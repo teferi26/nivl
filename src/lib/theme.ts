@@ -1,0 +1,30 @@
+export const colors = {
+  bg: '#060B16',
+  panel: '#0A1322',
+  panelDeep: '#0C0F22',
+  tabBar: '#080E1B',
+  line: '#14233A',
+  cyan: '#37C8F0',
+  cyanDim: '#1E6E96',
+  cyanFaint: '#11304A',
+  cyanText: '#8FD9F2',
+  purple: '#8A76E8',
+  purpleDim: '#5A48B8',
+  purplePanel: '#0C0F22',
+  red: '#FF5C6B',
+  redDim: '#A8333F',
+  redPanel: '#170D14',
+  amber: '#FFB02E',
+  text: '#EAF5FF',
+  textDim: '#7A8CA6',
+  textFaint: '#56698A',
+  track: '#13233B',
+} as const;
+
+export const fonts = {
+  brand: 'Orbitron_800ExtraBold',
+  number: 'Orbitron_700Bold',
+  heading: 'Rajdhani_700Bold',
+  semibold: 'Rajdhani_600SemiBold',
+  body: 'Rajdhani_500Medium',
+} as const;
