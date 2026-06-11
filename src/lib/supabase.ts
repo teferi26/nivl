@@ -10,19 +10,25 @@ if (!url || !key) {
   throw new Error('Faltan EXPO_PUBLIC_SUPABASE_URL / EXPO_PUBLIC_SUPABASE_KEY en .env');
 }
 
+// En el render web de Node (SSR de expo-router) no hay window ni AsyncStorage:
+// sin esta guarda, abrir la versión web mata Metro entero.
+const isServer = typeof window === 'undefined';
+
 export const supabase = createClient(url, key, {
   auth: {
-    storage: AsyncStorage,
-    autoRefreshToken: true,
-    persistSession: true,
+    ...(isServer ? {} : { storage: AsyncStorage }),
+    autoRefreshToken: !isServer,
+    persistSession: !isServer,
     detectSessionInUrl: false,
   },
 });
 
-AppState.addEventListener('change', (state) => {
-  if (state === 'active') {
-    supabase.auth.startAutoRefresh();
-  } else {
-    supabase.auth.stopAutoRefresh();
-  }
-});
+if (!isServer) {
+  AppState.addEventListener('change', (state) => {
+    if (state === 'active') {
+      supabase.auth.startAutoRefresh();
+    } else {
+      supabase.auth.stopAutoRefresh();
+    }
+  });
+}
