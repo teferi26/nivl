@@ -1,6 +1,7 @@
 # Expo HAS CHANGED
 
-Read the exact versioned docs at https://docs.expo.dev/versions/v56.0.0/ before writing any code.
+Read the exact versioned docs at https://docs.expo.dev/versions/v55.0.0/ before writing any code.
+(El proyecto se bajó de SDK 56 a 55 el 2026-06-11 porque el Expo Go de las tiendas aún no soportaba 56. No subir de SDK sin comprobar antes qué soporta el Expo Go del usuario.)
 
 # NIVL — contexto del proyecto
 
