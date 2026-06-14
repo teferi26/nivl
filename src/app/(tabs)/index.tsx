@@ -2,7 +2,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Haptics from 'expo-haptics';
 import * as ImagePicker from 'expo-image-picker';
 import { router, useFocusEffect } from 'expo-router';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Alert, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Hexagon } from '@/components/Hexagon';
@@ -44,6 +44,8 @@ export default function Sistema() {
   const [refreshing, setRefreshing] = useState(false);
   const [toast, setToast] = useState<{ xp: number; bonus: boolean } | null>(null);
 
+  const completing = useRef<Set<string>>(new Set());
+
   const load = useCallback(async () => {
     if (!userId) return;
     try {
@@ -63,7 +65,9 @@ export default function Sistema() {
       setProfile(prof);
       setTodayQuests(questsScheduledOn(quests, today));
       setCompletions(map);
-      if (result) setDayResult(result);
+      // Siempre (incluido null): un null borra el aviso de cierre de ayer, que
+      // antes se quedaba pegado indefinidamente al cambiar de pestaña.
+      setDayResult(result);
       if (seeded) {
         Alert.alert(
           'El sistema te da la bienvenida',
@@ -102,7 +106,7 @@ export default function Sistema() {
 
   const finishQuest = async (quest: Quest, evidence: string | null) => {
     if (!profile || !userId) return;
-    setBusyQuestId(quest.id);
+    const today = dateKey();
     try {
       const res = await completeQuest(profile, quest, evidence);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -111,10 +115,10 @@ export default function Sistema() {
       setCompletions((prev) => ({
         ...prev,
         [quest.id]: {
-          id: 'local',
+          id: `local-${quest.id}`,
           user_id: profile.id,
           quest_id: quest.id,
-          date: dateKey(),
+          date: today,
           completed_at: new Date().toISOString(),
           xp_awarded: res.xp,
           evidence_url: evidence ? 'local' : null,
@@ -138,33 +142,40 @@ export default function Sistema() {
       }
     } catch (e) {
       Alert.alert('Error del sistema', e instanceof Error ? e.message : 'Fallo desconocido');
-    } finally {
-      setBusyQuestId(null);
     }
   };
 
   const onComplete = (quest: Quest) => {
+    // Cerrojo síncrono por misión: un doble toque mientras la cámara o el Alert
+    // están abiertos ya no dispara dos completeQuest (evita XP duplicado).
+    if (completing.current.has(quest.id)) return;
+    completing.current.add(quest.id);
+    setBusyQuestId(quest.id);
+    const release = () => {
+      completing.current.delete(quest.id);
+      setBusyQuestId((id) => (id === quest.id ? null : id));
+    };
+
     if (quest.is_penalty) {
-      finishQuest(quest, null);
+      finishQuest(quest, null).finally(release);
       return;
     }
     if (quest.requires_evidence) {
-      captureEvidence().then((b64) => {
-        if (b64) finishQuest(quest, b64);
-      });
+      captureEvidence()
+        .then((b64) => (b64 ? finishQuest(quest, b64) : undefined))
+        .finally(release);
       return;
     }
     Alert.alert('Completar misión', '¿Quieres adjuntar evidencia? (+25% XP)', [
       {
         text: 'Cámara +25%',
-        onPress: () => {
-          captureEvidence().then((b64) => {
-            if (b64) finishQuest(quest, b64);
-          });
-        },
+        onPress: () =>
+          captureEvidence()
+            .then((b64) => (b64 ? finishQuest(quest, b64) : undefined))
+            .finally(release),
       },
-      { text: 'Sin evidencia', onPress: () => finishQuest(quest, null) },
-      { text: 'Cancelar', style: 'cancel' },
+      { text: 'Sin evidencia', onPress: () => finishQuest(quest, null).finally(release) },
+      { text: 'Cancelar', style: 'cancel', onPress: release },
     ]);
   };
 

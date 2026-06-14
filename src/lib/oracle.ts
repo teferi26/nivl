@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { DIFFICULTIES, STATS } from './game';
 import type { Difficulty, Stat } from './types';
 
 // El Oráculo: genera misiones desde un objetivo en lenguaje natural usando
@@ -106,8 +107,23 @@ export async function generateQuests(goal: string, apiKey: string): Promise<Orac
   if (!text) throw new Error('El oráculo devolvió una respuesta vacía.');
 
   const parsed = JSON.parse(text) as OracleResponse;
-  if (!Array.isArray(parsed.quests) || parsed.quests.length === 0) {
-    throw new Error('El oráculo no encontró misiones para ese objetivo. Reformúlalo.');
+  if (!Array.isArray(parsed.quests)) {
+    throw new Error('El oráculo devolvió un formato inesperado.');
   }
-  return parsed;
+  // Valida cada propuesta contra los enums reales antes de dejar que llegue a la BD:
+  // la IA podría devolver stat 'STR' o difficulty 'hard' e insertar basura.
+  const valid = parsed.quests.filter(
+    (q) =>
+      typeof q.title === 'string' &&
+      q.title.trim().length > 0 &&
+      STATS.includes(q.stat) &&
+      DIFFICULTIES.includes(q.difficulty) &&
+      Array.isArray(q.days_of_week) &&
+      q.days_of_week.length > 0 &&
+      q.days_of_week.every((d) => Number.isInteger(d) && d >= 1 && d <= 7),
+  );
+  if (valid.length === 0) {
+    throw new Error('El oráculo no encontró misiones válidas para ese objetivo. Reformúlalo.');
+  }
+  return { quests: valid, plan_summary: parsed.plan_summary ?? '' };
 }

@@ -5,9 +5,11 @@ import type { Completion, Difficulty, Profile, Quest, Stat } from './types';
 export async function ensureProfile(userId: string): Promise<Profile> {
   const { data } = await supabase.from('profiles').select('*').eq('id', userId).maybeSingle();
   if (data) return data as Profile;
+  // upsert en vez de insert: el trigger handle_new_user ya pudo crear la fila,
+  // y un insert pelado lanzaba duplicate key (23505) en esa carrera.
   const { data: created, error } = await supabase
     .from('profiles')
-    .insert({ id: userId })
+    .upsert({ id: userId }, { onConflict: 'id' })
     .select()
     .single();
   if (error) throw error;

@@ -1,7 +1,7 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Haptics from 'expo-haptics';
-import { router } from 'expo-router';
-import { useCallback, useEffect, useState } from 'react';
+import { router, useFocusEffect } from 'expo-router';
+import { useCallback, useRef, useState } from 'react';
 import {
   Alert,
   Pressable,
@@ -72,17 +72,20 @@ export default function Diario() {
   const [recent, setRecent] = useState<JournalEntry[]>([]);
   const [chronicle, setChronicle] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
+  const saving = useRef(false);
 
   const load = useCallback(async () => {
+    const todayKey = dateKey();
     try {
-      const entry = await fetchEntryForDate(today);
+      const entry = await fetchEntryForDate(todayKey);
       if (entry) {
         setMood(entry.mood);
         setEnergy(entry.energy);
         setText(entry.text ?? '');
         setSavedToday(true);
       }
-      setRecent((await fetchRecentEntries(14)).filter((e) => e.date !== today));
+      // Pide 15 y recorta a 14 tras excluir hoy (antes mostraba 13 si hoy ya existía).
+      setRecent((await fetchRecentEntries(15)).filter((e) => e.date !== todayKey).slice(0, 14));
       const start = new Date();
       start.setHours(0, 0, 0, 0);
       const end = new Date(start);
@@ -92,15 +95,20 @@ export default function Diario() {
     } catch (e) {
       Alert.alert('Error del sistema', e instanceof Error ? e.message : 'Fallo desconocido');
     }
-  }, [today]);
+  }, []);
 
-  useEffect(() => {
-    load();
-  }, [load]);
+  useFocusEffect(
+    useCallback(() => {
+      load();
+    }, [load]),
+  );
 
   const save = async () => {
-    if (!userId || busy) return;
+    // Cerrojo síncrono: dos toques rápidos ya no insertan dos entradas ni duplican XP.
+    if (!userId || busy || saving.current) return;
+    saving.current = true;
     setBusy(true);
+    const today = dateKey();
     try {
       const { isNew } = await upsertEntry(userId, {
         date: today,
@@ -124,6 +132,7 @@ export default function Diario() {
     } catch (e) {
       Alert.alert('Error del sistema', e instanceof Error ? e.message : 'Fallo desconocido');
     } finally {
+      saving.current = false;
       setBusy(false);
     }
   };

@@ -103,7 +103,8 @@ export default function DungeonDetail() {
   };
 
   const claimLoot = async () => {
-    if (!userId || !dungeon || busy) return;
+    // El guard de status evita reclamar el botín dos veces (reentrada / doble pantalla).
+    if (!userId || !dungeon || busy || dungeon.status !== 'active') return;
     setBusy(true);
     try {
       await updateDungeon(dungeon.id, { status: 'cleared', cleared_at: new Date().toISOString() });

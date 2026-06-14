@@ -1,6 +1,6 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { router } from 'expo-router';
-import { useCallback, useEffect, useState } from 'react';
+import { router, useFocusEffect } from 'expo-router';
+import { useCallback, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Heatmap } from '@/components/Heatmap';
@@ -20,18 +20,20 @@ export default function Informe() {
 
   const load = useCallback(async () => {
     try {
-      const from = addDays(today, -91);
+      const from = addDays(dateKey(), -91);
       const [cs, qs] = await Promise.all([fetchCompletionsSince(from), fetchQuests()]);
       setCompletions(cs);
       setQuests(qs);
     } catch (e) {
       Alert.alert('Error del sistema', e instanceof Error ? e.message : 'Fallo desconocido');
     }
-  }, [today]);
+  }, []);
 
-  useEffect(() => {
-    load();
-  }, [load]);
+  useFocusEffect(
+    useCallback(() => {
+      load();
+    }, [load]),
+  );
 
   const weekStart = addDays(today, -6);
   const prevWeekStart = addDays(today, -13);
