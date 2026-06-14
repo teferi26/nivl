@@ -214,10 +214,10 @@ export default function Sistema() {
               </View>
             </View>
             <View style={{ marginTop: 12 }}>
-              <XPBar ratio={lvl.into / lvl.next} />
+              <XPBar ratio={lvl.next > 0 ? lvl.into / lvl.next : 1} />
               <View style={styles.xpRow}>
                 <Text style={styles.xpText}>
-                  {lvl.into} / {lvl.next} XP
+                  {lvl.next > 0 ? `${lvl.into} / ${lvl.next} XP` : 'NIVEL MÁXIMO'}
                 </Text>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
                   <Text style={styles.streak}>

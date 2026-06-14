@@ -46,10 +46,13 @@ export function xpCostForLevel(level: number): number {
 export function levelFromXp(xpTotal: number): { level: number; into: number; next: number } {
   let level = 1;
   let rest = Math.max(0, xpTotal);
-  while (rest >= xpCostForLevel(level) && level < 999) {
+  while (level < 999 && rest >= xpCostForLevel(level)) {
     rest -= xpCostForLevel(level);
     level += 1;
   }
+  // Nivel tope: estado terminal. next=0 => los consumidores pintan barra llena
+  // y evitan la división into/next que antes desbordaba el ratio (>1).
+  if (level >= 999) return { level: 999, into: 0, next: 0 };
   return { level, into: rest, next: xpCostForLevel(level) };
 }
 
@@ -65,7 +68,10 @@ export function rankForLevel(level: number): Rank {
 }
 
 export function streakMultiplier(streakDays: number): number {
-  return Math.min(1.5, 1 + 0.1 * Math.floor(streakDays / 7));
+  // Clamp inferior: una racha negativa (corrupción/edición manual) nunca debe
+  // reducir el XP por debajo de ×1.
+  const weeks = Math.max(0, Math.floor(streakDays / 7));
+  return Math.min(1.5, 1 + 0.1 * weeks);
 }
 
 export function statPoints(statXp: number): number {

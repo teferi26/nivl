@@ -44,9 +44,12 @@ export function computeDayClose(input: CloseInput): CloseOutput {
   let frozenDays = 0;
   const missedTitles: string[] = [];
 
+  // Normaliza por si freeze_until llega de Supabase como timestamp
+  // ('2026-06-10T00:00:00'): la comparación lexicográfica exige 'YYYY-MM-DD'.
+  const freezeUntil = input.freezeUntil ? input.freezeUntil.slice(0, 10) : null;
   let day = input.fromDate;
   while (day < input.today) {
-    if (input.freezeUntil && day <= input.freezeUntil) {
+    if (freezeUntil && day <= freezeUntil) {
       frozenDays += 1;
       day = addDays(day, 1);
       continue;

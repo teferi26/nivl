@@ -26,6 +26,13 @@ export async function processPendingDays(
   const today = dateKey();
   const yesterday = addDays(today, -1);
 
+  // Limpia una congelación vencida aunque hoy no haya días que cerrar; antes solo
+  // se limpiaba dentro del cierre, así que un freeze vencido quedaba pegado en BD.
+  if (profile.freeze_until && profile.freeze_until < today) {
+    await updateProfile(profile.id, { freeze_until: null, freeze_reason: null });
+    profile = { ...profile, freeze_until: null, freeze_reason: null };
+  }
+
   if (!profile.last_day_processed) {
     await updateProfile(profile.id, { last_day_processed: yesterday });
     return { profile: { ...profile, last_day_processed: yesterday }, result: null };

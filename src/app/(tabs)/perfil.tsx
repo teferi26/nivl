@@ -222,9 +222,11 @@ export default function Perfil() {
             </View>
           </View>
           <View style={{ marginTop: 10 }}>
-            <XPBar ratio={lvl.into / lvl.next} height={8} />
+            <XPBar ratio={lvl.next > 0 ? lvl.into / lvl.next : 1} height={8} />
             <Text style={styles.xpText}>
-              {lvl.into} / {lvl.next} XP para el nivel {lvl.level + 1}
+              {lvl.next > 0
+                ? `${lvl.into} / ${lvl.next} XP para el nivel ${lvl.level + 1}`
+                : 'NIVEL MÁXIMO ALCANZADO'}
             </Text>
           </View>
         </SystemWindow>

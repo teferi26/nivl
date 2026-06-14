@@ -75,10 +75,11 @@ const PROMPTS = [
   '¿A quién o qué debes agradecer el día de hoy?',
 ];
 
-export function promptForDate(dateKey: string): string {
+export function promptForDate(key: string): string {
+  // El parámetro se llamaba 'dateKey' y ensombrecía la función dateKey importable.
   let hash = 0;
-  for (let i = 0; i < dateKey.length; i++) {
-    hash = (hash * 31 + dateKey.charCodeAt(i)) | 0;
+  for (let i = 0; i < key.length; i++) {
+    hash = (hash * 31 + key.charCodeAt(i)) | 0;
   }
   return PROMPTS[Math.abs(hash) % PROMPTS.length] ?? PROMPTS[0]!;
 }

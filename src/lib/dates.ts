@@ -1,3 +1,13 @@
+const KEY_RE = /^\d{4}-\d{2}-\d{2}$/;
+
+// Valida una clave de fecha YYYY-MM-DD. Una clave corrupta producía un
+// Invalid Date silencioso que rompía comparaciones y dejaba misiones sin programar.
+export function isValidKey(key: string): boolean {
+  if (typeof key !== 'string' || !KEY_RE.test(key)) return false;
+  const [y, m, d] = key.split('-').map(Number);
+  return Number.isFinite(y) && m >= 1 && m <= 12 && d >= 1 && d <= 31;
+}
+
 export function dateKey(d: Date = new Date()): string {
   const y = d.getFullYear();
   const m = String(d.getMonth() + 1).padStart(2, '0');
@@ -6,6 +16,7 @@ export function dateKey(d: Date = new Date()): string {
 }
 
 function parseKey(key: string): Date {
+  if (!isValidKey(key)) throw new Error(`Clave de fecha inválida: ${key}`);
   const [y, m, d] = key.split('-').map(Number);
   return new Date(y, m - 1, d);
 }

@@ -116,3 +116,17 @@ describe('puntos de stat', () => {
     expect(statPoints(250)).toBe(2);
   });
 });
+
+describe('casos límite (auditoría de código)', () => {
+  test('nivel tope 999 devuelve estado terminal sin desbordar el ratio', () => {
+    const maxed = levelFromXp(5_000_000_000);
+    expect(maxed.level).toBe(999);
+    expect(maxed.next).toBe(0);
+    expect(maxed.into).toBe(0);
+  });
+
+  test('racha negativa nunca reduce el multiplicador por debajo de ×1', () => {
+    expect(streakMultiplier(-1)).toBe(1);
+    expect(streakMultiplier(-100)).toBe(1);
+  });
+});
