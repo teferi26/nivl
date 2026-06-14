@@ -94,9 +94,20 @@ export async function unlockAchievements(
   const unlocked = await fetchUnlocked();
   const fresh = codes.filter((code) => !unlocked.has(code) && ACHIEVEMENT_BY_CODE[code]);
   if (fresh.length === 0) return [];
-  const { error } = await supabase
+  // upsert idempotente: un duplicado por carrera (gym + mazmorra casi a la vez)
+  // ya no aborta el lote entero ni traga logros nuevos en silencio. .select()
+  // devuelve solo los realmente insertados.
+  const { data, error } = await supabase
     .from('achievements')
-    .insert(fresh.map((code) => ({ user_id: userId, code })));
-  if (error) return [];
-  return fresh.map((code) => ACHIEVEMENT_BY_CODE[code]!);
+    .upsert(
+      fresh.map((code) => ({ user_id: userId, code })),
+      { onConflict: 'user_id,code', ignoreDuplicates: true },
+    )
+    .select('code');
+  if (error) {
+    console.warn('NIVL: no se pudieron registrar logros:', error.message);
+    return [];
+  }
+  const inserted = new Set((data ?? []).map((r) => r.code as string));
+  return fresh.filter((code) => inserted.has(code)).map((code) => ACHIEVEMENT_BY_CODE[code]!);
 }

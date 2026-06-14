@@ -74,13 +74,17 @@ export async function fetchCompletionsForDate(date: string): Promise<Completion[
 }
 
 export async function completionStats(): Promise<{ total: number; withEvidence: number }> {
-  const { count: total } = await supabase
+  // Propaga el error en vez de degradar a 0: un fallo de red devolvía {0,0}
+  // indistinguible de "sin actividad" y enmudecía la evaluación de logros.
+  const { count: total, error: e1 } = await supabase
     .from('completions')
     .select('*', { count: 'exact', head: true });
-  const { count: withEvidence } = await supabase
+  if (e1) throw e1;
+  const { count: withEvidence, error: e2 } = await supabase
     .from('completions')
     .select('*', { count: 'exact', head: true })
     .not('evidence_url', 'is', null);
+  if (e2) throw e2;
   return { total: total ?? 0, withEvidence: withEvidence ?? 0 };
 }
 
@@ -89,7 +93,10 @@ export async function insertEvent(
   type: string,
   payload: Record<string, unknown>,
 ): Promise<void> {
-  await supabase.from('events').insert({ user_id: userId, type, payload });
+  // Los eventos son la fuente de verdad de la crónica y del conteo de PRs;
+  // tragarse un fallo aquí dejaba logros sin desbloquear sin aviso.
+  const { error } = await supabase.from('events').insert({ user_id: userId, type, payload });
+  if (error) throw error;
 }
 
 export async function uploadEvidence(

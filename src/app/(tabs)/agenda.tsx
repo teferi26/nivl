@@ -1,6 +1,6 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useFocusEffect } from 'expo-router';
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import {
   Alert,
   Modal,
@@ -17,7 +17,7 @@ import { SystemWindow } from '@/components/SystemWindow';
 import { useAuth } from '@/lib/auth';
 import { questsScheduledOn } from '@/lib/closing';
 import { fetchQuests } from '@/lib/data';
-import { addDays, dateKey } from '@/lib/dates';
+import { addDays, dateKey, isValidKey } from '@/lib/dates';
 import {
   createCalendarEvent,
   deleteCalendarEvent,
@@ -49,6 +49,7 @@ export default function Agenda() {
   const [title, setTitle] = useState('');
   const [date, setDate] = useState(dateKey());
   const [time, setTime] = useState('');
+  const saving = useRef(false);
 
   const today = dateKey();
 
@@ -74,20 +75,29 @@ export default function Agenda() {
   );
 
   const addEvent = async () => {
-    if (!userId || !title.trim()) return;
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    if (!userId || !title.trim() || saving.current) return;
+    // isValidKey valida mes/día reales; la regex anterior aceptaba 2026-13-45,
+    // que Postgres rechazaba con un error no capturado.
+    if (!isValidKey(date)) {
       Alert.alert('Fecha inválida', 'Usa el formato AAAA-MM-DD, ej. 2026-06-15');
       return;
     }
-    await createCalendarEvent(userId, {
-      title: title.trim(),
-      date,
-      time: time.trim() || null,
-    });
-    setTitle('');
-    setTime('');
-    setFormOpen(false);
-    await load();
+    saving.current = true;
+    try {
+      await createCalendarEvent(userId, {
+        title: title.trim(),
+        date,
+        time: time.trim() || null,
+      });
+      setTitle('');
+      setTime('');
+      setFormOpen(false);
+      await load();
+    } catch (e) {
+      Alert.alert('Error del sistema', e instanceof Error ? e.message : 'Fallo desconocido');
+    } finally {
+      saving.current = false;
+    }
   };
 
   const days = Array.from({ length: DAYS_AHEAD }, (_, i) => addDays(today, i));

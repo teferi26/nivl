@@ -27,7 +27,7 @@ export function SystemButton({ title, onPress, variant = 'solid', disabled, load
       ]}
     >
       {loading ? (
-        <ActivityIndicator color={solid ? colors.bg : colors.cyan} size="small" />
+        <ActivityIndicator color={solid ? colors.bg : danger ? colors.red : colors.cyan} size="small" />
       ) : (
         <Text
           style={[

@@ -48,7 +48,13 @@ export default function Misiones() {
 
   const onToggle = async (quest: Quest, active: boolean) => {
     setQuests((prev) => prev.map((q) => (q.id === quest.id ? { ...q, active } : q)));
-    await setQuestActive(quest.id, active);
+    try {
+      await setQuestActive(quest.id, active);
+    } catch (e) {
+      // Revierte el optimista: si no, el switch miente respecto a la BD.
+      setQuests((prev) => prev.map((q) => (q.id === quest.id ? { ...q, active: !active } : q)));
+      Alert.alert('Error del sistema', e instanceof Error ? e.message : 'No se pudo cambiar');
+    }
   };
 
   const onDelete = (quest: Quest) => {

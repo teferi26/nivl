@@ -1,7 +1,7 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Haptics from 'expo-haptics';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Alert,
   Modal,
@@ -50,6 +50,7 @@ export default function DungeonDetail() {
   const [isBoss, setIsBoss] = useState(false);
   const [levelUp, setLevelUp] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
+  const saving = useRef(false);
 
   const load = useCallback(async () => {
     if (!id) return;
@@ -71,7 +72,9 @@ export default function DungeonDetail() {
       title: taskTitle.trim(),
       difficulty,
       is_boss: isBoss,
-      position: tasks.length,
+      // max(position)+1 en vez de length: tras borrar una tarea del medio,
+      // length colisionaba con una position ya existente.
+      position: tasks.reduce((m, t) => Math.max(m, t.position), -1) + 1,
     });
     setTaskTitle('');
     setIsBoss(false);
@@ -80,8 +83,10 @@ export default function DungeonDetail() {
   };
 
   const toggleTask = async (task: DungeonTask) => {
-    if (!userId || !dungeon || busy || dungeon.status !== 'active') return;
+    // Cerrojo síncrono: el doble toque duplicaba el XP de la tarea.
+    if (!userId || !dungeon || busy || saving.current || dungeon.status !== 'active') return;
     if (task.done) return;
+    saving.current = true;
     setBusy(true);
     try {
       await setTaskDone(task.id, true);
@@ -98,6 +103,7 @@ export default function DungeonDetail() {
     } catch (e) {
       Alert.alert('Error del sistema', e instanceof Error ? e.message : 'Fallo desconocido');
     } finally {
+      saving.current = false;
       setBusy(false);
     }
   };

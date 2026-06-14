@@ -12,19 +12,28 @@ interface Props {
 export function XpToast({ xp, bonus, onDone }: Props) {
   const translateY = useRef(new Animated.Value(0)).current;
   const opacity = useRef(new Animated.Value(0)).current;
+  // onDone por ref: si fuera dependencia del efecto, cada render del padre
+  // (varios setState al completar) reiniciaba la animación a mitad de vuelo.
+  const onDoneRef = useRef(onDone);
+  onDoneRef.current = onDone;
 
   useEffect(() => {
     if (xp === null) return;
     translateY.setValue(0);
     opacity.setValue(0);
-    Animated.sequence([
+    const anim = Animated.sequence([
       Animated.parallel([
         Animated.timing(opacity, { toValue: 1, duration: 180, useNativeDriver: true }),
         Animated.timing(translateY, { toValue: -26, duration: 900, useNativeDriver: true }),
       ]),
       Animated.timing(opacity, { toValue: 0, duration: 350, useNativeDriver: true }),
-    ]).start(() => onDone());
-  }, [xp, translateY, opacity, onDone]);
+    ]);
+    anim.start(({ finished }) => {
+      if (finished) onDoneRef.current();
+    });
+    // Cancela la animación anterior antes de arrancar la nueva (toasts encadenados).
+    return () => anim.stop();
+  }, [xp, translateY, opacity]);
 
   if (xp === null) return null;
 

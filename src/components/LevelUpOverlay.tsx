@@ -57,10 +57,12 @@ export function LevelUpOverlay({ level, onClose }: Props) {
   return (
     <Modal visible={level !== null} transparent animationType="fade" onRequestClose={onClose}>
       <Pressable style={styles.backdrop} onPress={onClose}>
-        <View style={styles.ringLayer} pointerEvents="none">
-          <Ring delay={0} />
-          <Ring delay={550} />
-        </View>
+        {level !== null ? (
+          <View style={styles.ringLayer} pointerEvents="none">
+            <Ring delay={0} />
+            <Ring delay={550} />
+          </View>
+        ) : null}
         <Animated.View style={[styles.panel, { transform: [{ scale }], opacity }]}>
           <Text style={styles.notice}>HAS SUBIDO DE NIVEL</Text>
           <Text style={styles.level}>{level ?? 0}</Text>

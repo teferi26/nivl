@@ -9,10 +9,10 @@ import { View } from 'react-native';
 import { AuthProvider } from '@/lib/auth';
 import { colors } from '@/lib/theme';
 
-SplashScreen.preventAutoHideAsync();
+SplashScreen.preventAutoHideAsync().catch(() => {});
 
 export default function RootLayout() {
-  const [loaded] = useFonts({
+  const [loaded, error] = useFonts({
     Orbitron_700Bold,
     Orbitron_800ExtraBold,
     Rajdhani_500Medium,
@@ -21,12 +21,14 @@ export default function RootLayout() {
   });
 
   useEffect(() => {
-    if (loaded) {
-      SplashScreen.hideAsync();
+    // También con error: si una fuente falla, ocultar el splash igualmente para
+    // no quedar en pantalla negra permanente.
+    if (loaded || error) {
+      SplashScreen.hideAsync().catch(() => {});
     }
-  }, [loaded]);
+  }, [loaded, error]);
 
-  if (!loaded) {
+  if (!loaded && !error) {
     return <View style={{ flex: 1, backgroundColor: colors.bg }} />;
   }
 

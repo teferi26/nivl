@@ -45,6 +45,7 @@ export default function Sistema() {
   const [toast, setToast] = useState<{ xp: number; bonus: boolean } | null>(null);
 
   const completing = useRef<Set<string>>(new Set());
+  const clearToast = useCallback(() => setToast(null), []);
 
   const load = useCallback(async () => {
     if (!userId) return;
@@ -327,7 +328,7 @@ export default function Sistema() {
         </SystemWindow>
       </ScrollView>
 
-      <XpToast xp={toast?.xp ?? null} bonus={toast?.bonus} onDone={() => setToast(null)} />
+      <XpToast xp={toast?.xp ?? null} bonus={toast?.bonus} onDone={clearToast} />
       <LevelUpOverlay level={levelUp} onClose={() => setLevelUp(null)} />
     </SafeAreaView>
   );

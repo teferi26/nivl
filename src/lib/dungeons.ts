@@ -45,7 +45,8 @@ export async function fetchTasks(dungeonId: string): Promise<DungeonTask[]> {
     .from('dungeon_tasks')
     .select('*')
     .eq('dungeon_id', dungeonId)
-    .order('position', { ascending: true });
+    .order('position', { ascending: true })
+    .order('id', { ascending: true }); // desempate estable si dos comparten position
   if (error) throw error;
   return (data ?? []) as DungeonTask[];
 }

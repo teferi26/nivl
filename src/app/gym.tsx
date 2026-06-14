@@ -1,7 +1,7 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Haptics from 'expo-haptics';
-import { router } from 'expo-router';
-import { useCallback, useEffect, useState } from 'react';
+import { router, useFocusEffect } from 'expo-router';
+import { useCallback, useRef, useState } from 'react';
 import {
   Alert,
   Modal,
@@ -66,6 +66,7 @@ export default function Gym() {
   const [exWeight, setExWeight] = useState('');
   const [levelUp, setLevelUp] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
+  const saving = useRef(false);
 
   const today = dateKey();
   const todayWd = isoWeekday(new Date());
@@ -74,15 +75,18 @@ export default function Gym() {
     try {
       setDays(await fetchGymDays());
       setExercises(await fetchGymExercises());
-      setTodaySession(await fetchSessionForDate(today));
+      setTodaySession(await fetchSessionForDate(dateKey()));
     } catch (e) {
       Alert.alert('Error del sistema', e instanceof Error ? e.message : 'Fallo desconocido');
     }
-  }, [today]);
+  }, []);
 
-  useEffect(() => {
-    load();
-  }, [load]);
+  // Era la única pantalla con useEffect: no se refrescaba al volver de entrenar.
+  useFocusEffect(
+    useCallback(() => {
+      load();
+    }, [load]),
+  );
 
   const todayPlan = days.find((d) => d.day_of_week === todayWd);
   const exercisesFor = (dayId: string) => exercises.filter((e) => e.gym_day_id === dayId);
@@ -100,7 +104,10 @@ export default function Gym() {
   };
 
   const finishTraining = async () => {
-    if (!userId || busy) return;
+    // Cerrojo síncrono: el doble toque chocaba con unique(user_id,date) (23505)
+    // dejando una sesión fantasma. busy solo no bloquea de forma síncrona.
+    if (!userId || busy || saving.current) return;
+    saving.current = true;
     setBusy(true);
     try {
       const valid = lifts
@@ -147,6 +154,7 @@ export default function Gym() {
     } catch (e) {
       Alert.alert('Error del sistema', e instanceof Error ? e.message : 'Fallo desconocido');
     } finally {
+      saving.current = false;
       setBusy(false);
     }
   };

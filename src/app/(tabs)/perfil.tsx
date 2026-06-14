@@ -26,6 +26,7 @@ import { completionStats, ensureProfile, signedUrl, updateProfile, uploadAvatar 
 import { addDays, dateKey } from '@/lib/dates';
 import { setFreeze } from '@/lib/engine';
 import { exportAllData } from '@/lib/exporter';
+import { setApiKey } from '@/lib/oracle';
 import {
   levelFromXp,
   MAX_STONES,
@@ -172,6 +173,9 @@ export default function Perfil() {
   };
 
   const signOut = async () => {
+    // Borra la API key del dispositivo: en un móvil compartido el siguiente
+    // usuario heredaría la key de pago de Anthropic.
+    await setApiKey('');
     await supabase.auth.signOut();
     router.replace('/login');
   };
