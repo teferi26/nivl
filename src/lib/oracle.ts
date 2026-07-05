@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SecureStore from 'expo-secure-store';
 import { DIFFICULTIES, STATS } from './game';
 import type { Difficulty, Stat } from './types';
 
@@ -7,7 +8,9 @@ import type { Difficulty, Stat } from './types';
 // Modelo barato a propósito: cada consulta cuesta ~céntimos. Sube a
 // 'claude-sonnet-4-6' u 'claude-opus-4-8' si quieres más músculo.
 const MODEL = 'claude-haiku-4-5';
-const KEY_STORAGE = 'nivl.anthropic_key';
+// La key vive en SecureStore (cifrado del SO), no en AsyncStorage (texto plano).
+const KEY_STORAGE = 'nivl_anthropic_key';
+const LEGACY_KEY = 'nivl.anthropic_key';
 
 export interface ProposedQuest {
   title: string;
@@ -23,15 +26,27 @@ export interface OracleResponse {
 }
 
 export async function getApiKey(): Promise<string | null> {
-  return AsyncStorage.getItem(KEY_STORAGE);
+  const secure = await SecureStore.getItemAsync(KEY_STORAGE);
+  if (secure) return secure;
+  // Migración transparente: si venía de una versión anterior en AsyncStorage
+  // (texto plano), la movemos a SecureStore y borramos el resto inseguro.
+  const legacy = await AsyncStorage.getItem(LEGACY_KEY);
+  if (legacy) {
+    await SecureStore.setItemAsync(KEY_STORAGE, legacy);
+    await AsyncStorage.removeItem(LEGACY_KEY);
+    return legacy;
+  }
+  return null;
 }
 
 export async function setApiKey(key: string): Promise<void> {
-  if (key.trim()) {
-    await AsyncStorage.setItem(KEY_STORAGE, key.trim());
+  const trimmed = key.trim();
+  if (trimmed) {
+    await SecureStore.setItemAsync(KEY_STORAGE, trimmed);
   } else {
-    await AsyncStorage.removeItem(KEY_STORAGE);
+    await SecureStore.deleteItemAsync(KEY_STORAGE);
   }
+  await AsyncStorage.removeItem(LEGACY_KEY);
 }
 
 const QUESTS_SCHEMA = {

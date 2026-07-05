@@ -37,10 +37,20 @@ export async function exportAllData(): Promise<void> {
   const file = new File(Paths.cache, `nivl-export-${Date.now()}.json`);
   file.write(JSON.stringify(dump, null, 2));
 
-  if (await Sharing.isAvailableAsync()) {
+  try {
+    if (!(await Sharing.isAvailableAsync())) {
+      throw new Error('Compartir no está disponible en este dispositivo.');
+    }
     await Sharing.shareAsync(file.uri, {
       mimeType: 'application/json',
       dialogTitle: 'Exportar datos de NIVL',
     });
+  } finally {
+    // No dejar el volcado con datos personales en la caché del dispositivo.
+    try {
+      file.delete();
+    } catch {
+      // ignora: si no se puede borrar, la caché del SO lo hará
+    }
   }
 }

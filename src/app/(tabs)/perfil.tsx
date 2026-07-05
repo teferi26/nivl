@@ -26,6 +26,7 @@ import { completionStats, ensureProfile, signedUrl, updateProfile, uploadAvatar 
 import { addDays, dateKey } from '@/lib/dates';
 import { setFreeze } from '@/lib/engine';
 import { exportAllData } from '@/lib/exporter';
+import { deleteAccount } from '@/lib/account';
 import { setApiKey } from '@/lib/oracle';
 import {
   levelFromXp,
@@ -180,6 +181,36 @@ export default function Perfil() {
     router.replace('/login');
   };
 
+  const onDeleteAccount = () => {
+    Alert.alert(
+      'Eliminar cuenta',
+      'Esto borra PARA SIEMPRE tu perfil, misiones, mazmorras, diario, evidencias y todo tu progreso. No hay vuelta atrás.',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Continuar',
+          style: 'destructive',
+          onPress: () =>
+            Alert.alert('¿Estás totalmente seguro?', 'El sistema no puede deshacer esto.', [
+              { text: 'Cancelar', style: 'cancel' },
+              {
+                text: 'Eliminar mi cuenta',
+                style: 'destructive',
+                onPress: async () => {
+                  try {
+                    await deleteAccount();
+                    router.replace('/login');
+                  } catch (e) {
+                    Alert.alert('Error del sistema', e instanceof Error ? e.message : 'No se pudo eliminar');
+                  }
+                },
+              },
+            ]),
+        },
+      ],
+    );
+  };
+
   if (!profile) {
     return <SafeAreaView style={styles.screen} edges={['top']} />;
   }
@@ -331,6 +362,7 @@ export default function Perfil() {
         <SystemButton title="Compartir perfil" onPress={() => setShareOpen(true)} style={{ marginTop: 2 }} />
         <SystemButton title="Exportar mis datos" variant="outline" onPress={onExport} loading={busy} style={{ marginTop: 10 }} />
         <SystemButton title="Cerrar sesión" variant="danger" onPress={signOut} style={{ marginTop: 10 }} />
+        <SystemButton title="Eliminar cuenta" variant="danger" onPress={onDeleteAccount} style={{ marginTop: 10 }} />
       </ScrollView>
 
       <Modal visible={freezeOpen} transparent animationType="slide" onRequestClose={() => setFreezeOpen(false)}>
