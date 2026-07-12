@@ -6,7 +6,7 @@ Stack: Expo (React Native + TypeScript) · expo-router · Supabase (Postgres, Au
 
 ## Puesta en marcha (una sola vez)
 
-1. **Base de datos** — En [Supabase Dashboard](https://supabase.com/dashboard) → tu proyecto → SQL Editor, pega y ejecuta EN ORDEN: `supabase/migrations/0001_init.sql` y después `supabase/migrations/0002_fases.sql`. Crean tablas, RLS, trigger de perfil, buckets `evidence`/`avatars`, y los módulos de mazmorras, agenda, gym, dieta, compra, diario y logros.
+1. **Base de datos** — En [Supabase Dashboard](https://supabase.com/dashboard) → tu proyecto → SQL Editor, pega y ejecuta EN ORDEN todas las migraciones de `supabase/migrations/` (0001 → 0005). Crean tablas con RLS, trigger de perfil, buckets, los módulos (mazmorras, agenda, gym, dieta, compra, diario, logros), el endurecimiento de seguridad, el borrado de cuenta RGPD y el Contrato (reglas propias, Puntos Bonus, carta al futuro, fotos del diario).
 2. **Login sin fricción** — Authentication → Sign In / Providers → Email → desactiva **Confirm email** (es una app personal; así "Crear cuenta" entra directamente).
 3. **Claves** — Ya están en `.env` (`EXPO_PUBLIC_SUPABASE_URL` y `EXPO_PUBLIC_SUPABASE_KEY`, la publishable). La `secret`/`service_role` **nunca** van en este proyecto.
 4. **El Oráculo (opcional)** — Para generar misiones con IA desde un objetivo, crea una API key en [console.anthropic.com](https://console.anthropic.com) y pégala dentro de la app (Sistema → Oráculo). Se guarda solo en tu dispositivo; usa `claude-haiku-4-5` (céntimos por consulta).

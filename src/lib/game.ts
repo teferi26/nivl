@@ -114,3 +114,19 @@ export function dungeonTaskXp(difficulty: Difficulty, isBoss: boolean): number {
 export const GYM_SESSION_XP = 50;
 export const PR_XP = 25;
 export const JOURNAL_XP = 15;
+
+// ── El Contrato (regla 6 del cuaderno): Puntos Bonus ────────────────
+// Las misiones extra (is_bonus) dan PB en vez de XP: moneda secundaria
+// canjeable por descanso. Cualitativa → no infla el nivel.
+export const BONUS_BY_DIFFICULTY: Record<Difficulty, number> = {
+  trivial: 1,
+  facil: 3,
+  media: 5,
+  dificil: 10,
+  epica: 25,
+};
+export const REDEEM_COST = 10; // 10 PB = 1 h de descanso
+export const REDEEM_WEEKLY_CAP = 30; // máx 30 PB canjeados / 7 días
+// Romper una regla del contrato: −25 XP inmediatos + misión de consecuencia
+// que restaura exactamente eso si se cumple el castigo el mismo día.
+export const RULE_BREAK_XP = 25;

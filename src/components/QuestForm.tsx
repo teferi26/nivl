@@ -12,7 +12,7 @@ import {
   View,
 } from 'react-native';
 import type { QuestInput } from '@/lib/data';
-import { DIFFICULTIES, DIFFICULTY_LABEL, STAT_LABEL, STATS, XP_BY_DIFFICULTY } from '@/lib/game';
+import { BONUS_BY_DIFFICULTY, DIFFICULTIES, DIFFICULTY_LABEL, STAT_LABEL, STATS, XP_BY_DIFFICULTY } from '@/lib/game';
 import { colors, fonts } from '@/lib/theme';
 import type { Difficulty, Stat } from '@/lib/types';
 import { SystemButton } from './SystemButton';
@@ -31,6 +31,7 @@ export function QuestForm({ visible, onClose, onSubmit }: Props) {
   const [difficulty, setDifficulty] = useState<Difficulty>('media');
   const [days, setDays] = useState<number[]>([1, 2, 3, 4, 5, 6, 7]);
   const [requiresEvidence, setRequiresEvidence] = useState(false);
+  const [isBonus, setIsBonus] = useState(false);
   const [saving, setSaving] = useState(false);
 
   const toggleDay = (d: number) => {
@@ -43,6 +44,7 @@ export function QuestForm({ visible, onClose, onSubmit }: Props) {
     setDifficulty('media');
     setDays([1, 2, 3, 4, 5, 6, 7]);
     setRequiresEvidence(false);
+    setIsBonus(false);
   };
 
   const submit = async () => {
@@ -55,6 +57,7 @@ export function QuestForm({ visible, onClose, onSubmit }: Props) {
         difficulty,
         days_of_week: days,
         requires_evidence: requiresEvidence,
+        is_bonus: isBonus,
       });
       reset();
       onClose();
@@ -139,6 +142,21 @@ export function QuestForm({ visible, onClose, onSubmit }: Props) {
                 onValueChange={setRequiresEvidence}
                 trackColor={{ false: colors.track, true: colors.cyanDim }}
                 thumbColor={requiresEvidence ? colors.cyan : colors.textFaint}
+              />
+            </View>
+
+            <View style={styles.switchRow}>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.switchLabel}>Misión extra (Puntos Bonus)</Text>
+                <Text style={styles.hint}>
+                  Da {BONUS_BY_DIFFICULTY[difficulty]} PB canjeables por descanso, en vez de XP
+                </Text>
+              </View>
+              <Switch
+                value={isBonus}
+                onValueChange={setIsBonus}
+                trackColor={{ false: colors.track, true: '#5c4a12' }}
+                thumbColor={isBonus ? colors.amber : colors.textFaint}
               />
             </View>
 

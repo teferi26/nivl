@@ -20,6 +20,7 @@ export interface Profile {
   freeze_until: string | null;
   freeze_reason: string | null;
   equipped_title: string | null;
+  bonus_points: number;
   created_at: string;
 }
 
@@ -35,6 +36,7 @@ export interface Quest {
   is_penalty: boolean;
   penalty_date: string | null;
   penalty_xp: number | null;
+  is_bonus: boolean;
   created_at: string;
 }
 
@@ -148,6 +150,51 @@ export interface JournalEntry {
   mood: number | null;
   energy: number | null;
   text: string | null;
+  plan: string | null;
+  created_at: string;
+}
+
+export interface Rule {
+  id: string;
+  user_id: string;
+  position: number;
+  text: string;
+  consequence: string;
+  active: boolean;
+  created_at: string;
+}
+
+export interface RuleBreak {
+  id: string;
+  user_id: string;
+  rule_id: string;
+  date: string;
+  note: string | null;
+  created_at: string;
+}
+
+export interface BonusRedemption {
+  id: string;
+  user_id: string;
+  amount: number;
+  reward: string;
+  created_at: string;
+}
+
+export interface Letter {
+  id: string;
+  user_id: string;
+  body: string;
+  sealed_at: string;
+  open_at: string;
+  opened_at: string | null;
+}
+
+export interface JournalPhoto {
+  id: string;
+  user_id: string;
+  date: string;
+  path: string;
   created_at: string;
 }
 

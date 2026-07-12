@@ -1,7 +1,8 @@
 import { computeDayClose, questsScheduledOn } from './closing';
+import { awardBonus as awardBonusRpc } from './contract';
 import { fetchCompletionsSince, insertEvent, updateProfile, uploadEvidence } from './data';
 import { addDays, dateKey } from './dates';
-import { levelFromXp, questXp, STAT_COLUMN } from './game';
+import { BONUS_BY_DIFFICULTY, levelFromXp, questXp, STAT_COLUMN } from './game';
 import { supabase } from './supabase';
 import type { Profile, Quest } from './types';
 
@@ -113,6 +114,7 @@ export async function processPendingDays(
 
 export interface CompleteResult {
   xp: number;
+  bonusEarned: number;
   leveledUp: boolean;
   newLevel: number;
   profile: Profile;
@@ -129,6 +131,30 @@ export async function completeQuest(
   let evidencePath: string | null = null;
   if (evidenceBase64) {
     evidencePath = await uploadEvidence(profile.id, quest.id, today, evidenceBase64);
+  }
+
+  // Misión extra (contrato, regla 6): da Puntos Bonus canjeables por descanso,
+  // no XP. La completion se registra igual (cuenta para la racha del día).
+  if (quest.is_bonus) {
+    const pb = BONUS_BY_DIFFICULTY[quest.difficulty];
+    const { error } = await supabase.from('completions').insert({
+      user_id: profile.id,
+      quest_id: quest.id,
+      date: today,
+      xp_awarded: 0,
+      evidence_url: evidencePath,
+    });
+    if (error) throw error;
+    const newBonus = await awardBonusRpc(pb);
+    await insertEvent(profile.id, 'bonus_earned', { quest: quest.title, pb });
+    return {
+      xp: 0,
+      bonusEarned: pb,
+      leveledUp: false,
+      newLevel: levelFromXp(profile.xp_total).level,
+      profile: { ...profile, bonus_points: newBonus },
+      wasPenalty: false,
+    };
   }
 
   const xp = questXp(quest, { evidence: evidencePath !== null, streakDays: profile.streak_days });
@@ -162,6 +188,7 @@ export async function completeQuest(
 
   return {
     xp,
+    bonusEarned: 0,
     leveledUp: after > before,
     newLevel: after,
     profile: { ...profile, ...patch },

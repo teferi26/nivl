@@ -18,13 +18,19 @@ export async function fetchRecentEntries(limit = 14): Promise<JournalEntry[]> {
 
 export async function upsertEntry(
   userId: string,
-  input: { date: string; mood: number | null; energy: number | null; text: string | null },
+  input: {
+    date: string;
+    mood: number | null;
+    energy: number | null;
+    text: string | null;
+    plan: string | null;
+  },
 ): Promise<{ entry: JournalEntry; isNew: boolean }> {
   const existing = await fetchEntryForDate(input.date);
   if (existing) {
     const { data, error } = await supabase
       .from('journal_entries')
-      .update({ mood: input.mood, energy: input.energy, text: input.text })
+      .update({ mood: input.mood, energy: input.energy, text: input.text, plan: input.plan })
       .eq('id', existing.id)
       .select()
       .single();

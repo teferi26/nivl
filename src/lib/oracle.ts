@@ -90,21 +90,36 @@ Reglas:
 - Títulos cortos y accionables, en español. Sin emojis.`;
 
 export async function generateQuests(goal: string, apiKey: string): Promise<OracleResponse> {
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'x-api-key': apiKey,
-      'anthropic-version': '2023-06-01',
-      'content-type': 'application/json',
-    },
-    body: JSON.stringify({
-      model: MODEL,
-      max_tokens: 2000,
-      system: SYSTEM_PROMPT,
-      messages: [{ role: 'user', content: `Mi objetivo: ${goal}` }],
-      output_config: { format: { type: 'json_schema', schema: QUESTS_SCHEMA } },
-    }),
-  });
+  // Timeout de 30 s: sin AbortController, una red en agujero dejaba el botón
+  // "Consultar" girando para siempre.
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 30000);
+  let res: Response;
+  try {
+    res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      signal: controller.signal,
+      headers: {
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: MODEL,
+        max_tokens: 2000,
+        system: SYSTEM_PROMPT,
+        messages: [{ role: 'user', content: `Mi objetivo: ${goal}` }],
+        output_config: { format: { type: 'json_schema', schema: QUESTS_SCHEMA } },
+      }),
+    });
+  } catch (e) {
+    if (e instanceof Error && e.name === 'AbortError') {
+      throw new Error('El oráculo tardó demasiado. Revisa tu conexión y reintenta.');
+    }
+    throw e;
+  } finally {
+    clearTimeout(timeout);
+  }
 
   if (!res.ok) {
     if (res.status === 401) throw new Error('API key inválida. Revísala en este mismo panel.');
@@ -127,18 +142,150 @@ export async function generateQuests(goal: string, apiKey: string): Promise<Orac
   }
   // Valida cada propuesta contra los enums reales antes de dejar que llegue a la BD:
   // la IA podría devolver stat 'STR' o difficulty 'hard' e insertar basura.
-  const valid = parsed.quests.filter(
-    (q) =>
-      typeof q.title === 'string' &&
-      q.title.trim().length > 0 &&
-      STATS.includes(q.stat) &&
-      DIFFICULTIES.includes(q.difficulty) &&
-      Array.isArray(q.days_of_week) &&
-      q.days_of_week.length > 0 &&
-      q.days_of_week.every((d) => Number.isInteger(d) && d >= 1 && d <= 7),
-  );
+  const valid = parsed.quests.filter(isValidProposal);
   if (valid.length === 0) {
     throw new Error('El oráculo no encontró misiones válidas para ese objetivo. Reformúlalo.');
   }
   return { quests: valid, plan_summary: parsed.plan_summary ?? '' };
+}
+
+function isValidProposal(q: ProposedQuest): boolean {
+  return (
+    typeof q.title === 'string' &&
+    q.title.trim().length > 0 &&
+    STATS.includes(q.stat) &&
+    DIFFICULTIES.includes(q.difficulty) &&
+    Array.isArray(q.days_of_week) &&
+    q.days_of_week.length > 0 &&
+    q.days_of_week.every((d) => Number.isInteger(d) && d >= 1 && d <= 7)
+  );
+}
+
+// ── El sistema se mejora a sí mismo: análisis semanal con ajustes ───
+export interface QuestSnapshot {
+  id: string;
+  title: string;
+  difficulty: Difficulty;
+  days_of_week: number[];
+  scheduled: number; // veces programada en los últimos 14 días
+  completed: number; // veces completada
+}
+
+export interface WeeklyInput {
+  quests: QuestSnapshot[];
+  streakDays: number;
+  level: number;
+  rulesBroken: string[];
+  penaltiesXp: number;
+}
+
+export interface OracleAdjustment {
+  quest_id: string;
+  quest_title: string;
+  action: 'ajustar_dificultad' | 'desactivar';
+  new_difficulty?: Difficulty;
+  reasoning: string;
+}
+
+export interface WeeklyAdvice {
+  analysis: string;
+  adjustments: OracleAdjustment[];
+  new_quests: ProposedQuest[];
+  advice: string;
+}
+
+const WEEKLY_SCHEMA = {
+  type: 'object',
+  properties: {
+    analysis: { type: 'string', description: 'Lectura de la semana en 2-4 frases, voz sobria del sistema' },
+    adjustments: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          quest_id: { type: 'string' },
+          quest_title: { type: 'string' },
+          action: { type: 'string', enum: ['ajustar_dificultad', 'desactivar'] },
+          new_difficulty: { type: 'string', enum: ['trivial', 'facil', 'media', 'dificil', 'epica'] },
+          reasoning: { type: 'string', description: '1 frase: por qué' },
+        },
+        required: ['quest_id', 'quest_title', 'action', 'reasoning'],
+        additionalProperties: false,
+      },
+    },
+    new_quests: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          title: { type: 'string' },
+          stat: { type: 'string', enum: ['FUE', 'VIT', 'INT', 'AGI', 'PER'] },
+          difficulty: { type: 'string', enum: ['trivial', 'facil', 'media', 'dificil', 'epica'] },
+          days_of_week: { type: 'array', items: { type: 'integer', enum: [1, 2, 3, 4, 5, 6, 7] } },
+          reasoning: { type: 'string' },
+        },
+        required: ['title', 'stat', 'difficulty', 'days_of_week', 'reasoning'],
+        additionalProperties: false,
+      },
+    },
+    advice: { type: 'string', description: 'Un consejo accionable para la próxima semana' },
+  },
+  required: ['analysis', 'adjustments', 'new_quests', 'advice'],
+  additionalProperties: false,
+} as const;
+
+const WEEKLY_SYSTEM = `Eres "el sistema" de NIVL. Analizas la semana real del cazador y propones AJUSTES CONCRETOS para que el juego se adapte a él: misión que falla siempre → bajar dificultad o desactivar; misión trivial que clava el 100% → subir dificultad; huecos → como mucho 1-2 misiones nuevas. Sé conservador: pocos cambios y bien justificados. Nunca propongas más de 4 ajustes. Voz sobria, español, sin sermones.`;
+
+export async function weeklyOracle(input: WeeklyInput, apiKey: string): Promise<WeeklyAdvice> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 30000);
+  let res: Response;
+  try {
+    res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      signal: controller.signal,
+      headers: {
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: MODEL,
+        max_tokens: 2500,
+        system: WEEKLY_SYSTEM,
+        messages: [{ role: 'user', content: `Datos de mis últimos 14 días:\n${JSON.stringify(input)}` }],
+        output_config: { format: { type: 'json_schema', schema: WEEKLY_SCHEMA } },
+      }),
+    });
+  } catch (e) {
+    if (e instanceof Error && e.name === 'AbortError') {
+      throw new Error('El oráculo tardó demasiado. Revisa tu conexión y reintenta.');
+    }
+    throw e;
+  } finally {
+    clearTimeout(timeout);
+  }
+
+  if (!res.ok) {
+    if (res.status === 401) throw new Error('API key inválida. Revísala en el Oráculo.');
+    if (res.status === 429) throw new Error('Límite de uso alcanzado. Espera y reintenta.');
+    throw new Error(`El oráculo no responde (HTTP ${res.status}).`);
+  }
+
+  const data = (await res.json()) as { content: { type: string; text?: string }[] };
+  const text = data.content.find((b) => b.type === 'text')?.text;
+  if (!text) throw new Error('El oráculo devolvió una respuesta vacía.');
+
+  const parsed = JSON.parse(text) as WeeklyAdvice;
+  const validIds = new Set(input.quests.map((q) => q.id));
+  return {
+    analysis: parsed.analysis ?? '',
+    adjustments: (parsed.adjustments ?? []).filter(
+      (a) =>
+        validIds.has(a.quest_id) &&
+        (a.action === 'desactivar' || (a.new_difficulty && DIFFICULTIES.includes(a.new_difficulty))),
+    ),
+    new_quests: (parsed.new_quests ?? []).filter(isValidProposal),
+    advice: parsed.advice ?? '',
+  };
 }

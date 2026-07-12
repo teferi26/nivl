@@ -36,6 +36,7 @@ export interface QuestInput {
   difficulty: Difficulty;
   days_of_week: number[];
   requires_evidence: boolean;
+  is_bonus?: boolean;
 }
 
 export async function createQuest(userId: string, input: QuestInput): Promise<Quest> {
@@ -50,6 +51,11 @@ export async function createQuest(userId: string, input: QuestInput): Promise<Qu
 
 export async function setQuestActive(id: string, active: boolean): Promise<void> {
   const { error } = await supabase.from('quests').update({ active }).eq('id', id);
+  if (error) throw error;
+}
+
+export async function updateQuest(id: string, patch: Partial<QuestInput>): Promise<void> {
+  const { error } = await supabase.from('quests').update(patch).eq('id', id);
   if (error) throw error;
 }
 

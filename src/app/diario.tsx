@@ -1,5 +1,7 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Haptics from 'expo-haptics';
+import { Image } from 'expo-image';
+import * as ImagePicker from 'expo-image-picker';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useRef, useState } from 'react';
 import {
@@ -16,6 +18,12 @@ import { SystemButton } from '@/components/SystemButton';
 import { SystemWindow } from '@/components/SystemWindow';
 import { evaluateAchievements, unlockAchievements } from '@/lib/achievements';
 import { useAuth } from '@/lib/auth';
+import {
+  deleteJournalPhoto,
+  fetchJournalPhotos,
+  journalPhotoUrl,
+  uploadJournalPhoto,
+} from '@/lib/contract';
 import { ensureProfile } from '@/lib/data';
 import { dateKey } from '@/lib/dates';
 import { awardXp } from '@/lib/engine';
@@ -30,7 +38,7 @@ import {
   type SystemEvent,
 } from '@/lib/journal';
 import { colors, fonts } from '@/lib/theme';
-import type { JournalEntry } from '@/lib/types';
+import type { JournalEntry, JournalPhoto } from '@/lib/types';
 
 const MOOD_LABELS = ['Hundido', 'Bajo', 'Normal', 'Bien', 'Imparable'];
 
@@ -68,6 +76,8 @@ export default function Diario() {
   const [mood, setMood] = useState<number | null>(null);
   const [energy, setEnergy] = useState<number | null>(null);
   const [text, setText] = useState('');
+  const [plan, setPlan] = useState('');
+  const [photos, setPhotos] = useState<{ photo: JournalPhoto; url: string | null }[]>([]);
   const [savedToday, setSavedToday] = useState(false);
   const [recent, setRecent] = useState<JournalEntry[]>([]);
   const [chronicle, setChronicle] = useState<string[]>([]);
@@ -82,8 +92,15 @@ export default function Diario() {
         setMood(entry.mood);
         setEnergy(entry.energy);
         setText(entry.text ?? '');
+        setPlan(entry.plan ?? '');
         setSavedToday(true);
       }
+      const todayPhotos = await fetchJournalPhotos(todayKey);
+      setPhotos(
+        await Promise.all(
+          todayPhotos.map(async (photo) => ({ photo, url: await journalPhotoUrl(photo.path) })),
+        ),
+      );
       // Pide 15 y recorta a 14 tras excluir hoy (antes mostraba 13 si hoy ya existía).
       setRecent((await fetchRecentEntries(15)).filter((e) => e.date !== todayKey).slice(0, 14));
       const start = new Date();
@@ -96,6 +113,52 @@ export default function Diario() {
       Alert.alert('Error del sistema', e instanceof Error ? e.message : 'Fallo desconocido');
     }
   }, []);
+
+  const addPhoto = async () => {
+    if (!userId || saving.current) return;
+    const perm = await ImagePicker.requestCameraPermissionsAsync();
+    if (!perm.granted) {
+      Alert.alert('Sin cámara', 'El sistema necesita la cámara para los comprobantes del diario.');
+      return;
+    }
+    const result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ['images'],
+      quality: 0.4,
+      base64: true,
+    });
+    if (result.canceled) return;
+    const b64 = result.assets[0]?.base64;
+    if (!b64) return;
+    saving.current = true;
+    try {
+      const photo = await uploadJournalPhoto(userId, dateKey(), b64);
+      const url = await journalPhotoUrl(photo.path);
+      setPhotos((prev) => [...prev, { photo, url }]);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    } catch (e) {
+      Alert.alert('Error del sistema', e instanceof Error ? e.message : 'No se pudo subir la foto');
+    } finally {
+      saving.current = false;
+    }
+  };
+
+  const removePhoto = (item: { photo: JournalPhoto; url: string | null }) => {
+    Alert.alert('Eliminar comprobante', '¿Borrar esta foto del diario?', [
+      { text: 'Cancelar', style: 'cancel' },
+      {
+        text: 'Eliminar',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            await deleteJournalPhoto(item.photo);
+            setPhotos((prev) => prev.filter((p) => p.photo.id !== item.photo.id));
+          } catch (e) {
+            Alert.alert('Error del sistema', e instanceof Error ? e.message : 'Fallo desconocido');
+          }
+        },
+      },
+    ]);
+  };
 
   useFocusEffect(
     useCallback(() => {
@@ -115,6 +178,7 @@ export default function Diario() {
         mood,
         energy,
         text: text.trim() || null,
+        plan: plan.trim() || null,
       });
       if (isNew) {
         const profile = await ensureProfile(userId);
@@ -170,15 +234,54 @@ export default function Diario() {
             ))}
           </View>
 
-          <Text style={styles.label}>Tu registro</Text>
+          <Text style={styles.label}>Hoja 1 · Lo vivido y aprendido</Text>
           <TextInput
             style={styles.textarea}
             value={text}
             onChangeText={setText}
-            placeholder="Escribe lo que el sistema no puede ver…"
+            placeholder="Qué hice, qué aprendí, qué haría distinto…"
             placeholderTextColor={colors.textFaint}
             multiline
           />
+
+          <Text style={styles.label}>Hoja 2 · El plan de hoy</Text>
+          <TextInput
+            style={styles.textarea}
+            value={plan}
+            onChangeText={setPlan}
+            placeholder="Las tareas y batallas del día…"
+            placeholderTextColor={colors.textFaint}
+            multiline
+          />
+
+          <Text style={styles.label}>Comprobantes ({photos.length})</Text>
+          <View style={styles.photoStrip}>
+            {photos.map((item) => (
+              <Pressable
+                key={item.photo.id}
+                onLongPress={() => removePhoto(item)}
+                accessibilityRole="imagebutton"
+                accessibilityLabel="Comprobante del diario; mantén pulsado para eliminar"
+              >
+                {item.url ? (
+                  <Image source={{ uri: item.url }} style={styles.photo} contentFit="cover" />
+                ) : (
+                  <View style={[styles.photo, styles.photoPlaceholder]} />
+                )}
+              </Pressable>
+            ))}
+            <Pressable
+              onPress={addPhoto}
+              style={[styles.photo, styles.photoAdd]}
+              accessibilityRole="button"
+              accessibilityLabel="Añadir foto comprobante con la cámara"
+            >
+              <Ionicons name="camera-outline" size={22} color={colors.cyan} />
+            </Pressable>
+          </View>
+          <Text style={styles.photoHint}>
+            Fotos hechas en el momento: la prueba de que cumples tus propias normas.
+          </Text>
 
           <SystemButton
             title={savedToday ? 'Actualizar entrada' : `Registrar día · +${JOURNAL_XP} XP`}
@@ -271,6 +374,18 @@ const styles = StyleSheet.create({
     textAlignVertical: 'top',
     lineHeight: 21,
   },
+  photoStrip: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  photo: { width: 72, height: 72, backgroundColor: colors.cyanFaint },
+  photoPlaceholder: { borderWidth: 1, borderColor: colors.line },
+  photoAdd: {
+    borderWidth: 1,
+    borderColor: colors.cyanDim,
+    borderStyle: 'dashed',
+    backgroundColor: 'transparent',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  photoHint: { fontFamily: fonts.body, fontSize: 11, color: colors.textFaint, marginTop: 8, lineHeight: 15 },
   windowTitle: {
     fontFamily: fonts.heading,
     fontSize: 12,

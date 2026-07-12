@@ -5,11 +5,12 @@ import { colors, fonts } from '@/lib/theme';
 interface Props {
   xp: number | null;
   bonus?: boolean;
+  unit?: 'XP' | 'PB';
   onDone: () => void;
 }
 
 // "+62 XP" flotante que asciende y se desvanece al completar una misión.
-export function XpToast({ xp, bonus, onDone }: Props) {
+export function XpToast({ xp, bonus, unit = 'XP', onDone }: Props) {
   const translateY = useRef(new Animated.Value(0)).current;
   const opacity = useRef(new Animated.Value(0)).current;
   // onDone por ref: si fuera dependencia del efecto, cada render del padre
@@ -39,8 +40,9 @@ export function XpToast({ xp, bonus, onDone }: Props) {
 
   return (
     <Animated.View pointerEvents="none" style={[styles.wrap, { opacity, transform: [{ translateY }] }]}>
-      <Text style={styles.text}>
-        +{xp} XP{bonus ? '  · evidencia ×1,25' : ''}
+      <Text style={[styles.text, unit === 'PB' && styles.textBonus]}>
+        +{xp} {unit}
+        {bonus ? '  · evidencia ×1,25' : ''}
       </Text>
     </Animated.View>
   );
@@ -63,5 +65,8 @@ const styles = StyleSheet.create({
     fontSize: 16,
     letterSpacing: 1,
     color: colors.cyan,
+  },
+  textBonus: {
+    color: colors.amber,
   },
 });

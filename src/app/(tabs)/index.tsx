@@ -29,6 +29,7 @@ const MODULES = [
   { icon: 'book-outline', label: 'Diario', route: '/diario' },
   { icon: 'stats-chart-outline', label: 'Informe', route: '/informe' },
   { icon: 'sparkles-outline', label: 'Oráculo', route: '/oraculo' },
+  { icon: 'document-text-outline', label: 'Contrato', route: '/contrato' },
 ] as const;
 
 export default function Sistema() {
@@ -42,7 +43,7 @@ export default function Sistema() {
   const [levelUp, setLevelUp] = useState<number | null>(null);
   const [busyQuestId, setBusyQuestId] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
-  const [toast, setToast] = useState<{ xp: number; bonus: boolean } | null>(null);
+  const [toast, setToast] = useState<{ xp: number; bonus: boolean; unit: 'XP' | 'PB' } | null>(null);
 
   const completing = useRef<Set<string>>(new Set());
   const clearToast = useCallback(() => setToast(null), []);
@@ -112,7 +113,11 @@ export default function Sistema() {
       const res = await completeQuest(profile, quest, evidence);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       setProfile(res.profile);
-      setToast({ xp: res.xp, bonus: evidence !== null });
+      setToast(
+        res.bonusEarned > 0
+          ? { xp: res.bonusEarned, bonus: false, unit: 'PB' }
+          : { xp: res.xp, bonus: evidence !== null, unit: 'XP' },
+      );
       setCompletions((prev) => ({
         ...prev,
         [quest.id]: {
@@ -328,7 +333,7 @@ export default function Sistema() {
         </SystemWindow>
       </ScrollView>
 
-      <XpToast xp={toast?.xp ?? null} bonus={toast?.bonus} onDone={clearToast} />
+      <XpToast xp={toast?.xp ?? null} bonus={toast?.bonus} unit={toast?.unit} onDone={clearToast} />
       <LevelUpOverlay level={levelUp} onClose={() => setLevelUp(null)} />
     </SafeAreaView>
   );

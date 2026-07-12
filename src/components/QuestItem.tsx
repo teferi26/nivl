@@ -1,6 +1,6 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
-import { questXp, STAT_LABEL } from '@/lib/game';
+import { BONUS_BY_DIFFICULTY, questXp, STAT_LABEL } from '@/lib/game';
 import { colors, fonts } from '@/lib/theme';
 import type { Quest } from '@/lib/types';
 
@@ -14,7 +14,10 @@ interface Props {
 }
 
 export function QuestItem({ quest, completed, xpAwarded, busy, streakDays, onComplete }: Props) {
-  const previewXp = questXp(quest, { evidence: false, streakDays });
+  const previewXp = quest.is_bonus
+    ? BONUS_BY_DIFFICULTY[quest.difficulty]
+    : questXp(quest, { evidence: false, streakDays });
+  const unit = quest.is_bonus ? 'PB' : 'XP';
 
   return (
     <Pressable
@@ -46,8 +49,8 @@ export function QuestItem({ quest, completed, xpAwarded, busy, streakDays, onCom
           ) : null}
         </View>
       </View>
-      <Text style={[styles.xp, completed ? styles.xpDone : null]}>
-        +{completed && xpAwarded !== undefined ? xpAwarded : previewXp} XP
+      <Text style={[styles.xp, completed ? styles.xpDone : null, quest.is_bonus ? styles.xpBonus : null]}>
+        +{completed && xpAwarded !== undefined && !quest.is_bonus ? xpAwarded : previewXp} {unit}
       </Text>
     </Pressable>
   );
@@ -117,5 +120,8 @@ const styles = StyleSheet.create({
   },
   xpDone: {
     color: colors.cyan,
+  },
+  xpBonus: {
+    color: colors.amber,
   },
 });
