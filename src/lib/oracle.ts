@@ -1,7 +1,30 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as SecureStore from 'expo-secure-store';
 import { DIFFICULTIES, STATS } from './game';
+import { callPremiumOracle, fetchSubscription, isPremium } from './subscription';
 import type { Difficulty, Stat } from './types';
+
+// Señal tipada de "necesita pagar o poner su key": las pantallas la capturan
+// para mostrar el paywall en lugar de un error genérico.
+export class PaywallError extends Error {
+  constructor() {
+    super('El Oráculo es una función premium: suscríbete o usa tu propia API key.');
+    this.name = 'PaywallError';
+  }
+}
+
+export type OracleAccess = 'premium' | 'byok' | 'none';
+
+export async function resolveOracleAccess(userId: string): Promise<OracleAccess> {
+  try {
+    const sub = await fetchSubscription(userId);
+    if (isPremium(sub)) return 'premium';
+  } catch {
+    // Si la lectura de suscripción falla (red), probamos con la key propia.
+  }
+  const key = await getApiKey();
+  return key ? 'byok' : 'none';
+}
 
 // El Oráculo: genera misiones desde un objetivo en lenguaje natural usando
 // la API de Claude con la key personal del usuario (guardada solo en su móvil).
@@ -136,17 +159,47 @@ export async function generateQuests(goal: string, apiKey: string): Promise<Orac
   const text = data.content.find((b) => b.type === 'text')?.text;
   if (!text) throw new Error('El oráculo devolvió una respuesta vacía.');
 
-  const parsed = JSON.parse(text) as OracleResponse;
+  return sanitizeGenerate(JSON.parse(text) as OracleResponse);
+}
+
+// Valida cada propuesta contra los enums reales antes de dejar que llegue a la BD:
+// la IA podría devolver stat 'STR' o difficulty 'hard' e insertar basura.
+function sanitizeGenerate(parsed: OracleResponse): OracleResponse {
   if (!Array.isArray(parsed.quests)) {
     throw new Error('El oráculo devolvió un formato inesperado.');
   }
-  // Valida cada propuesta contra los enums reales antes de dejar que llegue a la BD:
-  // la IA podría devolver stat 'STR' o difficulty 'hard' e insertar basura.
   const valid = parsed.quests.filter(isValidProposal);
   if (valid.length === 0) {
     throw new Error('El oráculo no encontró misiones válidas para ese objetivo. Reformúlalo.');
   }
   return { quests: valid, plan_summary: parsed.plan_summary ?? '' };
+}
+
+// Punto de entrada único: decide la vía (premium/servidor · key propia · paywall).
+export async function askOracle(goal: string, userId: string): Promise<OracleResponse> {
+  const access = await resolveOracleAccess(userId);
+  if (access === 'premium') {
+    const raw = await callPremiumOracle<OracleResponse>('generate', { goal });
+    return sanitizeGenerate(raw);
+  }
+  if (access === 'byok') {
+    const key = await getApiKey();
+    return generateQuests(goal, key!);
+  }
+  throw new PaywallError();
+}
+
+export async function askWeeklyOracle(input: WeeklyInput, userId: string): Promise<WeeklyAdvice> {
+  const access = await resolveOracleAccess(userId);
+  if (access === 'premium') {
+    const raw = await callPremiumOracle<WeeklyAdvice>('weekly', { weeklyInput: input });
+    return sanitizeWeekly(raw, input);
+  }
+  if (access === 'byok') {
+    const key = await getApiKey();
+    return weeklyOracle(input, key!);
+  }
+  throw new PaywallError();
 }
 
 function isValidProposal(q: ProposedQuest): boolean {
@@ -276,7 +329,10 @@ export async function weeklyOracle(input: WeeklyInput, apiKey: string): Promise<
   const text = data.content.find((b) => b.type === 'text')?.text;
   if (!text) throw new Error('El oráculo devolvió una respuesta vacía.');
 
-  const parsed = JSON.parse(text) as WeeklyAdvice;
+  return sanitizeWeekly(JSON.parse(text) as WeeklyAdvice, input);
+}
+
+function sanitizeWeekly(parsed: WeeklyAdvice, input: WeeklyInput): WeeklyAdvice {
   const validIds = new Set(input.quests.map((q) => q.id));
   return {
     analysis: parsed.analysis ?? '',

@@ -29,6 +29,13 @@ import { exportAllData } from '@/lib/exporter';
 import { deleteAccount } from '@/lib/account';
 import { setApiKey } from '@/lib/oracle';
 import {
+  fetchSubscription,
+  isPremium,
+  openCheckout,
+  paymentsConfigured,
+  type Subscription,
+} from '@/lib/subscription';
+import {
   levelFromXp,
   MAX_STONES,
   rankForLevel,
@@ -54,6 +61,7 @@ export default function Perfil() {
   const [name, setName] = useState('');
   const [stats, setStats] = useState<{ total: number; withEvidence: number }>({ total: 0, withEvidence: 0 });
   const [unlocked, setUnlocked] = useState<Set<string>>(new Set());
+  const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [freezeOpen, setFreezeOpen] = useState(false);
   const [freezeReason, setFreezeReason] = useState(FREEZE_REASONS[0]!);
   const [freezeDays, setFreezeDays] = useState(3);
@@ -70,6 +78,7 @@ export default function Perfil() {
       setName(prof.name);
       setStats(await completionStats());
       setUnlocked(await fetchUnlocked());
+      setSubscription(await fetchSubscription(userId).catch(() => null));
       if (prof.avatar_url) {
         setAvatarUri(await signedUrl('avatars', prof.avatar_url));
       }
@@ -264,6 +273,40 @@ export default function Perfil() {
                 : 'NIVEL MÁXIMO ALCANZADO'}
             </Text>
           </View>
+        </SystemWindow>
+
+        <SystemWindow color={colors.purpleDim} fill={colors.panelDeep}>
+          <Text style={[styles.windowTitle, { color: '#A697F0' }]}>PREMIUM · EL ORÁCULO</Text>
+          {isPremium(subscription) ? (
+            <Text style={styles.valveText}>
+              Suscripción activa
+              {subscription?.current_period_end
+                ? ` · renueva el ${subscription.current_period_end.slice(0, 10)}`
+                : ''}
+              . El Oráculo va incluido.
+            </Text>
+          ) : (
+            <>
+              <Text style={styles.valveHint}>
+                La IA (misiones desde objetivos + análisis semanal) consume API real. Con la
+                suscripción va incluida; sin ella puedes usar tu propia key en el módulo Oráculo.
+              </Text>
+              {paymentsConfigured() ? (
+                <SystemButton
+                  title="Hazte Premium"
+                  variant="outline"
+                  onPress={() => userId && openCheckout(userId).catch((e) =>
+                    Alert.alert('Pagos no disponibles', e instanceof Error ? e.message : ''),
+                  )}
+                  style={{ marginTop: 12 }}
+                />
+              ) : (
+                <Text style={[styles.valveHint, { marginTop: 8 }]}>
+                  (Pagos aún no configurados en este servidor.)
+                </Text>
+              )}
+            </>
+          )}
         </SystemWindow>
 
         <SystemWindow color={colors.cyanDim}>

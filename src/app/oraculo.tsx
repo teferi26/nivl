@@ -18,7 +18,8 @@ import { SystemWindow } from '@/components/SystemWindow';
 import { useAuth } from '@/lib/auth';
 import { createQuest } from '@/lib/data';
 import { DIFFICULTY_LABEL, XP_BY_DIFFICULTY } from '@/lib/game';
-import { generateQuests, getApiKey, setApiKey, type ProposedQuest } from '@/lib/oracle';
+import { askOracle, getApiKey, PaywallError, setApiKey, type ProposedQuest } from '@/lib/oracle';
+import { openCheckout, paymentsConfigured } from '@/lib/subscription';
 import { colors, fonts } from '@/lib/theme';
 
 export default function Oraculo() {
@@ -50,24 +51,30 @@ export default function Oraculo() {
   };
 
   const consult = async () => {
-    if (!goal.trim() || busy) return;
-    const key = await getApiKey();
-    if (!key) {
-      Alert.alert(
-        'Falta la API key',
-        'El oráculo usa la API de Claude con tu propia key. Créala en console.anthropic.com y pégala arriba.',
-      );
-      return;
-    }
+    if (!goal.trim() || busy || !userId) return;
     setBusy(true);
     setProposals([]);
     try {
-      const res = await generateQuests(goal.trim(), key);
+      // Vía automática: suscripción premium (servidor) → key propia → paywall.
+      const res = await askOracle(goal.trim(), userId);
       setProposals(res.quests);
       setSummary(res.plan_summary);
       setSelected(new Set(res.quests.map((_, i) => i)));
     } catch (e) {
-      Alert.alert('El oráculo guarda silencio', e instanceof Error ? e.message : 'Error desconocido');
+      if (e instanceof PaywallError) {
+        Alert.alert(
+          'El Oráculo es premium',
+          'La IA consume API de verdad. Suscríbete y va incluida, o pega tu propia API key arriba y paga solo tu consumo.',
+          paymentsConfigured()
+            ? [
+                { text: 'Suscribirme', onPress: () => openCheckout(userId).catch(() => {}) },
+                { text: 'Usaré mi key', style: 'cancel' },
+              ]
+            : [{ text: 'Entendido', style: 'cancel' }],
+        );
+      } else {
+        Alert.alert('El oráculo guarda silencio', e instanceof Error ? e.message : 'Error desconocido');
+      }
     } finally {
       setBusy(false);
     }

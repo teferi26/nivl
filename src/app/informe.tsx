@@ -11,7 +11,8 @@ import { questsScheduledOn } from '@/lib/closing';
 import { createQuest, ensureProfile, fetchCompletionsSince, fetchQuests, setQuestActive, updateQuest } from '@/lib/data';
 import { addDays, dateKey } from '@/lib/dates';
 import { DIFFICULTY_LABEL, levelFromXp, STAT_LABEL, STATS } from '@/lib/game';
-import { getApiKey, weeklyOracle, type QuestSnapshot, type WeeklyAdvice } from '@/lib/oracle';
+import { askWeeklyOracle, PaywallError, type QuestSnapshot, type WeeklyAdvice } from '@/lib/oracle';
+import { openCheckout, paymentsConfigured } from '@/lib/subscription';
 import { supabase } from '@/lib/supabase';
 import { colors, fonts } from '@/lib/theme';
 import type { Completion, Quest, Stat } from '@/lib/types';
@@ -32,15 +33,7 @@ export default function Informe() {
   // El sistema se mejora a sí mismo: manda los datos reales de 14 días a la IA
   // y devuelve ajustes concretos que se aplican con un toque.
   const consultOracle = async () => {
-    if (lock.current) return;
-    const key = await getApiKey();
-    if (!key) {
-      Alert.alert(
-        'Falta la API key',
-        'El análisis semanal usa la API de Claude. Configura tu key en el módulo Oráculo.',
-      );
-      return;
-    }
+    if (lock.current || !userId) return;
     lock.current = true;
     setConsulting(true);
     try {
@@ -69,21 +62,34 @@ export default function Informe() {
         .from('rule_breaks')
         .select('*', { count: 'exact', head: true })
         .gte('date', from);
-      const prof = userId ? await ensureProfile(userId) : null;
-      const result = await weeklyOracle(
+      const prof = await ensureProfile(userId);
+      const result = await askWeeklyOracle(
         {
           quests: snapshots,
-          streakDays: prof?.streak_days ?? 0,
-          level: prof ? levelFromXp(prof.xp_total).level : 1,
+          streakDays: prof.streak_days,
+          level: levelFromXp(prof.xp_total).level,
           rulesBroken: breaks ? [`${breaks} normas rotas en 14 días`] : [],
           penaltiesXp: 0,
         },
-        key,
+        userId,
       );
       setAdvice(result);
       setApplied(new Set());
     } catch (e) {
-      Alert.alert('El oráculo guarda silencio', e instanceof Error ? e.message : 'Error desconocido');
+      if (e instanceof PaywallError) {
+        Alert.alert(
+          'El Oráculo es premium',
+          'El análisis semanal consume API. Suscríbete y va incluido, o configura tu propia key en el módulo Oráculo.',
+          paymentsConfigured()
+            ? [
+                { text: 'Suscribirme', onPress: () => openCheckout(userId).catch(() => {}) },
+                { text: 'Ahora no', style: 'cancel' },
+              ]
+            : [{ text: 'Entendido', style: 'cancel' }],
+        );
+      } else {
+        Alert.alert('El oráculo guarda silencio', e instanceof Error ? e.message : 'Error desconocido');
+      }
     } finally {
       lock.current = false;
       setConsulting(false);

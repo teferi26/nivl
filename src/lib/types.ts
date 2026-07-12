@@ -21,6 +21,7 @@ export interface Profile {
   freeze_reason: string | null;
   equipped_title: string | null;
   bonus_points: number;
+  onboarding_done: boolean;
   created_at: string;
 }
 
