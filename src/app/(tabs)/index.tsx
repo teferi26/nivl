@@ -28,6 +28,7 @@ const MODULES = [
   { icon: 'cart-outline', label: 'Compra', route: '/compra' },
   { icon: 'book-outline', label: 'Diario', route: '/diario' },
   { icon: 'stats-chart-outline', label: 'Informe', route: '/informe' },
+  { icon: 'trending-up-outline', label: 'Avances', route: '/avances' },
   { icon: 'sparkles-outline', label: 'Oráculo', route: '/oraculo' },
   { icon: 'document-text-outline', label: 'Contrato', route: '/contrato' },
 ] as const;

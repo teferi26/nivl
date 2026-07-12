@@ -2,6 +2,7 @@ import { describe, expect, test } from '@jest/globals';
 import {
   DUNGEON_CLEAR_XP,
   dungeonTaskXp,
+  goalProgress,
   levelFromXp,
   questXp,
   rankForLevel,
@@ -115,6 +116,25 @@ describe('puntos de stat', () => {
     expect(statPoints(0)).toBe(0);
     expect(statPoints(99)).toBe(0);
     expect(statPoints(250)).toBe(2);
+  });
+});
+
+describe('goalProgress (metas medibles)', () => {
+  test('meta de bajar peso: 85 → 78', () => {
+    expect(goalProgress(85, 78, 85)).toBe(0);
+    expect(goalProgress(85, 78, 81.5)).toBeCloseTo(0.5);
+    expect(goalProgress(85, 78, 78)).toBe(1);
+    expect(goalProgress(85, 78, 75)).toBe(1); // sobrepasada → 100%
+  });
+
+  test('meta de subir PR: 80 → 100', () => {
+    expect(goalProgress(80, 100, 90)).toBeCloseTo(0.5);
+    expect(goalProgress(80, 100, 70)).toBe(0); // retroceso → 0%
+  });
+
+  test('start === target no divide por cero', () => {
+    expect(goalProgress(80, 80, 80)).toBe(1);
+    expect(goalProgress(80, 80, 79)).toBe(0);
   });
 });
 

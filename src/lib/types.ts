@@ -199,6 +199,33 @@ export interface JournalPhoto {
   created_at: string;
 }
 
+export interface BodyMetric {
+  id: string;
+  user_id: string;
+  date: string;
+  weight_kg: number;
+  notes: string | null;
+  created_at: string;
+}
+
+export type GoalMetric = 'peso_corporal' | 'ejercicio' | 'libre';
+
+export interface Goal {
+  id: string;
+  user_id: string;
+  title: string;
+  metric_type: GoalMetric;
+  exercise_name: string | null;
+  start_value: number;
+  target_value: number;
+  current_value: number | null;
+  unit: string;
+  deadline: string | null;
+  status: 'active' | 'achieved' | 'abandoned';
+  created_at: string;
+  achieved_at: string | null;
+}
+
 export interface AchievementRow {
   id: string;
   user_id: string;

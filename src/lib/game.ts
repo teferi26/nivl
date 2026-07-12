@@ -130,3 +130,15 @@ export const REDEEM_WEEKLY_CAP = 30; // máx 30 PB canjeados / 7 días
 // Romper una regla del contrato: −25 XP inmediatos + misión de consecuencia
 // que restaura exactamente eso si se cumple el castigo el mismo día.
 export const RULE_BREAK_XP = 25;
+
+// ── Mis avances ─────────────────────────────────────────────────────
+export const WEIGH_IN_XP = 5; // pesarse (1/día, refuerzo del hábito, tier trivial)
+export const GOAL_ACHIEVED_XP = 100; // meta medible conseguida (puntual, ≤50% de un día)
+
+// Progreso 0..1 hacia una meta numérica; funciona en ambas direcciones
+// (bajar peso: 85→78; subir PR: 80→100).
+export function goalProgress(start: number, target: number, current: number): number {
+  if (target === start) return current === target ? 1 : 0;
+  const p = (current - start) / (target - start);
+  return Math.min(1, Math.max(0, p));
+}
