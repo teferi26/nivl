@@ -1,7 +1,7 @@
 # Expo HAS CHANGED
 
-Read the exact versioned docs at https://docs.expo.dev/versions/v55.0.0/ before writing any code.
-(El proyecto se bajó de SDK 56 a 55 el 2026-06-11 porque el Expo Go de las tiendas aún no soportaba 56. No subir de SDK sin comprobar antes qué soporta el Expo Go del usuario.)
+Read the exact versioned docs at https://docs.expo.dev/versions/v57.0.0/ before writing any code.
+(Historial SDK: 56→55 el 2026-06-11 por Android; **55→57 el 2026-06-12** porque en iPhone Expo Go solo soporta el SDK más reciente de la App Store y ya iba por 57. RN 0.86, React 19.2.3. Regla: en iOS el proyecto DEBE ir al último SDK publicado; comprobar `https://api.expo.dev/v2/versions` antes de tocar.)
 
 # NIVL — contexto del proyecto
 
