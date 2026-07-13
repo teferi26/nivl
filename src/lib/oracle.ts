@@ -26,14 +26,85 @@ export async function resolveOracleAccess(userId: string): Promise<OracleAccess>
   return key ? 'byok' : 'none';
 }
 
-// El Oráculo: genera misiones desde un objetivo en lenguaje natural usando
-// la API de Claude con la key personal del usuario (guardada solo en su móvil).
-// Modelo barato a propósito: cada consulta cuesta ~céntimos. Sube a
-// 'claude-sonnet-4-6' u 'claude-opus-4-8' si quieres más músculo.
+// El Oráculo BYOK es multi-proveedor: detecta por el prefijo de la key si es
+// OpenAI (sk-proj…/sk-…) o Anthropic (sk-ant…) y llama a la API correcta.
+// Modelos baratos a propósito: cada consulta cuesta ~décimas de céntimo.
 const MODEL = 'claude-haiku-4-5';
+// gpt-4o-mini: el mejor coste/calidad de OpenAI (~0,001 € por consulta).
+const OPENAI_MODEL = 'gpt-4o-mini';
 // La key vive en SecureStore (cifrado del SO), no en AsyncStorage (texto plano).
 const KEY_STORAGE = 'nivl_anthropic_key';
 const LEGACY_KEY = 'nivl.anthropic_key';
+
+export type AiProvider = 'anthropic' | 'openai';
+
+export function detectProvider(key: string): AiProvider {
+  return key.startsWith('sk-ant') ? 'anthropic' : 'openai';
+}
+
+// Llamada a OpenAI en modo JSON garantizado. La forma exacta va en el prompt y
+// la validación real la hacen los sanitizadores del cliente (igual que con
+// Anthropic): un item inválido se descarta, nunca llega a la BD.
+async function callOpenAI(
+  system: string,
+  user: string,
+  apiKey: string,
+  maxTokens: number,
+): Promise<unknown> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 30000);
+  let res: Response;
+  try {
+    res = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      signal: controller.signal,
+      headers: {
+        authorization: `Bearer ${apiKey}`,
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: OPENAI_MODEL,
+        max_tokens: maxTokens,
+        temperature: 0.7,
+        response_format: { type: 'json_object' },
+        messages: [
+          { role: 'system', content: system },
+          { role: 'user', content: user },
+        ],
+      }),
+    });
+  } catch (e) {
+    if (e instanceof Error && e.name === 'AbortError') {
+      throw new Error('El oráculo tardó demasiado. Revisa tu conexión y reintenta.');
+    }
+    throw e;
+  } finally {
+    clearTimeout(timeout);
+  }
+
+  if (!res.ok) {
+    const body = await res.text();
+    if (res.status === 401) throw new Error('API key de OpenAI inválida. Revísala en el Oráculo.');
+    if (res.status === 429 && body.includes('insufficient_quota')) {
+      throw new Error('Tu cuenta de OpenAI se ha quedado sin saldo. Recárgala en platform.openai.com.');
+    }
+    if (res.status === 429) throw new Error('Límite de peticiones de OpenAI alcanzado. Espera y reintenta.');
+    throw new Error(`El oráculo no responde (HTTP ${res.status}).`);
+  }
+
+  const data = (await res.json()) as {
+    choices?: { message?: { content?: string } }[];
+  };
+  const text = data.choices?.[0]?.message?.content;
+  if (!text) throw new Error('El oráculo devolvió una respuesta vacía.');
+  return JSON.parse(text);
+}
+
+// Formas JSON para el modo json_object de OpenAI (van en el prompt).
+const QUEST_JSON_SHAPE =
+  '{"title":"string","stat":"FUE|VIT|INT|AGI|PER","difficulty":"trivial|facil|media|dificil|epica","days_of_week":[1..7],"reasoning":"string"}';
+const GENERATE_SHAPE = `Responde SOLO con un JSON válido con esta forma exacta:\n{"quests":[${QUEST_JSON_SHAPE}],"plan_summary":"string"}`;
+const WEEKLY_SHAPE = `Responde SOLO con un JSON válido con esta forma exacta:\n{"analysis":"string","adjustments":[{"quest_id":"id EXACTO de los datos","quest_title":"string","action":"ajustar_dificultad|desactivar","new_difficulty":"trivial|facil|media|dificil|epica","reasoning":"string"}],"new_quests":[${QUEST_JSON_SHAPE}],"advice":"string"}`;
 
 export interface ProposedQuest {
   title: string;
@@ -58,6 +129,14 @@ export async function getApiKey(): Promise<string | null> {
     await SecureStore.setItemAsync(KEY_STORAGE, legacy);
     await AsyncStorage.removeItem(LEGACY_KEY);
     return legacy;
+  }
+  // Auto-sembrado SOLO para desarrollo: si el .env local trae una key por
+  // defecto y el dispositivo no tiene ninguna, se instala en SecureStore.
+  // JAMÁS compilar un build público con EXPO_PUBLIC_DEFAULT_AI_KEY puesta.
+  const seeded = process.env.EXPO_PUBLIC_DEFAULT_AI_KEY;
+  if (seeded && seeded.trim()) {
+    await SecureStore.setItemAsync(KEY_STORAGE, seeded.trim());
+    return seeded.trim();
   }
   return null;
 }
@@ -113,6 +192,16 @@ Reglas:
 - Títulos cortos y accionables, en español. Sin emojis.`;
 
 export async function generateQuests(goal: string, apiKey: string): Promise<OracleResponse> {
+  if (detectProvider(apiKey) === 'openai') {
+    const raw = await callOpenAI(
+      `${SYSTEM_PROMPT}\n\n${GENERATE_SHAPE}`,
+      `Mi objetivo: ${goal}`,
+      apiKey,
+      1200,
+    );
+    return sanitizeGenerate(raw as OracleResponse);
+  }
+
   // Timeout de 30 s: sin AbortController, una red en agujero dejaba el botón
   // "Consultar" girando para siempre.
   const controller = new AbortController();
@@ -290,6 +379,16 @@ const WEEKLY_SCHEMA = {
 const WEEKLY_SYSTEM = `Eres "el sistema" de NIVL. Analizas la semana real del cazador y propones AJUSTES CONCRETOS para que el juego se adapte a él: misión que falla siempre → bajar dificultad o desactivar; misión trivial que clava el 100% → subir dificultad; huecos → como mucho 1-2 misiones nuevas. Sé conservador: pocos cambios y bien justificados. Nunca propongas más de 4 ajustes. Voz sobria, español, sin sermones.`;
 
 export async function weeklyOracle(input: WeeklyInput, apiKey: string): Promise<WeeklyAdvice> {
+  if (detectProvider(apiKey) === 'openai') {
+    const raw = await callOpenAI(
+      `${WEEKLY_SYSTEM}\n\n${WEEKLY_SHAPE}`,
+      `Datos de mis últimos 14 días:\n${JSON.stringify(input)}`,
+      apiKey,
+      1500,
+    );
+    return sanitizeWeekly(raw as WeeklyAdvice, input);
+  }
+
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 30000);
   let res: Response;

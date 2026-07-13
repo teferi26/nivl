@@ -145,7 +145,7 @@ export default function Onboarding() {
                   mayo") y cada semana analiza tus datos y se ajusta sola a ti.{'\n\n'}
                   Estas funciones consumen API de verdad, así que van aparte:{'\n'}· Suscripción
                   mensual: Oráculo incluido, sin configurar nada.{'\n'}· O usa tu propia API key
-                  de Anthropic y paga solo tu consumo.{'\n\n'}
+                  (OpenAI o Anthropic) y paga solo tu consumo.{'\n\n'}
                   Todo lo demás — misiones, XP, mazmorras, gym, dieta, diario, contrato — es
                   tuyo gratis para siempre.
                 </Text>

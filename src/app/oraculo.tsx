@@ -131,13 +131,13 @@ export default function Oraculo() {
           </View>
 
           <SystemWindow color={colors.line}>
-            <Text style={styles.label}>API KEY DE ANTHROPIC (solo en tu dispositivo)</Text>
+            <Text style={styles.label}>API KEY · OPENAI O ANTHROPIC (solo en tu dispositivo)</Text>
             <View style={styles.keyRow}>
               <TextInput
                 style={[styles.input, { flex: 1 }]}
                 value={apiKey}
                 onChangeText={setKey}
-                placeholder="sk-ant-…"
+                placeholder="sk-proj-… (OpenAI) o sk-ant-… (Anthropic)"
                 placeholderTextColor={colors.textFaint}
                 autoCapitalize="none"
                 secureTextEntry={keySaved}
