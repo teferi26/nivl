@@ -1,7 +1,7 @@
 # Expo HAS CHANGED
 
-Read the exact versioned docs at https://docs.expo.dev/versions/v57.0.0/ before writing any code.
-(Historial SDK: 56→55 el 2026-06-11 por Android; **55→57 el 2026-06-12** porque en iPhone Expo Go solo soporta el SDK más reciente de la App Store y ya iba por 57. RN 0.86, React 19.2.3. Regla: en iOS el proyecto DEBE ir al último SDK publicado; comprobar `https://api.expo.dev/v2/versions` antes de tocar.)
+Read the exact versioned docs at https://docs.expo.dev/versions/v54.0.0/ before writing any code.
+(Historial SDK: 56→55→57→**54** — el proyecto está en **SDK 54** (RN 0.81.5, React 19.1.0). Motivo definitivo: el **Expo Go de la App Store de iOS es la 54.0.2** (verificado vía `itunes.apple.com/lookup?bundleId=host.exp.Exponent`), Apple no ha aprobado versiones más nuevas. En iOS el techo real es lo que hay LIVE en la App Store, NO lo último que Expo publica en su API. Para saberlo: iTunes lookup, no `api.expo.dev/v2/versions`. Nota: `expo-sharing` NO tiene config plugin en SDK 54 — fuera de app.json plugins. `StyleSheet.absoluteFill` no es spreadable en RN 0.81.)
 
 # NIVL — contexto del proyecto
 

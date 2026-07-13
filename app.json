@@ -48,7 +48,6 @@
           }
         }
       ],
-      "expo-sharing",
       "expo-secure-store"
     ],
     "experiments": {
