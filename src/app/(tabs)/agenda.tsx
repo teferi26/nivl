@@ -3,7 +3,9 @@ import { useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Alert,
+  KeyboardAvoidingView,
   Modal,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -128,6 +130,27 @@ export default function Agenda() {
     }
   }, [anchor, load]);
 
+  // Completadas del día seleccionado: sin esto, el historial de días pasados
+  // parecería una lista de fallos.
+  const [doneOnAnchor, setDoneOnAnchor] = useState<Set<string>>(new Set());
+  useEffect(() => {
+    if (anchor === today) {
+      setDoneOnAnchor(doneToday);
+      return;
+    }
+    let cancelled = false;
+    fetchCompletionsForDate(anchor)
+      .then((done) => {
+        if (!cancelled) setDoneOnAnchor(new Set(done.map((c) => c.quest_id)));
+      })
+      .catch(() => {
+        if (!cancelled) setDoneOnAnchor(new Set());
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [anchor, today, doneToday]);
+
   const contentFor = useCallback(
     (day: string) => {
       const dayQuests = questsScheduledOn(quests, day).filter(
@@ -189,10 +212,13 @@ export default function Agenda() {
   // Panel de detalle de un día (compartido por las tres vistas)
   const renderDayDetail = (day: string) => {
     const { dayQuests, dayEvents, dayTasks } = contentFor(day);
+    const doneSet = day === anchor ? doneOnAnchor : doneToday;
     const overdue =
       day === today ? dueTasks.filter((t) => t.due_date && t.due_date < today) : [];
+    // Las misiones extra son opcionales por diseño: no cuentan como pendientes.
     const pendingQuests =
-      day === today ? dayQuests.filter((q) => !doneToday.has(q.id)) : [];
+      day === today ? dayQuests.filter((q) => !q.is_bonus && !doneToday.has(q.id)) : [];
+    const pendingCount = pendingQuests.length + overdue.length;
     const empty =
       dayQuests.length === 0 && dayEvents.length === 0 && dayTasks.length === 0 && overdue.length === 0;
 
@@ -202,9 +228,11 @@ export default function Agenda() {
           {dayLabel(day, today)}
         </Text>
 
-        {day === today && (pendingQuests.length > 0 || overdue.length > 0) ? (
+        {day === today && pendingCount > 0 ? (
           <Text style={styles.pendingBanner}>
-            Te quedan {pendingQuests.length + overdue.length} cosas por hacer hoy
+            {pendingCount === 1
+              ? '1 objetivo pendiente antes del cierre.'
+              : `${pendingCount} objetivos pendientes antes del cierre.`}
           </Text>
         ) : null}
 
@@ -230,7 +258,7 @@ export default function Agenda() {
         {dayTasks.map((t) => (
           <View key={t.id} style={styles.row}>
             <Text style={[styles.tag, styles.tagDungeon]}>MAZMORRA</Text>
-            <Text style={[styles.rowText, { color: '#C9BDF7' }]} numberOfLines={1}>
+            <Text style={[styles.rowText, { color: colors.purpleText }]} numberOfLines={1}>
               {t.is_boss ? 'JEFE · ' : ''}
               {t.title}
             </Text>
@@ -238,7 +266,7 @@ export default function Agenda() {
         ))}
 
         {dayQuests.map((q) => {
-          const done = day === today && doneToday.has(q.id);
+          const done = doneSet.has(q.id);
           return (
             <View key={q.id} style={styles.row}>
               <Text style={[styles.tag, styles.tagQuest]}>MISIÓN</Text>
@@ -254,6 +282,9 @@ export default function Agenda() {
         })}
 
         {empty ? <Text style={styles.empty}>Día libre de obligaciones.</Text> : null}
+        {dayEvents.length > 0 ? (
+          <Text style={styles.deleteHint}>mantén pulsado un evento para eliminarlo</Text>
+        ) : null}
       </SystemWindow>
     );
   };
@@ -356,7 +387,7 @@ export default function Agenda() {
                     <View style={styles.dots}>
                       {dayQuests.length > 0 ? <View style={[styles.dot, { backgroundColor: colors.cyan }]} /> : null}
                       {dayTasks.length > 0 ? <View style={[styles.dot, { backgroundColor: colors.purple }]} /> : null}
-                      {dayEvents.length > 0 ? <View style={[styles.dot, { backgroundColor: colors.amber }]} /> : null}
+                      {dayEvents.length > 0 ? <View style={[styles.dot, { backgroundColor: colors.text }]} /> : null}
                     </View>
                   </Pressable>
                 );
@@ -366,8 +397,8 @@ export default function Agenda() {
               <View style={[styles.dot, { backgroundColor: colors.cyan }]} />
               <Text style={styles.legendText}>misiones</Text>
               <View style={[styles.dot, { backgroundColor: colors.purple }]} />
-              <Text style={styles.legendText}>mazmorra</Text>
-              <View style={[styles.dot, { backgroundColor: colors.amber }]} />
+              <Text style={styles.legendText}>mazmorras</Text>
+              <View style={[styles.dot, { backgroundColor: colors.text }]} />
               <Text style={styles.legendText}>eventos</Text>
             </View>
           </SystemWindow>
@@ -397,7 +428,7 @@ export default function Agenda() {
           </View>
         ) : null}
 
-        {view === 'dia' ? renderDayDetail(anchor) : renderDayDetail(anchor)}
+        {renderDayDetail(anchor)}
 
         {view !== 'dia' && anchor !== today && hasContent(today) ? (
           <Pressable onPress={() => setAnchor(today)}>
@@ -407,7 +438,7 @@ export default function Agenda() {
       </ScrollView>
 
       <Modal visible={formOpen} transparent animationType="slide" onRequestClose={() => setFormOpen(false)}>
-        <View style={styles.backdrop}>
+        <KeyboardAvoidingView style={styles.backdrop} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
           <View style={styles.sheet}>
             <Text style={styles.sheetTitle}>NUEVO EVENTO</Text>
             <Text style={styles.label}>Título</Text>
@@ -438,7 +469,7 @@ export default function Agenda() {
             <SystemButton title="Añadir al calendario" onPress={addEvent} disabled={!title.trim()} style={{ marginTop: 18 }} />
             <SystemButton title="Cancelar" variant="outline" onPress={() => setFormOpen(false)} style={{ marginTop: 10 }} />
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
     </SafeAreaView>
   );
@@ -508,7 +539,7 @@ const styles = StyleSheet.create({
     gap: 3,
   },
   weekDaySelected: { borderColor: colors.cyan, backgroundColor: colors.cyanFaint },
-  weekDayName: { fontFamily: fonts.heading, fontSize: 10, color: colors.textFaint },
+  weekDayName: { fontFamily: fonts.heading, fontSize: 11, color: colors.textFaint },
   weekDayNum: { fontFamily: fonts.semibold, fontSize: 15, color: colors.text },
   dayHeader: {
     fontFamily: fonts.heading,
@@ -521,13 +552,13 @@ const styles = StyleSheet.create({
   pendingBanner: {
     fontFamily: fonts.semibold,
     fontSize: 13,
-    color: colors.amber,
+    color: colors.cyanText,
     marginBottom: 8,
   },
   row: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 6 },
   tag: {
     fontFamily: fonts.heading,
-    fontSize: 9,
+    fontSize: 11,
     letterSpacing: 1,
     paddingHorizontal: 6,
     paddingVertical: 2,
@@ -536,11 +567,12 @@ const styles = StyleSheet.create({
   },
   tagQuest: { color: colors.cyan, borderColor: colors.cyanDim },
   tagDungeon: { color: colors.purple, borderColor: colors.purpleDim },
-  tagEvent: { color: colors.amber, borderColor: '#5c4a12' },
+  tagEvent: { color: colors.text, borderColor: colors.line },
   tagOverdue: { color: colors.red, borderColor: colors.redDim },
   rowText: { flex: 1, fontFamily: fonts.semibold, fontSize: 14, color: colors.text },
   rowDone: { textDecorationLine: 'line-through', color: colors.textFaint },
   empty: { fontFamily: fonts.body, fontSize: 13, color: colors.textFaint },
+  deleteHint: { fontFamily: fonts.body, fontSize: 11, color: colors.textFaint, marginTop: 8 },
   backToToday: {
     fontFamily: fonts.semibold,
     fontSize: 13,

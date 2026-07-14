@@ -103,7 +103,7 @@ export const voice = {
     }
     return pick([
       `${days} días. Los rangos S se construyen así: un día más, cada día. Imparable.`,
-      `${days} días de racha. El cazador que escribió aquella carta estaría orgulloso.`,
+      `${days} días de racha. El cazador de hace ${days} días no te reconocería.`,
     ]);
   },
 };

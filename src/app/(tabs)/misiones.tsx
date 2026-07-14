@@ -1,5 +1,6 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Haptics from 'expo-haptics';
+import * as ImagePicker from 'expo-image-picker';
 import { useFocusEffect } from 'expo-router';
 import { useCallback, useRef, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
@@ -19,7 +20,7 @@ import {
   updateQuest,
   type QuestInput,
 } from '@/lib/data';
-import { dateKey } from '@/lib/dates';
+import { dateKey, weekdayOfKey } from '@/lib/dates';
 import { completeQuest } from '@/lib/engine';
 import { BONUS_BY_DIFFICULTY, DIFFICULTY_LABEL, XP_BY_DIFFICULTY } from '@/lib/game';
 import { colors, fonts } from '@/lib/theme';
@@ -99,24 +100,55 @@ export default function Misiones() {
     }
   };
 
+  // Mismo contrato que en Sistema: sin foto no hay misión con evidencia obligatoria.
+  const captureEvidence = async (): Promise<string | null> => {
+    const perm = await ImagePicker.requestCameraPermissionsAsync();
+    if (!perm.granted) {
+      Alert.alert('Sin cámara', 'El sistema necesita la cámara para registrar evidencias.');
+      return null;
+    }
+    const result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ['images'],
+      quality: 0.4,
+      base64: true,
+    });
+    if (result.canceled) return null;
+    return result.assets[0]?.base64 ?? null;
+  };
+
   // Completar desde aquí mismo (sin pasar por Sistema), con cerrojo anti doble-toque.
   const markDone = async (quest: Quest) => {
     if (!profile || doneToday.has(quest.id) || completing.current.has(quest.id)) return;
+    // Solo cobra XP el día que la misión toca: si no, sería farming.
+    if (!quest.days_of_week.includes(weekdayOfKey(dateKey()))) return;
     completing.current.add(quest.id);
     setBusyId(quest.id);
     try {
-      const res = await completeQuest(profile, quest, null);
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      setProfile(res.profile);
+      let evidence: string | null = null;
+      if (quest.requires_evidence) {
+        evidence = await captureEvidence();
+        if (!evidence) return;
+      }
+      // Optimista: el check aparece ya y se revierte si el motor falla.
       setDoneToday((prev) => new Set(prev).add(quest.id));
-      setToast(
-        res.bonusEarned > 0
-          ? { xp: res.bonusEarned, bonus: false, unit: 'PB' }
-          : { xp: res.xp, bonus: false, unit: 'XP' },
-      );
-      if (res.leveledUp) setLevelUp(res.newLevel);
-    } catch (e) {
-      Alert.alert('Error del sistema', e instanceof Error ? e.message : 'Fallo desconocido');
+      try {
+        const res = await completeQuest(profile, quest, evidence);
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        setProfile(res.profile);
+        setToast(
+          res.bonusEarned > 0
+            ? { xp: res.bonusEarned, bonus: false, unit: 'PB' }
+            : { xp: res.xp, bonus: false, unit: 'XP' },
+        );
+        if (res.leveledUp) setLevelUp(res.newLevel);
+      } catch (e) {
+        setDoneToday((prev) => {
+          const next = new Set(prev);
+          next.delete(quest.id);
+          return next;
+        });
+        Alert.alert('Error del sistema', e instanceof Error ? e.message : 'Fallo desconocido');
+      }
     } finally {
       completing.current.delete(quest.id);
       setBusyId(null);
@@ -152,25 +184,42 @@ export default function Misiones() {
         ) : (
           quests.map((q) => {
             const done = doneToday.has(q.id);
+            const hoyToca = q.days_of_week.includes(weekdayOfKey(dateKey()));
+            const openEditor = () => {
+              setEditing(q);
+              setFormOpen(true);
+            };
             return (
               <SystemWindow key={q.id} color={q.active ? colors.cyanDim : colors.line}>
                 <View style={styles.questRow}>
                   <Pressable
                     onPress={() => markDone(q)}
-                    disabled={done || busyId === q.id || !q.active}
-                    style={[styles.doneCircle, done && styles.doneCircleOn, !q.active && styles.doneCircleOff]}
+                    disabled={done || busyId === q.id || !q.active || !hoyToca}
+                    hitSlop={8}
+                    style={[
+                      styles.doneCircle,
+                      done && styles.doneCircleOn,
+                      (!q.active || !hoyToca) && styles.doneCircleOff,
+                    ]}
                     accessibilityRole="checkbox"
-                    accessibilityState={{ checked: done, disabled: done || !q.active }}
-                    accessibilityLabel={done ? `${q.title}, completada hoy` : `Marcar ${q.title} como hecha hoy`}
+                    accessibilityState={{ checked: done, disabled: done || !q.active || !hoyToca }}
+                    accessibilityLabel={
+                      done
+                        ? `${q.title}, completada hoy`
+                        : hoyToca
+                          ? `Marcar ${q.title} como hecha hoy${q.requires_evidence ? ', exige foto' : ''}`
+                          : `${q.title}, hoy no toca`
+                    }
                   >
-                    {done ? <Ionicons name="checkmark" size={18} color={colors.cyan} /> : null}
+                    {done ? (
+                      <Ionicons name="checkmark" size={18} color={colors.cyan} />
+                    ) : q.requires_evidence && hoyToca && q.active ? (
+                      <Ionicons name="camera-outline" size={14} color={colors.textFaint} />
+                    ) : null}
                   </Pressable>
                   <Pressable
                     style={styles.questBody}
-                    onPress={() => {
-                      setEditing(q);
-                      setFormOpen(true);
-                    }}
+                    onPress={openEditor}
                     accessibilityRole="button"
                     accessibilityLabel={`Editar misión ${q.title}`}
                   >
@@ -184,6 +233,7 @@ export default function Misiones() {
                     </Text>
                     <Text style={styles.questDays}>
                       {daysSummary(q.days_of_week)}
+                      {!hoyToca ? '  ·  hoy no toca' : ''}
                       {q.requires_evidence ? '  ·  evidencia obligatoria' : ''}
                     </Text>
                   </Pressable>
@@ -195,7 +245,14 @@ export default function Misiones() {
                       thumbColor={q.active ? colors.cyan : colors.textFaint}
                       accessibilityLabel={`Misión ${q.active ? 'activa' : 'inactiva'}`}
                     />
-                    <Ionicons name="create-outline" size={17} color={colors.textFaint} />
+                    <Pressable
+                      onPress={openEditor}
+                      hitSlop={8}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Editar misión ${q.title}`}
+                    >
+                      <Ionicons name="create-outline" size={17} color={colors.textFaint} />
+                    </Pressable>
                   </View>
                 </View>
               </SystemWindow>

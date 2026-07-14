@@ -6,6 +6,7 @@ import { router, useFocusEffect } from 'expo-router';
 import * as Sharing from 'expo-sharing';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import {
+  ActivityIndicator,
   Alert,
   Modal,
   Pressable,
@@ -70,6 +71,7 @@ export default function Perfil() {
   const [freezeDays, setFreezeDays] = useState(3);
   const [shareOpen, setShareOpen] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
 
   const today = dateKey();
   const { height: winHeight } = useWindowDimensions();
@@ -103,7 +105,7 @@ export default function Perfil() {
   );
 
   const pickAvatar = async () => {
-    if (!userId || !profile) return;
+    if (!userId || !profile || uploadingPhoto) return;
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
       quality: 0.5,
@@ -114,6 +116,7 @@ export default function Perfil() {
     if (result.canceled) return;
     const b64 = result.assets[0]?.base64;
     if (!b64) return;
+    setUploadingPhoto(true);
     try {
       const path = await uploadAvatar(userId, b64);
       await updateProfile(userId, { avatar_url: path });
@@ -121,6 +124,8 @@ export default function Perfil() {
       setAvatarUri(await signedUrl('avatars', path));
     } catch (e) {
       Alert.alert('Error del sistema', e instanceof Error ? e.message : 'No se pudo subir la foto');
+    } finally {
+      setUploadingPhoto(false);
     }
   };
 
@@ -246,8 +251,7 @@ export default function Perfil() {
         <Pressable
           onPress={pickAvatar}
           style={[styles.hero, { height: heroHeight }]}
-          accessibilityRole="imagebutton"
-          accessibilityLabel="Cambiar foto de perfil"
+          accessible={false}
         >
           {avatarUri ? (
             <Image source={{ uri: avatarUri }} style={styles.heroImage} contentFit="cover" transition={200} />
@@ -260,14 +264,24 @@ export default function Perfil() {
             </View>
           )}
           <LinearGradient
-            colors={['rgba(6,11,22,0.30)', 'rgba(6,11,22,0)', 'rgba(6,11,22,0.78)', colors.bg]}
-            locations={[0, 0.32, 0.75, 1]}
+            colors={['rgba(6,11,22,0.30)', 'rgba(6,11,22,0)', 'rgba(6,11,22,0.88)', colors.bg]}
+            locations={[0, 0.28, 0.62, 1]}
             style={styles.heroShade}
             pointerEvents="none"
           />
-          <View style={styles.heroCamera} pointerEvents="none">
-            <Ionicons name="camera-outline" size={15} color={colors.text} />
-          </View>
+          <Pressable
+            style={styles.heroCamera}
+            onPress={pickAvatar}
+            hitSlop={10}
+            accessibilityRole="button"
+            accessibilityLabel="Cambiar foto de cazador"
+          >
+            {uploadingPhoto ? (
+              <ActivityIndicator size="small" color={colors.cyan} />
+            ) : (
+              <Ionicons name="camera-outline" size={15} color={colors.text} />
+            )}
+          </Pressable>
           <View style={styles.heroOverlay} pointerEvents="box-none">
             <View style={styles.heroIdentity} pointerEvents="box-none">
               <View style={styles.heroIdentityText} pointerEvents="box-none">
@@ -310,7 +324,7 @@ export default function Perfil() {
 
         <View style={styles.body}>
           {/* Lo primero al abrir el perfil: la racha subiendo y un empujón del sistema. */}
-          <SystemWindow color={streakDays > 0 ? '#5c4a12' : colors.line} fill={colors.panelDeep}>
+          <SystemWindow color={streakDays > 0 ? colors.amberDim : colors.line} fill={colors.panelDeep}>
             <View style={styles.streakRow}>
               <Ionicons
                 name="flame"
@@ -322,7 +336,9 @@ export default function Perfil() {
                   {streakDays} {streakDays === 1 ? 'DÍA' : 'DÍAS'} DE RACHA
                 </Text>
                 <Text style={styles.streakMult}>
-                  ×{streakMultiplier(streakDays).toFixed(1)} de multiplicador · cada misión vale más
+                  {streakMultiplier(streakDays) > 1
+                    ? `×${streakMultiplier(streakDays).toFixed(1).replace('.', ',')} de multiplicador · cada misión vale más`
+                    : '×1,0 · a los 7 días tu XP empieza a multiplicar'}
                 </Text>
               </View>
             </View>
@@ -390,7 +406,9 @@ export default function Perfil() {
               <Text style={styles.kpiLabel}>Días de racha</Text>
             </View>
             <View style={styles.kpi}>
-              <Text style={styles.kpiValue}>×{streakMultiplier(profile.streak_days).toFixed(1)}</Text>
+              <Text style={styles.kpiValue}>
+                ×{streakMultiplier(profile.streak_days).toFixed(1).replace('.', ',')}
+              </Text>
               <Text style={styles.kpiLabel}>Multiplicador XP</Text>
             </View>
           </View>
@@ -516,7 +534,7 @@ export default function Perfil() {
               <Ionicons name="flame" size={15} color={colors.amber} />
               <Text style={styles.shareStreakText}>
                 {profile.streak_days} {profile.streak_days === 1 ? 'DÍA' : 'DÍAS'} DE RACHA · ×
-                {streakMultiplier(profile.streak_days).toFixed(1)} XP
+                {streakMultiplier(profile.streak_days).toFixed(1).replace('.', ',')} XP
               </Text>
             </View>
             <View style={styles.shareStats}>
@@ -596,7 +614,7 @@ const styles = StyleSheet.create({
   },
   heroStatAbbr: {
     fontFamily: fonts.heading,
-    fontSize: 10,
+    fontSize: 11,
     letterSpacing: 1,
     color: colors.cyanText,
     marginTop: 1,

@@ -191,13 +191,28 @@ export function QuestForm({ visible, onClose, onSubmit, initial, onDelete }: Pro
               })}
             </View>
             <View style={styles.quickDays}>
-              <Pressable onPress={() => setDays([1, 2, 3, 4, 5, 6, 7])} style={styles.quickDay}>
+              <Pressable
+                onPress={() => setDays([1, 2, 3, 4, 5, 6, 7])}
+                style={styles.quickDay}
+                accessibilityRole="button"
+                accessibilityLabel="Todos los días"
+              >
                 <Text style={styles.quickDayText}>Diaria</Text>
               </Pressable>
-              <Pressable onPress={() => setDays([1, 2, 3, 4, 5])} style={styles.quickDay}>
+              <Pressable
+                onPress={() => setDays([1, 2, 3, 4, 5])}
+                style={styles.quickDay}
+                accessibilityRole="button"
+                accessibilityLabel="De lunes a viernes"
+              >
                 <Text style={styles.quickDayText}>Entre semana</Text>
               </Pressable>
-              <Pressable onPress={() => setDays([6, 7])} style={styles.quickDay}>
+              <Pressable
+                onPress={() => setDays([6, 7])}
+                style={styles.quickDay}
+                accessibilityRole="button"
+                accessibilityLabel="Sábado y domingo"
+              >
                 <Text style={styles.quickDayText}>Finde</Text>
               </Pressable>
             </View>
@@ -225,7 +240,7 @@ export function QuestForm({ visible, onClose, onSubmit, initial, onDelete }: Pro
               <Switch
                 value={isBonus}
                 onValueChange={setIsBonus}
-                trackColor={{ false: colors.track, true: '#5c4a12' }}
+                trackColor={{ false: colors.track, true: colors.amberDim }}
                 thumbColor={isBonus ? colors.amber : colors.textFaint}
               />
             </View>
@@ -325,7 +340,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 5,
   },
-  quickDayText: { fontFamily: fonts.body, fontSize: 12, color: colors.textDim },
+  quickDayText: { fontFamily: fonts.body, fontSize: 12, color: colors.cyanText },
   hint: {
     fontFamily: fonts.body,
     fontSize: 12,

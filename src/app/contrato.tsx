@@ -47,6 +47,7 @@ import {
   REDEEM_COST,
   REDEEM_WEEKLY_CAP,
   RULE_BREAK_XP,
+  streakMultiplier,
   WEIGH_IN_XP,
   XP_BY_DIFFICULTY,
 } from '@/lib/game';
@@ -399,15 +400,19 @@ export default function Contrato() {
               value: `${DIFFICULTIES.map((d) => XP_BY_DIFFICULTY[d]).join(' · ')} XP`,
             },
             { label: 'Evidencia (foto)', value: `+${Math.round(EVIDENCE_BONUS * 100)} %` },
-            { label: 'Racha', value: '+10 % por semana · techo ×1,5' },
+            {
+              label: 'Racha',
+              value: `+${Math.round((streakMultiplier(7) - 1) * 100)} % por semana · techo ×${streakMultiplier(9999).toFixed(1).replace('.', ',')}`,
+            },
             { label: 'Sesión de gimnasio', value: `${GYM_SESSION_XP} XP` },
             { label: 'Récord personal', value: `${PR_XP} XP` },
             { label: 'Página del diario', value: `${JOURNAL_XP} XP` },
             { label: 'Pesarte', value: `${WEIGH_IN_XP} XP` },
             { label: 'Objetivo cumplido', value: `${GOAL_ACHIEVED_XP} XP` },
+            { label: 'Tarea de mazmorra', value: `XP de su dificultad · jefe ×${BOSS_MULTIPLIER}` },
             {
               label: 'Mazmorra despejada',
-              value: `${DUNGEON_CLEAR_XP.E}–${DUNGEON_CLEAR_XP.S} XP · jefe ×${BOSS_MULTIPLIER}`,
+              value: `botín ${DUNGEON_CLEAR_XP.E}–${DUNGEON_CLEAR_XP.S} XP según rango`,
             },
             {
               label: 'Misión extra',
@@ -426,13 +431,16 @@ export default function Contrato() {
               value: `−${Math.round(PENALTY_FACTOR * 100)} % de su XP · tope −${DAILY_PENALTY_CAP}/día`,
             },
             { label: 'Romper una norma firmada', value: `−${RULE_BREAK_XP} XP + consecuencia` },
-            { label: 'Piedra de Protección', value: 'absorbe todo el daño de un día' },
           ].map((row) => (
             <View key={row.label} style={styles.scoreRow}>
               <Text style={styles.scoreLabel}>{row.label}</Text>
               <Text style={[styles.scoreValue, { color: colors.red }]}>{row.value}</Text>
             </View>
           ))}
+          <View style={styles.scoreRow}>
+            <Text style={styles.scoreLabel}>Piedra de Protección</Text>
+            <Text style={styles.scoreValue}>absorbe todo el daño de un día</Text>
+          </View>
           <Text style={styles.pbHint}>
             Toda la app puntúa con esta tabla: mismo esfuerzo, misma recompensa. Los PB no dan XP —
             se canjean por descanso ({REDEEM_COST} PB = 1 h, máx. {REDEEM_WEEKLY_CAP}/semana).
