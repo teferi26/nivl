@@ -1,9 +1,10 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
+import { LinearGradient } from 'expo-linear-gradient';
 import { router, useFocusEffect } from 'expo-router';
 import * as Sharing from 'expo-sharing';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import {
   Alert,
   Modal,
@@ -12,6 +13,7 @@ import {
   StyleSheet,
   Text,
   TextInput,
+  useWindowDimensions,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -47,6 +49,7 @@ import {
 import { supabase } from '@/lib/supabase';
 import { colors, fonts } from '@/lib/theme';
 import type { Profile } from '@/lib/types';
+import { voice } from '@/lib/voice';
 
 const FREEZE_REASONS = ['Exámenes', 'Enfermedad', 'Vacaciones'];
 const FREEZE_DAYS = [1, 3, 7, 14];
@@ -69,6 +72,12 @@ export default function Perfil() {
   const [busy, setBusy] = useState(false);
 
   const today = dateKey();
+  const { height: winHeight } = useWindowDimensions();
+  // La foto ocupa ~media pantalla, como pidió el cazador.
+  const heroHeight = Math.max(340, Math.round(winHeight * 0.48));
+  const streakDays = profile?.streak_days ?? 0;
+  // Memo: sin él, pick() elegiría una frase nueva en cada pulsación del nombre.
+  const streakMsg = useMemo(() => voice.streakHype(streakDays), [streakDays]);
 
   const load = useCallback(async () => {
     if (!userId) return;
@@ -233,107 +242,92 @@ export default function Perfil() {
   return (
     <SafeAreaView style={styles.screen} edges={['top']}>
       <ScrollView contentContainerStyle={styles.content}>
-        <SystemWindow color={colors.cyanDim}>
-          <View style={styles.profileTop}>
-            <Pressable onPress={pickAvatar}>
-              <Hexagon size={92}>
-                {avatarUri ? (
-                  <Image source={{ uri: avatarUri }} style={styles.avatarImage} contentFit="cover" />
-                ) : (
-                  <Text style={styles.avatarLetter}>{profile.name.charAt(0).toUpperCase()}</Text>
-                )}
+        {/* La foto del cazador ocupa media pantalla: identidad, rango y niveles por ámbito. */}
+        <Pressable
+          onPress={pickAvatar}
+          style={[styles.hero, { height: heroHeight }]}
+          accessibilityRole="imagebutton"
+          accessibilityLabel="Cambiar foto de perfil"
+        >
+          {avatarUri ? (
+            <Image source={{ uri: avatarUri }} style={styles.heroImage} contentFit="cover" transition={200} />
+          ) : (
+            <View style={styles.heroEmpty}>
+              <Hexagon size={110}>
+                <Text style={styles.avatarLetter}>{profile.name.charAt(0).toUpperCase()}</Text>
               </Hexagon>
-              <Text style={styles.changePhoto}>Cambiar foto</Text>
-            </Pressable>
-            <View style={styles.identity}>
-              <TextInput
-                style={styles.nameInput}
-                value={name}
-                onChangeText={setName}
-                onBlur={saveName}
-                onSubmitEditing={saveName}
-                returnKeyType="done"
-                maxLength={24}
-              />
-              {profile.equipped_title ? (
-                <Text style={styles.equippedTitle}>« {profile.equipped_title.toUpperCase()} »</Text>
-              ) : null}
-              <Text style={styles.rankText}>CAZADOR · RANGO {rank}</Text>
-              <View style={styles.levelRow}>
-                <Text style={styles.lvLabel}>LV.</Text>
-                <Text style={styles.lvValue}>{lvl.level}</Text>
+              <Text style={styles.heroEmptyHint}>Toca para poner tu foto de cazador</Text>
+            </View>
+          )}
+          <LinearGradient
+            colors={['rgba(6,11,22,0.30)', 'rgba(6,11,22,0)', 'rgba(6,11,22,0.78)', colors.bg]}
+            locations={[0, 0.32, 0.75, 1]}
+            style={styles.heroShade}
+            pointerEvents="none"
+          />
+          <View style={styles.heroCamera} pointerEvents="none">
+            <Ionicons name="camera-outline" size={15} color={colors.text} />
+          </View>
+          <View style={styles.heroOverlay} pointerEvents="box-none">
+            <View style={styles.heroIdentity} pointerEvents="box-none">
+              <View style={styles.heroIdentityText} pointerEvents="box-none">
+                <TextInput
+                  style={styles.heroName}
+                  value={name}
+                  onChangeText={setName}
+                  onBlur={saveName}
+                  onSubmitEditing={saveName}
+                  returnKeyType="done"
+                  maxLength={24}
+                />
+                {profile.equipped_title ? (
+                  <Text style={styles.equippedTitle}>« {profile.equipped_title.toUpperCase()} »</Text>
+                ) : null}
+                <Text style={styles.rankText}>
+                  CAZADOR · RANGO {rank} · LV. {lvl.level}
+                </Text>
               </View>
+              <Text style={styles.heroRankLetter}>{rank}</Text>
+            </View>
+            <View style={styles.heroXp} pointerEvents="none">
+              <XPBar ratio={lvl.next > 0 ? lvl.into / lvl.next : 1} height={7} />
+              <Text style={styles.xpText}>
+                {lvl.next > 0
+                  ? `${lvl.into} / ${lvl.next} XP para el nivel ${lvl.level + 1}`
+                  : 'NIVEL MÁXIMO ALCANZADO'}
+              </Text>
+            </View>
+            <View style={styles.heroStats} pointerEvents="none">
+              {STATS.map((s) => (
+                <View key={s} style={styles.heroStat}>
+                  <Text style={styles.heroStatVal}>{statPoints(profile[STAT_COLUMN[s]])}</Text>
+                  <Text style={styles.heroStatAbbr}>{s}</Text>
+                </View>
+              ))}
             </View>
           </View>
-          <View style={{ marginTop: 10 }}>
-            <XPBar ratio={lvl.next > 0 ? lvl.into / lvl.next : 1} height={8} />
-            <Text style={styles.xpText}>
-              {lvl.next > 0
-                ? `${lvl.into} / ${lvl.next} XP para el nivel ${lvl.level + 1}`
-                : 'NIVEL MÁXIMO ALCANZADO'}
-            </Text>
-          </View>
-        </SystemWindow>
+        </Pressable>
 
-        <SystemWindow color={colors.purpleDim} fill={colors.panelDeep}>
-          <Text style={[styles.windowTitle, { color: '#A697F0' }]}>PREMIUM · EL ORÁCULO</Text>
-          {isPremium(subscription) ? (
-            <Text style={styles.valveText}>
-              Suscripción activa
-              {subscription?.current_period_end
-                ? ` · renueva el ${subscription.current_period_end.slice(0, 10)}`
-                : ''}
-              . El Oráculo va incluido.
-            </Text>
-          ) : (
-            <>
-              <Text style={styles.valveHint}>
-                La IA (misiones desde objetivos + análisis semanal) consume API real. Con la
-                suscripción va incluida; sin ella puedes usar tu propia key en el módulo Oráculo.
-              </Text>
-              {paymentsConfigured() ? (
-                <SystemButton
-                  title="Hazte Premium"
-                  variant="outline"
-                  onPress={() => userId && openCheckout(userId).catch((e) =>
-                    Alert.alert('Pagos no disponibles', e instanceof Error ? e.message : ''),
-                  )}
-                  style={{ marginTop: 12 }}
-                />
-              ) : (
-                <Text style={[styles.valveHint, { marginTop: 8 }]}>
-                  (Pagos aún no configurados en este servidor.)
+        <View style={styles.body}>
+          {/* Lo primero al abrir el perfil: la racha subiendo y un empujón del sistema. */}
+          <SystemWindow color={streakDays > 0 ? '#5c4a12' : colors.line} fill={colors.panelDeep}>
+            <View style={styles.streakRow}>
+              <Ionicons
+                name="flame"
+                size={34}
+                color={streakDays > 0 ? colors.amber : colors.textFaint}
+              />
+              <View style={styles.streakBody}>
+                <Text style={[styles.streakBig, streakDays === 0 && styles.streakBigOff]}>
+                  {streakDays} {streakDays === 1 ? 'DÍA' : 'DÍAS'} DE RACHA
                 </Text>
-              )}
-            </>
-          )}
-        </SystemWindow>
-
-        <SystemWindow color={colors.cyanDim}>
-          <Text style={styles.windowTitle}>VÁLVULAS DEL SISTEMA</Text>
-          <View style={styles.valveRow}>
-            <Ionicons name="shield-half-outline" size={18} color={colors.cyan} />
-            <Text style={styles.valveText}>
-              Piedras de Protección: {profile.protection_stones}/{MAX_STONES}
-            </Text>
-          </View>
-          <Text style={styles.valveHint}>
-            Se forja 1 por semana de racha perfecta; se consume sola al fallar un día y absorbe todo el daño.
-          </Text>
-          {frozen ? (
-            <>
-              <View style={[styles.valveRow, { marginTop: 12 }]}>
-                <Ionicons name="snow-outline" size={18} color={colors.cyanText} />
-                <Text style={styles.valveText}>
-                  Sistema en pausa ({profile.freeze_reason}) hasta {profile.freeze_until}
+                <Text style={styles.streakMult}>
+                  ×{streakMultiplier(streakDays).toFixed(1)} de multiplicador · cada misión vale más
                 </Text>
               </View>
-              <SystemButton title="Reanudar el sistema" variant="outline" onPress={deactivateFreeze} style={{ marginTop: 12 }} />
-            </>
-          ) : (
-            <SystemButton title="Pausar sistema (examen · enfermedad · viaje)" variant="outline" onPress={() => setFreezeOpen(true)} style={{ marginTop: 12 }} />
-          )}
-        </SystemWindow>
+            </View>
+            <Text style={styles.streakMsg}>{streakMsg}</Text>
+          </SystemWindow>
 
         <SystemWindow color={colors.cyanDim}>
           <Text style={styles.windowTitle}>ESTADÍSTICAS</Text>
@@ -402,10 +396,72 @@ export default function Perfil() {
           </View>
         </SystemWindow>
 
-        <SystemButton title="Compartir perfil" onPress={() => setShareOpen(true)} style={{ marginTop: 2 }} />
-        <SystemButton title="Exportar mis datos" variant="outline" onPress={onExport} loading={busy} style={{ marginTop: 10 }} />
+        {/* Pausar el sistema vive justo debajo del Registro del cazador: hay que bajar hasta aquí. */}
+        <SystemWindow color={colors.cyanDim}>
+          <Text style={styles.windowTitle}>VÁLVULAS DEL SISTEMA</Text>
+          <View style={styles.valveRow}>
+            <Ionicons name="shield-half-outline" size={18} color={colors.cyan} />
+            <Text style={styles.valveText}>
+              Piedras de Protección: {profile.protection_stones}/{MAX_STONES}
+            </Text>
+          </View>
+          <Text style={styles.valveHint}>
+            Se forja 1 por semana de racha perfecta; se consume sola al fallar un día y absorbe todo el daño.
+          </Text>
+          {frozen ? (
+            <>
+              <View style={[styles.valveRow, { marginTop: 12 }]}>
+                <Ionicons name="snow-outline" size={18} color={colors.cyanText} />
+                <Text style={styles.valveText}>
+                  Sistema en pausa ({profile.freeze_reason}) hasta {profile.freeze_until}
+                </Text>
+              </View>
+              <SystemButton title="Reanudar el sistema" variant="outline" onPress={deactivateFreeze} style={{ marginTop: 12 }} />
+            </>
+          ) : (
+            <SystemButton title="Pausar sistema (examen · enfermedad · viaje)" variant="outline" onPress={() => setFreezeOpen(true)} style={{ marginTop: 12 }} />
+          )}
+        </SystemWindow>
+
+        <SystemWindow color={colors.purpleDim} fill={colors.panelDeep}>
+          <Text style={[styles.windowTitle, { color: '#A697F0' }]}>PREMIUM · EL ORÁCULO</Text>
+          {isPremium(subscription) ? (
+            <Text style={styles.valveText}>
+              Suscripción activa
+              {subscription?.current_period_end
+                ? ` · renueva el ${subscription.current_period_end.slice(0, 10)}`
+                : ''}
+              . El Oráculo va incluido.
+            </Text>
+          ) : (
+            <>
+              <Text style={styles.valveHint}>
+                La IA (misiones desde objetivos + análisis semanal) consume API real. Con la
+                suscripción va incluida; sin ella puedes usar tu propia key en el módulo Oráculo.
+              </Text>
+              {paymentsConfigured() ? (
+                <SystemButton
+                  title="Hazte Premium"
+                  variant="outline"
+                  onPress={() => userId && openCheckout(userId).catch((e) =>
+                    Alert.alert('Pagos no disponibles', e instanceof Error ? e.message : ''),
+                  )}
+                  style={{ marginTop: 12 }}
+                />
+              ) : (
+                <Text style={[styles.valveHint, { marginTop: 8 }]}>
+                  (Pagos aún no configurados en este servidor.)
+                </Text>
+              )}
+            </>
+          )}
+        </SystemWindow>
+
+        <SystemButton title="Compartir mi progreso" onPress={() => setShareOpen(true)} style={{ marginTop: 2 }} />
+        <SystemButton title="Exportar datos (copia de seguridad)" variant="outline" onPress={onExport} loading={busy} style={{ marginTop: 10 }} />
         <SystemButton title="Cerrar sesión" variant="danger" onPress={signOut} style={{ marginTop: 10 }} />
         <SystemButton title="Eliminar cuenta" variant="danger" onPress={onDeleteAccount} style={{ marginTop: 10 }} />
+        </View>
       </ScrollView>
 
       <Modal visible={freezeOpen} transparent animationType="slide" onRequestClose={() => setFreezeOpen(false)}>
@@ -456,6 +512,13 @@ export default function Perfil() {
             ) : null}
             <Text style={styles.shareRank}>CAZADOR · RANGO {rank}</Text>
             <Text style={styles.shareLevel}>LV. {lvl.level}</Text>
+            <View style={styles.shareStreak}>
+              <Ionicons name="flame" size={15} color={colors.amber} />
+              <Text style={styles.shareStreakText}>
+                {profile.streak_days} {profile.streak_days === 1 ? 'DÍA' : 'DÍAS'} DE RACHA · ×
+                {streakMultiplier(profile.streak_days).toFixed(1)} XP
+              </Text>
+            </View>
             <View style={styles.shareStats}>
               {STATS.map((s) => (
                 <View key={s} style={styles.shareStat}>
@@ -465,7 +528,7 @@ export default function Perfil() {
               ))}
             </View>
             <Text style={styles.shareFooter}>
-              {stats.total} misiones · racha {profile.streak_days} días
+              {stats.total} misiones completadas · {evidencePct}% con evidencia
             </Text>
           </View>
           <SystemButton title="Compartir imagen" onPress={shareProfile} style={{ marginTop: 16, alignSelf: 'stretch' }} />
@@ -478,33 +541,79 @@ export default function Perfil() {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.bg },
-  content: { padding: 16, paddingBottom: 32 },
-  profileTop: { flexDirection: 'row', gap: 16, alignItems: 'center' },
-  avatarImage: { width: 64, height: 64, borderRadius: 32 },
-  avatarLetter: { fontFamily: fonts.brand, fontSize: 32, color: colors.cyan },
-  changePhoto: {
-    fontFamily: fonts.body,
-    fontSize: 11,
-    color: colors.textFaint,
-    textAlign: 'center',
-    marginTop: 5,
+  content: { paddingBottom: 32 },
+  body: { paddingHorizontal: 16, marginTop: 12 },
+  hero: { width: '100%', backgroundColor: colors.panelDeep },
+  heroImage: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 },
+  heroEmpty: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 14 },
+  heroEmptyHint: { fontFamily: fonts.body, fontSize: 13, color: colors.textDim },
+  heroShade: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 },
+  heroCamera: {
+    position: 'absolute',
+    top: 12,
+    right: 14,
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: 'rgba(6, 11, 22, 0.6)',
+    borderWidth: 1,
+    borderColor: colors.line,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  identity: { flex: 1, minWidth: 0 },
-  nameInput: {
+  heroOverlay: { position: 'absolute', left: 16, right: 16, bottom: 12 },
+  heroIdentity: { flexDirection: 'row', alignItems: 'flex-end', gap: 10 },
+  heroIdentityText: { flex: 1, minWidth: 0 },
+  heroName: {
     fontFamily: fonts.heading,
-    fontSize: 22,
+    fontSize: 24,
     letterSpacing: 1,
     color: colors.text,
     padding: 0,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.line,
+    textShadowColor: 'rgba(0, 0, 0, 0.85)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 6,
   },
+  heroRankLetter: {
+    fontFamily: fonts.brand,
+    fontSize: 58,
+    lineHeight: 60,
+    color: colors.cyan,
+    textShadowColor: 'rgba(0, 0, 0, 0.85)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 8,
+  },
+  heroXp: { marginTop: 8 },
+  heroStats: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 10 },
+  heroStat: { alignItems: 'center', flex: 1 },
+  heroStatVal: {
+    fontFamily: fonts.number,
+    fontSize: 18,
+    color: colors.text,
+    textShadowColor: 'rgba(0, 0, 0, 0.85)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 5,
+  },
+  heroStatAbbr: {
+    fontFamily: fonts.heading,
+    fontSize: 10,
+    letterSpacing: 1,
+    color: colors.cyanText,
+    marginTop: 1,
+    textShadowColor: 'rgba(0, 0, 0, 0.85)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 5,
+  },
+  avatarLetter: { fontFamily: fonts.brand, fontSize: 32, color: colors.cyan },
   equippedTitle: {
     fontFamily: fonts.heading,
     fontSize: 12,
     letterSpacing: 2,
     color: colors.amber,
     marginTop: 5,
+    textShadowColor: 'rgba(0, 0, 0, 0.85)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 5,
   },
   rankText: {
     fontFamily: fonts.semibold,
@@ -512,11 +621,25 @@ const styles = StyleSheet.create({
     letterSpacing: 2,
     color: colors.cyanText,
     marginTop: 4,
+    textShadowColor: 'rgba(0, 0, 0, 0.85)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 5,
   },
-  levelRow: { flexDirection: 'row', alignItems: 'baseline', gap: 6, marginTop: 4 },
-  lvLabel: { fontFamily: fonts.heading, fontSize: 12, color: colors.textFaint },
-  lvValue: { fontFamily: fonts.brand, fontSize: 34, color: colors.cyan },
-  xpText: { fontFamily: fonts.semibold, fontSize: 12, color: colors.textDim, marginTop: 6 },
+  xpText: {
+    fontFamily: fonts.semibold,
+    fontSize: 12,
+    color: colors.textDim,
+    marginTop: 6,
+    textShadowColor: 'rgba(0, 0, 0, 0.85)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 5,
+  },
+  streakRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  streakBody: { flex: 1, minWidth: 0 },
+  streakBig: { fontFamily: fonts.brand, fontSize: 20, letterSpacing: 1, color: colors.amber },
+  streakBigOff: { color: colors.textDim },
+  streakMult: { fontFamily: fonts.semibold, fontSize: 12, color: colors.textDim, marginTop: 3 },
+  streakMsg: { fontFamily: fonts.body, fontSize: 13, color: colors.text, marginTop: 10, lineHeight: 19 },
   windowTitle: {
     fontFamily: fonts.heading,
     fontSize: 12,
@@ -596,6 +719,8 @@ const styles = StyleSheet.create({
   shareTitle: { fontFamily: fonts.heading, fontSize: 11, letterSpacing: 2, color: colors.amber, marginTop: 3 },
   shareRank: { fontFamily: fonts.semibold, fontSize: 11, letterSpacing: 2, color: colors.cyanText, marginTop: 4 },
   shareLevel: { fontFamily: fonts.brand, fontSize: 40, color: colors.cyan, marginTop: 6 },
+  shareStreak: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 8 },
+  shareStreakText: { fontFamily: fonts.heading, fontSize: 12, letterSpacing: 1, color: colors.amber },
   shareStats: { flexDirection: 'row', gap: 14, marginTop: 12 },
   shareStat: { alignItems: 'center' },
   shareStatAbbr: { fontFamily: fonts.heading, fontSize: 11, color: colors.cyanText },

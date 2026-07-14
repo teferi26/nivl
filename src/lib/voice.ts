@@ -69,4 +69,41 @@ export const voice = {
       'El sistema certifica tu hazaña.',
       'Nueva entrada en tu leyenda.',
     ]),
+  // Mensaje motivacional de racha para el perfil: lo primero que ve el cazador.
+  streakHype: (days: number) => {
+    if (days <= 0) {
+      return pick([
+        'Hoy es el día perfecto para encender la racha. El sistema observa.',
+        'Racha a cero. Los grandes cazadores también empezaron aquí. Enciéndela hoy.',
+      ]);
+    }
+    if (days < 3) {
+      return pick([
+        'La racha está encendida. Los primeros días forjan al cazador.',
+        'La cadena ha empezado. Protégela: hoy solo tienes que no romperla.',
+      ]);
+    }
+    if (days < 7) {
+      return pick([
+        `${days} días seguidos. La cadena crece — que no seas tú quien la rompa.`,
+        `${days} días. El sistema empieza a fiarse de ti. Sigue.`,
+      ]);
+    }
+    if (days < 14) {
+      return pick([
+        'Una semana entera en pie. Tu multiplicador ya paga: cada misión vale más.',
+        `${days} días. Esto ya se parece a la disciplina que prometiste.`,
+      ]);
+    }
+    if (days < 30) {
+      return pick([
+        `${days} días seguidos. Esto ya no es suerte: es quién eres.`,
+        `${days} días. Los que te rodean aún no lo saben, pero estás cambiando.`,
+      ]);
+    }
+    return pick([
+      `${days} días. Los rangos S se construyen así: un día más, cada día. Imparable.`,
+      `${days} días de racha. El cazador que escribió aquella carta estaría orgulloso.`,
+    ]);
+  },
 };

@@ -32,7 +32,24 @@ import {
 } from '@/lib/contract';
 import { ensureProfile } from '@/lib/data';
 import { addDays, dateKey } from '@/lib/dates';
-import { REDEEM_COST, REDEEM_WEEKLY_CAP, RULE_BREAK_XP } from '@/lib/game';
+import {
+  BONUS_BY_DIFFICULTY,
+  BOSS_MULTIPLIER,
+  DAILY_PENALTY_CAP,
+  DIFFICULTIES,
+  DUNGEON_CLEAR_XP,
+  EVIDENCE_BONUS,
+  GOAL_ACHIEVED_XP,
+  GYM_SESSION_XP,
+  JOURNAL_XP,
+  PENALTY_FACTOR,
+  PR_XP,
+  REDEEM_COST,
+  REDEEM_WEEKLY_CAP,
+  RULE_BREAK_XP,
+  WEIGH_IN_XP,
+  XP_BY_DIFFICULTY,
+} from '@/lib/game';
 import { colors, fonts } from '@/lib/theme';
 import type { Letter, Profile, Rule } from '@/lib/types';
 
@@ -371,6 +388,56 @@ export default function Contrato() {
             </Text>
           )}
         </SystemWindow>
+
+        {/* Tabla de transparencia: los valores salen de game.ts, no pueden desincronizarse del motor. */}
+        <SystemWindow color={colors.cyanDim}>
+          <Text style={styles.windowTitle}>PUNTUACIÓN DEL SISTEMA</Text>
+          <Text style={styles.scoreSection}>ASÍ SE GANA</Text>
+          {[
+            {
+              label: 'Misión (trivial → épica)',
+              value: `${DIFFICULTIES.map((d) => XP_BY_DIFFICULTY[d]).join(' · ')} XP`,
+            },
+            { label: 'Evidencia (foto)', value: `+${Math.round(EVIDENCE_BONUS * 100)} %` },
+            { label: 'Racha', value: '+10 % por semana · techo ×1,5' },
+            { label: 'Sesión de gimnasio', value: `${GYM_SESSION_XP} XP` },
+            { label: 'Récord personal', value: `${PR_XP} XP` },
+            { label: 'Página del diario', value: `${JOURNAL_XP} XP` },
+            { label: 'Pesarte', value: `${WEIGH_IN_XP} XP` },
+            { label: 'Objetivo cumplido', value: `${GOAL_ACHIEVED_XP} XP` },
+            {
+              label: 'Mazmorra despejada',
+              value: `${DUNGEON_CLEAR_XP.E}–${DUNGEON_CLEAR_XP.S} XP · jefe ×${BOSS_MULTIPLIER}`,
+            },
+            {
+              label: 'Misión extra',
+              value: `${DIFFICULTIES.map((d) => BONUS_BY_DIFFICULTY[d]).join(' · ')} PB`,
+            },
+          ].map((row) => (
+            <View key={row.label} style={styles.scoreRow}>
+              <Text style={styles.scoreLabel}>{row.label}</Text>
+              <Text style={styles.scoreValue}>{row.value}</Text>
+            </View>
+          ))}
+          <Text style={[styles.scoreSection, { marginTop: 14 }]}>ASÍ SE PIERDE</Text>
+          {[
+            {
+              label: 'Misión del día sin hacer',
+              value: `−${Math.round(PENALTY_FACTOR * 100)} % de su XP · tope −${DAILY_PENALTY_CAP}/día`,
+            },
+            { label: 'Romper una norma firmada', value: `−${RULE_BREAK_XP} XP + consecuencia` },
+            { label: 'Piedra de Protección', value: 'absorbe todo el daño de un día' },
+          ].map((row) => (
+            <View key={row.label} style={styles.scoreRow}>
+              <Text style={styles.scoreLabel}>{row.label}</Text>
+              <Text style={[styles.scoreValue, { color: colors.red }]}>{row.value}</Text>
+            </View>
+          ))}
+          <Text style={styles.pbHint}>
+            Toda la app puntúa con esta tabla: mismo esfuerzo, misma recompensa. Los PB no dan XP —
+            se canjean por descanso ({REDEEM_COST} PB = 1 h, máx. {REDEEM_WEEKLY_CAP}/semana).
+          </Text>
+        </SystemWindow>
       </ScrollView>
 
       <Modal visible={ruleFormOpen} transparent animationType="slide" onRequestClose={() => setRuleFormOpen(false)}>
@@ -481,6 +548,25 @@ const styles = StyleSheet.create({
   pbValue: { fontFamily: fonts.brand, fontSize: 28, color: colors.amber },
   pbMeta: { fontFamily: fonts.body, fontSize: 12, color: colors.textFaint },
   pbHint: { fontFamily: fonts.body, fontSize: 12, color: colors.textDim, marginTop: 6, lineHeight: 17 },
+  scoreSection: {
+    fontFamily: fonts.heading,
+    fontSize: 11,
+    letterSpacing: 2,
+    color: colors.textDim,
+    marginTop: 4,
+    marginBottom: 2,
+  },
+  scoreRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: 10,
+    paddingVertical: 7,
+    borderTopWidth: 1,
+    borderTopColor: colors.line,
+  },
+  scoreLabel: { fontFamily: fonts.body, fontSize: 13, color: colors.text, flexShrink: 1 },
+  scoreValue: { fontFamily: fonts.semibold, fontSize: 12, color: colors.cyanText, textAlign: 'right' },
   empty: { fontFamily: fonts.body, fontSize: 13, color: colors.textDim, lineHeight: 19 },
   ruleRow: {
     flexDirection: 'row',

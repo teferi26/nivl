@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
+  Alert,
   KeyboardAvoidingView,
   Modal,
   Platform,
@@ -12,9 +13,16 @@ import {
   View,
 } from 'react-native';
 import type { QuestInput } from '@/lib/data';
-import { BONUS_BY_DIFFICULTY, DIFFICULTIES, DIFFICULTY_LABEL, STAT_LABEL, STATS, XP_BY_DIFFICULTY } from '@/lib/game';
+import {
+  BONUS_BY_DIFFICULTY,
+  DIFFICULTIES,
+  DIFFICULTY_LABEL,
+  STAT_LABEL,
+  STATS,
+  XP_BY_DIFFICULTY,
+} from '@/lib/game';
 import { colors, fonts } from '@/lib/theme';
-import type { Difficulty, Stat } from '@/lib/types';
+import type { Difficulty, Quest, Stat } from '@/lib/types';
 import { SystemButton } from './SystemButton';
 
 const DAY_LABELS = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
@@ -23,9 +31,12 @@ interface Props {
   visible: boolean;
   onClose: () => void;
   onSubmit: (input: QuestInput) => Promise<void>;
+  // Modo edición: precarga la misión y muestra Guardar/Eliminar.
+  initial?: Quest | null;
+  onDelete?: (quest: Quest) => Promise<void>;
 }
 
-export function QuestForm({ visible, onClose, onSubmit }: Props) {
+export function QuestForm({ visible, onClose, onSubmit, initial, onDelete }: Props) {
   const [title, setTitle] = useState('');
   const [stat, setStat] = useState<Stat>('FUE');
   const [difficulty, setDifficulty] = useState<Difficulty>('media');
@@ -34,17 +45,29 @@ export function QuestForm({ visible, onClose, onSubmit }: Props) {
   const [isBonus, setIsBonus] = useState(false);
   const [saving, setSaving] = useState(false);
 
+  const editing = !!initial;
+
+  useEffect(() => {
+    if (!visible) return;
+    if (initial) {
+      setTitle(initial.title);
+      setStat(initial.stat);
+      setDifficulty(initial.difficulty);
+      setDays(initial.days_of_week);
+      setRequiresEvidence(initial.requires_evidence);
+      setIsBonus(initial.is_bonus);
+    } else {
+      setTitle('');
+      setStat('FUE');
+      setDifficulty('media');
+      setDays([1, 2, 3, 4, 5, 6, 7]);
+      setRequiresEvidence(false);
+      setIsBonus(false);
+    }
+  }, [visible, initial]);
+
   const toggleDay = (d: number) => {
     setDays((prev) => (prev.includes(d) ? prev.filter((x) => x !== d) : [...prev, d].sort()));
-  };
-
-  const reset = () => {
-    setTitle('');
-    setStat('FUE');
-    setDifficulty('media');
-    setDays([1, 2, 3, 4, 5, 6, 7]);
-    setRequiresEvidence(false);
-    setIsBonus(false);
   };
 
   const submit = async () => {
@@ -59,11 +82,35 @@ export function QuestForm({ visible, onClose, onSubmit }: Props) {
         requires_evidence: requiresEvidence,
         is_bonus: isBonus,
       });
-      reset();
       onClose();
+    } catch (e) {
+      Alert.alert('Error del sistema', e instanceof Error ? e.message : 'No se pudo guardar');
     } finally {
       setSaving(false);
     }
+  };
+
+  const confirmDelete = () => {
+    if (!initial || !onDelete) return;
+    Alert.alert(
+      'Eliminar misión',
+      `"${initial.title}" y todo su historial de completadas. Esta acción no se puede deshacer.`,
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Eliminar',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await onDelete(initial);
+              onClose();
+            } catch (e) {
+              Alert.alert('Error del sistema', e instanceof Error ? e.message : 'No se pudo eliminar');
+            }
+          },
+        },
+      ],
+    );
   };
 
   return (
@@ -74,7 +121,7 @@ export function QuestForm({ visible, onClose, onSubmit }: Props) {
       >
         <View style={styles.sheet}>
           <ScrollView keyboardShouldPersistTaps="handled">
-            <Text style={styles.heading}>NUEVA MISIÓN</Text>
+            <Text style={styles.heading}>{editing ? 'EDITAR MISIÓN' : 'NUEVA MISIÓN'}</Text>
 
             <Text style={styles.label}>Título</Text>
             <TextInput
@@ -92,6 +139,9 @@ export function QuestForm({ visible, onClose, onSubmit }: Props) {
                   key={s}
                   onPress={() => setStat(s)}
                   style={[styles.chip, stat === s && styles.chipOn]}
+                  accessibilityRole="radio"
+                  accessibilityState={{ selected: stat === s }}
+                  accessibilityLabel={STAT_LABEL[s]}
                 >
                   <Text style={[styles.chipText, stat === s && styles.chipTextOn]}>{s}</Text>
                 </Pressable>
@@ -99,13 +149,15 @@ export function QuestForm({ visible, onClose, onSubmit }: Props) {
             </View>
             <Text style={styles.hint}>{STAT_LABEL[stat]}</Text>
 
-            <Text style={styles.label}>Dificultad</Text>
+            <Text style={styles.label}>Dificultad (puntuación)</Text>
             <View style={styles.chips}>
               {DIFFICULTIES.map((d) => (
                 <Pressable
                   key={d}
                   onPress={() => setDifficulty(d)}
                   style={[styles.chip, difficulty === d && styles.chipOn]}
+                  accessibilityRole="radio"
+                  accessibilityState={{ selected: difficulty === d }}
                 >
                   <Text style={[styles.chipText, difficulty === d && styles.chipTextOn]}>
                     {DIFFICULTY_LABEL[d]}
@@ -113,7 +165,11 @@ export function QuestForm({ visible, onClose, onSubmit }: Props) {
                 </Pressable>
               ))}
             </View>
-            <Text style={styles.hint}>{XP_BY_DIFFICULTY[difficulty]} XP base</Text>
+            <Text style={styles.hint}>
+              {isBonus
+                ? `${BONUS_BY_DIFFICULTY[difficulty]} PB al completarla`
+                : `${XP_BY_DIFFICULTY[difficulty]} XP base (+25% con evidencia, ×racha)`}
+            </Text>
 
             <Text style={styles.label}>Días de la semana</Text>
             <View style={styles.chips}>
@@ -125,11 +181,25 @@ export function QuestForm({ visible, onClose, onSubmit }: Props) {
                     key={d}
                     onPress={() => toggleDay(d)}
                     style={[styles.day, on && styles.chipOn]}
+                    accessibilityRole="checkbox"
+                    accessibilityState={{ checked: on }}
+                    accessibilityLabel={`Día ${label}`}
                   >
                     <Text style={[styles.chipText, on && styles.chipTextOn]}>{label}</Text>
                   </Pressable>
                 );
               })}
+            </View>
+            <View style={styles.quickDays}>
+              <Pressable onPress={() => setDays([1, 2, 3, 4, 5, 6, 7])} style={styles.quickDay}>
+                <Text style={styles.quickDayText}>Diaria</Text>
+              </Pressable>
+              <Pressable onPress={() => setDays([1, 2, 3, 4, 5])} style={styles.quickDay}>
+                <Text style={styles.quickDayText}>Entre semana</Text>
+              </Pressable>
+              <Pressable onPress={() => setDays([6, 7])} style={styles.quickDay}>
+                <Text style={styles.quickDayText}>Finde</Text>
+              </Pressable>
             </View>
 
             <View style={styles.switchRow}>
@@ -161,12 +231,15 @@ export function QuestForm({ visible, onClose, onSubmit }: Props) {
             </View>
 
             <SystemButton
-              title="Crear misión"
+              title={editing ? 'Guardar cambios' : 'Crear misión'}
               onPress={submit}
               loading={saving}
               disabled={!title.trim() || days.length === 0}
               style={{ marginTop: 18 }}
             />
+            {editing && onDelete ? (
+              <SystemButton title="Eliminar misión" variant="danger" onPress={confirmDelete} style={{ marginTop: 10 }} />
+            ) : null}
             <SystemButton title="Cancelar" variant="outline" onPress={onClose} style={{ marginTop: 10 }} />
           </ScrollView>
         </View>
@@ -245,6 +318,14 @@ const styles = StyleSheet.create({
   chipTextOn: {
     color: colors.cyan,
   },
+  quickDays: { flexDirection: 'row', gap: 8, marginTop: 8 },
+  quickDay: {
+    borderWidth: 1,
+    borderColor: colors.line,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+  },
+  quickDayText: { fontFamily: fonts.body, fontSize: 12, color: colors.textDim },
   hint: {
     fontFamily: fonts.body,
     fontSize: 12,
