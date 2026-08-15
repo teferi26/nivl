@@ -12,7 +12,7 @@ import { missingTokenMessage, readToken } from './token.mjs';
 export const REF = 'dueyufxxkiixdxighpaz';
 export const SB_URL = `https://${REF}.supabase.co`;
 
-export async function abrirSesion(root, email = process.env.NIVL_EMAIL ?? 'teferi@springmarket.es') {
+export async function abrirSesion(root, email = process.env.NIVL_EMAIL ?? 'teferilaforga@gmail.com') {
   const pat = readToken(root);
   if (!pat) {
     console.error(missingTokenMessage(root));

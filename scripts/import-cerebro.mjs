@@ -45,7 +45,7 @@ const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL ?? env.EXPO_PUBLIC_SUP
 const TOKEN = readToken(ROOT);
 // La cuenta de NIVL en Supabase (distinta del correo personal). Se puede
 // sobreescribir con NIVL_EMAIL si algún día cambia.
-const EMAIL = process.env.NIVL_EMAIL ?? 'teferi@springmarket.es';
+const EMAIL = process.env.NIVL_EMAIL ?? 'teferilaforga@gmail.com';
 const REF = SUPABASE_URL.match(/https:\/\/([a-z0-9]+)\.supabase\.co/)?.[1];
 
 async function sql(query) {

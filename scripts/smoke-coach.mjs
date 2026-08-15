@@ -17,7 +17,7 @@ import { missingTokenMessage, readToken } from './token.mjs';
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const REF = 'dueyufxxkiixdxighpaz';
 const SB_URL = `https://${REF}.supabase.co`;
-const EMAIL = process.env.NIVL_EMAIL ?? 'teferi@springmarket.es';
+const EMAIL = process.env.NIVL_EMAIL ?? 'teferilaforga@gmail.com';
 
 const argv = process.argv.slice(2);
 const kindIdx = argv.indexOf('--kind');
