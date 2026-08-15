@@ -109,6 +109,20 @@ const BETAS = [
 ];
 
 /**
+ * El mecanismo de reserva es solo de la familia Opus: pedirlo con Sonnet o con
+ * Haiku devuelve un 400 seco ("does not support the `fallbacks` parameter") y
+ * tumba la llamada entera.
+ *
+ * Se comprueba por modelo y no por bandera de configuración a propósito: el
+ * modelo se puede cambiar desde los secretos del panel sin desplegar, así que
+ * una constante aquí se quedaría desfasada sin que nadie se entere y el coach
+ * dejaría de responder.
+ */
+function admiteReserva(model: string): boolean {
+  return model.startsWith('claude-opus');
+}
+
+/**
  * Un turno del modelo, en streaming. Devuelve los bloques de contenido
  * completos (texto, pensamiento y llamadas a herramientas) listos para
  * reenviarse tal cual en el siguiente turno.
@@ -130,7 +144,7 @@ export async function callClaude(opts: CallOptions): Promise<Turn> {
       // para poder mostrar "el sistema está pensando" en la app.
       thinking: { type: 'adaptive', display: 'summarized' },
       output_config: { effort: opts.effort ?? 'high' },
-      fallbacks: 'default',
+      ...(admiteReserva(model) ? { fallbacks: 'default' } : {}),
       system: opts.system,
       messages: opts.messages,
       ...(opts.tools?.length ? { tools: opts.tools } : {}),
