@@ -46,6 +46,27 @@ const MAX_COST_MICRO_USD = 750_000; // 0,75 $
 const KINDS = ['chat', 'brief', 'plan', 'revision_semanal', 'cierre_mensual', 'escalada'] as const;
 type Kind = (typeof KINDS)[number];
 
+/**
+ * Modelo por ritual, con dos secretos para cambiarlo sin desplegar:
+ *
+ *   COACH_MODEL_CHAT    → el del día a día, que es donde está el volumen
+ *   COACH_MODEL_RITUAL  → brief, revisión semanal, cierre de mes y escalada
+ *
+ * La división no es caprichosa. El chat son decenas de turnos al mes y manda
+ * en la factura; los rituales son unos treinta y uno deciden el rumbo de la
+ * semana entera, así que ahí un modelo más caro cuesta céntimos y se nota.
+ *
+ * Para probar si Haiku aguanta de coach basta con poner COACH_MODEL_CHAT a
+ * claude-haiku-4-5 en el panel de Supabase y comparar respuestas: el coste real
+ * de cada turno queda en coach_runs, con su modelo al lado.
+ */
+function modeloDe(kind: Kind): string {
+  const chat = Deno.env.get('COACH_MODEL_CHAT')?.trim();
+  const ritual = Deno.env.get('COACH_MODEL_RITUAL')?.trim();
+  const esCharla = kind === 'chat' || kind === 'plan';
+  return (esCharla ? chat : ritual) || COACH_MODEL;
+}
+
 // Los rituales que deciden el rumbo piensan más que una charla suelta.
 const EFFORT_BY_KIND: Record<Kind, Effort> = {
   chat: 'high',
@@ -186,10 +207,14 @@ async function runCoach(args: RunArgs): Promise<{ text: string; usage: Usage; mo
 
   let usage: Usage = {};
   let finalText = '';
-  let model = COACH_MODEL;
+  const elegido = modeloDe(kind);
+  // Arranca en el elegido, pero lo que se apunta en la contabilidad es el que
+  // devuelve la API: con el mecanismo de reserva puede resolver en otro.
+  let model = elegido;
 
   for (let i = 0; i < MAX_TOOL_ITERATIONS; i++) {
     const turn = await callClaude({
+      model: elegido,
       system,
       messages,
       tools: TOOL_DEFS,
@@ -345,7 +370,7 @@ Deno.serve(async (req) => {
     const { error: ledgerErr } = await admin.from('coach_runs').insert({
       user_id: userId,
       kind,
-      model: result?.model ?? COACH_MODEL,
+      model: result?.model ?? modeloDe(kind),
       in_tokens: result?.usage.input_tokens ?? 0,
       cache_read_tokens: result?.usage.cache_read_input_tokens ?? 0,
       cache_write_tokens: result?.usage.cache_creation_input_tokens ?? 0,
