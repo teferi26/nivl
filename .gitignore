@@ -34,6 +34,14 @@ yarn-error.*
 .env
 .env*.local
 
+# Memoria del coach: datos personales, financieros y de salud. Se importa una
+# vez a Supabase y a partir de ahí la fuente de verdad es coach_dossier.
+scripts/cerebro.md
+
+# Token de acceso de Supabase para los scripts de despliegue
+supabase-token.txt
+.supabase-token
+
 # typescript
 *.tsbuildinfo
 
@@ -42,3 +50,12 @@ example
 # generated native folders
 /ios
 /android
+
+# Caché de deno check sobre las Edge Functions (no lo usa el despliegue)
+deno.lock
+
+# Token de integración de Notion
+notion-token.txt
+
+# Temporales del CLI de Supabase
+supabase/.temp/

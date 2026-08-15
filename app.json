@@ -9,10 +9,15 @@
     "userInterfaceStyle": "dark",
     "backgroundColor": "#060B16",
     "ios": {
-      "icon": "./assets/expo.icon",
       "bundleIdentifier": "com.teferi.nivl",
+      "supportsTablet": false,
       "infoPlist": {
-        "NSCameraUsageDescription": "NIVL usa la cámara para registrar evidencias de tus misiones."
+        "NSCameraUsageDescription": "NIVL usa la cámara para registrar evidencias de tus misiones.",
+        "NSPhotoLibraryUsageDescription": "NIVL accede a tus fotos para que elijas tu retrato de cazador.",
+        "ITSAppUsesNonExemptEncryption": false
+      },
+      "entitlements": {
+        "com.apple.developer.usernotifications.time-sensitive": true
       }
     },
     "android": {
@@ -23,7 +28,14 @@
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "android.permission.POST_NOTIFICATIONS",
+        "android.permission.SCHEDULE_EXACT_ALARM"
+      ],
+      "blockedPermissions": [
+        "android.permission.RECORD_AUDIO"
+      ]
     },
     "web": {
       "output": "single",
@@ -31,21 +43,30 @@
     },
     "plugins": [
       "expo-router",
-      "expo-notifications",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/notification-icon.png",
+          "color": "#37C8F0",
+          "defaultChannel": "sistema",
+          "mode": "production"
+        }
+      ],
       [
         "expo-image-picker",
         {
-          "cameraPermission": "NIVL usa la cámara para registrar evidencias de tus misiones."
+          "cameraPermission": "NIVL usa la cámara para registrar evidencias de tus misiones.",
+          "photosPermission": "NIVL accede a tus fotos para que elijas tu retrato de cazador.",
+          "microphonePermission": false
         }
       ],
       [
         "expo-splash-screen",
         {
           "backgroundColor": "#060B16",
-          "android": {
-            "image": "./assets/images/splash-icon.png",
-            "imageWidth": 76
-          }
+          "image": "./assets/images/splash-icon.png",
+          "imageWidth": 180,
+          "resizeMode": "contain"
         }
       ],
       "expo-secure-store"
@@ -53,6 +74,13 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "f40353c9-a94b-441d-a270-1d1c7b8b81bd"
+      }
+    },
+    "owner": "tafatips"
   }
 }

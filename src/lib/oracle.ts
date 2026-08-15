@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as SecureStore from 'expo-secure-store';
 import { DIFFICULTIES, STATS } from './game';
-import { callPremiumOracle, fetchSubscription, isPremium } from './subscription';
+import { callPremiumOracle, fetchSubscription, isPremium, paywallEnabled } from './subscription';
 import type { Difficulty, Stat } from './types';
 
 // Señal tipada de "necesita pagar o poner su key": las pantallas la capturan
@@ -16,6 +16,9 @@ export class PaywallError extends Error {
 export type OracleAccess = 'premium' | 'byok' | 'none';
 
 export async function resolveOracleAccess(userId: string): Promise<OracleAccess> {
+  // Sin muro no hay nada que consultar: se va siempre por el servidor. Además
+  // evita que un fallo de red al leer la suscripción degrade a paywall.
+  if (!paywallEnabled()) return 'premium';
   try {
     const sub = await fetchSubscription(userId);
     if (isPremium(sub)) return 'premium';
@@ -132,8 +135,10 @@ export async function getApiKey(): Promise<string | null> {
   }
   // Auto-sembrado SOLO para desarrollo: si el .env local trae una key por
   // defecto y el dispositivo no tiene ninguna, se instala en SecureStore.
-  // JAMÁS compilar un build público con EXPO_PUBLIC_DEFAULT_AI_KEY puesta.
-  const seeded = process.env.EXPO_PUBLIC_DEFAULT_AI_KEY;
+  // El guard de __DEV__ es la red de seguridad: aunque alguien compile con
+  // EXPO_PUBLIC_DEFAULT_AI_KEY puesta, un build de release la ignora y la key
+  // nunca sale embebida en un binario distribuido.
+  const seeded = __DEV__ ? process.env.EXPO_PUBLIC_DEFAULT_AI_KEY : undefined;
   if (seeded && seeded.trim()) {
     await SecureStore.setItemAsync(KEY_STORAGE, seeded.trim());
     return seeded.trim();

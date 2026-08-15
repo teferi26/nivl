@@ -141,8 +141,8 @@ export default function Onboarding() {
               <Text style={styles.stepTitle}>EL ORÁCULO · PREMIUM</Text>
               <SystemWindow color={colors.purpleDim} fill={colors.panelDeep}>
                 <Text style={styles.lore}>
-                  La IA del sistema genera tus misiones desde un objetivo ("correr una 10K en
-                  mayo") y cada semana analiza tus datos y se ajusta sola a ti.{'\n\n'}
+                  La IA del sistema genera tus misiones desde un objetivo (&quot;correr una 10K en
+                  mayo&quot;) y cada semana analiza tus datos y se ajusta sola a ti.{'\n\n'}
                   Estas funciones consumen API de verdad, así que van aparte:{'\n'}· Suscripción
                   mensual: Oráculo incluido, sin configurar nada.{'\n'}· O usa tu propia API key
                   (OpenAI o Anthropic) y paga solo tu consumo.{'\n\n'}

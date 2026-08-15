@@ -11,8 +11,19 @@ export interface Subscription {
 // Va en .env como EXPO_PUBLIC_STRIPE_PAYMENT_LINK.
 const PAYMENT_LINK = process.env.EXPO_PUBLIC_STRIPE_PAYMENT_LINK;
 
+// Interruptor del modelo de pago. Mientras NIVL sea de uso personal el muro
+// no existe: el acceso es siempre premium y no se ofrece checkout en ninguna
+// pantalla. Todo el camino de Stripe (webhook, tabla subscriptions, Payment
+// Link) queda intacto: para reactivarlo basta con EXPO_PUBLIC_PAYWALL=on.
+//
+// Además evita el motivo de rechazo de la Guideline 3.1.1 de Apple, que
+// prohíbe cobrar contenido digital fuera de las compras dentro de la app.
+export function paywallEnabled(): boolean {
+  return process.env.EXPO_PUBLIC_PAYWALL === 'on';
+}
+
 export function paymentsConfigured(): boolean {
-  return !!PAYMENT_LINK;
+  return paywallEnabled() && !!PAYMENT_LINK;
 }
 
 export async function fetchSubscription(userId: string): Promise<Subscription | null> {
@@ -26,6 +37,8 @@ export async function fetchSubscription(userId: string): Promise<Subscription | 
 }
 
 export function isPremium(sub: Subscription | null): boolean {
+  // Sin muro, todo el mundo es premium: el Oráculo va siempre por el servidor.
+  if (!paywallEnabled()) return true;
   if (!sub) return false;
   if (sub.status !== 'active' && sub.status !== 'trialing') return false;
   if (sub.current_period_end && new Date(sub.current_period_end) <= new Date()) return false;

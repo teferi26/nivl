@@ -123,7 +123,12 @@ export default function Oraculo() {
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
           <View style={styles.header}>
-            <Pressable onPress={() => router.back()} hitSlop={10}>
+            <Pressable
+              onPress={() => router.back()}
+              hitSlop={10}
+              accessibilityRole="button"
+              accessibilityLabel="Volver"
+            >
               <Ionicons name="chevron-back" size={24} color={colors.cyan} />
             </Pressable>
             <Text style={styles.title}>EL ORÁCULO</Text>
@@ -179,7 +184,14 @@ export default function Oraculo() {
                   MISIONES PROPUESTAS · {selected.size}/{proposals.length} SELECCIONADAS
                 </Text>
                 {proposals.map((p, i) => (
-                  <Pressable key={i} onPress={() => toggle(i)} style={styles.proposal}>
+                  <Pressable
+                    key={i}
+                    onPress={() => toggle(i)}
+                    style={styles.proposal}
+                    accessibilityRole="checkbox"
+                    accessibilityState={{ checked: selected.has(i) }}
+                    accessibilityLabel={`Misión propuesta: ${p.title}`}
+                  >
                     <View style={[styles.box, selected.has(i) && styles.boxOn]}>
                       {selected.has(i) ? <Ionicons name="checkmark" size={14} color={colors.cyan} /> : null}
                     </View>
