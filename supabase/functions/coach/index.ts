@@ -31,7 +31,12 @@ import { buildSystem } from '../_shared/prompt.ts';
 import { executeTool, TOOL_DEFS } from '../_shared/tools.ts';
 
 const MAX_TOOL_ITERATIONS = 8;
-const HISTORY_LIMIT = 40;
+// Doce intercambios. El hilo es continuo de cara a ti, pero lo que se reenvía
+// a la API tiene tope: la memoria larga vive en el dossier y en coach_facts,
+// no en el transcript. Sin tope, la conversación crece sin fin y a los seis
+// meses cada turno arrastra cientos de miles de tokens, primero caros y luego
+// imposibles. Si algo de un turno viejo importa, el coach lo anota como hecho.
+const HISTORY_LIMIT = 24;
 // Freno de mano: si un turno encadena tantas herramientas que ya ha costado
 // esto, algo se ha ido de madre y es mejor cortar que despertarse con la
 // sorpresa. No limita turnos normales — un brief completo ronda 0,40 $.
@@ -78,6 +83,36 @@ function trimHistory(messages: ApiMessage[]): ApiMessage[] {
 }
 
 /**
+ * Aligera el historial antes de reenviarlo.
+ *
+ * Dos cosas engordan un hilo viejo hasta hacerlo caro: los bloques de
+ * pensamiento y los resultados de herramienta, que pueden llegar a 12.000
+ * caracteres cada uno. Ninguno de los dos aporta nada pasado su turno — lo que
+ * hay que recordar ya está en el dossier y en los hechos — pero se pagan
+ * enteros en cada llamada. Medido: 74.000 tokens de historia por turno.
+ *
+ * El pensamiento solo es obligatorio dentro del turno que se está resolviendo,
+ * y ese turno todavía no está en la tabla cuando se lee esto. Si al quitarlo un
+ * mensaje se quedara sin contenido, se deja intacto: la API rechaza los
+ * mensajes vacíos, y un tool_use sin su tool_result detrás también.
+ */
+function aligerarHistorial(messages: ApiMessage[]): ApiMessage[] {
+  const TOPE_RESULTADO = 1200;
+  return messages.map((m) => {
+    if (!Array.isArray(m.content)) return m;
+    const blocks = m.content
+      .filter((b) => b.type !== 'thinking' && b.type !== 'redacted_thinking')
+      .map((b) => {
+        if (b.type !== 'tool_result') return b;
+        const c = (b as { content?: unknown }).content;
+        if (typeof c !== 'string' || c.length <= TOPE_RESULTADO) return b;
+        return { ...b, content: `${c.slice(0, TOPE_RESULTADO)}\n[…recortado]` };
+      });
+    return blocks.length ? { ...m, content: blocks as ContentBlock[] } : m;
+  });
+}
+
+/**
  * Marca el final del historial como punto de caché.
  *
  * El prefijo (voz + dossier + herramientas) ya se cachea desde el bloque de
@@ -113,27 +148,31 @@ async function runCoach(args: RunArgs): Promise<{ text: string; usage: Usage; mo
   const { sb, userId, kind, threadId, userText, today, emit } = args;
 
   const ctx = await buildContext(sb, userId, today);
-  const system = buildSystem(ctx.dossier, kind);
+  const system = buildSystem(ctx.dossier, kind, ctx.text);
 
+  // Descendente y luego la vuelta: pidiendo ascendente con LIMIT se traen los
+  // mensajes MÁS VIEJOS del hilo, así que a partir del mensaje 40 el coach se
+  // quedaba anclado en el principio de la conversación y dejaba de ver lo
+  // último que le habías dicho. La memoria larga vive en el dossier y en los
+  // hechos; el hilo solo aporta lo reciente.
   const { data: rows } = await sb
     .from('coach_messages')
     .select('role, content')
     .eq('thread_id', threadId)
-    .order('created_at', { ascending: true })
+    .order('created_at', { ascending: false })
     .limit(HISTORY_LIMIT);
 
-  const history: ApiMessage[] = ((rows ?? []) as any[]).map((r) => ({
-    role: r.role,
-    content: r.content,
-  }));
+  const history: ApiMessage[] = ((rows ?? []) as any[])
+    .reverse()
+    .map((r) => ({ role: r.role, content: r.content }));
 
-  // El estado va pegado al turno actual, no al historial: así cada llamada ve
-  // datos frescos y los turnos viejos no arrastran fotos caducadas.
-  const turnText = `${ctx.text}\n\n---\n\n${userText}`;
-  const previos = markCacheable(trimHistory(history));
+  // El estado se reconstruye en cada llamada (así nunca ve datos caducados)
+  // pero viaja en el bloque de sistema, no aquí: ver la explicación de coste
+  // en buildSystem. El turno del usuario lleva solo lo que él ha dicho.
+  const previos = markCacheable(aligerarHistorial(trimHistory(history)));
   const messages: ApiMessage[] = [
     ...previos,
-    { role: 'user', content: [{ type: 'text', text: turnText }] },
+    { role: 'user', content: [{ type: 'text', text: userText }] },
   ];
 
   // Solo se persiste lo que dijo él, sin el volcado de estado.
@@ -321,6 +360,18 @@ Deno.serve(async (req) => {
   const describe = (e: unknown): string => {
     if (e instanceof RefusalError) return 'El sistema no puede responder a eso.';
     console.error('coach error:', e);
+
+    // Distinguir estos dos del fallo genérico importa: "reintenta en un
+    // momento" es un consejo inútil cuando lo que pasa es que se acabó el
+    // saldo, y te deja pensando que la app está rota mientras el coach lleva
+    // días callado. Que el mensaje diga qué hacer.
+    const texto = e instanceof Error ? e.message : String(e);
+    if (/credit balance is too low|insufficient.quota|billing/i.test(texto)) {
+      return 'Sin saldo en la cuenta de Anthropic. Recarga en console.anthropic.com → Plans & Billing y el sistema vuelve solo.';
+    }
+    if (/\b429\b|rate.?limit/i.test(texto)) {
+      return 'La API va saturada ahora mismo. Reintenta en un minuto.';
+    }
     return 'El sistema no responde. Reintenta en un momento.';
   };
 

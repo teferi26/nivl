@@ -44,10 +44,12 @@ Las notificaciones y el push **no funcionan en Expo Go**: hace falta un developm
 
 ## El coach
 
-- **Memoria en tres capas**: `coach_dossier` (lo estable, va cacheado en cada prompt), `coach_facts` (el log fechado) y `coach_messages` (la conversación).
+- **Memoria en tres capas**: `coach_dossier` (lo estable, va cacheado en cada prompt), `coach_facts` (el log fechado) y `coach_messages` (la conversación). Lo que se reenvía a la API son los **últimos 12 intercambios**: el hilo sigue siendo continuo para ti, pero la memoria larga vive en el dossier y en los hechos, no en el transcript. Sin ese tope la conversación crece sin fin y a los seis meses cada turno arrastra cientos de miles de tokens.
 - **Veinte herramientas** para escribir en tu vida real: crear y ajustar misiones, planificar el día, agenda, horarios, mazmorras, reglas del contrato, metas, memoria, las tres del cuerpo — `prescribir_entreno`, `fijar_nutricion` y `planificar_comidas` — y las cuatro del dinero — `fijar_plan_economico`, `fijar_presupuesto`, `regla_categoria` y `registrar_movimiento`. Se ejecutan con tu JWT, así que RLS sigue aplicando.
 - **El coach elige dificultad, nunca puntos**: el XP sale de la tabla de `game.ts` y no puede inflarlo.
-- **Coste real**: ~0,06 $ por turno de chat y ~0,38 $ por brief diario, medido y registrado en `coach_runs`. Míralo en la app: Coach → icono de memoria.
+- **Coste real medido** con el estudio del cuerpo y el del dinero dentro: **0,17 $ un turno en caliente** (hablando seguido, con la caché viva) y **~0,35 $ el primero** de cada rato. Un brief con herramientas ronda 0,40 $. Queda registrado turno a turno en `coach_runs`; se ve en la app en Coach → icono de memoria.
+- **De dónde sale ese coste**: el prefijo —voz, doctrina, dossier y estado del día— son unos 70.000 tokens que se cachean juntos. El estado va en el bloque de **sistema** a propósito: colgado del turno del usuario quedaba detrás del último punto de caché y se pagaba entero en cada vuelta del bucle de herramientas, que eran 0,60 $ por turno. Del historial se quitan además los bloques de pensamiento y los resultados largos, que no aportan nada pasado su turno y se pagaban enteros cada vez.
+- **Necesita saldo en Anthropic.** Cuando se acaba, el coach lo dice con esas palabras y con el enlace para recargar, en vez de un "reintenta más tarde" que no ayuda.
 
 ## El entrenador: cómo ajusta lo siguiente con lo que registras
 

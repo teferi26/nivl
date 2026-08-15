@@ -73,7 +73,21 @@ Escríbele como se le escribe a alguien que importa. Pregunta qué está pasando
 Una sola cosa operativa al final, la más urgente. Nada más.`,
 };
 
-export function buildSystem(dossier: string, kind: string) {
+/**
+ * `estado` es el volcado del día: perfil, misiones, y los dos estudios. Va
+ * aquí, en el sistema, y no pegado al mensaje del usuario.
+ *
+ * El motivo es de coste medido, y en su día se razonó justo al revés. Colgado
+ * del turno, el estado queda DESPUÉS del último punto de caché y se paga
+ * entero a precio completo en cada vuelta del bucle de herramientas y en cada
+ * turno nuevo: 31.000 tokens frescos cada vez, que era el 90 % de la factura.
+ *
+ * Puesto aquí funciona porque el estado NO cambia turno a turno: está fechado
+ * por día y no lleva reloj, así que solo se invalida cuando cambian tus datos
+ * de verdad (completas una misión, entra un movimiento). Mientras hablas
+ * seguido, se lee a una décima parte.
+ */
+export function buildSystem(dossier: string, kind: string, estado = '') {
   const blocks: Array<{ type: 'text'; text: string; cache_control?: { type: 'ephemeral' } }> = [
     { type: 'text', text: COACH_SYSTEM },
     // El conocimiento de dominio es estable: entra en la caché junto con la
@@ -88,9 +102,10 @@ export function buildSystem(dossier: string, kind: string) {
   }
   const extra = KIND_PROMPTS[kind];
   if (extra) blocks.push({ type: 'text', text: extra });
+  if (estado.trim()) blocks.push({ type: 'text', text: estado });
 
-  // El punto de caché va en el ÚLTIMO bloque estable: cachea voz + dossier +
-  // instrucción del ritual de una vez. Lo volátil viaja en el turno de usuario.
+  // El punto de caché va en el ÚLTIMO bloque: cachea voz, conocimiento,
+  // dossier, instrucción del ritual y estado del día de una vez.
   blocks[blocks.length - 1].cache_control = { type: 'ephemeral' };
   return blocks;
 }
