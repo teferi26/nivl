@@ -16,6 +16,7 @@
 //   supabase functions deploy ritual --no-verify-jwt
 //   supabase secrets set RITUAL_SECRET=<cadena larga al azar>
 
+import { callClaude, CHEAP_MODEL } from '../_shared/anthropic.ts';
 import { adminClient, type Db } from '../_shared/db.ts';
 import { espejarEntrada, espejoActivo } from '../_shared/notion.ts';
 
@@ -64,6 +65,41 @@ function horaDe(t: string): number {
   return Number(String(t).slice(0, 2));
 }
 
+/**
+ * Convierte el ritual entero en una línea para la notificación.
+ *
+ * Antes se cortaba por el carácter 240, que en un brief que empieza con
+ * "**El veredicto: tu gasto no es el problema…**" daba una notificación con
+ * asteriscos y partida a mitad de frase. Y una notificación es lo único que ves
+ * si no abres la app: si no dice nada, el ritual no ha servido de nada.
+ *
+ * Lo hace Haiku porque resumir en una línea un texto que ya está escrito no
+ * pide criterio, y con la tarifa del coach este resumen costaría más que
+ * generar el brief. Si falla, se cae al recorte de siempre: quedarse sin push
+ * por no tener titular sería peor.
+ */
+async function titular(cuerpo: string): Promise<string> {
+  const plano = cuerpo.replace(/[*#_`]/g, '').replace(/\s+/g, ' ').trim();
+  if (plano.length <= 180) return plano;
+  try {
+    const turn = await callClaude({
+      model: CHEAP_MODEL,
+      system: [{
+        type: 'text',
+        text: 'Resumes en UNA sola frase de menos de 180 caracteres lo que un coach acaba de escribirle a su cliente. Tono seco y directo, en segunda persona, sin emojis, sin markdown, sin comillas. Si hay una cifra o una hora concretas, van dentro. Devuelves solo la frase.',
+      }],
+      messages: [{ role: 'user', content: [{ type: 'text', text: plano.slice(0, 6000) }] }],
+      maxTokens: 200,
+      effort: 'low',
+    });
+    const t = turn.content.filter((b) => b.type === 'text').map((b) => b.text ?? '').join('').trim();
+    if (t) return t.slice(0, 240);
+  } catch (e) {
+    console.error('titular falló, se recorta:', e);
+  }
+  return plano.slice(0, 240);
+}
+
 async function empujar(sb: Db, userId: string, titulo: string, cuerpo: string, ruta: string) {
   const { data: tokens } = await sb.from('push_tokens').select('token').eq('user_id', userId);
   const lista = (tokens ?? []).map((t: { token: string }) => t.token);
@@ -76,9 +112,7 @@ async function empujar(sb: Db, userId: string, titulo: string, cuerpo: string, r
       lista.map((to) => ({
         to,
         title: titulo,
-        // El push es un titular: el texto completo vive en la app. Un brief
-        // entero no cabe en una notificación y quedaría cortado.
-        body: cuerpo.replace(/\s+/g, ' ').slice(0, 240),
+        body: cuerpo,
         sound: 'default',
         priority: 'high',
         channelId: 'sistema',
@@ -246,7 +280,13 @@ Deno.serve(async (req) => {
       }
 
       const texto = await invocarCoach(jwt, decision.kind, decision.message);
-      await empujar(sb, p.id, decision.titulo, texto || 'El sistema tiene algo para ti.', decision.ruta);
+      await empujar(
+        sb,
+        p.id,
+        decision.titulo,
+        await titular(texto || 'El sistema tiene algo para ti.'),
+        decision.ruta,
+      );
 
       // Espejo a la página del CEREBRO, para que el coach de escritorio lea lo
       // mismo. Solo los rituales que dejan huella: el brief diario cambia cada

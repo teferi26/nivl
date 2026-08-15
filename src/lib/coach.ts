@@ -195,6 +195,26 @@ export async function runRitual(kind: CoachKind, message = ''): Promise<string> 
   return body.text ?? '';
 }
 
+/**
+ * Clasifica los movimientos pendientes. No pasa por el coach: es una tarea
+ * mecánica que atiende Haiku con un prompt de diez líneas y sin nada del
+ * contexto del cazador. Un extracto entero cuesta céntimas.
+ */
+export async function clasificarMovimientos(): Promise<{ clasificados: number; texto: string }> {
+  const res = await fetch(functionsUrl(), {
+    method: 'POST',
+    headers: await authHeaders(),
+    body: JSON.stringify({ kind: 'clasificar' }),
+  });
+  const body = (await res.json().catch(() => ({}))) as {
+    clasificados?: number;
+    texto?: string;
+    error?: string;
+  };
+  if (!res.ok) throw new Error(body.error ?? `El sistema no responde (HTTP ${res.status}).`);
+  return { clasificados: body.clasificados ?? 0, texto: body.texto ?? '' };
+}
+
 // ── Lecturas ────────────────────────────────────────────────────────
 
 export async function fetchMainThread(): Promise<CoachThread | null> {

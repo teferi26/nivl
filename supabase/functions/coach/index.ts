@@ -25,6 +25,7 @@ import {
   type Effort,
   type Usage,
 } from '../_shared/anthropic.ts';
+import { clasificarPendientes } from '../_shared/clasificar.ts';
 import { buildContext } from '../_shared/context.ts';
 import { adminClient, userClient, type Db } from '../_shared/db.ts';
 import { buildSystem } from '../_shared/prompt.ts';
@@ -45,6 +46,11 @@ const MAX_COST_MICRO_USD = 750_000; // 0,75 $
 
 const KINDS = ['chat', 'brief', 'plan', 'revision_semanal', 'cierre_mensual', 'escalada'] as const;
 type Kind = (typeof KINDS)[number];
+
+// 'clasificar' va aparte de KINDS a propósito: no es un ritual del coach ni
+// pasa por su contexto. Es una tarea mecánica que se atiende con Haiku y con
+// diez líneas de prompt. Ver _shared/clasificar.ts.
+const KIND_MECANICO = 'clasificar';
 
 /**
  * Modelo por ritual, con dos secretos para cambiarlo sin desplegar:
@@ -320,15 +326,43 @@ Deno.serve(async (req) => {
     return json(400, { error: 'Cuerpo inválido' });
   }
 
+  // Cliente con el JWT del usuario: RLS manda también aquí.
+  const sbTemprano = userClient(token);
+
+  // Atajo mecánico. Sale antes de construir el contexto del coach a propósito:
+  // enviar 50.000 fichas de dossier y estudios para decidir si un cargo de
+  // Mercadona es supermercado es tirar el dinero, y es justo lo que hay que
+  // evitar en las tareas que no piden criterio.
+  if (body.kind === KIND_MECANICO) {
+    try {
+      const r = await clasificarPendientes(sbTemprano, userId);
+      const { error: ledgerErr } = await admin.from('coach_runs').insert({
+        user_id: userId,
+        kind: KIND_MECANICO,
+        model: r.model,
+        in_tokens: r.usage.input_tokens ?? 0,
+        cache_read_tokens: r.usage.cache_read_input_tokens ?? 0,
+        cache_write_tokens: r.usage.cache_creation_input_tokens ?? 0,
+        out_tokens: r.usage.output_tokens ?? 0,
+        cost_micro_usd: costMicroUsd(r.model, r.usage),
+      });
+      if (ledgerErr) console.error('coach_runs insert failed:', ledgerErr.message);
+      return json(200, { revisados: r.revisados, clasificados: r.clasificados, texto: r.resumen });
+    } catch (e) {
+      console.error('clasificar error:', e);
+      return json(500, { error: 'No se pudieron clasificar los movimientos.' });
+    }
+  }
+
   const kind = (body.kind ?? 'chat') as Kind;
   if (!KINDS.includes(kind)) return json(400, { error: `kind inválido: ${kind}` });
 
   const userText = String(body.message ?? '').slice(0, 8000).trim();
   if (kind === 'chat' && !userText) return json(400, { error: 'Mensaje vacío' });
 
-  // Cliente con el JWT del usuario: RLS manda también dentro de las
-  // herramientas. El cliente admin solo se usa para validar el token.
-  const sb = userClient(token);
+  // RLS manda también dentro de las herramientas: se reutiliza el cliente del
+  // usuario creado arriba. El cliente admin solo valida el token.
+  const sb = sbTemprano;
 
   const today = (body.date ?? new Date().toISOString().slice(0, 10)).slice(0, 10);
 

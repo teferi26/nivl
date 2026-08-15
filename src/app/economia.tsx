@@ -15,6 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { SystemButton } from '@/components/SystemButton';
 import { SystemWindow } from '@/components/SystemWindow';
 import { useAuth } from '@/lib/auth';
+import { clasificarMovimientos } from '@/lib/coach';
 import { addDays, dateKey } from '@/lib/dates';
 import {
   CATEGORIAS,
@@ -62,6 +63,7 @@ export default function Economia() {
   const [concepto, setConcepto] = useState('');
   const [catNueva, setCatNueva] = useState<Categoria>('otros');
   const [guardando, setGuardando] = useState(false);
+  const [clasificando, setClasificando] = useState(false);
 
   const cargar = useCallback(async () => {
     try {
@@ -112,6 +114,23 @@ export default function Economia() {
       gastadoPorCat: new Map(porCategoria(delMes).map((c) => [c.categoria, c.total])),
     };
   }, [movs, cuentas, plan, hoy]);
+
+  // Pasa por Haiku, no por el coach: leer "MERCADONA 4471" y decir que es
+  // supermercado no pide criterio, y hacerlo con el modelo del coach costaría
+  // cien veces más por arrastrar todo su contexto para nada.
+  const clasificarTodo = async () => {
+    if (clasificando) return;
+    setClasificando(true);
+    try {
+      const r = await clasificarMovimientos();
+      await cargar();
+      Alert.alert(r.clasificados ? 'El sistema ha clasificado' : 'Sin cambios', r.texto);
+    } catch (e) {
+      Alert.alert('Error del sistema', e instanceof Error ? e.message : 'Fallo desconocido');
+    } finally {
+      setClasificando(false);
+    }
+  };
 
   const aplicarCategoria = async (cat: Categoria) => {
     if (!editando || !userId) return;
@@ -260,6 +279,12 @@ export default function Economia() {
                 Este dinero no aparece en ningún presupuesto. Toca uno para decirle qué era: el
                 sistema aprende la regla y no vuelve a preguntártelo.
               </Text>
+              <SystemButton
+                title="Que los clasifique el sistema"
+                onPress={clasificarTodo}
+                loading={clasificando}
+                style={{ marginBottom: 6 }}
+              />
               {vista.sinClasificar.slice(0, 8).map((m) => (
                 <Pressable
                   key={m.id}

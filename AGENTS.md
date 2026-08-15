@@ -41,6 +41,8 @@ El coach elige **dificultad**, nunca puntos: el XP sale de `game.ts`.
 
 El modelo es **`claude-sonnet-5`** (`COACH_MODEL` en `_shared/anthropic.ts`), por coste medido: con Opus el turno salía a 0,42 $ en frío. No lo subas a Opus sin una razón medida, y no lo bajes a Haiku: con veinte herramientas y 50.000 tokens de contexto es donde se eligen herramientas equivocadas, y aquí eso son cargas de gimnasio y dinero. Si tocas el modelo, añade su tarifa a `PRICE_PER_MTOK` o el freno de gasto contará mal.
 
+**Regla de reparto: si la tarea es leer y transformar, va con `CHEAP_MODEL` (Haiku); si es decidir, con el coach.** Hoy son de Haiku la clasificación de movimientos (`_shared/clasificar.ts`), el titular del push (`ritual/index.ts`) y el Oráculo. Al añadir una tarea mecánica, sácala **antes** de `buildContext`: lo caro no es la tarifa del modelo, es arrastrar 50.000 fichas de dossier y estudios para responder algo que cabe en una línea. Ese es el patrón del atajo `kind: 'clasificar'` en `coach/index.ts`, que va aparte de `KINDS` justo por eso.
+
 ## El coach como entrenador y como contable
 
 La IA no hace aritmética con el historial en bruto: `analytics.ts` y `finance.ts` le entregan estudios ya calculados (e1RM por Epley, tendencia de peso por mínimos cuadrados, ritmo por zona, adherencia; y gasto por categoría, cargos recurrentes, ritmo de gasto, meses de aire) y `knowledge.ts` la doctrina para interpretarlos. Regla de oro: **los números son deterministas y la IA solo decide qué hacer con ellos**. Si añades una métrica, va en el módulo con su test en `src/lib/__tests__/`, no en el prompt.
