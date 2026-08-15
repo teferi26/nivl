@@ -1,6 +1,13 @@
 import { computeDayClose, questsScheduledOn } from './closing';
-import { awardBonus as awardBonusRpc } from './contract';
-import { fetchCompletionsSince, insertEvent, updateProfile, uploadEvidence } from './data';
+import {
+  applyDayCloseRpc,
+  awardXpRpc,
+  completeQuestRpc,
+  fetchCompletionsSince,
+  insertEvent,
+  updateProfile,
+  uploadEvidence,
+} from './data';
 import { addDays, dateKey } from './dates';
 import { BONUS_BY_DIFFICULTY, levelFromXp, questXp, STAT_COLUMN } from './game';
 import { supabase } from './supabase';
@@ -35,8 +42,8 @@ export async function processPendingDays(
   }
 
   if (!profile.last_day_processed) {
-    await updateProfile(profile.id, { last_day_processed: yesterday });
-    return { profile: { ...profile, last_day_processed: yesterday }, result: null };
+    const fresh = await applyDayCloseRpc({ lastDay: yesterday });
+    return { profile: fresh, result: null };
   }
   if (profile.last_day_processed >= yesterday) {
     return { profile, result: null };
@@ -57,21 +64,17 @@ export async function processPendingDays(
   });
 
   const levelBefore = levelFromXp(profile.xp_total).level;
-  const newTotal = Math.max(0, profile.xp_total - close.penaltyXp);
-  const levelAfter = levelFromXp(newTotal).level;
 
-  const patch: Partial<Profile> = {
-    last_day_processed: yesterday,
-    streak_days: close.streak,
-    protection_stones: close.stones,
-    xp_total: newTotal,
-  };
-  // La congelación expira sola cuando el último día congelado queda cerrado
-  if (profile.freeze_until && profile.freeze_until < today) {
-    patch.freeze_until = null;
-    patch.freeze_reason = null;
-  }
-  await updateProfile(profile.id, patch);
+  // Un solo viaje atómico: día procesado, racha, piedras y penalización.
+  // La congelación expira sola cuando el último día congelado queda cerrado.
+  const updated = await applyDayCloseRpc({
+    lastDay: yesterday,
+    streak: close.streak,
+    stones: close.stones,
+    penaltyXp: close.penaltyXp,
+    clearFreeze: !!(profile.freeze_until && profile.freeze_until < today),
+  });
+  const levelAfter = levelFromXp(updated.xp_total).level;
 
   if (close.penaltyXp > 0) {
     await supabase.from('quests').insert({
@@ -109,7 +112,7 @@ export async function processPendingDays(
         }
       : null;
 
-  return { profile: { ...profile, ...patch }, result };
+  return { profile: updated, result };
 }
 
 export interface CompleteResult {
@@ -135,63 +138,38 @@ export async function completeQuest(
 
   // Misión extra (contrato, regla 6): da Puntos Bonus canjeables por descanso,
   // no XP. La completion se registra igual (cuenta para la racha del día).
-  if (quest.is_bonus) {
-    const pb = BONUS_BY_DIFFICULTY[quest.difficulty];
-    const { error } = await supabase.from('completions').insert({
-      user_id: profile.id,
-      quest_id: quest.id,
-      date: today,
-      xp_awarded: 0,
-      evidence_url: evidencePath,
-    });
-    if (error) throw error;
-    const newBonus = await awardBonusRpc(pb);
-    await insertEvent(profile.id, 'bonus_earned', { quest: quest.title, pb });
-    return {
-      xp: 0,
-      bonusEarned: pb,
-      leveledUp: false,
-      newLevel: levelFromXp(profile.xp_total).level,
-      profile: { ...profile, bonus_points: newBonus },
-      wasPenalty: false,
-    };
-  }
+  const isBonus = quest.is_bonus;
+  const pb = isBonus ? BONUS_BY_DIFFICULTY[quest.difficulty] : 0;
+  const xp = isBonus
+    ? 0
+    : questXp(quest, { evidence: evidencePath !== null, streakDays: profile.streak_days });
 
-  const xp = questXp(quest, { evidence: evidencePath !== null, streakDays: profile.streak_days });
-
-  const { error } = await supabase.from('completions').insert({
-    user_id: profile.id,
-    quest_id: quest.id,
+  // Completion y recompensa viajan en la misma transacción. Si la misión ya
+  // estaba completada hoy (doble toque, reintento de red), awarded viene a
+  // false y no se otorga nada: el doble-XP es imposible, no "improbable".
+  const { awarded, profile: updated } = await completeQuestRpc({
+    questId: quest.id,
     date: today,
-    xp_awarded: xp,
-    evidence_url: evidencePath,
+    xp,
+    bonus: pb,
+    // Las misiones de penalización devuelven XP al total pero no suben stats:
+    // restauran lo perdido, no premian.
+    applyStat: !quest.is_penalty,
+    evidenceUrl: evidencePath,
   });
-  if (error) throw error;
-
-  const patch: Partial<Profile> = { xp_total: profile.xp_total + xp };
-  if (!quest.is_penalty) {
-    const col = STAT_COLUMN[quest.stat];
-    patch[col] = profile[col] + xp;
-  }
-  await updateProfile(profile.id, patch);
 
   const before = levelFromXp(profile.xp_total).level;
-  const after = levelFromXp(profile.xp_total + xp).level;
-  await insertEvent(profile.id, 'quest_completed', {
-    quest: quest.title,
-    xp,
-    evidence: evidencePath !== null,
-  });
-  if (after > before) {
+  const after = levelFromXp(updated.xp_total).level;
+  if (awarded && after > before) {
     await insertEvent(profile.id, 'level_up', { level: after });
   }
 
   return {
-    xp,
-    bonusEarned: 0,
-    leveledUp: after > before,
+    xp: awarded ? xp : 0,
+    bonusEarned: awarded ? pb : 0,
+    leveledUp: awarded && after > before,
     newLevel: after,
-    profile: { ...profile, ...patch },
+    profile: updated,
     wasPenalty: quest.is_penalty,
   };
 }
@@ -204,20 +182,15 @@ export async function awardXp(
   eventType: string,
   payload: Record<string, unknown>,
 ): Promise<{ profile: Profile; leveledUp: boolean; newLevel: number }> {
-  const patch: Partial<Profile> = { xp_total: profile.xp_total + amount };
-  if (stat) {
-    const col = STAT_COLUMN[stat];
-    patch[col] = profile[col] + amount;
-  }
-  await updateProfile(profile.id, patch);
+  // La RPC aplica el delta y registra el evento en la misma transacción.
+  const updated = await awardXpRpc(amount, stat, eventType, payload);
 
   const before = levelFromXp(profile.xp_total).level;
-  const after = levelFromXp(profile.xp_total + amount).level;
-  await insertEvent(profile.id, eventType, { ...payload, xp: amount });
+  const after = levelFromXp(updated.xp_total).level;
   if (after > before) {
     await insertEvent(profile.id, 'level_up', { level: after });
   }
-  return { profile: { ...profile, ...patch }, leveledUp: after > before, newLevel: after };
+  return { profile: updated, leveledUp: after > before, newLevel: after };
 }
 
 // Congelación manual (modo examen / enfermedad / vacaciones)

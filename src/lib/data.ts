@@ -5,20 +5,95 @@ import type { Completion, Difficulty, Profile, Quest, Stat } from './types';
 export async function ensureProfile(userId: string): Promise<Profile> {
   const { data } = await supabase.from('profiles').select('*').eq('id', userId).maybeSingle();
   if (data) return data as Profile;
-  // upsert en vez de insert: el trigger handle_new_user ya pudo crear la fila,
-  // y un insert pelado lanzaba duplicate key (23505) en esa carrera.
-  const { data: created, error } = await supabase
+  // ON CONFLICT DO NOTHING (ignoreDuplicates): el trigger handle_new_user ya
+  // pudo crear la fila en esta misma carrera. Un insert pelado lanzaba
+  // duplicate key (23505); un upsert normal intentaría UPDATE de la columna
+  // id, y desde la 0009 el UPDATE de tabla está revocado. Sin tocar ninguna
+  // columna, basta con permiso de INSERT.
+  const { error } = await supabase
     .from('profiles')
-    .upsert({ id: userId }, { onConflict: 'id' })
-    .select()
-    .single();
+    .upsert({ id: userId }, { onConflict: 'id', ignoreDuplicates: true });
   if (error) throw error;
+  const { data: created, error: readErr } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('id', userId)
+    .single();
+  if (readErr) throw readErr;
   return created as Profile;
 }
 
+// Solo campos "de perfil": nombre, avatar, título, congelación y horarios.
+// Las columnas de economía (xp_*, streak_days, protection_stones,
+// bonus_points, last_day_processed) tienen el UPDATE revocado desde la
+// migración 0009 y solo se mueven por las RPC de más abajo.
 export async function updateProfile(userId: string, patch: Partial<Profile>): Promise<void> {
   const { error } = await supabase.from('profiles').update(patch).eq('id', userId);
   if (error) throw error;
+}
+
+// ── Economía atómica (0009) ─────────────────────────────────────────
+// Cada una aplica DELTAS en una transacción y devuelve el perfil ya fresco:
+// se acabó el read-modify-write que hacía que dos acciones seguidas se
+// pisaran el XP.
+
+export async function awardXpRpc(
+  amount: number,
+  stat: Stat | null,
+  eventType: string | null,
+  payload: Record<string, unknown> = {},
+): Promise<Profile> {
+  const { data, error } = await supabase.rpc('award_xp', {
+    p_amount: amount,
+    p_stat: stat,
+    p_event: eventType,
+    p_payload: payload,
+  });
+  if (error) throw error;
+  return data as Profile;
+}
+
+// Devuelve awarded=false si la misión ya estaba completada hoy: el doble
+// toque no otorga dos veces porque la completion y el XP viajan juntos.
+export async function completeQuestRpc(args: {
+  questId: string;
+  date: string;
+  xp: number;
+  bonus?: number;
+  applyStat?: boolean;
+  evidenceUrl?: string | null;
+}): Promise<{ awarded: boolean; profile: Profile }> {
+  const { data, error } = await supabase.rpc('complete_quest', {
+    p_quest_id: args.questId,
+    p_date: args.date,
+    p_xp: args.xp,
+    p_bonus: args.bonus ?? 0,
+    p_apply_stat: args.applyStat ?? true,
+    p_evidence_url: args.evidenceUrl ?? null,
+  });
+  if (error) throw error;
+  const row = data as { awarded: boolean; profile: Profile };
+  return { awarded: row.awarded, profile: row.profile };
+}
+
+// Un parámetro nulo significa "no lo toques": sirve tanto para el primer
+// arranque (solo fija last_day_processed) como para un cierre completo.
+export async function applyDayCloseRpc(args: {
+  lastDay?: string | null;
+  streak?: number | null;
+  stones?: number | null;
+  penaltyXp?: number;
+  clearFreeze?: boolean;
+}): Promise<Profile> {
+  const { data, error } = await supabase.rpc('apply_day_close', {
+    p_last_day: args.lastDay ?? null,
+    p_streak: args.streak ?? null,
+    p_stones: args.stones ?? null,
+    p_penalty_xp: args.penaltyXp ?? 0,
+    p_clear_freeze: args.clearFreeze ?? false,
+  });
+  if (error) throw error;
+  return data as Profile;
 }
 
 export async function fetchQuests(): Promise<Quest[]> {
@@ -105,13 +180,17 @@ export async function insertEvent(
   if (error) throw error;
 }
 
+// Sin Date.now() en la ruta. Con marca de tiempo, cada reintento o cada foto
+// repetida creaba un objeto nuevo que no borraba nadie: el bucket crecía sin
+// tope hasta comerse el giga gratuito. La ruta es determinista (una evidencia
+// por misión y día), así que repetir sobrescribe.
 export async function uploadEvidence(
   userId: string,
   questId: string,
   date: string,
   base64: string,
 ): Promise<string> {
-  const path = `${userId}/${date}_${questId}_${Date.now()}.jpg`;
+  const path = `${userId}/${date}_${questId}.jpg`;
   const { error } = await supabase.storage
     .from('evidence')
     .upload(path, decode(base64), { contentType: 'image/jpeg', upsert: true });
@@ -119,8 +198,10 @@ export async function uploadEvidence(
   return path;
 }
 
+// Un cazador, un retrato: la ruta fija hace que cambiar de foto sustituya la
+// anterior en vez de acumularlas.
 export async function uploadAvatar(userId: string, base64: string): Promise<string> {
-  const path = `${userId}/avatar_${Date.now()}.jpg`;
+  const path = `${userId}/avatar.jpg`;
   const { error } = await supabase.storage
     .from('avatars')
     .upload(path, decode(base64), { contentType: 'image/jpeg', upsert: true });

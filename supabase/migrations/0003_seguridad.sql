@@ -9,9 +9,14 @@ alter table public.profiles
   add constraint profiles_streak_nonneg check (streak_days >= 0),
   add constraint profiles_stones_range check (protection_stones between 0 and 3);
 
--- El XP otorgado nunca puede ser negativo ni desorbitado (el máximo real ronda 469)
+-- El XP otorgado nunca puede ser negativo ni desorbitado.
+-- OJO con el techo: una misión normal tope ronda 469 (250 épica × 1,25 de
+-- evidencia × 1,5 de racha), pero una MISIÓN DE PENALIZACIÓN devuelve de golpe
+-- todo lo perdido durante una ausencia larga, a razón de hasta 150 XP por día
+-- cerrado. Un abandono de un mes son 4.500. El límite de 1.000 que había aquí
+-- rechazaba recuperaciones perfectamente válidas (hay una de 2.259 en julio).
 alter table public.completions
-  add constraint completions_xp_range check (xp_awarded between 0 and 1000);
+  add constraint completions_xp_range check (xp_awarded between 0 and 50000);
 
 -- days_of_week solo admite 1..7 (vacío permitido para penalizaciones)
 alter table public.quests
