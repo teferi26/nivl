@@ -30,6 +30,11 @@ import { addDays, dateKey } from '@/lib/dates';
 import { setFreeze } from '@/lib/engine';
 import { exportAllData } from '@/lib/exporter';
 import { deleteAccount } from '@/lib/account';
+import {
+  estadoAvisos,
+  inicializarAvisos,
+  type EstadoAvisos,
+} from '@/lib/notifications';
 import { setApiKey } from '@/lib/oracle';
 import {
   fetchSubscription,
@@ -72,6 +77,22 @@ export default function Perfil() {
   const [shareOpen, setShareOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [avisos, setAvisos] = useState<EstadoAvisos | null>(null);
+
+  const refrescarAvisos = useCallback(() => {
+    estadoAvisos().then(setAvisos).catch(() => setAvisos(null));
+  }, []);
+
+  const activarAvisos = async () => {
+    const ok = await inicializarAvisos();
+    if (!ok) {
+      Alert.alert(
+        'Avisos bloqueados',
+        'Actívalos en los ajustes del teléfono, en las notificaciones de NIVL. Sin ellos el sistema no puede despertarte ni avisarte de los bloques.',
+      );
+    }
+    refrescarAvisos();
+  };
 
   const today = dateKey();
   const { height: winHeight } = useWindowDimensions();
@@ -101,7 +122,8 @@ export default function Perfil() {
   useFocusEffect(
     useCallback(() => {
       load();
-    }, [load]),
+      refrescarAvisos();
+    }, [load, refrescarAvisos]),
   );
 
   const pickAvatar = async () => {
@@ -441,6 +463,40 @@ export default function Perfil() {
           )}
         </SystemWindow>
 
+        {/* Sin esto no había forma de saber si los avisos estaban vivos: fallaban
+            en silencio y el cazador se enteraba por no recibirlos. */}
+        <SystemWindow color={avisos?.permitido ? colors.cyanDim : colors.redDim}>
+          <Text style={styles.windowTitle}>AVISOS DEL SISTEMA</Text>
+          <View style={styles.valveRow}>
+            <Ionicons
+              name={avisos?.permitido ? 'notifications-outline' : 'notifications-off-outline'}
+              size={18}
+              color={avisos?.permitido ? colors.cyan : colors.red}
+            />
+            <Text style={styles.valveText}>
+              {avisos === null
+                ? 'Comprobando…'
+                : avisos.permitido
+                  ? `Activos · ${avisos.programados} programados`
+                  : 'Desactivados: el sistema no puede avisarte'}
+            </Text>
+          </View>
+          <Text style={styles.valveHint}>
+            {avisos?.permitido
+              ? 'Despertador, bloques del día y cierre. Una notificación no suena en silencio ni en Modo Concentración: mantén también la alarma del reloj.'
+              : 'Sin permiso de notificaciones no hay despertador ni avisos de bloque.'}
+          </Text>
+          {avisos && !avisos.permitido ? (
+            <SystemButton
+              title={avisos.puedePreguntar ? 'Activar avisos' : 'Abrir ajustes del sistema'}
+              variant="outline"
+              onPress={activarAvisos}
+              style={{ marginTop: 12 }}
+            />
+          ) : null}
+          {avisos?.error ? <Text style={styles.avisoError}>{avisos.error}</Text> : null}
+        </SystemWindow>
+
         <SystemWindow color={colors.purpleDim} fill={colors.panelDeep}>
           <Text style={[styles.windowTitle, { color: '#A697F0' }]}>PREMIUM · EL ORÁCULO</Text>
           {isPremium(subscription) ? (
@@ -668,6 +724,7 @@ const styles = StyleSheet.create({
   valveRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   valveText: { fontFamily: fonts.semibold, fontSize: 14, color: colors.text },
   valveHint: { fontFamily: fonts.body, fontSize: 12, color: colors.textFaint, marginTop: 5, lineHeight: 17 },
+  avisoError: { fontFamily: fonts.body, fontSize: 11.5, color: colors.red, marginTop: 8 },
   statRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 9 },
   statAbbr: { fontFamily: fonts.heading, fontSize: 13, color: colors.cyanText, width: 34 },
   statBar: { flex: 1 },

@@ -6,8 +6,11 @@ import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import { View } from 'react-native';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { AuthProvider, useAuth } from '@/lib/auth';
+import { registrarDispositivo } from '@/lib/push';
 import { colors } from '@/lib/theme';
+import { useNotificationRouting } from '@/lib/useNotificationRouting';
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
@@ -18,6 +21,17 @@ function ProtectedStack() {
   const { session, loading } = useAuth();
   const segments = useSegments();
   const router = useRouter();
+
+  // Solo con sesión: un deep link desde una notificación no debe saltarse la
+  // puerta de autenticación.
+  useNotificationRouting(!loading && !!session);
+
+  // Con sesión iniciada, se registra el dispositivo para que el coach pueda
+  // alcanzarte sin que abras la app. Silencioso: en emulador o sin permiso
+  // simplemente no hay token que guardar.
+  useEffect(() => {
+    if (!loading && session) registrarDispositivo();
+  }, [loading, session]);
 
   useEffect(() => {
     if (loading) return;
@@ -61,9 +75,11 @@ export default function RootLayout() {
   }
 
   return (
-    <AuthProvider>
-      <StatusBar style="light" />
-      <ProtectedStack />
-    </AuthProvider>
+    <ErrorBoundary>
+      <AuthProvider>
+        <StatusBar style="light" />
+        <ProtectedStack />
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }

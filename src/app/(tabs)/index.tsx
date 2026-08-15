@@ -8,22 +8,30 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Hexagon } from '@/components/Hexagon';
 import { LevelUpOverlay } from '@/components/LevelUpOverlay';
 import { QuestItem } from '@/components/QuestItem';
+import { OrdenDelDia } from '@/components/OrdenDelDia';
 import { SystemWindow } from '@/components/SystemWindow';
 import { XpToast } from '@/components/XpToast';
 import { XPBar } from '@/components/XPBar';
 import { evaluateAchievements, unlockAchievements } from '@/lib/achievements';
 import { useAuth } from '@/lib/auth';
 import { completionStats, ensureProfile, fetchCompletionsForDate, fetchQuests, seedDefaultQuests } from '@/lib/data';
+import { fetchPlan, horaAMinutos, setBlockDone, type DayBlock, type PlanConBloques } from '@/lib/dayplan';
 import { dateKey, formatLongDate } from '@/lib/dates';
 import { completeQuest, processPendingDays, questsScheduledOn, type DayCloseResult } from '@/lib/engine';
 import { levelFromXp, rankForLevel, streakMultiplier } from '@/lib/game';
-import { ensureDailyNotifications } from '@/lib/notifications';
+import {
+  inicializarAvisos,
+  programarDespertador,
+  reconciliarAvisosDelDia,
+} from '@/lib/notifications';
 import { colors, fonts } from '@/lib/theme';
 import { voice } from '@/lib/voice';
 import type { Completion, Profile, Quest } from '@/lib/types';
 
 const MODULES = [
   { icon: 'barbell-outline', label: 'Gym', route: '/gym' },
+  { icon: 'walk-outline', label: 'Cardio', route: '/cardio' },
+  { icon: 'nutrition-outline', label: 'Nutrición', route: '/nutricion' },
   { icon: 'restaurant-outline', label: 'Dieta', route: '/dieta' },
   { icon: 'cart-outline', label: 'Compra', route: '/compra' },
   { icon: 'book-outline', label: 'Diario', route: '/diario' },
@@ -45,6 +53,7 @@ export default function Sistema() {
   const [busyQuestId, setBusyQuestId] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [toast, setToast] = useState<{ xp: number; bonus: boolean; unit: 'XP' | 'PB' } | null>(null);
+  const [plan, setPlan] = useState<PlanConBloques | null>(null);
 
   const completing = useRef<Set<string>>(new Set());
   const clearToast = useCallback(() => setToast(null), []);
@@ -65,7 +74,27 @@ export default function Sistema() {
       const map: Record<string, Completion> = {};
       for (const c of done) map[c.quest_id] = c;
 
+      const planDeHoy = await fetchPlan(today).catch(() => null);
+
+      // Los logros también se ganan en el cierre: subir de nivel por una
+      // penalización recuperada o cruzar un hito de racha cuenta igual que
+      // completar una misión. Antes solo se recalculaban al completar.
+      if (result) {
+        const stats = await completionStats();
+        await unlockAchievements(
+          userId,
+          evaluateAchievements({
+            totalCompletions: stats.total,
+            evidenceCount: stats.withEvidence,
+            streak: prof.streak_days,
+            level: levelFromXp(prof.xp_total).level,
+            penaltyRedeemed: false,
+          }),
+        ).catch(() => {});
+      }
+
       setProfile(prof);
+      setPlan(planDeHoy);
       setTodayQuests(questsScheduledOn(quests, today));
       setCompletions(map);
       // Siempre (incluido null): un null borra el aviso de cierre de ayer, que
@@ -88,9 +117,26 @@ export default function Sistema() {
     }, [load]),
   );
 
+  // Los avisos se derivan del plan: se inicializan una vez y se reconcilian
+  // cada vez que cambia el plan o los horarios. Ojo con lo que había antes
+  // aquí: llamaba a cancelAllScheduledNotificationsAsync en cada montaje, así
+  // que abrir esta pestaña borraba todo lo programado.
   useEffect(() => {
-    ensureDailyNotifications();
+    inicializarAvisos();
   }, []);
+
+  useEffect(() => {
+    if (!profile) return;
+    programarDespertador(horaAMinutos(profile.wake_time));
+    if (plan) {
+      const cierre = horaAMinutos(profile.sleep_time);
+      reconciliarAvisosDelDia(
+        plan.plan.date,
+        plan.bloques,
+        cierre === null ? null : Math.max(0, cierre - 20),
+      );
+    }
+  }, [profile, plan]);
 
   const captureEvidence = async (): Promise<string | null> => {
     const perm = await ImagePicker.requestCameraPermissionsAsync();
@@ -186,6 +232,21 @@ export default function Sistema() {
     ]);
   };
 
+  const alternarBloque = async (b: DayBlock) => {
+    // Optimista: el plan es la pantalla principal y esperar a la red para
+    // pintar un check la haría sentir lenta.
+    setPlan((p) =>
+      p ? { ...p, bloques: p.bloques.map((x) => (x.id === b.id ? { ...x, done: !b.done } : x)) } : p,
+    );
+    try {
+      await setBlockDone(b.id, !b.done);
+    } catch {
+      setPlan((p) =>
+        p ? { ...p, bloques: p.bloques.map((x) => (x.id === b.id ? { ...x, done: b.done } : x)) } : p,
+      );
+    }
+  };
+
   const onRefresh = async () => {
     setRefreshing(true);
     await load();
@@ -211,6 +272,12 @@ export default function Sistema() {
           <Text style={styles.brand}>NIVL</Text>
           <Text style={styles.date}>{formatLongDate()}</Text>
         </View>
+
+        <OrdenDelDia
+          plan={plan?.plan ?? null}
+          bloques={plan?.bloques ?? []}
+          onToggle={alternarBloque}
+        />
 
         {profile && lvl ? (
           <SystemWindow color={colors.cyanDim}>
@@ -325,7 +392,13 @@ export default function Sistema() {
           <Text style={[styles.windowTitle, { color: colors.textFaint }]}>MÓDULOS</Text>
           <View style={styles.moduleGrid}>
             {MODULES.map((m) => (
-              <Pressable key={m.route} onPress={() => router.push(m.route)} style={styles.module}>
+              <Pressable
+                key={m.route}
+                onPress={() => router.push(m.route)}
+                style={styles.module}
+                accessibilityRole="button"
+                accessibilityLabel={`Abrir ${m.label}`}
+              >
                 <Ionicons name={m.icon} size={20} color={colors.cyan} />
                 <Text style={styles.moduleLabel}>{m.label}</Text>
               </Pressable>
