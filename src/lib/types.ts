@@ -22,6 +22,12 @@ export interface Profile {
   equipped_title: string | null;
   bonus_points: number;
   onboarding_done: boolean;
+  // Horarios y régimen pactados con el coach (migración 0008). wake_time y
+  // sleep_time llegan de Postgres como 'HH:MM:SS'.
+  wake_time: string;
+  sleep_time: string;
+  timezone: string;
+  coach_mode: 'A' | 'B' | 'pausa';
   created_at: string;
 }
 
@@ -122,6 +128,10 @@ export interface GymLift {
   exercise_name: string;
   weight: number;
   reps: number;
+  // Esfuerzo percibido de la serie (1-10). Null en las series registradas
+  // antes de la migración 0012.
+  rpe: number | null;
+  set_index: number;
 }
 
 export type MealSlotName = 'desayuno' | 'comida' | 'merienda' | 'cena' | 'snack';
@@ -133,6 +143,10 @@ export interface MealSlot {
   slot: MealSlotName;
   description: string;
   ingredients: string | null;
+  // Los pone el coach al planificar la semana (migración 0012). Null en las
+  // comidas escritas a mano desde la pantalla de Dieta.
+  kcal: number | null;
+  protein_g: number | null;
 }
 
 export interface ShoppingItem {

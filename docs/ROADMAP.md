@@ -13,7 +13,24 @@
 - ✅ **Fase 6 — núcleo** (2026-06-11): el Oráculo — misiones generadas por IA desde un objetivo (API Claude con key propia, structured outputs, claude-haiku-4-5).
 - ✅ **Fase 7 — núcleo** (2026-06-11): motor de cierre extraído a `closing.ts` puro + 23 tests jest, export completo de datos a JSON, CI (typecheck+tests).
 - ✅ **Fase 8 — núcleo** (2026-06-11): compartir perfil como imagen (view-shot), `eas.json` con perfiles development/preview(apk)/production.
-- ⏳ **Siguiente**: vivir la app, y profundizar cada fase con lotes del backlog (cada "núcleo" tiene decenas de mejoras pendientes en su categoría).
+- ✅ **Fase 9 — EL COACH** (2026-08-14): el salto de registro de hábitos a sistema operativo del día.
+  - **Memoria persistente**: `coach_dossier` + `coach_facts` + conversación. Trasplantada la memoria del coach anterior (dossier de 2.881 tokens + 14 entradas de log fechadas).
+  - **Agente con manos**: Edge Function `coach` sobre `claude-opus-5` con 13 herramientas que escriben misiones, plan del día, agenda, horarios, mazmorras, reglas y metas. Ejecutadas con el JWT del usuario: RLS sigue aplicando.
+  - **Economía atómica** (0009): RPC `award_xp` / `complete_quest` / `apply_day_close` y UPDATE revocado sobre las columnas de puntos. Cierra la deuda nº1 de las dos auditorías y hace imposible el doble-XP por doble toque.
+  - **El día bajo control**: pantalla ORDEN DEL DÍA, `notifications.ts` reescrito (canales, sonido, acciones HECHO/POSPONER, deep links, despertador, reconciliación en vez de borrado masivo).
+  - **Rituales automáticos**: `pg_cron` cada hora → Edge Function `ritual` → brief, revisión semanal, cierre mensual y escalada, con push a Expo.
+  - **Higiene**: export RGPD completo (de 15 a 28 tablas), fugas de Storage cerradas, `penaltiesXp` real en el informe, unicidad (0011), Error Boundary, accesibilidad, lint limpio.
+  - **Espejo a Notion**: tras cada ritual el coach escribe la entrada de log en la página CEREBRO. El coach de escritorio y el del móvil comparten un solo cerebro en vez de divergir.
+- ✅ **Fase 9.5 — EL ENTRENADOR** (2026-08-15): el coach deja de dar consejos genéricos y pasa a programar con tus números.
+  - **Capa del cuerpo** (0012): `cardio_sessions`, `nutrition_targets`, `nutrition_logs`, `training_prescriptions`, y **RPE por serie** en `gym_lifts` — el dato que decide la carga siguiente.
+  - **El estudio** (`_shared/analytics.ts`): e1RM por Epley con su variación a 28 días, tendencia de peso por mínimos cuadrados (no el último pesaje), ritmo comparado solo dentro de la misma zona, adherencia a la dieta y al programa. Determinista y con tests; la IA interpreta, no calcula.
+  - **La doctrina** (`_shared/knowledge.ts`): progresión por RPE, disparadores de descarga, regla del 10 % semanal, proteína por kilo, déficit sostenible — y los límites duros: no es médico, y para dolor articular o señales de trastorno alimentario manda parar.
+  - **Tres herramientas nuevas**: `prescribir_entreno` (la prescripción se ve en Gym antes de entrenar), `fijar_nutricion` (objetivo de kcal y macros con su motivo) y `planificar_comidas` (reescribe el día entero de `meal_slots` con kcal y proteína por franja, y de ahí sale la lista de la compra).
+  - **Dos pantallas**: Cardio (distancia, tiempo, zona, pulso, RPE) y Nutrición (objetivo vigente con su motivo, parte diario y adherencia a 28 días).
+  - **Bucle cerrado**: verificado de punta a punta — registradas tres series con RPE 6,5-7 y una carrera Z2, el coach subió sentadilla 60 → 65 kg y prensa 120 → 130 kg citando el e1RM, y dejó la sesión escrita en la base de datos.
+- ⏳ **Siguiente**: vivirla desde TestFlight y afinar con datos reales. El backlog de `docs/mejoras/` sigue siendo la fuente para profundizar cada fase.
+
+> **Nota de método (2026-08-14):** este roadmap llevaba desde junio sin reflejar el trabajo real (faltaban El Contrato, seguridad, pagos, avances y la agenda nueva). Si un lote no se anota aquí al cerrarlo, la siguiente sesión planifica a ciegas.
 
 ## Fases
 

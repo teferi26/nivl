@@ -115,6 +115,39 @@ export const GYM_SESSION_XP = 50;
 export const PR_XP = 25;
 export const JOURNAL_XP = 15;
 
+// ── El cuerpo bajo programa (fase 9) ────────────────────────────────
+// Presupuesto: un día normal cumplido ronda 150-300 XP y una fuente
+// recurrente no debe pasar del 15%. Un día completo con gym + cardio +
+// diario + nutrición + pesaje suma ~270 sobre las misiones: cabe sin inflar.
+//
+// El cardio paga algo menos que el gimnasio porque la sesión suele ser más
+// corta, pero paga a FUE igual: es ejercicio, y el IRONMAN de 2029 se
+// construye ahí.
+export const CARDIO_SESSION_XP = 40;
+// Caminar cuenta, pero no es entrenar. Si pagara lo mismo que correr, el
+// camino más rentable para subir de nivel sería dar un paseo.
+export const CARDIO_WALK_XP = 15;
+// Tope diario de todo el cardio junto. Sin él, seis tipos de sesión × 40 XP
+// son 240 puntos: un presupuesto diario entero desde una sola pantalla.
+// Con el tope, un doble sesión de verdad se premia y el grinding no.
+export const CARDIO_DAILY_CAP = 60;
+// Cumplir calorías Y proteína el mismo día. Pequeño a propósito: es un hábito
+// diario, no una gesta.
+export const NUTRITION_DAY_XP = 10;
+
+/**
+ * XP que corresponde a una sesión de cardio, ya descontado lo cobrado hoy.
+ *
+ * `yaPagadoHoy` es la suma de `xp_awarded` de las sesiones de cardio de la
+ * fecha. Devuelve 0 cuando el día ya está agotado: registrar la sesión sigue
+ * sirviendo (el coach la lee para programar), simplemente deja de pagar.
+ */
+export function cardioXp(kind: string, yaPagadoHoy: number): number {
+  const base = kind === 'caminar' ? CARDIO_WALK_XP : CARDIO_SESSION_XP;
+  const margen = CARDIO_DAILY_CAP - Math.max(0, yaPagadoHoy);
+  return Math.max(0, Math.min(base, margen));
+}
+
 // ── El Contrato (regla 6 del cuaderno): Puntos Bonus ────────────────
 // Las misiones extra (is_bonus) dan PB en vez de XP: moneda secundaria
 // canjeable por descanso. Cualitativa → no infla el nivel.

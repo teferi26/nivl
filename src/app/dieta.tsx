@@ -1,6 +1,6 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { router } from 'expo-router';
-import { useCallback, useEffect, useState } from 'react';
+import { router, useFocusEffect } from 'expo-router';
+import { useCallback, useState } from 'react';
 import {
   Alert,
   Modal,
@@ -48,11 +48,19 @@ export default function Dieta() {
     }
   }, []);
 
-  useEffect(() => {
-    load();
-  }, [load]);
+  // Al volver a la pantalla, no solo al montarla: estas dos se alimentan de
+  // datos que cambian desde otras pantallas.
+  useFocusEffect(
+    useCallback(() => {
+      load();
+    }, [load]),
+  );
 
   const daySlots = slots.filter((s) => s.day_of_week === day);
+  // Solo suman las comidas que el coach ha planificado con macros; las escritas
+  // a mano no llevan cifras y no deben falsear el total del día.
+  const kcalDia = daySlots.reduce((a, s) => a + (s.kcal ?? 0), 0);
+  const proteDia = daySlots.reduce((a, s) => a + (s.protein_g ?? 0), 0);
 
   const openEditor = (slotName: MealSlotName) => {
     const existing = daySlots.find((s) => s.slot === slotName) ?? null;
@@ -107,33 +115,68 @@ export default function Dieta() {
     <SafeAreaView style={styles.screen} edges={['top']}>
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.header}>
-          <Pressable onPress={() => router.back()} hitSlop={10}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Volver"
+            onPress={() => router.back()}
+            hitSlop={10}
+          >
             <Ionicons name="chevron-back" size={24} color={colors.cyan} />
           </Pressable>
           <Text style={styles.title}>DIETA SEMANAL</Text>
-          <Pressable onPress={() => router.push('/compra')} hitSlop={10}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Ir a la lista de la compra"
+            onPress={() => router.push('/compra')}
+            hitSlop={10}
+          >
             <Ionicons name="cart-outline" size={22} color={colors.cyan} />
           </Pressable>
         </View>
 
         <View style={styles.dayChips}>
           {DAY_CHIPS.map((label, i) => (
-            <Pressable key={label} onPress={() => setDay(i + 1)} style={[styles.dayChip, day === i + 1 && styles.dayChipOn]}>
+            <Pressable
+              key={label}
+              onPress={() => setDay(i + 1)}
+              style={[styles.dayChip, day === i + 1 && styles.dayChipOn]}
+              accessibilityRole="tab"
+              accessibilityState={{ selected: day === i + 1 }}
+              accessibilityLabel={`Día ${label}`}
+            >
               <Text style={[styles.dayChipText, day === i + 1 && styles.dayChipTextOn]}>{label}</Text>
             </Pressable>
           ))}
         </View>
 
         <SystemWindow color={colors.cyanDim}>
+          {kcalDia > 0 ? (
+            <Text style={styles.dayTotal}>
+              TOTAL DEL DÍA · {kcalDia} kcal · {proteDia} g de proteína
+            </Text>
+          ) : null}
           {MEAL_SLOTS.map((slotName) => {
             const existing = daySlots.find((s) => s.slot === slotName);
             return (
-              <Pressable key={slotName} onPress={() => openEditor(slotName)} style={styles.mealRow}>
+              <Pressable
+                key={slotName}
+                onPress={() => openEditor(slotName)}
+                style={styles.mealRow}
+                accessibilityRole="button"
+                accessibilityLabel={`Editar ${slotName}`}
+              >
                 <View style={{ flex: 1, minWidth: 0 }}>
                   <Text style={styles.mealSlot}>{slotName.toUpperCase()}</Text>
                   {existing ? (
                     <>
                       <Text style={styles.mealDesc}>{existing.description}</Text>
+                      {existing.kcal || existing.protein_g ? (
+                        <Text style={styles.mealMacros}>
+                          {existing.kcal ? `${existing.kcal} kcal` : ''}
+                          {existing.kcal && existing.protein_g ? ' · ' : ''}
+                          {existing.protein_g ? `${existing.protein_g} g de proteína` : ''}
+                        </Text>
+                      ) : null}
                       {existing.ingredients ? (
                         <Text style={styles.mealIngredients} numberOfLines={1}>
                           {existing.ingredients}
@@ -222,7 +265,15 @@ const styles = StyleSheet.create({
   },
   mealSlot: { fontFamily: fonts.heading, fontSize: 11, letterSpacing: 2, color: colors.cyanText },
   mealDesc: { fontFamily: fonts.semibold, fontSize: 15, color: colors.text, marginTop: 2 },
+  mealMacros: { fontFamily: fonts.semibold, fontSize: 12, color: colors.cyanText, marginTop: 2 },
   mealIngredients: { fontFamily: fonts.body, fontSize: 12, color: colors.textFaint, marginTop: 1 },
+  dayTotal: {
+    fontFamily: fonts.heading,
+    fontSize: 11.5,
+    letterSpacing: 2,
+    color: colors.cyanText,
+    marginBottom: 12,
+  },
   mealEmpty: { fontFamily: fonts.body, fontSize: 13, color: colors.textFaint, marginTop: 2 },
   hint: { fontFamily: fonts.body, fontSize: 12, color: colors.textFaint, marginTop: 10, lineHeight: 17 },
   backdrop: { flex: 1, backgroundColor: 'rgba(2, 6, 14, 0.85)', justifyContent: 'flex-end' },

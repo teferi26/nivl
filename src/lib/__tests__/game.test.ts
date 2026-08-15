@@ -1,5 +1,9 @@
 import { describe, expect, test } from '@jest/globals';
 import {
+  CARDIO_DAILY_CAP,
+  CARDIO_SESSION_XP,
+  CARDIO_WALK_XP,
+  cardioXp,
   DUNGEON_CLEAR_XP,
   dungeonTaskXp,
   goalProgress,
@@ -149,5 +153,40 @@ describe('casos límite (auditoría de código)', () => {
   test('racha negativa nunca reduce el multiplicador por debajo de ×1', () => {
     expect(streakMultiplier(-1)).toBe(1);
     expect(streakMultiplier(-100)).toBe(1);
+  });
+});
+
+describe('cardioXp — tope diario y anti-grinding', () => {
+  test('la primera sesión del día cobra completa', () => {
+    expect(cardioXp('correr', 0)).toBe(CARDIO_SESSION_XP);
+    expect(cardioXp('nadar', 0)).toBe(CARDIO_SESSION_XP);
+  });
+
+  test('caminar paga menos que entrenar', () => {
+    expect(cardioXp('caminar', 0)).toBe(CARDIO_WALK_XP);
+    expect(CARDIO_WALK_XP).toBeLessThan(CARDIO_SESSION_XP);
+  });
+
+  test('la segunda sesión cobra solo lo que queda hasta el tope', () => {
+    expect(cardioXp('bici', CARDIO_SESSION_XP)).toBe(CARDIO_DAILY_CAP - CARDIO_SESSION_XP);
+  });
+
+  test('a partir del tope no se paga nada', () => {
+    expect(cardioXp('correr', CARDIO_DAILY_CAP)).toBe(0);
+    expect(cardioXp('correr', CARDIO_DAILY_CAP + 500)).toBe(0);
+  });
+
+  test('seis tipos de sesión no pueden dar un presupuesto diario entero', () => {
+    // El agujero que esto cierra: 6 tipos × 40 XP = 240, un día completo de
+    // misiones sacado desde una sola pantalla.
+    let pagado = 0;
+    for (const k of ['correr', 'nadar', 'bici', 'caminar', 'remo', 'otro']) {
+      pagado += cardioXp(k, pagado);
+    }
+    expect(pagado).toBe(CARDIO_DAILY_CAP);
+  });
+
+  test('un total corrupto en negativo no regala XP extra', () => {
+    expect(cardioXp('correr', -999)).toBe(CARDIO_SESSION_XP);
   });
 });

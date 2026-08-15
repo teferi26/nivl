@@ -18,6 +18,7 @@ import { SystemButton } from '@/components/SystemButton';
 import { SystemWindow } from '@/components/SystemWindow';
 import { evaluateAchievements, unlockAchievements } from '@/lib/achievements';
 import { useAuth } from '@/lib/auth';
+import { fetchPrescription, type Prescription } from '@/lib/bodywork';
 import {
   createGymDay,
   createGymExercise,
@@ -45,6 +46,9 @@ interface LiftInput {
   exercise: string;
   weight: string;
   reps: string;
+  // El RPE es lo que decide la carga de la próxima sesión: sin él, el coach
+  // sube peso por calendario en vez de por cómo salió la serie.
+  rpe: string;
 }
 
 export default function Gym() {
@@ -57,6 +61,7 @@ export default function Gym() {
   const [training, setTraining] = useState(false);
   const [lifts, setLifts] = useState<LiftInput[]>([]);
   const [dayFormOpen, setDayFormOpen] = useState(false);
+  const [prescrito, setPrescrito] = useState<Prescription[]>([]);
   const [newDayOfWeek, setNewDayOfWeek] = useState(1);
   const [newDayName, setNewDayName] = useState('');
   const [exFormDay, setExFormDay] = useState<GymDay | null>(null);
@@ -76,6 +81,7 @@ export default function Gym() {
       setDays(await fetchGymDays());
       setExercises(await fetchGymExercises());
       setTodaySession(await fetchSessionForDate(dateKey()));
+      setPrescrito(await fetchPrescription(dateKey()).catch(() => []));
     } catch (e) {
       Alert.alert('Error del sistema', e instanceof Error ? e.message : 'Fallo desconocido');
     }
@@ -98,6 +104,7 @@ export default function Gym() {
         exercise: e.name,
         weight: e.weight !== null ? String(e.weight) : '',
         reps: String(e.reps),
+        rpe: '',
       })),
     );
     setTraining(true);
@@ -115,6 +122,7 @@ export default function Gym() {
           exercise_name: l.exercise,
           weight: parseFloat(l.weight.replace(',', '.')) || 0,
           reps: parseInt(l.reps, 10) || 0,
+          rpe: l.rpe.trim() ? parseFloat(l.rpe.replace(',', '.')) : null,
         }))
         .filter((l) => l.reps > 0 || l.weight > 0);
 
@@ -186,14 +194,38 @@ export default function Gym() {
     <SafeAreaView style={styles.screen} edges={['top']}>
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.header}>
-          <Pressable onPress={() => router.back()} hitSlop={10}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Volver"
+            onPress={() => router.back()}
+            hitSlop={10}
+          >
             <Ionicons name="chevron-back" size={24} color={colors.cyan} />
           </Pressable>
           <Text style={styles.title}>ENTRENAMIENTO</Text>
-          <Pressable onPress={() => setDayFormOpen(true)} hitSlop={10}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Añadir día de rutina"
+            onPress={() => setDayFormOpen(true)}
+            hitSlop={10}
+          >
             <Ionicons name="add" size={24} color={colors.cyan} />
           </Pressable>
         </View>
+
+        {prescrito.length > 0 ? (
+          <SystemWindow color={colors.cyan}>
+            <Text style={styles.windowTitle}>EL SISTEMA HA PRESCRITO</Text>
+            {prescrito.map((p) => (
+              <Text key={p.id} style={styles.prescLine}>
+                {p.exercise_name} · {p.sets}×{p.reps}
+                {p.weight ? ` @ ${p.weight} kg` : ''}
+                {p.rpe_target ? ` · RPE ${p.rpe_target}` : ''}
+                {p.notes ? `\n   ${p.notes}` : ''}
+              </Text>
+            ))}
+          </SystemWindow>
+        ) : null}
 
         <SystemWindow color={colors.cyanDim}>
           <Text style={styles.windowTitle}>SESIÓN DE HOY · {DAY_NAMES[todayWd - 1]?.toUpperCase()}</Text>
@@ -219,6 +251,10 @@ export default function Gym() {
           ) : (
             <>
               <Text style={styles.planName}>{todayPlan.name} — serie top por ejercicio</Text>
+              <Text style={styles.rpeHint}>
+                RPE = cuánto te quedaba. 7 son tres repeticiones en el depósito, 10 es no poder
+                con una más. Es el dato con el que el sistema decide la carga de la próxima.
+              </Text>
               {lifts.map((l, i) => (
                 <View key={l.exercise} style={styles.liftRow}>
                   <Text style={styles.liftName} numberOfLines={1}>
@@ -239,6 +275,16 @@ export default function Gym() {
                     keyboardType="number-pad"
                     placeholder="reps"
                     placeholderTextColor={colors.textFaint}
+                    accessibilityLabel={`Repeticiones de ${l.exercise}`}
+                  />
+                  <TextInput
+                    style={styles.liftInput}
+                    value={l.rpe}
+                    onChangeText={(v) => setLifts((prev) => prev.map((x, j) => (j === i ? { ...x, rpe: v } : x)))}
+                    keyboardType="decimal-pad"
+                    placeholder="RPE"
+                    placeholderTextColor={colors.textFaint}
+                    accessibilityLabel={`Esfuerzo percibido de ${l.exercise}, de 1 a 10`}
                   />
                 </View>
               ))}
@@ -260,10 +306,17 @@ export default function Gym() {
                   {DAY_NAMES[d.day_of_week - 1]?.toUpperCase()} · {d.name}
                 </Text>
                 <View style={{ flexDirection: 'row', gap: 14 }}>
-                  <Pressable onPress={() => setExFormDay(d)} hitSlop={8}>
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel="Añadir ejercicio"
+                    onPress={() => setExFormDay(d)}
+                    hitSlop={8}
+                  >
                     <Ionicons name="add" size={20} color={colors.cyan} />
                   </Pressable>
                   <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel={`Eliminar el día ${d.name}`}
                     onPress={() =>
                       Alert.alert('Eliminar día', `¿Eliminar ${d.name} y sus ejercicios?`, [
                         { text: 'Cancelar', style: 'cancel' },
@@ -286,6 +339,9 @@ export default function Gym() {
               {exercisesFor(d.id).map((e) => (
                 <Pressable
                   key={e.id}
+                  accessibilityRole="button"
+                  accessibilityLabel={e.name}
+                  accessibilityHint="Mantén pulsado para eliminar el ejercicio"
                   onLongPress={() =>
                     Alert.alert('Eliminar ejercicio', e.name, [
                       { text: 'Cancelar', style: 'cancel' },
@@ -321,6 +377,9 @@ export default function Gym() {
                   key={name}
                   onPress={() => setNewDayOfWeek(i + 1)}
                   style={[styles.chip, newDayOfWeek === i + 1 && styles.chipOn]}
+                  accessibilityRole="radio"
+                  accessibilityState={{ selected: newDayOfWeek === i + 1 }}
+                  accessibilityLabel={name}
                 >
                   <Text style={[styles.chipText, newDayOfWeek === i + 1 && styles.chipTextOn]}>
                     {name.slice(0, 3)}
@@ -411,10 +470,24 @@ const styles = StyleSheet.create({
   },
   doneText: { fontFamily: fonts.semibold, fontSize: 14, color: colors.cyan },
   empty: { fontFamily: fonts.body, fontSize: 13, color: colors.textDim, lineHeight: 19 },
+  prescLine: {
+    fontFamily: fonts.semibold,
+    fontSize: 13,
+    lineHeight: 19,
+    color: colors.cyanText,
+    marginBottom: 4,
+  },
   planName: { fontFamily: fonts.semibold, fontSize: 16, color: colors.text, marginBottom: 6 },
   exLine: { fontFamily: fonts.body, fontSize: 13, color: colors.textDim, paddingVertical: 3 },
   liftRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 8 },
   liftName: { flex: 1, fontFamily: fonts.semibold, fontSize: 14, color: colors.text },
+  rpeHint: {
+    fontFamily: fonts.body,
+    fontSize: 11.5,
+    lineHeight: 16,
+    color: colors.textFaint,
+    marginBottom: 10,
+  },
   liftInput: {
     width: 64,
     borderWidth: 1,

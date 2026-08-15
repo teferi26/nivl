@@ -1,20 +1,59 @@
 # Expo HAS CHANGED
 
 Read the exact versioned docs at https://docs.expo.dev/versions/v54.0.0/ before writing any code.
-(Historial SDK: 56→55→57→**54** — el proyecto está en **SDK 54** (RN 0.81.5, React 19.1.0). Motivo definitivo: el **Expo Go de la App Store de iOS es la 54.0.2** (verificado vía `itunes.apple.com/lookup?bundleId=host.exp.Exponent`), Apple no ha aprobado versiones más nuevas. En iOS el techo real es lo que hay LIVE en la App Store, NO lo último que Expo publica en su API. Para saberlo: iTunes lookup, no `api.expo.dev/v2/versions`. Nota: `expo-sharing` NO tiene config plugin en SDK 54 — fuera de app.json plugins. `StyleSheet.absoluteFill` no es spreadable en RN 0.81.)
+
+El proyecto está en **Expo SDK 54** (RN 0.81.5, React 19.1.0). Historial: 56→55→57→**54**. El motivo definitivo es que el Expo Go LIVE en la App Store de iOS es la **54.0.2** (verificado con `itunes.apple.com/lookup?bundleId=host.exp.Exponent`); Apple no ha aprobado versiones más nuevas. **En iOS el techo real es lo que hay LIVE en la App Store, NO lo último que Expo publica** en `api.expo.dev/v2/versions`. Para saberlo: iTunes lookup.
+
+Trampas conocidas del SDK 54: `expo-sharing` no tiene config plugin (fuera de `app.json` plugins, funciona autolinkado). `StyleSheet.absoluteFill` no es spreadable en RN 0.81. Las **rutas tipadas solo se regeneran arrancando Metro** (`npx expo start`), no con `expo export`: si `tsc` falla por una ruta nueva, arranca Metro unos segundos y mátalo.
 
 # NIVL — contexto del proyecto
 
-App móvil personal gamificada estilo Solo Leveling (un solo usuario, interfaz en español). Expo SDK 56 · React Native 0.85 · TypeScript estricto · Supabase. El README.md explica el juego; el código manda.
+App móvil personal gamificada estilo Solo Leveling (uso personal, interfaz en español) **con un coach de IA dentro que manda en el día del usuario**. El README explica el juego; el código manda.
 
-Mapa: pantallas `src/app/` (expo-router) · componentes `src/components/` · motor de juego `src/lib/game.ts` + `src/lib/engine.ts` · datos `src/lib/data.ts` · tema `src/lib/theme.ts` · SQL `supabase/migrations/` (las aplicadas nunca se editan; siempre archivo nuevo numerado, y el usuario las pega a mano en el SQL Editor de Supabase).
+## Mapa
 
-Reglas del proyecto (detalle en `.claude/skills/`):
+- Pantallas `src/app/` (expo-router, 6 pestañas) · componentes `src/components/`
+- **Motor de juego**: `src/lib/game.ts` (tablas puras) + `src/lib/closing.ts` (cierre puro) + `src/lib/engine.ts` (efectos)
+- **Plan del día**: `src/lib/plan.ts` (puro) + `src/lib/dayplan.ts` (datos)
+- **Coach**: `src/lib/coach.ts` (cliente) · `supabase/functions/coach/` (el agente) · `supabase/functions/ritual/` (lo que dispara el cron)
+- **Cuerpo**: `src/lib/bodymath.ts` (puro) + `src/lib/bodywork.ts` (datos: cardio, nutrición, prescripciones) · `supabase/functions/_shared/analytics.ts` (el estudio que lee el coach) + `_shared/knowledge.ts` (la doctrina de entreno y dieta)
+- **Avisos**: `src/lib/notifications.ts` + `src/lib/useNotificationRouting.ts`
+- SQL en `supabase/migrations/`
 
-- **nivl-design-system** — OBLIGATORIA antes de tocar cualquier UI o copy: paleta/tipos desde theme.ts, paneles en SystemWindow, voz del "sistema".
-- **nivl-game-design** — OBLIGATORIA antes de tocar XP/rachas/penalizaciones o crear mecánicas: invariantes y presupuesto de XP.
-- **nivl-backlog** — para planificar: el backlog de 1000+ mejoras vive en `docs/mejoras/`, el plan por fases en `docs/ROADMAP.md`.
+**Patrón de arquitectura**: la lógica pura vive en un módulo sin imports de Supabase, y los efectos en otro. No es estética — importar `supabase` arrastra AsyncStorage y los tests de ese módulo dejan de arrancar.
 
-Agentes del proyecto (`.claude/agents/`): `nivl-planner` (IDs del backlog → plan por archivos), `nivl-ux-auditor` (audita UI tras implementar), `nivl-game-balancer` (audita mecánicas antes de merge).
+## Reglas que no se negocian
 
-Verificación mínima de todo cambio: `npm run typecheck` + `npx expo export --platform android`. Las claves secret/service de Supabase NUNCA entran en este repo (solo la publishable en `.env`).
+- **Las migraciones aplicadas nunca se editan**: siempre un archivo nuevo numerado. Se aplican con `node scripts/apply-migrations.mjs` (detecta lo pendiente por huellas). Al añadir una, añade su huella en `HUELLAS` o se intentará aplicar en cada ejecución.
+- **La economía solo se mueve por RPC** (`award_xp`, `complete_quest`, `apply_day_close`). El UPDATE directo sobre `xp_total`, `streak_days`, `protection_stones` y `bonus_points` está revocado desde la 0009. Si necesitas tocar puntos, es una RPC nueva, no un update.
+- **Ojo con los topes de XP**: una misión de penalización devuelve de golpe lo perdido en toda una ausencia (hasta 150/día). Los límites del esquema son altos a propósito; bajarlos rompe recuperaciones reales.
+- Las claves secret/service de Supabase **nunca** entran en el repo. El token de despliegue vive en `supabase-token.txt` (gitignorado).
+
+## Herramientas del coach
+
+Las define `supabase/functions/_shared/tools.ts` (hoy son 16). Dos límites de la API que ya nos han mordido:
+
+1. **Sin `strict: true`**: pasando de doce herramientas el compilador de esquemas responde "Schema is too complex". La validación real la hacen los CHECK de Postgres y el ejecutor.
+2. **Nada de tipos unión**: `{ type: ['string','null'] }` junto a un `enum` se rechaza, y hay un tope de 16 parámetros con uniones en todo el conjunto. Lo opcional se expresa con **cadena vacía** como centinela (`opt` / `enumOpt`), no con null.
+
+El coach elige **dificultad**, nunca puntos: el XP sale de `game.ts`.
+
+## El coach como entrenador
+
+La IA no hace aritmética con el historial en bruto: `analytics.ts` le entrega un estudio ya calculado (e1RM por Epley, tendencia de peso por mínimos cuadrados, ritmo por zona, adherencia) y `knowledge.ts` la doctrina para interpretarlo. Regla de oro: **los números son deterministas y la IA solo decide qué hacer con ellos**. Si añades una métrica, va en `analytics.ts` con su test en `src/lib/__tests__/bodymath.test.ts`, no en el prompt.
+
+Las fórmulas están duplicadas a propósito entre `analytics.ts` (Deno) y `bodymath.ts` (Hermes): el empaquetado de la Edge Function no sube nada de fuera de `supabase/`. Si tocas una, toca la otra.
+
+## Skills del proyecto (`.claude/skills/`)
+
+- **nivl-design-system** — OBLIGATORIA antes de tocar UI o copy: paleta y tipos desde `theme.ts`, paneles en `SystemWindow`, voz del "sistema".
+- **nivl-game-design** — OBLIGATORIA antes de tocar XP/rachas/penalizaciones o crear mecánicas.
+- **nivl-backlog** — para planificar: backlog en `docs/mejoras/`, plan por fases en `docs/ROADMAP.md`.
+
+Agentes (`.claude/agents/`): `nivl-planner`, `nivl-ux-auditor`, `nivl-game-balancer`.
+
+## Verificación mínima de todo cambio
+
+`npm run typecheck` · `npm test` · `npm run lint` · `npx expo export --platform ios`
+
+Si tocas Edge Functions: `npx deno check supabase/functions/<nombre>/index.ts` y despliega. Para probar el coach de verdad: `node scripts/smoke-coach.mjs "…"`.
