@@ -162,13 +162,23 @@ export default function DungeonDetail() {
     <SafeAreaView style={styles.screen} edges={['top']}>
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.header}>
-          <Pressable onPress={() => router.back()} hitSlop={10}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Volver"
+            onPress={() => router.back()}
+            hitSlop={10}
+          >
             <Ionicons name="chevron-back" size={24} color={colors.purple} />
           </Pressable>
           <Text style={styles.headerTitle} numberOfLines={1}>
             MAZMORRA · RANGO {dungeon.rank}
           </Text>
-          <Pressable onPress={removeDungeon} hitSlop={10}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Eliminar la mazmorra"
+            onPress={removeDungeon}
+            hitSlop={10}
+          >
             <Ionicons name="trash-outline" size={20} color={colors.textFaint} />
           </Pressable>
         </View>
@@ -190,7 +200,12 @@ export default function DungeonDetail() {
           <View style={styles.taskHeader}>
             <Text style={styles.windowTitle}>OBJETIVOS</Text>
             {dungeon.status === 'active' ? (
-              <Pressable onPress={() => setFormOpen(true)} hitSlop={8}>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Añadir tarea"
+                onPress={() => setFormOpen(true)}
+                hitSlop={8}
+              >
                 <Ionicons name="add" size={22} color={colors.purple} />
               </Pressable>
             ) : null}
@@ -203,6 +218,9 @@ export default function DungeonDetail() {
             tasks.map((t) => (
               <Pressable
                 key={t.id}
+                accessibilityRole="checkbox"
+                accessibilityState={{ checked: t.done }}
+                accessibilityLabel={`${t.title}${t.is_boss ? ', jefe' : ''}${t.done ? ', hecha' : ''}`}
                 onPress={() => toggleTask(t)}
                 onLongPress={() =>
                   Alert.alert('Eliminar objetivo', t.title, [
@@ -262,6 +280,9 @@ export default function DungeonDetail() {
                   key={d}
                   onPress={() => setDifficulty(d)}
                   style={[styles.chip, difficulty === d && styles.chipOn]}
+                  accessibilityRole="radio"
+                  accessibilityState={{ selected: difficulty === d }}
+                  accessibilityLabel={DIFFICULTY_LABEL[d]}
                 >
                   <Text style={[styles.chipText, difficulty === d && styles.chipTextOn]}>
                     {DIFFICULTY_LABEL[d]}

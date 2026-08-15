@@ -2,6 +2,11 @@ import { File, Paths } from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import { supabase } from './supabase';
 
+// TODA tabla con datos del cazador va aquí. La lista se quedó corta durante
+// mucho tiempo: faltaban las siete de El Contrato y Mis Avances, así que la
+// "copia de seguridad completa" perdía en silencio las reglas, las roturas,
+// los canjes, la carta al futuro, las fotos del diario, el peso y las metas.
+// Al añadir una tabla nueva al esquema, añádela también aquí.
 const TABLES = [
   'profiles',
   'quests',
@@ -18,6 +23,22 @@ const TABLES = [
   'shopping_items',
   'journal_entries',
   'achievements',
+  // El Contrato (0005)
+  'rules',
+  'rule_breaks',
+  'bonus_redemptions',
+  'journal_photos',
+  'letters',
+  // Mis avances (0007)
+  'body_metrics',
+  'goals',
+  // El coach (0008): su memoria es tan tuya como el resto
+  'coach_dossier',
+  'coach_facts',
+  'coach_threads',
+  'coach_messages',
+  'day_plans',
+  'day_blocks',
 ] as const;
 
 // Export completo de los datos del usuario a un JSON compartible.

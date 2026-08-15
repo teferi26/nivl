@@ -272,7 +272,7 @@ export default function Avances() {
           <Text style={styles.windowTitle}>METAS · {activeGoals.length} ACTIVAS</Text>
           {activeGoals.length === 0 ? (
             <Text style={styles.empty}>
-              Una meta es un número con fecha: "press banca 100 kg", "bajar a 78 kg". Pulsa + y
+              Una meta es un número con fecha: &quot;press banca 100 kg&quot;, &quot;bajar a 78 kg&quot;. Pulsa + y
               ponle cifra a tu objetivo.
             </Text>
           ) : (

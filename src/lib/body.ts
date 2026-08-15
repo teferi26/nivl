@@ -1,5 +1,5 @@
 import { supabase } from './supabase';
-import type { GymDay, GymExercise, GymLift, GymSession, MealSlot, MealSlotName, ShoppingItem } from './types';
+import type { GymDay, GymExercise, GymSession, MealSlot, MealSlotName, ShoppingItem } from './types';
 
 // ── Gimnasio ───────────────────────────────────────────────────────
 export async function fetchGymDays(): Promise<GymDay[]> {
@@ -75,7 +75,7 @@ export async function createSession(
 export async function insertLifts(
   userId: string,
   sessionId: string,
-  lifts: { exercise_name: string; weight: number; reps: number }[],
+  lifts: { exercise_name: string; weight: number; reps: number; rpe?: number | null }[],
 ): Promise<void> {
   if (lifts.length === 0) return;
   const { error } = await supabase

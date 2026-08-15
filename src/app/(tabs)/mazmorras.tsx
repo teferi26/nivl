@@ -84,7 +84,12 @@ export default function Mazmorras() {
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.header}>
           <Text style={styles.title}>MAZMORRAS</Text>
-          <Pressable onPress={() => setFormOpen(true)} style={styles.addButton}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Abrir una mazmorra nueva"
+            onPress={() => setFormOpen(true)}
+            style={styles.addButton}
+          >
             <Ionicons name="add" size={22} color={colors.bg} />
           </Pressable>
         </View>
@@ -101,6 +106,8 @@ export default function Mazmorras() {
             <Pressable
               key={d.id}
               onPress={() => router.push({ pathname: '/dungeon/[id]', params: { id: d.id } })}
+              accessibilityRole="button"
+              accessibilityLabel={`Abrir la mazmorra ${d.title}, rango ${d.rank}`}
             >
               <SystemWindow color={colors.purpleDim} fill={colors.panelDeep}>
                 <View style={styles.row}>
@@ -152,7 +159,14 @@ export default function Mazmorras() {
             <Text style={styles.label}>Rango (envergadura)</Text>
             <View style={styles.chips}>
               {DUNGEON_RANKS.map((r) => (
-                <Pressable key={r} onPress={() => setRank(r)} style={[styles.chip, rank === r && styles.chipOn]}>
+                <Pressable
+                  key={r}
+                  onPress={() => setRank(r)}
+                  style={[styles.chip, rank === r && styles.chipOn]}
+                  accessibilityRole="radio"
+                  accessibilityState={{ selected: rank === r }}
+                  accessibilityLabel={`Rango ${r}`}
+                >
                   <Text style={[styles.chipText, rank === r && styles.chipTextOn]}>{r}</Text>
                 </Pressable>
               ))}
@@ -160,7 +174,14 @@ export default function Mazmorras() {
             <Text style={styles.label}>Stat que entrena</Text>
             <View style={styles.chips}>
               {STATS.map((s) => (
-                <Pressable key={s} onPress={() => setStat(s)} style={[styles.chip, stat === s && styles.chipOn]}>
+                <Pressable
+                  key={s}
+                  onPress={() => setStat(s)}
+                  style={[styles.chip, stat === s && styles.chipOn]}
+                  accessibilityRole="radio"
+                  accessibilityState={{ selected: stat === s }}
+                  accessibilityLabel={`Estadística ${s}`}
+                >
                   <Text style={[styles.chipText, stat === s && styles.chipTextOn]}>{s}</Text>
                 </Pressable>
               ))}

@@ -1,6 +1,6 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { router } from 'expo-router';
-import { useCallback, useEffect, useState } from 'react';
+import { router, useFocusEffect } from 'expo-router';
+import { useCallback, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { SystemButton } from '@/components/SystemButton';
@@ -25,9 +25,13 @@ export default function Compra() {
     }
   }, []);
 
-  useEffect(() => {
-    load();
-  }, [load]);
+  // Al volver a la pantalla, no solo al montarla: estas dos se alimentan de
+  // datos que cambian desde otras pantallas.
+  useFocusEffect(
+    useCallback(() => {
+      load();
+    }, [load]),
+  );
 
   const add = async () => {
     if (!userId || !newItem.trim()) return;
@@ -53,7 +57,12 @@ export default function Compra() {
     <SafeAreaView style={styles.screen} edges={['top']}>
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <View style={styles.header}>
-          <Pressable onPress={() => router.back()} hitSlop={10}>
+          <Pressable
+            onPress={() => router.back()}
+            hitSlop={10}
+            accessibilityRole="button"
+            accessibilityLabel="Volver"
+          >
             <Ionicons name="chevron-back" size={24} color={colors.cyan} />
           </Pressable>
           <Text style={styles.title}>LISTA DE LA COMPRA</Text>
@@ -70,7 +79,12 @@ export default function Compra() {
             onSubmitEditing={add}
             returnKeyType="done"
           />
-          <Pressable onPress={add} style={styles.addButton}>
+          <Pressable
+            onPress={add}
+            style={styles.addButton}
+            accessibilityRole="button"
+            accessibilityLabel="Añadir a la lista"
+          >
             <Ionicons name="add" size={22} color={colors.bg} />
           </Pressable>
         </View>
@@ -81,7 +95,14 @@ export default function Compra() {
             <Text style={styles.empty}>Nada pendiente. Generala desde la dieta o añade artículos arriba.</Text>
           ) : (
             pending.map((i) => (
-              <Pressable key={i.id} onPress={() => toggle(i)} style={styles.row}>
+              <Pressable
+                key={i.id}
+                onPress={() => toggle(i)}
+                style={styles.row}
+                accessibilityRole="checkbox"
+                accessibilityState={{ checked: false }}
+                accessibilityLabel={`${i.name}, pendiente`}
+              >
                 <View style={styles.box} />
                 <Text style={styles.rowText}>{i.name}</Text>
                 {i.qty ? <Text style={styles.qty}>{i.qty}</Text> : null}
@@ -95,7 +116,14 @@ export default function Compra() {
             <SystemWindow color={colors.line}>
               <Text style={[styles.windowTitle, { color: colors.textFaint }]}>EN EL CARRO · {done.length}</Text>
               {done.map((i) => (
-                <Pressable key={i.id} onPress={() => toggle(i)} style={styles.row}>
+                <Pressable
+                  key={i.id}
+                  onPress={() => toggle(i)}
+                  style={styles.row}
+                  accessibilityRole="checkbox"
+                  accessibilityState={{ checked: true }}
+                  accessibilityLabel={`${i.name}, en el carro`}
+                >
                   <View style={[styles.box, styles.boxDone]}>
                     <Ionicons name="checkmark" size={13} color={colors.cyan} />
                   </View>

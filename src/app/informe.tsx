@@ -62,6 +62,19 @@ export default function Informe() {
         .from('rule_breaks')
         .select('*', { count: 'exact', head: true })
         .gte('date', from);
+      // El XP perdido de verdad, leído de los eventos de penalización. Antes
+      // se enviaba un 0 fijo: la IA analizaba la quincena creyendo que no
+      // habías perdido nada y sus ajustes salían de un dato falso.
+      const { data: penaltyEvents } = await supabase
+        .from('events')
+        .select('payload')
+        .eq('type', 'penalty')
+        .gte('created_at', `${from}T00:00:00`);
+      const penaltiesXp = (penaltyEvents ?? []).reduce(
+        (sum: number, e: { payload: { xp?: number } | null }) => sum + (e.payload?.xp ?? 0),
+        0,
+      );
+
       const prof = await ensureProfile(userId);
       const result = await askWeeklyOracle(
         {
@@ -69,7 +82,7 @@ export default function Informe() {
           streakDays: prof.streak_days,
           level: levelFromXp(prof.xp_total).level,
           rulesBroken: breaks ? [`${breaks} normas rotas en 14 días`] : [],
-          penaltiesXp: 0,
+          penaltiesXp,
         },
         userId,
       );

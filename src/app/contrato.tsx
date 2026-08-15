@@ -28,7 +28,6 @@ import {
   openLetter,
   redeemBonus,
   sealLetter,
-  setRuleActive,
 } from '@/lib/contract';
 import { ensureProfile } from '@/lib/data';
 import { addDays, dateKey } from '@/lib/dates';

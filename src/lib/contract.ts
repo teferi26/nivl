@@ -1,5 +1,5 @@
 import { decode } from 'base64-arraybuffer';
-import { insertEvent, updateProfile } from './data';
+import { awardXpRpc } from './data';
 import { dateKey } from './dates';
 import { RULE_BREAK_XP } from './game';
 import { supabase } from './supabase';
@@ -46,7 +46,6 @@ export async function breakRule(
   rule: Rule,
 ): Promise<{ profile: Profile; penaltyXp: number }> {
   const today = dateKey();
-  const newTotal = Math.max(0, profile.xp_total - RULE_BREAK_XP);
 
   const { error: breakErr } = await supabase.from('rule_breaks').insert({
     user_id: profile.id,
@@ -55,7 +54,11 @@ export async function breakRule(
   });
   if (breakErr) throw breakErr;
 
-  await updateProfile(profile.id, { xp_total: newTotal });
+  // Delta negativo por RPC: el suelo de 0 lo pone el servidor.
+  const updated = await awardXpRpc(-RULE_BREAK_XP, null, 'rule_broken', {
+    rule: rule.text,
+    consequence: rule.consequence,
+  });
 
   const { error: questErr } = await supabase.from('quests').insert({
     user_id: profile.id,
@@ -70,8 +73,7 @@ export async function breakRule(
   });
   if (questErr) throw questErr;
 
-  await insertEvent(profile.id, 'rule_broken', { rule: rule.text, consequence: rule.consequence });
-  return { profile: { ...profile, xp_total: newTotal }, penaltyXp: RULE_BREAK_XP };
+  return { profile: updated, penaltyXp: RULE_BREAK_XP };
 }
 
 export async function countBreaks(ruleId: string): Promise<number> {
@@ -145,6 +147,10 @@ export async function uploadJournalPhoto(
   date: string,
   base64: string,
 ): Promise<JournalPhoto> {
+  // Aquí la marca de tiempo SÍ va: un día admite varias fotos comprobante y
+  // son una galería, no un único archivo. No es una fuga como lo era en las
+  // evidencias porque deleteJournalPhoto borra fila y objeto a la vez, y un
+  // fallo al insertar la fila compensa borrando la subida.
   const path = `${userId}/journal/${date}_${Date.now()}.jpg`;
   const { error: upErr } = await supabase.storage
     .from('evidence')
