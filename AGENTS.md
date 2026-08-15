@@ -39,6 +39,8 @@ Las define `supabase/functions/_shared/tools.ts` (hoy son 16). Dos límites de l
 
 El coach elige **dificultad**, nunca puntos: el XP sale de `game.ts`.
 
+El modelo es **`claude-sonnet-5`** (`COACH_MODEL` en `_shared/anthropic.ts`), por coste medido: con Opus el turno salía a 0,42 $ en frío. No lo subas a Opus sin una razón medida, y no lo bajes a Haiku: con veinte herramientas y 50.000 tokens de contexto es donde se eligen herramientas equivocadas, y aquí eso son cargas de gimnasio y dinero. Si tocas el modelo, añade su tarifa a `PRICE_PER_MTOK` o el freno de gasto contará mal.
+
 ## El coach como entrenador y como contable
 
 La IA no hace aritmética con el historial en bruto: `analytics.ts` y `finance.ts` le entregan estudios ya calculados (e1RM por Epley, tendencia de peso por mínimos cuadrados, ritmo por zona, adherencia; y gasto por categoría, cargos recurrentes, ritmo de gasto, meses de aire) y `knowledge.ts` la doctrina para interpretarlos. Regla de oro: **los números son deterministas y la IA solo decide qué hacer con ellos**. Si añades una métrica, va en el módulo con su test en `src/lib/__tests__/`, no en el prompt.

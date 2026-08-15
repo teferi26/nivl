@@ -39,8 +39,9 @@ const MAX_TOOL_ITERATIONS = 8;
 const HISTORY_LIMIT = 24;
 // Freno de mano: si un turno encadena tantas herramientas que ya ha costado
 // esto, algo se ha ido de madre y es mejor cortar que despertarse con la
-// sorpresa. No limita turnos normales — un brief completo ronda 0,40 $.
-const MAX_COST_MICRO_USD = 1_500_000; // 1,50 $
+// sorpresa. Con Sonnet un turno normal ronda 0,07 $ y un brief con herramientas
+// 0,18 $, así que 0,75 $ deja margen de sobra sin dejar pasar una fuga.
+const MAX_COST_MICRO_USD = 750_000; // 0,75 $
 
 const KINDS = ['chat', 'brief', 'plan', 'revision_semanal', 'cierre_mensual', 'escalada'] as const;
 type Kind = (typeof KINDS)[number];

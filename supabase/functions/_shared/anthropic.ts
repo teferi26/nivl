@@ -1,8 +1,18 @@
 // NIVL · Cliente de la API de Claude para las Edge Functions.
 // La key vive como secret del servidor y jamás llega al cliente.
 
-export const COACH_MODEL = 'claude-opus-5';
-// Haiku para lo mecánico (destilar la memoria importada, resumir): mismo
+// Sonnet 5 es el coach. La decisión es de coste medido, no de gusto: con Opus
+// el turno salía a 0,42 $ en frío, que para el uso real que se le va a dar son
+// del orden de 150 €/mes. La tarea de coach no lo necesita — es leer un estudio
+// ya calculado, aplicar una doctrina escrita y llamar a la herramienta correcta,
+// y en eso Sonnet no se despeña. La aritmética fina, que es donde un modelo
+// mediano sí patina, no la hace él: sale de analytics.ts y finance.ts.
+//
+// Haiku se descartó a propósito para el coach: con veinte herramientas y 50.000
+// tokens de contexto es donde empiezan a elegirse herramientas equivocadas y a
+// inventarse cifras, y aquí eso se traduce en cargas de gimnasio y dinero.
+export const COACH_MODEL = 'claude-sonnet-5';
+// Haiku sí para lo mecánico (destilar la memoria importada, resumir): mismo
 // trabajo por una fracción del coste.
 export const CHEAP_MODEL = 'claude-haiku-4-5';
 
@@ -42,10 +52,16 @@ export interface Turn {
   model: string;
 }
 
-// Precios de Claude Opus 5 en dólares por millón de tokens. Como el coste se
-// guarda en millonésimas de dólar, tokens × tarifa da directamente el valor.
+// Dólares por millón de tokens. Como el coste se guarda en millonésimas de
+// dólar, tokens × tarifa da directamente el valor.
+//
+// La escritura de caché es ×1,25 y la lectura ×0,1 sobre la tarifa de entrada,
+// así que basta con guardar entrada y salida. Un modelo desconocido se cobra
+// como Opus a propósito: si algún día la API responde con otro por el
+// mecanismo de reserva, más vale que el freno de gasto peque de caro.
 const PRICE_PER_MTOK: Record<string, { in: number; out: number }> = {
   'claude-opus-5': { in: 5, out: 25 },
+  'claude-sonnet-5': { in: 2, out: 10 },
   'claude-haiku-4-5': { in: 1, out: 5 },
 };
 
