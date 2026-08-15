@@ -71,7 +71,13 @@ Si tocas dependencias, regenera así:
 npx npm@10.9.2 install --package-lock-only
 ```
 
-`eas.json` fija `node: 22.14.0` para todos los perfiles: la 22 trae npm 10.9 —el que casa con el lockfile— y además cumple el `engines: node>=22` que declara `@supabase/supabase-js`, que con la 20 por defecto de EAS avisaba en cada build.
+`eas.json` fija `node: 22.14.0` en el perfil `base` y los demás lo heredan con `extends`: la 22 trae npm 10.9 —el que casa con el lockfile— y además cumple el `engines: node>=22` que declara `@supabase/supabase-js`, que con la 20 por defecto de EAS avisaba en cada build.
+
+**`eas.json` no admite claves libres**, ni siquiera `"//"` para comentar: el esquema las rechaza y el build ni siquiera arranca. Los porqués van aquí, no ahí. Tras tocar ese archivo, valídalo sin gastar un build:
+
+```bash
+npx eas-cli config --platform ios --profile production
+```
 
 ## Verificación mínima de todo cambio
 

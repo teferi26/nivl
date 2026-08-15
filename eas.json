@@ -5,7 +5,6 @@
   },
   "build": {
     "base": {
-      "//": "Node 22 porque @supabase/supabase-js declara engines node>=22: con la 20 que EAS trae por defecto, la instalación avisa de motor incompatible en cada build. La 22 arrastra npm 10.9, que es el que tiene que casar con el package-lock.json (ver AGENTS.md: generarlo con npm 11 rompe el npm ci de EAS).",
       "node": "22.14.0"
     },
     "development": {
