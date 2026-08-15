@@ -39,6 +39,18 @@ const TABLES = [
   'coach_messages',
   'day_plans',
   'day_blocks',
+  // El cuerpo (0012)
+  'cardio_sessions',
+  'nutrition_targets',
+  'nutrition_logs',
+  'training_prescriptions',
+  // El dinero (0013): lo más sensible que guarda la app, y por eso mismo lo
+  // que más tiene que poder llevarse entero quien quiera irse.
+  'money_accounts',
+  'transactions',
+  'category_rules',
+  'budgets',
+  'money_plan',
 ] as const;
 
 // Export completo de los datos del usuario a un JSON compartible.

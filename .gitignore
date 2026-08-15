@@ -59,3 +59,7 @@ notion-token.txt
 
 # Temporales del CLI de Supabase
 supabase/.temp/
+
+# Credenciales del agregador bancario (GoCardless Bank Account Data)
+banco-token.txt
+banco-estado.json

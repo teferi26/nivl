@@ -45,7 +45,7 @@ Las notificaciones y el push **no funcionan en Expo Go**: hace falta un developm
 ## El coach
 
 - **Memoria en tres capas**: `coach_dossier` (lo estable, va cacheado en cada prompt), `coach_facts` (el log fechado) y `coach_messages` (la conversación).
-- **Dieciséis herramientas** para escribir en tu vida real: crear y ajustar misiones, planificar el día, agenda, horarios, mazmorras, reglas del contrato, metas, memoria, y las tres del cuerpo — `prescribir_entreno`, `fijar_nutricion` y `planificar_comidas`. Se ejecutan con tu JWT, así que RLS sigue aplicando.
+- **Veinte herramientas** para escribir en tu vida real: crear y ajustar misiones, planificar el día, agenda, horarios, mazmorras, reglas del contrato, metas, memoria, las tres del cuerpo — `prescribir_entreno`, `fijar_nutricion` y `planificar_comidas` — y las cuatro del dinero — `fijar_plan_economico`, `fijar_presupuesto`, `regla_categoria` y `registrar_movimiento`. Se ejecutan con tu JWT, así que RLS sigue aplicando.
 - **El coach elige dificultad, nunca puntos**: el XP sale de la tabla de `game.ts` y no puede inflarlo.
 - **Coste real**: ~0,06 $ por turno de chat y ~0,38 $ por brief diario, medido y registrado en `coach_runs`. Míralo en la app: Coach → icono de memoria.
 
@@ -60,11 +60,39 @@ El bucle es prescribir → ejecutar → registrar → ajustar. Lo que lo cierra 
 
 La doctrina que aplica sobre esos números está escrita y versionada en `supabase/functions/_shared/knowledge.ts`, con sus límites: no es médico, y para dolor articular, mareos o señales de trastorno alimentario manda parar y derivar. La matemática es determinista y está cubierta por tests; la IA decide qué hacer con las cifras, no las inventa.
 
+## El dinero: en qué se te va y si llegas
+
+Mismo bucle que el cuerpo, aplicado a la economía. `supabase/functions/_shared/finance.ts` calcula el estudio y el coach decide sobre él:
+
+- **Cargos recurrentes**: agrupa por cobrador normalizado (`AMZN Mktp ES*2K4L9` y `AMZN Mktp ES*7H1P2` son el mismo comercio) y saca lo que se repite tres meses o más con importe estable, con su **coste anual**. Lo que sangra no suele ser una compra grande.
+- **Ritmo de gasto**: a mitad de mes ya dice si vas a cerrar por encima del tope, en vez de avisarte el día 30 cuando ya no hay margen.
+- **Meses de aire**: saldo entre el gasto medio. Es la cifra que permite decir que no a un mal cliente.
+- **Tasa de ahorro** por mes cerrado, y gasto por categoría comparado con su propia media.
+- **Sin clasificar**: lo que no tiene categoría no está en ningún presupuesto, así que el coach pregunta por los mayores y escribe una regla para que se clasifiquen solos a partir de entonces.
+
+La doctrina y sus límites están en `knowledge.ts`: primero los cargos recurrentes, luego las categorías desviadas y por último el gasto del día; **ingresos antes que recortes** (un recorte tiene suelo, una venta no); y tres cosas que no hace nunca — no da consejo de inversión, no mueve dinero, y no entra en fiscalidad concreta.
+
+### Importar movimientos
+
+```bash
+node scripts/import-revolut.mjs extracto.csv
+```
+
+El CSV sale de la app de Revolut → Menú → Extractos → formato **Excel/CSV** (no PDF). Se puede ejecutar las veces que quieras y con rangos solapados: cada movimiento lleva una huella estable y los repetidos se descartan. Con `--seco` enseña lo que importaría sin escribir nada.
+
+Para conexión automática por open banking (PSD2), sin CSV:
+
+```bash
+node scripts/setup-banco.mjs --conectar
+```
+
+Necesita una cuenta gratuita en GoCardless Bank Account Data y sus dos credenciales en `banco-token.txt` (gitignorado). El consentimiento PSD2 caduca a los 90 días y hay que renovarlo.
+
 ## Mapa de la app
 
-6 pestañas: **Sistema** (orden del día + misiones + módulos), **Coach** (el chat), **Misiones**, **Mazmorras**, **Agenda**, **Perfil**. Módulos desde Sistema: Gym, Cardio, Nutrición, Dieta, Compra, Diario, Informe, Avances, Oráculo y Contrato. Pantalla **Memoria** desde el chat del coach.
+6 pestañas: **Sistema** (orden del día + misiones + módulos), **Coach** (el chat), **Misiones**, **Mazmorras**, **Agenda**, **Perfil**. Módulos desde Sistema: Gym, Cardio, Nutrición, Dieta, Economía, Compra, Diario, Informe, Avances, Oráculo y Contrato. Pantalla **Memoria** desde el chat del coach.
 
-Verificación: `npm run typecheck` · `npm test` (68 tests) · `npm run lint` · `npx expo export --platform ios`.
+Verificación: `npm run typecheck` · `npm test` (95 tests) · `npm run lint` · `npx expo export --platform ios`.
 
 ## Notas
 

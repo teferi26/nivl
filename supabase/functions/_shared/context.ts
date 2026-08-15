@@ -5,6 +5,7 @@
 // en cada llamada y el coste se multiplicaría.
 
 import { construirEstudio } from './analytics.ts';
+import { construirEstudioEconomico } from './finance.ts';
 import type { Db } from './db.ts';
 
 // Espejo de levelFromXp/rankForLevel de src/lib/game.ts. La fuente de verdad
@@ -218,11 +219,16 @@ export async function buildContext(
     push();
   }
 
-  // El estudio va al final: son las conclusiones sobre las que programa.
-  const estudio = await construirEstudio(sb, userId, today);
+  // Los estudios van al final: son las conclusiones sobre las que programa.
+  // En paralelo porque son dos barridos independientes de tablas distintas y
+  // encadenarlos añade su latencia entera a cada turno.
+  const [estudio, economia] = await Promise.all([
+    construirEstudio(sb, userId, today),
+    construirEstudioEconomico(sb, userId, today),
+  ]);
 
   return {
-    text: `${lines.join('\n')}\n\n${estudio}`,
+    text: `${lines.join('\n')}\n\n${estudio}\n\n${economia}`,
     dossier: (dossierRes.data as any)?.content ?? '',
   };
 }

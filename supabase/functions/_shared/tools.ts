@@ -17,6 +17,20 @@ const TIPOS_BLOQUE = [
   'deep_work', 'estudio', 'comida', 'redes', 'descanso', 'dormir', 'libre',
 ];
 
+// Las de gasto, para poner topes. No se puede presupuestar un ingreso.
+const CATEGORIAS_GASTO = [
+  'vivienda', 'suministros', 'super', 'restaurante', 'transporte', 'salud',
+  'gimnasio', 'suscripciones', 'ocio', 'ropa', 'formacion', 'negocio',
+  'impuestos', 'comisiones', 'otros',
+];
+
+// Todas las que admite el CHECK de la 0013. Si añades una aquí, añádela allí.
+const CATEGORIAS_TODAS = [
+  'ingreso_negocio', 'ingreso_nomina', 'ingreso_otro',
+  ...CATEGORIAS_GASTO,
+  'ahorro', 'inversion', 'transferencia',
+];
+
 // Sin `strict: true` a propósito.
 //
 // El modo estricto compila cada esquema a una gramática de decodificación, y
@@ -288,11 +302,53 @@ export const TOOL_DEFS = [
   ),
 
   tool(
+    'fijar_plan_economico',
+    'Fija el plan de dinero del mes: cuánto tiene que entrar, cuánto es el techo de gasto, cuánto aparta y cuántos meses de aire quiere mantener. Úsala al empezar y cuando los meses cerrados digan que el plan no se corresponde con la realidad. Los meses de aire mandan sobre el crecimiento: si el colchón baja del pactado, esa es la alarma del mes.',
+    {
+      ingreso_objetivo: { type: 'integer', description: 'Euros que deben entrar al mes. 0 para no fijarlo.' },
+      tope_gasto: { type: 'integer', description: 'Techo de gasto mensual en euros. 0 para no fijarlo.' },
+      ahorro_objetivo: { type: 'integer', description: 'Euros a apartar cada mes. 0 para no fijarlo.' },
+      meses_aire: { type: 'integer', description: 'Meses de gastos que quiere tener siempre cubiertos con el saldo. 0 para no fijarlo.' },
+      motivo: str('Por qué estos números y de qué dato salen. Se le enseña tal cual.'),
+    },
+  ),
+
+  tool(
+    'fijar_presupuesto',
+    'Pone un tope mensual a una categoría de gasto. Úsala sobre las categorías que el estudio muestre desviadas de su media, no sobre todas: un presupuesto que no se mira no existe. Sustituye el tope anterior de esa categoría.',
+    {
+      categoria: enumOf(CATEGORIAS_GASTO, 'Categoría a la que pones tope'),
+      tope_mensual: { type: 'integer', description: 'Euros al mes' },
+      motivo: str('Por qué ese tope y de qué cifra sale'),
+    },
+  ),
+
+  tool(
+    'regla_categoria',
+    'Enseña al sistema a clasificar un tipo de movimiento para siempre. Úsala en cuanto él te diga qué era un cargo sin clasificar, y también cuando te corrija una categoría: a partir de ahí se aplica solo, y también recategoriza los movimientos que ya había. El dinero sin clasificar no aparece en ningún presupuesto.',
+    {
+      patron: str('Texto que aparece en la descripción o el cobrador, p. ej. "MERCADONA". Se compara sin distinguir mayúsculas.'),
+      categoria: enumOf(CATEGORIAS_TODAS, 'Categoría que le corresponde'),
+    },
+  ),
+
+  tool(
+    'registrar_movimiento',
+    'Anota un movimiento que el banco no ve: efectivo, un cobro en mano, un gasto de otra cuenta. Úsala solo cuando él te lo cuente, nunca para estimar lo que crees que gastó. El importe va NEGATIVO si es gasto y POSITIVO si es ingreso.',
+    {
+      fecha: str('YYYY-MM-DD'),
+      importe: { type: 'number', description: 'Euros. Negativo si es gasto, positivo si es ingreso.' },
+      descripcion: str('Qué fue'),
+      categoria: enumOf(CATEGORIAS_TODAS, 'Categoría del movimiento'),
+    },
+  ),
+
+  tool(
     'consultar_historial',
-    'Consulta datos que no vienen en el estado inicial. Úsala cuando necesites comprobar algo concreto antes de afirmarlo: si de verdad falló una misión, cuánto levantó hace un mes, qué pesaba en enero. No la uses para lo que ya tienes delante.',
+    'Consulta datos que no vienen en el estado inicial. Úsala cuando necesites comprobar algo concreto antes de afirmarlo: si de verdad falló una misión, cuánto levantó hace un mes, qué pesaba en enero, cuánto se gastó en algo. No la uses para lo que ya tienes delante.',
     {
       que: enumOf(
-        ['completadas', 'eventos', 'peso', 'gym', 'cardio', 'nutricion', 'comidas', 'diario', 'reglas_rotas', 'hechos'],
+        ['completadas', 'eventos', 'peso', 'gym', 'cardio', 'nutricion', 'comidas', 'diario', 'reglas_rotas', 'hechos', 'movimientos'],
         'Qué serie quieres',
       ),
       desde: str('YYYY-MM-DD'),
@@ -638,6 +694,128 @@ export async function executeTool(
       );
     }
 
+    case 'fijar_plan_economico': {
+      const num = (v: unknown) => {
+        const n = Number(v);
+        return Number.isFinite(n) && n > 0 ? n : null;
+      };
+      const ingreso = num(input.ingreso_objetivo);
+      const gasto = num(input.tope_gasto);
+      const ahorro = num(input.ahorro_objetivo);
+      const aire = num(input.meses_aire);
+      if (ingreso === null && gasto === null && ahorro === null && aire === null) {
+        throw new Error('Un plan sin ninguna cifra no es un plan. Fija al menos una.');
+      }
+      // Aritmética elemental, pero es el error que más se cuela: prometerle
+      // ahorrar más de lo que le sobra después del techo de gasto.
+      if (ingreso !== null && gasto !== null && ahorro !== null && ahorro > ingreso - gasto) {
+        throw new Error(
+          `No cuadra: con ${ingreso} € de ingreso y ${gasto} € de tope, lo máximo que puede apartar son ${ingreso - gasto} €, no ${ahorro} €.`,
+        );
+      }
+
+      await sb.from('money_plan').update({ active: false }).eq('user_id', userId).eq('active', true);
+
+      const { error } = await sb.from('money_plan').insert({
+        user_id: userId,
+        from_date: ctx.today,
+        income_target: ingreso,
+        spend_cap: gasto,
+        savings_target: ahorro,
+        runway_target_months: aire,
+        rationale: input.motivo,
+        active: true,
+      });
+      if (error) throw error;
+
+      const partes = [
+        ingreso !== null ? `entrar ${ingreso} €` : null,
+        gasto !== null ? `gastar como mucho ${gasto} €` : null,
+        ahorro !== null ? `apartar ${ahorro} €` : null,
+        aire !== null ? `${aire} meses de aire` : null,
+      ].filter(Boolean);
+      return ok(`Plan económico fijado: ${partes.join(' · ')} al mes.`);
+    }
+
+    case 'fijar_presupuesto': {
+      const tope = Number(input.tope_mensual);
+      if (!(tope >= 0)) throw new Error(`Tope inválido: ${input.tope_mensual}`);
+      const { error } = await sb
+        .from('budgets')
+        .upsert(
+          {
+            user_id: userId,
+            category: input.categoria,
+            monthly_limit: tope,
+            rationale: input.motivo,
+            active: true,
+          },
+          { onConflict: 'user_id,category' },
+        );
+      if (error) throw error;
+      return ok(`Presupuesto de ${input.categoria}: ${tope} € al mes.`);
+    }
+
+    case 'regla_categoria': {
+      const patron = String(input.patron ?? '').trim();
+      if (patron.length < 2) throw new Error('El patrón necesita al menos dos caracteres.');
+
+      const { error } = await sb
+        .from('category_rules')
+        .upsert(
+          { user_id: userId, pattern: patron, category: input.categoria },
+          { onConflict: 'user_id,pattern' },
+        );
+      if (error) throw error;
+
+      // La regla se aplica también hacia atrás. Solo sobre lo que nadie ha
+      // clasificado a mano: una regla nueva no debe pisar una corrección suya.
+      const like = `%${patron}%`;
+      const { data: tocados, error: e2 } = await sb
+        .from('transactions')
+        .update({ category: input.categoria })
+        .eq('user_id', userId)
+        .eq('category', 'sin_clasificar')
+        .or(`description.ilike.${like},counterparty.ilike.${like}`)
+        .select('id');
+      if (e2) throw e2;
+
+      return ok(
+        `Regla guardada: lo que contenga "${patron}" es ${input.categoria}. ` +
+          `${tocados?.length ?? 0} movimiento(s) antiguos reclasificados.`,
+      );
+    }
+
+    case 'registrar_movimiento': {
+      const importe = Number(input.importe);
+      if (!Number.isFinite(importe) || importe === 0) {
+        throw new Error(`Importe inválido: ${input.importe}. Negativo si es gasto, positivo si es ingreso.`);
+      }
+      const fecha = String(input.fecha);
+      const desc = String(input.descripcion ?? '').trim();
+      if (!desc) throw new Error('Un movimiento sin descripción no sirve de nada dentro de un mes.');
+
+      // Misma huella que usa el importador: si el mismo movimiento acaba
+      // llegando también por el extracto, no se cuenta dos veces.
+      const huella = `manual|${fecha}|${importe.toFixed(2)}|${desc.toLowerCase().slice(0, 60)}`;
+      const { error } = await sb.from('transactions').insert({
+        user_id: userId,
+        date: fecha,
+        amount: importe,
+        description: desc,
+        category: input.categoria,
+        source: 'coach',
+        dedup_hash: huella,
+      });
+      if (error) {
+        if (String(error.code) === '23505') return ok('Ese movimiento ya estaba registrado. No se duplica.');
+        throw error;
+      }
+      return ok(
+        `${importe < 0 ? 'Gasto' : 'Ingreso'} de ${Math.abs(importe).toFixed(2)} € anotado el ${fecha} como ${input.categoria}.`,
+      );
+    }
+
     case 'consultar_historial': {
       const { desde, hasta, filtro } = input;
       const LIMIT = 200;
@@ -651,6 +829,7 @@ export async function executeTool(
         diario: { t: 'journal_entries', cols: 'date, mood, energy, text', dateCol: 'date' },
         reglas_rotas: { t: 'rule_breaks', cols: 'date, rule_id', dateCol: 'date' },
         hechos: { t: 'coach_facts', cols: 'date, category, content', dateCol: 'date' },
+        movimientos: { t: 'transactions', cols: 'date, amount, currency, description, counterparty, category, is_internal', dateCol: 'date' },
       };
       // El plan de comidas es semanal, no una serie temporal: filtrarlo por
       // fechas no tiene sentido y la tabla ni siquiera tiene columna de fecha.

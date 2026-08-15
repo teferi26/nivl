@@ -17,6 +17,7 @@ App móvil personal gamificada estilo Solo Leveling (uso personal, interfaz en e
 - **Plan del día**: `src/lib/plan.ts` (puro) + `src/lib/dayplan.ts` (datos)
 - **Coach**: `src/lib/coach.ts` (cliente) · `supabase/functions/coach/` (el agente) · `supabase/functions/ritual/` (lo que dispara el cron)
 - **Cuerpo**: `src/lib/bodymath.ts` (puro) + `src/lib/bodywork.ts` (datos: cardio, nutrición, prescripciones) · `supabase/functions/_shared/analytics.ts` (el estudio que lee el coach) + `_shared/knowledge.ts` (la doctrina de entreno y dieta)
+- **Dinero**: `src/lib/moneymath.ts` (puro) + `src/lib/money.ts` (datos) · `supabase/functions/_shared/finance.ts` (el estudio económico) · importadores en `scripts/import-revolut.mjs` (CSV) y `scripts/setup-banco.mjs` (open banking)
 - **Avisos**: `src/lib/notifications.ts` + `src/lib/useNotificationRouting.ts`
 - SQL en `supabase/migrations/`
 
@@ -38,11 +39,15 @@ Las define `supabase/functions/_shared/tools.ts` (hoy son 16). Dos límites de l
 
 El coach elige **dificultad**, nunca puntos: el XP sale de `game.ts`.
 
-## El coach como entrenador
+## El coach como entrenador y como contable
 
-La IA no hace aritmética con el historial en bruto: `analytics.ts` le entrega un estudio ya calculado (e1RM por Epley, tendencia de peso por mínimos cuadrados, ritmo por zona, adherencia) y `knowledge.ts` la doctrina para interpretarlo. Regla de oro: **los números son deterministas y la IA solo decide qué hacer con ellos**. Si añades una métrica, va en `analytics.ts` con su test en `src/lib/__tests__/bodymath.test.ts`, no en el prompt.
+La IA no hace aritmética con el historial en bruto: `analytics.ts` y `finance.ts` le entregan estudios ya calculados (e1RM por Epley, tendencia de peso por mínimos cuadrados, ritmo por zona, adherencia; y gasto por categoría, cargos recurrentes, ritmo de gasto, meses de aire) y `knowledge.ts` la doctrina para interpretarlos. Regla de oro: **los números son deterministas y la IA solo decide qué hacer con ellos**. Si añades una métrica, va en el módulo con su test en `src/lib/__tests__/`, no en el prompt.
 
-Las fórmulas están duplicadas a propósito entre `analytics.ts` (Deno) y `bodymath.ts` (Hermes): el empaquetado de la Edge Function no sube nada de fuera de `supabase/`. Si tocas una, toca la otra.
+Las fórmulas están duplicadas a propósito entre el lado Deno (`analytics.ts`, `finance.ts`) y el lado Hermes (`bodymath.ts`, `moneymath.ts`): el empaquetado de la Edge Function no sube nada de fuera de `supabase/`. Si tocas una, toca la otra.
+
+Con el dinero hay tres líneas que el coach no cruza, escritas en `knowledge.ts` y que no se relajan: **no da consejo de inversión, no mueve dinero y no entra en fiscalidad concreta**. Informa, mide y avisa; ejecutar es del usuario.
+
+Convención de signo en todo lo económico: **negativo es gasto, positivo es ingreso**, como en el extracto. Los traspasos entre cuentas propias llevan `is_internal` y no cuentan ni como gasto ni como ingreso. Todo movimiento importado lleva `dedup_hash` con índice único: reimportar el mismo extracto veinte veces no duplica ni un cargo.
 
 ## Skills del proyecto (`.claude/skills/`)
 

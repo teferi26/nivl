@@ -33,6 +33,7 @@ const MODULES = [
   { icon: 'walk-outline', label: 'Cardio', route: '/cardio' },
   { icon: 'nutrition-outline', label: 'Nutrición', route: '/nutricion' },
   { icon: 'restaurant-outline', label: 'Dieta', route: '/dieta' },
+  { icon: 'wallet-outline', label: 'Economía', route: '/economia' },
   { icon: 'cart-outline', label: 'Compra', route: '/compra' },
   { icon: 'book-outline', label: 'Diario', route: '/diario' },
   { icon: 'stats-chart-outline', label: 'Informe', route: '/informe' },

@@ -28,6 +28,14 @@
   - **Tres herramientas nuevas**: `prescribir_entreno` (la prescripción se ve en Gym antes de entrenar), `fijar_nutricion` (objetivo de kcal y macros con su motivo) y `planificar_comidas` (reescribe el día entero de `meal_slots` con kcal y proteína por franja, y de ahí sale la lista de la compra).
   - **Dos pantallas**: Cardio (distancia, tiempo, zona, pulso, RPE) y Nutrición (objetivo vigente con su motivo, parte diario y adherencia a 28 días).
   - **Bucle cerrado**: verificado de punta a punta — registradas tres series con RPE 6,5-7 y una carrera Z2, el coach subió sentadilla 60 → 65 kg y prensa 120 → 130 kg citando el e1RM, y dejó la sesión escrita en la base de datos.
+- ✅ **Fase 9.6 — EL DINERO** (2026-08-15): el coach empuja hacia un objetivo económico, así que deja de ser ciego a los números que lo deciden.
+  - **Capa económica** (0013): `transactions` con huella única antiduplicados, `money_accounts`, `category_rules` que aprenden, `budgets` y `money_plan`.
+  - **El estudio** (`_shared/finance.ts`): gasto por categoría contra su propia media, **cargos recurrentes con coste anual** (agrupando por cobrador normalizado, que es lo que junta los `AMZN Mktp ES*XXXX`), ritmo de gasto a mitad de mes, meses de aire, tasa de ahorro y bulto sin clasificar.
+  - **Doctrina y límites**: primero los cargos recurrentes, luego las categorías desviadas, el gasto del día al final; ingresos antes que recortes. Y tres cosas que no hace: consejo de inversión, mover dinero, fiscalidad concreta.
+  - **Cuatro herramientas**: `fijar_plan_economico`, `fijar_presupuesto`, `regla_categoria` (aprende y reclasifica hacia atrás) y `registrar_movimiento`.
+  - **Dos entradas de datos**: `import-revolut.mjs` para el CSV del extracto (idempotente, con 108 reglas de categorización sembradas) y `setup-banco.mjs` para conexión automática por PSD2.
+  - **Pantalla Economía**: mes en curso con proyección y ritmo, meses de aire, en qué se va, cargos recurrentes con lo que cuestan al año, y clasificación de un toque que además enseña la regla.
+  - **Verificado**: con un extracto de tres meses el coach detectó los cargos recurrentes, ató el pico de gasto a la semana en la que el sistema se rompió, priorizó facturar sobre recortar y preguntó por los tres movimientos sin clasificar en vez de inventarlos.
 - ⏳ **Siguiente**: vivirla desde TestFlight y afinar con datos reales. El backlog de `docs/mejoras/` sigue siendo la fuente para profundizar cada fase.
 
 > **Nota de método (2026-08-14):** este roadmap llevaba desde junio sin reflejar el trabajo real (faltaban El Contrato, seguridad, pagos, avances y la agenda nueva). Si un lote no se anota aquí al cerrarlo, la siguiente sesión planifica a ciegas.
