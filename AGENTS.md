@@ -61,6 +61,18 @@ Convención de signo en todo lo económico: **negativo es gasto, positivo es ing
 
 Agentes (`.claude/agents/`): `nivl-planner`, `nivl-ux-auditor`, `nivl-game-balancer`.
 
+## El lockfile se genera con npm 10, no con npm 11
+
+EAS Build ejecuta `npm ci`, y `npm ci` exige que el lockfile case exactamente con el resolutor que lo escribió. Con npm 11 (el que trae Node 24) las dependencias entre pares de `@napi-rs/wasm-runtime` quedan anidadas; con npm 10 quedan arriba. EAS corre npm 10 y el build muere en «Install dependencies» con *Missing: @emnapi/core from lock file*, un error que no dice nada del motivo real.
+
+Si tocas dependencias, regenera así:
+
+```bash
+npx npm@10.9.2 install --package-lock-only
+```
+
+`eas.json` fija `node: 22.14.0` para todos los perfiles: la 22 trae npm 10.9 —el que casa con el lockfile— y además cumple el `engines: node>=22` que declara `@supabase/supabase-js`, que con la 20 por defecto de EAS avisaba en cada build.
+
 ## Verificación mínima de todo cambio
 
 `npm run typecheck` · `npm test` · `npm run lint` · `npx expo export --platform ios`
