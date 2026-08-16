@@ -91,20 +91,58 @@ export async function construirEstudio(sb: Db, userId: string, hoy: string): Pro
   const hace56 = haceDias(hoy, 56);
   const hace90 = haceDias(hoy, 90);
 
-  const [sesionesRes, pesoRes, cardioRes, nutriLogRes, nutriObjRes, prescRes] = await Promise.all([
-    sb.from('gym_sessions').select('id, date').eq('user_id', userId).gte('date', hace90).order('date'),
+  const [sesionesRes, pesoRes, cardioRes, nutriLogRes, nutriObjRes, prescRes, diasRes, ejerciciosRes] = await Promise.all([
+    sb.from('gym_sessions').select('id, date, notes').eq('user_id', userId).gte('date', hace90).order('date'),
     sb.from('body_metrics').select('date, weight_kg').eq('user_id', userId).gte('date', hace56).order('date'),
     sb.from('cardio_sessions').select('*').eq('user_id', userId).gte('date', hace56).order('date'),
     sb.from('nutrition_logs').select('date, hit_kcal, hit_protein').eq('user_id', userId).gte('date', hace28),
     sb.from('nutrition_targets').select('*').eq('user_id', userId).eq('active', true).order('from_date', { ascending: false }).limit(1),
     sb.from('training_prescriptions').select('*').eq('user_id', userId).gte('date', hace28).order('date'),
+    // La rutina vigente. Sin esto el coach podía REESCRIBIRLA con
+    // configurar_rutina pero no leerla, o sea que programaba a ciegas encima de
+    // algo que no veía.
+    sb.from('gym_days').select('id, day_of_week, name').eq('user_id', userId).order('day_of_week'),
+    sb.from('gym_exercises').select('gym_day_id, name, sets, reps, weight, position').eq('user_id', userId).order('position'),
   ]);
 
-  const sesiones = (sesionesRes.data ?? []) as { id: string; date: string }[];
+  const sesiones = (sesionesRes.data ?? []) as { id: string; date: string; notes: string | null }[];
   const fechaSesion = new Map(sesiones.map((s) => [s.id, s.date]));
 
   const lineas: string[] = ['# ESTUDIO DEL CAZADOR'];
   const push = (s = '') => lineas.push(s);
+
+  // ── La rutina vigente ───────────────────────────────────────────
+  const diasRutina = (diasRes.data ?? []) as { id: string; day_of_week: number; name: string }[];
+  if (diasRutina.length) {
+    const ejercicios = (ejerciciosRes.data ?? []) as {
+      gym_day_id: string; name: string; sets: number; reps: number; weight: number | null;
+    }[];
+    const NOMBRES = ['', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado', 'domingo'];
+    push();
+    push('## Rutina vigente del gimnasio');
+    for (const d of diasRutina) {
+      const suyos = ejercicios.filter((e) => e.gym_day_id === d.id);
+      push(
+        `- ${NOMBRES[d.day_of_week]}: ${d.name}` +
+          (suyos.length
+            ? ` — ${suyos.map((e) => `${e.name} ${e.sets}×${e.reps}${e.weight ? ` @ ${e.weight} kg` : ''}`).join(' · ')}`
+            : ' (sin ejercicios)'),
+      );
+    }
+    push('Esto es lo que hay escrito. Para cambiarlo, configurar_rutina; para la carga de un día suelto, prescribir_entreno.');
+  }
+
+  // ── Cómo fue cada sesión, en sus palabras ───────────────────────
+  const conNotas = sesiones.filter((s) => s.notes).slice(-8);
+  if (conNotas.length) {
+    push();
+    push('## Notas de las últimas sesiones');
+    for (const s of conNotas) push(`- ${s.date}: ${String(s.notes).slice(0, 300)}`);
+    push(
+      'Lectura: aquí está el porqué que los kilos no cuentan. Una sesión con los mismos números ' +
+        'pero "no he dormido" o "me tira el hombro" no se programa igual que una buena.',
+    );
+  }
 
   // ── Fuerza ──────────────────────────────────────────────────────
   if (sesiones.length) {

@@ -49,6 +49,21 @@ export async function createGymExercise(
   return data as GymExercise;
 }
 
+/**
+ * Edita un ejercicio de la rutina. Antes solo se podía crear y borrar, así que
+ * cambiar un peso obligaba a borrar la fila y volver a escribirla entera.
+ */
+export async function updateGymExercise(
+  id: string,
+  input: { name: string; sets: number; reps: number; weight: number | null },
+): Promise<void> {
+  const { error } = await supabase
+    .from('gym_exercises')
+    .update({ name: input.name, sets: input.sets, reps: input.reps, weight: input.weight })
+    .eq('id', id);
+  if (error) throw error;
+}
+
 export async function deleteGymExercise(id: string): Promise<void> {
   const { error } = await supabase.from('gym_exercises').delete().eq('id', id);
   if (error) throw error;

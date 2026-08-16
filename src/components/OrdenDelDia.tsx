@@ -4,6 +4,7 @@ import { router } from 'expo-router';
 import { memo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SystemWindow } from '@/components/SystemWindow';
+import { TextoSistema } from '@/components/TextoSistema';
 import {
   bloqueActual,
   hhmm,
@@ -63,7 +64,7 @@ export const OrdenDelDia = memo(function OrdenDelDia({ plan, bloques, onToggle }
         </View>
       ) : null}
 
-      {plan.brief ? <Text style={styles.brief}>{plan.brief}</Text> : null}
+      {plan.brief ? <TextoSistema texto={plan.brief} tono="tenue" /> : null}
 
       <View style={styles.bloques}>
         {bloques.map((b) => {

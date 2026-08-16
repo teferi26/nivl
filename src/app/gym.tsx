@@ -1,5 +1,6 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Haptics from 'expo-haptics';
+import * as ImagePicker from 'expo-image-picker';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useRef, useState } from 'react';
 import {
@@ -24,6 +25,7 @@ import { fetchPrescription, type Prescription } from '@/lib/bodywork';
 import {
   createGymDay,
   createGymExercise,
+  updateGymExercise,
   createSession,
   deleteGymDay,
   deleteGymExercise,
@@ -38,6 +40,7 @@ import { dateKey, isoWeekday } from '@/lib/dates';
 import { awardXp } from '@/lib/engine';
 import { GYM_SESSION_XP, PR_XP } from '@/lib/game';
 import { supabase } from '@/lib/supabase';
+import { subirFotoMision } from '@/lib/photos';
 import { colors, fonts } from '@/lib/theme';
 import { voice } from '@/lib/voice';
 import type { GymDay, GymExercise, GymSession } from '@/lib/types';
@@ -67,6 +70,10 @@ export default function Gym() {
   const [newDayOfWeek, setNewDayOfWeek] = useState(1);
   const [newDayName, setNewDayName] = useState('');
   const [exFormDay, setExFormDay] = useState<GymDay | null>(null);
+  // Cuando no es null, el formulario edita en vez de crear.
+  const [exEditando, setExEditando] = useState<GymExercise | null>(null);
+  const [notas, setNotas] = useState('');
+  const [fotoB64, setFotoB64] = useState<string | null>(null);
   const [exName, setExName] = useState('');
   const [exSets, setExSets] = useState('3');
   const [exReps, setExReps] = useState('10');
@@ -135,7 +142,21 @@ export default function Gym() {
         date: today,
         gym_day_id: todayPlan?.id ?? null,
         xp_awarded: GYM_SESSION_XP + prs.length * PR_XP,
+        notes: notas.trim() || null,
       });
+
+      // La foto del entreno entra en quest_photos: así la ve el coach y así
+      // aparece en el resumen del domingo. Si falla, la sesión no se cae — ya
+      // está registrada y perderla por una foto sería absurdo.
+      if (fotoB64) {
+        await subirFotoMision(userId, {
+          base64: fotoB64,
+          questId: null,
+          completionId: null,
+          date: today,
+          caption: `Entreno ${todayPlan?.name ?? 'libre'}${notas.trim() ? ` — ${notas.trim()}` : ''}`,
+        }).catch(() => {});
+      }
       await insertLifts(userId, gymSession.id, valid);
 
       let profile = await ensureProfile(userId);
@@ -160,6 +181,8 @@ export default function Gym() {
       Alert.alert('SESIÓN REGISTRADA', `+${totalXp} XP a FUE${prText}${achText}`);
       if (res.leveledUp) setLevelUp(res.newLevel);
       setTraining(false);
+      setNotas('');
+      setFotoB64(null);
       await load();
     } catch (e) {
       Alert.alert('Error del sistema', e instanceof Error ? e.message : 'Fallo desconocido');
@@ -177,19 +200,48 @@ export default function Gym() {
     await load();
   };
 
-  const addExercise = async () => {
+  const abrirEjercicio = (dia: GymDay, ejercicio: GymExercise | null) => {
+    setExEditando(ejercicio);
+    setExName(ejercicio?.name ?? '');
+    setExSets(String(ejercicio?.sets ?? 3));
+    setExReps(String(ejercicio?.reps ?? 10));
+    setExWeight(ejercicio?.weight !== null && ejercicio !== null ? String(ejercicio.weight) : '');
+    setExFormDay(dia);
+  };
+
+  const guardarEjercicio = async () => {
     if (!userId || !exFormDay || !exName.trim()) return;
-    await createGymExercise(userId, exFormDay.id, {
+    const datos = {
       name: exName.trim(),
       sets: parseInt(exSets, 10) || 3,
       reps: parseInt(exReps, 10) || 10,
       weight: exWeight ? parseFloat(exWeight.replace(',', '.')) : null,
-      position: exercisesFor(exFormDay.id).length,
-    });
+    };
+    if (exEditando) {
+      await updateGymExercise(exEditando.id, datos);
+    } else {
+      await createGymExercise(userId, exFormDay.id, {
+        ...datos,
+        position: exercisesFor(exFormDay.id).length,
+      });
+    }
     setExName('');
     setExWeight('');
+    setExEditando(null);
     setExFormDay(null);
     await load();
+  };
+
+  const fotoSesion = async () => {
+    const perm = await ImagePicker.requestCameraPermissionsAsync();
+    if (!perm.granted) {
+      Alert.alert('Sin cámara', 'El sistema necesita la cámara para el registro del entreno.');
+      return;
+    }
+    const r = await ImagePicker.launchCameraAsync({ mediaTypes: ['images'], quality: 0.4, base64: true });
+    if (r.canceled) return;
+    setFotoB64(r.assets[0]?.base64 ?? null);
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
   };
 
   return (
@@ -290,6 +342,37 @@ export default function Gym() {
                   />
                 </View>
               ))}
+              <Text style={styles.label}>Cómo fue</Text>
+              <TextInput
+                style={styles.notasInput}
+                value={notas}
+                onChangeText={setNotas}
+                placeholder="Cómo te has encontrado, qué se torció, qué notaste"
+                placeholderTextColor={colors.textFaint}
+                multiline
+                accessibilityLabel="Notas de la sesión"
+              />
+              <Text style={styles.notasHint}>
+                Esto lo lee el coach: es lo que le dice por qué un día salió mal aunque los kilos
+                fueran los mismos.
+              </Text>
+
+              <Pressable
+                onPress={fotoSesion}
+                style={[styles.fotoBoton, fotoB64 && styles.fotoBotonHecha]}
+                accessibilityRole="button"
+                accessibilityLabel="Hacer una foto del entreno"
+              >
+                <Ionicons
+                  name={fotoB64 ? 'checkmark-circle' : 'camera-outline'}
+                  size={18}
+                  color={fotoB64 ? colors.cyan : colors.cyanText}
+                />
+                <Text style={styles.fotoTexto}>
+                  {fotoB64 ? 'Foto lista · entra en tu resumen' : 'Foto del entreno'}
+                </Text>
+              </Pressable>
+
               <SystemButton title="Terminar sesión" onPress={finishTraining} loading={busy} style={{ marginTop: 14 }} />
             </>
           )}
@@ -311,7 +394,7 @@ export default function Gym() {
                   <Pressable
                     accessibilityRole="button"
                     accessibilityLabel="Añadir ejercicio"
-                    onPress={() => setExFormDay(d)}
+                    onPress={() => abrirEjercicio(d, null)}
                     hitSlop={8}
                   >
                     <Ionicons name="add" size={20} color={colors.cyan} />
@@ -342,8 +425,9 @@ export default function Gym() {
                 <Pressable
                   key={e.id}
                   accessibilityRole="button"
-                  accessibilityLabel={e.name}
+                  accessibilityLabel={`Editar ${e.name}`}
                   accessibilityHint="Mantén pulsado para eliminar el ejercicio"
+                  onPress={() => abrirEjercicio(d, e)}
                   onLongPress={() =>
                     Alert.alert('Eliminar ejercicio', e.name, [
                       { text: 'Cancelar', style: 'cancel' },
@@ -358,10 +442,13 @@ export default function Gym() {
                     ])
                   }
                 >
-                  <Text style={styles.exLine}>
-                    {e.name} · {e.sets}×{e.reps}
-                    {e.weight !== null ? ` · ${e.weight} kg` : ''}
-                  </Text>
+                  <View style={styles.exFila}>
+                    <Text style={styles.exLine}>
+                      {e.name} · {e.sets}×{e.reps}
+                      {e.weight !== null ? ` · ${e.weight} kg` : ''}
+                    </Text>
+                    <Ionicons name="create-outline" size={15} color={colors.textFaint} />
+                  </View>
                 </Pressable>
               ))}
             </SystemWindow>
@@ -411,7 +498,9 @@ export default function Gym() {
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         >
           <View style={styles.sheet}>
-            <Text style={styles.sheetTitle}>EJERCICIO · {exFormDay?.name.toUpperCase()}</Text>
+            <Text style={styles.sheetTitle}>
+              {exEditando ? 'EDITAR' : 'NUEVO'} EJERCICIO · {exFormDay?.name.toUpperCase()}
+            </Text>
             <TextInput
               style={styles.input}
               value={exName}
@@ -440,8 +529,21 @@ export default function Gym() {
                 />
               </View>
             </View>
-            <SystemButton title="Añadir" onPress={addExercise} disabled={!exName.trim()} style={{ marginTop: 18 }} />
-            <SystemButton title="Cancelar" variant="outline" onPress={() => setExFormDay(null)} style={{ marginTop: 10 }} />
+            <SystemButton
+              title={exEditando ? 'Guardar cambios' : 'Añadir'}
+              onPress={guardarEjercicio}
+              disabled={!exName.trim()}
+              style={{ marginTop: 18 }}
+            />
+            <SystemButton
+              title="Cancelar"
+              variant="outline"
+              onPress={() => {
+                setExEditando(null);
+                setExFormDay(null);
+              }}
+              style={{ marginTop: 10 }}
+            />
           </View>
         </KeyboardAvoidingView>
       </Modal>
@@ -486,6 +588,38 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   planName: { fontFamily: fonts.semibold, fontSize: 16, color: colors.text, marginBottom: 6 },
+  notasInput: {
+    borderWidth: 1,
+    borderColor: colors.line,
+    backgroundColor: colors.bg,
+    color: colors.text,
+    fontFamily: fonts.body,
+    fontSize: 13.5,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    minHeight: 64,
+    textAlignVertical: 'top',
+  },
+  notasHint: {
+    fontFamily: fonts.body,
+    fontSize: 11,
+    lineHeight: 15,
+    color: colors.textFaint,
+    marginTop: 6,
+  },
+  fotoBoton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    borderWidth: 1,
+    borderColor: colors.cyanFaint,
+    paddingVertical: 11,
+    paddingHorizontal: 12,
+    marginTop: 12,
+  },
+  fotoBotonHecha: { borderColor: colors.cyan },
+  fotoTexto: { fontFamily: fonts.semibold, fontSize: 13, color: colors.cyanText },
+  exFila: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 },
   exLine: { fontFamily: fonts.body, fontSize: 13, color: colors.textDim, paddingVertical: 3 },
   liftRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 8 },
   liftName: { flex: 1, fontFamily: fonts.semibold, fontSize: 14, color: colors.text },

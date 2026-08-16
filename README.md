@@ -108,6 +108,12 @@ node scripts/setup-banco.mjs --conectar
 
 Necesita una cuenta gratuita en GoCardless Bank Account Data y sus dos credenciales en `banco-token.txt` (gitignorado). El consentimiento PSD2 caduca a los 90 días y hay que renovarlo.
 
+## El formato del coach
+
+El coach escribe en markdown porque así piensa: **negrita** para la cifra que importa, viñetas para las órdenes. En pantalla salía en crudo, con los asteriscos a la vista. `src/lib/markdown.ts` lo convierte en algo pintable — negrita, títulos, viñetas y numeradas — sin meter una librería, que traería su propia tipografía a pelear con el sistema de diseño.
+
+Solo se soporta lo que el coach usa de verdad. El `*` suelto **no** es cursiva a propósito: aparece constantemente en cifras ("3*10", "×1,5") y tratarlo como formato dejaba frases mutiladas.
+
 ## El diario: cómo el coach te va conociendo
 
 Es la pieza que más le enseña sobre ti, así que entra **entero en su contexto**: las últimas 10 entradas con ánimo, energía y tus propias palabras. No es algo que consulte si se le ocurre — lo lee siempre, y con la doctrina de que dos días seguidos por debajo de 3 son una señal, no una queja.
@@ -130,7 +136,7 @@ También puedes **mandarle fotos al coach en el chat** con el botón `+`. Viajan
 
 6 pestañas: **Sistema** (orden del día + misiones + módulos), **Coach** (el chat), **Misiones**, **Mazmorras**, **Agenda**, **Perfil**. Módulos desde Sistema: Gym, Cardio, Nutrición, Dieta, Economía, Recuerdos, Compra, Diario, Informe, Avances, Oráculo y Contrato. Pantalla **Memoria** desde el chat del coach.
 
-Verificación: `npm run typecheck` · `npm test` (107 tests) · `npm run lint` · `npx expo export --platform ios`.
+Verificación: `npm run typecheck` · `npm test` (118 tests) · `npm run lint` · `npx expo export --platform ios`.
 
 ## Notas
 

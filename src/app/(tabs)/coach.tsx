@@ -15,6 +15,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { SystemWindow } from '@/components/SystemWindow';
+import { TextoSistema } from '@/components/TextoSistema';
 import { useAuth } from '@/lib/auth';
 import {
   describeAction,
@@ -254,7 +255,7 @@ ${limpio}` : limpio,
                 </View>
               ) : (
                 <SystemWindow style={styles.burbujaSistema}>
-                  {b.text ? <Text style={styles.textoSistema}>{b.text}</Text> : null}
+                  {b.text ? <TextoSistema texto={b.text} /> : null}
                   {b.acciones.map((a, i) => (
                     <View key={i} style={styles.accion}>
                       <Ionicons name="checkmark-circle-outline" size={13} color={colors.cyan} />
@@ -272,7 +273,7 @@ ${limpio}` : limpio,
                 {pensando && !enCurso ? (
                   <Text style={styles.pensando}>El sistema está pensando</Text>
                 ) : null}
-                {enCurso ? <Text style={styles.textoSistema}>{enCurso}</Text> : null}
+                {enCurso ? <TextoSistema texto={enCurso} /> : null}
                 {acciones.map((a, i) => (
                   <View key={i} style={styles.accion}>
                     <Ionicons
