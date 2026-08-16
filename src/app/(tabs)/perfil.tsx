@@ -24,6 +24,7 @@ import { captureRef } from 'react-native-view-shot';
 import { Hexagon } from '@/components/Hexagon';
 import { SystemButton } from '@/components/SystemButton';
 import { SystemWindow } from '@/components/SystemWindow';
+import { Version } from '@/components/Version';
 import { XPBar } from '@/components/XPBar';
 import { ACHIEVEMENTS, fetchUnlocked } from '@/lib/achievements';
 import { useAuth } from '@/lib/auth';
@@ -537,6 +538,7 @@ export default function Perfil() {
         <SystemButton title="Exportar datos (copia de seguridad)" variant="outline" onPress={onExport} loading={busy} style={{ marginTop: 10 }} />
         <SystemButton title="Cerrar sesión" variant="danger" onPress={signOut} style={{ marginTop: 10 }} />
         <SystemButton title="Eliminar cuenta" variant="danger" onPress={onDeleteAccount} style={{ marginTop: 10 }} />
+        <Version />
         </View>
       </ScrollView>
 
