@@ -115,7 +115,7 @@ export default function Login() {
   return (
     <SafeAreaView style={styles.screen}>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+        <ScrollView automaticallyAdjustKeyboardInsets contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
           <Text style={styles.brand}>NIVL</Text>
           <Text style={styles.tagline}>
             {mode === 'signin' ? 'EL SISTEMA TE ESTÁ ESPERANDO' : 'HAS SIDO ELEGIDO COMO JUGADOR'}

@@ -14,6 +14,28 @@ export function questsScheduledOn(quests: Quest[], date: string): Quest[] {
   });
 }
 
+/**
+ * La racha que se le enseña, contando el día de hoy si ya está cerrado.
+ *
+ * `profiles.streak_days` solo cuenta días CERRADOS: se recalcula al procesar el
+ * día siguiente. Eso es correcto para la economía —el multiplicador de XP tiene
+ * que ser el mismo para todas las misiones del día, o completarlas en un orden
+ * u otro pagaría distinto— pero como número a la vista es desmoralizante:
+ * cumples las tres misiones del día y el contador sigue igual hasta mañana.
+ *
+ * Esto devuelve lo que el cazador ha ganado de verdad. Las penalizaciones no
+ * cuentan, igual que en el cierre.
+ */
+export function rachaVisible(
+  streakDays: number,
+  questsHoy: Quest[],
+  completadasHoy: Set<string>,
+): { valor: number; hoyCerrado: boolean } {
+  const pendientes = questsHoy.filter((q) => !q.is_penalty);
+  const hoyCerrado = pendientes.length > 0 && pendientes.every((q) => completadasHoy.has(q.id));
+  return { valor: streakDays + (hoyCerrado ? 1 : 0), hoyCerrado };
+}
+
 export interface CloseInput {
   fromDate: string;
   today: string;
@@ -55,7 +77,17 @@ export function computeDayClose(input: CloseInput): CloseOutput {
       continue;
     }
 
-    const scheduled = questsScheduledOn(input.quests, day);
+    // Las misiones de penalización no entran en el juicio del día.
+    //
+    // Son una oportunidad de recuperar lo perdido, no una obligación nueva. Si
+    // contaran, ignorarla castigaría DOS VECES el mismo fallo: el día que
+    // fallaste ya te costó la racha y el XP, y al día siguiente la penalización
+    // sin tocar volvía a ponerte la racha a cero aunque hubieras cumplido todo
+    // lo demás. Eso hacía imposible arrancar de nuevo mientras hubiera una
+    // pendiente, que es justo el momento en el que hace falta poder.
+    //
+    // Ignorarla sigue teniendo su precio: consolida la pérdida de XP.
+    const scheduled = questsScheduledOn(input.quests, day).filter((q) => !q.is_penalty);
     const missed = scheduled.filter((q) => !input.completedKeys.has(`${day}|${q.id}`));
 
     if (scheduled.length > 0) {
@@ -75,7 +107,6 @@ export function computeDayClose(input: CloseInput): CloseOutput {
         streakLost = true;
         let dayPenalty = 0;
         for (const q of missed) {
-          if (q.is_penalty) continue;
           dayPenalty += Math.round(XP_BY_DIFFICULTY[q.difficulty] * PENALTY_FACTOR);
           missedTitles.push(q.title);
         }

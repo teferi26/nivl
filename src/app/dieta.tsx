@@ -2,6 +2,8 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import {
+  Platform,
+  KeyboardAvoidingView,
   Alert,
   Modal,
   Pressable,
@@ -113,7 +115,7 @@ export default function Dieta() {
 
   return (
     <SafeAreaView style={styles.screen} edges={['top']}>
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView automaticallyAdjustKeyboardInsets keyboardShouldPersistTaps="handled" contentContainerStyle={styles.content}>
         <View style={styles.header}>
           <Pressable
             accessibilityRole="button"
@@ -200,7 +202,10 @@ export default function Dieta() {
       </ScrollView>
 
       <Modal visible={editing !== null} transparent animationType="slide" onRequestClose={() => setEditing(null)}>
-        <View style={styles.backdrop}>
+        <KeyboardAvoidingView
+          style={styles.backdrop}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        >
           <View style={styles.sheet}>
             <Text style={styles.sheetTitle}>
               {editing?.slot.toUpperCase()} · {['L', 'M', 'X', 'J', 'V', 'S', 'D'][day - 1]}
@@ -228,7 +233,7 @@ export default function Dieta() {
             ) : null}
             <SystemButton title="Cancelar" variant="outline" onPress={() => setEditing(null)} style={{ marginTop: 10 }} />
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
     </SafeAreaView>
   );

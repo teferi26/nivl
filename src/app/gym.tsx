@@ -3,6 +3,8 @@ import * as Haptics from 'expo-haptics';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useRef, useState } from 'react';
 import {
+  Platform,
+  KeyboardAvoidingView,
   Alert,
   Modal,
   Pressable,
@@ -192,7 +194,7 @@ export default function Gym() {
 
   return (
     <SafeAreaView style={styles.screen} edges={['top']}>
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView automaticallyAdjustKeyboardInsets keyboardShouldPersistTaps="handled" contentContainerStyle={styles.content}>
         <View style={styles.header}>
           <Pressable
             accessibilityRole="button"
@@ -368,7 +370,10 @@ export default function Gym() {
       </ScrollView>
 
       <Modal visible={dayFormOpen} transparent animationType="slide" onRequestClose={() => setDayFormOpen(false)}>
-        <View style={styles.backdrop}>
+        <KeyboardAvoidingView
+          style={styles.backdrop}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        >
           <View style={styles.sheet}>
             <Text style={styles.sheetTitle}>NUEVO DÍA DE RUTINA</Text>
             <View style={styles.chips}>
@@ -397,11 +402,14 @@ export default function Gym() {
             <SystemButton title="Crear" onPress={addDay} disabled={!newDayName.trim()} style={{ marginTop: 18 }} />
             <SystemButton title="Cancelar" variant="outline" onPress={() => setDayFormOpen(false)} style={{ marginTop: 10 }} />
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
 
       <Modal visible={exFormDay !== null} transparent animationType="slide" onRequestClose={() => setExFormDay(null)}>
-        <View style={styles.backdrop}>
+        <KeyboardAvoidingView
+          style={styles.backdrop}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        >
           <View style={styles.sheet}>
             <Text style={styles.sheetTitle}>EJERCICIO · {exFormDay?.name.toUpperCase()}</Text>
             <TextInput
@@ -435,7 +443,7 @@ export default function Gym() {
             <SystemButton title="Añadir" onPress={addExercise} disabled={!exName.trim()} style={{ marginTop: 18 }} />
             <SystemButton title="Cancelar" variant="outline" onPress={() => setExFormDay(null)} style={{ marginTop: 10 }} />
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
 
       <LevelUpOverlay level={levelUp} onClose={() => setLevelUp(null)} />

@@ -117,7 +117,7 @@ export default function Nutricion() {
         <View style={{ width: 24 }} />
       </View>
 
-      <ScrollView contentContainerStyle={styles.contenido}>
+      <ScrollView keyboardShouldPersistTaps="handled" automaticallyAdjustKeyboardInsets contentContainerStyle={styles.contenido}>
         <SystemWindow>
           <Text style={styles.windowTitle}>OBJETIVO VIGENTE</Text>
           {objetivo ? (

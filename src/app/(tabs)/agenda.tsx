@@ -294,7 +294,7 @@ export default function Agenda() {
 
   return (
     <SafeAreaView style={styles.screen} edges={['top']}>
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView keyboardShouldPersistTaps="handled" automaticallyAdjustKeyboardInsets contentContainerStyle={styles.content}>
         <View style={styles.header}>
           <Text style={styles.title}>AGENDA</Text>
           <Pressable

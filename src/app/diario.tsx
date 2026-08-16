@@ -203,7 +203,7 @@ export default function Diario() {
 
   return (
     <SafeAreaView style={styles.screen} edges={['top']}>
-      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+      <ScrollView automaticallyAdjustKeyboardInsets contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <View style={styles.header}>
           <Pressable onPress={() => router.back()} hitSlop={10}>
             <Ionicons name="chevron-back" size={24} color={colors.cyan} />

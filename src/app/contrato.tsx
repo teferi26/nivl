@@ -273,7 +273,7 @@ export default function Contrato() {
 
   return (
     <SafeAreaView style={styles.screen} edges={['top']}>
-      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+      <ScrollView automaticallyAdjustKeyboardInsets contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <View style={styles.header}>
           <Pressable onPress={() => router.back()} hitSlop={10} accessibilityRole="button" accessibilityLabel="Volver">
             <Ionicons name="chevron-back" size={24} color={colors.cyan} />
@@ -486,7 +486,7 @@ export default function Contrato() {
       >
         <KeyboardAvoidingView style={styles.backdrop} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
           <View style={styles.sheet}>
-            <ScrollView keyboardShouldPersistTaps="handled">
+            <ScrollView automaticallyAdjustKeyboardInsets keyboardShouldPersistTaps="handled">
               <Text style={styles.sheetTitle}>PARA MI YO DEL FUTURO</Text>
               <TextInput
                 style={[styles.input, styles.letterInput]}

@@ -3,6 +3,8 @@ import * as Haptics from 'expo-haptics';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
+  Platform,
+  KeyboardAvoidingView,
   Alert,
   Modal,
   Pressable,
@@ -160,7 +162,7 @@ export default function DungeonDetail() {
 
   return (
     <SafeAreaView style={styles.screen} edges={['top']}>
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView automaticallyAdjustKeyboardInsets keyboardShouldPersistTaps="handled" contentContainerStyle={styles.content}>
         <View style={styles.header}>
           <Pressable
             accessibilityRole="button"
@@ -263,7 +265,10 @@ export default function DungeonDetail() {
       </ScrollView>
 
       <Modal visible={formOpen} transparent animationType="slide" onRequestClose={() => setFormOpen(false)}>
-        <View style={styles.backdrop}>
+        <KeyboardAvoidingView
+          style={styles.backdrop}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        >
           <View style={styles.sheet}>
             <Text style={styles.sheetTitle}>NUEVO OBJETIVO</Text>
             <TextInput
@@ -302,7 +307,7 @@ export default function DungeonDetail() {
             <SystemButton title="Añadir" onPress={addTask} disabled={!taskTitle.trim()} style={{ marginTop: 18 }} />
             <SystemButton title="Cancelar" variant="outline" onPress={() => setFormOpen(false)} style={{ marginTop: 10 }} />
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
 
       <LevelUpOverlay level={levelUp} onClose={() => setLevelUp(null)} />

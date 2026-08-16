@@ -120,7 +120,7 @@ export function QuestForm({ visible, onClose, onSubmit, initial, onDelete }: Pro
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
         <View style={styles.sheet}>
-          <ScrollView keyboardShouldPersistTaps="handled">
+          <ScrollView automaticallyAdjustKeyboardInsets keyboardShouldPersistTaps="handled">
             <Text style={styles.heading}>{editing ? 'EDITAR MISIÓN' : 'NUEVA MISIÓN'}</Text>
 
             <Text style={styles.label}>Título</Text>

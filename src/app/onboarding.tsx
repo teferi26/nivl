@@ -74,7 +74,7 @@ export default function Onboarding() {
   return (
     <SafeAreaView style={styles.screen}>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+        <ScrollView automaticallyAdjustKeyboardInsets contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
           <View style={styles.dots}>
             {Array.from({ length: STEPS }, (_, i) => (
               <View key={i} style={[styles.dot, i === step && styles.dotOn]} />

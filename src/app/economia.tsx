@@ -2,6 +2,8 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
 import {
+  Platform,
+  KeyboardAvoidingView,
   Alert,
   Modal,
   Pressable,
@@ -200,7 +202,7 @@ export default function Economia() {
       </View>
 
       {movs.length === 0 ? (
-        <ScrollView contentContainerStyle={styles.contenido}>
+        <ScrollView automaticallyAdjustKeyboardInsets keyboardShouldPersistTaps="handled" contentContainerStyle={styles.contenido}>
           <SystemWindow>
             <Text style={styles.windowTitle}>SIN DATOS</Text>
             <Text style={styles.vacio}>
@@ -214,7 +216,7 @@ export default function Economia() {
           </SystemWindow>
         </ScrollView>
       ) : (
-        <ScrollView contentContainerStyle={styles.contenido}>
+        <ScrollView automaticallyAdjustKeyboardInsets keyboardShouldPersistTaps="handled" contentContainerStyle={styles.contenido}>
           <SystemWindow color={colors.cyanDim}>
             <Text style={styles.windowTitle}>
               ESTE MES · DÍA {vista.dia} DE {vista.totalDias}
@@ -377,13 +379,17 @@ export default function Economia() {
       )}
 
       <Modal visible={editando !== null} transparent animationType="slide" onRequestClose={() => setEditando(null)}>
-        <Pressable style={styles.backdrop} onPress={() => setEditando(null)}>
+        <KeyboardAvoidingView
+          style={styles.backdrop}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        >
+        <Pressable style={StyleSheet.absoluteFill} onPress={() => setEditando(null)}>
           <Pressable style={styles.sheet} onPress={(e) => e.stopPropagation()}>
             <Text style={styles.sheetTitle}>¿QUÉ FUE ESTO?</Text>
             <Text style={styles.sheetSub} numberOfLines={2}>
               {editando?.description} · {editando ? eur(Math.abs(editando.amount), 2) : ''}
             </Text>
-            <ScrollView style={{ maxHeight: 320 }}>
+            <ScrollView automaticallyAdjustKeyboardInsets keyboardShouldPersistTaps="handled" style={{ maxHeight: 320 }}>
               <View style={styles.chips}>
                 {CATEGORIAS.filter((c) => c !== 'sin_clasificar').map((c) => (
                   <Pressable
@@ -400,10 +406,15 @@ export default function Economia() {
             </ScrollView>
           </Pressable>
         </Pressable>
+        </KeyboardAvoidingView>
       </Modal>
 
       <Modal visible={nuevoAbierto} transparent animationType="slide" onRequestClose={() => setNuevoAbierto(false)}>
-        <Pressable style={styles.backdrop} onPress={() => setNuevoAbierto(false)}>
+        <KeyboardAvoidingView
+          style={styles.backdrop}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        >
+        <Pressable style={StyleSheet.absoluteFill} onPress={() => setNuevoAbierto(false)}>
           <Pressable style={styles.sheet} onPress={(e) => e.stopPropagation()}>
             <Text style={styles.sheetTitle}>MOVIMIENTO EN EFECTIVO</Text>
             <Text style={styles.sheetSub}>
@@ -426,7 +437,7 @@ export default function Economia() {
               placeholderTextColor={colors.textFaint}
               accessibilityLabel="Concepto"
             />
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: 10 }}>
+            <ScrollView automaticallyAdjustKeyboardInsets keyboardShouldPersistTaps="handled" horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: 10 }}>
               <View style={styles.chipsFila}>
                 {CATEGORIAS.filter((c) => c !== 'sin_clasificar').map((c) => (
                   <Pressable
@@ -447,6 +458,7 @@ export default function Economia() {
             <SystemButton title="Registrar" onPress={guardarEfectivo} loading={guardando} style={{ marginTop: 16 }} />
           </Pressable>
         </Pressable>
+        </KeyboardAvoidingView>
       </Modal>
     </SafeAreaView>
   );

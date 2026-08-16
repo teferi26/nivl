@@ -2,6 +2,8 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import {
+  Platform,
+  KeyboardAvoidingView,
   Alert,
   Modal,
   Pressable,
@@ -81,7 +83,7 @@ export default function Mazmorras() {
 
   return (
     <SafeAreaView style={styles.screen} edges={['top']}>
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView automaticallyAdjustKeyboardInsets keyboardShouldPersistTaps="handled" contentContainerStyle={styles.content}>
         <View style={styles.header}>
           <Text style={styles.title}>MAZMORRAS</Text>
           <Pressable
@@ -145,7 +147,10 @@ export default function Mazmorras() {
       </ScrollView>
 
       <Modal visible={formOpen} transparent animationType="slide" onRequestClose={() => setFormOpen(false)}>
-        <View style={styles.backdrop}>
+        <KeyboardAvoidingView
+          style={styles.backdrop}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        >
           <View style={styles.sheet}>
             <Text style={styles.sheetTitle}>NUEVA MAZMORRA</Text>
             <Text style={styles.label}>Nombre del objetivo o proyecto</Text>
@@ -195,7 +200,7 @@ export default function Mazmorras() {
             />
             <SystemButton title="Cancelar" variant="outline" onPress={() => setFormOpen(false)} style={{ marginTop: 10 }} />
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
     </SafeAreaView>
   );

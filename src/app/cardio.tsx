@@ -3,6 +3,8 @@ import * as Haptics from 'expo-haptics';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import {
+  Platform,
+  KeyboardAvoidingView,
   Alert,
   Modal,
   Pressable,
@@ -198,7 +200,7 @@ export default function Cardio() {
         </Pressable>
       </View>
 
-      <ScrollView contentContainerStyle={styles.contenido}>
+      <ScrollView automaticallyAdjustKeyboardInsets keyboardShouldPersistTaps="handled" contentContainerStyle={styles.contenido}>
         <SystemWindow>
           <Text style={styles.windowTitle}>ÚLTIMOS 28 DÍAS</Text>
           <View style={styles.kpis}>
@@ -260,8 +262,11 @@ export default function Cardio() {
       </ScrollView>
 
       <Modal visible={abierto} transparent animationType="slide" onRequestClose={() => setAbierto(false)}>
-        <View style={styles.backdrop}>
-          <ScrollView style={styles.sheet} contentContainerStyle={{ padding: 18 }}>
+        <KeyboardAvoidingView
+          style={styles.backdrop}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        >
+          <ScrollView automaticallyAdjustKeyboardInsets keyboardShouldPersistTaps="handled" style={styles.sheet} contentContainerStyle={{ padding: 18 }}>
             <Text style={styles.sheetTitle}>REGISTRAR SESIÓN</Text>
 
             <Text style={styles.label}>Tipo</Text>
@@ -375,7 +380,7 @@ export default function Cardio() {
               style={{ marginTop: 8 }}
             />
           </ScrollView>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
     </SafeAreaView>
   );

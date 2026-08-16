@@ -192,7 +192,7 @@ export default function CoachScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 8 : 0}
       >
-        <ScrollView
+        <ScrollView automaticallyAdjustKeyboardInsets
           ref={scrollRef}
           style={styles.flex}
           contentContainerStyle={styles.lista}
@@ -258,7 +258,7 @@ export default function CoachScreen() {
         </ScrollView>
 
         {vacio ? (
-          <ScrollView
+          <ScrollView keyboardShouldPersistTaps="handled" automaticallyAdjustKeyboardInsets
             horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.atajos}

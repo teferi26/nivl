@@ -6,6 +6,8 @@ import { router, useFocusEffect } from 'expo-router';
 import * as Sharing from 'expo-sharing';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import {
+  Platform,
+  KeyboardAvoidingView,
   ActivityIndicator,
   Alert,
   Modal,
@@ -268,7 +270,7 @@ export default function Perfil() {
 
   return (
     <SafeAreaView style={styles.screen} edges={['top']}>
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView automaticallyAdjustKeyboardInsets keyboardShouldPersistTaps="handled" contentContainerStyle={styles.content}>
         {/* La foto del cazador ocupa media pantalla: identidad, rango y niveles por ámbito. */}
         <Pressable
           onPress={pickAvatar}
@@ -539,7 +541,10 @@ export default function Perfil() {
       </ScrollView>
 
       <Modal visible={freezeOpen} transparent animationType="slide" onRequestClose={() => setFreezeOpen(false)}>
-        <View style={styles.backdrop}>
+        <KeyboardAvoidingView
+          style={styles.backdrop}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        >
           <View style={styles.sheet}>
             <Text style={styles.sheetTitle}>PAUSAR EL SISTEMA</Text>
             <Text style={styles.sheetHint}>
@@ -566,7 +571,7 @@ export default function Perfil() {
             <SystemButton title="Activar pausa" onPress={activateFreeze} style={{ marginTop: 20 }} />
             <SystemButton title="Cancelar" variant="outline" onPress={() => setFreezeOpen(false)} style={{ marginTop: 10 }} />
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
 
       <Modal visible={shareOpen} transparent animationType="fade" onRequestClose={() => setShareOpen(false)}>

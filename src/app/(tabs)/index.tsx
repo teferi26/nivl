@@ -18,6 +18,7 @@ import { completionStats, ensureProfile, fetchCompletionsForDate, fetchQuests, s
 import { fetchPlan, horaAMinutos, setBlockDone, type DayBlock, type PlanConBloques } from '@/lib/dayplan';
 import { dateKey, formatLongDate } from '@/lib/dates';
 import { completeQuest, processPendingDays, questsScheduledOn, type DayCloseResult } from '@/lib/engine';
+import { rachaVisible } from '@/lib/closing';
 import { levelFromXp, rankForLevel, streakMultiplier } from '@/lib/game';
 import {
   inicializarAvisos,
@@ -259,6 +260,14 @@ export default function Sistema() {
   const frozen = profile?.freeze_until != null && profile.freeze_until >= today;
   const sorted = [...todayQuests].sort((a, b) => Number(b.is_penalty) - Number(a.is_penalty));
   const completedCount = sorted.filter((q) => completions[q.id]).length;
+  // La racha que se enseña cuenta el día de hoy en cuanto queda cerrado. El
+  // multiplicador sigue saliendo de los días CERRADOS: si subiera a mitad del
+  // día, completar las misiones en un orden u otro pagaría distinto.
+  const racha = rachaVisible(
+    profile?.streak_days ?? 0,
+    sorted,
+    new Set(Object.keys(completions)),
+  );
   const pendingCount = sorted.length - completedCount;
 
   return (
@@ -306,8 +315,9 @@ export default function Sistema() {
                   {lvl.next > 0 ? `${lvl.into} / ${lvl.next} XP` : 'NIVEL MÁXIMO'}
                 </Text>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                  <Text style={styles.streak}>
-                    Racha {profile.streak_days} · ×{streakMultiplier(profile.streak_days).toFixed(1)}
+                  <Text style={[styles.streak, racha.hoyCerrado && styles.streakViva]}>
+                    Racha {racha.valor} · ×{streakMultiplier(profile.streak_days).toFixed(1)}
+                    {racha.hoyCerrado ? ' · hoy cerrado' : ''}
                   </Text>
                   <Text style={styles.stones}>
                     <Ionicons name="shield-half-outline" size={12} color={colors.cyanText} />{' '}
@@ -374,7 +384,7 @@ export default function Sistema() {
                 completed={!!completions[q.id]}
                 xpAwarded={completions[q.id]?.xp_awarded}
                 busy={busyQuestId === q.id}
-                streakDays={profile?.streak_days ?? 0}
+                streakDays={racha.valor}
                 onComplete={onComplete}
               />
             ))
@@ -497,6 +507,8 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: colors.amber,
   },
+  // Cuando el día ya está cerrado la racha deja de ser una promesa: se enciende.
+  streakViva: { color: colors.cyan },
   stones: {
     fontFamily: fonts.heading,
     fontSize: 12,
