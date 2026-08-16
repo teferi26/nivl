@@ -26,6 +26,7 @@ import {
   type Usage,
 } from '../_shared/anthropic.ts';
 import { clasificarPendientes } from '../_shared/clasificar.ts';
+import { construirResumen, periodoMensual, periodoSemanal } from '../_shared/recap.ts';
 import { buildContext } from '../_shared/context.ts';
 import { adminClient, userClient, type Db } from '../_shared/db.ts';
 import { buildSystem } from '../_shared/prompt.ts';
@@ -51,6 +52,9 @@ type Kind = (typeof KINDS)[number];
 // pasa por su contexto. Es una tarea mecánica que se atiende con Haiku y con
 // diez líneas de prompt. Ver _shared/clasificar.ts.
 const KIND_MECANICO = 'clasificar';
+// El resumen visual: tampoco es un ritual del coach, es un generador con datos
+// del periodo. Ver _shared/recap.ts.
+const KIND_RESUMEN = 'resumen';
 
 /**
  * Modelo por ritual, con dos secretos para cambiarlo sin desplegar:
@@ -169,11 +173,12 @@ interface RunArgs {
   threadId: string;
   userText: string;
   today: string;
+  imagenes?: { media_type: string; data: string }[];
   emit: (event: string, data: unknown) => void;
 }
 
 async function runCoach(args: RunArgs): Promise<{ text: string; usage: Usage; model: string }> {
-  const { sb, userId, kind, threadId, userText, today, emit } = args;
+  const { sb, userId, kind, threadId, userText, today, imagenes, emit } = args;
 
   const ctx = await buildContext(sb, userId, today);
   const system = buildSystem(ctx.dossier, kind, ctx.text);
@@ -198,17 +203,33 @@ async function runCoach(args: RunArgs): Promise<{ text: string; usage: Usage; mo
   // pero viaja en el bloque de sistema, no aquí: ver la explicación de coste
   // en buildSystem. El turno del usuario lleva solo lo que él ha dicho.
   const previos = markCacheable(aligerarHistorial(trimHistory(history)));
-  const messages: ApiMessage[] = [
-    ...previos,
-    { role: 'user', content: [{ type: 'text', text: userText }] },
-  ];
 
-  // Solo se persiste lo que dijo él, sin el volcado de estado.
+  // Las fotos van DELANTE del texto: el modelo lee mejor una imagen cuando la
+  // pregunta viene después de verla, no antes.
+  const bloquesUsuario: ContentBlock[] = [
+    ...(imagenes ?? []).map((img) => ({
+      type: 'image',
+      source: { type: 'base64', media_type: img.media_type, data: img.data },
+    })),
+    { type: 'text', text: userText },
+  ] as ContentBlock[];
+
+  const messages: ApiMessage[] = [...previos, { role: 'user', content: bloquesUsuario }];
+
+  // Solo se persiste lo que dijo él, sin el volcado de estado. Y de las fotos
+  // solo la marca, nunca los bytes: guardar base64 en el historial lo haría
+  // crecer megabytes y se reenviaría entero en cada turno siguiente.
   await sb.from('coach_messages').insert({
     thread_id: threadId,
     user_id: userId,
     role: 'user',
-    content: [{ type: 'text', text: userText }],
+    content: [
+      {
+        type: 'text',
+        text: imagenes?.length ? `[te envía ${imagenes.length} foto(s)]
+${userText}` : userText,
+      },
+    ],
   });
 
   let usage: Usage = {};
@@ -319,6 +340,8 @@ Deno.serve(async (req) => {
     message?: string;
     date?: string;
     stream?: boolean;
+    periodo?: string;
+    imagenes?: { media_type: string; data: string }[];
   };
   try {
     body = await req.json();
@@ -351,6 +374,51 @@ Deno.serve(async (req) => {
     } catch (e) {
       console.error('clasificar error:', e);
       return json(500, { error: 'No se pudieron clasificar los movimientos.' });
+    }
+  }
+
+  // El resumen tampoco pasa por el contexto del coach: se construye con datos
+  // del periodo ya calculados y no necesita el dossier ni los estudios.
+  if (body.kind === KIND_RESUMEN) {
+    const periodo = body.periodo === 'mensual' ? 'mensual' : 'semanal';
+    const hoy = (body.date ?? new Date().toISOString().slice(0, 10)).slice(0, 10);
+    try {
+      const r = await construirResumen(sbTemprano, userId, periodo, hoy);
+      if (!r.slides.length) return json(200, { slides: [], fotos: 0, motivo: r.motivo });
+
+      const { desde, hasta } = periodo === 'semanal' ? periodoSemanal(hoy) : periodoMensual(hoy);
+      const { data: guardado, error } = await sbTemprano
+        .from('recaps')
+        .upsert(
+          {
+            user_id: userId,
+            kind: periodo,
+            period_start: desde,
+            period_end: hasta,
+            slides: r.slides,
+            photo_count: r.fotos,
+          },
+          { onConflict: 'user_id,kind,period_start' },
+        )
+        .select('id')
+        .single();
+      if (error) throw error;
+
+      await admin.from('coach_runs').insert({
+        user_id: userId,
+        kind: `resumen_${periodo}`,
+        model: r.model,
+        in_tokens: r.usage.input_tokens ?? 0,
+        cache_read_tokens: r.usage.cache_read_input_tokens ?? 0,
+        cache_write_tokens: r.usage.cache_creation_input_tokens ?? 0,
+        out_tokens: r.usage.output_tokens ?? 0,
+        cost_micro_usd: costMicroUsd(r.model, r.usage),
+      });
+
+      return json(200, { id: (guardado as { id: string }).id, slides: r.slides, fotos: r.fotos });
+    } catch (e) {
+      console.error('resumen error:', e);
+      return json(500, { error: 'No se pudo construir el resumen.' });
     }
   }
 
@@ -444,6 +512,7 @@ Deno.serve(async (req) => {
         threadId: threadId!,
         userText: prompt,
         today,
+        imagenes: body.imagenes,
         emit: () => {},
       });
       await finish(result, null);
@@ -470,6 +539,7 @@ Deno.serve(async (req) => {
           threadId: threadId!,
           userText: prompt,
           today,
+          imagenes: body.imagenes,
           emit,
         });
         await finish(result, null);

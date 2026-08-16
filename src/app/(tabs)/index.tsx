@@ -39,6 +39,7 @@ const MODULES = [
   { icon: 'book-outline', label: 'Diario', route: '/diario' },
   { icon: 'stats-chart-outline', label: 'Informe', route: '/informe' },
   { icon: 'trending-up-outline', label: 'Avances', route: '/avances' },
+  { icon: 'images-outline', label: 'Recuerdos', route: '/resumen' },
   { icon: 'sparkles-outline', label: 'Oráculo', route: '/oraculo' },
   { icon: 'document-text-outline', label: 'Contrato', route: '/contrato' },
 ] as const;
@@ -221,7 +222,10 @@ export default function Sistema() {
         .finally(release);
       return;
     }
-    Alert.alert('Completar misión', '¿Quieres adjuntar evidencia? (+25% XP)', [
+    Alert.alert(
+      'Completar misión',
+      '¿Le haces una foto? Suma un 25 % de XP y el domingo entra en tu resumen.',
+      [
       {
         text: 'Cámara +25%',
         onPress: () =>
@@ -229,9 +233,10 @@ export default function Sistema() {
             .then((b64) => (b64 ? finishQuest(quest, b64) : undefined))
             .finally(release),
       },
-      { text: 'Sin evidencia', onPress: () => finishQuest(quest, null).finally(release) },
+      { text: 'Sin foto', onPress: () => finishQuest(quest, null).finally(release) },
       { text: 'Cancelar', style: 'cancel', onPress: release },
-    ]);
+      ],
+    );
   };
 
   const alternarBloque = async (b: DayBlock) => {

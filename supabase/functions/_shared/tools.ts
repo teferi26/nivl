@@ -302,6 +302,30 @@ export const TOOL_DEFS = [
   ),
 
   tool(
+    'configurar_rutina',
+    'Reescribe la rutina de un día de la semana en el gimnasio: el nombre del día y sus ejercicios con series, repeticiones y peso. Úsala cuando el programa entero tenga que cambiar (cambio de bloque, un ejercicio que le hace daño, un split nuevo), no para la carga de una sesión suelta: para eso está prescribir_entreno. Sustituye lo que hubiera ese día.',
+    {
+      dia_semana: { type: 'integer', description: 'Día de la semana: 1=lunes … 7=domingo' },
+      nombre: str('Nombre del día, p. ej. PUSH, PULL, LEGS o Descanso'),
+      ejercicios: {
+        type: 'array',
+        description: 'Los ejercicios del día, en el orden en que se hacen. Vacío convierte el día en descanso.',
+        items: {
+          type: 'object',
+          properties: {
+            nombre: str('Nombre del ejercicio'),
+            series: { type: 'integer', description: 'Número de series' },
+            reps: { type: 'integer', description: 'Repeticiones objetivo por serie' },
+            peso: { type: 'number', description: 'Kilos. 0 si es al fallo, con el propio peso corporal o si aún no lo sabes.' },
+          },
+          required: ['nombre', 'series', 'reps', 'peso'],
+          additionalProperties: false,
+        },
+      },
+    },
+  ),
+
+  tool(
     'fijar_plan_economico',
     'Fija el plan de dinero del mes: cuánto tiene que entrar, cuánto es el techo de gasto, cuánto aparta y cuántos meses de aire quiere mantener. Úsala al empezar y cuando los meses cerrados digan que el plan no se corresponde con la realidad. Los meses de aire mandan sobre el crecimiento: si el colchón baja del pactado, esa es la alarma del mes.',
     {
@@ -691,6 +715,60 @@ export async function executeTool(
       return ok(
         `Comidas del ${DIAS_NOMBRE[dia]} escritas: ${filas.length} franjas` +
           (totalKcal ? ` · ${totalKcal} kcal y ${totalProt} g de proteína en total` : ''),
+      );
+    }
+
+    case 'configurar_rutina': {
+      const dia = Number(input.dia_semana);
+      if (!(dia >= 1 && dia <= 7)) throw new Error(`Día de la semana inválido: ${input.dia_semana}`);
+      const nombre = String(input.nombre ?? '').trim();
+      if (!nombre) throw new Error('El día necesita un nombre: PUSH, PULL, LEGS, Descanso…');
+      const ejercicios = (input.ejercicios ?? []) as any[];
+
+      // El día se reescribe entero. Las SESIONES ya registradas no se tocan:
+      // gym_sessions apunta al día por gym_day_id, y borrar el día se lo
+      // llevaría por delante junto con el histórico de cargas que alimenta el
+      // estudio. Por eso se reutiliza la fila si existe.
+      const { data: existente } = await sb
+        .from('gym_days')
+        .select('id')
+        .eq('user_id', userId)
+        .eq('day_of_week', dia)
+        .maybeSingle();
+
+      let diaId = (existente as { id: string } | null)?.id;
+      if (diaId) {
+        const { error } = await sb.from('gym_days').update({ name: nombre }).eq('id', diaId);
+        if (error) throw error;
+        await sb.from('gym_exercises').delete().eq('gym_day_id', diaId);
+      } else {
+        const { data, error } = await sb
+          .from('gym_days')
+          .insert({ user_id: userId, day_of_week: dia, name: nombre })
+          .select('id')
+          .single();
+        if (error) throw error;
+        diaId = (data as { id: string }).id;
+      }
+
+      if (ejercicios.length) {
+        const filas = ejercicios.map((e, i) => ({
+          gym_day_id: diaId,
+          user_id: userId,
+          name: String(e.nombre),
+          sets: Number(e.series) || 3,
+          reps: Number(e.reps) || 10,
+          weight: e.peso ? Number(e.peso) : null,
+          position: i,
+        }));
+        const { error } = await sb.from('gym_exercises').insert(filas);
+        if (error) throw error;
+      }
+
+      const DIAS_NOMBRE = ['', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado', 'domingo'];
+      return ok(
+        `Rutina del ${DIAS_NOMBRE[dia]} reescrita como ${nombre}: ` +
+          (ejercicios.length ? `${ejercicios.length} ejercicios.` : 'día de descanso.'),
       );
     }
 

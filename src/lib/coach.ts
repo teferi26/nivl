@@ -9,6 +9,7 @@
 // de golpe al final y el chat se sentiría muerto.
 
 import { fetch as streamingFetch } from 'expo/fetch';
+import type { Slide } from './photos';
 import { supabase } from './supabase';
 
 export type CoachKind =
@@ -99,6 +100,8 @@ export async function streamCoach(opts: {
   kind?: CoachKind;
   message: string;
   threadId?: string;
+  /** Fotos en base64. Viajan solo en este turno: no se guardan en el hilo. */
+  imagenes?: { media_type: string; data: string }[];
   onEvent: (e: CoachEvent) => void;
   signal?: AbortSignal;
 }): Promise<void> {
@@ -110,6 +113,7 @@ export async function streamCoach(opts: {
       kind: opts.kind ?? 'chat',
       message: opts.message,
       thread_id: opts.threadId,
+      imagenes: opts.imagenes,
     }),
   });
 
@@ -193,6 +197,30 @@ export async function runRitual(kind: CoachKind, message = ''): Promise<string> 
   const body = (await res.json().catch(() => ({}))) as { text?: string; error?: string };
   if (!res.ok) throw new Error(body.error ?? `El sistema no responde (HTTP ${res.status}).`);
   return body.text ?? '';
+}
+
+/**
+ * Genera el resumen del periodo. Devuelve `motivo` en vez de diapositivas
+ * cuando no hay fotos: un pase vacío no motiva, recuerda que no registraste
+ * nada, así que se dice con palabras y ya está.
+ */
+export async function generarResumen(
+  periodo: 'semanal' | 'mensual',
+): Promise<{ id?: string; slides: Slide[]; fotos: number; motivo?: string }> {
+  const res = await fetch(functionsUrl(), {
+    method: 'POST',
+    headers: await authHeaders(),
+    body: JSON.stringify({ kind: 'resumen', periodo }),
+  });
+  const body = (await res.json().catch(() => ({}))) as {
+    id?: string;
+    slides?: Slide[];
+    fotos?: number;
+    motivo?: string;
+    error?: string;
+  };
+  if (!res.ok) throw new Error(body.error ?? `El sistema no responde (HTTP ${res.status}).`);
+  return { id: body.id, slides: body.slides ?? [], fotos: body.fotos ?? 0, motivo: body.motivo };
 }
 
 /**

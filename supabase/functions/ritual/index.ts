@@ -122,6 +122,30 @@ async function empujar(sb: Db, userId: string, titulo: string, cuerpo: string, r
   }).catch(() => {});
 }
 
+/**
+ * El resumen del mes, automático el día 1. El semanal NO se genera solo: es un
+ * momento y se pide cuando apetece verlo; el mensual llega sin pedirlo porque
+ * si no, no se mira nunca.
+ *
+ * Devuelve null si no hubo fotos ese mes. En ese caso no se avisa de nada: un
+ * push diciendo "no hay resumen" es peor que el silencio.
+ */
+async function resumenMensual(userJwt: string): Promise<number | null> {
+  const url = `${Deno.env.get('SUPABASE_URL')}/functions/v1/coach`;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: {
+      authorization: `Bearer ${userJwt}`,
+      apikey: Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      'content-type': 'application/json',
+    },
+    body: JSON.stringify({ kind: 'resumen', periodo: 'mensual' }),
+  });
+  if (!res.ok) return null;
+  const body = (await res.json().catch(() => ({}))) as { slides?: unknown[]; fotos?: number };
+  return body.slides?.length ? (body.fotos ?? 0) : null;
+}
+
 /** Llama a la función `coach` como lo haría la app, pero desde el servidor. */
 async function invocarCoach(userJwt: string, kind: string, message: string): Promise<string> {
   const url = `${Deno.env.get('SUPABASE_URL')}/functions/v1/coach`;
@@ -293,6 +317,20 @@ Deno.serve(async (req) => {
       // día y llenaría la página de ruido.
       if (espejoActivo() && decision.kind !== 'brief' && texto) {
         await espejarEntrada(ahoraLocal(p.timezone).fecha, decision.titulo, texto);
+      }
+
+      // El día 1, además del cierre, se monta el pase de diapositivas del mes.
+      if (decision.kind === 'cierre_mensual') {
+        const fotos = await resumenMensual(jwt).catch(() => null);
+        if (fotos) {
+          await empujar(
+            sb,
+            p.id,
+            'Tu mes en imágenes',
+            `${fotos} fotos. El sistema ha montado el pase: toca para verlo.`,
+            '/resumen',
+          );
+        }
       }
 
       hechos.push({ user: p.id, kind: decision.kind });

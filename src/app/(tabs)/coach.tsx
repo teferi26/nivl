@@ -1,4 +1,5 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
+import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
@@ -47,6 +48,10 @@ export default function CoachScreen() {
   const router = useRouter();
   const scrollRef = useRef<ScrollView>(null);
   const enviando = useRef(false);
+  // Fotos adjuntas al turno en curso. Viven solo hasta que se envía: no se
+  // guardan en el hilo, porque meter base64 en el historial lo haría crecer
+  // megabytes y se reenviaría entero en cada turno siguiente.
+  const [adjuntas, setAdjuntas] = useState<{ media_type: string; data: string }[]>([]);
 
   const [threadId, setThreadId] = useState<string | null>(null);
   const [burbujas, setBurbujas] = useState<Burbuja[]>([]);
@@ -91,19 +96,50 @@ export default function CoachScreen() {
 
   const alFondo = () => requestAnimationFrame(() => scrollRef.current?.scrollToEnd({ animated: true }));
 
+  const adjuntar = async () => {
+    const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!perm.granted) {
+      setError('El sistema necesita permiso para leer tus fotos.');
+      return;
+    }
+    const r = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      // Calidad baja a propósito: una foto de móvil sin comprimir son varios
+      // megas de base64, y eso se paga como miles de fichas en cada turno.
+      quality: 0.35,
+      base64: true,
+      selectionLimit: 3,
+      allowsMultipleSelection: true,
+    });
+    if (r.canceled) return;
+    setAdjuntas(
+      r.assets
+        .filter((a) => a.base64)
+        .map((a) => ({ media_type: a.mimeType ?? 'image/jpeg', data: a.base64! })),
+    );
+  };
+
   const enviar = async (mensaje: string) => {
     const limpio = mensaje.trim();
     // Cerrojo: sin él, un doble toque manda el turno dos veces y el coach
     // acaba respondiéndose a sí mismo.
-    if (!limpio || enviando.current) return;
+    if ((!limpio && !adjuntas.length) || enviando.current) return;
     enviando.current = true;
     setError(null);
     setTexto('');
     setAcciones([]);
     setEnCurso('');
+    const fotos = adjuntas;
+    setAdjuntas([]);
     setBurbujas((b) => [
       ...b,
-      { id: `local-${Date.now()}`, role: 'user', text: limpio, acciones: [] },
+      {
+        id: `local-${Date.now()}`,
+        role: 'user',
+        text: fotos.length ? `[${fotos.length} foto(s)]
+${limpio}` : limpio,
+        acciones: [],
+      },
     ]);
     alFondo();
 
@@ -111,8 +147,9 @@ export default function CoachScreen() {
     const ejecutadas: CoachAction[] = [];
     try {
       await streamCoach({
-        message: limpio,
+        message: limpio || 'Mira esta foto.',
         threadId: threadId ?? undefined,
+        imagenes: fotos.length ? fotos : undefined,
         onEvent: (e) => {
           switch (e.type) {
             case 'start':
@@ -277,7 +314,33 @@ export default function CoachScreen() {
           </ScrollView>
         ) : null}
 
+        {adjuntas.length ? (
+          <View style={styles.adjuntas}>
+            <Ionicons name="image-outline" size={14} color={colors.cyanText} />
+            <Text style={styles.adjuntasTexto}>
+              {adjuntas.length} foto(s) listas para enviar
+            </Text>
+            <Pressable
+              onPress={() => setAdjuntas([])}
+              hitSlop={8}
+              accessibilityRole="button"
+              accessibilityLabel="Quitar las fotos"
+            >
+              <Ionicons name="close" size={16} color={colors.textDim} />
+            </Pressable>
+          </View>
+        ) : null}
+
         <View style={styles.barra}>
+          <Pressable
+            onPress={adjuntar}
+            disabled={enviando.current}
+            style={styles.adjuntar}
+            accessibilityRole="button"
+            accessibilityLabel="Adjuntar una foto"
+          >
+            <Ionicons name="add" size={22} color={colors.cyanText} />
+          </Pressable>
           <TextInput
             style={styles.input}
             value={texto}
@@ -289,8 +352,11 @@ export default function CoachScreen() {
           />
           <Pressable
             onPress={() => enviar(texto)}
-            disabled={!texto.trim() || enviando.current}
-            style={[styles.enviar, (!texto.trim() || enviando.current) && styles.enviarOff]}
+            disabled={(!texto.trim() && !adjuntas.length) || enviando.current}
+            style={[
+              styles.enviar,
+              (!texto.trim() && !adjuntas.length) || enviando.current ? styles.enviarOff : null,
+            ]}
             accessibilityRole="button"
             accessibilityLabel="Enviar mensaje"
           >
@@ -426,4 +492,20 @@ const styles = StyleSheet.create({
     backgroundColor: colors.cyan,
   },
   enviarOff: { opacity: 0.4 },
+  adjuntar: {
+    width: 38,
+    height: 38,
+    borderWidth: 1,
+    borderColor: colors.cyanFaint,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  adjuntas: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 16,
+    paddingBottom: 6,
+  },
+  adjuntasTexto: { fontFamily: fonts.body, fontSize: 12, color: colors.cyanText, flex: 1 },
 });

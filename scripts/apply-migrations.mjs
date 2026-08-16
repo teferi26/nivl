@@ -82,6 +82,7 @@ const HUELLAS = {
   '0011': `exists(select 1 from pg_constraint where conname = 'journal_entries_unique')`,
   '0012': `to_regclass('public.cardio_sessions') is not null`,
   '0013': `to_regclass('public.transactions') is not null`,
+  '0014': `to_regclass('public.recaps') is not null`,
 };
 
 const archivos = readdirSync(MIGRATIONS)

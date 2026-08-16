@@ -164,6 +164,27 @@ export async function completeQuest(
     await insertEvent(profile.id, 'level_up', { level: after });
   }
 
+  // La evidencia se apunta ADEMÁS como recuerdo. Es la misma foto y el mismo
+  // gesto, pero sirve para dos cosas distintas: la evidencia es el contrato
+  // (+25 % XP) y el recuerdo es lo que el domingo se convierte en el pase de
+  // diapositivas. Pedir la foto dos veces sería absurdo.
+  //
+  // Solo si `awarded`: en un doble toque la completada ya existía y duplicar la
+  // foto llenaría el resumen de repetidas.
+  if (awarded && evidencePath) {
+    await supabase
+      .from('quest_photos')
+      .insert({
+        user_id: profile.id,
+        quest_id: quest.id,
+        date: today,
+        path: evidencePath,
+      })
+      .then(undefined, () => {
+        /* Que falle el recuerdo no puede tumbar la misión ya completada. */
+      });
+  }
+
   return {
     xp: awarded ? xp : 0,
     bonusEarned: awarded ? pb : 0,

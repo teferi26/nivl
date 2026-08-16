@@ -45,7 +45,7 @@ Las notificaciones y el push **no funcionan en Expo Go**: hace falta un developm
 ## El coach
 
 - **Memoria en tres capas**: `coach_dossier` (lo estable, va cacheado en cada prompt), `coach_facts` (el log fechado) y `coach_messages` (la conversación). Lo que se reenvía a la API son los **últimos 12 intercambios**: el hilo sigue siendo continuo para ti, pero la memoria larga vive en el dossier y en los hechos, no en el transcript. Sin ese tope la conversación crece sin fin y a los seis meses cada turno arrastra cientos de miles de tokens.
-- **Veinte herramientas** para escribir en tu vida real: crear y ajustar misiones, planificar el día, agenda, horarios, mazmorras, reglas del contrato, metas, memoria, las tres del cuerpo — `prescribir_entreno`, `fijar_nutricion` y `planificar_comidas` — y las cuatro del dinero — `fijar_plan_economico`, `fijar_presupuesto`, `regla_categoria` y `registrar_movimiento`. Se ejecutan con tu JWT, así que RLS sigue aplicando.
+- **Veintiuna herramientas** para escribir en tu vida real: crear y ajustar misiones, planificar el día, agenda, horarios, mazmorras, reglas del contrato, metas, memoria, las tres del cuerpo — `prescribir_entreno`, `fijar_nutricion` y `planificar_comidas` — y las cuatro del dinero — `fijar_plan_economico`, `fijar_presupuesto`, `regla_categoria` y `registrar_movimiento` — más `configurar_rutina`, que reescribe la rutina fija de un día del gimnasio (los ejercicios del programa, no la carga de una sesión suelta). Se ejecutan con tu JWT, así que RLS sigue aplicando.
 - **El coach elige dificultad, nunca puntos**: el XP sale de la tabla de `game.ts` y no puede inflarlo.
 ### Qué modelo hace cada cosa
 
@@ -54,6 +54,7 @@ Las notificaciones y el push **no funcionan en Expo Go**: hace falta un developm
 | Chat, brief, plan del día, revisión semanal, cierre de mes, escalada | **Sonnet 5** | Todo eso es criterio: cruzar dominios, decidir cargas, escribir la carta de las tres puertas |
 | Clasificar movimientos del extracto | **Haiku 4.5** | Leer "MERCADONA 4471" y decir que es súper no pide criterio. Además sale **antes** de construir el contexto: no viajan las 50.000 fichas de dossier y estudios |
 | Titular del push tras un ritual | **Haiku 4.5** | Resumir en una línea un texto ya escrito |
+| Resumen semanal y mensual en imágenes | **Sonnet 5** | Redactar con calidez sobre datos ya calculados; son 5 llamadas al mes |
 | Misiones desde un objetivo (Oráculo) | **Haiku 4.5** | Rellenar una plantilla con salida estructurada |
 
 La regla: **si la tarea es leer y transformar, Haiku; si es decidir, Sonnet.** Un extracto entero de sesenta movimientos se clasifica por céntimas; con el coach costaría cien veces más, y no por la tarifa del modelo sino porque arrastraría todo su contexto para responder algo que cabe en una línea.
@@ -107,11 +108,21 @@ node scripts/setup-banco.mjs --conectar
 
 Necesita una cuenta gratuita en GoCardless Bank Account Data y sus dos credenciales en `banco-token.txt` (gitignorado). El consentimiento PSD2 caduca a los 90 días y hay que renovarlo.
 
+## Recuerdos: la semana en imágenes
+
+Al completar una misión el sistema ofrece hacerle una foto. Suma un 25 % de XP —eso ya existía como evidencia— y **la misma foto queda además como recuerdo**: pedirla dos veces sería absurdo.
+
+El domingo, o cuando lo pidas, esas fotos se convierten en un pase de diapositivas: portada, las cifras que importan, una diapositiva por foto contando qué pasaba ese día, el día que costó, y un cierre. Se toca la mitad derecha para avanzar y la izquierda para volver, con barras de progreso arriba.
+
+Dos reglas: **sin fotos no hay resumen** (un pase vacío no motiva, recuerda que no registraste nada) y **no se inventa nada** — las cifras se calculan en `_shared/recap.ts` y el modelo solo redacta. El semanal lo pides tú; el mensual lo monta el sistema solo el día 1 y te avisa.
+
+También puedes **mandarle fotos al coach en el chat** con el botón `+`. Viajan solo en ese turno: en el historial queda la marca, nunca los bytes, o cada turno siguiente arrastraría megabytes.
+
 ## Mapa de la app
 
-6 pestañas: **Sistema** (orden del día + misiones + módulos), **Coach** (el chat), **Misiones**, **Mazmorras**, **Agenda**, **Perfil**. Módulos desde Sistema: Gym, Cardio, Nutrición, Dieta, Economía, Compra, Diario, Informe, Avances, Oráculo y Contrato. Pantalla **Memoria** desde el chat del coach.
+6 pestañas: **Sistema** (orden del día + misiones + módulos), **Coach** (el chat), **Misiones**, **Mazmorras**, **Agenda**, **Perfil**. Módulos desde Sistema: Gym, Cardio, Nutrición, Dieta, Economía, Recuerdos, Compra, Diario, Informe, Avances, Oráculo y Contrato. Pantalla **Memoria** desde el chat del coach.
 
-Verificación: `npm run typecheck` · `npm test` (95 tests) · `npm run lint` · `npx expo export --platform ios`.
+Verificación: `npm run typecheck` · `npm test` (102 tests) · `npm run lint` · `npx expo export --platform ios`.
 
 ## Notas
 
