@@ -25,7 +25,7 @@ import {
   uploadJournalPhoto,
 } from '@/lib/contract';
 import { ensureProfile } from '@/lib/data';
-import { dateKey } from '@/lib/dates';
+import { addDays, dateKey, nombreDia, relativoDe } from '@/lib/dates';
 import { awardXp } from '@/lib/engine';
 import { JOURNAL_XP } from '@/lib/game';
 import {
@@ -78,33 +78,35 @@ export default function Diario() {
   const [text, setText] = useState('');
   const [plan, setPlan] = useState('');
   const [photos, setPhotos] = useState<{ photo: JournalPhoto; url: string | null }[]>([]);
-  const [savedToday, setSavedToday] = useState(false);
+  // El día que se está escribiendo. No siempre es hoy: se puede retroceder
+  // para completar o corregir lo de días pasados.
+  const [dia, setDia] = useState(today);
+  const [registrado, setRegistrado] = useState(false);
+  const [sucio, setSucio] = useState(false);
   const [recent, setRecent] = useState<JournalEntry[]>([]);
   const [chronicle, setChronicle] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
   const saving = useRef(false);
 
   const load = useCallback(async () => {
-    const todayKey = dateKey();
     try {
-      const entry = await fetchEntryForDate(todayKey);
-      if (entry) {
-        setMood(entry.mood);
-        setEnergy(entry.energy);
-        setText(entry.text ?? '');
-        setPlan(entry.plan ?? '');
-        setSavedToday(true);
-      }
-      const todayPhotos = await fetchJournalPhotos(todayKey);
+      const entry = await fetchEntryForDate(dia);
+      // Siempre se reinicia: al cambiar de día, si no se limpiara, quedaría en
+      // pantalla lo escrito del día anterior y se guardaría en el equivocado.
+      setMood(entry?.mood ?? null);
+      setEnergy(entry?.energy ?? null);
+      setText(entry?.text ?? '');
+      setPlan(entry?.plan ?? '');
+      setRegistrado(!!entry);
+      setSucio(false);
+      const todayPhotos = await fetchJournalPhotos(dia);
       setPhotos(
         await Promise.all(
           todayPhotos.map(async (photo) => ({ photo, url: await journalPhotoUrl(photo.path) })),
         ),
       );
-      // Pide 15 y recorta a 14 tras excluir hoy (antes mostraba 13 si hoy ya existía).
-      setRecent((await fetchRecentEntries(15)).filter((e) => e.date !== todayKey).slice(0, 14));
-      const start = new Date();
-      start.setHours(0, 0, 0, 0);
+      setRecent((await fetchRecentEntries(30)).filter((e) => e.date !== dia).slice(0, 20));
+      const start = new Date(`${dia}T00:00:00`);
       const end = new Date(start);
       end.setDate(end.getDate() + 1);
       const events = await fetchEventsForDate(start.toISOString(), end.toISOString());
@@ -112,7 +114,7 @@ export default function Diario() {
     } catch (e) {
       Alert.alert('Error del sistema', e instanceof Error ? e.message : 'Fallo desconocido');
     }
-  }, []);
+  }, [dia]);
 
   const addPhoto = async () => {
     if (!userId || saving.current) return;
@@ -131,7 +133,7 @@ export default function Diario() {
     if (!b64) return;
     saving.current = true;
     try {
-      const photo = await uploadJournalPhoto(userId, dateKey(), b64);
+      const photo = await uploadJournalPhoto(userId, dia, b64);
       const url = await journalPhotoUrl(photo.path);
       setPhotos((prev) => [...prev, { photo, url }]);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -171,18 +173,21 @@ export default function Diario() {
     if (!userId || busy || saving.current) return;
     saving.current = true;
     setBusy(true);
-    const today = dateKey();
     try {
       const { isNew } = await upsertEntry(userId, {
-        date: today,
+        date: dia,
         mood,
         energy,
         text: text.trim() || null,
         plan: plan.trim() || null,
       });
-      if (isNew) {
+      // El XP solo se paga por escribir el día en caliente: hoy o ayer. Rellenar
+      // dos semanas de golpe completaría el archivo igual, pero no debe pagar
+      // 20 entradas de una sentada — eso convierte la reflexión en granja.
+      const enCaliente = dia === dateKey() || dia === addDays(dateKey(), -1);
+      if (isNew && enCaliente) {
         const profile = await ensureProfile(userId);
-        await awardXp(profile, JOURNAL_XP, 'PER', 'journal_entry', { date: today });
+        await awardXp(profile, JOURNAL_XP, 'PER', 'journal_entry', { date: dia });
         const total = await countEntries();
         const fresh = await unlockAchievements(userId, evaluateAchievements({ journalCount: total }));
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -191,7 +196,11 @@ export default function Diario() {
           `+${JOURNAL_XP} XP a PER${fresh.length > 0 ? `\nLogro: ${fresh.map((a) => a.name).join(', ')}` : ''}`,
         );
       }
-      setSavedToday(true);
+      if (isNew && !(dia === dateKey() || dia === addDays(dateKey(), -1))) {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        Alert.alert('ENTRADA REGISTRADA', 'Día completado en tu archivo. Sin XP: solo lo paga el día en caliente.');
+      }
+      setRegistrado(true);
       await load();
     } catch (e) {
       Alert.alert('Error del sistema', e instanceof Error ? e.message : 'Fallo desconocido');
@@ -212,13 +221,52 @@ export default function Diario() {
           <View style={{ width: 24 }} />
         </View>
 
-        <SystemWindow color={colors.cyanDim}>
-          <Text style={styles.prompt}>{promptForDate(today)}</Text>
+        <View style={styles.navDias}>
+          <Pressable
+            onPress={() => setDia((d) => addDays(d, -1))}
+            hitSlop={10}
+            style={styles.navBoton}
+            accessibilityRole="button"
+            accessibilityLabel="Día anterior"
+          >
+            <Ionicons name="chevron-back" size={20} color={colors.cyan} />
+          </Pressable>
+          <View style={styles.navCentro}>
+            <Text style={styles.navFecha}>{nombreDia(dia)}</Text>
+            <Text style={styles.navRelativo}>{relativoDe(dia)}</Text>
+          </View>
+          <Pressable
+            onPress={() => setDia((d) => (d < today ? addDays(d, 1) : d))}
+            hitSlop={10}
+            disabled={dia >= today}
+            style={[styles.navBoton, dia >= today && styles.navBotonOff]}
+            accessibilityRole="button"
+            accessibilityLabel="Día siguiente"
+          >
+            <Ionicons name="chevron-forward" size={20} color={colors.cyan} />
+          </Pressable>
+        </View>
+
+        <SystemWindow color={registrado ? colors.cyan : colors.cyanDim}>
+          {/* Que se vea de un vistazo si ese día ya está escrito: el fallo era
+              entrar de nuevo y no saber si se había enviado. */}
+          <View style={styles.estadoFila}>
+            <Ionicons
+              name={registrado ? 'checkmark-circle' : 'ellipse-outline'}
+              size={16}
+              color={registrado ? colors.cyan : colors.textFaint}
+            />
+            <Text style={[styles.estado, registrado && styles.estadoOn]}>
+              {registrado ? 'REGISTRADO' : 'SIN REGISTRAR'}
+              {sucio ? ' · CAMBIOS SIN GUARDAR' : ''}
+            </Text>
+          </View>
+          <Text style={styles.prompt}>{promptForDate(dia)}</Text>
 
           <Text style={styles.label}>Ánimo</Text>
           <View style={styles.scale}>
             {MOOD_LABELS.map((lbl, i) => (
-              <Pressable key={lbl} onPress={() => setMood(i + 1)} style={[styles.scaleChip, mood === i + 1 && styles.scaleChipOn]}>
+              <Pressable key={lbl} onPress={() => { setMood(i + 1); setSucio(true); }} style={[styles.scaleChip, mood === i + 1 && styles.scaleChipOn]}>
                 <Text style={[styles.scaleNum, mood === i + 1 && styles.scaleNumOn]}>{i + 1}</Text>
               </Pressable>
             ))}
@@ -228,7 +276,7 @@ export default function Diario() {
           <Text style={styles.label}>Energía</Text>
           <View style={styles.scale}>
             {[1, 2, 3, 4, 5].map((n) => (
-              <Pressable key={n} onPress={() => setEnergy(n)} style={[styles.scaleChip, energy === n && styles.scaleChipOn]}>
+              <Pressable key={n} onPress={() => { setEnergy(n); setSucio(true); }} style={[styles.scaleChip, energy === n && styles.scaleChipOn]}>
                 <Text style={[styles.scaleNum, energy === n && styles.scaleNumOn]}>{n}</Text>
               </Pressable>
             ))}
@@ -238,7 +286,7 @@ export default function Diario() {
           <TextInput
             style={styles.textarea}
             value={text}
-            onChangeText={setText}
+            onChangeText={(v) => { setText(v); setSucio(true); }}
             placeholder="Qué hice, qué aprendí, qué haría distinto…"
             placeholderTextColor={colors.textFaint}
             multiline
@@ -248,7 +296,7 @@ export default function Diario() {
           <TextInput
             style={styles.textarea}
             value={plan}
-            onChangeText={setPlan}
+            onChangeText={(v) => { setPlan(v); setSucio(true); }}
             placeholder="Las tareas y batallas del día…"
             placeholderTextColor={colors.textFaint}
             multiline
@@ -284,7 +332,13 @@ export default function Diario() {
           </Text>
 
           <SystemButton
-            title={savedToday ? 'Actualizar entrada' : `Registrar día · +${JOURNAL_XP} XP`}
+            title={
+              registrado
+                ? 'Guardar cambios'
+                : dia === today || dia === addDays(today, -1)
+                  ? `Registrar el día · +${JOURNAL_XP} XP`
+                  : 'Registrar el día'
+            }
             onPress={save}
             loading={busy}
             style={{ marginTop: 14 }}
@@ -292,9 +346,9 @@ export default function Diario() {
         </SystemWindow>
 
         <SystemWindow color={colors.line}>
-          <Text style={styles.windowTitle}>CRÓNICA AUTOMÁTICA DE HOY</Text>
+          <Text style={styles.windowTitle}>CRÓNICA AUTOMÁTICA · {nombreDia(dia).toUpperCase()}</Text>
           {chronicle.length === 0 ? (
-            <Text style={styles.empty}>El sistema aún no ha registrado actividad hoy.</Text>
+            <Text style={styles.empty}>El sistema no registró actividad ese día.</Text>
           ) : (
             chronicle.map((line, i) => (
               <Text key={i} style={styles.chronicleLine}>
@@ -307,9 +361,16 @@ export default function Diario() {
         {recent.length > 0 ? (
           <SystemWindow color={colors.line}>
             <Text style={styles.windowTitle}>ENTRADAS ANTERIORES</Text>
+            <Text style={styles.hintLista}>Toca una entrada para leerla entera o editarla.</Text>
             {recent.map((e) => (
-              <View key={e.id} style={styles.entryRow}>
-                <Text style={styles.entryDate}>{e.date}</Text>
+              <Pressable
+                key={e.id}
+                onPress={() => setDia(e.date)}
+                style={styles.entryRow}
+                accessibilityRole="button"
+                accessibilityLabel={`Abrir el diario del ${e.date}`}
+              >
+                <Text style={styles.entryDate}>{nombreDia(e.date)}</Text>
                 <Text style={styles.entryMeta}>
                   {e.mood ? `ánimo ${e.mood}/5` : ''}
                   {e.mood && e.energy ? ' · ' : ''}
@@ -320,7 +381,7 @@ export default function Diario() {
                     {e.text}
                   </Text>
                 ) : null}
-              </View>
+              </Pressable>
             ))}
           </SystemWindow>
         ) : null}
@@ -340,6 +401,23 @@ const styles = StyleSheet.create({
   },
   title: { fontFamily: fonts.heading, fontSize: 15, letterSpacing: 3, color: colors.cyan },
   prompt: { fontFamily: fonts.semibold, fontSize: 15, color: colors.cyanText, lineHeight: 21 },
+  navDias: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
+  navBoton: {
+    width: 40,
+    height: 40,
+    borderWidth: 1,
+    borderColor: colors.cyanFaint,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  navBotonOff: { opacity: 0.3 },
+  navCentro: { flex: 1, alignItems: 'center' },
+  navFecha: { fontFamily: fonts.heading, fontSize: 15, letterSpacing: 1.5, color: colors.text },
+  navRelativo: { fontFamily: fonts.body, fontSize: 11.5, color: colors.textFaint, marginTop: 1 },
+  estadoFila: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 10 },
+  estado: { fontFamily: fonts.heading, fontSize: 11.5, letterSpacing: 2, color: colors.textFaint },
+  estadoOn: { color: colors.cyan },
+  hintLista: { fontFamily: fonts.body, fontSize: 11.5, color: colors.textFaint, marginBottom: 4 },
   label: {
     fontFamily: fonts.heading,
     fontSize: 12,

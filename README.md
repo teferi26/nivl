@@ -108,6 +108,14 @@ node scripts/setup-banco.mjs --conectar
 
 Necesita una cuenta gratuita en GoCardless Bank Account Data y sus dos credenciales en `banco-token.txt` (gitignorado). El consentimiento PSD2 caduca a los 90 días y hay que renovarlo.
 
+## El diario: cómo el coach te va conociendo
+
+Es la pieza que más le enseña sobre ti, así que entra **entero en su contexto**: las últimas 10 entradas con ánimo, energía y tus propias palabras. No es algo que consulte si se le ocurre — lo lee siempre, y con la doctrina de que dos días seguidos por debajo de 3 son una señal, no una queja.
+
+La pantalla navega por días con las flechas: puedes leer y **editar cualquier día pasado**, y arriba se ve de un vistazo si ese día está `REGISTRADO` o `SIN REGISTRAR`, más un aviso de cambios sin guardar. Tocar una entrada de la lista salta a ese día.
+
+Los 15 XP solo se pagan escribiendo **hoy o ayer**. Rellenar dos semanas de golpe completa tu archivo igual, pero no debe pagar veinte entradas de una sentada: eso convertiría la reflexión en una granja.
+
 ## Recuerdos: la semana en imágenes
 
 Al completar una misión el sistema ofrece hacerle una foto. Suma un 25 % de XP —eso ya existía como evidencia— y **la misma foto queda además como recuerdo**: pedirla dos veces sería absurdo.
@@ -122,7 +130,7 @@ También puedes **mandarle fotos al coach en el chat** con el botón `+`. Viajan
 
 6 pestañas: **Sistema** (orden del día + misiones + módulos), **Coach** (el chat), **Misiones**, **Mazmorras**, **Agenda**, **Perfil**. Módulos desde Sistema: Gym, Cardio, Nutrición, Dieta, Economía, Recuerdos, Compra, Diario, Informe, Avances, Oráculo y Contrato. Pantalla **Memoria** desde el chat del coach.
 
-Verificación: `npm run typecheck` · `npm test` (102 tests) · `npm run lint` · `npx expo export --platform ios`.
+Verificación: `npm run typecheck` · `npm test` (107 tests) · `npm run lint` · `npx expo export --platform ios`.
 
 ## Notas
 

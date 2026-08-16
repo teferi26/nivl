@@ -63,6 +63,7 @@ export async function buildContext(
     dungeonsRes,
     eventsRes,
     factsRes,
+    diarioRes,
   ] = await Promise.all([
     sb.from('profiles').select('*').eq('id', userId).maybeSingle(),
     sb.from('coach_dossier').select('content').eq('user_id', userId).maybeSingle(),
@@ -77,6 +78,12 @@ export async function buildContext(
     sb.from('dungeons').select('id, title, rank, status, deadline').eq('user_id', userId).eq('status', 'active'),
     sb.from('calendar_events').select('title, date, time, notes').eq('user_id', userId).gte('date', today).order('date').limit(15),
     sb.from('coach_facts').select('date, category, content').eq('user_id', userId).order('date', { ascending: false }).limit(120),
+    // El diario es donde de verdad se conoce a alguien: ánimo, energía y sus
+    // propias palabras sobre cómo fue el día. Sin esto el coach solo veía qué
+    // hizo, nunca cómo lo llevó, y ese es justo el dato que permite ajustar
+    // antes de que algo se rompa.
+    sb.from('journal_entries').select('date, mood, energy, text, plan').eq('user_id', userId)
+      .order('date', { ascending: false }).limit(10),
   ]);
 
   const p = profileRes.data as Record<string, any> | null;
@@ -161,6 +168,29 @@ export async function buildContext(
   if (weightRes.data?.length) {
     push('## Peso (más reciente primero)');
     push((weightRes.data as any[]).map((w) => `${w.date}: ${w.weight_kg} kg`).join(' · '));
+    push();
+  }
+
+  const diario = (diarioRes.data ?? []) as any[];
+  if (diario.length) {
+    push('## Diario del cazador (lo más reciente primero)');
+    for (const d of diario) {
+      const cabecera = [
+        d.date,
+        d.mood ? `ánimo ${d.mood}/5` : null,
+        d.energy ? `energía ${d.energy}/5` : null,
+      ].filter(Boolean).join(' · ');
+      // Recortado a 500: una entrada larga por sí sola puede pesar más que
+      // todo el resto del estado, y se paga en cada turno.
+      const cuerpo = [d.text, d.plan].filter(Boolean).join(' | ').slice(0, 500);
+      push(`- ${cabecera}${cuerpo ? `
+  ${cuerpo}` : ''}`);
+    }
+    push(
+      'Lectura: el ánimo y la energía anticipan lo que los números confirman una semana después. ' +
+        'Dos días seguidos por debajo de 3 son una señal, no una queja. Y lo que escribe con sus ' +
+        'palabras vale más que cualquier métrica para saber qué le mueve y qué le hunde.',
+    );
     push();
   }
 
