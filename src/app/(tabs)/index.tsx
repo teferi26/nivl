@@ -106,7 +106,7 @@ export default function Sistema() {
       if (seeded) {
         Alert.alert(
           'El sistema te da la bienvenida',
-          'Se han creado tus primeras misiones diarias. Edítalas en la pestaña Misiones.',
+          'Se han creado tus primeras misiones diarias. Edítalas en la pestaña Hábitos.',
         );
       }
     } catch (e) {
@@ -379,7 +379,7 @@ export default function Sistema() {
           </View>
           {sorted.length === 0 ? (
             <Text style={styles.empty}>
-              No hay misiones programadas para hoy. Crea las tuyas en la pestaña Misiones.
+              No hay misiones programadas para hoy. Crea las tuyas en la pestaña Hábitos.
             </Text>
           ) : (
             sorted.map((q) => (

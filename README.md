@@ -108,6 +108,14 @@ node scripts/setup-banco.mjs --conectar
 
 Necesita una cuenta gratuita en GoCardless Bank Account Data y sus dos credenciales en `banco-token.txt` (gitignorado). El consentimiento PSD2 caduca a los 90 días y hay que renovarlo.
 
+## Hábitos
+
+La pestaña donde se ve **cada hábito por separado**: lectura, skincare, correr, nadar, los correos, las llamadas en frío. La racha del perfil es global y se rompe si fallas cualquier cosa; esta cuenta cada uno por su cuenta y solo los días en los que tocaba — un hábito de lunes a viernes no se rompe el domingo.
+
+A los **21 días seguidos** se puede consolidar, y la decisión es tuya: puedes seguir contando, o darlo por adquirido. Consolidarlo es la recompensa de verdad — **deja de pedirte el toque diario y deja de poder romperte la racha**— y son 100 XP de una vez. Se puede volver a exigir con una pulsación larga.
+
+No hay tabla de hábitos: un hábito y una misión recurrente son la misma cosa mirada en dos momentos. Separarlas habría obligado a duplicar completadas, XP, racha y todas las herramientas del coach.
+
 ## El formato del coach
 
 El coach escribe en markdown porque así piensa: **negrita** para la cifra que importa, viñetas para las órdenes. En pantalla salía en crudo, con los asteriscos a la vista. `src/lib/markdown.ts` lo convierte en algo pintable — negrita, títulos, viñetas y numeradas — sin meter una librería, que traería su propia tipografía a pelear con el sistema de diseño.
@@ -134,9 +142,9 @@ También puedes **mandarle fotos al coach en el chat** con el botón `+`. Viajan
 
 ## Mapa de la app
 
-6 pestañas: **Sistema** (orden del día + misiones + módulos), **Coach** (el chat), **Misiones**, **Mazmorras**, **Agenda**, **Perfil**. Módulos desde Sistema: Gym, Cardio, Nutrición, Dieta, Economía, Recuerdos, Compra, Diario, Informe, Avances, Oráculo y Contrato. Pantalla **Memoria** desde el chat del coach.
+6 pestañas: **Sistema** (orden del día + misiones + módulos), **Coach** (el chat), **Hábitos**, **Mazmorras**, **Agenda**, **Perfil**. Módulos desde Sistema: Gym, Cardio, Nutrición, Dieta, Economía, Recuerdos, Compra, Diario, Informe, Avances, Oráculo y Contrato. Pantalla **Memoria** desde el chat del coach.
 
-Verificación: `npm run typecheck` · `npm test` (118 tests) · `npm run lint` · `npx expo export --platform ios`.
+Verificación: `npm run typecheck` · `npm test` (129 tests) · `npm run lint` · `npx expo export --platform ios`.
 
 ## Notas
 

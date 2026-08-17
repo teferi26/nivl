@@ -105,7 +105,7 @@ export default function Oraculo() {
         });
       }
       Alert.alert('MISIONES ASIGNADAS', `El sistema ha registrado ${selected.size} nueva(s) misión(es).`, [
-        { text: 'Ver misiones', onPress: () => router.replace('/(tabs)/misiones') },
+        { text: 'Ver misiones', onPress: () => router.replace('/(tabs)/habitos') },
       ]);
       setProposals([]);
       setGoal('');

@@ -148,6 +148,14 @@ export function cardioXp(kind: string, yaPagadoHoy: number): number {
   return Math.max(0, Math.min(base, margen));
 }
 
+// Consolidar un hábito: 21 días seguidos de la misma cosa.
+//
+// Pago único y por hábito, así que no se puede repetir ni granjear. Cabe de
+// sobra en el presupuesto (un día normal son 150-300 XP y las recompensas
+// puntuales admiten hasta la mitad de eso), y la recompensa de verdad no es el
+// XP: es dejar de tener que marcarlo.
+export const HABIT_ACQUIRED_XP = 100;
+
 // ── El Contrato (regla 6 del cuaderno): Puntos Bonus ────────────────
 // Las misiones extra (is_bonus) dan PB en vez de XP: moneda secundaria
 // canjeable por descanso. Cualitativa → no infla el nivel.

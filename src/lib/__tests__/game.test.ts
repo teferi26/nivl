@@ -30,6 +30,8 @@ function makeQuest(partial: Partial<Quest>): Quest {
     penalty_date: null,
     penalty_xp: null,
     is_bonus: false,
+    acquired_at: null,
+    acquired_streak: null,
     created_at: '',
     ...partial,
   };

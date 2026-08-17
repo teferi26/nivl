@@ -44,6 +44,10 @@ export interface Quest {
   penalty_date: string | null;
   penalty_xp: number | null;
   is_bonus: boolean;
+  // Hábito consolidado (migración 0015): con fecha puesta deja de programarse,
+  // así que ni pide marcarse ni puede romper la racha del día.
+  acquired_at: string | null;
+  acquired_streak: number | null;
   created_at: string;
 }
 

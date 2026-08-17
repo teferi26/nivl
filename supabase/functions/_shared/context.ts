@@ -100,7 +100,12 @@ export async function buildContext(
   }
 
   const DIAS = ['', 'L', 'M', 'X', 'J', 'V', 'S', 'D'];
-  const quests = ((questsRes.data ?? []) as any[]).filter((q) => !q.is_penalty);
+  // Un hábito consolidado sigue activo pero ya no se programa: si entrara en la
+  // lista de misiones, el coach lo daría por pendiente y lo reclamaría todos los
+  // días, que es justo lo contrario de la recompensa.
+  const todasQuests = ((questsRes.data ?? []) as any[]).filter((q) => !q.is_penalty);
+  const quests = todasQuests.filter((q) => !q.acquired_at);
+  const adquiridos = todasQuests.filter((q) => q.acquired_at);
   const penalties = ((questsRes.data ?? []) as any[]).filter((q) => q.is_penalty && q.penalty_date === today);
 
   const lines: string[] = [];
@@ -124,6 +129,19 @@ export async function buildContext(
     push(`- [${q.id}] "${q.title}" · ${q.stat} · ${q.difficulty} · días ${dias} · ${counts.get(q.id) ?? 0} veces en 14d · ${estado}${q.is_bonus ? ' · EXTRA (paga PB)' : ''}`);
   }
   push();
+
+  if (adquiridos.length) {
+    push('## Hábitos ya adquiridos');
+    for (const q of adquiridos) {
+      push(`- "${q.title}" · consolidado tras ${q.acquired_streak ?? '?'} días seguidos`);
+    }
+    push(
+      'Estos NO se le piden ni cuentan para la racha: se los ganó. No se los reclames ni los ' +
+        'metas en el plan del día como obligación. Si ves que uno se ha caído de verdad, ' +
+        'menciónalo una vez y deja que decida él.',
+    );
+    push();
+  }
 
   if (penalties.length) {
     push('## Misiones de penalización pendientes hoy');

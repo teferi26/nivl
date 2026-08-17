@@ -10,6 +10,10 @@ export function questsScheduledOn(quests: Quest[], date: string): Quest[] {
   return quests.filter((q) => {
     if (!q.active) return false;
     if (q.is_penalty) return q.penalty_date === date;
+    // Un hábito consolidado ya no se pide. Esa es exactamente la recompensa por
+    // los 21 días: deja de exigir el toque diario y deja de poder romperte la
+    // racha. Se sigue pudiendo marcar a mano desde Hábitos si apetece.
+    if (q.acquired_at) return false;
     return q.days_of_week.includes(wd);
   });
 }

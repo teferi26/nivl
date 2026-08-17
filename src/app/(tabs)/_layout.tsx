@@ -35,11 +35,11 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
-        name="misiones"
+        name="habitos"
         options={{
-          title: 'Misiones',
+          title: 'Hábitos',
           tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="sword-cross" color={color} size={size} />
+            <MaterialCommunityIcons name="calendar-check-outline" color={color} size={size} />
           ),
         }}
       />
