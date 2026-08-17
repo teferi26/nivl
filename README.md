@@ -108,6 +108,18 @@ node scripts/setup-banco.mjs --conectar
 
 Necesita una cuenta gratuita en GoCardless Bank Account Data y sus dos credenciales en `banco-token.txt` (gitignorado). El consentimiento PSD2 caduca a los 90 días y hay que renovarlo.
 
+## La agenda
+
+Tres vistas que de verdad son tres cosas distintas, no la misma lista repetida:
+
+- **Día** — eje de horas con los bloques del plan del coach colocados por su hora y su duración, los eventos con hora, y una línea roja marcando el momento actual.
+- **Semana** — tira de siete días con una barra de carga por día, y debajo el día elegido en su eje.
+- **Mes** — rejilla con puntos por tipo, y debajo el día elegido en su eje.
+
+Lo que no tiene hora —misiones del día, deadlines de mazmorra, eventos sin hora— va a una tira superior, como el "todo el día" de cualquier calendario: meterlo en el eje obligaría a inventarle una hora que no tiene.
+
+La colocación vive en `src/lib/timeline.ts`, con tests: una hora mide siempre lo mismo, el eje se recorta a las horas con contenido (un día de 5:00 a 22:00 no necesita seis horas de vacío arriba), y lo que se solapa se reparte el ancho **por tramo**, así que dos citas a las 9:00 no dejan la tarde a media pantalla.
+
 ## Hábitos
 
 La pestaña donde se ve **cada hábito por separado**: lectura, skincare, correr, nadar, los correos, las llamadas en frío. La racha del perfil es global y se rompe si fallas cualquier cosa; esta cuenta cada uno por su cuenta y solo los días en los que tocaba — un hábito de lunes a viernes no se rompe el domingo.
@@ -144,7 +156,7 @@ También puedes **mandarle fotos al coach en el chat** con el botón `+`. Viajan
 
 6 pestañas: **Sistema** (orden del día + misiones + módulos), **Coach** (el chat), **Hábitos**, **Mazmorras**, **Agenda**, **Perfil**. Módulos desde Sistema: Gym, Cardio, Nutrición, Dieta, Economía, Recuerdos, Compra, Diario, Informe, Avances, Oráculo y Contrato. Pantalla **Memoria** desde el chat del coach.
 
-Verificación: `npm run typecheck` · `npm test` (129 tests) · `npm run lint` · `npx expo export --platform ios`.
+Verificación: `npm run typecheck` · `npm test` (143 tests) · `npm run lint` · `npx expo export --platform ios`.
 
 ## Notas
 
