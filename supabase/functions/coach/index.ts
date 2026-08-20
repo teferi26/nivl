@@ -32,13 +32,25 @@ import { adminClient, userClient, type Db } from '../_shared/db.ts';
 import { buildSystem } from '../_shared/prompt.ts';
 import { executeTool, TOOL_DEFS } from '../_shared/tools.ts';
 
-const MAX_TOOL_ITERATIONS = 8;
+// Cinco vueltas, no ocho. Cada vuelta reenvía el contexto entero y genera
+// pensamiento: con ocho, un turno se comía el presupuesto de tiempo de la
+// función antes de contestar nada.
+const MAX_TOOL_ITERATIONS = 5;
+
+// Presupuesto de reloj del turno.
+//
+// Una Edge Function de Supabase se corta sobre los 150 segundos. Cuando eso
+// pasa NO queda ni respuesta ni registro en coach_runs: el turno se evapora y
+// desde la app parece que el sistema no contesta. Con este margen, al pasar de
+// 100 s se deja de encadenar herramientas y se contesta con lo que haya, que
+// siempre es mejor que un silencio.
+const PRESUPUESTO_MS = 100_000;
 // Doce intercambios. El hilo es continuo de cara a ti, pero lo que se reenvía
 // a la API tiene tope: la memoria larga vive en el dossier y en coach_facts,
 // no en el transcript. Sin tope, la conversación crece sin fin y a los seis
 // meses cada turno arrastra cientos de miles de tokens, primero caros y luego
 // imposibles. Si algo de un turno viejo importa, el coach lo anota como hecho.
-const HISTORY_LIMIT = 24;
+const HISTORY_LIMIT = 12;
 // Freno de mano: si un turno encadena tantas herramientas que ya ha costado
 // esto, algo se ha ido de madre y es mejor cortar que despertarse con la
 // sorpresa. Con Sonnet un turno normal ronda 0,07 $ y un brief con herramientas
@@ -78,13 +90,32 @@ function modeloDe(kind: Kind): string {
 }
 
 // Los rituales que deciden el rumbo piensan más que una charla suelta.
+//
+// El chat baja a 'medium' por una razón medida: con 'high' un turno generaba
+// entre 2.000 y 11.000 fichas de pensamiento, y generar es la parte lenta
+// (decenas de fichas por segundo). Un "¿cómo voy?" no necesita once mil fichas
+// de deliberación, necesita responder antes de que sueltes el móvil.
 const EFFORT_BY_KIND: Record<Kind, Effort> = {
-  chat: 'high',
+  chat: 'low',
   brief: 'high',
   plan: 'high',
   revision_semanal: 'xhigh',
   cierre_mensual: 'xhigh',
   escalada: 'high',
+};
+
+// Techo de salida por tipo. El de chat es el que más importa: 16.000 fichas de
+// tope invitaban a respuestas kilométricas que además tardaban minutos.
+const MAX_TOKENS_BY_KIND: Record<Kind, number> = {
+  // Ojo: el pensamiento cuenta DENTRO de este tope. Con 3.000 el modelo se lo
+  // gastó entero deliberando y devolvió un turno VACÍO. El techo tiene que dar
+  // para pensar y además responder.
+  chat: 8000,
+  brief: 6000,
+  plan: 6000,
+  revision_semanal: 10000,
+  cierre_mensual: 10000,
+  escalada: 4000,
 };
 
 const admin = adminClient();
@@ -129,7 +160,7 @@ function trimHistory(messages: ApiMessage[]): ApiMessage[] {
  * mensajes vacíos, y un tool_use sin su tool_result detrás también.
  */
 function aligerarHistorial(messages: ApiMessage[]): ApiMessage[] {
-  const TOPE_RESULTADO = 1200;
+  const TOPE_RESULTADO = 600;
   return messages.map((m) => {
     if (!Array.isArray(m.content)) return m;
     const blocks = m.content
@@ -262,12 +293,18 @@ ${userText}` : userText,
   // devuelve la API: con el mecanismo de reserva puede resolver en otro.
   let model = elegido;
 
+  const arranque = Date.now();
+
   for (let i = 0; i < MAX_TOOL_ITERATIONS; i++) {
+    // Si ya no queda reloj, se corta el encadenado: con lo que hay se contesta,
+    // y sin él la función muere sin dejar nada.
+    const sinTiempo = Date.now() - arranque > PRESUPUESTO_MS;
     const turn = await callClaude({
       model: elegido,
       system,
       messages,
-      tools: TOOL_DEFS,
+      tools: sinTiempo ? undefined : TOOL_DEFS,
+      maxTokens: MAX_TOKENS_BY_KIND[kind],
       effort: EFFORT_BY_KIND[kind],
       onText: (d) => emit('text', { delta: d }),
       onThinking: () => emit('thinking', {}),
@@ -523,6 +560,14 @@ Deno.serve(async (req) => {
     if (/\b429\b|rate.?limit/i.test(texto)) {
       return 'La API va saturada ahora mismo. Reintenta en un minuto.';
     }
+    // Un 400 es un fallo NUESTRO en la petición, y esconderlo detrás de un
+    // "no responde" deja el sistema mudo sin pista de por qué. El cuerpo del
+    // error de la API no lleva credenciales: es seguro enseñarlo.
+    const detalle = /anthropic (\d{3}):([\s\S]*)/.exec(texto);
+    if (detalle) {
+      const cuerpo = (detalle[2] ?? '').replace(/\s+/g, ' ').slice(0, 200);
+      return `La API ha rechazado la petición (${detalle[1]}): ${cuerpo}`;
+    }
     return 'El sistema no responde. Reintenta en un momento.';
   };
 
@@ -548,10 +593,26 @@ Deno.serve(async (req) => {
   }
 
   const encoder = new TextEncoder();
+  // Compartida entre start() y cancel(): el objeto permite que cancel la mute.
+  const vivoGlobal = { valor: true };
   const stream = new ReadableStream({
     async start(controller) {
+      // Si el móvil se va (bloqueas la pantalla, cambias de app, se cae la
+      // cobertura), el canal se cierra y cada enqueue lanza. Sin esta guarda esa
+      // excepción tumbaba el turno ENTERO: la respuesta no se guardaba, no
+      // quedaba registro, y al volver a la app no había nada. Y no tiene
+      // sentido, porque el mensaje ya estaba enviado y el trabajo ya estaba
+      // pagado.
+      //
+      // Ahora el turno sigue hasta el final aunque nadie escuche: la respuesta
+      // se persiste igual y aparece al reabrir el chat.
       const emit = (event: string, data: unknown) => {
-        controller.enqueue(encoder.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`));
+        if (!vivoGlobal.valor) return;
+        try {
+          controller.enqueue(encoder.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`));
+        } catch {
+          vivoGlobal.valor = false;
+        }
       };
       emit('start', { thread_id: threadId });
       try {
@@ -576,8 +637,17 @@ Deno.serve(async (req) => {
         await finish(null, message);
         emit('error', { message });
       } finally {
-        controller.close();
+        try {
+          controller.close();
+        } catch {
+          /* ya estaba cerrado porque el cliente se fue: no es un error. */
+        }
       }
+    },
+
+    // El cliente se ha ido. NO se aborta nada: el turno termina y se guarda.
+    cancel() {
+      vivoGlobal.valor = false;
     },
   });
 

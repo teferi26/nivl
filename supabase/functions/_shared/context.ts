@@ -81,7 +81,10 @@ export async function buildContext(
     sb.from('rule_checks').select('rule_id, date').eq('user_id', userId).gte('date', since14),
     sb.from('dungeons').select('id, title, rank, status, deadline').eq('user_id', userId).eq('status', 'active'),
     sb.from('calendar_events').select('title, date, time, notes').eq('user_id', userId).gte('date', today).order('date').limit(15),
-    sb.from('coach_facts').select('date, category, content').eq('user_id', userId).order('date', { ascending: false }).limit(120),
+    // 40 y no 120: los hechos son la parte más gorda del estado (8.700 fichas
+    // con 46 filas) y se pagan en cada turno. Lo estable de verdad vive en el
+    // dossier, que para eso se destila.
+    sb.from('coach_facts').select('date, category, content').eq('user_id', userId).order('date', { ascending: false }).limit(25),
     // El diario es donde de verdad se conoce a alguien: ánimo, energía y sus
     // propias palabras sobre cómo fue el día. Sin esto el coach solo veía qué
     // hizo, nunca cómo lo llevó, y ese es justo el dato que permite ajustar
@@ -256,15 +259,22 @@ export async function buildContext(
   if (facts.length) {
     // Lo perdurable no caduca; lo demás, solo lo reciente.
     const perdurable = facts.filter((f) => f.category === 'aprendizaje' || f.category === 'regla');
-    const reciente = facts.filter((f) => f.category !== 'aprendizaje' && f.category !== 'regla').slice(0, 60);
+    const reciente = facts.filter((f) => f.category !== 'aprendizaje' && f.category !== 'regla').slice(0, 15);
+
+    // Recortados a 400 caracteres. Un hecho importado del coach anterior puede
+    // ocupar 1.500 y son decenas: sin recorte, el registro solo ya se comía
+    // varios miles de fichas en CADA turno, y eso es lo que hacía que un "hola"
+    // tardase minutos. Lo que no quepa aquí está entero en el dossier.
+    const corto = (t: string) => (t.length > 400 ? `${t.slice(0, 400)}…` : t);
+
     if (perdurable.length) {
       push('## Lo que has aprendido sobre él');
-      for (const f of perdurable) push(`- (${f.date}) ${f.content}`);
+      for (const f of perdurable.slice(0, 12)) push(`- (${f.date}) ${corto(f.content)}`);
       push();
     }
     if (reciente.length) {
       push('## Registro reciente');
-      for (const f of reciente) push(`- (${f.date}) [${f.category}] ${f.content}`);
+      for (const f of reciente) push(`- (${f.date}) [${f.category}] ${corto(f.content)}`);
       push();
     }
   }
