@@ -11,7 +11,8 @@ import { useAuth } from '@/lib/auth';
 import { createQuest, deleteQuest, ensureProfile, updateQuest } from '@/lib/data';
 import { dateKey } from '@/lib/dates';
 import { awardXp } from '@/lib/engine';
-import { HABIT_ACQUIRED_XP } from '@/lib/game';
+import { desmarcarRegla, fetchRuleChecks, fetchRules, marcarReglaCumplida } from '@/lib/contract';
+import { HABIT_ACQUIRED_XP, RULE_BREAK_XP } from '@/lib/game';
 import {
   consolidarHabito,
   fetchHabitos,
@@ -20,7 +21,7 @@ import {
 } from '@/lib/habitdata';
 import { HABIT_TARGET_DAYS, ordenarPorCercania, progresoHabito, type ProgresoHabito } from '@/lib/habits';
 import { colors, fonts } from '@/lib/theme';
-import type { Quest } from '@/lib/types';
+import type { Quest, Rule } from '@/lib/types';
 
 const DIAS = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
 
@@ -44,6 +45,9 @@ export default function Habitos() {
   const [formOpen, setFormOpen] = useState(false);
   const [editando, setEditando] = useState<Quest | null>(null);
   const [busy, setBusy] = useState(false);
+  const [reglas, setReglas] = useState<Rule[]>([]);
+  const [cumplidas, setCumplidas] = useState<Set<string>>(new Set());
+  const pendientesReglas = reglas.filter((r) => !cumplidas.has(r.id)).length;
 
   const cargar = useCallback(async () => {
     try {
@@ -54,6 +58,9 @@ export default function Habitos() {
       setProgresos(mapa);
       setEnCurso(ordenarPorCercania(todos.filter((q) => !q.acquired_at), mapa));
       setAdquiridos(todos.filter((q) => q.acquired_at));
+      const [rs, checks] = await Promise.all([fetchRules(), fetchRuleChecks(hoy)]);
+      setReglas(rs);
+      setCumplidas(checks);
     } catch (e) {
       Alert.alert('Error del sistema', e instanceof Error ? e.message : 'Fallo desconocido');
     }
@@ -64,6 +71,36 @@ export default function Habitos() {
       cargar();
     }, [cargar]),
   );
+
+  /**
+   * Marcar una regla del contrato como cumplida hoy.
+   *
+   * Es optimista a propósito: son seis toques seguidos cada noche y esperar a
+   * la red en cada uno haría que se sintiera rota. Si falla, se revierte.
+   */
+  const alternarRegla = async (r: Rule) => {
+    if (!userId) return;
+    const estaba = cumplidas.has(r.id);
+    setCumplidas((prev) => {
+      const s = new Set(prev);
+      if (estaba) s.delete(r.id);
+      else s.add(r.id);
+      return s;
+    });
+    try {
+      if (estaba) await desmarcarRegla(r.id, hoy);
+      else await marcarReglaCumplida(userId, r.id, hoy);
+      if (!estaba) Haptics.selectionAsync().catch(() => {});
+    } catch (e) {
+      setCumplidas((prev) => {
+        const s = new Set(prev);
+        if (estaba) s.add(r.id);
+        else s.delete(r.id);
+        return s;
+      });
+      Alert.alert('Error del sistema', e instanceof Error ? e.message : 'Fallo desconocido');
+    }
+  };
 
   const consolidar = (q: Quest, p: ProgresoHabito) => {
     Alert.alert(
@@ -134,6 +171,42 @@ export default function Habitos() {
             seguir contando.
           </Text>
         </SystemWindow>
+
+        {reglas.length > 0 ? (
+          <>
+            <Text style={styles.seccion}>REGLAS DEL CONTRATO · HOY</Text>
+            <SystemWindow color={pendientesReglas > 0 ? colors.redDim : colors.cyanDim}>
+              <Text style={styles.introReglas}>
+                {pendientesReglas === 0
+                  ? 'Las has cumplido todas hoy. El sistema toma nota.'
+                  : `Marca las que hayas cumplido. Lo que quede sin marcar al cerrar el día cuenta como roto: ${RULE_BREAK_XP} XP por regla y su consecuencia mañana.`}
+              </Text>
+              {reglas.map((r) => {
+                const ok = cumplidas.has(r.id);
+                return (
+                  <Pressable
+                    key={r.id}
+                    onPress={() => alternarRegla(r)}
+                    style={styles.reglaFila}
+                    accessibilityRole="checkbox"
+                    accessibilityState={{ checked: ok }}
+                    accessibilityLabel={r.text}
+                  >
+                    <View style={[styles.caja, ok && styles.cajaOn]}>
+                      {ok ? <Ionicons name="checkmark" size={13} color={colors.bg} /> : null}
+                    </View>
+                    <View style={{ flex: 1, minWidth: 0 }}>
+                      <Text style={[styles.reglaTexto, ok && styles.reglaHecha]}>{r.text}</Text>
+                      {!ok ? (
+                        <Text style={styles.reglaConsecuencia}>si no: {r.consequence}</Text>
+                      ) : null}
+                    </View>
+                  </Pressable>
+                );
+              })}
+            </SystemWindow>
+          </>
+        ) : null}
 
         {enCurso.length === 0 && adquiridos.length === 0 ? (
           <SystemWindow>
@@ -277,6 +350,28 @@ const styles = StyleSheet.create({
   dias: { fontFamily: fonts.heading, fontSize: 11.5, letterSpacing: 2, color: colors.textFaint },
   meta: { fontFamily: fonts.body, fontSize: 12, color: colors.textDim },
   metaTenue: { fontFamily: fonts.body, fontSize: 11, color: colors.textFaint, marginTop: 6 },
+  introReglas: { fontFamily: fonts.body, fontSize: 12, lineHeight: 17, color: colors.textDim, marginBottom: 8 },
+  reglaFila: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 10,
+    paddingVertical: 8,
+    borderTopWidth: 1,
+    borderTopColor: colors.line,
+  },
+  caja: {
+    width: 19,
+    height: 19,
+    borderWidth: 1.5,
+    borderColor: colors.cyanDim,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 1,
+  },
+  cajaOn: { backgroundColor: colors.cyan, borderColor: colors.cyan },
+  reglaTexto: { fontFamily: fonts.semibold, fontSize: 13.5, color: colors.text, lineHeight: 19 },
+  reglaHecha: { color: colors.textDim, textDecorationLine: 'line-through' },
+  reglaConsecuencia: { fontFamily: fonts.body, fontSize: 11.5, color: colors.red, marginTop: 2 },
   seccion: {
     fontFamily: fonts.heading,
     fontSize: 12,

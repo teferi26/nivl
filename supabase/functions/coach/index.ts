@@ -154,6 +154,29 @@ function aligerarHistorial(messages: ApiMessage[]): ApiMessage[] {
  * actual se lee a una décima parte. El estado fresco y el mensaje nuevo van
  * después, así que el prefijo se mantiene byte a byte estable.
  */
+/**
+ * Un error legible para el modelo.
+ *
+ * Los errores de PostgREST no son instancias de Error: son objetos con
+ * message/code/details/hint. Con `String(e)` llegaban al modelo como
+ * "[object Object]", que no le dice nada y le impide corregirse solo — que es
+ * justo lo que sostiene todo el diseño de herramientas sin validación estricta.
+ */
+function describirFallo(e: unknown): string {
+  if (e instanceof Error) return e.message;
+  if (e && typeof e === 'object') {
+    const o = e as { message?: string; code?: string; details?: string; hint?: string };
+    const partes = [o.message, o.details, o.hint].filter(Boolean);
+    if (partes.length) return `${partes.join(' · ')}${o.code ? ` [${o.code}]` : ''}`;
+    try {
+      return JSON.stringify(e).slice(0, 300);
+    } catch {
+      return 'error desconocido';
+    }
+  }
+  return String(e);
+}
+
 function markCacheable(messages: ApiMessage[]): ApiMessage[] {
   if (!messages.length) return messages;
   const out = messages.slice();
@@ -295,7 +318,7 @@ ${userText}` : userText,
         });
         emit('tool', { name: call.name, ok: true, detail: text.slice(0, 200) });
       } catch (e) {
-        text = `Error: ${e instanceof Error ? e.message : String(e)}`;
+        text = `Error: ${describirFallo(e)}`;
         isError = true;
         emit('tool', { name: call.name, ok: false, detail: text.slice(0, 200) });
       }

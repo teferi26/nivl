@@ -40,6 +40,71 @@ export function rachaVisible(
   return { valor: streakDays + (hoyCerrado ? 1 : 0), hoyCerrado };
 }
 
+/**
+ * Reglas incumplidas en los días ya cerrados.
+ *
+ * El criterio es el mismo que con las misiones: no marcarla es fallarla. Pero
+ * el castigo se AGREGA por día y se topa igual que el de misiones — sin tope,
+ * seis reglas por seis días de ausencia serían 900 XP de golpe, y eso no es un
+ * sistema exigente, es uno del que te vas.
+ *
+ * Se devuelve una entrada por día con reglas rotas para que el ejecutor cree
+ * UNA consecuencia agregada, no seis.
+ */
+export function reglasIncumplidas(input: {
+  fromDate: string;
+  today: string;
+  reglas: { id: string; text: string; consequence: string }[];
+  checksPorDia: Map<string, Set<string>>;
+  freezeUntil: string | null;
+  xpPorRegla: number;
+  topeDiario: number;
+}): { date: string; rotas: { id: string; text: string; consequence: string }[]; xp: number }[] {
+  if (!input.reglas.length) return [];
+
+  // Nunca se juzga a alguien que todavía no ha empezado a marcar.
+  //
+  // El día que esta función existe, el historial entero está sin marcar: sin
+  // esta guarda, el primer cierre castigaría semanas enteras por no haber usado
+  // algo que no existía. Y quien nunca ha marcado nada no está incumpliendo,
+  // está sin enterarse — eso se arregla explicándolo, no cobrando.
+  //
+  // El juicio arranca el día de la primera marca. A partir de ahí, el silencio
+  // sí cuenta como roto.
+  const diasConMarcas = [...input.checksPorDia.entries()]
+    .filter(([, set]) => set.size > 0)
+    .map(([dia]) => dia)
+    .sort();
+  if (!diasConMarcas.length) return [];
+  const desdeCuando = diasConMarcas[0]!;
+
+  const freezeUntil = input.freezeUntil ? input.freezeUntil.slice(0, 10) : null;
+  const salida: { date: string; rotas: { id: string; text: string; consequence: string }[]; xp: number }[] = [];
+
+  let day = input.fromDate;
+  while (day < input.today) {
+    if (freezeUntil && day <= freezeUntil) {
+      day = addDays(day, 1);
+      continue;
+    }
+    if (day < desdeCuando) {
+      day = addDays(day, 1);
+      continue;
+    }
+    const marcadas = input.checksPorDia.get(day) ?? new Set<string>();
+    const rotas = input.reglas.filter((r) => !marcadas.has(r.id));
+    if (rotas.length) {
+      salida.push({
+        date: day,
+        rotas,
+        xp: Math.min(rotas.length * input.xpPorRegla, input.topeDiario),
+      });
+    }
+    day = addDays(day, 1);
+  }
+  return salida;
+}
+
 export interface CloseInput {
   fromDate: string;
   today: string;

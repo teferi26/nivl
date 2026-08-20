@@ -214,7 +214,7 @@ export default function Diario() {
     <SafeAreaView style={styles.screen} edges={['top']}>
       <ScrollView automaticallyAdjustKeyboardInsets contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <View style={styles.header}>
-          <Pressable onPress={() => router.back()} hitSlop={10}>
+          <Pressable onPress={() => router.back()} hitSlop={10} accessibilityRole="button" accessibilityLabel="Volver">
             <Ionicons name="chevron-back" size={24} color={colors.cyan} />
           </Pressable>
           <Text style={styles.title}>DIARIO DEL CAZADOR</Text>

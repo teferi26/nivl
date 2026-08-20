@@ -1,10 +1,12 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Haptics from 'expo-haptics';
+import * as Sharing from 'expo-sharing';
 import { Image } from 'expo-image';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   Animated,
   Dimensions,
   Pressable,
@@ -14,6 +16,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { captureRef } from 'react-native-view-shot';
 import { SystemButton } from '@/components/SystemButton';
 import { SystemWindow } from '@/components/SystemWindow';
 import { generarResumen } from '@/lib/coach';
@@ -26,6 +29,8 @@ const DURACION_MS = 6000;
 /** El pase: una diapositiva a la vez, con barras de progreso arriba. */
 function Pase({ recap, onSalir }: { recap: Recap; onSalir: () => void }) {
   const [i, setI] = useState(0);
+  const [compartiendo, setCompartiendo] = useState(false);
+  const lienzo = useRef<View>(null);
   const [urls, setUrls] = useState<Record<string, string>>({});
   const progreso = useRef(new Animated.Value(0)).current;
   const slides = recap.slides;
@@ -68,11 +73,35 @@ function Pase({ recap, onSalir }: { recap: Recap; onSalir: () => void }) {
     }
   }, [i, slides.length, recap.id]);
 
+  /**
+   * Sacar la diapositiva como imagen.
+   *
+   * Era lo que faltaba: el pase se podía ver pero no extraer, así que el
+   * recuerdo se quedaba dentro de la app. Se captura lo que hay en pantalla —
+   * foto de fondo incluida— y se abre el compartir del sistema.
+   */
+  const compartir = async () => {
+    if (compartiendo || !lienzo.current) return;
+    setCompartiendo(true);
+    try {
+      const uri = await captureRef(lienzo, { format: 'jpg', quality: 0.92 });
+      if (!(await Sharing.isAvailableAsync())) {
+        Alert.alert('No disponible', 'Este dispositivo no permite compartir archivos.');
+        return;
+      }
+      await Sharing.shareAsync(uri, { mimeType: 'image/jpeg', dialogTitle: 'Tu semana' });
+    } catch (e) {
+      Alert.alert('No se pudo extraer', e instanceof Error ? e.message : 'Fallo desconocido');
+    } finally {
+      setCompartiendo(false);
+    }
+  };
+
   if (!slide) return null;
   const foto = slide.foto ? urls[slide.foto] : undefined;
 
   return (
-    <View style={styles.pase}>
+    <View style={styles.pase} ref={lienzo} collapsable={false}>
       {foto ? (
         <Image source={{ uri: foto }} style={StyleSheet.absoluteFill} contentFit="cover" transition={220} />
       ) : null}
@@ -103,6 +132,20 @@ function Pase({ recap, onSalir }: { recap: Recap; onSalir: () => void }) {
           accessibilityLabel="Cerrar el resumen"
         >
           <Ionicons name="close" size={26} color={colors.text} />
+        </Pressable>
+
+        <Pressable
+          onPress={compartir}
+          hitSlop={12}
+          style={styles.compartir}
+          accessibilityRole="button"
+          accessibilityLabel="Extraer esta diapositiva como imagen"
+        >
+          {compartiendo ? (
+            <ActivityIndicator size="small" color={colors.text} />
+          ) : (
+            <Ionicons name="share-outline" size={22} color={colors.text} />
+          )}
         </Pressable>
 
         {/* Mitad izquierda atrás, mitad derecha adelante: el gesto que ya
@@ -280,6 +323,7 @@ const styles = StyleSheet.create({
   barraPista: { flex: 1, height: 2.5, backgroundColor: colors.track },
   barraRelleno: { height: 2.5, backgroundColor: colors.cyan },
   cerrar: { position: 'absolute', top: 44, right: 18, zIndex: 10 },
+  compartir: { position: 'absolute', top: 46, right: 58, zIndex: 10 },
   zonas: { ...StyleSheet.absoluteFillObject, flexDirection: 'row' },
   zona: { flex: 1 },
   contenidoSlide: { flex: 1, justifyContent: 'flex-end', paddingBottom: 60, maxWidth: width - 44 },

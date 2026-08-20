@@ -83,6 +83,8 @@ const HUELLAS = {
   '0012': `to_regclass('public.cardio_sessions') is not null`,
   '0013': `to_regclass('public.transactions') is not null`,
   '0014': `to_regclass('public.recaps') is not null`,
+  '0015': `exists(select 1 from information_schema.columns where table_name = 'quests' and column_name = 'acquired_at')`,
+  '0016': `to_regclass('public.rule_checks') is not null`,
 };
 
 const archivos = readdirSync(MIGRATIONS)

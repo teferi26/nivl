@@ -120,6 +120,14 @@ Lo que no tiene hora —misiones del día, deadlines de mazmorra, eventos sin ho
 
 La colocación vive en `src/lib/timeline.ts`, con tests: una hora mide siempre lo mismo, el eje se recorta a las horas con contenido (un día de 5:00 a 22:00 no necesita seis horas de vacío arriba), y lo que se solapa se reparte el ancho **por tramo**, así que dos citas a las 9:00 no dejan la tarde a media pantalla.
 
+## El contrato se marca cada día
+
+Las reglas innegociables aparecen en Hábitos y se marcan como **cumplidas**. Lo que quede sin marcar al cerrar el día cuenta como roto: 25 XP por regla y su consecuencia al día siguiente.
+
+Antes una regla solo existía cuando confesabas haberla roto, y eso deja el contrato en manos de la honestidad del peor momento del día.
+
+Tres guardas para que sea exigente sin ser una emboscada: el castigo diario **se agrega y se topa** en 150 XP (seis reglas por seis días de ausencia serían 900 de golpe), la consecuencia es **una sola** aunque caigan varias (seis castigos el mismo día no se hacen, se abandonan), y **el juicio no empieza hasta la primera vez que marcas algo** — quien nunca ha marcado no está incumpliendo, está sin enterarse.
+
 ## Hábitos
 
 La pestaña donde se ve **cada hábito por separado**: lectura, skincare, correr, nadar, los correos, las llamadas en frío. La racha del perfil es global y se rompe si fallas cualquier cosa; esta cuenta cada uno por su cuenta y solo los días en los que tocaba — un hábito de lunes a viernes no se rompe el domingo.
@@ -156,7 +164,7 @@ También puedes **mandarle fotos al coach en el chat** con el botón `+`. Viajan
 
 6 pestañas: **Sistema** (orden del día + misiones + módulos), **Coach** (el chat), **Hábitos**, **Mazmorras**, **Agenda**, **Perfil**. Módulos desde Sistema: Gym, Cardio, Nutrición, Dieta, Economía, Recuerdos, Compra, Diario, Informe, Avances, Oráculo y Contrato. Pantalla **Memoria** desde el chat del coach.
 
-Verificación: `npm run typecheck` · `npm test` (143 tests) · `npm run lint` · `npx expo export --platform ios`.
+Verificación: `npm run typecheck` · `npm test` (151 tests) · `npm run lint` · `npx expo export --platform ios`.
 
 ## Notas
 

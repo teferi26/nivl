@@ -51,6 +51,11 @@ const TABLES = [
   'category_rules',
   'budgets',
   'money_plan',
+  // La memoria visual (0014) y las marcas del contrato (0016). Las fotos son
+  // lo más personal que guarda la app: si alguien se va, se va con ellas.
+  'quest_photos',
+  'recaps',
+  'rule_checks',
 ] as const;
 
 // Export completo de los datos del usuario a un JSON compartible.

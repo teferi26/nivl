@@ -1,5 +1,5 @@
 import { describe, expect, test } from '@jest/globals';
-import { computeDayClose, questsScheduledOn, rachaVisible } from '../closing';
+import { computeDayClose, questsScheduledOn, rachaVisible, reglasIncumplidas } from '../closing';
 import type { Quest } from '../types';
 
 function makeQuest(partial: Partial<Quest>): Quest {
@@ -268,5 +268,109 @@ describe('rachaVisible', () => {
   test('un día sin misiones programadas no cierra nada', () => {
     // Domingo sin nada que hacer no es una racha ganada, es un día libre.
     expect(rachaVisible(4, [], new Set())).toEqual({ valor: 4, hoyCerrado: false });
+  });
+});
+
+describe('reglasIncumplidas', () => {
+  const reglas = [
+    { id: 'r1', text: 'Nada de pantallas después de las 22:00', consequence: 'Correr 5 km' },
+    { id: 'r2', text: 'Sin azúcar', consequence: '20 burpees' },
+  ];
+  const base = {
+    fromDate: LUNES,
+    today: MARTES,
+    reglas,
+    freezeUntil: null,
+    xpPorRegla: 25,
+    topeDiario: 150,
+  };
+
+  // El juicio solo arranca cuando ya ha marcado alguna vez: con el historial
+  // virgen no se castiga (ver "arranque justo" más abajo). Estos casos parten
+  // de alguien que YA usa el contrato, marcando el lunes.
+  const yaLoUsa = (marcadasElLunes: string[]) => new Map([[LUNES, new Set(marcadasElLunes)]]);
+
+  test('lo no marcado cuenta como roto', () => {
+    const r = reglasIncumplidas({ ...base, checksPorDia: yaLoUsa(['r1']) });
+    expect(r).toHaveLength(1);
+    expect(r[0]!.rotas.map((x) => x.id)).toEqual(['r2']);
+    expect(r[0]!.xp).toBe(25);
+  });
+
+  test('marcarlas todas no genera consecuencia', () => {
+    expect(reglasIncumplidas({ ...base, checksPorDia: yaLoUsa(['r1', 'r2']) })).toEqual([]);
+  });
+
+  test('el castigo diario tiene tope', () => {
+    // Sin tope, una ausencia larga con muchas reglas se vuelve impagable y el
+    // sistema deja de ser exigente para ser uno del que te vas.
+    const muchas = Array.from({ length: 12 }, (_, i) => ({
+      id: `r${i}`,
+      text: `Regla ${i}`,
+      consequence: 'algo',
+    }));
+    // Marca una sola para que el juicio esté activo; las once que faltan pasan
+    // del tope y se quedan en 150.
+    const r = reglasIncumplidas({
+      ...base,
+      reglas: muchas,
+      checksPorDia: new Map([[LUNES, new Set(['r0'])]]),
+    });
+    expect(r[0]!.xp).toBe(150);
+  });
+
+  test('los días congelados no se juzgan', () => {
+    const r = reglasIncumplidas({ ...base, checksPorDia: yaLoUsa(['r1']), freezeUntil: LUNES });
+    expect(r).toEqual([]);
+  });
+
+  test('sin reglas no hay nada que juzgar', () => {
+    expect(reglasIncumplidas({ ...base, reglas: [], checksPorDia: new Map() })).toEqual([]);
+  });
+
+  test('el día de hoy no se juzga: sigue abierto', () => {
+    const r = reglasIncumplidas({
+      ...base,
+      fromDate: MARTES,
+      today: MARTES,
+      checksPorDia: yaLoUsa(['r1']),
+    });
+    expect(r).toEqual([]);
+  });
+});
+
+describe('reglasIncumplidas — arranque justo', () => {
+  const reglas = [{ id: 'r1', text: 'Sin azúcar', consequence: '20 burpees' }];
+  const MIERCOLES = '2026-06-10';
+
+  test('quien nunca ha marcado nada no es castigado', () => {
+    // El día que la función existe, el historial entero está sin marcar. Sin
+    // esta guarda el primer cierre cobraría semanas de una función que no
+    // existía, y eso no es exigencia: es una emboscada.
+    const r = reglasIncumplidas({
+      fromDate: LUNES,
+      today: JUEVES,
+      reglas,
+      checksPorDia: new Map(),
+      freezeUntil: null,
+      xpPorRegla: 25,
+      topeDiario: 150,
+    });
+    expect(r).toEqual([]);
+  });
+
+  test('el juicio empieza el día de la primera marca, no antes', () => {
+    const checks = new Map([[MARTES, new Set(['r1'])]]);
+    const r = reglasIncumplidas({
+      fromDate: LUNES,
+      today: JUEVES,
+      reglas,
+      checksPorDia: checks,
+      freezeUntil: null,
+      xpPorRegla: 25,
+      topeDiario: 150,
+    });
+    // El lunes queda fuera; el martes está marcado; el miércoles sí se juzga.
+    expect(r.map((d) => d.date)).toEqual([MIERCOLES]);
   });
 });

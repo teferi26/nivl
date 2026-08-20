@@ -901,7 +901,6 @@ export async function executeTool(
         completadas: { t: 'completions', cols: 'date, quest_id, xp_awarded', dateCol: 'date' },
         eventos: { t: 'events', cols: 'type, payload, created_at', dateCol: 'created_at' },
         peso: { t: 'body_metrics', cols: 'date, weight_kg, notes', dateCol: 'date' },
-        gym: { t: 'gym_lifts', cols: '*', dateCol: 'created_at' },
         cardio: { t: 'cardio_sessions', cols: 'date, kind, distance_km, duration_min, zone, rpe, avg_hr, notes', dateCol: 'date' },
         nutricion: { t: 'nutrition_logs', cols: 'date, hit_kcal, hit_protein, kcal_est, protein_est, notes', dateCol: 'date' },
         diario: { t: 'journal_entries', cols: 'date, mood, energy, text', dateCol: 'date' },
@@ -909,6 +908,49 @@ export async function executeTool(
         hechos: { t: 'coach_facts', cols: 'date, category, content', dateCol: 'date' },
         movimientos: { t: 'transactions', cols: 'date, amount, currency, description, counterparty, category, is_internal', dateCol: 'date' },
       };
+      // gym_lifts NO tiene fecha propia: la fecha vive en su sesión. Filtrarlo
+      // por created_at reventaba con un error de Postgres que además llegaba al
+      // modelo como "[object Object]", así que ni podía corregirse solo.
+      if (input.que === 'gym') {
+        const { data: sesiones, error: e1 } = await sb
+          .from('gym_sessions')
+          .select('id, date, notes')
+          .eq('user_id', userId)
+          .gte('date', desde)
+          .lte('date', hasta)
+          .order('date');
+        if (e1) throw e1;
+        if (!sesiones?.length) return ok(`Sin sesiones de gimnasio entre ${desde} y ${hasta}.`);
+
+        const porId = new Map(
+          (sesiones as { id: string; date: string; notes: string | null }[]).map((x) => [x.id, x]),
+        );
+        const { data: series, error: e2 } = await sb
+          .from('gym_lifts')
+          .select('session_id, exercise_name, weight, reps, rpe, set_index')
+          .eq('user_id', userId)
+          .in('session_id', [...porId.keys()]);
+        if (e2) throw e2;
+
+        const filas = ((series ?? []) as Record<string, unknown>[])
+          .map((l) => ({
+            fecha: porId.get(String(l.session_id))?.date,
+            ejercicio: l.exercise_name,
+            serie: (Number(l.set_index) || 0) + 1,
+            kg: l.weight,
+            reps: l.reps,
+            rpe: l.rpe,
+          }))
+          .sort((a, b) => String(a.fecha).localeCompare(String(b.fecha)) || a.serie - b.serie);
+
+        const notas = (sesiones as { date: string; notes: string | null }[])
+          .filter((x) => x.notes)
+          .map((x) => `${x.date}: ${x.notes}`);
+        return ok(
+          JSON.stringify({ series: filas, notas }).slice(0, 12000),
+        );
+      }
+
       // El plan de comidas es semanal, no una serie temporal: filtrarlo por
       // fechas no tiene sentido y la tabla ni siquiera tiene columna de fecha.
       if (input.que === 'comidas') {

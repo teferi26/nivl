@@ -1,4 +1,5 @@
-import { computeDayClose, questsScheduledOn } from './closing';
+import { computeDayClose, questsScheduledOn, reglasIncumplidas } from './closing';
+import { fetchRuleChecksRange, fetchRules } from './contract';
 import {
   applyDayCloseRpc,
   awardXpRpc,
@@ -9,7 +10,7 @@ import {
   uploadEvidence,
 } from './data';
 import { addDays, dateKey } from './dates';
-import { BONUS_BY_DIFFICULTY, levelFromXp, questXp, STAT_COLUMN } from './game';
+import { BONUS_BY_DIFFICULTY, DAILY_PENALTY_CAP, levelFromXp, questXp, RULE_BREAK_XP, STAT_COLUMN } from './game';
 import { supabase } from './supabase';
 import type { Profile, Quest } from './types';
 
@@ -63,6 +64,24 @@ export async function processPendingDays(
     freezeUntil: profile.freeze_until,
   });
 
+  // Las reglas del contrato se juzgan igual que las misiones: no marcarla como
+  // cumplida es haberla roto. Se agrega por día y se topa, porque seis reglas
+  // por seis días de ausencia sin tope serían 900 XP de golpe.
+  const [reglasActivas, checksPorDia] = await Promise.all([
+    fetchRules(),
+    fetchRuleChecksRange(fromDate, yesterday),
+  ]);
+  const diasConReglasRotas = reglasIncumplidas({
+    fromDate,
+    today,
+    reglas: reglasActivas.map((r) => ({ id: r.id, text: r.text, consequence: r.consequence })),
+    checksPorDia,
+    freezeUntil: profile.freeze_until,
+    xpPorRegla: RULE_BREAK_XP,
+    topeDiario: DAILY_PENALTY_CAP,
+  });
+  const xpReglas = diasConReglasRotas.reduce((a, d) => a + d.xp, 0);
+
   const levelBefore = levelFromXp(profile.xp_total).level;
 
   // Un solo viaje atómico: día procesado, racha, piedras y penalización.
@@ -71,10 +90,39 @@ export async function processPendingDays(
     lastDay: yesterday,
     streak: close.streak,
     stones: close.stones,
-    penaltyXp: close.penaltyXp,
+    penaltyXp: close.penaltyXp + xpReglas,
     clearFreeze: !!(profile.freeze_until && profile.freeze_until < today),
   });
   const levelAfter = levelFromXp(updated.xp_total).level;
+
+  // Las roturas quedan registradas una a una (para el histórico de cada regla),
+  // pero la consecuencia es UNA sola: seis misiones de castigo el mismo día no
+  // se hacen, se abandonan.
+  if (diasConReglasRotas.length > 0) {
+    const roturas = diasConReglasRotas.flatMap((d) =>
+      d.rotas.map((r) => ({ user_id: profile.id, rule_id: r.id, date: d.date })),
+    );
+    await supabase.from('rule_breaks').insert(roturas).then(undefined, () => {
+      /* Que falle el histórico no puede tumbar el cierre del día. */
+    });
+
+    const ultimo = diasConReglasRotas[diasConReglasRotas.length - 1]!;
+    const cuantas = new Set(diasConReglasRotas.flatMap((d) => d.rotas.map((r) => r.id))).size;
+    await supabase.from('quests').insert({
+      user_id: profile.id,
+      title:
+        cuantas === 1
+          ? `Consecuencia: ${ultimo.rotas[0]!.consequence}`
+          : `Consecuencia: ${cuantas} reglas rotas`,
+      stat: 'AGI',
+      difficulty: 'media',
+      days_of_week: [],
+      requires_evidence: false,
+      is_penalty: true,
+      penalty_date: today,
+      penalty_xp: xpReglas,
+    });
+  }
 
   if (close.penaltyXp > 0) {
     await supabase.from('quests').insert({

@@ -221,7 +221,7 @@ export default function Informe() {
     <SafeAreaView style={styles.screen} edges={['top']}>
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.header}>
-          <Pressable onPress={() => router.back()} hitSlop={10}>
+          <Pressable onPress={() => router.back()} hitSlop={10} accessibilityRole="button" accessibilityLabel="Volver">
             <Ionicons name="chevron-back" size={24} color={colors.cyan} />
           </Pressable>
           <Text style={styles.title}>INFORME DEL SISTEMA</Text>

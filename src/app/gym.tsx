@@ -47,13 +47,25 @@ import type { GymDay, GymExercise, GymSession } from '@/lib/types';
 
 const DAY_NAMES = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
 
-interface LiftInput {
-  exercise: string;
+interface SerieInput {
   weight: string;
   reps: string;
   // El RPE es lo que decide la carga de la próxima sesión: sin él, el coach
   // sube peso por calendario en vez de por cómo salió la serie.
   rpe: string;
+}
+
+/**
+ * Un ejercicio con SUS series, cada una con su peso y sus repeticiones.
+ *
+ * Antes era una sola fila por ejercicio —el mismo peso para todas las series—
+ * y eso no es entrenar: una pirámide de 12 a 60 kg, 8 a 70 y 5 a 80 se
+ * registraba como si hubieran sido tres series iguales, y el coach programaba
+ * la siguiente sesión sobre un dato falso.
+ */
+interface LiftInput {
+  exercise: string;
+  series: SerieInput[];
 }
 
 export default function Gym() {
@@ -106,14 +118,47 @@ export default function Gym() {
   const todayPlan = days.find((d) => d.day_of_week === todayWd);
   const exercisesFor = (dayId: string) => exercises.filter((e) => e.gym_day_id === dayId);
 
+  const cambiarSerie = (iEj: number, iSerie: number, campo: keyof SerieInput, valor: string) =>
+    setLifts((prev) =>
+      prev.map((l, j) =>
+        j !== iEj
+          ? l
+          : { ...l, series: l.series.map((s, k) => (k === iSerie ? { ...s, [campo]: valor } : s)) },
+      ),
+    );
+
+  /** Copia la última serie: lo normal es repetir y tocar un solo número. */
+  const anadirSerie = (iEj: number) =>
+    setLifts((prev) =>
+      prev.map((l, j) => {
+        if (j !== iEj) return l;
+        const ultima = l.series[l.series.length - 1] ?? { weight: '', reps: '', rpe: '' };
+        return { ...l, series: [...l.series, { ...ultima, rpe: '' }] };
+      }),
+    );
+
+  const quitarSerie = (iEj: number, iSerie: number) =>
+    setLifts((prev) =>
+      prev.map((l, j) =>
+        // Nunca por debajo de una: un ejercicio sin series no es un ejercicio.
+        j !== iEj || l.series.length === 1
+          ? l
+          : { ...l, series: l.series.filter((_, k) => k !== iSerie) },
+      ),
+    );
+
   const startTraining = () => {
     if (!todayPlan) return;
     setLifts(
       exercisesFor(todayPlan.id).map((e) => ({
         exercise: e.name,
-        weight: e.weight !== null ? String(e.weight) : '',
-        reps: String(e.reps),
-        rpe: '',
+        // Tantas filas como series diga la rutina, ya rellenas con el peso y
+        // las reps de referencia: lo normal es tocar solo lo que cambie.
+        series: Array.from({ length: Math.max(1, e.sets) }, () => ({
+          weight: e.weight !== null ? String(e.weight) : '',
+          reps: String(e.reps),
+          rpe: '',
+        })),
       })),
     );
     setTraining(true);
@@ -127,16 +172,28 @@ export default function Gym() {
     setBusy(true);
     try {
       const valid = lifts
-        .map((l) => ({
-          exercise_name: l.exercise,
-          weight: parseFloat(l.weight.replace(',', '.')) || 0,
-          reps: parseInt(l.reps, 10) || 0,
-          rpe: l.rpe.trim() ? parseFloat(l.rpe.replace(',', '.')) : null,
-        }))
+        .flatMap((l) =>
+          l.series.map((serie, idx) => ({
+            exercise_name: l.exercise,
+            weight: parseFloat(serie.weight.replace(',', '.')) || 0,
+            reps: parseInt(serie.reps, 10) || 0,
+            rpe: serie.rpe.trim() ? parseFloat(serie.rpe.replace(',', '.')) : null,
+            set_index: idx,
+          })),
+        )
         .filter((l) => l.reps > 0 || l.weight > 0);
 
       const previousMax = await fetchMaxLifts();
-      const prs = valid.filter((l) => l.weight > 0 && l.weight > (previousMax[l.exercise_name] ?? 0));
+      // El récord es por EJERCICIO, no por serie: con series de peso creciente,
+      // contar cada una daría tres PR del mismo movimiento en una sesión.
+      const mejorPorEjercicio = new Map<string, (typeof valid)[number]>();
+      for (const l of valid) {
+        const previo = mejorPorEjercicio.get(l.exercise_name);
+        if (!previo || l.weight > previo.weight) mejorPorEjercicio.set(l.exercise_name, l);
+      }
+      const prs = [...mejorPorEjercicio.values()].filter(
+        (l) => l.weight > 0 && l.weight > (previousMax[l.exercise_name] ?? 0),
+      );
 
       const gymSession = await createSession(userId, {
         date: today,
@@ -304,42 +361,77 @@ export default function Gym() {
             </>
           ) : (
             <>
-              <Text style={styles.planName}>{todayPlan.name} — serie top por ejercicio</Text>
+              <Text style={styles.planName}>{todayPlan.name} — serie a serie</Text>
               <Text style={styles.rpeHint}>
                 RPE = cuánto te quedaba. 7 son tres repeticiones en el depósito, 10 es no poder
                 con una más. Es el dato con el que el sistema decide la carga de la próxima.
               </Text>
               {lifts.map((l, i) => (
-                <View key={l.exercise} style={styles.liftRow}>
-                  <Text style={styles.liftName} numberOfLines={1}>
-                    {l.exercise}
-                  </Text>
-                  <TextInput
-                    style={styles.liftInput}
-                    value={l.weight}
-                    onChangeText={(v) => setLifts((prev) => prev.map((x, j) => (j === i ? { ...x, weight: v } : x)))}
-                    keyboardType="decimal-pad"
-                    placeholder="kg"
-                    placeholderTextColor={colors.textFaint}
-                  />
-                  <TextInput
-                    style={styles.liftInput}
-                    value={l.reps}
-                    onChangeText={(v) => setLifts((prev) => prev.map((x, j) => (j === i ? { ...x, reps: v } : x)))}
-                    keyboardType="number-pad"
-                    placeholder="reps"
-                    placeholderTextColor={colors.textFaint}
-                    accessibilityLabel={`Repeticiones de ${l.exercise}`}
-                  />
-                  <TextInput
-                    style={styles.liftInput}
-                    value={l.rpe}
-                    onChangeText={(v) => setLifts((prev) => prev.map((x, j) => (j === i ? { ...x, rpe: v } : x)))}
-                    keyboardType="decimal-pad"
-                    placeholder="RPE"
-                    placeholderTextColor={colors.textFaint}
-                    accessibilityLabel={`Esfuerzo percibido de ${l.exercise}, de 1 a 10`}
-                  />
+                <View key={l.exercise} style={styles.ejercicioBloque}>
+                  <View style={styles.ejercicioCabecera}>
+                    <Text style={styles.liftName} numberOfLines={1}>
+                      {l.exercise}
+                    </Text>
+                    <Pressable
+                      onPress={() => anadirSerie(i)}
+                      hitSlop={8}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Añadir serie a ${l.exercise}`}
+                    >
+                      <Ionicons name="add-circle-outline" size={19} color={colors.cyan} />
+                    </Pressable>
+                  </View>
+
+                  <View style={styles.serieCabecera}>
+                    <Text style={styles.serieNum}>#</Text>
+                    <Text style={styles.serieEtiqueta}>kg</Text>
+                    <Text style={styles.serieEtiqueta}>reps</Text>
+                    <Text style={styles.serieEtiqueta}>RPE</Text>
+                    <View style={{ width: 22 }} />
+                  </View>
+
+                  {l.series.map((serie, si) => (
+                    <View key={si} style={styles.liftRow}>
+                      <Text style={styles.serieNum}>{si + 1}</Text>
+                      <TextInput
+                        style={styles.liftInput}
+                        value={serie.weight}
+                        onChangeText={(v) => cambiarSerie(i, si, 'weight', v)}
+                        keyboardType="decimal-pad"
+                        placeholder="kg"
+                        placeholderTextColor={colors.textFaint}
+                        accessibilityLabel={`Peso de la serie ${si + 1} de ${l.exercise}`}
+                      />
+                      <TextInput
+                        style={styles.liftInput}
+                        value={serie.reps}
+                        onChangeText={(v) => cambiarSerie(i, si, 'reps', v)}
+                        keyboardType="number-pad"
+                        placeholder="reps"
+                        placeholderTextColor={colors.textFaint}
+                        accessibilityLabel={`Repeticiones de la serie ${si + 1} de ${l.exercise}`}
+                      />
+                      <TextInput
+                        style={styles.liftInput}
+                        value={serie.rpe}
+                        onChangeText={(v) => cambiarSerie(i, si, 'rpe', v)}
+                        keyboardType="decimal-pad"
+                        placeholder="RPE"
+                        placeholderTextColor={colors.textFaint}
+                        accessibilityLabel={`Esfuerzo de la serie ${si + 1} de ${l.exercise}`}
+                      />
+                      <Pressable
+                        onPress={() => quitarSerie(i, si)}
+                        hitSlop={6}
+                        disabled={l.series.length === 1}
+                        style={{ width: 22, opacity: l.series.length === 1 ? 0.25 : 1 }}
+                        accessibilityRole="button"
+                        accessibilityLabel={`Quitar la serie ${si + 1}`}
+                      >
+                        <Ionicons name="close" size={15} color={colors.textFaint} />
+                      </Pressable>
+                    </View>
+                  ))}
                 </View>
               ))}
               <Text style={styles.label}>Cómo fue</Text>
@@ -588,6 +680,34 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   planName: { fontFamily: fonts.semibold, fontSize: 16, color: colors.text, marginBottom: 6 },
+  ejercicioBloque: {
+    borderTopWidth: 1,
+    borderTopColor: colors.line,
+    paddingTop: 10,
+    marginTop: 10,
+  },
+  ejercicioCabecera: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 6,
+  },
+  serieCabecera: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 3 },
+  serieNum: {
+    width: 16,
+    fontFamily: fonts.heading,
+    fontSize: 11,
+    color: colors.textFaint,
+    textAlign: 'center',
+  },
+  serieEtiqueta: {
+    flex: 1,
+    fontFamily: fonts.heading,
+    fontSize: 9.5,
+    letterSpacing: 1,
+    color: colors.textFaint,
+    textAlign: 'center',
+  },
   notasInput: {
     borderWidth: 1,
     borderColor: colors.line,

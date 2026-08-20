@@ -76,6 +76,55 @@ export async function breakRule(
   return { profile: updated, penaltyXp: RULE_BREAK_XP };
 }
 
+// ── Las reglas se marcan cada día ───────────────────────────────────
+//
+// Antes una regla solo existía cuando confesabas haberla roto, y eso deja el
+// contrato en manos de la honestidad del peor momento del día. Ahora se marca
+// lo CUMPLIDO y el silencio cuenta como rota, igual que ya pasaba con las
+// misiones en el cierre.
+
+export async function fetchRuleChecks(date: string): Promise<Set<string>> {
+  const { data, error } = await supabase
+    .from('rule_checks')
+    .select('rule_id')
+    .eq('date', date);
+  if (error) throw error;
+  return new Set((data ?? []).map((r) => (r as { rule_id: string }).rule_id));
+}
+
+/** Marcas de un rango, agrupadas por fecha. Para el cierre de varios días. */
+export async function fetchRuleChecksRange(desde: string, hasta: string): Promise<Map<string, Set<string>>> {
+  const { data, error } = await supabase
+    .from('rule_checks')
+    .select('rule_id, date')
+    .gte('date', desde)
+    .lte('date', hasta);
+  if (error) throw error;
+  const mapa = new Map<string, Set<string>>();
+  for (const r of (data ?? []) as { rule_id: string; date: string }[]) {
+    const set = mapa.get(r.date) ?? new Set<string>();
+    set.add(r.rule_id);
+    mapa.set(r.date, set);
+  }
+  return mapa;
+}
+
+export async function marcarReglaCumplida(userId: string, ruleId: string, date: string): Promise<void> {
+  const { error } = await supabase
+    .from('rule_checks')
+    .upsert({ user_id: userId, rule_id: ruleId, date }, { onConflict: 'user_id,rule_id,date' });
+  if (error) throw error;
+}
+
+export async function desmarcarRegla(ruleId: string, date: string): Promise<void> {
+  const { error } = await supabase
+    .from('rule_checks')
+    .delete()
+    .eq('rule_id', ruleId)
+    .eq('date', date);
+  if (error) throw error;
+}
+
 export async function countBreaks(ruleId: string): Promise<number> {
   const { count } = await supabase
     .from('rule_breaks')

@@ -60,6 +60,7 @@ export async function buildContext(
     weightRes,
     rulesRes,
     breaksRes,
+    checksRes,
     dungeonsRes,
     eventsRes,
     factsRes,
@@ -75,6 +76,9 @@ export async function buildContext(
     sb.from('body_metrics').select('date, weight_kg').eq('user_id', userId).order('date', { ascending: false }).limit(8),
     sb.from('rules').select('id, text, consequence').eq('user_id', userId).eq('active', true),
     sb.from('rule_breaks').select('date, rule_id').eq('user_id', userId).gte('date', since60),
+    // Marcas diarias del contrato (0016): sin esto el coach no sabía si hoy
+    // las está cumpliendo, solo si las rompió en el pasado.
+    sb.from('rule_checks').select('rule_id, date').eq('user_id', userId).gte('date', since14),
     sb.from('dungeons').select('id, title, rank, status, deadline').eq('user_id', userId).eq('status', 'active'),
     sb.from('calendar_events').select('title, date, time, notes').eq('user_id', userId).gte('date', today).order('date').limit(15),
     sb.from('coach_facts').select('date, category, content').eq('user_id', userId).order('date', { ascending: false }).limit(120),
@@ -214,11 +218,29 @@ export async function buildContext(
 
   if (rulesRes.data?.length) {
     const breaks = (breaksRes.data ?? []) as any[];
+    const checks = (checksRes.data ?? []) as any[];
+    const hoyMarcadas = new Set(checks.filter((c) => c.date === today).map((c) => c.rule_id));
+    // Días distintos con marca, para saber si de verdad las está marcando.
+    const diasConMarcas = new Set(checks.map((c) => c.date)).size;
+
     push('## Contrato (reglas innegociables)');
     for (const r of rulesRes.data as any[]) {
       const n = breaks.filter((b) => b.rule_id === r.id).length;
-      push(`- "${r.text}" → consecuencia: ${r.consequence}${n ? ` · rota ${n} veces en 60d` : ''}`);
+      const cumplidas = checks.filter((c) => c.rule_id === r.id).length;
+      push(
+        `- "${r.text}" → consecuencia: ${r.consequence}` +
+          `${hoyMarcadas.has(r.id) ? ' · CUMPLIDA HOY' : ' · pendiente hoy'}` +
+          ` · cumplida ${cumplidas} de los últimos 14 días` +
+          `${n ? ` · rota ${n} veces en 60d` : ''}`,
+      );
     }
+    push(
+      'Las reglas se marcan cada día y lo que quede sin marcar al cerrar cuenta como roto, ' +
+        'con su consecuencia al día siguiente. ' +
+        (diasConMarcas === 0
+          ? 'AVISO: no ha marcado ninguna regla ningún día. O no sabe que hay que marcarlas, o el contrato está muerto. Pregúntaselo antes de castigarle por ello.'
+          : 'Si una lleva días sin marcarse pero él dice cumplirla, el problema es el registro, no la conducta.'),
+    );
     push();
   }
 

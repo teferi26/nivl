@@ -90,7 +90,7 @@ export async function createSession(
 export async function insertLifts(
   userId: string,
   sessionId: string,
-  lifts: { exercise_name: string; weight: number; reps: number; rpe?: number | null }[],
+  lifts: { exercise_name: string; weight: number; reps: number; rpe?: number | null; set_index?: number }[],
 ): Promise<void> {
   if (lifts.length === 0) return;
   const { error } = await supabase

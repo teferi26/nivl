@@ -399,6 +399,8 @@ export default function Perfil() {
                   key={a.code}
                   onPress={() => onAchievementTap(a.code)}
                   style={[styles.ach, isUnlocked && styles.achOn]}
+                  accessibilityRole="button"
+                  accessibilityLabel={`${a.name}${isUnlocked ? ', desbloqueado' : ', bloqueado'}`}
                 >
                   <Ionicons
                     name={isUnlocked ? 'ribbon' : 'lock-closed-outline'}
@@ -555,7 +557,14 @@ export default function Perfil() {
             <Text style={styles.label}>Motivo</Text>
             <View style={styles.chips}>
               {FREEZE_REASONS.map((r) => (
-                <Pressable key={r} onPress={() => setFreezeReason(r)} style={[styles.chip, freezeReason === r && styles.chipOn]}>
+                <Pressable
+                  key={r}
+                  onPress={() => setFreezeReason(r)}
+                  style={[styles.chip, freezeReason === r && styles.chipOn]}
+                  accessibilityRole="radio"
+                  accessibilityState={{ selected: freezeReason === r }}
+                  accessibilityLabel={`Motivo: ${r}`}
+                >
                   <Text style={[styles.chipText, freezeReason === r && styles.chipTextOn]}>{r}</Text>
                 </Pressable>
               ))}
@@ -563,7 +572,14 @@ export default function Perfil() {
             <Text style={styles.label}>Duración (desde hoy)</Text>
             <View style={styles.chips}>
               {FREEZE_DAYS.map((d) => (
-                <Pressable key={d} onPress={() => setFreezeDays(d)} style={[styles.chip, freezeDays === d && styles.chipOn]}>
+                <Pressable
+                  key={d}
+                  onPress={() => setFreezeDays(d)}
+                  style={[styles.chip, freezeDays === d && styles.chipOn]}
+                  accessibilityRole="radio"
+                  accessibilityState={{ selected: freezeDays === d }}
+                  accessibilityLabel={`${d} día${d > 1 ? 's' : ''}`}
+                >
                   <Text style={[styles.chipText, freezeDays === d && styles.chipTextOn]}>
                     {d} día{d > 1 ? 's' : ''}
                   </Text>
