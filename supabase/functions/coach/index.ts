@@ -19,6 +19,7 @@ import {
   callClaude,
   COACH_MODEL,
   costMicroUsd,
+  proveedorCompatible,
   RefusalError,
   type ApiMessage,
   type ContentBlock,
@@ -26,6 +27,7 @@ import {
   type Usage,
 } from '../_shared/anthropic.ts';
 import { clasificarPendientes } from '../_shared/clasificar.ts';
+import { callOpenAICompat } from '../_shared/openai.ts';
 import { construirResumen, periodoMensual, periodoSemanal } from '../_shared/recap.ts';
 import { buildContext } from '../_shared/context.ts';
 import { adminClient, userClient, type Db } from '../_shared/db.ts';
@@ -86,7 +88,18 @@ function modeloDe(kind: Kind): string {
   const chat = Deno.env.get('COACH_MODEL_CHAT')?.trim();
   const ritual = Deno.env.get('COACH_MODEL_RITUAL')?.trim();
   const esCharla = kind === 'chat' || kind === 'plan';
-  return (esCharla ? chat : ritual) || COACH_MODEL;
+  const elegido = esCharla ? chat || ritual : ritual || chat;
+  if (elegido) return elegido;
+
+  // Con proveedor externo configurado NO se cae a un modelo de Claude: mandarle
+  // "claude-sonnet-5" a DeepSeek devuelve un 400 que no explica nada. Mejor
+  // decirlo con todas las letras que dejar el sistema mudo.
+  if (proveedorCompatible()) {
+    throw new Error(
+      'Hay un proveedor externo configurado pero no su modelo. Añade el secret COACH_MODEL_CHAT (por ejemplo deepseek-chat o gemini-2.5-flash).',
+    );
+  }
+  return COACH_MODEL;
 }
 
 // Los rituales que deciden el rumbo piensan más que una charla suelta.
@@ -171,8 +184,14 @@ function aligerarHistorial(messages: ApiMessage[]): ApiMessage[] {
         if (typeof c !== 'string' || c.length <= TOPE_RESULTADO) return b;
         return { ...b, content: `${c.slice(0, TOPE_RESULTADO)}\n[…recortado]` };
       });
-    return blocks.length ? { ...m, content: blocks as ContentBlock[] } : m;
-  });
+    return { ...m, content: blocks as ContentBlock[] };
+  })
+  // Un mensaje que se queda SIN bloques al quitarle el pensamiento era un turno
+  // que solo pensó y no llegó a decir ni a hacer nada — lo que pasaba cuando el
+  // turno se cortaba a mitad. No aporta nada al siguiente y la API rechaza los
+  // mensajes vacíos, así que desaparece. Antes se devolvía el original CON su
+  // pensamiento, y eso es lo que reventaba la petición más abajo.
+  .filter((m) => !Array.isArray(m.content) || m.content.length > 0);
 }
 
 /**
@@ -213,8 +232,24 @@ function markCacheable(messages: ApiMessage[]): ApiMessage[] {
   const out = messages.slice();
   const last = out[out.length - 1];
   if (!Array.isArray(last.content) || !last.content.length) return out;
+
+  // El punto de caché NO puede ir en un bloque de pensamiento: la API responde
+  // 400 "thinking.cache_control: Extra inputs are not permitted" y el turno
+  // entero se pierde. Pasaba de forma intermitente —solo cuando el último
+  // mensaje del historial era un turno que se quedó pensando— y desde la app se
+  // veía como que el sistema no contesta.
+  let idx = -1;
+  for (let i = last.content.length - 1; i >= 0; i--) {
+    const t = last.content[i]?.type;
+    if (t !== 'thinking' && t !== 'redacted_thinking') {
+      idx = i;
+      break;
+    }
+  }
+  if (idx === -1) return out;
+
   const blocks = last.content.map((b, i) =>
-    i === last.content.length - 1 ? { ...b, cache_control: { type: 'ephemeral' } } : b,
+    i === idx ? { ...b, cache_control: { type: 'ephemeral' } } : b,
   );
   out[out.length - 1] = { ...last, content: blocks as ContentBlock[] };
   return out;
@@ -299,16 +334,28 @@ ${userText}` : userText,
     // Si ya no queda reloj, se corta el encadenado: con lo que hay se contesta,
     // y sin él la función muere sin dejar nada.
     const sinTiempo = Date.now() - arranque > PRESUPUESTO_MS;
-    const turn = await callClaude({
-      model: elegido,
-      system,
-      messages,
-      tools: sinTiempo ? undefined : TOOL_DEFS,
-      maxTokens: MAX_TOKENS_BY_KIND[kind],
-      effort: EFFORT_BY_KIND[kind],
-      onText: (d) => emit('text', { delta: d }),
-      onThinking: () => emit('thinking', {}),
-    });
+    const compat = proveedorCompatible();
+    const turn = compat
+      ? await callOpenAICompat({
+          baseUrl: compat.baseUrl,
+          apiKey: compat.apiKey,
+          model: elegido,
+          system,
+          messages,
+          tools: sinTiempo ? undefined : TOOL_DEFS,
+          maxTokens: MAX_TOKENS_BY_KIND[kind],
+          onText: (d) => emit('text', { delta: d }),
+        })
+      : await callClaude({
+          model: elegido,
+          system,
+          messages,
+          tools: sinTiempo ? undefined : TOOL_DEFS,
+          maxTokens: MAX_TOKENS_BY_KIND[kind],
+          effort: EFFORT_BY_KIND[kind],
+          onText: (d) => emit('text', { delta: d }),
+          onThinking: () => emit('thinking', {}),
+        });
 
     usage = addUsage(usage, turn.usage);
     model = turn.model;

@@ -63,6 +63,18 @@ const PRICE_PER_MTOK: Record<string, { in: number; out: number }> = {
   'claude-opus-5': { in: 5, out: 25 },
   'claude-sonnet-5': { in: 2, out: 10 },
   'claude-haiku-4-5': { in: 1, out: 5 },
+  // Proveedores compatibles con OpenAI. Las tarifas son las publicadas y hay
+  // que revisarlas: cambian más a menudo que las de Anthropic. Si el modelo no
+  // aparece aquí, se cobra como Opus a propósito, para que el freno de gasto
+  // peque de caro en vez de dejar pasar una fuga.
+  'deepseek-chat': { in: 0.27, out: 1.1 },
+  'deepseek-reasoner': { in: 0.55, out: 2.19 },
+  'gpt-5-mini': { in: 0.25, out: 2 },
+  'gpt-5': { in: 1.25, out: 10 },
+  'gemini-2.5-flash': { in: 0.3, out: 2.5 },
+  'gemini-2.5-pro': { in: 1.25, out: 10 },
+  'qwen-plus': { in: 0.4, out: 1.2 },
+  'kimi-k2': { in: 0.6, out: 2.5 },
 };
 
 export function costMicroUsd(model: string, u: Usage): number {
@@ -120,6 +132,27 @@ const BETAS = [
  */
 function admiteReserva(model: string): boolean {
   return model.startsWith('claude-opus');
+}
+
+/**
+ * ¿A quién le hablamos?
+ *
+ * Con COACH_BASE_URL y COACH_API_KEY puestos en los secretos del panel, el
+ * coach deja de hablar con Anthropic y pasa a cualquier API compatible con
+ * OpenAI — DeepSeek, Gemini por su capa compatible, Qwen, Kimi, Groq o la
+ * propia OpenAI. Sin tocar código y sin desplegar.
+ *
+ * Se hace por configuración y no por una constante porque el proveedor es una
+ * decisión de negocio (coste por usuario), no de arquitectura: probar uno nuevo
+ * tiene que costar dos minutos y poder revertirse igual de rápido.
+ */
+export function proveedorCompatible(): { baseUrl: string; apiKey: string } | null {
+  const baseUrl = Deno.env.get('COACH_BASE_URL')?.trim();
+  const apiKey = Deno.env.get('COACH_API_KEY')?.trim();
+  // Los dos o ninguno: con la URL sin la clave, cada turno fallaría con un 401
+  // y sería un misterio. Mejor seguir con Anthropic.
+  if (!baseUrl || !apiKey) return null;
+  return { baseUrl, apiKey };
 }
 
 /**

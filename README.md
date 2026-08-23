@@ -47,6 +47,22 @@ Las notificaciones y el push **no funcionan en Expo Go**: hace falta un developm
 - **Memoria en tres capas**: `coach_dossier` (lo estable, va cacheado en cada prompt), `coach_facts` (el log fechado) y `coach_messages` (la conversación). Lo que se reenvía a la API son los **últimos 12 intercambios**: el hilo sigue siendo continuo para ti, pero la memoria larga vive en el dossier y en los hechos, no en el transcript. Sin ese tope la conversación crece sin fin y a los seis meses cada turno arrastra cientos de miles de tokens.
 - **Veintiuna herramientas** para escribir en tu vida real: crear y ajustar misiones, planificar el día, agenda, horarios, mazmorras, reglas del contrato, metas, memoria, las tres del cuerpo — `prescribir_entreno`, `fijar_nutricion` y `planificar_comidas` — y las cuatro del dinero — `fijar_plan_economico`, `fijar_presupuesto`, `regla_categoria` y `registrar_movimiento` — más `configurar_rutina`, que reescribe la rutina fija de un día del gimnasio (los ejercicios del programa, no la carga de una sesión suelta). Se ejecutan con tu JWT, así que RLS sigue aplicando.
 - **El coach elige dificultad, nunca puntos**: el XP sale de la tabla de `game.ts` y no puede inflarlo.
+### Cambiar de proveedor sin tocar código
+
+El coach habla con Anthropic por defecto, pero puede hablar con **cualquier API compatible con OpenAI** — DeepSeek, Gemini (capa compatible), Qwen, Kimi, Groq o la propia OpenAI. Se hace con tres secrets en el panel de Supabase:
+
+```
+COACH_BASE_URL   https://api.deepseek.com/v1
+COACH_API_KEY    <la clave del proveedor>
+COACH_MODEL_CHAT deepseek-chat
+```
+
+Con `COACH_BASE_URL` y `COACH_API_KEY` puestos, `_shared/openai.ts` traduce a la ida y a la vuelta: las 21 herramientas, el estudio, la doctrina y la memoria funcionan igual. Quitando los secrets se vuelve a Claude en el acto.
+
+**Por qué importa**: medido sobre una semana real, el coste lo domina el prefijo de ~78.000 fichas que se escribe en caché en cada conversación nueva. Con Claude son 0,19 $ por turno en frío; con DeepSeek o Gemini Flash ronda 0,03 $. Para uso personal da igual; para monetizar es la diferencia entre viable e inviable.
+
+Las tarifas de cada modelo están en `PRICE_PER_MTOK` (`_shared/anthropic.ts`) y hay que revisarlas: cambian más a menudo que las de Anthropic. Un modelo que no esté en la tabla se cobra como Opus, para que el freno de gasto peque de caro.
+
 ### Qué modelo hace cada cosa
 
 | Tarea | Modelo | Por qué |
