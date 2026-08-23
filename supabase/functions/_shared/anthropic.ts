@@ -67,6 +67,12 @@ const PRICE_PER_MTOK: Record<string, { in: number; out: number }> = {
   // que revisarlas: cambian más a menudo que las de Anthropic. Si el modelo no
   // aparece aquí, se cobra como Opus a propósito, para que el freno de gasto
   // peque de caro en vez de dejar pasar una fuga.
+  // DeepSeek cobra distinto en hora punta (01-04 y 06-10 UTC) que fuera de
+  // ella, casi el doble. Aqui va SIEMPRE la tarifa de punta: el freno de gasto
+  // tiene que pecar de caro, no llevarse la sorpresa. Fuera de punta lo real
+  // es la mitad de lo que veras apuntado.
+  'deepseek-v4-flash': { in: 0.44, out: 1.32 },
+  'deepseek-v4-pro': { in: 1.1, out: 4.4 },
   'deepseek-chat': { in: 0.27, out: 1.1 },
   'deepseek-reasoner': { in: 0.55, out: 2.19 },
   'gpt-5-mini': { in: 0.25, out: 2 },

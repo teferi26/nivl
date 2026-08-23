@@ -304,6 +304,29 @@ Deno.serve(async (req) => {
       }
 
       const texto = await invocarCoach(jwt, decision.kind, decision.message);
+
+      // El brief tiene que dejar el plan del dia escrito. Se le dice en su
+      // instruccion con todas las letras, y aun asi hay dias que no lo hace:
+      // se le acaba el sitio antes de llegar a la llamada, o simplemente
+      // decide que no. El precio de ese fallo lo paga el usuario levantandose
+      // sin nada que hacer, y sin ningun error que lo explique.
+      //
+      // Asi que no se confia en que lo haya hecho: se comprueba. Si no hay
+      // plan, se pide aparte, que es un turno corto y con un solo trabajo.
+      if (decision.kind === 'brief') {
+        const hoy = ahoraLocal(p.timezone).fecha;
+        const { count } = await sb
+          .from('day_plans')
+          .select('id', { count: 'exact', head: true })
+          .eq('user_id', p.id)
+          .eq('date', hoy);
+        if (!count) {
+          await invocarCoach(jwt, 'plan', `Es ${hoy}. Escribe el plan del dia completo.`).catch(
+            (e) => fallos.push({ user: p.id, error: `plan de respaldo: ${e.message ?? e}` }),
+          );
+        }
+      }
+
       await empujar(
         sb,
         p.id,

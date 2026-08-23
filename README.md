@@ -61,6 +61,8 @@ Con `COACH_BASE_URL` y `COACH_API_KEY` puestos, `_shared/openai.ts` traduce a la
 
 **Por qué importa**: medido sobre una semana real, el coste lo domina el prefijo de ~78.000 fichas que se escribe en caché en cada conversación nueva. Con Claude son 0,19 $ por turno en frío; con DeepSeek o Gemini Flash ronda 0,03 $. Para uso personal da igual; para monetizar es la diferencia entre viable e inviable.
 
+DeepSeek cobra casi el doble en hora punta (01-04 y 06-10 UTC). En la tabla va **siempre la tarifa de punta**: el freno de gasto tiene que pecar de caro. Fuera de punta lo real es la mitad de lo apuntado.
+
 Las tarifas de cada modelo están en `PRICE_PER_MTOK` (`_shared/anthropic.ts`) y hay que revisarlas: cambian más a menudo que las de Anthropic. Un modelo que no esté en la tabla se cobra como Opus, para que el freno de gasto peque de caro.
 
 ### Qué modelo hace cada cosa

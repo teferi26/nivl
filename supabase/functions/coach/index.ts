@@ -110,8 +110,14 @@ function modeloDe(kind: Kind): string {
 // de deliberación, necesita responder antes de que sueltes el móvil.
 const EFFORT_BY_KIND: Record<Kind, Effort> = {
   chat: 'low',
-  brief: 'high',
-  plan: 'high',
+  // El brief y el plan bajan a 'medium' por lo mismo que el chat, pero el
+  // sintoma fue peor: con 'high' se gastaban el techo ENTERO pensando y
+  // devolvian un turno sin texto y sin llamada, asi que el usuario se
+  // levantaba sin plan del dia. No es reflexion, es un cuelgue. La tarea
+  // tampoco lo pide: leer un estudio ya calculado y aplicar una doctrina
+  // escrita, que es justo el argumento por el que el coach es Sonnet.
+  brief: 'medium',
+  plan: 'medium',
   revision_semanal: 'xhigh',
   cierre_mensual: 'xhigh',
   escalada: 'high',
@@ -124,11 +130,18 @@ const MAX_TOKENS_BY_KIND: Record<Kind, number> = {
   // gastó entero deliberando y devolvió un turno VACÍO. El techo tiene que dar
   // para pensar y además responder.
   chat: 8000,
-  brief: 6000,
-  plan: 6000,
-  revision_semanal: 10000,
-  cierre_mensual: 10000,
-  escalada: 4000,
+  // Los rituales necesitan MAS que el chat, no menos: ademas de escribir el
+  // veredicto llaman a planificar_dia con el dia entero, y ese JSON son un par
+  // de miles de fichas por si solo. Con 6.000 no cabia pensamiento + texto +
+  // plan, y lo que se perdia siempre era el plan, que va al final.
+  brief: 12000,
+  plan: 12000,
+  revision_semanal: 16000,
+  cierre_mensual: 16000,
+  // Con 4.000 y esfuerzo alto, la carta de las tres puertas caia en la misma
+  // trampa. Es el turno mas delicado de todos: llega cuando lleva dias sin
+  // aparecer. Quedarse mudo justo ahi es el peor momento posible.
+  escalada: 8000,
 };
 
 const admin = adminClient();
@@ -335,30 +348,57 @@ ${userText}` : userText,
     // y sin él la función muere sin dejar nada.
     const sinTiempo = Date.now() - arranque > PRESUPUESTO_MS;
     const compat = proveedorCompatible();
-    const turn = compat
-      ? await callOpenAICompat({
-          baseUrl: compat.baseUrl,
-          apiKey: compat.apiKey,
-          model: elegido,
-          system,
-          messages,
-          tools: sinTiempo ? undefined : TOOL_DEFS,
-          maxTokens: MAX_TOKENS_BY_KIND[kind],
-          onText: (d) => emit('text', { delta: d }),
-        })
-      : await callClaude({
-          model: elegido,
-          system,
-          messages,
-          tools: sinTiempo ? undefined : TOOL_DEFS,
-          maxTokens: MAX_TOKENS_BY_KIND[kind],
-          effort: EFFORT_BY_KIND[kind],
-          onText: (d) => emit('text', { delta: d }),
-          onThinking: () => emit('thinking', {}),
-        });
+    const pedirTurno = (maxTokens: number, effort: Effort) =>
+      compat
+        ? callOpenAICompat({
+            baseUrl: compat.baseUrl,
+            apiKey: compat.apiKey,
+            model: elegido,
+            system,
+            messages,
+            tools: sinTiempo ? undefined : TOOL_DEFS,
+            maxTokens,
+            onText: (d) => emit('text', { delta: d }),
+          })
+        : callClaude({
+            model: elegido,
+            system,
+            messages,
+            tools: sinTiempo ? undefined : TOOL_DEFS,
+            maxTokens,
+            effort,
+            onText: (d) => emit('text', { delta: d }),
+            onThinking: () => emit('thinking', {}),
+          });
 
+    let turn = await pedirTurno(MAX_TOKENS_BY_KIND[kind], EFFORT_BY_KIND[kind]);
     usage = addUsage(usage, turn.usage);
+
+    // Un turno que SOLO ha pensado esta perdido: ni texto ni herramienta.
+    //
+    // Pasa porque el pensamiento cuenta DENTRO de max_tokens y puede comerse
+    // el techo entero antes de llegar a responder. Se ha cobrado ya dos
+    // victimas: el chat, que devolvia respuestas vacias, y el brief, que dejo
+    // de escribir el plan del dia tres dias seguidos sin dar ni un error.
+    //
+    // Ajustar los techos hace que sea raro; esta guarda hace que no importe.
+    // Se repite una vez con el doble de sitio y sin apenas pensar, para que la
+    // respuesta quepa con seguridad. Y el turno muerto NO se guarda: un
+    // mensaje que solo tiene pensamiento envenena el historial de los turnos
+    // siguientes (de ahi salio el 400 de thinking.cache_control).
+    const util = (t: typeof turn) =>
+      t.content.some((b) => b.type === 'text' || b.type === 'tool_use');
+    if (!util(turn)) {
+      turn = await pedirTurno(MAX_TOKENS_BY_KIND[kind] * 2, 'low');
+      usage = addUsage(usage, turn.usage);
+    }
+
     model = turn.model;
+    if (!util(turn)) {
+      // Dos intentos y nada. Mejor decirlo que dejar la pantalla en blanco.
+      finalText ||= 'El sistema se ha quedado sin sitio para responder. Vuelve a preguntar.';
+      break;
+    }
 
     messages.push({ role: 'assistant', content: turn.content });
     await sb.from('coach_messages').insert({
