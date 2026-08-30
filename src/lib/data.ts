@@ -81,6 +81,7 @@ export async function completeQuestRpc(args: {
 export async function applyDayCloseRpc(args: {
   lastDay?: string | null;
   streak?: number | null;
+  perfectStreak?: number | null;
   stones?: number | null;
   penaltyXp?: number;
   clearFreeze?: boolean;
@@ -88,6 +89,7 @@ export async function applyDayCloseRpc(args: {
   const { data, error } = await supabase.rpc('apply_day_close', {
     p_last_day: args.lastDay ?? null,
     p_streak: args.streak ?? null,
+    p_perfect_streak: args.perfectStreak ?? null,
     p_stones: args.stones ?? null,
     p_penalty_xp: args.penaltyXp ?? 0,
     p_clear_freeze: args.clearFreeze ?? false,
@@ -212,6 +214,37 @@ export async function uploadAvatar(userId: string, base64: string): Promise<stri
 export async function signedUrl(bucket: 'evidence' | 'avatars', path: string): Promise<string | null> {
   const { data } = await supabase.storage.from(bucket).createSignedUrl(path, 60 * 60 * 24 * 7);
   return data?.signedUrl ?? null;
+}
+
+/**
+ * La misma firma, pero recordada mientras dure la sesión.
+ *
+ * Sin esto, cada vez que la pantalla recuperaba el foco se pedía una firma
+ * NUEVA para el mismo fichero. La URL cambiaba, así que para el componente de
+ * imagen era otra imagen: la descargaba otra vez y volvía a hacer su fundido.
+ * Efecto visible: entras en Perfil y tu cara aparece con retraso cada vez,
+ * aunque no hayas tocado la foto.
+ *
+ * Las firmas duran siete días; la caché muere con la app, así que nunca puede
+ * servir una caducada.
+ */
+const firmas = new Map<string, string>();
+
+export async function signedUrlCached(
+  bucket: 'evidence' | 'avatars',
+  path: string,
+): Promise<string | null> {
+  const clave = `${bucket}/${path}`;
+  const guardada = firmas.get(clave);
+  if (guardada) return guardada;
+  const url = await signedUrl(bucket, path);
+  if (url) firmas.set(clave, url);
+  return url;
+}
+
+/** Al cambiar de foto hay que olvidar la firma vieja o se vería la anterior. */
+export function olvidarFirma(bucket: 'evidence' | 'avatars', path: string): void {
+  firmas.delete(`${bucket}/${path}`);
 }
 
 const DEFAULT_QUESTS: QuestInput[] = [

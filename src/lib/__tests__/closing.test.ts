@@ -1,5 +1,11 @@
 import { describe, expect, test } from '@jest/globals';
-import { computeDayClose, questsScheduledOn, rachaVisible, reglasIncumplidas } from '../closing';
+import {
+  computeDayClose,
+  fallosPermitidos,
+  questsScheduledOn,
+  rachaVisible,
+  reglasIncumplidas,
+} from '../closing';
 import type { Quest } from '../types';
 
 function makeQuest(partial: Partial<Quest>): Quest {
@@ -73,6 +79,7 @@ describe('computeDayClose', () => {
       quests: [quest],
       completedKeys: new Set([`${LUNES}|q1`]),
       streak: 6,
+      perfectStreak: 6,
       stones: 0,
       freezeUntil: null,
     });
@@ -86,6 +93,7 @@ describe('computeDayClose', () => {
       quests: [quest],
       completedKeys: new Set([`${LUNES}|q1`]),
       streak: 6,
+      perfectStreak: 6,
       stones: 3,
       freezeUntil: null,
     });
@@ -248,16 +256,80 @@ describe('las penalizaciones no juzgan el día', () => {
   });
 });
 
+describe('tolerancia del día (30%)', () => {
+  const ocho = Array.from({ length: 8 }, (_, i) => makeQuest({ id: `q${i}` }));
+  // Los ocho tocan todos los días, así que el lunes se programan los ocho.
+  const cerrar = (hechas: number, streak = 3, perfectStreak = 3) =>
+    computeDayClose({
+      fromDate: LUNES,
+      today: MARTES,
+      quests: ocho,
+      completedKeys: new Set(ocho.slice(0, hechas).map((q) => `${LUNES}|${q.id}`)),
+      streak,
+      perfectStreak,
+      stones: 0,
+      freezeUntil: null,
+    });
+
+  test('con ocho misiones se perdonan dos fallos', () => {
+    expect(fallosPermitidos(8)).toBe(2);
+    const out = cerrar(6);
+    expect(out.streak).toBe(4);
+    expect(out.streakLost).toBe(false);
+  });
+
+  test('el tercer fallo sí rompe la racha', () => {
+    const out = cerrar(5);
+    expect(out.streak).toBe(0);
+    expect(out.streakLost).toBe(true);
+  });
+
+  test('un día cumplido con fallos SÍ paga la penalización', () => {
+    // La tolerancia salva la racha, no el bolsillo.
+    const out = cerrar(6);
+    expect(out.penaltyXp).toBeGreaterThan(0);
+    expect(out.missedTitles).toHaveLength(2);
+  });
+
+  test('los días pequeños siguen exigiéndolo todo', () => {
+    expect(fallosPermitidos(1)).toBe(0);
+    expect(fallosPermitidos(2)).toBe(0);
+    expect(fallosPermitidos(3)).toBe(0);
+    expect(fallosPermitidos(4)).toBe(1);
+  });
+
+  test('un día cumplido pero imperfecto corta la racha PERFECTA, no la normal', () => {
+    // Es lo que impide que las piedras se regalen al ablandarse la racha.
+    const out = cerrar(6, 3, 6);
+    expect(out.streak).toBe(4);
+    expect(out.perfectStreak).toBe(0);
+    expect(out.stonesEarned).toBe(0);
+  });
+
+  test('el día perfecto suma en las dos rachas', () => {
+    const out = cerrar(8, 3, 3);
+    expect(out.streak).toBe(4);
+    expect(out.perfectStreak).toBe(4);
+    expect(out.penaltyXp).toBe(0);
+  });
+});
+
 describe('rachaVisible', () => {
   const hoy = [makeQuest({ id: 'a' }), makeQuest({ id: 'b' })];
 
   test('suma el día en curso cuando ya está cerrado', () => {
     const r = rachaVisible(6, hoy, new Set(['a', 'b']));
-    expect(r).toEqual({ valor: 7, hoyCerrado: true });
+    expect(r).toEqual({ valor: 7, hoyCerrado: true, perfecto: true, faltan: 0 });
   });
 
   test('no lo suma si queda algo pendiente', () => {
-    expect(rachaVisible(6, hoy, new Set(['a']))).toEqual({ valor: 6, hoyCerrado: false });
+    // Con dos misiones la tolerancia es cero: floor(2 × 0,3) = 0.
+    expect(rachaVisible(6, hoy, new Set(['a']))).toEqual({
+      valor: 6,
+      hoyCerrado: false,
+      perfecto: false,
+      faltan: 1,
+    });
   });
 
   test('la penalización pendiente no impide cerrar el día', () => {
@@ -267,7 +339,12 @@ describe('rachaVisible', () => {
 
   test('un día sin misiones programadas no cierra nada', () => {
     // Domingo sin nada que hacer no es una racha ganada, es un día libre.
-    expect(rachaVisible(4, [], new Set())).toEqual({ valor: 4, hoyCerrado: false });
+    expect(rachaVisible(4, [], new Set())).toEqual({
+      valor: 4,
+      hoyCerrado: false,
+      perfecto: false,
+      faltan: 0,
+    });
   });
 });
 

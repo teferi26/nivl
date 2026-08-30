@@ -170,6 +170,10 @@ export default function Habitos() {
             decides tú: puedes consolidarlo —deja de pedírsete y deja de poder romperte la racha— o
             seguir contando.
           </Text>
+          <Text style={[styles.intro, { marginTop: 10 }]}>
+            Toca cualquier hábito para editarlo o eliminarlo. El sistema también puede quitártelos
+            si se lo pides.
+          </Text>
         </SystemWindow>
 
         {reglas.length > 0 ? (
@@ -251,6 +255,9 @@ export default function Habitos() {
                       ? 'Falta 1 día'
                       : `Faltan ${p.restantes} días`}
                 </Text>
+              </View>
+              <View style={styles.metaFila}>
+                <Text style={styles.dias}>Tocar para editar o eliminar</Text>
               </View>
               {p.consolidable ? (
                 <SystemButton

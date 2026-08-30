@@ -19,6 +19,32 @@ export function questsScheduledOn(quests: Quest[], date: string): Quest[] {
 }
 
 /**
+ * Cuántas misiones puedes fallar en un día sin romper la racha.
+ *
+ * Todo o nada no funcionaba. Con ocho misiones diarias, un día perfecto es
+ * raro y dos seguidos casi imposible: en dos semanas de uso real hubo tres
+ * días perfectos, ninguno consecutivo, así que la racha nunca pasó de 1 y AGI
+ * —la stat de la constancia— se quedó clavada en 0. El día que fue al
+ * gimnasio, escribió el diario, se pesó, leyó y registró las comidas se leía
+ * igual que el día que no abrió la app. Eso no es exigencia, es ruido.
+ *
+ * El 30% se redondea hacia abajo, así que los días pequeños siguen pidiéndolo
+ * todo (con tres misiones no perdonas ninguna) y el margen solo aparece cuando
+ * el día es grande de verdad. Es proporcional al tamaño del día, no un regalo
+ * fijo.
+ *
+ * Lo que NO cambia: cada misión fallada sigue costando su XP. La tolerancia
+ * salva la racha, no el bolsillo. Y así se respeta mejor el invariante de no
+ * castigar dos veces el mismo fallo — antes un despiste costaba el XP Y la
+ * racha entera.
+ */
+export const TOLERANCIA_DIA = 0.3;
+
+export function fallosPermitidos(programadas: number): number {
+  return Math.floor(programadas * TOLERANCIA_DIA);
+}
+
+/**
  * La racha que se le enseña, contando el día de hoy si ya está cerrado.
  *
  * `profiles.streak_days` solo cuenta días CERRADOS: se recalcula al procesar el
@@ -34,10 +60,18 @@ export function rachaVisible(
   streakDays: number,
   questsHoy: Quest[],
   completadasHoy: Set<string>,
-): { valor: number; hoyCerrado: boolean } {
+): { valor: number; hoyCerrado: boolean; perfecto: boolean; faltan: number } {
   const pendientes = questsHoy.filter((q) => !q.is_penalty);
-  const hoyCerrado = pendientes.length > 0 && pendientes.every((q) => completadasHoy.has(q.id));
-  return { valor: streakDays + (hoyCerrado ? 1 : 0), hoyCerrado };
+  const fallos = pendientes.filter((q) => !completadasHoy.has(q.id)).length;
+  // El mismo criterio que el cierre, o el número a la vista mentiría: verías
+  // "hoy cerrado" y mañana la racha rota, o al revés.
+  const hoyCerrado = pendientes.length > 0 && fallos <= fallosPermitidos(pendientes.length);
+  return {
+    valor: streakDays + (hoyCerrado ? 1 : 0),
+    hoyCerrado,
+    perfecto: pendientes.length > 0 && fallos === 0,
+    faltan: Math.max(0, fallos - fallosPermitidos(pendientes.length)),
+  };
 }
 
 /**
@@ -111,12 +145,15 @@ export interface CloseInput {
   quests: Quest[];
   completedKeys: Set<string>;
   streak: number;
+  /** Días perfectos seguidos: es lo que forja la piedra, no la racha normal. */
+  perfectStreak?: number;
   stones: number;
   freezeUntil: string | null;
 }
 
 export interface CloseOutput {
   streak: number;
+  perfectStreak: number;
   stones: number;
   penaltyXp: number;
   missedTitles: string[];
@@ -128,6 +165,7 @@ export interface CloseOutput {
 
 export function computeDayClose(input: CloseInput): CloseOutput {
   let { streak, stones } = input;
+  let perfectStreak = input.perfectStreak ?? 0;
   let penaltyXp = 0;
   let streakLost = false;
   let stonesUsed = 0;
@@ -159,31 +197,47 @@ export function computeDayClose(input: CloseInput): CloseOutput {
     const scheduled = questsScheduledOn(input.quests, day).filter((q) => !q.is_penalty);
     const missed = scheduled.filter((q) => !input.completedKeys.has(`${day}|${q.id}`));
 
+    // El XP de lo fallado se cobra igual esté el día cumplido o no: la
+    // tolerancia protege la racha, no el bolsillo.
+    const cobrarFallos = () => {
+      let dayPenalty = 0;
+      for (const q of missed) {
+        dayPenalty += Math.round(XP_BY_DIFFICULTY[q.difficulty] * PENALTY_FACTOR);
+        missedTitles.push(q.title);
+      }
+      penaltyXp += Math.min(dayPenalty, DAILY_PENALTY_CAP);
+    };
+
     if (scheduled.length > 0) {
-      if (missed.length === 0) {
+      const perfecto = missed.length === 0;
+      const cumplido = missed.length <= fallosPermitidos(scheduled.length);
+
+      if (cumplido) {
         streak += 1;
-        if (streak > 0 && streak % STONE_EVERY_STREAK_DAYS === 0 && stones < MAX_STONES) {
+        // La piedra se gana con días PERFECTOS, no con días cumplidos. Si la
+        // racha se ablanda y la piedra viene con ella, las válvulas pasarían de
+        // ganarse a regalarse — y una piedra absorbe un día entero de fallos.
+        perfectStreak = perfecto ? perfectStreak + 1 : 0;
+        if (perfectStreak > 0 && perfectStreak % STONE_EVERY_STREAK_DAYS === 0 && stones < MAX_STONES) {
           stones += 1;
           stonesEarned += 1;
         }
+        if (!perfecto) cobrarFallos();
       } else if (stones > 0) {
         // La piedra absorbe el día entero: sin penalización y la racha sobrevive
         // (aunque no suma).
         stones -= 1;
         stonesUsed += 1;
+        perfectStreak = 0;
       } else {
         streak = 0;
+        perfectStreak = 0;
         streakLost = true;
-        let dayPenalty = 0;
-        for (const q of missed) {
-          dayPenalty += Math.round(XP_BY_DIFFICULTY[q.difficulty] * PENALTY_FACTOR);
-          missedTitles.push(q.title);
-        }
-        penaltyXp += Math.min(dayPenalty, DAILY_PENALTY_CAP);
+        cobrarFallos();
       }
     }
     day = addDays(day, 1);
   }
 
-  return { streak, stones, penaltyXp, missedTitles, streakLost, stonesUsed, stonesEarned, frozenDays };
+  return { streak, perfectStreak, stones, penaltyXp, missedTitles, streakLost, stonesUsed, stonesEarned, frozenDays };
 }

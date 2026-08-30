@@ -60,6 +60,7 @@ export async function processPendingDays(
     quests,
     completedKeys,
     streak: profile.streak_days,
+    perfectStreak: profile.perfect_streak_days,
     stones: profile.protection_stones,
     freezeUntil: profile.freeze_until,
   });
@@ -89,6 +90,7 @@ export async function processPendingDays(
   const updated = await applyDayCloseRpc({
     lastDay: yesterday,
     streak: close.streak,
+    perfectStreak: close.perfectStreak,
     stones: close.stones,
     penaltyXp: close.penaltyXp + xpReglas,
     clearFreeze: !!(profile.freeze_until && profile.freeze_until < today),

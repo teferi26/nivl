@@ -5,7 +5,7 @@ import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Alert, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Hexagon } from '@/components/Hexagon';
+import { Avatar } from '@/components/Avatar';
 import { LevelUpOverlay } from '@/components/LevelUpOverlay';
 import { QuestItem } from '@/components/QuestItem';
 import { OrdenDelDia } from '@/components/OrdenDelDia';
@@ -297,9 +297,7 @@ export default function Sistema() {
         {profile && lvl ? (
           <SystemWindow color={colors.cyanDim}>
             <View style={styles.profileRow}>
-              <Hexagon size={58}>
-                <Text style={styles.avatarLetter}>{profile.name.charAt(0).toUpperCase()}</Text>
-              </Hexagon>
+              <Avatar size={58} avatarPath={profile.avatar_url} name={profile.name} />
               <View style={styles.profileInfo}>
                 <Text style={styles.name}>{profile.name.toUpperCase()}</Text>
                 <Text style={styles.rank}>
@@ -322,7 +320,13 @@ export default function Sistema() {
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
                   <Text style={[styles.streak, racha.hoyCerrado && styles.streakViva]}>
                     Racha {racha.valor} · ×{streakMultiplier(profile.streak_days).toFixed(1)}
-                    {racha.hoyCerrado ? ' · hoy cerrado' : ''}
+                    {racha.hoyCerrado
+                      ? racha.perfecto
+                        ? ' · día perfecto'
+                        : ' · hoy cuenta'
+                      : racha.faltan > 0
+                        ? ` · ${racha.faltan} para salvar el día`
+                        : ''}
                   </Text>
                   <Text style={styles.stones}>
                     <Ionicons name="shield-half-outline" size={12} color={colors.cyanText} />{' '}

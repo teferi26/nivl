@@ -28,7 +28,14 @@ import { Version } from '@/components/Version';
 import { XPBar } from '@/components/XPBar';
 import { ACHIEVEMENTS, fetchUnlocked } from '@/lib/achievements';
 import { useAuth } from '@/lib/auth';
-import { completionStats, ensureProfile, signedUrl, updateProfile, uploadAvatar } from '@/lib/data';
+import {
+  completionStats,
+  ensureProfile,
+  olvidarFirma,
+  signedUrlCached,
+  updateProfile,
+  uploadAvatar,
+} from '@/lib/data';
 import { addDays, dateKey } from '@/lib/dates';
 import { setFreeze } from '@/lib/engine';
 import { exportAllData } from '@/lib/exporter';
@@ -111,12 +118,15 @@ export default function Perfil() {
       const prof = await ensureProfile(userId);
       setProfile(prof);
       setName(prof.name);
+      // La foto, ANTES que el resto. Iba la última, detrás de dos consultas que
+      // no tienen nada que ver con ella, así que su cara tardaba tres viajes de
+      // red en aparecer sobre una pantalla ya pintada.
+      if (prof.avatar_url) {
+        setAvatarUri(await signedUrlCached('avatars', prof.avatar_url));
+      }
       setStats(await completionStats());
       setUnlocked(await fetchUnlocked());
       setSubscription(await fetchSubscription(userId).catch(() => null));
-      if (prof.avatar_url) {
-        setAvatarUri(await signedUrl('avatars', prof.avatar_url));
-      }
     } catch (e) {
       Alert.alert('Error del sistema', e instanceof Error ? e.message : 'Fallo desconocido');
     }
@@ -146,7 +156,10 @@ export default function Perfil() {
       const path = await uploadAvatar(userId, b64);
       await updateProfile(userId, { avatar_url: path });
       setProfile({ ...profile, avatar_url: path });
-      setAvatarUri(await signedUrl('avatars', path));
+      // La ruta es siempre la misma (un cazador, un retrato), así que sin
+      // olvidar la firma guardada seguiría viéndose la foto anterior.
+      olvidarFirma('avatars', path);
+      setAvatarUri(await signedUrlCached('avatars', path));
     } catch (e) {
       Alert.alert('Error del sistema', e instanceof Error ? e.message : 'No se pudo subir la foto');
     } finally {
@@ -280,6 +293,11 @@ export default function Perfil() {
         >
           {avatarUri ? (
             <Image source={{ uri: avatarUri }} style={styles.heroImage} contentFit="cover" transition={200} />
+          ) : profile.avatar_url ? (
+            // Sabemos que hay foto aunque todavía no haya llegado: hueco en
+            // silencio. Poner la inicial aquí es lo que hacía aparecer una letra
+            // y después la cara, cada vez que entrabas.
+            <View style={styles.heroEmpty} />
           ) : (
             <View style={styles.heroEmpty}>
               <Hexagon size={110}>

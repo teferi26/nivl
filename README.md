@@ -34,9 +34,9 @@ Las notificaciones y el push **no funcionan en Expo Go**: hace falta un developm
 
 - XP por dificultad: trivial 10 · fácil 25 · media 50 · difícil 100 · épica 250.
 - Evidencia (foto en el momento): +25 % XP.
-- Racha: cada 7 días completos +0,1 al multiplicador (máx ×1,5). Fallar un día la reinicia.
+- Racha: cada 7 días completos +0,1 al multiplicador (máx ×1,5). **Un día cuenta si fallas como mucho el 30% de lo programado**, redondeando hacia abajo: con ocho misiones se perdonan dos, con tres no se perdona ninguna. Fallar más la reinicia. El XP de lo fallado se pierde igual — la tolerancia salva la racha, no el bolsillo. Todo o nada no funcionaba: con ocho misiones diarias un día perfecto es raro, dos seguidos casi imposible, y la racha nunca pasaba de 1.
 - Penalización al cierre: −50 % del XP base de cada misión fallada, con **tope de 150 XP/día**, y una **misión de penalización** que recupera exactamente lo perdido. En una ausencia larga se acumula: por eso los topes del esquema son altos.
-- **Válvulas**: cada semana perfecta forja una Piedra de Protección (máx 3), y desde Perfil puedes pausar el sistema.
+- **Válvulas**: cada semana **perfecta** —siete días al 100%, no siete días cumplidos— forja una Piedra de Protección (máx 3), y desde Perfil puedes pausar el sistema. La piedra exige perfección a propósito: si se ablandara con la racha, la válvula pasaría de ganarse a regalarse.
 - Nivel: curva `100 × nivel^1.5`. Rangos: E (1-10) · D (11-25) · C (26-45) · B (46-70) · A (71-99) · S (100+).
 - Mazmorras: tareas dan XP base, jefes ×2, botín al despejar (E 50 → S 600). Gym: 50 XP + 25 por PR. Diario: 15 XP.
 - Cuerpo: cardio 40 XP (caminar 15) con **tope de 60 XP diarios** entre todas las sesiones, y 10 XP por cumplir calorías y proteína el mismo día. El tope existe porque hay seis tipos de sesión: sin él, un paseo repetido valdría más que un día entero de misiones. Pasado el tope la sesión se sigue registrando — cuenta para el estudio aunque no pague.

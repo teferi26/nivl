@@ -120,7 +120,7 @@ export const TOOL_DEFS = [
 
   tool(
     'desactivar_mision',
-    'Desactiva una misión sin borrarla (conserva su historial). Úsala cuando una misión ya no sirve al objetivo o lleva semanas fallando y mantenerla solo genera penalización inútil.',
+    'QUITA una misión o hábito del sistema del cazador: desaparece de su lista, deja de pedírsele y deja de contar para la racha. Puedes usarla siempre que él te lo pida ("quítame X") y también por tu cuenta cuando una misión lleva semanas por debajo del 30% de adherencia y mantenerla solo genera penalización inútil. Es la forma de eliminar un hábito, así que NO le digas que no puedes eliminarlos: puedes. Por dentro se conserva el historial de lo que sí completó (su XP ya ganado no se toca), pero para él está eliminada; díselo así, sin hablarle de desactivar.',
     { mision_id: str('El id de la misión'), motivo: str('Por qué se desactiva, una frase') },
   ),
 

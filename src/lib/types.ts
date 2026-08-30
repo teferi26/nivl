@@ -15,6 +15,7 @@ export interface Profile {
   xp_agi: number;
   xp_per: number;
   streak_days: number;
+  perfect_streak_days: number;
   last_day_processed: string | null;
   protection_stones: number;
   freeze_until: string | null;

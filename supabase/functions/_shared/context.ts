@@ -40,12 +40,102 @@ export interface BuiltContext {
   dossier: string;
 }
 
+/**
+ * Tolerancia del día, la misma que aplica el cierre en el móvil (closing.ts).
+ *
+ * Duplicada a propósito, como el resto de fórmulas de este lado: el empaquetado
+ * de la Edge Function no sube nada de fuera de supabase/. Si se toca una, se
+ * toca la otra.
+ */
+const TOLERANCIA_DIA = 0.3;
+const fallosPermitidos = (programadas: number) => Math.floor(programadas * TOLERANCIA_DIA);
+
+const diaSemana = (fecha: string) => ((new Date(fecha).getDay() + 6) % 7) + 1;
+
+/**
+ * Adherencia real: cuántas veces TOCABA cada misión y cuántas se hizo.
+ *
+ * Antes aquí solo iba un contador suelto ("6 veces en 14d") y se dejaba que el
+ * modelo dedujera el denominador de days_of_week. Eso es aritmética, y la
+ * aritmética con el historial no la hace la IA: la hace este módulo y la IA
+ * decide qué hacer con el resultado. Sin denominador, "6 veces" puede ser un
+ * 100% o un 20% y el coach no distinguía una misión sana de una muerta.
+ *
+ * Solo se cuentan los días en que la misión ya existía: una creada anteayer no
+ * puede figurar con un 7% de adherencia sobre treinta días.
+ */
+function adherencia(
+  quests: Record<string, any>[],
+  completions: { quest_id: string; date: string }[],
+  desde: string,
+  hasta: string,
+) {
+  const hechasPorMision = new Map<string, Set<string>>();
+  for (const c of completions) {
+    if (!hechasPorMision.has(c.quest_id)) hechasPorMision.set(c.quest_id, new Set());
+    hechasPorMision.get(c.quest_id)!.add(c.date);
+  }
+
+  const dias: string[] = [];
+  for (let d = new Date(desde); d < new Date(hasta); d.setDate(d.getDate() + 1)) {
+    dias.push(d.toISOString().slice(0, 10));
+  }
+
+  return quests.map((q) => {
+    const nacida = String(q.created_at ?? '').slice(0, 10);
+    const suyos = dias.filter(
+      (d) => (q.days_of_week ?? []).includes(diaSemana(d)) && (!nacida || d >= nacida),
+    );
+    const hechas = hechasPorMision.get(q.id) ?? new Set();
+    const cumplidos = suyos.filter((d) => hechas.has(d));
+    const ultima = [...hechas].sort().pop() ?? null;
+    return {
+      q,
+      programadas: suyos.length,
+      completadas: cumplidos.length,
+      pct: suyos.length ? Math.round((cumplidos.length / suyos.length) * 100) : null,
+      ultima,
+      diasSinHacer: ultima
+        ? Math.round((new Date(hasta).getTime() - new Date(ultima).getTime()) / 86400000)
+        : null,
+    };
+  });
+}
+
+/** Día a día: qué tocaba, qué se hizo y si el día contó para la racha. */
+function diarioDeDias(
+  quests: Record<string, any>[],
+  completions: { quest_id: string; date: string }[],
+  desde: string,
+  hasta: string,
+) {
+  const hechas = new Set(completions.map((c) => `${c.date}|${c.quest_id}`));
+  const NOMBRES = ['', 'L', 'M', 'X', 'J', 'V', 'S', 'D'];
+  const filas: string[] = [];
+  for (let d = new Date(desde); d < new Date(hasta); d.setDate(d.getDate() + 1)) {
+    const dia = d.toISOString().slice(0, 10);
+    const toca = quests.filter(
+      (q) =>
+        (q.days_of_week ?? []).includes(diaSemana(dia)) &&
+        String(q.created_at ?? '').slice(0, 10) <= dia,
+    );
+    if (!toca.length) continue;
+    const ok = toca.filter((q) => hechas.has(`${dia}|${q.id}`)).length;
+    const fallos = toca.length - ok;
+    const veredicto =
+      fallos === 0 ? 'PERFECTO' : fallos <= fallosPermitidos(toca.length) ? 'cumplido' : 'FALLADO';
+    filas.push(`${NOMBRES[diaSemana(dia)]} ${dia.slice(5)} · ${ok}/${toca.length} · ${veredicto}`);
+  }
+  return filas;
+}
+
 export async function buildContext(
   sb: Db,
   userId: string,
   today: string,
 ): Promise<BuiltContext> {
   const since14 = new Date(new Date(today).getTime() - 14 * 86400000).toISOString().slice(0, 10);
+  const since30 = new Date(new Date(today).getTime() - 30 * 86400000).toISOString().slice(0, 10);
   const since60 = new Date(new Date(today).getTime() - 60 * 86400000).toISOString().slice(0, 10);
   const weekday = ((new Date(today).getDay() + 6) % 7) + 1; // 1=lunes … 7=domingo
 
@@ -69,7 +159,7 @@ export async function buildContext(
     sb.from('profiles').select('*').eq('id', userId).maybeSingle(),
     sb.from('coach_dossier').select('content').eq('user_id', userId).maybeSingle(),
     sb.from('quests').select('*').eq('user_id', userId).eq('active', true),
-    sb.from('completions').select('quest_id, date').eq('user_id', userId).gte('date', since14),
+    sb.from('completions').select('quest_id, date').eq('user_id', userId).gte('date', since30),
     sb.from('completions').select('quest_id').eq('user_id', userId).eq('date', today),
     sb.from('day_plans').select('id, date, brief, verdict, status').eq('user_id', userId).eq('date', today).maybeSingle(),
     sb.from('goals').select('*').eq('user_id', userId).eq('status', 'active'),
@@ -99,13 +189,6 @@ export async function buildContext(
   const level = levelFromXp(p.xp_total ?? 0);
   const doneToday = new Set((todayDoneRes.data ?? []).map((c: any) => c.quest_id));
 
-  // Cuántas veces se completó cada misión en 14 días. No se calculan los días
-  // programados aquí: el modelo tiene days_of_week y saca la conclusión solo.
-  const counts = new Map<string, number>();
-  for (const c of (completionsRes.data ?? []) as any[]) {
-    counts.set(c.quest_id, (counts.get(c.quest_id) ?? 0) + 1);
-  }
-
   const DIAS = ['', 'L', 'M', 'X', 'J', 'V', 'S', 'D'];
   // Un hábito consolidado sigue activo pero ya no se programa: si entrara en la
   // lista de misiones, el coach lo daría por pendiente y lo reclamaría todos los
@@ -121,20 +204,50 @@ export async function buildContext(
   push(`# ESTADO DEL CAZADOR · ${today}`);
   push();
   push(`Nombre: ${p.name} · Nivel ${level} · Rango ${rankForLevel(level)} · ${p.xp_total} XP totales`);
-  push(`Racha: ${p.streak_days} días · Piedras de protección: ${p.protection_stones} · Puntos Bonus: ${p.bonus_points ?? 0}`);
+  push(
+    `Racha: ${p.streak_days} días (perfectos seguidos: ${p.perfect_streak_days ?? 0}) · ` +
+      `Piedras de protección: ${p.protection_stones} · Puntos Bonus: ${p.bonus_points ?? 0}`,
+  );
   push(`Horarios pactados: despertar ${String(p.wake_time).slice(0, 5)} · dormir ${String(p.sleep_time).slice(0, 5)} · régimen ${p.coach_mode}`);
   if (p.freeze_until) push(`CONGELADO hasta ${p.freeze_until} (${p.freeze_reason ?? 'sin motivo'})`);
   push(`Stats: FUE ${p.xp_fue} · VIT ${p.xp_vit} · INT ${p.xp_int} · AGI ${p.xp_agi} · PER ${p.xp_per}`);
   push();
 
-  push('## Misiones activas (últimos 14 días)');
+  push('## Misiones activas · adherencia real de 30 días');
   if (!quests.length) push('Ninguna. No tiene sistema todavía.');
-  for (const q of quests) {
+  // Peor primero: lo que está fallando tiene que ser lo primero que lea, no
+  // algo que encuentre al final de una lista ordenada por antigüedad.
+  const adherencias = adherencia(quests, (completionsRes.data ?? []) as any[], since30, today);
+  for (const a of [...adherencias].sort((x, y) => (x.pct ?? 101) - (y.pct ?? 101))) {
+    const q = a.q;
     const dias = (q.days_of_week ?? []).map((d: number) => DIAS[d]).join('') || '—';
     const tocaHoy = (q.days_of_week ?? []).includes(weekday);
     const estado = tocaHoy ? (doneToday.has(q.id) ? 'HECHA HOY' : 'PENDIENTE HOY') : 'hoy no toca';
-    push(`- [${q.id}] "${q.title}" · ${q.stat} · ${q.difficulty} · días ${dias} · ${counts.get(q.id) ?? 0} veces en 14d · ${estado}${q.is_bonus ? ' · EXTRA (paga PB)' : ''}`);
+    const adh =
+      a.pct === null
+        ? 'sin días programados aún'
+        : `${a.completadas}/${a.programadas} = ${a.pct}%`;
+    const abandono =
+      a.diasSinHacer === null
+        ? ' · NUNCA se ha hecho'
+        : a.diasSinHacer >= 7
+          ? ` · ${a.diasSinHacer} días sin hacerse`
+          : '';
+    push(
+      `- [${q.id}] "${q.title}" · ${q.stat} · ${q.difficulty} · días ${dias} · adherencia ${adh}${abandono} · ${estado}${q.is_bonus ? ' · EXTRA (paga PB)' : ''}`,
+    );
   }
+  push();
+
+  push('## Los últimos 14 días, uno a uno');
+  const bitacora = diarioDeDias(quests, (completionsRes.data ?? []) as any[], since14, today);
+  if (!bitacora.length) push('Sin días con misiones programadas.');
+  for (const fila of bitacora) push(`- ${fila}`);
+  push(
+    'PERFECTO = todo hecho · cumplido = falló poco y la racha aguanta · FALLADO = racha rota. ' +
+      'Un día sin ninguna marca es un día en que no abrió la app, no un día en que lo hizo mal: ' +
+      'son cosas distintas y se tratan distinto.',
+  );
   push();
 
   if (adquiridos.length) {
