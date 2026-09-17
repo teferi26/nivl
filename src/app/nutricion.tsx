@@ -1,11 +1,23 @@
-import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Haptics from 'expo-haptics';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Alert, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SystemButton } from '@/components/SystemButton';
-import { SystemWindow } from '@/components/SystemWindow';
+import { XPBar } from '@/components/XPBar';
+import {
+  Card,
+  Check,
+  EmptyState,
+  FadeIn,
+  Row,
+  RowValue,
+  Screen,
+  ScreenHeader,
+  Section,
+  Stagger,
+  Stat,
+  StatRow,
+} from '@/components/ui';
 import { useAuth } from '@/lib/auth';
 import {
   fetchNutritionLog,
@@ -102,183 +114,145 @@ export default function Nutricion() {
   const pctKcal = dias ? Math.round((historial.filter((l) => l.hit_kcal).length / dias) * 100) : 0;
   const pctProte = dias ? Math.round((historial.filter((l) => l.hit_protein).length / dias) * 100) : 0;
 
+  // Solo presentación.
+  const cumplidosHoy = (kcal ? 1 : 0) + (prote ? 1 : 0);
+  const diaPagado = !!(hoyLog?.hit_kcal && hoyLog?.hit_protein);
+  const subtitulo = objetivo
+    ? `${objetivo.kcal} kcal y ${objetivo.protein_g} g de proteína al día.`
+    : 'Sin objetivo fijado todavía.';
+
   return (
-    <SafeAreaView style={styles.screen} edges={['top', 'bottom']}>
-      <View style={styles.header}>
-        <Pressable
-          onPress={() => router.back()}
-          hitSlop={10}
-          accessibilityRole="button"
-          accessibilityLabel="Volver"
-        >
-          <Ionicons name="chevron-back" size={24} color={colors.accent} />
-        </Pressable>
-        <Text style={styles.title}>NUTRICIÓN</Text>
-        <View style={{ width: 24 }} />
-      </View>
+    <Screen>
+      <Stagger>
+        <FadeIn index={0}>
+          <ScreenHeader onBack={() => router.back()} eyebrow="Cuerpo" title="Nutrición" subtitle={subtitulo} />
+        </FadeIn>
 
-      <ScrollView keyboardShouldPersistTaps="handled" automaticallyAdjustKeyboardInsets contentContainerStyle={styles.contenido}>
-        <SystemWindow>
-          <Text style={styles.windowTitle}>OBJETIVO VIGENTE</Text>
+        <FadeIn index={1}>
           {objetivo ? (
-            <>
-              <View style={styles.macros}>
-                <View>
-                  <Text style={styles.macroNum}>{objetivo.kcal}</Text>
-                  <Text style={styles.macroLabel}>kcal</Text>
-                </View>
-                <View>
-                  <Text style={styles.macroNum}>{objetivo.protein_g}</Text>
-                  <Text style={styles.macroLabel}>proteína g</Text>
-                </View>
-                {objetivo.carbs_g ? (
-                  <View>
-                    <Text style={styles.macroNum}>{objetivo.carbs_g}</Text>
-                    <Text style={styles.macroLabel}>carbo g</Text>
-                  </View>
-                ) : null}
-                {objetivo.fat_g ? (
-                  <View>
-                    <Text style={styles.macroNum}>{objetivo.fat_g}</Text>
-                    <Text style={styles.macroLabel}>grasa g</Text>
-                  </View>
-                ) : null}
-              </View>
+            <Card>
+              <StatRow>
+                <Stat value={objetivo.kcal} label="kcal" />
+                <Stat value={objetivo.protein_g} unit="g" label="Proteína" />
+                {objetivo.carbs_g ? <Stat value={objetivo.carbs_g} unit="g" label="Carbos" /> : null}
+                {objetivo.fat_g ? <Stat value={objetivo.fat_g} unit="g" label="Grasa" /> : null}
+              </StatRow>
               {objetivo.rationale ? <Text style={styles.motivo}>{objetivo.rationale}</Text> : null}
-            </>
+            </Card>
           ) : (
-            <Text style={styles.vacio}>
-              El sistema aún no te ha fijado objetivos. Pídeselos al coach y los calculará con tu
-              peso, tu entrenamiento y el ritmo al que quieres bajar.
-            </Text>
+            <Card variant="outline">
+              <EmptyState
+                compact
+                icon="nutrition-outline"
+                title="Sin objetivo fijado"
+                body="Pídeselo al coach: lo calculará con tu peso, tu entrenamiento y el ritmo al que quieres bajar."
+                action={{ label: 'Hablar con el coach', onPress: () => router.push('/(tabs)/coach') }}
+              />
+            </Card>
           )}
-        </SystemWindow>
+        </FadeIn>
 
-        <SystemWindow>
-          <Text style={styles.windowTitle}>PARTE DE HOY</Text>
-          <Pressable
-            onPress={() => setKcal((v) => !v)}
-            style={styles.check}
-            accessibilityRole="checkbox"
-            accessibilityState={{ checked: kcal }}
-            accessibilityLabel="He cumplido las calorías"
-          >
-            <View style={[styles.caja, kcal && styles.cajaOn]}>
-              {kcal ? <Ionicons name="checkmark" size={14} color={colors.bg} /> : null}
-            </View>
-            <Text style={styles.checkText}>
-              He cumplido las calorías{objetivo ? ` (${objetivo.kcal})` : ''}
+        <FadeIn index={2}>
+          <Section title="Parte de hoy" meta={`${cumplidosHoy}/2`} tone={cumplidosHoy === 2 ? 'accent' : 'dim'}>
+            <Card padded={false} style={styles.lista}>
+              <Row
+                first
+                leading={<Check checked={kcal} />}
+                title="Calorías"
+                detail={objetivo ? `Objetivo: ${objetivo.kcal} kcal` : 'Sin objetivo fijado'}
+                trailing={kcal ? <RowValue tone="accent">Cumplido</RowValue> : undefined}
+                onPress={() => setKcal((v) => !v)}
+                accessibilityRole="checkbox"
+                accessibilityState={{ checked: kcal }}
+                accessibilityLabel="He cumplido las calorías"
+              />
+              <Row
+                leading={<Check checked={prote} />}
+                title="Proteína"
+                detail={objetivo ? `Objetivo: ${objetivo.protein_g} g` : 'Sin objetivo fijado'}
+                trailing={prote ? <RowValue tone="accent">Cumplido</RowValue> : undefined}
+                onPress={() => setProte((v) => !v)}
+                accessibilityRole="checkbox"
+                accessibilityState={{ checked: prote }}
+                accessibilityLabel="He cumplido la proteína"
+              />
+            </Card>
+            <TextInput
+              style={styles.input}
+              value={notas}
+              onChangeText={setNotas}
+              placeholder="Qué se torció, o qué comiste de más"
+              placeholderTextColor={colors.textFaint}
+              multiline
+              accessibilityLabel="Notas del día"
+            />
+            <SystemButton title="Registrar el día" onPress={guardar} loading={guardando} style={{ marginTop: 12 }} />
+            <Text style={styles.nota}>
+              {diaPagado
+                ? 'El día ya está registrado y pagado. Puedes corregir el parte sin que vuelva a premiar.'
+                : `Cumplir las dos cosas paga +${NUTRITION_DAY_XP} XP a VIT.`}
             </Text>
-          </Pressable>
-          <Pressable
-            onPress={() => setProte((v) => !v)}
-            style={styles.check}
-            accessibilityRole="checkbox"
-            accessibilityState={{ checked: prote }}
-            accessibilityLabel="He cumplido la proteína"
-          >
-            <View style={[styles.caja, prote && styles.cajaOn]}>
-              {prote ? <Ionicons name="checkmark" size={14} color={colors.bg} /> : null}
-            </View>
-            <Text style={styles.checkText}>
-              He cumplido la proteína{objetivo ? ` (${objetivo.protein_g} g)` : ''}
-            </Text>
-          </Pressable>
+          </Section>
+        </FadeIn>
 
-          <TextInput
-            style={styles.input}
-            value={notas}
-            onChangeText={setNotas}
-            placeholder="Qué se torció, o qué comiste de más"
-            placeholderTextColor={colors.textFaint}
-            multiline
-            accessibilityLabel="Notas del día"
-          />
-          <SystemButton title="Registrar el día" onPress={guardar} loading={guardando} style={{ marginTop: 12 }} />
-        </SystemWindow>
-
-        <SystemWindow>
-          <Text style={styles.windowTitle}>ADHERENCIA · 28 DÍAS</Text>
-          {dias ? (
-            <>
-              <Text style={styles.adherencia}>
-                Calorías {pctKcal} % · Proteína {pctProte} % · {dias} partes
-              </Text>
-              <Text style={styles.hint}>
-                Si la adherencia es alta y el peso no se mueve dos semanas, el fallo es del
-                objetivo, no tuyo: el sistema lo recalculará.
-              </Text>
-            </>
-          ) : (
-            <Text style={styles.vacio}>
-              Sin partes todavía. Son dos toques al día y son lo que permite al sistema saber si
-              hay que tocar las calorías o apretar.
-            </Text>
-          )}
-        </SystemWindow>
-      </ScrollView>
-    </SafeAreaView>
+        <FadeIn index={3}>
+          <Section title="Adherencia · 28 días" meta={dias ? `${dias} ${dias === 1 ? 'parte' : 'partes'}` : undefined}>
+            {dias ? (
+              <Card>
+                <StatRow>
+                  <Stat value={pctKcal} unit="%" label="Calorías" tone={pctKcal >= 80 ? 'accent' : 'text'} />
+                  <Stat value={pctProte} unit="%" label="Proteína" tone={pctProte >= 80 ? 'accent' : 'text'} />
+                  <Stat value={dias} label="Partes" />
+                </StatRow>
+                <View style={styles.barras}>
+                  <View style={styles.barra}>
+                    <Text style={styles.barraRotulo}>CALORÍAS</Text>
+                    <XPBar ratio={pctKcal / 100} height={5} />
+                  </View>
+                  <View style={styles.barra}>
+                    <Text style={styles.barraRotulo}>PROTEÍNA</Text>
+                    <XPBar ratio={pctProte / 100} height={5} />
+                  </View>
+                </View>
+                <Text style={styles.nota}>
+                  Si la adherencia es alta y el peso no se mueve dos semanas, el fallo es del
+                  objetivo, no tuyo: el sistema lo recalculará.
+                </Text>
+              </Card>
+            ) : (
+              <Card variant="outline">
+                <EmptyState
+                  compact
+                  icon="analytics-outline"
+                  title="Sin partes todavía"
+                  body="Son dos toques al día y son lo que permite al sistema saber si hay que tocar las calorías o apretar."
+                />
+              </Card>
+            )}
+          </Section>
+        </FadeIn>
+      </Stagger>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.bg },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-  },
-  title: { fontFamily: fonts.heading, fontSize: 15, letterSpacing: 3, color: colors.text },
-  contenido: { padding: 16, paddingBottom: 32 },
-  windowTitle: {
-    fontFamily: fonts.heading,
-    fontSize: 12,
-    letterSpacing: 2.5,
-    color: colors.accentText,
-    marginBottom: 10,
-  },
-  macros: { flexDirection: 'row', gap: 22, flexWrap: 'wrap' },
-  macroNum: { fontFamily: fonts.number, fontSize: 20, color: colors.text },
-  macroLabel: { fontFamily: fonts.body, fontSize: 11, color: colors.textDim },
-  motivo: {
-    fontFamily: fonts.body,
-    fontSize: 12.5,
-    lineHeight: 18,
-    color: colors.textDim,
-    marginTop: 10,
-  },
-  vacio: { fontFamily: fonts.body, fontSize: 13, lineHeight: 20, color: colors.textDim },
-  check: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 8 },
-  caja: {
-    width: 20,
-    height: 20,
-    borderWidth: 1.5,
-    borderColor: colors.accentDim,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  cajaOn: { backgroundColor: colors.accent, borderColor: colors.accent },
-  checkText: { fontFamily: fonts.semibold, fontSize: 13.5, color: colors.text, flex: 1 },
+  lista: { paddingHorizontal: 16, paddingVertical: 2 },
+  motivo: { fontFamily: fonts.body, fontSize: 13, lineHeight: 19, color: colors.textDim, marginTop: 14 },
   input: {
     borderWidth: 1,
-    borderColor: colors.line,
+    borderColor: colors.accentDim,
     backgroundColor: colors.bg,
     color: colors.text,
     fontFamily: fonts.body,
-    fontSize: 13,
+    fontSize: 14,
     paddingHorizontal: 12,
     paddingVertical: 10,
-    height: 60,
-    marginTop: 8,
+    minHeight: 64,
+    textAlignVertical: 'top',
   },
-  adherencia: { fontFamily: fonts.semibold, fontSize: 14, color: colors.accentText },
-  hint: {
-    fontFamily: fonts.body,
-    fontSize: 11.5,
-    lineHeight: 16,
-    color: colors.textFaint,
-    marginTop: 8,
-  },
+  nota: { fontFamily: fonts.body, fontSize: 12, lineHeight: 17, color: colors.textFaint, marginTop: 10 },
+  barras: { marginTop: 16, gap: 10 },
+  barra: { gap: 6 },
+  barraRotulo: { fontFamily: fonts.heading, fontSize: 9.5, letterSpacing: 1.8, color: colors.textFaint },
 });

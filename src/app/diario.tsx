@@ -4,18 +4,21 @@ import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useRef, useState } from 'react';
-import {
-  Alert,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Alert, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SystemButton } from '@/components/SystemButton';
-import { SystemWindow } from '@/components/SystemWindow';
+import {
+  Card,
+  Chip,
+  EmptyState,
+  FadeIn,
+  Row,
+  RowValue,
+  Screen,
+  ScreenHeader,
+  Section,
+  Stagger,
+  Tag,
+} from '@/components/ui';
 import { evaluateAchievements, unlockAchievements } from '@/lib/achievements';
 import { useAuth } from '@/lib/auth';
 import {
@@ -41,6 +44,8 @@ import { colors, fonts } from '@/lib/theme';
 import type { JournalEntry, JournalPhoto } from '@/lib/types';
 
 const MOOD_LABELS = ['Hundido', 'Bajo', 'Normal', 'Bien', 'Imparable'];
+const ENERGY_LABELS = ['Vacío', 'Poca', 'Normal', 'Alta', 'A tope'];
+const ESCALA = [1, 2, 3, 4, 5];
 
 function chronicleLine(e: SystemEvent): string | null {
   const p = e.payload as Record<string, unknown>;
@@ -66,6 +71,37 @@ function chronicleLine(e: SystemEvent): string | null {
     default:
       return null;
   }
+}
+
+/** Cinco chips numéricos a lo ancho: ánimo y energía se puntúan igual. */
+function Escala({
+  valor,
+  onChange,
+  etiquetas,
+  nombre,
+}: {
+  valor: number | null;
+  onChange: (n: number) => void;
+  etiquetas: string[];
+  nombre: string;
+}) {
+  return (
+    <View>
+      <View style={styles.escala}>
+        {ESCALA.map((n) => (
+          <Chip
+            key={n}
+            label={String(n)}
+            selected={valor === n}
+            onPress={() => onChange(n)}
+            style={styles.escalaChip}
+            accessibilityLabel={`${nombre} ${n} de 5: ${etiquetas[n - 1]}`}
+          />
+        ))}
+      </View>
+      <Text style={styles.escalaTexto}>{valor === null ? 'Sin puntuar' : etiquetas[valor - 1]}</Text>
+    </View>
+  );
 }
 
 export default function Diario() {
@@ -210,250 +246,233 @@ export default function Diario() {
     }
   };
 
+  const enCaliente = dia === today || dia === addDays(today, -1);
+  const esHoy = dia >= today;
+
   return (
-    <SafeAreaView style={styles.screen} edges={['top']}>
-      <ScrollView automaticallyAdjustKeyboardInsets contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-        <View style={styles.header}>
-          <Pressable onPress={() => router.back()} hitSlop={10} accessibilityRole="button" accessibilityLabel="Volver">
-            <Ionicons name="chevron-back" size={24} color={colors.accent} />
-          </Pressable>
-          <Text style={styles.title}>DIARIO DEL GLADIADOR</Text>
-          <View style={{ width: 24 }} />
-        </View>
+    <Screen>
+      <Stagger>
+        <FadeIn index={0}>
+          <ScreenHeader
+            onBack={() => router.back()}
+            eyebrow={`Mente · ${relativoDe(dia)}`}
+            title="Diario"
+            subtitle={nombreDia(dia)}
+            right={
+              <View style={styles.navDias}>
+                <Pressable
+                  onPress={() => setDia((d) => addDays(d, -1))}
+                  hitSlop={8}
+                  style={({ pressed }) => [styles.navBoton, pressed && styles.navPulsado]}
+                  accessibilityRole="button"
+                  accessibilityLabel="Día anterior"
+                >
+                  <Ionicons name="chevron-back" size={18} color={colors.text} />
+                </Pressable>
+                <Pressable
+                  onPress={() => setDia((d) => (d < today ? addDays(d, 1) : d))}
+                  hitSlop={8}
+                  disabled={esHoy}
+                  style={({ pressed }) => [styles.navBoton, esHoy && styles.navBotonOff, pressed && styles.navPulsado]}
+                  accessibilityRole="button"
+                  accessibilityLabel="Día siguiente"
+                  accessibilityState={{ disabled: esHoy }}
+                >
+                  <Ionicons name="chevron-forward" size={18} color={colors.text} />
+                </Pressable>
+              </View>
+            }
+          />
+        </FadeIn>
 
-        <View style={styles.navDias}>
-          <Pressable
-            onPress={() => setDia((d) => addDays(d, -1))}
-            hitSlop={10}
-            style={styles.navBoton}
-            accessibilityRole="button"
-            accessibilityLabel="Día anterior"
-          >
-            <Ionicons name="chevron-back" size={20} color={colors.accent} />
-          </Pressable>
-          <View style={styles.navCentro}>
-            <Text style={styles.navFecha}>{nombreDia(dia)}</Text>
-            <Text style={styles.navRelativo}>{relativoDe(dia)}</Text>
-          </View>
-          <Pressable
-            onPress={() => setDia((d) => (d < today ? addDays(d, 1) : d))}
-            hitSlop={10}
-            disabled={dia >= today}
-            style={[styles.navBoton, dia >= today && styles.navBotonOff]}
-            accessibilityRole="button"
-            accessibilityLabel="Día siguiente"
-          >
-            <Ionicons name="chevron-forward" size={20} color={colors.accent} />
-          </Pressable>
-        </View>
-
-        <SystemWindow color={registrado ? colors.accent : colors.accentDim}>
+        <FadeIn index={1}>
           {/* Que se vea de un vistazo si ese día ya está escrito: el fallo era
               entrar de nuevo y no saber si se había enviado. */}
-          <View style={styles.estadoFila}>
-            <Ionicons
-              name={registrado ? 'checkmark-circle' : 'ellipse-outline'}
-              size={16}
-              color={registrado ? colors.accent : colors.textFaint}
+          <Card variant={registrado ? 'tinted' : 'outline'} accent={sucio ? colors.red : undefined}>
+            <View style={styles.estadoFila}>
+              <Tag tone={registrado ? 'accent' : 'dim'}>{registrado ? 'Registrado' : 'Sin registrar'}</Tag>
+              {sucio ? <Tag tone="red">Cambios sin guardar</Tag> : null}
+              {enCaliente && !registrado ? <Tag tone="dim">+{JOURNAL_XP} XP</Tag> : null}
+            </View>
+            <Text style={styles.prompt}>{promptForDate(dia)}</Text>
+          </Card>
+        </FadeIn>
+
+        <FadeIn index={2}>
+          <Section title="Ánimo">
+            <Escala valor={mood} etiquetas={MOOD_LABELS} nombre="Ánimo" onChange={(n) => { setMood(n); setSucio(true); }} />
+          </Section>
+        </FadeIn>
+
+        <FadeIn index={3}>
+          <Section title="Energía">
+            <Escala valor={energy} etiquetas={ENERGY_LABELS} nombre="Energía" onChange={(n) => { setEnergy(n); setSucio(true); }} />
+          </Section>
+        </FadeIn>
+
+        <FadeIn index={4}>
+          <Section title="Hoja 1 · Lo vivido y aprendido">
+            <TextInput
+              style={styles.textarea}
+              value={text}
+              onChangeText={(v) => { setText(v); setSucio(true); }}
+              placeholder="Qué hice, qué aprendí, qué haría distinto…"
+              placeholderTextColor={colors.textFaint}
+              multiline
+              accessibilityLabel="Lo vivido y aprendido"
             />
-            <Text style={[styles.estado, registrado && styles.estadoOn]}>
-              {registrado ? 'REGISTRADO' : 'SIN REGISTRAR'}
-              {sucio ? ' · CAMBIOS SIN GUARDAR' : ''}
-            </Text>
-          </View>
-          <Text style={styles.prompt}>{promptForDate(dia)}</Text>
+          </Section>
+        </FadeIn>
 
-          <Text style={styles.label}>Ánimo</Text>
-          <View style={styles.scale}>
-            {MOOD_LABELS.map((lbl, i) => (
-              <Pressable key={lbl} onPress={() => { setMood(i + 1); setSucio(true); }} style={[styles.scaleChip, mood === i + 1 && styles.scaleChipOn]}>
-                <Text style={[styles.scaleNum, mood === i + 1 && styles.scaleNumOn]}>{i + 1}</Text>
-              </Pressable>
-            ))}
-          </View>
-          {mood !== null ? <Text style={styles.scaleLabel}>{MOOD_LABELS[mood - 1]}</Text> : null}
+        <FadeIn index={5}>
+          <Section title="Hoja 2 · El plan del día">
+            <TextInput
+              style={styles.textarea}
+              value={plan}
+              onChangeText={(v) => { setPlan(v); setSucio(true); }}
+              placeholder="Las tareas y batallas del día…"
+              placeholderTextColor={colors.textFaint}
+              multiline
+              accessibilityLabel="El plan del día"
+            />
+          </Section>
+        </FadeIn>
 
-          <Text style={styles.label}>Energía</Text>
-          <View style={styles.scale}>
-            {[1, 2, 3, 4, 5].map((n) => (
-              <Pressable key={n} onPress={() => { setEnergy(n); setSucio(true); }} style={[styles.scaleChip, energy === n && styles.scaleChipOn]}>
-                <Text style={[styles.scaleNum, energy === n && styles.scaleNumOn]}>{n}</Text>
-              </Pressable>
-            ))}
-          </View>
-
-          <Text style={styles.label}>Hoja 1 · Lo vivido y aprendido</Text>
-          <TextInput
-            style={styles.textarea}
-            value={text}
-            onChangeText={(v) => { setText(v); setSucio(true); }}
-            placeholder="Qué hice, qué aprendí, qué haría distinto…"
-            placeholderTextColor={colors.textFaint}
-            multiline
-          />
-
-          <Text style={styles.label}>Hoja 2 · El plan de hoy</Text>
-          <TextInput
-            style={styles.textarea}
-            value={plan}
-            onChangeText={(v) => { setPlan(v); setSucio(true); }}
-            placeholder="Las tareas y batallas del día…"
-            placeholderTextColor={colors.textFaint}
-            multiline
-          />
-
-          <Text style={styles.label}>Comprobantes ({photos.length})</Text>
-          <View style={styles.photoStrip}>
-            {photos.map((item) => (
+        <FadeIn index={6}>
+          <Section title="Comprobantes" meta={photos.length > 0 ? `${photos.length}` : undefined}>
+            <View style={styles.photoStrip}>
+              {photos.map((item) => (
+                <Pressable
+                  key={item.photo.id}
+                  onLongPress={() => removePhoto(item)}
+                  accessibilityRole="imagebutton"
+                  accessibilityLabel="Comprobante del diario; mantén pulsado para eliminar"
+                >
+                  {item.url ? (
+                    <Image source={{ uri: item.url }} style={styles.photo} contentFit="cover" />
+                  ) : (
+                    <View style={[styles.photo, styles.photoPlaceholder]} />
+                  )}
+                </Pressable>
+              ))}
               <Pressable
-                key={item.photo.id}
-                onLongPress={() => removePhoto(item)}
-                accessibilityRole="imagebutton"
-                accessibilityLabel="Comprobante del diario; mantén pulsado para eliminar"
+                onPress={addPhoto}
+                style={({ pressed }) => [styles.photo, styles.photoAdd, pressed && styles.navPulsado]}
+                accessibilityRole="button"
+                accessibilityLabel="Añadir foto comprobante con la cámara"
               >
-                {item.url ? (
-                  <Image source={{ uri: item.url }} style={styles.photo} contentFit="cover" />
-                ) : (
-                  <View style={[styles.photo, styles.photoPlaceholder]} />
-                )}
+                <Ionicons name="camera-outline" size={22} color={colors.text} />
               </Pressable>
-            ))}
-            <Pressable
-              onPress={addPhoto}
-              style={[styles.photo, styles.photoAdd]}
-              accessibilityRole="button"
-              accessibilityLabel="Añadir foto comprobante con la cámara"
-            >
-              <Ionicons name="camera-outline" size={22} color={colors.accent} />
-            </Pressable>
-          </View>
-          <Text style={styles.photoHint}>
-            Fotos hechas en el momento: la prueba de que cumples tus propias normas.
-          </Text>
+            </View>
+            <Text style={styles.nota}>Fotos hechas en el momento: la prueba de que cumples tus propias normas.</Text>
+            <SystemButton
+              title={registrado ? 'Guardar cambios' : enCaliente ? `Registrar el día · +${JOURNAL_XP} XP` : 'Registrar el día'}
+              onPress={save}
+              loading={busy}
+              icon={registrado ? 'save-outline' : 'checkmark'}
+              style={{ marginTop: 18 }}
+            />
+            {sucio ? <Text style={styles.avisoSucio}>Hay cambios sin guardar. Se pierden si cambias de día.</Text> : null}
+          </Section>
+        </FadeIn>
 
-          <SystemButton
-            title={
-              registrado
-                ? 'Guardar cambios'
-                : dia === today || dia === addDays(today, -1)
-                  ? `Registrar el día · +${JOURNAL_XP} XP`
-                  : 'Registrar el día'
-            }
-            onPress={save}
-            loading={busy}
-            style={{ marginTop: 14 }}
-          />
-        </SystemWindow>
-
-        <SystemWindow color={colors.line}>
-          <Text style={styles.windowTitle}>CRÓNICA AUTOMÁTICA · {nombreDia(dia).toUpperCase()}</Text>
-          {chronicle.length === 0 ? (
-            <Text style={styles.empty}>El sistema no registró actividad ese día.</Text>
-          ) : (
-            chronicle.map((line, i) => (
-              <Text key={i} style={styles.chronicleLine}>
-                · {line}
-              </Text>
-            ))
-          )}
-        </SystemWindow>
+        <FadeIn index={7}>
+          <Section title="Crónica automática" meta={chronicle.length > 0 ? `${chronicle.length}` : undefined}>
+            {chronicle.length === 0 ? (
+              <Card variant="outline">
+                <EmptyState compact icon="time-outline" title="Sin actividad ese día" body="El sistema no registró nada." />
+              </Card>
+            ) : (
+              <Card padded={false} style={styles.lista}>
+                {chronicle.map((line, i) => (
+                  <Row
+                    key={`${i}-${line}`}
+                    first={i === 0}
+                    leading={<Ionicons name="ellipse" size={6} color={colors.accentDim} />}
+                    title={line}
+                  />
+                ))}
+              </Card>
+            )}
+          </Section>
+        </FadeIn>
 
         {recent.length > 0 ? (
-          <SystemWindow color={colors.line}>
-            <Text style={styles.windowTitle}>ENTRADAS ANTERIORES</Text>
-            <Text style={styles.hintLista}>Toca una entrada para leerla entera o editarla.</Text>
-            {recent.map((e) => (
-              <Pressable
-                key={e.id}
-                onPress={() => setDia(e.date)}
-                style={styles.entryRow}
-                accessibilityRole="button"
-                accessibilityLabel={`Abrir el diario del ${e.date}`}
-              >
-                <Text style={styles.entryDate}>{nombreDia(e.date)}</Text>
-                <Text style={styles.entryMeta}>
-                  {e.mood ? `ánimo ${e.mood}/5` : ''}
-                  {e.mood && e.energy ? ' · ' : ''}
-                  {e.energy ? `energía ${e.energy}/5` : ''}
-                </Text>
-                {e.text ? (
-                  <Text style={styles.entryText} numberOfLines={3}>
-                    {e.text}
-                  </Text>
-                ) : null}
-              </Pressable>
-            ))}
-          </SystemWindow>
+          <FadeIn index={8}>
+            <Section title="Entradas anteriores" meta={`${recent.length}`}>
+              <Card padded={false} style={styles.lista}>
+                {recent.map((e, i) => (
+                  <Row
+                    key={e.id}
+                    first={i === 0}
+                    title={nombreDia(e.date)}
+                    detail={
+                      <View>
+                        <Text style={styles.entradaMeta}>{relativoDe(e.date)}</Text>
+                        {e.text ? (
+                          <Text style={styles.entradaTexto} numberOfLines={2}>
+                            {e.text}
+                          </Text>
+                        ) : null}
+                      </View>
+                    }
+                    trailing={
+                      e.mood || e.energy ? (
+                        <RowValue>
+                          {e.mood ? `Á ${e.mood}` : ''}
+                          {e.mood && e.energy ? ' · ' : ''}
+                          {e.energy ? `E ${e.energy}` : ''}
+                        </RowValue>
+                      ) : undefined
+                    }
+                    chevron
+                    onPress={() => setDia(e.date)}
+                    accessibilityLabel={`Abrir el diario del ${nombreDia(e.date)}`}
+                  />
+                ))}
+              </Card>
+              <Text style={styles.nota}>Toca una entrada para leerla entera o editarla. Á es ánimo, E energía.</Text>
+            </Section>
+          </FadeIn>
         ) : null}
-      </ScrollView>
-    </SafeAreaView>
+      </Stagger>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.bg },
-  content: { padding: 16, paddingBottom: 32 },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 14,
-  },
-  title: { fontFamily: fonts.heading, fontSize: 15, letterSpacing: 3, color: colors.accent },
-  prompt: { fontFamily: fonts.semibold, fontSize: 15, color: colors.accentText, lineHeight: 21 },
-  navDias: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
+  lista: { paddingHorizontal: 16, paddingVertical: 2 },
+  navDias: { flexDirection: 'row', gap: 8, marginBottom: 2 },
   navBoton: {
     width: 40,
     height: 40,
     borderWidth: 1,
-    borderColor: colors.accentFaint,
+    borderColor: colors.accentDim,
     alignItems: 'center',
     justifyContent: 'center',
   },
   navBotonOff: { opacity: 0.3 },
-  navCentro: { flex: 1, alignItems: 'center' },
-  navFecha: { fontFamily: fonts.heading, fontSize: 15, letterSpacing: 1.5, color: colors.text },
-  navRelativo: { fontFamily: fonts.body, fontSize: 11.5, color: colors.textFaint, marginTop: 1 },
-  estadoFila: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 10 },
-  estado: { fontFamily: fonts.heading, fontSize: 11.5, letterSpacing: 2, color: colors.textFaint },
-  estadoOn: { color: colors.accent },
-  hintLista: { fontFamily: fonts.body, fontSize: 11.5, color: colors.textFaint, marginBottom: 4 },
-  label: {
-    fontFamily: fonts.heading,
-    fontSize: 12,
-    letterSpacing: 1.5,
-    color: colors.textDim,
-    textTransform: 'uppercase',
-    marginTop: 16,
-    marginBottom: 8,
-  },
-  scale: { flexDirection: 'row', gap: 8 },
-  scaleChip: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: colors.accentDim,
-    paddingVertical: 10,
-    alignItems: 'center',
-  },
-  scaleChipOn: { backgroundColor: colors.accentFaint, borderColor: colors.accent },
-  scaleNum: { fontFamily: fonts.heading, fontSize: 15, color: colors.textDim },
-  scaleNumOn: { color: colors.accent },
-  scaleLabel: { fontFamily: fonts.body, fontSize: 12, color: colors.accentText, marginTop: 6 },
+  navPulsado: { opacity: 0.7 },
+  estadoFila: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 12 },
+  prompt: { fontFamily: fonts.semibold, fontSize: 15.5, lineHeight: 22, color: colors.text },
+  escala: { flexDirection: 'row', gap: 8 },
+  escalaChip: { flex: 1, justifyContent: 'center', paddingHorizontal: 0 },
+  escalaTexto: { fontFamily: fonts.body, fontSize: 12.5, color: colors.textDim, marginTop: 8 },
   textarea: {
     borderWidth: 1,
     borderColor: colors.accentDim,
     backgroundColor: colors.bg,
     color: colors.text,
     fontFamily: fonts.semibold,
-    fontSize: 15,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    minHeight: 110,
+    fontSize: 15.5,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    minHeight: 130,
     textAlignVertical: 'top',
-    lineHeight: 21,
+    lineHeight: 22,
   },
   photoStrip: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  photo: { width: 72, height: 72, backgroundColor: colors.accentFaint },
+  photo: { width: 76, height: 76, backgroundColor: colors.accentFaint },
   photoPlaceholder: { borderWidth: 1, borderColor: colors.line },
   photoAdd: {
     borderWidth: 1,
@@ -463,18 +482,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  photoHint: { fontFamily: fonts.body, fontSize: 11, color: colors.textFaint, marginTop: 8, lineHeight: 15 },
-  windowTitle: {
-    fontFamily: fonts.heading,
-    fontSize: 12,
-    letterSpacing: 2.5,
-    color: colors.textFaint,
-    marginBottom: 8,
-  },
-  empty: { fontFamily: fonts.body, fontSize: 13, color: colors.textFaint },
-  chronicleLine: { fontFamily: fonts.body, fontSize: 13, color: colors.textDim, paddingVertical: 2.5, lineHeight: 18 },
-  entryRow: { borderTopWidth: 1, borderTopColor: colors.line, paddingVertical: 9 },
-  entryDate: { fontFamily: fonts.heading, fontSize: 12, letterSpacing: 1, color: colors.accentText },
-  entryMeta: { fontFamily: fonts.body, fontSize: 11, color: colors.textFaint, marginTop: 1 },
-  entryText: { fontFamily: fonts.body, fontSize: 13, color: colors.textDim, marginTop: 4, lineHeight: 18 },
+  nota: { fontFamily: fonts.body, fontSize: 12, lineHeight: 17, color: colors.textFaint, marginTop: 8 },
+  avisoSucio: { fontFamily: fonts.semibold, fontSize: 12.5, lineHeight: 17, color: colors.red, marginTop: 10, textAlign: 'center' },
+  entradaMeta: { fontFamily: fonts.body, fontSize: 12, color: colors.textFaint },
+  entradaTexto: { fontFamily: fonts.body, fontSize: 13, lineHeight: 18, color: colors.textDim, marginTop: 3 },
 });

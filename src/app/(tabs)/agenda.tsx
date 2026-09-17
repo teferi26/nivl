@@ -7,33 +7,51 @@ import {
   Modal,
   Platform,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
   View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { LineaDeTiempo, type ItemAgenda } from '@/components/LineaDeTiempo';
 import { SystemButton } from '@/components/SystemButton';
-import { SystemWindow } from '@/components/SystemWindow';
+import {
+  Card,
+  Check,
+  Chip,
+  ChipWrap,
+  EmptyState,
+  FadeIn,
+  Row,
+  RowValue,
+  Screen,
+  ScreenHeader,
+  Section,
+  Stagger,
+  Tag,
+} from '@/components/ui';
 import { useAuth } from '@/lib/auth';
 import { questsScheduledOn } from '@/lib/closing';
 import { fetchCompletionsForDate, fetchQuests } from '@/lib/data';
 import { fetchPlan, type PlanConBloques } from '@/lib/dayplan';
-import { addDays, dateKey, isValidKey, nombreDia, weekdayOfKey } from '@/lib/dates';
+import { addDays, dateKey, isValidKey, nombreDia, relativoDe, weekdayOfKey } from '@/lib/dates';
 import {
   createCalendarEvent,
   deleteCalendarEvent,
   fetchCalendarEvents,
   fetchPendingTasksWithDue,
 } from '@/lib/dungeons';
-import { horaAMinutos, KIND_ICON, minutosAhora } from '@/lib/plan';
+import { hhmm, horaAMinutos, KIND_ICON, minutosAhora } from '@/lib/plan';
 import { cargaDelDia } from '@/lib/timeline';
 import { colors, fonts } from '@/lib/theme';
 import type { CalendarEvent, DungeonTask, Quest } from '@/lib/types';
 
 type ViewMode = 'dia' | 'semana' | 'mes';
+
+const VIEWS: { id: ViewMode; label: string }[] = [
+  { id: 'dia', label: 'Día' },
+  { id: 'semana', label: 'Semana' },
+  { id: 'mes', label: 'Mes' },
+];
 
 const DAY_HEADERS = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
 const MONTH_NAMES = [
@@ -43,18 +61,31 @@ const MONTH_NAMES = [
 
 function monthLabel(key: string): string {
   const [y, m] = key.split('-').map(Number);
-  return `${MONTH_NAMES[(m ?? 1) - 1]} ${y}`.toUpperCase();
+  return `${MONTH_NAMES[(m ?? 1) - 1]} ${y}`;
 }
 
-function dayLabel(key: string, today: string): string {
-  if (key === today) return 'HOY';
-  if (key === addDays(today, 1)) return 'MAÑANA';
-  if (key === addDays(today, -1)) return 'AYER';
-  return nombreDia(key).toUpperCase();
+/** El título grande de la cabecera: "Hoy", "Mañana", "Ayer" o "Jueves 24". */
+function tituloDelDia(key: string, today: string): string {
+  if (key === today) return 'Hoy';
+  if (key === addDays(today, 1)) return 'Mañana';
+  if (key === addDays(today, -1)) return 'Ayer';
+  const diaSemana = nombreDia(key).split(',')[0] ?? '';
+  return `${diaSemana} ${Number(key.slice(8))}`;
 }
 
 function weekStartOf(key: string): string {
   return addDays(key, -(weekdayOfKey(key) - 1));
+}
+
+/** "14 – 20 de septiembre", o con los dos meses si la semana cruza de uno a otro. */
+function rangoSemana(start: string): string {
+  const end = addDays(start, 6);
+  const m1 = Number(start.slice(5, 7));
+  const m2 = Number(end.slice(5, 7));
+  const d1 = Number(start.slice(8));
+  const d2 = Number(end.slice(8));
+  if (m1 === m2) return `${d1} – ${d2} de ${MONTH_NAMES[m1 - 1]}`;
+  return `${d1} de ${MONTH_NAMES[m1 - 1]} – ${d2} de ${MONTH_NAMES[m2 - 1]}`;
 }
 
 function monthGrid(anchor: string): (string | null)[] {
@@ -74,6 +105,10 @@ function monthGrid(anchor: string): (string | null)[] {
 function addMonths(anchor: string, n: number): string {
   const [y, m] = anchor.split('-').map(Number);
   return dateKey(new Date(y!, m! - 1 + n, 1));
+}
+
+function plural(n: number, uno: string, varios: string): string {
+  return `${n} ${n === 1 ? uno : varios}`;
 }
 
 export default function Agenda() {
@@ -177,7 +212,7 @@ export default function Agenda() {
   /**
    * Lo que va sobre el eje de horas: los bloques del plan y los eventos con
    * hora. Lo que no tiene hora (misiones del día, deadlines de campaña) va a
-   * la tira de arriba, como el "todo el día" de cualquier calendario: meterlo
+   * su propia lista, como el "todo el día" de cualquier calendario: meterlo
    * en el eje obligaría a inventarle una hora que no tiene.
    */
   const itemsConHora = useMemo((): ItemAgenda[] => {
@@ -208,15 +243,6 @@ export default function Agenda() {
     }
     return items;
   }, [plan, contentFor, anchor]);
-
-  const sinHora = useMemo(() => {
-    const { dayQuests, dayEvents, dayTasks } = contentFor(anchor);
-    return {
-      quests: dayQuests,
-      eventos: dayEvents.filter((e) => horaAMinutos(e.time) === null),
-      tareas: dayTasks,
-    };
-  }, [contentFor, anchor]);
 
   const addEvent = async () => {
     if (!userId || !title.trim() || saving.current) return;
@@ -251,332 +277,431 @@ export default function Agenda() {
       },
     ]);
 
-  const semana = Array.from({ length: 7 }, (_, i) => addDays(weekStartOf(anchor), i));
-
-  /** La tira de "sin hora": lo que ocurre ese día pero no a una hora concreta. */
-  const TiraSinHora = () => {
-    const total = sinHora.quests.length + sinHora.eventos.length + sinHora.tareas.length;
-    if (!total) return null;
-    const doneSet = anchor === today ? doneToday : doneOnAnchor;
-    return (
-      <View style={styles.tira}>
-        {sinHora.tareas.map((t) => (
-          <View key={t.id} style={[styles.chip, { borderColor: colors.steelDim }]}>
-            <Text style={[styles.chipTexto, { color: colors.steelText }]} numberOfLines={1}>
-              {t.is_boss ? 'JEFE · ' : ''}
-              {t.title}
-            </Text>
-          </View>
-        ))}
-        {sinHora.eventos.map((e) => (
-          <Pressable
-            key={e.id}
-            onLongPress={() => removeEvent(e)}
-            style={[styles.chip, { borderColor: colors.goldDim }]}
-          >
-            <Text style={[styles.chipTexto, { color: colors.gold }]} numberOfLines={1}>
-              {e.title}
-            </Text>
-          </Pressable>
-        ))}
-        {sinHora.quests.map((q) => {
-          const hecha = doneSet.has(q.id);
-          return (
-            <View key={q.id} style={[styles.chip, hecha && styles.chipHecho]}>
-              <Text style={[styles.chipTexto, hecha && styles.chipTextoHecho]} numberOfLines={1}>
-                {q.title}
-              </Text>
-            </View>
-          );
-        })}
-      </View>
-    );
+  const abrirFormulario = () => {
+    setDate(anchor);
+    setFormOpen(true);
   };
 
+  const semana = Array.from({ length: 7 }, (_, i) => addDays(weekStartOf(anchor), i));
+  const { dayQuests, dayEvents, dayTasks } = contentFor(anchor);
+  const doneSet = anchor === today ? doneToday : doneOnAnchor;
+  const bloques = plan?.bloques.length ?? 0;
+  const misionesHechas = dayQuests.filter((q) => doneSet.has(q.id)).length;
+
+  // Los eventos con hora primero y en orden; los de todo el día, al final.
+  const eventosOrdenados = [...dayEvents].sort(
+    (a, b) =>
+      (horaAMinutos(a.time) ?? Number.MAX_SAFE_INTEGER) - (horaAMinutos(b.time) ?? Number.MAX_SAFE_INTEGER),
+  );
+
+  const titulo = tituloDelDia(anchor, today);
+  const partes: string[] = [];
+  if (bloques) partes.push(plural(bloques, 'bloque del plan', 'bloques del plan'));
+  if (dayEvents.length) partes.push(plural(dayEvents.length, 'evento', 'eventos'));
+  if (dayTasks.length) partes.push(plural(dayTasks.length, 'plazo', 'plazos'));
+  if (dayQuests.length) partes.push(plural(dayQuests.length, 'misión', 'misiones'));
+  const relativo =
+    titulo === 'Hoy' || titulo === 'Mañana' || titulo === 'Ayer' ? null : relativoDe(anchor, today);
+  const vacioTotal = partes.length === 0;
+  const subtitulo = vacioTotal
+    ? anchor >= today
+      ? 'Nada programado todavía.'
+      : 'Ese día no quedó nada registrado.'
+    : `${relativo ? `${relativo} · ` : ''}${partes.join(' · ')}`;
+
+  const navLabel =
+    view === 'mes' ? monthLabel(anchor) : view === 'semana' ? rangoSemana(weekStartOf(anchor)) : nombreDia(anchor);
+  const unidad = view === 'mes' ? 'Mes' : view === 'semana' ? 'Semana' : 'Día';
+  const irAnterior = () =>
+    setAnchor(view === 'mes' ? addMonths(anchor, -1) : addDays(anchor, view === 'semana' ? -7 : -1));
+  const irSiguiente = () =>
+    setAnchor(view === 'mes' ? addMonths(anchor, 1) : addDays(anchor, view === 'semana' ? 7 : 1));
+
   return (
-    <SafeAreaView style={styles.screen} edges={['top']}>
-      <View style={styles.header}>
-        <Text style={styles.title}>AGENDA</Text>
-        <Pressable
-          onPress={() => {
-            setDate(anchor);
-            setFormOpen(true);
-          }}
-          style={styles.addButton}
-          accessibilityRole="button"
-          accessibilityLabel="Añadir evento"
-        >
-          <Ionicons name="add" size={22} color={colors.bg} />
-        </Pressable>
-      </View>
-
-      <View style={styles.segmented}>
-        {(['dia', 'semana', 'mes'] as ViewMode[]).map((m) => (
-          <Pressable
-            key={m}
-            onPress={() => setView(m)}
-            style={[styles.segment, view === m && styles.segmentOn]}
-            accessibilityRole="radio"
-            accessibilityState={{ selected: view === m }}
-          >
-            <Text style={[styles.segmentText, view === m && styles.segmentTextOn]}>
-              {m === 'dia' ? 'DÍA' : m === 'semana' ? 'SEMANA' : 'MES'}
-            </Text>
-          </Pressable>
-        ))}
-      </View>
-
-      <View style={styles.navRow}>
-        <Pressable
-          onPress={() =>
-            setAnchor(view === 'mes' ? addMonths(anchor, -1) : addDays(anchor, view === 'semana' ? -7 : -1))
-          }
-          hitSlop={12}
-          accessibilityRole="button"
-          accessibilityLabel="Anterior"
-        >
-          <Ionicons name="chevron-back" size={22} color={colors.accent} />
-        </Pressable>
-        <Pressable onPress={() => setAnchor(today)} accessibilityRole="button" accessibilityLabel="Ir a hoy">
-          <Text style={styles.navLabel}>
-            {view === 'mes' ? monthLabel(anchor) : dayLabel(anchor, today)}
-          </Text>
-          {anchor !== today ? <Text style={styles.navVolver}>toca para volver a hoy</Text> : null}
-        </Pressable>
-        <Pressable
-          onPress={() =>
-            setAnchor(view === 'mes' ? addMonths(anchor, 1) : addDays(anchor, view === 'semana' ? 7 : 1))
-          }
-          hitSlop={12}
-          accessibilityRole="button"
-          accessibilityLabel="Siguiente"
-        >
-          <Ionicons name="chevron-forward" size={22} color={colors.accent} />
-        </Pressable>
-      </View>
-
-      {/* SEMANA y MES comparten idea: arriba se elige el día, abajo se ve ese
-          día en el eje de horas. Antes las tres vistas apilaban la misma lista
-          de tarjetas y no se distinguían entre sí. */}
-      {view === 'semana' ? (
-        <View style={styles.tiraSemana}>
-          {semana.map((d) => {
-            const c = contentFor(d);
-            const carga = cargaDelDia(
-              c.dayEvents
-                .map((e) => horaAMinutos(e.time))
-                .filter((m): m is number => m !== null)
-                .map((m) => ({ id: 'x', inicio: m, fin: m + 45 })),
-            );
-            const sel = d === anchor;
-            return (
-              <Pressable
-                key={d}
-                onPress={() => setAnchor(d)}
-                style={[styles.diaSemana, sel && styles.diaSemanaSel]}
-                accessibilityRole="button"
-                accessibilityLabel={nombreDia(d)}
-              >
-                <Text style={[styles.diaSemanaLetra, sel && styles.diaSemanaTextoSel]}>
-                  {DAY_HEADERS[weekdayOfKey(d) - 1]}
-                </Text>
-                <Text
-                  style={[
-                    styles.diaSemanaNum,
-                    d === today && styles.diaHoy,
-                    sel && styles.diaSemanaTextoSel,
-                  ]}
-                >
-                  {Number(d.slice(8))}
-                </Text>
-                <View style={styles.cargaPista}>
-                  <View style={[styles.cargaRelleno, { height: `${Math.max(8, carga * 100)}%` }]} />
-                </View>
-              </Pressable>
-            );
-          })}
-        </View>
-      ) : null}
-
-      {view === 'mes' ? (
-        <View style={styles.mes}>
-          <View style={styles.gridHeader}>
-            {DAY_HEADERS.map((d) => (
-              <Text key={d} style={styles.gridHeaderText}>
-                {d}
-              </Text>
-            ))}
-          </View>
-          <View style={styles.grid}>
-            {monthGrid(anchor).map((day, i) => {
-              if (!day) return <View key={`x-${i}`} style={styles.cell} />;
-              const c = contentFor(day);
-              const sel = day === anchor;
-              const esHoy = day === today;
-              const n = c.dayEvents.length + c.dayTasks.length;
-              return (
-                <Pressable
-                  key={day}
-                  onPress={() => setAnchor(day)}
-                  style={[styles.cell, sel && styles.cellSelected]}
-                  accessibilityRole="button"
-                  accessibilityLabel={nombreDia(day)}
-                >
-                  <Text style={[styles.cellNum, esHoy && styles.cellNumToday, sel && styles.cellNumSel]}>
-                    {Number(day.slice(8))}
-                  </Text>
-                  <View style={styles.dots}>
-                    {c.dayEvents.length ? <View style={[styles.dot, { backgroundColor: colors.gold }]} /> : null}
-                    {c.dayTasks.length ? <View style={[styles.dot, { backgroundColor: colors.steel }]} /> : null}
-                    {n === 0 && c.dayQuests.length ? (
-                      <View style={[styles.dot, { backgroundColor: colors.accentFaint }]} />
-                    ) : null}
-                  </View>
-                </Pressable>
-              );
-            })}
-          </View>
-        </View>
-      ) : null}
-
-      <ScrollView
-        contentContainerStyle={styles.content}
-        keyboardShouldPersistTaps="handled"
-        automaticallyAdjustKeyboardInsets
-      >
-        <Text style={styles.subcabecera}>{dayLabel(anchor, today)}</Text>
-        <TiraSinHora />
-
-        {itemsConHora.length === 0 ? (
-          <SystemWindow color={colors.line}>
-            <Text style={styles.vacio}>
-              Sin nada a una hora concreta.
-              {anchor >= today
-                ? ' Pídele al coach que planifique el día, o añade un evento con el +.'
-                : ''}
-            </Text>
-          </SystemWindow>
-        ) : (
-          <LineaDeTiempo
-            items={itemsConHora}
-            ahoraMin={anchor === today ? minutosAhora() : null}
-            onPress={(item) => {
-              const e = contentFor(anchor).dayEvents.find((x) => `e-${x.id}` === item.id);
-              if (e) removeEvent(e);
-            }}
+    <Screen>
+      <Stagger>
+        <FadeIn index={0}>
+          <ScreenHeader
+            eyebrow={monthLabel(anchor)}
+            title={titulo}
+            subtitle={subtitulo}
+            action={{ icon: 'add', label: 'Nuevo evento', onPress: abrirFormulario, solid: true }}
           />
+        </FadeIn>
+
+        <FadeIn index={1}>
+          <View style={styles.selector}>
+            <ChipWrap>
+              {VIEWS.map((v) => (
+                <Chip
+                  key={v.id}
+                  small
+                  label={v.label}
+                  selected={view === v.id}
+                  onPress={() => setView(v.id)}
+                  accessibilityLabel={`Vista por ${v.label.toLowerCase()}`}
+                />
+              ))}
+            </ChipWrap>
+            {anchor !== today ? (
+              <Chip
+                small
+                icon="today-outline"
+                label="Hoy"
+                onPress={() => setAnchor(today)}
+                accessibilityLabel="Volver a hoy"
+              />
+            ) : null}
+          </View>
+          <View style={styles.nav}>
+            <Pressable
+              onPress={irAnterior}
+              hitSlop={8}
+              style={({ pressed }) => [styles.navBtn, pressed && styles.pressed]}
+              accessibilityRole="button"
+              accessibilityLabel={`${unidad} anterior`}
+            >
+              <Ionicons name="chevron-back" size={18} color={colors.text} />
+            </Pressable>
+            <Text style={styles.navLabel} numberOfLines={1}>
+              {navLabel}
+            </Text>
+            <Pressable
+              onPress={irSiguiente}
+              hitSlop={8}
+              style={({ pressed }) => [styles.navBtn, pressed && styles.pressed]}
+              accessibilityRole="button"
+              accessibilityLabel={`${unidad} siguiente`}
+            >
+              <Ionicons name="chevron-forward" size={18} color={colors.text} />
+            </Pressable>
+          </View>
+        </FadeIn>
+
+        {/* SEMANA y MES comparten idea: arriba se elige el día, abajo se ve ese
+            día. La carga de cada día se pinta como una barra que crece hacia
+            arriba: de un vistazo se ve qué día está cargado sin abrirlo. */}
+        {view === 'semana' ? (
+          <FadeIn index={2}>
+            <View style={styles.tiraSemana}>
+              {semana.map((d) => {
+                const c = contentFor(d);
+                const carga = cargaDelDia(
+                  c.dayEvents
+                    .map((e) => horaAMinutos(e.time))
+                    .filter((m): m is number => m !== null)
+                    .map((m) => ({ id: 'x', inicio: m, fin: m + 45 })),
+                );
+                const sel = d === anchor;
+                const esHoy = d === today;
+                return (
+                  <Pressable
+                    key={d}
+                    onPress={() => setAnchor(d)}
+                    style={({ pressed }) => [styles.diaSemana, sel && styles.diaSemanaSel, pressed && styles.pressed]}
+                    accessibilityRole="radio"
+                    accessibilityState={{ selected: sel }}
+                    accessibilityLabel={nombreDia(d)}
+                  >
+                    <Text style={[styles.diaSemanaLetra, sel && styles.diaSemanaLetraSel]}>
+                      {DAY_HEADERS[weekdayOfKey(d) - 1]}
+                    </Text>
+                    <Text style={[styles.diaSemanaNum, esHoy && styles.diaHoy, sel && styles.diaSemanaNumSel]}>
+                      {Number(d.slice(8))}
+                    </Text>
+                    <View style={styles.cargaPista}>
+                      <View style={[styles.cargaRelleno, { height: `${Math.max(8, carga * 100)}%` }]} />
+                    </View>
+                  </Pressable>
+                );
+              })}
+            </View>
+          </FadeIn>
+        ) : null}
+
+        {view === 'mes' ? (
+          <FadeIn index={2}>
+            <View style={styles.mes}>
+              <View style={styles.gridHeader}>
+                {DAY_HEADERS.map((d) => (
+                  <Text key={d} style={styles.gridHeaderText}>
+                    {d}
+                  </Text>
+                ))}
+              </View>
+              <View style={styles.grid}>
+                {monthGrid(anchor).map((day, i) => {
+                  if (!day) return <View key={`x-${i}`} style={styles.cell} />;
+                  const c = contentFor(day);
+                  const sel = day === anchor;
+                  const esHoy = day === today;
+                  const n = c.dayEvents.length + c.dayTasks.length;
+                  return (
+                    <Pressable
+                      key={day}
+                      onPress={() => setAnchor(day)}
+                      style={({ pressed }) => [styles.cell, sel && styles.cellSelected, pressed && styles.pressed]}
+                      accessibilityRole="radio"
+                      accessibilityState={{ selected: sel }}
+                      accessibilityLabel={nombreDia(day)}
+                    >
+                      <Text style={[styles.cellNum, esHoy && styles.cellNumToday, sel && styles.cellNumSel]}>
+                        {Number(day.slice(8))}
+                      </Text>
+                      <View style={styles.dots}>
+                        {c.dayEvents.length ? <View style={[styles.dot, { backgroundColor: colors.gold }]} /> : null}
+                        {c.dayTasks.length ? <View style={[styles.dot, { backgroundColor: colors.steel }]} /> : null}
+                        {n === 0 && c.dayQuests.length ? (
+                          <View style={[styles.dot, { backgroundColor: colors.accentDim }]} />
+                        ) : null}
+                      </View>
+                    </Pressable>
+                  );
+                })}
+              </View>
+            </View>
+          </FadeIn>
+        ) : null}
+
+        {vacioTotal ? (
+          <FadeIn index={3}>
+            <Card variant="outline">
+              <EmptyState
+                icon="calendar-outline"
+                title={anchor >= today ? 'Nada programado' : 'Un día en blanco'}
+                body={
+                  anchor >= today
+                    ? 'Pídele al coach que planifique el día o añade un evento. Las misiones programadas aparecen aquí.'
+                    : 'El sistema no tiene nada registrado para ese día.'
+                }
+                action={anchor >= today ? { label: 'Añadir evento', onPress: abrirFormulario } : undefined}
+              />
+            </Card>
+          </FadeIn>
+        ) : (
+          <>
+            {eventosOrdenados.length > 0 ? (
+              <FadeIn index={3}>
+                <Section title="Eventos" meta={`${eventosOrdenados.length}`} tone="gold">
+                  <Card padded={false} style={styles.lista}>
+                    {eventosOrdenados.map((e, i) => {
+                      const min = horaAMinutos(e.time);
+                      const hora = min === null ? 'Todo el día' : hhmm(min);
+                      return (
+                        <Row
+                          key={e.id}
+                          first={i === 0}
+                          leading={<Ionicons name="calendar-outline" size={18} color={colors.gold} />}
+                          title={e.title}
+                          detail={e.notes ?? undefined}
+                          trailing={
+                            <RowValue tone="gold" strong>
+                              {hora}
+                            </RowValue>
+                          }
+                          onPress={() => removeEvent(e)}
+                          accessibilityLabel={`${e.title}, ${min === null ? 'todo el día' : `a las ${hora}`}. Toca para eliminarlo.`}
+                        />
+                      );
+                    })}
+                  </Card>
+                  <Text style={styles.nota}>Toca un evento para eliminarlo.</Text>
+                </Section>
+              </FadeIn>
+            ) : null}
+
+            <FadeIn index={4}>
+              <Section title="Por horas" meta={itemsConHora.length > 0 ? `${itemsConHora.length}` : undefined}>
+                {itemsConHora.length === 0 ? (
+                  <Card variant="outline">
+                    <EmptyState
+                      compact
+                      icon="time-outline"
+                      title="Sin nada a una hora concreta"
+                      body={
+                        anchor >= today
+                          ? 'Pídele al coach que planifique el día, o añade un evento con hora.'
+                          : 'Ese día no tuvo plan por horas.'
+                      }
+                    />
+                  </Card>
+                ) : (
+                  <LineaDeTiempo
+                    items={itemsConHora}
+                    ahoraMin={anchor === today ? minutosAhora() : null}
+                    onPress={(item) => {
+                      const e = contentFor(anchor).dayEvents.find((x) => `e-${x.id}` === item.id);
+                      if (e) removeEvent(e);
+                    }}
+                  />
+                )}
+              </Section>
+            </FadeIn>
+
+            {dayTasks.length > 0 || dayQuests.length > 0 ? (
+              <FadeIn index={5}>
+                <Section
+                  title="Misiones y plazos"
+                  meta={dayQuests.length > 0 ? `${misionesHechas}/${dayQuests.length}` : `${dayTasks.length}`}
+                >
+                  <Card padded={false} style={styles.lista}>
+                    {dayTasks.map((t, i) => (
+                      <Row
+                        key={t.id}
+                        first={i === 0}
+                        leading={<Ionicons name="flag-outline" size={18} color={colors.steel} />}
+                        title={t.title}
+                        detail={t.is_boss ? 'Jefe final de campaña. Vence ese día.' : 'Tarea de campaña. Vence ese día.'}
+                        trailing={t.is_boss ? <Tag tone="steel">Jefe</Tag> : <RowValue tone="steel">Plazo</RowValue>}
+                      />
+                    ))}
+                    {dayQuests.map((q, i) => {
+                      const hecha = doneSet.has(q.id);
+                      return (
+                        <Row
+                          key={q.id}
+                          first={dayTasks.length === 0 && i === 0}
+                          leading={<Check checked={hecha} size={24} tone={q.is_penalty ? 'red' : 'accent'} />}
+                          title={q.title}
+                          done={hecha}
+                          detail={`Misión · ${q.stat}`}
+                          trailing={q.is_penalty && !hecha ? <Tag tone="red">Penalización</Tag> : undefined}
+                        />
+                      );
+                    })}
+                  </Card>
+                  <Text style={styles.nota}>Las misiones se completan desde Hoy.</Text>
+                </Section>
+              </FadeIn>
+            ) : null}
+          </>
         )}
-      </ScrollView>
+      </Stagger>
 
       <Modal visible={formOpen} transparent animationType="slide" onRequestClose={() => setFormOpen(false)}>
-        <KeyboardAvoidingView
-          style={styles.backdrop}
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        >
+        <KeyboardAvoidingView style={styles.backdrop} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+          <Pressable
+            style={styles.backdropTap}
+            onPress={() => setFormOpen(false)}
+            accessibilityRole="button"
+            accessibilityLabel="Cerrar"
+          />
           <View style={styles.sheet}>
-            <Text style={styles.sheetTitle}>NUEVO EVENTO</Text>
+            <View style={styles.sheetHandle} />
+            <Text style={styles.sheetEyebrow}>NUEVO EVENTO</Text>
+            <Text style={styles.sheetTitle}>¿Qué hay que recordar?</Text>
+            <Text style={styles.label}>Nombre</Text>
             <TextInput
               style={styles.input}
               value={title}
               onChangeText={setTitle}
-              placeholder="Llamada, cita, demo…"
+              placeholder="Llamada, cita, demo, examen"
               placeholderTextColor={colors.textFaint}
-              accessibilityLabel="Título del evento"
+              accessibilityLabel="Nombre del evento"
+              autoFocus
             />
+            <Text style={styles.label}>Día</Text>
+            <ChipWrap style={styles.chipsDia}>
+              <Chip small label="Hoy" selected={date === today} onPress={() => setDate(today)} accessibilityLabel="Hoy" />
+              <Chip
+                small
+                label="Mañana"
+                selected={date === addDays(today, 1)}
+                onPress={() => setDate(addDays(today, 1))}
+                accessibilityLabel="Mañana"
+              />
+              {anchor !== today && anchor !== addDays(today, 1) ? (
+                <Chip
+                  small
+                  label={tituloDelDia(anchor, today)}
+                  selected={date === anchor}
+                  onPress={() => setDate(anchor)}
+                  accessibilityLabel={`El día elegido, ${nombreDia(anchor)}`}
+                />
+              ) : null}
+            </ChipWrap>
+            <TextInput
+              style={styles.input}
+              value={date}
+              onChangeText={setDate}
+              placeholder="AAAA-MM-DD"
+              placeholderTextColor={colors.textFaint}
+              accessibilityLabel="Fecha"
+              autoCapitalize="none"
+            />
+            <Text style={styles.label}>Hora</Text>
             <View style={styles.inline}>
-              <View style={{ flex: 2 }}>
-                <Text style={styles.label}>Fecha</Text>
-                <TextInput
-                  style={styles.input}
-                  value={date}
-                  onChangeText={setDate}
-                  placeholder="AAAA-MM-DD"
-                  placeholderTextColor={colors.textFaint}
-                  accessibilityLabel="Fecha"
-                />
-              </View>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.label}>Hora</Text>
-                <TextInput
-                  style={styles.input}
-                  value={time}
-                  onChangeText={setTime}
-                  placeholder="09:30"
-                  placeholderTextColor={colors.textFaint}
-                  accessibilityLabel="Hora"
-                />
-              </View>
+              <TextInput
+                style={[styles.input, styles.inputHora]}
+                value={time}
+                onChangeText={setTime}
+                placeholder="09:30"
+                placeholderTextColor={colors.textFaint}
+                accessibilityLabel="Hora"
+                keyboardType="numbers-and-punctuation"
+              />
+              <Chip
+                small
+                label="Todo el día"
+                selected={!time.trim()}
+                onPress={() => setTime('')}
+                accessibilityLabel="Sin hora, todo el día"
+              />
             </View>
             <Text style={styles.hint}>
-              Sin hora, el evento va a la tira de arriba junto a lo que no tiene momento fijo.
+              Con hora, el evento se pinta sobre el eje del día. Sin hora, cuenta como de todo el día.
             </Text>
-            <SystemButton title="Añadir" onPress={addEvent} disabled={!title.trim()} style={{ marginTop: 16 }} />
-            <SystemButton
-              title="Cancelar"
-              variant="outline"
-              onPress={() => setFormOpen(false)}
-              style={{ marginTop: 10 }}
-            />
+            <SystemButton title="Añadir evento" onPress={addEvent} disabled={!title.trim()} style={{ marginTop: 22 }} />
+            <SystemButton title="Cancelar" variant="ghost" onPress={() => setFormOpen(false)} style={{ marginTop: 6 }} />
           </View>
         </KeyboardAvoidingView>
       </Modal>
-    </SafeAreaView>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.bg },
-  content: { paddingHorizontal: 16, paddingBottom: 40 },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingTop: 4,
-    marginBottom: 12,
-  },
-  title: { fontFamily: fonts.heading, fontSize: 15, letterSpacing: 3, color: colors.text },
-  addButton: {
-    width: 34,
-    height: 34,
-    backgroundColor: colors.accent,
+  selector: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
+  nav: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 12, marginBottom: 22 },
+  navBtn: {
+    width: 36,
+    height: 36,
+    borderWidth: 1,
+    borderColor: colors.accentDim,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  segmented: { flexDirection: 'row', marginHorizontal: 16, borderWidth: 1, borderColor: colors.accentFaint },
-  segment: { flex: 1, paddingVertical: 9, alignItems: 'center' },
-  segmentOn: { backgroundColor: colors.accentFaint },
-  segmentText: { fontFamily: fonts.heading, fontSize: 11.5, letterSpacing: 2, color: colors.textDim },
-  segmentTextOn: { color: colors.accent },
-  navRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+  navLabel: {
+    flex: 1,
+    minWidth: 0,
+    textAlign: 'center',
+    fontFamily: fonts.heading,
+    fontSize: 11,
+    letterSpacing: 2,
+    textTransform: 'uppercase',
+    color: colors.textDim,
   },
-  navLabel: { fontFamily: fonts.heading, fontSize: 14, letterSpacing: 1.5, color: colors.text, textAlign: 'center' },
-  navVolver: { fontFamily: fonts.body, fontSize: 10.5, color: colors.textFaint, textAlign: 'center' },
+  pressed: { opacity: 0.7 },
 
-  tiraSemana: { flexDirection: 'row', paddingHorizontal: 16, gap: 5, marginBottom: 6 },
+  tiraSemana: { flexDirection: 'row', gap: 5, marginBottom: 22 },
   diaSemana: {
     flex: 1,
     alignItems: 'center',
-    paddingVertical: 7,
+    paddingVertical: 8,
     borderWidth: 1,
     borderColor: colors.line,
+    backgroundColor: colors.panel,
   },
   diaSemanaSel: { borderColor: colors.accent, backgroundColor: colors.accentFaint },
   diaSemanaLetra: { fontFamily: fonts.heading, fontSize: 10, letterSpacing: 1, color: colors.textFaint },
-  diaSemanaNum: { fontFamily: fonts.number, fontSize: 14, color: colors.text, marginTop: 2 },
-  diaSemanaTextoSel: { color: colors.accent },
+  diaSemanaLetraSel: { color: colors.accentText },
+  diaSemanaNum: { fontFamily: fonts.number, fontSize: 15, color: colors.text, marginTop: 3 },
+  diaSemanaNumSel: { color: colors.accent },
   diaHoy: { color: colors.gold },
-  // La carga se pinta como una barra que crece hacia arriba: de un vistazo se
-  // ve qué día está cargado sin tener que abrirlo.
-  cargaPista: { width: 16, height: 18, backgroundColor: colors.track, marginTop: 5, justifyContent: 'flex-end' },
+  cargaPista: { width: 16, height: 18, backgroundColor: colors.track, marginTop: 6, justifyContent: 'flex-end' },
   cargaRelleno: { backgroundColor: colors.accentDim, width: '100%' },
 
-  mes: { paddingHorizontal: 16, marginBottom: 6 },
+  mes: { marginBottom: 22 },
   gridHeader: { flexDirection: 'row' },
   gridHeaderText: {
     flex: 1,
@@ -603,60 +728,50 @@ const styles = StyleSheet.create({
   dots: { flexDirection: 'row', gap: 3, marginTop: 3, height: 5 },
   dot: { width: 4, height: 4, borderRadius: 2 },
 
-  subcabecera: {
-    fontFamily: fonts.heading,
-    fontSize: 12,
-    letterSpacing: 2.5,
-    color: colors.accentText,
-    marginTop: 10,
-    marginBottom: 8,
-  },
-  tira: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 10 },
-  chip: {
-    borderWidth: 1,
-    borderColor: colors.accentFaint,
-    paddingHorizontal: 9,
-    paddingVertical: 5,
-    maxWidth: '100%',
-  },
-  chipHecho: { opacity: 0.45 },
-  chipTexto: { fontFamily: fonts.body, fontSize: 11.5, color: colors.textDim },
-  chipTextoHecho: { textDecorationLine: 'line-through' },
-  vacio: { fontFamily: fonts.body, fontSize: 13, lineHeight: 19, color: colors.textDim },
+  lista: { paddingHorizontal: 16, paddingVertical: 2 },
+  nota: { fontFamily: fonts.body, fontSize: 12, lineHeight: 17, color: colors.textFaint, marginTop: 2 },
 
-  backdrop: { flex: 1, backgroundColor: 'rgba(2, 6, 14, 0.85)', justifyContent: 'flex-end' },
+  backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'flex-end' },
+  backdropTap: { flex: 1 },
   sheet: {
     backgroundColor: colors.panel,
-    borderTopWidth: 1.5,
-    borderTopColor: colors.accentDim,
-    padding: 20,
+    borderTopWidth: 1,
+    borderTopColor: colors.line,
+    paddingHorizontal: 20,
+    paddingTop: 10,
     paddingBottom: 34,
   },
+  sheetHandle: { alignSelf: 'center', width: 36, height: 3, backgroundColor: colors.accentDim, marginBottom: 16 },
+  sheetEyebrow: { fontFamily: fonts.heading, fontSize: 11, letterSpacing: 2.5, color: colors.gold },
   sheetTitle: {
     fontFamily: fonts.heading,
-    fontSize: 13,
-    letterSpacing: 2.5,
-    color: colors.accentText,
-    marginBottom: 12,
+    fontSize: 24,
+    letterSpacing: -0.5,
+    color: colors.text,
+    marginTop: 6,
+    marginBottom: 4,
   },
-  inline: { flexDirection: 'row', gap: 10 },
   label: {
     fontFamily: fonts.heading,
     fontSize: 11,
-    letterSpacing: 1.5,
-    color: colors.textDim,
-    marginTop: 10,
-    marginBottom: 6,
+    letterSpacing: 2,
+    color: colors.textFaint,
+    textTransform: 'uppercase',
+    marginTop: 18,
+    marginBottom: 8,
   },
+  hint: { fontFamily: fonts.body, fontSize: 12, color: colors.textFaint, marginTop: 8, lineHeight: 17 },
+  chipsDia: { marginBottom: 8 },
+  inline: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   input: {
     borderWidth: 1,
-    borderColor: colors.line,
+    borderColor: colors.accentDim,
     backgroundColor: colors.bg,
     color: colors.text,
-    fontFamily: fonts.body,
-    fontSize: 14,
-    paddingHorizontal: 12,
-    paddingVertical: 11,
+    fontFamily: fonts.semibold,
+    fontSize: 16,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
   },
-  hint: { fontFamily: fonts.body, fontSize: 11, color: colors.textFaint, marginTop: 10, lineHeight: 15 },
+  inputHora: { flex: 1, minWidth: 0 },
 });

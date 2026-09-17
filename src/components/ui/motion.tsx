@@ -7,7 +7,7 @@
 // pasando de decoración.
 
 import { createContext, useContext, useEffect, useRef, type PropsWithChildren, type ReactNode } from 'react';
-import { Animated, Pressable, type PressableProps, type StyleProp, type ViewStyle } from 'react-native';
+import { Animated, Pressable, StyleSheet, type PressableProps, type StyleProp, type ViewStyle } from 'react-native';
 
 const StaggerContext = createContext<{ step: number; base: number } | null>(null);
 
@@ -62,15 +62,39 @@ interface PressScaleProps extends Omit<PressableProps, 'style'> {
   to?: number;
 }
 
+// Las propiedades de layout tienen que vivir en el Pressable exterior: si un
+// `width: '31%'` se queda en la vista interior, dentro de una rejilla el
+// Pressable se encoge al contenido y las tarjetas salen como columnas de una
+// letra. Lo visual (fondo, borde, padding) va dentro, con la escala.
+const LAYOUT_KEYS = new Set([
+  'width', 'minWidth', 'maxWidth', 'height', 'minHeight', 'maxHeight',
+  'flex', 'flexGrow', 'flexShrink', 'flexBasis', 'alignSelf',
+  'margin', 'marginTop', 'marginBottom', 'marginLeft', 'marginRight', 'marginHorizontal', 'marginVertical',
+  'position', 'top', 'left', 'right', 'bottom', 'zIndex', 'aspectRatio',
+]);
+
+function splitStyle(style: StyleProp<ViewStyle>): { outer: ViewStyle; inner: ViewStyle } {
+  const flat = (StyleSheet.flatten(style) ?? {}) as Record<string, unknown>;
+  const outer: Record<string, unknown> = {};
+  const inner: Record<string, unknown> = {};
+  for (const k of Object.keys(flat)) {
+    if (LAYOUT_KEYS.has(k)) outer[k] = flat[k];
+    else inner[k] = flat[k];
+  }
+  return { outer: outer as ViewStyle, inner: inner as ViewStyle };
+}
+
 /** Pressable que se encoge un poco al tocarlo. Sustituye a los `opacity: 0.7`. */
 export function PressScale({ to = 0.97, style, children, onPressIn, onPressOut, ...rest }: PropsWithChildren<PressScaleProps>) {
   const scale = useRef(new Animated.Value(1)).current;
   const animar = (v: number) =>
     Animated.spring(scale, { toValue: v, useNativeDriver: true, speed: 40, bounciness: 4 }).start();
+  const { outer, inner } = splitStyle(style);
 
   return (
     <Pressable
       {...rest}
+      style={outer}
       onPressIn={(e) => {
         animar(to);
         onPressIn?.(e);
@@ -80,7 +104,7 @@ export function PressScale({ to = 0.97, style, children, onPressIn, onPressOut, 
         onPressOut?.(e);
       }}
     >
-      <Animated.View style={[style, { transform: [{ scale }] }]}>{children}</Animated.View>
+      <Animated.View style={[inner, { transform: [{ scale }] }]}>{children}</Animated.View>
     </Pressable>
   );
 }

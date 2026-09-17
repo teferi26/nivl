@@ -7,11 +7,11 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
-  Switch,
   Text,
   TextInput,
   View,
 } from 'react-native';
+import { Chip, ChipWrap } from '@/components/ui';
 import type { QuestInput } from '@/lib/data';
 import {
   BONUS_BY_DIFFICULTY,
@@ -26,6 +26,12 @@ import type { Difficulty, Quest, Stat } from '@/lib/types';
 import { SystemButton } from './SystemButton';
 
 const DAY_LABELS = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
+const DAY_NAMES = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+const DIARIA = [1, 2, 3, 4, 5, 6, 7];
+const LABORABLES = [1, 2, 3, 4, 5];
+const FINDE = [6, 7];
+
+const mismosDias = (a: number[], b: number[]) => a.length === b.length && a.every((d) => b.includes(d));
 
 interface Props {
   visible: boolean;
@@ -36,6 +42,11 @@ interface Props {
   onDelete?: (quest: Quest) => Promise<void>;
 }
 
+/**
+ * El formulario de misión, en hoja inferior: la misma gramática que la hoja de
+ * campañas (asa, rótulo, título grande, chips) para que crear una misión y
+ * abrir una campaña se sientan el mismo gesto.
+ */
 export function QuestForm({ visible, onClose, onSubmit, initial, onDelete }: Props) {
   const [title, setTitle] = useState('');
   const [stat, setStat] = useState<Stat>('FUE');
@@ -113,66 +124,55 @@ export function QuestForm({ visible, onClose, onSubmit, initial, onDelete }: Pro
     );
   };
 
+  const pago = isBonus
+    ? `${BONUS_BY_DIFFICULTY[difficulty]} PB al completarla, canjeables por descanso.`
+    : `${XP_BY_DIFFICULTY[difficulty]} XP base. Con foto, +25 %; la racha lo multiplica.`;
+
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <KeyboardAvoidingView
-        style={styles.backdrop}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      >
+      <KeyboardAvoidingView style={styles.backdrop} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        <Pressable style={styles.backdropTap} onPress={onClose} accessibilityRole="button" accessibilityLabel="Cerrar" />
         <View style={styles.sheet}>
-          <ScrollView automaticallyAdjustKeyboardInsets keyboardShouldPersistTaps="handled">
-            <Text style={styles.heading}>{editing ? 'EDITAR MISIÓN' : 'NUEVA MISIÓN'}</Text>
+          <View style={styles.sheetHandle} />
+          <ScrollView automaticallyAdjustKeyboardInsets keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+            <Text style={styles.sheetEyebrow}>{editing ? 'EDITAR MISIÓN' : 'NUEVA MISIÓN'}</Text>
+            <Text style={styles.sheetTitle}>{editing ? 'Ajusta la misión' : '¿Qué vas a exigirte?'}</Text>
 
-            <Text style={styles.label}>Título</Text>
+            <Text style={styles.label}>Misión</Text>
             <TextInput
               style={styles.input}
               value={title}
               onChangeText={setTitle}
-              placeholder="Ej. Gimnasio — pierna"
+              placeholder="Ej. Gimnasio · pierna"
               placeholderTextColor={colors.textFaint}
+              autoFocus={!editing}
+              accessibilityLabel="Nombre de la misión"
             />
 
-            <Text style={styles.label}>Estadística</Text>
-            <View style={styles.chips}>
+            <Text style={styles.label}>Qué entrena</Text>
+            <ChipWrap>
               {STATS.map((s) => (
-                <Pressable
-                  key={s}
-                  onPress={() => setStat(s)}
-                  style={[styles.chip, stat === s && styles.chipOn]}
-                  accessibilityRole="radio"
-                  accessibilityState={{ selected: stat === s }}
-                  accessibilityLabel={STAT_LABEL[s]}
-                >
-                  <Text style={[styles.chipText, stat === s && styles.chipTextOn]}>{s}</Text>
-                </Pressable>
+                <Chip key={s} label={s} selected={stat === s} onPress={() => setStat(s)} accessibilityLabel={STAT_LABEL[s]} />
               ))}
-            </View>
+            </ChipWrap>
             <Text style={styles.hint}>{STAT_LABEL[stat]}</Text>
 
-            <Text style={styles.label}>Dificultad (puntuación)</Text>
-            <View style={styles.chips}>
+            <Text style={styles.label}>Dificultad</Text>
+            <ChipWrap>
               {DIFFICULTIES.map((d) => (
-                <Pressable
+                <Chip
                   key={d}
+                  label={DIFFICULTY_LABEL[d]}
+                  selected={difficulty === d}
                   onPress={() => setDifficulty(d)}
-                  style={[styles.chip, difficulty === d && styles.chipOn]}
-                  accessibilityRole="radio"
-                  accessibilityState={{ selected: difficulty === d }}
-                >
-                  <Text style={[styles.chipText, difficulty === d && styles.chipTextOn]}>
-                    {DIFFICULTY_LABEL[d]}
-                  </Text>
-                </Pressable>
+                  accessibilityLabel={`Dificultad ${DIFFICULTY_LABEL[d]}`}
+                />
               ))}
-            </View>
-            <Text style={styles.hint}>
-              {isBonus
-                ? `${BONUS_BY_DIFFICULTY[difficulty]} PB al completarla`
-                : `${XP_BY_DIFFICULTY[difficulty]} XP base (+25% con evidencia, ×racha)`}
-            </Text>
+            </ChipWrap>
+            <Text style={styles.hint}>{pago}</Text>
 
-            <Text style={styles.label}>Días de la semana</Text>
-            <View style={styles.chips}>
+            <Text style={styles.label}>Días</Text>
+            <View style={styles.days}>
               {DAY_LABELS.map((label, i) => {
                 const d = i + 1;
                 const on = days.includes(d);
@@ -180,82 +180,58 @@ export function QuestForm({ visible, onClose, onSubmit, initial, onDelete }: Pro
                   <Pressable
                     key={d}
                     onPress={() => toggleDay(d)}
-                    style={[styles.day, on && styles.chipOn]}
+                    style={({ pressed }) => [styles.day, on && styles.dayOn, pressed && styles.pressed]}
                     accessibilityRole="checkbox"
                     accessibilityState={{ checked: on }}
-                    accessibilityLabel={`Día ${label}`}
+                    accessibilityLabel={DAY_NAMES[i]}
                   >
-                    <Text style={[styles.chipText, on && styles.chipTextOn]}>{label}</Text>
+                    <Text style={[styles.dayText, on && styles.dayTextOn]}>{label}</Text>
                   </Pressable>
                 );
               })}
             </View>
-            <View style={styles.quickDays}>
-              <Pressable
-                onPress={() => setDays([1, 2, 3, 4, 5, 6, 7])}
-                style={styles.quickDay}
-                accessibilityRole="button"
-                accessibilityLabel="Todos los días"
-              >
-                <Text style={styles.quickDayText}>Diaria</Text>
-              </Pressable>
-              <Pressable
-                onPress={() => setDays([1, 2, 3, 4, 5])}
-                style={styles.quickDay}
-                accessibilityRole="button"
-                accessibilityLabel="De lunes a viernes"
-              >
-                <Text style={styles.quickDayText}>Entre semana</Text>
-              </Pressable>
-              <Pressable
-                onPress={() => setDays([6, 7])}
-                style={styles.quickDay}
-                accessibilityRole="button"
-                accessibilityLabel="Sábado y domingo"
-              >
-                <Text style={styles.quickDayText}>Finde</Text>
-              </Pressable>
-            </View>
+            <ChipWrap style={{ marginTop: 10 }}>
+              <Chip small label="Diaria" selected={mismosDias(days, DIARIA)} onPress={() => setDays(DIARIA)} accessibilityLabel="Todos los días" />
+              <Chip small label="Entre semana" selected={mismosDias(days, LABORABLES)} onPress={() => setDays(LABORABLES)} accessibilityLabel="De lunes a viernes" />
+              <Chip small label="Finde" selected={mismosDias(days, FINDE)} onPress={() => setDays(FINDE)} accessibilityLabel="Sábado y domingo" />
+            </ChipWrap>
+            {days.length === 0 ? <Text style={[styles.hint, styles.hintRed]}>Elige al menos un día.</Text> : null}
 
-            <View style={styles.switchRow}>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.switchLabel}>Evidencia obligatoria</Text>
-                <Text style={styles.hint}>Exige foto al completar la misión</Text>
-              </View>
-              <Switch
-                value={requiresEvidence}
-                onValueChange={setRequiresEvidence}
-                trackColor={{ false: colors.track, true: colors.accentDim }}
-                thumbColor={requiresEvidence ? colors.accent : colors.textFaint}
+            <Text style={styles.label}>Evidencia</Text>
+            <ChipWrap>
+              <Chip label="Sin foto" selected={!requiresEvidence} onPress={() => setRequiresEvidence(false)} accessibilityLabel="Sin evidencia obligatoria" />
+              <Chip
+                label="Foto obligatoria"
+                icon="camera-outline"
+                selected={requiresEvidence}
+                onPress={() => setRequiresEvidence(true)}
+                accessibilityLabel="Exigir foto al completar la misión"
               />
-            </View>
+            </ChipWrap>
+            <Text style={styles.hint}>{requiresEvidence ? 'No se podrá completar sin foto. Paga un 25 % más.' : 'La foto es opcional al completar.'}</Text>
 
-            <View style={styles.switchRow}>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.switchLabel}>Misión extra (Puntos Bonus)</Text>
-                <Text style={styles.hint}>
-                  Da {BONUS_BY_DIFFICULTY[difficulty]} PB canjeables por descanso, en vez de XP
-                </Text>
-              </View>
-              <Switch
-                value={isBonus}
-                onValueChange={setIsBonus}
-                trackColor={{ false: colors.track, true: colors.goldDim }}
-                thumbColor={isBonus ? colors.gold : colors.textFaint}
-              />
-            </View>
+            <Text style={styles.label}>Qué paga</Text>
+            <ChipWrap>
+              <Chip label="XP" selected={!isBonus} onPress={() => setIsBonus(false)} accessibilityLabel="Misión normal: paga XP" />
+              <Chip label="Puntos bonus" tone="gold" selected={isBonus} onPress={() => setIsBonus(true)} accessibilityLabel="Misión extra: paga puntos bonus" />
+            </ChipWrap>
+            <Text style={styles.hint}>
+              {isBonus
+                ? 'Misión extra: no da XP ni cuenta para la racha. Sus PB se canjean por descanso en el contrato.'
+                : 'Misión del día: cuenta para la racha y se penaliza si queda sin hacer.'}
+            </Text>
 
             <SystemButton
               title={editing ? 'Guardar cambios' : 'Crear misión'}
               onPress={submit}
               loading={saving}
               disabled={!title.trim() || days.length === 0}
-              style={{ marginTop: 18 }}
+              style={{ marginTop: 24 }}
             />
             {editing && onDelete ? (
-              <SystemButton title="Eliminar misión" variant="danger" onPress={confirmDelete} style={{ marginTop: 10 }} />
+              <SystemButton title="Eliminar misión" variant="danger" icon="trash-outline" onPress={confirmDelete} style={{ marginTop: 10 }} />
             ) : null}
-            <SystemButton title="Cancelar" variant="outline" onPress={onClose} style={{ marginTop: 10 }} />
+            <SystemButton title="Cancelar" variant="ghost" onPress={onClose} style={{ marginTop: 6 }} />
           </ScrollView>
         </View>
       </KeyboardAvoidingView>
@@ -264,98 +240,52 @@ export function QuestForm({ visible, onClose, onSubmit, initial, onDelete }: Pro
 }
 
 const styles = StyleSheet.create({
-  backdrop: {
-    flex: 1,
-    backgroundColor: 'rgba(2, 6, 14, 0.85)',
-    justifyContent: 'flex-end',
-  },
+  backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'flex-end' },
+  backdropTap: { flex: 1 },
   sheet: {
     backgroundColor: colors.panel,
-    borderTopWidth: 1.5,
-    borderTopColor: colors.accentDim,
-    padding: 20,
+    borderTopWidth: 1,
+    borderTopColor: colors.line,
+    paddingHorizontal: 20,
+    paddingTop: 10,
     paddingBottom: 34,
-    maxHeight: '88%',
+    maxHeight: '90%',
   },
-  heading: {
-    fontFamily: fonts.heading,
-    fontSize: 16,
-    letterSpacing: 3,
-    color: colors.accent,
-    marginBottom: 14,
-  },
+  sheetHandle: { alignSelf: 'center', width: 36, height: 3, backgroundColor: colors.accentDim, marginBottom: 16 },
+  sheetEyebrow: { fontFamily: fonts.heading, fontSize: 11, letterSpacing: 2.5, color: colors.accentText },
+  sheetTitle: { fontFamily: fonts.heading, fontSize: 24, letterSpacing: -0.5, color: colors.text, marginTop: 6, marginBottom: 4 },
   label: {
     fontFamily: fonts.heading,
-    fontSize: 12,
-    letterSpacing: 1.5,
-    color: colors.textDim,
+    fontSize: 11,
+    letterSpacing: 2,
+    color: colors.textFaint,
     textTransform: 'uppercase',
-    marginTop: 14,
-    marginBottom: 7,
+    marginTop: 18,
+    marginBottom: 8,
   },
+  hint: { fontFamily: fonts.body, fontSize: 12, color: colors.textFaint, marginTop: 8, lineHeight: 17 },
+  hintRed: { color: colors.red },
   input: {
     borderWidth: 1,
     borderColor: colors.accentDim,
     backgroundColor: colors.bg,
     color: colors.text,
     fontFamily: fonts.semibold,
-    fontSize: 15,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
+    fontSize: 16,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
   },
-  chips: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  chip: {
-    borderWidth: 1,
-    borderColor: colors.accentDim,
-    paddingHorizontal: 12,
-    paddingVertical: 7,
-  },
+  days: { flexDirection: 'row', gap: 6 },
   day: {
+    flex: 1,
+    height: 40,
     borderWidth: 1,
     borderColor: colors.accentDim,
-    width: 38,
-    paddingVertical: 7,
     alignItems: 'center',
+    justifyContent: 'center',
   },
-  chipOn: {
-    backgroundColor: colors.accentFaint,
-    borderColor: colors.accent,
-  },
-  chipText: {
-    fontFamily: fonts.semibold,
-    fontSize: 13,
-    color: colors.textDim,
-  },
-  chipTextOn: {
-    color: colors.accent,
-  },
-  quickDays: { flexDirection: 'row', gap: 8, marginTop: 8 },
-  quickDay: {
-    borderWidth: 1,
-    borderColor: colors.line,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-  },
-  quickDayText: { fontFamily: fonts.body, fontSize: 12, color: colors.accentText },
-  hint: {
-    fontFamily: fonts.body,
-    fontSize: 12,
-    color: colors.textFaint,
-    marginTop: 5,
-  },
-  switchRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    marginTop: 18,
-  },
-  switchLabel: {
-    fontFamily: fonts.semibold,
-    fontSize: 15,
-    color: colors.text,
-  },
+  dayOn: { backgroundColor: colors.accent, borderColor: colors.accent },
+  dayText: { fontFamily: fonts.heading, fontSize: 13, color: colors.text },
+  dayTextOn: { color: colors.bg },
+  pressed: { opacity: 0.7 },
 });

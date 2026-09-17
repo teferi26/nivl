@@ -1,25 +1,37 @@
-import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Haptics from 'expo-haptics';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  Platform,
-  KeyboardAvoidingView,
   Alert,
+  KeyboardAvoidingView,
   Modal,
+  Platform,
   Pressable,
-  ScrollView,
   StyleSheet,
-  Switch,
   Text,
   TextInput,
   View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { LevelUpOverlay } from '@/components/LevelUpOverlay';
 import { SystemButton } from '@/components/SystemButton';
-import { SystemWindow } from '@/components/SystemWindow';
-import { XPBar } from '@/components/XPBar';
+import {
+  Card,
+  Check,
+  Chip,
+  ChipWrap,
+  EmptyState,
+  FadeIn,
+  ProgressRing,
+  Row,
+  RowValue,
+  Screen,
+  ScreenHeader,
+  Section,
+  Stagger,
+  Stat,
+  StatRow,
+  Tag,
+} from '@/components/ui';
 import { evaluateAchievements, unlockAchievements } from '@/lib/achievements';
 import { useAuth } from '@/lib/auth';
 import { ensureProfile } from '@/lib/data';
@@ -38,6 +50,18 @@ import { DIFFICULTIES, DIFFICULTY_LABEL, DUNGEON_CLEAR_XP, dungeonTaskXp } from 
 import { colors, fonts } from '@/lib/theme';
 import { voice } from '@/lib/voice';
 import type { Difficulty, Dungeon, DungeonTask } from '@/lib/types';
+
+/** Días que quedan hasta la fecha límite, en la voz del sistema. */
+function plazo(fecha: string | null): { valor: string; label: string; tone: 'text' | 'red' } {
+  if (!fecha) return { valor: '—', label: 'Sin fecha', tone: 'text' };
+  const hoy = new Date();
+  hoy.setHours(0, 0, 0, 0);
+  const objetivo = new Date(`${fecha}T00:00:00`);
+  const dias = Math.round((objetivo.getTime() - hoy.getTime()) / 86_400_000);
+  if (dias < 0) return { valor: `${-dias}`, label: 'Días de retraso', tone: 'red' };
+  if (dias === 0) return { valor: 'Hoy', label: 'Fecha límite', tone: 'red' };
+  return { valor: `${dias}`, label: dias === 1 ? 'Día restante' : 'Días restantes', tone: dias <= 3 ? 'red' : 'text' };
+}
 
 export default function DungeonDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -153,254 +177,271 @@ export default function DungeonDetail() {
     ]);
   };
 
+  const removeTask = (t: DungeonTask) =>
+    Alert.alert('Eliminar tarea', t.title, [
+      { text: 'Cancelar', style: 'cancel' },
+      {
+        text: 'Eliminar',
+        style: 'destructive',
+        onPress: async () => {
+          await deleteTask(t.id);
+          await load();
+        },
+      },
+    ]);
+
   if (!dungeon) {
-    return <SafeAreaView style={styles.screen} edges={['top']} />;
+    return (
+      <Screen>
+        <ScreenHeader onBack={() => router.back()} eyebrow="Campaña" title="Abriendo" />
+        <EmptyState icon="flag-outline" title="El sistema busca la campaña" body="Un momento." />
+      </Screen>
+    );
   }
 
   const done = tasks.filter((t) => t.done).length;
+  const bosses = tasks.filter((t) => t.is_boss);
+  const bossesDone = bosses.filter((t) => t.done).length;
   const allDone = tasks.length > 0 && done === tasks.length;
+  const active = dungeon.status === 'active';
+  const cleared = dungeon.status === 'cleared';
+  const ratio = tasks.length > 0 ? done / tasks.length : 0;
+  const loot = DUNGEON_CLEAR_XP[dungeon.rank];
+  const fecha = plazo(dungeon.deadline);
+
+  const subtitulo = cleared
+    ? `Despejada${dungeon.cleared_at ? ` el ${dungeon.cleared_at.slice(0, 10)}` : ''}. Botín cobrado: +${loot} XP.`
+    : tasks.length === 0
+      ? `Entrena ${dungeon.stat}. Botín al despejar: ${loot} XP.`
+      : allDone
+        ? 'Todas las tareas hechas. El botín espera.'
+        : `${done}/${tasks.length} tareas · entrena ${dungeon.stat} · botín ${loot} XP`;
 
   return (
-    <SafeAreaView style={styles.screen} edges={['top']}>
-      <ScrollView automaticallyAdjustKeyboardInsets keyboardShouldPersistTaps="handled" contentContainerStyle={styles.content}>
-        <View style={styles.header}>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Volver"
-            onPress={() => router.back()}
-            hitSlop={10}
-          >
-            <Ionicons name="chevron-back" size={24} color={colors.steel} />
-          </Pressable>
-          <Text style={styles.headerTitle} numberOfLines={1}>
-            CAMPAÑA · RANGO {dungeon.rank}
-          </Text>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Eliminar la campaña"
-            onPress={removeDungeon}
-            hitSlop={10}
-          >
-            <Ionicons name="trash-outline" size={20} color={colors.textFaint} />
-          </Pressable>
-        </View>
+    <Screen>
+      <Stagger>
+        <FadeIn index={0}>
+          <ScreenHeader
+            onBack={() => router.back()}
+            eyebrow={`Campaña · Rango ${dungeon.rank}`}
+            title={dungeon.title}
+            subtitle={subtitulo}
+            right={
+              <View style={styles.rankBox} accessibilityLabel={`Rango ${dungeon.rank}`}>
+                <Text style={styles.rankLetter}>{dungeon.rank}</Text>
+              </View>
+            }
+            action={
+              active
+                ? { icon: 'add', label: 'Añadir una tarea', onPress: () => setFormOpen(true), solid: !allDone }
+                : undefined
+            }
+          />
+        </FadeIn>
 
-        <SystemWindow color={colors.steelDim} fill={colors.panelDeep}>
-          <Text style={styles.dungeonTitle}>{dungeon.title}</Text>
-          <Text style={styles.meta}>
-            {done}/{tasks.length} objetivos · stat {dungeon.stat} · botín al despejar: {DUNGEON_CLEAR_XP[dungeon.rank]} XP
-          </Text>
-          <View style={{ marginTop: 10 }}>
-            <XPBar ratio={tasks.length > 0 ? done / tasks.length : 0} color={colors.steel} trackColor={colors.track} height={8} />
-          </View>
-          {dungeon.status === 'cleared' ? (
-            <Text style={styles.clearedTag}>DESPEJADA</Text>
-          ) : null}
-        </SystemWindow>
+        <FadeIn index={1}>
+          <Card accent={cleared ? colors.gold : undefined}>
+            <View style={styles.progressRow}>
+              <ProgressRing ratio={ratio} size={84} stroke={5} color={cleared ? colors.gold : colors.steel} sublabel={cleared ? 'despejada' : 'hecho'} />
+              <StatRow style={styles.stats}>
+                <Stat value={`${done}/${tasks.length}`} label="Tareas" size="sm" />
+                <Stat value={bosses.length > 0 ? `${bossesDone}/${bosses.length}` : '—'} label="Jefes" size="sm" tone="steel" />
+                <Stat value={fecha.valor} label={fecha.label} size="sm" tone={active ? fecha.tone : 'text'} />
+              </StatRow>
+            </View>
+          </Card>
+        </FadeIn>
 
-        <SystemWindow color={colors.steelDim} fill={colors.panelDeep}>
-          <View style={styles.taskHeader}>
-            <Text style={styles.windowTitle}>OBJETIVOS</Text>
-            {dungeon.status === 'active' ? (
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel="Añadir tarea"
-                onPress={() => setFormOpen(true)}
-                hitSlop={8}
-              >
-                <Ionicons name="add" size={22} color={colors.steel} />
-              </Pressable>
-            ) : null}
-          </View>
-          {tasks.length === 0 ? (
-            <Text style={styles.empty}>
-              Sin objetivos todavía. Desglosa la campaña: cada tarea es un monstruo, cada hito un jefe.
-            </Text>
-          ) : (
-            tasks.map((t) => (
-              <Pressable
-                key={t.id}
-                accessibilityRole="checkbox"
-                accessibilityState={{ checked: t.done }}
-                accessibilityLabel={`${t.title}${t.is_boss ? ', jefe' : ''}${t.done ? ', hecha' : ''}`}
-                onPress={() => toggleTask(t)}
-                onLongPress={() =>
-                  Alert.alert('Eliminar objetivo', t.title, [
-                    { text: 'Cancelar', style: 'cancel' },
-                    {
-                      text: 'Eliminar',
-                      style: 'destructive',
-                      onPress: async () => {
-                        await deleteTask(t.id);
-                        await load();
-                      },
-                    },
-                  ])
-                }
-                style={styles.taskRow}
-              >
-                <View style={[styles.box, t.done && styles.boxDone, t.is_boss && styles.boxBoss]}>
-                  {t.done ? <Ionicons name="checkmark" size={14} color={colors.steel} /> : null}
-                </View>
-                <View style={{ flex: 1, minWidth: 0 }}>
-                  <Text style={[styles.taskTitle, t.done && styles.taskDone]} numberOfLines={1}>
-                    {t.title}
-                  </Text>
-                  <Text style={styles.taskMeta}>
-                    {t.is_boss ? 'JEFE · ' : ''}
-                    {DIFFICULTY_LABEL[t.difficulty]}
-                  </Text>
-                </View>
-                <Text style={[styles.xp, t.done && styles.xpDone]}>
-                  +{dungeonTaskXp(t.difficulty, t.is_boss)} XP
-                </Text>
-              </Pressable>
-            ))
-          )}
-        </SystemWindow>
-
-        {allDone && dungeon.status === 'active' ? (
-          <SystemButton title={`Reclamar botín · +${DUNGEON_CLEAR_XP[dungeon.rank]} XP`} onPress={claimLoot} loading={busy} />
+        {cleared ? (
+          <FadeIn index={2}>
+            <Card variant="outline" accent={colors.gold}>
+              <View style={styles.clearedRow}>
+                <Tag tone="gold">Despejada</Tag>
+                <Text style={styles.clearedText}>{voice.dungeonCleared(dungeon.title)}</Text>
+              </View>
+            </Card>
+          </FadeIn>
         ) : null}
-      </ScrollView>
+
+        {allDone && active ? (
+          <FadeIn index={2}>
+            <Card variant="outline" accent={colors.gold}>
+              <Text style={styles.lootEyebrow}>BOTÍN DISPONIBLE</Text>
+              <Text style={styles.lootText}>Cada tarea y cada jefe han caído. Reclama lo que es tuyo.</Text>
+              <SystemButton
+                title={`Reclamar botín · +${loot} XP`}
+                onPress={claimLoot}
+                loading={busy}
+                icon="trophy-outline"
+                style={{ marginTop: 14 }}
+              />
+            </Card>
+          </FadeIn>
+        ) : null}
+
+        <FadeIn index={3}>
+          <Section title="Tareas" meta={tasks.length > 0 ? `${done}/${tasks.length}` : undefined} tone="steel">
+            {tasks.length === 0 ? (
+              <Card variant="outline">
+                <EmptyState
+                  compact
+                  icon="list-outline"
+                  title="Sin tareas todavía"
+                  body="Desglosa la campaña: cada tarea es un paso y cada hito, un jefe que paga el doble."
+                  action={active ? { label: 'Añadir la primera', onPress: () => setFormOpen(true) } : undefined}
+                />
+              </Card>
+            ) : (
+              <Card padded={false} style={styles.lista}>
+                {tasks.map((t, i) => {
+                  const xp = dungeonTaskXp(t.difficulty, t.is_boss);
+                  return (
+                    <Row
+                      key={t.id}
+                      first={i === 0}
+                      leading={<Check checked={t.done} tone={t.is_boss ? 'steel' : 'accent'} />}
+                      title={t.title}
+                      done={t.done}
+                      detail={
+                        <View style={styles.taskMeta}>
+                          {t.is_boss ? <Tag tone="steel">Jefe</Tag> : null}
+                          <Text style={styles.taskMetaText}>{DIFFICULTY_LABEL[t.difficulty]}</Text>
+                        </View>
+                      }
+                      trailing={
+                        <RowValue tone={t.done ? 'steel' : 'dim'} strong={t.done}>
+                          +{xp} XP
+                        </RowValue>
+                      }
+                      onPress={() => toggleTask(t)}
+                      onLongPress={() => removeTask(t)}
+                      disabled={t.done}
+                      accessibilityRole="checkbox"
+                      accessibilityState={{ checked: t.done, disabled: t.done }}
+                      accessibilityLabel={`${t.title}${t.is_boss ? ', jefe' : ''}${t.done ? ', hecha' : `, pendiente, ${xp} XP`}. Mantén pulsado para eliminarla.`}
+                    />
+                  );
+                })}
+              </Card>
+            )}
+            {tasks.length > 0 && active ? (
+              <Text style={styles.nota}>Toca una tarea para darla por hecha. Mantén pulsada para eliminarla.</Text>
+            ) : null}
+          </Section>
+        </FadeIn>
+
+        <FadeIn index={4}>
+          <SystemButton
+            title={cleared ? 'Borrar la campaña' : 'Abandonar la campaña'}
+            variant="danger"
+            icon="trash-outline"
+            onPress={removeDungeon}
+          />
+        </FadeIn>
+      </Stagger>
 
       <Modal visible={formOpen} transparent animationType="slide" onRequestClose={() => setFormOpen(false)}>
-        <KeyboardAvoidingView
-          style={styles.backdrop}
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        >
+        <KeyboardAvoidingView style={styles.backdrop} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+          <Pressable style={styles.backdropTap} onPress={() => setFormOpen(false)} accessibilityRole="button" accessibilityLabel="Cerrar" />
           <View style={styles.sheet}>
-            <Text style={styles.sheetTitle}>NUEVO OBJETIVO</Text>
+            <View style={styles.sheetHandle} />
+            <Text style={styles.sheetEyebrow}>NUEVA TAREA</Text>
+            <Text style={styles.sheetTitle}>¿Cuál es el siguiente paso?</Text>
+            <Text style={styles.label}>Tarea</Text>
             <TextInput
               style={styles.input}
               value={taskTitle}
               onChangeText={setTaskTitle}
-              placeholder="Ej. Redactar capítulo 2"
+              placeholder="Ej. Redactar el capítulo 2"
               placeholderTextColor={colors.textFaint}
+              autoFocus
+              accessibilityLabel="Nombre de la tarea"
             />
             <Text style={styles.label}>Dificultad</Text>
-            <View style={styles.chips}>
+            <ChipWrap>
               {DIFFICULTIES.map((d) => (
-                <Pressable
+                <Chip
                   key={d}
+                  label={DIFFICULTY_LABEL[d]}
+                  selected={difficulty === d}
                   onPress={() => setDifficulty(d)}
-                  style={[styles.chip, difficulty === d && styles.chipOn]}
-                  accessibilityRole="radio"
-                  accessibilityState={{ selected: difficulty === d }}
-                  accessibilityLabel={DIFFICULTY_LABEL[d]}
-                >
-                  <Text style={[styles.chipText, difficulty === d && styles.chipTextOn]}>
-                    {DIFFICULTY_LABEL[d]}
-                  </Text>
-                </Pressable>
+                  tone="steel"
+                  accessibilityLabel={`Dificultad ${DIFFICULTY_LABEL[d]}`}
+                />
               ))}
-            </View>
-            <View style={styles.switchRow}>
-              <Text style={styles.switchLabel}>Es un jefe (hito) · XP ×2</Text>
-              <Switch
-                value={isBoss}
-                onValueChange={setIsBoss}
-                trackColor={{ false: colors.track, true: colors.accentFaint }}
-                thumbColor={isBoss ? colors.steel : colors.textFaint}
-              />
-            </View>
-            <SystemButton title="Añadir" onPress={addTask} disabled={!taskTitle.trim()} style={{ marginTop: 18 }} />
-            <SystemButton title="Cancelar" variant="outline" onPress={() => setFormOpen(false)} style={{ marginTop: 10 }} />
+            </ChipWrap>
+            <Text style={styles.label}>Tipo</Text>
+            <ChipWrap>
+              <Chip label="Tarea" selected={!isBoss} onPress={() => setIsBoss(false)} tone="steel" accessibilityLabel="Tarea normal" />
+              <Chip label="Jefe" icon="skull-outline" selected={isBoss} onPress={() => setIsBoss(true)} tone="steel" accessibilityLabel="Jefe: hito que paga el doble" />
+            </ChipWrap>
+            <Text style={styles.hint}>
+              {isBoss ? 'Un jefe es un hito. Paga el doble: ' : 'Paga '}
+              {dungeonTaskXp(difficulty, isBoss)} XP al caer.
+            </Text>
+            <SystemButton title="Añadir tarea" onPress={addTask} disabled={!taskTitle.trim()} style={{ marginTop: 22 }} />
+            <SystemButton title="Cancelar" variant="ghost" onPress={() => setFormOpen(false)} style={{ marginTop: 6 }} />
           </View>
         </KeyboardAvoidingView>
       </Modal>
 
       <LevelUpOverlay level={levelUp} onClose={() => setLevelUp(null)} />
-    </SafeAreaView>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.bg },
-  content: { padding: 16, paddingBottom: 32 },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 10,
-    marginBottom: 14,
-  },
-  headerTitle: {
-    flex: 1,
-    fontFamily: fonts.heading,
-    fontSize: 14,
-    letterSpacing: 3,
-    color: colors.steel,
-    textAlign: 'center',
-  },
-  dungeonTitle: { fontFamily: fonts.heading, fontSize: 19, color: colors.text },
-  meta: { fontFamily: fonts.body, fontSize: 12, color: colors.textDim, marginTop: 4 },
-  clearedTag: {
-    fontFamily: fonts.heading,
-    fontSize: 12,
-    letterSpacing: 2,
-    color: colors.steel,
-    marginTop: 8,
-  },
-  taskHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
-  windowTitle: { fontFamily: fonts.heading, fontSize: 12, letterSpacing: 2.5, color: colors.steelText },
-  empty: { fontFamily: fonts.body, fontSize: 13, color: colors.textDim, lineHeight: 19 },
-  taskRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    paddingVertical: 9,
-    borderTopWidth: 1,
-    borderTopColor: colors.line,
-  },
-  box: {
-    width: 20,
-    height: 20,
-    borderWidth: 1,
+  rankBox: {
+    width: 56,
+    height: 56,
+    borderWidth: 1.5,
     borderColor: colors.steelDim,
     alignItems: 'center',
     justifyContent: 'center',
+    marginBottom: 2,
   },
-  boxDone: { backgroundColor: colors.accentFaint, borderColor: colors.steel },
-  boxBoss: { borderWidth: 2, borderColor: colors.steel },
-  taskTitle: { fontFamily: fonts.semibold, fontSize: 15, color: colors.text },
-  taskDone: { color: colors.textDim, textDecorationLine: 'line-through' },
-  taskMeta: { fontFamily: fonts.body, fontSize: 11, color: colors.textFaint, marginTop: 1 },
-  xp: { fontFamily: fonts.heading, fontSize: 13, color: colors.textFaint },
-  xpDone: { color: colors.steel },
-  backdrop: { flex: 1, backgroundColor: 'rgba(2, 6, 14, 0.85)', justifyContent: 'flex-end' },
+  rankLetter: { fontFamily: fonts.brand, fontSize: 30, lineHeight: 36, color: colors.steel },
+  progressRow: { flexDirection: 'row', alignItems: 'center', gap: 18 },
+  stats: { flex: 1, minWidth: 0 },
+  clearedRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  clearedText: { flex: 1, minWidth: 0, fontFamily: fonts.body, fontSize: 13.5, lineHeight: 19, color: colors.text },
+  lootEyebrow: { fontFamily: fonts.heading, fontSize: 11, letterSpacing: 2.5, color: colors.gold },
+  lootText: { fontFamily: fonts.body, fontSize: 13.5, lineHeight: 19, color: colors.text, marginTop: 6 },
+  lista: { paddingHorizontal: 16, paddingVertical: 2 },
+  taskMeta: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  taskMetaText: { fontFamily: fonts.body, fontSize: 12, color: colors.textFaint },
+  nota: { fontFamily: fonts.body, fontSize: 12, lineHeight: 17, color: colors.textFaint, marginTop: 2 },
+  backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'flex-end' },
+  backdropTap: { flex: 1 },
   sheet: {
-    backgroundColor: colors.panelDeep,
-    borderTopWidth: 1.5,
-    borderTopColor: colors.steelDim,
-    padding: 20,
+    backgroundColor: colors.panel,
+    borderTopWidth: 1,
+    borderTopColor: colors.line,
+    paddingHorizontal: 20,
+    paddingTop: 10,
     paddingBottom: 34,
   },
-  sheetTitle: { fontFamily: fonts.heading, fontSize: 16, letterSpacing: 3, color: colors.steel, marginBottom: 12 },
+  sheetHandle: { alignSelf: 'center', width: 36, height: 3, backgroundColor: colors.accentDim, marginBottom: 16 },
+  sheetEyebrow: { fontFamily: fonts.heading, fontSize: 11, letterSpacing: 2.5, color: colors.steel },
+  sheetTitle: { fontFamily: fonts.heading, fontSize: 24, letterSpacing: -0.5, color: colors.text, marginTop: 6, marginBottom: 4 },
   label: {
     fontFamily: fonts.heading,
-    fontSize: 12,
-    letterSpacing: 1.5,
-    color: colors.textDim,
+    fontSize: 11,
+    letterSpacing: 2,
+    color: colors.textFaint,
     textTransform: 'uppercase',
-    marginTop: 14,
-    marginBottom: 7,
+    marginTop: 18,
+    marginBottom: 8,
   },
+  hint: { fontFamily: fonts.body, fontSize: 12, color: colors.textFaint, marginTop: 8, lineHeight: 17 },
   input: {
     borderWidth: 1,
-    borderColor: colors.steelDim,
+    borderColor: colors.accentDim,
     backgroundColor: colors.bg,
     color: colors.text,
     fontFamily: fonts.semibold,
-    fontSize: 15,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
+    fontSize: 16,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
   },
-  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  chip: { borderWidth: 1, borderColor: colors.steelDim, paddingHorizontal: 12, paddingVertical: 7 },
-  chipOn: { backgroundColor: colors.accentFaint, borderColor: colors.steel },
-  chipText: { fontFamily: fonts.semibold, fontSize: 13, color: colors.textDim },
-  chipTextOn: { color: colors.steel },
-  switchRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 18 },
-  switchLabel: { fontFamily: fonts.semibold, fontSize: 14, color: colors.text },
 });

@@ -9,16 +9,30 @@ import {
   Alert,
   Modal,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
   View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { LevelUpOverlay } from '@/components/LevelUpOverlay';
 import { SystemButton } from '@/components/SystemButton';
-import { SystemWindow } from '@/components/SystemWindow';
+import {
+  Card,
+  Check,
+  Chip,
+  ChipWrap,
+  EmptyState,
+  FadeIn,
+  Row,
+  RowValue,
+  Screen,
+  ScreenHeader,
+  Section,
+  Stagger,
+  Stat,
+  StatRow,
+  Tag,
+} from '@/components/ui';
 import { evaluateAchievements, unlockAchievements } from '@/lib/achievements';
 import { useAuth } from '@/lib/auth';
 import { fetchPrescription, type Prescription } from '@/lib/bodywork';
@@ -301,315 +315,421 @@ export default function Gym() {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
   };
 
+  const confirmarBorrarDia = (d: GymDay) =>
+    Alert.alert('Eliminar día', `¿Eliminar ${d.name} y sus ejercicios?`, [
+      { text: 'Cancelar', style: 'cancel' },
+      {
+        text: 'Eliminar',
+        style: 'destructive',
+        onPress: async () => {
+          await deleteGymDay(d.id);
+          await load();
+        },
+      },
+    ]);
+
+  const confirmarBorrarEjercicio = (e: GymExercise) =>
+    Alert.alert('Eliminar ejercicio', e.name, [
+      { text: 'Cancelar', style: 'cancel' },
+      {
+        text: 'Eliminar',
+        style: 'destructive',
+        onPress: async () => {
+          await deleteGymExercise(e.id);
+          await load();
+        },
+      },
+    ]);
+
+  const cerrarFormEjercicio = () => {
+    setExEditando(null);
+    setExFormDay(null);
+  };
+
+  // Solo presentación: el dato del día para el subtítulo de la cabecera.
+  const nombreHoy = DAY_NAMES[todayWd - 1] ?? '';
+  const ejerciciosHoy = todayPlan ? exercisesFor(todayPlan.id) : [];
+  const subtitulo = todaySession
+    ? `Sesión registrada. +${todaySession.xp_awarded} XP a FUE.`
+    : training && todayPlan
+      ? `${todayPlan.name}, serie a serie.`
+      : todayPlan
+        ? `Hoy toca ${todayPlan.name}. ${ejerciciosHoy.length} ${ejerciciosHoy.length === 1 ? 'ejercicio' : 'ejercicios'}.`
+        : `Hoy, ${nombreHoy.toLowerCase()}, no hay rutina asignada.`;
+
   return (
-    <SafeAreaView style={styles.screen} edges={['top']}>
-      <ScrollView automaticallyAdjustKeyboardInsets keyboardShouldPersistTaps="handled" contentContainerStyle={styles.content}>
-        <View style={styles.header}>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Volver"
-            onPress={() => router.back()}
-            hitSlop={10}
-          >
-            <Ionicons name="chevron-back" size={24} color={colors.accent} />
-          </Pressable>
-          <Text style={styles.title}>ENTRENAMIENTO</Text>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Añadir día de rutina"
-            onPress={() => setDayFormOpen(true)}
-            hitSlop={10}
-          >
-            <Ionicons name="add" size={24} color={colors.accent} />
-          </Pressable>
-        </View>
+    <Screen>
+      <Stagger>
+        <FadeIn index={0}>
+          <ScreenHeader
+            onBack={() => router.back()}
+            eyebrow="Cuerpo"
+            title="Gimnasio"
+            subtitle={subtitulo}
+            action={{ icon: 'add', label: 'Añadir día de rutina', onPress: () => setDayFormOpen(true) }}
+          />
+        </FadeIn>
+
+        <FadeIn index={1}>
+          <Card>
+            <StatRow>
+              <Stat value={days.length} label="Días / semana" />
+              <Stat value={exercises.length} label="Ejercicios" />
+              <Stat
+                value={todaySession ? todaySession.xp_awarded : GYM_SESSION_XP}
+                unit="XP"
+                label={todaySession ? 'Ganados hoy' : 'En juego'}
+                tone={todaySession ? 'accent' : 'text'}
+              />
+            </StatRow>
+          </Card>
+        </FadeIn>
 
         {prescrito.length > 0 ? (
-          <SystemWindow color={colors.accent}>
-            <Text style={styles.windowTitle}>EL SISTEMA HA PRESCRITO</Text>
-            {prescrito.map((p) => (
-              <Text key={p.id} style={styles.prescLine}>
-                {p.exercise_name} · {p.sets}×{p.reps}
-                {p.weight ? ` @ ${p.weight} kg` : ''}
-                {p.rpe_target ? ` · RPE ${p.rpe_target}` : ''}
-                {p.notes ? `\n   ${p.notes}` : ''}
-              </Text>
-            ))}
-          </SystemWindow>
+          <FadeIn index={2}>
+            <Section title="Prescrito por el sistema" meta={`${prescrito.length}`} tone="accent">
+              <Card padded={false} style={styles.lista}>
+                {prescrito.map((p, i) => (
+                  <Row
+                    key={p.id}
+                    first={i === 0}
+                    leading={<Text style={styles.ordinal}>{i + 1}</Text>}
+                    title={p.exercise_name}
+                    detail={[`${p.sets}×${p.reps}`, p.rpe_target ? `RPE ${p.rpe_target}` : null, p.notes]
+                      .filter(Boolean)
+                      .join(' · ')}
+                    trailing={p.weight ? <RowValue tone="accent">{p.weight} kg</RowValue> : undefined}
+                  />
+                ))}
+              </Card>
+            </Section>
+          </FadeIn>
         ) : null}
 
-        <SystemWindow color={colors.accentDim}>
-          <Text style={styles.windowTitle}>SESIÓN DE HOY · {DAY_NAMES[todayWd - 1]?.toUpperCase()}</Text>
-          {todaySession ? (
-            <Text style={styles.doneText}>
-              Sesión registrada (+{todaySession.xp_awarded} XP). FUE crece.
-            </Text>
-          ) : !todayPlan ? (
-            <Text style={styles.empty}>
-              Hoy no hay rutina asignada. Añade un día de rutina con + si quieres entrenar los {DAY_NAMES[todayWd - 1]?.toLowerCase()}.
-            </Text>
-          ) : !training ? (
-            <>
-              <Text style={styles.planName}>{todayPlan.name}</Text>
-              {exercisesFor(todayPlan.id).map((e) => (
-                <Text key={e.id} style={styles.exLine}>
-                  {e.name} · {e.sets}×{e.reps}
-                  {e.weight !== null ? ` · ${e.weight} kg` : ''}
-                </Text>
-              ))}
-              <SystemButton title={`Entrenar · +${GYM_SESSION_XP} XP`} onPress={startTraining} style={{ marginTop: 14 }} />
-            </>
-          ) : (
-            <>
-              <Text style={styles.planName}>{todayPlan.name} — serie a serie</Text>
-              <Text style={styles.rpeHint}>
-                RPE = cuánto te quedaba. 7 son tres repeticiones en el depósito, 10 es no poder
-                con una más. Es el dato con el que el sistema decide la carga de la próxima.
-              </Text>
-              {lifts.map((l, i) => (
-                <View key={l.exercise} style={styles.ejercicioBloque}>
-                  <View style={styles.ejercicioCabecera}>
-                    <Text style={styles.liftName} numberOfLines={1}>
-                      {l.exercise}
+        <FadeIn index={3}>
+          <Section title="Sesión de hoy" meta={nombreHoy}>
+            {todaySession ? (
+              <Card variant="tinted">
+                <View style={styles.hechoFila}>
+                  <Check checked />
+                  <View style={styles.hechoTexto}>
+                    <Text style={styles.hechoTitulo}>Sesión registrada</Text>
+                    <Text style={styles.hechoDetalle}>+{todaySession.xp_awarded} XP a FUE. FUE crece.</Text>
+                  </View>
+                </View>
+              </Card>
+            ) : !todayPlan ? (
+              <Card variant="outline">
+                <EmptyState
+                  compact
+                  icon="barbell-outline"
+                  title="Hoy no hay rutina"
+                  body={`Añade un día de rutina si quieres entrenar los ${nombreHoy.toLowerCase()}.`}
+                  action={{ label: 'Añadir día', onPress: () => setDayFormOpen(true) }}
+                />
+              </Card>
+            ) : !training ? (
+              <>
+                <Card padded={false} style={styles.lista}>
+                  {ejerciciosHoy.length === 0 ? (
+                    <Text style={styles.sinEjercicios}>
+                      Sin ejercicios en {todayPlan.name}. Añádelos en la rutina semanal.
                     </Text>
-                    <Pressable
-                      onPress={() => anadirSerie(i)}
-                      hitSlop={8}
-                      accessibilityRole="button"
-                      accessibilityLabel={`Añadir serie a ${l.exercise}`}
-                    >
-                      <Ionicons name="add-circle-outline" size={19} color={colors.accent} />
-                    </Pressable>
-                  </View>
-
-                  <View style={styles.serieCabecera}>
-                    <Text style={styles.serieNum}>#</Text>
-                    <Text style={styles.serieEtiqueta}>kg</Text>
-                    <Text style={styles.serieEtiqueta}>reps</Text>
-                    <Text style={styles.serieEtiqueta}>RPE</Text>
-                    <View style={{ width: 22 }} />
-                  </View>
-
-                  {l.series.map((serie, si) => (
-                    <View key={si} style={styles.liftRow}>
-                      <Text style={styles.serieNum}>{si + 1}</Text>
-                      <TextInput
-                        style={styles.liftInput}
-                        value={serie.weight}
-                        onChangeText={(v) => cambiarSerie(i, si, 'weight', v)}
-                        keyboardType="decimal-pad"
-                        placeholder="kg"
-                        placeholderTextColor={colors.textFaint}
-                        accessibilityLabel={`Peso de la serie ${si + 1} de ${l.exercise}`}
+                  ) : (
+                    ejerciciosHoy.map((e, i) => (
+                      <Row
+                        key={e.id}
+                        first={i === 0}
+                        leading={<Text style={styles.ordinal}>{i + 1}</Text>}
+                        title={e.name}
+                        detail={`${e.sets}×${e.reps}`}
+                        trailing={e.weight !== null ? <RowValue>{e.weight} kg</RowValue> : undefined}
                       />
-                      <TextInput
-                        style={styles.liftInput}
-                        value={serie.reps}
-                        onChangeText={(v) => cambiarSerie(i, si, 'reps', v)}
-                        keyboardType="number-pad"
-                        placeholder="reps"
-                        placeholderTextColor={colors.textFaint}
-                        accessibilityLabel={`Repeticiones de la serie ${si + 1} de ${l.exercise}`}
-                      />
-                      <TextInput
-                        style={styles.liftInput}
-                        value={serie.rpe}
-                        onChangeText={(v) => cambiarSerie(i, si, 'rpe', v)}
-                        keyboardType="decimal-pad"
-                        placeholder="RPE"
-                        placeholderTextColor={colors.textFaint}
-                        accessibilityLabel={`Esfuerzo de la serie ${si + 1} de ${l.exercise}`}
-                      />
+                    ))
+                  )}
+                </Card>
+                <SystemButton
+                  title={`Entrenar · +${GYM_SESSION_XP} XP`}
+                  onPress={startTraining}
+                  icon="barbell-outline"
+                  style={{ marginTop: 4 }}
+                />
+              </>
+            ) : (
+              <>
+                <Text style={styles.rpeHint}>
+                  RPE = cuánto te quedaba. 7 son tres repeticiones en el depósito, 10 es no poder
+                  con una más. Es el dato con el que el sistema decide la carga de la próxima.
+                </Text>
+                {lifts.map((l, i) => (
+                  <Card key={l.exercise}>
+                    <View style={styles.ejercicioCabecera}>
+                      <Text style={styles.liftName} numberOfLines={1}>
+                        {l.exercise}
+                      </Text>
                       <Pressable
-                        onPress={() => quitarSerie(i, si)}
-                        hitSlop={6}
-                        disabled={l.series.length === 1}
-                        style={{ width: 22, opacity: l.series.length === 1 ? 0.25 : 1 }}
+                        onPress={() => anadirSerie(i)}
+                        hitSlop={8}
                         accessibilityRole="button"
-                        accessibilityLabel={`Quitar la serie ${si + 1}`}
+                        accessibilityLabel={`Añadir serie a ${l.exercise}`}
+                        style={styles.serieMas}
                       >
-                        <Ionicons name="close" size={15} color={colors.textFaint} />
+                        <Ionicons name="add" size={16} color={colors.text} />
+                        <Text style={styles.serieMasTexto}>Serie</Text>
                       </Pressable>
                     </View>
-                  ))}
-                </View>
-              ))}
-              <Text style={styles.label}>Cómo fue</Text>
-              <TextInput
-                style={styles.notasInput}
-                value={notas}
-                onChangeText={setNotas}
-                placeholder="Cómo te has encontrado, qué se torció, qué notaste"
-                placeholderTextColor={colors.textFaint}
-                multiline
-                accessibilityLabel="Notas de la sesión"
-              />
-              <Text style={styles.notasHint}>
-                Esto lo lee el coach: es lo que le dice por qué un día salió mal aunque los kilos
-                fueran los mismos.
-              </Text>
 
-              <Pressable
-                onPress={fotoSesion}
-                style={[styles.fotoBoton, fotoB64 && styles.fotoBotonHecha]}
-                accessibilityRole="button"
-                accessibilityLabel="Hacer una foto del entreno"
-              >
-                <Ionicons
-                  name={fotoB64 ? 'checkmark-circle' : 'camera-outline'}
-                  size={18}
-                  color={fotoB64 ? colors.accent : colors.accentText}
-                />
-                <Text style={styles.fotoTexto}>
-                  {fotoB64 ? 'Foto lista · entra en tu resumen' : 'Foto del entreno'}
-                </Text>
-              </Pressable>
+                    <View style={styles.serieCabecera}>
+                      <Text style={styles.serieNum}>#</Text>
+                      <Text style={styles.serieEtiqueta}>kg</Text>
+                      <Text style={styles.serieEtiqueta}>reps</Text>
+                      <Text style={styles.serieEtiqueta}>RPE</Text>
+                      <View style={{ width: 22 }} />
+                    </View>
 
-              <SystemButton title="Terminar sesión" onPress={finishTraining} loading={busy} style={{ marginTop: 14 }} />
-            </>
-          )}
-        </SystemWindow>
+                    {l.series.map((serie, si) => (
+                      <View key={si} style={styles.liftRow}>
+                        <Text style={styles.serieNum}>{si + 1}</Text>
+                        <TextInput
+                          style={styles.liftInput}
+                          value={serie.weight}
+                          onChangeText={(v) => cambiarSerie(i, si, 'weight', v)}
+                          keyboardType="decimal-pad"
+                          placeholder="kg"
+                          placeholderTextColor={colors.textFaint}
+                          accessibilityLabel={`Peso de la serie ${si + 1} de ${l.exercise}`}
+                        />
+                        <TextInput
+                          style={styles.liftInput}
+                          value={serie.reps}
+                          onChangeText={(v) => cambiarSerie(i, si, 'reps', v)}
+                          keyboardType="number-pad"
+                          placeholder="reps"
+                          placeholderTextColor={colors.textFaint}
+                          accessibilityLabel={`Repeticiones de la serie ${si + 1} de ${l.exercise}`}
+                        />
+                        <TextInput
+                          style={styles.liftInput}
+                          value={serie.rpe}
+                          onChangeText={(v) => cambiarSerie(i, si, 'rpe', v)}
+                          keyboardType="decimal-pad"
+                          placeholder="RPE"
+                          placeholderTextColor={colors.textFaint}
+                          accessibilityLabel={`Esfuerzo de la serie ${si + 1} de ${l.exercise}`}
+                        />
+                        <Pressable
+                          onPress={() => quitarSerie(i, si)}
+                          hitSlop={6}
+                          disabled={l.series.length === 1}
+                          style={{ width: 22, opacity: l.series.length === 1 ? 0.25 : 1 }}
+                          accessibilityRole="button"
+                          accessibilityLabel={`Quitar la serie ${si + 1}`}
+                        >
+                          <Ionicons name="close" size={15} color={colors.textFaint} />
+                        </Pressable>
+                      </View>
+                    ))}
+                  </Card>
+                ))}
 
-        <Text style={styles.sectionTitle}>RUTINA SEMANAL</Text>
-        {days.length === 0 ? (
-          <SystemWindow color={colors.line}>
-            <Text style={styles.empty}>Sin rutina aún. Pulsa + y crea tus días (ej. Lunes — Empuje).</Text>
-          </SystemWindow>
-        ) : (
-          days.map((d) => (
-            <SystemWindow key={d.id} color={d.day_of_week === todayWd ? colors.accentDim : colors.line}>
-              <View style={styles.dayHeader}>
-                <Text style={styles.dayTitle}>
-                  {DAY_NAMES[d.day_of_week - 1]?.toUpperCase()} · {d.name}
-                </Text>
-                <View style={{ flexDirection: 'row', gap: 14 }}>
+                <Card>
+                  <Text style={styles.labelPrimero}>Cómo fue</Text>
+                  <TextInput
+                    style={styles.notasInput}
+                    value={notas}
+                    onChangeText={setNotas}
+                    placeholder="Cómo te has encontrado, qué se torció, qué notaste"
+                    placeholderTextColor={colors.textFaint}
+                    multiline
+                    accessibilityLabel="Notas de la sesión"
+                  />
+                  <Text style={styles.hint}>
+                    Esto lo lee el coach: es lo que le dice por qué un día salió mal aunque los kilos
+                    fueran los mismos.
+                  </Text>
                   <Pressable
+                    onPress={fotoSesion}
+                    style={[styles.fotoBoton, fotoB64 && styles.fotoBotonHecha]}
                     accessibilityRole="button"
-                    accessibilityLabel="Añadir ejercicio"
-                    onPress={() => abrirEjercicio(d, null)}
-                    hitSlop={8}
+                    accessibilityLabel="Hacer una foto del entreno"
                   >
-                    <Ionicons name="add" size={20} color={colors.accent} />
-                  </Pressable>
-                  <Pressable
-                    accessibilityRole="button"
-                    accessibilityLabel={`Eliminar el día ${d.name}`}
-                    onPress={() =>
-                      Alert.alert('Eliminar día', `¿Eliminar ${d.name} y sus ejercicios?`, [
-                        { text: 'Cancelar', style: 'cancel' },
-                        {
-                          text: 'Eliminar',
-                          style: 'destructive',
-                          onPress: async () => {
-                            await deleteGymDay(d.id);
-                            await load();
-                          },
-                        },
-                      ])
-                    }
-                    hitSlop={8}
-                  >
-                    <Ionicons name="trash-outline" size={18} color={colors.textFaint} />
-                  </Pressable>
-                </View>
-              </View>
-              {exercisesFor(d.id).map((e) => (
-                <Pressable
-                  key={e.id}
-                  accessibilityRole="button"
-                  accessibilityLabel={`Editar ${e.name}`}
-                  accessibilityHint="Mantén pulsado para eliminar el ejercicio"
-                  onPress={() => abrirEjercicio(d, e)}
-                  onLongPress={() =>
-                    Alert.alert('Eliminar ejercicio', e.name, [
-                      { text: 'Cancelar', style: 'cancel' },
-                      {
-                        text: 'Eliminar',
-                        style: 'destructive',
-                        onPress: async () => {
-                          await deleteGymExercise(e.id);
-                          await load();
-                        },
-                      },
-                    ])
-                  }
-                >
-                  <View style={styles.exFila}>
-                    <Text style={styles.exLine}>
-                      {e.name} · {e.sets}×{e.reps}
-                      {e.weight !== null ? ` · ${e.weight} kg` : ''}
+                    <Ionicons
+                      name={fotoB64 ? 'checkmark-circle' : 'camera-outline'}
+                      size={18}
+                      color={fotoB64 ? colors.accent : colors.accentText}
+                    />
+                    <Text style={[styles.fotoTexto, fotoB64 && styles.fotoTextoHecha]}>
+                      {fotoB64 ? 'Foto lista. Entra en tu resumen.' : 'Foto del entreno'}
                     </Text>
-                    <Ionicons name="create-outline" size={15} color={colors.textFaint} />
-                  </View>
-                </Pressable>
-              ))}
-            </SystemWindow>
-          ))
-        )}
-      </ScrollView>
+                  </Pressable>
+                </Card>
+
+                <SystemButton title="Terminar sesión" onPress={finishTraining} loading={busy} style={{ marginTop: 4 }} />
+              </>
+            )}
+          </Section>
+        </FadeIn>
+
+        <FadeIn index={4}>
+          <Section
+            title="Rutina semanal"
+            meta={days.length > 0 ? `${days.length}` : undefined}
+            action={{ label: 'Añadir día', icon: 'add', onPress: () => setDayFormOpen(true) }}
+          >
+            {days.length === 0 ? (
+              <Card variant="outline">
+                <EmptyState
+                  icon="calendar-outline"
+                  title="Sin rutina aún"
+                  body="Crea tus días de entreno, por ejemplo Lunes · Empuje, y añade ejercicios a cada uno."
+                  action={{ label: 'Crear el primer día', onPress: () => setDayFormOpen(true) }}
+                />
+              </Card>
+            ) : (
+              days.map((d, di) => {
+                const esHoy = d.day_of_week === todayWd;
+                const exs = exercisesFor(d.id);
+                return (
+                  <FadeIn key={d.id} index={di}>
+                    <Card padded={false} style={styles.lista} accent={esHoy ? colors.accent : undefined}>
+                      <View style={styles.dayHeader}>
+                        <View style={styles.dayTexto}>
+                          <Text style={styles.dayEyebrow}>{DAY_NAMES[d.day_of_week - 1]}</Text>
+                          <Text style={styles.dayTitle} numberOfLines={1}>
+                            {d.name}
+                          </Text>
+                        </View>
+                        {esHoy ? <Tag tone="accent">Hoy</Tag> : null}
+                        <Pressable
+                          accessibilityRole="button"
+                          accessibilityLabel={`Añadir ejercicio a ${d.name}`}
+                          onPress={() => abrirEjercicio(d, null)}
+                          hitSlop={8}
+                          style={styles.dayBoton}
+                        >
+                          <Ionicons name="add" size={18} color={colors.text} />
+                        </Pressable>
+                        <Pressable
+                          accessibilityRole="button"
+                          accessibilityLabel={`Eliminar el día ${d.name}`}
+                          onPress={() => confirmarBorrarDia(d)}
+                          hitSlop={8}
+                          style={styles.dayBoton}
+                        >
+                          <Ionicons name="trash-outline" size={16} color={colors.textFaint} />
+                        </Pressable>
+                      </View>
+                      {exs.length === 0 ? (
+                        <Text style={styles.sinEjercicios}>Sin ejercicios. Toca + para añadir el primero.</Text>
+                      ) : (
+                        exs.map((e) => (
+                          <Row
+                            key={e.id}
+                            title={e.name}
+                            detail={e.weight !== null ? `${e.weight} kg de referencia` : 'Sin peso de referencia'}
+                            trailing={<RowValue>{`${e.sets}×${e.reps}`}</RowValue>}
+                            chevron
+                            onPress={() => abrirEjercicio(d, e)}
+                            onLongPress={() => confirmarBorrarEjercicio(e)}
+                            accessibilityLabel={`Editar ${e.name}. Mantén pulsado para eliminarlo.`}
+                          />
+                        ))
+                      )}
+                    </Card>
+                  </FadeIn>
+                );
+              })
+            )}
+          </Section>
+        </FadeIn>
+      </Stagger>
 
       <Modal visible={dayFormOpen} transparent animationType="slide" onRequestClose={() => setDayFormOpen(false)}>
-        <KeyboardAvoidingView
-          style={styles.backdrop}
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        >
+        <KeyboardAvoidingView style={styles.backdrop} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+          <Pressable
+            style={styles.backdropTap}
+            onPress={() => setDayFormOpen(false)}
+            accessibilityRole="button"
+            accessibilityLabel="Cerrar"
+          />
           <View style={styles.sheet}>
-            <Text style={styles.sheetTitle}>NUEVO DÍA DE RUTINA</Text>
-            <View style={styles.chips}>
+            <View style={styles.sheetHandle} />
+            <Text style={styles.sheetEyebrow}>NUEVO DÍA DE RUTINA</Text>
+            <Text style={styles.sheetTitle}>¿Qué día entrenas?</Text>
+            <Text style={styles.label}>Día</Text>
+            <ChipWrap>
               {DAY_NAMES.map((name, i) => (
-                <Pressable
+                <Chip
                   key={name}
+                  label={name.slice(0, 3)}
+                  selected={newDayOfWeek === i + 1}
                   onPress={() => setNewDayOfWeek(i + 1)}
-                  style={[styles.chip, newDayOfWeek === i + 1 && styles.chipOn]}
-                  accessibilityRole="radio"
-                  accessibilityState={{ selected: newDayOfWeek === i + 1 }}
                   accessibilityLabel={name}
-                >
-                  <Text style={[styles.chipText, newDayOfWeek === i + 1 && styles.chipTextOn]}>
-                    {name.slice(0, 3)}
-                  </Text>
-                </Pressable>
+                />
               ))}
-            </View>
+            </ChipWrap>
+            <Text style={styles.label}>Nombre</Text>
             <TextInput
-              style={[styles.input, { marginTop: 14 }]}
+              style={styles.input}
               value={newDayName}
               onChangeText={setNewDayName}
-              placeholder="Nombre · ej. Empuje, Pierna, Full body"
+              placeholder="Ej. Empuje · Pierna · Full body"
               placeholderTextColor={colors.textFaint}
+              accessibilityLabel="Nombre del día de rutina"
             />
-            <SystemButton title="Crear" onPress={addDay} disabled={!newDayName.trim()} style={{ marginTop: 18 }} />
-            <SystemButton title="Cancelar" variant="outline" onPress={() => setDayFormOpen(false)} style={{ marginTop: 10 }} />
+            <SystemButton title="Crear día" onPress={addDay} disabled={!newDayName.trim()} style={{ marginTop: 22 }} />
+            <SystemButton title="Cancelar" variant="ghost" onPress={() => setDayFormOpen(false)} style={{ marginTop: 6 }} />
           </View>
         </KeyboardAvoidingView>
       </Modal>
 
-      <Modal visible={exFormDay !== null} transparent animationType="slide" onRequestClose={() => setExFormDay(null)}>
-        <KeyboardAvoidingView
-          style={styles.backdrop}
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        >
+      <Modal visible={exFormDay !== null} transparent animationType="slide" onRequestClose={cerrarFormEjercicio}>
+        <KeyboardAvoidingView style={styles.backdrop} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+          <Pressable
+            style={styles.backdropTap}
+            onPress={cerrarFormEjercicio}
+            accessibilityRole="button"
+            accessibilityLabel="Cerrar"
+          />
           <View style={styles.sheet}>
-            <Text style={styles.sheetTitle}>
-              {exEditando ? 'EDITAR' : 'NUEVO'} EJERCICIO · {exFormDay?.name.toUpperCase()}
+            <View style={styles.sheetHandle} />
+            <Text style={styles.sheetEyebrow}>
+              {exEditando ? 'EDITAR EJERCICIO' : 'NUEVO EJERCICIO'} · {exFormDay?.name.toUpperCase()}
             </Text>
+            <Text style={styles.sheetTitle} numberOfLines={1}>
+              {exEditando ? exEditando.name : '¿Qué movimiento?'}
+            </Text>
+            <Text style={styles.label}>Ejercicio</Text>
             <TextInput
               style={styles.input}
               value={exName}
               onChangeText={setExName}
               placeholder="Ej. Press banca"
               placeholderTextColor={colors.textFaint}
+              accessibilityLabel="Nombre del ejercicio"
             />
             <View style={styles.inlineInputs}>
-              <View style={{ flex: 1 }}>
+              <View style={styles.columna}>
                 <Text style={styles.label}>Series</Text>
-                <TextInput style={styles.input} value={exSets} onChangeText={setExSets} keyboardType="number-pad" />
+                <TextInput
+                  style={styles.input}
+                  value={exSets}
+                  onChangeText={setExSets}
+                  keyboardType="number-pad"
+                  accessibilityLabel="Número de series"
+                />
               </View>
-              <View style={{ flex: 1 }}>
+              <View style={styles.columna}>
                 <Text style={styles.label}>Reps</Text>
-                <TextInput style={styles.input} value={exReps} onChangeText={setExReps} keyboardType="number-pad" />
+                <TextInput
+                  style={styles.input}
+                  value={exReps}
+                  onChangeText={setExReps}
+                  keyboardType="number-pad"
+                  accessibilityLabel="Repeticiones por serie"
+                />
               </View>
-              <View style={{ flex: 1 }}>
+              <View style={styles.columna}>
                 <Text style={styles.label}>Kg</Text>
                 <TextInput
                   style={styles.input}
@@ -618,168 +738,143 @@ export default function Gym() {
                   keyboardType="decimal-pad"
                   placeholder="—"
                   placeholderTextColor={colors.textFaint}
+                  accessibilityLabel="Peso de referencia en kilos"
                 />
               </View>
             </View>
             <SystemButton
-              title={exEditando ? 'Guardar cambios' : 'Añadir'}
+              title={exEditando ? 'Guardar cambios' : 'Añadir ejercicio'}
               onPress={guardarEjercicio}
               disabled={!exName.trim()}
-              style={{ marginTop: 18 }}
+              style={{ marginTop: 22 }}
             />
-            <SystemButton
-              title="Cancelar"
-              variant="outline"
-              onPress={() => {
-                setExEditando(null);
-                setExFormDay(null);
-              }}
-              style={{ marginTop: 10 }}
-            />
+            <SystemButton title="Cancelar" variant="ghost" onPress={cerrarFormEjercicio} style={{ marginTop: 6 }} />
           </View>
         </KeyboardAvoidingView>
       </Modal>
 
       <LevelUpOverlay level={levelUp} onClose={() => setLevelUp(null)} />
-    </SafeAreaView>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.bg },
-  content: { padding: 16, paddingBottom: 32 },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 14,
-  },
-  title: { fontFamily: fonts.heading, fontSize: 15, letterSpacing: 3, color: colors.accent },
-  windowTitle: {
-    fontFamily: fonts.heading,
-    fontSize: 12,
-    letterSpacing: 2.5,
-    color: colors.accent,
-    marginBottom: 8,
-  },
-  sectionTitle: {
-    fontFamily: fonts.heading,
-    fontSize: 12,
-    letterSpacing: 2.5,
-    color: colors.textFaint,
-    marginTop: 8,
-    marginBottom: 10,
-  },
-  doneText: { fontFamily: fonts.semibold, fontSize: 14, color: colors.accent },
-  empty: { fontFamily: fonts.body, fontSize: 13, color: colors.textDim, lineHeight: 19 },
-  prescLine: {
-    fontFamily: fonts.semibold,
-    fontSize: 13,
-    lineHeight: 19,
-    color: colors.accentText,
-    marginBottom: 4,
-  },
-  planName: { fontFamily: fonts.semibold, fontSize: 16, color: colors.text, marginBottom: 6 },
-  ejercicioBloque: {
-    borderTopWidth: 1,
-    borderTopColor: colors.line,
-    paddingTop: 10,
-    marginTop: 10,
-  },
+  lista: { paddingHorizontal: 16, paddingVertical: 2 },
+  ordinal: { width: 22, fontFamily: fonts.number, fontSize: 13, color: colors.textFaint, textAlign: 'center' },
+  sinEjercicios: { fontFamily: fonts.body, fontSize: 13, lineHeight: 19, color: colors.textFaint, paddingVertical: 12 },
+  hechoFila: { flexDirection: 'row', alignItems: 'center', gap: 14 },
+  hechoTexto: { flex: 1, minWidth: 0 },
+  hechoTitulo: { fontFamily: fonts.heading, fontSize: 16, letterSpacing: -0.2, color: colors.text },
+  hechoDetalle: { fontFamily: fonts.body, fontSize: 13, color: colors.textDim, marginTop: 2 },
+  rpeHint: { fontFamily: fonts.body, fontSize: 12.5, lineHeight: 18, color: colors.textFaint, marginBottom: 12 },
   ejercicioCabecera: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 6,
+    gap: 10,
+    marginBottom: 10,
   },
-  serieCabecera: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 3 },
-  serieNum: {
-    width: 16,
-    fontFamily: fonts.heading,
-    fontSize: 11,
-    color: colors.textFaint,
-    textAlign: 'center',
+  liftName: { flex: 1, minWidth: 0, fontFamily: fonts.heading, fontSize: 16, letterSpacing: -0.2, color: colors.text },
+  serieMas: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    borderWidth: 1,
+    borderColor: colors.accentDim,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
   },
+  serieMasTexto: { fontFamily: fonts.semibold, fontSize: 12, color: colors.text },
+  serieCabecera: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 2 },
+  serieNum: { width: 16, fontFamily: fonts.number, fontSize: 11, color: colors.textFaint, textAlign: 'center' },
   serieEtiqueta: {
     flex: 1,
     fontFamily: fonts.heading,
     fontSize: 9.5,
-    letterSpacing: 1,
+    letterSpacing: 1.5,
+    textTransform: 'uppercase',
     color: colors.textFaint,
     textAlign: 'center',
   },
-  notasInput: {
-    borderWidth: 1,
-    borderColor: colors.line,
-    backgroundColor: colors.bg,
-    color: colors.text,
-    fontFamily: fonts.body,
-    fontSize: 13.5,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    minHeight: 64,
-    textAlignVertical: 'top',
-  },
-  notasHint: {
-    fontFamily: fonts.body,
-    fontSize: 11,
-    lineHeight: 15,
-    color: colors.textFaint,
-    marginTop: 6,
-  },
-  fotoBoton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    borderWidth: 1,
-    borderColor: colors.accentFaint,
-    paddingVertical: 11,
-    paddingHorizontal: 12,
-    marginTop: 12,
-  },
-  fotoBotonHecha: { borderColor: colors.accent },
-  fotoTexto: { fontFamily: fonts.semibold, fontSize: 13, color: colors.accentText },
-  exFila: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 },
-  exLine: { fontFamily: fonts.body, fontSize: 13, color: colors.textDim, paddingVertical: 3 },
   liftRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 8 },
-  liftName: { flex: 1, fontFamily: fonts.semibold, fontSize: 14, color: colors.text },
-  rpeHint: {
-    fontFamily: fonts.body,
-    fontSize: 11.5,
-    lineHeight: 16,
-    color: colors.textFaint,
-    marginBottom: 10,
-  },
   liftInput: {
-    width: 64,
+    flex: 1,
     borderWidth: 1,
     borderColor: colors.accentDim,
     backgroundColor: colors.bg,
     color: colors.text,
     fontFamily: fonts.semibold,
-    fontSize: 14,
+    fontSize: 15,
     paddingHorizontal: 8,
-    paddingVertical: 7,
+    paddingVertical: 9,
     textAlign: 'center',
   },
-  dayHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 },
-  dayTitle: { fontFamily: fonts.heading, fontSize: 13, letterSpacing: 1, color: colors.text },
-  backdrop: { flex: 1, backgroundColor: 'rgba(2, 6, 14, 0.85)', justifyContent: 'flex-end' },
+  notasInput: {
+    borderWidth: 1,
+    borderColor: colors.accentDim,
+    backgroundColor: colors.bg,
+    color: colors.text,
+    fontFamily: fonts.body,
+    fontSize: 14,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    minHeight: 72,
+    textAlignVertical: 'top',
+  },
+  hint: { fontFamily: fonts.body, fontSize: 12, lineHeight: 17, color: colors.textFaint, marginTop: 8 },
+  fotoBoton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    borderWidth: 1,
+    borderColor: colors.accentDim,
+    paddingVertical: 11,
+    paddingHorizontal: 12,
+    marginTop: 14,
+  },
+  fotoBotonHecha: { borderColor: colors.accent, backgroundColor: colors.accentFaint },
+  fotoTexto: { fontFamily: fonts.semibold, fontSize: 13, color: colors.accentText },
+  fotoTextoHecha: { color: colors.text },
+  dayHeader: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 12 },
+  dayTexto: { flex: 1, minWidth: 0 },
+  dayEyebrow: {
+    fontFamily: fonts.heading,
+    fontSize: 10,
+    letterSpacing: 2,
+    textTransform: 'uppercase',
+    color: colors.textFaint,
+  },
+  dayTitle: { fontFamily: fonts.heading, fontSize: 16, letterSpacing: -0.2, color: colors.text, marginTop: 2 },
+  dayBoton: { width: 30, height: 30, alignItems: 'center', justifyContent: 'center' },
+  backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'flex-end' },
+  backdropTap: { flex: 1 },
   sheet: {
     backgroundColor: colors.panel,
-    borderTopWidth: 1.5,
-    borderTopColor: colors.accentDim,
-    padding: 20,
+    borderTopWidth: 1,
+    borderTopColor: colors.line,
+    paddingHorizontal: 20,
+    paddingTop: 10,
     paddingBottom: 34,
   },
-  sheetTitle: { fontFamily: fonts.heading, fontSize: 15, letterSpacing: 3, color: colors.accent, marginBottom: 12 },
+  sheetHandle: { alignSelf: 'center', width: 36, height: 3, backgroundColor: colors.accentDim, marginBottom: 16 },
+  sheetEyebrow: { fontFamily: fonts.heading, fontSize: 11, letterSpacing: 2.5, color: colors.accentText },
+  sheetTitle: { fontFamily: fonts.heading, fontSize: 24, letterSpacing: -0.5, color: colors.text, marginTop: 6, marginBottom: 4 },
   label: {
     fontFamily: fonts.heading,
     fontSize: 11,
-    letterSpacing: 1.5,
-    color: colors.textDim,
+    letterSpacing: 2,
+    color: colors.textFaint,
     textTransform: 'uppercase',
-    marginBottom: 6,
+    marginTop: 18,
+    marginBottom: 8,
+  },
+  labelPrimero: {
+    fontFamily: fonts.heading,
+    fontSize: 11,
+    letterSpacing: 2,
+    color: colors.textFaint,
+    textTransform: 'uppercase',
+    marginBottom: 8,
   },
   input: {
     borderWidth: 1,
@@ -787,14 +882,10 @@ const styles = StyleSheet.create({
     backgroundColor: colors.bg,
     color: colors.text,
     fontFamily: fonts.semibold,
-    fontSize: 15,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
+    fontSize: 16,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
   },
-  inlineInputs: { flexDirection: 'row', gap: 10, marginTop: 14 },
-  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  chip: { borderWidth: 1, borderColor: colors.accentDim, paddingHorizontal: 12, paddingVertical: 7 },
-  chipOn: { backgroundColor: colors.accentFaint, borderColor: colors.accent },
-  chipText: { fontFamily: fonts.semibold, fontSize: 13, color: colors.textDim },
-  chipTextOn: { color: colors.accent },
+  inlineInputs: { flexDirection: 'row', gap: 10 },
+  columna: { flex: 1 },
 });

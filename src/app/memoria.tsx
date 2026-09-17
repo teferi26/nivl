@@ -1,17 +1,31 @@
-import Ionicons from '@expo/vector-icons/Ionicons';
-import { Stack } from 'expo-router';
+import { router } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { SystemWindow } from '@/components/SystemWindow';
+import { Alert, StyleSheet, View } from 'react-native';
+import { TextoSistema } from '@/components/TextoSistema';
+import {
+  Card,
+  Chip,
+  ChipRow,
+  EmptyState,
+  FadeIn,
+  Row,
+  RowValue,
+  Screen,
+  ScreenHeader,
+  Section,
+  Stagger,
+  Stat,
+  StatRow,
+  Tag,
+} from '@/components/ui';
 import {
   fetchDossier,
   fetchFacts,
   fetchMonthCost,
   type CoachFact,
 } from '@/lib/coach';
-import { colors, fonts } from '@/lib/theme';
+import { colors } from '@/lib/theme';
 
 const CATEGORIAS: { clave: string; etiqueta: string }[] = [
   { clave: 'todo', etiqueta: 'Todo' },
@@ -24,6 +38,19 @@ const CATEGORIAS: { clave: string; etiqueta: string }[] = [
   { clave: 'regla', etiqueta: 'Reglas' },
   { clave: 'perfil', etiqueta: 'Perfil' },
 ];
+
+const MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+
+/** "2026-09-14" → "14 sep". Si no parece una fecha, se devuelve tal cual. */
+function fechaCorta(iso: string): string {
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso);
+  if (!m) return iso;
+  return `${Number(m[3])} ${MESES[Number(m[2]) - 1] ?? ''}`;
+}
+
+function etiquetaCategoria(clave: string): string {
+  return CATEGORIAS.find((c) => c.clave === clave)?.etiqueta ?? clave;
+}
 
 export default function MemoriaScreen() {
   const [dossier, setDossier] = useState<{ content: string; version: number } | null>(null);
@@ -56,195 +83,145 @@ export default function MemoriaScreen() {
 
   const visibles = filtro === 'todo' ? hechos : hechos.filter((h) => h.category === filtro);
 
+  if (cargando) {
+    return (
+      <Screen>
+        <ScreenHeader onBack={() => router.back()} eyebrow="El sistema recuerda" title="Memoria" />
+        <EmptyState icon="library-outline" title="Leyendo la memoria" body="Un momento." />
+      </Screen>
+    );
+  }
+
+  const subtitulo = error
+    ? 'La memoria no responde.'
+    : hechos.length === 0
+      ? 'Todavía no hay nada anotado. Se escribe sola mientras hablas con el coach.'
+      : `${hechos.length} ${hechos.length === 1 ? 'hecho anotado' : 'hechos anotados'} · dossier v${dossier?.version ?? 0}`;
+
   return (
-    <SafeAreaView style={styles.screen} edges={['bottom']}>
-      <Stack.Screen options={{ title: 'Memoria del sistema' }} />
-      {cargando ? (
-        <View style={styles.centro}>
-          <ActivityIndicator color={colors.accent} />
-        </View>
-      ) : (
-        <ScrollView contentContainerStyle={styles.contenido}>
-          {error ? (
-            <SystemWindow color={colors.redDim} fill={colors.redPanel}>
-              <Text style={styles.error}>{error}</Text>
-            </SystemWindow>
-          ) : null}
+    <Screen>
+      <Stagger>
+        <FadeIn index={0}>
+          <ScreenHeader onBack={() => router.back()} eyebrow="El sistema recuerda" title="Memoria" subtitle={subtitulo} />
+        </FadeIn>
 
-          <SystemWindow>
-            <Text style={styles.seccion}>ESTADO DE LA MEMORIA</Text>
-            <View style={styles.kpis}>
-              <View style={styles.kpi}>
-                <Text style={styles.kpiNumero}>{hechos.length}</Text>
-                <Text style={styles.kpiEtiqueta}>hechos</Text>
-              </View>
-              <View style={styles.kpi}>
-                <Text style={styles.kpiNumero}>v{dossier?.version ?? 0}</Text>
-                <Text style={styles.kpiEtiqueta}>dossier</Text>
-              </View>
-              <View style={styles.kpi}>
-                <Text style={styles.kpiNumero}>
-                  {gasto === null ? '—' : `${gasto.toFixed(2)}$`}
-                </Text>
-                <Text style={styles.kpiEtiqueta}>este mes</Text>
-              </View>
-            </View>
-          </SystemWindow>
-
-          <SystemWindow>
-            <Pressable
-              onPress={() => setDossierAbierto((v) => !v)}
-              style={styles.cabeceraDossier}
-              accessibilityRole="button"
-              accessibilityLabel={dossierAbierto ? 'Contraer el dossier' : 'Desplegar el dossier'}
-            >
-              <Text style={styles.seccion}>QUIÉN ERES PARA EL SISTEMA</Text>
-              <Ionicons
-                name={dossierAbierto ? 'chevron-up' : 'chevron-down'}
-                size={16}
-                color={colors.accentText}
+        {error ? (
+          <FadeIn index={1}>
+            <Card variant="outline" accent={colors.red}>
+              <EmptyState
+                compact
+                icon="alert-circle-outline"
+                title="No se pudo leer la memoria"
+                body={error}
+                action={{ label: 'Reintentar', onPress: () => cargar() }}
               />
-            </Pressable>
-            {dossier?.content ? (
-              <Text
-                style={styles.dossier}
-                numberOfLines={dossierAbierto ? undefined : 6}
-              >
-                {dossier.content}
-              </Text>
-            ) : (
-              <Text style={styles.vacio}>
-                El sistema aún no tiene memoria estable. Se escribe sola cuando algo estructural
-                cambia: un objetivo nuevo, un proyecto que muere, una regla que pactas.
-              </Text>
-            )}
-          </SystemWindow>
+            </Card>
+          </FadeIn>
+        ) : null}
 
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.filtros}
+        <FadeIn index={1}>
+          <Card>
+            <StatRow>
+              <Stat value={hechos.length} label="Hechos" />
+              <Stat value={`v${dossier?.version ?? 0}`} label="Dossier" />
+              <Stat value={gasto === null ? '—' : gasto.toFixed(2).replace('.', ',')} unit={gasto === null ? undefined : '$'} label="Este mes" />
+            </StatRow>
+          </Card>
+        </FadeIn>
+
+        <FadeIn index={2}>
+          <Section
+            title="Quién eres para el sistema"
+            tone="accent"
+            action={
+              dossier?.content
+                ? {
+                    label: dossierAbierto ? 'Contraer' : 'Leer todo',
+                    icon: dossierAbierto ? 'chevron-up' : 'chevron-down',
+                    onPress: () => setDossierAbierto((v) => !v),
+                  }
+                : undefined
+            }
           >
-            {CATEGORIAS.map((c) => {
-              const n = c.clave === 'todo' ? hechos.length : hechos.filter((h) => h.category === c.clave).length;
-              if (!n && c.clave !== 'todo') return null;
-              const activo = filtro === c.clave;
-              return (
-                <Pressable
-                  key={c.clave}
-                  onPress={() => setFiltro(c.clave)}
-                  style={[styles.filtro, activo && styles.filtroActivo]}
-                  accessibilityRole="button"
-                  accessibilityLabel={`Filtrar por ${c.etiqueta}`}
-                  accessibilityState={{ selected: activo }}
-                >
-                  <Text style={[styles.filtroTexto, activo && styles.filtroTextoActivo]}>
-                    {c.etiqueta} {n}
-                  </Text>
-                </Pressable>
-              );
-            })}
-          </ScrollView>
-
-          {visibles.length ? (
-            visibles.map((h) => (
-              <SystemWindow key={h.id} style={styles.hecho}>
-                <View style={styles.hechoCabecera}>
-                  <Text style={styles.hechoFecha}>{h.date}</Text>
-                  <Text style={styles.hechoCategoria}>{h.category.toUpperCase()}</Text>
+            {dossier?.content ? (
+              <Card>
+                <View style={!dossierAbierto && styles.dossierPlegado}>
+                  <TextoSistema texto={dossier.content} />
                 </View>
-                <Text style={styles.hechoTexto}>{h.content}</Text>
-              </SystemWindow>
-            ))
-          ) : (
-            <SystemWindow>
-              <Text style={styles.vacio}>Nada registrado en esta categoría todavía.</Text>
-            </SystemWindow>
-          )}
-        </ScrollView>
-      )}
-    </SafeAreaView>
+                {!dossierAbierto ? <View style={styles.dossierVelo} pointerEvents="none" /> : null}
+              </Card>
+            ) : (
+              <Card variant="outline">
+                <EmptyState
+                  compact
+                  icon="library-outline"
+                  title="Sin memoria estable aún"
+                  body="Se escribe sola cuando algo estructural cambia: un objetivo nuevo, un proyecto que muere, una regla que pactas."
+                />
+              </Card>
+            )}
+          </Section>
+        </FadeIn>
+
+        <FadeIn index={3}>
+          <Section title="Hechos" meta={visibles.length > 0 ? `${visibles.length}` : undefined}>
+            {hechos.length > 0 ? (
+              <ChipRow style={styles.filtros}>
+                {CATEGORIAS.map((c) => {
+                  const n = c.clave === 'todo' ? hechos.length : hechos.filter((h) => h.category === c.clave).length;
+                  if (!n && c.clave !== 'todo') return null;
+                  return (
+                    <Chip
+                      key={c.clave}
+                      small
+                      label={`${c.etiqueta} · ${n}`}
+                      selected={filtro === c.clave}
+                      onPress={() => setFiltro(c.clave)}
+                      accessibilityLabel={`Filtrar por ${c.etiqueta}, ${n}`}
+                    />
+                  );
+                })}
+              </ChipRow>
+            ) : null}
+
+            {visibles.length > 0 ? (
+              <Card padded={false} style={styles.lista}>
+                {visibles.map((h, i) => (
+                  <Row
+                    key={h.id}
+                    first={i === 0}
+                    title={h.content}
+                    detail={filtro === 'todo' ? <Tag>{etiquetaCategoria(h.category)}</Tag> : undefined}
+                    trailing={<RowValue>{fechaCorta(h.date)}</RowValue>}
+                    onPress={() => Alert.alert(`${etiquetaCategoria(h.category)} · ${h.date}`, h.content)}
+                    accessibilityLabel={`${etiquetaCategoria(h.category)}, ${h.date}: ${h.content}`}
+                  />
+                ))}
+              </Card>
+            ) : (
+              <Card variant="outline">
+                <EmptyState
+                  compact
+                  icon="time-outline"
+                  title={hechos.length === 0 ? 'Nada anotado todavía' : 'Nada en esta categoría'}
+                  body={
+                    hechos.length === 0
+                      ? 'Cada cifra, venta, aprendizaje o regla que le cuentes al coach queda aquí con su fecha.'
+                      : 'Prueba otra categoría.'
+                  }
+                />
+              </Card>
+            )}
+          </Section>
+        </FadeIn>
+      </Stagger>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.bg },
-  centro: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  contenido: { padding: 16, paddingBottom: 32 },
-  seccion: {
-    fontFamily: fonts.heading,
-    fontSize: 13,
-    letterSpacing: 2.5,
-    color: colors.accentText,
-    marginBottom: 10,
-  },
-  kpis: { flexDirection: 'row', gap: 20 },
-  kpi: { minWidth: 0 },
-  kpiNumero: {
-    fontFamily: fonts.number,
-    fontSize: 20,
-    color: colors.text,
-  },
-  kpiEtiqueta: {
-    fontFamily: fonts.body,
-    fontSize: 11,
-    color: colors.textDim,
-    marginTop: 2,
-  },
-  cabeceraDossier: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  dossier: {
-    fontFamily: fonts.body,
-    fontSize: 12.5,
-    lineHeight: 19,
-    color: colors.textDim,
-  },
-  vacio: {
-    fontFamily: fonts.body,
-    fontSize: 13,
-    lineHeight: 20,
-    color: colors.textDim,
-  },
-  filtros: { gap: 8, paddingBottom: 12 },
-  filtro: {
-    borderWidth: 1,
-    borderColor: colors.line,
-    paddingVertical: 6,
-    paddingHorizontal: 10,
-  },
-  filtroActivo: { borderColor: colors.accent, backgroundColor: colors.accentFaint },
-  filtroTexto: {
-    fontFamily: fonts.body,
-    fontSize: 11.5,
-    color: colors.textDim,
-  },
-  filtroTextoActivo: { color: colors.accentText },
-  hecho: { marginBottom: 8 },
-  hechoCabecera: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 6,
-  },
-  hechoFecha: {
-    fontFamily: fonts.number,
-    fontSize: 11,
-    color: colors.textFaint,
-  },
-  hechoCategoria: {
-    fontFamily: fonts.semibold,
-    fontSize: 10,
-    letterSpacing: 1.5,
-    color: colors.accentDim,
-  },
-  hechoTexto: {
-    fontFamily: fonts.body,
-    fontSize: 13,
-    lineHeight: 19,
-    color: colors.text,
-  },
-  error: { fontFamily: fonts.body, fontSize: 13, color: colors.red },
+  dossierPlegado: { maxHeight: 168, overflow: 'hidden' },
+  dossierVelo: { position: 'absolute', left: 0, right: 0, bottom: 0, height: 28, backgroundColor: colors.panel, opacity: 0.85 },
+  filtros: { marginBottom: 12 },
+  lista: { paddingHorizontal: 16, paddingVertical: 2 },
 });

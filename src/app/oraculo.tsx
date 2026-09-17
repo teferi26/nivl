@@ -1,20 +1,30 @@
-import Ionicons from '@expo/vector-icons/Ionicons';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
   Alert,
   KeyboardAvoidingView,
+  Modal,
   Platform,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
   View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { SystemButton } from '@/components/SystemButton';
-import { SystemWindow } from '@/components/SystemWindow';
+import { TextoSistema } from '@/components/TextoSistema';
+import {
+  Card,
+  Check,
+  EmptyState,
+  FadeIn,
+  Row,
+  RowValue,
+  Screen,
+  ScreenHeader,
+  Section,
+  Stagger,
+} from '@/components/ui';
 import { useAuth } from '@/lib/auth';
 import { createQuest } from '@/lib/data';
 import { DIFFICULTY_LABEL, XP_BY_DIFFICULTY } from '@/lib/game';
@@ -22,12 +32,15 @@ import { askOracle, getApiKey, PaywallError, setApiKey, type ProposedQuest } fro
 import { openCheckout, paymentsConfigured } from '@/lib/subscription';
 import { colors, fonts } from '@/lib/theme';
 
+const DAY_LABELS = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
+
 export default function Oraculo() {
   const { session } = useAuth();
   const userId = session?.user.id;
 
   const [apiKey, setKey] = useState('');
   const [keySaved, setKeySaved] = useState(false);
+  const [keyOpen, setKeyOpen] = useState(false);
   const [goal, setGoal] = useState('');
   const [proposals, setProposals] = useState<ProposedQuest[]>([]);
   const [selected, setSelected] = useState<Set<number>>(new Set());
@@ -47,6 +60,7 @@ export default function Oraculo() {
   const saveKey = async () => {
     await setApiKey(apiKey);
     setKeySaved(!!apiKey.trim());
+    setKeyOpen(false);
     Alert.alert('Guardada', 'La key se guarda solo en este dispositivo.');
   };
 
@@ -64,13 +78,17 @@ export default function Oraculo() {
       if (e instanceof PaywallError) {
         Alert.alert(
           'El Oráculo es premium',
-          'La IA consume API de verdad. Suscríbete y va incluida, o pega tu propia API key arriba y paga solo tu consumo.',
+          'La IA consume API de verdad. Suscríbete y va incluida, o pega tu propia API key y paga solo tu consumo.',
           paymentsConfigured()
             ? [
                 { text: 'Suscribirme', onPress: () => openCheckout(userId).catch(() => {}) },
-                { text: 'Usaré mi key', style: 'cancel' },
+                { text: 'Usaré mi key', onPress: () => setKeyOpen(true) },
+                { text: 'Ahora no', style: 'cancel' },
               ]
-            : [{ text: 'Entendido', style: 'cancel' }],
+            : [
+                { text: 'Pegar mi key', onPress: () => setKeyOpen(true) },
+                { text: 'Entendido', style: 'cancel' },
+              ],
         );
       } else {
         Alert.alert('El oráculo guarda silencio', e instanceof Error ? e.message : 'Error desconocido');
@@ -116,162 +134,212 @@ export default function Oraculo() {
     }
   };
 
-  const DAY_LABELS = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
+  const hayPropuestas = proposals.length > 0;
+  const dias = (d: number[]) => (d.length === 7 ? 'todos los días' : d.map((x) => DAY_LABELS[x - 1]).join(' '));
 
   return (
-    <SafeAreaView style={styles.screen} edges={['top']}>
-      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <ScrollView automaticallyAdjustKeyboardInsets contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-          <View style={styles.header}>
-            <Pressable
-              onPress={() => router.back()}
-              hitSlop={10}
-              accessibilityRole="button"
-              accessibilityLabel="Volver"
-            >
-              <Ionicons name="chevron-back" size={24} color={colors.accent} />
-            </Pressable>
-            <Text style={styles.title}>EL ORÁCULO</Text>
-            <View style={{ width: 24 }} />
-          </View>
+    <Screen>
+      <Stagger>
+        <FadeIn index={0}>
+          <ScreenHeader
+            onBack={() => router.back()}
+            eyebrow="El sistema forja"
+            title="Oráculo"
+            subtitle={
+              keySaved
+                ? 'Dile tu objetivo y lo convierte en misiones. Tu clave está en este dispositivo.'
+                : 'Dile tu objetivo y lo convierte en misiones diarias con fecha y medida.'
+            }
+            action={{ icon: 'key-outline', label: keySaved ? 'Cambiar la clave de API' : 'Usar mi propia clave de API', onPress: () => setKeyOpen(true) }}
+          />
+        </FadeIn>
 
-          <SystemWindow color={colors.line}>
-            <Text style={styles.label}>API KEY · OPENAI O ANTHROPIC (solo en tu dispositivo)</Text>
-            <View style={styles.keyRow}>
-              <TextInput
-                style={[styles.input, { flex: 1 }]}
-                value={apiKey}
-                onChangeText={setKey}
-                placeholder="sk-proj-… (OpenAI) o sk-ant-… (Anthropic)"
-                placeholderTextColor={colors.textFaint}
-                autoCapitalize="none"
-                secureTextEntry={keySaved}
-              />
-              <SystemButton title="Guardar" variant="outline" onPress={saveKey} style={{ paddingVertical: 10 }} />
-            </View>
-          </SystemWindow>
-
-          <SystemWindow color={colors.accentDim}>
-            <Text style={styles.intro}>
-              Dile al sistema tu objetivo y él forjará las misiones que te llevarán hasta él.
-            </Text>
+        <FadeIn index={1}>
+          <Section title="Tu objetivo">
             <TextInput
-              style={[styles.input, styles.goalInput]}
+              style={styles.goalInput}
               value={goal}
               onChangeText={setGoal}
-              placeholder="Ej. Correr una 10K en mayo · Aprobar INGP con nota · Dormir mejor"
+              placeholder="Correr 10 km en mayo. Aprobar Cálculo con nota. Dormir 8 horas."
               placeholderTextColor={colors.textFaint}
               multiline
+              editable={!busy}
+              accessibilityLabel="Tu objetivo"
             />
             <SystemButton
               title="Consultar al oráculo"
+              icon="sparkles-outline"
+              variant={hayPropuestas ? 'outline' : 'solid'}
               onPress={consult}
               loading={busy}
               disabled={!goal.trim()}
               style={{ marginTop: 12 }}
             />
-          </SystemWindow>
+          </Section>
+        </FadeIn>
 
-          {proposals.length > 0 ? (
-            <>
-              <SystemWindow color={colors.accentDim}>
-                <Text style={styles.label}>VEREDICTO DEL SISTEMA</Text>
-                <Text style={styles.summary}>{summary}</Text>
-              </SystemWindow>
+        {busy ? (
+          <FadeIn index={2}>
+            <Card variant="outline">
+              <EmptyState compact icon="hourglass-outline" title="El oráculo delibera" body="Unos segundos. Está midiendo tu objetivo contra tus días." />
+            </Card>
+          </FadeIn>
+        ) : null}
 
-              <SystemWindow color={colors.accentDim}>
-                <Text style={styles.label}>
-                  MISIONES PROPUESTAS · {selected.size}/{proposals.length} SELECCIONADAS
-                </Text>
-                {proposals.map((p, i) => (
-                  <Pressable
-                    key={i}
-                    onPress={() => toggle(i)}
-                    style={styles.proposal}
-                    accessibilityRole="checkbox"
-                    accessibilityState={{ checked: selected.has(i) }}
-                    accessibilityLabel={`Misión propuesta: ${p.title}`}
-                  >
-                    <View style={[styles.box, selected.has(i) && styles.boxOn]}>
-                      {selected.has(i) ? <Ionicons name="checkmark" size={14} color={colors.accent} /> : null}
-                    </View>
-                    <View style={{ flex: 1, minWidth: 0 }}>
-                      <Text style={styles.proposalTitle}>{p.title}</Text>
-                      <Text style={styles.proposalMeta}>
-                        {p.stat} · {DIFFICULTY_LABEL[p.difficulty]} · {XP_BY_DIFFICULTY[p.difficulty]} XP ·{' '}
-                        {p.days_of_week.length === 7
-                          ? 'todos los días'
-                          : p.days_of_week.map((d) => DAY_LABELS[d - 1]).join(' ')}
-                      </Text>
-                      <Text style={styles.proposalReason}>{p.reasoning}</Text>
-                    </View>
-                  </Pressable>
-                ))}
+        {!busy && !hayPropuestas ? (
+          <FadeIn index={2}>
+            <Card variant="outline">
+              <EmptyState
+                compact
+                icon="sparkles-outline"
+                title="El oráculo espera"
+                body="Un objetivo concreto, con fecha y medida, da mejores misiones. Tú eliges cuáles aceptar."
+              />
+            </Card>
+          </FadeIn>
+        ) : null}
+
+        {hayPropuestas ? (
+          <>
+            <FadeIn index={2}>
+              <Section title="Veredicto del sistema" tone="accent">
+                <Card>
+                  <TextoSistema texto={summary} />
+                </Card>
+              </Section>
+            </FadeIn>
+
+            <FadeIn index={3}>
+              <Section title="Misiones propuestas" meta={`${selected.size}/${proposals.length}`}>
+                <Card padded={false} style={styles.lista}>
+                  {proposals.map((p, i) => {
+                    const on = selected.has(i);
+                    return (
+                      <Row
+                        key={i}
+                        first={i === 0}
+                        leading={<Check checked={on} />}
+                        title={p.title}
+                        muted={!on}
+                        detail={
+                          <View>
+                            <Text style={styles.meta}>
+                              {p.stat} · {DIFFICULTY_LABEL[p.difficulty]} · {dias(p.days_of_week)}
+                            </Text>
+                            {p.reasoning ? (
+                              <Text style={styles.reason} numberOfLines={3}>
+                                {p.reasoning}
+                              </Text>
+                            ) : null}
+                          </View>
+                        }
+                        trailing={<RowValue tone={on ? 'accent' : 'dim'}>+{XP_BY_DIFFICULTY[p.difficulty]} XP</RowValue>}
+                        onPress={() => toggle(i)}
+                        accessibilityRole="checkbox"
+                        accessibilityState={{ checked: on }}
+                        accessibilityLabel={`Misión propuesta: ${p.title}, ${on ? 'aceptada' : 'descartada'}`}
+                      />
+                    );
+                  })}
+                </Card>
+                <Text style={styles.nota}>Desmarca las que no quieras. Las aceptadas pasan a Hábitos como misiones diarias.</Text>
                 <SystemButton
-                  title={`Aceptar ${selected.size} misión(es)`}
+                  title={selected.size === 1 ? 'Aceptar 1 misión' : `Aceptar ${selected.size} misiones`}
+                  icon="checkmark"
                   onPress={accept}
                   loading={accepting}
                   disabled={selected.size === 0}
                   style={{ marginTop: 14 }}
                 />
-              </SystemWindow>
-            </>
-          ) : null}
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+              </Section>
+            </FadeIn>
+          </>
+        ) : null}
+      </Stagger>
+
+      <Modal visible={keyOpen} transparent animationType="slide" onRequestClose={() => setKeyOpen(false)}>
+        <KeyboardAvoidingView style={styles.backdrop} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+          <Pressable style={styles.backdropTap} onPress={() => setKeyOpen(false)} accessibilityRole="button" accessibilityLabel="Cerrar" />
+          <View style={styles.sheet}>
+            <View style={styles.sheetHandle} />
+            <Text style={styles.sheetEyebrow}>CLAVE DE API</Text>
+            <Text style={styles.sheetTitle}>Tu propia clave</Text>
+            <Text style={styles.sheetBody}>
+              OpenAI o Anthropic. Se guarda solo en este dispositivo y pagas solo tu consumo. Con suscripción no hace falta.
+            </Text>
+            <Text style={styles.label}>Clave</Text>
+            <TextInput
+              style={styles.input}
+              value={apiKey}
+              onChangeText={setKey}
+              placeholder="sk-proj-… (OpenAI) o sk-ant-… (Anthropic)"
+              placeholderTextColor={colors.textFaint}
+              autoCapitalize="none"
+              autoCorrect={false}
+              secureTextEntry={keySaved}
+              accessibilityLabel="Clave de API"
+            />
+            <Text style={styles.hint}>{keySaved ? 'Hay una clave guardada. Pega otra para sustituirla, o bórrala y guarda para quitarla.' : 'Nunca sale del dispositivo.'}</Text>
+            <SystemButton title="Guardar la clave" onPress={saveKey} style={{ marginTop: 22 }} />
+            <SystemButton title="Cancelar" variant="ghost" onPress={() => setKeyOpen(false)} style={{ marginTop: 6 }} />
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.bg },
-  content: { padding: 16, paddingBottom: 32 },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 14,
+  goalInput: {
+    borderWidth: 1,
+    borderColor: colors.accentDim,
+    backgroundColor: colors.bg,
+    color: colors.text,
+    fontFamily: fonts.heading,
+    fontSize: 20,
+    lineHeight: 27,
+    letterSpacing: -0.3,
+    minHeight: 110,
+    textAlignVertical: 'top',
+    paddingHorizontal: 16,
+    paddingVertical: 14,
   },
-  title: { fontFamily: fonts.heading, fontSize: 15, letterSpacing: 3, color: colors.accent },
+  lista: { paddingHorizontal: 16, paddingVertical: 2 },
+  meta: { fontFamily: fonts.body, fontSize: 12, color: colors.accentText },
+  reason: { fontFamily: fonts.body, fontSize: 12, lineHeight: 16, color: colors.textFaint, marginTop: 3 },
+  nota: { fontFamily: fonts.body, fontSize: 12, lineHeight: 17, color: colors.textFaint, marginTop: 2 },
+  backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'flex-end' },
+  backdropTap: { flex: 1 },
+  sheet: {
+    backgroundColor: colors.panel,
+    borderTopWidth: 1,
+    borderTopColor: colors.line,
+    paddingHorizontal: 20,
+    paddingTop: 10,
+    paddingBottom: 34,
+  },
+  sheetHandle: { alignSelf: 'center', width: 36, height: 3, backgroundColor: colors.accentDim, marginBottom: 16 },
+  sheetEyebrow: { fontFamily: fonts.heading, fontSize: 11, letterSpacing: 2.5, color: colors.accentText },
+  sheetTitle: { fontFamily: fonts.heading, fontSize: 24, letterSpacing: -0.5, color: colors.text, marginTop: 6, marginBottom: 4 },
+  sheetBody: { fontFamily: fonts.body, fontSize: 13.5, lineHeight: 19, color: colors.textDim, marginTop: 4 },
   label: {
     fontFamily: fonts.heading,
     fontSize: 11,
     letterSpacing: 2,
-    color: colors.textDim,
+    color: colors.textFaint,
+    textTransform: 'uppercase',
+    marginTop: 18,
     marginBottom: 8,
   },
-  keyRow: { flexDirection: 'row', gap: 8, alignItems: 'stretch' },
+  hint: { fontFamily: fonts.body, fontSize: 12, color: colors.textFaint, marginTop: 8, lineHeight: 17 },
   input: {
     borderWidth: 1,
     borderColor: colors.accentDim,
     backgroundColor: colors.bg,
     color: colors.text,
     fontFamily: fonts.semibold,
-    fontSize: 14,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
+    fontSize: 15,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
   },
-  intro: { fontFamily: fonts.semibold, fontSize: 14, color: colors.accentText, lineHeight: 20, marginBottom: 10 },
-  goalInput: { minHeight: 70, textAlignVertical: 'top' },
-  summary: { fontFamily: fonts.semibold, fontSize: 14, color: colors.text, lineHeight: 20 },
-  proposal: {
-    flexDirection: 'row',
-    gap: 10,
-    paddingVertical: 10,
-    borderTopWidth: 1,
-    borderTopColor: colors.line,
-  },
-  box: {
-    width: 20,
-    height: 20,
-    borderWidth: 1,
-    borderColor: colors.accentDim,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 2,
-  },
-  boxOn: { backgroundColor: colors.accentFaint, borderColor: colors.accent },
-  proposalTitle: { fontFamily: fonts.semibold, fontSize: 15, color: colors.text },
-  proposalMeta: { fontFamily: fonts.body, fontSize: 12, color: colors.accentText, marginTop: 2 },
-  proposalReason: { fontFamily: fonts.body, fontSize: 12, color: colors.textFaint, marginTop: 3, lineHeight: 16 },
 });

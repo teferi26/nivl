@@ -1,4 +1,3 @@
-import Ionicons from '@expo/vector-icons/Ionicons';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import {
@@ -7,15 +6,26 @@ import {
   Alert,
   Modal,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
   View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { SystemButton } from '@/components/SystemButton';
-import { SystemWindow } from '@/components/SystemWindow';
+import {
+  Card,
+  Chip,
+  ChipRow,
+  FadeIn,
+  Row,
+  RowValue,
+  Screen,
+  ScreenHeader,
+  Section,
+  Stagger,
+  Stat,
+  StatRow,
+} from '@/components/ui';
 import { useAuth } from '@/lib/auth';
 import {
   addShoppingItems,
@@ -30,6 +40,15 @@ import { colors, fonts } from '@/lib/theme';
 import type { MealSlot, MealSlotName } from '@/lib/types';
 
 const DAY_CHIPS = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
+const DAY_NAMES = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+
+const SLOT_LABEL: Record<MealSlotName, string> = {
+  desayuno: 'Desayuno',
+  comida: 'Comida',
+  merienda: 'Merienda',
+  cena: 'Cena',
+  snack: 'Snack',
+};
 
 export default function Dieta() {
   const { session } = useAuth();
@@ -113,103 +132,117 @@ export default function Dieta() {
     }
   };
 
+  // Solo presentación.
+  const nombreDia = DAY_NAMES[day - 1] ?? '';
+  const esHoy = day === isoWeekday(new Date());
+  const subtitulo =
+    kcalDia > 0
+      ? `${nombreDia}: ${kcalDia} kcal y ${proteDia} g de proteína planificados.`
+      : daySlots.length > 0
+        ? `${nombreDia}: ${daySlots.length} ${daySlots.length === 1 ? 'comida' : 'comidas'} planificadas.`
+        : `${nombreDia} sin planificar todavía.`;
+
   return (
-    <SafeAreaView style={styles.screen} edges={['top']}>
-      <ScrollView automaticallyAdjustKeyboardInsets keyboardShouldPersistTaps="handled" contentContainerStyle={styles.content}>
-        <View style={styles.header}>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Volver"
-            onPress={() => router.back()}
-            hitSlop={10}
-          >
-            <Ionicons name="chevron-back" size={24} color={colors.accent} />
-          </Pressable>
-          <Text style={styles.title}>DIETA SEMANAL</Text>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Ir a la lista de la compra"
-            onPress={() => router.push('/compra')}
-            hitSlop={10}
-          >
-            <Ionicons name="cart-outline" size={22} color={colors.accent} />
-          </Pressable>
-        </View>
+    <Screen>
+      <Stagger>
+        <FadeIn index={0}>
+          <ScreenHeader
+            onBack={() => router.back()}
+            eyebrow="Cuerpo"
+            title="Dieta"
+            subtitle={subtitulo}
+            action={{ icon: 'cart-outline', label: 'Ir a la lista de la compra', onPress: () => router.push('/compra') }}
+          />
+        </FadeIn>
 
-        <View style={styles.dayChips}>
-          {DAY_CHIPS.map((label, i) => (
-            <Pressable
-              key={label}
-              onPress={() => setDay(i + 1)}
-              style={[styles.dayChip, day === i + 1 && styles.dayChipOn]}
-              accessibilityRole="tab"
-              accessibilityState={{ selected: day === i + 1 }}
-              accessibilityLabel={`Día ${label}`}
-            >
-              <Text style={[styles.dayChipText, day === i + 1 && styles.dayChipTextOn]}>{label}</Text>
-            </Pressable>
-          ))}
-        </View>
+        <FadeIn index={1}>
+          <ChipRow style={styles.dias}>
+            {DAY_CHIPS.map((label, i) => (
+              <Chip
+                key={label}
+                label={label}
+                selected={day === i + 1}
+                onPress={() => setDay(i + 1)}
+                accessibilityLabel={DAY_NAMES[i]}
+              />
+            ))}
+          </ChipRow>
+        </FadeIn>
 
-        <SystemWindow color={colors.accentDim}>
-          {kcalDia > 0 ? (
-            <Text style={styles.dayTotal}>
-              TOTAL DEL DÍA · {kcalDia} kcal · {proteDia} g de proteína
+        <FadeIn index={2}>
+          <Card>
+            <StatRow>
+              <Stat value={kcalDia > 0 ? kcalDia : '—'} label="kcal" />
+              <Stat value={proteDia > 0 ? proteDia : '—'} unit={proteDia > 0 ? 'g' : undefined} label="Proteína" />
+              <Stat
+                value={`${daySlots.length}/${MEAL_SLOTS.length}`}
+                label="Comidas"
+                tone={daySlots.length === MEAL_SLOTS.length ? 'accent' : 'text'}
+              />
+            </StatRow>
+            {kcalDia === 0 && daySlots.length > 0 ? (
+              <Text style={styles.nota}>Las comidas escritas a mano no llevan macros; solo suman las que planifica el coach.</Text>
+            ) : null}
+          </Card>
+        </FadeIn>
+
+        <FadeIn index={3}>
+          <Section title={esHoy ? `Hoy · ${nombreDia}` : nombreDia} meta={`${daySlots.length}/${MEAL_SLOTS.length}`}>
+            <Card padded={false} style={styles.lista}>
+              {MEAL_SLOTS.map((slotName, i) => {
+                const existing = daySlots.find((s) => s.slot === slotName);
+                const macros = existing
+                  ? [existing.kcal ? `${existing.kcal} kcal` : null, existing.protein_g ? `${existing.protein_g} g prot.` : null]
+                      .filter(Boolean)
+                      .join(' · ')
+                  : '';
+                return (
+                  <Row
+                    key={slotName}
+                    first={i === 0}
+                    leading={<Text style={styles.slotLetra}>{SLOT_LABEL[slotName].slice(0, 1)}</Text>}
+                    title={existing ? existing.description : SLOT_LABEL[slotName]}
+                    muted={!existing}
+                    detail={
+                      existing
+                        ? [SLOT_LABEL[slotName], existing.ingredients].filter(Boolean).join(' · ')
+                        : 'Sin planificar. Toca para añadir.'
+                    }
+                    trailing={macros ? <RowValue tone="accent">{macros}</RowValue> : undefined}
+                    chevron
+                    onPress={() => openEditor(slotName)}
+                    accessibilityLabel={`${existing ? 'Editar' : 'Planificar'} ${SLOT_LABEL[slotName].toLowerCase()} del ${nombreDia.toLowerCase()}`}
+                  />
+                );
+              })}
+            </Card>
+          </Section>
+        </FadeIn>
+
+        <FadeIn index={4}>
+          <Section title="Lista de la compra">
+            <SystemButton title="Generar lista de la compra" onPress={generateList} loading={busy} icon="cart-outline" />
+            <Text style={styles.nota}>
+              El sistema junta los ingredientes de las 7 jornadas, elimina duplicados y los envía a la lista.
             </Text>
-          ) : null}
-          {MEAL_SLOTS.map((slotName) => {
-            const existing = daySlots.find((s) => s.slot === slotName);
-            return (
-              <Pressable
-                key={slotName}
-                onPress={() => openEditor(slotName)}
-                style={styles.mealRow}
-                accessibilityRole="button"
-                accessibilityLabel={`Editar ${slotName}`}
-              >
-                <View style={{ flex: 1, minWidth: 0 }}>
-                  <Text style={styles.mealSlot}>{slotName.toUpperCase()}</Text>
-                  {existing ? (
-                    <>
-                      <Text style={styles.mealDesc}>{existing.description}</Text>
-                      {existing.kcal || existing.protein_g ? (
-                        <Text style={styles.mealMacros}>
-                          {existing.kcal ? `${existing.kcal} kcal` : ''}
-                          {existing.kcal && existing.protein_g ? ' · ' : ''}
-                          {existing.protein_g ? `${existing.protein_g} g de proteína` : ''}
-                        </Text>
-                      ) : null}
-                      {existing.ingredients ? (
-                        <Text style={styles.mealIngredients} numberOfLines={1}>
-                          {existing.ingredients}
-                        </Text>
-                      ) : null}
-                    </>
-                  ) : (
-                    <Text style={styles.mealEmpty}>Sin planificar — toca para añadir</Text>
-                  )}
-                </View>
-                <Ionicons name={existing ? 'create-outline' : 'add'} size={18} color={colors.textFaint} />
-              </Pressable>
-            );
-          })}
-        </SystemWindow>
-
-        <SystemButton title="Generar lista de la compra" onPress={generateList} loading={busy} />
-        <Text style={styles.hint}>
-          El sistema junta los ingredientes de las 7 jornadas, elimina duplicados y los envía a la lista.
-        </Text>
-      </ScrollView>
+          </Section>
+        </FadeIn>
+      </Stagger>
 
       <Modal visible={editing !== null} transparent animationType="slide" onRequestClose={() => setEditing(null)}>
-        <KeyboardAvoidingView
-          style={styles.backdrop}
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        >
+        <KeyboardAvoidingView style={styles.backdrop} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+          <Pressable
+            style={styles.backdropTap}
+            onPress={() => setEditing(null)}
+            accessibilityRole="button"
+            accessibilityLabel="Cerrar"
+          />
           <View style={styles.sheet}>
-            <Text style={styles.sheetTitle}>
-              {editing?.slot.toUpperCase()} · {['L', 'M', 'X', 'J', 'V', 'S', 'D'][day - 1]}
+            <View style={styles.sheetHandle} />
+            <Text style={styles.sheetEyebrow}>
+              {editing ? SLOT_LABEL[editing.slot].toUpperCase() : ''} · {nombreDia.toUpperCase()}
             </Text>
+            <Text style={styles.sheetTitle}>{editing?.existing ? 'Ajusta la comida' : '¿Qué vas a comer?'}</Text>
             <Text style={styles.label}>Comida</Text>
             <TextInput
               style={styles.input}
@@ -217,6 +250,7 @@ export default function Dieta() {
               onChangeText={setDescription}
               placeholder="Ej. Pollo con arroz y brócoli"
               placeholderTextColor={colors.textFaint}
+              accessibilityLabel="Descripción de la comida"
             />
             <Text style={styles.label}>Ingredientes (separados por comas)</Text>
             <TextInput
@@ -226,78 +260,56 @@ export default function Dieta() {
               placeholder="pollo, arroz, brócoli, aceite de oliva"
               placeholderTextColor={colors.textFaint}
               multiline
+              accessibilityLabel="Ingredientes separados por comas"
             />
-            <SystemButton title="Guardar" onPress={save} disabled={!description.trim()} style={{ marginTop: 18 }} />
+            <SystemButton title="Guardar" onPress={save} disabled={!description.trim()} style={{ marginTop: 22 }} />
             {editing?.existing ? (
               <SystemButton title="Eliminar" variant="danger" onPress={removeSlot} style={{ marginTop: 10 }} />
             ) : null}
-            <SystemButton title="Cancelar" variant="outline" onPress={() => setEditing(null)} style={{ marginTop: 10 }} />
+            <SystemButton title="Cancelar" variant="ghost" onPress={() => setEditing(null)} style={{ marginTop: 6 }} />
           </View>
         </KeyboardAvoidingView>
       </Modal>
-    </SafeAreaView>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.bg },
-  content: { padding: 16, paddingBottom: 32 },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 14,
-  },
-  title: { fontFamily: fonts.heading, fontSize: 15, letterSpacing: 3, color: colors.accent },
-  dayChips: { flexDirection: 'row', gap: 8, marginBottom: 14 },
-  dayChip: {
-    flex: 1,
+  dias: { marginBottom: 16 },
+  lista: { paddingHorizontal: 16, paddingVertical: 2 },
+  slotLetra: {
+    width: 28,
+    height: 28,
+    lineHeight: 28,
+    textAlign: 'center',
     borderWidth: 1,
     borderColor: colors.accentDim,
-    paddingVertical: 9,
-    alignItems: 'center',
+    fontFamily: fonts.brand,
+    fontSize: 13,
+    color: colors.text,
   },
-  dayChipOn: { backgroundColor: colors.accentFaint, borderColor: colors.accent },
-  dayChipText: { fontFamily: fonts.semibold, fontSize: 13, color: colors.textDim },
-  dayChipTextOn: { color: colors.accent },
-  mealRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    paddingVertical: 10,
-    borderTopWidth: 1,
-    borderTopColor: colors.line,
-  },
-  mealSlot: { fontFamily: fonts.heading, fontSize: 11, letterSpacing: 2, color: colors.accentText },
-  mealDesc: { fontFamily: fonts.semibold, fontSize: 15, color: colors.text, marginTop: 2 },
-  mealMacros: { fontFamily: fonts.semibold, fontSize: 12, color: colors.accentText, marginTop: 2 },
-  mealIngredients: { fontFamily: fonts.body, fontSize: 12, color: colors.textFaint, marginTop: 1 },
-  dayTotal: {
-    fontFamily: fonts.heading,
-    fontSize: 11.5,
-    letterSpacing: 2,
-    color: colors.accentText,
-    marginBottom: 12,
-  },
-  mealEmpty: { fontFamily: fonts.body, fontSize: 13, color: colors.textFaint, marginTop: 2 },
-  hint: { fontFamily: fonts.body, fontSize: 12, color: colors.textFaint, marginTop: 10, lineHeight: 17 },
-  backdrop: { flex: 1, backgroundColor: 'rgba(2, 6, 14, 0.85)', justifyContent: 'flex-end' },
+  nota: { fontFamily: fonts.body, fontSize: 12, lineHeight: 17, color: colors.textFaint, marginTop: 10 },
+  backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'flex-end' },
+  backdropTap: { flex: 1 },
   sheet: {
     backgroundColor: colors.panel,
-    borderTopWidth: 1.5,
-    borderTopColor: colors.accentDim,
-    padding: 20,
+    borderTopWidth: 1,
+    borderTopColor: colors.line,
+    paddingHorizontal: 20,
+    paddingTop: 10,
     paddingBottom: 34,
   },
-  sheetTitle: { fontFamily: fonts.heading, fontSize: 15, letterSpacing: 3, color: colors.accent, marginBottom: 6 },
+  sheetHandle: { alignSelf: 'center', width: 36, height: 3, backgroundColor: colors.accentDim, marginBottom: 16 },
+  sheetEyebrow: { fontFamily: fonts.heading, fontSize: 11, letterSpacing: 2.5, color: colors.accentText },
+  sheetTitle: { fontFamily: fonts.heading, fontSize: 24, letterSpacing: -0.5, color: colors.text, marginTop: 6, marginBottom: 4 },
   label: {
     fontFamily: fonts.heading,
-    fontSize: 12,
-    letterSpacing: 1.5,
-    color: colors.textDim,
+    fontSize: 11,
+    letterSpacing: 2,
+    color: colors.textFaint,
     textTransform: 'uppercase',
-    marginTop: 14,
-    marginBottom: 7,
+    marginTop: 18,
+    marginBottom: 8,
   },
   input: {
     borderWidth: 1,
@@ -305,9 +317,9 @@ const styles = StyleSheet.create({
     backgroundColor: colors.bg,
     color: colors.text,
     fontFamily: fonts.semibold,
-    fontSize: 15,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
+    fontSize: 16,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
   },
-  multiline: { minHeight: 70, textAlignVertical: 'top' },
+  multiline: { minHeight: 72, textAlignVertical: 'top' },
 });

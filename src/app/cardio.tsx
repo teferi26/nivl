@@ -14,9 +14,22 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { SystemButton } from '@/components/SystemButton';
-import { SystemWindow } from '@/components/SystemWindow';
+import {
+  Card,
+  Chip,
+  ChipWrap,
+  EmptyState,
+  FadeIn,
+  Row,
+  RowValue,
+  Screen,
+  ScreenHeader,
+  Section,
+  Stagger,
+  Stat,
+  StatRow,
+} from '@/components/ui';
 import { useAuth } from '@/lib/auth';
 import {
   CARDIO_KINDS,
@@ -37,13 +50,22 @@ import { CARDIO_DAILY_CAP, cardioXp } from '@/lib/game';
 import { colors, fonts } from '@/lib/theme';
 import { voice } from '@/lib/voice';
 
-const ICONO: Record<CardioKind, string> = {
+const ICONO: Record<CardioKind, keyof typeof Ionicons.glyphMap> = {
   correr: 'walk-outline',
   nadar: 'water-outline',
   bici: 'bicycle-outline',
   caminar: 'footsteps-outline',
   remo: 'boat-outline',
   otro: 'pulse-outline',
+};
+
+const ETIQUETA: Record<CardioKind, string> = {
+  correr: 'Correr',
+  nadar: 'Nadar',
+  bici: 'Bici',
+  caminar: 'Caminar',
+  remo: 'Remo',
+  otro: 'Otro',
 };
 
 // La natación se mide en metros y por tiempo; el resto en kilómetros.
@@ -55,6 +77,9 @@ const PIDE_DISTANCIA: Record<CardioKind, boolean> = {
   remo: true,
   otro: false,
 };
+
+/** "2026-09-17" → "17/09". Solo para la lista. */
+const fechaCorta = (iso: string) => `${iso.slice(8, 10)}/${iso.slice(5, 7)}`;
 
 export default function Cardio() {
   const { session } = useAuth();
@@ -178,279 +203,246 @@ export default function Cardio() {
     .filter((s) => s.date >= addDays(dateKey(), -28))
     .reduce((a, s) => a + Number(s.distance_km ?? 0), 0);
 
+  // Solo presentación: las otras dos cifras del resumen de 28 días.
+  const ultimas28 = sesiones.filter((s) => s.date >= addDays(dateKey(), -28));
+  const min28 = ultimas28.reduce((a, s) => a + Number(s.duration_min ?? 0), 0);
+
+  const subtitulo =
+    sesiones.length === 0
+      ? 'Nada registrado aún. Cada sesión ajusta la siguiente.'
+      : `${km28.toFixed(1)} km y ${ultimas28.length} ${ultimas28.length === 1 ? 'sesión' : 'sesiones'} en 28 días.`;
+
   return (
-    <SafeAreaView style={styles.screen} edges={['top', 'bottom']}>
-      <View style={styles.header}>
-        <Pressable
-          onPress={() => router.back()}
-          hitSlop={10}
-          accessibilityRole="button"
-          accessibilityLabel="Volver"
-        >
-          <Ionicons name="chevron-back" size={24} color={colors.accent} />
-        </Pressable>
-        <Text style={styles.title}>MOTOR AERÓBICO</Text>
-        <Pressable
-          onPress={() => setAbierto(true)}
-          hitSlop={10}
-          accessibilityRole="button"
-          accessibilityLabel="Registrar sesión de cardio"
-        >
-          <Ionicons name="add" size={24} color={colors.accent} />
-        </Pressable>
-      </View>
+    <Screen>
+      <Stagger>
+        <FadeIn index={0}>
+          <ScreenHeader
+            onBack={() => router.back()}
+            eyebrow="Cuerpo"
+            title="Cardio"
+            subtitle={subtitulo}
+            action={{ icon: 'add', label: 'Registrar sesión de cardio', onPress: () => setAbierto(true), solid: true }}
+          />
+        </FadeIn>
 
-      <ScrollView automaticallyAdjustKeyboardInsets keyboardShouldPersistTaps="handled" contentContainerStyle={styles.contenido}>
-        <SystemWindow>
-          <Text style={styles.windowTitle}>ÚLTIMOS 28 DÍAS</Text>
-          <View style={styles.kpis}>
-            <View>
-              <Text style={styles.kpiNum}>{km28.toFixed(1)}</Text>
-              <Text style={styles.kpiLabel}>km</Text>
-            </View>
-            <View>
-              <Text style={styles.kpiNum}>
-                {sesiones.filter((s) => s.date >= addDays(dateKey(), -28)).length}
-              </Text>
-              <Text style={styles.kpiLabel}>sesiones</Text>
-            </View>
-          </View>
-          <Text style={styles.hint}>
-            El volumen semanal no debe subir más de un 10 %. El sistema lo vigila y ajusta tus
-            órdenes con estos datos.
-          </Text>
-        </SystemWindow>
-
-        {sesiones.length === 0 ? (
-          <SystemWindow>
-            <Text style={styles.vacio}>
-              Nada registrado. Cada carrera y cada largo que anotes aquí es lo que el sistema usa
-              para calcular tu ritmo y ajustar lo siguiente.
+        <FadeIn index={1}>
+          <Card>
+            <StatRow>
+              <Stat value={km28.toFixed(1)} unit="km" label="28 días" />
+              <Stat value={ultimas28.length} label="Sesiones" />
+              <Stat value={Math.round(min28)} unit="min" label="En movimiento" />
+            </StatRow>
+            <Text style={styles.nota}>
+              El volumen semanal no debe subir más de un 10 %. El sistema lo vigila y ajusta tus
+              órdenes con estos datos.
             </Text>
-          </SystemWindow>
-        ) : (
-          sesiones.map((s) => {
-            const ritmo = paceOf(s.distance_km, s.duration_min);
-            return (
-              <Pressable
-                key={s.id}
-                onLongPress={() => borrar(s)}
-                accessibilityRole="button"
-                accessibilityLabel={`${s.kind} del ${s.date}`}
-                accessibilityHint="Mantén pulsado para eliminar"
-              >
-                <SystemWindow>
-                  <View style={styles.fila}>
-                    <Ionicons name={ICONO[s.kind] as never} size={18} color={colors.accent} />
-                    <Text style={styles.tipo}>{s.kind.toUpperCase()}</Text>
-                    <Text style={styles.fecha}>{s.date}</Text>
-                  </View>
-                  <Text style={styles.datos}>
-                    {s.distance_km ? `${s.distance_km} km · ` : ''}
-                    {s.duration_min} min
-                    {ritmo ? ` · ${ritmo} min/km` : ''}
-                    {` · ${s.zone}`}
-                    {s.rpe ? ` · RPE ${s.rpe}` : ''}
-                    {s.avg_hr ? ` · ${s.avg_hr} ppm` : ''}
-                  </Text>
-                  {s.notes ? <Text style={styles.notas}>{s.notes}</Text> : null}
-                </SystemWindow>
-              </Pressable>
-            );
-          })
-        )}
-      </ScrollView>
+          </Card>
+        </FadeIn>
+
+        <FadeIn index={2}>
+          <Section title="Sesiones" meta={sesiones.length > 0 ? `${sesiones.length}` : undefined}>
+            {sesiones.length === 0 ? (
+              <Card variant="outline">
+                <EmptyState
+                  icon="pulse-outline"
+                  title="Nada registrado"
+                  body="Cada carrera y cada largo que anotes aquí es lo que el sistema usa para calcular tu ritmo y ajustar lo siguiente."
+                  action={{ label: 'Registrar la primera', onPress: () => setAbierto(true) }}
+                />
+              </Card>
+            ) : (
+              <Card padded={false} style={styles.lista}>
+                {sesiones.map((s, i) => {
+                  const ritmo = paceOf(s.distance_km, s.duration_min);
+                  const datos = [
+                    s.distance_km ? `${s.distance_km} km` : null,
+                    `${s.duration_min} min`,
+                    ritmo ? `${ritmo} min/km` : null,
+                    s.zone,
+                    s.rpe ? `RPE ${s.rpe}` : null,
+                    s.avg_hr ? `${s.avg_hr} ppm` : null,
+                  ]
+                    .filter(Boolean)
+                    .join(' · ');
+                  return (
+                    <Row
+                      key={s.id}
+                      first={i === 0}
+                      leading={<Ionicons name={ICONO[s.kind]} size={18} color={colors.text} />}
+                      title={ETIQUETA[s.kind]}
+                      detail={s.notes ? `${datos}\n${s.notes}` : datos}
+                      trailing={
+                        <View style={styles.trailing}>
+                          <RowValue strong>{fechaCorta(s.date)}</RowValue>
+                          {s.xp_awarded > 0 ? <RowValue tone="accent">+{s.xp_awarded} XP</RowValue> : null}
+                        </View>
+                      }
+                      onLongPress={() => borrar(s)}
+                      accessibilityLabel={`${ETIQUETA[s.kind]} del ${s.date}. Mantén pulsado para eliminar.`}
+                    />
+                  );
+                })}
+              </Card>
+            )}
+          </Section>
+        </FadeIn>
+      </Stagger>
 
       <Modal visible={abierto} transparent animationType="slide" onRequestClose={() => setAbierto(false)}>
-        <KeyboardAvoidingView
-          style={styles.backdrop}
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        >
-          <ScrollView automaticallyAdjustKeyboardInsets keyboardShouldPersistTaps="handled" style={styles.sheet} contentContainerStyle={{ padding: 18 }}>
-            <Text style={styles.sheetTitle}>REGISTRAR SESIÓN</Text>
+        <KeyboardAvoidingView style={styles.backdrop} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+          <Pressable
+            style={styles.backdropTap}
+            onPress={() => setAbierto(false)}
+            accessibilityRole="button"
+            accessibilityLabel="Cerrar"
+          />
+          <View style={styles.sheet}>
+            <View style={styles.sheetHandle} />
+            <ScrollView keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+              <Text style={styles.sheetEyebrow}>NUEVA SESIÓN</Text>
+              <Text style={styles.sheetTitle}>¿Qué has movido hoy?</Text>
 
-            <Text style={styles.label}>Tipo</Text>
-            <View style={styles.chips}>
-              {CARDIO_KINDS.map((k) => (
-                <Pressable
-                  key={k}
-                  onPress={() => setKind(k)}
-                  style={[styles.chip, kind === k && styles.chipOn]}
-                  accessibilityRole="radio"
-                  accessibilityState={{ selected: kind === k }}
-                  accessibilityLabel={k}
-                >
-                  <Text style={[styles.chipText, kind === k && styles.chipTextOn]}>{k}</Text>
-                </Pressable>
-              ))}
-            </View>
+              <Text style={styles.label}>Tipo</Text>
+              <ChipWrap>
+                {CARDIO_KINDS.map((k) => (
+                  <Chip
+                    key={k}
+                    label={ETIQUETA[k]}
+                    icon={ICONO[k]}
+                    selected={kind === k}
+                    onPress={() => setKind(k)}
+                    accessibilityLabel={ETIQUETA[k]}
+                  />
+                ))}
+              </ChipWrap>
 
-            <Text style={styles.label}>Zona</Text>
-            <View style={styles.chips}>
-              {CARDIO_ZONES.map((z) => (
-                <Pressable
-                  key={z}
-                  onPress={() => setZone(z)}
-                  style={[styles.chip, zone === z && styles.chipOn]}
-                  accessibilityRole="radio"
-                  accessibilityState={{ selected: zone === z }}
-                  accessibilityLabel={`Zona ${z}`}
-                >
-                  <Text style={[styles.chipText, zone === z && styles.chipTextOn]}>{z}</Text>
-                </Pressable>
-              ))}
-            </View>
-            <Text style={styles.hint}>
-              Z2 es el motor: ritmo al que puedes hablar en frases completas. Es el 80 % del
-              volumen y el que construye la base.
-            </Text>
+              <Text style={styles.label}>Zona</Text>
+              <ChipWrap>
+                {CARDIO_ZONES.map((z) => (
+                  <Chip key={z} label={z} selected={zone === z} onPress={() => setZone(z)} accessibilityLabel={`Zona ${z}`} />
+                ))}
+              </ChipWrap>
+              <Text style={styles.hint}>
+                Z2 es el motor: ritmo al que puedes hablar en frases completas. Es el 80 % del
+                volumen y el que construye la base.
+              </Text>
 
-            <View style={styles.dosColumnas}>
-              <View style={styles.columna}>
-                <Text style={styles.label}>Duración (min)</Text>
-                <TextInput
-                  style={styles.input}
-                  value={duracion}
-                  onChangeText={setDuracion}
-                  keyboardType="decimal-pad"
-                  placeholder="30"
-                  placeholderTextColor={colors.textFaint}
-                  accessibilityLabel="Duración en minutos"
-                />
-              </View>
-              {PIDE_DISTANCIA[kind] ? (
+              <View style={styles.dosColumnas}>
                 <View style={styles.columna}>
-                  <Text style={styles.label}>Distancia (km)</Text>
+                  <Text style={styles.label}>Duración (min)</Text>
                   <TextInput
                     style={styles.input}
-                    value={distancia}
-                    onChangeText={setDistancia}
+                    value={duracion}
+                    onChangeText={setDuracion}
                     keyboardType="decimal-pad"
-                    placeholder="5,2"
+                    placeholder="30"
                     placeholderTextColor={colors.textFaint}
-                    accessibilityLabel="Distancia en kilómetros"
+                    accessibilityLabel="Duración en minutos"
                   />
                 </View>
-              ) : null}
-            </View>
-
-            <View style={styles.dosColumnas}>
-              <View style={styles.columna}>
-                <Text style={styles.label}>Esfuerzo (RPE 1-10)</Text>
-                <TextInput
-                  style={styles.input}
-                  value={rpe}
-                  onChangeText={setRpe}
-                  keyboardType="decimal-pad"
-                  placeholder="6"
-                  placeholderTextColor={colors.textFaint}
-                  accessibilityLabel="Esfuerzo percibido de 1 a 10"
-                />
+                {PIDE_DISTANCIA[kind] ? (
+                  <View style={styles.columna}>
+                    <Text style={styles.label}>Distancia (km)</Text>
+                    <TextInput
+                      style={styles.input}
+                      value={distancia}
+                      onChangeText={setDistancia}
+                      keyboardType="decimal-pad"
+                      placeholder="5,2"
+                      placeholderTextColor={colors.textFaint}
+                      accessibilityLabel="Distancia en kilómetros"
+                    />
+                  </View>
+                ) : null}
               </View>
-              <View style={styles.columna}>
-                <Text style={styles.label}>Pulso medio</Text>
-                <TextInput
-                  style={styles.input}
-                  value={pulso}
-                  onChangeText={setPulso}
-                  keyboardType="number-pad"
-                  placeholder="142"
-                  placeholderTextColor={colors.textFaint}
-                  accessibilityLabel="Pulsaciones medias"
-                />
+
+              <View style={styles.dosColumnas}>
+                <View style={styles.columna}>
+                  <Text style={styles.label}>Esfuerzo (RPE 1-10)</Text>
+                  <TextInput
+                    style={styles.input}
+                    value={rpe}
+                    onChangeText={setRpe}
+                    keyboardType="decimal-pad"
+                    placeholder="6"
+                    placeholderTextColor={colors.textFaint}
+                    accessibilityLabel="Esfuerzo percibido de 1 a 10"
+                  />
+                </View>
+                <View style={styles.columna}>
+                  <Text style={styles.label}>Pulso medio</Text>
+                  <TextInput
+                    style={styles.input}
+                    value={pulso}
+                    onChangeText={setPulso}
+                    keyboardType="number-pad"
+                    placeholder="142"
+                    placeholderTextColor={colors.textFaint}
+                    accessibilityLabel="Pulsaciones medias"
+                  />
+                </View>
               </View>
-            </View>
 
-            <Text style={styles.label}>Notas</Text>
-            <TextInput
-              style={[styles.input, { height: 64 }]}
-              value={notas}
-              onChangeText={setNotas}
-              multiline
-              placeholder="Cómo fue, molestias, terreno…"
-              placeholderTextColor={colors.textFaint}
-              accessibilityLabel="Notas de la sesión"
-            />
+              <Text style={styles.label}>Notas</Text>
+              <TextInput
+                style={[styles.input, styles.multiline]}
+                value={notas}
+                onChangeText={setNotas}
+                multiline
+                placeholder="Cómo fue, molestias, terreno"
+                placeholderTextColor={colors.textFaint}
+                accessibilityLabel="Notas de la sesión"
+              />
 
-            <SystemButton title="Registrar" onPress={guardar} loading={guardando} style={{ marginTop: 16 }} />
-            <SystemButton
-              title="Cancelar"
-              variant="outline"
-              onPress={() => setAbierto(false)}
-              style={{ marginTop: 8 }}
-            />
-          </ScrollView>
+              <SystemButton title="Registrar sesión" onPress={guardar} loading={guardando} style={{ marginTop: 22 }} />
+              <SystemButton title="Cancelar" variant="ghost" onPress={() => setAbierto(false)} style={{ marginTop: 6 }} />
+            </ScrollView>
+          </View>
         </KeyboardAvoidingView>
       </Modal>
-    </SafeAreaView>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.bg },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
+  lista: { paddingHorizontal: 16, paddingVertical: 2 },
+  nota: { fontFamily: fonts.body, fontSize: 12, lineHeight: 17, color: colors.textFaint, marginTop: 14 },
+  trailing: { alignItems: 'flex-end', gap: 2 },
+  backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'flex-end' },
+  backdropTap: { flex: 1 },
+  sheet: {
+    maxHeight: '92%',
+    backgroundColor: colors.panel,
+    borderTopWidth: 1,
+    borderTopColor: colors.line,
+    paddingHorizontal: 20,
+    paddingTop: 10,
+    paddingBottom: 34,
   },
-  title: { fontFamily: fonts.heading, fontSize: 15, letterSpacing: 3, color: colors.text },
-  contenido: { padding: 16, paddingBottom: 32 },
-  windowTitle: {
-    fontFamily: fonts.heading,
-    fontSize: 12,
-    letterSpacing: 2.5,
-    color: colors.accentText,
-    marginBottom: 10,
-  },
-  kpis: { flexDirection: 'row', gap: 28 },
-  kpiNum: { fontFamily: fonts.number, fontSize: 22, color: colors.text },
-  kpiLabel: { fontFamily: fonts.body, fontSize: 11, color: colors.textDim },
-  hint: {
-    fontFamily: fonts.body,
-    fontSize: 11.5,
-    lineHeight: 16,
-    color: colors.textFaint,
-    marginTop: 10,
-  },
-  vacio: { fontFamily: fonts.body, fontSize: 13, lineHeight: 20, color: colors.textDim },
-  fila: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 6 },
-  tipo: { fontFamily: fonts.heading, fontSize: 12, letterSpacing: 1.5, color: colors.text, flex: 1 },
-  fecha: { fontFamily: fonts.number, fontSize: 11, color: colors.textFaint },
-  datos: { fontFamily: fonts.semibold, fontSize: 13, color: colors.accentText },
-  notas: { fontFamily: fonts.body, fontSize: 12, color: colors.textDim, marginTop: 4 },
-  backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.75)', justifyContent: 'flex-end' },
-  sheet: { maxHeight: '92%', backgroundColor: colors.panel, borderTopWidth: 1.5, borderTopColor: colors.accentDim },
-  sheetTitle: {
-    fontFamily: fonts.heading,
-    fontSize: 14,
-    letterSpacing: 2.5,
-    color: colors.accentText,
-    marginBottom: 14,
-  },
+  sheetHandle: { alignSelf: 'center', width: 36, height: 3, backgroundColor: colors.accentDim, marginBottom: 16 },
+  sheetEyebrow: { fontFamily: fonts.heading, fontSize: 11, letterSpacing: 2.5, color: colors.accentText },
+  sheetTitle: { fontFamily: fonts.heading, fontSize: 24, letterSpacing: -0.5, color: colors.text, marginTop: 6, marginBottom: 4 },
   label: {
-    fontFamily: fonts.semibold,
-    fontSize: 12,
-    color: colors.textDim,
-    marginTop: 12,
-    marginBottom: 6,
+    fontFamily: fonts.heading,
+    fontSize: 11,
+    letterSpacing: 2,
+    color: colors.textFaint,
+    textTransform: 'uppercase',
+    marginTop: 18,
+    marginBottom: 8,
   },
-  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
-  chip: { borderWidth: 1, borderColor: colors.line, paddingVertical: 6, paddingHorizontal: 10 },
-  chipOn: { borderColor: colors.accent, backgroundColor: colors.accentFaint },
-  chipText: { fontFamily: fonts.body, fontSize: 12, color: colors.textDim },
-  chipTextOn: { color: colors.accentText },
+  hint: { fontFamily: fonts.body, fontSize: 12, color: colors.textFaint, marginTop: 8, lineHeight: 17 },
   dosColumnas: { flexDirection: 'row', gap: 12 },
   columna: { flex: 1 },
   input: {
     borderWidth: 1,
-    borderColor: colors.line,
+    borderColor: colors.accentDim,
     backgroundColor: colors.bg,
     color: colors.text,
-    fontFamily: fonts.body,
-    fontSize: 14,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
+    fontFamily: fonts.semibold,
+    fontSize: 16,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
   },
+  multiline: { minHeight: 72, textAlignVertical: 'top' },
 });

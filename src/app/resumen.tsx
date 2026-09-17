@@ -10,7 +10,6 @@ import {
   Animated,
   Dimensions,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   View,
@@ -18,13 +17,26 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { captureRef } from 'react-native-view-shot';
 import { SystemButton } from '@/components/SystemButton';
-import { SystemWindow } from '@/components/SystemWindow';
+import { Card, EmptyState, FadeIn, Row, RowValue, Screen, ScreenHeader, Section, Stagger, Tag } from '@/components/ui';
 import { generarResumen } from '@/lib/coach';
 import { fetchRecaps, marcarVisto, urlFirmada, type Recap, type Slide } from '@/lib/photos';
 import { colors, fonts } from '@/lib/theme';
 
 const { width } = Dimensions.get('window');
 const DURACION_MS = 6000;
+
+/** Rótulo pequeño de cada diapositiva: dice qué es antes de leerla. */
+const EYEBROW_SLIDE: Record<Slide['tipo'], string> = {
+  portada: 'NIVL · Recuerdos',
+  dato: 'El dato',
+  foto: 'Evidencia',
+  duro: 'Lo duro',
+  cierre: 'Cierre',
+};
+
+function nombrePeriodo(r: Recap): string {
+  return `${r.kind === 'mensual' ? 'Mes' : 'Semana'} del ${r.period_start}`;
+}
 
 /** El pase: una diapositiva a la vez, con barras de progreso arriba. */
 function Pase({ recap, onSalir }: { recap: Recap; onSalir: () => void }) {
@@ -99,6 +111,9 @@ function Pase({ recap, onSalir }: { recap: Recap; onSalir: () => void }) {
 
   if (!slide) return null;
   const foto = slide.foto ? urls[slide.foto] : undefined;
+  const esPortada = slide.tipo === 'portada';
+  const esCierre = slide.tipo === 'cierre';
+  const centrado = esPortada || esCierre;
 
   return (
     <View style={styles.pase} ref={lienzo} collapsable={false}>
@@ -124,29 +139,33 @@ function Pase({ recap, onSalir }: { recap: Recap; onSalir: () => void }) {
           ))}
         </View>
 
-        <Pressable
-          onPress={onSalir}
-          hitSlop={12}
-          style={styles.cerrar}
-          accessibilityRole="button"
-          accessibilityLabel="Cerrar el resumen"
-        >
-          <Ionicons name="close" size={26} color={colors.text} />
-        </Pressable>
-
-        <Pressable
-          onPress={compartir}
-          hitSlop={12}
-          style={styles.compartir}
-          accessibilityRole="button"
-          accessibilityLabel="Extraer esta diapositiva como imagen"
-        >
-          {compartiendo ? (
-            <ActivityIndicator size="small" color={colors.text} />
-          ) : (
-            <Ionicons name="share-outline" size={22} color={colors.text} />
-          )}
-        </Pressable>
+        <View style={styles.paseCabecera} pointerEvents="box-none">
+          <Text style={styles.paseMarca}>{nombrePeriodo(recap).toUpperCase()}</Text>
+          <View style={styles.paseBotones}>
+            <Pressable
+              onPress={compartir}
+              hitSlop={10}
+              style={({ pressed }) => [styles.paseBoton, pressed && styles.pulsado]}
+              accessibilityRole="button"
+              accessibilityLabel="Extraer esta diapositiva como imagen"
+            >
+              {compartiendo ? (
+                <ActivityIndicator size="small" color={colors.text} />
+              ) : (
+                <Ionicons name="share-outline" size={20} color={colors.text} />
+              )}
+            </Pressable>
+            <Pressable
+              onPress={onSalir}
+              hitSlop={10}
+              style={({ pressed }) => [styles.paseBoton, pressed && styles.pulsado]}
+              accessibilityRole="button"
+              accessibilityLabel="Cerrar el resumen"
+            >
+              <Ionicons name="close" size={22} color={colors.text} />
+            </Pressable>
+          </View>
+        </View>
 
         {/* Mitad izquierda atrás, mitad derecha adelante: el gesto que ya
             conoce cualquiera que haya visto una historia. */}
@@ -165,12 +184,23 @@ function Pase({ recap, onSalir }: { recap: Recap; onSalir: () => void }) {
           />
         </View>
 
-        <View style={styles.contenidoSlide} pointerEvents="none">
-          {slide.dato ? <Text style={styles.dato}>{slide.dato}</Text> : null}
-          <Text style={[styles.tituloSlide, slide.tipo === 'duro' && styles.tituloDuro]}>
-            {slide.titulo}
+        <View style={[styles.contenidoSlide, centrado && styles.contenidoCentrado]} pointerEvents="none">
+          {centrado ? <View style={styles.regla} /> : null}
+          <Text style={[styles.slideEyebrow, centrado && styles.centrado]}>{EYEBROW_SLIDE[slide.tipo]}</Text>
+          {slide.dato ? <Text style={[styles.dato, centrado && styles.centrado]}>{slide.dato}</Text> : null}
+          <Text
+            style={[styles.tituloSlide, centrado && styles.tituloPortada, slide.tipo === 'duro' && styles.tituloDuro]}
+            numberOfLines={4}
+          >
+            {centrado ? slide.titulo.toUpperCase() : slide.titulo}
           </Text>
-          <Text style={styles.textoSlide}>{slide.texto}</Text>
+          <Text style={[styles.textoSlide, centrado && styles.centrado]}>{slide.texto}</Text>
+          {centrado ? <View style={styles.regla} /> : null}
+          {esCierre ? <Text style={styles.cierreMotto}>UN 1 % MEJOR CADA DÍA</Text> : null}
+          <Text style={[styles.pasePie, centrado && styles.centrado]}>
+            {i + 1} / {slides.length}
+            {esCierre ? ' · Toca para salir' : ''}
+          </Text>
         </View>
       </SafeAreaView>
     </View>
@@ -182,12 +212,16 @@ export default function Resumen() {
   const [abierto, setAbierto] = useState<Recap | null>(null);
   const [generando, setGenerando] = useState(false);
   const [aviso, setAviso] = useState<string | null>(null);
+  const [cargado, setCargado] = useState(false);
+  const [refrescando, setRefrescando] = useState(false);
 
   const cargar = useCallback(async () => {
     try {
       setRecaps(await fetchRecaps());
     } catch {
       /* la pantalla ya avisa si no hay nada */
+    } finally {
+      setCargado(true);
     }
   }, []);
 
@@ -196,6 +230,12 @@ export default function Resumen() {
       cargar();
     }, [cargar]),
   );
+
+  const refrescar = async () => {
+    setRefrescando(true);
+    await cargar();
+    setRefrescando(false);
+  };
 
   const generar = async () => {
     if (generando) return;
@@ -219,122 +259,154 @@ export default function Resumen() {
 
   if (abierto) return <Pase recap={abierto} onSalir={() => setAbierto(null)} />;
 
+  const sinVer = recaps.filter((r) => !r.seen_at).length;
+  const subtitulo = !cargado
+    ? undefined
+    : recaps.length === 0
+      ? 'Todavía no hay pases guardados.'
+      : sinVer > 0
+        ? `${sinVer} ${sinVer === 1 ? 'pase sin ver' : 'pases sin ver'} de ${recaps.length}.`
+        : `${recaps.length} ${recaps.length === 1 ? 'pase guardado' : 'pases guardados'}.`;
+
   return (
-    <SafeAreaView style={styles.screen} edges={['top', 'bottom']}>
-      <View style={styles.header}>
-        <Pressable onPress={() => router.back()} hitSlop={10} accessibilityRole="button" accessibilityLabel="Volver">
-          <Ionicons name="chevron-back" size={24} color={colors.accent} />
-        </Pressable>
-        <Text style={styles.title}>RECUERDOS</Text>
-        <View style={{ width: 24 }} />
-      </View>
+    <Screen refreshing={refrescando} onRefresh={refrescar}>
+      <Stagger>
+        <FadeIn index={0}>
+          <ScreenHeader onBack={() => router.back()} eyebrow="Recuerdos" title="Tu semana en imágenes" subtitle={subtitulo} />
+        </FadeIn>
 
-      <ScrollView contentContainerStyle={styles.contenido}>
-        <SystemWindow color={colors.accentDim}>
-          <Text style={styles.windowTitle}>LA SEMANA EN IMÁGENES</Text>
-          <Text style={styles.hint}>
-            El sistema junta las fotos que has ido subiendo con cada misión y te cuenta la semana.
-            Si no has subido ninguna, no hay resumen: un pase vacío no recuerda nada.
-          </Text>
-          <SystemButton
-            title="Generar el de esta semana"
-            onPress={generar}
-            loading={generando}
-            style={{ marginTop: 12 }}
-          />
-          {aviso ? <Text style={styles.aviso}>{aviso}</Text> : null}
-          <Text style={styles.hint}>El del mes lo genera el sistema solo, el día 1.</Text>
-        </SystemWindow>
-
-        {recaps.length === 0 ? (
-          <SystemWindow>
-            <Text style={styles.vacio}>
-              Todavía no hay recuerdos. Sube una foto al completar una misión y el domingo tendrás
-              algo que mirar.
-            </Text>
-          </SystemWindow>
-        ) : (
-          recaps.map((r) => (
-            <Pressable key={r.id} onPress={() => setAbierto(r)} accessibilityRole="button">
-              <SystemWindow color={r.kind === 'mensual' ? colors.steelDim : colors.accentDim}>
-                <View style={styles.filaRecap}>
-                  <View style={{ flex: 1, minWidth: 0 }}>
-                    <Text style={styles.windowTitle}>
-                      {r.kind === 'mensual' ? 'MES' : 'SEMANA'} · {r.period_start}
-                    </Text>
-                    <Text style={styles.hint}>
-                      {r.slides.length} diapositivas · {r.photo_count} fotos
-                      {r.seen_at ? '' : ' · sin ver'}
-                    </Text>
-                  </View>
-                  <Ionicons
-                    name="play-circle-outline"
-                    size={30}
-                    color={r.seen_at ? colors.textDim : colors.accent}
-                  />
+        <FadeIn index={1}>
+          <Section title="Esta semana">
+            <Card>
+              <Text style={styles.texto}>
+                El sistema junta las fotos que has ido subiendo con cada misión y te cuenta la semana. Si no has
+                subido ninguna, no hay resumen: un pase vacío no recuerda nada.
+              </Text>
+              <SystemButton
+                title="Generar el de esta semana"
+                icon="sparkles-outline"
+                onPress={generar}
+                loading={generando}
+                style={{ marginTop: 16 }}
+              />
+              {generando ? <Text style={styles.montando}>El sistema está montando tu semana…</Text> : null}
+              {aviso ? (
+                <View style={styles.aviso}>
+                  <Ionicons name="alert-circle-outline" size={15} color={colors.accentText} />
+                  <Text style={styles.avisoTexto}>{aviso}</Text>
                 </View>
-              </SystemWindow>
-            </Pressable>
-          ))
-        )}
-      </ScrollView>
+              ) : null}
+              <Text style={styles.nota}>El del mes lo genera el sistema solo, el día 1.</Text>
+            </Card>
+          </Section>
+        </FadeIn>
 
-      {generando ? (
-        <View style={styles.cargando} pointerEvents="none">
-          <ActivityIndicator color={colors.accent} />
-          <Text style={styles.hint}>El sistema está montando tu semana…</Text>
-        </View>
-      ) : null}
-    </SafeAreaView>
+        <FadeIn index={2}>
+          <Section title="Pases" meta={recaps.length > 0 ? `${recaps.length}` : undefined}>
+            {!cargado ? (
+              <EmptyState compact icon="hourglass-outline" title="Buscando tus recuerdos" />
+            ) : recaps.length === 0 ? (
+              <Card variant="outline">
+                <EmptyState
+                  icon="images-outline"
+                  title="Todavía no hay recuerdos"
+                  body="Sube una foto al completar una misión y el domingo tendrás algo que mirar."
+                />
+              </Card>
+            ) : (
+              <Card padded={false} style={styles.lista}>
+                {recaps.map((r, i) => (
+                  <Row
+                    key={r.id}
+                    first={i === 0}
+                    leading={
+                      <Ionicons
+                        name={r.seen_at ? 'play-circle-outline' : 'play-circle'}
+                        size={26}
+                        color={r.seen_at ? colors.textDim : colors.accent}
+                      />
+                    }
+                    title={nombrePeriodo(r)}
+                    detail={`${r.slides.length} diapositivas · ${r.photo_count} fotos`}
+                    trailing={r.seen_at ? <RowValue>Visto</RowValue> : <Tag tone="accent">Sin ver</Tag>}
+                    chevron
+                    onPress={() => setAbierto(r)}
+                    accessibilityLabel={`Abrir el pase: ${nombrePeriodo(r)}`}
+                  />
+                ))}
+              </Card>
+            )}
+          </Section>
+        </FadeIn>
+      </Stagger>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.bg },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-  },
-  title: { fontFamily: fonts.heading, fontSize: 15, letterSpacing: 3, color: colors.text },
-  contenido: { padding: 16, paddingBottom: 32 },
-  windowTitle: {
-    fontFamily: fonts.heading,
-    fontSize: 12,
-    letterSpacing: 2.5,
-    color: colors.accentText,
-    marginBottom: 8,
-  },
-  hint: { fontFamily: fonts.body, fontSize: 12.5, lineHeight: 18, color: colors.textDim, marginTop: 4 },
-  aviso: { fontFamily: fonts.semibold, fontSize: 13, color: colors.gold, marginTop: 10, lineHeight: 19 },
-  vacio: { fontFamily: fonts.body, fontSize: 13, lineHeight: 20, color: colors.textDim },
-  filaRecap: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  cargando: { position: 'absolute', bottom: 30, alignSelf: 'center', alignItems: 'center', gap: 6 },
+  lista: { paddingHorizontal: 16, paddingVertical: 2 },
+  texto: { fontFamily: fonts.body, fontSize: 13.5, lineHeight: 20, color: colors.textDim },
+  nota: { fontFamily: fonts.body, fontSize: 12, lineHeight: 17, color: colors.textFaint, marginTop: 12 },
+  montando: { fontFamily: fonts.body, fontSize: 12.5, color: colors.textDim, marginTop: 10, textAlign: 'center' },
+  aviso: { flexDirection: 'row', alignItems: 'flex-start', gap: 6, marginTop: 12 },
+  avisoTexto: { flex: 1, minWidth: 0, fontFamily: fonts.semibold, fontSize: 13, lineHeight: 19, color: colors.accentText },
+  pulsado: { opacity: 0.6 },
 
   pase: { flex: 1, backgroundColor: colors.bg },
   velo: { backgroundColor: colors.bg },
   // Con foto detrás el velo se levanta para que la imagen respire, pero sin
-  // llegar a tapar el texto: es un degradado plano, no un blur.
-  veloFoto: { backgroundColor: 'rgba(6, 11, 22, 0.62)' },
+  // llegar a tapar el texto: es un velo plano de negro, no un blur ni un tinte.
+  veloFoto: { backgroundColor: 'rgba(5, 5, 5, 0.62)' },
   paseSeguro: { flex: 1, paddingHorizontal: 22 },
   barras: { flexDirection: 'row', gap: 4, paddingTop: 6 },
-  barraPista: { flex: 1, height: 2.5, backgroundColor: colors.track },
-  barraRelleno: { height: 2.5, backgroundColor: colors.accent },
-  cerrar: { position: 'absolute', top: 44, right: 18, zIndex: 10 },
-  compartir: { position: 'absolute', top: 46, right: 58, zIndex: 10 },
+  barraPista: { flex: 1, height: 2, backgroundColor: colors.accentDim },
+  barraRelleno: { height: 2, backgroundColor: colors.accent },
+  paseCabecera: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 14, zIndex: 10 },
+  paseMarca: { flex: 1, fontFamily: fonts.heading, fontSize: 10.5, letterSpacing: 2.5, color: colors.textDim },
+  paseBotones: { flexDirection: 'row', gap: 8 },
+  paseBoton: {
+    width: 38,
+    height: 38,
+    borderWidth: 1,
+    borderColor: colors.accentDim,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.bg,
+  },
   zonas: { ...StyleSheet.absoluteFillObject, flexDirection: 'row' },
   zona: { flex: 1 },
-  contenidoSlide: { flex: 1, justifyContent: 'flex-end', paddingBottom: 60, maxWidth: width - 44 },
-  dato: { fontFamily: fonts.brand, fontSize: 46, color: colors.accent, marginBottom: 6 },
-  tituloSlide: {
+  contenidoSlide: { flex: 1, justifyContent: 'flex-end', paddingBottom: 56, maxWidth: width - 44 },
+  contenidoCentrado: { justifyContent: 'center', alignItems: 'center', paddingBottom: 0 },
+  centrado: { textAlign: 'center' },
+  regla: { width: 40, height: 1, backgroundColor: colors.accentDim, marginVertical: 22 },
+  slideEyebrow: {
     fontFamily: fonts.heading,
-    fontSize: 26,
-    letterSpacing: 1.5,
-    color: colors.text,
+    fontSize: 11,
+    letterSpacing: 2.5,
+    textTransform: 'uppercase',
+    color: colors.textFaint,
     marginBottom: 10,
   },
-  tituloDuro: { color: colors.gold },
+  dato: { fontFamily: fonts.brand, fontSize: 54, lineHeight: 60, color: colors.accent, marginBottom: 6 },
+  tituloSlide: {
+    fontFamily: fonts.heading,
+    fontSize: 28,
+    lineHeight: 33,
+    letterSpacing: -0.6,
+    color: colors.text,
+    marginBottom: 12,
+  },
+  // Portada y cierre: Cinzel en mayúsculas, la piedra tallada, centrada.
+  tituloPortada: {
+    fontFamily: fonts.brand,
+    fontSize: 24,
+    lineHeight: 32,
+    letterSpacing: 2,
+    textAlign: 'center',
+  },
+  // Lo duro se dice con el mismo blanco, más pequeño y sin adorno.
+  tituloDuro: { fontSize: 24, lineHeight: 29, color: colors.textDim },
   textoSlide: { fontFamily: fonts.semibold, fontSize: 16, lineHeight: 24, color: colors.text },
+  cierreMotto: { fontFamily: fonts.heading, fontSize: 10.5, letterSpacing: 3, color: colors.textFaint, textAlign: 'center' },
+  pasePie: { fontFamily: fonts.body, fontSize: 11.5, color: colors.textFaint, marginTop: 18 },
 });

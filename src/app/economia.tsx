@@ -2,10 +2,10 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
 import {
-  Platform,
-  KeyboardAvoidingView,
   Alert,
+  KeyboardAvoidingView,
   Modal,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -13,9 +13,24 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { SystemButton } from '@/components/SystemButton';
-import { SystemWindow } from '@/components/SystemWindow';
+import { XPBar } from '@/components/XPBar';
+import {
+  Card,
+  Chip,
+  ChipRow,
+  ChipWrap,
+  EmptyState,
+  FadeIn,
+  Row,
+  RowValue,
+  Screen,
+  ScreenHeader,
+  Section,
+  Stagger,
+  Stat,
+  StatRow,
+} from '@/components/ui';
 import { useAuth } from '@/lib/auth';
 import { clasificarMovimientos } from '@/lib/coach';
 import { addDays, dateKey } from '@/lib/dates';
@@ -47,8 +62,13 @@ import {
 } from '@/lib/moneymath';
 import { colors, fonts } from '@/lib/theme';
 
-const eur = (n: number, dec = 0) =>
-  `${n.toLocaleString('es-ES', { minimumFractionDigits: dec, maximumFractionDigits: dec })} €`;
+const num = (n: number, dec = 0) =>
+  n.toLocaleString('es-ES', { minimumFractionDigits: dec, maximumFractionDigits: dec });
+const eur = (n: number, dec = 0) => `${num(n, dec)} €`;
+/** Con signo: negativo es gasto, positivo ingreso. El signo es la información. */
+const eurSigno = (n: number) => `${n < 0 ? '−' : '+'}${eur(Math.abs(n), 2)}`;
+
+const CATEGORIAS_ELEGIBLES = CATEGORIAS.filter((c) => c !== 'sin_clasificar');
 
 export default function Economia() {
   const { session } = useAuth();
@@ -66,6 +86,8 @@ export default function Economia() {
   const [catNueva, setCatNueva] = useState<Categoria>('otros');
   const [guardando, setGuardando] = useState(false);
   const [clasificando, setClasificando] = useState(false);
+  const [cargado, setCargado] = useState(false);
+  const [refrescando, setRefrescando] = useState(false);
 
   const cargar = useCallback(async () => {
     try {
@@ -81,6 +103,8 @@ export default function Economia() {
       setPresupuestos(b);
     } catch (e) {
       Alert.alert('Error del sistema', e instanceof Error ? e.message : 'Fallo desconocido');
+    } finally {
+      setCargado(true);
     }
   }, [hoy]);
 
@@ -89,6 +113,12 @@ export default function Economia() {
       cargar();
     }, [cargar]),
   );
+
+  const refrescar = async () => {
+    setRefrescando(true);
+    await cargar();
+    setRefrescando(false);
+  };
 
   const vista = useMemo(() => {
     const mesActual = mesDe(hoy);
@@ -183,243 +213,317 @@ export default function Economia() {
 
   const tasa = tasaAhorro(vista.esteMes.ingresos, vista.esteMes.gastos);
   const maxCat = vista.categorias[0]?.total ?? 1;
+  const tope = plan?.spend_cap ? Number(plan.spend_cap) : null;
+  const objetivoIngresos = plan?.income_target ? Number(plan.income_target) : null;
+  const colchon = plan?.runway_target_months ? Number(plan.runway_target_months) : null;
+  const desbordado = vista.ritmo !== null && vista.ritmo > 1.1;
+  const ritmoTexto =
+    vista.ritmo === null ? null : vista.ritmo > 1.1 ? 'vas desbordado' : vista.ritmo < 0.9 ? 'vas sobrado' : 'en el guion';
+  const bajoColchon = vista.aire !== null && colchon !== null && vista.aire < colchon;
+  const anualSuscripciones = vista.suscripciones.reduce((a, s) => a + s.anual, 0);
+
+  const subtitulo = !cargado
+    ? undefined
+    : movs.length === 0
+      ? 'El sistema no ve tu dinero todavía.'
+      : `Día ${vista.dia} de ${vista.totalDias}. Al ritmo actual cierras el mes en ${eur(vista.proyeccion)} de gasto.`;
 
   return (
-    <SafeAreaView style={styles.screen} edges={['top', 'bottom']}>
-      <View style={styles.header}>
-        <Pressable onPress={() => router.back()} hitSlop={10} accessibilityRole="button" accessibilityLabel="Volver">
-          <Ionicons name="chevron-back" size={24} color={colors.accent} />
-        </Pressable>
-        <Text style={styles.title}>ECONOMÍA</Text>
-        <Pressable
-          onPress={() => setNuevoAbierto(true)}
-          hitSlop={10}
-          accessibilityRole="button"
-          accessibilityLabel="Registrar movimiento en efectivo"
-        >
-          <Ionicons name="add" size={24} color={colors.accent} />
-        </Pressable>
-      </View>
+    <Screen refreshing={refrescando} onRefresh={refrescar}>
+      <Stagger>
+        <FadeIn index={0}>
+          <ScreenHeader
+            onBack={() => router.back()}
+            eyebrow="Dinero"
+            title="Economía"
+            subtitle={subtitulo}
+            action={{
+              icon: 'add',
+              label: 'Registrar movimiento en efectivo',
+              onPress: () => setNuevoAbierto(true),
+              solid: true,
+            }}
+          />
+        </FadeIn>
 
-      {movs.length === 0 ? (
-        <ScrollView automaticallyAdjustKeyboardInsets keyboardShouldPersistTaps="handled" contentContainerStyle={styles.contenido}>
-          <SystemWindow>
-            <Text style={styles.windowTitle}>SIN DATOS</Text>
-            <Text style={styles.vacio}>
-              El sistema no ve tu dinero todavía. Exporta el extracto de Revolut en formato Excel
-              o CSV (Menú → Extractos) e impórtalo desde el ordenador con{'\n\n'}
-              <Text style={styles.mono}>node scripts/import-revolut.mjs extracto.csv</Text>
-              {'\n\n'}
-              Hasta entonces el coach no te dirá en qué se te va: no lo sabe, y no se lo va a
-              inventar.
-            </Text>
-          </SystemWindow>
-        </ScrollView>
-      ) : (
-        <ScrollView automaticallyAdjustKeyboardInsets keyboardShouldPersistTaps="handled" contentContainerStyle={styles.contenido}>
-          <SystemWindow color={colors.accentDim}>
-            <Text style={styles.windowTitle}>
-              ESTE MES · DÍA {vista.dia} DE {vista.totalDias}
-            </Text>
-            <View style={styles.kpis}>
-              <View>
-                <Text style={styles.kpiNum}>{eur(vista.esteMes.ingresos)}</Text>
-                <Text style={styles.kpiLabel}>entrado</Text>
-              </View>
-              <View>
-                <Text style={[styles.kpiNum, { color: colors.red }]}>{eur(vista.esteMes.gastos)}</Text>
-                <Text style={styles.kpiLabel}>gastado</Text>
-              </View>
-              <View>
-                <Text style={styles.kpiNum}>{tasa === null ? '—' : `${tasa.toFixed(0)} %`}</Text>
-                <Text style={styles.kpiLabel}>ahorro</Text>
-              </View>
-            </View>
-            <Text style={styles.linea}>
-              Al ritmo actual cierras el mes en {eur(vista.proyeccion)} de gasto.
-            </Text>
-            {vista.ritmo !== null && plan?.spend_cap ? (
-              <Text style={[styles.linea, vista.ritmo > 1.1 && styles.alerta]}>
-                Ritmo contra tu tope de {eur(Number(plan.spend_cap))}: ×{vista.ritmo.toFixed(2)}
-                {vista.ritmo > 1.1 ? ' — vas desbordado' : vista.ritmo < 0.9 ? ' — vas sobrado' : ' — en el guion'}
-              </Text>
-            ) : null}
-            {plan?.income_target ? (
-              <Text style={styles.linea}>
-                {vista.esteMes.ingresos >= Number(plan.income_target)
-                  ? `Objetivo de ${eur(Number(plan.income_target))} cumplido.`
-                  : `Para tu objetivo de ${eur(Number(plan.income_target))} faltan ${eur(Number(plan.income_target) - vista.esteMes.ingresos)} en ${vista.totalDias - vista.dia} días.`}
-              </Text>
-            ) : null}
-          </SystemWindow>
-
-          <SystemWindow>
-            <Text style={styles.windowTitle}>MESES DE AIRE</Text>
-            {vista.aire === null ? (
-              <Text style={styles.vacio}>Sin saldo o sin gasto medio: no hay cuenta atrás que dar.</Text>
-            ) : (
-              <>
-                <Text style={styles.aireNum}>{vista.aire.toFixed(1)}</Text>
-                <Text style={styles.linea}>
-                  {eur(vista.saldo)} de saldo entre {eur(vista.gastoMedio)} de gasto medio al mes.
-                </Text>
-                {plan?.runway_target_months ? (
-                  <Text style={[styles.linea, vista.aire < Number(plan.runway_target_months) && styles.alerta]}>
-                    {vista.aire >= Number(plan.runway_target_months)
-                      ? `Por encima del colchón pactado de ${plan.runway_target_months} meses.`
-                      : `Por debajo del colchón pactado de ${plan.runway_target_months} meses.`}
-                  </Text>
-                ) : null}
-              </>
-            )}
-          </SystemWindow>
-
-          {vista.sinClasificar.length > 0 ? (
-            <SystemWindow color={colors.goldDim}>
-              <Text style={styles.windowTitle}>SIN CLASIFICAR · {vista.sinClasificar.length}</Text>
-              <Text style={styles.hint}>
-                Este dinero no aparece en ningún presupuesto. Toca uno para decirle qué era: el
-                sistema aprende la regla y no vuelve a preguntártelo.
-              </Text>
-              <SystemButton
-                title="Que los clasifique el sistema"
-                onPress={clasificarTodo}
-                loading={clasificando}
-                style={{ marginBottom: 6 }}
+        {!cargado ? (
+          <FadeIn index={1}>
+            <EmptyState icon="hourglass-outline" title="Leyendo tus cuentas" body="El sistema suma los últimos seis meses." />
+          </FadeIn>
+        ) : movs.length === 0 ? (
+          <FadeIn index={1}>
+            <Card variant="outline">
+              <EmptyState
+                icon="wallet-outline"
+                title="El sistema no ve tu dinero"
+                body="Exporta el extracto de Revolut en Excel o CSV (Menú → Extractos) e impórtalo desde el ordenador. Hasta entonces el coach no te dirá en qué se te va: no lo sabe, y no se lo va a inventar."
               />
-              {vista.sinClasificar.slice(0, 8).map((m) => (
-                <Pressable
-                  key={m.id}
-                  onPress={() => setEditando(m)}
-                  style={styles.movRow}
-                  accessibilityRole="button"
-                  accessibilityLabel={`Clasificar ${m.description} de ${Math.abs(m.amount)} euros`}
-                >
-                  <View style={{ flex: 1, minWidth: 0 }}>
-                    <Text style={styles.movDesc} numberOfLines={1}>{m.description}</Text>
-                    <Text style={styles.movFecha}>{m.date}</Text>
-                  </View>
-                  <Text style={styles.movImporte}>{eur(Math.abs(m.amount), 2)}</Text>
-                </Pressable>
-              ))}
-            </SystemWindow>
-          ) : null}
-
-          <SystemWindow>
-            <Text style={styles.windowTitle}>EN QUÉ SE VA</Text>
-            {vista.categorias.length === 0 ? (
-              <Text style={styles.vacio}>Sin gastos este mes.</Text>
-            ) : (
-              vista.categorias.map((c) => {
-                const tope = presupuestos.find((b) => b.category === c.categoria);
-                const pasado = tope ? c.total > Number(tope.monthly_limit) : false;
-                return (
-                  <View key={c.categoria} style={styles.catRow}>
-                    <View style={styles.catCabecera}>
-                      <Text style={styles.catNombre}>{NOMBRE_CATEGORIA[c.categoria] ?? c.categoria}</Text>
-                      <Text style={[styles.catTotal, pasado && styles.alerta]}>
-                        {eur(c.total)}
-                        {tope ? ` / ${eur(Number(tope.monthly_limit))}` : ''}
-                      </Text>
-                    </View>
-                    <View style={styles.barra}>
-                      <View
-                        style={[
-                          styles.barraRelleno,
-                          { width: `${Math.min(100, (c.total / maxCat) * 100)}%` },
-                          pasado && { backgroundColor: colors.red },
-                        ]}
-                      />
-                    </View>
-                  </View>
-                );
-              })
-            )}
-          </SystemWindow>
-
-          <SystemWindow>
-            <Text style={styles.windowTitle}>CARGOS RECURRENTES</Text>
-            {vista.suscripciones.length === 0 ? (
-              <Text style={styles.vacio}>
-                Ninguno detectado. Hacen falta tres meses de histórico para verlos.
+              <Text style={styles.mono} selectable>
+                node scripts/import-revolut.mjs extracto.csv
               </Text>
-            ) : (
-              <>
-                {vista.suscripciones.slice(0, 10).map((s) => (
-                  <View key={s.cobrador} style={styles.subRow}>
-                    <View style={{ flex: 1, minWidth: 0 }}>
-                      <Text style={styles.movDesc} numberOfLines={1}>{s.cobrador}</Text>
-                      <Text style={styles.movFecha}>
-                        {eur(s.importeMedio, 2)}/mes · {s.meses} meses · último {s.ultimo}
-                      </Text>
-                    </View>
-                    <Text style={styles.subAnual}>{eur(s.anual)}/año</Text>
-                  </View>
-                ))}
-                <Text style={styles.hint}>
-                  Son {eur(vista.suscripciones.reduce((a, s) => a + s.anual, 0))} al año que se
-                  cobran solos. Cancelar lo que no usas es el único ahorro que no exige disciplina.
-                </Text>
-              </>
-            )}
-          </SystemWindow>
+            </Card>
+          </FadeIn>
+        ) : (
+          <>
+            <FadeIn index={1}>
+              <Card>
+                <StatRow>
+                  <Stat value={num(vista.saldo)} unit="€" label="Saldo" />
+                  <Stat value={num(vista.esteMes.ingresos)} unit="€" label="Entrado" />
+                  <Stat value={num(vista.esteMes.gastos)} unit="€" label="Gastado" tone={desbordado ? 'red' : 'text'} />
+                </StatRow>
+                <StatRow style={styles.statsSecundarios}>
+                  <Stat size="sm" value={tasa === null ? '—' : tasa.toFixed(0)} unit={tasa === null ? undefined : '%'} label="Ahorro" />
+                  <Stat size="sm" value={num(vista.proyeccion)} unit="€" label="Proyección" />
+                  <Stat
+                    size="sm"
+                    value={vista.ritmo === null ? '—' : `×${vista.ritmo.toFixed(2)}`}
+                    label="Ritmo"
+                    tone={desbordado ? 'red' : 'text'}
+                  />
+                </StatRow>
+              </Card>
+            </FadeIn>
 
-          {vista.cerrados.length > 0 ? (
-            <SystemWindow>
-              <Text style={styles.windowTitle}>MESES CERRADOS</Text>
-              {vista.cerrados.slice(-5).reverse().map((r) => (
-                <Text key={r.mes} style={styles.linea}>
-                  {r.mes} · entró {eur(r.ingresos)} · gastó {eur(r.gastos)}
-                  {r.ingresos > 0 ? ` · ahorro ${(((r.ingresos - r.gastos) / r.ingresos) * 100).toFixed(0)} %` : ''}
-                </Text>
-              ))}
-            </SystemWindow>
-          ) : null}
-        </ScrollView>
-      )}
+            {tope !== null || objetivoIngresos !== null ? (
+              <FadeIn index={2}>
+                <Section title="Plan del mes" tone={desbordado ? 'red' : 'dim'}>
+                  <Card accent={desbordado ? colors.red : undefined}>
+                    {tope !== null ? (
+                      <View>
+                        <View style={styles.metaFila}>
+                          <Text style={styles.metaNombre}>Tope de gasto</Text>
+                          <Text style={[styles.metaValor, desbordado && styles.alerta]}>
+                            {eur(vista.esteMes.gastos)} / {eur(tope)}
+                          </Text>
+                        </View>
+                        <XPBar ratio={vista.esteMes.gastos / tope} color={desbordado ? colors.red : colors.accent} />
+                        {ritmoTexto ? (
+                          <Text style={[styles.nota, desbordado && styles.alerta]}>
+                            Ritmo ×{vista.ritmo?.toFixed(2)}: {ritmoTexto}.
+                          </Text>
+                        ) : null}
+                      </View>
+                    ) : null}
+                    {objetivoIngresos !== null ? (
+                      <View style={tope !== null ? styles.metaBloque : undefined}>
+                        <View style={styles.metaFila}>
+                          <Text style={styles.metaNombre}>Objetivo de ingresos</Text>
+                          <Text style={styles.metaValor}>
+                            {eur(vista.esteMes.ingresos)} / {eur(objetivoIngresos)}
+                          </Text>
+                        </View>
+                        <XPBar ratio={vista.esteMes.ingresos / objetivoIngresos} />
+                        <Text style={styles.nota}>
+                          {vista.esteMes.ingresos >= objetivoIngresos
+                            ? 'Objetivo cumplido.'
+                            : `Faltan ${eur(objetivoIngresos - vista.esteMes.ingresos)} en ${vista.totalDias - vista.dia} días.`}
+                        </Text>
+                      </View>
+                    ) : null}
+                  </Card>
+                </Section>
+              </FadeIn>
+            ) : null}
+
+            <FadeIn index={3}>
+              <Section title="Meses de aire" tone={bajoColchon ? 'red' : 'dim'}>
+                <Card accent={bajoColchon ? colors.red : undefined}>
+                  {vista.aire === null ? (
+                    <Text style={styles.texto}>Sin saldo o sin gasto medio: no hay cuenta atrás que dar.</Text>
+                  ) : (
+                    <>
+                      <Stat
+                        size="lg"
+                        value={vista.aire.toFixed(1)}
+                        unit="meses"
+                        label="Con el gasto medio actual"
+                        tone={bajoColchon ? 'red' : 'text'}
+                      />
+                      <Text style={styles.nota}>
+                        {eur(vista.saldo)} de saldo entre {eur(vista.gastoMedio)} de gasto medio al mes.
+                      </Text>
+                      {colchon !== null ? (
+                        <View style={styles.metaBloque}>
+                          <XPBar ratio={vista.aire / colchon} color={bajoColchon ? colors.red : colors.accent} />
+                          <Text style={[styles.nota, bajoColchon && styles.alerta]}>
+                            {bajoColchon ? 'Por debajo' : 'Por encima'} del colchón pactado de {colchon} meses.
+                          </Text>
+                        </View>
+                      ) : null}
+                    </>
+                  )}
+                </Card>
+              </Section>
+            </FadeIn>
+
+            {vista.sinClasificar.length > 0 ? (
+              <FadeIn index={4}>
+                <Section title="Sin clasificar" meta={`${vista.sinClasificar.length}`} tone="accent">
+                  <Card padded={false} style={styles.lista}>
+                    {vista.sinClasificar.slice(0, 8).map((m, i) => (
+                      <Row
+                        key={m.id}
+                        first={i === 0}
+                        leading={<Ionicons name="help-circle-outline" size={18} color={colors.textDim} />}
+                        title={m.description}
+                        detail={m.date}
+                        trailing={<RowValue tone="accent">{eurSigno(m.amount)}</RowValue>}
+                        chevron
+                        onPress={() => setEditando(m)}
+                        accessibilityLabel={`Clasificar ${m.description} de ${Math.abs(m.amount)} euros`}
+                      />
+                    ))}
+                  </Card>
+                  <SystemButton
+                    title="Que los clasifique el sistema"
+                    variant="outline"
+                    icon="sparkles-outline"
+                    onPress={clasificarTodo}
+                    loading={clasificando}
+                  />
+                  <Text style={styles.nota}>
+                    Este dinero no aparece en ningún presupuesto. Toca uno para decirle qué era: el sistema
+                    aprende la regla y no vuelve a preguntártelo.
+                  </Text>
+                </Section>
+              </FadeIn>
+            ) : null}
+
+            <FadeIn index={5}>
+              <Section title="En qué se va" meta={vista.categorias.length > 0 ? `${vista.categorias.length}` : undefined}>
+                {vista.categorias.length === 0 ? (
+                  <Card variant="outline">
+                    <EmptyState compact icon="pie-chart-outline" title="Sin gastos este mes" />
+                  </Card>
+                ) : (
+                  <Card>
+                    {vista.categorias.map((c, i) => {
+                      const limite = presupuestos.find((b) => b.category === c.categoria);
+                      const pasado = limite ? c.total > Number(limite.monthly_limit) : false;
+                      return (
+                        <View key={c.categoria} style={[styles.cat, i > 0 && styles.catSep]}>
+                          <View style={styles.metaFila}>
+                            <Text style={styles.metaNombre} numberOfLines={1}>
+                              {NOMBRE_CATEGORIA[c.categoria] ?? c.categoria}
+                            </Text>
+                            <Text style={[styles.metaValor, pasado && styles.alerta]}>
+                              {eur(c.total)}
+                              {limite ? ` / ${eur(Number(limite.monthly_limit))}` : ''}
+                            </Text>
+                          </View>
+                          <XPBar ratio={c.total / maxCat} color={pasado ? colors.red : colors.accent} height={5} />
+                        </View>
+                      );
+                    })}
+                  </Card>
+                )}
+              </Section>
+            </FadeIn>
+
+            <FadeIn index={6}>
+              <Section
+                title="Cargos recurrentes"
+                meta={vista.suscripciones.length > 0 ? `${eur(anualSuscripciones)} al año` : undefined}
+              >
+                {vista.suscripciones.length === 0 ? (
+                  <Card variant="outline">
+                    <EmptyState
+                      compact
+                      icon="repeat-outline"
+                      title="Ninguno detectado"
+                      body="Hacen falta tres meses de histórico para verlos."
+                    />
+                  </Card>
+                ) : (
+                  <>
+                    <Card padded={false} style={styles.lista}>
+                      {vista.suscripciones.slice(0, 10).map((s, i) => (
+                        <Row
+                          key={s.cobrador}
+                          first={i === 0}
+                          leading={<Ionicons name="repeat-outline" size={18} color={colors.textDim} />}
+                          title={s.cobrador}
+                          detail={`${eur(s.importeMedio, 2)} al mes · ${s.meses} meses · último ${s.ultimo}`}
+                          trailing={<RowValue strong>{eur(s.anual)}/año</RowValue>}
+                        />
+                      ))}
+                    </Card>
+                    <Text style={styles.nota}>
+                      Son {eur(anualSuscripciones)} al año que se cobran solos. Cancelar lo que no usas es el
+                      único ahorro que no exige disciplina.
+                    </Text>
+                  </>
+                )}
+              </Section>
+            </FadeIn>
+
+            {vista.cerrados.length > 0 ? (
+              <FadeIn index={7}>
+                <Section title="Meses cerrados" meta={`${vista.cerrados.length}`}>
+                  <Card padded={false} style={styles.lista}>
+                    {vista.cerrados.slice(-5).reverse().map((r, i) => (
+                      <Row
+                        key={r.mes}
+                        first={i === 0}
+                        title={r.mes}
+                        detail={`Entró ${eur(r.ingresos)} · gastó ${eur(r.gastos)}`}
+                        trailing={
+                          r.ingresos > 0 ? (
+                            <RowValue>{(((r.ingresos - r.gastos) / r.ingresos) * 100).toFixed(0)} % ahorro</RowValue>
+                          ) : undefined
+                        }
+                      />
+                    ))}
+                  </Card>
+                </Section>
+              </FadeIn>
+            ) : null}
+          </>
+        )}
+      </Stagger>
 
       <Modal visible={editando !== null} transparent animationType="slide" onRequestClose={() => setEditando(null)}>
-        <KeyboardAvoidingView
-          style={styles.backdrop}
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        >
-        <Pressable style={StyleSheet.absoluteFill} onPress={() => setEditando(null)}>
-          <Pressable style={styles.sheet} onPress={(e) => e.stopPropagation()}>
-            <Text style={styles.sheetTitle}>¿QUÉ FUE ESTO?</Text>
+        <KeyboardAvoidingView style={styles.backdrop} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+          <Pressable style={styles.backdropTap} onPress={() => setEditando(null)} accessibilityLabel="Cerrar" />
+          <View style={styles.sheet}>
+            <View style={styles.sheetHandle} />
+            <Text style={styles.sheetEyebrow}>CLASIFICAR</Text>
+            <Text style={styles.sheetTitle}>¿Qué fue esto?</Text>
             <Text style={styles.sheetSub} numberOfLines={2}>
-              {editando?.description} · {editando ? eur(Math.abs(editando.amount), 2) : ''}
+              {editando?.description} · {editando ? eurSigno(editando.amount) : ''}
             </Text>
-            <ScrollView automaticallyAdjustKeyboardInsets keyboardShouldPersistTaps="handled" style={{ maxHeight: 320 }}>
-              <View style={styles.chips}>
-                {CATEGORIAS.filter((c) => c !== 'sin_clasificar').map((c) => (
-                  <Pressable
+            <ScrollView
+              automaticallyAdjustKeyboardInsets
+              keyboardShouldPersistTaps="handled"
+              style={styles.sheetScroll}
+              showsVerticalScrollIndicator={false}
+            >
+              <ChipWrap>
+                {CATEGORIAS_ELEGIBLES.map((c) => (
+                  <Chip
                     key={c}
+                    label={NOMBRE_CATEGORIA[c] ?? c}
                     onPress={() => aplicarCategoria(c)}
-                    style={styles.chip}
-                    accessibilityRole="button"
-                    accessibilityLabel={NOMBRE_CATEGORIA[c]}
-                  >
-                    <Text style={styles.chipText}>{NOMBRE_CATEGORIA[c]}</Text>
-                  </Pressable>
+                    accessibilityLabel={`Clasificar como ${NOMBRE_CATEGORIA[c] ?? c}`}
+                  />
                 ))}
-              </View>
+              </ChipWrap>
             </ScrollView>
-          </Pressable>
-        </Pressable>
+            <SystemButton title="Cancelar" variant="ghost" onPress={() => setEditando(null)} style={{ marginTop: 10 }} />
+          </View>
         </KeyboardAvoidingView>
       </Modal>
 
       <Modal visible={nuevoAbierto} transparent animationType="slide" onRequestClose={() => setNuevoAbierto(false)}>
-        <KeyboardAvoidingView
-          style={styles.backdrop}
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        >
-        <Pressable style={StyleSheet.absoluteFill} onPress={() => setNuevoAbierto(false)}>
-          <Pressable style={styles.sheet} onPress={(e) => e.stopPropagation()}>
-            <Text style={styles.sheetTitle}>MOVIMIENTO EN EFECTIVO</Text>
-            <Text style={styles.sheetSub}>
-              Lo que el banco no ve. Negativo si es gasto, positivo si es un cobro en mano.
-            </Text>
+        <KeyboardAvoidingView style={styles.backdrop} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+          <Pressable style={styles.backdropTap} onPress={() => setNuevoAbierto(false)} accessibilityLabel="Cerrar" />
+          <View style={styles.sheet}>
+            <View style={styles.sheetHandle} />
+            <Text style={styles.sheetEyebrow}>EN EFECTIVO</Text>
+            <Text style={styles.sheetTitle}>Lo que el banco no ve</Text>
+            <Text style={styles.sheetSub}>Negativo si es gasto, positivo si es un cobro en mano.</Text>
+            <Text style={styles.label}>Importe</Text>
             <TextInput
               style={styles.input}
               value={importe}
@@ -428,7 +532,9 @@ export default function Economia() {
               placeholderTextColor={colors.textFaint}
               keyboardType="numbers-and-punctuation"
               accessibilityLabel="Importe en euros"
+              autoFocus
             />
+            <Text style={styles.label}>Concepto</Text>
             <TextInput
               style={styles.input}
               value={concepto}
@@ -437,128 +543,79 @@ export default function Economia() {
               placeholderTextColor={colors.textFaint}
               accessibilityLabel="Concepto"
             />
-            <ScrollView automaticallyAdjustKeyboardInsets keyboardShouldPersistTaps="handled" horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: 10 }}>
-              <View style={styles.chipsFila}>
-                {CATEGORIAS.filter((c) => c !== 'sin_clasificar').map((c) => (
-                  <Pressable
-                    key={c}
-                    onPress={() => setCatNueva(c)}
-                    style={[styles.chip, catNueva === c && styles.chipOn]}
-                    accessibilityRole="button"
-                    accessibilityState={{ selected: catNueva === c }}
-                    accessibilityLabel={NOMBRE_CATEGORIA[c]}
-                  >
-                    <Text style={[styles.chipText, catNueva === c && styles.chipTextOn]}>
-                      {NOMBRE_CATEGORIA[c]}
-                    </Text>
-                  </Pressable>
-                ))}
-              </View>
-            </ScrollView>
-            <SystemButton title="Registrar" onPress={guardarEfectivo} loading={guardando} style={{ marginTop: 16 }} />
-          </Pressable>
-        </Pressable>
+            <Text style={styles.label}>Categoría</Text>
+            <ChipRow>
+              {CATEGORIAS_ELEGIBLES.map((c) => (
+                <Chip
+                  key={c}
+                  label={NOMBRE_CATEGORIA[c] ?? c}
+                  selected={catNueva === c}
+                  onPress={() => setCatNueva(c)}
+                  accessibilityLabel={`Categoría ${NOMBRE_CATEGORIA[c] ?? c}`}
+                />
+              ))}
+            </ChipRow>
+            <SystemButton title="Registrar" onPress={guardarEfectivo} loading={guardando} style={{ marginTop: 22 }} />
+            <SystemButton title="Cancelar" variant="ghost" onPress={() => setNuevoAbierto(false)} style={{ marginTop: 6 }} />
+          </View>
         </KeyboardAvoidingView>
       </Modal>
-    </SafeAreaView>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.bg },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-  },
-  title: { fontFamily: fonts.heading, fontSize: 15, letterSpacing: 3, color: colors.text },
-  contenido: { padding: 16, paddingBottom: 32 },
-  windowTitle: {
-    fontFamily: fonts.heading,
-    fontSize: 12,
-    letterSpacing: 2.5,
-    color: colors.accentText,
-    marginBottom: 10,
-  },
-  kpis: { flexDirection: 'row', gap: 26, flexWrap: 'wrap', marginBottom: 10 },
-  kpiNum: { fontFamily: fonts.number, fontSize: 17, color: colors.text },
-  kpiLabel: { fontFamily: fonts.body, fontSize: 11, color: colors.textDim },
-  aireNum: { fontFamily: fonts.number, fontSize: 30, color: colors.accent, marginBottom: 4 },
-  linea: { fontFamily: fonts.body, fontSize: 12.5, lineHeight: 18, color: colors.textDim, marginTop: 3 },
+  lista: { paddingHorizontal: 16, paddingVertical: 2 },
+  statsSecundarios: { marginTop: 18, paddingTop: 14, borderTopWidth: 1, borderTopColor: colors.line },
+  texto: { fontFamily: fonts.body, fontSize: 13.5, lineHeight: 20, color: colors.textDim },
+  nota: { fontFamily: fonts.body, fontSize: 12, lineHeight: 17, color: colors.textFaint, marginTop: 8 },
   alerta: { color: colors.red },
-  vacio: { fontFamily: fonts.body, fontSize: 13, lineHeight: 20, color: colors.textDim },
-  mono: { fontFamily: fonts.semibold, color: colors.accentText, fontSize: 12.5 },
-  hint: {
-    fontFamily: fonts.body,
-    fontSize: 11.5,
-    lineHeight: 16,
-    color: colors.textFaint,
-    marginTop: 8,
+  mono: {
+    fontFamily: fonts.semibold,
+    fontSize: 12.5,
+    color: colors.accentText,
+    textAlign: 'center',
+    marginTop: 4,
+    marginBottom: 20,
   },
-  movRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    paddingVertical: 9,
-    borderTopWidth: 1,
-    borderTopColor: colors.line,
-  },
-  movDesc: { fontFamily: fonts.semibold, fontSize: 13, color: colors.text },
-  movFecha: { fontFamily: fonts.body, fontSize: 11, color: colors.textFaint, marginTop: 1 },
-  movImporte: { fontFamily: fonts.number, fontSize: 13, color: colors.red },
-  subRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    paddingVertical: 9,
-    borderTopWidth: 1,
-    borderTopColor: colors.line,
-  },
-  subAnual: { fontFamily: fonts.number, fontSize: 13, color: colors.gold },
-  catRow: { marginBottom: 12 },
-  catCabecera: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 5 },
-  catNombre: { fontFamily: fonts.semibold, fontSize: 13, color: colors.text },
-  catTotal: { fontFamily: fonts.number, fontSize: 12.5, color: colors.accentText },
-  barra: { height: 5, backgroundColor: colors.track, overflow: 'hidden' },
-  barraRelleno: { height: 5, backgroundColor: colors.accent },
-  backdrop: { flex: 1, backgroundColor: 'rgba(2, 6, 14, 0.85)', justifyContent: 'flex-end' },
+  metaFila: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline', gap: 10, marginBottom: 8 },
+  metaNombre: { flex: 1, minWidth: 0, fontFamily: fonts.semibold, fontSize: 14, color: colors.text },
+  metaValor: { fontFamily: fonts.number, fontSize: 12.5, color: colors.accentText },
+  metaBloque: { marginTop: 18 },
+  cat: { paddingVertical: 10 },
+  catSep: { borderTopWidth: 1, borderTopColor: colors.line },
+  backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'flex-end' },
+  backdropTap: { flex: 1 },
   sheet: {
     backgroundColor: colors.panel,
-    borderTopWidth: 1.5,
-    borderTopColor: colors.accentDim,
-    padding: 20,
+    borderTopWidth: 1,
+    borderTopColor: colors.line,
+    paddingHorizontal: 20,
+    paddingTop: 10,
     paddingBottom: 34,
   },
-  sheetTitle: {
+  sheetHandle: { alignSelf: 'center', width: 36, height: 3, backgroundColor: colors.accentDim, marginBottom: 16 },
+  sheetEyebrow: { fontFamily: fonts.heading, fontSize: 11, letterSpacing: 2.5, color: colors.accentText },
+  sheetTitle: { fontFamily: fonts.heading, fontSize: 24, letterSpacing: -0.5, color: colors.text, marginTop: 6, marginBottom: 4 },
+  sheetSub: { fontFamily: fonts.body, fontSize: 13, lineHeight: 19, color: colors.textDim },
+  sheetScroll: { maxHeight: 320, marginTop: 16 },
+  label: {
     fontFamily: fonts.heading,
-    fontSize: 13,
-    letterSpacing: 2.5,
-    color: colors.accentText,
-    marginBottom: 6,
+    fontSize: 11,
+    letterSpacing: 2,
+    color: colors.textFaint,
+    textTransform: 'uppercase',
+    marginTop: 18,
+    marginBottom: 8,
   },
-  sheetSub: { fontFamily: fonts.body, fontSize: 12.5, color: colors.textDim, marginBottom: 12 },
-  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  chipsFila: { flexDirection: 'row', gap: 8 },
-  chip: {
-    borderWidth: 1,
-    borderColor: colors.accentFaint,
-    paddingHorizontal: 12,
-    paddingVertical: 9,
-  },
-  chipOn: { borderColor: colors.accent, backgroundColor: colors.accentFaint },
-  chipText: { fontFamily: fonts.semibold, fontSize: 12.5, color: colors.textDim },
-  chipTextOn: { color: colors.text },
   input: {
     borderWidth: 1,
-    borderColor: colors.line,
+    borderColor: colors.accentDim,
     backgroundColor: colors.bg,
     color: colors.text,
-    fontFamily: fonts.body,
-    fontSize: 14,
-    paddingHorizontal: 12,
-    paddingVertical: 11,
-    marginTop: 8,
+    fontFamily: fonts.semibold,
+    fontSize: 16,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
   },
 });

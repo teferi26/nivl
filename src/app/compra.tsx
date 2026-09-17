@@ -1,10 +1,20 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { SystemButton } from '@/components/SystemButton';
-import { SystemWindow } from '@/components/SystemWindow';
+import { Alert, Pressable, StyleSheet, TextInput, View } from 'react-native';
+import {
+  Card,
+  Check,
+  EmptyState,
+  FadeIn,
+  ProgressRing,
+  Row,
+  RowValue,
+  Screen,
+  ScreenHeader,
+  Section,
+  Stagger,
+} from '@/components/ui';
 import { useAuth } from '@/lib/auth';
 import { addShoppingItems, clearDoneShopping, fetchShoppingItems, setShoppingDone } from '@/lib/body';
 import { colors, fonts } from '@/lib/theme';
@@ -53,146 +63,146 @@ export default function Compra() {
   const pending = items.filter((i) => !i.done);
   const done = items.filter((i) => i.done);
 
+  // Solo presentación.
+  const subtitulo =
+    items.length === 0
+      ? 'Nada en la lista.'
+      : pending.length === 0
+        ? 'Todo en el carro. Compra hecha.'
+        : `${pending.length} ${pending.length === 1 ? 'artículo pendiente' : 'artículos pendientes'} · ${done.length} en el carro.`;
+
   return (
-    <SafeAreaView style={styles.screen} edges={['top']}>
-      <ScrollView automaticallyAdjustKeyboardInsets contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-        <View style={styles.header}>
-          <Pressable
-            onPress={() => router.back()}
-            hitSlop={10}
-            accessibilityRole="button"
-            accessibilityLabel="Volver"
-          >
-            <Ionicons name="chevron-back" size={24} color={colors.accent} />
-          </Pressable>
-          <Text style={styles.title}>LISTA DE LA COMPRA</Text>
-          <View style={{ width: 24 }} />
-        </View>
-
-        <View style={styles.addRow}>
-          <TextInput
-            style={styles.input}
-            value={newItem}
-            onChangeText={setNewItem}
-            placeholder="Añadir artículo…"
-            placeholderTextColor={colors.textFaint}
-            onSubmitEditing={add}
-            returnKeyType="done"
+    <Screen>
+      <Stagger>
+        <FadeIn index={0}>
+          <ScreenHeader
+            onBack={() => router.back()}
+            eyebrow="Compra"
+            title="Lista de la compra"
+            subtitle={subtitulo}
+            right={
+              items.length > 0 ? (
+                <ProgressRing
+                  ratio={done.length / items.length}
+                  size={66}
+                  stroke={4}
+                  label={`${done.length}/${items.length}`}
+                  sublabel="carro"
+                />
+              ) : undefined
+            }
           />
-          <Pressable
-            onPress={add}
-            style={styles.addButton}
-            accessibilityRole="button"
-            accessibilityLabel="Añadir a la lista"
-          >
-            <Ionicons name="add" size={22} color={colors.bg} />
-          </Pressable>
-        </View>
+        </FadeIn>
 
-        <SystemWindow color={colors.accentDim}>
-          <Text style={styles.windowTitle}>PENDIENTE · {pending.length}</Text>
-          {pending.length === 0 ? (
-            <Text style={styles.empty}>Nada pendiente. Generala desde la dieta o añade artículos arriba.</Text>
-          ) : (
-            pending.map((i) => (
-              <Pressable
-                key={i.id}
-                onPress={() => toggle(i)}
-                style={styles.row}
-                accessibilityRole="checkbox"
-                accessibilityState={{ checked: false }}
-                accessibilityLabel={`${i.name}, pendiente`}
-              >
-                <View style={styles.box} />
-                <Text style={styles.rowText}>{i.name}</Text>
-                {i.qty ? <Text style={styles.qty}>{i.qty}</Text> : null}
-              </Pressable>
-            ))
-          )}
-        </SystemWindow>
+        <FadeIn index={1}>
+          <View style={styles.addRow}>
+            <TextInput
+              style={styles.input}
+              value={newItem}
+              onChangeText={setNewItem}
+              placeholder="Añadir artículo"
+              placeholderTextColor={colors.textFaint}
+              onSubmitEditing={add}
+              returnKeyType="done"
+              accessibilityLabel="Nuevo artículo"
+            />
+            <Pressable
+              onPress={add}
+              disabled={!newItem.trim()}
+              style={({ pressed }) => [styles.addButton, !newItem.trim() && styles.addButtonOff, pressed && styles.pressed]}
+              accessibilityRole="button"
+              accessibilityLabel="Añadir a la lista"
+              accessibilityState={{ disabled: !newItem.trim() }}
+            >
+              <Ionicons name="add" size={22} color={colors.bg} />
+            </Pressable>
+          </View>
+        </FadeIn>
+
+        <FadeIn index={2}>
+          <Section title="Pendiente" meta={pending.length > 0 ? `${pending.length}` : undefined}>
+            {pending.length === 0 ? (
+              <Card variant="outline">
+                <EmptyState
+                  compact
+                  icon="cart-outline"
+                  title="Nada pendiente"
+                  body="Genera la lista desde la dieta o añade artículos arriba."
+                  action={{ label: 'Ir a la dieta', onPress: () => router.push('/dieta') }}
+                />
+              </Card>
+            ) : (
+              <Card padded={false} style={styles.lista}>
+                {pending.map((i, idx) => (
+                  <Row
+                    key={i.id}
+                    first={idx === 0}
+                    leading={<Check checked={false} size={24} />}
+                    title={i.name}
+                    trailing={i.qty ? <RowValue>{i.qty}</RowValue> : undefined}
+                    onPress={() => toggle(i)}
+                    accessibilityRole="checkbox"
+                    accessibilityState={{ checked: false }}
+                    accessibilityLabel={`${i.name}, pendiente`}
+                  />
+                ))}
+              </Card>
+            )}
+          </Section>
+        </FadeIn>
 
         {done.length > 0 ? (
-          <>
-            <SystemWindow color={colors.line}>
-              <Text style={[styles.windowTitle, { color: colors.textFaint }]}>EN EL CARRO · {done.length}</Text>
-              {done.map((i) => (
-                <Pressable
-                  key={i.id}
-                  onPress={() => toggle(i)}
-                  style={styles.row}
-                  accessibilityRole="checkbox"
-                  accessibilityState={{ checked: true }}
-                  accessibilityLabel={`${i.name}, en el carro`}
-                >
-                  <View style={[styles.box, styles.boxDone]}>
-                    <Ionicons name="checkmark" size={13} color={colors.accent} />
-                  </View>
-                  <Text style={[styles.rowText, styles.rowDone]}>{i.name}</Text>
-                </Pressable>
-              ))}
-            </SystemWindow>
-            <SystemButton title="Vaciar comprados" variant="outline" onPress={clearDone} />
-          </>
+          <FadeIn index={3}>
+            <Section
+              title="En el carro"
+              meta={`${done.length}`}
+              tone="accent"
+              action={{ label: 'Vaciar comprados', icon: 'trash-outline', onPress: clearDone }}
+            >
+              <Card padded={false} style={styles.lista}>
+                {done.map((i, idx) => (
+                  <Row
+                    key={i.id}
+                    first={idx === 0}
+                    leading={<Check checked size={24} />}
+                    title={i.name}
+                    done
+                    trailing={i.qty ? <RowValue>{i.qty}</RowValue> : undefined}
+                    onPress={() => toggle(i)}
+                    accessibilityRole="checkbox"
+                    accessibilityState={{ checked: true }}
+                    accessibilityLabel={`${i.name}, en el carro`}
+                  />
+                ))}
+              </Card>
+            </Section>
+          </FadeIn>
         ) : null}
-      </ScrollView>
-    </SafeAreaView>
+      </Stagger>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.bg },
-  content: { padding: 16, paddingBottom: 32 },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 14,
-  },
-  title: { fontFamily: fonts.heading, fontSize: 15, letterSpacing: 3, color: colors.accent },
-  addRow: { flexDirection: 'row', gap: 8, marginBottom: 14 },
+  addRow: { flexDirection: 'row', gap: 8, marginBottom: 22 },
   input: {
     flex: 1,
     borderWidth: 1,
     borderColor: colors.accentDim,
-    backgroundColor: colors.panel,
+    backgroundColor: colors.bg,
     color: colors.text,
     fontFamily: fonts.semibold,
-    fontSize: 15,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
+    fontSize: 16,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
   },
   addButton: {
-    width: 44,
+    width: 50,
     backgroundColor: colors.accent,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  windowTitle: {
-    fontFamily: fonts.heading,
-    fontSize: 12,
-    letterSpacing: 2.5,
-    color: colors.accent,
-    marginBottom: 6,
-  },
-  empty: { fontFamily: fonts.body, fontSize: 13, color: colors.textDim },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    paddingVertical: 8,
-    borderTopWidth: 1,
-    borderTopColor: colors.line,
-  },
-  box: {
-    width: 18,
-    height: 18,
-    borderWidth: 1,
-    borderColor: colors.accentDim,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  boxDone: { backgroundColor: colors.accentFaint, borderColor: colors.accent },
-  rowText: { flex: 1, fontFamily: fonts.semibold, fontSize: 15, color: colors.text },
-  rowDone: { color: colors.textDim, textDecorationLine: 'line-through' },
-  qty: { fontFamily: fonts.body, fontSize: 13, color: colors.textFaint },
+  addButtonOff: { opacity: 0.4 },
+  pressed: { opacity: 0.7 },
+  lista: { paddingHorizontal: 16, paddingVertical: 2 },
 });
