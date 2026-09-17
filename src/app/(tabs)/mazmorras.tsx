@@ -2,24 +2,24 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import {
-  Platform,
-  KeyboardAvoidingView,
   Alert,
+  KeyboardAvoidingView,
   Modal,
+  Platform,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
   View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { SystemButton } from '@/components/SystemButton';
-import { SystemWindow } from '@/components/SystemWindow';
 import { XPBar } from '@/components/XPBar';
+import { Card, Chip, ChipWrap, EmptyState, FadeIn, Row, RowValue, Screen, ScreenHeader, Section, Stagger } from '@/components/ui';
 import { useAuth } from '@/lib/auth';
+import { ensureProfile } from '@/lib/data';
 import { createDungeon, fetchDungeons } from '@/lib/dungeons';
 import { DUNGEON_CLEAR_XP, DUNGEON_RANKS, STATS } from '@/lib/game';
+import { kindMeta } from '@/lib/kinds';
 import { supabase } from '@/lib/supabase';
 import { colors, fonts } from '@/lib/theme';
 import type { Dungeon, DungeonRank, Stat } from '@/lib/types';
@@ -29,11 +29,24 @@ interface DungeonWithProgress extends Dungeon {
   doneCount: number;
 }
 
+function diasHasta(fecha: string | null): { texto: string; urgente: boolean } | null {
+  if (!fecha) return null;
+  const hoy = new Date();
+  hoy.setHours(0, 0, 0, 0);
+  const objetivo = new Date(`${fecha}T00:00:00`);
+  const dias = Math.round((objetivo.getTime() - hoy.getTime()) / 86_400_000);
+  if (dias < 0) return { texto: `${-dias} d de retraso`, urgente: true };
+  if (dias === 0) return { texto: 'Hoy', urgente: true };
+  if (dias === 1) return { texto: 'Mañana', urgente: true };
+  return { texto: `${dias} días`, urgente: dias <= 3 };
+}
+
 export default function Campañas() {
   const { session } = useAuth();
   const userId = session?.user.id;
 
   const [dungeons, setDungeons] = useState<DungeonWithProgress[]>([]);
+  const [kind, setKind] = useState<unknown>('general');
   const [formOpen, setFormOpen] = useState(false);
   const [title, setTitle] = useState('');
   const [rank, setRank] = useState<DungeonRank>('D');
@@ -52,10 +65,14 @@ export default function Campañas() {
           doneCount: rows.filter((t) => t.dungeon_id === d.id && t.done).length,
         })),
       );
+      if (userId) {
+        const p = await ensureProfile(userId).catch(() => null);
+        if (p) setKind(p.profile_kind);
+      }
     } catch (e) {
       Alert.alert('Error del sistema', e instanceof Error ? e.message : 'Fallo desconocido');
     }
-  }, []);
+  }, [userId]);
 
   useFocusEffect(
     useCallback(() => {
@@ -78,204 +95,200 @@ export default function Campañas() {
     }
   };
 
+  const meta = kindMeta(kind);
   const active = dungeons.filter((d) => d.status === 'active');
   const cleared = dungeons.filter((d) => d.status === 'cleared');
+  const botinTotal = cleared.reduce((s, d) => s + DUNGEON_CLEAR_XP[d.rank], 0);
 
   return (
-    <SafeAreaView style={styles.screen} edges={['top']}>
-      <ScrollView automaticallyAdjustKeyboardInsets keyboardShouldPersistTaps="handled" contentContainerStyle={styles.content}>
-        <View style={styles.header}>
-          <Text style={styles.title}>CAMPAÑAS</Text>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Abrir una campaña nueva"
-            onPress={() => setFormOpen(true)}
-            style={styles.addButton}
-          >
-            <Ionicons name="add" size={22} color={colors.bg} />
-          </Pressable>
-        </View>
+    <Screen>
+      <Stagger>
+        <FadeIn index={0}>
+          <ScreenHeader
+            eyebrow="Campañas"
+            title={meta.campaignsLabel}
+            subtitle={meta.campaignsHint}
+            action={{ icon: 'add', label: 'Abrir una campaña nueva', onPress: () => setFormOpen(true), solid: true }}
+          />
+        </FadeIn>
 
-        {active.length === 0 ? (
-          <SystemWindow color={colors.steelDim} fill={colors.panelDeep}>
-            <Text style={styles.empty}>
-              No hay campañas abiertas. Cada proyecto u objetivo grande de tu vida es una campaña:
-              créala y desglósala en monstruos (tareas) y jefes (hitos).
-            </Text>
-          </SystemWindow>
-        ) : (
-          active.map((d) => (
-            <Pressable
-              key={d.id}
-              onPress={() => router.push({ pathname: '/dungeon/[id]', params: { id: d.id } })}
-              accessibilityRole="button"
-              accessibilityLabel={`Abrir la campaña ${d.title}, rango ${d.rank}`}
-            >
-              <SystemWindow color={colors.steelDim} fill={colors.panelDeep}>
-                <View style={styles.row}>
-                  <View style={styles.rankBox}>
-                    <Text style={styles.rankLetter}>{d.rank}</Text>
-                  </View>
-                  <View style={styles.body}>
-                    <Text style={styles.dungeonTitle} numberOfLines={1}>
-                      {d.title}
-                    </Text>
-                    <Text style={styles.meta}>
-                      {d.doneCount}/{d.total} objetivos · stat {d.stat} · botín {DUNGEON_CLEAR_XP[d.rank]} XP
-                    </Text>
-                    <View style={{ marginTop: 8 }}>
-                      <XPBar ratio={d.total > 0 ? d.doneCount / d.total : 0} color={colors.steel} trackColor={colors.track} />
-                    </View>
-                  </View>
-                  <Ionicons name="chevron-forward" size={18} color={colors.textFaint} />
-                </View>
-              </SystemWindow>
-            </Pressable>
-          ))
-        )}
+        <FadeIn index={1}>
+          <Section title="Abiertas" meta={active.length > 0 ? `${active.length}` : undefined} tone="steel">
+            {active.length === 0 ? (
+              <Card variant="outline">
+                <EmptyState
+                  icon="flag-outline"
+                  title="Ninguna campaña abierta"
+                  body="Cada proyecto u objetivo grande es una campaña: tareas, un jefe final y una fecha. Al despejarla hay botín."
+                  action={{ label: 'Abrir la primera', onPress: () => setFormOpen(true), variant: 'solid' }}
+                />
+              </Card>
+            ) : (
+              active.map((d, i) => {
+                const plazo = diasHasta(d.deadline);
+                const ratio = d.total > 0 ? d.doneCount / d.total : 0;
+                return (
+                  <FadeIn key={d.id} index={i}>
+                    <Card
+                      onPress={() => router.push({ pathname: '/dungeon/[id]', params: { id: d.id } })}
+                      accessibilityLabel={`Abrir la campaña ${d.title}, rango ${d.rank}`}
+                    >
+                      <View style={styles.row}>
+                        <View style={styles.rankBox}>
+                          <Text style={styles.rankLetter}>{d.rank}</Text>
+                        </View>
+                        <View style={styles.body}>
+                          <Text style={styles.dungeonTitle} numberOfLines={2}>
+                            {d.title}
+                          </Text>
+                          <View style={styles.metaRow}>
+                            <Text style={styles.meta}>
+                              {d.doneCount}/{d.total} tareas · {d.stat}
+                            </Text>
+                            {plazo ? (
+                              <View style={styles.plazo}>
+                                <Ionicons name="time-outline" size={12} color={plazo.urgente ? colors.red : colors.textFaint} />
+                                <Text style={[styles.meta, plazo.urgente && styles.plazoUrgente]}>{plazo.texto}</Text>
+                              </View>
+                            ) : null}
+                          </View>
+                        </View>
+                        <Ionicons name="chevron-forward" size={18} color={colors.textFaint} />
+                      </View>
+                      <View style={styles.progress}>
+                        <XPBar ratio={ratio} color={colors.steel} height={5} />
+                        <View style={styles.progressMeta}>
+                          <Text style={styles.progressPct}>{Math.round(ratio * 100)}%</Text>
+                          <Text style={styles.botin}>Botín {DUNGEON_CLEAR_XP[d.rank]} XP</Text>
+                        </View>
+                      </View>
+                    </Card>
+                  </FadeIn>
+                );
+              })
+            )}
+          </Section>
+        </FadeIn>
 
         {cleared.length > 0 ? (
-          <SystemWindow color={colors.line}>
-            <Text style={styles.clearedHeader}>DESPEJADAS · {cleared.length}</Text>
-            {cleared.map((d) => (
-              <Text key={d.id} style={styles.clearedRow}>
-                {d.rank} · {d.title}
-              </Text>
-            ))}
-          </SystemWindow>
+          <FadeIn index={2}>
+            <Section title="Despejadas" meta={`${cleared.length} · ${botinTotal} XP`} tone="gold">
+              <Card padded={false} style={styles.lista}>
+                {cleared.map((d, i) => (
+                  <Row
+                    key={d.id}
+                    first={i === 0}
+                    leading={
+                      <View style={styles.rankMini}>
+                        <Text style={styles.rankMiniLetter}>{d.rank}</Text>
+                      </View>
+                    }
+                    title={d.title}
+                    muted
+                    detail={d.cleared_at ? `Despejada el ${d.cleared_at.slice(0, 10)}` : undefined}
+                    trailing={<RowValue tone="gold">+{DUNGEON_CLEAR_XP[d.rank]} XP</RowValue>}
+                    onPress={() => router.push({ pathname: '/dungeon/[id]', params: { id: d.id } })}
+                  />
+                ))}
+              </Card>
+            </Section>
+          </FadeIn>
         ) : null}
-      </ScrollView>
+      </Stagger>
 
       <Modal visible={formOpen} transparent animationType="slide" onRequestClose={() => setFormOpen(false)}>
-        <KeyboardAvoidingView
-          style={styles.backdrop}
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        >
+        <KeyboardAvoidingView style={styles.backdrop} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+          <Pressable style={styles.backdropTap} onPress={() => setFormOpen(false)} accessibilityLabel="Cerrar" />
           <View style={styles.sheet}>
-            <Text style={styles.sheetTitle}>NUEVA CAMPAÑA</Text>
-            <Text style={styles.label}>Nombre del objetivo o proyecto</Text>
+            <View style={styles.sheetHandle} />
+            <Text style={styles.sheetEyebrow}>NUEVA CAMPAÑA</Text>
+            <Text style={styles.sheetTitle}>¿Qué vas a conquistar?</Text>
+            <Text style={styles.label}>Nombre</Text>
             <TextInput
               style={styles.input}
               value={title}
               onChangeText={setTitle}
-              placeholder="Ej. Aprobar INGP · Terminar el TFG"
+              placeholder="Ej. Lanzar la web · Aprobar Cálculo · Media maratón"
               placeholderTextColor={colors.textFaint}
+              autoFocus
             />
-            <Text style={styles.label}>Rango (envergadura)</Text>
-            <View style={styles.chips}>
+            <Text style={styles.label}>Envergadura</Text>
+            <ChipWrap>
               {DUNGEON_RANKS.map((r) => (
-                <Pressable
-                  key={r}
-                  onPress={() => setRank(r)}
-                  style={[styles.chip, rank === r && styles.chipOn]}
-                  accessibilityRole="radio"
-                  accessibilityState={{ selected: rank === r }}
-                  accessibilityLabel={`Rango ${r}`}
-                >
-                  <Text style={[styles.chipText, rank === r && styles.chipTextOn]}>{r}</Text>
-                </Pressable>
+                <Chip key={r} label={r} selected={rank === r} onPress={() => setRank(r)} tone="steel" accessibilityLabel={`Rango ${r}`} />
               ))}
-            </View>
-            <Text style={styles.label}>Stat que entrena</Text>
-            <View style={styles.chips}>
+            </ChipWrap>
+            <Text style={styles.hint}>De E (una semana) a S (una temporada entera). Botín al despejar: {DUNGEON_CLEAR_XP[rank]} XP.</Text>
+            <Text style={styles.label}>Qué entrena</Text>
+            <ChipWrap>
               {STATS.map((s) => (
-                <Pressable
-                  key={s}
-                  onPress={() => setStat(s)}
-                  style={[styles.chip, stat === s && styles.chipOn]}
-                  accessibilityRole="radio"
-                  accessibilityState={{ selected: stat === s }}
-                  accessibilityLabel={`Estadística ${s}`}
-                >
-                  <Text style={[styles.chipText, stat === s && styles.chipTextOn]}>{s}</Text>
-                </Pressable>
+                <Chip key={s} label={s} selected={stat === s} onPress={() => setStat(s)} accessibilityLabel={`Estadística ${s}`} />
               ))}
-            </View>
-            <SystemButton
-              title="Abrir campaña"
-              onPress={onCreate}
-              loading={saving}
-              disabled={!title.trim()}
-              style={{ marginTop: 20 }}
-            />
-            <SystemButton title="Cancelar" variant="outline" onPress={() => setFormOpen(false)} style={{ marginTop: 10 }} />
+            </ChipWrap>
+            <SystemButton title="Abrir campaña" onPress={onCreate} loading={saving} disabled={!title.trim()} style={{ marginTop: 22 }} />
+            <SystemButton title="Cancelar" variant="ghost" onPress={() => setFormOpen(false)} style={{ marginTop: 6 }} />
           </View>
         </KeyboardAvoidingView>
       </Modal>
-    </SafeAreaView>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.bg },
-  content: { padding: 16, paddingBottom: 32 },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 14,
-  },
-  title: { fontFamily: fonts.heading, fontSize: 16, letterSpacing: 4, color: colors.steel },
-  addButton: {
-    width: 34,
-    height: 34,
-    backgroundColor: colors.steel,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  empty: { fontFamily: fonts.body, fontSize: 13, color: colors.textDim, lineHeight: 19 },
-  row: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  row: { flexDirection: 'row', alignItems: 'center', gap: 14 },
   rankBox: {
-    width: 42,
-    height: 42,
+    width: 46,
+    height: 46,
     borderWidth: 1.5,
-    borderColor: colors.steel,
+    borderColor: colors.steelDim,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  rankLetter: { fontFamily: fonts.brand, fontSize: 20, color: colors.steel },
+  rankLetter: { fontFamily: fonts.brand, fontSize: 22, color: colors.steel },
   body: { flex: 1, minWidth: 0 },
-  dungeonTitle: { fontFamily: fonts.semibold, fontSize: 16, color: colors.text },
-  meta: { fontFamily: fonts.body, fontSize: 12, color: colors.textDim, marginTop: 2 },
-  clearedHeader: {
-    fontFamily: fonts.heading,
-    fontSize: 12,
-    letterSpacing: 2.5,
-    color: colors.textFaint,
-    marginBottom: 8,
-  },
-  clearedRow: { fontFamily: fonts.body, fontSize: 13, color: colors.textDim, paddingVertical: 3 },
-  backdrop: { flex: 1, backgroundColor: 'rgba(2, 6, 14, 0.85)', justifyContent: 'flex-end' },
+  dungeonTitle: { fontFamily: fonts.heading, fontSize: 16.5, lineHeight: 21, letterSpacing: -0.2, color: colors.text },
+  metaRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 4, flexWrap: 'wrap' },
+  meta: { fontFamily: fonts.body, fontSize: 12, color: colors.textFaint },
+  plazo: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  plazoUrgente: { color: colors.red, fontFamily: fonts.semibold },
+  progress: { marginTop: 14 },
+  progressMeta: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 6 },
+  progressPct: { fontFamily: fonts.number, fontSize: 12, color: colors.steel },
+  botin: { fontFamily: fonts.body, fontSize: 12, color: colors.textFaint },
+  lista: { paddingHorizontal: 16, paddingVertical: 2 },
+  rankMini: { width: 28, height: 28, borderWidth: 1, borderColor: colors.goldDim, alignItems: 'center', justifyContent: 'center' },
+  rankMiniLetter: { fontFamily: fonts.brand, fontSize: 13, color: colors.gold },
+  backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'flex-end' },
+  backdropTap: { flex: 1 },
   sheet: {
-    backgroundColor: colors.panelDeep,
-    borderTopWidth: 1.5,
-    borderTopColor: colors.steelDim,
-    padding: 20,
+    backgroundColor: colors.panel,
+    borderTopWidth: 1,
+    borderTopColor: colors.line,
+    paddingHorizontal: 20,
+    paddingTop: 10,
     paddingBottom: 34,
   },
-  sheetTitle: { fontFamily: fonts.heading, fontSize: 16, letterSpacing: 3, color: colors.steel, marginBottom: 6 },
+  sheetHandle: { alignSelf: 'center', width: 36, height: 3, backgroundColor: colors.accentDim, marginBottom: 16 },
+  sheetEyebrow: { fontFamily: fonts.heading, fontSize: 11, letterSpacing: 2.5, color: colors.steel },
+  sheetTitle: { fontFamily: fonts.heading, fontSize: 24, letterSpacing: -0.5, color: colors.text, marginTop: 6, marginBottom: 4 },
   label: {
     fontFamily: fonts.heading,
-    fontSize: 12,
-    letterSpacing: 1.5,
-    color: colors.textDim,
+    fontSize: 11,
+    letterSpacing: 2,
+    color: colors.textFaint,
     textTransform: 'uppercase',
-    marginTop: 14,
-    marginBottom: 7,
+    marginTop: 18,
+    marginBottom: 8,
   },
+  hint: { fontFamily: fonts.body, fontSize: 12, color: colors.textFaint, marginTop: 8, lineHeight: 17 },
   input: {
     borderWidth: 1,
-    borderColor: colors.steelDim,
+    borderColor: colors.accentDim,
     backgroundColor: colors.bg,
     color: colors.text,
     fontFamily: fonts.semibold,
-    fontSize: 15,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
+    fontSize: 16,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
   },
-  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  chip: { borderWidth: 1, borderColor: colors.steelDim, paddingHorizontal: 14, paddingVertical: 7 },
-  chipOn: { backgroundColor: colors.accentFaint, borderColor: colors.steel },
-  chipText: { fontFamily: fonts.semibold, fontSize: 13, color: colors.textDim },
-  chipTextOn: { color: colors.steel },
 });

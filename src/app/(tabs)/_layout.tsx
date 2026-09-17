@@ -1,73 +1,16 @@
-import Ionicons from '@expo/vector-icons/Ionicons';
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { Tabs } from 'expo-router';
-import { colors, fonts } from '@/lib/theme';
+import { TabBar } from '@/components/ui/TabBar';
 
+// Los iconos y las etiquetas viven en TabBar (src/components/ui/TabBar.tsx).
 export default function TabsLayout() {
   return (
-    <Tabs
-      screenOptions={{
-        headerShown: false,
-        tabBarStyle: {
-          backgroundColor: colors.tabBar,
-          borderTopColor: colors.line,
-          borderTopWidth: 1,
-        },
-        tabBarActiveTintColor: colors.accent,
-        tabBarInactiveTintColor: colors.textFaint,
-        tabBarLabelStyle: { fontFamily: fonts.semibold, fontSize: 11 },
-      }}
-    >
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: 'Hoy',
-          tabBarIcon: ({ color, size }) => <Ionicons name="grid-outline" color={color} size={size} />,
-        }}
-      />
-      <Tabs.Screen
-        name="coach"
-        options={{
-          title: 'Coach',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="chatbubble-ellipses-outline" color={color} size={size} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="habitos"
-        options={{
-          title: 'Hábitos',
-          tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="calendar-check-outline" color={color} size={size} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="mazmorras"
-        options={{
-          title: 'Campañas',
-          tabBarIcon: ({ color, size }) => <Ionicons name="flag-outline" color={color} size={size} />,
-        }}
-      />
-      <Tabs.Screen
-        name="agenda"
-        options={{
-          title: 'Agenda',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="calendar-outline" color={color} size={size} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="perfil"
-        options={{
-          title: 'Perfil',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="person-outline" color={color} size={size} />
-          ),
-        }}
-      />
+    <Tabs tabBar={(props) => <TabBar {...props} />} screenOptions={{ headerShown: false }}>
+      <Tabs.Screen name="index" options={{ title: 'Hoy' }} />
+      <Tabs.Screen name="coach" options={{ title: 'Coach' }} />
+      <Tabs.Screen name="habitos" options={{ title: 'Hábitos' }} />
+      <Tabs.Screen name="mazmorras" options={{ title: 'Campañas' }} />
+      <Tabs.Screen name="agenda" options={{ title: 'Agenda' }} />
+      <Tabs.Screen name="perfil" options={{ title: 'Perfil' }} />
     </Tabs>
   );
 }

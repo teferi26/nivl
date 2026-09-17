@@ -13,9 +13,8 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { SystemWindow } from '@/components/SystemWindow';
 import { TextoSistema } from '@/components/TextoSistema';
+import { Chip, ChipRow, FadeIn, Screen } from '@/components/ui';
 import { useAuth } from '@/lib/auth';
 import {
   describeAction,
@@ -37,12 +36,46 @@ interface Burbuja {
 }
 
 // Atajos a los rituales: lo que el coach anterior hacía por cadena programada.
-const ATAJOS: { etiqueta: string; mensaje: string }[] = [
-  { etiqueta: 'Planifica mi día', mensaje: 'Planifica el resto de mi día de hoy.' },
-  { etiqueta: 'Reporte', mensaje: 'Voy a reportar. Pregúntame lo que necesites saber de hoy.' },
-  { etiqueta: 'Dojo de ventas', mensaje: 'Entréname 15 minutos de ventas. Empieza con una objeción real.' },
-  { etiqueta: 'Revísame', mensaje: 'Haz la revisión de mis últimos 14 días con honestidad brutal.' },
+const ATAJOS: { etiqueta: string; mensaje: string; icono: keyof typeof Ionicons.glyphMap }[] = [
+  { etiqueta: 'Planifica mi día', mensaje: 'Planifica el resto de mi día de hoy.', icono: 'list-outline' },
+  { etiqueta: 'Reporte', mensaje: 'Voy a reportar. Pregúntame lo que necesites saber de hoy.', icono: 'clipboard-outline' },
+  { etiqueta: 'Dojo de ventas', mensaje: 'Entréname 15 minutos de ventas. Empieza con una objeción real.', icono: 'flash-outline' },
+  { etiqueta: 'Revísame', mensaje: 'Haz la revisión de mis últimos 14 días con honestidad brutal.', icono: 'analytics-outline' },
 ];
+
+/** Mensaje del coach: sin burbuja, con una marca a la izquierda y el texto en editorial. */
+function MensajeSistema({ texto, acciones, pensando }: { texto?: string; acciones: { texto: string; ok: boolean }[]; pensando?: boolean }) {
+  return (
+    <View style={styles.filaSistema}>
+      <View style={styles.marcaSistema}>
+        <Ionicons name="shield-half" size={12} color={colors.bg} />
+      </View>
+      <View style={styles.cuerpoSistema}>
+        {pensando && !texto ? (
+          <View style={styles.pensandoFila}>
+            <ActivityIndicator size="small" color={colors.textDim} />
+            <Text style={styles.pensando}>El sistema piensa</Text>
+          </View>
+        ) : null}
+        {texto ? <TextoSistema texto={texto} /> : null}
+        {acciones.length > 0 ? (
+          <View style={styles.acciones}>
+            {acciones.map((a, i) => (
+              <View key={i} style={styles.accion}>
+                <Ionicons
+                  name={a.ok ? 'checkmark-circle' : 'alert-circle'}
+                  size={13}
+                  color={a.ok ? colors.accentText : colors.red}
+                />
+                <Text style={styles.accionTexto}>{a.texto}</Text>
+              </View>
+            ))}
+          </View>
+        ) : null}
+      </View>
+    </View>
+  );
+}
 
 export default function CoachScreen() {
   const { session } = useAuth();
@@ -137,8 +170,7 @@ export default function CoachScreen() {
       {
         id: `local-${Date.now()}`,
         role: 'user',
-        text: fotos.length ? `[${fotos.length} foto(s)]
-${limpio}` : limpio,
+        text: fotos.length ? `[${fotos.length} foto(s)]\n${limpio}` : limpio,
         acciones: [],
       },
     ]);
@@ -201,27 +233,33 @@ ${limpio}` : limpio,
 
   if (cargando) {
     return (
-      <SafeAreaView style={styles.screen} edges={['top']}>
+      <Screen plain>
         <View style={styles.centro}>
           <ActivityIndicator color={colors.accent} />
         </View>
-      </SafeAreaView>
+      </Screen>
     );
   }
 
   const vacio = !burbujas.length && !enCurso;
+  const puedeEnviar = (!!texto.trim() || adjuntas.length > 0) && !enviando.current;
 
   return (
-    <SafeAreaView style={styles.screen} edges={['top']}>
+    <Screen plain>
       <View style={styles.header}>
-        <Text style={styles.titulo}>EL SISTEMA</Text>
+        <View>
+          <Text style={styles.eyebrow}>EL SISTEMA</Text>
+          <Text style={styles.titulo}>Coach</Text>
+        </View>
         <Pressable
           onPress={() => router.push('/memoria')}
+          style={({ pressed }) => [styles.memoria, pressed && { opacity: 0.6 }]}
           accessibilityRole="button"
           accessibilityLabel="Ver la memoria del sistema"
-          hitSlop={10}
+          hitSlop={8}
         >
-          <Ionicons name="library-outline" size={20} color={colors.accentText} />
+          <Ionicons name="library-outline" size={18} color={colors.text} />
+          <Text style={styles.memoriaTexto}>Memoria</Text>
         </Pressable>
       </View>
 
@@ -230,103 +268,73 @@ ${limpio}` : limpio,
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 8 : 0}
       >
-        <ScrollView automaticallyAdjustKeyboardInsets
+        <ScrollView
+          automaticallyAdjustKeyboardInsets
           ref={scrollRef}
           style={styles.flex}
           contentContainerStyle={styles.lista}
           onContentSizeChange={alFondo}
           keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
         >
           {vacio ? (
-            <SystemWindow>
-              <Text style={styles.vacioTitulo}>El sistema te escucha</Text>
-              <Text style={styles.vacioTexto}>
-                Conserva la memoria de tu coach anterior: tus objetivos, tus proyectos, tus reglas y
-                lo que ha aprendido de ti. Habla con él como hablarías con quien lleva tu vida.
-              </Text>
-            </SystemWindow>
+            <FadeIn>
+              <View style={styles.vacio}>
+                <View style={styles.vacioEmblema}>
+                  <Ionicons name="shield-half" size={26} color={colors.bg} />
+                </View>
+                <Text style={styles.vacioTitulo}>El sistema te escucha.</Text>
+                <Text style={styles.vacioTexto}>
+                  Manda en tu día, decide qué puntúa cada cosa, te juzga por la noche y recuerda todo lo que
+                  aprende de ti. Habla con él como hablarías con quien lleva tu vida.
+                </Text>
+              </View>
+            </FadeIn>
           ) : null}
 
-          {burbujas.map((b) => (
-            <View key={b.id} style={b.role === 'user' ? styles.filaUsuario : styles.filaSistema}>
-              {b.role === 'user' ? (
+          {burbujas.map((b) =>
+            b.role === 'user' ? (
+              <View key={b.id} style={styles.filaUsuario}>
                 <View style={styles.burbujaUsuario}>
                   <Text style={styles.textoUsuario}>{b.text}</Text>
                 </View>
-              ) : (
-                <SystemWindow style={styles.burbujaSistema}>
-                  {b.text ? <TextoSistema texto={b.text} /> : null}
-                  {b.acciones.map((a, i) => (
-                    <View key={i} style={styles.accion}>
-                      <Ionicons name="checkmark-circle-outline" size={13} color={colors.accent} />
-                      <Text style={styles.accionTexto}>{a}</Text>
-                    </View>
-                  ))}
-                </SystemWindow>
-              )}
-            </View>
-          ))}
+              </View>
+            ) : (
+              <MensajeSistema key={b.id} texto={b.text} acciones={b.acciones.map((texto) => ({ texto, ok: true }))} />
+            ),
+          )}
 
           {enCurso || pensando || acciones.length ? (
-            <View style={styles.filaSistema}>
-              <SystemWindow style={styles.burbujaSistema}>
-                {pensando && !enCurso ? (
-                  <Text style={styles.pensando}>El sistema está pensando</Text>
-                ) : null}
-                {enCurso ? <TextoSistema texto={enCurso} /> : null}
-                {acciones.map((a, i) => (
-                  <View key={i} style={styles.accion}>
-                    <Ionicons
-                      name={a.ok ? 'checkmark-circle-outline' : 'alert-circle-outline'}
-                      size={13}
-                      color={a.ok ? colors.accent : colors.red}
-                    />
-                    <Text style={styles.accionTexto}>{describeAction(a.name)}</Text>
-                  </View>
-                ))}
-              </SystemWindow>
-            </View>
+            <MensajeSistema
+              texto={enCurso}
+              pensando={pensando}
+              acciones={acciones.map((a) => ({ texto: describeAction(a.name), ok: a.ok }))}
+            />
           ) : null}
 
           {error ? (
-            <SystemWindow color={colors.redDim} fill={colors.redPanel}>
-              <Text style={styles.error}>{error}</Text>
-            </SystemWindow>
+            <View style={styles.error}>
+              <Ionicons name="alert-circle-outline" size={14} color={colors.red} />
+              <Text style={styles.errorTexto}>{error}</Text>
+            </View>
           ) : null}
         </ScrollView>
 
         {vacio ? (
-          <ScrollView keyboardShouldPersistTaps="handled" automaticallyAdjustKeyboardInsets
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.atajos}
-          >
-            {ATAJOS.map((a) => (
-              <Pressable
-                key={a.etiqueta}
-                onPress={() => enviar(a.mensaje)}
-                style={styles.atajo}
-                accessibilityRole="button"
-                accessibilityLabel={a.etiqueta}
-              >
-                <Text style={styles.atajoTexto}>{a.etiqueta}</Text>
-              </Pressable>
-            ))}
-          </ScrollView>
+          <View style={styles.atajos}>
+            <ChipRow>
+              {ATAJOS.map((a) => (
+                <Chip key={a.etiqueta} label={a.etiqueta} icon={a.icono} onPress={() => enviar(a.mensaje)} />
+              ))}
+            </ChipRow>
+          </View>
         ) : null}
 
         {adjuntas.length ? (
           <View style={styles.adjuntas}>
             <Ionicons name="image-outline" size={14} color={colors.accentText} />
-            <Text style={styles.adjuntasTexto}>
-              {adjuntas.length} foto(s) listas para enviar
-            </Text>
-            <Pressable
-              onPress={() => setAdjuntas([])}
-              hitSlop={8}
-              accessibilityRole="button"
-              accessibilityLabel="Quitar las fotos"
-            >
+            <Text style={styles.adjuntasTexto}>{adjuntas.length} foto(s) listas para enviar</Text>
+            <Pressable onPress={() => setAdjuntas([])} hitSlop={8} accessibilityRole="button" accessibilityLabel="Quitar las fotos">
               <Ionicons name="close" size={16} color={colors.textDim} />
             </Pressable>
           </View>
@@ -336,11 +344,11 @@ ${limpio}` : limpio,
           <Pressable
             onPress={adjuntar}
             disabled={enviando.current}
-            style={styles.adjuntar}
+            style={({ pressed }) => [styles.adjuntar, pressed && { opacity: 0.6 }]}
             accessibilityRole="button"
             accessibilityLabel="Adjuntar una foto"
           >
-            <Ionicons name="add" size={22} color={colors.accentText} />
+            <Ionicons name="add" size={22} color={colors.textDim} />
           </Pressable>
           <TextInput
             style={styles.input}
@@ -353,11 +361,8 @@ ${limpio}` : limpio,
           />
           <Pressable
             onPress={() => enviar(texto)}
-            disabled={(!texto.trim() && !adjuntas.length) || enviando.current}
-            style={[
-              styles.enviar,
-              (!texto.trim() && !adjuntas.length) || enviando.current ? styles.enviarOff : null,
-            ]}
+            disabled={!puedeEnviar}
+            style={({ pressed }) => [styles.enviar, !puedeEnviar && styles.enviarOff, pressed && { opacity: 0.8 }]}
             accessibilityRole="button"
             accessibilityLabel="Enviar mensaje"
           >
@@ -365,148 +370,103 @@ ${limpio}` : limpio,
           </Pressable>
         </View>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.bg },
   flex: { flex: 1 },
   centro: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   header: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-end',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingTop: 8,
-    paddingBottom: 10,
+    paddingHorizontal: 20,
+    paddingTop: 10,
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.line,
   },
-  titulo: {
-    fontFamily: fonts.heading,
-    fontSize: 16,
-    letterSpacing: 4,
-    color: colors.text,
-  },
-  lista: { paddingHorizontal: 16, paddingBottom: 12 },
-  filaUsuario: { alignItems: 'flex-end', marginBottom: 12 },
-  filaSistema: { alignItems: 'stretch' },
-  burbujaSistema: { marginBottom: 12 },
+  eyebrow: { fontFamily: fonts.heading, fontSize: 10.5, letterSpacing: 2.5, color: colors.textFaint },
+  titulo: { fontFamily: fonts.heading, fontSize: 24, letterSpacing: -0.5, color: colors.text, marginTop: 2 },
+  memoria: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 6, paddingHorizontal: 10, borderWidth: 1, borderColor: colors.line },
+  memoriaTexto: { fontFamily: fonts.semibold, fontSize: 12, color: colors.text },
+  lista: { paddingHorizontal: 20, paddingTop: 16, paddingBottom: 12 },
+  filaUsuario: { alignItems: 'flex-end', marginBottom: 16 },
   burbujaUsuario: {
-    maxWidth: '86%',
-    backgroundColor: colors.accentFaint,
-    borderWidth: 1,
-    borderColor: colors.accentDim,
-    paddingVertical: 9,
-    paddingHorizontal: 12,
+    maxWidth: '84%',
+    backgroundColor: colors.accent,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
   },
-  textoUsuario: {
-    fontFamily: fonts.body,
-    fontSize: 14,
-    lineHeight: 20,
-    color: colors.text,
-  },
-  textoSistema: {
-    fontFamily: fonts.body,
-    fontSize: 14,
-    lineHeight: 21,
-    color: colors.text,
-  },
-  pensando: {
-    fontFamily: fonts.body,
-    fontSize: 13,
-    color: colors.textDim,
-    fontStyle: 'italic',
-  },
-  accion: {
-    flexDirection: 'row',
+  textoUsuario: { fontFamily: fonts.body, fontSize: 14.5, lineHeight: 21, color: colors.bg },
+  filaSistema: { flexDirection: 'row', gap: 12, marginBottom: 20 },
+  marcaSistema: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: colors.accent,
     alignItems: 'center',
-    gap: 6,
-    marginTop: 8,
+    justifyContent: 'center',
+    marginTop: 1,
   },
-  accionTexto: {
-    fontFamily: fonts.body,
-    fontSize: 12,
-    color: colors.accentText,
-    flexShrink: 1,
-  },
-  error: {
-    fontFamily: fonts.body,
-    fontSize: 13,
-    color: colors.red,
-  },
-  vacioTitulo: {
-    fontFamily: fonts.heading,
-    fontSize: 15,
-    letterSpacing: 2,
-    color: colors.accentText,
-    marginBottom: 8,
-  },
-  vacioTexto: {
-    fontFamily: fonts.body,
-    fontSize: 13,
-    lineHeight: 20,
-    color: colors.textDim,
-  },
-  atajos: { paddingHorizontal: 16, paddingBottom: 10, gap: 8 },
-  atajo: {
-    borderWidth: 1,
-    borderColor: colors.accentDim,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-  },
-  atajoTexto: {
-    fontFamily: fonts.semibold,
-    fontSize: 12,
-    letterSpacing: 1,
-    color: colors.accentText,
-  },
+  cuerpoSistema: { flex: 1, minWidth: 0 },
+  pensandoFila: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  pensando: { fontFamily: fonts.body, fontSize: 13, color: colors.textDim },
+  acciones: { marginTop: 8, borderLeftWidth: 1, borderLeftColor: colors.line, paddingLeft: 10, gap: 4 },
+  accion: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  accionTexto: { fontFamily: fonts.body, fontSize: 12.5, color: colors.textDim, flexShrink: 1 },
+  error: { flexDirection: 'row', alignItems: 'center', gap: 8, borderLeftWidth: 2, borderLeftColor: colors.red, paddingLeft: 10, paddingVertical: 6 },
+  errorTexto: { fontFamily: fonts.body, fontSize: 13, color: colors.red, flex: 1 },
+  vacio: { alignItems: 'center', paddingTop: 48, paddingBottom: 24, paddingHorizontal: 12 },
+  vacioEmblema: { width: 56, height: 56, borderRadius: 28, backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center' },
+  vacioTitulo: { fontFamily: fonts.heading, fontSize: 22, letterSpacing: -0.4, color: colors.text, marginTop: 18 },
+  vacioTexto: { fontFamily: fonts.body, fontSize: 14, lineHeight: 21, color: colors.textDim, textAlign: 'center', marginTop: 8 },
+  atajos: { paddingBottom: 10 },
   barra: {
     flexDirection: 'row',
     alignItems: 'flex-end',
     gap: 8,
     paddingHorizontal: 16,
-    paddingTop: 8,
+    paddingTop: 10,
     paddingBottom: 12,
     borderTopWidth: 1,
     borderTopColor: colors.line,
-    backgroundColor: colors.tabBar,
+    backgroundColor: colors.bg,
   },
   input: {
     flex: 1,
-    minHeight: 42,
+    minHeight: 46,
     maxHeight: 130,
-    borderWidth: 1,
-    borderColor: colors.line,
     backgroundColor: colors.panel,
     color: colors.text,
     fontFamily: fonts.body,
-    fontSize: 14,
-    paddingHorizontal: 12,
-    paddingTop: 11,
-    paddingBottom: 11,
+    fontSize: 15,
+    paddingHorizontal: 14,
+    paddingTop: 13,
+    paddingBottom: 13,
   },
   enviar: {
-    width: 42,
-    height: 42,
+    width: 46,
+    height: 46,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: colors.accent,
   },
-  enviarOff: { opacity: 0.4 },
+  enviarOff: { opacity: 0.35 },
   adjuntar: {
-    width: 38,
-    height: 38,
-    borderWidth: 1,
-    borderColor: colors.accentFaint,
+    width: 46,
+    height: 46,
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: colors.panel,
   },
   adjuntas: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    paddingHorizontal: 16,
-    paddingBottom: 6,
+    paddingHorizontal: 20,
+    paddingBottom: 8,
   },
   adjuntasTexto: { fontFamily: fonts.body, fontSize: 12, color: colors.accentText, flex: 1 },
 });

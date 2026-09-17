@@ -34,11 +34,40 @@ Regla de color: el blanco es el idioma; acero, rojo y oro son palabras reservada
 - `body` Outfit 500: secundario/hints.
 - Mínimos: 11px; texto de lectura ≥13px.
 
-## Componentes canónicos (reusar, no reinventar)
+## El kit (`src/components/ui`, importa desde `@/components/ui`)
 
-- `SystemWindow` (src/components/SystemWindow.tsx): TODO panel va dentro de una. Por defecto es un marco recto de 1px (cut=0). El corte diagonal (`cut={14}`) queda reservado a momentos épicos (level-up, botín). Props color/fill para variantes (roja = alerta, acero = campaña).
-- `Hexagon`: avatares y emblemas. `XPBar`: toda barra de progreso (altura 6-8). `SystemButton`: botones (solid blanco / outline / danger). `QuestItem`: filas de misión.
-- Esquinas rectas en todo (borderRadius 0 salvo avatar circular). Bordes 1px. Sin sombras difusas ni degradados: la jerarquía se hace con el gris, no con blur.
+La pantalla es editorial: cabecera grande, secciones con rótulo pequeño y SIN caja, y tarjetas solo para lo que es una unidad (una misión, una campaña, un aviso). Referencias hechas: `src/app/(tabs)/index.tsx` (Hoy), `habitos.tsx`, `mazmorras.tsx`, `coach.tsx`.
+
+- `Screen` — SafeArea + ScrollView con padding 20 y pull-to-refresh (`refreshing`, `onRefresh`). `plain` para pantallas que gestionan su propio scroll (chat).
+- `ScreenHeader` — `eyebrow` (rótulo pequeño: fecha, sección), `title` (Outfit 30, tracking negativo; `compact` para 22), `subtitle` (una línea de contexto), `action` ({icon,label,onPress,solid}) o `right` (un anillo, una cifra), `onBack` en pantallas fuera de las pestañas.
+- `Section` — `title` (eyebrow), `meta` ("2/6"), `action` ({label,onPress}), `tone` (dim|accent|gold|red|steel). Debajo, el contenido sin caja. `Rule` para un separador fino.
+- `Card` — `variant` raised (superficie #0D0D0D sin borde, lo normal) | outline (marco, para avisos y vacíos) | tinted (activo/hecho). `accent` pinta una barra izquierda de 2 px (rojo alerta, oro hito). `onPress` la hace pulsable con encogido. `padded={false}` + `style={{paddingHorizontal:16, paddingVertical:2}}` para listas de `Row`.
+- `Row` + `Check` + `RowValue` — la fila de lista: `leading` (un `Check` redondo de 26, un icono, una letra), `title`, `detail` (texto o nodo), `trailing` (`RowValue` con tono), `done` (tachado), `muted`, `first` (sin línea superior), `chevron`, `onPress`/`onLongPress`.
+- `Chip`, `ChipRow` (desplazable, sangra el padding), `ChipWrap` (envuelve), `Tag` (etiqueta de estado sin interacción: PENALIZACIÓN, JEFE, HOY).
+- `Stat` + `StatRow` — cifras en Cinzel con rótulo: `value`, `label`, `unit`, `size` sm|md|lg, `tone`.
+- `ProgressRing` — anillo SVG animado: `ratio`, `size`, `label`, `sublabel`.
+- `EmptyState` — icono suelto + título + frase + `action`. `compact` dentro de una Card outline.
+- `FadeIn` / `Stagger` / `PressScale` — entrada al montar con `index` para la cascada; envuelve cada bloque de una pantalla en `<FadeIn index={i}>` dentro de un `<Stagger>`.
+- `SystemButton` — `variant` solid (blanco, UNA por pantalla) | outline | ghost | danger; `size` sm|md|lg; `icon`.
+- `XPBar` — barra animada; `segments` para marcar tramos (los 21 días de un hábito).
+- `TabBar` — la barra de pestañas propia (línea blanca arriba en la activa).
+- `SystemWindow` sigue existiendo para compatibilidad, pero en pantallas nuevas o rediseñadas NO se usa: sustituir por `Section` + `Card`.
+- `Hexagon` para avatares y emblemas. Esquinas rectas en todo (borderRadius 0 salvo `Check`, avatar y el emblema del coach). Sin sombras difusas ni degradados.
+
+### Anatomía de una pantalla rediseñada
+
+```tsx
+<Screen refreshing={r} onRefresh={load}>
+  <Stagger>
+    <FadeIn index={0}><ScreenHeader eyebrow="Cuerpo" title="Gimnasio" subtitle="Hoy toca empuje." action={{icon:'add',label:'Nueva sesión',onPress,solid:true}} /></FadeIn>
+    <FadeIn index={1}><Card><StatRow><Stat value={3} label="Sesiones" /><Stat value="72,5" unit="kg" label="Banca 1RM" /></StatRow></Card></FadeIn>
+    <FadeIn index={2}><Section title="Rutina de hoy" meta="4 ejercicios"><Card padded={false} style={{paddingHorizontal:16,paddingVertical:2}}>{items.map((it,i)=><Row key={it.id} first={i===0} leading={<Check checked={it.done}/>} title={it.name} detail="3×8" trailing={<RowValue>72,5 kg</RowValue>} onPress={...}/>)}</Card></Section></FadeIn>
+    <FadeIn index={3}><Section title="Historial"><EmptyState compact icon="barbell-outline" title="Sin sesiones aún" body="..." /></Section></FadeIn>
+  </Stagger>
+</Screen>
+```
+
+Reglas: una acción sólida por pantalla; los formularios en hoja inferior (`Modal` + `sheet` como en `mazmorras.tsx`) con `sheetHandle`, eyebrow, título grande y chips; los inputs con borde `accentDim` sobre `bg`; los estados vacío/cargando/error SIEMPRE definidos; textos largos con `numberOfLines`/`minWidth: 0`.
 
 ## Perfiles de uso (`src/lib/kinds.ts`)
 
@@ -46,7 +75,7 @@ El perfil (`profiles.profile_kind`: emprendedor · deportista · estudiante · g
 
 ## Layout
 
-Pantallas: SafeAreaView edges top → ScrollView padding 16, paddingBottom 32. Ventanas apiladas (SystemWindow trae marginBottom 12). Header de pantalla: título Outfit 700 espaciado o marca NIVL (Cinzel) + dato contextual a la derecha.
+Pantallas: `Screen` (padding horizontal 20, inferior 40) → `ScreenHeader` → secciones (`Section`, margen inferior 26) con sus tarjetas (`Card`, margen inferior 10). Cabecera: eyebrow + título grande + subtítulo, acción a la derecha. Nada de títulos en mayúsculas espaciadas como cabecera de pantalla: eso es solo para eyebrows y rótulos de sección.
 
 ## La voz del sistema (copy)
 

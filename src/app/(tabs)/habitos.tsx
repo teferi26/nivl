@@ -2,11 +2,11 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Haptics from 'expo-haptics';
 import { useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Alert, StyleSheet, Text, View } from 'react-native';
 import { QuestForm } from '@/components/QuestForm';
 import { SystemButton } from '@/components/SystemButton';
-import { SystemWindow } from '@/components/SystemWindow';
+import { XPBar } from '@/components/XPBar';
+import { Card, Check, EmptyState, FadeIn, Row, RowValue, Screen, ScreenHeader, Section, Stagger, Stat, StatRow } from '@/components/ui';
 import { useAuth } from '@/lib/auth';
 import { createQuest, deleteQuest, ensureProfile, updateQuest } from '@/lib/data';
 import { dateKey } from '@/lib/dates';
@@ -25,11 +25,18 @@ import type { Quest, Rule } from '@/lib/types';
 
 const DIAS = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
 
-function Barra({ p }: { p: ProgresoHabito }) {
-  const ratio = Math.min(1, p.racha / p.objetivo);
+/** Los siete días de la semana: los programados en blanco, el resto en hierro. */
+function Semana({ dias }: { dias: number[] }) {
   return (
-    <View style={styles.pista}>
-      <View style={[styles.relleno, { width: `${ratio * 100}%` }, p.consolidable && styles.rellenoListo]} />
+    <View style={styles.semana}>
+      {DIAS.map((d, i) => {
+        const on = dias.includes(i + 1);
+        return (
+          <View key={d} style={[styles.dia, on && styles.diaOn]}>
+            <Text style={[styles.diaTexto, on && styles.diaTextoOn]}>{d}</Text>
+          </View>
+        );
+      })}
     </View>
   );
 }
@@ -149,158 +156,157 @@ export default function Habitos() {
       },
     ]);
 
-  return (
-    <SafeAreaView style={styles.screen} edges={['top']}>
-      <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.content}>
-        <View style={styles.header}>
-          <Text style={styles.title}>HÁBITOS</Text>
-          <Pressable
-            onPress={() => setFormOpen(true)}
-            hitSlop={10}
-            accessibilityRole="button"
-            accessibilityLabel="Nuevo hábito"
-          >
-            <Ionicons name="add" size={24} color={colors.accent} />
-          </Pressable>
-        </View>
+  const listos = enCurso.filter((q) => progresos.get(q.id)?.consolidable).length;
+  const mejorRacha = Math.max(0, ...enCurso.map((q) => progresos.get(q.id)?.racha ?? 0));
 
-        <SystemWindow color={colors.accentDim}>
-          <Text style={styles.intro}>
-            Un hábito se da por adquirido a los {HABIT_TARGET_DAYS} días seguidos. A partir de ahí
-            decides tú: puedes consolidarlo —deja de pedírsete y deja de poder romperte la racha— o
-            seguir contando.
-          </Text>
-          <Text style={[styles.intro, { marginTop: 10 }]}>
-            Toca cualquier hábito para editarlo o eliminarlo. El sistema también puede quitártelos
-            si se lo pides.
-          </Text>
-        </SystemWindow>
+  return (
+    <Screen>
+      <Stagger>
+        <FadeIn index={0}>
+          <ScreenHeader
+            eyebrow="Constancia"
+            title="Hábitos"
+            subtitle={`A los ${HABIT_TARGET_DAYS} días seguidos un hábito es tuyo. Cada uno cuenta su propia racha.`}
+            action={{ icon: 'add', label: 'Nuevo hábito', onPress: () => setFormOpen(true), solid: true }}
+          />
+        </FadeIn>
+
+        <FadeIn index={1}>
+          <Card>
+            <StatRow>
+              <Stat value={enCurso.length} label="En forja" />
+              <Stat value={mejorRacha} label="Mejor racha" unit="d" tone={mejorRacha >= HABIT_TARGET_DAYS ? 'gold' : 'text'} />
+              <Stat value={listos} label="Listos" tone={listos > 0 ? 'accent' : 'text'} />
+              <Stat value={adquiridos.length} label="Adquiridos" />
+            </StatRow>
+          </Card>
+        </FadeIn>
 
         {reglas.length > 0 ? (
-          <>
-            <Text style={styles.seccion}>REGLAS DEL CONTRATO · HOY</Text>
-            <SystemWindow color={pendientesReglas > 0 ? colors.redDim : colors.accentDim}>
-              <Text style={styles.introReglas}>
+          <FadeIn index={2}>
+            <Section
+              title="Reglas del contrato · hoy"
+              tone={pendientesReglas > 0 ? 'red' : 'accent'}
+              meta={`${reglas.length - pendientesReglas}/${reglas.length}`}
+            >
+              <Card padded={false} style={styles.lista} accent={pendientesReglas > 0 ? colors.red : undefined}>
+                {reglas.map((r, i) => {
+                  const ok = cumplidas.has(r.id);
+                  return (
+                    <Row
+                      key={r.id}
+                      first={i === 0}
+                      leading={<Check checked={ok} size={24} />}
+                      title={r.text}
+                      done={ok}
+                      detail={!ok ? `Si no: ${r.consequence}` : undefined}
+                      onPress={() => alternarRegla(r)}
+                      accessibilityRole="checkbox"
+                      accessibilityState={{ checked: ok }}
+                    />
+                  );
+                })}
+              </Card>
+              <Text style={styles.nota}>
                 {pendientesReglas === 0
                   ? 'Las has cumplido todas hoy. El sistema toma nota.'
-                  : `Marca las que hayas cumplido. Lo que quede sin marcar al cerrar el día cuenta como roto: ${RULE_BREAK_XP} XP por regla y su consecuencia mañana.`}
+                  : `Lo que quede sin marcar al cierre cuenta como roto: ${RULE_BREAK_XP} XP por regla y su consecuencia mañana.`}
               </Text>
-              {reglas.map((r) => {
-                const ok = cumplidas.has(r.id);
-                return (
-                  <Pressable
-                    key={r.id}
-                    onPress={() => alternarRegla(r)}
-                    style={styles.reglaFila}
-                    accessibilityRole="checkbox"
-                    accessibilityState={{ checked: ok }}
-                    accessibilityLabel={r.text}
-                  >
-                    <View style={[styles.caja, ok && styles.cajaOn]}>
-                      {ok ? <Ionicons name="checkmark" size={13} color={colors.bg} /> : null}
-                    </View>
-                    <View style={{ flex: 1, minWidth: 0 }}>
-                      <Text style={[styles.reglaTexto, ok && styles.reglaHecha]}>{r.text}</Text>
-                      {!ok ? (
-                        <Text style={styles.reglaConsecuencia}>si no: {r.consequence}</Text>
-                      ) : null}
-                    </View>
-                  </Pressable>
-                );
-              })}
-            </SystemWindow>
-          </>
+            </Section>
+          </FadeIn>
         ) : null}
 
-        {enCurso.length === 0 && adquiridos.length === 0 ? (
-          <SystemWindow>
-            <Text style={styles.vacio}>
-              No tienes hábitos en construcción. Añade el primero: lectura, skincare, correr, nadar,
-              los correos, las llamadas en frío. Lo que quieras que un día te salga solo.
-            </Text>
-          </SystemWindow>
-        ) : null}
-
-        {enCurso.map((q) => {
-          const p = progresos.get(q.id);
-          if (!p) return null;
-          return (
-            <Pressable
-              key={q.id}
-              onPress={() => {
-                setEditando(q);
-                setFormOpen(true);
-              }}
-              accessibilityRole="button"
-              accessibilityLabel={`Editar ${q.title}`}
-            >
-            <SystemWindow color={p.consolidable ? colors.accent : colors.accentDim}>
-              <View style={styles.fila}>
-                <Text style={styles.nombre} numberOfLines={1}>
-                  {q.title}
-                </Text>
-                <Text style={[styles.racha, p.consolidable && styles.rachaListo]}>
-                  {p.racha}/{p.objetivo}
-                </Text>
-              </View>
-              <Barra p={p} />
-              <View style={styles.metaFila}>
-                <Text style={styles.dias}>
-                  {DIAS.filter((_, i) => q.days_of_week.includes(i + 1)).join(' ') || '—'}
-                </Text>
-                <Text style={styles.meta}>
-                  {p.consolidable
-                    ? 'Listo para consolidar'
-                    : p.restantes === 1
-                      ? 'Falta 1 día'
-                      : `Faltan ${p.restantes} días`}
-                </Text>
-              </View>
-              <View style={styles.metaFila}>
-                <Text style={styles.dias}>Tocar para editar o eliminar</Text>
-              </View>
-              {p.consolidable ? (
-                <SystemButton
-                  title="Darlo por adquirido"
-                  onPress={() => consolidar(q, p)}
-                  loading={busy}
-                  style={{ marginTop: 12 }}
+        <FadeIn index={3}>
+          <Section title="En forja" meta={enCurso.length > 0 ? `${enCurso.length}` : undefined}>
+            {enCurso.length === 0 && adquiridos.length === 0 ? (
+              <Card variant="outline">
+                <EmptyState
+                  icon="repeat-outline"
+                  title="Ningún hábito en forja"
+                  body="Lectura, correr, las llamadas en frío, dormir a tu hora. Lo que quieras que un día te salga solo."
+                  action={{ label: 'Añadir el primero', onPress: () => setFormOpen(true), variant: 'solid' }}
                 />
-              ) : null}
-            </SystemWindow>
-            </Pressable>
-          );
-        })}
+              </Card>
+            ) : null}
 
-        {adquiridos.length > 0 ? (
-          <>
-            <Text style={styles.seccion}>ADQUIRIDOS</Text>
-            {adquiridos.map((q) => (
-              <Pressable
-                key={q.id}
-                onLongPress={() => reactivar(q)}
-                accessibilityRole="button"
-                accessibilityLabel={`${q.title}, adquirido. Mantén pulsado para volver a exigirlo.`}
-              >
-                <SystemWindow color={colors.line}>
-                  <View style={styles.fila}>
-                    <View style={styles.filaIcono}>
-                      <Ionicons name="checkmark-circle" size={16} color={colors.accent} />
-                      <Text style={styles.nombreAdq} numberOfLines={1}>
+            {enCurso.map((q, i) => {
+              const p = progresos.get(q.id);
+              if (!p) return null;
+              return (
+                <FadeIn key={q.id} index={i}>
+                  <Card
+                    onPress={() => {
+                      setEditando(q);
+                      setFormOpen(true);
+                    }}
+                    accent={p.consolidable ? colors.gold : undefined}
+                    accessibilityLabel={`Editar ${q.title}`}
+                  >
+                    <View style={styles.fila}>
+                      <Text style={styles.nombre} numberOfLines={1}>
                         {q.title}
                       </Text>
+                      <Text style={[styles.racha, p.consolidable && styles.rachaListo]}>
+                        {p.racha}
+                        <Text style={styles.rachaObjetivo}> / {p.objetivo}</Text>
+                      </Text>
                     </View>
-                    <Text style={styles.meta}>{q.acquired_streak ?? '—'} días</Text>
-                  </View>
-                  <Text style={styles.metaTenue}>
-                    Ya no se te pide. Mantén pulsado si quieres volver a exigirlo.
-                  </Text>
-                </SystemWindow>
-              </Pressable>
-            ))}
-          </>
+                    <View style={{ marginTop: 10 }}>
+                      <XPBar
+                        ratio={Math.min(1, p.racha / p.objetivo)}
+                        height={8}
+                        segments={p.objetivo}
+                        color={p.consolidable ? colors.gold : colors.accent}
+                      />
+                    </View>
+                    <View style={styles.metaFila}>
+                      <Semana dias={q.days_of_week} />
+                      <Text style={[styles.meta, p.consolidable && styles.metaListo]}>
+                        {p.consolidable
+                          ? 'Listo para consolidar'
+                          : p.restantes === 1
+                            ? 'Falta 1 día'
+                            : `Faltan ${p.restantes} días`}
+                      </Text>
+                    </View>
+                    {p.consolidable ? (
+                      <SystemButton
+                        title="Darlo por adquirido"
+                        onPress={() => consolidar(q, p)}
+                        loading={busy}
+                        icon="ribbon-outline"
+                        style={{ marginTop: 14 }}
+                      />
+                    ) : null}
+                  </Card>
+                </FadeIn>
+              );
+            })}
+          </Section>
+        </FadeIn>
+
+        {adquiridos.length > 0 ? (
+          <FadeIn index={4}>
+            <Section title="Adquiridos" meta={`${adquiridos.length}`} tone="gold">
+              <Card padded={false} style={styles.lista}>
+                {adquiridos.map((q, i) => (
+                  <Row
+                    key={q.id}
+                    first={i === 0}
+                    leading={<Ionicons name="ribbon" size={18} color={colors.gold} />}
+                    title={q.title}
+                    muted
+                    detail="Ya no se te pide. Mantén pulsado para volver a exigirlo."
+                    trailing={<RowValue tone="gold">{q.acquired_streak ?? '—'} d</RowValue>}
+                    onLongPress={() => reactivar(q)}
+                    accessibilityLabel={`${q.title}, adquirido. Mantén pulsado para volver a exigirlo.`}
+                  />
+                ))}
+              </Card>
+            </Section>
+          </FadeIn>
         ) : null}
-      </ScrollView>
+      </Stagger>
 
       <QuestForm
         visible={formOpen}
@@ -323,68 +329,24 @@ export default function Habitos() {
           await cargar();
         }}
       />
-    </SafeAreaView>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.bg },
-  content: { padding: 16, paddingBottom: 32 },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 14,
-  },
-  title: { fontFamily: fonts.heading, fontSize: 15, letterSpacing: 3, color: colors.text },
-  intro: { fontFamily: fonts.body, fontSize: 12.5, lineHeight: 18, color: colors.textDim },
-  vacio: { fontFamily: fonts.body, fontSize: 13, lineHeight: 20, color: colors.textDim },
-  fila: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 },
-  filaIcono: { flexDirection: 'row', alignItems: 'center', gap: 7, flex: 1, minWidth: 0 },
-  nombre: { fontFamily: fonts.semibold, fontSize: 15, color: colors.text, flex: 1, minWidth: 0 },
-  nombreAdq: { fontFamily: fonts.semibold, fontSize: 14, color: colors.textDim, flex: 1, minWidth: 0 },
-  racha: { fontFamily: fonts.number, fontSize: 15, color: colors.accentText },
-  rachaListo: { color: colors.accent },
-  pista: { height: 6, backgroundColor: colors.track, marginTop: 10 },
-  relleno: { height: 6, backgroundColor: colors.accentDim },
-  rellenoListo: { backgroundColor: colors.accent },
-  metaFila: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  dias: { fontFamily: fonts.heading, fontSize: 11.5, letterSpacing: 2, color: colors.textFaint },
-  meta: { fontFamily: fonts.body, fontSize: 12, color: colors.textDim },
-  metaTenue: { fontFamily: fonts.body, fontSize: 11, color: colors.textFaint, marginTop: 6 },
-  introReglas: { fontFamily: fonts.body, fontSize: 12, lineHeight: 17, color: colors.textDim, marginBottom: 8 },
-  reglaFila: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 10,
-    paddingVertical: 8,
-    borderTopWidth: 1,
-    borderTopColor: colors.line,
-  },
-  caja: {
-    width: 19,
-    height: 19,
-    borderWidth: 1.5,
-    borderColor: colors.accentDim,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 1,
-  },
-  cajaOn: { backgroundColor: colors.accent, borderColor: colors.accent },
-  reglaTexto: { fontFamily: fonts.semibold, fontSize: 13.5, color: colors.text, lineHeight: 19 },
-  reglaHecha: { color: colors.textDim, textDecorationLine: 'line-through' },
-  reglaConsecuencia: { fontFamily: fonts.body, fontSize: 11.5, color: colors.red, marginTop: 2 },
-  seccion: {
-    fontFamily: fonts.heading,
-    fontSize: 12,
-    letterSpacing: 2.5,
-    color: colors.textFaint,
-    marginTop: 18,
-    marginBottom: 8,
-  },
+  lista: { paddingHorizontal: 16, paddingVertical: 2 },
+  nota: { fontFamily: fonts.body, fontSize: 12, lineHeight: 17, color: colors.textFaint, marginTop: 2 },
+  fila: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', gap: 10 },
+  nombre: { fontFamily: fonts.heading, fontSize: 17, letterSpacing: -0.2, color: colors.text, flex: 1, minWidth: 0 },
+  racha: { fontFamily: fonts.number, fontSize: 18, color: colors.text },
+  rachaListo: { color: colors.gold },
+  rachaObjetivo: { fontFamily: fonts.body, fontSize: 12, color: colors.textFaint },
+  metaFila: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 12, gap: 10 },
+  semana: { flexDirection: 'row', gap: 4 },
+  dia: { width: 20, height: 20, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: colors.line },
+  diaOn: { backgroundColor: colors.accentFaint, borderColor: colors.accentDim },
+  diaTexto: { fontFamily: fonts.heading, fontSize: 9.5, color: colors.textFaint },
+  diaTextoOn: { color: colors.text },
+  meta: { fontFamily: fonts.body, fontSize: 12, color: colors.textDim, flexShrink: 1, textAlign: 'right' },
+  metaListo: { color: colors.gold, fontFamily: fonts.semibold },
 });
