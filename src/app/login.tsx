@@ -219,7 +219,7 @@ export default function Login() {
                 secureTextEntry={!showPassword}
                 autoCapitalize="none"
                 autoComplete={mode === 'signin' ? 'current-password' : 'new-password'}
-                placeholder={mode === 'signup' ? 'Una frase que recuerdes (12+ caracteres)' : '••••••••••••'}
+                placeholder={mode === 'signup' ? 'Una frase que recuerdes' : '••••••••••••'}
                 placeholderTextColor={colors.textFaint}
                 accessibilityLabel="Contraseña"
                 onSubmitEditing={mode === 'signin' ? submit : undefined}
