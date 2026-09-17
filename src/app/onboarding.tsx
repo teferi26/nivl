@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { SystemButton } from '@/components/SystemButton';
-import { SystemWindow } from '@/components/SystemWindow';
+import { Card, FadeIn } from '@/components/ui';
 import { useAuth } from '@/lib/auth';
 import { createStarterQuests, ensureProfile, updateProfile } from '@/lib/data';
 import { KINDS, PROFILE_KINDS, type ProfileKind } from '@/lib/kinds';
@@ -117,10 +117,10 @@ export default function Onboarding() {
           </View>
 
           {step === 0 ? (
-            <View>
+            <FadeIn key="paso-0">
               <Text style={styles.brand}>NIVL</Text>
               <Text style={styles.tagline}>UN 1 % MEJOR CADA DÍA</Text>
-              <SystemWindow>
+              <Card variant="outline">
                 <Text style={styles.lore}>
                   Esto no es una lista de tareas. Es una arena.{'\n\n'}
                   Cada día tienes misiones. Cumplirlas da XP y sube tu nivel; fallarlas lo
@@ -130,15 +130,15 @@ export default function Onboarding() {
                   Nada de trampas: las evidencias se hacen con la cámara, en el momento. El
                   sistema no opina. Registra.
                 </Text>
-              </SystemWindow>
-              <SystemButton title="Entrar en la arena" onPress={() => setStep(1)} />
-            </View>
+              </Card>
+              <SystemButton title="Entrar en la arena" size="lg" onPress={() => setStep(1)} />
+            </FadeIn>
           ) : null}
 
           {step === 1 ? (
-            <View>
-              <Text style={styles.stepTitle}>IDENTIFÍCATE</Text>
-              <SystemWindow>
+            <FadeIn key="paso-1">
+              <Text style={styles.stepTitle}>¿Cómo te llamas?</Text>
+              <Card variant="outline">
                 <Text style={styles.label}>Tu nombre en el sistema</Text>
                 <TextInput
                   style={styles.input}
@@ -150,14 +150,14 @@ export default function Onboarding() {
                   autoCapitalize="words"
                   accessibilityLabel="Tu nombre"
                 />
-              </SystemWindow>
+              </Card>
               <SystemButton title="Continuar" onPress={saveName} loading={busy} disabled={!name.trim()} />
-            </View>
+            </FadeIn>
           ) : null}
 
           {step === 2 ? (
-            <View>
-              <Text style={styles.stepTitle}>¿PARA QUÉ VAS A USAR NIVL?</Text>
+            <FadeIn key="paso-2">
+              <Text style={styles.stepTitle}>¿Para qué vas a usar NIVL?</Text>
               <Text style={styles.stepHint}>
                 Cambia lo que ves primero y lo que el coach te pide. Todo sigue disponible y lo
                 puedes cambiar en Perfil.
@@ -183,23 +183,23 @@ export default function Onboarding() {
                 );
               })}
               {meta ? (
-                <SystemWindow color={colors.line} style={{ marginTop: 6 }}>
+                <Card variant="outline" style={{ marginTop: 6 }}>
                   <Text style={styles.detailTitle}>QUÉ SE ACTIVA</Text>
                   <Text style={styles.detail}>{meta.description}</Text>
-                </SystemWindow>
+                </Card>
               ) : null}
               <SystemButton title="Continuar" onPress={saveKind} loading={busy} disabled={!kind} />
-            </View>
+            </FadeIn>
           ) : null}
 
           {step === 3 && meta ? (
-            <View>
-              <Text style={styles.stepTitle}>TUS PRIMERAS MISIONES</Text>
+            <FadeIn key="paso-3">
+              <Text style={styles.stepTitle}>Tus primeras misiones</Text>
               <Text style={styles.stepHint}>
                 Propuestas para un {meta.label.toLowerCase() === 'en general' ? 'gladiador' : meta.label.toLowerCase()}.
                 Quita las que no vayan contigo; podrás crear las tuyas en Hábitos.
               </Text>
-              <SystemWindow>
+              <Card variant="outline">
                 {meta.starterQuests.map((q, i) => {
                   const on = chosen.has(i);
                   return (
@@ -223,19 +223,19 @@ export default function Onboarding() {
                     </Pressable>
                   );
                 })}
-              </SystemWindow>
+              </Card>
               <SystemButton
                 title={chosen.size > 0 ? `Crear ${chosen.size} misión${chosen.size === 1 ? '' : 'es'}` : 'Empezar sin misiones'}
                 onPress={saveStarters}
                 loading={busy}
               />
-            </View>
+            </FadeIn>
           ) : null}
 
           {step === 4 ? (
-            <View>
-              <Text style={styles.stepTitle}>EL CONTRATO</Text>
-              <SystemWindow>
+            <FadeIn key="paso-4">
+              <Text style={styles.stepTitle}>El contrato</Text>
+              <Card variant="outline">
                 <Text style={styles.lore}>
                   Las normas las pones tú, y también sus consecuencias.{'\n\n'}
                   · Cada norma se marca cada día. La que quede sin marcar al cierre cuenta como
@@ -243,10 +243,10 @@ export default function Onboarding() {
                   {'\n'}· Las misiones extra pagan Puntos Bonus: 10 PB = 1 hora de descanso sin
                   culpa, máximo 30 a la semana.{'\n'}· Podrás sellar una carta a tu yo del futuro.
                 </Text>
-              </SystemWindow>
+              </Card>
               <SystemButton title="Firmo el contrato" onPress={finish} loading={busy} />
               <Text style={styles.smallPrint}>Escribe tus normas en Hoy → Contrato cuando entres.</Text>
-            </View>
+            </FadeIn>
           ) : null}
         </ScrollView>
       </KeyboardAvoidingView>
@@ -278,9 +278,10 @@ const styles = StyleSheet.create({
   },
   stepTitle: {
     fontFamily: fonts.heading,
-    fontSize: 16,
-    letterSpacing: 3,
-    color: colors.accent,
+    fontSize: 26,
+    letterSpacing: -0.5,
+    lineHeight: 31,
+    color: colors.text,
     textAlign: 'center',
     marginBottom: 10,
   },

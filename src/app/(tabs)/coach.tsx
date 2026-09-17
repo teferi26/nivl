@@ -422,7 +422,8 @@ const styles = StyleSheet.create({
   vacioEmblema: { width: 56, height: 56, borderRadius: 28, backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center' },
   vacioTitulo: { fontFamily: fonts.heading, fontSize: 22, letterSpacing: -0.4, color: colors.text, marginTop: 18 },
   vacioTexto: { fontFamily: fonts.body, fontSize: 14, lineHeight: 21, color: colors.textDim, textAlign: 'center', marginTop: 8 },
-  atajos: { paddingBottom: 10 },
+  // ChipRow sangra 20 px a cada lado para pantallas con padding; aquí no lo hay.
+  atajos: { paddingBottom: 10, paddingHorizontal: 20 },
   barra: {
     flexDirection: 'row',
     alignItems: 'flex-end',
