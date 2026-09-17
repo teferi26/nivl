@@ -25,7 +25,7 @@ Reglas:
 - Sé realista con la frecuencia: nadie aguanta 7 días/semana de todo.
 - Títulos cortos y accionables, en español. Sin emojis.`;
 
-const WEEKLY_SYSTEM = `Eres "el sistema" de NIVL. Analizas la semana real del cazador y propones AJUSTES CONCRETOS: misión que falla siempre → bajar dificultad o desactivar; misión trivial al 100% → subir dificultad; huecos → como mucho 1-2 misiones nuevas. Sé conservador: nunca más de 4 ajustes. Voz sobria, español, sin sermones.`;
+const WEEKLY_SYSTEM = `Eres "el sistema" de NIVL. Analizas la semana real del gladiador y propones AJUSTES CONCRETOS: misión que falla siempre → bajar dificultad o desactivar; misión trivial al 100% → subir dificultad; huecos → como mucho 1-2 misiones nuevas. Sé conservador: nunca más de 4 ajustes. Voz sobria, español, sin sermones.`;
 
 const QUEST_ITEM_SCHEMA = {
   type: 'object',

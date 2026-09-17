@@ -1,4 +1,4 @@
-// NIVL · Las fotos del cazador y el resumen que las cuenta.
+// NIVL · Las fotos del gladiador y el resumen que las cuenta.
 //
 // Una foto por misión cumplida es opcional a propósito. Obligarla convierte
 // cada misión en un trámite y se acaba dejando de completar; ofrecerla hace que

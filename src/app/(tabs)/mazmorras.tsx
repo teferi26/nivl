@@ -29,7 +29,7 @@ interface DungeonWithProgress extends Dungeon {
   doneCount: number;
 }
 
-export default function Mazmorras() {
+export default function Campañas() {
   const { session } = useAuth();
   const userId = session?.user.id;
 
@@ -85,10 +85,10 @@ export default function Mazmorras() {
     <SafeAreaView style={styles.screen} edges={['top']}>
       <ScrollView automaticallyAdjustKeyboardInsets keyboardShouldPersistTaps="handled" contentContainerStyle={styles.content}>
         <View style={styles.header}>
-          <Text style={styles.title}>MAZMORRAS</Text>
+          <Text style={styles.title}>CAMPAÑAS</Text>
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="Abrir una mazmorra nueva"
+            accessibilityLabel="Abrir una campaña nueva"
             onPress={() => setFormOpen(true)}
             style={styles.addButton}
           >
@@ -97,9 +97,9 @@ export default function Mazmorras() {
         </View>
 
         {active.length === 0 ? (
-          <SystemWindow color={colors.purpleDim} fill={colors.panelDeep}>
+          <SystemWindow color={colors.steelDim} fill={colors.panelDeep}>
             <Text style={styles.empty}>
-              No hay mazmorras abiertas. Cada proyecto u objetivo grande de tu vida es una mazmorra:
+              No hay campañas abiertas. Cada proyecto u objetivo grande de tu vida es una campaña:
               créala y desglósala en monstruos (tareas) y jefes (hitos).
             </Text>
           </SystemWindow>
@@ -109,9 +109,9 @@ export default function Mazmorras() {
               key={d.id}
               onPress={() => router.push({ pathname: '/dungeon/[id]', params: { id: d.id } })}
               accessibilityRole="button"
-              accessibilityLabel={`Abrir la mazmorra ${d.title}, rango ${d.rank}`}
+              accessibilityLabel={`Abrir la campaña ${d.title}, rango ${d.rank}`}
             >
-              <SystemWindow color={colors.purpleDim} fill={colors.panelDeep}>
+              <SystemWindow color={colors.steelDim} fill={colors.panelDeep}>
                 <View style={styles.row}>
                   <View style={styles.rankBox}>
                     <Text style={styles.rankLetter}>{d.rank}</Text>
@@ -124,7 +124,7 @@ export default function Mazmorras() {
                       {d.doneCount}/{d.total} objetivos · stat {d.stat} · botín {DUNGEON_CLEAR_XP[d.rank]} XP
                     </Text>
                     <View style={{ marginTop: 8 }}>
-                      <XPBar ratio={d.total > 0 ? d.doneCount / d.total : 0} color={colors.purple} trackColor="#191D3D" />
+                      <XPBar ratio={d.total > 0 ? d.doneCount / d.total : 0} color={colors.steel} trackColor={colors.track} />
                     </View>
                   </View>
                   <Ionicons name="chevron-forward" size={18} color={colors.textFaint} />
@@ -152,7 +152,7 @@ export default function Mazmorras() {
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         >
           <View style={styles.sheet}>
-            <Text style={styles.sheetTitle}>NUEVA MAZMORRA</Text>
+            <Text style={styles.sheetTitle}>NUEVA CAMPAÑA</Text>
             <Text style={styles.label}>Nombre del objetivo o proyecto</Text>
             <TextInput
               style={styles.input}
@@ -192,7 +192,7 @@ export default function Mazmorras() {
               ))}
             </View>
             <SystemButton
-              title="Abrir mazmorra"
+              title="Abrir campaña"
               onPress={onCreate}
               loading={saving}
               disabled={!title.trim()}
@@ -215,11 +215,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 14,
   },
-  title: { fontFamily: fonts.heading, fontSize: 16, letterSpacing: 4, color: colors.purple },
+  title: { fontFamily: fonts.heading, fontSize: 16, letterSpacing: 4, color: colors.steel },
   addButton: {
     width: 34,
     height: 34,
-    backgroundColor: colors.purple,
+    backgroundColor: colors.steel,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -229,11 +229,11 @@ const styles = StyleSheet.create({
     width: 42,
     height: 42,
     borderWidth: 1.5,
-    borderColor: colors.purple,
+    borderColor: colors.steel,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  rankLetter: { fontFamily: fonts.brand, fontSize: 20, color: colors.purple },
+  rankLetter: { fontFamily: fonts.brand, fontSize: 20, color: colors.steel },
   body: { flex: 1, minWidth: 0 },
   dungeonTitle: { fontFamily: fonts.semibold, fontSize: 16, color: colors.text },
   meta: { fontFamily: fonts.body, fontSize: 12, color: colors.textDim, marginTop: 2 },
@@ -249,11 +249,11 @@ const styles = StyleSheet.create({
   sheet: {
     backgroundColor: colors.panelDeep,
     borderTopWidth: 1.5,
-    borderTopColor: colors.purpleDim,
+    borderTopColor: colors.steelDim,
     padding: 20,
     paddingBottom: 34,
   },
-  sheetTitle: { fontFamily: fonts.heading, fontSize: 16, letterSpacing: 3, color: colors.purple, marginBottom: 6 },
+  sheetTitle: { fontFamily: fonts.heading, fontSize: 16, letterSpacing: 3, color: colors.steel, marginBottom: 6 },
   label: {
     fontFamily: fonts.heading,
     fontSize: 12,
@@ -265,7 +265,7 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderColor: colors.purpleDim,
+    borderColor: colors.steelDim,
     backgroundColor: colors.bg,
     color: colors.text,
     fontFamily: fonts.semibold,
@@ -274,8 +274,8 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  chip: { borderWidth: 1, borderColor: colors.purpleDim, paddingHorizontal: 14, paddingVertical: 7 },
-  chipOn: { backgroundColor: '#191D3D', borderColor: colors.purple },
+  chip: { borderWidth: 1, borderColor: colors.steelDim, paddingHorizontal: 14, paddingVertical: 7 },
+  chipOn: { backgroundColor: colors.accentFaint, borderColor: colors.steel },
   chipText: { fontFamily: fonts.semibold, fontSize: 13, color: colors.textDim },
-  chipTextOn: { color: colors.purple },
+  chipTextOn: { color: colors.steel },
 });

@@ -1,4 +1,5 @@
 import { decode } from 'base64-arraybuffer';
+import { kindMeta, type StarterQuest } from './kinds';
 import { supabase } from './supabase';
 import type { Completion, Difficulty, Profile, Quest, Stat } from './types';
 
@@ -200,7 +201,7 @@ export async function uploadEvidence(
   return path;
 }
 
-// Un cazador, un retrato: la ruta fija hace que cambiar de foto sustituya la
+// Un gladiador, un retrato: la ruta fija hace que cambiar de foto sustituya la
 // anterior en vez de acumularlas.
 export async function uploadAvatar(userId: string, base64: string): Promise<string> {
   const path = `${userId}/avatar.jpg`;
@@ -247,20 +248,24 @@ export function olvidarFirma(bucket: 'evidence' | 'avatars', path: string): void
   firmas.delete(`${bucket}/${path}`);
 }
 
-const DEFAULT_QUESTS: QuestInput[] = [
-  { title: 'Gimnasio', stat: 'FUE', difficulty: 'media', days_of_week: [1, 2, 3, 4, 5], requires_evidence: false },
-  { title: 'Estudiar 2 h', stat: 'INT', difficulty: 'media', days_of_week: [1, 2, 3, 4, 5], requires_evidence: false },
-  { title: 'Registrar comidas del día', stat: 'VIT', difficulty: 'facil', days_of_week: [1, 2, 3, 4, 5, 6, 7], requires_evidence: false },
-  { title: 'Leer 20 minutos', stat: 'INT', difficulty: 'facil', days_of_week: [1, 2, 3, 4, 5, 6, 7], requires_evidence: false },
-  { title: 'Diario del cazador', stat: 'PER', difficulty: 'facil', days_of_week: [1, 2, 3, 4, 5, 6, 7], requires_evidence: false },
-];
-
-export async function seedDefaultQuests(userId: string): Promise<boolean> {
+/**
+ * Los primeros hábitos de una cuenta salen del perfil de uso (kinds.ts): un
+ * deportista no empieza con "Prospección: 10 contactos". El onboarding deja
+ * elegir cuáles crear; esto es la red de seguridad para una cuenta que llegó
+ * sin pasar por ahí (o que borró todo). Con misiones ya creadas no hace nada.
+ */
+export async function seedDefaultQuests(userId: string, kind: unknown = 'general'): Promise<boolean> {
   const { count } = await supabase.from('quests').select('*', { count: 'exact', head: true });
   if ((count ?? 0) > 0) return false;
+  await createStarterQuests(userId, kindMeta(kind).starterQuests);
+  return true;
+}
+
+/** Crea de golpe los hábitos elegidos en el onboarding. Con lista vacía no toca nada. */
+export async function createStarterQuests(userId: string, quests: readonly StarterQuest[]): Promise<void> {
+  if (quests.length === 0) return;
   const { error } = await supabase
     .from('quests')
-    .insert(DEFAULT_QUESTS.map((q) => ({ user_id: userId, ...q })));
+    .insert(quests.map((q) => ({ user_id: userId, ...q })));
   if (error) throw error;
-  return true;
 }

@@ -13,9 +13,9 @@ const GAP = 3;
 
 function cellColor(count: number): string {
   if (count <= 0) return colors.track;
-  if (count <= 2) return colors.cyanFaint;
-  if (count <= 4) return colors.cyanDim;
-  return colors.cyan;
+  if (count <= 2) return colors.accentFaint;
+  if (count <= 4) return colors.accentDim;
+  return colors.accent;
 }
 
 // Heatmap de actividad estilo GitHub: columnas = semanas, filas = L→D.
@@ -53,7 +53,7 @@ export function Heatmap({ counts, weeks = 13 }: Props) {
       </Svg>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 8 }}>
         <Text style={{ fontFamily: fonts.body, fontSize: 11, color: colors.textFaint }}>Menos</Text>
-        {[colors.track, colors.cyanFaint, colors.cyanDim, colors.cyan].map((c) => (
+        {[colors.track, colors.accentFaint, colors.accentDim, colors.accent].map((c) => (
           <View key={c} style={{ width: 10, height: 10, backgroundColor: c }} />
         ))}
         <Text style={{ fontFamily: fonts.body, fontSize: 11, color: colors.textFaint }}>Más</Text>

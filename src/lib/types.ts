@@ -1,3 +1,5 @@
+import type { ProfileKind } from './kinds';
+
 export type Stat = 'FUE' | 'VIT' | 'INT' | 'AGI' | 'PER';
 
 export type Difficulty = 'trivial' | 'facil' | 'media' | 'dificil' | 'epica';
@@ -29,6 +31,9 @@ export interface Profile {
   sleep_time: string;
   timezone: string;
   coach_mode: 'A' | 'B' | 'pausa';
+  // Para qué usa NIVL (migración 0018): ordena módulos, hábitos propuestos y
+  // el énfasis del coach. Ver src/lib/kinds.ts.
+  profile_kind: ProfileKind;
   created_at: string;
 }
 

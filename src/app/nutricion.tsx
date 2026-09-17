@@ -111,7 +111,7 @@ export default function Nutricion() {
           accessibilityRole="button"
           accessibilityLabel="Volver"
         >
-          <Ionicons name="chevron-back" size={24} color={colors.cyan} />
+          <Ionicons name="chevron-back" size={24} color={colors.accent} />
         </Pressable>
         <Text style={styles.title}>NUTRICIÓN</Text>
         <View style={{ width: 24 }} />
@@ -236,7 +236,7 @@ const styles = StyleSheet.create({
     fontFamily: fonts.heading,
     fontSize: 12,
     letterSpacing: 2.5,
-    color: colors.cyanText,
+    color: colors.accentText,
     marginBottom: 10,
   },
   macros: { flexDirection: 'row', gap: 22, flexWrap: 'wrap' },
@@ -255,11 +255,11 @@ const styles = StyleSheet.create({
     width: 20,
     height: 20,
     borderWidth: 1.5,
-    borderColor: colors.cyanDim,
+    borderColor: colors.accentDim,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  cajaOn: { backgroundColor: colors.cyan, borderColor: colors.cyan },
+  cajaOn: { backgroundColor: colors.accent, borderColor: colors.accent },
   checkText: { fontFamily: fonts.semibold, fontSize: 13.5, color: colors.text, flex: 1 },
   input: {
     borderWidth: 1,
@@ -273,7 +273,7 @@ const styles = StyleSheet.create({
     height: 60,
     marginTop: 8,
   },
-  adherencia: { fontFamily: fonts.semibold, fontSize: 14, color: colors.cyanText },
+  adherencia: { fontFamily: fonts.semibold, fontSize: 14, color: colors.accentText },
   hint: {
     fontFamily: fonts.body,
     fontSize: 11.5,

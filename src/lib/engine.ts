@@ -245,7 +245,7 @@ export async function completeQuest(
   };
 }
 
-// Otorga XP fuera de misiones (mazmorras, gym, diario) respetando el mismo flujo.
+// Otorga XP fuera de misiones (campañas, gym, diario) respetando el mismo flujo.
 export async function awardXp(
   profile: Profile,
   amount: number,

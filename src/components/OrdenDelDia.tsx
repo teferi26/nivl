@@ -94,7 +94,7 @@ export const OrdenDelDia = memo(function OrdenDelDia({ plan, bloques, onToggle }
                   <Ionicons
                     name={KIND_ICON[b.kind] as never}
                     size={13}
-                    color={esActual ? colors.cyan : colors.textFaint}
+                    color={esActual ? colors.accent : colors.textFaint}
                   />
                   <Text
                     style={[
@@ -132,7 +132,7 @@ const styles = StyleSheet.create({
     fontFamily: fonts.heading,
     fontSize: 13,
     letterSpacing: 2.5,
-    color: colors.cyanText,
+    color: colors.accentText,
   },
   progreso: {
     fontFamily: fonts.number,
@@ -141,7 +141,7 @@ const styles = StyleSheet.create({
   },
   veredicto: {
     borderLeftWidth: 2,
-    borderLeftColor: colors.amber,
+    borderLeftColor: colors.gold,
     paddingLeft: 10,
     marginBottom: 10,
   },
@@ -167,27 +167,27 @@ const styles = StyleSheet.create({
     paddingHorizontal: 6,
   },
   bloqueActual: {
-    backgroundColor: colors.cyanFaint,
+    backgroundColor: colors.accentFaint,
     borderLeftWidth: 2,
-    borderLeftColor: colors.cyan,
+    borderLeftColor: colors.accent,
   },
   marca: {
     width: 18,
     height: 18,
     borderWidth: 1.5,
-    borderColor: colors.cyanDim,
+    borderColor: colors.accentDim,
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 1,
   },
-  marcaHecha: { backgroundColor: colors.cyan, borderColor: colors.cyan },
+  marcaHecha: { backgroundColor: colors.accent, borderColor: colors.accent },
   horas: { width: 42 },
   hora: {
     fontFamily: fonts.number,
     fontSize: 12,
     color: colors.textDim,
   },
-  horaActual: { color: colors.cyan },
+  horaActual: { color: colors.accent },
   horaFin: {
     fontFamily: fonts.body,
     fontSize: 10,
@@ -220,7 +220,7 @@ const styles = StyleSheet.create({
   },
   cta: {
     borderWidth: 1.5,
-    borderColor: colors.cyan,
+    borderColor: colors.accent,
     paddingVertical: 10,
     alignItems: 'center',
   },
@@ -228,6 +228,6 @@ const styles = StyleSheet.create({
     fontFamily: fonts.heading,
     fontSize: 13,
     letterSpacing: 2,
-    color: colors.cyan,
+    color: colors.accent,
   },
 });

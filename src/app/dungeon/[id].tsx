@@ -126,7 +126,7 @@ export default function DungeonDetail() {
       const fresh = await unlockAchievements(userId, evaluateAchievements({ dungeonsCleared: cleared }));
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       Alert.alert(
-        'MAZMORRA DESPEJADA',
+        'CAMPAÑA DESPEJADA',
         `${voice.dungeonCleared(dungeon.title)}\n\nBotín: +${loot} XP${fresh.length > 0 ? `\n${voice.achievement()} ${fresh.map((a) => a.name).join(', ')}` : ''}`,
       );
       if (res.leveledUp) setLevelUp(res.newLevel);
@@ -140,7 +140,7 @@ export default function DungeonDetail() {
 
   const removeDungeon = () => {
     if (!dungeon) return;
-    Alert.alert('Abandonar mazmorra', `¿Eliminar "${dungeon.title}" y todas sus tareas?`, [
+    Alert.alert('Abandonar campaña', `¿Eliminar "${dungeon.title}" y todas sus tareas?`, [
       { text: 'Cancelar', style: 'cancel' },
       {
         text: 'Eliminar',
@@ -170,14 +170,14 @@ export default function DungeonDetail() {
             onPress={() => router.back()}
             hitSlop={10}
           >
-            <Ionicons name="chevron-back" size={24} color={colors.purple} />
+            <Ionicons name="chevron-back" size={24} color={colors.steel} />
           </Pressable>
           <Text style={styles.headerTitle} numberOfLines={1}>
-            MAZMORRA · RANGO {dungeon.rank}
+            CAMPAÑA · RANGO {dungeon.rank}
           </Text>
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="Eliminar la mazmorra"
+            accessibilityLabel="Eliminar la campaña"
             onPress={removeDungeon}
             hitSlop={10}
           >
@@ -185,20 +185,20 @@ export default function DungeonDetail() {
           </Pressable>
         </View>
 
-        <SystemWindow color={colors.purpleDim} fill={colors.panelDeep}>
+        <SystemWindow color={colors.steelDim} fill={colors.panelDeep}>
           <Text style={styles.dungeonTitle}>{dungeon.title}</Text>
           <Text style={styles.meta}>
             {done}/{tasks.length} objetivos · stat {dungeon.stat} · botín al despejar: {DUNGEON_CLEAR_XP[dungeon.rank]} XP
           </Text>
           <View style={{ marginTop: 10 }}>
-            <XPBar ratio={tasks.length > 0 ? done / tasks.length : 0} color={colors.purple} trackColor="#191D3D" height={8} />
+            <XPBar ratio={tasks.length > 0 ? done / tasks.length : 0} color={colors.steel} trackColor={colors.track} height={8} />
           </View>
           {dungeon.status === 'cleared' ? (
             <Text style={styles.clearedTag}>DESPEJADA</Text>
           ) : null}
         </SystemWindow>
 
-        <SystemWindow color={colors.purpleDim} fill={colors.panelDeep}>
+        <SystemWindow color={colors.steelDim} fill={colors.panelDeep}>
           <View style={styles.taskHeader}>
             <Text style={styles.windowTitle}>OBJETIVOS</Text>
             {dungeon.status === 'active' ? (
@@ -208,13 +208,13 @@ export default function DungeonDetail() {
                 onPress={() => setFormOpen(true)}
                 hitSlop={8}
               >
-                <Ionicons name="add" size={22} color={colors.purple} />
+                <Ionicons name="add" size={22} color={colors.steel} />
               </Pressable>
             ) : null}
           </View>
           {tasks.length === 0 ? (
             <Text style={styles.empty}>
-              Sin objetivos todavía. Desglosa la mazmorra: cada tarea es un monstruo, cada hito un jefe.
+              Sin objetivos todavía. Desglosa la campaña: cada tarea es un monstruo, cada hito un jefe.
             </Text>
           ) : (
             tasks.map((t) => (
@@ -240,7 +240,7 @@ export default function DungeonDetail() {
                 style={styles.taskRow}
               >
                 <View style={[styles.box, t.done && styles.boxDone, t.is_boss && styles.boxBoss]}>
-                  {t.done ? <Ionicons name="checkmark" size={14} color={colors.purple} /> : null}
+                  {t.done ? <Ionicons name="checkmark" size={14} color={colors.steel} /> : null}
                 </View>
                 <View style={{ flex: 1, minWidth: 0 }}>
                   <Text style={[styles.taskTitle, t.done && styles.taskDone]} numberOfLines={1}>
@@ -300,8 +300,8 @@ export default function DungeonDetail() {
               <Switch
                 value={isBoss}
                 onValueChange={setIsBoss}
-                trackColor={{ false: colors.track, true: '#191D3D' }}
-                thumbColor={isBoss ? colors.purple : colors.textFaint}
+                trackColor={{ false: colors.track, true: colors.accentFaint }}
+                thumbColor={isBoss ? colors.steel : colors.textFaint}
               />
             </View>
             <SystemButton title="Añadir" onPress={addTask} disabled={!taskTitle.trim()} style={{ marginTop: 18 }} />
@@ -330,7 +330,7 @@ const styles = StyleSheet.create({
     fontFamily: fonts.heading,
     fontSize: 14,
     letterSpacing: 3,
-    color: colors.purple,
+    color: colors.steel,
     textAlign: 'center',
   },
   dungeonTitle: { fontFamily: fonts.heading, fontSize: 19, color: colors.text },
@@ -339,11 +339,11 @@ const styles = StyleSheet.create({
     fontFamily: fonts.heading,
     fontSize: 12,
     letterSpacing: 2,
-    color: colors.purple,
+    color: colors.steel,
     marginTop: 8,
   },
   taskHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
-  windowTitle: { fontFamily: fonts.heading, fontSize: 12, letterSpacing: 2.5, color: '#A697F0' },
+  windowTitle: { fontFamily: fonts.heading, fontSize: 12, letterSpacing: 2.5, color: colors.steelText },
   empty: { fontFamily: fonts.body, fontSize: 13, color: colors.textDim, lineHeight: 19 },
   taskRow: {
     flexDirection: 'row',
@@ -351,32 +351,32 @@ const styles = StyleSheet.create({
     gap: 10,
     paddingVertical: 9,
     borderTopWidth: 1,
-    borderTopColor: '#15182E',
+    borderTopColor: colors.line,
   },
   box: {
     width: 20,
     height: 20,
     borderWidth: 1,
-    borderColor: colors.purpleDim,
+    borderColor: colors.steelDim,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  boxDone: { backgroundColor: '#191D3D', borderColor: colors.purple },
-  boxBoss: { borderWidth: 2, borderColor: colors.purple },
+  boxDone: { backgroundColor: colors.accentFaint, borderColor: colors.steel },
+  boxBoss: { borderWidth: 2, borderColor: colors.steel },
   taskTitle: { fontFamily: fonts.semibold, fontSize: 15, color: colors.text },
   taskDone: { color: colors.textDim, textDecorationLine: 'line-through' },
   taskMeta: { fontFamily: fonts.body, fontSize: 11, color: colors.textFaint, marginTop: 1 },
   xp: { fontFamily: fonts.heading, fontSize: 13, color: colors.textFaint },
-  xpDone: { color: colors.purple },
+  xpDone: { color: colors.steel },
   backdrop: { flex: 1, backgroundColor: 'rgba(2, 6, 14, 0.85)', justifyContent: 'flex-end' },
   sheet: {
     backgroundColor: colors.panelDeep,
     borderTopWidth: 1.5,
-    borderTopColor: colors.purpleDim,
+    borderTopColor: colors.steelDim,
     padding: 20,
     paddingBottom: 34,
   },
-  sheetTitle: { fontFamily: fonts.heading, fontSize: 16, letterSpacing: 3, color: colors.purple, marginBottom: 12 },
+  sheetTitle: { fontFamily: fonts.heading, fontSize: 16, letterSpacing: 3, color: colors.steel, marginBottom: 12 },
   label: {
     fontFamily: fonts.heading,
     fontSize: 12,
@@ -388,7 +388,7 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderColor: colors.purpleDim,
+    borderColor: colors.steelDim,
     backgroundColor: colors.bg,
     color: colors.text,
     fontFamily: fonts.semibold,
@@ -397,10 +397,10 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  chip: { borderWidth: 1, borderColor: colors.purpleDim, paddingHorizontal: 12, paddingVertical: 7 },
-  chipOn: { backgroundColor: '#191D3D', borderColor: colors.purple },
+  chip: { borderWidth: 1, borderColor: colors.steelDim, paddingHorizontal: 12, paddingVertical: 7 },
+  chipOn: { backgroundColor: colors.accentFaint, borderColor: colors.steel },
   chipText: { fontFamily: fonts.semibold, fontSize: 13, color: colors.textDim },
-  chipTextOn: { color: colors.purple },
+  chipTextOn: { color: colors.steel },
   switchRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 18 },
   switchLabel: { fontFamily: fonts.semibold, fontSize: 14, color: colors.text },
 });

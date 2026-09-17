@@ -93,7 +93,7 @@ export const DAILY_PENALTY_CAP = 150;
 export const MAX_STONES = 3;
 export const STONE_EVERY_STREAK_DAYS = 7;
 
-// ── Mazmorras (fase 2) ─────────────────────────────────────────────
+// ── Campañas (fase 2) ─────────────────────────────────────────────
 // Tareas dan XP base (sin racha/evidencia); jefes ×2; botín único al despejar.
 export const BOSS_MULTIPLIER = 2;
 export const DUNGEON_CLEAR_XP: Record<DungeonRank, number> = {

@@ -13,7 +13,7 @@ export default function TabsLayout() {
           borderTopColor: colors.line,
           borderTopWidth: 1,
         },
-        tabBarActiveTintColor: colors.cyan,
+        tabBarActiveTintColor: colors.accent,
         tabBarInactiveTintColor: colors.textFaint,
         tabBarLabelStyle: { fontFamily: fonts.semibold, fontSize: 11 },
       }}
@@ -21,7 +21,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Sistema',
+          title: 'Hoy',
           tabBarIcon: ({ color, size }) => <Ionicons name="grid-outline" color={color} size={size} />,
         }}
       />
@@ -46,8 +46,8 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="mazmorras"
         options={{
-          title: 'Mazmorras',
-          tabBarIcon: ({ color, size }) => <Ionicons name="map-outline" color={color} size={size} />,
+          title: 'Campañas',
+          tabBarIcon: ({ color, size }) => <Ionicons name="flag-outline" color={color} size={size} />,
         }}
       />
       <Tabs.Screen

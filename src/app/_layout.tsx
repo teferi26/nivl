@@ -1,5 +1,5 @@
-import { Orbitron_700Bold, Orbitron_800ExtraBold } from '@expo-google-fonts/orbitron';
-import { Rajdhani_500Medium, Rajdhani_600SemiBold, Rajdhani_700Bold } from '@expo-google-fonts/rajdhani';
+import { Cinzel_600SemiBold, Cinzel_700Bold } from '@expo-google-fonts/cinzel';
+import { Outfit_500Medium, Outfit_600SemiBold, Outfit_700Bold } from '@expo-google-fonts/outfit';
 import { useFonts } from 'expo-font';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
@@ -54,12 +54,14 @@ function ProtectedStack() {
 }
 
 export default function RootLayout() {
+  // Cinzel para la piedra (marca y cifras), Outfit para todo lo que habla:
+  // la misma familia que Franky en web y app.
   const [loaded, error] = useFonts({
-    Orbitron_700Bold,
-    Orbitron_800ExtraBold,
-    Rajdhani_500Medium,
-    Rajdhani_600SemiBold,
-    Rajdhani_700Bold,
+    Cinzel_600SemiBold,
+    Cinzel_700Bold,
+    Outfit_500Medium,
+    Outfit_600SemiBold,
+    Outfit_700Bold,
   });
 
   useEffect(() => {

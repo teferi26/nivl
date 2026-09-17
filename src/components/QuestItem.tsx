@@ -27,9 +27,9 @@ export function QuestItem({ quest, completed, xpAwarded, busy, streakDays, onCom
     >
       <View style={[styles.box, completed && styles.boxDone, quest.is_penalty && styles.boxPenalty]}>
         {busy ? (
-          <ActivityIndicator size="small" color={colors.cyan} />
+          <ActivityIndicator size="small" color={colors.accent} />
         ) : completed ? (
-          <Ionicons name="checkmark" size={14} color={colors.cyan} />
+          <Ionicons name="checkmark" size={14} color={colors.accent} />
         ) : null}
       </View>
       <View style={styles.body}>
@@ -45,7 +45,7 @@ export function QuestItem({ quest, completed, xpAwarded, busy, streakDays, onCom
             </Text>
           )}
           {quest.requires_evidence ? (
-            <Ionicons name="camera-outline" size={13} color={colors.cyan} />
+            <Ionicons name="camera-outline" size={13} color={colors.accent} />
           ) : null}
         </View>
       </View>
@@ -72,13 +72,13 @@ const styles = StyleSheet.create({
     width: 20,
     height: 20,
     borderWidth: 1,
-    borderColor: colors.cyanDim,
+    borderColor: colors.accentDim,
     alignItems: 'center',
     justifyContent: 'center',
   },
   boxDone: {
-    backgroundColor: colors.cyanFaint,
-    borderColor: colors.cyan,
+    backgroundColor: colors.accentFaint,
+    borderColor: colors.accent,
   },
   boxPenalty: {
     borderColor: colors.red,
@@ -119,9 +119,9 @@ const styles = StyleSheet.create({
     color: colors.textFaint,
   },
   xpDone: {
-    color: colors.cyan,
+    color: colors.accent,
   },
   xpBonus: {
-    color: colors.amber,
+    color: colors.gold,
   },
 });

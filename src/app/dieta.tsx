@@ -123,7 +123,7 @@ export default function Dieta() {
             onPress={() => router.back()}
             hitSlop={10}
           >
-            <Ionicons name="chevron-back" size={24} color={colors.cyan} />
+            <Ionicons name="chevron-back" size={24} color={colors.accent} />
           </Pressable>
           <Text style={styles.title}>DIETA SEMANAL</Text>
           <Pressable
@@ -132,7 +132,7 @@ export default function Dieta() {
             onPress={() => router.push('/compra')}
             hitSlop={10}
           >
-            <Ionicons name="cart-outline" size={22} color={colors.cyan} />
+            <Ionicons name="cart-outline" size={22} color={colors.accent} />
           </Pressable>
         </View>
 
@@ -151,7 +151,7 @@ export default function Dieta() {
           ))}
         </View>
 
-        <SystemWindow color={colors.cyanDim}>
+        <SystemWindow color={colors.accentDim}>
           {kcalDia > 0 ? (
             <Text style={styles.dayTotal}>
               TOTAL DEL DÍA · {kcalDia} kcal · {proteDia} g de proteína
@@ -248,18 +248,18 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: 14,
   },
-  title: { fontFamily: fonts.heading, fontSize: 15, letterSpacing: 3, color: colors.cyan },
+  title: { fontFamily: fonts.heading, fontSize: 15, letterSpacing: 3, color: colors.accent },
   dayChips: { flexDirection: 'row', gap: 8, marginBottom: 14 },
   dayChip: {
     flex: 1,
     borderWidth: 1,
-    borderColor: colors.cyanDim,
+    borderColor: colors.accentDim,
     paddingVertical: 9,
     alignItems: 'center',
   },
-  dayChipOn: { backgroundColor: colors.cyanFaint, borderColor: colors.cyan },
+  dayChipOn: { backgroundColor: colors.accentFaint, borderColor: colors.accent },
   dayChipText: { fontFamily: fonts.semibold, fontSize: 13, color: colors.textDim },
-  dayChipTextOn: { color: colors.cyan },
+  dayChipTextOn: { color: colors.accent },
   mealRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -268,15 +268,15 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: colors.line,
   },
-  mealSlot: { fontFamily: fonts.heading, fontSize: 11, letterSpacing: 2, color: colors.cyanText },
+  mealSlot: { fontFamily: fonts.heading, fontSize: 11, letterSpacing: 2, color: colors.accentText },
   mealDesc: { fontFamily: fonts.semibold, fontSize: 15, color: colors.text, marginTop: 2 },
-  mealMacros: { fontFamily: fonts.semibold, fontSize: 12, color: colors.cyanText, marginTop: 2 },
+  mealMacros: { fontFamily: fonts.semibold, fontSize: 12, color: colors.accentText, marginTop: 2 },
   mealIngredients: { fontFamily: fonts.body, fontSize: 12, color: colors.textFaint, marginTop: 1 },
   dayTotal: {
     fontFamily: fonts.heading,
     fontSize: 11.5,
     letterSpacing: 2,
-    color: colors.cyanText,
+    color: colors.accentText,
     marginBottom: 12,
   },
   mealEmpty: { fontFamily: fonts.body, fontSize: 13, color: colors.textFaint, marginTop: 2 },
@@ -285,11 +285,11 @@ const styles = StyleSheet.create({
   sheet: {
     backgroundColor: colors.panel,
     borderTopWidth: 1.5,
-    borderTopColor: colors.cyanDim,
+    borderTopColor: colors.accentDim,
     padding: 20,
     paddingBottom: 34,
   },
-  sheetTitle: { fontFamily: fonts.heading, fontSize: 15, letterSpacing: 3, color: colors.cyan, marginBottom: 6 },
+  sheetTitle: { fontFamily: fonts.heading, fontSize: 15, letterSpacing: 3, color: colors.accent, marginBottom: 6 },
   label: {
     fontFamily: fonts.heading,
     fontSize: 12,
@@ -301,7 +301,7 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderColor: colors.cyanDim,
+    borderColor: colors.accentDim,
     backgroundColor: colors.bg,
     color: colors.text,
     fontFamily: fonts.semibold,

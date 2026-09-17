@@ -53,7 +53,7 @@ export function fallosPermitidos(programadas: number): number {
  * u otro pagaría distinto— pero como número a la vista es desmoralizante:
  * cumples las tres misiones del día y el contador sigue igual hasta mañana.
  *
- * Esto devuelve lo que el cazador ha ganado de verdad. Las penalizaciones no
+ * Esto devuelve lo que el gladiador ha ganado de verdad. Las penalizaciones no
  * cuentan, igual que en el cierre.
  */
 export function rachaVisible(

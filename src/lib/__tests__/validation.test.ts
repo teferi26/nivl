@@ -1,9 +1,9 @@
 import { describe, expect, test } from '@jest/globals';
-import { checkPassword, isValidEmail } from '../validation';
+import { checkPassword, isValidEmail, isValidName } from '../validation';
 
 describe('isValidEmail', () => {
   test('acepta correos válidos', () => {
-    expect(isValidEmail('cazador@nivl.app')).toBe(true);
+    expect(isValidEmail('gladiador@nivl.app')).toBe(true);
     expect(isValidEmail('a.b-c+d@sub.example.co')).toBe(true);
     expect(isValidEmail('  teferi@gmail.com  ')).toBe(true); // trim
   });
@@ -17,29 +17,50 @@ describe('isValidEmail', () => {
   });
 });
 
-describe('checkPassword', () => {
-  test('menos de 8 caracteres no es válida para registrar', () => {
-    const r = checkPassword('Ab1');
+describe('checkPassword (política Franky, NIST 800-63B)', () => {
+  test('menos de 12 caracteres no es válida para registrar', () => {
+    const r = checkPassword('Ab1cdefg');
     expect(r.ok).toBe(false);
-    expect(r.missing).toContain('8 caracteres');
+    expect(r.missing[0]).toContain('12 caracteres');
   });
 
-  test('8+ caracteres es válida aunque no sea fuerte', () => {
-    const r = checkPassword('todoenminuscula');
+  test('una frase en minúsculas de 12+ es válida: no hay reglas de composición', () => {
+    const r = checkPassword('el gato de mi abuela ronca');
     expect(r.ok).toBe(true);
-    expect(r.strength).not.toBe('fuerte');
-  });
-
-  test('mezcla larga con símbolo es fuerte', () => {
-    const r = checkPassword('Cazador2026!');
-    expect(r.ok).toBe(true);
-    expect(r.strength).toBe('fuerte');
     expect(r.missing).toHaveLength(0);
+    expect(r.strength).toBe('fuerte');
+  });
+
+  test('12 caracteres repetitivos se rechazan aunque cumplan la longitud', () => {
+    const r = checkPassword('aaaaaaaaaaaa');
+    expect(r.ok).toBe(false);
+    expect(r.missing).toContain('más variedad de caracteres');
+  });
+
+  test('solo espacios se rechaza', () => {
+    expect(checkPassword('            ').ok).toBe(false);
+  });
+
+  test('las contraseñas de diccionario puntúan cero', () => {
+    const r = checkPassword('password12345');
+    expect(r.strength).toBe('debil');
+    expect(r.score).toBe(0);
   });
 
   test('el score se acota a 0..4', () => {
-    const r = checkPassword('Cazador2026!SuperLarga$$');
+    const r = checkPassword('Gladiador2026!SuperLarga$$');
     expect(r.score).toBeLessThanOrEqual(4);
     expect(r.score).toBeGreaterThanOrEqual(0);
+  });
+});
+
+describe('isValidName', () => {
+  test('acepta nombres normales y recorta espacios', () => {
+    expect(isValidName('Teferi')).toBe(true);
+    expect(isValidName('  Pau  ')).toBe(true);
+  });
+  test('rechaza vacío y demasiado largo', () => {
+    expect(isValidName('   ')).toBe(false);
+    expect(isValidName('x'.repeat(25))).toBe(false);
   });
 });

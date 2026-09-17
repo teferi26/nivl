@@ -225,8 +225,8 @@ export function QuestForm({ visible, onClose, onSubmit, initial, onDelete }: Pro
               <Switch
                 value={requiresEvidence}
                 onValueChange={setRequiresEvidence}
-                trackColor={{ false: colors.track, true: colors.cyanDim }}
-                thumbColor={requiresEvidence ? colors.cyan : colors.textFaint}
+                trackColor={{ false: colors.track, true: colors.accentDim }}
+                thumbColor={requiresEvidence ? colors.accent : colors.textFaint}
               />
             </View>
 
@@ -240,8 +240,8 @@ export function QuestForm({ visible, onClose, onSubmit, initial, onDelete }: Pro
               <Switch
                 value={isBonus}
                 onValueChange={setIsBonus}
-                trackColor={{ false: colors.track, true: colors.amberDim }}
-                thumbColor={isBonus ? colors.amber : colors.textFaint}
+                trackColor={{ false: colors.track, true: colors.goldDim }}
+                thumbColor={isBonus ? colors.gold : colors.textFaint}
               />
             </View>
 
@@ -272,7 +272,7 @@ const styles = StyleSheet.create({
   sheet: {
     backgroundColor: colors.panel,
     borderTopWidth: 1.5,
-    borderTopColor: colors.cyanDim,
+    borderTopColor: colors.accentDim,
     padding: 20,
     paddingBottom: 34,
     maxHeight: '88%',
@@ -281,7 +281,7 @@ const styles = StyleSheet.create({
     fontFamily: fonts.heading,
     fontSize: 16,
     letterSpacing: 3,
-    color: colors.cyan,
+    color: colors.accent,
     marginBottom: 14,
   },
   label: {
@@ -295,7 +295,7 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderColor: colors.cyanDim,
+    borderColor: colors.accentDim,
     backgroundColor: colors.bg,
     color: colors.text,
     fontFamily: fonts.semibold,
@@ -310,20 +310,20 @@ const styles = StyleSheet.create({
   },
   chip: {
     borderWidth: 1,
-    borderColor: colors.cyanDim,
+    borderColor: colors.accentDim,
     paddingHorizontal: 12,
     paddingVertical: 7,
   },
   day: {
     borderWidth: 1,
-    borderColor: colors.cyanDim,
+    borderColor: colors.accentDim,
     width: 38,
     paddingVertical: 7,
     alignItems: 'center',
   },
   chipOn: {
-    backgroundColor: colors.cyanFaint,
-    borderColor: colors.cyan,
+    backgroundColor: colors.accentFaint,
+    borderColor: colors.accent,
   },
   chipText: {
     fontFamily: fonts.semibold,
@@ -331,7 +331,7 @@ const styles = StyleSheet.create({
     color: colors.textDim,
   },
   chipTextOn: {
-    color: colors.cyan,
+    color: colors.accent,
   },
   quickDays: { flexDirection: 'row', gap: 8, marginTop: 8 },
   quickDay: {
@@ -340,7 +340,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 5,
   },
-  quickDayText: { fontFamily: fonts.body, fontSize: 12, color: colors.cyanText },
+  quickDayText: { fontFamily: fonts.body, fontSize: 12, color: colors.accentText },
   hint: {
     fontFamily: fonts.body,
     fontSize: 12,

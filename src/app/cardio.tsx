@@ -187,7 +187,7 @@ export default function Cardio() {
           accessibilityRole="button"
           accessibilityLabel="Volver"
         >
-          <Ionicons name="chevron-back" size={24} color={colors.cyan} />
+          <Ionicons name="chevron-back" size={24} color={colors.accent} />
         </Pressable>
         <Text style={styles.title}>MOTOR AERÓBICO</Text>
         <Pressable
@@ -196,7 +196,7 @@ export default function Cardio() {
           accessibilityRole="button"
           accessibilityLabel="Registrar sesión de cardio"
         >
-          <Ionicons name="add" size={24} color={colors.cyan} />
+          <Ionicons name="add" size={24} color={colors.accent} />
         </Pressable>
       </View>
 
@@ -241,7 +241,7 @@ export default function Cardio() {
               >
                 <SystemWindow>
                   <View style={styles.fila}>
-                    <Ionicons name={ICONO[s.kind] as never} size={18} color={colors.cyan} />
+                    <Ionicons name={ICONO[s.kind] as never} size={18} color={colors.accent} />
                     <Text style={styles.tipo}>{s.kind.toUpperCase()}</Text>
                     <Text style={styles.fecha}>{s.date}</Text>
                   </View>
@@ -401,7 +401,7 @@ const styles = StyleSheet.create({
     fontFamily: fonts.heading,
     fontSize: 12,
     letterSpacing: 2.5,
-    color: colors.cyanText,
+    color: colors.accentText,
     marginBottom: 10,
   },
   kpis: { flexDirection: 'row', gap: 28 },
@@ -418,15 +418,15 @@ const styles = StyleSheet.create({
   fila: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 6 },
   tipo: { fontFamily: fonts.heading, fontSize: 12, letterSpacing: 1.5, color: colors.text, flex: 1 },
   fecha: { fontFamily: fonts.number, fontSize: 11, color: colors.textFaint },
-  datos: { fontFamily: fonts.semibold, fontSize: 13, color: colors.cyanText },
+  datos: { fontFamily: fonts.semibold, fontSize: 13, color: colors.accentText },
   notas: { fontFamily: fonts.body, fontSize: 12, color: colors.textDim, marginTop: 4 },
   backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.75)', justifyContent: 'flex-end' },
-  sheet: { maxHeight: '92%', backgroundColor: colors.panel, borderTopWidth: 1.5, borderTopColor: colors.cyanDim },
+  sheet: { maxHeight: '92%', backgroundColor: colors.panel, borderTopWidth: 1.5, borderTopColor: colors.accentDim },
   sheetTitle: {
     fontFamily: fonts.heading,
     fontSize: 14,
     letterSpacing: 2.5,
-    color: colors.cyanText,
+    color: colors.accentText,
     marginBottom: 14,
   },
   label: {
@@ -438,9 +438,9 @@ const styles = StyleSheet.create({
   },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   chip: { borderWidth: 1, borderColor: colors.line, paddingVertical: 6, paddingHorizontal: 10 },
-  chipOn: { borderColor: colors.cyan, backgroundColor: colors.cyanFaint },
+  chipOn: { borderColor: colors.accent, backgroundColor: colors.accentFaint },
   chipText: { fontFamily: fonts.body, fontSize: 12, color: colors.textDim },
-  chipTextOn: { color: colors.cyanText },
+  chipTextOn: { color: colors.accentText },
   dosColumnas: { flexDirection: 'row', gap: 12 },
   columna: { flex: 1 },
   input: {

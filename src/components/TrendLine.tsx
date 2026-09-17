@@ -11,7 +11,7 @@ interface Props {
 }
 
 // Gráfica de línea minimalista (sin librerías): evolución de peso o de un PR.
-export function TrendLine({ values, width = 300, height = 90, color = colors.cyan, unit = 'kg' }: Props) {
+export function TrendLine({ values, width = 300, height = 90, color = colors.accent, unit = 'kg' }: Props) {
   if (values.length === 0) {
     return (
       <Text style={{ fontFamily: fonts.body, fontSize: 12, color: colors.textFaint }}>

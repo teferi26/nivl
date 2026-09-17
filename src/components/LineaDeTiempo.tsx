@@ -4,7 +4,7 @@ import { hhmm } from '@/lib/plan';
 import { ALTO_HORA, disponer, rangoHoras, yDeMinuto, type ItemTiempo } from '@/lib/timeline';
 import { colors, fonts } from '@/lib/theme';
 
-export type TipoItem = 'bloque' | 'evento' | 'mazmorra';
+export type TipoItem = 'bloque' | 'evento' | 'campaña';
 
 export interface ItemAgenda extends ItemTiempo {
   titulo: string;
@@ -15,9 +15,9 @@ export interface ItemAgenda extends ItemTiempo {
 }
 
 const COLOR: Record<TipoItem, string> = {
-  bloque: colors.cyan,
-  evento: colors.amber,
-  mazmorra: colors.purple,
+  bloque: colors.accent,
+  evento: colors.gold,
+  campaña: colors.steel,
 };
 
 const ANCHO_HORAS = 46;
@@ -85,7 +85,7 @@ export function LineaDeTiempo({
               <Text style={[styles.bloqueTitulo, item.hecho && styles.tachado]} numberOfLines={1}>
                 {item.titulo}
               </Text>
-              {item.hecho ? <Ionicons name="checkmark" size={12} color={colors.cyan} /> : null}
+              {item.hecho ? <Ionicons name="checkmark" size={12} color={colors.accent} /> : null}
             </View>
             {/* La hora solo cabe si el bloque pasa de media hora; en uno de 20
                 minutos taparía el título, que es lo que de verdad importa. */}

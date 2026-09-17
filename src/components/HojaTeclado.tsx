@@ -116,7 +116,7 @@ const styles = StyleSheet.create({
   sheet: {
     backgroundColor: colors.panel,
     borderTopWidth: 1.5,
-    borderTopColor: colors.cyanDim,
+    borderTopColor: colors.accentDim,
     paddingHorizontal: 20,
     paddingTop: 10,
     paddingBottom: 34,
@@ -128,7 +128,7 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     width: 42,
     height: 3,
-    backgroundColor: colors.cyanFaint,
+    backgroundColor: colors.accentFaint,
     marginBottom: 14,
   },
 });

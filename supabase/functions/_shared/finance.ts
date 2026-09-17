@@ -1,4 +1,4 @@
-// NIVL · El estudio económico del cazador.
+// NIVL · El estudio económico del gladiador.
 //
 // Mismo principio que `analytics.ts` para el cuerpo: el coach no ve 900
 // movimientos sueltos, ve conclusiones. Un modelo al que le sueltas el extracto

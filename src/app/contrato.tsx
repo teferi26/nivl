@@ -276,7 +276,7 @@ export default function Contrato() {
       <ScrollView automaticallyAdjustKeyboardInsets contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <View style={styles.header}>
           <Pressable onPress={() => router.back()} hitSlop={10} accessibilityRole="button" accessibilityLabel="Volver">
-            <Ionicons name="chevron-back" size={24} color={colors.cyan} />
+            <Ionicons name="chevron-back" size={24} color={colors.accent} />
           </Pressable>
           <Text style={styles.title}>EL CONTRATO</Text>
           <Pressable
@@ -285,11 +285,11 @@ export default function Contrato() {
             accessibilityRole="button"
             accessibilityLabel="Añadir norma"
           >
-            <Ionicons name="add" size={24} color={colors.cyan} />
+            <Ionicons name="add" size={24} color={colors.accent} />
           </Pressable>
         </View>
 
-        <SystemWindow color={colors.cyanDim}>
+        <SystemWindow color={colors.accentDim}>
           <Text style={styles.windowTitle}>PUNTOS BONUS</Text>
           <View style={styles.pbRow}>
             <Text style={styles.pbValue}>{profile?.bonus_points ?? 0} PB</Text>
@@ -308,7 +308,7 @@ export default function Contrato() {
           />
         </SystemWindow>
 
-        <SystemWindow color={colors.cyanDim}>
+        <SystemWindow color={colors.accentDim}>
           <Text style={styles.windowTitle}>REGLAS DEL JUEGO</Text>
           {activeRules.length === 0 ? (
             <>
@@ -354,8 +354,8 @@ export default function Contrato() {
           )}
         </SystemWindow>
 
-        <SystemWindow color={colors.purpleDim} fill={colors.panelDeep}>
-          <Text style={[styles.windowTitle, { color: '#A697F0' }]}>CARTA A TU YO DEL FUTURO</Text>
+        <SystemWindow color={colors.steelDim} fill={colors.panelDeep}>
+          <Text style={[styles.windowTitle, { color: colors.steelText }]}>CARTA A TU YO DEL FUTURO</Text>
           {!letter ? (
             <>
               <Text style={styles.empty}>
@@ -390,7 +390,7 @@ export default function Contrato() {
         </SystemWindow>
 
         {/* Tabla de transparencia: los valores salen de game.ts, no pueden desincronizarse del motor. */}
-        <SystemWindow color={colors.cyanDim}>
+        <SystemWindow color={colors.accentDim}>
           <Text style={styles.windowTitle}>PUNTUACIÓN DEL SISTEMA</Text>
           <Text style={styles.scoreSection}>ASÍ SE GANA</Text>
           {[
@@ -408,9 +408,9 @@ export default function Contrato() {
             { label: 'Página del diario', value: `${JOURNAL_XP} XP` },
             { label: 'Pesarte', value: `${WEIGH_IN_XP} XP` },
             { label: 'Objetivo cumplido', value: `${GOAL_ACHIEVED_XP} XP` },
-            { label: 'Tarea de mazmorra', value: `XP de su dificultad · jefe ×${BOSS_MULTIPLIER}` },
+            { label: 'Tarea de campaña', value: `XP de su dificultad · jefe ×${BOSS_MULTIPLIER}` },
             {
-              label: 'Mazmorra despejada',
+              label: 'Campaña despejada',
               value: `botín ${DUNGEON_CLEAR_XP.E}–${DUNGEON_CLEAR_XP.S} XP según rango`,
             },
             {
@@ -543,16 +543,16 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: 14,
   },
-  title: { fontFamily: fonts.heading, fontSize: 15, letterSpacing: 3, color: colors.cyan },
+  title: { fontFamily: fonts.heading, fontSize: 15, letterSpacing: 3, color: colors.accent },
   windowTitle: {
     fontFamily: fonts.heading,
     fontSize: 12,
     letterSpacing: 2.5,
-    color: colors.cyan,
+    color: colors.accent,
     marginBottom: 8,
   },
   pbRow: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between' },
-  pbValue: { fontFamily: fonts.brand, fontSize: 28, color: colors.amber },
+  pbValue: { fontFamily: fonts.brand, fontSize: 28, color: colors.gold },
   pbMeta: { fontFamily: fonts.body, fontSize: 12, color: colors.textFaint },
   pbHint: { fontFamily: fonts.body, fontSize: 12, color: colors.textDim, marginTop: 6, lineHeight: 17 },
   scoreSection: {
@@ -573,7 +573,7 @@ const styles = StyleSheet.create({
     borderTopColor: colors.line,
   },
   scoreLabel: { fontFamily: fonts.body, fontSize: 13, color: colors.text, flexShrink: 1 },
-  scoreValue: { fontFamily: fonts.semibold, fontSize: 12, color: colors.cyanText, textAlign: 'right' },
+  scoreValue: { fontFamily: fonts.semibold, fontSize: 12, color: colors.accentText, textAlign: 'right' },
   empty: { fontFamily: fonts.body, fontSize: 13, color: colors.textDim, lineHeight: 19 },
   ruleRow: {
     flexDirection: 'row',
@@ -582,7 +582,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: colors.line,
   },
-  ruleNumber: { fontFamily: fonts.heading, fontSize: 14, color: colors.cyanText, width: 24 },
+  ruleNumber: { fontFamily: fonts.heading, fontSize: 14, color: colors.accentText, width: 24 },
   ruleBody: { flex: 1, minWidth: 0 },
   ruleText: { fontFamily: fonts.semibold, fontSize: 15, color: colors.text, lineHeight: 20 },
   ruleConsequence: { fontFamily: fonts.body, fontSize: 12, color: colors.red, marginTop: 3 },
@@ -611,12 +611,12 @@ const styles = StyleSheet.create({
   sheet: {
     backgroundColor: colors.panel,
     borderTopWidth: 1.5,
-    borderTopColor: colors.cyanDim,
+    borderTopColor: colors.accentDim,
     padding: 20,
     paddingBottom: 34,
     maxHeight: '88%',
   },
-  sheetTitle: { fontFamily: fonts.heading, fontSize: 15, letterSpacing: 3, color: colors.cyan, marginBottom: 6 },
+  sheetTitle: { fontFamily: fonts.heading, fontSize: 15, letterSpacing: 3, color: colors.accent, marginBottom: 6 },
   label: {
     fontFamily: fonts.heading,
     fontSize: 12,
@@ -628,7 +628,7 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderColor: colors.cyanDim,
+    borderColor: colors.accentDim,
     backgroundColor: colors.bg,
     color: colors.text,
     fontFamily: fonts.semibold,
@@ -641,11 +641,11 @@ const styles = StyleSheet.create({
   chip: {
     flex: 1,
     borderWidth: 1,
-    borderColor: colors.cyanDim,
+    borderColor: colors.accentDim,
     paddingVertical: 9,
     alignItems: 'center',
   },
-  chipOn: { backgroundColor: colors.cyanFaint, borderColor: colors.cyan },
+  chipOn: { backgroundColor: colors.accentFaint, borderColor: colors.accent },
   chipText: { fontFamily: fonts.semibold, fontSize: 13, color: colors.textDim },
-  chipTextOn: { color: colors.cyan },
+  chipTextOn: { color: colors.accent },
 });

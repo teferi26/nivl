@@ -52,12 +52,12 @@ export function TextoSistema({ texto, tono = 'normal' }: { texto: string; tono?:
 const styles = StyleSheet.create({
   normal: { fontFamily: fonts.body, fontSize: 14.5, lineHeight: 21, color: colors.text },
   tenue: { fontFamily: fonts.body, fontSize: 13, lineHeight: 19, color: colors.textDim },
-  negrita: { fontFamily: fonts.semibold, color: colors.cyanText },
+  negrita: { fontFamily: fonts.semibold, color: colors.accentText },
   titulo: {
     fontFamily: fonts.heading,
     fontSize: 13,
     letterSpacing: 1.5,
-    color: colors.cyanText,
+    color: colors.accentText,
     textTransform: 'uppercase',
     marginBottom: 4,
   },
@@ -65,6 +65,6 @@ const styles = StyleSheet.create({
   parrafoSeparado: { marginTop: 8 },
   fila: { flexDirection: 'row', gap: 8, marginTop: 5 },
   // Ancho fijo para que los números de una lista queden alineados entre sí.
-  marca: { minWidth: 16, color: colors.cyan },
+  marca: { minWidth: 16, color: colors.accent },
   cuerpoFila: { flex: 1 },
 });

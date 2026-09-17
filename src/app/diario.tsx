@@ -52,9 +52,9 @@ function chronicleLine(e: SystemEvent): string | null {
     case 'penalty':
       return `Penalización aplicada: −${Number(p.xp ?? 0)} XP`;
     case 'dungeon_task':
-      return `Objetivo de mazmorra: ${String(p.task ?? '')}`;
+      return `Objetivo de campaña: ${String(p.task ?? '')}`;
     case 'dungeon_cleared':
-      return `Mazmorra despejada: ${String(p.dungeon ?? '')}`;
+      return `Campaña despejada: ${String(p.dungeon ?? '')}`;
     case 'gym_session':
       return `Sesión de gimnasio registrada (+${Number(p.xp ?? 0)} XP)`;
     case 'gym_pr':
@@ -215,9 +215,9 @@ export default function Diario() {
       <ScrollView automaticallyAdjustKeyboardInsets contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <View style={styles.header}>
           <Pressable onPress={() => router.back()} hitSlop={10} accessibilityRole="button" accessibilityLabel="Volver">
-            <Ionicons name="chevron-back" size={24} color={colors.cyan} />
+            <Ionicons name="chevron-back" size={24} color={colors.accent} />
           </Pressable>
-          <Text style={styles.title}>DIARIO DEL CAZADOR</Text>
+          <Text style={styles.title}>DIARIO DEL GLADIADOR</Text>
           <View style={{ width: 24 }} />
         </View>
 
@@ -229,7 +229,7 @@ export default function Diario() {
             accessibilityRole="button"
             accessibilityLabel="Día anterior"
           >
-            <Ionicons name="chevron-back" size={20} color={colors.cyan} />
+            <Ionicons name="chevron-back" size={20} color={colors.accent} />
           </Pressable>
           <View style={styles.navCentro}>
             <Text style={styles.navFecha}>{nombreDia(dia)}</Text>
@@ -243,18 +243,18 @@ export default function Diario() {
             accessibilityRole="button"
             accessibilityLabel="Día siguiente"
           >
-            <Ionicons name="chevron-forward" size={20} color={colors.cyan} />
+            <Ionicons name="chevron-forward" size={20} color={colors.accent} />
           </Pressable>
         </View>
 
-        <SystemWindow color={registrado ? colors.cyan : colors.cyanDim}>
+        <SystemWindow color={registrado ? colors.accent : colors.accentDim}>
           {/* Que se vea de un vistazo si ese día ya está escrito: el fallo era
               entrar de nuevo y no saber si se había enviado. */}
           <View style={styles.estadoFila}>
             <Ionicons
               name={registrado ? 'checkmark-circle' : 'ellipse-outline'}
               size={16}
-              color={registrado ? colors.cyan : colors.textFaint}
+              color={registrado ? colors.accent : colors.textFaint}
             />
             <Text style={[styles.estado, registrado && styles.estadoOn]}>
               {registrado ? 'REGISTRADO' : 'SIN REGISTRAR'}
@@ -324,7 +324,7 @@ export default function Diario() {
               accessibilityRole="button"
               accessibilityLabel="Añadir foto comprobante con la cámara"
             >
-              <Ionicons name="camera-outline" size={22} color={colors.cyan} />
+              <Ionicons name="camera-outline" size={22} color={colors.accent} />
             </Pressable>
           </View>
           <Text style={styles.photoHint}>
@@ -399,14 +399,14 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: 14,
   },
-  title: { fontFamily: fonts.heading, fontSize: 15, letterSpacing: 3, color: colors.cyan },
-  prompt: { fontFamily: fonts.semibold, fontSize: 15, color: colors.cyanText, lineHeight: 21 },
+  title: { fontFamily: fonts.heading, fontSize: 15, letterSpacing: 3, color: colors.accent },
+  prompt: { fontFamily: fonts.semibold, fontSize: 15, color: colors.accentText, lineHeight: 21 },
   navDias: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
   navBoton: {
     width: 40,
     height: 40,
     borderWidth: 1,
-    borderColor: colors.cyanFaint,
+    borderColor: colors.accentFaint,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -416,7 +416,7 @@ const styles = StyleSheet.create({
   navRelativo: { fontFamily: fonts.body, fontSize: 11.5, color: colors.textFaint, marginTop: 1 },
   estadoFila: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 10 },
   estado: { fontFamily: fonts.heading, fontSize: 11.5, letterSpacing: 2, color: colors.textFaint },
-  estadoOn: { color: colors.cyan },
+  estadoOn: { color: colors.accent },
   hintLista: { fontFamily: fonts.body, fontSize: 11.5, color: colors.textFaint, marginBottom: 4 },
   label: {
     fontFamily: fonts.heading,
@@ -431,17 +431,17 @@ const styles = StyleSheet.create({
   scaleChip: {
     flex: 1,
     borderWidth: 1,
-    borderColor: colors.cyanDim,
+    borderColor: colors.accentDim,
     paddingVertical: 10,
     alignItems: 'center',
   },
-  scaleChipOn: { backgroundColor: colors.cyanFaint, borderColor: colors.cyan },
+  scaleChipOn: { backgroundColor: colors.accentFaint, borderColor: colors.accent },
   scaleNum: { fontFamily: fonts.heading, fontSize: 15, color: colors.textDim },
-  scaleNumOn: { color: colors.cyan },
-  scaleLabel: { fontFamily: fonts.body, fontSize: 12, color: colors.cyanText, marginTop: 6 },
+  scaleNumOn: { color: colors.accent },
+  scaleLabel: { fontFamily: fonts.body, fontSize: 12, color: colors.accentText, marginTop: 6 },
   textarea: {
     borderWidth: 1,
-    borderColor: colors.cyanDim,
+    borderColor: colors.accentDim,
     backgroundColor: colors.bg,
     color: colors.text,
     fontFamily: fonts.semibold,
@@ -453,11 +453,11 @@ const styles = StyleSheet.create({
     lineHeight: 21,
   },
   photoStrip: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  photo: { width: 72, height: 72, backgroundColor: colors.cyanFaint },
+  photo: { width: 72, height: 72, backgroundColor: colors.accentFaint },
   photoPlaceholder: { borderWidth: 1, borderColor: colors.line },
   photoAdd: {
     borderWidth: 1,
-    borderColor: colors.cyanDim,
+    borderColor: colors.accentDim,
     borderStyle: 'dashed',
     backgroundColor: 'transparent',
     alignItems: 'center',
@@ -474,7 +474,7 @@ const styles = StyleSheet.create({
   empty: { fontFamily: fonts.body, fontSize: 13, color: colors.textFaint },
   chronicleLine: { fontFamily: fonts.body, fontSize: 13, color: colors.textDim, paddingVertical: 2.5, lineHeight: 18 },
   entryRow: { borderTopWidth: 1, borderTopColor: colors.line, paddingVertical: 9 },
-  entryDate: { fontFamily: fonts.heading, fontSize: 12, letterSpacing: 1, color: colors.cyanText },
+  entryDate: { fontFamily: fonts.heading, fontSize: 12, letterSpacing: 1, color: colors.accentText },
   entryMeta: { fontFamily: fonts.body, fontSize: 11, color: colors.textFaint, marginTop: 1 },
   entryText: { fontFamily: fonts.body, fontSize: 13, color: colors.textDim, marginTop: 4, lineHeight: 18 },
 });

@@ -27,7 +27,7 @@ export function SystemButton({ title, onPress, variant = 'solid', disabled, load
       ]}
     >
       {loading ? (
-        <ActivityIndicator color={solid ? colors.bg : danger ? colors.red : colors.cyan} size="small" />
+        <ActivityIndicator color={solid ? colors.bg : danger ? colors.red : colors.accent} size="small" />
       ) : (
         <Text
           style={[
@@ -46,14 +46,14 @@ export function SystemButton({ title, onPress, variant = 'solid', disabled, load
 const styles = StyleSheet.create({
   base: {
     borderWidth: 1.5,
-    borderColor: colors.cyan,
+    borderColor: colors.accent,
     paddingVertical: 12,
     paddingHorizontal: 18,
     alignItems: 'center',
     justifyContent: 'center',
   },
   solid: {
-    backgroundColor: colors.cyan,
+    backgroundColor: colors.accent,
   },
   danger: {
     borderColor: colors.redDim,
@@ -69,7 +69,7 @@ const styles = StyleSheet.create({
     fontFamily: fonts.heading,
     fontSize: 15,
     letterSpacing: 2,
-    color: colors.cyan,
+    color: colors.accent,
     textTransform: 'uppercase',
   },
   labelSolid: {

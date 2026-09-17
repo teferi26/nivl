@@ -222,19 +222,19 @@ export default function Informe() {
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.header}>
           <Pressable onPress={() => router.back()} hitSlop={10} accessibilityRole="button" accessibilityLabel="Volver">
-            <Ionicons name="chevron-back" size={24} color={colors.cyan} />
+            <Ionicons name="chevron-back" size={24} color={colors.accent} />
           </Pressable>
           <Text style={styles.title}>INFORME DEL SISTEMA</Text>
           <View style={{ width: 24 }} />
         </View>
 
-        <SystemWindow color={colors.cyanDim}>
+        <SystemWindow color={colors.accentDim}>
           <Text style={styles.windowTitle}>LECTURA SEMANAL</Text>
           <Text style={styles.narrative}>{narrative}</Text>
         </SystemWindow>
 
-        <SystemWindow color={colors.purpleDim} fill={colors.panelDeep}>
-          <Text style={[styles.windowTitle, { color: '#A697F0' }]}>EL SISTEMA SE AJUSTA</Text>
+        <SystemWindow color={colors.steelDim} fill={colors.panelDeep}>
+          <Text style={[styles.windowTitle, { color: colors.steelText }]}>EL SISTEMA SE AJUSTA</Text>
           {!advice ? (
             <>
               <Text style={styles.oracleHint}>
@@ -265,7 +265,7 @@ export default function Informe() {
                     </Text>
                   </View>
                   {applied.has(adj.quest_id) ? (
-                    <Ionicons name="checkmark-circle" size={20} color={colors.purple} />
+                    <Ionicons name="checkmark-circle" size={20} color={colors.steel} />
                   ) : (
                     <Pressable
                       onPress={() => applyAdjustment(adj)}
@@ -289,7 +289,7 @@ export default function Informe() {
                       </Text>
                     </View>
                     {applied.has(key) ? (
-                      <Ionicons name="checkmark-circle" size={20} color={colors.purple} />
+                      <Ionicons name="checkmark-circle" size={20} color={colors.steel} />
                     ) : (
                       <Pressable
                         onPress={() => applyNewQuest(q, key)}
@@ -315,7 +315,7 @@ export default function Informe() {
           )}
         </SystemWindow>
 
-        <SystemWindow color={colors.cyanDim}>
+        <SystemWindow color={colors.accentDim}>
           <Text style={styles.windowTitle}>ÚLTIMOS 7 DÍAS</Text>
           <View style={styles.kpiGrid}>
             <View style={styles.kpi}>
@@ -337,7 +337,7 @@ export default function Informe() {
           </View>
         </SystemWindow>
 
-        <SystemWindow color={colors.cyanDim}>
+        <SystemWindow color={colors.accentDim}>
           <Text style={styles.windowTitle}>XP POR ESTADÍSTICA · 7 DÍAS</Text>
           {STATS.map((s) => (
             <View key={s} style={styles.statRow}>
@@ -346,7 +346,7 @@ export default function Informe() {
                 <View
                   style={{
                     height: 6,
-                    backgroundColor: s === topStat ? colors.cyan : colors.cyanDim,
+                    backgroundColor: s === topStat ? colors.accent : colors.accentDim,
                     width: `${Math.min(100, Math.round((xpByStat[s] / Math.max(1, xpByStat[topStat])) * 100))}%`,
                   }}
                 />
@@ -356,7 +356,7 @@ export default function Informe() {
           ))}
         </SystemWindow>
 
-        <SystemWindow color={colors.cyanDim}>
+        <SystemWindow color={colors.accentDim}>
           <Text style={styles.windowTitle}>MAPA DE ACTIVIDAD · 13 SEMANAS</Text>
           <Heatmap counts={byDay} />
         </SystemWindow>
@@ -374,12 +374,12 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: 14,
   },
-  title: { fontFamily: fonts.heading, fontSize: 15, letterSpacing: 3, color: colors.cyan },
+  title: { fontFamily: fonts.heading, fontSize: 15, letterSpacing: 3, color: colors.accent },
   windowTitle: {
     fontFamily: fonts.heading,
     fontSize: 12,
     letterSpacing: 2.5,
-    color: colors.cyan,
+    color: colors.accent,
     marginBottom: 10,
   },
   narrative: { fontFamily: fonts.semibold, fontSize: 14, color: colors.text, lineHeight: 21 },
@@ -387,7 +387,7 @@ const styles = StyleSheet.create({
   oracleAdvice: {
     fontFamily: fonts.semibold,
     fontSize: 13,
-    color: '#A697F0',
+    color: colors.steelText,
     lineHeight: 19,
     marginTop: 12,
   },
@@ -397,19 +397,19 @@ const styles = StyleSheet.create({
     gap: 10,
     paddingVertical: 9,
     borderTopWidth: 1,
-    borderTopColor: '#15182E',
+    borderTopColor: colors.line,
     marginTop: 8,
   },
   adjTitle: { fontFamily: fonts.semibold, fontSize: 14, color: colors.text },
   adjMeta: { fontFamily: fonts.body, fontSize: 12, color: colors.textDim, marginTop: 2, lineHeight: 16 },
-  applyBtn: { borderWidth: 1, borderColor: colors.purple, paddingHorizontal: 10, paddingVertical: 5 },
-  applyBtnText: { fontFamily: fonts.heading, fontSize: 11, letterSpacing: 1.5, color: colors.purple },
+  applyBtn: { borderWidth: 1, borderColor: colors.steel, paddingHorizontal: 10, paddingVertical: 5 },
+  applyBtnText: { fontFamily: fonts.heading, fontSize: 11, letterSpacing: 1.5, color: colors.steel },
   kpiGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  kpi: { width: '47%', backgroundColor: colors.cyanFaint, padding: 12 },
-  kpiValue: { fontFamily: fonts.number, fontSize: 22, color: colors.cyan },
+  kpi: { width: '47%', backgroundColor: colors.accentFaint, padding: 12 },
+  kpiValue: { fontFamily: fonts.number, fontSize: 22, color: colors.accent },
   kpiLabel: { fontFamily: fonts.body, fontSize: 12, color: colors.textDim, marginTop: 3 },
   statRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 9 },
-  statAbbr: { fontFamily: fonts.heading, fontSize: 13, color: colors.cyanText, width: 34 },
+  statAbbr: { fontFamily: fonts.heading, fontSize: 13, color: colors.accentText, width: 34 },
   statTrack: { flex: 1, height: 6, backgroundColor: colors.track, overflow: 'hidden' },
   statXp: { fontFamily: fonts.heading, fontSize: 13, color: colors.text, width: 44, textAlign: 'right' },
 });

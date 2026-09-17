@@ -176,7 +176,7 @@ export default function Agenda() {
 
   /**
    * Lo que va sobre el eje de horas: los bloques del plan y los eventos con
-   * hora. Lo que no tiene hora (misiones del día, deadlines de mazmorra) va a
+   * hora. Lo que no tiene hora (misiones del día, deadlines de campaña) va a
    * la tira de arriba, como el "todo el día" de cualquier calendario: meterlo
    * en el eje obligaría a inventarle una hora que no tiene.
    */
@@ -261,8 +261,8 @@ export default function Agenda() {
     return (
       <View style={styles.tira}>
         {sinHora.tareas.map((t) => (
-          <View key={t.id} style={[styles.chip, { borderColor: colors.purpleDim }]}>
-            <Text style={[styles.chipTexto, { color: colors.purpleText }]} numberOfLines={1}>
+          <View key={t.id} style={[styles.chip, { borderColor: colors.steelDim }]}>
+            <Text style={[styles.chipTexto, { color: colors.steelText }]} numberOfLines={1}>
               {t.is_boss ? 'JEFE · ' : ''}
               {t.title}
             </Text>
@@ -272,9 +272,9 @@ export default function Agenda() {
           <Pressable
             key={e.id}
             onLongPress={() => removeEvent(e)}
-            style={[styles.chip, { borderColor: colors.amberDim }]}
+            style={[styles.chip, { borderColor: colors.goldDim }]}
           >
-            <Text style={[styles.chipTexto, { color: colors.amber }]} numberOfLines={1}>
+            <Text style={[styles.chipTexto, { color: colors.gold }]} numberOfLines={1}>
               {e.title}
             </Text>
           </Pressable>
@@ -335,7 +335,7 @@ export default function Agenda() {
           accessibilityRole="button"
           accessibilityLabel="Anterior"
         >
-          <Ionicons name="chevron-back" size={22} color={colors.cyan} />
+          <Ionicons name="chevron-back" size={22} color={colors.accent} />
         </Pressable>
         <Pressable onPress={() => setAnchor(today)} accessibilityRole="button" accessibilityLabel="Ir a hoy">
           <Text style={styles.navLabel}>
@@ -351,7 +351,7 @@ export default function Agenda() {
           accessibilityRole="button"
           accessibilityLabel="Siguiente"
         >
-          <Ionicons name="chevron-forward" size={22} color={colors.cyan} />
+          <Ionicons name="chevron-forward" size={22} color={colors.accent} />
         </Pressable>
       </View>
 
@@ -426,10 +426,10 @@ export default function Agenda() {
                     {Number(day.slice(8))}
                   </Text>
                   <View style={styles.dots}>
-                    {c.dayEvents.length ? <View style={[styles.dot, { backgroundColor: colors.amber }]} /> : null}
-                    {c.dayTasks.length ? <View style={[styles.dot, { backgroundColor: colors.purple }]} /> : null}
+                    {c.dayEvents.length ? <View style={[styles.dot, { backgroundColor: colors.gold }]} /> : null}
+                    {c.dayTasks.length ? <View style={[styles.dot, { backgroundColor: colors.steel }]} /> : null}
                     {n === 0 && c.dayQuests.length ? (
-                      <View style={[styles.dot, { backgroundColor: colors.cyanFaint }]} />
+                      <View style={[styles.dot, { backgroundColor: colors.accentFaint }]} />
                     ) : null}
                   </View>
                 </Pressable>
@@ -539,15 +539,15 @@ const styles = StyleSheet.create({
   addButton: {
     width: 34,
     height: 34,
-    backgroundColor: colors.cyan,
+    backgroundColor: colors.accent,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  segmented: { flexDirection: 'row', marginHorizontal: 16, borderWidth: 1, borderColor: colors.cyanFaint },
+  segmented: { flexDirection: 'row', marginHorizontal: 16, borderWidth: 1, borderColor: colors.accentFaint },
   segment: { flex: 1, paddingVertical: 9, alignItems: 'center' },
-  segmentOn: { backgroundColor: colors.cyanFaint },
+  segmentOn: { backgroundColor: colors.accentFaint },
   segmentText: { fontFamily: fonts.heading, fontSize: 11.5, letterSpacing: 2, color: colors.textDim },
-  segmentTextOn: { color: colors.cyan },
+  segmentTextOn: { color: colors.accent },
   navRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -566,15 +566,15 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.line,
   },
-  diaSemanaSel: { borderColor: colors.cyan, backgroundColor: colors.cyanFaint },
+  diaSemanaSel: { borderColor: colors.accent, backgroundColor: colors.accentFaint },
   diaSemanaLetra: { fontFamily: fonts.heading, fontSize: 10, letterSpacing: 1, color: colors.textFaint },
   diaSemanaNum: { fontFamily: fonts.number, fontSize: 14, color: colors.text, marginTop: 2 },
-  diaSemanaTextoSel: { color: colors.cyan },
-  diaHoy: { color: colors.amber },
+  diaSemanaTextoSel: { color: colors.accent },
+  diaHoy: { color: colors.gold },
   // La carga se pinta como una barra que crece hacia arriba: de un vistazo se
   // ve qué día está cargado sin tener que abrirlo.
   cargaPista: { width: 16, height: 18, backgroundColor: colors.track, marginTop: 5, justifyContent: 'flex-end' },
-  cargaRelleno: { backgroundColor: colors.cyanDim, width: '100%' },
+  cargaRelleno: { backgroundColor: colors.accentDim, width: '100%' },
 
   mes: { paddingHorizontal: 16, marginBottom: 6 },
   gridHeader: { flexDirection: 'row' },
@@ -596,10 +596,10 @@ const styles = StyleSheet.create({
     borderWidth: 0.5,
     borderColor: colors.line,
   },
-  cellSelected: { backgroundColor: colors.cyanFaint, borderColor: colors.cyan },
+  cellSelected: { backgroundColor: colors.accentFaint, borderColor: colors.accent },
   cellNum: { fontFamily: fonts.number, fontSize: 13, color: colors.textDim },
-  cellNumToday: { color: colors.amber },
-  cellNumSel: { color: colors.cyan },
+  cellNumToday: { color: colors.gold },
+  cellNumSel: { color: colors.accent },
   dots: { flexDirection: 'row', gap: 3, marginTop: 3, height: 5 },
   dot: { width: 4, height: 4, borderRadius: 2 },
 
@@ -607,14 +607,14 @@ const styles = StyleSheet.create({
     fontFamily: fonts.heading,
     fontSize: 12,
     letterSpacing: 2.5,
-    color: colors.cyanText,
+    color: colors.accentText,
     marginTop: 10,
     marginBottom: 8,
   },
   tira: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 10 },
   chip: {
     borderWidth: 1,
-    borderColor: colors.cyanFaint,
+    borderColor: colors.accentFaint,
     paddingHorizontal: 9,
     paddingVertical: 5,
     maxWidth: '100%',
@@ -628,7 +628,7 @@ const styles = StyleSheet.create({
   sheet: {
     backgroundColor: colors.panel,
     borderTopWidth: 1.5,
-    borderTopColor: colors.cyanDim,
+    borderTopColor: colors.accentDim,
     padding: 20,
     paddingBottom: 34,
   },
@@ -636,7 +636,7 @@ const styles = StyleSheet.create({
     fontFamily: fonts.heading,
     fontSize: 13,
     letterSpacing: 2.5,
-    color: colors.cyanText,
+    color: colors.accentText,
     marginBottom: 12,
   },
   inline: { flexDirection: 'row', gap: 10 },

@@ -8,7 +8,7 @@ interface Props {
   height?: number;
 }
 
-export function XPBar({ ratio, color = colors.cyan, trackColor = colors.track, height = 6 }: Props) {
+export function XPBar({ ratio, color = colors.accent, trackColor = colors.track, height = 6 }: Props) {
   const pct = Math.min(100, Math.max(0, Math.round(ratio * 100)));
   return (
     <View style={{ height, backgroundColor: trackColor, overflow: 'hidden' }}>

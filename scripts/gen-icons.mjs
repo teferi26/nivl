@@ -101,10 +101,10 @@ function sdChevron(px, py, apexY, armX, armY, r) {
   );
 }
 
-const CYAN = hex('#37C8F0');
-const CYAN_TEXT = hex('#8FD9F2');
-const BG_TOP = hex('#0B1526');
-const BG_BOT = hex('#04070F');
+const CYAN = hex('#FFFFFF');
+const CYAN_TEXT = hex('#CFCBC2');
+const BG_TOP = hex('#111111');
+const BG_BOT = hex('#050505');
 
 /**
  * Pinta el glifo de NIVL.

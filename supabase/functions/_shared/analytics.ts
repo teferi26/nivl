@@ -1,4 +1,4 @@
-// NIVL · El estudio del cazador.
+// NIVL · El estudio del gladiador.
 //
 // Aquí se convierte el historial en conclusiones. La diferencia importa: un
 // modelo al que le sueltas 300 series sueltas puede sacar la cuenta, pero
@@ -108,7 +108,7 @@ export async function construirEstudio(sb: Db, userId: string, hoy: string): Pro
   const sesiones = (sesionesRes.data ?? []) as { id: string; date: string; notes: string | null }[];
   const fechaSesion = new Map(sesiones.map((s) => [s.id, s.date]));
 
-  const lineas: string[] = ['# ESTUDIO DEL CAZADOR'];
+  const lineas: string[] = ['# ESTUDIO DEL GLADIADOR'];
   const push = (s = '') => lineas.push(s);
 
   // ── La rutina vigente ───────────────────────────────────────────

@@ -311,7 +311,7 @@ export default function Gym() {
             onPress={() => router.back()}
             hitSlop={10}
           >
-            <Ionicons name="chevron-back" size={24} color={colors.cyan} />
+            <Ionicons name="chevron-back" size={24} color={colors.accent} />
           </Pressable>
           <Text style={styles.title}>ENTRENAMIENTO</Text>
           <Pressable
@@ -320,12 +320,12 @@ export default function Gym() {
             onPress={() => setDayFormOpen(true)}
             hitSlop={10}
           >
-            <Ionicons name="add" size={24} color={colors.cyan} />
+            <Ionicons name="add" size={24} color={colors.accent} />
           </Pressable>
         </View>
 
         {prescrito.length > 0 ? (
-          <SystemWindow color={colors.cyan}>
+          <SystemWindow color={colors.accent}>
             <Text style={styles.windowTitle}>EL SISTEMA HA PRESCRITO</Text>
             {prescrito.map((p) => (
               <Text key={p.id} style={styles.prescLine}>
@@ -338,7 +338,7 @@ export default function Gym() {
           </SystemWindow>
         ) : null}
 
-        <SystemWindow color={colors.cyanDim}>
+        <SystemWindow color={colors.accentDim}>
           <Text style={styles.windowTitle}>SESIÓN DE HOY · {DAY_NAMES[todayWd - 1]?.toUpperCase()}</Text>
           {todaySession ? (
             <Text style={styles.doneText}>
@@ -378,7 +378,7 @@ export default function Gym() {
                       accessibilityRole="button"
                       accessibilityLabel={`Añadir serie a ${l.exercise}`}
                     >
-                      <Ionicons name="add-circle-outline" size={19} color={colors.cyan} />
+                      <Ionicons name="add-circle-outline" size={19} color={colors.accent} />
                     </Pressable>
                   </View>
 
@@ -458,7 +458,7 @@ export default function Gym() {
                 <Ionicons
                   name={fotoB64 ? 'checkmark-circle' : 'camera-outline'}
                   size={18}
-                  color={fotoB64 ? colors.cyan : colors.cyanText}
+                  color={fotoB64 ? colors.accent : colors.accentText}
                 />
                 <Text style={styles.fotoTexto}>
                   {fotoB64 ? 'Foto lista · entra en tu resumen' : 'Foto del entreno'}
@@ -477,7 +477,7 @@ export default function Gym() {
           </SystemWindow>
         ) : (
           days.map((d) => (
-            <SystemWindow key={d.id} color={d.day_of_week === todayWd ? colors.cyanDim : colors.line}>
+            <SystemWindow key={d.id} color={d.day_of_week === todayWd ? colors.accentDim : colors.line}>
               <View style={styles.dayHeader}>
                 <Text style={styles.dayTitle}>
                   {DAY_NAMES[d.day_of_week - 1]?.toUpperCase()} · {d.name}
@@ -489,7 +489,7 @@ export default function Gym() {
                     onPress={() => abrirEjercicio(d, null)}
                     hitSlop={8}
                   >
-                    <Ionicons name="add" size={20} color={colors.cyan} />
+                    <Ionicons name="add" size={20} color={colors.accent} />
                   </Pressable>
                   <Pressable
                     accessibilityRole="button"
@@ -654,12 +654,12 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: 14,
   },
-  title: { fontFamily: fonts.heading, fontSize: 15, letterSpacing: 3, color: colors.cyan },
+  title: { fontFamily: fonts.heading, fontSize: 15, letterSpacing: 3, color: colors.accent },
   windowTitle: {
     fontFamily: fonts.heading,
     fontSize: 12,
     letterSpacing: 2.5,
-    color: colors.cyan,
+    color: colors.accent,
     marginBottom: 8,
   },
   sectionTitle: {
@@ -670,13 +670,13 @@ const styles = StyleSheet.create({
     marginTop: 8,
     marginBottom: 10,
   },
-  doneText: { fontFamily: fonts.semibold, fontSize: 14, color: colors.cyan },
+  doneText: { fontFamily: fonts.semibold, fontSize: 14, color: colors.accent },
   empty: { fontFamily: fonts.body, fontSize: 13, color: colors.textDim, lineHeight: 19 },
   prescLine: {
     fontFamily: fonts.semibold,
     fontSize: 13,
     lineHeight: 19,
-    color: colors.cyanText,
+    color: colors.accentText,
     marginBottom: 4,
   },
   planName: { fontFamily: fonts.semibold, fontSize: 16, color: colors.text, marginBottom: 6 },
@@ -732,13 +732,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
     borderWidth: 1,
-    borderColor: colors.cyanFaint,
+    borderColor: colors.accentFaint,
     paddingVertical: 11,
     paddingHorizontal: 12,
     marginTop: 12,
   },
-  fotoBotonHecha: { borderColor: colors.cyan },
-  fotoTexto: { fontFamily: fonts.semibold, fontSize: 13, color: colors.cyanText },
+  fotoBotonHecha: { borderColor: colors.accent },
+  fotoTexto: { fontFamily: fonts.semibold, fontSize: 13, color: colors.accentText },
   exFila: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 },
   exLine: { fontFamily: fonts.body, fontSize: 13, color: colors.textDim, paddingVertical: 3 },
   liftRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 8 },
@@ -753,7 +753,7 @@ const styles = StyleSheet.create({
   liftInput: {
     width: 64,
     borderWidth: 1,
-    borderColor: colors.cyanDim,
+    borderColor: colors.accentDim,
     backgroundColor: colors.bg,
     color: colors.text,
     fontFamily: fonts.semibold,
@@ -768,11 +768,11 @@ const styles = StyleSheet.create({
   sheet: {
     backgroundColor: colors.panel,
     borderTopWidth: 1.5,
-    borderTopColor: colors.cyanDim,
+    borderTopColor: colors.accentDim,
     padding: 20,
     paddingBottom: 34,
   },
-  sheetTitle: { fontFamily: fonts.heading, fontSize: 15, letterSpacing: 3, color: colors.cyan, marginBottom: 12 },
+  sheetTitle: { fontFamily: fonts.heading, fontSize: 15, letterSpacing: 3, color: colors.accent, marginBottom: 12 },
   label: {
     fontFamily: fonts.heading,
     fontSize: 11,
@@ -783,7 +783,7 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderColor: colors.cyanDim,
+    borderColor: colors.accentDim,
     backgroundColor: colors.bg,
     color: colors.text,
     fontFamily: fonts.semibold,
@@ -793,8 +793,8 @@ const styles = StyleSheet.create({
   },
   inlineInputs: { flexDirection: 'row', gap: 10, marginTop: 14 },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  chip: { borderWidth: 1, borderColor: colors.cyanDim, paddingHorizontal: 12, paddingVertical: 7 },
-  chipOn: { backgroundColor: colors.cyanFaint, borderColor: colors.cyan },
+  chip: { borderWidth: 1, borderColor: colors.accentDim, paddingHorizontal: 12, paddingVertical: 7 },
+  chipOn: { backgroundColor: colors.accentFaint, borderColor: colors.accent },
   chipText: { fontFamily: fonts.semibold, fontSize: 13, color: colors.textDim },
-  chipTextOn: { color: colors.cyan },
+  chipTextOn: { color: colors.accent },
 });

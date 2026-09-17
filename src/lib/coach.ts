@@ -1,7 +1,7 @@
 // NIVL · Cliente del coach.
 //
 // Habla con la Edge Function `coach`, que es la que tiene la clave de IA y las
-// manos para escribir en la vida del cazador. Aquí no hay ninguna credencial
+// manos para escribir en la vida del gladiador. Aquí no hay ninguna credencial
 // de IA: solo el JWT de la sesión.
 //
 // El streaming va por `expo/fetch`, no por el fetch de React Native: el de RN
@@ -226,7 +226,7 @@ export async function generarResumen(
 /**
  * Clasifica los movimientos pendientes. No pasa por el coach: es una tarea
  * mecánica que atiende Haiku con un prompt de diez líneas y sin nada del
- * contexto del cazador. Un extracto entero cuesta céntimas.
+ * contexto del gladiador. Un extracto entero cuesta céntimas.
  */
 export async function clasificarMovimientos(): Promise<{ clasificados: number; texto: string }> {
   const res = await fetch(functionsUrl(), {
@@ -315,7 +315,7 @@ const ACCION_LEGIBLE: Record<string, string> = {
   fijar_horarios: 'ha fijado tus horarios',
   registrar_hecho: 'ha anotado en su memoria',
   actualizar_dossier: 'ha reescrito su memoria',
-  crear_mazmorra: 'ha abierto una mazmorra',
+  crear_mazmorra: 'ha abierto una campaña',
   crear_tarea: 'ha añadido una tarea',
   registrar_regla: 'ha añadido una regla al contrato',
   ajustar_meta: 'ha fijado una meta',

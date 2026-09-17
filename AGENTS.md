@@ -8,7 +8,7 @@ Trampas conocidas del SDK 54: `expo-sharing` no tiene config plugin (fuera de `a
 
 # NIVL — contexto del proyecto
 
-App móvil personal gamificada estilo Solo Leveling (uso personal, interfaz en español) **con un coach de IA dentro que manda en el día del usuario**. El README explica el juego; el código manda.
+App de hábitos de la gente de Franky (interfaz en español), gamificada como una arena de gladiador **con un coach de IA dentro que manda en el día del usuario**. Se entra con la cuenta de Franky (puente `supabase/functions/franky-auth`). Cada usuario tiene un **perfil de uso** (emprendedor · deportista · estudiante · general, `src/lib/kinds.ts`) que ordena módulos, hábitos propuestos y el énfasis del coach. El README explica el juego; el código manda.
 
 ## Mapa
 
@@ -19,6 +19,8 @@ App móvil personal gamificada estilo Solo Leveling (uso personal, interfaz en e
 - **Cuerpo**: `src/lib/bodymath.ts` (puro) + `src/lib/bodywork.ts` (datos: cardio, nutrición, prescripciones) · `supabase/functions/_shared/analytics.ts` (el estudio que lee el coach) + `_shared/knowledge.ts` (la doctrina de entreno y dieta)
 - **Dinero**: `src/lib/moneymath.ts` (puro) + `src/lib/money.ts` (datos) · `supabase/functions/_shared/finance.ts` (el estudio económico) · importadores en `scripts/import-revolut.mjs` (CSV) y `scripts/setup-banco.mjs` (open banking)
 - **Avisos**: `src/lib/notifications.ts` + `src/lib/useNotificationRouting.ts`
+- **Cuenta Franky**: `src/lib/frankyAuth.ts` (cliente) · `supabase/functions/franky-auth/` (el puente; se despliega con `--no-verify-jwt` y los secrets `FRANKY_SUPABASE_URL`, `FRANKY_SUPABASE_ANON_KEY`, `FRANKY_WEB_URL`). Las reglas de contraseña de `src/lib/validation.ts` son las de Franky (12+, sin composición): si Franky las cambia, cámbialas aquí.
+- **Perfiles de uso**: `src/lib/kinds.ts` (puro, con tests) y su copia para el coach en `supabase/functions/_shared/kinds.ts`. Si tocas uno, toca el otro.
 - SQL en `supabase/migrations/`
 
 **Patrón de arquitectura**: la lógica pura vive en un módulo sin imports de Supabase, y los efectos en otro. No es estética — importar `supabase` arrastra AsyncStorage y los tests de ese módulo dejan de arrancar.
@@ -55,7 +57,7 @@ Convención de signo en todo lo económico: **negativo es gasto, positivo es ing
 
 ## Skills del proyecto (`.claude/skills/`)
 
-- **nivl-design-system** — OBLIGATORIA antes de tocar UI o copy: paleta y tipos desde `theme.ts`, paneles en `SystemWindow`, voz del "sistema".
+- **nivl-design-system** — OBLIGATORIA antes de tocar UI o copy: paleta monocroma y tipos (Cinzel + Outfit) desde `theme.ts`, paneles en `SystemWindow`, voz del "sistema", vocabulario (gladiador, campañas; nunca cazador/mazmorras en UI) y reglas por perfil.
 - **nivl-game-design** — OBLIGATORIA antes de tocar XP/rachas/penalizaciones o crear mecánicas.
 - **nivl-backlog** — para planificar: backlog en `docs/mejoras/`, plan por fases en `docs/ROADMAP.md`.
 

@@ -87,7 +87,7 @@ export function Version() {
         accessibilityLabel="Buscar actualización del sistema"
       >
         {buscando ? (
-          <ActivityIndicator size="small" color={colors.cyanText} />
+          <ActivityIndicator size="small" color={colors.accentText} />
         ) : (
           <Text style={styles.botonTexto}>BUSCAR ACTUALIZACIÓN</Text>
         )}
@@ -101,7 +101,7 @@ const styles = StyleSheet.create({
   boton: {
     marginTop: 10,
     borderWidth: 1,
-    borderColor: colors.cyanFaint,
+    borderColor: colors.accentFaint,
     paddingHorizontal: 14,
     paddingVertical: 9,
     minWidth: 190,
@@ -111,7 +111,7 @@ const styles = StyleSheet.create({
     fontFamily: fonts.heading,
     fontSize: 11,
     letterSpacing: 2,
-    color: colors.cyanText,
+    color: colors.accentText,
   },
   linea: {
     fontFamily: fonts.body,

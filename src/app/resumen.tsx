@@ -223,14 +223,14 @@ export default function Resumen() {
     <SafeAreaView style={styles.screen} edges={['top', 'bottom']}>
       <View style={styles.header}>
         <Pressable onPress={() => router.back()} hitSlop={10} accessibilityRole="button" accessibilityLabel="Volver">
-          <Ionicons name="chevron-back" size={24} color={colors.cyan} />
+          <Ionicons name="chevron-back" size={24} color={colors.accent} />
         </Pressable>
         <Text style={styles.title}>RECUERDOS</Text>
         <View style={{ width: 24 }} />
       </View>
 
       <ScrollView contentContainerStyle={styles.contenido}>
-        <SystemWindow color={colors.cyanDim}>
+        <SystemWindow color={colors.accentDim}>
           <Text style={styles.windowTitle}>LA SEMANA EN IMÁGENES</Text>
           <Text style={styles.hint}>
             El sistema junta las fotos que has ido subiendo con cada misión y te cuenta la semana.
@@ -256,7 +256,7 @@ export default function Resumen() {
         ) : (
           recaps.map((r) => (
             <Pressable key={r.id} onPress={() => setAbierto(r)} accessibilityRole="button">
-              <SystemWindow color={r.kind === 'mensual' ? colors.purpleDim : colors.cyanDim}>
+              <SystemWindow color={r.kind === 'mensual' ? colors.steelDim : colors.accentDim}>
                 <View style={styles.filaRecap}>
                   <View style={{ flex: 1, minWidth: 0 }}>
                     <Text style={styles.windowTitle}>
@@ -270,7 +270,7 @@ export default function Resumen() {
                   <Ionicons
                     name="play-circle-outline"
                     size={30}
-                    color={r.seen_at ? colors.textDim : colors.cyan}
+                    color={r.seen_at ? colors.textDim : colors.accent}
                   />
                 </View>
               </SystemWindow>
@@ -281,7 +281,7 @@ export default function Resumen() {
 
       {generando ? (
         <View style={styles.cargando} pointerEvents="none">
-          <ActivityIndicator color={colors.cyan} />
+          <ActivityIndicator color={colors.accent} />
           <Text style={styles.hint}>El sistema está montando tu semana…</Text>
         </View>
       ) : null}
@@ -304,11 +304,11 @@ const styles = StyleSheet.create({
     fontFamily: fonts.heading,
     fontSize: 12,
     letterSpacing: 2.5,
-    color: colors.cyanText,
+    color: colors.accentText,
     marginBottom: 8,
   },
   hint: { fontFamily: fonts.body, fontSize: 12.5, lineHeight: 18, color: colors.textDim, marginTop: 4 },
-  aviso: { fontFamily: fonts.semibold, fontSize: 13, color: colors.amber, marginTop: 10, lineHeight: 19 },
+  aviso: { fontFamily: fonts.semibold, fontSize: 13, color: colors.gold, marginTop: 10, lineHeight: 19 },
   vacio: { fontFamily: fonts.body, fontSize: 13, lineHeight: 20, color: colors.textDim },
   filaRecap: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   cargando: { position: 'absolute', bottom: 30, alignSelf: 'center', alignItems: 'center', gap: 6 },
@@ -321,13 +321,13 @@ const styles = StyleSheet.create({
   paseSeguro: { flex: 1, paddingHorizontal: 22 },
   barras: { flexDirection: 'row', gap: 4, paddingTop: 6 },
   barraPista: { flex: 1, height: 2.5, backgroundColor: colors.track },
-  barraRelleno: { height: 2.5, backgroundColor: colors.cyan },
+  barraRelleno: { height: 2.5, backgroundColor: colors.accent },
   cerrar: { position: 'absolute', top: 44, right: 18, zIndex: 10 },
   compartir: { position: 'absolute', top: 46, right: 58, zIndex: 10 },
   zonas: { ...StyleSheet.absoluteFillObject, flexDirection: 'row' },
   zona: { flex: 1 },
   contenidoSlide: { flex: 1, justifyContent: 'flex-end', paddingBottom: 60, maxWidth: width - 44 },
-  dato: { fontFamily: fonts.brand, fontSize: 46, color: colors.cyan, marginBottom: 6 },
+  dato: { fontFamily: fonts.brand, fontSize: 46, color: colors.accent, marginBottom: 6 },
   tituloSlide: {
     fontFamily: fonts.heading,
     fontSize: 26,
@@ -335,6 +335,6 @@ const styles = StyleSheet.create({
     color: colors.text,
     marginBottom: 10,
   },
-  tituloDuro: { color: colors.amber },
+  tituloDuro: { color: colors.gold },
   textoSlide: { fontFamily: fonts.semibold, fontSize: 16, lineHeight: 24, color: colors.text },
 });

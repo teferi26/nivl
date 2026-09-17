@@ -6,18 +6,22 @@ import { colors } from '@/lib/theme';
 interface Props {
   color?: string;
   fill?: string;
+  /**
+   * Esquinas cortadas en diagonal (superior-izquierda e inferior-derecha).
+   * Por defecto 0: la arena es piedra recta, un marco de un píxel. El corte
+   * queda disponible para momentos épicos (level-up, botín).
+   */
   cut?: number;
   style?: StyleProp<ViewStyle>;
   contentStyle?: StyleProp<ViewStyle>;
   children: ReactNode;
 }
 
-// Ventana del sistema: panel con esquinas cortadas en diagonal
-// (superior-izquierda e inferior-derecha), el sello visual de NIVL.
+// Ventana del sistema: el panel de NIVL. Marco de hierro sobre negro.
 export function SystemWindow({
-  color = colors.cyanDim,
+  color = colors.accentDim,
   fill = colors.panel,
-  cut = 14,
+  cut = 0,
   style,
   contentStyle,
   children,
@@ -30,6 +34,14 @@ export function SystemWindow({
       setSize({ w: width, h: height });
     }
   };
+
+  if (cut <= 0) {
+    return (
+      <View style={[styles.box, styles.frame, { borderColor: color, backgroundColor: fill }, style]}>
+        <View style={[styles.content, contentStyle]}>{children}</View>
+      </View>
+    );
+  }
 
   return (
     <View style={[styles.box, style]} onLayout={onLayout}>
@@ -51,6 +63,9 @@ export function SystemWindow({
 const styles = StyleSheet.create({
   box: {
     marginBottom: 12,
+  },
+  frame: {
+    borderWidth: 1,
   },
   content: {
     padding: 14,

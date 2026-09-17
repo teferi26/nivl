@@ -5,7 +5,7 @@
 // AsyncStorage y los tests ni siquiera arrancarían.
 //
 // Los bloques se guardan en minutos desde medianoche a propósito. El plan es
-// local por definición (la mañana del cazador es su mañana), así que guardar
+// local por definición (la mañana del gladiador es su mañana), así que guardar
 // instantes UTC solo traería líos de zona horaria y de cambio de hora.
 
 export type BlockKind =

@@ -96,7 +96,7 @@ const styles = StyleSheet.create({
   },
   boton: {
     borderWidth: 1.5,
-    borderColor: colors.cyan,
+    borderColor: colors.accent,
     paddingVertical: 12,
     alignItems: 'center',
   },
@@ -104,6 +104,6 @@ const styles = StyleSheet.create({
     fontFamily: fonts.heading,
     fontSize: 14,
     letterSpacing: 2,
-    color: colors.cyan,
+    color: colors.accent,
   },
 });

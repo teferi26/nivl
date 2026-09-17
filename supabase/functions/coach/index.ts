@@ -1,7 +1,7 @@
 // NIVL · Edge Function: EL COACH.
 //
 // No es un proxy de la API de Claude: es un agente con manos. Lee el estado
-// real del cazador, conversa, y escribe en su vida (misiones, plan del día,
+// real del gladiador, conversa, y escribe en su vida (misiones, plan del día,
 // agenda, horarios, memoria) a través de herramientas acotadas.
 //
 // Dos garantías de diseño:

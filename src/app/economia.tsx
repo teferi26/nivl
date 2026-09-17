@@ -188,7 +188,7 @@ export default function Economia() {
     <SafeAreaView style={styles.screen} edges={['top', 'bottom']}>
       <View style={styles.header}>
         <Pressable onPress={() => router.back()} hitSlop={10} accessibilityRole="button" accessibilityLabel="Volver">
-          <Ionicons name="chevron-back" size={24} color={colors.cyan} />
+          <Ionicons name="chevron-back" size={24} color={colors.accent} />
         </Pressable>
         <Text style={styles.title}>ECONOMÍA</Text>
         <Pressable
@@ -197,7 +197,7 @@ export default function Economia() {
           accessibilityRole="button"
           accessibilityLabel="Registrar movimiento en efectivo"
         >
-          <Ionicons name="add" size={24} color={colors.cyan} />
+          <Ionicons name="add" size={24} color={colors.accent} />
         </Pressable>
       </View>
 
@@ -217,7 +217,7 @@ export default function Economia() {
         </ScrollView>
       ) : (
         <ScrollView automaticallyAdjustKeyboardInsets keyboardShouldPersistTaps="handled" contentContainerStyle={styles.contenido}>
-          <SystemWindow color={colors.cyanDim}>
+          <SystemWindow color={colors.accentDim}>
             <Text style={styles.windowTitle}>
               ESTE MES · DÍA {vista.dia} DE {vista.totalDias}
             </Text>
@@ -275,7 +275,7 @@ export default function Economia() {
           </SystemWindow>
 
           {vista.sinClasificar.length > 0 ? (
-            <SystemWindow color={colors.amberDim}>
+            <SystemWindow color={colors.goldDim}>
               <Text style={styles.windowTitle}>SIN CLASIFICAR · {vista.sinClasificar.length}</Text>
               <Text style={styles.hint}>
                 Este dinero no aparece en ningún presupuesto. Toca uno para decirle qué era: el
@@ -479,17 +479,17 @@ const styles = StyleSheet.create({
     fontFamily: fonts.heading,
     fontSize: 12,
     letterSpacing: 2.5,
-    color: colors.cyanText,
+    color: colors.accentText,
     marginBottom: 10,
   },
   kpis: { flexDirection: 'row', gap: 26, flexWrap: 'wrap', marginBottom: 10 },
   kpiNum: { fontFamily: fonts.number, fontSize: 17, color: colors.text },
   kpiLabel: { fontFamily: fonts.body, fontSize: 11, color: colors.textDim },
-  aireNum: { fontFamily: fonts.number, fontSize: 30, color: colors.cyan, marginBottom: 4 },
+  aireNum: { fontFamily: fonts.number, fontSize: 30, color: colors.accent, marginBottom: 4 },
   linea: { fontFamily: fonts.body, fontSize: 12.5, lineHeight: 18, color: colors.textDim, marginTop: 3 },
   alerta: { color: colors.red },
   vacio: { fontFamily: fonts.body, fontSize: 13, lineHeight: 20, color: colors.textDim },
-  mono: { fontFamily: fonts.semibold, color: colors.cyanText, fontSize: 12.5 },
+  mono: { fontFamily: fonts.semibold, color: colors.accentText, fontSize: 12.5 },
   hint: {
     fontFamily: fonts.body,
     fontSize: 11.5,
@@ -516,18 +516,18 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: colors.line,
   },
-  subAnual: { fontFamily: fonts.number, fontSize: 13, color: colors.amber },
+  subAnual: { fontFamily: fonts.number, fontSize: 13, color: colors.gold },
   catRow: { marginBottom: 12 },
   catCabecera: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 5 },
   catNombre: { fontFamily: fonts.semibold, fontSize: 13, color: colors.text },
-  catTotal: { fontFamily: fonts.number, fontSize: 12.5, color: colors.cyanText },
+  catTotal: { fontFamily: fonts.number, fontSize: 12.5, color: colors.accentText },
   barra: { height: 5, backgroundColor: colors.track, overflow: 'hidden' },
-  barraRelleno: { height: 5, backgroundColor: colors.cyan },
+  barraRelleno: { height: 5, backgroundColor: colors.accent },
   backdrop: { flex: 1, backgroundColor: 'rgba(2, 6, 14, 0.85)', justifyContent: 'flex-end' },
   sheet: {
     backgroundColor: colors.panel,
     borderTopWidth: 1.5,
-    borderTopColor: colors.cyanDim,
+    borderTopColor: colors.accentDim,
     padding: 20,
     paddingBottom: 34,
   },
@@ -535,7 +535,7 @@ const styles = StyleSheet.create({
     fontFamily: fonts.heading,
     fontSize: 13,
     letterSpacing: 2.5,
-    color: colors.cyanText,
+    color: colors.accentText,
     marginBottom: 6,
   },
   sheetSub: { fontFamily: fonts.body, fontSize: 12.5, color: colors.textDim, marginBottom: 12 },
@@ -543,11 +543,11 @@ const styles = StyleSheet.create({
   chipsFila: { flexDirection: 'row', gap: 8 },
   chip: {
     borderWidth: 1,
-    borderColor: colors.cyanFaint,
+    borderColor: colors.accentFaint,
     paddingHorizontal: 12,
     paddingVertical: 9,
   },
-  chipOn: { borderColor: colors.cyan, backgroundColor: colors.cyanFaint },
+  chipOn: { borderColor: colors.accent, backgroundColor: colors.accentFaint },
   chipText: { fontFamily: fonts.semibold, fontSize: 12.5, color: colors.textDim },
   chipTextOn: { color: colors.text },
   input: {

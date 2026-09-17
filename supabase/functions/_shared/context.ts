@@ -1,4 +1,4 @@
-// NIVL · El estado real del cazador, tal y como lo ve el coach.
+// NIVL · El estado real del gladiador, tal y como lo ve el coach.
 //
 // Esto es lo VOLÁTIL del prompt y por eso va en el turno de usuario, nunca en
 // el system: si cambiara el system se invalidaría la caché del dossier entero
@@ -7,6 +7,7 @@
 import { construirEstudio } from './analytics.ts';
 import { construirEstudioEconomico } from './finance.ts';
 import type { Db } from './db.ts';
+import { kindLines } from './kinds.ts';
 
 // Espejo de levelFromXp/rankForLevel de src/lib/game.ts. La fuente de verdad
 // es game.ts: si allí cambia la curva, hay que tocar aquí. Se replica porque
@@ -201,9 +202,10 @@ export async function buildContext(
   const lines: string[] = [];
   const push = (s = '') => lines.push(s);
 
-  push(`# ESTADO DEL CAZADOR · ${today}`);
+  push(`# ESTADO DEL GLADIADOR · ${today}`);
   push();
   push(`Nombre: ${p.name} · Nivel ${level} · Rango ${rankForLevel(level)} · ${p.xp_total} XP totales`);
+  for (const l of kindLines(p.profile_kind)) push(l);
   push(
     `Racha: ${p.streak_days} días (perfectos seguidos: ${p.perfect_streak_days ?? 0}) · ` +
       `Piedras de protección: ${p.protection_stones} · Puntos Bonus: ${p.bonus_points ?? 0}`,
@@ -311,7 +313,7 @@ export async function buildContext(
 
   const diario = (diarioRes.data ?? []) as any[];
   if (diario.length) {
-    push('## Diario del cazador (lo más reciente primero)');
+    push('## Diario del gladiador (lo más reciente primero)');
     for (const d of diario) {
       const cabecera = [
         d.date,

@@ -58,7 +58,7 @@ describe('curva de niveles', () => {
   });
 });
 
-describe('rangos de cazador', () => {
+describe('rangos de gladiador', () => {
   test('fronteras E→S', () => {
     expect(rankForLevel(1)).toBe('E');
     expect(rankForLevel(10)).toBe('E');
@@ -105,7 +105,7 @@ describe('XP de misiones', () => {
   });
 });
 
-describe('mazmorras', () => {
+describe('campañas', () => {
   test('los jefes dan ×2', () => {
     expect(dungeonTaskXp('media', false)).toBe(50);
     expect(dungeonTaskXp('media', true)).toBe(100);

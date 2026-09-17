@@ -63,6 +63,7 @@ import {
   streakMultiplier,
 } from '@/lib/game';
 import { supabase } from '@/lib/supabase';
+import { KINDS, kindMeta, PROFILE_KINDS, type ProfileKind } from '@/lib/kinds';
 import { colors, fonts } from '@/lib/theme';
 import type { Profile } from '@/lib/types';
 import { voice } from '@/lib/voice';
@@ -104,9 +105,22 @@ export default function Perfil() {
     refrescarAvisos();
   };
 
+  // Cambia lo que va delante en Hoy y el énfasis del coach; no borra nada.
+  const cambiarPerfilDeUso = async (k: ProfileKind) => {
+    if (!profile || !userId || profile.profile_kind === k) return;
+    const anterior = profile.profile_kind;
+    setProfile({ ...profile, profile_kind: k });
+    try {
+      await updateProfile(userId, { profile_kind: k });
+    } catch (e) {
+      setProfile((p) => (p ? { ...p, profile_kind: anterior } : p));
+      Alert.alert('Error del sistema', e instanceof Error ? e.message : 'Fallo desconocido');
+    }
+  };
+
   const today = dateKey();
   const { height: winHeight } = useWindowDimensions();
-  // La foto ocupa ~media pantalla, como pidió el cazador.
+  // La foto ocupa ~media pantalla, como pidió el gladiador.
   const heroHeight = Math.max(340, Math.round(winHeight * 0.48));
   const streakDays = profile?.streak_days ?? 0;
   // Memo: sin él, pick() elegiría una frase nueva en cada pulsación del nombre.
@@ -156,7 +170,7 @@ export default function Perfil() {
       const path = await uploadAvatar(userId, b64);
       await updateProfile(userId, { avatar_url: path });
       setProfile({ ...profile, avatar_url: path });
-      // La ruta es siempre la misma (un cazador, un retrato), así que sin
+      // La ruta es siempre la misma (un gladiador, un retrato), así que sin
       // olvidar la firma guardada seguiría viéndose la foto anterior.
       olvidarFirma('avatars', path);
       setAvatarUri(await signedUrlCached('avatars', path));
@@ -245,7 +259,7 @@ export default function Perfil() {
   const onDeleteAccount = () => {
     Alert.alert(
       'Eliminar cuenta',
-      'Esto borra PARA SIEMPRE tu perfil, misiones, mazmorras, diario, evidencias y todo tu progreso. No hay vuelta atrás.',
+      'Esto borra PARA SIEMPRE tu perfil, misiones, campañas, diario, evidencias y todo tu progreso. No hay vuelta atrás.',
       [
         { text: 'Cancelar', style: 'cancel' },
         {
@@ -285,7 +299,7 @@ export default function Perfil() {
   return (
     <SafeAreaView style={styles.screen} edges={['top']}>
       <ScrollView automaticallyAdjustKeyboardInsets keyboardShouldPersistTaps="handled" contentContainerStyle={styles.content}>
-        {/* La foto del cazador ocupa media pantalla: identidad, rango y niveles por ámbito. */}
+        {/* La foto del gladiador ocupa media pantalla: identidad, rango y niveles por ámbito. */}
         <Pressable
           onPress={pickAvatar}
           style={[styles.hero, { height: heroHeight }]}
@@ -303,7 +317,7 @@ export default function Perfil() {
               <Hexagon size={110}>
                 <Text style={styles.avatarLetter}>{profile.name.charAt(0).toUpperCase()}</Text>
               </Hexagon>
-              <Text style={styles.heroEmptyHint}>Toca para poner tu foto de cazador</Text>
+              <Text style={styles.heroEmptyHint}>Toca para poner tu foto de gladiador</Text>
             </View>
           )}
           <LinearGradient
@@ -317,10 +331,10 @@ export default function Perfil() {
             onPress={pickAvatar}
             hitSlop={10}
             accessibilityRole="button"
-            accessibilityLabel="Cambiar foto de cazador"
+            accessibilityLabel="Cambiar foto de gladiador"
           >
             {uploadingPhoto ? (
-              <ActivityIndicator size="small" color={colors.cyan} />
+              <ActivityIndicator size="small" color={colors.accent} />
             ) : (
               <Ionicons name="camera-outline" size={15} color={colors.text} />
             )}
@@ -341,7 +355,7 @@ export default function Perfil() {
                   <Text style={styles.equippedTitle}>« {profile.equipped_title.toUpperCase()} »</Text>
                 ) : null}
                 <Text style={styles.rankText}>
-                  CAZADOR · RANGO {rank} · LV. {lvl.level}
+                  {kindMeta(profile.profile_kind).title} · RANGO {rank} · LV. {lvl.level}
                 </Text>
               </View>
               <Text style={styles.heroRankLetter}>{rank}</Text>
@@ -367,12 +381,12 @@ export default function Perfil() {
 
         <View style={styles.body}>
           {/* Lo primero al abrir el perfil: la racha subiendo y un empujón del sistema. */}
-          <SystemWindow color={streakDays > 0 ? colors.amberDim : colors.line} fill={colors.panelDeep}>
+          <SystemWindow color={streakDays > 0 ? colors.goldDim : colors.line} fill={colors.panelDeep}>
             <View style={styles.streakRow}>
               <Ionicons
                 name="flame"
                 size={34}
-                color={streakDays > 0 ? colors.amber : colors.textFaint}
+                color={streakDays > 0 ? colors.gold : colors.textFaint}
               />
               <View style={styles.streakBody}>
                 <Text style={[styles.streakBig, streakDays === 0 && styles.streakBigOff]}>
@@ -388,7 +402,30 @@ export default function Perfil() {
             <Text style={styles.streakMsg}>{streakMsg}</Text>
           </SystemWindow>
 
-        <SystemWindow color={colors.cyanDim}>
+        <SystemWindow color={colors.accentDim}>
+          <Text style={styles.windowTitle}>PARA QUÉ USO NIVL</Text>
+          <View style={styles.kindRow}>
+            {PROFILE_KINDS.map((k) => {
+              const on = profile.profile_kind === k;
+              return (
+                <Pressable
+                  key={k}
+                  onPress={() => cambiarPerfilDeUso(k)}
+                  disabled={busy}
+                  style={[styles.kindChip, on && styles.kindChipOn]}
+                  accessibilityRole="radio"
+                  accessibilityState={{ selected: on }}
+                  accessibilityLabel={KINDS[k].label}
+                >
+                  <Text style={[styles.kindChipText, on && styles.kindChipTextOn]}>{KINDS[k].label}</Text>
+                </Pressable>
+              );
+            })}
+          </View>
+          <Text style={styles.statHint}>{kindMeta(profile.profile_kind).tagline}</Text>
+        </SystemWindow>
+
+        <SystemWindow color={colors.accentDim}>
           <Text style={styles.windowTitle}>ESTADÍSTICAS</Text>
           {STATS.map((s) => {
             const xp = profile[STAT_COLUMN[s]];
@@ -405,7 +442,7 @@ export default function Perfil() {
           <Text style={styles.statHint}>1 punto por cada 100 XP de área</Text>
         </SystemWindow>
 
-        <SystemWindow color={colors.cyanDim}>
+        <SystemWindow color={colors.accentDim}>
           <Text style={styles.windowTitle}>
             LOGROS · {unlocked.size}/{ACHIEVEMENTS.length}
           </Text>
@@ -423,7 +460,7 @@ export default function Perfil() {
                   <Ionicons
                     name={isUnlocked ? 'ribbon' : 'lock-closed-outline'}
                     size={15}
-                    color={isUnlocked ? colors.cyan : colors.textFaint}
+                    color={isUnlocked ? colors.accent : colors.textFaint}
                   />
                   <Text style={[styles.achName, isUnlocked && styles.achNameOn]} numberOfLines={2}>
                     {a.name}
@@ -435,8 +472,8 @@ export default function Perfil() {
           </View>
         </SystemWindow>
 
-        <SystemWindow color={colors.cyanDim}>
-          <Text style={styles.windowTitle}>REGISTRO DEL CAZADOR</Text>
+        <SystemWindow color={colors.accentDim}>
+          <Text style={styles.windowTitle}>REGISTRO DEL GLADIADOR</Text>
           <View style={styles.kpiGrid}>
             <View style={styles.kpi}>
               <Text style={styles.kpiValue}>{stats.total}</Text>
@@ -459,11 +496,11 @@ export default function Perfil() {
           </View>
         </SystemWindow>
 
-        {/* Pausar el sistema vive justo debajo del Registro del cazador: hay que bajar hasta aquí. */}
-        <SystemWindow color={colors.cyanDim}>
+        {/* Pausar el sistema vive justo debajo del Registro del gladiador: hay que bajar hasta aquí. */}
+        <SystemWindow color={colors.accentDim}>
           <Text style={styles.windowTitle}>VÁLVULAS DEL SISTEMA</Text>
           <View style={styles.valveRow}>
-            <Ionicons name="shield-half-outline" size={18} color={colors.cyan} />
+            <Ionicons name="shield-half-outline" size={18} color={colors.accent} />
             <Text style={styles.valveText}>
               Piedras de Protección: {profile.protection_stones}/{MAX_STONES}
             </Text>
@@ -474,7 +511,7 @@ export default function Perfil() {
           {frozen ? (
             <>
               <View style={[styles.valveRow, { marginTop: 12 }]}>
-                <Ionicons name="snow-outline" size={18} color={colors.cyanText} />
+                <Ionicons name="snow-outline" size={18} color={colors.accentText} />
                 <Text style={styles.valveText}>
                   Sistema en pausa ({profile.freeze_reason}) hasta {profile.freeze_until}
                 </Text>
@@ -487,14 +524,14 @@ export default function Perfil() {
         </SystemWindow>
 
         {/* Sin esto no había forma de saber si los avisos estaban vivos: fallaban
-            en silencio y el cazador se enteraba por no recibirlos. */}
-        <SystemWindow color={avisos?.permitido ? colors.cyanDim : colors.redDim}>
+            en silencio y el gladiador se enteraba por no recibirlos. */}
+        <SystemWindow color={avisos?.permitido ? colors.accentDim : colors.redDim}>
           <Text style={styles.windowTitle}>AVISOS DEL SISTEMA</Text>
           <View style={styles.valveRow}>
             <Ionicons
               name={avisos?.permitido ? 'notifications-outline' : 'notifications-off-outline'}
               size={18}
-              color={avisos?.permitido ? colors.cyan : colors.red}
+              color={avisos?.permitido ? colors.accent : colors.red}
             />
             <Text style={styles.valveText}>
               {avisos === null
@@ -520,8 +557,8 @@ export default function Perfil() {
           {avisos?.error ? <Text style={styles.avisoError}>{avisos.error}</Text> : null}
         </SystemWindow>
 
-        <SystemWindow color={colors.purpleDim} fill={colors.panelDeep}>
-          <Text style={[styles.windowTitle, { color: '#A697F0' }]}>PREMIUM · EL ORÁCULO</Text>
+        <SystemWindow color={colors.steelDim} fill={colors.panelDeep}>
+          <Text style={[styles.windowTitle, { color: colors.steelText }]}>PREMIUM · EL ORÁCULO</Text>
           {isPremium(subscription) ? (
             <Text style={styles.valveText}>
               Suscripción activa
@@ -625,10 +662,10 @@ export default function Perfil() {
             {profile.equipped_title ? (
               <Text style={styles.shareTitle}>« {profile.equipped_title.toUpperCase()} »</Text>
             ) : null}
-            <Text style={styles.shareRank}>CAZADOR · RANGO {rank}</Text>
+            <Text style={styles.shareRank}>GLADIADOR · RANGO {rank}</Text>
             <Text style={styles.shareLevel}>LV. {lvl.level}</Text>
             <View style={styles.shareStreak}>
-              <Ionicons name="flame" size={15} color={colors.amber} />
+              <Ionicons name="flame" size={15} color={colors.gold} />
               <Text style={styles.shareStreakText}>
                 {profile.streak_days} {profile.streak_days === 1 ? 'DÍA' : 'DÍAS'} DE RACHA · ×
                 {streakMultiplier(profile.streak_days).toFixed(1).replace('.', ',')} XP
@@ -693,7 +730,7 @@ const styles = StyleSheet.create({
     fontFamily: fonts.brand,
     fontSize: 58,
     lineHeight: 60,
-    color: colors.cyan,
+    color: colors.accent,
     textShadowColor: 'rgba(0, 0, 0, 0.85)',
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 8,
@@ -713,18 +750,18 @@ const styles = StyleSheet.create({
     fontFamily: fonts.heading,
     fontSize: 11,
     letterSpacing: 1,
-    color: colors.cyanText,
+    color: colors.accentText,
     marginTop: 1,
     textShadowColor: 'rgba(0, 0, 0, 0.85)',
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 5,
   },
-  avatarLetter: { fontFamily: fonts.brand, fontSize: 32, color: colors.cyan },
+  avatarLetter: { fontFamily: fonts.brand, fontSize: 32, color: colors.accent },
   equippedTitle: {
     fontFamily: fonts.heading,
     fontSize: 12,
     letterSpacing: 2,
-    color: colors.amber,
+    color: colors.gold,
     marginTop: 5,
     textShadowColor: 'rgba(0, 0, 0, 0.85)',
     textShadowOffset: { width: 0, height: 1 },
@@ -734,7 +771,7 @@ const styles = StyleSheet.create({
     fontFamily: fonts.semibold,
     fontSize: 12,
     letterSpacing: 2,
-    color: colors.cyanText,
+    color: colors.accentText,
     marginTop: 4,
     textShadowColor: 'rgba(0, 0, 0, 0.85)',
     textShadowOffset: { width: 0, height: 1 },
@@ -751,7 +788,7 @@ const styles = StyleSheet.create({
   },
   streakRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   streakBody: { flex: 1, minWidth: 0 },
-  streakBig: { fontFamily: fonts.brand, fontSize: 20, letterSpacing: 1, color: colors.amber },
+  streakBig: { fontFamily: fonts.brand, fontSize: 20, letterSpacing: 1, color: colors.gold },
   streakBigOff: { color: colors.textDim },
   streakMult: { fontFamily: fonts.semibold, fontSize: 12, color: colors.textDim, marginTop: 3 },
   streakMsg: { fontFamily: fonts.body, fontSize: 13, color: colors.text, marginTop: 10, lineHeight: 19 },
@@ -759,15 +796,20 @@ const styles = StyleSheet.create({
     fontFamily: fonts.heading,
     fontSize: 12,
     letterSpacing: 2.5,
-    color: colors.cyan,
+    color: colors.accent,
     marginBottom: 10,
   },
   valveRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   valveText: { fontFamily: fonts.semibold, fontSize: 14, color: colors.text },
   valveHint: { fontFamily: fonts.body, fontSize: 12, color: colors.textFaint, marginTop: 5, lineHeight: 17 },
   avisoError: { fontFamily: fonts.body, fontSize: 11.5, color: colors.red, marginTop: 8 },
+  kindRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 10 },
+  kindChip: { borderWidth: 1, borderColor: colors.accentDim, paddingVertical: 7, paddingHorizontal: 12 },
+  kindChipOn: { backgroundColor: colors.accent, borderColor: colors.accent },
+  kindChipText: { fontFamily: fonts.semibold, fontSize: 12, color: colors.textDim },
+  kindChipTextOn: { color: colors.bg },
   statRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 9 },
-  statAbbr: { fontFamily: fonts.heading, fontSize: 13, color: colors.cyanText, width: 34 },
+  statAbbr: { fontFamily: fonts.heading, fontSize: 13, color: colors.accentText, width: 34 },
   statBar: { flex: 1 },
   statPoints: { fontFamily: fonts.heading, fontSize: 14, color: colors.text, width: 30, textAlign: 'right' },
   statHint: { fontFamily: fonts.body, fontSize: 11, color: colors.textFaint, marginTop: 2 },
@@ -781,23 +823,23 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 4,
   },
-  achOn: { borderColor: colors.cyanDim, backgroundColor: colors.cyanFaint },
+  achOn: { borderColor: colors.accentDim, backgroundColor: colors.accentFaint },
   achName: { fontFamily: fonts.semibold, fontSize: 11, color: colors.textFaint, textAlign: 'center' },
   achNameOn: { color: colors.text },
-  achTitleTag: { fontFamily: fonts.body, fontSize: 10, color: colors.amber },
+  achTitleTag: { fontFamily: fonts.body, fontSize: 10, color: colors.gold },
   kpiGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  kpi: { width: '47%', backgroundColor: colors.cyanFaint, paddingVertical: 12, paddingHorizontal: 12 },
-  kpiValue: { fontFamily: fonts.number, fontSize: 22, color: colors.cyan },
+  kpi: { width: '47%', backgroundColor: colors.accentFaint, paddingVertical: 12, paddingHorizontal: 12 },
+  kpiValue: { fontFamily: fonts.number, fontSize: 22, color: colors.accent },
   kpiLabel: { fontFamily: fonts.body, fontSize: 12, color: colors.textDim, marginTop: 3 },
   backdrop: { flex: 1, backgroundColor: 'rgba(2, 6, 14, 0.85)', justifyContent: 'flex-end' },
   sheet: {
     backgroundColor: colors.panel,
     borderTopWidth: 1.5,
-    borderTopColor: colors.cyanDim,
+    borderTopColor: colors.accentDim,
     padding: 20,
     paddingBottom: 34,
   },
-  sheetTitle: { fontFamily: fonts.heading, fontSize: 16, letterSpacing: 3, color: colors.cyan },
+  sheetTitle: { fontFamily: fonts.heading, fontSize: 16, letterSpacing: 3, color: colors.accent },
   sheetHint: { fontFamily: fonts.body, fontSize: 13, color: colors.textDim, marginTop: 6, lineHeight: 18 },
   label: {
     fontFamily: fonts.heading,
@@ -809,10 +851,10 @@ const styles = StyleSheet.create({
     marginBottom: 7,
   },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  chip: { borderWidth: 1, borderColor: colors.cyanDim, paddingHorizontal: 12, paddingVertical: 8 },
-  chipOn: { backgroundColor: colors.cyanFaint, borderColor: colors.cyan },
+  chip: { borderWidth: 1, borderColor: colors.accentDim, paddingHorizontal: 12, paddingVertical: 8 },
+  chipOn: { backgroundColor: colors.accentFaint, borderColor: colors.accent },
   chipText: { fontFamily: fonts.semibold, fontSize: 13, color: colors.textDim },
-  chipTextOn: { color: colors.cyan },
+  chipTextOn: { color: colors.accent },
   shareBackdrop: {
     flex: 1,
     backgroundColor: 'rgba(2, 6, 14, 0.95)',
@@ -824,22 +866,22 @@ const styles = StyleSheet.create({
     alignSelf: 'stretch',
     backgroundColor: colors.bg,
     borderWidth: 1.5,
-    borderColor: colors.cyan,
+    borderColor: colors.accent,
     alignItems: 'center',
     paddingVertical: 26,
     paddingHorizontal: 20,
   },
-  shareBrand: { fontFamily: fonts.brand, fontSize: 16, letterSpacing: 8, color: colors.cyan, marginBottom: 14 },
+  shareBrand: { fontFamily: fonts.brand, fontSize: 16, letterSpacing: 8, color: colors.accent, marginBottom: 14 },
   shareAvatar: { width: 58, height: 58, borderRadius: 29 },
   shareName: { fontFamily: fonts.heading, fontSize: 20, letterSpacing: 1, color: colors.text, marginTop: 10 },
-  shareTitle: { fontFamily: fonts.heading, fontSize: 11, letterSpacing: 2, color: colors.amber, marginTop: 3 },
-  shareRank: { fontFamily: fonts.semibold, fontSize: 11, letterSpacing: 2, color: colors.cyanText, marginTop: 4 },
-  shareLevel: { fontFamily: fonts.brand, fontSize: 40, color: colors.cyan, marginTop: 6 },
+  shareTitle: { fontFamily: fonts.heading, fontSize: 11, letterSpacing: 2, color: colors.gold, marginTop: 3 },
+  shareRank: { fontFamily: fonts.semibold, fontSize: 11, letterSpacing: 2, color: colors.accentText, marginTop: 4 },
+  shareLevel: { fontFamily: fonts.brand, fontSize: 40, color: colors.accent, marginTop: 6 },
   shareStreak: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 8 },
-  shareStreakText: { fontFamily: fonts.heading, fontSize: 12, letterSpacing: 1, color: colors.amber },
+  shareStreakText: { fontFamily: fonts.heading, fontSize: 12, letterSpacing: 1, color: colors.gold },
   shareStats: { flexDirection: 'row', gap: 14, marginTop: 12 },
   shareStat: { alignItems: 'center' },
-  shareStatAbbr: { fontFamily: fonts.heading, fontSize: 11, color: colors.cyanText },
+  shareStatAbbr: { fontFamily: fonts.heading, fontSize: 11, color: colors.accentText },
   shareStatVal: { fontFamily: fonts.number, fontSize: 16, color: colors.text, marginTop: 2 },
   shareFooter: { fontFamily: fonts.body, fontSize: 12, color: colors.textDim, marginTop: 14 },
 });

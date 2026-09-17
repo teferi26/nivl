@@ -129,7 +129,7 @@ export default function Oraculo() {
               accessibilityRole="button"
               accessibilityLabel="Volver"
             >
-              <Ionicons name="chevron-back" size={24} color={colors.cyan} />
+              <Ionicons name="chevron-back" size={24} color={colors.accent} />
             </Pressable>
             <Text style={styles.title}>EL ORÁCULO</Text>
             <View style={{ width: 24 }} />
@@ -151,7 +151,7 @@ export default function Oraculo() {
             </View>
           </SystemWindow>
 
-          <SystemWindow color={colors.cyanDim}>
+          <SystemWindow color={colors.accentDim}>
             <Text style={styles.intro}>
               Dile al sistema tu objetivo y él forjará las misiones que te llevarán hasta él.
             </Text>
@@ -174,12 +174,12 @@ export default function Oraculo() {
 
           {proposals.length > 0 ? (
             <>
-              <SystemWindow color={colors.cyanDim}>
+              <SystemWindow color={colors.accentDim}>
                 <Text style={styles.label}>VEREDICTO DEL SISTEMA</Text>
                 <Text style={styles.summary}>{summary}</Text>
               </SystemWindow>
 
-              <SystemWindow color={colors.cyanDim}>
+              <SystemWindow color={colors.accentDim}>
                 <Text style={styles.label}>
                   MISIONES PROPUESTAS · {selected.size}/{proposals.length} SELECCIONADAS
                 </Text>
@@ -193,7 +193,7 @@ export default function Oraculo() {
                     accessibilityLabel={`Misión propuesta: ${p.title}`}
                   >
                     <View style={[styles.box, selected.has(i) && styles.boxOn]}>
-                      {selected.has(i) ? <Ionicons name="checkmark" size={14} color={colors.cyan} /> : null}
+                      {selected.has(i) ? <Ionicons name="checkmark" size={14} color={colors.accent} /> : null}
                     </View>
                     <View style={{ flex: 1, minWidth: 0 }}>
                       <Text style={styles.proposalTitle}>{p.title}</Text>
@@ -232,7 +232,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: 14,
   },
-  title: { fontFamily: fonts.heading, fontSize: 15, letterSpacing: 3, color: colors.cyan },
+  title: { fontFamily: fonts.heading, fontSize: 15, letterSpacing: 3, color: colors.accent },
   label: {
     fontFamily: fonts.heading,
     fontSize: 11,
@@ -243,7 +243,7 @@ const styles = StyleSheet.create({
   keyRow: { flexDirection: 'row', gap: 8, alignItems: 'stretch' },
   input: {
     borderWidth: 1,
-    borderColor: colors.cyanDim,
+    borderColor: colors.accentDim,
     backgroundColor: colors.bg,
     color: colors.text,
     fontFamily: fonts.semibold,
@@ -251,7 +251,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 10,
   },
-  intro: { fontFamily: fonts.semibold, fontSize: 14, color: colors.cyanText, lineHeight: 20, marginBottom: 10 },
+  intro: { fontFamily: fonts.semibold, fontSize: 14, color: colors.accentText, lineHeight: 20, marginBottom: 10 },
   goalInput: { minHeight: 70, textAlignVertical: 'top' },
   summary: { fontFamily: fonts.semibold, fontSize: 14, color: colors.text, lineHeight: 20 },
   proposal: {
@@ -265,13 +265,13 @@ const styles = StyleSheet.create({
     width: 20,
     height: 20,
     borderWidth: 1,
-    borderColor: colors.cyanDim,
+    borderColor: colors.accentDim,
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 2,
   },
-  boxOn: { backgroundColor: colors.cyanFaint, borderColor: colors.cyan },
+  boxOn: { backgroundColor: colors.accentFaint, borderColor: colors.accent },
   proposalTitle: { fontFamily: fonts.semibold, fontSize: 15, color: colors.text },
-  proposalMeta: { fontFamily: fonts.body, fontSize: 12, color: colors.cyanText, marginTop: 2 },
+  proposalMeta: { fontFamily: fonts.body, fontSize: 12, color: colors.accentText, marginTop: 2 },
   proposalReason: { fontFamily: fonts.body, fontSize: 12, color: colors.textFaint, marginTop: 3, lineHeight: 16 },
 });

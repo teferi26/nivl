@@ -34,7 +34,7 @@ function Ring({ delay }: { delay: number }) {
 
   return (
     <Animated.View style={[styles.ring, { opacity, transform: [{ scale }] }]} pointerEvents="none">
-      <Hexagon size={170} fill="transparent" color={colors.cyan} />
+      <Hexagon size={170} fill="transparent" color={colors.accent} />
     </Animated.View>
   );
 }
@@ -66,7 +66,7 @@ export function LevelUpOverlay({ level, onClose }: Props) {
         <Animated.View style={[styles.panel, { transform: [{ scale }], opacity }]}>
           <Text style={styles.notice}>HAS SUBIDO DE NIVEL</Text>
           <Text style={styles.level}>{level ?? 0}</Text>
-          <Text style={styles.rank}>CAZADOR · RANGO {level !== null ? rankForLevel(level) : ''}</Text>
+          <Text style={styles.rank}>GLADIADOR · RANGO {level !== null ? rankForLevel(level) : ''}</Text>
           <Text style={styles.flavor}>{level !== null ? voice.levelUp() : ''}</Text>
           <Text style={styles.hint}>Toca para continuar</Text>
         </Animated.View>
@@ -97,7 +97,7 @@ const styles = StyleSheet.create({
   panel: {
     alignItems: 'center',
     borderWidth: 1.5,
-    borderColor: colors.cyan,
+    borderColor: colors.accent,
     backgroundColor: colors.panel,
     paddingVertical: 36,
     paddingHorizontal: 44,
@@ -106,12 +106,12 @@ const styles = StyleSheet.create({
     fontFamily: fonts.heading,
     fontSize: 14,
     letterSpacing: 4,
-    color: colors.cyanText,
+    color: colors.accentText,
   },
   level: {
     fontFamily: fonts.brand,
     fontSize: 84,
-    color: colors.cyan,
+    color: colors.accent,
     marginVertical: 6,
   },
   rank: {

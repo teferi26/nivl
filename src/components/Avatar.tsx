@@ -1,4 +1,4 @@
-// NIVL · El retrato del cazador.
+// NIVL · El retrato del gladiador.
 
 import { Image } from 'expo-image';
 import { useEffect, useState } from 'react';
@@ -16,10 +16,10 @@ interface Props {
 
 /**
  * La inicial del nombre NO es un indicador de carga: es la respuesta a "este
- * cazador no tiene foto".
+ * gladiador no tiene foto".
  *
  * Usarla mientras la foto viajaba hacía que en cada entrada saliera primero
- * una letra y después la cara. Y como el perfil arranca llamándose "Cazador",
+ * una letra y después la cara. Y como el perfil arranca llamándose "Gladiador",
  * esa letra era una C que no significaba nada para su dueño.
  *
  * Con `avatarPath` ya sabemos que hay foto antes de tenerla: se deja el hueco
@@ -57,5 +57,5 @@ export function Avatar({ size, avatarPath, name }: Props) {
 }
 
 const styles = StyleSheet.create({
-  letra: { color: colors.cyan, fontFamily: fonts.brand },
+  letra: { color: colors.accent, fontFamily: fonts.brand },
 });

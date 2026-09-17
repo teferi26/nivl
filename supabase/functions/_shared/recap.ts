@@ -32,7 +32,7 @@ export interface Resultado {
   motivo?: string;
 }
 
-const SISTEMA = `Escribes el resumen de un periodo para el cazador de NIVL, una app que gamifica la vida real con la estética de Solo Leveling.
+const SISTEMA = `Escribes el resumen de un periodo para el gladiador de NIVL, una app que gamifica la vida real con la estética de Solo Leveling.
 
 La voz es la del SISTEMA: español, segunda persona, frases cortas, sobrio. Constata, no suplica. Nada de emojis, nada de signos de exclamación dobles. La calidez está permitida aquí —es un momento ganado— pero se gana con precisión, no con adjetivos.
 
@@ -132,7 +132,7 @@ export async function construirResumen(
 
   const datos = [
     `PERIODO: ${desde} → ${hasta} (${kind})`,
-    `Cazador: ${perfil?.name ?? 'Cazador'} · ${perfil?.xp_total ?? 0} XP totales · racha actual ${perfil?.streak_days ?? 0} días`,
+    `Gladiador: ${perfil?.name ?? 'Gladiador'} · ${perfil?.xp_total ?? 0} XP totales · racha actual ${perfil?.streak_days ?? 0} días`,
     `Misiones completadas: ${comps.length} · XP ganado en el periodo: ${xpGanado}`,
     `Días con actividad: ${porDia.size}`,
     mejorDia ? `Mejor día: ${mejorDia[0]} con ${mejorDia[1]} misiones` : null,

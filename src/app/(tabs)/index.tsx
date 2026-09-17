@@ -25,24 +25,11 @@ import {
   programarDespertador,
   reconciliarAvisosDelDia,
 } from '@/lib/notifications';
+import { kindMeta, modulesFor } from '@/lib/kinds';
 import { colors, fonts } from '@/lib/theme';
 import { voice } from '@/lib/voice';
 import type { Completion, Profile, Quest } from '@/lib/types';
 
-const MODULES = [
-  { icon: 'barbell-outline', label: 'Gym', route: '/gym' },
-  { icon: 'walk-outline', label: 'Cardio', route: '/cardio' },
-  { icon: 'nutrition-outline', label: 'Nutrición', route: '/nutricion' },
-  { icon: 'restaurant-outline', label: 'Dieta', route: '/dieta' },
-  { icon: 'wallet-outline', label: 'Economía', route: '/economia' },
-  { icon: 'cart-outline', label: 'Compra', route: '/compra' },
-  { icon: 'book-outline', label: 'Diario', route: '/diario' },
-  { icon: 'stats-chart-outline', label: 'Informe', route: '/informe' },
-  { icon: 'trending-up-outline', label: 'Avances', route: '/avances' },
-  { icon: 'images-outline', label: 'Recuerdos', route: '/resumen' },
-  { icon: 'sparkles-outline', label: 'Oráculo', route: '/oraculo' },
-  { icon: 'document-text-outline', label: 'Contrato', route: '/contrato' },
-] as const;
 
 export default function Sistema() {
   const { session } = useAuth();
@@ -57,6 +44,7 @@ export default function Sistema() {
   const [refreshing, setRefreshing] = useState(false);
   const [toast, setToast] = useState<{ xp: number; bonus: boolean; unit: 'XP' | 'PB' } | null>(null);
   const [plan, setPlan] = useState<PlanConBloques | null>(null);
+  const [showMore, setShowMore] = useState(false);
 
   const completing = useRef<Set<string>>(new Set());
   const clearToast = useCallback(() => setToast(null), []);
@@ -65,7 +53,7 @@ export default function Sistema() {
     if (!userId) return;
     try {
       let prof = await ensureProfile(userId);
-      const seeded = await seedDefaultQuests(userId);
+      const seeded = await seedDefaultQuests(userId, prof.profile_kind);
       let quests = await fetchQuests();
       const { profile: processed, result } = await processPendingDays(prof, quests);
       prof = processed;
@@ -274,13 +262,14 @@ export default function Sistema() {
     new Set(Object.keys(completions)),
   );
   const pendingCount = sorted.length - completedCount;
+  const modulos = modulesFor(profile?.profile_kind);
 
   return (
     <SafeAreaView style={styles.screen} edges={['top']}>
       <ScrollView
         contentContainerStyle={styles.content}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.cyan} />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />
         }
       >
         <View style={styles.header}>
@@ -295,7 +284,7 @@ export default function Sistema() {
         />
 
         {profile && lvl ? (
-          <SystemWindow color={colors.cyanDim}>
+          <SystemWindow color={colors.accentDim}>
             <View style={styles.profileRow}>
               <Avatar size={58} avatarPath={profile.avatar_url} name={profile.name} />
               <View style={styles.profileInfo}>
@@ -303,7 +292,7 @@ export default function Sistema() {
                 <Text style={styles.rank}>
                   {profile.equipped_title
                     ? `${profile.equipped_title.toUpperCase()} · RANGO ${rankForLevel(lvl.level)}`
-                    : `CAZADOR · RANGO ${rankForLevel(lvl.level)}`}
+                    : `${kindMeta(profile.profile_kind).title} · RANGO ${rankForLevel(lvl.level)}`}
                 </Text>
               </View>
               <View style={styles.levelBox}>
@@ -329,7 +318,7 @@ export default function Sistema() {
                         : ''}
                   </Text>
                   <Text style={styles.stones}>
-                    <Ionicons name="shield-half-outline" size={12} color={colors.cyanText} />{' '}
+                    <Ionicons name="shield-half-outline" size={12} color={colors.accentText} />{' '}
                     {profile.protection_stones}
                   </Text>
                 </View>
@@ -339,9 +328,9 @@ export default function Sistema() {
         ) : null}
 
         {frozen && profile ? (
-          <SystemWindow color={colors.cyanDim} fill={colors.cyanFaint}>
+          <SystemWindow color={colors.accentDim} fill={colors.accentFaint}>
             <Text style={styles.frozenTitle}>
-              <Ionicons name="snow-outline" size={13} color={colors.cyanText} /> SISTEMA EN PAUSA
+              <Ionicons name="snow-outline" size={13} color={colors.accentText} /> SISTEMA EN PAUSA
             </Text>
             <Text style={styles.frozenBody}>
               {voice.frozen(profile.freeze_reason ?? 'pausa')} Hasta el {profile.freeze_until}.
@@ -351,10 +340,10 @@ export default function Sistema() {
 
         {dayResult ? (
           <SystemWindow
-            color={dayResult.penaltyXp > 0 ? colors.redDim : colors.cyanDim}
+            color={dayResult.penaltyXp > 0 ? colors.redDim : colors.accentDim}
             fill={dayResult.penaltyXp > 0 ? colors.redPanel : colors.panel}
           >
-            <Text style={[styles.alertTitle, dayResult.penaltyXp === 0 && { color: colors.cyanText }]}>
+            <Text style={[styles.alertTitle, dayResult.penaltyXp === 0 && { color: colors.accentText }]}>
               {dayResult.penaltyXp > 0 ? 'ALERTA DEL SISTEMA' : 'INFORME DEL CIERRE'}
             </Text>
             {dayResult.stonesUsed > 0 ? (
@@ -374,7 +363,7 @@ export default function Sistema() {
           </SystemWindow>
         ) : null}
 
-        <SystemWindow color={colors.cyanDim}>
+        <SystemWindow color={colors.accentDim}>
           <View style={styles.questHeader}>
             <Text style={styles.windowTitle}>MISIONES DE HOY</Text>
             <Text style={styles.counter}>
@@ -411,7 +400,7 @@ export default function Sistema() {
         <SystemWindow color={colors.line}>
           <Text style={[styles.windowTitle, { color: colors.textFaint }]}>MÓDULOS</Text>
           <View style={styles.moduleGrid}>
-            {MODULES.map((m) => (
+            {modulos.primary.map((m) => (
               <Pressable
                 key={m.route}
                 onPress={() => router.push(m.route)}
@@ -419,11 +408,47 @@ export default function Sistema() {
                 accessibilityRole="button"
                 accessibilityLabel={`Abrir ${m.label}`}
               >
-                <Ionicons name={m.icon} size={20} color={colors.cyan} />
+                <Ionicons name={m.icon as never} size={20} color={colors.accent} />
                 <Text style={styles.moduleLabel}>{m.label}</Text>
               </Pressable>
             ))}
           </View>
+          {modulos.secondary.length > 0 ? (
+            <>
+              <Pressable
+                onPress={() => setShowMore((v) => !v)}
+                style={styles.moreBtn}
+                accessibilityRole="button"
+                accessibilityState={{ expanded: showMore }}
+                accessibilityLabel={showMore ? 'Ocultar el resto de módulos' : 'Ver el resto de módulos'}
+              >
+                <Text style={styles.moreText}>
+                  {showMore ? 'MENOS' : `MÁS · ${modulos.secondary.length}`}
+                </Text>
+                <Ionicons
+                  name={showMore ? 'chevron-up-outline' : 'chevron-down-outline'}
+                  size={14}
+                  color={colors.textFaint}
+                />
+              </Pressable>
+              {showMore ? (
+                <View style={styles.moduleGrid}>
+                  {modulos.secondary.map((m) => (
+                    <Pressable
+                      key={m.route}
+                      onPress={() => router.push(m.route)}
+                      style={[styles.module, styles.moduleSecondary]}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Abrir ${m.label}`}
+                    >
+                      <Ionicons name={m.icon as never} size={20} color={colors.textDim} />
+                      <Text style={styles.moduleLabel}>{m.label}</Text>
+                    </Pressable>
+                  ))}
+                </View>
+              ) : null}
+            </>
+          ) : null}
         </SystemWindow>
       </ScrollView>
 
@@ -452,7 +477,7 @@ const styles = StyleSheet.create({
     fontFamily: fonts.brand,
     fontSize: 18,
     letterSpacing: 6,
-    color: colors.cyan,
+    color: colors.accent,
   },
   date: {
     fontFamily: fonts.semibold,
@@ -467,7 +492,7 @@ const styles = StyleSheet.create({
   avatarLetter: {
     fontFamily: fonts.brand,
     fontSize: 22,
-    color: colors.cyan,
+    color: colors.accent,
   },
   profileInfo: {
     flex: 1,
@@ -483,7 +508,7 @@ const styles = StyleSheet.create({
     fontFamily: fonts.semibold,
     fontSize: 11,
     letterSpacing: 2,
-    color: colors.cyanText,
+    color: colors.accentText,
     marginTop: 3,
   },
   levelBox: {
@@ -498,7 +523,7 @@ const styles = StyleSheet.create({
   lvValue: {
     fontFamily: fonts.brand,
     fontSize: 30,
-    color: colors.cyan,
+    color: colors.accent,
   },
   xpRow: {
     flexDirection: 'row',
@@ -514,20 +539,20 @@ const styles = StyleSheet.create({
   streak: {
     fontFamily: fonts.heading,
     fontSize: 12,
-    color: colors.amber,
+    color: colors.gold,
   },
   // Cuando el día ya está cerrado la racha deja de ser una promesa: se enciende.
-  streakViva: { color: colors.cyan },
+  streakViva: { color: colors.accent },
   stones: {
     fontFamily: fonts.heading,
     fontSize: 12,
-    color: colors.cyanText,
+    color: colors.accentText,
   },
   frozenTitle: {
     fontFamily: fonts.heading,
     fontSize: 12,
     letterSpacing: 2.5,
-    color: colors.cyanText,
+    color: colors.accentText,
     marginBottom: 5,
   },
   frozenBody: {
@@ -546,7 +571,7 @@ const styles = StyleSheet.create({
   alertBody: {
     fontFamily: fonts.semibold,
     fontSize: 13,
-    color: '#E8C9CD',
+    color: colors.redText,
     lineHeight: 19,
     marginBottom: 4,
   },
@@ -559,7 +584,7 @@ const styles = StyleSheet.create({
     fontFamily: fonts.heading,
     fontSize: 12,
     letterSpacing: 2.5,
-    color: colors.cyan,
+    color: colors.accent,
   },
   counter: {
     fontFamily: fonts.heading,
@@ -576,7 +601,7 @@ const styles = StyleSheet.create({
   allDone: {
     fontFamily: fonts.semibold,
     fontSize: 13,
-    color: colors.cyan,
+    color: colors.accent,
     marginTop: 10,
   },
   pendingNote: {
@@ -604,5 +629,22 @@ const styles = StyleSheet.create({
     fontFamily: fonts.semibold,
     fontSize: 12,
     color: colors.textDim,
+  },
+  moduleSecondary: {
+    opacity: 0.8,
+  },
+  moreBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 10,
+    marginTop: 8,
+  },
+  moreText: {
+    fontFamily: fonts.heading,
+    fontSize: 11,
+    letterSpacing: 2,
+    color: colors.textFaint,
   },
 });

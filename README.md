@@ -1,8 +1,36 @@
-# NIVL — El sistema
+# NIVL — Un 1 % mejor cada día
 
-App móvil personal que gamifica la vida real al estilo Solo Leveling **y lleva dentro un coach con IA que manda en tu día**: dicta el plan hora a hora, decide qué puntúa cada tarea, te avisa, te juzga por la noche y recuerda todo lo que aprende de ti.
+App de hábitos de la gente de **Franky**. Gamifica la vida real como una arena (misiones con XP, niveles y rangos, racha, campañas con jefe final) **y lleva dentro un coach con IA que manda en tu día**: dicta el plan hora a hora, decide qué puntúa cada tarea, te avisa, te juzga por la noche y recuerda todo lo que aprende de ti.
 
-Stack: Expo SDK 54 (React Native 0.81 + TypeScript estricto) · expo-router · Supabase (Postgres, Auth, Storage, Edge Functions, pg_cron) · Claude Opus 5.
+Sirve igual a un emprendedor, a un deportista, a un estudiante o a cualquiera que quiera mejorar en general: en el alta eliges **para qué la usas** y eso ordena lo que ves primero, los hábitos que te propone y el énfasis del coach (ver "Perfiles de uso"). Estética: monocromo de gladiador (negro, hueso, hierro; el rojo avisa y el oro corona), tipografía Cinzel + Outfit (la de Franky).
+
+Stack: Expo SDK 54 (React Native 0.81 + TypeScript estricto) · expo-router · Supabase (Postgres, Auth, Storage, Edge Functions, pg_cron) · Claude Sonnet 5.
+
+## La cuenta es la de Franky
+
+Se entra con el correo y la contraseña de Franky, y crear cuenta desde NIVL crea una cuenta Franky. Las dos plataformas viven en proyectos de Supabase distintos (esquemas incompatibles), así que el puente es la Edge Function `franky-auth`: comprueba las credenciales contra Auth de Franky, garantiza el usuario NIVL con ese correo y devuelve un token de un solo uso que la app canjea con `verifyOtp`. La contraseña no se guarda en NIVL; la recuperación es en franky.es/recuperar. Detalle y garantías en la cabecera de `supabase/functions/franky-auth/index.ts`.
+
+Despliegue del puente (una vez):
+
+```bash
+npx supabase functions deploy franky-auth --no-verify-jwt --project-ref <ref>
+npx supabase secrets set FRANKY_SUPABASE_URL=https://<ref-franky>.supabase.co FRANKY_SUPABASE_ANON_KEY=<clave pública de Franky> FRANKY_WEB_URL=https://franky.es
+```
+
+Las cuentas creadas en NIVL antes del puente siguen entrando por "¿Cuenta antigua de NIVL?" en la pantalla de acceso. Si el correo coincide con el de Franky, el puente reutiliza esa misma cuenta y todo su historial.
+
+## Perfiles de uso
+
+`profiles.profile_kind` (migración 0018): **emprendedor · deportista · estudiante · general**. No oculta nada; ordena:
+
+| Perfil | Módulos delante | Campañas se llaman | Hábitos propuestos |
+|---|---|---|---|
+| Emprendedor | Economía, Contrato, Informe, Avances, Diario, Oráculo | Proyectos | prospección, trabajo profundo, métricas… |
+| Deportista | Gym, Cardio, Nutrición, Dieta, Avances, Compra | Bloques | entrenar, comidas, dormir 8 h, movilidad, pesarse… |
+| Estudiante | Diario, Informe, Avances, Oráculo, Contrato, Recuerdos | Asignaturas | estudiar 2 h, repasar, sin móvil en clase… |
+| General | todos | Campañas | entrenar, trabajo o estudio, comidas, leer, diario |
+
+La definición vive en `src/lib/kinds.ts` (con tests) y el coach recibe el mismo perfil desde `supabase/functions/_shared/kinds.ts`. Se cambia en Perfil → "Para qué uso NIVL".
 
 ## Puesta en marcha
 
@@ -13,7 +41,7 @@ Todo el backend se despliega con scripts; no hace falta pegar SQL a mano.
 3. **El coach** — `npx supabase functions deploy coach --project-ref <ref>` y añade el secret `ANTHROPIC_API_KEY` (Panel → Edge Functions → Secrets). Ponle tope de gasto en la consola de Anthropic.
 4. **Rituales automáticos** — `npx supabase functions deploy ritual --no-verify-jwt --project-ref <ref>` y después `node scripts/setup-cron.mjs`. A partir de ahí la base de datos llama al coach cada hora y decide si te toca brief, revisión o cierre de mes.
 5. **Memoria** — Si vienes de otro coach, deja su volcado en `scripts/cerebro.md` y ejecuta `node scripts/import-cerebro.mjs`.
-6. **Login sin fricción** — Authentication → Sign In / Providers → Email → desactiva **Confirm email**.
+6. **Login** — Authentication → Sign In / Providers → Email activado (el puente crea los usuarios ya confirmados). Ver "La cuenta es la de Franky".
 
 Comprobar que el coach responde de punta a punta:
 
@@ -38,14 +66,14 @@ Las notificaciones y el push **no funcionan en Expo Go**: hace falta un developm
 - Penalización al cierre: −50 % del XP base de cada misión fallada, con **tope de 150 XP/día**, y una **misión de penalización** que recupera exactamente lo perdido. En una ausencia larga se acumula: por eso los topes del esquema son altos.
 - **Válvulas**: cada semana **perfecta** —siete días al 100%, no siete días cumplidos— forja una Piedra de Protección (máx 3), y desde Perfil puedes pausar el sistema. La piedra exige perfección a propósito: si se ablandara con la racha, la válvula pasaría de ganarse a regalarse.
 - Nivel: curva `100 × nivel^1.5`. Rangos: E (1-10) · D (11-25) · C (26-45) · B (46-70) · A (71-99) · S (100+).
-- Mazmorras: tareas dan XP base, jefes ×2, botín al despejar (E 50 → S 600). Gym: 50 XP + 25 por PR. Diario: 15 XP.
+- Campañas: tareas dan XP base, jefes ×2, botín al despejar (E 50 → S 600). Gym: 50 XP + 25 por PR. Diario: 15 XP.
 - Cuerpo: cardio 40 XP (caminar 15) con **tope de 60 XP diarios** entre todas las sesiones, y 10 XP por cumplir calorías y proteína el mismo día. El tope existe porque hay seis tipos de sesión: sin él, un paseo repetido valdría más que un día entero de misiones. Pasado el tope la sesión se sigue registrando — cuenta para el estudio aunque no pague.
 - **La economía es intocable desde el cliente**: `xp_total`, la racha y las piedras solo se mueven por las RPC `award_xp`, `complete_quest` y `apply_day_close` (migración 0009). El UPDATE directo está revocado.
 
 ## El coach
 
 - **Memoria en tres capas**: `coach_dossier` (lo estable, va cacheado en cada prompt), `coach_facts` (el log fechado) y `coach_messages` (la conversación). Lo que se reenvía a la API son los **últimos 12 intercambios**: el hilo sigue siendo continuo para ti, pero la memoria larga vive en el dossier y en los hechos, no en el transcript. Sin ese tope la conversación crece sin fin y a los seis meses cada turno arrastra cientos de miles de tokens.
-- **Veintiuna herramientas** para escribir en tu vida real: crear y ajustar misiones, planificar el día, agenda, horarios, mazmorras, reglas del contrato, metas, memoria, las tres del cuerpo — `prescribir_entreno`, `fijar_nutricion` y `planificar_comidas` — y las cuatro del dinero — `fijar_plan_economico`, `fijar_presupuesto`, `regla_categoria` y `registrar_movimiento` — más `configurar_rutina`, que reescribe la rutina fija de un día del gimnasio (los ejercicios del programa, no la carga de una sesión suelta). Se ejecutan con tu JWT, así que RLS sigue aplicando.
+- **Veintiuna herramientas** para escribir en tu vida real: crear y ajustar misiones, planificar el día, agenda, horarios, campañas, reglas del contrato, metas, memoria, las tres del cuerpo — `prescribir_entreno`, `fijar_nutricion` y `planificar_comidas` — y las cuatro del dinero — `fijar_plan_economico`, `fijar_presupuesto`, `regla_categoria` y `registrar_movimiento` — más `configurar_rutina`, que reescribe la rutina fija de un día del gimnasio (los ejercicios del programa, no la carga de una sesión suelta). Se ejecutan con tu JWT, así que RLS sigue aplicando.
 - **El coach elige dificultad, nunca puntos**: el XP sale de la tabla de `game.ts` y no puede inflarlo.
 ### Cambiar de proveedor sin tocar código
 
@@ -134,7 +162,7 @@ Tres vistas que de verdad son tres cosas distintas, no la misma lista repetida:
 - **Semana** — tira de siete días con una barra de carga por día, y debajo el día elegido en su eje.
 - **Mes** — rejilla con puntos por tipo, y debajo el día elegido en su eje.
 
-Lo que no tiene hora —misiones del día, deadlines de mazmorra, eventos sin hora— va a una tira superior, como el "todo el día" de cualquier calendario: meterlo en el eje obligaría a inventarle una hora que no tiene.
+Lo que no tiene hora —misiones del día, deadlines de campaña, eventos sin hora— va a una tira superior, como el "todo el día" de cualquier calendario: meterlo en el eje obligaría a inventarle una hora que no tiene.
 
 La colocación vive en `src/lib/timeline.ts`, con tests: una hora mide siempre lo mismo, el eje se recorta a las horas con contenido (un día de 5:00 a 22:00 no necesita seis horas de vacío arriba), y lo que se solapa se reparte el ancho **por tramo**, así que dos citas a las 9:00 no dejan la tarde a media pantalla.
 
@@ -180,9 +208,9 @@ También puedes **mandarle fotos al coach en el chat** con el botón `+`. Viajan
 
 ## Mapa de la app
 
-6 pestañas: **Sistema** (orden del día + misiones + módulos), **Coach** (el chat), **Hábitos**, **Mazmorras**, **Agenda**, **Perfil**. Módulos desde Sistema: Gym, Cardio, Nutrición, Dieta, Economía, Recuerdos, Compra, Diario, Informe, Avances, Oráculo y Contrato. Pantalla **Memoria** desde el chat del coach.
+6 pestañas: **Hoy** (orden del día + misiones + módulos según perfil), **Coach** (el chat), **Hábitos**, **Campañas** (campañas en rutas y BD), **Agenda**, **Perfil**. Módulos desde Hoy: Gym, Cardio, Nutrición, Dieta, Economía, Recuerdos, Compra, Diario, Informe, Avances, Oráculo y Contrato. Pantalla **Memoria** desde el chat del coach.
 
-Verificación: `npm run typecheck` · `npm test` (151 tests) · `npm run lint` · `npx expo export --platform ios`.
+Verificación: `npm run typecheck` · `npm test` (164 tests) · `npm run lint` · `npx expo export --platform ios`.
 
 ## Notas
 

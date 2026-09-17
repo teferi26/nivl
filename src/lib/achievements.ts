@@ -10,8 +10,8 @@ export interface AchievementDef {
 // Logros cualitativos: sin XP (anti-inflación). Algunos desbloquean títulos equipables.
 export const ACHIEVEMENTS: AchievementDef[] = [
   { code: 'first_quest', name: 'Primer paso', desc: 'Completa tu primera misión' },
-  { code: 'quests_10', name: 'Cazador novato', desc: '10 misiones completadas' },
-  { code: 'quests_50', name: 'Cazador veterano', desc: '50 misiones completadas', title: 'El Persistente' },
+  { code: 'quests_10', name: 'Gladiador novato', desc: '10 misiones completadas' },
+  { code: 'quests_50', name: 'Gladiador veterano', desc: '50 misiones completadas', title: 'El Persistente' },
   { code: 'quests_100', name: 'Centurión', desc: '100 misiones completadas' },
   { code: 'quests_500', name: 'Leyenda del gremio', desc: '500 misiones completadas', title: 'Leyenda' },
   { code: 'streak_7', name: 'Una semana imparable', desc: 'Racha de 7 días' },
@@ -22,13 +22,13 @@ export const ACHIEVEMENTS: AchievementDef[] = [
   { code: 'level_25', name: 'Sangre de élite', desc: 'Alcanza el nivel 25', title: 'Élite' },
   { code: 'level_50', name: 'Monarca en ciernes', desc: 'Alcanza el nivel 50', title: 'Monarca' },
   { code: 'first_evidence', name: 'Sin palabras, pruebas', desc: 'Primera misión con evidencia' },
-  { code: 'evidence_50', name: 'Archivo del cazador', desc: '50 evidencias registradas', title: 'El Verificado' },
+  { code: 'evidence_50', name: 'Archivo del gladiador', desc: '50 evidencias registradas', title: 'El Verificado' },
   { code: 'penalty_redeemed', name: 'Redención', desc: 'Completa una misión de penalización' },
-  { code: 'first_dungeon', name: 'Primera mazmorra', desc: 'Despeja tu primera mazmorra' },
-  { code: 'dungeons_5', name: 'Limpiador de mazmorras', desc: 'Despeja 5 mazmorras', title: 'Asesino de Jefes' },
+  { code: 'first_dungeon', name: 'Primera campaña', desc: 'Despeja tu primera campaña' },
+  { code: 'dungeons_5', name: 'Limpiador de campañas', desc: 'Despeja 5 campañas', title: 'Asesino de Jefes' },
   { code: 'first_pr', name: 'Nuevo récord', desc: 'Tu primer récord personal en el gym' },
   { code: 'pr_10', name: 'Rompe límites', desc: '10 récords personales', title: 'Rompe Límites' },
-  { code: 'first_journal', name: 'La pluma del cazador', desc: 'Primera entrada del diario' },
+  { code: 'first_journal', name: 'La pluma del gladiador', desc: 'Primera entrada del diario' },
   { code: 'journal_30', name: 'Cronista', desc: '30 entradas del diario', title: 'El Cronista' },
 ];
 
@@ -94,7 +94,7 @@ export async function unlockAchievements(
   const unlocked = await fetchUnlocked();
   const fresh = codes.filter((code) => !unlocked.has(code) && ACHIEVEMENT_BY_CODE[code]);
   if (fresh.length === 0) return [];
-  // upsert idempotente: un duplicado por carrera (gym + mazmorra casi a la vez)
+  // upsert idempotente: un duplicado por carrera (gym + campaña casi a la vez)
   // ya no aborta el lote entero ni traga logros nuevos en silencio. .select()
   // devuelve solo los realmente insertados.
   const { data, error } = await supabase

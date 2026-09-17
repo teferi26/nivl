@@ -10,7 +10,7 @@ interface Props {
   children?: ReactNode;
 }
 
-export function Hexagon({ size, color = colors.cyan, fill = colors.cyanFaint, children }: Props) {
+export function Hexagon({ size, color = colors.accent, fill = colors.accentFaint, children }: Props) {
   const w = size;
   const h = size;
   const points = [

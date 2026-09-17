@@ -9,7 +9,7 @@ export const voice = {
   allDone: () =>
     pick([
       'Todas las misiones completadas. El sistema está satisfecho.',
-      'Día cerrado sin bajas. Continúa así, cazador.',
+      'Día cerrado sin bajas. Continúa así, gladiador.',
       'Objetivos del día neutralizados. Descansa: lo has ganado.',
       'El sistema registra un día impecable.',
     ]),
@@ -44,7 +44,7 @@ export const voice = {
   morningNotif: () =>
     pick([
       'El sistema ha asignado tus misiones de hoy. Complétalas antes de medianoche.',
-      'Nuevas misiones disponibles. El día es una mazmorra: entra primero.',
+      'Nuevas misiones disponibles. El día es una campaña: entra primero.',
       'Tus misiones esperan. Cada una completada te acerca al siguiente rango.',
     ]),
   eveningNotif: () =>
@@ -55,7 +55,7 @@ export const voice = {
     ]),
   dungeonCleared: (title: string) =>
     pick([
-      `Mazmorra "${title}" despejada. El botín es tuyo.`,
+      `Campaña "${title}" despejada. El botín es tuyo.`,
       `"${title}" ha caído. El sistema registra tu victoria.`,
     ]),
   pr: (exercise: string) =>
@@ -69,17 +69,17 @@ export const voice = {
       'El sistema certifica tu hazaña.',
       'Nueva entrada en tu leyenda.',
     ]),
-  // Mensaje motivacional de racha para el perfil: lo primero que ve el cazador.
+  // Mensaje motivacional de racha para el perfil: lo primero que ve el gladiador.
   streakHype: (days: number) => {
     if (days <= 0) {
       return pick([
         'Hoy es el día perfecto para encender la racha. El sistema observa.',
-        'Racha a cero. Los grandes cazadores también empezaron aquí. Enciéndela hoy.',
+        'Racha a cero. Los grandes gladiadores también empezaron aquí. Enciéndela hoy.',
       ]);
     }
     if (days < 3) {
       return pick([
-        'La racha está encendida. Los primeros días forjan al cazador.',
+        'La racha está encendida. Los primeros días forjan al gladiador.',
         'La cadena ha empezado. Protégela: hoy solo tienes que no romperla.',
       ]);
     }
@@ -103,7 +103,7 @@ export const voice = {
     }
     return pick([
       `${days} días. Los rangos S se construyen así: un día más, cada día. Imparable.`,
-      `${days} días de racha. El cazador de hace ${days} días no te reconocería.`,
+      `${days} días de racha. El gladiador de hace ${days} días no te reconocería.`,
     ]);
   },
 };

@@ -164,7 +164,7 @@ export async function programarDespertador(horaMin: number | null): Promise<void
     await Notifications.scheduleNotificationAsync({
       identifier: ID_DESPERTAR,
       content: {
-        title: 'Arriba, cazador',
+        title: 'Arriba, gladiador',
         body: voice.morningNotif(),
         sound: 'default',
         interruptionLevel: 'timeSensitive',

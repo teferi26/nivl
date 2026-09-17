@@ -61,7 +61,7 @@ export default function MemoriaScreen() {
       <Stack.Screen options={{ title: 'Memoria del sistema' }} />
       {cargando ? (
         <View style={styles.centro}>
-          <ActivityIndicator color={colors.cyan} />
+          <ActivityIndicator color={colors.accent} />
         </View>
       ) : (
         <ScrollView contentContainerStyle={styles.contenido}>
@@ -102,7 +102,7 @@ export default function MemoriaScreen() {
               <Ionicons
                 name={dossierAbierto ? 'chevron-up' : 'chevron-down'}
                 size={16}
-                color={colors.cyanText}
+                color={colors.accentText}
               />
             </Pressable>
             {dossier?.content ? (
@@ -175,7 +175,7 @@ const styles = StyleSheet.create({
     fontFamily: fonts.heading,
     fontSize: 13,
     letterSpacing: 2.5,
-    color: colors.cyanText,
+    color: colors.accentText,
     marginBottom: 10,
   },
   kpis: { flexDirection: 'row', gap: 20 },
@@ -215,13 +215,13 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     paddingHorizontal: 10,
   },
-  filtroActivo: { borderColor: colors.cyan, backgroundColor: colors.cyanFaint },
+  filtroActivo: { borderColor: colors.accent, backgroundColor: colors.accentFaint },
   filtroTexto: {
     fontFamily: fonts.body,
     fontSize: 11.5,
     color: colors.textDim,
   },
-  filtroTextoActivo: { color: colors.cyanText },
+  filtroTextoActivo: { color: colors.accentText },
   hecho: { marginBottom: 8 },
   hechoCabecera: {
     flexDirection: 'row',
@@ -238,7 +238,7 @@ const styles = StyleSheet.create({
     fontFamily: fonts.semibold,
     fontSize: 10,
     letterSpacing: 1.5,
-    color: colors.cyanDim,
+    color: colors.accentDim,
   },
   hechoTexto: {
     fontFamily: fonts.body,

@@ -2,7 +2,7 @@
 //
 // Esto es lo que convierte a NIVL en un coach que trabaja para ti y no en una
 // app que abres. pg_cron la llama cada hora; ella mira qué hora es en la zona
-// de cada cazador y decide si le toca algo:
+// de cada gladiador y decide si le toca algo:
 //
 //   · brief          — a la hora de despertar, con el plan del día escrito
 //   · revision       — domingo por la tarde
@@ -38,7 +38,7 @@ function json(status: number, body: unknown): Response {
   });
 }
 
-/** Hora local del cazador, sin librerías: Intl ya sabe de husos y de DST. */
+/** Hora local del gladiador, sin librerías: Intl ya sabe de husos y de DST. */
 function ahoraLocal(timezone: string): { fecha: string; hora: number; minuto: number; diaSemana: number } {
   const ahora = new Date();
   const fmt = new Intl.DateTimeFormat('en-CA', {

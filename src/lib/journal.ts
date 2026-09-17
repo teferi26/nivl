@@ -76,7 +76,7 @@ const PROMPTS = [
   '¿Qué harías distinto si hoy volviera a empezar?',
   '¿Qué te ha dado energía hoy? ¿Qué te la ha quitado?',
   '¿De qué estás orgulloso hoy, por pequeño que sea?',
-  '¿Qué versión de ti ha ganado hoy: el cazador o la sombra?',
+  '¿Qué versión de ti ha ganado hoy: el gladiador o la sombra?',
   '¿Qué has aprendido hoy que tu yo de hace un año no sabía?',
   '¿A quién o qué debes agradecer el día de hoy?',
 ];

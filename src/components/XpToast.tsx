@@ -53,9 +53,9 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 110,
     alignSelf: 'center',
-    backgroundColor: colors.cyanFaint,
+    backgroundColor: colors.accentFaint,
     borderWidth: 1,
-    borderColor: colors.cyan,
+    borderColor: colors.accent,
     paddingHorizontal: 16,
     paddingVertical: 8,
     zIndex: 10,
@@ -64,9 +64,9 @@ const styles = StyleSheet.create({
     fontFamily: fonts.heading,
     fontSize: 16,
     letterSpacing: 1,
-    color: colors.cyan,
+    color: colors.accent,
   },
   textBonus: {
-    color: colors.amber,
+    color: colors.gold,
   },
 });

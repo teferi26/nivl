@@ -227,7 +227,7 @@ export default function Avances() {
       <ScrollView automaticallyAdjustKeyboardInsets contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <View style={styles.header}>
           <Pressable onPress={() => router.back()} hitSlop={10} accessibilityRole="button" accessibilityLabel="Volver">
-            <Ionicons name="chevron-back" size={24} color={colors.cyan} />
+            <Ionicons name="chevron-back" size={24} color={colors.accent} />
           </Pressable>
           <Text style={styles.title}>MIS AVANCES</Text>
           <Pressable
@@ -236,11 +236,11 @@ export default function Avances() {
             accessibilityRole="button"
             accessibilityLabel="Nueva meta"
           >
-            <Ionicons name="add" size={24} color={colors.cyan} />
+            <Ionicons name="add" size={24} color={colors.accent} />
           </Pressable>
         </View>
 
-        <SystemWindow color={colors.cyanDim}>
+        <SystemWindow color={colors.accentDim}>
           <Text style={styles.windowTitle}>PESO CORPORAL</Text>
           {latestWeight !== null ? (
             <Text style={styles.bigValue}>
@@ -268,7 +268,7 @@ export default function Avances() {
           ) : null}
         </SystemWindow>
 
-        <SystemWindow color={colors.cyanDim}>
+        <SystemWindow color={colors.accentDim}>
           <Text style={styles.windowTitle}>METAS · {activeGoals.length} ACTIVAS</Text>
           {activeGoals.length === 0 ? (
             <Text style={styles.empty}>
@@ -291,7 +291,7 @@ export default function Avances() {
                     </Pressable>
                   </View>
                   <View style={{ marginTop: 6 }}>
-                    <XPBar ratio={progress} color={done ? colors.amber : colors.cyan} />
+                    <XPBar ratio={progress} color={done ? colors.gold : colors.accent} />
                   </View>
                   <View style={styles.goalMetaRow}>
                     <Text style={styles.goalMeta}>
@@ -327,7 +327,7 @@ export default function Avances() {
           ) : null}
         </SystemWindow>
 
-        <SystemWindow color={colors.cyanDim}>
+        <SystemWindow color={colors.accentDim}>
           <Text style={styles.windowTitle}>RÉCORDS PERSONALES</Text>
           {prs.length === 0 ? (
             <Text style={styles.empty}>
@@ -353,7 +353,7 @@ export default function Avances() {
           {series ? (
             <View style={{ marginTop: 12 }}>
               <Text style={styles.seriesTitle}>PROGRESIÓN · {series.exercise.toUpperCase()}</Text>
-              <TrendLine values={series.values} width={chartWidth} color={colors.amber} />
+              <TrendLine values={series.values} width={chartWidth} color={colors.gold} />
             </View>
           ) : null}
         </SystemWindow>
@@ -460,12 +460,12 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: 14,
   },
-  title: { fontFamily: fonts.heading, fontSize: 15, letterSpacing: 3, color: colors.cyan },
+  title: { fontFamily: fonts.heading, fontSize: 15, letterSpacing: 3, color: colors.accent },
   windowTitle: {
     fontFamily: fonts.heading,
     fontSize: 12,
     letterSpacing: 2.5,
-    color: colors.cyan,
+    color: colors.accent,
     marginBottom: 8,
   },
   bigValue: { fontFamily: fonts.brand, fontSize: 34, color: colors.text },
@@ -474,7 +474,7 @@ const styles = StyleSheet.create({
   weighRow: { flexDirection: 'row', gap: 8, marginTop: 10, alignItems: 'stretch' },
   input: {
     borderWidth: 1,
-    borderColor: colors.cyanDim,
+    borderColor: colors.accentDim,
     backgroundColor: colors.bg,
     color: colors.text,
     fontFamily: fonts.semibold,
@@ -492,9 +492,9 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
   goalMeta: { fontFamily: fonts.body, fontSize: 12, color: colors.textDim },
-  claimBtn: { borderWidth: 1, borderColor: colors.amber, paddingHorizontal: 10, paddingVertical: 4 },
-  claimBtnText: { fontFamily: fonts.heading, fontSize: 11, letterSpacing: 1.5, color: colors.amber },
-  updateText: { fontFamily: fonts.semibold, fontSize: 12, color: colors.cyanText },
+  claimBtn: { borderWidth: 1, borderColor: colors.gold, paddingHorizontal: 10, paddingVertical: 4 },
+  claimBtnText: { fontFamily: fonts.heading, fontSize: 11, letterSpacing: 1.5, color: colors.gold },
+  updateText: { fontFamily: fonts.semibold, fontSize: 12, color: colors.accentText },
   achievedLine: { fontFamily: fonts.body, fontSize: 12, color: colors.textFaint, marginTop: 10, lineHeight: 17 },
   prRow: {
     flexDirection: 'row',
@@ -505,7 +505,7 @@ const styles = StyleSheet.create({
     borderTopColor: colors.line,
   },
   prName: { flex: 1, fontFamily: fonts.semibold, fontSize: 14, color: colors.text },
-  prWeight: { fontFamily: fonts.heading, fontSize: 14, color: colors.amber },
+  prWeight: { fontFamily: fonts.heading, fontSize: 14, color: colors.gold },
   seriesTitle: {
     fontFamily: fonts.heading,
     fontSize: 11,
@@ -517,12 +517,12 @@ const styles = StyleSheet.create({
   sheet: {
     backgroundColor: colors.panel,
     borderTopWidth: 1.5,
-    borderTopColor: colors.cyanDim,
+    borderTopColor: colors.accentDim,
     padding: 20,
     paddingBottom: 34,
     maxHeight: '88%',
   },
-  sheetTitle: { fontFamily: fonts.heading, fontSize: 15, letterSpacing: 3, color: colors.cyan, marginBottom: 6 },
+  sheetTitle: { fontFamily: fonts.heading, fontSize: 15, letterSpacing: 3, color: colors.accent, marginBottom: 6 },
   label: {
     fontFamily: fonts.heading,
     fontSize: 12,
@@ -534,8 +534,8 @@ const styles = StyleSheet.create({
   },
   inlineInputs: { flexDirection: 'row', gap: 10 },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  chip: { borderWidth: 1, borderColor: colors.cyanDim, paddingHorizontal: 12, paddingVertical: 8 },
-  chipOn: { backgroundColor: colors.cyanFaint, borderColor: colors.cyan },
+  chip: { borderWidth: 1, borderColor: colors.accentDim, paddingHorizontal: 12, paddingVertical: 8 },
+  chipOn: { backgroundColor: colors.accentFaint, borderColor: colors.accent },
   chipText: { fontFamily: fonts.semibold, fontSize: 13, color: colors.textDim },
-  chipTextOn: { color: colors.cyan },
+  chipTextOn: { color: colors.accent },
 });

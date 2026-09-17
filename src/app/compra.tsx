@@ -63,7 +63,7 @@ export default function Compra() {
             accessibilityRole="button"
             accessibilityLabel="Volver"
           >
-            <Ionicons name="chevron-back" size={24} color={colors.cyan} />
+            <Ionicons name="chevron-back" size={24} color={colors.accent} />
           </Pressable>
           <Text style={styles.title}>LISTA DE LA COMPRA</Text>
           <View style={{ width: 24 }} />
@@ -89,7 +89,7 @@ export default function Compra() {
           </Pressable>
         </View>
 
-        <SystemWindow color={colors.cyanDim}>
+        <SystemWindow color={colors.accentDim}>
           <Text style={styles.windowTitle}>PENDIENTE · {pending.length}</Text>
           {pending.length === 0 ? (
             <Text style={styles.empty}>Nada pendiente. Generala desde la dieta o añade artículos arriba.</Text>
@@ -125,7 +125,7 @@ export default function Compra() {
                   accessibilityLabel={`${i.name}, en el carro`}
                 >
                   <View style={[styles.box, styles.boxDone]}>
-                    <Ionicons name="checkmark" size={13} color={colors.cyan} />
+                    <Ionicons name="checkmark" size={13} color={colors.accent} />
                   </View>
                   <Text style={[styles.rowText, styles.rowDone]}>{i.name}</Text>
                 </Pressable>
@@ -148,12 +148,12 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: 14,
   },
-  title: { fontFamily: fonts.heading, fontSize: 15, letterSpacing: 3, color: colors.cyan },
+  title: { fontFamily: fonts.heading, fontSize: 15, letterSpacing: 3, color: colors.accent },
   addRow: { flexDirection: 'row', gap: 8, marginBottom: 14 },
   input: {
     flex: 1,
     borderWidth: 1,
-    borderColor: colors.cyanDim,
+    borderColor: colors.accentDim,
     backgroundColor: colors.panel,
     color: colors.text,
     fontFamily: fonts.semibold,
@@ -163,7 +163,7 @@ const styles = StyleSheet.create({
   },
   addButton: {
     width: 44,
-    backgroundColor: colors.cyan,
+    backgroundColor: colors.accent,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -171,7 +171,7 @@ const styles = StyleSheet.create({
     fontFamily: fonts.heading,
     fontSize: 12,
     letterSpacing: 2.5,
-    color: colors.cyan,
+    color: colors.accent,
     marginBottom: 6,
   },
   empty: { fontFamily: fonts.body, fontSize: 13, color: colors.textDim },
@@ -187,11 +187,11 @@ const styles = StyleSheet.create({
     width: 18,
     height: 18,
     borderWidth: 1,
-    borderColor: colors.cyanDim,
+    borderColor: colors.accentDim,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  boxDone: { backgroundColor: colors.cyanFaint, borderColor: colors.cyan },
+  boxDone: { backgroundColor: colors.accentFaint, borderColor: colors.accent },
   rowText: { flex: 1, fontFamily: fonts.semibold, fontSize: 15, color: colors.text },
   rowDone: { color: colors.textDim, textDecorationLine: 'line-through' },
   qty: { fontFamily: fonts.body, fontSize: 13, color: colors.textFaint },

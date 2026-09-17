@@ -381,7 +381,7 @@ const WEEKLY_SCHEMA = {
   additionalProperties: false,
 } as const;
 
-const WEEKLY_SYSTEM = `Eres "el sistema" de NIVL. Analizas la semana real del cazador y propones AJUSTES CONCRETOS para que el juego se adapte a él: misión que falla siempre → bajar dificultad o desactivar; misión trivial que clava el 100% → subir dificultad; huecos → como mucho 1-2 misiones nuevas. Sé conservador: pocos cambios y bien justificados. Nunca propongas más de 4 ajustes. Voz sobria, español, sin sermones.`;
+const WEEKLY_SYSTEM = `Eres "el sistema" de NIVL. Analizas la semana real del gladiador y propones AJUSTES CONCRETOS para que el juego se adapte a él: misión que falla siempre → bajar dificultad o desactivar; misión trivial que clava el 100% → subir dificultad; huecos → como mucho 1-2 misiones nuevas. Sé conservador: pocos cambios y bien justificados. Nunca propongas más de 4 ajustes. Voz sobria, español, sin sermones.`;
 
 export async function weeklyOracle(input: WeeklyInput, apiKey: string): Promise<WeeklyAdvice> {
   if (detectProvider(apiKey) === 'openai') {

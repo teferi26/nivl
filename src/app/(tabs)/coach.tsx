@@ -203,7 +203,7 @@ ${limpio}` : limpio,
     return (
       <SafeAreaView style={styles.screen} edges={['top']}>
         <View style={styles.centro}>
-          <ActivityIndicator color={colors.cyan} />
+          <ActivityIndicator color={colors.accent} />
         </View>
       </SafeAreaView>
     );
@@ -221,7 +221,7 @@ ${limpio}` : limpio,
           accessibilityLabel="Ver la memoria del sistema"
           hitSlop={10}
         >
-          <Ionicons name="library-outline" size={20} color={colors.cyanText} />
+          <Ionicons name="library-outline" size={20} color={colors.accentText} />
         </Pressable>
       </View>
 
@@ -258,7 +258,7 @@ ${limpio}` : limpio,
                   {b.text ? <TextoSistema texto={b.text} /> : null}
                   {b.acciones.map((a, i) => (
                     <View key={i} style={styles.accion}>
-                      <Ionicons name="checkmark-circle-outline" size={13} color={colors.cyan} />
+                      <Ionicons name="checkmark-circle-outline" size={13} color={colors.accent} />
                       <Text style={styles.accionTexto}>{a}</Text>
                     </View>
                   ))}
@@ -279,7 +279,7 @@ ${limpio}` : limpio,
                     <Ionicons
                       name={a.ok ? 'checkmark-circle-outline' : 'alert-circle-outline'}
                       size={13}
-                      color={a.ok ? colors.cyan : colors.red}
+                      color={a.ok ? colors.accent : colors.red}
                     />
                     <Text style={styles.accionTexto}>{describeAction(a.name)}</Text>
                   </View>
@@ -317,7 +317,7 @@ ${limpio}` : limpio,
 
         {adjuntas.length ? (
           <View style={styles.adjuntas}>
-            <Ionicons name="image-outline" size={14} color={colors.cyanText} />
+            <Ionicons name="image-outline" size={14} color={colors.accentText} />
             <Text style={styles.adjuntasTexto}>
               {adjuntas.length} foto(s) listas para enviar
             </Text>
@@ -340,7 +340,7 @@ ${limpio}` : limpio,
             accessibilityRole="button"
             accessibilityLabel="Adjuntar una foto"
           >
-            <Ionicons name="add" size={22} color={colors.cyanText} />
+            <Ionicons name="add" size={22} color={colors.accentText} />
           </Pressable>
           <TextInput
             style={styles.input}
@@ -393,9 +393,9 @@ const styles = StyleSheet.create({
   burbujaSistema: { marginBottom: 12 },
   burbujaUsuario: {
     maxWidth: '86%',
-    backgroundColor: colors.cyanFaint,
+    backgroundColor: colors.accentFaint,
     borderWidth: 1,
-    borderColor: colors.cyanDim,
+    borderColor: colors.accentDim,
     paddingVertical: 9,
     paddingHorizontal: 12,
   },
@@ -426,7 +426,7 @@ const styles = StyleSheet.create({
   accionTexto: {
     fontFamily: fonts.body,
     fontSize: 12,
-    color: colors.cyanText,
+    color: colors.accentText,
     flexShrink: 1,
   },
   error: {
@@ -438,7 +438,7 @@ const styles = StyleSheet.create({
     fontFamily: fonts.heading,
     fontSize: 15,
     letterSpacing: 2,
-    color: colors.cyanText,
+    color: colors.accentText,
     marginBottom: 8,
   },
   vacioTexto: {
@@ -450,7 +450,7 @@ const styles = StyleSheet.create({
   atajos: { paddingHorizontal: 16, paddingBottom: 10, gap: 8 },
   atajo: {
     borderWidth: 1,
-    borderColor: colors.cyanDim,
+    borderColor: colors.accentDim,
     paddingVertical: 8,
     paddingHorizontal: 12,
   },
@@ -458,7 +458,7 @@ const styles = StyleSheet.create({
     fontFamily: fonts.semibold,
     fontSize: 12,
     letterSpacing: 1,
-    color: colors.cyanText,
+    color: colors.accentText,
   },
   barra: {
     flexDirection: 'row',
@@ -490,14 +490,14 @@ const styles = StyleSheet.create({
     height: 42,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.cyan,
+    backgroundColor: colors.accent,
   },
   enviarOff: { opacity: 0.4 },
   adjuntar: {
     width: 38,
     height: 38,
     borderWidth: 1,
-    borderColor: colors.cyanFaint,
+    borderColor: colors.accentFaint,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -508,5 +508,5 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingBottom: 6,
   },
-  adjuntasTexto: { fontFamily: fonts.body, fontSize: 12, color: colors.cyanText, flex: 1 },
+  adjuntasTexto: { fontFamily: fonts.body, fontSize: 12, color: colors.accentText, flex: 1 },
 });

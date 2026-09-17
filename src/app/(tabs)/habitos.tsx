@@ -160,11 +160,11 @@ export default function Habitos() {
             accessibilityRole="button"
             accessibilityLabel="Nuevo hábito"
           >
-            <Ionicons name="add" size={24} color={colors.cyan} />
+            <Ionicons name="add" size={24} color={colors.accent} />
           </Pressable>
         </View>
 
-        <SystemWindow color={colors.cyanDim}>
+        <SystemWindow color={colors.accentDim}>
           <Text style={styles.intro}>
             Un hábito se da por adquirido a los {HABIT_TARGET_DAYS} días seguidos. A partir de ahí
             decides tú: puedes consolidarlo —deja de pedírsete y deja de poder romperte la racha— o
@@ -179,7 +179,7 @@ export default function Habitos() {
         {reglas.length > 0 ? (
           <>
             <Text style={styles.seccion}>REGLAS DEL CONTRATO · HOY</Text>
-            <SystemWindow color={pendientesReglas > 0 ? colors.redDim : colors.cyanDim}>
+            <SystemWindow color={pendientesReglas > 0 ? colors.redDim : colors.accentDim}>
               <Text style={styles.introReglas}>
                 {pendientesReglas === 0
                   ? 'Las has cumplido todas hoy. El sistema toma nota.'
@@ -234,7 +234,7 @@ export default function Habitos() {
               accessibilityRole="button"
               accessibilityLabel={`Editar ${q.title}`}
             >
-            <SystemWindow color={p.consolidable ? colors.cyan : colors.cyanDim}>
+            <SystemWindow color={p.consolidable ? colors.accent : colors.accentDim}>
               <View style={styles.fila}>
                 <Text style={styles.nombre} numberOfLines={1}>
                   {q.title}
@@ -285,7 +285,7 @@ export default function Habitos() {
                 <SystemWindow color={colors.line}>
                   <View style={styles.fila}>
                     <View style={styles.filaIcono}>
-                      <Ionicons name="checkmark-circle" size={16} color={colors.cyan} />
+                      <Ionicons name="checkmark-circle" size={16} color={colors.accent} />
                       <Text style={styles.nombreAdq} numberOfLines={1}>
                         {q.title}
                       </Text>
@@ -343,11 +343,11 @@ const styles = StyleSheet.create({
   filaIcono: { flexDirection: 'row', alignItems: 'center', gap: 7, flex: 1, minWidth: 0 },
   nombre: { fontFamily: fonts.semibold, fontSize: 15, color: colors.text, flex: 1, minWidth: 0 },
   nombreAdq: { fontFamily: fonts.semibold, fontSize: 14, color: colors.textDim, flex: 1, minWidth: 0 },
-  racha: { fontFamily: fonts.number, fontSize: 15, color: colors.cyanText },
-  rachaListo: { color: colors.cyan },
+  racha: { fontFamily: fonts.number, fontSize: 15, color: colors.accentText },
+  rachaListo: { color: colors.accent },
   pista: { height: 6, backgroundColor: colors.track, marginTop: 10 },
-  relleno: { height: 6, backgroundColor: colors.cyanDim },
-  rellenoListo: { backgroundColor: colors.cyan },
+  relleno: { height: 6, backgroundColor: colors.accentDim },
+  rellenoListo: { backgroundColor: colors.accent },
   metaFila: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -370,12 +370,12 @@ const styles = StyleSheet.create({
     width: 19,
     height: 19,
     borderWidth: 1.5,
-    borderColor: colors.cyanDim,
+    borderColor: colors.accentDim,
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 1,
   },
-  cajaOn: { backgroundColor: colors.cyan, borderColor: colors.cyan },
+  cajaOn: { backgroundColor: colors.accent, borderColor: colors.accent },
   reglaTexto: { fontFamily: fonts.semibold, fontSize: 13.5, color: colors.text, lineHeight: 19 },
   reglaHecha: { color: colors.textDim, textDecorationLine: 'line-through' },
   reglaConsecuencia: { fontFamily: fonts.body, fontSize: 11.5, color: colors.red, marginTop: 2 },

@@ -88,7 +88,7 @@ const val = (v: unknown): string | undefined => {
 export const TOOL_DEFS = [
   tool(
     'crear_mision',
-    'Crea una misión recurrente. Úsala cuando acuerdes un hábito nuevo, cuando el cazador declare un objetivo que exija repetición, o al montar su sistema desde cero. La dificultad determina el XP (trivial 10, facil 25, media 50, dificil 100, epica 250): elígela por el esfuerzo de UNA sesión, no por lo importante que sea.',
+    'Crea una misión recurrente. Úsala cuando acuerdes un hábito nuevo, cuando el gladiador declare un objetivo que exija repetición, o al montar su sistema desde cero. La dificultad determina el XP (trivial 10, facil 25, media 50, dificil 100, epica 250): elígela por el esfuerzo de UNA sesión, no por lo importante que sea.',
     {
       titulo: str('Título corto y accionable, en español, sin emojis'),
       stat: enumOf(STATS, 'FUE ejercicio · VIT nutrición/sueño · INT trabajo mental · AGI constancia · PER reflexión'),
@@ -120,7 +120,7 @@ export const TOOL_DEFS = [
 
   tool(
     'desactivar_mision',
-    'QUITA una misión o hábito del sistema del cazador: desaparece de su lista, deja de pedírsele y deja de contar para la racha. Puedes usarla siempre que él te lo pida ("quítame X") y también por tu cuenta cuando una misión lleva semanas por debajo del 30% de adherencia y mantenerla solo genera penalización inútil. Es la forma de eliminar un hábito, así que NO le digas que no puedes eliminarlos: puedes. Por dentro se conserva el historial de lo que sí completó (su XP ya ganado no se toca), pero para él está eliminada; díselo así, sin hablarle de desactivar.',
+    'QUITA una misión o hábito del sistema del gladiador: desaparece de su lista, deja de pedírsele y deja de contar para la racha. Puedes usarla siempre que él te lo pida ("quítame X") y también por tu cuenta cuando una misión lleva semanas por debajo del 30% de adherencia y mantenerla solo genera penalización inútil. Es la forma de eliminar un hábito, así que NO le digas que no puedes eliminarlos: puedes. Por dentro se conserva el historial de lo que sí completó (su XP ya ganado no se toca), pero para él está eliminada; díselo así, sin hablarle de desactivar.',
     { mision_id: str('El id de la misión'), motivo: str('Por qué se desactiva, una frase') },
   ),
 
