@@ -208,8 +208,10 @@ export async function buildContext(
     // propias palabras sobre cómo fue el día. Sin esto el coach solo veía qué
     // hizo, nunca cómo lo llevó, y ese es justo el dato que permite ajustar
     // antes de que algo se rompa.
-    sb.from('journal_entries').select('date, mood, energy, text, plan').eq('user_id', userId)
-      .order('date', { ascending: false }).limit(10),
+    sb.from('journal_entries')
+      .select('date, mood, energy, sleep_hours, emotions, wins, text, lesson, gratitude, plan')
+      .eq('user_id', userId)
+      .order('date', { ascending: false }).limit(21),
     sb.from('body_profile').select('*').eq('user_id', userId).maybeSingle(),
     // Lo que escribió y firmó el día que entró: para qué está aquí y a cuántos
     // años se comprometió. En una cuenta nueva es TODO lo que el coach sabe de
@@ -421,20 +423,58 @@ export async function buildContext(
   const diario = (diarioRes.data ?? []) as any[];
   if (diario.length) {
     push('## Diario del gladiador (lo más reciente primero)');
-    for (const d of diario) {
+
+    // La tendencia antes que las entradas: 7 días contra los 7 anteriores. Es
+    // lo que convierte el diario en una medición de su proceso y no en prosa
+    // suelta. Con menos de 3 datos en una ventana no hay media que valga.
+    const dia = (n: number) => new Date(new Date(today).getTime() - n * 86400000).toISOString().slice(0, 10);
+    const media = (filas: any[], campo: string) => {
+      const v = filas.map((f) => Number(f[campo])).filter((x) => Number.isFinite(x) && x > 0);
+      return v.length >= 3 ? Math.round((v.reduce((a, b) => a + b, 0) / v.length) * 10) / 10 : null;
+    };
+    const ultimos = diario.filter((d) => d.date > dia(7));
+    const previos = diario.filter((d) => d.date <= dia(7) && d.date > dia(14));
+    const tendencia: string[] = [];
+    for (const [campo, nombre, unidad] of [['mood', 'ánimo', '/5'], ['energy', 'energía', '/5'], ['sleep_hours', 'sueño', ' h']]) {
+      const a = media(ultimos, campo);
+      const b = media(previos, campo);
+      if (a === null) continue;
+      tendencia.push(`${nombre} ${a}${unidad}${b !== null ? ` (antes ${b}${unidad})` : ''}`);
+    }
+    const frecuencia = new Map<string, number>();
+    for (const d of diario.filter((x) => x.date > dia(14))) {
+      for (const e of (d.emotions ?? []) as string[]) frecuencia.set(e, (frecuencia.get(e) ?? 0) + 1);
+    }
+    const top = [...frecuencia.entries()].sort((x, y) => y[1] - x[1]).slice(0, 4);
+    if (tendencia.length) push(`Últimos 7 días: ${tendencia.join(' · ')} · escribió ${ultimos.length} de 7 días.`);
+    if (top.length) push(`Emociones más repetidas en 14 días: ${top.map(([e, n]) => `${e} ×${n}`).join(', ')}.`);
+
+    // Solo las 10 últimas en detalle: el resto ya está en la tendencia.
+    for (const d of diario.slice(0, 10)) {
       const cabecera = [
         d.date,
         d.mood ? `ánimo ${d.mood}/5` : null,
         d.energy ? `energía ${d.energy}/5` : null,
+        d.sleep_hours ? `durmió ${d.sleep_hours} h` : null,
+        (d.emotions ?? []).length ? `se sintió: ${(d.emotions as string[]).join(', ')}` : null,
       ].filter(Boolean).join(' · ');
-      // Recortado a 500: una entrada larga por sí sola puede pesar más que
-      // todo el resto del estado, y se paga en cada turno.
-      const cuerpo = [d.text, d.plan].filter(Boolean).join(' | ').slice(0, 500);
-      push(`- ${cabecera}${cuerpo ? `
-  ${cuerpo}` : ''}`);
+      // Recortado: una entrada larga por sí sola puede pesar más que todo el
+      // resto del estado, y se paga en cada turno.
+      const lineas = [
+        (d.wins ?? []).length ? `Victorias: ${(d.wins as string[]).join(' · ').slice(0, 300)}` : null,
+        d.text ? `Vivido: ${String(d.text).slice(0, 400)}` : null,
+        d.lesson ? `Aprendió: ${String(d.lesson).slice(0, 200)}` : null,
+        d.gratitude ? `Agradece: ${String(d.gratitude).slice(0, 120)}` : null,
+        d.plan ? `Mañana, lo primero: ${String(d.plan).slice(0, 160)}` : null,
+      ].filter(Boolean);
+      push(`- ${cabecera}${lineas.map((l) => `\n  ${l}`).join('')}`);
     }
     push(
-      'Lectura: el ánimo y la energía anticipan lo que los números confirman una semana después. ' +
+      'Lectura: cada entrada tiene forma — cómo se sintió (con nombre), cuánto durmió, qué logró, ' +
+        'qué vivió, qué aprendió y lo primero de mañana. Úsalo: "Mañana, lo primero" de ayer es lo ' +
+        'PRIMERO que compruebas en el brief; una victoria que él escribió vale más citada que cualquier ' +
+        'elogio tuyo; y una lección que se repite tres veces es un cambio de sistema que aún no has hecho. ' +
+        'El ánimo y la energía anticipan lo que los números confirman una semana después. ' +
         'Dos días seguidos por debajo de 3 son una señal, no una queja. Y lo que escribe con sus ' +
         'palabras vale más que cualquier métrica para saber qué le mueve y qué le hunde.',
     );

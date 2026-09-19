@@ -378,6 +378,7 @@ const ACCION_LEGIBLE: Record<string, string> = {
   gestionar_elemento: 'ha modificado tu sistema',
   registrar_dato: 'ha registrado un dato por ti',
   fijar_ficha: 'ha actualizado tu ficha física',
+  escribir_diario: 'ha escrito en tu diario',
   consultar_historial: 'ha consultado tu historial',
 };
 

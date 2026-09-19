@@ -11,6 +11,12 @@
 import type { Db } from './db.ts';
 
 const STATS = ['FUE', 'VIT', 'INT', 'AGI', 'PER'];
+
+// Espejo de EMOCIONES en src/lib/journalmath.ts. Si tocas una, toca la otra.
+const EMOCIONES = [
+  'orgulloso', 'motivado', 'tranquilo', 'agradecido', 'enfocado', 'fuerte', 'feliz',
+  'cansado', 'estresado', 'ansioso', 'frustrado', 'disperso', 'triste', 'solo',
+];
 const DIFICULTADES = ['trivial', 'facil', 'media', 'dificil', 'epica'];
 const TIPOS_BLOQUE = [
   'despertar', 'ritual', 'gym', 'aerobico', 'ventas', 'contenido',
@@ -396,6 +402,26 @@ export const TOOL_DEFS = [
       kcal: { type: 'integer', description: 'Calorías estimadas del día completo. 0 si no aplica.' },
       proteina_g: { type: 'integer', description: 'Proteína estimada del día en gramos. 0 si no aplica.' },
       notas: opt('Qué comió, con cantidades, o cualquier matiz'),
+    },
+  ),
+
+  tool(
+    'escribir_diario',
+    'Escribe o completa SU diario de hoy a partir de lo que te cuente en el chat: cómo se sintió, cuánto durmió, qué logró, qué vivió, qué aprendió, qué agradece y lo primero de mañana. Úsala cuando te cuente cómo le fue el día o en el cierre de la noche: así escribir el diario es contártelo. Ordénalo con SUS palabras, en primera persona; no lo embellezcas ni inventes nada que no haya dicho. Se fusiona con lo que ya hubiera escrito hoy y lo que dejes vacío no se toca. Si falta algo importante (cómo durmió, una victoria, lo primero de mañana) pregúntalo UNA vez; no hagas un interrogatorio.',
+    {
+      animo: { type: 'integer', description: 'Ánimo de 1 a 5. 0 si no lo ha dicho.' },
+      energia: { type: 'integer', description: 'Energía de 1 a 5. 0 si no lo ha dicho.' },
+      horas_sueno: { type: 'number', description: 'Horas que durmió anoche. 0 si no lo ha dicho.' },
+      emociones: {
+        type: 'array',
+        items: { type: 'string', enum: EMOCIONES },
+        description: 'Cómo se sintió, con nombre. Solo las que él exprese.',
+      },
+      victorias: { type: 'array', items: { type: 'string' }, description: 'Lo que logró hoy, una por elemento, corta.' },
+      vivido: opt('Lo que vivió, en primera persona, con sus palabras'),
+      leccion: opt('Lo que aprendió o haría distinto'),
+      gratitud: opt('Lo que agradece'),
+      manana: opt('Lo PRIMERO de mañana: una sola cosa, con hora si la dio'),
     },
   ),
 
@@ -1219,6 +1245,82 @@ export async function executeTool(
       }
     }
 
+    case 'escribir_diario': {
+      const hoy = ctx.today;
+      const d = input;
+      const { data: previa } = await sb
+        .from('journal_entries')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('date', hoy)
+        .maybeSingle();
+      const antes = previa as Record<string, any> | null;
+
+      // Fusión, no sustitución: si él ya escribió algo hoy en la pantalla,
+      // contarle el día al coach lo completa, no lo pisa.
+      const entre = (n: unknown, min: number, max: number) => {
+        const v = Number(n);
+        return Number.isFinite(v) && v >= min && v <= max ? v : null;
+      };
+      const unir = (a: unknown, b: unknown, tope: number) => {
+        const vistos = new Set<string>();
+        const salida: string[] = [];
+        for (const x of [...((a as string[]) ?? []), ...((b as string[]) ?? [])]) {
+          const t = String(x ?? '').trim();
+          if (!t || vistos.has(t.toLowerCase())) continue;
+          vistos.add(t.toLowerCase());
+          salida.push(t.slice(0, 200));
+        }
+        return salida.slice(0, tope);
+      };
+      const texto = (nuevo: unknown, viejo: unknown) => {
+        const n = val(nuevo);
+        if (!n) return (viejo as string | null) ?? null;
+        const v = String(viejo ?? '').trim();
+        return v && !v.includes(n) ? `${v}\n${n}` : n;
+      };
+
+      const fila = {
+        user_id: userId,
+        date: hoy,
+        mood: entre(d.animo, 1, 5) ?? antes?.mood ?? null,
+        energy: entre(d.energia, 1, 5) ?? antes?.energy ?? null,
+        sleep_hours: entre(d.horas_sueno, 0.5, 24) ?? antes?.sleep_hours ?? null,
+        emotions: unir(antes?.emotions, ((d.emociones ?? []) as string[]).filter((e) => EMOCIONES.includes(e)), 8),
+        wins: unir(antes?.wins, d.victorias, 10),
+        text: texto(d.vivido, antes?.text),
+        lesson: texto(d.leccion, antes?.lesson),
+        gratitude: texto(d.gratitud, antes?.gratitude),
+        plan: val(d.manana) ?? antes?.plan ?? null,
+      };
+      const vacia =
+        !fila.mood && !fila.energy && !fila.sleep_hours && !fila.emotions.length && !fila.wins.length &&
+        !fila.text && !fila.lesson && !fila.gratitude && !fila.plan;
+      if (vacia) throw new Error('Una entrada de diario vacía no dice nada. Pregúntale cómo fue el día.');
+
+      const { error } = await sb.from('journal_entries').upsert(fila, { onConflict: 'user_id,date' });
+      if (error) throw error;
+
+      // Igual que en la app: la primera entrada del día paga 15 XP a PER
+      // salvo que ya lo pague una misión enlazada (JOURNAL_XP en game.ts).
+      let eco = { texto: '', enlazadas: 0 };
+      if (!antes) {
+        eco = await propagarActo(ctx, 'diario');
+        if (eco.enlazadas === 0) {
+          await sb.rpc('award_xp', { p_amount: 15, p_stat: 'PER', p_event: 'journal_entry', p_payload: { date: hoy, via: 'coach' } });
+        }
+      }
+      return ok(
+        `Diario de hoy ${antes ? 'completado' : 'escrito'}: ` +
+          [
+            fila.mood ? `ánimo ${fila.mood}/5` : '',
+            fila.sleep_hours ? `${fila.sleep_hours} h de sueño` : '',
+            fila.wins.length ? `${fila.wins.length} victoria(s)` : '',
+            fila.plan ? 'con lo primero de mañana' : 'SIN lo primero de mañana',
+          ].filter(Boolean).join(' · ') + `.${eco.texto}`,
+      );
+    }
+
     case 'fijar_ficha': {
       const patch: Record<string, unknown> = {};
       if (Number(input.altura_cm) > 0) patch.height_cm = Number(input.altura_cm);
@@ -1248,7 +1350,7 @@ export async function executeTool(
         peso: { t: 'body_metrics', cols: 'date, weight_kg, notes', dateCol: 'date' },
         cardio: { t: 'cardio_sessions', cols: 'date, kind, distance_km, duration_min, zone, rpe, avg_hr, notes', dateCol: 'date' },
         nutricion: { t: 'nutrition_logs', cols: 'date, hit_kcal, hit_protein, kcal_est, protein_est, notes', dateCol: 'date' },
-        diario: { t: 'journal_entries', cols: 'date, mood, energy, text', dateCol: 'date' },
+        diario: { t: 'journal_entries', cols: 'date, mood, energy, sleep_hours, emotions, wins, text, lesson, gratitude, plan', dateCol: 'date' },
         reglas_rotas: { t: 'rule_breaks', cols: 'date, rule_id', dateCol: 'date' },
         hechos: { t: 'coach_facts', cols: 'id, date, category, content', dateCol: 'date' },
         movimientos: { t: 'transactions', cols: 'date, amount, currency, description, counterparty, category, is_internal', dateCol: 'date' },
