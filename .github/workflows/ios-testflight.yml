@@ -15,7 +15,7 @@
 # Único secreto necesario: EXPO_TOKEN (expo.dev → Account settings → Access
 # tokens), en Settings → Secrets and variables → Actions.
 #
-# Se lanza A MANO (Actions → iOS a TestFlight → Run workflow). Solo quien tiene
+# Se lanza A MANO (pestaña Actions → iOS a TestFlight → Run workflow). Solo quien tiene
 # permiso de escritura puede dispararlo, y los PR de forks no ven secretos.
 
 name: iOS a TestFlight
