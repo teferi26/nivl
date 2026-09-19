@@ -228,7 +228,7 @@ describe('código de amigo', () => {
     expect(codigoLegible('ABCD2345')).toBe('ABCD 2345');
     expect(codigoLegible('ABC')).toBe('ABC');
     expect(mensajeInvitacion('ABCD2345')).toBe(
-      'Entréname la disciplina en NIVL. Mi código: ABCD2345 · https://nivl.app',
+      'Mídete conmigo en NIVL. Mi código: ABCD2345 · https://nivl.app',
     );
   });
 });

@@ -7,5 +7,6 @@ export { ProgressRing } from './ProgressRing';
 export { Check, Row, RowValue } from './Row';
 export { Eyebrow, Screen, ScreenHeader } from './Screen';
 export { Rule, Section } from './Section';
+export { Skeleton, SkeletonRows } from './Skeleton';
 export { Stat, StatRow } from './Stat';
 export { TabBar } from './TabBar';

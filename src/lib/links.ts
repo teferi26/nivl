@@ -119,6 +119,15 @@ export const RUTA_DE_ACTO: Record<ActLink, '/gym' | '/cardio' | '/nutricion' | '
   diario: '/diario',
 };
 
+/** El módulo donde se registra cada acto, como se le llama en los botones. */
+export const MODULO_DE_ACTO: Record<ActLink, string> = {
+  gym: 'Gimnasio',
+  cardio: 'Cardio',
+  nutricion: 'Nutrición',
+  peso: 'Avances',
+  diario: 'Diario',
+};
+
 export const NOMBRE_DE_ACTO: Record<ActLink, string> = {
   gym: 'la sesión de gimnasio',
   cardio: 'la sesión de cardio',

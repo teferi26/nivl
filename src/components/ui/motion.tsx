@@ -73,7 +73,7 @@ const LAYOUT_KEYS = new Set([
   'position', 'top', 'left', 'right', 'bottom', 'zIndex', 'aspectRatio',
 ]);
 
-function splitStyle(style: StyleProp<ViewStyle>): { outer: ViewStyle; inner: ViewStyle } {
+export function splitStyle(style: StyleProp<ViewStyle>): { outer: ViewStyle; inner: ViewStyle } {
   const flat = (StyleSheet.flatten(style) ?? {}) as Record<string, unknown>;
   const outer: Record<string, unknown> = {};
   const inner: Record<string, unknown> = {};

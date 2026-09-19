@@ -1,5 +1,14 @@
 import { describe, expect, test } from '@jest/globals';
-import { checkPassword, isValidEmail, isValidName } from '../validation';
+import {
+  checkPassword,
+  ErrorVisible,
+  esErrorDeRed,
+  isValidEmail,
+  isValidName,
+  MENSAJE_FALLO,
+  MENSAJE_SIN_CONEXION,
+  mensajeSistema,
+} from '../validation';
 
 describe('isValidEmail', () => {
   test('acepta correos válidos', () => {
@@ -62,5 +71,27 @@ describe('isValidName', () => {
   test('rechaza vacío y demasiado largo', () => {
     expect(isValidName('   ')).toBe(false);
     expect(isValidName('x'.repeat(25))).toBe(false);
+  });
+});
+
+describe('mensajeSistema', () => {
+  test('un fallo de red se cuenta como sin conexión', () => {
+    expect(mensajeSistema(new TypeError('Network request failed'))).toBe(MENSAJE_SIN_CONEXION);
+    expect(mensajeSistema(new Error('Failed to fetch'))).toBe(MENSAJE_SIN_CONEXION);
+    expect(mensajeSistema({ message: 'The request timed out.' })).toBe(MENSAJE_SIN_CONEXION);
+    expect(mensajeSistema({ name: 'AbortError', message: 'Aborted' })).toBe(MENSAJE_SIN_CONEXION);
+    expect(esErrorDeRed('timeout')).toBe(true);
+  });
+
+  test('lo demás nunca enseña el mensaje técnico', () => {
+    expect(mensajeSistema(new Error('JWT expired'))).toBe(MENSAJE_FALLO);
+    expect(mensajeSistema({ message: 'new row violates row-level security policy', code: '42501' })).toBe(MENSAJE_FALLO);
+    expect(mensajeSistema(null)).toBe(MENSAJE_FALLO);
+    expect(mensajeSistema(undefined)).toBe(MENSAJE_FALLO);
+    expect(esErrorDeRed(new Error('JWT expired'))).toBe(false);
+  });
+
+  test('un ErrorVisible pasa tal cual: ya está escrito para el usuario', () => {
+    expect(mensajeSistema(new ErrorVisible('Ese código no existe.'))).toBe('Ese código no existe.');
   });
 });

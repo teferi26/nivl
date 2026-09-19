@@ -152,5 +152,5 @@ const styles = StyleSheet.create({
   laurel: { width: 44, height: 1, backgroundColor: colors.gold, marginTop: 18 },
   rango: { fontFamily: fonts.heading, fontSize: 13, letterSpacing: 3, color: colors.text, marginTop: 14 },
   frase: { fontFamily: fonts.body, fontSize: 13.5, lineHeight: 19, color: colors.textDim, marginTop: 10, textAlign: 'center' },
-  pista: { fontFamily: fonts.heading, fontSize: 10, letterSpacing: 2, color: colors.textFaint, marginTop: 22 },
+  pista: { fontFamily: fonts.heading, fontSize: 11, letterSpacing: 1.7, color: colors.textFaint, marginTop: 22 },
 });

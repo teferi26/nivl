@@ -99,5 +99,5 @@ const styles = StyleSheet.create({
   rowContent: { paddingHorizontal: 20, gap: 8 },
   wrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   tag: { borderWidth: 1, paddingHorizontal: 6, paddingVertical: 2, alignSelf: 'flex-start' },
-  tagText: { fontFamily: fonts.heading, fontSize: 9.5, letterSpacing: 1.5, textTransform: 'uppercase' },
+  tagText: { fontFamily: fonts.heading, fontSize: 11, letterSpacing: 1.2, textTransform: 'uppercase' },
 });

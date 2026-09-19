@@ -27,6 +27,17 @@ App de hábitos de la gente de Franky (interfaz en español), gamificada como un
 
 **Patrón de arquitectura**: la lógica pura vive en un módulo sin imports de Supabase, y los efectos en otro. No es estética — importar `supabase` arrastra AsyncStorage y los tests de ese módulo dejan de arrancar.
 
+## Patrones de interfaz que ya existen (úsalos, no los reinventes)
+
+- **Cargando = huecos, no spinner ni estado vacío.** `Skeleton` / `SkeletonRows` (`@/components/ui`): un bloque de `panel` que respira y respeta "reducir movimiento". Una pantalla lleva un `loaded` que se pone en el `finally` de su `load`; hasta entonces pinta la cabecera y huecos, nunca "Nada programado" (referencias: Hoy, Amigos, `/pro`, Coach).
+- **Lo que flota va en `<Screen overlay={…}>`**, no dentro del ScrollView: ahí un `position: 'absolute'` se ancla al contenido y con la lista desplazada queda fuera de la vista (era el bug del `XpToast`).
+- **Completar una misión = `CompletarSheet`** (`src/components/CompletarSheet.tsx`): una hoja con Completar / Con foto / Registrar en {módulo}; siempre dos toques. La hoja solo devuelve la opción: el cerrojo síncrono por misión (`completing` en Hoy) lo toma `onComplete` y lo suelta exactamente una salida. Nada de `Alert.alert` encadenados para elegir.
+- **Ningún `e.message` llega al usuario**: `mensajeSistema(e)` (`src/lib/validation.ts`, con tests) devuelve "sin conexión" o el fallo genérico. Un error de negocio ya escrito para el usuario se lanza como `ErrorVisible` y pasa tal cual (`requestFriend`).
+- **Pie fijo para la acción principal** en flujos por pasos (onboarding): botón fuera del ScrollView con `borderTopColor: colors.line`. Y un solo mecanismo de teclado por pantalla: `KeyboardAvoidingView` **o** `automaticallyAdjustKeyboardInsets`, nunca los dos (iOS suma el teclado dos veces).
+- **`SystemButton` reparte su `style`** con `splitStyle` (`ui/motion.tsx`): márgenes, `alignSelf`, `flex` y ancho van al Pressable; lo visual, a la vista que escala.
+- **Hoy no siembra misiones.** `seedDefaultQuests` no se llama al cargar: pisaba el "Empezar sin misiones" del onboarding. La entrada tras login pasa por `/` (`src/app/index.tsx`), que es quien mira `onboarding_done`.
+- **NIVL Pro con la tienda cerrada** (`purchasesAvailable() === false`): `ProOffer` enseña precios en lista de solo lectura y NO pinta selector, "Restaurar compras", letra de renovación ni enlaces legales. La pieza está partida en `useProOffer` + `ProOfferBody` / `ProOfferActions` / `ProOfferLegal` para poder poner los botones en un pie fijo.
+
 ## Reglas que no se negocian
 
 - **Las migraciones aplicadas nunca se editan**: siempre un archivo nuevo numerado. Se aplican con `node scripts/apply-migrations.mjs` (detecta lo pendiente por huellas). Al añadir una, añade su huella en `HUELLAS` o se intentará aplicar en cada ejecución.

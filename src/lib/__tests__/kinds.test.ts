@@ -44,6 +44,16 @@ describe('perfiles de uso', () => {
     for (const kind of PROFILE_KINDS) expect(KINDS[kind].primaryModules).toContain('amigos');
   });
 
+  test('amigos va en la primera fila de la rejilla (puesto 2 o 3), no enterrado al final', () => {
+    // La rejilla de Hoy tiene cuatro columnas: lo que no está en la primera
+    // fila no existe para quien acaba de llegar, y los amigos son la retención.
+    for (const kind of PROFILE_KINDS) {
+      const i = KINDS[kind].primaryModules.indexOf('amigos');
+      expect(i).toBeGreaterThanOrEqual(1);
+      expect(i).toBeLessThanOrEqual(2);
+    }
+  });
+
   test('un valor desconocido cae en general en vez de romper', () => {
     expect(isProfileKind('piloto')).toBe(false);
     expect(isProfileKind(null)).toBe(false);

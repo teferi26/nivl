@@ -15,7 +15,7 @@ import {
 } from 'react-native';
 import { SystemButton } from '@/components/SystemButton';
 import { TextoSistema } from '@/components/TextoSistema';
-import { Chip, ChipRow, FadeIn, Screen } from '@/components/ui';
+import { Chip, ChipRow, FadeIn, Screen, Skeleton, Tag } from '@/components/ui';
 import { useAuth } from '@/lib/auth';
 import {
   accessNotice,
@@ -31,7 +31,7 @@ import {
 } from '@/lib/coach';
 import { ensureProfile } from '@/lib/data';
 import { isValidKey, nombreDia } from '@/lib/dates';
-import { energiaAgotada, fetchAiStatus, isPro, proToday, type AiStatus } from '@/lib/pro';
+import { energiaAgotada, fetchAiStatus, isPro, proSampleBrief, proToday, type AiStatus } from '@/lib/pro';
 import { colors, fonts } from '@/lib/theme';
 
 interface Burbuja {
@@ -107,6 +107,19 @@ function CoachBloqueado({ kind, onPro }: { kind: unknown; onPro: () => void }) {
               <Ionicons name="remove-outline" size={14} color={colors.accentDim} style={styles.hoyIcono} />
               <Text style={styles.hoyTexto}>{linea}</Text>
             </View>
+          ))}
+        </View>
+        {/* Cómo suena un brief de verdad. Es una muestra y se dice: nada aquí
+            sale de los datos de esta cuenta. */}
+        <View style={styles.muestra} accessible accessibilityLabel={`Ejemplo de brief del coach. ${proSampleBrief(kind).join(' ')}`}>
+          <View style={styles.muestraCabecera}>
+            <Text style={styles.hoyRotulo}>UN BRIEF SUYO</Text>
+            <Tag>Ejemplo</Tag>
+          </View>
+          {proSampleBrief(kind).map((linea) => (
+            <Text key={linea} style={styles.muestraLinea}>
+              {linea}
+            </Text>
           ))}
         </View>
         <SystemButton title="Ver NIVL Pro" onPress={onPro} style={styles.bloqueadoBoton} />
@@ -238,7 +251,7 @@ export default function CoachScreen() {
       {
         id: localId,
         role: 'user',
-        text: fotos.length ? `[${fotos.length} foto(s)]\n${limpio}` : limpio,
+        text: fotos.length ? `[${fotos.length} ${fotos.length === 1 ? 'foto' : 'fotos'}]\n${limpio}` : limpio,
         acciones: [],
       },
     ]);
@@ -313,10 +326,23 @@ export default function CoachScreen() {
   };
 
   if (cargando || !estadoListo) {
+    // La cabecera ya, y el cuerpo en hueco: un spinner solo en mitad del negro
+    // no decía ni en qué pantalla se estaba.
     return (
       <Screen plain>
-        <View style={styles.centro}>
-          <ActivityIndicator color={colors.accent} />
+        <View style={styles.header}>
+          <View>
+            <Text style={styles.eyebrow}>EL SISTEMA</Text>
+            <Text style={styles.titulo}>Coach</Text>
+          </View>
+        </View>
+        <View style={styles.cargandoCuerpo} accessibilityRole="progressbar" accessibilityLabel="Cargando el coach">
+          <Skeleton height={14} width="64%" />
+          <Skeleton height={14} width="88%" style={styles.cargandoLinea} />
+          <Skeleton height={14} width="46%" style={styles.cargandoLinea} />
+          <Skeleton height={88} style={styles.cargandoBloque} />
+          <Skeleton height={14} width="72%" style={styles.cargandoBloque} />
+          <Skeleton height={14} width="54%" style={styles.cargandoLinea} />
         </View>
       </Screen>
     );
@@ -353,16 +379,20 @@ export default function CoachScreen() {
             <Ionicons name="flash-outline" size={16} color={colors.text} />
             <Text style={styles.memoriaTexto}>Pro</Text>
           </Pressable>
-          <Pressable
-            onPress={() => router.push('/memoria')}
-            style={({ pressed }) => [styles.memoria, pressed && { opacity: 0.6 }]}
-            accessibilityRole="button"
-            accessibilityLabel="Ver la memoria del sistema"
-            hitSlop={8}
-          >
-            <Ionicons name="library-outline" size={18} color={colors.text} />
-            <Text style={styles.memoriaTexto}>Memoria</Text>
-          </Pressable>
+          {/* La memoria es del coach: sin Pro no ha aprendido nada que
+              enseñar. Vuelve en cuanto la cuenta tiene coach. */}
+          {sinPro ? null : (
+            <Pressable
+              onPress={() => router.push('/memoria')}
+              style={({ pressed }) => [styles.memoria, pressed && { opacity: 0.6 }]}
+              accessibilityRole="button"
+              accessibilityLabel="Ver la memoria del sistema"
+              hitSlop={8}
+            >
+              <Ionicons name="library-outline" size={18} color={colors.text} />
+              <Text style={styles.memoriaTexto}>Memoria</Text>
+            </Pressable>
+          )}
         </View>
       </View>
 
@@ -438,7 +468,9 @@ export default function CoachScreen() {
         {adjuntas.length ? (
           <View style={styles.adjuntas}>
             <Ionicons name="image-outline" size={14} color={colors.accentText} />
-            <Text style={styles.adjuntasTexto}>{adjuntas.length} foto(s) listas para enviar</Text>
+            <Text style={styles.adjuntasTexto}>
+              {adjuntas.length === 1 ? '1 foto lista para enviar' : `${adjuntas.length} fotos listas para enviar`}
+            </Text>
             <Pressable onPress={() => setAdjuntas([])} hitSlop={8} accessibilityRole="button" accessibilityLabel="Quitar las fotos">
               <Ionicons name="close" size={16} color={colors.textDim} />
             </Pressable>
@@ -506,7 +538,6 @@ export default function CoachScreen() {
 
 const styles = StyleSheet.create({
   flex: { flex: 1 },
-  centro: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   header: {
     flexDirection: 'row',
     alignItems: 'flex-end',
@@ -517,7 +548,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: colors.line,
   },
-  eyebrow: { fontFamily: fonts.heading, fontSize: 10.5, letterSpacing: 2.5, color: colors.textFaint },
+  eyebrow: { fontFamily: fonts.heading, fontSize: 11, letterSpacing: 2.2, color: colors.textFaint },
   titulo: { fontFamily: fonts.heading, fontSize: 24, letterSpacing: -0.5, color: colors.text, marginTop: 2 },
   headerAcciones: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   memoria: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 6, paddingHorizontal: 10, borderWidth: 1, borderColor: colors.line },
@@ -569,6 +600,12 @@ const styles = StyleSheet.create({
   hoyFila: { flexDirection: 'row', gap: 10, paddingVertical: 9 },
   hoyFilaSep: { borderTopWidth: 1, borderTopColor: colors.line },
   hoyIcono: { marginTop: 3 },
+  muestra: { alignSelf: 'stretch', marginTop: 10, backgroundColor: colors.panel, padding: 16 },
+  muestraCabecera: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 },
+  muestraLinea: { fontFamily: fonts.body, fontSize: 13.5, lineHeight: 20, color: colors.textDim, marginTop: 8 },
+  cargandoCuerpo: { paddingHorizontal: 20, paddingTop: 20 },
+  cargandoLinea: { marginTop: 10 },
+  cargandoBloque: { marginTop: 22 },
   hoyTexto: { flex: 1, minWidth: 0, fontFamily: fonts.body, fontSize: 14, lineHeight: 20, color: colors.text },
   aviso: {
     flexDirection: 'row',

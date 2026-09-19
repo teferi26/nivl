@@ -1,8 +1,12 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
+import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Alert,
+  Animated,
+  BackHandler,
+  Keyboard,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -14,9 +18,9 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { HoldToSign } from '@/components/HoldToSign';
-import { ProOffer } from '@/components/ProOffer';
+import { ProOfferActions, ProOfferBody, ProOfferLegal, useProOffer } from '@/components/ProOffer';
 import { SystemButton } from '@/components/SystemButton';
-import { Card, Chip, FadeIn } from '@/components/ui';
+import { Card, Chip, FadeIn, Stagger } from '@/components/ui';
 import { useAuth } from '@/lib/auth';
 import {
   GOAL_DETAIL_MAX_LENGTH,
@@ -29,12 +33,13 @@ import {
   type Horizonte,
 } from '@/lib/compromiso';
 import { sealLetter } from '@/lib/contract';
-import { createStarterQuests, ensureProfile, insertEvent, updateProfile } from '@/lib/data';
+import { createStarterQuests, deleteQuest, ensureProfile, insertEvent, updateProfile } from '@/lib/data';
 import { addDays, dateKey, fechaConAnio } from '@/lib/dates';
 import { KINDS, PROFILE_KINDS, type ProfileKind } from '@/lib/kinds';
+import { DIFFICULTY_LABEL, STAT_LABEL } from '@/lib/game';
 import { fetchAiStatus, isPro } from '@/lib/pro';
 import { colors, fonts } from '@/lib/theme';
-import { NAME_MAX_LENGTH } from '@/lib/validation';
+import { mensajeSistema, NAME_MAX_LENGTH } from '@/lib/validation';
 
 // Bienvenida · Nombre · Para qué · El objetivo · Primeros hábitos · La firma · NIVL Pro
 //
@@ -43,6 +48,11 @@ import { NAME_MAX_LENGTH } from '@/lib/validation';
 // compromiso ya tiene contenido. Pro va DESPUÉS de la firma, en el momento de
 // más convicción, y con la salida gratuita a la misma altura que la compra.
 const STEPS = 7;
+/** Pasos de los que se puede volver: del nombre a la firma. Tras firmar, no. */
+const PRIMER_PASO_CON_VUELTA = 1;
+const ULTIMO_PASO_CON_VUELTA = 5;
+/** Lo que dura el sello en pantalla si no se toca. */
+const MS_SELLO = 1400;
 
 // Nombres por defecto de la fila de perfil: si es uno de estos, no se
 // prerrellena (que escriba el suyo).
@@ -65,6 +75,21 @@ export default function Onboarding() {
   // Quien ya tiene coach (una cuenta de cortesía que rehace el onboarding) no
   // ve la oferta: tras firmar, entra.
   const yaEsPro = useRef(false);
+  // Volver atrás no puede duplicar nada. Las misiones creadas se recuerdan
+  // (título → id) para reconciliar si se cambia la selección al volver a
+  // pasar; el objetivo solo se reescribe en la crónica si ha cambiado; y el
+  // perfil solo repone la selección por defecto si es OTRO perfil.
+  const creadas = useRef<Map<string, string>>(new Map());
+  const objetivoGuardado = useRef<string | null>(null);
+  const kindGuardado = useRef<ProfileKind | null>(null);
+  // Mientras el dedo firma, el scroll se apaga: un milímetro de deriva le daba
+  // el gesto al ScrollView y el anillo volvía a cero.
+  const [holding, setHolding] = useState(false);
+  const [sello, setSello] = useState(false);
+  const scroll = useRef<ScrollView>(null);
+  const selloEscala = useRef(new Animated.Value(1.5)).current;
+  const selloOpacidad = useRef(new Animated.Value(0)).current;
+  const selloTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // El nombre puede venir ya de Franky (trigger de alta, migración 0018).
   useEffect(() => {
@@ -88,7 +113,7 @@ export default function Onboarding() {
     try {
       await fn();
     } catch (e) {
-      Alert.alert('Error del sistema', e instanceof Error ? e.message : 'Fallo desconocido');
+      Alert.alert('Error del sistema', mensajeSistema(e));
     } finally {
       lock.current = false;
       setBusy(false);
@@ -107,7 +132,12 @@ export default function Onboarding() {
       if (!kind) return;
       await updateProfile(userId!, { profile_kind: kind });
       // Por defecto todos los hábitos propuestos marcados: quitar es un toque.
-      setChosen(new Set(KINDS[kind].starterQuests.map((_, i) => i)));
+      // Solo al cambiar de perfil: volver atrás y seguir con el mismo no debe
+      // deshacer lo que ya se había desmarcado.
+      if (kindGuardado.current !== kind) {
+        setChosen(new Set(KINDS[kind].starterQuests.map((_, i) => i)));
+        kindGuardado.current = kind;
+      }
       setStep(3);
     });
 
@@ -117,20 +147,38 @@ export default function Onboarding() {
   const saveGoal = () =>
     withLock(async () => {
       if (!limpiarFrase(goal)) return;
-      await insertEvent(userId!, 'onboarding_goal', {
+      const payload = {
         goal: limpiarFrase(goal),
         target: limpiarFrase(target) || null,
         deadline: limpiarFrase(deadline) || null,
         kind,
-      });
+      };
+      const huella = JSON.stringify(payload);
+      if (objetivoGuardado.current !== huella) {
+        await insertEvent(userId!, 'onboarding_goal', payload);
+        objetivoGuardado.current = huella;
+      }
       setStep(4);
     });
 
   const saveStarters = () =>
     withLock(async () => {
       if (!kind) return;
-      const quests = KINDS[kind].starterQuests.filter((_, i) => chosen.has(i));
-      await createStarterQuests(userId!, quests);
+      const elegidas = KINDS[kind].starterQuests.filter((_, i) => chosen.has(i));
+      const titulos = new Set(elegidas.map((q) => q.title));
+      // Reconciliar en vez de insertar a ciegas: al volver a pasar por aquí se
+      // crea solo lo nuevo y se retira lo que ya no está elegido (también las
+      // de otro perfil, si se cambió). Primera pasada: todo es nuevo.
+      for (const [titulo, id] of [...creadas.current]) {
+        if (titulos.has(titulo)) continue;
+        await deleteQuest(id);
+        creadas.current.delete(titulo);
+      }
+      const nuevas = await createStarterQuests(
+        userId!,
+        elegidas.filter((q) => !creadas.current.has(q.title)),
+      );
+      for (const q of nuevas) creadas.current.set(q.title, q.id);
       setFirma('');
       setStep(5);
     });
@@ -160,13 +208,48 @@ export default function Onboarding() {
     withLock(async () => {
       await sealLetter(userId!, contrato, abreEl);
       await insertEvent(userId!, 'commitment_signed', { years: horizonte.years, open_at: abreEl }).catch(() => {});
-      if (yaEsPro.current) {
-        await updateProfile(userId!, { onboarding_done: true });
-        router.replace('/(tabs)');
-        return;
-      }
-      setStep(6);
+      if (yaEsPro.current) await updateProfile(userId!, { onboarding_done: true });
+      setSello(true);
     });
+
+  // El sello: un segundo y medio para que firmar pese. Se salta con un toque.
+  const trasElSello = useCallback(() => {
+    if (selloTimer.current) clearTimeout(selloTimer.current);
+    selloTimer.current = null;
+    setSello(false);
+    if (yaEsPro.current) router.replace('/(tabs)');
+    else setStep(6);
+  }, []);
+
+  useEffect(() => {
+    if (!sello) return;
+    selloEscala.setValue(1.5);
+    selloOpacidad.setValue(0);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy).catch(() => {});
+    Animated.parallel([
+      Animated.spring(selloEscala, { toValue: 1, useNativeDriver: true, friction: 6, tension: 80 }),
+      Animated.timing(selloOpacidad, { toValue: 1, duration: 160, useNativeDriver: true }),
+    ]).start();
+    selloTimer.current = setTimeout(trasElSello, MS_SELLO);
+    return () => {
+      if (selloTimer.current) clearTimeout(selloTimer.current);
+    };
+  }, [sello, selloEscala, selloOpacidad, trasElSello]);
+
+  const puedeVolver = step >= PRIMER_PASO_CON_VUELTA && step <= ULTIMO_PASO_CON_VUELTA && !busy && !sello;
+  const volver = useCallback(() => setStep((s) => Math.max(0, s - 1)), []);
+
+  // El botón físico de Android hace lo mismo que la flecha. En la bienvenida y
+  // tras la firma no se intercepta: ahí atrás es salir de la app.
+  useEffect(() => {
+    const sub = BackHandler.addEventListener('hardwareBackPress', () => {
+      if (sello) return true;
+      if (!puedeVolver) return false;
+      volver();
+      return true;
+    });
+    return () => sub.remove();
+  }, [puedeVolver, sello, volver]);
 
   const toggleStarter = (i: number) =>
     setChosen((prev) => {
@@ -178,20 +261,71 @@ export default function Onboarding() {
 
   const meta = kind ? KINDS[kind] : null;
   const firmaOk = firmaValida(firma, name);
+  const oferta = useProOffer({ userId, onPurchased: finish });
+
+  // Con el nombre bien escrito el teclado sobra: tapaba justo el anillo que
+  // hay que mantener pulsado. Se recoge solo y se baja hasta la firma.
+  useEffect(() => {
+    if (step !== 5 || !firmaOk) return;
+    Keyboard.dismiss();
+    const t = setTimeout(() => scroll.current?.scrollToEnd({ animated: true }), 280);
+    return () => clearTimeout(t);
+  }, [firmaOk, step]);
+
+  // Cada paso empieza arriba: el ScrollView es el mismo para todos y, si no,
+  // la oferta de Pro heredaba el scroll del final de la firma.
+  useEffect(() => {
+    scroll.current?.scrollTo({ y: 0, animated: false });
+  }, [step]);
+
+  const elegirKind = (k: ProfileKind) => {
+    Haptics.selectionAsync().catch(() => {});
+    setKind(k);
+  };
+  const elegirHorizonte = (h: Horizonte) => {
+    Haptics.selectionAsync().catch(() => {});
+    setHorizonte(h);
+  };
 
   return (
     <SafeAreaView style={styles.screen}>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <ScrollView
-          automaticallyAdjustKeyboardInsets
-          contentContainerStyle={styles.content}
-          keyboardShouldPersistTaps="handled"
-        >
-          <View style={styles.dots}>
+        {/* Cabecera fija: la vuelta atrás y el progreso. La fila de la flecha
+            ocupa siempre su alto para que el progreso no salte entre pasos. */}
+        <View style={styles.top}>
+          <View style={styles.backRow}>
+            {puedeVolver ? (
+              <Pressable
+                onPress={volver}
+                hitSlop={12}
+                style={styles.back}
+                accessibilityRole="button"
+                accessibilityLabel="Volver al paso anterior"
+              >
+                <Ionicons name="arrow-back" size={20} color={colors.text} />
+              </Pressable>
+            ) : null}
+          </View>
+          <View
+            style={styles.dots}
+            accessibilityRole="progressbar"
+            accessibilityLabel={`Paso ${step + 1} de ${STEPS}`}
+          >
             {Array.from({ length: STEPS }, (_, i) => (
-              <View key={i} style={[styles.dot, i === step && styles.dotOn]} />
+              <View key={i} style={[styles.dot, i <= step && styles.dotOn]} />
             ))}
           </View>
+        </View>
+
+        {/* Solo el KeyboardAvoidingView empuja: junto a
+            automaticallyAdjustKeyboardInsets, iOS sumaba el teclado dos veces. */}
+        <ScrollView
+          ref={scroll}
+          scrollEnabled={!holding}
+          contentContainerStyle={styles.content}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
 
           {step === 0 ? (
             <FadeIn key="paso-0">
@@ -208,7 +342,6 @@ export default function Onboarding() {
                   sistema no opina. Registra.
                 </Text>
               </Card>
-              <SystemButton title="Entrar en la arena" size="lg" onPress={() => setStep(1)} />
             </FadeIn>
           ) : null}
 
@@ -225,10 +358,11 @@ export default function Onboarding() {
                   placeholderTextColor={colors.textFaint}
                   maxLength={NAME_MAX_LENGTH}
                   autoCapitalize="words"
+                  returnKeyType="done"
+                  onSubmitEditing={saveName}
                   accessibilityLabel="Tu nombre"
                 />
               </Card>
-              <SystemButton title="Continuar" onPress={saveName} loading={busy} disabled={!name.trim()} />
             </FadeIn>
           ) : null}
 
@@ -245,7 +379,7 @@ export default function Onboarding() {
                 return (
                   <Pressable
                     key={k}
-                    onPress={() => setKind(k)}
+                    onPress={() => elegirKind(k)}
                     style={[styles.kindCard, on && styles.kindCardOn]}
                     accessibilityRole="radio"
                     accessibilityState={{ selected: on }}
@@ -265,7 +399,6 @@ export default function Onboarding() {
                   <Text style={styles.detail}>{meta.description}</Text>
                 </Card>
               ) : null}
-              <SystemButton title="Continuar" onPress={saveKind} loading={busy} disabled={!kind} />
             </FadeIn>
           ) : null}
 
@@ -314,7 +447,6 @@ export default function Onboarding() {
                   </View>
                 </View>
               </Card>
-              <SystemButton title="Continuar" onPress={saveGoal} loading={busy} disabled={!limpiarFrase(goal)} />
             </FadeIn>
           ) : null}
 
@@ -343,18 +475,13 @@ export default function Onboarding() {
                       <View style={{ flex: 1, minWidth: 0 }}>
                         <Text style={[styles.starterTitle, !on && styles.starterOff]}>{q.title}</Text>
                         <Text style={styles.starterMeta}>
-                          {q.stat} · {q.difficulty} · {q.days_of_week.length === 7 ? 'cada día' : `${q.days_of_week.length} días/semana`}
+                          {STAT_LABEL[q.stat]} · {DIFFICULTY_LABEL[q.difficulty]} · {q.days_of_week.length === 7 ? 'cada día' : `${q.days_of_week.length} días/semana`}
                         </Text>
                       </View>
                     </Pressable>
                   );
                 })}
               </Card>
-              <SystemButton
-                title={chosen.size > 0 ? `Crear ${chosen.size} misión${chosen.size === 1 ? '' : 'es'}` : 'Empezar sin misiones'}
-                onPress={saveStarters}
-                loading={busy}
-              />
             </FadeIn>
           ) : null}
 
@@ -370,7 +497,7 @@ export default function Onboarding() {
                     <Chip
                       label={h.label}
                       selected={horizonte.years === h.years}
-                      onPress={() => setHorizonte(h)}
+                      onPress={() => elegirHorizonte(h)}
                       accessibilityLabel={`Horizonte de ${h.label}${h.recomendado ? ', recomendado' : ''}`}
                       style={styles.horizonteChip}
                     />
@@ -379,7 +506,14 @@ export default function Onboarding() {
                 ))}
               </View>
               <Card variant="outline" accent={colors.accentDim}>
-                <Text style={styles.contrato}>{contrato}</Text>
+                {/* El texto se revela párrafo a párrafo: se lee, no se acepta. */}
+                <Stagger step={140} base={120}>
+                  {contrato.split(/\n\s*\n/).map((parrafo, i) => (
+                    <FadeIn key={i} index={i} from={8}>
+                      <Text style={[styles.contrato, i > 0 && styles.contratoParrafo]}>{parrafo}</Text>
+                    </FadeIn>
+                  ))}
+                </Stagger>
               </Card>
               <Text style={styles.smallPrint}>
                 Se abrirá el {fechaConAnio(abreEl)}. Hasta entonces lo guarda Contrato, sellado. Tus normas y sus
@@ -396,12 +530,15 @@ export default function Onboarding() {
                   maxLength={NAME_MAX_LENGTH}
                   autoCapitalize="words"
                   autoCorrect={false}
+                  returnKeyType="done"
+                  onSubmitEditing={Keyboard.dismiss}
                   accessibilityLabel="Escribe tu nombre para firmar"
                 />
               </Card>
               <HoldToSign
                 label={firmaOk ? 'Mantén pulsado para firmar' : 'Escribe tu nombre'}
                 onComplete={sign}
+                onHoldChange={setHolding}
                 disabled={!firmaOk}
                 loading={busy}
               />
@@ -415,27 +552,77 @@ export default function Onboarding() {
                 NIVL es tuya entera y gratis. El coach de IA es lo único de pago. Decide ahora o más adelante, desde la
                 pestaña Coach: el compromiso vale igual.
               </Text>
-              <ProOffer
-                compact
-                userId={userId}
-                kind={kind}
-                exitLabel="Seguir gratis por ahora"
-                onExit={finish}
-                exitLoading={busy}
-                onPurchased={finish}
-              />
+              <ProOfferBody oferta={oferta} kind={kind} compact />
+              <ProOfferLegal oferta={oferta} />
             </FadeIn>
           ) : null}
         </ScrollView>
+
+        {/* Pie fijo: la acción del paso siempre a la vista, también en 667 pt y
+            con el teclado abierto. La firma no tiene pie: su botón es el anillo. */}
+        {step !== 5 ? (
+          <View style={styles.footer}>
+            {step === 0 ? <SystemButton title="Entrar en la arena" size="lg" onPress={() => setStep(1)} /> : null}
+            {step === 1 ? (
+              <SystemButton title="Continuar" size="lg" onPress={saveName} loading={busy} disabled={!name.trim()} />
+            ) : null}
+            {step === 2 ? (
+              <SystemButton title="Continuar" size="lg" onPress={saveKind} loading={busy} disabled={!kind} />
+            ) : null}
+            {step === 3 ? (
+              <SystemButton title="Continuar" size="lg" onPress={saveGoal} loading={busy} disabled={!limpiarFrase(goal)} />
+            ) : null}
+            {step === 4 ? (
+              <SystemButton
+                title={chosen.size > 0 ? `Crear ${chosen.size} ${chosen.size === 1 ? 'misión' : 'misiones'}` : 'Empezar sin misiones'}
+                size="lg"
+                onPress={saveStarters}
+                loading={busy}
+              />
+            ) : null}
+            {step === 6 ? (
+              <ProOfferActions oferta={oferta} exitLabel="Seguir gratis por ahora" onExit={finish} exitLoading={busy} />
+            ) : null}
+          </View>
+        ) : null}
       </KeyboardAvoidingView>
+
+      {sello ? (
+        <Pressable
+          style={styles.sello}
+          onPress={trasElSello}
+          accessibilityRole="button"
+          accessibilityLabel={`Sellado. Vence el ${fechaConAnio(abreEl)}. Toca para continuar`}
+        >
+          <Animated.View style={{ alignItems: 'center', opacity: selloOpacidad, transform: [{ scale: selloEscala }] }}>
+            <View style={styles.selloMarco}>
+              <Text style={styles.selloTexto}>SELLADO</Text>
+            </View>
+          </Animated.View>
+          <Animated.Text style={[styles.selloFecha, { opacity: selloOpacidad }]}>
+            Vence el {fechaConAnio(abreEl)}
+          </Animated.Text>
+        </Pressable>
+      ) : null}
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.bg },
-  content: { flexGrow: 1, justifyContent: 'center', padding: 24 },
-  dots: { flexDirection: 'row', gap: 8, justifyContent: 'center', marginBottom: 24 },
+  top: { paddingHorizontal: 24, paddingTop: 8 },
+  backRow: { height: 32, justifyContent: 'center' },
+  back: { alignSelf: 'flex-start', marginLeft: -4, padding: 4 },
+  content: { flexGrow: 1, justifyContent: 'center', paddingHorizontal: 24, paddingTop: 20, paddingBottom: 24 },
+  footer: {
+    paddingHorizontal: 24,
+    paddingTop: 12,
+    paddingBottom: 12,
+    borderTopWidth: 1,
+    borderTopColor: colors.line,
+    backgroundColor: colors.bg,
+  },
+  dots: { flexDirection: 'row', gap: 8, justifyContent: 'center', marginTop: 4 },
   dot: { width: 22, height: 3, backgroundColor: colors.track },
   dotOn: { backgroundColor: colors.accent },
   brand: {
@@ -538,6 +725,29 @@ const styles = StyleSheet.create({
     marginTop: 6,
   },
   contrato: { fontFamily: fonts.body, fontSize: 14, lineHeight: 22, color: colors.text },
+  contratoParrafo: { marginTop: 12 },
+  sello: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: colors.bg,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 24,
+  },
+  selloMarco: { borderWidth: 1.5, borderColor: colors.accent, paddingHorizontal: 26, paddingVertical: 14 },
+  selloTexto: { fontFamily: fonts.heading, fontSize: 34, letterSpacing: 10, color: colors.accent, marginRight: -10 },
+  selloFecha: {
+    fontFamily: fonts.heading,
+    fontSize: 12,
+    letterSpacing: 2.5,
+    textTransform: 'uppercase',
+    color: colors.textDim,
+    marginTop: 22,
+    textAlign: 'center',
+  },
   firmaCard: { marginTop: 14 },
   smallPrint: {
     fontFamily: fonts.body,

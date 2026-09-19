@@ -10,6 +10,8 @@ import {
   // build nativo solo para copiar ocho letras. Si un día desaparece, `copiar`
   // cae al compartir del sistema, que también deja copiar.
   Clipboard,
+  LayoutAnimation,
+  Pressable,
   Share,
   StyleSheet,
   Switch,
@@ -18,7 +20,7 @@ import {
   View,
 } from 'react-native';
 import { Avatar } from '@/components/Avatar';
-import { ShareSemanaModal, type DatosSemana } from '@/components/ShareCardSemana';
+import { prepararDatosSemana, ShareSemanaModal, type DatosSemana } from '@/components/ShareCardSemana';
 import { SystemButton } from '@/components/SystemButton';
 import {
   Card,
@@ -31,6 +33,8 @@ import {
   Screen,
   ScreenHeader,
   Section,
+  Skeleton,
+  SkeletonRows,
   Stagger,
   Tag,
 } from '@/components/ui';
@@ -60,11 +64,12 @@ import {
   mensajeInvitacion,
   METRICA_LABEL,
   normalizarCodigo,
-  posicionEntreAmigos,
   type Metrica,
   type Ventana,
 } from '@/lib/socialmath';
 import { colors, fonts } from '@/lib/theme';
+import { useCountUp } from '@/lib/useCountUp';
+import { mensajeSistema } from '@/lib/validation';
 
 const VENTANAS: { key: Ventana; label: string }[] = [
   { key: 'semana', label: 'Semana' },
@@ -72,7 +77,16 @@ const VENTANAS: { key: Ventana; label: string }[] = [
 ];
 const METRICAS: Metrica[] = ['xp', 'cumplimiento', 'racha'];
 
-const mensajeDe = (e: unknown) => (e instanceof Error ? e.message : 'Fallo desconocido');
+
+/** La cifra del ranking, que sube (o baja) hasta su valor al cambiar de métrica o de periodo. */
+function ValorRanking({ valor, metrica, tone }: { valor: number | null; metrica: Metrica; tone: 'gold' | 'accent' | 'dim' }) {
+  const mostrado = useCountUp(valor ?? 0, 600);
+  return (
+    <RowValue strong tone={tone}>
+      {formatoValor(valor === null ? null : mostrado, metrica)}
+    </RowValue>
+  );
+}
 
 export default function Amigos() {
   const { session } = useAuth();
@@ -86,6 +100,9 @@ export default function Amigos() {
   const [cargando, setCargando] = useState(true);
   const [fallo, setFallo] = useState<string | null>(null);
   const [refrescando, setRefrescando] = useState(false);
+  // Entre que se toca Semana/Mes y llegan las cifras nuevas, el ranking viejo
+  // se atenúa: sin esto el chip cambiaba y la lista no, y parecía roto.
+  const [cambiando, setCambiando] = useState(false);
 
   const [codigo, setCodigo] = useState('');
   const [avisoCodigo, setAvisoCodigo] = useState<{ texto: string; error: boolean } | null>(null);
@@ -99,6 +116,7 @@ export default function Amigos() {
   // La ventana pedida más reciente: si tocas Semana → Mes → Semana deprisa, la
   // respuesta lenta de "Mes" no debe pisar la de "Semana".
   const ventanaViva = useRef<Ventana>('semana');
+  const hayRanking = useRef(false);
 
   const load = useCallback(
     async (v: Ventana) => {
@@ -111,14 +129,19 @@ export default function Amigos() {
           fetchRequests(),
         ]);
         if (ventanaViva.current !== v) return;
+        // Si el orden cambia con los datos nuevos, las filas se recolocan con
+        // una transición. En la primera carga no hay nada que mover.
+        if (hayRanking.current) LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+        hayRanking.current = true;
         setYo(self);
         setBoard(filas);
         setRequests(pendientes);
         setFallo(null);
       } catch (e) {
-        setFallo(mensajeDe(e));
+        setFallo(mensajeSistema(e));
       } finally {
         setCargando(false);
+        if (ventanaViva.current === v) setCambiando(false);
       }
     },
     [userId],
@@ -140,6 +163,20 @@ export default function Amigos() {
   const ocultos = useMemo(() => board.filter((b) => !b.visible && !b.isMe), [board]);
   const ranking = useMemo(() => clasificar(visibles, metrica), [visibles, metrica]);
   const numAmigos = board.filter((b) => !b.isMe).length;
+
+  const elegirVentana = (v: Ventana) => {
+    if (v === ventana) return;
+    Haptics.selectionAsync().catch(() => {});
+    setCambiando(true);
+    setVentana(v);
+  };
+  const elegirMetrica = (m: Metrica) => {
+    if (m === metrica) return;
+    Haptics.selectionAsync().catch(() => {});
+    // Otro criterio, otro orden: las filas se recolocan, no saltan.
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setMetrica(m);
+  };
   const entrantes = requests.filter((r) => r.direction === 'incoming');
   const salientes = requests.filter((r) => r.direction === 'outgoing');
 
@@ -149,7 +186,7 @@ export default function Amigos() {
     try {
       await Share.share({ message: mensajeInvitacion(yo.friendCode) });
     } catch (e) {
-      Alert.alert('Error del sistema', mensajeDe(e));
+      Alert.alert('Error del sistema', mensajeSistema(e));
     }
   };
 
@@ -192,7 +229,9 @@ export default function Amigos() {
       await load(ventana);
     } catch (e) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      setAvisoCodigo({ texto: mensajeDe(e), error: true });
+      // Los errores de negocio (código desconocido, ya sois amigos, tope) llegan
+      // como ErrorVisible y pasan tal cual; lo demás, con la voz del sistema.
+      setAvisoCodigo({ texto: mensajeSistema(e), error: true });
     } finally {
       lock.current = false;
       setEnviando(false);
@@ -209,7 +248,7 @@ export default function Amigos() {
       if (aceptar) Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       await load(ventana);
     } catch (e) {
-      Alert.alert('Error del sistema', mensajeDe(e));
+      Alert.alert('Error del sistema', mensajeSistema(e));
     } finally {
       lock.current = false;
       setOcupada(null);
@@ -229,7 +268,7 @@ export default function Amigos() {
             await removeFriend(friendshipId);
             await load(ventana);
           } catch (e) {
-            Alert.alert('Error del sistema', mensajeDe(e));
+            Alert.alert('Error del sistema', mensajeSistema(e));
           } finally {
             lock.current = false;
           }
@@ -257,7 +296,7 @@ export default function Amigos() {
       await setSocialVisible(userId, visible);
     } catch (e) {
       setYo(antes);
-      Alert.alert('Error del sistema', mensajeDe(e));
+      Alert.alert('Error del sistema', mensajeSistema(e));
     }
   };
 
@@ -266,27 +305,17 @@ export default function Amigos() {
   // ranking: si está en "Mes" se pide la semana aparte en vez de rotular como
   // semanal una cifra de treinta días.
   const abrirTarjeta = async () => {
-    if (!yo || preparando) return;
+    if (!yo || !userId || preparando) return;
     setPreparando(true);
     try {
-      const semana = ventana === 'semana' ? board : await fetchBoard(DIAS_VENTANA.semana);
-      const mio = semana.find((b) => b.isMe);
-      if (!mio) throw new Error('El sistema no encuentra tu fila en el marcador.');
-      setTarjeta({
-        name: mio.name,
-        avatarPath: mio.avatarPath,
-        equippedTitle: mio.equippedTitle,
-        profileKind: mio.profileKind,
-        xpTotal: mio.xpTotal,
-        streakDays: mio.streakDays,
-        xpSemana: mio.xpWindow,
-        compliancePct: mio.compliancePct,
-        daysActive: mio.daysActive,
-        posicion: posicionEntreAmigos(clasificar(semana.filter((b) => b.visible), 'xp')),
-        friendCode: yo.friendCode,
-      });
+      setTarjeta(
+        await prepararDatosSemana(userId, {
+          semana: ventana === 'semana' ? board : undefined,
+          friendCode: yo.friendCode,
+        }),
+      );
     } catch (e) {
-      Alert.alert('Error del sistema', mensajeDe(e));
+      Alert.alert('Error del sistema', mensajeSistema(e));
     } finally {
       setPreparando(false);
     }
@@ -311,9 +340,12 @@ export default function Amigos() {
         </FadeIn>
 
         {cargando ? (
-          <View style={styles.cargando} accessibilityLabel="Cargando la arena" accessibilityRole="progressbar">
-            <ActivityIndicator color={colors.accent} />
-            <Text style={styles.cargandoTexto}>El sistema está reuniendo a tus rivales.</Text>
+          <View accessibilityLabel="Cargando la arena" accessibilityRole="progressbar">
+            <Skeleton height={168} style={styles.huecoTarjeta} />
+            <Skeleton height={11} width={150} style={styles.huecoRotulo} />
+            <Skeleton height={50} style={styles.huecoTarjeta} />
+            <Skeleton height={11} width={90} style={styles.huecoRotulo} />
+            <SkeletonRows rows={4} />
           </View>
         ) : fallo && !yo ? (
           <Card variant="outline" accent={colors.redDim}>
@@ -361,7 +393,14 @@ export default function Amigos() {
                     />
                   </View>
                   <View style={styles.boton}>
-                    <SystemButton title="Invitar" icon="paper-plane-outline" onPress={invitar} />
+                    {/* Un sólido por pantalla: sin amigos, el sólido es "Invitar al
+                        primero" del ranking vacío y este baja a contorno. */}
+                    <SystemButton
+                      title="Invitar"
+                      icon="paper-plane-outline"
+                      variant={numAmigos === 0 ? 'outline' : 'solid'}
+                      onPress={invitar}
+                    />
                   </View>
                 </View>
               </Card>
@@ -417,6 +456,8 @@ export default function Amigos() {
                         leading={<Ionicons name="person-add-outline" size={18} color={colors.accent} />}
                         title={r.name}
                         detail={`Nivel ${r.level} · quiere medirse contigo`}
+                        // Aceptar a la derecha y rechazar como un aspa: dos chips
+                        // con texto dejaban al nombre en dos letras a 375 px.
                         trailing={
                           ocupada === r.friendshipId ? (
                             <ActivityIndicator size="small" color={colors.accent} />
@@ -429,12 +470,15 @@ export default function Amigos() {
                                 onPress={() => responder(r, true)}
                                 accessibilityLabel={`Aceptar la solicitud de ${r.name}`}
                               />
-                              <Chip
-                                label="Rechazar"
-                                small
+                              <Pressable
                                 onPress={() => responder(r, false)}
+                                hitSlop={10}
+                                style={({ pressed }) => [styles.rechazar, pressed && styles.pulsado]}
+                                accessibilityRole="button"
                                 accessibilityLabel={`Rechazar la solicitud de ${r.name}`}
-                              />
+                              >
+                                <Ionicons name="close" size={18} color={colors.textDim} />
+                              </Pressable>
                             </View>
                           )
                         }
@@ -484,7 +528,7 @@ export default function Amigos() {
                           key={v.key}
                           label={v.label}
                           selected={ventana === v.key}
-                          onPress={() => setVentana(v.key)}
+                          onPress={() => elegirVentana(v.key)}
                           style={styles.segmentoChip}
                           accessibilityLabel={`Ranking de ${v.key === 'semana' ? 'los últimos 7 días' : 'los últimos 30 días'}`}
                         />
@@ -498,7 +542,7 @@ export default function Amigos() {
                           small
                           tone={m === 'racha' ? 'gold' : 'accent'}
                           selected={metrica === m}
-                          onPress={() => setMetrica(m)}
+                          onPress={() => elegirMetrica(m)}
                           accessibilityLabel={`Ordenar por ${METRICA_LABEL[m]}`}
                         />
                       ))}
@@ -508,7 +552,7 @@ export default function Amigos() {
                       {lineaRivalidad(ranking, metrica, ventana)}
                     </Text>
 
-                    <Card padded={false} style={styles.lista}>
+                    <Card padded={false} style={[styles.lista, cambiando && styles.atenuado]}>
                       {ranking.map((c, i) => {
                         const b = c.competidor;
                         const nivel = levelFromXp(b.xpTotal).level;
@@ -537,9 +581,11 @@ export default function Amigos() {
                               </View>
                             }
                             trailing={
-                              <RowValue strong tone={metrica === 'racha' && (c.valor ?? 0) > 0 ? 'gold' : b.isMe ? 'accent' : 'dim'}>
-                                {valor}
-                              </RowValue>
+                              <ValorRanking
+                                valor={c.valor}
+                                metrica={metrica}
+                                tone={metrica === 'racha' && (c.valor ?? 0) > 0 ? 'gold' : b.isMe ? 'accent' : 'dim'}
+                              />
                             }
                             onLongPress={b.isMe ? undefined : () => quitarAmigo(b)}
                             accessibilityLabel={`${c.valor === null ? 'Sin puesto' : `Puesto ${c.posicion}`}. ${b.isMe ? 'Tú' : b.name}, nivel ${nivel}, ${valor}.${b.isMe ? '' : ' Mantén pulsado para quitar.'}`}
@@ -555,6 +601,14 @@ export default function Amigos() {
                           : 'Días seguidos cerrados. Es la única cifra que no depende del periodo.'}{' '}
                       Mantén pulsado a alguien para quitarle.
                     </Text>
+                    <SystemButton
+                      title="Compartir mi semana"
+                      icon="share-social-outline"
+                      variant="outline"
+                      onPress={abrirTarjeta}
+                      loading={preparando}
+                      style={{ marginTop: 14 }}
+                    />
                   </>
                 )}
               </Section>
@@ -605,14 +659,6 @@ export default function Amigos() {
                     }
                   />
                 </Card>
-                <SystemButton
-                  title="Compartir mi semana"
-                  icon="share-social-outline"
-                  variant="outline"
-                  onPress={abrirTarjeta}
-                  loading={preparando}
-                  style={{ marginTop: 12 }}
-                />
               </Section>
             </FadeIn>
           </>
@@ -626,8 +672,11 @@ export default function Amigos() {
 
 const styles = StyleSheet.create({
   lista: { paddingHorizontal: 16, paddingVertical: 2 },
-  cargando: { alignItems: 'center', paddingVertical: 48, gap: 12 },
-  cargandoTexto: { fontFamily: fonts.body, fontSize: 13, color: colors.textFaint },
+  huecoTarjeta: { marginBottom: 26 },
+  huecoRotulo: { marginBottom: 12 },
+  atenuado: { opacity: 0.45 },
+  rechazar: { width: 32, height: 32, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: colors.line },
+  pulsado: { opacity: 0.6 },
   falloLinea: { fontFamily: fonts.body, fontSize: 13, lineHeight: 18, color: colors.redText },
   eyebrow: {
     fontFamily: fonts.heading,
@@ -660,7 +709,7 @@ const styles = StyleSheet.create({
   },
   aviso: { fontFamily: fonts.body, fontSize: 13, lineHeight: 18, color: colors.accentText, marginTop: 10 },
   avisoError: { color: colors.red },
-  respuestas: { flexDirection: 'row', gap: 6 },
+  respuestas: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   segmento: { flexDirection: 'row', gap: 8 },
   segmentoChip: { flex: 1, justifyContent: 'center' },
   metricas: { marginTop: 10 },

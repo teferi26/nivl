@@ -251,8 +251,13 @@ export function olvidarFirma(bucket: 'evidence' | 'avatars', path: string): void
 /**
  * Los primeros hábitos de una cuenta salen del perfil de uso (kinds.ts): un
  * deportista no empieza con "Prospección: 10 contactos". El onboarding deja
- * elegir cuáles crear; esto es la red de seguridad para una cuenta que llegó
- * sin pasar por ahí (o que borró todo). Con misiones ya creadas no hace nada.
+ * elegir cuáles crear, incluido ninguno.
+ *
+ * OJO: ninguna pantalla debe llamar a esto al cargar. Hoy lo hacía en cada
+ * foco y pisaba la decisión del usuario: quien elegía "Empezar sin misiones"
+ * o borraba las suyas se encontraba las de fábrica otra vez. Una cuenta sin
+ * misiones ve el estado vacío, que ya le lleva a Hábitos. Queda como
+ * utilidad explícita (un futuro "proponme misiones"), nunca automática.
  */
 export async function seedDefaultQuests(userId: string, kind: unknown = 'general'): Promise<boolean> {
   const { count } = await supabase.from('quests').select('*', { count: 'exact', head: true });
@@ -261,11 +266,20 @@ export async function seedDefaultQuests(userId: string, kind: unknown = 'general
   return true;
 }
 
-/** Crea de golpe los hábitos elegidos en el onboarding. Con lista vacía no toca nada. */
-export async function createStarterQuests(userId: string, quests: readonly StarterQuest[]): Promise<void> {
-  if (quests.length === 0) return;
-  const { error } = await supabase
+/**
+ * Crea de golpe los hábitos elegidos en el onboarding y devuelve lo creado
+ * (id y título), para que el onboarding pueda reconciliar si el usuario vuelve
+ * atrás y cambia la selección. Con lista vacía no toca nada.
+ */
+export async function createStarterQuests(
+  userId: string,
+  quests: readonly StarterQuest[],
+): Promise<{ id: string; title: string }[]> {
+  if (quests.length === 0) return [];
+  const { data, error } = await supabase
     .from('quests')
-    .insert(quests.map((q) => ({ user_id: userId, ...q })));
+    .insert(quests.map((q) => ({ user_id: userId, ...q })))
+    .select('id, title');
   if (error) throw error;
+  return (data ?? []) as { id: string; title: string }[];
 }

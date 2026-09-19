@@ -11,6 +11,7 @@ import {
   planLabel,
   proEmphasis,
   proPlan,
+  proSampleBrief,
   proToday,
   type AiStatus,
 } from '../proplans';
@@ -58,6 +59,24 @@ describe('NIVL Pro · la oferta', () => {
     }
     expect(proEmphasis('piloto')).toBe(proEmphasis('general'));
     expect(PRO_BENEFITS.length).toBe(7);
+  });
+});
+
+describe('NIVL Pro · el brief de muestra', () => {
+  test('cuatro líneas por perfil, con cifras concretas y sin exclamaciones', () => {
+    for (const kind of PROFILE_KINDS) {
+      const brief = proSampleBrief(kind);
+      expect(brief.length).toBe(4);
+      expect(brief.some((l) => /\d/.test(l))).toBe(true);
+      for (const linea of brief) {
+        expect(linea.length).toBeGreaterThan(20);
+        expect(linea).not.toMatch(/[!¡]/);
+      }
+    }
+  });
+
+  test('un perfil desconocido cae en el general', () => {
+    expect(proSampleBrief('astronauta')).toEqual(proSampleBrief('general'));
   });
 });
 

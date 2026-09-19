@@ -20,13 +20,20 @@ interface Props {
   plan: DayPlan | null;
   bloques: DayBlock[];
   onToggle: (b: DayBlock) => void;
+  /**
+   * La cuenta tiene coach. Sin coach y sin plan esta sección NO se pinta: su
+   * único botón ("Pedir el plan") llevaba a un coach con candado. Hoy ofrece
+   * Pro en una línea discreta bajo las misiones.
+   */
+  pro?: boolean;
 }
 
 // El plan del día como una línea de tiempo: hora a la izquierda, un hilo
 // vertical con un punto por bloque, el bloque actual encendido. Si el coach
 // no ha escrito nada, se dice claro y se ofrece el camino.
-export const OrdenDelDia = memo(function OrdenDelDia({ plan, bloques, onToggle }: Props) {
+export const OrdenDelDia = memo(function OrdenDelDia({ plan, bloques, onToggle, pro = true }: Props) {
   if (!plan || !bloques.length) {
+    if (!pro) return null;
     return (
       <Section title="Orden del día">
         <Card variant="outline">
@@ -143,7 +150,7 @@ const styles = StyleSheet.create({
   hora: { fontFamily: fonts.number, fontSize: 12, color: colors.textDim },
   horaActual: { color: colors.accent },
   horaHecha: { color: colors.textFaint },
-  horaFin: { fontFamily: fonts.body, fontSize: 10, color: colors.textFaint, marginTop: 1 },
+  horaFin: { fontFamily: fonts.body, fontSize: 11, color: colors.textFaint, marginTop: 1 },
   hilo: { width: 18, alignItems: 'center' },
   punto: {
     width: 16,
@@ -165,7 +172,7 @@ const styles = StyleSheet.create({
   cuerpoActual: {},
   tituloFila: { flexDirection: 'row', alignItems: 'center', gap: 7 },
   bloqueTitulo: { flex: 1, fontFamily: fonts.semibold, fontSize: 14.5, lineHeight: 19, color: colors.text },
-  ahora: { fontFamily: fonts.heading, fontSize: 9.5, letterSpacing: 1.5, color: colors.bg, backgroundColor: colors.accent, paddingHorizontal: 5, paddingVertical: 1 },
+  ahora: { fontFamily: fonts.heading, fontSize: 11, letterSpacing: 1.2, color: colors.bg, backgroundColor: colors.accent, paddingHorizontal: 5, paddingVertical: 1 },
   tachado: { textDecorationLine: 'line-through', color: colors.textFaint },
   perdido: { color: colors.textDim },
   detalle: {

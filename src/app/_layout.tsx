@@ -39,7 +39,12 @@ function ProtectedStack() {
     if (!session && !inAuthArea) {
       router.replace('/login');
     } else if (session && inAuthArea) {
-      router.replace('/(tabs)');
+      // A la raíz, no a las pestañas: `index.tsx` es quien mira
+      // `onboarding_done` y decide entre el onboarding y Hoy. Ir directo a
+      // '/(tabs)' dejaba a toda cuenta nueva sin onboarding ni firma. No hay
+      // bucle: en '/' ya no se está en el área de acceso, así que esta rama no
+      // vuelve a dispararse.
+      router.replace('/');
     }
   }, [session, loading, segments, router]);
 

@@ -8,6 +8,7 @@
 import type { ProfileKind } from './kinds';
 import type { Competidor } from './socialmath';
 import { supabase } from './supabase';
+import { ErrorVisible } from './validation';
 
 /** Una fila del marcador: yo o un amigo aceptado. */
 export interface BoardEntry extends Competidor {
@@ -97,13 +98,13 @@ export interface RequestResult {
  * Pide amistad por código. Los errores de negocio (código desconocido, ya
  * amigos, topes, freno de intentos) NO llegan como excepción de Postgres sino
  * como {ok:false, message}: la RPC no lanza para que el intento quede contado.
- * Aquí se convierten en Error con el mensaje en español, listo para enseñar.
+ * Aquí se convierten en ErrorVisible con el mensaje en español, listo para enseñar.
  */
 export async function requestFriend(code: string): Promise<RequestResult> {
   const { data, error } = await supabase.rpc('friend_request', { p_code: code });
   if (error) throw error;
   const r = data as { ok: boolean; status?: 'pending' | 'accepted'; name?: string; message?: string } | null;
-  if (!r || !r.ok) throw new Error(r?.message ?? 'El sistema no ha podido enviar la solicitud.');
+  if (!r || !r.ok) throw new ErrorVisible(r?.message ?? 'El sistema no ha podido enviar la solicitud.');
   return { status: r.status ?? 'pending', name: r.name?.trim() || 'Gladiador', message: r.message ?? '' };
 }
 

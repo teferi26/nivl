@@ -7,11 +7,11 @@
 
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { ProOffer } from '@/components/ProOffer';
 import { SystemButton } from '@/components/SystemButton';
 import { XPBar } from '@/components/XPBar';
-import { Card, FadeIn, Row, RowValue, Screen, ScreenHeader, Section, Stagger } from '@/components/ui';
+import { Card, FadeIn, Row, RowValue, Screen, ScreenHeader, Section, Skeleton, Stagger } from '@/components/ui';
 import { useAuth } from '@/lib/auth';
 import { ensureProfile } from '@/lib/data';
 import { isValidKey, nombreDia } from '@/lib/dates';
@@ -36,7 +36,12 @@ export default function Pro() {
   const [refreshing, setRefreshing] = useState(false);
 
   const load = useCallback(async () => {
-    if (!userId) return;
+    // Sin sesión no hay nada que leer, pero la pantalla no puede quedarse
+    // cargando para siempre: antes este return dejaba el spinner infinito.
+    if (!userId) {
+      setLoading(false);
+      return;
+    }
     // Cada lectura falla por su cuenta: sin red, la oferta se pinta igual con
     // el perfil general. Una pantalla de venta nunca se queda en blanco.
     const [st, prof, sub] = await Promise.allSettled([fetchAiStatus(), ensureProfile(userId), fetchSubscription(userId)]);
@@ -64,10 +69,18 @@ export default function Pro() {
   };
 
   if (loading) {
+    // La cabecera (con su vuelta atrás) desde el primer fotograma; debajo,
+    // huecos. Aún no se sabe qué cara toca, así que el título es neutro.
     return (
-      <Screen plain>
-        <View style={styles.centro}>
-          <ActivityIndicator color={colors.accent} />
+      <Screen>
+        <ScreenHeader onBack={salir} eyebrow="NIVL Pro" title="El coach" />
+        <View accessibilityRole="progressbar" accessibilityLabel="Cargando NIVL Pro">
+          <Skeleton height={64} style={styles.hueco} />
+          <Skeleton height={14} width="82%" style={styles.huecoLinea} />
+          <Skeleton height={14} width="68%" style={styles.huecoLinea} />
+          <Skeleton height={14} width="74%" style={styles.huecoLinea} />
+          <Skeleton height={120} style={styles.huecoBloque} />
+          <Skeleton height={56} style={styles.huecoBloque} />
         </View>
       </Screen>
     );
@@ -137,7 +150,7 @@ export default function Pro() {
             onBack={salir}
             eyebrow="NIVL Pro"
             title="Un coach que manda en tu día."
-            subtitle="NIVL es gratis entera: misiones, racha, campañas, gym, dieta, economía, amigos. Pro añade lo único que nos cuesta dinero: la IA que lo dirige todo por ti."
+            subtitle="NIVL es gratis entera: misiones, racha, campañas, gym, dieta, economía, amigos. Pro añade el coach: la IA que lo dirige todo por ti."
           />
         </FadeIn>
         <FadeIn index={1}>
@@ -149,7 +162,9 @@ export default function Pro() {
 }
 
 const styles = StyleSheet.create({
-  centro: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  hueco: { marginBottom: 18 },
+  huecoLinea: { marginBottom: 12 },
+  huecoBloque: { marginTop: 14 },
   energia: { fontFamily: fonts.body, fontSize: 13.5, lineHeight: 20, color: colors.textDim, marginTop: 10 },
   lista: { paddingHorizontal: 16, paddingVertical: 2 },
   valor: { fontFamily: fonts.semibold, fontSize: 13, color: colors.text },

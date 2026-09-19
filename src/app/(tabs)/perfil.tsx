@@ -48,7 +48,7 @@ import {
   updateProfile,
   uploadAvatar,
 } from '@/lib/data';
-import { addDays, dateKey } from '@/lib/dates';
+import { addDays, dateKey, isValidKey, nombreDia } from '@/lib/dates';
 import { setFreeze } from '@/lib/engine';
 import { exportAllData } from '@/lib/exporter';
 import { deleteAccount } from '@/lib/account';
@@ -58,6 +58,7 @@ import {
   type EstadoAvisos,
 } from '@/lib/notifications';
 import { setApiKey } from '@/lib/oracle';
+import { fetchAiStatus, isPro } from '@/lib/pro';
 import {
   fetchSubscription,
   isPremium,
@@ -99,6 +100,8 @@ export default function Perfil() {
   const [stats, setStats] = useState<{ total: number; withEvidence: number }>({ total: 0, withEvidence: 0 });
   const [unlocked, setUnlocked] = useState<Set<string>>(new Set());
   const [subscription, setSubscription] = useState<Subscription | null>(null);
+  // null = aún no se sabe (o sin red): la fila de Pro se pinta sin detalle.
+  const [tieneCoach, setTieneCoach] = useState<boolean | null>(null);
   const [freezeOpen, setFreezeOpen] = useState(false);
   const [freezeReason, setFreezeReason] = useState(FREEZE_REASONS[0]!);
   const [freezeDays, setFreezeDays] = useState(3);
@@ -145,6 +148,10 @@ export default function Perfil() {
 
   const load = useCallback(async () => {
     if (!userId) return;
+    // Por su cuenta: no bloquea el perfil ni lo tumba si falla.
+    fetchAiStatus()
+      .then((s) => setTieneCoach(isPro(s)))
+      .catch(() => {});
     try {
       const prof = await ensureProfile(userId);
       setProfile(prof);
@@ -422,6 +429,28 @@ export default function Perfil() {
             </Card>
           </FadeIn>
 
+          {/* Las dos puertas que no son un módulo más: la gente y el coach. Amigos
+              solo se alcanzaba desde el último azulejo de Hoy. */}
+          <FadeIn index={2}>
+            <Card padded={false} style={styles.accesos}>
+              <Row
+                first
+                chevron
+                leading={<Ionicons name="people-outline" size={18} color={colors.text} />}
+                title="Amigos"
+                detail="Ranking y tu código"
+                onPress={() => router.push('/amigos')}
+              />
+              <Row
+                chevron
+                leading={<Ionicons name="shield-half-outline" size={18} color={colors.text} />}
+                title="NIVL Pro"
+                detail={tieneCoach === null ? undefined : tieneCoach ? 'Activo' : 'Activa el coach'}
+                onPress={() => router.push('/pro')}
+              />
+            </Card>
+          </FadeIn>
+
           {frozen ? (
             <FadeIn index={2}>
               <Card variant="outline" accent={colors.accentDim}>
@@ -429,7 +458,10 @@ export default function Perfil() {
                   <Ionicons name="snow-outline" size={12} color={colors.accentText} /> SISTEMA EN PAUSA
                 </Text>
                 <Text style={styles.alertBody}>
-                  {voice.frozen(profile.freeze_reason ?? 'pausa')} Hasta el {profile.freeze_until}.
+                  {voice.frozen(profile.freeze_reason ?? 'pausa')}
+                  {profile.freeze_until && isValidKey(profile.freeze_until)
+                    ? ` Hasta el ${nombreDia(profile.freeze_until).toLowerCase()}.`
+                    : ''}
                 </Text>
               </Card>
             </FadeIn>
@@ -797,6 +829,7 @@ export default function Perfil() {
 const styles = StyleSheet.create({
   content: { paddingHorizontal: 0, paddingTop: 0 },
   body: { paddingHorizontal: 20, marginTop: 14 },
+  accesos: { paddingHorizontal: 16, paddingVertical: 2 },
 
   hero: { width: '100%', backgroundColor: colors.panelDeep },
   heroImage: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 },

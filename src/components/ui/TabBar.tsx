@@ -75,6 +75,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   indicatorOn: { backgroundColor: colors.accent },
-  label: { fontFamily: fonts.semibold, fontSize: 10.5, color: colors.textFaint, letterSpacing: 0.2 },
+  label: { fontFamily: fonts.semibold, fontSize: 11, color: colors.textFaint, letterSpacing: 0 },
   labelOn: { color: colors.accent },
 });

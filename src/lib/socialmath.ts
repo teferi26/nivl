@@ -232,8 +232,12 @@ export function codigoLegible(codigo: string): string {
   return codigo.length === LARGO_CODIGO ? `${codigo.slice(0, 4)} ${codigo.slice(4)}` : codigo;
 }
 
+/** La web de NIVL. ÚNICA definición: la invitación y la tarjeta salen de aquí. */
 export const URL_NIVL = 'https://nivl.app';
 
+/** "nivl.app": la URL sin protocolo, como se escribe en una tarjeta. */
+export const DOMINIO_NIVL = URL_NIVL.replace(/^https?:\/\//, '');
+
 export function mensajeInvitacion(codigo: string): string {
-  return `Entréname la disciplina en NIVL. Mi código: ${codigo} · ${URL_NIVL}`;
+  return `Mídete conmigo en NIVL. Mi código: ${codigo} · ${URL_NIVL}`;
 }

@@ -47,6 +47,9 @@ La pantalla es editorial: cabecera grande, secciones con rótulo pequeño y SIN 
 - `Stat` + `StatRow` — cifras en Cinzel con rótulo: `value`, `label`, `unit`, `size` sm|md|lg, `tone`.
 - `ProgressRing` — anillo SVG animado: `ratio`, `size`, `label`, `sublabel`.
 - `EmptyState` — icono suelto + título + frase + `action`. `compact` dentro de una Card outline.
+- `Skeleton` / `SkeletonRows` — el estado de carga: bloques de `panel` que respiran (0,4↔0,8) y respetan "reducir movimiento". Sustituyen al spinner suelto y al estado vacío pintado antes de tiempo. Dentro de un contenedor con `accessibilityRole="progressbar"`.
+- `Screen overlay={…}` — lo que flota sobre la pantalla (el aviso de XP) va aquí, nunca dentro del scroll.
+- `CompletarSheet` (`src/components`) — la hoja inferior de completar misión; patrón para cualquier elección de 2–3 opciones en vez de `Alert.alert`.
 - `FadeIn` / `Stagger` / `PressScale` — entrada al montar con `index` para la cascada; envuelve cada bloque de una pantalla en `<FadeIn index={i}>` dentro de un `<Stagger>`.
 - `SystemButton` — `variant` solid (blanco, UNA por pantalla) | outline | ghost | danger; `size` sm|md|lg; `icon`.
 - `XPBar` — barra animada; `segments` para marcar tramos (los 21 días de un hábito).

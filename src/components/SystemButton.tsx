@@ -1,6 +1,7 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRef } from 'react';
 import { ActivityIndicator, Animated, Pressable, StyleSheet, Text, type StyleProp, type ViewStyle } from 'react-native';
+import { splitStyle } from '@/components/ui/motion';
 import { colors, fonts } from '@/lib/theme';
 
 interface Props {
@@ -22,6 +23,10 @@ export function SystemButton({ title, onPress, variant = 'solid', size = 'md', i
   const danger = variant === 'danger';
   const ghost = variant === 'ghost';
   const fg = solid ? colors.bg : danger ? colors.red : colors.accent;
+  // El layout (márgenes, alignSelf, flex, ancho) va al Pressable, que es quien
+  // ocupa sitio en el padre; lo visual, a la vista que escala. Antes todo caía
+  // dentro y un `alignSelf: 'stretch'` o un `flex: 1` no hacían nada.
+  const { outer, inner } = splitStyle(style);
   const animar = (v: number) => Animated.spring(scale, { toValue: v, useNativeDriver: true, speed: 40, bounciness: 4 }).start();
 
   return (
@@ -33,6 +38,7 @@ export function SystemButton({ title, onPress, variant = 'solid', size = 'md', i
       accessibilityRole="button"
       accessibilityLabel={title}
       accessibilityState={{ disabled: !!disabled, busy: !!loading }}
+      style={outer}
     >
       <Animated.View
         style={[
@@ -43,7 +49,7 @@ export function SystemButton({ title, onPress, variant = 'solid', size = 'md', i
           danger && styles.danger,
           ghost && styles.ghost,
           (disabled || loading) && styles.disabled,
-          style,
+          inner,
           { transform: [{ scale }] },
         ]}
       >

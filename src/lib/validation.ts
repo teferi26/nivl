@@ -58,3 +58,44 @@ export function isValidName(name: string): boolean {
   const n = name.trim();
   return n.length >= 1 && n.length <= NAME_MAX_LENGTH;
 }
+
+// ── Errores que llegan al usuario ───────────────────────────────────
+// Un `e.message` en crudo es inglés de PostgREST o de fetch ("TypeError:
+// Network request failed", "JWT expired"): no es la voz del sistema y no le
+// dice a nadie qué hacer. Toda alerta o aviso en pantalla pasa por aquí.
+
+/**
+ * Un error cuyo mensaje YA está escrito para el usuario (un código de amigo
+ * que no existe, un tope alcanzado). `mensajeSistema` lo deja pasar tal cual.
+ */
+export class ErrorVisible extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'ErrorVisible';
+  }
+}
+
+export const MENSAJE_SIN_CONEXION = 'Sin conexión. El sistema lo reintentará cuando vuelvas a tener red.';
+export const MENSAJE_FALLO = 'El sistema no ha podido completar la operación.';
+
+const PISTAS_DE_RED = /network|fetch|timeout|timed out|connection|offline|internet|abort|socket|ECONN|ENOTFOUND/i;
+
+function textoDe(e: unknown): string {
+  if (typeof e === 'string') return e;
+  if (e && typeof e === 'object') {
+    const o = e as { message?: unknown; name?: unknown };
+    return `${typeof o.name === 'string' ? o.name : ''} ${typeof o.message === 'string' ? o.message : ''}`;
+  }
+  return '';
+}
+
+/** ¿Parece un fallo de red (sin cobertura, tiempo agotado, petición abortada)? */
+export function esErrorDeRed(e: unknown): boolean {
+  return PISTAS_DE_RED.test(textoDe(e));
+}
+
+/** La frase que se enseña cuando algo falla. Nunca el mensaje técnico. */
+export function mensajeSistema(e: unknown): string {
+  if (e instanceof ErrorVisible) return e.message;
+  return esErrorDeRed(e) ? MENSAJE_SIN_CONEXION : MENSAJE_FALLO;
+}

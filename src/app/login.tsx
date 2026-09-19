@@ -2,8 +2,6 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Linking from 'expo-linking';
 import { useState } from 'react';
 import {
-  KeyboardAvoidingView,
-  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -128,7 +126,10 @@ export default function Login() {
 
   return (
     <SafeAreaView style={styles.screen}>
-      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      {/* Un solo mecanismo para el teclado: el inset automático del ScrollView,
+          que además lleva el campo enfocado a la vista. Junto a un
+          KeyboardAvoidingView con padding, iOS sumaba el teclado dos veces. */}
+      <View style={{ flex: 1 }}>
         <ScrollView
           automaticallyAdjustKeyboardInsets
           contentContainerStyle={styles.content}
@@ -345,7 +346,7 @@ export default function Login() {
             )}
           </View>
         </ScrollView>
-      </KeyboardAvoidingView>
+      </View>
     </SafeAreaView>
   );
 }

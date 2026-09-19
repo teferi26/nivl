@@ -185,6 +185,48 @@ export function proToday(kind: unknown): readonly string[] {
   return PRO_TODAY[kindMeta(kind).id];
 }
 
+// Un brief de MUESTRA por perfil: cuatro líneas con la forma y el tono de los
+// que escribe el coach, con cifras concretas para que se entienda qué se
+// compra. Es un ejemplo inventado y la pantalla lo rotula como tal ("Ejemplo"):
+// no son datos del usuario ni una promesa de resultado.
+const PRO_SAMPLE_BRIEF: Record<ProfileKind, readonly string[]> = {
+  emprendedor: [
+    'Ayer: 6 contactos de 10 y ninguna reunión cerrada. La caja no se mueve sola.',
+    '09:00–10:30 · Prospección: 10 contactos antes de abrir el correo.',
+    '11:00–13:00 · Trabajo profundo: la propuesta de 1.800 € sale hoy.',
+    'Esta noche te pido dos cifras: contactos hechos y reuniones agendadas.',
+  ],
+  trabajador: [
+    'Ayer cerraste 4 de 5 misiones. Falló el entreno: hoy va antes de la jornada.',
+    '07:15–08:00 · Fuerza, 45 min. Sin móvil hasta terminar.',
+    '09:30–11:30 · Bloque de foco: el informe trimestral, y solo eso.',
+    'Cena antes de las 21:30 y pantalla fuera a las 23:00. Mañana lo compruebo.',
+  ],
+  deportista: [
+    'Peso medio de la semana: 78,4 kg (−0,3). El ritmo es bueno: no se toca la dieta.',
+    'Hoy, empuje: press banca 4×6 con 72,5 kg. El martes marcaste RPE 7: subes 2,5 kg.',
+    'Objetivo del día: 2.450 kcal y 165 g de proteína. Llevas tres días por debajo.',
+    'Esta noche reviso la sesión. Si las series salen a RPE 9, la semana que viene se descarga.',
+  ],
+  estudiante: [
+    'Quedan 12 días para Estadística y llevas 5 de 9 temas. Hoy caen dos.',
+    '09:00–10:30 · Tema 6: contrastes de hipótesis. Sin apuntes delante al final.',
+    '16:00–17:30 · 20 problemas del tema 5. Se corrigen hoy, no mañana.',
+    'Ayer estudiaste 2 h 10 min de las 4 previstas. Esta noche te pido la cifra real.',
+  ],
+  general: [
+    'Ayer: 5 de 6 misiones y la racha en 9. Hoy no se rompe.',
+    '07:30 · Arriba. 20 min de movimiento antes del primer café.',
+    '18:00–19:00 · Lo que llevas tres días aplazando. Hoy se cierra.',
+    'A las 22:30 te pido cuentas. Lo pendiente a medianoche se penaliza.',
+  ],
+};
+
+/** Brief de ejemplo para el perfil; un valor desconocido cae en general. */
+export function proSampleBrief(kind: unknown): readonly string[] {
+  return PRO_SAMPLE_BRIEF[kindMeta(kind).id];
+}
+
 export const LEGAL_URLS = {
   terminos: 'https://nivl.app/terminos',
   privacidad: 'https://nivl.app/privacidad',

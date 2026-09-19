@@ -6,10 +6,16 @@ import { supabase } from './supabase';
 import type { BonusRedemption, JournalPhoto, Letter, Profile, Rule } from './types';
 
 // ── Reglas del juego ────────────────────────────────────────────────
+// Solo las VIGENTES. Una regla eliminada (por el coach o desde Contrato) se
+// archiva con active=false para conservar su historial de roturas, y antes
+// esta función las devolvía todas: Hábitos las seguía pintando y el cierre del
+// día seguía cobrando 25 XP por cada una, aunque ya no existieran para él.
+// Filtrar aquí y no en cada pantalla es lo que impide que vuelva a pasar.
 export async function fetchRules(): Promise<Rule[]> {
   const { data, error } = await supabase
     .from('rules')
     .select('*')
+    .eq('active', true)
     .order('position', { ascending: true })
     .order('created_at', { ascending: true });
   if (error) throw error;

@@ -30,20 +30,44 @@ interface Props {
   loading?: boolean;
   /** Milisegundos que hay que aguantar. */
   duration?: number;
+  /**
+   * Avisa al padre de que el dedo está puesto (true) o se ha levantado
+   * (false). Dentro de un ScrollView sirve para apagar el scroll mientras se
+   * firma: si no, una deriva mínima del dedo le entrega el gesto al scroll,
+   * llega un onPressOut y el anillo vuelve a cero.
+   */
+  onHoldChange?: (holding: boolean) => void;
 }
 
-export function HoldToSign({ label, holdingLabel = 'No sueltes', onComplete, disabled, loading, duration = 1600 }: Props) {
+// Cuánto puede alejarse el dedo del anillo sin que cuente como soltar.
+const MARGEN_DEL_DEDO = { top: 60, bottom: 60, left: 60, right: 60 } as const;
+
+export function HoldToSign({ label, holdingLabel = 'No sueltes', onComplete, disabled, loading, duration = 1600, onHoldChange }: Props) {
   const progress = useRef(new Animated.Value(0)).current;
   const latido = useRef<ReturnType<typeof setInterval> | null>(null);
   const hecho = useRef(false);
-  const [holding, setHolding] = useState(false);
+  const [holding, setHoldingState] = useState(false);
+  const avisar = useRef(onHoldChange);
+  avisar.current = onHoldChange;
+  const setHolding = (h: boolean) => {
+    setHoldingState(h);
+    avisar.current?.(h);
+  };
 
   const parar = () => {
     if (latido.current) clearInterval(latido.current);
     latido.current = null;
   };
 
-  useEffect(() => parar, []);
+  // Al desmontar (la firma ha ido bien y se cambia de paso) el padre no puede
+  // quedarse con el scroll apagado.
+  useEffect(
+    () => () => {
+      parar();
+      avisar.current?.(false);
+    },
+    [],
+  );
 
   // Si la firma falla (sin red), el padre vuelve a habilitar el botón: el
   // anillo tiene que volver a cero para poder repetir el gesto.
@@ -88,6 +112,7 @@ export function HoldToSign({ label, holdingLabel = 'No sueltes', onComplete, dis
       <Pressable
         onPressIn={empezar}
         onPressOut={soltar}
+        pressRetentionOffset={MARGEN_DEL_DEDO}
         disabled={disabled || loading}
         accessibilityRole="button"
         accessibilityLabel={label}

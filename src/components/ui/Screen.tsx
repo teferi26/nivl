@@ -29,14 +29,22 @@ interface ScreenProps extends Omit<ScrollViewProps, 'style' | 'contentContainerS
   onRefresh?: () => void;
   style?: StyleProp<ViewStyle>;
   contentStyle?: StyleProp<ViewStyle>;
+  /**
+   * Lo que flota SOBRE la pantalla y no debe irse con el scroll: el aviso de
+   * XP, una celebración. Se pinta como hermano del ScrollView; dentro de él,
+   * un `position: 'absolute'` se ancla al contenido y, con la lista desplazada,
+   * queda fuera de la vista.
+   */
+  overlay?: ReactNode;
   children: ReactNode;
 }
 
-export function Screen({ plain, refreshing, onRefresh, style, contentStyle, children, ...rest }: ScreenProps) {
+export function Screen({ plain, refreshing, onRefresh, style, contentStyle, overlay, children, ...rest }: ScreenProps) {
   if (plain) {
     return (
       <SafeAreaView style={[styles.screen, style]} edges={['top']}>
         {children}
+        {overlay}
       </SafeAreaView>
     );
   }
@@ -56,6 +64,7 @@ export function Screen({ plain, refreshing, onRefresh, style, contentStyle, chil
       >
         {children}
       </ScrollView>
+      {overlay}
     </SafeAreaView>
   );
 }
