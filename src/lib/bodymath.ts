@@ -45,3 +45,30 @@ export function pendientePorDia(puntos: { x: number; y: number }[]): number | nu
   if (den === 0) return null;
   return num / den;
 }
+
+export type NivelActividad = 'sedentario' | 'ligero' | 'moderado' | 'alto' | 'muy_alto';
+
+const FACTOR_ACTIVIDAD: Record<NivelActividad, number> = {
+  sedentario: 1.2,
+  ligero: 1.375,
+  moderado: 1.55,
+  alto: 1.725,
+  muy_alto: 1.9,
+};
+
+/**
+ * Mantenimiento calórico estimado: metabolismo basal por Mifflin-St Jeor por
+ * el factor de actividad. Es un PUNTO DE PARTIDA con ±10 % de error: a las
+ * tres semanas manda la tendencia real del peso, no esta fórmula.
+ */
+export function mantenimientoKcal(f: {
+  pesoKg: number;
+  alturaCm: number;
+  edad: number;
+  sexo: 'hombre' | 'mujer';
+  actividad: NivelActividad;
+}): { basal: number; mantenimiento: number } | null {
+  if (!(f.pesoKg > 20) || !(f.alturaCm > 100) || !(f.edad >= 14 && f.edad <= 100)) return null;
+  const basal = 10 * f.pesoKg + 6.25 * f.alturaCm - 5 * f.edad + (f.sexo === 'hombre' ? 5 : -161);
+  return { basal: Math.round(basal), mantenimiento: Math.round((basal * FACTOR_ACTIVIDAD[f.actividad]) / 10) * 10 };
+}

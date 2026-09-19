@@ -52,6 +52,7 @@ import {
 import { ensureProfile, insertEvent } from '@/lib/data';
 import { dateKey, isoWeekday } from '@/lib/dates';
 import { awardXp } from '@/lib/engine';
+import { propagarActo, restoDelModulo } from '@/lib/links';
 import { GYM_SESSION_XP, PR_XP } from '@/lib/game';
 import { supabase } from '@/lib/supabase';
 import { subirFotoMision } from '@/lib/photos';
@@ -209,6 +210,8 @@ export default function Gym() {
         (l) => l.weight > 0 && l.weight > (previousMax[l.exercise_name] ?? 0),
       );
 
+      // Primero se guarda el acto. xp_awarded se corrige abajo, cuando se sabe
+      // cuánto ha pagado ya la misión enlazada.
       const gymSession = await createSession(userId, {
         date: today,
         gym_day_id: todayPlan?.id ?? null,
@@ -230,12 +233,23 @@ export default function Gym() {
       }
       await insertLifts(userId, gymSession.id, valid);
 
-      let profile = await ensureProfile(userId);
-      const totalXp = GYM_SESSION_XP + prs.length * PR_XP;
-      const res = await awardXp(profile, totalXp, 'FUE', 'gym_session', {
-        day: todayPlan?.name ?? 'libre',
-        prs: prs.map((p) => p.exercise_name),
-      });
+      // Un solo gesto: con la sesión ya guardada, se marcan solas la misión, la
+      // regla y el bloque del plan que la pedían. El módulo paga solo lo que la
+      // misión no haya pagado ya (más los récords): el mismo entreno no cobra
+      // dos veces.
+      const eco = await propagarActo(await ensureProfile(userId), 'gym', today);
+      const totalXp = restoDelModulo(GYM_SESSION_XP, eco) + prs.length * PR_XP;
+      if (totalXp !== gymSession.xp_awarded) {
+        await supabase.from('gym_sessions').update({ xp_awarded: totalXp }).eq('id', gymSession.id);
+      }
+
+      const res =
+        totalXp > 0
+          ? await awardXp(eco.profile, totalXp, 'FUE', 'gym_session', {
+              day: todayPlan?.name ?? 'libre',
+              prs: prs.map((p) => p.exercise_name),
+            })
+          : { leveledUp: false, newLevel: 0 };
       for (const pr of prs) {
         await insertEvent(userId, 'gym_pr', { exercise: pr.exercise_name, weight: pr.weight });
       }
@@ -249,8 +263,14 @@ export default function Gym() {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       const prText = prs.length > 0 ? `\n${prs.map((p) => voice.pr(p.exercise_name)).join('\n')}` : '';
       const achText = fresh.length > 0 ? `\nLogro: ${fresh.map((a) => a.name).join(', ')}` : '';
-      Alert.alert('SESIÓN REGISTRADA', `+${totalXp} XP a FUE${prText}${achText}`);
+      const ecoText = eco.marcadas.length > 0 ? `\nMarcado solo: ${eco.marcadas.join(', ')}` : '';
+      const pagado = totalXp + eco.xp;
+      Alert.alert(
+        'SESIÓN REGISTRADA',
+        `${pagado > 0 ? `+${pagado} XP a FUE` : 'La misión de hoy ya estaba marcada y pagada.'}${ecoText}${prText}${achText}`,
+      );
       if (res.leveledUp) setLevelUp(res.newLevel);
+      else if (eco.leveledUp) setLevelUp(eco.newLevel);
       setTraining(false);
       setNotas('');
       setFotoB64(null);

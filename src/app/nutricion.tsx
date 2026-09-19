@@ -30,7 +30,9 @@ import {
 import { ensureProfile } from '@/lib/data';
 import { addDays, dateKey } from '@/lib/dates';
 import { awardXp } from '@/lib/engine';
+import { propagarActo } from '@/lib/links';
 import { NUTRITION_DAY_XP } from '@/lib/game';
+import { supabase } from '@/lib/supabase';
 import { colors, fonts } from '@/lib/theme';
 
 export default function Nutricion() {
@@ -78,30 +80,45 @@ export default function Nutricion() {
     try {
       // El XP solo se paga la primera vez que se cierra el día cumpliendo
       // ambas cosas: corregir el parte después no vuelve a premiar.
-      const yaPagado = hoyLog?.hit_kcal && hoyLog?.hit_protein;
-      const merece = kcal && prote && !yaPagado;
+      //
+      // El recibo es el evento del día, no el parte guardado: mirando el parte,
+      // desmarcar-guardar-marcar-guardar pagaba 10 XP en cada vuelta, sin fin.
+      const { count: recibos } = await supabase
+        .from('events')
+        .select('id', { count: 'exact', head: true })
+        .eq('type', 'nutrition_day')
+        .gte('created_at', new Date(`${hoy}T00:00:00`).toISOString());
+      const merece = kcal && prote && !recibos;
 
       await saveNutritionLog(userId, {
         date: hoy,
         hit_kcal: kcal,
         hit_protein: prote,
-        kcal_est: null,
-        protein_est: null,
+        // Si el coach estimó el día desde el chat, guardar aquí no lo borra.
+        kcal_est: hoyLog?.kcal_est ?? null,
+        protein_est: hoyLog?.protein_est ?? null,
         notes: notas.trim() || null,
       });
 
       if (merece) {
         const perfil = await ensureProfile(userId);
-        await awardXp(perfil, NUTRITION_DAY_XP, 'VIT', 'nutrition_day', { kcal, prote });
+        await awardXp(perfil, NUTRITION_DAY_XP, 'VIT', 'nutrition_day', { kcal, prote, date: hoy });
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       }
+
+      // Un solo gesto: el parte marca solo la misión de registrar comidas. Los
+      // 10 XP de arriba son por CUMPLIR los dos objetivos, no por registrar,
+      // así que aquí no hay doble pago que evitar.
+      const eco = await propagarActo(await ensureProfile(userId), 'nutricion', hoy);
 
       await cargar();
       Alert.alert(
         'Parte registrado',
         merece
           ? `El sistema toma nota. +${NUTRITION_DAY_XP} XP a VIT.`
-          : 'El sistema toma nota.',
+          : eco.marcadas.length > 0
+            ? `El sistema toma nota. Marcado solo: ${eco.marcadas.join(', ')} · +${eco.xp} XP.`
+            : 'El sistema toma nota.',
       );
     } catch (e) {
       Alert.alert('Error del sistema', e instanceof Error ? e.message : 'Fallo desconocido');

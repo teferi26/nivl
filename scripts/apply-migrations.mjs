@@ -87,6 +87,7 @@ const HUELLAS = {
   '0016': `to_regclass('public.rule_checks') is not null`,
   '0017': `exists(select 1 from information_schema.columns where table_name = 'profiles' and column_name = 'perfect_streak_days')`,
   '0018': `exists(select 1 from information_schema.columns where table_name = 'profiles' and column_name = 'profile_kind')`,
+  '0019': `exists(select 1 from information_schema.tables where table_schema = 'public' and table_name = 'body_profile')`,
 };
 
 const archivos = readdirSync(MIGRATIONS)

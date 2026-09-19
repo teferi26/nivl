@@ -32,9 +32,15 @@ App de hábitos de la gente de Franky (interfaz en español), gamificada como un
 - **Ojo con los topes de XP**: una misión de penalización devuelve de golpe lo perdido en toda una ausencia (hasta 150/día). Los límites del esquema son altos a propósito; bajarlos rompe recuperaciones reales.
 - Las claves secret/service de Supabase **nunca** entran en el repo. El token de despliegue vive en `supabase-token.txt` (gitignorado).
 
+## Un solo gesto (0019)
+
+**Manda el acto real.** Una misión o una regla lleva un `link` (`gym · cardio · nutricion · peso · diario · ninguno`) que un trigger de Postgres deduce del título (`infer_link`, conservador a propósito). Al registrar la sesión, el cardio, el parte de comidas, el peso o el diario, `src/lib/links.ts → propagarActo` marca sola la misión enlazada, la regla del contrato y el bloque del plan. Si había misión enlazada programada hoy, **paga ella y el módulo no cobra su XP base** (los récords del gym sí): el mismo acto no paga dos veces. El coach tiene su espejo en `_shared/tools.ts` (`propagarActo`, `completarMision`, con las tablas de XP copiadas de `game.ts`: si tocas una, toca la otra). Al añadir un módulo que registre actos, engánchalo aquí en vez de crear otro check.
+
+La **ficha física** (`body_profile`: altura, año, sexo, actividad, experiencia, lesiones, salud, comida, material) la escribe el coach con `fijar_ficha` y la lee en el estado junto al mantenimiento estimado (`mantenimientoKcal`, en `bodymath.ts` con tests y espejo en `context.ts`).
+
 ## Herramientas del coach
 
-Las define `supabase/functions/_shared/tools.ts` (hoy son 16). Dos límites de la API que ya nos han mordido:
+Las define `supabase/functions/_shared/tools.ts` (hoy son 24). Dos límites de la API que ya nos han mordido:
 
 1. **Sin `strict: true`**: pasando de doce herramientas el compilador de esquemas responde "Schema is too complex". La validación real la hacen los CHECK de Postgres y el ejecutor.
 2. **Nada de tipos unión**: `{ type: ['string','null'] }` junto a un `enum` se rechaza, y hay un tope de 16 parámetros con uniones en todo el conjunto. Lo opcional se expresa con **cadena vacía** como centinela (`opt` / `enumOpt`), no con null.

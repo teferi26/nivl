@@ -30,6 +30,7 @@ import {
 import { ensureProfile } from '@/lib/data';
 import { addDays, dateKey, nombreDia, relativoDe } from '@/lib/dates';
 import { awardXp } from '@/lib/engine';
+import { propagarActo, restoDelModulo } from '@/lib/links';
 import { JOURNAL_XP } from '@/lib/game';
 import {
   countEntries,
@@ -223,13 +224,22 @@ export default function Diario() {
       const enCaliente = dia === dateKey() || dia === addDays(dateKey(), -1);
       if (isNew && enCaliente) {
         const profile = await ensureProfile(userId);
-        await awardXp(profile, JOURNAL_XP, 'PER', 'journal_entry', { date: dia });
+        // Un solo gesto: escribir el día marca sola la misión del diario. Solo
+        // hoy (una misión no se completa con fecha de ayer), y si la había paga
+        // ella: el módulo no vuelve a cobrar por lo mismo.
+        const eco = dia === dateKey() ? await propagarActo(profile, 'diario', dia) : null;
+        const resto = restoDelModulo(JOURNAL_XP, eco);
+        if (resto > 0) {
+          await awardXp(eco?.profile ?? profile, resto, 'PER', 'journal_entry', { date: dia });
+        }
+        const pagado = resto + (eco?.xp ?? 0);
+        const marcado = eco?.marcadas.length ? `\nMarcado solo: ${eco.marcadas.join(', ')}` : '';
         const total = await countEntries();
         const fresh = await unlockAchievements(userId, evaluateAchievements({ journalCount: total }));
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         Alert.alert(
           'ENTRADA REGISTRADA',
-          `+${JOURNAL_XP} XP a PER${fresh.length > 0 ? `\nLogro: ${fresh.map((a) => a.name).join(', ')}` : ''}`,
+          `+${pagado} XP a PER${marcado}${fresh.length > 0 ? `\nLogro: ${fresh.map((a) => a.name).join(', ')}` : ''}`,
         );
       }
       if (isNew && !(dia === dateKey() || dia === addDays(dateKey(), -1))) {

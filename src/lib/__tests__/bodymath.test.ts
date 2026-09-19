@@ -1,4 +1,4 @@
-import { e1rm, paceOf, pendientePorDia } from '../bodymath';
+import { e1rm, mantenimientoKcal, paceOf, pendientePorDia } from '../bodymath';
 
 // Esta matemática no es cosmética: de ella salen los kilos que el coach te
 // manda levantar la próxima sesión. Un error aquí se traduce en carga real.
@@ -91,5 +91,24 @@ describe('pendientePorDia', () => {
     // igual. Ahí no hay déficit y el coach tiene que verlo plano.
     const puntos = [0, 1, 2, 3, 4, 5, 6].map((x) => ({ x, y: 80 + (x % 2 ? 0.2 : -0.2) }));
     expect(Math.abs(pendientePorDia(puntos)! * 7)).toBeLessThan(0.05);
+  });
+});
+
+describe('mantenimientoKcal', () => {
+  it('Mifflin-St Jeor para un hombre de 96 kg, 181 cm y 25 años', () => {
+    // 960 + 1131,25 − 125 + 5 = 1971,25
+    const r = mantenimientoKcal({ pesoKg: 96, alturaCm: 181, edad: 25, sexo: 'hombre', actividad: 'moderado' });
+    expect(r).toEqual({ basal: 1971, mantenimiento: 3060 });
+  });
+
+  it('la constante cambia con el sexo', () => {
+    const r = mantenimientoKcal({ pesoKg: 60, alturaCm: 165, edad: 30, sexo: 'mujer', actividad: 'sedentario' });
+    // 600 + 1031,25 − 150 − 161 = 1320,25 → ×1,2 = 1584,3
+    expect(r).toEqual({ basal: 1320, mantenimiento: 1580 });
+  });
+
+  it('sin datos creíbles no inventa un número', () => {
+    expect(mantenimientoKcal({ pesoKg: 0, alturaCm: 181, edad: 25, sexo: 'hombre', actividad: 'ligero' })).toBeNull();
+    expect(mantenimientoKcal({ pesoKg: 80, alturaCm: 181, edad: 5, sexo: 'hombre', actividad: 'ligero' })).toBeNull();
   });
 });

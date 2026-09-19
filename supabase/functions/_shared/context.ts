@@ -32,6 +32,31 @@ function rankForLevel(level: number): string {
   return 'S';
 }
 
+// Espejo de NOMBRE_DE_ACTO en src/lib/links.ts.
+const ENLACE: Record<string, string> = {
+  gym: 'la sesión de gimnasio',
+  cardio: 'el cardio',
+  nutricion: 'el parte de comidas',
+  peso: 'el pesaje',
+  diario: 'el diario',
+};
+
+// Espejo de mantenimientoKcal en src/lib/bodymath.ts (allí están los tests).
+const FACTOR_ACTIVIDAD: Record<string, number> = {
+  sedentario: 1.2, ligero: 1.375, moderado: 1.55, alto: 1.725, muy_alto: 1.9,
+};
+function mantenimientoKcal(
+  pesoKg: number,
+  alturaCm: number | null,
+  edad: number | null,
+  sexo: string | null,
+  actividad: string | null,
+): { basal: number; mantenimiento: number } | null {
+  if (!(pesoKg > 20) || !alturaCm || !edad || !sexo || !actividad || !FACTOR_ACTIVIDAD[actividad]) return null;
+  const basal = 10 * pesoKg + 6.25 * alturaCm - 5 * edad + (sexo === 'hombre' ? 5 : -161);
+  return { basal: Math.round(basal), mantenimiento: Math.round((basal * FACTOR_ACTIVIDAD[actividad]) / 10) * 10 };
+}
+
 function hhmm(minutes: number): string {
   return `${String(Math.floor(minutes / 60)).padStart(2, '0')}:${String(minutes % 60).padStart(2, '0')}`;
 }
@@ -156,6 +181,8 @@ export async function buildContext(
     eventsRes,
     factsRes,
     diarioRes,
+    fichaRes,
+    tareasRes,
   ] = await Promise.all([
     sb.from('profiles').select('*').eq('id', userId).maybeSingle(),
     sb.from('coach_dossier').select('content').eq('user_id', userId).maybeSingle(),
@@ -165,13 +192,13 @@ export async function buildContext(
     sb.from('day_plans').select('id, date, brief, verdict, status').eq('user_id', userId).eq('date', today).maybeSingle(),
     sb.from('goals').select('*').eq('user_id', userId).eq('status', 'active'),
     sb.from('body_metrics').select('date, weight_kg').eq('user_id', userId).order('date', { ascending: false }).limit(8),
-    sb.from('rules').select('id, text, consequence').eq('user_id', userId).eq('active', true),
+    sb.from('rules').select('id, text, consequence, link').eq('user_id', userId).eq('active', true),
     sb.from('rule_breaks').select('date, rule_id').eq('user_id', userId).gte('date', since60),
     // Marcas diarias del contrato (0016): sin esto el coach no sabía si hoy
     // las está cumpliendo, solo si las rompió en el pasado.
     sb.from('rule_checks').select('rule_id, date').eq('user_id', userId).gte('date', since14),
     sb.from('dungeons').select('id, title, rank, status, deadline').eq('user_id', userId).eq('status', 'active'),
-    sb.from('calendar_events').select('title, date, time, notes').eq('user_id', userId).gte('date', today).order('date').limit(15),
+    sb.from('calendar_events').select('id, title, date, time, notes').eq('user_id', userId).gte('date', today).order('date').limit(15),
     // 40 y no 120: los hechos son la parte más gorda del estado (8.700 fichas
     // con 46 filas) y se pagan en cada turno. Lo estable de verdad vive en el
     // dossier, que para eso se destila.
@@ -182,6 +209,9 @@ export async function buildContext(
     // antes de que algo se rompa.
     sb.from('journal_entries').select('date, mood, energy, text, plan').eq('user_id', userId)
       .order('date', { ascending: false }).limit(10),
+    sb.from('body_profile').select('*').eq('user_id', userId).maybeSingle(),
+    sb.from('dungeon_tasks').select('id, dungeon_id, title, is_boss, due_date').eq('user_id', userId)
+      .eq('done', false).order('position').limit(40),
   ]);
 
   const p = profileRes.data as Record<string, any> | null;
@@ -236,9 +266,14 @@ export async function buildContext(
           ? ` · ${a.diasSinHacer} días sin hacerse`
           : '';
     push(
-      `- [${q.id}] "${q.title}" · ${q.stat} · ${q.difficulty} · días ${dias} · adherencia ${adh}${abandono} · ${estado}${q.is_bonus ? ' · EXTRA (paga PB)' : ''}`,
+      `- [${q.id}] "${q.title}" · ${q.stat} · ${q.difficulty} · días ${dias} · adherencia ${adh}${abandono} · ${estado}${q.is_bonus ? ' · EXTRA (paga PB)' : ''}${ENLACE[q.link] ? ` · se marca sola al registrar ${ENLACE[q.link]}` : ''}`,
     );
   }
+  push(
+    'Un solo gesto: lo que pone "se marca sola" no se le pide dos veces. Registrar el acto real ' +
+      '(la sesión, el pesaje, el diario) marca la misión, la regla enlazada y el bloque del plan. ' +
+      'Si dice que lo hizo y sigue PENDIENTE, es que no lo ha registrado: pídele el registro, no la marca.',
+  );
   push();
 
   push('## Los últimos 14 días, uno a uno');
@@ -293,6 +328,10 @@ export async function buildContext(
     push('## Mazmorras activas');
     for (const d of dungeonsRes.data as any[]) {
       push(`- [${d.id}] "${d.title}" rango ${d.rank}${d.deadline ? ` · límite ${d.deadline}` : ''}`);
+      const pendientes = ((tareasRes.data ?? []) as any[]).filter((t) => t.dungeon_id === d.id).slice(0, 8);
+      for (const t of pendientes) {
+        push(`  · [${t.id}] ${t.title}${t.is_boss ? ' (JEFE)' : ''}${t.due_date ? ` · ${t.due_date}` : ''}`);
+      }
     }
     push();
   }
@@ -300,7 +339,7 @@ export async function buildContext(
   if (goalsRes.data?.length) {
     push('## Metas');
     for (const g of goalsRes.data as any[]) {
-      push(`- "${g.title}": ${g.start_value} → ${g.target_value} ${g.unit}${g.deadline ? ` (límite ${g.deadline})` : ''}`);
+      push(`- [${g.id}] "${g.title}": ${g.start_value} → ${g.target_value} ${g.unit}${g.deadline ? ` (límite ${g.deadline})` : ''}`);
     }
     push();
   }
@@ -308,6 +347,50 @@ export async function buildContext(
   if (weightRes.data?.length) {
     push('## Peso (más reciente primero)');
     push((weightRes.data as any[]).map((w) => `${w.date}: ${w.weight_kg} kg`).join(' · '));
+    push();
+  }
+
+  {
+    const f = fichaRes.data as Record<string, any> | null;
+    const pesoActual = Number((weightRes.data as any[] | null)?.[0]?.weight_kg) || 0;
+    push('## Ficha física');
+    if (!f) {
+      push(
+        'VACÍA. Sin altura, edad, sexo, actividad, lesiones, material y gustos de comida estás ' +
+          'prescribiendo para un usuario medio que no existe. Antes de programar entreno o dieta, ' +
+          'pregúntale lo que falte (de una en una) y guárdalo con fijar_ficha.',
+      );
+    } else {
+      const edad = f.birth_year ? new Date(today).getFullYear() - f.birth_year : null;
+      push(
+        [
+          f.height_cm ? `${f.height_cm} cm` : null,
+          edad ? `${edad} años` : null,
+          f.sex,
+          f.activity ? `actividad ${f.activity}` : null,
+          f.experience ? `experiencia ${f.experience}` : null,
+        ].filter(Boolean).join(' · ') || 'Sin datos básicos.',
+      );
+      if (f.goal) push(`Objetivo físico: ${f.goal}`);
+      if (f.injuries) push(`LESIONES Y MOLESTIAS: ${f.injuries}`);
+      if (f.health_notes) push(`Salud: ${f.health_notes}`);
+      if (f.food_notes) push(`Comida: ${f.food_notes}`);
+      if (f.equipment) push(`Material: ${f.equipment}`);
+      const m = mantenimientoKcal(pesoActual, f.height_cm, edad, f.sex, f.activity);
+      if (m) {
+        push(
+          `Mantenimiento estimado (Mifflin-St Jeor): basal ${m.basal} kcal · mantenimiento ~${m.mantenimiento} kcal ` +
+            `con ${pesoActual} kg. Es un punto de partida con ±10 % de error: en cuanto haya tres semanas de ` +
+            'pesajes manda la pendiente real del peso, no esta fórmula.',
+        );
+      }
+      const faltan = [
+        !f.height_cm && 'altura', !f.birth_year && 'año de nacimiento', !f.sex && 'sexo',
+        !f.activity && 'actividad', !f.experience && 'experiencia', !f.injuries && 'lesiones (o "ninguna")',
+        !f.food_notes && 'comida', !f.equipment && 'material',
+      ].filter(Boolean);
+      if (faltan.length) push(`Falta por saber: ${faltan.join(', ')}. Pregúntalo cuando venga a cuento y guárdalo.`);
+    }
     push();
   }
 
@@ -346,7 +429,8 @@ export async function buildContext(
       const n = breaks.filter((b) => b.rule_id === r.id).length;
       const cumplidas = checks.filter((c) => c.rule_id === r.id).length;
       push(
-        `- "${r.text}" → consecuencia: ${r.consequence}` +
+        `- [${r.id}] "${r.text}" → consecuencia: ${r.consequence}` +
+          `${ENLACE[r.link] ? ` · se marca sola al registrar ${ENLACE[r.link]}` : ''}` +
           `${hoyMarcadas.has(r.id) ? ' · CUMPLIDA HOY' : ' · pendiente hoy'}` +
           ` · cumplida ${cumplidas} de los últimos 14 días` +
           `${n ? ` · rota ${n} veces en 60d` : ''}`,
@@ -365,7 +449,7 @@ export async function buildContext(
   if (eventsRes.data?.length) {
     push('## Agenda próxima');
     for (const e of eventsRes.data as any[]) {
-      push(`- ${e.date}${e.time ? ` ${e.time}` : ''} · ${e.title}${e.notes ? ` (${e.notes})` : ''}`);
+      push(`- [${e.id}] ${e.date}${e.time ? ` ${e.time}` : ''} · ${e.title}${e.notes ? ` (${e.notes})` : ''}`);
     }
     push();
   }

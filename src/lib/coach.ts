@@ -319,6 +319,17 @@ const ACCION_LEGIBLE: Record<string, string> = {
   crear_tarea: 'ha añadido una tarea',
   registrar_regla: 'ha añadido una regla al contrato',
   ajustar_meta: 'ha fijado una meta',
+  prescribir_entreno: 'ha prescrito tu entreno',
+  fijar_nutricion: 'ha fijado tus calorías y tu proteína',
+  planificar_comidas: 'ha escrito tus comidas',
+  configurar_rutina: 'ha reescrito tu rutina',
+  fijar_plan_economico: 'ha fijado tu plan económico',
+  fijar_presupuesto: 'ha puesto un tope de gasto',
+  regla_categoria: 'ha aprendido a clasificar un movimiento',
+  registrar_movimiento: 'ha anotado un movimiento',
+  gestionar_elemento: 'ha modificado tu sistema',
+  registrar_dato: 'ha registrado un dato por ti',
+  fijar_ficha: 'ha actualizado tu ficha física',
   consultar_historial: 'ha consultado tu historial',
 };
 

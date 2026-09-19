@@ -20,6 +20,7 @@ import { completeQuest, processPendingDays, questsScheduledOn, type DayCloseResu
 import { rachaVisible } from '@/lib/closing';
 import { levelFromXp, rankForLevel, streakMultiplier } from '@/lib/game';
 import { kindMeta, modulesFor } from '@/lib/kinds';
+import { NOMBRE_DE_ACTO, RUTA_DE_ACTO } from '@/lib/links';
 import {
   inicializarAvisos,
   programarDespertador,
@@ -193,7 +194,7 @@ export default function Hoy() {
     }
   };
 
-  const onComplete = (quest: Quest) => {
+  const onComplete = (quest: Quest, saltarEnlace = false) => {
     // Cerrojo síncrono por misión: un doble toque mientras la cámara o el Alert
     // están abiertos ya no dispara dos completeQuest (evita XP duplicado).
     if (completing.current.has(quest.id)) return;
@@ -206,6 +207,31 @@ export default function Hoy() {
 
     if (quest.is_penalty) {
       finishQuest(quest, null).finally(release);
+      return;
+    }
+    // Un solo gesto: si la misión se demuestra en un módulo (la sesión del
+    // gimnasio, el diario, el pesaje), lo natural es ir allí — al registrarlo
+    // se marca sola, con la regla y el bloque del plan. Marcarla a pelo sigue
+    // siendo posible: hay días en que se entrena sin apuntar las series.
+    const acto = quest.link && quest.link !== 'ninguno' ? quest.link : null;
+    if (acto && !saltarEnlace) {
+      Alert.alert(quest.title, `Se marca sola al registrar ${NOMBRE_DE_ACTO[acto]}.`, [
+        {
+          text: 'Registrar ahora',
+          onPress: () => {
+            release();
+            router.push(RUTA_DE_ACTO[acto]);
+          },
+        },
+        {
+          text: 'Marcar sin registrar',
+          onPress: () => {
+            release();
+            onComplete(quest, true);
+          },
+        },
+        { text: 'Cancelar', style: 'cancel', onPress: release },
+      ]);
       return;
     }
     if (quest.requires_evidence) {

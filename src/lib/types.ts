@@ -54,8 +54,14 @@ export interface Quest {
   // así que ni pide marcarse ni puede romper la racha del día.
   acquired_at: string | null;
   acquired_streak: number | null;
+  // Módulo que la demuestra (migración 0019): al registrar el acto real se
+  // marca sola. Lo deduce un trigger del título; 'ninguno' es no enlazar.
+  link?: ActLink | 'ninguno' | null;
   created_at: string;
 }
+
+/** Los actos reales que pueden marcar solos una misión, una regla o un bloque. */
+export type ActLink = 'gym' | 'cardio' | 'nutricion' | 'peso' | 'diario';
 
 export interface Completion {
   id: string;
@@ -186,6 +192,7 @@ export interface Rule {
   text: string;
   consequence: string;
   active: boolean;
+  link?: ActLink | 'ninguno' | null;
   created_at: string;
 }
 

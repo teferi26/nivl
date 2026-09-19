@@ -46,6 +46,7 @@ import {
 import { ensureProfile } from '@/lib/data';
 import { addDays, dateKey } from '@/lib/dates';
 import { awardXp } from '@/lib/engine';
+import { propagarActo, restoDelModulo } from '@/lib/links';
 import { CARDIO_DAILY_CAP, cardioXp } from '@/lib/game';
 import { colors, fonts } from '@/lib/theme';
 import { voice } from '@/lib/voice';
@@ -145,10 +146,9 @@ export default function Cardio() {
       // mal), y el total del día no puede pasar de CARDIO_DAILY_CAP.
       const { pagadoHoy, pagadoEsteTipo } = await cardioDayState(hoy, kind);
       const esCorreccion = pagadoEsteTipo !== null;
-      const nuevo = esCorreccion ? 0 : cardioXp(kind, pagadoHoy);
-      const xp = esCorreccion ? pagadoEsteTipo : nuevo;
 
-      await saveCardio(userId, {
+      const base = esCorreccion ? 0 : cardioXp(kind, pagadoHoy);
+      const fila = {
         date: hoy,
         kind,
         distance_km: km,
@@ -157,8 +157,21 @@ export default function Cardio() {
         rpe: esfuerzo,
         zone,
         notes: notas.trim() || null,
-        xp,
-      });
+      };
+      // Primero se guarda el acto; si la misión enlazada paga parte, la fila se
+      // corrige después (de `xp` sale el tope diario, tiene que ser exacto).
+      await saveCardio(userId, { ...fila, xp: esCorreccion ? pagadoEsteTipo : base });
+
+      // Un solo gesto: con la sesión guardada se marcan solas la misión, la
+      // regla y el bloque aeróbico. Caminar no: un paseo no salda un "Correr
+      // 5 km". La misión descuenta solo a la PRIMERA sesión del día — la doble
+      // sesión real sigue cobrando lo suyo, con el tope de siempre.
+      const eco =
+        !esCorreccion && kind !== 'caminar'
+          ? await propagarActo(await ensureProfile(userId), 'cardio', hoy)
+          : null;
+      const nuevo = pagadoHoy === 0 ? restoDelModulo(base, eco) : base;
+      if (!esCorreccion && nuevo !== base) await saveCardio(userId, { ...fila, xp: nuevo });
 
       // Se paga `nuevo`, nunca `xp`: `xp` solo conserva en la fila lo que ya se
       // cobró en su momento.
@@ -175,8 +188,12 @@ export default function Cardio() {
         'Sesión registrada',
         nuevo > 0
           ? `${voice.allDone()}\n+${nuevo} XP a FUE.`
-          : esCorreccion
-            ? 'El sistema corrige el registro. El XP de esta sesión ya estaba pagado.'
+          : eco && eco.xpMisiones > 0
+            ? eco.marcadas.length > 0
+              ? `${voice.allDone()}\nMarcado solo: ${eco.marcadas.join(', ')} · +${eco.xp} XP.`
+              : 'Anotada. La misión de hoy ya estaba marcada y pagada.'
+            : esCorreccion
+              ? 'El sistema corrige el registro. El XP de esta sesión ya estaba pagado.'
             : `Anotada. Hoy ya has cobrado el máximo de cardio (${CARDIO_DAILY_CAP} XP), pero la sesión cuenta igual para tu estudio.`,
       );
     } catch (e) {

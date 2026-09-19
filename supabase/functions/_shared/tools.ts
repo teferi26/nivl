@@ -368,6 +368,58 @@ export const TOOL_DEFS = [
   ),
 
   tool(
+    'gestionar_elemento',
+    'Edita o ELIMINA algo que ya existe: una cita de la agenda, una regla del contrato, una meta, una campaña (mazmorra), una tarea de campaña o un hecho de tu memoria. Con esto y con editar_mision / desactivar_mision tienes control completo: nunca le digas que algo "solo se puede cambiar desde la app". Úsala cuando él te lo pida ("borra la cita del jueves", "esa regla ya no aplica", "la meta ahora es 88 kg") y por tu cuenta cuando algo se haya quedado obsoleto y ensucie su sistema. Los ids vienen entre corchetes en el estado; los de hechos, en consultar_historial. Eliminar una regla, meta o campaña la archiva (conserva el historial); eliminar una cita, tarea o hecho la borra de verdad.',
+    {
+      tipo: enumOf(['evento', 'regla', 'meta', 'mazmorra', 'tarea', 'hecho'], 'Qué es'),
+      accion: enumOf(['editar', 'eliminar'], 'Qué haces con ello'),
+      id: str('El id del elemento'),
+      titulo: opt('Nuevo título o texto (evento, regla, meta, mazmorra, tarea, hecho)'),
+      fecha: opt('Nueva fecha o fecha límite, YYYY-MM-DD'),
+      hora: opt('Nueva hora HH:MM (solo evento)'),
+      nota: opt('Notas del evento · consecuencia de la regla · descripción de la campaña'),
+      valor: opt('Número: nuevo objetivo de la meta'),
+      motivo: str('Por qué, en una frase'),
+    },
+  ),
+
+  tool(
+    'registrar_dato',
+    'Apunta EN SU NOMBRE lo que te cuente por el chat, para que no tenga que ir a marcarlo a otra pantalla: "hoy peso 94,2", "he comido X, Y y Z", "ya he hecho la lectura", "he cumplido lo del alcohol". Es un solo gesto: al registrar el peso o las comidas se marcan solas las misiones y reglas enlazadas. Para las comidas, estima tú las calorías y la proteína del día a partir de lo que describa (cantidades en gramos si las da; si no, pregunta solo lo que cambie el total de verdad) y dile el número. NUNCA la uses para marcar algo que él no ha dicho que hizo: hecho es hecho. El gimnasio y el cardio no se registran aquí — necesitan series, pesos y ritmos, y eso se apunta en su pantalla.',
+    {
+      tipo: enumOf(
+        ['peso', 'comidas', 'mision_hecha', 'regla_cumplida'],
+        'peso en kg · comidas: parte del día · mision_hecha: una misión de hoy · regla_cumplida: una regla del contrato hoy',
+      ),
+      id: opt('Id de la misión o la regla (solo mision_hecha y regla_cumplida)'),
+      peso_kg: { type: 'number', description: 'Peso en kg. 0 si no aplica.' },
+      kcal: { type: 'integer', description: 'Calorías estimadas del día completo. 0 si no aplica.' },
+      proteina_g: { type: 'integer', description: 'Proteína estimada del día en gramos. 0 si no aplica.' },
+      notas: opt('Qué comió, con cantidades, o cualquier matiz'),
+    },
+  ),
+
+  tool(
+    'fijar_ficha',
+    'Guarda su ficha física: altura, año de nacimiento, sexo, nivel de actividad, experiencia, objetivo, lesiones, salud, gustos y restricciones de comida, y material disponible. Es lo que te permite calcular su mantenimiento y elegir ejercicios y comidas PARA ÉL y no para un usuario medio. Si en el estado pone que falta, pregúntale lo que falte (de una en una, no un formulario) y guárdalo. Actualízala cada vez que cambie algo: una lesión nueva, un cambio de gimnasio, un alimento que deja de tolerar. Solo se toca lo que rellenes.',
+    {
+      altura_cm: { type: 'integer', description: 'Altura en cm. 0 para no tocarla.' },
+      ano_nacimiento: { type: 'integer', description: 'Año de nacimiento. 0 para no tocarlo.' },
+      sexo: enumOpt(['hombre', 'mujer'], 'Sexo, para la fórmula del metabolismo basal'),
+      actividad: enumOpt(
+        ['sedentario', 'ligero', 'moderado', 'alto', 'muy_alto'],
+        'Actividad FUERA del entreno registrado: sedentario = oficina · ligero = camina algo · moderado = de pie o 8-10k pasos · alto = trabajo físico · muy_alto = doble sesión diaria',
+      ),
+      experiencia: enumOpt(['principiante', 'intermedio', 'avanzado'], 'Experiencia real con pesas'),
+      objetivo: opt('Objetivo físico en una frase, con número y fecha'),
+      lesiones: opt('Lesiones y molestias, con qué movimientos las despiertan'),
+      salud: opt('Condiciones de salud, medicación, analíticas relevantes'),
+      comida: opt('Alergias, intolerancias, lo que no come, lo que le gusta, cuánto cocina, presupuesto'),
+      material: opt('Dónde entrena y con qué: gimnasio completo, casa con mancuernas, piscina…'),
+    },
+  ),
+
+  tool(
     'consultar_historial',
     'Consulta datos que no vienen en el estado inicial. Úsala cuando necesites comprobar algo concreto antes de afirmarlo: si de verdad falló una misión, cuánto levantó hace un mes, qué pesaba en enero, cuánto se gastó en algo. No la uses para lo que ya tienes delante.',
     {
@@ -396,6 +448,103 @@ export interface ToolCtx {
   sb: Db;
   userId: string;
   today: string;
+}
+
+// ── Un solo gesto, en el lado del coach ─────────────────────────────
+// Espejo de XP_BY_DIFFICULTY, BONUS_BY_DIFFICULTY y streakMultiplier de
+// src/lib/game.ts, y de propagarActo de src/lib/links.ts. La fuente de verdad
+// es la app: si allí cambia una tabla o el multiplicador, hay que tocar aquí.
+const XP_POR_DIFICULTAD: Record<string, number> = { trivial: 10, facil: 25, media: 50, dificil: 100, epica: 250 };
+const PB_POR_DIFICULTAD: Record<string, number> = { trivial: 1, facil: 3, media: 5, dificil: 10, epica: 25 };
+
+async function completarMision(ctx: ToolCtx, questId: string): Promise<string> {
+  const { sb, userId, today } = ctx;
+  const { data: q, error: e1 } = await sb
+    .from('quests')
+    .select('*')
+    .eq('id', questId)
+    .eq('user_id', userId)
+    .maybeSingle();
+  if (e1) throw e1;
+  const quest = q as Record<string, any> | null;
+  if (!quest) throw new Error(`No existe la misión ${questId}.`);
+  if (!quest.active) throw new Error('Esa misión está desactivada.');
+  // Las mismas puertas que la pantalla de Hoy, que es el único sitio donde él
+  // puede completar algo: una penalización de otro día ya está consolidada
+  // (devolverla ahora anularía el castigo), y una misión que hoy no toca o un
+  // hábito ya adquirido no se cobran por pedirlo en el chat.
+  if (quest.is_penalty && quest.penalty_date !== today) {
+    throw new Error('Esa penalización era de otro día y ya está consolidada. No se puede recuperar.');
+  }
+  if (quest.acquired_at) throw new Error('Ese hábito ya está adquirido: no se marca ni se cobra.');
+  const diaSemana = ((new Date(today).getDay() + 6) % 7) + 1;
+  if (!quest.is_penalty && !(quest.days_of_week ?? []).includes(diaSemana)) {
+    throw new Error(`"${quest.title}" no toca hoy. Solo se marca lo programado para hoy.`);
+  }
+
+  const { data: prof } = await sb.from('profiles').select('streak_days').eq('id', userId).maybeSingle();
+  const semanas = Math.max(0, Math.floor(((prof as any)?.streak_days ?? 0) / 7));
+  const mult = Math.min(1.5, 1 + 0.1 * semanas);
+  // Las de penalización restauran lo perdido exacto: sin multiplicador.
+  const xp = quest.is_bonus
+    ? 0
+    : quest.is_penalty
+      ? (quest.penalty_xp ?? 0)
+      : Math.round((XP_POR_DIFICULTAD[quest.difficulty] ?? 0) * mult);
+  const pb = quest.is_bonus ? (PB_POR_DIFICULTAD[quest.difficulty] ?? 0) : 0;
+
+  const { data, error } = await sb.rpc('complete_quest', {
+    p_quest_id: questId,
+    p_date: today,
+    p_xp: xp,
+    p_bonus: pb,
+    p_apply_stat: !quest.is_penalty,
+    p_evidence_url: null,
+  });
+  if (error) throw error;
+  return (data as any)?.awarded === false
+    ? `"${quest.title}" ya estaba marcada hoy. No se paga dos veces.`
+    : `"${quest.title}" marcada como hecha hoy: +${pb ? `${pb} PB` : `${xp} XP`}.`;
+}
+
+async function propagarActo(ctx: ToolCtx, link: string): Promise<{ texto: string; enlazadas: number }> {
+  const { sb, userId, today } = ctx;
+  const weekday = ((new Date(today).getDay() + 6) % 7) + 1;
+  const marcadas: string[] = [];
+  let enlazadas = 0;
+  try {
+    const { data: quests } = await sb
+      .from('quests')
+      .select('id, title, days_of_week')
+      .eq('user_id', userId)
+      .eq('active', true)
+      .eq('link', link)
+      .eq('is_penalty', false)
+      .is('acquired_at', null);
+    for (const q of (quests ?? []) as any[]) {
+      if (!(q.days_of_week ?? []).includes(weekday)) continue;
+      enlazadas += 1;
+      const r = await completarMision(ctx, q.id);
+      if (!r.includes('ya estaba')) marcadas.push(q.title);
+    }
+    // Una marca automática no puede ser la que arranque el juicio diario de
+    // las reglas (ver src/lib/links.ts): solo si él ya las marca por su cuenta.
+    const { count } = await sb
+      .from('rule_checks')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', userId);
+    const { data: rules } = (count ?? 0) > 0
+      ? await sb.from('rules').select('id').eq('user_id', userId).eq('active', true).eq('link', link)
+      : { data: [] };
+    for (const r of (rules ?? []) as any[]) {
+      await sb
+        .from('rule_checks')
+        .upsert({ user_id: userId, rule_id: r.id, date: today }, { onConflict: 'user_id,rule_id,date' });
+    }
+  } catch {
+    /* el dato ya está guardado; lo enlazado se puede marcar aparte */
+  }
+  return { texto: marcadas.length ? ` Marcado solo: ${marcadas.join(', ')}.` : '', enlazadas };
 }
 
 /** Ejecuta una herramienta y devuelve el texto que verá el modelo. */
@@ -511,15 +660,20 @@ export async function executeTool(
 
     case 'fijar_horarios': {
       const patch: Record<string, unknown> = {};
-      if (input.hora_despertar != null) {
-        toMinutes(input.hora_despertar);
-        patch.wake_time = input.hora_despertar;
+      // Con val(): lo opcional llega como cadena vacía, y '' != null dejaba
+      // pasar el centinela hasta toMinutes, que reventaba con "Hora inválida"
+      // cada vez que el coach cambiaba solo el régimen.
+      const despertar = val(input.hora_despertar);
+      const dormir = val(input.hora_dormir);
+      if (despertar) {
+        toMinutes(despertar);
+        patch.wake_time = despertar;
       }
-      if (input.hora_dormir != null) {
-        toMinutes(input.hora_dormir);
-        patch.sleep_time = input.hora_dormir;
+      if (dormir) {
+        toMinutes(dormir);
+        patch.sleep_time = dormir;
       }
-      if (input.regimen != null) patch.coach_mode = input.regimen;
+      if (val(input.regimen)) patch.coach_mode = val(input.regimen);
       if (!Object.keys(patch).length) return ok('Nada que cambiar.');
       const { error } = await sb.from('profiles').update(patch).eq('id', userId);
       if (error) throw error;
@@ -894,6 +1048,197 @@ export async function executeTool(
       );
     }
 
+    case 'gestionar_elemento': {
+      const id = String(input.id ?? '').trim();
+      if (!id) throw new Error('Falta el id. Los ids vienen entre corchetes en el estado.');
+      const eliminar = input.accion === 'eliminar';
+      const titulo = val(input.titulo);
+      const fecha = val(input.fecha);
+      const hora = val(input.hora);
+      const nota = val(input.nota);
+      const valorTxt = val(input.valor);
+      const valor = valorTxt !== undefined ? Number(valorTxt.replace(',', '.')) : undefined;
+      if (valor !== undefined && !Number.isFinite(valor)) throw new Error(`Valor no numérico: ${input.valor}`);
+      if (hora) toMinutes(hora);
+
+      // `archivo` es lo que se escribe al eliminar; null = se borra la fila.
+      // Reglas, metas y campañas se archivan porque su historial (roturas,
+      // progreso, tareas hechas) alimenta los estudios.
+      const planes: Record<string, { t: string; patch: Record<string, unknown>; archivo: Record<string, unknown> | null }> = {
+        evento: {
+          t: 'calendar_events',
+          patch: { ...(titulo && { title: titulo }), ...(fecha && { date: fecha }), ...(hora && { time: hora }), ...(nota && { notes: nota }) },
+          archivo: null,
+        },
+        regla: {
+          t: 'rules',
+          patch: { ...(titulo && { text: titulo }), ...(nota && { consequence: nota }) },
+          archivo: { active: false },
+        },
+        meta: {
+          t: 'goals',
+          patch: { ...(titulo && { title: titulo }), ...(fecha && { deadline: fecha }), ...(valor !== undefined && { target_value: valor }) },
+          archivo: { status: 'abandoned' },
+        },
+        mazmorra: {
+          t: 'dungeons',
+          patch: { ...(titulo && { title: titulo }), ...(fecha && { deadline: fecha }), ...(nota && { description: nota }) },
+          archivo: { status: 'abandoned' },
+        },
+        tarea: {
+          t: 'dungeon_tasks',
+          patch: { ...(titulo && { title: titulo }), ...(fecha && { due_date: fecha }) },
+          archivo: null,
+        },
+        hecho: { t: 'coach_facts', patch: { ...(titulo && { content: titulo }) }, archivo: null },
+      };
+      const p = planes[String(input.tipo)];
+      if (!p) throw new Error(`Tipo desconocido: ${input.tipo}`);
+
+      let afectadas = 0;
+      if (eliminar && p.archivo === null) {
+        const { data, error } = await sb.from(p.t).delete().eq('id', id).eq('user_id', userId).select('id');
+        if (error) throw error;
+        afectadas = data?.length ?? 0;
+      } else {
+        const cambio = eliminar ? p.archivo! : p.patch;
+        if (!Object.keys(cambio).length) {
+          return ok('Nada que cambiar: no has rellenado ningún campo que aplique a ese tipo.');
+        }
+        const { data, error } = await sb.from(p.t).update(cambio).eq('id', id).eq('user_id', userId).select('id');
+        if (error) throw error;
+        afectadas = data?.length ?? 0;
+      }
+      // Sin esto, un id inventado devolvía "hecho" sin haber tocado nada, y el
+      // coach le confirmaba al gladiador un borrado que no había pasado.
+      if (!afectadas) throw new Error(`No existe ${input.tipo} con id ${id}. Revisa el id en el estado.`);
+
+      if (input.tipo !== 'hecho') {
+        await sb.from('coach_facts').insert({
+          user_id: userId,
+          category: 'log',
+          content: `${eliminar ? 'Eliminado' : 'Editado'} ${input.tipo}: ${input.motivo}`,
+          source: 'coach',
+        });
+      }
+      return ok(`${input.tipo} ${id} ${eliminar ? 'eliminado' : 'actualizado'}.`);
+    }
+
+    case 'registrar_dato': {
+      const hoy = ctx.today;
+      switch (input.tipo) {
+        case 'peso': {
+          const kg = Number(input.peso_kg);
+          if (!(kg > 20 && kg < 400)) throw new Error(`${input.peso_kg} kg no es un peso válido.`);
+          const { data: previo } = await sb
+            .from('body_metrics')
+            .select('id')
+            .eq('user_id', userId)
+            .eq('date', hoy)
+            .maybeSingle();
+          const { error } = await sb
+            .from('body_metrics')
+            .upsert(
+              { user_id: userId, date: hoy, weight_kg: kg, notes: val(input.notas) ?? null },
+              { onConflict: 'user_id,date' },
+            );
+          if (error) throw error;
+          const eco = await propagarActo(ctx, 'peso');
+          // Igual que en la app: el primer pesaje del día paga 5 XP salvo que
+          // ya lo haya pagado una misión enlazada (WEIGH_IN_XP en game.ts).
+          if (!previo && eco.enlazadas === 0) {
+            await sb.rpc('award_xp', { p_amount: 5, p_stat: 'VIT', p_event: 'weigh_in', p_payload: { weight: kg, via: 'coach' } });
+          }
+          return ok(`Peso de hoy anotado: ${kg} kg.${eco.texto}`);
+        }
+        case 'comidas': {
+          const kcal = Number(input.kcal) || 0;
+          const prot = Number(input.proteina_g) || 0;
+          if (!kcal && !prot && !val(input.notas)) {
+            throw new Error('Un parte sin calorías, sin proteína y sin notas no dice nada.');
+          }
+          const { data: objetivo } = await sb
+            .from('nutrition_targets')
+            .select('kcal, protein_g')
+            .eq('user_id', userId)
+            .eq('active', true)
+            .maybeSingle();
+          const t = objetivo as { kcal: number; protein_g: number } | null;
+          // Calorías dentro de un ±10 % del objetivo; proteína, con llegar al 95 %.
+          const hitKcal = !!t && kcal > 0 && Math.abs(kcal - t.kcal) <= t.kcal * 0.1;
+          const hitProt = !!t && prot >= t.protein_g * 0.95;
+          const { error } = await sb.from('nutrition_logs').upsert(
+            {
+              user_id: userId,
+              date: hoy,
+              hit_kcal: hitKcal,
+              hit_protein: hitProt,
+              kcal_est: kcal || null,
+              protein_est: prot || null,
+              notes: val(input.notas) ?? null,
+            },
+            { onConflict: 'user_id,date' },
+          );
+          if (error) throw error;
+          const eco = await propagarActo(ctx, 'nutricion');
+          // Cumplir los dos objetivos paga 10 XP una vez al día
+          // (NUTRITION_DAY_XP). El evento con fecha es el recibo: sin él, esto
+          // y la pantalla de Nutrición podrían pagar el mismo día dos veces.
+          if (hitKcal && hitProt) {
+            const { count } = await sb
+              .from('events')
+              .select('id', { count: 'exact', head: true })
+              .eq('user_id', userId)
+              .eq('type', 'nutrition_day')
+              .eq('payload->>date', hoy);
+            if (!count) {
+              await sb.rpc('award_xp', { p_amount: 10, p_stat: 'VIT', p_event: 'nutrition_day', p_payload: { date: hoy, via: 'coach' } });
+            }
+          }
+          const veredicto = t
+            ? ` contra un objetivo de ${t.kcal} kcal y ${t.protein_g} g → calorías ${hitKcal ? 'CUMPLE' : 'no cumple'}, proteína ${hitProt ? 'CUMPLE' : 'no cumple'}.`
+            : '. No tiene objetivo de nutrición fijado: fíjalo con fijar_nutricion.';
+          return ok(`Parte de comidas de hoy: ${kcal || '¿?'} kcal y ${prot || '¿?'} g de proteína${veredicto}${eco.texto}`);
+        }
+        case 'mision_hecha': {
+          const id = val(input.id);
+          if (!id) throw new Error('Falta el id de la misión.');
+          return ok(await completarMision(ctx, id));
+        }
+        case 'regla_cumplida': {
+          const id = val(input.id);
+          if (!id) throw new Error('Falta el id de la regla.');
+          const { error } = await sb
+            .from('rule_checks')
+            .upsert({ user_id: userId, rule_id: id, date: hoy }, { onConflict: 'user_id,rule_id,date' });
+          if (error) throw error;
+          return ok('Regla marcada como cumplida hoy.');
+        }
+        default:
+          throw new Error(`Tipo desconocido: ${input.tipo}`);
+      }
+    }
+
+    case 'fijar_ficha': {
+      const patch: Record<string, unknown> = {};
+      if (Number(input.altura_cm) > 0) patch.height_cm = Number(input.altura_cm);
+      if (Number(input.ano_nacimiento) > 0) patch.birth_year = Number(input.ano_nacimiento);
+      if (val(input.sexo)) patch.sex = val(input.sexo);
+      if (val(input.actividad)) patch.activity = val(input.actividad);
+      if (val(input.experiencia)) patch.experience = val(input.experiencia);
+      if (val(input.objetivo)) patch.goal = val(input.objetivo);
+      if (val(input.lesiones)) patch.injuries = val(input.lesiones);
+      if (val(input.salud)) patch.health_notes = val(input.salud);
+      if (val(input.comida)) patch.food_notes = val(input.comida);
+      if (val(input.material)) patch.equipment = val(input.material);
+      if (!Object.keys(patch).length) return ok('Nada que guardar.');
+      const { error } = await sb
+        .from('body_profile')
+        .upsert({ user_id: userId, ...patch, updated_at: new Date().toISOString() }, { onConflict: 'user_id' });
+      if (error) throw error;
+      return ok(`Ficha física actualizada: ${Object.keys(patch).join(', ')}.`);
+    }
+
     case 'consultar_historial': {
       const { desde, hasta, filtro } = input;
       const LIMIT = 200;
@@ -905,7 +1250,7 @@ export async function executeTool(
         nutricion: { t: 'nutrition_logs', cols: 'date, hit_kcal, hit_protein, kcal_est, protein_est, notes', dateCol: 'date' },
         diario: { t: 'journal_entries', cols: 'date, mood, energy, text', dateCol: 'date' },
         reglas_rotas: { t: 'rule_breaks', cols: 'date, rule_id', dateCol: 'date' },
-        hechos: { t: 'coach_facts', cols: 'date, category, content', dateCol: 'date' },
+        hechos: { t: 'coach_facts', cols: 'id, date, category, content', dateCol: 'date' },
         movimientos: { t: 'transactions', cols: 'date, amount, currency, description, counterparty, category, is_internal', dateCol: 'date' },
       };
       // gym_lifts NO tiene fecha propia: la fecha vive en su sesión. Filtrarlo

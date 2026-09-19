@@ -37,6 +37,7 @@ import { useAuth } from '@/lib/auth';
 import { ensureProfile } from '@/lib/data';
 import { dateKey } from '@/lib/dates';
 import { awardXp } from '@/lib/engine';
+import { propagarActo, restoDelModulo } from '@/lib/links';
 import { GOAL_ACHIEVED_XP, goalProgress, WEIGH_IN_XP } from '@/lib/game';
 import {
   createGoal,
@@ -122,8 +123,12 @@ export default function Avances() {
     try {
       const { isNew } = await upsertWeight(userId, dateKey(), value);
       if (isNew) {
+        // Un solo gesto: pesarse marca sola la misión de pesarse. Si la había,
+        // paga ella y el módulo no vuelve a cobrar.
         const profile = await ensureProfile(userId);
-        await awardXp(profile, WEIGH_IN_XP, 'VIT', 'weigh_in', { weight: value });
+        const eco = await propagarActo(profile, 'peso', dateKey());
+        const resto = restoDelModulo(WEIGH_IN_XP, eco);
+        if (resto > 0) await awardXp(eco.profile, resto, 'VIT', 'weigh_in', { weight: value });
       }
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       setWeightInput('');
