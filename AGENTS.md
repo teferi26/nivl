@@ -8,7 +8,7 @@ Trampas conocidas del SDK 54: `expo-sharing` no tiene config plugin (fuera de `a
 
 # NIVL — contexto del proyecto
 
-App de hábitos de la gente de Franky (interfaz en español), gamificada como una arena de gladiador **con un coach de IA dentro que manda en el día del usuario**. Se entra con la cuenta de Franky (puente `supabase/functions/franky-auth`). Cada usuario tiene un **perfil de uso** (emprendedor · deportista · estudiante · general, `src/lib/kinds.ts`) que ordena módulos, hábitos propuestos y el énfasis del coach. El README explica el juego; el código manda.
+App de hábitos de la gente de Franky (interfaz en español), gamificada como una arena de gladiador **con un coach de IA dentro que manda en el día del usuario**. Se entra con la cuenta de Franky (puente `supabase/functions/franky-auth`). Cada usuario tiene un **perfil de uso** (emprendedor · profesional (`trabajador`) · deportista · estudiante · general, `src/lib/kinds.ts`) que ordena módulos, hábitos propuestos y el énfasis del coach. El README explica el juego; el código manda.
 
 ## Mapa
 
@@ -20,7 +20,9 @@ App de hábitos de la gente de Franky (interfaz en español), gamificada como un
 - **Dinero**: `src/lib/moneymath.ts` (puro) + `src/lib/money.ts` (datos) · `supabase/functions/_shared/finance.ts` (el estudio económico) · importadores en `scripts/import-revolut.mjs` (CSV) y `scripts/setup-banco.mjs` (open banking)
 - **Avisos**: `src/lib/notifications.ts` + `src/lib/useNotificationRouting.ts`
 - **Cuenta Franky**: `src/lib/frankyAuth.ts` (cliente) · `supabase/functions/franky-auth/` (el puente; se despliega con `--no-verify-jwt` y los secrets `FRANKY_SUPABASE_URL`, `FRANKY_SUPABASE_ANON_KEY`, `FRANKY_WEB_URL`). Las reglas de contraseña de `src/lib/validation.ts` son las de Franky (12+, sin composición): si Franky las cambia, cámbialas aquí.
-- **Perfiles de uso**: `src/lib/kinds.ts` (puro, con tests) y su copia para el coach en `supabase/functions/_shared/kinds.ts`. Si tocas uno, toca el otro.
+- **Perfiles de uso**: `src/lib/kinds.ts` (puro, con tests) y su copia para el coach en `supabase/functions/_shared/kinds.ts`. Si tocas uno, toca el otro. Un perfil nuevo pide además migración del CHECK `profiles_profile_kind_check` (ver 0022).
+- **NIVL Pro** (gratis = todo sin IA; Pro = el coach; `docs/PRECIOS.md`): `src/lib/proplans.ts` (puro: planes, precios, copy, energía) + `src/lib/pro.ts` (`fetchAiStatus`, y la capa de compra, hoy sin tienda: `purchasesAvailable()` devuelve false hasta cablear RevenueCat) · pantalla `src/app/pro.tsx` y pieza compartida `src/components/ProOffer.tsx` (también último paso del onboarding). El candado es del servidor (0020): la función `coach` responde 402/429 y `src/lib/coach.ts` lo lanza como `CoachAccessError` con `reason`; ninguna pantalla lo enseña como error. `subscription.ts` (Stripe, `EXPO_PUBLIC_PAYWALL`) queda solo para el Oráculo y la web.
+- **La firma del onboarding**: `src/lib/compromiso.ts` (puro) construye el texto y `sealLetter` lo sella como carta; el objetivo escrito va a `events` como `onboarding_goal`.
 - SQL en `supabase/migrations/`
 
 **Patrón de arquitectura**: la lógica pura vive en un módulo sin imports de Supabase, y los efectos en otro. No es estética — importar `supabase` arrastra AsyncStorage y los tests de ese módulo dejan de arrancar.

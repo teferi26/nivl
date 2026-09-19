@@ -28,6 +28,22 @@ describe('perfiles de uso', () => {
     expect(modulesFor('emprendedor').primary[0]?.id).toBe('economia');
   });
 
+  test('el profesional es un perfil de pleno derecho', () => {
+    expect(PROFILE_KINDS).toContain('trabajador');
+    expect(isProfileKind('trabajador')).toBe(true);
+    expect(kindMeta('trabajador').label).toBe('Profesional');
+    expect(kindMeta('trabajador').campaignsLabel).toBe('Objetivos');
+    expect(modulesFor('trabajador').primary[0]?.id).toBe('informe');
+    // Cuida el cuerpo además del trabajo: al menos un hábito físico propuesto.
+    expect(KINDS.trabajador.starterQuests.some((q) => q.stat === 'FUE' || q.stat === 'VIT')).toBe(true);
+  });
+
+  test('amigos es un módulo de todos los perfiles', () => {
+    const amigos = MODULES.find((m) => m.id === 'amigos');
+    expect(amigos).toMatchObject({ label: 'Amigos', icon: 'people-outline', route: '/amigos' });
+    for (const kind of PROFILE_KINDS) expect(KINDS[kind].primaryModules).toContain('amigos');
+  });
+
   test('un valor desconocido cae en general en vez de romper', () => {
     expect(isProfileKind('piloto')).toBe(false);
     expect(isProfileKind(null)).toBe(false);

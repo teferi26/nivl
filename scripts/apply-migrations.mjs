@@ -89,6 +89,9 @@ const HUELLAS = {
   '0018': `exists(select 1 from information_schema.columns where table_name = 'profiles' and column_name = 'profile_kind')`,
   '0019': `exists(select 1 from information_schema.tables where table_schema = 'public' and table_name = 'body_profile')`,
   '0020': `exists(select 1 from information_schema.tables where table_schema = 'public' and table_name = 'ai_plans')`,
+  // La 0022 no crea nada: reescribe un CHECK. Se reconoce por su definición.
+  '0021': `to_regclass('public.friendships') is not null`,
+  '0022': `exists(select 1 from pg_constraint where conname = 'profiles_profile_kind_check' and pg_get_constraintdef(oid) like '%trabajador%')`,
 };
 
 const archivos = readdirSync(MIGRATIONS)

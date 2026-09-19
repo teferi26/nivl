@@ -4,10 +4,11 @@
 // el empaquetado de la Edge Function no sube nada de fuera de `supabase/`.
 // Si cambias un perfil allí, cámbialo aquí.
 
-export type ProfileKind = 'emprendedor' | 'deportista' | 'estudiante' | 'general';
+export type ProfileKind = 'emprendedor' | 'trabajador' | 'deportista' | 'estudiante' | 'general';
 
 const KIND_LABEL: Record<ProfileKind, string> = {
   emprendedor: 'emprendedor',
+  trabajador: 'profesional por cuenta ajena',
   deportista: 'deportista',
   estudiante: 'estudiante',
   general: 'general (cuerpo, cabeza y hábitos)',
@@ -15,6 +16,7 @@ const KIND_LABEL: Record<ProfileKind, string> = {
 
 const KIND_CAMPAIGNS: Record<ProfileKind, string> = {
   emprendedor: 'proyectos',
+  trabajador: 'objetivos profesionales',
   deportista: 'bloques de temporada',
   estudiante: 'asignaturas (el examen es el jefe)',
   general: 'campañas',
@@ -23,6 +25,8 @@ const KIND_CAMPAIGNS: Record<ProfileKind, string> = {
 const KIND_HINT: Record<ProfileKind, string> = {
   emprendedor:
     'Es emprendedor: su campo de batalla son las ventas, el foco y la caja. Pide cifras de embudo (contactos, reuniones, cierres, ingresos) y ordena acciones que muevan el negocio hoy. El cuerpo se cuida para rendir, no es el centro.',
+  trabajador:
+    'Es un profesional por cuenta ajena: quiere crecer en su trabajo y mantener salud y hábitos en orden. Su jornada es fija y no se negocia: protege uno o dos bloques de foco dentro de ella, pregunta por entregas, aprendizaje y objetivos de carrera (ascenso, cambio, certificación), y encaja entreno, comida y sueño antes o después del trabajo sin cargar los días largos.',
   deportista:
     'Es deportista: el entreno, la comida y el descanso son el centro. Programa sobre el estudio (1RM, RPE, ritmo por zona, tendencia de peso), exige registro de sesiones y comidas, y protege el descanso como parte del plan.',
   estudiante:
@@ -32,7 +36,9 @@ const KIND_HINT: Record<ProfileKind, string> = {
 };
 
 export function kindOf(value: unknown): ProfileKind {
-  return value === 'emprendedor' || value === 'deportista' || value === 'estudiante' ? value : 'general';
+  return value === 'emprendedor' || value === 'trabajador' || value === 'deportista' || value === 'estudiante'
+    ? value
+    : 'general';
 }
 
 /** Las líneas que van al estado del día, justo debajo del nombre. */

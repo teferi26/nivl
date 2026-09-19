@@ -46,6 +46,11 @@ export function nombreDia(key: string): string {
   return formatLongDate(parseKey(key));
 }
 
+/** "sábado, 19 de septiembre de 2026": para fechas a años vista, donde el año importa. */
+export function fechaConAnio(key: string): string {
+  return parseKey(key).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+}
+
 /**
  * Cómo de lejos queda ese día: "Hoy", "Ayer", "Hace 5 días", "Hace 3 semanas".
  *

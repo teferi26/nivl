@@ -85,6 +85,63 @@ async function authHeaders(): Promise<Record<string, string>> {
   };
 }
 
+/** Por qué el candado de gasto (migración 0020) ha dicho que no. */
+export type CoachDenyReason = 'sin_suscripcion' | 'presupuesto_agotado' | 'turno_en_curso';
+
+const DENY_REASONS: readonly CoachDenyReason[] = ['sin_suscripcion', 'presupuesto_agotado', 'turno_en_curso'];
+
+/**
+ * El coach ha rechazado el turno por el candado, no por un fallo. Es una señal
+ * tipada para que las pantallas respondan con diseño y no con una alerta de
+ * error: sin suscripción → NIVL Pro; presupuesto agotado → aviso sereno con la
+ * fecha de recarga; turno en curso → "sigue respondiendo".
+ */
+export class CoachAccessError extends Error {
+  readonly reason: CoachDenyReason;
+  readonly status: number;
+  constructor(reason: CoachDenyReason, status: number, message: string) {
+    super(message);
+    this.name = 'CoachAccessError';
+    this.reason = reason;
+    this.status = status;
+  }
+}
+
+/** Texto sereno para cada negativa del candado, en la voz del sistema. */
+export function accessNotice(e: CoachAccessError): string {
+  switch (e.reason) {
+    case 'sin_suscripcion':
+      return 'El coach es parte de NIVL Pro. El resto de NIVL sigue siendo tuyo.';
+    case 'presupuesto_agotado':
+      // El servidor ya trae la fecha de recarga en su mensaje.
+      return e.message || 'La energía del coach de este mes se ha agotado. Se recarga el día 1.';
+    case 'turno_en_curso':
+      return 'El sistema sigue respondiendo a tu mensaje anterior. Dale unos segundos.';
+  }
+}
+
+/**
+ * Convierte una respuesta fallida de la función `coach` en el error que toca:
+ * 402 y 429 con `reason` conocido son negativas del candado; lo demás, un
+ * fallo de verdad.
+ */
+async function errorDe(res: { status: number; json: () => Promise<unknown> }): Promise<Error> {
+  let body: { error?: string; reason?: string } = {};
+  try {
+    body = ((await res.json()) ?? {}) as { error?: string; reason?: string };
+  } catch {
+    /* respuesta no JSON */
+  }
+  const reason = DENY_REASONS.find((r) => r === body.reason);
+  if (reason && (res.status === 402 || res.status === 429)) {
+    return new CoachAccessError(reason, res.status, body.error ?? '');
+  }
+  // Un 402 sin motivo reconocible (servidor más nuevo que la app) sigue siendo
+  // "no tienes acceso", no un error del sistema.
+  if (res.status === 402) return new CoachAccessError('sin_suscripcion', 402, body.error ?? '');
+  return new Error(body.error || `El sistema no responde (HTTP ${res.status}).`);
+}
+
 function functionsUrl(): string {
   const base = process.env.EXPO_PUBLIC_SUPABASE_URL;
   if (!base) throw new Error('Falta EXPO_PUBLIC_SUPABASE_URL');
@@ -94,7 +151,8 @@ function functionsUrl(): string {
 /**
  * Envía un turno al coach y va emitiendo lo que llega. Resuelve cuando el
  * turno termina; los errores del servidor llegan como evento 'error' y además
- * se lanzan, para que la pantalla pueda elegir cómo tratarlos.
+ * se lanzan, para que la pantalla pueda elegir cómo tratarlos. Una negativa
+ * del candado (402/429) se lanza como `CoachAccessError`, sin evento.
  */
 export async function streamCoach(opts: {
   kind?: CoachKind;
@@ -117,15 +175,7 @@ export async function streamCoach(opts: {
     }),
   });
 
-  if (!res.ok || !res.body) {
-    let detalle = '';
-    try {
-      detalle = ((await res.json()) as { error?: string }).error ?? '';
-    } catch {
-      /* respuesta no JSON */
-    }
-    throw new Error(detalle || `El sistema no responde (HTTP ${res.status}).`);
-  }
+  if (!res.ok || !res.body) throw await errorDe(res);
 
   const reader = res.body.getReader();
   const decoder = new TextDecoder();
@@ -194,8 +244,8 @@ export async function runRitual(kind: CoachKind, message = ''): Promise<string> 
     headers: await authHeaders(),
     body: JSON.stringify({ kind, message, stream: false }),
   });
-  const body = (await res.json().catch(() => ({}))) as { text?: string; error?: string };
-  if (!res.ok) throw new Error(body.error ?? `El sistema no responde (HTTP ${res.status}).`);
+  if (!res.ok) throw await errorDe(res);
+  const body = (await res.json().catch(() => ({}))) as { text?: string };
   return body.text ?? '';
 }
 
@@ -212,14 +262,13 @@ export async function generarResumen(
     headers: await authHeaders(),
     body: JSON.stringify({ kind: 'resumen', periodo }),
   });
+  if (!res.ok) throw await errorDe(res);
   const body = (await res.json().catch(() => ({}))) as {
     id?: string;
     slides?: Slide[];
     fotos?: number;
     motivo?: string;
-    error?: string;
   };
-  if (!res.ok) throw new Error(body.error ?? `El sistema no responde (HTTP ${res.status}).`);
   return { id: body.id, slides: body.slides ?? [], fotos: body.fotos ?? 0, motivo: body.motivo };
 }
 
@@ -234,12 +283,11 @@ export async function clasificarMovimientos(): Promise<{ clasificados: number; t
     headers: await authHeaders(),
     body: JSON.stringify({ kind: 'clasificar' }),
   });
+  if (!res.ok) throw await errorDe(res);
   const body = (await res.json().catch(() => ({}))) as {
     clasificados?: number;
     texto?: string;
-    error?: string;
   };
-  if (!res.ok) throw new Error(body.error ?? `El sistema no responde (HTTP ${res.status}).`);
   return { clasificados: body.clasificados ?? 0, texto: body.texto ?? '' };
 }
 

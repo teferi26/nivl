@@ -1,6 +1,6 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import * as ImagePicker from 'expo-image-picker';
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
@@ -13,10 +13,13 @@ import {
   TextInput,
   View,
 } from 'react-native';
+import { SystemButton } from '@/components/SystemButton';
 import { TextoSistema } from '@/components/TextoSistema';
 import { Chip, ChipRow, FadeIn, Screen } from '@/components/ui';
 import { useAuth } from '@/lib/auth';
 import {
+  accessNotice,
+  CoachAccessError,
   describeAction,
   fetchMainThread,
   fetchMessages,
@@ -26,6 +29,9 @@ import {
   streamCoach,
   type CoachAction,
 } from '@/lib/coach';
+import { ensureProfile } from '@/lib/data';
+import { isValidKey, nombreDia } from '@/lib/dates';
+import { energiaAgotada, fetchAiStatus, isPro, proToday, type AiStatus } from '@/lib/pro';
 import { colors, fonts } from '@/lib/theme';
 
 interface Burbuja {
@@ -77,6 +83,38 @@ function MensajeSistema({ texto, acciones, pensando }: { texto?: string; accione
   );
 }
 
+/**
+ * La pestaña de una cuenta sin NIVL Pro. No es un error ni un muro en blanco:
+ * enseña lo que el coach estaría haciendo hoy por este perfil y el camino a
+ * Pro. El resto de la app no se toca.
+ */
+function CoachBloqueado({ kind, onPro }: { kind: unknown; onPro: () => void }) {
+  return (
+    <FadeIn>
+      <View style={styles.bloqueado}>
+        <View style={styles.bloqueadoEmblema}>
+          <Ionicons name="lock-closed-outline" size={24} color={colors.text} />
+        </View>
+        <Text style={styles.vacioTitulo}>El coach es parte de NIVL Pro.</Text>
+        <Text style={styles.vacioTexto}>
+          Tus misiones, tu racha, tus campañas y todos los módulos siguen siendo tuyos. Lo que falta es quien lo
+          dirige.
+        </Text>
+        <View style={styles.hoy}>
+          <Text style={styles.hoyRotulo}>HOY ESTARÍA</Text>
+          {proToday(kind).map((linea, i) => (
+            <View key={linea} style={[styles.hoyFila, i > 0 && styles.hoyFilaSep]}>
+              <Ionicons name="remove-outline" size={14} color={colors.accentDim} style={styles.hoyIcono} />
+              <Text style={styles.hoyTexto}>{linea}</Text>
+            </View>
+          ))}
+        </View>
+        <SystemButton title="Ver NIVL Pro" onPress={onPro} style={styles.bloqueadoBoton} />
+      </View>
+    </FadeIn>
+  );
+}
+
 export default function CoachScreen() {
   const { session } = useAuth();
   const router = useRouter();
@@ -95,6 +133,34 @@ export default function CoachScreen() {
   const [enCurso, setEnCurso] = useState('');
   const [acciones, setAcciones] = useState<CoachAction[]>([]);
   const [error, setError] = useState<string | null>(null);
+  // Aviso sereno (energía agotada, turno en curso): no es un fallo, no va en rojo.
+  const [aviso, setAviso] = useState<string | null>(null);
+  // Estado de la IA de la cuenta. null = aún no se sabe (o no hay red): se deja
+  // escribir y, si no hay derecho, el 402 del servidor cierra la puerta igual.
+  const [estado, setEstado] = useState<AiStatus | null>(null);
+  // Hasta la primera respuesta (o su fallo) no se pinta nada: si no, una cuenta
+  // gratuita vería un instante el chat abierto antes del estado bloqueado.
+  const [estadoListo, setEstadoListo] = useState(false);
+  const [kind, setKind] = useState<unknown>('general');
+  const userId = session?.user.id;
+
+  // Se relee al volver a la pestaña: quien viene de /pro recién suscrito tiene
+  // que encontrarse el chat abierto, no el candado de hace un minuto.
+  useFocusEffect(
+    useCallback(() => {
+      if (!userId) return;
+      fetchAiStatus()
+        .then((s) => {
+          setEstado(s);
+          if (isPro(s) && !energiaAgotada(s)) setAviso(null);
+        })
+        .catch(() => {})
+        .finally(() => setEstadoListo(true));
+      ensureProfile(userId)
+        .then((p) => setKind(p.profile_kind))
+        .catch(() => {});
+    }, [userId]),
+  );
 
   const cargar = useCallback(async () => {
     try {
@@ -160,15 +226,17 @@ export default function CoachScreen() {
     if ((!limpio && !adjuntas.length) || enviando.current) return;
     enviando.current = true;
     setError(null);
+    setAviso(null);
     setTexto('');
     setAcciones([]);
     setEnCurso('');
     const fotos = adjuntas;
     setAdjuntas([]);
+    const localId = `local-${Date.now()}`;
     setBurbujas((b) => [
       ...b,
       {
-        id: `local-${Date.now()}`,
+        id: localId,
         role: 'user',
         text: fotos.length ? `[${fotos.length} foto(s)]\n${limpio}` : limpio,
         acciones: [],
@@ -223,7 +291,20 @@ export default function CoachScreen() {
         },
       });
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'El sistema no responde.');
+      if (e instanceof CoachAccessError) {
+        // El candado ha dicho que no: el mensaje no se ha enviado. Se devuelve
+        // al cuadro de texto en vez de dejarlo colgado como si esperase
+        // respuesta, y se explica sin alarma.
+        setBurbujas((b) => b.filter((x) => x.id !== localId));
+        setTexto(limpio);
+        if (e.reason === 'sin_suscripcion') {
+          setEstado({ entitled: false, plan: null, budget: 0, spent: 0, remaining: 0 });
+        } else {
+          setAviso(accessNotice(e));
+        }
+      } else {
+        setError(e instanceof Error ? e.message : 'El sistema no responde.');
+      }
       setEnCurso('');
     } finally {
       setPensando(false);
@@ -231,7 +312,7 @@ export default function CoachScreen() {
     }
   };
 
-  if (cargando) {
+  if (cargando || !estadoListo) {
     return (
       <Screen plain>
         <View style={styles.centro}>
@@ -242,6 +323,14 @@ export default function CoachScreen() {
   }
 
   const vacio = !burbujas.length && !enCurso;
+  // Solo con certeza: mientras `estado` sea null no se bloquea a nadie.
+  const sinPro = estado !== null && !isPro(estado);
+  const recarga = estado?.renews && isValidKey(estado.renews) ? nombreDia(estado.renews).toLowerCase() : null;
+  const avisoEnergia =
+    aviso ??
+    (energiaAgotada(estado)
+      ? `La energía del coach de este mes se ha agotado. ${recarga ? `Se recarga el ${recarga}.` : 'Se recarga el día 1.'}`
+      : null);
   const puedeEnviar = (!!texto.trim() || adjuntas.length > 0) && !enviando.current;
 
   return (
@@ -251,16 +340,30 @@ export default function CoachScreen() {
           <Text style={styles.eyebrow}>EL SISTEMA</Text>
           <Text style={styles.titulo}>Coach</Text>
         </View>
-        <Pressable
-          onPress={() => router.push('/memoria')}
-          style={({ pressed }) => [styles.memoria, pressed && { opacity: 0.6 }]}
-          accessibilityRole="button"
-          accessibilityLabel="Ver la memoria del sistema"
-          hitSlop={8}
-        >
-          <Ionicons name="library-outline" size={18} color={colors.text} />
-          <Text style={styles.memoriaTexto}>Memoria</Text>
-        </Pressable>
+        <View style={styles.headerAcciones}>
+          {/* La puerta a /pro para todos: la oferta si no hay coach, y el plan
+              y la energía del mes si lo hay. */}
+          <Pressable
+            onPress={() => router.push('/pro')}
+            style={({ pressed }) => [styles.memoria, pressed && { opacity: 0.6 }]}
+            accessibilityRole="button"
+            accessibilityLabel={sinPro ? 'Ver NIVL Pro' : 'Ver tu plan y la energía del coach'}
+            hitSlop={8}
+          >
+            <Ionicons name="flash-outline" size={16} color={colors.text} />
+            <Text style={styles.memoriaTexto}>Pro</Text>
+          </Pressable>
+          <Pressable
+            onPress={() => router.push('/memoria')}
+            style={({ pressed }) => [styles.memoria, pressed && { opacity: 0.6 }]}
+            accessibilityRole="button"
+            accessibilityLabel="Ver la memoria del sistema"
+            hitSlop={8}
+          >
+            <Ionicons name="library-outline" size={18} color={colors.text} />
+            <Text style={styles.memoriaTexto}>Memoria</Text>
+          </Pressable>
+        </View>
       </View>
 
       <KeyboardAvoidingView
@@ -277,7 +380,9 @@ export default function CoachScreen() {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          {vacio ? (
+          {vacio && sinPro ? <CoachBloqueado kind={kind} onPro={() => router.push('/pro')} /> : null}
+
+          {vacio && !sinPro ? (
             <FadeIn>
               <View style={styles.vacio}>
                 <View style={styles.vacioEmblema}>
@@ -320,7 +425,7 @@ export default function CoachScreen() {
           ) : null}
         </ScrollView>
 
-        {vacio ? (
+        {vacio && !sinPro ? (
           <View style={styles.atajos}>
             <ChipRow>
               {ATAJOS.map((a) => (
@@ -340,35 +445,60 @@ export default function CoachScreen() {
           </View>
         ) : null}
 
-        <View style={styles.barra}>
+        {avisoEnergia && !sinPro ? (
           <Pressable
-            onPress={adjuntar}
-            disabled={enviando.current}
-            style={({ pressed }) => [styles.adjuntar, pressed && { opacity: 0.6 }]}
+            onPress={() => router.push('/pro')}
+            style={({ pressed }) => [styles.aviso, pressed && { opacity: 0.7 }]}
             accessibilityRole="button"
-            accessibilityLabel="Adjuntar una foto"
+            accessibilityLabel={`${avisoEnergia} Ver la energía del coach`}
           >
-            <Ionicons name="add" size={22} color={colors.textDim} />
+            <Ionicons name="hourglass-outline" size={14} color={colors.accentText} />
+            <Text style={styles.avisoTexto}>{avisoEnergia}</Text>
+            <Ionicons name="chevron-forward" size={14} color={colors.textFaint} />
           </Pressable>
-          <TextInput
-            style={styles.input}
-            value={texto}
-            onChangeText={setTexto}
-            placeholder="Habla con el sistema"
-            placeholderTextColor={colors.textFaint}
-            multiline
-            accessibilityLabel="Mensaje para el sistema"
-          />
-          <Pressable
-            onPress={() => enviar(texto)}
-            disabled={!puedeEnviar}
-            style={({ pressed }) => [styles.enviar, !puedeEnviar && styles.enviarOff, pressed && { opacity: 0.8 }]}
-            accessibilityRole="button"
-            accessibilityLabel="Enviar mensaje"
-          >
-            <Ionicons name="arrow-up" size={20} color={colors.bg} />
-          </Pressable>
-        </View>
+        ) : null}
+
+        {/* Sin Pro se cierra ESCRIBIR, no leer: con historial (una suscripción
+            que venció) la conversación se conserva a la vista. Sin historial,
+            el estado bloqueado de arriba ya lleva su propio botón. */}
+        {sinPro ? (
+          vacio ? null : (
+            <View style={styles.bandaPro}>
+              <Text style={styles.bandaProTexto}>El coach es parte de NIVL Pro. Tu conversación se conserva.</Text>
+              <SystemButton title="Ver NIVL Pro" size="sm" onPress={() => router.push('/pro')} />
+            </View>
+          )
+        ) : (
+          <View style={styles.barra}>
+            <Pressable
+              onPress={adjuntar}
+              disabled={enviando.current}
+              style={({ pressed }) => [styles.adjuntar, pressed && { opacity: 0.6 }]}
+              accessibilityRole="button"
+              accessibilityLabel="Adjuntar una foto"
+            >
+              <Ionicons name="add" size={22} color={colors.textDim} />
+            </Pressable>
+            <TextInput
+              style={styles.input}
+              value={texto}
+              onChangeText={setTexto}
+              placeholder="Habla con el sistema"
+              placeholderTextColor={colors.textFaint}
+              multiline
+              accessibilityLabel="Mensaje para el sistema"
+            />
+            <Pressable
+              onPress={() => enviar(texto)}
+              disabled={!puedeEnviar}
+              style={({ pressed }) => [styles.enviar, !puedeEnviar && styles.enviarOff, pressed && { opacity: 0.8 }]}
+              accessibilityRole="button"
+              accessibilityLabel="Enviar mensaje"
+            >
+              <Ionicons name="arrow-up" size={20} color={colors.bg} />
+            </Pressable>
+          </View>
+        )}
       </KeyboardAvoidingView>
     </Screen>
   );
@@ -389,6 +519,7 @@ const styles = StyleSheet.create({
   },
   eyebrow: { fontFamily: fonts.heading, fontSize: 10.5, letterSpacing: 2.5, color: colors.textFaint },
   titulo: { fontFamily: fonts.heading, fontSize: 24, letterSpacing: -0.5, color: colors.text, marginTop: 2 },
+  headerAcciones: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   memoria: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 6, paddingHorizontal: 10, borderWidth: 1, borderColor: colors.line },
   memoriaTexto: { fontFamily: fonts.semibold, fontSize: 12, color: colors.text },
   lista: { paddingHorizontal: 20, paddingTop: 16, paddingBottom: 12 },
@@ -422,6 +553,42 @@ const styles = StyleSheet.create({
   vacioEmblema: { width: 56, height: 56, borderRadius: 28, backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center' },
   vacioTitulo: { fontFamily: fonts.heading, fontSize: 22, letterSpacing: -0.4, color: colors.text, marginTop: 18 },
   vacioTexto: { fontFamily: fonts.body, fontSize: 14, lineHeight: 21, color: colors.textDim, textAlign: 'center', marginTop: 8 },
+  bloqueado: { alignItems: 'center', paddingTop: 36, paddingBottom: 24, paddingHorizontal: 4 },
+  bloqueadoEmblema: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    borderWidth: 1.5,
+    borderColor: colors.accentDim,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  bloqueadoBoton: { alignSelf: 'stretch', marginTop: 20 },
+  hoy: { alignSelf: 'stretch', marginTop: 24, borderWidth: 1, borderColor: colors.line, padding: 16 },
+  hoyRotulo: { fontFamily: fonts.heading, fontSize: 11, letterSpacing: 2.5, color: colors.textFaint, marginBottom: 6 },
+  hoyFila: { flexDirection: 'row', gap: 10, paddingVertical: 9 },
+  hoyFilaSep: { borderTopWidth: 1, borderTopColor: colors.line },
+  hoyIcono: { marginTop: 3 },
+  hoyTexto: { flex: 1, minWidth: 0, fontFamily: fonts.body, fontSize: 14, lineHeight: 20, color: colors.text },
+  aviso: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderTopWidth: 1,
+    borderTopColor: colors.line,
+  },
+  avisoTexto: { flex: 1, minWidth: 0, fontFamily: fonts.body, fontSize: 12.5, lineHeight: 18, color: colors.accentText },
+  bandaPro: {
+    gap: 10,
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    paddingBottom: 14,
+    borderTopWidth: 1,
+    borderTopColor: colors.line,
+  },
+  bandaProTexto: { fontFamily: fonts.body, fontSize: 13, lineHeight: 19, color: colors.textDim },
   // ChipRow sangra 20 px a cada lado para pantallas con padding; aquí no lo hay.
   atajos: { paddingBottom: 10, paddingHorizontal: 20 },
   barra: {

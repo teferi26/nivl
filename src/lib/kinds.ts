@@ -2,17 +2,19 @@
 //
 // La app nació para una sola persona. Abierta a la gente de Franky, la misma
 // mecánica (misiones, XP, racha, campañas, coach) tiene que hablarle a un
-// emprendedor, a un deportista y a un estudiante sin que ninguno vea primero
-// lo que no le importa. Aquí vive esa diferencia: qué módulos van delante,
+// emprendedor, a un profesional con su jornada, a un deportista y a un
+// estudiante sin que ninguno vea primero lo que no le importa. Aquí vive esa diferencia: qué módulos van delante,
 // qué hábitos se proponen el primer día y cómo se llaman las campañas.
 //
 // Módulo PURO: sin imports de Supabase, para que los tests arranquen.
 
 import type { Difficulty, Stat } from './types';
 
-export type ProfileKind = 'emprendedor' | 'deportista' | 'estudiante' | 'general';
+// Al añadir un perfil: el CHECK de `profiles.profile_kind` va en una migración
+// nueva (0018 → 0022) y el coach tiene su copia en supabase/functions/_shared/kinds.ts.
+export type ProfileKind = 'emprendedor' | 'trabajador' | 'deportista' | 'estudiante' | 'general';
 
-export const PROFILE_KINDS: readonly ProfileKind[] = ['emprendedor', 'deportista', 'estudiante', 'general'];
+export const PROFILE_KINDS: readonly ProfileKind[] = ['emprendedor', 'trabajador', 'deportista', 'estudiante', 'general'];
 
 export function isProfileKind(value: unknown): value is ProfileKind {
   return typeof value === 'string' && (PROFILE_KINDS as readonly string[]).includes(value);
@@ -30,7 +32,8 @@ export type ModuleId =
   | 'avances'
   | 'resumen'
   | 'oraculo'
-  | 'contrato';
+  | 'contrato'
+  | 'amigos';
 
 export type ModuleRoute =
   | '/gym'
@@ -44,7 +47,8 @@ export type ModuleRoute =
   | '/avances'
   | '/resumen'
   | '/oraculo'
-  | '/contrato';
+  | '/contrato'
+  | '/amigos';
 
 export interface ModuleMeta {
   id: ModuleId;
@@ -67,6 +71,7 @@ export const MODULES: readonly ModuleMeta[] = [
   { id: 'resumen', label: 'Recuerdos', icon: 'images-outline', route: '/resumen' },
   { id: 'oraculo', label: 'Oráculo', icon: 'sparkles-outline', route: '/oraculo' },
   { id: 'contrato', label: 'Contrato', icon: 'document-text-outline', route: '/contrato' },
+  { id: 'amigos', label: 'Amigos', icon: 'people-outline', route: '/amigos' },
 ];
 
 export interface StarterQuest {
@@ -94,6 +99,8 @@ export interface KindMeta {
   campaignsHint: string;
   /** Módulos que van delante en la pantalla de hoy, en este orden. */
   primaryModules: readonly ModuleId[];
+  /** Ejemplo de objetivo concreto para el onboarding: enseña el nivel de detalle que se pide. */
+  goalExample: string;
   /** Hábitos propuestos el primer día. El usuario elige cuáles crear. */
   starterQuests: readonly StarterQuest[];
   /** Instrucción breve para el coach: cambia el énfasis, no las leyes. */
@@ -114,7 +121,8 @@ export const KINDS: Record<ProfileKind, KindMeta> = {
       'Economía y contrato delante. Proyectos con jefe final y fecha. El coach te pide números: contactos, cierres, ingresos.',
     campaignsLabel: 'Proyectos',
     campaignsHint: 'Un proyecto es una campaña: tareas, un jefe final y una fecha. Al despejarlo hay botín.',
-    primaryModules: ['economia', 'contrato', 'informe', 'avances', 'diario', 'oraculo'],
+    primaryModules: ['economia', 'contrato', 'informe', 'avances', 'diario', 'oraculo', 'amigos'],
+    goalExample: 'Facturar 5.000 € al mes con mi negocio',
     starterQuests: [
       { title: 'Prospección: 10 contactos', stat: 'AGI', difficulty: 'media', days_of_week: LABORABLES, requires_evidence: false },
       { title: 'Bloque de trabajo profundo 2 h', stat: 'INT', difficulty: 'media', days_of_week: LABORABLES, requires_evidence: false },
@@ -126,6 +134,29 @@ export const KINDS: Record<ProfileKind, KindMeta> = {
     coachHint:
       'Es emprendedor: su campo de batalla son las ventas, el foco y la caja. Pide cifras de embudo (contactos, reuniones, cierres, ingresos) y ordena acciones que muevan el negocio hoy. El cuerpo se cuida para rendir, no es el centro.',
   },
+  trabajador: {
+    id: 'trabajador',
+    label: 'Profesional',
+    title: 'PROFESIONAL',
+    icon: 'briefcase-outline',
+    tagline: 'Crecer en tu trabajo sin descuidar el cuerpo. Foco en la jornada, orden fuera de ella.',
+    description:
+      'Informe, avances y diario delante, con el gym y la economía a mano. Objetivos de carrera con hito final y fecha. El coach protege tus bloques de foco y encaja entreno, comida y descanso alrededor de tu jornada.',
+    campaignsLabel: 'Objetivos',
+    campaignsHint: 'Un objetivo profesional es una campaña: pasos como tareas, un hito final y una fecha. Al cumplirlo hay botín.',
+    primaryModules: ['informe', 'avances', 'diario', 'gym', 'economia', 'contrato', 'amigos'],
+    goalExample: 'Conseguir el ascenso a responsable de equipo',
+    starterQuests: [
+      { title: 'Bloque de foco 90 min sin interrupciones', stat: 'INT', difficulty: 'media', days_of_week: LABORABLES, requires_evidence: false },
+      { title: 'Planificar la jornada antes de empezar', stat: 'PER', difficulty: 'facil', days_of_week: LABORABLES, requires_evidence: false },
+      { title: 'Formación en tu oficio 30 min', stat: 'INT', difficulty: 'facil', days_of_week: LABORABLES, requires_evidence: false },
+      { title: 'Entrenar', stat: 'FUE', difficulty: 'media', days_of_week: [1, 3, 5], requires_evidence: false },
+      { title: 'Dormir 7 horas', stat: 'VIT', difficulty: 'facil', days_of_week: DIARIO, requires_evidence: false },
+      { title: 'Diario del día', stat: 'PER', difficulty: 'facil', days_of_week: DIARIO, requires_evidence: false },
+    ],
+    coachHint:
+      'Es un profesional por cuenta ajena: quiere crecer en su trabajo y mantener salud y hábitos en orden. Su jornada es fija y no se negocia: protege uno o dos bloques de foco dentro de ella, pregunta por entregas, aprendizaje y objetivos de carrera (ascenso, cambio, certificación), y encaja entreno, comida y sueño antes o después del trabajo sin cargar los días largos.',
+  },
   deportista: {
     id: 'deportista',
     label: 'Deportista',
@@ -136,7 +167,8 @@ export const KINDS: Record<ProfileKind, KindMeta> = {
       'Gym, cardio, nutrición y dieta delante. Bloques de temporada con objetivo y fecha. El coach prescribe cargas con tu RPE y ajusta la dieta con tu tendencia de peso.',
     campaignsLabel: 'Bloques',
     campaignsHint: 'Un bloque de temporada es una campaña: sesiones, un objetivo final y una fecha. Al cumplirlo hay botín.',
-    primaryModules: ['gym', 'cardio', 'nutricion', 'dieta', 'avances', 'compra'],
+    primaryModules: ['gym', 'cardio', 'nutricion', 'dieta', 'avances', 'compra', 'amigos'],
+    goalExample: 'Bajar a 78 kg sin perder fuerza',
     starterQuests: [
       { title: 'Entrenar', stat: 'FUE', difficulty: 'media', days_of_week: LABORABLES, requires_evidence: false },
       { title: 'Registrar comidas del día', stat: 'VIT', difficulty: 'facil', days_of_week: DIARIO, requires_evidence: false },
@@ -158,7 +190,8 @@ export const KINDS: Record<ProfileKind, KindMeta> = {
       'Diario, informe y avances delante. Asignaturas con el examen como jefe final. El coach reparte el estudio por bloques y vigila que descanses.',
     campaignsLabel: 'Asignaturas',
     campaignsHint: 'Una asignatura es una campaña: temas como tareas, el examen como jefe y su fecha. Al aprobarla hay botín.',
-    primaryModules: ['diario', 'informe', 'avances', 'oraculo', 'contrato', 'resumen'],
+    primaryModules: ['diario', 'informe', 'avances', 'oraculo', 'contrato', 'resumen', 'amigos'],
+    goalExample: 'Aprobar las cuatro asignaturas de junio',
     starterQuests: [
       { title: 'Estudiar 2 h', stat: 'INT', difficulty: 'media', days_of_week: LABORABLES, requires_evidence: false },
       { title: 'Repasar apuntes 20 min', stat: 'INT', difficulty: 'facil', days_of_week: DIARIO, requires_evidence: false },
@@ -180,7 +213,8 @@ export const KINDS: Record<ProfileKind, KindMeta> = {
       'Todos los módulos a la vista. Campañas para cualquier reto con fecha. El coach te pregunta qué quieres conquistar y lo convierte en misiones.',
     campaignsLabel: 'Campañas',
     campaignsHint: 'Una campaña es un reto con fecha: tareas, un jefe final y botín al despejarla.',
-    primaryModules: ['gym', 'cardio', 'nutricion', 'dieta', 'economia', 'compra', 'diario', 'informe', 'avances', 'resumen', 'oraculo', 'contrato'],
+    primaryModules: ['gym', 'cardio', 'nutricion', 'dieta', 'economia', 'compra', 'diario', 'informe', 'avances', 'resumen', 'oraculo', 'contrato', 'amigos'],
+    goalExample: 'Entrenar cuatro días por semana durante un año',
     starterQuests: [
       { title: 'Entrenar', stat: 'FUE', difficulty: 'media', days_of_week: LABORABLES, requires_evidence: false },
       { title: 'Trabajo o estudio 2 h', stat: 'INT', difficulty: 'media', days_of_week: LABORABLES, requires_evidence: false },

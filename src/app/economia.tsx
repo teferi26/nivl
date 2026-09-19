@@ -32,7 +32,7 @@ import {
   StatRow,
 } from '@/components/ui';
 import { useAuth } from '@/lib/auth';
-import { clasificarMovimientos } from '@/lib/coach';
+import { accessNotice, clasificarMovimientos, CoachAccessError } from '@/lib/coach';
 import { addDays, dateKey } from '@/lib/dates';
 import {
   CATEGORIAS,
@@ -158,7 +158,25 @@ export default function Economia() {
       await cargar();
       Alert.alert(r.clasificados ? 'El sistema ha clasificado' : 'Sin cambios', r.texto);
     } catch (e) {
-      Alert.alert('Error del sistema', e instanceof Error ? e.message : 'Fallo desconocido');
+      if (e instanceof CoachAccessError) {
+        // La clasificación automática es IA y pasa por el mismo candado que el
+        // coach. No es un error: clasificar a mano sigue funcionando, y quien
+        // quiera la automática tiene el camino a Pro.
+        Alert.alert(
+          e.reason === 'sin_suscripcion' ? 'Clasificación automática' : 'El sistema',
+          e.reason === 'sin_suscripcion'
+            ? 'Que el sistema clasifique por ti es parte de NIVL Pro. Puedes seguir clasificando a mano: toca un movimiento y el sistema aprende la regla.'
+            : accessNotice(e),
+          e.reason === 'sin_suscripcion'
+            ? [
+                { text: 'Ahora no', style: 'cancel' },
+                { text: 'Ver NIVL Pro', onPress: () => router.push('/pro') },
+              ]
+            : [{ text: 'Entendido' }],
+        );
+      } else {
+        Alert.alert('Error del sistema', e instanceof Error ? e.message : 'Fallo desconocido');
+      }
     } finally {
       setClasificando(false);
     }

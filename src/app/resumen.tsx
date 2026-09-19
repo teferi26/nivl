@@ -18,7 +18,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { captureRef } from 'react-native-view-shot';
 import { SystemButton } from '@/components/SystemButton';
 import { Card, EmptyState, FadeIn, Row, RowValue, Screen, ScreenHeader, Section, Stagger, Tag } from '@/components/ui';
-import { generarResumen } from '@/lib/coach';
+import { accessNotice, CoachAccessError, generarResumen } from '@/lib/coach';
 import { fetchRecaps, marcarVisto, urlFirmada, type Recap, type Slide } from '@/lib/photos';
 import { colors, fonts } from '@/lib/theme';
 
@@ -212,6 +212,8 @@ export default function Resumen() {
   const [abierto, setAbierto] = useState<Recap | null>(null);
   const [generando, setGenerando] = useState(false);
   const [aviso, setAviso] = useState<string | null>(null);
+  // El pase lo monta la IA: sin NIVL Pro el aviso lleva el camino, no un error.
+  const [pidePro, setPidePro] = useState(false);
   const [cargado, setCargado] = useState(false);
   const [refrescando, setRefrescando] = useState(false);
 
@@ -241,6 +243,7 @@ export default function Resumen() {
     if (generando) return;
     setGenerando(true);
     setAviso(null);
+    setPidePro(false);
     try {
       const r = await generarResumen('semanal');
       if (!r.slides.length) {
@@ -251,7 +254,16 @@ export default function Resumen() {
       const nuevos = await fetchRecaps();
       setAbierto(nuevos[0] ?? null);
     } catch (e) {
-      setAviso(e instanceof Error ? e.message : 'Fallo desconocido');
+      if (e instanceof CoachAccessError) {
+        setPidePro(e.reason === 'sin_suscripcion');
+        setAviso(
+          e.reason === 'sin_suscripcion'
+            ? 'El pase de la semana lo monta el coach, y el coach es parte de NIVL Pro. Tus fotos y tus recuerdos guardados siguen aquí.'
+            : accessNotice(e),
+        );
+      } else {
+        setAviso(e instanceof Error ? e.message : 'Fallo desconocido');
+      }
     } finally {
       setGenerando(false);
     }
@@ -295,6 +307,15 @@ export default function Resumen() {
                   <Ionicons name="alert-circle-outline" size={15} color={colors.accentText} />
                   <Text style={styles.avisoTexto}>{aviso}</Text>
                 </View>
+              ) : null}
+              {pidePro ? (
+                <SystemButton
+                  title="Ver NIVL Pro"
+                  variant="outline"
+                  size="sm"
+                  onPress={() => router.push('/pro')}
+                  style={{ marginTop: 12, alignSelf: 'flex-start' }}
+                />
               ) : null}
               <Text style={styles.nota}>El del mes lo genera el sistema solo, el día 1.</Text>
             </Card>

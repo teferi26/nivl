@@ -42,6 +42,7 @@ import {
   redeemBonus,
   sealLetter,
 } from '@/lib/contract';
+import { esCompromiso } from '@/lib/compromiso';
 import { ensureProfile } from '@/lib/data';
 import { addDays, dateKey } from '@/lib/dates';
 import {
@@ -444,6 +445,14 @@ export default function Contrato() {
                   <Text style={styles.letterEyebrow}>HA LLEGADO EL DÍA</Text>
                   <Text style={styles.letterMeta}>La carta que sellaste el {letter.sealed_at.slice(0, 10)} espera.</Text>
                   <SystemButton title="Abrir la carta" variant="outline" icon="mail-open-outline" onPress={onOpenLetter} style={{ marginTop: 14 }} />
+                </>
+              ) : esCompromiso(letter.body) ? (
+                <>
+                  <Text style={styles.letterEyebrow}>FIRMADO POR TI</Text>
+                  <Text style={styles.letterMeta}>
+                    Firmado el {letter.sealed_at.slice(0, 10)} · vence el {letter.open_at}
+                  </Text>
+                  <Text style={styles.letterBody}>{letter.body}</Text>
                 </>
               ) : (
                 <>

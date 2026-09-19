@@ -182,6 +182,7 @@ export async function buildContext(
     factsRes,
     diarioRes,
     fichaRes,
+    origenRes,
     tareasRes,
   ] = await Promise.all([
     sb.from('profiles').select('*').eq('id', userId).maybeSingle(),
@@ -210,6 +211,11 @@ export async function buildContext(
     sb.from('journal_entries').select('date, mood, energy, text, plan').eq('user_id', userId)
       .order('date', { ascending: false }).limit(10),
     sb.from('body_profile').select('*').eq('user_id', userId).maybeSingle(),
+    // Lo que escribió y firmó el día que entró: para qué está aquí y a cuántos
+    // años se comprometió. En una cuenta nueva es TODO lo que el coach sabe de
+    // sus motivos, y sin ello el primer brief sería genérico.
+    sb.from('events').select('type, payload, created_at').eq('user_id', userId)
+      .in('type', ['onboarding_goal', 'commitment_signed']).order('created_at', { ascending: false }).limit(4),
     sb.from('dungeon_tasks').select('id, dungeon_id, title, is_boss, due_date').eq('user_id', userId)
       .eq('done', false).order('position').limit(40),
   ]);
@@ -244,6 +250,24 @@ export async function buildContext(
   if (p.freeze_until) push(`CONGELADO hasta ${p.freeze_until} (${p.freeze_reason ?? 'sin motivo'})`);
   push(`Stats: FUE ${p.xp_fue} · VIT ${p.xp_vit} · INT ${p.xp_int} · AGI ${p.xp_agi} · PER ${p.xp_per}`);
   push();
+
+  {
+    const origen = (origenRes.data ?? []) as { type: string; payload: Record<string, any> }[];
+    const meta = origen.find((e) => e.type === 'onboarding_goal')?.payload;
+    const firma = origen.find((e) => e.type === 'commitment_signed')?.payload;
+    if (meta || firma) {
+      push('## Para qué está aquí (lo escribió y lo firmó al entrar)');
+      if (meta) {
+        const partes = [meta.goal, meta.target ? `cifra: ${meta.target}` : '', meta.deadline ? `fecha: ${meta.deadline}` : '']
+          .filter(Boolean)
+          .join(' · ');
+        push(`Objetivo: ${String(partes).slice(0, 400)}`);
+      }
+      if (firma) push(`Compromiso firmado a ${firma.years} años (vence el ${firma.open_at}).`);
+      push('Todo lo que le mandes tiene que poder explicarse como un paso hacia esto. Si su sistema no lo refleja, arréglalo.');
+      push();
+    }
+  }
 
   push('## Misiones activas · adherencia real de 30 días');
   if (!quests.length) push('Ninguna. No tiene sistema todavía.');
