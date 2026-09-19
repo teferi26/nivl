@@ -53,7 +53,7 @@ La **ficha física** (`body_profile`: altura, año, sexo, actividad, experiencia
 
 ## Herramientas del coach
 
-Las define `supabase/functions/_shared/tools.ts` (hoy son 24). Dos límites de la API que ya nos han mordido:
+Las define `supabase/functions/_shared/tools.ts` (hoy son 25). Dos límites de la API que ya nos han mordido:
 
 1. **Sin `strict: true`**: pasando de doce herramientas el compilador de esquemas responde "Schema is too complex". La validación real la hacen los CHECK de Postgres y el ejecutor.
 2. **Nada de tipos unión**: `{ type: ['string','null'] }` junto a un `enum` se rechaza, y hay un tope de 16 parámetros con uniones en todo el conjunto. Lo opcional se expresa con **cadena vacía** como centinela (`opt` / `enumOpt`), no con null.

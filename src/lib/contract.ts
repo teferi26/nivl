@@ -234,6 +234,20 @@ export async function fetchJournalPhotos(date: string): Promise<JournalPhoto[]> 
   return (data ?? []) as JournalPhoto[];
 }
 
+/** Las fotos de varios días en UNA consulta: el Archivo del diario pinta veinte
+ *  tarjetas y no puede preguntar día a día. Las URL firmadas se piden aparte y
+ *  solo para las tarjetas que las enseñan. */
+export async function fetchJournalPhotosForDates(dates: string[]): Promise<JournalPhoto[]> {
+  if (dates.length === 0) return [];
+  const { data, error } = await supabase
+    .from('journal_photos')
+    .select('*')
+    .in('date', dates)
+    .order('created_at', { ascending: true });
+  if (error) throw error;
+  return (data ?? []) as JournalPhoto[];
+}
+
 export async function deleteJournalPhoto(photo: JournalPhoto): Promise<void> {
   const { error } = await supabase.from('journal_photos').delete().eq('id', photo.id);
   if (error) throw error;

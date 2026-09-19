@@ -181,7 +181,16 @@ export interface JournalEntry {
   mood: number | null;
   energy: number | null;
   text: string | null;
+  /** Desde la 0023 significa UNA cosa: lo primero de mañana. El plan de hoy lo escribe el coach. */
   plan: string | null;
+  /** Ids del vocabulario de `journalmath.ts → EMOCIONES` (máx. 8). Vacío en entradas antiguas. */
+  emotions: string[];
+  /** Las victorias del día, una por línea (máx. 10). Vacío en entradas antiguas. */
+  wins: string[];
+  lesson: string | null;
+  gratitude: string | null;
+  /** Horas dormidas la noche anterior (0–24). */
+  sleep_hours: number | null;
   created_at: string;
 }
 
