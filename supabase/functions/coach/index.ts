@@ -276,11 +276,13 @@ interface RunArgs {
   userText: string;
   today: string;
   imagenes?: { media_type: string; data: string }[];
+  /** Lo que le queda de IA este mes, en microdólares: techo de este turno. */
+  restanteMicro: number;
   emit: (event: string, data: unknown) => void;
 }
 
 async function runCoach(args: RunArgs): Promise<{ text: string; usage: Usage; model: string }> {
-  const { sb, userId, kind, threadId, userText, today, imagenes, emit } = args;
+  const { sb, userId, kind, threadId, userText, today, imagenes, restanteMicro, emit } = args;
 
   const ctx = await buildContext(sb, userId, today);
   const system = buildSystem(ctx.dossier, kind, ctx.text);
@@ -421,7 +423,7 @@ ${userText}` : userText,
     // haber costado más de la cuenta.
     if (turn.stopReason !== 'tool_use' || !toolUses.length) break;
 
-    if (costMicroUsd(model, usage) > MAX_COST_MICRO_USD) {
+    if (costMicroUsd(model, usage) > Math.min(MAX_COST_MICRO_USD, restanteMicro)) {
       emit('error', {
         message: 'El sistema ha parado aquí: este turno ya ha costado demasiado.',
       });
@@ -480,6 +482,51 @@ Deno.serve(async (req) => {
   const { data: userData, error: userErr } = await admin.auth.getUser(token);
   if (userErr || !userData.user) return json(401, { error: 'Sesión inválida' });
   const userId = userData.user.id;
+
+  // El candado de gasto (migración 0020). Va ANTES de leer el cuerpo y de
+  // cualquier llamada a un modelo: suscripción viva, presupuesto del mes sin
+  // agotar y ningún otro turno en marcha. Cubre también a los rituales del
+  // cron, que entran por aquí con el JWT del usuario.
+  const { data: puerta, error: puertaErr } = await admin.rpc('ai_begin_turn', { p_user: userId });
+  if (puertaErr) {
+    console.error('ai_begin_turn failed:', puertaErr.message);
+    // Cerrado por defecto: si no se puede comprobar, no se gasta.
+    return json(503, { error: 'El sistema no puede comprobar tu plan ahora mismo. Vuelve a intentarlo.' });
+  }
+  const estado = puerta as { allowed: boolean; reason?: string; remaining: number; renews?: string };
+  if (!estado.allowed) {
+    const MENSAJES: Record<string, [number, string]> = {
+      sin_suscripcion: [402, 'El coach es parte de NIVL Pro.'],
+      presupuesto_agotado: [402, `Has agotado la IA de este mes. Se renueva el ${estado.renews ?? 'día 1'}.`],
+      turno_en_curso: [429, 'El sistema todavía está respondiendo a tu mensaje anterior.'],
+    };
+    const [status, error] = MENSAJES[estado.reason ?? ''] ?? [402, 'Sin acceso a la IA.'];
+    return json(status, { error, reason: estado.reason });
+  }
+
+  const soltar = () =>
+    admin.rpc('ai_end_turn', { p_user: userId }).then(
+      () => {},
+      () => {},
+    );
+  let res: Response;
+  try {
+    res = await atender(req, userId, token, Number(estado.remaining) || 0);
+  } catch (e) {
+    await soltar();
+    throw e;
+  }
+  // El cerrojo se suelta cuando la respuesta TERMINA, no cuando empieza: con
+  // streaming, el turno sigue gastando mucho después de devolver el Response.
+  if (!res.body) {
+    await soltar();
+    return res;
+  }
+  const alTerminar = new TransformStream<Uint8Array, Uint8Array>({ flush: soltar });
+  return new Response(res.body.pipeThrough(alTerminar), { status: res.status, headers: res.headers });
+});
+
+async function atender(req: Request, userId: string, token: string, restanteMicro: number): Promise<Response> {
 
   let body: {
     kind?: string;
@@ -668,6 +715,7 @@ Deno.serve(async (req) => {
         userText: prompt,
         today,
         imagenes: body.imagenes,
+        restanteMicro,
         emit: () => {},
       });
       await finish(result, null);
@@ -711,6 +759,7 @@ Deno.serve(async (req) => {
           userText: prompt,
           today,
           imagenes: body.imagenes,
+          restanteMicro,
           emit,
         });
         await finish(result, null);
@@ -745,4 +794,4 @@ Deno.serve(async (req) => {
       connection: 'keep-alive',
     },
   });
-});
+}

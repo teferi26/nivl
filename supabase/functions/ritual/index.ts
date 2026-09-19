@@ -293,6 +293,14 @@ Deno.serve(async (req) => {
       const decision = await decidir(sb, p);
       if (!decision) continue;
 
+      // Sin IA contratada (o con la del mes agotada) no hay ritual. El coach
+      // lo rechazaría igual —el candado está allí—, pero así ni se fabrica la
+      // sesión ni se apunta como fallo algo que es lo esperado en una cuenta
+      // gratuita.
+      const { data: ia } = await sb.rpc('ai_state', { p_user: p.id });
+      const estadoIa = ia as { entitled?: boolean; remaining?: number } | null;
+      if (!estadoIa?.entitled || (estadoIa.remaining ?? 0) < 20000) continue;
+
       const { data: usuario } = await sb.auth.admin.getUserById(p.id);
       const email = usuario?.user?.email;
       if (!email) continue;
