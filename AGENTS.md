@@ -82,6 +82,24 @@ Convención de signo en todo lo económico: **negativo es gasto, positivo es ing
 
 Agentes (`.claude/agents/`): `nivl-planner`, `nivl-ux-auditor`, `nivl-game-balancer`.
 
+## Cómo sale un cambio: OTA casi siempre, binario solo si hay nativo
+
+**Si el cambio es solo JavaScript/TypeScript o assets, sale por OTA. Gratis, en un minuto, sin build:**
+
+```bash
+npx eas-cli update --channel production --platform ios --message "…" --non-interactive
+```
+
+Comprobado el 2026-09-19 en el móvil del dueño: llega. Se descarga en un arranque y se aplica en el siguiente (a veces tarda un par de aperturas).
+
+**La regla que lo hace funcionar: NO subas `version` en `app.json` para un cambio de JS.** `runtimeVersion.policy` es `appVersion`, así que una OTA solo llega a los binarios de su MISMA versión. En agosto se concluyó que "las OTA no llegan a este móvil" (commit 4113e44) y se abandonaron; la causa más probable es que cada tanda subía la versión y la OTA se publicaba para un runtime que no tenía ningún binario instalado. La versión solo se sube cuando sale un binario nuevo.
+
+**Hace falta binario nuevo solo si cambia lo nativo:** una dependencia con código nativo (p. ej. RevenueCat), plugins o permisos en `app.json`, el SDK de Expo, iconos o splash. Y entonces, después del binario, las OTA vuelven a publicarse para la versión nueva.
+
+**El binario no se compila en EAS Build** (15 builds de iOS al mes en el plan gratuito; se agotaron). Se compila en GitHub Actions: `.github/workflows/ios-testflight.yml`, a mano desde la pestaña Actions del repo `teferi26/nivl`. Usa `eas build --local` (no gasta cupo) y `eas submit`; necesita el secreto `EXPO_TOKEN`. Mientras el repo sea público los minutos de macOS son ilimitados; en privado cuentan ×10.
+
+Antes de publicar una OTA: la misma verificación mínima de siempre, y si el cambio necesita una migración o un despliegue de Edge Function, eso va PRIMERO — la OTA llega a los móviles en minutos y no espera al servidor.
+
 ## El lockfile se genera con npm 10, no con npm 11
 
 EAS Build ejecuta `npm ci`, y `npm ci` exige que el lockfile case exactamente con el resolutor que lo escribió. Con npm 11 (el que trae Node 24) las dependencias entre pares de `@napi-rs/wasm-runtime` quedan anidadas; con npm 10 quedan arriba. EAS corre npm 10 y el build muere en «Install dependencies» con *Missing: @emnapi/core from lock file*, un error que no dice nada del motivo real.
