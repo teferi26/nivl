@@ -13,23 +13,50 @@
 // EXPO_PUBLIC_PAYWALL) se queda como está para el Oráculo y para la web.
 
 import { supabase } from './supabase';
-import type { AiStatus, ProPlanId } from './proplans';
+import type { AiStatus, PlanKey, ProPlanId, Tier } from './proplans';
 
 export * from './proplans';
 
-/** Estado de la IA de la cuenta con sesión iniciada. */
+const TIERS_CONOCIDOS: readonly Tier[] = ['free', 'pro', 'elite', 'owner'];
+
+/**
+ * Estado de la IA de la cuenta con sesión iniciada. Cada campo nuevo (0024)
+ * lleva su valor por defecto: con el servidor aún en la 0020 la pantalla se
+ * pinta igual, sin modo profundo ni prueba.
+ */
 export async function fetchAiStatus(): Promise<AiStatus> {
   const { data, error } = await supabase.rpc('ai_status');
   if (error) throw error;
-  const s = (data ?? {}) as Partial<AiStatus>;
+  const s = (data ?? {}) as Record<string, unknown>;
+  const entitled = !!s.entitled;
+  const tier = TIERS_CONOCIDOS.find((t) => t === s.tier) ?? (entitled ? 'pro' : 'free');
   return {
-    entitled: !!s.entitled,
-    plan: s.plan ?? null,
+    entitled,
+    plan: typeof s.plan === 'string' ? (s.plan as PlanKey) : null,
+    tier,
     budget: Number(s.budget ?? 0),
     spent: Number(s.spent ?? 0),
     remaining: Number(s.remaining ?? 0),
-    renews: s.renews,
+    renews: typeof s.renews === 'string' ? s.renews : undefined,
+    trial: s.trial === true,
+    deepAllowed: s.deep_allowed === true,
+    deepRemaining: Number(s.deep_remaining ?? 0),
+    deepTurns: Number(s.deep_turns ?? 0),
+    trialAvailable: s.trial_available === true,
   };
+}
+
+/**
+ * Empieza la prueba de 7 días del coach (RPC `start_trial`, 0024). Una por
+ * cuenta: si ya la tuvo, o tuvo cualquier suscripción, `ya_usada`. Después
+ * hay que volver a leer `fetchAiStatus()`.
+ */
+export async function startTrial(): Promise<{ ok: boolean; reason?: 'ya_usada'; ends?: string }> {
+  const { data, error } = await supabase.rpc('start_trial');
+  if (error) throw error;
+  const r = (data ?? {}) as { ok?: boolean; reason?: string; ends?: string };
+  if (r.ok) return { ok: true, ends: r.ends };
+  return { ok: false, reason: 'ya_usada' };
 }
 
 /** Se lanza al intentar comprar o restaurar cuando la tienda aún no está conectada. */
@@ -43,8 +70,8 @@ export class PurchasesUnavailableError extends Error {
 /**
  * ¿Se puede comprar desde esta build?
  *
- * TODO(RevenueCat): cuando existan los productos `nivl_pro_mensual` y
- * `nivl_pro_anual` en App Store Connect y Play Console y el proyecto de
+ * TODO(RevenueCat): cuando existan los cinco productos de `PRO_PLANS`
+ * (`nivl_pro_*` y `nivl_elite_*`) en App Store Connect y Play Console y el proyecto de
  * RevenueCat, añadir `react-native-purchases` (dependencia nativa: pide build
  * nueva de EAS, no sale por OTA), configurarlo al iniciar sesión con
  * `Purchases.configure({ apiKey, appUserID: userId })` —el appUserID tiene que

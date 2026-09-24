@@ -1,29 +1,107 @@
-// NIVL · NIVL Pro: la oferta, en datos.
+// NIVL · NIVL Pro y Élite: la oferta, en datos.
 //
-// Gratis es la app entera sin IA; Pro es el coach (docs/PRECIOS.md). Aquí vive
-// lo que la pantalla de Pro y el paso del onboarding necesitan pintar: planes,
-// precios, lo que hace el coach y la línea de énfasis por perfil. Si cambias un
-// precio, rehaz antes la cuenta de docs/PRECIOS.md.
+// Tres niveles (docs/PRECIOS.md): gratis es la app entera sin IA; Pro es el
+// coach en potencia estándar; Élite, el coach a máxima potencia con modo
+// profundo. Aquí vive lo que la pantalla de Pro y el paso del onboarding
+// necesitan pintar: planes, precios, lo que hace el coach y la línea de
+// énfasis por perfil. Si cambias un precio, rehaz antes la cuenta de
+// docs/PRECIOS.md.
 //
 // Módulo PURO: sin imports de Supabase, para que los tests arranquen. Los
-// efectos (leer el estado de la IA, comprar, restaurar) están en `pro.ts`.
+// efectos (leer el estado de la IA, la prueba, comprar, restaurar) están en
+// `pro.ts`.
 
 import { kindMeta, type ProfileKind } from './kinds';
 
-/** Lo que devuelve la RPC `ai_status()` (migración 0020). Importes en micro-USD. */
+/**
+ * Los valores de `subscriptions.plan` (0024). 'mensual' y 'anual' son los
+ * heredados de Stripe y cuentan como Pro; 'cortesia' es la prueba de 7 días
+ * y las cortesías de la 0020.
+ */
+export type PlanKey =
+  | 'mensual'
+  | 'anual'
+  | 'pro_mensual'
+  | 'pro_anual'
+  | 'elite_mensual'
+  | 'elite_anual'
+  | 'elite_fundador'
+  | 'cortesia'
+  | 'owner';
+
+/** El nivel de la cuenta según el servidor (`ai_plans.tier`, 0024). */
+export type Tier = 'free' | 'pro' | 'elite' | 'owner';
+
+/** Lo que devuelve la RPC `ai_status()` (0020 + 0024). Importes en micro-USD. */
 export interface AiStatus {
   entitled: boolean;
-  plan: 'mensual' | 'anual' | 'cortesia' | 'owner' | null;
+  /** Un plan que esta versión de la app no conoce llega tal cual: `planLabel` lo cubre. */
+  plan: PlanKey | null;
+  tier: Tier;
+  /** Presupuesto, gasto y resto del bolsillo ESTÁNDAR del mes. */
   budget: number;
   spent: number;
   remaining: number;
-  /** Día en que se recarga el presupuesto del mes (YYYY-MM-DD). Solo con derecho a IA. */
+  /** Día en que se recarga el presupuesto (YYYY-MM-DD). Solo con derecho a IA. */
   renews?: string;
+  /** La cuenta está en la prueba de 7 días. */
+  trial: boolean;
+  /** El plan incluye modo profundo (Élite y owner). */
+  deepAllowed: boolean;
+  /** Lo que queda en el bolsillo profundo, en micro-USD. */
+  deepRemaining: number;
+  /** Turnos profundos que quedan este mes, estimados con la media real de la cuenta. */
+  deepTurns: number;
+  /** Nunca tuvo suscripción ni prueba: puede empezar la de 7 días. */
+  trialAvailable: boolean;
 }
 
-/** Tiene coach: suscripción viva, cortesía o dueño. Lo decide el servidor. */
+/** Una cuenta sin nada: lo que se pinta cuando el servidor dice que no hay IA. */
+export const SIN_IA: AiStatus = {
+  entitled: false,
+  plan: null,
+  tier: 'free',
+  budget: 0,
+  spent: 0,
+  remaining: 0,
+  trial: false,
+  deepAllowed: false,
+  deepRemaining: 0,
+  deepTurns: 0,
+  trialAvailable: false,
+};
+
+/** Tiene coach: suscripción viva, prueba, cortesía o dueño. Lo decide el servidor. */
 export function isPro(status: AiStatus | null | undefined): boolean {
   return !!status?.entitled;
+}
+
+/** Tiene el coach a máxima potencia (Élite). El owner no cuenta como Élite en pantalla. */
+export function isElite(status: AiStatus | null | undefined): boolean {
+  return isPro(status) && status?.tier === 'elite';
+}
+
+/** Por debajo de 2 céntimos el candado no deja entrar (ai_begin_turn). */
+const UMBRAL_TURNO = 20000;
+
+/** ¿Puede pedir AHORA un turno profundo? Lo decide el bolsillo, no los turnos redondeados. */
+export function puedeProfundo(status: AiStatus | null | undefined): boolean {
+  return isPro(status) && !!status?.deepAllowed && (status?.deepRemaining ?? 0) >= UMBRAL_TURNO;
+}
+
+/** Turnos profundos que quedan este mes (0 si el plan no los incluye). */
+export function turnosProfundos(status: AiStatus | null | undefined): number {
+  if (!isPro(status) || !status?.deepAllowed) return 0;
+  return Math.max(0, Math.floor(status.deepTurns || 0));
+}
+
+/** La línea bajo el selector de potencia, en la voz del sistema. */
+export function lineaProfundos(status: AiStatus | null | undefined): string {
+  if (!puedeProfundo(status)) return 'Has usado tus turnos profundos de este mes. El estándar sigue disponible.';
+  const n = turnosProfundos(status);
+  if (n === 0) return 'Te queda menos de un turno profundo este mes.';
+  if (n === 1) return 'Te queda 1 turno profundo este mes.';
+  return `Te quedan ${n} turnos profundos este mes.`;
 }
 
 /**
@@ -37,83 +115,179 @@ export function energiaRestante(status: AiStatus | null | undefined): number {
 
 /** El candado corta por debajo de 2 céntimos (ai_begin_turn): a efectos de pantalla, agotada. */
 export function energiaAgotada(status: AiStatus | null | undefined): boolean {
-  return isPro(status) && (status?.remaining ?? 0) < 20000;
+  return isPro(status) && (status?.remaining ?? 0) < UMBRAL_TURNO;
 }
 
-const PLAN_LABEL: Record<NonNullable<AiStatus['plan']>, string> = {
-  mensual: 'Mensual',
-  anual: 'Anual',
+const PLAN_LABEL: Record<PlanKey, string> = {
+  mensual: 'Pro mensual',
+  anual: 'Pro anual',
+  pro_mensual: 'Pro mensual',
+  pro_anual: 'Pro anual',
+  elite_mensual: 'Élite mensual',
+  elite_anual: 'Élite anual',
+  elite_fundador: 'Élite fundador',
   cortesia: 'Cortesía',
-  owner: 'Fundador',
+  // No "Fundador": chocaría con el Élite fundador.
+  owner: 'Dueño',
 };
 
-export function planLabel(plan: AiStatus['plan']): string {
-  return plan ? PLAN_LABEL[plan] : 'Gratis';
+/**
+ * Nombre del plan. Con valor por defecto: una app vieja que recibe un plan que
+ * aún no conoce (servidor más nuevo) enseña "NIVL Pro", nunca `undefined`.
+ */
+export function planLabel(plan: string | null | undefined): string {
+  if (!plan) return 'Gratis';
+  return (PLAN_LABEL as Record<string, string>)[plan] ?? 'NIVL Pro';
+}
+
+/** Un plan que se cobra (y se gestiona en la tienda): ni cortesía ni dueño. */
+export function planDePago(plan: string | null | undefined): boolean {
+  return !!plan && plan !== 'cortesia' && plan !== 'owner' && plan in PLAN_LABEL;
 }
 
 // Los identificadores son los de los productos de tienda (App Store Connect y
 // Play Console) y los de RevenueCat. Aún no existen: hay que crearlos con
-// exactamente estos ids.
-export type ProPlanId = 'nivl_pro_mensual' | 'nivl_pro_anual';
+// exactamente estos ids, en un solo grupo de suscripción (Élite por encima).
+export type ProPlanId =
+  | 'nivl_pro_mensual'
+  | 'nivl_pro_anual'
+  | 'nivl_elite_mensual'
+  | 'nivl_elite_anual'
+  | 'nivl_elite_fundador';
+
+/** Los dos niveles que se venden. */
+export type OfferTier = 'pro' | 'elite';
 
 export interface ProPlan {
   id: ProPlanId;
+  tier: OfferTier;
   /** El valor que acabará en `subscriptions.plan`. */
-  plan: 'mensual' | 'anual';
+  plan: PlanKey;
   label: string;
   priceCents: number;
-  /** Precio tal y como se enseña: "79,99 €". */
+  /** Precio tal y como se enseña: "99,99 €". */
   price: string;
   period: 'mes' | 'año';
   months: number;
-  /** Equivalente mensual ya formateado: "6,67 €". */
+  /** Equivalente mensual ya formateado: "8,33 €". */
   perMonth: string;
-  /** Ahorro frente a pagar mes a mes ("−33 %"), o null si no lo hay. */
+  /** Ahorro frente a pagar mes a mes de ese nivel ("−36 %"), o null si no lo hay. */
   savings: string | null;
   /** Rótulo bajo el precio. */
   pitch: string;
 }
 
-const MENSUAL_CENTS = 999;
-const ANUAL_CENTS = 7999;
+const PRO_MENSUAL_CENTS = 1299;
+const PRO_ANUAL_CENTS = 9999;
+const ELITE_MENSUAL_CENTS = 2999;
+const ELITE_ANUAL_CENTS = 29900;
+const ELITE_FUNDADOR_CENTS = 24900;
+/** Plazas del Élite fundador (precio congelado). El cupo lo cierra el dueño en la tienda. */
+export const PLAZAS_FUNDADOR = 100;
 
-/** "6,67 €": coma decimal y el símbolo detrás, como se escribe en España. */
+/** "8,33 €": coma decimal y el símbolo detrás, como se escribe en España. */
 export function euros(cents: number): string {
   return `${(Math.round(cents) / 100).toFixed(2).replace('.', ',')} €`;
 }
 
-const ahorroAnual = Math.round((1 - ANUAL_CENTS / (MENSUAL_CENTS * 12)) * 100);
-const mesesGratis = Math.round(12 - ANUAL_CENTS / MENSUAL_CENTS);
+function ahorro(anualCents: number, mensualCents: number): number {
+  return Math.round((1 - anualCents / (mensualCents * 12)) * 100);
+}
 
-export const PRO_PLANS: readonly ProPlan[] = [
-  {
-    id: 'nivl_pro_anual',
-    plan: 'anual',
-    label: 'Anual',
-    priceCents: ANUAL_CENTS,
-    price: euros(ANUAL_CENTS),
+function mesesGratis(anualCents: number, mensualCents: number): number {
+  return Math.round(12 - anualCents / mensualCents);
+}
+
+function anual(id: ProPlanId, tier: OfferTier, plan: PlanKey, label: string, cents: number, mensualCents: number, pitch?: string): ProPlan {
+  return {
+    id,
+    tier,
+    plan,
+    label,
+    priceCents: cents,
+    price: euros(cents),
     period: 'año',
     months: 12,
-    perMonth: euros(ANUAL_CENTS / 12),
-    savings: `−${ahorroAnual} %`,
-    pitch: `${mesesGratis} meses gratis · ${euros(ANUAL_CENTS / 12)}/mes`,
-  },
-  {
-    id: 'nivl_pro_mensual',
-    plan: 'mensual',
+    perMonth: euros(cents / 12),
+    savings: `−${ahorro(cents, mensualCents)} %`,
+    pitch: pitch ?? `${mesesGratis(cents, mensualCents)} meses gratis · ${euros(cents / 12)}/mes`,
+  };
+}
+
+function mensual(id: ProPlanId, tier: OfferTier, plan: PlanKey, cents: number): ProPlan {
+  return {
+    id,
+    tier,
+    plan,
     label: 'Mensual',
-    priceCents: MENSUAL_CENTS,
-    price: euros(MENSUAL_CENTS),
+    priceCents: cents,
+    price: euros(cents),
     period: 'mes',
     months: 1,
-    perMonth: euros(MENSUAL_CENTS),
+    perMonth: euros(cents),
     savings: null,
     pitch: 'Sin permanencia',
+  };
+}
+
+export interface TierOffer {
+  id: OfferTier;
+  /** "NIVL Pro" / "NIVL Élite". */
+  name: string;
+  /** Lo corto del selector: "Pro" / "Élite". */
+  label: string;
+  /** La potencia del coach en una línea. */
+  power: string;
+  /** Planes en el orden en que se enseñan (el preseleccionado primero). */
+  plans: readonly ProPlan[];
+  defaultPlan: ProPlanId;
+}
+
+export const TIERS: readonly TierOffer[] = [
+  {
+    id: 'pro',
+    name: 'NIVL Pro',
+    label: 'Pro',
+    power: 'El coach en potencia estándar.',
+    plans: [
+      anual('nivl_pro_anual', 'pro', 'pro_anual', 'Anual', PRO_ANUAL_CENTS, PRO_MENSUAL_CENTS),
+      mensual('nivl_pro_mensual', 'pro', 'pro_mensual', PRO_MENSUAL_CENTS),
+    ],
+    defaultPlan: 'nivl_pro_anual',
+  },
+  {
+    id: 'elite',
+    name: 'NIVL Élite',
+    label: 'Élite',
+    power: 'El coach a máxima potencia, con modo profundo.',
+    plans: [
+      anual(
+        'nivl_elite_fundador',
+        'elite',
+        'elite_fundador',
+        'Fundador',
+        ELITE_FUNDADOR_CENTS,
+        ELITE_MENSUAL_CENTS,
+        `${PLAZAS_FUNDADOR} plazas · precio congelado · ${euros(ELITE_FUNDADOR_CENTS / 12)}/mes`,
+      ),
+      anual('nivl_elite_anual', 'elite', 'elite_anual', 'Anual', ELITE_ANUAL_CENTS, ELITE_MENSUAL_CENTS),
+      mensual('nivl_elite_mensual', 'elite', 'elite_mensual', ELITE_MENSUAL_CENTS),
+    ],
+    defaultPlan: 'nivl_elite_fundador',
   },
 ];
 
-/** El anual va preseleccionado: es el que más le conviene a quien va en serio. */
+/** Todos los planes a la venta, de todos los niveles. */
+export const PRO_PLANS: readonly ProPlan[] = TIERS.flatMap((t) => t.plans);
+
+/** El nivel que se enseña primero en la oferta. */
+export const DEFAULT_TIER: OfferTier = 'pro';
+/** El anual de Pro va preseleccionado: es el que más le conviene a quien va en serio. */
 export const DEFAULT_PLAN: ProPlanId = 'nivl_pro_anual';
+
+export function tierOffer(id: OfferTier): TierOffer {
+  return TIERS.find((t) => t.id === id) ?? TIERS[0]!;
+}
 
 export function proPlan(id: ProPlanId): ProPlan {
   return PRO_PLANS.find((p) => p.id === id) ?? PRO_PLANS[0]!;
@@ -136,6 +310,13 @@ export const PRO_BENEFITS: readonly ProBenefit[] = [
   { icon: 'analytics-outline', title: 'Revisión semanal', detail: 'Mide la semana con tus datos y reajusta tu sistema.' },
   { icon: 'library-outline', title: 'Memoria', detail: 'Recuerda lo que aprende de ti. Te conoce más cada semana.' },
   { icon: 'chatbubble-ellipses-outline', title: 'Control total por chat', detail: 'Díselo y lo hace: misiones, agenda, normas, metas.' },
+];
+
+// Lo que el Élite añade. SOLO lo que ya existe (Apple 3.1.2): la comunidad,
+// las escuadras y la insignia llegan en la fase 3 y se añaden entonces.
+export const ELITE_BENEFITS: readonly ProBenefit[] = [
+  { icon: 'flash-outline', title: 'Máxima potencia', detail: 'Un modelo de primera línea en cada brief, plan, revisión y conversación.' },
+  { icon: 'telescope-outline', title: 'Modo profundo', detail: 'Para lo que pide pensarlo a fondo: el coach se toma su tiempo y responde con más detalle.' },
 ];
 
 const PRO_EMPHASIS: Record<ProfileKind, string> = {
@@ -235,8 +416,11 @@ export const LEGAL_URLS = {
 /** La letra pequeña que exigen las tiendas para una suscripción autorrenovable. */
 export function legalText(id: ProPlanId): string {
   const p = proPlan(id);
+  const nivel = tierOffer(p.tier).name;
+  const cuando = p.period === 'mes' ? 'cada mes' : 'cada año';
+  const congelado = p.id === 'nivl_elite_fundador' ? ' El precio de fundador se mantiene mientras no la canceles.' : '';
   return (
-    `NIVL Pro ${p.label.toLowerCase()} es una suscripción de renovación automática: ${p.price} cada ${p.period}. ` +
+    `${nivel} ${p.label.toLowerCase()} es una suscripción de renovación automática: ${p.price} ${cuando}.${congelado} ` +
     'El cobro se hace en tu cuenta de la tienda al confirmar la compra y se renueva sola salvo que la canceles ' +
     'al menos 24 horas antes de que acabe el periodo. La gestionas y la cancelas cuando quieras en los ajustes ' +
     'de suscripciones de la App Store o de Google Play. Sin ella, NIVL sigue entera y gratis, sin el coach.'

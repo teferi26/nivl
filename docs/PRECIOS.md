@@ -1,100 +1,136 @@
-# NIVL Pro — precios y la cuenta que no puede fallar
+# NIVL — precios, niveles y la cuenta que no puede fallar
 
-Escrito el 2026-09-19 con los costes reales de `coach_runs`. Si cambias un
-precio, un presupuesto de `ai_plans` o el proveedor del modelo, rehaz la
-tabla de abajo antes de publicar.
+Rehecho el 2026-09-24 (sustituye a la versión de 9,99/79,99 € del 2026-09-19).
+Si cambias un precio, un presupuesto de `ai_plans`, el proveedor del modelo o
+una comisión de creador, rehaz las tablas de abajo antes de publicar.
 
-## La oferta
+Dominio y marca: **NIVL** («se dice *nivel*»), `nivl.app`, `@nivl.app` en
+Instagram, TikTok y YouTube.
 
-| | Gratis | NIVL Pro |
+## La oferta: tres niveles
+
+| | Gratis | **Pro** | **Élite — el 1 %** |
+|---|---|---|---|
+| Hábitos, misiones, XP, racha, contrato, campañas, agenda | sí | sí | sí |
+| Gym, cardio, nutrición, peso, diario, avances, economía | sí | sí | sí |
+| Amigos, ranking y compartir progreso | sí | sí | sí |
+| Coach de IA (brief, plan del día, chat, revisión semanal, entreno y dieta) | no | **Estándar** (DeepSeek) | **Máxima potencia** (modelo top) + modo profundo |
+| Comunidad privada, grupos de 5-8 por objetivo, ranking propio | no | no | sí |
+| Revisión semanal profunda (semana + ficha física + fotos) | no | no | sí |
+| Insignia dorado laurel, acceso anticipado, retos trimestrales con premio | no | no | sí |
+
+| Plan | Mensual | Anual |
 |---|---|---|
-| Hábitos, misiones, XP, racha, contrato, campañas, agenda | sí | sí |
-| Gym, cardio, nutrición, peso, diario, avances, economía | sí | sí |
-| Amigos, ranking y compartir progreso | sí | sí |
-| **Coach de IA**: brief cada mañana, plan del día, chat, revisión semanal, entreno y dieta prescritos | no | **sí** |
+| Pro | **12,99 €** | **99,99 €** (8,33 €/mes · −36 %) |
+| Élite | **29,99 €** | **299 €** · fundador **249 €** (100 plazas, precio congelado) |
 
-- **Mensual: 9,99 €/mes.**
-- **Anual: 79,99 €/año** (6,67 €/mes · −33 % · «4 meses gratis»).
+- Prueba gratis de 7 días: `plan = 'cortesia'` con presupuesto propio de
+  **0,50 $**, nunca el presupuesto entero.
+- La insignia y la comunidad del Élite son estatus, **no XP**: nada de pagar
+  para ganar en el ranking general.
+- Lo gratis es la app entera sin IA y tiene que ser buena de verdad: es la que
+  hace el boca a boca.
 
-Lo gratis es la app entera sin IA: tiene que ser buena de verdad, porque es la
-que hace el boca a boca. Lo que se paga es lo único que nos cuesta dinero.
-
-## Lo que entra limpio, en el peor caso
+## Lo que entra limpio
 
 IVA 21 % incluido en el precio. La comisión de tienda se aplica sobre el
-precio sin IVA. Apple y Google cobran 15 % dentro del Small Business Program
-(menos de 1 M $/año; **hay que solicitarlo**, no es automático) y 30 % fuera.
+precio sin IVA: 15 % dentro del Small Business Program (menos de 1 M $/año;
+**hay que solicitarlo**) y 30 % fuera (solo el primer año de cada
+suscripción; desde el segundo, 15 % siempre).
 
-| Plan | Precio | Sin IVA | Limpio al 15 % | Limpio al 30 % | **Limpio/mes, peor caso** |
-|---|---|---|---|---|---|
-| Mensual | 9,99 € | 8,26 € | 7,02 € | 5,78 € | **5,78 €** |
-| Anual | 79,99 € | 66,11 € | 56,19 € | 46,28 € | **3,86 €** |
+| Plan | Precio | Sin IVA | Limpio al 15 % | Limpio al 30 % |
+|---|---|---|---|---|
+| Pro mensual | 12,99 € | 10,74 € | 9,13 € | 7,51 € |
+| Pro anual | 99,99 € | 82,64 € | 70,24 € | 57,85 € |
+| Élite mensual | 29,99 € | 24,79 € | 21,07 € | 17,35 € |
+| Élite anual | 299 € | 247,11 € | 210,04 € | 172,98 € |
+| Élite fundador | 249 € | 205,79 € | 174,92 € | 144,05 € |
 
-## Lo que puede gastar una cuenta
+## Lo que puede gastar una cuenta en IA
 
-`ai_plans.monthly_budget_micro_usd` = **2,50 $** al mes para mensual, anual y
-cortesía. El candado (`ai_begin_turn`, migración 0020) corta en el servidor al
-llegar; el tope por turno se recorta a lo que quede, así que el exceso máximo
-es una sola llamada al modelo: ~0,05 $ con DeepSeek, ~0,30 $ con Sonnet.
+`ai_plans.monthly_budget_micro_usd`, cortado en servidor por `ai_begin_turn`
+(0020). El exceso máximo es una sola llamada: ~0,05 $ con DeepSeek, ~0,30 $
+con Sonnet. 1 $ ≈ 0,93 €.
 
-Peor caso absoluto por usuario y mes: **2,80 $ ≈ 2,60 €** (tratando 1 $ = 0,93 €;
-aunque el dólar llegara a la paridad, 2,80 €).
+| Plan | Modelo | Presupuesto/mes | **Peor caso/mes** | Peor caso/año |
+|---|---|---|---|---|
+| Prueba (cortesía) | DeepSeek | 0,50 $ | 0,51 € | — |
+| Pro | DeepSeek | 1,50 $ | **1,44 €** | 17,30 € |
+| Élite | Sonnet / top | 4,00 $ | **4,00 €** | 48,00 € |
 
-| Plan | Limpio/mes peor caso | Gasto IA máximo | **Margen mínimo** |
-|---|---|---|---|
-| Mensual | 5,78 € | 2,80 € | **+2,98 €** |
-| Anual | 3,86 € | 2,80 € | **+1,06 €** |
+Qué compra el presupuesto (medido sobre la cuenta más pesada; una normal
+lleva 4-5 veces menos contexto):
 
-Ningún usuario de pago puede costar más de lo que deja, ni en el peor plan, ni
-con la peor comisión, ni gastando el 100 % de su IA todos los meses. El usuario
-típico gasta una fracción del tope, y una cuenta gratuita gasta **cero** de IA
-(el candado la rechaza antes de llamar a ningún modelo).
-
-Costes fijos a repartir: Supabase Pro 25 $/mes, Apple Developer 99 $/año,
-EAS según builds. Con el margen medio real (~4-5 €/usuario) se cubren con
-unos 10 suscriptores.
-
-## Qué compran 2,50 $ — y por qué el proveedor importa
-
-Medido en producción sobre la cuenta más pesada que existe (dossier de 12.000
-tokens + estudios; una cuenta nueva lleva 4-5 veces menos contexto):
-
-| Turno | Sonnet 5 | DeepSeek v4 flash (tarifa de hora punta) |
+| Turno | Sonnet 5 | DeepSeek v4 flash |
 |---|---|---|
 | Chat | 0,20 $ | 0,056 $ |
 | Brief de la mañana | 0,30 $ | 0,036 $ |
 | Revisión semanal | 0,48 $ | 0,029 $ |
 
-- **Con DeepSeek**: 30 briefs (1,08 $) + 4 revisiones (0,12 $) dejan 1,30 $ →
-  unos 25 chats/mes en la cuenta más pesada, 80-120 en una cuenta normal. Es
-  un producto completo.
-- **Con Sonnet**: los 2,50 $ se van en 8 briefs. No perdemos dinero (el candado
-  corta igual), pero el usuario se queda sin IA el día 9 y se da de baja.
+**El Pro solo existe con DeepSeek.** Con Sonnet, 1,50 $ son 5 briefs. Requisito
+de lanzamiento: el enrutado por plan (Pro → DeepSeek, Élite → Anthropic a la
+vez) y los secrets de DeepSeek puestos en el panel de Supabase.
 
-**Requisito de lanzamiento**: los secrets `COACH_BASE_URL`, `COACH_API_KEY` y
-`COACH_MODEL_CHAT` (DeepSeek) puestos en el panel de Supabase. Hoy NO están:
-producción corre en Sonnet. El dueño (`plan = 'owner'`, 40 $/mes de techo de
-seguridad) puede seguir en el modelo que quiera con `COACH_MODEL_RITUAL`.
+## Programa de creadores (clippers)
+
+| Rango | Comisión | Por venta anual |
+|---|---|---|
+| Novato | 25 % | 25 € |
+| Pro | 35 % | 35 € |
+| Élite | 50 % | 50 € |
+
+Reglas:
+
+1. **La base es siempre 100 €**, compre el usuario Pro o Élite.
+2. **Solo el primer pago.** Renovaciones: 0 % (parámetro; como mucho 10 %).
+3. **Retención de 30 días** por reembolsos: si Apple o Google devuelven el
+   dinero (webhook de RevenueCat), la comisión se anula.
+4. **Mensual**: el creador cobra su % **del neto de cada mes cobrado** hasta
+   llegar a lo mismo que en el anual (25/35/50 €). Sustituye a la idea de
+   «pagar entera al tercer mes»: con el Pro mensual, 3 meses dejan 27 € limpios
+   y pagar 50 € ese día pierde dinero si el usuario se va en el cuarto.
+5. El rango se gana por resultados; los Élite pueden llevar además un fijo
+   mensual y el premio del primero del ranking, que salen del presupuesto de
+   marketing, no de esta tabla.
+6. Las vistas (CPM) se pagan fuera, en Whop Content Rewards, también con
+   presupuesto de marketing.
+
+## La cuenta que no puede fallar: primer año por venta
+
+Limpio − comisión del creador − IA en el peor caso. Las renovaciones no llevan
+comisión y dejan mucho más.
+
+| Venta | Tienda 15 %, creador 50 € | Tienda 30 %, creador 50 € | Tienda 30 %, creador 35 € |
+|---|---|---|---|
+| Pro anual | **+2,94 €** | **−9,45 €** ⚠ | +5,55 € |
+| Élite anual | +112,04 € | +74,98 € | +89,98 € |
+| Élite fundador | +76,92 € | +46,05 € | +61,05 € |
+
+| Venta mensual (por mes, mientras cobra) | Tienda 15 %, creador 50 % | Tienda 30 %, creador 50 % |
+|---|---|---|
+| Pro mensual | +3,12 € | +2,31 € |
+| Élite mensual | +6,53 € | +4,68 € |
+
+**Regla de ajuste**: mientras estemos en el Small Business Program, todo
+cuadra. Si salimos (más de 1 M $/año), la comisión sobre un **Pro anual** baja
+a un máximo de 35 %; es la única casilla que pierde.
+
+Costes fijos a repartir: Supabase Pro 25 $/mes, Apple Developer 99 $/año,
+dominio nivl.app 15 $/año.
 
 ## Por qué no Stripe dentro de la app
 
-La Guideline 3.1.1 de Apple y la política de pagos de Google Play obligan a
-vender las suscripciones de contenido digital con su compra integrada. Un
-enlace de Stripe dentro de la app = rechazo en revisión. Por eso:
+La Guideline 3.1.1 de Apple y la política de Google Play obligan a vender las
+suscripciones digitales con su compra integrada; un enlace a Stripe dentro de
+la app = rechazo. Por eso:
 
-- **iOS y Android**: compra integrada (StoreKit / Play Billing) vía RevenueCat,
-  que avisa por webhook y escribe en `subscriptions` con `provider = 'apple'`
-  o `'google'`.
-- **Web (nivl.app)**: Stripe, con el webhook que ya existe
-  (`provider = 'stripe'`), sin comisión de tienda. La app no puede enlazarlo.
+- **iOS y Android**: compra integrada vía RevenueCat, con webhook que escribe
+  en `subscriptions` (`provider = 'apple' | 'google'`) y atribuye la comisión.
+- **Web (nivl.app)**: Stripe, con el webhook que ya existe, sin comisión de
+  tienda. La app no puede enlazarlo.
 
-La tabla `subscriptions` y el candado son agnósticos del proveedor: a
-`ai_begin_turn` le da igual quién cobró.
+## Palancas
 
-## Palancas si algún día hace falta
-
-- Subir o bajar el tope: `update ai_plans set monthly_budget_micro_usd = …`.
-  Sin desplegar nada.
-- Recarga de IA de pago único (consumible) para quien agote el mes.
-- Prueba gratuita de 7 días: solo con `plan = 'cortesia'` y un presupuesto
-  propio más bajo (p. ej. 0,50 $), nunca con el presupuesto entero.
+- Tope de IA: `update ai_plans set monthly_budget_micro_usd = …`, sin desplegar.
+- Packs de turnos profundos (consumibles) para quien agote el mes.
+- Comisiones y retención: parámetros, no código.

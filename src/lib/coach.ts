@@ -85,10 +85,24 @@ async function authHeaders(): Promise<Record<string, string>> {
   };
 }
 
-/** Por qué el candado de gasto (migración 0020) ha dicho que no. */
-export type CoachDenyReason = 'sin_suscripcion' | 'presupuesto_agotado' | 'turno_en_curso';
+/** Por qué el candado de gasto (migraciones 0020 y 0024) ha dicho que no. */
+export type CoachDenyReason =
+  | 'sin_suscripcion'
+  | 'presupuesto_agotado'
+  | 'turno_en_curso'
+  | 'profundo_no_incluido'
+  | 'profundo_agotado';
 
-const DENY_REASONS: readonly CoachDenyReason[] = ['sin_suscripcion', 'presupuesto_agotado', 'turno_en_curso'];
+const DENY_REASONS: readonly CoachDenyReason[] = [
+  'sin_suscripcion',
+  'presupuesto_agotado',
+  'turno_en_curso',
+  'profundo_no_incluido',
+  'profundo_agotado',
+];
+
+/** Potencia del turno (0024): el profundo es solo del Élite y tiene su propio bolsillo. */
+export type CoachMode = 'estandar' | 'profundo';
 
 /**
  * El coach ha rechazado el turno por el candado, no por un fallo. Es una señal
@@ -117,6 +131,10 @@ export function accessNotice(e: CoachAccessError): string {
       return e.message || 'La energía del coach de este mes se ha agotado. Se recarga el día 1.';
     case 'turno_en_curso':
       return 'El sistema sigue respondiendo a tu mensaje anterior. Dale unos segundos.';
+    case 'profundo_no_incluido':
+      return 'El modo profundo es parte de NIVL Élite. El estándar sigue contigo.';
+    case 'profundo_agotado':
+      return 'Has usado tus turnos profundos de este mes. El modo estándar sigue disponible.';
   }
 }
 
@@ -160,12 +178,19 @@ export async function streamCoach(opts: {
   threadId?: string;
   /** Fotos en base64. Viajan solo en este turno: no se guardan en el hilo. */
   imagenes?: { media_type: string; data: string }[];
+  /**
+   * Potencia del turno. Viaja en la cabecera `x-nivl-mode`, no en el cuerpo:
+   * el servidor cruza la puerta del candado antes de leer el cuerpo.
+   */
+  mode?: CoachMode;
   onEvent: (e: CoachEvent) => void;
   signal?: AbortSignal;
 }): Promise<void> {
+  const headers: Record<string, string> = await authHeaders();
+  if (opts.mode === 'profundo') headers['x-nivl-mode'] = 'profundo';
   const res = await streamingFetch(functionsUrl(), {
     method: 'POST',
-    headers: await authHeaders(),
+    headers,
     signal: opts.signal,
     body: JSON.stringify({
       kind: opts.kind ?? 'chat',

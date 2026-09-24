@@ -1,4 +1,5 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
+import * as Haptics from 'expo-haptics';
 import * as ImagePicker from 'expo-image-picker';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -28,10 +29,21 @@ import {
   messageText,
   streamCoach,
   type CoachAction,
+  type CoachMode,
 } from '@/lib/coach';
 import { ensureProfile } from '@/lib/data';
 import { isValidKey, nombreDia } from '@/lib/dates';
-import { energiaAgotada, fetchAiStatus, isPro, proSampleBrief, proToday, type AiStatus } from '@/lib/pro';
+import {
+  energiaAgotada,
+  fetchAiStatus,
+  isPro,
+  lineaProfundos,
+  proSampleBrief,
+  proToday,
+  puedeProfundo,
+  SIN_IA,
+  type AiStatus,
+} from '@/lib/pro';
 import { colors, fonts } from '@/lib/theme';
 
 interface Burbuja {
@@ -155,24 +167,32 @@ export default function CoachScreen() {
   // gratuita vería un instante el chat abierto antes del estado bloqueado.
   const [estadoListo, setEstadoListo] = useState(false);
   const [kind, setKind] = useState<unknown>('general');
+  // Potencia del próximo turno (solo Élite). Vuelve sola a estándar tras cada
+  // turno profundo: que el mes no se queme por despiste.
+  const [modo, setModo] = useState<CoachMode>('estandar');
   const userId = session?.user.id;
+
+  const releerEstado = useCallback(
+    () =>
+      fetchAiStatus()
+        .then((s) => {
+          setEstado(s);
+          if (isPro(s) && !energiaAgotada(s)) setAviso(null);
+        })
+        .catch(() => {}),
+    [],
+  );
 
   // Se relee al volver a la pestaña: quien viene de /pro recién suscrito tiene
   // que encontrarse el chat abierto, no el candado de hace un minuto.
   useFocusEffect(
     useCallback(() => {
       if (!userId) return;
-      fetchAiStatus()
-        .then((s) => {
-          setEstado(s);
-          if (isPro(s) && !energiaAgotada(s)) setAviso(null);
-        })
-        .catch(() => {})
-        .finally(() => setEstadoListo(true));
+      releerEstado().finally(() => setEstadoListo(true));
       ensureProfile(userId)
         .then((p) => setKind(p.profile_kind))
         .catch(() => {});
-    }, [userId]),
+    }, [userId, releerEstado]),
   );
 
   const cargar = useCallback(async () => {
@@ -259,8 +279,12 @@ export default function CoachScreen() {
 
     let acumulado = '';
     const ejecutadas: CoachAction[] = [];
+    // Profundo solo si el bolsillo lo permite AHORA: un estado viejo no manda
+    // un turno caro que el servidor rechazaría.
+    const modoTurno: CoachMode = modo === 'profundo' && puedeProfundo(estado) ? 'profundo' : 'estandar';
     try {
       await streamCoach({
+        mode: modoTurno,
         message: limpio || 'Mira esta foto.',
         threadId: threadId ?? undefined,
         imagenes: fotos.length ? fotos : undefined,
@@ -311,7 +335,7 @@ export default function CoachScreen() {
         setBurbujas((b) => b.filter((x) => x.id !== localId));
         setTexto(limpio);
         if (e.reason === 'sin_suscripcion') {
-          setEstado({ entitled: false, plan: null, budget: 0, spent: 0, remaining: 0 });
+          setEstado(SIN_IA);
         } else {
           setAviso(accessNotice(e));
         }
@@ -322,7 +346,19 @@ export default function CoachScreen() {
     } finally {
       setPensando(false);
       enviando.current = false;
+      // Tras un turno profundo (o su negativa), de vuelta a estándar y con los
+      // turnos que quedan releídos del servidor.
+      if (modoTurno === 'profundo') {
+        setModo('estandar');
+        releerEstado();
+      }
     }
+  };
+
+  const elegirModo = (m: CoachMode) => {
+    if (m === modo) return;
+    Haptics.selectionAsync().catch(() => {});
+    setModo(m);
   };
 
   if (cargando || !estadoListo) {
@@ -358,6 +394,10 @@ export default function CoachScreen() {
       ? `La energía del coach de este mes se ha agotado. ${recarga ? `Se recarga el ${recarga}.` : 'Se recarga el día 1.'}`
       : null);
   const puedeEnviar = (!!texto.trim() || adjuntas.length > 0) && !enviando.current;
+  // El selector de potencia solo existe si el plan incluye el modo profundo.
+  const conPotencia = !sinPro && !!estado?.deepAllowed;
+  const profundoAbierto = puedeProfundo(estado);
+  const modoVisible: CoachMode = modo === 'profundo' && profundoAbierto ? 'profundo' : 'estandar';
 
   return (
     <Screen plain>
@@ -490,6 +530,26 @@ export default function CoachScreen() {
           </Pressable>
         ) : null}
 
+        {conPotencia ? (
+          <View style={styles.potencia}>
+            <View style={styles.potenciaChips} accessibilityRole="radiogroup" accessibilityLabel="Potencia del coach">
+              <Chip small label="Estándar" selected={modoVisible === 'estandar'} onPress={() => elegirModo('estandar')} />
+              <Chip
+                small
+                label="Profundo"
+                icon="telescope-outline"
+                selected={modoVisible === 'profundo'}
+                onPress={() => elegirModo('profundo')}
+                disabled={!profundoAbierto}
+                accessibilityLabel={`Modo profundo. ${lineaProfundos(estado)}`}
+              />
+            </View>
+            <Text style={styles.potenciaTexto} numberOfLines={2}>
+              {lineaProfundos(estado)}
+            </Text>
+          </View>
+        ) : null}
+
         {/* Sin Pro se cierra ESCRIBIR, no leer: con historial (una suscripción
             que venció) la conversación se conserva a la vista. Sin historial,
             el estado bloqueado de arriba ya lleva su propio botón. */}
@@ -501,7 +561,7 @@ export default function CoachScreen() {
             </View>
           )
         ) : (
-          <View style={styles.barra}>
+          <View style={[styles.barra, conPotencia && styles.barraSinLinea]}>
             <Pressable
               onPress={adjuntar}
               disabled={enviando.current}
@@ -674,4 +734,14 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
   },
   adjuntasTexto: { fontFamily: fonts.body, fontSize: 12, color: colors.accentText, flex: 1 },
+  potencia: {
+    paddingHorizontal: 20,
+    paddingTop: 10,
+    paddingBottom: 2,
+    borderTopWidth: 1,
+    borderTopColor: colors.line,
+  },
+  potenciaChips: { flexDirection: 'row', gap: 8 },
+  barraSinLinea: { borderTopWidth: 0 },
+  potenciaTexto: { fontFamily: fonts.body, fontSize: 12, lineHeight: 17, color: colors.textDim, marginTop: 6 },
 });

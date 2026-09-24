@@ -32,6 +32,7 @@ import { construirResumen, periodoMensual, periodoSemanal } from '../_shared/rec
 import { buildContext } from '../_shared/context.ts';
 import { adminClient, userClient, type Db } from '../_shared/db.ts';
 import { buildSystem } from '../_shared/prompt.ts';
+import { elegirModelo, modoDeCabecera, proveedorDe, type Modo, type Routes } from '../_shared/routing.ts';
 import { executeTool, TOOL_DEFS } from '../_shared/tools.ts';
 
 // Cinco vueltas, no ocho. Cada vuelta reenvía el contexto entero y genera
@@ -58,6 +59,11 @@ const HISTORY_LIMIT = 12;
 // sorpresa. Con Sonnet un turno normal ronda 0,07 $ y un brief con herramientas
 // 0,18 $, así que 0,75 $ deja margen de sobra sin dejar pasar una fuga.
 const MAX_COST_MICRO_USD = 750_000; // 0,75 $
+// El modo profundo (solo Élite, 0024) piensa a fondo y escribe más: su freno
+// es el doble. Igual que el estándar, nunca por encima de lo que le queda en
+// su bolsillo.
+const MAX_COST_PROFUNDO_MICRO_USD = 1_500_000; // 1,50 $
+const MAX_TOKENS_PROFUNDO = 16000;
 
 const KINDS = ['chat', 'brief', 'plan', 'revision_semanal', 'cierre_mensual', 'escalada'] as const;
 type Kind = (typeof KINDS)[number];
@@ -71,7 +77,11 @@ const KIND_MECANICO = 'clasificar';
 const KIND_RESUMEN = 'resumen';
 
 /**
- * Modelo por ritual, con dos secretos para cambiarlo sin desplegar:
+ * Modelo por ritual SEGÚN LOS SECRETS. Desde la 0024 el modelo sale primero
+ * del plan (`ai_plans.routes`, ver `_shared/routing.ts`); esto es la reserva
+ * para un plan sin modelo fijado, que hoy es el del owner.
+ *
+ * Dos secretos para cambiarlo sin desplegar:
  *
  *   COACH_MODEL_CHAT    → el del día a día, que es donde está el volumen
  *   COACH_MODEL_RITUAL  → brief, revisión semanal, cierre de mes y escalada
@@ -84,22 +94,34 @@ const KIND_RESUMEN = 'resumen';
  * claude-haiku-4-5 en el panel de Supabase y comparar respuestas: el coste real
  * de cada turno queda en coach_runs, con su modelo al lado.
  */
-function modeloDe(kind: Kind): string {
+function modeloDeEnv(kind: Kind): string {
   const chat = Deno.env.get('COACH_MODEL_CHAT')?.trim();
   const ritual = Deno.env.get('COACH_MODEL_RITUAL')?.trim();
   const esCharla = kind === 'chat' || kind === 'plan';
   const elegido = esCharla ? chat || ritual : ritual || chat;
-  if (elegido) return elegido;
+  // Antes, con COACH_BASE_URL puesto y sin modelo, esto lanzaba un error: el
+  // proveedor era global y "claude-sonnet-5" acababa en DeepSeek. Ahora el
+  // proveedor sale del nombre del modelo, así que caer a Claude es seguro.
+  return elegido || COACH_MODEL;
+}
 
-  // Con proveedor externo configurado NO se cae a un modelo de Claude: mandarle
-  // "claude-sonnet-5" a DeepSeek devuelve un 400 que no explica nada. Mejor
-  // decirlo con todas las letras que dejar el sistema mudo.
-  if (proveedorCompatible()) {
-    throw new Error(
-      'Hay un proveedor externo configurado pero no su modelo. Añade el secret COACH_MODEL_CHAT (por ejemplo deepseek-chat o gemini-2.5-flash).',
-    );
-  }
-  return COACH_MODEL;
+/**
+ * El modelo del turno y con quién se habla. Un modelo que no es de Claude va
+ * por la API compatible; si sus secrets (COACH_BASE_URL + COACH_API_KEY) no
+ * están puestos, se cae a COACH_MODEL con un aviso en el log: el producto se
+ * degrada, pero el candado sigue cortando el gasto.
+ */
+function resolverModelo(
+  routes: Routes,
+  kind: Kind,
+  modo: Modo,
+): { model: string; compat: { baseUrl: string; apiKey: string } | null } {
+  const model = elegirModelo(routes, kind, modo, () => modeloDeEnv(kind));
+  if (proveedorDe(model) === 'anthropic') return { model, compat: null };
+  const compat = proveedorCompatible();
+  if (compat) return { model, compat };
+  console.warn(`Modelo ${model} sin COACH_BASE_URL/COACH_API_KEY: se atiende con ${COACH_MODEL}.`);
+  return { model: COACH_MODEL, compat: null };
 }
 
 // Los rituales que deciden el rumbo piensan más que una charla suelta.
@@ -276,13 +298,17 @@ interface RunArgs {
   userText: string;
   today: string;
   imagenes?: { media_type: string; data: string }[];
-  /** Lo que le queda de IA este mes, en microdólares: techo de este turno. */
-  restanteMicro: number;
+  /** Freno de coste del turno, en microdólares (ya acotado por el bolsillo). */
+  topeMicro: number;
+  /** Modelo elegido por el plan y, si no es de Claude, la API compatible. */
+  modelo: string;
+  compat: { baseUrl: string; apiKey: string } | null;
+  modo: Modo;
   emit: (event: string, data: unknown) => void;
 }
 
 async function runCoach(args: RunArgs): Promise<{ text: string; usage: Usage; model: string }> {
-  const { sb, userId, kind, threadId, userText, today, imagenes, restanteMicro, emit } = args;
+  const { sb, userId, kind, threadId, userText, today, imagenes, topeMicro, modelo, compat, modo, emit } = args;
 
   const ctx = await buildContext(sb, userId, today);
   const system = buildSystem(ctx.dossier, kind, ctx.text);
@@ -338,7 +364,12 @@ ${userText}` : userText,
 
   let usage: Usage = {};
   let finalText = '';
-  const elegido = modeloDe(kind);
+  const elegido = modelo;
+  // El profundo piensa a fondo y con más sitio para escribir; el estándar,
+  // lo de cada kind.
+  const esfuerzo: Effort = modo === 'profundo' ? 'xhigh' : EFFORT_BY_KIND[kind];
+  const techo =
+    modo === 'profundo' ? Math.max(MAX_TOKENS_PROFUNDO, MAX_TOKENS_BY_KIND[kind]) : MAX_TOKENS_BY_KIND[kind];
   // Arranca en el elegido, pero lo que se apunta en la contabilidad es el que
   // devuelve la API: con el mecanismo de reserva puede resolver en otro.
   let model = elegido;
@@ -349,7 +380,6 @@ ${userText}` : userText,
     // Si ya no queda reloj, se corta el encadenado: con lo que hay se contesta,
     // y sin él la función muere sin dejar nada.
     const sinTiempo = Date.now() - arranque > PRESUPUESTO_MS;
-    const compat = proveedorCompatible();
     const pedirTurno = (maxTokens: number, effort: Effort) =>
       compat
         ? callOpenAICompat({
@@ -373,7 +403,7 @@ ${userText}` : userText,
             onThinking: () => emit('thinking', {}),
           });
 
-    let turn = await pedirTurno(MAX_TOKENS_BY_KIND[kind], EFFORT_BY_KIND[kind]);
+    let turn = await pedirTurno(techo, esfuerzo);
     usage = addUsage(usage, turn.usage);
 
     // Un turno que SOLO ha pensado esta perdido: ni texto ni herramienta.
@@ -391,7 +421,7 @@ ${userText}` : userText,
     const util = (t: typeof turn) =>
       t.content.some((b) => b.type === 'text' || b.type === 'tool_use');
     if (!util(turn)) {
-      turn = await pedirTurno(MAX_TOKENS_BY_KIND[kind] * 2, 'low');
+      turn = await pedirTurno(techo * 2, 'low');
       usage = addUsage(usage, turn.usage);
     }
 
@@ -423,7 +453,7 @@ ${userText}` : userText,
     // haber costado más de la cuenta.
     if (turn.stopReason !== 'tool_use' || !toolUses.length) break;
 
-    if (costMicroUsd(model, usage) > Math.min(MAX_COST_MICRO_USD, restanteMicro)) {
+    if (costMicroUsd(model, usage) > topeMicro) {
       emit('error', {
         message: 'El sistema ha parado aquí: este turno ya ha costado demasiado.',
       });
@@ -487,21 +517,28 @@ Deno.serve(async (req) => {
   // cualquier llamada a un modelo: suscripción viva, presupuesto del mes sin
   // agotar y ningún otro turno en marcha. Cubre también a los rituales del
   // cron, que entran por aquí con el JWT del usuario.
-  const { data: puerta, error: puertaErr } = await admin.rpc('ai_begin_turn', { p_user: userId });
+  //
+  // El modo va en una CABECERA y no en el cuerpo a propósito: la puerta se
+  // cruza antes de leer el cuerpo. Solo 'profundo' exacto abre ese bolsillo.
+  const modo = modoDeCabecera(req.headers.get('x-nivl-mode'));
+  const { data: puerta, error: puertaErr } = await admin.rpc('ai_begin_turn', { p_user: userId, p_mode: modo });
   if (puertaErr) {
     console.error('ai_begin_turn failed:', puertaErr.message);
     // Cerrado por defecto: si no se puede comprobar, no se gasta.
     return json(503, { error: 'El sistema no puede comprobar tu plan ahora mismo. Vuelve a intentarlo.' });
   }
-  const estado = puerta as { allowed: boolean; reason?: string; remaining: number; renews?: string };
-  if (!estado.allowed) {
+  const estado = puerta as Puerta | null;
+  if (!estado || estado.allowed !== true) {
     const MENSAJES: Record<string, [number, string]> = {
       sin_suscripcion: [402, 'El coach es parte de NIVL Pro.'],
-      presupuesto_agotado: [402, `Has agotado la IA de este mes. Se renueva el ${estado.renews ?? 'día 1'}.`],
+      presupuesto_agotado: [402, `Has agotado la IA de este mes. Se renueva el ${estado?.renews ?? 'día 1'}.`],
       turno_en_curso: [429, 'El sistema todavía está respondiendo a tu mensaje anterior.'],
+      // Lo que recibe un Pro que pide el modo profundo.
+      profundo_no_incluido: [402, 'El modo profundo es parte de NIVL Élite.'],
+      profundo_agotado: [402, 'Has usado tus turnos profundos de este mes. El modo estándar sigue disponible.'],
     };
-    const [status, error] = MENSAJES[estado.reason ?? ''] ?? [402, 'Sin acceso a la IA.'];
-    return json(status, { error, reason: estado.reason });
+    const [status, error] = MENSAJES[estado?.reason ?? ''] ?? [402, 'Sin acceso a la IA.'];
+    return json(status, { error, reason: estado?.reason });
   }
 
   const soltar = () =>
@@ -511,7 +548,7 @@ Deno.serve(async (req) => {
     );
   let res: Response;
   try {
-    res = await atender(req, userId, token, Number(estado.remaining) || 0);
+    res = await atender(req, userId, token, estado, modo);
   } catch (e) {
     await soltar();
     throw e;
@@ -526,7 +563,22 @@ Deno.serve(async (req) => {
   return new Response(res.body.pipeThrough(alTerminar), { status: res.status, headers: res.headers });
 });
 
-async function atender(req: Request, userId: string, token: string, restanteMicro: number): Promise<Response> {
+/** Lo que devuelve `ai_begin_turn` (0024). Importes en microdólares. */
+interface Puerta {
+  allowed: boolean;
+  reason?: string;
+  remaining?: number;
+  renews?: string;
+  mode?: Modo;
+  /** Lo que queda en el bolsillo del modo de este turno: su techo de gasto. */
+  turn_budget?: number;
+  routes?: Routes;
+}
+
+async function atender(req: Request, userId: string, token: string, estado: Puerta, modo: Modo): Promise<Response> {
+  // Con la 0024 aplicada llega turn_budget; con la puerta de 0020, remaining.
+  const restanteMicro = Number(estado.turn_budget ?? estado.remaining) || 0;
+  const routes: Routes = estado.routes && typeof estado.routes === 'object' ? estado.routes : {};
 
   let body: {
     kind?: string;
@@ -556,6 +608,7 @@ async function atender(req: Request, userId: string, token: string, restanteMicr
       const { error: ledgerErr } = await admin.from('coach_runs').insert({
         user_id: userId,
         kind: KIND_MECANICO,
+        mode: modo,
         model: r.model,
         in_tokens: r.usage.input_tokens ?? 0,
         cache_read_tokens: r.usage.cache_read_input_tokens ?? 0,
@@ -601,6 +654,7 @@ async function atender(req: Request, userId: string, token: string, restanteMicr
       await admin.from('coach_runs').insert({
         user_id: userId,
         kind: `resumen_${periodo}`,
+        mode: modo,
         model: r.model,
         in_tokens: r.usage.input_tokens ?? 0,
         cache_read_tokens: r.usage.cache_read_input_tokens ?? 0,
@@ -656,6 +710,12 @@ async function atender(req: Request, userId: string, token: string, restanteMicr
   const prompt = userText || `[ritual: ${kind}]`;
   const wantsStream = body.stream !== false;
 
+  // La "revisión semanal profunda" del Élite no es un modo: sale de sus routes
+  // (Sonnet, y revision_semanal ya piensa en 'xhigh'), cuenta en el bolsillo
+  // estándar y no gasta turnos profundos del usuario.
+  const { model: modelo, compat } = resolverModelo(routes, kind, modo);
+  const topeMicro = Math.min(modo === 'profundo' ? MAX_COST_PROFUNDO_MICRO_USD : MAX_COST_MICRO_USD, restanteMicro);
+
   // El libro de cuentas lo escribe el SERVIDOR, no el usuario: coach_runs solo
   // tiene política de lectura, así que con el cliente del usuario la inserción
   // la bloquearía RLS en silencio y el coste no quedaría registrado.
@@ -666,7 +726,8 @@ async function atender(req: Request, userId: string, token: string, restanteMicr
     const { error: ledgerErr } = await admin.from('coach_runs').insert({
       user_id: userId,
       kind,
-      model: result?.model ?? modeloDe(kind),
+      mode: modo,
+      model: result?.model ?? modelo,
       in_tokens: result?.usage.input_tokens ?? 0,
       cache_read_tokens: result?.usage.cache_read_input_tokens ?? 0,
       cache_write_tokens: result?.usage.cache_creation_input_tokens ?? 0,
@@ -715,7 +776,10 @@ async function atender(req: Request, userId: string, token: string, restanteMicr
         userText: prompt,
         today,
         imagenes: body.imagenes,
-        restanteMicro,
+        topeMicro,
+        modelo,
+        compat,
+        modo,
         emit: () => {},
       });
       await finish(result, null);
@@ -759,7 +823,10 @@ async function atender(req: Request, userId: string, token: string, restanteMicr
           userText: prompt,
           today,
           imagenes: body.imagenes,
-          restanteMicro,
+          topeMicro,
+          modelo,
+          compat,
+          modo,
           emit,
         });
         await finish(result, null);

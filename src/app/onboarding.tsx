@@ -75,6 +75,8 @@ export default function Onboarding() {
   // Quien ya tiene coach (una cuenta de cortesía que rehace el onboarding) no
   // ve la oferta: tras firmar, entra.
   const yaEsPro = useRef(false);
+  // La cuenta nunca tuvo coach: el paso 6 ofrece la prueba de 7 días.
+  const [pruebaDisponible, setPruebaDisponible] = useState(false);
   // Volver atrás no puede duplicar nada. Las misiones creadas se recuerdan
   // (título → id) para reconciliar si se cambia la selección al volver a
   // pasar; el objetivo solo se reescribe en la crónica si ha cambiado; y el
@@ -102,6 +104,7 @@ export default function Onboarding() {
     fetchAiStatus()
       .then((s) => {
         yaEsPro.current = isPro(s);
+        setPruebaDisponible(s.trialAvailable);
       })
       .catch(() => {});
   }, [userId]);
@@ -261,7 +264,9 @@ export default function Onboarding() {
 
   const meta = kind ? KINDS[kind] : null;
   const firmaOk = firmaValida(firma, name);
-  const oferta = useProOffer({ userId, onPurchased: finish });
+  // Mientras la tienda esté cerrada, la prueba de 7 días es la acción principal
+  // de este paso (si la cuenta nunca tuvo coach). Empezarla cierra el onboarding.
+  const oferta = useProOffer({ userId, onPurchased: finish, trialAvailable: pruebaDisponible, onTrialStarted: finish });
 
   // Con el nombre bien escrito el teclado sobra: tapaba justo el anillo que
   // hay que mantener pulsado. Se recoge solo y se baja hasta la firma.

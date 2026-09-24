@@ -141,16 +141,15 @@ function admiteReserva(model: string): boolean {
 }
 
 /**
- * ¿A quién le hablamos?
+ * Las credenciales de la API compatible con OpenAI — DeepSeek, Gemini por su
+ * capa compatible, Qwen, Kimi, Groq o la propia OpenAI —, si están puestas
+ * (COACH_BASE_URL y COACH_API_KEY en los secretos del panel).
  *
- * Con COACH_BASE_URL y COACH_API_KEY puestos en los secretos del panel, el
- * coach deja de hablar con Anthropic y pasa a cualquier API compatible con
- * OpenAI — DeepSeek, Gemini por su capa compatible, Qwen, Kimi, Groq o la
- * propia OpenAI. Sin tocar código y sin desplegar.
- *
- * Se hace por configuración y no por una constante porque el proveedor es una
- * decisión de negocio (coste por usuario), no de arquitectura: probar uno nuevo
- * tiene que costar dos minutos y poder revertirse igual de rápido.
+ * Ya NO es "el proveedor global": desde la 0024 el proveedor de cada turno
+ * sale del nombre del modelo (`_shared/routing.ts → proveedorDe`). Un modelo
+ * `claude-*` va siempre a Anthropic; cualquier otro va por aquí. Así el Pro
+ * (DeepSeek) y el Élite (Anthropic) conviven en la misma función. Sin estos
+ * secrets, un modelo que no es de Claude cae a COACH_MODEL con un aviso.
  */
 export function proveedorCompatible(): { baseUrl: string; apiKey: string } | null {
   const baseUrl = Deno.env.get('COACH_BASE_URL')?.trim();

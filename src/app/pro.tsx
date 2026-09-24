@@ -1,7 +1,8 @@
-// NIVL · NIVL Pro. Se llega desde cualquier sitio con router.push('/pro').
+// NIVL · NIVL Pro y Élite. Se llega desde cualquier sitio con router.push('/pro').
 //
 // Dos caras de la misma pantalla: quien no tiene coach ve la oferta completa
-// (ProOffer); quien ya lo tiene ve su plan y la energía que le queda este mes.
+// (ProOffer, con la prueba de 7 días si nunca la tuvo); quien ya lo tiene ve
+// su plan, la energía que le queda este mes y, en Élite, sus turnos profundos.
 // La energía es el presupuesto de IA del candado (0020) enseñado SIEMPRE como
 // porcentaje: los dólares son cosa nuestra, no del usuario.
 
@@ -15,7 +16,19 @@ import { Card, FadeIn, Row, RowValue, Screen, ScreenHeader, Section, Skeleton, S
 import { useAuth } from '@/lib/auth';
 import { ensureProfile } from '@/lib/data';
 import { isValidKey, nombreDia } from '@/lib/dates';
-import { energiaAgotada, energiaRestante, fetchAiStatus, isPro, planLabel, type AiStatus } from '@/lib/pro';
+import {
+  energiaAgotada,
+  energiaRestante,
+  fetchAiStatus,
+  isElite,
+  isPro,
+  lineaProfundos,
+  planDePago,
+  planLabel,
+  puedeProfundo,
+  turnosProfundos,
+  type AiStatus,
+} from '@/lib/pro';
 import { fetchSubscription } from '@/lib/subscription';
 import { colors, fonts } from '@/lib/theme';
 
@@ -92,16 +105,26 @@ export default function Pro() {
     const agotada = energiaAgotada(status);
     const recarga = fechaLegible(status?.renews);
     const renueva = fechaLegible(periodEnd);
-    const dePago = status?.plan === 'mensual' || status?.plan === 'anual';
+    const prueba = !!status?.trial;
+    const dePago = planDePago(status?.plan) && !prueba;
+    const elite = isElite(status);
+    const conProfundo = !!status?.deepAllowed;
+    const turnos = turnosProfundos(status);
     return (
       <Screen refreshing={refreshing} onRefresh={refrescar}>
         <Stagger>
           <FadeIn index={0}>
             <ScreenHeader
               onBack={salir}
-              eyebrow="NIVL Pro"
+              eyebrow={elite ? 'NIVL Élite' : 'NIVL Pro'}
               title="El coach está contigo."
-              subtitle="Brief, plan del día, entreno, dieta, revisión semanal y memoria. Todo activo."
+              subtitle={
+                elite
+                  ? 'Máxima potencia y modo profundo. Brief, plan del día, entreno, dieta, revisión semanal y memoria.'
+                  : prueba
+                    ? 'Tu prueba de 7 días. Brief, plan del día, entreno, dieta, revisión semanal y memoria.'
+                    : 'Brief, plan del día, entreno, dieta, revisión semanal y memoria. Todo activo.'
+              }
             />
           </FadeIn>
 
@@ -119,11 +142,29 @@ export default function Pro() {
           <FadeIn index={2}>
             <Section title="Tu plan">
               <Card padded={false} style={styles.lista}>
-                <Row first title="Plan" trailing={<RowValue tone="accent" strong>{planLabel(status?.plan ?? null)}</RowValue>} />
+                <Row
+                  first
+                  title="Plan"
+                  trailing={
+                    <RowValue tone="accent" strong>
+                      {prueba ? 'Prueba de 7 días' : planLabel(status?.plan ?? null)}
+                    </RowValue>
+                  }
+                />
                 {renueva ? (
                   <Row title={dePago ? 'Próxima renovación' : 'Activo hasta'} trailing={<Text style={styles.valor}>{renueva}</Text>} />
                 ) : null}
-                {recarga ? <Row title="Recarga de energía" trailing={<Text style={styles.valor}>{recarga}</Text>} /> : null}
+                {/* La prueba no se recarga: acaba. La fila de "Activo hasta" ya lo dice. */}
+                {recarga && !prueba ? (
+                  <Row title="Recarga de energía" trailing={<Text style={styles.valor}>{recarga}</Text>} />
+                ) : null}
+                {conProfundo ? (
+                  <Row
+                    title="Turnos profundos"
+                    detail={lineaProfundos(status)}
+                    trailing={<Text style={styles.valor}>{puedeProfundo(status) ? turnos : 'Agotados'}</Text>}
+                  />
+                ) : null}
               </Card>
               {dePago ? (
                 <Text style={styles.nota}>
@@ -154,7 +195,15 @@ export default function Pro() {
           />
         </FadeIn>
         <FadeIn index={1}>
-          <ProOffer userId={userId} kind={kind} exitLabel="Seguir gratis" onExit={salir} onPurchased={load} />
+          <ProOffer
+            userId={userId}
+            kind={kind}
+            exitLabel="Seguir gratis"
+            onExit={salir}
+            onPurchased={load}
+            trialAvailable={!!status?.trialAvailable}
+            onTrialStarted={load}
+          />
         </FadeIn>
       </Stagger>
     </Screen>
