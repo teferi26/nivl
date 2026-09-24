@@ -14,7 +14,7 @@ Instagram, TikTok y YouTube.
 | Hábitos, misiones, XP, racha, contrato, campañas, agenda | sí | sí | sí |
 | Gym, cardio, nutrición, peso, diario, avances, economía | sí | sí | sí |
 | Amigos, ranking y compartir progreso | sí | sí | sí |
-| Coach de IA (brief, plan del día, chat, revisión semanal, entreno y dieta) | no | **Estándar** (DeepSeek) | **Máxima potencia** (modelo top) + modo profundo |
+| Coach de IA (brief, plan del día, chat, revisión semanal, entreno y dieta) | no | **Estándar** (DeepSeek) | **Máxima potencia** (Sonnet) + modo profundo (Sonnet a `xhigh`) |
 | Comunidad privada, grupos de 5-8 por objetivo, ranking propio | no | no | sí |
 | Revisión semanal profunda (semana + ficha física + fotos) | no | no | sí |
 | Insignia dorado laurel, acceso anticipado, retos trimestrales con premio | no | no | sí |
@@ -56,7 +56,7 @@ con Sonnet. 1 $ ≈ 0,93 €.
 |---|---|---|---|---|
 | Prueba (cortesía) | DeepSeek | 0,50 $ | 0,51 € | — |
 | Pro | DeepSeek | 1,50 $ | **1,44 €** | 17,30 € |
-| Élite | Sonnet / top | 4,00 $ | **4,00 €** | 48,00 € |
+| Élite | Sonnet (2,50 $ estándar + 1,50 $ profundo) | 4,00 $ | **4,00 €** | 48,00 € |
 
 Qué compra el presupuesto (medido sobre la cuenta más pesada; una normal
 lleva 4-5 veces menos contexto):
