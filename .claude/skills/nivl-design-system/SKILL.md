@@ -18,7 +18,7 @@ NIVL es la app de hábitos de la gente de Franky: un gladiador que quiere ser un
 | accentText | #CFCBC2 | texto acento secundario, enlaces |
 | steel / steelDim / steelPanel / steelText | #B9B9B9 / #454545 / #0B0B0B / #D8D8D8 | SOLO campañas (proyectos) |
 | red / redDim / redPanel / redText | #D8414F / #6B242B / #140A0B / #E8C9CD | SOLO alertas y penalización |
-| gold / goldDim | #D6B76A / #4A3E1E | SOLO rachas y hitos (el laurel) |
+| gold / goldDim | #D6B76A / #4A3E1E | SOLO rachas, hitos y el estatus Élite (el laurel: la insignia `EliteBadge` y la sección "Tu ludus") |
 | text / textDim / textFaint | #ECE9E2 / #A5A29A / #7A776F | jerarquía de texto |
 | line, track | #262626 / #1C1C1C | separadores, pistas de barras |
 | franky | #8B5CF6 | SOLO la marca "by Franky" y el botón de cuenta Franky. Nunca como color de interfaz |
@@ -55,6 +55,7 @@ La pantalla es editorial: cabecera grande, secciones con rótulo pequeño y SIN 
 - `XPBar` — barra animada; `segments` para marcar tramos (los 21 días de un hábito).
 - `TabBar` — la barra de pestañas propia (línea blanca arriba en la activa).
 - `SystemWindow` sigue existiendo para compatibilidad, pero en pantallas nuevas o rediseñadas NO se usa: sustituir por `Section` + `Card`.
+- `EliteBadge` (`src/components`) — el laurel dorado de la insignia Élite, junto al nombre (`Row titleAddon`, cabecera de Perfil). Estética pura: nunca ordena ni da puntos.
 - `Hexagon` para avatares y emblemas. Esquinas rectas en todo (borderRadius 0 salvo `Check`, avatar y el emblema del coach). Sin sombras difusas ni degradados.
 
 ### Anatomía de una pantalla rediseñada
@@ -84,7 +85,7 @@ Pantallas: `Screen` (padding horizontal 20, inferior 40) → `ScreenHeader` → 
 
 - Español, segunda persona, frases cortas, dramatismo sobrio: "El sistema ha aplicado −38 XP." / "El sistema está satisfecho."
 - El sistema nunca suplica ni usa signos de exclamación dobles; constata. La calidez se permite solo en momentos ganados (level-up, racha hito).
-- Términos fijos: misiones (no "tareas" en UI de hábitos), campañas (proyectos; en las herramientas del coach y en las rutas siguen llamándose mazmorra/dungeon), gladiador (usuario), cierre (medianoche), evidencia, penalización, racha. Nada de "cazador", "sistema de Solo Leveling", "despertar como jugador".
+- Términos fijos: ludus (el grupo de 5 a 8 Élite; nunca "escuadra" en UI; en BD `elite_groups`), misiones (no "tareas" en UI de hábitos), campañas (proyectos; en las herramientas del coach y en las rutas siguen llamándose mazmorra/dungeon), gladiador (usuario), cierre (medianoche), evidencia, penalización, racha. Nada de "cazador", "sistema de Solo Leveling", "despertar como jugador".
 - Sin emojis en la UI; iconos Ionicons/MaterialCommunityIcons outline.
 - La cuenta es de Franky: en pantallas de acceso se dice "tu cuenta de Franky", nunca "tu proyecto de Supabase".
 

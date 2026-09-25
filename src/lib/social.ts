@@ -5,6 +5,7 @@
 // misiones de otra persona: la RLS no lo permite y así debe seguir. De un amigo
 // solo existe lo que friends_board decide devolver.
 
+import { mensajeLudus, normalizarNota, parseMiLudus, type MiLudus } from './elite';
 import type { ProfileKind } from './kinds';
 import type { Competidor } from './socialmath';
 import { supabase } from './supabase';
@@ -43,10 +44,8 @@ interface BoardRow {
   window_days: number;
 }
 
-export async function fetchBoard(days: number): Promise<BoardEntry[]> {
-  const { data, error } = await supabase.rpc('friends_board', { p_days: days });
-  if (error) throw error;
-  return ((data ?? []) as BoardRow[]).map((r) => ({
+function toEntry(r: BoardRow): BoardEntry {
+  return {
     userId: r.user_id,
     friendshipId: r.friendship_id,
     isMe: r.is_me,
@@ -63,7 +62,13 @@ export async function fetchBoard(days: number): Promise<BoardEntry[]> {
     completed: r.completed ?? 0,
     compliancePct: r.compliance_pct,
     windowDays: r.window_days,
-  }));
+  };
+}
+
+export async function fetchBoard(days: number): Promise<BoardEntry[]> {
+  const { data, error } = await supabase.rpc('friends_board', { p_days: days });
+  if (error) throw error;
+  return ((data ?? []) as BoardRow[]).map(toEntry);
 }
 
 export interface FriendRequest {
@@ -141,4 +146,48 @@ export async function fetchSocialSelf(userId: string): Promise<SocialSelf> {
 export async function setSocialVisible(userId: string, visible: boolean): Promise<void> {
   const { error } = await supabase.from('profiles').update({ social_visible: visible }).eq('id', userId);
   if (error) throw error;
+}
+
+// ── Élite: insignia y ludus (0026) ──────────────────────────────────
+// Todo es estatus: nada de aquí toca XP, racha ni el orden de un ranking. El
+// servidor revalida el nivel (user_tier) en cada RPC; lo que el cliente crea
+// de sí mismo no abre nada.
+
+/**
+ * Los user_id con insignia Élite que puedo ver: yo, mis amigos y mi ludus,
+ * respetando social_visible. Es un adorno: si falla, la pantalla sigue sin él.
+ */
+export async function fetchEliteBadges(): Promise<Set<string>> {
+  const { data, error } = await supabase.rpc('elite_badges');
+  if (error) throw error;
+  return new Set(((data ?? []) as { user_id: string }[]).map((r) => r.user_id));
+}
+
+/** Mi ludus, mi petición pendiente y si el servidor me considera Élite. */
+export async function fetchMyEliteGroup(): Promise<MiLudus> {
+  const { data, error } = await supabase.rpc('my_elite_group');
+  if (error) throw error;
+  return parseMiLudus(data);
+}
+
+/**
+ * Pide plaza en un ludus. Los "no" de negocio llegan como {ok:false, reason}
+ * y se convierten en ErrorVisible con su frase.
+ */
+export async function requestEliteGroup(goal: ProfileKind, note: string): Promise<void> {
+  const limpia = normalizarNota(note);
+  const { data, error } = await supabase.rpc('elite_request_group', {
+    p_goal: goal,
+    p_note: limpia.length > 0 ? limpia : null,
+  });
+  if (error) throw error;
+  const r = data as { ok?: boolean; reason?: string } | null;
+  if (!r?.ok) throw new ErrorVisible(mensajeLudus(r?.reason));
+}
+
+/** El marcador de mi ludus: mismas filas y mismos recortes que `fetchBoard`. */
+export async function fetchGroupBoard(days: number): Promise<BoardEntry[]> {
+  const { data, error } = await supabase.rpc('elite_group_board', { p_days: days });
+  if (error) throw error;
+  return ((data ?? []) as BoardRow[]).map(toEntry);
 }

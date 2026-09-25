@@ -312,11 +312,16 @@ export const PRO_BENEFITS: readonly ProBenefit[] = [
   { icon: 'chatbubble-ellipses-outline', title: 'Control total por chat', detail: 'Díselo y lo hace: misiones, agenda, normas, metas.' },
 ];
 
-// Lo que el Élite añade. SOLO lo que ya existe (Apple 3.1.2): la comunidad,
-// las escuadras y la insignia llegan en la fase 3 y se añaden entonces.
+// Lo que el Élite añade. SOLO lo que ya existe (Apple 3.1.2). Desde la fase 3
+// (0026): el ludus, la insignia y la revisión semanal con el modelo top a
+// máximo esfuerzo (`revision_semanal` va a 'xhigh' en la función coach). Los
+// retos trimestrales y el acceso anticipado, cuando tengan contenido.
 export const ELITE_BENEFITS: readonly ProBenefit[] = [
   { icon: 'flash-outline', title: 'Máxima potencia', detail: 'Un modelo de primera línea en cada brief, plan, revisión y conversación.' },
   { icon: 'telescope-outline', title: 'Modo profundo', detail: 'Para lo que pide pensarlo a fondo: el coach se toma su tiempo y responde con más detalle.' },
+  { icon: 'analytics-outline', title: 'Revisión semanal a fondo', detail: 'Tu semana medida por el modelo de primera línea, pensando al máximo.' },
+  { icon: 'shield-outline', title: 'Tu ludus', detail: 'De 5 a 8 gladiadores Élite con tu mismo objetivo y un marcador propio.' },
+  { icon: 'ribbon-outline', title: 'Insignia de laurel', detail: 'El laurel dorado junto a tu nombre. Estatus, no puntos: no cambia ningún ranking.' },
 ];
 
 const PRO_EMPHASIS: Record<ProfileKind, string> = {

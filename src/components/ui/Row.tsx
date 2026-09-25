@@ -58,6 +58,8 @@ interface RowProps {
   /** Lo que va a la izquierda: un Check, un icono, una letra. */
   leading?: ReactNode;
   title: string;
+  /** Algo pequeño pegado al título (la insignia Élite). No entra en el texto de accesibilidad. */
+  titleAddon?: ReactNode;
   detail?: string | ReactNode;
   /** Lo que va a la derecha: un valor, una flecha. */
   trailing?: ReactNode;
@@ -80,6 +82,7 @@ interface RowProps {
 export function Row({
   leading,
   title,
+  titleAddon,
   detail,
   trailing,
   done,
@@ -111,9 +114,21 @@ export function Row({
       <Animated.View pointerEvents="none" style={[styles.flash, { opacity: flash }]} />
       {leading ? <View style={styles.leading}>{leading}</View> : null}
       <View style={styles.body}>
-        <Text style={[styles.title, done && styles.titleDone, muted && styles.titleMuted]} numberOfLines={2}>
-          {title}
-        </Text>
+        {titleAddon ? (
+          <View style={styles.titleRow}>
+            <Text
+              style={[styles.title, styles.titleShrink, done && styles.titleDone, muted && styles.titleMuted]}
+              numberOfLines={2}
+            >
+              {title}
+            </Text>
+            {titleAddon}
+          </View>
+        ) : (
+          <Text style={[styles.title, done && styles.titleDone, muted && styles.titleMuted]} numberOfLines={2}>
+            {title}
+          </Text>
+        )}
         {detail ? (
           typeof detail === 'string' ? (
             <Text style={styles.detail} numberOfLines={2}>
@@ -169,6 +184,8 @@ const styles = StyleSheet.create({
   leading: { alignItems: 'center', justifyContent: 'center' },
   body: { flex: 1, minWidth: 0 },
   title: { fontFamily: fonts.semibold, fontSize: 15, lineHeight: 20, color: colors.text },
+  titleRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  titleShrink: { flexShrink: 1 },
   titleDone: { color: colors.textFaint, textDecorationLine: 'line-through' },
   titleMuted: { color: colors.textDim },
   detail: { fontFamily: fonts.body, fontSize: 12.5, lineHeight: 17, color: colors.textFaint, marginTop: 2 },

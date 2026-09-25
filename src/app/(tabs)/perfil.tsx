@@ -20,6 +20,7 @@ import {
   View,
 } from 'react-native';
 import { captureRef } from 'react-native-view-shot';
+import { EliteBadge } from '@/components/EliteBadge';
 import { Hexagon } from '@/components/Hexagon';
 import { SystemButton } from '@/components/SystemButton';
 import { Version } from '@/components/Version';
@@ -61,7 +62,7 @@ import {
   type EstadoAvisos,
 } from '@/lib/notifications';
 import { setApiKey } from '@/lib/oracle';
-import { fetchAiStatus, isPro } from '@/lib/pro';
+import { fetchAiStatus, isElite, isPro } from '@/lib/pro';
 import {
   fetchSubscription,
   isPremium,
@@ -106,6 +107,8 @@ export default function Perfil() {
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   // null = aún no se sabe (o sin red): la fila de Pro se pinta sin detalle.
   const [tieneCoach, setTieneCoach] = useState<boolean | null>(null);
+  // La insignia Élite (0026): estética, nada más. El dueño no la lleva.
+  const [elite, setElite] = useState(false);
   const [freezeOpen, setFreezeOpen] = useState(false);
   const [freezeReason, setFreezeReason] = useState(FREEZE_REASONS[0]!);
   const [freezeDays, setFreezeDays] = useState(3);
@@ -162,7 +165,10 @@ export default function Perfil() {
     if (!userId) return;
     // Por su cuenta: no bloquea el perfil ni lo tumba si falla.
     fetchAiStatus()
-      .then((s) => setTieneCoach(isPro(s)))
+      .then((s) => {
+        setTieneCoach(isPro(s));
+        setElite(isElite(s));
+      })
       .catch(() => {});
     fetchMyReferral()
       .then(setReferral)
@@ -424,16 +430,34 @@ export default function Perfil() {
                   <Text style={styles.heroEyebrow}>
                     {kind.title} · RANGO {rank} · NIVEL {lvl.level}
                   </Text>
-                  <TextInput
-                    style={styles.heroName}
-                    value={name}
-                    onChangeText={setName}
-                    onBlur={saveName}
-                    onSubmitEditing={saveName}
-                    returnKeyType="done"
-                    maxLength={24}
-                    accessibilityLabel="Tu nombre. Toca para cambiarlo."
-                  />
+                  {/* Con insignia, nombre y laurel en fila; sin ella, el campo como siempre
+                      (un TextInput en fila mide por su contenido y no se arriesga a nadie). */}
+                  {elite ? (
+                    <View style={styles.heroNameRow} pointerEvents="box-none">
+                      <TextInput
+                        style={[styles.heroName, styles.heroNameShrink]}
+                        value={name}
+                        onChangeText={setName}
+                        onBlur={saveName}
+                        onSubmitEditing={saveName}
+                        returnKeyType="done"
+                        maxLength={24}
+                        accessibilityLabel="Tu nombre. Toca para cambiarlo."
+                      />
+                      <EliteBadge size={22} style={styles.heroBadge} />
+                    </View>
+                  ) : (
+                    <TextInput
+                      style={styles.heroName}
+                      value={name}
+                      onChangeText={setName}
+                      onBlur={saveName}
+                      onSubmitEditing={saveName}
+                      returnKeyType="done"
+                      maxLength={24}
+                      accessibilityLabel="Tu nombre. Toca para cambiarlo."
+                    />
+                  )}
                   {profile.equipped_title ? (
                     <Text style={styles.equippedTitle} numberOfLines={1}>
                       « {profile.equipped_title.toUpperCase()} »
@@ -974,6 +998,9 @@ const styles = StyleSheet.create({
     color: colors.textDim,
     marginBottom: 4,
   },
+  heroNameRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  heroBadge: { flexShrink: 0 },
+  heroNameShrink: { flexShrink: 1 },
   heroName: {
     fontFamily: fonts.heading,
     fontSize: 30,

@@ -265,6 +265,12 @@ principal y el enlace solo ayuda a quien ya tiene la app.
 
 ## 5. Fase 3 — Élite: insignia y escuadras (servidor + OTA)
 
+> **Implementada el 2026-09-25** (commit local en `feat/coach`, sin aplicar ni
+> publicar). En la interfaz las escuadras son **"ludus"** (§11.6) y la
+> insignia va en oro (§11.5). El script es `scripts/ludus.mjs`, no
+> `escuadras.mjs`. Además de lo de abajo, la 0026 lleva un trigger que
+> revalida Élite y aforo al asignar, y `my_elite_group` responde `eligible`.
+
 Revisado con la lente del game balancer: **nada de esto mueve XP, racha,
 piedras de protección ni el orden de ningún ranking**. La insignia es
 estética; el marcador de escuadra usa exactamente las métricas recortadas de

@@ -3,7 +3,8 @@
 // Antes esto era el azul gladiador de Solo Leveling. Con NIVL abierta a la gente
 // de Franky (emprendedores, deportistas, estudiantes) la interfaz pasa a un
 // monocromo de gladiador: el blanco es el idioma, el gris hierro estructura,
-// el rojo solo avisa y el oro de laurel solo corona (rachas, hitos). El
+// el rojo solo avisa y el oro de laurel solo corona (rachas, hitos y el
+// estatus Élite). El
 // violeta Franky aparece únicamente en la marca "by Franky" y en el botón de
 // cuenta Franky: es un sello, no un color de interfaz.
 //
@@ -30,7 +31,7 @@ export const colors = {
   redDim: '#6B242B',
   redPanel: '#140A0B',
   redText: '#E8C9CD',
-  // SOLO rachas y hitos: el laurel.
+  // SOLO rachas, hitos y el estatus Élite: el laurel.
   gold: '#D6B76A',
   goldDim: '#4A3E1E',
   text: '#ECE9E2',

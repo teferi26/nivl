@@ -20,6 +20,7 @@ import {
   View,
 } from 'react-native';
 import { Avatar } from '@/components/Avatar';
+import { EliteBadge } from '@/components/EliteBadge';
 import { prepararDatosSemana, ShareSemanaModal, type DatosSemana } from '@/components/ShareCardSemana';
 import { SystemButton } from '@/components/SystemButton';
 import {
@@ -39,12 +40,30 @@ import {
   Tag,
 } from '@/components/ui';
 import { useAuth } from '@/lib/auth';
+import {
+  conInsignias,
+  estadoLudus,
+  INSIGNIA_ELITE_LABEL,
+  LUDUS_MAX,
+  LUDUS_MIN,
+  lineaLudus,
+  NOTA_LUDUS_MAX,
+  OBJETIVOS_LUDUS,
+  SIN_LUDUS,
+  type MiLudus,
+} from '@/lib/elite';
 import { levelFromXp } from '@/lib/game';
+import { kindMeta, type ProfileKind } from '@/lib/kinds';
+import { fetchAiStatus, type Tier } from '@/lib/pro';
 import {
   fetchBoard,
+  fetchEliteBadges,
+  fetchGroupBoard,
+  fetchMyEliteGroup,
   fetchRequests,
   fetchSocialSelf,
   removeFriend,
+  requestEliteGroup,
   requestFriend,
   respondRequest,
   setSocialVisible,
@@ -54,6 +73,7 @@ import {
 } from '@/lib/social';
 import {
   clasificar,
+  type Clasificado,
   codigoLegible,
   DIAS_VENTANA,
   errorDeCodigo,
@@ -88,6 +108,71 @@ function ValorRanking({ valor, metrica, tone }: { valor: number | null; metrica:
   );
 }
 
+type Fila = Clasificado<BoardEntry> & { insignia: boolean };
+
+/**
+ * Las filas de un marcador (amigos o ludus). La insignia se pinta junto al
+ * nombre y NO interviene en el orden: llega ya clasificado.
+ */
+function ListaRanking({
+  filas,
+  metrica,
+  atenuado,
+  onLongPress,
+}: {
+  filas: readonly Fila[];
+  metrica: Metrica;
+  atenuado?: boolean;
+  /** Sin él (ludus) no se puede quitar a nadie desde aquí. */
+  onLongPress?: (b: BoardEntry) => void;
+}) {
+  return (
+    <Card padded={false} style={[styles.lista, atenuado && styles.atenuado]}>
+      {filas.map((c, i) => {
+        const b = c.competidor;
+        const nivel = levelFromXp(b.xpTotal).level;
+        const valor = formatoValor(c.valor, metrica);
+        const quitar = !b.isMe && onLongPress ? () => onLongPress(b) : undefined;
+        return (
+          <Row
+            key={b.userId}
+            first={i === 0}
+            style={b.isMe ? styles.miFila : undefined}
+            leading={
+              <View style={styles.puesto}>
+                <Text style={[styles.puestoTexto, c.posicion === 1 && c.valor !== null && styles.oro]}>
+                  {c.valor === null ? '—' : etiquetaPosicion(c.posicion)}
+                </Text>
+                <Avatar size={38} avatarPath={b.avatarPath} name={b.name} />
+              </View>
+            }
+            title={b.isMe ? `${b.name} · tú` : b.name}
+            titleAddon={c.insignia ? <EliteBadge size={14} /> : undefined}
+            detail={
+              <View style={styles.detalle}>
+                <Text style={styles.detalleTexto} numberOfLines={1}>
+                  Nivel {nivel}
+                  {metrica !== 'racha' && b.streakDays > 0 ? ` · racha ${b.streakDays}` : ''}
+                </Text>
+                {b.equippedTitle ? <Tag tone="gold">{b.equippedTitle}</Tag> : null}
+              </View>
+            }
+            trailing={
+              <ValorRanking
+                valor={c.valor}
+                metrica={metrica}
+                tone={metrica === 'racha' && (c.valor ?? 0) > 0 ? 'gold' : b.isMe ? 'accent' : 'dim'}
+              />
+            }
+            onLongPress={quitar}
+            accessibilityLabel={`${c.valor === null ? 'Sin puesto' : `Puesto ${c.posicion}`}. ${b.isMe ? 'Tú' : b.name}${c.insignia ? `, ${INSIGNIA_ELITE_LABEL}` : ''}, nivel ${nivel}, ${valor}.${quitar ? ' Mantén pulsado para quitar.' : ''}`}
+          />
+        );
+      })}
+    </Card>
+  );
+}
+
 export default function Amigos() {
   const { session } = useAuth();
   const userId = session?.user.id;
@@ -109,6 +194,21 @@ export default function Amigos() {
   const [enviando, setEnviando] = useState(false);
   const [copiado, setCopiado] = useState(false);
   const [ocupada, setOcupada] = useState<string | null>(null);
+
+  // ── Élite: insignias y ludus (0026). Todo es adorno o va aparte: si falla,
+  // la arena de amigos se pinta igual.
+  const [insignias, setInsignias] = useState<ReadonlySet<string>>(() => new Set());
+  const [tier, setTier] = useState<Tier>('free');
+  const [miLudus, setMiLudus] = useState<MiLudus>(SIN_LUDUS);
+  const [ludusBoard, setLudusBoard] = useState<BoardEntry[]>([]);
+  const [ventanaLudus, setVentanaLudus] = useState<Ventana>('semana');
+  const [metricaLudus, setMetricaLudus] = useState<Metrica>('xp');
+  const [objetivo, setObjetivo] = useState<ProfileKind | null>(null);
+  const [nota, setNota] = useState('');
+  const [pidiendo, setPidiendo] = useState(false);
+  const [avisoLudus, setAvisoLudus] = useState<{ texto: string; error: boolean } | null>(null);
+  const [cambiarPeticion, setCambiarPeticion] = useState(false);
+  const ventanaLudusViva = useRef<Ventana>('semana');
 
   const [tarjeta, setTarjeta] = useState<DatosSemana | null>(null);
   const [preparando, setPreparando] = useState(false);
@@ -153,15 +253,51 @@ export default function Amigos() {
     }, [load, ventana]),
   );
 
+  // El ludus y las insignias van por su cuenta: con el servidor aún sin la
+  // 0026, o sin red, la sección no aparece y el ranking sale sin laureles.
+  const loadLudus = useCallback(async (v: Ventana) => {
+    ventanaLudusViva.current = v;
+    fetchEliteBadges()
+      .then(setInsignias)
+      .catch(() => {});
+    try {
+      const [ia, mio] = await Promise.all([fetchAiStatus(), fetchMyEliteGroup()]);
+      if (ventanaLudusViva.current !== v) return;
+      setTier(ia.tier);
+      setMiLudus(mio);
+      if (estadoLudus(ia.tier, mio) === 'miembro') {
+        const filas = await fetchGroupBoard(DIAS_VENTANA[v]);
+        if (ventanaLudusViva.current !== v) return;
+        setLudusBoard(filas);
+      } else {
+        setLudusBoard([]);
+      }
+    } catch {
+      /* sin ludus: la pantalla sigue */
+    }
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadLudus(ventanaLudus);
+    }, [loadLudus, ventanaLudus]),
+  );
+
   const refrescar = async () => {
     setRefrescando(true);
-    await load(ventana);
+    await Promise.all([load(ventana), loadLudus(ventanaLudus)]);
     setRefrescando(false);
   };
 
   const visibles = useMemo(() => board.filter((b) => b.visible), [board]);
   const ocultos = useMemo(() => board.filter((b) => !b.visible && !b.isMe), [board]);
-  const ranking = useMemo(() => clasificar(visibles, metrica), [visibles, metrica]);
+  const ranking = useMemo(() => conInsignias(clasificar(visibles, metrica), insignias), [visibles, metrica, insignias]);
+  const estado = estadoLudus(tier, miLudus);
+  const ludusVisibles = useMemo(() => ludusBoard.filter((b) => b.visible), [ludusBoard]);
+  const rankingLudus = useMemo(
+    () => conInsignias(clasificar(ludusVisibles, metricaLudus), insignias),
+    [ludusVisibles, metricaLudus, insignias],
+  );
   const numAmigos = board.filter((b) => !b.isMe).length;
 
   const elegirVentana = (v: Ventana) => {
@@ -285,6 +421,43 @@ export default function Amigos() {
       `${b.name} saldrá de tu ranking y tú del suyo. Para volver hará falta otra solicitud.`,
       'Quitar',
     );
+  };
+
+  // ── Ludus ─────────────────────────────────────────────────────────
+  const elegirVentanaLudus = (v: Ventana) => {
+    if (v === ventanaLudus) return;
+    Haptics.selectionAsync().catch(() => {});
+    setVentanaLudus(v);
+  };
+  const elegirMetricaLudus = (m: Metrica) => {
+    if (m === metricaLudus) return;
+    Haptics.selectionAsync().catch(() => {});
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setMetricaLudus(m);
+  };
+
+  const pedirLudus = async () => {
+    if (lock.current) return;
+    if (!objetivo) {
+      setAvisoLudus({ texto: 'Elige el objetivo de tu ludus.', error: true });
+      return;
+    }
+    lock.current = true;
+    setPidiendo(true);
+    setAvisoLudus(null);
+    try {
+      await requestEliteGroup(objetivo, nota);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      setNota('');
+      setCambiarPeticion(false);
+      await loadLudus(ventanaLudus);
+    } catch (e) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      setAvisoLudus({ texto: mensajeSistema(e), error: true });
+    } finally {
+      lock.current = false;
+      setPidiendo(false);
+    }
   };
 
   // ── Privacidad ────────────────────────────────────────────────────
@@ -509,7 +682,132 @@ export default function Amigos() {
               </FadeIn>
             ) : null}
 
-            <FadeIn index={4}>
+            {estado !== 'fuera' ? (
+              <FadeIn index={4}>
+                <Section
+                  title="Tu ludus"
+                  tone="gold"
+                  meta={miLudus.group ? `${miLudus.group.members}/${miLudus.group.capacity}` : undefined}
+                >
+                  {estado === 'miembro' && miLudus.group ? (
+                    <>
+                      <View style={styles.ludusCabecera}>
+                        <Text style={styles.ludusNombre} numberOfLines={1}>
+                          {miLudus.group.name}
+                        </Text>
+                        <Text style={styles.ludusLinea}>{lineaLudus(miLudus.group)}</Text>
+                      </View>
+                      <View style={styles.segmento} accessibilityRole="radiogroup" accessibilityLabel="Periodo del ludus">
+                        {VENTANAS.map((v) => (
+                          <Chip
+                            key={v.key}
+                            label={v.label}
+                            selected={ventanaLudus === v.key}
+                            onPress={() => elegirVentanaLudus(v.key)}
+                            style={styles.segmentoChip}
+                            accessibilityLabel={`Ludus de ${v.key === 'semana' ? 'los últimos 7 días' : 'los últimos 30 días'}`}
+                          />
+                        ))}
+                      </View>
+                      <ChipWrap style={styles.metricas}>
+                        {METRICAS.map((m) => (
+                          <Chip
+                            key={m}
+                            label={METRICA_LABEL[m]}
+                            small
+                            tone={m === 'racha' ? 'gold' : 'accent'}
+                            selected={metricaLudus === m}
+                            onPress={() => elegirMetricaLudus(m)}
+                            accessibilityLabel={`Ordenar el ludus por ${METRICA_LABEL[m]}`}
+                          />
+                        ))}
+                      </ChipWrap>
+                      <Text style={styles.rivalidad} accessibilityLiveRegion="polite">
+                        {ludusVisibles.length < 2
+                          ? 'Tu ludus aún se está formando. El sistema suma gladiadores de tu mismo objetivo.'
+                          : lineaRivalidad(rankingLudus, metricaLudus, ventanaLudus)}
+                      </Text>
+                      <ListaRanking filas={rankingLudus} metrica={metricaLudus} />
+                      <Text style={styles.hint}>
+                        Las mismas cifras que el ranking de amigos: las penalizaciones no cuentan y nadie compra
+                        puestos. Sin chat: en el ludus se compite con hechos.
+                      </Text>
+                    </>
+                  ) : estado === 'pedido' && !cambiarPeticion ? (
+                    <Card variant="outline" accent={colors.goldDim}>
+                      <EmptyState
+                        compact
+                        icon="hourglass-outline"
+                        title="Petición registrada"
+                        body={`Objetivo: ${kindMeta(miLudus.requestedGoal ?? 'general').label.toLowerCase()}. Cada ludus se forma a mano, con ${LUDUS_MIN} a ${LUDUS_MAX} gladiadores Élite del mismo objetivo. Aparecerá aquí.`}
+                        action={{
+                          label: 'Cambiar la petición',
+                          onPress: () => {
+                            setObjetivo(miLudus.requestedGoal);
+                            setCambiarPeticion(true);
+                          },
+                        }}
+                      />
+                    </Card>
+                  ) : (
+                    <Card>
+                      <Text style={styles.ludusIntro}>
+                        Un ludus es tu escuela de gladiadores: de {LUDUS_MIN} a {LUDUS_MAX} Élite con el mismo
+                        objetivo, midiéndose cada semana. Sin chat ni ruido, solo el marcador. Elige el tuyo y el
+                        sistema te asigna plaza.
+                      </Text>
+                      <ChipWrap style={styles.metricas}>
+                        {OBJETIVOS_LUDUS.map((k) => (
+                          <Chip
+                            key={k}
+                            label={kindMeta(k).label}
+                            small
+                            selected={objetivo === k}
+                            onPress={() => {
+                              setObjetivo(k);
+                              setAvisoLudus(null);
+                            }}
+                            accessibilityLabel={`Objetivo del ludus: ${kindMeta(k).label}`}
+                          />
+                        ))}
+                      </ChipWrap>
+                      <TextInput
+                        style={styles.nota}
+                        value={nota}
+                        onChangeText={setNota}
+                        placeholder="Qué persigues ahora mismo (opcional)"
+                        placeholderTextColor={colors.textFaint}
+                        multiline
+                        maxLength={NOTA_LUDUS_MAX}
+                        accessibilityLabel="Nota para tu ludus, opcional"
+                      />
+                      <Text style={styles.contador}>
+                        {nota.length}/{NOTA_LUDUS_MAX}
+                      </Text>
+                      <SystemButton
+                        title="Pedir plaza"
+                        icon="shield-outline"
+                        variant="outline"
+                        onPress={pedirLudus}
+                        loading={pidiendo}
+                        style={{ marginTop: 12 }}
+                      />
+                      {avisoLudus ? (
+                        <Text
+                          style={[styles.aviso, avisoLudus.error && styles.avisoError]}
+                          accessibilityRole={avisoLudus.error ? 'alert' : undefined}
+                          accessibilityLiveRegion="polite"
+                        >
+                          {avisoLudus.texto}
+                        </Text>
+                      ) : null}
+                    </Card>
+                  )}
+                </Section>
+              </FadeIn>
+            ) : null}
+
+            <FadeIn index={5}>
               <Section title="Ranking" meta={numAmigos > 0 ? `${visibles.length}` : undefined}>
                 {numAmigos === 0 ? (
                   <Card variant="outline">
@@ -552,47 +850,7 @@ export default function Amigos() {
                       {lineaRivalidad(ranking, metrica, ventana)}
                     </Text>
 
-                    <Card padded={false} style={[styles.lista, cambiando && styles.atenuado]}>
-                      {ranking.map((c, i) => {
-                        const b = c.competidor;
-                        const nivel = levelFromXp(b.xpTotal).level;
-                        const valor = formatoValor(c.valor, metrica);
-                        return (
-                          <Row
-                            key={b.userId}
-                            first={i === 0}
-                            style={b.isMe ? styles.miFila : undefined}
-                            leading={
-                              <View style={styles.puesto}>
-                                <Text style={[styles.puestoTexto, c.posicion === 1 && c.valor !== null && styles.oro]}>
-                                  {c.valor === null ? '—' : etiquetaPosicion(c.posicion)}
-                                </Text>
-                                <Avatar size={38} avatarPath={b.avatarPath} name={b.name} />
-                              </View>
-                            }
-                            title={b.isMe ? `${b.name} · tú` : b.name}
-                            detail={
-                              <View style={styles.detalle}>
-                                <Text style={styles.detalleTexto} numberOfLines={1}>
-                                  Nivel {nivel}
-                                  {metrica !== 'racha' && b.streakDays > 0 ? ` · racha ${b.streakDays}` : ''}
-                                </Text>
-                                {b.equippedTitle ? <Tag tone="gold">{b.equippedTitle}</Tag> : null}
-                              </View>
-                            }
-                            trailing={
-                              <ValorRanking
-                                valor={c.valor}
-                                metrica={metrica}
-                                tone={metrica === 'racha' && (c.valor ?? 0) > 0 ? 'gold' : b.isMe ? 'accent' : 'dim'}
-                              />
-                            }
-                            onLongPress={b.isMe ? undefined : () => quitarAmigo(b)}
-                            accessibilityLabel={`${c.valor === null ? 'Sin puesto' : `Puesto ${c.posicion}`}. ${b.isMe ? 'Tú' : b.name}, nivel ${nivel}, ${valor}.${b.isMe ? '' : ' Mantén pulsado para quitar.'}`}
-                          />
-                        );
-                      })}
-                    </Card>
+                    <ListaRanking filas={ranking} metrica={metrica} atenuado={cambiando} onLongPress={quitarAmigo} />
                     <Text style={styles.hint}>
                       {metrica === 'xp'
                         ? 'XP ganado con misiones en el periodo. Las de penalización no cuentan: recuperar no es adelantar.'
@@ -615,7 +873,7 @@ export default function Amigos() {
             </FadeIn>
 
             {ocultos.length > 0 ? (
-              <FadeIn index={5}>
+              <FadeIn index={6}>
                 <Section title="Fuera del ranking" meta={`${ocultos.length}`}>
                   <Card padded={false} style={styles.lista}>
                     {ocultos.map((b, i) => (
@@ -635,7 +893,7 @@ export default function Amigos() {
               </FadeIn>
             ) : null}
 
-            <FadeIn index={6}>
+            <FadeIn index={7}>
               <Section title="Privacidad">
                 <Card padded={false} style={styles.lista}>
                   <Row
@@ -735,4 +993,23 @@ const styles = StyleSheet.create({
   oro: { color: colors.gold },
   detalle: { flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' },
   detalleTexto: { fontFamily: fonts.body, fontSize: 12.5, color: colors.textFaint },
+  ludusCabecera: { marginBottom: 14 },
+  ludusNombre: { fontFamily: fonts.heading, fontSize: 20, color: colors.text },
+  ludusLinea: { fontFamily: fonts.body, fontSize: 13, color: colors.textDim, marginTop: 2 },
+  ludusIntro: { fontFamily: fonts.body, fontSize: 13.5, lineHeight: 20, color: colors.textDim },
+  nota: {
+    borderWidth: 1,
+    borderColor: colors.accentDim,
+    backgroundColor: colors.bg,
+    color: colors.text,
+    fontFamily: fonts.body,
+    fontSize: 14,
+    lineHeight: 20,
+    minHeight: 84,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    marginTop: 14,
+    textAlignVertical: 'top',
+  },
+  contador: { fontFamily: fonts.body, fontSize: 11, color: colors.textFaint, marginTop: 6, textAlign: 'right' },
 });

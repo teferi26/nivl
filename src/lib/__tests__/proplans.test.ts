@@ -121,8 +121,10 @@ describe('NIVL Pro y Élite · la oferta', () => {
     }
     expect(proEmphasis('piloto')).toBe(proEmphasis('general'));
     expect(PRO_BENEFITS.length).toBe(7);
-    // Solo lo que existe (Apple 3.1.2): en la fase 1, potencia y modo profundo.
-    expect(ELITE_BENEFITS.length).toBe(2);
+    // Solo lo que existe (Apple 3.1.2): potencia y modo profundo (fase 1);
+    // revisión a fondo, ludus e insignia (fase 3).
+    expect(ELITE_BENEFITS.length).toBe(5);
+    for (const b of ELITE_BENEFITS) expect(`${b.title} ${b.detail}`).not.toMatch(/escuadra|XP gratis|!/i);
   });
 });
 
