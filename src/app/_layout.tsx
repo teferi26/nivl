@@ -36,7 +36,10 @@ function ProtectedStack() {
   useEffect(() => {
     if (loading) return;
     const inAuthArea = segments[0] === 'login';
-    if (!session && !inAuthArea) {
+    // `c` (nivl://c/CODIGO) también es pública: guarda el código de creador y
+    // salta sola a '/'. Sin esto el guard iba a /login antes de guardarlo.
+    const inPublicArea = inAuthArea || segments[0] === 'c';
+    if (!session && !inPublicArea) {
       router.replace('/login');
     } else if (session && inAuthArea) {
       // A la raíz, no a las pestañas: `index.tsx` es quien mira

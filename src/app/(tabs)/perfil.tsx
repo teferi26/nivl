@@ -1,4 +1,5 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
+import * as Haptics from 'expo-haptics';
 import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -48,6 +49,8 @@ import {
   updateProfile,
   uploadAvatar,
 } from '@/lib/data';
+import { CODIGO_MAX_LENGTH, motivoReferral } from '@/lib/creatormath';
+import { claimReferral, fetchCreatorPanel, fetchMyReferral, type MyReferral } from '@/lib/creators';
 import { addDays, dateKey, isValidKey, nombreDia } from '@/lib/dates';
 import { setFreeze } from '@/lib/engine';
 import { exportAllData } from '@/lib/exporter';
@@ -80,6 +83,7 @@ import { supabase } from '@/lib/supabase';
 import { KINDS, kindMeta, PROFILE_KINDS, type ProfileKind } from '@/lib/kinds';
 import { colors, fonts } from '@/lib/theme';
 import type { Profile } from '@/lib/types';
+import { mensajeSistema } from '@/lib/validation';
 import { voice } from '@/lib/voice';
 
 const FREEZE_REASONS = ['Exámenes', 'Enfermedad', 'Vacaciones'];
@@ -109,6 +113,14 @@ export default function Perfil() {
   const [busy, setBusy] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [avisos, setAvisos] = useState<EstadoAvisos | null>(null);
+  // Programa de creadores: la fila del código solo sale sin atribución y en
+  // plazo; la del panel, solo si esta cuenta es creador.
+  const [referral, setReferral] = useState<MyReferral | null>(null);
+  const [esCreador, setEsCreador] = useState(false);
+  const [codigoOpen, setCodigoOpen] = useState(false);
+  const [codigo, setCodigo] = useState('');
+  const [avisoCodigo, setAvisoCodigo] = useState<string | null>(null);
+  const [codigoBusy, setCodigoBusy] = useState(false);
 
   const refrescarAvisos = useCallback(() => {
     estadoAvisos().then(setAvisos).catch(() => setAvisos(null));
@@ -151,6 +163,12 @@ export default function Perfil() {
     // Por su cuenta: no bloquea el perfil ni lo tumba si falla.
     fetchAiStatus()
       .then((s) => setTieneCoach(isPro(s)))
+      .catch(() => {});
+    fetchMyReferral()
+      .then(setReferral)
+      .catch(() => {});
+    fetchCreatorPanel()
+      .then((p) => setEsCreador(!!p))
       .catch(() => {});
     try {
       const prof = await ensureProfile(userId);
@@ -278,6 +296,35 @@ export default function Perfil() {
     await setApiKey('');
     await supabase.auth.signOut();
     router.replace('/login');
+  };
+
+  const abrirCodigo = () => {
+    setCodigo('');
+    setAvisoCodigo(null);
+    setCodigoOpen(true);
+  };
+
+  const enviarCodigo = async () => {
+    if (codigoBusy || !codigo.trim()) return;
+    setCodigoBusy(true);
+    try {
+      const r = await claimReferral(codigo, 'perfil');
+      if (r.ok) {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+        setReferral({ alias: r.alias, since: new Date().toISOString(), claimable: false });
+        setCodigoOpen(false);
+      } else {
+        setAvisoCodigo(motivoReferral(r.reason));
+        // Ya asignado o fuera de plazo: la fila deja de tener sentido.
+        if (r.reason === 'ya_asignado' || r.reason === 'fuera_de_plazo' || r.reason === 'ya_pagas') {
+          setReferral((prev) => (prev ? { ...prev, claimable: false } : prev));
+        }
+      }
+    } catch (e) {
+      setAvisoCodigo(mensajeSistema(e));
+    } finally {
+      setCodigoBusy(false);
+    }
   };
 
   const onDeleteAccount = () => {
@@ -448,6 +495,24 @@ export default function Perfil() {
                 detail={tieneCoach === null ? undefined : tieneCoach ? 'Activo' : 'Activa el coach'}
                 onPress={() => router.push('/pro')}
               />
+              {referral?.claimable ? (
+                <Row
+                  chevron
+                  leading={<Ionicons name="ticket-outline" size={18} color={colors.text} />}
+                  title="Código de creador"
+                  detail="¿Te trajo alguien? Escribe su código"
+                  onPress={abrirCodigo}
+                />
+              ) : null}
+              {esCreador ? (
+                <Row
+                  chevron
+                  leading={<Ionicons name="megaphone-outline" size={18} color={colors.text} />}
+                  title="Panel de creador"
+                  detail="Tu código, tus ventas y tus pagos"
+                  onPress={() => router.push('/creador')}
+                />
+              ) : null}
             </Card>
           </FadeIn>
 
@@ -762,6 +827,57 @@ export default function Perfil() {
         </KeyboardAvoidingView>
       </Modal>
 
+      <Modal visible={codigoOpen} transparent animationType="slide" onRequestClose={() => setCodigoOpen(false)}>
+        <KeyboardAvoidingView style={styles.backdrop} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+          <Pressable
+            style={styles.backdropTap}
+            onPress={() => setCodigoOpen(false)}
+            accessibilityRole="button"
+            accessibilityLabel="Cerrar"
+          />
+          <View style={styles.sheet}>
+            <View style={styles.sheetHandle} />
+            <Text style={styles.sheetEyebrow}>CÓDIGO DE CREADOR</Text>
+            <Text style={styles.sheetTitle}>¿Quién te trajo?</Text>
+            <Text style={styles.sheetHint}>
+              Si te recomendó NIVL alguien del programa de creadores, escribe su código. No cambia nada para ti y solo
+              se puede poner una vez.
+            </Text>
+            <Text style={styles.label}>Código</Text>
+            <TextInput
+              style={styles.codigoInput}
+              value={codigo}
+              onChangeText={(t) => {
+                setCodigo(t);
+                setAvisoCodigo(null);
+              }}
+              placeholder="CÓDIGO"
+              placeholderTextColor={colors.textFaint}
+              maxLength={CODIGO_MAX_LENGTH + 4}
+              autoCapitalize="characters"
+              autoCorrect={false}
+              autoFocus
+              returnKeyType="done"
+              onSubmitEditing={enviarCodigo}
+              accessibilityLabel="Código del creador que te trajo"
+            />
+            {avisoCodigo ? (
+              <Text style={styles.avisoCodigo} accessibilityRole="alert">
+                {avisoCodigo}
+              </Text>
+            ) : null}
+            <SystemButton
+              title="Guardar código"
+              onPress={enviarCodigo}
+              loading={codigoBusy}
+              disabled={!codigo.trim()}
+              style={{ marginTop: 22 }}
+            />
+            <SystemButton title="Cancelar" variant="ghost" onPress={() => setCodigoOpen(false)} style={{ marginTop: 6 }} />
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
+
       <Modal visible={shareOpen} transparent animationType="fade" onRequestClose={() => setShareOpen(false)}>
         <View style={styles.shareBackdrop}>
           {/* La tarjeta que se captura: monocromo, oro solo para la racha y el título. */}
@@ -956,6 +1072,18 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   hint: { fontFamily: fonts.body, fontSize: 12, color: colors.textFaint, marginTop: 10, lineHeight: 17 },
+  codigoInput: {
+    borderWidth: 1,
+    borderColor: colors.accentDim,
+    backgroundColor: colors.bg,
+    color: colors.text,
+    fontFamily: fonts.number,
+    fontSize: 17,
+    letterSpacing: 3,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+  },
+  avisoCodigo: { fontFamily: fonts.body, fontSize: 13, lineHeight: 18, color: colors.red, marginTop: 10 },
 
   shareBackdrop: {
     flex: 1,

@@ -2,6 +2,7 @@ import { Redirect } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 import { useAuth } from '@/lib/auth';
+import { reintentarCodigoPendiente } from '@/lib/creators';
 import { ensureProfile } from '@/lib/data';
 import { colors } from '@/lib/theme';
 
@@ -18,6 +19,10 @@ export default function Index() {
     ensureProfile(session.user.id)
       .then((p) => {
         if (alive) setOnboarded(p.onboarding_done);
+        // Un código de creador pendiente (del enlace, o de un onboarding sin
+        // red) se reintenta aquí, en silencio. Antes del onboarding no: allí
+        // se precarga en "¿Quién te trajo?" y lo manda el propio paso.
+        if (p.onboarding_done) reintentarCodigoPendiente();
       })
       .catch(() => {
         // Si la lectura falla, no bloqueamos la entrada: mejor dentro que colgado.

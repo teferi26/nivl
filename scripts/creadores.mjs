@@ -1,0 +1,371 @@
+// NIVL · Administración del programa de creadores (local, solo el dueño).
+//
+// No hay pantalla de admin a propósito: así ningún dato de creadores pasa por
+// el repo (que es público) ni por una interfaz expuesta. Este script habla con
+// la base por la Management API, igual que apply-migrations.mjs, con el mismo
+// token (supabase-token.txt, gitignorado, o SUPABASE_ACCESS_TOKEN).
+//
+// Uso:
+//   node scripts/creadores.mjs lista
+//   node scripts/creadores.mjs alta CODIGO "alias" [novato|pro|elite]
+//   node scripts/creadores.mjs vincular CODIGO email
+//   node scripts/creadores.mjs rango CODIGO novato|pro|elite
+//   node scripts/creadores.mjs fijo CODIGO euros
+//   node scripts/creadores.mjs activo CODIGO si|no
+//   node scripts/creadores.mjs premio "texto"        (premio --quitar para borrarlo)
+//   node scripts/creadores.mjs sbp si|no              (Small Business Program de Apple)
+//   node scripts/creadores.mjs informe [AAAA-MM] [--csv]
+//   node scripts/creadores.mjs liquidar CODIGO ["nota"]
+//   node scripts/creadores.mjs pago CODIGO euros fijo_mensual|premio|contenido_externo|ajuste ["nota"]
+//
+// Los exportes (--csv) van a privado/, que está gitignorado. Nunca pegues la
+// salida de este script en un commit, un issue ni una captura.
+//
+// La transferencia real la haces tú fuera (banco, Whop…): `liquidar` y `pago`
+// solo la APUNTAN en creator_payouts para que el panel del creador cuadre.
+
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { createInterface } from 'node:readline/promises';
+import { fileURLToPath } from 'node:url';
+import { missingTokenMessage, readToken } from './token.mjs';
+
+const HERE = dirname(fileURLToPath(import.meta.url));
+const ROOT = join(HERE, '..');
+const PRIVADO = join(ROOT, 'privado');
+
+function readEnv() {
+  const out = {};
+  try {
+    for (const line of readFileSync(join(ROOT, '.env'), 'utf8').split(/\r?\n/)) {
+      const m = line.match(/^\s*([A-Z0-9_]+)\s*=\s*(.*)$/);
+      if (m) out[m[1]] = m[2].trim();
+    }
+  } catch {
+    /* sin .env */
+  }
+  return out;
+}
+
+const env = readEnv();
+const URL_SB = process.env.EXPO_PUBLIC_SUPABASE_URL ?? env.EXPO_PUBLIC_SUPABASE_URL ?? '';
+const REF = URL_SB.match(/https:\/\/([a-z0-9]+)\.supabase\.co/)?.[1];
+
+function fallo(msg) {
+  console.error(msg);
+  process.exit(1);
+}
+
+async function sql(query) {
+  const token = readToken(ROOT);
+  if (!REF) fallo('No se pudo deducir el project ref de EXPO_PUBLIC_SUPABASE_URL.');
+  if (!token) fallo(missingTokenMessage(ROOT));
+  const res = await fetch(`https://api.supabase.com/v1/projects/${REF}/database/query`, {
+    method: 'POST',
+    headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' },
+    body: JSON.stringify({ query }),
+  });
+  const text = await res.text();
+  if (!res.ok) throw new Error(`${res.status}: ${text.slice(0, 600)}`);
+  try {
+    return JSON.parse(text);
+  } catch {
+    return text;
+  }
+}
+
+// ── Validación y literales ──────────────────────────────────────────
+// Todo lo que entra en el SQL pasa por aquí: o se valida contra un patrón
+// cerrado, o va como literal con las comillas escapadas.
+
+/** Literal de texto SQL. */
+function q(v) {
+  const s = String(v);
+  if (s.includes('\u0000')) fallo('Texto con caracteres no válidos.');
+  return `'${s.replace(/'/g, "''")}'`;
+}
+
+const RANGOS = ['novato', 'pro', 'elite'];
+const TIPOS_PAGO = ['fijo_mensual', 'premio', 'contenido_externo', 'ajuste'];
+
+function codigo(raw) {
+  const c = String(raw ?? '').replace(/\s/g, '').toUpperCase();
+  if (!/^[A-Z0-9_]{3,20}$/.test(c)) fallo(`Código no válido: «${raw ?? ''}». De 3 a 20 letras, números o _.`);
+  return c;
+}
+
+function rango(raw) {
+  const r = String(raw ?? '').toLowerCase().replace('é', 'e');
+  if (!RANGOS.includes(r)) fallo(`Rango no válido: «${raw ?? ''}». Usa ${RANGOS.join(' | ')}.`);
+  return r;
+}
+
+/** "12,50" o "12.50" → 1250. `negativo` solo para ajustes. */
+function centimos(raw, { negativo = false } = {}) {
+  const s = String(raw ?? '').trim().replace(',', '.');
+  if (!/^-?\d+(\.\d{1,2})?$/.test(s)) fallo(`Importe no válido: «${raw ?? ''}». Ejemplo: 25 o 12,50.`);
+  const c = Math.round(Number(s) * 100);
+  if (c < 0 && !negativo) fallo('El importe no puede ser negativo aquí.');
+  if (Math.abs(c) > 10_000_000) fallo('Importe fuera de rango.');
+  return c;
+}
+
+function siNo(raw) {
+  const s = String(raw ?? '').toLowerCase();
+  if (['si', 'sí', 'true', 'on', '1'].includes(s)) return true;
+  if (['no', 'false', 'off', '0'].includes(s)) return false;
+  return fallo(`Usa si | no (recibido «${raw ?? ''}»).`);
+}
+
+function mesActualMadrid() {
+  const partes = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Madrid', year: 'numeric', month: '2-digit' })
+    .formatToParts(new Date());
+  const y = partes.find((p) => p.type === 'year')?.value;
+  const m = partes.find((p) => p.type === 'month')?.value;
+  return `${y}-${m}`;
+}
+
+const eur = (cents) => `${(Number(cents ?? 0) / 100).toFixed(2).replace('.', ',')} €`;
+
+async function creadorPorCodigo(c) {
+  const [row] = await sql(
+    `select id, code, alias, rank, active, monthly_fixed_cents, user_id is not null as vinculado
+     from public.creators where code = ${q(c)};`,
+  );
+  if (!row) fallo(`No hay ningún creador con el código ${c}.`);
+  return row;
+}
+
+async function confirmar(pregunta, esperado) {
+  const rl = createInterface({ input: process.stdin, output: process.stdout });
+  const r = (await rl.question(`${pregunta} Escribe ${esperado} para confirmar: `)).trim();
+  rl.close();
+  return r === esperado;
+}
+
+// ── Comandos ────────────────────────────────────────────────────────
+
+async function lista() {
+  const rows = await sql(
+    `select c.code, c.alias, c.rank, c.active as activo, c.user_id is not null as vinculado,
+            c.monthly_fixed_cents as fijo,
+            (select count(*) from public.referrals r where r.creator_id = c.id)::int as cuentas
+     from public.creators c order by c.active desc, c.created_at;`,
+  );
+  if (!rows.length) return console.log('Aún no hay creadores. Da de alta uno con: alta CODIGO "alias" [rango]');
+  console.table(rows.map((r) => ({ ...r, fijo: eur(r.fijo) })));
+}
+
+async function alta(rawCode, alias, rawRango = 'novato') {
+  const c = codigo(rawCode);
+  const a = String(alias ?? '').trim();
+  if (!a || a.length > 40) fallo('El alias va entre comillas y tiene de 1 a 40 caracteres.');
+  const r = rango(rawRango);
+  const res = await sql(
+    `insert into public.creators (code, alias, rank) values (${q(c)}, ${q(a)}, ${q(r)})
+     on conflict (code) do nothing returning code;`,
+  );
+  if (!res.length) fallo(`El código ${c} ya existe.`);
+  console.log(`Alta: ${c} · ${a} · creador ${r}. Enlace: nivl://c/${c}`);
+  console.log('Para que vea su panel en la app: vincular CODIGO email-de-su-cuenta');
+}
+
+async function vincular(rawCode, email) {
+  const c = codigo(rawCode);
+  const e = String(email ?? '').trim().toLowerCase();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)) fallo('Email no válido.');
+  const res = await sql(
+    `with u as (select id from auth.users where lower(email) = ${q(e)} limit 1)
+     update public.creators set user_id = (select id from u)
+     where code = ${q(c)} and exists (select 1 from u)
+     returning code;`,
+  );
+  if (!res.length) fallo('No se ha vinculado: o el código no existe o esa cuenta no ha entrado nunca en NIVL.');
+  console.log(`${c} vinculado a su cuenta. Verá "Panel de creador" en Perfil.`);
+}
+
+async function cambiarRango(rawCode, rawRango) {
+  const c = codigo(rawCode);
+  const r = rango(rawRango);
+  const res = await sql(`update public.creators set rank = ${q(r)} where code = ${q(c)} returning code;`);
+  if (!res.length) fallo(`No hay ningún creador con el código ${c}.`);
+  console.log(`${c} ahora es creador ${r}. Las comisiones ya generadas conservan su % (foto del cobro).`);
+}
+
+async function fijo(rawCode, euros) {
+  const c = codigo(rawCode);
+  const cents = centimos(euros);
+  const res = await sql(`update public.creators set monthly_fixed_cents = ${cents} where code = ${q(c)} returning code;`);
+  if (!res.length) fallo(`No hay ningún creador con el código ${c}.`);
+  console.log(`${c}: fijo mensual ${eur(cents)}. Se apunta al pagarlo, con: pago ${c} ${euros} fijo_mensual`);
+}
+
+async function activo(rawCode, valor) {
+  const c = codigo(rawCode);
+  const on = siNo(valor);
+  const res = await sql(`update public.creators set active = ${on} where code = ${q(c)} returning code;`);
+  if (!res.length) fallo(`No hay ningún creador con el código ${c}.`);
+  console.log(on ? `${c} activo.` : `${c} desactivado: su código deja de aceptarse y no genera comisiones nuevas.`);
+}
+
+async function premio(texto) {
+  if (texto === '--quitar') {
+    await sql('update public.creator_settings set prize_text = null;');
+    return console.log('Premio quitado del panel.');
+  }
+  const t = String(texto ?? '').trim();
+  if (!t || t.length > 200) fallo('El premio va entre comillas y tiene de 1 a 200 caracteres.');
+  await sql(`update public.creator_settings set prize_text = ${q(t)};`);
+  console.log('Premio del mes actualizado en el panel de los creadores.');
+}
+
+async function sbp(valor) {
+  const on = siNo(valor);
+  await sql(`update public.creator_settings set small_business_program = ${on};`);
+  console.log(
+    on
+      ? 'Small Business Program: SÍ. Neto al 15 % y sin tope de % en Pro anual.'
+      : 'Small Business Program: NO. Neto al 30 % y Pro anual limitado a 35 %.',
+  );
+}
+
+async function informe(...args) {
+  const csv = args.includes('--csv');
+  const mes = args.find((a) => a !== '--csv') ?? mesActualMadrid();
+  if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(mes)) fallo('El mes va como AAAA-MM.');
+  const desde = `(${q(`${mes}-01`)}::timestamp at time zone 'Europe/Madrid')`;
+  const hasta = `((${q(`${mes}-01`)}::timestamp + interval '1 month') at time zone 'Europe/Madrid')`;
+
+  const rows = await sql(
+    `select c.code, c.alias, c.rank, c.active,
+       (select count(*) from public.referrals r where r.creator_id = c.id)::int as cuentas,
+       (select count(*) from public.referrals r where r.creator_id = c.id
+          and r.created_at >= ${desde} and r.created_at < ${hasta})::int as cuentas_mes,
+       (select count(distinct s.user_id) from public.commissions k join public.store_sales s on s.id = k.sale_id
+          where k.creator_id = c.id and k.status <> 'anulada' and s.payment_number = 1
+            and s.purchased_at >= ${desde} and s.purchased_at < ${hasta})::int as ventas_mes,
+       (select coalesce(sum(k.amount_cents), 0) from public.commissions k join public.store_sales s on s.id = k.sale_id
+          where k.creator_id = c.id and k.status <> 'anulada'
+            and s.purchased_at >= ${desde} and s.purchased_at < ${hasta})::int as generado_mes,
+       (select coalesce(sum(amount_cents), 0) from public.commissions
+          where creator_id = c.id and status = 'pendiente' and available_at > now())::int as retencion,
+       (select coalesce(sum(amount_cents), 0) from public.commissions
+          where creator_id = c.id and status = 'pendiente' and available_at <= now())::int as disponible,
+       (select coalesce(sum(amount_cents), 0) from public.commissions
+          where creator_id = c.id and clawback and clawback_settled_at is null)::int as clawback,
+       (select coalesce(sum(amount_cents), 0) from public.creator_payouts p
+          where p.creator_id = c.id and p.paid_at >= ${desde} and p.paid_at < ${hasta})::int as pagado_mes,
+       (select coalesce(sum(amount_cents), 0) from public.creator_payouts p where p.creator_id = c.id)::int as pagado_total,
+       c.monthly_fixed_cents as fijo
+     from public.creators c
+     order by ventas_mes desc, c.alias;`,
+  );
+  const [ajustes] = await sql(
+    'select small_business_program, hold_days, renewal_pct, claim_window_days, prize_text from public.creator_settings;',
+  );
+
+  console.log(`Informe de creadores · ${mes} (hora de Madrid)`);
+  console.log(
+    `SBP: ${ajustes?.small_business_program ? 'sí' : 'no'} · retención ${ajustes?.hold_days} días · ` +
+      `renovación ${ajustes?.renewal_pct} % · plazo del código ${ajustes?.claim_window_days} días`,
+  );
+  if (!rows.length) return console.log('Aún no hay creadores.');
+  const dinero = ['generado_mes', 'retencion', 'disponible', 'clawback', 'pagado_mes', 'pagado_total', 'fijo'];
+  console.table(
+    rows.map((r) => Object.fromEntries(Object.entries(r).map(([k, v]) => [k, dinero.includes(k) ? eur(v) : v]))),
+  );
+
+  if (csv) {
+    mkdirSync(PRIVADO, { recursive: true });
+    const cols = Object.keys(rows[0]);
+    const esc = (v) => `"${String(v ?? '').replace(/"/g, '""')}"`;
+    const out = [cols.join(';'), ...rows.map((r) => cols.map((k) => esc(r[k])).join(';'))].join('\n');
+    const file = join(PRIVADO, `creadores-${mes}.csv`);
+    writeFileSync(file, out, 'utf8');
+    console.log(`\nExportado a ${file} (céntimos; privado/ está gitignorado).`);
+  }
+}
+
+async function liquidar(rawCode, nota) {
+  const c = codigo(rawCode);
+  const cr = await creadorPorCodigo(c);
+  const detalle = await sql(
+    `select k.kind, k.pct, k.amount_cents, s.product_id, s.purchased_at::date as cobro, k.available_at::date as disponible_desde
+     from public.commissions k join public.store_sales s on s.id = k.sale_id
+     where k.creator_id = ${q(cr.id)} and k.status = 'pendiente' and k.available_at <= now()
+     order by s.purchased_at;`,
+  );
+  const [claw] = await sql(
+    `select coalesce(sum(amount_cents), 0)::int as cents, count(*)::int as n from public.commissions
+     where creator_id = ${q(cr.id)} and clawback and clawback_settled_at is null;`,
+  );
+  const disponible = detalle.reduce((s, r) => s + Number(r.amount_cents), 0);
+  const aPagar = disponible - Number(claw?.cents ?? 0);
+
+  console.log(`Liquidación de ${cr.code} · ${cr.alias} (creador ${cr.rank})`);
+  if (detalle.length) console.table(detalle.map((r) => ({ ...r, amount_cents: eur(r.amount_cents) })));
+  console.log(`Disponible:  ${eur(disponible)} (${detalle.length} comisiones fuera de retención)`);
+  console.log(`A descontar: ${eur(claw?.cents)} (${claw?.n ?? 0} reembolsos de comisiones ya pagadas)`);
+  console.log(`A pagar:     ${eur(Math.max(aPagar, 0))}`);
+  if (aPagar <= 0) return console.log('\nNada que liquidar ahora.');
+
+  if (!(await confirmar(`\n¿Apuntar el pago de ${eur(aPagar)} a ${cr.code}? La transferencia la haces tú.`, cr.code))) {
+    return console.log('Cancelado. No se ha apuntado nada.');
+  }
+  const nt = nota ? String(nota).slice(0, 280) : null;
+  const [res] = await sql(`select public.liquidate_creator(${q(cr.id)}, ${nt ? q(nt) : 'null'}) as r;`);
+  const r = typeof res?.r === 'string' ? JSON.parse(res.r) : res?.r;
+  if (!r?.ok) return console.log('La base no ha apuntado nada (quizá cambió algo entre medias):', r);
+  console.log(`Apuntado: ${eur(r.amount)} a ${cr.code}. Ya sale en su panel como cobrado.`);
+}
+
+async function pago(rawCode, euros, tipo, nota) {
+  const c = codigo(rawCode);
+  if (!TIPOS_PAGO.includes(tipo)) fallo(`Tipo no válido. Usa ${TIPOS_PAGO.join(' | ')} (las comisiones van con liquidar).`);
+  const cents = centimos(euros, { negativo: tipo === 'ajuste' });
+  const cr = await creadorPorCodigo(c);
+  const nt = nota ? String(nota).slice(0, 280) : null;
+  if (!(await confirmar(`¿Apuntar ${eur(cents)} (${tipo}) a ${cr.code}?`, cr.code))) {
+    return console.log('Cancelado.');
+  }
+  await sql(
+    `insert into public.creator_payouts (creator_id, kind, amount_cents, period, note)
+     values (${q(cr.id)}, ${q(tipo)}, ${cents}, ${q(mesActualMadrid())}, ${nt ? q(nt) : 'null'});`,
+  );
+  console.log(`Apuntado: ${eur(cents)} (${tipo}) a ${cr.code}.`);
+}
+
+// ── Entrada ─────────────────────────────────────────────────────────
+
+const COMANDOS = {
+  lista,
+  alta,
+  vincular,
+  rango: cambiarRango,
+  fijo,
+  activo,
+  premio,
+  sbp,
+  informe,
+  liquidar,
+  pago,
+};
+
+const [cmd, ...args] = process.argv.slice(2);
+const fn = COMANDOS[cmd];
+if (!fn) {
+  console.log(
+    readFileSync(fileURLToPath(import.meta.url), 'utf8')
+      .split('\n')
+      .filter((l) => l.startsWith('//   node'))
+      .map((l) => l.slice(5))
+      .join('\n'),
+  );
+  process.exit(cmd ? 1 : 0);
+}
+
+try {
+  await fn(...args);
+} catch (e) {
+  fallo(`Falló: ${e.message}`);
+}

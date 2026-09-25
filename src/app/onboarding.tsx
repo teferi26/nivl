@@ -33,6 +33,14 @@ import {
   type Horizonte,
 } from '@/lib/compromiso';
 import { sealLetter } from '@/lib/contract';
+import { CODIGO_MAX_LENGTH, motivoReferral, normalizarCodigo } from '@/lib/creatormath';
+import {
+  claimReferral,
+  guardarCodigoPendiente,
+  leerCodigoPendiente,
+  olvidarCodigoPendiente,
+  type ReferralSource,
+} from '@/lib/creators';
 import { createStarterQuests, deleteQuest, ensureProfile, insertEvent, updateProfile } from '@/lib/data';
 import { addDays, dateKey, fechaConAnio } from '@/lib/dates';
 import { KINDS, PROFILE_KINDS, type ProfileKind } from '@/lib/kinds';
@@ -63,6 +71,13 @@ export default function Onboarding() {
   const userId = session?.user.id;
   const [step, setStep] = useState(0);
   const [name, setName] = useState('');
+  // "¿Quién te trajo?": opcional, precargado si se entró por nivl://c/CODIGO.
+  const [codigo, setCodigo] = useState('');
+  const [avisoCodigo, setAvisoCodigo] = useState<string | null>(null);
+  const codigoDelEnlace = useRef<string | null>(null);
+  // El último código que el servidor ya contestó (aceptado o rechazado): con
+  // el mismo código, Continuar ya no pregunta otra vez y deja seguir.
+  const codigoResuelto = useRef<string | null>(null);
   const [kind, setKind] = useState<ProfileKind | null>(null);
   const [goal, setGoal] = useState('');
   const [target, setTarget] = useState('');
@@ -101,6 +116,13 @@ export default function Onboarding() {
         if (p.name && !DEFAULT_NAMES.has(p.name)) setName((n) => n || p.name);
       })
       .catch(() => {});
+    leerCodigoPendiente()
+      .then((p) => {
+        if (!p) return;
+        if (p.source === 'enlace') codigoDelEnlace.current = p.code;
+        setCodigo((c) => c || p.code);
+      })
+      .catch(() => {});
     fetchAiStatus()
       .then((s) => {
         yaEsPro.current = isPro(s);
@@ -123,11 +145,37 @@ export default function Onboarding() {
     }
   };
 
+  /**
+   * Manda el código de creador, si hay. Nunca bloquea el onboarding: un
+   * rechazo se dice en una línea bajo el campo (y con el mismo código, el
+   * siguiente Continuar ya pasa); sin red, queda pendiente y `index.tsx` lo
+   * reintenta al entrar. Devuelve si se puede avanzar ya.
+   */
+  const reclamarCodigo = async (): Promise<boolean> => {
+    const c = normalizarCodigo(codigo);
+    if (!c || codigoResuelto.current === c) return true;
+    const fuente: ReferralSource = codigoDelEnlace.current === c ? 'enlace' : 'onboarding';
+    try {
+      const r = await claimReferral(c, fuente);
+      codigoResuelto.current = c;
+      await olvidarCodigoPendiente();
+      if (r.ok) {
+        setAvisoCodigo(null);
+        return true;
+      }
+      setAvisoCodigo(`${motivoReferral(r.reason)} Corrígelo o continúa sin él.`);
+      return false;
+    } catch {
+      await guardarCodigoPendiente(c, fuente);
+      return true;
+    }
+  };
+
   const saveName = () =>
     withLock(async () => {
       if (!name.trim()) return;
       await updateProfile(userId!, { name: name.trim() });
-      setStep(2);
+      if (await reclamarCodigo()) setStep(2);
     });
 
   const saveKind = () =>
@@ -367,6 +415,32 @@ export default function Onboarding() {
                   onSubmitEditing={saveName}
                   accessibilityLabel="Tu nombre"
                 />
+              </Card>
+              <Card variant="outline">
+                <Text style={styles.label}>¿Quién te trajo? · opcional</Text>
+                <TextInput
+                  style={styles.input}
+                  value={codigo}
+                  onChangeText={(t) => {
+                    setCodigo(t);
+                    setAvisoCodigo(null);
+                  }}
+                  placeholder="Código de creador"
+                  placeholderTextColor={colors.textFaint}
+                  maxLength={CODIGO_MAX_LENGTH + 4}
+                  autoCapitalize="characters"
+                  autoCorrect={false}
+                  returnKeyType="done"
+                  onSubmitEditing={saveName}
+                  accessibilityLabel="Código del creador que te trajo, opcional"
+                />
+                {avisoCodigo ? (
+                  <Text style={styles.avisoCodigo} accessibilityRole="alert">
+                    {avisoCodigo}
+                  </Text>
+                ) : (
+                  <Text style={styles.codigoHint}>Si te lo recomendó alguien, escribe su código. No cambia nada para ti.</Text>
+                )}
               </Card>
             </FadeIn>
           ) : null}
@@ -754,6 +828,8 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   firmaCard: { marginTop: 14 },
+  codigoHint: { fontFamily: fonts.body, fontSize: 12, lineHeight: 17, color: colors.textFaint, marginTop: 8 },
+  avisoCodigo: { fontFamily: fonts.body, fontSize: 13, lineHeight: 18, color: colors.red, marginTop: 8 },
   smallPrint: {
     fontFamily: fonts.body,
     fontSize: 12,
