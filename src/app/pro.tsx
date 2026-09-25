@@ -26,6 +26,7 @@ import {
   planDePago,
   planLabel,
   puedeProfundo,
+  purchasesAvailable,
   turnosProfundos,
   type AiStatus,
 } from '@/lib/pro';
@@ -47,6 +48,7 @@ export default function Pro() {
   const [periodEnd, setPeriodEnd] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [verOferta, setVerOferta] = useState(false);
 
   const load = useCallback(async () => {
     // Sin sesión no hay nada que leer, pero la pantalla no puede quedarse
@@ -110,6 +112,7 @@ export default function Pro() {
     const elite = isElite(status);
     const conProfundo = !!status?.deepAllowed;
     const turnos = turnosProfundos(status);
+    const mejorable = purchasesAvailable() && !elite && status?.tier !== 'owner';
     return (
       <Screen refreshing={refreshing} onRefresh={refrescar}>
         <Stagger>
@@ -178,6 +181,37 @@ export default function Pro() {
           <FadeIn index={3}>
             <SystemButton title="Hablar con el coach" icon="shield-half" onPress={() => router.replace('/(tabs)/coach')} />
           </FadeIn>
+
+          {/* Con la tienda abierta: quien está en la prueba puede suscribirse
+              sin esperar a que acabe, y un Pro puede pasar a Élite (el cambio
+              dentro del grupo de suscripción lo gestiona la tienda). */}
+          {mejorable ? (
+            <FadeIn index={4}>
+              {verOferta ? (
+                <View style={styles.oferta}>
+                  <ProOffer
+                    userId={userId}
+                    kind={kind}
+                    compact
+                    initialTier={prueba ? 'pro' : 'elite'}
+                    exitLabel={prueba ? 'Seguir con la prueba' : 'Seguir con Pro'}
+                    onExit={() => setVerOferta(false)}
+                    onPurchased={() => {
+                      setVerOferta(false);
+                      load();
+                    }}
+                  />
+                </View>
+              ) : (
+                <SystemButton
+                  title={prueba ? 'Suscribirme' : 'Ver NIVL Élite'}
+                  variant="outline"
+                  onPress={() => setVerOferta(true)}
+                  style={styles.mejorar}
+                />
+              )}
+            </FadeIn>
+          ) : null}
         </Stagger>
       </Screen>
     );
@@ -218,4 +252,6 @@ const styles = StyleSheet.create({
   lista: { paddingHorizontal: 16, paddingVertical: 2 },
   valor: { fontFamily: fonts.semibold, fontSize: 13, color: colors.text },
   nota: { fontFamily: fonts.body, fontSize: 12, lineHeight: 17, color: colors.textFaint, marginTop: 4 },
+  mejorar: { marginTop: 10 },
+  oferta: { marginTop: 22, borderTopWidth: 1, borderTopColor: colors.line, paddingTop: 18 },
 });

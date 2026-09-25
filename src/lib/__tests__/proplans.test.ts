@@ -7,7 +7,9 @@ import {
   PRO_PLANS,
   SIN_IA,
   TIERS,
+  compraReflejada,
   energiaAgotada,
+  esProductoNivl,
   energiaRestante,
   euros,
   isElite,
@@ -16,6 +18,11 @@ import {
   lineaProfundos,
   planDePago,
   planLabel,
+  planPorDefecto,
+  planesALaVenta,
+  pitchVisible,
+  precioVisible,
+  productoBase,
   proEmphasis,
   proPlan,
   proSampleBrief,
@@ -203,5 +210,44 @@ describe('NIVL Pro · el estado de la IA', () => {
     expect(planDePago('owner')).toBe(false);
     expect(planDePago(null)).toBe(false);
     expect(planDePago('plan_del_futuro')).toBe(false);
+  });
+});
+
+describe('NIVL Pro · la tienda abierta (fase 4)', () => {
+  test('el id de producto se limpia del plan base de Google Play', () => {
+    expect(productoBase('nivl_pro_anual')).toBe('nivl_pro_anual');
+    expect(productoBase('nivl_pro_anual:anual-base')).toBe('nivl_pro_anual');
+    expect(productoBase(null)).toBe('');
+    expect(esProductoNivl('nivl_elite_fundador:p1y')).toBe(true);
+    expect(esProductoNivl('rc_promo_pro_monthly')).toBe(false);
+  });
+
+  test('el fundador desaparece sin plazas y el preseleccionado cae al anual', () => {
+    expect(planesALaVenta('elite', null).map((p) => p.id)).toContain('nivl_elite_fundador');
+    expect(planesALaVenta('elite', 3).map((p) => p.id)).toContain('nivl_elite_fundador');
+    expect(planesALaVenta('elite', 0).map((p) => p.id)).toEqual(['nivl_elite_anual', 'nivl_elite_mensual']);
+    expect(planPorDefecto('elite', 0)).toBe('nivl_elite_anual');
+    expect(planPorDefecto('elite', 12)).toBe('nivl_elite_fundador');
+    expect(planPorDefecto('pro', 0)).toBe('nivl_pro_anual');
+  });
+
+  test('con el precio de la tienda en otra moneda no se enseñan cifras en euros', () => {
+    const anual = proPlan('nivl_pro_anual');
+    expect(precioVisible(anual)).toBe('99,99 €');
+    expect(pitchVisible(anual, '99,99 €')).toBe(anual.pitch);
+    expect(precioVisible(anual, '$99.99')).toBe('$99.99');
+    expect(pitchVisible(anual, '$99.99')).not.toMatch(/€/);
+    expect(pitchVisible(proPlan('nivl_elite_fundador'), '$249.99')).toMatch(/plazas/);
+    expect(legalText('nivl_pro_anual', '$99.99')).toContain('$99.99 cada año');
+  });
+
+  test('una compra está reflejada cuando el servidor da el nivel comprado', () => {
+    expect(compraReflejada(gratis, 'nivl_pro_anual')).toBe(false);
+    expect(compraReflejada(pro, 'nivl_pro_anual')).toBe(true);
+    // Pro no basta para una compra de Élite: el webhook aún no ha llegado.
+    expect(compraReflejada(pro, 'nivl_elite_anual')).toBe(false);
+    expect(compraReflejada(elite, 'nivl_elite_anual')).toBe(true);
+    // La prueba de 7 días no es la compra.
+    expect(compraReflejada({ ...pro, plan: 'cortesia', trial: true }, 'nivl_pro_mensual')).toBe(false);
   });
 });

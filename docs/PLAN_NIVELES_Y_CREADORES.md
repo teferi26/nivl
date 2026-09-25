@@ -1459,6 +1459,17 @@ RevenueCat los nombres de campo (`period_type`, `cancel_reason`,
 `commission_percentage`, se pueden usar en lugar de la fórmula de
 `net_cents_eur`, pero la fórmula peca de prudente y es determinista.
 
+**Implementada (2026-09-25, rama `feat/tienda`)**: la fuente de verdad es
+`supabase/migrations/0027_tienda.sql`, no el borrador de arriba. Campos
+contrastados con la documentación vigente (sí: reembolso = `CANCELLATION` +
+`CUSTOMER_SUPPORT`, precios negativos en reembolso). Cambios frente al
+borrador: el usuario se busca también en `original_app_user_id` y `aliases`;
+`TRANSFER` (restaurar con otra cuenta) mueve la fila de `subscriptions`; el
+reembolso anula la comisión antes de buscar al usuario y solo cancela la
+suscripción de ese `original_transaction_id`; `EXPIRATION` y los eventos
+viejos que llegan tarde no pisan un periodo más reciente; no hay venta con
+`TEST_STORE`, Family Sharing ni precio 0.
+
 ---
 
 ## 9. Riesgos y cómo se mitigan

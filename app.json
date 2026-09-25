@@ -2,7 +2,7 @@
   "expo": {
     "name": "NIVL",
     "slug": "nivl",
-    "version": "1.0.6",
+    "version": "1.0.7",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "nivl",
@@ -11,6 +11,7 @@
     "ios": {
       "bundleIdentifier": "com.teferi.nivl",
       "supportsTablet": false,
+      "associatedDomains": ["applinks:nivl.app"],
       "infoPlist": {
         "NSCameraUsageDescription": "NIVL usa la cámara para registrar evidencias de tus misiones.",
         "NSPhotoLibraryUsageDescription": "NIVL accede a tus fotos para que elijas tu retrato de gladiador.",
@@ -29,6 +30,14 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [{ "scheme": "https", "host": "nivl.app", "pathPrefix": "/c/" }],
+          "category": ["BROWSABLE", "DEFAULT"]
+        }
+      ],
       "permissions": [
         "android.permission.POST_NOTIFICATIONS",
         "android.permission.SCHEDULE_EXACT_ALARM",

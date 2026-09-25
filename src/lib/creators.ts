@@ -9,6 +9,7 @@
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { codigoValido, type CreatorRank, type ReferralReason } from './creatormath';
+import { marcarCreadorEnTienda } from './pro';
 import { supabase } from './supabase';
 
 // ── El código pendiente ─────────────────────────────────────────────
@@ -81,7 +82,11 @@ export async function claimReferral(code: string, source: ReferralSource): Promi
   const { data, error } = await supabase.rpc('claim_referral', { p_code: c, p_source: source });
   if (error) throw error;
   const r = data as { ok?: boolean; alias?: string; reason?: ReferralReason } | null;
-  if (r?.ok) return { ok: true, alias: r.alias?.trim() || c };
+  if (r?.ok) {
+    // Solo para los gráficos de RevenueCat; la verdad está en `referrals`.
+    void marcarCreadorEnTienda(c);
+    return { ok: true, alias: r.alias?.trim() || c };
+  }
   return { ok: false, reason: r?.reason ?? 'desconocido' };
 }
 

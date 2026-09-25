@@ -8,6 +8,7 @@ import { useEffect } from 'react';
 import { View } from 'react-native';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { AuthProvider, useAuth } from '@/lib/auth';
+import { identificarEnTienda } from '@/lib/pro';
 import { registrarDispositivo } from '@/lib/push';
 import { colors } from '@/lib/theme';
 import { useNotificationRouting } from '@/lib/useNotificationRouting';
@@ -32,6 +33,15 @@ function ProtectedStack() {
   useEffect(() => {
     if (!loading && session) registrarDispositivo();
   }, [loading, session]);
+
+  // La tienda (RevenueCat) va a nombre del uuid de Supabase: con él escribe el
+  // webhook. Se ata al entrar y se suelta al salir, sea cual sea el camino
+  // (Perfil, borrar la cuenta, sesión caducada). Sin tienda en esta build, no
+  // hace nada.
+  const userId = session?.user.id ?? null;
+  useEffect(() => {
+    if (!loading) identificarEnTienda(userId);
+  }, [loading, userId]);
 
   useEffect(() => {
     if (loading) return;

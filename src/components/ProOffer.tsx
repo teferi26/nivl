@@ -9,13 +9,18 @@
 // botón apunta el interés y lo dice, en vez de fingir un cobro: sin selector
 // de plan, sin "restaurar compras" y sin letra de renovación automática.
 //
+// Con la tienda abierta (binario 1.0.7 con clave de RevenueCat): selector con
+// los precios QUE DA LA TIENDA (son los que se cobran), "Restaurar compras",
+// letra de renovación y enlaces legales. El Élite fundador solo sale mientras
+// `founder_seats_left()` > 0.
+//
 // El nivel elegido (Pro / Élite) vive en `useProOffer`, no en el cuerpo: así el
 // pie fijo del onboarding y el cuerpo del scroll hablan del mismo nivel. Si la
 // cuenta nunca tuvo coach, la acción principal es la prueba de 7 días.
 
 import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Haptics from 'expo-haptics';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Linking, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SystemButton } from '@/components/SystemButton';
 import { Card, Chip, Tag } from '@/components/ui';
@@ -26,7 +31,13 @@ import {
   LEGAL_URLS,
   PRO_BENEFITS,
   TIERS,
+  fetchFounderSeatsLeft,
   legalText,
+  pitchVisible,
+  planPorDefecto,
+  planesALaVenta,
+  precioVisible,
+  preciosDeTienda,
   proEmphasis,
   proPlan,
   purchase,
@@ -40,6 +51,9 @@ import {
 import { colors, fonts } from '@/lib/theme';
 import { mensajeSistema } from '@/lib/validation';
 
+/** La tienda cobró pero el webhook aún no ha escrito la suscripción. */
+const AVISO_PENDIENTE = 'Compra confirmada por la tienda. El coach se activa en unos segundos.';
+
 interface OfferOptions {
   userId?: string;
   /** Tras una compra o una restauración confirmadas por la tienda. */
@@ -48,6 +62,8 @@ interface OfferOptions {
   trialAvailable?: boolean;
   /** Tras empezar la prueba: releer el estado o seguir adelante. */
   onTrialStarted?: () => void;
+  /** El nivel que se enseña primero (un Pro que mira el Élite). */
+  initialTier?: OfferTier;
 }
 
 /**
@@ -56,20 +72,47 @@ interface OfferOptions {
  * pie fijo (en un móvil de 667 pt, si no, no se veía ningún botón sin bajar) y
  * que aun así compartan plan elegido, cerrojo y avisos.
  */
-export function useProOffer({ userId, onPurchased, trialAvailable, onTrialStarted }: OfferOptions) {
-  const [tier, setTier] = useState<OfferTier>(DEFAULT_TIER);
-  const [planId, setPlanId] = useState<ProPlanId>(tierOffer(DEFAULT_TIER).defaultPlan);
+export function useProOffer({ userId, onPurchased, trialAvailable, onTrialStarted, initialTier }: OfferOptions) {
+  const [tier, setTier] = useState<OfferTier>(initialTier ?? DEFAULT_TIER);
+  const [planId, setPlanId] = useState<ProPlanId>(tierOffer(initialTier ?? DEFAULT_TIER).defaultPlan);
   const [busy, setBusy] = useState<'compra' | 'restaurar' | 'prueba' | null>(null);
   const [anotado, setAnotado] = useState(false);
   const [aviso, setAviso] = useState<string | null>(null);
   // El servidor dijo "ya_usada": la prueba desaparece aunque el estado leído
   // al abrir dijera lo contrario.
   const [pruebaUsada, setPruebaUsada] = useState(false);
+  // Con la tienda abierta: plazas de fundador (null = no se sabe, se enseña)
+  // y los precios de la tienda, que son los que se cobran.
+  const [plazas, setPlazas] = useState<number | null>(null);
+  const [precios, setPrecios] = useState<Partial<Record<ProPlanId, string>>>({});
   const lock = useRef(false);
 
   const disponible = purchasesAvailable();
+
+  useEffect(() => {
+    if (!disponible) return;
+    let vivo = true;
+    fetchFounderSeatsLeft().then((n) => {
+      if (!vivo) return;
+      setPlazas(n);
+      // Sin plazas, el fundador preseleccionado cae al anual.
+      if (n === 0) setPlanId((id) => (id === 'nivl_elite_fundador' ? planPorDefecto('elite', 0) : id));
+    });
+    // Sin precios de la tienda se enseñan los de la tabla; comprar los vuelve a pedir.
+    preciosDeTienda()
+      .then((p) => {
+        if (vivo) setPrecios(p);
+      })
+      .catch(() => {});
+    return () => {
+      vivo = false;
+    };
+  }, [disponible]);
+
   const plan = proPlan(planId);
   const nivel = tierOffer(tier);
+  const planes = planesALaVenta(tier, plazas);
+  const precioDe = (id: ProPlanId) => precioVisible(proPlan(id), precios[id]);
   const prueba = !!trialAvailable && !pruebaUsada;
 
   const conCerrojo = async (que: 'compra' | 'restaurar' | 'prueba', fn: () => Promise<void>) => {
@@ -90,7 +133,10 @@ export function useProOffer({ userId, onPurchased, trialAvailable, onTrialStarte
   const onPrincipal = () =>
     conCerrojo('compra', async () => {
       if (disponible) {
-        await purchase(planId);
+        const r = await purchase(planId);
+        // Cerrar la hoja de pago no es un error: aquí no ha pasado nada.
+        if (r === 'cancelada') return;
+        if (r === 'pendiente') setAviso(AVISO_PENDIENTE);
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
         onPurchased?.();
         return;
@@ -116,7 +162,13 @@ export function useProOffer({ userId, onPurchased, trialAvailable, onTrialStarte
 
   const onRestaurar = () =>
     conCerrojo('restaurar', async () => {
-      await restorePurchases();
+      const r = await restorePurchases();
+      if (r === 'nada') {
+        setAviso('Esta cuenta de la tienda no tiene ninguna suscripción de NIVL activa.');
+        return;
+      }
+      if (r === 'pendiente') setAviso(AVISO_PENDIENTE);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
       onPurchased?.();
     });
 
@@ -129,7 +181,7 @@ export function useProOffer({ userId, onPurchased, trialAvailable, onTrialStarte
     if (t === tier) return;
     Haptics.selectionAsync().catch(() => {});
     setTier(t);
-    setPlanId(tierOffer(t).defaultPlan);
+    setPlanId(planPorDefecto(t, plazas));
   };
 
   // Aviso propio, pintado junto a los enlaces: el de la compra sale encima de
@@ -143,8 +195,11 @@ export function useProOffer({ userId, onPurchased, trialAvailable, onTrialStarte
   return {
     tier,
     nivel,
+    planes,
     planId,
     plan,
+    precios,
+    precioDe,
     busy,
     anotado,
     aviso,
@@ -172,8 +227,7 @@ interface BodyProps {
 
 /** Qué hace el coach y cuánto cuesta. Sin botones. */
 export function ProOfferBody({ oferta, kind, compact }: BodyProps) {
-  const { tier, nivel, planId, disponible, elegir, elegirNivel } = oferta;
-  const planes = nivel.plans;
+  const { tier, nivel, planes, planId, precios, precioDe, disponible, elegir, elegirNivel } = oferta;
   const beneficios = tier === 'elite' ? [...ELITE_BENEFITS, ...PRO_BENEFITS] : PRO_BENEFITS;
   return (
     <View>
@@ -225,6 +279,8 @@ export function ProOfferBody({ oferta, kind, compact }: BodyProps) {
         <View accessibilityRole="radiogroup" style={styles.plans}>
           {planes.map((p) => {
             const on = p.id === planId;
+            const precio = precioDe(p.id);
+            const pitch = pitchVisible(p, precios[p.id]);
             return (
               <Pressable
                 key={p.id}
@@ -232,7 +288,7 @@ export function ProOfferBody({ oferta, kind, compact }: BodyProps) {
                 style={({ pressed }) => [styles.plan, on && styles.planOn, pressed && styles.pressed]}
                 accessibilityRole="radio"
                 accessibilityState={{ selected: on }}
-                accessibilityLabel={`${nivel.name} ${p.label.toLowerCase()}, ${p.price} al ${p.period}. ${p.pitch}`}
+                accessibilityLabel={`${nivel.name} ${p.label.toLowerCase()}, ${precio} al ${p.period}. ${pitch}`}
               >
                 <View style={[styles.radio, on && styles.radioOn]}>{on ? <View style={styles.radioDot} /> : null}</View>
                 <View style={styles.planBody}>
@@ -240,10 +296,12 @@ export function ProOfferBody({ oferta, kind, compact }: BodyProps) {
                     <Text style={styles.planLabel}>{p.label.toUpperCase()}</Text>
                     {p.savings ? <Tag tone="accent">{p.savings}</Tag> : null}
                   </View>
-                  <Text style={styles.planPitch}>{p.pitch}</Text>
+                  <Text style={styles.planPitch}>{pitch}</Text>
                 </View>
                 <View style={styles.planPrice}>
-                  <Text style={styles.price}>{p.price}</Text>
+                  <Text style={styles.price} numberOfLines={1}>
+                    {precio}
+                  </Text>
                   <Text style={styles.period}>al {p.period}</Text>
                 </View>
               </Pressable>
@@ -294,7 +352,8 @@ interface ActionsProps {
 
 /** Los dos botones, del mismo tamaño, y lo que el sistema responde al pulsarlos. */
 export function ProOfferActions({ oferta, exitLabel, onExit, exitLoading }: ActionsProps) {
-  const { nivel, plan, busy, anotado, aviso, disponible, prueba, onPrincipal, onPrueba } = oferta;
+  const { nivel, plan, precioDe, busy, anotado, aviso, disponible, prueba, onPrincipal, onPrueba } = oferta;
+  const activar = `Activar ${nivel.name} · ${precioDe(plan.id)}/${plan.period}`;
   return (
     <View>
       {prueba && !aviso ? (
@@ -313,17 +372,32 @@ export function ProOfferActions({ oferta, exitLabel, onExit, exitLoading }: Acti
         </Text>
       ) : null}
       {prueba ? (
-        <SystemButton
-          title="Probar el coach 7 días"
-          size="lg"
-          icon="hourglass-outline"
-          onPress={onPrueba}
-          loading={busy === 'prueba'}
-          disabled={busy !== null && busy !== 'prueba'}
-        />
+        <>
+          <SystemButton
+            title="Probar el coach 7 días"
+            size="lg"
+            icon="hourglass-outline"
+            onPress={onPrueba}
+            loading={busy === 'prueba'}
+            disabled={busy !== null && busy !== 'prueba'}
+          />
+          {/* Con la tienda abierta, quien ya lo tiene claro no pasa por la
+              prueba: el plan elegido en el selector, en un botón discreto. */}
+          {disponible ? (
+            <SystemButton
+              title={activar}
+              variant="ghost"
+              size="sm"
+              onPress={onPrincipal}
+              loading={busy === 'compra'}
+              disabled={busy !== null && busy !== 'compra'}
+              style={styles.directo}
+            />
+          ) : null}
+        </>
       ) : (
         <SystemButton
-          title={disponible ? `Activar ${nivel.name} · ${plan.price}/${plan.period}` : anotado ? 'Anotado' : 'Avísame cuando abra'}
+          title={disponible ? activar : anotado ? 'Anotado' : 'Avísame cuando abra'}
           size="lg"
           icon={disponible ? undefined : anotado ? 'checkmark' : 'notifications-outline'}
           onPress={onPrincipal}
@@ -351,7 +425,7 @@ export function ProOfferActions({ oferta, exitLabel, onExit, exitLoading }: Acti
  * compra que no puede existir contradecía el "hoy no se cobra nada".
  */
 export function ProOfferLegal({ oferta }: { oferta: ProOfferState }) {
-  const { planId, busy, disponible, avisoEnlace, onRestaurar, abrir } = oferta;
+  const { planId, precios, busy, disponible, avisoEnlace, onRestaurar, abrir } = oferta;
   if (!disponible) return null;
   return (
     <View>
@@ -364,7 +438,7 @@ export function ProOfferLegal({ oferta }: { oferta: ProOfferState }) {
         disabled={busy !== null && busy !== 'restaurar'}
         style={styles.restore}
       />
-      <Text style={styles.legal}>{legalText(planId)}</Text>
+      <Text style={styles.legal}>{legalText(planId, precios[planId])}</Text>
       <View style={styles.links}>
         <Pressable
           onPress={() => abrir(LEGAL_URLS.terminos)}
@@ -409,8 +483,9 @@ export function ProOffer({
   onPurchased,
   trialAvailable,
   onTrialStarted,
+  initialTier,
 }: Props) {
-  const oferta = useProOffer({ userId, onPurchased, trialAvailable, onTrialStarted });
+  const oferta = useProOffer({ userId, onPurchased, trialAvailable, onTrialStarted, initialTier });
   return (
     <View>
       <ProOfferBody oferta={oferta} kind={kind} compact={compact} />
@@ -482,6 +557,7 @@ const styles = StyleSheet.create({
   price: { fontFamily: fonts.number, fontSize: 17, color: colors.text },
   period: { fontFamily: fonts.body, fontSize: 11, color: colors.textFaint, marginTop: 1 },
   exit: { marginTop: 10 },
+  directo: { marginTop: 6, alignSelf: 'center' },
   notice: {
     fontFamily: fonts.body,
     fontSize: 12.5,

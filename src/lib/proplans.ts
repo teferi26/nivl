@@ -418,16 +418,86 @@ export const LEGAL_URLS = {
   privacidad: 'https://nivl.app/privacidad',
 } as const;
 
-/** La letra pequeña que exigen las tiendas para una suscripción autorrenovable. */
-export function legalText(id: ProPlanId): string {
+/**
+ * La letra pequeña que exigen las tiendas para una suscripción autorrenovable.
+ * `precio` es el que da la tienda (`priceString`, ya en la moneda y el formato
+ * del comprador); sin él, el de la tabla.
+ */
+export function legalText(id: ProPlanId, precio?: string | null): string {
   const p = proPlan(id);
   const nivel = tierOffer(p.tier).name;
   const cuando = p.period === 'mes' ? 'cada mes' : 'cada año';
   const congelado = p.id === 'nivl_elite_fundador' ? ' El precio de fundador se mantiene mientras no la canceles.' : '';
   return (
-    `${nivel} ${p.label.toLowerCase()} es una suscripción de renovación automática: ${p.price} ${cuando}.${congelado} ` +
+    `${nivel} ${p.label.toLowerCase()} es una suscripción de renovación automática: ${precio?.trim() || p.price} ${cuando}.${congelado} ` +
     'El cobro se hace en tu cuenta de la tienda al confirmar la compra y se renueva sola salvo que la canceles ' +
     'al menos 24 horas antes de que acabe el periodo. La gestionas y la cancelas cuando quieras en los ajustes ' +
     'de suscripciones de la App Store o de Google Play. Sin ella, NIVL sigue entera y gratis, sin el coach.'
   );
+}
+
+// ── La tienda abierta (fase 4) ──────────────────────────────────────
+
+/**
+ * El id de producto sin la parte de Google Play: allí una suscripción llega
+ * como "nivl_pro_anual:base-plan". En App Store ya viene limpio.
+ */
+export function productoBase(identifier: string | null | undefined): string {
+  return (identifier ?? '').split(':')[0]!.trim();
+}
+
+/** ¿Es uno de los cinco productos que vendemos? */
+export function esProductoNivl(identifier: string | null | undefined): identifier is ProPlanId {
+  const id = productoBase(identifier);
+  return PRO_PLANS.some((p) => p.id === id);
+}
+
+/**
+ * Los planes de un nivel que se pueden elegir. El Élite fundador sale solo
+ * mientras quedan plazas (`founder_seats_left()`, 0027); con `null` (no se
+ * sabe: sin red o servidor viejo) se enseña y decide la tienda.
+ */
+export function planesALaVenta(tier: OfferTier, plazasFundador: number | null): readonly ProPlan[] {
+  const planes = tierOffer(tier).plans;
+  if (plazasFundador === null || plazasFundador > 0) return planes;
+  return planes.filter((p) => p.id !== 'nivl_elite_fundador');
+}
+
+/** El plan preseleccionado de un nivel: su favorito si está a la venta, si no el primero que quede. */
+export function planPorDefecto(tier: OfferTier, plazasFundador: number | null): ProPlanId {
+  const planes = planesALaVenta(tier, plazasFundador);
+  const fav = tierOffer(tier).defaultPlan;
+  return planes.some((p) => p.id === fav) ? fav : (planes[0]?.id ?? fav);
+}
+
+/**
+ * El precio que se enseña: el de la tienda si lo hay (es el que se cobra), si
+ * no el de la tabla.
+ */
+export function precioVisible(p: ProPlan, precioTienda?: string | null): string {
+  return precioTienda?.trim() || p.price;
+}
+
+/**
+ * El rótulo bajo el precio. Lleva cifras en euros ("8,33 €/mes"): si la
+ * tienda cobra en otra moneda o a otro precio, esas cifras mentirían, así que
+ * se cambian por una línea sin importes.
+ */
+export function pitchVisible(p: ProPlan, precioTienda?: string | null): string {
+  if (precioVisible(p, precioTienda) === p.price) return p.pitch;
+  if (p.id === 'nivl_elite_fundador') return `${PLAZAS_FUNDADOR} plazas · precio congelado`;
+  return p.period === 'año' ? 'Un solo pago al año' : 'Sin permanencia';
+}
+
+/**
+ * ¿El estado del servidor ya refleja la compra de `id`? El webhook de
+ * RevenueCat tarda unos segundos: hasta entonces la app espera. Una compra de
+ * Élite no está reflejada con un Pro; una de Pro, con cualquier derecho de
+ * pago (un Élite que compra Pro sigue siendo Élite hasta que cambie).
+ */
+export function compraReflejada(status: AiStatus | null | undefined, id: ProPlanId): boolean {
+  if (!isPro(status) || status?.trial) return false;
+  const quiere = proPlan(id).tier;
+  if (quiere === 'elite') return status?.tier === 'elite' || status?.tier === 'owner';
+  return planDePago(status?.plan) || status?.tier === 'owner';
 }

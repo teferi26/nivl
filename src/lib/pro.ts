@@ -4,16 +4,32 @@
 // el cliente crea que alguien es Pro no le da IA a nadie; `ai_begin_turn` lo
 // vuelve a comprobar en cada turno.
 //
-// La compra es una ABSTRACCIÓN a propósito. En iOS y Android las suscripciones
-// tienen que ser compras integradas (Guideline 3.1.1 de Apple, política de
-// pagos de Google Play), y ni los productos de tienda ni la cuenta de
-// RevenueCat existen todavía. Hasta entonces `purchasesAvailable()` devuelve
-// false, la pantalla de Pro se pinta completa y el botón apunta el interés en
-// vez de cobrar. El código nuevo usa este módulo; `subscription.ts` (Stripe,
-// EXPO_PUBLIC_PAYWALL) se queda como está para el Oráculo y para la web.
+// La compra va por RevenueCat (`react-native-purchases`, desde el binario
+// 1.0.7): en iOS y Android una suscripción digital tiene que ser compra
+// integrada (Guideline 3.1.1 de Apple, política de pagos de Google Play). La
+// tienda solo cobra; el DERECHO a IA lo escribe el webhook de RevenueCat en
+// `subscriptions` (supabase/functions/revenuecat-webhook → apply_store_event,
+// 0027), así que tras comprar se vuelve a preguntar al servidor.
+//
+// `purchasesAvailable()` es false —y la oferta se pinta de solo lectura— si
+// falta la clave pública de la plataforma (EXPO_PUBLIC_RC_IOS_KEY /
+// EXPO_PUBLIC_RC_ANDROID_KEY, variables de EAS) o el módulo nativo (Expo Go,
+// web). `subscription.ts` (Stripe, EXPO_PUBLIC_PAYWALL) se queda como está
+// para el Oráculo y para la web.
 
+import { NativeModules, Platform } from 'react-native';
+import Purchases, { PURCHASES_ERROR_CODE, type PurchasesError, type PurchasesPackage } from 'react-native-purchases';
+import {
+  compraReflejada,
+  esProductoNivl,
+  productoBase,
+  type AiStatus,
+  type PlanKey,
+  type ProPlanId,
+  type Tier,
+} from './proplans';
 import { supabase } from './supabase';
-import type { AiStatus, PlanKey, ProPlanId, Tier } from './proplans';
+import { ErrorVisible } from './validation';
 
 export * from './proplans';
 
@@ -59,45 +75,226 @@ export async function startTrial(): Promise<{ ok: boolean; reason?: 'ya_usada'; 
   return { ok: false, reason: 'ya_usada' };
 }
 
-/** Se lanza al intentar comprar o restaurar cuando la tienda aún no está conectada. */
-export class PurchasesUnavailableError extends Error {
+/** Se lanza al intentar comprar o restaurar cuando esta build no tiene tienda. */
+export class PurchasesUnavailableError extends ErrorVisible {
   constructor() {
-    super('Las suscripciones se activan con el lanzamiento público.');
+    super('Las suscripciones no están disponibles en esta versión de la app.');
     this.name = 'PurchasesUnavailableError';
   }
 }
 
+// ── La tienda ──────────────────────────────────────────────────────
+
 /**
- * ¿Se puede comprar desde esta build?
- *
- * TODO(RevenueCat): cuando existan los cinco productos de `PRO_PLANS`
- * (`nivl_pro_*` y `nivl_elite_*`) en App Store Connect y Play Console y el proyecto de
- * RevenueCat, añadir `react-native-purchases` (dependencia nativa: pide build
- * nueva de EAS, no sale por OTA), configurarlo al iniciar sesión con
- * `Purchases.configure({ apiKey, appUserID: userId })` —el appUserID tiene que
- * ser el id de Supabase, que es con lo que el webhook escribe en
- * `subscriptions`— y devolver aquí true si hay clave para la plataforma.
+ * La clave pública de RevenueCat de esta plataforma. Se lee con
+ * `process.env.EXPO_PUBLIC_…` literal: Expo solo sustituye ese acceso exacto
+ * al empaquetar. No es secreta, pero vive en EAS para rotarla sin commit.
+ */
+function claveTienda(): string | null {
+  const k =
+    Platform.OS === 'ios'
+      ? process.env.EXPO_PUBLIC_RC_IOS_KEY
+      : Platform.OS === 'android'
+        ? process.env.EXPO_PUBLIC_RC_ANDROID_KEY
+        : undefined;
+  return k?.trim() || null;
+}
+
+/**
+ * ¿Se puede comprar desde esta build? Hace falta la clave de la plataforma y
+ * el módulo nativo `RNPurchases`: en Expo Go la librería se sustituye sola por
+ * una simulación, y ahí NO se ofrece una compra que no cobra.
  */
 export function purchasesAvailable(): boolean {
+  return !!claveTienda() && !!NativeModules.RNPurchases;
+}
+
+// La identidad en RevenueCat es el uuid de Supabase: con él escribe el
+// webhook. Se configura con `appUserID` directamente (así nunca pasa por un id
+// anónimo) y un cambio de cuenta es `logIn` / `logOut`. Todo en cola: dos
+// cambios de sesión seguidos no se pisan.
+let configurada = false;
+let usuarioTienda: string | null = null;
+let cola: Promise<void> = Promise.resolve();
+
+async function aplicarUsuario(userId: string | null): Promise<void> {
+  if (!purchasesAvailable()) return;
+  if (userId) {
+    if (!configurada) {
+      Purchases.configure({ apiKey: claveTienda()!, appUserID: userId });
+      configurada = true;
+      usuarioTienda = userId;
+      return;
+    }
+    if (usuarioTienda === userId) return;
+    await Purchases.logIn(userId);
+    usuarioTienda = userId;
+    return;
+  }
+  if (!configurada || !usuarioTienda) return;
+  usuarioTienda = null;
+  try {
+    await Purchases.logOut();
+  } catch {
+    /* ya era anónimo: nada que cerrar */
+  }
+}
+
+/**
+ * Ata la tienda a la cuenta con sesión, o la suelta al cerrar sesión. La llama
+ * `_layout.tsx` cada vez que cambia el usuario. Nunca lanza: un fallo aquí no
+ * puede tumbar la entrada, y `purchase` lo vuelve a intentar.
+ */
+export function identificarEnTienda(userId: string | null): Promise<void> {
+  cola = cola.then(() => aplicarUsuario(userId)).catch(() => {});
+  return cola;
+}
+
+/** Antes de cobrar: la tienda TIENE que estar a nombre de la cuenta con sesión. */
+async function asegurarUsuario(): Promise<void> {
+  if (!purchasesAvailable()) throw new PurchasesUnavailableError();
+  const { data } = await supabase.auth.getSession();
+  const uid = data.session?.user.id;
+  if (!uid) throw new ErrorVisible('Inicia sesión para suscribirte.');
+  await cola;
+  await aplicarUsuario(uid);
+}
+
+/**
+ * Atribución para los gráficos de RevenueCat tras un "¿Quién te trajo?"
+ * aceptado. La verdad está en `referrals` (0025): esto es informativo y nunca
+ * lanza.
+ */
+export async function marcarCreadorEnTienda(code: string): Promise<void> {
+  if (!purchasesAvailable() || !configurada) return;
+  try {
+    await Purchases.setAttributes({ creator_code: code });
+  } catch {
+    /* informativo */
+  }
+}
+
+function esErrorDeTienda(e: unknown): e is PurchasesError {
+  return !!e && typeof e === 'object' && 'code' in e;
+}
+
+function cancelada(e: unknown): boolean {
+  return esErrorDeTienda(e) && (e.code === PURCHASES_ERROR_CODE.PURCHASE_CANCELLED_ERROR || e.userCancelled === true);
+}
+
+/** Lo que la tienda dice, en la voz del sistema. El resto acaba en `mensajeSistema`. */
+function traducir(e: unknown): unknown {
+  if (!esErrorDeTienda(e)) return e;
+  switch (e.code) {
+    case PURCHASES_ERROR_CODE.PAYMENT_PENDING_ERROR:
+      return new ErrorVisible('El pago está pendiente de aprobación en la tienda. El coach se activará cuando se confirme.');
+    case PURCHASES_ERROR_CODE.PURCHASE_NOT_ALLOWED_ERROR:
+      return new ErrorVisible('Este dispositivo no permite compras. Revisa las restricciones de la tienda.');
+    case PURCHASES_ERROR_CODE.PRODUCT_NOT_AVAILABLE_FOR_PURCHASE_ERROR:
+      return new ErrorVisible('Ese plan no está disponible ahora mismo en la tienda.');
+    case PURCHASES_ERROR_CODE.NETWORK_ERROR:
+      // `mensajeSistema` lo reconoce como falta de red.
+      return new Error('network');
+    default:
+      return e;
+  }
+}
+
+async function todosLosPaquetes(): Promise<PurchasesPackage[]> {
+  const offerings = await Purchases.getOfferings();
+  // La offering actual primero: si un producto está en dos, manda la actual.
+  const todas = [offerings.current, ...Object.values(offerings.all)];
+  return todas.flatMap((o) => o?.availablePackages ?? []);
+}
+
+/**
+ * Los precios que da la tienda (en la moneda y el formato del comprador), por
+ * id de producto. Son los que se enseñan con la tienda abierta: el que se
+ * cobra es el de la tienda, no el de la tabla.
+ */
+export async function preciosDeTienda(): Promise<Partial<Record<ProPlanId, string>>> {
+  await asegurarUsuario();
+  const out: Partial<Record<ProPlanId, string>> = {};
+  for (const p of await todosLosPaquetes()) {
+    const id = productoBase(p.product.identifier);
+    if (esProductoNivl(id) && !out[id]) out[id] = p.product.priceString;
+  }
+  return out;
+}
+
+async function paqueteDe(planId: ProPlanId): Promise<PurchasesPackage | null> {
+  return (await todosLosPaquetes()).find((p) => productoBase(p.product.identifier) === planId) ?? null;
+}
+
+/** Plazas de Élite fundador que quedan (0027), o null si no se sabe. */
+export async function fetchFounderSeatsLeft(): Promise<number | null> {
+  const { data, error } = await supabase.rpc('founder_seats_left');
+  if (error || typeof data !== 'number') return null;
+  return data;
+}
+
+const pausa = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+/**
+ * Espera a que el webhook escriba la compra: reintentos cortos, unos 12 s en
+ * total. True si el servidor ya la refleja.
+ */
+async function esperarDerecho(planId: ProPlanId | null): Promise<boolean> {
+  for (let i = 0; i < 6; i++) {
+    if (i > 0) await pausa(2000);
+    try {
+      const st = await fetchAiStatus();
+      if (planId ? compraReflejada(st, planId) : st.entitled && !st.trial) return true;
+    } catch {
+      /* sin red un momento: se reintenta */
+    }
+  }
   return false;
 }
 
 /**
- * Compra un plan. Resuelve cuando la tienda confirma; el derecho a IA lo
- * activa el webhook de RevenueCat en `subscriptions`, así que tras comprar hay
- * que volver a leer `fetchAiStatus()`.
+ * - `activa`: la tienda cobró y el servidor ya da el coach.
+ * - `pendiente`: la tienda cobró y el webhook aún no ha llegado; se activa en
+ *   segundos (la pantalla lo dice y vuelve a leer el estado).
+ * - `cancelada`: el usuario cerró la hoja de pago. No es un error.
  */
-export async function purchase(planId: ProPlanId): Promise<void> {
-  if (!purchasesAvailable()) throw new PurchasesUnavailableError();
-  // TODO(RevenueCat): buscar el paquete cuyo product.identifier === planId en
-  // `Purchases.getOfferings()` y llamar a `Purchases.purchasePackage(paquete)`.
-  // Una cancelación del usuario (`userCancelled`) no es un error: volver sin más.
-  throw new Error(`Compra de ${planId} sin implementar.`);
+export type ResultadoCompra = 'activa' | 'pendiente' | 'cancelada';
+
+/** Compra un plan en la tienda y espera a que el servidor lo refleje. */
+export async function purchase(planId: ProPlanId): Promise<ResultadoCompra> {
+  await asegurarUsuario();
+  let paquete: PurchasesPackage | null;
+  try {
+    paquete = await paqueteDe(planId);
+  } catch (e) {
+    throw traducir(e);
+  }
+  if (!paquete) throw new ErrorVisible('Ese plan no está disponible ahora mismo en la tienda.');
+  try {
+    await Purchases.purchasePackage(paquete);
+  } catch (e) {
+    if (cancelada(e)) return 'cancelada';
+    throw traducir(e);
+  }
+  return (await esperarDerecho(planId)) ? 'activa' : 'pendiente';
 }
 
+/**
+ * - `activa` / `pendiente`: como en `purchase`.
+ * - `nada`: esa cuenta de tienda no tiene ninguna suscripción de NIVL viva.
+ */
+export type ResultadoRestaurar = 'activa' | 'pendiente' | 'nada';
+
 /** Recupera una compra hecha con la misma cuenta de tienda (obligatorio en iOS). */
-export async function restorePurchases(): Promise<void> {
-  if (!purchasesAvailable()) throw new PurchasesUnavailableError();
-  // TODO(RevenueCat): `Purchases.restorePurchases()` y releer `fetchAiStatus()`.
-  throw new Error('Restauración sin implementar.');
+export async function restorePurchases(): Promise<ResultadoRestaurar> {
+  await asegurarUsuario();
+  let activas: string[];
+  try {
+    const info = await Purchases.restorePurchases();
+    activas = info.activeSubscriptions ?? [];
+  } catch (e) {
+    throw traducir(e);
+  }
+  if (!activas.some((id) => esProductoNivl(id))) return 'nada';
+  return (await esperarDerecho(null)) ? 'activa' : 'pendiente';
 }
