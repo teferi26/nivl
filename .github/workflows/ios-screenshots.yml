@@ -46,16 +46,17 @@ jobs:
         with:
           path: ${{ runner.temp }}/nivl-derived/Build/Products/Release-iphonesimulator/NIVL.app
           key: nivl-capture-v1-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('package-lock.json', 'app.json', 'src/**', 'assets/**', 'metro.config.js', 'scripts/screenshots/*.ts', 'scripts/screenshots/bootstrap.js', 'scripts/screenshots/entry.js', 'scripts/screenshots/prepare.mjs') }}
+          restore-keys: nivl-capture-v1-macOS-ARM64-8296548885cfeffea676eb044b94cbf87cde977f86eee1a0d8f1c47c59ad02e1
       - name: Preparar configuración aislada sin credenciales
         run: node scripts/screenshots/prepare.mjs
       - name: Generar proyecto nativo
-        if: steps.native-cache.outputs.cache-hit != 'true'
+        if: steps.native-cache.outputs.cache-matched-key == ''
         run: npx expo prebuild --platform ios --clean --no-install
       - name: Instalar dependencias nativas
-        if: steps.native-cache.outputs.cache-hit != 'true'
+        if: steps.native-cache.outputs.cache-matched-key == ''
         run: pod install --project-directory=ios
       - name: Compilar solo para simulador
-        if: steps.native-cache.outputs.cache-hit != 'true'
+        if: steps.native-cache.outputs.cache-matched-key == ''
         run: |
           set -o pipefail
           xcodebuild -workspace ios/NIVL.xcworkspace -scheme NIVL \
@@ -67,6 +68,9 @@ jobs:
               tail -n 150 "$RUNNER_TEMP/nivl-xcode.log"
               exit 1
             }
+      - name: Actualizar solo bundle local con Expo oficial
+        if: steps.native-cache.outputs.cache-matched-key != '' && steps.native-cache.outputs.cache-hit != 'true'
+        run: node scripts/screenshots/reembed-simulator.mjs
       - name: Conservar app ficticia para ajustes de captura
         if: steps.native-cache.outputs.cache-hit != 'true'
         uses: actions/cache/save@v4

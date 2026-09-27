@@ -13,6 +13,12 @@ Module._extensions['.ts'] = (mod, file) => {
 const { screenshotRpc, supabase } = require('./supabase.ts');
 const { screenshotTables, screenshotDate } = require('./fixtures.ts');
 (async () => {
+  const { screenshotUser } = require('./fixtures.ts');
+  const channel = supabase.channel(`health:${screenshotUser.id}`);
+  assert.equal(channel.on('postgres_changes', {event:'*',schema:'public',table:'health_state',filter:`user_id=eq.${screenshotUser.id}`},()=>{}).subscribe(),channel);
+  assert.equal(await supabase.removeChannel(channel),'ok');
+  assert.throws(()=>supabase.channel('unrelated'));
+  assert.throws(()=>channel.on('unknown',{},()=>{}));
   const initial = await screenshotRpc('my_health_consent');
   assert.equal(initial.data.accepted, false);
   assert.equal(initial.data.version, null);
@@ -37,5 +43,5 @@ const { screenshotTables, screenshotDate } = require('./fixtures.ts');
   assert.equal((await screenshotRpc('my_health_consent')).data.accepted,true);
   assert((await screenshotRpc('unknown')).error);
   assert.equal(JSON.stringify(screenshotTables),before);
-  console.log('20 local health-fixture checks passed; no external requests.');
+  console.log('24 local health-fixture checks passed, including provider channel initialization/cleanup; no external requests.');
 })().catch(error=>{console.error(error);process.exitCode=1;});

@@ -174,9 +174,31 @@ export async function screenshotRpc(name: string, args: Record<string, unknown> 
 type AuthListener = (event: string, session: typeof screenshotSession | null) => void;
 const listeners = new Set<AuthListener>();
 let signedIn = true;
+type LocalHealthChannel = {
+  on: (event: string, filter: Record<string, unknown>, callback: (...args: unknown[]) => void) => LocalHealthChannel;
+  subscribe: () => LocalHealthChannel;
+};
+const channels = new Set<LocalHealthChannel>();
 const adapter = {
   from: (table: string) => new ScreenshotQuery(table),
   rpc: screenshotRpc,
+  channel: (name: string): LocalHealthChannel => {
+    if (name !== `health:${screenshotUser.id}`) throw new Error('Unknown local realtime channel');
+    const channel: LocalHealthChannel = {
+      on: (event, filter, callback) => {
+        if (event !== 'postgres_changes' || filter.event !== '*' || filter.schema !== 'public'
+          || filter.table !== 'health_state' || filter.filter !== `user_id=eq.${screenshotUser.id}` || typeof callback !== 'function') {
+          throw new Error('Unexpected local health subscription contract');
+        }
+        return channel;
+      },
+      // The UI refreshes explicitly after acceptance. Remote realtime changes
+      // are outside this local-only scenario; subscribe never opens a socket.
+      subscribe: () => { channels.add(channel); return channel; },
+    };
+    return channel;
+  },
+  removeChannel: async (channel: LocalHealthChannel) => { channels.delete(channel); return 'ok' as const; },
   auth: {
     getSession: async () => ({ data: { session: signedIn ? clone(screenshotSession) : null }, error: null }),
     getUser: async () => ({ data: { user: signedIn ? clone(screenshotUser) : null }, error: null }),
