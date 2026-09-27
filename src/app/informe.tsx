@@ -22,7 +22,7 @@ import {
 } from '@/components/ui';
 import { useAuth } from '@/lib/auth';
 import { questsScheduledOn } from '@/lib/closing';
-import { createQuest, ensureProfile, fetchCompletionsSince, fetchQuests, setQuestActive, updateQuest } from '@/lib/data';
+import { createQuest, ensureProfile, fetchCompletionsSince, fetchQuests, updateQuest } from '@/lib/data';
 import { addDays, dateKey } from '@/lib/dates';
 import { DIFFICULTY_LABEL, levelFromXp, STAT_LABEL, STATS } from '@/lib/game';
 import { olvidarConsentimiento } from '@/lib/consent';
@@ -132,9 +132,9 @@ export default function Informe() {
   const applyAdjustment = async (adj: WeeklyAdvice['adjustments'][number]) => {
     try {
       if (adj.action === 'desactivar') {
-        await setQuestActive(adj.quest_id, false);
+        await updateQuest(adj.quest_id, { active: false, health_data: true });
       } else if (adj.new_difficulty) {
-        await updateQuest(adj.quest_id, { difficulty: adj.new_difficulty });
+        await updateQuest(adj.quest_id, { difficulty: adj.new_difficulty, health_data: true });
       }
       setApplied((prev) => new Set(prev).add(adj.quest_id));
       await load();
@@ -147,6 +147,7 @@ export default function Informe() {
     if (!userId) return;
     try {
       await createQuest(userId, {
+        health_data: true,
         title: q.title,
         stat: q.stat,
         difficulty: q.difficulty,

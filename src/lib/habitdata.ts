@@ -2,6 +2,7 @@
 // Supabase, para que tenga tests.
 
 import { supabase } from './supabase';
+import { fetchCompletionsSince } from './data';
 import type { Quest } from './types';
 
 /**
@@ -34,11 +35,7 @@ export async function fetchHabitos(): Promise<Quest[]> {
 export async function fetchFechasPorHabito(dias = 200): Promise<Map<string, Set<string>>> {
   const desde = new Date();
   desde.setDate(desde.getDate() - dias);
-  const { data, error } = await supabase
-    .from('completions')
-    .select('quest_id, date')
-    .gte('date', desde.toISOString().slice(0, 10));
-  if (error) throw error;
+  const data = await fetchCompletionsSince(desde.toISOString().slice(0, 10));
 
   const mapa = new Map<string, Set<string>>();
   for (const c of (data ?? []) as { quest_id: string; date: string }[]) {

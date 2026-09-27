@@ -7,6 +7,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import { View } from 'react-native';
 import { EdadMinimaGuard, EdadMinimaProvider, useEdadMinima } from '@/components/EdadMinima';
+import { HealthConsentGuard, HealthConsentProvider } from '@/components/ConsentimientoSalud';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { AuthProvider, useAuth } from '@/lib/auth';
 import { identificarEnTienda } from '@/lib/pro';
@@ -66,7 +67,7 @@ function ProtectedStack() {
 
   return (
     <Stack
-      screenLayout={({ children, route }) => <EdadMinimaGuard routeName={route.name}>{children}</EdadMinimaGuard>}
+      screenLayout={({ children, route }) => <EdadMinimaGuard routeName={route.name}><HealthConsentGuard routeName={route.name}>{children}</HealthConsentGuard></EdadMinimaGuard>}
       screenOptions={{
         headerShown: false,
         contentStyle: { backgroundColor: colors.bg },
@@ -103,7 +104,7 @@ export default function RootLayout() {
       <AuthProvider>
         <StatusBar style="light" />
         <EdadMinimaProvider>
-          <ProtectedStack />
+          <HealthConsentProvider><ProtectedStack /></HealthConsentProvider>
         </EdadMinimaProvider>
       </AuthProvider>
     </ErrorBoundary>

@@ -72,12 +72,17 @@ export function periodoMensual(hoy: string): { desde: string; hasta: string } {
   return { desde: iso(primero), hasta: iso(ultimo) };
 }
 
+import { requireHealth } from './health.ts';
+import { consentimientoIa, SIN_CONSENTIMIENTO } from './consent.ts';
+
 export async function construirResumen(
   sb: Db,
   userId: string,
   kind: 'semanal' | 'mensual',
   hoy: string,
 ): Promise<Resultado> {
+  await requireHealth(sb, userId);
+  if (await consentimientoIa(sb, userId) !== true) throw new Error(SIN_CONSENTIMIENTO);
   const { desde, hasta } = kind === 'semanal' ? periodoSemanal(hoy) : periodoMensual(hoy);
 
   const [fotosRes, compRes, diarioRes, gymRes, cardioRes, perfilRes, logrosRes] = await Promise.all([
@@ -153,6 +158,8 @@ export async function construirResumen(
     .filter((l) => l !== null)
     .join('\n');
 
+  await requireHealth(sb, userId);
+  if (await consentimientoIa(sb, userId) !== true) throw new Error(SIN_CONSENTIMIENTO);
   const turn = await callClaude({
     system: [{ type: 'text', text: SISTEMA }],
     messages: [{ role: 'user', content: [{ type: 'text', text: datos }] }],

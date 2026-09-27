@@ -67,6 +67,7 @@ async function sql(query) {
 
 // Cada migración se reconoce por un objeto que solo ella crea.
 const HUELLAS = {
+  '0030': `to_regclass('public.health_consents') is not null and exists(select 1 from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='public' and p.proname='complete_health_erasure')`,
   '0001': `to_regclass('public.profiles') is not null`,
   '0002': `to_regclass('public.dungeons') is not null`,
   '0003': `exists(select 1 from pg_constraint where conname = 'profiles_xp_nonneg')`,

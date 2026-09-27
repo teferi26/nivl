@@ -31,6 +31,7 @@ import { callOpenAICompat } from '../_shared/openai.ts';
 import { construirResumen, periodoMensual, periodoSemanal } from '../_shared/recap.ts';
 import { buildContext } from '../_shared/context.ts';
 import { consentimientoIa, MENSAJE_SIN_CONSENTIMIENTO, SIN_CONSENTIMIENTO } from '../_shared/consent.ts';
+import { healthConsent, healthGuardedResult, healthRevision, healthScopedClient, HEALTH_REQUIRED, requireHealth } from '../_shared/health.ts';
 import { adminClient, userClient, type Db } from '../_shared/db.ts';
 import { buildSystem } from '../_shared/prompt.ts';
 import { elegirModelo, modoDeCabecera, proveedorDe, type Modo, type Routes } from '../_shared/routing.ts';
@@ -385,8 +386,9 @@ ${userText}` : userText,
     const pedirTurno = async (maxTokens: number, effort: Effort) => {
       // Un turno puede encadenar varias llamadas y reintentos. La aceptación
       // de su inicio no autoriza llamadas nuevas después de una retirada.
-      if ((await consentimientoIa(admin, userId)) !== true) return null;
-      return compat
+      if ((await consentimientoIa(admin, userId)) !== true || (await healthConsent(sb, userId)) !== true) return null;
+      let buffered = '';
+      const turn = await healthGuardedResult(sb, userId, () => compat
         ? callOpenAICompat({
             baseUrl: compat.baseUrl,
             apiKey: compat.apiKey,
@@ -395,7 +397,7 @@ ${userText}` : userText,
             messages,
             tools: sinTiempo ? undefined : TOOL_DEFS,
             maxTokens,
-            onText: (d) => emit('text', { delta: d }),
+            onText: (d) => { buffered += d; },
           })
         : callClaude({
             model: elegido,
@@ -404,9 +406,12 @@ ${userText}` : userText,
             tools: sinTiempo ? undefined : TOOL_DEFS,
             maxTokens,
             effort,
-            onText: (d) => emit('text', { delta: d }),
+            onText: (d) => { buffered += d; },
             onThinking: () => emit('thinking', {}),
-          });
+          }));
+      if (await consentimientoIa(admin, userId) !== true) return null;
+      if (buffered) emit('text', { delta: buffered });
+      return turn;
     };
 
     let turn = await pedirTurno(techo, esfuerzo);
@@ -449,6 +454,7 @@ ${userText}` : userText,
       break;
     }
 
+    await requireHealth(sb, userId);
     messages.push({ role: 'assistant', content: turn.content });
     await sb.from('coach_messages').insert({
       thread_id: threadId,
@@ -512,6 +518,7 @@ ${userText}` : userText,
     });
   }
 
+  await requireHealth(sb, userId);
   await sb
     .from('coach_threads')
     .update({ last_message_at: new Date().toISOString() })
@@ -624,7 +631,7 @@ async function atender(req: Request, userId: string, token: string, estado: Puer
   }
 
   // Cliente con el JWT del usuario: RLS manda también aquí.
-  const sbTemprano = userClient(token);
+  let sbTemprano = userClient(token);
 
   // Atajo mecánico. Sale antes de construir el contexto del coach a propósito:
   // enviar 50.000 fichas de dossier y estudios para decidir si un cargo de
@@ -657,6 +664,14 @@ async function atender(req: Request, userId: string, token: string, estado: Puer
       return json(500, { error: 'No se pudieron clasificar los movimientos.' });
     }
   }
+
+  // El chat libre y los rituales mezclan salud con otros datos. No se lee el
+  // historial ni se envía el mensaje sin el permiso independiente de salud.
+  const health = await healthConsent(sbTemprano, userId);
+  if (health === null) return json(503, { error: 'No se ha podido comprobar el permiso de salud.' });
+  if (!health) return json(403, { error: 'Revisa y activa el permiso de salud en Perfil antes de usar el coach.', reason: HEALTH_REQUIRED });
+  const revision = await healthRevision(sbTemprano, userId);
+  sbTemprano = healthScopedClient(userClient(token, revision), revision);
 
   // El resumen tampoco pasa por el contexto del coach: se construye con datos
   // del periodo ya calculados y no necesita el dossier ni los estudios.
@@ -767,7 +782,7 @@ async function atender(req: Request, userId: string, token: string, estado: Puer
       cache_write_tokens: result?.usage.cache_creation_input_tokens ?? 0,
       out_tokens: result?.usage.output_tokens ?? 0,
       cost_micro_usd: result ? costMicroUsd(result.model, result.usage) : 0,
-      error,
+      error: error ? 'turn_failed' : null,
     });
     // Que falle la contabilidad no debe tumbar el turno, pero tampoco puede
     // desaparecer sin dejar rastro: sin esto, el coste se pierde en silencio.
@@ -776,7 +791,8 @@ async function atender(req: Request, userId: string, token: string, estado: Puer
 
   const describe = (e: unknown): string => {
     if (e instanceof RefusalError) return 'El sistema no puede responder a eso.';
-    console.error('coach error:', e);
+    console.error('coach turn failed');
+    if (e instanceof Error && e.message === HEALTH_REQUIRED) return 'El permiso de salud ya no está activo. Revisa Perfil antes de continuar.';
 
     // Distinguir estos dos del fallo genérico importa: "reintenta en un
     // momento" es un consejo inútil cuando lo que pasa es que se acabó el
@@ -794,8 +810,7 @@ async function atender(req: Request, userId: string, token: string, estado: Puer
     // error de la API no lleva credenciales: es seguro enseñarlo.
     const detalle = /anthropic (\d{3}):([\s\S]*)/.exec(texto);
     if (detalle) {
-      const cuerpo = (detalle[2] ?? '').replace(/\s+/g, ' ').slice(0, 200);
-      return `La API ha rechazado la petición (${detalle[1]}): ${cuerpo}`;
+      return `La API ha rechazado la petición (${detalle[1]}). Reintenta en un momento.`;
     }
     return 'El sistema no responde. Reintenta en un momento.';
   };
@@ -817,6 +832,7 @@ async function atender(req: Request, userId: string, token: string, estado: Puer
         modo,
         emit: () => {},
       });
+      await requireHealth(sb, userId);
       await finish(result, null);
       return json(200, { thread_id: threadId, text: result.text });
     } catch (e) {
@@ -865,6 +881,7 @@ async function atender(req: Request, userId: string, token: string, estado: Puer
           modo,
           emit,
         });
+        await requireHealth(sb, userId);
         await finish(result, null);
         emit('done', {
           thread_id: threadId,

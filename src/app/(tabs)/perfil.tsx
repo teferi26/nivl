@@ -21,6 +21,7 @@ import {
 } from 'react-native';
 import { captureRef } from 'react-native-view-shot';
 import { useConsentimientoIA } from '@/components/ConsentimientoIA';
+import { HealthPrivacySection } from '@/components/ConsentimientoSalud';
 import { EliteBadge } from '@/components/EliteBadge';
 import { Hexagon } from '@/components/Hexagon';
 import { SystemButton } from '@/components/SystemButton';
@@ -840,6 +841,7 @@ export default function Perfil() {
           </FadeIn>
 
           <FadeIn index={10}>
+            <HealthPrivacySection />
             <Section title="Cuenta">
               <Card padded={false} style={styles.lista}>
                 <Row

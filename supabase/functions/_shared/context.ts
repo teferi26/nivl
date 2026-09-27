@@ -155,11 +155,14 @@ function diarioDeDias(
   return filas;
 }
 
+import { requireHealth } from './health.ts';
+
 export async function buildContext(
   sb: Db,
   userId: string,
   today: string,
 ): Promise<BuiltContext> {
+  await requireHealth(sb, userId);
   const since14 = new Date(new Date(today).getTime() - 14 * 86400000).toISOString().slice(0, 10);
   const since30 = new Date(new Date(today).getTime() - 30 * 86400000).toISOString().slice(0, 10);
   const since60 = new Date(new Date(today).getTime() - 60 * 86400000).toISOString().slice(0, 10);

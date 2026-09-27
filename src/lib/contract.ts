@@ -67,6 +67,7 @@ export async function breakRule(
   });
 
   const { error: questErr } = await supabase.from('quests').insert({
+    health_data: rule.health_data === true,
     user_id: profile.id,
     title: `Consecuencia: ${rule.consequence}`,
     stat: 'AGI',
@@ -175,10 +176,10 @@ export async function fetchLetter(): Promise<Letter | null> {
   return (data as Letter) ?? null;
 }
 
-export async function sealLetter(userId: string, body: string, openAt: string): Promise<Letter> {
+export async function sealLetter(userId: string, body: string, openAt: string, healthData = false): Promise<Letter> {
   const { data, error } = await supabase
     .from('letters')
-    .insert({ user_id: userId, body, open_at: openAt })
+    .insert({ user_id: userId, body, open_at: openAt, health_data: healthData })
     .select()
     .single();
   if (error) throw error;

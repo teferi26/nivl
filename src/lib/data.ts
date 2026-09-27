@@ -1,3 +1,4 @@
+import { requireHealthConsent } from './health';
 import { decode } from 'base64-arraybuffer';
 import { kindMeta, type StarterQuest } from './kinds';
 import { supabase } from './supabase';
@@ -87,7 +88,7 @@ export async function applyDayCloseRpc(args: {
   penaltyXp?: number;
   clearFreeze?: boolean;
 }): Promise<Profile> {
-  const { data, error } = await supabase.rpc('apply_day_close', {
+  const { data, error } = await supabase.rpc('apply_day_close_safe', {
     p_last_day: args.lastDay ?? null,
     p_streak: args.streak ?? null,
     p_perfect_streak: args.perfectStreak ?? null,
@@ -115,6 +116,8 @@ export interface QuestInput {
   days_of_week: number[];
   requires_evidence: boolean;
   is_bonus?: boolean;
+  health_data?: boolean;
+  active?: boolean;
 }
 
 export async function createQuest(userId: string, input: QuestInput): Promise<Quest> {
@@ -143,33 +146,26 @@ export async function deleteQuest(id: string): Promise<void> {
 }
 
 export async function fetchCompletionsSince(fromDate: string): Promise<Completion[]> {
-  const { data, error } = await supabase
-    .from('completions')
-    .select('*')
-    .gte('date', fromDate);
+  const { data, error } = await supabase.rpc('my_completions', { p_from: fromDate });
   if (error) throw error;
-  return (data ?? []) as Completion[];
+  if (!Array.isArray(data)) throw new Error('No se pudieron comprobar las misiones completadas.');
+  return data as Completion[];
 }
 
 export async function fetchCompletionsForDate(date: string): Promise<Completion[]> {
-  const { data, error } = await supabase.from('completions').select('*').eq('date', date);
+  const { data, error } = await supabase.rpc('my_completions', { p_from: date, p_until: date });
   if (error) throw error;
-  return (data ?? []) as Completion[];
+  if (!Array.isArray(data)) throw new Error('No se pudieron comprobar las misiones completadas.');
+  return data as Completion[];
 }
 
 export async function completionStats(): Promise<{ total: number; withEvidence: number }> {
   // Propaga el error en vez de degradar a 0: un fallo de red devolvía {0,0}
   // indistinguible de "sin actividad" y enmudecía la evaluación de logros.
-  const { count: total, error: e1 } = await supabase
-    .from('completions')
-    .select('*', { count: 'exact', head: true });
-  if (e1) throw e1;
-  const { count: withEvidence, error: e2 } = await supabase
-    .from('completions')
-    .select('*', { count: 'exact', head: true })
-    .not('evidence_url', 'is', null);
-  if (e2) throw e2;
-  return { total: total ?? 0, withEvidence: withEvidence ?? 0 };
+  const { data, error } = await supabase.rpc('my_completion_stats');
+  if (error) throw error;
+  if (typeof data?.total !== 'number' || typeof data?.with_evidence !== 'number') throw new Error('No se pudieron comprobar tus logros.');
+  return { total: data.total, withEvidence: data.with_evidence };
 }
 
 export async function insertEvent(
@@ -179,7 +175,9 @@ export async function insertEvent(
 ): Promise<void> {
   // Los eventos son la fuente de verdad de la crónica y del conteo de PRs;
   // tragarse un fallo aquí dejaba logros sin desbloquear sin aviso.
-  const { error } = await supabase.from('events').insert({ user_id: userId, type, payload });
+  const { error } = await supabase.from('events').insert({ user_id: userId, type, payload,
+    ...(payload.health_data === true ? { health_data: true } : {}),
+  });
   if (error) throw error;
 }
 
@@ -193,6 +191,7 @@ export async function uploadEvidence(
   date: string,
   base64: string,
 ): Promise<string> {
+  await requireHealthConsent();
   const path = `${userId}/${date}_${questId}.jpg`;
   const { error } = await supabase.storage
     .from('evidence')
@@ -213,7 +212,8 @@ export async function uploadAvatar(userId: string, base64: string): Promise<stri
 }
 
 export async function signedUrl(bucket: 'evidence' | 'avatars', path: string): Promise<string | null> {
-  const { data } = await supabase.storage.from(bucket).createSignedUrl(path, 60 * 60 * 24 * 7);
+  if (bucket === 'evidence') await requireHealthConsent();
+  const { data } = await supabase.storage.from(bucket).createSignedUrl(path, bucket === 'evidence' ? 60 : 60 * 60 * 24 * 7);
   return data?.signedUrl ?? null;
 }
 
@@ -230,11 +230,15 @@ export async function signedUrl(bucket: 'evidence' | 'avatars', path: string): P
  * servir una caducada.
  */
 const firmas = new Map<string, string>();
+export function clearEvidenceSignatures(): void {
+  for (const key of firmas.keys()) if (key.startsWith('evidence/')) firmas.delete(key);
+}
 
 export async function signedUrlCached(
   bucket: 'evidence' | 'avatars',
   path: string,
 ): Promise<string | null> {
+  if (bucket === 'evidence') return signedUrl(bucket, path);
   const clave = `${bucket}/${path}`;
   const guardada = firmas.get(clave);
   if (guardada) return guardada;

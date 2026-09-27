@@ -18,6 +18,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { HoldToSign } from '@/components/HoldToSign';
+import { useHealthConsent } from '@/components/ConsentimientoSalud';
 import { ProOfferActions, ProOfferBody, ProOfferLegal, useProOffer } from '@/components/ProOffer';
 import { SystemButton } from '@/components/SystemButton';
 import { Card, Chip, FadeIn, Stagger } from '@/components/ui';
@@ -68,6 +69,8 @@ const MS_SELLO = 1400;
 const DEFAULT_NAMES = new Set(['Gladiador', 'Cazador']);
 
 export default function Onboarding() {
+  const health = useHealthConsent();
+  const [healthGoal, setHealthGoal] = useState(false);
   const { session } = useAuth();
   const userId = session?.user.id;
   const [step, setStep] = useState(0);
@@ -187,7 +190,7 @@ export default function Onboarding() {
       // Solo al cambiar de perfil: volver atrás y seguir con el mismo no debe
       // deshacer lo que ya se había desmarcado.
       if (kindGuardado.current !== kind) {
-        setChosen(new Set(KINDS[kind].starterQuests.map((_, i) => i)));
+        setChosen(new Set(KINDS[kind].starterQuests.flatMap((q, i) => health.accepted || !q.health_data ? [i] : [])));
         kindGuardado.current = kind;
       }
       setStep(3);
@@ -199,7 +202,9 @@ export default function Onboarding() {
   const saveGoal = () =>
     withLock(async () => {
       if (!limpiarFrase(goal)) return;
+      if (healthGoal && !health.accepted) { health.ask(); return; }
       const payload = {
+        health_data: healthGoal,
         goal: limpiarFrase(goal),
         target: limpiarFrase(target) || null,
         deadline: limpiarFrase(deadline) || null,
@@ -217,6 +222,7 @@ export default function Onboarding() {
     withLock(async () => {
       if (!kind) return;
       const elegidas = KINDS[kind].starterQuests.filter((_, i) => chosen.has(i));
+      if (!health.accepted && elegidas.some(q => q.health_data)) { health.ask(); return; }
       const titulos = new Set(elegidas.map((q) => q.title));
       // Reconciliar en vez de insertar a ciegas: al volver a pasar por aquí se
       // crea solo lo nuevo y se retira lo que ya no está elegido (también las
@@ -258,7 +264,8 @@ export default function Onboarding() {
   // crónica sin revelar el texto.
   const sign = () =>
     withLock(async () => {
-      await sealLetter(userId!, contrato, abreEl);
+      if (healthGoal && !health.accepted) { health.ask(); return; }
+      await sealLetter(userId!, contrato, abreEl, healthGoal);
       await insertEvent(userId!, 'commitment_signed', { years: horizonte.years, open_at: abreEl }).catch(() => {});
       if (yaEsPro.current) await updateProfile(userId!, { onboarding_done: true });
       setSello(true);
@@ -303,13 +310,15 @@ export default function Onboarding() {
     return () => sub.remove();
   }, [puedeVolver, sello, volver]);
 
-  const toggleStarter = (i: number) =>
+  const toggleStarter = (i: number) => {
+    if (kind && KINDS[kind].starterQuests[i]?.health_data && !health.accepted && !chosen.has(i)) { health.ask(); return; }
     setChosen((prev) => {
       const next = new Set(prev);
       if (next.has(i)) next.delete(i);
       else next.add(i);
       return next;
     });
+  };
 
   const meta = kind ? KINDS[kind] : null;
   const firmaOk = firmaValida(firma, name);
@@ -491,11 +500,19 @@ export default function Onboarding() {
               </Text>
               <Card variant="outline">
                 <Text style={styles.label}>Tu objetivo</Text>
+                <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: healthGoal }}
+                  accessibilityLabel="Mi objetivo incluye salud o entrenamiento"
+                  onPress={() => { if (!health.accepted && !healthGoal) { health.ask(); return; } setHealthGoal(v => !v); }}
+                  style={styles.starterRow}>
+                  <View style={[styles.checkbox, healthGoal && styles.checkboxOn]}>{healthGoal ? <Ionicons name="checkmark" size={14} color={colors.bg} /> : null}</View>
+                  <Text style={[styles.detail, { flex: 1 }]}>Mi objetivo incluye salud o entrenamiento</Text>
+                </Pressable>
+                {!healthGoal ? <Text style={styles.stepHint}>Escribe un objetivo general, sin datos de salud. Para incluirlos, activa la opción de arriba.</Text> : null}
                 <TextInput
                   style={[styles.input, styles.inputMulti]}
                   value={goal}
                   onChangeText={setGoal}
-                  placeholder={meta.goalExample}
+                  placeholder={healthGoal ? meta.goalExample : 'Leer doce libros este año'}
                   placeholderTextColor={colors.textFaint}
                   maxLength={GOAL_MAX_LENGTH}
                   multiline
@@ -508,7 +525,7 @@ export default function Onboarding() {
                       style={styles.input}
                       value={target}
                       onChangeText={setTarget}
-                      placeholder="78 kg, 5.000 €…"
+                      placeholder={healthGoal ? '78 kg, 5.000 €…' : '12 libros, 5.000 €…'}
                       placeholderTextColor={colors.textFaint}
                       maxLength={GOAL_DETAIL_MAX_LENGTH}
                       accessibilityLabel="Cifra del objetivo, opcional"
@@ -557,6 +574,7 @@ export default function Onboarding() {
                         <Text style={[styles.starterTitle, !on && styles.starterOff]}>{q.title}</Text>
                         <Text style={styles.starterMeta}>
                           {STAT_LABEL[q.stat]} · {DIFFICULTY_LABEL[q.difficulty]} · {q.days_of_week.length === 7 ? 'cada día' : `${q.days_of_week.length} días/semana`}
+                          {q.health_data ? ' · salud (opcional)' : ''}
                         </Text>
                       </View>
                     </Pressable>

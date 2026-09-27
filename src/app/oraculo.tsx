@@ -116,6 +116,7 @@ export default function Oraculo() {
         const p = proposals[i];
         if (!p) continue;
         await createQuest(userId, {
+          health_data: true,
           title: p.title,
           stat: p.stat,
           difficulty: p.difficulty,

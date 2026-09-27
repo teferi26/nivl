@@ -20,6 +20,7 @@ import { Platform } from 'react-native';
 import type { DayBlock } from './plan';
 import { hhmm } from './plan';
 import { voice } from './voice';
+import { requireHealthConsent } from './health';
 
 export const CANALES = {
   despertar: 'despertar',
@@ -38,6 +39,20 @@ export const CATEGORIAS = {
 const ID_DESPERTAR = 'nivl.despertar';
 const idBloque = (fecha: string, blockId: string) => `nivl.bloque.${fecha}.${blockId}`;
 const idCierre = (fecha: string) => `nivl.cierre.${fecha}`;
+let healthGeneration = 0;
+
+/** Retira copias locales del plan/coach cuando se pierde el permiso. */
+export async function cancelarAvisosSalud(): Promise<void> {
+  healthGeneration++;
+  try {
+    const scheduled = await Notifications.getAllScheduledNotificationsAsync();
+    await Promise.all(scheduled.filter(n => n.identifier.startsWith('nivl.bloque.') || n.identifier.startsWith('nivl.cierre.'))
+      .map(n => Notifications.cancelScheduledNotificationAsync(n.identifier)));
+    const delivered = await Notifications.getPresentedNotificationsAsync();
+    await Promise.all(delivered.filter(n => ['/resumen', '/(tabs)/coach'].includes(String(n.request.content.data?.ruta)) || n.request.identifier.startsWith('nivl.bloque.'))
+      .map(n => Notifications.dismissNotificationAsync(n.request.identifier)));
+  } catch { /* El permiso de salud sigue retirado aunque el SO no responda. */ }
+}
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -195,6 +210,8 @@ export async function reconciliarAvisosDelDia(
   horaCierreMin: number | null,
 ): Promise<number> {
   try {
+    await requireHealthConsent();
+    const generation = healthGeneration;
     const programadas = await Notifications.getAllScheduledNotificationsAsync();
     const prefijo = `nivl.bloque.${fecha}.`;
     await Promise.all(
@@ -210,6 +227,7 @@ export async function reconciliarAvisosDelDia(
       if (!b.notify || b.done) continue;
       const cuando = fechaLocal(fecha, b.start_min);
       if (cuando <= ahora) continue;
+      if (generation !== healthGeneration) return 0;
       await Notifications.scheduleNotificationAsync({
         identifier: idBloque(fecha, b.id),
         content: {
@@ -253,6 +271,7 @@ export async function reconciliarAvisosDelDia(
       }
     }
 
+    if (generation !== healthGeneration) { await cancelarAvisosSalud(); return 0; }
     return puestas;
   } catch (e) {
     ultimoError = e instanceof Error ? e.message : 'No se pudieron programar los avisos del día.';

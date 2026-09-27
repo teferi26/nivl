@@ -574,12 +574,15 @@ async function propagarActo(ctx: ToolCtx, link: string): Promise<{ texto: string
 }
 
 /** Ejecuta una herramienta y devuelve el texto que verá el modelo. */
+import { requireHealth } from './health.ts';
+
 export async function executeTool(
   name: string,
   input: Record<string, any>,
   ctx: ToolCtx,
 ): Promise<string> {
   const { sb, userId } = ctx;
+  await requireHealth(sb, userId);
   const ok = (msg: string) => msg;
 
   switch (name) {

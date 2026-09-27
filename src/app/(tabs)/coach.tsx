@@ -15,6 +15,7 @@ import {
   View,
 } from 'react-native';
 import { useConsentimientoIA } from '@/components/ConsentimientoIA';
+import { HealthConsentGuard } from '@/components/ConsentimientoSalud';
 import { SystemButton } from '@/components/SystemButton';
 import { TextoSistema } from '@/components/TextoSistema';
 import { Chip, ChipRow, FadeIn, Screen, Skeleton, Tag } from '@/components/ui';
@@ -143,6 +144,10 @@ function CoachBloqueado({ kind, onPro }: { kind: unknown; onPro: () => void }) {
 }
 
 export default function CoachScreen() {
+  return <HealthConsentGuard routeName="coach"><CoachContent /></HealthConsentGuard>;
+}
+
+function CoachContent() {
   const { session } = useAuth();
   const router = useRouter();
   const scrollRef = useRef<ScrollView>(null);
