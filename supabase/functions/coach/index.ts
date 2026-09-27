@@ -26,7 +26,7 @@ import {
   type Effort,
   type Usage,
 } from '../_shared/anthropic.ts';
-import { clasificarPendientes } from '../_shared/clasificar.ts';
+import { clasificarPendientes, ClasificacionConsentimientoError } from '../_shared/clasificar.ts';
 import { callOpenAICompat } from '../_shared/openai.ts';
 import { construirResumen, periodoMensual, periodoSemanal } from '../_shared/recap.ts';
 import { buildContext } from '../_shared/context.ts';
@@ -632,7 +632,7 @@ async function atender(req: Request, userId: string, token: string, estado: Puer
   // evitar en las tareas que no piden criterio.
   if (body.kind === KIND_MECANICO) {
     try {
-      const r = await clasificarPendientes(sbTemprano, userId);
+      const r = await clasificarPendientes(sbTemprano, admin, userId);
       const { error: ledgerErr } = await admin.from('coach_runs').insert({
         user_id: userId,
         kind: KIND_MECANICO,
@@ -647,6 +647,12 @@ async function atender(req: Request, userId: string, token: string, estado: Puer
       if (ledgerErr) console.error('coach_runs insert failed:', ledgerErr.message);
       return json(200, { revisados: r.revisados, clasificados: r.clasificados, texto: r.resumen });
     } catch (e) {
+      if (e instanceof ClasificacionConsentimientoError) {
+        return json(e.status, {
+          error: e.message,
+          ...(e.status === 403 ? { reason: SIN_CONSENTIMIENTO } : {}),
+        });
+      }
       console.error('clasificar error:', e);
       return json(500, { error: 'No se pudieron clasificar los movimientos.' });
     }

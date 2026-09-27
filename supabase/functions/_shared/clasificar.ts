@@ -13,6 +13,7 @@
 // recortar o qué presupuesto poner. Eso es criterio y es del coach.
 
 import { callClaude, CHEAP_MODEL, type Usage } from './anthropic.ts';
+import { consentimientoIa, MENSAJE_SIN_CONSENTIMIENTO } from './consent.ts';
 import type { Db } from './db.ts';
 
 const CATEGORIAS = [
@@ -53,8 +54,15 @@ export interface ResultadoClasificacion {
   resumen: string;
 }
 
+export class ClasificacionConsentimientoError extends Error {
+  constructor(public status: 403 | 503) {
+    super(status === 403 ? MENSAJE_SIN_CONSENTIMIENTO : 'El sistema no puede comprobar tu consentimiento ahora mismo.');
+  }
+}
+
 export async function clasificarPendientes(
   sb: Db,
+  admin: Db,
   userId: string,
   tope = 60,
 ): Promise<ResultadoClasificacion> {
@@ -81,6 +89,11 @@ export async function clasificarPendientes(
   const lista = filas
     .map((f, i) => `${i + 1}. ${Number(f.amount).toFixed(2)} € — ${f.counterparty ?? f.description}`)
     .join('\n');
+
+  // La lectura puede tardar: una retirada posterior al inicio debe impedir
+  // que estos movimientos salgan hacia el proveedor.
+  const consiente = await consentimientoIa(admin, userId);
+  if (consiente !== true) throw new ClasificacionConsentimientoError(consiente === null ? 503 : 403);
 
   const turn = await callClaude({
     model: CHEAP_MODEL,

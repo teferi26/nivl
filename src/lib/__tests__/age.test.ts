@@ -8,13 +8,21 @@ let mockSession: { user: { id: string } } | null = { user: { id: 'usuario-a' } }
 let mockLoading = false;
 jest.mock('../supabase', () => ({ supabase: { rpc: (...args: unknown[]) => mockRpc(...args), auth: { signOut: (...args: unknown[]) => mockSignOut(...args) } } }));
 jest.mock('../auth', () => ({ useAuth: () => ({ session: mockSession, loading: mockLoading }) }));
+// Las primitivas solo transportan props e hijos. El proveedor, el guard y sus
+// efectos siguen siendo reales; no necesitamos cargar la plataforma nativa.
+jest.mock('react-native', () => ({
+  Pressable: 'Pressable',
+  Text: 'Text',
+  View: 'View',
+  StyleSheet: { create: (styles: unknown) => styles },
+}));
 jest.mock('../../components/SystemButton', () => ({ SystemButton: 'SystemButton' }));
 jest.mock('../../components/ui', () => ({ Screen: 'Screen', ScreenHeader: 'ScreenHeader', Card: 'Card', Check: 'Check', Skeleton: 'Skeleton' }));
 
 // jest-expo ya incluye el renderer de la versión de React instalada.
 // Contrato mínimo del renderer, sin añadir sus tipos como dependencia.
 interface Nodo {
-  props: Record<string, any>;
+  props: { onPress: () => void; disabled?: boolean };
 }
 const { create, act } = jest.requireActual<{
   create: (element: React.ReactElement) => {
@@ -24,7 +32,7 @@ const { create, act } = jest.requireActual<{
   };
   act: (fn: () => unknown) => Promise<void>;
 }>('react-test-renderer');
-let rendered: ReturnType<typeof create>;
+let rendered: ReturnType<typeof create> | null = null;
 const privateMount = jest.fn(() => React.createElement('PrivateScreen'));
 const tree = (routeName = '(tabs)') => React.createElement(
   EdadMinimaProvider,
@@ -34,7 +42,7 @@ const tree = (routeName = '(tabs)') => React.createElement(
 const mount = async (routeName?: string) => {
   await act(async () => { rendered = create(tree(routeName)); });
 };
-const button = (title: string) => rendered.root.findByProps({ title });
+const button = (title: string) => rendered!.root.findByProps({ title });
 const press = async (title: string) => {
   await act(async () => { button(title).props.onPress(); });
 };
@@ -46,7 +54,10 @@ beforeEach(() => {
   mockRpc.mockReset().mockResolvedValue({ data: false, error: null });
   mockSignOut.mockResolvedValue({ error: null });
 });
-afterEach(async () => { if (rendered) await act(async () => rendered.unmount()); });
+afterEach(async () => {
+  await act(async () => rendered?.unmount());
+  rendered = null;
+});
 
 test('una cuenta existente sin confirmación no monta pantallas privadas ni permite confirmar sin marcar', async () => {
   await mount();
@@ -76,7 +87,7 @@ test('cargar o fallar la lectura mantiene cerrado el acceso; se puede reintentar
 
 test('un fallo al guardar no abre; solo la confirmación persistida permite montar la pantalla', async () => {
   await mount();
-  await act(async () => rendered.root.findAllByProps({ accessibilityRole: 'checkbox' })[0].props.onPress());
+  await act(async () => rendered!.root.findAllByProps({ accessibilityRole: 'checkbox' })[0].props.onPress());
   mockRpc.mockResolvedValueOnce({ data: null, error: new Error('offline') });
   await press('Confirmar y continuar');
   expect(privateMount).not.toHaveBeenCalled();
@@ -90,7 +101,7 @@ test('una cuenta que ya confirmó entra sin repetir la pregunta', async () => {
   mockRpc.mockResolvedValueOnce({ data: true, error: null });
   await mount('gym');
   expect(privateMount).toHaveBeenCalled();
-  expect(rendered.root.findAllByProps({ title: 'Confirmar y continuar' })).toHaveLength(0);
+  expect(rendered!.root.findAllByProps({ title: 'Confirmar y continuar' })).toHaveLength(0);
 });
 
 test('una lectura de la cuenta anterior que termina tarde no abre la nueva cuenta', async () => {
@@ -98,7 +109,7 @@ test('una lectura de la cuenta anterior que termina tarde no abre la nueva cuent
   mockRpc.mockReturnValueOnce(new Promise((resolve) => { previousReply = resolve; }));
   await mount();
   mockSession = { user: { id: 'usuario-b' } };
-  await act(async () => rendered.update(tree()));
+  await act(async () => rendered!.update(tree()));
   await act(async () => previousReply({ data: true, error: null }));
   expect(privateMount).not.toHaveBeenCalled();
   expect(button('Confirmar y continuar').props.disabled).toBe(true);

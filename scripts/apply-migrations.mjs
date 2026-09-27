@@ -98,6 +98,7 @@ const HUELLAS = {
   '0026': `to_regclass('public.elite_groups') is not null`,
   '0027': `to_regclass('public.store_events') is not null`,
   '0028': `to_regclass('public.ai_consents') is not null`,
+  '0029': `exists(select 1 from information_schema.columns where table_schema = 'public' and table_name = 'age_confirmations' and column_name = 'app_confirmed_at') and exists(select 1 from pg_proc p join pg_namespace n on n.oid = p.pronamespace where n.nspname = 'public' and p.proname = 'ai_consent_ok' and p.prosrc like '%c.source = ''app''%')`,
 };
 
 const archivos = readdirSync(MIGRATIONS)

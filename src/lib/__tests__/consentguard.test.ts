@@ -3,8 +3,8 @@ import { useConsentimientoIA } from '@/components/ConsentimientoIA';
 import { aceptarConsentimiento, fetchConsentimiento } from '@/lib/consent';
 import {
   AI_CONSENT_VERSION,
-  crearCerrojoAceptacion,
   leerConsentimiento,
+  TEXTO_CONSENTIMIENTO,
   type EstadoConsentimiento,
 } from '@/lib/consentmath';
 
@@ -13,17 +13,35 @@ jest.mock('@/lib/consent', () => ({
   fetchConsentimiento: jest.fn(),
   aceptarConsentimiento: jest.fn(),
 }));
+// Conservamos la hoja y sus callbacks reales; aislamos solo las primitivas
+// nativas para que la primera pulsación no cargue Modal/ScrollView en frío.
+jest.mock('react-native', () => ({
+  Linking: { openURL: jest.fn().mockResolvedValue(undefined) },
+  Modal: 'Modal',
+  Pressable: 'Pressable',
+  ScrollView: 'ScrollView',
+  Text: 'Text',
+  View: 'View',
+  StyleSheet: { create: (styles: unknown) => styles },
+}));
 jest.mock('@expo/vector-icons/Ionicons', () => 'Ionicons');
 jest.mock('expo-haptics', () => ({
   NotificationFeedbackType: { Success: 'success' },
   notificationAsync: jest.fn().mockResolvedValue(undefined),
 }));
-jest.mock('@/components/SystemButton', () => ({ SystemButton: () => null }));
+jest.mock('@/components/SystemButton', () => ({ SystemButton: 'SystemButton' }));
 
 // El renderer viene con jest-expo; este contrato mínimo evita añadir tipos
-// o dependencias solo para montar el hook (la hoja no se renderiza).
+// o dependencias solo para montar el hook y la hoja.
 const { create } = jest.requireActual<{
-  create: (element: ReactElement) => { unmount: () => void };
+  create: (element: ReactElement) => {
+    unmount: () => void;
+    root: {
+      findByProps: (props: object) => {
+        props: { onPress: () => Promise<void> | void; loading?: boolean; children?: unknown };
+      };
+    };
+  };
 }>('react-test-renderer');
 const fetchMock = jest.mocked(fetchConsentimiento);
 const aceptarMock = jest.mocked(aceptarConsentimiento);
@@ -35,8 +53,10 @@ let renderer: ReturnType<typeof create> | null;
 
 function Harness() {
   control = useConsentimientoIA();
-  return null;
+  return control.hoja;
 }
+
+const button = (title: string) => renderer!.root.findByProps({ title });
 
 beforeEach(async () => {
   fetchMock.mockReset();
@@ -127,63 +147,43 @@ describe('el consentimiento bloquea la acción hasta comprobarlo o aceptarlo', (
     await expect(resultado).resolves.toBe(false);
   });
 
-  // El cerrojo de la hoja se prueba sin montarla: montar el Modal y el
-  // ScrollView reales carga en frío cientos de módulos de React Native dentro
-  // del test (varios segundos con la suite en paralelo), y eso era lo que
-  // agotaba los 5 s. La lógica es pura (consentmath.ts) y la hoja solo la usa.
   test('dos toques en aceptar guardan una sola aceptación y esperan al servidor', async () => {
     let guardar!: () => void;
-    const pendienteServidor = new Promise<void>((resolve) => {
+    aceptarMock.mockReturnValue(new Promise<void>((resolve) => {
       guardar = resolve;
+    }));
+    const { resultado, continuar } = await iniciar();
+    const aceptar = button(TEXTO_CONSENTIMIENTO.aceptar).props.onPress;
+    const cerrar = button(TEXTO_CONSENTIMIENTO.rechazar).props.onPress;
+    await act(async () => {
+      void aceptar();
+      void aceptar();
+      void cerrar();
     });
-    const acciones = {
-      guardar: jest.fn(() => pendienteServidor),
-      alEmpezar: jest.fn(),
-      alTerminar: jest.fn(),
-      alAceptar: jest.fn(),
-      alFallar: jest.fn(),
-    };
-    const onCerrar = jest.fn();
-    const cerrojo = crearCerrojoAceptacion(() => acciones);
 
-    const primero = cerrojo.aceptar();
-    const segundo = cerrojo.aceptar();
-    expect(cerrojo.cerrar(onCerrar)).toBe(false);
-
-    expect(acciones.guardar).toHaveBeenCalledTimes(1);
-    expect(cerrojo.guardando).toBe(true);
-    expect(acciones.alAceptar).not.toHaveBeenCalled();
-    expect(onCerrar).not.toHaveBeenCalled();
-    await segundo;
-    expect(acciones.alAceptar).not.toHaveBeenCalled();
-
-    guardar();
-    await primero;
-    expect(acciones.alAceptar).toHaveBeenCalledTimes(1);
-    expect(acciones.alTerminar).toHaveBeenCalledTimes(1);
-    expect(acciones.alFallar).not.toHaveBeenCalled();
-    expect(cerrojo.guardando).toBe(false);
-    expect(cerrojo.cerrar(onCerrar)).toBe(true);
-    expect(onCerrar).toHaveBeenCalledTimes(1);
+    expect(aceptarMock).toHaveBeenCalledTimes(1);
+    expect(button(TEXTO_CONSENTIMIENTO.aceptar).props.loading).toBe(true);
+    expect(continuar).not.toHaveBeenCalled();
+    expect(control.hoja.props.visible).toBe(true);
+    await act(async () => guardar());
+    await expect(resultado).resolves.toBe(true);
+    expect(button(TEXTO_CONSENTIMIENTO.aceptar).props.loading).toBe(false);
+    expect(control.hoja.props.visible).toBe(false);
   });
 
   test('si el servidor falla, no sigue, avisa y deja reintentar', async () => {
-    const acciones = {
-      guardar: jest.fn().mockRejectedValueOnce(new Error('offline')).mockResolvedValueOnce(undefined),
-      alEmpezar: jest.fn(),
-      alTerminar: jest.fn(),
-      alAceptar: jest.fn(),
-      alFallar: jest.fn(),
-    };
-    const cerrojo = crearCerrojoAceptacion(() => acciones);
+    aceptarMock.mockRejectedValueOnce(new Error('offline')).mockResolvedValueOnce(undefined);
+    const { resultado, continuar } = await iniciar();
 
-    await cerrojo.aceptar();
-    expect(acciones.alFallar).toHaveBeenCalledTimes(1);
-    expect(acciones.alAceptar).not.toHaveBeenCalled();
-    expect(cerrojo.guardando).toBe(false);
+    await act(async () => button(TEXTO_CONSENTIMIENTO.aceptar).props.onPress());
+    expect(renderer!.root.findByProps({ accessibilityRole: 'alert' }).props.children).toEqual(expect.any(String));
+    expect(continuar).not.toHaveBeenCalled();
+    expect(button(TEXTO_CONSENTIMIENTO.aceptar).props.loading).toBe(false);
+    expect(control.hoja.props.visible).toBe(true);
 
-    await cerrojo.aceptar();
-    expect(acciones.guardar).toHaveBeenCalledTimes(2);
-    expect(acciones.alAceptar).toHaveBeenCalledTimes(1);
+    await act(async () => button(TEXTO_CONSENTIMIENTO.aceptar).props.onPress());
+    expect(aceptarMock).toHaveBeenCalledTimes(2);
+    await expect(resultado).resolves.toBe(true);
+    expect(control.hoja.props.visible).toBe(false);
   });
 });
