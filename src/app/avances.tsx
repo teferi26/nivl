@@ -34,6 +34,7 @@ import {
   StatRow,
 } from '@/components/ui';
 import { useAuth } from '@/lib/auth';
+import { HealthConsentNotice, useHealthConsent } from '@/components/ConsentimientoSalud';
 import { ensureProfile } from '@/lib/data';
 import { dateKey } from '@/lib/dates';
 import { awardXp } from '@/lib/engine';
@@ -60,6 +61,7 @@ const METRIC_OPTIONS: { key: GoalMetric; label: string }[] = [
 ];
 
 export default function Avances() {
+  const health = useHealthConsent();
   const { session } = useAuth();
   const userId = session?.user.id;
   const { width } = useWindowDimensions();
@@ -74,7 +76,7 @@ export default function Avances() {
   const [series, setSeries] = useState<{ exercise: string; values: number[] } | null>(null);
   const [goalFormOpen, setGoalFormOpen] = useState(false);
   const [gTitle, setGTitle] = useState('');
-  const [gMetric, setGMetric] = useState<GoalMetric>('peso_corporal');
+  const [gMetric, setGMetric] = useState<GoalMetric>('libre');
   const [gExercise, setGExercise] = useState('');
   const [gStart, setGStart] = useState('');
   const [gTarget, setGTarget] = useState('');
@@ -85,9 +87,9 @@ export default function Avances() {
   const load = useCallback(async () => {
     try {
       const [ws, gs, records] = await Promise.all([
-        fetchWeights(180),
+        health.accepted ? fetchWeights(180) : Promise.resolve([]),
         fetchGoals(),
-        fetchPersonalRecords(),
+        health.accepted ? fetchPersonalRecords() : Promise.resolve([]),
       ]);
       setWeights(ws);
       setGoals(gs);
@@ -95,7 +97,7 @@ export default function Avances() {
     } catch (e) {
       Alert.alert('Error del sistema', e instanceof Error ? e.message : 'Fallo desconocido');
     }
-  }, []);
+  }, [health.accepted]);
 
   useFocusEffect(
     useCallback(() => {
@@ -112,6 +114,7 @@ export default function Avances() {
   const latestWeight = weights.length > 0 ? weights[weights.length - 1]!.weight_kg : null;
 
   const saveWeight = async () => {
+    if (!health.accepted) { health.ask(); return; }
     if (!userId || lock.current) return;
     const value = parseFloat(weightInput.replace(',', '.'));
     if (!Number.isFinite(value) || value <= 20 || value >= 400) {
@@ -142,6 +145,7 @@ export default function Avances() {
   };
 
   const addGoal = async () => {
+    if (gMetric !== 'libre' && !health.accepted) { health.ask(); return; }
     if (!userId || lock.current) return;
     const start = parseFloat(gStart.replace(',', '.'));
     const target = parseFloat(gTarget.replace(',', '.'));
@@ -251,7 +255,7 @@ export default function Avances() {
   const firstWeight = weights.length > 0 ? weights[0]!.weight_kg : null;
   const deltaPeso = latestWeight !== null && firstWeight !== null ? Math.round((latestWeight - firstWeight) * 10) / 10 : null;
 
-  const subtitulo =
+  const subtitulo = !health.accepted ? 'Tus metas generales, en una sola vista.' :
     latestWeight === null
       ? 'Registra tu primer pesaje: es tu línea de salida.'
       : `Último pesaje: ${latestWeight} kg${deltaPeso !== null && deltaPeso !== 0 ? ` (${deltaPeso > 0 ? '+' : ''}${deltaPeso} kg en ${weights.length} pesajes)` : ''}.`;
@@ -269,7 +273,8 @@ export default function Avances() {
           />
         </FadeIn>
 
-        <FadeIn index={1}>
+        <HealthConsentNotice />
+        {health.accepted ? <FadeIn index={1}>
           <Card>
             <StatRow>
               <Stat value={latestWeight ?? '—'} unit={latestWeight === null ? undefined : 'kg'} label="Peso" size="lg" />
@@ -295,7 +300,7 @@ export default function Avances() {
               </View>
             ) : null}
           </Card>
-        </FadeIn>
+        </FadeIn> : null}
 
         <FadeIn index={2}>
           <Section title="Metas" meta={activeGoals.length > 0 ? `${activeGoals.length} activas` : undefined}>
@@ -305,7 +310,7 @@ export default function Avances() {
                   compact
                   icon="flag-outline"
                   title="Sin metas fijadas"
-                  body="Una meta es un número con fecha: press banca 100 kg, bajar a 78 kg. Ponle cifra a tu objetivo."
+                  body="Una meta es un número con fecha: leer doce libros, terminar cuatro cursos. Ponle cifra a tu objetivo."
                   action={{ label: 'Fijar la primera', onPress: () => setGoalFormOpen(true) }}
                 />
               </Card>
@@ -394,7 +399,7 @@ export default function Avances() {
           </FadeIn>
         ) : null}
 
-        <FadeIn index={4}>
+        {health.accepted ? <FadeIn index={4}>
           <Section title="Récords personales" meta={prs.length > 0 ? `${prs.length}` : undefined}>
             {prs.length === 0 ? (
               <Card variant="outline">
@@ -428,7 +433,7 @@ export default function Avances() {
               </Card>
             ) : null}
           </Section>
-        </FadeIn>
+        </FadeIn> : null}
       </Stagger>
 
       <Modal visible={freeGoal !== null} transparent animationType="slide" onRequestClose={() => setFreeGoal(null)}>
@@ -469,14 +474,14 @@ export default function Avances() {
                 style={styles.input}
                 value={gTitle}
                 onChangeText={setGTitle}
-                placeholder="Ej. Press banca 100 kg"
+                placeholder={health.accepted ? 'Ej. Press banca 100 kg' : 'Ej. Leer doce libros'}
                 placeholderTextColor={colors.textFaint}
                 accessibilityLabel="Título de la meta"
                 autoFocus
               />
               <Text style={styles.label}>Se mide con</Text>
               <ChipWrap>
-                {METRIC_OPTIONS.map((m) => (
+                {METRIC_OPTIONS.filter(m => health.accepted || m.key === 'libre').map((m) => (
                   <Chip
                     key={m.key}
                     label={m.label}

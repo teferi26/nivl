@@ -7,7 +7,8 @@
 //   supabase secrets set ANTHROPIC_API_KEY=sk-ant-...
 
 import { consentimientoIa, MENSAJE_SIN_CONSENTIMIENTO, SIN_CONSENTIMIENTO } from '../_shared/consent.ts';
-import { adminClient } from '../_shared/db.ts';
+import { healthConsent, healthRevision, healthScopedClient, HEALTH_REQUIRED } from '../_shared/health.ts';
+import { adminClient, userClient } from '../_shared/db.ts';
 
 const MODEL = 'claude-haiku-4-5';
 const MONTHLY_CAP = 100; // consultas premium por usuario y mes (control de coste)
@@ -91,6 +92,9 @@ Deno.serve(async (req) => {
   const { data: userData, error: userErr } = await admin.auth.getUser(token);
   if (userErr || !userData.user) return json(401, { error: 'Sesión inválida' });
   const userId = userData.user.id;
+  if (await healthConsent(admin, userId) !== true) return json(403, { error: 'Activa el permiso de salud en Perfil antes de usar el oráculo.', reason: HEALTH_REQUIRED });
+  const revision = await healthRevision(admin, userId);
+  const healthDb = healthScopedClient(userClient(token, revision), revision);
 
   // 1b) Consentimiento para la IA (0028): sin él, ni una llamada al modelo.
   const consiente = await consentimientoIa(admin, userId);
@@ -154,6 +158,7 @@ Deno.serve(async (req) => {
   const consienteAlEnviar = await consentimientoIa(admin, userId);
   if (consienteAlEnviar === null) return json(503, { error: 'El oráculo no puede comprobar tu consentimiento ahora mismo.' });
   if (!consienteAlEnviar) return json(403, { error: MENSAJE_SIN_CONSENTIMIENTO, reason: SIN_CONSENTIMIENTO });
+  if (await healthConsent(healthDb, userId) !== true) return json(403, { error: 'El permiso de salud ya no está activo.', reason: HEALTH_REQUIRED });
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
@@ -171,8 +176,7 @@ Deno.serve(async (req) => {
   });
 
   if (!res.ok) {
-    const detail = await res.text();
-    console.error('anthropic error:', res.status, detail.slice(0, 300));
+    console.error('anthropic error:', res.status);
     return json(502, { error: 'El oráculo no responde. Reintenta en un momento.' });
   }
 
@@ -185,5 +189,6 @@ Deno.serve(async (req) => {
     .from('oracle_usage')
     .upsert({ user_id: userId, month, count: used + 1 }, { onConflict: 'user_id,month' });
 
+  if (await healthConsent(healthDb, userId) !== true) return json(403, { error: 'El permiso de salud ya no está activo.', reason: HEALTH_REQUIRED });
   return json(200, { result: JSON.parse(text), remaining: MONTHLY_CAP - used - 1 });
 });

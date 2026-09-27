@@ -18,6 +18,7 @@
 
 import { callClaude, CHEAP_MODEL } from '../_shared/anthropic.ts';
 import { consentimientoIa } from '../_shared/consent.ts';
+import { healthConsent, healthRevision, healthScopedClient, requireHealth } from '../_shared/health.ts';
 import { adminClient, type Db } from '../_shared/db.ts';
 import { espejarEntrada, espejoActivo } from '../_shared/notion.ts';
 
@@ -80,6 +81,7 @@ function horaDe(t: string): number {
  * por no tener titular sería peor.
  */
 async function titular(sb: Db, userId: string, cuerpo: string): Promise<string> {
+  await requireHealth(sb, userId);
   const plano = cuerpo.replace(/[*#_`]/g, '').replace(/\s+/g, ' ').trim();
   if (plano.length <= 180) return plano;
   try {
@@ -97,16 +99,18 @@ async function titular(sb: Db, userId: string, cuerpo: string): Promise<string> 
     const t = turn.content.filter((b) => b.type === 'text').map((b) => b.text ?? '').join('').trim();
     if (t) return t.slice(0, 240);
   } catch (e) {
-    console.error('titular falló, se recorta:', e);
+    console.error('titular failed');
   }
   return plano.slice(0, 240);
 }
 
 async function empujar(sb: Db, userId: string, titulo: string, cuerpo: string, ruta: string) {
+  await requireHealth(sb, userId);
   const { data: tokens } = await sb.from('push_tokens').select('token').eq('user_id', userId);
   const lista = (tokens ?? []).map((t: { token: string }) => t.token);
   if (!lista.length) return;
 
+  if (await healthConsent(sb, userId) !== true || await consentimientoIa(sb, userId) !== true) return;
   await fetch(EXPO_PUSH, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
@@ -282,8 +286,8 @@ Deno.serve(async (req) => {
     return json(401, { error: 'No autorizado' });
   }
 
-  const sb = adminClient();
-  const { data: perfiles } = await sb
+  const admin = adminClient();
+  const { data: perfiles } = await admin
     .from('profiles')
     .select('id, name, timezone, wake_time, sleep_time, coach_mode');
 
@@ -292,6 +296,9 @@ Deno.serve(async (req) => {
 
   for (const p of (perfiles ?? []) as Perfil[]) {
     try {
+      if (await healthConsent(admin, p.id) !== true || await consentimientoIa(admin, p.id) !== true) continue;
+      const revision = await healthRevision(admin, p.id);
+      const sb = healthScopedClient(adminClient(revision), revision);
       const decision = await decidir(sb, p);
       if (!decision) continue;
 
@@ -329,6 +336,7 @@ Deno.serve(async (req) => {
       // Asi que no se confia en que lo haya hecho: se comprueba. Si no hay
       // plan, se pide aparte, que es un turno corto y con un solo trabajo.
       if (decision.kind === 'brief') {
+        await requireHealth(sb, p.id);
         const hoy = ahoraLocal(p.timezone).fecha;
         const { count } = await sb
           .from('day_plans')
@@ -337,7 +345,7 @@ Deno.serve(async (req) => {
           .eq('date', hoy);
         if (!count) {
           await invocarCoach(jwt, 'plan', `Es ${hoy}. Escribe el plan del dia completo.`).catch(
-            (e) => fallos.push({ user: p.id, error: `plan de respaldo: ${e.message ?? e}` }),
+            () => fallos.push({ user: p.id, error: 'fallback_plan_failed' }),
           );
         }
       }
@@ -359,7 +367,7 @@ Deno.serve(async (req) => {
       // SOLO la cuenta del dueño: la página del CEREBRO es suya y privada. Sin
       // este filtro se copiaban ahí las revisiones y cierres de todos los
       // usuarios (fuga de datos personales a un tercero, Notion).
-      if (espejoActivo() && estadoIa?.tier === 'owner' && decision.kind !== 'brief' && texto) {
+      if (espejoActivo() && estadoIa?.tier === 'owner' && decision.kind !== 'brief' && texto && await healthConsent(sb, p.id) === true && await consentimientoIa(sb, p.id) === true) {
         await espejarEntrada(ahoraLocal(p.timezone).fecha, decision.titulo, texto);
       }
 
@@ -379,7 +387,7 @@ Deno.serve(async (req) => {
 
       hechos.push({ user: p.id, kind: decision.kind });
     } catch (e) {
-      fallos.push({ user: p.id, error: e instanceof Error ? e.message : String(e) });
+      fallos.push({ user: p.id, error: 'ritual_failed' });
     }
   }
 

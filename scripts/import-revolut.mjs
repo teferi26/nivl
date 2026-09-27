@@ -200,7 +200,7 @@ if (!cuenta && !SECO) {
 }
 
 // 3) Reglas, de mayor prioridad a menor.
-const reglas = (await db.select('category_rules', 'select=pattern,category,priority'))
+const reglas = (await db.select('category_rules', 'select=pattern,category,priority&active=eq.true'))
   .sort((a, b) => b.priority - a.priority || b.pattern.length - a.pattern.length);
 
 function categorizar(texto, importe) {

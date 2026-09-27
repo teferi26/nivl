@@ -1,3 +1,4 @@
+import { requireHealthConsent } from './health';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as SecureStore from 'expo-secure-store';
 import { DIFFICULTIES, STATS } from './game';
@@ -268,6 +269,7 @@ function sanitizeGenerate(parsed: OracleResponse): OracleResponse {
 
 // Punto de entrada único: decide la vía (premium/servidor · key propia · paywall).
 export async function askOracle(goal: string, userId: string): Promise<OracleResponse> {
+  await requireHealthConsent();
   const access = await resolveOracleAccess(userId);
   if (access === 'premium') {
     const raw = await callPremiumOracle<OracleResponse>('generate', { goal });
@@ -281,6 +283,7 @@ export async function askOracle(goal: string, userId: string): Promise<OracleRes
 }
 
 export async function askWeeklyOracle(input: WeeklyInput, userId: string): Promise<WeeklyAdvice> {
+  await requireHealthConsent();
   const access = await resolveOracleAccess(userId);
   if (access === 'premium') {
     const raw = await callPremiumOracle<WeeklyAdvice>('weekly', { weeklyInput: input });

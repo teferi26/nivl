@@ -38,6 +38,7 @@ export interface Profile {
 }
 
 export interface Quest {
+  health_data?: boolean;
   id: string;
   user_id: string;
   title: string;
@@ -195,6 +196,7 @@ export interface JournalEntry {
 }
 
 export interface Rule {
+  health_data?: boolean;
   id: string;
   user_id: string;
   position: number;

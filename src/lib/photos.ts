@@ -1,3 +1,4 @@
+import { requireHealthConsent } from './health';
 // NIVL · Las fotos del gladiador y el resumen que las cuenta.
 //
 // Una foto por misión cumplida es opcional a propósito. Obligarla convierte
@@ -47,6 +48,7 @@ export async function subirFotoMision(
   userId: string,
   input: { base64: string; questId: string | null; completionId: string | null; date: string; caption?: string },
 ): Promise<QuestPhoto> {
+  await requireHealthConsent();
   const ruta = `${userId}/${input.date}_${input.questId ?? 'libre'}_${Date.now()}.jpg`;
   const { error: subida } = await supabase.storage
     .from(BUCKET)
@@ -93,8 +95,9 @@ export async function contarFotos(desde: string, hasta: string): Promise<number>
  * URL temporal para pintar la foto. Firmada y no pública: el bucket es privado
  * y estas imágenes son lo más personal que guarda la app.
  */
-export async function urlFirmada(path: string, segundos = 3600): Promise<string | null> {
-  const { data } = await supabase.storage.from(BUCKET).createSignedUrl(path, segundos);
+export async function urlFirmada(path: string, segundos = 60): Promise<string | null> {
+  await requireHealthConsent();
+  const { data } = await supabase.storage.from(BUCKET).createSignedUrl(path, Math.min(60, Math.max(1, segundos)));
   return data?.signedUrl ?? null;
 }
 

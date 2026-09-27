@@ -11,6 +11,7 @@
 import { fetch as streamingFetch } from 'expo/fetch';
 import type { Slide } from './photos';
 import { supabase } from './supabase';
+import { requireHealthConsent } from './health';
 
 export type CoachKind =
   | 'chat'
@@ -93,7 +94,8 @@ export type CoachDenyReason =
   | 'profundo_no_incluido'
   | 'profundo_agotado'
   /** Sin consentimiento vigente para la IA (0028): se abre la hoja, no un error. */
-  | 'sin_consentimiento';
+  | 'sin_consentimiento'
+  | 'sin_consentimiento_salud';
 
 const DENY_REASONS: readonly CoachDenyReason[] = [
   'sin_suscripcion',
@@ -102,6 +104,7 @@ const DENY_REASONS: readonly CoachDenyReason[] = [
   'profundo_no_incluido',
   'profundo_agotado',
   'sin_consentimiento',
+  'sin_consentimiento_salud',
 ];
 
 /** Potencia del turno (0024): el profundo es solo del Élite y tiene su propio bolsillo. */
@@ -127,6 +130,8 @@ export class CoachAccessError extends Error {
 /** Texto sereno para cada negativa del candado, en la voz del sistema. */
 export function accessNotice(e: CoachAccessError): string {
   switch (e.reason) {
+    case 'sin_consentimiento_salud':
+      return 'Revisa el permiso de salud en Perfil antes de continuar con el coach.';
     case 'sin_suscripcion':
       return 'El coach es parte de NIVL Pro. El resto de NIVL sigue siendo tuyo.';
     case 'presupuesto_agotado':
@@ -191,6 +196,7 @@ export async function streamCoach(opts: {
   onEvent: (e: CoachEvent) => void;
   signal?: AbortSignal;
 }): Promise<void> {
+  await requireHealthConsent();
   const headers: Record<string, string> = await authHeaders();
   if (opts.mode === 'profundo') headers['x-nivl-mode'] = 'profundo';
   const res = await streamingFetch(functionsUrl(), {
@@ -269,6 +275,7 @@ export async function streamCoach(opts: {
 
 /** Ritual sin streaming (brief, revisión…): devuelve el texto ya completo. */
 export async function runRitual(kind: CoachKind, message = ''): Promise<string> {
+  await requireHealthConsent();
   const res = await fetch(functionsUrl(), {
     method: 'POST',
     headers: await authHeaders(),
@@ -287,6 +294,7 @@ export async function runRitual(kind: CoachKind, message = ''): Promise<string> 
 export async function generarResumen(
   periodo: 'semanal' | 'mensual',
 ): Promise<{ id?: string; slides: Slide[]; fotos: number; motivo?: string }> {
+  await requireHealthConsent();
   const res = await fetch(functionsUrl(), {
     method: 'POST',
     headers: await authHeaders(),

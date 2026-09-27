@@ -189,7 +189,7 @@ const sesion = await abrirSesion(ROOT);
 const db = rest(sesion);
 console.log(`Sesión abierta para ${sesion.email} · ${req.accounts.length} cuenta(s) autorizadas`);
 
-const reglas = (await db.select('category_rules', 'select=pattern,category,priority')).sort(
+const reglas = (await db.select('category_rules', 'select=pattern,category,priority&active=eq.true')).sort(
   (a, b) => b.priority - a.priority || b.pattern.length - a.pattern.length,
 );
 if (!reglas.length) {

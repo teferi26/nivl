@@ -75,6 +75,7 @@ export const MODULES: readonly ModuleMeta[] = [
 ];
 
 export interface StarterQuest {
+  health_data?: boolean;
   title: string;
   stat: Stat;
   difficulty: Difficulty;
@@ -127,9 +128,9 @@ export const KINDS: Record<ProfileKind, KindMeta> = {
       { title: 'Prospección: 10 contactos', stat: 'AGI', difficulty: 'media', days_of_week: LABORABLES, requires_evidence: false },
       { title: 'Bloque de trabajo profundo 2 h', stat: 'INT', difficulty: 'media', days_of_week: LABORABLES, requires_evidence: false },
       { title: 'Revisar métricas del negocio', stat: 'PER', difficulty: 'facil', days_of_week: LABORABLES, requires_evidence: false },
-      { title: 'Entrenar', stat: 'FUE', difficulty: 'media', days_of_week: [1, 3, 5], requires_evidence: false },
+      { title: 'Entrenar', health_data: true, stat: 'FUE', difficulty: 'media', days_of_week: [1, 3, 5], requires_evidence: false },
       { title: 'Leer 20 minutos', stat: 'INT', difficulty: 'facil', days_of_week: DIARIO, requires_evidence: false },
-      { title: 'Diario del día', stat: 'PER', difficulty: 'facil', days_of_week: DIARIO, requires_evidence: false },
+      { title: 'Diario del día', health_data: true, stat: 'PER', difficulty: 'facil', days_of_week: DIARIO, requires_evidence: false },
     ],
     coachHint:
       'Es emprendedor: su campo de batalla son las ventas, el foco y la caja. Pide cifras de embudo (contactos, reuniones, cierres, ingresos) y ordena acciones que muevan el negocio hoy. El cuerpo se cuida para rendir, no es el centro.',
@@ -150,9 +151,9 @@ export const KINDS: Record<ProfileKind, KindMeta> = {
       { title: 'Bloque de foco 90 min sin interrupciones', stat: 'INT', difficulty: 'media', days_of_week: LABORABLES, requires_evidence: false },
       { title: 'Planificar la jornada antes de empezar', stat: 'PER', difficulty: 'facil', days_of_week: LABORABLES, requires_evidence: false },
       { title: 'Formación en tu oficio 30 min', stat: 'INT', difficulty: 'facil', days_of_week: LABORABLES, requires_evidence: false },
-      { title: 'Entrenar', stat: 'FUE', difficulty: 'media', days_of_week: [1, 3, 5], requires_evidence: false },
-      { title: 'Dormir 7 horas', stat: 'VIT', difficulty: 'facil', days_of_week: DIARIO, requires_evidence: false },
-      { title: 'Diario del día', stat: 'PER', difficulty: 'facil', days_of_week: DIARIO, requires_evidence: false },
+      { title: 'Entrenar', health_data: true, stat: 'FUE', difficulty: 'media', days_of_week: [1, 3, 5], requires_evidence: false },
+      { title: 'Dormir 7 horas', health_data: true, stat: 'VIT', difficulty: 'facil', days_of_week: DIARIO, requires_evidence: false },
+      { title: 'Diario del día', health_data: true, stat: 'PER', difficulty: 'facil', days_of_week: DIARIO, requires_evidence: false },
     ],
     coachHint:
       'Es un profesional por cuenta ajena: quiere crecer en su trabajo y mantener salud y hábitos en orden. Su jornada es fija y no se negocia: protege uno o dos bloques de foco dentro de ella, pregunta por entregas, aprendizaje y objetivos de carrera (ascenso, cambio, certificación), y encaja entreno, comida y sueño antes o después del trabajo sin cargar los días largos.',
@@ -170,12 +171,12 @@ export const KINDS: Record<ProfileKind, KindMeta> = {
     primaryModules: ['gym', 'cardio', 'amigos', 'nutricion', 'dieta', 'avances', 'compra'],
     goalExample: 'Bajar a 78 kg sin perder fuerza',
     starterQuests: [
-      { title: 'Entrenar', stat: 'FUE', difficulty: 'media', days_of_week: LABORABLES, requires_evidence: false },
-      { title: 'Registrar comidas del día', stat: 'VIT', difficulty: 'facil', days_of_week: DIARIO, requires_evidence: false },
-      { title: 'Dormir 8 horas', stat: 'VIT', difficulty: 'facil', days_of_week: DIARIO, requires_evidence: false },
-      { title: 'Movilidad 10 minutos', stat: 'AGI', difficulty: 'trivial', days_of_week: DIARIO, requires_evidence: false },
-      { title: 'Pesarse', stat: 'VIT', difficulty: 'trivial', days_of_week: [1, 4], requires_evidence: false },
-      { title: 'Diario del día', stat: 'PER', difficulty: 'facil', days_of_week: DIARIO, requires_evidence: false },
+      { title: 'Entrenar', health_data: true, stat: 'FUE', difficulty: 'media', days_of_week: LABORABLES, requires_evidence: false },
+      { title: 'Registrar comidas del día', health_data: true, stat: 'VIT', difficulty: 'facil', days_of_week: DIARIO, requires_evidence: false },
+      { title: 'Dormir 8 horas', health_data: true, stat: 'VIT', difficulty: 'facil', days_of_week: DIARIO, requires_evidence: false },
+      { title: 'Movilidad 10 minutos', health_data: true, stat: 'AGI', difficulty: 'trivial', days_of_week: DIARIO, requires_evidence: false },
+      { title: 'Pesarse', health_data: true, stat: 'VIT', difficulty: 'trivial', days_of_week: [1, 4], requires_evidence: false },
+      { title: 'Diario del día', health_data: true, stat: 'PER', difficulty: 'facil', days_of_week: DIARIO, requires_evidence: false },
     ],
     coachHint:
       'Es deportista: el entreno, la comida y el descanso son el centro. Programa sobre el estudio (1RM, RPE, ritmo por zona, tendencia de peso), exige registro de sesiones y comidas, y protege el descanso como parte del plan.',
@@ -196,9 +197,9 @@ export const KINDS: Record<ProfileKind, KindMeta> = {
       { title: 'Estudiar 2 h', stat: 'INT', difficulty: 'media', days_of_week: LABORABLES, requires_evidence: false },
       { title: 'Repasar apuntes 20 min', stat: 'INT', difficulty: 'facil', days_of_week: DIARIO, requires_evidence: false },
       { title: 'Sin móvil en clase', stat: 'AGI', difficulty: 'facil', days_of_week: LABORABLES, requires_evidence: false },
-      { title: 'Entrenar', stat: 'FUE', difficulty: 'media', days_of_week: [1, 3, 5], requires_evidence: false },
+      { title: 'Entrenar', health_data: true, stat: 'FUE', difficulty: 'media', days_of_week: [1, 3, 5], requires_evidence: false },
       { title: 'Leer 20 minutos', stat: 'INT', difficulty: 'facil', days_of_week: DIARIO, requires_evidence: false },
-      { title: 'Diario del día', stat: 'PER', difficulty: 'facil', days_of_week: DIARIO, requires_evidence: false },
+      { title: 'Diario del día', health_data: true, stat: 'PER', difficulty: 'facil', days_of_week: DIARIO, requires_evidence: false },
     ],
     coachHint:
       'Es estudiante: las horas de estudio reales y los exámenes son el centro. Reparte el estudio en bloques con materia concreta, trata cada examen como el jefe de su campaña con fecha, y vigila el sueño en época de exámenes.',
@@ -216,11 +217,11 @@ export const KINDS: Record<ProfileKind, KindMeta> = {
     primaryModules: ['gym', 'cardio', 'amigos', 'nutricion', 'dieta', 'economia', 'compra', 'diario', 'informe', 'avances', 'resumen', 'oraculo', 'contrato'],
     goalExample: 'Entrenar cuatro días por semana durante un año',
     starterQuests: [
-      { title: 'Entrenar', stat: 'FUE', difficulty: 'media', days_of_week: LABORABLES, requires_evidence: false },
+      { title: 'Entrenar', health_data: true, stat: 'FUE', difficulty: 'media', days_of_week: LABORABLES, requires_evidence: false },
       { title: 'Trabajo o estudio 2 h', stat: 'INT', difficulty: 'media', days_of_week: LABORABLES, requires_evidence: false },
-      { title: 'Registrar comidas del día', stat: 'VIT', difficulty: 'facil', days_of_week: DIARIO, requires_evidence: false },
+      { title: 'Registrar comidas del día', health_data: true, stat: 'VIT', difficulty: 'facil', days_of_week: DIARIO, requires_evidence: false },
       { title: 'Leer 20 minutos', stat: 'INT', difficulty: 'facil', days_of_week: DIARIO, requires_evidence: false },
-      { title: 'Diario del día', stat: 'PER', difficulty: 'facil', days_of_week: DIARIO, requires_evidence: false },
+      { title: 'Diario del día', health_data: true, stat: 'PER', difficulty: 'facil', days_of_week: DIARIO, requires_evidence: false },
     ],
     coachHint:
       'Perfil general: no hay un dominio dominante. Pregunta qué quiere conquistar esta temporada y reparte el esfuerzo entre cuerpo, cabeza y hábitos sin cargar todo el mismo día.',

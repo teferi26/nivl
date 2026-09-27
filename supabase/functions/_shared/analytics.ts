@@ -86,7 +86,10 @@ interface Lift {
  * porque va directo al prompt: cualquier estructura que el modelo tenga que
  * volver a interpretar es contexto desperdiciado.
  */
+import { requireHealth } from './health.ts';
+
 export async function construirEstudio(sb: Db, userId: string, hoy: string): Promise<string> {
+  await requireHealth(sb, userId);
   const hace28 = haceDias(hoy, 28);
   const hace56 = haceDias(hoy, 56);
   const hace90 = haceDias(hoy, 90);

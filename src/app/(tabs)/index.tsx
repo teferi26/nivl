@@ -1,3 +1,4 @@
+import { useHealthConsent } from '@/components/ConsentimientoSalud';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Haptics from 'expo-haptics';
 import * as ImagePicker from 'expo-image-picker';
@@ -69,6 +70,7 @@ let ultimoPro: boolean | null = null;
 const esperarCierreDeHoja = () => new Promise<void>((ok) => setTimeout(ok, 420));
 
 export default function Hoy() {
+  const health = useHealthConsent();
   const { session } = useAuth();
   const userId = session?.user.id;
 
@@ -195,6 +197,7 @@ export default function Hoy() {
   }, [profile, plan]);
 
   const captureEvidence = async (): Promise<string | null> => {
+    if (!health.accepted) { health.ask(); return null; }
     const perm = await ImagePicker.requestCameraPermissionsAsync();
     if (!perm.granted) {
       Alert.alert('Sin cámara', 'El sistema necesita la cámara para registrar evidencias.');

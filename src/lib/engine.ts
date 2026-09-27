@@ -111,6 +111,7 @@ export async function processPendingDays(
     const ultimo = diasConReglasRotas[diasConReglasRotas.length - 1]!;
     const cuantas = new Set(diasConReglasRotas.flatMap((d) => d.rotas.map((r) => r.id))).size;
     await supabase.from('quests').insert({
+      health_data: diasConReglasRotas.some(d => d.rotas.some(r => reglasActivas.some(original => original.id === r.id && original.health_data))),
       user_id: profile.id,
       title:
         cuantas === 1
@@ -138,7 +139,9 @@ export async function processPendingDays(
       penalty_date: today,
       penalty_xp: close.penaltyXp,
     });
-    await insertEvent(profile.id, 'penalty', { xp: close.penaltyXp, missed: close.missedTitles });
+    await insertEvent(profile.id, 'penalty', { xp: close.penaltyXp, missed: close.missedTitles,
+      health_data: quests.some(q => q.health_data && close.missedTitles.includes(q.title)),
+    });
   }
   if (close.stonesUsed > 0) {
     await insertEvent(profile.id, 'stone_used', { count: close.stonesUsed });

@@ -56,20 +56,22 @@ const TABLES = [
   'quest_photos',
   'recaps',
   'rule_checks',
+  'body_profile',
+  'health_consents',
+  'health_state',
+  'health_erasure_jobs',
+  'ai_consents',
 ] as const;
 
 // Export completo de los datos del usuario a un JSON compartible.
 // Las evidencias (Storage) no se incluyen: solo sus rutas.
 export async function exportAllData(): Promise<void> {
-  const dump: Record<string, unknown> = {
-    app: 'NIVL',
-    version: 1,
-    exported_at: new Date().toISOString(),
-  };
+  // The owner-only rights RPC includes data isolated after withdrawal. Normal
+  // SELECT would silently omit it under the health RLS policies.
+  const { data: dump, error } = await supabase.rpc('export_my_data');
+  if (error) throw error;
   for (const table of TABLES) {
-    const { data, error } = await supabase.from(table).select('*');
-    if (error) throw new Error(`Error exportando ${table}: ${error.message}`);
-    dump[table] = data ?? [];
+    if (!Array.isArray(dump?.[table])) throw new Error('La exportación está incompleta.');
   }
 
   const file = new File(Paths.cache, `nivl-export-${Date.now()}.json`);

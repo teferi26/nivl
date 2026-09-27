@@ -14,10 +14,11 @@ export type Db = SupabaseClient<any, 'public', any>;
  * servidor (cron). Se salta RLS, así que nunca debe usarse para ejecutar lo
  * que pida el modelo.
  */
-export function adminClient(): Db {
+export function adminClient(healthRevision?: number): Db {
   return createClient(
     Deno.env.get('SUPABASE_URL') ?? '',
     Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+    healthRevision === undefined ? undefined : { global: { headers: { 'x-nivl-health-revision': String(healthRevision) } } },
   ) as Db;
 }
 
@@ -26,10 +27,12 @@ export function adminClient(): Db {
  * herramientas del coach, de modo que el modelo no puede alcanzar datos que
  * su dueño no podría alcanzar.
  */
-export function userClient(token: string): Db {
+export function userClient(token: string, healthRevision?: number): Db {
   return createClient(
     Deno.env.get('SUPABASE_URL') ?? '',
     Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-    { global: { headers: { Authorization: `Bearer ${token}` } } },
+    { global: { headers: { Authorization: `Bearer ${token}`,
+      ...(healthRevision === undefined ? {} : { 'x-nivl-health-revision': String(healthRevision) }),
+    } } },
   ) as Db;
 }
