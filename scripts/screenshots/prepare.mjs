@@ -6,7 +6,7 @@ if (process.env.EXPO_PUBLIC_SCREENSHOT_MODE !== '1') throw new Error('Explicit s
 if (process.env.EXPO_TOKEN || process.env.EXPO_PUBLIC_SUPABASE_URL || process.env.EXPO_PUBLIC_SUPABASE_KEY) {
   throw new Error('Do not expose real service configuration or credentials to the screenshot job');
 }
-const sourceCommit = '7a5e6e13d08076cbc06298d47ccbe329facd26b5';
+const sourceCommit = '112109db750cd77f3fa30348d440c89d3ac60cfc';
 const unchanged = execFileSync('git', ['diff', '--name-only', sourceCommit, '--', 'src', 'assets', 'package-lock.json'], { encoding: 'utf8' }).trim();
 if (unchanged) throw new Error('The release UI/assets/dependencies must remain unchanged: ' + unchanged);
 
@@ -35,5 +35,6 @@ fs.writeFileSync('screenshots/provenance.json', JSON.stringify({
   ui: 'Unchanged source components, assets and dependencies from sourceCommit',
   productionPublication: false,
   purchases: 'Display-only configured catalogue; purchase and restoration disabled',
+  scenario: 'Health consent native QA: initial denial, cancel, explicit local acceptance, withdrawal alert cancelled',
 }, null, 2) + '\n');
 console.log('Prepared isolated simulator capture configuration; original src/assets unchanged.');

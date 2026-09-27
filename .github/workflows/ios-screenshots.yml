@@ -1,4 +1,4 @@
-name: Capturas nativas iOS (datos ficticios)
+name: QA nativa iOS consentimiento (datos ficticios)
 
 on:
   workflow_dispatch:
@@ -38,6 +38,8 @@ jobs:
         with:
           xcode-version: latest-stable
       - run: npm ci
+      - name: Comprobar contrato de datos ficticios locales
+        run: node scripts/screenshots/verify-health-fixture.cjs
       - name: Reutilizar solo la app local del simulador
         id: native-cache
         uses: actions/cache/restore@v4
@@ -83,6 +85,6 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: nivl-ios-native-screenshots
+          name: nivl-ios-health-consent-qa
           path: screenshots
           retention-days: 7

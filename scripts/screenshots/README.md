@@ -1,7 +1,7 @@
 # NIVL 1.0.7 native screenshot harness
 
 This isolated branch renders the actual React Native screens from commit
-`7a5e6e13d08076cbc06298d47ccbe329facd26b5` in an iOS Simulator. It is not a
+`112109db750cd77f3fa30348d440c89d3ac60cfc` in an iOS Simulator. It is not a
 production build, an OTA update, or a web imitation of the interface.
 
 The workflow compiles a Release `.app` with the separate bundle identifier
@@ -11,7 +11,7 @@ review-account credentials. It never signs or submits an application.
 `prepare.mjs` checks that `src/`, assets and the dependency lock match the release,
 then changes only the runner's entry point and native capture configuration.
 With `EXPO_PUBLIC_SCREENSHOT_MODE=1`, Metro replaces Supabase and the RevenueCat
-JavaScript SDK with deterministic local adapters. All unknown calls and writes
+JavaScript SDK with deterministic local adapters. Only explicit health acceptance changes local in-memory state. All unknown calls and other writes
 fail explicitly. The bootstrap rejects fetch, XMLHttpRequest and WebSocket;
 Metro also replaces Expo's separate native fetch path with a rejecting adapter,
 and the capture build disables Expo Updates. Fixtures use no remote images.
@@ -26,7 +26,7 @@ opening StoreKit. Nothing here proves or pretends a completed transaction.
 
 The macOS job chooses an available iPhone Pro Max, launches in Spanish and dark
 mode, sets its status bar to 9:41 and full battery, then opens real app routes.
-PNG files come directly from `xcrun simctl io screenshot` after load/animation
+PNG files come directly from Maestro/XCTest native screenshots after load/animation
 waits. They require human visual review before upload to App Store Connect.
 The artifact includes source/harness commits, dimensions, timestamps, simulator
 details, SHA-256 hashes and diagnostic logs. Only the reviewed PNGs go into final
@@ -36,3 +36,12 @@ Dispatch `ios-screenshots.yml` on this branch, or push a change to its capture
 files. The workflow has only read repository permissions and uses no secrets.
 The fictional simulator app is cached by its source/fixture hash, so changing
 only the camera/navigation script does not require compiling again.
+
+Current scenario: health-consent QA only. The fresh local session has no health
+permission; the exact acceptance RPC updates only a local boolean. The flow
+checks the Coach guard, unchecked sheet and disabled CTA, dismissal with general
+missions still available, explicit acceptance, then Profile withdrawal controls.
+It opens the irreversible-action warning and taps only Cancel. The erasure
+function is blocked by the adapter in all states. No message is sent to AI.
+These images are QA artifacts, not new App Store screenshot uploads. Local
+fixtures exercise UI behavior and do not replace database/RLS verification.

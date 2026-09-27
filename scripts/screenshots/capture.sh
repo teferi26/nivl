@@ -34,16 +34,10 @@ xcrun simctl launch "$DEVICE_ID" com.teferi.nivl.screenshots -AppleLanguages '(e
 sleep 15
 
 set +e
-"$MAESTRO" --device "$DEVICE_ID" test --test-output-dir screenshots/maestro-marketing scripts/screenshots/marketing.yaml
-MARKETING_STATUS=$?
-if [ "$MARKETING_STATUS" -eq 0 ]; then
-  "$MAESTRO" --device "$DEVICE_ID" test --test-output-dir screenshots/maestro-pro scripts/screenshots/pro-review.yaml
-  PRO_STATUS=$?
-else
-  PRO_STATUS=99
-fi
+"$MAESTRO" --device "$DEVICE_ID" test --test-output-dir screenshots/maestro-health scripts/screenshots/health-consent.yaml
+HEALTH_STATUS=$?
 set -e
-export MARKETING_STATUS PRO_STATUS
+export HEALTH_STATUS
 
 node -e '
   const fs=require("fs"), crypto=require("crypto");
@@ -60,16 +54,16 @@ node -e '
   const match=Object.entries(simulators.devices).flatMap(([runtime,ds])=>ds.map(d=>({...d,runtime}))).find(d=>d.udid===process.env.DEVICE_ID);
   p.simulator={name:match.name,runtime:match.runtime,udid:match.udid};
   p.capturedAt=new Date().toISOString();
-  p.marketingStatus=Number(process.env.MARKETING_STATUS);
-  p.subscriptionCaptureStatus=Number(process.env.PRO_STATUS);
+  p.healthConsentStatus=Number(process.env.HEALTH_STATUS);
+
   p.images=fs.readdirSync("screenshots").filter(f=>f.endsWith(".png")).map(name=>{
     const b=fs.readFileSync("screenshots/"+name);
     return {name,width:b.readUInt32BE(16),height:b.readUInt32BE(20),sha256:crypto.createHash("sha256").update(b).digest("hex")};
   });
   fs.writeFileSync(file,JSON.stringify(p,null,2)+"\n");
-  const main=p.images.filter(x=>/^(01-hoy|02-plan|03-coach|04-gym|05-dinero|06-amigos|07-avances)\.png$/.test(x.name));
-  if(p.marketingStatus!==0 || main.length!==7 || new Set(main.map(x=>x.sha256)).size!==7) {
-    throw new Error("Marketing captures incomplete or duplicated; inspect Maestro artifacts before upload.");
+  const main=p.images.filter(x=>/^(20-health-guard|21-health-sheet-intro|22-health-unchecked|23-general-without-health|24-health-checked|25-coach-after-consent|26-profile-withdrawal|27-withdrawal-alert|28-withdrawal-cancelled)\.png$/.test(x.name));
+  if(p.healthConsentStatus!==0 || main.length!==9) {
+    throw new Error("Native consent QA incomplete; inspect Maestro artifacts.");
   }
 '
 

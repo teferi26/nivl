@@ -19,6 +19,26 @@ const fail = (message: string, code = 'SCREENSHOT_UNSUPPORTED'): ScreenshotResul
   count: null, status: 400, statusText: 'Fixture error',
 });
 
+// This scenario begins without health consent. Only the exact acceptance RPC
+// may change this in-memory fixture. No deletion or server write is enabled.
+const HEALTH_VERSION = '2026-09-27-salud-v1';
+let healthAccepted = false;
+const dedicatedHealthTables = new Set([
+  'body_profile', 'body_metrics', 'gym_days', 'gym_exercises', 'gym_sessions', 'gym_lifts', 'training_prescriptions',
+  'cardio_sessions', 'nutrition_targets', 'nutrition_logs', 'meal_slots',
+  'journal_entries', 'journal_photos', 'quest_photos', 'day_plans', 'day_blocks',
+  'coach_threads', 'coach_messages', 'coach_dossier', 'coach_facts', 'coach_runs', 'recaps',
+]);
+const healthQuest = (row: ScreenshotRow) => row.health_data === true || (row.link ?? 'ninguno') !== 'ninguno';
+function visibleCompletions(args: Record<string, unknown> = {}) {
+  return screenshotTables.completions!.filter(row => {
+    const quest = screenshotTables.quests!.find(q => q.id === row.quest_id);
+    return quest && (healthAccepted || !healthQuest(quest))
+      && (!args.p_from || String(row.date) >= String(args.p_from))
+      && (!args.p_until || String(row.date) <= String(args.p_until));
+  }).map(row => ({ ...row, evidence_url: healthAccepted ? row.evidence_url : null }));
+}
+
 function read(row: ScreenshotRow, column: string): unknown {
   return column.split('.').reduce<unknown>((value, part) => value && typeof value === 'object' ? (value as ScreenshotRow)[part] : undefined, row);
 }
@@ -79,6 +99,14 @@ class ScreenshotQuery implements PromiseLike<ScreenshotResult> {
     if (this.invalid) return this.invalid;
     if (!Object.prototype.hasOwnProperty.call(screenshotTables, this.table)) return fail(`Unknown table: ${this.table}`);
     let rows = clone(screenshotTables[this.table]!);
+    if (!healthAccepted) {
+      if (dedicatedHealthTables.has(this.table)) rows = [];
+      else if (this.table === 'quests') rows = rows.filter(row => !healthQuest(row));
+      else if (this.table === 'goals') rows = rows.filter(row => row.health_data !== true && (row.metric_type ?? 'libre') === 'libre');
+    }
+    if (this.table === 'coach_threads' || this.table === 'coach_messages') {
+      console.info(`[SCREENSHOT_QA] ${this.table} read; healthAccepted=${healthAccepted}`);
+    }
     if (this.table === 'gym_lifts' && this.columns.includes('gym_sessions')) {
       rows = rows.map(row => ({ ...row, gym_sessions: screenshotTables.gym_sessions!.find(s => s.id === row.session_id) ?? null }));
     }
@@ -110,6 +138,18 @@ class ScreenshotQuery implements PromiseLike<ScreenshotResult> {
 
 export async function screenshotRpc(name: string, args: Record<string, unknown> = {}): Promise<ScreenshotResult> {
   switch (name) {
+    case 'my_health_consent': return ok({ accepted: healthAccepted, current_version: HEALTH_VERSION,
+      version: healthAccepted ? HEALTH_VERSION : null, revision: healthAccepted ? 1 : 0, erasure_pending: false });
+    case 'accept_health_consent':
+      if (args.p_version !== HEALTH_VERSION) return ok({ ok: false, reason: 'version_obsoleta' });
+      healthAccepted = true;
+      console.info('[SCREENSHOT_QA] explicit local health acceptance recorded');
+      return ok({ ok: true });
+    case 'my_completions': return ok(visibleCompletions(args));
+    case 'my_completion_stats': {
+      const rows = visibleCompletions();
+      return ok({ total: rows.length, with_evidence: rows.filter(row => row.evidence_url).length });
+    }
     case 'my_age_confirmation': return ok(true);
     case 'my_ai_consent': return ok({ current_version: '2026-09-27', granted: true, action: 'accept', version: '2026-09-27', at: `${screenshotDate(-30)}T08:00:00.000Z` });
     case 'ai_status':

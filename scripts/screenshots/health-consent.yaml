@@ -1,0 +1,93 @@
+appId: com.teferi.nivl.screenshots
+name: NIVL native health consent QA
+---
+- launchApp:
+    stopApp: false
+- extendedWaitUntil:
+    visible: '.*Buenos días, Alex.*'
+    timeout: 30000
+- tapOn: '^Coach$'
+- extendedWaitUntil:
+    visible: '^Revisar permiso$'
+    timeout: 20000
+- assertVisible: '^Tu salud, con permiso$'
+- assertNotVisible: '^Mensaje para el sistema$'
+- waitForAnimationToEnd
+- takeScreenshot: 20-health-guard
+- tapOn: '^Revisar permiso$'
+- extendedWaitUntil:
+    visible: '^Tus datos de salud$'
+    timeout: 10000
+- assertVisible:
+    text: '^Aceptar y activar salud$'
+    enabled: false
+- waitForAnimationToEnd
+- takeScreenshot: 21-health-sheet-intro
+- scrollUntilVisible:
+    element:
+      text: '^Consiento explícitamente que NIVL guarde y utilice mis datos de salud para estas finalidades\.$'
+    direction: DOWN
+    visibilityPercentage: 100
+- assertVisible:
+    text: '^Consiento explícitamente que NIVL guarde y utilice mis datos de salud para estas finalidades\.$'
+    checked: false
+- assertVisible:
+    text: '^Aceptar y activar salud$'
+    enabled: false
+- takeScreenshot: 22-health-unchecked
+- tapOn: '^Ahora no$'
+- assertNotVisible: '^Tus datos de salud$'
+- assertVisible: '^Tu salud, con permiso$'
+- tapOn: '^Hoy$'
+- scrollUntilVisible:
+    element:
+      text: '.*Avanzar en mi proyecto.*'
+    direction: DOWN
+- assertNotVisible: '^Tu salud, con permiso$'
+- takeScreenshot: 23-general-without-health
+- tapOn: '^Coach$'
+- tapOn: '^Revisar permiso$'
+- scrollUntilVisible:
+    element:
+      text: '^Consiento explícitamente que NIVL guarde y utilice mis datos de salud para estas finalidades\.$'
+    direction: DOWN
+    visibilityPercentage: 100
+- assertVisible:
+    text: '^Consiento explícitamente que NIVL guarde y utilice mis datos de salud para estas finalidades\.$'
+    checked: false
+- tapOn: '^Consiento explícitamente que NIVL guarde y utilice mis datos de salud para estas finalidades\.$'
+- assertVisible:
+    text: '^Consiento explícitamente que NIVL guarde y utilice mis datos de salud para estas finalidades\.$'
+    checked: true
+- assertVisible:
+    text: '^Aceptar y activar salud$'
+    enabled: true
+- takeScreenshot: 24-health-checked
+- tapOn: '^Aceptar y activar salud$'
+- extendedWaitUntil:
+    notVisible: '^Tus datos de salud$'
+    timeout: 15000
+- tapOn: '^Coach$'
+- extendedWaitUntil:
+    visible: '^Mensaje para el sistema$'
+    timeout: 20000
+- assertNotVisible: '^Tu salud, con permiso$'
+- waitForAnimationToEnd
+- takeScreenshot: 25-coach-after-consent
+- tapOn: '^Perfil$'
+- scrollUntilVisible:
+    element:
+      text: '^Retirar y borrar salud$'
+    direction: DOWN
+    visibilityPercentage: 100
+- assertVisible: 'Has permitido guardar y utilizar tus datos de salud\. Puedes retirar el permiso y borrarlos\.'
+- takeScreenshot: 26-profile-withdrawal
+- tapOn: '^Retirar y borrar salud$'
+- assertVisible: '^Retirar permiso y borrar$'
+- assertVisible: '^Cancelar$'
+- takeScreenshot: 27-withdrawal-alert
+- tapOn: '^Cancelar$'
+- assertNotVisible: '^Retirar permiso y borrar$'
+- assertVisible: '^Retirar y borrar salud$'
+- assertVisible: 'Has permitido guardar y utilizar tus datos de salud\. Puedes retirar el permiso y borrarlos\.'
+- takeScreenshot: 28-withdrawal-cancelled
