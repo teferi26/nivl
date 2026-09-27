@@ -15,38 +15,51 @@ name: Native NIVL marketing screenshots
     centerElement: true
 - waitForAnimationToEnd
 - takeScreenshot: 01-misiones
-- openLink: 'nivl-capture://agenda'
-- runFlow:
-    when:
-      visible: '^(Open|Abrir)$'
-    commands:
-      - tapOn: '^(Open|Abrir)$'
+- tapOn: '^Agenda$'
 - extendedWaitUntil:
     visible: 'Vista por semana'
     timeout: 20000
 - waitForAnimationToEnd
 - takeScreenshot: 02-plan
-- openLink: 'nivl-capture://coach'
+- tapOn: '^Coach$'
 - extendedWaitUntil:
     visible: '.*Ejemplo.*'
     timeout: 20000
 - waitForAnimationToEnd
 - takeScreenshot: 03-coach
-- openLink: 'nivl-capture://gym'
+- tapOn: '^Hoy$'
+- scrollUntilVisible:
+    element:
+      text: '^Abrir Gym$'
+    direction: DOWN
+    centerElement: true
+- tapOn: '^Abrir Gym$'
 - extendedWaitUntil:
     visible: 'Gimnasio'
     timeout: 20000
 - waitForAnimationToEnd
 - takeScreenshot: 04-gym
-- openLink: 'nivl-capture://economia'
+- tapOn: '^Volver$'
+- scrollUntilVisible:
+    element:
+      text: '^Abrir Economía$'
+    direction: DOWN
+    centerElement: true
+- tapOn: '^Abrir Economía$'
 - extendedWaitUntil:
-    visible: 'Economía'
+    visible: '^Economía$'
     timeout: 20000
 - waitForAnimationToEnd
 - takeScreenshot: 05-dinero
-- openLink: 'nivl-capture://amigos'
+- tapOn: '^Volver$'
+- scrollUntilVisible:
+    element:
+      text: '^Abrir Amigos$'
+    direction: UP
+    centerElement: true
+- tapOn: '^Abrir Amigos$'
 - extendedWaitUntil:
-    visible: 'Amigos'
+    visible: '^Amigos$'
     timeout: 20000
 - waitForAnimationToEnd
 - takeScreenshot: 06-amigos
@@ -57,21 +70,23 @@ name: Native NIVL marketing screenshots
     centerElement: true
 - waitForAnimationToEnd
 - takeScreenshot: 06-ranking
-- openLink: 'nivl-capture://avances'
+- scrollUntilVisible:
+    element:
+      text: '^Volver$'
+    direction: UP
+- tapOn: '^Volver$'
+- scrollUntilVisible:
+    element:
+      text: '^Abrir Avances$'
+    direction: DOWN
+    centerElement: true
+- tapOn: '^Abrir Avances$'
 - extendedWaitUntil:
-    visible: 'Avances'
+    visible: '^Avances$'
     timeout: 20000
 - waitForAnimationToEnd
 - takeScreenshot: 07-avances
-- openLink: 'nivl-capture://pro'
-- extendedWaitUntil:
-    visible: 'Un coach que manda en tu día\.'
-    timeout: 20000
-- waitForAnimationToEnd
-- takeScreenshot: 08-pro
-- openLink: 'nivl-capture://habitos'
-- extendedWaitUntil:
-    visible: '.*(?i:hábitos).*'
-    timeout: 20000
+- tapOn: '^Volver$'
+- tapOn: '^Hábitos$'
 - waitForAnimationToEnd
 - takeScreenshot: 09-habitos

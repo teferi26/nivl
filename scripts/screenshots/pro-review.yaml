@@ -14,8 +14,7 @@
 appId: com.teferi.nivl.screenshots
 name: NIVL local subscription review captures
 ---
-# Start normally and wait for fixture UI before sending the warm deep link.
-# bootstrap.js observes the warm /pro link to select the free-account catalogue.
+# Navigate through the existing UI. A Pro account can inspect all upgrade plans.
 - launchApp:
     stopApp: true
     clearState: false
@@ -24,10 +23,16 @@ name: NIVL local subscription review captures
 - extendedWaitUntil:
     visible: '.*Alex.*'
     timeout: 30000
-- openLink: 'nivl-capture://pro'
+- tapOn: '^Coach$'
+- tapOn: '^Ver tu plan y la energía del coach$'
 - extendedWaitUntil:
-    visible: 'Un coach que manda en tu día\.'
+    visible: 'El coach está contigo\.'
     timeout: 15000
+- scrollUntilVisible:
+    element:
+      text: '^Ver NIVL Élite$'
+    direction: DOWN
+- tapOn: '^Ver NIVL Élite$'
 - scrollUntilVisible:
     element:
       text: '^NIVL Pro\. El coach en potencia estándar\.$'
@@ -137,3 +142,4 @@ name: NIVL local subscription review captures
 - assertVisible: '^Activar NIVL Élite · 249,00\s*€/año$'
 - waitForAnimationToEnd
 - takeScreenshot: 14-elite-fundador
+
