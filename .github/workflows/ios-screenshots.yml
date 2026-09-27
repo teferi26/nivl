@@ -23,6 +23,7 @@ jobs:
     env:
       CI: '1'
       EXPO_NO_TELEMETRY: '1'
+      MAESTRO_CLI_NO_ANALYTICS: 'true'
       EXPO_PUBLIC_SCREENSHOT_MODE: '1'
       EXPO_PUBLIC_RC_IOS_KEY: 'screenshot-local-not-a-service-key'
     steps:
@@ -71,6 +72,8 @@ jobs:
           path: ${{ runner.temp }}/nivl-derived/Build/Products/Release-iphonesimulator/NIVL.app
           key: ${{ steps.native-cache.outputs.cache-primary-key }}
       - name: Capturar interfaz real de iOS
+        env:
+          MAESTRO_DRIVER_STARTUP_TIMEOUT: '180000'
         run: bash scripts/screenshots/capture.sh
       - name: Guardar diagnóstico de compilación
         if: always()

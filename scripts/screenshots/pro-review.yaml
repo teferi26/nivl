@@ -1,0 +1,139 @@
+# Optional flow for the isolated, display-only screenshot build, never the Store app.
+# Run only after reviewing the marketing captures and the native accessibility tree.
+# Uses the existing local catalogue: no credentials, backend, StoreKit or purchases.
+# Example from repository root (runner owns installation/output directory):
+# maestro --device "$DEVICE_ID" test --test-output-dir screenshots/pro-review scripts/screenshots/pro-review.yaml
+# No buying/restoring/trial/consent/exit/link controls are tapped. All seven taps
+# target only the two tier radios and five plan radios by their existing labels.
+# Prices are explicit so stale catalogue data cannot silently produce review PNGs.
+# Primary docs checked 2026-09-27:
+# https://docs.maestro.dev/reference/selectors/core-selectors
+# https://docs.maestro.dev/reference/selectors/state-selectors
+# https://docs.maestro.dev/reference/commands-available/scrolluntilvisible
+# https://docs.maestro.dev/reference/commands-available/takescreenshot
+appId: com.teferi.nivl.screenshots
+name: NIVL local subscription review captures
+---
+# Start normally and wait for fixture UI before sending the warm deep link.
+# bootstrap.js observes the warm /pro link to select the free-account catalogue.
+- launchApp:
+    stopApp: true
+    clearState: false
+    permissions:
+      all: deny
+- extendedWaitUntil:
+    visible: '.*Alex.*'
+    timeout: 30000
+- openLink: 'nivl-capture://pro'
+- extendedWaitUntil:
+    visible: 'Un coach que manda en tu día\.'
+    timeout: 15000
+- scrollUntilVisible:
+    element:
+      text: '^NIVL Pro\. El coach en potencia estándar\.$'
+    direction: DOWN
+- tapOn:
+    text: '^NIVL Pro\. El coach en potencia estándar\.$'
+
+# Pro monthly: show selected radio + matching CTA, never tap the CTA.
+- scrollUntilVisible:
+    element:
+      text: '^NIVL Pro mensual, 12,99\s*€ al mes\..*'
+    direction: DOWN
+- tapOn:
+    text: '^NIVL Pro mensual, 12,99\s*€ al mes\..*'
+- scrollUntilVisible:
+    element:
+      text: '^Activar NIVL Pro · 12,99\s*€/mes$'
+    direction: DOWN
+    visibilityPercentage: 100
+- assertVisible:
+    text: '^NIVL Pro mensual, 12,99\s*€ al mes\..*'
+    selected: true
+- assertVisible: '^Activar NIVL Pro · 12,99\s*€/mes$'
+- waitForAnimationToEnd
+- takeScreenshot: 10-pro-mensual
+
+# Pro annual.
+- scrollUntilVisible:
+    element:
+      text: '^NIVL Pro anual, 99,99\s*€ al año\..*'
+    direction: UP
+- tapOn:
+    text: '^NIVL Pro anual, 99,99\s*€ al año\..*'
+- scrollUntilVisible:
+    element:
+      text: '^Activar NIVL Pro · 99,99\s*€/año$'
+    direction: DOWN
+    visibilityPercentage: 100
+- assertVisible:
+    text: '^NIVL Pro anual, 99,99\s*€ al año\..*'
+    selected: true
+- assertVisible: '^Activar NIVL Pro · 99,99\s*€/año$'
+- waitForAnimationToEnd
+- takeScreenshot: 11-pro-anual
+
+# Return to the existing tier selector; no route reload or state injection.
+- scrollUntilVisible:
+    element:
+      text: '^NIVL Élite\. El coach a máxima potencia, con modo profundo\.$'
+    direction: UP
+- tapOn:
+    text: '^NIVL Élite\. El coach a máxima potencia, con modo profundo\.$'
+
+# Elite monthly.
+- scrollUntilVisible:
+    element:
+      text: '^NIVL Élite mensual, 29,99\s*€ al mes\..*'
+    direction: DOWN
+- tapOn:
+    text: '^NIVL Élite mensual, 29,99\s*€ al mes\..*'
+- scrollUntilVisible:
+    element:
+      text: '^Activar NIVL Élite · 29,99\s*€/mes$'
+    direction: DOWN
+    visibilityPercentage: 100
+- assertVisible:
+    text: '^NIVL Élite mensual, 29,99\s*€ al mes\..*'
+    selected: true
+- assertVisible: '^Activar NIVL Élite · 29,99\s*€/mes$'
+- waitForAnimationToEnd
+- takeScreenshot: 12-elite-mensual
+
+# Elite annual.
+- scrollUntilVisible:
+    element:
+      text: '^NIVL Élite anual, 299,00\s*€ al año\..*'
+    direction: UP
+- tapOn:
+    text: '^NIVL Élite anual, 299,00\s*€ al año\..*'
+- scrollUntilVisible:
+    element:
+      text: '^Activar NIVL Élite · 299,00\s*€/año$'
+    direction: DOWN
+    visibilityPercentage: 100
+- assertVisible:
+    text: '^NIVL Élite anual, 299,00\s*€ al año\..*'
+    selected: true
+- assertVisible: '^Activar NIVL Élite · 299,00\s*€/año$'
+- waitForAnimationToEnd
+- takeScreenshot: 13-elite-anual
+
+# Elite founder: availability is provided only by the existing local fixture.
+- scrollUntilVisible:
+    element:
+      text: '^NIVL Élite fundador, 249,00\s*€ al año\..*'
+    direction: UP
+- tapOn:
+    text: '^NIVL Élite fundador, 249,00\s*€ al año\..*'
+- scrollUntilVisible:
+    element:
+      text: '^Activar NIVL Élite · 249,00\s*€/año$'
+    direction: DOWN
+    visibilityPercentage: 100
+- assertVisible:
+    text: '^NIVL Élite fundador, 249,00\s*€ al año\..*'
+    selected: true
+- assertVisible: '^Activar NIVL Élite · 249,00\s*€/año$'
+- waitForAnimationToEnd
+- takeScreenshot: 14-elite-fundador

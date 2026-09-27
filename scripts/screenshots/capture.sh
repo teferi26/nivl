@@ -2,6 +2,17 @@
 set -euo pipefail
 
 mkdir -p screenshots
+# Pinned official Maestro CLI. Its native driver accepts the iOS deep-link
+# security prompt, then verifies the visible route before taking each PNG.
+curl -fLsS 'https://github.com/mobile-dev-inc/Maestro/releases/download/cli-2.10.0/maestro.zip' -o "$RUNNER_TEMP/maestro.zip"
+curl -fLsS 'https://github.com/mobile-dev-inc/Maestro/releases/download/cli-2.10.0/checksums_sha256.txt' -o "$RUNNER_TEMP/maestro-checksums.txt"
+(cd "$RUNNER_TEMP" && grep 'maestro.zip' maestro-checksums.txt | shasum -a 256 -c -)
+unzip -q -o "$RUNNER_TEMP/maestro.zip" -d "$RUNNER_TEMP/maestro-cli"
+MAESTRO=$(find "$RUNNER_TEMP/maestro-cli" -path '*/bin/maestro' -type f -print -quit)
+test -n "$MAESTRO"
+chmod +x "$MAESTRO"
+export JAVA_HOME=$(/usr/libexec/java_home -v 17)
+"$MAESTRO" --version
 xcrun simctl list devices available -j > "$RUNNER_TEMP/simulators.json"
 DEVICE_ID=$(node -e '
   const fs=require("fs"); const list=JSON.parse(fs.readFileSync(process.argv[1]));
@@ -22,36 +33,44 @@ xcrun simctl install "$DEVICE_ID" "$APP_PATH"
 xcrun simctl launch "$DEVICE_ID" com.teferi.nivl.screenshots -AppleLanguages '(es)' -AppleLocale 'es_ES'
 sleep 15
 
-capture() {
-  local name="$1"
-  local route="$2"
-  xcrun simctl openurl "$DEVICE_ID" "nivl-capture://$route"
-  sleep 8
-  xcrun simctl io "$DEVICE_ID" screenshot --type=png "screenshots/$name.png"
-}
-
-capture 01-hoy ''
-capture 02-plan 'agenda'
-capture 03-coach 'coach'
-capture 04-gym 'gym'
-capture 05-dinero 'economia'
-capture 06-amigos 'amigos'
-capture 07-avances 'avances'
-capture 08-pro 'pro'
-capture 09-habitos 'habitos'
+set +e
+"$MAESTRO" --device "$DEVICE_ID" test --test-output-dir screenshots/maestro-marketing scripts/screenshots/marketing.yaml
+MARKETING_STATUS=$?
+if [ "$MARKETING_STATUS" -eq 0 ]; then
+  "$MAESTRO" --device "$DEVICE_ID" test --test-output-dir screenshots/maestro-pro scripts/screenshots/pro-review.yaml
+  PRO_STATUS=$?
+else
+  PRO_STATUS=99
+fi
+set -e
+export MARKETING_STATUS PRO_STATUS
 
 node -e '
   const fs=require("fs"), crypto=require("crypto");
+  function collect(dir) {
+    for(const item of fs.readdirSync(dir,{withFileTypes:true})) {
+      const path=dir+"/"+item.name;
+      if(item.isDirectory()) collect(path);
+      else if(/^\d\d-[a-z-]+\.png$/.test(item.name) && dir!=="screenshots") fs.copyFileSync(path,"screenshots/"+item.name);
+    }
+  }
+  collect("screenshots");
   const file="screenshots/provenance.json", p=JSON.parse(fs.readFileSync(file));
   const simulators=JSON.parse(fs.readFileSync(process.env.RUNNER_TEMP+"/simulators.json"));
   const match=Object.entries(simulators.devices).flatMap(([runtime,ds])=>ds.map(d=>({...d,runtime}))).find(d=>d.udid===process.env.DEVICE_ID);
   p.simulator={name:match.name,runtime:match.runtime,udid:match.udid};
   p.capturedAt=new Date().toISOString();
+  p.marketingStatus=Number(process.env.MARKETING_STATUS);
+  p.subscriptionCaptureStatus=Number(process.env.PRO_STATUS);
   p.images=fs.readdirSync("screenshots").filter(f=>f.endsWith(".png")).map(name=>{
     const b=fs.readFileSync("screenshots/"+name);
     return {name,width:b.readUInt32BE(16),height:b.readUInt32BE(20),sha256:crypto.createHash("sha256").update(b).digest("hex")};
   });
   fs.writeFileSync(file,JSON.stringify(p,null,2)+"\n");
+  const main=p.images.filter(x=>/^(01-hoy|02-plan|03-coach|04-gym|05-dinero|06-amigos|07-avances)\.png$/.test(x.name));
+  if(p.marketingStatus!==0 || main.length!==7 || new Set(main.map(x=>x.sha256)).size!==7) {
+    throw new Error("Marketing captures incomplete or duplicated; inspect Maestro artifacts before upload.");
+  }
 '
 
 # System logs contain only this isolated fictional app. Useful for diagnosing a

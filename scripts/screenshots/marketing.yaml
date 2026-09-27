@@ -1,0 +1,77 @@
+appId: com.teferi.nivl.screenshots
+name: Native NIVL marketing screenshots
+---
+- launchApp:
+    stopApp: false
+- extendedWaitUntil:
+    visible: '.*Buenos días, Alex.*'
+    timeout: 30000
+- waitForAnimationToEnd
+- takeScreenshot: 01-hoy
+- scrollUntilVisible:
+    element:
+      text: '(?i)Misiones de hoy'
+    direction: DOWN
+    centerElement: true
+- waitForAnimationToEnd
+- takeScreenshot: 01-misiones
+- openLink: 'nivl-capture://agenda'
+- runFlow:
+    when:
+      visible: '^(Open|Abrir)$'
+    commands:
+      - tapOn: '^(Open|Abrir)$'
+- extendedWaitUntil:
+    visible: 'Vista por semana'
+    timeout: 20000
+- waitForAnimationToEnd
+- takeScreenshot: 02-plan
+- openLink: 'nivl-capture://coach'
+- extendedWaitUntil:
+    visible: '.*Ejemplo.*'
+    timeout: 20000
+- waitForAnimationToEnd
+- takeScreenshot: 03-coach
+- openLink: 'nivl-capture://gym'
+- extendedWaitUntil:
+    visible: 'Gimnasio'
+    timeout: 20000
+- waitForAnimationToEnd
+- takeScreenshot: 04-gym
+- openLink: 'nivl-capture://economia'
+- extendedWaitUntil:
+    visible: 'Economía'
+    timeout: 20000
+- waitForAnimationToEnd
+- takeScreenshot: 05-dinero
+- openLink: 'nivl-capture://amigos'
+- extendedWaitUntil:
+    visible: 'Amigos'
+    timeout: 20000
+- waitForAnimationToEnd
+- takeScreenshot: 06-amigos
+- scrollUntilVisible:
+    element:
+      text: '(?i)Ranking'
+    direction: DOWN
+    centerElement: true
+- waitForAnimationToEnd
+- takeScreenshot: 06-ranking
+- openLink: 'nivl-capture://avances'
+- extendedWaitUntil:
+    visible: 'Avances'
+    timeout: 20000
+- waitForAnimationToEnd
+- takeScreenshot: 07-avances
+- openLink: 'nivl-capture://pro'
+- extendedWaitUntil:
+    visible: 'Un coach que manda en tu día\.'
+    timeout: 20000
+- waitForAnimationToEnd
+- takeScreenshot: 08-pro
+- openLink: 'nivl-capture://habitos'
+- extendedWaitUntil:
+    visible: '.*(?i:hábitos).*'
+    timeout: 20000
+- waitForAnimationToEnd
+- takeScreenshot: 09-habitos
