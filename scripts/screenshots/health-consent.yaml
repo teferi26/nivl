@@ -11,7 +11,8 @@ name: NIVL native health consent QA
     visible: '^Revisar permiso$'
     timeout: 20000
 - assertVisible: '^Tu salud, con permiso$'
-- assertNotVisible: '^Mensaje para el sistema$'
+# iOS combines the input label and placeholder in accessibilityText.
+- assertNotVisible: '^Mensaje para el sistema.*'
 - waitForAnimationToEnd
 - takeScreenshot: 20-health-guard
 - tapOn: '^Revisar permiso$'
@@ -72,12 +73,13 @@ name: NIVL native health consent QA
     timeout: 15000
 - tapOn: '^Coach$'
 - extendedWaitUntil:
-    visible: '^Mensaje para el sistema$'
+    visible: '^Mensaje para el sistema.*'
     timeout: 20000
 - assertNotVisible: '^Tu salud, con permiso$'
 - waitForAnimationToEnd
 - takeScreenshot: 25-coach-after-consent
 - tapOn: '^Perfil$'
+- waitForAnimationToEnd
 - scrollUntilVisible:
     element:
       text: '^Retirar y borrar salud$'
