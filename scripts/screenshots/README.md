@@ -15,6 +15,8 @@ JavaScript SDK with deterministic local adapters. All unknown calls and writes
 fail explicitly. The bootstrap rejects fetch, XMLHttpRequest and WebSocket;
 Metro also replaces Expo's separate native fetch path with a rejecting adapter,
 and the capture build disables Expo Updates. Fixtures use no remote images.
+Notifications have an existing permission-denied fixture, preventing native
+permission dialogs and scheduled notifications from covering the screenshots.
 
 The example account, friends, mission history, conversations, workouts and money
 are entirely fictional. The coach conversation identifies itself as an example
@@ -32,3 +34,5 @@ App Store compositions; the original screenshots remain preserved.
 
 Dispatch `ios-screenshots.yml` on this branch, or push a change to its capture
 files. The workflow has only read repository permissions and uses no secrets.
+The fictional simulator app is cached by its source/fixture hash, so changing
+only the camera/navigation script does not require compiling again.
