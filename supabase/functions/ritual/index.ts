@@ -298,7 +298,7 @@ Deno.serve(async (req) => {
       // sesión ni se apunta como fallo algo que es lo esperado en una cuenta
       // gratuita.
       const { data: ia } = await sb.rpc('ai_state', { p_user: p.id });
-      const estadoIa = ia as { entitled?: boolean; remaining?: number } | null;
+      const estadoIa = ia as { entitled?: boolean; remaining?: number; tier?: string } | null;
       if (!estadoIa?.entitled || (estadoIa.remaining ?? 0) < 20000) continue;
 
       const { data: usuario } = await sb.auth.admin.getUserById(p.id);
@@ -346,7 +346,10 @@ Deno.serve(async (req) => {
       // Espejo a la página del CEREBRO, para que el coach de escritorio lea lo
       // mismo. Solo los rituales que dejan huella: el brief diario cambia cada
       // día y llenaría la página de ruido.
-      if (espejoActivo() && decision.kind !== 'brief' && texto) {
+      // SOLO la cuenta del dueño: la página del CEREBRO es suya y privada. Sin
+      // este filtro se copiaban ahí las revisiones y cierres de todos los
+      // usuarios (fuga de datos personales a un tercero, Notion).
+      if (espejoActivo() && estadoIa?.tier === 'owner' && decision.kind !== 'brief' && texto) {
         await espejarEntrada(ahoraLocal(p.timezone).fecha, decision.titulo, texto);
       }
 
