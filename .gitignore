@@ -68,3 +68,6 @@ banco-estado.json
 # de creadores (códigos, alias, emails, pagos). El repo es público.
 privado/
 scripts/*.local.*
+
+# Native simulator screenshots are exported as CI artifacts, never committed.
+/screenshots/

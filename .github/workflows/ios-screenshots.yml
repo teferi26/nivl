@@ -1,0 +1,68 @@
+name: Capturas nativas iOS (datos ficticios)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [chore/ios-screenshots-107]
+    paths:
+      - '.github/workflows/ios-screenshots.yml'
+      - 'scripts/screenshots/**'
+      - 'metro.config.js'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nivl-ios-screenshots
+  cancel-in-progress: false
+
+jobs:
+  screenshots:
+    runs-on: macos-15
+    timeout-minutes: 80
+    env:
+      CI: '1'
+      EXPO_NO_TELEMETRY: '1'
+      EXPO_PUBLIC_SCREENSHOT_MODE: '1'
+      EXPO_PUBLIC_RC_IOS_KEY: 'screenshot-local-not-a-service-key'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.14.0
+          cache: npm
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+      - run: npm ci
+      - name: Preparar configuración aislada sin credenciales
+        run: node scripts/screenshots/prepare.mjs
+      - name: Generar proyecto nativo
+        run: npx expo prebuild --platform ios --clean --no-install
+      - name: Instalar dependencias nativas
+        run: pod install --project-directory=ios
+      - name: Compilar solo para simulador
+        run: |
+          set -o pipefail
+          xcodebuild -workspace ios/NIVL.xcworkspace -scheme NIVL \
+            -configuration Release -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath "$RUNNER_TEMP/nivl-derived" \
+            ARCHS="$(uname -m)" ONLY_ACTIVE_ARCH=YES \
+            CODE_SIGNING_ALLOWED=NO build > "$RUNNER_TEMP/nivl-xcode.log" 2>&1 || {
+              tail -n 150 "$RUNNER_TEMP/nivl-xcode.log"
+              exit 1
+            }
+      - name: Capturar interfaz real de iOS
+        run: bash scripts/screenshots/capture.sh
+      - name: Guardar diagnóstico de compilación
+        if: always()
+        run: |
+          mkdir -p screenshots
+          if [ -f "$RUNNER_TEMP/nivl-xcode.log" ]; then cp "$RUNNER_TEMP/nivl-xcode.log" screenshots/xcode.log; fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: nivl-ios-native-screenshots
+          path: screenshots
+          retention-days: 7
