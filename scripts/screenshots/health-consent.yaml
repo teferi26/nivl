@@ -30,7 +30,9 @@ name: NIVL native health consent QA
     visibilityPercentage: 100
 - assertVisible:
     text: '^Consiento explícitamente que NIVL guarde y utilice mis datos de salud para estas finalidades\.$'
-    checked: false
+# iOS exposes the React Native state in value ("checkbox, checked"), while
+# Maestro 2.10.0 normalizes checked=false even after a successful tap.
+# Assert the real disabled/enabled action and keep both native screenshots.
 - assertVisible:
     text: '^Aceptar y activar salud$'
     enabled: false
@@ -54,11 +56,12 @@ name: NIVL native health consent QA
     visibilityPercentage: 100
 - assertVisible:
     text: '^Consiento explícitamente que NIVL guarde y utilice mis datos de salud para estas finalidades\.$'
-    checked: false
+- assertVisible:
+    text: '^Aceptar y activar salud$'
+    enabled: false
 - tapOn: '^Consiento explícitamente que NIVL guarde y utilice mis datos de salud para estas finalidades\.$'
 - assertVisible:
     text: '^Consiento explícitamente que NIVL guarde y utilice mis datos de salud para estas finalidades\.$'
-    checked: true
 - assertVisible:
     text: '^Aceptar y activar salud$'
     enabled: true
