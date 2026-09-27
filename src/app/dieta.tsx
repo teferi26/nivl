@@ -11,6 +11,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
+import { DescargoSalud } from '@/components/DescargoSalud';
 import { SystemButton } from '@/components/SystemButton';
 import {
   Card,
@@ -227,6 +228,7 @@ export default function Dieta() {
             </Text>
           </Section>
         </FadeIn>
+      <DescargoSalud />
       </Stagger>
 
       <Modal visible={editing !== null} transparent animationType="slide" onRequestClose={() => setEditing(null)}>

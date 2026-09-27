@@ -2,6 +2,7 @@ import * as Haptics from 'expo-haptics';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Alert, StyleSheet, Text, TextInput, View } from 'react-native';
+import { DescargoSalud } from '@/components/DescargoSalud';
 import { SystemButton } from '@/components/SystemButton';
 import { XPBar } from '@/components/XPBar';
 import {
@@ -248,6 +249,7 @@ export default function Nutricion() {
             )}
           </Section>
         </FadeIn>
+      <DescargoSalud />
       </Stagger>
     </Screen>
   );

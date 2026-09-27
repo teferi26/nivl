@@ -11,6 +11,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
+import { useConsentimientoIA } from '@/components/ConsentimientoIA';
 import { SystemButton } from '@/components/SystemButton';
 import { TextoSistema } from '@/components/TextoSistema';
 import {
@@ -28,9 +29,11 @@ import {
 import { useAuth } from '@/lib/auth';
 import { createQuest } from '@/lib/data';
 import { DIFFICULTY_LABEL, XP_BY_DIFFICULTY } from '@/lib/game';
-import { askOracle, getApiKey, PaywallError, setApiKey, type ProposedQuest } from '@/lib/oracle';
-import { openCheckout, paymentsConfigured } from '@/lib/subscription';
+import { olvidarConsentimiento } from '@/lib/consent';
+import { askOracle, ConsentRequiredError, getApiKey, PaywallError, setApiKey, type ProposedQuest } from '@/lib/oracle';
+import { byokEnabled } from '@/lib/subscription';
 import { colors, fonts } from '@/lib/theme';
+import { mensajeSistema } from '@/lib/validation';
 
 const DAY_LABELS = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
 
@@ -47,15 +50,21 @@ export default function Oraculo() {
   const [summary, setSummary] = useState('');
   const [busy, setBusy] = useState(false);
   const [accepting, setAccepting] = useState(false);
+  // El Oráculo es de NIVL Pro: sin él, un aviso con el camino a /pro. Nunca
+  // Stripe ni la clave propia en la app de tienda (Guideline 3.1.1).
+  const [pidePro, setPidePro] = useState(false);
+  const clavePropia = byokEnabled();
+  const consentimiento = useConsentimientoIA();
 
   useEffect(() => {
+    if (!clavePropia) return;
     getApiKey().then((k) => {
       if (k) {
         setKey(k);
         setKeySaved(true);
       }
     });
-  }, []);
+  }, [clavePropia]);
 
   const saveKey = async () => {
     await setApiKey(apiKey);
@@ -66,7 +75,9 @@ export default function Oraculo() {
 
   const consult = async () => {
     if (!goal.trim() || busy || !userId) return;
+    if (!(await consentimiento.asegurar())) return;
     setBusy(true);
+    setPidePro(false);
     setProposals([]);
     try {
       // Vía automática: suscripción premium (servidor) → key propia → paywall.
@@ -76,22 +87,12 @@ export default function Oraculo() {
       setSelected(new Set(res.quests.map((_, i) => i)));
     } catch (e) {
       if (e instanceof PaywallError) {
-        Alert.alert(
-          'El Oráculo es premium',
-          'La IA consume API de verdad. Suscríbete y va incluida, o pega tu propia API key y paga solo tu consumo.',
-          paymentsConfigured()
-            ? [
-                { text: 'Suscribirme', onPress: () => openCheckout(userId).catch(() => {}) },
-                { text: 'Usaré mi key', onPress: () => setKeyOpen(true) },
-                { text: 'Ahora no', style: 'cancel' },
-              ]
-            : [
-                { text: 'Pegar mi key', onPress: () => setKeyOpen(true) },
-                { text: 'Entendido', style: 'cancel' },
-              ],
-        );
+        setPidePro(true);
+      } else if (e instanceof ConsentRequiredError) {
+        olvidarConsentimiento();
+        consentimiento.pedir();
       } else {
-        Alert.alert('El oráculo guarda silencio', e instanceof Error ? e.message : 'Error desconocido');
+        Alert.alert('El oráculo guarda silencio', mensajeSistema(e));
       }
     } finally {
       setBusy(false);
@@ -128,7 +129,7 @@ export default function Oraculo() {
       setProposals([]);
       setGoal('');
     } catch (e) {
-      Alert.alert('Error del sistema', e instanceof Error ? e.message : 'Fallo desconocido');
+      Alert.alert('Error del sistema', mensajeSistema(e));
     } finally {
       setAccepting(false);
     }
@@ -146,11 +147,15 @@ export default function Oraculo() {
             eyebrow="El sistema forja"
             title="Oráculo"
             subtitle={
-              keySaved
+              clavePropia && keySaved
                 ? 'Dile tu objetivo y lo convierte en misiones. Tu clave está en este dispositivo.'
                 : 'Dile tu objetivo y lo convierte en misiones diarias con fecha y medida.'
             }
-            action={{ icon: 'key-outline', label: keySaved ? 'Cambiar la clave de API' : 'Usar mi propia clave de API', onPress: () => setKeyOpen(true) }}
+            action={
+              clavePropia
+                ? { icon: 'key-outline', label: keySaved ? 'Cambiar la clave de API' : 'Usar mi propia clave de API', onPress: () => setKeyOpen(true) }
+                : undefined
+            }
           />
         </FadeIn>
 
@@ -186,7 +191,21 @@ export default function Oraculo() {
           </FadeIn>
         ) : null}
 
-        {!busy && !hayPropuestas ? (
+        {pidePro && !busy ? (
+          <FadeIn index={2}>
+            <Card variant="outline">
+              <EmptyState
+                compact
+                icon="shield-half-outline"
+                title="El Oráculo es parte de NIVL Pro"
+                body="Convertir objetivos en misiones con IA va con el coach. El resto de NIVL sigue siendo tuyo."
+                action={{ label: 'Ver NIVL Pro', onPress: () => router.push('/pro') }}
+              />
+            </Card>
+          </FadeIn>
+        ) : null}
+
+        {!busy && !hayPropuestas && !pidePro ? (
           <FadeIn index={2}>
             <Card variant="outline">
               <EmptyState
@@ -257,7 +276,9 @@ export default function Oraculo() {
         ) : null}
       </Stagger>
 
-      <Modal visible={keyOpen} transparent animationType="slide" onRequestClose={() => setKeyOpen(false)}>
+      {consentimiento.hoja}
+
+      <Modal visible={clavePropia && keyOpen} transparent animationType="slide" onRequestClose={() => setKeyOpen(false)}>
         <KeyboardAvoidingView style={styles.backdrop} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
           <Pressable style={styles.backdropTap} onPress={() => setKeyOpen(false)} accessibilityRole="button" accessibilityLabel="Cerrar" />
           <View style={styles.sheet}>
@@ -265,7 +286,7 @@ export default function Oraculo() {
             <Text style={styles.sheetEyebrow}>CLAVE DE API</Text>
             <Text style={styles.sheetTitle}>Tu propia clave</Text>
             <Text style={styles.sheetBody}>
-              OpenAI o Anthropic. Se guarda solo en este dispositivo y pagas solo tu consumo. Con suscripción no hace falta.
+              OpenAI o Anthropic. Se guarda solo en este dispositivo y pagas solo tu consumo.
             </Text>
             <Text style={styles.label}>Clave</Text>
             <TextInput

@@ -30,6 +30,7 @@ import { clasificarPendientes } from '../_shared/clasificar.ts';
 import { callOpenAICompat } from '../_shared/openai.ts';
 import { construirResumen, periodoMensual, periodoSemanal } from '../_shared/recap.ts';
 import { buildContext } from '../_shared/context.ts';
+import { consentimientoIa, MENSAJE_SIN_CONSENTIMIENTO, SIN_CONSENTIMIENTO } from '../_shared/consent.ts';
 import { adminClient, userClient, type Db } from '../_shared/db.ts';
 import { buildSystem } from '../_shared/prompt.ts';
 import { elegirModelo, modoDeCabecera, proveedorDe, type Modo, type Routes } from '../_shared/routing.ts';
@@ -292,6 +293,7 @@ function markCacheable(messages: ApiMessage[]): ApiMessage[] {
 
 interface RunArgs {
   sb: Db;
+  admin: Db;
   userId: string;
   kind: Kind;
   threadId: string;
@@ -308,7 +310,7 @@ interface RunArgs {
 }
 
 async function runCoach(args: RunArgs): Promise<{ text: string; usage: Usage; model: string }> {
-  const { sb, userId, kind, threadId, userText, today, imagenes, topeMicro, modelo, compat, modo, emit } = args;
+  const { sb, admin, userId, kind, threadId, userText, today, imagenes, topeMicro, modelo, compat, modo, emit } = args;
 
   const ctx = await buildContext(sb, userId, today);
   const system = buildSystem(ctx.dossier, kind, ctx.text);
@@ -380,8 +382,11 @@ ${userText}` : userText,
     // Si ya no queda reloj, se corta el encadenado: con lo que hay se contesta,
     // y sin él la función muere sin dejar nada.
     const sinTiempo = Date.now() - arranque > PRESUPUESTO_MS;
-    const pedirTurno = (maxTokens: number, effort: Effort) =>
-      compat
+    const pedirTurno = async (maxTokens: number, effort: Effort) => {
+      // Un turno puede encadenar varias llamadas y reintentos. La aceptación
+      // de su inicio no autoriza llamadas nuevas después de una retirada.
+      if ((await consentimientoIa(admin, userId)) !== true) return null;
+      return compat
         ? callOpenAICompat({
             baseUrl: compat.baseUrl,
             apiKey: compat.apiKey,
@@ -402,8 +407,14 @@ ${userText}` : userText,
             onText: (d) => emit('text', { delta: d }),
             onThinking: () => emit('thinking', {}),
           });
+    };
 
     let turn = await pedirTurno(techo, esfuerzo);
+    if (!turn) {
+      finalText = 'El coach se ha detenido porque no puede confirmar tu consentimiento. Revísalo en Perfil antes de continuar.';
+      emit('text', { delta: finalText });
+      break;
+    }
     usage = addUsage(usage, turn.usage);
 
     // Un turno que SOLO ha pensado esta perdido: ni texto ni herramienta.
@@ -418,10 +429,16 @@ ${userText}` : userText,
     // respuesta quepa con seguridad. Y el turno muerto NO se guarda: un
     // mensaje que solo tiene pensamiento envenena el historial de los turnos
     // siguientes (de ahi salio el 400 de thinking.cache_control).
-    const util = (t: typeof turn) =>
+    const util = (t: NonNullable<typeof turn>) =>
       t.content.some((b) => b.type === 'text' || b.type === 'tool_use');
     if (!util(turn)) {
-      turn = await pedirTurno(techo * 2, 'low');
+      const retry = await pedirTurno(techo * 2, 'low');
+      if (!retry) {
+        finalText = 'El coach se ha detenido porque no puede confirmar tu consentimiento. Revísalo en Perfil antes de continuar.';
+        emit('text', { delta: finalText });
+        break;
+      }
+      turn = retry;
       usage = addUsage(usage, turn.usage);
     }
 
@@ -512,6 +529,17 @@ Deno.serve(async (req) => {
   const { data: userData, error: userErr } = await admin.auth.getUser(token);
   if (userErr || !userData.user) return json(401, { error: 'Sesión inválida' });
   const userId = userData.user.id;
+
+  // El consentimiento para la IA (migración 0028), antes que nada más: sin él
+  // no se lee el cuerpo, no se toma el cerrojo y no se llama a ningún modelo.
+  // Cubre también a los rituales del cron y al atajo de clasificar.
+  const consiente = await consentimientoIa(admin, userId);
+  if (consiente === null) {
+    return json(503, { error: 'El sistema no puede comprobar tu consentimiento ahora mismo. Vuelve a intentarlo.' });
+  }
+  if (!consiente) {
+    return json(403, { error: MENSAJE_SIN_CONSENTIMIENTO, reason: SIN_CONSENTIMIENTO });
+  }
 
   // El candado de gasto (migración 0020). Va ANTES de leer el cuerpo y de
   // cualquier llamada a un modelo: suscripción viva, presupuesto del mes sin
@@ -770,6 +798,7 @@ async function atender(req: Request, userId: string, token: string, estado: Puer
     try {
       const result = await runCoach({
         sb,
+        admin,
         userId,
         kind,
         threadId: threadId!,
@@ -817,6 +846,7 @@ async function atender(req: Request, userId: string, token: string, estado: Puer
       try {
         const result = await runCoach({
           sb,
+          admin,
           userId,
           kind,
           threadId: threadId!,

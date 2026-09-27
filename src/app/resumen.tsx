@@ -18,6 +18,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { captureRef } from 'react-native-view-shot';
 import { SystemButton } from '@/components/SystemButton';
 import { Card, EmptyState, FadeIn, Row, RowValue, Screen, ScreenHeader, Section, Stagger, Tag } from '@/components/ui';
+import { useConsentimientoIA } from '@/components/ConsentimientoIA';
 import { accessNotice, CoachAccessError, generarResumen } from '@/lib/coach';
 import { fetchRecaps, marcarVisto, urlFirmada, type Recap, type Slide } from '@/lib/photos';
 import { colors, fonts } from '@/lib/theme';
@@ -208,6 +209,7 @@ function Pase({ recap, onSalir }: { recap: Recap; onSalir: () => void }) {
 }
 
 export default function Resumen() {
+  const consentimiento = useConsentimientoIA();
   const [recaps, setRecaps] = useState<Recap[]>([]);
   const [abierto, setAbierto] = useState<Recap | null>(null);
   const [generando, setGenerando] = useState(false);
@@ -241,6 +243,7 @@ export default function Resumen() {
 
   const generar = async () => {
     if (generando) return;
+    if (!(await consentimiento.asegurar())) return;
     setGenerando(true);
     setAviso(null);
     setPidePro(false);
@@ -360,6 +363,7 @@ export default function Resumen() {
           </Section>
         </FadeIn>
       </Stagger>
+      {consentimiento.hoja}
     </Screen>
   );
 }

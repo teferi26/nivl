@@ -1,5 +1,7 @@
-import { Linking } from 'react-native';
+import { Linking, Platform } from 'react-native';
+import { clavePropiaPermitida, stripePermitido } from './storepolicy';
 import { supabase } from './supabase';
+import { ErrorVisible } from './validation';
 
 export interface Subscription {
   user_id: string;
@@ -16,10 +18,33 @@ const PAYMENT_LINK = process.env.EXPO_PUBLIC_STRIPE_PAYMENT_LINK;
 // pantalla. Todo el camino de Stripe (webhook, tabla subscriptions, Payment
 // Link) queda intacto: para reactivarlo basta con EXPO_PUBLIC_PAYWALL=on.
 //
-// Además evita el motivo de rechazo de la Guideline 3.1.1 de Apple, que
-// prohíbe cobrar contenido digital fuera de las compras dentro de la app.
+// En iOS y Android es SIEMPRE false (Guideline 3.1.1: el contenido digital
+// solo se cobra con compra integrada, que es /pro con RevenueCat): aunque la
+// build lleve el interruptor puesto por error, la app de tienda no tiene
+// ningún camino a Stripe. Ver `storepolicy.ts`.
 export function paywallEnabled(): boolean {
-  return process.env.EXPO_PUBLIC_PAYWALL === 'on';
+  return stripePermitido(Platform.OS, process.env.EXPO_PUBLIC_PAYWALL);
+}
+
+/** "Usa tu propia clave de API" en el Oráculo: nunca en la app de tienda (salvo desarrollo). */
+export function byokEnabled(): boolean {
+  return clavePropiaPermitida(Platform.OS, __DEV__);
+}
+
+/** El Oráculo es de NIVL Pro (402 del servidor): la pantalla lleva a /pro. */
+export class PaywallError extends Error {
+  constructor() {
+    super('El Oráculo es parte de NIVL Pro.');
+    this.name = 'PaywallError';
+  }
+}
+
+/** El servidor no tiene consentimiento vigente para la IA (403, 0028): se abre la hoja. */
+export class ConsentRequiredError extends Error {
+  constructor() {
+    super('Falta el consentimiento para la IA.');
+    this.name = 'ConsentRequiredError';
+  }
 }
 
 export function paymentsConfigured(): boolean {
@@ -48,7 +73,7 @@ export function isPremium(sub: Subscription | null): boolean {
 // Abre el checkout de Stripe en el navegador. client_reference_id enlaza el
 // pago con el usuario de Supabase: el webhook lo usa para activar su cuenta.
 export async function openCheckout(userId: string): Promise<void> {
-  if (!PAYMENT_LINK) {
+  if (!paywallEnabled() || !PAYMENT_LINK) {
     throw new Error('Los pagos aún no están configurados en este servidor.');
   }
   const url = `${PAYMENT_LINK}?client_reference_id=${encodeURIComponent(userId)}`;
@@ -63,7 +88,7 @@ export async function callPremiumOracle<T>(
 ): Promise<T> {
   const { data: sessionData } = await supabase.auth.getSession();
   const token = sessionData.session?.access_token;
-  if (!token) throw new Error('Sesión caducada. Vuelve a entrar.');
+  if (!token) throw new ErrorVisible('Sesión caducada. Vuelve a entrar.');
 
   const url = process.env.EXPO_PUBLIC_SUPABASE_URL;
   const controller = new AbortController();
@@ -81,17 +106,19 @@ export async function callPremiumOracle<T>(
     });
   } catch (e) {
     if (e instanceof Error && e.name === 'AbortError') {
-      throw new Error('El oráculo tardó demasiado. Reintenta.');
+      throw new ErrorVisible('El oráculo tardó demasiado. Reintenta.');
     }
     throw e;
   } finally {
     clearTimeout(timeout);
   }
 
-  const body = (await res.json().catch(() => ({}))) as { result?: T; error?: string };
-  if (!res.ok) {
-    throw new Error(body.error ?? `El oráculo no responde (HTTP ${res.status}).`);
-  }
-  if (!body.result) throw new Error('Respuesta vacía del oráculo.');
+  const body = (await res.json().catch(() => ({}))) as { result?: T; error?: string; reason?: string };
+  if (res.status === 402) throw new PaywallError();
+  if (res.status === 403 && body.reason === 'sin_consentimiento') throw new ConsentRequiredError();
+  // El cupo del mes: el servidor ya lo dice para la persona.
+  if (res.status === 429 && body.error) throw new ErrorVisible(body.error);
+  if (!res.ok) throw new Error(`El oráculo no responde (HTTP ${res.status}).`);
+  if (!body.result) throw new ErrorVisible('El oráculo ha devuelto una respuesta vacía. Reintenta.');
   return body.result;
 }

@@ -221,6 +221,9 @@ Deno.serve(async (req) => {
     frenar(ip);
 
     const body = (await req.json().catch(() => ({}))) as Body;
+    if (body.action != null && body.action !== 'login' && body.action !== 'register') {
+      return json(400, { error: 'invalid_action', message: 'Acción no admitida.' });
+    }
     const action: Action = body.action === 'register' ? 'register' : 'login';
     const email = limpiarEmail(body.email);
     const password = limpiarPassword(body.password);

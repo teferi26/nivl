@@ -3,6 +3,7 @@ import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useRef, useState } from 'react';
 import { Alert, StyleSheet, Text, View } from 'react-native';
 import { Heatmap } from '@/components/Heatmap';
+import { useConsentimientoIA } from '@/components/ConsentimientoIA';
 import { SystemButton } from '@/components/SystemButton';
 import { XPBar } from '@/components/XPBar';
 import {
@@ -24,15 +25,17 @@ import { questsScheduledOn } from '@/lib/closing';
 import { createQuest, ensureProfile, fetchCompletionsSince, fetchQuests, setQuestActive, updateQuest } from '@/lib/data';
 import { addDays, dateKey } from '@/lib/dates';
 import { DIFFICULTY_LABEL, levelFromXp, STAT_LABEL, STATS } from '@/lib/game';
-import { askWeeklyOracle, PaywallError, type QuestSnapshot, type WeeklyAdvice } from '@/lib/oracle';
-import { openCheckout, paymentsConfigured } from '@/lib/subscription';
+import { olvidarConsentimiento } from '@/lib/consent';
+import { askWeeklyOracle, ConsentRequiredError, PaywallError, type QuestSnapshot, type WeeklyAdvice } from '@/lib/oracle';
 import { supabase } from '@/lib/supabase';
 import { colors, fonts } from '@/lib/theme';
 import type { Completion, Quest, Stat as StatKey } from '@/lib/types';
+import { mensajeSistema } from '@/lib/validation';
 
 const DAY_NAMES = ['lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado', 'domingo'];
 
 export default function Informe() {
+  const consentimiento = useConsentimientoIA();
   const { session } = useAuth();
   const userId = session?.user.id;
   const today = dateKey();
@@ -49,6 +52,10 @@ export default function Informe() {
   const consultOracle = async () => {
     if (lock.current || !userId) return;
     lock.current = true;
+    if (!(await consentimiento.asegurar())) {
+      lock.current = false;
+      return;
+    }
     setConsulting(true);
     try {
       const activeQuests = quests.filter((q) => q.active && !q.is_penalty);
@@ -104,18 +111,17 @@ export default function Informe() {
       setApplied(new Set());
     } catch (e) {
       if (e instanceof PaywallError) {
-        Alert.alert(
-          'El Oráculo es premium',
-          'El análisis semanal consume API. Suscríbete y va incluido, o configura tu propia key en el módulo Oráculo.',
-          paymentsConfigured()
-            ? [
-                { text: 'Suscribirme', onPress: () => openCheckout(userId).catch(() => {}) },
-                { text: 'Ahora no', style: 'cancel' },
-              ]
-            : [{ text: 'Entendido', style: 'cancel' }],
-        );
+        // Todo lo de pago lleva a /pro (compra integrada): nada de Stripe ni
+        // de clave propia en la app de tienda (Guideline 3.1.1).
+        Alert.alert('Análisis semanal', 'El análisis del Oráculo es parte de NIVL Pro. El informe sigue siendo tuyo.', [
+          { text: 'Ahora no', style: 'cancel' },
+          { text: 'Ver NIVL Pro', onPress: () => router.push('/pro') },
+        ]);
+      } else if (e instanceof ConsentRequiredError) {
+        olvidarConsentimiento();
+        consentimiento.pedir();
       } else {
-        Alert.alert('El oráculo guarda silencio', e instanceof Error ? e.message : 'Error desconocido');
+        Alert.alert('El oráculo guarda silencio', mensajeSistema(e));
       }
     } finally {
       lock.current = false;
@@ -428,6 +434,7 @@ export default function Informe() {
           </Section>
         </FadeIn>
       </Stagger>
+      {consentimiento.hoja}
     </Screen>
   );
 }

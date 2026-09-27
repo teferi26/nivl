@@ -14,6 +14,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
+import { useConsentimientoIA } from '@/components/ConsentimientoIA';
 import { SystemButton } from '@/components/SystemButton';
 import { TextoSistema } from '@/components/TextoSistema';
 import { Chip, ChipRow, FadeIn, Screen, Skeleton, Tag } from '@/components/ui';
@@ -31,6 +32,7 @@ import {
   type CoachAction,
   type CoachMode,
 } from '@/lib/coach';
+import { DESCARGO_SALUD, LINEA_CRISIS, olvidarConsentimiento } from '@/lib/consent';
 import { ensureProfile } from '@/lib/data';
 import { isValidKey, nombreDia } from '@/lib/dates';
 import {
@@ -171,6 +173,9 @@ export default function CoachScreen() {
   // turno profundo: que el mes no se queme por despiste.
   const [modo, setModo] = useState<CoachMode>('estandar');
   const userId = session?.user.id;
+  // Antes del primer turno, el consentimiento para la IA (0028). El servidor
+  // lo vuelve a exigir: sin él responde 403 y aquí se abre la hoja.
+  const consentimiento = useConsentimientoIA();
 
   const releerEstado = useCallback(
     () =>
@@ -258,6 +263,10 @@ export default function CoachScreen() {
     // acaba respondiéndose a sí mismo.
     if ((!limpio && !adjuntas.length) || enviando.current) return;
     enviando.current = true;
+    if (!(await consentimiento.asegurar())) {
+      enviando.current = false;
+      return;
+    }
     setError(null);
     setAviso(null);
     setTexto('');
@@ -336,6 +345,11 @@ export default function CoachScreen() {
         setTexto(limpio);
         if (e.reason === 'sin_suscripcion') {
           setEstado(SIN_IA);
+        } else if (e.reason === 'sin_consentimiento') {
+          // El servidor no lo tiene (retirado en otro dispositivo, versión
+          // nueva del texto): se vuelve a preguntar, sin alarma.
+          olvidarConsentimiento();
+          consentimiento.pedir();
         } else {
           setAviso(accessNotice(e));
         }
@@ -462,6 +476,9 @@ export default function CoachScreen() {
                 <Text style={styles.vacioTexto}>
                   Manda en tu día, decide qué puntúa cada cosa, te juzga por la noche y recuerda todo lo que
                   aprende de ti. Habla con él como hablarías con quien lleva tu vida.
+                </Text>
+                <Text style={styles.vacioDescargo}>
+                  {DESCARGO_SALUD} {LINEA_CRISIS}
                 </Text>
               </View>
             </FadeIn>
@@ -592,6 +609,7 @@ export default function CoachScreen() {
           </View>
         )}
       </KeyboardAvoidingView>
+      {consentimiento.hoja}
     </Screen>
   );
 }
@@ -644,6 +662,7 @@ const styles = StyleSheet.create({
   vacioEmblema: { width: 56, height: 56, borderRadius: 28, backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center' },
   vacioTitulo: { fontFamily: fonts.heading, fontSize: 22, letterSpacing: -0.4, color: colors.text, marginTop: 18 },
   vacioTexto: { fontFamily: fonts.body, fontSize: 14, lineHeight: 21, color: colors.textDim, textAlign: 'center', marginTop: 8 },
+  vacioDescargo: { fontFamily: fonts.body, fontSize: 12, lineHeight: 17, color: colors.textFaint, textAlign: 'center', marginTop: 14 },
   bloqueado: { alignItems: 'center', paddingTop: 36, paddingBottom: 24, paddingHorizontal: 4 },
   bloqueadoEmblema: {
     width: 56,

@@ -32,6 +32,7 @@ import {
   textoCompromiso,
   type Horizonte,
 } from '@/lib/compromiso';
+import { DESCARGO_SALUD } from '@/lib/consentmath';
 import { sealLetter } from '@/lib/contract';
 import { CODIGO_MAX_LENGTH, motivoReferral, normalizarCodigo } from '@/lib/creatormath';
 import {
@@ -395,6 +396,7 @@ export default function Onboarding() {
                   sistema no opina. Registra.
                 </Text>
               </Card>
+              <Text style={styles.descargo}>{DESCARGO_SALUD}</Text>
             </FadeIn>
           ) : null}
 
@@ -641,7 +643,9 @@ export default function Onboarding() {
             con el teclado abierto. La firma no tiene pie: su botón es el anillo. */}
         {step !== 5 ? (
           <View style={styles.footer}>
-            {step === 0 ? <SystemButton title="Entrar en la arena" size="lg" onPress={() => setStep(1)} /> : null}
+            {step === 0 ? (
+              <SystemButton title="Entrar en la arena" size="lg" onPress={() => setStep(1)} />
+            ) : null}
             {step === 1 ? (
               <SystemButton title="Continuar" size="lg" onPress={saveName} loading={busy} disabled={!name.trim()} />
             ) : null}
@@ -689,6 +693,7 @@ export default function Onboarding() {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.bg },
+  descargo: { fontFamily: fonts.body, fontSize: 12, lineHeight: 17, color: colors.textFaint, marginTop: 8 },
   top: { paddingHorizontal: 24, paddingTop: 8 },
   backRow: { height: 32, justifyContent: 'center' },
   back: { alignSelf: 'flex-start', marginLeft: -4, padding: 4 },

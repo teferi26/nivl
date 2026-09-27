@@ -91,7 +91,9 @@ export type CoachDenyReason =
   | 'presupuesto_agotado'
   | 'turno_en_curso'
   | 'profundo_no_incluido'
-  | 'profundo_agotado';
+  | 'profundo_agotado'
+  /** Sin consentimiento vigente para la IA (0028): se abre la hoja, no un error. */
+  | 'sin_consentimiento';
 
 const DENY_REASONS: readonly CoachDenyReason[] = [
   'sin_suscripcion',
@@ -99,6 +101,7 @@ const DENY_REASONS: readonly CoachDenyReason[] = [
   'turno_en_curso',
   'profundo_no_incluido',
   'profundo_agotado',
+  'sin_consentimiento',
 ];
 
 /** Potencia del turno (0024): el profundo es solo del Élite y tiene su propio bolsillo. */
@@ -135,6 +138,8 @@ export function accessNotice(e: CoachAccessError): string {
       return 'El modo profundo es parte de NIVL Élite. El estándar sigue contigo.';
     case 'profundo_agotado':
       return 'Has usado tus turnos profundos de este mes. El modo estándar sigue disponible.';
+    case 'sin_consentimiento':
+      return 'Antes de usar el coach tienes que aceptar el envío de tus datos al proveedor de IA. Puedes hacerlo en Perfil.';
   }
 }
 
@@ -151,7 +156,7 @@ async function errorDe(res: { status: number; json: () => Promise<unknown> }): P
     /* respuesta no JSON */
   }
   const reason = DENY_REASONS.find((r) => r === body.reason);
-  if (reason && (res.status === 402 || res.status === 429)) {
+  if (reason && (res.status === 402 || res.status === 403 || res.status === 429)) {
     return new CoachAccessError(reason, res.status, body.error ?? '');
   }
   // Un 402 sin motivo reconocible (servidor más nuevo que la app) sigue siendo

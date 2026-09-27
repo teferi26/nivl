@@ -1,17 +1,12 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as SecureStore from 'expo-secure-store';
 import { DIFFICULTIES, STATS } from './game';
-import { callPremiumOracle, fetchSubscription, isPremium, paywallEnabled } from './subscription';
+import { byokEnabled, callPremiumOracle, fetchSubscription, isPremium, PaywallError, paywallEnabled } from './subscription';
 import type { Difficulty, Stat } from './types';
 
-// Señal tipada de "necesita pagar o poner su key": las pantallas la capturan
-// para mostrar el paywall en lugar de un error genérico.
-export class PaywallError extends Error {
-  constructor() {
-    super('El Oráculo es una función premium: suscríbete o usa tu propia API key.');
-    this.name = 'PaywallError';
-  }
-}
+// Señales tipadas (viven en subscription.ts): PaywallError lleva a /pro y
+// ConsentRequiredError abre la hoja del consentimiento para la IA.
+export { ConsentRequiredError, PaywallError } from './subscription';
 
 export type OracleAccess = 'premium' | 'byok' | 'none';
 
@@ -25,6 +20,8 @@ export async function resolveOracleAccess(userId: string): Promise<OracleAccess>
   } catch {
     // Si la lectura de suscripción falla (red), probamos con la key propia.
   }
+  // La clave propia solo existe fuera de la app de tienda (Guideline 3.1.1).
+  if (!byokEnabled()) return 'none';
   const key = await getApiKey();
   return key ? 'byok' : 'none';
 }

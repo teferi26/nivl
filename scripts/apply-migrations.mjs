@@ -97,6 +97,7 @@ const HUELLAS = {
   '0025': `to_regclass('public.creators') is not null`,
   '0026': `to_regclass('public.elite_groups') is not null`,
   '0027': `to_regclass('public.store_events') is not null`,
+  '0028': `to_regclass('public.ai_consents') is not null`,
 };
 
 const archivos = readdirSync(MIGRATIONS)

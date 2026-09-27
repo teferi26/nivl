@@ -14,6 +14,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
+import { DescargoSalud } from '@/components/DescargoSalud';
 import { LevelUpOverlay } from '@/components/LevelUpOverlay';
 import { SystemButton } from '@/components/SystemButton';
 import {
@@ -662,6 +663,7 @@ export default function Gym() {
             )}
           </Section>
         </FadeIn>
+      <DescargoSalud />
       </Stagger>
 
       <Modal visible={dayFormOpen} transparent animationType="slide" onRequestClose={() => setDayFormOpen(false)}>

@@ -20,6 +20,7 @@ import {
   View,
 } from 'react-native';
 import { captureRef } from 'react-native-view-shot';
+import { useConsentimientoIA } from '@/components/ConsentimientoIA';
 import { EliteBadge } from '@/components/EliteBadge';
 import { Hexagon } from '@/components/Hexagon';
 import { SystemButton } from '@/components/SystemButton';
@@ -57,6 +58,15 @@ import { setFreeze } from '@/lib/engine';
 import { exportAllData } from '@/lib/exporter';
 import { deleteAccount } from '@/lib/account';
 import {
+  consentimientoVigente,
+  DESCARGO_SALUD,
+  fetchConsentimiento,
+  LINEA_CRISIS,
+  lineaPerfil,
+  retirarConsentimiento,
+  type EstadoConsentimiento,
+} from '@/lib/consent';
+import {
   estadoAvisos,
   inicializarAvisos,
   type EstadoAvisos,
@@ -68,6 +78,7 @@ import {
   isPremium,
   openCheckout,
   paymentsConfigured,
+  paywallEnabled,
   type Subscription,
 } from '@/lib/subscription';
 import {
@@ -124,6 +135,13 @@ export default function Perfil() {
   const [codigo, setCodigo] = useState('');
   const [avisoCodigo, setAvisoCodigo] = useState<string | null>(null);
   const [codigoBusy, setCodigoBusy] = useState(false);
+  // El consentimiento para la IA (0028): se ve y se retira aquí.
+  const [consent, setConsent] = useState<EstadoConsentimiento | null>(null);
+  const consentimiento = useConsentimientoIA();
+  // Esta hoja solo permite borrar la cuenta y los datos de NIVL.
+  const [borrarOpen, setBorrarOpen] = useState(false);
+  const [borrando, setBorrando] = useState(false);
+  const [avisoBorrar, setAvisoBorrar] = useState<string | null>(null);
 
   const refrescarAvisos = useCallback(() => {
     estadoAvisos().then(setAvisos).catch(() => setAvisos(null));
@@ -176,6 +194,9 @@ export default function Perfil() {
     fetchCreatorPanel()
       .then((p) => setEsCreador(!!p))
       .catch(() => {});
+    fetchConsentimiento({ fresco: true })
+      .then(setConsent)
+      .catch(() => setConsent(null));
     try {
       const prof = await ensureProfile(userId);
       setProfile(prof);
@@ -333,34 +354,67 @@ export default function Perfil() {
     }
   };
 
-  const onDeleteAccount = () => {
+  const abrirBorrar = () => {
+    setAvisoBorrar(null);
+    setBorrarOpen(true);
+  };
+
+  const ejecutarBorrado = async () => {
+    if (borrando) return;
+    setBorrando(true);
+    setAvisoBorrar(null);
+    try {
+      await deleteAccount();
+      setBorrarOpen(false);
+      router.replace('/login');
+    } catch (e) {
+      setAvisoBorrar(mensajeSistema(e));
+    } finally {
+      setBorrando(false);
+    }
+  };
+
+  const confirmarBorrado = () => {
+    if (borrando) return;
     Alert.alert(
-      'Eliminar cuenta',
-      'Esto borra PARA SIEMPRE tu perfil, misiones, campañas, diario, evidencias y todo tu progreso. No hay vuelta atrás.',
+      '¿Estás totalmente seguro?',
+      'Se borra tu cuenta de NIVL. El sistema no puede deshacerlo.',
       [
         { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Continuar',
-          style: 'destructive',
-          onPress: () =>
-            Alert.alert('¿Estás totalmente seguro?', 'El sistema no puede deshacer esto.', [
-              { text: 'Cancelar', style: 'cancel' },
-              {
-                text: 'Eliminar mi cuenta',
-                style: 'destructive',
-                onPress: async () => {
-                  try {
-                    await deleteAccount();
-                    router.replace('/login');
-                  } catch (e) {
-                    Alert.alert('Error del sistema', e instanceof Error ? e.message : 'No se pudo eliminar');
-                  }
-                },
-              },
-            ]),
-        },
+        { text: 'Eliminar para siempre', style: 'destructive', onPress: ejecutarBorrado },
       ],
     );
+  };
+
+  // Aceptado: retirar (con confirmación). Sin aceptar: la hoja.
+  const tocarConsentimiento = async () => {
+    if (consentimientoVigente(consent)) {
+      Alert.alert(
+        'Retirar el consentimiento',
+        'Desde ahora no se envía nada al proveedor de IA y el coach deja de funcionar, también los avisos que prepara. Tus datos en NIVL no se borran. Puedes volver a aceptarlo cuando quieras.',
+        [
+          { text: 'Cancelar', style: 'cancel' },
+          {
+            text: 'Retirar',
+            style: 'destructive',
+            onPress: async () => {
+              try {
+                await retirarConsentimiento();
+                setConsent(await fetchConsentimiento({ fresco: true }));
+              } catch (e) {
+                Alert.alert('Error del sistema', mensajeSistema(e));
+              }
+            },
+          },
+        ],
+      );
+      return;
+    }
+    if (await consentimiento.pedir()) {
+      fetchConsentimiento({ fresco: true })
+        .then(setConsent)
+        .catch(() => {});
+    }
   };
 
   if (!profile) {
@@ -733,6 +787,9 @@ export default function Perfil() {
             </Section>
           </FadeIn>
 
+          {/* Stripe solo existe fuera de la app de tienda (paywallEnabled es
+              false en iOS y Android, Guideline 3.1.1): allí lo de pago es /pro. */}
+          {paywallEnabled() ? (
           <FadeIn index={9}>
             <Section title="El Oráculo" tone="steel">
               <Card padded={false} style={styles.lista}>
@@ -761,6 +818,24 @@ export default function Perfil() {
                   accessibilityLabel={!premium && paymentsConfigured() ? 'Hazte Premium' : undefined}
                 />
               </Card>
+            </Section>
+          </FadeIn>
+          ) : null}
+
+          <FadeIn index={9}>
+            <Section title="Datos y la IA">
+              <Card padded={false} style={styles.lista}>
+                <Row
+                  first
+                  leading={<Ionicons name="shield-checkmark-outline" size={20} color={colors.text} />}
+                  title="Envío de datos al coach"
+                  detail={consent ? lineaPerfil(consent) : 'Qué datos van al proveedor de IA y a quién.'}
+                  chevron
+                  onPress={tocarConsentimiento}
+                  accessibilityLabel="Consentimiento para el envío de datos al proveedor de IA"
+                />
+              </Card>
+              <Text style={styles.nota}>{`${DESCARGO_SALUD} ${LINEA_CRISIS}`}</Text>
             </Section>
           </FadeIn>
 
@@ -792,10 +867,12 @@ export default function Perfil() {
                 title="Eliminar cuenta"
                 variant="danger"
                 icon="trash-outline"
-                onPress={onDeleteAccount}
+                onPress={abrirBorrar}
                 style={{ marginTop: 6 }}
               />
-              <Text style={styles.nota}>Borra para siempre tu perfil y todo tu progreso. El sistema no puede deshacerlo.</Text>
+              <Text style={styles.nota}>
+                Borra para siempre tu perfil y todo tu progreso en NIVL.
+              </Text>
             </Section>
           </FadeIn>
 
@@ -804,6 +881,52 @@ export default function Perfil() {
           </FadeIn>
         </View>
       </Stagger>
+
+      {consentimiento.hoja}
+
+      <Modal visible={borrarOpen} transparent animationType="slide" onRequestClose={() => !borrando && setBorrarOpen(false)}>
+        <KeyboardAvoidingView style={styles.backdrop} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+          <Pressable
+            style={styles.backdropTap}
+            onPress={() => !borrando && setBorrarOpen(false)}
+            accessibilityRole="button"
+            accessibilityLabel="Cerrar"
+          />
+          <View style={styles.sheet}>
+            <View style={styles.sheetHandle} />
+            <Text style={styles.sheetEyebrow}>ELIMINAR CUENTA</Text>
+            <Text style={styles.sheetTitle}>Borrar para siempre</Text>
+            <Text style={styles.sheetHint}>
+              Se borran tu perfil, misiones, campañas, diario, datos de cuerpo y dinero, la conversación con el coach,
+              tus fotos y todo tu progreso. No hay vuelta atrás.
+            </Text>
+            <Text style={styles.hint}>
+              Borrar la cuenta no cancela una suscripción de NIVL Pro: cancélala en los ajustes de suscripciones de tu
+              Apple ID o de Google Play.
+            </Text>
+            {avisoBorrar ? (
+              <Text style={styles.avisoCodigo} accessibilityRole="alert">
+                {avisoBorrar}
+              </Text>
+            ) : null}
+            <SystemButton
+              title="Eliminar para siempre"
+              variant="danger"
+              icon="trash-outline"
+              onPress={confirmarBorrado}
+              loading={borrando}
+              style={{ marginTop: 22 }}
+            />
+            <SystemButton
+              title="Cancelar"
+              variant="ghost"
+              onPress={() => setBorrarOpen(false)}
+              disabled={borrando}
+              style={{ marginTop: 6 }}
+            />
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
 
       <Modal visible={freezeOpen} transparent animationType="slide" onRequestClose={() => setFreezeOpen(false)}>
         <KeyboardAvoidingView style={styles.backdrop} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
@@ -1111,6 +1234,17 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   avisoCodigo: { fontFamily: fonts.body, fontSize: 13, lineHeight: 18, color: colors.red, marginTop: 10 },
+  input: {
+    borderWidth: 1,
+    borderColor: colors.accentDim,
+    backgroundColor: colors.bg,
+    color: colors.text,
+    fontFamily: fonts.semibold,
+    fontSize: 15,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+  },
+  enlace: { color: colors.accentText, textDecorationLine: 'underline' },
 
   shareBackdrop: {
     flex: 1,

@@ -6,15 +6,13 @@
 //   supabase functions deploy oracle
 //   supabase secrets set ANTHROPIC_API_KEY=sk-ant-...
 
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { consentimientoIa, MENSAJE_SIN_CONSENTIMIENTO, SIN_CONSENTIMIENTO } from '../_shared/consent.ts';
+import { adminClient } from '../_shared/db.ts';
 
 const MODEL = 'claude-haiku-4-5';
 const MONTHLY_CAP = 100; // consultas premium por usuario y mes (control de coste)
 
-const admin = createClient(
-  Deno.env.get('SUPABASE_URL') ?? '',
-  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
-);
+const admin = adminClient();
 
 const GENERATE_SYSTEM = `Eres "el sistema" de NIVL, una app que gamifica la vida real estilo Solo Leveling. El usuario te da un objetivo y tú lo conviertes en misiones diarias/semanales recurrentes y realistas.
 
@@ -94,6 +92,11 @@ Deno.serve(async (req) => {
   if (userErr || !userData.user) return json(401, { error: 'Sesión inválida' });
   const userId = userData.user.id;
 
+  // 1b) Consentimiento para la IA (0028): sin él, ni una llamada al modelo.
+  const consiente = await consentimientoIa(admin, userId);
+  if (consiente === null) return json(503, { error: 'El oráculo no puede comprobar tu consentimiento ahora mismo.' });
+  if (!consiente) return json(403, { error: MENSAJE_SIN_CONSENTIMIENTO, reason: SIN_CONSENTIMIENTO });
+
   // 2) Suscripción activa (el candado real: sin pagar no hay IA)
   const { data: sub } = await admin
     .from('subscriptions')
@@ -105,7 +108,7 @@ Deno.serve(async (req) => {
     (sub.status === 'active' || sub.status === 'trialing') &&
     (!sub.current_period_end || new Date(sub.current_period_end) > new Date());
   if (!premium) {
-    return json(402, { error: 'El Oráculo requiere suscripción activa (o usa tu propia API key).' });
+    return json(402, { error: 'El Oráculo es parte de NIVL Pro.', reason: 'sin_suscripcion' });
   }
 
   // 3) Cupo mensual
@@ -148,6 +151,9 @@ Deno.serve(async (req) => {
   }
 
   // 5) Llamada a Anthropic con la key del servidor
+  const consienteAlEnviar = await consentimientoIa(admin, userId);
+  if (consienteAlEnviar === null) return json(503, { error: 'El oráculo no puede comprobar tu consentimiento ahora mismo.' });
+  if (!consienteAlEnviar) return json(403, { error: MENSAJE_SIN_CONSENTIMIENTO, reason: SIN_CONSENTIMIENTO });
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {

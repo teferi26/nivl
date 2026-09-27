@@ -17,6 +17,7 @@
 //   supabase secrets set RITUAL_SECRET=<cadena larga al azar>
 
 import { callClaude, CHEAP_MODEL } from '../_shared/anthropic.ts';
+import { consentimientoIa } from '../_shared/consent.ts';
 import { adminClient, type Db } from '../_shared/db.ts';
 import { espejarEntrada, espejoActivo } from '../_shared/notion.ts';
 
@@ -78,10 +79,11 @@ function horaDe(t: string): number {
  * generar el brief. Si falla, se cae al recorte de siempre: quedarse sin push
  * por no tener titular sería peor.
  */
-async function titular(cuerpo: string): Promise<string> {
+async function titular(sb: Db, userId: string, cuerpo: string): Promise<string> {
   const plano = cuerpo.replace(/[*#_`]/g, '').replace(/\s+/g, ' ').trim();
   if (plano.length <= 180) return plano;
   try {
+    if ((await consentimientoIa(sb, userId)) !== true) return plano.slice(0, 240);
     const turn = await callClaude({
       model: CHEAP_MODEL,
       system: [{
@@ -301,6 +303,11 @@ Deno.serve(async (req) => {
       const estadoIa = ia as { entitled?: boolean; remaining?: number; tier?: string } | null;
       if (!estadoIa?.entitled || (estadoIa.remaining ?? 0) < 20000) continue;
 
+      // Sin consentimiento vigente para la IA (0028), ni ritual ni push: el
+      // coach lo rechazaría igual, pero así no se abre una sesión para nada.
+      // Retirarlo en Perfil tiene que parar TAMBIÉN lo que dispara el cron.
+      if ((await consentimientoIa(sb, p.id)) !== true) continue;
+
       const { data: usuario } = await sb.auth.admin.getUserById(p.id);
       const email = usuario?.user?.email;
       if (!email) continue;
@@ -335,11 +342,14 @@ Deno.serve(async (req) => {
         }
       }
 
+      if ((await consentimientoIa(sb, p.id)) !== true) continue;
+      const tituloPush = await titular(sb, p.id, texto || 'El sistema tiene algo para ti.');
+      if ((await consentimientoIa(sb, p.id)) !== true) continue;
       await empujar(
         sb,
         p.id,
         decision.titulo,
-        await titular(texto || 'El sistema tiene algo para ti.'),
+        tituloPush,
         decision.ruta,
       );
 

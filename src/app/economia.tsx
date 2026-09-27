@@ -32,6 +32,7 @@ import {
   StatRow,
 } from '@/components/ui';
 import { useAuth } from '@/lib/auth';
+import { useConsentimientoIA } from '@/components/ConsentimientoIA';
 import { accessNotice, clasificarMovimientos, CoachAccessError } from '@/lib/coach';
 import { addDays, dateKey } from '@/lib/dates';
 import {
@@ -71,6 +72,7 @@ const eurSigno = (n: number) => `${n < 0 ? '−' : '+'}${eur(Math.abs(n), 2)}`;
 const CATEGORIAS_ELEGIBLES = CATEGORIAS.filter((c) => c !== 'sin_clasificar');
 
 export default function Economia() {
+  const consentimiento = useConsentimientoIA();
   const { session } = useAuth();
   const userId = session?.user.id;
   const hoy = dateKey();
@@ -152,6 +154,7 @@ export default function Economia() {
   // cien veces más por arrastrar todo su contexto para nada.
   const clasificarTodo = async () => {
     if (clasificando) return;
+    if (!(await consentimiento.asegurar())) return;
     setClasificando(true);
     try {
       const r = await clasificarMovimientos();
@@ -578,6 +581,7 @@ export default function Economia() {
           </View>
         </KeyboardAvoidingView>
       </Modal>
+      {consentimiento.hoja}
     </Screen>
   );
 }

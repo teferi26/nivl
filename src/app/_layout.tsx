@@ -6,6 +6,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import { View } from 'react-native';
+import { EdadMinimaGuard, EdadMinimaProvider, useEdadMinima } from '@/components/EdadMinima';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { AuthProvider, useAuth } from '@/lib/auth';
 import { identificarEnTienda } from '@/lib/pro';
@@ -22,17 +23,19 @@ function ProtectedStack() {
   const { session, loading } = useAuth();
   const segments = useSegments();
   const router = useRouter();
+  const { estado: estadoEdad } = useEdadMinima();
+  const edadConfirmada = estadoEdad === 'confirmada';
 
   // Solo con sesión: un deep link desde una notificación no debe saltarse la
   // puerta de autenticación.
-  useNotificationRouting(!loading && !!session);
+  useNotificationRouting(!loading && !!session && edadConfirmada);
 
   // Con sesión iniciada, se registra el dispositivo para que el coach pueda
   // alcanzarte sin que abras la app. Silencioso: en emulador o sin permiso
   // simplemente no hay token que guardar.
   useEffect(() => {
-    if (!loading && session) registrarDispositivo();
-  }, [loading, session]);
+    if (!loading && session && edadConfirmada) registrarDispositivo();
+  }, [loading, session, edadConfirmada]);
 
   // La tienda (RevenueCat) va a nombre del uuid de Supabase: con él escribe el
   // webhook. Se ata al entrar y se suelta al salir, sea cual sea el camino
@@ -63,6 +66,7 @@ function ProtectedStack() {
 
   return (
     <Stack
+      screenLayout={({ children, route }) => <EdadMinimaGuard routeName={route.name}>{children}</EdadMinimaGuard>}
       screenOptions={{
         headerShown: false,
         contentStyle: { backgroundColor: colors.bg },
@@ -98,7 +102,9 @@ export default function RootLayout() {
     <ErrorBoundary>
       <AuthProvider>
         <StatusBar style="light" />
-        <ProtectedStack />
+        <EdadMinimaProvider>
+          <ProtectedStack />
+        </EdadMinimaProvider>
       </AuthProvider>
     </ErrorBoundary>
   );

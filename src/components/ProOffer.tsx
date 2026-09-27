@@ -22,6 +22,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Haptics from 'expo-haptics';
 import { useEffect, useRef, useState } from 'react';
 import { Linking, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useConsentimientoIA } from '@/components/ConsentimientoIA';
 import { SystemButton } from '@/components/SystemButton';
 import { Card, Chip, Tag } from '@/components/ui';
 import { insertEvent } from '@/lib/data';
@@ -86,6 +87,9 @@ export function useProOffer({ userId, onPurchased, trialAvailable, onTrialStarte
   const [plazas, setPlazas] = useState<number | null>(null);
   const [precios, setPrecios] = useState<Partial<Record<ProPlanId, string>>>({});
   const lock = useRef(false);
+  // Antes de la prueba o de la compra, el consentimiento para la IA (0028):
+  // pagar o probar un coach al que no se le pueden enviar datos no tiene sentido.
+  const consentimiento = useConsentimientoIA();
 
   const disponible = purchasesAvailable();
 
@@ -130,8 +134,10 @@ export function useProOffer({ userId, onPurchased, trialAvailable, onTrialStarte
     }
   };
 
-  const onPrincipal = () =>
-    conCerrojo('compra', async () => {
+  const onPrincipal = async () => {
+    if (lock.current) return;
+    if (disponible && !(await consentimiento.asegurar())) return;
+    return conCerrojo('compra', async () => {
       if (disponible) {
         const r = await purchase(planId);
         // Cerrar la hoja de pago no es un error: aquí no ha pasado nada.
@@ -147,9 +153,12 @@ export function useProOffer({ userId, onPurchased, trialAvailable, onTrialStarte
       setAnotado(true);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
     });
+  };
 
-  const onPrueba = () =>
-    conCerrojo('prueba', async () => {
+  const onPrueba = async () => {
+    if (lock.current) return;
+    if (!(await consentimiento.asegurar())) return;
+    return conCerrojo('prueba', async () => {
       const r = await startTrial();
       if (!r.ok) {
         setPruebaUsada(true);
@@ -159,6 +168,7 @@ export function useProOffer({ userId, onPurchased, trialAvailable, onTrialStarte
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
       onTrialStarted?.();
     });
+  };
 
   const onRestaurar = () =>
     conCerrojo('restaurar', async () => {
@@ -212,6 +222,7 @@ export function useProOffer({ userId, onPurchased, trialAvailable, onTrialStarte
     onPrueba,
     onRestaurar,
     abrir,
+    hojaConsentimiento: consentimiento.hoja,
   };
 }
 
@@ -352,7 +363,7 @@ interface ActionsProps {
 
 /** Los dos botones, del mismo tamaño, y lo que el sistema responde al pulsarlos. */
 export function ProOfferActions({ oferta, exitLabel, onExit, exitLoading }: ActionsProps) {
-  const { nivel, plan, precioDe, busy, anotado, aviso, disponible, prueba, onPrincipal, onPrueba } = oferta;
+  const { nivel, plan, precioDe, busy, anotado, aviso, disponible, prueba, onPrincipal, onPrueba, hojaConsentimiento } = oferta;
   const activar = `Activar ${nivel.name} · ${precioDe(plan.id)}/${plan.period}`;
   return (
     <View>
@@ -414,6 +425,7 @@ export function ProOfferActions({ oferta, exitLabel, onExit, exitLoading }: Acti
         disabled={busy !== null}
         style={styles.exit}
       />
+      {hojaConsentimiento}
     </View>
   );
 }

@@ -11,10 +11,10 @@
     "ios": {
       "bundleIdentifier": "com.teferi.nivl",
       "supportsTablet": false,
-      "associatedDomains": ["applinks:nivl.app"],
+      "associatedDomains": ["applinks:nivl.app", "applinks:nivl-web.vercel.app"],
       "infoPlist": {
-        "NSCameraUsageDescription": "NIVL usa la cámara para registrar evidencias de tus misiones.",
-        "NSPhotoLibraryUsageDescription": "NIVL accede a tus fotos para que elijas tu retrato de gladiador.",
+        "NSCameraUsageDescription": "NIVL usa la cámara para las fotos de evidencia de tus misiones, tu diario y tus entrenos. Solo se hace una foto cuando tú lo pides.",
+        "NSPhotoLibraryUsageDescription": "NIVL accede a tus fotos para tu retrato y para las imágenes que decidas enviar a tu coach de IA, que las procesa un proveedor de IA externo.",
         "ITSAppUsesNonExemptEncryption": false
       },
       "entitlements": {
@@ -67,8 +67,8 @@
       [
         "expo-image-picker",
         {
-          "cameraPermission": "NIVL usa la cámara para registrar evidencias de tus misiones.",
-          "photosPermission": "NIVL accede a tus fotos para que elijas tu retrato de gladiador.",
+          "cameraPermission": "NIVL usa la cámara para las fotos de evidencia de tus misiones, tu diario y tus entrenos. Solo se hace una foto cuando tú lo pides.",
+          "photosPermission": "NIVL accede a tus fotos para tu retrato y para las imágenes que decidas enviar a tu coach de IA, que las procesa un proveedor de IA externo.",
           "microphonePermission": false
         }
       ],

@@ -414,8 +414,8 @@ export function proSampleBrief(kind: unknown): readonly string[] {
 }
 
 export const LEGAL_URLS = {
-  terminos: 'https://nivl.app/terminos',
-  privacidad: 'https://nivl.app/privacidad',
+  terminos: 'https://nivl-web.vercel.app/terminos',
+  privacidad: 'https://nivl-web.vercel.app/privacidad',
 } as const;
 
 /**

@@ -44,6 +44,7 @@ App de hábitos de la gente de Franky (interfaz en español), gamificada como un
 
 ## Reglas que no se negocian
 
+- **Borrado separado, por instrucción del dueño:** eliminar una cuenta en NIVL solo afecta a NIVL. No añadir opciones, enlaces ni llamadas que borren la cuenta de Franky, y no modificar Franky como parte de este flujo.
 - **Las migraciones aplicadas nunca se editan**: siempre un archivo nuevo numerado. Se aplican con `node scripts/apply-migrations.mjs` (detecta lo pendiente por huellas). Al añadir una, añade su huella en `HUELLAS` o se intentará aplicar en cada ejecución.
 - **La economía solo se mueve por RPC** (`award_xp`, `complete_quest`, `apply_day_close`). El UPDATE directo sobre `xp_total`, `streak_days`, `protection_stones` y `bonus_points` está revocado desde la 0009. Si necesitas tocar puntos, es una RPC nueva, no un update.
 - **Ojo con los topes de XP**: una misión de penalización devuelve de golpe lo perdido en toda una ausencia (hasta 150/día). Los límites del esquema son altos a propósito; bajarlos rompe recuperaciones reales.
