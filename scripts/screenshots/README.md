@@ -12,7 +12,8 @@ review-account credentials. It never signs or submits an application.
 then changes only the runner's entry point and native capture configuration.
 With `EXPO_PUBLIC_SCREENSHOT_MODE=1`, Metro replaces Supabase and the RevenueCat
 JavaScript SDK with deterministic local adapters. All unknown calls and writes
-fail explicitly. The bootstrap also rejects fetch, XMLHttpRequest and WebSocket,
+fail explicitly. The bootstrap rejects fetch, XMLHttpRequest and WebSocket;
+Metro also replaces Expo's separate native fetch path with a rejecting adapter,
 and the capture build disables Expo Updates. Fixtures use no remote images.
 
 The example account, friends, mission history, conversations, workouts and money
