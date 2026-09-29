@@ -419,7 +419,7 @@ export function ProOfferActions({ oferta, exitLabel, onExit, exitLoading }: Acti
     <View>
       {prueba && !aviso ? (
         <Text style={[styles.notice, styles.noticeAbove]}>
-          Siete días con el coach, sin tarjeta y sin cobro. Al acabar, NIVL sigue entera y gratis.
+          Siete días con el coach, sin tarjeta y sin cobro. Al acabar, tus hábitos y tu progreso siguen disponibles gratis.
         </Text>
       ) : null}
       {anotado ? (

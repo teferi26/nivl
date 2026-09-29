@@ -52,7 +52,7 @@ export const TEXTO_CONSENTIMIENTO = {
   paraQue: 'NIVL envía estos datos para que el coach te responda. NIVL no los utiliza para publicidad.',
   consentimiento:
     'Al aceptar das tu consentimiento explícito para que se traten estos datos, incluidos los de salud, y para enviarlos a esos proveedores, también fuera del EEE. Puedes retirarlo cuando quieras en Perfil: se detienen las nuevas solicitudes de IA. Los datos de una solicitud ya enviada no se pueden recuperar.',
-  sinAceptar: 'Si no aceptas, el resto de NIVL sigue entero y gratis, sin el coach.',
+  sinAceptar: 'Si no aceptas, puedes seguir usando gratis tus hábitos, tu organización y tu progreso, sin el coach.',
   aceptar: 'Acepto y activo el coach',
   rechazar: 'Ahora no',
 } as const;

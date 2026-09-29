@@ -443,7 +443,7 @@ export function legalText(id: ProPlanId, precio?: string | null): string | null 
     `${nivel} ${p.label.toLowerCase()} es una suscripción de renovación automática: ${confirmado} ${cuando}.${congelado} ` +
     'El cobro se hace en tu cuenta de la tienda al confirmar la compra y se renueva sola salvo que la canceles ' +
     'al menos 24 horas antes de que acabe el periodo. La gestionas y la cancelas cuando quieras en los ajustes ' +
-    'de suscripciones de la App Store o de Google Play. Sin ella, NIVL sigue entera y gratis, sin el coach.'
+    'de suscripciones de la App Store o de Google Play. Sin ella, tus hábitos, tu organización y tu progreso siguen disponibles gratis.'
   );
 }
 

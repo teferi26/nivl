@@ -648,8 +648,8 @@ export default function Onboarding() {
             <FadeIn key="paso-6">
               <Text style={styles.stepTitle}>Firmado. Ahora, quién lo dirige.</Text>
               <Text style={styles.stepHint}>
-                NIVL es tuya entera y gratis. El coach de IA es lo único de pago. Decide ahora o más adelante, desde la
-                pestaña Coach: el compromiso vale igual.
+                Tus hábitos, tu organización y tu progreso son gratis. Los planes de pago añaden el coach de IA y,
+                con Élite, insignia y solicitud de plaza en un ludus. Decide ahora o más adelante: el compromiso vale igual.
               </Text>
               <ProOfferBody oferta={oferta} kind={kind} compact />
               <ProOfferLegal oferta={oferta} />
