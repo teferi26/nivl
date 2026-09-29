@@ -9,22 +9,25 @@
 import { consentimientoIa, MENSAJE_SIN_CONSENTIMIENTO, SIN_CONSENTIMIENTO } from '../_shared/consent.ts';
 import { healthConsent, healthRevision, healthScopedClient, HEALTH_REQUIRED } from '../_shared/health.ts';
 import { adminClient, userClient } from '../_shared/db.ts';
+import { AI_SAFETY_RULES } from '../_shared/ai-safety.ts';
 
 const MODEL = 'claude-haiku-4-5';
 const MONTHLY_CAP = 100; // consultas premium por usuario y mes (control de coste)
 
 const admin = adminClient();
 
-const GENERATE_SYSTEM = `Eres "el sistema" de NIVL, una app que gamifica la vida real estilo Solo Leveling. El usuario te da un objetivo y tú lo conviertes en misiones diarias/semanales recurrentes y realistas.
+const GENERATE_SYSTEM = `Eres "el sistema" de NIVL, una app de hábitos con una estética de arena. El usuario te da un objetivo y tú lo conviertes en misiones diarias/semanales recurrentes y realistas.
 
 Reglas:
 - Genera entre 3 y 6 misiones recurrentes que, mantenidas en el tiempo, lleven al objetivo.
 - Stats: FUE (ejercicio físico), VIT (nutrición/sueño/salud), INT (estudio/trabajo mental), AGI (constancia/organización), PER (reflexión/mentalidad).
 - Dificultad por esfuerzo de UNA sesión: trivial (≤5 min), facil (≤20 min), media (~45 min), dificil (1-2 h), epica (medio día). XP: 10/25/50/100/250.
 - Sé realista con la frecuencia: nadie aguanta 7 días/semana de todo.
-- Títulos cortos y accionables, en español. Sin emojis.`;
+- Títulos cortos y accionables, en español. Sin emojis.
+${AI_SAFETY_RULES}`;
 
-const WEEKLY_SYSTEM = `Eres "el sistema" de NIVL. Analizas la semana real del gladiador y propones AJUSTES CONCRETOS: misión que falla siempre → bajar dificultad o desactivar; misión trivial al 100% → subir dificultad; huecos → como mucho 1-2 misiones nuevas. Sé conservador: nunca más de 4 ajustes. Voz sobria, español, sin sermones.`;
+const WEEKLY_SYSTEM = `Eres "el sistema" de NIVL. Analizas la semana real del gladiador y propones AJUSTES CONCRETOS: misión que falla siempre → bajar dificultad o desactivar; misión trivial al 100% → subir dificultad; huecos → como mucho 1-2 misiones nuevas. Sé conservador: nunca más de 4 ajustes. Voz sobria, español, sin sermones.
+${AI_SAFETY_RULES}`;
 
 const QUEST_ITEM_SCHEMA = {
   type: 'object',

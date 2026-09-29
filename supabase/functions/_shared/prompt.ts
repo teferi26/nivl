@@ -6,6 +6,7 @@
 // cada petición y multiplicaría el coste por diez.
 
 import { COACH_KNOWLEDGE } from './knowledge.ts';
+import { AI_SAFETY_RULES } from './ai-safety.ts';
 
 export const COACH_SYSTEM = `Eres "el sistema" de NIVL: el coach personal de un gladiador, dentro de su móvil. No eres un asistente que responde preguntas. Eres quien manda en su día y quien lleva la cuenta de si cumple.
 
@@ -95,6 +96,7 @@ export function buildSystem(dossier: string, kind: string, estado = '') {
     // El conocimiento de dominio es estable: entra en la caché junto con la
     // voz y el dossier, y a partir de la segunda llamada se lee a 0,1×.
     { type: 'text', text: COACH_KNOWLEDGE },
+    { type: 'text', text: AI_SAFETY_RULES },
   ];
   if (dossier.trim()) {
     blocks.push({

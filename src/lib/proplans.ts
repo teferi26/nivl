@@ -312,6 +312,15 @@ export const PRO_BENEFITS: readonly ProBenefit[] = [
   { icon: 'chatbubble-ellipses-outline', title: 'Control total por chat', detail: 'Díselo y lo hace: misiones, agenda, normas, metas.' },
 ];
 
+export const COACH_USAGE_NOTICE =
+  'El coach tiene energía limitada que se recarga cada mes, también con el plan anual. ' +
+  'Chats, briefs, planes y revisiones consumen energía según su extensión. ' +
+  'Al agotarla, el coach se pausa hasta la recarga; el resto de NIVL sigue disponible.';
+
+export const ELITE_USAGE_NOTICE =
+  'El modo profundo tiene su propio límite mensual. El ludus se solicita desde Amigos y se asigna manualmente ' +
+  'según las plazas disponibles; puede requerir espera.';
+
 // Lo que el Élite añade. SOLO lo que ya existe (Apple 3.1.2). Desde la fase 3
 // (0026): el ludus, la insignia y la revisión semanal con el modelo top a
 // máximo esfuerzo (`revision_semanal` va a 'xhigh' en la función coach). Los
@@ -320,7 +329,7 @@ export const ELITE_BENEFITS: readonly ProBenefit[] = [
   { icon: 'flash-outline', title: 'Máxima potencia', detail: 'Un modelo de primera línea en cada brief, plan, revisión y conversación.' },
   { icon: 'telescope-outline', title: 'Modo profundo', detail: 'Para lo que pide pensarlo a fondo: el coach se toma su tiempo y responde con más detalle.' },
   { icon: 'analytics-outline', title: 'Revisión semanal a fondo', detail: 'Tu semana medida por el modelo de primera línea, pensando al máximo.' },
-  { icon: 'shield-outline', title: 'Tu ludus', detail: 'De 5 a 8 gladiadores Élite con tu mismo objetivo y un marcador propio.' },
+  { icon: 'shield-outline', title: 'Plaza en un ludus', detail: 'Solicita un grupo de 5 a 8 gladiadores Élite con tu objetivo y marcador propio. Asignación manual según disponibilidad.' },
   { icon: 'ribbon-outline', title: 'Insignia de laurel', detail: 'El laurel dorado junto a tu nombre. Estatus, no puntos: no cambia ningún ranking.' },
 ];
 
@@ -421,15 +430,17 @@ export const LEGAL_URLS = {
 /**
  * La letra pequeña que exigen las tiendas para una suscripción autorrenovable.
  * `precio` es el que da la tienda (`priceString`, ya en la moneda y el formato
- * del comprador); sin él, el de la tabla.
+ * del comprador). Sin precio confirmado no hay condiciones de compra que mostrar.
  */
-export function legalText(id: ProPlanId, precio?: string | null): string {
+export function legalText(id: ProPlanId, precio?: string | null): string | null {
+  const confirmado = precioVisible(precio);
+  if (!confirmado) return null;
   const p = proPlan(id);
   const nivel = tierOffer(p.tier).name;
   const cuando = p.period === 'mes' ? 'cada mes' : 'cada año';
   const congelado = p.id === 'nivl_elite_fundador' ? ' El precio de fundador se mantiene mientras no la canceles.' : '';
   return (
-    `${nivel} ${p.label.toLowerCase()} es una suscripción de renovación automática: ${precio?.trim() || p.price} ${cuando}.${congelado} ` +
+    `${nivel} ${p.label.toLowerCase()} es una suscripción de renovación automática: ${confirmado} ${cuando}.${congelado} ` +
     'El cobro se hace en tu cuenta de la tienda al confirmar la compra y se renueva sola salvo que la canceles ' +
     'al menos 24 horas antes de que acabe el periodo. La gestionas y la cancelas cuando quieras en los ajustes ' +
     'de suscripciones de la App Store o de Google Play. Sin ella, NIVL sigue entera y gratis, sin el coach.'
@@ -471,22 +482,32 @@ export function planPorDefecto(tier: OfferTier, plazasFundador: number | null): 
 }
 
 /**
- * El precio que se enseña: el de la tienda si lo hay (es el que se cobra), si
- * no el de la tabla.
+ * El precio de compra solo existe cuando lo confirma la tienda. La tabla de
+ * precios en euros sirve únicamente para el catálogo informativo sin tienda.
  */
-export function precioVisible(p: ProPlan, precioTienda?: string | null): string {
-  return precioTienda?.trim() || p.price;
+export function precioVisible(precioTienda?: string | null): string | null {
+  return precioTienda?.trim() || null;
 }
 
 /**
- * El rótulo bajo el precio. Lleva cifras en euros ("8,33 €/mes"): si la
- * tienda cobra en otra moneda o a otro precio, esas cifras mentirían, así que
- * se cambian por una línea sin importes.
+ * La tienda puede aplicar precios distintos en cada país y periodo. No se
+ * prometen ahorros ni equivalentes mensuales calculados desde la tabla local.
  */
-export function pitchVisible(p: ProPlan, precioTienda?: string | null): string {
-  if (precioVisible(p, precioTienda) === p.price) return p.pitch;
+export function pitchVisible(p: ProPlan): string {
   if (p.id === 'nivl_elite_fundador') return `${PLAZAS_FUNDADOR} plazas · precio congelado`;
   return p.period === 'año' ? 'Un solo pago al año' : 'Sin permanencia';
+}
+
+export type PreciosTienda = Partial<Record<ProPlanId, string>>;
+
+/** Un producto solo se ofrece cuando la tienda ha devuelto su precio. */
+export function planesDeTienda(tier: OfferTier, plazas: number | null, precios: PreciosTienda): readonly ProPlan[] {
+  return planesALaVenta(tier, plazas).filter((p) => precioVisible(precios[p.id]) !== null);
+}
+
+/** Conserva la elección si sigue a la venta; si falta, usa el primer producto real del nivel. */
+export function seleccionDeTienda(planes: readonly ProPlan[], elegido: ProPlanId): ProPlan | null {
+  return planes.find((p) => p.id === elegido) ?? planes[0] ?? null;
 }
 
 /**

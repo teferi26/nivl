@@ -200,20 +200,30 @@ export async function uploadEvidence(
   return path;
 }
 
-// Un gladiador, un retrato: la ruta fija hace que cambiar de foto sustituya la
-// anterior en vez de acumularlas.
+// Each upload gets a new object: a previously approved/signed avatar must
+// never start serving different, unreviewed bytes.
 export async function uploadAvatar(userId: string, base64: string): Promise<string> {
-  const path = `${userId}/avatar.jpg`;
+  const path = `${userId}/avatar-${Date.now()}-${Math.random().toString(36).slice(2, 10)}.jpg`;
   const { error } = await supabase.storage
     .from('avatars')
-    .upload(path, decode(base64), { contentType: 'image/jpeg', upsert: true });
+    .upload(path, decode(base64), { contentType: 'image/jpeg', upsert: false });
   if (error) throw error;
   return path;
 }
 
+/** Retire a replaced/failed upload using Storage's API, never SQL metadata deletion. */
+export async function removeAvatar(userId: string, path: string): Promise<void> {
+  if (!path.startsWith(`${userId}/`) || path.split('/').some(part => part === '..' || part === '.')) {
+    throw new Error('Invalid avatar ownership');
+  }
+  const { error } = await supabase.storage.from('avatars').remove([path]);
+  if (error) throw error;
+  olvidarFirma('avatars', path);
+}
+
 export async function signedUrl(bucket: 'evidence' | 'avatars', path: string): Promise<string | null> {
   if (bucket === 'evidence') await requireHealthConsent();
-  const { data } = await supabase.storage.from(bucket).createSignedUrl(path, bucket === 'evidence' ? 60 : 60 * 60 * 24 * 7);
+  const { data } = await supabase.storage.from(bucket).createSignedUrl(path, 60);
   return data?.signedUrl ?? null;
 }
 
@@ -226,10 +236,10 @@ export async function signedUrl(bucket: 'evidence' | 'avatars', path: string): P
  * Efecto visible: entras en Perfil y tu cara aparece con retraso cada vez,
  * aunque no hayas tocado la foto.
  *
- * Las firmas duran siete días; la caché muere con la app, así que nunca puede
- * servir una caducada.
+ * Las firmas caducan en un minuto; se revalidan para respetar bloqueos y
+ * cambios de moderación. La caché deja margen antes de la caducidad real.
  */
-const firmas = new Map<string, string>();
+const firmas = new Map<string, { url: string; expiresAt: number }>();
 export function clearEvidenceSignatures(): void {
   for (const key of firmas.keys()) if (key.startsWith('evidence/')) firmas.delete(key);
 }
@@ -241,9 +251,10 @@ export async function signedUrlCached(
   if (bucket === 'evidence') return signedUrl(bucket, path);
   const clave = `${bucket}/${path}`;
   const guardada = firmas.get(clave);
-  if (guardada) return guardada;
+  if (guardada && guardada.expiresAt > Date.now()) return guardada.url;
+  firmas.delete(clave);
   const url = await signedUrl(bucket, path);
-  if (url) firmas.set(clave, url);
+  if (url) firmas.set(clave, { url, expiresAt: Date.now() + 50_000 });
   return url;
 }
 

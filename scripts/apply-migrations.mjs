@@ -67,6 +67,9 @@ async function sql(query) {
 
 // Cada migración se reconoce por un objeto que solo ella crea.
 const HUELLAS = {
+  '0031': `to_regclass('public.account_erasure_jobs') is not null and to_regprocedure('public.account_erasure_ready(uuid,uuid)') is not null and exists(select 1 from pg_trigger where tgrelid='storage.objects'::regclass and tgname='account_upload_guard')`,
+  '0032': `to_regclass('public.social_reports') is not null and to_regclass('public.social_avatar_paths') is not null and to_regprocedure('public.social_blocked_users()') is not null and exists(select 1 from pg_trigger where tgrelid='storage.objects'::regclass and tgname='social_avatar_immutable')`,
+  '0033': `to_regclass('public.store_reconciliation') is not null and to_regprocedure('public.apply_store_reconciliation(jsonb,jsonb)') is not null`,
   '0030': `to_regclass('public.health_consents') is not null and exists(select 1 from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='public' and p.proname='complete_health_erasure')`,
   '0001': `to_regclass('public.profiles') is not null`,
   '0002': `to_regclass('public.dungeons') is not null`,

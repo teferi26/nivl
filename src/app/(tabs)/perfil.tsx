@@ -48,6 +48,7 @@ import {
   completionStats,
   ensureProfile,
   olvidarFirma,
+  removeAvatar,
   signedUrlCached,
   updateProfile,
   uploadAvatar,
@@ -225,27 +226,33 @@ export default function Perfil() {
 
   const pickAvatar = async () => {
     if (!userId || !profile || uploadingPhoto) return;
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
-      quality: 0.5,
-      base64: true,
-      allowsEditing: true,
-      aspect: [1, 1],
-    });
-    if (result.canceled) return;
-    const b64 = result.assets[0]?.base64;
-    if (!b64) return;
     setUploadingPhoto(true);
     try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        quality: 0.5,
+        base64: true,
+        allowsEditing: true,
+        aspect: [1, 1],
+      });
+      if (result.canceled) return;
+      const b64 = result.assets[0]?.base64;
+      if (!b64) return;
       const path = await uploadAvatar(userId, b64);
-      await updateProfile(userId, { avatar_url: path });
+      try {
+        await updateProfile(userId, { avatar_url: path });
+      } catch (error) {
+        await removeAvatar(userId, path).catch(() => {});
+        throw error;
+      }
       setProfile({ ...profile, avatar_url: path });
-      // La ruta es siempre la misma (un gladiador, un retrato), así que sin
-      // olvidar la firma guardada seguiría viéndose la foto anterior.
+      if (profile.avatar_url && profile.avatar_url !== path) {
+        await removeAvatar(userId, profile.avatar_url).catch(() => {});
+      }
       olvidarFirma('avatars', path);
       setAvatarUri(await signedUrlCached('avatars', path));
     } catch (e) {
-      Alert.alert('Error del sistema', e instanceof Error ? e.message : 'No se pudo subir la foto');
+      Alert.alert('Error del sistema', mensajeSistema(e));
     } finally {
       setUploadingPhoto(false);
     }
@@ -255,8 +262,13 @@ export default function Perfil() {
     if (!userId || !profile) return;
     const trimmed = name.trim();
     if (!trimmed || trimmed === profile.name) return;
-    await updateProfile(userId, { name: trimmed });
-    setProfile({ ...profile, name: trimmed });
+    try {
+      await updateProfile(userId, { name: trimmed });
+      setProfile({ ...profile, name: trimmed });
+    } catch (error) {
+      setName(profile.name);
+      Alert.alert('No se ha guardado el nombre', mensajeSistema(error));
+    }
   };
 
   const activateFreeze = async () => {
@@ -528,6 +540,9 @@ export default function Perfil() {
         </FadeIn>
 
         <View style={styles.body}>
+          <Text style={styles.profileReviewNotice}>
+            Tu nombre, foto y título se muestran a otras personas tras su revisión. Mientras tanto verán un alias provisional.
+          </Text>
           <FadeIn index={1}>
             <Card>
               <StatRow>
@@ -1155,6 +1170,7 @@ const styles = StyleSheet.create({
   xpMult: { fontFamily: fonts.number, fontSize: 12, color: colors.textFaint },
   xpMultOn: { color: colors.gold },
   streakMsg: { fontFamily: fonts.body, fontSize: 13, lineHeight: 19, color: colors.text, marginTop: 12 },
+  profileReviewNotice: { fontFamily: fonts.body, fontSize: 13, lineHeight: 19, color: colors.textDim, marginBottom: 16 },
 
   alertTitle: {
     fontFamily: fonts.heading,

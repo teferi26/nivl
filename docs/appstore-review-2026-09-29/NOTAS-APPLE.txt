@@ -1,0 +1,31 @@
+BORRADOR INTERNO: sustituir campos [PENDIENTE], verificar la compilación final y retirar esta línea antes de pegar. Las credenciales van en los campos privados de acceso de App Review.
+
+NIVL — Guideline 2.1 information
+
+1. Physical-device video
+[PENDIENTE: accessible video URL/attachment, iPhone model, latest iOS version, app version/build and recording date]. The recording must show launch, registration/login, normal use, separate health/AI permissions, subscriptions and paid access, reporting/blocking, and deletion of a disposable NIVL account. Do not use the review account for deletion.
+
+2. Purpose/audience
+Spanish-language habit and personal organisation app for people aged 16+. Students, workers, entrepreneurs and people building fitness habits can track routines, projects, schedules and progress. Exercise, nutrition, journal and personal finance records are optional. Tracking is free; AI coaching is optional and paid. This is a consumer app, not an employee-only/business app.
+
+3. Access/main features
+Use the credentials in App Review's sign-in fields. Choose “¿Cuenta antigua de NIVL? Entrar con ella”, then “Entrar con cuenta NIVL”. This dedicated account uses direct NIVL login, not Franky login. No external hardware, files, bank connection or personal AI API key is required.
+Confirm age if prompted. Hoy shows missions; Hábitos manages routines; Agenda organises scheduled activities. Perfil provides permissions, export and account deletion. Health and AI require separate explicit permissions; declining leaves general organisation available. Permissions can be withdrawn from Perfil.
+Open the NIVL Pro screen from Perfil. Eligible accounts can select “Probar el coach 7 días” (no payment details or automatic renewal), then use Coach. Try “Ayúdame a organizar mi día de mañana”. [PENDIENTE: verify trial and additional Élite/ludus review access].
+Account deletion removes NIVL data/files but does not delete the separate Franky account or cancel an Apple subscription.
+
+4. External services
+Supabase: NIVL auth, database, storage and server functions; database in Frankfurt. Franky: normal registration/login. Apple StoreKit and RevenueCat: native subscriptions and purchase status. Anthropic/DeepSeek: optional AI, with US/China processing disclosed before explicit consent. Expo/Apple push: optional notifications and app infrastructure/updates. Vercel: legal/support website; that website uses Google Fonts. An internal Notion integration is developer-account-only, not required for users.
+
+5. Regions
+Same core features and Spanish interface across enabled storefronts; local prices/currency and purchase availability come from the App Store. Scheduling uses the user's timezone. [PENDIENTE: confirm enabled territories match AI provider availability; describe exceptions if any].
+
+6. Regulated/protected content
+General productivity/wellbeing; no medical diagnosis/treatment, investment advice, banking transactions, gambling or HealthKit. Relevant notices are displayed. Brand graphics are project-generated; fonts/icons have open-source licences. No licensed media catalogue is distributed. User content is subject to moderation and Terms of Use.
+
+7. IAP
+Five auto-renewable products: nivl_pro_mensual (1 month), nivl_pro_anual (1 year), nivl_elite_mensual (1 month), nivl_elite_anual (1 year), nivl_elite_fundador (1 year, limited founder offer, not lifetime). Pro includes standard AI with a monthly allowance; Élite adds advanced/deep usage, badge and ludus placement requests. Placement is gradual, not immediate; no XP/ranking advantages are sold. The purchase screen shows available plans, title, duration, store price, renewal information, restore and legal links.
+
+Privacy: https://nivl-web.vercel.app/privacidad
+Terms: https://nivl-web.vercel.app/terminos
+Support: https://nivl-web.vercel.app/soporte

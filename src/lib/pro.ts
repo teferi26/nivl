@@ -22,9 +22,11 @@ import Purchases, { PURCHASES_ERROR_CODE, type PurchasesError, type PurchasesPac
 import {
   compraReflejada,
   esProductoNivl,
+  precioVisible,
   productoBase,
   type AiStatus,
   type PlanKey,
+  type PreciosTienda,
   type ProPlanId,
   type Tier,
 } from './proplans';
@@ -212,18 +214,21 @@ async function todosLosPaquetes(): Promise<PurchasesPackage[]> {
  * id de producto. Son los que se enseñan con la tienda abierta: el que se
  * cobra es el de la tienda, no el de la tabla.
  */
-export async function preciosDeTienda(): Promise<Partial<Record<ProPlanId, string>>> {
+export async function preciosDeTienda(): Promise<PreciosTienda> {
   await asegurarUsuario();
-  const out: Partial<Record<ProPlanId, string>> = {};
+  const out: PreciosTienda = {};
   for (const p of await todosLosPaquetes()) {
     const id = productoBase(p.product.identifier);
-    if (esProductoNivl(id) && !out[id]) out[id] = p.product.priceString;
+    const precio = precioVisible(p.product.priceString);
+    if (esProductoNivl(id) && !out[id] && precio) out[id] = precio;
   }
   return out;
 }
 
 async function paqueteDe(planId: ProPlanId): Promise<PurchasesPackage | null> {
-  return (await todosLosPaquetes()).find((p) => productoBase(p.product.identifier) === planId) ?? null;
+  return (await todosLosPaquetes()).find((p) =>
+    productoBase(p.product.identifier) === planId && precioVisible(p.product.priceString) !== null,
+  ) ?? null;
 }
 
 /** Plazas de Élite fundador que quedan (0027), o null si no se sabe. */
@@ -234,6 +239,16 @@ export async function fetchFounderSeatsLeft(): Promise<number | null> {
 }
 
 const pausa = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+/** Verifica en servidor el derecho actual, incluso con la cuenta original
+ * borrada. Nunca se envía un plan ni un recibo decidido por el cliente. */
+async function reconciliarCompra(): Promise<void> {
+  try {
+    await supabase.functions.invoke('store-reconcile', { body: {}, timeout: 15000 });
+  } catch {
+    // El webhook aún puede completar la verificación. Restaurar permite reintentar.
+  }
+}
 
 /**
  * Espera a que el webhook escriba la compra: reintentos cortos, unos 12 s en
@@ -260,8 +275,17 @@ async function esperarDerecho(planId: ProPlanId | null): Promise<boolean> {
  */
 export type ResultadoCompra = 'activa' | 'pendiente' | 'cancelada';
 
-/** Compra un plan en la tienda y espera a que el servidor lo refleje. */
-export async function purchase(planId: ProPlanId): Promise<ResultadoCompra> {
+/** El importe cambió entre la oferta y el cobro: hay que volver a mostrarlo. */
+export class StorePriceChangedError extends ErrorVisible {
+  constructor() {
+    super('El precio de la tienda ha cambiado. Revisa el importe actualizado antes de comprar.');
+    this.name = 'StorePriceChangedError';
+  }
+}
+
+/** Compra solo al precio mostrado y espera a que el servidor refleje el derecho. */
+export async function purchase(planId: ProPlanId, precioMostrado: string): Promise<ResultadoCompra> {
+  if (!precioVisible(precioMostrado)) throw new ErrorVisible('Espera a que se cargue el precio de la tienda.');
   await asegurarUsuario();
   let paquete: PurchasesPackage | null;
   try {
@@ -270,12 +294,14 @@ export async function purchase(planId: ProPlanId): Promise<ResultadoCompra> {
     throw traducir(e);
   }
   if (!paquete) throw new ErrorVisible('Ese plan no está disponible ahora mismo en la tienda.');
+  if (precioVisible(paquete.product.priceString) !== precioMostrado.trim()) throw new StorePriceChangedError();
   try {
     await Purchases.purchasePackage(paquete);
   } catch (e) {
     if (cancelada(e)) return 'cancelada';
     throw traducir(e);
   }
+  await reconciliarCompra();
   return (await esperarDerecho(planId)) ? 'activa' : 'pendiente';
 }
 
@@ -296,5 +322,6 @@ export async function restorePurchases(): Promise<ResultadoRestaurar> {
     throw traducir(e);
   }
   if (!activas.some((id) => esProductoNivl(id))) return 'nada';
+  await reconciliarCompra();
   return (await esperarDerecho(null)) ? 'activa' : 'pendiente';
 }

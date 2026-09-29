@@ -1,12 +1,21 @@
 import { setApiKey } from './oracle';
 import { supabase } from './supabase';
+import { ErrorVisible } from './validation';
 
-// Borrado total de la cuenta (derecho de supresión RGPD). La RPC delete_own_account
-// (migración 0004) borra los objetos de Storage del usuario y su fila en auth.users,
-// que en cascada elimina profiles y todo lo demás. Después limpiamos el dispositivo.
+// Perfil already asks for irreversible confirmation. The endpoint only deletes
+// NIVL, keeps Auth until the Storage API has removed every file, and can resume.
 export async function deleteAccount(): Promise<void> {
-  const { error } = await supabase.rpc('delete_own_account');
-  if (error) throw error;
-  await setApiKey('');
-  await supabase.auth.signOut();
+  try {
+    const { data, error } = await supabase.functions.invoke('account-erasure', {
+      body: { confirm: 'BORRAR_CUENTA_NIVL' },
+    });
+    if (error || data?.ok !== true) throw new Error('incomplete');
+  } catch {
+    // Never discard the session while files or the account still need erasing.
+    throw new ErrorVisible('El borrado no ha terminado. Reintenta desde Eliminar cuenta para completarlo.');
+  }
+  // Auth has already been deleted. A failed legacy-key cleanup must not keep
+  // the app signed in to an account that no longer exists.
+  await setApiKey('').catch(() => undefined);
+  await supabase.auth.signOut({ scope: 'local' });
 }

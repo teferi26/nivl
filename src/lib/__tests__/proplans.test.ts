@@ -20,6 +20,7 @@ import {
   planLabel,
   planPorDefecto,
   planesALaVenta,
+  planesDeTienda,
   pitchVisible,
   precioVisible,
   productoBase,
@@ -27,6 +28,7 @@ import {
   proPlan,
   proSampleBrief,
   proToday,
+  seleccionDeTienda,
   puedeProfundo,
   tierOffer,
   turnosProfundos,
@@ -112,7 +114,7 @@ describe('NIVL Pro y Élite · la oferta', () => {
 
   test('la letra pequeña dice nivel, precio, periodo, renovación y cómo cancelar', () => {
     for (const p of PRO_PLANS) {
-      const t = legalText(p.id);
+      const t = legalText(p.id, p.price);
       expect(t).toContain(p.price);
       expect(t).toContain(tierOffer(p.tier).name);
       expect(t).toContain(`cada ${p.period === 'mes' ? 'mes' : 'año'}`);
@@ -233,12 +235,24 @@ describe('NIVL Pro · la tienda abierta (fase 4)', () => {
 
   test('con el precio de la tienda en otra moneda no se enseñan cifras en euros', () => {
     const anual = proPlan('nivl_pro_anual');
-    expect(precioVisible(anual)).toBe('99,99 €');
-    expect(pitchVisible(anual, '99,99 €')).toBe(anual.pitch);
-    expect(precioVisible(anual, '$99.99')).toBe('$99.99');
-    expect(pitchVisible(anual, '$99.99')).not.toMatch(/€/);
-    expect(pitchVisible(proPlan('nivl_elite_fundador'), '$249.99')).toMatch(/plazas/);
+    expect(precioVisible()).toBeNull();
+    expect(precioVisible('  ')).toBeNull();
+    expect(legalText(anual.id)).toBeNull();
+    expect(precioVisible('$99.99')).toBe('$99.99');
+    expect(pitchVisible(anual)).not.toMatch(/€|gratis|%/);
+    expect(pitchVisible(proPlan('nivl_elite_fundador'))).toMatch(/plazas/);
     expect(legalText('nivl_pro_anual', '$99.99')).toContain('$99.99 cada año');
+  });
+
+  test('selecciona solo productos que la tienda ofrece, respetando plazas y nivel', () => {
+    const precios = { nivl_pro_mensual: '$14.99', nivl_elite_anual: '$349.99', nivl_elite_fundador: '$299.99' };
+    const pro = planesDeTienda('pro', 10, precios);
+    expect(pro.map((p) => p.id)).toEqual(['nivl_pro_mensual']);
+    expect(seleccionDeTienda(pro, 'nivl_pro_anual')?.id).toBe('nivl_pro_mensual');
+    const elite = planesDeTienda('elite', 0, precios);
+    expect(elite.map((p) => p.id)).toEqual(['nivl_elite_anual']);
+    expect(seleccionDeTienda(elite, 'nivl_elite_fundador')?.id).toBe('nivl_elite_anual');
+    expect(seleccionDeTienda(planesDeTienda('pro', null, {}), 'nivl_pro_anual')).toBeNull();
   });
 
   test('una compra está reflejada cuando el servidor da el nivel comprado', () => {
