@@ -2,7 +2,7 @@
 
 Apple pide expresamente una grabación de pantalla de un **dispositivo físico con el sistema operativo actualizado**, desde el lanzamiento y mostrando el recorrido normal. Un simulador, Expo Go, un vídeo generado o las capturas comerciales no satisfacen esa petición.
 
-Estado: **grabación física pendiente**. Este guion no acredita que las pruebas se hayan realizado. Grabar la compilación final corregida que vaya a recibir Apple; no mezclar una versión local, una actualización distinta y el binario del envío.
+Estado: **grabación física pendiente**. Instalar **NIVL 1.0.7 (20)**, ya disponible en TestFlight interno y verificada el 29/09/2026 a las 13:23:35 de Madrid. Este guion no acredita que las pruebas se hayan realizado. Grabar esta compilación corregida; no mezclar una versión local, una actualización distinta y el binario del envío.
 
 ## Preparación
 

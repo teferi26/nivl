@@ -13,7 +13,7 @@ Thank you for your request under Guideline 2.1. Below is the information about N
 **1. Physical-device recording and testing**
 
 Recording: [ATTACHMENT NAME OR ACCESSIBLE VIDEO URL]
-Device: [IPHONE MODEL]; operating system: [IOS VERSION]; NIVL: [VERSION AND BUILD]; recorded on [DATE].
+Device: [IPHONE MODEL]; operating system: [IOS VERSION]; NIVL: 1.0.7 (20); recorded on [DATE].
 
 The recording starts with launching NIVL and demonstrates registration, login, the normal habit and planning flow, separate health and AI permissions, the subscription screens and paid access, user-content reporting and blocking, and deletion of a disposable NIVL account. [ADD TIMESTAMPS ONLY AFTER VIEWING THE ACTUAL VIDEO.]
 

@@ -3,7 +3,7 @@ BORRADOR INTERNO: completar campos, verificar vídeo/build/regiones y quitar est
 NIVL — Guideline 2.1 information
 
 1. Physical-device video
-[VIDEO URL/ATTACHMENT, IPHONE MODEL, IOS, APP VERSION/BUILD, DATE]. Shows launch, registration/login, normal use, health/AI permissions, subscriptions/paid access, reporting/blocking and deletion of a disposable NIVL account. Keep review accounts available.
+[VIDEO URL/ATTACHMENT, IPHONE MODEL, IOS, DATE]. NIVL 1.0.7 (20). Shows launch, registration/login, normal use, health/AI permissions, subscriptions/paid access, reporting/blocking and deletion of a disposable NIVL account. Keep review accounts available.
 
 2. Purpose/audience
 Spanish-language habit and personal organisation app for people aged 16+. Routines, projects, schedules and progress; optional exercise, nutrition, journal and personal finance records. Tracking is free; AI coaching is optional and paid. Available to consumers, not restricted to businesses/employees.
