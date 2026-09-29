@@ -1,6 +1,6 @@
 # Respuesta preparada — Guideline 2.1
 
-**BORRADOR. No enviar todavía:** falta la grabación en iPhone físico y completar las pruebas con la compilación final. Las correcciones locales deben estar desplegadas y dentro del binario antes de describirlas como disponibles. No afirmar que hay un vídeo adjunto ni pruebas completadas hasta que existan.
+**BORRADOR. No enviar todavía:** falta la grabación en iPhone físico y completar las pruebas con la compilación final. El servidor y la política web ya están actualizados; comprobar que el binario instalado contiene las correcciones. No afirmar que hay un vídeo adjunto ni pruebas completadas hasta que existan.
 
 Sustituir los campos entre corchetes tras verificar los hechos. Las credenciales no se incluyen en este archivo público. No enviar este encabezado interno a Apple.
 
@@ -29,7 +29,9 @@ Confirm the age declaration when prompted. Hoy shows today's missions; Hábitos 
 
 Health features require explicit health-data permission. Select Perfil > Salud y bienestar > “Revisar permiso de salud”, read the notice, mark the initially unchecked box and choose “Aceptar y activar salud”. Declining keeps general organisation features available. AI sharing requires a separate consent screen describing the providers, data and processing countries, accepted with “Acepto y activo el coach”. To withdraw it, open Perfil, scroll to “Datos y la IA”, tap “Envío de datos al coach”, and confirm “Retirar”. Health permission is managed separately in “Salud y bienestar” with “Retirar y borrar salud”.
 
-In Perfil, tap the “NIVL Pro” row below the profile header to open the paid plans. Eligible accounts can use “Probar el coach 7 días”, a server-granted trial with no payment details and no automatic renewal. Then open Coach and try “Ayúdame a organizar mi día de mañana”. If a trial is already active, “Suscribirme” opens the plans. An active Pro account can use “Ver NIVL Élite”. [ADD VERIFIED ADDITIONAL REVIEW ACCOUNT ACCESS IF NEEDED TO DEMONSTRATE ÉLITE/LUDUS.]
+In Perfil, tap the “NIVL Pro” row below the profile header to open the paid plans. Eligible accounts can use “Probar el coach 7 días”, a server-granted trial with no payment details and no automatic renewal. Then open Coach and try “Ayúdame a organizar mi día de mañana”. If a trial is already active, “Suscribirme” opens the plans. An active Pro account can use “Ver NIVL Élite”.
+
+An additional demonstration account has ordinary manually granted Élite access until 28 November 2026 and belongs to a separate five-member demonstration ludus. [INSERT THE PRINCIPAL DEMO CREDENTIALS PRIVATELY IN THE REVIEW NOTES.] Use the same direct NIVL login route. Complete the age/onboarding steps and decide the health and AI permissions in the app; none have been accepted on the reviewer's behalf. Open Perfil > Amigos to see the ludus and its demonstration members. Use the original review account to inspect the purchase screen; the additional account demonstrates paid features without a purchase or a seven-day trial. Do not delete these accounts or their group members when testing account deletion.
 
 For account deletion, open Perfil and scroll to the “Cuenta” section. Tap “Eliminar cuenta”, then “Eliminar para siempre” in the explanation sheet, and confirm “Eliminar para siempre” in the final alert. “Cuenta” is a section on Perfil, not a separate screen. It removes the NIVL account, active personal records and stored files; limited records may be retained where legally required, as described in the Privacy Policy. The separate Franky account is unchanged. Deleting an app account does not cancel an Apple subscription, which is managed in Apple's subscription settings. Please use a disposable test account when verifying deletion so the supplied review account remains available. Data export is in the same “Cuenta” section under “Exportar mis datos”.
 
@@ -72,6 +74,7 @@ Open Perfil > “NIVL Pro”, select “Pro” or “Élite” and the desired a
 
 Support: https://nivl-web.vercel.app/soporte
 Terms of Use: https://nivl-web.vercel.app/terminos
+Apple Standard EULA: https://www.apple.com/legal/internet-services/itunes/dev/stdeula/
 Privacy Policy: https://nivl-web.vercel.app/privacidad
 
 Thank you for reviewing NIVL.
