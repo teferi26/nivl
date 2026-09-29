@@ -1,4 +1,4 @@
-import { readFileSync } from 'fs';
+import { readFileSync, readdirSync } from 'fs';
 import { join } from 'path';
 import {
   AI_CONSENT_VERSION,
@@ -15,10 +15,13 @@ import {
 const aceptado = { current_version: AI_CONSENT_VERSION, granted: true, action: 'accept', version: AI_CONSENT_VERSION, at: '2026-09-27T10:00:00Z' };
 
 describe('consentimiento IA · versión', () => {
-  test('la versión de la app casa con ai_consent_version() de la 0028', () => {
-    const sql = readFileSync(join(__dirname, '../../../supabase/migrations/0028_consentimiento_ia.sql'), 'utf8');
-    const m = /ai_consent_version\(\)[\s\S]*?select '([^']+)'::text/.exec(sql);
-    expect(m?.[1]).toBe(AI_CONSENT_VERSION);
+  test('la versión de la app casa con la última ai_consent_version() desplegable', () => {
+    const directory = join(__dirname, '../../../supabase/migrations');
+    const versions = readdirSync(directory).filter(file => /^\d{4}.*\.sql$/.test(file)).sort().flatMap(file => {
+      const sql = readFileSync(join(directory, file), 'utf8');
+      return [...sql.matchAll(/create\s+or\s+replace\s+function\s+public\.ai_consent_version\(\)[\s\S]*?select '([^']+)'::text/gi)].map(match => match[1]);
+    });
+    expect(versions[versions.length - 1]).toBe(AI_CONSENT_VERSION);
   });
 
   test('la edad mínima es la de los Términos', () => {
@@ -32,8 +35,9 @@ describe('consentimiento IA · lo que dice la hoja', () => {
     for (const w of ['salud', 'diario', 'finanzas', 'fotos']) expect(t).toContain(w);
   });
 
-  test('nombra a Anthropic en EE. UU. y a DeepSeek en China', () => {
-    expect(PROVEEDORES_IA.find((p) => p.nombre.startsWith('Anthropic'))?.donde).toBe('Estados Unidos');
+  test('distingue almacenamiento y procesamiento global de Anthropic y DeepSeek en China', () => {
+    const location = PROVEEDORES_IA.find((p) => p.nombre.startsWith('Anthropic'))?.donde ?? '';
+    for (const region of ['Almacenamiento en EE. UU.', 'procesamiento', 'Europa', 'Asia', 'Australia']) expect(location).toContain(region);
     expect(PROVEEDORES_IA.find((p) => p.nombre === 'DeepSeek')?.donde).toContain('China');
   });
 });

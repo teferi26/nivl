@@ -40,7 +40,7 @@ For social safety, open Perfil > “Amigos”. Tap another user's row or its thr
 - Supabase: NIVL authentication, database, file storage and server functions; the NIVL database is hosted in Frankfurt.
 - Franky account service: registration and verification of the user's Franky credentials. The supplied review account also has the direct NIVL login described above.
 - Apple StoreKit/App Store and RevenueCat: in-app subscriptions, purchase/restore handling and subscription status. iOS purchases are made through Apple's purchase sheet; there is no Stripe checkout or personal AI-key unlock in the App Store build.
-- Anthropic (Claude) and DeepSeek: AI coaching and related assistance, depending on the configured plan/model. The app discloses US/China processing and asks for explicit permission before sending user context. These services are optional; free tracking remains available without AI.
+- Anthropic (Claude) and DeepSeek: AI coaching and related assistance, depending on the configured plan/model. The app discloses Anthropic's US storage and default processing in the US, Europe, Asia and Australia, and DeepSeek's processing in China. It asks for explicit permission before sending user context. These services are optional; free tracking remains available without AI.
 - Expo and Apple push services: notifications and app infrastructure, including compatible app updates. Notifications are optional.
 - Vercel: hosting of the public support and legal pages. Google Fonts is used on those web pages.
 

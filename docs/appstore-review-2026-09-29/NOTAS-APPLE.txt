@@ -15,7 +15,7 @@ Open the NIVL Pro screen from Perfil. Eligible accounts can select “Probar el 
 Account deletion removes NIVL data/files but does not delete the separate Franky account or cancel an Apple subscription.
 
 4. External services
-Supabase: NIVL auth, database, storage and server functions; database in Frankfurt. Franky: normal registration/login. Apple StoreKit and RevenueCat: native subscriptions and purchase status. Anthropic/DeepSeek: optional AI, with US/China processing disclosed before explicit consent. Expo/Apple push: optional notifications and app infrastructure/updates. Vercel: legal/support website; that website uses Google Fonts. An internal Notion integration is developer-account-only, not required for users.
+Supabase: auth, database, storage and server functions; database in Frankfurt. Franky: normal registration/login. StoreKit/RevenueCat: native subscriptions. Optional AI: Anthropic stores in US and processes in US/Europe/Asia/Australia; DeepSeek processes in China, disclosed before explicit consent. Expo/Apple push: optional notifications and app infrastructure/updates. Vercel: legal/support website with Google Fonts. Internal Notion integration is developer-account-only, not required for users.
 
 5. Regions
 Same core features and Spanish interface across enabled storefronts; local prices/currency and purchase availability come from the App Store. Scheduling uses the user's timezone. [PENDIENTE: confirm enabled territories match AI provider availability; describe exceptions if any].
