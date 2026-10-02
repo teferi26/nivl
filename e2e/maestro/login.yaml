@@ -1,0 +1,23 @@
+# Subflujo: entrar con una cuenta de PRUEBA de Franky.
+# Las credenciales llegan SOLO por variables de entorno en la línea de órdenes:
+#   maestro test -e NIVL_QA_EMAIL=... -e NIVL_QA_PASSWORD=... e2e/maestro/<flujo>.yaml
+# Nunca escribirlas en este archivo ni en el repositorio. No usar la cuenta
+# revisora de Apple ni las del ludus de demostración en flujos que escriben.
+# Selectores tomados de src/app/login.tsx en bf32d28 (accessibilityLabel);
+# NO verificados todavía en un dispositivo: confirmar en la primera ejecución.
+appId: com.teferi.nivl
+name: NIVL login (subflujo)
+---
+- extendedWaitUntil:
+    visible: '^Entrar con cuenta existente$'
+    timeout: 30000
+- tapOn: '^Entrar con cuenta existente$'
+- tapOn: '^Correo electrónico$'
+- inputText: ${NIVL_QA_EMAIL}
+- tapOn: '^Contraseña$'
+- inputText: ${NIVL_QA_PASSWORD}
+- hideKeyboard
+- tapOn: '^Entrar con Franky$'
+- extendedWaitUntil:
+    visible: '^Hoy$'
+    timeout: 30000

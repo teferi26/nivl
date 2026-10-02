@@ -1,0 +1,93 @@
+# Consentimiento de salud contra un build REAL. Portado de
+# scripts/screenshots/health-consent.yaml (rama chore/ios-screenshots-107).
+#
+# DIFERENCIA CLAVE con el original: allí la aceptación solo cambiaba un booleano
+# en memoria (fixtures). Aquí "Aceptar y activar salud" ESCRIBE el consentimiento
+# en el servidor real. Usar SOLO una cuenta DESECHABLE sin consentimiento de salud.
+# NUNCA la cuenta revisora de Apple (no se aceptan permisos en su nombre) ni las
+# del ludus de demostración.
+#
+# La retirada solo abre la alerta irreversible y pulsa "Cancelar": no borra datos.
+# No envía ningún mensaje a la IA.
+# Textos verificados por grep en bf32d28 (ConsentimientoSalud.tsx, healthmath.ts,
+# coach.tsx). Se eliminan las aserciones de fixtures ("Buenos días, Alex",
+# "Avanzar en mi proyecto").
+appId: com.teferi.nivl
+name: NIVL consentimiento de salud (build real, cuenta desechable)
+---
+- launchApp:
+    stopApp: true
+    clearState: false
+    permissions:
+      notifications: deny
+- extendedWaitUntil:
+    visible: '^Hoy$'
+    timeout: 30000
+- tapOn: '^Coach$'
+- extendedWaitUntil:
+    visible: '^Revisar permiso$'
+    timeout: 20000
+- assertVisible: '^Tu salud, con permiso$'
+- assertNotVisible: '^Mensaje para el sistema.*'
+- takeScreenshot: hc-20-guard
+- tapOn: '^Revisar permiso$'
+- extendedWaitUntil:
+    visible: '^Tus datos de salud$'
+    timeout: 10000
+- assertVisible:
+    text: '^Aceptar y activar salud$'
+    enabled: false
+- takeScreenshot: hc-21-sheet
+- scrollUntilVisible:
+    element:
+      text: '^Consiento explícitamente que NIVL guarde y utilice mis datos de salud para estas finalidades\.$'
+    direction: DOWN
+    visibilityPercentage: 100
+# Maestro 2.10 normaliza checked=false en iOS; se comprueba el botón habilitado/deshabilitado.
+- assertVisible:
+    text: '^Aceptar y activar salud$'
+    enabled: false
+- takeScreenshot: hc-22-unchecked
+- tapOn: '^Ahora no$'
+- assertNotVisible: '^Tus datos de salud$'
+# Las funciones generales siguen accesibles sin salud.
+- tapOn: '^Hoy$'
+- assertNotVisible: '^Tu salud, con permiso$'
+- takeScreenshot: hc-23-general-sin-salud
+# Aceptación explícita (escribe en el servidor: solo cuenta desechable).
+- tapOn: '^Coach$'
+- tapOn: '^Revisar permiso$'
+- scrollUntilVisible:
+    element:
+      text: '^Consiento explícitamente que NIVL guarde y utilice mis datos de salud para estas finalidades\.$'
+    direction: DOWN
+    visibilityPercentage: 100
+- tapOn: '^Consiento explícitamente que NIVL guarde y utilice mis datos de salud para estas finalidades\.$'
+- assertVisible:
+    text: '^Aceptar y activar salud$'
+    enabled: true
+- takeScreenshot: hc-24-checked
+- tapOn: '^Aceptar y activar salud$'
+- extendedWaitUntil:
+    notVisible: '^Tus datos de salud$'
+    timeout: 15000
+# Tras salud, el coach puede seguir pidiendo el consentimiento de IA aparte:
+# eso es lo esperado (permisos separados). No se acepta aquí.
+- tapOn: '^Coach$'
+- assertNotVisible: '^Tu salud, con permiso$'
+- takeScreenshot: hc-25-coach-tras-salud
+- tapOn: '^Perfil$'
+- scrollUntilVisible:
+    element:
+      text: '^Retirar y borrar salud$'
+    direction: DOWN
+    visibilityPercentage: 100
+- takeScreenshot: hc-26-perfil-retirada
+- tapOn: '^Retirar y borrar salud$'
+- assertVisible: '^Retirar permiso y borrar$'
+- assertVisible: '^Cancelar$'
+- takeScreenshot: hc-27-alerta
+- tapOn: '^Cancelar$'
+- assertNotVisible: '^Retirar permiso y borrar$'
+- assertVisible: '^Retirar y borrar salud$'
+- takeScreenshot: hc-28-cancelado

@@ -1,0 +1,137 @@
+FAIL src/lib/__tests__/qa-hipotesis.test.ts
+  H3 · dos cierres concurrentes del mismo día
+    × mismo dispositivo (dos cargas de Hoy en vuelo): una sola penalización y una sola recuperación (11 ms)
+    √ la recuperación devuelve exactamente lo perdido (invariante 2) (2 ms)
+    √ dos dispositivos con el mismo estado: el servidor aplica un solo cierre (3 ms)
+  H1 · fallo entre el cierre y la creación de la recuperación
+    × un fallo transitorio al crear la misión de penalización no deja XP irrecuperable (2 ms)
+    × si la recuperación no se puede crear, el fallo se ve y queda auditado, no se traga (1 ms)
+  H2 · el mismo acto no paga dos veces cuando falla la red
+    √ camino feliz: paga la misión y el módulo solo la diferencia (1 ms)
+    × respuesta perdida tras confirmar la misión: el módulo no vuelve a cobrar (1 ms)
+    × un fallo transitorio al leer las misiones no hace pagar al módulo y a la misión (1 ms)
+    × la misión ya completada en otro dispositivo entre lectura y marca cuenta como pagada (1 ms)
+
+  ● H3 · dos cierres concurrentes del mismo día › mismo dispositivo (dos cargas de Hoy en vuelo): una sola penalización y una sola recuperación
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 800
+    Received: 600
+
+      38 |       processPendingDays(visto, mockSrv.quests),
+      39 |     ]);
+    > 40 |     expect(mockSrv.profile.xp_total).toBe(800);
+         |                                      ^
+      41 |     expect(penalizaciones()).toHaveLength(1);
+      42 |     expect(penalizaciones()[0]!.penalty_xp).toBe(200);
+      43 |   });
+
+      at Object.toBe (src/lib/__tests__/qa-hipotesis.test.ts:40:38)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+
+  ● H1 · fallo entre el cierre y la creación de la recuperación › un fallo transitorio al crear la misión de penalización no deja XP irrecuperable
+
+    expect(received).toHaveLength(expected)
+
+    Expected length: 1
+    Received length: 0
+    Received array:  []
+
+      73 |     await processPendingDays({ ...mockSrv.profile }, mockSrv.quests);
+      74 |     expect(mockSrv.profile.xp_total).toBe(800);
+    > 75 |     expect(penalizaciones()).toHaveLength(1);
+         |                              ^
+      76 |     expect(penalizaciones()[0]!.penalty_xp).toBe(200);
+      77 |   });
+      78 |
+
+      at Object.toHaveLength (src/lib/__tests__/qa-hipotesis.test.ts:75:30)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+
+  ● H1 · fallo entre el cierre y la creación de la recuperación › si la recuperación no se puede crear, el fallo se ve y queda auditado, no se traga
+
+    expect(received).rejects.toThrow()
+
+    Received promise resolved instead of rejected
+    Resolved to value: {"profile": {"avatar_url": null, "bonus_points": 0, "coach_mode": "A", "created_at": "2026-09-01", "equipped_title": null, "freeze_reason": null, "freeze_until": null, "id": "u1", "last_day_processed": "2026-10-09", "name": "Gladiador", "onboarding_done": true, "perfect_streak_days": 0, "profile_kind": "general", "protection_stones": 0, "sleep_time": "23:00:00", "streak_days": 0, "timezone": "Europe/Madrid", "wake_time": "07:00:00", "xp_agi": 0, "xp_fue": 0, "xp_int": 0, "xp_per": 0, "xp_total": 800, "xp_vit": 0}, "result": {"levelsLost": 1, "missedTitles": ["Misión 1", "Misión 2", "Misión 3", "Misión 4", "Misión 1", "Misión 2", "Misión 3", "Misión 4"], "penaltyXp": 200, "stonesEarned": 0, "stonesUsed": 0, "streakLost": true}}
+
+      80 |     ausenciaDeDosDias();
+      81 |     mockSrv.fallos.insertQuest = 99;
+    > 82 |     await expect(processPendingDays({ ...mockSrv.profile }, mockSrv.quests)).rejects.toThrow();
+         |           ^
+      83 |     expect(mockSrv.events.some((e) => e.type === 'penalty' && e.payload.recuperacion === 'fallida')).toBe(true);
+      84 |   });
+      85 | });
+
+      at expect (node_modules/expect/build/index.js:113:15)
+      at Object.expect (src/lib/__tests__/qa-hipotesis.test.ts:82:11)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+      at node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
+      at Object.<anonymous> (node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12)
+
+  ● H2 · el mismo acto no paga dos veces cuando falla la red › respuesta perdida tras confirmar la misión: el módulo no vuelve a cobrar
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 50
+    Received: 100
+
+      101 |     const pagadoMision = mockSrv.completions.reduce((a, c) => a + c.xp_awarded, 0);
+      102 |     expect(pagadoMision).toBe(50);
+    > 103 |     expect(pagadoMision + restoDelModulo(GYM_SESSION_XP, eco)).toBe(50);
+          |                                                                ^
+      104 |   });
+      105 |
+      106 |   test('un fallo transitorio al leer las misiones no hace pagar al módulo y a la misión', async () => {
+
+      at Object.toBe (src/lib/__tests__/qa-hipotesis.test.ts:103:64)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+
+  ● H2 · el mismo acto no paga dos veces cuando falla la red › un fallo transitorio al leer las misiones no hace pagar al módulo y a la misión
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 50
+    Received: 100
+
+      111 |     // El usuario marca después la misión a mano desde Hoy.
+      112 |     const manual = await completeQuest({ ...mockSrv.profile }, mockSrv.quests[0]!, null);
+    > 113 |     expect(modulo + eco.xp + manual.xp).toBe(50);
+          |                                         ^
+      114 |   });
+      115 |
+      116 |   test('la misión ya completada en otro dispositivo entre lectura y marca cuenta como pagada', async () => {
+
+      at Object.toBe (src/lib/__tests__/qa-hipotesis.test.ts:113:41)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+
+  ● H2 · el mismo acto no paga dos veces cuando falla la red › la misión ya completada en otro dispositivo entre lectura y marca cuenta como pagada
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 0
+    Received: 50
+
+      124 |     };
+      125 |     const eco = await propagarActo({ ...mockSrv.profile }, 'gym', HOY);
+    > 126 |     expect(restoDelModulo(GYM_SESSION_XP, eco)).toBe(0);
+          |                                                 ^
+      127 |   });
+      128 | });
+      129 |
+
+      at Object.toBe (src/lib/__tests__/qa-hipotesis.test.ts:126:49)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+
+Test Suites: 1 failed, 1 total
+Tests:       6 failed, 3 passed, 9 total
+Snapshots:   0 total
+Time:        0.959 s, estimated 1 s
+Ran all test suites matching /src\\lib\\__tests__\\qa-hipotesis.test.ts/i.
