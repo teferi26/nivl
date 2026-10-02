@@ -50,7 +50,7 @@ import {
   fetchSessionForDate,
   insertLifts,
 } from '@/lib/body';
-import { ensureProfile, insertEvent } from '@/lib/data';
+import { ensureProfile, fetchCompletionsForDate, fetchQuests, insertEvent } from '@/lib/data';
 import { dateKey, isoWeekday } from '@/lib/dates';
 import { awardXp } from '@/lib/engine';
 import { propagarActo, restoDelModulo } from '@/lib/links';
@@ -58,7 +58,8 @@ import { GYM_SESSION_XP, PR_XP } from '@/lib/game';
 import { supabase } from '@/lib/supabase';
 import { subirFotoMision } from '@/lib/photos';
 import { colors, fonts } from '@/lib/theme';
-import { voice } from '@/lib/voice';
+import { mensajeSistema } from '@/lib/validation';
+import { deMisiones, desgloseXp, voice } from '@/lib/voice';
 import type { GymDay, GymExercise, GymSession } from '@/lib/types';
 
 const DAY_NAMES = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
@@ -108,6 +109,10 @@ export default function Gym() {
   const [exWeight, setExWeight] = useState('');
   const [levelUp, setLevelUp] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
+  // XP que han pagado hoy las misiones enlazadas al gimnasio. La sesión guarda
+  // solo lo que paga el módulo (el resto hasta su base y los récords): sin
+  // sumar esto, la tarjeta decía +25 mientras la misión enseñaba +50.
+  const [xpMisionHoy, setXpMisionHoy] = useState(0);
   const saving = useRef(false);
 
   const today = dateKey();
@@ -115,12 +120,24 @@ export default function Gym() {
 
   const load = useCallback(async () => {
     try {
-      setDays(await fetchGymDays());
-      setExercises(await fetchGymExercises());
-      setTodaySession(await fetchSessionForDate(dateKey()));
-      setPrescrito(await fetchPrescription(dateKey()).catch(() => []));
+      const hoy = dateKey();
+      // En paralelo: eran cuatro viajes en serie al abrir la pantalla.
+      const [d, ex, sesion, presc, quests, hechas] = await Promise.all([
+        fetchGymDays(),
+        fetchGymExercises(),
+        fetchSessionForDate(hoy),
+        fetchPrescription(hoy).catch(() => []),
+        fetchQuests().catch(() => []),
+        fetchCompletionsForDate(hoy).catch(() => []),
+      ]);
+      const deGym = new Set(quests.filter((q) => q.link === 'gym').map((q) => q.id));
+      setDays(d);
+      setExercises(ex);
+      setTodaySession(sesion);
+      setPrescrito(presc);
+      setXpMisionHoy(hechas.filter((c) => deGym.has(c.quest_id)).reduce((s, c) => s + c.xp_awarded, 0));
     } catch (e) {
-      Alert.alert('Error del sistema', e instanceof Error ? e.message : 'Fallo desconocido');
+      Alert.alert('Error del sistema', mensajeSistema(e));
     }
   }, []);
 
@@ -264,11 +281,16 @@ export default function Gym() {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       const prText = prs.length > 0 ? `\n${prs.map((p) => voice.pr(p.exercise_name)).join('\n')}` : '';
       const achText = fresh.length > 0 ? `\nLogro: ${fresh.map((a) => a.name).join(', ')}` : '';
-      const ecoText = eco.marcadas.length > 0 ? `\nMarcado solo: ${eco.marcadas.join(', ')}` : '';
-      const pagado = totalXp + eco.xp;
+      // El desglose cuadra con lo que luego enseña la misión enlazada.
+      const xpRecords = prs.length * PR_XP;
+      const desglose = desgloseXp([
+        { xp: eco.xp, de: deMisiones(eco.marcadas) },
+        { xp: totalXp - xpRecords, de: 'a FUE por la sesión' },
+        { xp: xpRecords, de: `a FUE por ${prs.length === 1 ? '1 récord' : `${prs.length} récords`}` },
+      ]);
       Alert.alert(
         'SESIÓN REGISTRADA',
-        `${pagado > 0 ? `+${pagado} XP a FUE` : 'La misión de hoy ya estaba marcada y pagada.'}${ecoText}${prText}${achText}`,
+        `${desglose || 'La misión de hoy ya estaba marcada y pagada.'}${prText}${achText}`,
       );
       if (res.leveledUp) setLevelUp(res.newLevel);
       else if (eco.leveledUp) setLevelUp(eco.newLevel);
@@ -277,7 +299,7 @@ export default function Gym() {
       setFotoB64(null);
       await load();
     } catch (e) {
-      Alert.alert('Error del sistema', e instanceof Error ? e.message : 'Fallo desconocido');
+      Alert.alert('Error del sistema', mensajeSistema(e));
     } finally {
       saving.current = false;
       setBusy(false);
@@ -370,8 +392,10 @@ export default function Gym() {
   // Solo presentación: el dato del día para el subtítulo de la cabecera.
   const nombreHoy = DAY_NAMES[todayWd - 1] ?? '';
   const ejerciciosHoy = todayPlan ? exercisesFor(todayPlan.id) : [];
+  // Lo ganado hoy por entrenar: lo del módulo más lo de la misión enlazada.
+  const xpHoy = (todaySession?.xp_awarded ?? 0) + xpMisionHoy;
   const subtitulo = todaySession
-    ? `Sesión registrada. +${todaySession.xp_awarded} XP a FUE.`
+    ? `Sesión registrada. +${xpHoy} XP hoy.`
     : training && todayPlan
       ? `${todayPlan.name}, serie a serie.`
       : todayPlan
@@ -397,7 +421,7 @@ export default function Gym() {
               <Stat value={days.length} label="Días / semana" />
               <Stat value={exercises.length} label="Ejercicios" />
               <Stat
-                value={todaySession ? todaySession.xp_awarded : GYM_SESSION_XP}
+                value={todaySession ? xpHoy : GYM_SESSION_XP}
                 unit="XP"
                 label={todaySession ? 'Ganados hoy' : 'En juego'}
                 tone={todaySession ? 'accent' : 'text'}
@@ -435,7 +459,11 @@ export default function Gym() {
                   <Check checked />
                   <View style={styles.hechoTexto}>
                     <Text style={styles.hechoTitulo}>Sesión registrada</Text>
-                    <Text style={styles.hechoDetalle}>+{todaySession.xp_awarded} XP a FUE. FUE crece.</Text>
+                    <Text style={styles.hechoDetalle}>
+                      {xpMisionHoy > 0
+                        ? `+${xpHoy} XP hoy: ${xpMisionHoy} de la misión enlazada${todaySession.xp_awarded > 0 ? ` y ${todaySession.xp_awarded} a FUE` : ''}.`
+                        : `+${todaySession.xp_awarded} XP a FUE. FUE crece.`}
+                    </Text>
                   </View>
                 </View>
               </Card>

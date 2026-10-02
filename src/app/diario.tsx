@@ -59,6 +59,7 @@ import { propagarActo, restoDelModulo } from '@/lib/links';
 import { colors, fonts } from '@/lib/theme';
 import type { JournalEntry, JournalPhoto } from '@/lib/types';
 import { mensajeSistema } from '@/lib/validation';
+import { deMisiones, desgloseXp } from '@/lib/voice';
 
 const MOOD_LABELS = ['Hundido', 'Bajo', 'Normal', 'Bien', 'Imparable'];
 const ENERGY_LABELS = ['Vacío', 'Poca', 'Normal', 'Alta', 'A tope'];
@@ -373,14 +374,18 @@ export default function Diario() {
         if (resto > 0) {
           await awardXp(eco?.profile ?? profile, resto, 'PER', 'journal_entry', { date: dia });
         }
-        const pagado = resto + (eco?.xp ?? 0);
-        const marcado = eco?.marcadas.length ? `\nMarcado solo: ${eco.marcadas.join(', ')}` : '';
+        // El desglose cuadra con lo que luego enseña la misión enlazada
+        // (+15 en el aviso frente a +10 en la misión era 10 + 5 sin decirlo).
+        const desglose = desgloseXp([
+          { xp: eco?.xp ?? 0, de: deMisiones(eco?.marcadas ?? []) },
+          { xp: resto, de: 'a PER por el diario' },
+        ]);
         const total = await countEntries();
         const fresh = await unlockAchievements(userId, evaluateAchievements({ journalCount: total }));
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         Alert.alert(
           'ENTRADA REGISTRADA',
-          `+${pagado} XP a PER${marcado}${fresh.length > 0 ? `\nLogro: ${fresh.map((a) => a.name).join(', ')}` : ''}`,
+          `${desglose || 'La misión del diario ya estaba marcada y pagada.'}${fresh.length > 0 ? `\nLogro: ${fresh.map((a) => a.name).join(', ')}` : ''}`,
         );
       }
       if (isNew && !(dia === dateKey() || dia === addDays(dateKey(), -1))) {
