@@ -50,7 +50,7 @@ import { awardXp } from '@/lib/engine';
 import { propagarActo, restoDelModulo } from '@/lib/links';
 import { CARDIO_DAILY_CAP, cardioXp } from '@/lib/game';
 import { colors, fonts } from '@/lib/theme';
-import { voice } from '@/lib/voice';
+import { deMisiones, desgloseXp, voice } from '@/lib/voice';
 
 const ICONO: Record<CardioKind, keyof typeof Ionicons.glyphMap> = {
   correr: 'walk-outline',
@@ -185,13 +185,18 @@ export default function Cardio() {
       setAbierto(false);
       limpiar();
       await cargar();
+      // Misión enlazada y resto del módulo pueden pagar a la vez: se dicen las dos.
+      const desglose = desgloseXp([
+        { xp: eco?.xp ?? 0, de: deMisiones(eco?.marcadas ?? []) },
+        { xp: nuevo, de: 'a FUE por la sesión' },
+      ]);
       Alert.alert(
         'Sesión registrada',
         nuevo > 0
-          ? `${voice.allDone()}\n+${nuevo} XP a FUE.`
+          ? `${voice.allDone()}\n${desglose}`
           : eco && eco.xpMisiones > 0
             ? eco.marcadas.length > 0
-              ? `${voice.allDone()}\nMarcado solo: ${eco.marcadas.join(', ')} · +${eco.xp} XP.`
+              ? `${voice.allDone()}\n${desglose}`
               : 'Anotada. La misión de hoy ya estaba marcada y pagada.'
             : esCorreccion
               ? 'El sistema corrige el registro. El XP de esta sesión ya estaba pagado.'

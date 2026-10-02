@@ -32,6 +32,8 @@ import { ensureProfile } from '@/lib/data';
 import { addDays, dateKey } from '@/lib/dates';
 import { awardXp } from '@/lib/engine';
 import { propagarActo } from '@/lib/links';
+import { mensajeSistema } from '@/lib/validation';
+import { deMisiones, desgloseXp } from '@/lib/voice';
 import { NUTRITION_DAY_XP } from '@/lib/game';
 import { supabase } from '@/lib/supabase';
 import { colors, fonts } from '@/lib/theme';
@@ -113,16 +115,14 @@ export default function Nutricion() {
       const eco = await propagarActo(await ensureProfile(userId), 'nutricion', hoy);
 
       await cargar();
-      Alert.alert(
-        'Parte registrado',
-        merece
-          ? `El sistema toma nota. +${NUTRITION_DAY_XP} XP a VIT.`
-          : eco.marcadas.length > 0
-            ? `El sistema toma nota. Marcado solo: ${eco.marcadas.join(', ')} · +${eco.xp} XP.`
-            : 'El sistema toma nota.',
-      );
+      // Las dos partes pueden pagar a la vez: callar la misión infravaloraba el aviso.
+      const desglose = desgloseXp([
+        { xp: eco.xp, de: deMisiones(eco.marcadas) },
+        { xp: merece ? NUTRITION_DAY_XP : 0, de: 'a VIT por cumplir kcal y proteína' },
+      ]);
+      Alert.alert('Parte registrado', desglose ? `El sistema toma nota. ${desglose}` : 'El sistema toma nota.');
     } catch (e) {
-      Alert.alert('Error del sistema', e instanceof Error ? e.message : 'Fallo desconocido');
+      Alert.alert('Error del sistema', mensajeSistema(e));
     } finally {
       setGuardando(false);
     }
