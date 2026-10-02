@@ -157,6 +157,26 @@ Columnas: Auto = Jest/tsc/lint @`d3dccae` (si no se indica otra cosa) · SimI = 
 | D4 | Arranque, login, paywall y compra en modo compatibilidad | iPad (`supportsTablet=false`) | NP | D-04 (Chat1-B4) | Apple puede revisar en iPad |
 | D5 | «Designed for iPhone» en Mac | Mac Apple Silicon | NP | — | Fuera del mínimo (Chat 1, apartado C). Disponible por defecto en ASC: probarlo o desactivarlo |
 
+## Evidencia en vídeo del usuario (02/10/2026, 15:18)
+
+Archivo: `WhatsApp Video 2026-10-02 at 15.18.24.mp4`, de 64 s y 384×848, sha256 `234abc67…16edb4`. Lo revisó el coordinador por fotogramas, uno cada 2 s.
+
+- **Cuenta:** la real del dueño.
+- **Build:** probablemente la 21 (se ven Términos y Privacidad en Perfil → Cuenta y «Retirar y borrar salud»), pero **sin confirmar**.
+
+**Clasificación: OBSERVADO (físico, build sin confirmar).** Acredita que las pantallas cargan y se navega por ellas en un iPhone real. **No es PASS** de ningún caso: falta atribuir la build y no se ejecutan acciones con resultado comprobable.
+
+| Flujo | Qué se ve | Efecto en la matriz |
+|---|---|---|
+| Flujo típico (A4 / O-06, O-07) | Hoy, Coach, contrato y hábitos, Perfil (estadísticas, logros), Agenda (día, semana, mes), Campañas y su detalle, Gimnasio, Nutrición, Diario | OBSERVADO; sigue NO PROBADO como caso: no completa misiones con XP comprobable ni identifica la build |
+| Cuenta: Exportar, Cerrar sesión, Términos, Privacidad, ELIMINAR CUENTA | Los botones están visibles; **el borrado no se ejecuta** | A10 / O-16 sigue NO PROBADO |
+| Arranque desde el icono (A1) | No: el vídeo empieza dentro de Hoy | NO PROBADO |
+| Registro, login, correo de confirmación (A2, A3) | No aparecen | NO PROBADO |
+| Denuncia y bloqueo (A9) | No aparece | NO PROBADO |
+| Paywall con 5 planes, compra y restauración (A6–A8) | No aparece | NO PROBADO |
+
+**No cumple el requerimiento de Apple tal cual.** El coordinador prepara con el usuario una segunda toma, en la build 21 confirmada y con cuentas de demostración, que cubra lo que falta (`GRABACION-BUILD-21.md`, escenas 1, 2, 5, 6 y 7). Ningún bloqueante cambia de estado.
+
 ## GO / NO-GO
 
 **Dictamen a 02/10/2026 (SHA integrado `c87df0d`, build 21 compilándose): NO-GO para reenviar a Apple.** La automática del SHA integrado está en verde. Todos los bloqueantes físicos siguen en NO PROBADO hasta ejecutar `GRABACION-BUILD-21.md` en la build 21 de TestFlight.
