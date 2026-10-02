@@ -295,10 +295,10 @@ describe('fase 2: oferta con motivo y línea de upsell', () => {
     expect(button('Activar NIVL Pro anual · 99,99 €/año').props.disabled).toBe(false);
   });
 
-  test('la voz no se vende: el contexto dice que no existe y no reordena', async () => {
+  test('voz: el contexto dice que va con el coach y no reordena beneficios', async () => {
     prices.mockResolvedValue(CATALOGO);
     await mount(false, null, { motivo: 'voz_premium' });
-    expect(content()).toContain('aún no está disponible');
+    expect(content()).toContain('La voz va con el coach');
   });
 
   test('ProUpsellLine: una fila (no modal) que lleva a /pro con motivo y nivel', async () => {
