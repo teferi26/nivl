@@ -43,7 +43,7 @@ import { pareceAfirmacion, rutaDelTurno, type Ruta } from '../_shared/intencion.
 import { fueraDelPack, PACK_REGISTRO, TOOL_DEFS_REGISTRO } from '../_shared/packs.ts';
 import { bloqueComprobacion } from '../_shared/comprobacion.ts';
 import { insertarRun, type Telemetria } from '../_shared/telemetria.ts';
-import { enSegundoPlano, leerResumen, MIN_NUEVOS, resumirHilo } from '../_shared/resumenhilo.ts';
+import { enSegundoPlano, leerResumen, MIN_NUEVOS, resumirHilo, VENTANA_HISTORIAL } from '../_shared/resumenhilo.ts';
 
 // Cinco vueltas, no ocho. Cada vuelta reenvía el contexto entero y genera
 // pensamiento: con ocho, un turno se comía el presupuesto de tiempo de la
@@ -63,12 +63,25 @@ const PRESUPUESTO_MS = 100_000;
 // coach_runs y ese gasto no lo ve el candado: hay que cortar antes nosotros,
 // con margen para guardar la respuesta y la contabilidad.
 const PLAZO_DURO_MS = 130_000;
-// Doce intercambios. El hilo es continuo de cara a ti, pero lo que se reenvía
-// a la API tiene tope: la memoria larga vive en el dossier y en coach_facts,
-// no en el transcript. Sin tope, la conversación crece sin fin y a los seis
-// meses cada turno arrastra cientos de miles de tokens, primero caros y luego
-// imposibles. Si algo de un turno viejo importa, el coach lo anota como hecho.
-const HISTORY_LIMIT = 12;
+// El hilo es continuo de cara a ti, pero lo que se reenvía a la API tiene tope:
+// la memoria larga vive en el dossier, en coach_facts y en el resumen del hilo
+// (L4), no en el transcript. Sin tope, la conversación crece sin fin y a los
+// seis meses cada turno arrastra cientos de miles de tokens.
+//
+// L8: con resumen al día viajan 6 filas (VENTANA_HISTORIAL), y el resumen se
+// compacta en cuanto hay 6 sin resumir, así que lo que sale de la ventana ya
+// está en él. Sin resumen todavía (hilos antiguos) o con el resumen atrasado
+// (el del turno anterior aún no se ha escrito, o falló), el tope de antes: 12.
+// Medido el 02/10: el historial era la mayor parte dinámica del prefijo (las
+// respuestas del asistente promediaban 4.000 caracteres con tool_use/
+// tool_result serializados).
+const HISTORY_LIMIT = VENTANA_HISTORIAL;
+const HISTORY_LIMIT_SIN_RESUMEN = 12;
+// Un turno añade como mínimo 2 filas (su mensaje y la respuesta): con eso se
+// decide, sin otra consulta, si tras el turno tocará compactar.
+const FILAS_POR_TURNO = 2;
+// Lo más largo que viaja de una respuesta vieja del asistente (L8).
+const TOPE_ASISTENTE_VIEJO = 1500;
 // Freno de mano: si un turno encadena tantas herramientas que ya ha costado
 // esto, algo se ha ido de madre y es mejor cortar que despertarse con la
 // sorpresa. Con Sonnet un turno normal ronda 0,07 $ y un brief con herramientas
@@ -239,58 +252,72 @@ function json(status: number, body: unknown): Response {
   });
 }
 
-/**
- * Recorta el historial sin partir un turno por la mitad. Si la primera
- * entrada fuese un tool_result huérfano (o un turno del asistente), la API
- * rechaza la petición: hay que empezar siempre en un mensaje de usuario que
- * sea texto de verdad.
- */
-function trimHistory(messages: ApiMessage[]): ApiMessage[] {
-  let out = messages.slice(-HISTORY_LIMIT);
-  while (out.length) {
-    const first = out[0];
-    const blocks = Array.isArray(first.content) ? first.content : [];
-    const isToolResult = blocks.some((b) => b.type === 'tool_result');
-    if (first.role === 'user' && !isToolResult) break;
-    out = out.slice(1);
-  }
-  return out;
+// Marcas de texto del historial ligero (L8). Deterministas: el mismo hilo da
+// los mismos bytes en cada llamada del turno y no rompe la caché.
+const MARCA_SIN_TEXTO = '[el sistema consultó/registró datos]';
+const MARCA_INICIO = '[sigue la conversación]';
+const MARCA_SIN_RESPUESTA = '[sin respuesta]';
+
+/** Recorta a `tope` caracteres con «…», sin partir un par sustituto (emoji). */
+function recortar(texto: string, tope: number): string {
+  if (texto.length <= tope) return texto;
+  let corte = tope - 1;
+  const c = texto.charCodeAt(corte - 1);
+  if (c >= 0xd800 && c <= 0xdbff) corte--;
+  return `${texto.slice(0, corte).trimEnd()}…`;
 }
 
 /**
- * Aligera el historial antes de reenviarlo.
+ * L8 «historial ligero»: los mensajes ANTERIORES al turno, solo como texto.
  *
- * Dos cosas engordan un hilo viejo hasta hacerlo caro: los bloques de
- * pensamiento y los resultados de herramienta, que pueden llegar a 12.000
- * caracteres cada uno. Ninguno de los dos aporta nada pasado su turno — lo que
- * hay que recordar ya está en el dossier y en los hechos — pero se pagan
- * enteros en cada llamada. Medido: 74.000 tokens de historia por turno.
+ * Antes viajaban con sus tool_use (con el input entero), sus tool_result
+ * (recortados a 600) y, si se colaba, el pensamiento: de media 4.000
+ * caracteres por respuesta del asistente, hasta 46.000. Pasado su turno nada
+ * de eso le sirve al modelo — lo que importa ya está en el estado, el dossier,
+ * los hechos y el resumen — y se pagaba entero en cada turno. Ahora:
  *
- * El pensamiento solo es obligatorio dentro del turno que se está resolviendo,
- * y ese turno todavía no está en la tabla cuando se lee esto. Si al quitarlo un
- * mensaje se quedara sin contenido, se deja intacto: la API rechaza los
- * mensajes vacíos, y un tool_use sin su tool_result detrás también.
+ *   · Se quedan solo los bloques de texto. De las herramientas queda una marca
+ *     con su nombre («[usó consultar_dia]»), para que sepa qué se hizo.
+ *   · Las filas del usuario que solo llevaban tool_result desaparecen y las
+ *     respuestas del asistente que quedan seguidas se juntan en un mensaje:
+ *     un turno de herramientas queda en pregunta + respuesta.
+ *   · Cada respuesta vieja del asistente, a TOPE_ASISTENTE_VIEJO con «…».
+ *   · Alternancia user/assistant estricta y el primero del usuario: si el
+ *     primero que queda es del asistente se antepone una marca, si dos del
+ *     usuario van seguidos se juntan, y si el último es del usuario (un turno
+ *     que no llegó a contestarse) se cierra con una marca. Un mensaje vacío
+ *     (un turno que solo pensó) se sustituye por una marca, nunca se manda vacío.
+ *
+ * Puro y determinista. El bucle de herramientas del turno en curso NO pasa por
+ * aquí: se añade después y viaja completo y emparejado.
  */
-function aligerarHistorial(messages: ApiMessage[]): ApiMessage[] {
-  const TOPE_RESULTADO = 600;
-  return messages.map((m) => {
-    if (!Array.isArray(m.content)) return m;
-    const blocks = m.content
-      .filter((b) => b.type !== 'thinking' && b.type !== 'redacted_thinking')
-      .map((b) => {
-        if (b.type !== 'tool_result') return b;
-        const c = (b as { content?: unknown }).content;
-        if (typeof c !== 'string' || c.length <= TOPE_RESULTADO) return b;
-        return { ...b, content: `${c.slice(0, TOPE_RESULTADO)}\n[…recortado]` };
-      });
-    return { ...m, content: blocks as ContentBlock[] };
-  })
-  // Un mensaje que se queda SIN bloques al quitarle el pensamiento era un turno
-  // que solo pensó y no llegó a decir ni a hacer nada — lo que pasaba cuando el
-  // turno se cortaba a mitad. No aporta nada al siguiente y la API rechaza los
-  // mensajes vacíos, así que desaparece. Antes se devolvía el original CON su
-  // pensamiento, y eso es lo que reventaba la petición más abajo.
-  .filter((m) => !Array.isArray(m.content) || m.content.length > 0);
+export function historialLigero(messages: ApiMessage[]): ApiMessage[] {
+  const planos: { role: 'user' | 'assistant'; partes: string[] }[] = [];
+  for (const m of messages) {
+    const role = m.role === 'assistant' ? 'assistant' : 'user';
+    const bloques: ContentBlock[] = typeof m.content === 'string'
+      ? [{ type: 'text', text: m.content } as ContentBlock]
+      : Array.isArray(m.content) ? m.content : [];
+    const textos = bloques
+      .filter((b) => b.type === 'text' && typeof b.text === 'string' && b.text.trim())
+      .map((b) => (b.text as string).trim());
+    const usadas = role === 'assistant'
+      ? [...new Set(bloques.filter((b) => b.type === 'tool_use' && b.name).map((b) => String(b.name).slice(0, 40)))]
+      : [];
+    if (usadas.length) textos.push(`[usó ${usadas.join(', ')}]`);
+    // Una fila del usuario sin texto es un tool_result: su tool_use ya no viaja.
+    if (!textos.length && role === 'user') continue;
+    const previo = planos[planos.length - 1];
+    if (previo && previo.role === role) previo.partes.push(...textos);
+    else planos.push({ role, partes: textos });
+  }
+  if (planos.length && planos[0].role !== 'user') planos.unshift({ role: 'user', partes: [MARCA_INICIO] });
+  if (planos.length && planos[planos.length - 1].role === 'user') planos.push({ role: 'assistant', partes: [MARCA_SIN_RESPUESTA] });
+  return planos.map(({ role, partes }) => {
+    let texto = partes.join('\n\n') || MARCA_SIN_TEXTO;
+    if (role === 'assistant') texto = recortar(texto, TOPE_ASISTENTE_VIEJO);
+    return { role, content: [{ type: 'text', text: texto }] as ContentBlock[] };
+  });
 }
 
 /**
@@ -459,27 +486,38 @@ async function runCoach(args: RunArgs): Promise<ResultadoTurno> {
   const { data: rows } = await consulta
     .order('created_at', { ascending: false })
     // En la estrecha se piden algunas filas de más: las de herramientas no
-    // tienen texto y se descartan.
-    .limit(estrecha ? HISTORY_LIMIT_REGISTRO * 2 : HISTORY_LIMIT);
+    // tienen texto y se descartan. En la completa se lee hasta el tope sin
+    // resumen: así se sabe si el resumen va atrasado.
+    .limit(estrecha ? HISTORY_LIMIT_REGISTRO * 2 : HISTORY_LIMIT_SIN_RESUMEN);
 
-  const sinResumir = ((rows ?? []) as any[]).filter(
+  let sinResumir = ((rows ?? []) as any[]).filter(
     (r) => !hilo.summary_until || typeof r.created_at !== 'string' || r.created_at > hilo.summary_until,
   );
-  // L4: ¿toca compactar? Se decide con lo que YA se ha leído (sin otra
-  // consulta): si las filas posteriores al resumen llenan el tope, hay al
-  // menos MIN_NUEVOS sin resumir. Solo en la ruta completa.
-  const pideResumen = !estrecha && sinResumir.length >= Math.min(MIN_NUEVOS, HISTORY_LIMIT);
+  // Reintento por la completa tras un rechazo de la estrecha: el mensaje de
+  // este turno ya está en la tabla y va a ir otra vez abajo. No se duplica.
+  if (usuarioYaGuardado && sinResumir[0]?.role === 'user') sinResumir = sinResumir.slice(1);
+  // L4/L8: ¿toca compactar? Se decide con lo que YA se ha leído (sin otra
+  // consulta): lo sin resumir más las filas que añade este turno. Solo en la
+  // ruta completa (resumirHilo vuelve a contar y no gasta si no llega).
+  const pideResumen = !estrecha && sinResumir.length + FILAS_POR_TURNO >= MIN_NUEVOS;
+  // L8: con resumen al día, la ventana corta (en régimen normal todo lo sin
+  // resumir cabe en ella). Sin resumen o con el resumen atrasado, el tope de
+  // antes: lo que no está resumido no se tira mientras quepa en él.
+  const ventana = hilo.summary && sinResumir.length <= HISTORY_LIMIT ? HISTORY_LIMIT : HISTORY_LIMIT_SIN_RESUMEN;
 
   const history: ApiMessage[] = sinResumir
+    .slice(0, estrecha ? sinResumir.length : ventana)
     .reverse()
     .map((r) => ({ role: r.role, content: r.content }));
 
   // El estado se reconstruye en cada llamada (así nunca ve datos caducados)
   // pero viaja en el bloque de sistema, no aquí: ver la explicación de coste
   // en buildSystem. El turno del usuario lleva solo lo que él ha dicho.
+  // Se calcula UNA vez por turno: todas las vueltas del bucle llevan los
+  // mismos bytes delante (la caché del historial se lee dentro del turno).
   const previos = estrecha
     ? historialDeTexto(history, HISTORY_LIMIT_REGISTRO)
-    : markCacheable(aligerarHistorial(trimHistory(history)));
+    : markCacheable(historialLigero(history));
 
   // Las fotos van DELANTE del texto: el modelo lee mejor una imagen cuando la
   // pregunta viene después de verla, no antes.

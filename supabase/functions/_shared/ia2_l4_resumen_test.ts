@@ -97,12 +97,13 @@ const runsResumen = (fake: ReturnType<typeof instalar>) =>
 
 // ── Selección (pura) ─────────────────────────────────────────────────────
 
-Deno.test('L4 resumen: selección — menos de 12 nada; con 12 deja los 4 últimos y corta en un mensaje del gladiador', () => {
+Deno.test('L4 resumen: selección — por debajo de MIN_NUEVOS nada; con MIN_NUEVOS deja los 4 últimos y corta en un mensaje del gladiador', () => {
   equal(seleccionarParaResumir(mensajes(MIN_NUEVOS - 1) as any), null);
   const sel = seleccionarParaResumir(mensajes(MIN_NUEVOS) as any)!;
   ok(sel);
-  equal(sel.compactar.length, 8, '12 − 4 recientes (el 9.º es del gladiador)');
-  equal(sel.hasta, hora(7));
+  // L8: MIN_NUEVOS bajó de 12 a 6 (la ventana del historial con resumen).
+  equal(sel.compactar.length, MIN_NUEVOS - 4, 'MIN_NUEVOS − 4 recientes (el siguiente es del gladiador)');
+  equal(sel.hasta, hora(MIN_NUEVOS - 5));
   // Si el corte cae en una respuesta, se adelanta hasta el último mensaje del gladiador.
   const conHerramienta = mensajes(13);
   const sel2 = seleccionarParaResumir(conHerramienta as any)!;
@@ -111,8 +112,8 @@ Deno.test('L4 resumen: selección — menos de 12 nada; con 12 deja los 4 últim
 
 // ── De punta a punta por el handler ──────────────────────────────────────
 
-Deno.test('L4 resumen: con 11 mensajes sin resumir NO se resume (ni Haiku ni coach_runs)', async () => {
-  const fake = instalar({ otras: postgrest(datos({}, mensajes(11))), proveedor: proveedor() });
+Deno.test('L4 resumen: con 3 mensajes sin resumir (+2 del turno < MIN_NUEVOS) NO se resume (ni Haiku ni coach_runs)', async () => {
+  const fake = instalar({ otras: postgrest(datos({}, mensajes(MIN_NUEVOS - 3))), proveedor: proveedor() });
   try {
     await (await handler(peticion({ kind: 'chat', message: '¿cómo voy?', stream: false }))).text();
     await esperarSegundoPlano();

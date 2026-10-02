@@ -32,6 +32,7 @@ import { buildContextMinimo } from './context.ts';
 import { userClient } from './db.ts';
 import { CHEAP_MODEL, COACH_MODEL, costMicroUsd, estimarFichas } from './anthropic.ts';
 import { HEALTH_REQUIRED } from './health.ts';
+import { esperarSegundoPlano } from './resumenhilo.ts';
 
 const { handler } = await import('../coach/handler.ts');
 
@@ -340,6 +341,7 @@ Deno.test('L3 «te he subido el gym hoy»: modelo barato, pack fijo, sin dossier
     ok(guardados.some((g) => g.includes('te he subido el gym hoy')));
     ok(!guardados.some((g) => g.includes('Comprobación del sistema')));
   } finally {
+    await esperarSegundoPlano(); // L8: el resumen del hilo (segundo plano) no se escapa del fake
     fake.restaurar();
   }
 });
@@ -357,6 +359,7 @@ Deno.test('L3 «¿qué entreno hoy?» → ruta completa (coach, todas las herram
     equal(run.intent, 'general');
     equal(run.tools_offered, TOOL_DEFS.length);
   } finally {
+    await esperarSegundoPlano(); // L8: el resumen del hilo (segundo plano) no se escapa del fake
     fake.restaurar();
   }
 });
@@ -376,6 +379,7 @@ Deno.test('L3 modelo: routes.registro del plan manda; sin él, CHEAP_MODEL aunqu
       equal(cuerpo(fake, 0).model, esperado);
       equal(runs(fake)[0].intent, 'dato');
     } finally {
+      await esperarSegundoPlano(); // L8: el resumen del hilo (segundo plano) no se escapa del fake
       fake.restaurar();
     }
   }
@@ -392,11 +396,13 @@ Deno.test('L3 profundo y fotos: el parte va por la ruta completa', async () => {
       kind: 'chat', message: 'ya he entrenado', stream: false, date: HOY,
       imagenes: [{ media_type: 'image/jpeg', data: 'QUJD' }],
     }))).text();
-    const [profundo, conFoto] = runs(fake);
+    // L8: con 8 filas de hilo la ruta completa programa el resumen (resumen_hilo): no es un turno.
+    const [profundo, conFoto] = runs(fake).filter((r) => r.kind !== 'resumen_hilo');
     equal(profundo.route, 'completa');
     equal(conFoto.route, 'completa');
     equal(cuerpo(fake, 0).tools.length, TOOL_DEFS.length);
   } finally {
+    await esperarSegundoPlano(); // L8: el resumen del hilo (segundo plano) no se escapa del fake
     fake.restaurar();
   }
 });
@@ -414,6 +420,7 @@ Deno.test('L3 vueltas: como mucho 3 y la última va a texto (tool_choice none, m
     equal(cuerpo(fake, 2).tools.length, PACK_REGISTRO.length);
     equal(runs(fake)[0].iterations, 3);
   } finally {
+    await esperarSegundoPlano(); // L8: el resumen del hilo (segundo plano) no se escapa del fake
     fake.restaurar();
   }
 });
@@ -433,6 +440,7 @@ Deno.test('L3 registrar_dato del pack sí escribe (peso), con el JWT del usuario
     equal(pesos[0].rol, 'user');
     ok(!escriturasAjenas(fake).some((p) => /training_prescriptions|day_plans|day_blocks|quests$/.test(p)));
   } finally {
+    await esperarSegundoPlano(); // L8: el resumen del hilo (segundo plano) no se escapa del fake
     fake.restaurar();
   }
 });
@@ -443,6 +451,7 @@ Deno.test('L3 contexto mínimo: respeta el consentimiento de salud igual que bui
     await rejects(buildContextMinimo(userClient(USER_TOKEN), USER_ID, HOY), (e: Error) => e.message === HEALTH_REQUIRED);
     ok(!fake.llamadas.some((l) => l.url.pathname === '/rest/v1/gym_sessions'), 'ni se pide el gimnasio');
   } finally {
+    await esperarSegundoPlano(); // L8: el resumen del hilo (segundo plano) no se escapa del fake
     fake.restaurar();
   }
 });
@@ -468,6 +477,7 @@ Deno.test('L3 coste simulado: «te he subido el gym hoy» estrecho frente a comp
       equal(runs(fake)[0].route, rutaForzada);
       return { modelo: cuerpo(fake, 0).model, fichas: fichasDe(cuerpo(fake, 0)) };
     } finally {
+      await esperarSegundoPlano(); // L8: el resumen del hilo (segundo plano) no se escapa del fake
       fake.restaurar();
     }
   };
@@ -508,6 +518,7 @@ Deno.test('P0 Haiku: la petición a Haiku 4.5 no lleva thinking adaptive ni effo
     equal(b.thinking, undefined, 'sin thinking para Haiku 4.5');
     equal(b.output_config, undefined, 'sin effort para Haiku 4.5');
   } finally {
+    await esperarSegundoPlano(); // L8: el resumen del hilo (segundo plano) no se escapa del fake
     fake.restaurar();
   }
   const { admitePensamientoAdaptativo } = await import('./anthropic.ts');
@@ -536,6 +547,7 @@ Deno.test('P0 reintento: si el proveedor rechaza la ruta estrecha (400), respond
     equal(run.route, 'registro_reintento');
     equal(run.error, null);
   } finally {
+    await esperarSegundoPlano(); // L8: el resumen del hilo (segundo plano) no se escapa del fake
     fake.restaurar();
   }
 });
