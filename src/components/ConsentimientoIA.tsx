@@ -12,7 +12,7 @@
 // `{consentimiento.hoja}` en cualquier parte de su árbol.
 
 import Ionicons from '@expo/vector-icons/Ionicons';
-import * as Haptics from 'expo-haptics';
+import { vibrar } from '@/design/haptics';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Linking, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SystemButton } from '@/components/SystemButton';
@@ -52,7 +52,7 @@ export function ConsentimientoSheet({ visible, onAceptado, onCerrar }: SheetProp
     },
     alTerminar: () => setBusy(false),
     alAceptar: () => {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+      vibrar('mision');
       onAceptado();
     },
     alFallar: (e) => setAviso(mensajeSistema(e)),

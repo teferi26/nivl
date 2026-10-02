@@ -20,17 +20,23 @@ interface Props {
 
 type EstadoNodo = 'alcanzado' | 'actual' | 'futuro';
 
-function textoSiguiente(s: NonNullable<EstadoProgreso['siguienteRango']>): string {
-  const dias =
-    s.faltanDias != null && s.faltanDias > 0
-      ? `${s.faltanDias} ${s.faltanDias === 1 ? 'día activo' : 'días activos'}`
-      : null;
-  if (s.faltan <= 0) {
-    // El nivel ya llega: el rango espera a los días en la arena.
-    return dias ? `${dias} para ${s.nombre}.` : `Nivel listo para ${s.nombre}. Faltan días en la arena.`;
+/**
+ * «{n} niveles y {d} días activos para {nombre}». Sin los días activos
+ * (faltanDias null: sin red o sin sync_rank) no se inventa la cifra: se dice
+ * que el rango pide además días en la arena.
+ */
+export function textoSiguiente(s: NonNullable<EstadoProgreso['siguienteRango']>): string {
+  const niveles = s.faltan > 0 ? `${s.faltan} ${s.faltan === 1 ? 'nivel' : 'niveles'}` : null;
+  if (s.faltanDias == null) {
+    const pide = `${s.nombre} pide además días activos en la arena.`;
+    return niveles ? `${niveles} para ${s.nombre}. ${pide}` : `Nivel listo. ${pide}`;
   }
-  const niveles = `${s.faltan} ${s.faltan === 1 ? 'nivel' : 'niveles'}`;
-  return dias ? `${niveles} y ${dias} para ${s.nombre}.` : `${niveles} para ${s.nombre}.`;
+  const dias = s.faltanDias > 0 ? `${s.faltanDias} ${s.faltanDias === 1 ? 'día activo' : 'días activos'}` : null;
+  if (niveles && dias) return `${niveles} y ${dias} para ${s.nombre}.`;
+  if (niveles) return `${niveles} para ${s.nombre}.`;
+  // El nivel ya llega: el rango espera a los días en la arena.
+  if (dias) return `${dias} para ${s.nombre}.`;
+  return `Nivel y días listos para ${s.nombre}.`;
 }
 
 export function CaminoDeRangos({ rango, siguiente }: Props) {

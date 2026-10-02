@@ -1,5 +1,5 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import * as Haptics from 'expo-haptics';
+import { vibrar } from '@/design/haptics';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useRef, useState } from 'react';
 import {
@@ -200,7 +200,7 @@ export default function Contrato() {
     try {
       const res = await breakRule(profile, rule);
       setProfile(res.profile);
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+      vibrar('penalizacion');
       avisar(
         'REGISTRADO',
         `El sistema no juzga: registra. La misión "Consecuencia: ${rule.consequence}" te espera hoy en Sistema.`,
@@ -250,7 +250,7 @@ export default function Contrato() {
       const newTotal = await redeemBonus(REDEEM_COST, '1 h de descanso');
       setProfile((p) => (p ? { ...p, bonus_points: newTotal } : p));
       setSpentWeek((s) => s + REDEEM_COST);
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      vibrar('mision');
       avisar('DESCANSO GANADO', 'Disfrútalo sin culpa: lo has pagado con esfuerzo.');
     } catch (e) {
       avisar('Error del sistema', mensajeSistema(e));
@@ -268,7 +268,7 @@ export default function Contrato() {
       await sealLetter(userId, letterBody.trim(), openAt);
       setLetterFormOpen(false);
       setLetterBody('');
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      vibrar('mision');
       avisar('CARTA SELLADA', `El sistema la custodiará hasta el ${openAt}. Nadie podrá leerla antes, ni tú.`);
       await load();
     } catch (e) {
@@ -285,7 +285,7 @@ export default function Contrato() {
     try {
       const opened = await openLetter(letter);
       setLetter(opened);
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      vibrar('mision');
     } catch (e) {
       avisar('Error del sistema', mensajeSistema(e));
     } finally {

@@ -8,13 +8,19 @@
 //     `display` mientras la barra se llena; sin corona.
 //   · «reducir movimiento»: estado final directo con un fundido de 180 ms.
 //
-// Un toque en cualquier parte la cierra; los botones se quedan su toque. La
-// vibración la pone el proveedor (una sola, por la principal): aquí no.
+// Un toque en cualquier parte la cierra; los botones se quedan su toque (y
+// solo cuando ya se ven: antes no reciben toques). La vibración va por fases
+// (SISTEMA.md §9) y la pone ESTA pieza: Heavy al aparecer la cifra nueva
+// (~120 ms) y, en un rango, el segundo golpe con la corona (~1040 ms).
 // Es un Modal de RN: la hoja de compartir NO va aquí dentro (en Android la
 // captura sale negra); `onCompartir` la abre fuera, en la capa raíz.
+// Red de seguridad: si el Modal no llega a presentarse (onShow) en 1 s —en
+// iOS no sale con un UIAlertController abierto— se cierra solo para no
+// bloquear la cola.
 
 import { useEffect, useRef, useState } from 'react';
 import { AccessibilityInfo, Animated, Easing, Modal, Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import { vibrar } from '@/design/haptics';
 import { ink, motion, RANK_THEME, sizeClass, space, type } from '@/design/tokens';
 import { RANGOS, type Celebracion, type EstadoProgreso, type RangoId } from '@/lib/progression';
 import { Avatar, alturaCorona } from './Avatar';
@@ -38,6 +44,11 @@ export interface CeremonyProps {
 }
 
 const ANCHO_MAX = 560;
+/** Sin onShow en este tiempo, la ceremonia se da por perdida. */
+const ESPERA_ONSHOW_MS = 1000;
+/** Fases de la épica: sale la letra (120), sube (420), mezcla (500): la corona. */
+const MS_CIFRA = 120;
+const MS_CORONA = 120 + 420 + 500;
 
 /** Claves ya anunciadas al lector de pantalla (una vez por clave). */
 const anunciadas = new Set<string>();
@@ -85,8 +96,35 @@ function piezas(c: Celebracion): { viejo: string; nuevo: string; eyebrow: string
 
 export function Ceremony({ celebracion, forma, resumen, siguiente, avatar, onCerrar, onCompartir }: CeremonyProps) {
   const visible = celebracion !== null && (celebracion.tipo === 'rango' || celebracion.tipo === 'grado' || celebracion.tipo === 'nivel');
+  const onCerrarRef = useRef(onCerrar);
+  onCerrarRef.current = onCerrar;
+  const presentado = useRef(false);
+
+  // Se arma al pasar a visible (no en cada clave: dos ceremonias seguidas
+  // comparten la misma presentación del Modal y no hay un onShow nuevo).
+  useEffect(() => {
+    if (!visible) {
+      presentado.current = false;
+      return;
+    }
+    if (presentado.current) return;
+    const t = setTimeout(() => {
+      if (!presentado.current) onCerrarRef.current();
+    }, ESPERA_ONSHOW_MS);
+    return () => clearTimeout(t);
+  }, [visible]);
+
   return (
-    <Modal visible={visible} transparent statusBarTranslucent animationType="none" onRequestClose={onCerrar}>
+    <Modal
+      visible={visible}
+      transparent
+      statusBarTranslucent
+      animationType="none"
+      onRequestClose={onCerrar}
+      onShow={() => {
+        presentado.current = true;
+      }}
+    >
       {visible ? (
         <Contenido
           key={celebracion.clave}
@@ -137,6 +175,20 @@ function Contenido({ c, forma, resumen, siguiente, avatar, onCerrar, onCompartir
       AccessibilityInfo.announceForAccessibility(p.anuncio);
     }
     // Solo al montar: cada clave monta un Contenido nuevo (key).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Vibración por fases. Con «reducir movimiento» todo está ya en su sitio:
+  // un solo evento al aparecer.
+  useEffect(() => {
+    if (reducido) {
+      vibrar(epica ? 'rango' : 'nivel');
+      return;
+    }
+    const relojes = [setTimeout(() => vibrar('nivel'), MS_CIFRA)];
+    if (epica) relojes.push(setTimeout(() => vibrar('rango'), MS_CORONA));
+    return () => relojes.forEach(clearTimeout);
+    // Una vez por clave (key en el padre).
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -276,7 +328,7 @@ function Contenido({ c, forma, resumen, siguiente, avatar, onCerrar, onCompartir
 
           </View>
 
-          <Animated.View style={[styles.textos, { opacity: resto }]} pointerEvents="box-none">
+          <Animated.View style={[styles.textos, { opacity: resto }]} pointerEvents={terminado ? 'box-none' : 'none'}>
             <View style={styles.arriba} pointerEvents="none">
             <Text style={styles.headline} accessibilityRole="header">
               {p.titulo}
@@ -287,10 +339,16 @@ function Contenido({ c, forma, resumen, siguiente, avatar, onCerrar, onCompartir
                 <Text style={styles.sigTexto}>
                   Siguiente: {siguiente.nombre} en el nivel {siguiente.nivel}
                 </Text>
-                <Text style={styles.sigTexto}>
-                  Faltan {siguiente.faltan} {siguiente.faltan === 1 ? 'nivel' : 'niveles'}
-                  {faltanDias !== null && faltanDias > 0 ? ` y ${faltanDias} ${faltanDias === 1 ? 'día activo' : 'días activos'}` : ''}
-                </Text>
+                {siguiente.faltan > 0 || (faltanDias ?? 0) > 0 ? (
+                  <Text style={styles.sigTexto}>
+                    Faltan {siguiente.faltan} {siguiente.faltan === 1 ? 'nivel' : 'niveles'}
+                    {faltanDias !== null && faltanDias > 0 ? ` y ${faltanDias} ${faltanDias === 1 ? 'día activo' : 'días activos'}` : ''}
+                  </Text>
+                ) : null}
+                {/* Sin los días activos no se puede dar a entender que basten los niveles. */}
+                {faltanDias === null && siguiente.dias > 0 ? (
+                  <Text style={styles.sigTexto}>{siguiente.nombre} pide además días activos en la arena</Text>
+                ) : null}
               </View>
             ) : null}
             {resumen.length > 0 ? <Text style={styles.resumen}>{resumen.join(' · ')}</Text> : null}

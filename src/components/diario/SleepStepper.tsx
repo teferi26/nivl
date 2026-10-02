@@ -6,7 +6,7 @@
 // el primer toque lo deja en 7.
 
 import Ionicons from '@expo/vector-icons/Ionicons';
-import * as Haptics from 'expo-haptics';
+import { vibrar } from '@/design/haptics';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SUENO_MAX, SUENO_MIN, formatoDecimal, formatoHoras, pasoDeSueno } from '@/lib/journalmath';
 import { colors, fonts } from '@/lib/theme';
@@ -20,7 +20,7 @@ export function SleepStepper({ value, onChange }: Props) {
   const mover = (dir: 1 | -1) => {
     const next = pasoDeSueno(value, dir);
     if (next === value) return;
-    Haptics.selectionAsync().catch(() => {});
+    vibrar('seleccion');
     onChange(next);
   };
   const enMinimo = value !== null && value <= SUENO_MIN;

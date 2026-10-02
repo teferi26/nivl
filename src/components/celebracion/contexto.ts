@@ -36,8 +36,15 @@ export interface CelebracionApi {
   celebrar(a: AccionCelebrable): void;
   /** Toast suelto, por la misma cola: nunca dos a la vez. */
   avisar(texto: string): void;
-  /** Abre HojaCompartir en la capa raíz. */
-  compartir(t: Tarjeta): void;
+  /**
+   * Abre HojaCompartir en la capa raíz (pausa la cola mientras está abierta).
+   * `retratoUri`: el retrato del usuario para la tarjeta (p. ej. la de rango en Perfil).
+   */
+  compartir(t: Tarjeta, opciones?: OpcionesCompartir): void;
+}
+
+export interface OpcionesCompartir {
+  retratoUri?: string | null;
 }
 
 const NOOP: CelebracionApi = { celebrando: false, celebrar: () => {}, avisar: () => {}, compartir: () => {} };

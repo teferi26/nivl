@@ -13,7 +13,6 @@
 // quién instaló por el enlace; se cuenta quién metió el código.
 
 import Ionicons from '@expo/vector-icons/Ionicons';
-import * as Haptics from 'expo-haptics';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useRef, useState } from 'react';
 import {
@@ -43,6 +42,7 @@ import {
   StatRow,
   Tag,
 } from '@/components/ui';
+import { vibrar } from '@/design/haptics';
 import { ink, space, stroke, type as tipo } from '@/design/tokens';
 import {
   estadoReto,
@@ -75,6 +75,12 @@ import { mensajeSistema } from '@/lib/validation';
 
 const MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sept', 'oct', 'nov', 'dic'];
 
+/** «Creador novato» → «Novato»: el rol ya va delante en el subtítulo. */
+function rangoSinRol(label: string): string {
+  const r = label.replace(/^creador\s+/i, '');
+  return r.charAt(0).toUpperCase() + r.slice(1);
+}
+
 /** 'AAAA-MM' → «sept 2026». */
 function mesLabel(month: string): string {
   const [a, m] = month.split('-');
@@ -94,7 +100,8 @@ export default function Creador() {
 
   const load = useCallback(async () => {
     try {
-      const [p, board] = await Promise.all([fetchCreatorPanel(), fetchCreatorBoard()]);
+      // La tabla es accesoria: sin ella el panel sale igual (vacía).
+      const [p, board] = await Promise.all([fetchCreatorPanel(), fetchCreatorBoard().catch(() => [])]);
       // Lo de la 0046 es accesorio: si falla, el panel sale igual con lo de la 0025.
       const [progreso, historico, tabla] = await Promise.all([
         fetchCreatorProgress().catch(() => null),
@@ -144,7 +151,7 @@ export default function Creador() {
     if (!vista?.code) return;
     try {
       Clipboard.setString(vista.code);
-      Haptics.selectionAsync().catch(() => {});
+      vibrar('seleccion');
       setCopiado(true);
       if (copiadoTimer.current) clearTimeout(copiadoTimer.current);
       copiadoTimer.current = setTimeout(() => setCopiado(false), 2000);
@@ -175,7 +182,7 @@ export default function Creador() {
         {error ? (
           <EmptyState
             icon="cloud-offline-outline"
-            title="No se ha podido cargar"
+            title="El sistema no responde"
             body={error}
             action={{ label: 'Reintentar', onPress: refrescar }}
           />
@@ -192,7 +199,7 @@ export default function Creador() {
   }
 
   const web: PanelCreadorWeb | null = vista.conImportes ? vista : null;
-  const subtitulo = web ? lineaRango(web.rank, web.pct, web.baseCents) : `${vista.rolLabel} · ${vista.rangoLabel}`;
+  const subtitulo = web ? lineaRango(web.rank, web.pct, web.baseCents) : `${vista.rolLabel} · ${rangoSinRol(vista.rangoLabel)}`;
 
   return (
     <Screen refreshing={refreshing} onRefresh={refrescar}>
@@ -352,7 +359,12 @@ function ProgresoRango({ vista }: { vista: PanelCreadorVista }) {
         </StatRow>
         {p.siguiente && p.umbral != null ? (
           <>
-            <Barra fraccion={p.fraccion} etiqueta={`Hacia ${rangoLabel(p.siguiente)}`} />
+            <Barra
+              fraccion={p.fraccion}
+              etiqueta={`Hacia ${rangoLabel(p.siguiente)}`}
+              ventas={vista.sales90d}
+              meta={p.umbral}
+            />
             <Text style={styles.lineaProgreso}>
               {p.faltan
                 ? `${rangoLabel(p.siguiente)}: ${p.umbral} ventas en 90 días. Te faltan ${p.faltan}.`
@@ -368,14 +380,14 @@ function ProgresoRango({ vista }: { vista: PanelCreadorVista }) {
 }
 
 /** Barra de progreso B/N: pista ink3, relleno ink10. Sin porcentajes en el estilo. */
-function Barra({ fraccion, etiqueta }: { fraccion: number; etiqueta: string }) {
+function Barra({ fraccion, etiqueta, ventas, meta }: { fraccion: number; etiqueta: string; ventas: number; meta: number }) {
   const f = Math.max(0, Math.min(1, fraccion));
   return (
     <View
       style={styles.pista}
       accessibilityRole="progressbar"
       accessibilityLabel={etiqueta}
-      accessibilityValue={{ min: 0, max: 100, now: Math.round(f * 100) }}
+      accessibilityValue={{ text: `${ventas} de ${meta} ventas` }}
     >
       <View style={[styles.relleno, { flex: f }]} />
       <View style={{ flex: 1 - f }} />
@@ -397,7 +409,7 @@ function RetoCard({ reto }: { reto: RetoVista }) {
       <Text style={styles.retoCifra}>
         {reto.sales}/{reto.goalSales} ventas
       </Text>
-      <Barra fraccion={e.fraccion} etiqueta={`Reto ${reto.title}`} />
+      <Barra fraccion={e.fraccion} etiqueta={`Reto ${reto.title}`} ventas={reto.sales} meta={reto.goalSales} />
       <Text style={styles.retoTexto}>{e.linea}</Text>
       {reto.prize ? <Text style={styles.retoPremio}>Premio: {reto.prize}</Text> : null}
     </Card>

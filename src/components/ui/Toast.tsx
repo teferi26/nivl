@@ -17,11 +17,16 @@ interface Props {
   /** Texto del aviso. null = no hay toast. Un mensaje nuevo reinicia el ciclo. */
   message: string | null;
   onDone: () => void;
+  /**
+   * Lo que se lee al lector de pantalla; por defecto, `message`. Cadena vacía:
+   * no se anuncia nada (p. ej. un toast que solo repite lo ya leído).
+   */
+  anuncio?: string;
 }
 
 const VISIBLE_MS = 1600;
 
-export function Toast({ message, onDone }: Props) {
+export function Toast({ message, onDone, anuncio }: Props) {
   const insets = useSafeAreaInsets();
   const reducido = useMovimientoReducido();
   const opacity = useRef(new Animated.Value(0)).current;
@@ -32,10 +37,13 @@ export function Toast({ message, onDone }: Props) {
   onDoneRef.current = onDone;
   const reducidoRef = useRef(reducido);
   reducidoRef.current = reducido;
+  const anuncioRef = useRef(anuncio);
+  anuncioRef.current = anuncio;
 
   useEffect(() => {
     if (message === null) return;
-    AccessibilityInfo.announceForAccessibility(message);
+    const leer = anuncioRef.current ?? message;
+    if (leer.trim().length > 0) AccessibilityInfo.announceForAccessibility(leer);
     const quieto = reducidoRef.current;
     opacity.setValue(0);
     translateY.setValue(quieto ? 0 : -12);

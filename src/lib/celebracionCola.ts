@@ -110,9 +110,23 @@ export function romano(n: number): string {
   return n === 3 ? 'III' : n === 2 ? 'II' : 'I';
 }
 
-/** Texto del toast de un momento: [principal, ...resumen] con « · ». */
+/** Todas las líneas de un momento: [principal, ...resumen]. */
+export function lineasDe(m: Momento): string[] {
+  return [...(m.principal ? [textoDe(m.principal)] : []), ...m.resumen];
+}
+
+/** Líneas que caben en un toast: la principal y una más. */
+export const LINEAS_TOAST = 2;
+
+/**
+ * Texto del toast de un momento: la principal y una línea más, con « · »; si
+ * hay más, « y N más». Lo completo va en la ceremonia o en el anuncio.
+ */
 export function textoToast(m: Momento): string {
-  return [...(m.principal ? [textoDe(m.principal)] : []), ...m.resumen].join(' · ');
+  const lineas = lineasDe(m);
+  const texto = lineas.slice(0, LINEAS_TOAST).join(' · ');
+  const quedan = lineas.length - LINEAS_TOAST;
+  return quedan > 0 ? `${texto} y ${quedan} más` : texto;
 }
 
 export function formaDe(principal: Celebracion | null): FormaMomento {
@@ -123,6 +137,12 @@ export function formaDe(principal: Celebracion | null): FormaMomento {
 
 function sinRepetir(xs: string[]): string[] {
   return [...new Set(xs.filter((x) => x.trim().length > 0))];
+}
+
+/** Una celebración por clave (la primera que llegó). */
+function sinClaveRepetida(xs: Celebracion[]): Celebracion[] {
+  const vistas = new Set<string>();
+  return xs.filter((c) => (vistas.has(c.clave) ? false : (vistas.add(c.clave), true)));
 }
 
 /** Fusión de una llegada sobre lo acumulado de su acción. */
@@ -136,7 +156,7 @@ export function fusionar(prev: Acumulado | undefined, a: AccionCelebrable): Acum
     logrosNuevos: [...nuevos.values()],
     fecha: prev?.fecha ?? a.fecha,
     recuperadoXp: Math.max(prev?.recuperadoXp ?? 0, a.recuperadoXp ?? 0) || undefined,
-    extra: [...(prev?.extra ?? []), ...(a.extra ?? [])],
+    extra: sinClaveRepetida([...(prev?.extra ?? []), ...(a.extra ?? [])]),
     resumen: [...(prev?.resumen ?? []), ...(a.resumen ?? [])],
     cerrada: false,
   };
@@ -230,7 +250,7 @@ function cerrar(s: EstadoCola, accion: string): EstadoCola {
       return mostrar({ ...sin, mostrando: null }, { ...m, resumen });
     }
     // La ceremonia se come el toast: su texto pasa al resumen.
-    const resumen = sinRepetir([textoToast(vis), ...m.resumen.filter((x) => !vis.resumen.includes(x))]);
+    const resumen = sinRepetir([...lineasDe(vis), ...m.resumen]);
     return mostrar({ ...sin, mostrando: null }, { ...m, resumen });
   }
 
