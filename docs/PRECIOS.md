@@ -16,7 +16,7 @@ Instagram, TikTok y YouTube.
 | Amigos, ranking y compartir progreso | sí | sí | sí |
 | Coach de IA (brief, plan del día, chat, revisión semanal, entreno y dieta) | no | **Estándar** (DeepSeek) | **Máxima potencia** (Sonnet) + modo profundo (Sonnet a `xhigh`) |
 | Comunidad privada, grupos de 5-8 por objetivo, ranking propio | no | no | sí |
-| Revisión semanal profunda (semana + ficha física + fotos) | no | no | sí |
+| Revisión semanal profunda (semana + ficha física + progreso) | no | no | sí |
 | Insignia dorado laurel, acceso anticipado, retos trimestrales con premio | no | no | sí |
 
 | Plan | Mensual | Anual |
