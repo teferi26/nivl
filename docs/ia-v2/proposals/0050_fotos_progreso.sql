@@ -1,6 +1,4 @@
 -- 0050 · Fotos de progreso corporales y confirmación 18+ (Chat 3; número asignado por el coordinador 02/10/2026).
--- PROPUESTA (Chat 3 · almacenamiento seguro de FOTOS DE PROGRESO corporales). NO es una migración aplicada:
--- el coordinador le asigna número (≥0045) al integrarla en supabase/migrations/.
 -- Huella: to_regclass('public.progress_photos') is not null
 -- Test: fotos-progreso.test.sql (se inyecta este archivo SIN sus líneas begin/commit en el marcador
 --       «-- @@MIGRACION@@» del test y se ejecuta todo con rosql.mjs en BEGIN…ROLLBACK).
