@@ -13,6 +13,7 @@
 // vista (left: -10000) a 1080 px físicos. Sin animaciones: respeta «reducir
 // movimiento» por construcción.
 
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { useEffect, useRef, useState } from 'react';
 import { PixelRatio, Platform, Pressable, ScrollView, StyleSheet, Switch, Text, useWindowDimensions, View } from 'react-native';
 import { compartirTarjeta, type Ancla } from '@/lib/share';
@@ -171,17 +172,14 @@ export function HojaCompartir({ visible, onCerrar, tarjeta, contexto, alias, ret
           {codigoAmigo ? (
             <Interruptor rotulo="Añadir mi enlace de invitación" valor={opciones.incluirInvitacion} onCambio={cambiar('incluirInvitacion')} />
           ) : null}
-
-          {motivo ? <Text style={styles.nota}>{motivo}</Text> : null}
-          {aviso ? <Text style={styles.nota}>{aviso}</Text> : null}
-          {error ? (
-            <Text style={styles.nota} accessibilityLiveRegion="polite">
-              {error}
-            </Text>
-          ) : null}
         </ScrollView>
 
         <View ref={boton} collapsable={false} style={styles.pie}>
+          {/* Avisos justo encima del botón (Chat 4). Bloqueo y error con trama:
+              hasta integrar <Trama/> de ui/Texture.tsx, un borde ink6. */}
+          {motivo ? <Aviso texto={motivo} trama /> : null}
+          {aviso ? <Aviso texto={aviso} /> : null}
+          {error ? <Aviso texto={error} trama alerta /> : null}
           <Pressable
             onPress={compartir}
             disabled={!puede}
@@ -193,6 +191,19 @@ export function HojaCompartir({ visible, onCerrar, tarjeta, contexto, alias, ret
           </Pressable>
         </View>
       </View>
+    </View>
+  );
+}
+
+function Aviso({ texto, trama = false, alerta = false }: { texto: string; trama?: boolean; alerta?: boolean }) {
+  return (
+    <View
+      style={[styles.aviso, trama && styles.avisoTrama]}
+      accessibilityRole={alerta ? 'alert' : undefined}
+      accessibilityLiveRegion={alerta ? 'polite' : undefined}
+    >
+      <Ionicons name="information-circle-outline" size={16} color={ink.ink8} />
+      <Text style={styles.nota}>{texto}</Text>
     </View>
   );
 }
@@ -232,7 +243,9 @@ const styles = StyleSheet.create({
   formatoTextoActivo: { color: ink.ink0 },
   fila: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', minHeight: 44, borderBottomWidth: 1, borderBottomColor: ink.ink3, gap: 12 },
   filaTexto: { fontFamily: fonts.body, fontSize: 16, color: ink.ink9, flexShrink: 1 },
-  nota: { fontFamily: fonts.body, fontSize: 14, lineHeight: 20, color: ink.ink8 },
+  nota: { fontFamily: fonts.body, fontSize: 14, lineHeight: 20, color: ink.ink8, flexShrink: 1 },
+  aviso: { flexDirection: 'row', alignItems: 'flex-start', gap: 8, marginBottom: 12 },
+  avisoTrama: { borderWidth: 1, borderColor: ink.ink6, padding: 10 },
   pie: { paddingHorizontal: 20, paddingTop: 12, paddingBottom: 32, borderTopWidth: 1, borderTopColor: ink.ink3 },
   boton: { minHeight: 52, backgroundColor: ink.ink10, alignItems: 'center', justifyContent: 'center' },
   botonApagado: { backgroundColor: ink.ink1, borderWidth: 1, borderColor: ink.ink4 },
