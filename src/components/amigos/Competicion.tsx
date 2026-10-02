@@ -13,6 +13,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Barra } from '@/components/arena';
 import { Avatar, Button, Card, Chip, ChipWrap, confirmar, Row, Section, Sheet } from '@/components/ui';
 import { SIN_DATO } from '@/components/ui/sinDato';
 import { vibrar } from '@/design/haptics';
@@ -385,22 +386,23 @@ function DueloActivo({ d, hoy }: { d: Duelo; hoy: string }) {
         </Text>
         <Text style={styles.dueloMeta}>{textoQuedan(quedan)}</Text>
       </View>
-      <Barra etiqueta="Tú" valor={d.mi_indice} dias={d.mis_dias} fuerte={delante !== 'rival'} />
-      <Barra etiqueta={d.rival ?? ''} valor={d.su_indice} dias={d.sus_dias} fuerte={delante !== 'yo'} />
+      <BarraDuelo etiqueta="Tú" valor={d.mi_indice} dias={d.mis_dias} mia />
+      <BarraDuelo etiqueta={d.rival ?? ''} valor={d.su_indice} dias={d.sus_dias} />
       <Text style={styles.dueloLinea}>{linea} · disciplina de la semana</Text>
     </Card>
   );
 }
 
-function Barra({ etiqueta, valor, dias, fuerte }: { etiqueta: string; valor: number; dias: number; fuerte: boolean }) {
-  const pct = Math.max(0, Math.min(100, valor));
+// La barra de la arena (L-RADICAL §B.4.4): la mía en blanco, la del rival en
+// ink8. El duelo entero se anuncia en la tarjeta; la fila no se lee aparte.
+function BarraDuelo({ etiqueta, valor, dias, mia }: { etiqueta: string; valor: number; dias: number; mia?: boolean }) {
   return (
     <View style={styles.barraFila} importantForAccessibility="no-hide-descendants" accessibilityElementsHidden>
       <Text style={styles.barraEtiqueta} numberOfLines={1}>
         {etiqueta}
       </Text>
       <View style={styles.pista}>
-        <View style={[styles.relleno, { width: `${pct}%` }, !fuerte && styles.rellenoTenue]} />
+        <Barra ratio={valor / 100} alto={6} tono={mia ? 'blanco' : 'ink8'} etiqueta={`Disciplina de ${etiqueta}`} />
       </View>
       <Text style={styles.barraValor}>{valor}</Text>
       <Text style={styles.barraDias}>{dias} d</Text>
@@ -782,9 +784,7 @@ const styles = StyleSheet.create({
   dueloLinea: { fontFamily: fonts.body, fontSize: 13, color: ink.ink8, marginTop: 2 },
   barraFila: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   barraEtiqueta: { width: 72, fontFamily: fonts.body, fontSize: 12.5, color: ink.ink8 },
-  pista: { flex: 1, height: 6, backgroundColor: ink.ink2 },
-  relleno: { height: '100%', backgroundColor: ink.ink10 },
-  rellenoTenue: { backgroundColor: ink.ink6 },
+  pista: { flex: 1 },
   barraValor: { width: 28, textAlign: 'right', fontFamily: fonts.number, fontSize: 13, color: ink.ink9 },
   barraDias: { width: 28, textAlign: 'right', fontFamily: fonts.body, fontSize: 11, color: ink.ink6 },
   rotulo: {
