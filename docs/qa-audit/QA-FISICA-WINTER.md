@@ -154,3 +154,7 @@ Casos que coinciden con otros de la lista:
 - PAY-01 = O-09/A6;
 - PAY-11 = O-10/A8;
 - PAY-20 = W-21.
+- Ajustes del Chat 2:
+  - PAY-03 y PAY-13 son **P0 para el lanzamiento en Android** (doble cobro en Play) y P1 en iOS.
+  - PAY-21 sube a P1 (Apple 2.3.10).
+  - PAY-01 se graba en la build que lleve el paywall empaquetado. Si llega por OTA, el primer arranque muestra el paywall antiguo: se graba después del segundo arranque y se anota.
