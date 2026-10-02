@@ -551,3 +551,54 @@ Deno.test('P0 reintento: si el proveedor rechaza la ruta estrecha (400), respond
     fake.restaurar();
   }
 });
+
+// ── Ruta estrecha por DeepSeek (Pro y la prueba): routes.registro = deepseek-v4-flash ──
+// Comprobación previa al UPDATE de ai_plans: herramientas del pack en formato
+// OpenAI, tool_calls, saneado del guion largo y tarifa conocida.
+
+function sseCompat(trozos: unknown[]): Response {
+  const cuerpo = trozos.map((t) => `data: ${JSON.stringify(t)}\n\n`).join('') + 'data: [DONE]\n\n';
+  return new Response(cuerpo, { headers: { 'content-type': 'text/event-stream' } });
+}
+
+Deno.test('Ruta estrecha por DeepSeek: pack de 4 herramientas, tool_calls, sin guion largo y coste con tarifa de DeepSeek', async () => {
+  Deno.env.set('COACH_BASE_URL', 'https://deepseek.fake/v1');
+  Deno.env.set('COACH_API_KEY', 'clave-de-prueba');
+  const fake = instalar({
+    otras: postgrest(datos()),
+    rpc: { ai_begin_turn: () => ({ allowed: true, mode: 'estandar', turn_budget: 5_000_000, routes: { default: 'deepseek-v4-flash', registro: 'deepseek-v4-flash' } }) },
+    proveedor: (_b, n) =>
+      n === 0
+        ? sseCompat([
+          { model: 'deepseek-flash', choices: [{ delta: { tool_calls: [{ index: 0, id: 'call_1', function: { name: 'consultar_dia', arguments: '{"fecha":""}' } }] } }] },
+          { model: 'deepseek-flash', choices: [{ delta: {}, finish_reason: 'tool_calls' }] },
+          { model: 'deepseek-flash', choices: [], usage: { prompt_tokens: 3000, completion_tokens: 40, prompt_cache_hit_tokens: 0 } },
+        ])
+        : sseCompat([
+          { model: 'deepseek-flash', choices: [{ delta: { content: 'Consta — sentadilla 100×5, 100×5.' } }] },
+          { model: 'deepseek-flash', choices: [{ delta: {}, finish_reason: 'stop' }] },
+          { model: 'deepseek-flash', choices: [], usage: { prompt_tokens: 3200, completion_tokens: 30, prompt_cache_hit_tokens: 2800 } },
+        ]),
+  });
+  try {
+    const r = await handler(peticion({ kind: 'chat', message: 'te he subido el gym hoy', stream: false, date: HOY }));
+    equal(r.status, 200);
+    const respuesta = await r.json() as { text: string };
+    equal(respuesta.text.includes('—'), false, 'sin guion largo');
+    ok(respuesta.text.includes('100×5'));
+    const primera = fake.proveedor[0];
+    ok(primera.url.pathname.endsWith('/chat/completions'), 'va por la API compatible');
+    const b = primera.body as { model: string; tools: { function: { name: string } }[] };
+    equal(b.model, 'deepseek-v4-flash');
+    deepEqual(b.tools.map((t) => t.function.name), TOOL_DEFS_REGISTRO.map((t) => t.name), 'las 4 del pack en formato OpenAI');
+    const [run] = runs(fake);
+    equal(run.route, 'registro');
+    // Tarifa de DeepSeek (0,44/1,32 por M), no la de Opus: dos llamadas pequeñas, muy por debajo de 0,01 $.
+    ok(Number(run.cost_micro_usd) > 0 && Number(run.cost_micro_usd) < 5_000, `coste ${run.cost_micro_usd} µ$`);
+  } finally {
+    await esperarSegundoPlano();
+    fake.restaurar();
+    Deno.env.delete('COACH_BASE_URL');
+    Deno.env.delete('COACH_API_KEY');
+  }
+});
