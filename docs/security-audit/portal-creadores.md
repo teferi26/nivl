@@ -66,10 +66,19 @@ creadores activos) junto a su puesto. Es una decisión de negocio que ya está e
 - Con `signInWithPassword` **no hace falta añadir `creadores.nivl.app` a la lista**. No añadirlo con
   comodín. Si algún día hay restablecer contraseña en el portal: la ruta exacta
   `https://creadores.nivl.app/auth/callback`, PKCE y canje manual (como la app).
-- Un formulario de login público y nuevo atrae relleno de credenciales contra cuentas NIVL. Antes de
-  anunciarlo, recomiendo activar CAPTCHA (Turnstile) en Auth. Es un cambio de configuración: lo
-  deciden el coordinador y el dueño. Mientras tanto: `noindex`, sin enlaces públicos y mensajes de
-  error genéricos (`authFlow.lanzar` ya no distingue entre cuenta inexistente y contraseña mala).
+- Un formulario de login público y nuevo atrae relleno de credenciales contra cuentas NIVL.
+  **Decisión del coordinador (03/10): CAPTCHA NO por ahora.** Supabase lo exige en todo
+  `signIn`/`signUp` del proyecto, y las builds 21 y 1.0.8 no mandan `captchaToken`: se rompería el
+  login de la app y el del revisor de Apple. HIBP pide plan de pago. Se revisa cuando la 1.0.9 mande
+  el token de Turnstile. **Riesgo aceptado** hasta entonces, con lo que hay:
+  - los límites por IP de Auth por defecto;
+  - `noindex`, sin enlaces públicos;
+  - errores genéricos: `traducirErrorAuth` da el mismo mensaje para cuenta inexistente y contraseña mala.
+- **El rate limit o la Firewall de Vercel en `/creador` NO protege el login.** El navegador llama a
+  `https://dueyufxxkiixdxighpaz.supabase.co/auth/v1/token` directamente, sin pasar por Vercel, y un
+  atacante ni siquiera necesita cargar el portal: puede atacar ese endpoint de Auth hoy mismo, con o
+  sin portal. Limitar en Vercel solo frena la descarga del HTML, así que no es una alternativa al
+  CAPTCHA. El portal apenas añade riesgo a lo que ya existe: es un formulario más contra el mismo endpoint.
 - **CORS:** PostgREST y Auth de Supabase responden `Access-Control-Allow-Origin: *` y no se puede
   configurar. No es un control: el control es JWT más RPC con `auth.uid()` (§2). El portal no llama a
   Edge Functions, así que no hay CORS propio que tocar.
