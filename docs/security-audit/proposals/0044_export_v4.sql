@@ -1,6 +1,6 @@
--- PROPUESTA Chat 3 · Seguridad (sin número): exportación v4.
+-- 0044 · Exportación v4 (Chat 3 · Seguridad; número asignado por el coordinador 02/10/2026).
 -- Huella: coalesce(obj_description('public.export_my_data()'::regprocedure, 'pg_proc') like '%nivl:export-completo-v4%', false)
--- Test: c3-export-v4.test.sql (sin aplicar nada antes; aplica esta migración y el test en una transacción que se revierte).
+-- Test: 0044_export_v4.test.sql (aplicar esta migración sin begin/commit y el test en una transacción que se revierte).
 --
 -- Hallazgo del humo post-despliegue (02/10, producción en rollback): la 0040
 -- dejó de cubrir las tablas con dueño creadas después: ai_reports (0037,
