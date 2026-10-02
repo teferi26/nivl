@@ -40,6 +40,7 @@
 //
 // Ninguna credencial ni correo se imprime nunca, tampoco en los errores.
 
+import { Buffer } from 'node:buffer';
 import { createHash } from 'node:crypto';
 
 // ── Curva (espejo de src/lib/game.ts y de _nivel_de_xp en la 0051) ─────────
