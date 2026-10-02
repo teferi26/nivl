@@ -11,7 +11,7 @@ import { lineaEnJuego } from '@/components/hoy/enJuego';
 import { PanelHoy } from '@/components/hoy/PanelHoy';
 import { TarjetaRango } from '@/components/hoy/TarjetaRango';
 import { QuestItem } from '@/components/QuestItem';
-import { prepararDatosSemana, ShareSemanaModal, type DatosSemana } from '@/components/ShareCardSemana';
+import { prepararDatosSemana, tarjetaDeSemana } from '@/components/ShareCardSemana';
 import {
   Button,
   Card,
@@ -125,7 +125,7 @@ export default function Hoy() {
   const [refreshing, setRefreshing] = useState(false);
   // XP, nivel, racha, logros y rango van por la cola global de celebraciones:
   // una principal y un resumen por acción, nunca dos avisos a la vez.
-  const { celebrar } = useCelebracion();
+  const { celebrar, compartir } = useCelebracion();
   // Logros conocidos (de ellos sale el rango de «antes» de cada acción).
   const logrosRef = useRef<Set<string> | null>(null);
   const [plan, setPlan] = useState<PlanConBloques | null>(null);
@@ -140,7 +140,6 @@ export default function Hoy() {
   const [diaPerfecto, setDiaPerfecto] = useState(false);
   // RET-03: la misión recién completada ha abierto la recuperación.
   const [avisoRecuperacion, setAvisoRecuperacion] = useState(false);
-  const [tarjeta, setTarjeta] = useState<DatosSemana | null>(null);
   const [preparandoTarjeta, setPreparandoTarjeta] = useState(false);
   // Rango vigente (estadoDe con los logros). null = aún no se sabe: hueco.
   const [rango, setRango] = useState<RangoId | null>(null);
@@ -566,7 +565,7 @@ export default function Hoy() {
     try {
       // El marcador se pide de nuevo: el que hay en memoria es de antes de
       // completar la última misión.
-      setTarjeta(await prepararDatosSemana(userId));
+      compartir(tarjetaDeSemana(await prepararDatosSemana(userId)));
     } catch (e) {
       avisar('Error del sistema', mensajeSistema(e));
     } finally {
@@ -964,7 +963,6 @@ export default function Hoy() {
       </Stagger>
 
       <CompletarSheet quest={sheetQuest} onElegir={elegirEnHoja} onClose={cerrarHoja} />
-      <ShareSemanaModal visible={tarjeta !== null} datos={tarjeta} onClose={() => setTarjeta(null)} />
     </Screen>
   );
 }

@@ -30,7 +30,7 @@ import { signedUrlCached } from '@/lib/data';
 import { dateKey } from '@/lib/dates';
 import { rangoPorId, type Celebracion } from '@/lib/progression';
 import { tarjetaDeCelebracion, type Tarjeta } from '@/lib/sharecard';
-import { fetchSocialSelf } from '@/lib/social';
+import { fetchAliasCompartir, fetchSocialSelf } from '@/lib/social';
 import { supabase } from '@/lib/supabase';
 import { CelebracionContext, type AccionCelebrable, type CelebracionApi, type OpcionesCompartir } from './contexto';
 
@@ -56,6 +56,13 @@ export function tarjetaDe(c: Celebracion, estado: Momento['estado']): Tarjeta | 
     rachaDias: t.rachaDias ?? (estado.racha > 0 ? estado.racha : undefined),
   };
 }
+
+/**
+ * Alias para firmar la tarjeta (Chat 3, 0053): solo se pide al encender el
+ * interruptor de la hoja. Llega el público, el aprobado o el genérico, nunca
+ * el nombre real ni uno pendiente; null = sin firma.
+ */
+const pedirAlias = () => fetchAliasCompartir().then((a) => a?.alias ?? null);
 
 export function CelebracionProvider({ children }: { children: ReactNode }) {
   const { session, loading } = useAuth();
@@ -318,7 +325,7 @@ export function CelebracionProvider({ children }: { children: ReactNode }) {
                 onCerrar={cerrarHoja}
                 tarjeta={hoja.tarjeta}
                 contexto={{ puedeCompartirFotos: false }}
-                alias={null}
+                pedirAlias={pedirAlias}
                 codigoAmigo={hoja.codigo}
                 retratoUri={hoja.retratoUri}
               />
