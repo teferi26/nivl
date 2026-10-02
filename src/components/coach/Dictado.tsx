@@ -220,7 +220,11 @@ function useLectorPantalla(): boolean {
   return activo;
 }
 
-/** El botón del micrófono: 46 × 46, en el sitio de «enviar» cuando no hay nada que enviar. */
+/**
+ * El botón del micrófono: círculo de 48 con aro de 3 en ink10 sobre negro (L-RADICAL
+ * §B.2), en el sitio de «enviar» cuando no hay nada que enviar. Grabando se
+ * enciende en blanco: enviar no está en pantalla, la inversión sigue siendo una.
+ */
 export function BotonDictar({ dictado, disabled }: { dictado: Dictado; disabled?: boolean }) {
   const lector = useLectorPantalla();
   const y0 = useRef(0);
@@ -249,7 +253,7 @@ export function BotonDictar({ dictado, disabled }: { dictado: Dictado; disabled?
           if (e.nativeEvent.actionName === 'escape') descartar();
         }}
       >
-        <Ionicons name={dictado.grabando ? 'stop' : 'mic-outline'} size={20} color={enMarcha ? ink.ink0 : ink.ink8} />
+        <Ionicons name={dictado.grabando ? 'stop' : 'mic-outline'} size={20} color={enMarcha ? ink.ink0 : ink.ink10} />
       </Pressable>
     );
   }
@@ -274,7 +278,7 @@ export function BotonDictar({ dictado, disabled }: { dictado: Dictado; disabled?
       accessibilityHint="Mantén pulsado para grabar y suelta para escribirlo"
       accessibilityState={{ disabled: !!disabled, busy: dictado.grabando }}
     >
-      <Ionicons name="mic-outline" size={20} color={enMarcha ? ink.ink0 : ink.ink8} />
+      <Ionicons name="mic-outline" size={20} color={enMarcha ? ink.ink0 : ink.ink10} />
     </View>
   );
 }
@@ -320,7 +324,16 @@ export function FranjaGrabacion({ dictado, aviso }: { dictado: Dictado; aviso?: 
 }
 
 const styles = StyleSheet.create({
-  boton: { width: 46, height: 46, alignItems: 'center', justifyContent: 'center', backgroundColor: ink.ink1 },
+  boton: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    borderWidth: 3,
+    borderColor: ink.ink10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: ink.ink0,
+  },
   botonOn: { backgroundColor: ink.ink10 },
   apagado: { opacity: 0.35 },
   pulsado: { opacity: 0.8 },
