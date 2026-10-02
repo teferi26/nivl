@@ -112,7 +112,7 @@ Se basa **solo en lo que hace el cliente**. La retención, los proveedores y las
 | https://nivl-web.vercel.app/privacidad | PASS (200) | Usada también en la app (`proplans.ts:427`). Debe nombrar a Google Play como canal de pago (Chat 4). |
 | https://nivl-web.vercel.app/soporte | PASS (200) / FAIL de contenido | Solo da instrucciones para iPhone (`soporte.html:30,34`). Añadir Android (Chat 4). |
 | https://nivl-web.vercel.app/terminos | PASS (200) | — |
-| https://nivl.app | NO APLICABLE | Fuera de alcance: dominio único `nivl-web.vercel.app` (decisión del usuario del 02/10). |
+| https://nivl.app | NO APLICABLE para enlaces | Comprado el 02/10, pero solo se usa para el correo (Resend). Los enlaces, la web y los textos legales siguen en `nivl-web.vercel.app`. |
 
 ## 6. Deep links / App Links
 
