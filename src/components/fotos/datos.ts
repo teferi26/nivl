@@ -3,14 +3,15 @@
 // Consume el contrato de 0050 sin cambiarlo:
 //   - metadatos por la RPC `my_progress_photos_meta` (sin path ni URL);
 //   - la fila se inserta ANTES de subir (la política del bucket exige que
-//     exista) y, si la subida falla, se borra y se relanza;
+//     exista) y, si la subida falla, se mira si el objeto llegó de todos
+//     modos (respuesta perdida); solo si no está, se borra y se relanza;
 //   - `upsert: false`: un objeto de `progress` nunca se sobrescribe;
 //   - firmas de 60 s, siempre tras `requireHealthConsent()`.
 // Nada se guarda en local salvo la copia temporal para compartir, que se
 // borra al salir de la pantalla.
 
 import { decode } from 'base64-arraybuffer';
-import { File, Paths } from 'expo-file-system';
+import { Directory, File, Paths } from 'expo-file-system';
 import { Platform } from 'react-native';
 import { requireHealthConsent } from '@/lib/health';
 import type { FotoProgreso, Pose } from '@/lib/progressPhotos';
@@ -74,11 +75,25 @@ export async function subirFoto(
     .from(BUCKET)
     .upload(path, decode(foto.base64), { contentType: 'image/jpeg', upsert: false });
   if (errSubida) {
+    // La subida pudo llegar aunque la respuesta se perdiera: si el objeto
+    // existe, la foto está guardada y la fila es buena.
+    if (await objetoExiste(uid, id)) return { id, fecha: foto.fecha, pose: foto.pose, pesoKg: null };
     // Sin objeto, la fila sobra: se quita para no dejar una foto fantasma.
     await supabase.from('progress_photos').delete().eq('id', id).then(() => {}, () => {});
     throw errSubida;
   }
   return { id, fecha: foto.fecha, pose: foto.pose, pesoKg: null };
+}
+
+/** ¿Está ya el objeto `{uid}/{id}.jpg` en el bucket? Ante la duda, no. */
+async function objetoExiste(uid: string, id: string): Promise<boolean> {
+  try {
+    const { data, error } = await supabase.storage.from(BUCKET).list(uid, { search: id });
+    if (error || !Array.isArray(data)) return false;
+    return data.some((o) => o?.name === `${id}.jpg`);
+  } catch {
+    return false;
+  }
 }
 
 /** Borra el objeto y luego la fila (al revés, un fallo dejaría un objeto huérfano). */
@@ -120,3 +135,17 @@ export function borrarTemporales(nombres: readonly string[], uris: readonly stri
 /** Nombres fijos de las copias de compartir. */
 export const TEMP_ANTES = 'nivl-progreso-antes.jpg';
 export const TEMP_DESPUES = 'nivl-progreso-despues.jpg';
+
+/**
+ * Borra la carpeta de caché del selector (`ImagePicker`), donde expo-image-picker
+ * deja las copias recortadas. Solo en nativo; si no está, nada.
+ */
+export function borrarCacheSelector(): void {
+  if (Platform.OS === 'web') return;
+  try {
+    const dir = new Directory(Paths.cache, 'ImagePicker');
+    if (dir.exists) dir.delete();
+  } catch {
+    /* ya no estaba */
+  }
+}

@@ -1,12 +1,14 @@
 // NIVL · Fotos de progreso: la hoja de nueva foto (L5 · A).
 //
 // Cámara o galería (recorte 3:4, calidad 0,5, base64), pose obligatoria con
-// chips y fecha de hoy con «-1 / +1» (nunca futuro). Guardar sube la foto con
+// chips (por defecto, la primera que falta esta semana) y fecha de hoy con «-1 / +1» (nunca futuro). Guardar sube la foto con
 // la capa de datos. Sin XP: una foto de progreso es un registro, no una misión.
 //
 // Privacidad: el base64 vive solo en el estado de la hoja (memoria) y la
 // vista previa usa `cachePolicy="memory"`. Al cerrar o al guardar se vacía el
-// estado y se borra el archivo temporal que deja el selector.
+// estado y se borra el archivo temporal que deja el selector; al cerrar,
+// también su carpeta de caché (`ImagePicker`). Fuera de la app (`tapada`) la
+// vista previa no se pinta.
 
 import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
@@ -19,7 +21,7 @@ import { vibrar } from '@/design/haptics';
 import { ink, space, stroke, type as tipo } from '@/design/tokens';
 import { addDays, isValidKey } from '@/lib/dates';
 import { POSES, type FotoProgreso, type Pose } from '@/lib/progressPhotos';
-import { borrarTemporales, subirFoto } from './datos';
+import { borrarCacheSelector, borrarTemporales, subirFoto } from './datos';
 import { DIAS_ATRAS_MAX, fechaCorta, fechaFotoValida, mensajeErrorFotos, NOMBRE_POSE } from './modelo';
 
 interface Props {
@@ -30,6 +32,10 @@ interface Props {
   onGuardada: (f: FotoProgreso) => void;
   /** El servidor ha dicho que falta salud o 18+: hay que releer el permiso. */
   onGate: () => void;
+  /** La pose con la que abre: la primera que falta esta semana (null: ninguna). */
+  poseInicial?: Pose | null;
+  /** La app no está activa: no se pinta la vista previa. */
+  tapada?: boolean;
 }
 
 interface Elegida {
@@ -60,7 +66,7 @@ function sinCabecera(b64: string): string {
   return i >= 0 ? b64.slice(i + 7) : b64;
 }
 
-export function HojaNuevaFoto({ visible, onCerrar, uid, hoy, onGuardada, onGate }: Props) {
+export function HojaNuevaFoto({ visible, onCerrar, uid, hoy, onGuardada, onGate, poseInicial = null, tapada = false }: Props) {
   const [pose, setPose] = useState<Pose | null>(null);
   const [fecha, setFecha] = useState(hoy);
   const [elegida, setElegida] = useState<Elegida | null>(null);
@@ -74,16 +80,22 @@ export function HojaNuevaFoto({ visible, onCerrar, uid, hoy, onGuardada, onGate 
     temporal.current = null;
   };
 
-  // Cada apertura empieza de cero; al cerrar no queda nada en memoria.
+  // Cada apertura empieza de cero; al cerrar no queda nada en memoria ni en
+  // la caché del selector. La pose inicial se toma al abrir, no después.
+  const poseAlAbrir = useRef(poseInicial);
+  poseAlAbrir.current = poseInicial;
+  const estabaVisible = useRef(false);
   useEffect(() => {
     if (visible) {
-      setPose(null);
+      setPose(poseAlAbrir.current);
       setFecha(hoy);
       setError(null);
     } else {
       setElegida(null);
       soltarTemporal();
+      if (estabaVisible.current) borrarCacheSelector();
     }
+    estabaVisible.current = visible;
   }, [visible, hoy]);
   useEffect(() => () => soltarTemporal(), []);
 
@@ -93,7 +105,7 @@ export function HojaNuevaFoto({ visible, onCerrar, uid, hoy, onGuardada, onGate 
     if (!a?.base64) return;
     if (!esJpeg(a)) {
       if (!a.uri.startsWith('data:')) borrarTemporales([], [a.uri]);
-      avisar('Solo fotos JPG', 'Esa imagen no es JPG. Elige otra o hazla con la cámara.');
+      avisar('Solo fotos JPG', 'Ese formato no sirve. Hazla con la cámara o elige otra.');
       return;
     }
     soltarTemporal();
@@ -131,7 +143,7 @@ export function HojaNuevaFoto({ visible, onCerrar, uid, hoy, onGuardada, onGate 
     setError(null);
     try {
       const f = await subirFoto(uid, { base64: elegida.base64, fecha, pose });
-      vibrar('misionExtra');
+      vibrar('seleccion');
       setElegida(null);
       soltarTemporal();
       onGuardada(f);
@@ -168,6 +180,10 @@ export function HojaNuevaFoto({ visible, onCerrar, uid, hoy, onGuardada, onGate 
             <Text style={styles.error} accessibilityRole="alert">
               {error}
             </Text>
+          ) : !pose ? (
+            <Text style={styles.falta} maxFontSizeMultiplier={1.35}>
+              Elige la pose
+            </Text>
           ) : null}
           <Button title="Guardar" onPress={guardar} disabled={!elegida || !pose || !uid} loading={guardando} />
         </>
@@ -176,7 +192,7 @@ export function HojaNuevaFoto({ visible, onCerrar, uid, hoy, onGuardada, onGate 
       <View style={styles.cuerpo}>
         <View style={styles.vista}>
           <View style={styles.previa}>
-            {elegida ? (
+            {elegida && !tapada ? (
               <Image
                 source={{ uri: elegida.uri }}
                 style={StyleSheet.absoluteFill}
@@ -280,5 +296,6 @@ const styles = StyleSheet.create({
     color: ink.ink9,
   },
   nota: { fontFamily: tipo.bodySm.family, fontSize: 13, lineHeight: 18, color: ink.ink6, marginTop: space.s4 },
+  falta: { fontFamily: tipo.bodySm.family, fontSize: tipo.bodySm.size, lineHeight: tipo.bodySm.lineHeight, color: ink.ink6 },
   error: { fontFamily: tipo.bodySm.family, fontSize: tipo.bodySm.size, lineHeight: tipo.bodySm.lineHeight, color: ink.ink9 },
 });

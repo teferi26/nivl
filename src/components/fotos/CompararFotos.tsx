@@ -74,14 +74,13 @@ export function CompararFotos({
     <View style={styles.wrap}>
       <ChipWrap>
         {POSES.map((p) => (
-          <Chip key={p} small label={NOMBRE_POSE[p]} selected={p === pose} onPress={() => setPose(p)} />
+          <Chip key={p} label={NOMBRE_POSE[p]} selected={p === pose} onPress={() => setPose(p)} />
         ))}
       </ChipWrap>
       <ChipWrap>
         {PLAZOS.map((d) => (
           <Chip
             key={d}
-            small
             label={`${d} días`}
             selected={d === plazo}
             onPress={() => setPlazo(d)}
@@ -99,14 +98,31 @@ export function CompararFotos({
           <View style={styles.par}>
             {(['antes', 'despues'] as const).map((k) => {
               const f = par[k];
+              // Una sola etiqueta por columna; lo de dentro no se repite al lector.
+              const etiqueta = [
+                k === 'antes' ? 'Antes' : 'Después',
+                NOMBRE_POSE[f.pose].toLowerCase(),
+                fechaCorta(f.fecha, hoy),
+                ...(mostrarPeso && f.pesoKg !== null ? [textoKg(f.pesoKg)] : []),
+              ].join(', ');
               return (
-                <View key={k} style={styles.columna}>
-                  <Miniatura url={urls[f.id]} pose={f.pose} fecha={f.fecha} hoy={hoy} grande onFallo={() => onFallo(f.id)} />
-                  <Text style={styles.rotulo} maxFontSizeMultiplier={1.35}>
+                <View key={k} style={styles.columna} accessible accessibilityLabel={etiqueta}>
+                  <Miniatura url={urls[f.id]} pose={f.pose} fecha={f.fecha} hoy={hoy} grande oculta onFallo={() => onFallo(f.id)} />
+                  <Text
+                    style={styles.rotulo}
+                    maxFontSizeMultiplier={1.35}
+                    accessibilityElementsHidden
+                    importantForAccessibility="no"
+                  >
                     {k === 'antes' ? 'ANTES' : 'DESPUÉS'} · {fechaCorta(f.fecha, hoy)}
                   </Text>
                   {mostrarPeso ? (
-                    <Text style={styles.peso} maxFontSizeMultiplier={1.35}>
+                    <Text
+                      style={styles.peso}
+                      maxFontSizeMultiplier={1.35}
+                      accessibilityElementsHidden
+                      importantForAccessibility="no"
+                    >
                       {textoKg(f.pesoKg)}
                     </Text>
                   ) : null}

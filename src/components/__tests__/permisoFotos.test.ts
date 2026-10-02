@@ -1,4 +1,4 @@
-import { accesoFotos, leerPuedeCompartirFotos, necesitaPermisoFotos } from '@/components/permisoFotos';
+import { accesoFotos, leerPermisoCompartirFotos, leerPuedeCompartirFotos, necesitaPermisoFotos } from '@/components/permisoFotos';
 import { fetchMayorDeEdadConfirmada } from '@/lib/age';
 import { fetchHealthConsent } from '@/lib/health';
 
@@ -65,6 +65,15 @@ describe('leerPuedeCompartirFotos', () => {
     salud.mockRejectedValue(new Error('red'));
     await expect(leerPuedeCompartirFotos()).resolves.toBe(false);
   });
+  it('la versión estricta lanza si falla una lectura (no es un «no»)', async () => {
+    edad.mockRejectedValue(new Error('red'));
+    salud.mockResolvedValue(consentimiento(true));
+    await expect(leerPermisoCompartirFotos()).rejects.toThrow('red');
+    edad.mockResolvedValue(false);
+    await expect(leerPermisoCompartirFotos()).resolves.toBe(false);
+    edad.mockResolvedValue(true);
+    await expect(leerPermisoCompartirFotos()).resolves.toBe(true);
+  });
   it('lee las dos en paralelo', async () => {
     let soltar: (v: boolean) => void = () => {};
     edad.mockReturnValue(new Promise<boolean>((r) => { soltar = r; }));
@@ -93,5 +102,14 @@ describe('accesoFotos', () => {
     expect(accesoFotos({ salud: true, mayor18: null })).toBe('confirmar_edad');
     expect(accesoFotos({ salud: true, mayor18: false })).toBe('confirmar_edad');
     expect(accesoFotos({ salud: true, mayor18: true })).toBe('abierto');
+  });
+  it('un fallo al leer la salud es error, no «sin salud»', () => {
+    expect(accesoFotos({ salud: false, mayor18: undefined, errorSalud: true })).toBe('error');
+    expect(accesoFotos({ salud: null, mayor18: undefined, errorSalud: true })).toBe('cargando');
+  });
+  it('un fallo al leer la edad es error: nunca se vuelve a preguntar', () => {
+    expect(accesoFotos({ salud: true, mayor18: undefined, errorEdad: true })).toBe('error');
+    expect(accesoFotos({ salud: true, mayor18: null, errorEdad: true })).toBe('error');
+    expect(accesoFotos({ salud: false, mayor18: undefined, errorEdad: true })).toBe('sin_salud');
   });
 });

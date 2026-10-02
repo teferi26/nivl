@@ -99,7 +99,7 @@ describe('textos', () => {
 describe('mensajeErrorFotos', () => {
   it('el tope diario', () => {
     expect(mensajeErrorFotos({ message: 'limite_fotos_progreso', code: '54000' })).toEqual({
-      mensaje: 'Hoy ya has guardado 12 fotos. Mañana puedes seguir.',
+      mensaje: 'Has guardado 12 fotos en las últimas 24 horas. Podrás seguir más tarde.',
       refrescar: false,
     });
   });

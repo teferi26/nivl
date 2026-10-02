@@ -88,6 +88,7 @@ function base(cambios: Partial<FotosVistaProps> = {}): FotosVistaProps {
       onAhoraNo: nada,
       onRevisarSalud: nada,
       onReintentar: nada,
+      onReintentarAcceso: nada,
     },
     ...cambios,
   };
@@ -127,6 +128,7 @@ export const DEMO: DemoPantalla | null = {
         </Screen>
       ),
     },
+    { id: 'sin-conexion', titulo: 'Sin conexión', render: () => <FotosVista {...base({ acceso: 'error' })} /> },
     { id: 'sin-salud', titulo: 'Sin permiso de salud', render: () => <FotosVista {...base({ acceso: 'sin_salud' })} /> },
     { id: 'cargando', titulo: 'Cargando', render: () => <FotosVista {...base({ cargado: false })} /> },
   ],

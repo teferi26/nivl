@@ -118,7 +118,8 @@ export function textoDifKg(kg: number | null | undefined): string {
 // ---------------------------------------------------------------------------
 // Errores
 
-export const MENSAJE_LIMITE = 'Hoy ya has guardado 12 fotos. Mañana puedes seguir.';
+/** 0050 cuenta 12 fotos en una ventana móvil de 24 h, no por día natural. */
+export const MENSAJE_LIMITE = 'Has guardado 12 fotos en las últimas 24 horas. Podrás seguir más tarde.';
 export const MENSAJE_GATE = 'Ha cambiado el permiso de las fotos. Vuelve a comprobarlo.';
 export const MENSAJE_PESO = 'La foto pesa demasiado. Recórtala o hazla de nuevo.';
 export const MENSAJE_FECHA = 'La fecha de la foto no es válida.';

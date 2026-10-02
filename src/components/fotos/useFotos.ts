@@ -9,12 +9,17 @@
 //   - Compartir: solo con `permisos.compartir` y fuera de la web. Firma de
 //     nuevo, baja copias temporales con nombre fijo y abre la hoja de
 //     compartir de la capa raíz; CompararFotos borra las copias al desmontar.
-//   - Al salir se limpia la caché de memoria de expo-image.
+//   - Al salir, y al cerrarse el acceso, se limpia la caché de memoria de
+//     expo-image.
+//   - Fuera de la app (AppState distinto de 'active') la vista se tapa con
+//     una placa: así el selector de apps no enseña las fotos. Las capturas de
+//     Android (FLAG_SECURE) necesitarían expo-screen-capture: pedido al
+//     coordinador, no está instalado.
 
 import { Image } from 'expo-image';
 import { router, useFocusEffect } from 'expo-router';
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { Platform } from 'react-native';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { AppState, Platform } from 'react-native';
 import { useCelebracion } from '@/components/celebracion/contexto';
 import { useHealthConsent } from '@/components/ConsentimientoSalud';
 import { usePermisoFotos } from '@/components/permisoFotos';
@@ -24,7 +29,7 @@ import { confirmarMayorDeEdad } from '@/lib/age';
 import { useAuth } from '@/lib/auth';
 import { dateKey } from '@/lib/dates';
 import { fetchWeights } from '@/lib/progress';
-import { lineaTemporal, type FotoConPeso, type FotoProgreso, type ParAntesDespues, type PesoDia } from '@/lib/progressPhotos';
+import { estadoSemanal, lineaTemporal, type FotoConPeso, type FotoProgreso, type ParAntesDespues, type PesoDia } from '@/lib/progressPhotos';
 import { mensajeSistema } from '@/lib/validation';
 import { borrarFoto, descargarParaCompartir, firmar, listarFotos, TEMP_ANTES, TEMP_DESPUES } from './datos';
 import { SEMANAS_POR_PAGINA, type FotosVistaProps } from './FotosVista';
@@ -35,7 +40,7 @@ export function useFotos() {
   const uid = session?.user.id ?? null;
   const health = useHealthConsent();
   const permiso = usePermisoFotos();
-  const { compartir: abrirHoja } = useCelebracion();
+  const { compartir: abrirHoja, avisar: avisarCola } = useCelebracion();
   const abierto = permiso.estado === 'abierto';
   const hoy = dateKey();
 
@@ -51,6 +56,7 @@ export function useFotos() {
   const [compartiendo, setCompartiendo] = useState(false);
   const [confirmandoEdad, setConfirmandoEdad] = useState(false);
   const [errorEdad, setErrorEdad] = useState<string | null>(null);
+  const [activa, setActiva] = useState(() => AppState.currentState !== 'background' && AppState.currentState !== 'inactive');
 
   const vivo = useRef(true);
   const pedidas = useRef(new Set<string>());
@@ -64,9 +70,16 @@ export function useFotos() {
     };
   }, []);
 
+  // Fuera de la app se tapan las fotos (selector de apps).
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', (s) => setActiva(s === 'active'));
+    return () => sub.remove();
+  }, []);
+
   // Sin acceso, nada de fotos en memoria.
   useEffect(() => {
     if (abierto) return;
+    void Image.clearMemoryCache().catch(() => {});
     serie.current++;
     setFotos([]);
     setPesos([]);
@@ -231,7 +244,8 @@ export function useFotos() {
     puedeCompartir: permiso.permisos.compartir && Platform.OS !== 'web',
     compartiendo,
     confirmandoEdad,
-    errorEdad: errorEdad ?? permiso.error,
+    errorEdad,
+    tapado: !activa,
     acciones: {
       onVolver: () => volver(router),
       onNueva: () => setNueva(true),
@@ -250,8 +264,12 @@ export function useFotos() {
         setCargado(false);
         void cargar();
       },
+      onReintentarAcceso: permiso.reintentar,
     },
   };
+
+  // La pose por defecto de la hoja: la primera que falta esta semana.
+  const poseInicial = useMemo(() => estadoSemanal(fotos, hoy).faltan[0] ?? null, [fotos, hoy]);
 
   return {
     vista: vistaProps,
@@ -259,16 +277,20 @@ export function useFotos() {
     hoy,
     nueva: {
       visible: nueva && abierto,
+      poseInicial,
+      tapada: !activa,
       cerrar: () => setNueva(false),
       guardada: (f: FotoProgreso) => {
         setFotos((xs) => [f, ...xs]);
+        avisarCola(`Foto guardada · ${NOMBRE_POSE[f.pose]}`);
         void cargar();
       },
       gate,
     },
     ver: {
       foto: abierto ? vista : null,
-      url: vista ? urls[vista.id] : undefined,
+      // Fuera de la app, la foto abierta tampoco se pinta.
+      url: vista && activa ? urls[vista.id] : undefined,
       cerrar: () => setVista(null),
       borrar: () => (vista ? void borrar(vista) : undefined),
       borrando,

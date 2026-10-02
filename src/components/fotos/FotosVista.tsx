@@ -9,7 +9,13 @@
 //   4. Comparar (antes y después) y la línea por semanas.
 //   5. Pie de privacidad.
 // Gate propio (HEALTH_ROUTES no incluye /fotos): sin salud, la tarjeta del
-// permiso; sin 18+, la pregunta con «Tengo 18 o más» y «Ahora no» iguales.
+// permiso; sin 18+, la pregunta con «Tengo 18 o más» y «Ahora no» iguales;
+// si no se ha podido leer (sin conexión), «El sistema no responde» y
+// reintentar, nunca la pregunta de la edad.
+// Privacidad: con `tapado` (la app no está activa: selector de apps) una placa
+// ink0 cubre las miniaturas y la comparación. Bloquear las capturas de
+// pantalla de Android (FLAG_SECURE) necesitaría expo-screen-capture, que no
+// está instalado: pedido al coordinador.
 // Cosmético: ninguna cifra de aquí es XP.
 
 import { useMemo, type ReactNode } from 'react';
@@ -50,6 +56,8 @@ export interface FotosVistaProps {
   compartiendo: boolean;
   confirmandoEdad: boolean;
   errorEdad: string | null;
+  /** La app no está activa: se tapa el contenido (miniaturas y comparación). */
+  tapado?: boolean;
   /** Estado inicial de Comparar (solo la galería). */
   compararInicial?: CompararFotosProps['inicial'];
   acciones: {
@@ -64,6 +72,8 @@ export interface FotosVistaProps {
     onAhoraNo: () => void;
     onRevisarSalud: () => void;
     onReintentar: () => void;
+    /** Con acceso 'error': vuelve a leer la salud y la confirmación 18+. */
+    onReintentarAcceso: () => void;
   };
   /** Hojas de la ruta (nueva foto, ver foto). */
   hojas?: ReactNode;
@@ -101,6 +111,17 @@ export function FotosVista(p: FotosVistaProps) {
         <Skeleton height={120} />
         <Skeleton height={220} />
       </View>
+    );
+  } else if (acceso === 'error') {
+    cuerpo = (
+      <Entrada>
+        <TarjetaArena variante="contorno" rotulo="El sistema no responde">
+          <Text style={styles.texto} maxFontSizeMultiplier={1.35}>
+            No se ha podido comprobar el permiso de las fotos. Revisa la conexión.
+          </Text>
+          <Button title="Volver a intentarlo" variant="secondary" onPress={a.onReintentarAcceso} style={styles.boton} />
+        </TarjetaArena>
+      </Entrada>
     );
   } else if (acceso === 'sin_salud') {
     cuerpo = (
@@ -147,11 +168,19 @@ export function FotosVista(p: FotosVistaProps) {
       <>
         <Entrada indice={0}>
           <FranjaCifras
-            cifras={[
-              { valor: racha.semanas, rotulo: 'Semanas seguidas', etiqueta: `Semanas seguidas: ${racha.semanas}` },
-              { valor: `${semana.hechas.length}/3`, rotulo: 'Esta semana' },
-              { valor: fotos.length, rotulo: 'Fotos' },
-            ]}
+            cifras={
+              racha.semanas > 0
+                ? [
+                    { valor: racha.semanas, rotulo: 'Semanas seguidas', etiqueta: `Semanas seguidas: ${racha.semanas}` },
+                    { valor: `${semana.hechas.length}/3`, rotulo: 'Esta semana' },
+                    { valor: fotos.length, rotulo: 'Fotos' },
+                  ]
+                : // Sin racha no se enseña un 0: primero la semana en curso.
+                  [
+                    { valor: `${semana.hechas.length}/3`, rotulo: 'Esta semana' },
+                    { valor: fotos.length, rotulo: 'Fotos' },
+                  ]
+            }
           />
         </Entrada>
 
@@ -231,7 +260,16 @@ export function FotosVista(p: FotosVistaProps) {
         accion={abierto && cargado && !error ? { icono: 'camera-outline', etiqueta: 'Nueva foto', onPress: a.onNueva, solida: true } : undefined}
         meandro
       />
-      <View style={styles.pila}>{cuerpo}</View>
+      <View style={styles.pila}>
+        {cuerpo}
+        {p.tapado && abierto ? (
+          <View
+            style={[StyleSheet.absoluteFill, styles.placa]}
+            accessibilityElementsHidden
+            importantForAccessibility="no-hide-descendants"
+          />
+        ) : null}
+      </View>
       <Text style={styles.pie} maxFontSizeMultiplier={1.35}>
         {PIE_PRIVACIDAD}
       </Text>
@@ -242,7 +280,9 @@ export function FotosVista(p: FotosVistaProps) {
 
 const styles = StyleSheet.create({
   pila: { gap: space.s5 },
-  texto: { fontFamily: tipo.body.family, fontSize: 15, lineHeight: 22, color: ink.ink9 },
+  texto: { fontFamily: tipo.body.family, fontSize: tipo.body.size, lineHeight: tipo.body.lineHeight, color: ink.ink9 },
+  // Tapa las fotos fuera de la app; mismo fondo que la pantalla.
+  placa: { backgroundColor: ink.ink0, zIndex: 1 },
   nota: {
     fontFamily: tipo.bodySm.family,
     fontSize: tipo.bodySm.size,
@@ -266,8 +306,8 @@ const styles = StyleSheet.create({
   poseFalta: { color: ink.ink6 },
   pie: {
     fontFamily: tipo.micro.family,
-    fontSize: 12,
-    lineHeight: 16,
+    fontSize: tipo.micro.size,
+    lineHeight: tipo.micro.lineHeight,
     color: ink.ink6,
     textAlign: 'center',
     marginTop: space.s8,

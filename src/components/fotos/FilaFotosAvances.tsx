@@ -3,6 +3,8 @@
 // Va dentro del bloque de salud aceptada de Avances, tras el peso. Según el
 // acceso (usePermisoFotos):
 //   - cargando o sin salud → nada (Avances ya enseña su aviso de salud);
+//   - error (sin conexión al leer la edad) → «No se ha podido comprobar»,
+//     que vuelve a leer; nunca pregunta la edad por un fallo de red;
 //   - confirmar_edad → «Fotos de progreso · 18+», que abre la pregunta en una
 //     hoja con «Tengo 18 o más» y «Ahora no» del mismo peso;
 //   - abierto → «Fotos de progreso» con las semanas seguidas (cosmético, sin
@@ -24,7 +26,7 @@ import { textoSemanas } from './modelo';
 import { PREGUNTA_EDAD, PreguntaEdad } from './PreguntaEdad';
 
 export function FilaFotosAvances() {
-  const { estado, recargar } = usePermisoFotos();
+  const { estado, recargar, reintentar } = usePermisoFotos();
   const [semanas, setSemanas] = useState<number | null>(null);
   const [hoja, setHoja] = useState(false);
   const [ocupado, setOcupado] = useState(false);
@@ -78,7 +80,16 @@ export function FilaFotosAvances() {
   return (
     <View style={styles.wrap}>
       <Card padded={false} style={styles.lista}>
-        {abierto ? (
+        {estado === 'error' ? (
+          <Row
+            first
+            leading={icono}
+            title="Fotos de progreso"
+            detail="No se ha podido comprobar. Toca para reintentar."
+            onPress={reintentar}
+            accessibilityLabel="Fotos de progreso. No se ha podido comprobar el permiso. Toca para reintentar."
+          />
+        ) : abierto ? (
           <Row
             first
             leading={icono}

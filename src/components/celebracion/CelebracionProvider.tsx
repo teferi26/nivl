@@ -18,14 +18,16 @@
 //   (justo antes de que pueda salir una ceremonia), no una vez por usuario.
 // - Fotos (L5): `puedeCompartirFotos` se calcula en cada apertura, solo si la
 //   tarjeta lleva foto (`necesitaPermisoFotos`), leyendo 18+ y salud del
-//   servidor en paralelo con la salida del Modal. Con la misma espera que el
-//   código de amigo: la hoja abre con false y se enciende si llega a tiempo.
-//   Ante error o retraso, false.
+//   servidor en paralelo con la salida del Modal. Esa hoja SÍ espera a la
+//   lectura (tope ESPERA_FOTOS_MS): abrirla con false le diría a un adulto ya
+//   confirmado que es «a partir de los 18». Si la lectura falla o vence, no
+//   se abre: sale un aviso por la cola para reintentar. Un «no» leído de
+//   verdad abre la hoja con su bloqueo, como antes.
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState, type ReactNode } from 'react';
 import { BackHandler, StyleSheet, View } from 'react-native';
-import { leerPuedeCompartirFotos, necesitaPermisoFotos } from '@/components/permisoFotos';
+import { leerPermisoCompartirFotos, necesitaPermisoFotos } from '@/components/permisoFotos';
 import { HojaCompartir } from '@/components/share/HojaCompartir';
 import { Ceremony } from '@/components/ui/Ceremony';
 import { Toast } from '@/components/ui/Toast';
@@ -45,6 +47,9 @@ const claveAlmacen = (userId: string) => `nivl:celebradas:${userId}`;
 const ESPERA_HOJA_MS = 420;
 /** El código de amigo no hace esperar a la hoja: entra si llega en este tiempo. */
 const ESPERA_CODIGO_MS = 1500;
+/** Tope de la lectura del permiso de fotos (18+ y salud) antes de abrir la hoja. */
+const ESPERA_FOTOS_MS = 2000;
+const AVISO_PERMISO_FOTOS = 'No se ha podido comprobar el permiso. Vuelve a intentarlo.';
 /** Mínimo entre dos relecturas del perfil (varias llegadas de una acción). */
 const RELEER_YO_MS = 2000;
 
@@ -249,15 +254,15 @@ export function CelebracionProvider({ children }: { children: ReactNode }) {
           () => null,
         )
       : Promise.resolve(null);
-    // Permiso de fotos: solo se pregunta si la tarjeta lleva foto; nunca se recuerda.
-    let fotosListo = false;
-    const fotos: Promise<boolean> =
-      uid && necesitaPermisoFotos(t)
-        ? leerPuedeCompartirFotos().then((v) => {
-            fotosListo = v;
-            return v;
-          })
-        : Promise.resolve(false);
+    // Permiso de fotos: solo se pregunta si la tarjeta lleva foto; nunca se
+    // recuerda. null = no se sabe (error o tope vencido), que no es un «no».
+    const conFotos = !!uid && necesitaPermisoFotos(t);
+    const fotos: Promise<boolean | null> = conFotos
+      ? Promise.race([
+          leerPermisoCompartirFotos().catch(() => null),
+          espera(ESPERA_FOTOS_MS).then(() => null),
+        ])
+      : Promise.resolve(false);
     void (async () => {
       await espera(ESPERA_HOJA_MS);
       if (aperturas.current !== n) return;
@@ -265,28 +270,29 @@ export function CelebracionProvider({ children }: { children: ReactNode }) {
         dispatch({ tipo: 'pausar', pausa: false });
         return;
       }
-      const retratoUri = await Promise.race([retrato, espera(ESPERA_CODIGO_MS).then(() => null)]);
-      if (aperturas.current !== n) return;
-      setHoja({ tarjeta: t, codigo: codigoListo, retratoUri, puedeCompartirFotos: fotosListo });
-      if (!uid) return;
-      // Lo que llegue tarde (código o permiso) entra si lo hace en ESPERA_CODIGO_MS.
-      const limite = espera(ESPERA_CODIGO_MS);
-      await Promise.all([
-        codigoListo
-          ? null
-          : Promise.race([codigo, limite.then(() => null)]).then((tarde) => {
-              if (aperturas.current !== n || userRef.current !== uid || !tarde) return;
-              setHoja((h) => (h && h.tarjeta === t ? { ...h, codigo: tarde } : h));
-            }),
-        fotosListo
-          ? null
-          : Promise.race([fotos, limite.then(() => false)]).then((ok) => {
-              if (aperturas.current !== n || userRef.current !== uid || !ok) return;
-              setHoja((h) => (h && h.tarjeta === t ? { ...h, puedeCompartirFotos: true } : h));
-            }),
+      const [retratoUri, puedeFotos] = await Promise.all([
+        Promise.race([retrato, espera(ESPERA_CODIGO_MS).then(() => null)]),
+        fotos,
       ]);
+      if (aperturas.current !== n) return;
+      if (userRef.current !== uid) {
+        dispatch({ tipo: 'pausar', pausa: false });
+        return;
+      }
+      if (puedeFotos === null) {
+        // Sin saber el permiso, la hoja solo enseñaría el bloqueo de los 18.
+        dispatch({ tipo: 'pausar', pausa: false });
+        avisarTexto(AVISO_PERMISO_FOTOS);
+        return;
+      }
+      setHoja({ tarjeta: t, codigo: codigoListo, retratoUri, puedeCompartirFotos: puedeFotos });
+      if (!uid || codigoListo) return;
+      // El código que llegue tarde entra si lo hace en ESPERA_CODIGO_MS.
+      const tarde = await Promise.race([codigo, espera(ESPERA_CODIGO_MS).then(() => null)]);
+      if (aperturas.current !== n || userRef.current !== uid || !tarde) return;
+      setHoja((h) => (h && h.tarjeta === t ? { ...h, codigo: tarde } : h));
     })();
-  }, []);
+  }, [avisarTexto]);
 
   const compartir = useCallback(
     (t: Tarjeta, opciones?: OpcionesCompartir) => abrirHoja(t, Promise.resolve(opciones?.retratoUri ?? null)),

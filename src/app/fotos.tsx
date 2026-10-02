@@ -28,6 +28,8 @@ export default function Fotos() {
             hoy={f.hoy}
             onGuardada={f.nueva.guardada}
             onGate={f.nueva.gate}
+            poseInicial={f.nueva.poseInicial}
+            tapada={f.nueva.tapada}
           />
           <Sheet
             visible={foto !== null}

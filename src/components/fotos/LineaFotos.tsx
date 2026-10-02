@@ -25,10 +25,12 @@ interface MiniaturaProps {
   onFallo?: () => void;
   /** Proporción alto/ancho (3:4 por defecto). */
   grande?: boolean;
+  /** La etiqueta la pone el contenedor (Comparar): la miniatura no se anuncia. */
+  oculta?: boolean;
 }
 
 /** Una foto (o su hueco) en proporción 3:4. */
-export function Miniatura({ url, pose, fecha, hoy, vacia, onPress, onFallo, grande }: MiniaturaProps) {
+export function Miniatura({ url, pose, fecha, hoy, vacia, onPress, onFallo, grande, oculta }: MiniaturaProps) {
   const etiqueta = vacia
     ? `${NOMBRE_POSE[pose]}: sin foto esta semana`
     : `Foto de ${NOMBRE_POSE[pose].toLowerCase()} del ${fecha ? fechaCorta(fecha, hoy) : ''}`;
@@ -51,6 +53,13 @@ export function Miniatura({ url, pose, fecha, hoy, vacia, onPress, onFallo, gran
       )}
     </View>
   );
+  if (oculta && (!onPress || vacia)) {
+    return (
+      <View style={styles.flex} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+        {caja}
+      </View>
+    );
+  }
   if (!onPress || vacia) {
     return (
       <View accessible accessibilityLabel={etiqueta} style={styles.flex}>
@@ -115,7 +124,13 @@ export function LineaFotos({ semanas, urls, hoy, hayMas, onVerMas, onAbrir, onFa
                   ) : (
                     <Miniatura pose={p} vacia />
                   )}
-                  <Text style={styles.pose} maxFontSizeMultiplier={1.35}>
+                  {/* La miniatura ya dice la pose: el rótulo es solo visual. */}
+                  <Text
+                    style={styles.pose}
+                    maxFontSizeMultiplier={1.35}
+                    accessibilityElementsHidden
+                    importantForAccessibility="no"
+                  >
                     {NOMBRE_POSE[p]}
                   </Text>
                 </View>
