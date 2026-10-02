@@ -398,3 +398,59 @@ export function metadatosParaCoach(
       return { fecha: f.fecha, pose: f.pose, pesoKg };
     });
 }
+
+// ---------------------------------------------------------------------------
+// 6. Permisos: mayor de 18 confirmado y consentimientos
+
+/** La visión sobre fotos corporales solo se hace con Claude (Anthropic); ningún otro proveedor. */
+export const PROVEEDOR_VISION = 'claude' as const;
+
+export type MotivoPermisoFotos =
+  | 'edad_sin_confirmar'
+  | 'menor'
+  | 'sin_consentimiento_salud'
+  | 'sin_consentimiento_ia'
+  | null;
+
+export interface PermisosFotos {
+  guardar: boolean;
+  compartir: boolean;
+  analizarIA: boolean;
+  /** Por qué falta el primer permiso que falta (null si están todos). */
+  motivo: MotivoPermisoFotos;
+  /** Único proveedor de visión permitido, se pueda analizar o no: siempre Claude. */
+  proveedorVision: typeof PROVEEDOR_VISION;
+}
+
+/**
+ * Qué se puede hacer con las fotos. La app no conoce la edad, solo la
+ * confirmación declarada de ser mayor de 18: `null` es sin confirmar y `false`,
+ * menor; en los dos casos, nada. Guardar exige el consentimiento de salud. Compartir exige poder guardar
+ * (no se comparte lo que no se puede tener). Analizar con IA exige además el
+ * consentimiento de IA, porque lo que se analiza es un dato de salud ya
+ * guardado, y se hace solo con Claude.
+ */
+export function permisosFotos(entrada: {
+  mayor18: boolean | null;
+  consentimientoSalud: boolean;
+  consentimientoIA: boolean;
+}): PermisosFotos {
+  const nada = (motivo: MotivoPermisoFotos): PermisosFotos => ({
+    guardar: false,
+    compartir: false,
+    analizarIA: false,
+    motivo,
+    proveedorVision: PROVEEDOR_VISION,
+  });
+  if (entrada.mayor18 === false) return nada('menor');
+  if (entrada.mayor18 !== true) return nada('edad_sin_confirmar');
+  if (entrada.consentimientoSalud !== true) return nada('sin_consentimiento_salud');
+  const ia = entrada.consentimientoIA === true;
+  return {
+    guardar: true,
+    compartir: true,
+    analizarIA: ia,
+    motivo: ia ? null : 'sin_consentimiento_ia',
+    proveedorVision: PROVEEDOR_VISION,
+  };
+}

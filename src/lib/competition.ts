@@ -12,18 +12,24 @@
 
 // ── Índice de disciplina ───────────────────────────────────────────────
 
-/** Media a priori y peso del prior: un 3/3 no puede ganar a un 38/40. */
+/**
+ * Media a priori y peso del prior, en XP BASE (game.XP_BY_DIFFICULTY, sin
+ * racha ni evidencia): un día con 3 triviales al 100 % no puede ganar a quien
+ * cumple el 90 % de un día exigente (revisión de nivl-game-balancer). El peso
+ * equivale a un día normal (250 XP base).
+ */
 export const PRIOR_ADHERENCIA = 0.7;
-export const PESO_PRIOR = 5;
+export const PESO_PRIOR_XP = 250;
 
 /**
- * Adherencia suavizada (bayesiana) de 0 a 100. Con pocas misiones el valor
- * se acerca al 70 %; con muchas, manda lo real.
+ * Adherencia suavizada (bayesiana) de 0 a 100, ponderada por la dificultad:
+ * `cumplidasXp` y `programadasXp` son la suma del XP base de lo cumplido y de
+ * lo programado. Con poco programado el valor se acerca al 70 %.
  */
-export function indiceDisciplina(cumplidas: number, programadas: number): number {
-  const c = Math.max(0, Math.min(cumplidas, programadas));
-  const p = Math.max(0, programadas);
-  return Math.round((100 * (c + PRIOR_ADHERENCIA * PESO_PRIOR)) / (p + PESO_PRIOR));
+export function indiceDisciplina(cumplidasXp: number, programadasXp: number): number {
+  const c = Math.max(0, Math.min(cumplidasXp, programadasXp));
+  const p = Math.max(0, programadasXp);
+  return Math.round((100 * (c + PRIOR_ADHERENCIA * PESO_PRIOR_XP)) / (p + PESO_PRIOR_XP));
 }
 
 // ── Velocidad de progreso ──────────────────────────────────────────────
@@ -46,15 +52,20 @@ export function velocidad(xpVentana: number, diasVentana: number, xpBase: number
 // ── Duelos semanales ───────────────────────────────────────────────────
 
 export interface MarcadorSemana {
-  /** Misiones programadas y cumplidas en la semana (lunes–domingo local). */
-  programadas: number;
-  cumplidas: number;
+  /**
+   * XP base programado y cumplido en la semana (lunes–domingo local). Lo
+   * programado sale de la FOTO FIJA que guarda el servidor al cerrar cada
+   * día, no de las misiones actuales: desactivar una misión fallada no
+   * borra el fallo de la semana.
+   */
+  programadasXp: number;
+  cumplidasXp: number;
   /** Días con al menos una misión cumplida. */
   diasActivos: number;
 }
 
-/** Mínimo de misiones programadas para que la semana cuente en un duelo. */
-export const MIN_PROGRAMADAS_DUELO = 3;
+/** XP base mínimo programado para que la semana cuente (≈ 3 misiones medias). */
+export const MIN_XP_DUELO = 150;
 
 export type ResultadoDuelo =
   | { estado: 'ganador'; ganador: 'a' | 'b'; motivo: 'disciplina' | 'dias_activos'; a: number; b: number }
@@ -63,16 +74,16 @@ export type ResultadoDuelo =
 
 /**
  * Gana el mayor índice de disciplina; a igualdad, más días activos; si no,
- * empate. Una semana con menos de 3 misiones programadas no se puede juzgar:
- * crear muy pocas misiones para tener un 100 % no sirve.
+ * empate. Una semana con menos de 150 XP base programados no se puede
+ * juzgar: crear muy pocas misiones para tener un 100 % no sirve.
  */
 export function resolverDuelo(a: MarcadorSemana, b: MarcadorSemana): ResultadoDuelo {
   const falta: ('a' | 'b')[] = [];
-  if (a.programadas < MIN_PROGRAMADAS_DUELO) falta.push('a');
-  if (b.programadas < MIN_PROGRAMADAS_DUELO) falta.push('b');
+  if (a.programadasXp < MIN_XP_DUELO) falta.push('a');
+  if (b.programadasXp < MIN_XP_DUELO) falta.push('b');
   if (falta.length) return { estado: 'sin_datos', falta };
-  const ia = indiceDisciplina(a.cumplidas, a.programadas);
-  const ib = indiceDisciplina(b.cumplidas, b.programadas);
+  const ia = indiceDisciplina(a.cumplidasXp, a.programadasXp);
+  const ib = indiceDisciplina(b.cumplidasXp, b.programadasXp);
   if (ia !== ib) return { estado: 'ganador', ganador: ia > ib ? 'a' : 'b', motivo: 'disciplina', a: ia, b: ib };
   if (a.diasActivos !== b.diasActivos) {
     return { estado: 'ganador', ganador: a.diasActivos > b.diasActivos ? 'a' : 'b', motivo: 'dias_activos', a: ia, b: ib };
@@ -118,10 +129,10 @@ export interface PuestoLiga {
 export function tablaLiga(filas: FilaLiga[]): PuestoLiga[] {
   const calc = filas.map((f) => ({
     id: f.id, alias: f.alias,
-    indice: indiceDisciplina(f.cumplidas, f.programadas),
+    indice: indiceDisciplina(f.cumplidasXp, f.programadasXp),
     velocidad: velocidad(f.xpSemana, 7, f.xpBase28),
     diasActivos: f.diasActivos,
-    sinDatos: f.programadas < MIN_PROGRAMADAS_DUELO,
+    sinDatos: f.programadasXp < MIN_XP_DUELO,
   }));
   const con = calc.filter((c) => !c.sinDatos).sort((x, y) =>
     y.indice - x.indice || y.velocidad - x.velocidad || y.diasActivos - x.diasActivos || x.alias.localeCompare(y.alias));

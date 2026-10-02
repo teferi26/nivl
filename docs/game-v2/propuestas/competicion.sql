@@ -73,48 +73,101 @@ language sql stable security definer set search_path = public as $$
     where (s.blocker = a and s.blocked = b) or (s.blocker = b and s.blocked = a));
 $$;
 
--- Marcador de un usuario entre dos fechas locales (incluidas). Mismo criterio
--- que friends_board (0032): sin penalizaciones ni bonus ni hábitos adquiridos,
--- salud solo con consentimiento, no antes del alta de la misión, y los días
--- en curso solo cuentan lo ya hecho.
-create or replace function public._marcador(p_user uuid, p_desde date, p_hasta date)
-returns table (programadas integer, cumplidas integer, dias_activos integer, xp integer)
-language sql stable security definer set search_path = public as $$
-  with z as (
-    select public.safe_tz(p.timezone) as tz, (now() at time zone public.safe_tz(p.timezone))::date as hoy
-    from public.profiles p where p.id = p_user
-  ),
-  dias as (
-    select d::date as dia, z.tz, z.hoy from z, generate_series(p_desde, least(p_hasta, z.hoy), interval '1 day') d
-  ),
-  prog as (
-    select d.dia, d.hoy, (c.id is not null) as hecha
-    from dias d
-    join public.quests q on q.user_id = p_user
-    left join public.completions c on c.user_id = p_user and c.quest_id = q.id and c.date = d.dia
-    where q.active and not q.is_penalty and not q.is_bonus and q.acquired_at is null
-      and (not public.health_row('quests', to_jsonb(q)) or public.health_consent_active(p_user))
-      and extract(isodow from d.dia)::integer = any (q.days_of_week)
-      and d.dia >= (q.created_at at time zone d.tz)::date
-  ),
-  hechas as (
-    select c.date, least(c.xp_awarded, 500) as xp
-    from public.completions c join public.quests q on q.id = c.quest_id and not q.is_penalty
-    where c.user_id = p_user and c.date between p_desde and p_hasta
-      and (not public.health_row('quests', to_jsonb(q)) or public.health_consent_active(p_user))
-  )
-  select
-    (select count(*) filter (where dia < hoy or hecha) from prog)::integer,
-    (select count(*) filter (where hecha) from prog)::integer,
-    (select count(distinct date) from hechas)::integer,
-    ((select coalesce(sum(xp), 0) from hechas)
-      + (select coalesce(sum(l.xp), 0) from public.xp_daily_ledger l where l.user_id = p_user and l.day between p_desde and p_hasta))::integer;
+-- Foto fija diaria (revisión de nivl-game-balancer): lo programado de cada día
+-- se congela en el servidor cuando ese día se cierra, para que desactivar o
+-- borrar una misión fallada no reescriba la semana. La escribe un trigger al
+-- avanzar profiles.last_day_processed, así funciona con cualquier cliente
+-- (también 1.0.7). XP BASE por dificultad (game.ts XP_BY_DIFFICULTY).
+create table if not exists public.daily_scorecards (
+  user_id uuid not null references auth.users(id) on delete cascade,
+  day date not null,
+  programadas_xp integer not null default 0 check (programadas_xp >= 0),
+  cumplidas_xp integer not null default 0 check (cumplidas_xp >= 0),
+  primary key (user_id, day)
+);
+alter table public.daily_scorecards enable row level security;
+revoke all on public.daily_scorecards from anon, authenticated;
+
+create or replace function public._xp_base(p_dificultad text) returns integer
+language sql immutable as $$
+  select case p_dificultad when 'trivial' then 10 when 'facil' then 25 when 'media' then 50
+    when 'dificil' then 100 when 'epica' then 250 else 0 end;
 $$;
 
--- competition.ts → indiceDisciplina (prior 0,7 con peso 5) y velocidad (tope 2).
-create or replace function public._indice(p_cumplidas integer, p_programadas integer) returns integer
+-- Lo programado y cumplido de UN día con las misiones tal como están AHORA.
+-- Mismo criterio que friends_board (0032): sin penalizaciones, bonus ni
+-- hábitos adquiridos; salud solo con consentimiento; no antes del alta.
+create or replace function public._dia_en_vivo(p_user uuid, p_dia date)
+returns table (programadas_xp integer, cumplidas_xp integer)
+language sql stable security definer set search_path = public as $$
+  select coalesce(sum(public._xp_base(q.difficulty)), 0)::integer,
+         coalesce(sum(public._xp_base(q.difficulty)) filter (where c.id is not null), 0)::integer
+  from public.quests q
+  join public.profiles p on p.id = q.user_id
+  left join public.completions c on c.user_id = p_user and c.quest_id = q.id and c.date = p_dia
+  where q.user_id = p_user and q.active and not q.is_penalty and not q.is_bonus and q.acquired_at is null
+    and (not public.health_row('quests', to_jsonb(q)) or public.health_consent_active(p_user))
+    and extract(isodow from p_dia)::integer = any (q.days_of_week)
+    and p_dia >= (q.created_at at time zone public.safe_tz(p.timezone))::date;
+$$;
+
+create or replace function public._scorecard_al_cerrar() returns trigger
+language plpgsql security definer set search_path = public as $$
+declare d date;
+begin
+  if new.last_day_processed is not null
+     and (old.last_day_processed is null or new.last_day_processed > old.last_day_processed) then
+    -- Como mucho 60 días hacia atrás por cierre (ausencias largas).
+    d := greatest(coalesce(old.last_day_processed + 1, new.last_day_processed), new.last_day_processed - 59);
+    while d <= new.last_day_processed loop
+      insert into public.daily_scorecards(user_id, day, programadas_xp, cumplidas_xp)
+        select new.id, d, s.programadas_xp, s.cumplidas_xp from public._dia_en_vivo(new.id, d) s
+        on conflict (user_id, day) do nothing;
+      d := d + 1;
+    end loop;
+  end if;
+  return new;
+end $$;
+drop trigger if exists profiles_scorecard_al_cerrar on public.profiles;
+create trigger profiles_scorecard_al_cerrar after update of last_day_processed on public.profiles
+  for each row execute function public._scorecard_al_cerrar();
+
+-- Marcador entre dos fechas locales (incluidas): días cerrados desde la foto
+-- fija; el resto en vivo, y del día en curso solo cuenta como programado lo
+-- ya cumplido (aún no se ha fallado nada).
+create or replace function public._marcador(p_user uuid, p_desde date, p_hasta date)
+returns table (programadas_xp integer, cumplidas_xp integer, dias_activos integer, xp integer)
+language plpgsql stable security definer set search_path = public as $$
+declare v_hoy date; d date; v_p integer := 0; v_c integer := 0; v_dp integer; v_dc integer;
+begin
+  select (now() at time zone public.safe_tz(p.timezone))::date into v_hoy from public.profiles p where p.id = p_user;
+  d := p_desde;
+  while d <= least(p_hasta, v_hoy) loop
+    select sc.programadas_xp, sc.cumplidas_xp into v_dp, v_dc
+      from public.daily_scorecards sc where sc.user_id = p_user and sc.day = d;
+    if not found then
+      select x.programadas_xp, x.cumplidas_xp into v_dp, v_dc from public._dia_en_vivo(p_user, d) x;
+      if d = v_hoy then v_dp := v_dc; end if;
+    end if;
+    v_p := v_p + coalesce(v_dp, 0); v_c := v_c + coalesce(v_dc, 0);
+    d := d + 1;
+  end loop;
+  programadas_xp := v_p; cumplidas_xp := v_c;
+  select count(distinct c.date)::integer into dias_activos
+    from public.completions c join public.quests q on q.id = c.quest_id and not q.is_penalty
+    where c.user_id = p_user and c.date between p_desde and p_hasta;
+  select (coalesce((select sum(least(c.xp_awarded, 500)) from public.completions c join public.quests q on q.id = c.quest_id and not q.is_penalty
+             where c.user_id = p_user and c.date between p_desde and p_hasta), 0)
+        + coalesce((select sum(l.xp) from public.xp_daily_ledger l where l.user_id = p_user and l.day between p_desde and p_hasta), 0))::integer
+    into xp;
+  return next;
+end $$;
+
+-- competition.ts → indiceDisciplina (XP base; prior 0,7 con peso 250) y velocidad (tope 2).
+create or replace function public._indice(p_cumplidas_xp integer, p_programadas_xp integer) returns integer
 language sql immutable as $$
-  select round(100.0 * (least(greatest(p_cumplidas, 0), greatest(p_programadas, 0)) + 0.7 * 5) / (greatest(p_programadas, 0) + 5))::integer;
+  select round(100.0 * (least(greatest(p_cumplidas_xp, 0), greatest(p_programadas_xp, 0)) + 0.7 * 250)
+               / (greatest(p_programadas_xp, 0) + 250))::integer;
 $$;
 create or replace function public._velocidad(p_xp integer, p_dias integer, p_base integer, p_dias_base integer default 28) returns numeric
 language sql immutable as $$
@@ -123,7 +176,8 @@ language sql immutable as $$
 $$;
 
 revoke all on function public._son_amigos(uuid, uuid), public._bloqueo_entre(uuid, uuid),
-  public._marcador(uuid, date, date) from public, anon, authenticated;
+  public._marcador(uuid, date, date), public._dia_en_vivo(uuid, date), public._scorecard_al_cerrar()
+  from public, anon, authenticated;
 
 -- ── Ligas ──────────────────────────────────────────────────────────────
 
@@ -185,6 +239,7 @@ begin
   return query
   with m as (
     select lm.user_id, p.name, p.avatar_url, p.social_visible,
+      (now() at time zone public.safe_tz(p.timezone))::date as hoy,
       date_trunc('week', (now() at time zone public.safe_tz(p.timezone)))::date as lunes
     from public.league_members lm join public.profiles p on p.id = lm.user_id
     where lm.league_id = p_league and (lm.user_id = u or not public._bloqueo_entre(u, lm.user_id))
@@ -192,9 +247,9 @@ begin
   )
   select m.user_id = u, left(m.name, 40),
     case when m.avatar_url like m.user_id::text || '/%' then m.avatar_url end,
-    public._indice(s.cumplidas, s.programadas),
-    public._velocidad(s.xp, greatest(1, ((now() at time zone 'UTC')::date - m.lunes) + 1), b.xp),
-    s.dias_activos, s.programadas < 3
+    public._indice(s.cumplidas_xp, s.programadas_xp),
+    public._velocidad(s.xp, greatest(1, (m.hoy - m.lunes) + 1), b.xp),
+    s.dias_activos, s.programadas_xp < 150
   from m
   cross join lateral public._marcador(m.user_id, m.lunes, m.lunes + 6) s
   cross join lateral public._marcador(m.user_id, m.lunes - 28, m.lunes - 1) b;
@@ -265,10 +320,10 @@ begin
            and x.week_start >= (now()::date - 35) order by x.week_start desc limit 20 loop
     select * into a from public._marcador(u, d.week_start, d.week_start + 6);
     select * into b from public._marcador(case when d.challenger = u then d.opponent else d.challenger end, d.week_start, d.week_start + 6);
-    ia := public._indice(a.cumplidas, a.programadas); ib := public._indice(b.cumplidas, b.programadas);
+    ia := public._indice(a.cumplidas_xp, a.programadas_xp); ib := public._indice(b.cumplidas_xp, b.programadas_xp);
     r := null;
     if d.status in ('accepted', 'done') and now()::date > d.week_start + 7 then
-      r := case when a.programadas < 3 or b.programadas < 3 then 'sin_datos'
+      r := case when a.programadas_xp < 150 or b.programadas_xp < 150 then 'sin_datos'
                 when ia > ib then 'gano' when ia < ib then 'pierdo'
                 when a.dias_activos > b.dias_activos then 'gano' when a.dias_activos < b.dias_activos then 'pierdo'
                 else 'empate' end;

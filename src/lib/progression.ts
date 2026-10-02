@@ -16,8 +16,15 @@
 //
 // El rango NO baja nunca. El nivel sí puede bajar con una penalización
 // (invariante: solo xp_total cae), pero lo ganado como identidad —rango,
-// título, marco— se queda: se registra como logro `rango_X` (tabla
-// achievements, ya existente) y manda el máximo entre ese registro y el nivel.
+// título, marco— se queda.
+//
+// El rango lo decide y registra el SERVIDOR (RPC `sync_rank`, propuesta en
+// docs/game-v2/propuestas/rango.sql): el cliente podía insertar cualquier
+// logro y lucir una corona falsa ante sus amigos. Es el MÍNIMO entre el rango
+// que da el nivel y el que dan los días activos (RANGO_DIAS): el volumen no
+// compra identidad, hace falta tiempo real en la arena (revisión de
+// nivl-game-balancer: con 9 misiones y racha ×1,5 se llegaba a S en ~1 año).
+// El cliente solo LEE lo registrado (`rango_X` en achievements).
 
 import { levelFromXp } from './game';
 
@@ -76,6 +83,21 @@ export function rangoDeNivel(nivel: number): { rango: RangoDef; grado: Grado } {
   return { rango: r, grado };
 }
 
+/**
+ * Días activos (días distintos con alguna misión cumplida) mínimos por rango.
+ * Con ~270 XP/día el nivel llega antes que los días en los rangos altos: así
+ * nadie es Leyenda sin haber pisado la arena 600 días.
+ */
+export const RANGO_DIAS: Record<RangoId, number> = { E: 0, D: 7, C: 40, B: 110, A: 300, S: 600 };
+
+/** Rango que merece un usuario: el menor entre el de su nivel y el de sus días activos. */
+export function rangoMerecido(nivel: number, diasActivos: number): RangoId {
+  const porNivel = rangoDeNivel(nivel).rango.id;
+  let porDias: RangoId = 'E';
+  for (const id of ORDEN) if (diasActivos >= RANGO_DIAS[id]) porDias = id;
+  return compararRangos(porNivel, porDias) <= 0 ? porNivel : porDias;
+}
+
 /** Código de logro que registra para siempre un rango alcanzado. */
 export const codigoRango = (id: RangoId) => `rango_${id}`;
 
@@ -95,34 +117,45 @@ export interface EstadoProgreso {
   /** XP dentro del nivel y coste del siguiente (0 = tope). */
   xpEnNivel: number;
   xpSiguiente: number;
-  /** Rango vigente: el mayor entre el del nivel actual y el registrado. Nunca baja. */
+  /** Rango vigente: el registrado por el servidor (sync_rank). Nunca baja. */
   rango: RangoId;
-  /** Grado dentro del rango del NIVEL actual (si el nivel bajó por debajo del rango, 1). */
+  /**
+   * Grado dentro del rango: el del nivel actual si el nivel está en ese
+   * rango; III si el nivel ya lo supera (esperando días activos); I si el
+   * nivel bajó por debajo.
+   */
   grado: Grado;
   racha: number;
   piedras: number;
   logros: ReadonlySet<string>;
-  /** Próximo rango y niveles que faltan («6 niveles para Leyenda»); null en S. */
-  siguienteRango: { rango: RangoId; nombre: string; nivel: number; faltan: number } | null;
+  /**
+   * Próximo rango y lo que falta («6 niveles y 40 días activos para Leyenda»);
+   * null en S. `faltanDias` solo si se conocen los días activos.
+   */
+  siguienteRango: { rango: RangoId; nombre: string; nivel: number; faltan: number; dias: number; faltanDias: number | null } | null;
 }
 
 export function estadoDe(p: {
   xp_total: number;
   streak_days: number;
   protection_stones: number;
-}, logros: Iterable<string>): EstadoProgreso {
+}, logros: Iterable<string>, diasActivos?: number): EstadoProgreso {
   const set = new Set(logros);
   const lvl = levelFromXp(p.xp_total);
   const porNivel = rangoDeNivel(lvl.level);
-  const registrado = rangoRegistrado(set);
-  const rango = compararRangos(porNivel.rango.id, registrado) >= 0 ? porNivel.rango.id : registrado;
-  const grado: Grado = rango === porNivel.rango.id ? porNivel.grado : 1;
+  const rango = rangoRegistrado(set);
+  const cmp = compararRangos(porNivel.rango.id, rango);
+  const grado: Grado = cmp === 0 ? porNivel.grado : cmp > 0 ? 3 : 1;
   const sig = RANGOS[ORDEN.indexOf(rango) + 1];
   return {
     xp: p.xp_total, nivel: lvl.level, xpEnNivel: lvl.into, xpSiguiente: lvl.next,
     rango, grado, racha: p.streak_days, piedras: p.protection_stones, logros: set,
     siguienteRango: sig
-      ? { rango: sig.id, nombre: sig.nombre, nivel: sig.grados[0], faltan: Math.max(0, sig.grados[0] - lvl.level) }
+      ? {
+          rango: sig.id, nombre: sig.nombre, nivel: sig.grados[0], faltan: Math.max(0, sig.grados[0] - lvl.level),
+          dias: RANGO_DIAS[sig.id],
+          faltanDias: diasActivos === undefined ? null : Math.max(0, RANGO_DIAS[sig.id] - diasActivos),
+        }
       : null,
   };
 }
@@ -283,10 +316,13 @@ export function colaDeCelebracion(lista: Celebracion[], yaVistas: ReadonlySet<st
   return { principal: pendientes[0] ?? null, resto: pendientes.slice(1) };
 }
 
-/** Logros de rango que hay que registrar para que el rango no baje nunca. */
-export function codigosDeRangoPendientes(nivel: number, logros: ReadonlySet<string>): string[] {
-  const actual = rangoDeNivel(nivel).rango.id;
-  return ORDEN.slice(1, ORDEN.indexOf(actual) + 1)
+/**
+ * Códigos de rango que el servidor debe registrar (espejo de sync_rank): todos
+ * los rangos hasta el merecido que aún no estén. El CLIENTE no los inserta.
+ */
+export function codigosDeRangoPendientes(nivel: number, diasActivos: number, logros: ReadonlySet<string>): string[] {
+  const merecido = rangoMerecido(nivel, diasActivos);
+  return ORDEN.slice(1, ORDEN.indexOf(merecido) + 1)
     .map(codigoRango)
     .filter((c) => !logros.has(c));
 }

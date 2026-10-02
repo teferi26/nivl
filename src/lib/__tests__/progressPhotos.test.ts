@@ -7,6 +7,8 @@ import {
   lunesDe,
   metadatosParaCoach,
   parAntesDespues,
+  permisosFotos,
+  PROVEEDOR_VISION,
   pesoCercano,
   Pose,
   rachaFotosSemanal,
@@ -435,5 +437,63 @@ describe('ninguna función devuelve rutas ni URL', () => {
 
   it('el coach tampoco recibe el id', () => {
     expect(JSON.stringify(metadatosParaCoach(filas))).not.toMatch(/"id"|a1|a2/);
+  });
+});
+
+describe('permisosFotos', () => {
+  const todo = { consentimientoSalud: true, consentimientoIA: true };
+  const nada = (motivo: string) => ({
+    guardar: false,
+    compartir: false,
+    analizarIA: false,
+    proveedorVision: 'claude',
+    motivo,
+  });
+
+  it('mayor de 18 con los dos consentimientos: todo, y la visión solo con Claude', () => {
+    expect(permisosFotos({ mayor18: true, ...todo })).toEqual({
+      guardar: true,
+      compartir: true,
+      analizarIA: true,
+      motivo: null,
+      proveedorVision: 'claude',
+    });
+    expect(PROVEEDOR_VISION).toBe('claude');
+  });
+
+  it('menor declarado: todo false', () => {
+    expect(permisosFotos({ mayor18: false, ...todo })).toEqual(nada('menor'));
+  });
+
+  it('edad sin confirmar (null): todo false', () => {
+    expect(permisosFotos({ mayor18: null, ...todo })).toEqual(nada('edad_sin_confirmar'));
+  });
+
+  it('un valor que no es booleano cuenta como sin confirmar', () => {
+    const raro = { mayor18: 'true' as unknown as boolean, ...todo };
+    expect(permisosFotos(raro)).toEqual(nada('edad_sin_confirmar'));
+  });
+
+  it('sin consentimiento de salud no se guarda, ni se comparte ni se analiza', () => {
+    expect(permisosFotos({ mayor18: true, consentimientoSalud: false, consentimientoIA: true })).toEqual(
+      nada('sin_consentimiento_salud'),
+    );
+  });
+
+  it('sin consentimiento de IA: se guarda y se comparte, pero no se analiza', () => {
+    expect(permisosFotos({ mayor18: true, consentimientoSalud: true, consentimientoIA: false })).toEqual({
+      guardar: true,
+      compartir: true,
+      analizarIA: false,
+      motivo: 'sin_consentimiento_ia',
+      proveedorVision: 'claude',
+    });
+  });
+
+  it('la edad se mira antes que los consentimientos', () => {
+    expect(permisosFotos({ mayor18: false, consentimientoSalud: false, consentimientoIA: false }).motivo).toBe('menor');
+    expect(permisosFotos({ mayor18: null, consentimientoSalud: false, consentimientoIA: false }).motivo).toBe(
+      'edad_sin_confirmar',
+    );
   });
 });

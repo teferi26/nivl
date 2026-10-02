@@ -2,7 +2,7 @@ import { evaluateAchievements, tituloVigente } from '../achievements';
 import { levelFromXp, xpCostForLevel } from '../game';
 import {
   celebracionesEntre, celebrarCambio, colaDeCelebracion, codigosDeRangoPendientes, cosmeticosDe,
-  estadoDe, RANGOS, rangoDeNivel, rangoRegistrado, titulosDisponibles,
+  estadoDe, RANGOS, rangoDeNivel, rangoMerecido, rangoRegistrado, titulosDisponibles,
 } from '../progression';
 
 jest.mock('../supabase', () => ({ supabase: {} }));
@@ -53,15 +53,29 @@ describe('el rango no baja nunca', () => {
     expect(e.nivel).toBe(9);
     expect(e.rango).toBe('C');
     expect(e.grado).toBe(1);
-    expect(e.siguienteRango).toEqual({ rango: 'B', nombre: 'Campeón', nivel: 15, faltan: 6 });
+    expect(e.siguienteRango).toEqual({ rango: 'B', nombre: 'Campeón', nivel: 15, faltan: 6, dias: 110, faltanDias: null });
+    expect(estadoDe(perfil(9), ['rango_D', 'rango_C'], 50).siguienteRango?.faltanDias).toBe(60);
     expect(estadoDe(perfil(31), ['rango_S']).siguienteRango).toBeNull();
   });
 
-  test('evaluateAchievements registra los rangos alcanzados y no los repite', () => {
-    expect(evaluateAchievements({ level: 12 })).toEqual(expect.arrayContaining(['rango_D', 'rango_C']));
-    expect(evaluateAchievements({ level: 12, unlocked: new Set(['rango_D']) })).not.toContain('rango_D');
-    expect(codigosDeRangoPendientes(3, new Set())).toEqual([]);
+  test('el rango merecido es el menor entre nivel y días activos; el cliente no lo inserta', () => {
+    expect(rangoMerecido(30, 900)).toBe('S');
+    expect(rangoMerecido(30, 200)).toBe('B'); // mucho volumen, poco tiempo
+    expect(rangoMerecido(6, 900)).toBe('D');
+    expect(codigosDeRangoPendientes(12, 50, new Set(['rango_D']))).toEqual(['rango_C']);
+    expect(codigosDeRangoPendientes(3, 0, new Set())).toEqual([]);
+    expect(evaluateAchievements({ level: 30 }).some((c) => c.startsWith('rango_'))).toBe(false);
     expect(rangoRegistrado(['level_5', 'rango_B', 'rango_D'])).toBe('B');
+  });
+
+  test('sin rango registrado manda lo registrado (E), con el grado III mientras espera días', () => {
+    const e = estadoDe(perfil(12), []);
+    expect(e).toMatchObject({ rango: 'E', grado: 3 });
+  });
+
+  test('hitos de días activos para el segundo año', () => {
+    expect(evaluateAchievements({ diasActivos: 365 })).toEqual(expect.arrayContaining(['dias_100', 'dias_200', 'dias_365']));
+    expect(evaluateAchievements({ diasActivos: 99 })).not.toContain('dias_100');
   });
 
   test('títulos: los de cada rango alcanzado más los de logros, sin repetir', () => {
@@ -127,7 +141,8 @@ describe('contrato de celebraciones', () => {
   });
 
   test('la cola no repite lo ya visto y agrupa el resto', () => {
-    const r = celebrarCambio({ perfilAntes: perfil(4, { streak_days: 6 }), perfilDespues: perfil(5, { streak_days: 7 }), logrosAntes: [], fecha });
+    const r = celebrarCambio({ perfilAntes: perfil(4, { streak_days: 6 }), perfilDespues: perfil(5, { streak_days: 7 }), logrosAntes: [], fecha,
+      logrosNuevos: [{ codigo: 'rango_D', nombre: 'x', desc: 'x' }] });
     const { principal, resto } = colaDeCelebracion(r, new Set(['rango:D']));
     expect(principal).toMatchObject({ tipo: 'racha' });
     expect(resto).toEqual([]);

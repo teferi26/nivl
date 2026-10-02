@@ -24,7 +24,7 @@ Los plazos son para un ritmo constante de unos 270 XP netos al día. Los rangos 
 
 **Paleta: solo blanco y negro.** El marco y la corona se dibujan como monocromo. Lo que evoluciona con el rango es la forma, el grosor, el laurel y el grano o brillo, nunca un color.
 
-**El rango no baja nunca.** Una penalización puede bajar el nivel, pero el rango alcanzado se registra como logro oculto `rango_X` (tabla `achievements`, sin SQL nuevo) y `estadoDe` usa el máximo. Si el nivel cae por debajo, el grado vuelve a I dentro del rango conservado.
+**El rango no baja nunca y lo decide el servidor.** El rango merecido es el **mínimo entre el que da el nivel y el que dan los días activos**. Los días activos son días distintos con alguna misión cumplida, con estos mínimos: D 7, C 40, B 110, A 300, S 600. Así el volumen no compra identidad (`RANGO_DIAS`, `rangoMerecido`). Lo registra la RPC `sync_rank()`, propuesta en `propuestas/rango.sql`: inserta `rango_X` en `achievements`, y un trigger impide que el cliente escriba esos códigos. El cliente llama a `sincronizarRango()` (`achievements.ts`) después de completar, registrar o cerrar el día; los `rango_X` que devuelve se pasan como `logrosNuevos` a `celebrarCambio`. `estadoDe` solo LEE lo registrado. Si el nivel ya supera el rango (porque faltan días activos), el grado se muestra como III; si el nivel bajó, como I. `siguienteRango` trae `faltan` (niveles) y `faltanDias` (si se le pasan los días activos).
 
 Títulos:
 - `titulosDisponibles(rango, titulosDeLogros)`.
@@ -51,7 +51,7 @@ const lista = celebrarCambio({
 const { principal, resto } = colaDeCelebracion(lista, clavesYaVistas);
 ```
 
-Para que el rango quede registrado, llama a `evaluateAchievements({ level, unlocked, ... })`. Ya devuelve los `rango_X` pendientes; después, `unlockAchievements` como siempre.
+Para registrar el rango, llama a `sincronizarRango()`, que es del servidor. `evaluateAchievements` ya NO devuelve códigos `rango_X`; sí devuelve `first_day` (`diaCumplido`) y los hitos de días activos `dias_100` … `dias_730` (`diasActivos`), con títulos y sin XP, para el segundo año.
 
 ## 3. Celebraciones (`Celebracion`)
 

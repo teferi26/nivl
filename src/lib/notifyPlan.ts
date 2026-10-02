@@ -52,8 +52,8 @@ export const PRIORIDAD: Record<TipoAviso, number> = {
 
 /**
  * Hora preferida y margen en el que se puede mover si choca. Todo en minutos
- * locales y siempre recortado a la ventana activa. `null` = usar la regla
- * propia del tipo (la racha depende de sleep_time).
+ * locales y siempre recortado a la ventana activa. La racha no está aquí:
+ * depende de sleep_time (ver horaRacha) y solo puede adelantarse.
  */
 const HORARIO: Record<Exclude<TipoAviso, 'racha'>, { pref: number; desde: number; hasta: number }> = {
   recuperacion: { pref: 17 * 60, desde: 15 * 60, hasta: 19 * 60 }, // media tarde

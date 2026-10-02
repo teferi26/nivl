@@ -1,4 +1,3 @@
-import { codigosDeRangoPendientes } from './progression';
 import { supabase } from './supabase';
 
 export interface AchievementDef {
@@ -34,8 +33,18 @@ export const ACHIEVEMENTS: AchievementDef[] = [
   { code: 'pr_10', name: 'Rompe límites', desc: '10 récords personales', title: 'Rompe Límites' },
   { code: 'first_journal', name: 'La pluma del gladiador', desc: 'Primera entrada del diario' },
   { code: 'journal_30', name: 'Cronista', desc: '30 entradas del diario', title: 'El Cronista' },
-  // Sistema v2 (progression.ts): el rango alcanzado se registra aquí para que
-  // no baje nunca aunque una penalización baje el nivel. Sin XP.
+  // Hitos por días activos: dan identidad en el segundo año, cuando los
+  // rangos se espacian (revisión de nivl-game-balancer). Sin XP.
+  { code: 'dias_100', name: 'Cien días en la arena', desc: '100 días activos', title: 'Centenario' },
+  { code: 'dias_200', name: 'Doscientos días', desc: '200 días activos' },
+  { code: 'dias_365', name: 'Un año de arena', desc: '365 días activos', title: 'El del año' },
+  { code: 'dias_450', name: 'Cuatrocientos cincuenta', desc: '450 días activos' },
+  { code: 'dias_500', name: 'Quinientos días', desc: '500 días activos', title: 'Quingentésimo' },
+  { code: 'dias_550', name: 'Quinientos cincuenta', desc: '550 días activos' },
+  { code: 'dias_650', name: 'Seiscientos cincuenta', desc: '650 días activos' },
+  { code: 'dias_730', name: 'Dos años de arena', desc: '730 días activos', title: 'Bienal' },
+  // Sistema v2 (progression.ts): el rango alcanzado lo registra el SERVIDOR
+  // (sync_rank) para que no baje nunca ni se pueda falsificar. Sin XP.
   { code: 'rango_D', name: 'Rango Gladiador', desc: 'Alcanza el rango D', oculto: true },
   { code: 'rango_C', name: 'Rango Veterano', desc: 'Alcanza el rango C', oculto: true },
   { code: 'rango_B', name: 'Rango Campeón', desc: 'Alcanza el rango B', oculto: true },
@@ -62,6 +71,11 @@ export function tituloVigente(equipado: string | null | undefined): string | nul
 /** Logros que se enseñan en la vitrina (sin los registros internos). */
 export const ACHIEVEMENTS_VISIBLES = (): AchievementDef[] => ACHIEVEMENTS.filter((a) => !a.oculto);
 
+const DIAS_ACTIVOS_HITOS: [number, string][] = [
+  [100, 'dias_100'], [200, 'dias_200'], [365, 'dias_365'], [450, 'dias_450'],
+  [500, 'dias_500'], [550, 'dias_550'], [650, 'dias_650'], [730, 'dias_730'],
+];
+
 export const ACHIEVEMENT_BY_CODE: Record<string, AchievementDef> = Object.fromEntries(
   ACHIEVEMENTS.map((a) => [a.code, a]),
 );
@@ -77,8 +91,8 @@ export interface AchievementContext {
   penaltyRedeemed?: boolean;
   /** El cierre acaba de dar por cumplido al menos un día (DayCloseResult.diasCumplidos > 0). */
   diaCumplido?: boolean;
-  /** Logros ya desbloqueados: para registrar el rango (progression.ts). */
-  unlocked?: ReadonlySet<string>;
+  /** Días distintos con alguna misión cumplida. */
+  diasActivos?: number;
 }
 
 export function evaluateAchievements(ctx: AchievementContext): string[] {
@@ -112,8 +126,9 @@ export function evaluateAchievements(ctx: AchievementContext): string[] {
   const j = ctx.journalCount ?? 0;
   if (j >= 1) codes.push('first_journal');
   if (j >= 30) codes.push('journal_30');
-  // Rango v2: se registra en cuanto el nivel lo alcanza y ya no se pierde.
-  if (l > 0) codes.push(...codigosDeRangoPendientes(l, ctx.unlocked ?? new Set()));
+  // Días activos (segundo año: un hito cualitativo cada ≤ 2 meses, sin XP).
+  const da = ctx.diasActivos ?? 0;
+  for (const [n, code] of DIAS_ACTIVOS_HITOS) if (da >= n) codes.push(code);
   return codes;
 }
 
@@ -147,4 +162,19 @@ export async function unlockAchievements(
   }
   const inserted = new Set((data ?? []).map((r) => r.code as string));
   return fresh.filter((code) => inserted.has(code)).map((code) => ACHIEVEMENT_BY_CODE[code]!);
+}
+
+/**
+ * Pide al servidor que registre el rango merecido (nivel y días activos) y
+ * devuelve los códigos `rango_X` nuevos, para celebrarlos. Si la RPC aún no
+ * existe en el servidor, no hace nada: el rango se queda en lo registrado.
+ */
+export async function sincronizarRango(): Promise<string[]> {
+  const { data, error } = await supabase.rpc('sync_rank');
+  if (error) {
+    if (error.code === 'PGRST202' || error.code === '42883') return [];
+    throw error;
+  }
+  const nuevos = (data as { nuevos?: unknown } | null)?.nuevos;
+  return Array.isArray(nuevos) ? nuevos.filter((c): c is string => typeof c === 'string' && /^rango_[DCBAS]$/.test(c)) : [];
 }

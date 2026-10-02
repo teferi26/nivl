@@ -3,17 +3,17 @@ import {
 } from '../competition';
 
 describe('índice de disciplina', () => {
-  test('3/3 no gana a 38/40: el prior pesa con pocas misiones', () => {
-    expect(indiceDisciplina(3, 3)).toBeLessThan(indiceDisciplina(38, 40));
+  test('3 triviales al día al 100 % (210 XP) no ganan al 90 % de un día exigente (63 medias)', () => {
+    expect(indiceDisciplina(210, 210)).toBeLessThan(indiceDisciplina(0.9 * 63 * 50, 63 * 50));
   });
   test('es justo entre perfiles: misma adherencia con volumen distinto ≈ mismo índice', () => {
-    expect(Math.abs(indiceDisciplina(18, 21) - indiceDisciplina(54, 63))).toBeLessThanOrEqual(3);
+    expect(Math.abs(indiceDisciplina(900, 1050) - indiceDisciplina(2700, 3150))).toBeLessThanOrEqual(4);
   });
-  test('sin misiones vale el prior (70) y está acotado a 0–100', () => {
+  test('sin nada programado vale el prior (70) y está acotado a 0–100', () => {
     expect(indiceDisciplina(0, 0)).toBe(70);
-    expect(indiceDisciplina(100, 100)).toBeLessThanOrEqual(100);
-    expect(indiceDisciplina(0, 100)).toBeGreaterThanOrEqual(0);
-    expect(indiceDisciplina(9, 3)).toBe(indiceDisciplina(3, 3)); // no se cuentan de más
+    expect(indiceDisciplina(5000, 5000)).toBeLessThanOrEqual(100);
+    expect(indiceDisciplina(0, 5000)).toBeGreaterThanOrEqual(0);
+    expect(indiceDisciplina(900, 300)).toBe(indiceDisciplina(300, 300)); // no se cuenta de más
   });
 });
 
@@ -31,23 +31,23 @@ describe('velocidad', () => {
 
 describe('duelos', () => {
   test('gana la adherencia, no el volumen', () => {
-    const r = resolverDuelo({ programadas: 6, cumplidas: 6, diasActivos: 6 }, { programadas: 40, cumplidas: 28, diasActivos: 7 });
+    const r = resolverDuelo({ programadasXp: 1500, cumplidasXp: 1500, diasActivos: 6 }, { programadasXp: 6000, cumplidasXp: 4200, diasActivos: 7 });
     expect(r).toMatchObject({ estado: 'ganador', ganador: 'a', motivo: 'disciplina' });
   });
   test('a igual índice, desempatan los días activos', () => {
-    const r = resolverDuelo({ programadas: 10, cumplidas: 8, diasActivos: 5 }, { programadas: 10, cumplidas: 8, diasActivos: 6 });
+    const r = resolverDuelo({ programadasXp: 500, cumplidasXp: 400, diasActivos: 5 }, { programadasXp: 500, cumplidasXp: 400, diasActivos: 6 });
     expect(r).toMatchObject({ estado: 'ganador', ganador: 'b', motivo: 'dias_activos' });
   });
   test('empate y semana sin datos', () => {
-    expect(resolverDuelo({ programadas: 10, cumplidas: 8, diasActivos: 5 }, { programadas: 10, cumplidas: 8, diasActivos: 5 }).estado).toBe('empate');
-    expect(resolverDuelo({ programadas: 2, cumplidas: 2, diasActivos: 2 }, { programadas: 10, cumplidas: 8, diasActivos: 5 }))
+    expect(resolverDuelo({ programadasXp: 500, cumplidasXp: 400, diasActivos: 5 }, { programadasXp: 500, cumplidasXp: 400, diasActivos: 5 }).estado).toBe('empate');
+    expect(resolverDuelo({ programadasXp: 100, cumplidasXp: 100, diasActivos: 2 }, { programadasXp: 500, cumplidasXp: 400, diasActivos: 5 }))
       .toEqual({ estado: 'sin_datos', falta: ['a'] });
   });
 });
 
 describe('ligas privadas', () => {
   const fila = (id: string, cumplidas: number, programadas: number, extra: Partial<FilaLiga> = {}): FilaLiga =>
-    ({ id, alias: id, cumplidas, programadas, diasActivos: 5, xpSemana: 1400, xpBase28: 5600, ...extra });
+    ({ id, alias: id, cumplidasXp: cumplidas * 50, programadasXp: programadas * 50, diasActivos: 5, xpSemana: 1400, xpBase28: 5600, ...extra });
 
   test('ordena por disciplina, comparte puesto en empate y deja sin puesto a quien no llega al mínimo', () => {
     const t = tablaLiga([fila('ana', 18, 20), fila('bea', 18, 20), fila('carl', 10, 20), fila('dani', 1, 2)]);
