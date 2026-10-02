@@ -1,14 +1,13 @@
 -- 0049 · Origen de los datos de salud importados (HealthKit / Health Connect).
 --
 -- Propuesta del Chat 1 (winter2/chat1-compartir @16c7fa2) + adenda de seguridad
--- del Chat 3 (winter2/chat3-ia @6a54a80), en una sola migración por decisión del
+-- del Chat 3 (winter2/chat3-ia @221e70e, versión sin exportación), en una sola migración por decisión del
 -- coordinador. Aditiva y compatible con binarios 1.0.7: columnas nuevas con
 -- valor por defecto 'manual', sin tocar firmas, únicos existentes ni políticas.
 -- Se aplica con 1.0.9 (bibliotecas nativas), salvo que se adelante la integración.
 --
--- Va DESPUÉS de la 0044: reemplaza export_my_data v4 → v5. Si alguna de las
--- 0045–0048 toca export_my_data, hay que regenerar aquí la versión final con
--- su lista de tablas más 'health_daily_steps' (coordinar con el Chat 3).
+-- NO toca export_my_data: el Chat 3 añade 'health_daily_steps' a la exportación
+-- en su migración de exportación consolidada, la última de la tanda.
 --
 -- Huella propuesta para scripts/apply-migrations.mjs:
 --   '0049': `exists(select 1 from information_schema.columns where table_schema='public' and table_name='cardio_sessions' and column_name='source') and to_regclass('public.health_daily_steps') is not null`
@@ -58,7 +57,6 @@ create policy health_daily_steps_own on public.health_daily_steps
   with check (user_id = (select auth.uid()));
 
 -- ── 3. Adenda de seguridad (Chat 3) ─────────────────────────────────────
-
 revoke all on public.health_daily_steps from anon;
 revoke truncate, trigger, references on public.health_daily_steps from authenticated;
 
@@ -123,53 +121,3 @@ begin
 end $function$
 ;
 
--- Exportación v5: la v4 (0044) con la tabla nueva.
-create or replace function public.export_my_data() returns jsonb
-language plpgsql security definer set search_path=public as $$
-declare u uuid:=auth.uid(); t text; rows jsonb;
-  result jsonb:=jsonb_build_object('app','NIVL','version',5,'exported_at',clock_timestamp());
-begin
-  if u is null then raise exception 'No autenticado' using errcode='42501'; end if;
-  -- 1. Igual que 0030 (filas completas) y 2. nuevas tablas propias sin terceros.
-  foreach t in array array['profiles','quests','completions','events','dungeons','dungeon_tasks','calendar_events',
-    'gym_days','gym_exercises','gym_sessions','gym_lifts','meal_slots','shopping_items','journal_entries','achievements',
-    'rules','rule_breaks','bonus_redemptions','journal_photos','letters','body_metrics','goals','coach_dossier',
-    'coach_facts','coach_threads','coach_messages','day_plans','day_blocks','body_profile','cardio_sessions',
-    'nutrition_targets','nutrition_logs','training_prescriptions','money_accounts','transactions','category_rules',
-    'budgets','money_plan','quest_photos','recaps','rule_checks','ai_consents','health_consents','health_state','health_erasure_jobs',
-    'age_confirmations','subscriptions','coach_runs','oracle_usage','push_tokens','social_profile_reviews',
-    'social_avatar_paths','elite_group_requests','store_reconciliation','account_erasure_jobs','friend_request_log',
-    'recovery_credits','xp_daily_ledger','xp_once','health_daily_steps'] loop
-    execute format('select coalesce(jsonb_agg(to_jsonb(r)),''[]''::jsonb) from public.%I r where %I=$1',
-      t,case when t='profiles' then 'id' else 'user_id' end) into rows using u;
-    result:=result||jsonb_build_object(t,rows);
-  end loop;
-  -- 3. Relaciones: solo la parte de la persona.
-  result:=result||jsonb_build_object(
-    'friendships',(select coalesce(jsonb_agg(jsonb_build_object('rol',case when f.requester=u then 'enviada' else 'recibida' end,
-      'status',f.status,'created_at',f.created_at,'accepted_at',f.accepted_at) order by f.created_at),'[]'::jsonb)
-      from public.friendships f where u in (f.requester,f.addressee)),
-    'social_blocks',(select coalesce(jsonb_agg(jsonb_build_object('created_at',b.created_at) order by b.created_at),'[]'::jsonb)
-      from public.social_blocks b where b.blocker=u),
-    'social_reports',(select coalesce(jsonb_agg(jsonb_build_object('reason',s.reason,'status',s.status,'created_at',s.created_at,
-      'resolved_at',s.resolved_at) order by s.created_at),'[]'::jsonb) from public.social_reports s where s.reporter=u),
-    'elite_group_members',(select coalesce(jsonb_agg(jsonb_build_object('joined_at',m.joined_at)),'[]'::jsonb)
-      from public.elite_group_members m where m.user_id=u),
-    'referrals',(select coalesce(jsonb_agg(jsonb_build_object('creator_code',c.code,'source',r.source,'created_at',r.created_at)),'[]'::jsonb)
-      from public.referrals r left join public.creators c on c.id=r.creator_id where r.user_id=u),
-    'ai_reports',(select coalesce(jsonb_agg(jsonb_build_object('source',a.source,'message_id',a.message_id,'reason',a.reason,
-      'excerpt',a.excerpt,'status',a.status,'created_at',a.created_at,'resolved_at',a.resolved_at) order by a.created_at),'[]'::jsonb)
-      from public.ai_reports a where a.reporter=u),
-    'store_sales',(select coalesce(jsonb_agg(jsonb_build_object('store',s.store,'product_id',s.product_id,'payment_number',s.payment_number,
-      'price_cents',s.price_cents,'currency',s.currency,'purchased_at',s.purchased_at,'refunded_at',s.refunded_at) order by s.purchased_at),'[]'::jsonb)
-      from public.store_sales s where s.user_id=u),
-    -- Las fotos: la lista de archivos que existen. Los bytes se descargan aparte
-    -- con URL firmada (dependencia de UI, ver b-privacidad-borrado.md).
-    'storage_objects',(select coalesce(jsonb_agg(jsonb_build_object('bucket',o.bucket_id,'path',o.name,
-      'bytes',(o.metadata->>'size')::bigint,'created_at',o.created_at) order by o.bucket_id,o.name),'[]'::jsonb)
-      from storage.objects o where o.bucket_id in ('evidence','avatars') and (storage.foldername(o.name))[1]=u::text));
-  return result;
-end $$;
-revoke all on function public.export_my_data() from public,anon;
-grant execute on function public.export_my_data() to authenticated;
-comment on function public.export_my_data() is 'Owner-only rights export v5; nivl:export-completo-v4 nivl:export-v5';
