@@ -104,7 +104,7 @@ describe('etiquetas', () => {
     expect(formatoValor(86, 'cumplimiento')).toBe('86 %');
     expect(formatoValor(1, 'racha')).toBe('1 día');
     expect(formatoValor(14, 'racha')).toBe('14 días');
-    expect(formatoValor(null, 'cumplimiento')).toBe('—');
+    expect(formatoValor(null, 'cumplimiento')).toBe('-');
   });
 
   test('posición entre amigos: solo si hay alguien más y se me puede medir', () => {
