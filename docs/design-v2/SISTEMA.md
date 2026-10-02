@@ -1,6 +1,6 @@
 # NIVL · Sistema de diseño v2 — «Mármol y tinta»
 
-Fase 2 (1.0.8). Autoridad: Chat 4 (líder de UI). Tokens en `src/design/tokens.ts` (fuente única, con tests de contraste). Maquetas: artifact «NIVL Diseño v2» (enlace en `coordinacion-winter-arc/CHAT_4_ESTADO.md`).
+Fase 2 (1.0.8). Autoridad: Chat 4 (líder de UI). Tokens en `src/design/tokens.ts` (fuente única, con tests de contraste). Maquetas: artifact «NIVL Diseño v2» https://claude.ai/artifact/Gew7UaYjh3rvXweC2DYc62 (privado del dueño hasta que lo comparta).
 Base: `winter2/integracion @99729ea`. Sustituye al sistema «arena» (`nivl-design-system`, paleta con rojo y oro).
 
 ## 0. Principio
@@ -111,18 +111,22 @@ Se conserva la API del kit actual cuando se puede (para que la migración sea me
 
 ## 7. Rango: el tema que evoluciona dentro del blanco y negro
 
-El rango (`rankForLevel`: E ≤10 · D ≤25 · C ≤45 · B ≤70 · A ≤99 · S 100+) cambia tres cosas a la vez. Así el progreso se ve en toda la app sin añadir color.
+Los datos son del **Chat 5**: `src/lib/progression.ts` y `docs/game-v2/CONTRATO-PROGRESION.md`. Rangos E–S con grados I/II/III, umbrales ligados a momentos reales y un rango que **nunca baja**. Aquí solo se fija cómo se ve (`RANK_THEME` en `tokens.ts`). Evoluciona la forma o el grano, nunca el color.
 
-| Rango | Marco del avatar | Corona | Acento de la interfaz | Título por defecto |
+| Rango (desde nivel) | Marco (`marco`) | Corona | Acento de la interfaz | Título |
 |---|---|---|---|---|
-| E | Aro hairline 1 | — | Plano | Recluta |
-| D | Aro 2 | — | Plano, número de nivel en Cinzel | Tiro |
-| C | Doble aro (2 + 1) | Diadema: 3 puntas | Regla de sección de 2 px | Gladiador |
-| B | Doble aro con 8 muescas | Laurel de contorno | Grano suave en la tarjeta de nivel | Veterano |
-| A | Aro de 3 + laurel sólido | Laurel sólido | Grano en cabecera y barra de XP | Campeón |
-| S | Aro de 3 con brillo animado (una pasada cada 8 s; quieto si se reduce el movimiento) | Corona de 5 puntas | Grano + borde de 3 en la tarjeta de perfil | Leyenda de la arena |
+| E (1) | liso: aro hairline 1 | — | Plano | Tiro |
+| D (5, ~1 semana) | doble: aro 2 + aro ink6 | — | Plano | Gladiador |
+| C (10, ~6 semanas) | remachado: doble aro con 8 remaches | — | Regla de sección de 2 px | Veterano |
+| B (15, ~4 meses) | laurel simple, aro 3 | **Casco** (galea de un trazo) | Grano suave en la tarjeta de nivel | Campeón |
+| A (22, ~11 meses) | laurel doble | Casco | Grano en la cabecera y la barra de XP | Héroe de la arena |
+| S (30, ~2 años) | laurel con corona y brillo (una pasada cada 8 s; quieto si se reduce el movimiento) | Corona de laurel | Grano + borde de 3 en la tarjeta de perfil | Leyenda |
 
-Los títulos los decide el Chat 5 (contrato de celebración); estos son los de partida. Las coronas son SVG en `src/components/ui/Crown.tsx` con un solo trazo blanco, sin relleno de color.
+- El título que se pinta es siempre `tituloVigente()`.
+- La vitrina de logros sale de `ACHIEVEMENTS_VISIBLES()`.
+- Las celebraciones vienen de `colaDeCelebracion()`: una principal y un resumen, nunca una cascada.
+- El cliente guarda las claves vistas por usuario y expone `celebrando`; con ella el Chat 2 sabe que no debe abrir la oferta encima de una ceremonia.
+- Coronas y marcos son SVG de un solo trazo blanco en `src/components/ui/Crown.tsx` y `Avatar.tsx`.
 
 ## 8. Movimiento
 
@@ -137,7 +141,7 @@ Los títulos los decide el Chat 5 (contrato de celebración); estos son los de p
 **Ceremonia de nivel** (pantalla completa, negro):
 1. El número viejo se rompe en 6 fragmentos (120 ms).
 2. El nuevo sube desde abajo en `display` (420 ms) mientras la barra se llena.
-3. Si cambia el rango: la corona baja sobre el avatar (500 ms), el marco engorda y aparece el título nuevo.
+3. Si cambia el rango (celebración `rango`, épica): el marco cambia de forma (500 ms), el casco o la corona baja sobre el avatar y aparece el título nuevo. Las de `grado` y `nivel` son una versión corta de 900 ms, sin corona.
 4. CTA «Compartir» (blanco) y «Seguir» (ghost).
 
 Con «reducir movimiento»: corte directo al estado final y fundido de 180 ms. Se salta con un toque. El sonido es opcional, está apagado por defecto y se activa en Perfil.
@@ -159,6 +163,16 @@ Una sola función `vibrar(evento)` para que ninguna pantalla elija el estilo por
 | Acción destructiva confirmada | `impactAsync(Rigid)` |
 | Recuperación abierta (RET-03) | `Success` |
 
+## 9 bis. Coach: galea y voz (con el Chat 3)
+
+- **Glifo propio: la galea.** Un casco de gladiador de un solo trazo, en negro sobre un círculo blanco. Se reconoce a 16, 24 y 96 px. No es un emoji del sistema.
+- **Escuchar:** cada respuesta del coach lleva «Escuchar», que usa `hablar()` de `src/lib/voice/` (Chat 3). «Parar» aparece mientras habla. Nunca habla en segundo plano: al salir de la app, `parar()`.
+- **Dictar:** se mantiene pulsado el botón del micrófono del compositor. El permiso de micrófono se pide la PRIMERA vez que se pulsa, nunca en el onboarding.
+  - Mientras graba, se ve una franja «● GRABANDO 0:04 · suelta para enviar, desliza para cancelar» (guía 2.5.14 de Apple).
+  - El lector de pantalla anuncia el inicio y el fin.
+- **Cita:** si el coach ha consultado datos, su respuesta empieza con una línea discreta en `bodySm` ink6 con regla izquierda de 2 px: «Consultado: …».
+- **Denunciar respuesta:** se mantiene, junto a «Escuchar».
+
 ## 10. Compartir (con el Chat 1)
 
 Plantillas en negro puro con la marca NIVL (Cinzel) arriba y el dominio `nivl.app` abajo. Siempre se elige qué compartir: nada de datos de salud ni de dinero por defecto.
@@ -167,6 +181,17 @@ Plantillas en negro puro con la marca NIVL (Cinzel) arriba y el dominio `nivl.ap
 - **Racha** (4:5): número enorme y una retícula de 30 días con los cuadros hechos invertidos.
 - **Antes/después** (9:16 y 4:5): dos fotos en B/N (el filtro se aplica al generar), fecha y Δ de peso solo si el usuario lo activa.
 - **Logro**: sello y frase.
+
+## 10 bis. Creadores (con el Chat 2)
+
+En las apps de tienda (iOS y Android), el panel de creador **no muestra importes en euros**. Muestra:
+- rango y progreso;
+- ventas atribuidas (número);
+- retos;
+- tabla del periodo;
+- y la línea «Tus ganancias se gestionan en nivl.app», sin botón de cobro.
+
+Los importes (pendiente, disponible, pagado) solo están en el portal web. La vista sale de `vistaPanelCreador(plataforma, datos)` del Chat 2.
 
 ## 11. Voz del sistema y notificaciones
 

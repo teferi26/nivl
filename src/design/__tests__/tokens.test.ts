@@ -46,3 +46,13 @@ describe('tema por rango', () => {
     expect(Object.entries(RANK_THEME).filter(([, t]) => t.shimmer).map(([r]) => r)).toEqual(['S']);
   });
 });
+
+describe('contrato de rangos del Chat 5', () => {
+  it('umbrales crecientes y marcos en el orden del contrato', () => {
+    const orden = ['E', 'D', 'C', 'B', 'A', 'S'] as const;
+    expect(orden.map((r) => RANK_THEME[r].desdeNivel)).toEqual([1, 5, 10, 15, 22, 30]);
+    expect(orden.map((r) => RANK_THEME[r].marco)).toEqual([
+      'liso', 'doble', 'remachado', 'laurel_simple', 'laurel_doble', 'laurel_corona',
+    ]);
+  });
+});

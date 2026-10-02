@@ -60,27 +60,35 @@ export const VERIFY_WIDTHS = [375, 430, 744, 1024, 1440] as const;
 export type Rank = 'E' | 'D' | 'C' | 'B' | 'A' | 'S';
 
 export interface RankTheme {
+  /** Marco del contrato de progresión (Chat 5, progression.ts → cosmeticosDe). */
+  marco: 'liso' | 'doble' | 'remachado' | 'laurel_simple' | 'laurel_doble' | 'laurel_corona';
   /** Grosor del aro del avatar (pt). */
   ring: number;
   /** Segundo aro concéntrico. */
   doubleRing: boolean;
   /** Muescas del marco (0 = ninguna). */
   notches: number;
-  crown: 'none' | 'diadem' | 'laurelOutline' | 'laurelSolid' | 'crown';
+  /** Desde B, el casco; S, la corona de laurel. */
+  crown: 'none' | 'casco' | 'corona';
   /** Grano en cabecera/tarjeta de nivel: 0 nada · 1 suave · 2 marcado. */
   grain: 0 | 1 | 2;
   /** Brillo animado del marco (solo S; quieto con reducir movimiento). */
   shimmer: boolean;
+  /** Título por defecto (el vigente lo da tituloVigente() del Chat 5). */
   defaultTitle: string;
+  /** Nivel en que se entra al rango (contrato del Chat 5; el rango no baja). */
+  desdeNivel: number;
 }
 
+// Rangos y umbrales: contrato del Chat 5 (docs/game-v2/CONTRATO-PROGRESION.md).
+// Aquí solo vive cómo se ven; los datos los da progression.ts.
 export const RANK_THEME: Record<Rank, RankTheme> = {
-  E: { ring: 1, doubleRing: false, notches: 0, crown: 'none', grain: 0, shimmer: false, defaultTitle: 'Recluta' },
-  D: { ring: 2, doubleRing: false, notches: 0, crown: 'none', grain: 0, shimmer: false, defaultTitle: 'Tiro' },
-  C: { ring: 2, doubleRing: true, notches: 0, crown: 'diadem', grain: 0, shimmer: false, defaultTitle: 'Gladiador' },
-  B: { ring: 2, doubleRing: true, notches: 8, crown: 'laurelOutline', grain: 1, shimmer: false, defaultTitle: 'Veterano' },
-  A: { ring: 3, doubleRing: true, notches: 8, crown: 'laurelSolid', grain: 2, shimmer: false, defaultTitle: 'Campeón' },
-  S: { ring: 3, doubleRing: true, notches: 12, crown: 'crown', grain: 2, shimmer: true, defaultTitle: 'Leyenda de la arena' },
+  E: { marco: 'liso', ring: 1, doubleRing: false, notches: 0, crown: 'none', grain: 0, shimmer: false, defaultTitle: 'Tiro', desdeNivel: 1 },
+  D: { marco: 'doble', ring: 2, doubleRing: true, notches: 0, crown: 'none', grain: 0, shimmer: false, defaultTitle: 'Gladiador', desdeNivel: 5 },
+  C: { marco: 'remachado', ring: 2, doubleRing: true, notches: 8, crown: 'none', grain: 0, shimmer: false, defaultTitle: 'Veterano', desdeNivel: 10 },
+  B: { marco: 'laurel_simple', ring: 3, doubleRing: true, notches: 8, crown: 'casco', grain: 1, shimmer: false, defaultTitle: 'Campeón', desdeNivel: 15 },
+  A: { marco: 'laurel_doble', ring: 3, doubleRing: true, notches: 12, crown: 'casco', grain: 2, shimmer: false, defaultTitle: 'Héroe de la arena', desdeNivel: 22 },
+  S: { marco: 'laurel_corona', ring: 3, doubleRing: true, notches: 12, crown: 'corona', grain: 2, shimmer: true, defaultTitle: 'Leyenda', desdeNivel: 30 },
 };
 
 // ── Contraste WCAG (para tests y para comprobar combinaciones nuevas) ──
