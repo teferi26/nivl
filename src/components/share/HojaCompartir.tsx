@@ -41,6 +41,13 @@ export interface HojaCompartirProps {
   contexto?: ContextoTarjeta;
   /** Alias público aprobado; sin él no se ofrece el interruptor. */
   alias?: string | null;
+  /**
+   * Pide el alias público SOLO cuando se enciende «Mostrar mi alias» (condición
+   * del Chat 3: `fetchAliasCompartir()` no se llama al abrir la hoja). Devuelve
+   * el alias que se puede firmar, o null si no hay. Quien llama decide qué
+   * hacer con un alias pendiente de aprobación; nunca se firma con él.
+   */
+  pedirAlias?: () => Promise<string | null>;
   retratoUri?: string | null;
   /** Código de amigo; sin él no se ofrece la invitación. */
   codigoAmigo?: string | null;
@@ -48,7 +55,17 @@ export interface HojaCompartirProps {
   formatoInicial?: FormatoTarjeta;
 }
 
-export function HojaCompartir({ visible, onCerrar, tarjeta, contexto, alias, retratoUri, codigoAmigo, formatoInicial = 'stories' }: HojaCompartirProps) {
+export function HojaCompartir({
+  visible,
+  onCerrar,
+  tarjeta,
+  contexto,
+  alias: aliasDado,
+  pedirAlias,
+  retratoUri,
+  codigoAmigo,
+  formatoInicial = 'stories',
+}: HojaCompartirProps) {
   const { width, height } = useWindowDimensions();
   const [formato, setFormato] = useState<FormatoTarjeta>(formatoInicial);
   const [opciones, setOpciones] = useState<OpcionesTarjeta>(OPCIONES_POR_DEFECTO);
@@ -58,6 +75,11 @@ export function HojaCompartir({ visible, onCerrar, tarjeta, contexto, alias, ret
   const [listoPara, setListoPara] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
+  // Alias pedido al encender el interruptor (undefined = aún no pedido).
+  const [aliasPedido, setAliasPedido] = useState<string | null | undefined>(undefined);
+  const [pidiendoAlias, setPidiendoAlias] = useState(false);
+  const [sinAlias, setSinAlias] = useState(false);
+  const alias = aliasDado ?? aliasPedido ?? null;
   const vista = useRef<View>(null);
   const boton = useRef<View>(null);
   const ctx: ContextoTarjeta = contexto ?? { puedeCompartirFotos: false };
@@ -68,11 +90,13 @@ export function HojaCompartir({ visible, onCerrar, tarjeta, contexto, alias, ret
     setFormato(formatoInicial);
     setOpciones(OPCIONES_POR_DEFECTO);
     setError(null);
+    setAliasPedido(undefined);
+    setSinAlias(false);
   }, [visible, formatoInicial]);
 
   if (!visible) return null;
 
-  const clave = `${formato}|${opciones.mostrarNombre}|${opciones.mostrarFotos}|${opciones.mostrarPeso}|${opciones.incluirInvitacion}|${opciones.mostrarTextoCoach}`;
+  const clave = `${alias ?? ''}|${formato}|${opciones.mostrarNombre}|${opciones.mostrarFotos}|${opciones.mostrarPeso}|${opciones.incluirInvitacion}|${opciones.mostrarTextoCoach}`;
   const listo = listoPara === clave;
 
   const esProgreso = tarjeta.tipo === 'antesDespues';
@@ -83,6 +107,33 @@ export function HojaCompartir({ visible, onCerrar, tarjeta, contexto, alias, ret
   const aviso = avisoColor(tarjeta, opciones, ctx, Platform.OS);
   const cambiar = (k: keyof OpcionesTarjeta) => (v: boolean) =>
     setOpciones((o) => ({ ...o, [k]: v, ...(k === 'mostrarFotos' && !v ? { mostrarPeso: false } : null) }));
+
+  // Encender el alias: si no ha llegado, se pide una vez. Mientras tanto la
+  // tarjeta va sin firma (mostrarNombre sigue apagado hasta tener alias).
+  const cambiarAlias = async (v: boolean) => {
+    setSinAlias(false);
+    if (!v || aliasDado || aliasPedido) {
+      setOpciones((o) => ({ ...o, mostrarNombre: v && !!(aliasDado || aliasPedido) }));
+      return;
+    }
+    if (!pedirAlias || aliasPedido === null) {
+      setSinAlias(true);
+      return;
+    }
+    setPidiendoAlias(true);
+    try {
+      const a = await pedirAlias();
+      const limpio = a && a.trim() ? a.trim() : null;
+      setAliasPedido(limpio);
+      if (limpio) setOpciones((o) => ({ ...o, mostrarNombre: true }));
+      else setSinAlias(true);
+    } catch {
+      setAliasPedido(null);
+      setSinAlias(true);
+    } finally {
+      setPidiendoAlias(false);
+    }
+  };
 
   const anchoPrevia = Math.min(width - 48, formato === 'stories' ? (height * 0.5 * 9) / 16 : (height * 0.5 * 4) / 5, 340);
   // La captura se pinta a 1080 px físicos: así view-shot no reescala.
@@ -174,7 +225,9 @@ export function HojaCompartir({ visible, onCerrar, tarjeta, contexto, alias, ret
             })}
           </View>
 
-          {alias ? <Interruptor rotulo="Mostrar mi alias" valor={opciones.mostrarNombre} onCambio={cambiar('mostrarNombre')} /> : null}
+          {aliasDado || pedirAlias ? (
+            <Interruptor rotulo="Mostrar mi alias" valor={opciones.mostrarNombre} onCambio={cambiarAlias} deshabilitado={pidiendoAlias} />
+          ) : null}
           {esProgreso && ctx.puedeCompartirFotos ? (
             <Interruptor rotulo="Incluir mis fotos de progreso" valor={opciones.mostrarFotos} onCambio={cambiar('mostrarFotos')} />
           ) : null}
@@ -198,6 +251,7 @@ export function HojaCompartir({ visible, onCerrar, tarjeta, contexto, alias, ret
               la Card alerta del kit. */}
           {motivo ? <Aviso texto={motivo} trama /> : null}
           {aviso ? <Aviso texto={aviso} /> : null}
+          {sinAlias ? <Aviso texto="Sin alias disponible." /> : null}
           {error ? <Aviso texto={error} trama alerta /> : null}
           <Pressable
             onPress={compartir}
@@ -239,13 +293,24 @@ function Aviso({ texto, trama = false, alerta = false }: { texto: string; trama?
   );
 }
 
-function Interruptor({ rotulo, valor, onCambio }: { rotulo: string; valor: boolean; onCambio: (v: boolean) => void }) {
+function Interruptor({
+  rotulo,
+  valor,
+  onCambio,
+  deshabilitado = false,
+}: {
+  rotulo: string;
+  valor: boolean;
+  onCambio: (v: boolean) => void;
+  deshabilitado?: boolean;
+}) {
   return (
     <View style={styles.fila}>
       <Text style={styles.filaTexto}>{rotulo}</Text>
       <Switch
         value={valor}
         onValueChange={onCambio}
+        disabled={deshabilitado}
         accessibilityLabel={rotulo}
         trackColor={{ false: ink.ink4, true: ink.ink10 }}
         thumbColor={valor ? ink.ink0 : ink.ink8}
