@@ -158,7 +158,13 @@ async function cerrarDias(profile: Profile, quests: Quest[]): Promise<CierreResu
 
   // Limpia una congelación vencida aunque hoy no haya días que cerrar; antes solo
   // se limpiaba dentro del cierre, así que un freeze vencido quedaba pegado en BD.
-  if (profile.freeze_until && profile.freeze_until < today) {
+  //
+  // PERO solo si no hay días que cerrar: si los hay, el cierre necesita saber
+  // hasta cuándo estuvo congelado para no juzgar esos días, y ya la limpia él
+  // (clearFreeze). Limpiarla antes cobraba las vacaciones a quien volvía
+  // después de que venciera la congelación (QA Chat 5; estaba en bf32d28).
+  const hayDiasQueCerrar = !!profile.last_day_processed && profile.last_day_processed < yesterday;
+  if (profile.freeze_until && profile.freeze_until < today && !hayDiasQueCerrar) {
     await updateProfile(profile.id, { freeze_until: null, freeze_reason: null });
     profile = { ...profile, freeze_until: null, freeze_reason: null };
   }
