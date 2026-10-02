@@ -280,6 +280,28 @@ export function bloqueo(t: Tarjeta, opciones: OpcionesTarjeta, contexto: Context
   return null;
 }
 
+/**
+ * Plataformas donde se ha COMPROBADO que la foto sale en B/N en el archivo
+ * capturado. Donde no lo está, la foto sale tal cual y la hoja avisa: nunca se
+ * promete un B/N que no se ha visto. Se activa plataforma a plataforma tras la
+ * prueba física (Chat 5). Web: verificado en Expo web el 02/10/2026.
+ */
+export const BN_VERIFICADO: Readonly<Record<'ios' | 'android' | 'web', boolean>> = Object.freeze({
+  ios: false,
+  android: false,
+  web: true,
+});
+
+/** ¿Se pasan las fotos a B/N en esta plataforma? */
+export function fotosEnBN(plataforma: string): boolean {
+  return plataforma === 'ios' || plataforma === 'android' || plataforma === 'web' ? BN_VERIFICADO[plataforma] : false;
+}
+
+/** Aviso para la hoja cuando la tarjeta lleva fotos que saldrán en color, o null. */
+export function avisoColor(t: Tarjeta, opciones: OpcionesTarjeta, contexto: ContextoTarjeta, plataforma: string): string | null {
+  return fotosVisibles(t, opciones, contexto).length > 0 && !fotosEnBN(plataforma) ? 'Las fotos se compartirán en color.' : null;
+}
+
 /** Fotos que la tarjeta puede pintar (vacío si no hay permiso o si no es mayor de edad). */
 export function fotosVisibles(t: Tarjeta, opciones: OpcionesTarjeta, contexto: ContextoTarjeta = { puedeCompartirFotos: false }): Foto[] {
   if (t.tipo !== 'antesDespues' || !opciones.mostrarFotos || !contexto.puedeCompartirFotos) return [];

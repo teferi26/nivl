@@ -14,15 +14,18 @@
 // dentro de un Modal da negro), con `collapsable={false}`, y avisa con
 // `onListo` cuando las imágenes han cargado: capturar antes deja huecos.
 //
-// Fotos en B/N: en iOS, RN 0.81 no tiene `filter: grayscale`. Se desatura con
-// una capa negra en `mixBlendMode: 'saturation'` dentro de un grupo aislado
-// (nueva arquitectura). NO PROBADO en dispositivo ni en la captura de
-// view-shot; si no desatura, la alternativa es procesar la imagen antes.
+// Fotos en B/N, solo donde está comprobado (`BN_VERIFICADO` en sharecard.ts):
+// en Android, `filter: grayscale` (nativo con la nueva arquitectura); en iOS y
+// web, una capa negra en `mixBlendMode: 'saturation'` dentro de un grupo
+// aislado (iOS no tiene filtro de gris). Donde no está verificado, la foto sale
+// tal cual y la hoja avisa «Las fotos se compartirán en color»: nunca se
+// promete un B/N que no se ha visto en el archivo capturado.
 
 import { forwardRef, useEffect, useMemo, useRef } from 'react';
-import { Image, StyleSheet, Text, View, type TextStyle } from 'react-native';
+import { Image, Platform, StyleSheet, Text, View, type TextStyle } from 'react-native';
 import Svg, { Circle, Path } from 'react-native-svg';
 import {
+  fotosEnBN,
   fotosVisibles,
   lienzo,
   reticulaRacha,
@@ -74,6 +77,7 @@ export const TarjetaCompartir = forwardRef<View, TarjetaCompartirProps>(function
   const x = textos(tarjeta, opciones, alias);
   const fotos = fotosVisibles(tarjeta, opciones, contexto);
   const retrato = tarjeta.tipo === 'rango' && retratoUri ? retratoUri : null;
+  const bn = fotosEnBN(Platform.OS);
   const imagenes = fotos.length + (retrato ? 1 : 0);
 
   // Avisar una sola vez cuando todas las imágenes han cargado (o fallado).
@@ -210,8 +214,16 @@ export const TarjetaCompartir = forwardRef<View, TarjetaCompartirProps>(function
             {fotos.map((f, i) => (
               <View key={f.uri} style={{ flex: 1, gap: px(18), minHeight: 0 }}>
                 <View style={{ flexShrink: 1, minHeight: 0, height: px(formato === 'stories' ? 980 : 720), backgroundColor: ink.ink2, borderWidth: px(2), borderColor: ink.ink4, overflow: 'hidden', isolation: 'isolate' }}>
-                  <Image source={{ uri: f.uri }} onLoad={unaMenos} onError={unaMenos} style={StyleSheet.absoluteFillObject} resizeMode="cover" />
-                  <View pointerEvents="none" style={[StyleSheet.absoluteFillObject, { backgroundColor: ink.ink0, mixBlendMode: 'saturation' }]} />
+                  <Image
+                    source={{ uri: f.uri }}
+                    onLoad={unaMenos}
+                    onError={unaMenos}
+                    style={[StyleSheet.absoluteFillObject, bn && Platform.OS === 'android' ? { filter: [{ grayscale: 1 }] } : null]}
+                    resizeMode="cover"
+                  />
+                  {bn && Platform.OS !== 'android' ? (
+                    <View pointerEvents="none" style={[StyleSheet.absoluteFillObject, { backgroundColor: ink.ink0, mixBlendMode: 'saturation' }]} />
+                  ) : null}
                 </View>
                 <Text allowFontScaling={false} style={txt(fonts.body, 32, ink.ink10, { letterSpacing: px(6) })}>
                   {i === 0 ? 'ANTES' : 'DESPUÉS'}

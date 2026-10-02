@@ -11,6 +11,9 @@ import {
   OPCIONES_POR_DEFECTO,
   recortar,
   textos,
+  avisoColor,
+  BN_VERIFICADO,
+  fotosEnBN,
   reticulaRacha,
   tarjetaDeCelebracion,
   type OpcionesTarjeta,
@@ -227,5 +230,22 @@ describe('diseño v2 (SISTEMA.md §10)', () => {
     const real = Array.from({ length: 30 }, (_, i) => i % 2 === 0);
     expect(reticulaRacha({ tipo: 'racha', dias: 1, ultimos30: real })).toEqual(real);
     expect(reticulaRacha({ tipo: 'racha', dias: 3, ultimos30: [true] }).filter(Boolean)).toHaveLength(3);
+  });
+});
+
+describe('B/N solo donde está comprobado', () => {
+  it('hoy solo web; iOS y Android hasta la prueba física', () => {
+    expect(BN_VERIFICADO).toEqual({ ios: false, android: false, web: true });
+    expect(fotosEnBN('web')).toBe(true);
+    expect(fotosEnBN('ios')).toBe(false);
+    expect(fotosEnBN('windows')).toBe(false);
+  });
+
+  it('la hoja avisa cuando las fotos saldrán en color', () => {
+    const adulto = { puedeCompartirFotos: true };
+    expect(avisoColor(progreso, todo, adulto, 'ios')).toBe('Las fotos se compartirán en color.');
+    expect(avisoColor(progreso, todo, adulto, 'web')).toBeNull();
+    expect(avisoColor(progreso, OPCIONES_POR_DEFECTO, adulto, 'ios')).toBeNull();
+    expect(avisoColor({ tipo: 'racha', dias: 3 }, todo, adulto, 'ios')).toBeNull();
   });
 });
