@@ -36,6 +36,7 @@ import { useAuth } from '@/lib/auth';
 import { estadoInicial, hayAlgo, lineasDe, reducir, textoToast, VENTANA_MS, type Momento } from '@/lib/celebracionCola';
 import { signedUrlCached } from '@/lib/data';
 import { dateKey } from '@/lib/dates';
+import { reprogramarAvisosDelPlan } from '@/lib/notifications';
 import { rangoPorId, type Celebracion } from '@/lib/progression';
 import { tarjetaDeCelebracion, type Tarjeta } from '@/lib/sharecard';
 import { fetchAliasCompartir, fetchSocialSelf } from '@/lib/social';
@@ -152,7 +153,10 @@ export function CelebracionProvider({ children }: { children: ReactNode }) {
   // Persistencia: cada vez que se marcan claves (al mostrar).
   useEffect(() => {
     if (!estado.cargado || !userId) return;
-    AsyncStorage.setItem(claveAlmacen(userId), JSON.stringify([...estado.vistas])).catch(() => {});
+    AsyncStorage.setItem(claveAlmacen(userId), JSON.stringify([...estado.vistas]))
+      .catch(() => {})
+      // L6-0: una celebración vista ya no merece el aviso de rango.
+      .finally(reprogramarAvisosDelPlan);
   }, [estado.vistas, estado.cargado, userId]);
 
   // Vibración de los toasts: una por momento y solo por la principal. La

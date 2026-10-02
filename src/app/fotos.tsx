@@ -1,6 +1,6 @@
 // NIVL · Fotos de progreso (L5 · A). Dato de salud y solo 18+.
 //
-// La ruta no está en HEALTH_ROUTES: se protege sola (FotosVista enseña el
+// La ruta está en HEALTH_ROUTES (Chat 3) y además se protege sola (FotosVista enseña el
 // permiso de salud o la pregunta de los 18 antes que cualquier foto). Los
 // efectos viven en useFotos; aquí solo se montan la vista y las dos hojas.
 

@@ -45,9 +45,18 @@ import { RUTA_DE_ACTO } from '@/lib/links';
 import { compararRangos, estadoDe, type LogroInfo, type RangoId } from '@/lib/progression';
 import {
   inicializarAvisos,
+  leerClavesCelebradas,
+  leerDuelosVistos,
   programarDespertador,
   reconciliarAvisosDelDia,
+  registrarFuenteAvisos,
+  reprogramarAvisosDelPlan,
 } from '@/lib/notifications';
+import { listarFotos } from '@/components/fotos/datos';
+import { fetchMayorDeEdadConfirmada } from '@/lib/age';
+import { armarEstadoPlanAvisos } from '@/lib/avisosPlan';
+import { misDuelos } from '@/lib/competicionData';
+import { fetchHealthConsent } from '@/lib/health';
 import { fetchAiStatus, isPro } from '@/lib/pro';
 import { registrarDispositivo } from '@/lib/push';
 import { fetchBoard, type BoardEntry } from '@/lib/social';
@@ -141,6 +150,11 @@ export function useHoy() {
   const completionsRef = useRef<Record<string, Completion>>({});
 
   const completing = useRef<Set<string>>(new Set());
+
+  // L6-0: lo que lee la fuente del plan de avisos cuando dispara (2 s después
+  // de la última petición). Espejo de lo pintado y el día al que pertenece.
+  const diaCargado = useRef<string | null>(null);
+  const avisosRef = useRef({ profile, todayQuests, rotosPrevios });
 
   /**
    * Pide al servidor el rango merecido y cierra la ventana de la acción: el
@@ -280,6 +294,9 @@ export function useHoy() {
       completionsRef.current = map;
       setCompletions(map);
       setLoadError(null);
+      diaCargado.current = today;
+      // Al cargar y al volver a primer plano (useAlVolver llama a load).
+      reprogramarAvisosDelPlan();
     } catch (e) {
       // En línea y con reintento, no en una alerta del sistema operativo: Hoy
       // se recarga en cada foco y sin red la alerta saltaba una y otra vez.
@@ -309,6 +326,44 @@ export function useHoy() {
       .then((ok) => (ok ? registrarDispositivo() : null))
       .catch(() => {});
   }, []);
+
+  avisosRef.current = { profile, todayQuests, rotosPrevios };
+
+  // L6-0: Hoy es quien sabe armar el estado del plan de avisos. Lo de fuera
+  // (duelos, fotos, edad, salud) se pide en paralelo y en blando: lo que
+  // falle va neutro y el resto sigue.
+  useEffect(() => {
+    if (!userId) return;
+    return registrarFuenteAvisos(async () => {
+      const hoy = dateKey();
+      const { profile: p, todayQuests: quests, rotosPrevios: rotos } = avisosRef.current;
+      if (!p || diaCargado.current !== hoy) return null;
+      const salud = fetchHealthConsent().then((c) => c.accepted, () => null);
+      const [consentimientoSalud, fotos, mayor18, duelos, duelosVistos, celebradas] = await Promise.all([
+        salud,
+        // Dato de salud: solo con el permiso.
+        salud.then((ok) => (ok ? listarFotos() : null)).catch(() => null),
+        fetchMayorDeEdadConfirmada().catch(() => null),
+        misDuelos().catch(() => null),
+        leerDuelosVistos(),
+        leerClavesCelebradas(userId),
+      ]);
+      return armarEstadoPlanAvisos({
+        hoy,
+        perfil: p,
+        questsHoy: quests,
+        completadasHoy: new Set(Object.keys(completionsRef.current)),
+        rotosPrevios: rotos,
+        fotos,
+        mayor18,
+        consentimientoSalud,
+        duelos,
+        duelosVistos,
+        logros: logrosRef.current,
+        celebradas,
+      });
+    });
+  }, [userId]);
 
   useEffect(() => {
     if (!profile) return;
@@ -368,6 +423,8 @@ export function useHoy() {
       };
       completionsRef.current = despues;
       setCompletions(despues);
+      // La racha o la recuperación pueden haber dejado de estar en juego.
+      reprogramarAvisosDelPlan();
 
       // Día perfecto: era la última pendiente. Solo se celebra cuando pasa
       // delante del usuario, no al cargar un día que ya estaba cerrado.
