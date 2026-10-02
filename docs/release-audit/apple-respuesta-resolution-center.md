@@ -19,7 +19,7 @@ Responde al mensaje de Apple del 29/09/2026 1:16 (Guideline 2.1 — Information 
 | `[AI_ROUTING]` (interno) | RESUELTO el 02/10: el usuario confirma COACH_BASE_URL = DeepSeek y el coordinador verificó que cortesía y Pro usan deepseek-v4-flash | ☑ |
 | `[MOD_PUSH]` (opcional) | Solo si la 0037 (push al dueño por cada denuncia) está integrada, desplegada y probada, se puede añadir «and receives a notification for each new report». Hoy el texto no lo afirma | ☐ |
 | `[TRIAL_STATE]` | Si la cuenta Gratis ya gastó la prueba y no se puede restablecer, añadir a la respuesta y a las notas: «The Free account has already used its trial; the paywall shows the paid plans directly.» | ☐ |
-| `[PAYWALL]` | Confirmación del Chat 2 de que la build `[BUILD]` muestra los 5 planes con título, periodo y precio, y los enlaces | ☐ |
+| `[PAYWALL]` | PROVISIONAL en Chat 2 @b85ce96 (solo JS): 5 productos en lista con título de ASC, duración y priceString; fundador anual auto-renovable mientras queden plazas; Términos, Privacidad y «EULA de Apple»; sin «Google Play» en iOS. Aún NO es final (faltan la revisión UX del Chat 4 y la de seguridad). Si llega por OTA y no en el binario, ver el riesgo del primer arranque en apple-build-y-reenvio.md. Falta la confirmación del Chat 2 de que la build `[BUILD]` muestra los 5 planes con título, periodo y precio, y los enlaces | ☐ |
 
 Límites: el Resolution Center admite texto largo. Las **notas** de App Review Information tienen un máximo de 4.000 caracteres y van en [apple-notas-revisor.txt](apple-notas-revisor.txt), en versión compacta.
 
