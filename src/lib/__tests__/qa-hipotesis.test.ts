@@ -82,6 +82,14 @@ describe('H1 · fallo entre el cierre y la creación de la recuperación', () =>
     expect(penalizaciones()[0]!.penalty_xp).toBe(200);
   });
 
+  test('un insert guardado con la respuesta perdida no crea una segunda recuperación al reintentar', async () => {
+    ausenciaDeDosDias();
+    mockSrv.fallos.insertQuestPerdido = 1;
+    await processPendingDays({ ...mockSrv.profile }, mockSrv.quests);
+    expect(penalizaciones()).toHaveLength(1);
+    expect(mockSrv.events.find((e) => e.type === 'penalty')!.payload.xp).toBe(200);
+  });
+
   test('si la recuperación no se puede crear, el fallo se ve y queda auditado, no se traga', async () => {
     ausenciaDeDosDias();
     mockSrv.fallos.insertQuest = 99;

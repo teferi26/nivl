@@ -24,6 +24,8 @@ export interface Fallos {
   fetchQuests: number;
   /** complete_quest que confirman en BD y pierden la respuesta (timeout). */
   respuestaPerdida: number;
+  /** Inserts de `quests` que se guardan y pierden la respuesta. */
+  insertQuestPerdido: number;
 }
 
 export interface Servidor {
@@ -72,7 +74,7 @@ export function crearServidor(): Servidor {
     quests: [] as Quest[],
     completions: [] as Completion[],
     events: [] as { type: string; payload: Record<string, unknown> }[],
-    fallos: { insertQuest: 0, fetchQuests: 0, respuestaPerdida: 0 },
+    fallos: { insertQuest: 0, fetchQuests: 0, respuestaPerdida: 0, insertQuestPerdido: 0 },
     llamadas: {} as Record<string, number>,
   } as Servidor;
   const cuenta = (k: string) => { s.llamadas[k] = (s.llamadas[k] ?? 0) + 1; };
@@ -151,8 +153,12 @@ export function crearServidor(): Servidor {
     if (tabla === 'quests') {
       cuenta('insert_quest');
       if (s.fallos.insertQuest > 0) { s.fallos.insertQuest -= 1; return { data: null, error: { message: 'Network request failed' } }; }
-      const filas = (Array.isArray(fila) ? fila : [fila]).map((f: any) => mision({ ...f, id: `pq${++seq}` }));
+      const filas = (Array.isArray(fila) ? fila : [fila])
+        .map((f: any) => mision({ ...f, id: f.id ?? `pq${++seq}` }))
+        // upsert ignoreDuplicates: on conflict (id) do nothing.
+        .filter((f: Quest) => !s.quests.some((q) => q.id === f.id));
       s.quests.push(...filas);
+      if (s.fallos.insertQuestPerdido > 0) { s.fallos.insertQuestPerdido -= 1; return { data: null, error: { message: 'Network request failed' } }; }
       return { data: filas, error: null };
     }
     return { data: null, error: null };
@@ -161,6 +167,10 @@ export function crearServidor(): Servidor {
     from(tabla: string) {
       return {
         insert(fila: any) {
+          const p = insertar(tabla, fila);
+          return Object.assign(p, { select: () => p });
+        },
+        upsert(fila: any) {
           const p = insertar(tabla, fila);
           return Object.assign(p, { select: () => p });
         },

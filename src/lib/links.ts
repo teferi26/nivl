@@ -55,12 +55,15 @@ export async function propagarActo(profile: Profile, link: ActLink, date: string
   // (QA Chat 5, H2). Se reintenta una vez.
   const leer = () => Promise.all([fetchQuests(), fetchCompletionsForDate(date)]);
   const pagadoHoy = async (questId: string): Promise<number | null> => {
-    try {
-      const c = (await fetchCompletionsForDate(date)).find((x) => x.quest_id === questId);
-      return c ? c.xp_awarded : null;
-    } catch {
-      return null;
+    for (let i = 0; i < 2; i++) {
+      try {
+        const c = (await fetchCompletionsForDate(date)).find((x) => x.quest_id === questId);
+        return c ? c.xp_awarded : null;
+      } catch {
+        /* un reintento */
+      }
     }
+    return null;
   };
 
   try {

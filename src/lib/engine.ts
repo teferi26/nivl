@@ -39,7 +39,22 @@ const cierresEnVuelo = new Map<string, Promise<CierreResultado>>();
 
 // Misiones de recuperación que no se pudieron crear tras un cierre ya
 // aplicado. Se reintentan en el siguiente cierre de esta sesión.
-type Recuperacion = Record<string, unknown> & { penalty_date: string };
+type Recuperacion = Record<string, unknown> & { id: string; penalty_date: string };
+
+// Clave de idempotencia, no un secreto: el id lo pone el cliente para que un
+// reintento tras una respuesta perdida no cree una segunda misión que
+// devolvería otra vez todo lo perdido.
+function idRecuperacion(): string {
+  const h = '0123456789abcdef';
+  let out = '';
+  for (let i = 0; i < 36; i++) {
+    if (i === 8 || i === 13 || i === 18 || i === 23) out += '-';
+    else if (i === 14) out += '4';
+    else if (i === 19) out += h[8 + Math.floor(Math.random() * 4)];
+    else out += h[Math.floor(Math.random() * 16)];
+  }
+  return out;
+}
 const recuperacionesPendientes = new Map<string, Recuperacion[]>();
 const INTENTOS_RECUPERACION = 3;
 
@@ -48,7 +63,9 @@ async function insertarRecuperacion(fila: Recuperacion): Promise<boolean> {
     try {
       // supabase-js no lanza: devuelve `{ error }`. Antes se ignoraba, y un
       // fallo de red aquí dejaba el XP descontado sin misión que lo devolviera.
-      const { error } = await supabase.from('quests').insert(fila);
+      const { error } = await supabase
+        .from('quests')
+        .upsert(fila, { onConflict: 'id', ignoreDuplicates: true });
       if (!error) return true;
     } catch {
       /* se reintenta */
@@ -174,6 +191,7 @@ async function cerrarDias(profile: Profile, quests: Quest[]): Promise<CierreResu
     const ultimo = diasConReglasRotas[diasConReglasRotas.length - 1]!;
     const cuantas = new Set(diasConReglasRotas.flatMap((d) => d.rotas.map((r) => r.id))).size;
     if (recuperaReglas > 0) recuperaciones.push({
+      id: idRecuperacion(),
       health_data: diasConReglasRotas.some(d => d.rotas.some(r => reglasActivas.some(original => original.id === r.id && original.health_data))),
       user_id: profile.id,
       title:
@@ -192,6 +210,7 @@ async function cerrarDias(profile: Profile, quests: Quest[]): Promise<CierreResu
 
   if (recuperaMisiones > 0) {
     recuperaciones.push({
+      id: idRecuperacion(),
       user_id: profile.id,
       title: 'Misión de penalización',
       stat: 'AGI',
@@ -218,7 +237,8 @@ async function cerrarDias(profile: Profile, quests: Quest[]): Promise<CierreResu
   const recuperacionFallida = fallidas.some((f) => f.title === 'Misión de penalización');
 
   if (close.penaltyXp > 0) {
-    await insertEvent(profile.id, 'penalty', { xp: close.penaltyXp, missed: close.missedTitles,
+    // Lo descontado de verdad, no lo calculado (invariante 6: auditable).
+    await insertEvent(profile.id, 'penalty', { xp: recuperaMisiones, missed: close.missedTitles,
       health_data: quests.some(q => q.health_data && close.missedTitles.includes(q.title)),
       ...(recuperacionFallida ? { recuperacion: 'fallida' } : {}),
     }).catch(() => {
