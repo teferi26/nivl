@@ -212,7 +212,7 @@ export const TarjetaCompartir = forwardRef<View, TarjetaCompartirProps>(function
           // antetítulo ni del pie.
           <View style={{ alignSelf: 'stretch', flexDirection: 'row', gap: px(28), flexShrink: 1, minHeight: 0 }}>
             {fotos.map((f, i) => (
-              <View key={f.uri} style={{ flex: 1, gap: px(18), minHeight: 0 }}>
+              <View key={i === 0 ? 'antes' : 'despues'} style={{ flex: 1, gap: px(18), minHeight: 0 }}>
                 <View style={{ flexShrink: 1, minHeight: 0, height: px(formato === 'stories' ? 980 : 720), backgroundColor: ink.ink2, borderWidth: px(2), borderColor: ink.ink4, overflow: 'hidden', isolation: 'isolate', ...(bn && Platform.OS === 'android' ? { filter: [{ grayscale: 1 }] } : null) }}>
                   <Image
                     source={{ uri: f.uri }}
