@@ -92,7 +92,7 @@ test('mientras carga no inventa precio ni permite comprar; después muestra el r
   expect(buy).not.toHaveBeenCalled();
   await act(async () => resolve({ nivl_pro_anual: '$109.99' }));
   expect(control.puedeComprar).toBe(true);
-  expect(button('Activar NIVL Pro · $109.99/año').props.disabled).toBe(false);
+  expect(button('Activar NIVL Pro anual · $109.99/año').props.disabled).toBe(false);
   expect(content()).toContain('$109.99 cada año');
 });
 
@@ -143,7 +143,7 @@ test('si cambia precio lo recarga y exige un nuevo toque; no vuelve a comprar so
   await act(async () => control.onPrincipal());
   expect(prices).toHaveBeenCalledTimes(2);
   expect(buy).toHaveBeenCalledTimes(1);
-  expect(button('Activar NIVL Pro · $119.99/año').props.disabled).toBe(false);
+  expect(button('Activar NIVL Pro anual · $119.99/año').props.disabled).toBe(false);
   expect(content()).toContain('$119.99 cada año');
   expect(content()).not.toContain('$109.99');
 });
@@ -183,7 +183,7 @@ test('el fundador se describe como suscripción anual autorrenovable, no vitalic
   const texto = content();
   expect(texto).toContain('NIVL Élite fundador es una suscripción anual (1 año) de renovación automática: 249,00 € cada año.');
   expect(texto).toMatch(/no es un pago único ni vitalicio/);
-  expect(button('Activar NIVL Élite · 249,00 €/año').props.disabled).toBe(false);
+  expect(button('Activar NIVL Élite fundador · 249,00 €/año').props.disabled).toBe(false);
 });
 
 test('en Android no se enlaza el EULA de Apple', async () => {

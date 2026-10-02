@@ -370,9 +370,10 @@ function tiendaDelDispositivo(): string {
 }
 
 // Sin nombrar la tienda de la otra plataforma (Apple 2.3.10).
+// Tampoco se remite a pagar fuera de la tienda (3.1.1): solo se dice dónde vive.
 const NOMBRE_TIENDA: Record<string, string> = {
-  STRIPE: 'la web de NIVL',
-  RC_BILLING: 'la web de NIVL',
+  STRIPE: 'fuera de esta app',
+  RC_BILLING: 'fuera de esta app',
 };
 
 export interface SuscripcionTienda {
@@ -440,8 +441,8 @@ export async function purchase(planId: ProPlanId, precioMostrado: string): Promi
   }
   if (actual?.store && actual.store !== tiendaDelDispositivo()) {
     // Otra tienda (o la web): cambiar aquí sería pagar dos suscripciones.
-    const donde = NOMBRE_TIENDA[actual.store] ?? 'otra tienda (la de tu otro dispositivo)';
-    throw new ErrorVisible(`Tu suscripción de NIVL se paga en ${donde}. Cámbiala o cancélala allí: comprar aquí sería un segundo cobro.`);
+    const donde = NOMBRE_TIENDA[actual.store] ?? 'en otra tienda (la de tu otro dispositivo)';
+    throw new ErrorVisible(`Tu suscripción de NIVL se paga ${donde}. Cámbiala o cancélala allí: comprar aquí sería un segundo cobro.`);
   }
 
   let cambio: StoreProductChangeInfo | null = null;

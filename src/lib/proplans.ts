@@ -444,13 +444,6 @@ export function duracionPlan(id: ProPlanId): string {
 }
 
 /**
- * La letra pequeña que exigen las tiendas para una suscripción autorrenovable.
- * `precio` es el que da la tienda (`priceString`, ya en la moneda y el formato
- * del comprador). Sin precio confirmado no hay condiciones de compra que mostrar.
- * `intro` es la oferta introductoria que declara la tienda para ese producto
- * (`introDeTienda`); sin ella no se menciona ninguna prueba de tienda.
- */
-/**
  * Dónde se gestiona y cancela, SIN nombrar la tienda de la otra plataforma
  * (Apple 2.3.10: en iOS no se menciona Google Play; en Android, tampoco Apple).
  */
@@ -462,6 +455,13 @@ export function textoGestionTienda(plataforma: string): string {
   return 'La gestionas y la cancelas cuando quieras desde la tienda donde la contrataste.';
 }
 
+/**
+ * La letra pequeña que exigen las tiendas para una suscripción autorrenovable.
+ * `precio` es el que da la tienda (`priceString`, ya en la moneda y el formato
+ * del comprador). Sin precio confirmado no hay condiciones de compra que mostrar.
+ * `intro` es la oferta introductoria que declara la tienda para ese producto
+ * (`introDeTienda`); sin ella no se menciona ninguna prueba de tienda.
+ */
 export function legalText(
   id: ProPlanId,
   precio?: string | null,
@@ -566,8 +566,8 @@ export function precioVisible(precioTienda?: string | null): string | null {
  * prometen ahorros ni equivalentes mensuales calculados desde la tabla local.
  */
 export function pitchVisible(p: ProPlan): string {
-  if (p.id === 'nivl_elite_fundador') return `${PLAZAS_FUNDADOR} plazas · precio congelado`;
-  return p.period === 'año' ? 'Un solo pago al año' : 'Sin permanencia';
+  if (p.id === 'nivl_elite_fundador') return 'Plazas limitadas · precio congelado';
+  return p.period === 'año' ? 'Se cobra una vez al año' : 'Sin permanencia';
 }
 
 export type PreciosTienda = Partial<Record<ProPlanId, string>>;

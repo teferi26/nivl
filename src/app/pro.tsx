@@ -213,7 +213,7 @@ export default function Pro() {
               ) : dePago ? (
                 <Text style={styles.nota}>
                   {provider === 'stripe'
-                    ? 'Esta suscripción se paga en la web de NIVL: se gestiona y se cancela desde allí.'
+                    ? 'Esta suscripción se contrató fuera de esta app: se gestiona y se cancela desde donde la contrataste.'
                     : textoGestionTienda(Platform.OS)}
                 </Text>
               ) : null}

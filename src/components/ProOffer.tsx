@@ -312,62 +312,17 @@ interface BodyProps {
 
 /** Qué hace el coach y cuánto cuesta. Sin botones. */
 export function ProOfferBody({ oferta, kind, compact }: BodyProps) {
-  const { tier, nivel, planes, planId, precioDe, catalogo, faltan, planActual, busy, reintentarPrecios, disponible, elegir, elegirNivel } = oferta;
+  const { tier, nivel, planes, planId, precioDe, catalogo, faltan, planActual, busy, reintentarPrecios, disponible, elegir, elegirNivel, prueba } = oferta;
   const sinNivel = disponible && catalogo === 'listo' && planes.length > 0 && !planes.some((p) => p.tier === tier);
   const beneficios = tier === 'elite' ? [...ELITE_BENEFITS, ...PRO_BENEFITS] : PRO_BENEFITS;
-  return (
-    <View>
-      {compact ? null : (
-        <Card variant="outline" accent={colors.accentDim}>
-          <Text style={styles.emphasis}>{proEmphasis(kind)}</Text>
-        </Card>
-      )}
-
-      <View style={styles.niveles} accessibilityRole="radiogroup" accessibilityLabel="Nivel">
-        {TIERS.map((t) => (
-          <Chip
-            key={t.id}
-            label={t.label}
-            selected={t.id === tier}
-            onPress={() => elegirNivel(t.id)}
-            accessibilityLabel={`${t.name}. ${t.power}`}
-          />
-        ))}
-      </View>
-      <Text style={styles.potencia}>{nivel.power}</Text>
-
-      {compact ? (
-        <View style={styles.benefitGrid}>
-          {beneficios.map((b) => (
-            <View key={b.title} style={styles.benefitCell}>
-              <Ionicons name={b.icon as never} size={15} color={colors.accentText} style={styles.benefitIcon} />
-              <Text style={styles.benefitCellTitle} numberOfLines={2}>
-                {b.title}
-              </Text>
-            </View>
-          ))}
-        </View>
-      ) : (
-        <View style={styles.benefits}>
-          {beneficios.map((b, i) => (
-            <View key={b.title} style={[styles.benefit, i > 0 && styles.sep]}>
-              <Ionicons name={b.icon as never} size={18} color={colors.accentText} style={styles.benefitIcon} />
-              <View style={styles.benefitBody}>
-                <Text style={styles.benefitTitle}>{b.title}</Text>
-                <Text style={styles.benefitDetail}>{b.detail}</Text>
-              </View>
-            </View>
-          ))}
-        </View>
-      )}
-
-      <Text style={styles.usageNotice}>{COACH_USAGE_NOTICE}</Text>
-      {tier === 'elite' ? <Text style={styles.usageNotice}>{ELITE_USAGE_NOTICE}</Text> : null}
-
-      {disponible && catalogo === 'cargando' ? (
+  // Con la tienda abierta en /pro, los planes (título, duración y precio) van
+  // antes que los beneficios: es lo que Apple pide ver sin buscarlo (2.1).
+  const planesArriba = disponible && !compact;
+  const catalogoVista = (disponible && catalogo === 'cargando' ? (
         <View style={styles.plans} accessibilityRole="progressbar" accessibilityLabel="Cargando precios de la tienda">
-          <Skeleton height={78} />
-          <Skeleton height={78} />
+          {[0, 1, 2, 3, 4].map((i) => (
+            <Skeleton key={i} height={70} />
+          ))}
         </View>
       ) : disponible && (catalogo === 'error' || planes.length === 0) ? (
         <Card variant="outline">
@@ -382,8 +337,11 @@ export function ProOfferBody({ oferta, kind, compact }: BodyProps) {
         <View accessibilityRole="radiogroup" accessibilityLabel="Suscripciones" style={styles.plans}>
           {sinNivel ? (
             <Text style={[styles.notice, styles.noticeLeft]} accessibilityRole="alert">
-              {`La tienda no tiene planes de ${nivel.name} disponibles ahora. Puedes reintentarlo más tarde.`}
+              {`La tienda no tiene planes de ${nivel.name} disponibles ahora.`}
             </Text>
+          ) : null}
+          {sinNivel ? (
+            <SystemButton title="Reintentar precios" variant="outline" size="sm" onPress={reintentarPrecios} disabled={busy !== null} />
           ) : null}
           {planes.map((p) => {
             const actual = p.id === planActual;
@@ -391,24 +349,32 @@ export function ProOfferBody({ oferta, kind, compact }: BodyProps) {
             const precio = precioDe(p.id);
             const titulo = tituloPlan(p.id);
             const duracion = duracionPlan(p.id);
-            const pitch = actual ? 'Tu plan actual' : pitchVisible(p);
+            const pitch = pitchVisible(p);
             return (
               <Pressable
                 key={p.id}
                 onPress={() => elegir(p.id)}
                 disabled={actual}
-                style={({ pressed }) => [styles.plan, on && styles.planOn, actual && styles.planActual, pressed && styles.pressed]}
+                style={({ pressed }) => [styles.plan, on && styles.planOn, pressed && !actual && styles.pressed]}
                 accessibilityRole="radio"
                 accessibilityState={{ selected: on, disabled: actual }}
-                accessibilityLabel={`${titulo}. Suscripción ${p.period === 'mes' ? 'mensual' : 'anual'} de renovación automática, ${precio} al ${p.period}. ${pitch}`}
+                accessibilityLabel={`${titulo}. Suscripción ${p.period === 'mes' ? 'mensual' : 'anual'} de renovación automática, ${precio} al ${p.period}. ${actual ? 'Tu plan actual' : pitch}`}
               >
-                <View style={[styles.radio, on && styles.radioOn]}>{on ? <View style={styles.radioDot} /> : null}</View>
+                {actual ? null : (
+                  <View style={[styles.radio, on && styles.radioOn]}>{on ? <View style={styles.radioDot} /> : null}</View>
+                )}
                 <View style={styles.planBody}>
+                  {actual ? (
+                    <View style={styles.planHead}>
+                      <Tag>Tu plan actual</Tag>
+                    </View>
+                  ) : null}
                   <Text style={styles.planTitle} numberOfLines={2}>
                     {titulo}
                   </Text>
-                  <Text style={styles.planDuration}>{`${duracion} · renovación automática`}</Text>
-                  <Text style={styles.planPitch}>{pitch}</Text>
+                  <Text style={styles.planDuration} numberOfLines={2}>
+                    {`${duracion} · renovación automática · ${pitch}`}
+                  </Text>
                 </View>
                 <View style={styles.planPrice}>
                   <Text style={styles.price} numberOfLines={1}>
@@ -455,7 +421,64 @@ export function ProOfferBody({ oferta, kind, compact }: BodyProps) {
             Las compras no están disponibles en esta versión. Hoy no se cobra nada.
           </Text>
         </View>
+      )
+  );
+  return (
+    <View>
+      {compact ? null : (
+        <Card variant="outline" accent={colors.accentDim}>
+          <Text style={styles.emphasis}>{proEmphasis(kind)}</Text>
+        </Card>
       )}
+
+      <View style={styles.niveles} accessibilityRole="radiogroup" accessibilityLabel="Nivel">
+        {TIERS.map((t) => (
+          <Chip
+            key={t.id}
+            label={t.label}
+            selected={t.id === tier}
+            onPress={() => elegirNivel(t.id)}
+            accessibilityLabel={`${t.name}. ${t.power}`}
+          />
+        ))}
+      </View>
+      <Text style={styles.potencia}>{nivel.power}</Text>
+      {planesArriba ? catalogoVista : null}
+
+      {compact ? (
+        <View style={styles.benefitGrid}>
+          {beneficios.map((b) => (
+            <View key={b.title} style={styles.benefitCell}>
+              <Ionicons name={b.icon as never} size={15} color={colors.accentText} style={styles.benefitIcon} />
+              <Text style={styles.benefitCellTitle} numberOfLines={2}>
+                {b.title}
+              </Text>
+            </View>
+          ))}
+        </View>
+      ) : (
+        <View style={styles.benefits}>
+          {beneficios.map((b, i) => (
+            <View key={b.title} style={[styles.benefit, i > 0 && styles.sep]}>
+              <Ionicons name={b.icon as never} size={18} color={colors.accentText} style={styles.benefitIcon} />
+              <View style={styles.benefitBody}>
+                <Text style={styles.benefitTitle}>{b.title}</Text>
+                <Text style={styles.benefitDetail}>{b.detail}</Text>
+              </View>
+            </View>
+          ))}
+        </View>
+      )}
+
+      <Text style={styles.usageNotice}>{COACH_USAGE_NOTICE}</Text>
+      {tier === 'elite' ? <Text style={styles.usageNotice}>{ELITE_USAGE_NOTICE}</Text> : null}
+
+      {planesArriba ? null : catalogoVista}
+      {disponible && prueba ? (
+        <Text style={[styles.notice, styles.noticeLeft, styles.noticeBelow]}>
+          Siete días con el coach, sin tarjeta y sin cobro. Al acabar, tus hábitos y tu progreso siguen disponibles gratis.
+        </Text>
+      ) : null}
     </View>
   );
 }
@@ -470,18 +493,12 @@ interface ActionsProps {
 
 /** Los dos botones, del mismo tamaño, y lo que el sistema responde al pulsarlos. */
 export function ProOfferActions({ oferta, exitLabel, onExit, exitLoading }: ActionsProps) {
-  const { nivel, plan, precioDe, catalogo, puedeComprar, busy, anotado, aviso, disponible, prueba, onPrincipal, onPrueba, hojaConsentimiento } = oferta;
-  const nombre = disponible ? tierOffer(plan.tier).name : nivel.name;
+  const { plan, precioDe, catalogo, puedeComprar, busy, anotado, aviso, disponible, prueba, onPrincipal, onPrueba, hojaConsentimiento } = oferta;
   const activar = puedeComprar
-    ? `Activar ${nombre} · ${precioDe(plan.id)}/${plan.period}`
+    ? `Activar ${tituloPlan(plan.id)} · ${precioDe(plan.id)}/${plan.period}`
     : catalogo === 'cargando' ? 'Cargando precios de la tienda' : 'Compra no disponible';
   return (
     <View>
-      {prueba && !aviso ? (
-        <Text style={[styles.notice, styles.noticeAbove]}>
-          Siete días con el coach, sin tarjeta y sin cobro. Al acabar, tus hábitos y tu progreso siguen disponibles gratis.
-        </Text>
-      ) : null}
       {anotado ? (
         <Text style={[styles.notice, styles.noticeAbove]} accessibilityLiveRegion="polite">
           Anotado. El sistema te avisará cuando abran las suscripciones. Hoy no se cobra nada.
@@ -564,7 +581,7 @@ export function ProOfferLegal({ oferta }: { oferta: ProOfferState }) {
       <View style={styles.links}>
         <Pressable
           onPress={() => abrir(LEGAL_URLS.terminos)}
-          hitSlop={10}
+          hitSlop={{ top: 14, bottom: 14, left: 8, right: 8 }}
           accessibilityRole="link"
           accessibilityLabel="Términos de uso"
         >
@@ -573,7 +590,7 @@ export function ProOfferLegal({ oferta }: { oferta: ProOfferState }) {
         <Text style={styles.linkSep}>·</Text>
         <Pressable
           onPress={() => abrir(LEGAL_URLS.privacidad)}
-          hitSlop={10}
+          hitSlop={{ top: 14, bottom: 14, left: 8, right: 8 }}
           accessibilityRole="link"
           accessibilityLabel="Política de privacidad"
         >
@@ -585,7 +602,7 @@ export function ProOfferLegal({ oferta }: { oferta: ProOfferState }) {
             <Text style={styles.linkSep}>·</Text>
             <Pressable
               onPress={() => abrir(LEGAL_URLS.eulaApple)}
-              hitSlop={10}
+              hitSlop={{ top: 14, bottom: 14, left: 8, right: 8 }}
               accessibilityRole="link"
               accessibilityLabel="Contrato de licencia de usuario final de Apple (EULA)"
             >
@@ -661,7 +678,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.line,
     backgroundColor: colors.bg,
-    paddingVertical: 14,
+    paddingVertical: 11,
     paddingHorizontal: 14,
   },
   planOn: { borderColor: colors.accent, borderWidth: 1.5, backgroundColor: colors.accentFaint },
@@ -691,7 +708,6 @@ const styles = StyleSheet.create({
   planLabel: { fontFamily: fonts.heading, fontSize: 13, letterSpacing: 2, color: colors.text },
   planTitle: { fontFamily: fonts.semibold, fontSize: 14.5, lineHeight: 19, color: colors.text },
   planDuration: { fontFamily: fonts.body, fontSize: 12, lineHeight: 16, color: colors.accentText, marginTop: 2 },
-  planActual: { opacity: 0.6 },
   planPitch: { fontFamily: fonts.body, fontSize: 12.5, lineHeight: 17, color: colors.textDim, marginTop: 3 },
   planPrice: { alignItems: 'flex-end' },
   price: { fontFamily: fonts.number, fontSize: 17, color: colors.text },
@@ -708,10 +724,11 @@ const styles = StyleSheet.create({
   },
   noticeLeft: { textAlign: 'left', marginTop: 8 },
   noticeAbove: { marginTop: 0, marginBottom: 10 },
+  noticeBelow: { marginTop: 0, marginBottom: 16 },
   noticeWarn: { color: colors.textDim },
   usageNotice: { fontFamily: fonts.body, fontSize: 13, lineHeight: 19, color: colors.textDim, marginBottom: 14 },
   restore: { marginTop: 6, alignSelf: 'center' },
-  legal: { fontFamily: fonts.body, fontSize: 11, lineHeight: 16, color: colors.textFaint, marginTop: 8 },
+  legal: { fontFamily: fonts.body, fontSize: 12, lineHeight: 17, color: colors.textFaint, marginTop: 8 },
   links: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center', gap: 10, marginTop: 10 },
   link: { fontFamily: fonts.semibold, fontSize: 12, color: colors.accentText, textDecorationLine: 'underline' },
   linkSep: { fontFamily: fonts.body, fontSize: 12, color: colors.textFaint },

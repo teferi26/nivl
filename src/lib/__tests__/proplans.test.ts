@@ -241,7 +241,7 @@ describe('NIVL Pro · la tienda abierta (fase 4)', () => {
     expect(legalText(anual.id)).toBeNull();
     expect(precioVisible('$99.99')).toBe('$99.99');
     expect(pitchVisible(anual)).not.toMatch(/€|gratis|%/);
-    expect(pitchVisible(proPlan('nivl_elite_fundador'))).toMatch(/plazas/);
+    expect(pitchVisible(proPlan('nivl_elite_fundador'))).toMatch(/^Plazas limitadas/);
     expect(legalText('nivl_pro_anual', '$99.99')).toContain('$99.99 cada año');
   });
 
