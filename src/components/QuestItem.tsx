@@ -13,7 +13,7 @@
 
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
-import { TarjetaArena } from '@/components/arena';
+import { Entrada, TarjetaArena } from '@/components/arena';
 import { Check, Tag } from '@/components/ui';
 import { ink, space, stroke, type as tipo } from '@/design/tokens';
 import { BONUS_BY_DIFFICULTY, questXp, STAT_LABEL } from '@/lib/game';
@@ -111,30 +111,35 @@ export function QuestItem({ quest, completed, xpAwarded, busy, streakDays, onCom
   }
 
   // ── La siguiente: la inversión ──
+  // Al completar la anterior, esta fila pasa a invertida: entra con un
+  // fundido corto (Entrada con key: monta de nuevo) en vez de saltar. Sin layout
+  // animations.
   if (siguiente && !completed) {
     return (
-      <Pressable {...comunes} style={({ pressed }) => [styles.siguiente, pressed && styles.pulsadaInvertida]}>
-        <View style={styles.aroInvertido}>
-          {busy ? <ActivityIndicator size="small" color={ink.ink0} /> : null}
-        </View>
-        <View style={styles.cuerpo}>
-          <Text style={styles.rotuloSiguiente} maxFontSizeMultiplier={1.35}>
-            SIGUIENTE
-          </Text>
-          <Text style={styles.tituloSiguiente} numberOfLines={2}>
-            {quest.title}
-          </Text>
-          <View style={styles.metaFila}>{meta}</View>
-        </View>
-        <View style={styles.xp}>
-          <Text style={styles.xpSiguiente} maxFontSizeMultiplier={1.35}>
-            +{shown}
-          </Text>
-          <Text style={[styles.unidad, styles.unidadInvertida]} maxFontSizeMultiplier={1.35}>
-            {unit}
-          </Text>
-        </View>
-      </Pressable>
+      <Entrada key={quest.id}>
+        <Pressable {...comunes} style={({ pressed }) => [styles.siguiente, pressed && styles.pulsadaInvertida]}>
+          <View style={styles.aroInvertido}>
+            {busy ? <ActivityIndicator size="small" color={ink.ink0} /> : null}
+          </View>
+          <View style={styles.cuerpo}>
+            <Text style={styles.rotuloSiguiente} maxFontSizeMultiplier={1.35}>
+              SIGUIENTE
+            </Text>
+            <Text style={styles.tituloSiguiente} numberOfLines={2}>
+              {quest.title}
+            </Text>
+            <View style={styles.metaFila}>{meta}</View>
+          </View>
+          <View style={styles.xp}>
+            <Text style={styles.xpSiguiente} maxFontSizeMultiplier={1.35}>
+              +{shown}
+            </Text>
+            <Text style={[styles.unidad, styles.unidadInvertida]} maxFontSizeMultiplier={1.35}>
+              {unit}
+            </Text>
+          </View>
+        </Pressable>
+      </Entrada>
     );
   }
 

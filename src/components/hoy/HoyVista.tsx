@@ -19,6 +19,8 @@ import { router } from 'expo-router';
 import { useState, type ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { EncabezadoArena, Entrada, HeroRango, Laurel, TarjetaArena } from '@/components/arena';
+import { LAUREL_ALTO, LAUREL_ANCHO } from '@/components/arena/geometria';
+import { ajustarInscripcion } from '@/components/arena/medida';
 import { OrdenDelDia } from '@/components/OrdenDelDia';
 import { QuestItem } from '@/components/QuestItem';
 import { Button, EmptyState, Row, Screen, Section, SkeletonRows } from '@/components/ui';
@@ -67,6 +69,10 @@ const HUECO_MODULOS = 8;
 const LADO_MODULO = 112;
 /** Por encima, el texto no cabe en dos columnas: una sola. */
 const ESCALA_DOS_COLUMNAS = 1.35;
+const LEMA = 'UN 1 % MEJOR CADA DÍA';
+const LAUREL_LEMA = 20;
+/** Lo que el lema no puede usar: dos laureles de 20 y sus dos huecos. */
+const MARCO_LEMA = 2 * ((LAUREL_LEMA * LAUREL_ANCHO) / LAUREL_ALTO) + 2 * space.s3;
 
 export function HoyVista({
   estado,
@@ -83,7 +89,7 @@ export function HoyVista({
   // Ancho real de la rejilla de módulos (onLayout), no el de la ventana.
   const [anchoRejilla, setAnchoRejilla] = useState(0);
   const ancho = useAnchoUtil();
-  const { sizeClass } = useSizeClass();
+  const { sizeClass, gutter, maxContent } = useSizeClass();
   const { fontScale } = useWindowDimensions();
   // La Agenda se ofrece desde aquí solo con la barra inferior de verdad en
   // pantalla (sale del ancho de la ventana, no del hueco tras el raíl).
@@ -91,13 +97,20 @@ export function HoyVista({
   const cargando = estado === 'cargando';
   const h = d.hero;
 
-  // El panel solo existe si tiene algo que decir (coach o duelo) o mientras
-  // carga; si no cabe, Screen no lo pinta y el duelo va en el cuerpo.
-  const hayPanel = cargando || d.esPro === true || !!d.duelo;
+  // El panel solo existe si tiene algo que decir (coach o duelo); si no cabe,
+  // Screen no lo pinta y el duelo va en el cuerpo. Mientras carga se decide
+  // con lo ya sabido (esPro llega de la última carga de la sesión): si no,
+  // aparecía con huecos y desaparecía al cargar sin Pro ni duelo.
+  const hayPanel = d.esPro === true || (!cargando && !!d.duelo);
   const conPanel = hayPanel && cabeAside(ancho);
   const dueloEnCuerpo = !cargando && !!d.duelo && !conPanel;
   const ordenVisible = !cargando && !!d.orden;
   const dosColumnas = sizeClass !== 'compact' && fontScale <= ESCALA_DOS_COLUMNAS && (ordenVisible || dueloEnCuerpo);
+
+  // El lema en UNA línea (en la web no hay adjustsFontSizeToFit): tracking 3
+  // de partida y, si aun así no cabe, más apretado.
+  const huecoLema = Math.min(ancho, maxContent + 2 * gutter) - 2 * gutter - MARCO_LEMA;
+  const ajusteLema = ajustarInscripcion(LEMA, huecoLema, { size: tipo.inscripcion.size, tracking: 3 });
 
   const modulos = d.modulos;
   const columnas = Math.max(4, Math.floor(anchoRejilla / LADO_MODULO));
@@ -147,11 +160,7 @@ export function HoyVista({
           ))}
         </View>
       )}
-      {!cargando && d.avisoRecuperacion ? (
-        <Text style={styles.recuperacion} accessibilityRole="alert">
-          La recuperación está abierta. Recupera lo perdido.
-        </Text>
-      ) : null}
+      {/* La recuperación abierta ya la dice la losa de la penalización. */}
       {!cargando && d.todoHecho ? <Text style={styles.todoHecho}>{d.todoHecho}</Text> : null}
       {!cargando && d.notaPendiente ? (
         <Text style={[styles.nota, d.notaPendiente.alerta && styles.notaAlerta]}>{d.notaPendiente.texto}</Text>
@@ -290,8 +299,9 @@ export function HoyVista({
         </Entrada>
       ) : null}
 
-      {/* 4-6 · Misiones | Orden del día y duelo. */}
-      <Entrada indice={3}>
+      {/* 4-6 · Misiones | Orden del día y duelo. Con key: la cascada se
+          vuelve a ver con el contenido real, no sobre los huecos. */}
+      <Entrada key={cargando ? 'misiones-sk' : 'misiones-ok'} indice={3}>
         {dosColumnas ? (
           <View style={styles.columnas}>
             <View style={styles.columna}>{misiones}</View>
@@ -306,7 +316,7 @@ export function HoyVista({
       </Entrada>
 
       {/* 7 · Módulos. */}
-      <Entrada indice={4}>
+      <Entrada key={cargando ? 'modulos-sk' : 'modulos-ok'} indice={4}>
         <Section
           title="Módulos"
           action={
@@ -343,11 +353,15 @@ export function HoyVista({
       {/* 8 · El lema entre laureles. */}
       <Entrada indice={5}>
         <View style={styles.lema} accessible accessibilityLabel="Un 1 % mejor cada día">
-          <Laurel alto={20} lado="izq" />
-          <Text style={styles.lemaTexto} maxFontSizeMultiplier={1.35}>
-            UN 1 % MEJOR CADA DÍA
+          <Laurel alto={LAUREL_LEMA} lado="izq" />
+          <Text
+            style={[styles.lemaTexto, { fontSize: ajusteLema.size, letterSpacing: ajusteLema.tracking }]}
+            maxFontSizeMultiplier={1.35}
+            numberOfLines={ajusteLema.cabe ? 1 : 2}
+          >
+            {LEMA}
           </Text>
-          <Laurel alto={20} lado="der" />
+          <Laurel alto={LAUREL_LEMA} lado="der" />
         </View>
       </Entrada>
     </Screen>
@@ -368,13 +382,6 @@ const styles = StyleSheet.create({
   compartir: { alignSelf: 'flex-start', marginTop: space.s3 },
   columnas: { flexDirection: 'row', alignItems: 'flex-start', gap: space.s6 },
   columna: { flex: 1, minWidth: 0 },
-  recuperacion: {
-    fontFamily: fonts.semibold,
-    fontSize: tipo.bodySm.size,
-    lineHeight: tipo.bodySm.lineHeight,
-    color: ink.ink10,
-    marginTop: space.s3,
-  },
   todoHecho: {
     fontFamily: fonts.semibold,
     fontSize: tipo.bodySm.size,

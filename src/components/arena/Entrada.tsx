@@ -13,7 +13,7 @@
 // Con «reducir movimiento» no hay entrada: el bloque aparece en su sitio.
 
 import { useMemo, type ReactNode } from 'react';
-import { Platform, type StyleProp, type ViewStyle } from 'react-native';
+import { Platform, View, type StyleProp, type ViewStyle } from 'react-native';
 import Animated, {
   Easing,
   ReduceMotion,
@@ -21,8 +21,9 @@ import Animated, {
   withTiming,
   type EntryExitAnimationFunction,
 } from 'react-native-reanimated';
-import { FadeIn, useMovimientoReducido } from '@/components/ui/motion';
+import { FadeIn } from '@/components/ui/motion';
 import { motion } from '@/design/tokens';
+import { estaQuieto, useMovimientoArena } from './quieto';
 
 /** Bloques con retraso propio; del noveno en adelante entran con el octavo. */
 export const TOPE_ESCALON = 8;
@@ -62,9 +63,11 @@ function entradaNativa(retraso: number): EntryExitAnimationFunction {
 }
 
 export function Entrada({ indice = 0, style, children }: EntradaProps) {
-  const reducido = useMovimientoReducido();
+  const reducido = useMovimientoArena();
   const retraso = Math.min(Math.max(0, indice), TOPE_ESCALON) * motion.escalon;
   const entering = useMemo(() => entradaNativa(retraso), [retraso]);
+  // Galería con ?quieto=1 (solo desarrollo): el bloque, ya en su sitio.
+  if (estaQuieto()) return <View style={style}>{children}</View>;
   if (Platform.OS === 'web') {
     // FadeIn ya respeta «reducir movimiento» por su cuenta.
     return (

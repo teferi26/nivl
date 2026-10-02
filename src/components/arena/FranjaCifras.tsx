@@ -23,6 +23,11 @@ export interface FranjaCifrasProps {
   cifras: Cifra[];
   /** Celdas centradas (Hero, Perfil). Por defecto, alineadas a la izquierda. */
   centrado?: boolean;
+  /**
+   * Dentro de un bloque que ya se lee entero (el Hero): las celdas no se
+   * anuncian una a una. Por defecto, false.
+   */
+  enGrupo?: boolean;
 }
 
 const MAX_CELDAS = 4;
@@ -33,15 +38,19 @@ export function textoCifra(c: Cifra): string {
   return `${v}${c.sufijo ?? ''}`;
 }
 
-export function FranjaCifras({ cifras, centrado }: FranjaCifrasProps) {
+export function FranjaCifras({ cifras, centrado, enGrupo = false }: FranjaCifrasProps) {
   const celdas = cifras.slice(0, MAX_CELDAS);
   return (
-    <View style={styles.franja}>
+    <View
+      style={styles.franja}
+      importantForAccessibility={enGrupo ? 'no-hide-descendants' : undefined}
+      accessibilityElementsHidden={enGrupo || undefined}
+    >
       {celdas.map((c, i) => (
         <View
           key={`${c.rotulo}-${i}`}
-          accessible
-          accessibilityLabel={c.etiqueta ?? `${c.rotulo}: ${textoCifra(c)}`}
+          accessible={!enGrupo}
+          accessibilityLabel={enGrupo ? undefined : (c.etiqueta ?? `${c.rotulo}: ${textoCifra(c)}`)}
           style={[styles.celda, i > 0 && styles.conRegla, centrado ? styles.centrada : i === 0 && styles.primera]}
         >
           {/* Alto fijo: el sufijo (otra familia) no debe empujar el rótulo. */}

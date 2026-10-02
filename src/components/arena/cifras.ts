@@ -60,3 +60,11 @@ export function ratioSeguro(a: number, b: number): number {
   if (!Number.isFinite(r)) return 0;
   return Math.min(1, Math.max(0, r));
 }
+
+/**
+ * Rótulo a la derecha de la barra de XP: el nivel que viene, escrito para que
+ * no parezca el actual («NIVEL 24» junto al «23» se leía como contradicción).
+ */
+export function rotuloSiguiente(nivel: number, tope: boolean): string {
+  return tope ? 'NIVEL MÁXIMO' : `SIGUIENTE · ${nivel + 1}`;
+}

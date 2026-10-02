@@ -32,6 +32,22 @@ export const GALEA_PATH =
   ' M12.8 15.5A1.7 1.7 0 1 0 16.2 15.5A1.7 1.7 0 1 0 12.8 15.5' + // ojo derecho
   ' M9.5 13.8V17.2M7.8 15.5H11.2M14.5 13.8V17.2M12.8 15.5H16.2'; // rejilla
 
+/**
+ * La galea para 24 o menos (CoachMark pequeño, junto a cada mensaje del
+ * coach): a ese tamaño los dos ojos redondos se leían como una cara con gafas
+ * de sol. Misma silueta (cresta, cúpula, ala y placa) con una sola ranura
+ * horizontal de visera.
+ */
+export const GALEA_PATH_PEQUENA =
+  'M10.8 6C10.8 3.2 11.2 1.2 12 1.2S13.2 3.2 13.2 6' + // cresta
+  ' M5.5 12.5V11.5C5.5 7.8 8.4 6 12 6S18.5 7.8 18.5 11.5V12.5' + // cúpula
+  ' M1.5 14C3 12.9 4.5 12.5 6.5 12.5H17.5C19.5 12.5 21 12.9 22.5 14' + // ala
+  ' M6.5 12.5L7.1 18Q7.4 20 9.4 20H14.6Q16.6 20 16.9 18L17.5 12.5' + // visera
+  ' M9.2 15.6H14.8'; // ranura
+
+/** Por debajo de este tamaño (incluido) la galea va sin ojos. */
+export const GALEA_TAM_PEQUENA = 24;
+
 const LAUREL_PATH =
   'M3 17.5Q12 13.5 21 17.5' + // cinta
   ' M10.8 15.6C9.6 14.3 9.4 11.6 10 10C11.2 11.4 11.4 14 10.8 15.6Z' +
@@ -74,7 +90,7 @@ export function Crown({ kind, size, color = ink.ink10, strokeWidth }: Props) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" pointerEvents="none">
       <Path
-        d={PATHS[kind]}
+        d={kind === 'casco' && size <= GALEA_TAM_PEQUENA ? GALEA_PATH_PEQUENA : PATHS[kind]}
         stroke={color}
         strokeWidth={strokeWidth ?? grosorCorona(size)}
         strokeLinecap="round"

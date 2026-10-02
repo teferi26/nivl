@@ -26,8 +26,9 @@ import { ink, RANK_THEME, space, stroke, type as tipo, type Rank } from '@/desig
 import { useSizeClass, useAnchoUtil } from '@/design/useSizeClass';
 import { ASangre } from './ASangre';
 import { Barra } from './Barra';
-import { formatoMiles, ratioSeguro } from './cifras';
+import { formatoMiles, ratioSeguro, rotuloSiguiente } from './cifras';
 import { Contador } from './Contador';
+import { ajustarInscripcion } from './medida';
 import { BotonArena, TAM_BOTON } from './EncabezadoArena';
 import { FranjaCifras, textoCifra, type Cifra } from './FranjaCifras';
 import { Arena, Laurel, Meandro } from './Motivos';
@@ -66,8 +67,12 @@ export interface HeroRangoProps {
 }
 
 const ARENA_ALTO = 120;
+/** Graderío en ink4 con 4 gradas, como PortadaArena: en ink3 no se veía (1,3:1). */
+const GRADAS = 4;
 /** Hueco de texto por debajo del cual un nivel de 3 cifras baja a monumentoSm. */
 const HUECO_MONUMENTO = 360;
+/** «NIVEL» sobre el número: la inscripción en pequeño. */
+const ROTULO_NIVEL = { size: 12, lineHeight: 16, tracking: 4 };
 
 const dias = (n: number) => (n === 1 ? '1 día' : `${formatoMiles(n)} días`);
 
@@ -102,6 +107,11 @@ function HeroHoy(p: HeroRangoProps) {
   const tope = p.xpSiguiente <= 0;
   const ratio = tope ? 1 : ratioSeguro(p.xpEnNivel, p.xpSiguiente);
   const d = p.desde ?? null;
+  const tituloMayus = p.titulo.toUpperCase();
+  const ajusteTitulo = ajustarInscripcion(tituloMayus, huecoTexto, {
+    size: tipo.inscripcion.size,
+    tracking: tipo.inscripcion.tracking,
+  });
 
   const alMedir = (e: LayoutChangeEvent) => {
     const w = Math.round(e.nativeEvent.layout.width);
@@ -152,27 +162,43 @@ function HeroHoy(p: HeroRangoProps) {
         accessibilityLabel={p.cargando ? 'Cargando tu nivel' : resumenHero(p)}
         accessibilityRole={p.cargando ? 'progressbar' : undefined}
       >
-        <View style={[styles.monumento, { height: mono.lineHeight + space.s6 }]} onLayout={alMedir}>
+        <View
+          style={[styles.monumento, { height: mono.lineHeight + ROTULO_NIVEL.lineHeight + space.s6 }]}
+          onLayout={alMedir}
+        >
           {anchoArena > 0 ? (
-            <Arena ancho={anchoArena} alto={ARENA_ALTO} variante="arco" style={styles.arena} />
+            <Arena
+              ancho={anchoArena}
+              alto={ARENA_ALTO}
+              variante="arco"
+              gradas={GRADAS}
+              color={ink.ink4}
+              style={styles.arena}
+            />
           ) : null}
           <View style={styles.filaMonumento}>
             <Laurel alto={altoLaurel} lado="izq" />
             {p.cargando ? (
               <Skeleton height={mono.size * 0.8} width={mono.size * 1.1} />
             ) : (
-              <Contador
-                valor={p.nivel}
-                desde={d?.nivel ?? null}
-                formato={String}
-                style={[
-                  styles.nivel,
-                  { fontFamily: mono.family, fontSize: mono.size, lineHeight: mono.lineHeight, letterSpacing: mono.tracking },
-                ]}
-                maxFontSizeMultiplier={1}
-                adjustsFontSizeToFit
-                numberOfLines={1}
-              />
+              <View style={styles.nivelPila}>
+                {/* Qué es el número: sin esto, «23» no dice nada. */}
+                <Text style={styles.rotuloNivel} maxFontSizeMultiplier={1.35} numberOfLines={1}>
+                  NIVEL
+                </Text>
+                <Contador
+                  valor={p.nivel}
+                  desde={d?.nivel ?? null}
+                  formato={String}
+                  style={[
+                    styles.nivel,
+                    { fontFamily: mono.family, fontSize: mono.size, lineHeight: mono.lineHeight, letterSpacing: mono.tracking },
+                  ]}
+                  maxFontSizeMultiplier={1}
+                  adjustsFontSizeToFit
+                  numberOfLines={1}
+                />
+              </View>
             )}
             <Laurel alto={altoLaurel} lado="der" />
           </View>
@@ -182,9 +208,26 @@ function HeroHoy(p: HeroRangoProps) {
           {p.cargando ? (
             <Skeleton height={14} width={200} style={styles.centro} />
           ) : (
-            <Text style={styles.inscripcion} maxFontSizeMultiplier={1.35} numberOfLines={2}>
-              {(p.rango ? `Rango ${p.rango} · ${p.titulo}` : p.titulo).toUpperCase()}
-            </Text>
+            <>
+              {/* «RANGO A» en su línea y el título en la suya: nunca «HÉROE DE
+                  LA / ARENA». Si el título no cabe, se aprieta el tracking. */}
+              {p.rango ? (
+                <Text style={styles.inscripcion} maxFontSizeMultiplier={1.35} numberOfLines={1}>
+                  {`RANGO ${p.rango}`}
+                </Text>
+              ) : null}
+              <Text
+                style={[
+                  styles.inscripcion,
+                  p.rango ? styles.inscripcionTitulo : null,
+                  { fontSize: ajusteTitulo.size, letterSpacing: ajusteTitulo.tracking },
+                ]}
+                maxFontSizeMultiplier={1.35}
+                numberOfLines={ajusteTitulo.cabe ? 1 : 2}
+              >
+                {tituloMayus}
+              </Text>
+            </>
           )}
 
           {p.linea && !p.cargando ? (
@@ -198,17 +241,24 @@ function HeroHoy(p: HeroRangoProps) {
               {p.cargando ? '- XP' : tope ? `${formatoMiles(p.xpEnNivel)} XP` : `${formatoMiles(p.xpEnNivel)} / ${formatoMiles(p.xpSiguiente)} XP`}
             </Text>
             <Text style={styles.micro} maxFontSizeMultiplier={1.35}>
-              {p.cargando ? '' : tope ? 'NIVEL MÁXIMO' : `NIVEL ${p.nivel + 1}`}
+              {p.cargando ? '' : rotuloSiguiente(p.nivel, tope)}
             </Text>
           </View>
           {p.cargando ? (
             <Skeleton height={6} />
           ) : (
-            <Barra ratio={ratio} desde={d?.xpRatio ?? null} alto={6} segmentos={10} etiqueta={`Experiencia del nivel ${p.nivel}`} />
+            <Barra
+              ratio={ratio}
+              desde={d?.xpRatio ?? null}
+              alto={6}
+              segmentos={10}
+              etiqueta={`Experiencia del nivel ${p.nivel}`}
+              enGrupo
+            />
           )}
 
           <View style={styles.franja}>
-            <FranjaCifras cifras={cifras} centrado />
+            <FranjaCifras cifras={cifras} centrado enGrupo />
           </View>
         </View>
       </View>
@@ -254,7 +304,7 @@ function HeroPerfil(p: HeroRangoProps) {
       {grano ? <Grano color={ink.ink3} /> : null}
 
       <View style={styles.escena}>
-        <Arena ancho={220} alto={140} variante="ovalo" style={styles.ovalo} />
+        <Arena ancho={220} alto={140} variante="ovalo" gradas={GRADAS} color={ink.ink4} style={styles.ovalo} />
         <Pressable
           onPress={p.onAvatar}
           disabled={!p.onAvatar || p.avatarOcupado}
@@ -310,7 +360,7 @@ function HeroPerfil(p: HeroRangoProps) {
           {p.cargando ? '- XP' : tope ? `${formatoMiles(p.xpEnNivel)} XP` : `${formatoMiles(p.xpEnNivel)} / ${formatoMiles(p.xpSiguiente)} XP`}
         </Text>
         <Text style={styles.micro} maxFontSizeMultiplier={1.35}>
-          {p.cargando ? '' : tope ? 'NIVEL MÁXIMO' : `NIVEL ${p.nivel + 1}`}
+          {p.cargando ? '' : rotuloSiguiente(p.nivel, tope)}
         </Text>
       </View>
       {p.cargando ? (
@@ -347,6 +397,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: space.s4,
     paddingBottom: space.s1,
   },
+  nivelPila: { alignItems: 'center', flexShrink: 1 },
+  rotuloNivel: {
+    fontFamily: tipo.inscripcion.family,
+    fontSize: ROTULO_NIVEL.size,
+    lineHeight: ROTULO_NIVEL.lineHeight,
+    letterSpacing: ROTULO_NIVEL.tracking,
+    // El tracking también se pinta tras la última letra: se compensa para
+    // que «NIVEL» quede centrado sobre el número.
+    paddingLeft: ROTULO_NIVEL.tracking,
+    color: ink.ink6,
+    textAlign: 'center',
+  },
   nivel: { color: ink.ink10, textAlign: 'center', flexShrink: 1 },
   inscripcion: {
     marginTop: space.s2,
@@ -357,6 +419,7 @@ const styles = StyleSheet.create({
     color: ink.ink9,
     textAlign: 'center',
   },
+  inscripcionTitulo: { marginTop: space.s1 },
   linea: {
     marginTop: space.s3,
     alignSelf: 'center',

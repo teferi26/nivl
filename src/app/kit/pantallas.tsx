@@ -2,6 +2,10 @@
 //
 // /kit/pantallas?pantalla=<id>&estado=<estado>&ancho=375|430|744|1024|1440
 //
+// Para capturar con Chrome sin cabeza: `&quieto=1` pinta Entrada, Contador y
+// Barra ya en su valor final (sin animar; arena/quieto.ts) y `&solo=1` quita
+// la cabecera de selectores y deja solo el marco.
+//
 // Arriba, los selectores; debajo, un marco del ancho elegido (acotado a la
 // ventana) con el hueco de contenido que tendría la app a ese ancho
 // (`huecoContenido`: a 1024 son 784, a 1440 son 1200). La página «arena»
@@ -10,7 +14,7 @@
 // En un build de release (__DEV__ false) redirige a la raíz.
 
 import { Redirect, router, useLocalSearchParams } from 'expo-router';
-import { useState, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { StyleSheet, Text, View, useWindowDimensions, type LayoutChangeEvent } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
@@ -33,6 +37,7 @@ import {
   type IdPantalla,
   type VarianteArena,
 } from '@/components/arena';
+import { fijarQuieto } from '@/components/arena/quieto';
 import { DEMO as demoAmigos } from '@/components/amigos/demo';
 import { DEMO as demoCampanas } from '@/components/campanas/demo';
 import { DEMO as demoCoach } from '@/components/coach/demo';
@@ -62,9 +67,21 @@ const ANCHO_POR_DEFECTO = 375;
 const nada = () => {};
 
 export default function GaleriaPantallas() {
-  const params = useLocalSearchParams<{ pantalla?: string; estado?: string; ancho?: string }>();
+  const params = useLocalSearchParams<{
+    pantalla?: string;
+    estado?: string;
+    ancho?: string;
+    quieto?: string;
+    solo?: string;
+  }>();
   const { width: ventana } = useWindowDimensions();
+  // Se fija en el render, antes de que se pinten las piezas de debajo; al
+  // salir de la galería se apaga.
+  fijarQuieto(params.quieto === '1');
+  useEffect(() => () => fijarQuieto(false), []);
   if (!__DEV__) return <Redirect href="/" />;
+  const solo = params.solo === '1';
+  const quieto = params.quieto === '1';
 
   const pagina: IdPagina = PAGINAS.some((p) => p.id === params.pantalla) ? (params.pantalla as IdPagina) : 'arena';
   const anchoPedido = Number(params.ancho);
@@ -84,40 +101,45 @@ export default function GaleriaPantallas() {
 
   return (
     <SafeAreaView style={styles.pantalla} edges={['top', 'left', 'right']}>
-      <View style={styles.controles}>
-        <Text style={styles.titulo}>PANTALLAS · L-RADICAL</Text>
-        <ChipRow>
-          {PAGINAS.map((p) => (
-            <Chip
-              key={p.id}
-              small
-              label={p.id !== 'arena' && !DEMOS[p.id] ? `${p.titulo} · pendiente` : p.titulo}
-              selected={p.id === pagina}
-              onPress={() => ir({ pantalla: p.id, estado: '' })}
-            />
-          ))}
-        </ChipRow>
-        {demo && demo.estados.length > 0 ? (
+      {solo ? null : (
+        <View style={styles.controles}>
+          <Text style={styles.titulo}>PANTALLAS · L-RADICAL</Text>
           <ChipRow>
-            {demo.estados.map((e) => (
-              <Chip key={e.id} small label={e.titulo} selected={e.id === estado?.id} onPress={() => ir({ estado: e.id })} />
+            {PAGINAS.map((p) => (
+              <Chip
+                key={p.id}
+                small
+                label={p.id !== 'arena' && !DEMOS[p.id] ? `${p.titulo} · pendiente` : p.titulo}
+                selected={p.id === pagina}
+                onPress={() => ir({ pantalla: p.id, estado: '' })}
+              />
             ))}
           </ChipRow>
-        ) : null}
-        <ChipRow>
-          {VERIFY_WIDTHS.map((w) => (
-            <Chip key={w} small label={String(w)} selected={w === ancho} onPress={() => ir({ ancho: String(w) })} />
-          ))}
-        </ChipRow>
-        <Text style={styles.nota}>
-          Marco {marco} · hueco de contenido {hueco}
-          {marco < ancho ? ` · la ventana no llega a ${ancho}` : ''}
-        </Text>
-      </View>
+          {demo && demo.estados.length > 0 ? (
+            <ChipRow>
+              {demo.estados.map((e) => (
+                <Chip key={e.id} small label={e.titulo} selected={e.id === estado?.id} onPress={() => ir({ estado: e.id })} />
+              ))}
+            </ChipRow>
+          ) : null}
+          <ChipRow>
+            {VERIFY_WIDTHS.map((w) => (
+              <Chip key={w} small label={String(w)} selected={w === ancho} onPress={() => ir({ ancho: String(w) })} />
+            ))}
+          </ChipRow>
+          <Text style={styles.nota}>
+            Marco {marco} · hueco de contenido {hueco}
+            {marco < ancho ? ` · la ventana no llega a ${ancho}` : ''}
+            {quieto ? ' · quieto' : ''}
+          </Text>
+        </View>
+      )}
 
-      <View style={[styles.marco, { width: marco }]}>
+      {/* Con «solo», el marco a la izquierda: Chrome sin cabeza no baja de
+          ~500 de ventana y, centrado, la captura de 375 lo cortaba. */}
+      <View style={[styles.marco, { width: marco }, solo && styles.marcoSolo]}>
         <TopeAncho.Provider value={hueco}>
-          <View key={`${pagina}-${estado?.id ?? ''}`} style={styles.flex}>
+          <View key={`${pagina}-${estado?.id ?? ''}-${quieto ? 'q' : 'm'}`} style={styles.flex}>
             {contenido}
           </View>
         </TopeAncho.Provider>
@@ -452,6 +474,7 @@ const styles = StyleSheet.create({
     borderColor: ink.ink3,
     overflow: 'hidden',
   },
+  marcoSolo: { alignSelf: 'flex-start', borderLeftWidth: 0, borderRightWidth: 0 },
   pendiente: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: space.s4, padding: space.s6 },
   pendienteTexto: { flexShrink: 1, alignItems: 'center', gap: space.s2 },
   inscripcion: {

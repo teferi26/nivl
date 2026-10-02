@@ -9,9 +9,10 @@
 import { useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
 import Animated, { cancelAnimation, ReduceMotion, useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
-import { useMovimientoReducido } from '@/components/ui/motion';
 import { ink } from '@/design/tokens';
 import { ratioSeguro } from './cifras';
+import { MUELLE_BARRA } from './muelle';
+import { useMovimientoArena } from './quieto';
 
 export interface BarraProps {
   /** 0..1 (se acota). */
@@ -24,13 +25,18 @@ export interface BarraProps {
   tono?: 'blanco' | 'ink8';
   /** Qué mide, para el lector: «Experiencia del nivel 23». */
   etiqueta: string;
+  /**
+   * Dentro de un bloque que ya se lee entero (el Hero): la barra no se anuncia
+   * por su cuenta. Por defecto, false.
+   */
+  enGrupo?: boolean;
 }
 
 const CORTE = 2;
 const MAX_SEGMENTOS = 30;
 
-export function Barra({ ratio, desde, alto = 6, segmentos, tono = 'blanco', etiqueta }: BarraProps) {
-  const reducido = useMovimientoReducido();
+export function Barra({ ratio, desde, alto = 6, segmentos, tono = 'blanco', etiqueta, enGrupo = false }: BarraProps) {
+  const reducido = useMovimientoArena();
   const r = ratioSeguro(ratio, 1);
   const inicio = desde == null ? r : ratioSeguro(desde, 1);
   const progreso = useSharedValue(reducido ? r : inicio);
@@ -41,7 +47,9 @@ export function Barra({ ratio, desde, alto = 6, segmentos, tono = 'blanco', etiq
       progreso.value = r;
       return;
     }
-    progreso.value = withSpring(r, { damping: 18, reduceMotion: ReduceMotion.System });
+    // Configuración entera (muelle.ts): con los valores por defecto de
+    // Reanimated 4, `damping: 18` suelto rebotaba por encima del 100 %.
+    progreso.value = withSpring(r, { ...MUELLE_BARRA, reduceMotion: ReduceMotion.System });
   }, [r, reducido, progreso]);
 
   const relleno = useAnimatedStyle(() => ({ transform: [{ scaleX: progreso.value }] }));
@@ -51,10 +59,14 @@ export function Barra({ ratio, desde, alto = 6, segmentos, tono = 'blanco', etiq
 
   return (
     <View
-      accessible
-      accessibilityRole="progressbar"
-      accessibilityLabel={etiqueta}
-      accessibilityValue={{ min: 0, max: 100, now: Math.round(r * 100) }}
+      {...(enGrupo
+        ? { importantForAccessibility: 'no-hide-descendants' as const, accessibilityElementsHidden: true }
+        : {
+            accessible: true,
+            accessibilityRole: 'progressbar' as const,
+            accessibilityLabel: etiqueta,
+            accessibilityValue: { min: 0, max: 100, now: Math.round(r * 100) },
+          })}
       style={[styles.pista, { height: alto }]}
     >
       <Animated.View

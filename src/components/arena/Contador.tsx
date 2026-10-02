@@ -19,9 +19,9 @@ import {
   withTiming,
 } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
-import { useMovimientoReducido } from '@/components/ui/motion';
 import { type as tipo } from '@/design/tokens';
 import { formatoMiles } from './cifras';
+import { useMovimientoArena } from './quieto';
 
 export interface ContadorProps {
   valor: number;
@@ -51,7 +51,7 @@ export function Contador({
   adjustsFontSizeToFit,
   numberOfLines,
 }: ContadorProps) {
-  const reducido = useMovimientoReducido();
+  const reducido = useMovimientoArena();
   const inicio = desde ?? valor;
   const sv = useSharedValue(inicio);
   const [shown, setShown] = useState(() => Math.round(reducido ? valor : inicio));
