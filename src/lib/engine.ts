@@ -35,6 +35,8 @@ export interface DayCloseResult {
   stonesEarned: number;
   /** Días rotos que ya no se cobran por ser del cuarto en adelante (RET-02). */
   diasSinCobrar: number;
+  /** Días cerrados como cumplidos en este cierre (logro `first_day`). */
+  diasCumplidos: number;
 }
 
 type CierreResultado = { profile: Profile; result: DayCloseResult | null };
@@ -356,7 +358,7 @@ async function cerrarDias(profile: Profile, quests: Quest[]): Promise<CierreResu
   }
 
   const result: DayCloseResult | null =
-    penaMisiones > 0 || close.streakLost || close.stonesUsed > 0 || close.diasExentos.length > 0
+    penaMisiones > 0 || close.streakLost || close.stonesUsed > 0 || close.diasExentos.length > 0 || close.diasCumplidos > 0
       ? {
           penaltyXp: penaMisiones,
           missedTitles: close.missedTitles,
@@ -365,6 +367,7 @@ async function cerrarDias(profile: Profile, quests: Quest[]): Promise<CierreResu
           stonesUsed: close.stonesUsed,
           stonesEarned: close.stonesEarned,
           diasSinCobrar: close.diasExentos.length,
+          diasCumplidos: close.diasCumplidos,
         }
       : null;
 
