@@ -38,6 +38,7 @@ import {
 } from '@/lib/competicionData';
 import { LIGA_MAX, NOMBRE_LIGA_MAX, nombreDeLiga } from '@/lib/competition';
 import { dateKey } from '@/lib/dates';
+import { marcarDuelosVistos, reprogramarAvisosDelPlan } from '@/lib/notifications';
 import { colors, fonts } from '@/lib/theme';
 import { mensajeSistema } from '@/lib/validation';
 import { Aviso } from './Aviso';
@@ -92,6 +93,8 @@ export function Competicion({ amigos, recarga, retarA, onRetarA, onDisponible }:
     try {
       const [d, l, i] = await Promise.all([misDuelos(), misLigas(), misInvitacionesDeLiga()]);
       setDuelos(d);
+      // L6-0: lo que se enseña aquí deja de ser novedad para el aviso de duelo.
+      void marcarDuelosVistos(d);
       setLigas(l);
       setInvitaciones(i);
       setFallo(null);
@@ -135,6 +138,7 @@ export function Competicion({ amigos, recarga, retarA, onRetarA, onDisponible }:
       await responderDuelo(d.id, aceptar);
       if (aceptar) vibrar('mision');
       await cargar();
+      if (aceptar) reprogramarAvisosDelPlan();
     } catch (e) {
       vibrar('penalizacion');
       setAvisoLista({ texto: mensajeSistema(e), error: true });
