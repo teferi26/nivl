@@ -356,3 +356,53 @@ export function computeDayClose(input: CloseInput): CloseOutput {
     stonesUsed, stonesEarned, frozenDays, porDia, diasExentos, diasCumplidos,
   };
 }
+
+/**
+ * RET-05 · Lo que hay en juego HOY si el día se cerrara ahora, con el mismo
+ * criterio que el cierre (computeDayClose): para que Hoy y el aviso de la
+ * noche digan algo concreto («te faltan 2 para salvar la racha; te
+ * costaría 75 XP») en vez de un genérico «lo pendiente se penaliza».
+ *
+ * `rotosSeguidosPrevios` (rotosSeguidosAntes del día de hoy): si hoy sería el
+ * cuarto día roto seguido con la racha a cero, no costaría XP (RET-02).
+ */
+export function enJuegoHoy(input: {
+  questsHoy: Quest[];
+  completadasHoy: Set<string>;
+  streak: number;
+  stones: number;
+  rotosSeguidosPrevios?: number;
+}): {
+  /** Misiones normales pendientes hoy. */
+  pendientes: number;
+  /** Cuántas más hay que completar para no romper la racha (0 = a salvo). */
+  faltanParaSalvar: number;
+  /** La racha se rompería si el día cerrara así (y no hay piedra que la salve). */
+  rachaEnRiesgo: boolean;
+  /** Se gastaría una piedra para salvarla. */
+  gastariaPiedra: boolean;
+  /** XP que costaría lo pendiente si se quedara sin hacer (con tope y RET-02). */
+  xpEnJuego: number;
+} {
+  const normales = input.questsHoy.filter((q) => !q.is_penalty && !q.is_bonus);
+  const pendientes = normales.filter((q) => !input.completadasHoy.has(q.id));
+  const faltanParaSalvar = Math.max(0, pendientes.length - fallosPermitidos(normales.length));
+  const romperia = normales.length > 0 && faltanParaSalvar > 0;
+  const exento = romperia && (input.rotosSeguidosPrevios ?? 0) >= DIAS_COBRADOS_SEGUIDOS && input.streak === 0;
+  const gastariaPiedra = romperia && !exento && input.stones > 0;
+  const coste = Math.min(
+    DAILY_PENALTY_CAP,
+    pendientes.reduce((a, q) => a + Math.round(XP_BY_DIFFICULTY[q.difficulty] * PENALTY_FACTOR), 0),
+  );
+  // Una piedra absorbe el día entero; un día exento no cobra. Un día salvado
+  // por la tolerancia SÍ cobra lo fallado (la tolerancia salva la racha, no el
+  // bolsillo).
+  const xpEnJuego = gastariaPiedra || exento ? 0 : coste;
+  return {
+    pendientes: pendientes.length,
+    faltanParaSalvar,
+    rachaEnRiesgo: romperia && !gastariaPiedra && !exento && input.streak > 0,
+    gastariaPiedra,
+    xpEnJuego,
+  };
+}
