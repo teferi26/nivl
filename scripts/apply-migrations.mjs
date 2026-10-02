@@ -67,7 +67,7 @@ async function sql(query) {
 
 // Cada migración se reconoce por un objeto que solo ella crea.
 const HUELLAS = {
-  '0048': `to_regclass('public.daily_scorecards') is not null`,
+  '0048': `to_regclass('public.league_invites') is not null`,
   '0051': `to_regprocedure('public.sync_rank()') is not null`,
   '0046': `coalesce(obj_description(to_regprocedure('public.creator_progress()'), 'pg_proc') like '%nivl:creator-program-0046%', false)`,
   '0050': `to_regclass('public.progress_photos') is not null`,

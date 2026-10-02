@@ -1,6 +1,6 @@
 -- NIVL · 0051 — Rango v2 decidido y registrado por el servidor.
 -- Chat 5, revisión del Chat 3. Aditiva; NO toca export_my_data.
--- Huella: to_regprocedure('public.sync_rank()') is not null
+-- Huella: ver HUELLAS en scripts/apply-migrations.mjs
 begin;
 
 -- Nivel desde xp_total con la misma curva que game.ts (100·N^1,5, redondeo).
