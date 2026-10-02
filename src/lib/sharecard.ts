@@ -339,7 +339,7 @@ export function reticulaRacha(t: Extract<Tarjeta, { tipo: 'racha' }>): boolean[]
 /** Por qué una tarjeta no se puede generar con estas opciones, o null si se puede. */
 export function bloqueo(t: Tarjeta, opciones: OpcionesTarjeta, contexto: ContextoTarjeta = { puedeCompartirFotos: false }): string | null {
   if (t.tipo === 'antesDespues') {
-    if (!contexto.puedeCompartirFotos) return 'Compartir fotos de progreso está disponible a partir de los 18 años.';
+    if (!contexto.puedeCompartirFotos) return 'Compartir fotos de progreso pide ser mayor de 18 y tener activados los datos de salud.';
     if (!opciones.mostrarFotos) return 'Para compartir el antes y después tienes que permitir las fotos.';
     if (!t.antes.uri || !t.despues.uri) return 'Faltan fotos para comparar.';
     if (t.antes.fecha > t.despues.fecha) return 'La foto de antes es posterior a la de después.';
