@@ -454,3 +454,26 @@ export function permisosFotos(entrada: {
     proveedorVision: PROVEEDOR_VISION,
   };
 }
+
+// ---------------------------------------------------------------------------
+// Recordatorio semanal para el plan de avisos (notifyPlan.planDeAvisos)
+
+/**
+ * Cuántas poses faltan esta semana, para `EstadoPlanAvisos.fotosPendientes`.
+ * Devuelve 0 (sin aviso) si:
+ * - no hay permiso para guardar fotos (18+ y consentimiento de salud);
+ * - el usuario nunca ha hecho una foto de progreso: el recordatorio es para
+ *   quien ya usa la función, no publicidad de ella;
+ * - no es domingo o la semana ya está completa (estadoSemanal).
+ * Los topes, el silencio y la caducidad los aplica planDeAvisos.
+ */
+export function fotosPendientesParaAviso(
+  fotos: readonly FotoProgreso[],
+  hoy: string,
+  permisos: { mayor18: boolean | null; consentimientoSalud: boolean },
+): number {
+  if (!permisosFotos({ ...permisos, consentimientoIA: false }).guardar) return 0;
+  if (!fotosValidas(fotos).some((f) => f.fecha <= hoy)) return 0;
+  const e = estadoSemanal(fotos, hoy);
+  return e.recordar ? e.faltan.length : 0;
+}

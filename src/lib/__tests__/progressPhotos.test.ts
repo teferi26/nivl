@@ -497,3 +497,27 @@ describe('permisosFotos', () => {
     );
   });
 });
+
+describe('fotosPendientesParaAviso (recordatorio semanal)', () => {
+  const { fotosPendientesParaAviso } = jest.requireActual('../progressPhotos');
+  const ok = { mayor18: true, consentimientoSalud: true };
+  const domingo = '2026-10-11';
+  const f = (id: string, fecha: string, pose: string) => ({ id, fecha, pose });
+  test('domingo con poses pendientes y permisos: cuenta las que faltan', () => {
+    expect(fotosPendientesParaAviso([f('a', '2026-10-06', 'frente'), f('b', '2026-10-01', 'lado')], domingo, ok)).toBe(2);
+  });
+  test('sin 18+ o sin consentimiento de salud: nunca avisa', () => {
+    const fotos = [f('a', '2026-10-01', 'frente')];
+    expect(fotosPendientesParaAviso(fotos, domingo, { mayor18: null, consentimientoSalud: true })).toBe(0);
+    expect(fotosPendientesParaAviso(fotos, domingo, { mayor18: false, consentimientoSalud: true })).toBe(0);
+    expect(fotosPendientesParaAviso(fotos, domingo, { mayor18: true, consentimientoSalud: false })).toBe(0);
+  });
+  test('quien nunca ha hecho una foto no recibe el aviso; entre semana tampoco', () => {
+    expect(fotosPendientesParaAviso([], domingo, ok)).toBe(0);
+    expect(fotosPendientesParaAviso([f('a', '2026-10-01', 'frente')], '2026-10-10', ok)).toBe(0);
+  });
+  test('semana completa: nada', () => {
+    const fotos = [f('a', '2026-10-06', 'frente'), f('b', '2026-10-06', 'lado'), f('c', '2026-10-07', 'espalda')];
+    expect(fotosPendientesParaAviso(fotos, domingo, ok)).toBe(0);
+  });
+});
