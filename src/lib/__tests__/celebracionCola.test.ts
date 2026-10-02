@@ -152,6 +152,14 @@ describe('cola de celebraciones', () => {
     expect(s.acciones.get('a')?.extra).toHaveLength(1);
   });
 
+  test('los días activos dan la cifra del siguiente rango; sin ellos, null', () => {
+    const accion = { accion: 'a', perfilAntes: perfil(3), perfilDespues: perfil(4), fecha, resumen: ['+50 XP'], final: true };
+    const sin = correr([{ tipo: 'llega', a: accion }], cargado());
+    expect(sin.mostrando!.estado!.siguienteRango!.faltanDias).toBeNull();
+    const con = correr([{ tipo: 'llega', a: { ...accion, final: false } }, { tipo: 'llega', a: { accion: 'a', diasActivos: 2, final: true } }], cargado());
+    expect(typeof con.mostrando!.estado!.siguienteRango!.faltanDias).toBe('number');
+  });
+
   test('vaciar (cierre de sesión) borra la memoria', () => {
     const s = correr([{ tipo: 'avisar', id: 'aviso:1', texto: 'x' }, { tipo: 'vaciar' }], cargado(['rango:B']));
     expect(s).toMatchObject({ cargado: false, mostrando: null });
