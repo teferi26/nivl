@@ -1,9 +1,11 @@
--- PROPUESTA (Chat 5) · Rango registrado de mis amigos, para pintar su corona.
+-- NIVL · 0052 — Rango registrado de mis amigos, para pintar su corona.
+-- Chat 5, aprobada por el Chat 3 (rollback contra el esquema vivo, 4/4).
+-- Huella: ver HUELLAS en scripts/apply-migrations.mjs
 -- friends_board (0021/0032) no se toca: esta RPC devuelve solo user_id y
 -- rango, y el cliente lo cruza con friends_board por user_id (que ya recibe).
 -- Mismas reglas de visibilidad que friends_board: amistad aceptada,
 -- social_visible y sin bloqueo ni suspensión (_pareja_ok de 0048).
--- Aditiva; NO toca export_my_data. Número: lo asigna el coordinador.
+-- Aditiva; NO toca export_my_data. Depende de 0048 (_pareja_ok) y 0051.
 
 begin;
 
