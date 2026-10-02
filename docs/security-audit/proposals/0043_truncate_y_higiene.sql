@@ -1,3 +1,7 @@
+-- 0043_truncate_y_higiene · sin TRUNCATE para anon/authenticated e higiene de privilegios (Chat 3 · Seguridad; número asignado por el coordinador 02/10/2026).
+-- Huella: not has_table_privilege('authenticated','public.quests','TRUNCATE')
+-- Test: 0043_truncate_y_higiene.test.sql — incluye el cuerpo; se ejecuta SOLO (sin aplicar antes la migración), en una transacción que se revierte.
+--
 -- PROPUESTA (Chat 3 · subagente a «RLS y auth»). NO es una migración aplicada.
 -- Test: docs/security-audit/proposals/a-02_truncate_y_higiene.test.sql
 --

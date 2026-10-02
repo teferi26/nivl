@@ -1,3 +1,7 @@
+-- 0041_xp_topes · topes diarios y premios únicos de award_xp (E7) (Chat 3 · Seguridad; número asignado por el coordinador 02/10/2026).
+-- Huella: to_regclass('public.xp_daily_ledger') is not null
+-- Test: 0041_xp_topes.test.sql (ejecutar en una transacción que se revierte).
+--
 -- PROPUESTA Chat 3 + Chat 5 (sin número): E7, fase 2 de la integridad de la
 -- economía. award_xp acepta hoy ±2000 por llamada sin tope ni lista de
 -- eventos: cualquier cliente se da XP ilimitado. Valores de game.ts
