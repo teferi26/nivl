@@ -2,6 +2,7 @@
 export { Avatar } from './Avatar';
 export { Button } from './Button';
 export { Card, SuperficieContext } from './Card';
+export { Ceremony } from './Ceremony';
 export { Chip, ChipRow, ChipWrap, Tag } from './Chip';
 export { avisar, confirmar } from './confirmar';
 export { Crown, GALEA_PATH } from './Crown';

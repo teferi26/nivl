@@ -16,16 +16,15 @@ import {
   Pressable,
   Share,
   StyleSheet,
-  Switch,
   Text,
   TextInput,
   View,
 } from 'react-native';
-import { Avatar } from '@/components/Avatar';
 import { EliteBadge } from '@/components/EliteBadge';
 import { prepararDatosSemana, ShareSemanaModal, type DatosSemana } from '@/components/ShareCardSemana';
 import { SystemButton } from '@/components/SystemButton';
 import {
+  Avatar,
   Card,
   Chip,
   ChipWrap,
@@ -39,8 +38,14 @@ import {
   Skeleton,
   SkeletonRows,
   Stagger,
+  Stat,
+  StatRow,
   Tag,
 } from '@/components/ui';
+import { useCelebracion } from '@/components/celebracion/contexto';
+import { Interruptor } from '@/components/ui/Interruptor';
+import { ink } from '@/design/tokens';
+import { fetchUnlocked, tituloVigente } from '@/lib/achievements';
 import { avisar, confirmar } from '@/components/ui/confirmar';
 import { volver } from '@/components/ui/Screen';
 import { useAuth } from '@/lib/auth';
@@ -57,8 +62,10 @@ import {
   type MiLudus,
 } from '@/lib/elite';
 import { levelFromXp } from '@/lib/game';
+import { fetchMyInvites, UMBRALES_INVITACION, type MyInvites } from '@/lib/invites';
 import { kindMeta, type ProfileKind } from '@/lib/kinds';
 import { fetchAiStatus, type Tier } from '@/lib/pro';
+import { celebracionInsignia, INSIGNIAS, rangoRegistrado, type Celebracion, type RangoId } from '@/lib/progression';
 import {
   blockSocialUser,
   fetchBlockedUsers,
@@ -109,7 +116,7 @@ const METRICAS: Metrica[] = ['xp', 'cumplimiento', 'racha'];
 
 
 /** La cifra del ranking, que sube (o baja) hasta su valor al cambiar de métrica o de periodo. */
-function ValorRanking({ valor, metrica, tone }: { valor: number | null; metrica: Metrica; tone: 'gold' | 'accent' | 'dim' }) {
+function ValorRanking({ valor, metrica, tone }: { valor: number | null; metrica: Metrica; tone: 'accent' | 'dim' }) {
   const mostrado = useCountUp(valor ?? 0, 600);
   return (
     <RowValue strong tone={tone}>
@@ -130,10 +137,13 @@ function ListaRanking({
   atenuado,
   onLongPress,
   onSafety,
+  miRango,
 }: {
   filas: readonly Fila[];
   metrica: Metrica;
   atenuado?: boolean;
+  /** Rango propio (registrado en los logros); el de los amigos no se conoce. */
+  miRango: RangoId | null;
   /** Sin él (ludus) no se puede quitar a nadie desde aquí. */
   onLongPress?: (b: BoardEntry) => void;
   onSafety: (b: BoardEntry) => void;
@@ -155,7 +165,13 @@ function ListaRanking({
                 <Text style={[styles.puestoTexto, c.posicion === 1 && c.valor !== null && styles.oro]}>
                   {c.valor === null ? '—' : etiquetaPosicion(c.posicion)}
                 </Text>
-                <Avatar size={38} avatarPath={b.avatarPath} name={b.name} />
+                <Avatar
+                  size={40}
+                  avatarPath={b.avatarPath}
+                  name={b.name}
+                  rank={b.isMe ? miRango : null}
+                  titulo={tituloVigente(b.equippedTitle) ?? undefined}
+                />
               </View>
             }
             title={b.isMe ? `${b.name} · tú` : b.name}
@@ -166,7 +182,7 @@ function ListaRanking({
                   Nivel {nivel}
                   {metrica !== 'racha' && b.streakDays > 0 ? ` · racha ${b.streakDays}` : ''}
                 </Text>
-                {b.equippedTitle ? <Tag tone="gold">{b.equippedTitle}</Tag> : null}
+                {tituloVigente(b.equippedTitle) ? <Tag tone="logro">{tituloVigente(b.equippedTitle)}</Tag> : null}
               </View>
             }
             trailing={
@@ -174,7 +190,7 @@ function ListaRanking({
                 <ValorRanking
                   valor={c.valor}
                   metrica={metrica}
-                  tone={metrica === 'racha' && (c.valor ?? 0) > 0 ? 'gold' : b.isMe ? 'accent' : 'dim'}
+                  tone={b.isMe || (metrica === 'racha' && (c.valor ?? 0) > 0) ? 'accent' : 'dim'}
                 />
                 {!b.isMe ? <SafetyButton name={b.name} onPress={() => onSafety(b)} /> : null}
               </View>
@@ -240,6 +256,11 @@ export default function Amigos() {
   const [cambiarPeticion, setCambiarPeticion] = useState(false);
   const ventanaLudusViva = useRef<Ventana>('semana');
 
+  // Rango propio e invitaciones: adorno, por su cuenta. Si fallan, no se pintan.
+  const [miRango, setMiRango] = useState<RangoId | null>(null);
+  const [invitaciones, setInvitaciones] = useState<MyInvites | null>(null);
+  const { celebrar } = useCelebracion();
+
   const [tarjeta, setTarjeta] = useState<DatosSemana | null>(null);
   const [preparando, setPreparando] = useState(false);
   const lock = useRef(false);
@@ -292,6 +313,20 @@ export default function Amigos() {
     fetchEliteBadges()
       .then(setInsignias)
       .catch(() => {});
+    fetchUnlocked()
+      .then((logros) => setMiRango(rangoRegistrado(logros)))
+      .catch(() => {});
+    fetchMyInvites()
+      .catch(() => null)
+      .then((inv) => {
+        setInvitaciones(inv);
+        if (!inv) return;
+        // La cola deduplica por clave: cada nivel de insignia se celebra una vez.
+        const extra = [celebracionInsignia('reclutador', 0, inv.activos)].filter(
+          (c): c is Celebracion => c !== null,
+        );
+        celebrar({ accion: 'insignias', extra, final: true });
+      });
     try {
       const [ia, mio] = await Promise.all([fetchAiStatus(), fetchMyEliteGroup()]);
       if (ventanaLudusViva.current !== v) return;
@@ -307,7 +342,7 @@ export default function Amigos() {
     } catch {
       /* sin ludus: la pantalla sigue */
     }
-  }, []);
+  }, [celebrar]);
 
   useFocusEffect(
     useCallback(() => {
@@ -606,6 +641,17 @@ export default function Amigos() {
     }
   };
 
+  // ── Invitar: insignias Reclutador (cosméticas) ───────────────────
+  const reclutador = INSIGNIAS.reclutador;
+  const umbralSiguiente = invitaciones?.siguienteUmbral ?? null;
+  const nombreSiguiente =
+    umbralSiguiente == null ? undefined : reclutador.nombres[reclutador.umbrales.indexOf(umbralSiguiente)];
+  const siguienteInsignia =
+    umbralSiguiente != null && nombreSiguiente ? { nombre: nombreSiguiente, umbral: umbralSiguiente } : null;
+  const insigniasGanadas = (invitaciones?.insignias ?? [])
+    .map((k) => reclutador.nombres[UMBRALES_INVITACION.findIndex((u) => u.kind === k)])
+    .filter((n): n is string => !!n);
+
   const subtitulo =
     numAmigos === 0
       ? 'Nadie mejora igual cuando alguien le mira el marcador.'
@@ -633,7 +679,7 @@ export default function Amigos() {
             <SkeletonRows rows={4} />
           </View>
         ) : fallo && !yo ? (
-          <Card variant="outline" accent={colors.redDim}>
+          <Card variant="alerta">
             <EmptyState
               compact
               icon="cloud-offline-outline"
@@ -645,7 +691,7 @@ export default function Amigos() {
         ) : yo ? (
           <>
             {fallo ? (
-              <Card variant="outline" accent={colors.redDim}>
+              <Card variant="alerta">
                 <Text style={styles.falloLinea} accessibilityRole="alert">
                   No se ha podido actualizar: {fallo}
                 </Text>
@@ -678,18 +724,44 @@ export default function Amigos() {
                     />
                   </View>
                   <View style={styles.boton}>
-                    {/* Un sólido por pantalla: sin amigos, el sólido es "Invitar al
-                        primero" del ranking vacío y este baja a contorno. */}
-                    <SystemButton
-                      title="Invitar"
-                      icon="paper-plane-outline"
-                      variant={numAmigos === 0 ? 'outline' : 'solid'}
-                      onPress={invitar}
-                    />
+                    {/* Una sola inversión por pantalla: la de "Invitar al primero"
+                        del ranking vacío. Este va siempre en contorno. */}
+                    <SystemButton title="Invitar" icon="paper-plane-outline" variant="outline" onPress={invitar} />
                   </View>
                 </View>
               </Card>
             </FadeIn>
+
+            {invitaciones ? (
+              <FadeIn index={2}>
+                <Section title="Invitar">
+                  <Card>
+                    <StatRow>
+                      <Stat value={invitaciones.activos} label="Activos" style={styles.celda} />
+                      <Stat value={invitaciones.pendientes} label="Pendientes" style={styles.celda} />
+                    </StatRow>
+                    {siguienteInsignia ? (
+                      <Text style={styles.siguienteInsignia}>
+                        Siguiente insignia: {siguienteInsignia.nombre} con {siguienteInsignia.umbral} invitados activos
+                      </Text>
+                    ) : null}
+                    {insigniasGanadas.length > 0 ? (
+                      <View style={styles.insignias}>
+                        {insigniasGanadas.map((nombre) => (
+                          <Tag key={nombre} tone="logro">
+                            {nombre}
+                          </Tag>
+                        ))}
+                      </View>
+                    ) : null}
+                  </Card>
+                  <Text style={styles.hint}>
+                    Cuenta quien entra con tu código y está activo 3 días en sus primeras dos semanas. Solo identidad: ni XP
+                    ni días de Pro.
+                  </Text>
+                </Section>
+              </FadeIn>
+            ) : null}
 
             <FadeIn index={2}>
               <Section title="Añadir por código">
@@ -802,7 +874,7 @@ export default function Amigos() {
               <FadeIn index={4}>
                 <Section
                   title="Tu ludus"
-                  tone="gold"
+                  tone="logro"
                   meta={miLudus.group ? `${miLudus.group.members}/${miLudus.group.capacity}` : undefined}
                 >
                   {estado === 'miembro' && miLudus.group ? (
@@ -831,7 +903,7 @@ export default function Amigos() {
                             key={m}
                             label={METRICA_LABEL[m]}
                             small
-                            tone={m === 'racha' ? 'gold' : 'accent'}
+                            tone="accent"
                             selected={metricaLudus === m}
                             onPress={() => elegirMetricaLudus(m)}
                             accessibilityLabel={`Ordenar el ludus por ${METRICA_LABEL[m]}`}
@@ -843,14 +915,14 @@ export default function Amigos() {
                           ? 'Tu ludus aún se está formando. El sistema suma gladiadores de tu mismo objetivo.'
                           : lineaRivalidad(rankingLudus, metricaLudus, ventanaLudus)}
                       </Text>
-                      <ListaRanking filas={rankingLudus} metrica={metricaLudus} onSafety={abrirSeguridad} />
+                      <ListaRanking filas={rankingLudus} metrica={metricaLudus} onSafety={abrirSeguridad} miRango={miRango} />
                       <Text style={styles.hint}>
                         Las mismas cifras que el ranking de amigos: las penalizaciones no cuentan y nadie compra
                         puestos. Sin chat: en el ludus se compite con hechos.
                       </Text>
                     </>
                   ) : estado === 'pedido' && !cambiarPeticion ? (
-                    <Card variant="outline" accent={colors.goldDim}>
+                    <Card variant="outline">
                       <EmptyState
                         compact
                         icon="hourglass-outline"
@@ -954,7 +1026,7 @@ export default function Amigos() {
                           key={m}
                           label={METRICA_LABEL[m]}
                           small
-                          tone={m === 'racha' ? 'gold' : 'accent'}
+                          tone="accent"
                           selected={metrica === m}
                           onPress={() => elegirMetrica(m)}
                           accessibilityLabel={`Ordenar por ${METRICA_LABEL[m]}`}
@@ -966,7 +1038,14 @@ export default function Amigos() {
                       {lineaRivalidad(ranking, metrica, ventana)}
                     </Text>
 
-                    <ListaRanking filas={ranking} metrica={metrica} atenuado={cambiando} onLongPress={quitarAmigo} onSafety={abrirSeguridad} />
+                    <ListaRanking
+                      filas={ranking}
+                      metrica={metrica}
+                      atenuado={cambiando}
+                      onLongPress={quitarAmigo}
+                      onSafety={abrirSeguridad}
+                      miRango={miRango}
+                    />
                     <Text style={styles.hint}>
                       {metrica === 'xp'
                         ? 'XP ganado con misiones en el periodo. Las de penalización no cuentan: recuperar no es adelantar.'
@@ -1033,12 +1112,9 @@ export default function Amigos() {
                         : 'Estás fuera: tus amigos no ven tus cifras ni tu retrato. Tú sigues viendo las suyas.'
                     }
                     trailing={
-                      <Switch
+                      <Interruptor
                         value={yo.socialVisible}
                         onValueChange={cambiarVisible}
-                        trackColor={{ false: colors.track, true: colors.accentDim }}
-                        thumbColor={yo.socialVisible ? colors.accent : colors.textFaint}
-                        ios_backgroundColor={colors.track}
                         accessibilityLabel="Aparecer en los rankings de tus amigos"
                       />
                     }
@@ -1086,7 +1162,7 @@ const styles = StyleSheet.create({
   atenuado: { opacity: 0.45 },
   rechazar: { width: 32, height: 32, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: colors.line },
   pulsado: { opacity: 0.6 },
-  falloLinea: { fontFamily: fonts.body, fontSize: 13, lineHeight: 18, color: colors.redText },
+  falloLinea: { fontFamily: fonts.body, fontSize: 13, lineHeight: 18, color: ink.ink9 },
   eyebrow: {
     fontFamily: fonts.heading,
     fontSize: 11,
@@ -1103,6 +1179,9 @@ const styles = StyleSheet.create({
   },
   hint: { fontFamily: fonts.body, fontSize: 12, color: colors.textFaint, marginTop: 10, lineHeight: 17 },
   botones: { flexDirection: 'row', gap: 8, marginTop: 16 },
+  celda: { flex: 1 },
+  siguienteInsignia: { fontFamily: fonts.body, fontSize: 14, lineHeight: 20, color: ink.ink8, marginTop: 14 },
+  insignias: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 12 },
   boton: { flex: 1 },
   anadirFila: { flexDirection: 'row', gap: 8, alignItems: 'stretch' },
   input: {
@@ -1117,7 +1196,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   aviso: { fontFamily: fonts.body, fontSize: 13, lineHeight: 18, color: colors.accentText, marginTop: 10 },
-  avisoError: { color: colors.red },
+  avisoError: { color: ink.ink9 },
   respuestas: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   segmento: { flexDirection: 'row', gap: 8 },
   segmentoChip: { flex: 1, justifyContent: 'center' },
@@ -1141,7 +1220,7 @@ const styles = StyleSheet.create({
   },
   puesto: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   puestoTexto: { width: 30, fontFamily: fonts.number, fontSize: 13, color: colors.textDim },
-  oro: { color: colors.gold },
+  oro: { color: ink.ink10 },
   detalle: { flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' },
   detalleTexto: { fontFamily: fonts.body, fontSize: 12.5, color: colors.textFaint },
   ludusCabecera: { marginBottom: 14 },

@@ -4,8 +4,9 @@
 // Por eso no enseña la interfaz sino un parte: quién eres, cuánto has subido
 // esta semana, cuánto cumples y dónde te encuentran (la web de NIVL + tu código).
 //
-// Monocromo de arena: blanco sobre negro, hierro para la estructura y el oro
-// SOLO en la racha y el título, como en el resto de la app. Todo se mide en
+// Solo blanco y negro (SISTEMA v2): blanco sobre negro, hierro para la
+// estructura y el blanco puro (ink10) para lo que se celebra, la racha y el
+// título; nada de color, como en el resto de la app. Todo se mide en
 // unidades relativas al ancho (u) para que la vista previa del móvil y el PNG
 // de 1080×1920 sean la misma pieza a distinta escala.
 
@@ -162,8 +163,8 @@ export function ShareCardSemana({ datos, width, ref, onReady }: CardProps) {
             <View style={styles.divisor} />
             <View style={styles.cifra}>
               <View style={styles.rachaFila}>
-                <Ionicons name="flame" size={17 * u} color={conRacha ? colors.gold : colors.textFaint} />
-                <Text allowFontScaling={false} style={[styles.cifraValor, t(24), conRacha && styles.oro]}>{datos.streakDays}</Text>
+                <Ionicons name="flame" size={17 * u} color={conRacha ? colors.accent : colors.textFaint} />
+                <Text allowFontScaling={false} style={[styles.cifraValor, t(24), conRacha && styles.conRacha]}>{datos.streakDays}</Text>
               </View>
               <Text allowFontScaling={false} style={[styles.rotulo, t(8.5, { letterSpacing: 1.8 * u, marginTop: 5 * u })]} numberOfLines={1} adjustsFontSizeToFit>
                 {datos.streakDays === 1 ? 'DÍA DE RACHA' : 'DÍAS DE RACHA'}
@@ -280,7 +281,7 @@ const styles = StyleSheet.create({
   rotuloClaro: { fontFamily: fonts.heading, color: colors.accentText, textAlign: 'center' },
   identidad: { alignItems: 'center' },
   nombre: { fontFamily: fonts.heading, color: colors.text, textAlign: 'center' },
-  titulo: { fontFamily: fonts.heading, color: colors.gold, textAlign: 'center' },
+  titulo: { fontFamily: fonts.heading, color: colors.accent, textAlign: 'center' },
   heroe: { alignItems: 'center' },
   xp: { fontFamily: fonts.brand, color: colors.accent, textAlign: 'center' },
   cifras: {
@@ -293,7 +294,7 @@ const styles = StyleSheet.create({
   cifra: { flex: 1, alignItems: 'center', minWidth: 0 },
   cifraValor: { fontFamily: fonts.number, color: colors.text },
   rachaFila: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  oro: { color: colors.gold },
+  conRacha: { color: colors.accent },
   divisor: { width: 1, alignSelf: 'stretch', backgroundColor: colors.line },
   pista: { backgroundColor: colors.track },
   relleno: { height: '100%', backgroundColor: colors.accent },

@@ -1,11 +1,8 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Haptics from 'expo-haptics';
-import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
-import { LinearGradient } from 'expo-linear-gradient';
 import { router, useFocusEffect } from 'expo-router';
-import * as Sharing from 'expo-sharing';
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -16,19 +13,19 @@ import {
   StyleSheet,
   Text,
   TextInput,
-  useWindowDimensions,
   View,
 } from 'react-native';
-import { captureRef } from 'react-native-view-shot';
 import { useConsentimientoIA } from '@/components/ConsentimientoIA';
 import { HealthPrivacySection } from '@/components/ConsentimientoSalud';
 import { EliteBadge } from '@/components/EliteBadge';
-import { Hexagon } from '@/components/Hexagon';
+import { CaminoDeRangos } from '@/components/perfil/CaminoDeRangos';
+import { HojaCompartir } from '@/components/share/HojaCompartir';
 import { SystemButton } from '@/components/SystemButton';
 import { Version } from '@/components/Version';
 import { XPBar } from '@/components/XPBar';
 import {
   avisar,
+  Avatar,
   Card,
   Chip,
   ChipWrap,
@@ -44,7 +41,11 @@ import {
   StatRow,
   Tag,
 } from '@/components/ui';
-import { ACHIEVEMENTS, fetchUnlocked } from '@/lib/achievements';
+import { Interruptor } from '@/components/ui/Interruptor';
+import { ACHIEVEMENTS, ACHIEVEMENTS_VISIBLES, fetchUnlocked, tituloVigente } from '@/lib/achievements';
+import { useVibraciones, vibrar } from '@/design/haptics';
+import { ink } from '@/design/tokens';
+import { useSizeClass } from '@/design/useSizeClass';
 import { useAuth } from '@/lib/auth';
 import { cerrarSesion } from '@/lib/authFlow';
 import {
@@ -88,9 +89,7 @@ import {
   type Subscription,
 } from '@/lib/subscription';
 import {
-  levelFromXp,
   MAX_STONES,
-  rankForLevel,
   STAT_COLUMN,
   STAT_LABEL,
   statPoints,
@@ -98,6 +97,8 @@ import {
   streakMultiplier,
 } from '@/lib/game';
 import { KINDS, kindMeta, PROFILE_KINDS, type ProfileKind } from '@/lib/kinds';
+import { cosmeticosDe, estadoDe } from '@/lib/progression';
+import { fetchSocialSelf } from '@/lib/social';
 import { colors, fonts } from '@/lib/theme';
 import type { Profile } from '@/lib/types';
 import { mensajeSistema } from '@/lib/validation';
@@ -113,7 +114,9 @@ function multiplicador(dias: number): string {
 export default function Perfil() {
   const { session } = useAuth();
   const userId = session?.user.id;
-  const shareRef = useRef<View>(null);
+  const marco = useSizeClass();
+  const ancho = marco.sizeClass !== 'compact';
+  const [vibraciones, setVibraciones] = useVibraciones();
 
   const [profile, setProfile] = useState<Profile | null>(null);
   const [avatarUri, setAvatarUri] = useState<string | null>(null);
@@ -129,6 +132,9 @@ export default function Perfil() {
   const [freezeReason, setFreezeReason] = useState(FREEZE_REASONS[0]!);
   const [freezeDays, setFreezeDays] = useState(3);
   const [shareOpen, setShareOpen] = useState(false);
+  // Código de amigo para la invitación de la hoja de compartir. Se pide la
+  // primera vez que se abre: undefined = sin pedir, null = no disponible.
+  const [codigoAmigo, setCodigoAmigo] = useState<string | null | undefined>(undefined);
   const [busy, setBusy] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [avisos, setAvisos] = useState<EstadoAvisos | null>(null);
@@ -184,9 +190,6 @@ export default function Perfil() {
   };
 
   const today = dateKey();
-  const { height: winHeight } = useWindowDimensions();
-  // La foto ocupa casi media pantalla, como pidió el gladiador.
-  const heroHeight = Math.max(320, Math.round(winHeight * 0.44));
   const streakDays = profile?.streak_days ?? 0;
   // Memo: sin él, pick() elegiría una frase nueva en cada pulsación del nombre.
   const streakMsg = useMemo(() => voice.streakHype(streakDays), [streakDays]);
@@ -320,15 +323,20 @@ export default function Perfil() {
     }
   };
 
-  const shareProfile = async () => {
-    try {
-      const uri = await captureRef(shareRef, { format: 'png', quality: 1 });
-      if (await Sharing.isAvailableAsync()) {
-        await Sharing.shareAsync(uri, { mimeType: 'image/png', dialogTitle: 'Compartir perfil NIVL' });
-      }
-    } catch (e) {
-      avisar('Error del sistema', mensajeSistema(e));
+  // La hoja de compartir (HojaCompartir) va en el overlay de Screen, no en un
+  // Modal: capturar dentro de un Modal daba un PNG negro en Android.
+  const abrirCompartir = () => {
+    setShareOpen(true);
+    if (codigoAmigo === undefined && userId) {
+      fetchSocialSelf(userId)
+        .then((s) => setCodigoAmigo(s.friendCode || null))
+        .catch(() => setCodigoAmigo(null));
     }
+  };
+
+  const cambiarVibraciones = (v: boolean) => {
+    setVibraciones(v);
+    if (v) vibrar('seleccion');
   };
 
   const onExport = async () => {
@@ -449,105 +457,101 @@ export default function Perfil() {
     );
   }
 
-  const lvl = levelFromXp(profile.xp_total);
-  const rank = rankForLevel(lvl.level);
+  // TODO(Chat 5): pasar los días activos cuando exista sincronizarRangoDetalle;
+  // sin ellos, siguienteRango no sabe cuántos días faltan (faltanDias = null).
+  const estado = estadoDe(profile, unlocked);
+  const rank = estado.rango;
+  const titulo = tituloVigente(profile.equipped_title) ?? cosmeticosDe(rank).titulo;
+  const leyenda = rank === 'S';
   const maxStatXp = Math.max(100, ...STATS.map((s) => profile[STAT_COLUMN[s]]));
   const evidencePct = stats.total > 0 ? Math.round((stats.withEvidence / stats.total) * 100) : 0;
   const frozen = profile.freeze_until != null && profile.freeze_until >= today;
   const kind = kindMeta(profile.profile_kind);
   const premium = isPremium(subscription);
-  const inicial = profile.name.charAt(0).toUpperCase();
+  const visibles = ACHIEVEMENTS_VISIBLES();
+  const desbloqueados = visibles.filter((a) => unlocked.has(a.code)).length;
+  const sinPermiso = !!avisos && !avisos.permitido;
+
+  const campoNombre = (
+    <TextInput
+      style={[styles.heroName, ancho ? null : styles.heroNameCentro, elite && styles.heroNameShrink]}
+      value={name}
+      onChangeText={setName}
+      onBlur={saveName}
+      onSubmitEditing={saveName}
+      returnKeyType="done"
+      maxLength={24}
+      accessibilityLabel="Tu nombre. Toca para cambiarlo."
+    />
+  );
 
   return (
-    <Screen contentStyle={styles.content}>
+    <Screen
+      contentStyle={styles.content}
+      overlay={
+        <HojaCompartir
+          visible={shareOpen}
+          onCerrar={() => setShareOpen(false)}
+          tarjeta={{ tipo: 'rango', rango: rank, titulo, rachaDias: streakDays }}
+          retratoUri={avatarUri}
+          codigoAmigo={codigoAmigo ?? null}
+        />
+      }
+    >
       <Stagger>
-        {/* La foto del gladiador ocupa casi media pantalla: identidad y rango. */}
+        {/* Cabecera: retrato con el marco de su rango, nombre, título y cifras.
+            En S la tarjeta lleva marco de grano (logro); si no, superficie. */}
         <FadeIn index={0} from={0}>
-          <Pressable
-            onPress={pickAvatar}
-            style={[styles.hero, { height: heroHeight }]}
-            accessible={false}
-          >
-            {avatarUri ? (
-              <Image source={{ uri: avatarUri }} style={styles.heroImage} contentFit="cover" transition={200} />
-            ) : profile.avatar_url ? (
-              // Sabemos que hay foto aunque todavía no haya llegado: hueco en
-              // silencio. Poner la inicial aquí es lo que hacía aparecer una letra
-              // y después la cara, cada vez que entrabas.
-              <View style={styles.heroEmpty} />
-            ) : (
-              <View style={styles.heroEmpty}>
-                <Hexagon size={110}>
-                  <Text style={styles.avatarLetter}>{inicial}</Text>
-                </Hexagon>
-                <Text style={styles.heroEmptyHint}>Toca para poner tu foto de gladiador</Text>
-              </View>
-            )}
-            <LinearGradient
-              colors={['rgba(5,5,5,0.35)', 'rgba(5,5,5,0)', 'rgba(5,5,5,0.9)', colors.bg]}
-              locations={[0, 0.3, 0.68, 1]}
-              style={styles.heroShade}
-              pointerEvents="none"
-            />
-            <Pressable
-              style={styles.heroCamera}
-              onPress={pickAvatar}
-              hitSlop={10}
-              accessibilityRole="button"
-              accessibilityLabel="Cambiar foto de gladiador"
-            >
-              {uploadingPhoto ? (
-                <ActivityIndicator size="small" color={colors.accent} />
-              ) : (
-                <Ionicons name="camera-outline" size={16} color={colors.text} />
-              )}
-            </Pressable>
-            <View style={styles.heroOverlay} pointerEvents="box-none">
-              <View style={styles.heroIdentity} pointerEvents="box-none">
-                <View style={styles.heroIdentityText} pointerEvents="box-none">
-                  <Text style={styles.heroEyebrow}>
-                    {kind.title} · RANGO {rank} · NIVEL {lvl.level}
-                  </Text>
-                  {/* Con insignia, nombre y laurel en fila; sin ella, el campo como siempre
-                      (un TextInput en fila mide por su contenido y no se arriesga a nadie). */}
-                  {elite ? (
-                    <View style={styles.heroNameRow} pointerEvents="box-none">
-                      <TextInput
-                        style={[styles.heroName, styles.heroNameShrink]}
-                        value={name}
-                        onChangeText={setName}
-                        onBlur={saveName}
-                        onSubmitEditing={saveName}
-                        returnKeyType="done"
-                        maxLength={24}
-                        accessibilityLabel="Tu nombre. Toca para cambiarlo."
-                      />
-                      <EliteBadge size={22} style={styles.heroBadge} />
-                    </View>
+          <Card variant={leyenda ? 'logro' : 'surface'} style={styles.cabecera}>
+            <View style={[styles.cabeceraDentro, ancho && styles.cabeceraAncha]}>
+              <Pressable
+                onPress={pickAvatar}
+                disabled={uploadingPhoto}
+                style={styles.retrato}
+                accessibilityRole="button"
+                // El botón agrupa al Avatar: su etiqueta (nombre, rango, título) va aquí.
+                accessibilityLabel={`${profile.name}, rango ${rank}, ${titulo}. Cambiar foto de gladiador`}
+                accessibilityState={{ busy: uploadingPhoto }}
+              >
+                <Avatar
+                  size={ancho ? 136 : 112}
+                  avatarPath={profile.avatar_url}
+                  name={profile.name}
+                  rank={rank}
+                  titulo={titulo}
+                />
+                <View style={styles.camara} pointerEvents="none">
+                  {uploadingPhoto ? (
+                    <ActivityIndicator size="small" color={ink.ink9} />
                   ) : (
-                    <TextInput
-                      style={styles.heroName}
-                      value={name}
-                      onChangeText={setName}
-                      onBlur={saveName}
-                      onSubmitEditing={saveName}
-                      returnKeyType="done"
-                      maxLength={24}
-                      accessibilityLabel="Tu nombre. Toca para cambiarlo."
-                    />
+                    <Ionicons name="camera-outline" size={14} color={ink.ink9} />
                   )}
-                  {profile.equipped_title ? (
-                    <Text style={styles.equippedTitle} numberOfLines={1}>
-                      « {profile.equipped_title.toUpperCase()} »
-                    </Text>
-                  ) : null}
                 </View>
-                <Text style={styles.heroRankLetter} accessibilityLabel={`Rango ${rank}`}>
-                  {rank}
+              </Pressable>
+
+              <View style={[styles.datos, ancho ? styles.datosAncha : styles.datosCentro]}>
+                {/* Con insignia, nombre y laurel en fila; sin ella, el campo solo
+                    (un TextInput en fila mide por su contenido). */}
+                {elite ? (
+                  <View style={[styles.heroNameRow, !ancho && styles.heroNameRowCentro]}>
+                    {campoNombre}
+                    <EliteBadge size={22} style={styles.heroBadge} />
+                  </View>
+                ) : (
+                  campoNombre
+                )}
+                <Text style={[styles.lineaTitulo, !ancho && styles.textoCentro]} numberOfLines={2}>
+                  « {titulo.toUpperCase()} » · {kind.title}
                 </Text>
+                <StatRow style={styles.cifras}>
+                  <Stat value={estado.nivel} label="Nivel" />
+                  <Stat value={rank} label="Rango" />
+                  <Stat value={streakDays} unit="d" label="Racha" />
+                  <Stat value={`${profile.protection_stones}/${MAX_STONES}`} label="Piedras" />
+                </StatRow>
               </View>
             </View>
-          </Pressable>
+          </Card>
         </FadeIn>
 
         <View style={styles.body}>
@@ -556,17 +560,13 @@ export default function Perfil() {
           </Text>
           <FadeIn index={1}>
             <Card>
-              <StatRow>
-                <Stat value={lvl.level} label="Nivel" />
-                <Stat value={rank} label="Rango" />
-                <Stat value={streakDays} unit="d" label="Racha" tone={streakDays > 0 ? 'gold' : 'text'} />
-                <Stat value={`${profile.protection_stones}/${MAX_STONES}`} label="Piedras" />
-              </StatRow>
-              <View style={styles.xp}>
-                <XPBar ratio={lvl.next > 0 ? lvl.into / lvl.next : 1} height={5} />
+              <View>
+                <XPBar ratio={estado.xpSiguiente > 0 ? estado.xpEnNivel / estado.xpSiguiente : 1} height={5} />
                 <View style={styles.xpMeta}>
                   <Text style={styles.xpText}>
-                    {lvl.next > 0 ? `${lvl.into} / ${lvl.next} XP para el nivel ${lvl.level + 1}` : 'Nivel máximo alcanzado'}
+                    {estado.xpSiguiente > 0
+                      ? `${estado.xpEnNivel} / ${estado.xpSiguiente} XP para el nivel ${estado.nivel + 1}`
+                      : 'Nivel máximo alcanzado'}
                   </Text>
                   <Text style={[styles.xpMult, streakDays >= 7 && styles.xpMultOn]}>{multiplicador(streakDays)} XP</Text>
                 </View>
@@ -575,10 +575,17 @@ export default function Perfil() {
               <SystemButton
                 title="Compartir mi progreso"
                 icon="share-social-outline"
-                onPress={() => setShareOpen(true)}
+                variant="outline"
+                onPress={abrirCompartir}
                 style={{ marginTop: 16 }}
               />
             </Card>
+          </FadeIn>
+
+          <FadeIn index={1}>
+            <Section title="Camino de rangos">
+              <CaminoDeRangos rango={rank} siguiente={estado.siguienteRango} />
+            </Section>
           </FadeIn>
 
           {/* Las dos puertas que no son un módulo más: la gente y el coach. Amigos
@@ -684,31 +691,30 @@ export default function Perfil() {
           <FadeIn index={5}>
             <Section
               title="Logros"
-              meta={`${unlocked.size}/${ACHIEVEMENTS.length}`}
-              tone={unlocked.size > 0 ? 'gold' : 'dim'}
+              meta={`${desbloqueados}/${visibles.length}`}
+              tone={desbloqueados > 0 ? 'logro' : 'default'}
             >
               <View style={styles.achGrid}>
-                {ACHIEVEMENTS.map((a) => {
+                {visibles.map((a) => {
                   const isUnlocked = unlocked.has(a.code);
+                  const equipado = !!a.title && profile.equipped_title === a.title;
                   return (
                     <Card
                       key={a.code}
                       onPress={() => onAchievementTap(a.code)}
-                      style={[styles.ach, isUnlocked && styles.achOn]}
-                      accessibilityLabel={`${a.name}${isUnlocked ? ', desbloqueado' : ', bloqueado'}${a.title && isUnlocked ? `. Título: ${a.title}` : ''}`}
+                      style={[styles.ach, isUnlocked ? styles.achOn : styles.achOff]}
+                      accessibilityLabel={`${a.name}${isUnlocked ? ', desbloqueado' : ', bloqueado'}${a.title && isUnlocked ? `. Título: ${a.title}${equipado ? ', equipado' : ''}` : ''}`}
                     >
                       <Ionicons
                         name={isUnlocked ? 'ribbon' : 'lock-closed-outline'}
                         size={18}
-                        color={isUnlocked ? colors.gold : colors.textFaint}
+                        color={isUnlocked ? ink.ink10 : ink.ink6}
                       />
                       <Text style={[styles.achName, isUnlocked && styles.achNameOn]} numberOfLines={2}>
                         {a.name}
                       </Text>
                       {a.title && isUnlocked ? (
-                        <Text style={[styles.achTitleTag, profile.equipped_title === a.title && styles.achTitleTagOn]}>
-                          {profile.equipped_title === a.title ? 'EQUIPADO' : 'TÍTULO'}
-                        </Text>
+                        equipado ? <Tag tone="logro">EQUIPADO</Tag> : <Tag>TÍTULO</Tag>
                       ) : null}
                     </Card>
                   );
@@ -723,7 +729,7 @@ export default function Perfil() {
                 <StatRow>
                   <Stat value={stats.total} label="Misiones" />
                   <Stat value={evidencePct} unit="%" label="Con evidencia" />
-                  <Stat value={multiplicador(profile.streak_days)} label="Multiplicador" tone={streakDays >= 7 ? 'gold' : 'text'} />
+                  <Stat value={multiplicador(profile.streak_days)} label="Multiplicador" />
                 </StatRow>
               </Card>
             </Section>
@@ -756,6 +762,14 @@ export default function Perfil() {
                   onPress={frozen ? deactivateFreeze : () => setFreezeOpen(true)}
                   accessibilityLabel={frozen ? 'Reanudar el sistema' : 'Pausar el sistema'}
                 />
+                <Row
+                  leading={<Ionicons name="phone-portrait-outline" size={20} color={vibraciones ? ink.ink9 : ink.ink6} />}
+                  title="Vibraciones"
+                  detail="Al completar, subir de nivel o de rango."
+                  trailing={
+                    <Interruptor value={vibraciones} onValueChange={cambiarVibraciones} accessibilityLabel="Vibraciones" />
+                  }
+                />
               </Card>
             </Section>
           </FadeIn>
@@ -763,52 +777,55 @@ export default function Perfil() {
           {/* Sin esto no había forma de saber si los avisos estaban vivos: fallaban
               en silencio y el gladiador se enteraba por no recibirlos. */}
           <FadeIn index={8}>
-            <Section title="Avisos" tone={avisos && !avisos.permitido ? 'red' : 'dim'}>
-              <Card padded={false} style={styles.lista} accent={avisos && !avisos.permitido ? colors.red : undefined}>
-                <Row
-                  first
-                  leading={
-                    <Ionicons
-                      name={avisos?.permitido ? 'notifications-outline' : 'notifications-off-outline'}
-                      size={20}
-                      color={avisos === null ? colors.textDim : avisos.permitido ? colors.accent : colors.red}
-                    />
-                  }
-                  title={
-                    avisos === null ? 'Comprobando los avisos' : avisos.permitido ? 'Avisos activos' : 'Avisos desactivados'
-                  }
-                  detail={
-                    avisos?.permitido
-                      ? 'Despertador, bloques del día y cierre. Una notificación no suena en silencio ni en Modo Concentración: mantén también la alarma del reloj.'
-                      : avisos === null
-                        ? undefined
-                        : 'Sin permiso no hay despertador ni avisos de bloque. Toca para activarlos.'
-                  }
-                  trailing={
-                    avisos?.permitido ? (
-                      <RowValue tone="accent" strong>
-                        {avisos.programados}
-                      </RowValue>
-                    ) : undefined
-                  }
-                  chevron={!!avisos && !avisos.permitido}
-                  onPress={avisos && !avisos.permitido ? activarAvisos : undefined}
-                  accessibilityLabel={
-                    avisos && !avisos.permitido
-                      ? avisos.puedePreguntar
-                        ? 'Activar avisos'
-                        : 'Abrir ajustes del sistema para activar los avisos'
-                      : undefined
-                  }
-                />
-                {avisos?.error ? (
+            <Section title="Avisos" tone={sinPermiso ? 'alerta' : 'default'}>
+              <Card padded={false} variant={sinPermiso ? 'alerta' : 'surface'}>
+                {/* El relleno va dentro: en alerta la trama hace de marco de 3 pt. */}
+                <View style={styles.lista}>
                   <Row
-                    leading={<Ionicons name="alert-circle-outline" size={20} color={colors.red} />}
-                    title="Último error"
-                    detail={avisos.error}
-                    muted
+                    first
+                    leading={
+                      <Ionicons
+                        name={avisos?.permitido ? 'notifications-outline' : 'notifications-off-outline'}
+                        size={20}
+                        color={avisos === null ? ink.ink6 : ink.ink9}
+                      />
+                    }
+                    title={
+                      avisos === null ? 'Comprobando los avisos' : avisos.permitido ? 'Avisos activos' : 'Avisos desactivados'
+                    }
+                    detail={
+                      avisos?.permitido
+                        ? 'Despertador, bloques del día y cierre. Una notificación no suena en silencio ni en Modo Concentración: mantén también la alarma del reloj.'
+                        : avisos === null
+                          ? undefined
+                          : 'Sin permiso no hay despertador ni avisos de bloque. Toca para activarlos.'
+                    }
+                    trailing={
+                      avisos?.permitido ? (
+                        <RowValue tone="accent" strong>
+                          {avisos.programados}
+                        </RowValue>
+                      ) : undefined
+                    }
+                    chevron={sinPermiso}
+                    onPress={sinPermiso ? activarAvisos : undefined}
+                    accessibilityLabel={
+                      avisos && !avisos.permitido
+                        ? avisos.puedePreguntar
+                          ? 'Activar avisos'
+                          : 'Abrir ajustes del sistema para activar los avisos'
+                        : undefined
+                    }
                   />
-                ) : null}
+                  {avisos?.error ? (
+                    <Row
+                      leading={<Ionicons name="alert-circle-outline" size={20} color={ink.ink9} />}
+                      title="Último error"
+                      detail={avisos.error}
+                      muted
+                    />
+                  ) : null}
+                </View>
               </Card>
               {avisos?.permitido ? <Text style={styles.nota}>{avisos.programados} avisos programados.</Text> : null}
             </Section>
@@ -1073,66 +1090,6 @@ export default function Perfil() {
         </KeyboardAvoidingView>
       </Modal>
 
-      <Modal visible={shareOpen} transparent animationType="fade" onRequestClose={() => setShareOpen(false)}>
-        <View style={styles.shareBackdrop}>
-          {/* La tarjeta que se captura: monocromo, oro solo para la racha y el título. */}
-          <View ref={shareRef} collapsable={false} style={styles.shareCard}>
-            <Text style={styles.shareBrand}>NIVL</Text>
-            {avatarUri ? (
-              <Image source={{ uri: avatarUri }} style={styles.shareAvatar} contentFit="cover" />
-            ) : (
-              <Hexagon size={84}>
-                <Text style={styles.avatarLetter}>{inicial}</Text>
-              </Hexagon>
-            )}
-            <Text style={styles.shareName} numberOfLines={1}>
-              {profile.name}
-            </Text>
-            {profile.equipped_title ? (
-              <Text style={styles.shareTitle} numberOfLines={1}>
-                « {profile.equipped_title.toUpperCase()} »
-              </Text>
-            ) : null}
-            <Text style={styles.shareRank}>
-              {kind.title} · RANGO {rank}
-            </Text>
-            <View style={styles.shareLevelRow}>
-              <Text style={styles.shareLevelLabel}>NIVEL</Text>
-              <Text style={styles.shareLevel}>{lvl.level}</Text>
-            </View>
-            <View style={styles.shareStreak}>
-              <Ionicons name="flame" size={14} color={streakDays > 0 ? colors.gold : colors.textFaint} />
-              <Text style={[styles.shareStreakText, streakDays === 0 && styles.shareStreakOff]}>
-                {streakDays} {streakDays === 1 ? 'DÍA' : 'DÍAS'} DE RACHA · {multiplicador(streakDays)} XP
-              </Text>
-            </View>
-            <View style={styles.shareRule} />
-            <View style={styles.shareStats}>
-              {STATS.map((s) => (
-                <View key={s} style={styles.shareStat}>
-                  <Text style={styles.shareStatVal}>{statPoints(profile[STAT_COLUMN[s]])}</Text>
-                  <Text style={styles.shareStatAbbr}>{s}</Text>
-                </View>
-              ))}
-            </View>
-            <Text style={styles.shareFooter}>
-              {stats.total} misiones completadas · {evidencePct}% con evidencia
-            </Text>
-          </View>
-          <SystemButton
-            title="Compartir imagen"
-            icon="share-social-outline"
-            onPress={shareProfile}
-            style={{ marginTop: 16, alignSelf: 'stretch' }}
-          />
-          <SystemButton
-            title="Cerrar"
-            variant="ghost"
-            onPress={() => setShareOpen(false)}
-            style={{ marginTop: 6, alignSelf: 'stretch' }}
-          />
-        </View>
-      </Modal>
     </Screen>
   );
 }
@@ -1142,64 +1099,53 @@ const styles = StyleSheet.create({
   body: { paddingHorizontal: 20, marginTop: 14 },
   accesos: { paddingHorizontal: 16, paddingVertical: 2 },
 
-  hero: { width: '100%', backgroundColor: colors.panelDeep },
-  heroImage: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 },
-  heroEmpty: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 14 },
-  heroEmptyHint: { fontFamily: fonts.body, fontSize: 13, color: colors.textDim },
-  heroShade: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 },
-  heroCamera: {
+  cabecera: { marginHorizontal: 20, marginTop: 16, marginBottom: 0 },
+  cabeceraDentro: { alignItems: 'center', gap: 16 },
+  cabeceraAncha: { flexDirection: 'row', alignItems: 'center', gap: 24 },
+  retrato: { alignItems: 'center', justifyContent: 'center' },
+  camara: {
     position: 'absolute',
-    top: 12,
-    right: 20,
-    width: 36,
-    height: 36,
-    backgroundColor: colors.panelDeep,
+    right: 0,
+    bottom: 0,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: ink.ink0,
     borderWidth: 1,
-    borderColor: colors.accentDim,
+    borderColor: ink.ink4,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  heroOverlay: { position: 'absolute', left: 20, right: 20, bottom: 8 },
-  heroIdentity: { flexDirection: 'row', alignItems: 'flex-end', gap: 12 },
-  heroIdentityText: { flex: 1, minWidth: 0 },
-  heroEyebrow: {
-    fontFamily: fonts.heading,
-    fontSize: 11,
-    letterSpacing: 2.5,
-    color: colors.textDim,
-    marginBottom: 4,
-  },
+  datos: { gap: 6 },
+  datosCentro: { alignSelf: 'stretch', alignItems: 'center' },
+  datosAncha: { flex: 1, minWidth: 0 },
   heroNameRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  heroNameRowCentro: { justifyContent: 'center', maxWidth: '100%' },
   heroBadge: { flexShrink: 0 },
   heroNameShrink: { flexShrink: 1 },
   heroName: {
     fontFamily: fonts.heading,
-    fontSize: 30,
-    lineHeight: 34,
-    letterSpacing: -0.8,
-    color: colors.text,
+    fontSize: 26,
+    lineHeight: 32,
+    letterSpacing: -0.6,
+    color: ink.ink10,
     padding: 0,
   },
-  equippedTitle: {
+  heroNameCentro: { textAlign: 'center' },
+  lineaTitulo: {
     fontFamily: fonts.heading,
-    fontSize: 11.5,
+    fontSize: 12,
+    lineHeight: 16,
     letterSpacing: 2,
-    color: colors.gold,
-    marginTop: 4,
+    color: ink.ink8,
   },
-  heroRankLetter: {
-    fontFamily: fonts.brand,
-    fontSize: 58,
-    lineHeight: 60,
-    color: colors.accent,
-  },
-  avatarLetter: { fontFamily: fonts.brand, fontSize: 32, color: colors.accent },
+  textoCentro: { textAlign: 'center' },
+  cifras: { marginTop: 10 },
 
-  xp: { marginTop: 16 },
   xpMeta: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 10, marginTop: 6 },
   xpText: { flex: 1, minWidth: 0, fontFamily: fonts.body, fontSize: 12, color: colors.textDim },
   xpMult: { fontFamily: fonts.number, fontSize: 12, color: colors.textFaint },
-  xpMultOn: { color: colors.gold },
+  xpMultOn: { color: ink.ink9 },
   streakMsg: { fontFamily: fonts.body, fontSize: 13, lineHeight: 19, color: colors.text, marginTop: 12 },
   profileReviewNotice: { fontFamily: fonts.body, fontSize: 13, lineHeight: 19, color: colors.textDim, marginBottom: 16 },
 
@@ -1231,14 +1177,11 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     paddingHorizontal: 6,
     gap: 6,
-    borderWidth: 1,
-    borderColor: 'transparent',
   },
-  achOn: { borderColor: colors.goldDim },
-  achName: { fontFamily: fonts.semibold, fontSize: 11, lineHeight: 14, color: colors.textFaint, textAlign: 'center' },
-  achNameOn: { color: colors.text },
-  achTitleTag: { fontFamily: fonts.heading, fontSize: 11, letterSpacing: 1.5, color: colors.goldDim },
-  achTitleTagOn: { color: colors.gold },
+  achOn: { borderWidth: 2, borderColor: ink.ink8 },
+  achOff: { borderWidth: 1, borderColor: ink.ink3 },
+  achName: { fontFamily: fonts.semibold, fontSize: 11, lineHeight: 14, color: ink.ink6, textAlign: 'center' },
+  achNameOn: { color: ink.ink9 },
 
   backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'flex-end' },
   backdropTap: { flex: 1 },
@@ -1282,7 +1225,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 12,
   },
-  avisoCodigo: { fontFamily: fonts.body, fontSize: 13, lineHeight: 18, color: colors.red, marginTop: 10 },
+  avisoCodigo: { fontFamily: fonts.body, fontSize: 13, lineHeight: 18, color: ink.ink9, marginTop: 10 },
   input: {
     borderWidth: 1,
     borderColor: colors.accentDim,
@@ -1294,38 +1237,4 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   enlace: { color: colors.accentText, textDecorationLine: 'underline' },
-
-  shareBackdrop: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.92)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 28,
-  },
-  shareCard: {
-    alignSelf: 'stretch',
-    backgroundColor: colors.bg,
-    borderWidth: 1,
-    borderColor: colors.accentDim,
-    alignItems: 'center',
-    paddingVertical: 28,
-    paddingHorizontal: 20,
-  },
-  shareBrand: { fontFamily: fonts.brand, fontSize: 15, letterSpacing: 8, color: colors.accent, marginBottom: 18 },
-  shareAvatar: { width: 84, height: 84, borderRadius: 42, borderWidth: 1.5, borderColor: colors.accent },
-  shareName: { fontFamily: fonts.heading, fontSize: 24, letterSpacing: -0.5, color: colors.text, marginTop: 14 },
-  shareTitle: { fontFamily: fonts.heading, fontSize: 11, letterSpacing: 2, color: colors.gold, marginTop: 4 },
-  shareRank: { fontFamily: fonts.heading, fontSize: 11, letterSpacing: 2.5, color: colors.textFaint, marginTop: 6 },
-  shareLevelRow: { flexDirection: 'row', alignItems: 'baseline', gap: 8, marginTop: 10 },
-  shareLevelLabel: { fontFamily: fonts.heading, fontSize: 11, letterSpacing: 2.5, color: colors.textFaint },
-  shareLevel: { fontFamily: fonts.brand, fontSize: 44, lineHeight: 48, color: colors.accent },
-  shareStreak: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4 },
-  shareStreakText: { fontFamily: fonts.heading, fontSize: 11, letterSpacing: 1.5, color: colors.gold },
-  shareStreakOff: { color: colors.textFaint },
-  shareRule: { alignSelf: 'stretch', height: 1, backgroundColor: colors.line, marginTop: 18, marginBottom: 14 },
-  shareStats: { flexDirection: 'row', alignSelf: 'stretch', justifyContent: 'space-around' },
-  shareStat: { alignItems: 'center' },
-  shareStatVal: { fontFamily: fonts.number, fontSize: 18, color: colors.text },
-  shareStatAbbr: { fontFamily: fonts.heading, fontSize: 11, letterSpacing: 1.5, color: colors.textFaint, marginTop: 3 },
-  shareFooter: { fontFamily: fonts.body, fontSize: 12, color: colors.textDim, marginTop: 16 },
 });
