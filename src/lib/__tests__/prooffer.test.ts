@@ -28,11 +28,7 @@ jest.mock('react-native', () => ({
   StyleSheet: { create: (styles: unknown) => styles },
 }));
 jest.mock('@expo/vector-icons/Ionicons', () => 'Ionicons');
-jest.mock('expo-haptics', () => ({
-  NotificationFeedbackType: { Success: 'success' },
-  notificationAsync: jest.fn().mockResolvedValue(undefined),
-  selectionAsync: jest.fn().mockResolvedValue(undefined),
-}));
+jest.mock('@/design/haptics', () => ({ vibrar: jest.fn() }));
 jest.mock('@/components/SystemButton', () => ({ SystemButton: 'SystemButton' }));
 jest.mock('@/components/ui', () => ({ Card: 'Card', Chip: 'Chip', Skeleton: 'Skeleton', Tag: 'Tag' }));
 

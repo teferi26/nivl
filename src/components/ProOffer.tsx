@@ -29,7 +29,7 @@
 // (fila con icono, una línea y chevron) que lleva a `/pro?motivo=…&tier=…`.
 
 import Ionicons from '@expo/vector-icons/Ionicons';
-import * as Haptics from 'expo-haptics';
+import { vibrar } from '@/design/haptics';
 import { router } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { Linking, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
@@ -212,7 +212,7 @@ export function useProOffer({ userId, onPurchased, trialAvailable, onTrialStarte
         if (r === 'cancelada') return;
         if (r === 'pendiente') setAviso(AVISO_PENDIENTE);
         if (r === 'programada') setAviso(AVISO_PROGRAMADA);
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+        vibrar('mision');
         onPurchased?.();
         return;
       }
@@ -228,7 +228,7 @@ export function useProOffer({ userId, onPurchased, trialAvailable, onTrialStarte
         }
       }
       setAnotado(true);
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+      vibrar('mision');
     });
   };
 
@@ -242,7 +242,7 @@ export function useProOffer({ userId, onPurchased, trialAvailable, onTrialStarte
         setAviso('La prueba ya se usó en esta cuenta.');
         return;
       }
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+      vibrar('mision');
       onTrialStarted?.();
     });
   };
@@ -255,13 +255,13 @@ export function useProOffer({ userId, onPurchased, trialAvailable, onTrialStarte
         return;
       }
       if (r === 'pendiente') setAviso(AVISO_PENDIENTE);
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+      vibrar('mision');
       onPurchased?.();
     });
 
   const elegir = (id: ProPlanId) => {
     if (lock.current || (disponible && !comprables.some((p) => p.id === id))) return;
-    Haptics.selectionAsync().catch(() => {});
+    vibrar('seleccion');
     setPlanId(id);
     // Elegir un plan del otro nivel cambia también lo que se enseña de él.
     setTier(proPlan(id).tier);
@@ -269,7 +269,7 @@ export function useProOffer({ userId, onPurchased, trialAvailable, onTrialStarte
 
   const elegirNivel = (t: OfferTier) => {
     if (lock.current || t === tier) return;
-    Haptics.selectionAsync().catch(() => {});
+    vibrar('seleccion');
     setTier(t);
     setPlanId(planPorDefecto(t, plazas));
   };
