@@ -9,6 +9,10 @@
 // nunca se guardan en el repo:
 //
 //   DEMO_USER_ID               uuid de la cuenta demo (obligatorio, también en seco)
+//   CAPTURE_IDS                uuids de las cuentas de capturas (obligatorio): toda
+//                              cuenta tocada tiene que estar aquí
+//   CAPTURE_EMAIL_PREFIX       con --apply: prefijo obligatorio del correo de cada
+//                              cuenta tocada (se comprueba antes de escribir)
 //   PROTECTED_IDS              uuids separados por comas que el script se niega a
 //                              tocar (revisora de Apple, cuentas reales…)
 //   FRIEND_IDS                 opcional: 3–5 uuids de rivales ficticios a sembrar
@@ -382,6 +386,18 @@ async function main() {
   }
   if (new Set([demoId, ...rivalIds]).size !== rivalIds.length + 1) fallo('DEMO_USER_ID y FRIEND_IDS deben ser cuentas distintas.');
   if (aplicar && protegidos.size === 0) fallo('con --apply, PROTECTED_IDS es obligatorio (al menos la cuenta revisora de Apple).');
+  if (protegidos.has(demoId)) fallo('DEMO_USER_ID está en PROTECTED_IDS: no se toca.');
+
+  // Guardas de la excepción de economía (aprobada por el coordinador solo
+  // para esta siembra): cada cuenta tocada tiene que estar en CAPTURE_IDS y,
+  // con --apply, su correo tiene que empezar por CAPTURE_EMAIL_PREFIX.
+  const capturas = new Set(lista(process.env.CAPTURE_IDS));
+  if (!capturas.size) fallo('falta CAPTURE_IDS: la lista explícita de uuids de las cuentas de capturas.');
+  for (const id of [demoId, ...rivalIds]) {
+    if (!capturas.has(id)) fallo(`${id} no está en CAPTURE_IDS: solo se tocan cuentas de capturas.`);
+  }
+  const prefijo = (process.env.CAPTURE_EMAIL_PREFIX ?? '').trim().toLowerCase();
+  if (aplicar && prefijo.length < 4) fallo('con --apply hace falta CAPTURE_EMAIL_PREFIX (p. ej. «capturas+»).');
 
   let tz = process.env.DEMO_TZ || 'Europe/Madrid';
   let sb = null;
@@ -398,6 +414,10 @@ async function main() {
   const zonas = new Map();
   if (sb) {
     for (const id of [demoId, ...rivalIds]) {
+      // Antes de escribir nada: el correo de la cuenta tiene que ser de capturas.
+      const u = await sb.auth('GET', `/auth/v1/admin/users/${id}`);
+      const email = String(u?.email ?? '').toLowerCase();
+      if (!email.startsWith(prefijo)) fallo(`${id} no tiene correo de capturas: no se toca.`);
       const [p] = await sb.select('profiles', `id=eq.${id}&select=id,onboarding_done,timezone`);
       if (!p) fallo(`no existe el perfil ${id}: da de alta la cuenta (y haz el onboarding) antes de sembrar.`);
       if (id === demoId && !p.onboarding_done)
