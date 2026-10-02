@@ -26,7 +26,7 @@ Todas las pruebas se hacen con la **misma build `[BUILD]`** instalada desde Test
 |---|---|---|---|
 | B1 | iPhone pequeño (pantalla de 4,7–6,1") con iOS 27: paywall, consentimientos y hoja de borrado sin texto cortado ni botones tapados | iPhone SE o mini | NO PROBADO |
 | B2 | iPhone grande (6,7–6,9"): las mismas pantallas | Pro Max o Plus | NO PROBADO |
-| B3 | iOS mínimo realista disponible (la build declara minOS 15.1): arranque y login | El iPhone más antiguo disponible | NO PROBADO |
+| B3 | iOS mínimo realista disponible (la build declara minOS 15.1): arranque y login. Solo bloquea si hay un dispositivo antiguo disponible; si no lo hay, se queda NO PROBADO con el motivo y no bloquea | El iPhone más antiguo disponible | NO PROBADO |
 | B4 | **iPad en modo compatibilidad iPhone** (`supportsTablet=false`): Apple puede revisar en iPad. Arranque, login, paywall y compra sin bloqueos | Cualquier iPad | NO PROBADO |
 | B5 | Modo avión al abrir la app y al comprar: error recuperable, sin pantalla bloqueada | iPhone | NO PROBADO |
 | B6 | Restauración tras borrar la cuenta y crearla de nuevo con el mismo Apple ID sandbox (caso obligatorio de COORDINACION.md) | iPhone | NO PROBADO |
