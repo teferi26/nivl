@@ -43,7 +43,7 @@ Recibes datos ya calculados y una lista de fotos. Devuelves ÚNICAMENTE un array
 Tipos y cómo se usan:
 - portada: una sola, la primera. El titular del periodo.
 - dato: una cifra que importe, con contexto. "dato" es la cifra suelta y grande.
-- foto: SIEMPRE lleva "foto" con la ruta EXACTA que te dieron. El texto cuenta qué pasaba ese día, usando la misión y la fecha. Una diapositiva por foto que merezca la pena.
+- foto: SIEMPRE lleva "foto" con la referencia EXACTA que te dieron (F1, F2…). El texto cuenta qué pasaba ese día, usando la misión y la fecha. Una diapositiva por foto que merezca la pena.
 - duro: el día o el momento que costó. Solo si los datos lo respaldan (un día fallado, ánimo bajo en el diario, una racha rota). Sin dramatizar y sin culpar.
 - cierre: una sola, la última. Qué se lleva del periodo y qué viene ahora.
 
@@ -101,7 +101,7 @@ export async function construirResumen(
     sb.from('gym_sessions').select('date').eq('user_id', userId).gte('date', desde).lte('date', hasta),
     sb.from('cardio_sessions').select('date, kind, distance_km').eq('user_id', userId)
       .gte('date', desde).lte('date', hasta),
-    sb.from('profiles').select('name, xp_total, streak_days').eq('id', userId).maybeSingle(),
+    sb.from('profiles').select('xp_total, streak_days').eq('id', userId).maybeSingle(),
     sb.from('achievements').select('code, unlocked_at').eq('user_id', userId)
       .gte('unlocked_at', `${desde}T00:00:00Z`).lte('unlocked_at', `${hasta}T23:59:59Z`),
   ]);
@@ -139,11 +139,11 @@ export async function construirResumen(
   const peorDia = conAnimo.slice().sort((a, b) => (a.mood ?? 9) - (b.mood ?? 9))[0];
   const cardio = (cardioRes.data ?? []) as { kind: string; distance_km: number | null }[];
   const km = cardio.reduce((a, c) => a + Number(c.distance_km ?? 0), 0);
-  const perfil = perfilRes.data as { name: string; xp_total: number; streak_days: number } | null;
+  const perfil = perfilRes.data as { xp_total: number; streak_days: number } | null;
 
   const datos = [
     `PERIODO: ${desde} → ${hasta} (${kind})`,
-    `Gladiador: ${perfil?.name ?? 'Gladiador'} · ${perfil?.xp_total ?? 0} XP totales · racha actual ${perfil?.streak_days ?? 0} días`,
+    `Gladiador · ${perfil?.xp_total ?? 0} XP totales · racha actual ${perfil?.streak_days ?? 0} días`,
     `Misiones completadas: ${comps.length} · XP ganado en el periodo: ${xpGanado}`,
     `Días con actividad: ${porDia.size}`,
     mejorDia ? `Mejor día: ${mejorDia[0]} con ${mejorDia[1]} misiones` : null,
@@ -153,10 +153,10 @@ export async function construirResumen(
     peorDia ? `Día más bajo según el diario: ${peorDia.date}, ánimo ${peorDia.mood}/5${peorDia.text ? ` — escribió: "${peorDia.text.slice(0, 200)}"` : ''}` : null,
     conAnimo.length ? `Ánimo medio: ${(conAnimo.reduce((a, d) => a + (d.mood ?? 0), 0) / conAnimo.length).toFixed(1)}/5` : null,
     '',
-    'FOTOS (usa la ruta exacta en el campo "foto"):',
+    'FOTOS (usa la referencia exacta en el campo "foto"):',
     ...fotos.map(
-      (f) =>
-        `- ruta: ${f.path} · fecha: ${f.date}` +
+      (f, i) =>
+        `- ${refFoto(i)} · fecha: ${f.date}` +
         (f.quest_id && titulos.get(f.quest_id) ? ` · misión: ${titulos.get(f.quest_id)}` : '') +
         (f.caption ? ` · escribió: "${f.caption}"` : ''),
     ),
@@ -183,12 +183,25 @@ export async function construirResumen(
     throw new Error('El resumen no vino en el formato esperado.');
   }
 
-  // Red de seguridad: si inventa una ruta de foto, la diapositiva se queda sin
-  // imagen en vez de romper la pantalla con un hueco negro.
-  const rutas = new Set(fotos.map((f) => f.path));
+  // La IA solo ve referencias (F1, F2…), nunca la ruta de Storage, que lleva el
+  // uuid del usuario. Aquí se traducen de vuelta; si inventa una referencia, la
+  // diapositiva se queda sin imagen en vez de romper la pantalla.
   slides = slides
     .filter((s) => s && typeof s.titulo === 'string')
-    .map((s) => (s.foto && !rutas.has(s.foto) ? { ...s, foto: undefined } : s));
+    .map((s) => ({ ...s, foto: rutaDeRef(s.foto, fotos) }));
 
   return { slides, fotos: fotos.length, usage: turn.usage, model: turn.model };
+}
+
+/** Referencia que ve la IA para la foto i (F1, F2…). */
+export function refFoto(i: number): string {
+  return `F${i + 1}`;
+}
+
+/** De la referencia que devuelve la IA a la ruta real; undefined si no existe. */
+export function rutaDeRef(ref: unknown, fotos: { path: string }[]): string | undefined {
+  if (typeof ref !== 'string') return undefined;
+  const m = /^F(\d{1,3})$/.exec(ref.trim().toUpperCase());
+  if (!m) return undefined;
+  return fotos[Number(m[1]) - 1]?.path;
 }
