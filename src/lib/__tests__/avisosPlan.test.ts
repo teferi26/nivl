@@ -196,6 +196,10 @@ describe('duelos pendientes', () => {
 });
 
 describe('celebración pendiente', () => {
+  test('AV-05: el estado del plan nunca lleva aviso de rango mientras Hoy no saque la ceremonia', () => {
+    expect(armarEstadoPlanAvisos(entrada({ logros: new Set(['rango_D']), celebradas: new Set() })).celebracionPendiente).toBeNull();
+  });
+
   test('el rango registrado sin celebrar, con su clave', () => {
     const p = perfil();
     expect(celebracionPendienteDe(p, new Set(['rango_D']), new Set(), LUNES)).toEqual({ clave: 'rango:D' });

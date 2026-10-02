@@ -144,7 +144,11 @@ export function armarEstadoPlanAvisos(e: EntradaEstadoAvisos): EstadoPlanAvisos 
       ? fotosPendientesParaAviso(e.fotos, e.hoy, { mayor18: e.mayor18, consentimientoSalud: e.consentimientoSalud === true })
       : 0,
     duelosPendientes: duelosPendientesDe(e.duelos, e.duelosVistos, e.hoy),
-    celebracionPendiente: celebracionPendienteDe(e.perfil, e.logros, e.celebradas, e.hoy),
+    // AV-05 (Chat 5): un aviso nunca promete lo que la app no enseña. Hoy no
+    // saca al entrar una ceremonia pendiente, así que no hay aviso de rango:
+    // el rango nuevo ya se celebra en la propia acción, con la app abierta.
+    // celebracionPendienteDe queda lista para cuando Hoy la muestre al cargar.
+    celebracionPendiente: null,
     pushesServidor: [],
   };
 }
