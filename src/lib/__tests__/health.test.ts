@@ -63,6 +63,10 @@ test('sin permiso no se monta ni lee la pantalla; los módulos generales siguen 
   expect(mounted).toHaveBeenCalled();
 });
 
+test('las fotos de progreso son ruta de salud: sin permiso no se montan', async () => {
+  await mount('fotos'); expect(mounted).not.toHaveBeenCalled();
+});
+
 test('sin red no abre; una comprobación vigente tras reintentar sí abre', async () => {
   mockRpc.mockRejectedValueOnce(new Error('offline'));
   await mount(); expect(mounted).not.toHaveBeenCalled();
