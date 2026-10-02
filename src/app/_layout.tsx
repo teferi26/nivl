@@ -85,7 +85,7 @@ function ProtectedStack() {
     // salta sola a '/'. Sin esto el guard iba a /login antes de guardarlo.
     // `auth` (nivl://auth/confirmar y /restablecer) llega sin sesión: es el
     // enlace del correo el que la abre.
-    const inPublicArea = inAuthArea || segments[0] === 'c' || segments[0] === 'auth';
+    const inPublicArea = inAuthArea || segments[0] === 'c' || segments[0] === 'auth' || (__DEV__ && segments[0] === 'kit');
     if (!session && !inPublicArea) {
       router.replace('/login');
     } else if (session && inAuthArea) {
