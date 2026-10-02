@@ -1,13 +1,19 @@
--- NIVL · BORRADOR (NO es una migración; el coordinador asigna número y huella)
--- Tema: proteger concesiones manuales/Stripe vigentes frente a compras de tienda.
+-- NIVL · 0036 — proteger concesiones manuales/Stripe vigentes frente a compras de tienda.
+-- Número asignado por el coordinador el 02/10/2026. Entregado como archivo final en
+-- docs/payment-audit/propuestas/; el coordinador lo copia a supabase/migrations/ y
+-- añade la huella a scripts/apply-migrations.mjs:
+--   '0036': `exists(select 1 from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='public' and p.proname='apply_store_reconciliation' and obj_description(p.oid, 'pg_proc') like '%nivl:store-manual-grants-20261002%')`
 --
 -- Contrato
 --   Re-crea SOLO public.apply_store_reconciliation(jsonb, jsonb) de 0033 con un
 --   cambio: si la fila previa es provider manual|stripe, plan distinto de
 --   cortesia/owner, status active|trialing y vigente (fin nulo o > ahora - 2 días,
 --   la misma gracia que ai_state), la reconciliación la CONSERVA cuando el mejor
---   derecho de tienda es SANDBOX, o es PRODUCTION de tier igual o inferior.
---   Una compra real de tier superior (Pro manual → Élite de tienda) sí la sustituye.
+--   derecho de tienda es SANDBOX, o es PRODUCTION de tier igual o inferior y la
+--   concesión dura al menos lo mismo (fin nulo o >= expiración de la tienda).
+--   Una compra real de tier superior (Pro manual → Élite de tienda), o una que dura
+--   más que la concesión, sí la sustituye: quien paga nunca queda sin acceso al
+--   terminar la concesión esperando al siguiente webhook de renovación.
 --   Sin cambios: apply_store_event (0027), ventas/comisiones, store_events,
 --   begin_store_reconciliation, permisos (service_role), prioridad producción>sandbox.
 -- Compatibilidad con lo desplegado (0033 en producción desde 2026-09-29)
@@ -126,7 +132,12 @@ begin
       and v_old.status in ('active', 'trialing')
       and (v_old.current_period_end is null or v_old.current_period_end > clock_timestamp() - interval '2 days')
       and (v_best->>'environment' = 'SANDBOX'
-           or (case when v_best_tier = 'elite' then 2 else 1 end) <= (case when v_old.plan like 'elite%' then 2 else 1 end));
+           -- A real purchase only defers to a grant of the same or a higher tier
+           -- that lasts at least as long; otherwise the payer would lose access
+           -- when the grant ends and wait for the next renewal webhook.
+           or ((case when v_best_tier = 'elite' then 2 else 1 end) <= (case when v_old.plan like 'elite%' then 2 else 1 end)
+               and (v_old.current_period_end is null
+                    or v_old.current_period_end >= (v_best->>'expires_at')::timestamptz)));
     if v_old.plan = 'owner' or v_keep_old or (v_best is null and v_old.provider not in ('apple', 'google')) then
       update public.subscriptions set status = v_old.status, plan = v_old.plan, provider = v_old.provider,
         current_period_end = v_old.current_period_end, store_product_id = v_old.store_product_id,
@@ -162,6 +173,8 @@ begin
 end;
 $$;
 
+comment on function public.apply_store_reconciliation(jsonb, jsonb) is
+  'nivl:store-manual-grants-20261002 — 0036: conserva concesiones manual/Stripe vigentes frente a sandbox y a compras de producción de nivel igual o inferior que no duren más.';
 revoke all on function public.apply_store_reconciliation(jsonb, jsonb) from public, anon, authenticated;
 grant execute on function public.apply_store_reconciliation(jsonb, jsonb) to service_role;
 notify pgrst, 'reload schema';
