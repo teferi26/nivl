@@ -9,12 +9,15 @@ import { FotosVista } from '@/components/fotos/FotosVista';
 import { HojaNuevaFoto } from '@/components/fotos/HojaNuevaFoto';
 import { Miniatura } from '@/components/fotos/LineaFotos';
 import { fechaCorta, NOMBRE_POSE } from '@/components/fotos/modelo';
+import { useSinCapturas } from '@/components/fotos/sinCapturas';
 import { useFotos } from '@/components/fotos/useFotos';
 import { Button, Sheet } from '@/components/ui';
 import { ink, space, type as tipo } from '@/design/tokens';
 
 export default function Fotos() {
   const f = useFotos();
+  // Con fotos a la vista no se permiten capturas (build 23+; en la 22 no hace nada).
+  useSinCapturas(f.vista.acceso === 'abierto');
   const foto = f.ver.foto;
   return (
     <FotosVista
