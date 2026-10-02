@@ -52,10 +52,16 @@ function entitled(row: SubscriptionRow, now: number): boolean {
 }
 
 /** May a Stripe checkout take over this row? */
-export function stripeMayTakeOver(row: SubscriptionRow | null, now: number): boolean {
+export function stripeMayTakeOver(row: SubscriptionRow | null, now: number, subscriptionId?: string): boolean {
   if (!row) return true;
   if (row.plan === 'owner') return false;
-  if (row.provider === 'stripe') return true;
+  // A Payment Link carries client_reference_id in the URL: anyone can pay with
+  // another user's uuid. A live Stripe subscription is never replaced by a
+  // DIFFERENT one (review c, P1-2: a third party could pay, cancel, and leave
+  // the victim paying without access).
+  if (row.provider === 'stripe') {
+    return !entitled(row, now) || !row.stripe_subscription_id || row.stripe_subscription_id === subscriptionId;
+  }
   if (row.provider === 'manual' && row.plan === 'cortesia') return true; // the 7-day trial
   return !entitled(row, now); // a live store purchase or manual grant is never overwritten
 }
@@ -101,7 +107,13 @@ export const stripeWebhookHandler = (deps: StripeDeps | null) => async (req: Req
           if (await deps.repo.insert({ user_id: userId, plan: 'mensual', ...patch })) return ok({});
           continue; // created concurrently: re-read and decide again
         }
-        if (!stripeMayTakeOver(row, now)) return ok({ ignored: 'fila_protegida' });
+        if (!stripeMayTakeOver(row, now, sub.id)) {
+          // NOT recorded: the payment exists in Stripe without access here. Stripe web
+          // must not be enabled until checkout is created server-side and refuses
+          // accounts with a live subscription (docs/payment-audit/REVISION-SEGURIDAD.md, P1-3).
+          console.error('stripe-webhook: checkout over a protected subscription row; manual review/refund needed', sub.id);
+          return ok({ ignored: 'fila_protegida' });
+        }
         const plan = row.provider === 'stripe' ? row.plan : 'mensual';
         if (await deps.repo.update(userId, row, { ...patch, plan })) return ok({});
       }
