@@ -27,3 +27,13 @@ Deno.test('el coste ya no cobra dos veces la caché', () => {
   // Todo leído de caché debe costar ~0,1× de todo sin caché.
   assertEquals(Math.round((conCache / sinCache) * 10), 1);
 });
+
+Deno.test('tarifa: el id fechado que devuelve la API cobra como su modelo (no como Opus)', async () => {
+  const { tarifa, costMicroUsd: coste } = await import('./anthropic.ts');
+  assertEquals(tarifa('claude-haiku-4-5-20251001'), tarifa('claude-haiku-4-5'));
+  // El turno real del 02/10: 1342 entrada, 4456 escritura de caché, 108 salida.
+  const u = { input_tokens: 1342, cache_creation_input_tokens: 4456, output_tokens: 108 };
+  assertEquals(coste('claude-haiku-4-5-20251001', u), 7452);
+  // Un modelo desconocido sigue cobrándose como Opus (el freno peca de caro).
+  assertEquals(tarifa('modelo-raro'), tarifa('claude-opus-5'));
+});
