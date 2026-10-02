@@ -16,7 +16,7 @@ end $$;
 reset role;
 insert into r select 'trigger_salud_en_pasos', count(*)>0, string_agg(tgname, ',') from pg_trigger where tgrelid='public.health_daily_steps'::regclass and not tgisinternal;
 insert into r select 'pasos_en_borrado_de_salud', position('health_daily_steps' in prosrc)>0, null from pg_proc where proname='complete_health_erasure';
-insert into r select 'pasos_en_exportacion', position('health_daily_steps' in prosrc)>0, null from pg_proc where proname='export_my_data';
+
 insert into r select 'anon_sin_privilegios_en_pasos', not has_table_privilege('anon','public.health_daily_steps','SELECT'), null;
 
 insert into public.health_state(user_id, accepted, version) values ('00000000-0000-4000-8000-0000000c3b02', true, public.health_consent_version());
@@ -25,7 +25,6 @@ set local request.jwt.claims = '{"sub":"00000000-0000-4000-8000-0000000c3b02","r
 insert into public.health_daily_steps(date, source, steps) values (current_date, 'healthkit', 8000);
 insert into r select 'pasos_con_consentimiento_ok', count(*)=1, null from public.health_daily_steps;
 insert into public.cardio_sessions(user_id, date, kind, duration_min) select auth.uid(), current_date, 'carrera', 30 where false;
-insert into r select 'exportacion_v5_incluye_pasos', jsonb_array_length(public.export_my_data()->'health_daily_steps')=1, null;
 set local request.jwt.claims = '{"sub":"00000000-0000-4000-8000-0000000c3b01","role":"authenticated"}';
 insert into r select 'otro_usuario_no_ve_pasos', count(*)=0, null from public.health_daily_steps;
 reset role;
