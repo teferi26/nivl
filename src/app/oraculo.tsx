@@ -11,6 +11,7 @@ import {
   View,
 } from 'react-native';
 import { useConsentimientoIA } from '@/components/ConsentimientoIA';
+import { DenunciarIA, type RespuestaDenunciada } from '@/components/DenunciarIA';
 import { SystemButton } from '@/components/SystemButton';
 import { TextoSistema } from '@/components/TextoSistema';
 import {
@@ -50,6 +51,7 @@ export default function Oraculo() {
   const [proposals, setProposals] = useState<ProposedQuest[]>([]);
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [summary, setSummary] = useState('');
+  const [denuncia, setDenuncia] = useState<RespuestaDenunciada | null>(null);
   const [busy, setBusy] = useState(false);
   const [accepting, setAccepting] = useState(false);
   // El Oráculo es de NIVL Pro: sin él, un aviso con el camino a /pro. Nunca
@@ -231,7 +233,20 @@ export default function Oraculo() {
         {hayPropuestas ? (
           <>
             <FadeIn index={2}>
-              <Section title="Veredicto del sistema" tone="accent">
+              <Section
+                title="Veredicto del sistema"
+                tone="accent"
+                action={{
+                  label: 'Denunciar respuesta',
+                  // El Oráculo no guarda la respuesta en el servidor: viaja el texto.
+                  onPress: () =>
+                    setDenuncia({
+                      fuente: 'oraculo',
+                      messageId: null,
+                      texto: [summary, ...proposals.map((p) => p.title)].join(' · '),
+                    }),
+                }}
+              >
                 <Card>
                   <TextoSistema texto={summary} />
                 </Card>
@@ -316,6 +331,7 @@ export default function Oraculo() {
           </View>
         </KeyboardAvoidingView>
       </Modal>
+      <DenunciarIA respuesta={denuncia} onClose={() => setDenuncia(null)} />
     </Screen>
   );
 }

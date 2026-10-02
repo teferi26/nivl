@@ -17,6 +17,7 @@ import {
   type TextInputKeyPressEventData,
 } from 'react-native';
 import { useConsentimientoIA } from '@/components/ConsentimientoIA';
+import { DenunciarIA, type RespuestaDenunciada } from '@/components/DenunciarIA';
 import { HealthConsentGuard } from '@/components/ConsentimientoSalud';
 import { SystemButton } from '@/components/SystemButton';
 import { TextoSistema } from '@/components/TextoSistema';
@@ -68,7 +69,17 @@ const ATAJOS: { etiqueta: string; mensaje: string; icono: keyof typeof Ionicons.
 ];
 
 /** Mensaje del coach: sin burbuja, con una marca a la izquierda y el texto en editorial. */
-function MensajeSistema({ texto, acciones, pensando }: { texto?: string; acciones: { texto: string; ok: boolean }[]; pensando?: boolean }) {
+function MensajeSistema({
+  texto,
+  acciones,
+  pensando,
+  onDenunciar,
+}: {
+  texto?: string;
+  acciones: { texto: string; ok: boolean }[];
+  pensando?: boolean;
+  onDenunciar?: () => void;
+}) {
   return (
     <View style={styles.filaSistema}>
       <View style={styles.marcaSistema}>
@@ -96,10 +107,26 @@ function MensajeSistema({ texto, acciones, pensando }: { texto?: string; accione
             ))}
           </View>
         ) : null}
+        {onDenunciar && texto ? (
+          <Pressable
+            onPress={onDenunciar}
+            hitSlop={8}
+            style={styles.denunciar}
+            accessibilityRole="button"
+            accessibilityLabel="Denunciar respuesta"
+          >
+            <Ionicons name="flag-outline" size={12} color={colors.textFaint} />
+            <Text style={styles.denunciarTexto}>Denunciar respuesta</Text>
+          </Pressable>
+        ) : null}
       </View>
     </View>
   );
 }
+
+// Los ids que vienen del servidor son uuid; los de burbujas recién llegadas
+// por el stream son locales y no identifican nada en el servidor.
+const ES_UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /**
  * La pestaña de una cuenta sin NIVL Pro. No es un error ni un muro en blanco:
@@ -162,6 +189,7 @@ function CoachContent() {
 
   const [threadId, setThreadId] = useState<string | null>(null);
   const [burbujas, setBurbujas] = useState<Burbuja[]>([]);
+  const [denuncia, setDenuncia] = useState<RespuestaDenunciada | null>(null);
   const [texto, setTexto] = useState('');
   const [cargando, setCargando] = useState(true);
   const [pensando, setPensando] = useState(false);
@@ -516,7 +544,14 @@ function CoachContent() {
                 </View>
               </View>
             ) : (
-              <MensajeSistema key={b.id} texto={b.text} acciones={b.acciones.map((texto) => ({ texto, ok: true }))} />
+              <MensajeSistema
+                key={b.id}
+                texto={b.text}
+                acciones={b.acciones.map((texto) => ({ texto, ok: true }))}
+                onDenunciar={() =>
+                  setDenuncia({ fuente: 'coach', messageId: ES_UUID.test(b.id) ? b.id : null, texto: b.text })
+                }
+              />
             ),
           )}
 
@@ -635,6 +670,7 @@ function CoachContent() {
         )}
       </KeyboardAvoidingView>
       {consentimiento.hoja}
+      <DenunciarIA respuesta={denuncia} onClose={() => setDenuncia(null)} />
     </Screen>
   );
 }
@@ -680,6 +716,8 @@ const styles = StyleSheet.create({
   pensando: { fontFamily: fonts.body, fontSize: 13, color: colors.textDim },
   acciones: { marginTop: 8, borderLeftWidth: 1, borderLeftColor: colors.line, paddingLeft: 10, gap: 4 },
   accion: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  denunciar: { flexDirection: 'row', alignItems: 'center', gap: 5, alignSelf: 'flex-start', marginTop: 8, paddingVertical: 2 },
+  denunciarTexto: { fontFamily: fonts.body, fontSize: 11, color: colors.textFaint },
   accionTexto: { fontFamily: fonts.body, fontSize: 12.5, color: colors.textDim, flexShrink: 1 },
   error: { flexDirection: 'row', alignItems: 'center', gap: 8, borderLeftWidth: 2, borderLeftColor: colors.red, paddingLeft: 10, paddingVertical: 6 },
   errorTexto: { fontFamily: fonts.body, fontSize: 13, color: colors.red, flex: 1 },
