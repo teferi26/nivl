@@ -88,7 +88,7 @@ export function EdadMinimaGuard({ children, routeName }: PropsWithChildren<{ rou
   const edad = useEdadMinima();
   // Estas rutas son públicas también con sesión: el enlace de creador debe
   // poder guardar el código antes de enviar a la persona a la raíz.
-  if (routeName === 'login' || routeName === 'c' || routeName.startsWith('c/') || routeName.startsWith('auth/')) return <>{children}</>;
+  if (routeName === 'login' || routeName === 'c' || routeName.startsWith('c/') || routeName.startsWith('auth/') || (__DEV__ && routeName === 'kit')) return <>{children}</>;
   if (!loading && session && edad.estado === 'confirmada') return <>{children}</>;
   return <ConfirmacionEdad key={session?.user.id ?? 'sin-sesion'} autenticado={!loading && !!session} />;
 }

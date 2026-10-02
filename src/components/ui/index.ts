@@ -1,14 +1,20 @@
 // NIVL · Kit de interfaz. Importa desde '@/components/ui'.
-export { Card } from './Card';
+export { Avatar } from './Avatar';
+export { Button } from './Button';
+export { Card, SuperficieContext } from './Card';
 export { Chip, ChipRow, ChipWrap, Tag } from './Chip';
 export { avisar, confirmar } from './confirmar';
+export { Crown, GALEA_PATH } from './Crown';
 export { EmptyState } from './EmptyState';
 export { FadeIn, PressScale, Stagger } from './motion';
 export { ProgressRing } from './ProgressRing';
 export { Check, Row, RowValue } from './Row';
 export { Eyebrow, Screen, ScreenHeader, volver } from './Screen';
 export { Rule, Section } from './Section';
+export { Sheet } from './Sheet';
 export { Skeleton, SkeletonRows } from './Skeleton';
 export { Stat, StatRow } from './Stat';
 export { TabBar } from './TabBar';
+export { Grano, Trama } from './Texture';
+export { Toast } from './Toast';
 export { debeRecargar, useAlVolver } from './useAlVolver';

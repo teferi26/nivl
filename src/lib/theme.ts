@@ -1,53 +1,57 @@
-// NIVL · Paleta "arena": negro, hueso, hierro y una sola gota de sangre.
+// NIVL · Paleta v2 «Mármol y tinta»: solo blanco y negro.
 //
-// Antes esto era el azul gladiador de Solo Leveling. Con NIVL abierta a la gente
-// de Franky (emprendedores, deportistas, estudiantes) la interfaz pasa a un
-// monocromo de gladiador: el blanco es el idioma, el gris hierro estructura,
-// el rojo solo avisa y el oro de laurel solo corona (rachas, hitos y el
-// estatus Élite). El
-// violeta Franky aparece únicamente en la marca "by Franky" y en el botón de
-// cuenta Franky: es un sello, no un color de interfaz.
+// Fuente única: `ink` de src/design/tokens.ts (docs/design-v2/SISTEMA.md). Aquí
+// solo se mapean los nombres antiguos a la escala nueva para que toda la app
+// cambie de golpe sin tocar cincuenta pantallas.
 //
-// Los NOMBRES de los tokens son semánticos a propósito (accent, steel, gold):
-// se puede cambiar un valor sin tocar cincuenta pantallas.
+// No hay rojo, oro, acero ni violeta. El significado ya no va en el color:
+//   · inversión (blanco con texto negro) → lo activo, lo hecho, la acción;
+//   · peso del trazo → jerarquía y rango;
+//   · trama (rayado a 45°) → alerta, penalización, bloqueado (antes, el rojo);
+//   · grano (puntos finos) → logro, racha, Élite (antes, el oro).
+// Por eso `red`, `gold` o `steel` siguen existiendo como NOMBRES, pero valen un
+// gris de la escala: quien quiera decir «alerta» usa <Trama/> o Card alerta, y
+// quien quiera decir «logro», <Grano/> o Card logro (src/components/ui).
+import { ink } from '@/design/tokens';
+
 export const colors = {
-  bg: '#050505',
-  panel: '#0D0D0D',
-  panelDeep: '#090909',
-  tabBar: '#050505',
-  line: '#262626',
+  bg: ink.ink0,
+  panel: ink.ink1,
+  panelDeep: ink.ink0,
+  tabBar: ink.ink0,
+  line: ink.ink3,
   // El idioma de la interfaz: nivel, XP, CTAs, activo.
-  accent: '#FFFFFF',
-  accentDim: '#5A5A5A',
-  accentFaint: '#191919',
-  accentText: '#CFCBC2',
-  // SOLO campañas (proyectos): acero, un escalón por debajo del blanco.
-  steel: '#B9B9B9',
-  steelDim: '#454545',
-  steelPanel: '#0B0B0B',
-  steelText: '#D8D8D8',
-  // SOLO alertas y penalización.
-  red: '#D8414F',
-  redDim: '#6B242B',
-  redPanel: '#140A0B',
-  redText: '#E8C9CD',
-  // SOLO rachas, hitos y el estatus Élite: el laurel.
-  gold: '#D6B76A',
-  goldDim: '#4A3E1E',
-  text: '#ECE9E2',
-  textDim: '#A5A29A',
-  // #7E7B73: 4,6:1 sobre panel (#0D0D0D) y 4,8:1 sobre bg (#050505), WCAG AA.
-  textFaint: '#7E7B73',
-  track: '#1C1C1C',
-  // El sello de Franky. No se usa como color de interfaz.
-  franky: '#8B5CF6',
+  accent: ink.ink10,
+  accentDim: ink.ink4,
+  accentFaint: ink.ink3,
+  accentText: ink.ink8,
+  // Campañas: ya sin acero propio, la misma escala.
+  steel: ink.ink8,
+  steelDim: ink.ink4,
+  steelPanel: ink.ink1,
+  steelText: ink.ink8,
+  // Alertas: el significado lo pone la trama, no este valor.
+  red: ink.ink10,
+  redDim: ink.ink6,
+  redPanel: ink.ink2,
+  redText: ink.ink9,
+  // Logros: el significado lo pone el grano, no este valor.
+  gold: ink.ink10,
+  goldDim: ink.ink6,
+  text: ink.ink9,
+  textDim: ink.ink8,
+  textFaint: ink.ink6,
+  // Pista de barras y primer escalón del Heatmap: [track, accentFaint, accentDim, accent] crece.
+  track: ink.ink2,
+  // Antes el violeta de Franky; ahora blanco (la marca va en la forma, no en el color).
+  franky: ink.ink10,
 } as const;
 
 export const fonts = {
   // Cinzel: la piedra tallada. SOLO marca, números de nivel y momentos épicos.
   brand: 'Cinzel_700Bold',
   number: 'Cinzel_600SemiBold',
-  // Outfit: la misma familia que usa Franky en web y app.
+  // Outfit: la voz.
   heading: 'Outfit_700Bold',
   semibold: 'Outfit_600SemiBold',
   body: 'Outfit_500Medium',

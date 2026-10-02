@@ -35,7 +35,10 @@ const ESPERA_FOTO_MS = 5000;
  * en silencio y la cara entra cuando llega. La letra solo aparece cuando de
  * verdad no hay ninguna.
  */
-export function Avatar({ size, avatarPath, name, onReady }: Props) {
+export function useRetrato(
+  avatarPath: string | null,
+  onReady?: () => void,
+): { uri: string | null; fallida: boolean; alCargar: () => void; alFallar: () => void } {
   const [uri, setUri] = useState<string | null>(null);
   // La foto existe pero no ha llegado (sin red, firma caducada): se cae a la
   // inicial en vez de dejar el hueco para siempre.
@@ -78,6 +81,20 @@ export function Avatar({ size, avatarPath, name, onReady }: Props) {
     };
   }, [avatarPath, esperaFoto]);
 
+  return {
+    uri,
+    fallida,
+    alCargar: listo,
+    alFallar: () => {
+      setFallida(true);
+      listo();
+    },
+  };
+}
+
+export function Avatar({ size, avatarPath, name, onReady }: Props) {
+  const { uri, fallida, alCargar, alFallar } = useRetrato(avatarPath, onReady);
+
   return (
     <Hexagon size={size}>
       {uri && !fallida ? (
@@ -85,11 +102,8 @@ export function Avatar({ size, avatarPath, name, onReady }: Props) {
           source={{ uri }}
           style={{ width: size, height: size }}
           contentFit="cover"
-          onLoad={listo}
-          onError={() => {
-            setFallida(true);
-            listo();
-          }}
+          onLoad={alCargar}
+          onError={alFallar}
         />
       ) : avatarPath && !fallida ? null : (
         <Text allowFontScaling={false} style={[styles.letra, { fontSize: size * 0.4 }]}>

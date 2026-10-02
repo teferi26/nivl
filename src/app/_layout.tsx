@@ -9,6 +9,7 @@ import { Platform, StyleSheet, View } from 'react-native';
 import { EdadMinimaGuard, EdadMinimaProvider, useEdadMinima } from '@/components/EdadMinima';
 import { HealthConsentGuard, HealthConsentProvider } from '@/components/ConsentimientoSalud';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { TopeAncho } from '@/design/useSizeClass';
 import { AuthProvider, useAuth } from '@/lib/auth';
 import { identificarEnTienda } from '@/lib/pro';
 import { registrarDispositivo } from '@/lib/push';
@@ -21,18 +22,30 @@ SplashScreen.preventAutoHideAsync().catch(() => {});
 // chips y la barra de pestañas se estiraban de lado a lado. Solo en web; en
 // nativo no se añade ninguna vista. Los `Modal` de react-native-web son
 // portales a `body` y quedan fuera de esta columna (a ancho completo).
+// Las pestañas no se acotan: allí el raíl, la barra lateral y `Screen` ya
+// colocan el contenido según la clase de tamaño. El tope llega a
+// `useSizeClass` por `TopeAncho` para que lo de dentro se mida a 560. El árbol
+// es siempre el mismo (solo cambian el estilo y el valor): si cambiara al
+// entrar o salir de las pestañas, el Stack se volvería a montar y se perdería
+// el historial.
 function ColumnaWeb({ children }: { children: ReactNode }) {
+  const enPestanas = useSegments()[0] === '(tabs)';
   if (Platform.OS !== 'web') return <>{children}</>;
   return (
     <View style={webStyles.fuera}>
-      <View style={webStyles.dentro}>{children}</View>
+      <View style={[webStyles.dentro, enPestanas && webStyles.ancho]}>
+        <TopeAncho.Provider value={enPestanas ? null : ANCHO_COLUMNA_WEB}>{children}</TopeAncho.Provider>
+      </View>
     </View>
   );
 }
 
+const ANCHO_COLUMNA_WEB = 560;
+
 const webStyles = StyleSheet.create({
   fuera: { flex: 1, alignItems: 'center', backgroundColor: colors.bg },
-  dentro: { flex: 1, width: '100%', maxWidth: 560 },
+  dentro: { flex: 1, width: '100%', maxWidth: ANCHO_COLUMNA_WEB },
+  ancho: { maxWidth: '100%' },
 });
 
 // Puerta de sesión única para TODA la app: cubre deep links a pantallas
@@ -72,7 +85,7 @@ function ProtectedStack() {
     // salta sola a '/'. Sin esto el guard iba a /login antes de guardarlo.
     // `auth` (nivl://auth/confirmar y /restablecer) llega sin sesión: es el
     // enlace del correo el que la abre.
-    const inPublicArea = inAuthArea || segments[0] === 'c' || segments[0] === 'auth';
+    const inPublicArea = inAuthArea || segments[0] === 'c' || segments[0] === 'auth' || (__DEV__ && segments[0] === 'kit');
     if (!session && !inPublicArea) {
       router.replace('/login');
     } else if (session && inAuthArea) {
