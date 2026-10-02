@@ -55,9 +55,9 @@ export function reglasPendientes(reglas: Rule[], cumplidas: Set<string>): number
   return reglas.filter((r) => !cumplidas.has(r.id)).length;
 }
 
-/** «Listo para consolidar», «Falta 1 día», «Faltan 8 días». */
+/** «Listo para ser tuyo», «Falta 1 día», «Faltan 8 días». */
 export function textoRestantes(p: ProgresoHabito): string {
-  if (p.consolidable) return 'Listo para consolidar';
+  if (p.consolidable) return 'Listo para ser tuyo';
   return p.restantes === 1 ? 'Falta 1 día' : `Faltan ${p.restantes} días`;
 }
 

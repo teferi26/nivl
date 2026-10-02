@@ -77,7 +77,7 @@ describe('textoRestantes', () => {
   test('singular, plural y listo', () => {
     expect(textoRestantes({ racha: 20, objetivo: 21, consolidable: false, restantes: 1 })).toBe('Falta 1 día');
     expect(textoRestantes({ racha: 5, objetivo: 21, consolidable: false, restantes: 16 })).toBe('Faltan 16 días');
-    expect(textoRestantes({ racha: 21, objetivo: 21, consolidable: true, restantes: 0 })).toBe('Listo para consolidar');
+    expect(textoRestantes({ racha: 21, objetivo: 21, consolidable: true, restantes: 0 })).toBe('Listo para ser tuyo');
   });
 
   test('el resumen para el lector no lleva la raya larga', () => {

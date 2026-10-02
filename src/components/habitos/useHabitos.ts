@@ -134,8 +134,8 @@ export function useHabitos(): { vista: HabitosVistaProps; hoja: HojaHabito } {
   const consolidar = async (q: Quest, p: ProgresoHabito) => {
     const ok = await confirmar({
       titulo: 'HÁBITO ADQUIRIDO',
-      mensaje: `${q.title} lleva ${p.racha} días seguidos.\n\nSi lo consolidas deja de pedirte el toque diario y deja de poder romperte la racha. Puedes seguir marcándolo cuando quieras.\n\nSi prefieres seguir contando, no pasa nada: sigue sumando.`,
-      confirmar: 'Consolidar',
+      mensaje: `${q.title} lleva ${p.racha} días seguidos.\n\nSi lo das por adquirido, deja de pedirte el toque diario y deja de poder romperte la racha. Puedes seguir marcándolo cuando quieras.\n\nSi prefieres seguir contando, no pasa nada: sigue sumando.`,
+      confirmar: 'Darlo por adquirido',
       cancelar: 'Seguir contando',
     });
     // Cerrojo síncrono además de `busy`: el XP del hábito adquirido se paga una vez.

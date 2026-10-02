@@ -4,8 +4,8 @@
 // ink4, apoyadas en una basa común donde se graba el puesto en Cinzel
 // (`type.cifra`). Encima de cada columna, el gladiador: Avatar 48 con el marco
 // de su rango, nombre `micro` y su cifra en Cinzel 600 18 (Contador: al cambiar
-// de métrica o de periodo, sube o baja hasta la nueva; son 3 de los 4 de la
-// pantalla). Debajo, «TU PUESTO: 3.º DE 8» en inscripción entre dos laureles.
+// de periodo sube o baja hasta la nueva; al cambiar de métrica se vuelve a
+// montar sin contar; son 3 de los 4 de la pantalla). Debajo, «TU PUESTO: 3.º DE 8» en inscripción entre dos laureles.
 //
 // Con uno o dos rivales (o sin tres cifras medidas) no hay podio: solo la línea.
 // No es superficie invertida: la inversión de Amigos es mi fila del ranking.
@@ -54,9 +54,11 @@ export function Podio({ filas, metrica, rivales, miRango, rangos, atenuado }: Po
             {tres.map((c, i) => {
               const b = c.competidor;
               return (
-                // La clave es el hueco, no la persona: así la cifra cuenta
-                // hasta la nueva al cambiar de métrica en vez de saltar.
-                <View key={`hueco-${i}`} style={styles.hueco}>
+                // La clave lleva la métrica: al cambiarla el hueco se vuelve a
+                // montar y la cifra aparece ya en su unidad (contar de XP a %
+                // pasaba por «1.200 %»). Dentro de una métrica, cambiar de
+                // periodo sí cuenta hasta la nueva.
+                <View key={`${metrica}-${i}`} style={styles.hueco}>
                   <Avatar
                     size={AVATAR}
                     avatarPath={b.avatarPath}

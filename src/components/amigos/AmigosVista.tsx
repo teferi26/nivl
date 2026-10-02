@@ -3,7 +3,8 @@
 // datos de mentira (demo.tsx). <Competicion> llega como slot (`competicion`).
 //
 // Composición de la arena:
-//   1. EncabezadoArena «AMIGOS» grabado, con volver, compartir y el meandro.
+//   1. EncabezadoArena «AMIGOS» grabado, con volver, compartir (el único) y
+//      el meandro. Si hay solicitudes entrantes, van justo debajo.
 //   2. El podio de columnas (con 3 rivales o más) y «TU PUESTO: 3.º DE 8».
 //   3. El ranking, que sube justo detrás: chips, línea de rivalidad y la lista
 //      con MI FILA INVERTIDA = la única inversión de la pantalla. Con la arena
@@ -15,12 +16,14 @@
 
 import Ionicons from '@expo/vector-icons/Ionicons';
 import type { ReactNode } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View, useWindowDimensions } from 'react-native';
 import { Arena, EncabezadoArena, Entrada, FranjaCifras, TarjetaArena } from '@/components/arena';
+import { TAM_BOTON } from '@/components/arena/EncabezadoArena';
 import { SystemButton } from '@/components/SystemButton';
 import { Button, Chip, ChipWrap, EmptyState, Row, Screen, Section, Skeleton, SkeletonRows, Tag } from '@/components/ui';
 import { Interruptor } from '@/components/ui/Interruptor';
 import { ink, space, stroke, type as tipo } from '@/design/tokens';
+import { useSizeClass } from '@/design/useSizeClass';
 import { LUDUS_MAX, LUDUS_MIN, lineaLudus, NOTA_LUDUS_MAX, OBJETIVOS_LUDUS } from '@/lib/elite';
 import { kindMeta } from '@/lib/kinds';
 import {
@@ -50,9 +53,11 @@ export type AmigosVistaProps = DatosAmigos['vista'] & {
 
 /** La planta de la arena del ranking vacío. */
 const ARENA_VACIA = { ancho: 220, alto: 110 };
+/** Con el texto por encima de esto, «Tu código» y «Añadir» vuelven a apilarse. */
+const ESCALA_DOS_COLUMNAS = 1.35;
 
 export function AmigosVista(p: AmigosVistaProps) {
-  const { refrescando, refrescar, onVolver, abrirTarjeta, yo, subtitulo, cargando, fallo } = p;
+  const { refrescando, refrescar, onVolver, abrirTarjeta, preparando, yo, subtitulo, cargando, fallo } = p;
 
   return (
     <Screen refreshing={refrescando} onRefresh={refrescar}>
@@ -62,7 +67,25 @@ export function AmigosVista(p: AmigosVistaProps) {
           titulo="Amigos"
           subtitulo={subtitulo}
           onVolver={onVolver}
-          accion={yo ? { icono: 'share-social-outline', etiqueta: 'Compartir mi semana', onPress: abrirTarjeta } : undefined}
+          // Compartir vive solo aquí. Mientras se prepara la tarjeta, el
+          // botón pasa a un indicador del mismo tamaño.
+          accion={
+            yo && !preparando
+              ? { icono: 'share-social-outline', etiqueta: 'Compartir mi semana', onPress: abrirTarjeta }
+              : undefined
+          }
+          derecha={
+            yo && preparando ? (
+              <View
+                style={styles.preparando}
+                accessible
+                accessibilityRole="progressbar"
+                accessibilityLabel="Preparando tu semana para compartir"
+              >
+                <ActivityIndicator size="small" color={ink.ink9} />
+              </View>
+            ) : undefined
+          }
           meandro
         />
       </Entrada>
@@ -70,11 +93,11 @@ export function AmigosVista(p: AmigosVistaProps) {
       {cargando ? (
         <Cargando />
       ) : fallo && !yo ? (
-        <TarjetaArena variante="trama">
+        <TarjetaArena variante="contorno">
           <EmptyState
             compact
             icon="cloud-offline-outline"
-            title="La arena no responde"
+            title="El sistema no responde"
             body={fallo}
             action={{ label: 'Reintentar', onPress: refrescar }}
           />
@@ -116,22 +139,43 @@ function Contenido(p: AmigosVistaProps & { yo: NonNullable<AmigosVistaProps['yo'
     miRango,
     rangos,
     competicion,
-    requests,
     entrantes,
     salientes,
     estado,
     invitaciones,
     ocultos,
+    refrescar,
+    refrescando,
   } = p;
+  const { sizeClass } = useSizeClass();
+  const { fontScale } = useWindowDimensions();
+  // Desde medium, «Tu código» y «Añadir por código» van lado a lado (no con
+  // el texto muy grande).
+  const parLado = sizeClass !== 'compact' && fontScale <= ESCALA_DOS_COLUMNAS;
 
   return (
     <>
       {fallo ? (
-        <TarjetaArena variante="trama" style={styles.bloque}>
+        <TarjetaArena variante="contorno" style={styles.bloque}>
           <Text style={styles.falloLinea} accessibilityRole="alert">
             No se ha podido actualizar: {fallo}
           </Text>
+          <Button
+            title="Reintentar"
+            size="sm"
+            variant="secondary"
+            onPress={refrescar}
+            loading={refrescando}
+            style={styles.reintentar}
+          />
         </TarjetaArena>
+      ) : null}
+
+      {/* Lo que espera respuesta va lo primero; lo enviado, más abajo. */}
+      {entrantes.length > 0 ? (
+        <Entrada indice={1}>
+          <Solicitudes {...p} entrantes={entrantes} salientes={[]} />
+        </Entrada>
       ) : null}
 
       {numAmigos > 0 ? (
@@ -153,19 +197,32 @@ function Contenido(p: AmigosVistaProps & { yo: NonNullable<AmigosVistaProps['yo'
 
       {competicion ? <Entrada indice={3}>{competicion}</Entrada> : null}
 
-      {requests.length > 0 ? (
+      {salientes.length > 0 ? (
         <Entrada indice={4}>
-          <Solicitudes {...p} entrantes={entrantes} salientes={salientes} />
+          <Solicitudes {...p} entrantes={[]} salientes={salientes} />
         </Entrada>
       ) : null}
 
-      <Entrada indice={5}>
-        <TuCodigo {...p} yo={yo} />
-      </Entrada>
+      {parLado ? (
+        <Entrada indice={5} style={styles.par}>
+          <View style={styles.parCelda}>
+            <TuCodigo {...p} yo={yo} />
+          </View>
+          <View style={styles.parCelda}>
+            <AnadirCodigo {...p} />
+          </View>
+        </Entrada>
+      ) : (
+        <>
+          <Entrada indice={5}>
+            <TuCodigo {...p} yo={yo} />
+          </Entrada>
 
-      <Entrada indice={6}>
-        <AnadirCodigo {...p} />
-      </Entrada>
+          <Entrada indice={6}>
+            <AnadirCodigo {...p} />
+          </Entrada>
+        </>
+      )}
 
       <Entrada indice={7}>
         {estado !== 'fuera' ? <Ludus {...p} /> : null}
@@ -219,18 +276,15 @@ function Ranking(p: AmigosVistaProps) {
     abrirSeguridad,
     miRango,
     rangos,
-    abrirTarjeta,
-    preparando,
   } = p;
   return (
     <Section title="Ranking" meta={numAmigos > 0 ? `${visibles.length}` : undefined}>
       {numAmigos === 0 ? (
         <TarjetaArena variante="contorno" remaches>
           <View style={styles.vacioArena}>
+            {/* El óvalo va vacío: el único icono es el del EmptyState (que
+                lo exige), así no se repite. */}
             <Arena ancho={ARENA_VACIA.ancho} alto={ARENA_VACIA.alto} variante="ovalo" />
-            <View style={styles.vacioIcono}>
-              <Ionicons name="people-outline" size={28} color={ink.ink8} />
-            </View>
           </View>
           {/* La inversión de la pantalla cuando no hay fila mía: invitar. */}
           <EmptyState
@@ -267,14 +321,6 @@ function Ranking(p: AmigosVistaProps) {
                 : 'Días seguidos cerrados. Es la única cifra que no depende del periodo.'}{' '}
             Mantén pulsado a alguien para quitarle.
           </Text>
-          <SystemButton
-            title="Compartir mi semana"
-            icon="share-social-outline"
-            variant="outline"
-            onPress={abrirTarjeta}
-            loading={preparando}
-            style={styles.compartir}
-          />
         </>
       )}
     </Section>
@@ -337,7 +383,7 @@ function Solicitudes({
   quitar,
 }: Pick<AmigosVistaProps, 'entrantes' | 'salientes' | 'ocupada' | 'abrirSeguridad' | 'responder' | 'quitar'>) {
   return (
-    <Section title="Solicitudes" meta={entrantes.length > 0 ? `${entrantes.length}` : undefined}>
+    <Section title={entrantes.length > 0 ? 'Solicitudes' : 'Solicitudes enviadas'} meta={entrantes.length > 0 ? `${entrantes.length}` : undefined}>
       <View style={styles.lista}>
         {entrantes.map((r) => (
           <Row
@@ -611,8 +657,8 @@ function Invitados({
     <Section title="Tus invitados">
       <FranjaCifras
         cifras={[
-          { valor: invitaciones.activos, rotulo: 'Activos', etiqueta: `Invitados activos: ${invitaciones.activos}` },
-          { valor: invitaciones.pendientes, rotulo: 'En prueba', etiqueta: `En prueba: ${invitaciones.pendientes}` },
+          { valor: String(invitaciones.activos), rotulo: 'Activos', etiqueta: `Invitados activos: ${invitaciones.activos}` },
+          { valor: String(invitaciones.pendientes), rotulo: 'En prueba', etiqueta: `En prueba: ${invitaciones.pendientes}` },
         ]}
       />
       {siguienteInsignia ? (
@@ -729,6 +775,17 @@ const styles = StyleSheet.create({
   podioHuecoFuste: { marginTop: space.s1 },
   huecoLinea: { alignSelf: 'center', marginTop: space.s5, marginBottom: space.s8 },
   huecoRotulo: { marginBottom: space.s3 },
+  reintentar: { alignSelf: 'flex-start', marginTop: space.s3 },
+  preparando: {
+    width: TAM_BOTON,
+    height: TAM_BOTON,
+    borderWidth: stroke.hairline,
+    borderColor: ink.ink4,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  par: { flexDirection: 'row', alignItems: 'flex-start', gap: space.s5 },
+  parCelda: { flex: 1, minWidth: 0 },
   falloLinea: {
     fontFamily: tipo.bodySm.family,
     fontSize: tipo.bodySm.size,
@@ -736,7 +793,6 @@ const styles = StyleSheet.create({
     color: ink.ink9,
   },
   vacioArena: { alignItems: 'center', justifyContent: 'center', marginTop: space.s2 },
-  vacioIcono: { position: 'absolute' },
   codigo: {
     fontFamily: tipo.rank.family,
     fontSize: tipo.rank.size,

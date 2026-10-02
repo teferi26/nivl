@@ -3,13 +3,14 @@
 //
 // La forja de la arena, de arriba abajo: el encabezado grabado con el
 // meandro, la franja de cifras (en forja, mejor racha, listos, adquiridos),
-// las reglas del contrato de hoy, cada hábito como una losa con remaches (la
-// racha en Cinzel sobre «/21», la barra en 21 segmentos y los días que toca
-// en contorno) y los adquiridos con su laurel. El hábito que llega a 21 pasa
-// a losa con grano y pide la decisión: «Darlo por adquirido».
+// las reglas del contrato de hoy, cada hábito como una losa con zócalo (la
+// racha manda: columna de 64 con la cifra en Cinzel sobre «/21» y una hairline;
+// a la derecha el nombre, la barra en 21 segmentos y los días que toca en
+// contorno) y los adquiridos con su laurel. El hábito que llega a 21 pasa a
+// losa con grano y pide la decisión: «Darlo por adquirido».
 //
-// Inversión única de la pantalla: «Nuevo hábito» en el encabezado si hay
-// hábitos en forja; sin ninguno, el «Añadir el primero» del vacío. Los días de
+// Inversión única de la pantalla: «Nuevo hábito» en el encabezado salvo en el
+// vacío, donde la lleva el «Añadir el primero». Los días de
 // la semana van en contorno a propósito (no cuentan como superficie) y el
 // botón de consolidar es secondary.
 //
@@ -18,7 +19,6 @@
 
 import { StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { Barra, EncabezadoArena, Entrada, FranjaCifras, Laurel, TarjetaArena } from '@/components/arena';
-import { TOPE_ESCALON } from '@/components/arena/Entrada';
 import { Button, Check, EmptyState, PressScale, Row, Screen, Section, Skeleton, SkeletonRows } from '@/components/ui';
 import { SIN_DATO } from '@/components/ui/sinDato';
 import { ink, space, stroke, type as tipo } from '@/design/tokens';
@@ -89,61 +89,72 @@ function Semana({ dias }: { dias: number[] }) {
   );
 }
 
-/** El cuerpo de una losa: nombre y racha, la barra de 21 y la semana. */
-function CuerpoHabito({ q, p }: { q: Quest; p: ProgresoHabito }) {
+/**
+ * El cuerpo de una losa. La racha manda: columna izquierda de 64 con la cifra
+ * en Cinzel sobre «/21» y una hairline vertical; a la derecha, el nombre, la
+ * barra de 21 y la semana.
+ */
+function CuerpoHabito({ q, p, animar }: { q: Quest; p: ProgresoHabito; animar: boolean }) {
   return (
-    <>
-      <View style={styles.cabeza}>
+    <View style={styles.cuerpo}>
+      <View style={styles.colRacha}>
+        {/* Texto y no Contador: Contador, como mucho 4 por pantalla y nunca
+            en una lista (ya los usa la franja de cifras). */}
+        <Text style={styles.racha} maxFontSizeMultiplier={1} numberOfLines={1} adjustsFontSizeToFit>
+          {p.racha}
+        </Text>
+        <Text style={styles.objetivo} maxFontSizeMultiplier={1}>
+          /{p.objetivo}
+        </Text>
+      </View>
+      <View style={styles.colTexto}>
         <Text style={styles.nombre} numberOfLines={2} maxFontSizeMultiplier={1.35}>
           {q.title}
         </Text>
-        {/* Texto y no Contador: Contador, como mucho 4 por pantalla y nunca
-            en una lista (ya los usa la franja de cifras). */}
-        <Text style={styles.racha} maxFontSizeMultiplier={1}>
-          {p.racha}
-          <Text style={styles.objetivo}>/{p.objetivo}</Text>
-        </Text>
+        <View style={styles.barra}>
+          {/* Solo se anima lo que se ve al entrar: más abajo aparece ya llena. */}
+          <Barra
+            ratio={p.racha / p.objetivo}
+            desde={animar ? 0 : null}
+            alto={8}
+            segmentos={p.objetivo}
+            etiqueta={`Racha de ${q.title}: ${p.racha} de ${p.objetivo} días`}
+          />
+        </View>
+        <View style={styles.pie}>
+          <Semana dias={q.days_of_week ?? []} />
+          <Text style={[styles.restantes, p.consolidable && styles.restantesListo]} maxFontSizeMultiplier={1.35}>
+            {textoRestantes(p)}
+          </Text>
+        </View>
       </View>
-      <View style={styles.barra}>
-        <Barra
-          ratio={p.racha / p.objetivo}
-          desde={0}
-          alto={8}
-          segmentos={p.objetivo}
-          etiqueta={`Racha de ${q.title}: ${p.racha} de ${p.objetivo} días`}
-        />
-      </View>
-      <View style={styles.pie}>
-        <Semana dias={q.days_of_week ?? []} />
-        <Text style={[styles.restantes, p.consolidable && styles.restantesListo]} maxFontSizeMultiplier={1.35}>
-          {textoRestantes(p)}
-        </Text>
-      </View>
-    </>
+    </View>
   );
 }
+
+/** Las losas que entran a la vista y llenan su barra desde cero. */
+const LOSAS_ANIMADAS = 4;
 
 function LosaHabito({
   q,
   p,
+  indice,
   ocupado,
   acciones,
 }: {
   q: Quest;
   p: ProgresoHabito;
+  indice: number;
   ocupado: boolean;
   acciones: HabitosVistaProps['acciones'];
 }) {
   const editar = () => acciones.onEditar(q);
+  const animar = indice < LOSAS_ANIMADAS;
+  const etiqueta = `${resumenHabito(q.title, p)} Se pide ${diasLeidos(q.days_of_week ?? [])}. Toca para editar.`;
   if (!p.consolidable) {
     return (
-      <TarjetaArena
-        variante="piedra"
-        remaches
-        onPress={editar}
-        accessibilityLabel={`${resumenHabito(q.title, p)} Toca para editar.`}
-      >
-        <CuerpoHabito q={q} p={p} />
+      <TarjetaArena variante="piedra" zocalo onPress={editar} accessibilityLabel={etiqueta}>
+        <CuerpoHabito q={q} p={p} animar={animar} />
       </TarjetaArena>
     );
   }
@@ -151,13 +162,9 @@ function LosaHabito({
   // para VoiceOver. Lo que edita es el cuerpo; «Darlo por adquirido» queda
   // como botón propio debajo.
   return (
-    <TarjetaArena variante="grano" remaches rotulo="Forjado">
-      <PressScale
-        onPress={editar}
-        accessibilityRole="button"
-        accessibilityLabel={`${resumenHabito(q.title, p)} Toca para editar.`}
-      >
-        <CuerpoHabito q={q} p={p} />
+    <TarjetaArena variante="grano" zocalo rotulo="Forjado">
+      <PressScale onPress={editar} accessibilityRole="button" accessibilityLabel={etiqueta}>
+        <CuerpoHabito q={q} p={p} animar={animar} />
       </PressScale>
       <Button
         title="Darlo por adquirido"
@@ -211,9 +218,10 @@ export function HabitosVista({
           titulo="Hábitos"
           subtitulo={SUBTITULO_HABITOS}
           meandro
-          // Sólida solo si hay hábitos en forja: sin ellos, la acción
-          // principal (la única inversión) es la del estado vacío.
-          accion={{ icono: 'add', etiqueta: 'Nuevo hábito', onPress: acciones.onNuevo, solida: enCurso.length > 0 }}
+          // Sólida salvo en el vacío: allí la acción principal (la única
+          // inversión) es «Añadir el primero». Con todo adquirido y nada en
+          // forja, esta es la acción clara.
+          accion={{ icono: 'add', etiqueta: 'Nuevo hábito', onPress: acciones.onNuevo, solida: !vacio }}
         />
       </Entrada>
 
@@ -239,9 +247,9 @@ export function HabitosVista({
               { valor: resumen.enForja, rotulo: 'En forja' },
               { valor: resumen.mejorRacha, rotulo: 'Mejor racha', sufijo: 'd', etiqueta: `Mejor racha: ${resumen.mejorRacha} días` },
               { valor: resumen.listos, rotulo: 'Listos' },
-              // Guion blando: a 375 la celda mide ~60 pt y «ADQUIRIDOS» no
-              // cabe; así corta por la sílaba y no por donde caiga.
-              { valor: resumen.adquiridos, rotulo: 'Adqui\u00ADridos', etiqueta: `Adquiridos: ${resumen.adquiridos}` },
+              // «Tuyos» y no «Adquiridos»: a 375 la celda mide ~60 pt y la
+              // palabra larga se partía.
+              { valor: resumen.adquiridos, rotulo: 'Tuyos', etiqueta: `Hábitos tuyos: ${resumen.adquiridos}` },
             ]}
           />
         </Entrada>
@@ -282,10 +290,12 @@ export function HabitosVista({
       ) : null}
 
       {/* Con la carga caída y nada que enseñar, la sección sobra. */}
+      {/* La sección entra entera (título incluido) como el bloque 3; las
+          losas no llevan Entrada propia: anidada, sumaría subida y retraso. */}
       {listo && !(error && enCurso.length === 0) ? (
-        <Section title="En forja" meta={enCurso.length > 0 ? `${enCurso.length}` : undefined}>
-          {vacio ? (
-            <Entrada indice={3}>
+        <Entrada indice={3}>
+          <Section title="En forja" meta={enCurso.length > 0 ? `${enCurso.length}` : undefined}>
+            {vacio ? (
               <TarjetaArena variante="contorno" remaches>
                 <EmptyState
                   icon="hammer-outline"
@@ -294,35 +304,29 @@ export function HabitosVista({
                   action={{ label: 'Añadir el primero', onPress: acciones.onNuevo, variant: 'solid' }}
                 />
               </TarjetaArena>
-            </Entrada>
-          ) : null}
+            ) : null}
 
-          {!vacio && !error && enCurso.length === 0 ? (
-            <Text style={styles.nota} maxFontSizeMultiplier={1.35}>
-              Nada en forja ahora mismo. Lo que ya es tuyo sigue abajo.
-            </Text>
-          ) : null}
+            {!vacio && !error && enCurso.length === 0 ? (
+              <Text style={styles.nota} maxFontSizeMultiplier={1.35}>
+                Nada en forja ahora mismo. Lo que ya es tuyo sigue abajo.
+              </Text>
+            ) : null}
 
-          <View style={dosColumnas ? styles.rejilla : styles.columna}>
-            {enCurso.map((q, i) => {
-              const p = progresos.get(q.id);
-              if (!p) return null;
-              const losa = <LosaHabito q={q} p={p} ocupado={ocupado} acciones={acciones} />;
-              // El que pide la decisión ocupa el ancho entero: su botón no cabe a media columna.
-              const celda = dosColumnas ? (p.consolidable ? styles.celdaAncha : styles.celda) : undefined;
-              // Entrada solo en las 8 primeras: del resto no se ve la cascada.
-              return i < TOPE_ESCALON ? (
-                <Entrada key={q.id} indice={3 + i} style={celda}>
-                  {losa}
-                </Entrada>
-              ) : (
-                <View key={q.id} style={celda}>
-                  {losa}
-                </View>
-              );
-            })}
-          </View>
-        </Section>
+            <View style={dosColumnas ? styles.rejilla : styles.columna}>
+              {enCurso.map((q, i) => {
+                const p = progresos.get(q.id);
+                if (!p) return null;
+                // El que pide la decisión ocupa el ancho entero: su botón no cabe a media columna.
+                const celda = dosColumnas ? (p.consolidable ? styles.celdaAncha : styles.celda) : undefined;
+                return (
+                  <View key={q.id} style={celda}>
+                    <LosaHabito q={q} p={p} indice={i} ocupado={ocupado} acciones={acciones} />
+                  </View>
+                );
+              })}
+            </View>
+          </Section>
+        </Entrada>
       ) : null}
 
       {listo && adquiridos.length > 0 ? (
@@ -357,6 +361,8 @@ export function HabitosVista({
 }
 
 const DIA = 22;
+/** Ancho de la columna de la racha en cada losa. */
+const COL_RACHA = 64;
 
 const styles = StyleSheet.create({
   bloque: { marginBottom: space.s6 },
@@ -379,15 +385,23 @@ const styles = StyleSheet.create({
   rejilla: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', rowGap: space.s3 },
   celda: { width: '48.5%' },
   celdaAncha: { width: '100%' },
-  cabeza: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: space.s3 },
+  cuerpo: { flexDirection: 'row', alignItems: 'stretch' },
+  // La racha es la protagonista: columna fija con hairline a la derecha.
+  colRacha: {
+    width: COL_RACHA,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingRight: space.s3,
+    marginRight: space.s3,
+    borderRightWidth: stroke.hairline,
+    borderRightColor: ink.ink4,
+  },
+  colTexto: { flex: 1, minWidth: 0 },
   nombre: {
-    flex: 1,
-    minWidth: 0,
     fontFamily: 'Outfit_600SemiBold',
     fontSize: 16,
     lineHeight: 21,
     color: ink.ink9,
-    paddingTop: space.s1,
   },
   racha: {
     fontFamily: tipo.cifra.family,
@@ -395,12 +409,15 @@ const styles = StyleSheet.create({
     lineHeight: tipo.cifra.lineHeight,
     color: ink.ink10,
     fontVariant: ['tabular-nums'],
+    textAlign: 'center',
   },
   objetivo: {
     fontFamily: tipo.micro.family,
-    fontSize: 13,
+    fontSize: tipo.micro.size,
+    lineHeight: tipo.micro.lineHeight,
     letterSpacing: tipo.micro.tracking,
     color: ink.ink6,
+    textAlign: 'center',
   },
   barra: { marginTop: space.s3 },
   pie: {

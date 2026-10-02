@@ -70,6 +70,9 @@ export function ListaRanking({
           `Nivel ${nivel}`,
           metrica !== 'racha' && b.streakDays > 0 ? `racha ${b.streakDays}` : null,
           invertida && c.titulo ? c.titulo : null,
+          // En mi fila invertida el laurel (ink10) no se vería sobre ink10:
+          // la insignia pasa a texto en el detalle.
+          invertida && c.insignia ? 'Élite' : null,
         ]
           .filter(Boolean)
           .join(' · ');
@@ -88,6 +91,14 @@ export function ListaRanking({
               onPress={!b.isMe ? () => onSafety(b) : undefined}
               onLongPress={quitar}
               disabled={b.isMe}
+              accessibilityActions={quitar ? [{ name: 'longpress', label: 'Quitar' }] : undefined}
+              onAccessibilityAction={
+                quitar
+                  ? (e) => {
+                      if (e.nativeEvent.actionName === 'longpress') quitar();
+                    }
+                  : undefined
+              }
               style={({ pressed }) => [styles.toque, pressed && styles.pulsada]}
               accessibilityRole={b.isMe ? undefined : 'button'}
               accessibilityLabel={`${c.valor === null ? 'Sin puesto' : `Puesto ${c.posicion}`}. ${b.isMe ? 'Tú' : b.name}${c.insignia ? `, ${INSIGNIA_ELITE_LABEL}` : ''}, nivel ${nivel}, ${valor}.${!b.isMe ? ' Toca para más opciones.' : ''}${quitar ? ' Mantén pulsado para quitar.' : ''}`}
@@ -116,7 +127,7 @@ export function ListaRanking({
                   >
                     {b.isMe ? `${b.name} · tú` : b.name}
                   </Text>
-                  {c.insignia ? <EliteBadge size={14} /> : null}
+                  {c.insignia && !invertida ? <EliteBadge size={14} /> : null}
                 </View>
                 <View style={styles.detalleFila}>
                   <Text
