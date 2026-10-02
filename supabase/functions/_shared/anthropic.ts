@@ -234,6 +234,16 @@ function admiteReserva(model: string): boolean {
 }
 
 /**
+ * Pensamiento adaptativo y `output_config.effort`: solo modelos 4.6 en
+ * adelante. Haiku 4.5 responde 400 a los dos (guía de la API, 2026-10-02):
+ * con él no se manda ninguno de los dos y responde sin pensamiento extendido.
+ * Rompía la ruta de registro (L3) y, en silencio, clasificar y el titular.
+ */
+export function admitePensamientoAdaptativo(model: string): boolean {
+  return !/^claude-haiku-4-5/.test(model.trim().toLowerCase());
+}
+
+/**
  * Las credenciales de la API compatible con OpenAI — DeepSeek, Gemini por su
  * capa compatible, Qwen, Kimi, Groq o la propia OpenAI —, si están puestas
  * (COACH_BASE_URL y COACH_API_KEY en los secretos del panel).
@@ -275,8 +285,12 @@ export async function callClaude(opts: CallOptions): Promise<Turn> {
       max_tokens: opts.maxTokens ?? 16000,
       // El pensamiento va en adaptativo (por defecto en Opus 5) y resumido
       // para poder mostrar "el sistema está pensando" en la app.
-      thinking: { type: 'adaptive', display: 'summarized' },
-      output_config: { effort: opts.effort ?? 'high' },
+      ...(admitePensamientoAdaptativo(model)
+        ? {
+            thinking: { type: 'adaptive', display: 'summarized' },
+            output_config: { effort: opts.effort ?? 'high' },
+          }
+        : {}),
       ...(admiteReserva(model) ? { fallbacks: 'default' } : {}),
       system: opts.system,
       messages: opts.messages,
