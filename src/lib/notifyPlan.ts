@@ -20,19 +20,25 @@
 
 import { rachaVisible, recuperacionDesbloqueada } from './closing';
 import type { Quest } from './types';
+import {
+  diaNum, diasEntre, DIAS_CADUCIDAD, DIAS_VUELTA_FINAL, enSilencio, faseCaducidad, keyDeNum,
+  MAX_PUSH_SERVIDOR_DIA, minutosDe, momentoDeCuando, normalizarAhora, pushDelServidorPermitido,
+  VENTANA_POR_DEFECTO, ventanaActiva, type FaseCaducidad, type Momento,
+} from './pushPolicy';
+
+// La política del servidor y la caducidad viven en pushPolicy.ts (sin
+// imports, espejo Deno); se reexportan para no romper a quien las importa aquí.
+export {
+  diasEntre, DIAS_CADUCIDAD, DIAS_VUELTA_FINAL, enSilencio, faseCaducidad, MAX_PUSH_SERVIDOR_DIA, minutosDe,
+  momentoDeCuando, pushDelServidorPermitido, VENTANA_POR_DEFECTO, ventanaActiva,
+};
+export type { FaseCaducidad, Momento };
 
 // ─── Constantes ──────────────────────────────────────────────────────────────
 
 export const MAX_LOCALES_DIA = 2;
-export const MAX_PUSH_SERVIDOR_DIA = 1;
 export const SEPARACION_MIN = 180;
 export const ENFRIAMIENTO_MIN = 24 * 60;
-export const DIAS_CADUCIDAD = 7;
-export const DIAS_VUELTA_FINAL = 30;
-/** Ventana activa por defecto (fuera de ella, silencio). */
-export const VENTANA_POR_DEFECTO = { inicio: 8 * 60, fin: 22 * 60 } as const;
-/** Una ventana más corta que esto es un dato corrupto: se usa la de defecto. */
-const VENTANA_MINIMA = 6 * 60;
 /** Hora del aviso de racha cuando no hay sleep_time. */
 const RACHA_SIN_SUENO = 21 * 60 + 30;
 const RACHA_ANTES_DE_DORMIR = 90;
@@ -65,11 +71,6 @@ const HORARIO: Record<Exclude<TipoAviso, 'racha'>, { pref: number; desde: number
 
 // ─── Tipos públicos ──────────────────────────────────────────────────────────
 
-/** Un instante en hora local de pared: clave de fecha + minuto del día. */
-export interface Momento {
-  fecha: string;
-  min: number;
-}
 
 /** Aviso del sistema ya entregado (o ya disparado) y su hora local. */
 export interface AvisoPasado {
@@ -124,34 +125,11 @@ export interface Aviso {
   prioridad: number;
 }
 
-export type FaseCaducidad = 'activa' | 'vuelta7' | 'silencio' | 'vuelta30' | 'apagada';
 
 // ─── Fechas sin zona horaria ─────────────────────────────────────────────────
 
-const KEY_RE = /^(\d{4})-(\d{2})-(\d{2})$/;
-const MOMENTO_RE = /^(\d{4}-\d{2}-\d{2})T(\d{2}):(\d{2})/;
 
-/** Días desde 1970-01-01 de una clave. Aritmética UTC pura: sin DST. */
-function diaNum(key: string): number | null {
-  const m = KEY_RE.exec(key);
-  if (!m) return null;
-  const y = Number(m[1]);
-  const mo = Number(m[2]);
-  const d = Number(m[3]);
-  if (mo < 1 || mo > 12 || d < 1 || d > 31) return null;
-  const t = Date.UTC(y, mo - 1, d);
-  // Rechaza fechas imposibles (2026-02-30 caería en marzo).
-  if (new Date(t).getUTCDate() !== d) return null;
-  return Math.round(t / 86400000);
-}
 
-function keyDeNum(n: number): string {
-  const d = new Date(n * 86400000);
-  const y = d.getUTCFullYear();
-  const m = String(d.getUTCMonth() + 1).padStart(2, '0');
-  const day = String(d.getUTCDate()).padStart(2, '0');
-  return `${y}-${m}-${day}`;
-}
 
 /** Suma días a una clave sin pasar por la zona horaria de la máquina. */
 export function sumarDias(key: string, n: number): string {
@@ -160,13 +138,6 @@ export function sumarDias(key: string, n: number): string {
   return keyDeNum(base + n);
 }
 
-/** Días entre dos claves (b − a). */
-export function diasEntre(a: string, b: string): number {
-  const na = diaNum(a);
-  const nb = diaNum(b);
-  if (na === null || nb === null) throw new Error(`Clave de fecha inválida: ${a} / ${b}`);
-  return nb - na;
-}
 
 /** 1 = lunes … 7 = domingo, sin zona horaria. */
 export function diaSemana(key: string): number {
@@ -176,16 +147,6 @@ export function diaSemana(key: string): number {
   return wd === 0 ? 7 : wd;
 }
 
-/** 'HH:MM' o 'HH:MM:SS' → minutos. null si no es una hora válida. */
-export function minutosDe(hora: string | null | undefined): number | null {
-  if (!hora) return null;
-  const m = /^(\d{1,2}):(\d{2})(?::\d{2})?$/.exec(hora.trim());
-  if (!m) return null;
-  const h = Number(m[1]);
-  const mi = Number(m[2]);
-  if (h > 23 || mi > 59) return null;
-  return h * 60 + mi;
-}
 
 export function hhmmDe(min: number): string {
   return `${String(Math.floor(min / 60)).padStart(2, '0')}:${String(min % 60).padStart(2, '0')}`;
@@ -195,15 +156,6 @@ export function cuandoDe(m: Momento): string {
   return `${m.fecha}T${hhmmDe(m.min)}`;
 }
 
-/** 'YYYY-MM-DDTHH:MM' → Momento. null si no es válido. */
-export function momentoDeCuando(cuando: string): Momento | null {
-  const m = MOMENTO_RE.exec(cuando);
-  if (!m || diaNum(m[1]) === null) return null;
-  const h = Number(m[2]);
-  const mi = Number(m[3]);
-  if (h > 23 || mi > 59) return null;
-  return { fecha: m[1], min: h * 60 + mi };
-}
 
 /** Minuto absoluto de pared (para distancias de 3 h y 24 h). */
 function absoluto(m: Momento): number {
@@ -234,26 +186,7 @@ export function fechaDeAviso(cuando: string): Date | null {
 
 // ─── Ventana activa y caducidad ──────────────────────────────────────────────
 
-/**
- * Minutos del día en los que se puede avisar: [inicio, fin). Fuera, silencio.
- * Si dormir cae pasada la medianoche, el día se corta en 24:00 (lo de después
- * de medianoche es de la noche anterior y no se usa).
- */
-export function ventanaActiva(wakeTime?: string | null, sleepTime?: string | null): { inicio: number; fin: number } {
-  const w = minutosDe(wakeTime);
-  const s = minutosDe(sleepTime);
-  const inicio = w ?? VENTANA_POR_DEFECTO.inicio;
-  let fin = s ?? VENTANA_POR_DEFECTO.fin;
-  if (fin <= inicio) fin += 1440;
-  if (fin - inicio < VENTANA_MINIMA) return { ...VENTANA_POR_DEFECTO };
-  return { inicio, fin: Math.min(fin, 1440) };
-}
 
-/** ¿Es hora de silencio? */
-export function enSilencio(min: number, wakeTime?: string | null, sleepTime?: string | null): boolean {
-  const v = ventanaActiva(wakeTime, sleepTime);
-  return min < v.inicio || min >= v.fin;
-}
 
 /** Minuto del aviso de racha: 90 min antes de dormir, o 21:30. */
 export function horaRacha(sleepTime?: string | null): number {
@@ -264,20 +197,6 @@ export function horaRacha(sleepTime?: string | null): number {
   return Math.min(fin - RACHA_ANTES_DE_DORMIR, 1439);
 }
 
-/**
- * En qué punto de la caducidad está. 0–6 días sin abrir: activa. Día 7: solo
- * la vuelta. 8–29: silencio. Día 30: la última vuelta. Después, nada.
- */
-export function faseCaducidad(ultimaApertura: string | null, hoy: string): { dias: number; fase: FaseCaducidad } {
-  const dias = ultimaApertura ? Math.max(0, diasEntre(ultimaApertura, hoy)) : 0;
-  let fase: FaseCaducidad;
-  if (dias < DIAS_CADUCIDAD) fase = 'activa';
-  else if (dias === DIAS_CADUCIDAD) fase = 'vuelta7';
-  else if (dias < DIAS_VUELTA_FINAL) fase = 'silencio';
-  else if (dias === DIAS_VUELTA_FINAL) fase = 'vuelta30';
-  else fase = 'apagada';
-  return { dias, fase };
-}
 
 /**
  * Último día en que pueden sonar avisos recurrentes del usuario (despertador,
@@ -348,12 +267,6 @@ function registrar(occ: Ocupacion, tipo: TipoAviso, m: Momento, local: boolean):
   occ.localesPorDia.set(m.fecha, (occ.localesPorDia.get(m.fecha) ?? 0) + 1);
 }
 
-function normalizarAhora(ahora: Momento | string): Momento | null {
-  if (typeof ahora === 'string') return momentoDeCuando(ahora);
-  if (!ahora || diaNum(ahora.fecha) === null) return null;
-  if (!Number.isInteger(ahora.min) || ahora.min < 0 || ahora.min > 1439) return null;
-  return ahora;
-}
 
 // ─── Candidatos de hoy ───────────────────────────────────────────────────────
 
@@ -482,27 +395,3 @@ export function planDeAvisos(estado: EstadoPlanAvisos, ahoraIn: Momento | string
   return avisos.sort((a, b) => (a.cuando < b.cuando ? -1 : a.cuando > b.cuando ? 1 : a.prioridad - b.prioridad));
 }
 
-/**
- * Regla para el ritual del servidor (se copia tal cual al espejo Deno): como
- * mucho UN push al día, solo en la ventana activa y solo mientras la app no
- * haya caducado (menos de 7 días sin abrir). En caducidad el servidor calla:
- * las dos vueltas son locales y no se duplican.
- */
-export function pushDelServidorPermitido(
-  args: {
-    ultimaApertura: string | null;
-    wakeTime?: string | null;
-    sleepTime?: string | null;
-    /** Push del ritual ya enviados hoy (fecha local). */
-    pushesHoy: number;
-  },
-  ahoraIn: Momento | string,
-): { ok: boolean; motivo: 'ok' | 'caducada' | 'silencio' | 'tope' | 'fecha' } {
-  const ahora = normalizarAhora(ahoraIn);
-  if (!ahora) return { ok: false, motivo: 'fecha' };
-  const apertura = args.ultimaApertura && diaNum(args.ultimaApertura) !== null ? args.ultimaApertura : ahora.fecha;
-  if (faseCaducidad(apertura, ahora.fecha).fase !== 'activa') return { ok: false, motivo: 'caducada' };
-  if (enSilencio(ahora.min, args.wakeTime, args.sleepTime)) return { ok: false, motivo: 'silencio' };
-  if (args.pushesHoy >= MAX_PUSH_SERVIDOR_DIA) return { ok: false, motivo: 'tope' };
-  return { ok: true, motivo: 'ok' };
-}
