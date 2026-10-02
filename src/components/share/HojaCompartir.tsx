@@ -78,7 +78,9 @@ export function HojaCompartir({
   // Alias pedido al encender el interruptor (undefined = aún no pedido).
   const [aliasPedido, setAliasPedido] = useState<string | null | undefined>(undefined);
   const [pidiendoAlias, setPidiendoAlias] = useState(false);
-  // Por qué no hay alias: no existe (no se reintenta) o falló la petición (sí).
+  // Por qué no hay alias: el servidor no lo da ahora (null) o falló la
+  // petición. En los dos casos se puede reintentar. Sin nombre aprobado, el
+  // servidor ya devuelve el genérico «Gladiador xxxxxx» (Chat 3), no null.
   const [sinAlias, setSinAlias] = useState<'ninguno' | 'error' | null>(null);
   const alias = aliasDado ?? aliasPedido ?? null;
   const vista = useRef<View>(null);
@@ -125,9 +127,13 @@ export function HojaCompartir({
     try {
       const a = await pedirAlias();
       const limpio = a && a.trim() ? a.trim() : null;
-      setAliasPedido(limpio);
-      if (limpio) setOpciones((o) => ({ ...o, mostrarNombre: true }));
-      else setSinAlias('ninguno');
+      if (limpio) {
+        setAliasPedido(limpio);
+        setOpciones((o) => ({ ...o, mostrarNombre: true }));
+      } else {
+        setAliasPedido(undefined);
+        setSinAlias('ninguno');
+      }
     } catch {
       // Un fallo de red no es «no tienes alias»: se deja reintentar.
       setAliasPedido(undefined);
@@ -253,7 +259,7 @@ export function HojaCompartir({
               la Card alerta del kit. */}
           {motivo ? <Aviso texto={motivo} trama /> : null}
           {aviso ? <Aviso texto={aviso} /> : null}
-          {sinAlias === 'ninguno' ? <Aviso texto="Aún no tienes alias público. Créalo en Amigos." /> : null}
+          {sinAlias === 'ninguno' ? <Aviso texto="Tu alias no está disponible ahora." /> : null}
           {sinAlias === 'error' ? <Aviso texto="No se ha podido traer tu alias. Prueba otra vez." /> : null}
           {error ? <Aviso texto={error} trama alerta /> : null}
           <Pressable
