@@ -35,19 +35,9 @@ import {
   type OpcionesTarjeta,
   type Tarjeta,
 } from '@/lib/sharecard';
+import { ink } from '@/design/tokens';
 import { fonts } from '@/lib/theme';
 
-// Tokens `ink` del Sistema de diseño v2 (src/design/tokens.ts, rama del Chat 4).
-// Copia literal hasta la integración: entonces se importan de allí.
-const ink = {
-  ink0: '#000000',
-  ink2: '#161616',
-  ink3: '#242424',
-  ink4: '#3A3A3A',
-  ink6: '#8C8C8C',
-  ink8: '#BDBDBD',
-  ink10: '#FFFFFF',
-} as const;
 
 export interface TarjetaCompartirProps {
   tarjeta: Tarjeta;
