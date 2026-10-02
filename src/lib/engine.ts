@@ -1,10 +1,19 @@
-import { computeDayClose, questsScheduledOn, reglasIncumplidas } from './closing';
+import {
+  computeDayClose,
+  questsScheduledOn,
+  recuperacionDesbloqueada,
+  reglasIncumplidas,
+  rotosSeguidosAntes,
+  TOPE_DIARIO_CONJUNTO,
+} from './closing';
 import { fetchRuleChecksRange, fetchRules } from './contract';
 import {
   applyDayCloseRpc,
   awardXpRpc,
   completeQuestRpc,
+  fetchCompletionsForDate,
   fetchCompletionsSince,
+  fetchQuests,
   insertEvent,
   updateProfile,
   uploadEvidence,
@@ -24,6 +33,8 @@ export interface DayCloseResult {
   levelsLost: number;
   stonesUsed: number;
   stonesEarned: number;
+  /** Días rotos que ya no se cobran por ser del cuarto en adelante (RET-02). */
+  diasSinCobrar: number;
 }
 
 type CierreResultado = { profile: Profile; result: DayCloseResult | null };
@@ -161,10 +172,12 @@ async function cerrarDias(profile: Profile, quests: Quest[]): Promise<CierreResu
   }
 
   const fromDate = addDays(profile.last_day_processed, 1);
-  const completions = await fetchCompletionsSince(fromDate);
+  // Una semana más atrás para saber cuántos días rotos seguidos traía (RET-02).
+  const completions = await fetchCompletionsSince(addDays(fromDate, -7));
   const completedKeys = new Set(completions.map((c) => `${c.date}|${c.quest_id}`));
 
   const close = computeDayClose({
+    rotosSeguidosPrevios: rotosSeguidosAntes({ fromDate, quests, completedKeys, freezeUntil: profile.freeze_until }),
     fromDate,
     today,
     quests,
@@ -190,11 +203,26 @@ async function cerrarDias(profile: Profile, quests: Quest[]): Promise<CierreResu
     freezeUntil: profile.freeze_until,
     xpPorRegla: RULE_BREAK_XP,
     topeDiario: DAILY_PENALTY_CAP,
+    diasExentos: new Set(close.diasExentos),
   });
-  const xpReglas = diasConReglasRotas.reduce((a, d) => a + d.xp, 0);
+
+  // RET-08: misiones y reglas comparten UN tope de 150 por día. Primero se
+  // cobran las misiones; las reglas, lo que quede hasta el tope.
+  const misionesPorDia = new Map(close.porDia.map((d) => [d.date, d.xp]));
+  let penaMisiones = 0;
+  let xpReglas = 0;
+  const reglasCobradas = new Set<string>();
+  for (const d of diasConReglasRotas) {
+    const yaMisiones = misionesPorDia.get(d.date) ?? 0;
+    const cabe = Math.max(0, TOPE_DIARIO_CONJUNTO - yaMisiones);
+    const xp = Math.min(d.xp, cabe);
+    xpReglas += xp;
+    if (xp > 0) reglasCobradas.add(d.date);
+  }
+  for (const d of close.porDia) penaMisiones += Math.min(d.xp, TOPE_DIARIO_CONJUNTO);
 
   const levelBefore = levelFromXp(profile.xp_total).level;
-  const calculado = close.penaltyXp + xpReglas;
+  const calculado = penaMisiones + xpReglas;
   const clearFreeze = !!(profile.freeze_until && profile.freeze_until < today);
 
   // Las recuperaciones: UNA por misiones y UNA por reglas (seis misiones de
@@ -204,8 +232,8 @@ async function cerrarDias(profile: Profile, quests: Quest[]): Promise<CierreResu
   // misiones, luego las reglas. El servidor (0035) vuelve a acotarlo exacto.
   const estimado = Math.min(calculado, profile.xp_total);
   const planes: { titulo: string; xp: number; health_data: boolean; deMisiones: boolean }[] = [];
-  if (close.penaltyXp > 0) {
-    planes.push({ titulo: 'Misión de penalización', xp: close.penaltyXp, health_data: false, deMisiones: true });
+  if (penaMisiones > 0) {
+    planes.push({ titulo: 'Misión de penalización', xp: penaMisiones, health_data: false, deMisiones: true });
   }
   if (diasConReglasRotas.length > 0) {
     const ultimo = diasConReglasRotas[diasConReglasRotas.length - 1]!;
@@ -296,7 +324,7 @@ async function cerrarDias(profile: Profile, quests: Quest[]): Promise<CierreResu
   }
   const recuperacionFallida = fallidas.some((f) => f.title === 'Misión de penalización');
 
-  if (close.penaltyXp > 0) {
+  if (penaMisiones > 0) {
     // Lo descontado de verdad, no lo calculado (invariante 6: auditable).
     await insertEvent(profile.id, 'penalty', { xp: recuperaMisiones, missed: close.missedTitles,
       health_data: quests.some(q => q.health_data && close.missedTitles.includes(q.title)),
@@ -322,14 +350,15 @@ async function cerrarDias(profile: Profile, quests: Quest[]): Promise<CierreResu
   }
 
   const result: DayCloseResult | null =
-    close.penaltyXp > 0 || close.streakLost || close.stonesUsed > 0
+    penaMisiones > 0 || close.streakLost || close.stonesUsed > 0 || close.diasExentos.length > 0
       ? {
-          penaltyXp: close.penaltyXp,
+          penaltyXp: penaMisiones,
           missedTitles: close.missedTitles,
           streakLost: close.streakLost,
           levelsLost: Math.max(0, levelBefore - levelAfter),
           stonesUsed: close.stonesUsed,
           stonesEarned: close.stonesEarned,
+          diasSinCobrar: close.diasExentos.length,
         }
       : null;
 
@@ -365,6 +394,22 @@ export async function completeQuest(
         ? 'Esta misión de penalización caducó a medianoche: la pérdida ya se consolidó.'
         : 'El día ha cambiado. Vuelve a abrir Hoy para ver las misiones de hoy.',
     );
+  }
+
+  // RET-03 «Regreso a la arena»: la recuperación se abre con un acto real de
+  // hoy (una misión normal ya completada). Cero XP extra.
+  if (quest.is_penalty) {
+    const [todas, hechas] = await Promise.all([fetchQuests(), fetchCompletionsForDate(today)]);
+    const abierta = recuperacionDesbloqueada(
+      questsScheduledOn(todas, today),
+      new Set(hechas.map((c) => c.quest_id)),
+      today,
+    );
+    if (!abierta) {
+      throw new ErrorVisible(
+        'Primero vuelve a la arena: completa hoy una de tus misiones y la recuperación quedará abierta.',
+      );
+    }
   }
 
   let evidencePath: string | null = null;
