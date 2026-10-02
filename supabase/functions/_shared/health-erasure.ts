@@ -6,10 +6,28 @@ const json = (status: number, body: unknown) => new Response(JSON.stringify(body
 });
 
 /** Same rule as account-erasure: only plain segments inside the caller's own folder. */
-function ownPaths(value: unknown, userId: string): value is string[] {
-  return Array.isArray(value) && value.length <= 100 && value.every(path =>
-    typeof path === 'string' && path.startsWith(`${userId}/`) && !/[\\\u0000]/.test(path)
-    && path.split('/').every(part => part !== '' && part !== '.' && part !== '..'));
+const ownPath = (path: unknown, userId: string): path is string =>
+  typeof path === 'string' && path.startsWith(`${userId}/`) && !/[\\\u0000]/.test(path)
+  && path.split('/').every(part => part !== '' && part !== '.' && part !== '..');
+
+// health_erasure_paths keeps 'evidence' as plain strings (format of the deployed
+// function) and lists 'progress' (body progress photos) as {bucket, path}.
+const BUCKETS = ['evidence', 'progress'] as const;
+type HealthObject = { bucket: typeof BUCKETS[number]; path: string };
+
+function ownObjects(value: unknown, userId: string): HealthObject[] | null {
+  if (!Array.isArray(value) || value.length > 100) return null;
+  const objects: HealthObject[] = [];
+  for (const item of value) {
+    if (typeof item === 'string') {
+      if (!ownPath(item, userId)) return null;
+      objects.push({ bucket: 'evidence', path: item });
+    } else if (item && typeof item === 'object' && (item as { bucket?: unknown }).bucket === 'progress'
+      && ownPath((item as { path?: unknown }).path, userId)) {
+      objects.push({ bucket: 'progress', path: (item as { path: string }).path });
+    } else return null;
+  }
+  return objects;
 }
 
 export const healthErasureHandler = (admin: Db, userClient: (token: string) => Db) => async (request: Request): Promise<Response> => {
@@ -34,16 +52,21 @@ export const healthErasureHandler = (admin: Db, userClient: (token: string) => D
     // Bounded work; a pending job can be resumed without re-enabling health.
     for (let batch = 0; batch < 20; batch++) {
       const { data: paths, error } = await user.rpc('health_erasure_paths', { p_job: job.job_id });
-      if (error || !ownPaths(paths, auth.user.id)) {
+      const objects = error ? null : ownObjects(paths, auth.user.id);
+      if (!objects) {
         return json(503, { error: 'El permiso está retirado. El borrado sigue pendiente.', pending: true });
       }
-      if (!paths.length) {
+      if (!objects.length) {
         const { data, error: finished } = await admin.rpc('complete_health_erasure', { p_user: auth.user.id, p_job: job.job_id });
         return !finished && data?.ok === true ? json(200, { ok: true })
           : json(503, { error: 'El permiso está retirado. Falta completar el borrado.', pending: true });
       }
-      const { error: removalError } = await admin.storage.from('evidence').remove(paths);
-      if (removalError) return json(503, { error: 'El permiso está retirado. Algunas fotos siguen pendientes de borrar.', pending: true });
+      for (const bucket of BUCKETS) {
+        const names = objects.filter(item => item.bucket === bucket).map(item => item.path);
+        if (!names.length) continue;
+        const { error: removalError } = await admin.storage.from(bucket).remove(names);
+        if (removalError) return json(503, { error: 'El permiso está retirado. Algunas fotos siguen pendientes de borrar.', pending: true });
+      }
     }
     return json(202, { ok: false, pending: true, error: 'El permiso está retirado. Reintenta para terminar de borrar las fotos restantes.' });
   } catch {
