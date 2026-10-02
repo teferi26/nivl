@@ -26,6 +26,11 @@ import { checkPassword, isValidEmail, isValidName, NAME_MAX_LENGTH } from '@/lib
 
 type Mode = 'signin' | 'signup';
 
+// Texto acordado con el Chat 3 (seguridad y datos): la cuenta es de Franky,
+// pero se crea dentro de NIVL, que trata datos propios.
+const CASILLA_LEGAL =
+  'He leído y acepto los Términos de Franky y de NIVL, y he leído sus Políticas de privacidad.';
+
 const STRENGTH_META = {
   debil: { label: 'Débil', color: colors.red, bars: 1 },
   media: { label: 'Media', color: colors.accentText, bars: 3 },
@@ -282,23 +287,35 @@ export default function Login() {
                   style={styles.checkRow}
                   accessibilityRole="checkbox"
                   accessibilityState={{ checked: accepted }}
-                  accessibilityLabel="Acepto los términos y la política de privacidad de Franky"
+                  accessibilityLabel={CASILLA_LEGAL}
                 >
                   <View style={[styles.checkbox, accepted && styles.checkboxOn]}>
                     {accepted ? <Ionicons name="checkmark" size={14} color={colors.bg} /> : null}
                   </View>
-                  <Text style={styles.checkText}>
-                    Acepto los{' '}
-                    <Text style={styles.link} onPress={() => Linking.openURL(FRANKY_TERMS_URL)}>
-                      términos
-                    </Text>{' '}
-                    y la{' '}
-                    <Text style={styles.link} onPress={() => Linking.openURL(FRANKY_PRIVACY_URL)}>
-                      política de privacidad
-                    </Text>{' '}
-                    de Franky.
-                  </Text>
+                  <Text style={styles.checkText}>{CASILLA_LEGAL}</Text>
                 </Pressable>
+                {/* Los enlaces van fuera de la casilla: dentro, VoiceOver y
+                    TalkBack leían la casilla entera y no llegaban a ellos. */}
+                <View style={styles.legalesRegistro}>
+                  {(
+                    [
+                      ['Términos de Franky', FRANKY_TERMS_URL],
+                      ['Privacidad de Franky', FRANKY_PRIVACY_URL],
+                      ['Términos de NIVL', LEGAL_URLS.terminos],
+                      ['Privacidad de NIVL', LEGAL_URLS.privacidad],
+                    ] as const
+                  ).map(([texto, url]) => (
+                    <Pressable
+                      key={url}
+                      onPress={() => Linking.openURL(url).catch(() => {})}
+                      hitSlop={6}
+                      accessibilityRole="link"
+                      accessibilityLabel={texto}
+                    >
+                      <Text style={styles.legalLink}>{texto}</Text>
+                    </Pressable>
+                  ))}
+                </View>
               </>
             ) : null}
 
@@ -346,9 +363,9 @@ export default function Login() {
               </Text>
             )}
 
-            {/* Los textos legales de NIVL, a la vista antes de entrar: la
-                casilla de arriba es la de Franky, que es quien guarda la cuenta. */}
-            <View style={styles.legales}>
+            {/* Los textos legales de NIVL, a la vista antes de entrar. Al crear
+                cuenta ya van los cuatro junto a la casilla. */}
+            {mode === 'signin' ? <View style={styles.legales}>
               <Pressable
                 onPress={() => Linking.openURL(LEGAL_URLS.terminos).catch(() => {})}
                 hitSlop={8}
@@ -366,7 +383,7 @@ export default function Login() {
               >
                 <Text style={styles.legalLink}>Privacidad de NIVL</Text>
               </Pressable>
-            </View>
+            </View> : null}
           </View>
         </ScrollView>
       </View>
@@ -456,6 +473,7 @@ const styles = StyleSheet.create({
   forgotText: { fontFamily: fonts.semibold, fontSize: 13, color: colors.accentText },
   legacy: { marginTop: 14, alignItems: 'center' },
   legacyText: { fontFamily: fonts.body, fontSize: 12, color: colors.textFaint },
+  legalesRegistro: { flexDirection: 'row', flexWrap: 'wrap', columnGap: 14, rowGap: 8, marginTop: 10, paddingLeft: 32 },
   legales: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 10, marginTop: 22 },
   legalLink: { fontFamily: fonts.body, fontSize: 12, color: colors.textDim, textDecorationLine: 'underline' },
   legalSep: { fontFamily: fonts.body, fontSize: 12, color: colors.textFaint },
