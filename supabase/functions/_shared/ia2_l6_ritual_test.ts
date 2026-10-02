@@ -95,7 +95,8 @@ Deno.test('L6 ritual: checkin a su hora → Haiku sin herramientas, mensaje en e
 
   const p = pushes(f);
   equal(p.length, 1);
-  const envio = (p[0].body as { body: string; data: { ruta: string } }[])[0];
+  const envio = (p[0].body as { title: string; body: string; data: { ruta: string } }[])[0];
+  equal(envio.title, 'Una pregunta del coach');
   equal(envio.body, TEXTO);
   equal(envio.data.ruta, '/(tabs)/coach');
 
@@ -271,7 +272,7 @@ Deno.test('Día 1: el único push es «Tu mes en imágenes» (prioridad mensual 
       }
       if (ruta === '/functions/v1/coach') {
         return c.body && JSON.stringify(c.body).includes('"periodo":"mensual"')
-          ? j({ slides: [{}, {}], fotos: 7 })
+          ? j({ slides: [{}, {}], fotos: 1 })
           : j({ text: 'Cierre del mes. '.repeat(40) });
       }
       if (ruta === '/auth/v1/logout') return new Response(null, { status: 204 });
@@ -289,6 +290,7 @@ Deno.test('Día 1: el único push es «Tu mes en imágenes» (prioridad mensual 
     const enviados = pushes(f);
     equal(enviados.length, 1, 'un solo push el día 1');
     ok(JSON.stringify(enviados[0].body).includes('Tu mes en im'), JSON.stringify(enviados[0].body));
+    ok(JSON.stringify(enviados[0].body).includes('1 foto.'), 'singular: «1 foto», no «1 fotos»');
   } finally {
     relojRitual.ahora = original;
     f.restaurar();

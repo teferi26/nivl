@@ -87,7 +87,7 @@ Deno.test('moderación: nuevos > 0 envía solo a los dispositivos de los owners,
     for (const m of mensajes) {
       equal(m.title, 'Moderación');
       equal(m.body, '2 denuncias o revisiones nuevas · 5 abiertas');
-      equal(m.data, undefined, 'sin carga extra');
+      deepEqual(m.data, { ruta: '/(tabs)' }, 'solo la ruta permitida, sin contenido');
     }
     // Con los consentimientos NEGADOS también sale: es operativo.
     ok(!fake.proveedor.length, 'no llama a ningún modelo');
@@ -105,6 +105,8 @@ Deno.test('moderación: el texto no lleva contenido aunque la RPC devolviera de 
     await (await handler(cron())).text();
     equal(enviados.length, 1);
     ok(!JSON.stringify(enviados[0].body).includes('SECRETO'));
+    // Singular bien concordado (L5-C del Chat 4).
+    equal((enviados[0].body as { body: string }[])[0].body, '1 denuncia o revisión nueva · 1 abierta');
   } finally {
     fake.restaurar();
   }

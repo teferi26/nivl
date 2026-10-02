@@ -38,6 +38,7 @@ import {
   pushesDeHoy,
 } from '../_shared/checkin.ts';
 import { consentimientoIa } from '../_shared/consent.ts';
+import { sinGuiones } from '../_shared/singuiones.ts';
 import { healthConsent, healthRevision, healthScopedClient, requireHealth } from '../_shared/health.ts';
 import { adminClient, type Db } from '../_shared/db.ts';
 import { espejarEntrada, espejoActivo } from '../_shared/notion.ts';
@@ -124,9 +125,9 @@ function horaDe(t: string): number {
 async function titular(sb: Db, userId: string, cuerpo: string): Promise<string> {
   await requireHealth(sb, userId);
   const plano = cuerpo.replace(/[*#_`]/g, '').replace(/\s+/g, ' ').trim();
-  if (plano.length <= 180) return plano;
+  if (plano.length <= 180) return sinGuiones(plano);
   try {
-    if ((await consentimientoIa(sb, userId)) !== true) return plano.slice(0, 240);
+    if ((await consentimientoIa(sb, userId)) !== true) return sinGuiones(plano.slice(0, 240));
     const turn = await callClaude({
       model: CHEAP_MODEL,
       signal: AbortSignal.timeout(30_000),
@@ -155,11 +156,11 @@ async function titular(sb: Db, userId: string, cuerpo: string): Promise<string> 
     }, { route: 'mecanica', tools_offered: 0, tool_calls: 0, iterations: 1 });
     if (ledgerErr) console.error('coach_runs insert failed (titular):', ledgerErr.message);
     const t = turn.content.filter((b) => b.type === 'text').map((b) => b.text ?? '').join('').trim();
-    if (t) return t.slice(0, 240);
+    if (t) return sinGuiones(t.slice(0, 240));
   } catch (e) {
     console.error('titular failed');
   }
-  return plano.slice(0, 240);
+  return sinGuiones(plano.slice(0, 240));
 }
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -207,7 +208,7 @@ export async function avisarModeracion(admin: Db): Promise<number> {
     const tokens = [...new Set(((filas ?? []) as { token?: unknown }[]).map((t) => t.token).filter((t): t is string => typeof t === 'string' && !!t))];
     if (!tokens.length) return 0;
 
-    const cuerpo = `${nuevos} denuncias o revisiones nuevas · ${abiertos} abiertas`;
+    const cuerpo = `${nuevos} ${nuevos === 1 ? 'denuncia o revisión nueva' : 'denuncias o revisiones nuevas'} · ${abiertos} ${abiertos === 1 ? 'abierta' : 'abiertas'}`;
     // Expo admite hasta 100 mensajes por petición.
     for (let i = 0; i < tokens.length; i += 100) {
       await fetch(EXPO_PUSH, {
@@ -221,6 +222,8 @@ export async function avisarModeracion(admin: Db): Promise<number> {
             sound: 'default',
             priority: 'high',
             channelId: 'sistema',
+            // Sin pantalla de moderación en la app: Hoy (ruta en RUTAS_PERMITIDAS de voice.ts).
+            data: { ruta: '/(tabs)' },
           })),
         ),
       }).catch(() => {});
@@ -551,7 +554,7 @@ export async function intentarCheckin(admin: Db, sb: Db, p: Perfil): Promise<str
     await sb.from('coach_threads').update({ last_message_at: relojRitual.ahora().toISOString() }).eq('id', hilo);
 
     if (politica.ok) {
-      await empujar(sb, p.id, 'El sistema', limpio, '/(tabs)/coach');
+      await empujar(sb, p.id, 'Una pregunta del coach', limpio, '/(tabs)/coach');
       return 'enviado';
     }
     return 'escrito_sin_push';
@@ -657,7 +660,7 @@ async function decidir(sb: Db, p: Perfil): Promise<Decision | null> {
       return {
         kind: 'escalada',
         message: 'Lleva cuatro días en silencio.',
-        titulo: 'El sistema te espera',
+        titulo: 'Tu coach te ha escrito',
         ruta: '/(tabs)/coach',
       };
     }
@@ -774,7 +777,7 @@ export async function handler(req: Request): Promise<Response> {
           sb,
           p.id,
           'Tu mes en imágenes',
-          `${fotosMes} fotos. El sistema ha montado el pase y cerrado el mes: toca para verlo.`,
+          `${fotosMes} ${fotosMes === 1 ? 'foto' : 'fotos'}. El sistema ha montado el pase y cerrado el mes: toca para verlo.`,
           '/resumen',
         );
       } else if (puedeEmpujar) {
