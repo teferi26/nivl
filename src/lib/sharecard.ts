@@ -13,10 +13,13 @@
 // Todo se expresa en `u` (1/100 del ancho): la vista previa del móvil y el
 // PNG/JPG final son la misma pieza a distinta escala.
 //
-// Privacidad: una tarjeta sale del móvil y la puede ver cualquiera. Por
-// defecto NO lleva datos de salud (peso, fotos corporales) ni el nombre; cada
-// cosa se activa a propósito en la hoja de compartir (`OpcionesTarjeta`). Una
-// tarjeta antes/después sin permiso para las fotos no se puede generar.
+// Privacidad (requisitos del Chat 3, docs/ia-v2/requisitos-seguridad.md §3):
+// una tarjeta sale del móvil y la puede ver cualquiera. Lleva solo una lista
+// cerrada: nivel, rango, título, racha, logro y, si se permite, el ALIAS
+// público (nunca el nombre real). Por defecto NO lleva datos de salud (peso,
+// fotos corporales); cada cosa se activa a propósito en la hoja de compartir
+// (`OpcionesTarjeta`), que abre siempre con todo apagado. Una tarjeta
+// antes/después sin permiso para las fotos no se puede generar.
 
 import { DOMINIO_NIVL, URL_NIVL } from './socialmath';
 
@@ -57,6 +60,7 @@ export type TipoTarjeta = Tarjeta['tipo'];
 
 /** Lo que el usuario decide en la hoja de compartir. Todo en false por defecto. */
 export interface OpcionesTarjeta {
+  /** Firma con el alias público aprobado (nunca el nombre real). */
   mostrarNombre: boolean;
   /** Fotos de cuerpo o de gimnasio: dato de salud. Obligatorio para antes/después. */
   mostrarFotos: boolean;
@@ -149,8 +153,8 @@ function kg(n: number): string {
  * emojis. Respeta las opciones de privacidad: lo que no se permite no aparece
  * ni en el texto.
  */
-export function textos(t: Tarjeta, opciones: OpcionesTarjeta = OPCIONES_POR_DEFECTO, nombre?: string | null): TextosTarjeta {
-  const quien = opciones.mostrarNombre && nombre && nombre.trim() ? recortar(nombre, MAX_NOMBRE) : null;
+export function textos(t: Tarjeta, opciones: OpcionesTarjeta = OPCIONES_POR_DEFECTO, alias?: string | null): TextosTarjeta {
+  const quien = opciones.mostrarNombre && alias && alias.trim() ? recortar(alias, MAX_NOMBRE) : null;
   const firma = quien ? `${quien} · ${DOMINIO_NIVL}` : DOMINIO_NIVL;
   switch (t.tipo) {
     case 'logro':
