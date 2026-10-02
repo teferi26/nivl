@@ -16,10 +16,16 @@
 //   de debajo queda oculto al lector de pantalla mientras está abierta.
 // - El avatar y el nombre de la ceremonia se releen al llegar cada acción
 //   (justo antes de que pueda salir una ceremonia), no una vez por usuario.
+// - Fotos (L5): `puedeCompartirFotos` se calcula en cada apertura, solo si la
+//   tarjeta lleva foto (`necesitaPermisoFotos`), leyendo 18+ y salud del
+//   servidor en paralelo con la salida del Modal. Con la misma espera que el
+//   código de amigo: la hoja abre con false y se enciende si llega a tiempo.
+//   Ante error o retraso, false.
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState, type ReactNode } from 'react';
 import { BackHandler, StyleSheet, View } from 'react-native';
+import { leerPuedeCompartirFotos, necesitaPermisoFotos } from '@/components/permisoFotos';
 import { HojaCompartir } from '@/components/share/HojaCompartir';
 import { Ceremony } from '@/components/ui/Ceremony';
 import { Toast } from '@/components/ui/Toast';
@@ -68,7 +74,12 @@ export function CelebracionProvider({ children }: { children: ReactNode }) {
   const { session, loading } = useAuth();
   const userId = session?.user.id ?? null;
   const [estado, dispatch] = useReducer(reducir, undefined, estadoInicial);
-  const [hoja, setHoja] = useState<{ tarjeta: Tarjeta; codigo: string | null; retratoUri: string | null } | null>(null);
+  const [hoja, setHoja] = useState<{
+    tarjeta: Tarjeta;
+    codigo: string | null;
+    retratoUri: string | null;
+    puedeCompartirFotos: boolean;
+  } | null>(null);
   const [yo, setYo] = useState<{ path: string | null; name: string }>({ path: null, name: 'Gladiador' });
   const relojes = useRef(new Map<string, ReturnType<typeof setTimeout>>());
   const avisos = useRef(0);
@@ -238,6 +249,15 @@ export function CelebracionProvider({ children }: { children: ReactNode }) {
           () => null,
         )
       : Promise.resolve(null);
+    // Permiso de fotos: solo se pregunta si la tarjeta lleva foto; nunca se recuerda.
+    let fotosListo = false;
+    const fotos: Promise<boolean> =
+      uid && necesitaPermisoFotos(t)
+        ? leerPuedeCompartirFotos().then((v) => {
+            fotosListo = v;
+            return v;
+          })
+        : Promise.resolve(false);
     void (async () => {
       await espera(ESPERA_HOJA_MS);
       if (aperturas.current !== n) return;
@@ -247,11 +267,24 @@ export function CelebracionProvider({ children }: { children: ReactNode }) {
       }
       const retratoUri = await Promise.race([retrato, espera(ESPERA_CODIGO_MS).then(() => null)]);
       if (aperturas.current !== n) return;
-      setHoja({ tarjeta: t, codigo: codigoListo, retratoUri });
-      if (codigoListo || !uid) return;
-      const tarde = await Promise.race([codigo, espera(ESPERA_CODIGO_MS).then(() => null)]);
-      if (aperturas.current !== n || userRef.current !== uid || !tarde) return;
-      setHoja((h) => (h && h.tarjeta === t ? { ...h, codigo: tarde } : h));
+      setHoja({ tarjeta: t, codigo: codigoListo, retratoUri, puedeCompartirFotos: fotosListo });
+      if (!uid) return;
+      // Lo que llegue tarde (código o permiso) entra si lo hace en ESPERA_CODIGO_MS.
+      const limite = espera(ESPERA_CODIGO_MS);
+      await Promise.all([
+        codigoListo
+          ? null
+          : Promise.race([codigo, limite.then(() => null)]).then((tarde) => {
+              if (aperturas.current !== n || userRef.current !== uid || !tarde) return;
+              setHoja((h) => (h && h.tarjeta === t ? { ...h, codigo: tarde } : h));
+            }),
+        fotosListo
+          ? null
+          : Promise.race([fotos, limite.then(() => false)]).then((ok) => {
+              if (aperturas.current !== n || userRef.current !== uid || !ok) return;
+              setHoja((h) => (h && h.tarjeta === t ? { ...h, puedeCompartirFotos: true } : h));
+            }),
+      ]);
     })();
   }, []);
 
@@ -324,7 +357,7 @@ export function CelebracionProvider({ children }: { children: ReactNode }) {
                 visible
                 onCerrar={cerrarHoja}
                 tarjeta={hoja.tarjeta}
-                contexto={{ puedeCompartirFotos: false }}
+                contexto={{ puedeCompartirFotos: hoja.puedeCompartirFotos }}
                 pedirAlias={pedirAlias}
                 codigoAmigo={hoja.codigo}
                 retratoUri={hoja.retratoUri}

@@ -18,6 +18,7 @@ import { useCelebracion } from '@/components/celebracion/contexto';
 import { SystemButton } from '@/components/SystemButton';
 import { avisar, Card, EmptyState, FadeIn, Row, RowValue, Screen, ScreenHeader, Section, Stagger, Tag, volver } from '@/components/ui';
 import { useConsentimientoIA } from '@/components/ConsentimientoIA';
+import { leerPuedeCompartirFotos } from '@/components/permisoFotos';
 import { vibrar } from '@/design/haptics';
 import { accessNotice, CoachAccessError, generarResumen } from '@/lib/coach';
 import { fetchRecaps, marcarVisto, urlFirmada, type Recap, type Slide } from '@/lib/photos';
@@ -111,12 +112,15 @@ function Pase({ recap, onSalir }: { recap: Recap; onSalir: () => void }) {
    * de la capa raíz (useCelebracion().compartir: nunca en un Modal, y la cola
    * de celebraciones se pausa mientras está abierta). El texto del coach y la
    * foto salen apagados: los enciende el usuario en la hoja, si quiere.
+   * La foto solo se descarga si se pueden compartir fotos (18+ y salud): sin
+   * permiso, ni siquiera llega a la caché.
    */
   const compartir = async () => {
     if (compartiendo || !slide) return;
     setCompartiendo(true);
     try {
-      const foto = slide.foto ? await fotoLocal(slide.foto, recap.period_start) : null;
+      const foto =
+        slide.foto && (await leerPuedeCompartirFotos()) ? await fotoLocal(slide.foto, recap.period_start) : null;
       const tarjeta: Tarjeta = {
         tipo: 'recuerdo',
         etiqueta: EYEBROW_SLIDE[slide.tipo],
