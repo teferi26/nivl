@@ -57,7 +57,7 @@ test('antes/después sin permiso de fotos o sin 18 años: error visible y sin ca
   await expect(compartirTarjeta({ ...base, tarjeta: progreso, contexto: { puedeCompartirFotos: true } })).rejects.toBeInstanceOf(ErrorVisible);
   await expect(
     compartirTarjeta({ ...base, tarjeta: progreso, opciones: { ...OPCIONES_POR_DEFECTO, mostrarFotos: true } }),
-  ).rejects.toThrow(/18 años/);
+  ).rejects.toThrow(/mayor de 18/);
   expect(captureRef).not.toHaveBeenCalled();
   expect(Sharing.shareAsync).not.toHaveBeenCalled();
 });

@@ -142,8 +142,8 @@ describe('privacidad', () => {
   });
 
   it('las fotos de progreso solo se comparten con 18 años o más, y por defecto no', () => {
-    expect(bloqueo(progreso, todo)).toMatch(/18 años/);
-    expect(bloqueo(progreso, todo, { puedeCompartirFotos: false })).toMatch(/18 años/);
+    expect(bloqueo(progreso, todo)).toMatch(/mayor de 18/);
+    expect(bloqueo(progreso, todo, { puedeCompartirFotos: false })).toMatch(/mayor de 18/);
     expect(fotosVisibles(progreso, todo)).toEqual([]);
     expect(formatoArchivo(progreso, todo).formato).toBe('png');
   });
