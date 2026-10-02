@@ -40,7 +40,7 @@ Requisito de SDK: Apple exige compilar con el SDK de iOS 26 o posterior desde el
 - [ ] El arreglo del Chat 3 a `start_trial` está integrado, o A5 prueba que la prueba arranca con la salud rechazada.
 - [ ] Sin «Google Play» en la UI de iOS (Chat 2: proplans/pro.tsx; Chat 4: perfil.tsx).
 - [ ] `/privacidad` coherente con lo que se conserva de verdad (sin plazo legal fijado) y `/terminos` citando la EULA estándar de Apple, o la frase de la respuesta ajustada.
-- [ ] Paywall con los 5 planes y enlaces legales confirmado por el Chat 2 en `[BUILD]`.
+- [ ] Paywall con los 5 planes y enlaces legales confirmado por el Chat 2 en `[BUILD]` (candidato @b11c2d2). La offering de RevenueCat devuelve los 5 productos, sin «Algún plan no está disponible…».
 - [x] Territorios decididos (165) y `[N]` sustituido.
 - [ ] Cuentas Pro y Élite con la concesión vigente ([cuentas-demo.md](cuentas-demo.md)).
 - [ ] Capturas coherentes con la build final ([apple-ficha-capturas-productos.md](apple-ficha-capturas-productos.md)).

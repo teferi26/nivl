@@ -35,8 +35,9 @@ Es una grabación de un iPhone y aporta valor como demostración parcial (`coord
 4. Preparar las cuentas ([cuentas-demo.md](cuentas-demo.md)):
    - **D** (desechable): se crea en cámara y se borra al final;
    - **U2** (segundo usuario): servirá para denunciarlo y bloquearlo, y tiene que tener ya una relación con D (solicitud de amistad o ludus de prueba). Para que D, recién creada, pueda verlo, la solicitud se envía desde U2 durante la grabación (en otro dispositivo o desde la web), o la escena 6 se graba con la cuenta Gratis de revisión, que ya tiene ese vínculo. Decidir y ensayarlo antes. Nunca denunciar a usuarios reales.
-5. Ensayar el recorrido entero una vez. Si algo falla, se corrige y se graba de nuevo. No se esconde nada en el montaje.
-6. Cerrar la app del todo (deslizar en el selector de apps) y empezar la grabación de pantalla desde el Centro de control.
+5. Comprobar que los 5 productos están adjuntos a la versión en ASC y que la offering de RevenueCat los devuelve todos: abrir Perfil > «NIVL Pro» y verificar que **no** aparece «Algún plan no está disponible…». Si aparece, no grabar.
+6. Ensayar el recorrido entero una vez. Si algo falla, se corrige y se graba de nuevo. No se esconde nada en el montaje.
+7. Cerrar la app del todo (deslizar en el selector de apps) y empezar la grabación de pantalla desde el Centro de control.
 
 ## Recorrido (una sola toma; unos 6–9 minutos)
 
@@ -57,7 +58,7 @@ Es una grabación de un iPhone y aporta valor como demostración parcial (`coord
 
 **4. Coach e IA.** (La salud tiene que estar aceptada en la escena 3: hoy `start_trial` falla si se rechazó el consentimiento de salud, trigger 0030, hasta que se integre el arreglo del Chat 3.) Perfil > fila «NIVL Pro» → «Probar el coach 7 días» si la cuenta tiene derecho → aparece el consentimiento de IA con los proveedores → «Acepto y activo el coach» → pestaña Coach → enviar «Ayúdame a organizar mi día de mañana» → mostrar la respuesta.
 
-**5. Suscripciones (lo que más mira Apple).**
+**5. Suscripciones (lo que más mira Apple).** Grabar SIEMPRE en Perfil > «NIVL Pro» (`/pro`), donde los planes salen antes que los beneficios. **No** grabarlo en el último paso del onboarding: ahí los 5 productos no caben sin desplazar la pantalla (Chat 2 @b11c2d2).
 - Volver a «NIVL Pro» → «Suscribirme» (con la prueba activa) o directamente el selector de planes.
 - Recorrer **los cinco planes**: «Pro» → mensual y anual; «Élite» → mensual, anual y fundador. En cada uno, mantener la imagen unos 2 segundos para que se lean el **título**, la **duración** y el **precio** de la tienda.
 - Mostrar el texto de renovación automática y el aviso de energía mensual.
