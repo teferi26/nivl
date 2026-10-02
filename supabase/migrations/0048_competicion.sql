@@ -1,15 +1,14 @@
--- PROPUESTA (Chat 5) · Competición entre amigos: ligas privadas y duelos semanales.
--- NO es una migración aplicada. El número lo asigna el coordinador. Revisión y
--- pruebas en rollback: Chat 3 (requisitos-seguridad.md §5).
+-- NIVL · 0048 — Competición entre amigos: ligas privadas, duelos semanales,
+-- foto fija diaria (daily_scorecards) y última apertura (last_open_on).
 --
--- Aditiva y compatible con 1.0.7: tablas y RPC nuevas; friends_board y
--- elite_group_board no se tocan. Sin XP en juego: solo se mide.
--- Las fórmulas replican src/lib/competition.ts (indiceDisciplina, velocidad,
--- resolverDuelo). Si tocas una, toca la otra.
+-- Chat 5 (lógica de juego), revisión de seguridad del Chat 3. Aditiva y
+-- compatible con 1.0.7: tablas y RPC nuevas; friends_board,
+-- elite_group_board y las firmas existentes no se tocan. NO toca
+-- export_my_data (la exportación consolidada es la 0060 del Chat 3).
+-- Sin XP en juego: la competición mide, no paga. Las fórmulas replican
+-- src/lib/competition.ts (si tocas una, toca la otra).
 --
--- Pendiente de integrar en la misma migración (lo hace el coordinador sobre la
--- última versión de require_health_write, 0035): añadir 'duel_won',
--- 'duel_lost', 'duel_draw', 'league_joined' a la lista de eventos generales.
+-- Huella: to_regclass('public.daily_scorecards') is not null
 
 begin;
 
@@ -52,12 +51,21 @@ revoke all on public.private_leagues, public.league_members, public.duels from a
 -- Lectura solo de lo propio; toda escritura va por RPC.
 grant select on public.private_leagues, public.league_members, public.duels to authenticated;
 
+-- Pertenencia por función security definer: una política de league_members
+-- que consultara league_members entraría en recursión de RLS.
+create or replace function public._es_miembro(p_league uuid, p_user uuid) returns boolean
+language sql stable security definer set search_path = public as $$
+  select exists (select 1 from public.league_members m where m.league_id = p_league and m.user_id = p_user);
+$$;
+revoke all on function public._es_miembro(uuid, uuid) from public, anon;
+grant execute on function public._es_miembro(uuid, uuid) to authenticated;
+
 drop policy if exists "ligas: solo miembros" on public.private_leagues;
 create policy "ligas: solo miembros" on public.private_leagues for select to authenticated
-  using (exists (select 1 from public.league_members m where m.league_id = id and m.user_id = auth.uid()));
+  using (public._es_miembro(id, auth.uid()));
 drop policy if exists "miembros: solo de mis ligas" on public.league_members;
 create policy "miembros: solo de mis ligas" on public.league_members for select to authenticated
-  using (exists (select 1 from public.league_members m where m.league_id = league_members.league_id and m.user_id = auth.uid()));
+  using (public._es_miembro(league_id, auth.uid()));
 drop policy if exists "duelos: solo las partes" on public.duels;
 create policy "duelos: solo las partes" on public.duels for select to authenticated
   using (auth.uid() in (challenger, opponent));
@@ -358,5 +366,105 @@ revoke all on function public.league_create(text), public.league_add_member(uuid
 grant execute on function public.league_create(text), public.league_add_member(uuid, uuid), public.league_leave(uuid),
   public.league_board(uuid), public.my_league_standing(), public.duel_challenge(uuid), public.duel_respond(uuid, boolean),
   public.my_duels() to authenticated;
+
+-- ── Última apertura (plan de avisos, docs/game-v2/PLAN-AVISOS.md) ───────
+-- El ritual necesita saber cuándo se abrió la app por última vez para no
+-- escribir a quien lleva una semana fuera (caducidad 7/30 días) y respetar
+-- el tope de 1 push al día. Fecha LOCAL del usuario (safe_tz). La escribe
+-- touch_open(), que el cliente llama al abrir; null = cliente antiguo.
+alter table public.profiles add column if not exists last_open_on date;
+
+create or replace function public.touch_open() returns date
+language plpgsql security definer set search_path = public as $$
+declare u uuid := auth.uid(); v_hoy date;
+begin
+  if u is null then raise exception 'No autenticado' using errcode = '42501'; end if;
+  select (now() at time zone public.safe_tz(p.timezone))::date into v_hoy from public.profiles p where p.id = u;
+  update public.profiles set last_open_on = v_hoy
+    where id = u and last_open_on is distinct from v_hoy;
+  return v_hoy;
+end $$;
+revoke all on function public.touch_open() from public, anon;
+grant execute on function public.touch_open() to authenticated;
+
+-- ── Tipos de evento generales (sobre require_health_write de 0035) ──────
+-- Se conserva todo lo que ya permitía y se añaden duel_won, duel_lost,
+-- duel_draw y league_joined (sin datos de salud).
+CREATE OR REPLACE FUNCTION public.require_health_write()
+ RETURNS trigger
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+declare u uuid:=new.user_id; is_health boolean; parent_table text; parent_key text; parent_owned boolean;
+begin
+  -- Deleting the account remains available after withdrawal. Cascades may
+  -- clear nullable references while auth.users is already gone; no new data
+  -- can survive that transaction (all owner FKs cascade from auth.users).
+  if pg_trigger_depth()>1 and not exists(select 1 from auth.users where id=u) then return new; end if;
+  if tg_op='UPDATE' then
+    if new.user_id is distinct from old.user_id then raise exception 'No se puede cambiar el titular' using errcode='42501'; end if;
+    -- Narrow redaction-only escape for the service erasure RPC after an
+    -- explicitly requested pending job. Every economic field must be identical.
+    if tg_table_name in ('money_plan','budgets','transactions','category_rules') then
+      if auth.role()='service_role' and old.health_note and not new.health_note
+        and exists(select 1 from public.health_erasure_jobs where user_id=u and status='pending') then
+        if tg_table_name in ('money_plan','budgets') then
+          if new.rationale is null and (to_jsonb(new)-array['rationale','health_note'])=(to_jsonb(old)-array['rationale','health_note']) then return new; end if;
+        elsif tg_table_name='transactions' then
+          if new.description='Descripción retirada' and (to_jsonb(new)-array['description','health_note'])=(to_jsonb(old)-array['description','health_note']) then return new; end if;
+        elsif tg_table_name='category_rules' then
+          if not new.active and new.pattern='__nivl_removed_'||new.id::text
+            and (to_jsonb(new)-array['pattern','active','health_note'])=(to_jsonb(old)-array['pattern','active','health_note']) then return new; end if;
+        end if;
+      end if;
+    end if;
+    if tg_table_name='completions' then
+      if auth.role()='service_role' and new.evidence_url is null
+        and (to_jsonb(new)-'evidence_url')=(to_jsonb(old)-'evidence_url')
+        and exists(select 1 from public.health_erasure_jobs where user_id=u and status='pending') then return new; end if;
+    end if;
+  end if;
+  -- RLS on a child alone does not enforce ownership of its referenced parent.
+  select x.t,x.k into parent_table,parent_key from (values
+    ('completions','quests','quest_id'),('quest_photos','quests','quest_id'),
+    ('rule_checks','rules','rule_id'),('rule_breaks','rules','rule_id'),
+    ('dungeon_tasks','dungeons','dungeon_id'),('gym_exercises','gym_days','gym_day_id'),
+    ('gym_sessions','gym_days','gym_day_id'),('gym_lifts','gym_sessions','session_id'),
+    ('day_blocks','day_plans','plan_id'),('coach_messages','coach_threads','thread_id')
+  ) x(child,t,k) where x.child=tg_table_name;
+  if parent_table is not null and to_jsonb(new)->>parent_key is not null then
+    execute format('select exists(select 1 from public.%I where id=$1 and user_id=$2)',parent_table)
+      into parent_owned using (to_jsonb(new)->>parent_key)::uuid,u;
+    if not parent_owned then raise exception 'Referencia ajena' using errcode='42501'; end if;
+  end if;
+  if tg_table_name='events' then
+    -- Old client APIs pass titles rather than IDs. Preserve known provenance
+    -- when they copy a health-tagged mission, rule, campaign or goal.
+    if exists(select 1 from public.quests q where q.user_id=u and q.title=new.payload->>'quest' and public.health_row('quests',to_jsonb(q)))
+      or exists(select 1 from public.rules r where r.user_id=u and r.text=new.payload->>'rule' and public.health_row('rules',to_jsonb(r)))
+      or exists(select 1 from public.dungeons d where d.user_id=u and d.title=new.payload->>'dungeon' and public.health_row('dungeons',to_jsonb(d)))
+      or exists(select 1 from public.goals g where g.user_id=u and g.title=new.payload->>'goal' and public.health_row('goals',to_jsonb(g))) then new.health_data:=true; end if;
+  end if;
+  is_health:=public.health_row(tg_table_name,to_jsonb(new));
+  if tg_op='UPDATE' then is_health:=is_health or public.health_row(tg_table_name,to_jsonb(old)); end if;
+  if is_health then
+    perform public.assert_health_write(u);
+    -- A health-derived record cannot be laundered by clearing its marker.
+    if to_jsonb(new) ? 'health_data' then new:=jsonb_populate_record(new,jsonb_build_object('health_data',true)); end if;
+    if to_jsonb(new) ? 'health_note' then new:=jsonb_populate_record(new,jsonb_build_object('health_note',true)); end if;
+  end if;
+  if tg_table_name='events' then
+    if not is_health then
+      if new.type not in ('quest_completed','bonus_earned','habit_acquired','dungeon_task','dungeon_cleared','goal_achieved','rule_broken','penalty','stone_used','stone_earned','streak_lost','level_up','freeze_on','freeze_off','commitment_signed','onboarding_goal','trial_started','creator_referral','pro_interest','duel_won','duel_lost','duel_draw','league_joined') then
+        perform public.assert_health_write(u);
+        new.health_data:=true;
+      else new.payload:=public.general_event_payload(new.payload);
+      end if;
+    end if;
+  end if;
+  return new;
+end $function$
+;
 
 commit;
