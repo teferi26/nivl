@@ -3,7 +3,7 @@
 //
 // Perfil sin sesión ni Supabase: PerfilVista con un perfil de mentira y la
 // vitrina escrita a mano (ACHIEVEMENTS vive junto a supabase). Ajustes = null.
-import { perfilDemo } from '@/components/arena/demoDatos';
+import { perfilDemo, YO_DEMO } from '@/components/arena/demoDatos';
 import type { DemoPantalla } from '@/components/arena/galeria';
 import { Screen } from '@/components/ui';
 import { estadoDe, type RangoId } from '@/lib/progression';
@@ -20,9 +20,6 @@ const ACCIONES: PerfilAcciones = {
   onLogro: nada,
   onReintentar: nada,
 };
-
-/** Los mismos números que el estado «Lleno» de Hoy (hoy/demo.tsx): nivel 23 con 9.300 de 11.030 XP. */
-const XP_NIVEL_23 = 105321;
 
 const ORDEN: RangoId[] = ['E', 'D', 'C', 'B', 'A', 'S'];
 
@@ -139,12 +136,12 @@ export const DEMO: DemoPantalla | null = {
       render: () => (
         <Pantalla
           datos={datosDemo({
-            // Racha 12 y 2 piedras: los de perfilDemo, como en Hoy.
-            perfil: { xp_total: XP_NIVEL_23, xp_fue: 25800, xp_vit: 19200, xp_int: 23300, xp_agi: 13500, xp_per: 18200 },
-            rango: 'A',
+            // «Yo» tal cual (YO_DEMO): nivel 23, racha 12 y 2 piedras, como en Hoy y Amigos.
+            perfil: {},
+            rango: YO_DEMO.rango,
             ganados: 7,
-            titulo: 'El Constante',
-            equipado: 'El Constante',
+            // Sin título equipado: lleva el del rango, el mismo que enseña Hoy.
+            titulo: YO_DEMO.titulo,
             diasActivos: 312,
             stats: { total: 418, withEvidence: 151 },
             rachaFrase: '12 días seguidos. La arena ya sabe tu nombre.',

@@ -8,22 +8,39 @@ import type { Profile, Quest } from '@/lib/types';
 /** «Hoy» fijo de la galería: los estados no cambian según el día en que se miren. */
 export const HOY_DEMO = '2026-10-02';
 
-/** Perfil de un gladiador a medio camino (nivel ~23, rango A). */
+/**
+ * «Yo» en todas las demos: la misma persona en Hoy, Perfil, Amigos y el resto.
+ * Nivel 23 con 9.300 de 11.030 XP (84 %), rango A «Héroe de la arena», racha
+ * 12 y 2 piedras. `xpTotal` es lo único que se guarda: el nivel sale de
+ * levelFromXp(105321).
+ */
+export const YO_DEMO = {
+  id: 'demo-usuario',
+  nombre: 'Teferi',
+  xpTotal: 105321,
+  nivel: 23,
+  rango: 'A',
+  titulo: 'Héroe de la arena',
+  racha: 12,
+  piedras: 2,
+} as const;
+
+/** Perfil de «yo» (YO_DEMO): nivel 23, rango A. Los cambios lo convierten en otro. */
 export function perfilDemo(p: Partial<Profile> = {}): Profile {
   return {
-    id: 'demo-usuario',
-    name: 'Teferi',
+    id: YO_DEMO.id,
+    name: YO_DEMO.nombre,
     avatar_url: null,
-    xp_total: 31840,
-    xp_fue: 8200,
-    xp_vit: 6100,
-    xp_int: 7400,
-    xp_agi: 4300,
-    xp_per: 5840,
-    streak_days: 12,
+    xp_total: YO_DEMO.xpTotal,
+    xp_fue: 25800,
+    xp_vit: 19200,
+    xp_int: 23300,
+    xp_agi: 13500,
+    xp_per: 18200,
+    streak_days: YO_DEMO.racha,
     perfect_streak_days: 4,
     last_day_processed: '2026-10-01',
-    protection_stones: 2,
+    protection_stones: YO_DEMO.piedras,
     freeze_until: null,
     freeze_reason: null,
     equipped_title: null,

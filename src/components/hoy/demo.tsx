@@ -3,7 +3,7 @@
 // datos con derivarHoy y se le pasan por props. Tocar una misión la marca en
 // local, para ver cómo la inversión pasa a la siguiente.
 import { useMemo, useState } from 'react';
-import { HOY_DEMO, misionDemo, perfilDemo } from '@/components/arena/demoDatos';
+import { HOY_DEMO, misionDemo, perfilDemo, YO_DEMO } from '@/components/arena/demoDatos';
 import type { DemoPantalla } from '@/components/arena/galeria';
 import type { DayCloseResult } from '@/lib/engine';
 import type { DayBlock, PlanConBloques } from '@/lib/plan';
@@ -13,9 +13,8 @@ import { derivarHoy, type EntradaHoy } from './derivarHoy';
 import { HoyVista } from './HoyVista';
 
 const nada = () => {};
-/** Nivel 23 con 9.300 de 11.030 XP (84 %): rango A, como en Main.dc. */
-const XP_NIVEL_23 = 105321;
-const perfil = (p: Parameters<typeof perfilDemo>[0] = {}) => perfilDemo({ xp_total: XP_NIVEL_23, ...p });
+/** «Yo» (YO_DEMO): nivel 23 con 9.300 de 11.030 XP (84 %), rango A, como en Main.dc. */
+const perfil = perfilDemo;
 /** 16:10: el bloque de las 16:00 es el de ahora. */
 const AHORA = 16 * 60 + 10;
 
@@ -97,7 +96,7 @@ const fila = (p: Partial<BoardEntry> & { userId: string; name: string }): BoardE
 });
 
 const MARCADOR: BoardEntry[] = [
-  fila({ userId: 'demo-usuario', name: 'Teferi', isMe: true, friendshipId: null, xpWindow: 860 }),
+  fila({ userId: YO_DEMO.id, name: YO_DEMO.nombre, isMe: true, friendshipId: null, xpWindow: 860 }),
   fila({ userId: 'marta', name: 'Marta', xpWindow: 910 }),
   fila({ userId: 'luis', name: 'Luis', xpWindow: 540 }),
 ];
@@ -117,7 +116,7 @@ const base = (p: Partial<EntradaHoy> = {}): EntradaHoy => ({
   hoy: HOY_DEMO,
   hora: 16,
   profile: perfil(),
-  rango: 'A',
+  rango: YO_DEMO.rango,
   tituloEquipado: null,
   quests: [entrenar, leer, diario, propuesta, paseo],
   completions: { [entrenar.id]: hecha(entrenar, 75) },

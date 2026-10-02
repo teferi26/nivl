@@ -5,6 +5,7 @@
 // hacen nada y <Competicion> (el slot) va a null. Estados: lleno (con podio),
 // dos-rivales (solo la línea), vacio (la arena sin nadie) y cargando.
 import { router } from 'expo-router';
+import { YO_DEMO } from '@/components/arena/demoDatos';
 import type { DemoPantalla } from '@/components/arena/galeria';
 import type { Rank } from '@/design/tokens';
 import { conInsignias, SIN_LUDUS } from '@/lib/elite';
@@ -41,24 +42,30 @@ function gladiador(p: Partial<BoardEntry> & { name: string }): BoardEntry {
   };
 }
 
+/** «Yo» (YO_DEMO): nivel 23, rango A, racha 12, como en Hoy y Perfil. */
 const YO = gladiador({
-  name: 'Teferi',
+  userId: YO_DEMO.id,
+  name: YO_DEMO.nombre,
   isMe: true,
   friendshipId: null,
   xpWindow: 1840,
   compliancePct: 86,
   completed: 31,
-  streakDays: 12,
-  xpTotal: 31840,
+  streakDays: YO_DEMO.racha,
+  xpTotal: YO_DEMO.xpTotal,
+  daysActive: 7,
 });
 
+// El nivel de cada uno (levelFromXp) casa con su rango de RANGOS (rangoDeNivel):
+// Lucía 31 (S), Marcos 24 (A), Irene 17 (B), Dani 11 (C), Sara 6 (D), Álvaro 4
+// y Nerea 3 (E, sin corona). El orden de la semana no sigue al del total.
 const RIVALES: BoardEntry[] = [
-  gladiador({ name: 'Lucía', xpWindow: 2410, compliancePct: 94, completed: 34, streakDays: 41, xpTotal: 58200 }),
-  gladiador({ name: 'Marcos', xpWindow: 2020, compliancePct: 88, completed: 30, streakDays: 9, xpTotal: 27100 }),
-  gladiador({ name: 'Irene', xpWindow: 1505, compliancePct: 80, completed: 26, streakDays: 22, xpTotal: 19400 }),
-  gladiador({ name: 'Dani', xpWindow: 1120, compliancePct: 71, completed: 22, streakDays: 4, xpTotal: 9800 }),
-  gladiador({ name: 'Sara', xpWindow: 860, compliancePct: 62, completed: 18, streakDays: 0, xpTotal: 6100 }),
-  gladiador({ name: 'Álvaro', xpWindow: 410, compliancePct: 40, completed: 9, streakDays: 2, xpTotal: 2300 }),
+  gladiador({ name: 'Lucía', xpWindow: 2410, compliancePct: 94, completed: 34, streakDays: 41, xpTotal: 207400 }),
+  gladiador({ name: 'Marcos', xpWindow: 2020, compliancePct: 88, completed: 30, streakDays: 9, xpTotal: 112600 }),
+  gladiador({ name: 'Irene', xpWindow: 1505, compliancePct: 80, completed: 26, streakDays: 22, xpTotal: 47900 }),
+  gladiador({ name: 'Dani', xpWindow: 1120, compliancePct: 71, completed: 22, streakDays: 4, xpTotal: 14800 }),
+  gladiador({ name: 'Sara', xpWindow: 860, compliancePct: 62, completed: 18, streakDays: 0, xpTotal: 3100 }),
+  gladiador({ name: 'Álvaro', xpWindow: 410, compliancePct: 40, completed: 9, streakDays: 2, xpTotal: 1200 }),
   gladiador({ name: 'Nerea', xpWindow: 0, compliancePct: null, completed: 0, streakDays: 0, xpTotal: 900 }),
 ];
 
@@ -132,7 +139,7 @@ function base(board: readonly BoardEntry[], cambios: Partial<AmigosVistaProps> =
     elegirMetricaLudus: nada,
     ludusVisibles: [],
     rankingLudus: [],
-    miRango: 'A',
+    miRango: YO_DEMO.rango,
     rangos: RANGOS,
     cambiarPeticion: false,
     setCambiarPeticion: nada,

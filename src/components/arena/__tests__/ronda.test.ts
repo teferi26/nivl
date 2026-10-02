@@ -75,8 +75,10 @@ describe('galea pequeña', () => {
     expect(GALEA_PATH_PEQUENA).toContain(' 20H');
   });
 
-  it('comparte la silueta con la grande', () => {
-    const silueta = GALEA_PATH.split(' M7.8')[0];
-    expect(GALEA_PATH_PEQUENA.startsWith(silueta)).toBe(true);
+  it('se apoya en la misma base que la grande', () => {
+    // La grande va de perfil y la pequeña de frente, pero las dos tienen la
+    // barbilla en la línea base: cambiar de tamaño no las hace saltar.
+    expect(GALEA_PATH).toContain(' 20H');
+    expect(GALEA_PATH_PEQUENA).toContain(' 20H');
   });
 });

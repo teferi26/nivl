@@ -15,28 +15,27 @@ export type CrownKind = 'casco' | 'laurel' | 'corona_arena';
 export const BASE_CORONA = 20;
 
 /**
- * La galea: el casco del mirmilón visto de frente, de un trazo. Cresta fina
- * de aleta, cúpula, ala ancha que cae hacia los lados y visera de placa que
- * se estrecha hacia la barbilla, con los dos ojos redondos enrejados (una
- * barra vertical y otra horizontal en cada uno, como los de Pompeya). A 16 px
- * la silueta (cresta, ala, placa) ya dice casco y los ojos se cierran en dos
- * puntos; a 48 y 96 se ve la rejilla. La reutiliza el CoachMark (negro sobre
- * círculo blanco).
+ * La galea: el casco del mirmilón visto de perfil (mira a la derecha), de un
+ * trazo. Cresta alta en abanico que se vence hacia delante, con tres varillas;
+ * cúpula baja; ala ancha que cae hacia la nuca y se levanta en la frente; y la
+ * visera abombada con una rejilla de tres barras horizontales finas. Sin ojos
+ * redondos: de frente, dos ojos bajo un ala se leían como una cara con gafas
+ * de sol y sombrero. Se usa por encima de 24 (CoachMark de 48 y 64, la galea
+ * de 96 del Coach y la del jefe de campaña); por debajo, GALEA_PATH_PEQUENA.
  */
 export const GALEA_PATH =
-  'M10.8 6C10.8 3.2 11.2 1.2 12 1.2S13.2 3.2 13.2 6' + // cresta
-  ' M5.5 12.5V11.5C5.5 7.8 8.4 6 12 6S18.5 7.8 18.5 11.5V12.5' + // cúpula
-  ' M1.5 14C3 12.9 4.5 12.5 6.5 12.5H17.5C19.5 12.5 21 12.9 22.5 14' + // ala
-  ' M6.5 12.5L7.1 18Q7.4 20 9.4 20H14.6Q16.6 20 16.9 18L17.5 12.5' + // visera
-  ' M7.8 15.5A1.7 1.7 0 1 0 11.2 15.5A1.7 1.7 0 1 0 7.8 15.5' + // ojo izquierdo
-  ' M12.8 15.5A1.7 1.7 0 1 0 16.2 15.5A1.7 1.7 0 1 0 12.8 15.5' + // ojo derecho
-  ' M9.5 13.8V17.2M7.8 15.5H11.2M14.5 13.8V17.2M12.8 15.5H16.2'; // rejilla
+  'M7.4 8.4C6.6 4.6 9.6 1.4 14.2 1.2C16.8 2.8 17.8 6 16.8 9.6' + // cresta en abanico
+  ' M10.2 7.6L10.8 3M12.6 7.4L13.8 2.2M14.8 8L16.2 4' + // varillas de la cresta
+  ' M4.6 12.5C4.6 9.2 7.6 7.4 11 7.4C14.4 7.4 17.4 9 17.8 12.5' + // cúpula
+  ' M1.4 16.4C2.6 14.2 3.8 12.5 6 12.5H17.8C19.4 12.5 20.8 12.2 22.2 11.4' + // ala
+  ' M7.4 12.5C7.4 16.4 8.4 19.2 10.8 20H16.8C18.6 20 19.6 18.8 19.7 16.6C19.8 14.6 19 13.2 17.8 12.5' + // visera
+  ' M11.6 12.5V20M11.6 14.6H19.5M11.6 16.6H19.7M11.6 18.6H19.4'; // rejilla
 
 /**
  * La galea para 24 o menos (CoachMark pequeño, junto a cada mensaje del
- * coach): a ese tamaño los dos ojos redondos se leían como una cara con gafas
- * de sol. Misma silueta (cresta, cúpula, ala y placa) con una sola ranura
- * horizontal de visera.
+ * coach): de frente, con cresta, cúpula, ala, placa y una sola ranura de
+ * visera. El perfil de la grande se empasta a ese tamaño (la cresta y la
+ * rejilla se funden en una «A»); esta silueta se sigue leyendo como casco.
  */
 export const GALEA_PATH_PEQUENA =
   'M10.8 6C10.8 3.2 11.2 1.2 12 1.2S13.2 3.2 13.2 6' + // cresta
@@ -45,7 +44,7 @@ export const GALEA_PATH_PEQUENA =
   ' M6.5 12.5L7.1 18Q7.4 20 9.4 20H14.6Q16.6 20 16.9 18L17.5 12.5' + // visera
   ' M9.2 15.6H14.8'; // ranura
 
-/** Por debajo de este tamaño (incluido) la galea va sin ojos. */
+/** Hasta este tamaño (incluido) la galea va de frente y sin rejilla. */
 export const GALEA_TAM_PEQUENA = 24;
 
 const LAUREL_PATH =

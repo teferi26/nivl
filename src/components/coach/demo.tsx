@@ -104,6 +104,13 @@ export const DEMO: DemoPantalla | null = {
       ),
     },
     {
+      // El hilo empezado con el cuadro vacío: se ven las píldoras de acción
+      // rápida y el micrófono fijo junto a enviar (Pro, sin grabar, sin turno).
+      id: 'conversacion-lista',
+      titulo: 'Conversación lista',
+      render: () => <CoachVista {...base({ burbujas: HILO.slice(0, 2) })} />,
+    },
+    {
       id: 'vacio-pro',
       titulo: 'Vacío con Pro',
       render: () => <CoachVista {...base({ vacio: true, burbujas: [], consultas: 0 })} />,

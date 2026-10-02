@@ -177,10 +177,11 @@ describe('galea', () => {
     expect(GALEA_PATH).toContain(` ${BASE_CORONA}H`);
   });
 
-  it('cresta, cúpula, ala, visera, dos ojos y una rejilla de pocas barras', () => {
-    // Seis piezas (cresta, cúpula, ala, visera y los dos ojos) y cuatro barras
-    // cortas de rejilla, una cruz por ojo: nada de cuadrícula.
-    expect(comandos(GALEA_PATH, 'M')).toBe(6 + 4);
-    expect(comandos(GALEA_PATH, 'A')).toBe(4);
+  it('de perfil: cresta en abanico, cúpula, ala, visera y rejilla de barras horizontales', () => {
+    // Cuatro piezas (cresta, cúpula, ala y visera), tres varillas de la
+    // cresta y la rejilla (su borde y tres barras). Sin ojos: ni un arco.
+    expect(comandos(GALEA_PATH, 'M')).toBe(4 + 3 + 4);
+    expect(comandos(GALEA_PATH, 'A')).toBe(0);
+    expect(comandos(GALEA_PATH, 'H')).toBeGreaterThanOrEqual(3 + 2);
   });
 });
