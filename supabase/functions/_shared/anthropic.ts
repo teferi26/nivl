@@ -1,6 +1,8 @@
 // NIVL · Cliente de la API de Claude para las Edge Functions.
 // La key vive como secret del servidor y jamás llega al cliente.
 
+import { FiltroGuiones, sanearPeticion, sinGuiones, sinGuionesProfundo } from './singuiones.ts';
+
 // Sonnet 5 es el coach. La decisión es de coste medido, no de gusto: con Opus
 // el turno salía a 0,42 $ en frío, que para el uso real que se le va a dar son
 // del orden de 150 €/mes. La tarea de coach no lo necesita — es leer un estudio
@@ -279,7 +281,7 @@ export function proveedorCompatible(): { baseUrl: string; apiKey: string } | nul
  * completos (texto, pensamiento y llamadas a herramientas) listos para
  * reenviarse tal cual en el siguiente turno.
  */
-export async function callClaude(opts: CallOptions): Promise<Turn> {
+async function callClaudeCrudo(opts: CallOptions): Promise<Turn> {
   const model = opts.model ?? COACH_MODEL;
   const signal = opts.signal ?? AbortSignal.timeout(PLAZO_LLAMADA_MS);
   const res = await fetch('https://api.anthropic.com/v1/messages', {
@@ -427,4 +429,39 @@ export async function callClaude(opts: CallOptions): Promise<Turn> {
   if (stopReason === 'refusal') throw new RefusalError(stopCategory);
 
   return { content: blocks.filter(Boolean), stopReason, usage, model: servedModel };
+}
+
+/**
+ * Orden del dueño (02/10/2026): ningún texto de la IA lleva «—» ni «–». Todo
+ * pasa por aquí: los fragmentos en streaming (filtrados por líneas, para no
+ * romper un guion partido) y el turno final (texto y entradas de herramientas,
+ * que también acaban a la vista: títulos, planes, diario). El pensamiento no se
+ * toca: la API exige devolverlo tal cual.
+ */
+export function sanearTurno(turn: Turn): Turn {
+  return {
+    ...turn,
+    content: turn.content.map((b) =>
+      b.type === 'text' && typeof b.text === 'string'
+        ? { ...b, text: sinGuiones(b.text) }
+        : b.type === 'tool_use' && b.input !== undefined
+        ? { ...b, input: sinGuionesProfundo(b.input) }
+        : b
+    ),
+  };
+}
+
+/** callClaudeCrudo con el saneado de guiones en el stream y en el resultado. */
+export async function callClaude(opts: CallOptions): Promise<Turn> {
+  const filtro = new FiltroGuiones();
+  const onText = opts.onText
+    ? (d: string) => {
+      const s = filtro.push(d);
+      if (s) opts.onText!(s);
+    }
+    : undefined;
+  const turn = await callClaudeCrudo(sanearPeticion({ ...opts, onText }));
+  const resto = filtro.fin();
+  if (resto && opts.onText) opts.onText(resto);
+  return sanearTurno(turn);
 }

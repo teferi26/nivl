@@ -16,6 +16,8 @@
 // ida y a la vuelta, así que las 21 herramientas, el estudio, la doctrina y la
 // memoria funcionan igual con cualquier proveedor.
 
+import { FiltroGuiones, sanearPeticion } from './singuiones.ts';
+import { sanearTurno } from './anthropic.ts';
 import { estimarFichas, LlamadaFallida, PLAZO_LLAMADA_MS, type ApiMessage, type ContentBlock, type Turn, type Usage } from './anthropic.ts';
 
 export interface OpcionesCompat {
@@ -133,7 +135,7 @@ function aFunciones(tools: unknown[] | undefined) {
  * herramientas, la contabilidad y la persistencia no se enteran de con quién
  * están hablando.
  */
-export async function callOpenAICompat(opts: OpcionesCompat): Promise<Turn> {
+async function callOpenAICompatCrudo(opts: OpcionesCompat): Promise<Turn> {
   const cuerpo = JSON.stringify({
     model: opts.model,
     max_tokens: opts.maxTokens ?? 8000,
@@ -281,4 +283,19 @@ export function usoCompatible(u: any): Usage {
     cache_read_input_tokens: cacheados,
     cache_creation_input_tokens: 0,
   };
+}
+
+/** callOpenAICompatCrudo con el saneado de guiones (ver sanearTurno en anthropic.ts). */
+export async function callOpenAICompat(opts: OpcionesCompat): Promise<Turn> {
+  const filtro = new FiltroGuiones();
+  const onText = opts.onText
+    ? (d: string) => {
+      const s = filtro.push(d);
+      if (s) opts.onText!(s);
+    }
+    : undefined;
+  const turn = await callOpenAICompatCrudo(sanearPeticion({ ...opts, onText }));
+  const resto = filtro.fin();
+  if (resto && opts.onText) opts.onText(resto);
+  return sanearTurno(turn);
 }

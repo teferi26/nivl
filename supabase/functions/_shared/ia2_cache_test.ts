@@ -16,6 +16,7 @@
 //   · Un simulador de caché sobre las peticiones REALES del handler (backend
 //     simulado) mide la escritura por turno antes/después.
 
+import { sinGuionesProfundo, sinGuionesProtegido } from './singuiones.ts';
 import { deepEqual, equal, ok } from 'node:assert/strict';
 import { instalar, peticion, turnoHerramienta, turnoTexto } from './sec_coach_fake_test.ts';
 import { buildSystem, COACH_SYSTEM, DATOS_ABRE, SISTEMA_FIJO } from './prompt.ts';
@@ -117,8 +118,8 @@ Deno.test('cache: la petición del handler lleva 3 puntos (fijo, dinámico, hist
     equal(marcasEn(body), 3);
     ok(body.system[N_FIJO - 1].cache_control, 'punto tras la parte fija');
     ok(body.system.at(-1)!.cache_control, 'punto tras dossier + estado');
-    deepEqual(body.system.slice(0, N_FIJO).map((b) => b.text), [...SISTEMA_FIJO]);
-    equal(JSON.stringify(body.tools), JSON.stringify(TOOL_DEFS), 'herramientas deterministas');
+    deepEqual(body.system.slice(0, N_FIJO).map((b) => b.text), [...SISTEMA_FIJO].map(sinGuionesProtegido));
+    equal(JSON.stringify(body.tools), JSON.stringify(sinGuionesProfundo(TOOL_DEFS)), 'herramientas deterministas');
     equal(body.tool_choice, undefined, 'con tiempo, tool_choice por defecto (auto)');
   } finally {
     fake.restaurar();
