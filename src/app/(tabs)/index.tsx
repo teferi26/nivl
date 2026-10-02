@@ -4,7 +4,7 @@ import * as Haptics from 'expo-haptics';
 import * as ImagePicker from 'expo-image-picker';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Alert, Animated, Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import { Animated, Linking, Platform, Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { Avatar } from '@/components/Avatar';
 import { CompletarSheet, type ModoCompletar } from '@/components/CompletarSheet';
 import { LevelUpOverlay } from '@/components/LevelUpOverlay';
@@ -27,6 +27,7 @@ import {
   SkeletonRows,
   Stagger,
 } from '@/components/ui';
+import { avisar, confirmar } from '@/components/ui/confirmar';
 import { evaluateAchievements, unlockAchievements } from '@/lib/achievements';
 import { useAuth } from '@/lib/auth';
 import { completionStats, ensureProfile, fetchCompletionsForDate, fetchQuests } from '@/lib/data';
@@ -43,6 +44,7 @@ import {
   reconciliarAvisosDelDia,
 } from '@/lib/notifications';
 import { fetchAiStatus, isPro } from '@/lib/pro';
+import { registrarDispositivo } from '@/lib/push';
 import { fetchBoard, type BoardEntry } from '@/lib/social';
 import { clasificar, DIAS_VENTANA, lineaRivalidad } from '@/lib/socialmath';
 import { colors, fonts } from '@/lib/theme';
@@ -120,8 +122,9 @@ export default function Hoy() {
     try {
       // Aquí NO se siembran misiones por defecto: quien eligió "Empezar sin
       // misiones" en el onboarding, o borró las suyas, ve el estado vacío.
-      let prof = await ensureProfile(userId);
-      let quests = await fetchQuests();
+      // Las misiones se leen por RLS y no dependen de que el perfil exista:
+      // las dos lecturas van a la vez.
+      let [prof, quests] = await Promise.all([ensureProfile(userId), fetchQuests()]);
       const { profile: processed, result } = await processPendingDays(prof, quests);
       prof = processed;
       if (result && result.penaltyXp > 0) {
@@ -179,8 +182,12 @@ export default function Hoy() {
   // cada vez que cambia el plan o los horarios. Ojo con lo que había antes
   // aquí: llamaba a cancelAllScheduledNotificationsAsync en cada montaje, así
   // que abrir esta pestaña borraba todo lo programado.
+  // Con permiso, el dispositivo se registra para el push del coach (upsert
+  // idempotente: repetirlo en cada montaje no duplica nada).
   useEffect(() => {
-    inicializarAvisos();
+    inicializarAvisos()
+      .then((ok) => (ok ? registrarDispositivo() : null))
+      .catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -200,7 +207,12 @@ export default function Hoy() {
     if (!health.accepted) { health.ask(); return null; }
     const perm = await ImagePicker.requestCameraPermissionsAsync();
     if (!perm.granted) {
-      Alert.alert('Sin cámara', 'El sistema necesita la cámara para registrar evidencias.');
+      const mensaje = 'El sistema necesita la cámara para registrar evidencias.';
+      if (Platform.OS === 'web') {
+        avisar('Sin cámara', mensaje);
+      } else if (await confirmar({ titulo: 'Sin cámara', mensaje, confirmar: 'Abrir ajustes' })) {
+        Linking.openSettings().catch(() => {});
+      }
       return null;
     }
     const result = await ImagePicker.launchCameraAsync({
@@ -251,22 +263,28 @@ export default function Hoy() {
         setTimeout(() => Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {}), 260);
       }
 
-      const stats = await completionStats();
-      const fresh = await unlockAchievements(
-        userId,
-        evaluateAchievements({
-          totalCompletions: stats.total,
-          evidenceCount: stats.withEvidence,
-          streak: res.profile.streak_days,
-          level: levelFromXp(res.profile.xp_total).level,
-          penaltyRedeemed: res.wasPenalty,
-        }),
-      );
-      if (fresh.length > 0 && !res.leveledUp) {
-        Alert.alert('LOGRO DESBLOQUEADO', `${voice.achievement()}\n${fresh.map((a) => a.name).join('\n')}`);
+      // La misión ya está pagada: un fallo al calcular logros no puede
+      // enseñar "Error del sistema" sobre algo que sí ha salido bien.
+      try {
+        const stats = await completionStats();
+        const fresh = await unlockAchievements(
+          userId,
+          evaluateAchievements({
+            totalCompletions: stats.total,
+            evidenceCount: stats.withEvidence,
+            streak: res.profile.streak_days,
+            level: levelFromXp(res.profile.xp_total).level,
+            penaltyRedeemed: res.wasPenalty,
+          }),
+        );
+        if (fresh.length > 0 && !res.leveledUp) {
+          avisar('LOGRO DESBLOQUEADO', `${voice.achievement()}\n${fresh.map((a) => a.name).join('\n')}`);
+        }
+      } catch {
+        // Los logros se vuelven a evaluar en la siguiente misión o al cierre.
       }
     } catch (e) {
-      Alert.alert('Error del sistema', mensajeSistema(e));
+      avisar('Error del sistema', mensajeSistema(e));
     }
   };
 
@@ -340,7 +358,7 @@ export default function Hoy() {
       // completar la última misión.
       setTarjeta(await prepararDatosSemana(userId));
     } catch (e) {
-      Alert.alert('Error del sistema', mensajeSistema(e));
+      avisar('Error del sistema', mensajeSistema(e));
     } finally {
       setPreparandoTarjeta(false);
     }
@@ -594,6 +612,9 @@ export default function Hoy() {
         <FadeIn index={4}>
           <Section title="Misiones de hoy" meta={sorted.length > 0 ? `${completedCount}/${sorted.length}` : undefined}>
             {sorted.length === 0 ? (
+              // Con la carga fallida no se sabe si hay misiones: el aviso de
+              // arriba ya lo dice y aquí no se afirma "Nada programado".
+              loadError ? null : (
               <Card variant="outline">
                 <EmptyState
                   compact
@@ -603,6 +624,7 @@ export default function Hoy() {
                   action={{ label: 'Ir a Hábitos', onPress: () => router.push('/(tabs)/habitos') }}
                 />
               </Card>
+              )
             ) : (
               <Card padded={false} style={styles.questCard}>
                 {sorted.map((q, i) => (

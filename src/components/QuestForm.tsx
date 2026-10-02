@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import {
-  Alert,
   KeyboardAvoidingView,
   Modal,
   Platform,
@@ -12,6 +11,7 @@ import {
   View,
 } from 'react-native';
 import { Chip, ChipWrap } from '@/components/ui';
+import { avisar, confirmar } from '@/components/ui/confirmar';
 import type { QuestInput } from '@/lib/data';
 import {
   BONUS_BY_DIFFICULTY,
@@ -22,6 +22,7 @@ import {
   XP_BY_DIFFICULTY,
 } from '@/lib/game';
 import { colors, fonts } from '@/lib/theme';
+import { mensajeSistema } from '@/lib/validation';
 import type { Difficulty, Quest, Stat } from '@/lib/types';
 import { SystemButton } from './SystemButton';
 
@@ -95,33 +96,28 @@ export function QuestForm({ visible, onClose, onSubmit, initial, onDelete }: Pro
       });
       onClose();
     } catch (e) {
-      Alert.alert('Error del sistema', e instanceof Error ? e.message : 'No se pudo guardar');
+      avisar('Error del sistema', mensajeSistema(e));
     } finally {
       setSaving(false);
     }
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (!initial || !onDelete) return;
-    Alert.alert(
-      'Eliminar misión',
-      `"${initial.title}" y todo su historial de completadas. Esta acción no se puede deshacer.`,
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Eliminar',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await onDelete(initial);
-              onClose();
-            } catch (e) {
-              Alert.alert('Error del sistema', e instanceof Error ? e.message : 'No se pudo eliminar');
-            }
-          },
-        },
-      ],
-    );
+    const ok = await confirmar({
+      titulo: 'Eliminar misión',
+      mensaje: `"${initial.title}" y todo su historial de completadas. Esta acción no se puede deshacer.`,
+      confirmar: 'Eliminar',
+      destructivo: true,
+    });
+    if (!ok) return;
+    try {
+      // La hoja solo se cierra si se ha borrado de verdad.
+      await onDelete(initial);
+      onClose();
+    } catch (e) {
+      avisar('Error del sistema', mensajeSistema(e));
+    }
   };
 
   const pago = isBonus
@@ -134,7 +130,7 @@ export function QuestForm({ visible, onClose, onSubmit, initial, onDelete }: Pro
         <Pressable style={styles.backdropTap} onPress={onClose} accessibilityRole="button" accessibilityLabel="Cerrar" />
         <View style={styles.sheet}>
           <View style={styles.sheetHandle} />
-          <ScrollView automaticallyAdjustKeyboardInsets keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+          <ScrollView keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
             <Text style={styles.sheetEyebrow}>{editing ? 'EDITAR MISIÓN' : 'NUEVA MISIÓN'}</Text>
             <Text style={styles.sheetTitle}>{editing ? 'Ajusta la misión' : '¿Qué vas a exigirte?'}</Text>
 

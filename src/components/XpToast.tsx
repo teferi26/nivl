@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
-import { Animated, StyleSheet, Text } from 'react-native';
+import { AccessibilityInfo, Animated, StyleSheet, Text } from 'react-native';
+import { useMovimientoReducido } from '@/components/ui/motion';
 import { colors, fonts } from '@/lib/theme';
 
 interface Props {
@@ -11,6 +12,7 @@ interface Props {
 
 // "+62 XP" flotante que asciende y se desvanece al completar una misión.
 export function XpToast({ xp, bonus, unit = 'XP', onDone }: Props) {
+  const reducido = useMovimientoReducido();
   const translateY = useRef(new Animated.Value(0)).current;
   const opacity = useRef(new Animated.Value(0)).current;
   // onDone por ref: si fuera dependencia del efecto, cada render del padre
@@ -20,12 +22,15 @@ export function XpToast({ xp, bonus, unit = 'XP', onDone }: Props) {
 
   useEffect(() => {
     if (xp === null) return;
+    // El aviso flota y se va: quien usa lector de pantalla lo oye.
+    AccessibilityInfo.announceForAccessibility(`+${xp} ${unit}`);
     translateY.setValue(0);
     opacity.setValue(0);
     const anim = Animated.sequence([
       Animated.parallel([
-        Animated.timing(opacity, { toValue: 1, duration: 180, useNativeDriver: true }),
-        Animated.timing(translateY, { toValue: -26, duration: 900, useNativeDriver: true }),
+        Animated.timing(opacity, { toValue: 1, duration: reducido ? 0 : 180, useNativeDriver: true }),
+        // Con "reducir movimiento" no sube: aparece, se queda y se apaga.
+        Animated.timing(translateY, { toValue: reducido ? 0 : -26, duration: 900, useNativeDriver: true }),
       ]),
       Animated.timing(opacity, { toValue: 0, duration: 350, useNativeDriver: true }),
     ]);
@@ -34,6 +39,8 @@ export function XpToast({ xp, bonus, unit = 'XP', onDone }: Props) {
     });
     // Cancela la animación anterior antes de arrancar la nueva (toasts encadenados).
     return () => anim.stop();
+    // `unit` y `reducido` no reinician el aviso: solo cuenta un xp nuevo.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [xp, translateY, opacity]);
 
   if (xp === null) return null;

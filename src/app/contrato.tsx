@@ -3,7 +3,6 @@ import * as Haptics from 'expo-haptics';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useRef, useState } from 'react';
 import {
-  Alert,
   KeyboardAvoidingView,
   Modal,
   Platform,
@@ -30,6 +29,8 @@ import {
   Stat,
   StatRow,
 } from '@/components/ui';
+import { avisar, confirmar } from '@/components/ui/confirmar';
+import { volver } from '@/components/ui/Screen';
 import { useAuth } from '@/lib/auth';
 import {
   breakRule,
@@ -65,6 +66,7 @@ import {
   XP_BY_DIFFICULTY,
 } from '@/lib/game';
 import { colors, fonts } from '@/lib/theme';
+import { mensajeSistema } from '@/lib/validation';
 import type { Letter, Profile, Rule } from '@/lib/types';
 
 // Plantilla basada en el cuaderno "CAMINO AL ÉXITO" del usuario, adaptada
@@ -137,7 +139,7 @@ export default function Contrato() {
       setSpentWeek(reds.reduce((s, r) => s + r.amount, 0));
       setLetter(lt);
     } catch (e) {
-      Alert.alert('Error del sistema', e instanceof Error ? e.message : 'Fallo desconocido');
+      avisar('Error del sistema', mensajeSistema(e));
     }
   }, [userId]);
 
@@ -158,7 +160,7 @@ export default function Contrato() {
       }
       await load();
     } catch (e) {
-      Alert.alert('Error del sistema', e instanceof Error ? e.message : 'Fallo desconocido');
+      avisar('Error del sistema', mensajeSistema(e));
     } finally {
       lock.current = false;
       setBusy(false);
@@ -179,93 +181,82 @@ export default function Contrato() {
       setRuleFormOpen(false);
       await load();
     } catch (e) {
-      Alert.alert('Error del sistema', e instanceof Error ? e.message : 'Fallo desconocido');
+      avisar('Error del sistema', mensajeSistema(e));
     } finally {
       lock.current = false;
     }
   };
 
-  const onBreakRule = (rule: Rule) => {
-    Alert.alert(
-      'Confesión al sistema',
-      `¿Has roto la norma "${rule.text}"?\n\nPenalización: −${RULE_BREAK_XP} XP y la consecuencia que tú mismo firmaste: ${rule.consequence}. Cúmplela hoy y recuperas el XP.`,
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'La he roto',
-          style: 'destructive',
-          onPress: async () => {
-            if (!profile || lock.current) return;
-            lock.current = true;
-            try {
-              const res = await breakRule(profile, rule);
-              setProfile(res.profile);
-              Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-              Alert.alert(
-                'REGISTRADO',
-                `El sistema no juzga: registra. La misión "Consecuencia: ${rule.consequence}" te espera hoy en Sistema.`,
-              );
-              await load();
-            } catch (e) {
-              Alert.alert('Error del sistema', e instanceof Error ? e.message : 'Fallo desconocido');
-            } finally {
-              lock.current = false;
-            }
-          },
-        },
-      ],
-    );
+  const onBreakRule = async (rule: Rule) => {
+    if (lock.current) return;
+    const ok = await confirmar({
+      titulo: 'Confesión al sistema',
+      mensaje: `¿Has roto la norma "${rule.text}"?\n\nPenalización: −${RULE_BREAK_XP} XP y la consecuencia que tú mismo firmaste: ${rule.consequence}. Cúmplela hoy y recuperas el XP.`,
+      confirmar: 'La he roto',
+      destructivo: true,
+    });
+    if (!ok || !profile || lock.current) return;
+    lock.current = true;
+    try {
+      const res = await breakRule(profile, rule);
+      setProfile(res.profile);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+      avisar(
+        'REGISTRADO',
+        `El sistema no juzga: registra. La misión "Consecuencia: ${rule.consequence}" te espera hoy en Sistema.`,
+      );
+      await load();
+    } catch (e) {
+      avisar('Error del sistema', mensajeSistema(e));
+    } finally {
+      lock.current = false;
+    }
   };
 
-  const onDeleteRule = (rule: Rule) => {
-    Alert.alert('Eliminar norma', `"${rule.text}" y su historial de incumplimientos.`, [
-      { text: 'Cancelar', style: 'cancel' },
-      {
-        text: 'Eliminar',
-        style: 'destructive',
-        onPress: async () => {
-          try {
-            await deleteRule(rule.id);
-            await load();
-          } catch (e) {
-            Alert.alert('Error del sistema', e instanceof Error ? e.message : 'Fallo desconocido');
-          }
-        },
-      },
-    ]);
+  const onDeleteRule = async (rule: Rule) => {
+    const ok = await confirmar({
+      titulo: 'Eliminar norma',
+      mensaje: `"${rule.text}" y su historial de incumplimientos.`,
+      confirmar: 'Eliminar',
+      destructivo: true,
+    });
+    if (!ok) return;
+    try {
+      await deleteRule(rule.id);
+      await load();
+    } catch (e) {
+      avisar('Error del sistema', mensajeSistema(e));
+    }
   };
 
-  const onRedeem = () => {
+  const onRedeem = async () => {
     if (!profile) return;
     if (profile.bonus_points < REDEEM_COST) {
-      Alert.alert('Puntos insuficientes', `Necesitas ${REDEEM_COST} PB para canjear 1 h de descanso.`);
+      avisar('Puntos insuficientes', `Necesitas ${REDEEM_COST} PB para canjear 1 h de descanso.`);
       return;
     }
     if (spentWeek + REDEEM_COST > REDEEM_WEEKLY_CAP) {
-      Alert.alert('Tope semanal', `Máximo ${REDEEM_WEEKLY_CAP} PB canjeados cada 7 días. Llevas ${spentWeek}.`);
+      avisar('Tope semanal', `Máximo ${REDEEM_WEEKLY_CAP} PB canjeados cada 7 días. Llevas ${spentWeek}.`);
       return;
     }
-    Alert.alert('Canjear descanso', `${REDEEM_COST} PB → 1 hora de descanso ganado. ¿Confirmas?`, [
-      { text: 'Cancelar', style: 'cancel' },
-      {
-        text: 'Canjear',
-        onPress: async () => {
-          if (lock.current) return;
-          lock.current = true;
-          try {
-            const newTotal = await redeemBonus(REDEEM_COST, '1 h de descanso');
-            setProfile((p) => (p ? { ...p, bonus_points: newTotal } : p));
-            setSpentWeek((s) => s + REDEEM_COST);
-            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-            Alert.alert('DESCANSO GANADO', 'Disfrútalo sin culpa: lo has pagado con esfuerzo.');
-          } catch (e) {
-            Alert.alert('Error del sistema', e instanceof Error ? e.message : 'No se pudo canjear');
-          } finally {
-            lock.current = false;
-          }
-        },
-      },
-    ]);
+    const ok = await confirmar({
+      titulo: 'Canjear descanso',
+      mensaje: `${REDEEM_COST} PB → 1 hora de descanso ganado. ¿Confirmas?`,
+      confirmar: 'Canjear',
+    });
+    if (!ok || lock.current) return;
+    lock.current = true;
+    try {
+      const newTotal = await redeemBonus(REDEEM_COST, '1 h de descanso');
+      setProfile((p) => (p ? { ...p, bonus_points: newTotal } : p));
+      setSpentWeek((s) => s + REDEEM_COST);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      avisar('DESCANSO GANADO', 'Disfrútalo sin culpa: lo has pagado con esfuerzo.');
+    } catch (e) {
+      avisar('Error del sistema', mensajeSistema(e));
+    } finally {
+      lock.current = false;
+    }
   };
 
   const onSealLetter = async () => {
@@ -278,10 +269,10 @@ export default function Contrato() {
       setLetterFormOpen(false);
       setLetterBody('');
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      Alert.alert('CARTA SELLADA', `El sistema la custodiará hasta el ${openAt}. Nadie podrá leerla antes, ni tú.`);
+      avisar('CARTA SELLADA', `El sistema la custodiará hasta el ${openAt}. Nadie podrá leerla antes, ni tú.`);
       await load();
     } catch (e) {
-      Alert.alert('Error del sistema', e instanceof Error ? e.message : 'Fallo desconocido');
+      avisar('Error del sistema', mensajeSistema(e));
     } finally {
       lock.current = false;
       setBusy(false);
@@ -296,7 +287,7 @@ export default function Contrato() {
       setLetter(opened);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (e) {
-      Alert.alert('Error del sistema', e instanceof Error ? e.message : 'Fallo desconocido');
+      avisar('Error del sistema', mensajeSistema(e));
     } finally {
       lock.current = false;
     }
@@ -339,7 +330,7 @@ export default function Contrato() {
       <Stagger>
         <FadeIn index={0}>
           <ScreenHeader
-            onBack={() => router.back()}
+            onBack={() => volver(router)}
             eyebrow="Lo que tú firmas"
             title="El contrato"
             subtitle={subtitulo}
@@ -533,7 +524,7 @@ export default function Contrato() {
           <Pressable style={styles.backdropTap} onPress={() => setLetterFormOpen(false)} accessibilityRole="button" accessibilityLabel="Cerrar" />
           <View style={[styles.sheet, styles.sheetTall]}>
             <View style={styles.sheetHandle} />
-            <ScrollView automaticallyAdjustKeyboardInsets keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+            <ScrollView keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
               <Text style={[styles.sheetEyebrow, { color: colors.gold }]}>PARA TU YO DEL FUTURO</Text>
               <Text style={styles.sheetTitle}>Escríbele a quien serás</Text>
               <TextInput

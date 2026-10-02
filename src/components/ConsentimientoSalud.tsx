@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type PropsWithChildren } from 'react';
-import { Alert, AppState, Linking, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { AppState, Linking, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { router } from 'expo-router';
 import { Image } from 'expo-image';
 import { useAuth } from '@/lib/auth';
@@ -12,6 +12,7 @@ import { colors, fonts } from '@/lib/theme';
 import { mensajeSistema } from '@/lib/validation';
 import { SystemButton } from './SystemButton';
 import { Card, Check, Screen, ScreenHeader, Section, Skeleton } from './ui';
+import { confirmar } from './ui/confirmar';
 
 interface State extends HealthConsent { loading: boolean; error: string | null; epoch: number; }
 interface Context extends State { refresh: () => Promise<void>; ask: () => void; }
@@ -144,9 +145,11 @@ export function HealthPrivacySection() {
   return <Section title="Salud y bienestar">
     <Card><Text style={styles.body}>{health.loading ? 'Comprobando el permiso…' : health.error ? 'No se ha podido comprobar el permiso de salud.' : health.erasurePending ? 'Permiso retirado. Falta terminar el borrado; reinténtalo.' : health.accepted ? 'Has permitido guardar y utilizar tus datos de salud. Puedes retirar el permiso y borrarlos.' : 'Sin permiso. NIVL no utiliza los registros de salud. Puedes exportar los datos anteriores o pedir su borrado.'}</Text>
       {health.error ? <SystemButton title="Volver a comprobar" variant="outline" onPress={() => void health.refresh()} disabled={busy} /> : !health.accepted && !health.erasurePending ? <SystemButton title="Revisar permiso de salud" variant="outline" onPress={health.ask} disabled={health.loading || busy} /> : null}
-      <SystemButton title={health.erasurePending ? 'Terminar borrado' : 'Retirar y borrar salud'} variant="ghost" onPress={() => Alert.alert('Retirar permiso y borrar', T.erase, [
-        { text: 'Cancelar', style: 'cancel' }, { text: 'Retirar y borrar', style: 'destructive', onPress: () => void erase() },
-      ])} loading={busy} disabled={health.loading} />
+      <SystemButton title={health.erasurePending ? 'Terminar borrado' : 'Retirar y borrar salud'} variant="ghost" onPress={async () => {
+        // Solo con un "Retirar y borrar" explícito. `confirmar` también pinta en
+        // la web; el estado lo decide después `health.refresh()`, no la UI.
+        if (await confirmar({ titulo: 'Retirar permiso y borrar', mensaje: T.erase, confirmar: 'Retirar y borrar', destructivo: true })) await erase();
+      }} loading={busy} disabled={health.loading} />
       <Text style={styles.body}>La exportación y la eliminación de cuenta siguen disponibles debajo. Las direcciones temporales de fotos ya compartidas pueden seguir siendo válidas hasta que se elimine el archivo o caduquen.</Text>
       {error || health.error ? <Text style={styles.error} accessibilityRole="alert">{error ?? health.error}</Text> : null}
     </Card>

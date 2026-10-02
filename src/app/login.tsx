@@ -319,8 +319,16 @@ export default function Login() {
               </>
             ) : null}
 
-            {error ? <Text style={styles.error}>{error}</Text> : null}
-            {notice ? <Text style={styles.notice}>{notice}</Text> : null}
+            {error ? (
+              <Text style={styles.error} accessibilityRole="alert" accessibilityLiveRegion="assertive">
+                {error}
+              </Text>
+            ) : null}
+            {notice ? (
+              <Text style={styles.notice} accessibilityRole="alert" accessibilityLiveRegion="polite">
+                {notice}
+              </Text>
+            ) : null}
 
             <SystemButton
               title={mode === 'signin' ? (legacy ? 'Entrar con cuenta NIVL' : 'Entrar con Franky') : 'Crear cuenta Franky'}

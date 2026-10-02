@@ -116,7 +116,7 @@ const styles = StyleSheet.create({
   horaTexto: {
     width: ANCHO_HORAS,
     fontFamily: fonts.body,
-    fontSize: 10.5,
+    fontSize: 11,
     color: colors.textFaint,
   },
   reglaHora: { flex: 1, height: 1, backgroundColor: colors.line },
@@ -148,7 +148,7 @@ const styles = StyleSheet.create({
     color: colors.text,
   },
   tachado: { textDecorationLine: 'line-through', color: colors.textDim },
-  bloqueHora: { fontFamily: fonts.body, fontSize: 10.5, color: colors.textFaint, marginTop: 2 },
+  bloqueHora: { fontFamily: fonts.body, fontSize: 11, color: colors.textFaint, marginTop: 2 },
   ahora: { position: 'absolute', left: 0, right: 0, flexDirection: 'row', alignItems: 'center' },
   ahoraPunto: {
     width: 7,

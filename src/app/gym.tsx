@@ -6,7 +6,7 @@ import { useCallback, useRef, useState } from 'react';
 import {
   Platform,
   KeyboardAvoidingView,
-  Alert,
+  Linking,
   Modal,
   Pressable,
   StyleSheet,
@@ -34,6 +34,8 @@ import {
   StatRow,
   Tag,
 } from '@/components/ui';
+import { avisar, confirmar } from '@/components/ui/confirmar';
+import { volver } from '@/components/ui/Screen';
 import { evaluateAchievements, unlockAchievements } from '@/lib/achievements';
 import { useAuth } from '@/lib/auth';
 import { fetchPrescription, type Prescription } from '@/lib/bodywork';
@@ -137,7 +139,7 @@ export default function Gym() {
       setPrescrito(presc);
       setXpMisionHoy(hechas.filter((c) => deGym.has(c.quest_id)).reduce((s, c) => s + c.xp_awarded, 0));
     } catch (e) {
-      Alert.alert('Error del sistema', mensajeSistema(e));
+      avisar('Error del sistema', mensajeSistema(e));
     }
   }, []);
 
@@ -288,7 +290,7 @@ export default function Gym() {
         { xp: totalXp - xpRecords, de: 'a FUE por la sesión' },
         { xp: xpRecords, de: `a FUE por ${prs.length === 1 ? '1 récord' : `${prs.length} récords`}` },
       ]);
-      Alert.alert(
+      avisar(
         'SESIÓN REGISTRADA',
         `${desglose || 'La misión de hoy ya estaba marcada y pagada.'}${prText}${achText}`,
       );
@@ -299,7 +301,7 @@ export default function Gym() {
       setFotoB64(null);
       await load();
     } catch (e) {
-      Alert.alert('Error del sistema', mensajeSistema(e));
+      avisar('Error del sistema', mensajeSistema(e));
     } finally {
       saving.current = false;
       setBusy(false);
@@ -349,7 +351,12 @@ export default function Gym() {
   const fotoSesion = async () => {
     const perm = await ImagePicker.requestCameraPermissionsAsync();
     if (!perm.granted) {
-      Alert.alert('Sin cámara', 'El sistema necesita la cámara para el registro del entreno.');
+      const mensaje = 'El sistema necesita la cámara para el registro del entreno.';
+      if (Platform.OS === 'web') {
+        avisar('Sin cámara', mensaje);
+      } else if (await confirmar({ titulo: 'Sin cámara', mensaje, confirmar: 'Abrir ajustes' })) {
+        Linking.openSettings().catch(() => {});
+      }
       return;
     }
     const r = await ImagePicker.launchCameraAsync({ mediaTypes: ['images'], quality: 0.4, base64: true });
@@ -358,31 +365,34 @@ export default function Gym() {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
   };
 
-  const confirmarBorrarDia = (d: GymDay) =>
-    Alert.alert('Eliminar día', `¿Eliminar ${d.name} y sus ejercicios?`, [
-      { text: 'Cancelar', style: 'cancel' },
-      {
-        text: 'Eliminar',
-        style: 'destructive',
-        onPress: async () => {
-          await deleteGymDay(d.id);
-          await load();
-        },
-      },
-    ]);
+  const confirmarBorrarDia = async (d: GymDay) => {
+    const ok = await confirmar({
+      titulo: 'Eliminar día',
+      mensaje: `¿Eliminar ${d.name} y sus ejercicios?`,
+      confirmar: 'Eliminar',
+      destructivo: true,
+    });
+    if (!ok) return;
+    try {
+      await deleteGymDay(d.id);
+    } catch (err) {
+      avisar('Error del sistema', mensajeSistema(err));
+      return;
+    }
+    await load();
+  };
 
-  const confirmarBorrarEjercicio = (e: GymExercise) =>
-    Alert.alert('Eliminar ejercicio', e.name, [
-      { text: 'Cancelar', style: 'cancel' },
-      {
-        text: 'Eliminar',
-        style: 'destructive',
-        onPress: async () => {
-          await deleteGymExercise(e.id);
-          await load();
-        },
-      },
-    ]);
+  const confirmarBorrarEjercicio = async (e: GymExercise) => {
+    const ok = await confirmar({ titulo: 'Eliminar ejercicio', mensaje: e.name, confirmar: 'Eliminar', destructivo: true });
+    if (!ok) return;
+    try {
+      await deleteGymExercise(e.id);
+    } catch (err) {
+      avisar('Error del sistema', mensajeSistema(err));
+      return;
+    }
+    await load();
+  };
 
   const cerrarFormEjercicio = () => {
     setExEditando(null);
@@ -407,7 +417,7 @@ export default function Gym() {
       <Stagger>
         <FadeIn index={0}>
           <ScreenHeader
-            onBack={() => router.back()}
+            onBack={() => volver(router)}
             eyebrow="Cuerpo"
             title="Gimnasio"
             subtitle={subtitulo}
@@ -840,7 +850,7 @@ const styles = StyleSheet.create({
   serieEtiqueta: {
     flex: 1,
     fontFamily: fonts.heading,
-    fontSize: 9.5,
+    fontSize: 11,
     letterSpacing: 1.5,
     textTransform: 'uppercase',
     color: colors.textFaint,
@@ -889,7 +899,7 @@ const styles = StyleSheet.create({
   dayTexto: { flex: 1, minWidth: 0 },
   dayEyebrow: {
     fontFamily: fonts.heading,
-    fontSize: 10,
+    fontSize: 11,
     letterSpacing: 2,
     textTransform: 'uppercase',
     color: colors.textFaint,

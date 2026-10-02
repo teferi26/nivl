@@ -3,7 +3,6 @@ import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  Alert,
   Animated,
   BackHandler,
   Keyboard,
@@ -22,6 +21,7 @@ import { useHealthConsent } from '@/components/ConsentimientoSalud';
 import { ProOfferActions, ProOfferBody, ProOfferLegal, useProOffer } from '@/components/ProOffer';
 import { SystemButton } from '@/components/SystemButton';
 import { Card, Chip, FadeIn, Stagger } from '@/components/ui';
+import { avisar } from '@/components/ui/confirmar';
 import { useAuth } from '@/lib/auth';
 import {
   GOAL_DETAIL_MAX_LENGTH,
@@ -34,7 +34,7 @@ import {
   type Horizonte,
 } from '@/lib/compromiso';
 import { DESCARGO_SALUD } from '@/lib/consentmath';
-import { sealLetter } from '@/lib/contract';
+import { fetchLetter, sealLetter } from '@/lib/contract';
 import { CODIGO_MAX_LENGTH, motivoReferral, normalizarCodigo } from '@/lib/creatormath';
 import {
   claimReferral,
@@ -43,7 +43,7 @@ import {
   olvidarCodigoPendiente,
   type ReferralSource,
 } from '@/lib/creators';
-import { createStarterQuests, deleteQuest, ensureProfile, insertEvent, updateProfile } from '@/lib/data';
+import { createStarterQuests, deleteQuest, ensureProfile, fetchQuests, insertEvent, updateProfile } from '@/lib/data';
 import { addDays, dateKey, fechaConAnio } from '@/lib/dates';
 import { KINDS, PROFILE_KINDS, type ProfileKind } from '@/lib/kinds';
 import { DIFFICULTY_LABEL, STAT_LABEL } from '@/lib/game';
@@ -142,7 +142,7 @@ export default function Onboarding() {
     try {
       await fn();
     } catch (e) {
-      Alert.alert('Error del sistema', mensajeSistema(e));
+      avisar('Error del sistema', mensajeSistema(e));
     } finally {
       lock.current = false;
       setBusy(false);
@@ -224,6 +224,15 @@ export default function Onboarding() {
       const elegidas = KINDS[kind].starterQuests.filter((_, i) => chosen.has(i));
       if (!health.accepted && elegidas.some(q => q.health_data)) { health.ask(); return; }
       const titulos = new Set(elegidas.map((q) => q.title));
+      // Sin memoria de esta sesión (la app se cerró a mitad de onboarding, o
+      // la primera pasada falló tras insertar): se mira lo que ya hay en la
+      // cuenta y no se vuelve a crear una misión elegida que ya existe.
+      if (creadas.current.size === 0 && titulos.size > 0) {
+        const existentes = await fetchQuests();
+        for (const q of existentes) {
+          if (titulos.has(q.title) && !creadas.current.has(q.title)) creadas.current.set(q.title, q.id);
+        }
+      }
       // Reconciliar en vez de insertar a ciegas: al volver a pasar por aquí se
       // crea solo lo nuevo y se retira lo que ya no está elegido (también las
       // de otro perfil, si se cambió). Primera pasada: todo es nuevo.
@@ -265,8 +274,15 @@ export default function Onboarding() {
   const sign = () =>
     withLock(async () => {
       if (healthGoal && !health.accepted) { health.ask(); return; }
-      await sealLetter(userId!, contrato, abreEl, healthGoal);
-      await insertEvent(userId!, 'commitment_signed', { years: horizonte.years, open_at: abreEl }).catch(() => {});
+      // Un reintento (falló lo de después, o la app se cerró en el sello) no
+      // sella otra carta igual ni repite el evento: si la última carta es
+      // esta misma firma, se da por sellada.
+      const previa = await fetchLetter();
+      const yaSellada = !!previa && (previa.body === contrato || previa.open_at === abreEl);
+      if (!yaSellada) {
+        await sealLetter(userId!, contrato, abreEl, healthGoal);
+        await insertEvent(userId!, 'commitment_signed', { years: horizonte.years, open_at: abreEl }).catch(() => {});
+      }
       if (yaEsPro.current) await updateProfile(userId!, { onboarding_done: true });
       setSello(true);
     });

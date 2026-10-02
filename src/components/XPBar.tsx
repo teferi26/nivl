@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { Animated, View } from 'react-native';
+import { useMovimientoReducido } from '@/components/ui/motion';
 import { colors } from '@/lib/theme';
 
 interface Props {
@@ -16,10 +17,17 @@ interface Props {
 export function XPBar({ ratio, color = colors.accent, trackColor = colors.track, height = 6, segments }: Props) {
   const pct = Math.min(100, Math.max(0, ratio * 100));
   const width = useRef(new Animated.Value(pct)).current;
+  const reducido = useMovimientoReducido();
 
   useEffect(() => {
-    Animated.timing(width, { toValue: pct, duration: 500, useNativeDriver: false }).start();
-  }, [pct, width]);
+    if (reducido) {
+      width.setValue(pct);
+      return;
+    }
+    const anim = Animated.timing(width, { toValue: pct, duration: 500, useNativeDriver: false });
+    anim.start();
+    return () => anim.stop();
+  }, [pct, width, reducido]);
 
   return (
     <View style={{ height, backgroundColor: trackColor, overflow: 'hidden' }}>

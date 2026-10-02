@@ -4,7 +4,6 @@ import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   // Clipboard sigue en el núcleo de RN 0.81 (módulo nativo incluido). Está
   // marcado como obsoleto, pero la alternativa es una dependencia nueva y un
   // build nativo solo para copiar ocho letras. Si un día desaparece, `copiar`
@@ -42,6 +41,8 @@ import {
   Stagger,
   Tag,
 } from '@/components/ui';
+import { avisar, confirmar } from '@/components/ui/confirmar';
+import { volver } from '@/components/ui/Screen';
 import { useAuth } from '@/lib/auth';
 import {
   conInsignias,
@@ -333,46 +334,71 @@ export default function Amigos() {
     } catch (e) { setSafetyMessage(mensajeSistema(e)); }
     finally { lock.current = false; setSafetyBusy(false); }
   };
-  const bloquear = () => {
+  // Bloquear y desbloquear: la acción solo corre tras la confirmación
+  // explícita (`confirmar` también pinta en la web, donde el Alert de botones
+  // no aparece), y la pantalla solo cambia cuando el servidor lo ha hecho.
+  const bloquear = async () => {
     if (!safetyUser || lock.current) return;
     const person = safetyUser;
-    Alert.alert('Bloquear usuario', 'Dejaréis de veros en solicitudes y rankings, también en el ludus. La amistad se eliminará.', [
-      { text: 'Cancelar', style: 'cancel' },
-      { text: 'Bloquear', style: 'destructive', onPress: async () => {
-        if (lock.current) return;
-        lock.current = true; setSafetyBusy(true);
-        try {
-          await blockSocialUser(person.userId);
-          blockedLocally.current.add(person.userId);
-          // Remove immediately even if the subsequent refresh has no connection.
-          setBoard((rows) => rows.filter((r) => r.userId !== person.userId));
-          setLudusBoard((rows) => rows.filter((r) => r.userId !== person.userId));
-          setRequests((rows) => rows.filter((r) => r.userId !== person.userId));
-          setSafetyUser(null);
-          await Promise.all([load(ventana), loadLudus(ventanaLudus)]);
-        } catch (e) { setSafetyMessage(mensajeSistema(e)); }
-        finally { lock.current = false; setSafetyBusy(false); }
-      } },
-    ]);
+    const ok = await confirmar({
+      titulo: 'Bloquear usuario',
+      mensaje: 'Dejaréis de veros en solicitudes y rankings, también en el ludus. La amistad se eliminará.',
+      confirmar: 'Bloquear',
+      destructivo: true,
+    });
+    if (!ok || lock.current) return;
+    lock.current = true; setSafetyBusy(true);
+    try {
+      await blockSocialUser(person.userId);
+    } catch (e) {
+      setSafetyMessage(mensajeSistema(e));
+      lock.current = false; setSafetyBusy(false);
+      return;
+    }
+    // Hecho en el servidor: fuera de la pantalla al momento, aunque el
+    // refresco de después no tenga red.
+    blockedLocally.current.add(person.userId);
+    setBoard((rows) => rows.filter((r) => r.userId !== person.userId));
+    setLudusBoard((rows) => rows.filter((r) => r.userId !== person.userId));
+    setRequests((rows) => rows.filter((r) => r.userId !== person.userId));
+    setSafetyUser(null);
+    try {
+      await Promise.all([load(ventana), loadLudus(ventanaLudus)]);
+    } catch {
+      // El bloqueo ya está hecho; la lista se pondrá al día en el próximo foco.
+    } finally {
+      lock.current = false; setSafetyBusy(false);
+    }
   };
-  const desbloquear = (person: BlockedUser) => {
-    Alert.alert('Desbloquear usuario', 'Podrá volver a solicitar amistad. La amistad anterior no se recupera. Si compartís ludus, volverá a aparecer.', [
-      { text: 'Cancelar', style: 'cancel' },
-      { text: 'Desbloquear', onPress: async () => {
-        if (lock.current) return;
-        lock.current = true; setSafetyBusy(true);
-        try {
-          await unblockSocialUser(person.userId);
-          blockedLocally.current.delete(person.userId);
-          await refrescar();
-        }
-        catch (e) { Alert.alert('Error del sistema', mensajeSistema(e)); }
-        finally { lock.current = false; setSafetyBusy(false); }
-      } },
-    ]);
+  const desbloquear = async (person: BlockedUser) => {
+    if (lock.current) return;
+    const ok = await confirmar({
+      titulo: 'Desbloquear usuario',
+      mensaje: 'Podrá volver a solicitar amistad. La amistad anterior no se recupera. Si compartís ludus, volverá a aparecer.',
+      confirmar: 'Desbloquear',
+    });
+    if (!ok || lock.current) return;
+    lock.current = true; setSafetyBusy(true);
+    try {
+      await unblockSocialUser(person.userId);
+    } catch (e) {
+      // Sigue bloqueado y la lista lo sigue diciendo.
+      avisar('Error del sistema', mensajeSistema(e));
+      lock.current = false; setSafetyBusy(false);
+      return;
+    }
+    blockedLocally.current.delete(person.userId);
+    setBlockedUsers((rows) => rows.filter((r) => r.userId !== person.userId));
+    try {
+      await refrescar();
+    } catch {
+      // Desbloqueado en el servidor; el resto se pondrá al día en el próximo foco.
+    } finally {
+      lock.current = false; setSafetyBusy(false);
+    }
   };
   const abrirSoporte = () => Linking.openURL(SOCIAL_SUPPORT_URL).catch(() =>
-    Alert.alert('No se ha abierto soporte', SOCIAL_SUPPORT_URL));
+    avisar('No se ha abierto soporte', SOCIAL_SUPPORT_URL));
 
   const visibles = useMemo(() => board.filter((b) => b.visible), [board]);
   const ocultos = useMemo(() => board.filter((b) => !b.visible && !b.isMe), [board]);
@@ -407,7 +433,7 @@ export default function Amigos() {
     try {
       await Share.share({ message: mensajeInvitacion(yo.friendCode) });
     } catch (e) {
-      Alert.alert('Error del sistema', mensajeSistema(e));
+      avisar('Error del sistema', mensajeSistema(e));
     }
   };
 
@@ -469,33 +495,34 @@ export default function Amigos() {
       if (aceptar) Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       await load(ventana);
     } catch (e) {
-      Alert.alert('Error del sistema', mensajeSistema(e));
+      avisar('Error del sistema', mensajeSistema(e));
     } finally {
       lock.current = false;
       setOcupada(null);
     }
   };
 
-  const quitar = (friendshipId: string, titulo: string, cuerpo: string, accion: string) => {
-    Alert.alert(titulo, cuerpo, [
-      { text: 'Cancelar', style: 'cancel' },
-      {
-        text: accion,
-        style: 'destructive',
-        onPress: async () => {
-          if (lock.current) return;
-          lock.current = true;
-          try {
-            await removeFriend(friendshipId);
-            await load(ventana);
-          } catch (e) {
-            Alert.alert('Error del sistema', mensajeSistema(e));
-          } finally {
-            lock.current = false;
-          }
-        },
-      },
-    ]);
+  const quitar = async (friendshipId: string, titulo: string, cuerpo: string, accion: string) => {
+    if (lock.current) return;
+    if (!(await confirmar({ titulo, mensaje: cuerpo, confirmar: accion, destructivo: true }))) return;
+    if (lock.current) return;
+    lock.current = true;
+    try {
+      // Sin cambio optimista: la fila solo desaparece con la recarga que sigue
+      // a un borrado hecho.
+      await removeFriend(friendshipId);
+    } catch (e) {
+      avisar('Error del sistema', mensajeSistema(e));
+      lock.current = false;
+      return;
+    }
+    try {
+      await load(ventana);
+    } catch {
+      // Quitado en el servidor; la lista se pondrá al día en el próximo foco.
+    } finally {
+      lock.current = false;
+    }
   };
 
   const quitarAmigo = (b: BoardEntry) => {
@@ -554,7 +581,7 @@ export default function Amigos() {
       await setSocialVisible(userId, visible);
     } catch (e) {
       setYo(antes);
-      Alert.alert('Error del sistema', mensajeSistema(e));
+      avisar('Error del sistema', mensajeSistema(e));
     }
   };
 
@@ -573,7 +600,7 @@ export default function Amigos() {
         }),
       );
     } catch (e) {
-      Alert.alert('Error del sistema', mensajeSistema(e));
+      avisar('Error del sistema', mensajeSistema(e));
     } finally {
       setPreparando(false);
     }
@@ -589,7 +616,7 @@ export default function Amigos() {
       <Stagger>
         <FadeIn index={0}>
           <ScreenHeader
-            onBack={() => router.back()}
+            onBack={() => volver(router)}
             eyebrow="Arena"
             title="Amigos"
             subtitle={subtitulo}
