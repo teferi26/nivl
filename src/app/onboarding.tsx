@@ -18,9 +18,11 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { HoldToSign } from '@/components/HoldToSign';
 import { useHealthConsent } from '@/components/ConsentimientoSalud';
-import { ProOfferActions, ProOfferBody, ProOfferLegal, useProOffer } from '@/components/ProOffer';
+import { pasoOferta } from '@/components/onboarding/pasoOferta';
+import { useCelebracion } from '@/components/celebracion/contexto';
+import { ProOfferActions, ProOfferBody, ProOfferLegal, ProUpsellLine, useProOffer } from '@/components/ProOffer';
 import { SystemButton } from '@/components/SystemButton';
-import { Card, Chip, FadeIn, Stagger } from '@/components/ui';
+import { Button, Card, Chip, FadeIn, Skeleton, Stagger } from '@/components/ui';
 import { avisar } from '@/components/ui/confirmar';
 import { useAuth } from '@/lib/auth';
 import {
@@ -47,7 +49,7 @@ import { createStarterQuests, deleteQuest, ensureProfile, fetchQuests, insertEve
 import { addDays, dateKey, fechaConAnio } from '@/lib/dates';
 import { KINDS, PROFILE_KINDS, type ProfileKind } from '@/lib/kinds';
 import { DIFFICULTY_LABEL, STAT_LABEL } from '@/lib/game';
-import { fetchAiStatus, isPro } from '@/lib/pro';
+import { anotarOferta, fetchAiStatus, isPro, ofrecerSi, type AiStatus, type DecisionOferta, type RespuestaOferta } from '@/lib/pro';
 import { colors, fonts } from '@/lib/theme';
 import { mensajeSistema, NAME_MAX_LENGTH } from '@/lib/validation';
 
@@ -96,6 +98,14 @@ export default function Onboarding() {
   const yaEsPro = useRef(false);
   // La cuenta nunca tuvo coach: el paso 6 ofrece la prueba de 7 días.
   const [pruebaDisponible, setPruebaDisponible] = useState(false);
+  // El estado entero de la IA: el paso 6 lo necesita para decidir la oferta
+  // (`ofrecerSi`). null = aún no leído o sin red.
+  const estadoIA = useRef<AiStatus | null>(null);
+  // Qué decidió `ofrecerSi('firma', …)` para el paso 6. null = aún no.
+  const [decisionOferta, setDecisionOferta] = useState<DecisionOferta | null>(null);
+  // Una sola petición aunque StrictMode monte el efecto dos veces.
+  const pidiendoOferta = useRef(false);
+  const { celebrando } = useCelebracion();
   // Volver atrás no puede duplicar nada. Las misiones creadas se recuerdan
   // (título → id) para reconciliar si se cambia la selección al volver a
   // pasar; el objetivo solo se reescribe en la crónica si ha cambiado; y el
@@ -129,6 +139,7 @@ export default function Onboarding() {
       .catch(() => {});
     fetchAiStatus()
       .then((s) => {
+        estadoIA.current = s;
         yaEsPro.current = isPro(s);
         setPruebaDisponible(s.trialAvailable);
       })
@@ -338,9 +349,45 @@ export default function Onboarding() {
 
   const meta = kind ? KINDS[kind] : null;
   const firmaOk = firmaValida(firma, name);
-  // Mientras la tienda esté cerrada, la prueba de 7 días es la acción principal
-  // de este paso (si la cuenta nunca tuvo coach). Empezarla cierra el onboarding.
-  const oferta = useProOffer({ userId, onPurchased: finish, trialAvailable: pruebaDisponible, onTrialStarted: finish });
+  // Salir del paso 6. La respuesta solo se apunta si se enseñó la hoja: la
+  // línea no cuenta contra los topes y no hay nada que cerrar.
+  const salir = async (respuesta: RespuestaOferta) => {
+    if (decisionOferta?.forma === 'hoja') await anotarOferta('firma', respuesta, 'hoja');
+    await finish();
+  };
+
+  // La prueba de 7 días solo si la cuenta nunca tuvo coach Y la decisión la
+  // incluye. Empezarla o comprar cierra el onboarding.
+  const oferta = useProOffer({
+    userId,
+    onPurchased: () => void salir('compra'),
+    trialAvailable: pruebaDisponible && (decisionOferta?.prueba ?? false),
+    onTrialStarted: () => void salir('prueba'),
+  });
+  const forma = pasoOferta(decisionOferta, celebrando);
+
+  // Paso 6: se decide la oferta UNA vez, nunca con una celebración en
+  // pantalla. Sin estado de la IA (sin red) no se ofrece a ciegas: se entra.
+  // Si la decisión pide otro nivel (Élite), se ajusta el que enseña la hoja.
+  const { elegirNivel, tier: tierOferta } = oferta;
+  useEffect(() => {
+    if (step !== 6 || decisionOferta || celebrando || pidiendoOferta.current) return;
+    pidiendoOferta.current = true;
+    (async () => {
+      const s = estadoIA.current ?? (await fetchAiStatus().catch(() => null));
+      if (s) estadoIA.current = s;
+      const d = await ofrecerSi('firma', s, { celebrando: false });
+      // Se guarda también el «no»: si entrar falla, el pie da el botón para reintentarlo.
+      if (d.mostrar && d.tier !== tierOferta) elegirNivel(d.tier);
+      setDecisionOferta(d);
+      if (!d.mostrar) await finish();
+    })().catch(() => {
+      // ofrecerSi no lanza; si algo falla igual, se entra sin oferta.
+      setDecisionOferta({ mostrar: false, forma: 'linea', tier: 'pro', prueba: false, copyKey: 'firma.pro', razon: 'error' });
+      void finish();
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- `finish` y el nivel se leen al decidir, una sola vez
+  }, [step, decisionOferta, celebrando]);
 
   // Con el nombre bien escrito el teclado sobra: tapaba justo el anillo que
   // hay que mantener pulsado. Se recoge solo y se baja hasta la firma.
@@ -667,8 +714,20 @@ export default function Onboarding() {
                 Tus hábitos, tu organización y tu progreso son gratis. Los planes de pago añaden el coach de IA y,
                 con Élite, insignia y solicitud de plaza en un ludus. Decide ahora o más adelante: el compromiso vale igual.
               </Text>
-              <ProOfferBody oferta={oferta} kind={kind} compact />
-              <ProOfferLegal oferta={oferta} />
+              {forma === 'esperar' ? (
+                <View style={styles.ofertaEspera} accessibilityRole="progressbar" accessibilityLabel="Preparando tu entrada">
+                  <Skeleton height={86} />
+                  <Skeleton height={70} />
+                  <Skeleton height={70} />
+                </View>
+              ) : null}
+              {forma === 'hoja' ? (
+                <>
+                  <ProOfferBody oferta={oferta} kind={kind} compact motivo="firma" />
+                  <ProOfferLegal oferta={oferta} />
+                </>
+              ) : null}
+              {forma === 'linea' && decisionOferta ? <ProUpsellLine momento="firma" tier={decisionOferta.tier} /> : null}
             </FadeIn>
           ) : null}
         </ScrollView>
@@ -697,8 +756,18 @@ export default function Onboarding() {
                 loading={busy}
               />
             ) : null}
-            {step === 6 ? (
-              <ProOfferActions oferta={oferta} exitLabel="Seguir gratis por ahora" onExit={finish} exitLoading={busy} />
+            {/* Mientras se decide, el pie queda vacío: ningún botón que cambie de
+                sitio bajo el dedo. */}
+            {step === 6 && forma === 'hoja' ? (
+              <ProOfferActions
+                oferta={oferta}
+                exitLabel="Seguir gratis por ahora"
+                onExit={() => void salir('cerrada')}
+                exitLoading={busy}
+              />
+            ) : null}
+            {step === 6 && (forma === 'linea' || forma === 'saltar') ? (
+              <Button title="Entrar en la arena" size="lg" onPress={() => void finish()} loading={busy} />
             ) : null}
           </View>
         ) : null}
@@ -732,6 +801,7 @@ const styles = StyleSheet.create({
   backRow: { height: 32, justifyContent: 'center' },
   back: { alignSelf: 'flex-start', marginLeft: -4, padding: 4 },
   content: { flexGrow: 1, justifyContent: 'center', paddingHorizontal: 24, paddingTop: 20, paddingBottom: 24 },
+  ofertaEspera: { gap: 10, marginTop: 8 },
   footer: {
     paddingHorizontal: 24,
     paddingTop: 12,
