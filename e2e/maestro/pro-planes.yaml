@@ -1,0 +1,89 @@
+# Planes de NIVL Pro contra un build REAL. Portado de
+# scripts/screenshots/pro-review.yaml (rama chore/ios-screenshots-107).
+#
+# Diferencias con el original:
+# - El original usaba un catálogo FICTICIO con precios fijos (12,99 / 99,99 /
+#   29,99 / 299,00 / 249,00 €). Aquí los precios vienen de StoreKit/Play, así que
+#   solo se exige que haya un precio, no un importe concreto. Anotar a mano los
+#   importes que se vean en las capturas.
+# - Se entra por Perfil → fila "NIVL Pro" (sirve con cuenta gratuita o de prueba).
+# - Se comprueban los enlaces "Términos de uso" y "Política de privacidad".
+#
+# NUNCA pulsa comprar, restaurar, prueba gratuita ni consentimientos. Ver la
+# pantalla de planes no acredita una compra sandbox (caso O-08 es manual).
+# El fundador solo aparece si la tienda lo ofrece: su bloque es opcional.
+appId: com.teferi.nivl
+name: NIVL planes Pro (solo lectura)
+---
+- launchApp:
+    stopApp: true
+    clearState: false
+    permissions:
+      notifications: deny
+- extendedWaitUntil:
+    visible: '^Hoy$'
+    timeout: 30000
+- tapOn: '^Perfil$'
+- scrollUntilVisible:
+    element:
+      text: '^NIVL Pro$'
+    direction: DOWN
+- tapOn: '^NIVL Pro$'
+- extendedWaitUntil:
+    notVisible: '^Cargando precios de la tienda$'
+    timeout: 30000
+# Nivel Pro
+- scrollUntilVisible:
+    element:
+      text: '^NIVL Pro\. El coach en potencia estándar\.$'
+    direction: DOWN
+- tapOn: '^NIVL Pro\. El coach en potencia estándar\.$'
+- scrollUntilVisible:
+    element:
+      text: '^NIVL Pro mensual, .+ al mes\..*'
+    direction: DOWN
+- tapOn: '^NIVL Pro mensual, .+ al mes\..*'
+- assertVisible: '^Activar NIVL Pro · .+/mes$'
+- takeScreenshot: pro-10-mensual
+- scrollUntilVisible:
+    element:
+      text: '^NIVL Pro anual, .+ al año\..*'
+    direction: UP
+- tapOn: '^NIVL Pro anual, .+ al año\..*'
+- assertVisible: '^Activar NIVL Pro · .+/año$'
+- takeScreenshot: pro-11-anual
+# Nivel Élite
+- scrollUntilVisible:
+    element:
+      text: '^NIVL Élite\. El coach a máxima potencia, con modo profundo\.$'
+    direction: UP
+- tapOn: '^NIVL Élite\. El coach a máxima potencia, con modo profundo\.$'
+- scrollUntilVisible:
+    element:
+      text: '^NIVL Élite mensual, .+ al mes\..*'
+    direction: DOWN
+- tapOn: '^NIVL Élite mensual, .+ al mes\..*'
+- assertVisible: '^Activar NIVL Élite · .+/mes$'
+- takeScreenshot: pro-12-elite-mensual
+- scrollUntilVisible:
+    element:
+      text: '^NIVL Élite anual, .+ al año\..*'
+    direction: UP
+- tapOn: '^NIVL Élite anual, .+ al año\..*'
+- assertVisible: '^Activar NIVL Élite · .+/año$'
+- takeScreenshot: pro-13-elite-anual
+- runFlow:
+    when:
+      visible: '^NIVL Élite fundador, .+ al año\..*'
+    commands:
+      - tapOn: '^NIVL Élite fundador, .+ al año\..*'
+      - takeScreenshot: pro-14-elite-fundador
+# Enlaces legales: deben existir. Abrirlos sale de la app (navegador); se
+# comprueba solo su presencia para no depender del navegador del dispositivo.
+- scrollUntilVisible:
+    element:
+      text: '^Términos de uso$'
+    direction: DOWN
+- assertVisible: '^Términos de uso$'
+- assertVisible: '^Política de privacidad$'
+- takeScreenshot: pro-15-legal

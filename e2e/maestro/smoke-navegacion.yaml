@@ -1,0 +1,36 @@
+# Humo de navegación contra un build REAL (dev client, simulador del SHA o TestFlight).
+# Adaptado de scripts/screenshots/marketing.yaml (rama chore/ios-screenshots-107):
+# se quitan los textos de los fixtures ficticios ("Buenos días, Alex", misiones de
+# ejemplo, conversación de ejemplo) y se comprueban solo las seis pestañas reales
+# de src/app/(tabs)/_layout.tsx. Solo lee: no completa misiones ni escribe nada.
+# Requiere sesión iniciada y onboarding hecho (usar antes login.yaml si hace falta).
+appId: com.teferi.nivl
+name: NIVL humo de navegación
+---
+- launchApp:
+    stopApp: true
+    clearState: false
+    permissions:
+      notifications: deny
+- extendedWaitUntil:
+    visible: '^Hoy$'
+    timeout: 30000
+- waitForAnimationToEnd
+- takeScreenshot: smoke-01-hoy
+- tapOn: '^Coach$'
+- waitForAnimationToEnd
+- takeScreenshot: smoke-02-coach
+- tapOn: '^Hábitos$'
+- waitForAnimationToEnd
+- takeScreenshot: smoke-03-habitos
+- tapOn: '^Campañas$'
+- waitForAnimationToEnd
+- takeScreenshot: smoke-04-campanas
+- tapOn: '^Agenda$'
+- waitForAnimationToEnd
+- takeScreenshot: smoke-05-agenda
+- tapOn: '^Perfil$'
+- waitForAnimationToEnd
+- takeScreenshot: smoke-06-perfil
+- tapOn: '^Hoy$'
+- assertVisible: '^Hoy$'
