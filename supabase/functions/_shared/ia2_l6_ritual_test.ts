@@ -257,3 +257,40 @@ Deno.test('L6 ritual: el brief no empuja si lleva 7+ días sin abrir (la regla v
     f.restaurar();
   }
 });
+
+Deno.test('Día 1: el único push es «Tu mes en imágenes» (prioridad mensual > brief); el cierre queda en el hilo', async () => {
+  const f = escenario({
+    perfilExtra: { last_open_on: '2026-10-31' },
+    otras: (c) => {
+      const ruta = c.url.pathname;
+      const j = (b: unknown, extra: ResponseInit = {}) => new Response(JSON.stringify(b), { headers: { 'content-type': 'application/json' }, ...extra });
+      if (ruta === `/auth/v1/admin/users/${USER_ID}`) return j({ id: USER_ID, email: 'g@test.local' });
+      if (ruta === '/auth/v1/admin/generate_link') return j({ id: USER_ID, action_link: 'x', hashed_token: 'h', verification_type: 'magiclink' });
+      if (ruta === '/auth/v1/verify') {
+        return new Response(null, { status: 303, headers: { location: `http://localhost/#access_token=${USER_TOKEN}&token_type=bearer` } });
+      }
+      if (ruta === '/functions/v1/coach') {
+        return c.body && JSON.stringify(c.body).includes('"periodo":"mensual"')
+          ? j({ slides: [{}, {}], fotos: 7 })
+          : j({ text: 'Cierre del mes. '.repeat(40) });
+      }
+      if (ruta === '/auth/v1/logout') return new Response(null, { status: 204 });
+      return undefined;
+    },
+  });
+  const original = relojRitual.ahora;
+  // 1 de noviembre, 08:30 en Madrid: cierre mensual a la hora de despertar.
+  relojRitual.ahora = () => new Date('2026-11-01T07:30:00Z');
+  try {
+    const r = await handler(llamadaCron());
+    const cuerpo = JSON.parse(await r.text());
+    equal(r.status, 200);
+    ok(cuerpo.hechos.some((h: { kind: string }) => h.kind === 'cierre_mensual'));
+    const enviados = pushes(f);
+    equal(enviados.length, 1, 'un solo push el día 1');
+    ok(JSON.stringify(enviados[0].body).includes('Tu mes en im'), JSON.stringify(enviados[0].body));
+  } finally {
+    relojRitual.ahora = original;
+    f.restaurar();
+  }
+});

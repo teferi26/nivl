@@ -764,7 +764,20 @@ export async function handler(req: Request): Promise<Response> {
       }
 
       if ((await consentimientoIa(sb, p.id)) !== true) continue;
-      if (puedeEmpujar) {
+
+      // El día 1 el único push del día es el del mes (prioridad acordada:
+      // escalada > mensual > brief > check-in). Si hay pase de fotos, sale
+      // «Tu mes en imágenes» y el cierre queda en el hilo; si no, el cierre.
+      const fotosMes = decision.kind === 'cierre_mensual' ? await resumenMensual(jwt).catch(() => null) : null;
+      if (fotosMes && puedeEmpujar) {
+        await empujar(
+          sb,
+          p.id,
+          'Tu mes en imágenes',
+          `${fotosMes} fotos. El sistema ha montado el pase y cerrado el mes: toca para verlo.`,
+          '/resumen',
+        );
+      } else if (puedeEmpujar) {
         const tituloPush = await titular(sb, p.id, texto || 'El sistema tiene algo para ti.');
         if ((await consentimientoIa(sb, p.id)) !== true) continue;
         await empujar(
@@ -784,22 +797,6 @@ export async function handler(req: Request): Promise<Response> {
       // usuarios (fuga de datos personales a un tercero, Notion).
       if (espejoActivo() && estadoIa?.tier === 'owner' && decision.kind !== 'brief' && texto && await healthConsent(sb, p.id) === true && await consentimientoIa(sb, p.id) === true) {
         await espejarEntrada(ahoraLocal(p.timezone).fecha, decision.titulo, texto);
-      }
-
-      // El día 1, además del cierre, se monta el pase de diapositivas del mes.
-      if (decision.kind === 'cierre_mensual') {
-        const fotos = await resumenMensual(jwt).catch(() => null);
-        // Un push del servidor al día: si el cierre ya lo gastó, el pase se ve
-        // al abrir la app.
-        if (fotos && politicaPush(p, pushesHoy + (puedeEmpujar ? 1 : 0)).ok) {
-          await empujar(
-            sb,
-            p.id,
-            'Tu mes en imágenes',
-            `${fotos} fotos. El sistema ha montado el pase: toca para verlo.`,
-            '/resumen',
-          );
-        }
       }
 
       hechos.push({ user: p.id, kind: decision.kind });
