@@ -4,7 +4,7 @@ import * as Haptics from 'expo-haptics';
 import * as ImagePicker from 'expo-image-picker';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Animated, Linking, Platform, Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import { AccessibilityInfo, Animated, Linking, Platform, Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { Avatar } from '@/components/Avatar';
 import { CompletarSheet, type ModoCompletar } from '@/components/CompletarSheet';
 import { LevelUpOverlay } from '@/components/LevelUpOverlay';
@@ -35,7 +35,7 @@ import { completionStats, ensureProfile, fetchCompletionsForDate, fetchQuests } 
 import { fetchPlan, horaAMinutos, setBlockDone, type DayBlock, type PlanConBloques } from '@/lib/dayplan';
 import { dateKey, formatLongDate, isValidKey, nombreDia } from '@/lib/dates';
 import { completeQuest, processPendingDays, questsScheduledOn, type DayCloseResult } from '@/lib/engine';
-import { rachaVisible } from '@/lib/closing';
+import { rachaVisible, recuperacionDesbloqueada } from '@/lib/closing';
 import { levelFromXp, rankForLevel, streakMultiplier } from '@/lib/game';
 import { kindMeta, modulesFor } from '@/lib/kinds';
 import { RUTA_DE_ACTO } from '@/lib/links';
@@ -95,6 +95,8 @@ export default function Hoy() {
   const [board, setBoard] = useState<BoardEntry[] | null>(null);
   const [sheetQuest, setSheetQuest] = useState<Quest | null>(null);
   const [diaPerfecto, setDiaPerfecto] = useState(false);
+  // RET-03: la misión recién completada ha abierto la recuperación.
+  const [avisoRecuperacion, setAvisoRecuperacion] = useState(false);
   const [tarjeta, setTarjeta] = useState<DatosSemana | null>(null);
   const [preparandoTarjeta, setPreparandoTarjeta] = useState(false);
   const { width } = useWindowDimensions();
@@ -254,6 +256,13 @@ export default function Hoy() {
       }));
       if (res.leveledUp) setLevelUp(res.newLevel);
 
+      // RET-03: esta misión abre la recuperación. Es el momento que motiva:
+      // se dice en pantalla y al lector de pantalla.
+      if (!quest.is_penalty && !recuperacionAbierta && todayQuests.some((q) => q.is_penalty && !completions[q.id])) {
+        setAvisoRecuperacion(true);
+        AccessibilityInfo.announceForAccessibility('La recuperación está abierta. Recupera lo perdido.');
+      }
+
       // Día perfecto: era la última pendiente. Solo se celebra cuando pasa
       // delante del usuario, no al cargar un día que ya estaba cerrado.
       const quedan = todayQuests.filter((q) => q.id !== quest.id && !completions[q.id]).length;
@@ -302,6 +311,9 @@ export default function Hoy() {
     // están abiertas ya no dispara dos completeQuest (evita XP duplicado). El
     // cerrojo se toma AQUÍ y lo suelta exactamente una de las salidas: el fin
     // del pago, la cámara cancelada, el cierre de la hoja o irse al módulo.
+    // RET-03: con la recuperación cerrada no se toma el cerrojo ni se paga
+    // (el motor también lo rechaza). La fila ya dice por qué.
+    if (quest.is_penalty && !recuperacionAbierta) return;
     if (completing.current.has(quest.id)) return;
     completing.current.add(quest.id);
     setBusyQuestId(quest.id);
@@ -393,6 +405,10 @@ export default function Hoy() {
   const lvl = profile ? levelFromXp(profile.xp_total) : null;
   const frozen = profile?.freeze_until != null && profile.freeze_until >= today;
   const sorted = [...todayQuests].sort((a, b) => Number(b.is_penalty) - Number(a.is_penalty));
+  // RET-03 «Regreso a la arena»: la penalización de hoy se abre al completar
+  // una misión normal de hoy (no vale una creada hoy). Se recalcula sola al
+  // cambiar `completions`. Cero XP extra.
+  const recuperacionAbierta = recuperacionDesbloqueada(todayQuests, new Set(Object.keys(completions)), dateKey());
   const completedCount = sorted.filter((q) => completions[q.id]).length;
   // La racha que se enseña cuenta el día de hoy en cuanto queda cerrado. El
   // multiplicador sigue saliendo de los días CERRADOS: si subiera a mitad del
@@ -575,6 +591,13 @@ export default function Hoy() {
               ) : dayResult.streakLost ? (
                 <Text style={styles.alertBody}>Racha perdida. El contador vuelve a cero.</Text>
               ) : null}
+              {dayResult.diasSinCobrar > 0 ? (
+                <Text style={styles.alertBody}>
+                  Solo se cobran los 3 primeros días: {dayResult.diasSinCobrar}{' '}
+                  {dayResult.diasSinCobrar === 1 ? 'día no te cuesta' : 'días no te cuestan'} XP.
+                  {todayQuests.some((q) => q.is_penalty && !completions[q.id]) ? ' Hoy puedes recuperarlo en la arena.' : ''}
+                </Text>
+              ) : null}
               {dayResult.stonesEarned > 0 ? <Text style={styles.alertBody}>{voice.stoneEarned()}</Text> : null}
             </Card>
           </FadeIn>
@@ -641,10 +664,16 @@ export default function Hoy() {
                     busy={busyQuestId === q.id}
                     streakDays={racha.valor}
                     onComplete={onComplete}
+                    bloqueada={q.is_penalty && !recuperacionAbierta}
                   />
                 ))}
               </Card>
             )}
+            {avisoRecuperacion && recuperacionAbierta && todayQuests.some((q) => q.is_penalty && !completions[q.id]) ? (
+              <Text style={styles.recuperacionAbierta} accessibilityRole="alert">
+                La recuperación está abierta. Recupera lo perdido.
+              </Text>
+            ) : null}
             {sorted.length > 0 && pendingCount === 0 ? (
               <Text style={styles.allDone}>{voice.allDone()}</Text>
             ) : null}
@@ -749,6 +778,7 @@ const styles = StyleSheet.create({
   },
   questCard: { paddingHorizontal: 16, paddingVertical: 4 },
   allDone: { fontFamily: fonts.semibold, fontSize: 13, color: colors.accent, marginTop: 4 },
+  recuperacionAbierta: { fontFamily: fonts.semibold, fontSize: 13, color: colors.text, marginTop: 10 },
   pendingNote: { fontFamily: fonts.body, fontSize: 12, color: colors.textFaint, marginTop: 4 },
   moduleGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: HUECO_MODULOS },
   // El lado del azulejo se calcula con el ancho de la ventana (ver `tile`).
