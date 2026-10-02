@@ -2,7 +2,7 @@
 //
 // Esta tarjeta ES el marketing: es lo único de NIVL que ve quien no la tiene.
 // Por eso no enseña la interfaz sino un parte: quién eres, cuánto has subido
-// esta semana, cuánto cumples y dónde te encuentran (nivl.app + tu código).
+// esta semana, cuánto cumples y dónde te encuentran (la web de NIVL + tu código).
 //
 // Monocromo de arena: blanco sobre negro, hierro para la estructura y el oro
 // SOLO en la racha y el título, como en el resto de la app. Todo se mide en
