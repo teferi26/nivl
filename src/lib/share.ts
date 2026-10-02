@@ -26,6 +26,7 @@ import {
   DIMENSIONES,
   formatoArchivo,
   mensaje,
+  type ContextoTarjeta,
   type FormatoTarjeta,
   type OpcionesTarjeta,
   type Tarjeta,
@@ -43,6 +44,8 @@ export interface PeticionCompartir {
   tarjeta: Tarjeta;
   formato: FormatoTarjeta;
   opciones: OpcionesTarjeta;
+  /** Edad verificada de quien comparte: sin ella, nada de fotos corporales. */
+  contexto?: ContextoTarjeta;
   /** Vista ya montada (fuera de pantalla) con la tarjeta pintada. */
   vista: RefObject<View | null>;
   codigoAmigo?: string | null;
@@ -75,7 +78,8 @@ function borrar(uri: string | null): void {
  * permiso de fotos); cualquier otro fallo sube tal cual para `mensajeSistema`.
  */
 export async function compartirTarjeta(p: PeticionCompartir): Promise<ResultadoCompartir> {
-  const motivo = bloqueo(p.tarjeta, p.opciones);
+  const contexto = p.contexto ?? { mayorDeEdad: false };
+  const motivo = bloqueo(p.tarjeta, p.opciones, contexto);
   if (motivo) throw new ErrorVisible(motivo);
   if (ocupado) return 'ocupado';
   ocupado = true;
@@ -87,7 +91,7 @@ export async function compartirTarjeta(p: PeticionCompartir): Promise<ResultadoC
       await Share.share({ message: texto });
       return 'solo-texto';
     }
-    const { formato, calidad } = formatoArchivo(p.tarjeta, p.opciones);
+    const { formato, calidad } = formatoArchivo(p.tarjeta, p.opciones, contexto);
     const { ancho, alto } = DIMENSIONES[p.formato];
     uri = await captureRef(p.vista, { format: formato, quality: calidad, width: ancho, height: alto, result: 'tmpfile' });
     await Sharing.shareAsync(uri, {

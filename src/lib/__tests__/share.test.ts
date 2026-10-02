@@ -48,13 +48,16 @@ test('captura a los píxeles exactos del formato, comparte y borra el temporal',
 });
 
 test('con fotos permitidas sale en JPG 0,9', async () => {
-  await compartirTarjeta({ ...base, tarjeta: progreso, opciones: { ...OPCIONES_POR_DEFECTO, mostrarFotos: true } });
+  await compartirTarjeta({ ...base, tarjeta: progreso, opciones: { ...OPCIONES_POR_DEFECTO, mostrarFotos: true }, contexto: { mayorDeEdad: true } });
   expect(captureRef).toHaveBeenCalledWith(vista, expect.objectContaining({ format: 'jpg', quality: 0.9, width: 1080, height: 1920 }));
   expect(Sharing.shareAsync).toHaveBeenCalledWith(expect.any(String), expect.objectContaining({ mimeType: 'image/jpeg' }));
 });
 
-test('antes/después sin permiso de fotos: error visible y sin capturar nada', async () => {
-  await expect(compartirTarjeta({ ...base, tarjeta: progreso })).rejects.toBeInstanceOf(ErrorVisible);
+test('antes/después sin permiso de fotos o sin 18 años: error visible y sin capturar nada', async () => {
+  await expect(compartirTarjeta({ ...base, tarjeta: progreso, contexto: { mayorDeEdad: true } })).rejects.toBeInstanceOf(ErrorVisible);
+  await expect(
+    compartirTarjeta({ ...base, tarjeta: progreso, opciones: { ...OPCIONES_POR_DEFECTO, mostrarFotos: true } }),
+  ).rejects.toThrow(/18 años/);
   expect(captureRef).not.toHaveBeenCalled();
   expect(Sharing.shareAsync).not.toHaveBeenCalled();
 });

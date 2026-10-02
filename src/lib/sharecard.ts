@@ -210,9 +210,16 @@ export function textos(t: Tarjeta, opciones: OpcionesTarjeta = OPCIONES_POR_DEFE
   }
 }
 
+/** Lo que la tarjeta necesita saber de quien comparte (no lo elige el usuario). */
+export interface ContextoTarjeta {
+  /** Edad verificada ≥ 18. Las fotos corporales solo se comparten en adultos (decisión del coordinador, 02/10). */
+  mayorDeEdad: boolean;
+}
+
 /** Por qué una tarjeta no se puede generar con estas opciones, o null si se puede. */
-export function bloqueo(t: Tarjeta, opciones: OpcionesTarjeta): string | null {
+export function bloqueo(t: Tarjeta, opciones: OpcionesTarjeta, contexto: ContextoTarjeta = { mayorDeEdad: false }): string | null {
   if (t.tipo === 'antesDespues') {
+    if (!contexto.mayorDeEdad) return 'Compartir fotos de progreso está disponible a partir de los 18 años.';
     if (!opciones.mostrarFotos) return 'Para compartir el antes y después tienes que permitir las fotos.';
     if (!t.antes.uri || !t.despues.uri) return 'Faltan fotos para comparar.';
     if (t.antes.fecha > t.despues.fecha) return 'La foto de antes es posterior a la de después.';
@@ -221,9 +228,9 @@ export function bloqueo(t: Tarjeta, opciones: OpcionesTarjeta): string | null {
   return null;
 }
 
-/** Fotos que la tarjeta puede pintar (vacío si no hay permiso). */
-export function fotosVisibles(t: Tarjeta, opciones: OpcionesTarjeta): Foto[] {
-  if (t.tipo !== 'antesDespues' || !opciones.mostrarFotos) return [];
+/** Fotos que la tarjeta puede pintar (vacío si no hay permiso o si no es mayor de edad). */
+export function fotosVisibles(t: Tarjeta, opciones: OpcionesTarjeta, contexto: ContextoTarjeta = { mayorDeEdad: false }): Foto[] {
+  if (t.tipo !== 'antesDespues' || !opciones.mostrarFotos || !contexto.mayorDeEdad) return [];
   return [t.antes, t.despues];
 }
 
@@ -231,8 +238,12 @@ export function fotosVisibles(t: Tarjeta, opciones: OpcionesTarjeta): Foto[] {
  * Formato del archivo: con foto, JPG (una foto en PNG a 1080×1920 pasa
  * fácilmente de 4 MB); sin foto, PNG (texto nítido y fondo plano).
  */
-export function formatoArchivo(t: Tarjeta, opciones: OpcionesTarjeta): { formato: 'png' | 'jpg'; calidad: number } {
-  return fotosVisibles(t, opciones).length > 0 ? { formato: 'jpg', calidad: 0.9 } : { formato: 'png', calidad: 1 };
+export function formatoArchivo(
+  t: Tarjeta,
+  opciones: OpcionesTarjeta,
+  contexto: ContextoTarjeta = { mayorDeEdad: false },
+): { formato: 'png' | 'jpg'; calidad: number } {
+  return fotosVisibles(t, opciones, contexto).length > 0 ? { formato: 'jpg', calidad: 0.9 } : { formato: 'png', calidad: 1 };
 }
 
 /** "nivl-logro-2026-10-02-stories.png": legible en la galería, sin datos personales. */

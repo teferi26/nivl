@@ -118,16 +118,25 @@ describe('textos', () => {
 });
 
 describe('privacidad', () => {
+  const adulto = { mayorDeEdad: true };
+
   it('antes/después sin permiso de fotos no se genera', () => {
-    expect(bloqueo(progreso, OPCIONES_POR_DEFECTO)).toMatch(/permitir las fotos/);
-    expect(fotosVisibles(progreso, OPCIONES_POR_DEFECTO)).toEqual([]);
-    expect(bloqueo(progreso, todo)).toBeNull();
-    expect(fotosVisibles(progreso, todo)).toHaveLength(2);
+    expect(bloqueo(progreso, OPCIONES_POR_DEFECTO, adulto)).toMatch(/permitir las fotos/);
+    expect(fotosVisibles(progreso, OPCIONES_POR_DEFECTO, adulto)).toEqual([]);
+    expect(bloqueo(progreso, todo, adulto)).toBeNull();
+    expect(fotosVisibles(progreso, todo, adulto)).toHaveLength(2);
+  });
+
+  it('las fotos de progreso solo se comparten con 18 años o más, y por defecto no', () => {
+    expect(bloqueo(progreso, todo)).toMatch(/18 años/);
+    expect(bloqueo(progreso, todo, { mayorDeEdad: false })).toMatch(/18 años/);
+    expect(fotosVisibles(progreso, todo)).toEqual([]);
+    expect(formatoArchivo(progreso, todo).formato).toBe('png');
   });
 
   it('rechaza fotos sin URI o en orden inverso', () => {
-    expect(bloqueo({ ...progreso, antes: { uri: '', fecha: '2026-07-01' } } as Tarjeta, todo)).toMatch(/Faltan fotos/);
-    expect(bloqueo({ ...progreso, antes: progreso.despues, despues: progreso.antes } as Tarjeta, todo)).toMatch(/posterior/);
+    expect(bloqueo({ ...progreso, antes: { uri: '', fecha: '2026-07-01' } } as Tarjeta, todo, adulto)).toMatch(/Faltan fotos/);
+    expect(bloqueo({ ...progreso, antes: progreso.despues, despues: progreso.antes } as Tarjeta, todo, adulto)).toMatch(/posterior/);
   });
 
   it('las tarjetas sin fotos nunca enseñan fotos', () => {
@@ -141,7 +150,7 @@ describe('privacidad', () => {
 
 describe('archivo y enlace', () => {
   it('JPG con foto, PNG sin ella', () => {
-    expect(formatoArchivo(progreso, todo)).toEqual({ formato: 'jpg', calidad: 0.9 });
+    expect(formatoArchivo(progreso, todo, { mayorDeEdad: true })).toEqual({ formato: 'jpg', calidad: 0.9 });
     expect(formatoArchivo(progreso, OPCIONES_POR_DEFECTO).formato).toBe('png');
     expect(formatoArchivo({ tipo: 'nivel', nivel: 3 }, todo).formato).toBe('png');
   });
