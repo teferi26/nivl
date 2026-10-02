@@ -36,7 +36,13 @@ import {
 } from '@/components/ui';
 import { avisar, confirmar } from '@/components/ui/confirmar';
 import { volver } from '@/components/ui/Screen';
-import { evaluateAchievements, fetchUnlocked, unlockAchievements } from '@/lib/achievements';
+import {
+  ACHIEVEMENT_BY_CODE,
+  evaluateAchievements,
+  fetchUnlocked,
+  sincronizarRangoDetalle,
+  unlockAchievements,
+} from '@/lib/achievements';
 import { useAuth } from '@/lib/auth';
 import { fetchPrescription, type Prescription } from '@/lib/bodywork';
 import {
@@ -61,8 +67,14 @@ import { supabase } from '@/lib/supabase';
 import { subirFotoMision } from '@/lib/photos';
 import { colors, fonts } from '@/lib/theme';
 import { mensajeSistema } from '@/lib/validation';
-import { deMisiones, desgloseXp } from '@/lib/voice';
+import type { LogroInfo } from '@/lib/progression';
 import type { GymDay, GymExercise, GymSession } from '@/lib/types';
+
+/** Un código suelto (p. ej. `rango_C` de sync_rank) en la forma del contrato. */
+const logroDeCodigo = (codigo: string): LogroInfo => {
+  const def = ACHIEVEMENT_BY_CODE[codigo];
+  return def ? { codigo: def.code, nombre: def.name, desc: def.desc, titulo: def.title } : { codigo, nombre: codigo, desc: '' };
+};
 // Pedido por el Chat 5 (economía): con el tope diario de award_xp, pagar más
 // récords se recortaría en silencio. En la primera sesión todo es récord.
 const MAX_PR_PAGADOS = 4;
@@ -292,37 +304,39 @@ export default function Gym() {
         .eq('type', 'gym_pr');
       const fresh = await unlockAchievements(userId, evaluateAchievements({ prCount: prCount ?? 0 }));
 
-      // El desglose cuadra con lo que luego enseña la misión enlazada.
-      const xpSesion = Math.min(pagado, totalXp - prsPagados * PR_XP);
-      const xpRecords = pagado - xpSesion;
-      const desglose = desgloseXp([
-        { xp: eco.xp, de: deMisiones(eco.marcadas) },
-        { xp: xpSesion, de: 'a FUE por la sesión' },
-        { xp: xpRecords, de: `a FUE por ${prsPagados === 1 ? '1 récord' : `${prsPagados} récords`}` },
-      ]);
       // Nada de Alert aquí: en iOS, con un UIAlertController abierto el Modal
       // de la ceremonia no se presenta y la cola se queda bloqueada. El
-      // desglose y los récords van al resumen de la celebración (los logros,
-      // como logros); sin nivel ni rango nuevos, la cola lo enseña en un toast.
-      const resumen = [
-        desglose ? desglose.replace(/\.$/, '') : 'Sesión registrada · la misión de hoy ya estaba pagada',
-        ...prs.map((p) => `Récord · ${p.exercise_name}`),
-      ];
-      // Nivel y rango vibran en la ceremonia; si no la hay, misión cumplida.
+      // resumen va corto (cabe en un toast): el XP total y los récords. El
+      // desglose (misión enlazada, sesión, récords) ya lo pinta la ficha de
+      // la sesión al recargar.
+      const xpTotal = eco.xp + pagado;
+      const lineaXp =
+        xpTotal > 0
+          ? `+${xpTotal} XP · FUE`
+          : totalXp > 0
+            ? 'Tope diario de XP alcanzado'
+            : 'Sesión registrada · la misión de hoy ya estaba pagada';
+      const resumen = [lineaXp, ...prs.map((p) => `Récord · ${p.exercise_name}`)];
+      // El nivel vibra en su ceremonia; el rango, si llega del servidor, en la
+      // suya. Sin nivel nuevo, misión cumplida.
       const subeNivel = levelFromXp(res.profile.xp_total).level > levelFromXp(perfilAntes.xp_total).level;
-      const subeRango = fresh.some((a) => a.code.startsWith('rango_'));
-      if (!subeNivel && !subeRango) vibrar('mision');
-      // Nivel, rango, logros y rachas: una sola celebración por la cola.
+      if (!subeNivel) vibrar('mision');
+      // Nivel, rango, logros y rachas: una sola celebración por la cola. La
+      // ventana la cierra el rango que devuelve el servidor (sync_rank).
+      const accion = `gym:${gymSession.id}`;
       celebrar({
-        accion: `gym:${gymSession.id}`,
+        accion,
         perfilAntes,
         perfilDespues: res.profile,
         logrosAntes,
         logrosNuevos: fresh.map((a) => ({ codigo: a.code, nombre: a.name, desc: a.desc, titulo: a.title })),
         fecha: dateKey(),
         resumen,
-        final: true,
       });
+      sincronizarRangoDetalle()
+        .catch(() => ({ nuevos: [] as string[], diasActivos: null }))
+        .then(({ nuevos, diasActivos }) => celebrar({ accion, logrosNuevos: nuevos.map(logroDeCodigo), diasActivos, final: true }))
+        .catch(() => {});
       setTraining(false);
       setNotas('');
       setFotoB64(null);

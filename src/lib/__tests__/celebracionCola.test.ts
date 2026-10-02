@@ -1,6 +1,6 @@
 import { xpCostForLevel } from '../game';
 import { celebracionInsignia } from '../progression';
-import { estadoInicial, fusionar, hayAlgo, lineasDe, MAX_VISTAS, reducir, textoToast, type EstadoCola, type EventoCola } from '../celebracionCola';
+import { celebracionesDeRacha, estadoInicial, fusionar, hayAlgo, lineasDe, MAX_VISTAS, reducir, textoToast, type EstadoCola, type EventoCola } from '../celebracionCola';
 
 jest.mock('../supabase', () => ({ supabase: {} }));
 
@@ -164,5 +164,40 @@ describe('cola de celebraciones', () => {
     const s = correr([{ tipo: 'avisar', id: 'aviso:1', texto: 'x' }, { tipo: 'vaciar' }], cargado(['rango:B']));
     expect(s).toMatchObject({ cargado: false, mostrando: null });
     expect(s.vistas.size).toBe(0);
+  });
+
+  test('ceremonia fallida: desmarca sus claves y sale en un toast con su texto', () => {
+    let s = correr([{ tipo: 'llega', a: { accion: 'a', perfilAntes: perfil(3), perfilDespues: perfil(4), logrosAntes: [], logrosNuevos: [{ codigo: 'x', nombre: 'Equis', desc: '' }], fecha, resumen: ['+80 XP · FUE'], final: true } }], cargado(['otra']));
+    expect(s.mostrando?.forma).toBe('ceremonia-corta');
+    expect(s.vistas.has('nivel:4')).toBe(true);
+    s = reducir(s, { tipo: 'fallida' });
+    expect(s.mostrando).toMatchObject({ forma: 'toast', principal: null, accion: null });
+    expect(lineasDe(s.mostrando!)).toEqual(['Nivel 4', '+80 XP · FUE', 'Logro · Equis']);
+    expect(s.vistas.has('nivel:4')).toBe(false);
+    expect(s.vistas.has('logro:x')).toBe(false);
+    expect(s.vistas.has('otra')).toBe(true);
+    // El toast se apaga como cualquier otro y no deja nada esperando.
+    s = reducir(s, { tipo: 'ocultar' });
+    expect(hayAlgo(s)).toBe(false);
+  });
+
+  test('fallida sin ceremonia visible no toca las vistas', () => {
+    const s = correr([{ tipo: 'avisar', id: 'aviso:1', texto: 'Hola' }, { tipo: 'fallida' }], cargado(['nivel:4']));
+    expect(s.mostrando).toBeNull();
+    expect(s.vistas.has('nivel:4')).toBe(true);
+  });
+
+  test('racha hito al completar: misma clave que el cierre de ese día, y no se repite', () => {
+    const hitos = celebracionesDeRacha(6, 7, fecha);
+    expect(hitos).toEqual([{ tipo: 'racha', clave: `racha:7:${fecha}`, intensidad: 'suave', dias: 7 }]);
+    expect(celebracionesDeRacha(7, 7, fecha)).toEqual([]);
+    expect(celebracionesDeRacha(29, 30, fecha).map((c) => c.clave)).toEqual([`racha:30:${fecha}`]);
+    // Completar la misión (streak_days aún 6) con el hito en extra.
+    let s = correr([{ tipo: 'llega', a: { accion: 'mision', perfilAntes: perfil(3, { streak_days: 6 }), perfilDespues: perfil(3, { streak_days: 6 }), logrosAntes: [], fecha, extra: hitos, resumen: ['+50 XP · FUE'], final: true } }], cargado());
+    expect(s.mostrando?.principal).toMatchObject({ tipo: 'racha', dias: 7 });
+    s = reducir(s, { tipo: 'ocultar' });
+    // El cierre del día siguiente, con fecha = el día cerrado: nada nuevo.
+    s = reducir(s, { tipo: 'llega', a: { accion: 'cierre', perfilAntes: perfil(3, { streak_days: 6 }), perfilDespues: perfil(3, { streak_days: 7 }), logrosAntes: [], fecha, final: true } });
+    expect(s.mostrando).toBeNull();
   });
 });

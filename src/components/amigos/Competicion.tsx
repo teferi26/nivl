@@ -180,7 +180,14 @@ export function Competicion({ amigos, recarga, retarA, onRetarA, onDisponible }:
         </View>
       ) : (
         <>
-          {fallo ? <Aviso texto={`No se ha podido cargar: ${fallo}`} error style={styles.separado} /> : null}
+          {fallo ? (
+            <View style={styles.separado}>
+              <Aviso texto={`No se ha podido cargar: ${fallo}`} error />
+              <View style={styles.reintentar}>
+                <Button title="Reintentar" icon="refresh" variant="secondary" size="sm" onPress={cargar} />
+              </View>
+            </View>
+          ) : null}
 
           {vista.porResponder.length > 0 ? (
             <Card padded={false} style={styles.lista}>
@@ -222,16 +229,28 @@ export function Competicion({ amigos, recarga, retarA, onRetarA, onDisponible }:
                   detail="Reto enviado · falta su respuesta"
                 />
               ))}
-              {vista.resueltos.map((d, i) => (
-                <Row
-                  key={d.id}
-                  first={vista.enviados.length === 0 && i === 0}
-                  leading={<Ionicons name="flag-outline" size={18} color={ink.ink6} />}
-                  title={d.rival ?? ''}
-                  detail={`Semana pasada · ${d.mi_indice} frente a ${d.su_indice}`}
-                  trailing={<Text style={styles.resultado}>{TEXTO_RESULTADO[d.resultado!]}</Text>}
-                />
-              ))}
+              {vista.resueltos.map((d, i) => {
+                // Revancha: solo si el rival se identifica sin duda entre tus
+                // amigos (el duelo trae su nombre, no su id).
+                const mismos = d.resultado === 'pierdo' && d.rival ? amigos.filter((a) => a.name === d.rival) : [];
+                const rival = mismos.length === 1 ? mismos[0]! : null;
+                return (
+                  <Row
+                    key={d.id}
+                    first={vista.enviados.length === 0 && i === 0}
+                    leading={<Ionicons name="flag-outline" size={18} color={ink.ink6} />}
+                    title={d.rival ?? ''}
+                    detail={`Semana pasada · ${d.mi_indice} frente a ${d.su_indice} · ${TEXTO_RESULTADO[d.resultado!]}`}
+                    trailing={
+                      rival ? (
+                        <Button title="Revancha" size="sm" variant="secondary" onPress={() => onRetarA(rival)} />
+                      ) : (
+                        <Text style={styles.resultado}>{TEXTO_RESULTADO[d.resultado!]}</Text>
+                      )
+                    }
+                  />
+                );
+              })}
             </Card>
           ) : null}
 
@@ -283,9 +302,12 @@ export function Competicion({ amigos, recarga, retarA, onRetarA, onDisponible }:
           {avisoLista ? <Aviso texto={avisoLista.texto} error={avisoLista.error} style={styles.separado} /> : null}
 
           {nada ? (
-            <Text style={styles.hint}>
-              Un duelo dura una semana, de lunes a domingo. Una liga reúne hasta {LIGA_MAX} amigos. {REGLA}
-            </Text>
+            <>
+              <Text style={styles.vacio}>Esta semana nadie te mide. Reta a un amigo.</Text>
+              <Text style={styles.hint}>
+                Un duelo dura una semana, de lunes a domingo. Una liga reúne hasta {LIGA_MAX} amigos. {REGLA}
+              </Text>
+            </>
           ) : null}
 
           <View style={styles.botones}>
@@ -617,6 +639,13 @@ function LigaSheet({
   }, [id]);
 
   const tabla = useMemo(() => ordenarTablero(filas ?? []), [filas]);
+  // A quién se puede invitar: los amigos que aún no están en el tablero. El
+  // tablero no trae ids (solo el alias público, cortado a 40), así que se
+  // compara por nombre.
+  const invitables = useMemo(() => {
+    const dentro = new Set((filas ?? []).filter((f) => !f.es_yo).map((f) => f.alias));
+    return amigos.filter((a) => !dentro.has(a.name.slice(0, 40)));
+  }, [filas, amigos]);
 
   const invitar = async (a: Amigo) => {
     if (!id || lock.current) return;
@@ -630,7 +659,9 @@ function LigaSheet({
       setAviso({ texto: `Invitación enviada a ${a.name}. Entra cuando la acepte.`, error: false });
     } catch (e) {
       vibrar('penalizacion');
-      setAviso({ texto: mensajeSistema(e), error: true });
+      // 42501 al invitar: no eres quien la creó (el servidor no dice quién es).
+      const code = (e as { code?: string } | null)?.code;
+      setAviso({ texto: code === '42501' ? 'Solo quien creó la liga puede invitar.' : mensajeSistema(e), error: true });
     } finally {
       lock.current = false;
       setInvitando(null);
@@ -687,7 +718,11 @@ function LigaSheet({
                 </View>
               }
               title={f.es_yo ? `${f.alias} · tú` : f.alias}
-              detail={f.sin_datos ? 'Aún sin datos esta semana' : `${f.dias_activos} días activos · ritmo ×${f.velocidad}`}
+              detail={
+                f.sin_datos
+                  ? 'Aún sin datos esta semana'
+                  : `${f.dias_activos} días activos · ritmo ×${Number(f.velocidad).toFixed(1).replace('.', ',')}`
+              }
               trailing={<Text style={styles.indice}>{f.sin_datos ? '—' : f.indice}</Text>}
               accessibilityLabel={`${f.puesto > 0 ? `Puesto ${f.puesto}` : 'Sin puesto'}. ${f.es_yo ? 'Tú' : f.alias}. ${
                 f.sin_datos ? 'Aún sin datos esta semana' : `Disciplina ${f.indice}, ${f.dias_activos} días activos`
@@ -700,11 +735,11 @@ function LigaSheet({
         </View>
       )}
 
-      {amigos.length > 0 ? (
+      {filas !== null && invitables.length > 0 ? (
         <>
           <Text style={[styles.rotulo, styles.separado]}>Invitar</Text>
           <ChipWrap>
-            {amigos.map((a) => (
+            {invitables.map((a) => (
               <Chip
                 key={a.userId}
                 label={invitados.has(a.userId) ? `${a.name} · invitado` : a.name}
@@ -716,7 +751,9 @@ function LigaSheet({
               />
             ))}
           </ChipWrap>
-          <Text style={styles.hint}>Solo quien creó la liga puede invitar.</Text>
+          <Text style={styles.hint}>
+            Solo quien creó la liga puede invitar. Si no la creaste tú, pídele que invite a quien quieras sumar.
+          </Text>
         </>
       ) : null}
       {aviso ? <Aviso texto={aviso.texto} error={aviso.error} /> : null}
@@ -732,6 +769,8 @@ const styles = StyleSheet.create({
   rechazar: { width: 32, height: 32, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: colors.line },
   pulsado: { opacity: 0.6 },
   resultado: { fontFamily: fonts.semibold, fontSize: 13, color: ink.ink9 },
+  reintentar: { alignSelf: 'flex-start', marginTop: 8 },
+  vacio: { fontFamily: fonts.semibold, fontSize: 14, color: ink.ink9, marginTop: 4 },
   hint: { fontFamily: fonts.body, fontSize: 12, color: colors.textFaint, marginTop: 10, lineHeight: 17 },
   botones: { flexDirection: 'row', gap: 8, marginTop: 6 },
   boton: { flex: 1 },
