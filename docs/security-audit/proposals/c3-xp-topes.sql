@@ -7,14 +7,18 @@
 --   · Lo que supera el tope se RECORTA en silencio (la app no se rompe).
 --   · Evento desconocido o sin evento: paga 0 (se registra igual).
 --   · Negativo solo en rule_broken, y como mucho −25. Las stats nunca bajan.
---   · Una sola vez en la vida: habit_acquired (por misión), goal_achieved (por
---     meta) y dungeon_cleared (por campaña), con la clave que ya mandan los
---     clientes en el payload (título).
+--   · Una sola vez por FILA (id real, resuelto desde el título si hace falta):
+--     habit_acquired (misión), goal_achieved (meta), dungeon_cleared (campaña;
+--     botín según el rango guardado y con ≥3 tareas hechas). Revisado por
+--     nivl-game-balancer (Chat 5): marca de una vez solo si se paga; diario de
+--     ayer cuenta en su día; dungeon_task 500/día.
 --   · Libros en tablas sin acceso de cliente: events no sirve, el usuario
 --     puede borrar sus propios eventos.
 -- Residual aceptado: cambiar profiles.timezone desplaza "hoy" como mucho un
--- día. Renombrar una misión permite volver a cobrar habit_acquired, pero
--- dentro del tope diario.
+-- día. Las tareas de campaña las marca el cliente, así que el mínimo de 3
+-- frena pero no impide; el tope diario acota lo que se pueda forzar.
+-- Para que la UI no anuncie lo calculado tras un recorte: lo pagado es
+-- xp_total(después) − xp_total(antes) del perfil que devuelve la RPC.
 -- Mantiene el crédito de recuperación de 0035 en rule_broken.
 -- Huella: to_regclass('public.xp_daily_ledger') is not null
 
@@ -51,7 +55,7 @@ language sql immutable set search_path = public as $$
     when 'nutrition_day' then 10
     when 'habit_acquired' then 300
     when 'goal_achieved' then 200
-    when 'dungeon_task' then 750
+    when 'dungeon_task' then 500
     when 'dungeon_cleared' then 600
     else null end;
 $$;
@@ -91,28 +95,58 @@ begin
       v_amount := 0;
     else
       v_amount := p_amount;
-      v_key := case p_event
-        when 'habit_acquired' then coalesce(p_payload->>'quest_id', p_payload->>'quest')
-        when 'goal_achieved' then coalesce(p_payload->>'goal_id', p_payload->>'goal')
-        when 'dungeon_cleared' then coalesce(p_payload->>'dungeon_id', p_payload->>'dungeon')
-        else null end;
-      if p_event in ('habit_acquired', 'goal_achieved', 'dungeon_cleared') then
-        if v_key is null or btrim(v_key) = '' then
-          v_amount := 0;
-        else
-          insert into public.xp_once (user_id, event, key) values (v_uid, p_event, left(v_key, 300))
-            on conflict do nothing;
-          if not found then v_amount := 0; end if;
-        end if;
+      -- Diario: el cliente paga la entrada de hoy o la de ayer; el libro usa
+      -- el día de la entrada si es uno de esos dos.
+      if p_event = 'journal_entry' and (p_payload->>'date') ~ '^\d{4}-\d{2}-\d{2}$'
+         and (p_payload->>'date')::date between v_day - 1 and v_day then
+        v_day := (p_payload->>'date')::date;
       end if;
+      -- "Una sola vez" se ata a la FILA real (id), no al título: el cliente
+      -- manda el título hoy, así que se resuelve a la fila más reciente de
+      -- esta cuenta con ese título. Una meta que se repite al año siguiente
+      -- es otra fila y vuelve a pagar; renombrar no crea otra fila.
+      if p_event = 'habit_acquired' then
+        select q.id::text into v_key from public.quests q where q.user_id = v_uid
+          and (q.id::text = p_payload->>'quest_id' or q.title = p_payload->>'quest')
+          order by (q.id::text = p_payload->>'quest_id') desc, q.created_at desc limit 1;
+      elsif p_event = 'goal_achieved' then
+        select g.id::text into v_key from public.goals g where g.user_id = v_uid
+          and (g.id::text = p_payload->>'goal_id' or g.title = p_payload->>'goal')
+          order by (g.id::text = p_payload->>'goal_id') desc, g.created_at desc limit 1;
+      elsif p_event = 'dungeon_cleared' then
+        -- El botín sale del rango GUARDADO de la campaña y exige al menos 3
+        -- tareas hechas: el payload no decide cuánto vale.
+        select d.id::text,
+               case d.rank when 'E' then 50 when 'D' then 100 when 'C' then 150
+                           when 'B' then 250 when 'A' then 400 when 'S' then 600 else 0 end
+               * (case when (select count(*) from public.dungeon_tasks t
+                             where t.dungeon_id = d.id and t.user_id = v_uid and t.done) >= 3 then 1 else 0 end)
+          into v_key, v_cap
+          from public.dungeons d where d.user_id = v_uid
+          and (d.id::text = p_payload->>'dungeon_id' or d.title = p_payload->>'dungeon')
+          order by (d.id::text = p_payload->>'dungeon_id') desc, d.created_at desc limit 1;
+        v_amount := least(v_amount, coalesce(v_cap, 0));
+        v_cap := public.xp_daily_cap(p_event);
+      end if;
+      if p_event in ('habit_acquired', 'goal_achieved', 'dungeon_cleared') and v_key is null then
+        v_amount := 0;
+      end if;
+
+      -- Primero el tope diario; la marca de "una sola vez" solo se gasta si
+      -- de verdad se paga algo (si no, el cuarto hábito del día la perdería).
       if v_amount > 0 then
         select coalesce(xp, 0) into v_used from public.xp_daily_ledger
           where user_id = v_uid and day = v_day and event = p_event for update;
         v_amount := least(v_amount, greatest(0, v_cap - coalesce(v_used, 0)));
-        if v_amount > 0 then
-          insert into public.xp_daily_ledger (user_id, day, event, xp) values (v_uid, v_day, p_event, v_amount)
-            on conflict (user_id, day, event) do update set xp = public.xp_daily_ledger.xp + excluded.xp;
-        end if;
+      end if;
+      if v_amount > 0 and v_key is not null then
+        insert into public.xp_once (user_id, event, key) values (v_uid, p_event, v_key)
+          on conflict do nothing;
+        if not found then v_amount := 0; end if;
+      end if;
+      if v_amount > 0 then
+        insert into public.xp_daily_ledger (user_id, day, event, xp) values (v_uid, v_day, p_event, v_amount)
+          on conflict (user_id, day, event) do update set xp = public.xp_daily_ledger.xp + excluded.xp;
       end if;
     end if;
   end if;
