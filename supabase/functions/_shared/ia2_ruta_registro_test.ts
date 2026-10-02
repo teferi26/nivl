@@ -488,3 +488,54 @@ Deno.test('L3 coste simulado: «te he subido el gym hoy» estrecho frente a comp
   ok(estrecha.fichas.total * 4 < completa.fichas.total, 'la estrecha manda menos de una cuarta parte');
   ok(cE * 2 < 10_000, `dos llamadas estrechas < 0,01 $ (${cE * 2} µ$)`);
 });
+
+// ── Regresión del P0 de producción (02/10): Haiku 4.5 y el reintento ──────────
+// Con L3 desplegado, «te he subido el gym hoy» devolvía «El sistema no responde»:
+// la petición a claude-haiku-4-5 llevaba thinking adaptive + output_config.effort,
+// que Haiku 4.5 rechaza con 400 (guía de la API). Clasificar y el titular,
+// también en Haiku, fallaban igual en silencio.
+
+Deno.test('P0 Haiku: la petición a Haiku 4.5 no lleva thinking adaptive ni effort; la de Sonnet sí', async () => {
+  const fake = instalar({
+    otras: postgrest(datos()),
+    proveedor: () => turnoTexto('Consta.', USO_ESTRECHO, CHEAP_MODEL),
+  });
+  try {
+    const r = await handler(peticion({ kind: 'chat', message: 'te he subido el gym hoy', stream: false, date: HOY }));
+    equal(r.status, 200);
+    const b = fake.proveedor[0].body as Record<string, unknown>;
+    equal(b.model, CHEAP_MODEL);
+    equal(b.thinking, undefined, 'sin thinking para Haiku 4.5');
+    equal(b.output_config, undefined, 'sin effort para Haiku 4.5');
+  } finally {
+    fake.restaurar();
+  }
+  const { admitePensamientoAdaptativo } = await import('./anthropic.ts');
+  ok(!admitePensamientoAdaptativo('claude-haiku-4-5'));
+  ok(admitePensamientoAdaptativo(COACH_MODEL));
+});
+
+Deno.test('P0 reintento: si el proveedor rechaza la ruta estrecha (400), responde la completa y el mensaje se guarda una sola vez', async () => {
+  const fake = instalar({
+    otras: postgrest(datos()),
+    proveedor: (body: { model: string }) =>
+      body.model === CHEAP_MODEL
+        ? new Response(JSON.stringify({ type: 'error', error: { type: 'invalid_request_error', message: 'x' } }), { status: 400 })
+        : turnoTexto('Consta: Sentadilla 100×5 hoy.', { input_tokens: 20_000, output_tokens: 300 }, COACH_MODEL),
+  });
+  try {
+    const r = await handler(peticion({ kind: 'chat', message: 'te he subido el gym hoy', stream: false, date: HOY }));
+    equal(r.status, 200, 'el usuario no ve un error');
+    const respuesta = await r.json() as { text: string };
+    ok(respuesta.text.includes('Sentadilla'));
+    equal((fake.proveedor[0].body as { model: string }).model, CHEAP_MODEL);
+    equal((fake.proveedor.at(-1)!.body as { model: string }).model, COACH_MODEL, 'reintento por la completa');
+    const delUsuario = fake.escrituras('coach_messages').filter((l) => JSON.stringify(l.body).includes('"role":"user"'));
+    equal(delUsuario.length, 1, 'el mensaje del usuario no se duplica');
+    const [run] = runs(fake);
+    equal(run.route, 'registro_reintento');
+    equal(run.error, null);
+  } finally {
+    fake.restaurar();
+  }
+});

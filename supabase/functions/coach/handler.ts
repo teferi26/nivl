@@ -394,6 +394,14 @@ interface RunArgs {
   telemetria: Telemetria;
   /** 'registro' = ruta estrecha (L3); 'completa' = el coach con todo. */
   ruta: Ruta;
+  /** Reintento tras un rechazo de la ruta estrecha: el mensaje ya está guardado. */
+  usuarioYaGuardado?: boolean;
+}
+
+/** ¿El proveedor rechazó la petición (4xx)? Es lo único que justifica reintentar por la completa. */
+export function rechazoDelProveedor(e: unknown): boolean {
+  const texto = e instanceof Error ? e.message : String(e);
+  return /(?:anthropic|proveedor) 4\d\d/.test(texto);
 }
 
 /**
@@ -405,7 +413,7 @@ function ttlFijoDeEnv(): '1h' | undefined {
 }
 
 async function runCoach(args: RunArgs): Promise<{ text: string; usage: Usage; model: string }> {
-  const { sb, admin, userId, kind, threadId, userText, today, imagenes, topeMicro, modelo, compat, modo, emit, gasto, deadline, telemetria, ruta } =
+  const { sb, admin, userId, kind, threadId, userText, today, imagenes, topeMicro, modelo, compat, modo, emit, gasto, deadline, telemetria, ruta, usuarioYaGuardado } =
     args;
 
   // La ruta estrecha cambia TRES cosas y nada más: el estado (mínimo), el
@@ -481,7 +489,7 @@ async function runCoach(args: RunArgs): Promise<{ text: string; usage: Usage; mo
   // Solo se persiste lo que dijo él, sin el volcado de estado. Y de las fotos
   // solo la marca, nunca los bytes: guardar base64 en el historial lo haría
   // crecer megabytes y se reenviaría entero en cada turno siguiente.
-  await sb.from('coach_messages').insert({
+  if (!usuarioYaGuardado) await sb.from('coach_messages').insert({
     thread_id: threadId,
     user_id: userId,
     role: 'user',
@@ -967,6 +975,33 @@ async function atender(
   const gasto = new Gasto(modelo);
   const telemetria: Telemetria = { route: ruta, tool_calls: 0, iterations: 0 };
 
+  // Si el proveedor RECHAZA la ruta estrecha (4xx: parámetros que un modelo no
+  // admite, nombre de modelo mal puesto en routes.registro…), el turno se
+  // atiende por la completa en vez de devolver un error al usuario. El mensaje
+  // ya quedó guardado en el primer intento; lo gastado se sigue sumando.
+  const ejecutarTurno = async (emitir: (event: string, data: unknown) => void) => {
+    const base = {
+      sb, admin, userId, kind, threadId: threadId!, userText: prompt, today,
+      imagenes: fotos.imagenes, gasto, deadline, modo, emit: emitir, telemetria,
+    };
+    try {
+      return await runCoach({ ...base, topeMicro, modelo, compat, ruta });
+    } catch (e) {
+      if (ruta !== 'registro' || !rechazoDelProveedor(e)) throw e;
+      console.warn('ruta de registro rechazada por el proveedor: se reintenta por la completa');
+      const completa = resolverModelo(routes, kind, modo);
+      telemetria.route = 'registro_reintento';
+      return await runCoach({
+        ...base,
+        topeMicro: Math.max(0, Math.min(MAX_COST_MICRO_USD, restanteMicro) - gasto.micro()),
+        modelo: completa.model,
+        compat: completa.compat,
+        ruta: 'completa',
+        usuarioYaGuardado: true,
+      });
+    }
+  };
+
   // El libro de cuentas lo escribe el SERVIDOR, no el usuario: coach_runs solo
   // tiene política de lectura, así que con el cliente del usuario la inserción
   // la bloquearía RLS en silencio y el coste no quedaría registrado.
@@ -1011,25 +1046,7 @@ async function atender(
 
   if (!wantsStream) {
     try {
-      const result = await runCoach({
-        sb,
-        admin,
-        userId,
-        kind,
-        threadId: threadId!,
-        userText: prompt,
-        today,
-        imagenes: fotos.imagenes,
-        topeMicro,
-        gasto,
-        deadline,
-        modelo,
-        compat,
-        modo,
-        emit: () => {},
-        telemetria,
-        ruta,
-      });
+      const result = await ejecutarTurno(() => {});
       await requireHealth(sb, userId);
       await finish(result, null);
       return json(200, { thread_id: threadId, text: result.text });
@@ -1064,25 +1081,7 @@ async function atender(
       };
       emit('start', { thread_id: threadId });
       try {
-        const result = await runCoach({
-          sb,
-          admin,
-          userId,
-          kind,
-          threadId: threadId!,
-          userText: prompt,
-          today,
-          imagenes: fotos.imagenes,
-          topeMicro,
-          gasto,
-          deadline,
-          modelo,
-          compat,
-          modo,
-          emit,
-          telemetria,
-          ruta,
-        });
+        const result = await ejecutarTurno(emit);
         await requireHealth(sb, userId);
         await finish(result, null);
         emit('done', {
