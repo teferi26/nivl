@@ -4,6 +4,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
+  AccessibilityInfo,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -28,7 +29,8 @@ import { DenunciarIA, type RespuestaDenunciada } from '@/components/DenunciarIA'
 import { HealthConsentGuard } from '@/components/ConsentimientoSalud';
 import { ProUpsellLine } from '@/components/ProOffer';
 import { SystemButton } from '@/components/SystemButton';
-import { Chip, ChipRow, FadeIn, Screen, Skeleton, Tag } from '@/components/ui';
+import { Button, Card, Chip, ChipRow, FadeIn, Screen, Skeleton, Tag } from '@/components/ui';
+import { ink, space, type } from '@/design/tokens';
 import { useAuth } from '@/lib/auth';
 import {
   accessNotice,
@@ -60,7 +62,6 @@ import {
   type AiStatus,
   type DecisionOferta,
 } from '@/lib/pro';
-import { colors, fonts } from '@/lib/theme';
 import { mensajeSistema } from '@/lib/validation';
 
 interface Burbuja {
@@ -110,6 +111,9 @@ const ATAJOS: { etiqueta: string; mensaje: string; icono: keyof typeof Ionicons.
   { etiqueta: 'Revísame', mensaje: 'Haz la revisión de mis últimos 14 días con honestidad brutal.', icono: 'analytics-outline' },
 ];
 
+// Sin respuesta del estado de la IA en este tiempo, se pinta igual (estado null).
+const LIMITE_ESTADO_MS = 5000;
+
 // Los ids que vienen del servidor son uuid; los de burbujas recién llegadas
 // por el stream son locales y no identifican nada en el servidor.
 const ES_UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -124,9 +128,11 @@ function CoachBloqueado({ kind, onPro, oferta }: { kind: unknown; onPro: () => v
     <FadeIn>
       <View style={styles.bloqueado}>
         <View style={styles.bloqueadoEmblema}>
-          <Ionicons name="lock-closed-outline" size={24} color={colors.text} />
+          <Ionicons name="lock-closed-outline" size={24} color={ink.ink9} />
         </View>
-        <Text style={styles.vacioTitulo}>El coach es parte de NIVL Pro.</Text>
+        {/* Con la línea de la oferta, «El coach es parte de NIVL Pro» ya lo
+            dice ella: el título no lo repite. */}
+        <Text style={styles.vacioTitulo}>{oferta ? 'El coach no está en tu plan.' : 'El coach es parte de NIVL Pro.'}</Text>
         <Text style={styles.vacioTexto}>
           Tus misiones, tu racha, tus campañas y todos los módulos siguen siendo tuyos. Lo que falta es quien lo
           dirige.
@@ -135,7 +141,7 @@ function CoachBloqueado({ kind, onPro, oferta }: { kind: unknown; onPro: () => v
           <Text style={styles.hoyRotulo}>HOY ESTARÍA</Text>
           {proToday(kind).map((linea, i) => (
             <View key={linea} style={[styles.hoyFila, i > 0 && styles.hoyFilaSep]}>
-              <Ionicons name="remove-outline" size={14} color={colors.accentDim} style={styles.hoyIcono} />
+              <Ionicons name="remove-outline" size={14} color={ink.ink4} style={styles.hoyIcono} />
               <Text style={styles.hoyTexto}>{linea}</Text>
             </View>
           ))}
@@ -190,7 +196,11 @@ function CoachContent() {
   const [acciones, setAcciones] = useState<CoachAction[]>([]);
   const [error, setError] = useState<string | null>(null);
   // Aviso sereno (energía agotada, turno en curso): no es un fallo, no va en rojo.
-  const [aviso, setAviso] = useState<string | null>(null);
+  // `energia` marca el del servidor por energía agotada: con la línea de la
+  // oferta delante, lo dice ella y el aviso no se repite.
+  const [aviso, setAviso] = useState<{ texto: string; energia: boolean } | null>(null);
+  // La conversación no ha cargado: sin esto el vacío decía «El sistema te escucha».
+  const [falloCarga, setFalloCarga] = useState(false);
   // Estado de la IA de la cuenta. null = aún no se sabe (o no hay red): se deja
   // escribir y, si no hay derecho, el 402 del servidor cierra la puerta igual.
   const [estado, setEstado] = useState<AiStatus | null>(null);
@@ -205,7 +215,7 @@ function CoachContent() {
   // Antes del primer turno, el consentimiento para la IA (0028). El servidor
   // lo vuelve a exigir: sin él responde 403 y aquí se abre la hoja.
   const consentimiento = useConsentimientoIA();
-  const { avisar, celebrando } = useCelebracion();
+  const { celebrando } = useCelebracion();
 
   // La voz: qué respuesta se está leyendo. `turnoVoz` distingue una lectura de
   // la anterior: hablar() calla lo previo y eso avisa «no habla» antes de que
@@ -242,15 +252,32 @@ function CoachContent() {
   // El dictado: lo dicho va al cuadro de texto y NUNCA se envía solo.
   const [puedeDictar, setPuedeDictar] = useState(() => disponibleDictado());
   const [hojaDictado, setHojaDictado] = useState(false);
+  // Lo que dice el dictado (un fallo, qué hacer ahora) va en su franja, junto
+  // al micrófono, unos segundos: por la cola de celebraciones salía tarde.
+  const [avisoDictado, setAvisoDictado] = useState<string | null>(null);
+  const relojAvisoDictado = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const mostrarAvisoDictado = useCallback((mensaje: string) => {
+    if (relojAvisoDictado.current) clearTimeout(relojAvisoDictado.current);
+    setAvisoDictado(mensaje);
+    AccessibilityInfo.announceForAccessibility(mensaje);
+    relojAvisoDictado.current = setTimeout(() => setAvisoDictado(null), 3000);
+  }, []);
+  useEffect(
+    () => () => {
+      if (relojAvisoDictado.current) clearTimeout(relojAvisoDictado.current);
+    },
+    [],
+  );
   const dictado = useDictado({
     onTexto: (t) => setTexto((previo) => unirDictado(previo, t)),
-    onError: (e) => avisar(e.mensaje),
+    onError: (e) => mostrarAvisoDictado(e.mensaje),
     onPedirPrivacidad: () => setHojaDictado(true),
+    onAviso: mostrarAvisoDictado,
   });
   const dictarPorRed = () => {
     void aceptarRed();
     setHojaDictado(false);
-    avisar('Mantén pulsado para dictar');
+    mostrarAvisoDictado('Mantén pulsado para dictar');
   };
 
   // Al salir de la pestaña (y al desmontar) se calla y se tira el dictado.
@@ -330,7 +357,17 @@ function CoachContent() {
   useFocusEffect(
     useCallback(() => {
       if (!userId) return;
-      releerEstado().finally(() => setEstadoListo(true));
+      // Sin respuesta en 5 s se pinta igual, con el estado que haya (null deja
+      // escribir y el servidor cierra la puerta si toca): el esqueleto no se
+      // queda para siempre por una red colgada.
+      let reloj: ReturnType<typeof setTimeout> | null = null;
+      const limite = new Promise<void>((resolver) => {
+        reloj = setTimeout(resolver, LIMITE_ESTADO_MS);
+      });
+      void Promise.race([releerEstado(), limite]).finally(() => {
+        if (reloj) clearTimeout(reloj);
+        setEstadoListo(true);
+      });
       ensureProfile(userId)
         .then((p) => setKind(p.profile_kind))
         .catch(() => {});
@@ -338,6 +375,7 @@ function CoachContent() {
   );
 
   const cargar = useCallback(async () => {
+    setFalloCarga(false);
     try {
       const hilo = await fetchMainThread();
       if (!hilo) {
@@ -348,8 +386,8 @@ function CoachContent() {
       setThreadId(hilo.id);
       const mensajes = await fetchMessages(hilo.id);
       setBurbujas(aBurbujas(mensajes));
-    } catch (e) {
-      setError(mensajeSistema(e));
+    } catch {
+      setFalloCarga(true);
     } finally {
       setCargando(false);
     }
@@ -480,7 +518,7 @@ function CoachContent() {
           olvidarConsentimiento();
           consentimiento.pedir();
         } else {
-          setAviso(accessNotice(e));
+          setAviso({ texto: accessNotice(e), energia: e.reason === 'presupuesto_agotado' });
         }
       } else {
         setError(mensajeSistema(e));
@@ -549,7 +587,7 @@ function CoachContent() {
   const sinPro = estado !== null && !isPro(estado);
   const recarga = estado?.renews && isValidKey(estado.renews) ? nombreDia(estado.renews).toLowerCase() : null;
   const avisoEnergia =
-    aviso ??
+    aviso?.texto ??
     (energiaAgotada(estado)
       ? `La energía del coach de este mes se ha agotado. ${recarga ? `Se recarga el ${recarga}.` : 'Se recarga el día 1.'}`
       : null);
@@ -580,7 +618,7 @@ function CoachContent() {
             accessibilityLabel={sinPro ? 'Ver NIVL Pro' : 'Ver tu plan y la energía del coach'}
             hitSlop={8}
           >
-            <Ionicons name="flash-outline" size={16} color={colors.text} />
+            <Ionicons name="flash-outline" size={16} color={ink.ink9} />
             <Text style={styles.memoriaTexto}>Pro</Text>
           </Pressable>
           {/* La memoria es del coach: sin Pro no ha aprendido nada que
@@ -593,7 +631,7 @@ function CoachContent() {
               accessibilityLabel="Ver la memoria del sistema"
               hitSlop={8}
             >
-              <Ionicons name="library-outline" size={18} color={colors.text} />
+              <Ionicons name="library-outline" size={18} color={ink.ink9} />
               <Text style={styles.memoriaTexto}>Memoria</Text>
             </Pressable>
           )}
@@ -615,7 +653,25 @@ function CoachContent() {
         >
           {vacio && sinPro ? <CoachBloqueado kind={kind} onPro={() => router.push('/pro')} oferta={ofertaCerrado} /> : null}
 
-          {vacio && !sinPro ? (
+          {vacio && !sinPro && falloCarga ? (
+            <FadeIn>
+              <Card variant="outline" style={styles.falloCarga}>
+                <Text style={styles.falloCargaTexto}>No se ha podido cargar la conversación.</Text>
+                <Button
+                  title="Reintentar"
+                  variant="secondary"
+                  size="sm"
+                  onPress={() => {
+                    setCargando(true);
+                    void cargar();
+                  }}
+                  style={styles.falloCargaBoton}
+                />
+              </Card>
+            </FadeIn>
+          ) : null}
+
+          {vacio && !sinPro && !falloCarga ? (
             <FadeIn>
               <View style={styles.vacio}>
                 <CoachMark size={48} />
@@ -674,15 +730,18 @@ function CoachContent() {
             />
           ) : null}
 
+          {/* Alerta v2: la trama hace de borde; el texto, en ink9. */}
           {error ? (
-            <View style={styles.error}>
-              <Ionicons name="alert-circle-outline" size={14} color={colors.red} />
-              <Text style={styles.errorTexto}>{error}</Text>
-            </View>
+            <Card variant="alerta" padded={false} style={styles.errorTarjeta}>
+              <View style={styles.error} accessibilityRole="alert">
+                <Ionicons name="alert-circle-outline" size={16} color={ink.ink9} />
+                <Text style={styles.errorTexto}>{error}</Text>
+              </View>
+            </Card>
           ) : null}
         </ScrollView>
 
-        {vacio && !sinPro ? (
+        {vacio && !sinPro && !falloCarga ? (
           <View style={styles.atajos}>
             <ChipRow>
               {ATAJOS.map((a) => (
@@ -694,23 +753,27 @@ function CoachContent() {
 
         {adjuntas.length ? (
           <View style={styles.adjuntas}>
-            <Ionicons name="image-outline" size={14} color={colors.accentText} />
+            <Ionicons name="image-outline" size={14} color={ink.ink8} />
             <Text style={styles.adjuntasTexto}>
               {adjuntas.length === 1 ? '1 foto lista para enviar' : `${adjuntas.length} fotos listas para enviar`}
             </Text>
             <Pressable onPress={() => setAdjuntas([])} hitSlop={8} accessibilityRole="button" accessibilityLabel="Quitar las fotos">
-              <Ionicons name="close" size={16} color={colors.textDim} />
+              <Ionicons name="close" size={16} color={ink.ink8} />
             </Pressable>
           </View>
         ) : null}
 
         {avisoEnergia && !sinPro ? (
           ofertaEnergia && agotadaPro ? (
+            // La línea ya dice que la energía se ha agotado: el aviso propio
+            // solo queda si el servidor ha dicho otra cosa.
             <View style={styles.avisoBloque}>
-              <View style={styles.avisoFila}>
-                <Ionicons name="hourglass-outline" size={14} color={colors.accentText} />
-                <Text style={styles.avisoTexto}>{avisoEnergia}</Text>
-              </View>
+              {aviso && !aviso.energia ? (
+                <View style={styles.avisoFila}>
+                  <Ionicons name="hourglass-outline" size={14} color={ink.ink8} />
+                  <Text style={styles.avisoTexto}>{aviso.texto}</Text>
+                </View>
+              ) : null}
               <ProUpsellLine momento="energia_agotada" tier={ofertaEnergia.tier} />
             </View>
           ) : (
@@ -720,9 +783,9 @@ function CoachContent() {
               accessibilityRole="button"
               accessibilityLabel={`${avisoEnergia} Ver la energía del coach`}
             >
-              <Ionicons name="hourglass-outline" size={14} color={colors.accentText} />
+              <Ionicons name="hourglass-outline" size={14} color={ink.ink8} />
               <Text style={styles.avisoTexto}>{avisoEnergia}</Text>
-              <Ionicons name="chevron-forward" size={14} color={colors.textFaint} />
+              <Ionicons name="chevron-forward" size={14} color={ink.ink6} />
             </Pressable>
           )
         ) : null}
@@ -753,7 +816,10 @@ function CoachContent() {
         {sinPro ? (
           vacio ? null : (
             <View style={styles.bandaPro}>
-              <Text style={styles.bandaProTexto}>El coach es parte de NIVL Pro. Tu conversación se conserva.</Text>
+              {/* La línea de la oferta ya dice que el coach es parte de NIVL Pro. */}
+              <Text style={styles.bandaProTexto}>
+                {ofertaCerrado ? 'Tu conversación se conserva.' : 'El coach es parte de NIVL Pro. Tu conversación se conserva.'}
+              </Text>
               {ofertaCerrado ? (
                 <ProUpsellLine momento="coach_cerrado" tier={ofertaCerrado.tier} />
               ) : (
@@ -763,8 +829,8 @@ function CoachContent() {
           )
         ) : (
           <View>
-            <FranjaGrabacion dictado={dictado} />
-            <View style={[styles.barra, (conPotencia || grabandoUi) && styles.barraSinLinea]}>
+            <FranjaGrabacion dictado={dictado} aviso={avisoDictado} />
+            <View style={[styles.barra, (conPotencia || grabandoUi || !!avisoDictado) && styles.barraSinLinea]}>
               <Pressable
                 onPress={adjuntar}
                 disabled={enviando.current}
@@ -772,14 +838,14 @@ function CoachContent() {
                 accessibilityRole="button"
                 accessibilityLabel="Adjuntar una foto"
               >
-                <Ionicons name="add" size={22} color={colors.textDim} />
+                <Ionicons name="add" size={22} color={ink.ink8} />
               </Pressable>
               <TextInput
                 style={styles.input}
                 value={texto}
                 onChangeText={setTexto}
                 placeholder="Habla con el sistema"
-                placeholderTextColor={colors.textFaint}
+                placeholderTextColor={ink.ink6}
                 multiline
                 onKeyPress={alTeclear}
                 accessibilityLabel="Mensaje para el sistema"
@@ -794,7 +860,7 @@ function CoachContent() {
                   accessibilityRole="button"
                   accessibilityLabel="Enviar mensaje"
                 >
-                  <Ionicons name="arrow-up" size={20} color={colors.bg} />
+                  <Ionicons name="arrow-up" size={20} color={ink.ink0} />
                 </Pressable>
               )}
             </View>
@@ -808,119 +874,162 @@ function CoachContent() {
   );
 }
 
+// Tokens v2 (src/design/tokens.ts): lectura en bodySm (≥ 14), rótulos en label.
+const lectura = { fontFamily: type.bodySm.family, fontSize: type.bodySm.size, lineHeight: type.bodySm.lineHeight } as const;
+
 const styles = StyleSheet.create({
   flex: { flex: 1 },
   header: {
     flexDirection: 'row',
     alignItems: 'flex-end',
     justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingTop: 10,
-    paddingBottom: 12,
+    paddingHorizontal: space.s5,
+    paddingTop: space.s2,
+    paddingBottom: space.s3,
     borderBottomWidth: 1,
-    borderBottomColor: colors.line,
+    borderBottomColor: ink.ink3,
   },
-  eyebrow: { fontFamily: fonts.heading, fontSize: 11, letterSpacing: 2.2, color: colors.textFaint },
-  titulo: { fontFamily: fonts.heading, fontSize: 24, letterSpacing: -0.5, color: colors.text, marginTop: 2 },
-  headerAcciones: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  memoria: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 6, paddingHorizontal: 10, borderWidth: 1, borderColor: colors.line },
-  memoriaTexto: { fontFamily: fonts.semibold, fontSize: 12, color: colors.text },
-  lista: { paddingHorizontal: 20, paddingTop: 16, paddingBottom: 12 },
-  filaUsuario: { alignItems: 'flex-end', marginBottom: 16 },
+  eyebrow: { fontFamily: type.label.family, fontSize: type.label.size, lineHeight: type.label.lineHeight, letterSpacing: type.label.tracking, color: ink.ink6 },
+  titulo: {
+    fontFamily: type.headline.family,
+    fontSize: type.headline.size,
+    lineHeight: type.headline.lineHeight,
+    letterSpacing: type.headline.tracking,
+    color: ink.ink9,
+    marginTop: 2,
+  },
+  headerAcciones: { flexDirection: 'row', alignItems: 'center', gap: space.s2 },
+  memoria: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.s2,
+    paddingVertical: space.s1 + 2,
+    paddingHorizontal: space.s3,
+    borderWidth: 1,
+    borderColor: ink.ink3,
+  },
+  memoriaTexto: { fontFamily: type.micro.family, fontSize: type.label.size, lineHeight: type.label.lineHeight, color: ink.ink9 },
+  lista: { paddingHorizontal: space.s5, paddingTop: space.s4, paddingBottom: space.s3 },
+  filaUsuario: { alignItems: 'flex-end', marginBottom: space.s4 },
+  // Sin invertir: la inversión de la pantalla es de enviar y del micrófono.
   burbujaUsuario: {
     maxWidth: '84%',
-    backgroundColor: colors.accent,
-    paddingVertical: 10,
-    paddingHorizontal: 14,
+    backgroundColor: ink.ink2,
+    borderWidth: 1,
+    borderColor: ink.ink3,
+    paddingVertical: space.s3 - 2,
+    paddingHorizontal: space.s3 + 2,
   },
-  textoUsuario: { fontFamily: fonts.body, fontSize: 14.5, lineHeight: 21, color: colors.bg },
-  error: { flexDirection: 'row', alignItems: 'center', gap: 8, borderLeftWidth: 2, borderLeftColor: colors.red, paddingLeft: 10, paddingVertical: 6 },
-  errorTexto: { fontFamily: fonts.body, fontSize: 13, color: colors.red, flex: 1 },
-  vacio: { alignItems: 'center', paddingTop: 48, paddingBottom: 24, paddingHorizontal: 12 },
-  vacioTitulo: { fontFamily: fonts.heading, fontSize: 22, letterSpacing: -0.4, color: colors.text, marginTop: 18 },
-  vacioTexto: { fontFamily: fonts.body, fontSize: 14, lineHeight: 21, color: colors.textDim, textAlign: 'center', marginTop: 8 },
-  vacioDescargo: { fontFamily: fonts.body, fontSize: 12, lineHeight: 17, color: colors.textFaint, textAlign: 'center', marginTop: 14 },
-  bloqueado: { alignItems: 'center', paddingTop: 36, paddingBottom: 24, paddingHorizontal: 4 },
+  textoUsuario: { ...lectura, color: ink.ink9 },
+  errorTarjeta: { marginTop: space.s1, marginBottom: 0 },
+  error: { flexDirection: 'row', alignItems: 'center', gap: space.s2, paddingHorizontal: space.s3, paddingVertical: space.s3 - 2 },
+  errorTexto: { ...lectura, color: ink.ink9, flex: 1 },
+  falloCarga: { marginTop: space.s8, alignItems: 'center', paddingVertical: space.s6 },
+  falloCargaTexto: { ...lectura, color: ink.ink9, textAlign: 'center' },
+  falloCargaBoton: { marginTop: space.s4 },
+  vacio: { alignItems: 'center', paddingTop: space.s10 + space.s2, paddingBottom: space.s6, paddingHorizontal: space.s3 },
+  vacioTitulo: {
+    fontFamily: type.headline.family,
+    fontSize: type.headline.size,
+    lineHeight: type.headline.lineHeight,
+    letterSpacing: type.headline.tracking,
+    color: ink.ink9,
+    marginTop: space.s4,
+    textAlign: 'center',
+  },
+  vacioTexto: { ...lectura, color: ink.ink8, textAlign: 'center', marginTop: space.s2 },
+  vacioDescargo: { ...lectura, color: ink.ink6, textAlign: 'center', marginTop: space.s3 },
+  bloqueado: { alignItems: 'center', paddingTop: space.s8, paddingBottom: space.s6, paddingHorizontal: space.s1 },
   bloqueadoEmblema: {
     width: 56,
     height: 56,
     borderRadius: 28,
     borderWidth: 1.5,
-    borderColor: colors.accentDim,
+    borderColor: ink.ink4,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  bloqueadoBoton: { alignSelf: 'stretch', marginTop: 20 },
-  bloqueadoLinea: { alignSelf: 'stretch', marginTop: 20 },
-  hoy: { alignSelf: 'stretch', marginTop: 24, borderWidth: 1, borderColor: colors.line, padding: 16 },
-  hoyRotulo: { fontFamily: fonts.heading, fontSize: 11, letterSpacing: 2.5, color: colors.textFaint, marginBottom: 6 },
-  hoyFila: { flexDirection: 'row', gap: 10, paddingVertical: 9 },
-  hoyFilaSep: { borderTopWidth: 1, borderTopColor: colors.line },
+  bloqueadoBoton: { alignSelf: 'stretch', marginTop: space.s5 },
+  bloqueadoLinea: { alignSelf: 'stretch', marginTop: space.s5 },
+  hoy: { alignSelf: 'stretch', marginTop: space.s6, borderWidth: 1, borderColor: ink.ink3, padding: space.s4 },
+  hoyRotulo: {
+    fontFamily: type.label.family,
+    fontSize: type.label.size,
+    lineHeight: type.label.lineHeight,
+    letterSpacing: type.label.tracking,
+    color: ink.ink6,
+    marginBottom: space.s1,
+  },
+  hoyFila: { flexDirection: 'row', gap: space.s3 - 2, paddingVertical: space.s2 },
+  hoyFilaSep: { borderTopWidth: 1, borderTopColor: ink.ink3 },
   hoyIcono: { marginTop: 3 },
-  muestra: { alignSelf: 'stretch', marginTop: 10, backgroundColor: colors.panel, padding: 16 },
-  muestraCabecera: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 },
-  muestraLinea: { fontFamily: fonts.body, fontSize: 13.5, lineHeight: 20, color: colors.textDim, marginTop: 8 },
-  cargandoCuerpo: { paddingHorizontal: 20, paddingTop: 20 },
-  cargandoLinea: { marginTop: 10 },
-  cargandoBloque: { marginTop: 22 },
-  hoyTexto: { flex: 1, minWidth: 0, fontFamily: fonts.body, fontSize: 14, lineHeight: 20, color: colors.text },
+  hoyTexto: { ...lectura, flex: 1, minWidth: 0, color: ink.ink9 },
+  muestra: { alignSelf: 'stretch', marginTop: space.s3 - 2, backgroundColor: ink.ink1, padding: space.s4 },
+  muestraCabecera: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: space.s1 },
+  muestraLinea: { ...lectura, color: ink.ink8, marginTop: space.s2 },
+  cargandoCuerpo: { paddingHorizontal: space.s5, paddingTop: space.s5 },
+  cargandoLinea: { marginTop: space.s3 - 2 },
+  cargandoBloque: { marginTop: space.s6 },
   aviso: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    paddingHorizontal: 20,
-    paddingVertical: 10,
+    gap: space.s2,
+    paddingHorizontal: space.s5,
+    paddingVertical: space.s3 - 2,
     borderTopWidth: 1,
-    borderTopColor: colors.line,
+    borderTopColor: ink.ink3,
   },
-  avisoBloque: {
-    paddingHorizontal: 20,
-    paddingTop: 10,
+  // La línea de la oferta trae su propio filete arriba: el bloque no pone otro.
+  avisoBloque: { paddingHorizontal: space.s5 },
+  avisoFila: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.s2,
+    paddingVertical: space.s3 - 2,
     borderTopWidth: 1,
-    borderTopColor: colors.line,
+    borderTopColor: ink.ink3,
   },
-  avisoFila: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingBottom: 10 },
-  avisoTexto: { flex: 1, minWidth: 0, fontFamily: fonts.body, fontSize: 12.5, lineHeight: 18, color: colors.accentText },
+  avisoTexto: { ...lectura, flex: 1, minWidth: 0, color: ink.ink8 },
   bandaPro: {
-    gap: 10,
-    paddingHorizontal: 20,
-    paddingTop: 12,
-    paddingBottom: 14,
+    gap: space.s3 - 2,
+    paddingHorizontal: space.s5,
+    paddingTop: space.s3,
+    paddingBottom: space.s3 + 2,
     borderTopWidth: 1,
-    borderTopColor: colors.line,
+    borderTopColor: ink.ink3,
   },
-  bandaProTexto: { fontFamily: fonts.body, fontSize: 13, lineHeight: 19, color: colors.textDim },
+  bandaProTexto: { ...lectura, color: ink.ink8 },
   // ChipRow sangra 20 px a cada lado para pantallas con padding; aquí no lo hay.
-  atajos: { paddingBottom: 10, paddingHorizontal: 20 },
+  atajos: { paddingBottom: space.s3 - 2, paddingHorizontal: space.s5 },
   barra: {
     flexDirection: 'row',
     alignItems: 'flex-end',
-    gap: 8,
-    paddingHorizontal: 16,
-    paddingTop: 10,
-    paddingBottom: 12,
+    gap: space.s2,
+    paddingHorizontal: space.s4,
+    paddingTop: space.s3 - 2,
+    paddingBottom: space.s3,
     borderTopWidth: 1,
-    borderTopColor: colors.line,
-    backgroundColor: colors.bg,
+    borderTopColor: ink.ink3,
+    backgroundColor: ink.ink0,
   },
   input: {
     flex: 1,
     minHeight: 46,
     maxHeight: 130,
-    backgroundColor: colors.panel,
-    color: colors.text,
-    fontFamily: fonts.body,
-    fontSize: 15,
-    paddingHorizontal: 14,
-    paddingTop: 13,
-    paddingBottom: 13,
+    backgroundColor: ink.ink1,
+    color: ink.ink9,
+    fontFamily: type.body.family,
+    fontSize: type.body.size,
+    paddingHorizontal: space.s3 + 2,
+    paddingTop: space.s3,
+    paddingBottom: space.s3,
   },
   enviar: {
     width: 46,
     height: 46,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.accent,
+    backgroundColor: ink.ink10,
   },
   enviarOff: { opacity: 0.35 },
   adjuntar: {
@@ -928,24 +1037,24 @@ const styles = StyleSheet.create({
     height: 46,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.panel,
+    backgroundColor: ink.ink1,
   },
   adjuntas: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    paddingHorizontal: 20,
-    paddingBottom: 8,
+    gap: space.s2,
+    paddingHorizontal: space.s5,
+    paddingBottom: space.s2,
   },
-  adjuntasTexto: { fontFamily: fonts.body, fontSize: 12, color: colors.accentText, flex: 1 },
+  adjuntasTexto: { ...lectura, color: ink.ink8, flex: 1 },
   potencia: {
-    paddingHorizontal: 20,
-    paddingTop: 10,
+    paddingHorizontal: space.s5,
+    paddingTop: space.s3 - 2,
     paddingBottom: 2,
     borderTopWidth: 1,
-    borderTopColor: colors.line,
+    borderTopColor: ink.ink3,
   },
-  potenciaChips: { flexDirection: 'row', gap: 8 },
+  potenciaChips: { flexDirection: 'row', gap: space.s2 },
   barraSinLinea: { borderTopWidth: 0 },
-  potenciaTexto: { fontFamily: fonts.body, fontSize: 12, lineHeight: 17, color: colors.textDim, marginTop: 6 },
+  potenciaTexto: { ...lectura, color: ink.ink8, marginTop: space.s1 + 2 },
 });

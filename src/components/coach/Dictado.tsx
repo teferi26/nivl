@@ -9,7 +9,7 @@
 
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { AccessibilityInfo, Pressable, StyleSheet, Text, View, type GestureResponderEvent } from 'react-native';
+import { AccessibilityInfo, AppState, Pressable, StyleSheet, Text, View, type GestureResponderEvent } from 'react-native';
 import { vibrar } from '@/design/haptics';
 import { ink, space, type } from '@/design/tokens';
 import { cancelarDictado, detenerDictado, dictar, type ErrorDictado } from '@/lib/coachvoz';
@@ -23,7 +23,15 @@ interface OpcionesUseDictado {
   onError: (error: ErrorDictado) => void;
   /** El dispositivo no transcribe en local: hay que preguntar antes de usar la red. */
   onPedirPrivacidad: () => void;
+  /** Una indicación que no es un fallo (micrófono recién concedido). */
+  onAviso?: (mensaje: string) => void;
 }
+
+/** Tras el diálogo de permiso el gesto ya se ha perdido: se dice qué hacer. */
+export const AVISO_MICROFONO_LISTO = 'Micrófono listo. Mantén pulsado para dictar.';
+// Un arranque más lento que esto casi siempre ha pasado por un diálogo del
+// sistema (el permiso), aunque la app no haya llegado a salir de primer plano.
+const ARRANQUE_CON_DIALOGO_MS = 1200;
 
 export interface Dictado {
   /** Hay una sesión de dictado escuchando. */
@@ -43,7 +51,7 @@ export interface Dictado {
   cancelar: () => void;
 }
 
-export function useDictado({ onTexto, onError, onPedirPrivacidad }: OpcionesUseDictado): Dictado {
+export function useDictado({ onTexto, onError, onPedirPrivacidad, onAviso }: OpcionesUseDictado): Dictado {
   const [grabando, setGrabando] = useState(false);
   const [preparando, setPreparando] = useState(false);
   const [parcial, setParcial] = useState('');
@@ -52,12 +60,14 @@ export function useDictado({ onTexto, onError, onPedirPrivacidad }: OpcionesUseD
   const [cancelaria, setCancelaria] = useState(false);
 
   // Las últimas funciones de quien llama, sin rehacer la sesión.
-  const cb = useRef({ onTexto, onError, onPedirPrivacidad });
-  cb.current = { onTexto, onError, onPedirPrivacidad };
+  const cb = useRef({ onTexto, onError, onPedirPrivacidad, onAviso });
+  cb.current = { onTexto, onError, onPedirPrivacidad, onAviso };
 
   const activo = useRef(false);
   const arrancando = useRef(false);
   const soltado = useRef(false);
+  // Tirado desde fuera (perder el foco, desmontar): no es que el dedo soltara.
+  const descartado = useRef(false);
   const montado = useRef(true);
 
   const limpiar = useCallback(() => {
@@ -90,9 +100,17 @@ export function useDictado({ onTexto, onError, onPedirPrivacidad }: OpcionesUseD
     if (activo.current || arrancando.current) return false;
     arrancando.current = true;
     soltado.current = false;
+    descartado.current = false;
     setPreparando(true);
     setParcial('');
     setCancelaria(false);
+    // La primera vez, el diálogo de permiso del sistema se queda el gesto: la
+    // app deja de estar activa y el dedo ya no está cuando vuelve.
+    const t0 = Date.now();
+    let dialogo = false;
+    const sub = AppState.addEventListener('change', (estado) => {
+      if (estado !== 'active') dialogo = true;
+    });
     const red = await redAceptada();
     const r = await dictar({
       permitirRed: red,
@@ -106,7 +124,7 @@ export function useDictado({ onTexto, onError, onPedirPrivacidad }: OpcionesUseD
         if (!arrancando.current) cb.current.onError(e);
       },
       onFin: limpiar,
-    });
+    }).finally(() => sub.remove());
     arrancando.current = false;
     if (!r.ok) {
       limpiar();
@@ -118,6 +136,10 @@ export function useDictado({ onTexto, onError, onPedirPrivacidad }: OpcionesUseD
     if (soltado.current || !montado.current) {
       cancelarDictado();
       limpiar();
+      // Sin esto la sesión se cancelaba en silencio y parecía que el botón no
+      // hacía nada. Ya hay permiso: el próximo pulsado graba.
+      const tras = dialogo || Date.now() - t0 > ARRANQUE_CON_DIALOGO_MS;
+      if (montado.current && !descartado.current && tras) cb.current.onAviso?.(AVISO_MICROFONO_LISTO);
       return false;
     }
     activo.current = true;
@@ -160,6 +182,7 @@ export function useDictado({ onTexto, onError, onPedirPrivacidad }: OpcionesUseD
 
   const cancelar = useCallback(() => {
     soltado.current = true;
+    descartado.current = true;
     cancelarDictado();
     limpiar();
   }, [limpiar]);
@@ -204,6 +227,13 @@ export function BotonDictar({ dictado, disabled }: { dictado: Dictado; disabled?
   const enMarcha = dictado.grabando || dictado.preparando;
 
   if (lector) {
+    // El gesto de escape del lector (frotar con dos dedos en iOS) tira lo
+    // dictado, como deslizar arriba sin lector.
+    const descartar = () => {
+      if (!enMarcha) return;
+      dictado.cancelar();
+      AccessibilityInfo.announceForAccessibility('Dictado cancelado');
+    };
     return (
       <Pressable
         onPress={dictado.alternar}
@@ -213,6 +243,11 @@ export function BotonDictar({ dictado, disabled }: { dictado: Dictado; disabled?
         accessibilityLabel={dictado.grabando ? 'Terminar el dictado' : 'Dictar un mensaje'}
         accessibilityHint={dictado.grabando ? 'Lo dictado se escribe en el cuadro de texto' : 'Toca para empezar a grabar'}
         accessibilityState={{ disabled: !!disabled, busy: dictado.grabando }}
+        accessibilityActions={enMarcha ? [{ name: 'escape', label: 'Cancelar el dictado' }] : undefined}
+        onAccessibilityEscape={descartar}
+        onAccessibilityAction={(e) => {
+          if (e.nativeEvent.actionName === 'escape') descartar();
+        }}
       >
         <Ionicons name={dictado.grabando ? 'stop' : 'mic-outline'} size={20} color={enMarcha ? ink.ink0 : ink.ink8} />
       </Pressable>
@@ -244,10 +279,27 @@ export function BotonDictar({ dictado, disabled }: { dictado: Dictado; disabled?
   );
 }
 
-/** La franja sobre la barra mientras se graba. */
-export function FranjaGrabacion({ dictado }: { dictado: Dictado }) {
-  if (!dictado.grabando && !dictado.preparando) return null;
-  const guia = dictado.cancelaria ? 'suelta para cancelar' : 'suelta para escribirlo, desliza arriba para cancelar';
+/**
+ * La franja sobre la barra mientras se graba. Fuera de la grabación enseña
+ * `aviso` (un fallo del dictado o qué hacer ahora) mientras quien llama lo
+ * mantenga: aquí, junto al micrófono, y no en la cola de celebraciones.
+ */
+export function FranjaGrabacion({ dictado, aviso }: { dictado: Dictado; aviso?: string | null }) {
+  const lector = useLectorPantalla();
+  if (!dictado.grabando && !dictado.preparando) {
+    if (!aviso) return null;
+    return (
+      <View style={styles.franja}>
+        <Text style={styles.aviso}>{aviso}</Text>
+      </View>
+    );
+  }
+  // Con lector se toca para empezar y para terminar: no hay soltar ni deslizar.
+  const guia = lector
+    ? 'toca el micrófono para terminar'
+    : dictado.cancelaria
+      ? 'suelta para cancelar'
+      : 'suelta para escribirlo, desliza arriba para cancelar';
   return (
     // Sin región viva: el reloj cambia cuatro veces por segundo y el lector lo
     // leería sin parar. El lector oye «Grabando» y «Dictado terminado».
@@ -287,6 +339,7 @@ const styles = StyleSheet.create({
   puntoOff: { backgroundColor: ink.ink4 },
   franjaRotulo: { fontFamily: type.label.family, fontSize: type.label.size, letterSpacing: type.label.tracking, color: ink.ink10 },
   franjaGuia: { flex: 1, minWidth: 0, fontFamily: type.bodySm.family, fontSize: 12, color: ink.ink6 },
+  aviso: { fontFamily: type.bodySm.family, fontSize: type.bodySm.size, lineHeight: type.bodySm.lineHeight, color: ink.ink9 },
   parcial: {
     fontFamily: type.bodySm.family,
     fontSize: type.bodySm.size,

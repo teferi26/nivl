@@ -25,6 +25,9 @@ interface Props {
   onDenunciar?: () => void;
 }
 
+// Los enlaces del pie miden 28 de alto: con esto llegan a 44 de zona táctil.
+const ZONA_ENLACE = { top: 10, bottom: 10, left: 8, right: 8 };
+
 export function MensajeCoach({ texto, acciones, pensando, cita, voz, onDenunciar }: Props) {
   const conTexto = !!texto;
   const hablando = voz?.estado === 'hablando';
@@ -58,7 +61,7 @@ export function MensajeCoach({ texto, acciones, pensando, cita, voz, onDenunciar
             {voz ? (
               <Pressable
                 onPress={hablando ? voz.onParar : voz.onEscuchar}
-                hitSlop={8}
+                hitSlop={ZONA_ENLACE}
                 style={({ pressed }) => [styles.enlace, pressed && styles.pulsado]}
                 accessibilityRole="button"
                 accessibilityLabel={hablando ? 'Parar la lectura' : 'Escuchar la respuesta'}
@@ -71,7 +74,7 @@ export function MensajeCoach({ texto, acciones, pensando, cita, voz, onDenunciar
             {onDenunciar ? (
               <Pressable
                 onPress={onDenunciar}
-                hitSlop={8}
+                hitSlop={ZONA_ENLACE}
                 style={({ pressed }) => [styles.enlace, pressed && styles.pulsado]}
                 accessibilityRole="button"
                 accessibilityLabel="Denunciar respuesta"
@@ -107,7 +110,8 @@ const styles = StyleSheet.create({
   accion: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   accionTexto: { fontFamily: type.bodySm.family, fontSize: 12.5, color: ink.ink8, flexShrink: 1 },
   pie: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: space.s5, marginTop: space.s2 },
-  enlace: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingVertical: 2 },
-  enlaceTexto: { fontFamily: type.bodySm.family, fontSize: 11, color: ink.ink6 },
+  // 28 de alto + 10 arriba y abajo de hitSlop = 48 de zona táctil.
+  enlace: { flexDirection: 'row', alignItems: 'center', gap: 5, minHeight: 28 },
+  enlaceTexto: { fontFamily: type.bodySm.family, fontSize: type.bodySm.size, lineHeight: type.bodySm.lineHeight, color: ink.ink6 },
   pulsado: { opacity: 0.6 },
 });

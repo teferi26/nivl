@@ -48,7 +48,7 @@ export function Chip({ label, selected, onPress, icon, small, disabled, accessib
       onPress={onPress}
       disabled={disabled}
       accessibilityRole={selected === undefined ? 'button' : 'radio'}
-      accessibilityState={selected === undefined ? undefined : { selected }}
+      accessibilityState={{ selected, disabled: !!disabled }}
       accessibilityLabel={accessibilityLabel ?? label}
       // El pequeño mide ~30 de alto: el hitSlop lo lleva a 44 de zona táctil.
       hitSlop={small ? HITSLOP_SMALL : undefined}
