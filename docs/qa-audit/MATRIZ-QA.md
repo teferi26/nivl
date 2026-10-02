@@ -170,7 +170,7 @@ Archivo: `WhatsApp Video 2026-10-02 at 15.18.24.mp4`, de 64 s y 384×848, sha256
 |---|---|---|
 | Flujo típico (A4 / O-06, O-07) | Hoy, Coach, contrato y hábitos, Perfil (estadísticas, logros), Agenda (día, semana, mes), Campañas y su detalle, Gimnasio, Nutrición, Diario | OBSERVADO; sigue NO PROBADO como caso: no completa misiones con XP comprobable ni identifica la build |
 | Cuenta: Exportar, Cerrar sesión, Términos, Privacidad, ELIMINAR CUENTA | Los botones están visibles; **el borrado no se ejecuta** | A10 / O-16 sigue NO PROBADO |
-| Arranque desde el icono (A1) | No: el vídeo empieza dentro de Hoy | NO PROBADO |
+| Arranque desde el icono (A1 / O-01) | **Sí** (corrección del coordinador tras revisar a 4 fps): 0,0–0,6 s en la pantalla de inicio, toca el icono de NIVL y llega a Hoy con la sesión ya iniciada, sin fallos | **OBSERVADO** (lanzamiento desde el icono, build sin confirmar). No acredita el arranque sin sesión hasta Acceso, que exige el guion de Apple con registro |
 | Registro, login, correo de confirmación (A2, A3) | No aparecen | NO PROBADO |
 | Denuncia y bloqueo (A9) | No aparece | NO PROBADO |
 | Paywall con 5 planes, compra y restauración (A6–A8) | No aparece | NO PROBADO |
