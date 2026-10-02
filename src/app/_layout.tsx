@@ -4,8 +4,8 @@ import { useFonts } from 'expo-font';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
-import { View } from 'react-native';
+import { useEffect, type ReactNode } from 'react';
+import { Platform, StyleSheet, View } from 'react-native';
 import { EdadMinimaGuard, EdadMinimaProvider, useEdadMinima } from '@/components/EdadMinima';
 import { HealthConsentGuard, HealthConsentProvider } from '@/components/ConsentimientoSalud';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
@@ -16,6 +16,24 @@ import { colors } from '@/lib/theme';
 import { useNotificationRouting } from '@/lib/useNotificationRouting';
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
+
+// En la web la app es una columna de móvil centrada: a 1440 px las filas, los
+// chips y la barra de pestañas se estiraban de lado a lado. Solo en web; en
+// nativo no se añade ninguna vista. Los `Modal` de react-native-web son
+// portales a `body` y quedan fuera de esta columna (a ancho completo).
+function ColumnaWeb({ children }: { children: ReactNode }) {
+  if (Platform.OS !== 'web') return <>{children}</>;
+  return (
+    <View style={webStyles.fuera}>
+      <View style={webStyles.dentro}>{children}</View>
+    </View>
+  );
+}
+
+const webStyles = StyleSheet.create({
+  fuera: { flex: 1, alignItems: 'center', backgroundColor: colors.bg },
+  dentro: { flex: 1, width: '100%', maxWidth: 560 },
+});
 
 // Puerta de sesión única para TODA la app: cubre deep links a pantallas
 // protegidas sin sesión y la expiración/cierre de sesión en caliente, no solo
@@ -52,7 +70,9 @@ function ProtectedStack() {
     const inAuthArea = segments[0] === 'login';
     // `c` (nivl://c/CODIGO) también es pública: guarda el código de creador y
     // salta sola a '/'. Sin esto el guard iba a /login antes de guardarlo.
-    const inPublicArea = inAuthArea || segments[0] === 'c';
+    // `auth` (nivl://auth/confirmar y /restablecer) llega sin sesión: es el
+    // enlace del correo el que la abre.
+    const inPublicArea = inAuthArea || segments[0] === 'c' || segments[0] === 'auth';
     if (!session && !inPublicArea) {
       router.replace('/login');
     } else if (session && inAuthArea) {
@@ -66,13 +86,15 @@ function ProtectedStack() {
   }, [session, loading, segments, router]);
 
   return (
-    <Stack
-      screenLayout={({ children, route }) => <EdadMinimaGuard routeName={route.name}><HealthConsentGuard routeName={route.name}>{children}</HealthConsentGuard></EdadMinimaGuard>}
-      screenOptions={{
-        headerShown: false,
-        contentStyle: { backgroundColor: colors.bg },
-      }}
-    />
+    <ColumnaWeb>
+      <Stack
+        screenLayout={({ children, route }) => <EdadMinimaGuard routeName={route.name}><HealthConsentGuard routeName={route.name}>{children}</HealthConsentGuard></EdadMinimaGuard>}
+        screenOptions={{
+          headerShown: false,
+          contentStyle: { backgroundColor: colors.bg },
+        }}
+      />
+    </ColumnaWeb>
   );
 }
 
@@ -86,6 +108,12 @@ export default function RootLayout() {
     Outfit_600SemiBold,
     Outfit_700Bold,
   });
+
+  // El HTML de `web.output: single` sale sin idioma: lectores de pantalla y
+  // traductores lo leían como inglés.
+  useEffect(() => {
+    if (typeof document !== 'undefined') document.documentElement.lang = 'es';
+  }, []);
 
   useEffect(() => {
     // También con error: si una fuente falla, ocultar el splash igualmente para

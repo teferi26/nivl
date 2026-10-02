@@ -7,6 +7,7 @@
 // la web y la app de Franky.
 
 import Ionicons from '@expo/vector-icons/Ionicons';
+import type { Router } from 'expo-router';
 import type { ReactNode } from 'react';
 import {
   Pressable,
@@ -21,6 +22,16 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, fonts } from '@/lib/theme';
+
+/**
+ * Volver atrás sin quedarse en blanco: en la web (recarga, enlace directo) o
+ * tras una notificación no hay historial y `router.back()` no hace nada.
+ * Entonces se va a las pestañas.
+ */
+export function volver(router: Pick<Router, 'canGoBack' | 'back' | 'replace'>): void {
+  if (router.canGoBack()) router.back();
+  else router.replace('/(tabs)');
+}
 
 interface ScreenProps extends Omit<ScrollViewProps, 'style' | 'contentContainerStyle'> {
   /** Sin scroll: la pantalla gestiona su propio contenido (chat, listas largas). */

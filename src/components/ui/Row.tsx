@@ -74,7 +74,7 @@ interface RowProps {
   first?: boolean;
   chevron?: boolean;
   accessibilityLabel?: string;
-  accessibilityRole?: 'button' | 'checkbox';
+  accessibilityRole?: 'button' | 'checkbox' | 'link';
   accessibilityState?: { checked?: boolean; selected?: boolean; disabled?: boolean };
   style?: StyleProp<ViewStyle>;
 }

@@ -6,7 +6,6 @@ import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   Animated,
   Dimensions,
   Pressable,
@@ -17,11 +16,12 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { captureRef } from 'react-native-view-shot';
 import { SystemButton } from '@/components/SystemButton';
-import { Card, EmptyState, FadeIn, Row, RowValue, Screen, ScreenHeader, Section, Stagger, Tag } from '@/components/ui';
+import { avisar, Card, EmptyState, FadeIn, Row, RowValue, Screen, ScreenHeader, Section, Stagger, Tag, volver } from '@/components/ui';
 import { useConsentimientoIA } from '@/components/ConsentimientoIA';
 import { accessNotice, CoachAccessError, generarResumen } from '@/lib/coach';
 import { fetchRecaps, marcarVisto, urlFirmada, type Recap, type Slide } from '@/lib/photos';
 import { colors, fonts } from '@/lib/theme';
+import { mensajeSistema } from '@/lib/validation';
 
 const { width } = Dimensions.get('window');
 const DURACION_MS = 6000;
@@ -99,12 +99,12 @@ function Pase({ recap, onSalir }: { recap: Recap; onSalir: () => void }) {
     try {
       const uri = await captureRef(lienzo, { format: 'jpg', quality: 0.92 });
       if (!(await Sharing.isAvailableAsync())) {
-        Alert.alert('No disponible', 'Este dispositivo no permite compartir archivos.');
+        avisar('No disponible', 'Este dispositivo no permite compartir archivos.');
         return;
       }
       await Sharing.shareAsync(uri, { mimeType: 'image/jpeg', dialogTitle: 'Tu semana' });
     } catch (e) {
-      Alert.alert('No se pudo extraer', e instanceof Error ? e.message : 'Fallo desconocido');
+      avisar('No se pudo extraer', mensajeSistema(e));
     } finally {
       setCompartiendo(false);
     }
@@ -265,7 +265,7 @@ export default function Resumen() {
             : accessNotice(e),
         );
       } else {
-        setAviso(e instanceof Error ? e.message : 'Fallo desconocido');
+        setAviso(mensajeSistema(e));
       }
     } finally {
       setGenerando(false);
@@ -287,7 +287,7 @@ export default function Resumen() {
     <Screen refreshing={refrescando} onRefresh={refrescar}>
       <Stagger>
         <FadeIn index={0}>
-          <ScreenHeader onBack={() => router.back()} eyebrow="Recuerdos" title="Tu semana en imágenes" subtitle={subtitulo} />
+          <ScreenHeader onBack={() => volver(router)} eyebrow="Recuerdos" title="Tu semana en imágenes" subtitle={subtitulo} />
         </FadeIn>
 
         <FadeIn index={1}>
@@ -387,7 +387,7 @@ const styles = StyleSheet.create({
   barraPista: { flex: 1, height: 2, backgroundColor: colors.accentDim },
   barraRelleno: { height: 2, backgroundColor: colors.accent },
   paseCabecera: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 14, zIndex: 10 },
-  paseMarca: { flex: 1, fontFamily: fonts.heading, fontSize: 10.5, letterSpacing: 2.5, color: colors.textDim },
+  paseMarca: { flex: 1, fontFamily: fonts.heading, fontSize: 11, letterSpacing: 2.5, color: colors.textDim },
   paseBotones: { flexDirection: 'row', gap: 8 },
   paseBoton: {
     width: 38,
@@ -432,6 +432,6 @@ const styles = StyleSheet.create({
   // Lo duro se dice con el mismo blanco, más pequeño y sin adorno.
   tituloDuro: { fontSize: 24, lineHeight: 29, color: colors.textDim },
   textoSlide: { fontFamily: fonts.semibold, fontSize: 16, lineHeight: 24, color: colors.text },
-  cierreMotto: { fontFamily: fonts.heading, fontSize: 10.5, letterSpacing: 3, color: colors.textFaint, textAlign: 'center' },
+  cierreMotto: { fontFamily: fonts.heading, fontSize: 11, letterSpacing: 3, color: colors.textFaint, textAlign: 'center' },
   pasePie: { fontFamily: fonts.body, fontSize: 11.5, color: colors.textFaint, marginTop: 18 },
 });

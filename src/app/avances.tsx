@@ -3,7 +3,6 @@ import * as Haptics from 'expo-haptics';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useRef, useState } from 'react';
 import {
-  Alert,
   KeyboardAvoidingView,
   Modal,
   Platform,
@@ -33,6 +32,8 @@ import {
   Stat,
   StatRow,
 } from '@/components/ui';
+import { avisar, confirmar } from '@/components/ui/confirmar';
+import { volver } from '@/components/ui/Screen';
 import { useAuth } from '@/lib/auth';
 import { HealthConsentNotice, useHealthConsent } from '@/components/ConsentimientoSalud';
 import { ensureProfile } from '@/lib/data';
@@ -52,6 +53,7 @@ import {
   upsertWeight,
 } from '@/lib/progress';
 import { colors, fonts } from '@/lib/theme';
+import { mensajeSistema } from '@/lib/validation';
 import type { BodyMetric, Goal, GoalMetric } from '@/lib/types';
 
 const METRIC_OPTIONS: { key: GoalMetric; label: string }[] = [
@@ -95,7 +97,7 @@ export default function Avances() {
       setGoals(gs);
       setPrs(records);
     } catch (e) {
-      Alert.alert('Error del sistema', e instanceof Error ? e.message : 'Fallo desconocido');
+      avisar('Error del sistema', mensajeSistema(e));
     }
   }, [health.accepted]);
 
@@ -118,7 +120,7 @@ export default function Avances() {
     if (!userId || lock.current) return;
     const value = parseFloat(weightInput.replace(',', '.'));
     if (!Number.isFinite(value) || value <= 20 || value >= 400) {
-      Alert.alert('Valor inválido', 'Introduce tu peso en kg, p. ej. 78,4');
+      avisar('Valor inválido', 'Introduce tu peso en kg, p. ej. 78,4');
       return;
     }
     lock.current = true;
@@ -137,7 +139,7 @@ export default function Avances() {
       setWeightInput('');
       await load();
     } catch (e) {
-      Alert.alert('Error del sistema', e instanceof Error ? e.message : 'Fallo desconocido');
+      avisar('Error del sistema', mensajeSistema(e));
     } finally {
       lock.current = false;
       setBusy(false);
@@ -150,11 +152,11 @@ export default function Avances() {
     const start = parseFloat(gStart.replace(',', '.'));
     const target = parseFloat(gTarget.replace(',', '.'));
     if (!gTitle.trim() || !Number.isFinite(start) || !Number.isFinite(target) || start === target) {
-      Alert.alert('Meta incompleta', 'Título, valor inicial y valor objetivo (distintos).');
+      avisar('Meta incompleta', 'Título, valor inicial y valor objetivo (distintos).');
       return;
     }
     if (gMetric === 'ejercicio' && !gExercise.trim()) {
-      Alert.alert('Falta el ejercicio', 'Escribe el nombre EXACTO del ejercicio del gym.');
+      avisar('Falta el ejercicio', 'Escribe el nombre EXACTO del ejercicio del gym.');
       return;
     }
     lock.current = true;
@@ -173,52 +175,44 @@ export default function Avances() {
       setGoalFormOpen(false);
       await load();
     } catch (e) {
-      Alert.alert('Error del sistema', e instanceof Error ? e.message : 'Fallo desconocido');
+      avisar('Error del sistema', mensajeSistema(e));
     } finally {
       lock.current = false;
     }
   };
 
-  const achieveGoal = (goal: Goal) => {
-    Alert.alert('META CONSEGUIDA', `"${goal.title}" — el sistema otorgará +${GOAL_ACHIEVED_XP} XP.`, [
-      { text: 'Aún no', style: 'cancel' },
-      {
-        text: 'Reclamar',
-        onPress: async () => {
-          if (!userId || lock.current) return;
-          lock.current = true;
-          try {
-            await updateGoal(goal.id, { status: 'achieved', achieved_at: new Date().toISOString() });
-            const profile = await ensureProfile(userId);
-            await awardXp(profile, GOAL_ACHIEVED_XP, 'AGI', 'goal_achieved', { goal: goal.title });
-            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-            await load();
-          } catch (e) {
-            Alert.alert('Error del sistema', e instanceof Error ? e.message : 'Fallo desconocido');
-          } finally {
-            lock.current = false;
-          }
-        },
-      },
-    ]);
+  const achieveGoal = async (goal: Goal) => {
+    if (lock.current) return;
+    const ok = await confirmar({
+      titulo: 'META CONSEGUIDA',
+      mensaje: `"${goal.title}" — el sistema otorgará +${GOAL_ACHIEVED_XP} XP.`,
+      confirmar: 'Reclamar',
+      cancelar: 'Aún no',
+    });
+    if (!ok || !userId || lock.current) return;
+    lock.current = true;
+    try {
+      await updateGoal(goal.id, { status: 'achieved', achieved_at: new Date().toISOString() });
+      const profile = await ensureProfile(userId);
+      await awardXp(profile, GOAL_ACHIEVED_XP, 'AGI', 'goal_achieved', { goal_id: goal.id, goal: goal.title });
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      await load();
+    } catch (e) {
+      avisar('Error del sistema', mensajeSistema(e));
+    } finally {
+      lock.current = false;
+    }
   };
 
-  const removeGoal = (goal: Goal) => {
-    Alert.alert('Eliminar meta', goal.title, [
-      { text: 'Cancelar', style: 'cancel' },
-      {
-        text: 'Eliminar',
-        style: 'destructive',
-        onPress: async () => {
-          try {
-            await deleteGoal(goal.id);
-            await load();
-          } catch (e) {
-            Alert.alert('Error del sistema', e instanceof Error ? e.message : 'Fallo desconocido');
-          }
-        },
-      },
-    ]);
+  const removeGoal = async (goal: Goal) => {
+    const ok = await confirmar({ titulo: 'Eliminar meta', mensaje: goal.title, confirmar: 'Eliminar', destructivo: true });
+    if (!ok) return;
+    try {
+      await deleteGoal(goal.id);
+      await load();
+    } catch (e) {
+      avisar('Error del sistema', mensajeSistema(e));
+    }
   };
 
   const [freeGoal, setFreeGoal] = useState<Goal | null>(null);
@@ -228,7 +222,7 @@ export default function Avances() {
     if (!freeGoal) return;
     const v = parseFloat(freeValue.replace(',', '.'));
     if (!Number.isFinite(v)) {
-      Alert.alert('Valor inválido', 'Introduce un número.');
+      avisar('Valor inválido', 'Introduce un número.');
       return;
     }
     try {
@@ -237,7 +231,7 @@ export default function Avances() {
       setFreeValue('');
       await load();
     } catch (e) {
-      Alert.alert('Error del sistema', e instanceof Error ? e.message : 'Fallo desconocido');
+      avisar('Error del sistema', mensajeSistema(e));
     }
   };
 
@@ -246,7 +240,7 @@ export default function Avances() {
       const s = await fetchExerciseSeries(exercise);
       setSeries({ exercise, values: s.map((p) => p.weight) });
     } catch (e) {
-      Alert.alert('Error del sistema', e instanceof Error ? e.message : 'Fallo desconocido');
+      avisar('Error del sistema', mensajeSistema(e));
     }
   };
 
@@ -265,7 +259,7 @@ export default function Avances() {
       <Stagger>
         <FadeIn index={0}>
           <ScreenHeader
-            onBack={() => router.back()}
+            onBack={() => volver(router)}
             eyebrow="Progreso"
             title="Avances"
             subtitle={subtitulo}
@@ -466,7 +460,7 @@ export default function Avances() {
           <Pressable style={styles.backdropTap} onPress={() => setGoalFormOpen(false)} accessibilityLabel="Cerrar" />
           <View style={[styles.sheet, styles.sheetAlta]}>
             <View style={styles.sheetHandle} />
-            <ScrollView automaticallyAdjustKeyboardInsets keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+            <ScrollView keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
               <Text style={styles.sheetEyebrow}>NUEVA META</Text>
               <Text style={styles.sheetTitle}>¿Qué cifra vas a alcanzar?</Text>
               <Text style={styles.label}>Título</Text>

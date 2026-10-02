@@ -2,7 +2,7 @@
 
 import Ionicons from '@expo/vector-icons/Ionicons';
 import type { ReactNode } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
+import { Platform, Pressable, ScrollView, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 import { colors, fonts } from '@/lib/theme';
 
 interface ChipProps {
@@ -49,8 +49,13 @@ export function Chip({ label, selected, onPress, icon, tone = 'accent', small, d
   );
 }
 
-/** Fila de chips que se desplaza en horizontal sin cortar el padding de la pantalla. */
+/**
+ * Fila de chips que se desplaza en horizontal sin cortar el padding de la
+ * pantalla. En la web envuelve como `ChipWrap`: con ratón no hay gesto lateral
+ * y los chips del final quedaban inalcanzables.
+ */
 export function ChipRow({ children, style }: { children: ReactNode; style?: StyleProp<ViewStyle> }) {
+  if (Platform.OS === 'web') return <View style={[styles.wrap, style]}>{children}</View>;
   return (
     <ScrollView
       horizontal

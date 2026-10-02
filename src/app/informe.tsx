@@ -1,12 +1,13 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useRef, useState } from 'react';
-import { Alert, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { Heatmap } from '@/components/Heatmap';
 import { useConsentimientoIA } from '@/components/ConsentimientoIA';
 import { SystemButton } from '@/components/SystemButton';
 import { XPBar } from '@/components/XPBar';
 import {
+  avisar,
   Card,
   Chip,
   EmptyState,
@@ -16,10 +17,14 @@ import {
   Screen,
   ScreenHeader,
   Section,
+  Skeleton,
+  SkeletonRows,
   Stagger,
   Stat,
   StatRow,
+  volver,
 } from '@/components/ui';
+import { confirmar } from '@/components/ui/confirmar';
 import { useAuth } from '@/lib/auth';
 import { questsScheduledOn } from '@/lib/closing';
 import { createQuest, ensureProfile, fetchCompletionsSince, fetchQuests, updateQuest } from '@/lib/data';
@@ -45,6 +50,7 @@ export default function Informe() {
   const [consulting, setConsulting] = useState(false);
   const [applied, setApplied] = useState<Set<string>>(new Set());
   const [refrescando, setRefrescando] = useState(false);
+  const [loaded, setLoaded] = useState(false);
   const lock = useRef(false);
 
   // El sistema se mejora a sí mismo: manda los datos reales de 14 días a la IA
@@ -113,15 +119,18 @@ export default function Informe() {
       if (e instanceof PaywallError) {
         // Todo lo de pago lleva a /pro (compra integrada): nada de Stripe ni
         // de clave propia en la app de tienda (Guideline 3.1.1).
-        Alert.alert('Análisis semanal', 'El análisis del Oráculo es parte de NIVL Pro. El informe sigue siendo tuyo.', [
-          { text: 'Ahora no', style: 'cancel' },
-          { text: 'Ver NIVL Pro', onPress: () => router.push('/pro') },
-        ]);
+        const verPro = await confirmar({
+          titulo: 'Análisis semanal',
+          mensaje: 'El análisis del Oráculo es parte de NIVL Pro. El informe sigue siendo tuyo.',
+          confirmar: 'Ver NIVL Pro',
+          cancelar: 'Ahora no',
+        });
+        if (verPro) router.push('/pro');
       } else if (e instanceof ConsentRequiredError) {
         olvidarConsentimiento();
         consentimiento.pedir();
       } else {
-        Alert.alert('El oráculo guarda silencio', mensajeSistema(e));
+        avisar('El oráculo guarda silencio', mensajeSistema(e));
       }
     } finally {
       lock.current = false;
@@ -139,7 +148,7 @@ export default function Informe() {
       setApplied((prev) => new Set(prev).add(adj.quest_id));
       await load();
     } catch (e) {
-      Alert.alert('Error del sistema', e instanceof Error ? e.message : 'No se pudo aplicar');
+      avisar('Error del sistema', mensajeSistema(e));
     }
   };
 
@@ -157,7 +166,7 @@ export default function Informe() {
       setApplied((prev) => new Set(prev).add(key));
       await load();
     } catch (e) {
-      Alert.alert('Error del sistema', e instanceof Error ? e.message : 'No se pudo crear');
+      avisar('Error del sistema', mensajeSistema(e));
     }
   };
 
@@ -168,7 +177,9 @@ export default function Informe() {
       setCompletions(cs);
       setQuests(qs);
     } catch (e) {
-      Alert.alert('Error del sistema', e instanceof Error ? e.message : 'Fallo desconocido');
+      avisar('Error del sistema', mensajeSistema(e));
+    } finally {
+      setLoaded(true);
     }
   }, []);
 
@@ -257,183 +268,194 @@ export default function Informe() {
       <Stagger>
         <FadeIn index={0}>
           <ScreenHeader
-            onBack={() => router.back()}
+            onBack={() => volver(router)}
             eyebrow="Progreso"
             title="Informe"
-            subtitle={subtitulo}
+            subtitle={loaded ? subtitulo : undefined}
             right={
-              thisWeek.length > 0 ? (
+              loaded && thisWeek.length > 0 ? (
                 <ProgressRing ratio={evidencePct / 100} size={66} stroke={4} label={`${evidencePct}%`} sublabel="evidencia" />
               ) : undefined
             }
           />
         </FadeIn>
 
-        <FadeIn index={1}>
-          <Card>
-            <StatRow>
-              <Stat value={xpWeek} unit="XP" label="Esta semana" tone="accent" />
-              <Stat value={thisWeek.length} label="Misiones" />
-              <Stat
-                value={delta === null ? '—' : `${delta >= 0 ? '+' : ''}${delta}`}
-                unit={delta === null ? undefined : '%'}
-                label="Vs. previa"
-                tone={delta !== null && delta < 0 ? 'red' : 'text'}
-              />
-              <Stat value={topStat} label="Dominante" />
-            </StatRow>
-          </Card>
-        </FadeIn>
-
-        <FadeIn index={2}>
-          <Section title="Lectura semanal">
-            <Card>
-              <Text style={styles.narrative}>{narrative}</Text>
-            </Card>
-          </Section>
-        </FadeIn>
-
-        <FadeIn index={3}>
-          <Section title="El sistema se ajusta" tone="steel" meta={pendientes > 0 ? `${pendientes} por aplicar` : undefined}>
-            {!advice ? (
-              <Card variant="outline">
-                <EmptyState
-                  compact
-                  icon="sparkles-outline"
-                  title="Sin análisis todavía"
-                  body="El oráculo lee tus últimos 14 días y propone ajustes: bajar lo que siempre falla, subir lo que ya es trivial, cubrir huecos."
-                />
-                <SystemButton
-                  title="Pedir análisis al oráculo"
-                  onPress={consultOracle}
-                  loading={consulting}
-                  icon="sparkles-outline"
-                  style={{ marginTop: 4 }}
-                />
+        {!loaded ? (
+          <View accessibilityRole="progressbar" accessibilityLabel="Cargando el informe">
+            <Skeleton height={76} style={styles.skCard} />
+            <Skeleton height={11} width={120} style={styles.skEyebrow} />
+            <Skeleton height={96} style={styles.skCard} />
+            <SkeletonRows rows={3} />
+          </View>
+        ) : (
+          <>
+            <FadeIn index={1}>
+              <Card>
+                <StatRow>
+                  <Stat value={xpWeek} unit="XP" label="Esta semana" tone="accent" />
+                  <Stat value={thisWeek.length} label="Misiones" />
+                  <Stat
+                    value={delta === null ? '—' : `${delta >= 0 ? '+' : ''}${delta}`}
+                    unit={delta === null ? undefined : '%'}
+                    label="Vs. previa"
+                    tone={delta !== null && delta < 0 ? 'red' : 'text'}
+                  />
+                  <Stat value={topStat} label="Dominante" />
+                </StatRow>
               </Card>
-            ) : (
-              <>
-                <Card accent={colors.steelDim}>
-                  <Text style={styles.narrative}>{advice.analysis}</Text>
+            </FadeIn>
+
+            <FadeIn index={2}>
+              <Section title="Lectura semanal">
+                <Card>
+                  <Text style={styles.narrative}>{narrative}</Text>
                 </Card>
-                {advice.adjustments.length > 0 || advice.new_quests.length > 0 ? (
-                  <Card padded={false} style={styles.lista}>
-                    {advice.adjustments.map((adj, i) => {
-                      const hecho = applied.has(adj.quest_id);
-                      return (
-                        <Row
-                          key={adj.quest_id}
-                          first={i === 0}
-                          leading={
-                            <Ionicons
-                              name={adj.action === 'desactivar' ? 'pause-circle-outline' : 'swap-vertical-outline'}
-                              size={18}
-                              color={colors.steel}
-                            />
-                          }
-                          title={adj.quest_title}
-                          done={hecho}
-                          detail={`${
-                            adj.action === 'desactivar'
-                              ? 'Desactivar'
-                              : `Dificultad → ${adj.new_difficulty ? DIFFICULTY_LABEL[adj.new_difficulty] : ''}`
-                          } · ${adj.reasoning}`}
-                          trailing={
-                            hecho ? (
-                              <Ionicons name="checkmark-circle" size={20} color={colors.steel} />
-                            ) : (
-                              <Chip
-                                label="Aplicar"
-                                small
-                                tone="steel"
-                                onPress={() => applyAdjustment(adj)}
-                                accessibilityLabel={`Aplicar ajuste a ${adj.quest_title}`}
-                              />
-                            )
-                          }
-                        />
-                      );
-                    })}
-                    {advice.new_quests.map((q, i) => {
-                      const key = `new-${i}`;
-                      const hecho = applied.has(key);
-                      return (
-                        <Row
-                          key={key}
-                          first={advice.adjustments.length === 0 && i === 0}
-                          leading={<Ionicons name="add-circle-outline" size={18} color={colors.steel} />}
-                          title={q.title}
-                          done={hecho}
-                          detail={`Nueva · ${q.stat} · ${DIFFICULTY_LABEL[q.difficulty]} · ${q.reasoning}`}
-                          trailing={
-                            hecho ? (
-                              <Ionicons name="checkmark-circle" size={20} color={colors.steel} />
-                            ) : (
-                              <Chip
-                                label="Crear"
-                                small
-                                tone="steel"
-                                onPress={() => applyNewQuest(q, key)}
-                                accessibilityLabel={`Crear misión ${q.title}`}
-                              />
-                            )
-                          }
-                        />
-                      );
-                    })}
-                  </Card>
-                ) : null}
-                {advice.advice ? <Text style={styles.consejo}>{advice.advice}</Text> : null}
-                <SystemButton
-                  title="Nuevo análisis"
-                  variant="outline"
-                  onPress={consultOracle}
-                  loading={consulting}
-                  icon="refresh-outline"
-                  style={{ marginTop: 6 }}
-                />
-              </>
-            )}
-          </Section>
-        </FadeIn>
+              </Section>
+            </FadeIn>
 
-        <FadeIn index={4}>
-          <Section title="XP por estadística" meta="7 días">
-            <Card>
-              {STATS.map((s, i) => {
-                const dominante = s === topStat && xpByStat[s] > 0;
-                return (
-                  <View key={s} style={[styles.statFila, i > 0 && styles.statSep]}>
-                    <View style={styles.statCabecera}>
-                      <Text style={[styles.statAbbr, dominante && styles.statAbbrTop]}>
-                        {s}
-                        <Text style={styles.statNombre}> · {STAT_LABEL[s]}</Text>
-                      </Text>
-                      <Text style={[styles.statXp, dominante && styles.statAbbrTop]}>{xpByStat[s]} XP</Text>
-                    </View>
-                    <XPBar
-                      ratio={xpByStat[s] / Math.max(1, xpByStat[topStat])}
-                      color={dominante ? colors.accent : colors.accentDim}
-                      height={5}
+            <FadeIn index={3}>
+              <Section title="El sistema se ajusta" tone="steel" meta={pendientes > 0 ? `${pendientes} por aplicar` : undefined}>
+                {!advice ? (
+                  <Card variant="outline">
+                    <EmptyState
+                      compact
+                      icon="sparkles-outline"
+                      title="Sin análisis todavía"
+                      body="El oráculo lee tus últimos 14 días y propone ajustes: bajar lo que siempre falla, subir lo que ya es trivial, cubrir huecos."
                     />
-                  </View>
-                );
-              })}
-            </Card>
-          </Section>
-        </FadeIn>
+                    <SystemButton
+                      title="Pedir análisis al oráculo"
+                      onPress={consultOracle}
+                      loading={consulting}
+                      icon="sparkles-outline"
+                      style={{ marginTop: 4 }}
+                    />
+                  </Card>
+                ) : (
+                  <>
+                    <Card accent={colors.steelDim}>
+                      <Text style={styles.narrative}>{advice.analysis}</Text>
+                    </Card>
+                    {advice.adjustments.length > 0 || advice.new_quests.length > 0 ? (
+                      <Card padded={false} style={styles.lista}>
+                        {advice.adjustments.map((adj, i) => {
+                          const hecho = applied.has(adj.quest_id);
+                          return (
+                            <Row
+                              key={adj.quest_id}
+                              first={i === 0}
+                              leading={
+                                <Ionicons
+                                  name={adj.action === 'desactivar' ? 'pause-circle-outline' : 'swap-vertical-outline'}
+                                  size={18}
+                                  color={colors.steel}
+                                />
+                              }
+                              title={adj.quest_title}
+                              done={hecho}
+                              detail={`${
+                                adj.action === 'desactivar'
+                                  ? 'Desactivar'
+                                  : `Dificultad → ${adj.new_difficulty ? DIFFICULTY_LABEL[adj.new_difficulty] : ''}`
+                              } · ${adj.reasoning}`}
+                              trailing={
+                                hecho ? (
+                                  <Ionicons name="checkmark-circle" size={20} color={colors.steel} />
+                                ) : (
+                                  <Chip
+                                    label="Aplicar"
+                                    small
+                                    tone="steel"
+                                    onPress={() => applyAdjustment(adj)}
+                                    accessibilityLabel={`Aplicar ajuste a ${adj.quest_title}`}
+                                  />
+                                )
+                              }
+                            />
+                          );
+                        })}
+                        {advice.new_quests.map((q, i) => {
+                          const key = `new-${i}`;
+                          const hecho = applied.has(key);
+                          return (
+                            <Row
+                              key={key}
+                              first={advice.adjustments.length === 0 && i === 0}
+                              leading={<Ionicons name="add-circle-outline" size={18} color={colors.steel} />}
+                              title={q.title}
+                              done={hecho}
+                              detail={`Nueva · ${q.stat} · ${DIFFICULTY_LABEL[q.difficulty]} · ${q.reasoning}`}
+                              trailing={
+                                hecho ? (
+                                  <Ionicons name="checkmark-circle" size={20} color={colors.steel} />
+                                ) : (
+                                  <Chip
+                                    label="Crear"
+                                    small
+                                    tone="steel"
+                                    onPress={() => applyNewQuest(q, key)}
+                                    accessibilityLabel={`Crear misión ${q.title}`}
+                                  />
+                                )
+                              }
+                            />
+                          );
+                        })}
+                      </Card>
+                    ) : null}
+                    {advice.advice ? <Text style={styles.consejo}>{advice.advice}</Text> : null}
+                    <SystemButton
+                      title="Nuevo análisis"
+                      variant="outline"
+                      onPress={consultOracle}
+                      loading={consulting}
+                      icon="refresh-outline"
+                      style={{ marginTop: 6 }}
+                    />
+                  </>
+                )}
+              </Section>
+            </FadeIn>
 
-        <FadeIn index={5}>
-          <Section title="Mapa de actividad" meta="13 semanas">
-            <Card>
-              {completions.length === 0 ? (
-                <EmptyState compact icon="grid-outline" title="Todavía en blanco" body="Cada misión completada enciende un día." />
-              ) : (
-                <Heatmap counts={byDay} />
-              )}
-            </Card>
-          </Section>
-        </FadeIn>
+            <FadeIn index={4}>
+              <Section title="XP por estadística" meta="7 días">
+                <Card>
+                  {STATS.map((s, i) => {
+                    const dominante = s === topStat && xpByStat[s] > 0;
+                    return (
+                      <View key={s} style={[styles.statFila, i > 0 && styles.statSep]}>
+                        <View style={styles.statCabecera}>
+                          <Text style={[styles.statAbbr, dominante && styles.statAbbrTop]}>
+                            {s}
+                            <Text style={styles.statNombre}> · {STAT_LABEL[s]}</Text>
+                          </Text>
+                          <Text style={[styles.statXp, dominante && styles.statAbbrTop]}>{xpByStat[s]} XP</Text>
+                        </View>
+                        <XPBar
+                          ratio={xpByStat[s] / Math.max(1, xpByStat[topStat])}
+                          color={dominante ? colors.accent : colors.accentDim}
+                          height={5}
+                        />
+                      </View>
+                    );
+                  })}
+                </Card>
+              </Section>
+            </FadeIn>
+
+            <FadeIn index={5}>
+              <Section title="Mapa de actividad" meta="13 semanas">
+                <Card>
+                  {completions.length === 0 ? (
+                    <EmptyState compact icon="grid-outline" title="Todavía en blanco" body="Cada misión completada enciende un día." />
+                  ) : (
+                    <Heatmap counts={byDay} />
+                  )}
+                </Card>
+              </Section>
+            </FadeIn>
+          </>
+        )}
       </Stagger>
       {consentimiento.hoja}
     </Screen>
@@ -441,6 +463,8 @@ export default function Informe() {
 }
 
 const styles = StyleSheet.create({
+  skCard: { marginBottom: 10 },
+  skEyebrow: { marginBottom: 12, marginTop: 16 },
   lista: { paddingHorizontal: 16, paddingVertical: 2 },
   narrative: { fontFamily: fonts.semibold, fontSize: 14.5, lineHeight: 22, color: colors.text },
   consejo: { fontFamily: fonts.body, fontSize: 13.5, lineHeight: 20, color: colors.steelText, marginTop: 2, marginBottom: 12 },

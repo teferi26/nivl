@@ -1,6 +1,8 @@
 import { requireHealthConsent } from './health';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as SecureStore from 'expo-secure-store';
+import { Platform } from 'react-native';
+import { ErrorVisible } from './validation';
 import { DIFFICULTIES, STATS } from './game';
 import { byokEnabled, callPremiumOracle, fetchSubscription, isPremium, PaywallError, paywallEnabled } from './subscription';
 import type { Difficulty, Stat } from './types';
@@ -120,7 +122,13 @@ export interface OracleResponse {
   plan_summary: string;
 }
 
+// En la web no hay almacén cifrado (expo-secure-store es un stub y lanza). La
+// key de pago no se guarda en texto plano en localStorage: en web no hay key
+// propia, y el Oráculo va por el servidor o no va.
+const SIN_ALMACEN_SEGURO = Platform.OS === 'web';
+
 export async function getApiKey(): Promise<string | null> {
+  if (SIN_ALMACEN_SEGURO) return null;
   const secure = await SecureStore.getItemAsync(KEY_STORAGE);
   if (secure) return secure;
   // Migración transparente: si venía de una versión anterior en AsyncStorage
@@ -146,6 +154,12 @@ export async function getApiKey(): Promise<string | null> {
 
 export async function setApiKey(key: string): Promise<void> {
   const trimmed = key.trim();
+  if (SIN_ALMACEN_SEGURO) {
+    // Borrar es lo único que se permite: limpia restos de versiones antiguas.
+    await AsyncStorage.removeItem(LEGACY_KEY);
+    if (trimmed) throw new ErrorVisible('La clave propia solo se puede guardar en la app del móvil.');
+    return;
+  }
   if (trimmed) {
     await SecureStore.setItemAsync(KEY_STORAGE, trimmed);
   } else {

@@ -14,7 +14,6 @@ import * as Haptics from 'expo-haptics';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useRef, useState } from 'react';
 import {
-  Alert,
   // Como en Amigos: Clipboard sigue en el núcleo de RN 0.81. Si falla, se cae
   // al compartir del sistema, que también deja copiar.
   Clipboard,
@@ -25,6 +24,7 @@ import {
 } from 'react-native';
 import { SystemButton } from '@/components/SystemButton';
 import {
+  avisar,
   Card,
   EmptyState,
   FadeIn,
@@ -101,7 +101,7 @@ export default function Creador() {
     try {
       await Share.share({ message: mensajeInvitacionCreador(panel.code) });
     } catch (e) {
-      Alert.alert('Error del sistema', mensajeSistema(e));
+      avisar('Error del sistema', mensajeSistema(e));
     }
   };
 

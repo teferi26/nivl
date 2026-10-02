@@ -2,7 +2,6 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  Alert,
   KeyboardAvoidingView,
   Modal,
   Platform,
@@ -15,6 +14,7 @@ import {
 import { LineaDeTiempo, type ItemAgenda } from '@/components/LineaDeTiempo';
 import { SystemButton } from '@/components/SystemButton';
 import {
+  avisar,
   Card,
   Check,
   Chip,
@@ -26,9 +26,13 @@ import {
   Screen,
   ScreenHeader,
   Section,
+  Skeleton,
+  SkeletonRows,
   Stagger,
   Tag,
+  useAlVolver,
 } from '@/components/ui';
+import { confirmar } from '@/components/ui/confirmar';
 import { useAuth } from '@/lib/auth';
 import { questsScheduledOn } from '@/lib/closing';
 import { fetchCompletionsForDate, fetchQuests } from '@/lib/data';
@@ -41,9 +45,11 @@ import {
   fetchPendingTasksWithDue,
 } from '@/lib/dungeons';
 import { hhmm, horaAMinutos, KIND_ICON, minutosAhora } from '@/lib/plan';
+import { fetchAiStatus, isPro } from '@/lib/pro';
 import { cargaDelDia } from '@/lib/timeline';
 import { colors, fonts } from '@/lib/theme';
 import type { CalendarEvent, DungeonTask, Quest } from '@/lib/types';
+import { mensajeSistema } from '@/lib/validation';
 
 type ViewMode = 'dia' | 'semana' | 'mes';
 
@@ -129,9 +135,18 @@ export default function Agenda() {
   const [date, setDate] = useState(today);
   const [time, setTime] = useState('');
   const saving = useRef(false);
+  const [loaded, setLoaded] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  // Solo con coach se sugiere "pídele al coach": sin Pro esa puerta no existe.
+  // null mientras no se sabe (no se sugiere nada).
+  const [esPro, setEsPro] = useState<boolean | null>(null);
   const rangeRef = useRef<{ from: string; to: string } | null>(null);
 
   const load = useCallback(async (center: string) => {
+    // Accesorio: si la cuenta tiene coach. Nunca bloquea ni tumba la agenda.
+    fetchAiStatus()
+      .then((s) => setEsPro(isPro(s)))
+      .catch(() => {});
     try {
       const from = addDays(center, -45);
       const to = addDays(center, 75);
@@ -146,8 +161,11 @@ export default function Agenda() {
       setEvents(evs);
       setDueTasks(tasks);
       setDoneToday(new Set(done.map((c) => c.quest_id)));
+      setLoadError(null);
     } catch (e) {
-      Alert.alert('Error del sistema', e instanceof Error ? e.message : 'Fallo desconocido');
+      setLoadError(mensajeSistema(e));
+    } finally {
+      setLoaded(true);
     }
   }, []);
 
@@ -157,6 +175,16 @@ export default function Agenda() {
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [load]),
   );
+  // Quien miraba "hoy" sigue mirando hoy al volver al día siguiente; quien
+  // había navegado a otro día, se queda en él.
+  const hoyVisto = useRef(today);
+  useAlVolver(() => {
+    const hoy = dateKey();
+    const seguiaEnHoy = anchor === hoyVisto.current;
+    hoyVisto.current = hoy;
+    if (seguiaEnHoy && hoy !== anchor) setAnchor(hoy);
+    load(seguiaEnHoy ? hoy : anchor);
+  });
 
   useEffect(() => {
     const r = rangeRef.current;
@@ -247,7 +275,7 @@ export default function Agenda() {
   const addEvent = async () => {
     if (!userId || !title.trim() || saving.current) return;
     if (!isValidKey(date)) {
-      Alert.alert('Fecha inválida', 'Usa el formato AAAA-MM-DD, ej. 2026-06-15');
+      avisar('Fecha inválida', 'Usa el formato AAAA-MM-DD, ej. 2026-06-15');
       return;
     }
     saving.current = true;
@@ -258,24 +286,22 @@ export default function Agenda() {
       setFormOpen(false);
       await load(anchor);
     } catch (e) {
-      Alert.alert('Error del sistema', e instanceof Error ? e.message : 'Fallo desconocido');
+      avisar('Error del sistema', mensajeSistema(e));
     } finally {
       saving.current = false;
     }
   };
 
-  const removeEvent = (e: CalendarEvent) =>
-    Alert.alert('Eliminar evento', e.title, [
-      { text: 'Cancelar', style: 'cancel' },
-      {
-        text: 'Eliminar',
-        style: 'destructive',
-        onPress: async () => {
-          await deleteCalendarEvent(e.id).catch(() => {});
-          await load(anchor);
-        },
-      },
-    ]);
+  const removeEvent = async (e: CalendarEvent) => {
+    const ok = await confirmar({ titulo: 'Eliminar evento', mensaje: e.title, confirmar: 'Eliminar', destructivo: true });
+    if (!ok) return;
+    try {
+      await deleteCalendarEvent(e.id);
+    } catch (err) {
+      avisar('Error del sistema', mensajeSistema(err));
+    }
+    await load(anchor);
+  };
 
   const abrirFormulario = () => {
     setDate(anchor);
@@ -324,7 +350,7 @@ export default function Agenda() {
           <ScreenHeader
             eyebrow={monthLabel(anchor)}
             title={titulo}
-            subtitle={subtitulo}
+            subtitle={loaded && !loadError ? subtitulo : undefined}
             action={{ icon: 'add', label: 'Nuevo evento', onPress: abrirFormulario, solid: true }}
           />
         </FadeIn>
@@ -463,7 +489,26 @@ export default function Agenda() {
           </FadeIn>
         ) : null}
 
-        {vacioTotal ? (
+        {loaded && loadError ? (
+          <Card variant="outline">
+            <EmptyState
+              compact
+              icon="cloud-offline-outline"
+              title="El sistema no responde"
+              body={loadError}
+              action={{ label: 'Reintentar', onPress: () => load(anchor) }}
+            />
+          </Card>
+        ) : null}
+
+        {!loaded ? (
+          <View accessibilityRole="progressbar" accessibilityLabel="Cargando tu agenda">
+            <Skeleton height={11} width={100} style={styles.skEyebrow} />
+            <SkeletonRows rows={3} />
+            <Skeleton height={11} width={80} style={styles.skEyebrow} />
+            <Skeleton height={160} />
+          </View>
+        ) : loadError ? null : vacioTotal ? (
           <FadeIn index={3}>
             <Card variant="outline">
               <EmptyState
@@ -471,7 +516,9 @@ export default function Agenda() {
                 title={anchor >= today ? 'Nada programado' : 'Un día en blanco'}
                 body={
                   anchor >= today
-                    ? 'Pídele al coach que planifique el día o añade un evento. Las misiones programadas aparecen aquí.'
+                    ? esPro === true
+                      ? 'Pídele al coach que planifique el día o añade un evento. Las misiones programadas aparecen aquí.'
+                      : 'Añade un evento. Las misiones programadas aparecen aquí.'
                     : 'El sistema no tiene nada registrado para ese día.'
                 }
                 action={anchor >= today ? { label: 'Añadir evento', onPress: abrirFormulario } : undefined}
@@ -520,7 +567,9 @@ export default function Agenda() {
                       title="Sin nada a una hora concreta"
                       body={
                         anchor >= today
-                          ? 'Pídele al coach que planifique el día, o añade un evento con hora.'
+                          ? esPro === true
+                            ? 'Pídele al coach que planifique el día, o añade un evento con hora.'
+                            : 'Añade un evento con hora.'
                           : 'Ese día no tuvo plan por horas.'
                       }
                     />
@@ -693,7 +742,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.panel,
   },
   diaSemanaSel: { borderColor: colors.accent, backgroundColor: colors.accentFaint },
-  diaSemanaLetra: { fontFamily: fonts.heading, fontSize: 10, letterSpacing: 1, color: colors.textFaint },
+  diaSemanaLetra: { fontFamily: fonts.heading, fontSize: 11, letterSpacing: 1, color: colors.textFaint },
   diaSemanaLetraSel: { color: colors.accentText },
   diaSemanaNum: { fontFamily: fonts.number, fontSize: 15, color: colors.text, marginTop: 3 },
   diaSemanaNumSel: { color: colors.accent },
@@ -707,11 +756,12 @@ const styles = StyleSheet.create({
     flex: 1,
     textAlign: 'center',
     fontFamily: fonts.heading,
-    fontSize: 10.5,
+    fontSize: 11,
     letterSpacing: 1,
     color: colors.textFaint,
     paddingBottom: 6,
   },
+  skEyebrow: { marginBottom: 12, marginTop: 8 },
   grid: { flexDirection: 'row', flexWrap: 'wrap' },
   cell: {
     width: `${100 / 7}%`,

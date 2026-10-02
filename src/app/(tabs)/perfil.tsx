@@ -8,8 +8,8 @@ import * as Sharing from 'expo-sharing';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   KeyboardAvoidingView,
+  Linking,
   Modal,
   Platform,
   Pressable,
@@ -28,9 +28,11 @@ import { SystemButton } from '@/components/SystemButton';
 import { Version } from '@/components/Version';
 import { XPBar } from '@/components/XPBar';
 import {
+  avisar,
   Card,
   Chip,
   ChipWrap,
+  confirmar,
   EmptyState,
   FadeIn,
   Row,
@@ -44,6 +46,7 @@ import {
 } from '@/components/ui';
 import { ACHIEVEMENTS, fetchUnlocked } from '@/lib/achievements';
 import { useAuth } from '@/lib/auth';
+import { cerrarSesion } from '@/lib/authFlow';
 import {
   completionStats,
   ensureProfile,
@@ -73,8 +76,9 @@ import {
   inicializarAvisos,
   type EstadoAvisos,
 } from '@/lib/notifications';
-import { setApiKey } from '@/lib/oracle';
+import { registrarDispositivo } from '@/lib/push';
 import { fetchAiStatus, isElite, isPro } from '@/lib/pro';
+import { LEGAL_URLS } from '@/lib/proplans';
 import {
   fetchSubscription,
   isPremium,
@@ -93,7 +97,6 @@ import {
   STATS,
   streakMultiplier,
 } from '@/lib/game';
-import { supabase } from '@/lib/supabase';
 import { KINDS, kindMeta, PROFILE_KINDS, type ProfileKind } from '@/lib/kinds';
 import { colors, fonts } from '@/lib/theme';
 import type { Profile } from '@/lib/types';
@@ -151,11 +154,18 @@ export default function Perfil() {
 
   const activarAvisos = async () => {
     const ok = await inicializarAvisos();
-    if (!ok) {
-      Alert.alert(
-        'Avisos bloqueados',
-        'Actívalos en los ajustes del teléfono, en las notificaciones de NIVL. Sin ellos el sistema no puede despertarte ni avisarte de los bloques.',
-      );
+    if (ok) {
+      // Con permiso, el dispositivo se registra para el push del coach.
+      registrarDispositivo().catch(() => {});
+    } else {
+      const titulo = 'Avisos bloqueados';
+      const mensaje =
+        'Actívalos en los ajustes del teléfono, en las notificaciones de NIVL. Sin ellos el sistema no puede despertarte ni avisarte de los bloques.';
+      if (Platform.OS === 'web') {
+        avisar(titulo, mensaje);
+      } else if (await confirmar({ titulo, mensaje, confirmar: 'Abrir ajustes' })) {
+        Linking.openSettings().catch(() => {});
+      }
     }
     refrescarAvisos();
   };
@@ -169,7 +179,7 @@ export default function Perfil() {
       await updateProfile(userId, { profile_kind: k });
     } catch (e) {
       setProfile((p) => (p ? { ...p, profile_kind: anterior } : p));
-      Alert.alert('Error del sistema', e instanceof Error ? e.message : 'Fallo desconocido');
+      avisar('Error del sistema', mensajeSistema(e));
     }
   };
 
@@ -213,7 +223,7 @@ export default function Perfil() {
       setUnlocked(await fetchUnlocked());
       setSubscription(await fetchSubscription(userId).catch(() => null));
     } catch (e) {
-      Alert.alert('Error del sistema', e instanceof Error ? e.message : 'Fallo desconocido');
+      avisar('Error del sistema', mensajeSistema(e));
     }
   }, [userId]);
 
@@ -252,7 +262,7 @@ export default function Perfil() {
       olvidarFirma('avatars', path);
       setAvatarUri(await signedUrlCached('avatars', path));
     } catch (e) {
-      Alert.alert('Error del sistema', mensajeSistema(e));
+      avisar('Error del sistema', mensajeSistema(e));
     } finally {
       setUploadingPhoto(false);
     }
@@ -267,7 +277,7 @@ export default function Perfil() {
       setProfile({ ...profile, name: trimmed });
     } catch (error) {
       setName(profile.name);
-      Alert.alert('No se ha guardado el nombre', mensajeSistema(error));
+      avisar('No se ha guardado el nombre', mensajeSistema(error));
     }
   };
 
@@ -290,21 +300,24 @@ export default function Perfil() {
     const def = ACHIEVEMENTS.find((a) => a.code === code);
     if (!def || !unlocked.has(code)) return;
     if (!def.title) {
-      Alert.alert(def.name, def.desc);
+      avisar(def.name, def.desc);
       return;
     }
     const isEquipped = profile.equipped_title === def.title;
-    Alert.alert(def.name, `${def.desc}\nTítulo: "${def.title}"`, [
-      { text: 'Cerrar', style: 'cancel' },
-      {
-        text: isEquipped ? 'Quitar título' : 'Equipar título',
-        onPress: async () => {
-          const next = isEquipped ? null : def.title ?? null;
-          await updateProfile(userId, { equipped_title: next });
-          setProfile({ ...profile, equipped_title: next });
-        },
-      },
-    ]);
+    const ok = await confirmar({
+      titulo: def.name,
+      mensaje: `${def.desc}\nTítulo: "${def.title}"`,
+      confirmar: isEquipped ? 'Quitar título' : 'Equipar título',
+      cancelar: 'Cerrar',
+    });
+    if (!ok) return;
+    const next = isEquipped ? null : def.title ?? null;
+    try {
+      await updateProfile(userId, { equipped_title: next });
+      setProfile({ ...profile, equipped_title: next });
+    } catch (e) {
+      avisar('Error del sistema', mensajeSistema(e));
+    }
   };
 
   const shareProfile = async () => {
@@ -314,7 +327,7 @@ export default function Perfil() {
         await Sharing.shareAsync(uri, { mimeType: 'image/png', dialogTitle: 'Compartir perfil NIVL' });
       }
     } catch (e) {
-      Alert.alert('Error del sistema', e instanceof Error ? e.message : 'No se pudo generar la imagen');
+      avisar('Error del sistema', mensajeSistema(e));
     }
   };
 
@@ -324,17 +337,17 @@ export default function Perfil() {
     try {
       await exportAllData();
     } catch (e) {
-      Alert.alert('Error del sistema', e instanceof Error ? e.message : 'Export fallido');
+      avisar('Error del sistema', mensajeSistema(e));
     } finally {
       setBusy(false);
     }
   };
 
   const signOut = async () => {
-    // Borra la API key del dispositivo: en un móvil compartido el siguiente
-    // usuario heredaría la key de pago de Anthropic.
-    await setApiKey('');
-    await supabase.auth.signOut();
+    // cerrarSesion (authFlow, Chat 3) limpia lo que heredaría el siguiente
+    // usuario de este móvil: token push, avisos locales, key del Oráculo,
+    // consentimiento y código de creador. Nunca impide salir.
+    await cerrarSesion().catch(() => {});
     router.replace('/login');
   };
 
@@ -387,40 +400,38 @@ export default function Perfil() {
     }
   };
 
-  const confirmarBorrado = () => {
+  const confirmarBorrado = async () => {
     if (borrando) return;
-    Alert.alert(
-      '¿Estás totalmente seguro?',
-      'Se borra tu cuenta de NIVL. El sistema no puede deshacerlo.',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        { text: 'Eliminar para siempre', style: 'destructive', onPress: ejecutarBorrado },
-      ],
-    );
+    // `confirmar` y no Alert.alert: en la web el Alert no se pinta y el
+    // borrado se quedaba sin hacer.
+    const ok = await confirmar({
+      titulo: '¿Estás totalmente seguro?',
+      mensaje: 'Se borra tu cuenta de NIVL. El sistema no puede deshacerlo.',
+      confirmar: 'Eliminar para siempre',
+      destructivo: true,
+    });
+    if (ok) await ejecutarBorrado();
   };
 
   // Aceptado: retirar (con confirmación). Sin aceptar: la hoja.
   const tocarConsentimiento = async () => {
     if (consentimientoVigente(consent)) {
-      Alert.alert(
-        'Retirar el consentimiento',
-        'Desde ahora no se envía nada al proveedor de IA y el coach deja de funcionar, también los avisos que prepara. Tus datos en NIVL no se borran. Puedes volver a aceptarlo cuando quieras.',
-        [
-          { text: 'Cancelar', style: 'cancel' },
-          {
-            text: 'Retirar',
-            style: 'destructive',
-            onPress: async () => {
-              try {
-                await retirarConsentimiento();
-                setConsent(await fetchConsentimiento({ fresco: true }));
-              } catch (e) {
-                Alert.alert('Error del sistema', mensajeSistema(e));
-              }
-            },
-          },
-        ],
-      );
+      const ok = await confirmar({
+        titulo: 'Retirar el consentimiento',
+        mensaje:
+          'Desde ahora no se envía nada al proveedor de IA y el coach deja de funcionar, también los avisos que prepara. Tus datos en NIVL no se borran. Puedes volver a aceptarlo cuando quieras.',
+        confirmar: 'Retirar',
+        destructivo: true,
+      });
+      if (!ok) return;
+      // El estado solo cambia con lo que diga el servidor tras retirar: si la
+      // llamada falla, la pantalla sigue diciendo "aceptado".
+      try {
+        await retirarConsentimiento();
+        setConsent(await fetchConsentimiento({ fresco: true }));
+      } catch (e) {
+        avisar('Error del sistema', mensajeSistema(e));
+      }
       return;
     }
     if (await consentimiento.pedir()) {
@@ -827,7 +838,7 @@ export default function Perfil() {
                       ? () =>
                           userId &&
                           openCheckout(userId).catch((e) =>
-                            Alert.alert('Pagos no disponibles', e instanceof Error ? e.message : ''),
+                            avisar('Pagos no disponibles', mensajeSistema(e)),
                           )
                       : undefined
                   }
@@ -874,10 +885,26 @@ export default function Perfil() {
                 <Row
                   leading={<Ionicons name="log-out-outline" size={20} color={colors.text} />}
                   title="Cerrar sesión"
-                  detail="Tu cuenta de Franky sigue intacta."
+                  detail="Tu progreso queda guardado en tu cuenta."
                   chevron
                   onPress={signOut}
                   accessibilityLabel="Cerrar sesión"
+                />
+                <Row
+                  leading={<Ionicons name="document-text-outline" size={20} color={colors.text} />}
+                  title="Términos de uso"
+                  chevron
+                  onPress={() => Linking.openURL(LEGAL_URLS.terminos).catch(() => {})}
+                  accessibilityRole="link"
+                  accessibilityLabel="Términos de uso de NIVL"
+                />
+                <Row
+                  leading={<Ionicons name="shield-checkmark-outline" size={20} color={colors.text} />}
+                  title="Política de privacidad"
+                  chevron
+                  onPress={() => Linking.openURL(LEGAL_URLS.privacidad).catch(() => {})}
+                  accessibilityRole="link"
+                  accessibilityLabel="Política de privacidad de NIVL"
                 />
               </Card>
               <SystemButton
@@ -918,8 +945,12 @@ export default function Perfil() {
               tus fotos y todo tu progreso. No hay vuelta atrás.
             </Text>
             <Text style={styles.hint}>
-              Borrar la cuenta no cancela una suscripción de NIVL Pro: cancélala en los ajustes de suscripciones de tu
-              Apple ID o de Google Play.
+              {/* En iOS no se nombra Google Play (guideline 2.3.10), y al revés. */}
+              {Platform.OS === 'android'
+                ? 'Borrar la cuenta no cancela una suscripción de NIVL Pro: cancélala en Play Store > Pagos y suscripciones > Suscripciones.'
+                : Platform.OS === 'ios'
+                  ? 'Borrar la cuenta no cancela una suscripción de NIVL Pro: cancélala en Ajustes > tu nombre > Suscripciones.'
+                  : 'Borrar la cuenta no cancela una suscripción de NIVL Pro: cancélala en la tienda donde la contrataste.'}
             </Text>
             {avisoBorrar ? (
               <Text style={styles.avisoCodigo} accessibilityRole="alert">
@@ -1188,7 +1219,7 @@ const styles = StyleSheet.create({
   statRowSep: { borderTopWidth: 1, borderTopColor: colors.line },
   statName: { width: 88 },
   statAbbr: { fontFamily: fonts.heading, fontSize: 12.5, letterSpacing: 1.5, color: colors.text },
-  statLabel: { fontFamily: fonts.body, fontSize: 10.5, color: colors.textFaint, marginTop: 1 },
+  statLabel: { fontFamily: fonts.body, fontSize: 11, color: colors.textFaint, marginTop: 1 },
   statBar: { flex: 1 },
   statPoints: { fontFamily: fonts.number, fontSize: 14, color: colors.text, width: 34, textAlign: 'right' },
 
@@ -1206,7 +1237,7 @@ const styles = StyleSheet.create({
   achOn: { borderColor: colors.goldDim },
   achName: { fontFamily: fonts.semibold, fontSize: 11, lineHeight: 14, color: colors.textFaint, textAlign: 'center' },
   achNameOn: { color: colors.text },
-  achTitleTag: { fontFamily: fonts.heading, fontSize: 9, letterSpacing: 1.5, color: colors.goldDim },
+  achTitleTag: { fontFamily: fonts.heading, fontSize: 11, letterSpacing: 1.5, color: colors.goldDim },
   achTitleTagOn: { color: colors.gold },
 
   backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'flex-end' },
@@ -1284,9 +1315,9 @@ const styles = StyleSheet.create({
   shareAvatar: { width: 84, height: 84, borderRadius: 42, borderWidth: 1.5, borderColor: colors.accent },
   shareName: { fontFamily: fonts.heading, fontSize: 24, letterSpacing: -0.5, color: colors.text, marginTop: 14 },
   shareTitle: { fontFamily: fonts.heading, fontSize: 11, letterSpacing: 2, color: colors.gold, marginTop: 4 },
-  shareRank: { fontFamily: fonts.heading, fontSize: 10.5, letterSpacing: 2.5, color: colors.textFaint, marginTop: 6 },
+  shareRank: { fontFamily: fonts.heading, fontSize: 11, letterSpacing: 2.5, color: colors.textFaint, marginTop: 6 },
   shareLevelRow: { flexDirection: 'row', alignItems: 'baseline', gap: 8, marginTop: 10 },
-  shareLevelLabel: { fontFamily: fonts.heading, fontSize: 10, letterSpacing: 2.5, color: colors.textFaint },
+  shareLevelLabel: { fontFamily: fonts.heading, fontSize: 11, letterSpacing: 2.5, color: colors.textFaint },
   shareLevel: { fontFamily: fonts.brand, fontSize: 44, lineHeight: 48, color: colors.accent },
   shareStreak: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4 },
   shareStreakText: { fontFamily: fonts.heading, fontSize: 11, letterSpacing: 1.5, color: colors.gold },
@@ -1295,6 +1326,6 @@ const styles = StyleSheet.create({
   shareStats: { flexDirection: 'row', alignSelf: 'stretch', justifyContent: 'space-around' },
   shareStat: { alignItems: 'center' },
   shareStatVal: { fontFamily: fonts.number, fontSize: 18, color: colors.text },
-  shareStatAbbr: { fontFamily: fonts.heading, fontSize: 10, letterSpacing: 1.5, color: colors.textFaint, marginTop: 3 },
+  shareStatAbbr: { fontFamily: fonts.heading, fontSize: 11, letterSpacing: 1.5, color: colors.textFaint, marginTop: 3 },
   shareFooter: { fontFamily: fonts.body, fontSize: 12, color: colors.textDim, marginTop: 16 },
 });
