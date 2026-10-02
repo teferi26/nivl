@@ -9,6 +9,7 @@ import { Platform, StyleSheet, View } from 'react-native';
 import { EdadMinimaGuard, EdadMinimaProvider, useEdadMinima } from '@/components/EdadMinima';
 import { HealthConsentGuard, HealthConsentProvider } from '@/components/ConsentimientoSalud';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { CelebracionProvider } from '@/components/celebracion/CelebracionProvider';
 import { TopeAncho } from '@/design/useSizeClass';
 import { AuthProvider, useAuth } from '@/lib/auth';
 import { identificarEnTienda } from '@/lib/pro';
@@ -148,9 +149,12 @@ export default function RootLayout() {
     <ErrorBoundary>
       <AuthProvider>
         <StatusBar style="light" />
-        <EdadMinimaProvider>
-          <HealthConsentProvider><ProtectedStack /></HealthConsentProvider>
-        </EdadMinimaProvider>
+        {/* Por fuera de ColumnaWeb: en web la ceremonia y el toast cubren toda la ventana. */}
+        <CelebracionProvider>
+          <EdadMinimaProvider>
+            <HealthConsentProvider><ProtectedStack /></HealthConsentProvider>
+          </EdadMinimaProvider>
+        </CelebracionProvider>
       </AuthProvider>
     </ErrorBoundary>
   );

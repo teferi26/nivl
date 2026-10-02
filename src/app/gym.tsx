@@ -15,7 +15,7 @@ import {
   View,
 } from 'react-native';
 import { DescargoSalud } from '@/components/DescargoSalud';
-import { LevelUpOverlay } from '@/components/LevelUpOverlay';
+import { useCelebracion } from '@/components/celebracion/contexto';
 import { SystemButton } from '@/components/SystemButton';
 import {
   Card,
@@ -36,7 +36,7 @@ import {
 } from '@/components/ui';
 import { avisar, confirmar } from '@/components/ui/confirmar';
 import { volver } from '@/components/ui/Screen';
-import { evaluateAchievements, unlockAchievements } from '@/lib/achievements';
+import { evaluateAchievements, fetchUnlocked, unlockAchievements } from '@/lib/achievements';
 import { useAuth } from '@/lib/auth';
 import { fetchPrescription, type Prescription } from '@/lib/bodywork';
 import {
@@ -112,7 +112,7 @@ export default function Gym() {
   const [exSets, setExSets] = useState('3');
   const [exReps, setExReps] = useState('10');
   const [exWeight, setExWeight] = useState('');
-  const [levelUp, setLevelUp] = useState<number | null>(null);
+  const { celebrar } = useCelebracion();
   const [busy, setBusy] = useState(false);
   // XP que han pagado hoy las misiones enlazadas al gimnasio. La sesión guarda
   // solo lo que paga el módulo (el resto hasta su base y los récords): sin
@@ -260,7 +260,10 @@ export default function Gym() {
       // regla y el bloque del plan que la pedían. El módulo paga solo lo que la
       // misión no haya pagado ya (más los récords): el mismo entreno no cobra
       // dos veces.
-      const eco = await propagarActo(await ensureProfile(userId), 'gym', today);
+      // Lo de antes de la acción, para la cola de celebraciones: perfil y logros.
+      const perfilAntes = await ensureProfile(userId);
+      const logrosAntes = await fetchUnlocked().catch(() => new Set<string>());
+      const eco = await propagarActo(perfilAntes, 'gym', today);
       // Récords pagados: como mucho MAX_PR_PAGADOS (50 + 4×25 = 150, el tope
       // diario). Los récords se registran todos; lo que se limita es el pago.
       const prsPagados = Math.min(prs.length, MAX_PR_PAGADOS);
@@ -304,8 +307,18 @@ export default function Gym() {
         'Sesión registrada',
         `${desglose || 'La misión de hoy ya estaba marcada y pagada.'}${prText}${achText}`,
       );
-      if (res.leveledUp) setLevelUp(res.newLevel);
-      else if (eco.leveledUp) setLevelUp(eco.newLevel);
+      // Nivel, rango, logros y rachas: una sola celebración por la cola.
+      const xpTotal = eco.xp + pagado;
+      celebrar({
+        accion: `gym:${gymSession.id}`,
+        perfilAntes,
+        perfilDespues: res.profile,
+        logrosAntes,
+        logrosNuevos: fresh.map((a) => ({ codigo: a.code, nombre: a.name, desc: a.desc, titulo: a.title })),
+        fecha: dateKey(),
+        resumen: xpTotal > 0 ? [`+${xpTotal} XP`] : [],
+        final: true,
+      });
       setTraining(false);
       setNotas('');
       setFotoB64(null);
@@ -823,7 +836,6 @@ export default function Gym() {
         </KeyboardAvoidingView>
       </Modal>
 
-      <LevelUpOverlay level={levelUp} onClose={() => setLevelUp(null)} />
     </Screen>
   );
 }
