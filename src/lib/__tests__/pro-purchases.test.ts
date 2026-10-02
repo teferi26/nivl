@@ -247,7 +247,16 @@ describe('cambios de plan: sin segunda suscripción', () => {
 
   test('ya tiene ese mismo plan: no se vuelve a cobrar', async () => {
     customerInfo.mockResolvedValue(info([['nivl_pro_anual', 'APP_STORE']]));
-    await expect(purchase('nivl_pro_anual', '$109.99')).rejects.toThrow(/Ya tienes este plan/);
+    status.mockResolvedValue(server(null, 'free', false));
+    const e = await conReloj(() => purchase('nivl_pro_anual', '$109.99').catch((x: Error) => x));
+    expect(String(e)).toMatch(/Ya tienes este plan/);
+    expect(buy).not.toHaveBeenCalled();
+  });
+
+  test('ya tiene ese mismo plan y el servidor lo refleja tras reconciliar: activa, sin cobrar', async () => {
+    customerInfo.mockResolvedValue(info([['nivl_pro_anual', 'APP_STORE']]));
+    status.mockResolvedValue(server('pro_anual'));
+    await expect(conReloj(() => purchase('nivl_pro_anual', '$109.99'))).resolves.toBe('activa');
     expect(buy).not.toHaveBeenCalled();
   });
 

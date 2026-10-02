@@ -174,7 +174,7 @@ export function identificarEnTienda(userId: string | null): Promise<void> {
  * pregunta al SDK quién es: si `logIn` falló, la compra quedaría a nombre de
  * la cuenta anterior, así que no se cobra.
  */
-async function asegurarUsuario(): Promise<void> {
+async function asegurarUsuario(): Promise<string> {
   if (!purchasesAvailable()) throw new PurchasesUnavailableError();
   const { data } = await supabase.auth.getSession();
   const uid = data.session?.user.id;
@@ -191,6 +191,18 @@ async function asegurarUsuario(): Promise<void> {
   if (actual !== uid) {
     throw new ErrorVisible('La tienda aún no está vinculada a esta cuenta. Cierra y vuelve a abrir NIVL e inténtalo de nuevo.');
   }
+  return uid;
+}
+
+/**
+ * Ejecuta `fn` dentro de la misma cola que los cambios de cuenta: un
+ * `identificarEnTienda` que llegue mientras tanto espera a que termine. Así
+ * nadie cambia el appUserID entre la última comprobación y el cobro.
+ */
+function enColaDeTienda<T>(fn: () => Promise<T>): Promise<T> {
+  const paso = cola.then(fn);
+  cola = paso.then(() => {}, () => {});
+  return paso;
 }
 
 /**
@@ -384,6 +396,8 @@ export interface SuscripcionTienda {
   /** El id tal cual lo da la tienda (en Google Play, "producto:baseplan"). */
   idTienda: string;
   managementURL: string | null;
+  /** false si está cancelada pero sigue vigente hasta fin de periodo; null si el SDK no lo dice. */
+  renueva: boolean | null;
 }
 
 /**
@@ -395,15 +409,17 @@ export interface SuscripcionTienda {
 function suscripcionesNivl(info: CustomerInfo | null | undefined): SuscripcionTienda[] {
   if (!info) return [];
   const out = new Map<ProPlanId, SuscripcionTienda>();
-  const poner = (idTienda: string | null | undefined, store: string | null, url: string | null) => {
+  const poner = (idTienda: string | null | undefined, store: string | null, url: string | null, renueva: boolean | null = null) => {
     if (!idTienda || !esProductoNivl(idTienda)) return;
     const producto = productoBase(idTienda) as ProPlanId;
     const previo = out.get(producto);
     if (previo && (previo.store || !store)) return;
-    out.set(producto, { producto, store, idTienda, managementURL: url ?? info.managementURL ?? null });
+    out.set(producto, { producto, store, idTienda, managementURL: url ?? info.managementURL ?? null, renueva });
   };
   for (const [id, sub] of Object.entries(info.subscriptionsByProductIdentifier ?? {})) {
-    if (sub?.isActive) poner(sub.productIdentifier || id, sub.store ?? null, sub.managementURL ?? null);
+    if (sub?.isActive) {
+      poner(sub.productIdentifier || id, sub.store ?? null, sub.managementURL ?? null, typeof sub.willRenew === 'boolean' ? sub.willRenew : null);
+    }
   }
   for (const id of info.activeSubscriptions ?? []) poner(id, null, null);
   for (const e of Object.values(info.entitlements?.active ?? {})) {
@@ -417,7 +433,7 @@ function suscripcionesNivl(info: CustomerInfo | null | undefined): SuscripcionTi
 /** Compra solo al precio mostrado y espera a que el servidor refleje el derecho. */
 export async function purchase(planId: ProPlanId, precioMostrado: string): Promise<ResultadoCompra> {
   if (!precioVisible(precioMostrado)) throw new ErrorVisible('Espera a que se cargue el precio de la tienda.');
-  await asegurarUsuario();
+  const uid = await asegurarUsuario();
   let paquete: PurchasesPackage | null;
   try {
     paquete = await paqueteDe(planId);
@@ -432,11 +448,24 @@ export async function purchase(planId: ProPlanId, precioMostrado: string): Promi
   let actual: SuscripcionTienda | null;
   try {
     actual = suscripcionesNivl(await Purchases.getCustomerInfo())[0] ?? null;
+    // Android: una suscripción de Google Play viva que RevenueCat aún no asocia
+    // a esta cuenta (p. ej. borró la cuenta NIVL y creó otra sin restaurar) no
+    // aparece arriba, y comprar otro plan sin productChangeInfo abriría una
+    // SEGUNDA suscripción. Se sincroniza antes de decidir.
+    if (!actual && Platform.OS === 'android') {
+      actual = suscripcionesNivl(await Purchases.restorePurchases())[0] ?? null;
+    }
   } catch (e) {
     throw traducir(e);
   }
   const tipo = tipoCambio(actual?.producto, planId);
   if (tipo === 'mismo') {
+    if (actual?.renueva === false) {
+      throw new ErrorVisible('Tu suscripción a este plan está cancelada pero sigue vigente. Reactívala desde Gestionar o cancelar suscripción.');
+    }
+    // Puede que acabe de recuperarse (sincronización de arriba): que el servidor la refleje.
+    await reconciliarCompra();
+    if (await esperarDerecho((st) => planExacto(st, planId))) return 'activa';
     throw new ErrorVisible('Ya tienes este plan activo en la tienda. Si no lo ves en NIVL, pulsa Restaurar compras.');
   }
   if (actual?.store && actual.store !== tiendaDelDispositivo()) {
@@ -452,13 +481,26 @@ export async function purchase(planId: ProPlanId, precioMostrado: string): Promi
       replacementMode: modoReemplazoGoogle(tipo) as StoreProductChangeInfo['replacementMode'],
     };
   }
-  try {
-    if (cambio) await Purchases.purchasePackage(paquete, null, cambio);
-    else await Purchases.purchasePackage(paquete);
-  } catch (e) {
-    if (cancelada(e)) return 'cancelada';
-    throw traducir(e);
-  }
+  const compra = cambio;
+  const cobrada = await enColaDeTienda(async () => {
+    // Última comprobación, ya sin cambios de cuenta posibles hasta cobrar.
+    let actualId: string | null = null;
+    try {
+      actualId = await Purchases.getAppUserID();
+    } catch {
+      actualId = null;
+    }
+    if (actualId !== uid) throw new ErrorVisible('La cuenta ha cambiado. Vuelve a intentarlo.');
+    try {
+      if (compra) await Purchases.purchasePackage(paquete, null, compra);
+      else await Purchases.purchasePackage(paquete);
+      return true;
+    } catch (e) {
+      if (cancelada(e)) return false;
+      throw traducir(e);
+    }
+  });
+  if (!cobrada) return 'cancelada';
   await reconciliarCompra();
   if (tipo === 'nueva') return (await esperarDerecho((st) => compraReflejada(st, planId))) ? 'activa' : 'pendiente';
   // Cambio dentro del grupo: solo cuenta el plan EXACTO; el anterior ya daba derecho.
