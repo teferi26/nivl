@@ -68,8 +68,8 @@ export interface RankTheme {
   doubleRing: boolean;
   /** Muescas del marco (0 = ninguna). */
   notches: number;
-  /** Desde B, el casco; S, la corona de laurel. */
-  crown: 'none' | 'casco' | 'corona';
+  /** Contrato del Chat 5 (cosmeticosDe): B casco, A laurel, S corona_arena. */
+  crown: 'none' | 'casco' | 'laurel' | 'corona_arena';
   /** Grano en cabecera/tarjeta de nivel: 0 nada · 1 suave · 2 marcado. */
   grain: 0 | 1 | 2;
   /** Brillo animado del marco (solo S; quieto con reducir movimiento). */
@@ -87,8 +87,8 @@ export const RANK_THEME: Record<Rank, RankTheme> = {
   D: { marco: 'doble', ring: 2, doubleRing: true, notches: 0, crown: 'none', grain: 0, shimmer: false, defaultTitle: 'Gladiador', desdeNivel: 5 },
   C: { marco: 'remachado', ring: 2, doubleRing: true, notches: 8, crown: 'none', grain: 0, shimmer: false, defaultTitle: 'Veterano', desdeNivel: 10 },
   B: { marco: 'laurel_simple', ring: 3, doubleRing: true, notches: 8, crown: 'casco', grain: 1, shimmer: false, defaultTitle: 'Campeón', desdeNivel: 15 },
-  A: { marco: 'laurel_doble', ring: 3, doubleRing: true, notches: 12, crown: 'casco', grain: 2, shimmer: false, defaultTitle: 'Héroe de la arena', desdeNivel: 22 },
-  S: { marco: 'laurel_corona', ring: 3, doubleRing: true, notches: 12, crown: 'corona', grain: 2, shimmer: true, defaultTitle: 'Leyenda', desdeNivel: 30 },
+  A: { marco: 'laurel_doble', ring: 3, doubleRing: true, notches: 12, crown: 'laurel', grain: 2, shimmer: false, defaultTitle: 'Héroe de la arena', desdeNivel: 22 },
+  S: { marco: 'laurel_corona', ring: 3, doubleRing: true, notches: 12, crown: 'corona_arena', grain: 2, shimmer: true, defaultTitle: 'Leyenda', desdeNivel: 30 },
 };
 
 // ── Contraste WCAG (para tests y para comprobar combinaciones nuevas) ──

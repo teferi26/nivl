@@ -119,8 +119,8 @@ Los datos son del **Chat 5**: `src/lib/progression.ts` y `docs/game-v2/CONTRATO-
 | D (5, ~1 semana) | doble: aro 2 + aro ink6 | — | Plano | Gladiador |
 | C (10, ~6 semanas) | remachado: doble aro con 8 remaches | — | Regla de sección de 2 px | Veterano |
 | B (15, ~4 meses) | laurel simple, aro 3 | **Casco** (galea de un trazo) | Grano suave en la tarjeta de nivel | Campeón |
-| A (22, ~11 meses) | laurel doble | Casco | Grano en la cabecera y la barra de XP | Héroe de la arena |
-| S (30, ~2 años) | laurel con corona y brillo (una pasada cada 8 s; quieto si se reduce el movimiento) | Corona de laurel | Grano + borde de 3 en la tarjeta de perfil | Leyenda |
+| A (22, ~11 meses) | laurel doble | Laurel | Grano en la cabecera y la barra de XP | Héroe de la arena |
+| S (30, ~2 años) | laurel con corona y brillo (una pasada cada 8 s; quieto si se reduce el movimiento) | Corona de la arena (`corona_arena`) | Grano + borde de 3 en la tarjeta de perfil | Leyenda |
 
 - El título que se pinta es siempre `tituloVigente()`.
 - La vitrina de logros sale de `ACHIEVEMENTS_VISIBLES()`.
