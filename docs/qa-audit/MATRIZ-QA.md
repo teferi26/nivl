@@ -63,8 +63,9 @@ Columnas: Auto = Jest/tsc/lint @`d3dccae` (si no se indica otra cosa) · SimI = 
 | ID | Flujo | Auto | SimI | EmuA | iOS | And | Web | Cuenta | Caso físico | Notas |
 |---|---|---|---|---|---|---|---|---|---|---|
 | A1 | Arranque en frío | NP | NP | NP | NP | NP | NP | cualquiera | O-01 | Sin pruebas de arranque. Solo `tsc` limpio |
-| A2 | Registro y confirmación | PASS (unidad: `validation.test.ts`, reglas de contraseña) | NP | NP | NP | NP | NP | DES | O-02 | La unidad no prueba el puente `franky-auth` ni el correo |
+| A2 | Registro y confirmación | PASS (unidad: `validation.test.ts`, reglas de contraseña) | NP | NP | NP | NP | NP | DES | O-02 | **DESBLOQUEADO el 02/10:** el correo de Auth funciona en producción (SMTP de Resend desde team@nivl.app, plantillas de NIVL, límite de 25 correos/h; el usuario recibió en su iPhone el correo de recuperación). Sigue NO PROBADO: falta la toma con la cuenta D en la build 21 |
 | A3 | Login cuenta revisora | NP | NP | NP | NP | NP | NP | REV | O-03 | El 29/09 se comprobó login HTTP 200 contra el servidor (AUDITORIA.md). Es evidencia de servidor, no de cliente físico |
+| A3b | Recuperar contraseña | NP | NP | NP | NP | **OBSERVADO parcial**: el usuario recibió el correo de recuperación en su iPhone (02/10) | NP | DES | A3b | Falta el resto del flujo: abrir el enlace, «GUARDAR CONTRASEÑA» y entrar con la contraseña nueva |
 | A4 | Declaración de edad y onboarding | PASS (unidad: `age.test.ts`, `compromiso.test.ts`, `kinds.test.ts`) | NP | NP | NP | NP | NP | DES | O-06 | |
 | A5 | Cuentas Pro y Élite de revisión ven sus funciones sin comprar | NP | NP | NA | NP | NA | NP | REV Pro/Élite | A-11 (Chat1-A11) | |
 
@@ -188,7 +189,7 @@ Los identificadores `Chat1-A#` y `Chat1-B#` son los de la lista mínima del Chat
 | Chat 1 | Bloqueante | Filas matriz | Caso físico | Estado |
 |---|---|---|---|---|
 | A1 | Arranque en frío desde el icono, iPhone con iOS 27.0.1 o posterior | A1 | O-01 | NP |
-| A2 | Registro y confirmación | A2 | O-02 | NP |
+| A2 | Registro y confirmación | A2 | O-02 | NP · **desbloqueado** (correo de Auth operativo 02/10) |
 | A3 | Login de la cuenta D y de las 3 cuentas de revisión | A3 | O-03 | NP (solo el login HTTP 200 de la revisora contra el servidor, del 29/09) |
 | A4 | Flujo típico: misión, hábito, campaña y agenda | M1, M3, M4 | O-06, O-07 | NP |
 | A5 | Salud e IA rechazadas y aceptadas; el coach responde | C1, C2, C5 | O-04, O-05, O-12 | NP |

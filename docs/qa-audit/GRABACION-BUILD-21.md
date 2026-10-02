@@ -19,6 +19,7 @@ Las credenciales nunca se escriben aquí. Apuntar PASS o FAIL en cada casilla. U
 | [ ] | Ajustes → App Store → Cuenta sandbox | Sesión iniciada con la cuenta sandbox, nunca con la personal |
 | [ ] | La cuenta U2 tiene un vínculo visible con la que graba (solicitud o ludus) | Para denunciar y bloquear |
 | [ ] | «No molestar» activado; sin datos personales en ninguna cuenta | — |
+| [ ] | Correo de Auth: límite de **25 correos por hora** en total (Resend, team@nivl.app). No repetir registros ni recuperaciones durante el ensayo | El correo de confirmación de D llega en la toma buena |
 | [ ] | Ensayo completo sin grabar, incluida la compra sandbox | Todo pasa |
 | [ ] | Cerrar NIVL del todo | — |
 
