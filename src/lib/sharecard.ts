@@ -68,6 +68,31 @@ export type Tarjeta =
       /** Peso en kg en cada foto, si existe. Dato de salud: solo con `mostrarPeso`. */
       pesoAntesKg?: number | null;
       pesoDespuesKg?: number | null;
+    }
+  | {
+      /** El parte de la semana (lo que pintaba ShareCardSemana). */
+      tipo: 'semana';
+      xpSemana: number;
+      nivel: number;
+      /** null = no tenía misiones programadas: se enseñan los días activos. */
+      cumplimientoPct: number | null;
+      diasActivos: number;
+      rachaDias: number;
+      /** «2.º de 5», o null si aún no hay amigos. */
+      posicion: string | null;
+    }
+  | {
+      /** Una diapositiva de Recuerdos (resumen.tsx). */
+      tipo: 'recuerdo';
+      /** La etiqueta de la diapositiva («Evidencia», «Cierre»…). */
+      etiqueta: string;
+      /** La cifra destacada, si la hay. */
+      dato?: string | null;
+      titulo: string;
+      /** El texto que escribe el coach: solo con `mostrarTextoCoach`. */
+      texto?: string | null;
+      /** Foto de evidencia: puede ser corporal, así que se trata como las de progreso. */
+      foto?: Foto | null;
     };
 
 export type TipoTarjeta = Tarjeta['tipo'];
@@ -82,6 +107,8 @@ export interface OpcionesTarjeta {
   mostrarPeso: boolean;
   /** Añadir el enlace de invitación con el código de amigo (nivl.app/c/CODIGO). */
   incluirInvitacion: boolean;
+  /** Recuerdo: incluir el texto que escribió el coach (Chat 3: notas del coach, opt-in). */
+  mostrarTextoCoach: boolean;
 }
 
 export const OPCIONES_POR_DEFECTO: OpcionesTarjeta = Object.freeze({
@@ -89,6 +116,7 @@ export const OPCIONES_POR_DEFECTO: OpcionesTarjeta = Object.freeze({
   mostrarFotos: false,
   mostrarPeso: false,
   incluirInvitacion: false,
+  mostrarTextoCoach: false,
 });
 
 export interface Lienzo {
@@ -244,7 +272,47 @@ export function textos(t: Tarjeta, opciones: OpcionesTarjeta = OPCIONES_POR_DEFE
         fechas: [desde, hasta],
       };
     }
+    case 'semana': {
+      const xp = Math.max(0, Math.floor(t.xpSemana));
+      return {
+        antetitulo: 'PARTE DE LA SEMANA',
+        titular: xp > 0 ? `+${xp.toLocaleString('es-ES')} XP` : `NIVEL ${Math.max(1, Math.floor(t.nivel))}`,
+        detalle: xp > 0 ? 'Ganados en los últimos 7 días.' : null,
+        ...pie,
+      };
+    }
+    case 'recuerdo':
+      return {
+        antetitulo: recortar(t.etiqueta, 24).toUpperCase(),
+        titular: recortar(t.titulo, 60),
+        detalle: opciones.mostrarTextoCoach && t.texto ? recortar(t.texto, 140) : null,
+        ...pie,
+      };
   }
+}
+
+export interface Cifra {
+  valor: string;
+  rotulo: string;
+}
+
+/** Las tres cifras del parte de la semana: cumplimiento, racha y puesto (si lo hay). */
+export function cifrasSemana(t: Extract<Tarjeta, { tipo: 'semana' }>): Cifra[] {
+  const c: Cifra[] = [
+    t.cumplimientoPct === null
+      ? { valor: `${Math.max(0, Math.min(7, Math.floor(t.diasActivos)))}/7`, rotulo: 'DÍAS ACTIVOS' }
+      : { valor: `${Math.max(0, Math.min(100, Math.round(t.cumplimientoPct)))} %`, rotulo: 'CUMPLIMIENTO' },
+    { valor: String(Math.max(0, Math.floor(t.rachaDias))), rotulo: t.rachaDias === 1 ? 'DÍA DE RACHA' : 'DÍAS DE RACHA' },
+  ];
+  const m = t.posicion ? /^(\S+)\s+(.+)$/.exec(t.posicion.trim()) : null;
+  if (m) c.push({ valor: m[1], rotulo: `PUESTO ${m[2].toUpperCase()}` });
+  return c;
+}
+
+/** El código de amigo que se pinta en la tarjeta: solo si se ha elegido invitar. */
+export function codigoVisible(opciones: OpcionesTarjeta, codigoAmigo?: string | null): string | null {
+  const codigo = (codigoAmigo ?? '').trim().toUpperCase();
+  return opciones.incluirInvitacion && /^[A-Z0-9]{4,12}$/.test(codigo) ? codigo : null;
 }
 
 /** Lo que la tarjeta necesita saber de quien comparte (no lo elige el usuario). */
@@ -277,6 +345,7 @@ export function bloqueo(t: Tarjeta, opciones: OpcionesTarjeta, contexto: Context
     if (t.antes.fecha > t.despues.fecha) return 'La foto de antes es posterior a la de después.';
   }
   if (t.tipo === 'logro' && !t.titulo.trim()) return 'El logro no tiene nombre.';
+  if (t.tipo === 'recuerdo' && !t.titulo.trim()) return 'El recuerdo no tiene título.';
   return null;
 }
 
@@ -304,8 +373,10 @@ export function avisoColor(t: Tarjeta, opciones: OpcionesTarjeta, contexto: Cont
 
 /** Fotos que la tarjeta puede pintar (vacío si no hay permiso o si no es mayor de edad). */
 export function fotosVisibles(t: Tarjeta, opciones: OpcionesTarjeta, contexto: ContextoTarjeta = { puedeCompartirFotos: false }): Foto[] {
-  if (t.tipo !== 'antesDespues' || !opciones.mostrarFotos || !contexto.puedeCompartirFotos) return [];
-  return [t.antes, t.despues];
+  if (!opciones.mostrarFotos || !contexto.puedeCompartirFotos) return [];
+  if (t.tipo === 'antesDespues') return [t.antes, t.despues];
+  if (t.tipo === 'recuerdo' && t.foto?.uri) return [t.foto];
+  return [];
 }
 
 /**

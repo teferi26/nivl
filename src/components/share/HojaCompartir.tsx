@@ -71,10 +71,12 @@ export function HojaCompartir({ visible, onCerrar, tarjeta, contexto, alias, ret
 
   if (!visible) return null;
 
-  const clave = `${formato}|${opciones.mostrarNombre}|${opciones.mostrarFotos}|${opciones.mostrarPeso}|${opciones.incluirInvitacion}`;
+  const clave = `${formato}|${opciones.mostrarNombre}|${opciones.mostrarFotos}|${opciones.mostrarPeso}|${opciones.incluirInvitacion}|${opciones.mostrarTextoCoach}`;
   const listo = listoPara === clave;
 
   const esProgreso = tarjeta.tipo === 'antesDespues';
+  const fotoRecuerdo = tarjeta.tipo === 'recuerdo' && !!tarjeta.foto?.uri;
+  const textoRecuerdo = tarjeta.tipo === 'recuerdo' && !!tarjeta.texto;
   const hayPeso = esProgreso && typeof tarjeta.pesoAntesKg === 'number' && typeof tarjeta.pesoDespuesKg === 'number';
   const motivo = bloqueo(tarjeta, opciones, ctx);
   const aviso = avisoColor(tarjeta, opciones, ctx, Platform.OS);
@@ -121,6 +123,7 @@ export function HojaCompartir({ visible, onCerrar, tarjeta, contexto, alias, ret
           alias={alias}
           retratoUri={retratoUri}
           ancho={anchoCaptura}
+          codigoAmigo={codigoAmigo}
           key={clave}
           onListo={() => setListoPara(clave)}
         />
@@ -136,7 +139,16 @@ export function HojaCompartir({ visible, onCerrar, tarjeta, contexto, alias, ret
 
         <ScrollView contentContainerStyle={styles.contenido}>
           <View style={styles.previa} accessible accessibilityLabel="Vista previa de la tarjeta">
-            <TarjetaCompartir tarjeta={tarjeta} formato={formato} opciones={opciones} contexto={ctx} alias={alias} retratoUri={retratoUri} ancho={anchoPrevia} />
+            <TarjetaCompartir
+              tarjeta={tarjeta}
+              formato={formato}
+              opciones={opciones}
+              contexto={ctx}
+              alias={alias}
+              retratoUri={retratoUri}
+              codigoAmigo={codigoAmigo}
+              ancho={anchoPrevia}
+            />
           </View>
 
           <View style={styles.formatos} accessibilityRole="radiogroup">
@@ -164,6 +176,12 @@ export function HojaCompartir({ visible, onCerrar, tarjeta, contexto, alias, ret
           {alias ? <Interruptor rotulo="Mostrar mi alias" valor={opciones.mostrarNombre} onCambio={cambiar('mostrarNombre')} /> : null}
           {esProgreso && ctx.puedeCompartirFotos ? (
             <Interruptor rotulo="Incluir mis fotos de progreso" valor={opciones.mostrarFotos} onCambio={cambiar('mostrarFotos')} />
+          ) : null}
+          {fotoRecuerdo && ctx.puedeCompartirFotos ? (
+            <Interruptor rotulo="Incluir la foto" valor={opciones.mostrarFotos} onCambio={cambiar('mostrarFotos')} />
+          ) : null}
+          {textoRecuerdo ? (
+            <Interruptor rotulo="Incluir el texto del coach" valor={opciones.mostrarTextoCoach} onCambio={cambiar('mostrarTextoCoach')} />
           ) : null}
           {esProgreso && hayPeso && opciones.mostrarFotos ? (
             <Interruptor rotulo="Mostrar el peso" valor={opciones.mostrarPeso} onCambio={cambiar('mostrarPeso')} />

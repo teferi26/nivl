@@ -12,6 +12,8 @@ import {
   recortar,
   textos,
   avisoColor,
+  cifrasSemana,
+  codigoVisible,
   BN_VERIFICADO,
   fotosEnBN,
   reticulaRacha,
@@ -21,7 +23,7 @@ import {
 } from '../sharecard';
 import { DOMINIO_NIVL, URL_NIVL } from '../socialmath';
 
-const todo: OpcionesTarjeta = { mostrarNombre: true, mostrarFotos: true, mostrarPeso: true, incluirInvitacion: true };
+const todo: OpcionesTarjeta = { mostrarNombre: true, mostrarFotos: true, mostrarPeso: true, incluirInvitacion: true, mostrarTextoCoach: true };
 const progreso: Tarjeta = {
   tipo: 'antesDespues',
   antes: { uri: 'file:///cache/a.jpg', fecha: '2026-07-01' },
@@ -247,5 +249,54 @@ describe('B/N solo donde está comprobado', () => {
     expect(avisoColor(progreso, todo, adulto, 'web')).toBeNull();
     expect(avisoColor(progreso, OPCIONES_POR_DEFECTO, adulto, 'ios')).toBeNull();
     expect(avisoColor({ tipo: 'racha', dias: 3 }, todo, adulto, 'ios')).toBeNull();
+  });
+});
+
+describe('semana y recuerdo (migración de ShareCardSemana y resumen)', () => {
+  const semana: Tarjeta = { tipo: 'semana', xpSemana: 1240, nivel: 9, cumplimientoPct: 85.4, diasActivos: 5, rachaDias: 12, posicion: '2.º de 5' };
+
+  it('semana: XP de la semana o el nivel si no hubo XP', () => {
+    expect(textos(semana).titular).toBe('+1240 XP'.replace('1240', (1240).toLocaleString('es-ES')));
+    expect(textos({ ...semana, xpSemana: 0 } as Tarjeta).titular).toBe('NIVEL 9');
+    expect(textos(semana).antetitulo).toBe('PARTE DE LA SEMANA');
+  });
+
+  it('semana: cumplimiento, racha y puesto', () => {
+    expect(cifrasSemana(semana as Extract<Tarjeta, { tipo: 'semana' }>)).toEqual([
+      { valor: '85 %', rotulo: 'CUMPLIMIENTO' },
+      { valor: '12', rotulo: 'DÍAS DE RACHA' },
+      { valor: '2.º', rotulo: 'PUESTO DE 5' },
+    ]);
+    const sinPlan = { ...semana, cumplimientoPct: null, posicion: null, rachaDias: 1 } as Extract<Tarjeta, { tipo: 'semana' }>;
+    expect(cifrasSemana(sinPlan)).toEqual([
+      { valor: '5/7', rotulo: 'DÍAS ACTIVOS' },
+      { valor: '1', rotulo: 'DÍA DE RACHA' },
+    ]);
+  });
+
+  it('el código de amigo solo se pinta si se elige invitar', () => {
+    expect(codigoVisible(OPCIONES_POR_DEFECTO, 'ABCD2345')).toBeNull();
+    expect(codigoVisible({ ...OPCIONES_POR_DEFECTO, incluirInvitacion: true }, 'abcd2345')).toBe('ABCD2345');
+    expect(codigoVisible({ ...OPCIONES_POR_DEFECTO, incluirInvitacion: true }, null)).toBeNull();
+  });
+
+  const recuerdo: Tarjeta = {
+    tipo: 'recuerdo',
+    etiqueta: 'Evidencia',
+    dato: '4 de 5',
+    titulo: 'La semana que no fallaste el gimnasio',
+    texto: 'El coach vio que entrenaste cuatro días y comiste mejor.',
+    foto: { uri: 'file:///cache/e.jpg', fecha: '2026-10-01' },
+  };
+
+  it('recuerdo: el texto del coach y la foto, solo si se eligen', () => {
+    expect(textos(recuerdo).detalle).toBeNull();
+    expect(textos(recuerdo, todo).detalle).toContain('entrenaste');
+    expect(textos(recuerdo).antetitulo).toBe('EVIDENCIA');
+    expect(fotosVisibles(recuerdo, todo, { puedeCompartirFotos: true })).toHaveLength(1);
+    expect(fotosVisibles(recuerdo, todo, { puedeCompartirFotos: false })).toEqual([]);
+    expect(fotosVisibles(recuerdo, OPCIONES_POR_DEFECTO, { puedeCompartirFotos: true })).toEqual([]);
+    expect(bloqueo(recuerdo, OPCIONES_POR_DEFECTO)).toBeNull();
+    expect(bloqueo({ ...recuerdo, titulo: ' ' } as Tarjeta, OPCIONES_POR_DEFECTO)).not.toBeNull();
   });
 });
