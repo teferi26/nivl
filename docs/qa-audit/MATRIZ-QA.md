@@ -45,7 +45,7 @@ Ejecutado el 02/10/2026 en Windows 11 con zona `Europe/Madrid` (el 25/10/2026 du
 
 | Plataforma | Build que cuenta | Estado |
 |---|---|---|
-| iOS físico | NIVL 1.0.7 ([BUILD]) de TestFlight con la OTA final aplicada (`updateId`), en iPhone con iOS 27.0.1 o posterior. Hoy la última VALID es la 20 (no contiene `d0682a6`/`d3dccae`). La confirma el coordinador | Sin ejecuciones registradas |
+| iOS físico | **NIVL 1.0.7 (21) = SHA `c87df0d`** (compilada en GitHub Actions run 37006325384 y subida a App Store Connect el 02/10/2026; Apple la está procesando para TestFlight). Contiene todas las correcciones de economía del Chat 5 (hasta `cb8a3bb`) y la interfaz de RET-03 del Chat 4. Probar en iPhone con iOS 27.0.1 o posterior y anotar el `updateId` si se aplica una OTA. La build 20 NO sirve para los casos de economía | Sin ejecuciones registradas: pendiente de que aparezca en TestFlight |
 | Android físico | APK/AAB de la pista interna de Play con versionCode anotado | **Sin build Android identificada** en el expediente; pedir al coordinador |
 | Simulador iOS | Build local o arnés de capturas | Ninguna ejecución sobre `bf32d28` ni `d3dccae`. El arnés solo se ejecutó sobre el código `112109db` (build 18), con fixtures |
 | Emulador Android | Build local | Ninguna ejecución |
