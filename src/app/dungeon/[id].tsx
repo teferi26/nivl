@@ -1,7 +1,7 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
-import { LevelUpOverlay } from '@/components/LevelUpOverlay';
+import { useCelebracion } from '@/components/celebracion/contexto';
 import {
   avisar,
   Button,
@@ -24,15 +24,22 @@ import {
   Stat,
   StatRow,
   Tag,
-  Toast,
   volver,
 } from '@/components/ui';
 import { confirmar } from '@/components/ui/confirmar';
 import { vibrar } from '@/design/haptics';
 import { ink } from '@/design/tokens';
-import { evaluateAchievements, sincronizarRango, unlockAchievements } from '@/lib/achievements';
+import {
+  ACHIEVEMENT_BY_CODE,
+  evaluateAchievements,
+  fetchUnlocked,
+  sincronizarRangoDetalle,
+  unlockAchievements,
+  type AchievementDef,
+} from '@/lib/achievements';
 import { useAuth } from '@/lib/auth';
 import { ensureProfile } from '@/lib/data';
+import { dateKey } from '@/lib/dates';
 import { awardXp } from '@/lib/engine';
 import {
   countClearedDungeons,
@@ -45,6 +52,7 @@ import {
   updateDungeon,
 } from '@/lib/dungeons';
 import { DIFFICULTIES, DIFFICULTY_LABEL, DUNGEON_CLEAR_XP, dungeonTaskXp } from '@/lib/game';
+import type { LogroInfo } from '@/lib/progression';
 import { colors, fonts } from '@/lib/theme';
 import { voice } from '@/lib/voice';
 import type { Difficulty, Dungeon, DungeonTask } from '@/lib/types';
@@ -66,6 +74,15 @@ function plazo(fecha: string | null): { valor: string; label: string; urgente: b
   return { valor: `${dias}`, label: dias === 1 ? 'Día restante' : 'Días restantes', urgente: dias <= 3, vencida: false };
 }
 
+/** Un logro registrado, en la forma del contrato de celebraciones. */
+const logroInfo = (a: AchievementDef): LogroInfo => ({ codigo: a.code, nombre: a.name, desc: a.desc, titulo: a.title });
+
+/** Un código suelto (p. ej. `rango_C` de sync_rank) en la forma del contrato. */
+const logroDeCodigo = (codigo: string): LogroInfo => {
+  const def = ACHIEVEMENT_BY_CODE[codigo];
+  return def ? logroInfo(def) : { codigo, nombre: codigo, desc: '' };
+};
+
 export default function DungeonDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { session } = useAuth();
@@ -77,7 +94,6 @@ export default function DungeonDetail() {
   const [taskTitle, setTaskTitle] = useState('');
   const [difficulty, setDifficulty] = useState<Difficulty>('media');
   const [isBoss, setIsBoss] = useState(false);
-  const [levelUp, setLevelUp] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
   const saving = useRef(false);
   // Cerrojos síncronos: el estado de React llega tarde a un doble toque.
@@ -86,7 +102,8 @@ export default function DungeonDetail() {
   const [adding, setAdding] = useState(false);
   // Tarea que se está cobrando: su Check muestra `busy` mientras va la red.
   const [marcando, setMarcando] = useState<string | null>(null);
-  const [toast, setToast] = useState<string | null>(null);
+  // XP, nivel, rango y logros van por la cola global de celebraciones.
+  const { celebrar } = useCelebracion();
   const [loaded, setLoaded] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
 
@@ -106,6 +123,17 @@ export default function DungeonDetail() {
       setLoaded(true);
     }
   }, [id]);
+
+  /**
+   * El rango, al final de la acción: el servidor registra el merecido y lo
+   * nuevo llega a la cola como `rango_X`, cerrando la ventana. No lanza.
+   */
+  const cerrarConRango = (accion: string) => {
+    sincronizarRangoDetalle()
+      .catch(() => ({ nuevos: [] as string[], diasActivos: null }))
+      .then(({ nuevos, diasActivos }) => celebrar({ accion, logrosNuevos: nuevos.map(logroDeCodigo), diasActivos, final: true }))
+      .catch(() => {});
+  };
 
   const reintentar = () => {
     setLoaded(false);
@@ -157,7 +185,10 @@ export default function DungeonDetail() {
     try {
       await setTaskDone(task.id, true);
       marcadaEnServidor = true;
-      const profile = await ensureProfile(userId);
+      const [profile, logrosAntes] = await Promise.all([
+        ensureProfile(userId),
+        fetchUnlocked().catch(() => undefined),
+      ]);
       const xp = dungeonTaskXp(task.difficulty, task.is_boss);
       const res = await awardXp(profile, xp, dungeon.stat, 'dungeon_task', {
         dungeon_id: dungeon.id,
@@ -166,10 +197,18 @@ export default function DungeonDetail() {
         task: task.title,
         boss: task.is_boss,
       });
-      // El rango se recalcula en segundo plano: no bloquea ni rompe el cobro.
-      sincronizarRango().catch(() => []);
       vibrar(task.is_boss ? 'misionExtra' : 'mision');
-      if (res.leveledUp) setLevelUp(res.newLevel);
+      const accion = `tarea:${task.id}:${Date.now()}`;
+      celebrar({
+        accion,
+        perfilAntes: profile,
+        perfilDespues: res.profile,
+        logrosAntes,
+        fecha: dateKey(),
+        resumen: [`+${Math.max(0, res.profile.xp_total - profile.xp_total)} XP · ${dungeon.stat}`],
+      });
+      // El rango se recalcula en segundo plano: no bloquea ni rompe el cobro.
+      cerrarConRango(accion);
       await load();
     } catch (e) {
       fijarHecha(false);
@@ -194,17 +233,19 @@ export default function DungeonDetail() {
     setBusy(true);
     try {
       await updateDungeon(dungeon.id, { status: 'cleared', cleared_at: new Date().toISOString() });
-      const profile = await ensureProfile(userId);
+      const [profile, logrosAntes] = await Promise.all([
+        ensureProfile(userId),
+        fetchUnlocked().catch(() => undefined),
+      ]);
       const loot = DUNGEON_CLEAR_XP[dungeon.rank];
       const res = await awardXp(profile, loot, dungeon.stat, 'dungeon_cleared', {
         dungeon_id: dungeon.id,
         dungeon: dungeon.title,
         rank: dungeon.rank,
       });
-      sincronizarRango().catch(() => []);
       // Los logros van en su propio try: el botín ya está pagado, y si fallan
       // no puede salir «Error del sistema» (parecería que el cobro no entró).
-      let fresh: { name: string }[] = [];
+      let fresh: AchievementDef[] = [];
       try {
         const cleared = await countClearedDungeons();
         fresh = await unlockAchievements(userId, evaluateAchievements({ dungeonsCleared: cleared }));
@@ -213,10 +254,20 @@ export default function DungeonDetail() {
       }
       vibrar('misionExtra');
       const pagado = Math.max(0, res.profile.xp_total - profile.xp_total);
-      // La celebración, en el Toast del kit; el texto largo del sistema ya lo
-      // pinta la tarjeta de despejada al recargar.
-      setToast(`Campaña despejada · +${pagado} XP${fresh.length > 0 ? ` · ${fresh.map((a) => a.name).join(', ')}` : ''}`);
-      if (res.leveledUp) setLevelUp(res.newLevel);
+      // Una acción en la cola: «Campaña despejada» y el XP van en el resumen;
+      // nivel, rango y logros los decide el contrato. El texto largo del
+      // sistema ya lo pinta la tarjeta de despejada al recargar.
+      const accion = `campana:${dungeon.id}:${Date.now()}`;
+      celebrar({
+        accion,
+        perfilAntes: profile,
+        perfilDespues: res.profile,
+        logrosAntes,
+        logrosNuevos: fresh.map(logroInfo),
+        fecha: dateKey(),
+        resumen: [`Campaña despejada · +${pagado} XP`],
+      });
+      cerrarConRango(accion);
       await load();
     } catch (e) {
       avisar('Error del sistema', mensajeSistema(e));
@@ -303,7 +354,7 @@ export default function DungeonDetail() {
         : `${done}/${tasks.length} tareas · entrena ${dungeon.stat} · botín ${loot} XP`;
 
   return (
-    <Screen overlay={<Toast message={toast} onDone={() => setToast(null)} />}>
+    <Screen>
       <Stagger>
         <FadeIn index={0}>
           <ScreenHeader
@@ -475,7 +526,6 @@ export default function DungeonDetail() {
         </Text>
       </Sheet>
 
-      <LevelUpOverlay level={levelUp} onClose={() => setLevelUp(null)} />
     </Screen>
   );
 }

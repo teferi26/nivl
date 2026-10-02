@@ -8,16 +8,36 @@
 import { Redirect } from 'expo-router';
 import { useContext, useMemo, useState, type ReactNode } from 'react';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
+import { useCelebracion } from '@/components/celebracion/contexto';
 import { Heatmap } from '@/components/Heatmap';
 import { Avatar, Button, Card, Crown, Section, Screen, ScreenHeader, Sheet, SuperficieContext, Tag, Toast } from '@/components/ui';
 import { alturaCorona } from '@/components/ui/Avatar';
 import { addDays, dateKey } from '@/lib/dates';
+import { xpCostForLevel } from '@/lib/game';
+import { rangoPorId, RANGOS as DEFS_RANGO, type Celebracion, type RangoId } from '@/lib/progression';
 import { ink, RANK_THEME, space, type, type Rank } from '@/design/tokens';
 import { useAnchoUtil, useSizeClass } from '@/design/useSizeClass';
 
 const RANGOS: Rank[] = ['E', 'D', 'C', 'B', 'A', 'S'];
 const TAMANOS_CORONA = [16, 24, 48, 96] as const;
 const TAMANOS_AVATAR = [40, 64, 96] as const;
+
+// ── Demos de la cola de celebraciones ────────────────────────────────
+// Claves únicas por toque: la cola no repite una clave ya vista, y en la
+// galería se quiere ver la ceremonia cada vez.
+const xpDeNivel = (n: number) => {
+  let c = 0;
+  for (let l = 1; l < n; l++) c += xpCostForLevel(l);
+  return c;
+};
+const perfilDemo = (nivel: number, mas = 0) => ({ xp_total: xpDeNivel(nivel) + mas, streak_days: 12, protection_stones: 1 });
+/** Códigos de rango registrados hasta `id` incluido (para el «siguiente»). */
+const logrosHasta = (id: RangoId) => DEFS_RANGO.slice(1, DEFS_RANGO.findIndex((r) => r.id === id) + 1).map((r) => `rango_${r.id}`);
+function rangoDemo(id: RangoId): Celebracion {
+  const r = rangoPorId(id);
+  return { tipo: 'rango', clave: `kit:rango:${id}:${Date.now()}`, intensidad: 'epica', rango: r.id, nombre: r.nombre,
+    titulo: r.titulo, marco: r.marco, corona: r.corona, lema: r.lema };
+}
 
 /**
  * Texto de lectura del kit. Lee SuperficieContext: dentro de una Card inverse
@@ -32,6 +52,35 @@ export default function Kit() {
   const [hoja, setHoja] = useState(false);
   const [nota, setNota] = useState('');
   const [toast, setToast] = useState<string | null>(null);
+  const { celebrar, avisar: avisarCola, celebrando } = useCelebracion();
+  const demoRango = (id: RangoId) => {
+    const nivel = rangoPorId(id).grados[0];
+    celebrar({
+      accion: `kit:${Date.now()}`,
+      perfilDespues: perfilDemo(nivel, 30),
+      logrosAntes: logrosHasta(id),
+      extra: [rangoDemo(id)],
+      resumen: ['+120 XP · FUE', 'Logro · Primer récord'],
+      final: true,
+    });
+  };
+  const demoNivel = () => {
+    celebrar({
+      accion: `kit:${Date.now()}`,
+      perfilDespues: perfilDemo(7, 40),
+      logrosAntes: logrosHasta('D'),
+      extra: [{ tipo: 'nivel', clave: `kit:nivel:${Date.now()}`, intensidad: 'media', nivel: 7, xpEnNivel: 40, xpSiguiente: xpCostForLevel(7) }],
+      resumen: ['+60 XP · VIT'],
+      final: true,
+    });
+  };
+  // El XP sale primero (toast) y el rango llega tarde por red en la MISMA
+  // acción: la ceremonia se come el toast.
+  const demoAbsorcion = () => {
+    const accion = `kit:${Date.now()}`;
+    celebrar({ accion, perfilAntes: perfilDemo(15), perfilDespues: perfilDemo(15, 50), logrosAntes: logrosHasta('C'), resumen: ['+50 XP · FUE'], final: true });
+    setTimeout(() => celebrar({ accion, extra: [rangoDemo('B')], final: true }), 700);
+  };
   const marco = useSizeClass();
   const ancho = useAnchoUtil();
   // Actividad de prueba para ver los cuatro pasos de la escala del heatmap.
@@ -73,6 +122,16 @@ export default function Kit() {
             size="sm"
             onPress={() => setToast('+120 XP · FUE · día perfecto y racha de treinta días seguidos en la arena')}
           />
+        </View>
+      </Section>
+
+      <Section title="Celebraciones" meta={celebrando ? 'celebrando' : undefined}>
+        <View style={{ gap: 10 }}>
+          <Button title="Ceremonia épica · B" onPress={() => demoRango('B')} />
+          <Button title="Ceremonia épica · S" variant="secondary" onPress={() => demoRango('S')} />
+          <Button title="Ceremonia corta · nivel" variant="secondary" onPress={demoNivel} />
+          <Button title="XP y luego rango (absorción)" variant="secondary" onPress={demoAbsorcion} />
+          <Button title="Aviso por la cola" variant="ghost" onPress={() => avisarCola('+15 XP · INT')} />
         </View>
       </Section>
 

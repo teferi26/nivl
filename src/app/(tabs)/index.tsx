@@ -4,8 +4,8 @@ import * as ImagePicker from 'expo-image-picker';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { AccessibilityInfo, Animated, Linking, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useCelebracion } from '@/components/celebracion/contexto';
 import { CompletarSheet, type ModoCompletar } from '@/components/CompletarSheet';
-import { LevelUpOverlay } from '@/components/LevelUpOverlay';
 import { OrdenDelDia } from '@/components/OrdenDelDia';
 import { lineaEnJuego } from '@/components/hoy/enJuego';
 import { PanelHoy } from '@/components/hoy/PanelHoy';
@@ -25,7 +25,6 @@ import {
   Skeleton,
   SkeletonRows,
   Stagger,
-  Toast,
   useAlVolver,
 } from '@/components/ui';
 import { avisar, confirmar } from '@/components/ui/confirmar';
@@ -34,7 +33,14 @@ import { vibrar } from '@/design/haptics';
 import { cabeAside } from '@/design/responsive';
 import { ink, type as tipo } from '@/design/tokens';
 import { useAnchoUtil, useNavActual } from '@/design/useSizeClass';
-import { evaluateAchievements, fetchUnlocked, sincronizarRango, unlockAchievements } from '@/lib/achievements';
+import {
+  ACHIEVEMENT_BY_CODE,
+  evaluateAchievements,
+  fetchUnlocked,
+  sincronizarRangoDetalle,
+  unlockAchievements,
+  type AchievementDef,
+} from '@/lib/achievements';
 import { tocarApertura } from '@/lib/apertura';
 import { useAuth } from '@/lib/auth';
 import {
@@ -51,7 +57,7 @@ import { enJuegoHoy, rachaVisible, recuperacionDesbloqueada, rotosSeguidosAntes 
 import { levelFromXp } from '@/lib/game';
 import { modulesFor } from '@/lib/kinds';
 import { RUTA_DE_ACTO } from '@/lib/links';
-import { compararRangos, estadoDe, type RangoId } from '@/lib/progression';
+import { compararRangos, estadoDe, type LogroInfo, type RangoId } from '@/lib/progression';
 import {
   inicializarAvisos,
   programarDespertador,
@@ -77,14 +83,14 @@ function saludo(nombre: string): string {
 const HUECO_MODULOS = 8;
 const LADO_MODULO = 112;
 
-// Hitos de racha que se celebran al cerrar el día delante del usuario.
-const HITOS_RACHA = new Set([7, 30, 100]);
+/** Un logro registrado, en la forma del contrato de celebraciones. */
+const logroInfo = (a: AchievementDef): LogroInfo => ({ codigo: a.code, nombre: a.name, desc: a.desc, titulo: a.title });
 
-/** Un aviso en cola: el id remonta el Toast aunque dos textos seguidos coincidan. */
-interface Aviso {
-  id: number;
-  texto: string;
-}
+/** Un código suelto (p. ej. `rango_C` de sync_rank) en la forma del contrato. */
+const logroDeCodigo = (codigo: string): LogroInfo => {
+  const def = ACHIEVEMENT_BY_CODE[codigo];
+  return def ? logroInfo(def) : { codigo, nombre: codigo, desc: '' };
+};
 
 // Lo último que se supo de si la cuenta tiene coach. Vive fuera del componente
 // para que volver a la pestaña no repinte Hoy "sin saberlo" medio segundo.
@@ -114,12 +120,13 @@ export default function Hoy() {
   const [todayQuests, setTodayQuests] = useState<Quest[]>([]);
   const [completions, setCompletions] = useState<Record<string, Completion>>({});
   const [dayResult, setDayResult] = useState<DayCloseResult | null>(null);
-  const [levelUp, setLevelUp] = useState<number | null>(null);
   const [busyQuestId, setBusyQuestId] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
-  // Los avisos van en cola, de uno en uno: XP, racha hito, logro y rango
-  // pueden llegar a la vez y antes se pisaban.
-  const [avisos, setAvisos] = useState<Aviso[]>([]);
+  // XP, nivel, racha, logros y rango van por la cola global de celebraciones:
+  // una principal y un resumen por acción, nunca dos avisos a la vez.
+  const { celebrar } = useCelebracion();
+  // Logros conocidos (de ellos sale el rango de «antes» de cada acción).
+  const logrosRef = useRef<Set<string> | null>(null);
   const [plan, setPlan] = useState<PlanConBloques | null>(null);
   const [showMore, setShowMore] = useState(false);
   // Hasta la primera carga no se sabe si hay misiones o plan: se pintan huecos,
@@ -162,34 +169,29 @@ export default function Hoy() {
   const completionsRef = useRef<Record<string, Completion>>({});
 
   const completing = useRef<Set<string>>(new Set());
-  const siguienteAviso = useRef(0);
-  const mostrar = useCallback((texto: string) => {
-    siguienteAviso.current += 1;
-    const id = siguienteAviso.current;
-    // Tope corto: una ráfaga no deja diez avisos encolados durante veinte segundos.
-    setAvisos((cola) => (cola.length >= 4 ? cola : [...cola, { id, texto }]));
-  }, []);
-  const clearToast = useCallback(() => setAvisos((cola) => cola.slice(1)), []);
 
   /**
-   * Pide al servidor el rango merecido. No bloquea nada ni lanza: si sube,
-   * vibra, lo dice en el aviso y recarga el rango que se enseña.
+   * Pide al servidor el rango merecido y cierra la ventana de la acción: el
+   * rango nuevo llega a la cola como logro `rango_X` (la ceremonia la pinta el
+   * proveedor). No bloquea nada ni lanza; si sube, recarga el rango que se enseña.
    */
-  const sincronizar = useCallback((prof: Profile) => {
-    sincronizarRango()
-      .catch(() => [] as string[])
-      .then((nuevos) => {
+  const sincronizar = useCallback((prof: Profile, accion: string) => {
+    sincronizarRangoDetalle()
+      .catch(() => ({ nuevos: [] as string[], diasActivos: null }))
+      .then(({ nuevos, diasActivos }) => {
+        celebrar({ accion, logrosNuevos: nuevos.map(logroDeCodigo), diasActivos, final: true });
         const letra = rangoMasAlto(nuevos);
         if (!letra) return;
-        // TODO(L3): ceremonia
-        vibrar('rango');
-        mostrar(`RANGO ${letra}`);
+        if (logrosRef.current) for (const c of nuevos) logrosRef.current.add(c);
         fetchUnlocked()
-          .then((logros) => setRango(estadoDe(prof, logros).rango))
+          .then((logros) => {
+            logrosRef.current = logros;
+            setRango(estadoDe(prof, logros).rango);
+          })
           .catch(() => setRango((r) => (r && compararRangos(r, letra) > 0 ? r : letra)));
       })
       .catch(() => {});
-  }, [mostrar]);
+  }, [celebrar]);
 
   const load = useCallback(async () => {
     if (!userId) return;
@@ -219,6 +221,7 @@ export default function Hoy() {
         fetchUnlocked().catch(() => null),
       ]);
       let quests = misiones;
+      if (logros) logrosRef.current = new Set(logros);
       const { profile: prof, result } = await processPendingDays(perfil, quests);
       // El cierre ya está aplicado: perfil e informe se enseñan pase lo que
       // pase después. Antes un fallo en lo que sigue (los logros, las
@@ -231,6 +234,17 @@ export default function Hoy() {
       // penalización recuperada o cruzar un hito de racha cuenta igual que
       // completar una misión. Accesorio: no se espera ni puede tumbar Hoy.
       if (result) {
+        // El cierre es una acción más de la cola: la racha hito, la piedra y
+        // los logros del cierre los decide el contrato con los perfiles de
+        // antes y después.
+        const accion = `cierre:${Date.now()}`;
+        celebrar({
+          accion,
+          perfilAntes: perfil,
+          perfilDespues: prof,
+          logrosAntes: logros ?? undefined,
+          fecha: dateKey(),
+        });
         completionStats()
           .then((stats) =>
             unlockAchievements(
@@ -244,8 +258,13 @@ export default function Hoy() {
               }),
             ),
           )
-          .catch(() => {});
-        sincronizar(prof);
+          .then((fresh) => {
+            if (fresh.length === 0) return;
+            if (logrosRef.current) for (const a of fresh) logrosRef.current.add(a.code);
+            celebrar({ accion, logrosNuevos: fresh.map(logroInfo) });
+          })
+          .catch(() => {})
+          .finally(() => sincronizar(prof, accion));
         if ((result.penaltyXp > 0 || result.streakLost) && cierreVibrado.current !== result) {
           cierreVibrado.current = result;
           vibrar('penalizacion');
@@ -293,7 +312,7 @@ export default function Hoy() {
     } finally {
       setLoaded(true);
     }
-  }, [userId, sincronizar]);
+  }, [userId, sincronizar, celebrar]);
 
   useFocusEffect(
     useCallback(() => {
@@ -354,11 +373,23 @@ export default function Hoy() {
     if (!profile || !userId) return;
     const today = dateKey();
     try {
+      const logrosAntes = logrosRef.current ? [...logrosRef.current] : undefined;
       const res = await completeQuest(profile, quest, evidence);
       vibrar(evidence !== null || res.bonusEarned > 0 || quest.is_bonus ? 'misionExtra' : 'mision');
       setProfile(res.profile);
-      mostrar(res.bonusEarned > 0 ? `+${res.bonusEarned} PB` : `+${res.xp} XP · ${quest.stat}`);
-      sincronizar(res.profile);
+      // Una acción en la cola: el XP va en el resumen; nivel, rango, racha y
+      // logros los decide el contrato. La penalización cumplida se dice como
+      // recuperación (sin repetir el XP en el resumen).
+      const accion = `mision:${quest.id}:${Date.now()}`;
+      celebrar({
+        accion,
+        perfilAntes: profile,
+        perfilDespues: res.profile,
+        logrosAntes,
+        fecha: today,
+        recuperadoXp: res.wasPenalty && res.xp > 0 ? res.xp : undefined,
+        resumen: res.wasPenalty ? [] : [res.bonusEarned > 0 ? `+${res.bonusEarned} PB` : `+${res.xp} XP · ${quest.stat}`],
+      });
       // Antes y después, leídos del espejo síncrono y no del estado del render.
       const antes = completionsRef.current;
       const despues: Record<string, Completion> = {
@@ -375,17 +406,6 @@ export default function Hoy() {
       };
       completionsRef.current = despues;
       setCompletions(despues);
-      if (res.leveledUp) setLevelUp(res.newLevel);
-
-      // Racha hito: el día acaba de cerrarse delante del usuario y la racha
-      // que se enseña cae en 7, 30 o 100.
-      const rachaAntes = rachaVisible(profile.streak_days, todayQuests, new Set(Object.keys(antes)));
-      const rachaDespues = rachaVisible(res.profile.streak_days, todayQuests, new Set(Object.keys(despues)));
-      if (!rachaAntes.hoyCerrado && rachaDespues.hoyCerrado && HITOS_RACHA.has(rachaDespues.valor)) {
-        // Después del golpe de la misión: dos a la vez se funden en uno en iOS.
-        setTimeout(() => vibrar('rachaHito'), 300);
-        mostrar(`RACHA ${rachaDespues.valor}`);
-      }
 
       // RET-03: esta misión abre la recuperación. Es el momento que motiva:
       // se dice en pantalla y al lector de pantalla.
@@ -428,12 +448,15 @@ export default function Hoy() {
             penaltyRedeemed: res.wasPenalty,
           }),
         );
-        if (!res.leveledUp) {
-          for (const a of fresh) mostrar(`LOGRO · ${a.name}`);
+        if (fresh.length > 0) {
+          if (logrosRef.current) for (const a of fresh) logrosRef.current.add(a.code);
+          celebrar({ accion, logrosNuevos: fresh.map(logroInfo) });
         }
       } catch {
         // Los logros se vuelven a evaluar en la siguiente misión o al cierre.
       }
+      // El rango, al final: cierra la ventana de la acción.
+      sincronizar(res.profile, accion);
     } catch (e) {
       vibrar('penalizacion');
       avisar('Error del sistema', mensajeSistema(e));
@@ -620,7 +643,6 @@ export default function Hoy() {
     <Screen
       refreshing={refreshing}
       onRefresh={onRefresh}
-      overlay={<Toast key={avisos[0]?.id ?? 0} message={avisos[0]?.texto ?? null} onDone={clearToast} />}
       aside={
         <PanelHoy
           loaded={loaded}
@@ -911,7 +933,6 @@ export default function Hoy() {
 
       <CompletarSheet quest={sheetQuest} onElegir={elegirEnHoja} onClose={cerrarHoja} />
       <ShareSemanaModal visible={tarjeta !== null} datos={tarjeta} onClose={() => setTarjeta(null)} />
-      <LevelUpOverlay level={levelUp} onClose={() => setLevelUp(null)} />
     </Screen>
   );
 }

@@ -16,6 +16,7 @@
 //   · Un simulador de caché sobre las peticiones REALES del handler (backend
 //     simulado) mide la escritura por turno antes/después.
 
+import { sinGuionesProfundo, sinGuionesProtegido } from './singuiones.ts';
 import { deepEqual, equal, ok } from 'node:assert/strict';
 import { instalar, peticion, turnoHerramienta, turnoTexto } from './sec_coach_fake_test.ts';
 import { buildSystem, COACH_SYSTEM, DATOS_ABRE, SISTEMA_FIJO } from './prompt.ts';
@@ -117,8 +118,8 @@ Deno.test('cache: la petición del handler lleva 3 puntos (fijo, dinámico, hist
     equal(marcasEn(body), 3);
     ok(body.system[N_FIJO - 1].cache_control, 'punto tras la parte fija');
     ok(body.system.at(-1)!.cache_control, 'punto tras dossier + estado');
-    deepEqual(body.system.slice(0, N_FIJO).map((b) => b.text), [...SISTEMA_FIJO]);
-    equal(JSON.stringify(body.tools), JSON.stringify(TOOL_DEFS), 'herramientas deterministas');
+    deepEqual(body.system.slice(0, N_FIJO).map((b) => b.text), [...SISTEMA_FIJO].map(sinGuionesProtegido));
+    equal(JSON.stringify(body.tools), JSON.stringify(sinGuionesProfundo(TOOL_DEFS)), 'herramientas deterministas');
     equal(body.tool_choice, undefined, 'con tiempo, tool_choice por defecto (auto)');
   } finally {
     fake.restaurar();
@@ -312,4 +313,10 @@ Deno.test('cache: simulador — escritura por turno antes/después (informe)', a
   }
 
   console.log(`\n  parte fija (herramientas + sistema fijo) ≈ ${fijo} fichas\n  ` + filas.join('\n  '));
+});
+
+Deno.test('Calidad: la regla «primero lo que sabes» va en la parte fija del sistema', async () => {
+  const { COACH_SYSTEM, REGLA_PRIMERO_LO_QUE_SABES } = await import('./prompt.ts');
+  if (!COACH_SYSTEM.includes(REGLA_PRIMERO_LO_QUE_SABES)) throw new Error('falta la regla en COACH_SYSTEM');
+  if (!REGLA_PRIMERO_LO_QUE_SABES.includes('Responde primero con lo que ya sabes')) throw new Error('texto');
 });

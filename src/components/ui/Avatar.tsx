@@ -32,7 +32,8 @@ interface Props {
   /** `profiles.avatar_url`: la ruta en el bucket, no una URL firmada. */
   avatarPath: string | null;
   name: string;
-  rank?: Rank;
+  /** null = rango desconocido (p. ej. un amigo): marco liso y el lector no dice «rango». */
+  rank?: Rank | null;
   /** Título vigente (tituloVigente() del Chat 5). Lo lee el lector de pantalla. */
   titulo?: string;
   /** Una vez, cuando el retrato es definitivo (foto pintada o inicial). */
@@ -154,7 +155,9 @@ function rombo(x: number, y: number, a: number, r: number): string {
   return `M${f(x + ux)} ${f(y + uy)}L${f(x + vx)} ${f(y + vy)}L${f(x - ux)} ${f(y - uy)}L${f(x - vx)} ${f(y - vy)}Z`;
 }
 
-export function Avatar({ size, avatarPath, name, rank = 'E', titulo, onReady }: Props) {
+export function Avatar({ size, avatarPath, name, rank: rankProp = 'E', titulo, onReady }: Props) {
+  const rank: Rank = rankProp ?? 'E';
+  const conRango = rankProp !== null;
   const tema = RANK_THEME[rank];
   const reducido = useMovimientoReducido();
   const { uri, fallida, alCargar, alFallar } = useRetrato(avatarPath, onReady);
@@ -189,7 +192,8 @@ export function Avatar({ size, avatarPath, name, rank = 'E', titulo, onReady }: 
     }
   }
 
-  const etiqueta = titulo ? `${name}, rango ${rank}, ${titulo}` : `${name}, rango ${rank}`;
+  const base = conRango ? `${name}, rango ${rank}` : name;
+  const etiqueta = titulo ? `${base}, ${titulo}` : base;
 
   return (
     <View

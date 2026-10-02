@@ -19,20 +19,24 @@ interface ChipProps {
   style?: StyleProp<ViewStyle>;
 }
 
-const TONE = { accent: colors.accent, steel: colors.steel, gold: colors.gold, red: colors.red } as const;
-
-export function Chip({ label, selected, onPress, icon, tone = 'accent', small, disabled, accessibilityLabel, style }: ChipProps) {
-  const c = TONE[tone];
+/**
+ * Seleccionado SIN invertir (SISTEMA §0: una sola inversión por pantalla, y la
+ * gastan los botones primarios): marco de 2 pt en ink10, texto ink10 y placa
+ * ink1. El no seleccionado lleva marco de 1 pt ink4 y texto ink9: se distingue
+ * por el grosor y el brillo del marco, no por un relleno blanco. `tone` se
+ * conserva por compatibilidad; en v2 el seleccionado es siempre monocromo.
+ */
+export function Chip({ label, selected, onPress, icon, small, disabled, accessibilityLabel, style }: ChipProps) {
   const content = (
     <>
-      {icon ? <Ionicons name={icon} size={small ? 12 : 14} color={selected ? colors.bg : colors.textDim} /> : null}
-      <Text style={[styles.text, small && styles.textSmall, selected && { color: colors.bg }]}>{label}</Text>
+      {icon ? <Ionicons name={icon} size={small ? 12 : 14} color={selected ? ink.ink10 : colors.textDim} /> : null}
+      <Text style={[styles.text, small && styles.textSmall, selected && styles.textSelected]}>{label}</Text>
     </>
   );
   const box = [
     styles.chip,
     small && styles.chipSmall,
-    selected && { backgroundColor: c, borderColor: c },
+    selected && (small ? styles.selectedSmall : styles.selected),
     disabled && styles.disabled,
     style,
   ];
@@ -118,6 +122,10 @@ const styles = StyleSheet.create({
     paddingVertical: 9,
   },
   chipSmall: { paddingHorizontal: 10, paddingVertical: 6 },
+  // Marco de 2: se resta 1 al relleno para que el chip no crezca al elegirlo.
+  selected: { borderWidth: 2, borderColor: ink.ink10, backgroundColor: ink.ink1, paddingHorizontal: 13, paddingVertical: 8 },
+  selectedSmall: { borderWidth: 2, borderColor: ink.ink10, backgroundColor: ink.ink1, paddingHorizontal: 9, paddingVertical: 5 },
+  textSelected: { color: ink.ink10 },
   text: { fontFamily: fonts.semibold, fontSize: 13, color: colors.text },
   textSmall: { fontSize: 12 },
   disabled: { opacity: 0.4 },

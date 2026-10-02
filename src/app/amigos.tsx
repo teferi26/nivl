@@ -1,5 +1,5 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import * as Haptics from 'expo-haptics';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import {
@@ -16,16 +16,19 @@ import {
   Pressable,
   Share,
   StyleSheet,
-  Switch,
   Text,
   TextInput,
   View,
 } from 'react-native';
-import { Avatar } from '@/components/Avatar';
 import { EliteBadge } from '@/components/EliteBadge';
-import { prepararDatosSemana, ShareSemanaModal, type DatosSemana } from '@/components/ShareCardSemana';
+import { Aviso } from '@/components/amigos/Aviso';
+import { Competicion, type Amigo } from '@/components/amigos/Competicion';
+import { prepararDatosSemana, tarjetaDeSemana } from '@/components/ShareCardSemana';
+import { HojaCompartir } from '@/components/share/HojaCompartir';
 import { SystemButton } from '@/components/SystemButton';
 import {
+  Avatar,
+  Button,
   Card,
   Chip,
   ChipWrap,
@@ -39,8 +42,16 @@ import {
   Skeleton,
   SkeletonRows,
   Stagger,
+  Stat,
+  StatRow,
   Tag,
 } from '@/components/ui';
+import { useCelebracion } from '@/components/celebracion/contexto';
+import { Interruptor } from '@/components/ui/Interruptor';
+import { vibrar } from '@/design/haptics';
+import { ink, type Rank } from '@/design/tokens';
+import { fetchUnlocked, tituloVigente } from '@/lib/achievements';
+import { fetchRangosAmigos } from '@/lib/amigosRango';
 import { avisar, confirmar } from '@/components/ui/confirmar';
 import { volver } from '@/components/ui/Screen';
 import { useAuth } from '@/lib/auth';
@@ -57,8 +68,11 @@ import {
   type MiLudus,
 } from '@/lib/elite';
 import { levelFromXp } from '@/lib/game';
+import { fetchMyInvites, UMBRALES_INVITACION, type MyInvites } from '@/lib/invites';
 import { kindMeta, type ProfileKind } from '@/lib/kinds';
 import { fetchAiStatus, type Tier } from '@/lib/pro';
+import { celebracionInsignia, estadoDe, INSIGNIAS, nivelInsignia, type Celebracion } from '@/lib/progression';
+import type { Tarjeta } from '@/lib/sharecard';
 import {
   blockSocialUser,
   fetchBlockedUsers,
@@ -109,7 +123,7 @@ const METRICAS: Metrica[] = ['xp', 'cumplimiento', 'racha'];
 
 
 /** La cifra del ranking, que sube (o baja) hasta su valor al cambiar de métrica o de periodo. */
-function ValorRanking({ valor, metrica, tone }: { valor: number | null; metrica: Metrica; tone: 'gold' | 'accent' | 'dim' }) {
+function ValorRanking({ valor, metrica, tone }: { valor: number | null; metrica: Metrica; tone: 'accent' | 'dim' }) {
   const mostrado = useCountUp(valor ?? 0, 600);
   return (
     <RowValue strong tone={tone}>
@@ -130,10 +144,16 @@ function ListaRanking({
   atenuado,
   onLongPress,
   onSafety,
+  miRango,
+  rangos,
 }: {
   filas: readonly Fila[];
   metrica: Metrica;
   atenuado?: boolean;
+  /** Rango propio: el mismo que enseña Perfil (estadoDe(...).rango). */
+  miRango: Rank | null;
+  /** Rango registrado de los amigos (0052). Sin entrada = marco liso. */
+  rangos: ReadonlyMap<string, Rank>;
   /** Sin él (ludus) no se puede quitar a nadie desde aquí. */
   onLongPress?: (b: BoardEntry) => void;
   onSafety: (b: BoardEntry) => void;
@@ -155,7 +175,13 @@ function ListaRanking({
                 <Text style={[styles.puestoTexto, c.posicion === 1 && c.valor !== null && styles.oro]}>
                   {c.valor === null ? '—' : etiquetaPosicion(c.posicion)}
                 </Text>
-                <Avatar size={38} avatarPath={b.avatarPath} name={b.name} />
+                <Avatar
+                  size={40}
+                  avatarPath={b.avatarPath}
+                  name={b.name}
+                  rank={b.isMe ? miRango : (rangos.get(b.userId) ?? null)}
+                  titulo={tituloVigente(b.equippedTitle) ?? undefined}
+                />
               </View>
             }
             title={b.isMe ? `${b.name} · tú` : b.name}
@@ -166,7 +192,7 @@ function ListaRanking({
                   Nivel {nivel}
                   {metrica !== 'racha' && b.streakDays > 0 ? ` · racha ${b.streakDays}` : ''}
                 </Text>
-                {b.equippedTitle ? <Tag tone="gold">{b.equippedTitle}</Tag> : null}
+                {tituloVigente(b.equippedTitle) ? <Tag tone="logro">{tituloVigente(b.equippedTitle)}</Tag> : null}
               </View>
             }
             trailing={
@@ -174,14 +200,14 @@ function ListaRanking({
                 <ValorRanking
                   valor={c.valor}
                   metrica={metrica}
-                  tone={metrica === 'racha' && (c.valor ?? 0) > 0 ? 'gold' : b.isMe ? 'accent' : 'dim'}
+                  tone={b.isMe ? 'accent' : 'dim'}
                 />
                 {!b.isMe ? <SafetyButton name={b.name} onPress={() => onSafety(b)} /> : null}
               </View>
             }
             onPress={!b.isMe ? () => onSafety(b) : undefined}
             onLongPress={quitar}
-            accessibilityLabel={`${c.valor === null ? 'Sin puesto' : `Puesto ${c.posicion}`}. ${b.isMe ? 'Tú' : b.name}${c.insignia ? `, ${INSIGNIA_ELITE_LABEL}` : ''}, nivel ${nivel}, ${valor}.${!b.isMe ? ' Toca para denunciar o bloquear.' : ''}${quitar ? ' Mantén pulsado para quitar.' : ''}`}
+            accessibilityLabel={`${c.valor === null ? 'Sin puesto' : `Puesto ${c.posicion}`}. ${b.isMe ? 'Tú' : b.name}${c.insignia ? `, ${INSIGNIA_ELITE_LABEL}` : ''}, nivel ${nivel}, ${valor}.${!b.isMe ? ' Toca para más opciones.' : ''}${quitar ? ' Mantén pulsado para quitar.' : ''}`}
           />
         );
       })}
@@ -191,7 +217,7 @@ function ListaRanking({
 
 function SafetyButton({ name, onPress }: { name: string; onPress: () => void }) {
   return <Pressable onPress={onPress} style={styles.safetyButton} accessibilityRole="button"
-    accessibilityLabel={`Denunciar o bloquear a ${name}`}>
+    accessibilityLabel={`Más opciones con ${name}`}>
     <Ionicons name="ellipsis-horizontal" size={20} color={colors.textDim} />
   </Pressable>;
 }
@@ -240,7 +266,20 @@ export default function Amigos() {
   const [cambiarPeticion, setCambiarPeticion] = useState(false);
   const ventanaLudusViva = useRef<Ventana>('semana');
 
-  const [tarjeta, setTarjeta] = useState<DatosSemana | null>(null);
+  // Rango propio e invitaciones: adorno, por su cuenta. Si fallan, no se pintan.
+  // Mis logros: con ellos y mi fila del marcador sale el rango con la MISMA
+  // función que Perfil (estadoDe), para que el marco no diga otra cosa aquí.
+  const [logros, setLogros] = useState<ReadonlySet<string> | null>(null);
+  const [rangos, setRangos] = useState<ReadonlyMap<string, Rank>>(() => new Map());
+  const [invitaciones, setInvitaciones] = useState<MyInvites | null>(null);
+  const { celebrar } = useCelebracion();
+
+  // ── Competición (0048): duelos y ligas. Va por su cuenta en <Competicion>.
+  const [competicion, setCompeticion] = useState(true);
+  const [retarA, setRetarA] = useState<Amigo | null>(null);
+  const [recarga, setRecarga] = useState(0);
+
+  const [tarjeta, setTarjeta] = useState<{ tarjeta: Tarjeta; codigo: string } | null>(null);
   const [preparando, setPreparando] = useState(false);
   const lock = useRef(false);
   // La ventana pedida más reciente: si tocas Semana → Mes → Semana deprisa, la
@@ -292,6 +331,35 @@ export default function Amigos() {
     fetchEliteBadges()
       .then(setInsignias)
       .catch(() => {});
+    fetchUnlocked()
+      .then((l) => setLogros(new Set(l)))
+      .catch(() => {});
+    fetchRangosAmigos().then(setRangos);
+    fetchMyInvites()
+      .catch(() => null)
+      .then(async (inv) => {
+        setInvitaciones(inv);
+        if (!inv || !userId) return;
+        // Se celebra solo al SUBIR de nivel respecto al último celebrado, que
+        // se guarda por usuario: con antes=0 cada visita volvía a celebrarlo.
+        const clave = `nivl:insignia:reclutador:${userId}`;
+        const nivel = nivelInsignia('reclutador', inv.activos);
+        let celebrado = 0;
+        try {
+          celebrado = Math.max(0, Math.min(3, Number(await AsyncStorage.getItem(clave)) || 0));
+        } catch {
+          // Sin almacén no se celebra: mejor callar que repetir.
+          return;
+        }
+        if (nivel <= celebrado) return;
+        const umbrales = INSIGNIAS.reclutador.umbrales;
+        const antes = celebrado > 0 ? umbrales[celebrado - 1] : 0;
+        const extra = [celebracionInsignia('reclutador', antes, inv.activos)].filter(
+          (c): c is Celebracion => c !== null,
+        );
+        AsyncStorage.setItem(clave, String(nivel)).catch(() => {});
+        celebrar({ accion: 'insignias', extra, final: true });
+      });
     try {
       const [ia, mio] = await Promise.all([fetchAiStatus(), fetchMyEliteGroup()]);
       if (ventanaLudusViva.current !== v) return;
@@ -307,7 +375,7 @@ export default function Amigos() {
     } catch {
       /* sin ludus: la pantalla sigue */
     }
-  }, []);
+  }, [celebrar, userId]);
 
   useFocusEffect(
     useCallback(() => {
@@ -317,6 +385,7 @@ export default function Amigos() {
 
   const refrescar = async () => {
     setRefrescando(true);
+    setRecarga((n) => n + 1);
     await Promise.all([load(ventana), loadLudus(ventanaLudus)]);
     setRefrescando(false);
   };
@@ -410,16 +479,28 @@ export default function Amigos() {
     [ludusVisibles, metricaLudus, insignias],
   );
   const numAmigos = board.filter((b) => !b.isMe).length;
+  const yoEnMarcador = board.find((b) => b.isMe);
+  // estadoDe solo necesita mis cifras y mis logros; el rango sale de los logros.
+  const miRango: Rank | null =
+    logros && yoEnMarcador
+      ? estadoDe({ xp_total: yoEnMarcador.xpTotal, streak_days: yoEnMarcador.streakDays, protection_stones: 0 }, logros)
+          .rango
+      : null;
+  // A quién se puede retar o invitar a una liga: amigos aceptados.
+  const amigos = useMemo<Amigo[]>(
+    () => board.filter((b) => !b.isMe && b.friendshipId).map((b) => ({ userId: b.userId, name: b.name })),
+    [board],
+  );
 
   const elegirVentana = (v: Ventana) => {
     if (v === ventana) return;
-    Haptics.selectionAsync().catch(() => {});
+    vibrar('seleccion');
     setCambiando(true);
     setVentana(v);
   };
   const elegirMetrica = (m: Metrica) => {
     if (m === metrica) return;
-    Haptics.selectionAsync().catch(() => {});
+    vibrar('seleccion');
     // Otro criterio, otro orden: las filas se recolocan, no saltan.
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setMetrica(m);
@@ -441,7 +522,7 @@ export default function Amigos() {
     if (!yo) return;
     try {
       Clipboard.setString(yo.friendCode);
-      Haptics.selectionAsync();
+      vibrar('seleccion');
       setCopiado(true);
       setTimeout(() => setCopiado(false), 2000);
     } catch {
@@ -464,7 +545,7 @@ export default function Amigos() {
     setAvisoCodigo(null);
     try {
       const r = await requestFriend(normalizarCodigo(codigo));
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      vibrar('mision');
       setCodigo('');
       setAvisoCodigo({
         texto:
@@ -475,7 +556,7 @@ export default function Amigos() {
       });
       await load(ventana);
     } catch (e) {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      vibrar('penalizacion');
       // Los errores de negocio (código desconocido, ya sois amigos, tope) llegan
       // como ErrorVisible y pasan tal cual; lo demás, con la voz del sistema.
       setAvisoCodigo({ texto: mensajeSistema(e), error: true });
@@ -492,7 +573,7 @@ export default function Amigos() {
     setOcupada(r.friendshipId);
     try {
       await respondRequest(r.friendshipId, aceptar);
-      if (aceptar) Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      if (aceptar) vibrar('mision');
       await load(ventana);
     } catch (e) {
       avisar('Error del sistema', mensajeSistema(e));
@@ -538,12 +619,12 @@ export default function Amigos() {
   // ── Ludus ─────────────────────────────────────────────────────────
   const elegirVentanaLudus = (v: Ventana) => {
     if (v === ventanaLudus) return;
-    Haptics.selectionAsync().catch(() => {});
+    vibrar('seleccion');
     setVentanaLudus(v);
   };
   const elegirMetricaLudus = (m: Metrica) => {
     if (m === metricaLudus) return;
-    Haptics.selectionAsync().catch(() => {});
+    vibrar('seleccion');
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setMetricaLudus(m);
   };
@@ -559,12 +640,12 @@ export default function Amigos() {
     setAvisoLudus(null);
     try {
       await requestEliteGroup(objetivo, nota);
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      vibrar('mision');
       setNota('');
       setCambiarPeticion(false);
       await loadLudus(ventanaLudus);
     } catch (e) {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      vibrar('penalizacion');
       setAvisoLudus({ texto: mensajeSistema(e), error: true });
     } finally {
       lock.current = false;
@@ -593,12 +674,13 @@ export default function Amigos() {
     if (!yo || !userId || preparando) return;
     setPreparando(true);
     try {
-      setTarjeta(
-        await prepararDatosSemana(userId, {
-          semana: ventana === 'semana' ? board : undefined,
-          friendCode: yo.friendCode,
-        }),
-      );
+      const datos = await prepararDatosSemana(userId, {
+        semana: ventana === 'semana' ? board : undefined,
+        friendCode: yo.friendCode,
+      });
+      // El código solo sale si se enciende «Añadir mi enlace de invitación»
+      // en la hoja: lo decide HojaCompartir, no esta pantalla.
+      setTarjeta({ tarjeta: tarjetaDeSemana(datos), codigo: datos.friendCode });
     } catch (e) {
       avisar('Error del sistema', mensajeSistema(e));
     } finally {
@@ -606,13 +688,42 @@ export default function Amigos() {
     }
   };
 
+  // ── Invitar: insignias Reclutador (cosméticas) ───────────────────
+  const reclutador = INSIGNIAS.reclutador;
+  const umbralSiguiente = invitaciones?.siguienteUmbral ?? null;
+  const nombreSiguiente =
+    umbralSiguiente == null ? undefined : reclutador.nombres[reclutador.umbrales.indexOf(umbralSiguiente)];
+  const siguienteInsignia =
+    umbralSiguiente != null && nombreSiguiente ? { nombre: nombreSiguiente, umbral: umbralSiguiente } : null;
+  const insigniasGanadas = (invitaciones?.insignias ?? [])
+    .map((k) => reclutador.nombres[UMBRALES_INVITACION.findIndex((u) => u.kind === k)])
+    .filter((n): n is string => !!n);
+
   const subtitulo =
     numAmigos === 0
       ? 'Nadie mejora igual cuando alguien le mira el marcador.'
       : `${numAmigos} ${numAmigos === 1 ? 'rival' : 'rivales'} en tu arena${entrantes.length > 0 ? ` · ${entrantes.length} por responder` : ''}.`;
 
   return (
-    <Screen refreshing={refrescando} onRefresh={refrescar}>
+    <Screen
+      refreshing={refrescando}
+      onRefresh={refrescar}
+      overlay={
+        // En la capa de Screen, nunca en un Modal: capturar dentro de un Modal
+        // da un PNG negro en Android. Alias null: no hay alias aprobado que
+        // leer desde el cliente, así que la hoja no ofrece firmar.
+        tarjeta ? (
+          <HojaCompartir
+            visible
+            onCerrar={() => setTarjeta(null)}
+            tarjeta={tarjeta.tarjeta}
+            contexto={{ puedeCompartirFotos: false }}
+            alias={null}
+            codigoAmigo={tarjeta.codigo}
+          />
+        ) : null
+      }
+    >
       <Stagger>
         <FadeIn index={0}>
           <ScreenHeader
@@ -633,7 +744,7 @@ export default function Amigos() {
             <SkeletonRows rows={4} />
           </View>
         ) : fallo && !yo ? (
-          <Card variant="outline" accent={colors.redDim}>
+          <Card variant="alerta">
             <EmptyState
               compact
               icon="cloud-offline-outline"
@@ -645,7 +756,7 @@ export default function Amigos() {
         ) : yo ? (
           <>
             {fallo ? (
-              <Card variant="outline" accent={colors.redDim}>
+              <Card variant="alerta">
                 <Text style={styles.falloLinea} accessibilityRole="alert">
                   No se ha podido actualizar: {fallo}
                 </Text>
@@ -678,18 +789,44 @@ export default function Amigos() {
                     />
                   </View>
                   <View style={styles.boton}>
-                    {/* Un sólido por pantalla: sin amigos, el sólido es "Invitar al
-                        primero" del ranking vacío y este baja a contorno. */}
-                    <SystemButton
-                      title="Invitar"
-                      icon="paper-plane-outline"
-                      variant={numAmigos === 0 ? 'outline' : 'solid'}
-                      onPress={invitar}
-                    />
+                    {/* Una sola inversión por pantalla: la de "Invitar al primero"
+                        del ranking vacío. Este va siempre en contorno. */}
+                    <SystemButton title="Invitar" icon="paper-plane-outline" variant="outline" onPress={invitar} />
                   </View>
                 </View>
               </Card>
             </FadeIn>
+
+            {invitaciones ? (
+              <FadeIn index={2}>
+                <Section title="Tus invitados">
+                  <Card>
+                    <StatRow>
+                      <Stat value={invitaciones.activos} label="Invitados activos" style={styles.celda} />
+                      <Stat value={invitaciones.pendientes} label="En prueba" style={styles.celda} />
+                    </StatRow>
+                    {siguienteInsignia ? (
+                      <Text style={styles.siguienteInsignia}>
+                        Siguiente insignia: {siguienteInsignia.nombre} con {siguienteInsignia.umbral} invitados activos
+                      </Text>
+                    ) : null}
+                    {insigniasGanadas.length > 0 ? (
+                      <View style={styles.insignias}>
+                        {insigniasGanadas.map((nombre) => (
+                          <Tag key={nombre} tone="logro">
+                            {nombre}
+                          </Tag>
+                        ))}
+                      </View>
+                    ) : null}
+                  </Card>
+                  <Text style={styles.hint}>
+                    Cuenta quien entra con tu código y está activo 3 días en sus primeras dos semanas. Es una insignia: no
+                    da XP ni días de Pro.
+                  </Text>
+                </Section>
+              </FadeIn>
+            ) : null}
 
             <FadeIn index={2}>
               <Section title="Añadir por código">
@@ -718,15 +855,7 @@ export default function Amigos() {
                     disabled={codigo.length === 0}
                   />
                 </View>
-                {avisoCodigo ? (
-                  <Text
-                    style={[styles.aviso, avisoCodigo.error && styles.avisoError]}
-                    accessibilityRole={avisoCodigo.error ? 'alert' : undefined}
-                    accessibilityLiveRegion="polite"
-                  >
-                    {avisoCodigo.texto}
-                  </Text>
-                ) : null}
+                {avisoCodigo ? <Aviso texto={avisoCodigo.texto} error={avisoCodigo.error} /> : null}
               </Section>
             </FadeIn>
 
@@ -749,13 +878,7 @@ export default function Amigos() {
                           ) : (
                             <View style={styles.respuestas}>
                               <SafetyButton name={r.name} onPress={() => abrirSeguridad(r)} />
-                              <Chip
-                                label="Aceptar"
-                                small
-                                selected
-                                onPress={() => responder(r, true)}
-                                accessibilityLabel={`Aceptar la solicitud de ${r.name}`}
-                              />
+                              <Button title="Aceptar" size="sm" variant="secondary" onPress={() => responder(r, true)} />
                               <Pressable
                                 onPress={() => responder(r, false)}
                                 hitSlop={10}
@@ -802,7 +925,7 @@ export default function Amigos() {
               <FadeIn index={4}>
                 <Section
                   title="Tu ludus"
-                  tone="gold"
+                  tone="logro"
                   meta={miLudus.group ? `${miLudus.group.members}/${miLudus.group.capacity}` : undefined}
                 >
                   {estado === 'miembro' && miLudus.group ? (
@@ -831,7 +954,7 @@ export default function Amigos() {
                             key={m}
                             label={METRICA_LABEL[m]}
                             small
-                            tone={m === 'racha' ? 'gold' : 'accent'}
+                            tone="accent"
                             selected={metricaLudus === m}
                             onPress={() => elegirMetricaLudus(m)}
                             accessibilityLabel={`Ordenar el ludus por ${METRICA_LABEL[m]}`}
@@ -843,14 +966,20 @@ export default function Amigos() {
                           ? 'Tu ludus aún se está formando. El sistema suma gladiadores de tu mismo objetivo.'
                           : lineaRivalidad(rankingLudus, metricaLudus, ventanaLudus)}
                       </Text>
-                      <ListaRanking filas={rankingLudus} metrica={metricaLudus} onSafety={abrirSeguridad} />
+                      <ListaRanking
+                        filas={rankingLudus}
+                        metrica={metricaLudus}
+                        onSafety={abrirSeguridad}
+                        miRango={miRango}
+                        rangos={rangos}
+                      />
                       <Text style={styles.hint}>
                         Las mismas cifras que el ranking de amigos: las penalizaciones no cuentan y nadie compra
                         puestos. Sin chat: en el ludus se compite con hechos.
                       </Text>
                     </>
                   ) : estado === 'pedido' && !cambiarPeticion ? (
-                    <Card variant="outline" accent={colors.goldDim}>
+                    <Card variant="outline">
                       <EmptyState
                         compact
                         icon="hourglass-outline"
@@ -908,15 +1037,7 @@ export default function Amigos() {
                         loading={pidiendo}
                         style={{ marginTop: 12 }}
                       />
-                      {avisoLudus ? (
-                        <Text
-                          style={[styles.aviso, avisoLudus.error && styles.avisoError]}
-                          accessibilityRole={avisoLudus.error ? 'alert' : undefined}
-                          accessibilityLiveRegion="polite"
-                        >
-                          {avisoLudus.texto}
-                        </Text>
-                      ) : null}
+                      {avisoLudus ? <Aviso texto={avisoLudus.texto} error={avisoLudus.error} /> : null}
                     </Card>
                   )}
                 </Section>
@@ -954,7 +1075,7 @@ export default function Amigos() {
                           key={m}
                           label={METRICA_LABEL[m]}
                           small
-                          tone={m === 'racha' ? 'gold' : 'accent'}
+                          tone="accent"
                           selected={metrica === m}
                           onPress={() => elegirMetrica(m)}
                           accessibilityLabel={`Ordenar por ${METRICA_LABEL[m]}`}
@@ -966,7 +1087,15 @@ export default function Amigos() {
                       {lineaRivalidad(ranking, metrica, ventana)}
                     </Text>
 
-                    <ListaRanking filas={ranking} metrica={metrica} atenuado={cambiando} onLongPress={quitarAmigo} onSafety={abrirSeguridad} />
+                    <ListaRanking
+                      filas={ranking}
+                      metrica={metrica}
+                      atenuado={cambiando}
+                      onLongPress={quitarAmigo}
+                      onSafety={abrirSeguridad}
+                      miRango={miRango}
+                      rangos={rangos}
+                    />
                     <Text style={styles.hint}>
                       {metrica === 'xp'
                         ? 'XP ganado con misiones en el periodo. Las de penalización no cuentan: recuperar no es adelantar.'
@@ -986,6 +1115,16 @@ export default function Amigos() {
                   </>
                 )}
               </Section>
+            </FadeIn>
+
+            <FadeIn index={6}>
+              <Competicion
+                amigos={amigos}
+                recarga={recarga}
+                retarA={retarA}
+                onRetarA={setRetarA}
+                onDisponible={setCompeticion}
+              />
             </FadeIn>
 
             {ocultos.length > 0 ? (
@@ -1033,12 +1172,9 @@ export default function Amigos() {
                         : 'Estás fuera: tus amigos no ven tus cifras ni tu retrato. Tú sigues viendo las suyas.'
                     }
                     trailing={
-                      <Switch
+                      <Interruptor
                         value={yo.socialVisible}
                         onValueChange={cambiarVisible}
-                        trackColor={{ false: colors.track, true: colors.accentDim }}
-                        thumbColor={yo.socialVisible ? colors.accent : colors.textFaint}
-                        ios_backgroundColor={colors.track}
                         accessibilityLabel="Aparecer en los rankings de tus amigos"
                       />
                     }
@@ -1054,7 +1190,24 @@ export default function Amigos() {
         <View style={styles.safetyBackdrop}>
           <Pressable style={{ flex: 1 }} onPress={() => { if (!safetyBusy) setSafetyUser(null); }} accessibilityLabel="Cerrar seguridad" accessibilityRole="button" />
           <ScrollView style={styles.safetySheet} contentContainerStyle={{ padding: 20, paddingBottom: 34 }} accessibilityViewIsModal>
-            <Text style={styles.safetyTitle}>Seguridad · {safetyUser?.name}</Text>
+            <Text style={styles.safetyTitle}>{safetyUser?.name}</Text>
+            {competicion && safetyUser && amigos.some((a) => a.userId === safetyUser.userId) ? (
+              <SystemButton
+                title="Retar a un duelo"
+                icon="flash-outline"
+                variant="outline"
+                disabled={safetyBusy}
+                onPress={() => {
+                  const rival = amigos.find((a) => a.userId === safetyUser.userId) ?? null;
+                  setSafetyUser(null);
+                  // La hoja del duelo es otro Modal: en iOS no se presenta
+                  // mientras este aún se está cerrando.
+                  setTimeout(() => setRetarA(rival), 350);
+                }}
+                style={{ marginTop: 14 }}
+              />
+            ) : null}
+            <Text style={[styles.eyebrow, { marginTop: 22 }]}>Seguridad</Text>
             <Text style={styles.safetyText}>Elige qué quieres denunciar. El equipo revisará el perfil y podrá retirar contenido o suspender su acceso social.</Text>
             <ChipWrap style={{ marginTop: 16 }}>
               {REPORT_REASONS.map((reason) => <Chip key={reason.value} label={reason.label}
@@ -1069,7 +1222,6 @@ export default function Amigos() {
           </ScrollView>
         </View>
       </Modal>
-      <ShareSemanaModal visible={tarjeta !== null} datos={tarjeta} onClose={() => setTarjeta(null)} />
     </Screen>
   );
 }
@@ -1086,7 +1238,7 @@ const styles = StyleSheet.create({
   atenuado: { opacity: 0.45 },
   rechazar: { width: 32, height: 32, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: colors.line },
   pulsado: { opacity: 0.6 },
-  falloLinea: { fontFamily: fonts.body, fontSize: 13, lineHeight: 18, color: colors.redText },
+  falloLinea: { fontFamily: fonts.body, fontSize: 13, lineHeight: 18, color: ink.ink9 },
   eyebrow: {
     fontFamily: fonts.heading,
     fontSize: 11,
@@ -1103,6 +1255,9 @@ const styles = StyleSheet.create({
   },
   hint: { fontFamily: fonts.body, fontSize: 12, color: colors.textFaint, marginTop: 10, lineHeight: 17 },
   botones: { flexDirection: 'row', gap: 8, marginTop: 16 },
+  celda: { flex: 1 },
+  siguienteInsignia: { fontFamily: fonts.body, fontSize: 14, lineHeight: 20, color: ink.ink8, marginTop: 14 },
+  insignias: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 12 },
   boton: { flex: 1 },
   anadirFila: { flexDirection: 'row', gap: 8, alignItems: 'stretch' },
   input: {
@@ -1116,8 +1271,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 12,
   },
-  aviso: { fontFamily: fonts.body, fontSize: 13, lineHeight: 18, color: colors.accentText, marginTop: 10 },
-  avisoError: { color: colors.red },
   respuestas: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   segmento: { flexDirection: 'row', gap: 8 },
   segmentoChip: { flex: 1, justifyContent: 'center' },
@@ -1141,7 +1294,7 @@ const styles = StyleSheet.create({
   },
   puesto: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   puestoTexto: { width: 30, fontFamily: fonts.number, fontSize: 13, color: colors.textDim },
-  oro: { color: colors.gold },
+  oro: { color: ink.ink10 },
   detalle: { flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' },
   detalleTexto: { fontFamily: fonts.body, fontSize: 12.5, color: colors.textFaint },
   ludusCabecera: { marginBottom: 14 },

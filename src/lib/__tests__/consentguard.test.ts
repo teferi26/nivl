@@ -25,10 +25,7 @@ jest.mock('react-native', () => ({
   StyleSheet: { create: (styles: unknown) => styles },
 }));
 jest.mock('@expo/vector-icons/Ionicons', () => 'Ionicons');
-jest.mock('expo-haptics', () => ({
-  NotificationFeedbackType: { Success: 'success' },
-  notificationAsync: jest.fn().mockResolvedValue(undefined),
-}));
+jest.mock('@/design/haptics', () => ({ vibrar: jest.fn() }));
 jest.mock('@/components/SystemButton', () => ({ SystemButton: 'SystemButton' }));
 
 // El renderer viene con jest-expo; este contrato mínimo evita añadir tipos

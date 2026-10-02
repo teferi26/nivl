@@ -1,0 +1,179 @@
+# Capturas de la ficha de la App Store 1.0.8: las mismas 7 escenas en iPhone
+# 6,9" y iPad 13" (las lanza .github/workflows/screenshots.yml con -e SLUG=...).
+#
+# Procedencia: propuesta del Chat 1 @20c1861
+# (docs/release-audit/fase2/capturas/capturas-108.yaml.propuesta), revisada
+# por el Chat 5 contra winter2/integracion @21764de (rutas de src/app, scheme
+# `nivl` de app.json, rótulos y accessibilityLabel de cada pantalla). Las
+# correcciones están en docs/qa-audit/CAPTURAS-108.md. NO ejecutado todavía en
+# simulador: confirmar en la primera pasada.
+#
+# Solo LECTURA: no completa misiones, no compra, no restaura, no acepta
+# consentimientos. Requiere la CUENTA DEMO DE CAPTURAS (nunca la revisora de
+# Apple) con el onboarding, la edad, la salud y la IA ya aceptados en esa
+# cuenta, sembrada con scripts/seed-capturas.mjs y abierta una vez a mano
+# (para que sync_rank registre el rango y la ceremonia no salga en la foto).
+#
+# Variables (solo por -e en la línea de órdenes, nunca aquí):
+#   NIVL_QA_EMAIL, NIVL_QA_PASSWORD  credenciales de la cuenta demo
+#   SLUG                             iphone-69 | ipad-13
+#
+# Maestro compara el texto como expresión regular completa y sin distinguir
+# mayúsculas: '^Entrar$' casa con «Entrar» y con «ENTRAR».
+appId: com.teferi.nivl
+name: NIVL capturas 1.0.8
+---
+- launchApp:
+    clearState: true
+    permissions:
+      notifications: deny
+
+# ── Entrar ────────────────────────────────────────────────────────────────
+# Mismos pasos que login.yaml (corregido por el Chat 5 con esta revisión);
+# se deja en línea para que el flujo de capturas sea autocontenido.
+- extendedWaitUntil:
+    visible: 'Entra con tu correo y tu contraseña de NIVL\.'
+    timeout: 30000
+- tapOn: '^Correo electrónico$'
+- inputText: ${NIVL_QA_EMAIL}
+# Rótulo «Contraseña» (arriba) y campo con accessibilityLabel «Contraseña»
+# (debajo): el índice 1 es el campo.
+- tapOn:
+    text: '^Contraseña$'
+    index: 1
+- inputText: ${NIVL_QA_PASSWORD}
+- hideKeyboard
+# El botón de enviar es el «Entrar» que queda DEBAJO del campo; el conmutador
+# de arriba no cuenta.
+- tapOn:
+    text: '^Entrar$'
+    below:
+      text: '^Contraseña$'
+# iOS puede ofrecer guardar la contraseña: se rechaza.
+- runFlow:
+    when:
+      visible: '^(Ahora no|Not Now)$'
+    commands:
+      - tapOn: '^(Ahora no|Not Now)$'
+- extendedWaitUntil:
+    visible: '^Hoy$'
+    timeout: 30000
+
+# ── 1 · Hoy: misiones del día y progreso ─────────────────────────────────
+- extendedWaitUntil:
+    notVisible: '^Cargando tu día$'
+    timeout: 20000
+# Si la cola de celebraciones (L3) abre una ceremonia, se cierra antes de la
+# foto. Se repite en cada escena; sin anclas YAML, que Maestro no garantiza.
+- runFlow:
+    when:
+      visible: '^Cerrar la celebración$'
+    commands:
+      - tapOn: '^Cerrar la celebración$'
+- waitForAnimationToEnd
+- takeScreenshot: capt-${SLUG}-01-hoy
+
+# ── 2 · Coach ────────────────────────────────────────────────────────────
+# Con Pro: la conversación de la cuenta demo (sin datos reales). Sin Pro: la
+# muestra bloqueada con «Ver NIVL Pro». Ver el dilema Pro en CAPTURAS-108.md.
+- tapOn: '^Coach$'
+- extendedWaitUntil:
+    notVisible: '^Cargando el coach$'
+    timeout: 20000
+- runFlow:
+    when:
+      visible: '^Cerrar la celebración$'
+    commands:
+      - tapOn: '^Cerrar la celebración$'
+- waitForAnimationToEnd
+- takeScreenshot: capt-${SLUG}-02-coach
+
+# ── 3 · Perfil: rango y nivel ────────────────────────────────────────────
+- tapOn: '^Perfil$'
+- extendedWaitUntil:
+    notVisible: '^Consultando el registro$'
+    timeout: 20000
+- runFlow:
+    when:
+      visible: '^Cerrar la celebración$'
+    commands:
+      - tapOn: '^Cerrar la celebración$'
+# El avatar del héroe dice «<nombre>, rango A, <título>…»: si no sale A, la
+# siembra o sync_rank no se hicieron y la captura no vale.
+- assertVisible: '.*, rango A, .*'
+- waitForAnimationToEnd
+- takeScreenshot: capt-${SLUG}-03-perfil
+
+# ── 4 · Amigos: ranking con denuncia y bloqueo visibles ──────────────────
+# La UI de ligas privadas aún no está en integración: se ve el Ranking de
+# amigos (y «Tu ludus» si la cuenta es Élite con ludus).
+- openLink: nivl://amigos
+- extendedWaitUntil:
+    notVisible: '^Cargando la arena$'
+    timeout: 20000
+- runFlow:
+    when:
+      visible: '^Cerrar la celebración$'
+    commands:
+      - tapOn: '^Cerrar la celebración$'
+# Baja hasta la primera fila de un rival del Ranking y la centra: cada fila
+# lleva el botón «Denunciar o bloquear a <nombre>» y, en iOS, la fila entera
+# lo anuncia con «… Toca para denunciar o bloquear.». Si no hay rivales
+# (siembra sin FRIEND_IDS o sin amistades), falla aquí: la captura no vale.
+- scrollUntilVisible:
+    element:
+      text: '(Denunciar o bloquear a .+|.*Toca para denunciar o bloquear\..*)'
+    direction: DOWN
+    centerElement: true
+- waitForAnimationToEnd
+- takeScreenshot: capt-${SLUG}-04-amigos
+
+# ── 5 · Campañas ─────────────────────────────────────────────────────────
+- openLink: nivl://mazmorras
+- extendedWaitUntil:
+    notVisible: '^Cargando tus campañas$'
+    timeout: 20000
+- runFlow:
+    when:
+      visible: '^Cerrar la celebración$'
+    commands:
+      - tapOn: '^Cerrar la celebración$'
+- waitForAnimationToEnd
+- takeScreenshot: capt-${SLUG}-05-campanas
+
+# ── 6 · Agenda ───────────────────────────────────────────────────────────
+- openLink: nivl://agenda
+- extendedWaitUntil:
+    notVisible: '^Cargando tu agenda$'
+    timeout: 20000
+- runFlow:
+    when:
+      visible: '^Cerrar la celebración$'
+    commands:
+      - tapOn: '^Cerrar la celebración$'
+- waitForAnimationToEnd
+- takeScreenshot: capt-${SLUG}-06-agenda
+
+# ── 7 · NIVL Pro: planes con título, periodo y precio ────────────────────
+# Sin Pro, /pro abre directamente la oferta. Con Pro o en prueba, abre «Tu
+# plan» y la oferta se despliega con «Ver NIVL Élite» o «Suscribirme» (solo
+# abre la oferta: no compra). Si StoreKit no carga precios en el simulador,
+# esta captura se repite a mano en TestFlight: nunca se inventa un precio.
+- openLink: nivl://pro
+- extendedWaitUntil:
+    notVisible: '^Cargando NIVL Pro$'
+    timeout: 20000
+- runFlow:
+    when:
+      visible: '^(Ver NIVL Élite|Suscribirme)$'
+    commands:
+      - tapOn: '^(Ver NIVL Élite|Suscribirme)$'
+- extendedWaitUntil:
+    notVisible: '^Cargando precios de la tienda$'
+    timeout: 20000
+    # `optional` en extendedWaitUntil viene de la propuesta; no verificado en
+    # la 2.10.0. Si Maestro lo rechaza, quitarlo: entonces una tienda que no
+    # carga en 20 s hace fallar la escena (y se repite a mano).
+    optional: true
+- waitForAnimationToEnd
+- takeScreenshot: capt-${SLUG}-07-pro

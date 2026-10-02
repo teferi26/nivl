@@ -21,6 +21,7 @@ import type { DayBlock } from './plan';
 import { hhmm } from './plan';
 import { voice } from './voice';
 import { requireHealthConsent } from './health';
+import { MENSAJE_FALLO, mensajeSistema } from './validation';
 
 export const CANALES = {
   despertar: 'despertar',
@@ -71,6 +72,16 @@ export interface EstadoAvisos {
 }
 
 let ultimoError: string | null = null;
+
+/**
+ * Lo que se guarda como «Último error» (se enseña en Perfil): nunca el
+ * `e.message` crudo de la librería. Pasa por `mensajeSistema` y, si este solo
+ * sabe decir el fallo genérico, se queda la frase del contexto, que dice más.
+ */
+function errorDeAvisos(e: unknown, contexto: string): string {
+  const m = mensajeSistema(e);
+  return m === MENSAJE_FALLO ? contexto : m;
+}
 
 export function ultimoErrorDeAvisos(): string | null {
   return ultimoError;
@@ -146,7 +157,7 @@ export async function estadoAvisos(): Promise<EstadoAvisos> {
       permitido: false,
       puedePreguntar: false,
       programados: 0,
-      error: e instanceof Error ? e.message : 'Fallo leyendo el estado de los avisos.',
+      error: errorDeAvisos(e, 'Fallo leyendo el estado de los avisos.'),
     };
   }
 }
@@ -161,7 +172,7 @@ export async function inicializarAvisos(): Promise<boolean> {
   } catch (e) {
     // Antes esto se tragaba en silencio: en Expo Go las notificaciones no
     // están disponibles y no había forma de saberlo. Ahora queda registrado.
-    ultimoError = e instanceof Error ? e.message : 'Los avisos no están disponibles aquí.';
+    ultimoError = errorDeAvisos(e, 'Los avisos no están disponibles aquí.');
     return false;
   }
 }
@@ -193,7 +204,7 @@ export async function programarDespertador(horaMin: number | null): Promise<void
       },
     });
   } catch (e) {
-    ultimoError = e instanceof Error ? e.message : 'No se pudo programar el despertador.';
+    ultimoError = errorDeAvisos(e, 'No se pudo programar el despertador.');
   }
 }
 
@@ -274,7 +285,7 @@ export async function reconciliarAvisosDelDia(
     if (generation !== healthGeneration) { await cancelarAvisosSalud(); return 0; }
     return puestas;
   } catch (e) {
-    ultimoError = e instanceof Error ? e.message : 'No se pudieron programar los avisos del día.';
+    ultimoError = errorDeAvisos(e, 'No se pudieron programar los avisos del día.');
     return 0;
   }
 }
@@ -305,7 +316,7 @@ export async function avisarEn(
       },
     });
   } catch (e) {
-    ultimoError = e instanceof Error ? e.message : 'No se pudo programar el aviso.';
+    ultimoError = errorDeAvisos(e, 'No se pudo programar el aviso.');
   }
 }
 

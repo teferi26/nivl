@@ -1,4 +1,4 @@
-import * as Haptics from 'expo-haptics';
+import { vibrar } from '@/design/haptics';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
@@ -113,7 +113,7 @@ export default function Nutricion() {
       if (merece) {
         const perfil = await ensureProfile(userId);
         await awardXp(perfil, NUTRITION_DAY_XP, 'VIT', 'nutrition_day', { kcal, prote, date: hoy });
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        vibrar('mision');
       }
 
       // Un solo gesto: el parte marca solo la misión de registrar comidas. Los
