@@ -134,3 +134,18 @@ El script no imprime claves, JWT ni correos.
 - **La siembra escribe en el Supabase que usa la app,** que es producción: la build de capturas lleva `environment: production`. Toca solo filas de las cuentas indicadas y no borra nada. Aun así, hay que ejecutarla en seco primero y leer la salida.
 - **Precios:** si StoreKit no carga en el simulador, la escena 7 se repite a mano en TestFlight. Nunca se maquilla un precio.
 - **Maestro 2.10.0, checksum: NO verificado por el Chat 5.** El workflow fija `MAESTRO_SHA256 = 29b675e10cc12080e445e9bfb2e2b4e4dfb9c0f2e30d5884120d258b5e1cd991` para el asset `maestro.zip` de la release `cli-2.10.0` (publicada el 31/08/2026). Ese valor lo **obtuvo el Chat 1 de la API de GitHub** (`gh api repos/mobile-dev-inc/maestro/releases/tags/cli-2.10.0`); el Chat 5 no lo ha verificado. La release trae también `checksums_sha256.txt`. Antes de fiarse, contrástalo con la publicación oficial y no lo copies de este documento. La instalación es descargar el zip y comprobarlo con `shasum -a 256 -c`, como en el workflow propuesto por el Chat 1 @`8e2fa59`. Nunca `curl | bash`.
+
+
+## Excepción de economía (aprobada por el coordinador el 02/10/2026)
+
+La regla del proyecto es que la economía solo se mueve por RPC. Esta siembra escribe `xp_total`, la racha y las completions de cuentas **ficticias** con la clave de servicio. El coordinador lo aprobó solo para este script y con estas guardas, que el script comprueba antes de escribir nada:
+
+1. **`CAPTURE_IDS`** (obligatoria, también en seco): cada cuenta tocada (demo y rivales) tiene que estar en esta lista explícita.
+2. **`PROTECTED_IDS`** (obligatoria con `--apply`): la revisora de Apple, las cuentas Pro y Élite de revisión y la del dueño. Si alguna cuenta tocada está en la lista, el script se detiene.
+3. **`CAPTURE_EMAIL_PREFIX`** (obligatoria con `--apply`): con la API de administración se lee el correo de cada cuenta y, si no empieza por ese prefijo, el script se detiene sin escribir.
+
+Reparto:
+- La cuenta demo de capturas tiene Pro por concesión manual de servidor, separada de las de revisión; la concede el coordinador.
+- Las cuentas ficticias (correo y contraseña) las crea el usuario.
+- El coordinador ejecuta la siembra sin `--sesiones`, con la clave de servicio.
+- Lo que necesita sesión (`sync_rank`, amistades, liga) lo ejecuta el usuario con sus credenciales en el entorno.
