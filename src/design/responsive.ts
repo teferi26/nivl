@@ -73,3 +73,13 @@ export function huecoContenido(ventana: number, insetIzquierdo = 0): Hueco {
   const ancho = Math.max(0, base - resta);
   return { ancho, sizeClass: marcoDe(ancho).sizeClass, cabeAside: cabeAside(ancho) };
 }
+
+/**
+ * Navegación que pinta (tabs)/_layout.tsx para una ventana de este ancho. Se
+ * decide con la VENTANA, no con el hueco: entre 600 y 671 la ventana es
+ * `medium` (raíl) pero el hueco que queda tras el raíl de 72 es `compact`, así
+ * que `marcoDe(hueco).nav` diría 'tabs' cuando lo que hay en pantalla es el raíl.
+ */
+export function navDeVentana(ventana: number): NavKind {
+  return marcoDe(ventana).nav;
+}

@@ -24,6 +24,7 @@ import {
   Stat,
   StatRow,
   Tag,
+  Toast,
   volver,
 } from '@/components/ui';
 import { confirmar } from '@/components/ui/confirmar';
@@ -83,6 +84,9 @@ export default function DungeonDetail() {
   const cobrando = useRef(false);
   const anadiendo = useRef(false);
   const [adding, setAdding] = useState(false);
+  // Tarea que se está cobrando: su Check muestra `busy` mientras va la red.
+  const [marcando, setMarcando] = useState<string | null>(null);
+  const [toast, setToast] = useState<string | null>(null);
   const [loaded, setLoaded] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
 
@@ -143,8 +147,16 @@ export default function DungeonDetail() {
     if (task.done) return;
     saving.current = true;
     setBusy(true);
+    setMarcando(task.id);
+    // Optimista: la fila se marca al instante (y queda desactivada). Si algo
+    // falla, se revierte.
+    const fijarHecha = (hecha: boolean) =>
+      setTasks((prev) => prev.map((t) => (t.id === task.id ? { ...t, done: hecha } : t)));
+    fijarHecha(true);
+    let marcadaEnServidor = false;
     try {
       await setTaskDone(task.id, true);
+      marcadaEnServidor = true;
       const profile = await ensureProfile(userId);
       const xp = dungeonTaskXp(task.difficulty, task.is_boss);
       const res = await awardXp(profile, xp, dungeon.stat, 'dungeon_task', {
@@ -160,9 +172,15 @@ export default function DungeonDetail() {
       if (res.leveledUp) setLevelUp(res.newLevel);
       await load();
     } catch (e) {
+      fijarHecha(false);
+      // Si la tarea llegó a marcarse pero el XP no se cobró, se desmarca para
+      // que se pueda volver a intentar (el premio va por task_id: no se paga
+      // dos veces). Si esto también falla, la próxima carga dirá la verdad.
+      if (marcadaEnServidor) setTaskDone(task.id, false).catch(() => undefined);
       avisar('Error del sistema', mensajeSistema(e));
     } finally {
       saving.current = false;
+      setMarcando(null);
       setBusy(false);
     }
   };
@@ -184,13 +202,20 @@ export default function DungeonDetail() {
         rank: dungeon.rank,
       });
       sincronizarRango().catch(() => []);
-      const cleared = await countClearedDungeons();
-      const fresh = await unlockAchievements(userId, evaluateAchievements({ dungeonsCleared: cleared }));
+      // Los logros van en su propio try: el botín ya está pagado, y si fallan
+      // no puede salir «Error del sistema» (parecería que el cobro no entró).
+      let fresh: { name: string }[] = [];
+      try {
+        const cleared = await countClearedDungeons();
+        fresh = await unlockAchievements(userId, evaluateAchievements({ dungeonsCleared: cleared }));
+      } catch {
+        fresh = [];
+      }
       vibrar('misionExtra');
-      avisar(
-        'CAMPAÑA DESPEJADA',
-        `${voice.dungeonCleared(dungeon.title)}\n\nBotín: +${Math.max(0, res.profile.xp_total - profile.xp_total)} XP${fresh.length > 0 ? `\n${voice.achievement()} ${fresh.map((a) => a.name).join(', ')}` : ''}`,
-      );
+      const pagado = Math.max(0, res.profile.xp_total - profile.xp_total);
+      // La celebración, en el Toast del kit; el texto largo del sistema ya lo
+      // pinta la tarjeta de despejada al recargar.
+      setToast(`Campaña despejada · +${pagado} XP${fresh.length > 0 ? ` · ${fresh.map((a) => a.name).join(', ')}` : ''}`);
       if (res.leveledUp) setLevelUp(res.newLevel);
       await load();
     } catch (e) {
@@ -210,9 +235,10 @@ export default function DungeonDetail() {
       destructivo: true,
     });
     if (!ok) return;
-    vibrar('destructiva');
     try {
       await deleteDungeon(dungeon.id);
+      // La háptica de borrado, solo si se ha borrado.
+      vibrar('destructiva');
       volver(router);
     } catch (e) {
       avisar('Error del sistema', mensajeSistema(e));
@@ -222,9 +248,9 @@ export default function DungeonDetail() {
   const removeTask = async (t: DungeonTask) => {
     const ok = await confirmar({ titulo: 'Eliminar tarea', mensaje: t.title, confirmar: 'Eliminar', destructivo: true });
     if (!ok) return;
-    vibrar('destructiva');
     try {
       await deleteTask(t.id);
+      vibrar('destructiva');
       await load();
     } catch (e) {
       avisar('Error del sistema', mensajeSistema(e));
@@ -277,7 +303,7 @@ export default function DungeonDetail() {
         : `${done}/${tasks.length} tareas · entrena ${dungeon.stat} · botín ${loot} XP`;
 
   return (
-    <Screen>
+    <Screen overlay={<Toast message={toast} onDone={() => setToast(null)} />}>
       <Stagger>
         <FadeIn index={0}>
           <ScreenHeader
@@ -299,7 +325,9 @@ export default function DungeonDetail() {
         </FadeIn>
 
         <FadeIn index={1}>
-          <Card variant={cleared ? 'logro' : active && fecha.vencida ? 'alerta' : 'surface'}>
+          {/* Despejada: el grano va solo en la tarjeta de despejada de abajo
+              (una sola textura por pantalla, SISTEMA §0). */}
+          <Card variant={active && fecha.vencida ? 'alerta' : 'surface'}>
             <View style={styles.progressRow}>
               <ProgressRing ratio={ratio} size={84} stroke={5} sublabel={cleared ? 'despejada' : 'hecho'} />
               <StatRow style={styles.stats}>
@@ -361,7 +389,7 @@ export default function DungeonDetail() {
                     <Row
                       key={t.id}
                       first={i === 0}
-                      leading={<Check checked={t.done} />}
+                      leading={<Check checked={t.done} busy={marcando === t.id} />}
                       title={t.title}
                       done={t.done}
                       detail={

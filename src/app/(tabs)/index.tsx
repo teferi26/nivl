@@ -32,8 +32,8 @@ import { avisar, confirmar } from '@/components/ui/confirmar';
 import { useMovimientoReducido } from '@/components/ui/motion';
 import { vibrar } from '@/design/haptics';
 import { cabeAside } from '@/design/responsive';
-import { ink } from '@/design/tokens';
-import { useAnchoUtil, useSizeClass } from '@/design/useSizeClass';
+import { ink, type as tipo } from '@/design/tokens';
+import { useAnchoUtil, useNavActual } from '@/design/useSizeClass';
 import { evaluateAchievements, fetchUnlocked, sincronizarRango, unlockAchievements } from '@/lib/achievements';
 import { tocarApertura } from '@/lib/apertura';
 import { useAuth } from '@/lib/auth';
@@ -72,9 +72,19 @@ function saludo(nombre: string): string {
   return `${franja}, ${nombre}.`;
 }
 
-// Hueco de la rejilla de módulos.
+// Hueco de la rejilla de módulos y lado de referencia de un azulejo: cuatro
+// por fila como poco, y más cuando la rejilla es ancha.
 const HUECO_MODULOS = 8;
-const COLUMNAS_MODULOS = 4;
+const LADO_MODULO = 112;
+
+// Hitos de racha que se celebran al cerrar el día delante del usuario.
+const HITOS_RACHA = new Set([7, 30, 100]);
+
+/** Un aviso en cola: el id remonta el Toast aunque dos textos seguidos coincidan. */
+interface Aviso {
+  id: number;
+  texto: string;
+}
 
 // Lo último que se supo de si la cuenta tiene coach. Vive fuera del componente
 // para que volver a la pestaña no repinte Hoy "sin saberlo" medio segundo.
@@ -107,7 +117,9 @@ export default function Hoy() {
   const [levelUp, setLevelUp] = useState<number | null>(null);
   const [busyQuestId, setBusyQuestId] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
-  const [toast, setToast] = useState<string | null>(null);
+  // Los avisos van en cola, de uno en uno: XP, racha hito, logro y rango
+  // pueden llegar a la vez y antes se pisaban.
+  const [avisos, setAvisos] = useState<Aviso[]>([]);
   const [plan, setPlan] = useState<PlanConBloques | null>(null);
   const [showMore, setShowMore] = useState(false);
   // Hasta la primera carga no se sabe si hay misiones o plan: se pintan huecos,
@@ -132,7 +144,9 @@ export default function Hoy() {
   const pulso = useRef(new Animated.Value(1)).current;
   const reducido = useMovimientoReducido();
   const ancho = useAnchoUtil();
-  const { nav } = useSizeClass();
+  // La Agenda se ofrece desde aquí solo con la barra inferior de verdad en
+  // pantalla (sale del ancho de la ventana, no del hueco tras el raíl).
+  const navActual = useNavActual();
   // Con el panel lateral (expanded), rango y rivalidad van ahí y no se repiten.
   const conPanel = cabeAside(ancho);
   // El cierre que ya ha vibrado: processPendingDays puede devolver el mismo
@@ -142,8 +156,20 @@ export default function Hoy() {
   // para que un doble toque en una opción no complete dos veces.
   const sheetRef = useRef<Quest | null>(null);
 
+  // Espejo síncrono de `completions`: dos misiones completadas seguidas leían
+  // el mismo estado viejo y ninguna veía que era la última (día perfecto) o
+  // la que abría la recuperación.
+  const completionsRef = useRef<Record<string, Completion>>({});
+
   const completing = useRef<Set<string>>(new Set());
-  const clearToast = useCallback(() => setToast(null), []);
+  const siguienteAviso = useRef(0);
+  const mostrar = useCallback((texto: string) => {
+    siguienteAviso.current += 1;
+    const id = siguienteAviso.current;
+    // Tope corto: una ráfaga no deja diez avisos encolados durante veinte segundos.
+    setAvisos((cola) => (cola.length >= 4 ? cola : [...cola, { id, texto }]));
+  }, []);
+  const clearToast = useCallback(() => setAvisos((cola) => cola.slice(1)), []);
 
   /**
    * Pide al servidor el rango merecido. No bloquea nada ni lanza: si sube,
@@ -157,13 +183,13 @@ export default function Hoy() {
         if (!letra) return;
         // TODO(L3): ceremonia
         vibrar('rango');
-        setToast(`RANGO ${letra}`);
+        mostrar(`RANGO ${letra}`);
         fetchUnlocked()
           .then((logros) => setRango(estadoDe(prof, logros).rango))
           .catch(() => setRango((r) => (r && compararRangos(r, letra) > 0 ? r : letra)));
       })
       .catch(() => {});
-  }, []);
+  }, [mostrar]);
 
   const load = useCallback(async () => {
     if (!userId) return;
@@ -194,6 +220,37 @@ export default function Hoy() {
       ]);
       let quests = misiones;
       const { profile: prof, result } = await processPendingDays(perfil, quests);
+      // El cierre ya está aplicado: perfil e informe se enseñan pase lo que
+      // pase después. Antes un fallo en lo que sigue (los logros, las
+      // completadas) acababa en loadError y el informe del cierre se perdía.
+      setProfile(prof);
+      // Siempre (incluido null): un null borra el aviso de cierre de ayer, que
+      // antes se quedaba pegado indefinidamente al cambiar de pestaña.
+      setDayResult(result);
+      // Los logros también se ganan en el cierre: subir de nivel por una
+      // penalización recuperada o cruzar un hito de racha cuenta igual que
+      // completar una misión. Accesorio: no se espera ni puede tumbar Hoy.
+      if (result) {
+        completionStats()
+          .then((stats) =>
+            unlockAchievements(
+              userId,
+              evaluateAchievements({
+                totalCompletions: stats.total,
+                evidenceCount: stats.withEvidence,
+                streak: prof.streak_days,
+                level: levelFromXp(prof.xp_total).level,
+                penaltyRedeemed: false,
+              }),
+            ),
+          )
+          .catch(() => {});
+        sincronizar(prof);
+        if ((result.penaltyXp > 0 || result.streakLost) && cierreVibrado.current !== result) {
+          cierreVibrado.current = result;
+          vibrar('penalizacion');
+        }
+      }
       if (result && result.penaltyXp > 0) {
         quests = await fetchQuests();
       }
@@ -220,39 +277,14 @@ export default function Hoy() {
       const map: Record<string, Completion> = {};
       for (const c of done) map[c.quest_id] = c;
 
-      // Los logros también se ganan en el cierre: subir de nivel por una
-      // penalización recuperada o cruzar un hito de racha cuenta igual que
-      // completar una misión. Antes solo se recalculaban al completar.
-      if (result) {
-        const stats = await completionStats();
-        await unlockAchievements(
-          userId,
-          evaluateAchievements({
-            totalCompletions: stats.total,
-            evidenceCount: stats.withEvidence,
-            streak: prof.streak_days,
-            level: levelFromXp(prof.xp_total).level,
-            penaltyRedeemed: false,
-          }),
-        ).catch(() => {});
-        sincronizar(prof);
-        if ((result.penaltyXp > 0 || result.streakLost) && cierreVibrado.current !== result) {
-          cierreVibrado.current = result;
-          vibrar('penalizacion');
-        }
-      }
-
-      setProfile(prof);
       setRotosPrevios(rotos);
       // Contrato del Chat 5: el rango sale de estadoDe aunque sin la 0051 sea E.
       if (logros) setRango(estadoDe(prof, logros).rango);
       else setRango((r) => r ?? 'E');
       setPlan(planDeHoy);
       setTodayQuests(questsScheduledOn(quests, today));
+      completionsRef.current = map;
       setCompletions(map);
-      // Siempre (incluido null): un null borra el aviso de cierre de ayer, que
-      // antes se quedaba pegado indefinidamente al cambiar de pestaña.
-      setDayResult(result);
       setLoadError(null);
     } catch (e) {
       // En línea y con reintento, no en una alerta del sistema operativo: Hoy
@@ -325,10 +357,12 @@ export default function Hoy() {
       const res = await completeQuest(profile, quest, evidence);
       vibrar(evidence !== null || res.bonusEarned > 0 || quest.is_bonus ? 'misionExtra' : 'mision');
       setProfile(res.profile);
-      setToast(res.bonusEarned > 0 ? `+${res.bonusEarned} PB` : `+${res.xp} XP · ${quest.stat}`);
+      mostrar(res.bonusEarned > 0 ? `+${res.bonusEarned} PB` : `+${res.xp} XP · ${quest.stat}`);
       sincronizar(res.profile);
-      setCompletions((prev) => ({
-        ...prev,
+      // Antes y después, leídos del espejo síncrono y no del estado del render.
+      const antes = completionsRef.current;
+      const despues: Record<string, Completion> = {
+        ...antes,
         [quest.id]: {
           id: `local-${quest.id}`,
           user_id: profile.id,
@@ -338,12 +372,25 @@ export default function Hoy() {
           xp_awarded: res.xp,
           evidence_url: evidence ? 'local' : null,
         },
-      }));
+      };
+      completionsRef.current = despues;
+      setCompletions(despues);
       if (res.leveledUp) setLevelUp(res.newLevel);
+
+      // Racha hito: el día acaba de cerrarse delante del usuario y la racha
+      // que se enseña cae en 7, 30 o 100.
+      const rachaAntes = rachaVisible(profile.streak_days, todayQuests, new Set(Object.keys(antes)));
+      const rachaDespues = rachaVisible(res.profile.streak_days, todayQuests, new Set(Object.keys(despues)));
+      if (!rachaAntes.hoyCerrado && rachaDespues.hoyCerrado && HITOS_RACHA.has(rachaDespues.valor)) {
+        // Después del golpe de la misión: dos a la vez se funden en uno en iOS.
+        setTimeout(() => vibrar('rachaHito'), 300);
+        mostrar(`RACHA ${rachaDespues.valor}`);
+      }
 
       // RET-03: esta misión abre la recuperación. Es el momento que motiva:
       // se dice en pantalla y al lector de pantalla.
-      if (!quest.is_penalty && !recuperacionAbierta && todayQuests.some((q) => q.is_penalty && !completions[q.id])) {
+      const abiertaAntes = recuperacionDesbloqueada(todayQuests, new Set(Object.keys(antes)), today);
+      if (!quest.is_penalty && !abiertaAntes && todayQuests.some((q) => q.is_penalty && !despues[q.id])) {
         setAvisoRecuperacion(true);
         // Después del golpe de la misión: dos a la vez se funden en uno en iOS.
         setTimeout(() => vibrar('recuperacion'), 300);
@@ -352,7 +399,7 @@ export default function Hoy() {
 
       // Día perfecto: era la última pendiente. Solo se celebra cuando pasa
       // delante del usuario, no al cargar un día que ya estaba cerrado.
-      const quedan = todayQuests.filter((q) => q.id !== quest.id && !completions[q.id]).length;
+      const quedan = todayQuests.filter((q) => !despues[q.id]).length;
       if (quedan === 0 && todayQuests.length > 0) {
         setDiaPerfecto(true);
         pulso.setValue(1);
@@ -381,13 +428,14 @@ export default function Hoy() {
             penaltyRedeemed: res.wasPenalty,
           }),
         );
-        if (fresh.length > 0 && !res.leveledUp) {
-          avisar('LOGRO DESBLOQUEADO', `${voice.achievement()}\n${fresh.map((a) => a.name).join('\n')}`);
+        if (!res.leveledUp) {
+          for (const a of fresh) mostrar(`LOGRO · ${a.name}`);
         }
       } catch {
         // Los logros se vuelven a evaluar en la siguiente misión o al cierre.
       }
     } catch (e) {
+      vibrar('penalizacion');
       avisar('Error del sistema', mensajeSistema(e));
     }
   };
@@ -510,11 +558,12 @@ export default function Hoy() {
   );
   const pendingCount = sorted.length - completedCount;
   const modulos = modulesFor(profile?.profile_kind);
-  // Cuatro por fila, medido sobre el ancho REAL de la rejilla (onLayout): con
-  // `width: '23.5%'` + gap 8 la cuarta no cabía, y con el ancho de la ventana
-  // salía mal en tablet (márgenes de 32/48, raíl, panel lateral).
-  const tile =
-    anchoRejilla > 0 ? Math.floor((anchoRejilla - HUECO_MODULOS * (COLUMNAS_MODULOS - 1)) / COLUMNAS_MODULOS) : 0;
+  // Cuatro por fila como poco (más si la rejilla es ancha), medido sobre el
+  // ancho REAL de la rejilla (onLayout): con `width: '23.5%'` + gap 8 la cuarta
+  // no cabía, y con el ancho de la ventana salía mal en tablet (márgenes de
+  // 32/48, raíl, panel lateral).
+  const columnas = Math.max(4, Math.floor(anchoRejilla / LADO_MODULO));
+  const tile = anchoRejilla > 0 ? Math.floor((anchoRejilla - HUECO_MODULOS * (columnas - 1)) / columnas) : 0;
   // RET-05: lo que hay en juego hoy, con el criterio del cierre. Congelado no
   // se juzga, así que no se calcula.
   const enJuego =
@@ -531,6 +580,13 @@ export default function Hoy() {
         )
       : null;
   const cierreAlerta = !!dayResult && (dayResult.penaltyXp > 0 || dayResult.streakLost);
+  // La tarjeta de alerta del cierre lleva la trama de la pantalla: la sección
+  // de misiones no la repite (SISTEMA §0, sin acumular).
+  const alertaCierreVisible = loaded && cierreAlerta;
+  const penalizacionPendiente = todayQuests.some((q) => q.is_penalty && !completions[q.id]);
+  // Quedan misiones normales (ni extra ni penalización) sin hacer: solo
+  // entonces tiene sentido «A medianoche, lo pendiente se penaliza».
+  const quedanNormales = sorted.some((q) => !q.is_penalty && !q.is_bonus && !completions[q.id]);
   const cierreSinNada =
     !!dayResult &&
     !cierreAlerta &&
@@ -564,9 +620,19 @@ export default function Hoy() {
     <Screen
       refreshing={refreshing}
       onRefresh={onRefresh}
-      overlay={<Toast message={toast} onDone={clearToast} />}
+      overlay={<Toast key={avisos[0]?.id ?? 0} message={avisos[0]?.texto ?? null} onDone={clearToast} />}
       aside={
-        <PanelHoy loaded={loaded} profile={profile} rango={rango} racha={racha} rivalidad={rivalidad} esPro={esPro} />
+        <PanelHoy
+          loaded={loaded}
+          profile={profile}
+          rango={rango}
+          // Con la línea RET-05 a la vista, la pista del panel tampoco se pinta
+          // (faltan 0 = sin pista): darían dos números distintos.
+          racha={enJuego ? { ...racha, faltan: 0 } : racha}
+          rivalidad={rivalidad}
+          esPro={esPro}
+          diaPerfectoVisible={celebrando}
+        />
       }
     >
       <Stagger>
@@ -578,7 +644,7 @@ export default function Hoy() {
             // En compact la Agenda no está en la barra inferior: se llega desde
             // aquí. En el raíl y la barra lateral es un destino propio.
             action={
-              nav === 'tabs'
+              navActual === 'tabs'
                 ? { icon: 'calendar-outline', label: 'Abrir la agenda', onPress: () => router.push('/(tabs)/agenda') }
                 : undefined
             }
@@ -613,7 +679,8 @@ export default function Hoy() {
 
         {!loaded ? (
           <View accessibilityRole="progressbar" accessibilityLabel="Cargando tu día">
-            <Skeleton height={132} style={styles.skCard} />
+            {/* La tarjeta de rango va en el panel lateral cuando lo hay. */}
+            {!conPanel ? <Skeleton height={132} style={styles.skCard} /> : null}
             <Skeleton height={11} width={120} style={styles.skEyebrow} />
             <Skeleton height={64} style={styles.skCard} />
             <Skeleton height={11} width={140} style={styles.skEyebrow} />
@@ -623,7 +690,13 @@ export default function Hoy() {
 
         {loaded && profile && !conPanel ? (
           <FadeIn index={1}>
-            <TarjetaRango profile={profile} rango={rango} racha={racha} />
+            <TarjetaRango
+              profile={profile}
+              rango={rango}
+              racha={racha}
+              ocultarPista={!!enJuego}
+              diaPerfectoVisible={celebrando}
+            />
           </FadeIn>
         ) : null}
 
@@ -658,12 +731,15 @@ export default function Hoy() {
 
         {loaded && dayResult ? (
           <FadeIn index={2}>
-            <Card variant={cierreAlerta ? 'alerta' : 'logro'}>
+            {/* Grano solo para el día perfecto: el informe sin alerta va en contorno. */}
+            <Card variant={cierreAlerta ? 'alerta' : 'outline'}>
               <Text style={styles.alertTitle}>{cierreAlerta ? 'ALERTA DEL SISTEMA' : 'INFORME DEL CIERRE'}</Text>
               {dayResult.stonesUsed > 0 ? <Text style={styles.alertBody}>{voice.stoneUsed()}</Text> : null}
               {dayResult.penaltyXp > 0 ? (
                 <Text style={styles.alertBody}>
-                  {voice.penaltyApplied(dayResult.penaltyXp)}
+                  {/* Frase neutra: voice.penaltyApplied puede amenazar («será
+                      permanente») y la salida ya se dice al final. */}
+                  El sistema ha aplicado −{dayResult.penaltyXp} XP.
                   {dayResult.levelsLost > 0
                     ? ` Has perdido ${dayResult.levelsLost} ${dayResult.levelsLost === 1 ? 'nivel' : 'niveles'}.`
                     : ''}
@@ -675,12 +751,17 @@ export default function Hoy() {
                 <Text style={styles.alertBody}>
                   Solo se cobran los 3 primeros días: {dayResult.diasSinCobrar}{' '}
                   {dayResult.diasSinCobrar === 1 ? 'día no te cuesta' : 'días no te cuestan'} XP.
-                  {todayQuests.some((q) => q.is_penalty && !completions[q.id]) ? ' Hoy puedes recuperarlo en la arena.' : ''}
                 </Text>
               ) : null}
               {dayResult.stonesEarned > 0 ? <Text style={styles.alertBody}>{voice.stoneEarned()}</Text> : null}
               {/* Un cierre limpio sin nada que contar no deja la tarjeta vacía. */}
               {cierreSinNada ? <Text style={styles.alertBody}>Día cerrado. Racha {profile?.streak_days ?? 0}.</Text> : null}
+              {/* La tarjeta termina SIEMPRE con la salida si hay algo que recuperar. */}
+              {penalizacionPendiente ? (
+                <Text style={styles.alertBody}>
+                  Hoy puedes recuperarlo: completa una de tus misiones y se abre la arena.
+                </Text>
+              ) : null}
             </Card>
           </FadeIn>
         ) : null}
@@ -722,7 +803,7 @@ export default function Hoy() {
           <Section
             title="Misiones de hoy"
             meta={sorted.length > 0 ? `${completedCount}/${sorted.length}` : undefined}
-            tone={enJuego?.alerta ? 'alerta' : undefined}
+            tone={enJuego?.alerta && !alertaCierreVisible ? 'alerta' : undefined}
           >
             {sorted.length === 0 ? (
               // Con la carga fallida no se sabe si hay misiones: el aviso de
@@ -755,7 +836,7 @@ export default function Hoy() {
                 ))}
               </Card>
             )}
-            {avisoRecuperacion && recuperacionAbierta && todayQuests.some((q) => q.is_penalty && !completions[q.id]) ? (
+            {avisoRecuperacion && recuperacionAbierta && penalizacionPendiente ? (
               <Text style={styles.recuperacionAbierta} accessibilityRole="alert">
                 La recuperación está abierta. Recupera lo perdido.
               </Text>
@@ -763,7 +844,9 @@ export default function Hoy() {
             {sorted.length > 0 && pendingCount === 0 ? (
               <Text style={styles.allDone}>{voice.allDone()}</Text>
             ) : null}
-            {pendingCount > 0 && !frozen ? (
+            {/* Sin línea RET-05 y con solo extras o la penalización por hacer,
+                «A medianoche…» no es verdad: no se pinta. */}
+            {pendingCount > 0 && !frozen && (enJuego || quedanNormales) ? (
               <Text style={[styles.pendingNote, enJuego?.alerta && styles.pendingAlerta]}>
                 {enJuego ? enJuego.texto : 'A medianoche, lo pendiente se penaliza.'}
               </Text>
@@ -842,16 +925,35 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   alertBody: {
-    fontFamily: fonts.body,
-    fontSize: 13.5,
+    fontFamily: tipo.bodySm.family,
+    fontSize: tipo.bodySm.size,
+    lineHeight: tipo.bodySm.lineHeight,
     color: colors.text,
-    lineHeight: 19,
     marginBottom: 4,
   },
   questCard: { paddingHorizontal: 16, paddingVertical: 4 },
-  allDone: { fontFamily: fonts.semibold, fontSize: 13, color: colors.accent, marginTop: 4 },
-  recuperacionAbierta: { fontFamily: fonts.semibold, fontSize: 13, color: colors.text, marginTop: 10 },
-  pendingNote: { fontFamily: fonts.body, fontSize: 12, color: colors.textFaint, marginTop: 4 },
+  allDone: {
+    fontFamily: fonts.semibold,
+    fontSize: tipo.bodySm.size,
+    lineHeight: tipo.bodySm.lineHeight,
+    color: ink.ink9,
+    marginTop: 4,
+  },
+  recuperacionAbierta: {
+    fontFamily: fonts.semibold,
+    fontSize: tipo.bodySm.size,
+    lineHeight: tipo.bodySm.lineHeight,
+    color: colors.text,
+    marginTop: 10,
+  },
+  // RET-05: bodySm (14/20) en ink8.
+  pendingNote: {
+    fontFamily: tipo.bodySm.family,
+    fontSize: tipo.bodySm.size,
+    lineHeight: tipo.bodySm.lineHeight,
+    color: ink.ink8,
+    marginTop: 4,
+  },
   pendingAlerta: { fontFamily: fonts.semibold, color: ink.ink9 },
   moduleGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: HUECO_MODULOS },
   // El lado del azulejo se calcula con el ancho medido de la rejilla (ver `tile`).

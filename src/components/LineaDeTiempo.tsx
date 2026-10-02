@@ -75,22 +75,18 @@ export function LineaDeTiempo({
       <View style={styles.carril} pointerEvents="box-none">
         {colocados.map(({ item, top, alto: altoItem, columna, columnas }) => {
           const anchoPct = 100 / columnas;
-          return (
-            <Pressable
-              key={item.id}
-              onPress={() => onPress?.(item)}
-              style={[
-                styles.bloque,
-                {
-                  top,
-                  height: altoItem - 3,
-                  left: `${columna * anchoPct}%`,
-                  width: `${anchoPct}%`,
-                },
-              ]}
-              accessibilityRole="button"
-              accessibilityLabel={`${hhmm(item.inicio)} ${item.titulo}${item.hecho ? ', hecho' : ''}`}
-            >
+          const estilo = [
+            styles.bloque,
+            {
+              top,
+              height: altoItem - 3,
+              left: `${columna * anchoPct}%` as const,
+              width: `${anchoPct}%` as const,
+            },
+          ];
+          const etiqueta = `${hhmm(item.inicio)} ${item.titulo}${item.hecho ? ', hecho' : ''}`;
+          const contenido = (
+            <>
               <View style={styles.bloqueCabecera}>
                 <Marca item={item} />
                 <Text style={[styles.bloqueTitulo, item.hecho && styles.tachado]} numberOfLines={1}>
@@ -107,6 +103,26 @@ export function LineaDeTiempo({
                   {item.detalle ? ` · ${item.detalle}` : ''}
                 </Text>
               ) : null}
+            </>
+          );
+          // Los bloques del plan no hacen nada al tocarlos en la Agenda (se
+          // marcan desde Hoy): no se anuncian como botón. Los eventos, sí.
+          if (!onPress || item.tipo === 'bloque') {
+            return (
+              <View key={item.id} style={estilo} accessible accessibilityRole="text" accessibilityLabel={etiqueta}>
+                {contenido}
+              </View>
+            );
+          }
+          return (
+            <Pressable
+              key={item.id}
+              onPress={() => onPress(item)}
+              style={estilo}
+              accessibilityRole="button"
+              accessibilityLabel={etiqueta}
+            >
+              {contenido}
             </Pressable>
           );
         })}

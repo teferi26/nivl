@@ -3,14 +3,15 @@ import { useFocusEffect } from 'expo-router';
 import { useCallback, useRef, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { QuestForm } from '@/components/QuestForm';
-import { SystemButton } from '@/components/SystemButton';
 import { XPBar } from '@/components/XPBar';
 import {
   avisar,
+  Button,
   Card,
   Check,
   EmptyState,
   FadeIn,
+  PressScale,
   Row,
   RowValue,
   Screen,
@@ -79,6 +80,13 @@ export default function Habitos() {
   const [busy, setBusy] = useState(false);
   const [reglas, setReglas] = useState<Rule[]>([]);
   const [cumplidas, setCumplidas] = useState<Set<string>>(new Set());
+  // Copia síncrona de `cumplidas`: alternarRegla decide con ella si la regla
+  // estaba marcada, no con el `cumplidas` de la clausura del render en que se
+  // tocó (que puede ser viejo si llega un `cargar` entre medias).
+  const cumplidasRef = useRef<Set<string>>(new Set());
+  // Reglas con una escritura en vuelo: un segundo toque sobre la misma regla
+  // antes de que vuelva la red se ignora (si no, marcar y desmarcar se cruzan).
+  const reglasEnVuelo = useRef<Set<string>>(new Set());
   const pendientesReglas = reglas.filter((r) => !cumplidas.has(r.id)).length;
 
   const cargar = useCallback(async () => {
@@ -98,6 +106,7 @@ export default function Habitos() {
       setEnCurso(ordenarPorCercania(todos.filter((q) => !q.acquired_at), mapa));
       setAdquiridos(todos.filter((q) => q.acquired_at));
       setReglas(rs);
+      cumplidasRef.current = checks;
       setCumplidas(checks);
       setLoadError(null);
     } catch (e) {
@@ -120,27 +129,34 @@ export default function Habitos() {
    * Es optimista a propósito: son seis toques seguidos cada noche y esperar a
    * la red en cada uno haría que se sintiera rota. Si falla, se revierte.
    */
-  const alternarRegla = async (r: Rule) => {
-    if (!userId) return;
-    const estaba = cumplidas.has(r.id);
-    setCumplidas((prev) => {
+  const fijarRegla = (id: string, marcada: boolean) => {
+    // Idempotente (añade o quita, no alterna) y en forma funcional: no depende
+    // del estado que viera el render que lo llamó.
+    const aplicar = (prev: Set<string>) => {
+      if (prev.has(id) === marcada) return prev;
       const s = new Set(prev);
-      if (estaba) s.delete(r.id);
-      else s.add(r.id);
+      if (marcada) s.add(id);
+      else s.delete(id);
       return s;
-    });
+    };
+    cumplidasRef.current = aplicar(cumplidasRef.current);
+    setCumplidas(aplicar);
+  };
+
+  const alternarRegla = async (r: Rule) => {
+    if (!userId || reglasEnVuelo.current.has(r.id)) return;
+    reglasEnVuelo.current.add(r.id);
+    const estaba = cumplidasRef.current.has(r.id);
+    fijarRegla(r.id, !estaba);
     try {
       if (estaba) await desmarcarRegla(r.id, hoy);
       else await marcarReglaCumplida(userId, r.id, hoy);
       if (!estaba) vibrar('seleccion');
     } catch (e) {
-      setCumplidas((prev) => {
-        const s = new Set(prev);
-        if (estaba) s.add(r.id);
-        else s.delete(r.id);
-        return s;
-      });
+      fijarRegla(r.id, estaba);
       avisar('Error del sistema', mensajeSistema(e));
+    } finally {
+      reglasEnVuelo.current.delete(r.id);
     }
   };
 
@@ -204,7 +220,9 @@ export default function Habitos() {
             eyebrow="Constancia"
             title="Hábitos"
             subtitle={`A los ${HABIT_TARGET_DAYS} días seguidos un hábito es tuyo. Cada uno cuenta su propia racha.`}
-            action={{ icon: 'add', label: 'Nuevo hábito', onPress: () => setFormOpen(true), solid: true }}
+            // Sólida solo si hay hábitos en forja: sin ellos, la acción
+            // principal (la única inversión) es la del estado vacío.
+            action={{ icon: 'add', label: 'Nuevo hábito', onPress: () => setFormOpen(true), solid: enCurso.length > 0 }}
           />
         </FadeIn>
 
@@ -293,52 +311,60 @@ export default function Habitos() {
               {enCurso.map((q, i) => {
                 const p = progresos.get(q.id);
                 if (!p) return null;
+                const editar = () => {
+                  setEditando(q);
+                  setFormOpen(true);
+                };
+                const cuerpo = (
+                  <>
+                    <View style={styles.fila}>
+                      <Text style={styles.nombre} numberOfLines={1}>
+                        {q.title}
+                      </Text>
+                      <Text style={[styles.racha, p.consolidable && styles.rachaListo]}>
+                        {p.racha}
+                        <Text style={styles.rachaObjetivo}> / {p.objetivo}</Text>
+                      </Text>
+                    </View>
+                    <View style={{ marginTop: 10 }}>
+                      <XPBar ratio={Math.min(1, p.racha / p.objetivo)} height={8} segments={p.objetivo} />
+                    </View>
+                    <View style={styles.metaFila}>
+                      <Semana dias={q.days_of_week} />
+                      <Text style={[styles.meta, p.consolidable && styles.metaListo]}>
+                        {p.consolidable
+                          ? 'Listo para consolidar'
+                          : p.restantes === 1
+                            ? 'Falta 1 día'
+                            : `Faltan ${p.restantes} días`}
+                      </Text>
+                    </View>
+                  </>
+                );
                 return (
                   <FadeIn key={q.id} index={i}>
-                    <Card
-                      onPress={() => {
-                        setEditando(q);
-                        setFormOpen(true);
-                      }}
-                      variant={p.consolidable ? 'logro' : 'surface'}
-                      accessibilityLabel={`Editar ${q.title}`}
-                    >
-                      <View style={styles.fila}>
-                        <Text style={styles.nombre} numberOfLines={1}>
-                          {q.title}
-                        </Text>
-                        <Text style={[styles.racha, p.consolidable && styles.rachaListo]}>
-                          {p.racha}
-                          <Text style={styles.rachaObjetivo}> / {p.objetivo}</Text>
-                        </Text>
-                      </View>
-                      <View style={{ marginTop: 10 }}>
-                        <XPBar
-                          ratio={Math.min(1, p.racha / p.objetivo)}
-                          height={8}
-                          segments={p.objetivo}
-                        />
-                      </View>
-                      <View style={styles.metaFila}>
-                        <Semana dias={q.days_of_week} />
-                        <Text style={[styles.meta, p.consolidable && styles.metaListo]}>
-                          {p.consolidable
-                            ? 'Listo para consolidar'
-                            : p.restantes === 1
-                              ? 'Falta 1 día'
-                              : `Faltan ${p.restantes} días`}
-                        </Text>
-                      </View>
-                      {p.consolidable ? (
-                        <SystemButton
+                    {p.consolidable ? (
+                      // La tarjeta no es pulsable entera: un botón dentro de otro
+                      // botón desaparece para VoiceOver. Lo que edita es el cuerpo;
+                      // «Darlo por adquirido» queda como botón propio al lado.
+                      <Card variant="logro">
+                        <PressScale onPress={editar} accessibilityRole="button" accessibilityLabel={`Editar ${q.title}`}>
+                          {cuerpo}
+                        </PressScale>
+                        <Button
                           title="Darlo por adquirido"
+                          variant="secondary"
                           onPress={() => consolidar(q, p)}
                           loading={busy}
                           icon="ribbon-outline"
                           style={{ marginTop: 14 }}
                         />
-                      ) : null}
-                    </Card>
+                      </Card>
+                    ) : (
+                      <Card onPress={editar} accessibilityLabel={`Editar ${q.title}`}>
+                        {cuerpo}
+                      </Card>
+                    )}
                   </FadeIn>
                 );
               })}
@@ -348,7 +374,7 @@ export default function Habitos() {
 
         {loaded && adquiridos.length > 0 ? (
           <FadeIn index={4}>
-            <Section title="Adquiridos" meta={`${adquiridos.length}`} tone="logro">
+            <Section title="Adquiridos" meta={`${adquiridos.length}`}>
               <Card padded={false} style={styles.lista}>
                 {adquiridos.map((q, i) => (
                   <Row
@@ -370,6 +396,7 @@ export default function Habitos() {
       </Stagger>
 
       <QuestForm
+        sustantivo="hábito"
         visible={formOpen}
         initial={editando}
         onClose={() => {

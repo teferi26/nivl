@@ -7,6 +7,7 @@ import {
   huecoContenido,
   marcoDe,
   MIN_CONTENIDO_CON_ASIDE,
+  navDeVentana,
 } from '../responsive';
 
 describe('marcoDe: clases de tamaño (SISTEMA.md §3)', () => {
@@ -84,5 +85,31 @@ describe('cabeAside', () => {
     expect(cabeAside(1024)).toBe(true); // 1024 − 320 = 704
     expect(cabeAside(943)).toBe(false);
     expect(cabeAside(Number.NaN)).toBe(false);
+  });
+});
+
+describe('navDeVentana: la navegación sale de la ventana, no del hueco', () => {
+  it.each([
+    [375, 'tabs'],
+    [599, 'tabs'],
+    [600, 'rail'],
+    [640, 'rail'],
+    [671, 'rail'],
+    [1023, 'rail'],
+    [1024, 'sidebar'],
+  ] as const)('%i → %s', (w, nav) => {
+    expect(navDeVentana(w)).toBe(nav);
+  });
+
+  it('entre 600 y 671 hay raíl aunque el hueco sea compact', () => {
+    for (const w of [600, 640, 671]) {
+      expect(huecoContenido(w).sizeClass).toBe('compact');
+      expect(navDeVentana(w)).toBe('rail');
+    }
+  });
+
+  it('un ancho no válido es la barra inferior', () => {
+    expect(navDeVentana(0)).toBe('tabs');
+    expect(navDeVentana(Number.NaN)).toBe('tabs');
   });
 });
