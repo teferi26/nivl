@@ -8,7 +8,7 @@
 
 import Ionicons from '@expo/vector-icons/Ionicons';
 import type { Router } from 'expo-router';
-import type { ReactNode } from 'react';
+import { createContext, type ReactNode } from 'react';
 import {
   Pressable,
   RefreshControl,
@@ -70,6 +70,15 @@ interface ScreenProps extends Omit<ScrollViewProps, 'style' | 'contentContainerS
 const MARGEN_SIN_PANEL = space.s8;
 
 /**
+ * Margen lateral que `Screen` aplica de verdad a su cuerpo (20 · 32 · 48, o el
+ * de 32 si el panel no cabe). Lo leen las piezas que van a sangre (ASangre,
+ * HeroRango) para salir hasta el borde con un margen negativo exacto. Con
+ * `plain` vale 0: esas pantallas ponen su propio margen y Screen no añade nada.
+ * Fuera de una Screen, 20 (el del móvil).
+ */
+export const GutterContext = createContext<number>(20);
+
+/**
  * La pantalla se recoloca en caliente (rotación, ventanas de iPadOS, la web):
  * el margen y el ancho máximo salen de la clase de tamaño de `useSizeClass`.
  * El contenido es una columna centrada de `maxContent` más sus márgenes.
@@ -88,7 +97,9 @@ export function Screen({ plain, wide, refreshing, onRefresh, style, contentStyle
   // `plain` no recibe margen lateral: esas pantallas (coach, diario) ya llevan
   // el suyo y se duplicaría. Sí se centran y se acotan.
   const cuerpo = plain ? (
-    <View style={[styles.flex, !wide && columna, contentStyle]}>{children}</View>
+    <View style={[styles.flex, !wide && columna, contentStyle]}>
+      <GutterContext.Provider value={0}>{children}</GutterContext.Provider>
+    </View>
   ) : (
     <ScrollView
       keyboardShouldPersistTaps="handled"
@@ -102,7 +113,7 @@ export function Screen({ plain, wide, refreshing, onRefresh, style, contentStyle
       }
       {...rest}
     >
-      {children}
+      <GutterContext.Provider value={gutter}>{children}</GutterContext.Provider>
     </ScrollView>
   );
 

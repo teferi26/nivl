@@ -5,7 +5,7 @@
 // (__DEV__ false) redirige a la raíz y la puerta de sesión no la abre. En la
 // web no se acota a la columna de 560 (ColumnaWeb en _layout.tsx).
 
-import { Redirect } from 'expo-router';
+import { Redirect, router } from 'expo-router';
 import { useContext, useMemo, useState, type ReactNode } from 'react';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
 import { useCelebracion } from '@/components/celebracion/contexto';
@@ -119,6 +119,14 @@ export default function Kit() {
         eyebrow="Diseño v2"
         title="Kit"
         subtitle={`Hueco ${Math.round(ancho)} · clase ${marco.sizeClass} · margen ${marco.gutter} · máx. ${marco.maxContent}`}
+      />
+
+      <Button
+        title="Pantallas"
+        variant="secondary"
+        icon="albums-outline"
+        onPress={() => router.push('/kit/pantallas')}
+        style={{ marginBottom: space.s6 }}
       />
 
       <Section title="Botones">
