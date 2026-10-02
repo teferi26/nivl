@@ -1,6 +1,5 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import * as Haptics from 'expo-haptics';
-import * as Sharing from 'expo-sharing';
+import { File, Paths } from 'expo-file-system';
 import { Image } from 'expo-image';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -8,18 +7,21 @@ import {
   ActivityIndicator,
   Animated,
   Dimensions,
+  Platform,
   Pressable,
   StyleSheet,
   Text,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { captureRef } from 'react-native-view-shot';
+import { useCelebracion } from '@/components/celebracion/contexto';
 import { SystemButton } from '@/components/SystemButton';
 import { avisar, Card, EmptyState, FadeIn, Row, RowValue, Screen, ScreenHeader, Section, Stagger, Tag, volver } from '@/components/ui';
 import { useConsentimientoIA } from '@/components/ConsentimientoIA';
+import { vibrar } from '@/design/haptics';
 import { accessNotice, CoachAccessError, generarResumen } from '@/lib/coach';
 import { fetchRecaps, marcarVisto, urlFirmada, type Recap, type Slide } from '@/lib/photos';
+import type { Foto, Tarjeta } from '@/lib/sharecard';
 import { colors, fonts } from '@/lib/theme';
 import { mensajeSistema } from '@/lib/validation';
 
@@ -39,11 +41,29 @@ function nombrePeriodo(r: Recap): string {
   return `${r.kind === 'mensual' ? 'Mes' : 'Semana'} del ${r.period_start}`;
 }
 
+/**
+ * La foto de evidencia, descargada a caché con una URI local: la tarjeta nunca
+ * lleva una URL firmada (caduca en 60 s). Siempre el mismo archivo, que se
+ * sobrescribe: no se acumulan fotos de salud en caché. En web (sin sistema de
+ * archivos) o si falla, null: el recuerdo se comparte sin foto.
+ */
+async function fotoLocal(ruta: string, fecha: string): Promise<Foto | null> {
+  if (Platform.OS === 'web') return null;
+  try {
+    const url = await urlFirmada(ruta);
+    if (!url) return null;
+    const archivo = await File.downloadFileAsync(url, new File(Paths.cache, 'nivl-recuerdo.jpg'), { idempotent: true });
+    return { uri: archivo.uri, fecha };
+  } catch {
+    return null;
+  }
+}
+
 /** El pase: una diapositiva a la vez, con barras de progreso arriba. */
 function Pase({ recap, onSalir }: { recap: Recap; onSalir: () => void }) {
   const [i, setI] = useState(0);
   const [compartiendo, setCompartiendo] = useState(false);
-  const lienzo = useRef<View>(null);
+  const { compartir: abrirHoja } = useCelebracion();
   const [urls, setUrls] = useState<Record<string, string>>({});
   const progreso = useRef(new Animated.Value(0)).current;
   const slides = recap.slides;
@@ -82,29 +102,32 @@ function Pase({ recap, onSalir }: { recap: Recap; onSalir: () => void }) {
   useEffect(() => {
     if (i === slides.length - 1) {
       marcarVisto(recap.id).catch(() => {});
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+      vibrar('mision');
     }
   }, [i, slides.length, recap.id]);
 
   /**
-   * Sacar la diapositiva como imagen.
-   *
-   * Era lo que faltaba: el pase se podía ver pero no extraer, así que el
-   * recuerdo se quedaba dentro de la app. Se captura lo que hay en pantalla —
-   * foto de fondo incluida— y se abre el compartir del sistema.
+   * Compartir la diapositiva como tarjeta `recuerdo` en la hoja de compartir
+   * de la capa raíz (useCelebracion().compartir: nunca en un Modal, y la cola
+   * de celebraciones se pausa mientras está abierta). El texto del coach y la
+   * foto salen apagados: los enciende el usuario en la hoja, si quiere.
    */
   const compartir = async () => {
-    if (compartiendo || !lienzo.current) return;
+    if (compartiendo || !slide) return;
     setCompartiendo(true);
     try {
-      const uri = await captureRef(lienzo, { format: 'jpg', quality: 0.92 });
-      if (!(await Sharing.isAvailableAsync())) {
-        avisar('No disponible', 'Este dispositivo no permite compartir archivos.');
-        return;
-      }
-      await Sharing.shareAsync(uri, { mimeType: 'image/jpeg', dialogTitle: 'Tu semana' });
+      const foto = slide.foto ? await fotoLocal(slide.foto, recap.period_start) : null;
+      const tarjeta: Tarjeta = {
+        tipo: 'recuerdo',
+        etiqueta: EYEBROW_SLIDE[slide.tipo],
+        dato: slide.dato ?? null,
+        titulo: slide.titulo,
+        texto: slide.texto || null,
+        foto,
+      };
+      abrirHoja(tarjeta);
     } catch (e) {
-      avisar('No se pudo extraer', mensajeSistema(e));
+      avisar('No se pudo compartir', mensajeSistema(e));
     } finally {
       setCompartiendo(false);
     }
@@ -117,7 +140,7 @@ function Pase({ recap, onSalir }: { recap: Recap; onSalir: () => void }) {
   const centrado = esPortada || esCierre;
 
   return (
-    <View style={styles.pase} ref={lienzo} collapsable={false}>
+    <View style={styles.pase}>
       {foto ? (
         <Image source={{ uri: foto }} style={StyleSheet.absoluteFill} contentFit="cover" transition={220} />
       ) : null}
@@ -148,7 +171,7 @@ function Pase({ recap, onSalir }: { recap: Recap; onSalir: () => void }) {
               hitSlop={10}
               style={({ pressed }) => [styles.paseBoton, pressed && styles.pulsado]}
               accessibilityRole="button"
-              accessibilityLabel="Extraer esta diapositiva como imagen"
+              accessibilityLabel="Compartir esta diapositiva"
             >
               {compartiendo ? (
                 <ActivityIndicator size="small" color={colors.text} />

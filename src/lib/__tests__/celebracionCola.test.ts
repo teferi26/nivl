@@ -1,6 +1,6 @@
 import { xpCostForLevel } from '../game';
 import { celebracionInsignia } from '../progression';
-import { estadoInicial, hayAlgo, MAX_VISTAS, reducir, textoToast, type EstadoCola, type EventoCola } from '../celebracionCola';
+import { estadoInicial, fusionar, hayAlgo, lineasDe, MAX_VISTAS, reducir, textoToast, type EstadoCola, type EventoCola } from '../celebracionCola';
 
 jest.mock('../supabase', () => ({ supabase: {} }));
 
@@ -109,6 +109,47 @@ describe('cola de celebraciones', () => {
     expect(s.vistas.size).toBe(MAX_VISTAS);
     expect(s.vistas.has('k:0')).toBe(false);
     expect(s.vistas.has(`k:${MAX_VISTAS + 49}`)).toBe(true);
+  });
+
+  test('el toast lleva la principal y una línea; el resto, « y N más»', () => {
+    const insignia = celebracionInsignia('reclutador', 0, 1)!;
+    const s = correr([{ tipo: 'llega', a: { accion: 'a', extra: [insignia], resumen: ['+50 XP', '+1 PB', 'Sesión 12'], final: true } }], cargado());
+    expect(s.mostrando?.forma).toBe('toast');
+    expect(textoToast(s.mostrando!)).toBe('Insignia · Reclutador · +50 XP y 2 más');
+    // Lo completo sigue en el momento (anuncio, ceremonia).
+    expect(lineasDe(s.mostrando!)).toEqual(['Insignia · Reclutador', '+50 XP', '+1 PB', 'Sesión 12']);
+  });
+
+  test('sin principal, el toast enseña dos líneas', () => {
+    const dos = correr([{ tipo: 'llega', a: { accion: 'a', resumen: ['+50 XP', '+1 PB'], final: true } }], cargado());
+    expect(textoToast(dos.mostrando!)).toBe('+50 XP · +1 PB');
+    const tres = correr([{ tipo: 'llega', a: { accion: 'a', resumen: ['+50 XP', '+1 PB', '+1 PB banca'], final: true } }], cargado());
+    expect(textoToast(tres.mostrando!)).toBe('+50 XP · +1 PB y 1 más');
+  });
+
+  test('la ceremonia que se come un toast lleva todas sus líneas, no el texto recortado', () => {
+    const logrosAntes = ['rango_D', 'rango_C'];
+    let s = correr([{ tipo: 'llega', a: { accion: 'a', perfilAntes: perfil(16), perfilDespues: { ...perfil(16), xp_total: perfil(16).xp_total + 50 }, logrosAntes, fecha, resumen: ['+50 XP', '+1 PB', '+1 PB banca'], final: true } }], cargado());
+    expect(textoToast(s.mostrando!)).toBe('+50 XP · +1 PB y 1 más');
+    s = reducir(s, { tipo: 'llega', a: { accion: 'a', logrosNuevos: [{ codigo: 'rango_B', nombre: 'Campeón', desc: '' }], final: true } });
+    expect(s.mostrando?.forma).toBe('ceremonia-epica');
+    expect(s.mostrando!.resumen).toEqual(['+50 XP', '+1 PB', '+1 PB banca']);
+  });
+
+  test('fusionar quita los extra repetidos por clave', () => {
+    const insignia = celebracionInsignia('reclutador', 0, 1)!;
+    const a = fusionar(undefined, { accion: 'a', extra: [insignia, insignia] });
+    expect(a.extra).toHaveLength(1);
+    const b = fusionar(a, { accion: 'a', extra: [{ ...insignia }] });
+    expect(b.extra).toHaveLength(1);
+  });
+
+  test('un extra que vuelve a llegar tras el cierre (histórico) no se duplica', () => {
+    const insignia = celebracionInsignia('reclutador', 0, 1)!;
+    let s = correr([{ tipo: 'llega', a: { accion: 'a', extra: [insignia], resumen: ['+20 XP'], final: true } }], cargado());
+    expect(s.historico.get('a')?.extra).toHaveLength(1);
+    s = reducir(s, { tipo: 'llega', a: { accion: 'a', extra: [insignia] } });
+    expect(s.acciones.get('a')?.extra).toHaveLength(1);
   });
 
   test('vaciar (cierre de sesión) borra la memoria', () => {

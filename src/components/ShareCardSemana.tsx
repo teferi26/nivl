@@ -20,6 +20,7 @@ import { SystemButton } from '@/components/SystemButton';
 import { avisar } from '@/components/ui/confirmar';
 import { levelFromXp, rankForLevel } from '@/lib/game';
 import { kindMeta } from '@/lib/kinds';
+import type { Tarjeta } from '@/lib/sharecard';
 import { fetchBoard, fetchSocialSelf, type BoardEntry } from '@/lib/social';
 import { clasificar, codigoLegible, DIAS_VENTANA, DOMINIO_NIVL, posicionEntreAmigos } from '@/lib/socialmath';
 import { colors, fonts } from '@/lib/theme';
@@ -68,6 +69,23 @@ export async function prepararDatosSemana(
     daysActive: mio.daysActive,
     posicion: posicionEntreAmigos(clasificar(semana.filter((b) => b.visible), 'xp')),
     friendCode: codigo,
+  };
+}
+
+/**
+ * Los datos de la semana como tarjeta de la hoja de compartir unificada
+ * (HojaCompartir, tipo 'semana'). Ni el nombre ni el código viajan aquí: el
+ * alias y la invitación los decide la hoja con sus interruptores.
+ */
+export function tarjetaDeSemana(d: DatosSemana): Extract<Tarjeta, { tipo: 'semana' }> {
+  return {
+    tipo: 'semana',
+    xpSemana: d.xpSemana,
+    nivel: levelFromXp(d.xpTotal).level,
+    cumplimientoPct: d.compliancePct,
+    diasActivos: d.daysActive,
+    rachaDias: d.streakDays,
+    posicion: d.posicion,
   };
 }
 

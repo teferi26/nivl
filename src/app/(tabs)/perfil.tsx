@@ -1,5 +1,4 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import * as Haptics from 'expo-haptics';
 import * as ImagePicker from 'expo-image-picker';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
@@ -15,11 +14,11 @@ import {
   TextInput,
   View,
 } from 'react-native';
+import { useCelebracion } from '@/components/celebracion/contexto';
 import { useConsentimientoIA } from '@/components/ConsentimientoIA';
 import { HealthPrivacySection } from '@/components/ConsentimientoSalud';
 import { EliteBadge } from '@/components/EliteBadge';
 import { CaminoDeRangos } from '@/components/perfil/CaminoDeRangos';
-import { HojaCompartir } from '@/components/share/HojaCompartir';
 import { SystemButton } from '@/components/SystemButton';
 import { Version } from '@/components/Version';
 import { XPBar } from '@/components/XPBar';
@@ -42,7 +41,14 @@ import {
   Tag,
 } from '@/components/ui';
 import { Interruptor } from '@/components/ui/Interruptor';
-import { ACHIEVEMENTS, ACHIEVEMENTS_VISIBLES, fetchUnlocked, tituloVigente } from '@/lib/achievements';
+import {
+  ACHIEVEMENT_BY_CODE,
+  ACHIEVEMENTS,
+  ACHIEVEMENTS_VISIBLES,
+  fetchUnlocked,
+  sincronizarRangoDetalle,
+  tituloVigente,
+} from '@/lib/achievements';
 import { useVibraciones, vibrar } from '@/design/haptics';
 import { ink } from '@/design/tokens';
 import { useSizeClass } from '@/design/useSizeClass';
@@ -97,8 +103,7 @@ import {
   streakMultiplier,
 } from '@/lib/game';
 import { KINDS, kindMeta, PROFILE_KINDS, type ProfileKind } from '@/lib/kinds';
-import { cosmeticosDe, estadoDe } from '@/lib/progression';
-import { fetchSocialSelf } from '@/lib/social';
+import { cosmeticosDe, estadoDe, type LogroInfo } from '@/lib/progression';
 import { colors, fonts } from '@/lib/theme';
 import type { Profile } from '@/lib/types';
 import { mensajeSistema } from '@/lib/validation';
@@ -110,6 +115,12 @@ const FREEZE_DAYS = [1, 3, 7, 14];
 function multiplicador(dias: number): string {
   return `×${streakMultiplier(dias).toFixed(1).replace('.', ',')}`;
 }
+
+/** Un código `rango_X` de sync_rank en la forma del contrato de celebraciones. */
+const logroDeCodigo = (codigo: string): LogroInfo => {
+  const def = ACHIEVEMENT_BY_CODE[codigo];
+  return def ? { codigo, nombre: def.name, desc: def.desc, titulo: def.title } : { codigo, nombre: codigo, desc: '' };
+};
 
 export default function Perfil() {
   const { session } = useAuth();
@@ -123,6 +134,10 @@ export default function Perfil() {
   const [name, setName] = useState('');
   const [stats, setStats] = useState<{ total: number; withEvidence: number }>({ total: 0, withEvidence: 0 });
   const [unlocked, setUnlocked] = useState<Set<string>>(new Set());
+  // Días activos que usó el servidor para el rango (sync_rank). null = no se
+  // saben (sin red o sin la 0051): el camino lo dice sin cifra.
+  const [diasActivos, setDiasActivos] = useState<number | null>(null);
+  const { celebrar, compartir } = useCelebracion();
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   // null = aún no se sabe (o sin red): la fila de Pro se pinta sin detalle.
   const [tieneCoach, setTieneCoach] = useState<boolean | null>(null);
@@ -131,10 +146,6 @@ export default function Perfil() {
   const [freezeOpen, setFreezeOpen] = useState(false);
   const [freezeReason, setFreezeReason] = useState(FREEZE_REASONS[0]!);
   const [freezeDays, setFreezeDays] = useState(3);
-  const [shareOpen, setShareOpen] = useState(false);
-  // Código de amigo para la invitación de la hoja de compartir. Se pide la
-  // primera vez que se abre: undefined = sin pedir, null = no disponible.
-  const [codigoAmigo, setCodigoAmigo] = useState<string | null | undefined>(undefined);
   const [busy, setBusy] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [avisos, setAvisos] = useState<EstadoAvisos | null>(null);
@@ -212,6 +223,22 @@ export default function Perfil() {
     fetchConsentimiento({ fresco: true })
       .then(setConsent)
       .catch(() => setConsent(null));
+    // Rango y días activos, en paralelo y sin bloquear: si el servidor registra
+    // un rango nuevo aquí, se celebra por la cola como en cualquier pantalla.
+    sincronizarRangoDetalle()
+      .then(async ({ nuevos, diasActivos: dias }) => {
+        setDiasActivos(dias);
+        if (nuevos.length === 0) return;
+        const logros = await fetchUnlocked();
+        setUnlocked(logros);
+        celebrar({
+          accion: `perfil:rango:${Date.now()}`,
+          logrosAntes: [...logros].filter((c) => !nuevos.includes(c)),
+          logrosNuevos: nuevos.map(logroDeCodigo),
+          final: true,
+        });
+      })
+      .catch(() => {});
     try {
       const prof = await ensureProfile(userId);
       setProfile(prof);
@@ -228,7 +255,7 @@ export default function Perfil() {
     } catch (e) {
       avisar('Error del sistema', mensajeSistema(e));
     }
-  }, [userId]);
+  }, [userId, celebrar]);
 
   useFocusEffect(
     useCallback(() => {
@@ -323,15 +350,10 @@ export default function Perfil() {
     }
   };
 
-  // La hoja de compartir (HojaCompartir) va en el overlay de Screen, no en un
-  // Modal: capturar dentro de un Modal daba un PNG negro en Android.
+  // La hoja de compartir es la de la cola de celebraciones: la pausa mientras
+  // está abierta y pide ella el código de amigo. La de rango lleva el retrato.
   const abrirCompartir = () => {
-    setShareOpen(true);
-    if (codigoAmigo === undefined && userId) {
-      fetchSocialSelf(userId)
-        .then((s) => setCodigoAmigo(s.friendCode || null))
-        .catch(() => setCodigoAmigo(null));
-    }
+    compartir({ tipo: 'rango', rango: rank, titulo, rachaDias: streakDays }, { retratoUri: avatarUri });
   };
 
   const cambiarVibraciones = (v: boolean) => {
@@ -371,7 +393,7 @@ export default function Perfil() {
     try {
       const r = await claimReferral(codigo, 'perfil');
       if (r.ok) {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+        vibrar('mision');
         setReferral({ alias: r.alias, since: new Date().toISOString(), claimable: false });
         setCodigoOpen(false);
       } else {
@@ -457,9 +479,8 @@ export default function Perfil() {
     );
   }
 
-  // TODO(Chat 5): pasar los días activos cuando exista sincronizarRangoDetalle;
-  // sin ellos, siguienteRango no sabe cuántos días faltan (faltanDias = null).
-  const estado = estadoDe(profile, unlocked);
+  // Sin días activos (null), siguienteRango no sabe cuántos faltan (faltanDias = null).
+  const estado = estadoDe(profile, unlocked, diasActivos ?? undefined);
   const rank = estado.rango;
   const titulo = tituloVigente(profile.equipped_title) ?? cosmeticosDe(rank).titulo;
   const leyenda = rank === 'S';
@@ -488,15 +509,6 @@ export default function Perfil() {
   return (
     <Screen
       contentStyle={styles.content}
-      overlay={
-        <HojaCompartir
-          visible={shareOpen}
-          onCerrar={() => setShareOpen(false)}
-          tarjeta={{ tipo: 'rango', rango: rank, titulo, rachaDias: streakDays }}
-          retratoUri={avatarUri}
-          codigoAmigo={codigoAmigo ?? null}
-        />
-      }
     >
       <Stagger>
         {/* Cabecera: retrato con el marco de su rango, nombre, título y cifras.
@@ -835,11 +847,11 @@ export default function Perfil() {
               false en iOS y Android, Guideline 3.1.1): allí lo de pago es /pro. */}
           {paywallEnabled() ? (
           <FadeIn index={9}>
-            <Section title="El Oráculo" tone="steel">
+            <Section title="El Oráculo">
               <Card padded={false} style={styles.lista}>
                 <Row
                   first
-                  leading={<Ionicons name="sparkles-outline" size={20} color={colors.steel} />}
+                  leading={<Ionicons name="sparkles-outline" size={20} color={ink.ink8} />}
                   title={premium ? 'Premium activo' : 'Hazte Premium'}
                   detail={
                     premium
@@ -848,7 +860,7 @@ export default function Perfil() {
                         ? 'La IA (misiones desde objetivos y análisis semanal) consume API real. Con la suscripción va incluida; sin ella puedes usar tu propia key en el módulo Oráculo.'
                         : 'Pagos aún no configurados en este servidor. Puedes usar tu propia key en el módulo Oráculo.'
                   }
-                  trailing={premium ? <Tag tone="steel">Activo</Tag> : undefined}
+                  trailing={premium ? <Tag>Activo</Tag> : undefined}
                   chevron={!premium && paymentsConfigured()}
                   onPress={
                     !premium && paymentsConfigured()

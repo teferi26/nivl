@@ -111,7 +111,7 @@ export const voice = {
     }
     if (days < 7) {
       return pick([
-        `${days} días seguidos. La cadena crece — que no seas tú quien la rompa.`,
+        `${days} días seguidos. La cadena crece. Que no seas tú quien la rompa.`,
         `${days} días. El sistema empieza a fiarse de ti. Sigue.`,
       ]);
     }

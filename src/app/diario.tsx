@@ -1,5 +1,5 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import * as Haptics from 'expo-haptics';
+import { vibrar } from '@/design/haptics';
 import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
 import { router, useFocusEffect } from 'expo-router';
@@ -97,7 +97,7 @@ function Escala({
             selected={valor === n}
             // Tocar la nota ya marcada la quita: todas las preguntas se pueden dejar en blanco.
             onPress={() => {
-              Haptics.selectionAsync().catch(() => {});
+              vibrar('seleccion');
               onChange(valor === n ? null : n);
             }}
             style={styles.escalaChip}
@@ -300,7 +300,7 @@ export default function Diario() {
       const photo = await uploadJournalPhoto(userId, dia, b64);
       const url = await journalPhotoUrl(photo.path);
       setPhotos((prev) => [...prev, { photo, url }]);
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      vibrar('misionExtra');
       loadArchivo();
     } catch (e) {
       avisar('Error del sistema', mensajeSistema(e));
@@ -351,7 +351,7 @@ export default function Diario() {
   /** Lo que el sistema vio pasa a ser algo que él reclama: ocupa la primera fila vacía. */
   const reclamar = (victoria: string) => {
     if (!cabenMas || reclamadas.has(victoria.toLocaleLowerCase('es'))) return;
-    Haptics.selectionAsync().catch(() => {});
+    vibrar('seleccion');
     const hueco = wins.findIndex((w) => !w.trim());
     setWins(hueco >= 0 ? wins.map((w, i) => (i === hueco ? victoria : w)) : [...wins, victoria]);
     marcar();
@@ -392,18 +392,18 @@ export default function Diario() {
         ]);
         const total = await countEntries();
         const fresh = await unlockAchievements(userId, evaluateAchievements({ journalCount: total }));
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        vibrar('mision');
         avisar(
           'Entrada registrada',
           `${desglose || 'La misión del diario ya estaba marcada y pagada.'}${fresh.length > 0 ? `\nLogro: ${fresh.map((a) => a.name).join(', ')}` : ''}`,
         );
       }
       if (isNew && !(dia === dateKey() || dia === addDays(dateKey(), -1))) {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        vibrar('mision');
         avisar('Entrada registrada', 'Día completado en tu archivo. Sin XP: solo lo paga el día en caliente.');
       }
       if (!isNew) {
-        Haptics.selectionAsync().catch(() => {});
+        vibrar('seleccion');
         setAviso('Cambios guardados.');
       }
       setRegistrado(true);
@@ -422,7 +422,7 @@ export default function Diario() {
 
   const cambiarSegmento = (s: Segmento) => {
     if (s === segmento) return;
-    Haptics.selectionAsync().catch(() => {});
+    vibrar('seleccion');
     setSegmento(s);
     scroll.current?.scrollTo({ y: 0, animated: false });
   };

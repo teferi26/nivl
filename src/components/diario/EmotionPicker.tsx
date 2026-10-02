@@ -4,7 +4,7 @@
 // y el coach ven qué palabras se repiten. Dos filas, lo que empuja y lo que
 // pesa, con el vocabulario de `journalmath.ts` (el coach tiene su espejo).
 
-import * as Haptics from 'expo-haptics';
+import { vibrar } from '@/design/haptics';
 import { StyleSheet, Text, View } from 'react-native';
 import { Chip, ChipWrap } from '@/components/ui';
 import { EMOCIONES, MAX_EMOCIONES, type Valencia } from '@/lib/journalmath';
@@ -26,7 +26,7 @@ export function EmotionPicker({ value, onChange }: Props) {
   const alternar = (id: string) => {
     const marcada = value.includes(id);
     if (!marcada && lleno) return;
-    Haptics.selectionAsync().catch(() => {});
+    vibrar('seleccion');
     onChange(marcada ? value.filter((x) => x !== id) : [...value, id]);
   };
 

@@ -1,5 +1,5 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import * as Haptics from 'expo-haptics';
+import { vibrar } from '@/design/haptics';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useRef, useState } from 'react';
 import {
@@ -135,7 +135,7 @@ export default function Avances() {
         const resto = restoDelModulo(WEIGH_IN_XP, eco);
         if (resto > 0) await awardXp(eco.profile, resto, 'VIT', 'weigh_in', { weight: value });
       }
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      vibrar('mision');
       setWeightInput('');
       await load();
     } catch (e) {
@@ -185,7 +185,7 @@ export default function Avances() {
     if (lock.current) return;
     const ok = await confirmar({
       titulo: 'META CONSEGUIDA',
-      mensaje: `"${goal.title}" — el sistema otorgará +${GOAL_ACHIEVED_XP} XP.`,
+      mensaje: `"${goal.title}": el sistema otorgará +${GOAL_ACHIEVED_XP} XP.`,
       confirmar: 'Reclamar',
       cancelar: 'Aún no',
     });
@@ -195,7 +195,7 @@ export default function Avances() {
       await updateGoal(goal.id, { status: 'achieved', achieved_at: new Date().toISOString() });
       const profile = await ensureProfile(userId);
       await awardXp(profile, GOAL_ACHIEVED_XP, 'AGI', 'goal_achieved', { goal_id: goal.id, goal: goal.title });
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      vibrar('mision');
       await load();
     } catch (e) {
       avisar('Error del sistema', mensajeSistema(e));

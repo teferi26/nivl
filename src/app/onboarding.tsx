@@ -1,5 +1,5 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import * as Haptics from 'expo-haptics';
+import { vibrar } from '@/design/haptics';
 import { router } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
@@ -300,7 +300,7 @@ export default function Onboarding() {
     if (!sello) return;
     selloEscala.setValue(1.5);
     selloOpacidad.setValue(0);
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy).catch(() => {});
+    vibrar('nivel');
     Animated.parallel([
       Animated.spring(selloEscala, { toValue: 1, useNativeDriver: true, friction: 6, tension: 80 }),
       Animated.timing(selloOpacidad, { toValue: 1, duration: 160, useNativeDriver: true }),
@@ -358,11 +358,11 @@ export default function Onboarding() {
   }, [step]);
 
   const elegirKind = (k: ProfileKind) => {
-    Haptics.selectionAsync().catch(() => {});
+    vibrar('seleccion');
     setKind(k);
   };
   const elegirHorizonte = (h: Horizonte) => {
-    Haptics.selectionAsync().catch(() => {});
+    vibrar('seleccion');
     setHorizonte(h);
   };
 

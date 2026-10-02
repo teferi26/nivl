@@ -1,5 +1,4 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import * as Haptics from 'expo-haptics';
 import * as ImagePicker from 'expo-image-picker';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useRef, useState } from 'react';
@@ -16,6 +15,7 @@ import {
 } from 'react-native';
 import { DescargoSalud } from '@/components/DescargoSalud';
 import { useCelebracion } from '@/components/celebracion/contexto';
+import { vibrar } from '@/design/haptics';
 import { SystemButton } from '@/components/SystemButton';
 import {
   Card,
@@ -56,12 +56,12 @@ import { ensureProfile, fetchCompletionsForDate, fetchQuests, insertEvent } from
 import { dateKey, isoWeekday } from '@/lib/dates';
 import { awardXp } from '@/lib/engine';
 import { propagarActo, restoDelModulo } from '@/lib/links';
-import { GYM_SESSION_XP, PR_XP } from '@/lib/game';
+import { GYM_SESSION_XP, levelFromXp, PR_XP } from '@/lib/game';
 import { supabase } from '@/lib/supabase';
 import { subirFotoMision } from '@/lib/photos';
 import { colors, fonts } from '@/lib/theme';
 import { mensajeSistema } from '@/lib/validation';
-import { deMisiones, desgloseXp, voice } from '@/lib/voice';
+import { deMisiones, desgloseXp } from '@/lib/voice';
 import type { GymDay, GymExercise, GymSession } from '@/lib/types';
 // Pedido por el Chat 5 (economía): con el tope diario de award_xp, pagar más
 // récords se recortaría en silencio. En la primera sesión todo es récord.
@@ -251,7 +251,7 @@ export default function Gym() {
           questId: null,
           completionId: null,
           date: today,
-          caption: `Entreno ${todayPlan?.name ?? 'libre'}${notas.trim() ? ` — ${notas.trim()}` : ''}`,
+          caption: `Entreno ${todayPlan?.name ?? 'libre'}${notas.trim() ? `: ${notas.trim()}` : ''}`,
         }).catch(() => {});
       }
       await insertLifts(userId, gymSession.id, valid);
@@ -292,9 +292,6 @@ export default function Gym() {
         .eq('type', 'gym_pr');
       const fresh = await unlockAchievements(userId, evaluateAchievements({ prCount: prCount ?? 0 }));
 
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      const prText = prs.length > 0 ? `\n${prs.map((p) => voice.pr(p.exercise_name)).join('\n')}` : '';
-      const achText = fresh.length > 0 ? `\nLogro: ${fresh.map((a) => a.name).join(', ')}` : '';
       // El desglose cuadra con lo que luego enseña la misión enlazada.
       const xpSesion = Math.min(pagado, totalXp - prsPagados * PR_XP);
       const xpRecords = pagado - xpSesion;
@@ -303,12 +300,19 @@ export default function Gym() {
         { xp: xpSesion, de: 'a FUE por la sesión' },
         { xp: xpRecords, de: `a FUE por ${prsPagados === 1 ? '1 récord' : `${prsPagados} récords`}` },
       ]);
-      avisar(
-        'Sesión registrada',
-        `${desglose || 'La misión de hoy ya estaba marcada y pagada.'}${prText}${achText}`,
-      );
+      // Nada de Alert aquí: en iOS, con un UIAlertController abierto el Modal
+      // de la ceremonia no se presenta y la cola se queda bloqueada. El
+      // desglose y los récords van al resumen de la celebración (los logros,
+      // como logros); sin nivel ni rango nuevos, la cola lo enseña en un toast.
+      const resumen = [
+        desglose ? desglose.replace(/\.$/, '') : 'Sesión registrada · la misión de hoy ya estaba pagada',
+        ...prs.map((p) => `Récord · ${p.exercise_name}`),
+      ];
+      // Nivel y rango vibran en la ceremonia; si no la hay, misión cumplida.
+      const subeNivel = levelFromXp(res.profile.xp_total).level > levelFromXp(perfilAntes.xp_total).level;
+      const subeRango = fresh.some((a) => a.code.startsWith('rango_'));
+      if (!subeNivel && !subeRango) vibrar('mision');
       // Nivel, rango, logros y rachas: una sola celebración por la cola.
-      const xpTotal = eco.xp + pagado;
       celebrar({
         accion: `gym:${gymSession.id}`,
         perfilAntes,
@@ -316,7 +320,7 @@ export default function Gym() {
         logrosAntes,
         logrosNuevos: fresh.map((a) => ({ codigo: a.code, nombre: a.name, desc: a.desc, titulo: a.title })),
         fecha: dateKey(),
-        resumen: xpTotal > 0 ? [`+${xpTotal} XP`] : [],
+        resumen,
         final: true,
       });
       setTraining(false);
@@ -385,7 +389,7 @@ export default function Gym() {
     const r = await ImagePicker.launchCameraAsync({ mediaTypes: ['images'], quality: 0.4, base64: true });
     if (r.canceled) return;
     setFotoB64(r.assets[0]?.base64 ?? null);
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    vibrar('seleccion');
   };
 
   const confirmarBorrarDia = async (d: GymDay) => {

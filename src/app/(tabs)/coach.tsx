@@ -1,5 +1,5 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import * as Haptics from 'expo-haptics';
+import { vibrar } from '@/design/haptics';
 import * as ImagePicker from 'expo-image-picker';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -424,7 +424,7 @@ function CoachContent() {
 
   const elegirModo = (m: CoachMode) => {
     if (m === modo) return;
-    Haptics.selectionAsync().catch(() => {});
+    vibrar('seleccion');
     setModo(m);
   };
 
