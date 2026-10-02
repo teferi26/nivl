@@ -10,7 +10,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { StyleSheet, Text, View } from 'react-native';
 import { TrendLine } from '@/components/TrendLine';
 import { Card } from '@/components/ui';
-import { SIN_DATO } from '@/components/ui/sinDato';
+import { LEIDO_SIN_DATO, SIN_DATO } from '@/components/ui/sinDato';
 import { MIN_DATOS_MEDIA, formatoDecimal, type ResumenTendencia } from '@/lib/journalmath';
 import { colors, fonts } from '@/lib/theme';
 
@@ -39,10 +39,17 @@ function Cifra({
   leido: string;
 }) {
   const sube = (delta ?? 0) > 0;
+  // La cifra entera se lee con `leido` («faltan datos»): el guion nunca suena
+  // suelto. Si un lector llegara al texto, oye «sin dato», no «guion».
   return (
     <View style={styles.cifra} accessible accessibilityLabel={leido}>
       <View style={styles.cifraFila}>
-        <Text style={[styles.cifraValor, tono === 'gold' && { color: colors.gold }]}>{valor}</Text>
+        <Text
+          style={[styles.cifraValor, tono === 'gold' && { color: colors.gold }]}
+          accessibilityLabel={valor === SIN_DATO ? LEIDO_SIN_DATO : undefined}
+        >
+          {valor}
+        </Text>
         {unidad ? <Text style={[styles.cifraUnidad, tono === 'gold' && { color: colors.gold }]}>{unidad}</Text> : null}
       </View>
       {delta != null && delta !== 0 ? (

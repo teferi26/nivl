@@ -18,7 +18,13 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { HoldToSign } from '@/components/HoldToSign';
 import { useHealthConsent } from '@/components/ConsentimientoSalud';
-import { pasoOferta } from '@/components/onboarding/pasoOferta';
+import {
+  conTiempoLimite,
+  DECISION_SALTAR,
+  LECTURA_MAX_MS,
+  pasoOferta,
+  SALIDA_ESPERA_MS,
+} from '@/components/onboarding/pasoOferta';
 import { useCelebracion } from '@/components/celebracion/contexto';
 import { ProOfferActions, ProOfferBody, ProOfferLegal, ProUpsellLine, useProOffer } from '@/components/ProOffer';
 import { SystemButton } from '@/components/SystemButton';
@@ -365,6 +371,17 @@ export default function Onboarding() {
     onTrialStarted: () => void salir('prueba'),
   });
   const forma = pasoOferta(decisionOferta, celebrando);
+  // Si la espera se alarga (red lenta, una celebración que no se cierra), el
+  // pie enseña una salida discreta: el paso nunca se queda sin puerta.
+  const [salidaEspera, setSalidaEspera] = useState(false);
+  useEffect(() => {
+    if (step !== 6 || forma !== 'esperar') {
+      setSalidaEspera(false);
+      return;
+    }
+    const t = setTimeout(() => setSalidaEspera(true), SALIDA_ESPERA_MS);
+    return () => clearTimeout(t);
+  }, [step, forma]);
 
   // Paso 6: se decide la oferta UNA vez, nunca con una celebración en
   // pantalla. Sin estado de la IA (sin red) no se ofrece a ciegas: se entra.
@@ -374,7 +391,13 @@ export default function Onboarding() {
     if (step !== 6 || decisionOferta || celebrando || pidiendoOferta.current) return;
     pidiendoOferta.current = true;
     (async () => {
-      const s = estadoIA.current ?? (await fetchAiStatus().catch(() => null));
+      // La lectura tiene tiempo límite: si vence, se entra sin oferta.
+      const s = estadoIA.current ?? (await conTiempoLimite(fetchAiStatus(), LECTURA_MAX_MS, 'vencida' as const));
+      if (s === 'vencida') {
+        setDecisionOferta(DECISION_SALTAR);
+        await finish();
+        return;
+      }
       if (s) estadoIA.current = s;
       const d = await ofrecerSi('firma', s, { celebrando: false });
       // Se guarda también el «no»: si entrar falla, el pie da el botón para reintentarlo.
@@ -383,7 +406,7 @@ export default function Onboarding() {
       if (!d.mostrar) await finish();
     })().catch(() => {
       // ofrecerSi no lanza; si algo falla igual, se entra sin oferta.
-      setDecisionOferta({ mostrar: false, forma: 'linea', tier: 'pro', prueba: false, copyKey: 'firma.pro', razon: 'error' });
+      setDecisionOferta({ ...DECISION_SALTAR, razon: 'error' });
       void finish();
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps -- `finish` y el nivel se leen al decidir, una sola vez
@@ -712,7 +735,8 @@ export default function Onboarding() {
               <Text style={styles.stepTitle}>Firmado. Ahora, quién lo dirige.</Text>
               <Text style={styles.stepHint}>
                 Tus hábitos, tu organización y tu progreso son gratis. Los planes de pago añaden el coach de IA y,
-                con Élite, insignia y solicitud de plaza en un ludus. Decide ahora o más adelante: el compromiso vale igual.
+                con Élite, insignia y solicitud de plaza en un ludus.
+                {forma === 'hoja' ? ' Decide ahora o más adelante: el compromiso vale igual.' : null}
               </Text>
               {forma === 'esperar' ? (
                 <View style={styles.ofertaEspera} accessibilityRole="progressbar" accessibilityLabel="Preparando tu entrada">
@@ -757,7 +781,10 @@ export default function Onboarding() {
               />
             ) : null}
             {/* Mientras se decide, el pie queda vacío: ningún botón que cambie de
-                sitio bajo el dedo. */}
+                sitio bajo el dedo. Si la espera se alarga, aparece una salida. */}
+            {step === 6 && forma === 'esperar' && salidaEspera ? (
+              <Button title="Entrar en la arena" variant="ghost" size="lg" onPress={() => void finish()} loading={busy} />
+            ) : null}
             {step === 6 && forma === 'hoja' ? (
               <ProOfferActions
                 oferta={oferta}

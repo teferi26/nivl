@@ -21,3 +21,30 @@ export function pasoOferta(d: DecisionOferta | null, celebrando: boolean): PasoO
   if (d.forma === 'hoja') return celebrando ? 'esperar' : 'hoja';
   return 'linea';
 }
+
+/** Lo más que se espera al estado de la IA antes de entrar sin oferta. */
+export const LECTURA_MAX_MS = 4000;
+/** Tras esto en 'esperar', el pie enseña una salida: nunca un paso sin puerta. */
+export const SALIDA_ESPERA_MS = 2500;
+
+/** Decisión cuando la lectura del estado vence: no se ofrece nada y se entra. */
+export const DECISION_SALTAR: DecisionOferta = {
+  mostrar: false,
+  forma: 'linea',
+  tier: 'pro',
+  prueba: false,
+  copyKey: 'firma.pro',
+  razon: 'tiempo',
+};
+
+/**
+ * La promesa o, si tarda más de `ms`, `vencida`. Un fallo de la promesa
+ * también resuelve `vencida`: quien espera nunca se queda colgado.
+ */
+export function conTiempoLimite<T, V>(p: Promise<T>, ms: number, vencida: V): Promise<T | V> {
+  let t: ReturnType<typeof setTimeout> | undefined;
+  const limite = new Promise<V>((resolve) => {
+    t = setTimeout(() => resolve(vencida), ms);
+  });
+  return Promise.race([p.catch(() => vencida), limite]).finally(() => clearTimeout(t));
+}

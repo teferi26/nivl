@@ -1,6 +1,6 @@
-import { describe, expect, test } from '@jest/globals';
+import { describe, expect, jest, test } from '@jest/globals';
 import { DIA, HORA, decidirOferta, type ContextoOferta, type DecisionOferta } from '@/lib/paywallmoment';
-import { pasoOferta } from '../onboarding/pasoOferta';
+import { conTiempoLimite, DECISION_SALTAR, LECTURA_MAX_MS, pasoOferta, SALIDA_ESPERA_MS } from '../onboarding/pasoOferta';
 
 const AHORA = 1_800_000_000_000;
 
@@ -89,5 +89,36 @@ describe('el último paso del onboarding según la decisión real', () => {
   test('cuenta Élite: no se ofrece nada y se entra', () => {
     const dec = decidirOferta('firma', ctx({ tier: 'elite', entitled: true, trialAvailable: false }));
     expect(pasoOferta(dec, false)).toBe('saltar');
+  });
+});
+
+describe('el paso 6 nunca se queda sin salida', () => {
+  test('una lectura que no responde vence y resuelve el valor de escape', async () => {
+    jest.useFakeTimers();
+    try {
+      const colgada = new Promise<string>(() => {});
+      const r = conTiempoLimite(colgada, LECTURA_MAX_MS, 'vencida' as const);
+      jest.advanceTimersByTime(LECTURA_MAX_MS);
+      await expect(r).resolves.toBe('vencida');
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  test('una lectura a tiempo gana a la cuenta atrás', async () => {
+    await expect(conTiempoLimite(Promise.resolve('ok'), LECTURA_MAX_MS, 'vencida')).resolves.toBe('ok');
+  });
+
+  test('una lectura que falla tampoco cuelga: resuelve el valor de escape', async () => {
+    await expect(conTiempoLimite(Promise.reject(new Error('red')), LECTURA_MAX_MS, null)).resolves.toBeNull();
+  });
+
+  test('vencer es saltar: no se ofrece nada y se entra', () => {
+    expect(pasoOferta(DECISION_SALTAR, false)).toBe('saltar');
+    expect(pasoOferta(DECISION_SALTAR, true)).toBe('saltar');
+  });
+
+  test('la salida en espera llega antes de que venza la lectura', () => {
+    expect(SALIDA_ESPERA_MS).toBeLessThan(LECTURA_MAX_MS);
   });
 });

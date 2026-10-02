@@ -125,7 +125,9 @@ export default function Hoy() {
   const [refreshing, setRefreshing] = useState(false);
   // XP, nivel, racha, logros y rango van por la cola global de celebraciones:
   // una principal y un resumen por acción, nunca dos avisos a la vez.
-  const { celebrar, compartir } = useCelebracion();
+  // `avisarEnCola`: el aviso del sistema que no bloquea (a diferencia del
+  // Alert de confirmar, que en iOS se queda encima de una ceremonia).
+  const { celebrar, compartir, avisar: avisarEnCola } = useCelebracion();
   // Logros conocidos (de ellos sale el rango de «antes» de cada acción).
   const logrosRef = useRef<Set<string> | null>(null);
   const [plan, setPlan] = useState<PlanConBloques | null>(null);
@@ -567,7 +569,7 @@ export default function Hoy() {
       // completar la última misión.
       compartir(tarjetaDeSemana(await prepararDatosSemana(userId)));
     } catch (e) {
-      avisar('Error del sistema', mensajeSistema(e));
+      avisarEnCola(mensajeSistema(e));
     } finally {
       setPreparandoTarjeta(false);
     }
