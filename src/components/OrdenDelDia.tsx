@@ -2,10 +2,12 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { router } from 'expo-router';
 import { memo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { TarjetaArena } from '@/components/arena';
 import { TextoSistema } from '@/components/TextoSistema';
-import { Card, EmptyState, Section } from '@/components/ui';
+import { Check, EmptyState, Section } from '@/components/ui';
 import { vibrar } from '@/design/haptics';
-import { ink, stroke, type as tipo } from '@/design/tokens';
+import { ink, space, stroke, type as tipo } from '@/design/tokens';
+// De plan.ts (puro) y no de dayplan.ts: la vista no arrastra Supabase.
 import {
   bloqueActual,
   hhmm,
@@ -14,8 +16,8 @@ import {
   progresoDelPlan,
   type DayBlock,
   type DayPlan,
-} from '@/lib/dayplan';
-import { colors, fonts } from '@/lib/theme';
+} from '@/lib/plan';
+import { fonts } from '@/lib/theme';
 
 interface Props {
   plan: DayPlan | null;
@@ -27,17 +29,20 @@ interface Props {
    * Pro en una línea discreta bajo las misiones.
    */
   pro?: boolean;
+  /** Minutos del día que cuentan como «ahora» (la galería lo fija). */
+  ahora?: number;
 }
 
-// El plan del día como una línea de tiempo: hora a la izquierda, un hilo
-// vertical con un punto por bloque, el bloque actual encendido. Si el coach
-// no ha escrito nada, se dice claro y se ofrece el camino.
-export const OrdenDelDia = memo(function OrdenDelDia({ plan, bloques, onToggle, pro = true }: Props) {
+// El plan del día como un orden escrito (HoyiPad.dc): la hora en Cinzel en
+// una columna de 48, el bloque con su hairline y el bloque ACTUAL marcado con
+// una regla de 2 en blanco a la izquierda (contorno, no inversión: la de Hoy es
+// la misión siguiente). A la derecha, el aro que lo da por hecho.
+export const OrdenDelDia = memo(function OrdenDelDia({ plan, bloques, onToggle, pro = true, ahora: ahoraFijo }: Props) {
   if (!plan || !bloques.length) {
     if (!pro) return null;
     return (
       <Section title="Orden del día">
-        <Card variant="outline">
+        <TarjetaArena variante="contorno">
           <EmptyState
             compact
             icon="list-outline"
@@ -45,12 +50,12 @@ export const OrdenDelDia = memo(function OrdenDelDia({ plan, bloques, onToggle, 
             body="Pídele el plan al coach y tendrás el día escrito bloque a bloque."
             action={{ label: 'Pedir el plan', onPress: () => router.push('/(tabs)/coach') }}
           />
-        </Card>
+        </TarjetaArena>
       </Section>
     );
   }
 
-  const ahora = minutosAhora();
+  const ahora = ahoraFijo ?? minutosAhora();
   const actual = bloqueActual(bloques, ahora);
   const { hechos, total } = progresoDelPlan(bloques);
 
@@ -67,11 +72,10 @@ export const OrdenDelDia = memo(function OrdenDelDia({ plan, bloques, onToggle, 
         </View>
       ) : null}
 
-      <View style={styles.linea}>
+      <View>
         {bloques.map((b, i) => {
-          const esActual = actual?.id === b.id;
+          const esActual = actual?.id === b.id && !b.done;
           const pasado = b.end_min <= ahora;
-          const ultimo = i === bloques.length - 1;
           return (
             <Pressable
               key={b.id}
@@ -79,42 +83,29 @@ export const OrdenDelDia = memo(function OrdenDelDia({ plan, bloques, onToggle, 
                 vibrar('seleccion');
                 onToggle(b);
               }}
-              style={({ pressed }) => [styles.bloque, pressed && styles.pressed]}
+              style={({ pressed }) => [styles.bloque, i > 0 && styles.sep, pressed && styles.pressed]}
               accessibilityRole="checkbox"
               accessibilityState={{ checked: b.done }}
-              accessibilityLabel={`${hhmm(b.start_min)} ${b.title}${b.done ? ', hecho' : ''}`}
+              accessibilityLabel={`${hhmm(b.start_min)} ${b.title}${esActual ? ', ahora' : ''}${b.done ? ', hecho' : ''}`}
             >
               <View style={styles.horas}>
-                <Text style={[styles.hora, esActual && styles.horaActual, b.done && styles.horaHecha]}>{hhmm(b.start_min)}</Text>
-                <Text style={styles.horaFin}>{hhmm(b.end_min)}</Text>
-              </View>
-              <View style={styles.hilo}>
-                <View
-                  style={[
-                    styles.punto,
-                    b.done && styles.puntoHecho,
-                    esActual && !b.done && styles.puntoActual,
-                    pasado && !b.done && styles.puntoPerdido,
-                  ]}
-                >
-                  {b.done ? <Ionicons name="checkmark" size={10} color={colors.bg} /> : null}
-                </View>
-                {!ultimo ? <View style={[styles.hiloLinea, b.done && styles.hiloHecho]} /> : null}
+                <Text style={[styles.hora, esActual && styles.horaActual]} maxFontSizeMultiplier={1.35}>
+                  {hhmm(b.start_min)}
+                </Text>
+                <Text style={styles.horaFin} maxFontSizeMultiplier={1.35}>
+                  {hhmm(b.end_min)}
+                </Text>
               </View>
               <View style={[styles.cuerpo, esActual && styles.cuerpoActual]}>
                 <View style={styles.tituloFila}>
-                  <Ionicons
-                    name={KIND_ICON[b.kind] as never}
-                    size={13}
-                    color={esActual ? colors.accent : colors.textFaint}
-                  />
+                  <Ionicons name={KIND_ICON[b.kind] as never} size={13} color={esActual ? ink.ink10 : ink.ink6} />
                   <Text
                     style={[styles.bloqueTitulo, b.done && styles.tachado, pasado && !b.done && styles.perdido]}
                     numberOfLines={2}
                   >
                     {b.title}
                   </Text>
-                  {esActual && !b.done ? <Text style={styles.ahora}>AHORA</Text> : null}
+                  {esActual ? <Text style={styles.ahora}>AHORA</Text> : null}
                 </View>
                 {b.detail ? (
                   <Text style={styles.detalle} numberOfLines={esActual ? undefined : 2}>
@@ -122,6 +113,7 @@ export const OrdenDelDia = memo(function OrdenDelDia({ plan, bloques, onToggle, 
                   </Text>
                 ) : null}
               </View>
+              <Check checked={b.done} size={22} />
             </Pressable>
           );
         })}
@@ -134,49 +126,37 @@ const styles = StyleSheet.create({
   veredicto: {
     borderLeftWidth: stroke.rule,
     borderLeftColor: ink.ink10,
-    paddingLeft: 12,
-    marginBottom: 12,
+    paddingLeft: space.s3,
+    marginBottom: space.s3,
   },
   veredictoTexto: {
-    fontFamily: fonts.body,
-    fontSize: 13,
-    lineHeight: 19,
-    color: colors.textDim,
+    fontFamily: tipo.bodySm.family,
+    fontSize: tipo.bodySm.size,
+    lineHeight: tipo.bodySm.lineHeight,
+    color: ink.ink8,
   },
   brief: { marginBottom: 14 },
-  linea: {},
-  bloque: { flexDirection: 'row', alignItems: 'stretch', gap: 10 },
+  bloque: { flexDirection: 'row', alignItems: 'flex-start', gap: space.s3, paddingVertical: space.s3, minHeight: 48 },
+  sep: { borderTopWidth: stroke.hairline, borderTopColor: ink.ink3 },
   pressed: { opacity: 0.7 },
-  horas: { width: 44, paddingTop: 2, alignItems: 'flex-end' },
-  hora: { fontFamily: fonts.number, fontSize: 12, color: colors.textDim },
-  horaActual: { color: colors.accent },
-  horaHecha: { color: colors.textFaint },
-  horaFin: { fontFamily: fonts.body, fontSize: 11, color: colors.textFaint, marginTop: 1 },
-  hilo: { width: 18, alignItems: 'center' },
-  punto: {
-    width: 16,
-    height: 16,
-    borderRadius: 8,
-    borderWidth: 1.5,
-    borderColor: colors.accentDim,
-    backgroundColor: colors.bg,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 2,
+  horas: { width: 48, paddingTop: 1 },
+  hora: { fontFamily: tipo.number.family, fontSize: 13, lineHeight: 18, color: ink.ink6 },
+  horaActual: { color: ink.ink10 },
+  horaFin: {
+    fontFamily: tipo.micro.family,
+    fontSize: tipo.micro.size,
+    lineHeight: tipo.micro.lineHeight,
+    color: ink.ink6,
   },
-  puntoHecho: { backgroundColor: colors.accent, borderColor: colors.accent },
-  puntoActual: { borderColor: colors.accent, borderWidth: 2 },
-  puntoPerdido: { borderColor: colors.line },
-  hiloLinea: { flex: 1, width: 1, backgroundColor: colors.line, marginVertical: 3 },
-  hiloHecho: { backgroundColor: colors.accentDim },
-  cuerpo: { flex: 1, minWidth: 0, paddingBottom: 16, paddingTop: 1 },
-  cuerpoActual: {},
+  cuerpo: { flex: 1, minWidth: 0 },
+  // El bloque de ahora: regla de 2 en blanco a la izquierda.
+  cuerpoActual: { borderLeftWidth: stroke.rule, borderLeftColor: ink.ink10, paddingLeft: space.s3 },
   tituloFila: { flexDirection: 'row', alignItems: 'center', gap: 7 },
-  bloqueTitulo: { flex: 1, fontFamily: fonts.semibold, fontSize: 14.5, lineHeight: 19, color: colors.text },
+  bloqueTitulo: { flex: 1, fontFamily: fonts.semibold, fontSize: 15, lineHeight: 20, color: ink.ink9 },
   // Contorno, no inversión: la inversión de Hoy es una sola (SISTEMA §0).
   ahora: {
-    fontFamily: fonts.heading,
-    fontSize: 11,
+    fontFamily: tipo.micro.family,
+    fontSize: tipo.micro.size,
     letterSpacing: 1.2,
     color: ink.ink10,
     borderWidth: stroke.hairline,
@@ -184,13 +164,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 5,
     paddingVertical: 1,
   },
-  tachado: { textDecorationLine: 'line-through', color: colors.textFaint },
-  perdido: { color: colors.textDim },
+  tachado: { textDecorationLine: 'line-through', color: ink.ink6 },
+  perdido: { color: ink.ink8 },
   detalle: {
     fontFamily: tipo.bodySm.family,
     fontSize: tipo.bodySm.size,
     lineHeight: tipo.bodySm.lineHeight,
-    color: colors.textDim,
+    color: ink.ink8,
     marginTop: 3,
     marginLeft: 20,
   },

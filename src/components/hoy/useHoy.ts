@@ -10,13 +10,12 @@ import { useHealthConsent } from '@/components/ConsentimientoSalud';
 import * as ImagePicker from 'expo-image-picker';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { AccessibilityInfo, Animated, Linking, Platform } from 'react-native';
+import { AccessibilityInfo, Linking, Platform } from 'react-native';
 import { useCelebracion } from '@/components/celebracion/contexto';
 import type { ModoCompletar } from '@/components/CompletarSheet';
 import { prepararDatosSemana, tarjetaDeSemana } from '@/components/ShareCardSemana';
 import { useAlVolver } from '@/components/ui';
 import { avisar, confirmar } from '@/components/ui/confirmar';
-import { useMovimientoReducido } from '@/components/ui/motion';
 import { vibrar } from '@/design/haptics';
 import {
   ACHIEVEMENT_BY_CODE,
@@ -56,7 +55,7 @@ import { DIAS_VENTANA } from '@/lib/socialmath';
 import { mensajeSistema } from '@/lib/validation';
 import type { Completion, Profile, Quest } from '@/lib/types';
 import { derivarHoy } from './derivarHoy';
-import type { HoyVistaProps } from './HoyVista';
+import type { DesdeHero, HoyVistaProps } from './HoyVista';
 
 /** Un logro registrado, en la forma del contrato de celebraciones. */
 const logroInfo = (a: AchievementDef): LogroInfo => ({ codigo: a.code, nombre: a.name, desc: a.desc, titulo: a.title });
@@ -70,6 +69,12 @@ const logroDeCodigo = (codigo: string): LogroInfo => {
 // Lo último que se supo de si la cuenta tiene coach. Vive fuera del componente
 // para que volver a la pestaña no repinte Hoy "sin saberlo" medio segundo.
 let ultimoPro: boolean | null = null;
+
+// Lo último que enseñó el Hero (nivel, barra y racha). Vive fuera del
+// componente: al volver a Hoy los números suben desde ahí y no desde cero; la
+// primera carga de la sesión sí sube desde cero.
+let ultimoHero: DesdeHero | null = null;
+const DESDE_CERO: DesdeHero = { nivel: 0, xpRatio: 0, racha: 0 };
 
 /** Rango más alto de una lista de códigos `rango_X` (null si no hay ninguno). */
 function rangoMasAlto(codigos: string[]): RangoId | null {
@@ -121,8 +126,8 @@ export function useHoy() {
   // Días rotos seguidos antes de hoy (solo con la racha a cero, RET-02): con
   // ellos enJuegoHoy sabe si hoy ya no costaría XP.
   const [rotosPrevios, setRotosPrevios] = useState(0);
-  const pulso = useRef(new Animated.Value(1)).current;
-  const reducido = useMovimientoReducido();
+  // De dónde suben el nivel, la barra y la racha del Hero al montarse.
+  const [desdeHero] = useState<DesdeHero>(() => ultimoHero ?? DESDE_CERO);
   // El cierre que ya ha vibrado: processPendingDays puede devolver el mismo
   // resultado a dos cargas seguidas (cierre en vuelo compartido).
   const cierreVibrado = useRef<DayCloseResult | null>(null);
@@ -417,16 +422,9 @@ export function useHoy() {
       }
 
       if (esDiaPerfecto) {
+        // El día perfecto se dice con su tarjeta (y el botón de compartir),
+        // el resumen de la cola y la vibración.
         setDiaPerfecto(true);
-        pulso.setValue(1);
-        // Con «reducir movimiento» el anillo no late: el día perfecto se dice
-        // con la tarjeta, el resumen de la cola y la vibración.
-        if (!reducido) {
-          Animated.sequence([
-            Animated.spring(pulso, { toValue: 1.18, useNativeDriver: true, speed: 30, bounciness: 12 }),
-            Animated.spring(pulso, { toValue: 1, useNativeDriver: true, speed: 24, bounciness: 8 }),
-          ]).start();
-        }
         // Si sube de nivel, vibra su ceremonia: dos golpes seguidos se pisan.
         const subeNivel = levelFromXp(res.profile.xp_total).level > levelFromXp(profile.xp_total).level;
         if (!subeNivel) setTimeout(() => vibrar('diaPerfecto'), 260);
@@ -592,6 +590,16 @@ export function useHoy() {
     [hoy, hora, profile, rango, tituloEquipado, todayQuests, completions, dayResult, plan, esPro, board, rotosPrevios, diaPerfecto, avisoRecuperacion],
   );
 
+  const heroVisto = datos.hero;
+  useEffect(() => {
+    if (!heroVisto) return;
+    ultimoHero = {
+      nivel: heroVisto.nivel,
+      xpRatio: heroVisto.xpSiguiente > 0 ? heroVisto.xpEnNivel / heroVisto.xpSiguiente : 1,
+      racha: heroVisto.racha,
+    };
+  }, [heroVisto]);
+
   const vista: HoyVistaProps = {
     estado: loaded ? 'listo' : 'cargando',
     error: loadError,
@@ -599,7 +607,7 @@ export function useHoy() {
     ocupada: busyQuestId,
     preparandoTarjeta,
     refrescando: refreshing,
-    pulso,
+    desde: desdeHero,
     acciones: {
       onCompletar: onComplete,
       onAlternarBloque: alternarBloque,
