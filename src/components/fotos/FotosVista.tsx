@@ -8,7 +8,7 @@
 //   3. La semana en curso en una TarjetaArena (grano si está cerrada).
 //   4. Comparar (antes y después) y la línea por semanas.
 //   5. Pie de privacidad.
-// Gate propio (HEALTH_ROUTES no incluye /fotos): sin salud, la tarjeta del
+// Gate propio, además del de HEALTH_ROUTES: sin salud, la tarjeta del
 // permiso; sin 18+, la pregunta con «Tengo 18 o más» y «Ahora no» iguales;
 // si no se ha podido leer (sin conexión), «El sistema no responde» y
 // reintentar, nunca la pregunta de la edad.
