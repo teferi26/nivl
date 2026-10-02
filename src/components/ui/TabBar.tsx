@@ -5,26 +5,34 @@
 // el icono relleno y la etiqueta en blanco, y responde al dedo con háptica.
 // Solo en `compact`; en `medium` va NavRail y en `expanded`, NavSidebar. Los
 // iconos y rótulos son los de navItems.ts.
+//
+// Pinta 5 destinos (`destinosDe(…, 'tabs')`): la Agenda vive debajo de Hoy. Por
+// eso la activa se decide por NOMBRE con `destinoActivo` y no por índice: en la
+// Agenda, Hoy sigue marcada.
 
 import Ionicons from '@expo/vector-icons/Ionicons';
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors, fonts } from '@/lib/theme';
-import { navItemDe, pulsarDestino } from './navItems';
+import { destinoActivo, destinosDe, navItemDe, pulsarDestino } from './navItems';
 
 export function TabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
+  const activo = destinoActivo(state.routes, state.index, 'tabs');
+  const enfocada = state.routes[state.index]?.name;
   return (
     <View
       accessibilityRole="tablist"
       style={[styles.bar, { paddingBottom: Math.max(insets.bottom, Platform.OS === 'web' ? 8 : 6) }]}
     >
-      {state.routes.map((route, index) => {
-        const focused = state.index === index;
+      {destinosDe(state.routes, 'tabs').map((route) => {
+        const focused = route.name === activo;
         const meta = navItemDe(route, descriptors);
         const label = meta.label;
-        const onPress = () => pulsarDestino(navigation, route, focused);
+        // Marcada no es lo mismo que enfocada: desde la Agenda, tocar Hoy
+        // (marcada) tiene que volver a Hoy.
+        const onPress = () => pulsarDestino(navigation, route, route.name === enfocada);
         return (
           <Pressable
             key={route.key}
@@ -36,7 +44,7 @@ export function TabBar({ state, descriptors, navigation }: BottomTabBarProps) {
           >
             <View style={[styles.indicator, focused && styles.indicatorOn]} />
             <Ionicons name={focused ? meta.on : meta.off} size={21} color={focused ? colors.accent : colors.textFaint} />
-            {/* La barra no crece con el texto: con tamaño dinámico alto, seis
+            {/* La barra no crece con el texto: con tamaño dinámico alto, cinco
                 rótulos no caben en 375. El nombre completo va en el label. */}
             <Text style={[styles.label, focused && styles.labelOn]} numberOfLines={1} maxFontSizeMultiplier={1.2}>
               {label}

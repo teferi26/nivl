@@ -1,21 +1,10 @@
-import * as Haptics from 'expo-haptics';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import {
-  KeyboardAvoidingView,
-  Modal,
-  Platform,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import { StyleSheet, Text, TextInput, View } from 'react-native';
 import { LevelUpOverlay } from '@/components/LevelUpOverlay';
-import { SystemButton } from '@/components/SystemButton';
 import {
   avisar,
+  Button,
   Card,
   Check,
   Chip,
@@ -28,6 +17,7 @@ import {
   Screen,
   ScreenHeader,
   Section,
+  Sheet,
   Skeleton,
   SkeletonRows,
   Stagger,
@@ -37,7 +27,9 @@ import {
   volver,
 } from '@/components/ui';
 import { confirmar } from '@/components/ui/confirmar';
-import { evaluateAchievements, unlockAchievements } from '@/lib/achievements';
+import { vibrar } from '@/design/haptics';
+import { ink } from '@/design/tokens';
+import { evaluateAchievements, sincronizarRango, unlockAchievements } from '@/lib/achievements';
 import { useAuth } from '@/lib/auth';
 import { ensureProfile } from '@/lib/data';
 import { awardXp } from '@/lib/engine';
@@ -57,16 +49,20 @@ import { voice } from '@/lib/voice';
 import type { Difficulty, Dungeon, DungeonTask } from '@/lib/types';
 import { mensajeSistema } from '@/lib/validation';
 
-/** Días que quedan hasta la fecha límite, en la voz del sistema. */
-function plazo(fecha: string | null): { valor: string; label: string; tone: 'text' | 'red' } {
-  if (!fecha) return { valor: '—', label: 'Sin fecha', tone: 'text' };
+/**
+ * Días que quedan hasta la fecha límite, en la voz del sistema. `vencida`
+ * (la fecha ya pasó) pone la tarjeta de progreso en alerta; `urgente` solo
+ * sube el dato a blanco puro.
+ */
+function plazo(fecha: string | null): { valor: string; label: string; urgente: boolean; vencida: boolean } {
+  if (!fecha) return { valor: '—', label: 'Sin fecha', urgente: false, vencida: false };
   const hoy = new Date();
   hoy.setHours(0, 0, 0, 0);
   const objetivo = new Date(`${fecha}T00:00:00`);
   const dias = Math.round((objetivo.getTime() - hoy.getTime()) / 86_400_000);
-  if (dias < 0) return { valor: `${-dias}`, label: 'Días de retraso', tone: 'red' };
-  if (dias === 0) return { valor: 'Hoy', label: 'Fecha límite', tone: 'red' };
-  return { valor: `${dias}`, label: dias === 1 ? 'Día restante' : 'Días restantes', tone: dias <= 3 ? 'red' : 'text' };
+  if (dias < 0) return { valor: `${-dias}`, label: 'Días de retraso', urgente: true, vencida: true };
+  if (dias === 0) return { valor: 'Hoy', label: 'Fecha límite', urgente: true, vencida: false };
+  return { valor: `${dias}`, label: dias === 1 ? 'Día restante' : 'Días restantes', urgente: dias <= 3, vencida: false };
 }
 
 export default function DungeonDetail() {
@@ -158,7 +154,9 @@ export default function DungeonDetail() {
         task: task.title,
         boss: task.is_boss,
       });
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      // El rango se recalcula en segundo plano: no bloquea ni rompe el cobro.
+      sincronizarRango().catch(() => []);
+      vibrar(task.is_boss ? 'misionExtra' : 'mision');
       if (res.leveledUp) setLevelUp(res.newLevel);
       await load();
     } catch (e) {
@@ -185,9 +183,10 @@ export default function DungeonDetail() {
         dungeon: dungeon.title,
         rank: dungeon.rank,
       });
+      sincronizarRango().catch(() => []);
       const cleared = await countClearedDungeons();
       const fresh = await unlockAchievements(userId, evaluateAchievements({ dungeonsCleared: cleared }));
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      vibrar('misionExtra');
       avisar(
         'CAMPAÑA DESPEJADA',
         `${voice.dungeonCleared(dungeon.title)}\n\nBotín: +${Math.max(0, res.profile.xp_total - profile.xp_total)} XP${fresh.length > 0 ? `\n${voice.achievement()} ${fresh.map((a) => a.name).join(', ')}` : ''}`,
@@ -211,6 +210,7 @@ export default function DungeonDetail() {
       destructivo: true,
     });
     if (!ok) return;
+    vibrar('destructiva');
     try {
       await deleteDungeon(dungeon.id);
       volver(router);
@@ -222,6 +222,7 @@ export default function DungeonDetail() {
   const removeTask = async (t: DungeonTask) => {
     const ok = await confirmar({ titulo: 'Eliminar tarea', mensaje: t.title, confirmar: 'Eliminar', destructivo: true });
     if (!ok) return;
+    vibrar('destructiva');
     try {
       await deleteTask(t.id);
       await load();
@@ -298,13 +299,13 @@ export default function DungeonDetail() {
         </FadeIn>
 
         <FadeIn index={1}>
-          <Card accent={cleared ? colors.gold : undefined}>
+          <Card variant={cleared ? 'logro' : active && fecha.vencida ? 'alerta' : 'surface'}>
             <View style={styles.progressRow}>
-              <ProgressRing ratio={ratio} size={84} stroke={5} color={cleared ? colors.gold : colors.steel} sublabel={cleared ? 'despejada' : 'hecho'} />
+              <ProgressRing ratio={ratio} size={84} stroke={5} sublabel={cleared ? 'despejada' : 'hecho'} />
               <StatRow style={styles.stats}>
                 <Stat value={`${done}/${tasks.length}`} label="Tareas" size="sm" />
-                <Stat value={bosses.length > 0 ? `${bossesDone}/${bosses.length}` : '—'} label="Jefes" size="sm" tone="steel" />
-                <Stat value={fecha.valor} label={fecha.label} size="sm" tone={active ? fecha.tone : 'text'} />
+                <Stat value={bosses.length > 0 ? `${bossesDone}/${bosses.length}` : '—'} label="Jefes" size="sm" />
+                <Stat value={fecha.valor} label={fecha.label} size="sm" tone={active && fecha.urgente ? 'accent' : 'text'} />
               </StatRow>
             </View>
           </Card>
@@ -312,9 +313,9 @@ export default function DungeonDetail() {
 
         {cleared ? (
           <FadeIn index={2}>
-            <Card variant="outline" accent={colors.gold}>
+            <Card variant="logro">
               <View style={styles.clearedRow}>
-                <Tag tone="gold">Despejada</Tag>
+                <Tag tone="dim">Despejada</Tag>
                 <Text style={styles.clearedText}>{voice.dungeonCleared(dungeon.title)}</Text>
               </View>
             </Card>
@@ -323,11 +324,14 @@ export default function DungeonDetail() {
 
         {allDone && active ? (
           <FadeIn index={2}>
-            <Card variant="outline" accent={colors.gold}>
-              <Text style={styles.lootEyebrow}>BOTÍN DISPONIBLE</Text>
+            {/* La única inversión de la pantalla: el Button primario de dentro
+                se invierte solo (SuperficieContext) y queda negro sobre blanco. */}
+            <Card variant="inverse">
+              <Text style={styles.lootEyebrow}>Botín disponible</Text>
               <Text style={styles.lootText}>Cada tarea y cada jefe han caído. Reclama lo que es tuyo.</Text>
-              <SystemButton
+              <Button
                 title={`Reclamar botín · +${loot} XP`}
+                size="lg"
                 onPress={claimLoot}
                 loading={busy}
                 icon="trophy-outline"
@@ -338,7 +342,7 @@ export default function DungeonDetail() {
         ) : null}
 
         <FadeIn index={3}>
-          <Section title="Tareas" meta={tasks.length > 0 ? `${done}/${tasks.length}` : undefined} tone="steel">
+          <Section title="Tareas" meta={tasks.length > 0 ? `${done}/${tasks.length}` : undefined}>
             {tasks.length === 0 ? (
               <Card variant="outline">
                 <EmptyState
@@ -357,17 +361,17 @@ export default function DungeonDetail() {
                     <Row
                       key={t.id}
                       first={i === 0}
-                      leading={<Check checked={t.done} tone={t.is_boss ? 'steel' : 'accent'} />}
+                      leading={<Check checked={t.done} />}
                       title={t.title}
                       done={t.done}
                       detail={
                         <View style={styles.taskMeta}>
-                          {t.is_boss ? <Tag tone="steel">Jefe</Tag> : null}
+                          {t.is_boss ? <Tag tone="dim">Jefe</Tag> : null}
                           <Text style={styles.taskMetaText}>{DIFFICULTY_LABEL[t.difficulty]}</Text>
                         </View>
                       }
                       trailing={
-                        <RowValue tone={t.done ? 'steel' : 'dim'} strong={t.done}>
+                        <RowValue tone={t.done ? 'accent' : 'dim'} strong={t.done}>
                           +{xp} XP
                         </RowValue>
                       }
@@ -389,7 +393,7 @@ export default function DungeonDetail() {
         </FadeIn>
 
         <FadeIn index={4}>
-          <SystemButton
+          <Button
             title={cleared ? 'Borrar la campaña' : 'Abandonar la campaña'}
             variant="danger"
             icon="trash-outline"
@@ -398,52 +402,50 @@ export default function DungeonDetail() {
         </FadeIn>
       </Stagger>
 
-      <Modal visible={formOpen} transparent animationType="slide" onRequestClose={() => setFormOpen(false)}>
-        <KeyboardAvoidingView style={styles.backdrop} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-          <Pressable style={styles.backdropTap} onPress={() => setFormOpen(false)} accessibilityRole="button" accessibilityLabel="Cerrar" />
-          <View style={styles.sheet}>
-            <ScrollView keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false} contentContainerStyle={styles.sheetContent}>
-              <View style={styles.sheetHandle} />
-              <Text style={styles.sheetEyebrow}>NUEVA TAREA</Text>
-              <Text style={styles.sheetTitle}>¿Cuál es el siguiente paso?</Text>
-              <Text style={styles.label}>Tarea</Text>
-              <TextInput
-                style={styles.input}
-                value={taskTitle}
-                onChangeText={setTaskTitle}
-                placeholder="Ej. Redactar el capítulo 2"
-                placeholderTextColor={colors.textFaint}
-                autoFocus
-                accessibilityLabel="Nombre de la tarea"
-              />
-              <Text style={styles.label}>Dificultad</Text>
-              <ChipWrap>
-                {DIFFICULTIES.map((d) => (
-                  <Chip
-                    key={d}
-                    label={DIFFICULTY_LABEL[d]}
-                    selected={difficulty === d}
-                    onPress={() => setDifficulty(d)}
-                    tone="steel"
-                    accessibilityLabel={`Dificultad ${DIFFICULTY_LABEL[d]}`}
-                  />
-                ))}
-              </ChipWrap>
-              <Text style={styles.label}>Tipo</Text>
-              <ChipWrap>
-                <Chip label="Tarea" selected={!isBoss} onPress={() => setIsBoss(false)} tone="steel" accessibilityLabel="Tarea normal" />
-                <Chip label="Jefe" icon="skull-outline" selected={isBoss} onPress={() => setIsBoss(true)} tone="steel" accessibilityLabel="Jefe: hito que paga el doble" />
-              </ChipWrap>
-              <Text style={styles.hint}>
-                {isBoss ? 'Un jefe es un hito. Paga el doble: ' : 'Paga '}
-                {dungeonTaskXp(difficulty, isBoss)} XP al caer.
-              </Text>
-              <SystemButton title="Añadir tarea" onPress={addTask} loading={adding} disabled={!taskTitle.trim()} style={{ marginTop: 22 }} />
-              <SystemButton title="Cancelar" variant="ghost" onPress={() => setFormOpen(false)} style={{ marginTop: 6 }} />
-            </ScrollView>
-          </View>
-        </KeyboardAvoidingView>
-      </Modal>
+      <Sheet
+        visible={formOpen}
+        onClose={() => setFormOpen(false)}
+        eyebrow="Nueva tarea"
+        title="¿Cuál es el siguiente paso?"
+        footer={
+          <>
+            <Button title="Añadir tarea" size="lg" onPress={addTask} loading={adding} disabled={!taskTitle.trim()} />
+            <Button title="Cancelar" variant="ghost" onPress={() => setFormOpen(false)} />
+          </>
+        }
+      >
+        <Text style={[styles.label, styles.labelPrimero]}>Tarea</Text>
+        <TextInput
+          style={styles.input}
+          value={taskTitle}
+          onChangeText={setTaskTitle}
+          placeholder="Ej. Redactar el capítulo 2"
+          placeholderTextColor={colors.textFaint}
+          autoFocus
+          accessibilityLabel="Nombre de la tarea"
+        />
+        <Text style={styles.label}>Dificultad</Text>
+        <ChipWrap>
+          {DIFFICULTIES.map((d) => (
+            <Chip
+              key={d}
+              label={DIFFICULTY_LABEL[d]}
+              selected={difficulty === d}
+              onPress={() => setDifficulty(d)}
+              accessibilityLabel={`Dificultad ${DIFFICULTY_LABEL[d]}`}
+            />
+          ))}
+        </ChipWrap>
+        <Text style={styles.label}>Tipo</Text>
+        <ChipWrap>
+          <Chip label="Tarea" selected={!isBoss} onPress={() => setIsBoss(false)} accessibilityLabel="Tarea normal" />
+          <Chip label="Jefe" icon="skull-outline" selected={isBoss} onPress={() => setIsBoss(true)} accessibilityLabel="Jefe: hito que paga el doble" />
+        </ChipWrap>
+        <Text style={styles.hint}>
+          {isBoss ? 'Un jefe es un hito. Paga el doble: ' : 'Paga '}
+          {dungeonTaskXp(difficulty, isBoss)} XP al caer.
+        </Text>
+      </Sheet>
 
       <LevelUpOverlay level={levelUp} onClose={() => setLevelUp(null)} />
     </Screen>
@@ -455,36 +457,25 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderWidth: 1.5,
-    borderColor: colors.steelDim,
+    borderColor: ink.ink6,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 2,
   },
-  rankLetter: { fontFamily: fonts.brand, fontSize: 30, lineHeight: 36, color: colors.steel },
+  rankLetter: { fontFamily: fonts.brand, fontSize: 30, lineHeight: 36, color: colors.text },
   progressRow: { flexDirection: 'row', alignItems: 'center', gap: 18 },
   stats: { flex: 1, minWidth: 0 },
   clearedRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   clearedText: { flex: 1, minWidth: 0, fontFamily: fonts.body, fontSize: 13.5, lineHeight: 19, color: colors.text },
-  lootEyebrow: { fontFamily: fonts.heading, fontSize: 11, letterSpacing: 2.5, color: colors.gold },
-  lootText: { fontFamily: fonts.body, fontSize: 13.5, lineHeight: 19, color: colors.text, marginTop: 6 },
+  // Sobre la tarjeta inverse (blanca): texto en negro.
+  lootEyebrow: { fontFamily: fonts.heading, fontSize: 11, letterSpacing: 2.5, textTransform: 'uppercase', color: ink.ink0 },
+  lootText: { fontFamily: fonts.body, fontSize: 13.5, lineHeight: 19, color: ink.ink0, marginTop: 6 },
   lista: { paddingHorizontal: 16, paddingVertical: 2 },
   taskMeta: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   taskMetaText: { fontFamily: fonts.body, fontSize: 12, color: colors.textFaint },
   nota: { fontFamily: fonts.body, fontSize: 12, lineHeight: 17, color: colors.textFaint, marginTop: 2 },
-  backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'flex-end' },
-  backdropTap: { flex: 1 },
-  sheet: {
-    maxHeight: '92%',
-    backgroundColor: colors.panel,
-    borderTopWidth: 1,
-    borderTopColor: colors.line,
-  },
-  sheetContent: { paddingHorizontal: 20, paddingTop: 10, paddingBottom: 34 },
   skEyebrow: { marginBottom: 12, marginTop: 16 },
   skCard: { marginBottom: 10 },
-  sheetHandle: { alignSelf: 'center', width: 36, height: 3, backgroundColor: colors.accentDim, marginBottom: 16 },
-  sheetEyebrow: { fontFamily: fonts.heading, fontSize: 11, letterSpacing: 2.5, color: colors.steel },
-  sheetTitle: { fontFamily: fonts.heading, fontSize: 24, letterSpacing: -0.5, color: colors.text, marginTop: 6, marginBottom: 4 },
   label: {
     fontFamily: fonts.heading,
     fontSize: 11,
@@ -494,6 +485,7 @@ const styles = StyleSheet.create({
     marginTop: 18,
     marginBottom: 8,
   },
+  labelPrimero: { marginTop: 4 },
   hint: { fontFamily: fonts.body, fontSize: 12, color: colors.textFaint, marginTop: 8, lineHeight: 17 },
   input: {
     borderWidth: 1,

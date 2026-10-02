@@ -1,21 +1,11 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
-import {
-  KeyboardAvoidingView,
-  Modal,
-  Platform,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
-import { SystemButton } from '@/components/SystemButton';
+import { StyleSheet, Text, TextInput, View } from 'react-native';
 import { XPBar } from '@/components/XPBar';
 import {
   avisar,
+  Button,
   Card,
   Chip,
   ChipWrap,
@@ -26,11 +16,14 @@ import {
   Screen,
   ScreenHeader,
   Section,
+  Sheet,
   Skeleton,
   SkeletonRows,
   Stagger,
+  Tag,
   useAlVolver,
 } from '@/components/ui';
+import { ink } from '@/design/tokens';
 import { useAuth } from '@/lib/auth';
 import { ensureProfile } from '@/lib/data';
 import { createDungeon, fetchDungeons } from '@/lib/dungeons';
@@ -162,7 +155,7 @@ export default function Campañas() {
 
         {loaded && !(loadError && dungeons.length === 0) ? (
           <FadeIn index={1}>
-            <Section title="Abiertas" meta={active.length > 0 ? `${active.length}` : undefined} tone="steel">
+            <Section title="Abiertas" meta={active.length > 0 ? `${active.length}` : undefined}>
               {active.length === 0 ? (
                 <Card variant="outline">
                   <EmptyState
@@ -195,17 +188,21 @@ export default function Campañas() {
                                 {d.doneCount}/{d.total} tareas · {d.stat}
                               </Text>
                               {plazo ? (
-                                <View style={styles.plazo}>
-                                  <Ionicons name="time-outline" size={12} color={plazo.urgente ? colors.red : colors.textFaint} />
-                                  <Text style={[styles.meta, plazo.urgente && styles.plazoUrgente]}>{plazo.texto}</Text>
-                                </View>
+                                plazo.urgente ? (
+                                  <Tag tone="alerta">{plazo.texto}</Tag>
+                                ) : (
+                                  <View style={styles.plazo}>
+                                    <Ionicons name="time-outline" size={12} color={ink.ink6} />
+                                    <Text style={[styles.meta, styles.plazoTexto]}>{plazo.texto}</Text>
+                                  </View>
+                                )
                               ) : null}
                             </View>
                           </View>
                           <Ionicons name="chevron-forward" size={18} color={colors.textFaint} />
                         </View>
                         <View style={styles.progress}>
-                          <XPBar ratio={ratio} color={colors.steel} height={5} />
+                          <XPBar ratio={ratio} height={5} />
                           <View style={styles.progressMeta}>
                             <Text style={styles.progressPct}>{Math.round(ratio * 100)}%</Text>
                             <Text style={styles.botin}>Botín {DUNGEON_CLEAR_XP[d.rank]} XP</Text>
@@ -222,7 +219,7 @@ export default function Campañas() {
 
         {loaded && cleared.length > 0 ? (
           <FadeIn index={2}>
-            <Section title="Despejadas" meta={`${cleared.length} · ${botinTotal} XP`} tone="gold">
+            <Section title="Despejadas" meta={`${cleared.length} · ${botinTotal} XP`} tone="logro">
               <Card padded={false} style={styles.lista}>
                 {cleared.map((d, i) => (
                   <Row
@@ -236,7 +233,7 @@ export default function Campañas() {
                     title={d.title}
                     muted
                     detail={d.cleared_at ? `Despejada el ${d.cleared_at.slice(0, 10)}` : undefined}
-                    trailing={<RowValue tone="gold">+{DUNGEON_CLEAR_XP[d.rank]} XP</RowValue>}
+                    trailing={<RowValue tone="accent">+{DUNGEON_CLEAR_XP[d.rank]} XP</RowValue>}
                     onPress={() => router.push({ pathname: '/dungeon/[id]', params: { id: d.id } })}
                   />
                 ))}
@@ -246,42 +243,42 @@ export default function Campañas() {
         ) : null}
       </Stagger>
 
-      <Modal visible={formOpen} transparent animationType="slide" onRequestClose={() => setFormOpen(false)}>
-        <KeyboardAvoidingView style={styles.backdrop} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-          <Pressable style={styles.backdropTap} onPress={() => setFormOpen(false)} accessibilityLabel="Cerrar" />
-          <View style={styles.sheet}>
-            <ScrollView keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false} contentContainerStyle={styles.sheetContent}>
-              <View style={styles.sheetHandle} />
-              <Text style={styles.sheetEyebrow}>NUEVA CAMPAÑA</Text>
-              <Text style={styles.sheetTitle}>¿Qué vas a conquistar?</Text>
-              <Text style={styles.label}>Nombre</Text>
-              <TextInput
-                style={styles.input}
-                value={title}
-                onChangeText={setTitle}
-                placeholder="Ej. Lanzar la web · Aprobar Cálculo · Media maratón"
-                placeholderTextColor={colors.textFaint}
-                autoFocus
-              />
-              <Text style={styles.label}>Envergadura</Text>
-              <ChipWrap>
-                {DUNGEON_RANKS.map((r) => (
-                  <Chip key={r} label={r} selected={rank === r} onPress={() => setRank(r)} tone="steel" accessibilityLabel={`Rango ${r}`} />
-                ))}
-              </ChipWrap>
-              <Text style={styles.hint}>De E (una semana) a S (una temporada entera). Botín al despejar: {DUNGEON_CLEAR_XP[rank]} XP.</Text>
-              <Text style={styles.label}>Qué entrena</Text>
-              <ChipWrap>
-                {STATS.map((s) => (
-                  <Chip key={s} label={s} selected={stat === s} onPress={() => setStat(s)} accessibilityLabel={`Estadística ${s}`} />
-                ))}
-              </ChipWrap>
-              <SystemButton title="Abrir campaña" onPress={onCreate} loading={saving} disabled={!title.trim()} style={{ marginTop: 22 }} />
-              <SystemButton title="Cancelar" variant="ghost" onPress={() => setFormOpen(false)} style={{ marginTop: 6 }} />
-            </ScrollView>
-          </View>
-        </KeyboardAvoidingView>
-      </Modal>
+      <Sheet
+        visible={formOpen}
+        onClose={() => setFormOpen(false)}
+        eyebrow="Nueva campaña"
+        title="¿Qué vas a conquistar?"
+        footer={
+          <>
+            <Button title="Abrir campaña" size="lg" onPress={onCreate} loading={saving} disabled={!title.trim()} />
+            <Button title="Cancelar" variant="ghost" onPress={() => setFormOpen(false)} />
+          </>
+        }
+      >
+        <Text style={[styles.label, styles.labelPrimero]}>Nombre</Text>
+        <TextInput
+          style={styles.input}
+          value={title}
+          onChangeText={setTitle}
+          placeholder="Ej. Lanzar la web · Aprobar Cálculo · Media maratón"
+          placeholderTextColor={colors.textFaint}
+          autoFocus
+          accessibilityLabel="Nombre de la campaña"
+        />
+        <Text style={styles.label}>Envergadura</Text>
+        <ChipWrap>
+          {DUNGEON_RANKS.map((r) => (
+            <Chip key={r} label={r} selected={rank === r} onPress={() => setRank(r)} accessibilityLabel={`Rango ${r}`} />
+          ))}
+        </ChipWrap>
+        <Text style={styles.hint}>De E (una semana) a S (una temporada entera). Botín al despejar: {DUNGEON_CLEAR_XP[rank]} XP.</Text>
+        <Text style={styles.label}>Qué entrena</Text>
+        <ChipWrap>
+          {STATS.map((s) => (
+            <Chip key={s} label={s} selected={stat === s} onPress={() => setStat(s)} accessibilityLabel={`Estadística ${s}`} />
+          ))}
+        </ChipWrap>
+      </Sheet>
     </Screen>
   );
 }
@@ -292,38 +289,26 @@ const styles = StyleSheet.create({
     width: 46,
     height: 46,
     borderWidth: 1.5,
-    borderColor: colors.steelDim,
+    borderColor: ink.ink6,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  rankLetter: { fontFamily: fonts.brand, fontSize: 22, color: colors.steel },
+  rankLetter: { fontFamily: fonts.brand, fontSize: 22, color: colors.text },
   body: { flex: 1, minWidth: 0 },
   dungeonTitle: { fontFamily: fonts.heading, fontSize: 16.5, lineHeight: 21, letterSpacing: -0.2, color: colors.text },
   metaRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 4, flexWrap: 'wrap' },
   meta: { fontFamily: fonts.body, fontSize: 12, color: colors.textFaint },
   plazo: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  plazoUrgente: { color: colors.red, fontFamily: fonts.semibold },
+  plazoTexto: { color: ink.ink6 },
   progress: { marginTop: 14 },
   progressMeta: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 6 },
-  progressPct: { fontFamily: fonts.number, fontSize: 12, color: colors.steel },
+  progressPct: { fontFamily: fonts.number, fontSize: 12, color: colors.text },
   botin: { fontFamily: fonts.body, fontSize: 12, color: colors.textFaint },
   lista: { paddingHorizontal: 16, paddingVertical: 2 },
-  rankMini: { width: 28, height: 28, borderWidth: 1, borderColor: colors.goldDim, alignItems: 'center', justifyContent: 'center' },
-  rankMiniLetter: { fontFamily: fonts.brand, fontSize: 13, color: colors.gold },
-  backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'flex-end' },
-  backdropTap: { flex: 1 },
-  sheet: {
-    maxHeight: '92%',
-    backgroundColor: colors.panel,
-    borderTopWidth: 1,
-    borderTopColor: colors.line,
-  },
-  sheetContent: { paddingHorizontal: 20, paddingTop: 10, paddingBottom: 34 },
+  rankMini: { width: 28, height: 28, borderWidth: 1, borderColor: ink.ink4, alignItems: 'center', justifyContent: 'center' },
+  rankMiniLetter: { fontFamily: fonts.brand, fontSize: 13, color: ink.ink6 },
   skEyebrow: { marginBottom: 12 },
   skCard: { marginBottom: 10 },
-  sheetHandle: { alignSelf: 'center', width: 36, height: 3, backgroundColor: colors.accentDim, marginBottom: 16 },
-  sheetEyebrow: { fontFamily: fonts.heading, fontSize: 11, letterSpacing: 2.5, color: colors.steel },
-  sheetTitle: { fontFamily: fonts.heading, fontSize: 24, letterSpacing: -0.5, color: colors.text, marginTop: 6, marginBottom: 4 },
   label: {
     fontFamily: fonts.heading,
     fontSize: 11,
@@ -333,6 +318,7 @@ const styles = StyleSheet.create({
     marginTop: 18,
     marginBottom: 8,
   },
+  labelPrimero: { marginTop: 4 },
   hint: { fontFamily: fonts.body, fontSize: 12, color: colors.textFaint, marginTop: 8, lineHeight: 17 },
   input: {
     borderWidth: 1,

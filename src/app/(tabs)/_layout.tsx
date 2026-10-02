@@ -9,6 +9,7 @@ import { TopeAncho, useAnchoUtil } from '@/design/useSizeClass';
 // Navegación según la clase de tamaño (SISTEMA.md §3): barra inferior en
 // compact, raíl de 72 en medium y barra lateral de 240 en expanded. Cambia en
 // caliente al rotar o redimensionar la ventana. Iconos y rótulos: navItems.ts.
+// La barra inferior pinta 5 destinos; el raíl y la barra lateral, los 6.
 //
 // La navegación se decide con el ancho de la ventana, pero las pantallas se
 // miden con el hueco que les queda (ventana − raíl o barra lateral − inset
@@ -34,10 +35,12 @@ export default function TabsLayout() {
         screenOptions={{ headerShown: false, tabBarPosition: sizeClass === 'compact' ? 'bottom' : 'left' }}
       >
         <Tabs.Screen name="index" options={{ title: 'Hoy' }} />
+        {/* Justo detrás de Hoy: en compact no tiene pestaña (navItems.ts) y es
+            su destino secundario; en el raíl y la barra lateral va segunda. */}
+        <Tabs.Screen name="agenda" options={{ title: 'Agenda' }} />
         <Tabs.Screen name="coach" options={{ title: 'Coach' }} />
         <Tabs.Screen name="habitos" options={{ title: 'Hábitos' }} />
         <Tabs.Screen name="mazmorras" options={{ title: 'Campañas' }} />
-        <Tabs.Screen name="agenda" options={{ title: 'Agenda' }} />
         <Tabs.Screen name="perfil" options={{ title: 'Perfil' }} />
       </Tabs>
     </TopeAncho.Provider>
