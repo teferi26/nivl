@@ -207,6 +207,12 @@ begin
   if v_inviter = v_uid then
     return jsonb_build_object('ok', false, 'reason', 'propio');
   end if;
+  -- Un bloqueo en cualquier sentido (0032) tampoco se revela: 'desconocido'.
+  if exists(select 1 from public.social_blocks sb
+            where (sb.blocker = v_inviter and sb.blocked = v_uid)
+               or (sb.blocker = v_uid and sb.blocked = v_inviter)) then
+    return jsonb_build_object('ok', false, 'reason', 'desconocido');
+  end if;
 
   select u.created_at into v_created from auth.users u where u.id = v_uid;
   if v_created is null or v_created < now() - interval '7 days' then

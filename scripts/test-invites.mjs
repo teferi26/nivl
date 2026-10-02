@@ -80,6 +80,9 @@ try {
       evidence_url text);
     create table public.events(id uuid primary key default gen_random_uuid(), user_id uuid not null references auth.users(id) on delete cascade,
       type text not null, payload jsonb not null default '{}', created_at timestamptz not null default now());
+    create table public.social_blocks(blocker uuid not null references auth.users(id) on delete cascade,
+      blocked uuid not null references auth.users(id) on delete cascade, created_at timestamptz not null default now(),
+      primary key(blocker, blocked), check(blocker <> blocked));
     create table public.subscriptions(user_id uuid primary key references auth.users(id) on delete cascade,
       status text not null default 'none', plan text not null default 'cortesia', provider text not null default 'manual',
       current_period_end timestamptz);
@@ -125,6 +128,12 @@ try {
   check(await claim(E, codeA), { ok: false, reason: 'borrado_pendiente' });
   const F = await newUser(0);
   check(await claim(F, await codeOf(E)), { ok: false, reason: 'desconocido' });
+  // Blocks (0032) in either direction are hidden as unknown.
+  const BL1 = await newUser(0); const BL2 = await newUser(0);
+  await db.query('insert into social_blocks(blocker, blocked) values($1, $2)', [A, BL1]);
+  check(await claim(BL1, codeA), { ok: false, reason: 'desconocido' });
+  await db.query('insert into social_blocks(blocker, blocked) values($1, $2)', [BL2, A]);
+  check(await claim(BL2, codeA), { ok: false, reason: 'desconocido' });
   // Shared brake with friend_request (30/hour).
   const G = await newUser(0);
   for (let i = 0; i < 30; i++) await claim(G, 'ZZZZZZZZ');

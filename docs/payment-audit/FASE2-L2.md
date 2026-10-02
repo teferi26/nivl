@@ -11,7 +11,7 @@ Rama `winter2/chat2-monetizacion` @99729ea. D3 aprobada: **sin días de Pro desd
 | `src/lib/invites.ts` | Cliente: `claimInvite`, `settleMyInvites`, `fetchMyInvites` + puros `mensajeInvite`, `siguienteUmbral`, `normalizarCodigo` |
 | `src/lib/__tests__/invites.test.ts` | Jest con `supabase.rpc` simulado |
 
-SHA-256 de `0045_invitaciones.sql`: `d9c2243997c25e3f25e5027fe001bd6022d6aeca342a5f507b21d1c920466d97`
+SHA-256 de `0045_invitaciones.sql`: `3fbe6b28aa6c79262628475af37edcd70b838ca6a6451e9ded715238ba90d797`
 
 Huella para `HUELLAS` de `scripts/apply-migrations.mjs`:
 
@@ -68,7 +68,7 @@ Puramente aditiva: dos tablas, cinco funciones nuevas (`claim_invite`, `settle_m
 
 | Comprobación | Resultado |
 |---|---|
-| `node scripts/test-invites.mjs C:/temp/AGROLAFORGA/node_modules/@electric-sql/pglite/dist/index.js` | `{"ok":true,"checks":66,"database":"PGlite in memory","productionTouched":false}` |
+| `node scripts/test-invites.mjs C:/temp/AGROLAFORGA/node_modules/@electric-sql/pglite/dist/index.js` | `{"ok":true,"checks":68,"database":"PGlite in memory","productionTouched":false}` |
 | `CI=true npx jest --ci --runInBand src/lib/__tests__/invites.test.ts` | 16/16 |
 | `npm run typecheck` | sin errores |
 | `CI=true npm run lint` | 0 errores (1 aviso previo en `pro-purchases.test.ts`, ajeno) |
@@ -82,3 +82,7 @@ El test PGlite carga las migraciones REALES 0021 (códigos de amigo y freno), 00
 - **Chat 4**: sección de invitar en `amigos.tsx` con `fetchMyInvites()` y `mensajeInvite()`.
 - **Chat 3**: (1) **exportación**: `export_my_data()` (0044) enumera tablas; falta añadir `invite_rewards` (tiene `user_id`) y, como relación, solo la parte propia de `invites` (como invitado: `created_at`, `status`; como quien invita: cifras o filas sin el uuid del invitado). (2) Borrado: cubierto por `on delete cascade`; revisar si se quiere conservar algo para auditoría. (3) Revisión anti-abuso y, si se quiere, el estado `anulada` (hoy solo lo pondría un administrador con service_role) y el evento en `events` (requiere ampliar la lista de 0035).
 - **Chat 1**: dictamen 3.1.1/3.2.2 confirma que la recompensa es solo de estatus (sin Pro, sin dinero, sin incentivo a valorar).
+
+## Cambio tras la revisión del Chat 3 (02/10)
+
+`claim_invite` responde `desconocido` si existe un bloqueo (0032 `social_blocks`) en cualquier sentido entre invitado e invitador. Test PGlite: 68/68. SHA-256 nuevo: `3fbe6b28aa6c79262628475af37edcd70b838ca6a6451e9ded715238ba90d797`. Exportación: la consolida el Chat 3 en su migración final (no se toca `export_my_data` aquí).
