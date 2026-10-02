@@ -1,3 +1,4 @@
+import { codigosDeRangoPendientes } from './progression';
 import { supabase } from './supabase';
 
 export interface AchievementDef {
@@ -5,11 +6,14 @@ export interface AchievementDef {
   name: string;
   desc: string;
   title?: string;
+  /** Registro interno (p. ej. rango alcanzado): no se lista como logro. */
+  oculto?: boolean;
 }
 
 // Logros cualitativos: sin XP (anti-inflación). Algunos desbloquean títulos equipables.
 export const ACHIEVEMENTS: AchievementDef[] = [
   { code: 'first_quest', name: 'Primer paso', desc: 'Completa tu primera misión' },
+  { code: 'first_day', name: 'Primer día en la arena', desc: 'Cierra tu primer día con las misiones cumplidas' },
   { code: 'quests_10', name: 'Gladiador novato', desc: '10 misiones completadas' },
   { code: 'quests_50', name: 'Gladiador veterano', desc: '50 misiones completadas', title: 'El Persistente' },
   { code: 'quests_100', name: 'Centurión', desc: '100 misiones completadas' },
@@ -18,9 +22,9 @@ export const ACHIEVEMENTS: AchievementDef[] = [
   { code: 'streak_30', name: 'Mes de hierro', desc: 'Racha de 30 días', title: 'El Constante' },
   { code: 'streak_100', name: 'Voluntad de acero', desc: 'Racha de 100 días', title: 'Inquebrantable' },
   { code: 'level_5', name: 'Despertar', desc: 'Alcanza el nivel 5' },
-  { code: 'level_10', name: 'Doble dígito', desc: 'Alcanza el nivel 10', title: 'Despertado' },
-  { code: 'level_25', name: 'Sangre de élite', desc: 'Alcanza el nivel 25', title: 'Élite' },
-  { code: 'level_50', name: 'Monarca en ciernes', desc: 'Alcanza el nivel 50', title: 'Monarca' },
+  { code: 'level_10', name: 'Doble dígito', desc: 'Alcanza el nivel 10', title: 'Forjado' },
+  { code: 'level_25', name: 'Sangre de arena', desc: 'Alcanza el nivel 25', title: 'Sangre de arena' },
+  { code: 'level_50', name: 'Señor de la arena', desc: 'Alcanza el nivel 50', title: 'Señor de la arena' },
   { code: 'first_evidence', name: 'Sin palabras, pruebas', desc: 'Primera misión con evidencia' },
   { code: 'evidence_50', name: 'Archivo del gladiador', desc: '50 evidencias registradas', title: 'El Verificado' },
   { code: 'penalty_redeemed', name: 'Redención', desc: 'Completa una misión de penalización' },
@@ -30,7 +34,33 @@ export const ACHIEVEMENTS: AchievementDef[] = [
   { code: 'pr_10', name: 'Rompe límites', desc: '10 récords personales', title: 'Rompe Límites' },
   { code: 'first_journal', name: 'La pluma del gladiador', desc: 'Primera entrada del diario' },
   { code: 'journal_30', name: 'Cronista', desc: '30 entradas del diario', title: 'El Cronista' },
+  // Sistema v2 (progression.ts): el rango alcanzado se registra aquí para que
+  // no baje nunca aunque una penalización baje el nivel. Sin XP.
+  { code: 'rango_D', name: 'Rango Gladiador', desc: 'Alcanza el rango D', oculto: true },
+  { code: 'rango_C', name: 'Rango Veterano', desc: 'Alcanza el rango C', oculto: true },
+  { code: 'rango_B', name: 'Rango Campeón', desc: 'Alcanza el rango B', oculto: true },
+  { code: 'rango_A', name: 'Rango Héroe de la arena', desc: 'Alcanza el rango A', oculto: true },
+  { code: 'rango_S', name: 'Rango Leyenda', desc: 'Alcanza el rango S', oculto: true },
 ];
+
+/**
+ * Títulos renombrados en el sistema v2. «Élite» chocaba con el plan de pago
+ * y «Despertado»/«Monarca» eran de la marca antigua. Quien ya llevaba uno
+ * equipado (profiles.equipped_title) lo ve con el nombre nuevo.
+ */
+export const TITULOS_RENOMBRADOS: Record<string, string> = {
+  'Élite': 'Sangre de arena',
+  'Despertado': 'Forjado',
+  'Monarca': 'Señor de la arena',
+};
+
+export function tituloVigente(equipado: string | null | undefined): string | null {
+  if (!equipado) return null;
+  return TITULOS_RENOMBRADOS[equipado] ?? equipado;
+}
+
+/** Logros que se enseñan en la vitrina (sin los registros internos). */
+export const ACHIEVEMENTS_VISIBLES = (): AchievementDef[] => ACHIEVEMENTS.filter((a) => !a.oculto);
 
 export const ACHIEVEMENT_BY_CODE: Record<string, AchievementDef> = Object.fromEntries(
   ACHIEVEMENTS.map((a) => [a.code, a]),
@@ -45,6 +75,10 @@ export interface AchievementContext {
   prCount?: number;
   journalCount?: number;
   penaltyRedeemed?: boolean;
+  /** El cierre acaba de dar por cumplido al menos un día (DayCloseResult.diasCumplidos > 0). */
+  diaCumplido?: boolean;
+  /** Logros ya desbloqueados: para registrar el rango (progression.ts). */
+  unlocked?: ReadonlySet<string>;
 }
 
 export function evaluateAchievements(ctx: AchievementContext): string[] {
@@ -55,6 +89,7 @@ export function evaluateAchievements(ctx: AchievementContext): string[] {
   if (c >= 50) codes.push('quests_50');
   if (c >= 100) codes.push('quests_100');
   if (c >= 500) codes.push('quests_500');
+  if (ctx.diaCumplido) codes.push('first_day');
   const s = ctx.streak ?? 0;
   if (s >= 7) codes.push('streak_7');
   if (s >= 30) codes.push('streak_30');
@@ -77,6 +112,8 @@ export function evaluateAchievements(ctx: AchievementContext): string[] {
   const j = ctx.journalCount ?? 0;
   if (j >= 1) codes.push('first_journal');
   if (j >= 30) codes.push('journal_30');
+  // Rango v2: se registra en cuanto el nivel lo alcanza y ya no se pierde.
+  if (l > 0) codes.push(...codigosDeRangoPendientes(l, ctx.unlocked ?? new Set()));
   return codes;
 }
 

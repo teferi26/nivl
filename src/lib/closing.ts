@@ -256,6 +256,8 @@ export interface CloseOutput {
   porDia: { date: string; xp: number }[];
   /** Días rotos que ya no se cobran (RET-02); tampoco se cobran sus reglas. */
   diasExentos: string[];
+  /** Días cerrados como cumplidos (racha +1). Para el logro `first_day`. */
+  diasCumplidos: number;
 }
 
 export function computeDayClose(input: CloseInput): CloseOutput {
@@ -267,6 +269,7 @@ export function computeDayClose(input: CloseInput): CloseOutput {
   let stonesEarned = 0;
   let frozenDays = 0;
   let rotosSeguidos = input.rotosSeguidosPrevios ?? 0;
+  let diasCumplidos = 0;
   const missedTitles: string[] = [];
   const porDia: { date: string; xp: number }[] = [];
   const diasExentos: string[] = [];
@@ -315,6 +318,7 @@ export function computeDayClose(input: CloseInput): CloseOutput {
       if (cumplido) {
         streak += 1;
         rotosSeguidos = 0;
+        diasCumplidos += 1;
         // La piedra se gana con días PERFECTOS, no con días cumplidos. Si la
         // racha se ablanda y la piedra viene con ella, las válvulas pasarían de
         // ganarse a regalarse — y una piedra absorbe un día entero de fallos.
@@ -349,6 +353,6 @@ export function computeDayClose(input: CloseInput): CloseOutput {
 
   return {
     streak, perfectStreak, stones, penaltyXp, missedTitles, streakLost,
-    stonesUsed, stonesEarned, frozenDays, porDia, diasExentos,
+    stonesUsed, stonesEarned, frozenDays, porDia, diasExentos, diasCumplidos,
   };
 }
