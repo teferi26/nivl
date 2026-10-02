@@ -143,7 +143,7 @@ describe('vistaPanelCreador: en tienda, ni un importe', () => {
     expect(v.retos[0].prize).toBeNull();
     expect(v.retos[1].prize).toBe('Sudadera');
     expect(v.retos[1].description).toBeNull();
-    expect(v.tabla.map((r) => r.alias)).toEqual(['Beta', '—', 'Alfa']);
+    expect(v.tabla.map((r) => r.alias)).toEqual(['Beta', 'Creador', 'Alfa']);
     expect(v.historico).toEqual([
       { month: '2026-10', sales: 1 },
       { month: '2026-09', sales: 2 },

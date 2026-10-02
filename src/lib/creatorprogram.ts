@@ -344,7 +344,7 @@ export function vistaPanelCreador(plataforma: string, datos: DatosPanelCreador):
       ...comun,
       // El alias es del creador: si alguien se puso «Gana 500€», en tienda no sale.
       alias: PARECE_DINERO.test(comun.alias) ? code : comun.alias,
-      tabla: comun.tabla.map((r) => ({ ...r, alias: PARECE_DINERO.test(r.alias) ? '—' : r.alias })),
+      tabla: comun.tabla.map((r) => ({ ...r, alias: PARECE_DINERO.test(r.alias) ? 'Creador' : r.alias })),
       retos: retosBase.map((r) => ({
         ...r,
         title: PARECE_DINERO.test(r.title) ? 'Reto' : r.title,
