@@ -9,7 +9,7 @@ Free account: credentials in the sign-in fields. Use it for the purchase, sandbo
 Pro account: [PRO_USER] / [PRO_PASS]
 Élite account: [ELITE_USER] / [ELITE_PASS]
 Pro and Élite access was granted manually on our server. Please do not buy or restore with these two accounts: a sandbox purchase would replace the granted access, which would then expire.
-Sign in: [LOGIN_ROUTE_SHORT]. New account: [SIGNUP_ROUTE_SHORT].
+Sign in (all accounts): "ENTRAR" tab > email and password > "ENTRAR". New account: "CREAR CUENTA" tab > details > tick Terms/Privacy > "CREAR CUENTA" > open the email confirmation link on the device > sign in.
 None of the accounts has accepted the age declaration or the health and AI consents; the app asks for them on first use.
 
 PERMISSIONS AND COACH

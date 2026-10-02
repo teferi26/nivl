@@ -46,9 +46,9 @@ Es una grabación de un iPhone y aporta valor como demostración parcial (`coord
 **1. Lanzamiento.** Pantalla de inicio → tocar el icono de NIVL → pantalla de carga → pantalla de acceso.
 
 **2. Registro y login.**
-- Registro con la cuenta D por `[SIGNUP_ROUTE]` (ocultar la contraseña) → aceptar términos → completar la confirmación que pida la app. Desde el 02/10 NIVL tiene su propio Supabase Auth, sin Franky: anotar los rótulos reales de la build final.
-- Cerrar sesión desde Perfil y volver a entrar con D (login).
-- Si la ruta de acceso de las cuentas de revisión es distinta de la normal, enseñarla sin usarla (`[LOGIN_ROUTE]`).
+- Pestaña «CREAR CUENTA» → NOMBRE, CORREO, CONTRASEÑA y REPITE LA CONTRASEÑA de la cuenta D (ocultar la contraseña) → marcar la casilla «He leído y acepto los Términos de NIVL…» → «CREAR CUENTA» → aparece el aviso de confirmación → abrir la app Mail del **mismo iPhone** (el correo de D tiene que estar configurado ahí, sin otros correos personales a la vista) → tocar el enlace → NIVL abre «CONFIRMAR CUENTA» y entra solo. Ensayarlo antes: el correo real en el iPhone está NO PROBADO.
+- Cerrar sesión desde Perfil y volver a entrar con D: pestaña «ENTRAR» → CORREO y CONTRASEÑA → «ENTRAR».
+- Las cuentas de revisión entran por la misma pestaña «ENTRAR»; no hay otra ruta.
 
 **3. Flujo típico.**
 - Declaración de edad y onboarding (perfil de uso).
