@@ -45,9 +45,9 @@ Es una grabación de un iPhone y aporta valor como demostración parcial (`coord
 **1. Lanzamiento.** Pantalla de inicio → tocar el icono de NIVL → pantalla de carga → pantalla de acceso.
 
 **2. Registro y login.**
-- Pestaña «CREAR CUENTA» → rellenar con la cuenta D (ocultar la contraseña) → casilla de términos → «Crear cuenta Franky» → completar la confirmación que pida la app.
+- Registro con la cuenta D por `[SIGNUP_ROUTE]` (ocultar la contraseña) → aceptar términos → completar la confirmación que pida la app. Desde el 02/10 NIVL tiene su propio Supabase Auth, sin Franky: anotar los rótulos reales de la build final.
 - Cerrar sesión desde Perfil y volver a entrar con D (login).
-- Enseñar, sin usarlo, el enlace «¿Cuenta antigua de NIVL? Entrar con ella», que es la ruta de las cuentas de revisión.
+- Si la ruta de acceso de las cuentas de revisión es distinta de la normal, enseñarla sin usarla (`[LOGIN_ROUTE]`).
 
 **3. Flujo típico.**
 - Declaración de edad y onboarding (perfil de uso).
@@ -77,7 +77,7 @@ Es una grabación de un iPhone y aporta valor como demostración parcial (`coord
 - Perfil > «Envío de datos al coach» → enseñar la opción «Retirar» (no hace falta confirmarla).
 - Con la cuenta D: «Eliminar cuenta» → «Eliminar para siempre» en la hoja → «Eliminar para siempre» en la alerta → la app vuelve a la pantalla de acceso.
 - Intentar entrar de nuevo con D y enseñar que ya no tiene datos o que no puede entrar, según el comportamiento real.
-- **Cuenta Franky, pendiente de la decisión del usuario.** Si se aprueba el enlace directo a la página de borrado de Franky (propuesta del Chat 3), seguir el enlace y completar también ese borrado en cámara. Si no se aprueba, el vídeo no lo mostrará y la respuesta lo explicará. Hay que tener en cuenta que es un riesgo frente a la guía de Apple, que pide borrar el registro completo de la cuenta.
+- ~~Cuenta Franky~~: resuelto el 02/10. Ya no existe la cuenta compartida; el borrado de NIVL es el registro completo. Texto anterior, solo como historial: Si se aprueba el enlace directo a la página de borrado de Franky (propuesta del Chat 3), seguir el enlace y completar también ese borrado en cámara. Si no se aprueba, el vídeo no lo mostrará y la respuesta lo explicará. Hay que tener en cuenta que es un riesgo frente a la guía de Apple, que pide borrar el registro completo de la cuenta.
 
 **8. Cierre.** Volver a la pantalla de acceso y parar la grabación.
 
@@ -89,4 +89,4 @@ Es una grabación de un iPhone y aporta valor como demostración parcial (`coord
 - Anotar las marcas de tiempo de cada escena para `[TIMESTAMPS]` en la respuesta.
 - Apuntar los resultados en la lista mínima de pruebas físicas del Chat 5 ([pruebas-fisicas-minimas.md](pruebas-fisicas-minimas.md)): build, modelo, iOS, fecha y PASS/FAIL de cada escena.
 
-Estado a 02/10/2026: **NO GRABADO.** Depende de: (a) la build candidata (coordinador); (b) el paywall con los cinco planes en esa build (Chat 2); (c) la decisión sobre el borrado de la cuenta Franky (usuario, con los chats 3 y 4); (d) las cuentas U2 y sandbox preparadas.
+Estado a 02/10/2026: **NO GRABADO.** Depende de: (a) la build candidata (coordinador); (b) el paywall con los cinco planes en esa build (Chat 2); (c) los rótulos nuevos de registro y acceso sin Franky (chats 3 y 4); (d) las cuentas U2 y sandbox preparadas.

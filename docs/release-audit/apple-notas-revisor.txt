@@ -8,7 +8,7 @@ Free account: credentials in the sign-in fields. Use it for the purchase, sandbo
 Pro account: [PRO_USER] / [PRO_PASS]
 Élite account: [ELITE_USER] / [ELITE_PASS]
 Pro and Élite access was granted manually on our server. Please do not buy or restore with these two accounts: a sandbox purchase would replace the granted access, which would then expire.
-Sign in: "¿Cuenta antigua de NIVL? Entrar con ella" > credentials > "Entrar con cuenta NIVL". New account: "CREAR CUENTA" > "Crear cuenta Franky" (Franky is our account service shared with our Franky app).
+Sign in: [LOGIN_ROUTE_SHORT]. New account: [SIGNUP_ROUTE_SHORT].
 No permission has been accepted for you: the age declaration and the health and AI consents are asked in the app.
 
 PERMISSIONS AND COACH
@@ -21,13 +21,13 @@ REPORT AND BLOCK
 Perfil > "Amigos" > another user's three-dot button (or their row in a ranking) > reason > "Enviar denuncia". The same sheet has "Bloquear usuario" > "Bloquear". "Convivencia y seguridad" has "Desbloquear" and "Contactar con soporte". A person reviews reports. Names and photos stay private until approved. There is no user-to-user messaging.
 
 ACCOUNT DELETION
-Perfil > "Cuenta" section > "Eliminar cuenta" > "Eliminar para siempre" (sheet) > "Eliminar para siempre" (alert). [DELETION_SHORT] Please test deletion with a newly created account, not the review accounts. Deleting the account does not cancel an Apple subscription. "Exportar mis datos" is in the same section.
+Perfil > "Cuenta" section > "Eliminar cuenta" > "Eliminar para siempre" (sheet) > "Eliminar para siempre" (alert). It deletes the NIVL account, its data and files. Please test deletion with a newly created account, not the review accounts. Deleting the account does not cancel an Apple subscription. "Exportar mis datos" is in the same section.
 
 SERVICES
-Supabase (Frankfurt): auth, data, storage, functions. Franky account service (ours). Apple IAP + RevenueCat: subscriptions. AI after consent: DeepSeek (Pro and trial), Anthropic (Élite and short tasks). No analytics, ads or tracking SDKs. Expo/APNs: optional notifications and updates. Vercel: web pages.
+Supabase (Frankfurt): auth, data, storage, functions. Apple IAP + RevenueCat: subscriptions. AI after consent: DeepSeek (Pro and trial), Anthropic (Élite and short tasks). No analytics, ads or tracking SDKs. Expo/APNs: optional notifications and updates. Vercel: web pages.
 
 REGIONS
-Same features in all [N] enabled territories; Spanish interface; prices follow the storefront.
+Same features in all 165 enabled territories; Spanish interface; prices follow the storefront.
 
 REGULATED / THIRD-PARTY
 No regulated activity: no medical diagnosis, financial advice, banking or gambling; no HealthKit. Fonts under the SIL OFL 1.1.

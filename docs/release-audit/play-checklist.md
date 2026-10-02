@@ -1,5 +1,7 @@
 # Google Play · Checklist de lanzamiento Android (NIVL)
 
+> **Actualización del 02/10/2026:** el usuario ha decidido eliminar el puente de Franky; NIVL tendrá su propio Supabase Auth. Las menciones a Franky de este documento (proveedor de identidad, datos enviados a Franky al registrarse, cuenta que sobrevive al borrado) dejan de aplicar a la build que la integre. Las declaraciones finales no deben incluir Franky como destinatario, salvo que el Chat 3 confirme que queda alguna migración o puente para cuentas antiguas.
+
 Redactado el 02/10/2026 por el subagente (b) Google Play/Android del Chat 1 · Tiendas. Base: rama `winter/chat1-tiendas` @ `bf32d28`.
 Solo lectura de código y de fuentes oficiales. **No se ha abierto Play Console, no se ha compilado ningún AAB y no se ha probado nada en un Android físico.** Todo lo que depende de eso figura como NO PROBADO.
 
@@ -226,3 +228,22 @@ Nota: `google-services.json` no es secreto en sentido estricto, pero el repo es 
 - Permisos sensibles y alarmas exactas: https://support.google.com/googleplay/android-developer/answer/9888170 · https://developer.android.com/about/versions/14/changes/schedule-exact-alarms
 - Declaración de apps de salud: https://support.google.com/googleplay/android-developer/answer/14738291
 - Manifiestos de las librerías: https://unpkg.com/expo-image-picker@17.0.11/android/src/main/AndroidManifest.xml · https://unpkg.com/expo-notifications@0.32.17/android/src/main/AndroidManifest.xml
+
+## Plan de la prueba cerrada (cuenta personal reciente, decisión del usuario 02/10/2026)
+
+Requisito oficial ([Play Console Help 14151465](https://support.google.com/googleplay/android-developer/answer/14151465), consultado el 02/10/2026): las cuentas personales creadas después del 13/11/2023 necesitan «a minimum of 12 testers who have been opted in continuously for at least 14 days» en una prueba cerrada. Los testers que se dan de baja antes de 14 días no cuentan. Después se solicita el acceso a producción desde el Panel, con un cuestionario sobre la prueba, la app y la preparación para producción. La revisión suele tardar 7 días o menos.
+
+**Calendario mínimo:** día 0 abre la prueba → día 14, como pronto, se cumple el requisito → producción hacia el día 21, si la revisión no se alarga. Para un lanzamiento en Android dentro del Winter Arc, **la prueba cerrada tiene que abrirse cuanto antes**: cada día de retraso mueve la fecha de producción.
+
+| Paso | Qué | Dueño | Estado |
+|---|---|---|---|
+| 1 | Crear la app `com.teferi.nivl` en Play Console, completar la ficha mínima, la política de privacidad (`https://nivl-web.vercel.app/privacidad`), el acceso a la app (cuenta de prueba), anuncios = No, clasificación IARC, público objetivo 16+, Data Safety (borrador en este documento, pendiente del Chat 3), y las declaraciones de salud y finanzas | Usuario + coordinador | NO HECHO |
+| 2 | Primer AAB firmado (EAS, perfil de producción, `versionCode` nuevo), subido **a mano** a la pista interna y con Play App Signing activado. Instalarlo en un Android físico: arranque, login, compra con un tester de licencias | Coordinador | NO HECHO |
+| 3 | Crear las 5 suscripciones `nivl_*` (un plan base cada una) y enlazarlas en RevenueCat; poner `EXPO_PUBLIC_RC_ANDROID_KEY` en EAS (no vale la de iOS). Antes de abrir la prueba cerrada, integrar la corrección de Pro→Élite del Chat 2 | Usuario + Chat 2 | NO HECHO |
+| 4 | Promover la misma build a **Prueba cerrada**, con una lista de testers de Google Groups o de correos | Coordinador | NO HECHO |
+| 5 | Reclutar **al menos 15 testers** (margen sobre los 12 por si alguien se da de baja) con Android propio: amigos, clippers o comunidad. Cada uno acepta en el enlace de inscripción **e instala la app**. Llevar un registro privado (fuera de git) con la fecha de alta de cada uno | Usuario | NO HECHO |
+| 6 | Durante los 14 días: pedir uso real (misión diaria, coach con la prueba), recoger feedback con un formulario y corregir. **Las actualizaciones no reinician el contador**, pero un tester que se da de baja sí deja de contar | Usuario + chats | NO HECHO |
+| 7 | Día 14 o después: Panel → «Solicitar acceso a producción». Responder con datos reales: cómo se reclutó, uso y feedback recibidos, y qué se cambió | Usuario | NO HECHO |
+| 8 | Con el acceso concedido: lanzamiento por fases en producción, con los mismos territorios que iOS (165) salvo motivo documentado | Coordinador + usuario | NO HECHO |
+
+Riesgos: (a) Google puede denegar el acceso si la prueba se nota poco usada, así que hay que pedir uso diario de verdad; (b) los P0 de IA generativa (denuncia de respuestas dentro de la app) y de la URL web de borrado deben estar resueltos **antes** de pedir producción, y si es posible antes de abrir la prueba cerrada; (c) sin FCM no hay push remoto en Android: o se acepta para el lanzamiento o se configura Firebase antes del paso 2.

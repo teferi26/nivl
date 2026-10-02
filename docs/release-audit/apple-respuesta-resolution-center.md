@@ -10,8 +10,9 @@ Responde al mensaje de Apple del 29/09/2026 1:16 (Guideline 2.1 — Information 
 | `[DEVICE]`, `[IOS]`, `[DATE]` | Ajustes > General > Información del iPhone que grabó. Debe ser la última versión pública: el 02/10/2026 era iOS 27.0.1 ([Apple security releases](https://support.apple.com/en-us/100100)) | ☐ |
 | `[VIDEO]` | Nombre del adjunto o enlace probado sin iniciar sesión | ☐ |
 | `[TIMESTAMPS]` | Marcas tomadas viendo el vídeo final, no este guion | ☐ |
-| `[N]` | Número de territorios habilitados tras la decisión del usuario (173 tras retirar CHN y RUS el 02/10; pendiente la propuesta HKG/MAC/BLR/VEN/MMR/AFG/YEM/XKS) | ☐ |
-| `[DELETION]` | Texto final según la corrección de la cuenta Franky (Chat 3/4). Ver nota al pie | ☐ |
+| `[N]` | Sustituido por 165 (02/10: retirados CHN, RUS, HKG, MAC, BLR, VEN, MMR, AFG, YEM y XKS; se mantienen los 6 territorios británicos de ultramar por decisión del usuario) | ☑ |
+| `[LOGIN_ROUTE]`, `[SIGNUP_ROUTE]` | Rótulos exactos de acceso y registro con Supabase Auth propio en la build final (decisión del usuario 02/10: se elimina el puente Franky; implementan los chats 3 y 4). Ejemplo: `On the access screen, enter the credentials and tap "[RÓTULO]".` | ☐ |
+| Borrado | Comprobar en la build final que el borrado elimina la cuenta de Auth de NIVL, sus datos y Storage. Antes había un marcador `[DELETION]` por la cuenta Franky; desaparece con la decisión del 02/10 | ☐ |
 | `[PAYWALL]` | Confirmación del Chat 2 de que la build `[BUILD]` muestra los 5 planes con título, periodo y precio, y los enlaces | ☐ |
 
 Límites: el Resolution Center admite texto largo. Las **notas** de App Review Information tienen un máximo de 4.000 caracteres y van en [apple-notas-revisor.txt](apple-notas-revisor.txt), en versión compacta.
@@ -49,7 +50,7 @@ Review accounts. The credentials of each account are in the App Review sign-in f
 - Pro account and Élite account. Their paid access was granted manually on our server for review, so you can see the paid features without paying. Please do not buy or restore with these two accounts: a sandbox purchase would replace the granted access, and that access would expire.
 None of the accounts has accepted the age declaration or the health and AI permissions on your behalf. The app asks for these choices on first use.
 
-Signing in. On the access screen, tap "¿Cuenta antigua de NIVL? Entrar con ella", enter the credentials and tap "Entrar con cuenta NIVL". To create a new account instead, choose "CREAR CUENTA" and "Crear cuenta Franky". Franky is our account service shared by NIVL and our Franky app.
+Signing in. [LOGIN_ROUTE] To create a new account instead, [SIGNUP_ROUTE] NIVL accounts are NIVL's own; no third-party account is needed.
 
 Main features. The "Hoy" tab shows today's missions. "Hábitos" manages routines. Campaigns and "Agenda" organise longer goals and scheduled activities. "Perfil" contains settings, social features, data export and account deletion.
 
@@ -59,12 +60,11 @@ Coach. Grant both permissions, then open the Coach tab and send, for example, "A
 
 User-generated content. Open Perfil > "Amigos". Tap the three-dot button of another user (or the user's row in a ranking), choose a reason and tap "Enviar denuncia". The same sheet offers "Bloquear usuario"; after confirming "Bloquear", the users no longer see each other in requests or rankings. "Convivencia y seguridad" lists blocked users with "Desbloquear" and offers "Contactar con soporte". Reports go into a queue that a person reviews. Names, titles and photos stay private until they pass human approval. There is no messaging between users.
 
-Account deletion. In Perfil, scroll to the "Cuenta" section, tap "Eliminar cuenta", then tap "Eliminar para siempre" in the sheet and again in the final alert. [DELETION] "Exportar mis datos" is in the same section. Deleting the account does not cancel an Apple subscription; subscriptions are managed in the Apple ID settings. Please use a newly created account to test deletion, so that the review accounts remain available.
+Account deletion. In Perfil, scroll to the "Cuenta" section, tap "Eliminar cuenta", then tap "Eliminar para siempre" in the sheet and again in the final alert. This permanently deletes the NIVL account, its personal data and stored files; limited records may be kept only where the law requires, as described in the Privacy Policy. "Exportar mis datos" is in the same section. Deleting the account does not cancel an Apple subscription; subscriptions are managed in the Apple ID settings. Please use a newly created account to test deletion, so that the review accounts remain available.
 
 **4. External services**
 
 - Supabase (database hosted in Frankfurt, Germany): authentication, database, file storage and server functions.
-- Franky account service (operated by us): registration and sign-in shared with our Franky app.
 - Apple In-App Purchase (StoreKit) and RevenueCat: subscription purchases, restores and subscription status. All iOS purchases use Apple's purchase sheet.
 - AI services used by the optional coach, only after the user's consent: DeepSeek (Pro coach and the 7-day trial) and Anthropic (Claude: Élite coach and some shorter tasks). The in-app consent screen names each provider, when it is used and its processing locations. NIVL has no analytics, advertising or cross-app tracking SDKs.
 - Expo and Apple Push Notification service: optional notifications and compatible over-the-air updates of the app's JavaScript.
@@ -72,7 +72,7 @@ Account deletion. In Perfil, scroll to the "Cuenta" section, tap "Eliminar cuent
 
 **5. Regional differences**
 
-NIVL works the same in all [N] App Store territories where it is available. It has no region-specific features or content, and its interface is in Spanish. Prices, currency and taxes follow each customer's App Store storefront. We removed the territories where our AI providers do not offer service. Scheduling uses the device's time zone.
+NIVL works the same in all 165 App Store territories where it is available. It has no region-specific features or content, and its interface is in Spanish. Prices, currency and taxes follow each customer's App Store storefront. Scheduling uses the device's time zone.
 
 **6. Regulated industries and third-party material**
 
@@ -102,11 +102,6 @@ Thank you for reviewing NIVL.
 
 ---
 
-## Nota interna sobre `[DELETION]` (no enviar)
+## Nota interna sobre el borrado (no enviar)
 
-En la base `bf32d28`, «Eliminar cuenta» borra la cuenta de NIVL y sus datos, y conserva la cuenta Franky que se crea en el registro (`src/app/login.tsx:173`, «Una sola cuenta para Franky y NIVL. La creas aquí…»). La guía de Apple pide ofrecer el borrado del registro completo de la cuenta ([Offering account deletion in your app](https://developer.apple.com/support/offering-account-deletion-in-your-app/), consultada el 02/10/2026). **Esto es un riesgo detectado por nosotros: Apple no lo ha señalado.** Está pasado al Chat 3 (DEPENDENCIA) para que lo corrija. Según la corrección integrada, `[DELETION]` será una de estas dos frases:
-
-- Si desde NIVL se puede borrar también la cuenta Franky: «The sheet also offers "[RÓTULO EXACTO]", which deletes the shared Franky account as well.»
-- Si se ofrece un enlace directo a la página de borrado de Franky: «To also delete the shared Franky account, the sheet links directly to [URL], where the deletion is completed.»
-
-No enviar la respuesta sin resolver este punto. Si se queda como en la base, la frase verdadera sería «The separate Franky account is kept», que es justo lo que la guía de Apple desaconseja.
+Resuelto por decisión del usuario el 02/10/2026: NIVL deja el puente de Franky y usa su propio Supabase Auth, así que el borrado en NIVL elimina el registro completo de la cuenta, como pide la [guía de Apple](https://developer.apple.com/support/offering-account-deletion-in-your-app/). Falta comprobarlo en el binario (prueba A10). Si la build final mantuviera cuentas antiguas creadas con Franky, revisar este punto antes de enviar.

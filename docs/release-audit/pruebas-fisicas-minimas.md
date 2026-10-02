@@ -9,8 +9,8 @@ Todas las pruebas se hacen con la **misma build `[BUILD]`** instalada desde Test
 | # | Caso | Dispositivo | Origen | Resultado |
 |---|---|---|---|---|
 | A1 | Arranque en frío desde el icono hasta la pantalla de acceso, sin cierres | iPhone con iOS 27.0.1 o posterior | Mensaje: «begin with launching the app»; Guideline 2.1 | NO PROBADO |
-| A2 | Registro «Crear cuenta Franky» y confirmación | Ídem | «Account registration» | NO PROBADO |
-| A3 | Login de la cuenta D y de las 3 cuentas de revisión por «Entrar con cuenta NIVL» | Ídem | «login»; «credentials for each type» | NO PROBADO |
+| A2 | Registro de NIVL (Supabase Auth propio, sin Franky) y confirmación | Ídem | «Account registration» | NO PROBADO |
+| A3 | Login de la cuenta D y de las 3 cuentas de revisión por la ruta de acceso final | Ídem | «login»; «credentials for each type» | NO PROBADO |
 | A4 | Flujo típico: misión completada, hábito, campaña y evento de agenda | Ídem | «typical user flow» | NO PROBADO |
 | A5 | Salud e IA rechazadas: las funciones generales siguen disponibles. Aceptadas: el coach responde | Ídem | Notas y respuesta, punto 3 | NO PROBADO |
 | A6 | Paywall: los 5 planes con título, duración y precio de StoreKit, y enlaces a Términos y Privacidad que abren y vuelven | Ídem | «title, length, and price of each subscription… links» | NO PROBADO |

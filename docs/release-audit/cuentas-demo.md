@@ -9,13 +9,13 @@ Apple: «If the app has multiple account types, provide credentials for each typ
 | **Gratis (revisión)** | El revisor la usa para la compra sandbox y «Restaurar compras» | Sin concesión. Debe poder iniciar la prueba de 7 días: si ya la gastó, restablecerla o avisar en las notas | Campos de acceso de ASC (ya cargados: hay credenciales, no leídas) | Sin edad, salud ni IA aceptadas. No borrarla |
 | **Pro (revisión)** | Ver las funciones de Pro sin pagar | Concesión manual de servidor (la ejecuta el coordinador; Chat 2: `docs/payment-audit/DEMO-REVISION.md`) | Notas de ASC: `[PRO_USER]` / `[PRO_PASS]` | **No comprar ni restaurar con ella**: la compra sandbox sustituiría la concesión y luego caducaría. Sin consentimientos aceptados |
 | **Élite (revisión)** | Ver Élite: coach avanzado, modo profundo, ludus | Concesión manual de servidor. Ya existía una Élite de demostración hasta el 28/11/2026 (`privado/apple-review-elite-summary.json`); el coordinador decide si se reutiliza | Notas de ASC: `[ELITE_USER]` / `[ELITE_PASS]` | Igual que Pro. No borrar su ludus de demostración (5 miembros) |
-| **D (desechable)** | Vídeo: registro, login y borrado | Se crea en cámara con «Crear cuenta Franky» | No se entrega a Apple | Usar un correo de prueba exclusivo. Se borra al final del vídeo |
+| **D (desechable)** | Vídeo: registro, login y borrado | Se crea en cámara con el registro de NIVL (`[SIGNUP_ROUTE]`) | No se entrega a Apple | Usar un correo de prueba exclusivo. Se borra al final del vídeo |
 | **U2 (segundo usuario)** | Vídeo: denuncia, bloqueo y desbloqueo | Cuenta de prueba normal | No se entrega a Apple | Nunca usar una persona real. Necesita un vínculo visible (solicitud o ludus) con la cuenta que graba |
 | **Sandbox de Apple** | Comprar en TestFlight sin cargo real | App Store Connect > Usuarios y acceso > Sandbox | Solo en el iPhone de grabación | Nunca usar un Apple ID real para la compra de prueba |
 
 ## Antes de enviar (coordinador)
 
-- [ ] Las tres cuentas de revisión entran por «¿Cuenta antigua de NIVL? Entrar con ella» → «Entrar con cuenta NIVL» en la build `[BUILD]`. Probado el ____ en ____ (dispositivo).
+- [ ] Las tres cuentas de revisión entran por `[LOGIN_ROUTE]` en la build `[BUILD]`. Probado el ____ en ____ (dispositivo).
 - [ ] Pro y Élite muestran su nivel sin haber comprado. La concesión dura al menos 60 días desde el reenvío.
 - [ ] La cuenta Gratis puede iniciar la prueba, o las notas dicen que ya la usó.
 - [ ] Ninguna tiene aceptadas la edad, la salud ni la IA. Si un ensayo las aceptó, se retiran o se recrea la cuenta.
