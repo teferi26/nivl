@@ -116,6 +116,14 @@ export async function callPremiumOracle<T>(
   }
 
   const body = (await res.json().catch(() => ({}))) as { result?: T; error?: string; reason?: string };
+  // El Oráculo pasa por el candado de gasto (ai_begin_turn): son negativas
+  // serenas, no errores técnicos. Solo "sin suscripción" lleva a /pro.
+  if (res.status === 402 && body.reason === 'presupuesto_agotado') {
+    throw new ErrorVisible(body.error || 'La energía del coach de este mes se ha agotado. Se recarga el día 1.');
+  }
+  if (res.status === 429 && body.reason === 'turno_en_curso') {
+    throw new ErrorVisible('El sistema sigue respondiendo a tu petición anterior. Dale unos segundos.');
+  }
   if (res.status === 402) throw new PaywallError();
   if (res.status === 403 && body.reason === 'sin_consentimiento') throw new ConsentRequiredError();
   // El cupo del mes: el servidor ya lo dice para la persona.
