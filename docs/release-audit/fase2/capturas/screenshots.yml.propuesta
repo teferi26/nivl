@@ -79,10 +79,19 @@ jobs:
           tar -xzf "$RUNNER_TEMP/nivl-sim.tar.gz" -C "$RUNNER_TEMP/app"
           echo "APP_PATH=$(find "$RUNNER_TEMP/app" -maxdepth 2 -name '*.app' | head -1)" >> "$GITHUB_ENV"
 
+      # Zip oficial de la release cli-2.10.0, verificado por SHA-256. Digest
+      # publicado por GitHub para el asset maestro.zip (gh api
+      # repos/mobile-dev-inc/maestro/releases/tags/cli-2.10.0, leído el 02/10/2026).
+      # Nada de `curl | bash`.
       - name: Instalar Maestro
+        env:
+          MAESTRO_SHA256: 29b675e10cc12080e445e9bfb2e2b4e4dfb9c0f2e30d5884120d258b5e1cd991
         run: |
-          curl -Ls "https://get.maestro.mobile.dev" | bash
-          echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
+          set -euo pipefail
+          curl -fsSL -o "$RUNNER_TEMP/maestro.zip" "https://github.com/mobile-dev-inc/Maestro/releases/download/cli-${MAESTRO_VERSION}/maestro.zip"
+          echo "${MAESTRO_SHA256}  $RUNNER_TEMP/maestro.zip" | shasum -a 256 -c -
+          unzip -q "$RUNNER_TEMP/maestro.zip" -d "$HOME/maestro-cli"
+          echo "$HOME/maestro-cli/maestro/bin" >> "$GITHUB_PATH"
 
       - name: Capturas
         run: |

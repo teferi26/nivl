@@ -59,5 +59,5 @@ La 7 depende de StoreKit. En simulador sin configuración de StoreKit los precio
 ## Riesgos
 
 - Los nombres de simulador cambian con cada Xcode («iPhone 16 Pro Max», «iPad Pro 13-inch (M4)»). Si el runner no los tiene, el script falla con un mensaje claro y se ajusta el nombre.
-- `get.maestro.mobile.dev` se descarga sin verificar el checksum: es la vía oficial. Si se quiere fijar por hash como en el arnés anterior, el Chat 5 tiene el valor de la 2.10.0.
+- Maestro se instala desde el `maestro.zip` oficial de la release `cli-2.10.0`, verificado por SHA-256 (`29b675e1…cd991`, digest que GitHub publica para ese asset, leído el 02/10/2026). No se usa `curl | bash`. NO PROBADO: la ruta interna del zip (`maestro/bin`) se confirma en la primera ejecución.
 - El modo oscuro del simulador no influye, porque la app ya es negra, pero se fuerza para que los diálogos del sistema coincidan.
