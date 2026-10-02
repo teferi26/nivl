@@ -89,7 +89,9 @@ await db.exec(`
 // Mientras el Chat 3 no dé el PASS, viven en docs/game-v2/propuestas; después,
 // en supabase/migrations. Se usa la que exista (preferencia: migrations).
 const { existsSync } = await import('node:fs');
-for (const f of ['0048_competicion.sql', '0051_rango.sql']) {
+const { readdirSync } = await import('node:fs');
+const amigos = [...readdirSync(resolve(root, 'supabase/migrations')).filter((x) => /rango_amigos\.sql$/.test(x)), 'rango_amigos.sql'][0];
+for (const f of ['0048_competicion.sql', '0051_rango.sql', amigos]) {
   const ruta = ['supabase/migrations', 'docs/game-v2/propuestas'].map((d) => resolve(root, d, f)).find((x) => existsSync(x));
   if (!ruta) throw new Error(`No encuentro ${f}`);
   const sql = await readFile(ruta, 'utf8');
@@ -256,4 +258,16 @@ check(r.rango, 'C', 'el rango no baja');
 check(await one('select public._nivel_de_xp(0)'), 1, 'nivel 1');
 check(await one('select public._nivel_de_xp(1703)'), 5, 'curva igual que game.ts (nivel 5 = 1703)');
 
-console.log(`OK: ${checks} comprobaciones (0048 + 0051, cada una aplicada dos veces)`);
+// ── Rango de mis amigos (propuesta rango_amigos.sql) ────────────────────
+// A ya tiene rango C registrado; B es amiga de A y lo ve; C (amiga) también;
+// tras un bloqueo, B deja de verlo.
+const rangoDe = async (yo, otro) => (await as(yo, () => rows('select rango from public.friends_ranks() where user_id = $1', [otro])))[0]?.rango;
+check(await rangoDe(B, A), 'C', 'amiga ve el rango registrado');
+check(await rangoDe(C, B), undefined, 'no amigos: nada');
+await db.query('insert into public.social_blocks values ($1, $2)', [A, B]);
+check(await rangoDe(B, A), undefined, 'bloqueo: oculto');
+await db.query('delete from public.social_blocks where blocker = $1 and blocked = $2', [A, B]);
+await db.query("update public.profiles set social_visible = false where id = $1", [A]);
+check(await rangoDe(B, A), undefined, 'no visible: oculto');
+
+console.log(`OK: ${checks} comprobaciones (0048 + 0051 + rango de amigos, cada una aplicada dos veces)`);
