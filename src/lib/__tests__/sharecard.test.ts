@@ -11,6 +11,7 @@ import {
   OPCIONES_POR_DEFECTO,
   recortar,
   textos,
+  reticulaRacha,
   tarjetaDeCelebracion,
   type OpcionesTarjeta,
   type Tarjeta,
@@ -80,15 +81,20 @@ describe('textos', () => {
     expect(x.firma).not.toContain('Ana');
   });
 
-  it('el nombre solo aparece con permiso', () => {
+  it('el alias solo aparece con permiso', () => {
     expect(textos({ tipo: 'racha', dias: 7 }, todo, 'Ana').firma).toBe(`Ana · ${DOMINIO_NIVL}`);
+    expect(textos({ tipo: 'racha', dias: 7 }, todo, 'Ana').alias).toBe('Ana');
+    expect(textos({ tipo: 'racha', dias: 7 }, OPCIONES_POR_DEFECTO, 'Ana').alias).toBeNull();
     expect(textos({ tipo: 'racha', dias: 7 }, todo, '   ').firma).toBe(DOMINIO_NIVL);
+    expect(textos({ tipo: 'racha', dias: 7 }).dominio).toBe(DOMINIO_NIVL);
   });
 
   it('nivel 1 y niveles no enteros', () => {
     expect(textos({ tipo: 'nivel', nivel: 0 }).titular).toBe('NIVEL 1');
     expect(textos({ tipo: 'nivel', nivel: 12.7, rango: 'C' }).titular).toBe('NIVEL 12');
-    expect(textos({ tipo: 'nivel', nivel: 12, rango: 'C' }).detalle).toBe('Gladiador de rango C.');
+    expect(textos({ tipo: 'nivel', nivel: 12, rango: 'C' }).detalle).toBe('Rango C');
+    expect(textos({ tipo: 'nivel', nivel: 12, rango: 'B', nombreRango: 'Campeón' }).detalle).toBe('Rango B · Campeón');
+    expect(textos({ tipo: 'nivel', nivel: 12 }).antetitulo).toBe('NUEVO NIVEL');
   });
 
   it('racha de 0, 1 y n días', () => {
@@ -99,8 +105,10 @@ describe('textos', () => {
   });
 
   it('el peso del antes/después solo sale con permiso', () => {
-    expect(textos(progreso, { ...todo, mostrarPeso: false }).detalle).toBe('1 jul 2026 → 1 oct 2026');
-    expect(textos(progreso, todo).detalle).toBe('1 jul 2026 → 1 oct 2026 · 84,3 kg → 80 kg');
+    expect(textos(progreso, { ...todo, mostrarPeso: false }).detalle).toBe('13 semanas');
+    expect(textos(progreso, todo).detalle).toBe('13 semanas · 84,3 kg → 80 kg');
+    expect(textos(progreso, todo).fechas).toEqual(['1 jul 2026', '1 oct 2026']);
+    expect(textos({ ...progreso, despues: { uri: 'x', fecha: '2026-07-04' } } as Tarjeta).detalle).toBe('3 días');
   });
 
   it('la voz del sistema no grita', () => {
@@ -200,5 +208,24 @@ describe('celebraciones del juego', () => {
     for (const tipo of ['grado', 'insignia', 'recuperacion', 'piedra']) {
       expect(tarjetaDeCelebracion({ tipo, clave: tipo })).toBeNull();
     }
+  });
+});
+
+describe('diseño v2 (SISTEMA.md §10)', () => {
+  it('nivel y rango llevan «Día N de racha» si hay racha', () => {
+    expect(textos({ tipo: 'nivel', nivel: 9, rachaDias: 12 }).racha).toBe('Día 12 de racha');
+    expect(textos({ tipo: 'rango', rango: 'B', rachaDias: 0 }).racha).toBeNull();
+    expect(textos({ tipo: 'racha', dias: 40 }).racha).toBeNull();
+  });
+
+  it('retícula de 30 días: el detalle real o los últimos N hechos', () => {
+    const r = reticulaRacha({ tipo: 'racha', dias: 7 });
+    expect(r).toHaveLength(30);
+    expect(r.filter(Boolean)).toHaveLength(7);
+    expect(r.slice(-7).every(Boolean)).toBe(true);
+    expect(reticulaRacha({ tipo: 'racha', dias: 400 }).every(Boolean)).toBe(true);
+    const real = Array.from({ length: 30 }, (_, i) => i % 2 === 0);
+    expect(reticulaRacha({ tipo: 'racha', dias: 1, ultimos30: real })).toEqual(real);
+    expect(reticulaRacha({ tipo: 'racha', dias: 3, ultimos30: [true] }).filter(Boolean)).toHaveLength(3);
   });
 });

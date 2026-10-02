@@ -44,9 +44,23 @@ export interface Foto {
 
 export type Tarjeta =
   | { tipo: 'logro'; titulo: string; descripcion?: string }
-  | { tipo: 'nivel'; nivel: number; rango?: string }
-  | { tipo: 'rango'; rango: string; titulo?: string }
-  | { tipo: 'racha'; dias: number }
+  | {
+      tipo: 'nivel';
+      nivel: number;
+      rango?: string;
+      /** Nombre del rango («Campeón»). */
+      nombreRango?: string;
+      /** Progreso dentro del nivel, 0–1 (xpEnNivel / xpSiguiente del Chat 5). */
+      progreso?: number;
+      rachaDias?: number;
+    }
+  | { tipo: 'rango'; rango: string; titulo?: string; rachaDias?: number }
+  | {
+      tipo: 'racha';
+      dias: number;
+      /** Los últimos 30 días, del más antiguo al de hoy (true = cumplido). */
+      ultimos30?: readonly boolean[];
+    }
   | {
       tipo: 'antesDespues';
       antes: Foto;
@@ -131,8 +145,15 @@ export interface TextosTarjeta {
   titular: string;
   /** Una frase de apoyo, o null. */
   detalle: string | null;
-  /** Firma de abajo: nombre (si se permite) y dominio. */
+  /** Firma completa (alias · dominio) para el texto que acompaña a la imagen. */
   firma: string;
+  /** Pie de la tarjeta: alias a la izquierda (solo si se permite) y dominio a la derecha. */
+  alias: string | null;
+  dominio: string;
+  /** «Día N de racha» en nivel y rango, o null. */
+  racha: string | null;
+  /** Antes/después: la fecha de cada foto («2 jul 2026»). */
+  fechas: [string, string] | null;
 }
 
 function dias(n: number): string {
@@ -147,6 +168,17 @@ function fechaCorta(iso: string): string {
   return mes ? `${Number(m[3])} ${mes} ${m[1]}` : '';
 }
 
+/** «13 semanas» entre dos fechas ISO; «1 semana»; días si es menos de una semana. */
+function semanasEntre(desdeIso: string, hastaIso: string): string | null {
+  const a = Date.parse(desdeIso.slice(0, 10));
+  const b = Date.parse(hastaIso.slice(0, 10));
+  if (!Number.isFinite(a) || !Number.isFinite(b) || b < a) return null;
+  const d = Math.round((b - a) / 86_400_000);
+  if (d < 7) return dias(d);
+  const w = Math.round(d / 7);
+  return w === 1 ? '1 semana' : `${w} semanas`;
+}
+
 function kg(n: number): string {
   return `${(Math.round(n * 10) / 10).toLocaleString('es-ES', { maximumFractionDigits: 1 })} kg`;
 }
@@ -159,29 +191,33 @@ function kg(n: number): string {
 export function textos(t: Tarjeta, opciones: OpcionesTarjeta = OPCIONES_POR_DEFECTO, alias?: string | null): TextosTarjeta {
   const quien = opciones.mostrarNombre && alias && alias.trim() ? recortar(alias, MAX_NOMBRE) : null;
   const firma = quien ? `${quien} · ${DOMINIO_NIVL}` : DOMINIO_NIVL;
+  const conRacha = (n?: number) => (n && n > 0 ? `Día ${Math.floor(n)} de racha` : null);
+  const pie = { firma, alias: quien, dominio: DOMINIO_NIVL, racha: null, fechas: null } as const;
   switch (t.tipo) {
     case 'logro':
       return {
         antetitulo: 'LOGRO DESBLOQUEADO',
         titular: recortar(t.titulo, MAX_TITULAR),
         detalle: t.descripcion ? recortar(t.descripcion, MAX_DETALLE) : null,
-        firma,
+        ...pie,
       };
     case 'nivel': {
       const nivel = Math.max(1, Math.floor(t.nivel));
       return {
-        antetitulo: 'SUBIDA DE NIVEL',
+        antetitulo: 'NUEVO NIVEL',
         titular: `NIVEL ${nivel}`,
-        detalle: t.rango ? `Gladiador de rango ${t.rango}.` : 'El sistema registra el avance.',
-        firma,
+        detalle: t.rango ? (t.nombreRango ? `Rango ${t.rango} · ${t.nombreRango}` : `Rango ${t.rango}`) : null,
+        ...pie,
+        racha: conRacha(t.rachaDias),
       };
     }
     case 'rango':
       return {
         antetitulo: 'NUEVO RANGO',
         titular: `RANGO ${t.rango}`,
-        detalle: t.titulo ? recortar(t.titulo, MAX_DETALLE) : 'La arena reconoce el ascenso.',
-        firma,
+        detalle: t.titulo ? recortar(t.titulo, MAX_DETALLE).toUpperCase() : null,
+        ...pie,
+        racha: conRacha(t.rachaDias),
       };
     case 'racha': {
       const n = Math.max(0, Math.floor(t.dias));
@@ -189,22 +225,23 @@ export function textos(t: Tarjeta, opciones: OpcionesTarjeta = OPCIONES_POR_DEFE
         antetitulo: 'RACHA',
         titular: dias(n).toUpperCase(),
         detalle: n === 0 ? 'Hoy empieza la cuenta.' : `${dias(n)} seguidos cumpliendo.`,
-        firma,
+        ...pie,
       };
     }
     case 'antesDespues': {
       const desde = fechaCorta(t.antes.fecha);
       const hasta = fechaCorta(t.despues.fecha);
-      const periodo = desde && hasta ? `${desde} → ${hasta}` : null;
+      const periodo = semanasEntre(t.antes.fecha, t.despues.fecha);
       const pesos =
         opciones.mostrarPeso && typeof t.pesoAntesKg === 'number' && typeof t.pesoDespuesKg === 'number'
           ? `${kg(t.pesoAntesKg)} → ${kg(t.pesoDespuesKg)}`
           : null;
       return {
-        antetitulo: 'PROGRESO',
+        antetitulo: 'ANTES / DESPUÉS',
         titular: 'ANTES Y DESPUÉS',
         detalle: [periodo, pesos].filter(Boolean).join(' · ') || null,
-        firma,
+        ...pie,
+        fechas: [desde, hasta],
       };
     }
   }
@@ -218,6 +255,17 @@ export interface ContextoTarjeta {
    * `permisosFotos(...).compartir` de la lógica de fotos del Chat 5.
    */
   puedeCompartirFotos: boolean;
+}
+
+/**
+ * La retícula de 30 días de la tarjeta de racha (del más antiguo a hoy). Si
+ * no llega el detalle día a día, se marcan como hechos los últimos
+ * min(días, 30): es lo que una racha de N días garantiza.
+ */
+export function reticulaRacha(t: Extract<Tarjeta, { tipo: 'racha' }>): boolean[] {
+  if (t.ultimos30 && t.ultimos30.length === 30) return [...t.ultimos30];
+  const hechos = Math.min(30, Math.max(0, Math.floor(t.dias)));
+  return Array.from({ length: 30 }, (_, i) => i >= 30 - hechos);
 }
 
 /** Por qué una tarjeta no se puede generar con estas opciones, o null si se puede. */
