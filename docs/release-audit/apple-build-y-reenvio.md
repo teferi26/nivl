@@ -31,6 +31,9 @@ Requisito de SDK: Apple exige compilar con el SDK de iOS 26 o posterior desde el
 
 ## Condiciones previas (puertas de COORDINACION.md)
 
+- [ ] Todas las Edge Functions redesplegadas desde `[SHA_INTEGRADO]` (incluidos el borrado del suscriptor de RevenueCat y la seudonimización de `store_events`); `franky-auth` y los secretos `FRANKY_*` retirados. Anotar SHA y versiones.
+- [ ] El dueño confirma COACH_BASE_URL = DeepSeek, sin integraciones publicitarias en RevenueCat y sin EAS Insights → App Privacy y Data Safety sin tracking y sin Franky.
+
 - [ ] Vídeo nuevo grabado con `[BUILD]` en iOS de última versión ([apple-guion-video.md](apple-guion-video.md)).
 - [ ] Pruebas físicas mínimas en PASS sobre `[BUILD]` ([pruebas-fisicas-minimas.md](pruebas-fisicas-minimas.md)).
 - [ ] Resuelto el borrado de la cuenta Franky, o asumido el riesgo por escrito por el usuario.

@@ -15,6 +15,7 @@ Responde al mensaje de Apple del 29/09/2026 1:16 (Guideline 2.1 — Information 
 | Borrado | Comprobar en la build final que el borrado elimina la cuenta de Auth de NIVL, sus datos y Storage. Antes había un marcador `[DELETION]` por la cuenta Franky; desaparece con la decisión del 02/10 | ☐ |
 | `[PLAZO]` | Sustituido por «24 hours» (confirmado por el usuario el 02/10). Moderación: el propio dueño de la cuenta, avisado por push desde `ritual` (migración 0037, pendiente de integrar). No poner datos personales | ☐ |
 | `[AI_REPORT]` | Solo si la build final permite denunciar respuestas del coach (Chat 4): «Users can also report an AI coach reply from the reply itself; these reports go to the same queue.» Si no lo permite, borrar el marcador | ☐ |
+| `[SHA_INTEGRADO]` (interno, no va en el texto) | El coordinador redespliega TODAS las funciones desde el SHA integrado y retira franky-auth y los secretos FRANKY_* antes del reenvío. La frase de borrado («limited records may be kept only where the law requires») depende de que ese despliegue incluya el borrado del suscriptor de RevenueCat y la seudonimización de `store_events`. No se declara ningún plazo de conservación | ☐ |
 | `[PAYWALL]` | Confirmación del Chat 2 de que la build `[BUILD]` muestra los 5 planes con título, periodo y precio, y los enlaces | ☐ |
 
 Límites: el Resolution Center admite texto largo. Las **notas** de App Review Information tienen un máximo de 4.000 caracteres y van en [apple-notas-revisor.txt](apple-notas-revisor.txt), en versión compacta.
