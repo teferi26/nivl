@@ -9,9 +9,9 @@
 // gasto (lo que lee el candado) se apunta siempre.
 
 export interface Telemetria {
-  /** Ruta del turno: 'completa' (coach con todo), 'mecanica' (Haiku sin contexto)… */
+  /** Ruta del turno: 'completa' (coach con todo), 'registro' (parte, L3), 'mecanica' (Haiku sin contexto)… */
   route?: string | null;
-  /** Intención detectada del mensaje ('afirmacion', 'general') o null en rituales. */
+  /** Intención detectada del mensaje ('afirmacion', 'dato', 'general') o null en rituales. */
   intent?: string | null;
   tools_offered?: number | null;
   tool_calls?: number | null;

@@ -27,7 +27,8 @@ Deno.test('telemetría: el turno del coach apunta ruta, intención, herramientas
         : turnoTexto('Hecho.'),
   });
   try {
-    await (await handler(peticion({ kind: 'chat', message: 'te he subido el gym', stream: false }))).text();
+    // Afirmación con pregunta: va por la ruta completa (la estrecha, L3, tiene su test).
+    await (await handler(peticion({ kind: 'chat', message: 'te he subido el gym, ¿lo ves?', stream: false }))).text();
     const filas = filasRuns(fake);
     equal(filas.length, 1);
     const f = filas[0];

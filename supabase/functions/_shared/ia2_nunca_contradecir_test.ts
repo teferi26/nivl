@@ -180,7 +180,12 @@ Deno.test('L1 de punta a punta: «te he subido el gym» lleva la comprobación y
   const soltar = fijarReloj('2026-10-02T22:30:00Z');
   const fake = instalar({
     otras: postgrest(conSesion()),
-    proveedor: (_b, n) => (n === 0 ? turnoHerramienta('consultar_dia', { fecha: '' }, 'tu_dia') : turnoTexto('Visto.')),
+    // Desde L3 este parte va por la ruta estrecha (freno de 0,05 $): el uso
+    // simulado es el de un turno de registro, no el de 50 k fichas de Sonnet.
+    proveedor: (_b, n) =>
+      n === 0
+        ? turnoHerramienta('consultar_dia', { fecha: '' }, 'tu_dia', { input_tokens: 5_000, output_tokens: 200 })
+        : turnoTexto('Visto.', { input_tokens: 5_000, output_tokens: 200 }),
   });
   try {
     const r = await handler(peticion({ kind: 'chat', message: 'te he subido el gym', stream: false, date: HOY }));
