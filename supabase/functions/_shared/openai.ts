@@ -198,14 +198,7 @@ export async function callOpenAICompat(opts: OpcionesCompat): Promise<Turn> {
 
       if (d.model) modelo = d.model;
       if (d.usage) {
-        usage = {
-          input_tokens: d.usage.prompt_tokens ?? 0,
-          output_tokens: d.usage.completion_tokens ?? 0,
-          // Casi todos los compatibles informan del acierto de caché aquí.
-          cache_read_input_tokens:
-            d.usage.prompt_tokens_details?.cached_tokens ?? d.usage.prompt_cache_hit_tokens ?? 0,
-          cache_creation_input_tokens: 0,
-        };
+        usage = usoCompatible(d.usage);
       }
 
       const delta = d.choices?.[0]?.delta;
@@ -262,5 +255,26 @@ export async function callOpenAICompat(opts: OpcionesCompat): Promise<Turn> {
     stopReason: llamadas.size ? 'tool_use' : motivo === 'length' ? 'max_tokens' : 'end_turn',
     usage,
     model: modelo,
+  };
+}
+
+/**
+ * Uso de una API compatible con OpenAI en el formato de Anthropic.
+ * prompt_tokens YA incluye los tokens leídos de caché: se restan para no
+ * cobrarlos dos veces (a precio completo y otra vez a 0,1×), lo que inflaba el
+ * gasto apuntado de DeepSeek y hacía saltar antes el candado de los Pro.
+ */
+// deno-lint-ignore no-explicit-any
+export function usoCompatible(u: any): Usage {
+  const prompt = Math.max(0, Number(u?.prompt_tokens) || 0);
+  const cacheados = Math.max(
+    0,
+    Math.min(prompt, Number(u?.prompt_tokens_details?.cached_tokens ?? u?.prompt_cache_hit_tokens) || 0),
+  );
+  return {
+    input_tokens: prompt - cacheados,
+    output_tokens: Math.max(0, Number(u?.completion_tokens) || 0),
+    cache_read_input_tokens: cacheados,
+    cache_creation_input_tokens: 0,
   };
 }
