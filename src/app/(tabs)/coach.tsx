@@ -4,7 +4,6 @@ import * as ImagePicker from 'expo-image-picker';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -16,11 +15,19 @@ import {
   type NativeSyntheticEvent,
   type TextInputKeyPressEventData,
 } from 'react-native';
+import { useCelebracion } from '@/components/celebracion/contexto';
+import { citaDe, esConsulta, sinConsultas } from '@/components/coach/cita';
+import { CoachMark } from '@/components/coach/CoachMark';
+import { BotonDictar, FranjaGrabacion, useDictado } from '@/components/coach/Dictado';
+import { unirDictado } from '@/components/coach/dictadoGesto';
+import { HojaPrivacidadDictado } from '@/components/coach/HojaPrivacidadDictado';
+import { MensajeCoach } from '@/components/coach/MensajeCoach';
+import { aceptarRed } from '@/components/coach/redDictado';
 import { useConsentimientoIA } from '@/components/ConsentimientoIA';
 import { DenunciarIA, type RespuestaDenunciada } from '@/components/DenunciarIA';
 import { HealthConsentGuard } from '@/components/ConsentimientoSalud';
+import { ProUpsellLine } from '@/components/ProOffer';
 import { SystemButton } from '@/components/SystemButton';
-import { TextoSistema } from '@/components/TextoSistema';
 import { Chip, ChipRow, FadeIn, Screen, Skeleton, Tag } from '@/components/ui';
 import { useAuth } from '@/lib/auth';
 import {
@@ -30,12 +37,13 @@ import {
   fetchMainThread,
   fetchMessages,
   isToolResultOnly,
-  messageActions,
   messageText,
   streamCoach,
   type CoachAction,
+  type CoachMessage,
   type CoachMode,
 } from '@/lib/coach';
+import { cancelarDictado, disponible, disponibleDictado, hablar, parar, suscribirHablando } from '@/lib/coachvoz';
 import { DESCARGO_SALUD, LINEA_CRISIS, olvidarConsentimiento } from '@/lib/consent';
 import { ensureProfile } from '@/lib/data';
 import { isValidKey, nombreDia } from '@/lib/dates';
@@ -44,11 +52,13 @@ import {
   fetchAiStatus,
   isPro,
   lineaProfundos,
+  ofrecerSi,
   proSampleBrief,
   proToday,
   puedeProfundo,
   SIN_IA,
   type AiStatus,
+  type DecisionOferta,
 } from '@/lib/pro';
 import { colors, fonts } from '@/lib/theme';
 import { mensajeSistema } from '@/lib/validation';
@@ -57,7 +67,39 @@ interface Burbuja {
   id: string;
   role: 'user' | 'assistant';
   text: string;
+  /** Lo que cambió en el sistema, ya legible (sin las consultas). */
   acciones: string[];
+  /** Nombres de las herramientas del turno (para la cita de lo consultado). */
+  herramientas: string[];
+}
+
+/** Nombres de las herramientas que usó un turno guardado. */
+function herramientasDe(m: CoachMessage): string[] {
+  return (m.content ?? []).filter((b) => b.type === 'tool_use' && b.name).map((b) => b.name!);
+}
+
+/**
+ * Del hilo guardado a burbujas. Un turno del coach que solo consultó (sin
+ * texto ni cambios) no se pinta: su consulta pasa como cita a la siguiente
+ * respuesta del coach.
+ */
+function aBurbujas(mensajes: CoachMessage[]): Burbuja[] {
+  const lista: Burbuja[] = [];
+  let pendientes: string[] = [];
+  for (const m of mensajes) {
+    if (isToolResultOnly(m)) continue;
+    const propias = herramientasDe(m);
+    const herramientas = m.role === 'assistant' ? [...pendientes, ...propias] : propias;
+    const text = messageText(m);
+    const acciones = sinConsultas(propias).map(describeAction);
+    if (!text && !acciones.length) {
+      if (m.role === 'assistant') pendientes = herramientas;
+      continue;
+    }
+    pendientes = [];
+    lista.push({ id: m.id, role: m.role, text, acciones, herramientas });
+  }
+  return lista;
 }
 
 // Atajos a los rituales: lo que el coach anterior hacía por cadena programada.
@@ -68,62 +110,6 @@ const ATAJOS: { etiqueta: string; mensaje: string; icono: keyof typeof Ionicons.
   { etiqueta: 'Revísame', mensaje: 'Haz la revisión de mis últimos 14 días con honestidad brutal.', icono: 'analytics-outline' },
 ];
 
-/** Mensaje del coach: sin burbuja, con una marca a la izquierda y el texto en editorial. */
-function MensajeSistema({
-  texto,
-  acciones,
-  pensando,
-  onDenunciar,
-}: {
-  texto?: string;
-  acciones: { texto: string; ok: boolean }[];
-  pensando?: boolean;
-  onDenunciar?: () => void;
-}) {
-  return (
-    <View style={styles.filaSistema}>
-      <View style={styles.marcaSistema}>
-        <Ionicons name="shield-half" size={12} color={colors.bg} />
-      </View>
-      <View style={styles.cuerpoSistema}>
-        {pensando && !texto ? (
-          <View style={styles.pensandoFila}>
-            <ActivityIndicator size="small" color={colors.textDim} />
-            <Text style={styles.pensando}>El sistema piensa</Text>
-          </View>
-        ) : null}
-        {texto ? <TextoSistema texto={texto} /> : null}
-        {acciones.length > 0 ? (
-          <View style={styles.acciones}>
-            {acciones.map((a, i) => (
-              <View key={i} style={styles.accion}>
-                <Ionicons
-                  name={a.ok ? 'checkmark-circle' : 'alert-circle'}
-                  size={13}
-                  color={a.ok ? colors.accentText : colors.red}
-                />
-                <Text style={styles.accionTexto}>{a.texto}</Text>
-              </View>
-            ))}
-          </View>
-        ) : null}
-        {onDenunciar && texto ? (
-          <Pressable
-            onPress={onDenunciar}
-            hitSlop={8}
-            style={styles.denunciar}
-            accessibilityRole="button"
-            accessibilityLabel="Denunciar respuesta"
-          >
-            <Ionicons name="flag-outline" size={12} color={colors.textFaint} />
-            <Text style={styles.denunciarTexto}>Denunciar respuesta</Text>
-          </Pressable>
-        ) : null}
-      </View>
-    </View>
-  );
-}
-
 // Los ids que vienen del servidor son uuid; los de burbujas recién llegadas
 // por el stream son locales y no identifican nada en el servidor.
 const ES_UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -133,7 +119,7 @@ const ES_UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
  * enseña lo que el coach estaría haciendo hoy por este perfil y el camino a
  * Pro. El resto de la app no se toca.
  */
-function CoachBloqueado({ kind, onPro }: { kind: unknown; onPro: () => void }) {
+function CoachBloqueado({ kind, onPro, oferta }: { kind: unknown; onPro: () => void; oferta: DecisionOferta | null }) {
   return (
     <FadeIn>
       <View style={styles.bloqueado}>
@@ -167,7 +153,14 @@ function CoachBloqueado({ kind, onPro }: { kind: unknown; onPro: () => void }) {
             </Text>
           ))}
         </View>
-        <SystemButton title="Ver NIVL Pro" onPress={onPro} style={styles.bloqueadoBoton} />
+        {/* Sin decisión (o si no toca), el botón: la pantalla nunca se queda sin salida. */}
+        {oferta ? (
+          <View style={styles.bloqueadoLinea}>
+            <ProUpsellLine momento="coach_cerrado" tier={oferta.tier} />
+          </View>
+        ) : (
+          <SystemButton title="Ver NIVL Pro" onPress={onPro} style={styles.bloqueadoBoton} />
+        )}
       </View>
     </FadeIn>
   );
@@ -212,6 +205,114 @@ function CoachContent() {
   // Antes del primer turno, el consentimiento para la IA (0028). El servidor
   // lo vuelve a exigir: sin él responde 403 y aquí se abre la hoja.
   const consentimiento = useConsentimientoIA();
+  const { avisar, celebrando } = useCelebracion();
+
+  // La voz: qué respuesta se está leyendo. `turnoVoz` distingue una lectura de
+  // la anterior: hablar() calla lo previo y eso avisa «no habla» antes de que
+  // la nueva empiece.
+  const [puedeHablar, setPuedeHablar] = useState(() => disponible());
+  const [vozId, setVozId] = useState<string | null>(null);
+  const turnoVoz = useRef(0);
+  const vozIniciada = useRef(-1);
+  useEffect(
+    () =>
+      suscribirHablando((h) => {
+        if (!h && vozIniciada.current === turnoVoz.current) setVozId(null);
+      }),
+    [],
+  );
+  const escuchar = (b: Burbuja) => {
+    const t = ++turnoVoz.current;
+    setVozId(b.id);
+    void hablar(b.text, {
+      onInicio: () => {
+        vozIniciada.current = t;
+      },
+      onFin: () => {
+        if (turnoVoz.current === t) setVozId(null);
+      },
+    });
+  };
+  const pararVoz = () => {
+    turnoVoz.current += 1;
+    parar();
+    setVozId(null);
+  };
+
+  // El dictado: lo dicho va al cuadro de texto y NUNCA se envía solo.
+  const [puedeDictar, setPuedeDictar] = useState(() => disponibleDictado());
+  const [hojaDictado, setHojaDictado] = useState(false);
+  const dictado = useDictado({
+    onTexto: (t) => setTexto((previo) => unirDictado(previo, t)),
+    onError: (e) => avisar(e.mensaje),
+    onPedirPrivacidad: () => setHojaDictado(true),
+  });
+  const dictarPorRed = () => {
+    void aceptarRed();
+    setHojaDictado(false);
+    avisar('Mantén pulsado para dictar');
+  };
+
+  // Al salir de la pestaña (y al desmontar) se calla y se tira el dictado.
+  const cancelarDictadoUi = dictado.cancelar;
+  useFocusEffect(
+    useCallback(() => {
+      setPuedeHablar(disponible());
+      setPuedeDictar(disponibleDictado());
+      return () => {
+        turnoVoz.current += 1;
+        parar();
+        setVozId(null);
+        cancelarDictadoUi();
+      };
+    }, [cancelarDictadoUi]),
+  );
+  useEffect(
+    () => () => {
+      parar();
+      cancelarDictado();
+    },
+    [],
+  );
+
+  // Pro sin energía: una línea con la mejora, nunca una hoja ni sola.
+  const agotadaPro = isPro(estado) && energiaAgotada(estado);
+  const [ofertaEnergia, setOfertaEnergia] = useState<DecisionOferta | null>(null);
+  useEffect(() => {
+    if (!agotadaPro || celebrando) {
+      setOfertaEnergia(null);
+      return;
+    }
+    let vivo = true;
+    ofrecerSi('energia_agotada', estado, { celebrando })
+      .then((d) => {
+        if (vivo) setOfertaEnergia(d.mostrar ? d : null);
+      })
+      .catch(() => {});
+    return () => {
+      vivo = false;
+    };
+  }, [agotadaPro, celebrando, estado]);
+
+  // Sin coach: «Ver NIVL Pro» pasa a la línea de la oferta si toca. Quien tiene
+  // coach (Pro, prueba, Élite) no ve nada de esto.
+  const sinCoach = estado !== null && !isPro(estado);
+  const [ofertaCerrado, setOfertaCerrado] = useState<DecisionOferta | null>(null);
+  useEffect(() => {
+    if (!sinCoach || celebrando) {
+      setOfertaCerrado(null);
+      return;
+    }
+    let vivo = true;
+    ofrecerSi('coach_cerrado', estado, { celebrando })
+      .then((d) => {
+        if (vivo) setOfertaCerrado(d.mostrar ? d : null);
+      })
+      .catch(() => {});
+    return () => {
+      vivo = false;
+    };
+  }, [sinCoach, celebrando, estado]);
 
   const releerEstado = useCallback(
     () =>
@@ -246,17 +347,7 @@ function CoachContent() {
       }
       setThreadId(hilo.id);
       const mensajes = await fetchMessages(hilo.id);
-      setBurbujas(
-        mensajes
-          .filter((m) => !isToolResultOnly(m))
-          .map((m) => ({
-            id: m.id,
-            role: m.role,
-            text: messageText(m),
-            acciones: messageActions(m),
-          }))
-          .filter((b) => b.text || b.acciones.length),
-      );
+      setBurbujas(aBurbujas(mensajes));
     } catch (e) {
       setError(mensajeSistema(e));
     } finally {
@@ -318,6 +409,7 @@ function CoachContent() {
         role: 'user',
         text: fotos.length ? `[${fotos.length} ${fotos.length === 1 ? 'foto' : 'fotos'}]\n${limpio}` : limpio,
         acciones: [],
+        herramientas: [],
       },
     ]);
     alFondo();
@@ -359,7 +451,8 @@ function CoachContent() {
                   id: `done-${Date.now()}`,
                   role: 'assistant',
                   text: e.text || acumulado,
-                  acciones: ejecutadas.map((a) => describeAction(a.name)),
+                  acciones: ejecutadas.filter((a) => !esConsulta(a.name)).map((a) => describeAction(a.name)),
+                  herramientas: ejecutadas.filter((a) => a.ok).map((a) => a.name),
                 },
               ]);
               setEnCurso('');
@@ -461,6 +554,10 @@ function CoachContent() {
       ? `La energía del coach de este mes se ha agotado. ${recarga ? `Se recarga el ${recarga}.` : 'Se recarga el día 1.'}`
       : null);
   const puedeEnviar = (!!texto.trim() || adjuntas.length > 0) && !enviando.current;
+  // El micrófono ocupa el sitio de «enviar» cuando no hay nada que enviar; y se
+  // queda mientras graba, aunque llegue texto, para no soltar el gesto a medias.
+  const grabandoUi = dictado.grabando || dictado.preparando;
+  const conDictado = puedeDictar && ((!texto.trim() && !adjuntas.length) || grabandoUi);
   // El selector de potencia solo existe si el plan incluye el modo profundo.
   const conPotencia = !sinPro && !!estado?.deepAllowed;
   const profundoAbierto = puedeProfundo(estado);
@@ -516,14 +613,12 @@ function CoachContent() {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          {vacio && sinPro ? <CoachBloqueado kind={kind} onPro={() => router.push('/pro')} /> : null}
+          {vacio && sinPro ? <CoachBloqueado kind={kind} onPro={() => router.push('/pro')} oferta={ofertaCerrado} /> : null}
 
           {vacio && !sinPro ? (
             <FadeIn>
               <View style={styles.vacio}>
-                <View style={styles.vacioEmblema}>
-                  <Ionicons name="shield-half" size={26} color={colors.bg} />
-                </View>
+                <CoachMark size={48} />
                 <Text style={styles.vacioTitulo}>El sistema te escucha.</Text>
                 <Text style={styles.vacioTexto}>
                   Manda en tu día, decide qué puntúa cada cosa, te juzga por la noche y recuerda todo lo que
@@ -544,10 +639,20 @@ function CoachContent() {
                 </View>
               </View>
             ) : (
-              <MensajeSistema
+              <MensajeCoach
                 key={b.id}
                 texto={b.text}
                 acciones={b.acciones.map((texto) => ({ texto, ok: true }))}
+                cita={citaDe(b.herramientas)}
+                voz={
+                  puedeHablar && b.text
+                    ? {
+                        estado: vozId === b.id ? 'hablando' : 'quieto',
+                        onEscuchar: () => escuchar(b),
+                        onParar: pararVoz,
+                      }
+                    : undefined
+                }
                 onDenunciar={() =>
                   setDenuncia({
                     fuente: 'coach',
@@ -561,10 +666,11 @@ function CoachContent() {
           )}
 
           {enCurso || pensando || acciones.length ? (
-            <MensajeSistema
+            <MensajeCoach
               texto={enCurso}
               pensando={pensando}
-              acciones={acciones.map((a) => ({ texto: describeAction(a.name), ok: a.ok }))}
+              acciones={acciones.filter((a) => !esConsulta(a.name)).map((a) => ({ texto: describeAction(a.name), ok: a.ok }))}
+              cita={citaDe(acciones.filter((a) => a.ok).map((a) => a.name))}
             />
           ) : null}
 
@@ -599,16 +705,26 @@ function CoachContent() {
         ) : null}
 
         {avisoEnergia && !sinPro ? (
-          <Pressable
-            onPress={() => router.push('/pro')}
-            style={({ pressed }) => [styles.aviso, pressed && { opacity: 0.7 }]}
-            accessibilityRole="button"
-            accessibilityLabel={`${avisoEnergia} Ver la energía del coach`}
-          >
-            <Ionicons name="hourglass-outline" size={14} color={colors.accentText} />
-            <Text style={styles.avisoTexto}>{avisoEnergia}</Text>
-            <Ionicons name="chevron-forward" size={14} color={colors.textFaint} />
-          </Pressable>
+          ofertaEnergia && agotadaPro ? (
+            <View style={styles.avisoBloque}>
+              <View style={styles.avisoFila}>
+                <Ionicons name="hourglass-outline" size={14} color={colors.accentText} />
+                <Text style={styles.avisoTexto}>{avisoEnergia}</Text>
+              </View>
+              <ProUpsellLine momento="energia_agotada" tier={ofertaEnergia.tier} />
+            </View>
+          ) : (
+            <Pressable
+              onPress={() => router.push('/pro')}
+              style={({ pressed }) => [styles.aviso, pressed && { opacity: 0.7 }]}
+              accessibilityRole="button"
+              accessibilityLabel={`${avisoEnergia} Ver la energía del coach`}
+            >
+              <Ionicons name="hourglass-outline" size={14} color={colors.accentText} />
+              <Text style={styles.avisoTexto}>{avisoEnergia}</Text>
+              <Ionicons name="chevron-forward" size={14} color={colors.textFaint} />
+            </Pressable>
+          )
         ) : null}
 
         {conPotencia ? (
@@ -638,43 +754,55 @@ function CoachContent() {
           vacio ? null : (
             <View style={styles.bandaPro}>
               <Text style={styles.bandaProTexto}>El coach es parte de NIVL Pro. Tu conversación se conserva.</Text>
-              <SystemButton title="Ver NIVL Pro" size="sm" onPress={() => router.push('/pro')} />
+              {ofertaCerrado ? (
+                <ProUpsellLine momento="coach_cerrado" tier={ofertaCerrado.tier} />
+              ) : (
+                <SystemButton title="Ver NIVL Pro" size="sm" onPress={() => router.push('/pro')} />
+              )}
             </View>
           )
         ) : (
-          <View style={[styles.barra, conPotencia && styles.barraSinLinea]}>
-            <Pressable
-              onPress={adjuntar}
-              disabled={enviando.current}
-              style={({ pressed }) => [styles.adjuntar, pressed && { opacity: 0.6 }]}
-              accessibilityRole="button"
-              accessibilityLabel="Adjuntar una foto"
-            >
-              <Ionicons name="add" size={22} color={colors.textDim} />
-            </Pressable>
-            <TextInput
-              style={styles.input}
-              value={texto}
-              onChangeText={setTexto}
-              placeholder="Habla con el sistema"
-              placeholderTextColor={colors.textFaint}
-              multiline
-              onKeyPress={alTeclear}
-              accessibilityLabel="Mensaje para el sistema"
-            />
-            <Pressable
-              onPress={() => enviar(texto)}
-              disabled={!puedeEnviar}
-              style={({ pressed }) => [styles.enviar, !puedeEnviar && styles.enviarOff, pressed && { opacity: 0.8 }]}
-              accessibilityRole="button"
-              accessibilityLabel="Enviar mensaje"
-            >
-              <Ionicons name="arrow-up" size={20} color={colors.bg} />
-            </Pressable>
+          <View>
+            <FranjaGrabacion dictado={dictado} />
+            <View style={[styles.barra, (conPotencia || grabandoUi) && styles.barraSinLinea]}>
+              <Pressable
+                onPress={adjuntar}
+                disabled={enviando.current}
+                style={({ pressed }) => [styles.adjuntar, pressed && { opacity: 0.6 }]}
+                accessibilityRole="button"
+                accessibilityLabel="Adjuntar una foto"
+              >
+                <Ionicons name="add" size={22} color={colors.textDim} />
+              </Pressable>
+              <TextInput
+                style={styles.input}
+                value={texto}
+                onChangeText={setTexto}
+                placeholder="Habla con el sistema"
+                placeholderTextColor={colors.textFaint}
+                multiline
+                onKeyPress={alTeclear}
+                accessibilityLabel="Mensaje para el sistema"
+              />
+              {conDictado ? (
+                <BotonDictar dictado={dictado} disabled={enviando.current} />
+              ) : (
+                <Pressable
+                  onPress={() => enviar(texto)}
+                  disabled={!puedeEnviar}
+                  style={({ pressed }) => [styles.enviar, !puedeEnviar && styles.enviarOff, pressed && { opacity: 0.8 }]}
+                  accessibilityRole="button"
+                  accessibilityLabel="Enviar mensaje"
+                >
+                  <Ionicons name="arrow-up" size={20} color={colors.bg} />
+                </Pressable>
+              )}
+            </View>
           </View>
         )}
       </KeyboardAvoidingView>
       {consentimiento.hoja}
+      <HojaPrivacidadDictado visible={hojaDictado} onAceptar={dictarPorRed} onClose={() => setHojaDictado(false)} />
       <DenunciarIA respuesta={denuncia} onClose={() => setDenuncia(null)} />
     </Screen>
   );
@@ -706,28 +834,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
   },
   textoUsuario: { fontFamily: fonts.body, fontSize: 14.5, lineHeight: 21, color: colors.bg },
-  filaSistema: { flexDirection: 'row', gap: 12, marginBottom: 20 },
-  marcaSistema: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: colors.accent,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 1,
-  },
-  cuerpoSistema: { flex: 1, minWidth: 0 },
-  pensandoFila: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  pensando: { fontFamily: fonts.body, fontSize: 13, color: colors.textDim },
-  acciones: { marginTop: 8, borderLeftWidth: 1, borderLeftColor: colors.line, paddingLeft: 10, gap: 4 },
-  accion: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  denunciar: { flexDirection: 'row', alignItems: 'center', gap: 5, alignSelf: 'flex-start', marginTop: 8, paddingVertical: 2 },
-  denunciarTexto: { fontFamily: fonts.body, fontSize: 11, color: colors.textFaint },
-  accionTexto: { fontFamily: fonts.body, fontSize: 12.5, color: colors.textDim, flexShrink: 1 },
   error: { flexDirection: 'row', alignItems: 'center', gap: 8, borderLeftWidth: 2, borderLeftColor: colors.red, paddingLeft: 10, paddingVertical: 6 },
   errorTexto: { fontFamily: fonts.body, fontSize: 13, color: colors.red, flex: 1 },
   vacio: { alignItems: 'center', paddingTop: 48, paddingBottom: 24, paddingHorizontal: 12 },
-  vacioEmblema: { width: 56, height: 56, borderRadius: 28, backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center' },
   vacioTitulo: { fontFamily: fonts.heading, fontSize: 22, letterSpacing: -0.4, color: colors.text, marginTop: 18 },
   vacioTexto: { fontFamily: fonts.body, fontSize: 14, lineHeight: 21, color: colors.textDim, textAlign: 'center', marginTop: 8 },
   vacioDescargo: { fontFamily: fonts.body, fontSize: 12, lineHeight: 17, color: colors.textFaint, textAlign: 'center', marginTop: 14 },
@@ -742,6 +851,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   bloqueadoBoton: { alignSelf: 'stretch', marginTop: 20 },
+  bloqueadoLinea: { alignSelf: 'stretch', marginTop: 20 },
   hoy: { alignSelf: 'stretch', marginTop: 24, borderWidth: 1, borderColor: colors.line, padding: 16 },
   hoyRotulo: { fontFamily: fonts.heading, fontSize: 11, letterSpacing: 2.5, color: colors.textFaint, marginBottom: 6 },
   hoyFila: { flexDirection: 'row', gap: 10, paddingVertical: 9 },
@@ -763,6 +873,13 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: colors.line,
   },
+  avisoBloque: {
+    paddingHorizontal: 20,
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: colors.line,
+  },
+  avisoFila: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingBottom: 10 },
   avisoTexto: { flex: 1, minWidth: 0, fontFamily: fonts.body, fontSize: 12.5, lineHeight: 18, color: colors.accentText },
   bandaPro: {
     gap: 10,
