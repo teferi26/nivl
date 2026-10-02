@@ -533,13 +533,29 @@ async function completarMision(ctx: ToolCtx, questId: string): Promise<string> {
     : `"${quest.title}" marcada como hecha hoy: +${pb ? `${pb} PB` : `${xp} XP`}.`;
 }
 
-async function propagarActo(ctx: ToolCtx, link: string): Promise<{ texto: string; enlazadas: number }> {
+/**
+ * Lo que le queda por pagar al módulo una vez descontado lo que pagaron hoy
+ * sus misiones enlazadas. ESPEJO de restoDelModulo en src/lib/links.ts: si
+ * tocas uno, toca el otro (test de paridad en tools_paridad_test.ts y en
+ * src/lib/__tests__/qa-paridad.test.ts, misma tabla).
+ * `pagadoMisiones === null` = no se pudo comprobar: paga el módulo entero,
+ * igual que la app cuando no ve misiones.
+ */
+export function restoDelModulo(base: number, pagadoMisiones: number | null): number {
+  return Math.max(0, base - (pagadoMisiones ?? 0));
+}
+
+async function propagarActo(
+  ctx: ToolCtx,
+  link: string,
+): Promise<{ texto: string; enlazadas: number; pagadoMisiones: number | null }> {
   const { sb, userId, today } = ctx;
   const weekday = ((new Date(today).getDay() + 6) % 7) + 1;
   const marcadas: string[] = [];
   let enlazadas = 0;
+  let pagadoMisiones: number | null = null;
   try {
-    const { data: quests } = await sb
+    const { data: quests, error } = await sb
       .from('quests')
       .select('id, title, days_of_week')
       .eq('user_id', userId)
@@ -547,12 +563,35 @@ async function propagarActo(ctx: ToolCtx, link: string): Promise<{ texto: string
       .eq('link', link)
       .eq('is_penalty', false)
       .is('acquired_at', null);
-    for (const q of (quests ?? []) as any[]) {
-      if (!(q.days_of_week ?? []).includes(weekday)) continue;
+    if (error) throw error;
+    const hoy = ((quests ?? []) as any[]).filter((q) => (q.days_of_week ?? []).includes(weekday));
+    for (const q of hoy) {
       enlazadas += 1;
-      const r = await completarMision(ctx, q.id);
-      if (!r.includes('ya estaba')) marcadas.push(q.title);
+      try {
+        const r = await completarMision(ctx, q.id);
+        if (!r.includes('ya estaba')) marcadas.push(q.title);
+      } catch {
+        /* se mira abajo si llegó a pagarse */
+      }
     }
+    // Lo pagado se LEE, no se deduce de las respuestas: cuenta lo marcado ahora,
+    // lo marcado antes a mano y lo que confirmó con la respuesta perdida.
+    if (hoy.length) {
+      const { data: hechas, error: e2 } = await sb
+        .from('completions')
+        .select('xp_awarded')
+        .eq('user_id', userId)
+        .eq('date', today)
+        .in('quest_id', hoy.map((q) => q.id));
+      if (e2) throw e2;
+      pagadoMisiones = ((hechas ?? []) as any[]).reduce((a, c) => a + (c.xp_awarded ?? 0), 0);
+    } else {
+      pagadoMisiones = 0;
+    }
+  } catch {
+    /* el dato ya está guardado; lo enlazado se puede marcar aparte */
+  }
+  try {
     // Una marca automática no puede ser la que arranque el juicio diario de
     // las reglas (ver src/lib/links.ts): solo si él ya las marca por su cuenta.
     const { count } = await sb
@@ -568,9 +607,9 @@ async function propagarActo(ctx: ToolCtx, link: string): Promise<{ texto: string
         .upsert({ user_id: userId, rule_id: r.id, date: today }, { onConflict: 'user_id,rule_id,date' });
     }
   } catch {
-    /* el dato ya está guardado; lo enlazado se puede marcar aparte */
+    /* ídem */
   }
-  return { texto: marcadas.length ? ` Marcado solo: ${marcadas.join(', ')}.` : '', enlazadas };
+  return { texto: marcadas.length ? ` Marcado solo: ${marcadas.join(', ')}.` : '', enlazadas, pagadoMisiones };
 }
 
 /** Ejecuta una herramienta y devuelve el texto que verá el modelo. */
@@ -1175,8 +1214,9 @@ export async function executeTool(
           const eco = await propagarActo(ctx, 'peso');
           // Igual que en la app: el primer pesaje del día paga 5 XP salvo que
           // ya lo haya pagado una misión enlazada (WEIGH_IN_XP en game.ts).
-          if (!previo && eco.enlazadas === 0) {
-            await sb.rpc('award_xp', { p_amount: 5, p_stat: 'VIT', p_event: 'weigh_in', p_payload: { weight: kg, via: 'coach' } });
+          const restoPeso = previo ? 0 : restoDelModulo(5, eco.pagadoMisiones);
+          if (restoPeso > 0) {
+            await sb.rpc('award_xp', { p_amount: restoPeso, p_stat: 'VIT', p_event: 'weigh_in', p_payload: { weight: kg, via: 'coach' } });
           }
           return ok(`Peso de hoy anotado: ${kg} kg.${eco.texto}`);
         }
@@ -1306,11 +1346,12 @@ export async function executeTool(
 
       // Igual que en la app: la primera entrada del día paga 15 XP a PER
       // salvo que ya lo pague una misión enlazada (JOURNAL_XP en game.ts).
-      let eco = { texto: '', enlazadas: 0 };
+      let eco: { texto: string; enlazadas: number; pagadoMisiones: number | null } = { texto: '', enlazadas: 0, pagadoMisiones: 0 };
       if (!antes) {
         eco = await propagarActo(ctx, 'diario');
-        if (eco.enlazadas === 0) {
-          await sb.rpc('award_xp', { p_amount: 15, p_stat: 'PER', p_event: 'journal_entry', p_payload: { date: hoy, via: 'coach' } });
+        const restoDiario = restoDelModulo(15, eco.pagadoMisiones);
+        if (restoDiario > 0) {
+          await sb.rpc('award_xp', { p_amount: restoDiario, p_stat: 'PER', p_event: 'journal_entry', p_payload: { date: hoy, via: 'coach' } });
         }
       }
       return ok(
