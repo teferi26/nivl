@@ -11,6 +11,7 @@ import {
   OPCIONES_POR_DEFECTO,
   recortar,
   textos,
+  tarjetaDeCelebracion,
   type OpcionesTarjeta,
   type Tarjeta,
 } from '../sharecard';
@@ -118,7 +119,7 @@ describe('textos', () => {
 });
 
 describe('privacidad', () => {
-  const adulto = { mayorDeEdad: true };
+  const adulto = { puedeCompartirFotos: true };
 
   it('antes/después sin permiso de fotos no se genera', () => {
     expect(bloqueo(progreso, OPCIONES_POR_DEFECTO, adulto)).toMatch(/permitir las fotos/);
@@ -129,7 +130,7 @@ describe('privacidad', () => {
 
   it('las fotos de progreso solo se comparten con 18 años o más, y por defecto no', () => {
     expect(bloqueo(progreso, todo)).toMatch(/18 años/);
-    expect(bloqueo(progreso, todo, { mayorDeEdad: false })).toMatch(/18 años/);
+    expect(bloqueo(progreso, todo, { puedeCompartirFotos: false })).toMatch(/18 años/);
     expect(fotosVisibles(progreso, todo)).toEqual([]);
     expect(formatoArchivo(progreso, todo).formato).toBe('png');
   });
@@ -150,7 +151,7 @@ describe('privacidad', () => {
 
 describe('archivo y enlace', () => {
   it('JPG con foto, PNG sin ella', () => {
-    expect(formatoArchivo(progreso, todo, { mayorDeEdad: true })).toEqual({ formato: 'jpg', calidad: 0.9 });
+    expect(formatoArchivo(progreso, todo, { puedeCompartirFotos: true })).toEqual({ formato: 'jpg', calidad: 0.9 });
     expect(formatoArchivo(progreso, OPCIONES_POR_DEFECTO).formato).toBe('png');
     expect(formatoArchivo({ tipo: 'nivel', nivel: 3 }, todo).formato).toBe('png');
   });
@@ -176,5 +177,28 @@ describe('archivo y enlace', () => {
     expect(mensaje({ tipo: 'logro', titulo: 'Primer paso' }, todo, 'ABCD2345')).toBe(
       `Logro desbloqueado: Primer paso en NIVL. ${URL_NIVL}/c/ABCD2345`,
     );
+  });
+});
+
+describe('celebraciones del juego', () => {
+  it('nivel, rango, logro con título y racha ≥ 30 dan tarjeta', () => {
+    expect(tarjetaDeCelebracion({ tipo: 'nivel', clave: 'nivel:12', nivel: 12 })).toEqual({ tipo: 'nivel', nivel: 12 });
+    expect(tarjetaDeCelebracion({ tipo: 'rango', clave: 'rango:C', rango: 'C', nombre: 'Veterano', titulo: 'Hierro' })).toEqual({
+      tipo: 'rango',
+      rango: 'C',
+      titulo: 'Hierro',
+    });
+    expect(
+      tarjetaDeCelebracion({ tipo: 'logro', clave: 'logro:x', codigo: 'x', nombre: 'Primer paso', desc: 'Una misión', titulo: 'Novato' }),
+    ).toEqual({ tipo: 'logro', titulo: 'Primer paso', descripcion: 'Una misión' });
+    expect(tarjetaDeCelebracion({ tipo: 'racha', clave: 'racha:30:2026-10-02', dias: 30 })).toEqual({ tipo: 'racha', dias: 30 });
+  });
+
+  it('lo demás se celebra dentro, sin tarjeta', () => {
+    expect(tarjetaDeCelebracion({ tipo: 'racha', clave: 'racha:7:2026-10-02', dias: 7 })).toBeNull();
+    expect(tarjetaDeCelebracion({ tipo: 'logro', clave: 'l', codigo: 'l', nombre: 'Algo', titulo: null })).toBeNull();
+    for (const tipo of ['grado', 'insignia', 'recuperacion', 'piedra']) {
+      expect(tarjetaDeCelebracion({ tipo, clave: tipo })).toBeNull();
+    }
   });
 });

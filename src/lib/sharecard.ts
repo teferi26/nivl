@@ -212,14 +212,18 @@ export function textos(t: Tarjeta, opciones: OpcionesTarjeta = OPCIONES_POR_DEFE
 
 /** Lo que la tarjeta necesita saber de quien comparte (no lo elige el usuario). */
 export interface ContextoTarjeta {
-  /** Edad verificada ≥ 18. Las fotos corporales solo se comparten en adultos (decisión del coordinador, 02/10). */
-  mayorDeEdad: boolean;
+  /**
+   * Las fotos corporales solo se comparten con 18+ verificados Y consentimiento
+   * de salud vigente (decisión del coordinador, 02/10). Quien llama pasa
+   * `permisosFotos(...).compartir` de la lógica de fotos del Chat 5.
+   */
+  puedeCompartirFotos: boolean;
 }
 
 /** Por qué una tarjeta no se puede generar con estas opciones, o null si se puede. */
-export function bloqueo(t: Tarjeta, opciones: OpcionesTarjeta, contexto: ContextoTarjeta = { mayorDeEdad: false }): string | null {
+export function bloqueo(t: Tarjeta, opciones: OpcionesTarjeta, contexto: ContextoTarjeta = { puedeCompartirFotos: false }): string | null {
   if (t.tipo === 'antesDespues') {
-    if (!contexto.mayorDeEdad) return 'Compartir fotos de progreso está disponible a partir de los 18 años.';
+    if (!contexto.puedeCompartirFotos) return 'Compartir fotos de progreso está disponible a partir de los 18 años.';
     if (!opciones.mostrarFotos) return 'Para compartir el antes y después tienes que permitir las fotos.';
     if (!t.antes.uri || !t.despues.uri) return 'Faltan fotos para comparar.';
     if (t.antes.fecha > t.despues.fecha) return 'La foto de antes es posterior a la de después.';
@@ -229,8 +233,8 @@ export function bloqueo(t: Tarjeta, opciones: OpcionesTarjeta, contexto: Context
 }
 
 /** Fotos que la tarjeta puede pintar (vacío si no hay permiso o si no es mayor de edad). */
-export function fotosVisibles(t: Tarjeta, opciones: OpcionesTarjeta, contexto: ContextoTarjeta = { mayorDeEdad: false }): Foto[] {
-  if (t.tipo !== 'antesDespues' || !opciones.mostrarFotos || !contexto.mayorDeEdad) return [];
+export function fotosVisibles(t: Tarjeta, opciones: OpcionesTarjeta, contexto: ContextoTarjeta = { puedeCompartirFotos: false }): Foto[] {
+  if (t.tipo !== 'antesDespues' || !opciones.mostrarFotos || !contexto.puedeCompartirFotos) return [];
   return [t.antes, t.despues];
 }
 
@@ -241,7 +245,7 @@ export function fotosVisibles(t: Tarjeta, opciones: OpcionesTarjeta, contexto: C
 export function formatoArchivo(
   t: Tarjeta,
   opciones: OpcionesTarjeta,
-  contexto: ContextoTarjeta = { mayorDeEdad: false },
+  contexto: ContextoTarjeta = { puedeCompartirFotos: false },
 ): { formato: 'png' | 'jpg'; calidad: number } {
   return fotosVisibles(t, opciones, contexto).length > 0 ? { formato: 'jpg', calidad: 0.9 } : { formato: 'png', calidad: 1 };
 }
@@ -268,4 +272,47 @@ export function mensaje(t: Tarjeta, opciones: OpcionesTarjeta = OPCIONES_POR_DEF
   const titular = x.titular.charAt(0) + x.titular.slice(1).toLowerCase();
   const cuerpo = t.tipo === 'logro' ? `${x.antetitulo.charAt(0)}${x.antetitulo.slice(1).toLowerCase()}: ${x.titular}` : titular;
   return `${cuerpo} en NIVL. ${enlace(codigoAmigo, opciones.incluirInvitacion)}`;
+}
+
+// ── Celebraciones del juego (contrato del Chat 5: docs/game-v2/CONTRATO-PROGRESION.md §3) ──
+//
+// Se tipa por estructura, no se importa `progression.ts`: así este módulo no
+// depende de la rama del juego y la integración solo tiene que encajar formas.
+
+export type CelebracionCompartible =
+  | { tipo: 'nivel'; clave: string; nivel: number }
+  | { tipo: 'rango'; clave: string; rango: string; nombre?: string; titulo?: string | null }
+  | { tipo: 'logro'; clave: string; codigo: string; nombre: string; desc?: string; titulo: string | null }
+  | { tipo: 'racha'; clave: string; dias: number }
+  | { tipo: string; clave: string };
+
+/** Hitos de racha que merecen tarjeta (sugerencia del Chat 5: ≥ 30). */
+export const RACHA_MINIMA_COMPARTIR = 30;
+
+/**
+ * La tarjeta que corresponde a una celebración, o null si no se comparte:
+ * grados, insignias, recuperaciones, piedras, logros sin título y rachas
+ * cortas se celebran dentro de la app pero no ofrecen tarjeta.
+ */
+export function tarjetaDeCelebracion(c: CelebracionCompartible): Tarjeta | null {
+  switch (c.tipo) {
+    case 'nivel': {
+      const x = c as Extract<CelebracionCompartible, { tipo: 'nivel' }>;
+      return Number.isFinite(x.nivel) ? { tipo: 'nivel', nivel: x.nivel } : null;
+    }
+    case 'rango': {
+      const x = c as Extract<CelebracionCompartible, { tipo: 'rango' }>;
+      return x.rango ? { tipo: 'rango', rango: x.rango, titulo: x.titulo ?? x.nombre } : null;
+    }
+    case 'logro': {
+      const x = c as Extract<CelebracionCompartible, { tipo: 'logro' }>;
+      return x.titulo && x.nombre ? { tipo: 'logro', titulo: x.nombre, descripcion: x.desc } : null;
+    }
+    case 'racha': {
+      const x = c as Extract<CelebracionCompartible, { tipo: 'racha' }>;
+      return x.dias >= RACHA_MINIMA_COMPARTIR ? { tipo: 'racha', dias: x.dias } : null;
+    }
+    default:
+      return null;
+  }
 }

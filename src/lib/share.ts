@@ -78,7 +78,7 @@ function borrar(uri: string | null): void {
  * permiso de fotos); cualquier otro fallo sube tal cual para `mensajeSistema`.
  */
 export async function compartirTarjeta(p: PeticionCompartir): Promise<ResultadoCompartir> {
-  const contexto = p.contexto ?? { mayorDeEdad: false };
+  const contexto = p.contexto ?? { puedeCompartirFotos: false };
   const motivo = bloqueo(p.tarjeta, p.opciones, contexto);
   if (motivo) throw new ErrorVisible(motivo);
   if (ocupado) return 'ocupado';
