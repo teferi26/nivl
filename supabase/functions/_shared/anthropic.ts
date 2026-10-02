@@ -106,8 +106,19 @@ const PRICE_PER_MTOK: Record<string, { in: number; out: number }> = {
   'kimi-k2': { in: 0.6, out: 2.5 },
 };
 
+/**
+ * La tarifa de un modelo. La API responde a veces con el id fechado
+ * (`claude-haiku-4-5-20251001`, comprobado en producción el 2026-10-02): sin
+ * quitar la fecha caía en la tarifa de Opus y un turno de Haiku de 0,0075 $ se
+ * apuntaba (y descontaba del candado) como 0,0373 $, cinco veces más.
+ */
+export function tarifa(model: string): { in: number; out: number } {
+  const id = model.trim().toLowerCase();
+  return PRICE_PER_MTOK[id] ?? PRICE_PER_MTOK[id.replace(/-\d{8}$/, '')] ?? PRICE_PER_MTOK['claude-opus-5'];
+}
+
 export function costMicroUsd(model: string, u: Usage): number {
-  const p = PRICE_PER_MTOK[model] ?? PRICE_PER_MTOK['claude-opus-5'];
+  const p = tarifa(model);
   const cacheRead = (u.cache_read_input_tokens ?? 0) * p.in * 0.1;
   // La escritura de 1 h (2×) llega aparte en `cache_creation`; el resto del
   // total es de 5 min (1,25×). Sin desglose, todo es de 5 min, como antes.
