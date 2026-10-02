@@ -1,3 +1,4 @@
+import * as P from '../proplans';
 import { PROFILE_KINDS } from '../kinds';
 import {
   DEFAULT_PLAN,
@@ -240,7 +241,7 @@ describe('NIVL Pro · la tienda abierta (fase 4)', () => {
     expect(legalText(anual.id)).toBeNull();
     expect(precioVisible('$99.99')).toBe('$99.99');
     expect(pitchVisible(anual)).not.toMatch(/€|gratis|%/);
-    expect(pitchVisible(proPlan('nivl_elite_fundador'))).toMatch(/plazas/);
+    expect(pitchVisible(proPlan('nivl_elite_fundador'))).toMatch(/^Plazas limitadas/);
     expect(legalText('nivl_pro_anual', '$99.99')).toContain('$99.99 cada año');
   });
 
@@ -263,5 +264,81 @@ describe('NIVL Pro · la tienda abierta (fase 4)', () => {
     expect(compraReflejada(elite, 'nivl_elite_anual')).toBe(true);
     // La prueba de 7 días no es la compra.
     expect(compraReflejada({ ...pro, plan: 'cortesia', trial: true }, 'nivl_pro_mensual')).toBe(false);
+  });
+});
+
+describe('tienda: cambios de plan, títulos y ofertas (auditoría 2026-10-02)', () => {
+  const base = P.SIN_IA;
+  const st = (o: Partial<P.AiStatus>) => ({ ...base, entitled: true, ...o });
+
+  test('títulos y duración iguales a App Store Connect; el fundador es anual', () => {
+    expect(P.tituloPlan('nivl_pro_mensual')).toBe('NIVL Pro mensual');
+    expect(P.tituloPlan('nivl_elite_fundador')).toBe('NIVL Élite fundador');
+    expect(P.duracionPlan('nivl_elite_fundador')).toBe('Anual · 1 año');
+    expect(P.duracionPlan('nivl_elite_mensual')).toBe('Mensual · 1 mes');
+    expect(P.LEGAL_URLS.eulaApple).toBe('https://www.apple.com/legal/internet-services/itunes/dev/stdeula/');
+  });
+
+  test('tipo de cambio y modo de sustitución de Google Play', () => {
+    expect(P.tipoCambio(null, 'nivl_pro_anual')).toBe('nueva');
+    expect(P.tipoCambio('nivl_pro_anual', 'nivl_pro_anual')).toBe('mismo');
+    expect(P.tipoCambio('nivl_pro_mensual', 'nivl_elite_fundador')).toBe('subida');
+    expect(P.tipoCambio('nivl_elite_anual', 'nivl_pro_anual')).toBe('cambio');
+    expect(P.tipoCambio('nivl_pro_anual', 'nivl_pro_mensual')).toBe('cambio');
+    expect(P.modoReemplazoGoogle('subida')).toBe('CHARGE_PRORATED_PRICE');
+    expect(P.modoReemplazoGoogle('cambio')).toBe('DEFERRED');
+  });
+
+  test('no se ofrece una segunda suscripción en la tienda a quien ya paga fuera o está arriba', () => {
+    expect(P.puedeMejorarEnTienda(st({ tier: 'pro', plan: 'pro_anual' }), 'apple')).toBe(true);
+    expect(P.puedeMejorarEnTienda(st({ tier: 'pro', plan: 'cortesia', trial: true }), 'manual')).toBe(true);
+    expect(P.puedeMejorarEnTienda(st({ tier: 'pro', plan: 'pro_anual' }), 'stripe')).toBe(false);
+    expect(P.puedeMejorarEnTienda(st({ tier: 'pro', plan: 'mensual' }), null)).toBe(false);
+    expect(P.puedeMejorarEnTienda(st({ tier: 'elite', plan: 'elite_anual' }), 'apple')).toBe(false);
+    expect(P.puedeMejorarEnTienda(st({ tier: 'owner', plan: 'owner' }), 'manual')).toBe(false);
+    expect(P.puedeMejorarEnTienda(base, null)).toBe(false);
+  });
+
+  test('plan exacto y producto de un plan del servidor', () => {
+    expect(P.planExacto(st({ tier: 'pro', plan: 'pro_mensual' }), 'nivl_elite_mensual')).toBe(false);
+    expect(P.planExacto(st({ tier: 'elite', plan: 'elite_mensual' }), 'nivl_elite_mensual')).toBe(true);
+    expect(P.planExacto(st({ plan: 'pro_anual', trial: true }), 'nivl_pro_anual')).toBe(false);
+    expect(P.productoDePlan('elite_fundador')).toBe('nivl_elite_fundador');
+    expect(P.productoDePlan('cortesia')).toBeNull();
+    expect(P.productoDePlan('mensual')).toBeNull();
+  });
+
+  test('la oferta introductoria solo se declara si la tienda la da', () => {
+    expect(P.textoIntro(null)).toBeNull();
+    expect(P.textoIntro({ price: 0, priceString: '0 €', cycles: 1, periodUnit: 'DAY', periodNumberOfUnits: 7 })).toMatch(/7 días gratis/);
+    expect(P.textoIntro({ price: 1.99, priceString: '1,99 €', cycles: 3, periodUnit: 'MONTH', periodNumberOfUnits: 1 }, true))
+      .toMatch(/3 meses a 1,99 €.*elegible/);
+    expect(P.legalText('nivl_pro_anual', '99,99 €')).not.toMatch(/prueba|gratis durante|Oferta de la tienda/);
+    expect(P.legalText('nivl_pro_anual', '99,99 €', 'Oferta de la tienda: x.')).toContain('Oferta de la tienda: x.');
+  });
+
+  test('beneficios Élite: nada de uso ilimitado ni ludus inmediato', () => {
+    const texto = JSON.stringify([P.ELITE_BENEFITS, P.ELITE_USAGE_NOTICE, P.PRO_BENEFITS]);
+    expect(texto).not.toMatch(/ilimitad|sin límite|al instante|inmediat|acceso anticipado|retos trimestrales/i);
+    expect(P.ELITE_USAGE_NOTICE).toMatch(/límite mensual/);
+    expect(P.ELITE_USAGE_NOTICE).toMatch(/manualmente/);
+    const titulos = P.ELITE_BENEFITS.map((b) => b.title);
+    expect(titulos).toContain('Insignia de laurel');
+    expect(titulos).toContain('Solicita plaza en un ludus (5-8)');
+    expect(P.ELITE_BENEFITS.find((b) => b.title.includes('ludus'))?.detail).toMatch(/manual, según disponibilidad/);
+  });
+});
+
+describe('Apple 2.3.10: la letra no nombra la tienda de la otra plataforma', () => {
+  test('iOS sin Google Play; Android sin Apple/App Store; web sin tiendas', () => {
+    const ios = P.legalText('nivl_pro_anual', '99,99 €', null, 'ios')!;
+    expect(ios).toContain('Ajustes > tu nombre > Suscripciones');
+    expect(ios).not.toMatch(/Google|Play/);
+    const android = P.legalText('nivl_pro_anual', '99,99 €', null, 'android')!;
+    expect(android).toContain('Google Play > Pagos y suscripciones > Suscripciones');
+    expect(android).not.toMatch(/Apple|App Store|iOS/);
+    const web = P.legalText('nivl_pro_anual', '99,99 €')!;
+    expect(web).not.toMatch(/Apple|App Store|Google|Play/);
+    expect(P.textoGestionTienda('ios')).not.toMatch(/Google/);
   });
 });

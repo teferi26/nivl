@@ -328,8 +328,8 @@ export const ELITE_USAGE_NOTICE =
 export const ELITE_BENEFITS: readonly ProBenefit[] = [
   { icon: 'flash-outline', title: 'Máxima potencia', detail: 'Un modelo de primera línea en cada brief, plan, revisión y conversación.' },
   { icon: 'telescope-outline', title: 'Modo profundo', detail: 'Para lo que pide pensarlo a fondo: el coach se toma su tiempo y responde con más detalle.' },
-  { icon: 'analytics-outline', title: 'Revisión semanal a fondo', detail: 'Tu semana medida por el modelo de primera línea, pensando al máximo.' },
-  { icon: 'shield-outline', title: 'Plaza en un ludus', detail: 'Solicita un grupo de 5 a 8 gladiadores Élite con tu objetivo y marcador propio. Asignación manual según disponibilidad.' },
+  { icon: 'analytics-outline', title: 'Revisión semanal a fondo', detail: 'Tu semana medida por el modelo de primera línea, pensando a fondo.' },
+  { icon: 'shield-outline', title: 'Solicita plaza en un ludus (5-8)', detail: 'Un grupo de 5 a 8 gladiadores Élite con tu objetivo y marcador propio. La asignación es manual, según disponibilidad.' },
   { icon: 'ribbon-outline', title: 'Insignia de laurel', detail: 'El laurel dorado junto a tu nombre. Estatus, no puntos: no cambia ningún ranking.' },
 ];
 
@@ -425,26 +425,98 @@ export function proSampleBrief(kind: unknown): readonly string[] {
 export const LEGAL_URLS = {
   terminos: 'https://nivl-web.vercel.app/terminos',
   privacidad: 'https://nivl-web.vercel.app/privacidad',
+  /** NIVL no tiene EULA propio en App Store Connect: aplica el estándar de Apple. Se enlaza en iOS. */
+  eulaApple: 'https://www.apple.com/legal/internet-services/itunes/dev/stdeula/',
 } as const;
+
+/**
+ * El nombre visible de la suscripción, igual que en App Store Connect (es-ES):
+ * "NIVL Pro mensual", "NIVL Élite fundador". Apple 3.1.2 pide título claro.
+ */
+export function tituloPlan(id: ProPlanId): string {
+  const p = proPlan(id);
+  return `${tierOffer(p.tier).name} ${p.label.toLowerCase()}`;
+}
+
+/** Duración explícita del periodo de la suscripción. El fundador es ANUAL, no vitalicio. */
+export function duracionPlan(id: ProPlanId): string {
+  return proPlan(id).period === 'mes' ? 'Mensual · 1 mes' : 'Anual · 1 año';
+}
+
+/**
+ * Dónde se gestiona y cancela, SIN nombrar la tienda de la otra plataforma
+ * (Apple 2.3.10: en iOS no se menciona Google Play; en Android, tampoco Apple).
+ */
+export function textoGestionTienda(plataforma: string): string {
+  if (plataforma === 'ios') return 'La gestionas y la cancelas cuando quieras en Ajustes > tu nombre > Suscripciones.';
+  if (plataforma === 'android') {
+    return 'La gestionas y la cancelas cuando quieras en Google Play > Pagos y suscripciones > Suscripciones.';
+  }
+  return 'La gestionas y la cancelas cuando quieras desde la tienda donde la contrataste.';
+}
 
 /**
  * La letra pequeña que exigen las tiendas para una suscripción autorrenovable.
  * `precio` es el que da la tienda (`priceString`, ya en la moneda y el formato
  * del comprador). Sin precio confirmado no hay condiciones de compra que mostrar.
+ * `intro` es la oferta introductoria que declara la tienda para ese producto
+ * (`introDeTienda`); sin ella no se menciona ninguna prueba de tienda.
  */
-export function legalText(id: ProPlanId, precio?: string | null): string | null {
+export function legalText(
+  id: ProPlanId,
+  precio?: string | null,
+  intro?: string | null,
+  plataforma = 'web',
+): string | null {
   const confirmado = precioVisible(precio);
   if (!confirmado) return null;
   const p = proPlan(id);
-  const nivel = tierOffer(p.tier).name;
+  const duracion = p.period === 'mes' ? 'mensual (1 mes)' : 'anual (1 año)';
   const cuando = p.period === 'mes' ? 'cada mes' : 'cada año';
-  const congelado = p.id === 'nivl_elite_fundador' ? ' El precio de fundador se mantiene mientras no la canceles.' : '';
+  const congelado =
+    p.id === 'nivl_elite_fundador'
+      ? ` Oferta limitada a ${PLAZAS_FUNDADOR} plazas: no es un pago único ni vitalicio; el precio de fundador se mantiene mientras no la canceles.`
+      : '';
+  const introTexto = precioVisible(intro) ? ` ${intro!.trim()}` : '';
   return (
-    `${nivel} ${p.label.toLowerCase()} es una suscripción de renovación automática: ${confirmado} ${cuando}.${congelado} ` +
+    `${tituloPlan(id)} es una suscripción ${duracion} de renovación automática: ${confirmado} ${cuando}.${congelado}${introTexto} ` +
     'El cobro se hace en tu cuenta de la tienda al confirmar la compra y se renueva sola salvo que la canceles ' +
-    'al menos 24 horas antes de que acabe el periodo. La gestionas y la cancelas cuando quieras en los ajustes ' +
-    'de suscripciones de la App Store o de Google Play. Sin ella, tus hábitos, tu organización y tu progreso siguen disponibles gratis.'
+    `al menos 24 horas antes de que acabe el periodo. ${textoGestionTienda(plataforma)} ` +
+    'Sin ella, tus hábitos, tu organización y tu progreso siguen disponibles gratis.'
   );
+}
+
+/** Lo que la tienda declara como oferta introductoria (`product.introPrice`). */
+export interface IntroTienda {
+  price: number;
+  priceString: string;
+  cycles: number;
+  periodUnit: string;
+  periodNumberOfUnits: number;
+}
+
+const UNIDADES: Record<string, [string, string]> = {
+  DAY: ['día', 'días'],
+  WEEK: ['semana', 'semanas'],
+  MONTH: ['mes', 'meses'],
+  YEAR: ['año', 'años'],
+};
+
+/**
+ * La frase de la oferta introductoria, solo si la tienda la declara. Con
+ * `condicional` (iOS sin elegibilidad confirmada) se dice que depende de la
+ * tienda. Sin oferta, null: el paywall NUNCA promete una prueba de tienda que
+ * no existe (la prueba de 7 días de NIVL es del servidor, sin tarjeta).
+ */
+export function textoIntro(intro: IntroTienda | null | undefined, condicional = false): string | null {
+  if (!intro || !UNIDADES[intro.periodUnit] || !(intro.periodNumberOfUnits > 0)) return null;
+  const veces = Math.max(1, Math.round(intro.cycles || 1));
+  const n = intro.periodNumberOfUnits * veces;
+  const [uno, varios] = UNIDADES[intro.periodUnit]!;
+  const periodo = `${n} ${n === 1 ? uno : varios}`;
+  const que = intro.price <= 0 ? `${periodo} gratis` : `${periodo} a ${precioVisible(intro.priceString) ?? ''}`.trim();
+  const base = `Oferta de la tienda: los primeros ${que}; después se cobra el precio indicado.`;
+  return condicional ? `${base} Solo si tu cuenta de la tienda es elegible.` : base;
 }
 
 // ── La tienda abierta (fase 4) ──────────────────────────────────────
@@ -494,8 +566,8 @@ export function precioVisible(precioTienda?: string | null): string | null {
  * prometen ahorros ni equivalentes mensuales calculados desde la tabla local.
  */
 export function pitchVisible(p: ProPlan): string {
-  if (p.id === 'nivl_elite_fundador') return `${PLAZAS_FUNDADOR} plazas · precio congelado`;
-  return p.period === 'año' ? 'Un solo pago al año' : 'Sin permanencia';
+  if (p.id === 'nivl_elite_fundador') return 'Plazas limitadas · precio congelado';
+  return p.period === 'año' ? 'Se cobra una vez al año' : 'Sin permanencia';
 }
 
 export type PreciosTienda = Partial<Record<ProPlanId, string>>;
@@ -521,4 +593,52 @@ export function compraReflejada(status: AiStatus | null | undefined, id: ProPlan
   const quiere = proPlan(id).tier;
   if (quiere === 'elite') return status?.tier === 'elite' || status?.tier === 'owner';
   return planDePago(status?.plan) || status?.tier === 'owner';
+}
+
+/** El servidor ya refleja EXACTAMENTE ese plan (cambio de plan dentro del grupo). */
+export function planExacto(status: AiStatus | null | undefined, id: ProPlanId): boolean {
+  return isPro(status) && !status?.trial && status?.plan === proPlan(id).plan;
+}
+
+/**
+ * Qué supone comprar `nuevo` teniendo `actual` activo en la tienda:
+ * - `nueva`: no hay suscripción de NIVL en la tienda.
+ * - `mismo`: ya la tiene; no se vuelve a comprar.
+ * - `subida`: Pro → Élite. Inmediata en las dos tiendas (Apple: upgrade).
+ * - `cambio`: Élite → Pro o anual ↔ mensual del mismo nivel. Apple lo aplica
+ *   al renovar (downgrade / crossgrade de otra duración); en Google Play se
+ *   pide `DEFERRED` para no cobrar dos veces ni quitar lo ya pagado.
+ */
+export type TipoCambio = 'nueva' | 'mismo' | 'subida' | 'cambio';
+
+const RANGO_OFERTA: Record<OfferTier, number> = { pro: 1, elite: 2 };
+
+export function tipoCambio(actual: ProPlanId | null | undefined, nuevo: ProPlanId): TipoCambio {
+  if (!actual) return 'nueva';
+  if (actual === nuevo) return 'mismo';
+  return RANGO_OFERTA[proPlan(nuevo).tier] > RANGO_OFERTA[proPlan(actual).tier] ? 'subida' : 'cambio';
+}
+
+/** El modo de sustitución de Google Play para cada cambio (valores de STORE_REPLACEMENT_MODE). */
+export function modoReemplazoGoogle(tipo: TipoCambio): 'CHARGE_PRORATED_PRICE' | 'DEFERRED' {
+  return tipo === 'subida' ? 'CHARGE_PRORATED_PRICE' : 'DEFERRED';
+}
+
+/**
+ * ¿Se le puede ofrecer comprar en la tienda a una cuenta que YA tiene coach?
+ * No al Élite ni al dueño (no hay nada por encima), ni a quien paga por
+ * Stripe (web) o tiene un plan heredado de Stripe: comprar en la tienda sería
+ * una segunda suscripción y un segundo cobro. La prueba y las cortesías sí.
+ */
+export function puedeMejorarEnTienda(status: AiStatus | null | undefined, provider: string | null | undefined): boolean {
+  if (!isPro(status)) return false;
+  if (status?.tier === 'elite' || status?.tier === 'owner') return false;
+  if (provider === 'stripe' && !status?.trial) return false;
+  if (status?.plan === 'mensual' || status?.plan === 'anual') return false;
+  return true;
+}
+
+/** El producto de tienda que corresponde a un `subscriptions.plan`, o null (cortesía, owner, Stripe heredado). */
+export function productoDePlan(plan: string | null | undefined): ProPlanId | null {
+  return PRO_PLANS.find((p) => p.plan === plan)?.id ?? null;
 }
