@@ -50,8 +50,6 @@ export function PortadaArena({ descargo = DESCARGO_SALUD }: PortadaArenaProps) {
                 accessibilityRole="header"
                 accessibilityLabel="NIVL"
                 maxFontSizeMultiplier={1}
-                numberOfLines={1}
-                adjustsFontSizeToFit
               >
                 NIVL
               </Text>
@@ -100,8 +98,10 @@ const styles = StyleSheet.create({
     fontSize: tipo.display.size,
     lineHeight: tipo.display.lineHeight,
     letterSpacing: TRACKING_MARCA,
-    // El tracking también se suma tras la última letra: se compensa para centrar.
-    marginRight: -TRACKING_MARCA,
+    // El tracking también se suma tras la última letra: se compensa con el
+    // mismo hueco delante para centrar. Un margen negativo hacía que la web
+    // midiera la caja corta y recortara la marca en «NI…».
+    paddingLeft: TRACKING_MARCA,
     color: ink.ink10,
     textAlign: 'center',
   },
