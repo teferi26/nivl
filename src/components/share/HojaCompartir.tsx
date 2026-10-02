@@ -27,12 +27,11 @@ import {
   type OpcionesTarjeta,
   type Tarjeta,
 } from '@/lib/sharecard';
+import { ink } from '@/design/tokens';
 import { fonts } from '@/lib/theme';
 import { mensajeSistema } from '@/lib/validation';
 import { TarjetaCompartir } from './TarjetaCompartir';
 
-// Tokens `ink` del Sistema de diseño v2 (src/design/tokens.ts, rama del Chat 4).
-const ink = { ink0: '#000000', ink1: '#0B0B0B', ink3: '#242424', ink4: '#3A3A3A', ink6: '#8C8C8C', ink8: '#BDBDBD', ink9: '#EDEDED', ink10: '#FFFFFF' } as const;
 
 export interface HojaCompartirProps {
   visible: boolean;
