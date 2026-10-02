@@ -78,7 +78,8 @@ export function HojaCompartir({
   // Alias pedido al encender el interruptor (undefined = aún no pedido).
   const [aliasPedido, setAliasPedido] = useState<string | null | undefined>(undefined);
   const [pidiendoAlias, setPidiendoAlias] = useState(false);
-  const [sinAlias, setSinAlias] = useState(false);
+  // Por qué no hay alias: no existe (no se reintenta) o falló la petición (sí).
+  const [sinAlias, setSinAlias] = useState<'ninguno' | 'error' | null>(null);
   const alias = aliasDado ?? aliasPedido ?? null;
   const vista = useRef<View>(null);
   const boton = useRef<View>(null);
@@ -91,7 +92,7 @@ export function HojaCompartir({
     setOpciones(OPCIONES_POR_DEFECTO);
     setError(null);
     setAliasPedido(undefined);
-    setSinAlias(false);
+    setSinAlias(null);
   }, [visible, formatoInicial]);
 
   if (!visible) return null;
@@ -111,13 +112,13 @@ export function HojaCompartir({
   // Encender el alias: si no ha llegado, se pide una vez. Mientras tanto la
   // tarjeta va sin firma (mostrarNombre sigue apagado hasta tener alias).
   const cambiarAlias = async (v: boolean) => {
-    setSinAlias(false);
+    setSinAlias(null);
     if (!v || aliasDado || aliasPedido) {
       setOpciones((o) => ({ ...o, mostrarNombre: v && !!(aliasDado || aliasPedido) }));
       return;
     }
     if (!pedirAlias || aliasPedido === null) {
-      setSinAlias(true);
+      setSinAlias('ninguno');
       return;
     }
     setPidiendoAlias(true);
@@ -126,10 +127,11 @@ export function HojaCompartir({
       const limpio = a && a.trim() ? a.trim() : null;
       setAliasPedido(limpio);
       if (limpio) setOpciones((o) => ({ ...o, mostrarNombre: true }));
-      else setSinAlias(true);
+      else setSinAlias('ninguno');
     } catch {
-      setAliasPedido(null);
-      setSinAlias(true);
+      // Un fallo de red no es «no tienes alias»: se deja reintentar.
+      setAliasPedido(undefined);
+      setSinAlias('error');
     } finally {
       setPidiendoAlias(false);
     }
@@ -251,7 +253,8 @@ export function HojaCompartir({
               la Card alerta del kit. */}
           {motivo ? <Aviso texto={motivo} trama /> : null}
           {aviso ? <Aviso texto={aviso} /> : null}
-          {sinAlias ? <Aviso texto="Sin alias disponible." /> : null}
+          {sinAlias === 'ninguno' ? <Aviso texto="Aún no tienes alias público. Créalo en Amigos." /> : null}
+          {sinAlias === 'error' ? <Aviso texto="No se ha podido traer tu alias. Prueba otra vez." /> : null}
           {error ? <Aviso texto={error} trama alerta /> : null}
           <Pressable
             onPress={compartir}
