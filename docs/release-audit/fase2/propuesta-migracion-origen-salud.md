@@ -1,6 +1,6 @@
 # PROPUESTA de migración: origen de los datos de salud importados (para 1.0.9)
 
-**Estado:** propuesta del Chat 1 para que el Chat 3 la revise y la pruebe en rollback. **Sin número.** El número lo asigna el coordinador (≥ 0045). No se ha aplicado en ningún entorno y no está en `supabase/migrations/`, que es del coordinador.
+**Estado:** APROBADA por el Chat 3 el 02/10 tras probarla en rollback contra el esquema vivo, con una **ADENDA OBLIGATORIA en la misma migración**: `docs/ia-v2/proposals/adenda-origen-salud.sql` y su `.test.sql` (winter2/chat3-ia @6a54a80), 8/8 en rollback. Sin la adenda, `health_daily_steps` admitía inserciones sin consentimiento de salud, quedaba sin los triggers de salud y de borrado pendiente, fuera de `complete_health_erasure` y de la exportación (la adenda la sube a v5) y con privilegios para anon. Va DESPUÉS de la 0044. **Sin número.** El número lo asigna el coordinador (≥ 0045). No se ha aplicado en ningún entorno y no está en `supabase/migrations/`, que es del coordinador.
 
 Requisitos (Chat 3, 02/10/2026):
 - solo lectura y en primer plano;
@@ -100,3 +100,9 @@ create policy health_daily_steps_own on public.health_daily_steps
 | Bibliotecas nativas (@kingstinct/react-native-healthkit 16.0.0, react-native-health-connect 4.1.3, expo-build-properties con minSdk 26), capability HealthKit y declaración de Health Connect | Coordinador con el usuario, para 1.0.9 |
 | Módulo de importación (`src/lib/healthimport.ts` puro + efectos) y pantalla | Chat 1 (lógica), Chat 4 (UI) |
 | App Privacy, Data Safety, política y notas de Apple (deja de valer «does not use HealthKit») | Chat 1 y Chat 3 |
+
+## Decisiones del coordinador que afectan a 1.0.8 y 1.0.9 (vía Chat 3, 02/10)
+
+- Fotos corporales, su análisis por IA y compartirlas: **solo 18+**. Aplicado en compartir: `puedeCompartirFotos` (sharecard.ts/share.ts @77ac953).
+- Visión sobre fotos corporales: **solo Claude, nunca DeepSeek**.
+- No se afirma «sin retención» del proveedor de IA hasta que se firme el acuerdo de retención cero con Anthropic.
