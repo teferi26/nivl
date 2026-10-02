@@ -21,6 +21,9 @@ import {
   type ViewStyle,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { ink, space, stroke } from '@/design/tokens';
+import { ANCHO_ASIDE } from '@/design/responsive';
+import { useSizeClass } from '@/design/useSizeClass';
 import { colors, fonts } from '@/lib/theme';
 
 /**
@@ -36,10 +39,22 @@ export function volver(router: Pick<Router, 'canGoBack' | 'back' | 'replace'>): 
 interface ScreenProps extends Omit<ScrollViewProps, 'style' | 'contentContainerStyle'> {
   /** Sin scroll: la pantalla gestiona su propio contenido (chat, listas largas). */
   plain?: boolean;
+  /**
+   * Solo con `plain`: ocupa todo el ancho, sin la columna centrada (mapas,
+   * tablas, lo que necesite el lienzo entero).
+   */
+  wide?: boolean;
   refreshing?: boolean;
   onRefresh?: () => void;
   style?: StyleProp<ViewStyle>;
+  /** Se aplica al final: gana a los márgenes del marco. */
   contentStyle?: StyleProp<ViewStyle>;
+  /**
+   * Panel contextual (coach, rango, amigos). Solo se pinta en `expanded`, en
+   * una columna de 320 a la derecha con un hairline a la izquierda. En
+   * `compact` y `medium` no existe: lo esencial tiene que estar en el cuerpo.
+   */
+  aside?: ReactNode;
   /**
    * Lo que flota SOBRE la pantalla y no debe irse con el scroll: el aviso de
    * XP, una celebración. Se pinta como hermano del ScrollView; dentro de él,
@@ -50,31 +65,53 @@ interface ScreenProps extends Omit<ScrollViewProps, 'style' | 'contentContainerS
   children: ReactNode;
 }
 
-export function Screen({ plain, refreshing, onRefresh, style, contentStyle, overlay, children, ...rest }: ScreenProps) {
-  if (plain) {
-    return (
-      <SafeAreaView style={[styles.screen, style]} edges={['top']}>
-        {children}
-        {overlay}
-      </SafeAreaView>
-    );
-  }
+/**
+ * La pantalla se recoloca en caliente (rotación, ventanas de iPadOS, la web):
+ * el margen y el ancho máximo salen de la clase de tamaño de `useSizeClass`.
+ * El contenido es una columna centrada de `maxContent` más sus márgenes.
+ */
+export function Screen({ plain, wide, refreshing, onRefresh, style, contentStyle, aside, overlay, children, ...rest }: ScreenProps) {
+  const { sizeClass, gutter, maxContent } = useSizeClass();
+  const columna: ViewStyle = { width: '100%', maxWidth: maxContent + 2 * gutter, alignSelf: 'center' };
+  const conAside = sizeClass === 'expanded' && aside != null;
+
+  // `plain` no recibe margen lateral: esas pantallas (coach, diario) ya llevan
+  // el suyo y se duplicaría. Sí se centran y se acotan.
+  const cuerpo = plain ? (
+    <View style={[styles.flex, !wide && columna, contentStyle]}>{children}</View>
+  ) : (
+    <ScrollView
+      keyboardShouldPersistTaps="handled"
+      automaticallyAdjustKeyboardInsets
+      showsVerticalScrollIndicator={false}
+      contentContainerStyle={[styles.content, columna, { paddingHorizontal: gutter }, contentStyle]}
+      refreshControl={
+        onRefresh ? (
+          <RefreshControl refreshing={!!refreshing} onRefresh={onRefresh} tintColor={colors.accent} />
+        ) : undefined
+      }
+      {...rest}
+    >
+      {children}
+    </ScrollView>
+  );
+
   return (
-    <SafeAreaView style={[styles.screen, style]} edges={['top']}>
-      <ScrollView
-        keyboardShouldPersistTaps="handled"
-        automaticallyAdjustKeyboardInsets
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={[styles.content, contentStyle]}
-        refreshControl={
-          onRefresh ? (
-            <RefreshControl refreshing={!!refreshing} onRefresh={onRefresh} tintColor={colors.accent} />
-          ) : undefined
-        }
-        {...rest}
-      >
-        {children}
-      </ScrollView>
+    // Arriba y a los lados: en horizontal la isla o el notch quedan a un lado.
+    // Junto al raíl o la barra lateral el inset izquierdo ya es 0.
+    <SafeAreaView style={[styles.screen, style]} edges={['top', 'left', 'right']}>
+      {conAside ? (
+        <View style={styles.fila}>
+          <View style={styles.flex}>{cuerpo}</View>
+          <View style={styles.aside}>
+            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.asideContent}>
+              {aside}
+            </ScrollView>
+          </View>
+        </View>
+      ) : (
+        cuerpo
+      )}
       {overlay}
     </SafeAreaView>
   );
@@ -151,7 +188,11 @@ export function Eyebrow({ children, tone = 'dim', style }: { children: ReactNode
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.bg },
-  content: { paddingHorizontal: 20, paddingTop: 8, paddingBottom: 40 },
+  flex: { flex: 1 },
+  fila: { flex: 1, flexDirection: 'row' },
+  content: { paddingTop: 8, paddingBottom: 40 },
+  aside: { width: ANCHO_ASIDE, borderLeftWidth: stroke.hairline, borderLeftColor: ink.ink3 },
+  asideContent: { padding: space.s6, paddingBottom: space.s10 },
   header: { marginBottom: 18 },
   back: { alignSelf: 'flex-start', marginBottom: 12, marginLeft: -4, padding: 4 },
   headerRow: { flexDirection: 'row', alignItems: 'flex-end', gap: 12 },

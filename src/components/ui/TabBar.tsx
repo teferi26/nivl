@@ -3,24 +3,15 @@
 // La de serie pintaba seis iconos grises sobre una franja. Esta marca la activa
 // con una línea blanca arriba (la misma gramática que un separador editorial),
 // el icono relleno y la etiqueta en blanco, y responde al dedo con háptica.
+// Solo en `compact`; en `medium` va NavRail y en `expanded`, NavSidebar. Los
+// iconos y rótulos son los de navItems.ts.
 
 import Ionicons from '@expo/vector-icons/Ionicons';
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
-import * as Haptics from 'expo-haptics';
 import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors, fonts } from '@/lib/theme';
-
-type Icon = keyof typeof Ionicons.glyphMap;
-
-const ICONS: Record<string, { off: Icon; on: Icon; label: string }> = {
-  index: { off: 'today-outline', on: 'today', label: 'Hoy' },
-  coach: { off: 'chatbubble-ellipses-outline', on: 'chatbubble-ellipses', label: 'Coach' },
-  habitos: { off: 'repeat-outline', on: 'repeat', label: 'Hábitos' },
-  mazmorras: { off: 'flag-outline', on: 'flag', label: 'Campañas' },
-  agenda: { off: 'calendar-outline', on: 'calendar', label: 'Agenda' },
-  perfil: { off: 'person-outline', on: 'person', label: 'Perfil' },
-};
+import { navItemDe, pulsarDestino } from './navItems';
 
 export function TabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
@@ -28,16 +19,9 @@ export function TabBar({ state, descriptors, navigation }: BottomTabBarProps) {
     <View style={[styles.bar, { paddingBottom: Math.max(insets.bottom, Platform.OS === 'web' ? 8 : 6) }]}>
       {state.routes.map((route, index) => {
         const focused = state.index === index;
-        const meta = ICONS[route.name] ?? { off: 'ellipse-outline', on: 'ellipse', label: route.name };
-        const { options } = descriptors[route.key]!;
-        const label = typeof options.title === 'string' ? options.title : meta.label;
-        const onPress = () => {
-          const event = navigation.emit({ type: 'tabPress', target: route.key, canPreventDefault: true });
-          if (!focused && !event.defaultPrevented) {
-            Haptics.selectionAsync().catch(() => {});
-            navigation.navigate(route.name);
-          }
-        };
+        const meta = navItemDe(route, descriptors);
+        const label = meta.label;
+        const onPress = () => pulsarDestino(navigation, route, focused);
         return (
           <Pressable
             key={route.key}
