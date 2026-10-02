@@ -25,6 +25,8 @@ export interface OpcionesCompat {
   system: Array<{ type: 'text'; text: string }>;
   messages: ApiMessage[];
   tools?: unknown[];
+  /** 'none': responde en texto sin quitar las herramientas (ver CallOptions.toolChoice). */
+  toolChoice?: 'auto' | 'none';
   maxTokens?: number;
   onText?: (delta: string) => void;
   /** Corta la llamada (plazo del turno). Sin él, PLAZO_LLAMADA_MS. */
@@ -136,7 +138,9 @@ export async function callOpenAICompat(opts: OpcionesCompat): Promise<Turn> {
     model: opts.model,
     max_tokens: opts.maxTokens ?? 8000,
     messages: aFormatoChat(opts.system, opts.messages),
-    ...(aFunciones(opts.tools) ? { tools: aFunciones(opts.tools) } : {}),
+    ...(aFunciones(opts.tools)
+      ? { tools: aFunciones(opts.tools), ...(opts.toolChoice ? { tool_choice: opts.toolChoice } : {}) }
+      : {}),
     stream: true,
     // Pide el desglose de uso en el último fragmento; sin esto no hay forma
     // de saber lo que costó el turno y la contabilidad se queda a ciegas.

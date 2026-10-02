@@ -17,6 +17,7 @@
 //   supabase secrets set RITUAL_SECRET=<cadena larga al azar>
 
 import { callClaude, CHEAP_MODEL, costMicroUsd } from '../_shared/anthropic.ts';
+import { insertarRun } from '../_shared/telemetria.ts';
 import { consentimientoIa } from '../_shared/consent.ts';
 import { healthConsent, healthRevision, healthScopedClient, requireHealth } from '../_shared/health.ts';
 import { adminClient, type Db } from '../_shared/db.ts';
@@ -116,7 +117,8 @@ async function titular(sb: Db, userId: string, cuerpo: string): Promise<string> 
     // También esto cuesta y también va al libro: sin fila, el candado no lo
     // ve. (kind 'titular' necesita la propuesta c-coach-runs-kinds.sql; hasta
     // aplicarla el insert falla y queda en el log.)
-    const { error: ledgerErr } = await sb.from('coach_runs').insert({
+    // Con telemetría de la 0047 si ya está aplicada; si no, sin ella.
+    const { error: ledgerErr } = await insertarRun(sb, {
       user_id: userId,
       kind: 'titular',
       mode: 'estandar',
@@ -126,7 +128,7 @@ async function titular(sb: Db, userId: string, cuerpo: string): Promise<string> 
       cache_write_tokens: turn.usage.cache_creation_input_tokens ?? 0,
       out_tokens: turn.usage.output_tokens ?? 0,
       cost_micro_usd: costMicroUsd(turn.model, turn.usage),
-    });
+    }, { route: 'mecanica', tools_offered: 0, tool_calls: 0, iterations: 1 });
     if (ledgerErr) console.error('coach_runs insert failed (titular):', ledgerErr.message);
     const t = turn.content.filter((b) => b.type === 'text').map((b) => b.text ?? '').join('').trim();
     if (t) return t.slice(0, 240);

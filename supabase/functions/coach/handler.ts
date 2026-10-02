@@ -40,6 +40,7 @@ import { executeTool, TOOL_DEFS } from '../_shared/tools.ts';
 import { controlHerramientas, fechaAceptable, fechaDelTurno, Gasto, mensajeDeFallo, reloj, validarImagenes } from './guard.ts';
 import { pareceAfirmacion } from '../_shared/intencion.ts';
 import { bloqueComprobacion } from '../_shared/comprobacion.ts';
+import { insertarRun, type Telemetria } from '../_shared/telemetria.ts';
 
 // Cinco vueltas, no ocho. Cada vuelta reenvía el contexto entero y genera
 // pensamiento: con ocho, un turno se comía el presupuesto de tiempo de la
@@ -243,12 +244,18 @@ function aligerarHistorial(messages: ApiMessage[]): ApiMessage[] {
 /**
  * Marca el final del historial como punto de caché.
  *
- * El prefijo (voz + dossier + herramientas) ya se cachea desde el bloque de
- * sistema, pero la conversación crece turno a turno y volvía a pagarse entera
- * a precio completo en cada llamada: 13.300 tokens de entrada por turno medidos
- * en la primera prueba real. Con este segundo punto, todo lo anterior al turno
- * actual se lee a una décima parte. El estado fresco y el mensaje nuevo van
+ * El prefijo (herramientas + sistema fijo, y luego dossier + estado) ya se
+ * cachea en dos escalones desde el bloque de sistema (prompt.ts), pero la
+ * conversación crece turno a turno y volvía a pagarse entera a precio completo
+ * en cada llamada: 13.300 tokens de entrada por turno medidos en la primera
+ * prueba real. Con este tercer punto (de los 4 que admite la API), todo lo
+ * anterior al turno actual se lee a una décima parte. El mensaje nuevo va
  * después, así que el prefijo se mantiene byte a byte estable.
+ *
+ * Ojo: el historial va recortado a HISTORY_LIMIT filas. Con el hilo lleno, cada
+ * turno nuevo desplaza la ventana y cambia su primer mensaje, así que entre
+ * turnos esta caché se reescribe igualmente; donde rinde es dentro del bucle
+ * de herramientas de un mismo turno (lo resuelve el resumen del hilo, L4).
  */
 /**
  * Un error legible para el modelo.
@@ -332,14 +339,26 @@ interface RunArgs {
   compat: { baseUrl: string; apiKey: string } | null;
   modo: Modo;
   emit: (event: string, data: unknown) => void;
+  /** Telemetría del turno (0047), rellenada al momento: la lee finish aunque el turno falle. */
+  telemetria: Telemetria;
+}
+
+/**
+ * TTL del punto de caché fijo (ver OpcionesSistema en prompt.ts). Apagado por
+ * defecto: con el tráfico medido el 2026-10-02 la escritura a 2× no compensa.
+ */
+function ttlFijoDeEnv(): '1h' | undefined {
+  return Deno.env.get('COACH_CACHE_TTL_FIJO')?.trim() === '1h' ? '1h' : undefined;
 }
 
 async function runCoach(args: RunArgs): Promise<{ text: string; usage: Usage; model: string }> {
-  const { sb, admin, userId, kind, threadId, userText, today, imagenes, topeMicro, modelo, compat, modo, emit, gasto, deadline } =
+  const { sb, admin, userId, kind, threadId, userText, today, imagenes, topeMicro, modelo, compat, modo, emit, gasto, deadline, telemetria } =
     args;
 
   const ctx = await buildContext(sb, userId, today);
-  const system = buildSystem(ctx.dossier, kind, ctx.text);
+  const system = buildSystem(ctx.dossier, kind, ctx.text, { ttlFijo: ttlFijoDeEnv() });
+  telemetria.state_chars = ctx.text.length;
+  telemetria.tools_offered = TOOL_DEFS.length;
   const control = controlHerramientas(kind, ctx.dossier);
 
   // Descendente y luego la vuelta: pidiendo ascendente con LIMIT se traen los
@@ -378,7 +397,9 @@ async function runCoach(args: RunArgs): Promise<{ text: string; usage: Usage; mo
   // lectura que consultar_dia). Va en el mensaje de ESTE turno, después del
   // punto de caché, y no se guarda en el hilo. Si la lectura falla, el turno
   // sigue sin ella: el modelo aún tiene consultar_dia.
-  if (kind === 'chat' && pareceAfirmacion(userText)) {
+  const afirma = kind === 'chat' && pareceAfirmacion(userText);
+  telemetria.intent = kind === 'chat' ? (afirma ? 'afirmacion' : 'general') : null;
+  if (afirma) {
     try {
       const comprobacion = await bloqueComprobacion(sb, userId, today);
       bloquesUsuario.push({
@@ -437,6 +458,7 @@ ${userText}` : userText,
       // responde (o falla a medias): las comprobaciones de consentimiento que
       // vienen después pueden cortar el turno, pero lo cobrado ya no se borra.
       const llamar = async (): Promise<Turn> => {
+        telemetria.iterations = (telemetria.iterations ?? 0) + 1;
         try {
           const t = await (compat
             ? callOpenAICompat({
@@ -445,7 +467,11 @@ ${userText}` : userText,
                 model: elegido,
                 system,
                 messages,
-                tools: sinTiempo ? undefined : TOOL_DEFS,
+                // Sin tiempo: las MISMAS herramientas con tool_choice 'none'.
+                // Quitarlas cambiaba el prefijo (toda la caché a reescribir) y,
+                // con tool_use en el historial, la API respondía 400.
+                tools: TOOL_DEFS,
+                ...(sinTiempo ? { toolChoice: 'none' as const } : {}),
                 maxTokens,
                 signal,
                 onText: (d) => { buffered += d; },
@@ -454,7 +480,8 @@ ${userText}` : userText,
                 model: elegido,
                 system,
                 messages,
-                tools: sinTiempo ? undefined : TOOL_DEFS,
+                tools: TOOL_DEFS,
+                ...(sinTiempo ? { toolChoice: { type: 'none' as const } } : {}),
                 maxTokens,
                 effort,
                 signal,
@@ -544,6 +571,7 @@ ${userText}` : userText,
     // Todos los resultados vuelven en UN solo mensaje de usuario: partirlos
     // enseña al modelo a dejar de pedir herramientas en paralelo.
     const results: ContentBlock[] = [];
+    telemetria.tool_calls = (telemetria.tool_calls ?? 0) + toolUses.length;
     for (const call of toolUses) {
       let text: string;
       let isError = false;
@@ -711,7 +739,7 @@ async function atender(
   if (body.kind === KIND_MECANICO) {
     try {
       const r = await clasificarPendientes(sbTemprano, admin, userId);
-      const { error: ledgerErr } = await admin.from('coach_runs').insert({
+      const { error: ledgerErr } = await insertarRun(admin, {
         user_id: userId,
         kind: KIND_MECANICO,
         mode: modo,
@@ -721,7 +749,7 @@ async function atender(
         cache_write_tokens: r.usage.cache_creation_input_tokens ?? 0,
         out_tokens: r.usage.output_tokens ?? 0,
         cost_micro_usd: costMicroUsd(r.model, r.usage),
-      });
+      }, { route: 'mecanica', tools_offered: 0, tool_calls: 0, iterations: 1 });
       if (ledgerErr) console.error('coach_runs insert failed:', ledgerErr.message);
       return json(200, { revisados: r.revisados, clasificados: r.clasificados, texto: r.resumen });
     } catch (e) {
@@ -774,7 +802,7 @@ async function atender(
         .single();
       if (error) throw error;
 
-      await admin.from('coach_runs').insert({
+      await insertarRun(admin, {
         user_id: userId,
         kind: `resumen_${periodo}`,
         mode: modo,
@@ -784,7 +812,7 @@ async function atender(
         cache_write_tokens: r.usage.cache_creation_input_tokens ?? 0,
         out_tokens: r.usage.output_tokens ?? 0,
         cost_micro_usd: costMicroUsd(r.model, r.usage),
-      });
+      }, { route: 'mecanica', tools_offered: 0, tool_calls: 0, iterations: 1 });
 
       return json(200, { id: (guardado as { id: string }).id, slides: r.slides, fotos: r.fotos });
     } catch (e) {
@@ -856,6 +884,8 @@ async function atender(
   const topeMicro = Math.min(modo === 'profundo' ? MAX_COST_PROFUNDO_MICRO_USD : MAX_COST_MICRO_USD, restanteMicro);
   // Lo gastado en este turno, sumado según se cobra (ver Gasto en guard.ts).
   const gasto = new Gasto(modelo);
+  // L3 añadirá rutas estrechas ('registro'); hoy todo turno del coach va completo.
+  const telemetria: Telemetria = { route: 'completa', tool_calls: 0, iterations: 0 };
 
   // El libro de cuentas lo escribe el SERVIDOR, no el usuario: coach_runs solo
   // tiene política de lectura, así que con el cliente del usuario la inserción
@@ -868,7 +898,7 @@ async function atender(
     error: string | null,
   ) => {
     const u: Usage = gasto.usage;
-    const { error: ledgerErr } = await admin.from('coach_runs').insert({
+    const { error: ledgerErr } = await insertarRun(admin, {
       user_id: userId,
       kind,
       mode: modo,
@@ -879,7 +909,7 @@ async function atender(
       out_tokens: u.output_tokens ?? 0,
       cost_micro_usd: gasto.micro(),
       error: error ? 'turn_failed' : null,
-    });
+    }, telemetria);
     // Que falle la contabilidad no debe tumbar el turno, pero tampoco puede
     // desaparecer sin dejar rastro: sin esto, el coste se pierde en silencio.
     if (ledgerErr) console.error('coach_runs insert failed:', ledgerErr.message);
@@ -917,6 +947,7 @@ async function atender(
         compat,
         modo,
         emit: () => {},
+        telemetria,
       });
       await requireHealth(sb, userId);
       await finish(result, null);
@@ -968,6 +999,7 @@ async function atender(
           compat,
           modo,
           emit,
+          telemetria,
         });
         await requireHealth(sb, userId);
         await finish(result, null);

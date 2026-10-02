@@ -7,6 +7,7 @@
 
 import { COACH_KNOWLEDGE } from './knowledge.ts';
 import { AI_SAFETY_RULES } from './ai-safety.ts';
+import type { SystemBlock } from './anthropic.ts';
 
 export const COACH_SYSTEM = `Eres "el sistema" de NIVL: el coach personal de un gladiador, dentro de su móvil. No eres un asistente que responde preguntas. Eres quien manda en su día y quien lleva la cuenta de si cumple.
 
@@ -19,6 +20,8 @@ Vocabulario fijo: misiones (nunca "tareas"), campañas (los proyectos, bloques d
 Das órdenes con números exactos. "25 marcaciones en bloques de 5" y "banca 72,5 kg × 5" son órdenes. "Trabaja las ventas" y "entrena fuerte" son ruido: no las das nunca.
 
 Antes de afirmar o negar que algo pasó o se registró, compruébalo: si el gladiador dice que ha hecho o registrado algo, llama a consultar_dia antes de contestar y cita lo que ves (ejercicio, kg×reps, fecha). Si no aparece, di qué fecha has consultado y pregúntale dónde lo registró; nunca le acuses de no haberlo hecho ni discutas: muestra el dato una vez y sigue. Para series largas o fechas lejanas, consultar_historial. Si no lo puedes verificar, dilo. Un parte inflado es la única falta grave del sistema: hecho es hecho.
+
+No escribas planes, prescripciones, misiones ni eventos que no te hayan pedido en este turno (el encargo de un ritual cuenta como pedido): propónlos en una línea y espera un sí. Tras un "lo he hecho", comprueba, cita y marca; no reprogrames nada.
 
 Cuando falle, la escalada es proporcional y llega hasta la conversación cruda, no hasta la bronca infinita. Si lleva días en silencio, no le sueltes otra lista: pregúntale qué pasa y ofrécele tres puertas — A régimen completo, B mínimo viable, pausa para pensar. Un valle absorbido sin drama es lo que le permite volver sin vergüenza. Volver es la victoria.
 
@@ -96,30 +99,50 @@ export function neutralizarDatos(texto: string): string {
 }
 
 /**
- * `estado` es el volcado del día: perfil, misiones, y los dos estudios. Va
- * aquí, en el sistema, y no pegado al mensaje del usuario.
- *
- * El motivo es de coste medido, y en su día se razonó justo al revés. Colgado
- * del turno, el estado queda DESPUÉS del último punto de caché y se paga
- * entero a precio completo en cada vuelta del bucle de herramientas y en cada
- * turno nuevo: 31.000 tokens frescos cada vez, que era el 90 % de la factura.
- *
- * Puesto aquí funciona porque el estado NO cambia turno a turno: está fechado
- * por día y no lleva reloj, así que solo se invalida cuando cambian tus datos
- * de verdad (completas una misión, entra un movimiento). Mientras hablas
- * seguido, se lee a una décima parte.
+ * La parte FIJA del sistema: voz, doctrina, seguridad y la regla de datos.
+ * Es idéntica byte a byte para todos los usuarios y todos los turnos (nada de
+ * fecha, nombre, perfil ni kind): así la caché que la cubre —junto con las
+ * herramientas, que la API pone delante— la escribe un turno y la leen todos
+ * los demás mientras viva. Lo que cambie por usuario o por día va en la parte
+ * dinámica. Hay un test que lo vigila (ia2_cache_test.ts).
  */
-export function buildSystem(dossier: string, kind: string, estado = '') {
-  const blocks: Array<{ type: 'text'; text: string; cache_control?: { type: 'ephemeral' } }> = [
-    { type: 'text', text: COACH_SYSTEM },
-    // El conocimiento de dominio es estable: entra en la caché junto con la
-    // voz y el dossier, y a partir de la segunda llamada se lee a 0,1×.
-    { type: 'text', text: COACH_KNOWLEDGE },
-    { type: 'text', text: AI_SAFETY_RULES },
-    { type: 'text', text: REGLA_DATOS },
-  ];
+export const SISTEMA_FIJO: readonly string[] = Object.freeze([COACH_SYSTEM, COACH_KNOWLEDGE, AI_SAFETY_RULES, REGLA_DATOS]);
+
+export interface OpcionesSistema {
+  /**
+   * TTL del punto de caché FIJO. Por defecto 5 min. '1h' escribe a 2× (sin
+   * cabecera beta) y solo compensa si entre turnos de TODA la base de usuarios
+   * pasan de 5 a 60 min; con el tráfico medido (un usuario, turnos separados
+   * por horas) sale más caro. Se activa con el secret COACH_CACHE_TTL_FIJO=1h.
+   * Va en el PRIMER punto: la API exige los de 1 h antes que los de 5 min.
+   */
+  ttlFijo?: '1h';
+}
+
+/**
+ * El bloque de sistema en dos escalones de caché.
+ *
+ *   [herramientas] → FIJO (voz + conocimiento + seguridad + datos) ◆ →
+ *   dinámico (dossier + encargo del ritual + estado del día) ◆ → historial ◆
+ *
+ * Antes había un solo punto al final del estado: cuando cambiaba el estado
+ * (una misión hecha, un movimiento nuevo) o caducaban los 5 min, se
+ * reescribían también ~16,6 k fichas fijas (herramientas ~8 k, conocimiento
+ * ~6,7 k, voz ~1,3 k, reglas ~0,7 k) a 1,25×. Con el punto fijo, esa parte se
+ * lee a 0,1× aunque cambie el estado, y la comparten todos los usuarios.
+ *
+ * `estado` (perfil, misiones, estudios) va aquí y no en el turno del usuario:
+ * colgado del turno quedaba detrás del último punto de caché y se pagaba
+ * entero en cada vuelta del bucle de herramientas. Está fechado por día y sin
+ * reloj, así que solo se invalida cuando cambian tus datos de verdad.
+ */
+export function buildSystem(dossier: string, kind: string, estado = '', opciones: OpcionesSistema = {}): SystemBlock[] {
+  const fijo: SystemBlock[] = SISTEMA_FIJO.map((text) => ({ type: 'text', text }));
+  fijo[fijo.length - 1].cache_control = opciones.ttlFijo === '1h' ? { type: 'ephemeral', ttl: '1h' } : { type: 'ephemeral' };
+
+  const dinamico: SystemBlock[] = [];
   if (dossier.trim()) {
-    blocks.push({
+    dinamico.push({
       type: 'text',
       text: `# Tu memoria sobre este gladiador
 
@@ -128,14 +151,16 @@ ${neutralizarDatos(dossier)}
 ${DATOS_CIERRA}`,
     });
   }
+  // El encargo del ritual depende del kind: va detrás del punto fijo para que
+  // el chat y los rituales compartan la misma caché fija.
   const extra = KIND_PROMPTS[kind];
-  if (extra) blocks.push({ type: 'text', text: extra });
-  if (estado.trim()) blocks.push({ type: 'text', text: `${DATOS_ABRE}
+  if (extra) dinamico.push({ type: 'text', text: extra });
+  if (estado.trim()) dinamico.push({ type: 'text', text: `${DATOS_ABRE}
 ${neutralizarDatos(estado)}
 ${DATOS_CIERRA}` });
 
-  // El punto de caché va en el ÚLTIMO bloque: cachea voz, conocimiento,
-  // dossier, instrucción del ritual y estado del día de una vez.
-  blocks[blocks.length - 1].cache_control = { type: 'ephemeral' };
-  return blocks;
+  // Segundo punto: dossier + ritual + estado. Siempre de 5 min (va detrás del
+  // fijo, y un 1 h detrás de un 5 min lo rechaza la API).
+  if (dinamico.length) dinamico[dinamico.length - 1].cache_control = { type: 'ephemeral' };
+  return [...fijo, ...dinamico];
 }
