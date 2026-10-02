@@ -137,3 +137,20 @@ El Chat 1 ya ha aportado su lista mínima (fusionada arriba: A-11, D-01 a D-04 y
 - Los casos W-01, W-02, W-19 y W-20 necesitan una build u OTA que contenga `486b1cb`. En la build 20 fallarían por diseño.
 
 - **A6 y CAP-01 a CAP-05 (Chat 1, guion @8f5cbe4):** se graban y capturan siempre en Perfil → «NIVL Pro», con el paywall candidato del Chat 2 (@b11c2d2). Antes de grabar se hace una comprobación: si sale «Algún plan no está disponible…», es FAIL y no se graba.
+
+## Compras (Chat 2 @464d2a3): PAY-01 a PAY-21
+
+Precondiciones para que cuenten:
+- un binario con el cliente del Chat 2, no una OTA de primer arranque;
+- en el servidor, las funciones de 56eecf3 o posteriores y la 0036 aplicada;
+- en RevenueCat, Restore Behavior = Transfer;
+- en iOS, TestFlight con cuenta sandbox; en Android, pista interna con license tester.
+
+Un mock no acredita una compra.
+
+Prioridad P0: PAY-01, 02, 10, 11, 12 y 20. **PAY-12** (restaurar tras borrar y recrear la cuenta) es obligatorio para el reenvío.
+
+Casos que coinciden con otros de la lista:
+- PAY-01 = O-09/A6;
+- PAY-11 = O-10/A8;
+- PAY-20 = W-21.
