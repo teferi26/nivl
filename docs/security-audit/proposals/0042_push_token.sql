@@ -6,7 +6,7 @@
 -- Para aplicarla: copiar como supabase/migrations/00NN_claim_push_token.sql
 -- (siguiente número libre), añadir su huella en HUELLAS de
 -- scripts/apply-migrations.mjs y aplicar con node scripts/apply-migrations.mjs.
--- Test: docs/security-audit/proposals/a-01_push_token.test.sql
+-- Riesgo residual (P2): quien conozca el token Expo de otro móvil podría reclamarlo; el token solo existe en ese dispositivo.
 --
 -- A-04 (P1, parte servidor): el token push de un móvil quedaba a nombre del
 -- usuario anterior; el upsert del siguiente usuario lo rechaza la RLS de
