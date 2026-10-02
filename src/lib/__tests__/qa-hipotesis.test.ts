@@ -14,7 +14,10 @@ let mockSrv: Servidor;
 jest.mock('../data', () => new Proxy({}, { get: (_t, k: string) => (...a: unknown[]) => mockSrv.data[k]!(...a) }));
 jest.mock('../contract', () => new Proxy({}, { get: (_t, k: string) => (...a: unknown[]) => mockSrv.contract[k]!(...a) }));
 jest.mock('../dayplan', () => new Proxy({}, { get: (_t, k: string) => (...a: unknown[]) => mockSrv.dayplan[k]!(...a) }));
-jest.mock('../supabase', () => ({ supabase: { from: (t: string) => mockSrv.supabase.from(t) } }));
+jest.mock('../supabase', () => ({ supabase: {
+  from: (t: string) => mockSrv.supabase.from(t),
+  rpc: (fn: string, args: Record<string, unknown>) => mockSrv.supabase.rpc(fn, args),
+} }));
 
 
 const HOY = '2026-10-10';
@@ -55,11 +58,9 @@ describe('H3 · dos cierres concurrentes del mismo día', () => {
     expect(mockSrv.profile.xp_agi).toBe(0); // restaura, no premia (invariante 4)
   });
 
-  // Dos dispositivos son dos procesos: el cerrojo del cliente no los ve. Sin
-  // comparar last_day_processed en el servidor, ambos descuentan. Queda como
-  // test.failing hasta que el coordinador integre la RPC con CAS (PROPUESTA
-  // 0035 en docs/qa-audit/PROPUESTA-0035-cierre-atomico.md).
-  test.failing('dos dispositivos con el mismo estado: el servidor aplica un solo cierre', async () => {
+  // Dos dispositivos son dos procesos: el cerrojo del cliente no los ve.
+  // Sin la 0035, el servidor no compara last_day_processed y ambos descuentan.
+  test.failing('dos dispositivos SIN 0035 en el servidor: riesgo abierto mientras no se aplique', async () => {
     ausenciaDeDosDias();
     const visto = { ...mockSrv.profile };
     let otro!: typeof processPendingDays;
@@ -69,6 +70,46 @@ describe('H3 · dos cierres concurrentes del mismo día', () => {
     });
     await Promise.all([processPendingDays(visto, mockSrv.quests), otro(visto, mockSrv.quests)]);
     expect(mockSrv.profile.xp_total).toBe(800);
+  });
+});
+
+describe('H3 con la 0035 (close_day_v2) desplegada', () => {
+  const motores = () => {
+    const m: (typeof processPendingDays)[] = [];
+    for (let i = 0; i < 2; i++) {
+      jest.isolateModules(() => {
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        m.push(require('../engine').processPendingDays);
+      });
+    }
+    return m;
+  };
+
+  test('dos dispositivos con el mismo estado: un solo descuento y una sola recuperación', async () => {
+    ausenciaDeDosDias();
+    mockSrv.conV2 = true;
+    const visto = { ...mockSrv.profile };
+    const [a, b] = motores();
+    const r = await Promise.all([a!(visto, mockSrv.quests), b!(visto, mockSrv.quests)]);
+    expect(mockSrv.profile.xp_total).toBe(800);
+    expect(penalizaciones()).toHaveLength(1);
+    expect(penalizaciones()[0]!.penalty_xp).toBe(200);
+    // El que llega tarde no crea eventos ni enseña aviso de cierre.
+    expect(r.filter((x) => x.result === null)).toHaveLength(1);
+    expect(mockSrv.events.filter((e) => e.type === 'penalty')).toHaveLength(1);
+  });
+
+  test('la recuperación viaja en la misma transacción y se acota a lo descontado', async () => {
+    ausenciaDeDosDias();
+    mockSrv.conV2 = true;
+    mockSrv.profile = { ...mockSrv.profile, xp_total: 120 };
+    mockSrv.fallos.insertQuest = 99; // el insert del cliente ni se intenta
+    const [a] = motores();
+    await a!({ ...mockSrv.profile }, mockSrv.quests);
+    expect(mockSrv.profile.xp_total).toBe(0);
+    expect(penalizaciones()).toHaveLength(1);
+    expect(penalizaciones()[0]!.penalty_xp).toBe(120);
+    expect(mockSrv.llamadas.insert_quest ?? 0).toBe(0);
   });
 });
 

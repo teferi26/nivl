@@ -99,6 +99,47 @@ async function reintentarRecuperaciones(userId: string, today: string): Promise<
   else recuperacionesPendientes.delete(userId);
 }
 
+// close_day_v2 (0035): cierre con compare-and-set sobre last_day_processed y
+// recuperaciones en la misma transacción. Devuelve null si el servidor aún no
+// la tiene (la OTA puede llegar antes que la migración): entonces se usa el
+// cierre de siempre.
+let sinCloseDayV2 = false;
+async function cerrarConV2(a: {
+  expectedLastDay: string | null;
+  lastDay: string;
+  streak: number;
+  perfectStreak: number;
+  stones: number;
+  penaltyXp: number;
+  clearFreeze: boolean;
+  recoveries: { title: string; xp: number; health_data: boolean }[];
+}): Promise<{ applied: boolean; profile: Profile } | null> {
+  if (sinCloseDayV2) return null;
+  const { data, error } = await supabase.rpc('close_day_v2', {
+    p_expected_last_day: a.expectedLastDay,
+    p_last_day: a.lastDay,
+    p_streak: a.streak,
+    p_stones: a.stones,
+    p_penalty_xp: a.penaltyXp,
+    p_clear_freeze: a.clearFreeze,
+    p_perfect_streak: a.perfectStreak,
+    p_recoveries: a.recoveries,
+  });
+  if (error) {
+    // PGRST202: PostgREST no encuentra la función. 42883: Postgres tampoco.
+    if (error.code === 'PGRST202' || error.code === '42883') {
+      sinCloseDayV2 = true;
+      return null;
+    }
+    throw error;
+  }
+  const row = data as { applied?: boolean; profile?: Profile } | null;
+  if (!row || typeof row.applied !== 'boolean' || !row.profile) {
+    throw new Error('Respuesta de cierre incompleta.');
+  }
+  return { applied: row.applied, profile: row.profile };
+}
+
 async function cerrarDias(profile: Profile, quests: Quest[]): Promise<CierreResultado> {
   const today = dateKey();
   await reintentarRecuperaciones(profile.id, today);
@@ -153,33 +194,71 @@ async function cerrarDias(profile: Profile, quests: Quest[]): Promise<CierreResu
   const xpReglas = diasConReglasRotas.reduce((a, d) => a + d.xp, 0);
 
   const levelBefore = levelFromXp(profile.xp_total).level;
+  const calculado = close.penaltyXp + xpReglas;
+  const clearFreeze = !!(profile.freeze_until && profile.freeze_until < today);
 
-  // Un solo viaje atómico: día procesado, racha, piedras y penalización.
-  // La congelación expira sola cuando el último día congelado queda cerrado.
-  const updated = await applyDayCloseRpc({
+  // Las recuperaciones: UNA por misiones y UNA por reglas (seis misiones de
+  // castigo el mismo día no se hacen, se abandonan). Devuelven lo DESCONTADO,
+  // no lo calculado: el servidor no deja bajar de 0, y quien tenía 120 XP y
+  // pierde 200 solo pierde 120 (invariante 2: "exactamente"). Primero las
+  // misiones, luego las reglas. El servidor (0035) vuelve a acotarlo exacto.
+  const estimado = Math.min(calculado, profile.xp_total);
+  const planes: { titulo: string; xp: number; health_data: boolean; deMisiones: boolean }[] = [];
+  if (close.penaltyXp > 0) {
+    planes.push({ titulo: 'Misión de penalización', xp: close.penaltyXp, health_data: false, deMisiones: true });
+  }
+  if (diasConReglasRotas.length > 0) {
+    const ultimo = diasConReglasRotas[diasConReglasRotas.length - 1]!;
+    const cuantas = new Set(diasConReglasRotas.flatMap((d) => d.rotas.map((r) => r.id))).size;
+    planes.push({
+      titulo: cuantas === 1 ? `Consecuencia: ${ultimo.rotas[0]!.consequence}` : `Consecuencia: ${cuantas} reglas rotas`,
+      xp: xpReglas,
+      health_data: diasConReglasRotas.some((d) => d.rotas.some((r) => reglasActivas.some((o) => o.id === r.id && o.health_data))),
+      deMisiones: false,
+    });
+  }
+  const repartir = (total: number) => {
+    let queda = total;
+    return planes.map((pl) => {
+      const xp = Math.min(pl.xp, queda);
+      queda -= xp;
+      return { ...pl, xp };
+    });
+  };
+
+  const v2 = await cerrarConV2({
+    expectedLastDay: profile.last_day_processed,
     lastDay: yesterday,
     streak: close.streak,
     perfectStreak: close.perfectStreak,
     stones: close.stones,
-    penaltyXp: close.penaltyXp + xpReglas,
-    clearFreeze: !!(profile.freeze_until && profile.freeze_until < today),
+    penaltyXp: calculado,
+    clearFreeze,
+    recoveries: repartir(estimado)
+      .filter((pl) => pl.xp > 0)
+      .map((pl) => ({ title: pl.titulo, xp: pl.xp, health_data: pl.health_data })),
   });
+  // Otro cierre (otro dispositivo) se adelantó: ese ya descontó y creó la
+  // recuperación. Aquí no se toca nada (QA Chat 5, H3 entre dispositivos).
+  if (v2 && !v2.applied) return { profile: v2.profile, result: null };
+
+  // Sin 0035 en el servidor: el cierre de siempre, y la recuperación aparte.
+  const updated =
+    v2?.profile ??
+    (await applyDayCloseRpc({
+      lastDay: yesterday,
+      streak: close.streak,
+      perfectStreak: close.perfectStreak,
+      stones: close.stones,
+      penaltyXp: calculado,
+      clearFreeze,
+    }));
   const levelAfter = levelFromXp(updated.xp_total).level;
+  const descontado = updated.xp_total > 0 ? calculado : estimado;
+  const reparto = repartir(descontado);
+  const recuperaMisiones = reparto.find((pl) => pl.deMisiones)?.xp ?? 0;
 
-  // El servidor no deja bajar de 0 (greatest(0, …)): quien tenía 120 XP y
-  // pierde 200 solo pierde 120. La recuperación devuelve lo DESCONTADO, no lo
-  // calculado, o volver de una ausencia larga regalaría XP (invariante 2:
-  // "exactamente"). Primero las misiones, luego las reglas.
-  const calculado = close.penaltyXp + xpReglas;
-  const descontado = updated.xp_total > 0 ? calculado : Math.min(calculado, profile.xp_total);
-  const recuperaMisiones = Math.min(close.penaltyXp, descontado);
-  const recuperaReglas = Math.min(xpReglas, descontado - recuperaMisiones);
-
-  const recuperaciones: Recuperacion[] = [];
-
-  // Las roturas quedan registradas una a una (para el histórico de cada regla),
-  // pero la consecuencia es UNA sola: seis misiones de castigo el mismo día no
-  // se hacen, se abandonan.
+  // Las roturas quedan registradas una a una (para el histórico de cada regla).
   if (diasConReglasRotas.length > 0) {
     const roturas = diasConReglasRotas.flatMap((d) =>
       d.rotas.map((r) => ({ user_id: profile.id, rule_id: r.id, date: d.date })),
@@ -187,49 +266,30 @@ async function cerrarDias(profile: Profile, quests: Quest[]): Promise<CierreResu
     await supabase.from('rule_breaks').insert(roturas).then(undefined, () => {
       /* Que falle el histórico no puede tumbar el cierre del día. */
     });
-
-    const ultimo = diasConReglasRotas[diasConReglasRotas.length - 1]!;
-    const cuantas = new Set(diasConReglasRotas.flatMap((d) => d.rotas.map((r) => r.id))).size;
-    if (recuperaReglas > 0) recuperaciones.push({
-      id: idRecuperacion(),
-      health_data: diasConReglasRotas.some(d => d.rotas.some(r => reglasActivas.some(original => original.id === r.id && original.health_data))),
-      user_id: profile.id,
-      title:
-        cuantas === 1
-          ? `Consecuencia: ${ultimo.rotas[0]!.consequence}`
-          : `Consecuencia: ${cuantas} reglas rotas`,
-      stat: 'AGI',
-      difficulty: 'media',
-      days_of_week: [],
-      requires_evidence: false,
-      is_penalty: true,
-      penalty_date: today,
-      penalty_xp: recuperaReglas,
-    });
   }
 
-  if (recuperaMisiones > 0) {
-    recuperaciones.push({
-      id: idRecuperacion(),
-      user_id: profile.id,
-      title: 'Misión de penalización',
-      stat: 'AGI',
-      difficulty: 'media',
-      days_of_week: [],
-      requires_evidence: false,
-      is_penalty: true,
-      penalty_date: today,
-      penalty_xp: recuperaMisiones,
-    });
-  }
-
-  // El XP ya está descontado: cada recuperación tiene que existir o el fallo
-  // tiene que verse (invariante 2). Lo atómico de verdad es crearlas en la
-  // misma transacción que el cierre (PROPUESTA 0035); mientras, se reintenta,
-  // se apunta en el evento y se avisa.
+  // Camino antiguo: el XP ya está descontado, así que cada recuperación tiene
+  // que existir o el fallo tiene que verse (invariante 2). Se reintenta, se
+  // apunta en el evento y se avisa. Con 0035 ya viajan en la misma transacción.
   const fallidas: Recuperacion[] = [];
-  for (const fila of recuperaciones) {
-    if (!(await insertarRecuperacion(fila))) fallidas.push(fila);
+  if (!v2) {
+    for (const pl of reparto) {
+      if (pl.xp <= 0) continue;
+      const fila: Recuperacion = {
+        id: idRecuperacion(),
+        user_id: profile.id,
+        title: pl.titulo,
+        stat: 'AGI',
+        difficulty: 'media',
+        days_of_week: [],
+        requires_evidence: false,
+        is_penalty: true,
+        penalty_date: today,
+        penalty_xp: pl.xp,
+        ...(pl.health_data ? { health_data: true } : {}),
+      };
+      if (!(await insertarRecuperacion(fila))) fallidas.push(fila);
+    }
   }
   if (fallidas.length) {
     recuperacionesPendientes.set(profile.id, [...(recuperacionesPendientes.get(profile.id) ?? []), ...fallidas]);
@@ -240,7 +300,7 @@ async function cerrarDias(profile: Profile, quests: Quest[]): Promise<CierreResu
     // Lo descontado de verdad, no lo calculado (invariante 6: auditable).
     await insertEvent(profile.id, 'penalty', { xp: recuperaMisiones, missed: close.missedTitles,
       health_data: quests.some(q => q.health_data && close.missedTitles.includes(q.title)),
-      ...(recuperacionFallida ? { recuperacion: 'fallida' } : {}),
+      recuperacion: recuperacionFallida ? 'fallida' : 'ok',
     }).catch(() => {
       /* el aviso de abajo sigue saliendo */
     });

@@ -29,6 +29,8 @@ export interface Fallos {
 }
 
 export interface Servidor {
+  /** ¿Está desplegada la 0035 (close_day_v2)? Si no, PGRST202 como hoy. */
+  conV2: boolean;
   profile: Profile;
   quests: Quest[];
   completions: Completion[];
@@ -38,7 +40,7 @@ export interface Servidor {
   data: Record<string, (...args: any[]) => any>;
   contract: Record<string, (...args: any[]) => any>;
   dayplan: Record<string, (...args: any[]) => any>;
-  supabase: { from: (t: string) => any };
+  supabase: { from: (t: string) => any; rpc: (fn: string, args: Record<string, any>) => Promise<any> };
 }
 
 export function perfil(over: Partial<Profile> = {}): Profile {
@@ -70,6 +72,7 @@ const COLUMNA: Record<string, keyof Profile> = {
 export function crearServidor(): Servidor {
   let seq = 0;
   const s = {
+    conV2: false,
     profile: perfil(),
     quests: [] as Quest[],
     completions: [] as Completion[],
@@ -163,7 +166,44 @@ export function crearServidor(): Servidor {
     }
     return { data: null, error: null };
   };
+  // close_day_v2 de la PROPUESTA 0035 (Chat 3 @ 99a1fc3): CAS sobre
+  // last_day_processed y recuperaciones en la misma transacción, acotadas a lo
+  // realmente descontado.
+  const closeDayV2 = async (a: Record<string, any>) => {
+    cuenta('close_day_v2');
+    await tick();
+    if (!s.conV2) return { data: null, error: { code: 'PGRST202', message: 'Could not find the function' } };
+    if (s.profile.last_day_processed !== a.p_expected_last_day) {
+      return { data: { applied: false, recoveries: 0, profile: { ...s.profile } }, error: null };
+    }
+    // Sin await entre la comparación y la escritura: es el advisory lock.
+    const antes = s.profile.xp_total;
+    const p = s.profile;
+    s.profile = { ...p, last_day_processed: a.p_last_day, streak_days: a.p_streak ?? p.streak_days,
+      perfect_streak_days: a.p_perfect_streak ?? p.perfect_streak_days, protection_stones: a.p_stones ?? p.protection_stones,
+      xp_total: Math.max(0, p.xp_total - (a.p_penalty_xp ?? 0)),
+      freeze_until: a.p_clear_freeze ? null : p.freeze_until, freeze_reason: a.p_clear_freeze ? null : p.freeze_reason };
+    let credito = antes - s.profile.xp_total;
+    let creadas = 0;
+    for (const r of a.p_recoveries as { title: string; xp: number; health_data: boolean }[]) {
+      const xp = Math.min(r.xp, credito);
+      credito -= xp;
+      if (xp <= 0) continue;
+      const [y, m, d] = (a.p_last_day as string).split('-').map(Number);
+      const dt = new Date(y!, m! - 1, d! + 1);
+      const hoy = `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`;
+      s.quests.push(mision({ id: `pq${++seq}`, title: r.title, stat: 'AGI', days_of_week: [], is_penalty: true,
+        penalty_date: hoy, penalty_xp: xp, health_data: r.health_data }));
+      creadas += 1;
+    }
+    return { data: { applied: true, recoveries: creadas, profile: { ...s.profile } }, error: null };
+  };
+
   s.supabase = {
+    async rpc(fn: string, args: Record<string, any>) {
+      if (fn === 'close_day_v2') return closeDayV2(args);
+      return { data: null, error: { code: 'PGRST202', message: `Could not find ${fn}` } };
+    },
     from(tabla: string) {
       return {
         insert(fila: any) {
