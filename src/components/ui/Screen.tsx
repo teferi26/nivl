@@ -22,8 +22,8 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ink, space, stroke } from '@/design/tokens';
-import { ANCHO_ASIDE } from '@/design/responsive';
-import { useSizeClass } from '@/design/useSizeClass';
+import { ANCHO_ASIDE, cabeAside, marcoDe } from '@/design/responsive';
+import { useAnchoUtil } from '@/design/useSizeClass';
 import { colors, fonts } from '@/lib/theme';
 
 /**
@@ -50,9 +50,10 @@ interface ScreenProps extends Omit<ScrollViewProps, 'style' | 'contentContainerS
   /** Se aplica al final: gana a los márgenes del marco. */
   contentStyle?: StyleProp<ViewStyle>;
   /**
-   * Panel contextual (coach, rango, amigos). Solo se pinta en `expanded`, en
-   * una columna de 320 a la derecha con un hairline a la izquierda. En
-   * `compact` y `medium` no existe: lo esencial tiene que estar en el cuerpo.
+   * Panel contextual (coach, rango, amigos). Solo se pinta en `expanded` y si
+   * al contenido le quedan al menos 560 + 2·32 tras la columna de 320 (con un
+   * hairline a la izquierda). Si no cabe, o en `compact` y `medium`, no
+   * existe: lo esencial tiene que estar en el cuerpo.
    */
   aside?: ReactNode;
   /**
@@ -65,15 +66,24 @@ interface ScreenProps extends Omit<ScrollViewProps, 'style' | 'contentContainerS
   children: ReactNode;
 }
 
+/** Margen lateral cuando la pantalla traía panel pero no le cabe. */
+const MARGEN_SIN_PANEL = space.s8;
+
 /**
  * La pantalla se recoloca en caliente (rotación, ventanas de iPadOS, la web):
  * el margen y el ancho máximo salen de la clase de tamaño de `useSizeClass`.
  * El contenido es una columna centrada de `maxContent` más sus márgenes.
  */
 export function Screen({ plain, wide, refreshing, onRefresh, style, contentStyle, aside, overlay, children, ...rest }: ScreenProps) {
-  const { sizeClass, gutter, maxContent } = useSizeClass();
+  // El ancho útil es el hueco real (dentro de las pestañas, la ventana menos el
+  // raíl o la barra lateral: lo publica (tabs)/_layout.tsx en TopeAncho).
+  const ancho = useAnchoUtil();
+  const marco = marcoDe(ancho);
+  const conAside = aside != null && cabeAside(ancho);
+  // Si había panel pero no cabe, el contenido usa el margen medio de 32.
+  const gutter = aside != null && !conAside && marco.sizeClass === 'expanded' ? MARGEN_SIN_PANEL : marco.gutter;
+  const { maxContent } = marco;
   const columna: ViewStyle = { width: '100%', maxWidth: maxContent + 2 * gutter, alignSelf: 'center' };
-  const conAside = sizeClass === 'expanded' && aside != null;
 
   // `plain` no recibe margen lateral: esas pantallas (coach, diario) ya llevan
   // el suyo y se duplicaría. Sí se centran y se acotan.
@@ -112,6 +122,9 @@ export function Screen({ plain, wide, refreshing, onRefresh, style, contentStyle
       ) : (
         cuerpo
       )}
+      {/* El overlay es hijo absoluto del SafeAreaView: con `top` explícito se
+          mide desde el borde del padding (Yoga y la web), no desde debajo de la
+          safe area. Por eso Toast suma él el inset superior. */}
       {overlay}
     </SafeAreaView>
   );

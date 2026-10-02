@@ -82,18 +82,18 @@ Se conserva la API del kit actual cuando se puede (para que la migración sea me
 
 | Componente | Cambio v2 |
 |---|---|
-| `Screen` | Recibe la clase de tamaño. En `medium`/`expanded` coloca el raíl o la barra lateral y el panel contextual. Margen según la clase. |
+| `Screen` | Se mide con el **hueco real**, no con la ventana: dentro de las pestañas, `(tabs)/_layout.tsx` publica en `TopeAncho` la ventana menos el raíl (72) o la barra lateral (240) y el inset izquierdo (`huecoContenido` en `responsive.ts`). A 1024 el contenido mide 784 (`medium`). El panel contextual (320) solo se pinta si el hueco es `expanded` y le quedan al contenido 560 + 2·32 (`cabeAside`); si no, se oculta y el margen es 32. |
 | `ScreenHeader` | Título `title`, eyebrow `label`, acción. En `expanded` el título se alinea con la retícula de contenido. |
-| `Section` | El rótulo `label` va con una regla de 1 px que llega al borde. Sin `tone` de color: `tone` pasa a `default` · `alerta` (rótulo con trama) · `logro` (rótulo con grano). |
-| `Card` | Variantes `surface` (ink1), `outline` (hairline ink3), `inverse` (blanco con texto negro: solo una por pantalla), `alerta` (borde con trama) y `logro` (fondo con grano). |
+| `Section` | El rótulo `label` va con una regla de 1 px que llega al borde. Sin `tone` de color: `tone` pasa a `default` · `alerta` (la regla es una banda de trama de 6) · `logro` (banda de grano). Acepta los valores viejos: `red` → `alerta`, `gold` → `logro`, el resto → `default`. |
+| `Card` | Variantes `surface` (ink1), `outline` (hairline ink3), `inverse` (blanco con texto negro: solo una por pantalla; el contenido lo sabe por `SuperficieContext`), `alerta` (borde de trama ink6 de 3 alrededor de una placa ink1) y `logro` (marco de grano ink6 de 6 alrededor de una placa ink1: el texto nunca va encima de la textura). Trama y grano en ink6 (6,25:1); grano r 0,7 cada 4. |
 | `Row` / `Check` | `Check` hecho = círculo blanco sólido con marca negra. Pendiente = aro ink4. Bloqueado = aro con trama y candado. |
-| `Button` (antes `SystemButton`) | `primary` (blanco sólido), `secondary` (contorno blanco 1,5), `ghost`, `danger` (contorno con trama y texto blanco; el peligro es la trama, no el rojo). Alto 52 (lg), 44 (md), 36 (sm). |
-| `Chip` / `Tag` | Chip seleccionado = invertido. `Tag` = contorno; `Tag tone="alerta"` = trama. |
+| `Button` (antes `SystemButton`) | `primary` (blanco sólido), `secondary` (contorno blanco 1,5), `ghost`, `danger` (contorno con trama y texto blanco; el peligro es la trama, no el rojo). Alto 52 (lg), 44 (md), 36 (sm). Rótulo: Outfit 700 en mayúsculas, 15/2,5 · 14/2 · 12/1,5 (tamaño/tracking en lg · md · sm), la única excepción a la escala `type`. Desactivado: sin opacidad, borde ink4 y texto ink6. |
+| `Chip` / `Tag` | Chip seleccionado = invertido. `Tag` = contorno; `Tag tone="alerta"` = pastilla con borde de trama y `tone="logro"` = con borde de grano, ambas con el texto `micro` ink9 sobre una placa ink0. |
 | `Stat`, `ProgressRing`, `XPBar` | Barras con relleno blanco sobre ink4. Los segmentos se marcan con un corte de 2 px en negro. |
 | `EmptyState`, `Skeleton` | Esqueleto ink2↔ink3 que respira (se para con «reducir movimiento»). |
-| `Sheet` (nuevo) | La hoja inferior única (sustituye a los `Modal` sueltos): asa, eyebrow, título, contenido con scroll, pie fijo. Safe area real. Centrada en tablet. |
+| `Sheet` (nuevo) | La hoja inferior única (sustituye a los `Modal` sueltos): asa, eyebrow, título, botón «Cerrar» de 44, contenido con scroll, pie fijo. Safe area real en el móvil; en tablet, centrada y con pie de 16 (sin inset). Teclado: `padding` en iOS, `height` en Android. El gesto de escape del lector de pantalla la cierra. |
 | `Avatar` (nuevo, sustituye a `Hexagon`) | Círculo con el **marco de rango** (§7). |
-| `Toast` (nuevo, sustituye a `XpToast`) | Pastilla invertida arriba: «+50 XP · FUE». Se anuncia al lector. |
+| `Toast` (nuevo, sustituye a `XpToast`) | Pastilla invertida arriba: «+50 XP · FUE». Máx. 90 % de ancho y 2 líneas. Se anuncia al lector una vez (`announceForAccessibility`, sin región viva). |
 | `Ceremony` (nuevo) | Pantalla completa de subida de nivel y de rango (§8). |
 | `ShareCard` (nuevo, con el Chat 1) | Plantillas 9:16 y 4:5 (§10). |
 | `CoachMark` (nuevo) | La galea del coach a 16, 24 y 48. |
@@ -127,6 +127,15 @@ Los datos son del **Chat 5**: `src/lib/progression.ts` y `docs/game-v2/CONTRATO-
 - Las celebraciones vienen de `colaDeCelebracion()`: una principal y un resumen, nunca una cascada.
 - El cliente guarda las claves vistas por usuario y expone `celebrando`; con ella el Chat 2 sabe que no debe abrir la oferta encima de una ceremonia.
 - Coronas y marcos son SVG de un solo trazo blanco en `src/components/ui/Crown.tsx` y `Avatar.tsx`.
+
+**Medidas del marco y la corona** (`Avatar.tsx`):
+
+- Remaches sobre el aro **exterior**, r = max(1,5; tamaño/32), blancos con filo negro de 0,75. En S son rombos.
+- Ramitas de laurel en el arco inferior, entre remaches: 1 par en `laurel_simple` (B), 2 en `laurel_doble` (A) y `laurel_corona` (S).
+- S lleva además un tercer aro hairline blanco por dentro: A y S se distinguen sin el brillo.
+- Corona: lado = round(tamaño × 0,5), centrada, con la línea base (y = 20 de la retícula de 24) apoyada 1,5 pt dentro del aro. No se pinta por debajo de 48 pt de avatar. Su altura por encima del círculo la da `alturaCorona(tamaño, rango)` y el Avatar la reserva como `paddingTop`.
+- Grosor del trazo de la corona en unidades de la retícula: 2 (≤ 16), 1,5 (≤ 24), 1,25 (≤ 48), 1 (más grande).
+- El `accessibilityLabel` es «{nombre}, rango {R}, {título}».
 
 ## 8. Movimiento
 

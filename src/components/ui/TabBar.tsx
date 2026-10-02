@@ -16,7 +16,10 @@ import { navItemDe, pulsarDestino } from './navItems';
 export function TabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
   return (
-    <View style={[styles.bar, { paddingBottom: Math.max(insets.bottom, Platform.OS === 'web' ? 8 : 6) }]}>
+    <View
+      accessibilityRole="tablist"
+      style={[styles.bar, { paddingBottom: Math.max(insets.bottom, Platform.OS === 'web' ? 8 : 6) }]}
+    >
       {state.routes.map((route, index) => {
         const focused = state.index === index;
         const meta = navItemDe(route, descriptors);
@@ -33,7 +36,9 @@ export function TabBar({ state, descriptors, navigation }: BottomTabBarProps) {
           >
             <View style={[styles.indicator, focused && styles.indicatorOn]} />
             <Ionicons name={focused ? meta.on : meta.off} size={21} color={focused ? colors.accent : colors.textFaint} />
-            <Text style={[styles.label, focused && styles.labelOn]} numberOfLines={1}>
+            {/* La barra no crece con el texto: con tamaño dinámico alto, seis
+                rótulos no caben en 375. El nombre completo va en el label. */}
+            <Text style={[styles.label, focused && styles.labelOn]} numberOfLines={1} maxFontSizeMultiplier={1.2}>
               {label}
             </Text>
           </Pressable>

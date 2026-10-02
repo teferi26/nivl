@@ -6,9 +6,10 @@
 //   · inverse → blanco con texto negro: lo activo o lo hecho. UNA por pantalla.
 //               Publica SuperficieContext = 'inverse' para que el contenido
 //               sepa que tiene que pintarse en negro.
-//   · alerta  → borde rayado (trama) de 3 pt alrededor de una superficie ink1.
-//               Sustituye al rojo.
-//   · logro   → grano sobre ink1. Sustituye al oro.
+//   · alerta  → borde rayado (trama ink6, 6,25:1) de 3 pt alrededor de una
+//               superficie ink1. Sustituye al rojo.
+//   · logro   → marco de grano (ink6) de 6 pt alrededor de una placa ink1: el
+//               grano se ve como marco y el texto se lee limpio. Sustituye al oro.
 // Con `onPress` responde al dedo encogiéndose (PressScale).
 
 import { createContext, type ReactNode } from 'react';
@@ -59,6 +60,9 @@ export function Card({
 }: Props) {
   const v = variant === 'raised' ? 'surface' : variant;
   const alerta = v === 'alerta';
+  const logro = v === 'logro';
+  // Las dos texturas son marco: el relleno va en la placa de dentro.
+  const enMarco = alerta || logro;
   const base = [
     styles.card,
     v === 'surface' && styles.surface,
@@ -66,22 +70,22 @@ export function Card({
     v === 'inverse' && styles.inverse,
     v === 'tinted' && styles.tinted,
     alerta && styles.alerta,
-    v === 'logro' && styles.logro,
+    logro && styles.logro,
     accent && v !== 'outline' ? { borderLeftWidth: 2, borderLeftColor: accent } : null,
-    // En alerta el relleno va dentro, para que la trama quede como un borde.
-    padded && !alerta && styles.padded,
+    // En alerta y logro el relleno va dentro, para que la textura quede como un borde.
+    padded && !enMarco && styles.padded,
     style,
   ];
 
   const contenido = alerta ? (
     <>
-      <Trama />
+      <Trama color={ink.ink6} />
       <View style={[styles.alertaDentro, padded && styles.padded]}>{children}</View>
     </>
-  ) : v === 'logro' ? (
+  ) : logro ? (
     <>
       <Grano />
-      {children}
+      <View style={[styles.logroDentro, padded && styles.padded]}>{children}</View>
     </>
   ) : (
     children
@@ -116,6 +120,7 @@ const styles = StyleSheet.create({
   tinted: { backgroundColor: ink.ink3 },
   alerta: { backgroundColor: ink.ink0, overflow: 'hidden' },
   alertaDentro: { margin: 3, backgroundColor: ink.ink1 },
-  logro: { backgroundColor: ink.ink1, overflow: 'hidden' },
+  logro: { backgroundColor: ink.ink0, overflow: 'hidden' },
+  logroDentro: { margin: 6, backgroundColor: ink.ink1 },
   padded: { padding: 16 },
 });

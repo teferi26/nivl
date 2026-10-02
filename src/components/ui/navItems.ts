@@ -5,7 +5,7 @@
 
 import type Ionicons from '@expo/vector-icons/Ionicons';
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
-import * as Haptics from 'expo-haptics';
+import { vibrar } from '@/design/haptics';
 
 type Icon = keyof typeof Ionicons.glyphMap;
 
@@ -35,12 +35,13 @@ export function navItemDe(route: Route, descriptors: BottomTabBarProps['descript
 
 /**
  * Pulsar un destino: emite `tabPress` (para que una pantalla pueda impedirlo o
- * volver arriba) y, si no está activo, vibra y navega.
+ * volver arriba) y, si no está activo, vibra (mapa único de SISTEMA §9, que
+ * respeta el ajuste de Perfil) y navega.
  */
 export function pulsarDestino(navigation: BottomTabBarProps['navigation'], route: Route, focused: boolean): void {
   const event = navigation.emit({ type: 'tabPress', target: route.key, canPreventDefault: true });
   if (!focused && !event.defaultPrevented) {
-    Haptics.selectionAsync().catch(() => {});
+    vibrar('seleccion');
     navigation.navigate(route.name);
   }
 }
