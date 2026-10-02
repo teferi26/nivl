@@ -41,6 +41,7 @@ import { fijarQuieto } from '@/components/arena/quieto';
 import { DEMO as demoAmigos } from '@/components/amigos/demo';
 import { DEMO as demoCampanas } from '@/components/campanas/demo';
 import { DEMO as demoCoach } from '@/components/coach/demo';
+import { DEMO as demoFotos } from '@/components/fotos/demo';
 import { DEMO as demoHabitos } from '@/components/habitos/demo';
 import { DEMO as demoHoy } from '@/components/hoy/demo';
 import { DEMO as demoOnboarding } from '@/components/onboarding/demo';
@@ -58,6 +59,7 @@ const DEMOS: Record<IdPantalla, DemoPantalla | null> = {
   onboarding: demoOnboarding,
   habitos: demoHabitos,
   campanas: demoCampanas,
+  fotos: demoFotos,
 };
 
 type IdPagina = 'arena' | IdPantalla;

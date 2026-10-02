@@ -37,6 +37,7 @@ import { avisar, confirmar } from '@/components/ui/confirmar';
 import { volver } from '@/components/ui/Screen';
 import { useAuth } from '@/lib/auth';
 import { HealthConsentNotice, useHealthConsent } from '@/components/ConsentimientoSalud';
+import { FilaFotosAvances } from '@/components/fotos/FilaFotosAvances';
 import { ensureProfile } from '@/lib/data';
 import { dateKey } from '@/lib/dates';
 import { awardXp } from '@/lib/engine';
@@ -295,6 +296,7 @@ export default function Avances() {
               </View>
             ) : null}
           </Card>
+          <FilaFotosAvances />
         </FadeIn> : null}
 
         <FadeIn index={2}>

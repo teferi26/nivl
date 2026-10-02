@@ -6,7 +6,7 @@
 
 import type { ReactElement } from 'react';
 
-export type IdPantalla = 'hoy' | 'coach' | 'perfil' | 'amigos' | 'onboarding' | 'habitos' | 'campanas';
+export type IdPantalla = 'hoy' | 'coach' | 'perfil' | 'amigos' | 'onboarding' | 'habitos' | 'campanas' | 'fotos';
 
 export interface EstadoDemo {
   /** Va en la URL: /kit/pantallas?pantalla=hoy&estado=<id>. */
@@ -31,4 +31,5 @@ export const PANTALLAS_DEMO: { id: IdPantalla; titulo: string }[] = [
   { id: 'onboarding', titulo: 'Onboarding' },
   { id: 'habitos', titulo: 'Hábitos' },
   { id: 'campanas', titulo: 'Campañas' },
+  { id: 'fotos', titulo: 'Fotos' },
 ];
