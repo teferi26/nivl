@@ -93,14 +93,14 @@ Servidor (Edge Functions):
 - **Dónde:** `supabase/migrations/0027_tienda.sql:28,110`: tabla sin FK, sin purga, con el `payload` completo (aliases, `original_app_user_id`, `subscriber_attributes`, `transferred_*`).
 - **Reproducción:** R1, «Qué queda con el uuid de A». En producción hay 2 filas, las 2 huérfanas (solo se contaron).
 - **Impacto:** el borrado no es completo (RGPD art. 17) y contradice la política («suprime los datos de uso»).
-- **Fix (propuesta, NO aplicada):** `proposals/b-store-events-seudonimizar.sql`.
+- **Fix (propuesta, NO aplicada):** `proposals/0039_store_events_seudonimizar.sql`.
   - Se **redacta, no se borra**: el `id` es la clave de idempotencia de `apply_store_event` y un reenvío reprocesaría un reembolso.
   - `payload → {id, type, redacted:true}`, `app_user_id → null`, `note='redactado por borrado'`.
   - Se ejecuta en un trigger AFTER DELETE de `profiles`: corre en la misma transacción que la cascada de Auth, así que es atómico.
   - Un trigger BEFORE INSERT redacta los eventos tardíos de un uuid que ya no existe.
   - Un `update` final limpia las filas huérfanas que ya hay.
   - Columnas verificadas en remoto.
-- **Test:** `b-store-events-seudonimizar.test.sql`, ejecutado en remoto con ROLLBACK:
+- **Test:** `0039_store_events_seudonimizar.test.sql`, ejecutado en remoto con ROLLBACK:
   - 0 filas mencionan a G tras borrarlo.
   - Se conservan id, type, environment y received_at.
   - El TRANSFER que lo menciona también queda redactado.
@@ -125,11 +125,11 @@ Servidor (Edge Functions):
 - **Dónde:** `export_my_data` (0030:642-660) y `src/lib/exporter.ts:10-64`.
 - **Reproducción:** R3. Fallaba antes; pasa con la propuesta.
 - **Impacto:** acceso y portabilidad incompletos (RGPD arts. 15 y 20): suscripción, consumo de IA, amistades, denuncias, ventas, token push, confirmación de edad…
-- **Fix (propuesta, NO aplicada):** `proposals/b-export-completo.sql`.
+- **Fix (propuesta, NO aplicada):** `proposals/0040_export_completo.sql`.
   - v3, con la misma firma, solo **añade** claves: compatible con los binarios instalados.
   - De terceros solo exporta el hecho (rol, fecha, estado), nunca el uuid de la otra persona.
   - Añade `storage_objects` (bucket, ruta, tamaño, fecha).
-  - Test en `b-export-completo.test.sql`.
+  - Test en `0040_export_completo.test.sql`.
 - **Despliegue:** solo la migración. Los bytes de las fotos → DEPENDENCIA de UI (abajo).
 
 ### P1-4 · «Exportar mis datos» no funcionaba en web — CORREGIDO
@@ -241,7 +241,7 @@ Contraste de `nivl-web/privacidad.html` (v1.2, 29-09-2026) y `terminos.html` (so
 - `src/lib/account.ts` y `src/lib/__tests__/account.test.ts`.
 - `src/lib/exporter.ts` y `src/lib/__tests__/sec-priv-exporter.test.ts` (nuevo).
 - `docs/security-audit/{b-privacidad-borrado.md, evidencia-app-privacy.md}`.
-- `docs/security-audit/proposals/b-export-completo{.sql,.test.sql}` y `b-store-events-seudonimizar{.sql,.test.sql}`.
+- `docs/security-audit/proposals/0040_export_completo{.sql,.test.sql}` y `0039_store_events_seudonimizar{.sql,.test.sql}`.
 
 ## Orden de despliegue propuesto
 

@@ -1,3 +1,7 @@
+-- 0040_export_completo · exportación completa (RGPD arts. 15 y 20) (Chat 3 · Seguridad; número asignado por el coordinador 02/10/2026).
+-- Huella: coalesce(obj_description('public.export_my_data()'::regprocedure, 'pg_proc') like '%nivl:export-completo%', false)
+-- Test: 0040_export_completo.test.sql (ejecutar en una transacción que se revierte).
+--
 -- PROPUESTA (Chat 3 · b) — NO aplicada. El número final lo asigna quien la integre.
 -- Derecho de acceso (RGPD art. 15) y portabilidad (art. 20): export_my_data
 -- (0030) omite 17 tablas con datos de la persona y no dice qué fotos existen.
@@ -24,7 +28,8 @@ begin
     'nutrition_targets','nutrition_logs','training_prescriptions','money_accounts','transactions','category_rules',
     'budgets','money_plan','quest_photos','recaps','rule_checks','ai_consents','health_consents','health_state','health_erasure_jobs',
     'age_confirmations','subscriptions','coach_runs','oracle_usage','push_tokens','social_profile_reviews',
-    'social_avatar_paths','elite_group_requests','store_reconciliation','account_erasure_jobs','friend_request_log'] loop
+    'social_avatar_paths','elite_group_requests','store_reconciliation','account_erasure_jobs','friend_request_log',
+    'recovery_credits'] loop
     execute format('select coalesce(jsonb_agg(to_jsonb(r)),''[]''::jsonb) from public.%I r where %I=$1',
       t,case when t='profiles' then 'id' else 'user_id' end) into rows using u;
     result:=result||jsonb_build_object(t,rows);

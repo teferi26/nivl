@@ -74,5 +74,5 @@ Notas para el Chat 1:
 
 ## 4. Lo que hace falta para que todo esto siga siendo cierto
 - El cambio a Supabase Auth propio tiene que salir antes del envío (ver el aviso de arriba).
-- Hay que aplicar `proposals/b-store-events-seudonimizar.sql`. Si no, `store_events` guarda el uuid y el payload de RevenueCat después del borrado.
+- Hay que aplicar `proposals/0039_store_events_seudonimizar.sql`. Si no, `store_events` guarda el uuid y el payload de RevenueCat después del borrado.
 - Configurar `REVENUECAT_API_KEY` (la secreta `sk_…`) en las Edge Functions para que el borrado de cuenta elimine también el cliente en RevenueCat (`_shared/account-erasure.ts`). Sin ella, el borrado avisa y continúa: **NO PROBADO en producción**.

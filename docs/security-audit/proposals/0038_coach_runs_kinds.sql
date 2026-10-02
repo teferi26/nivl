@@ -1,3 +1,7 @@
+-- 0038_coach_runs_kinds · kinds 'oracle' y 'titular' en el libro de gasto de IA (Chat 3 · Seguridad; número asignado por el coordinador 02/10/2026).
+-- Huella: pg_get_constraintdef((select oid from pg_constraint where conname='coach_runs_kind_check' and conrelid='public.coach_runs'::regclass)) like '%titular%'
+-- Test: 0038_coach_runs_kinds.test.sql (ejecutar en una transacción que se revierte).
+--
 -- c-01 · El libro de gasto de la IA admite el Oráculo y el titular del push.
 --
 -- Por qué: coach_runs es lo único que suma ai_state (lo gastado del mes) y su

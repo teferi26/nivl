@@ -1,3 +1,7 @@
+-- 0039_store_events_seudonimizar · seudonimizar store_events al borrar la cuenta (Chat 3 · Seguridad; número asignado por el coordinador 02/10/2026).
+-- Huella: to_regprocedure('public.store_events_redact(text)') is not null
+-- Test: 0039_store_events_seudonimizar.test.sql (ejecutar en una transacción que se revierte).
+--
 -- PROPUESTA (Chat 3 · b) — NO aplicada. El número final lo asigna quien la integre.
 -- Problema (P1): store_events (0027) guarda app_user_id = uuid de la cuenta y el
 -- payload COMPLETO de RevenueCat (aliases, original_app_user_id, atributos como

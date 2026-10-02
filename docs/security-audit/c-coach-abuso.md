@@ -18,7 +18,7 @@ Comprobaciones en remoto (proyecto `dueyufxxkiixdxighpaz`) con el ayudante de so
 - **P0-1.** Nueva clase `Gasto` (`coach/guard.ts`). Suma el uso en cuanto el proveedor cobra, dentro de la operación protegida (`handler.ts:434/437`), y `finish` apunta siempre lo gastado de verdad.
 - **P0-1, cortes a mitad de stream.** `LlamadaFallida` (`anthropic.ts` y `openai.ts`) lleva lo consumido aunque el stream se corte.
 - **P0-2.** El Oráculo pasa por `ai_begin_turn` / `ai_end_turn`, que hacen de cerrojo por usuario y por eso serializan el cupo. Apunta su coste con `kind 'oracle'` (`oracle/handler.ts:118-138, 240`).
-- **Dependencia.** El apunte `oracle`/`titular` necesita **`proposals/c-01_coach_runs_kinds.sql`**: hoy el CHECK lo rechaza (23514, comprobado). El cerrojo y el cupo ya funcionan sin la migración.
+- **Dependencia.** El apunte `oracle`/`titular` necesita **`proposals/0038_coach_runs_kinds.sql`**: hoy el CHECK lo rechaza (23514, comprobado). El cerrojo y el cupo ya funcionan sin la migración.
 
 ## P1
 
@@ -75,7 +75,7 @@ Tests en `sec_coach_moderacion_test.ts` (5, todos en verde): nuevos=0 no envía;
   - `coach/handler.ts`, `coach/guard.ts`, `oracle/handler.ts`, `ritual/handler.ts`.
   - Tests `_shared/sec_coach_{fake,ledger,abuse,oracle,tools,ritual,moderacion}_test.ts`.
 - **Propuestas:**
-  - `c-01_coach_runs_kinds.sql` (+ `.test.sql`, pasado en remoto: `remaining 500000 → 484500`, y un kind inventado se sigue rechazando).
+  - `0038_coach_runs_kinds.sql` (+ `.test.sql`, pasado en remoto: `remaining 500000 → 484500`, y un kind inventado se sigue rechazando).
   - `c-03_tools_topes_y_filtros.patch` y `c-04_finance_conceptos.patch` (los dos pasan `git apply --check`).
 
 ## Dependencias y orden de salida

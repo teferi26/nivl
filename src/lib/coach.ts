@@ -12,6 +12,7 @@ import { fetch as streamingFetch } from 'expo/fetch';
 import type { Slide } from './photos';
 import { supabase } from './supabase';
 import { requireHealthConsent } from './health';
+import { ErrorVisible } from './validation';
 
 export type CoachKind =
   | 'chat'
@@ -167,7 +168,21 @@ async function errorDe(res: { status: number; json: () => Promise<unknown> }): P
   // Un 402 sin motivo reconocible (servidor más nuevo que la app) sigue siendo
   // "no tienes acceso", no un error del sistema.
   if (res.status === 402) return new CoachAccessError('sin_suscripcion', 402, body.error ?? '');
+  // Las fotos rechazadas (demasiadas, formato, tamaño) traen un motivo ya
+  // escrito para el usuario: pasa tal cual.
+  if (res.status === 400 && typeof body.error === 'string' && /foto/i.test(body.error)) {
+    return new ErrorVisible(body.error);
+  }
+  if (res.status === 404) return new HiloPerdidoError();
   return new Error(body.error || `El sistema no responde (HTTP ${res.status}).`);
+}
+
+/** El hilo guardado ya no existe en el servidor (o no es de esta cuenta). */
+export class HiloPerdidoError extends Error {
+  constructor() {
+    super('Hilo no encontrado.');
+    this.name = 'HiloPerdidoError';
+  }
 }
 
 function functionsUrl(): string {
@@ -211,7 +226,15 @@ export async function streamCoach(opts: {
     }),
   });
 
-  if (!res.ok || !res.body) throw await errorDe(res);
+  if (!res.ok || !res.body) {
+    const err = await errorDe(res);
+    // Hilo borrado o ajeno: se olvida y el turno va al hilo principal, una
+    // sola vez. El nuevo id llega en el evento 'start'.
+    if (err instanceof HiloPerdidoError && opts.threadId) {
+      return streamCoach({ ...opts, threadId: undefined });
+    }
+    throw err;
+  }
 
   const reader = res.body.getReader();
   const decoder = new TextDecoder();
