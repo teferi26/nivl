@@ -1,5 +1,11 @@
 // La voz del sistema: banco de mensajes. Dramatismo sobrio, segunda persona,
 // frases cortas. El sistema constata; la calidez solo en momentos ganados.
+// Arena, firme y adulta: sin amenazas, sin urgencia, sin culpa y sin «—».
+//
+// Puro: sin Supabase ni expo-notifications (los tests lo cargan tal cual).
+
+import type { DatosAviso, TipoAviso } from './notifyPlan';
+import { RANGOS, type RangoId } from './progression';
 
 function pick(lines: string[]): string {
   return lines[Math.floor(Math.random() * lines.length)] ?? lines[0] ?? '';
@@ -44,13 +50,13 @@ export const voice = {
       'Tu poder ha aumentado.',
       'El sistema reconoce tu progreso.',
       'Has roto tu límite anterior.',
-      'Los débiles esperan. Tú avanzas.',
+      'Un nivel más. La arena lo ha visto.',
     ]),
   penaltyApplied: (xp: number) =>
     pick([
-      `El sistema ha aplicado −${xp} XP. La misión de penalización espera.`,
-      `Fallo registrado: −${xp} XP. Redímete hoy o la pérdida será permanente.`,
-      `−${xp} XP. El sistema no olvida, pero ofrece redención.`,
+      `El sistema ha restado ${xp} XP. Tienes una misión de recuperación en Hoy.`,
+      `Día sin cerrar: −${xp} XP. La recuperación ya está en tu lista.`,
+      `−${xp} XP registrados. Un día no te define: la recuperación te espera.`,
     ]),
   stoneUsed: () =>
     pick([
@@ -64,25 +70,25 @@ export const voice = {
     ]),
   frozen: (reason: string) =>
     pick([
-      `Sistema en pausa (${reason}). Sin misiones, sin penalizaciones, sin juicio.`,
+      `Sistema en pausa (${reason}). Sin misiones, sin restas, sin juicio.`,
       `Modo ${reason} activo. El sistema protege tu retirada.`,
     ]),
   morningNotif: () =>
     pick([
-      'El sistema ha asignado tus misiones de hoy. Complétalas antes de medianoche.',
+      'El sistema ha asignado tus misiones de hoy. Empieza por la primera.',
       'Nuevas misiones disponibles. El día es una campaña: entra primero.',
       'Tus misiones esperan. Cada una completada te acerca al siguiente rango.',
     ]),
   eveningNotif: () =>
     pick([
-      'Quedan pocas horas. Las misiones incompletas serán penalizadas a medianoche.',
+      'Quedan unas horas para el cierre. Mira qué te falta.',
       'El cierre se acerca. Revisa tus misiones pendientes.',
-      'Última llamada del sistema: completa lo pendiente antes del cierre.',
+      'Antes de cerrar el día, un vistazo a lo pendiente.',
     ]),
   dungeonCleared: (title: string) =>
     pick([
-      `Campaña "${title}" despejada. El botín es tuyo.`,
-      `"${title}" ha caído. El sistema registra tu victoria.`,
+      `Campaña «${title}» despejada. El botín es tuyo.`,
+      `«${title}» ha caído. El sistema registra tu victoria.`,
     ]),
   pr: (exercise: string) =>
     pick([
@@ -111,7 +117,7 @@ export const voice = {
     }
     if (days < 7) {
       return pick([
-        `${days} días seguidos. La cadena crece. Que no seas tú quien la rompa.`,
+        `${days} días seguidos. La cadena crece. Mañana, uno más.`,
         `${days} días. El sistema empieza a fiarse de ti. Sigue.`,
       ]);
     }
@@ -128,8 +134,115 @@ export const voice = {
       ]);
     }
     return pick([
-      `${days} días. Los rangos S se construyen así: un día más, cada día. Imparable.`,
+      `${days} días. Así se llega a ${nombreRango('S')}: un día más, cada día.`,
       `${days} días de racha. El gladiador de hace ${days} días no te reconocería.`,
     ]);
   },
 };
+
+function nombreRango(id: RangoId): string {
+  return RANGOS.find((r) => r.id === id)?.nombre ?? id;
+}
+
+function plural(n: number, uno: string, varios: string): string {
+  return n === 1 ? uno : varios;
+}
+
+// ─── Avisos locales del plan (notifyPlan.ts) ────────────────────────────────
+
+/** Lo que se ve en la notificación: título y cuerpo, ya en la voz del sistema. */
+export interface TextoAviso {
+  titulo: string;
+  cuerpo: string;
+}
+
+/**
+ * El copy de cada aviso de `planDeAvisos`. Determinista (sin azar): el mismo
+ * dato da el mismo texto, así el test fija cada caso. Reglas de PLAN-AVISOS:
+ * la racha dice qué falta y nada más; la vuelta no culpa; la foto no nombra
+ * el cuerpo (se lee en la pantalla de bloqueo).
+ */
+export function textoAviso(d: DatosAviso): TextoAviso {
+  switch (d.tipo) {
+    case 'racha': {
+      const faltan = Math.max(1, Math.trunc(d.faltan));
+      return {
+        titulo: `Racha de ${d.racha} ${plural(d.racha, 'día', 'días')}`,
+        cuerpo: plural(
+          faltan,
+          'Te falta 1 misión para cerrar el día.',
+          `Te faltan ${faltan} misiones para cerrar el día.`,
+        ),
+      };
+    }
+    case 'recuperacion':
+      if (!d.desbloqueada) {
+        return { titulo: 'Recuperación', cuerpo: 'Completa una misión de hoy y la recuperación se abre.' };
+      }
+      return {
+        titulo: 'Recuperación abierta',
+        cuerpo: d.xp > 0
+          ? `Completa la misión de recuperación y vuelven ${d.xp} XP.`
+          : 'La misión de recuperación está lista en Hoy.',
+      };
+    case 'duelo': {
+      const n = Math.max(1, Math.trunc(d.pendientes));
+      return {
+        titulo: plural(n, 'Tu duelo', 'Tus duelos'),
+        cuerpo: plural(n, 'Hay novedades en 1 duelo.', `Hay novedades en ${n} duelos.`),
+      };
+    }
+    case 'foto': {
+      const n = Math.min(3, Math.max(1, Math.trunc(d.pendientes)));
+      return {
+        titulo: 'Fotos de la semana',
+        cuerpo: plural(n, 'Falta 1 de 3 para cerrar la semana.', `Faltan ${n} de 3 para cerrar la semana.`),
+      };
+    }
+    case 'rango': {
+      const id = d.clave?.startsWith('rango:') ? d.clave.slice(6) : null;
+      const def = RANGOS.find((r) => r.id === id);
+      if (def) return { titulo: 'Nuevo rango', cuerpo: `Ya eres ${def.nombre}. Entra a verlo.` };
+      return { titulo: 'La arena te reconoce', cuerpo: 'Tienes algo nuevo que ver. Entra cuando quieras.' };
+    }
+    case 'vuelta':
+      return d.dias === 7
+        ? { titulo: 'La arena sigue aquí', cuerpo: 'Un paso basta para volver.' }
+        : { titulo: 'La puerta sigue abierta', cuerpo: 'Cuando quieras, empiezas por una misión.' };
+  }
+}
+
+// ─── Rutas al tocar un aviso ─────────────────────────────────────────────────
+
+/** Adónde lleva cada aviso local al tocarlo (PLAN-AVISOS, punto 6). */
+export const RUTA_AVISO: Record<TipoAviso | 'despertar' | 'bloque' | 'cierre', string> = {
+  despertar: '/(tabs)',
+  bloque: '/(tabs)',
+  cierre: '/diario',
+  racha: '/(tabs)',
+  recuperacion: '/(tabs)',
+  duelo: '/amigos',
+  foto: '/fotos',
+  rango: '/(tabs)',
+  vuelta: '/(tabs)',
+};
+
+/**
+ * Las únicas rutas a las que puede llevar un aviso, local o remoto. Un push
+ * lleva `data.ruta` escrita por el servidor: sin esta lista, cualquiera que
+ * pudiera mandar un push abriría cualquier pantalla (compra, enlaces, web).
+ */
+export const RUTAS_PERMITIDAS: readonly string[] = [
+  '/(tabs)',
+  '/(tabs)/coach',
+  '/diario',
+  '/resumen',
+  '/amigos',
+  '/fotos',
+  '/avances',
+];
+
+/** La ruta del aviso si está permitida; si no, Hoy. */
+export function rutaSegura(r: unknown): string {
+  return typeof r === 'string' && RUTAS_PERMITIDAS.includes(r) ? r : '/(tabs)';
+}
