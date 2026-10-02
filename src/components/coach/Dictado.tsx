@@ -307,11 +307,9 @@ export function FranjaGrabacion({ dictado, aviso }: { dictado: Dictado; aviso?: 
       <View style={styles.franjaFila}>
         <View style={[styles.punto, dictado.cancelaria && styles.puntoOff]} />
         <Text style={styles.franjaRotulo}>{dictado.preparando ? 'PREPARANDO' : `GRABANDO ${formatoGrabacion(dictado.ms)}`}</Text>
-        <Text style={styles.franjaGuia} numberOfLines={1}>
-          {' · '}
-          {guia}
-        </Text>
       </View>
+      {/* Debajo y entera: a 375 en la misma fila se cortaba con puntos suspensivos. */}
+      <Text style={styles.franjaGuia}>{guia}</Text>
       {dictado.parcial ? (
         <Text style={styles.parcial} numberOfLines={3}>
           {dictado.parcial}
@@ -338,7 +336,7 @@ const styles = StyleSheet.create({
   punto: { width: 8, height: 8, borderRadius: 4, backgroundColor: ink.ink10 },
   puntoOff: { backgroundColor: ink.ink4 },
   franjaRotulo: { fontFamily: type.label.family, fontSize: type.label.size, letterSpacing: type.label.tracking, color: ink.ink10 },
-  franjaGuia: { flex: 1, minWidth: 0, fontFamily: type.bodySm.family, fontSize: 12, color: ink.ink6 },
+  franjaGuia: { marginTop: space.s1, fontFamily: type.bodySm.family, fontSize: type.bodySm.size, lineHeight: type.bodySm.lineHeight, color: ink.ink6 },
   aviso: { fontFamily: type.bodySm.family, fontSize: type.bodySm.size, lineHeight: type.bodySm.lineHeight, color: ink.ink9 },
   parcial: {
     fontFamily: type.bodySm.family,

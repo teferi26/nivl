@@ -9,7 +9,12 @@ import { Redirect } from 'expo-router';
 import { useContext, useMemo, useState, type ReactNode } from 'react';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
 import { useCelebracion } from '@/components/celebracion/contexto';
+import { CoachMark } from '@/components/coach/CoachMark';
+import { FranjaGrabacion, type Dictado } from '@/components/coach/Dictado';
+import { HojaPrivacidadDictado } from '@/components/coach/HojaPrivacidadDictado';
+import { MensajeCoach } from '@/components/coach/MensajeCoach';
 import { Heatmap } from '@/components/Heatmap';
+import { ProUpsellLine } from '@/components/ProOffer';
 import { Avatar, Button, Card, Crown, Section, Screen, ScreenHeader, Sheet, SuperficieContext, Tag, Toast } from '@/components/ui';
 import { alturaCorona } from '@/components/ui/Avatar';
 import { addDays, dateKey } from '@/lib/dates';
@@ -19,6 +24,12 @@ import { ink, RANK_THEME, space, type, type Rank } from '@/design/tokens';
 import { useAnchoUtil, useSizeClass } from '@/design/useSizeClass';
 
 const RANGOS: Rank[] = ['E', 'D', 'C', 'B', 'A', 'S'];
+const nada = () => {};
+/** Dictado de mentira para pintar la franja en la galería. */
+const dictadoDemo = (grabando: boolean): Dictado => ({
+  grabando, preparando: false, parcial: grabando ? 'Hoy he hecho sentadilla a cien kilos' : '', ms: 4200,
+  cancelaria: false, empezar: async () => false, mover: nada, soltar: nada, alternar: nada, cancelar: nada,
+});
 const TAMANOS_CORONA = [16, 24, 48, 96] as const;
 const TAMANOS_AVATAR = [40, 64, 96] as const;
 
@@ -52,6 +63,8 @@ export default function Kit() {
   const [hoja, setHoja] = useState(false);
   const [nota, setNota] = useState('');
   const [toast, setToast] = useState<string | null>(null);
+  const [privacidad, setPrivacidad] = useState(false);
+  const [hablando, setHablando] = useState(false);
   const { celebrar, avisar: avisarCola, celebrando } = useCelebracion();
   const demoRango = (id: RangoId) => {
     const nivel = rangoPorId(id).grados[0];
@@ -201,9 +214,40 @@ export default function Kit() {
         ))}
       </Section>
 
+      <Section title="Coach">
+        <View style={{ gap: space.s4 }}>
+          <View style={styles.fila}>
+            <CoachMark size={16} />
+            <CoachMark size={24} />
+            <CoachMark size={48} />
+          </View>
+          <MensajeCoach
+            texto="Hoy toca pierna. Subimos 2,5 kg en la sentadilla: la semana pasada cerraste las cinco series."
+            acciones={[{ texto: 'Misión creada: Sentadilla 5×5', ok: true }]}
+            cita="Consultado: tu historial"
+            voz={{ estado: hablando ? 'hablando' : 'quieto', onEscuchar: () => setHablando(true), onParar: () => setHablando(false) }}
+            onDenunciar={nada}
+          />
+          <MensajeCoach pensando acciones={[]} cita={null} />
+          <FranjaGrabacion dictado={dictadoDemo(true)} />
+          <FranjaGrabacion dictado={dictadoDemo(false)} aviso="Micrófono listo. Mantén pulsado para dictar." />
+          <Button title="Hoja de privacidad del dictado" variant="secondary" onPress={() => setPrivacidad(true)} />
+        </View>
+      </Section>
+
+      <Section title="Líneas Pro">
+        <View style={{ gap: space.s3 }}>
+          <ProUpsellLine momento="coach_cerrado" tier="pro" onPress={nada} />
+          <ProUpsellLine momento="energia_agotada" tier="elite" onPress={nada} />
+          <ProUpsellLine momento="firma" tier="pro" onPress={nada} />
+        </View>
+      </Section>
+
       <Section title="Heatmap">
         <Heatmap counts={conteos} />
       </Section>
+
+      <HojaPrivacidadDictado visible={privacidad} onAceptar={() => setPrivacidad(false)} onClose={() => setPrivacidad(false)} />
 
       <Sheet
         visible={hoja}
