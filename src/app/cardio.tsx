@@ -1,5 +1,5 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import * as Haptics from 'expo-haptics';
+import { vibrar } from '@/design/haptics';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import {
@@ -181,7 +181,7 @@ export default function Cardio() {
       if (nuevo > 0) {
         const perfil = await ensureProfile(userId);
         await awardXp(perfil, nuevo, 'FUE', 'cardio_session', { kind, km, min, zone });
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        vibrar('mision');
       }
 
       setAbierto(false);

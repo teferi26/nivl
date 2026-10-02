@@ -26,7 +26,7 @@ interface Props {
  * React 19 genera ids como «r0» (con comillas angulares) y en web rompen
  * `url(#…)`. Se dejan solo caracteres seguros.
  */
-function useIdSeguro(prefijo: string): string {
+export function useIdSeguro(prefijo: string): string {
   return `${prefijo}${useId().replace(/[^A-Za-z0-9_-]/g, '')}`;
 }
 

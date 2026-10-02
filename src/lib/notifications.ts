@@ -19,8 +19,9 @@ import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 import type { DayBlock } from './plan';
 import { hhmm } from './plan';
-import { voice } from './voice';
+import { RUTA_AVISO, voice } from './voice';
 import { requireHealthConsent } from './health';
+import { MENSAJE_FALLO, mensajeSistema } from './validation';
 
 export const CANALES = {
   despertar: 'despertar',
@@ -41,15 +42,20 @@ const idBloque = (fecha: string, blockId: string) => `nivl.bloque.${fecha}.${blo
 const idCierre = (fecha: string) => `nivl.cierre.${fecha}`;
 let healthGeneration = 0;
 
-/** Retira copias locales del plan/coach cuando se pierde el permiso. */
+// Lo que deriva de datos de salud: el plan del coach (bloques y cierre) y el
+// aviso de las fotos de progreso (planDeAvisos: `nivl.aviso.foto.<fecha>`).
+const PREFIJOS_SALUD = ['nivl.bloque.', 'nivl.cierre.', 'nivl.aviso.foto.'];
+const RUTAS_SALUD = ['/resumen', '/(tabs)/coach', '/fotos'];
+
+/** Retira copias locales del plan/coach y de las fotos cuando se pierde el permiso. */
 export async function cancelarAvisosSalud(): Promise<void> {
   healthGeneration++;
   try {
     const scheduled = await Notifications.getAllScheduledNotificationsAsync();
-    await Promise.all(scheduled.filter(n => n.identifier.startsWith('nivl.bloque.') || n.identifier.startsWith('nivl.cierre.'))
+    await Promise.all(scheduled.filter(n => PREFIJOS_SALUD.some(p => n.identifier.startsWith(p)))
       .map(n => Notifications.cancelScheduledNotificationAsync(n.identifier)));
     const delivered = await Notifications.getPresentedNotificationsAsync();
-    await Promise.all(delivered.filter(n => ['/resumen', '/(tabs)/coach'].includes(String(n.request.content.data?.ruta)) || n.request.identifier.startsWith('nivl.bloque.'))
+    await Promise.all(delivered.filter(n => RUTAS_SALUD.includes(String(n.request.content.data?.ruta)) || PREFIJOS_SALUD.some(p => n.request.identifier.startsWith(p)))
       .map(n => Notifications.dismissNotificationAsync(n.request.identifier)));
   } catch { /* El permiso de salud sigue retirado aunque el SO no responda. */ }
 }
@@ -71,6 +77,16 @@ export interface EstadoAvisos {
 }
 
 let ultimoError: string | null = null;
+
+/**
+ * Lo que se guarda como «Último error» (se enseña en Perfil): nunca el
+ * `e.message` crudo de la librería. Pasa por `mensajeSistema` y, si este solo
+ * sabe decir el fallo genérico, se queda la frase del contexto, que dice más.
+ */
+function errorDeAvisos(e: unknown, contexto: string): string {
+  const m = mensajeSistema(e);
+  return m === MENSAJE_FALLO ? contexto : m;
+}
 
 export function ultimoErrorDeAvisos(): string | null {
   return ultimoError;
@@ -146,7 +162,7 @@ export async function estadoAvisos(): Promise<EstadoAvisos> {
       permitido: false,
       puedePreguntar: false,
       programados: 0,
-      error: e instanceof Error ? e.message : 'Fallo leyendo el estado de los avisos.',
+      error: errorDeAvisos(e, 'Fallo leyendo el estado de los avisos.'),
     };
   }
 }
@@ -161,7 +177,7 @@ export async function inicializarAvisos(): Promise<boolean> {
   } catch (e) {
     // Antes esto se tragaba en silencio: en Expo Go las notificaciones no
     // están disponibles y no había forma de saberlo. Ahora queda registrado.
-    ultimoError = e instanceof Error ? e.message : 'Los avisos no están disponibles aquí.';
+    ultimoError = errorDeAvisos(e, 'Los avisos no están disponibles aquí.');
     return false;
   }
 }
@@ -183,7 +199,7 @@ export async function programarDespertador(horaMin: number | null): Promise<void
         body: voice.morningNotif(),
         sound: 'default',
         interruptionLevel: 'timeSensitive',
-        data: { ruta: '/(tabs)' },
+        data: { ruta: RUTA_AVISO.despertar },
       },
       trigger: {
         type: Notifications.SchedulableTriggerInputTypes.DAILY,
@@ -193,7 +209,7 @@ export async function programarDespertador(horaMin: number | null): Promise<void
       },
     });
   } catch (e) {
-    ultimoError = e instanceof Error ? e.message : 'No se pudo programar el despertador.';
+    ultimoError = errorDeAvisos(e, 'No se pudo programar el despertador.');
   }
 }
 
@@ -234,11 +250,11 @@ export async function reconciliarAvisosDelDia(
           title: `${hhmm(b.start_min)} · ${b.title}`,
           // El texto sale del plan en el momento de programar cada día, así
           // que refleja las órdenes reales de hoy y no un texto fósil.
-          body: b.detail?.trim() || 'El sistema espera ejecución.',
+          body: b.detail?.trim() || 'Es la hora de este bloque.',
           sound: 'default',
           interruptionLevel: 'timeSensitive',
           categoryIdentifier: CATEGORIAS.bloque,
-          data: { ruta: '/(tabs)', blockId: b.id, fecha },
+          data: { ruta: RUTA_AVISO.bloque, blockId: b.id, fecha },
         },
         trigger: {
           type: Notifications.SchedulableTriggerInputTypes.DATE,
@@ -259,7 +275,7 @@ export async function reconciliarAvisosDelDia(
             body: voice.eveningNotif(),
             sound: 'default',
             categoryIdentifier: CATEGORIAS.cierre,
-            data: { ruta: '/diario' },
+            data: { ruta: RUTA_AVISO.cierre },
           },
           trigger: {
             type: Notifications.SchedulableTriggerInputTypes.DATE,
@@ -274,7 +290,7 @@ export async function reconciliarAvisosDelDia(
     if (generation !== healthGeneration) { await cancelarAvisosSalud(); return 0; }
     return puestas;
   } catch (e) {
-    ultimoError = e instanceof Error ? e.message : 'No se pudieron programar los avisos del día.';
+    ultimoError = errorDeAvisos(e, 'No se pudieron programar los avisos del día.');
     return 0;
   }
 }
@@ -305,7 +321,7 @@ export async function avisarEn(
       },
     });
   } catch (e) {
-    ultimoError = e instanceof Error ? e.message : 'No se pudo programar el aviso.';
+    ultimoError = errorDeAvisos(e, 'No se pudo programar el aviso.');
   }
 }
 

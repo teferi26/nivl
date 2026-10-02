@@ -34,9 +34,17 @@ export const type = {
   label: { family: 'Outfit_700Bold', size: 12, lineHeight: 16, tracking: 2 },
   number: { family: 'Cinzel_600SemiBold', size: 24, lineHeight: 28, tracking: 0 },
   micro: { family: 'Outfit_600SemiBold', size: 11, lineHeight: 14, tracking: 1 },
+  // Arena (SISTEMA.md §5 bis): la piedra grande. El monumento es el nivel del
+  // Hero; la cifra, los números de una franja; la inscripción, los rótulos
+  // grabados («RANGO A · HÉROE DE LA ARENA»).
+  monumento: { family: 'Cinzel_700Bold', size: 112, lineHeight: 112, tracking: 0 },
+  monumentoSm: { family: 'Cinzel_700Bold', size: 72, lineHeight: 72, tracking: 0 },
+  cifra: { family: 'Cinzel_600SemiBold', size: 32, lineHeight: 36, tracking: 0 },
+  inscripcion: { family: 'Cinzel_700Bold', size: 14, lineHeight: 18, tracking: 4 },
 } as const;
 
-export const motion = { instant: 100, quick: 180, base: 260, slow: 420, ceremony: 1600 } as const;
+/** Duraciones (ms). `escalon`: retraso entre bloques consecutivos de una entrada en cascada. */
+export const motion = { instant: 100, quick: 180, base: 260, slow: 420, ceremony: 1600, escalon: 55 } as const;
 
 // ── Clases de tamaño ──────────────────────────────────────────────────
 export type SizeClass = 'compact' | 'medium' | 'expanded';

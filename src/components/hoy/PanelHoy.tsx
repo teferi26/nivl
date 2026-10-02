@@ -1,94 +1,83 @@
-// NIVL · Panel contextual de Hoy en `expanded` (<Screen aside>): el rango en
-// grande, la rivalidad con los amigos y, con Pro, la entrada al coach. Si el
-// panel no cabe, Screen no lo pinta y lo esencial (rango y rivalidad) sigue en
-// el cuerpo de Hoy.
+// NIVL · Panel contextual de Hoy en `expanded` (<Screen aside>, HoyiPad.dc):
+// con Pro, la entrada al coach con su marca; debajo, el duelo de la semana
+// (que entonces no se repite en el cuerpo). El rango ya no va aquí: el Hero
+// lo lleva a lo ancho en el cuerpo. Si el panel no cabe, Screen no lo pinta
+// y el duelo vuelve al cuerpo de Hoy.
 
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { router } from 'expo-router';
 import { StyleSheet, Text, View } from 'react-native';
-import { Card, Row, Section, Skeleton } from '@/components/ui';
+import { TarjetaArena } from '@/components/arena';
+import { CoachMark } from '@/components/coach/CoachMark';
+import { Skeleton } from '@/components/ui';
 import { ink, space, type as tipo } from '@/design/tokens';
-import type { RangoId } from '@/lib/progression';
-import type { Profile } from '@/lib/types';
-import { TarjetaRango, type RachaHoy } from './TarjetaRango';
+import type { DueloHoy } from './derivarHoy';
+import { Duelo } from './Duelo';
 
 interface Props {
-  /** Primera carga terminada. */
-  loaded: boolean;
-  profile: Profile | null;
-  rango: RangoId | null;
-  racha: RachaHoy;
-  /** Línea de rivalidad (lineaRivalidad); null = sin amigos visibles. */
-  rivalidad: string | null;
+  /** Primera carga sin terminar: huecos. */
+  cargando: boolean;
   /** true = la cuenta tiene coach. Sin Pro (o sin saberlo) no se pinta. */
   esPro: boolean | null;
-  /** Con el día perfecto a la vista, la tarjeta de rango no lleva grano (uno por pantalla). */
-  diaPerfectoVisible?: boolean;
+  duelo: DueloHoy | null;
 }
 
-export function PanelHoy({ loaded, profile, rango, racha, rivalidad, esPro, diaPerfectoVisible }: Props) {
-  if (!loaded || !profile) {
+export function PanelHoy({ cargando, esPro, duelo }: Props) {
+  if (cargando) {
     return (
-      <View accessibilityRole="progressbar" accessibilityLabel="Cargando tu rango">
-        <Skeleton height={220} style={styles.hueco} />
-        <Skeleton height={56} />
+      <View accessibilityRole="progressbar" accessibilityLabel="Cargando el panel">
+        <Skeleton height={96} style={styles.hueco} />
+        <Skeleton height={11} width={140} style={styles.hueco} />
+        <Skeleton height={72} />
       </View>
     );
   }
 
   return (
     <View>
-      <TarjetaRango profile={profile} rango={rango} racha={racha} grande diaPerfectoVisible={diaPerfectoVisible} />
-
-      {rivalidad ? (
-        <Section title="Amigos" style={styles.seccion}>
-          <Card padded={false} style={styles.lista}>
-            <Row
-              first
-              chevron
-              leading={<Ionicons name="people-outline" size={18} color={ink.ink8} />}
-              title={rivalidad}
-              onPress={() => router.push('/amigos')}
-              accessibilityLabel={`${rivalidad} Abrir Amigos`}
-            />
-          </Card>
-        </Section>
-      ) : null}
-
       {esPro === true ? (
-        <Card
-          variant="outline"
+        <TarjetaArena
+          variante="contorno"
           onPress={() => router.push('/(tabs)/coach')}
-          accessibilityLabel="Abrir el coach"
-          style={styles.seccion}
+          accessibilityLabel="Abrir el coach. Pídele el plan, ajusta el día o pregúntale."
+          style={styles.coach}
         >
-          <View style={styles.coach}>
-            <Ionicons name="chatbubble-ellipses-outline" size={18} color={ink.ink9} />
+          <View style={styles.coachFila}>
+            <CoachMark size={48} />
             <View style={styles.coachTexto}>
-              <Text style={styles.coachTitulo}>Coach</Text>
-              <Text style={styles.coachCuerpo}>Pídele el plan, ajusta el día o pregúntale.</Text>
+              <Text style={styles.coachTitulo} maxFontSizeMultiplier={1.35}>
+                COACH
+              </Text>
+              <Text style={styles.coachCuerpo} maxFontSizeMultiplier={1.35}>
+                Pídele el plan, ajusta el día o pregúntale.
+              </Text>
             </View>
             <Ionicons name="chevron-forward" size={16} color={ink.ink6} />
           </View>
-        </Card>
+        </TarjetaArena>
       ) : null}
+
+      {duelo ? <Duelo duelo={duelo} /> : null}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   hueco: { marginBottom: space.s4 },
-  seccion: { marginTop: space.s4 },
-  lista: { paddingHorizontal: space.s4, paddingVertical: 2 },
-  coach: { flexDirection: 'row', alignItems: 'center', gap: space.s3 },
-  coachTexto: { flex: 1, minWidth: 0 },
+  coach: { marginBottom: space.s6 },
+  coachFila: { flexDirection: 'row', alignItems: 'center', gap: space.s3 },
+  coachTexto: { flex: 1, minWidth: 0, gap: space.s1 },
   coachTitulo: {
-    fontFamily: tipo.label.family,
-    fontSize: tipo.label.size,
-    lineHeight: tipo.label.lineHeight,
-    letterSpacing: tipo.label.tracking,
-    textTransform: 'uppercase',
-    color: ink.ink9,
+    fontFamily: tipo.inscripcion.family,
+    fontSize: tipo.inscripcion.size,
+    lineHeight: tipo.inscripcion.lineHeight,
+    letterSpacing: tipo.inscripcion.tracking,
+    color: ink.ink10,
   },
-  coachCuerpo: { fontFamily: tipo.bodySm.family, fontSize: 13, lineHeight: 18, color: ink.ink8, marginTop: 2 },
+  coachCuerpo: {
+    fontFamily: tipo.bodySm.family,
+    fontSize: tipo.bodySm.size,
+    lineHeight: tipo.bodySm.lineHeight,
+    color: ink.ink8,
+  },
 });

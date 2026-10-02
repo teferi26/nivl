@@ -701,15 +701,27 @@ export const COPY_UPSELL: Record<CopyKey, CopyUpsell> = {
     beneficio: 'Modo profundo',
   },
   'voz_premium.pro': {
-    linea: 'La voz del coach aún no está disponible. Cuando lo esté, la verás en tu plan.',
-    enlace: 'Ver planes',
-    contexto: 'La voz del coach aún no está disponible y no forma parte de ningún plan. Esto es lo que incluye hoy cada uno.',
+    linea: 'El coach te lee su respuesta y te escucha si le dictas. Va con NIVL Pro.',
+    enlace: 'Ver NIVL Pro',
+    contexto: 'La voz va con el coach: te lee sus respuestas y puedes dictarle. NIVL sigue gratis entera; Pro añade el coach.',
     beneficio: null,
   },
   'voz_premium.elite': {
-    linea: 'La voz del coach aún no está disponible. Cuando lo esté, la verás en tu plan.',
+    linea: 'La voz va incluida con el coach.',
     enlace: 'Ver planes',
-    contexto: 'La voz del coach aún no está disponible y no forma parte de ningún plan. Esto es lo que incluye hoy cada uno.',
+    contexto: 'La voz va incluida con el coach, en Pro y en Élite.',
+    beneficio: null,
+  },
+  'coach_cerrado.pro': {
+    linea: 'El coach es parte de NIVL Pro. Todo lo demás sigue siendo tuyo y gratis.',
+    enlace: 'Ver NIVL Pro',
+    contexto: 'El coach es parte de NIVL Pro: brief cada mañana, plan del día y chat. Todo lo demás sigue gratis.',
+    beneficio: 'Brief cada mañana',
+  },
+  'coach_cerrado.elite': {
+    linea: 'El coach es parte de NIVL Pro y de NIVL Élite.',
+    enlace: 'Ver planes',
+    contexto: 'El coach es parte de NIVL Pro y de NIVL Élite. Todo lo demás sigue gratis.',
     beneficio: null,
   },
   'analisis_foto.pro': {

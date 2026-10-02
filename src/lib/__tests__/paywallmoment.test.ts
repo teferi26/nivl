@@ -56,9 +56,12 @@ describe('celebración y niveles', () => {
   });
 
   test('a un Pro: solo Élite, en línea, y solo en momentos de función o energía agotada', () => {
-    for (const m of ['coach_profundo', 'voz_premium', 'analisis_foto', 'energia_agotada'] as const) {
+    for (const m of ['coach_profundo', 'analisis_foto', 'energia_agotada'] as const) {
       expect(decidirOferta(m, pro())).toMatchObject({ mostrar: true, forma: 'linea', tier: 'elite', prueba: false });
     }
+    // La voz va con el coach: a un Pro no se le vende nada por ella.
+    expect(decidirOferta('voz_premium', pro()).mostrar).toBe(false);
+    expect(decidirOferta('coach_cerrado', pro()).mostrar).toBe(false);
     expect(decidirOferta('firma', pro()).mostrar).toBe(false);
     expect(decidirOferta('primer_dia', pro()).mostrar).toBe(false);
   });
@@ -247,12 +250,23 @@ describe('copy y ruta', () => {
     expect(Object.keys(COPY_UPSELL)).toHaveLength(MOMENTOS.length * 2);
   });
 
-  test('la voz no se vende: se dice que aún no existe', () => {
-    for (const t of ['pro', 'elite'] as const) {
-      const c = copyUpsell('voz_premium', t);
-      expect(c.linea).toMatch(/aún no está disponible/);
-      expect(c.beneficio).toBeNull();
+  test('la voz va con el coach: a un gratis se le ofrece Pro, sin prometer nada más', () => {
+    expect(decidirOferta('voz_premium', libre())).toMatchObject({ mostrar: true, forma: 'linea', tier: 'pro' });
+    expect(copyUpsell('voz_premium', 'pro').linea).toMatch(/Va con NIVL Pro/);
+    for (const t of ['pro', 'elite'] as const) expect(copyUpsell('voz_premium', t).beneficio).toBeNull();
+  });
+
+  test('coach cerrado: línea fija a Pro para quien no tiene coach, sin topes ni espera', () => {
+    const cerrada = { momento: 'firma' as const, at: AHORA - HORA, respuesta: 'cerrada' as const };
+    for (const h of [[], [cerrada, cerrada, cerrada]]) {
+      expect(decidirOferta('coach_cerrado', libre({ historial: h }))).toMatchObject({ mostrar: true, forma: 'linea', tier: 'pro' });
     }
+    expect(decidirOferta('coach_cerrado', libre({ trialAvailable: true })).prueba).toBe(true);
+    expect(decidirOferta('coach_cerrado', libre({ trialAvailable: false })).prueba).toBe(false);
+    expect(decidirOferta('coach_cerrado', libre({ celebrando: true })).mostrar).toBe(false);
+    const enPrueba = libre({ tier: 'pro', entitled: true, trial: true, trialAvailable: false });
+    expect(decidirOferta('coach_cerrado', enPrueba).mostrar).toBe(false);
+    expect(copyUpsell('coach_cerrado', 'pro').linea).toMatch(/gratis/);
   });
 
   test('cada beneficio citado existe de verdad', () => {

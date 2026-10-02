@@ -6,6 +6,8 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { useEffect, useRef, type ReactNode } from 'react';
 import { ActivityIndicator, Animated, Pressable, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 import { colors, fonts } from '@/lib/theme';
+import { ink, type } from '@/design/tokens';
+import { LEIDO_SIN_DATO, SIN_DATO } from './sinDato';
 
 interface CheckProps {
   checked: boolean;
@@ -163,10 +165,17 @@ export function Row({
 }
 
 /** Valor a la derecha de una fila: "+55 XP", "18 días". */
-export function RowValue({ children, tone = 'dim', strong }: { children: ReactNode; tone?: 'dim' | 'accent' | 'gold' | 'red' | 'steel'; strong?: boolean }) {
+export function RowValue({ children, tone = 'dim', strong }: { children: ReactNode; tone?: 'dim' | 'accent' | 'gold' | 'red' | 'steel' | 'strong'; strong?: boolean }) {
   const color =
     tone === 'accent' ? colors.accent : tone === 'gold' ? colors.gold : tone === 'red' ? colors.red : tone === 'steel' ? colors.steel : colors.textFaint;
-  return <Text style={[styles.value, { color }, strong && styles.valueStrong]}>{children}</Text>;
+  return (
+    <Text
+      style={tone === 'strong' ? styles.valueTexto : [styles.value, { color }, strong && styles.valueStrong]}
+      accessibilityLabel={children === SIN_DATO ? LEIDO_SIN_DATO : undefined}
+    >
+      {children}
+    </Text>
+  );
 }
 
 const styles = StyleSheet.create({
@@ -193,6 +202,8 @@ const styles = StyleSheet.create({
   trailing: { alignItems: 'flex-end', justifyContent: 'center' },
   value: { fontFamily: fonts.number, fontSize: 13, letterSpacing: 0.3 },
   valueStrong: { fontSize: 14 },
+  // tone «strong»: una cifra que se lee como texto (precio, plan), en Outfit.
+  valueTexto: { fontFamily: type.headline.family, fontSize: 14, color: ink.ink9 },
   check: {
     borderWidth: 1.5,
     borderColor: colors.accentDim,

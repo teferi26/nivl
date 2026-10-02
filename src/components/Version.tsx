@@ -3,6 +3,7 @@ import * as Updates from 'expo-updates';
 import { useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import { avisar, confirmar } from '@/components/ui/confirmar';
+import { SIN_DATO } from '@/components/ui/sinDato';
 import { colors, fonts } from '@/lib/theme';
 import { mensajeSistema } from '@/lib/validation';
 
@@ -22,16 +23,16 @@ import { mensajeSistema } from '@/lib/validation';
  */
 export function Version() {
   const [buscando, setBuscando] = useState(false);
-  const version = Constants.expoConfig?.version ?? '—';
+  const version = Constants.expoConfig?.version ?? SIN_DATO;
   const build =
-    Constants.expoConfig?.ios?.buildNumber ?? Constants.expoConfig?.android?.versionCode ?? '—';
+    Constants.expoConfig?.ios?.buildNumber ?? Constants.expoConfig?.android?.versionCode ?? SIN_DATO;
 
   // En Expo Go y en desarrollo estas propiedades no existen: se degrada a un
   // texto honesto en vez de reventar la pantalla de Perfil.
   const canal = Updates.channel || 'sin canal';
   const paquete = Updates.isEmbeddedLaunch
     ? 'embedded (sin OTA)'
-    : (Updates.updateId ?? '—').slice(0, 8);
+    : (Updates.updateId ?? SIN_DATO).slice(0, 8);
   const creado = Updates.createdAt ? Updates.createdAt.toISOString().slice(0, 16).replace('T', ' ') : null;
 
   /**

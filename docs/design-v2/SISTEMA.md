@@ -98,6 +98,31 @@ Se conserva la API del kit actual cuando se puede (para que la migración sea me
 | `ShareCard` (nuevo, con el Chat 1) | Plantillas 9:16 y 4:5 (§10). |
 | `CoachMark` (nuevo) | La galea del coach a 16, 24 y 48. |
 
+## 5 bis. Arena (`src/components/arena`, rediseño L-RADICAL)
+
+La base que hace que la app se lea como una arena y no como un recoloreado. Se importa desde `@/components/arena` (no desde `@/components/ui`). Plan completo y reparto: `docs/design-v2/L-RADICAL.md`.
+
+**Tokens nuevos** (`tokens.ts`): `type.monumento` (Cinzel 700 112/112), `type.monumentoSm` (72/72, el nivel de 3 cifras cuando el hueco de texto baja de 360), `type.cifra` (Cinzel 600 32/36, los números de una franja), `type.inscripcion` (Cinzel 700 14/18, tracking 4, los rótulos grabados) y `motion.escalon` (55 ms entre bloques de una entrada en cascada).
+
+| Pieza | Qué es |
+|---|---|
+| Motivos (`Laurel`, `Columna`, `Arena`, `Meandro`, `Galea`) | Un trazo, sin relleno, extremos redondos, ocultos al lector y sin toques. Laurel ink6 (rama de 24 × 64 escalada; `der` es el espejo), columna dórica ink4, arena ink3 (`arco`: graderío de 3 gradas con 15 arcadas; `ovalo`: planta con eje), meandro ink4 de 8 o 12 que llena el ancho (Pattern con `useIdSeguro`), galea = `Crown`. Geometría pura en `arena/geometria.ts` (con test). |
+| `Contador` | Cifra que cuenta (700 ms, salida cúbica) en el hilo de UI con Reanimated; el lector oye el valor final. Máximo 4 por pantalla y nunca en filas de lista. |
+| `Barra` | Pista ink4, relleno blanco o ink8 escalado en X desde la izquierda (muelle damping 18), cortes de 2 en ink0 si hay ≤ 30 segmentos. `progressbar` con valor 0-100. No sustituye a `XPBar`. |
+| `Entrada` | Fundido de 260 y subida de 14 en 320 con cascada de 55 ms, tope en el octavo. Solo bloques de pantalla y los 8 primeros de una lista; nunca `layout`. |
+| `TarjetaArena` | Card con `remaches` (4 cuadrados de 3 en las esquinas), `zocalo` (segunda losa hairline ink3 desplazada 4: profundidad sin sombra), `marco` 1-3 en ink10 y `rotulo` grabado. Variantes: piedra · contorno · trama · grano · invertida. |
+| `EncabezadoArena` | Título de pantalla en Cinzel mayúscula (`type.rank`), eyebrow, subtítulo, volver, acción de 44 (sólida = la inversión) y meandro opcional. |
+| `FranjaCifras` | 2 a 4 celdas con hairlines verticales ink3: cifra en `type.cifra` y rótulo `micro` ink6. Cada celda se lee «rótulo: valor». |
+| `HeroRango` | `hoy`: a sangre, nivel monumental entre laureles con la arena detrás, rango grabado, línea, barra de 10 segmentos, franja y meandro de cierre. `perfil`: avatar de 120 sobre el óvalo, nombre, título grabado, franja, barra y borde inferior de 3. El lector oye un resumen; avatar y agenda son botones aparte. |
+| `ASangre` | Saca el contenido al borde con el margen que publica `Screen` en `GutterContext` (0 con `plain`). |
+
+**Tres excepciones deliberadas** a lo anterior:
+1. **Títulos de pantalla en Cinzel mayúscula** (`EncabezadoArena`). Hasta aquí Cinzel era solo marca y cifras; en las pantallas rediseñadas el título es una inscripción.
+2. **Grano ink3 de fondo en los Hero** (rango B en adelante). Es decoración de bajo contraste, no significa «logro»: el grano de logro sigue siendo ink6 y en marco.
+3. **La inversión puede ser una fila de una lista** («lo activo»): la siguiente misión de Hoy, mi fila en el ranking. Sigue habiendo una sola por pantalla.
+
+Galería de verificación (solo desarrollo): `/kit/pantallas?pantalla=<id>&estado=<estado>&ancho=375|430|744|1024|1440`. La página «arena» enseña cada pieza; cada pantalla lee su `src/components/<carpeta>/demo.tsx`.
+
 ## 6. Estados
 
 | Estado | Cómo se ve |

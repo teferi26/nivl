@@ -1,6 +1,6 @@
 import { xpCostForLevel } from '../game';
 import { celebracionInsignia } from '../progression';
-import { estadoInicial, hayAlgo, MAX_VISTAS, reducir, textoToast, type EstadoCola, type EventoCola } from '../celebracionCola';
+import { celebracionesDeRacha, estadoInicial, fusionar, hayAlgo, lineasDe, MAX_VISTAS, reducir, textoToast, type EstadoCola, type EventoCola } from '../celebracionCola';
 
 jest.mock('../supabase', () => ({ supabase: {} }));
 
@@ -111,9 +111,93 @@ describe('cola de celebraciones', () => {
     expect(s.vistas.has(`k:${MAX_VISTAS + 49}`)).toBe(true);
   });
 
+  test('el toast lleva la principal y una línea; el resto, « y N más»', () => {
+    const insignia = celebracionInsignia('reclutador', 0, 1)!;
+    const s = correr([{ tipo: 'llega', a: { accion: 'a', extra: [insignia], resumen: ['+50 XP', '+1 PB', 'Sesión 12'], final: true } }], cargado());
+    expect(s.mostrando?.forma).toBe('toast');
+    expect(textoToast(s.mostrando!)).toBe('Insignia · Reclutador · +50 XP y 2 más');
+    // Lo completo sigue en el momento (anuncio, ceremonia).
+    expect(lineasDe(s.mostrando!)).toEqual(['Insignia · Reclutador', '+50 XP', '+1 PB', 'Sesión 12']);
+  });
+
+  test('sin principal, el toast enseña dos líneas', () => {
+    const dos = correr([{ tipo: 'llega', a: { accion: 'a', resumen: ['+50 XP', '+1 PB'], final: true } }], cargado());
+    expect(textoToast(dos.mostrando!)).toBe('+50 XP · +1 PB');
+    const tres = correr([{ tipo: 'llega', a: { accion: 'a', resumen: ['+50 XP', '+1 PB', '+1 PB banca'], final: true } }], cargado());
+    expect(textoToast(tres.mostrando!)).toBe('+50 XP · +1 PB y 1 más');
+  });
+
+  test('la ceremonia que se come un toast lleva todas sus líneas, no el texto recortado', () => {
+    const logrosAntes = ['rango_D', 'rango_C'];
+    let s = correr([{ tipo: 'llega', a: { accion: 'a', perfilAntes: perfil(16), perfilDespues: { ...perfil(16), xp_total: perfil(16).xp_total + 50 }, logrosAntes, fecha, resumen: ['+50 XP', '+1 PB', '+1 PB banca'], final: true } }], cargado());
+    expect(textoToast(s.mostrando!)).toBe('+50 XP · +1 PB y 1 más');
+    s = reducir(s, { tipo: 'llega', a: { accion: 'a', logrosNuevos: [{ codigo: 'rango_B', nombre: 'Campeón', desc: '' }], final: true } });
+    expect(s.mostrando?.forma).toBe('ceremonia-epica');
+    expect(s.mostrando!.resumen).toEqual(['+50 XP', '+1 PB', '+1 PB banca']);
+  });
+
+  test('fusionar quita los extra repetidos por clave', () => {
+    const insignia = celebracionInsignia('reclutador', 0, 1)!;
+    const a = fusionar(undefined, { accion: 'a', extra: [insignia, insignia] });
+    expect(a.extra).toHaveLength(1);
+    const b = fusionar(a, { accion: 'a', extra: [{ ...insignia }] });
+    expect(b.extra).toHaveLength(1);
+  });
+
+  test('un extra que vuelve a llegar tras el cierre (histórico) no se duplica', () => {
+    const insignia = celebracionInsignia('reclutador', 0, 1)!;
+    let s = correr([{ tipo: 'llega', a: { accion: 'a', extra: [insignia], resumen: ['+20 XP'], final: true } }], cargado());
+    expect(s.historico.get('a')?.extra).toHaveLength(1);
+    s = reducir(s, { tipo: 'llega', a: { accion: 'a', extra: [insignia] } });
+    expect(s.acciones.get('a')?.extra).toHaveLength(1);
+  });
+
+  test('los días activos dan la cifra del siguiente rango; sin ellos, null', () => {
+    const accion = { accion: 'a', perfilAntes: perfil(3), perfilDespues: perfil(4), fecha, resumen: ['+50 XP'], final: true };
+    const sin = correr([{ tipo: 'llega', a: accion }], cargado());
+    expect(sin.mostrando!.estado!.siguienteRango!.faltanDias).toBeNull();
+    const con = correr([{ tipo: 'llega', a: { ...accion, final: false } }, { tipo: 'llega', a: { accion: 'a', diasActivos: 2, final: true } }], cargado());
+    expect(typeof con.mostrando!.estado!.siguienteRango!.faltanDias).toBe('number');
+  });
+
   test('vaciar (cierre de sesión) borra la memoria', () => {
     const s = correr([{ tipo: 'avisar', id: 'aviso:1', texto: 'x' }, { tipo: 'vaciar' }], cargado(['rango:B']));
     expect(s).toMatchObject({ cargado: false, mostrando: null });
     expect(s.vistas.size).toBe(0);
+  });
+
+  test('ceremonia fallida: desmarca sus claves y sale en un toast con su texto', () => {
+    let s = correr([{ tipo: 'llega', a: { accion: 'a', perfilAntes: perfil(3), perfilDespues: perfil(4), logrosAntes: [], logrosNuevos: [{ codigo: 'x', nombre: 'Equis', desc: '' }], fecha, resumen: ['+80 XP · FUE'], final: true } }], cargado(['otra']));
+    expect(s.mostrando?.forma).toBe('ceremonia-corta');
+    expect(s.vistas.has('nivel:4')).toBe(true);
+    s = reducir(s, { tipo: 'fallida' });
+    expect(s.mostrando).toMatchObject({ forma: 'toast', principal: null, accion: null });
+    expect(lineasDe(s.mostrando!)).toEqual(['Nivel 4', '+80 XP · FUE', 'Logro · Equis']);
+    expect(s.vistas.has('nivel:4')).toBe(false);
+    expect(s.vistas.has('logro:x')).toBe(false);
+    expect(s.vistas.has('otra')).toBe(true);
+    // El toast se apaga como cualquier otro y no deja nada esperando.
+    s = reducir(s, { tipo: 'ocultar' });
+    expect(hayAlgo(s)).toBe(false);
+  });
+
+  test('fallida sin ceremonia visible no toca las vistas', () => {
+    const s = correr([{ tipo: 'avisar', id: 'aviso:1', texto: 'Hola' }, { tipo: 'fallida' }], cargado(['nivel:4']));
+    expect(s.mostrando).toBeNull();
+    expect(s.vistas.has('nivel:4')).toBe(true);
+  });
+
+  test('racha hito al completar: misma clave que el cierre de ese día, y no se repite', () => {
+    const hitos = celebracionesDeRacha(6, 7, fecha);
+    expect(hitos).toEqual([{ tipo: 'racha', clave: `racha:7:${fecha}`, intensidad: 'suave', dias: 7 }]);
+    expect(celebracionesDeRacha(7, 7, fecha)).toEqual([]);
+    expect(celebracionesDeRacha(29, 30, fecha).map((c) => c.clave)).toEqual([`racha:30:${fecha}`]);
+    // Completar la misión (streak_days aún 6) con el hito en extra.
+    let s = correr([{ tipo: 'llega', a: { accion: 'mision', perfilAntes: perfil(3, { streak_days: 6 }), perfilDespues: perfil(3, { streak_days: 6 }), logrosAntes: [], fecha, extra: hitos, resumen: ['+50 XP · FUE'], final: true } }], cargado());
+    expect(s.mostrando?.principal).toMatchObject({ tipo: 'racha', dias: 7 });
+    s = reducir(s, { tipo: 'ocultar' });
+    // El cierre del día siguiente, con fecha = el día cerrado: nada nuevo.
+    s = reducir(s, { tipo: 'llega', a: { accion: 'cierre', perfilAntes: perfil(3, { streak_days: 6 }), perfilDespues: perfil(3, { streak_days: 7 }), logrosAntes: [], fecha, final: true } });
+    expect(s.mostrando).toBeNull();
   });
 });

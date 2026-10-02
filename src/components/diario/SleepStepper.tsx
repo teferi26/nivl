@@ -6,7 +6,8 @@
 // el primer toque lo deja en 7.
 
 import Ionicons from '@expo/vector-icons/Ionicons';
-import * as Haptics from 'expo-haptics';
+import { vibrar } from '@/design/haptics';
+import { LEIDO_SIN_DATO, SIN_DATO } from '@/components/ui/sinDato';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SUENO_MAX, SUENO_MIN, formatoDecimal, formatoHoras, pasoDeSueno } from '@/lib/journalmath';
 import { colors, fonts } from '@/lib/theme';
@@ -20,7 +21,7 @@ export function SleepStepper({ value, onChange }: Props) {
   const mover = (dir: 1 | -1) => {
     const next = pasoDeSueno(value, dir);
     if (next === value) return;
-    Haptics.selectionAsync().catch(() => {});
+    vibrar('seleccion');
     onChange(next);
   };
   const enMinimo = value !== null && value <= SUENO_MIN;
@@ -52,8 +53,11 @@ export function SleepStepper({ value, onChange }: Props) {
           {/* La cifra en Cinzel y la unidad en Outfit: Cinzel no tiene minúsculas
               y "7,5 H" se leería como otra cosa. */}
           <View style={styles.cifra}>
-            <Text style={[styles.valor, value === null && styles.valorVacio]}>
-              {value === null ? '—' : formatoDecimal(value)}
+            <Text
+              style={[styles.valor, value === null && styles.valorVacio]}
+              accessibilityLabel={value === null ? LEIDO_SIN_DATO : undefined}
+            >
+              {value === null ? SIN_DATO : formatoDecimal(value)}
             </Text>
             {value !== null ? <Text style={styles.unidad}>h</Text> : null}
           </View>

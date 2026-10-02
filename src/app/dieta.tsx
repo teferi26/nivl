@@ -28,6 +28,7 @@ import {
   StatRow,
   volver,
 } from '@/components/ui';
+import { SIN_DATO } from '@/components/ui/sinDato';
 import { confirmar } from '@/components/ui/confirmar';
 import { mensajeSistema } from '@/lib/validation';
 import { useAuth } from '@/lib/auth';
@@ -188,8 +189,8 @@ export default function Dieta() {
         <FadeIn index={2}>
           <Card>
             <StatRow>
-              <Stat value={kcalDia > 0 ? kcalDia : '—'} label="kcal" />
-              <Stat value={proteDia > 0 ? proteDia : '—'} unit={proteDia > 0 ? 'g' : undefined} label="Proteína" />
+              <Stat value={kcalDia > 0 ? kcalDia : SIN_DATO} label="kcal" />
+              <Stat value={proteDia > 0 ? proteDia : SIN_DATO} unit={proteDia > 0 ? 'g' : undefined} label="Proteína" />
               <Stat
                 value={`${daySlots.length}/${MEAL_SLOTS.length}`}
                 label="Comidas"

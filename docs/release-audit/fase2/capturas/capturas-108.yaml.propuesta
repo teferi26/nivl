@@ -1,0 +1,60 @@
+# PROPUESTA (Chat 1 → Chat 5, dueño de e2e/maestro): e2e/maestro/capturas-108.yaml
+# Las 7 capturas de la ficha de 1.0.8, en el mismo orden en iPhone 6,9" y iPad 13".
+# Solo LECTURA: no completa misiones, no compra, no acepta permisos nuevos.
+# Requiere la cuenta demo de capturas con el onboarding hecho y la salud y la
+# IA ya aceptadas EN ESA CUENTA (no en la revisora de Apple), con datos
+# ficticios sembrados: nivel y rango altos, racha de 30 o más, misiones de hoy,
+# amigos y una liga.
+# Rótulos y rutas sacados del código de winter2/integracion. NO verificados
+# todavía en simulador: confirmar en la primera ejecución.
+appId: com.teferi.nivl
+name: NIVL capturas 1.0.8
+---
+- launchApp:
+    clearState: true
+    permissions:
+      notifications: deny
+- runFlow: login.yaml
+- extendedWaitUntil:
+    visible: '^Hoy$'
+    timeout: 30000
+- waitForAnimationToEnd
+
+# 1 · Hoy: misiones del día y progreso.
+- takeScreenshot: capt-${SLUG}-01-hoy
+
+# 2 · Coach: conversación de la cuenta demo (sin datos reales).
+- tapOn: '^Coach$'
+- waitForAnimationToEnd
+- takeScreenshot: capt-${SLUG}-02-coach
+
+# 3 · Rango y nivel en Perfil.
+- tapOn: '^Perfil$'
+- waitForAnimationToEnd
+- takeScreenshot: capt-${SLUG}-03-perfil
+
+# 4 · Amigos: competición y liga (pantallas con denuncia y bloqueo visibles).
+- openLink: nivl://amigos
+- waitForAnimationToEnd
+- takeScreenshot: capt-${SLUG}-04-amigos
+
+# 5 · Campañas.
+- openLink: nivl://mazmorras
+- waitForAnimationToEnd
+- takeScreenshot: capt-${SLUG}-05-campanas
+
+# 6 · Agenda.
+- openLink: nivl://agenda
+- waitForAnimationToEnd
+- takeScreenshot: capt-${SLUG}-06-agenda
+
+# 7 · NIVL Pro: planes con título, periodo y precio. En simulador sin
+# configuración de StoreKit los precios pueden no cargar: entonces esta captura
+# se repite a mano en TestFlight (no se inventan precios).
+- openLink: nivl://pro
+- extendedWaitUntil:
+    notVisible: 'Cargando precios'
+    timeout: 20000
+    optional: true
+- waitForAnimationToEnd
+- takeScreenshot: capt-${SLUG}-07-pro

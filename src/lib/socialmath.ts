@@ -105,7 +105,7 @@ export function posicionEntreAmigos(clasificados: readonly Clasificado[]): strin
 }
 
 export function formatoValor(valor: number | null, metrica: Metrica): string {
-  if (valor === null) return '—';
+  if (valor === null) return '-';
   if (metrica === 'xp') return `${valor.toLocaleString('es-ES')} XP`;
   if (metrica === 'cumplimiento') return `${valor} %`;
   return valor === 1 ? '1 día' : `${valor} días`;

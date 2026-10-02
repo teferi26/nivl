@@ -1,4 +1,4 @@
-import { contraste, ink, RANK_THEME, sizeClass, VERIFY_WIDTHS } from '../tokens';
+import { contraste, ink, motion, RANK_THEME, sizeClass, type, VERIFY_WIDTHS } from '../tokens';
 
 const SUPERFICIES = [ink.ink0, ink.ink1, ink.ink2] as const;
 
@@ -54,5 +54,24 @@ describe('contrato de rangos del Chat 5', () => {
     expect(orden.map((r) => RANK_THEME[r].marco)).toEqual([
       'liso', 'doble', 'remachado', 'laurel_simple', 'laurel_doble', 'laurel_corona',
     ]);
+  });
+});
+
+describe('tipografía', () => {
+  // Las familias que carga src/app/_layout.tsx con useFonts.
+  const CARGADAS = new Set(['Cinzel_600SemiBold', 'Cinzel_700Bold', 'Outfit_500Medium', 'Outfit_600SemiBold', 'Outfit_700Bold']);
+
+  it('ningún tamaño baja de 11 y toda familia está cargada', () => {
+    for (const t of Object.values(type)) {
+      expect(t.size).toBeGreaterThanOrEqual(11);
+      expect(t.lineHeight).toBeGreaterThanOrEqual(t.size);
+      expect(CARGADAS.has(t.family)).toBe(true);
+    }
+  });
+
+  it('la arena: monumento > monumentoSm > cifra, y escalón de 55 ms', () => {
+    expect(type.monumento.size).toBeGreaterThan(type.monumentoSm.size);
+    expect(type.monumentoSm.size).toBeGreaterThan(type.cifra.size);
+    expect(motion.escalon).toBe(55);
   });
 });

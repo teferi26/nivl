@@ -32,6 +32,7 @@ import {
   StatRow,
   volver,
 } from '@/components/ui';
+import { SIN_DATO } from '@/components/ui/sinDato';
 import { confirmar } from '@/components/ui/confirmar';
 import { mensajeSistema } from '@/lib/validation';
 import { useAuth } from '@/lib/auth';
@@ -299,11 +300,11 @@ export default function Economia() {
                   <Stat value={num(vista.esteMes.gastos)} unit="€" label="Gastado" tone={desbordado ? 'red' : 'text'} />
                 </StatRow>
                 <StatRow style={styles.statsSecundarios}>
-                  <Stat size="sm" value={tasa === null ? '—' : tasa.toFixed(0)} unit={tasa === null ? undefined : '%'} label="Ahorro" />
+                  <Stat size="sm" value={tasa === null ? SIN_DATO : tasa.toFixed(0)} unit={tasa === null ? undefined : '%'} label="Ahorro" />
                   <Stat size="sm" value={num(vista.proyeccion)} unit="€" label="Proyección" />
                   <Stat
                     size="sm"
-                    value={vista.ritmo === null ? '—' : `×${vista.ritmo.toFixed(2)}`}
+                    value={vista.ritmo === null ? SIN_DATO : `×${vista.ritmo.toFixed(2)}`}
                     label="Ritmo"
                     tone={desbordado ? 'red' : 'text'}
                   />

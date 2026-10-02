@@ -1,5 +1,4 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import * as Haptics from 'expo-haptics';
 import * as ImagePicker from 'expo-image-picker';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useRef, useState } from 'react';
@@ -16,6 +15,7 @@ import {
 } from 'react-native';
 import { DescargoSalud } from '@/components/DescargoSalud';
 import { useCelebracion } from '@/components/celebracion/contexto';
+import { vibrar } from '@/design/haptics';
 import { SystemButton } from '@/components/SystemButton';
 import {
   Card,
@@ -36,7 +36,13 @@ import {
 } from '@/components/ui';
 import { avisar, confirmar } from '@/components/ui/confirmar';
 import { volver } from '@/components/ui/Screen';
-import { evaluateAchievements, fetchUnlocked, unlockAchievements } from '@/lib/achievements';
+import {
+  ACHIEVEMENT_BY_CODE,
+  evaluateAchievements,
+  fetchUnlocked,
+  sincronizarRangoDetalle,
+  unlockAchievements,
+} from '@/lib/achievements';
 import { useAuth } from '@/lib/auth';
 import { fetchPrescription, type Prescription } from '@/lib/bodywork';
 import {
@@ -56,13 +62,19 @@ import { ensureProfile, fetchCompletionsForDate, fetchQuests, insertEvent } from
 import { dateKey, isoWeekday } from '@/lib/dates';
 import { awardXp } from '@/lib/engine';
 import { propagarActo, restoDelModulo } from '@/lib/links';
-import { GYM_SESSION_XP, PR_XP } from '@/lib/game';
+import { GYM_SESSION_XP, levelFromXp, PR_XP } from '@/lib/game';
 import { supabase } from '@/lib/supabase';
 import { subirFotoMision } from '@/lib/photos';
 import { colors, fonts } from '@/lib/theme';
 import { mensajeSistema } from '@/lib/validation';
-import { deMisiones, desgloseXp, voice } from '@/lib/voice';
+import type { LogroInfo } from '@/lib/progression';
 import type { GymDay, GymExercise, GymSession } from '@/lib/types';
+
+/** Un código suelto (p. ej. `rango_C` de sync_rank) en la forma del contrato. */
+const logroDeCodigo = (codigo: string): LogroInfo => {
+  const def = ACHIEVEMENT_BY_CODE[codigo];
+  return def ? { codigo: def.code, nombre: def.name, desc: def.desc, titulo: def.title } : { codigo, nombre: codigo, desc: '' };
+};
 // Pedido por el Chat 5 (economía): con el tope diario de award_xp, pagar más
 // récords se recortaría en silencio. En la primera sesión todo es récord.
 const MAX_PR_PAGADOS = 4;
@@ -251,7 +263,7 @@ export default function Gym() {
           questId: null,
           completionId: null,
           date: today,
-          caption: `Entreno ${todayPlan?.name ?? 'libre'}${notas.trim() ? ` — ${notas.trim()}` : ''}`,
+          caption: `Entreno ${todayPlan?.name ?? 'libre'}${notas.trim() ? `: ${notas.trim()}` : ''}`,
         }).catch(() => {});
       }
       await insertLifts(userId, gymSession.id, valid);
@@ -292,33 +304,39 @@ export default function Gym() {
         .eq('type', 'gym_pr');
       const fresh = await unlockAchievements(userId, evaluateAchievements({ prCount: prCount ?? 0 }));
 
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      const prText = prs.length > 0 ? `\n${prs.map((p) => voice.pr(p.exercise_name)).join('\n')}` : '';
-      const achText = fresh.length > 0 ? `\nLogro: ${fresh.map((a) => a.name).join(', ')}` : '';
-      // El desglose cuadra con lo que luego enseña la misión enlazada.
-      const xpSesion = Math.min(pagado, totalXp - prsPagados * PR_XP);
-      const xpRecords = pagado - xpSesion;
-      const desglose = desgloseXp([
-        { xp: eco.xp, de: deMisiones(eco.marcadas) },
-        { xp: xpSesion, de: 'a FUE por la sesión' },
-        { xp: xpRecords, de: `a FUE por ${prsPagados === 1 ? '1 récord' : `${prsPagados} récords`}` },
-      ]);
-      avisar(
-        'Sesión registrada',
-        `${desglose || 'La misión de hoy ya estaba marcada y pagada.'}${prText}${achText}`,
-      );
-      // Nivel, rango, logros y rachas: una sola celebración por la cola.
+      // Nada de Alert aquí: en iOS, con un UIAlertController abierto el Modal
+      // de la ceremonia no se presenta y la cola se queda bloqueada. El
+      // resumen va corto (cabe en un toast): el XP total y los récords. El
+      // desglose (misión enlazada, sesión, récords) ya lo pinta la ficha de
+      // la sesión al recargar.
       const xpTotal = eco.xp + pagado;
+      const lineaXp =
+        xpTotal > 0
+          ? `+${xpTotal} XP · FUE`
+          : totalXp > 0
+            ? 'Tope diario de XP alcanzado'
+            : 'Sesión registrada · la misión de hoy ya estaba pagada';
+      const resumen = [lineaXp, ...prs.map((p) => `Récord · ${p.exercise_name}`)];
+      // El nivel vibra en su ceremonia; el rango, si llega del servidor, en la
+      // suya. Sin nivel nuevo, misión cumplida.
+      const subeNivel = levelFromXp(res.profile.xp_total).level > levelFromXp(perfilAntes.xp_total).level;
+      if (!subeNivel) vibrar('mision');
+      // Nivel, rango, logros y rachas: una sola celebración por la cola. La
+      // ventana la cierra el rango que devuelve el servidor (sync_rank).
+      const accion = `gym:${gymSession.id}`;
       celebrar({
-        accion: `gym:${gymSession.id}`,
+        accion,
         perfilAntes,
         perfilDespues: res.profile,
         logrosAntes,
         logrosNuevos: fresh.map((a) => ({ codigo: a.code, nombre: a.name, desc: a.desc, titulo: a.title })),
         fecha: dateKey(),
-        resumen: xpTotal > 0 ? [`+${xpTotal} XP`] : [],
-        final: true,
+        resumen,
       });
+      sincronizarRangoDetalle()
+        .catch(() => ({ nuevos: [] as string[], diasActivos: null }))
+        .then(({ nuevos, diasActivos }) => celebrar({ accion, logrosNuevos: nuevos.map(logroDeCodigo), diasActivos, final: true }))
+        .catch(() => {});
       setTraining(false);
       setNotas('');
       setFotoB64(null);
@@ -385,7 +403,7 @@ export default function Gym() {
     const r = await ImagePicker.launchCameraAsync({ mediaTypes: ['images'], quality: 0.4, base64: true });
     if (r.canceled) return;
     setFotoB64(r.assets[0]?.base64 ?? null);
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    vibrar('seleccion');
   };
 
   const confirmarBorrarDia = async (d: GymDay) => {
@@ -819,7 +837,7 @@ export default function Gym() {
                   value={exWeight}
                   onChangeText={setExWeight}
                   keyboardType="decimal-pad"
-                  placeholder="—"
+                  placeholder="-"
                   placeholderTextColor={colors.textFaint}
                   accessibilityLabel="Peso de referencia en kilos"
                 />
