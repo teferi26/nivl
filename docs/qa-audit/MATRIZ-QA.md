@@ -63,7 +63,7 @@ Columnas: Auto = Jest/tsc/lint @`d3dccae` (si no se indica otra cosa) · SimI = 
 | ID | Flujo | Auto | SimI | EmuA | iOS | And | Web | Cuenta | Caso físico | Notas |
 |---|---|---|---|---|---|---|---|---|---|---|
 | A1 | Arranque en frío | NP | NP | NP | NP | NP | NP | cualquiera | O-01 | Sin pruebas de arranque. Solo `tsc` limpio |
-| A2 | Registro y confirmación | PASS (unidad: `validation.test.ts`, reglas de contraseña) | NP | NP | NP | NP | NP | DES | O-02 | **DESBLOQUEADO el 02/10:** el correo de Auth funciona en producción (SMTP de Resend desde team@nivl.app, plantillas de NIVL, límite de 25 correos/h; el usuario recibió en su iPhone el correo de recuperación). Sigue NO PROBADO: falta la toma con la cuenta D en la build 21 |
+| A2 | Registro y confirmación | PASS (unidad: `validation.test.ts`, reglas de contraseña) | NP | NP | NP | NP | NP | DES | O-02 | **DESBLOQUEADO el 02/10:** el correo de Auth funciona en producción (SMTP de Resend desde team@nivl.app, plantillas de NIVL, límite de 100 correos/h desde el 02/10; el usuario recibió en su iPhone el correo de recuperación). Sigue NO PROBADO: falta la toma con la cuenta D en la build 21 |
 | A3 | Login cuenta revisora | NP | NP | NP | NP | NP | NP | REV | O-03 | El 29/09 se comprobó login HTTP 200 contra el servidor (AUDITORIA.md). Es evidencia de servidor, no de cliente físico |
 | A3b | Recuperar contraseña | NP | NP | NP | NP | **OBSERVADO parcial**: el usuario recibió el correo de recuperación en su iPhone (02/10) | NP | DES | A3b | Falta el resto del flujo: abrir el enlace, «GUARDAR CONTRASEÑA» y entrar con la contraseña nueva |
 | A4 | Declaración de edad y onboarding | PASS (unidad: `age.test.ts`, `compromiso.test.ts`, `kinds.test.ts`) | NP | NP | NP | NP | NP | DES | O-06 | |
