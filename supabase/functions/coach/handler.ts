@@ -34,10 +34,12 @@ import { buildContext } from '../_shared/context.ts';
 import { consentimientoIa, MENSAJE_SIN_CONSENTIMIENTO, SIN_CONSENTIMIENTO } from '../_shared/consent.ts';
 import { healthConsent, healthGuardedResult, healthRevision, healthScopedClient, HEALTH_REQUIRED, requireHealth } from '../_shared/health.ts';
 import { adminClient, userClient, type Db } from '../_shared/db.ts';
-import { buildSystem } from '../_shared/prompt.ts';
+import { buildSystem, DATOS_ABRE, DATOS_CIERRA, neutralizarDatos } from '../_shared/prompt.ts';
 import { elegirModelo, modoDeCabecera, proveedorDe, type Modo, type Routes } from '../_shared/routing.ts';
 import { executeTool, TOOL_DEFS } from '../_shared/tools.ts';
-import { controlHerramientas, fechaDelTurno, Gasto, mensajeDeFallo, validarImagenes } from './guard.ts';
+import { controlHerramientas, fechaAceptable, fechaDelTurno, Gasto, mensajeDeFallo, reloj, validarImagenes } from './guard.ts';
+import { pareceAfirmacion } from '../_shared/intencion.ts';
+import { bloqueComprobacion } from '../_shared/comprobacion.ts';
 
 // Cinco vueltas, no ocho. Cada vuelta reenvía el contexto entero y genera
 // pensamiento: con ocho, un turno se comía el presupuesto de tiempo de la
@@ -271,6 +273,17 @@ function describirFallo(e: unknown): string {
   return String(e);
 }
 
+/** La zona horaria del perfil (`profiles.timezone`), o null si no se puede leer. */
+async function zonaDelPerfil(sb: Db, userId: string): Promise<string | null> {
+  try {
+    const { data } = await sb.from('profiles').select('timezone').eq('id', userId).maybeSingle();
+    const zona = (data as { timezone?: unknown } | null)?.timezone;
+    return typeof zona === 'string' && zona ? zona : null;
+  } catch {
+    return null;
+  }
+}
+
 function markCacheable(messages: ApiMessage[]): ApiMessage[] {
   if (!messages.length) return messages;
   const out = messages.slice();
@@ -359,6 +372,23 @@ async function runCoach(args: RunArgs): Promise<{ text: string; usage: Usage; mo
     })),
     { type: 'text', text: userText },
   ] as ContentBlock[];
+
+  // «Te he subido el gym»: si afirma haber hecho o registrado algo, el servidor
+  // mira antes de que conteste el modelo y le pega lo que consta (la misma
+  // lectura que consultar_dia). Va en el mensaje de ESTE turno, después del
+  // punto de caché, y no se guarda en el hilo. Si la lectura falla, el turno
+  // sigue sin ella: el modelo aún tiene consultar_dia.
+  if (kind === 'chat' && pareceAfirmacion(userText)) {
+    try {
+      const comprobacion = await bloqueComprobacion(sb, userId, today);
+      bloquesUsuario.push({
+        type: 'text',
+        text: `${DATOS_ABRE}\n${neutralizarDatos(comprobacion)}\n${DATOS_CIERRA}`,
+      } as ContentBlock);
+    } catch (e) {
+      console.warn('comprobación del sistema no disponible:', describirFallo(e));
+    }
+  }
 
   const messages: ApiMessage[] = [...previos, { role: 'user', content: bloquesUsuario }];
 
@@ -776,7 +806,10 @@ async function atender(
   // usuario creado arriba. El cliente admin solo valida el token.
   const sb = sbTemprano;
 
-  const today = fechaDelTurno(body.date);
+  // El "hoy" lo manda el móvil; la app 1.0.7 no lo manda, y entonces manda la
+  // zona de su perfil, no el día UTC (ver fechaDelTurno).
+  const ahora = reloj.ahora();
+  const today = fechaAceptable(body.date, ahora) ?? fechaDelTurno(null, ahora, await zonaDelPerfil(sb, userId));
 
   // Un hilo continuo por defecto: el coach lleva años de conversación, no
   // sesiones sueltas.
