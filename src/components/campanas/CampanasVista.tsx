@@ -11,14 +11,14 @@
 
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { Barra, EncabezadoArena, Entrada, FranjaCifras, TarjetaArena, formatoMiles } from '@/components/arena';
+import { Barra, EncabezadoArena, Entrada, FranjaCifras, Meandro, TarjetaArena, formatoMiles } from '@/components/arena';
 import { Button, EmptyState, Screen, Section, Skeleton, Tag } from '@/components/ui';
 import { ink, space, stroke, type as tipo } from '@/design/tokens';
 import { useAnchoUtil } from '@/design/useSizeClass';
 import { DUNGEON_CLEAR_XP } from '@/lib/game';
 import type { Dungeon } from '@/lib/types';
 import { Estandarte, grosorDeRango } from './Estandarte';
-import { diasHasta } from './plazo';
+import { diasHasta, fechaCorta } from './plazo';
 
 export interface CampanaResumen extends Dungeon {
   total: number;
@@ -29,8 +29,10 @@ export interface CampanasVistaProps {
   /** Hasta la primera carga: encabezado y huecos. */
   cargado: boolean;
   error: string | null;
-  /** `kindMeta(kind).campaignsLabel`: «Proyectos», «Asignaturas»… */
-  titulo: string;
+  /** `kindMeta(kind).campaignsLabel`: «Proyectos», «Asignaturas»… null = aún
+   *  no se sabe el perfil de uso: el título va en hueco (no salta de
+   *  CAMPAÑAS a PROYECTOS al cargar). */
+  titulo: string | null;
   subtitulo: string;
   campanas: CampanaResumen[];
   onNueva: () => void;
@@ -51,23 +53,33 @@ export function CampanasVista(p: CampanasVistaProps) {
   const caido = p.cargado && p.error != null && p.campanas.length === 0;
   const listo = p.cargado && !caido;
   const dosColumnas = ancho >= ANCHO_DOS_COLUMNAS;
+  // Con el perfil «general» el título ya es «Campañas»: el eyebrow sobra.
+  const eyebrow = p.titulo != null && p.titulo.toLowerCase() === 'campañas' ? undefined : 'Campañas';
+  // Sin campañas no hay nada que contar: la franja de 0 · 0 · 0 no se pinta.
+  const conFranja = p.campanas.length > 0;
+  // Una recarga ha fallado pero hay campañas de antes: se enseñan con aviso.
+  const avisoRecarga = listo && p.error != null;
 
   return (
     <Screen>
       <Entrada indice={0}>
-        <EncabezadoArena
-          eyebrow="Campañas"
-          titulo={p.titulo}
-          subtitulo={p.subtitulo}
-          meandro
-          accion={{
-            icono: 'flag-outline',
-            etiqueta: 'Abrir una campaña nueva',
-            onPress: p.onNueva,
-            // La inversión: con el vacío a la vista, la lleva su botón.
-            solida: listo && abiertas.length > 0,
-          }}
-        />
+        {p.titulo == null ? (
+          <EncabezadoCargando />
+        ) : (
+          <EncabezadoArena
+            eyebrow={eyebrow}
+            titulo={p.titulo}
+            subtitulo={p.subtitulo}
+            meandro
+            accion={{
+              icono: 'flag-outline',
+              etiqueta: 'Abrir una campaña nueva',
+              onPress: p.onNueva,
+              // La inversión: con el vacío a la vista, la lleva su botón.
+              solida: listo && abiertas.length > 0,
+            }}
+          />
+        )}
       </Entrada>
 
       {!p.cargado ? (
@@ -93,20 +105,41 @@ export function CampanasVista(p: CampanasVistaProps) {
 
       {listo ? (
         <>
-          <Entrada indice={1} style={styles.franja}>
-            <FranjaCifras
-              cifras={[
-                { valor: abiertas.length, rotulo: 'Abiertas' },
-                { valor: despejadas.length, rotulo: 'Despejadas' },
-                {
-                  valor: botinTotal,
-                  rotulo: 'Botín',
-                  sufijo: ' XP',
-                  etiqueta: `Botín ganado: ${formatoMiles(botinTotal)} XP`,
-                },
-              ]}
-            />
-          </Entrada>
+          {avisoRecarga ? (
+            <View style={styles.aviso} accessibilityRole="alert">
+              <Ionicons name="cloud-offline-outline" size={14} color={ink.ink6} />
+              <Text style={[styles.micro, styles.avisoTexto]} maxFontSizeMultiplier={1.35} numberOfLines={2}>
+                La última recarga ha fallado: puede que no esté al día.
+              </Text>
+              <Pressable
+                onPress={p.onReintentar}
+                accessibilityRole="button"
+                accessibilityLabel="Reintentar la carga"
+                hitSlop={12}
+              >
+                <Text style={[styles.micro, styles.avisoAccion]} maxFontSizeMultiplier={1.35}>
+                  REINTENTAR
+                </Text>
+              </Pressable>
+            </View>
+          ) : null}
+
+          {conFranja ? (
+            <Entrada indice={1} style={styles.franja}>
+              <FranjaCifras
+                cifras={[
+                  { valor: abiertas.length, rotulo: 'Abiertas' },
+                  { valor: despejadas.length, rotulo: 'Despejadas' },
+                  {
+                    valor: botinTotal,
+                    rotulo: 'Botín',
+                    sufijo: ' XP',
+                    etiqueta: `Botín ganado: ${formatoMiles(botinTotal)} XP`,
+                  },
+                ]}
+              />
+            </Entrada>
+          ) : null}
 
           <Section title="Abiertas" meta={abiertas.length > 0 ? `${abiertas.length}` : undefined}>
             {abiertas.length === 0 ? (
@@ -162,6 +195,18 @@ export function CampanasVista(p: CampanasVistaProps) {
         </>
       ) : null}
     </Screen>
+  );
+}
+
+/** El encabezado mientras no se sabe el perfil de uso: huecos, sin título que salte. */
+function EncabezadoCargando() {
+  return (
+    <View style={styles.encabezado}>
+      <Skeleton height={12} width={90} style={styles.skEyebrow} />
+      <Skeleton height={tipo.rank.lineHeight} width={200} />
+      <Skeleton height={14} width="80%" style={styles.skSubtitulo} />
+      <Meandro alto={8} style={styles.skMeandro} />
+    </View>
   );
 }
 
@@ -230,7 +275,7 @@ function FilaDespejada({ campana: d, primera, onPress }: { campana: CampanaResum
         <Text style={styles.filaTitulo} numberOfLines={2}>
           {d.title}
         </Text>
-        {d.cleared_at ? <Text style={styles.micro}>Despejada el {d.cleared_at.slice(0, 10)}</Text> : null}
+        {fechaCorta(d.cleared_at) ? <Text style={styles.micro}>Despejada el {fechaCorta(d.cleared_at)}</Text> : null}
       </View>
       <Text style={styles.botinCobrado} maxFontSizeMultiplier={1.35}>
         +{formatoMiles(botin)}
@@ -242,6 +287,21 @@ function FilaDespejada({ campana: d, primera, onPress }: { campana: CampanaResum
 
 const styles = StyleSheet.create({
   skFranja: { marginBottom: space.s6 },
+  encabezado: { marginBottom: space.s6 },
+  skSubtitulo: { marginTop: space.s3 },
+  skMeandro: { marginTop: space.s4 },
+  aviso: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.s2,
+    paddingVertical: space.s2,
+    marginBottom: space.s4,
+    borderTopWidth: stroke.hairline,
+    borderBottomWidth: stroke.hairline,
+    borderColor: ink.ink3,
+  },
+  avisoTexto: { flex: 1, minWidth: 0 },
+  avisoAccion: { color: ink.ink9 },
   skEyebrow: { marginBottom: space.s3 },
   skCard: { marginBottom: space.s4 },
   franja: { marginBottom: space.s6 },

@@ -15,6 +15,8 @@ import { DESCARGO_SALUD } from '@/lib/consentmath';
 const ALTO_ARENA = 200;
 /** Tracking de la marca: más abierto que el `display` normal, es una fachada. */
 const TRACKING_MARCA = 16;
+/** Tracking del lema: una línea a 375 entre los laureles. */
+const TRACKING_LEMA = 3;
 
 /** Las reglas de la arena, en tres párrafos. */
 export const LORE_ARENA: readonly string[] = [
@@ -61,7 +63,13 @@ export function PortadaArena({ descargo = DESCARGO_SALUD }: PortadaArenaProps) {
       <Entrada indice={1}>
         <View style={styles.lema}>
           <Laurel alto={24} lado="izq" />
-          <Text style={styles.lemaTexto} maxFontSizeMultiplier={1.35}>
+          <Text
+            style={styles.lemaTexto}
+            maxFontSizeMultiplier={1.35}
+            numberOfLines={1}
+            adjustsFontSizeToFit
+            minimumFontScale={0.8}
+          >
             UN 1 % MEJOR CADA DÍA
           </Text>
           <Laurel alto={24} lado="der" />
@@ -118,7 +126,9 @@ const styles = StyleSheet.create({
     fontFamily: tipo.inscripcion.family,
     fontSize: tipo.inscripcion.size,
     lineHeight: tipo.inscripcion.lineHeight,
-    letterSpacing: tipo.inscripcion.tracking,
+    // Tracking 3 (no el 4 de la inscripción): a 375 el lema cabe en una línea
+    // entre los dos laureles.
+    letterSpacing: TRACKING_LEMA,
     color: ink.ink8,
     textAlign: 'center',
   },

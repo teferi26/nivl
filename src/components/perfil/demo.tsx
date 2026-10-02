@@ -18,7 +18,11 @@ const ACCIONES: PerfilAcciones = {
   onCompartir: nada,
   onCodigo: nada,
   onLogro: nada,
+  onReintentar: nada,
 };
+
+/** Los mismos números que el estado «Lleno» de Hoy (hoy/demo.tsx): nivel 23 con 9.300 de 11.030 XP. */
+const XP_NIVEL_23 = 105321;
 
 const ORDEN: RangoId[] = ['E', 'D', 'C', 'B', 'A', 'S'];
 
@@ -53,6 +57,7 @@ function datosDemo(p: {
   diasActivos: number;
   stats: { total: number; withEvidence: number };
   rachaFrase: string;
+  rachaCerrada?: boolean;
 }): PerfilDatos {
   const profile = perfilDemo({ ...p.perfil, equipped_title: p.equipado ?? null });
   const logros = VITRINA.map((a, i) => ({
@@ -72,14 +77,18 @@ function datosDemo(p: {
     logros,
     stats: p.stats,
     rachaFrase: p.rachaFrase,
+    racha: profile.streak_days + (p.rachaCerrada ? 1 : 0),
+    rachaCerrada: !!p.rachaCerrada,
   };
 }
 
-function Pantalla({ datos }: { datos: PerfilDatos | null }) {
+function Pantalla({ datos, error = null }: { datos: PerfilDatos | null; error?: string | null }) {
   return (
     <Screen>
       <PerfilVista
         datos={datos}
+        error={error}
+        desde={null}
         nombre={datos?.profile.name ?? ''}
         subiendoFoto={false}
         acciones={ACCIONES}
@@ -130,7 +139,8 @@ export const DEMO: DemoPantalla | null = {
       render: () => (
         <Pantalla
           datos={datosDemo({
-            perfil: { xp_total: 100000, xp_fue: 25800, xp_vit: 19200, xp_int: 23300, xp_agi: 13500, xp_per: 18200 },
+            // Racha 12 y 2 piedras: los de perfilDemo, como en Hoy.
+            perfil: { xp_total: XP_NIVEL_23, xp_fue: 25800, xp_vit: 19200, xp_int: 23300, xp_agi: 13500, xp_per: 18200 },
             rango: 'A',
             ganados: 7,
             titulo: 'El Constante',
@@ -175,6 +185,11 @@ export const DEMO: DemoPantalla | null = {
       id: 'cargando',
       titulo: 'Cargando',
       render: () => <Pantalla datos={null} />,
+    },
+    {
+      id: 'error',
+      titulo: 'Error de carga',
+      render: () => <Pantalla datos={null} error="Sin conexión. Revisa la red y vuelve a intentarlo." />,
     },
   ],
 };

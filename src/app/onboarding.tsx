@@ -16,6 +16,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { TarjetaArena } from '@/components/arena';
 import { HoldToSign } from '@/components/HoldToSign';
 import { useHealthConsent } from '@/components/ConsentimientoSalud';
 import {
@@ -483,7 +484,7 @@ export default function Onboarding() {
           {step === 1 ? (
             <FadeIn key="paso-1">
               <TituloPaso inscripcion="El nombre" titulo="¿Cómo te llamas?" />
-              <Card variant="outline">
+              <TarjetaArena variante="contorno" remaches>
                 <Text style={styles.label}>Tu nombre en el sistema</Text>
                 <TextInput
                   style={styles.input}
@@ -497,8 +498,8 @@ export default function Onboarding() {
                   onSubmitEditing={saveName}
                   accessibilityLabel="Tu nombre"
                 />
-              </Card>
-              <Card variant="outline">
+              </TarjetaArena>
+              <TarjetaArena variante="contorno" remaches>
                 <Text style={styles.label}>¿Quién te trajo? · opcional</Text>
                 <TextInput
                   style={styles.input}
@@ -523,7 +524,7 @@ export default function Onboarding() {
                 ) : (
                   <Text style={styles.codigoHint}>Si te lo recomendó alguien, escribe su código. No cambia nada para ti.</Text>
                 )}
-              </Card>
+              </TarjetaArena>
             </FadeIn>
           ) : null}
 
@@ -555,10 +556,10 @@ export default function Onboarding() {
                 );
               })}
               {meta ? (
-                <Card variant="outline" style={{ marginTop: 6 }}>
+                <TarjetaArena variante="contorno" remaches style={{ marginTop: 6 }}>
                   <Text style={styles.detailTitle}>QUÉ SE ACTIVA</Text>
                   <Text style={styles.detail}>{meta.description}</Text>
-                </Card>
+                </TarjetaArena>
               ) : null}
             </FadeIn>
           ) : null}
@@ -570,7 +571,7 @@ export default function Onboarding() {
                 titulo="¿A qué has venido?"
                 pista="Una sola cosa, en una frase. No «mejorar»: lo que quieres haber conseguido. Es lo que vas a firmar."
               />
-              <Card variant="outline">
+              <TarjetaArena variante="contorno" remaches>
                 <Text style={styles.label}>Tu objetivo</Text>
                 <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: healthGoal }}
                   accessibilityLabel="Mi objetivo incluye salud o entrenamiento"
@@ -616,7 +617,7 @@ export default function Onboarding() {
                     />
                   </View>
                 </View>
-              </Card>
+              </TarjetaArena>
             </FadeIn>
           ) : null}
 
@@ -627,7 +628,7 @@ export default function Onboarding() {
                 titulo="Tus primeras misiones"
                 pista={`Propuestas para un ${meta.label.toLowerCase() === 'en general' ? 'gladiador' : meta.label.toLowerCase()}. Quita las que no vayan contigo; podrás crear las tuyas en Hábitos.`}
               />
-              <Card variant="outline">
+              <TarjetaArena variante="contorno" remaches>
                 {meta.starterQuests.map((q, i) => {
                   const on = chosen.has(i);
                   return (
@@ -652,7 +653,7 @@ export default function Onboarding() {
                     </Pressable>
                   );
                 })}
-              </Card>
+              </TarjetaArena>
             </FadeIn>
           ) : null}
 
@@ -680,8 +681,8 @@ export default function Onboarding() {
               {/* El texto se revela párrafo a párrafo: se lee, no se acepta. */}
               <TablillaContrato parrafos={contrato.split(/\n\s*\n/)} abreEl={fechaConAnio(abreEl)} />
               <Text style={styles.smallPrint}>
-                Se abrirá el {fechaConAnio(abreEl)}. Hasta entonces lo guarda Contrato, sellado. Tus normas y sus
-                consecuencias las escribes allí cuando entres.
+                Hasta entonces lo guarda Contrato, sellado. Tus normas y sus consecuencias las escribes allí cuando
+                entres.
               </Text>
               <Card variant="outline" style={styles.firmaCard}>
                 <Text style={styles.label}>Escribe tu nombre para firmar</Text>
@@ -806,8 +807,9 @@ export default function Onboarding() {
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.bg },
   top: { paddingHorizontal: GUTTER, paddingTop: 8 },
-  backRow: { height: 32, justifyContent: 'center', marginBottom: 4 },
-  back: { alignSelf: 'flex-start', marginLeft: -4, padding: 4 },
+  backRow: { height: 44, justifyContent: 'center' },
+  // Zona táctil de 44 × 44; el margen negativo deja la flecha alineada al canal.
+  back: { alignSelf: 'flex-start', width: 44, height: 44, marginLeft: -12, alignItems: 'center', justifyContent: 'center' },
   content: { flexGrow: 1, justifyContent: 'center', paddingHorizontal: GUTTER, paddingTop: 20, paddingBottom: 24 },
   ofertaEspera: { gap: 10, marginTop: 8 },
   footer: {

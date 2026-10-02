@@ -8,7 +8,7 @@
 
 import * as ImagePicker from 'expo-image-picker';
 import { router, useFocusEffect } from 'expo-router';
-import { useCallback, useMemo, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Linking, Platform } from 'react-native';
 import { useCelebracion } from '@/components/celebracion/contexto';
 import { useConsentimientoIA } from '@/components/ConsentimientoIA';
@@ -27,6 +27,8 @@ import { cerrarSesion } from '@/lib/authFlow';
 import {
   completionStats,
   ensureProfile,
+  fetchCompletionsForDate,
+  fetchQuests,
   olvidarFirma,
   removeAvatar,
   signedUrlCached,
@@ -35,6 +37,7 @@ import {
 } from '@/lib/data';
 import { motivoReferral } from '@/lib/creatormath';
 import { claimReferral, fetchCreatorPanel, fetchMyReferral, type MyReferral } from '@/lib/creators';
+import { questsScheduledOn, rachaVisible } from '@/lib/closing';
 import { addDays, dateKey } from '@/lib/dates';
 import { setFreeze } from '@/lib/engine';
 import { exportAllData } from '@/lib/exporter';
@@ -74,6 +77,18 @@ const logroDeCodigo = (codigo: string): LogroInfo => {
   const def = ACHIEVEMENT_BY_CODE[codigo];
   return def ? { codigo, nombre: def.name, desc: def.desc, titulo: def.title } : { codigo, nombre: codigo, desc: '' };
 };
+
+/** De dónde suben el nivel, la barra y la racha del Hero al montarse. */
+interface DesdeHero {
+  nivel: number;
+  xpRatio: number;
+  racha: number;
+}
+
+// Lo último que enseñó el Hero de Perfil. Vive fuera del componente, como en
+// useHoy: al volver a Perfil los números suben desde ahí y no desde cero.
+let ultimoHero: DesdeHero | null = null;
+const DESDE_CERO: DesdeHero = { nivel: 0, xpRatio: 0, racha: 0 };
 
 export interface PerfilHojas {
   today: string;
@@ -138,6 +153,13 @@ export function usePerfil(): UsePerfil {
   const [busy, setBusy] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [avisos, setAvisos] = useState<EstadoAvisos | null>(null);
+  // La carga del perfil ha fallado: la vista lo dice con un reintento en vez
+  // de dejar los huecos para siempre.
+  const [loadError, setLoadError] = useState<string | null>(null);
+  // La racha que enseña Hoy (rachaVisible): cuenta hoy si ya está cerrado.
+  // null = aún no se sabe (o sin red): se enseña la de los días cerrados.
+  const [rachaHoy, setRachaHoy] = useState<{ valor: number; hoyCerrado: boolean } | null>(null);
+  const [desdeHero] = useState<DesdeHero>(() => ultimoHero ?? DESDE_CERO);
   // Programa de creadores: la fila del código solo sale sin atribución y en
   // plazo; la del panel, solo si esta cuenta es creador.
   const [referral, setReferral] = useState<MyReferral | null>(null);
@@ -191,8 +213,11 @@ export function usePerfil(): UsePerfil {
 
   const today = dateKey();
   const streakDays = profile?.streak_days ?? 0;
+  // La misma racha que Hoy: con el día de hoy si ya está cerrado. El
+  // multiplicador (Registro) sigue saliendo de los días CERRADOS.
+  const rachaVista = rachaHoy?.valor ?? streakDays;
   // Memo: sin él, pick() elegiría una frase nueva en cada pulsación del nombre.
-  const streakMsg = useMemo(() => voice.streakHype(streakDays), [streakDays]);
+  const streakMsg = useMemo(() => voice.streakHype(rachaVista), [rachaVista]);
 
   const load = useCallback(async () => {
     if (!userId) return;
@@ -238,6 +263,20 @@ export function usePerfil(): UsePerfil {
       const prof = await perfilPromesa;
       setProfile(prof);
       setName(prof.name);
+      setLoadError(null);
+      // La racha visible, con el mismo criterio que Hoy. Por su cuenta: si
+      // falla, se queda la de los días cerrados.
+      const dia = dateKey();
+      Promise.all([fetchQuests(), fetchCompletionsForDate(dia)])
+        .then(([quests, hechas]) => {
+          const r = rachaVisible(
+            prof.streak_days,
+            questsScheduledOn(quests, dia),
+            new Set(hechas.map((c) => c.quest_id)),
+          );
+          setRachaHoy({ valor: r.valor, hoyCerrado: r.hoyCerrado });
+        })
+        .catch(() => setRachaHoy(null));
       // La foto, ANTES que el resto. Iba la última, detrás de dos consultas que
       // no tienen nada que ver con ella, así que su cara tardaba tres viajes de
       // red en aparecer sobre una pantalla ya pintada.
@@ -248,7 +287,9 @@ export function usePerfil(): UsePerfil {
       setUnlocked(await fetchUnlocked());
       setSubscription(await fetchSubscription(userId).catch(() => null));
     } catch (e) {
-      avisar('Error del sistema', mensajeSistema(e));
+      // En línea y con reintento, no en una alerta: Perfil se recarga en cada
+      // foco y sin red la alerta saltaría una y otra vez.
+      setLoadError(mensajeSistema(e));
     }
   }, [userId, celebrar]);
 
@@ -469,7 +510,7 @@ export function usePerfil(): UsePerfil {
   // La hoja de compartir es la de la cola de celebraciones: la pausa mientras
   // está abierta y pide ella el código de amigo. La de rango lleva el retrato.
   const abrirCompartir = () => {
-    compartir({ tipo: 'rango', rango: rank, titulo, rachaDias: streakDays }, { retratoUri: avatarUri });
+    compartir({ tipo: 'rango', rango: rank, titulo, rachaDias: rachaVista }, { retratoUri: avatarUri });
   };
 
   const logros: LogroVitrina[] = ACHIEVEMENTS_VISIBLES().map((a) => ({
@@ -479,6 +520,14 @@ export function usePerfil(): UsePerfil {
     unlocked: unlocked.has(a.code),
     equipado: !!a.title && profile?.equipped_title === a.title,
   }));
+
+  // Lo que enseña el Hero, para que la próxima visita suba desde aquí.
+  const heroNivel = estado?.nivel;
+  const heroRatio = estado ? (estado.xpSiguiente > 0 ? estado.xpEnNivel / estado.xpSiguiente : 1) : null;
+  useEffect(() => {
+    if (heroNivel == null || heroRatio == null) return;
+    ultimoHero = { nivel: heroNivel, xpRatio: heroRatio, racha: rachaVista };
+  }, [heroNivel, heroRatio, rachaVista]);
 
   const vista: UsePerfil['vista'] = {
     datos:
@@ -495,8 +544,12 @@ export function usePerfil(): UsePerfil {
             logros,
             stats,
             rachaFrase: streakMsg,
+            racha: rachaVista,
+            rachaCerrada: rachaHoy?.hoyCerrado ?? false,
           }
         : null,
+    error: loadError,
+    desde: desdeHero,
     nombre: name,
     subiendoFoto: uploadingPhoto,
     acciones: {
@@ -506,6 +559,10 @@ export function usePerfil(): UsePerfil {
       onCompartir: abrirCompartir,
       onCodigo: abrirCodigo,
       onLogro: onAchievementTap,
+      onReintentar: () => {
+        setLoadError(null);
+        load();
+      },
     },
   };
 

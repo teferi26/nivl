@@ -34,7 +34,9 @@ export function useCampanas(): { vista: CampanasVistaProps; hojas: { nueva: Hoja
   const userId = session?.user.id;
 
   const [dungeons, setDungeons] = useState<CampanaResumen[]>([]);
-  const [kind, setKind] = useState<unknown>('general');
+  // null = aún no se sabe: el título va en hueco y no salta de CAMPAÑAS a
+  // PROYECTOS al llegar el perfil.
+  const [kind, setKind] = useState<unknown>(null);
   const [formOpen, setFormOpen] = useState(false);
   const [title, setTitle] = useState('');
   const [rank, setRank] = useState<DungeonRank>('D');
@@ -99,12 +101,14 @@ export function useCampanas(): { vista: CampanasVistaProps; hojas: { nueva: Hoja
   };
 
   const meta = kindMeta(kind);
+  // Tras la primera carga, sin perfil (sin red), vale el de «general».
+  const conocido = kind != null || loaded;
 
   return {
     vista: {
       cargado: loaded,
       error: loadError,
-      titulo: meta.campaignsLabel,
+      titulo: conocido ? meta.campaignsLabel : null,
       subtitulo: meta.campaignsHint,
       campanas: dungeons,
       onNueva: () => setFormOpen(true),

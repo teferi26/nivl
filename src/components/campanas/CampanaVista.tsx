@@ -21,7 +21,7 @@ import { DIFFICULTY_LABEL, DUNGEON_CLEAR_XP, dungeonTaskXp } from '@/lib/game';
 import type { Dungeon, DungeonTask } from '@/lib/types';
 import { voice } from '@/lib/voice';
 import { Estandarte, grosorDeRango } from './Estandarte';
-import { plazo } from './plazo';
+import { fechaCorta, plazo } from './plazo';
 
 export interface CampanaVistaProps {
   cargado: boolean;
@@ -48,16 +48,6 @@ const TITULO_LARGO = 28;
 /** Más de 20 cortes en la barra ya no se leen. */
 const MAX_SEGMENTOS = 20;
 
-const MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
-
-/** «2026-10-14» → «14 oct 2026». Sin fecha válida, null. */
-function fechaCorta(fecha: string | null): string | null {
-  if (!fecha) return null;
-  const [a, m, d] = fecha.slice(0, 10).split('-').map(Number);
-  if (!a || !m || !d || !MESES[m - 1]) return null;
-  return `${d} ${MESES[m - 1]} ${a}`;
-}
-
 export function CampanaVista(p: CampanaVistaProps) {
   const d = p.campana;
   // La frase del sistema se elige una vez por campaña, no en cada render.
@@ -69,7 +59,26 @@ export function CampanaVista(p: CampanaVistaProps) {
     // que no acaba.
     return (
       <Screen>
-        <EncabezadoArena onVolver={p.onVolver} eyebrow="Campaña" titulo={p.cargado ? 'Campaña' : 'Abriendo'} meandro />
+        {p.cargado ? (
+          <EncabezadoArena onVolver={p.onVolver} eyebrow="Campaña" titulo="Campaña" meandro />
+        ) : (
+          // Cargando: el título en hueco, no un «ABRIENDO» que luego cambia.
+          <View style={styles.cabecera}>
+            <Pressable
+              onPress={p.onVolver}
+              style={({ pressed }) => [styles.volver, pressed && styles.pulsado]}
+              accessibilityRole="button"
+              accessibilityLabel="Volver"
+            >
+              <Ionicons name="arrow-back" size={20} color={ink.ink9} />
+            </Pressable>
+            <Text style={styles.eyebrow} maxFontSizeMultiplier={1.35} numberOfLines={1}>
+              Campaña
+            </Text>
+            <Skeleton height={tipo.rank.lineHeight} width={220} />
+            <Meandro alto={8} style={styles.meandro} />
+          </View>
+        )}
         {!p.cargado ? (
           <View accessibilityRole="progressbar" accessibilityLabel="Cargando la campaña">
             <Skeleton height={116} style={styles.skCard} />
@@ -104,7 +113,7 @@ export function CampanaVista(p: CampanaVistaProps) {
   const vencida = active && fecha.vencida;
 
   const subtitulo = cleared
-    ? `Despejada${d.cleared_at ? ` el ${d.cleared_at.slice(0, 10)}` : ''}. Botín cobrado: +${loot} XP.`
+    ? `Despejada${fechaCorta(d.cleared_at) ? ` el ${fechaCorta(d.cleared_at)}` : ''}. Botín cobrado: +${loot} XP.`
     : tasks.length === 0
       ? `Entrena ${d.stat}. Botín al despejar: ${loot} XP.`
       : allDone
@@ -222,16 +231,26 @@ export function CampanaVista(p: CampanaVistaProps) {
             </TarjetaArena>
           ) : (
             <View>
-              {tasks.map((t, i) => (
-                <FilaTarea
-                  key={t.id}
-                  tarea={t}
-                  primera={i === 0}
-                  marcando={p.marcando === t.id}
-                  onPress={() => p.onTarea(t)}
-                  onLongPress={() => p.onBorrarTarea(t)}
-                />
-              ))}
+              {tasks.map((t, i) => {
+                const fila = (
+                  <FilaTarea
+                    tarea={t}
+                    primera={i === 0 || (t.is_boss && !t.done)}
+                    marcando={p.marcando === t.id}
+                    onPress={() => p.onTarea(t)}
+                    onLongPress={() => p.onBorrarTarea(t)}
+                  />
+                );
+                // El jefe final pendiente se siente jefe: losa de piedra con
+                // marco 2 y la galea grande. Caído, vuelve a la lista.
+                return t.is_boss && !t.done ? (
+                  <TarjetaArena key={t.id} variante="piedra" marco={2} style={styles.jefe}>
+                    {fila}
+                  </TarjetaArena>
+                ) : (
+                  <View key={t.id}>{fila}</View>
+                );
+              })}
             </View>
           )}
           {tasks.length > 0 && active ? (
@@ -272,7 +291,7 @@ function FilaTarea({
       first={primera}
       leading={<Check checked={t.done} busy={marcando} />}
       title={t.title}
-      titleAddon={t.is_boss ? <Galea kind="casco" size={20} color={t.done ? ink.ink6 : ink.ink10} /> : undefined}
+      titleAddon={t.is_boss ? <Galea kind="casco" size={t.done ? 20 : 32} color={t.done ? ink.ink6 : ink.ink10} /> : undefined}
       done={t.done}
       detail={
         <View style={styles.tareaMeta}>
@@ -351,6 +370,7 @@ const styles = StyleSheet.create({
   skEyebrow: { marginBottom: space.s3, marginTop: space.s4 },
   skCard: { marginBottom: space.s3 },
   bloque: { marginBottom: space.s6 },
+  jefe: { marginVertical: space.s3 },
   cabecera: { marginBottom: space.s6 },
   volver: {
     width: 44,

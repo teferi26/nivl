@@ -18,7 +18,7 @@ import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { ASangre, Barra, Entrada, FranjaCifras, HeroRango, Meandro, TarjetaArena, type Cifra } from '@/components/arena';
 import { EliteBadge } from '@/components/EliteBadge';
-import { Section, Skeleton, SkeletonRows, Tag } from '@/components/ui';
+import { Button, Section, Skeleton, SkeletonRows, Tag } from '@/components/ui';
 import { SIN_DATO } from '@/components/ui/sinDato';
 import { ink, space, stroke, type as tipo } from '@/design/tokens';
 import { useSizeClass } from '@/design/useSizeClass';
@@ -53,6 +53,10 @@ export interface PerfilDatos {
   stats: { total: number; withEvidence: number };
   /** La frase de racha del sistema: va como `linea` del Hero. */
   rachaFrase: string;
+  /** La racha que enseña Hoy (rachaVisible): cuenta hoy si ya está cerrado. */
+  racha: number;
+  /** Hoy ya está cerrado y cuenta en la racha. */
+  rachaCerrada: boolean;
 }
 
 export interface PerfilAcciones {
@@ -62,11 +66,16 @@ export interface PerfilAcciones {
   onCompartir: () => void;
   onCodigo: () => void;
   onLogro: (code: string) => void;
+  onReintentar: () => void;
 }
 
 export interface PerfilVistaProps {
-  /** null = cargando. */
+  /** null = cargando (o error, si lo hay). */
   datos: PerfilDatos | null;
+  /** La carga ha fallado. Sin datos, la vista lo dice con un reintento. */
+  error?: string | null;
+  /** Lo último que enseñó el Hero: nivel, barra y racha suben desde ahí. */
+  desde?: { nivel: number; xpRatio: number; racha: number } | null;
   /** El valor del campo del nombre. */
   nombre: string;
   subiendoFoto: boolean;
@@ -79,7 +88,17 @@ function multiplicador(dias: number): string {
   return `×${streakMultiplier(dias).toFixed(1).replace('.', ',')}`;
 }
 
-export function PerfilVista({ datos, nombre, subiendoFoto, acciones, ajustes }: PerfilVistaProps) {
+export function PerfilVista({ datos, error, desde, nombre, subiendoFoto, acciones, ajustes }: PerfilVistaProps) {
+  if (!datos && error) {
+    return (
+      <TarjetaArena variante="contorno" rotulo="El sistema no responde" style={styles.bloque}>
+        <Text style={styles.cuerpo} maxFontSizeMultiplier={1.35} accessibilityRole="alert">
+          {error}
+        </Text>
+        <Button title="Reintentar" icon="refresh" variant="secondary" onPress={acciones.onReintentar} style={styles.reintentar} />
+      </TarjetaArena>
+    );
+  }
   if (!datos) return <PerfilCargando />;
 
   const { profile, estado, titulo, elite, frozen, tieneCoach, stats, logros } = datos;
@@ -109,8 +128,9 @@ export function PerfilVista({ datos, nombre, subiendoFoto, acciones, ajustes }: 
           titulo={titulo}
           xpEnNivel={estado.xpEnNivel}
           xpSiguiente={estado.xpSiguiente}
-          racha={profile.streak_days}
-          rachaCerrada={false}
+          racha={datos.racha}
+          rachaCerrada={datos.rachaCerrada}
+          desde={desde}
           piedras={profile.protection_stones}
           piedrasMax={MAX_STONES}
           eyebrow={kind.title}
@@ -356,7 +376,7 @@ function Estadisticas({ profile }: { profile: Profile }) {
 
 function PerfilCargando() {
   return (
-    <View accessibilityLabel="Cargando tu ficha de gladiador">
+    <View accessible accessibilityRole="progressbar" accessibilityLabel="Cargando tu ficha de gladiador">
       <HeroRango
         variante="perfil"
         cargando
@@ -405,6 +425,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   bloque: { marginBottom: 26 },
+  reintentar: { marginTop: space.s4, alignSelf: 'flex-start' },
   cuerpo: {
     fontFamily: tipo.bodySm.family,
     fontSize: tipo.bodySm.size,

@@ -31,3 +31,13 @@ export function plazo(fecha: string | null): { valor: string; label: string; urg
   if (dias === 0) return { valor: 'Hoy', label: 'Fecha límite', urgente: true, vencida: false };
   return { valor: `${dias}`, label: dias === 1 ? 'Día restante' : 'Días restantes', urgente: dias <= 3, vencida: false };
 }
+
+const MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+
+/** «2026-10-14» (o un ISO con hora) → «14 oct 2026». Sin fecha válida, null. */
+export function fechaCorta(fecha: string | null): string | null {
+  if (!fecha) return null;
+  const [a, m, d] = fecha.slice(0, 10).split('-').map(Number);
+  if (!a || !m || !d || !MESES[m - 1]) return null;
+  return `${d} ${MESES[m - 1]} ${a}`;
+}
