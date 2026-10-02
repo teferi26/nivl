@@ -2,11 +2,11 @@ import * as Haptics from 'expo-haptics';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  Alert,
   KeyboardAvoidingView,
   Modal,
   Platform,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -15,6 +15,7 @@ import {
 import { LevelUpOverlay } from '@/components/LevelUpOverlay';
 import { SystemButton } from '@/components/SystemButton';
 import {
+  avisar,
   Card,
   Check,
   Chip,
@@ -27,11 +28,15 @@ import {
   Screen,
   ScreenHeader,
   Section,
+  Skeleton,
+  SkeletonRows,
   Stagger,
   Stat,
   StatRow,
   Tag,
+  volver,
 } from '@/components/ui';
+import { confirmar } from '@/components/ui/confirmar';
 import { evaluateAchievements, unlockAchievements } from '@/lib/achievements';
 import { useAuth } from '@/lib/auth';
 import { ensureProfile } from '@/lib/data';
@@ -50,6 +55,7 @@ import { DIFFICULTIES, DIFFICULTY_LABEL, DUNGEON_CLEAR_XP, dungeonTaskXp } from 
 import { colors, fonts } from '@/lib/theme';
 import { voice } from '@/lib/voice';
 import type { Difficulty, Dungeon, DungeonTask } from '@/lib/types';
+import { mensajeSistema } from '@/lib/validation';
 
 /** Días que quedan hasta la fecha límite, en la voz del sistema. */
 function plazo(fecha: string | null): { valor: string; label: string; tone: 'text' | 'red' } {
@@ -77,35 +83,62 @@ export default function DungeonDetail() {
   const [levelUp, setLevelUp] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
   const saving = useRef(false);
+  // Cerrojos síncronos: el estado de React llega tarde a un doble toque.
+  const cobrando = useRef(false);
+  const anadiendo = useRef(false);
+  const [adding, setAdding] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
-    if (!id) return;
+    if (!id) {
+      setLoaded(true);
+      return;
+    }
     try {
-      setDungeon(await fetchDungeon(id));
-      setTasks(await fetchTasks(id));
+      const [d, t] = await Promise.all([fetchDungeon(id), fetchTasks(id)]);
+      setDungeon(d);
+      setTasks(t);
+      setLoadError(null);
     } catch (e) {
-      Alert.alert('Error del sistema', e instanceof Error ? e.message : 'Fallo desconocido');
+      setLoadError(mensajeSistema(e));
+    } finally {
+      setLoaded(true);
     }
   }, [id]);
+
+  const reintentar = () => {
+    setLoaded(false);
+    load();
+  };
 
   useEffect(() => {
     load();
   }, [load]);
 
   const addTask = async () => {
-    if (!userId || !id || !taskTitle.trim()) return;
-    await createTask(userId, id, {
-      title: taskTitle.trim(),
-      difficulty,
-      is_boss: isBoss,
-      // max(position)+1 en vez de length: tras borrar una tarea del medio,
-      // length colisionaba con una position ya existente.
-      position: tasks.reduce((m, t) => Math.max(m, t.position), -1) + 1,
-    });
-    setTaskTitle('');
-    setIsBoss(false);
-    setFormOpen(false);
-    await load();
+    if (!userId || !id || !taskTitle.trim() || anadiendo.current) return;
+    anadiendo.current = true;
+    setAdding(true);
+    try {
+      await createTask(userId, id, {
+        title: taskTitle.trim(),
+        difficulty,
+        is_boss: isBoss,
+        // max(position)+1 en vez de length: tras borrar una tarea del medio,
+        // length colisionaba con una position ya existente.
+        position: tasks.reduce((m, t) => Math.max(m, t.position), -1) + 1,
+      });
+      setTaskTitle('');
+      setIsBoss(false);
+      setFormOpen(false);
+      await load();
+    } catch (e) {
+      avisar('Error del sistema', mensajeSistema(e));
+    } finally {
+      anadiendo.current = false;
+      setAdding(false);
+    }
   };
 
   const toggleTask = async (task: DungeonTask) => {
@@ -127,7 +160,7 @@ export default function DungeonDetail() {
       if (res.leveledUp) setLevelUp(res.newLevel);
       await load();
     } catch (e) {
-      Alert.alert('Error del sistema', e instanceof Error ? e.message : 'Fallo desconocido');
+      avisar('Error del sistema', mensajeSistema(e));
     } finally {
       saving.current = false;
       setBusy(false);
@@ -135,8 +168,11 @@ export default function DungeonDetail() {
   };
 
   const claimLoot = async () => {
-    // El guard de status evita reclamar el botín dos veces (reentrada / doble pantalla).
-    if (!userId || !dungeon || busy || dungeon.status !== 'active') return;
+    // El guard de status evita reclamar el botín dos veces (reentrada / doble
+    // pantalla) y el cerrojo, tomado antes del primer await, el doble toque:
+    // `busy` es estado y no llega a tiempo al segundo toque.
+    if (!userId || !dungeon || busy || cobrando.current || dungeon.status !== 'active') return;
+    cobrando.current = true;
     setBusy(true);
     try {
       await updateDungeon(dungeon.id, { status: 'cleared', cleared_at: new Date().toISOString() });
@@ -149,52 +185,71 @@ export default function DungeonDetail() {
       const cleared = await countClearedDungeons();
       const fresh = await unlockAchievements(userId, evaluateAchievements({ dungeonsCleared: cleared }));
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      Alert.alert(
+      avisar(
         'CAMPAÑA DESPEJADA',
         `${voice.dungeonCleared(dungeon.title)}\n\nBotín: +${loot} XP${fresh.length > 0 ? `\n${voice.achievement()} ${fresh.map((a) => a.name).join(', ')}` : ''}`,
       );
       if (res.leveledUp) setLevelUp(res.newLevel);
       await load();
     } catch (e) {
-      Alert.alert('Error del sistema', e instanceof Error ? e.message : 'Fallo desconocido');
+      avisar('Error del sistema', mensajeSistema(e));
     } finally {
+      cobrando.current = false;
       setBusy(false);
     }
   };
 
-  const removeDungeon = () => {
+  const removeDungeon = async () => {
     if (!dungeon) return;
-    Alert.alert('Abandonar campaña', `¿Eliminar "${dungeon.title}" y todas sus tareas?`, [
-      { text: 'Cancelar', style: 'cancel' },
-      {
-        text: 'Eliminar',
-        style: 'destructive',
-        onPress: async () => {
-          await deleteDungeon(dungeon.id);
-          router.back();
-        },
-      },
-    ]);
+    const ok = await confirmar({
+      titulo: 'Abandonar campaña',
+      mensaje: `¿Eliminar "${dungeon.title}" y todas sus tareas?`,
+      confirmar: 'Eliminar',
+      destructivo: true,
+    });
+    if (!ok) return;
+    try {
+      await deleteDungeon(dungeon.id);
+      volver(router);
+    } catch (e) {
+      avisar('Error del sistema', mensajeSistema(e));
+    }
   };
 
-  const removeTask = (t: DungeonTask) =>
-    Alert.alert('Eliminar tarea', t.title, [
-      { text: 'Cancelar', style: 'cancel' },
-      {
-        text: 'Eliminar',
-        style: 'destructive',
-        onPress: async () => {
-          await deleteTask(t.id);
-          await load();
-        },
-      },
-    ]);
+  const removeTask = async (t: DungeonTask) => {
+    const ok = await confirmar({ titulo: 'Eliminar tarea', mensaje: t.title, confirmar: 'Eliminar', destructivo: true });
+    if (!ok) return;
+    try {
+      await deleteTask(t.id);
+      await load();
+    } catch (e) {
+      avisar('Error del sistema', mensajeSistema(e));
+    }
+  };
 
   if (!dungeon) {
+    // Cargando: huecos. Fallo: el motivo y una salida. Nunca un "un momento"
+    // que no acaba.
     return (
       <Screen>
-        <ScreenHeader onBack={() => router.back()} eyebrow="Campaña" title="Abriendo" />
-        <EmptyState icon="flag-outline" title="El sistema busca la campaña" body="Un momento." />
+        <ScreenHeader onBack={() => volver(router)} eyebrow="Campaña" title={loaded ? 'Campaña' : 'Abriendo'} />
+        {!loaded ? (
+          <View accessibilityRole="progressbar" accessibilityLabel="Cargando la campaña">
+            <Skeleton height={116} style={styles.skCard} />
+            <Skeleton height={11} width={90} style={styles.skEyebrow} />
+            <SkeletonRows rows={4} />
+          </View>
+        ) : (
+          <Card variant="outline">
+            <EmptyState
+              compact
+              icon={loadError ? 'cloud-offline-outline' : 'flag-outline'}
+              title={loadError ? 'El sistema no responde' : 'La campaña no está'}
+              body={loadError ?? 'Puede que se haya borrado desde otro dispositivo.'}
+              action={loadError ? { label: 'Reintentar', onPress: reintentar } : { label: 'Volver', onPress: () => volver(router) }}
+            />
+          </Card>
+        )}
       </Screen>
     );
   }
@@ -222,7 +277,7 @@ export default function DungeonDetail() {
       <Stagger>
         <FadeIn index={0}>
           <ScreenHeader
-            onBack={() => router.back()}
+            onBack={() => volver(router)}
             eyebrow={`Campaña · Rango ${dungeon.rank}`}
             title={dungeon.title}
             subtitle={subtitulo}
@@ -344,43 +399,45 @@ export default function DungeonDetail() {
         <KeyboardAvoidingView style={styles.backdrop} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
           <Pressable style={styles.backdropTap} onPress={() => setFormOpen(false)} accessibilityRole="button" accessibilityLabel="Cerrar" />
           <View style={styles.sheet}>
-            <View style={styles.sheetHandle} />
-            <Text style={styles.sheetEyebrow}>NUEVA TAREA</Text>
-            <Text style={styles.sheetTitle}>¿Cuál es el siguiente paso?</Text>
-            <Text style={styles.label}>Tarea</Text>
-            <TextInput
-              style={styles.input}
-              value={taskTitle}
-              onChangeText={setTaskTitle}
-              placeholder="Ej. Redactar el capítulo 2"
-              placeholderTextColor={colors.textFaint}
-              autoFocus
-              accessibilityLabel="Nombre de la tarea"
-            />
-            <Text style={styles.label}>Dificultad</Text>
-            <ChipWrap>
-              {DIFFICULTIES.map((d) => (
-                <Chip
-                  key={d}
-                  label={DIFFICULTY_LABEL[d]}
-                  selected={difficulty === d}
-                  onPress={() => setDifficulty(d)}
-                  tone="steel"
-                  accessibilityLabel={`Dificultad ${DIFFICULTY_LABEL[d]}`}
-                />
-              ))}
-            </ChipWrap>
-            <Text style={styles.label}>Tipo</Text>
-            <ChipWrap>
-              <Chip label="Tarea" selected={!isBoss} onPress={() => setIsBoss(false)} tone="steel" accessibilityLabel="Tarea normal" />
-              <Chip label="Jefe" icon="skull-outline" selected={isBoss} onPress={() => setIsBoss(true)} tone="steel" accessibilityLabel="Jefe: hito que paga el doble" />
-            </ChipWrap>
-            <Text style={styles.hint}>
-              {isBoss ? 'Un jefe es un hito. Paga el doble: ' : 'Paga '}
-              {dungeonTaskXp(difficulty, isBoss)} XP al caer.
-            </Text>
-            <SystemButton title="Añadir tarea" onPress={addTask} disabled={!taskTitle.trim()} style={{ marginTop: 22 }} />
-            <SystemButton title="Cancelar" variant="ghost" onPress={() => setFormOpen(false)} style={{ marginTop: 6 }} />
+            <ScrollView keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false} contentContainerStyle={styles.sheetContent}>
+              <View style={styles.sheetHandle} />
+              <Text style={styles.sheetEyebrow}>NUEVA TAREA</Text>
+              <Text style={styles.sheetTitle}>¿Cuál es el siguiente paso?</Text>
+              <Text style={styles.label}>Tarea</Text>
+              <TextInput
+                style={styles.input}
+                value={taskTitle}
+                onChangeText={setTaskTitle}
+                placeholder="Ej. Redactar el capítulo 2"
+                placeholderTextColor={colors.textFaint}
+                autoFocus
+                accessibilityLabel="Nombre de la tarea"
+              />
+              <Text style={styles.label}>Dificultad</Text>
+              <ChipWrap>
+                {DIFFICULTIES.map((d) => (
+                  <Chip
+                    key={d}
+                    label={DIFFICULTY_LABEL[d]}
+                    selected={difficulty === d}
+                    onPress={() => setDifficulty(d)}
+                    tone="steel"
+                    accessibilityLabel={`Dificultad ${DIFFICULTY_LABEL[d]}`}
+                  />
+                ))}
+              </ChipWrap>
+              <Text style={styles.label}>Tipo</Text>
+              <ChipWrap>
+                <Chip label="Tarea" selected={!isBoss} onPress={() => setIsBoss(false)} tone="steel" accessibilityLabel="Tarea normal" />
+                <Chip label="Jefe" icon="skull-outline" selected={isBoss} onPress={() => setIsBoss(true)} tone="steel" accessibilityLabel="Jefe: hito que paga el doble" />
+              </ChipWrap>
+              <Text style={styles.hint}>
+                {isBoss ? 'Un jefe es un hito. Paga el doble: ' : 'Paga '}
+                {dungeonTaskXp(difficulty, isBoss)} XP al caer.
+              </Text>
+              <SystemButton title="Añadir tarea" onPress={addTask} loading={adding} disabled={!taskTitle.trim()} style={{ marginTop: 22 }} />
+              <SystemButton title="Cancelar" variant="ghost" onPress={() => setFormOpen(false)} style={{ marginTop: 6 }} />
+            </ScrollView>
           </View>
         </KeyboardAvoidingView>
       </Modal>
@@ -414,13 +471,14 @@ const styles = StyleSheet.create({
   backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'flex-end' },
   backdropTap: { flex: 1 },
   sheet: {
+    maxHeight: '92%',
     backgroundColor: colors.panel,
     borderTopWidth: 1,
     borderTopColor: colors.line,
-    paddingHorizontal: 20,
-    paddingTop: 10,
-    paddingBottom: 34,
   },
+  sheetContent: { paddingHorizontal: 20, paddingTop: 10, paddingBottom: 34 },
+  skEyebrow: { marginBottom: 12, marginTop: 16 },
+  skCard: { marginBottom: 10 },
   sheetHandle: { alignSelf: 'center', width: 36, height: 3, backgroundColor: colors.accentDim, marginBottom: 16 },
   sheetEyebrow: { fontFamily: fonts.heading, fontSize: 11, letterSpacing: 2.5, color: colors.steel },
   sheetTitle: { fontFamily: fonts.heading, fontSize: 24, letterSpacing: -0.5, color: colors.text, marginTop: 6, marginBottom: 4 },

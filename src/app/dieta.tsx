@@ -3,7 +3,6 @@ import { useCallback, useState } from 'react';
 import {
   Platform,
   KeyboardAvoidingView,
-  Alert,
   Modal,
   Pressable,
   StyleSheet,
@@ -14,6 +13,7 @@ import {
 import { DescargoSalud } from '@/components/DescargoSalud';
 import { SystemButton } from '@/components/SystemButton';
 import {
+  avisar,
   Card,
   Chip,
   ChipRow,
@@ -26,7 +26,10 @@ import {
   Stagger,
   Stat,
   StatRow,
+  volver,
 } from '@/components/ui';
+import { confirmar } from '@/components/ui/confirmar';
+import { mensajeSistema } from '@/lib/validation';
 import { useAuth } from '@/lib/auth';
 import {
   addShoppingItems,
@@ -66,7 +69,7 @@ export default function Dieta() {
     try {
       setSlots(await fetchMealSlots());
     } catch (e) {
-      Alert.alert('Error del sistema', e instanceof Error ? e.message : 'Fallo desconocido');
+      avisar('Error del sistema', mensajeSistema(e));
     }
   }, []);
 
@@ -115,7 +118,7 @@ export default function Dieta() {
     if (!userId || busy) return;
     const items = ingredientsFromPlan(slots);
     if (items.length === 0) {
-      Alert.alert(
+      avisar(
         'Sin ingredientes',
         'Añade ingredientes a tus comidas (separados por comas) y el sistema generará la lista.',
       );
@@ -124,10 +127,16 @@ export default function Dieta() {
     setBusy(true);
     try {
       await addShoppingItems(userId, items.map((name) => ({ name })));
-      Alert.alert('Lista generada', `${items.length} ingredientes enviados a la lista de la compra.`, [
-        { text: 'Ver lista', onPress: () => router.push('/compra') },
-        { text: 'OK' },
-      ]);
+      setBusy(false);
+      const ver = await confirmar({
+        titulo: 'Lista generada',
+        mensaje: `${items.length} ingredientes enviados a la lista de la compra.`,
+        confirmar: 'Ver lista',
+        cancelar: 'Entendido',
+      });
+      if (ver) router.push('/compra');
+    } catch (e) {
+      avisar('Error del sistema', mensajeSistema(e));
     } finally {
       setBusy(false);
     }
@@ -148,7 +157,7 @@ export default function Dieta() {
       <Stagger>
         <FadeIn index={0}>
           <ScreenHeader
-            onBack={() => router.back()}
+            onBack={() => volver(router)}
             eyebrow="Cuerpo"
             title="Dieta"
             subtitle={subtitulo}

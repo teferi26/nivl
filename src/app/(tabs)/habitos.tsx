@@ -1,12 +1,30 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Haptics from 'expo-haptics';
 import { useFocusEffect } from 'expo-router';
-import { useCallback, useState } from 'react';
-import { Alert, StyleSheet, Text, View } from 'react-native';
+import { useCallback, useRef, useState } from 'react';
+import { StyleSheet, Text, View } from 'react-native';
 import { QuestForm } from '@/components/QuestForm';
 import { SystemButton } from '@/components/SystemButton';
 import { XPBar } from '@/components/XPBar';
-import { Card, Check, EmptyState, FadeIn, Row, RowValue, Screen, ScreenHeader, Section, Stagger, Stat, StatRow } from '@/components/ui';
+import {
+  avisar,
+  Card,
+  Check,
+  EmptyState,
+  FadeIn,
+  Row,
+  RowValue,
+  Screen,
+  ScreenHeader,
+  Section,
+  Skeleton,
+  SkeletonRows,
+  Stagger,
+  Stat,
+  StatRow,
+  useAlVolver,
+} from '@/components/ui';
+import { confirmar } from '@/components/ui/confirmar';
 import { useAuth } from '@/lib/auth';
 import { createQuest, deleteQuest, ensureProfile, updateQuest } from '@/lib/data';
 import { dateKey } from '@/lib/dates';
@@ -22,6 +40,7 @@ import {
 import { HABIT_TARGET_DAYS, ordenarPorCercania, progresoHabito, type ProgresoHabito } from '@/lib/habits';
 import { colors, fonts } from '@/lib/theme';
 import type { Quest, Rule } from '@/lib/types';
+import { mensajeSistema } from '@/lib/validation';
 
 const DIAS = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
 
@@ -44,7 +63,12 @@ function Semana({ dias }: { dias: number[] }) {
 export default function Habitos() {
   const { session } = useAuth();
   const userId = session?.user.id;
-  const hoy = dateKey();
+  // El día es estado y lo fija cada carga: si la app vuelve de segundo plano
+  // tras la medianoche, las reglas y las rachas pasan a contar el día nuevo.
+  const [hoy, setHoy] = useState(() => dateKey());
+  const [loaded, setLoaded] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const consolidando = useRef(false);
 
   const [enCurso, setEnCurso] = useState<Quest[]>([]);
   const [adquiridos, setAdquiridos] = useState<Quest[]>([]);
@@ -57,27 +81,37 @@ export default function Habitos() {
   const pendientesReglas = reglas.filter((r) => !cumplidas.has(r.id)).length;
 
   const cargar = useCallback(async () => {
+    const dia = dateKey();
     try {
-      const todos = await fetchHabitos();
-      const fechas = await fetchFechasPorHabito();
+      // Las cuatro consultas son independientes: van a la vez.
+      const [todos, fechas, rs, checks] = await Promise.all([
+        fetchHabitos(),
+        fetchFechasPorHabito(),
+        fetchRules(),
+        fetchRuleChecks(dia),
+      ]);
       const mapa = new Map<string, ProgresoHabito>();
-      for (const q of todos) mapa.set(q.id, progresoHabito(q, fechas.get(q.id) ?? new Set(), hoy));
+      for (const q of todos) mapa.set(q.id, progresoHabito(q, fechas.get(q.id) ?? new Set(), dia));
+      setHoy(dia);
       setProgresos(mapa);
       setEnCurso(ordenarPorCercania(todos.filter((q) => !q.acquired_at), mapa));
       setAdquiridos(todos.filter((q) => q.acquired_at));
-      const [rs, checks] = await Promise.all([fetchRules(), fetchRuleChecks(hoy)]);
       setReglas(rs);
       setCumplidas(checks);
+      setLoadError(null);
     } catch (e) {
-      Alert.alert('Error del sistema', e instanceof Error ? e.message : 'Fallo desconocido');
+      setLoadError(mensajeSistema(e));
+    } finally {
+      setLoaded(true);
     }
-  }, [hoy]);
+  }, []);
 
   useFocusEffect(
     useCallback(() => {
       cargar();
     }, [cargar]),
   );
+  useAlVolver(cargar);
 
   /**
    * Marcar una regla del contrato como cumplida hoy.
@@ -105,56 +139,49 @@ export default function Habitos() {
         else s.delete(r.id);
         return s;
       });
-      Alert.alert('Error del sistema', e instanceof Error ? e.message : 'Fallo desconocido');
+      avisar('Error del sistema', mensajeSistema(e));
     }
   };
 
-  const consolidar = (q: Quest, p: ProgresoHabito) => {
-    Alert.alert(
-      'HÁBITO ADQUIRIDO',
-      `${q.title} lleva ${p.racha} días seguidos.\n\nSi lo consolidas deja de pedirte el toque diario y deja de poder romperte la racha. Puedes seguir marcándolo cuando quieras.\n\nSi prefieres seguir contando, no pasa nada: sigue sumando.`,
-      [
-        { text: 'Seguir contando', style: 'cancel' },
-        {
-          text: 'Consolidar',
-          onPress: async () => {
-            if (!userId || busy) return;
-            setBusy(true);
-            try {
-              await consolidarHabito(q.id, p.racha);
-              const perfil = await ensureProfile(userId);
-              await awardXp(perfil, HABIT_ACQUIRED_XP, q.stat, 'habit_acquired', {
-                quest: q.title,
-                dias: p.racha,
-              });
-              Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-              await cargar();
-              Alert.alert(
-                'El sistema lo da por tuyo',
-                `${q.title} ya no se te va a pedir.\n+${HABIT_ACQUIRED_XP} XP a ${q.stat}.`,
-              );
-            } catch (e) {
-              Alert.alert('Error del sistema', e instanceof Error ? e.message : 'Fallo desconocido');
-            } finally {
-              setBusy(false);
-            }
-          },
-        },
-      ],
-    );
+  const consolidar = async (q: Quest, p: ProgresoHabito) => {
+    const ok = await confirmar({
+      titulo: 'HÁBITO ADQUIRIDO',
+      mensaje: `${q.title} lleva ${p.racha} días seguidos.\n\nSi lo consolidas deja de pedirte el toque diario y deja de poder romperte la racha. Puedes seguir marcándolo cuando quieras.\n\nSi prefieres seguir contando, no pasa nada: sigue sumando.`,
+      confirmar: 'Consolidar',
+      cancelar: 'Seguir contando',
+    });
+    // Cerrojo síncrono además de `busy`: el XP del hábito adquirido se paga una vez.
+    if (!ok || !userId || busy || consolidando.current) return;
+    consolidando.current = true;
+    setBusy(true);
+    try {
+      await consolidarHabito(q.id, p.racha);
+      const perfil = await ensureProfile(userId);
+      await awardXp(perfil, HABIT_ACQUIRED_XP, q.stat, 'habit_acquired', {
+        quest: q.title,
+        dias: p.racha,
+      });
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      await cargar();
+      avisar('El sistema lo da por tuyo', `${q.title} ya no se te va a pedir.\n+${HABIT_ACQUIRED_XP} XP a ${q.stat}.`);
+    } catch (e) {
+      avisar('Error del sistema', mensajeSistema(e));
+    } finally {
+      consolidando.current = false;
+      setBusy(false);
+    }
   };
 
-  const reactivar = (q: Quest) =>
-    Alert.alert('Volver a exigirlo', `${q.title} vuelve a pedirse cada día y vuelve a contar para la racha.`, [
-      { text: 'Cancelar', style: 'cancel' },
-      {
-        text: 'Volver a exigirlo',
-        onPress: async () => {
-          await reactivarHabito(q.id).catch(() => {});
-          await cargar();
-        },
-      },
-    ]);
+  const reactivar = async (q: Quest) => {
+    const ok = await confirmar({
+      titulo: 'Volver a exigirlo',
+      mensaje: `${q.title} vuelve a pedirse cada día y vuelve a contar para la racha.`,
+      confirmar: 'Volver a exigirlo',
+    });
+    if (!ok) return;
+    await reactivarHabito(q.id).catch(() => {});
+    await cargar();
+  };
 
   const listos = enCurso.filter((q) => progresos.get(q.id)?.consolidable).length;
   const mejorRacha = Math.max(0, ...enCurso.map((q) => progresos.get(q.id)?.racha ?? 0));
@@ -171,18 +198,41 @@ export default function Habitos() {
           />
         </FadeIn>
 
-        <FadeIn index={1}>
-          <Card>
-            <StatRow>
-              <Stat value={enCurso.length} label="En forja" />
-              <Stat value={mejorRacha} label="Mejor racha" unit="d" tone={mejorRacha >= HABIT_TARGET_DAYS ? 'gold' : 'text'} />
-              <Stat value={listos} label="Listos" tone={listos > 0 ? 'accent' : 'text'} />
-              <Stat value={adquiridos.length} label="Adquiridos" />
-            </StatRow>
-          </Card>
-        </FadeIn>
+        {!loaded ? (
+          <View accessibilityRole="progressbar" accessibilityLabel="Cargando tus hábitos">
+            <Skeleton height={76} style={styles.skCard} />
+            <Skeleton height={11} width={110} style={styles.skEyebrow} />
+            <Skeleton height={112} style={styles.skCard} />
+            <SkeletonRows rows={2} />
+          </View>
+        ) : null}
 
-        {reglas.length > 0 ? (
+        {loaded && loadError ? (
+          <Card variant="outline">
+            <EmptyState
+              compact
+              icon="cloud-offline-outline"
+              title="El sistema no responde"
+              body={loadError}
+              action={{ label: 'Reintentar', onPress: cargar }}
+            />
+          </Card>
+        ) : null}
+
+        {loaded ? (
+          <FadeIn index={1}>
+            <Card>
+              <StatRow>
+                <Stat value={enCurso.length} label="En forja" />
+                <Stat value={mejorRacha} label="Mejor racha" unit="d" tone={mejorRacha >= HABIT_TARGET_DAYS ? 'gold' : 'text'} />
+                <Stat value={listos} label="Listos" tone={listos > 0 ? 'accent' : 'text'} />
+                <Stat value={adquiridos.length} label="Adquiridos" />
+              </StatRow>
+            </Card>
+          </FadeIn>
+        ) : null}
+
+        {loaded && reglas.length > 0 ? (
           <FadeIn index={2}>
             <Section
               title="Reglas del contrato · hoy"
@@ -216,76 +266,78 @@ export default function Habitos() {
           </FadeIn>
         ) : null}
 
-        <FadeIn index={3}>
-          <Section title="En forja" meta={enCurso.length > 0 ? `${enCurso.length}` : undefined}>
-            {enCurso.length === 0 && adquiridos.length === 0 ? (
-              <Card variant="outline">
-                <EmptyState
-                  icon="repeat-outline"
-                  title="Ningún hábito en forja"
-                  body="Lectura, correr, las llamadas en frío, dormir a tu hora. Lo que quieras que un día te salga solo."
-                  action={{ label: 'Añadir el primero', onPress: () => setFormOpen(true), variant: 'solid' }}
-                />
-              </Card>
-            ) : null}
+        {loaded ? (
+          <FadeIn index={3}>
+            <Section title="En forja" meta={enCurso.length > 0 ? `${enCurso.length}` : undefined}>
+              {enCurso.length === 0 && adquiridos.length === 0 && !loadError ? (
+                <Card variant="outline">
+                  <EmptyState
+                    icon="repeat-outline"
+                    title="Ningún hábito en forja"
+                    body="Lectura, correr, las llamadas en frío, dormir a tu hora. Lo que quieras que un día te salga solo."
+                    action={{ label: 'Añadir el primero', onPress: () => setFormOpen(true), variant: 'solid' }}
+                  />
+                </Card>
+              ) : null}
 
-            {enCurso.map((q, i) => {
-              const p = progresos.get(q.id);
-              if (!p) return null;
-              return (
-                <FadeIn key={q.id} index={i}>
-                  <Card
-                    onPress={() => {
-                      setEditando(q);
-                      setFormOpen(true);
-                    }}
-                    accent={p.consolidable ? colors.gold : undefined}
-                    accessibilityLabel={`Editar ${q.title}`}
-                  >
-                    <View style={styles.fila}>
-                      <Text style={styles.nombre} numberOfLines={1}>
-                        {q.title}
-                      </Text>
-                      <Text style={[styles.racha, p.consolidable && styles.rachaListo]}>
-                        {p.racha}
-                        <Text style={styles.rachaObjetivo}> / {p.objetivo}</Text>
-                      </Text>
-                    </View>
-                    <View style={{ marginTop: 10 }}>
-                      <XPBar
-                        ratio={Math.min(1, p.racha / p.objetivo)}
-                        height={8}
-                        segments={p.objetivo}
-                        color={p.consolidable ? colors.gold : colors.accent}
-                      />
-                    </View>
-                    <View style={styles.metaFila}>
-                      <Semana dias={q.days_of_week} />
-                      <Text style={[styles.meta, p.consolidable && styles.metaListo]}>
-                        {p.consolidable
-                          ? 'Listo para consolidar'
-                          : p.restantes === 1
-                            ? 'Falta 1 día'
-                            : `Faltan ${p.restantes} días`}
-                      </Text>
-                    </View>
-                    {p.consolidable ? (
-                      <SystemButton
-                        title="Darlo por adquirido"
-                        onPress={() => consolidar(q, p)}
-                        loading={busy}
-                        icon="ribbon-outline"
-                        style={{ marginTop: 14 }}
-                      />
-                    ) : null}
-                  </Card>
-                </FadeIn>
-              );
-            })}
-          </Section>
-        </FadeIn>
+              {enCurso.map((q, i) => {
+                const p = progresos.get(q.id);
+                if (!p) return null;
+                return (
+                  <FadeIn key={q.id} index={i}>
+                    <Card
+                      onPress={() => {
+                        setEditando(q);
+                        setFormOpen(true);
+                      }}
+                      accent={p.consolidable ? colors.gold : undefined}
+                      accessibilityLabel={`Editar ${q.title}`}
+                    >
+                      <View style={styles.fila}>
+                        <Text style={styles.nombre} numberOfLines={1}>
+                          {q.title}
+                        </Text>
+                        <Text style={[styles.racha, p.consolidable && styles.rachaListo]}>
+                          {p.racha}
+                          <Text style={styles.rachaObjetivo}> / {p.objetivo}</Text>
+                        </Text>
+                      </View>
+                      <View style={{ marginTop: 10 }}>
+                        <XPBar
+                          ratio={Math.min(1, p.racha / p.objetivo)}
+                          height={8}
+                          segments={p.objetivo}
+                          color={p.consolidable ? colors.gold : colors.accent}
+                        />
+                      </View>
+                      <View style={styles.metaFila}>
+                        <Semana dias={q.days_of_week} />
+                        <Text style={[styles.meta, p.consolidable && styles.metaListo]}>
+                          {p.consolidable
+                            ? 'Listo para consolidar'
+                            : p.restantes === 1
+                              ? 'Falta 1 día'
+                              : `Faltan ${p.restantes} días`}
+                        </Text>
+                      </View>
+                      {p.consolidable ? (
+                        <SystemButton
+                          title="Darlo por adquirido"
+                          onPress={() => consolidar(q, p)}
+                          loading={busy}
+                          icon="ribbon-outline"
+                          style={{ marginTop: 14 }}
+                        />
+                      ) : null}
+                    </Card>
+                  </FadeIn>
+                );
+              })}
+            </Section>
+          </FadeIn>
+        ) : null}
 
-        {adquiridos.length > 0 ? (
+        {loaded && adquiridos.length > 0 ? (
           <FadeIn index={4}>
             <Section title="Adquiridos" meta={`${adquiridos.length}`} tone="gold">
               <Card padded={false} style={styles.lista}>
@@ -345,8 +397,10 @@ const styles = StyleSheet.create({
   semana: { flexDirection: 'row', gap: 4 },
   dia: { width: 20, height: 20, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: colors.line },
   diaOn: { backgroundColor: colors.accentFaint, borderColor: colors.accentDim },
-  diaTexto: { fontFamily: fonts.heading, fontSize: 9.5, color: colors.textFaint },
+  diaTexto: { fontFamily: fonts.heading, fontSize: 11, color: colors.textFaint },
   diaTextoOn: { color: colors.text },
   meta: { fontFamily: fonts.body, fontSize: 12, color: colors.textDim, flexShrink: 1, textAlign: 'right' },
   metaListo: { color: colors.gold, fontFamily: fonts.semibold },
+  skEyebrow: { marginBottom: 12, marginTop: 16 },
+  skCard: { marginBottom: 10 },
 });

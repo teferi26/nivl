@@ -12,10 +12,11 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Sharing from 'expo-sharing';
 import { useRef, useState, type Ref, type RefObject } from 'react';
-import { Alert, Modal, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import { Modal, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { captureRef } from 'react-native-view-shot';
 import { Avatar } from '@/components/Avatar';
 import { SystemButton } from '@/components/SystemButton';
+import { avisar } from '@/components/ui/confirmar';
 import { levelFromXp, rankForLevel } from '@/lib/game';
 import { kindMeta } from '@/lib/kinds';
 import { fetchBoard, fetchSocialSelf, type BoardEntry } from '@/lib/social';
@@ -240,9 +241,9 @@ export function ShareSemanaModal({ visible, datos, onClose }: ModalProps) {
     setOcupado(true);
     try {
       const pudo = await compartirSemana(lienzo);
-      if (!pudo) Alert.alert('No disponible', 'Este dispositivo no permite compartir archivos.');
+      if (!pudo) avisar('No disponible', 'Este dispositivo no permite compartir archivos.');
     } catch {
-      Alert.alert('Error del sistema', 'El sistema no ha podido generar la imagen.');
+      avisar('Error del sistema', 'El sistema no ha podido generar la imagen.');
     } finally {
       setOcupado(false);
     }

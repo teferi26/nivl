@@ -13,6 +13,8 @@ import {
   Text,
   TextInput,
   View,
+  type NativeSyntheticEvent,
+  type TextInputKeyPressEventData,
 } from 'react-native';
 import { useConsentimientoIA } from '@/components/ConsentimientoIA';
 import { HealthConsentGuard } from '@/components/ConsentimientoSalud';
@@ -48,6 +50,7 @@ import {
   type AiStatus,
 } from '@/lib/pro';
 import { colors, fonts } from '@/lib/theme';
+import { mensajeSistema } from '@/lib/validation';
 
 interface Burbuja {
   id: string;
@@ -227,7 +230,7 @@ function CoachContent() {
           .filter((b) => b.text || b.acciones.length),
       );
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'No se pudo abrir la conversación.');
+      setError(mensajeSistema(e));
     } finally {
       setCargando(false);
     }
@@ -336,7 +339,7 @@ function CoachContent() {
               alFondo();
               break;
             case 'error':
-              setError(e.message);
+              setError(mensajeSistema(e));
               break;
           }
         },
@@ -359,7 +362,14 @@ function CoachContent() {
           setAviso(accessNotice(e));
         }
       } else {
-        setError(e instanceof Error ? e.message : 'El sistema no responde.');
+        setError(mensajeSistema(e));
+        // Si el coach no llegó a contestar nada, el mensaje no ha cuajado: se
+        // devuelve al cuadro (con sus fotos) para reintentar sin reescribirlo.
+        if (!acumulado && !ejecutadas.length) {
+          setBurbujas((b) => b.filter((x) => x.id !== localId));
+          setTexto(limpio);
+          setAdjuntas(fotos);
+        }
       }
       setEnCurso('');
     } finally {
@@ -372,6 +382,16 @@ function CoachContent() {
         releerEstado();
       }
     }
+  };
+
+  // En la web, Intro envía y Mayús+Intro hace salto de línea, como en
+  // cualquier chat de escritorio. En el móvil el teclado no cambia.
+  const alTeclear = (e: NativeSyntheticEvent<TextInputKeyPressEventData>) => {
+    if (Platform.OS !== 'web') return;
+    const nativo = e.nativeEvent as TextInputKeyPressEventData & { shiftKey?: boolean; isComposing?: boolean };
+    if (nativo.key !== 'Enter' || nativo.shiftKey || nativo.isComposing) return;
+    e.preventDefault();
+    if (puedeEnviar) enviar(texto);
   };
 
   const elegirModo = (m: CoachMode) => {
@@ -461,7 +481,6 @@ function CoachContent() {
         keyboardVerticalOffset={Platform.OS === 'ios' ? 8 : 0}
       >
         <ScrollView
-          automaticallyAdjustKeyboardInsets
           ref={scrollRef}
           style={styles.flex}
           contentContainerStyle={styles.lista}
@@ -600,6 +619,7 @@ function CoachContent() {
               placeholder="Habla con el sistema"
               placeholderTextColor={colors.textFaint}
               multiline
+              onKeyPress={alTeclear}
               accessibilityLabel="Mensaje para el sistema"
             />
             <Pressable

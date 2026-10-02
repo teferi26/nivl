@@ -1,8 +1,10 @@
 import Constants from 'expo-constants';
 import * as Updates from 'expo-updates';
 import { useState } from 'react';
-import { ActivityIndicator, Alert, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
+import { avisar, confirmar } from '@/components/ui/confirmar';
 import { colors, fonts } from '@/lib/theme';
+import { mensajeSistema } from '@/lib/validation';
 
 /**
  * Qué código estás corriendo exactamente.
@@ -44,7 +46,7 @@ export function Version() {
   const buscar = async () => {
     if (buscando) return;
     if (!Updates.isEnabled) {
-      Alert.alert(
+      avisar(
         'Actualizaciones desactivadas',
         'Esta copia no tiene el sistema de actualizaciones activo (pasa en Expo Go y en desarrollo). Solo cambia con un build nuevo.',
       );
@@ -54,18 +56,23 @@ export function Version() {
     try {
       const r = await Updates.checkForUpdateAsync();
       if (!r.isAvailable) {
-        Alert.alert(
+        avisar(
           'Ya estás al día',
           `No hay ninguna actualización nueva para la versión ${version} en el canal ${canal}.`,
         );
         return;
       }
       await Updates.fetchUpdateAsync();
-      Alert.alert('Actualización lista', 'El sistema va a reiniciarse para aplicarla.', [
-        { text: 'Reiniciar', onPress: () => Updates.reloadAsync() },
-      ]);
+      setBuscando(false);
+      const ahora = await confirmar({
+        titulo: 'Actualización lista',
+        mensaje: 'El sistema va a reiniciarse para aplicarla. Si lo dejas para más tarde, se aplica en el próximo arranque.',
+        confirmar: 'Reiniciar',
+        cancelar: 'Más tarde',
+      });
+      if (ahora) await Updates.reloadAsync();
     } catch (e) {
-      Alert.alert('No se pudo actualizar', e instanceof Error ? e.message : 'Fallo desconocido');
+      avisar('No se pudo actualizar', mensajeSistema(e));
     } finally {
       setBuscando(false);
     }
@@ -115,7 +122,7 @@ const styles = StyleSheet.create({
   },
   linea: {
     fontFamily: fonts.body,
-    fontSize: 10.5,
+    fontSize: 11,
     letterSpacing: 0.5,
     color: colors.textFaint,
   },

@@ -1,7 +1,6 @@
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
-  Alert,
   KeyboardAvoidingView,
   Modal,
   Platform,
@@ -15,6 +14,7 @@ import { useConsentimientoIA } from '@/components/ConsentimientoIA';
 import { SystemButton } from '@/components/SystemButton';
 import { TextoSistema } from '@/components/TextoSistema';
 import {
+  avisar,
   Card,
   Check,
   EmptyState,
@@ -25,7 +25,9 @@ import {
   ScreenHeader,
   Section,
   Stagger,
+  volver,
 } from '@/components/ui';
+import { confirmar } from '@/components/ui/confirmar';
 import { useAuth } from '@/lib/auth';
 import { createQuest } from '@/lib/data';
 import { DIFFICULTY_LABEL, XP_BY_DIFFICULTY } from '@/lib/game';
@@ -70,7 +72,7 @@ export default function Oraculo() {
     await setApiKey(apiKey);
     setKeySaved(!!apiKey.trim());
     setKeyOpen(false);
-    Alert.alert('Guardada', 'La key se guarda solo en este dispositivo.');
+    avisar('Guardada', 'La key se guarda solo en este dispositivo.');
   };
 
   const consult = async () => {
@@ -92,7 +94,7 @@ export default function Oraculo() {
         olvidarConsentimiento();
         consentimiento.pedir();
       } else {
-        Alert.alert('El oráculo guarda silencio', mensajeSistema(e));
+        avisar('El oráculo guarda silencio', mensajeSistema(e));
       }
     } finally {
       setBusy(false);
@@ -124,13 +126,20 @@ export default function Oraculo() {
           requires_evidence: false,
         });
       }
-      Alert.alert('MISIONES ASIGNADAS', `El sistema ha registrado ${selected.size} nueva(s) misión(es).`, [
-        { text: 'Ver misiones', onPress: () => router.replace('/(tabs)/habitos') },
-      ]);
+      const n = selected.size;
       setProposals([]);
       setGoal('');
+      // El aviso llevaba la navegación en su botón: en la web era un botón
+      // muerto. Ahora es una confirmación que funciona en las dos.
+      const ver = await confirmar({
+        titulo: 'MISIONES ASIGNADAS',
+        mensaje: `El sistema ha registrado ${n} nueva(s) misión(es).`,
+        confirmar: 'Ver misiones',
+        cancelar: 'Quedarme aquí',
+      });
+      if (ver) router.replace('/(tabs)/habitos');
     } catch (e) {
-      Alert.alert('Error del sistema', mensajeSistema(e));
+      avisar('Error del sistema', mensajeSistema(e));
     } finally {
       setAccepting(false);
     }
@@ -144,7 +153,7 @@ export default function Oraculo() {
       <Stagger>
         <FadeIn index={0}>
           <ScreenHeader
-            onBack={() => router.back()}
+            onBack={() => volver(router)}
             eyebrow="El sistema forja"
             title="Oráculo"
             subtitle={
