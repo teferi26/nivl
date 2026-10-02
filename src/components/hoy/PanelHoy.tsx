@@ -22,9 +22,11 @@ interface Props {
   rivalidad: string | null;
   /** true = la cuenta tiene coach. Sin Pro (o sin saberlo) no se pinta. */
   esPro: boolean | null;
+  /** Con el día perfecto a la vista, la tarjeta de rango no lleva grano (uno por pantalla). */
+  diaPerfectoVisible?: boolean;
 }
 
-export function PanelHoy({ loaded, profile, rango, racha, rivalidad, esPro }: Props) {
+export function PanelHoy({ loaded, profile, rango, racha, rivalidad, esPro, diaPerfectoVisible }: Props) {
   if (!loaded || !profile) {
     return (
       <View accessibilityRole="progressbar" accessibilityLabel="Cargando tu rango">
@@ -36,7 +38,7 @@ export function PanelHoy({ loaded, profile, rango, racha, rivalidad, esPro }: Pr
 
   return (
     <View>
-      <TarjetaRango profile={profile} rango={rango} racha={racha} grande />
+      <TarjetaRango profile={profile} rango={rango} racha={racha} grande diaPerfectoVisible={diaPerfectoVisible} />
 
       {rivalidad ? (
         <Section title="Amigos" style={styles.seccion}>

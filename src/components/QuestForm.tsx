@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Button, Chip, ChipWrap, Sheet } from '@/components/ui';
 import { avisar, confirmar } from '@/components/ui/confirmar';
@@ -32,14 +32,48 @@ interface Props {
   // Modo edición: precarga la misión y muestra Guardar/Eliminar.
   initial?: Quest | null;
   onDelete?: (quest: Quest) => Promise<void>;
+  /**
+   * Cómo se llama lo que se crea: cambia el eyebrow, el título, los botones y
+   * la confirmación de borrado para que digan lo mismo que el botón que abrió
+   * la hoja («Nuevo hábito» abre «NUEVO HÁBITO»). Por defecto, misión.
+   */
+  sustantivo?: 'misión' | 'hábito';
+  /** Eyebrow propio; si no, sale de `sustantivo`. */
+  eyebrow?: string;
+  /** Título propio; si no, sale de `sustantivo`. */
+  title?: string;
 }
+
+const TEXTOS = {
+  misión: {
+    nuevo: 'Nueva misión',
+    editar: 'Editar misión',
+    tituloNuevo: '¿Qué vas a exigirte?',
+    tituloEditar: 'Ajusta la misión',
+    crear: 'Crear misión',
+    eliminar: 'Eliminar misión',
+    campo: 'Misión',
+    campoA11y: 'Nombre de la misión',
+  },
+  hábito: {
+    nuevo: 'Nuevo hábito',
+    editar: 'Editar hábito',
+    tituloNuevo: '¿Qué quieres que te salga solo?',
+    tituloEditar: 'Ajusta el hábito',
+    crear: 'Crear hábito',
+    eliminar: 'Eliminar hábito',
+    campo: 'Hábito',
+    campoA11y: 'Nombre del hábito',
+  },
+} as const;
 
 /**
  * El formulario de misión, en la hoja del kit (Sheet): la misma gramática que
  * la hoja de campañas para que crear una misión y abrir una campaña se sientan
  * el mismo gesto. El teclado lo gestiona la hoja; las acciones van en su pie.
  */
-export function QuestForm({ visible, onClose, onSubmit, initial, onDelete }: Props) {
+export function QuestForm({ visible, onClose, onSubmit, initial, onDelete, sustantivo = 'misión', eyebrow, title: tituloHoja }: Props) {
+  const t = TEXTOS[sustantivo];
   const [title, setTitle] = useState('');
   const [stat, setStat] = useState<Stat>('FUE');
   const [difficulty, setDifficulty] = useState<Difficulty>('media');
@@ -47,6 +81,9 @@ export function QuestForm({ visible, onClose, onSubmit, initial, onDelete }: Pro
   const [requiresEvidence, setRequiresEvidence] = useState(false);
   const [isBonus, setIsBonus] = useState(false);
   const [saving, setSaving] = useState(false);
+  // Cerrojo síncrono: `saving` no se ve hasta el siguiente render, así que dos
+  // toques seguidos en «Crear» entraban los dos y creaban dos misiones.
+  const guardando = useRef(false);
 
   const editing = !!initial;
 
@@ -74,7 +111,8 @@ export function QuestForm({ visible, onClose, onSubmit, initial, onDelete }: Pro
   };
 
   const submit = async () => {
-    if (!title.trim() || days.length === 0 || saving) return;
+    if (!title.trim() || days.length === 0 || guardando.current) return;
+    guardando.current = true;
     setSaving(true);
     try {
       await onSubmit({
@@ -89,6 +127,7 @@ export function QuestForm({ visible, onClose, onSubmit, initial, onDelete }: Pro
     } catch (e) {
       avisar('Error del sistema', mensajeSistema(e));
     } finally {
+      guardando.current = false;
       setSaving(false);
     }
   };
@@ -96,16 +135,17 @@ export function QuestForm({ visible, onClose, onSubmit, initial, onDelete }: Pro
   const confirmDelete = async () => {
     if (!initial || !onDelete) return;
     const ok = await confirmar({
-      titulo: 'Eliminar misión',
+      titulo: t.eliminar,
       mensaje: `"${initial.title}" y todo su historial de completadas. Esta acción no se puede deshacer.`,
       confirmar: 'Eliminar',
       destructivo: true,
     });
     if (!ok) return;
-    vibrar('destructiva');
     try {
-      // La hoja solo se cierra si se ha borrado de verdad.
+      // La hoja solo se cierra si se ha borrado de verdad, y la háptica de
+      // borrado solo suena entonces: si falla, no ha habido nada destructivo.
       await onDelete(initial);
+      vibrar('destructiva');
       onClose();
     } catch (e) {
       avisar('Error del sistema', mensajeSistema(e));
@@ -120,25 +160,25 @@ export function QuestForm({ visible, onClose, onSubmit, initial, onDelete }: Pro
     <Sheet
       visible={visible}
       onClose={onClose}
-      eyebrow={editing ? 'Editar misión' : 'Nueva misión'}
-      title={editing ? 'Ajusta la misión' : '¿Qué vas a exigirte?'}
+      eyebrow={eyebrow ?? (editing ? t.editar : t.nuevo)}
+      title={tituloHoja ?? (editing ? t.tituloEditar : t.tituloNuevo)}
       footer={
         <>
           <Button
-            title={editing ? 'Guardar cambios' : 'Crear misión'}
+            title={editing ? 'Guardar cambios' : t.crear}
             size="lg"
             onPress={submit}
             loading={saving}
             disabled={!title.trim() || days.length === 0}
           />
           {editing && onDelete ? (
-            <Button title="Eliminar misión" variant="danger" icon="trash-outline" onPress={confirmDelete} />
+            <Button title={t.eliminar} variant="danger" icon="trash-outline" onPress={confirmDelete} />
           ) : null}
           <Button title="Cancelar" variant="ghost" onPress={onClose} />
         </>
       }
     >
-      <Text style={[styles.label, styles.labelPrimero]}>Misión</Text>
+      <Text style={[styles.label, styles.labelPrimero]}>{t.campo}</Text>
       <TextInput
         style={styles.input}
         value={title}
@@ -146,7 +186,7 @@ export function QuestForm({ visible, onClose, onSubmit, initial, onDelete }: Pro
         placeholder="Ej. Gimnasio · pierna"
         placeholderTextColor={colors.textFaint}
         autoFocus={!editing}
-        accessibilityLabel="Nombre de la misión"
+        accessibilityLabel={t.campoA11y}
       />
 
       <Text style={styles.label}>Qué entrena</Text>
@@ -250,7 +290,8 @@ const styles = StyleSheet.create({
   days: { flexDirection: 'row', gap: 6 },
   day: {
     flex: 1,
-    height: 40,
+    // 44: la zona táctil mínima; con 7 en fila no hay hitSlop lateral posible.
+    height: 44,
     borderWidth: 1,
     borderColor: colors.accentDim,
     alignItems: 'center',

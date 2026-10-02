@@ -27,7 +27,7 @@ import {
 import { confirmar } from '@/components/ui/confirmar';
 import { vibrar } from '@/design/haptics';
 import { ink, stroke } from '@/design/tokens';
-import { useSizeClass } from '@/design/useSizeClass';
+import { useNavActual } from '@/design/useSizeClass';
 import { useAuth } from '@/lib/auth';
 import { questsScheduledOn } from '@/lib/closing';
 import { fetchCompletionsForDate, fetchQuests } from '@/lib/data';
@@ -126,10 +126,12 @@ export default function Agenda() {
   const userId = session?.user.id;
   const today = dateKey();
   const router = useRouter();
-  // En compact la Agenda no tiene pestaña: es un destino secundario de Hoy
-  // (navItems.ts), así que lleva su flecha de vuelta. En el raíl y la barra
-  // lateral es un destino más y no la necesita.
-  const enBarraInferior = useSizeClass().nav === 'tabs';
+  // Con la barra inferior la Agenda no tiene pestaña: es un destino secundario
+  // de Hoy (navItems.ts), así que lleva su flecha de vuelta. En el raíl y la
+  // barra lateral es un destino más y no la necesita. Se mira la navegación
+  // que hay de verdad (ancho de la ventana), no la clase del hueco: entre 600
+  // y 671 el hueco es compact pero se pinta el raíl.
+  const enBarraInferior = useNavActual() === 'tabs';
 
   const [view, setView] = useState<ViewMode>('dia');
   const [anchor, setAnchor] = useState(today);
@@ -144,6 +146,14 @@ export default function Agenda() {
   const [date, setDate] = useState(today);
   const [time, setTime] = useState('');
   const saving = useRef(false);
+  // Espejo del cerrojo para el botón: el ref no repinta.
+  const [guardando, setGuardando] = useState(false);
+  // Evento de la hoja de detalle. Se queda puesto al cerrarla para que el
+  // título no se vacíe durante la animación de salida.
+  const [detalle, setDetalle] = useState<CalendarEvent | null>(null);
+  const [detalleAbierto, setDetalleAbierto] = useState(false);
+  const borrando = useRef(false);
+  const [eliminando, setEliminando] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   // Solo con coach se sugiere "pídele al coach": sin Pro esa puerta no existe.
@@ -288,6 +298,7 @@ export default function Agenda() {
       return;
     }
     saving.current = true;
+    setGuardando(true);
     try {
       await createCalendarEvent(userId, { title: title.trim(), date, time: time.trim() || null });
       setTitle('');
@@ -298,19 +309,38 @@ export default function Agenda() {
       avisar('Error del sistema', mensajeSistema(e));
     } finally {
       saving.current = false;
+      setGuardando(false);
     }
   };
 
+  /**
+   * Tocar un evento abre su detalle; borrar se hace desde ahí, con «Eliminar»
+   * y su confirmación. Antes el toque borraba (tras confirmar) y no había forma
+   * de ver la nota ni la hora completa.
+   */
+  const abrirDetalle = (e: CalendarEvent) => {
+    setDetalle(e);
+    setDetalleAbierto(true);
+  };
+
   const removeEvent = async (e: CalendarEvent) => {
+    if (borrando.current) return;
     const ok = await confirmar({ titulo: 'Eliminar evento', mensaje: e.title, confirmar: 'Eliminar', destructivo: true });
-    if (!ok) return;
-    vibrar('destructiva');
+    if (!ok || borrando.current) return;
+    borrando.current = true;
+    setEliminando(true);
     try {
       await deleteCalendarEvent(e.id);
+      // La háptica de borrado, solo si se ha borrado de verdad.
+      vibrar('destructiva');
+      setDetalleAbierto(false);
+      await load(anchor);
     } catch (err) {
       avisar('Error del sistema', mensajeSistema(err));
+    } finally {
+      borrando.current = false;
+      setEliminando(false);
     }
-    await load(anchor);
   };
 
   const abrirFormulario = () => {
@@ -562,13 +592,13 @@ export default function Agenda() {
                               {hora}
                             </RowValue>
                           }
-                          onPress={() => removeEvent(e)}
-                          accessibilityLabel={`${e.title}, ${min === null ? 'todo el día' : `a las ${hora}`}. Toca para eliminarlo.`}
+                          onPress={() => abrirDetalle(e)}
+                          accessibilityLabel={`${e.title}, ${min === null ? 'todo el día' : `a las ${hora}`}. Toca para ver el detalle.`}
                         />
                       );
                     })}
                   </Card>
-                  <Text style={styles.nota}>Toca un evento para eliminarlo.</Text>
+                  <Text style={styles.nota}>Toca un evento para ver su detalle.</Text>
                 </Section>
               </FadeIn>
             ) : null}
@@ -596,7 +626,7 @@ export default function Agenda() {
                     ahoraMin={anchor === today ? minutosAhora() : null}
                     onPress={(item) => {
                       const e = contentFor(anchor).dayEvents.find((x) => `e-${x.id}` === item.id);
-                      if (e) removeEvent(e);
+                      if (e) abrirDetalle(e);
                     }}
                   />
                 )}
@@ -650,7 +680,7 @@ export default function Agenda() {
         title="¿Qué hay que recordar?"
         footer={
           <>
-            <Button title="Añadir evento" onPress={addEvent} disabled={!title.trim()} />
+            <Button title="Añadir evento" onPress={addEvent} loading={guardando} disabled={!title.trim()} />
             <Button title="Cancelar" variant="ghost" onPress={() => setFormOpen(false)} />
           </>
         }
@@ -716,6 +746,44 @@ export default function Agenda() {
         <Text style={styles.hint}>
           Con hora, el evento se pinta sobre el eje del día. Sin hora, cuenta como de todo el día.
         </Text>
+      </Sheet>
+
+      <Sheet
+        visible={detalleAbierto}
+        onClose={() => setDetalleAbierto(false)}
+        eyebrow="Evento"
+        title={detalle?.title ?? ''}
+        footer={
+          <>
+            <Button
+              title="Eliminar evento"
+              variant="danger"
+              icon="trash-outline"
+              loading={eliminando}
+              onPress={() => {
+                if (detalle) removeEvent(detalle);
+              }}
+            />
+            <Button title="Cerrar" variant="ghost" onPress={() => setDetalleAbierto(false)} />
+          </>
+        }
+      >
+        {detalle ? (
+          <>
+            <Text style={[styles.label, styles.labelPrimero]}>Fecha</Text>
+            <Text style={styles.detalleValor}>{nombreDia(detalle.date)}</Text>
+            <Text style={styles.label}>Hora</Text>
+            <Text style={styles.detalleValor}>
+              {horaAMinutos(detalle.time) === null ? 'Todo el día' : hhmm(horaAMinutos(detalle.time) ?? 0)}
+            </Text>
+            {detalle.notes ? (
+              <>
+                <Text style={styles.label}>Nota</Text>
+                <Text style={styles.detalleValor}>{detalle.notes}</Text>
+              </>
+            ) : null}
+          </>
+        ) : null}
       </Sheet>
     </Screen>
   );
@@ -807,6 +875,7 @@ const styles = StyleSheet.create({
   },
   labelPrimero: { marginTop: 0 },
   hint: { fontFamily: fonts.body, fontSize: 12, color: colors.textFaint, marginTop: 8, lineHeight: 17 },
+  detalleValor: { fontFamily: fonts.body, fontSize: 15, lineHeight: 21, color: colors.text },
   chipsDia: { marginBottom: 8 },
   inline: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   input: {

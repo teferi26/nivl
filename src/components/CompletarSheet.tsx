@@ -72,7 +72,7 @@ export function CompletarSheet({ quest, onElegir, onClose }: Props) {
       <Text style={styles.hint}>
         {exigeFoto
           ? 'Esta misión exige evidencia: se completa con una foto hecha ahora.'
-          : 'Con foto suma un 25 % de XP y el domingo entra en tu resumen.'}
+          : `Con foto suma un 25 % de ${q?.is_bonus ? 'PB' : 'XP'} y el domingo entra en tu resumen.`}
         {acto ? ` También se marca sola al registrar ${NOMBRE_DE_ACTO[acto]}.` : ''}
       </Text>
     </Sheet>

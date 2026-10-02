@@ -5,7 +5,7 @@
 
 import { createContext, useContext } from 'react';
 import { useWindowDimensions } from 'react-native';
-import { marcoDe, type Marco } from './responsive';
+import { marcoDe, navDeVentana, type Marco, type NavKind } from './responsive';
 
 /**
  * Tope de ancho impuesto por un contenedor: la columna de 560 de la web fuera
@@ -24,4 +24,15 @@ export function useAnchoUtil(): number {
 
 export function useSizeClass(): Marco {
   return marcoDe(useAnchoUtil());
+}
+
+/**
+ * Navegación que hay de verdad en pantalla: barra inferior, raíl o barra
+ * lateral. Sale del ancho de la ventana, como en (tabs)/_layout.tsx, y no del
+ * hueco: entre 600 y 671 `useSizeClass()` devuelve `compact` (el hueco tras el
+ * raíl) mientras se pinta el raíl. Úsalo para decidir lo que depende de la
+ * navegación (p. ej. una flecha de vuelta que solo hace falta sin raíl).
+ */
+export function useNavActual(): NavKind {
+  return navDeVentana(useWindowDimensions().width);
 }

@@ -1,6 +1,6 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { router, useFocusEffect } from 'expo-router';
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
 import { XPBar } from '@/components/XPBar';
 import {
@@ -62,6 +62,9 @@ export default function Campañas() {
   const [rank, setRank] = useState<DungeonRank>('D');
   const [stat, setStat] = useState<Stat>('INT');
   const [saving, setSaving] = useState(false);
+  // Cerrojo síncrono: `saving` llega un render tarde y dos toques seguidos en
+  // «Abrir campaña» abrían dos campañas.
+  const creando = useRef(false);
   // Hasta la primera carga se pintan huecos: nunca "Ninguna campaña abierta"
   // antes de saberlo (salía un instante al entrar).
   const [loaded, setLoaded] = useState(false);
@@ -101,7 +104,8 @@ export default function Campañas() {
   useAlVolver(load);
 
   const onCreate = async () => {
-    if (!userId || !title.trim() || saving) return;
+    if (!userId || !title.trim() || creando.current) return;
+    creando.current = true;
     setSaving(true);
     try {
       const d = await createDungeon(userId, { title: title.trim(), rank, stat });
@@ -111,6 +115,7 @@ export default function Campañas() {
     } catch (e) {
       avisar('Error del sistema', mensajeSistema(e));
     } finally {
+      creando.current = false;
       setSaving(false);
     }
   };

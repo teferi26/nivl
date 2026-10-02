@@ -9,7 +9,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { StyleSheet, Text, View } from 'react-native';
 import { Avatar, Card, Skeleton } from '@/components/ui';
 import { XPBar } from '@/components/XPBar';
-import { ink, space, type as tipo } from '@/design/tokens';
+import { ink, RANK_THEME, space, type as tipo } from '@/design/tokens';
 import { tituloVigente } from '@/lib/achievements';
 import { levelFromXp, streakMultiplier } from '@/lib/game';
 import { kindMeta } from '@/lib/kinds';
@@ -34,9 +34,20 @@ interface Props {
   racha: RachaHoy;
   /** Versión del panel lateral: avatar mayor y el bloque apilado. */
   grande?: boolean;
+  /**
+   * La línea RET-05 está a la vista: la pista «N para salvar el día» no se
+   * pinta. rachaVisible cuenta las extras y enJuegoHoy no, y darían dos
+   * números distintos para lo mismo.
+   */
+  ocultarPista?: boolean;
+  /**
+   * La tarjeta de día perfecto está a la vista: ella lleva el grano y esta no
+   * lo repite (SISTEMA §0, sin acumular).
+   */
+  diaPerfectoVisible?: boolean;
 }
 
-export function TarjetaRango({ profile, rango, racha, grande }: Props) {
+export function TarjetaRango({ profile, rango, racha, grande, ocultarPista, diaPerfectoVisible }: Props) {
   const lvl = levelFromXp(profile.xp_total);
   const xpEnNivel = useCountUp(lvl.into, 600);
   const titulo = tituloVigente(profile.equipped_title);
@@ -45,12 +56,15 @@ export function TarjetaRango({ profile, rango, racha, grande }: Props) {
     ? racha.perfecto
       ? 'Día perfecto'
       : 'Hoy cuenta'
-    : racha.faltan > 0
+    : racha.faltan > 0 && !ocultarPista
       ? `${racha.faltan} para salvar el día`
       : '';
+  // Grano solo para logro: el de los rangos altos (B, A, S), y nunca a la vez
+  // que el día perfecto.
+  const conGrano = !!rango && RANK_THEME[rango].grain > 0 && !diaPerfectoVisible;
 
   return (
-    <Card>
+    <Card variant={conGrano ? 'logro' : 'surface'}>
       <View style={[styles.fila, grande && styles.filaGrande]}>
         <Avatar
           size={grande ? 88 : 52}
@@ -123,7 +137,13 @@ const styles = StyleSheet.create({
   barra: { marginTop: 14 },
   insignias: { flexDirection: 'row', alignItems: 'center', gap: 12, marginTop: 12 },
   insignia: { flexDirection: 'row', alignItems: 'center', gap: 5 },
-  insigniaTexto: { fontFamily: fonts.semibold, fontSize: 12.5, color: ink.ink8 },
+  insigniaTexto: { fontFamily: tipo.micro.family, fontSize: tipo.micro.size, lineHeight: tipo.micro.lineHeight, color: ink.ink8 },
   insigniaCerrada: { color: ink.ink10 },
-  pista: { flex: 1, fontFamily: fonts.body, fontSize: 12, color: ink.ink6 },
+  pista: {
+    flex: 1,
+    fontFamily: tipo.micro.family,
+    fontSize: tipo.micro.size,
+    lineHeight: tipo.micro.lineHeight,
+    color: ink.ink6,
+  },
 });

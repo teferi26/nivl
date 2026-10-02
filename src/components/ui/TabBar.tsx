@@ -39,7 +39,9 @@ export function TabBar({ state, descriptors, navigation }: BottomTabBarProps) {
             onPress={onPress}
             style={styles.item}
             accessibilityRole="tab"
-            accessibilityState={{ selected: focused }}
+            // Para el lector, seleccionada es la pantalla ENFOCADA: en la Agenda
+            // no puede anunciar «Hoy, seleccionada», aunque Hoy siga marcada.
+            accessibilityState={{ selected: route.name === enfocada }}
             accessibilityLabel={label}
           >
             <View style={[styles.indicator, focused && styles.indicatorOn]} />

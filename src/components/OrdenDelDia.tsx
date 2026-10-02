@@ -5,7 +5,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { TextoSistema } from '@/components/TextoSistema';
 import { Card, EmptyState, Section } from '@/components/ui';
 import { vibrar } from '@/design/haptics';
-import { ink, stroke } from '@/design/tokens';
+import { ink, stroke, type as tipo } from '@/design/tokens';
 import {
   bloqueActual,
   hhmm,
@@ -173,13 +173,23 @@ const styles = StyleSheet.create({
   cuerpoActual: {},
   tituloFila: { flexDirection: 'row', alignItems: 'center', gap: 7 },
   bloqueTitulo: { flex: 1, fontFamily: fonts.semibold, fontSize: 14.5, lineHeight: 19, color: colors.text },
-  ahora: { fontFamily: fonts.heading, fontSize: 11, letterSpacing: 1.2, color: colors.bg, backgroundColor: colors.accent, paddingHorizontal: 5, paddingVertical: 1 },
+  // Contorno, no inversión: la inversión de Hoy es una sola (SISTEMA §0).
+  ahora: {
+    fontFamily: fonts.heading,
+    fontSize: 11,
+    letterSpacing: 1.2,
+    color: ink.ink10,
+    borderWidth: stroke.hairline,
+    borderColor: ink.ink10,
+    paddingHorizontal: 5,
+    paddingVertical: 1,
+  },
   tachado: { textDecorationLine: 'line-through', color: colors.textFaint },
   perdido: { color: colors.textDim },
   detalle: {
-    fontFamily: fonts.body,
-    fontSize: 12.5,
-    lineHeight: 17,
+    fontFamily: tipo.bodySm.family,
+    fontSize: tipo.bodySm.size,
+    lineHeight: tipo.bodySm.lineHeight,
     color: colors.textDim,
     marginTop: 3,
     marginLeft: 20,

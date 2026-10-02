@@ -1,9 +1,9 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { StyleSheet, Text, View } from 'react-native';
 import { Check, Row, RowValue, Tag, Trama } from '@/components/ui';
-import { ink } from '@/design/tokens';
+import { ink, type as tipo } from '@/design/tokens';
 import { BONUS_BY_DIFFICULTY, questXp, STAT_LABEL } from '@/lib/game';
-import { colors, fonts } from '@/lib/theme';
+import { colors } from '@/lib/theme';
 import type { Quest } from '@/lib/types';
 
 interface Props {
@@ -54,8 +54,10 @@ export function QuestItem({ quest, completed, xpAwarded, busy, streakDays, onCom
       detail={
         <View>
           <View style={styles.meta}>
+            {/* Bloqueada, el candado con trama ya dice que es la penalización:
+                el Tag con trama sería una segunda (SISTEMA §0). */}
             {quest.is_penalty ? (
-              <Tag tone="alerta">Penalización</Tag>
+              cerrada ? null : <Tag tone="alerta">Penalización</Tag>
             ) : (
               <Text style={styles.metaText}>
                 {quest.stat} · {STAT_LABEL[quest.stat]}
@@ -89,8 +91,14 @@ export function QuestItem({ quest, completed, xpAwarded, busy, streakDays, onCom
 
 const styles = StyleSheet.create({
   meta: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  metaText: { fontFamily: fonts.body, fontSize: 12, color: colors.textFaint },
-  cerrada: { fontFamily: fonts.body, fontSize: 13, lineHeight: 18, color: colors.textDim, marginTop: 4 },
+  metaText: { fontFamily: tipo.micro.family, fontSize: tipo.micro.size, lineHeight: tipo.micro.lineHeight, color: colors.textFaint },
+  cerrada: {
+    fontFamily: tipo.bodySm.family,
+    fontSize: tipo.bodySm.size,
+    lineHeight: tipo.bodySm.lineHeight,
+    color: colors.textDim,
+    marginTop: 4,
+  },
   candado: {
     width: 26,
     height: 26,
