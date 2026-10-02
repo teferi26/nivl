@@ -13,37 +13,51 @@ const f = (n: number): string => {
 
 // ── Laurel ────────────────────────────────────────────────────────────
 // Rama vertical en una retícula de 24 × 64 (la de Perfil.dc puesta en pie).
-// El tallo se curva hacia la izquierda: es la rama izquierda de una corona.
-// La derecha es su espejo (Motivos.tsx la voltea con scaleX: -1).
+// El tallo se curva hacia la izquierda: es la rama izquierda de la corona del
+// vencedor. La derecha es su espejo (Motivos.tsx la voltea con scaleX: -1).
+//
+// Cada hoja es una almendra cerrada (dos cuadráticas de punta a punta, solo
+// contorno). Salen alternas, una por fuera y otra por dentro, inclinadas hacia
+// la punta y cada vez más pequeñas; la rama remata con una hoja en el eje del
+// tallo. El número de hojas depende del alto: a 20 pt caben pocas y grandes, a
+// 88 pt la rama se llena.
 
 /** Ancho de la retícula del laurel. */
 export const LAUREL_ANCHO = 24;
 /** Alto de la retícula del laurel. */
 export const LAUREL_ALTO = 64;
 
-/** Tallo: cúbica de (18, 62) a (16, 2) con los controles a x = 6. */
+/** Tallo: cúbica de la base (16, 63) a la punta (14, 12), combada a la izquierda. */
 const TALLO: [number, number][] = [
-  [18, 62],
-  [6, 48],
-  [6, 20],
-  [16, 2],
+  [16, 63],
+  [8.5, 49],
+  [8, 26],
+  [14, 12],
 ];
 
-/** Hojas por fuera (hacia la izquierda): altura en el tallo y vector de la hoja. */
-const HOJAS: { y: number; dx: number; dy: number }[] = [
-  { y: 50, dx: -7, dy: -3 },
-  { y: 38, dx: -7, dy: -4 },
-  { y: 26, dx: -6, dy: -5 },
-  { y: 14, dx: -4, dy: -6 },
-];
-
-/** Las de dentro son el espejo, más cortas. */
-const HOJA_DENTRO = 0.6;
+/** Ángulo de la hoja respecto al tallo (rad): apunta hacia la punta de la rama. */
+const ANGULO_HOJA = 0.62;
+/** Ancho de la almendra respecto a su largo (desvío del control de la cuadrática). */
+const PANZA = 0.42;
+/** La hoja más alta mide esta fracción de la más baja. */
+const MENGUA = 0.5;
+/** Las de dentro, algo más cortas: la corona se cierra hacia el centro. */
+const HOJA_DENTRO = 0.85;
+/** Largo de la hoja de la punta (retícula). */
+const HOJA_PUNTA = 11;
+/** Margen (retícula) que ninguna hoja pisa: el trazo no se corta en el borde. */
+const MARGEN_LAUREL = 1;
 
 function bezier(t: number, eje: 0 | 1): number {
   const [p0, p1, p2, p3] = TALLO.map((p) => p[eje]);
   const u = 1 - t;
   return u * u * u * p0 + 3 * u * u * t * p1 + 3 * u * t * t * p2 + t * t * t * p3;
+}
+
+function tangente(t: number, eje: 0 | 1): number {
+  const [p0, p1, p2, p3] = TALLO.map((p) => p[eje]);
+  const u = 1 - t;
+  return 3 * u * u * (p1 - p0) + 6 * u * t * (p2 - p1) + 3 * t * t * (p3 - p2);
 }
 
 /** x del tallo a la altura y (la y del tallo baja monótona con t: bisección). */
@@ -58,20 +72,112 @@ export function xDelTallo(y: number): number {
   return bezier((lo + hi) / 2, 0);
 }
 
+/** Pares de hojas (una por fuera y otra por dentro) según el alto en pt: 2 a 20, 4 a 44, 7 a 88. */
+export function paresLaurel(alto: number): number {
+  return Math.max(2, Math.min(7, Math.round(alto / 12)));
+}
+
+/** Una hoja: punto del tallo donde nace, dirección unitaria y largo, en la retícula. */
+interface Hoja {
+  x: number;
+  y: number;
+  ux: number;
+  uy: number;
+  largo: number;
+}
+
+/** Dentro de la retícula con margen (control incluido: la curva queda dentro). */
+function cabe(h: Hoja): boolean {
+  const nx = -h.uy;
+  const ny = h.ux;
+  const mx = h.x + (h.ux * h.largo) / 2;
+  const my = h.y + (h.uy * h.largo) / 2;
+  const c = PANZA * h.largo;
+  const puntos = [
+    [h.x + h.ux * h.largo, h.y + h.uy * h.largo],
+    [mx + nx * c, my + ny * c],
+    [mx - nx * c, my - ny * c],
+  ];
+  return puntos.every(
+    ([px, py]) =>
+      px >= MARGEN_LAUREL && px <= LAUREL_ANCHO - MARGEN_LAUREL && py >= MARGEN_LAUREL && py <= LAUREL_ALTO - MARGEN_LAUREL,
+  );
+}
+
+/** Acorta la hoja lo justo para que quepa (bisección sobre el largo). */
+function encajar(h: Hoja): Hoja {
+  if (cabe(h)) return h;
+  let lo = 0;
+  let hi = h.largo;
+  for (let i = 0; i < 24; i++) {
+    const mid = (lo + hi) / 2;
+    if (cabe({ ...h, largo: mid })) lo = mid;
+    else hi = mid;
+  }
+  return { ...h, largo: lo };
+}
+
+/** Hojas de la rama en la retícula de 24 × 64 (de la base a la punta). */
+function hojas(pares: number): Hoja[] {
+  // Las hojas nacen entre t = 0,1 y t = 0,92; la punta lleva la suya en t = 1.
+  const t0 = 0.1;
+  const t1 = 0.92;
+  const paso = (t1 - t0) / (pares * 2 - 1);
+  // Más pares, hojas más cortas: se solapan como en la rama real sin taparse.
+  const largoBase = Math.min(17, 7 + 40 / pares);
+  const out: Hoja[] = [];
+  for (let i = 0; i < pares * 2; i++) {
+    const t = t0 + paso * i;
+    const fuera = i % 2 === 0;
+    let tx = tangente(t, 0);
+    let ty = tangente(t, 1);
+    const n = Math.hypot(tx, ty) || 1;
+    tx /= n;
+    ty /= n;
+    // Normal hacia fuera (izquierda en pantalla): (ty, -tx). Dentro, la contraria.
+    const s = fuera ? 1 : -1;
+    const ox = ty * s;
+    const oy = -tx * s;
+    const ux = Math.cos(ANGULO_HOJA) * tx + Math.sin(ANGULO_HOJA) * ox;
+    const uy = Math.cos(ANGULO_HOJA) * ty + Math.sin(ANGULO_HOJA) * oy;
+    const avance = i / (pares * 2 - 1);
+    const largo = largoBase * (1 - (1 - MENGUA) * avance) * (fuera ? 1 : HOJA_DENTRO);
+    out.push(encajar({ x: bezier(t, 0), y: bezier(t, 1), ux, uy, largo }));
+  }
+  const tx = tangente(1, 0);
+  const ty = tangente(1, 1);
+  const n = Math.hypot(tx, ty) || 1;
+  out.push(encajar({ x: bezier(1, 0), y: bezier(1, 1), ux: tx / n, uy: ty / n, largo: HOJA_PUNTA }));
+  return out;
+}
+
+/** Almendra cerrada de la base a la punta: dos cuadráticas con el control a cada lado. */
+function almendra(h: Hoja, k: number): string {
+  const px = h.x + h.ux * h.largo;
+  const py = h.y + h.uy * h.largo;
+  const mx = h.x + (h.ux * h.largo) / 2;
+  const my = h.y + (h.uy * h.largo) / 2;
+  const c = PANZA * h.largo;
+  const nx = -h.uy * c;
+  const ny = h.ux * c;
+  return (
+    `M${f(h.x * k)} ${f(h.y * k)}` +
+    `Q${f((mx + nx) * k)} ${f((my + ny) * k)} ${f(px * k)} ${f(py * k)}` +
+    `Q${f((mx - nx) * k)} ${f((my - ny) * k)} ${f(h.x * k)} ${f(h.y * k)}Z`
+  );
+}
+
 /**
- * Rama de laurel de `alto` pt; su ancho es `alto · 24 / 64`. Tallo más cuatro
- * pares de hojas (por fuera y, más cortas, por dentro).
+ * Rama de laurel de `alto` pt; su ancho es `alto · 24 / 64`. Tallo, `paresLaurel(alto)`
+ * pares de hojas alternas (fuera y dentro, decrecientes) y la hoja de la punta.
+ * Todo en coordenadas absolutas.
  */
 export function pathLaurel(alto: number): string {
+  if (!(alto > 0)) return '';
   const k = alto / LAUREL_ALTO;
   const [a, b, c, d] = TALLO;
   let out = `M${f(a[0] * k)} ${f(a[1] * k)}C${f(b[0] * k)} ${f(b[1] * k)} ${f(c[0] * k)} ${f(c[1] * k)} ${f(d[0] * k)} ${f(d[1] * k)}`;
-  for (const h of HOJAS) {
-    const x = xDelTallo(h.y) * k;
-    const y = h.y * k;
-    out += `M${f(x)} ${f(y)}l${f(h.dx * k)} ${f(h.dy * k)}`;
-    out += `M${f(x)} ${f(y)}l${f(-h.dx * HOJA_DENTRO * k)} ${f(h.dy * HOJA_DENTRO * k)}`;
-  }
+  for (const h of hojas(paresLaurel(alto))) out += almendra(h, k);
   return out;
 }
 

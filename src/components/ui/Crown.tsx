@@ -15,16 +15,22 @@ export type CrownKind = 'casco' | 'laurel' | 'corona_arena';
 export const BASE_CORONA = 20;
 
 /**
- * La galea: casco de gladiador de un trazo. Cresta, cúpula, ala ancha y
- * visera con rejilla. Se lee a 16, 24 y 96 px; la reutiliza el CoachMark
- * (negro sobre círculo blanco).
+ * La galea: el casco del mirmilón visto de frente, de un trazo. Cresta fina
+ * de aleta, cúpula, ala ancha que cae hacia los lados y visera de placa que
+ * se estrecha hacia la barbilla, con los dos ojos redondos enrejados (una
+ * barra vertical y otra horizontal en cada uno, como los de Pompeya). A 16 px
+ * la silueta (cresta, ala, placa) ya dice casco y los ojos se cierran en dos
+ * puntos; a 48 y 96 se ve la rejilla. La reutiliza el CoachMark (negro sobre
+ * círculo blanco).
  */
 export const GALEA_PATH =
-  'M10.5 8.5V3.5H13.5V8.5' + // cresta
-  ' M6 13V11.5C6 9.2 8.6 8.5 12 8.5S18 9.2 18 11.5V13' + // cúpula
-  ' M2 11.5L4.5 13.5H19.5L22 11.5' + // ala
-  ' M7 13.5V18.5C7 19.4 7.6 20 8.5 20H15.5C16.4 20 17 19.4 17 18.5V13.5' + // visera
-  ' M10 14.5V20M14 14.5V20M7 16.8H17'; // rejilla
+  'M10.8 6C10.8 3.2 11.2 1.2 12 1.2S13.2 3.2 13.2 6' + // cresta
+  ' M5.5 12.5V11.5C5.5 7.8 8.4 6 12 6S18.5 7.8 18.5 11.5V12.5' + // cúpula
+  ' M1.5 14C3 12.9 4.5 12.5 6.5 12.5H17.5C19.5 12.5 21 12.9 22.5 14' + // ala
+  ' M6.5 12.5L7.1 18Q7.4 20 9.4 20H14.6Q16.6 20 16.9 18L17.5 12.5' + // visera
+  ' M7.8 15.5A1.7 1.7 0 1 0 11.2 15.5A1.7 1.7 0 1 0 7.8 15.5' + // ojo izquierdo
+  ' M12.8 15.5A1.7 1.7 0 1 0 16.2 15.5A1.7 1.7 0 1 0 12.8 15.5' + // ojo derecho
+  ' M9.5 13.8V17.2M7.8 15.5H11.2M14.5 13.8V17.2M12.8 15.5H16.2'; // rejilla
 
 const LAUREL_PATH =
   'M3 17.5Q12 13.5 21 17.5' + // cinta

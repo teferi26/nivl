@@ -2,49 +2,105 @@ import {
   ARCADAS,
   gradasUtiles,
   MEANDRO_UNIDAD,
+  paresLaurel,
   PATH_MEANDRO,
   pathArena,
   pathColumna,
   pathLaurel,
   xDelTallo,
 } from '../geometria';
+import { BASE_CORONA, GALEA_PATH } from '@/components/ui/Crown';
 
 /** Números de una cadena `d`. */
 const numeros = (d: string) => (d.match(/-?\d+(\.\d+)?/g) ?? []).map(Number);
 const comandos = (d: string, c: string) => (d.match(new RegExp(c, 'g')) ?? []).length;
 
 describe('laurel', () => {
+  const hojasDe = (d: string) => comandos(d, 'Z');
+
   it('a 64 de alto reproduce el tallo de la retícula', () => {
-    expect(pathLaurel(64).startsWith('M18 62C6 48 6 20 16 2')).toBe(true);
+    expect(pathLaurel(64).startsWith('M16 63C8.5 49 8 26 14 12')).toBe(true);
   });
 
-  it('cuatro pares de hojas: un tallo y ocho trazos', () => {
+  it('es determinista y sin NaN ni Infinity', () => {
+    for (const alto of [20, 44, 60, 88, 120]) {
+      const d = pathLaurel(alto);
+      expect(pathLaurel(alto)).toBe(d);
+      expect(d).not.toMatch(/NaN|Infinity/);
+    }
+  });
+
+  it('sin alto no pinta nada', () => {
+    expect(pathLaurel(0)).toBe('');
+    expect(pathLaurel(Number.NaN)).toBe('');
+  });
+
+  it('cada hoja es una almendra cerrada: dos cuadráticas y Z', () => {
+    const d = pathLaurel(44);
+    const hojas = d.match(/M[^MC]*Q[^MQ]*Q[^MQ]*Z/g) ?? [];
+    expect(hojas).toHaveLength(hojasDe(d));
+    expect(comandos(d, 'Q')).toBe(hojasDe(d) * 2);
+    // La almendra vuelve a su base: el último punto es el primero.
+    for (const h of hojas) {
+      const ns = numeros(h);
+      expect(ns.slice(-2)).toEqual(ns.slice(0, 2));
+    }
+  });
+
+  it('el número de hojas crece con el alto: pocas a 20, la rama llena a 88', () => {
+    expect(paresLaurel(20)).toBe(2);
+    expect(paresLaurel(44)).toBe(4);
+    expect(paresLaurel(88)).toBe(7);
+    let antes = 0;
+    for (const alto of [20, 32, 44, 60, 76, 88]) {
+      const n = hojasDe(pathLaurel(alto));
+      // Pares alternos (fuera y dentro) y la hoja de la punta.
+      expect(n).toBe(paresLaurel(alto) * 2 + 1);
+      expect(n).toBeGreaterThanOrEqual(antes);
+      antes = n;
+    }
+    expect(hojasDe(pathLaurel(88))).toBeGreaterThan(hojasDe(pathLaurel(20)));
+  });
+
+  it('alternas: las hojas de fuera van a la izquierda del tallo y las de dentro a la derecha', () => {
+    const d = pathLaurel(64);
+    const hojas = (d.match(/M[^MC]*Q[^MQ]*Q[^MQ]*Z/g) ?? []).slice(0, -1);
+    hojas.forEach((h, i) => {
+      const [x0, , , , px] = numeros(h);
+      if (i % 2 === 0) expect(px).toBeLessThan(x0);
+      else expect(px).toBeGreaterThan(x0);
+    });
+  });
+
+  it('decrecientes hacia la punta (por lado)', () => {
     const d = pathLaurel(88);
-    expect(comandos(d, 'M')).toBe(1 + 8);
-    expect(comandos(d, 'l')).toBe(8);
-  });
-
-  it('escala con el alto y no se sale de la retícula', () => {
-    const alto = 88;
-    const ancho = (alto * 24) / 64;
-    const d = pathLaurel(alto);
-    // Solo las coordenadas absolutas (tras M y C) tienen que caber.
-    const abs = d.split(/l[^M]*/).join(' ');
-    const ns = numeros(abs);
-    for (let i = 0; i < ns.length; i += 2) {
-      expect(ns[i]).toBeGreaterThanOrEqual(0);
-      expect(ns[i]).toBeLessThanOrEqual(ancho);
-      expect(ns[i + 1]).toBeGreaterThanOrEqual(0);
-      expect(ns[i + 1]).toBeLessThanOrEqual(alto);
+    const hojas = (d.match(/M[^MC]*Q[^MQ]*Q[^MQ]*Z/g) ?? []).slice(0, -1);
+    const largo = (h: string) => {
+      const [x0, y0, , , px, py] = numeros(h);
+      return Math.hypot(px - x0, py - y0);
+    };
+    for (const lado of [0, 1]) {
+      const ls = hojas.filter((_, i) => i % 2 === lado).map(largo);
+      for (let i = 1; i < ls.length; i++) expect(ls[i]).toBeLessThanOrEqual(ls[i - 1] + 0.01);
+      expect(ls[ls.length - 1]).toBeLessThan(ls[0]);
     }
   });
 
-  it('el tallo se curva hacia la izquierda y las hojas de fuera caben', () => {
-    for (const y of [50, 38, 26, 14]) {
-      const x = xDelTallo(y);
-      expect(x).toBeLessThan(18);
-      expect(x - 7).toBeGreaterThanOrEqual(0);
+  it('escala con el alto y no se sale del lienzo (controles incluidos)', () => {
+    for (const alto of [20, 44, 88]) {
+      const ancho = (alto * 24) / 64;
+      const ns = numeros(pathLaurel(alto));
+      for (let i = 0; i < ns.length; i += 2) {
+        expect(ns[i]).toBeGreaterThanOrEqual(0);
+        expect(ns[i]).toBeLessThanOrEqual(ancho);
+        expect(ns[i + 1]).toBeGreaterThanOrEqual(0);
+        expect(ns[i + 1]).toBeLessThanOrEqual(alto);
+      }
     }
+  });
+
+  it('el tallo se curva hacia la izquierda', () => {
+    for (const y of [50, 38, 26]) expect(xDelTallo(y)).toBeLessThan(14);
   });
 });
 
@@ -105,5 +161,26 @@ describe('meandro', () => {
       expect(n).toBeGreaterThanOrEqual(0);
       expect(n).toBeLessThanOrEqual(MEANDRO_UNIDAD);
     }
+  });
+});
+
+describe('galea', () => {
+  it('cabe en la retícula de 24 y se apoya en la base', () => {
+    expect(GALEA_PATH).not.toMatch(/NaN|Infinity/);
+    // Fuera los radios y las banderas de los arcos: solo quedan coordenadas.
+    const ns = numeros(GALEA_PATH.replace(/A[\d.]+ [\d.]+ 0 1 0/g, ' '));
+    for (const n of ns) {
+      expect(n).toBeGreaterThanOrEqual(1);
+      expect(n).toBeLessThanOrEqual(23);
+    }
+    // La barbilla de la visera es un tramo horizontal sobre la línea base.
+    expect(GALEA_PATH).toContain(` ${BASE_CORONA}H`);
+  });
+
+  it('cresta, cúpula, ala, visera, dos ojos y una rejilla de pocas barras', () => {
+    // Seis piezas (cresta, cúpula, ala, visera y los dos ojos) y cuatro barras
+    // cortas de rejilla, una cruz por ojo: nada de cuadrícula.
+    expect(comandos(GALEA_PATH, 'M')).toBe(6 + 4);
+    expect(comandos(GALEA_PATH, 'A')).toBe(4);
   });
 });

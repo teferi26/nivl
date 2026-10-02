@@ -25,10 +25,11 @@ interface LaurelProps {
   /** izq: rama izquierda de la corona (curva hacia fuera a la izquierda). der: su espejo. */
   lado: 'izq' | 'der';
   color?: string;
+  /** Grosor en pt. Por defecto 1 por debajo de 32 de alto (las hojas son pequeñas y el hueco no se cierra) y 1,5 desde ahí. */
   trazo?: number;
 }
 
-export function Laurel({ alto, lado, color = ink.ink6, trazo = 1.5 }: LaurelProps) {
+export function Laurel({ alto, lado, color = ink.ink6, trazo = alto < 32 ? 1 : 1.5 }: LaurelProps) {
   const ancho = (alto * LAUREL_ANCHO) / LAUREL_ALTO;
   return (
     <View {...OCULTO} style={[{ width: ancho, height: alto }, lado === 'der' && { transform: [{ scaleX: -1 }] }]}>
