@@ -313,3 +313,9 @@ Deno.test('cache: simulador — escritura por turno antes/después (informe)', a
 
   console.log(`\n  parte fija (herramientas + sistema fijo) ≈ ${fijo} fichas\n  ` + filas.join('\n  '));
 });
+
+Deno.test('Calidad: la regla «primero lo que sabes» va en la parte fija del sistema', async () => {
+  const { COACH_SYSTEM, REGLA_PRIMERO_LO_QUE_SABES } = await import('./prompt.ts');
+  if (!COACH_SYSTEM.includes(REGLA_PRIMERO_LO_QUE_SABES)) throw new Error('falta la regla en COACH_SYSTEM');
+  if (!REGLA_PRIMERO_LO_QUE_SABES.includes('Responde primero con lo que ya sabes')) throw new Error('texto');
+});
