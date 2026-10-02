@@ -14,6 +14,7 @@ import { supabase } from './supabase';
 import { dateKey } from './dates';
 import { requireHealthConsent } from './health';
 import { ErrorVisible } from './validation';
+import { sinGuiones } from './singuiones';
 
 export type CoachKind =
   | 'chat'
@@ -286,7 +287,7 @@ export async function streamCoach(opts: {
           opts.onEvent({
             type: 'done',
             threadId: d.thread_id,
-            text: d.text ?? '',
+            text: sinGuiones(d.text ?? ''),
             costMicroUsd: d.cost_micro_usd ?? 0,
           });
           break;
@@ -371,6 +372,19 @@ export async function fetchMainThread(): Promise<CoachThread | null> {
   return (data as CoachThread) ?? null;
 }
 
+/** Sanea los bloques de texto de un mensaje del coach (los del usuario no se tocan). */
+export function sinGuionesEnMensaje(m: CoachMessage): CoachMessage {
+  if (m.role !== 'assistant' || !Array.isArray(m.content)) return m;
+  return {
+    ...m,
+    content: m.content.map((b) =>
+      b && (b as { type?: string }).type === 'text' && typeof (b as { text?: unknown }).text === 'string'
+        ? { ...b, text: sinGuiones((b as { text: string }).text) }
+        : b,
+    ),
+  };
+}
+
 export async function fetchMessages(threadId: string, limit = 60): Promise<CoachMessage[]> {
   const { data, error } = await supabase
     .from('coach_messages')
@@ -381,7 +395,8 @@ export async function fetchMessages(threadId: string, limit = 60): Promise<Coach
   if (error) throw error;
   // Se pide del más nuevo al más viejo para quedarnos con los últimos, pero se
   // pinta en orden cronológico.
-  return ((data ?? []) as CoachMessage[]).reverse();
+  // Orden del dueño: ningún texto de la IA con «—» ni «–», tampoco los ya guardados.
+  return ((data ?? []) as CoachMessage[]).reverse().map(sinGuionesEnMensaje);
 }
 
 export async function fetchDossier(): Promise<{ content: string; version: number } | null> {

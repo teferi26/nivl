@@ -222,7 +222,11 @@ export const AVISO_GANANCIAS = 'Tus ganancias se gestionan en nivl.app.';
 export const ENLACE_GANANCIAS = ORIGEN_ENLACE_CREADOR;
 
 /** Un texto con pinta de importe (€, $, £, «euros»). */
-const PARECE_DINERO = /[€$£]|\beur(?:o|os)?\b|\busd\b/i;
+// Importes, porcentajes y vocabulario de cobro (auditoría UX de Chat 4): en
+// tienda tampoco puede colarse «+10 % de comisión» ni «cobras al mes».
+// (Sin \b alrededor de acentos: el \b de JS no reconoce letras no ASCII.)
+const PARECE_DINERO =
+  /[€$£%]|\beur(?:o|os)?\b|\busd\b|comisi[oó]n|\bcobr[a-zá-ú]*|\bpag(?:o|os|a|as|an|ar|amos|ado|ada)\b|\bdinero\b|\bganancias?\b|\bliquidaci|\bbizum\b|\btransferencia/i;
 
 export interface RetoVista {
   id: string;
@@ -340,7 +344,7 @@ export function vistaPanelCreador(plataforma: string, datos: DatosPanelCreador):
       ...comun,
       // El alias es del creador: si alguien se puso «Gana 500€», en tienda no sale.
       alias: PARECE_DINERO.test(comun.alias) ? code : comun.alias,
-      tabla: comun.tabla.map((r) => ({ ...r, alias: PARECE_DINERO.test(r.alias) ? '—' : r.alias })),
+      tabla: comun.tabla.map((r) => ({ ...r, alias: PARECE_DINERO.test(r.alias) ? 'Creador' : r.alias })),
       retos: retosBase.map((r) => ({
         ...r,
         title: PARECE_DINERO.test(r.title) ? 'Reto' : r.title,

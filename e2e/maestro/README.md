@@ -46,3 +46,14 @@ maestro test --test-output-dir qa-out/health e2e/maestro/health-consent.yaml
 Compra, restauración, borrado de cuenta, denuncia y bloqueo, cierre del día, misiones enlazadas, dos dispositivos, cambio de hora y modo avión. Para eso están los casos manuales de `QA-FISICA-WINTER.csv`. Cualquier flujo nuevo que escriba en el servidor debe declararlo arriba y exigir cuenta desechable.
 
 No hay workflow de CI para estos flujos. Añadirlo (macOS, simulador y build) es decisión del coordinador: `.github/workflows/**`, `package.json` y `metro.config.js` son suyos.
+
+## Capturas de la App Store 1.0.8 (`capturas-108.yaml`)
+
+Las 7 escenas de la ficha de la tienda: Hoy, Coach, Perfil, Amigos, Campañas, Agenda y NIVL Pro. Se capturan en iPhone 6,9" y iPad 13" y las lanza `.github/workflows/screenshots.yml` con `-e SLUG=iphone-69|ipad-13`. Es una propuesta del Chat 1 @`20c1861`, revisada contra `winter2/integracion` @`21764de`. **No se ha ejecutado todavía.**
+
+- **Solo lectura:** no completa, no compra y no acepta nada. No prueba lógica: son capturas.
+- **Cuenta:** solo la **cuenta demo de capturas**, sembrada con `scripts/seed-capturas.mjs`. Nunca la revisora de Apple ni una cuenta real. Las credenciales llegan solo por `-e NIVL_QA_EMAIL=… -e NIVL_QA_PASSWORD=…` (en CI, los secretos `NIVL_SHOTS_*`).
+- **Login:** va dentro del flujo, no con `runFlow: login.yaml`. Los selectores de `login.yaml` pueden tocar el rótulo en vez del campo, y su `index: 1` sobre «ENTRAR» puede no existir en iOS. El detalle está en `docs/qa-audit/CAPTURAS-108.md`.
+- **Maestro 2.10.0:** el workflow verifica el zip oficial con `shasum -a 256 -c`. El digest lo obtuvo el Chat 1 de la API de GitHub y el Chat 5 no lo ha verificado: hay que contrastarlo con la release oficial `cli-2.10.0` (`checksums_sha256.txt`). Nunca `curl | bash`.
+
+Cómo ejecutarlo, qué deja la siembra, las correcciones a la propuesta y los riesgos están en [docs/qa-audit/CAPTURAS-108.md](../../docs/qa-audit/CAPTURAS-108.md).

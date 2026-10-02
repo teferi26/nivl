@@ -1,25 +1,34 @@
-# Subflujo: entrar con una cuenta de PRUEBA de Franky.
+# Subflujo: entrar con una cuenta de PRUEBA de NIVL.
 # Las credenciales llegan SOLO por variables de entorno en la línea de órdenes:
 #   maestro test -e NIVL_QA_EMAIL=... -e NIVL_QA_PASSWORD=... e2e/maestro/<flujo>.yaml
 # Nunca escribirlas en este archivo ni en el repositorio. No usar la cuenta
 # revisora de Apple ni las del ludus de demostración en flujos que escriben.
-# Rótulos del acceso sin Franky (Chat 4 @09a6b99; antes, src/app/login.tsx en bf32d28);
+# Selectores revisados contra winter2/integracion (CAPTURAS-108.md): «Correo
+# electrónico» y el SEGUNDO «Contraseña» son los campos (los primeros son
+# rótulos), y el envío es el «Entrar» que queda debajo del campo.
 # NO verificados todavía en un dispositivo: confirmar en la primera ejecución.
 appId: com.teferi.nivl
 name: NIVL login (subflujo)
 ---
 - extendedWaitUntil:
-    visible: '^ENTRAR$'
+    visible: 'Entra con tu correo y tu contraseña de NIVL\.'
     timeout: 30000
-- tapOn: '^ENTRAR$'
-- tapOn: '^(Correo|CORREO|Correo electrónico)$'
+- tapOn: '^Correo electrónico$'
 - inputText: ${NIVL_QA_EMAIL}
-- tapOn: '^(Contraseña|CONTRASEÑA)$'
+- tapOn:
+    text: '^Contraseña$'
+    index: 1
 - inputText: ${NIVL_QA_PASSWORD}
 - hideKeyboard
 - tapOn:
-    text: '^ENTRAR$'
-    index: 1
+    text: '^Entrar$'
+    below:
+      text: '^Contraseña$'
+- runFlow:
+    when:
+      visible: '^(Ahora no|Not Now)$'
+    commands:
+      - tapOn: '^(Ahora no|Not Now)$'
 - extendedWaitUntil:
     visible: '^Hoy$'
     timeout: 30000
