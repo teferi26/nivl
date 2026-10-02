@@ -36,7 +36,8 @@ export const colors = {
   goldDim: '#4A3E1E',
   text: '#ECE9E2',
   textDim: '#A5A29A',
-  textFaint: '#7A776F',
+  // #7E7B73: 4,6:1 sobre panel (#0D0D0D) y 4,8:1 sobre bg (#050505), WCAG AA.
+  textFaint: '#7E7B73',
   track: '#1C1C1C',
   // El sello de Franky. No se usa como color de interfaz.
   franky: '#8B5CF6',

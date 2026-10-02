@@ -61,7 +61,15 @@ export function useNotificationRouting(listo: boolean) {
         const id = r.notification.request.identifier + r.actionIdentifier;
         if (yaTratada.current === id) return;
         yaTratada.current = id;
-        return aplicar(r, ir);
+        return aplicar(r, ir).finally(() => {
+          // Tratada: se borra para que el siguiente arranque en frío (o un
+          // remontaje de este hook) no repita el "Hecho" ni la navegación.
+          try {
+            Notifications.clearLastNotificationResponse();
+          } catch {
+            // En plataformas sin el método nativo no hay nada que limpiar.
+          }
+        });
       })
       .catch(() => {});
 

@@ -8,6 +8,7 @@
 import { mensajeLudus, normalizarNota, parseMiLudus, type MiLudus } from './elite';
 import type { ProfileKind } from './kinds';
 import type { Competidor } from './socialmath';
+import { isReportReason, type ReportReason } from './socialSafety';
 import { supabase } from './supabase';
 import { ErrorVisible } from './validation';
 
@@ -73,6 +74,7 @@ export async function fetchBoard(days: number): Promise<BoardEntry[]> {
 
 export interface FriendRequest {
   friendshipId: string;
+  userId: string;
   direction: 'incoming' | 'outgoing';
   name: string;
   level: number;
@@ -80,11 +82,12 @@ export interface FriendRequest {
 }
 
 export async function fetchRequests(): Promise<FriendRequest[]> {
-  const { data, error } = await supabase.rpc('friend_requests');
+  const { data, error } = await supabase.rpc('friend_requests_safe');
   if (error) throw error;
-  type Row = { friendship_id: string; direction: 'incoming' | 'outgoing'; name: string | null; level: number; created_at: string };
+  type Row = { friendship_id: string; user_id: string; direction: 'incoming' | 'outgoing'; name: string | null; level: number; created_at: string };
   return ((data ?? []) as Row[]).map((r) => ({
     friendshipId: r.friendship_id,
+    userId: r.user_id,
     direction: r.direction,
     name: r.name?.trim() || 'Gladiador',
     level: r.level,
@@ -190,4 +193,28 @@ export async function fetchGroupBoard(days: number): Promise<BoardEntry[]> {
   const { data, error } = await supabase.rpc('elite_group_board', { p_days: days });
   if (error) throw error;
   return ((data ?? []) as BoardRow[]).map(toEntry);
+}
+
+export interface BlockedUser { userId: string; name: string }
+
+export async function fetchBlockedUsers(): Promise<BlockedUser[]> {
+  const { data, error } = await supabase.rpc('social_blocked_users');
+  if (error) throw error;
+  return ((data ?? []) as { user_id: string; name: string }[]).map((r) => ({ userId: r.user_id, name: r.name }));
+}
+
+export async function blockSocialUser(userId: string): Promise<void> {
+  const { error } = await supabase.rpc('social_block_user', { p_user: userId });
+  if (error) throw error;
+}
+
+export async function unblockSocialUser(userId: string): Promise<void> {
+  const { error } = await supabase.rpc('social_unblock_user', { p_user: userId });
+  if (error) throw error;
+}
+
+export async function reportSocialUser(userId: string, reason: ReportReason): Promise<void> {
+  if (!isReportReason(reason)) throw new ErrorVisible('Elige un motivo para la denuncia.');
+  const { error } = await supabase.rpc('social_report_user', { p_user: userId, p_reason: reason });
+  if (error) throw error;
 }

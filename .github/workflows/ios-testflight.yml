@@ -28,12 +28,20 @@ on:
         type: boolean
         default: true
 
+permissions:
+  contents: read
+
 concurrency:
   group: ios-testflight
   cancel-in-progress: false
 
 jobs:
+  # Se reutiliza CI desde este mismo commit, sin dar secretos al preflight.
+  preflight:
+    uses: ./.github/workflows/ci.yml
+
   build:
+    needs: preflight
     runs-on: macos-15
     timeout-minutes: 90
     env:
@@ -47,6 +55,9 @@ jobs:
           exit 1
 
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
 
       # La misma versión que fija eas.json: trae npm 10, que es el que casa con
       # el lockfile (ver AGENTS.md, "El lockfile se genera con npm 10").

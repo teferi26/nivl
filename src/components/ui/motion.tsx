@@ -6,8 +6,45 @@
 // hace falta algo que no cabe aquí, es una señal de que la pantalla se está
 // pasando de decoración.
 
-import { createContext, useContext, useEffect, useRef, type PropsWithChildren, type ReactNode } from 'react';
-import { Animated, Pressable, StyleSheet, type PressableProps, type StyleProp, type ViewStyle } from 'react-native';
+import { createContext, useContext, useEffect, useRef, useState, type PropsWithChildren, type ReactNode } from 'react';
+import { AccessibilityInfo, Animated, Pressable, StyleSheet, type PressableProps, type StyleProp, type ViewStyle } from 'react-native';
+
+/**
+ * ¿Ha pedido el usuario "reducir movimiento"? Una sola lectura y una sola
+ * suscripción para toda la app (antes cada FadeIn, barra y anillo abría la
+ * suya y empezaba en false: el primer frame animaba y luego saltaba). El valor
+ * se guarda aquí y los componentes que montan después lo leen ya resuelto.
+ */
+let reducidoCache = false;
+const oyentes = new Set<(v: boolean) => void>();
+let suscrito = false;
+
+function suscribir() {
+  if (suscrito) return;
+  suscrito = true;
+  const avisarTodos = (v: boolean) => {
+    reducidoCache = v;
+    oyentes.forEach((f) => f(v));
+  };
+  AccessibilityInfo.isReduceMotionEnabled()
+    .catch(() => false)
+    .then(avisarTodos);
+  AccessibilityInfo.addEventListener('reduceMotionChanged', avisarTodos);
+}
+suscribir();
+
+export function useMovimientoReducido(): boolean {
+  const [reducido, setReducido] = useState(reducidoCache);
+  useEffect(() => {
+    oyentes.add(setReducido);
+    // Por si se resolvió entre el render y el efecto.
+    setReducido(reducidoCache);
+    return () => {
+      oyentes.delete(setReducido);
+    };
+  }, []);
+  return reducido;
+}
 
 const StaggerContext = createContext<{ step: number; base: number } | null>(null);
 
@@ -25,10 +62,17 @@ interface FadeInProps {
 /** Entrada al montar: fundido más una subida corta. */
 export function FadeIn({ delay = 0, index = 0, from = 14, duration = 260, style, children }: FadeInProps) {
   const stagger = useContext(StaggerContext);
+  const reducido = useMovimientoReducido();
   const opacity = useRef(new Animated.Value(0)).current;
   const translateY = useRef(new Animated.Value(from)).current;
 
   useEffect(() => {
+    if (reducido) {
+      // Sin movimiento: el bloque aparece en su sitio, sin fundido ni subida.
+      opacity.setValue(1);
+      translateY.setValue(0);
+      return;
+    }
     // Tope al escalonado: a partir del duodécimo elemento todos entran juntos,
     // que una lista larga no tarde dos segundos en aparecer.
     const escalon = stagger ? stagger.base + Math.min(index, 12) * stagger.step : 0;
@@ -38,7 +82,7 @@ export function FadeIn({ delay = 0, index = 0, from = 14, duration = 260, style,
     ]);
     anim.start();
     return () => anim.stop();
-  }, [opacity, translateY, delay, index, duration, stagger]);
+  }, [opacity, translateY, delay, index, duration, stagger, reducido]);
 
   return <Animated.View style={[style, { opacity, transform: [{ translateY }] }]}>{children}</Animated.View>;
 }
@@ -87,8 +131,11 @@ export function splitStyle(style: StyleProp<ViewStyle>): { outer: ViewStyle; inn
 /** Pressable que se encoge un poco al tocarlo. Sustituye a los `opacity: 0.7`. */
 export function PressScale({ to = 0.97, style, children, onPressIn, onPressOut, ...rest }: PropsWithChildren<PressScaleProps>) {
   const scale = useRef(new Animated.Value(1)).current;
-  const animar = (v: number) =>
+  const reducido = useMovimientoReducido();
+  const animar = (v: number) => {
+    if (reducido) return;
     Animated.spring(scale, { toValue: v, useNativeDriver: true, speed: 40, bounciness: 4 }).start();
+  };
   const { outer, inner } = splitStyle(style);
 
   return (

@@ -4,7 +4,7 @@ import * as Haptics from 'expo-haptics';
 import * as ImagePicker from 'expo-image-picker';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Alert, Animated, Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import { AccessibilityInfo, Animated, Linking, Platform, Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { Avatar } from '@/components/Avatar';
 import { CompletarSheet, type ModoCompletar } from '@/components/CompletarSheet';
 import { LevelUpOverlay } from '@/components/LevelUpOverlay';
@@ -26,14 +26,16 @@ import {
   Skeleton,
   SkeletonRows,
   Stagger,
+  useAlVolver,
 } from '@/components/ui';
+import { avisar, confirmar } from '@/components/ui/confirmar';
 import { evaluateAchievements, unlockAchievements } from '@/lib/achievements';
 import { useAuth } from '@/lib/auth';
 import { completionStats, ensureProfile, fetchCompletionsForDate, fetchQuests } from '@/lib/data';
 import { fetchPlan, horaAMinutos, setBlockDone, type DayBlock, type PlanConBloques } from '@/lib/dayplan';
 import { dateKey, formatLongDate, isValidKey, nombreDia } from '@/lib/dates';
 import { completeQuest, processPendingDays, questsScheduledOn, type DayCloseResult } from '@/lib/engine';
-import { rachaVisible } from '@/lib/closing';
+import { rachaVisible, recuperacionDesbloqueada } from '@/lib/closing';
 import { levelFromXp, rankForLevel, streakMultiplier } from '@/lib/game';
 import { kindMeta, modulesFor } from '@/lib/kinds';
 import { RUTA_DE_ACTO } from '@/lib/links';
@@ -43,6 +45,7 @@ import {
   reconciliarAvisosDelDia,
 } from '@/lib/notifications';
 import { fetchAiStatus, isPro } from '@/lib/pro';
+import { registrarDispositivo } from '@/lib/push';
 import { fetchBoard, type BoardEntry } from '@/lib/social';
 import { clasificar, DIAS_VENTANA, lineaRivalidad } from '@/lib/socialmath';
 import { colors, fonts } from '@/lib/theme';
@@ -92,6 +95,8 @@ export default function Hoy() {
   const [board, setBoard] = useState<BoardEntry[] | null>(null);
   const [sheetQuest, setSheetQuest] = useState<Quest | null>(null);
   const [diaPerfecto, setDiaPerfecto] = useState(false);
+  // RET-03: la misión recién completada ha abierto la recuperación.
+  const [avisoRecuperacion, setAvisoRecuperacion] = useState(false);
   const [tarjeta, setTarjeta] = useState<DatosSemana | null>(null);
   const [preparandoTarjeta, setPreparandoTarjeta] = useState(false);
   const { width } = useWindowDimensions();
@@ -120,8 +125,9 @@ export default function Hoy() {
     try {
       // Aquí NO se siembran misiones por defecto: quien eligió "Empezar sin
       // misiones" en el onboarding, o borró las suyas, ve el estado vacío.
-      let prof = await ensureProfile(userId);
-      let quests = await fetchQuests();
+      // Las misiones se leen por RLS y no dependen de que el perfil exista:
+      // las dos lecturas van a la vez.
+      let [prof, quests] = await Promise.all([ensureProfile(userId), fetchQuests()]);
       const { profile: processed, result } = await processPendingDays(prof, quests);
       prof = processed;
       if (result && result.penaltyXp > 0) {
@@ -174,13 +180,20 @@ export default function Hoy() {
       load();
     }, [load]),
   );
+  // Volver a la app al día siguiente sin cambiar de pestaña: sin esto Hoy
+  // enseñaba las misiones de ayer como hechas y no aplicaba el cierre.
+  useAlVolver(load);
 
   // Los avisos se derivan del plan: se inicializan una vez y se reconcilian
   // cada vez que cambia el plan o los horarios. Ojo con lo que había antes
   // aquí: llamaba a cancelAllScheduledNotificationsAsync en cada montaje, así
   // que abrir esta pestaña borraba todo lo programado.
+  // Con permiso, el dispositivo se registra para el push del coach (upsert
+  // idempotente: repetirlo en cada montaje no duplica nada).
   useEffect(() => {
-    inicializarAvisos();
+    inicializarAvisos()
+      .then((ok) => (ok ? registrarDispositivo() : null))
+      .catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -200,7 +213,12 @@ export default function Hoy() {
     if (!health.accepted) { health.ask(); return null; }
     const perm = await ImagePicker.requestCameraPermissionsAsync();
     if (!perm.granted) {
-      Alert.alert('Sin cámara', 'El sistema necesita la cámara para registrar evidencias.');
+      const mensaje = 'El sistema necesita la cámara para registrar evidencias.';
+      if (Platform.OS === 'web') {
+        avisar('Sin cámara', mensaje);
+      } else if (await confirmar({ titulo: 'Sin cámara', mensaje, confirmar: 'Abrir ajustes' })) {
+        Linking.openSettings().catch(() => {});
+      }
       return null;
     }
     const result = await ImagePicker.launchCameraAsync({
@@ -238,6 +256,13 @@ export default function Hoy() {
       }));
       if (res.leveledUp) setLevelUp(res.newLevel);
 
+      // RET-03: esta misión abre la recuperación. Es el momento que motiva:
+      // se dice en pantalla y al lector de pantalla.
+      if (!quest.is_penalty && !recuperacionAbierta && todayQuests.some((q) => q.is_penalty && !completions[q.id])) {
+        setAvisoRecuperacion(true);
+        AccessibilityInfo.announceForAccessibility('La recuperación está abierta. Recupera lo perdido.');
+      }
+
       // Día perfecto: era la última pendiente. Solo se celebra cuando pasa
       // delante del usuario, no al cargar un día que ya estaba cerrado.
       const quedan = todayQuests.filter((q) => q.id !== quest.id && !completions[q.id]).length;
@@ -251,22 +276,28 @@ export default function Hoy() {
         setTimeout(() => Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {}), 260);
       }
 
-      const stats = await completionStats();
-      const fresh = await unlockAchievements(
-        userId,
-        evaluateAchievements({
-          totalCompletions: stats.total,
-          evidenceCount: stats.withEvidence,
-          streak: res.profile.streak_days,
-          level: levelFromXp(res.profile.xp_total).level,
-          penaltyRedeemed: res.wasPenalty,
-        }),
-      );
-      if (fresh.length > 0 && !res.leveledUp) {
-        Alert.alert('LOGRO DESBLOQUEADO', `${voice.achievement()}\n${fresh.map((a) => a.name).join('\n')}`);
+      // La misión ya está pagada: un fallo al calcular logros no puede
+      // enseñar "Error del sistema" sobre algo que sí ha salido bien.
+      try {
+        const stats = await completionStats();
+        const fresh = await unlockAchievements(
+          userId,
+          evaluateAchievements({
+            totalCompletions: stats.total,
+            evidenceCount: stats.withEvidence,
+            streak: res.profile.streak_days,
+            level: levelFromXp(res.profile.xp_total).level,
+            penaltyRedeemed: res.wasPenalty,
+          }),
+        );
+        if (fresh.length > 0 && !res.leveledUp) {
+          avisar('LOGRO DESBLOQUEADO', `${voice.achievement()}\n${fresh.map((a) => a.name).join('\n')}`);
+        }
+      } catch {
+        // Los logros se vuelven a evaluar en la siguiente misión o al cierre.
       }
     } catch (e) {
-      Alert.alert('Error del sistema', mensajeSistema(e));
+      avisar('Error del sistema', mensajeSistema(e));
     }
   };
 
@@ -280,6 +311,9 @@ export default function Hoy() {
     // están abiertas ya no dispara dos completeQuest (evita XP duplicado). El
     // cerrojo se toma AQUÍ y lo suelta exactamente una de las salidas: el fin
     // del pago, la cámara cancelada, el cierre de la hoja o irse al módulo.
+    // RET-03: con la recuperación cerrada no se toma el cerrojo ni se paga
+    // (el motor también lo rechaza). La fila ya dice por qué.
+    if (quest.is_penalty && !recuperacionAbierta) return;
     if (completing.current.has(quest.id)) return;
     completing.current.add(quest.id);
     setBusyQuestId(quest.id);
@@ -340,7 +374,7 @@ export default function Hoy() {
       // completar la última misión.
       setTarjeta(await prepararDatosSemana(userId));
     } catch (e) {
-      Alert.alert('Error del sistema', mensajeSistema(e));
+      avisar('Error del sistema', mensajeSistema(e));
     } finally {
       setPreparandoTarjeta(false);
     }
@@ -371,6 +405,10 @@ export default function Hoy() {
   const lvl = profile ? levelFromXp(profile.xp_total) : null;
   const frozen = profile?.freeze_until != null && profile.freeze_until >= today;
   const sorted = [...todayQuests].sort((a, b) => Number(b.is_penalty) - Number(a.is_penalty));
+  // RET-03 «Regreso a la arena»: la penalización de hoy se abre al completar
+  // una misión normal de hoy (no vale una creada hoy). Se recalcula sola al
+  // cambiar `completions`. Cero XP extra.
+  const recuperacionAbierta = recuperacionDesbloqueada(todayQuests, new Set(Object.keys(completions)), dateKey());
   const completedCount = sorted.filter((q) => completions[q.id]).length;
   // La racha que se enseña cuenta el día de hoy en cuanto queda cerrado. El
   // multiplicador sigue saliendo de los días CERRADOS: si subiera a mitad del
@@ -553,6 +591,13 @@ export default function Hoy() {
               ) : dayResult.streakLost ? (
                 <Text style={styles.alertBody}>Racha perdida. El contador vuelve a cero.</Text>
               ) : null}
+              {dayResult.diasSinCobrar > 0 ? (
+                <Text style={styles.alertBody}>
+                  Solo se cobran los 3 primeros días: {dayResult.diasSinCobrar}{' '}
+                  {dayResult.diasSinCobrar === 1 ? 'día no te cuesta' : 'días no te cuestan'} XP.
+                  {todayQuests.some((q) => q.is_penalty && !completions[q.id]) ? ' Hoy puedes recuperarlo en la arena.' : ''}
+                </Text>
+              ) : null}
               {dayResult.stonesEarned > 0 ? <Text style={styles.alertBody}>{voice.stoneEarned()}</Text> : null}
             </Card>
           </FadeIn>
@@ -594,6 +639,9 @@ export default function Hoy() {
         <FadeIn index={4}>
           <Section title="Misiones de hoy" meta={sorted.length > 0 ? `${completedCount}/${sorted.length}` : undefined}>
             {sorted.length === 0 ? (
+              // Con la carga fallida no se sabe si hay misiones: el aviso de
+              // arriba ya lo dice y aquí no se afirma "Nada programado".
+              loadError ? null : (
               <Card variant="outline">
                 <EmptyState
                   compact
@@ -603,6 +651,7 @@ export default function Hoy() {
                   action={{ label: 'Ir a Hábitos', onPress: () => router.push('/(tabs)/habitos') }}
                 />
               </Card>
+              )
             ) : (
               <Card padded={false} style={styles.questCard}>
                 {sorted.map((q, i) => (
@@ -615,10 +664,16 @@ export default function Hoy() {
                     busy={busyQuestId === q.id}
                     streakDays={racha.valor}
                     onComplete={onComplete}
+                    bloqueada={q.is_penalty && !recuperacionAbierta}
                   />
                 ))}
               </Card>
             )}
+            {avisoRecuperacion && recuperacionAbierta && todayQuests.some((q) => q.is_penalty && !completions[q.id]) ? (
+              <Text style={styles.recuperacionAbierta} accessibilityRole="alert">
+                La recuperación está abierta. Recupera lo perdido.
+              </Text>
+            ) : null}
             {sorted.length > 0 && pendingCount === 0 ? (
               <Text style={styles.allDone}>{voice.allDone()}</Text>
             ) : null}
@@ -723,6 +778,7 @@ const styles = StyleSheet.create({
   },
   questCard: { paddingHorizontal: 16, paddingVertical: 4 },
   allDone: { fontFamily: fonts.semibold, fontSize: 13, color: colors.accent, marginTop: 4 },
+  recuperacionAbierta: { fontFamily: fonts.semibold, fontSize: 13, color: colors.text, marginTop: 10 },
   pendingNote: { fontFamily: fonts.body, fontSize: 12, color: colors.textFaint, marginTop: 4 },
   moduleGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: HUECO_MODULOS },
   // El lado del azulejo se calcula con el ancho de la ventana (ver `tile`).

@@ -19,7 +19,12 @@ export const supabase = createClient(url, key, {
     ...(isServer ? {} : { storage: AsyncStorage }),
     autoRefreshToken: !isServer,
     persistSession: !isServer,
+    // RN no tiene barra de direcciones: los enlaces de confirmar y recuperar
+    // los canjea authFlow.completarEnlace a mano. PKCE: el enlace del correo
+    // trae un `code` de un solo uso que solo vale con el verificador guardado
+    // en ESTE dispositivo (AsyncStorage); un enlace interceptado no abre sesión.
     detectSessionInUrl: false,
+    flowType: 'pkce',
   },
 });
 

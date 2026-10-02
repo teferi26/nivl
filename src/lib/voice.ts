@@ -5,6 +5,32 @@ function pick(lines: string[]): string {
   return lines[Math.floor(Math.random() * lines.length)] ?? lines[0] ?? '';
 }
 
+/** Una parte de lo que ha pagado un mismo acto: «50 de la misión «Entrenar»». */
+export interface ParteXp {
+  xp: number;
+  de: string;
+}
+
+/**
+ * El desglose de lo que ha pagado un acto (sesión de gimnasio, diario…), para
+ * que la cifra del aviso cuadre con la que luego enseña la misión enlazada:
+ * «+15 XP: 10 de la misión «Diario» + 5 del diario». Las partes a cero no se
+ * nombran; sin nada pagado devuelve cadena vacía y el que llama decide.
+ */
+export function desgloseXp(partes: ParteXp[]): string {
+  const pagadas = partes.filter((p) => p.xp > 0);
+  if (pagadas.length === 0) return '';
+  if (pagadas.length === 1) return `+${pagadas[0].xp} XP ${pagadas[0].de}.`;
+  const total = pagadas.reduce((s, p) => s + p.xp, 0);
+  return `+${total} XP: ${pagadas.map((p) => `${p.xp} ${p.de}`).join(' + ')}.`;
+}
+
+/** «la misión «A»» o «las misiones «A», «B»», marcadas solas por el acto. */
+export function deMisiones(titulos: string[]): string {
+  const lista = titulos.map((t) => `«${t}»`).join(', ');
+  return titulos.length === 1 ? `de la misión ${lista} (marcada sola)` : `de las misiones ${lista} (marcadas solas)`;
+}
+
 export const voice = {
   allDone: () =>
     pick([

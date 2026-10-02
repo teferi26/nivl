@@ -34,20 +34,35 @@ export async function registrarDispositivo(): Promise<string | null> {
     const userId = sesion.session?.user.id;
     if (!userId) return null;
 
-    await supabase.from('push_tokens').upsert(
-      {
-        token,
-        user_id: userId,
-        platform: Platform.OS === 'ios' ? 'ios' : 'android',
-        updated_at: new Date().toISOString(),
-      },
-      { onConflict: 'token' },
-    );
+    if (Platform.OS !== 'ios' && Platform.OS !== 'android') return null;
+    const platform = Platform.OS;
+
+    // claim_push_token (0042, Chat 3) reasigna el token a quien tiene la
+    // sesión. Con el upsert, en un móvil compartido la RLS rechazaba el del
+    // segundo usuario y el token seguía a nombre del primero: los avisos del
+    // coach de A le llegaban a B. Sus errores ('Token no válido', 'Plataforma
+    // no válida') son silenciosos, como todo este registro.
+    const { error } = await supabase.rpc('claim_push_token', { p_token: token, p_platform: platform });
+    if (error && faltaLaRpc(error)) {
+      // La 0042 aún no está aplicada: el upsert de antes, una sola vez.
+      await supabase.from('push_tokens').upsert(
+        { token, user_id: userId, platform, updated_at: new Date().toISOString() },
+        { onConflict: 'token' },
+      );
+    } else if (error) {
+      return null;
+    }
     return token;
   } catch {
     // Un fallo aquí no debe romper el arranque de la app.
     return null;
   }
+}
+
+/** ¿El servidor aún no tiene la función? (PostgREST PGRST202 / Postgres 42883) */
+function faltaLaRpc(error: { code?: string; message?: string }): boolean {
+  if (error.code === 'PGRST202' || error.code === '42883') return true;
+  return /could not find the function|does not exist/i.test(error.message ?? '');
 }
 
 export async function olvidarDispositivo(): Promise<void> {

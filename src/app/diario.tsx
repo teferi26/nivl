@@ -5,7 +5,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import {
-  Alert,
+  Linking,
   Platform,
   Pressable,
   RefreshControl,
@@ -25,6 +25,8 @@ import { SleepStepper } from '@/components/diario/SleepStepper';
 import { WinsEditor } from '@/components/diario/WinsEditor';
 import { SystemButton } from '@/components/SystemButton';
 import { Card, Chip, FadeIn, Screen, ScreenHeader, Skeleton, Stagger, Tag } from '@/components/ui';
+import { avisar, confirmar } from '@/components/ui/confirmar';
+import { volver } from '@/components/ui/Screen';
 import { evaluateAchievements, unlockAchievements } from '@/lib/achievements';
 import { useAuth } from '@/lib/auth';
 import {
@@ -59,6 +61,7 @@ import { propagarActo, restoDelModulo } from '@/lib/links';
 import { colors, fonts } from '@/lib/theme';
 import type { JournalEntry, JournalPhoto } from '@/lib/types';
 import { mensajeSistema } from '@/lib/validation';
+import { deMisiones, desgloseXp } from '@/lib/voice';
 
 const MOOD_LABELS = ['Hundido', 'Bajo', 'Normal', 'Bien', 'Imparable'];
 const ENERGY_LABELS = ['Vacío', 'Poca', 'Normal', 'Alta', 'A tope'];
@@ -190,7 +193,7 @@ export default function Diario() {
       setPhotos(conUrl);
       setChronicle(events.map(lineaDeCronica).filter((l): l is LineaCronica => l !== null));
     } catch (e) {
-      if (mio === turno.current) Alert.alert('Error del sistema', mensajeSistema(e));
+      if (mio === turno.current) avisar('Error del sistema', mensajeSistema(e));
     } finally {
       if (mio === turno.current) setLoaded(true);
     }
@@ -249,7 +252,7 @@ export default function Diario() {
   };
 
   /** Cambiar de día tira lo no guardado: se pregunta una vez, no se pierde en silencio. */
-  const irADia = (next: string, alEscribir = false) => {
+  const irADia = async (next: string, alEscribir = false) => {
     const ir = () => {
       sucioRef.current = false;
       setSucio(false);
@@ -262,17 +265,26 @@ export default function Diario() {
       scroll.current?.scrollTo({ y: 0, animated: false });
     };
     if (!sucioRef.current || next === dia) return ir();
-    Alert.alert('Cambios sin guardar', 'Si cambias de día se pierde lo que has escrito.', [
-      { text: 'Seguir escribiendo', style: 'cancel' },
-      { text: 'Descartar', style: 'destructive', onPress: ir },
-    ]);
+    const descartar = await confirmar({
+      titulo: 'Cambios sin guardar',
+      mensaje: 'Si cambias de día se pierde lo que has escrito.',
+      confirmar: 'Descartar',
+      cancelar: 'Seguir escribiendo',
+      destructivo: true,
+    });
+    if (descartar) ir();
   };
 
   const addPhoto = async () => {
     if (!userId || saving.current) return;
     const perm = await ImagePicker.requestCameraPermissionsAsync();
     if (!perm.granted) {
-      Alert.alert('Sin cámara', 'El sistema necesita la cámara para los comprobantes del diario.');
+      const mensaje = 'El sistema necesita la cámara para los comprobantes del diario.';
+      if (Platform.OS === 'web') {
+        avisar('Sin cámara', mensaje);
+      } else if (await confirmar({ titulo: 'Sin cámara', mensaje, confirmar: 'Abrir ajustes' })) {
+        Linking.openSettings().catch(() => {});
+      }
       return;
     }
     const result = await ImagePicker.launchCameraAsync({
@@ -291,29 +303,28 @@ export default function Diario() {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       loadArchivo();
     } catch (e) {
-      Alert.alert('Error del sistema', mensajeSistema(e));
+      avisar('Error del sistema', mensajeSistema(e));
     } finally {
       saving.current = false;
     }
   };
 
-  const removePhoto = (item: { photo: JournalPhoto; url: string | null }) => {
-    Alert.alert('Eliminar comprobante', '¿Borrar esta foto del diario?', [
-      { text: 'Cancelar', style: 'cancel' },
-      {
-        text: 'Eliminar',
-        style: 'destructive',
-        onPress: async () => {
-          try {
-            await deleteJournalPhoto(item.photo);
-            setPhotos((prev) => prev.filter((p) => p.photo.id !== item.photo.id));
-            loadArchivo();
-          } catch (e) {
-            Alert.alert('Error del sistema', mensajeSistema(e));
-          }
-        },
-      },
-    ]);
+  const removePhoto = async (item: { photo: JournalPhoto; url: string | null }) => {
+    const ok = await confirmar({
+      titulo: 'Eliminar comprobante',
+      mensaje: '¿Borrar esta foto del diario?',
+      confirmar: 'Eliminar',
+      destructivo: true,
+    });
+    if (!ok) return;
+    try {
+      // La foto sale de la pantalla solo si se ha borrado de verdad.
+      await deleteJournalPhoto(item.photo);
+      setPhotos((prev) => prev.filter((p) => p.photo.id !== item.photo.id));
+      loadArchivo();
+    } catch (e) {
+      avisar('Error del sistema', mensajeSistema(e));
+    }
   };
 
   /** Lo que se guardaría ahora mismo: de aquí salen la completitud y el guardado. */
@@ -373,19 +384,23 @@ export default function Diario() {
         if (resto > 0) {
           await awardXp(eco?.profile ?? profile, resto, 'PER', 'journal_entry', { date: dia });
         }
-        const pagado = resto + (eco?.xp ?? 0);
-        const marcado = eco?.marcadas.length ? `\nMarcado solo: ${eco.marcadas.join(', ')}` : '';
+        // El desglose cuadra con lo que luego enseña la misión enlazada
+        // (+15 en el aviso frente a +10 en la misión era 10 + 5 sin decirlo).
+        const desglose = desgloseXp([
+          { xp: eco?.xp ?? 0, de: deMisiones(eco?.marcadas ?? []) },
+          { xp: resto, de: 'a PER por el diario' },
+        ]);
         const total = await countEntries();
         const fresh = await unlockAchievements(userId, evaluateAchievements({ journalCount: total }));
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        Alert.alert(
-          'ENTRADA REGISTRADA',
-          `+${pagado} XP a PER${marcado}${fresh.length > 0 ? `\nLogro: ${fresh.map((a) => a.name).join(', ')}` : ''}`,
+        avisar(
+          'Entrada registrada',
+          `${desglose || 'La misión del diario ya estaba marcada y pagada.'}${fresh.length > 0 ? `\nLogro: ${fresh.map((a) => a.name).join(', ')}` : ''}`,
         );
       }
       if (isNew && !(dia === dateKey() || dia === addDays(dateKey(), -1))) {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        Alert.alert('ENTRADA REGISTRADA', 'Día completado en tu archivo. Sin XP: solo lo paga el día en caliente.');
+        avisar('Entrada registrada', 'Día completado en tu archivo. Sin XP: solo lo paga el día en caliente.');
       }
       if (!isNew) {
         Haptics.selectionAsync().catch(() => {});
@@ -394,7 +409,7 @@ export default function Diario() {
       setRegistrado(true);
       await Promise.all([loadDia(), loadArchivo()]);
     } catch (e) {
-      Alert.alert('Error del sistema', mensajeSistema(e));
+      avisar('Error del sistema', mensajeSistema(e));
     } finally {
       saving.current = false;
       setBusy(false);
@@ -428,7 +443,7 @@ export default function Diario() {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refrescar} tintColor={colors.accent} />}
       >
         <ScreenHeader
-          onBack={() => router.back()}
+          onBack={() => volver(router)}
           eyebrow={escribiendo ? `Mente · ${relativoDe(dia)}` : 'Mente · Archivo'}
           title="Diario"
           subtitle={escribiendo ? nombreDia(dia) : 'Lo que has vivido, día a día.'}

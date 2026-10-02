@@ -2,7 +2,6 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
 import {
-  Alert,
   KeyboardAvoidingView,
   Modal,
   Platform,
@@ -16,6 +15,7 @@ import {
 import { SystemButton } from '@/components/SystemButton';
 import { XPBar } from '@/components/XPBar';
 import {
+  avisar,
   Card,
   Chip,
   ChipRow,
@@ -30,7 +30,10 @@ import {
   Stagger,
   Stat,
   StatRow,
+  volver,
 } from '@/components/ui';
+import { confirmar } from '@/components/ui/confirmar';
+import { mensajeSistema } from '@/lib/validation';
 import { useAuth } from '@/lib/auth';
 import { useConsentimientoIA } from '@/components/ConsentimientoIA';
 import { accessNotice, clasificarMovimientos, CoachAccessError } from '@/lib/coach';
@@ -104,7 +107,7 @@ export default function Economia() {
       setPlan(p);
       setPresupuestos(b);
     } catch (e) {
-      Alert.alert('Error del sistema', e instanceof Error ? e.message : 'Fallo desconocido');
+      avisar('Error del sistema', mensajeSistema(e));
     } finally {
       setCargado(true);
     }
@@ -159,26 +162,28 @@ export default function Economia() {
     try {
       const r = await clasificarMovimientos();
       await cargar();
-      Alert.alert(r.clasificados ? 'El sistema ha clasificado' : 'Sin cambios', r.texto);
+      avisar(r.clasificados ? 'El sistema ha clasificado' : 'Sin cambios', r.texto);
     } catch (e) {
       if (e instanceof CoachAccessError) {
         // La clasificación automática es IA y pasa por el mismo candado que el
         // coach. No es un error: clasificar a mano sigue funcionando, y quien
         // quiera la automática tiene el camino a Pro.
-        Alert.alert(
-          e.reason === 'sin_suscripcion' ? 'Clasificación automática' : 'El sistema',
-          e.reason === 'sin_suscripcion'
-            ? 'Que el sistema clasifique por ti es parte de NIVL Pro. Puedes seguir clasificando a mano: toca un movimiento y el sistema aprende la regla.'
-            : accessNotice(e),
-          e.reason === 'sin_suscripcion'
-            ? [
-                { text: 'Ahora no', style: 'cancel' },
-                { text: 'Ver NIVL Pro', onPress: () => router.push('/pro') },
-              ]
-            : [{ text: 'Entendido' }],
-        );
+        // Dos casos: sin suscripción se ofrece Pro (dos botones, uno lleva a
+        // /pro); con cualquier otro motivo es un aviso de un solo botón.
+        if (e.reason === 'sin_suscripcion') {
+          const verPro = await confirmar({
+            titulo: 'Clasificación automática',
+            mensaje:
+              'Que el sistema clasifique por ti es parte de NIVL Pro. Puedes seguir clasificando a mano: toca un movimiento y el sistema aprende la regla.',
+            confirmar: 'Ver NIVL Pro',
+            cancelar: 'Ahora no',
+          });
+          if (verPro) router.push('/pro');
+        } else {
+          avisar('El sistema', accessNotice(e));
+        }
       } else {
-        Alert.alert('Error del sistema', e instanceof Error ? e.message : 'Fallo desconocido');
+        avisar('Error del sistema', mensajeSistema(e));
       }
     } finally {
       setClasificando(false);
@@ -192,13 +197,13 @@ export default function Economia() {
       setEditando(null);
       await cargar();
       if (n > 1) {
-        Alert.alert(
+        avisar(
           'El sistema aprende',
           `${n} movimientos clasificados. A partir de ahora lo hace solo.`,
         );
       }
     } catch (e) {
-      Alert.alert('Error del sistema', e instanceof Error ? e.message : 'Fallo desconocido');
+      avisar('Error del sistema', mensajeSistema(e));
     }
   };
 
@@ -206,11 +211,11 @@ export default function Economia() {
     if (!userId || guardando) return;
     const n = Number(importe.replace(',', '.'));
     if (!Number.isFinite(n) || n === 0) {
-      Alert.alert('Importe inválido', 'Escribe el importe. Negativo si es gasto, positivo si es ingreso.');
+      avisar('Importe inválido', 'Escribe el importe. Negativo si es gasto, positivo si es ingreso.');
       return;
     }
     if (!concepto.trim()) {
-      Alert.alert('Falta el concepto', 'Dentro de un mes no vas a recordar qué fue.');
+      avisar('Falta el concepto', 'Dentro de un mes no vas a recordar qué fue.');
       return;
     }
     setGuardando(true);
@@ -226,7 +231,7 @@ export default function Economia() {
       setConcepto('');
       await cargar();
     } catch (e) {
-      Alert.alert('Error del sistema', e instanceof Error ? e.message : 'Fallo desconocido');
+      avisar('Error del sistema', mensajeSistema(e));
     } finally {
       setGuardando(false);
     }
@@ -254,7 +259,7 @@ export default function Economia() {
       <Stagger>
         <FadeIn index={0}>
           <ScreenHeader
-            onBack={() => router.back()}
+            onBack={() => volver(router)}
             eyebrow="Dinero"
             title="Economía"
             subtitle={subtitulo}
@@ -515,7 +520,6 @@ export default function Economia() {
               {editando?.description} · {editando ? eurSigno(editando.amount) : ''}
             </Text>
             <ScrollView
-              automaticallyAdjustKeyboardInsets
               keyboardShouldPersistTaps="handled"
               style={styles.sheetScroll}
               showsVerticalScrollIndicator={false}

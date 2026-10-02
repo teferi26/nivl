@@ -1,7 +1,8 @@
 import * as Haptics from 'expo-haptics';
 import { useEffect, useRef } from 'react';
-import { Animated, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import { AccessibilityInfo, Animated, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SystemWindow } from '@/components/SystemWindow';
+import { useMovimientoReducido } from '@/components/ui/motion';
 import { rankForLevel } from '@/lib/game';
 import { colors, fonts } from '@/lib/theme';
 import { voice } from '@/lib/voice';
@@ -51,19 +52,40 @@ function Anillo({ delay, size = 220 }: { delay: number; size?: number }) {
  * esquinas cortadas tiene permiso: un momento ganado, no una pantalla más.
  */
 export function LevelUpOverlay({ level, onClose }: Props) {
+  const reducido = useMovimientoReducido();
   const scale = useRef(new Animated.Value(0.7)).current;
   const opacity = useRef(new Animated.Value(0)).current;
   const numero = useRef(new Animated.Value(1.6)).current;
   const numeroOpacity = useRef(new Animated.Value(0)).current;
 
+  // Una sola vez por subida: si "reducir movimiento" se resuelve con el aviso
+  // ya abierto, el efecto se repite pero no vuelve a anunciar ni a vibrar.
+  const anunciado = useRef<number | null>(null);
+
   useEffect(() => {
-    if (level === null) return;
+    if (level === null) {
+      anunciado.current = null;
+      return;
+    }
+    if (anunciado.current !== level) {
+      anunciado.current = level;
+      // El lector de pantalla no ve la onda: se le dice con palabras.
+      AccessibilityInfo.announceForAccessibility(`Subes a nivel ${level}.`);
+      // Impacto fuerte: el par háptico del hito, como manda el sistema.
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy).catch(() => {});
+    }
+    if (reducido) {
+      // Sin movimiento: el marco y la cifra aparecen ya en su sitio.
+      scale.setValue(1);
+      opacity.setValue(1);
+      numero.setValue(1);
+      numeroOpacity.setValue(1);
+      return;
+    }
     scale.setValue(0.7);
     opacity.setValue(0);
     numero.setValue(1.6);
     numeroOpacity.setValue(0);
-    // Impacto fuerte: el par háptico del hito, como manda el sistema.
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy).catch(() => {});
     Animated.parallel([
       Animated.spring(scale, { toValue: 1, useNativeDriver: true, friction: 6, tension: 60 }),
       Animated.timing(opacity, { toValue: 1, duration: 220, useNativeDriver: true }),
@@ -75,14 +97,19 @@ export function LevelUpOverlay({ level, onClose }: Props) {
         ]),
       ]),
     ]).start();
-  }, [level, scale, opacity, numero, numeroOpacity]);
+  }, [level, reducido, scale, opacity, numero, numeroOpacity]);
 
   const rango = level !== null ? rankForLevel(level) : '';
 
   return (
     <Modal visible={level !== null} transparent animationType="fade" onRequestClose={onClose}>
-      <Pressable style={styles.backdrop} onPress={onClose} accessibilityRole="button" accessibilityLabel="Continuar">
-        {level !== null ? (
+      <Pressable
+        style={styles.backdrop}
+        onPress={onClose}
+        accessibilityRole="button"
+        accessibilityLabel={`Subes a nivel ${level ?? 0}. Continuar`}
+      >
+        {level !== null && !reducido ? (
           <View style={styles.capaAnillos} pointerEvents="none">
             <Anillo delay={0} />
             <Anillo delay={700} />

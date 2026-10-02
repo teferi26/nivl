@@ -13,8 +13,11 @@ import {
   Text,
   TextInput,
   View,
+  type NativeSyntheticEvent,
+  type TextInputKeyPressEventData,
 } from 'react-native';
 import { useConsentimientoIA } from '@/components/ConsentimientoIA';
+import { DenunciarIA, type RespuestaDenunciada } from '@/components/DenunciarIA';
 import { HealthConsentGuard } from '@/components/ConsentimientoSalud';
 import { SystemButton } from '@/components/SystemButton';
 import { TextoSistema } from '@/components/TextoSistema';
@@ -48,6 +51,7 @@ import {
   type AiStatus,
 } from '@/lib/pro';
 import { colors, fonts } from '@/lib/theme';
+import { mensajeSistema } from '@/lib/validation';
 
 interface Burbuja {
   id: string;
@@ -65,7 +69,17 @@ const ATAJOS: { etiqueta: string; mensaje: string; icono: keyof typeof Ionicons.
 ];
 
 /** Mensaje del coach: sin burbuja, con una marca a la izquierda y el texto en editorial. */
-function MensajeSistema({ texto, acciones, pensando }: { texto?: string; acciones: { texto: string; ok: boolean }[]; pensando?: boolean }) {
+function MensajeSistema({
+  texto,
+  acciones,
+  pensando,
+  onDenunciar,
+}: {
+  texto?: string;
+  acciones: { texto: string; ok: boolean }[];
+  pensando?: boolean;
+  onDenunciar?: () => void;
+}) {
   return (
     <View style={styles.filaSistema}>
       <View style={styles.marcaSistema}>
@@ -93,10 +107,26 @@ function MensajeSistema({ texto, acciones, pensando }: { texto?: string; accione
             ))}
           </View>
         ) : null}
+        {onDenunciar && texto ? (
+          <Pressable
+            onPress={onDenunciar}
+            hitSlop={8}
+            style={styles.denunciar}
+            accessibilityRole="button"
+            accessibilityLabel="Denunciar respuesta"
+          >
+            <Ionicons name="flag-outline" size={12} color={colors.textFaint} />
+            <Text style={styles.denunciarTexto}>Denunciar respuesta</Text>
+          </Pressable>
+        ) : null}
       </View>
     </View>
   );
 }
+
+// Los ids que vienen del servidor son uuid; los de burbujas recién llegadas
+// por el stream son locales y no identifican nada en el servidor.
+const ES_UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /**
  * La pestaña de una cuenta sin NIVL Pro. No es un error ni un muro en blanco:
@@ -159,6 +189,7 @@ function CoachContent() {
 
   const [threadId, setThreadId] = useState<string | null>(null);
   const [burbujas, setBurbujas] = useState<Burbuja[]>([]);
+  const [denuncia, setDenuncia] = useState<RespuestaDenunciada | null>(null);
   const [texto, setTexto] = useState('');
   const [cargando, setCargando] = useState(true);
   const [pensando, setPensando] = useState(false);
@@ -227,7 +258,7 @@ function CoachContent() {
           .filter((b) => b.text || b.acciones.length),
       );
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'No se pudo abrir la conversación.');
+      setError(mensajeSistema(e));
     } finally {
       setCargando(false);
     }
@@ -336,7 +367,7 @@ function CoachContent() {
               alFondo();
               break;
             case 'error':
-              setError(e.message);
+              setError(mensajeSistema(e));
               break;
           }
         },
@@ -359,7 +390,14 @@ function CoachContent() {
           setAviso(accessNotice(e));
         }
       } else {
-        setError(e instanceof Error ? e.message : 'El sistema no responde.');
+        setError(mensajeSistema(e));
+        // Si el coach no llegó a contestar nada, el mensaje no ha cuajado: se
+        // devuelve al cuadro (con sus fotos) para reintentar sin reescribirlo.
+        if (!acumulado && !ejecutadas.length) {
+          setBurbujas((b) => b.filter((x) => x.id !== localId));
+          setTexto(limpio);
+          setAdjuntas(fotos);
+        }
       }
       setEnCurso('');
     } finally {
@@ -372,6 +410,16 @@ function CoachContent() {
         releerEstado();
       }
     }
+  };
+
+  // En la web, Intro envía y Mayús+Intro hace salto de línea, como en
+  // cualquier chat de escritorio. En el móvil el teclado no cambia.
+  const alTeclear = (e: NativeSyntheticEvent<TextInputKeyPressEventData>) => {
+    if (Platform.OS !== 'web') return;
+    const nativo = e.nativeEvent as TextInputKeyPressEventData & { shiftKey?: boolean; isComposing?: boolean };
+    if (nativo.key !== 'Enter' || nativo.shiftKey || nativo.isComposing) return;
+    e.preventDefault();
+    if (puedeEnviar) enviar(texto);
   };
 
   const elegirModo = (m: CoachMode) => {
@@ -461,7 +509,6 @@ function CoachContent() {
         keyboardVerticalOffset={Platform.OS === 'ios' ? 8 : 0}
       >
         <ScrollView
-          automaticallyAdjustKeyboardInsets
           ref={scrollRef}
           style={styles.flex}
           contentContainerStyle={styles.lista}
@@ -497,7 +544,19 @@ function CoachContent() {
                 </View>
               </View>
             ) : (
-              <MensajeSistema key={b.id} texto={b.text} acciones={b.acciones.map((texto) => ({ texto, ok: true }))} />
+              <MensajeSistema
+                key={b.id}
+                texto={b.text}
+                acciones={b.acciones.map((texto) => ({ texto, ok: true }))}
+                onDenunciar={() =>
+                  setDenuncia({
+                    fuente: 'coach',
+                    messageId: ES_UUID.test(b.id) ? b.id : null,
+                    texto: b.text,
+                    contexto: `hilo ${threadId ?? 'desconocido'} · ${new Date().toISOString()}`,
+                  })
+                }
+              />
             ),
           )}
 
@@ -600,6 +659,7 @@ function CoachContent() {
               placeholder="Habla con el sistema"
               placeholderTextColor={colors.textFaint}
               multiline
+              onKeyPress={alTeclear}
               accessibilityLabel="Mensaje para el sistema"
             />
             <Pressable
@@ -615,6 +675,7 @@ function CoachContent() {
         )}
       </KeyboardAvoidingView>
       {consentimiento.hoja}
+      <DenunciarIA respuesta={denuncia} onClose={() => setDenuncia(null)} />
     </Screen>
   );
 }
@@ -660,6 +721,8 @@ const styles = StyleSheet.create({
   pensando: { fontFamily: fonts.body, fontSize: 13, color: colors.textDim },
   acciones: { marginTop: 8, borderLeftWidth: 1, borderLeftColor: colors.line, paddingLeft: 10, gap: 4 },
   accion: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  denunciar: { flexDirection: 'row', alignItems: 'center', gap: 5, alignSelf: 'flex-start', marginTop: 8, paddingVertical: 2 },
+  denunciarTexto: { fontFamily: fonts.body, fontSize: 11, color: colors.textFaint },
   accionTexto: { fontFamily: fonts.body, fontSize: 12.5, color: colors.textDim, flexShrink: 1 },
   error: { flexDirection: 'row', alignItems: 'center', gap: 8, borderLeftWidth: 2, borderLeftColor: colors.red, paddingLeft: 10, paddingVertical: 6 },
   errorTexto: { fontFamily: fonts.body, fontSize: 13, color: colors.red, flex: 1 },

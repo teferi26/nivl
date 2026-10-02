@@ -5,6 +5,7 @@ import { useEffect, useRef, type ReactNode } from 'react';
 import { Animated, StyleSheet, Text, View } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
 import { colors, fonts } from '@/lib/theme';
+import { useMovimientoReducido } from './motion';
 
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 
@@ -36,10 +37,17 @@ export function ProgressRing({
   const c = 2 * Math.PI * r;
   const clamped = Math.min(1, Math.max(0, ratio));
   const progress = useRef(new Animated.Value(clamped)).current;
+  const reducido = useMovimientoReducido();
 
   useEffect(() => {
-    Animated.timing(progress, { toValue: clamped, duration: 600, useNativeDriver: false }).start();
-  }, [clamped, progress]);
+    if (reducido) {
+      progress.setValue(clamped);
+      return;
+    }
+    const anim = Animated.timing(progress, { toValue: clamped, duration: 600, useNativeDriver: false });
+    anim.start();
+    return () => anim.stop();
+  }, [clamped, progress, reducido]);
 
   const dashOffset = progress.interpolate({ inputRange: [0, 1], outputRange: [c, 0] });
 
@@ -64,7 +72,7 @@ export function ProgressRing({
         {children ?? (
           <>
             <Text style={[styles.label, { fontSize: size * 0.26 }]}>{label ?? `${Math.round(clamped * 100)}%`}</Text>
-            {sublabel ? <Text style={[styles.sublabel, { fontSize: Math.max(8, size * 0.1) }]}>{sublabel}</Text> : null}
+            {sublabel ? <Text style={[styles.sublabel, { fontSize: Math.max(11, size * 0.1) }]}>{sublabel}</Text> : null}
           </>
         )}
       </View>

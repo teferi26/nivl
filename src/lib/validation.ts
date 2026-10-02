@@ -1,10 +1,16 @@
 // Validación pura de credenciales (sin dependencias) — testeable en aislamiento.
 //
-// La política de contraseñas es la de Franky (web/src/lib/password-strength.ts),
-// alineada con NIST SP 800-63B: longitud mínima de 12, sin reglas de
-// composición obligatorias y rechazo de lo evidentemente basura. Una cuenta
-// creada desde NIVL es una cuenta Franky, así que las reglas tienen que ser
-// las mismas o el servidor rechazaría lo que la app dio por bueno.
+// Política de contraseñas de la cuenta NIVL (Supabase Auth propio), alineada
+// con NIST SP 800-63B: de 10 a 72 caracteres, SIN reglas de composición, y se
+// rechaza lo evidentemente basura (poca variedad, solo espacios, contener el
+// propio correo). 72 es el límite de bcrypt, que es como guarda Supabase Auth:
+// lo que pase de ahí no cuenta, así que no se deja escribir.
+//
+// Esto es la ayuda de la pantalla. El control real es del servidor: en el
+// panel de Supabase → Authentication → «Minimum password length» debe estar
+// en 10 (el mismo número que aquí), y si el plan lo permite, activada la
+// protección contra contraseñas filtradas (HaveIBeenPwned). Si el servidor
+// rechaza algo, `authFlow.ts` lo traduce a «contraseña débil».
 
 export function isValidEmail(email: string): boolean {
   const e = email.trim();
@@ -22,15 +28,35 @@ export interface PasswordCheck {
   missing: string[]; // qué le falta para poder registrarse
 }
 
-export const PASSWORD_MIN_LENGTH = 12;
-export const PASSWORD_MAX_LENGTH = 200;
+export const PASSWORD_MIN_LENGTH = 10;
+/** Bytes, no caracteres: bcrypt corta en 72 bytes (una «ñ» o un emoji ocupan más de uno). */
+export const PASSWORD_MAX_LENGTH = 72;
 
-export function checkPassword(password: string): PasswordCheck {
+/** Longitud en bytes UTF-8, sin depender de TextEncoder (no siempre existe en Hermes). */
+export function utf8Bytes(s: string): number {
+  return encodeURIComponent(s).replace(/%[0-9A-F]{2}/gi, 'x').length;
+}
+
+function contieneCorreo(password: string, email?: string): boolean {
+  const e = (email ?? '').trim().toLowerCase();
+  if (!e) return false;
+  const p = password.toLowerCase();
+  if (p.includes(e)) return true;
+  const local = e.split('@')[0] ?? '';
+  return local.length >= 4 && p.includes(local);
+}
+
+/**
+ * ¿Vale esta contraseña para crear la cuenta o cambiarla? Con `email`, además
+ * se rechaza que lo contenga (o su parte antes de la @, si tiene 4+ letras).
+ */
+export function checkPassword(password: string, email?: string): PasswordCheck {
   const missing: string[] = [];
   if (password.length < PASSWORD_MIN_LENGTH) missing.push(`${PASSWORD_MIN_LENGTH} caracteres (una frase vale)`);
-  if (password.length > PASSWORD_MAX_LENGTH) missing.push(`no pasar de ${PASSWORD_MAX_LENGTH} caracteres`);
+  if (utf8Bytes(password) > PASSWORD_MAX_LENGTH) missing.push(`no pasar de ${PASSWORD_MAX_LENGTH} caracteres`);
   if (password.length > 0 && new Set(password).size < 5) missing.push('más variedad de caracteres');
   if (password.length > 0 && /^\s+$/.test(password)) missing.push('algo más que espacios');
+  if (password.length > 0 && contieneCorreo(password, email)) missing.push('que no contenga tu correo');
 
   // La longitud manda: es lo que de verdad mueve la entropía. Una frase larga
   // en minúsculas puntúa más que "Aa1!aa1!" y eso es lo correcto.
@@ -51,7 +77,7 @@ export function checkPassword(password: string): PasswordCheck {
   return { ok: missing.length === 0, strength, score, missing };
 }
 
-/** Nombre visible: lo que Franky acepta (1-80) recortado a lo que NIVL pinta (24). */
+/** Nombre visible: lo que NIVL pinta (1-24). */
 export const NAME_MAX_LENGTH = 24;
 
 export function isValidName(name: string): boolean {

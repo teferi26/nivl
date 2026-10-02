@@ -23,7 +23,13 @@
 //   · La sesión que Franky abre para verificar se cierra en el acto (scope
 //     local: solo esa, no las demás sesiones del usuario en Franky).
 //   · Sin JWT de entrada (--no-verify-jwt): quien llama todavía no tiene
-//     sesión. Freno por IP aquí, más los límites propios de Auth de Franky.
+//     sesión. Freno por IP y por correo aquí, más los límites de Auth de Franky.
+//   · La cuenta NIVL queda atada al id de Franky (app_metadata.franky_id). Si
+//     ya está atada a otro id, no se entrega sesión (409 account_conflict).
+//   · Requisito de configuración (panel de Supabase de NIVL, no código): alta
+//     pública DESACTIVADA y "Confirm email" ACTIVADO. Con alta abierta y
+//     autoconfirmación, cualquiera puede crear en NIVL la cuenta de un correo
+//     ajeno antes que su dueño (ver docs/security-audit/a-rls-auth.md).
 //
 // Despliegue:
 //   supabase functions deploy franky-auth --no-verify-jwt
@@ -31,6 +37,16 @@
 //     FRANKY_SUPABASE_ANON_KEY=<clave pública de Franky> FRANKY_WEB_URL=https://franky.es
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import {
+  accionDe,
+  decidirVinculo,
+  Freno,
+  ipDe,
+  limpiarEmail,
+  limpiarPassword,
+  passwordAleatoria,
+  PuertaError,
+} from './logic.ts';
 
 const FRANKY_URL = Deno.env.get('FRANKY_SUPABASE_URL') ?? '';
 const FRANKY_ANON = Deno.env.get('FRANKY_SUPABASE_ANON_KEY') ?? '';
@@ -42,67 +58,28 @@ const CORS = {
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
 
-type Action = 'login' | 'register';
-
 interface Body {
-  action?: Action;
+  action?: unknown;
   email?: string;
   password?: string;
   name?: string;
 }
 
-class PuertaError extends Error {
-  constructor(
-    public code: string,
-    public status: number,
-    message: string,
-  ) {
-    super(message);
-  }
-}
-
-// ── Freno por IP ─────────────────────────────────────────────────────
-// Best-effort: el aislado de una Edge Function es efímero, así que esto no
-// sustituye a los límites de Auth de Franky (que aplican igual). Frena a un
-// script que martillee la misma instancia; no castiga a un campus entero.
-const LIMITE = 12;
+// ── Frenos ───────────────────────────────────────────────────────────
+// Por IP (best-effort: la cabecera puede venir del cliente) y por correo (no
+// depende de cabeceras: frena el ataque dirigido a una cuenta concreta aunque
+// cada intento llegue con una IP inventada). Los dos viven en la memoria del
+// aislado; los límites reales siguen siendo los de Auth de Franky.
 const VENTANA_MS = 15 * 60_000;
-const intentos = new Map<string, { n: number; hasta: number }>();
-
-function frenar(ip: string): void {
-  const ahora = Date.now();
-  const v = intentos.get(ip);
-  if (!v || v.hasta < ahora) {
-    intentos.set(ip, { n: 1, hasta: ahora + VENTANA_MS });
-    return;
-  }
-  v.n += 1;
-  if (v.n > LIMITE) {
-    throw new PuertaError('rate_limited', 429, 'Demasiados intentos. Espera unos minutos y reintenta.');
-  }
-}
+const frenoIp = new Freno(12, VENTANA_MS);
+const frenoCorreo = new Freno(8, VENTANA_MS);
+const DEMASIADOS = 'Demasiados intentos. Espera unos minutos y reintenta.';
 
 function json(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {
     status,
     headers: { ...CORS, 'content-type': 'application/json' },
   });
-}
-
-function limpiarEmail(raw: unknown): string {
-  const e = typeof raw === 'string' ? raw.trim().toLowerCase() : '';
-  if (!e || e.length > 200 || !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(e)) {
-    throw new PuertaError('invalid_email', 400, 'El correo no tiene un formato válido.');
-  }
-  return e;
-}
-
-function limpiarPassword(raw: unknown): string {
-  const p = typeof raw === 'string' ? raw : '';
-  if (!p || p.length > 200) {
-    throw new PuertaError('invalid_password', 400, 'Escribe tu contraseña.');
-  }
-  return p;
 }
 
 // ── 0. Registro en Franky ────────────────────────────────────────────
@@ -132,7 +109,7 @@ async function registrarEnFranky(name: string, email: string, password: string):
     throw new PuertaError('rate_limited', 429, 'Demasiados registros desde tu red. Espera un rato y reintenta.');
   }
   if (res.status === 400) {
-    throw new PuertaError('invalid_signup', 400, detalle.message ?? 'Franky ha rechazado el alta. Revisa los datos.');
+    throw new PuertaError('invalid_signup', 400, (typeof detalle.message === 'string' && detalle.message.trim() ? detalle.message.trim().slice(0, 200) : 'Franky ha rechazado el alta. Revisa los datos.'));
   }
   console.error('[franky-auth] signup en Franky falló', res.status, detalle.error ?? '');
   throw new PuertaError('signup_failed', 502, 'Franky no responde ahora mismo. Inténtalo en unos minutos.');
@@ -150,7 +127,7 @@ async function verificarEnFranky(
   if (error || !data.user) {
     const m = (error?.message ?? '').toLowerCase();
     if (m.includes('rate limit') || m.includes('too many')) {
-      throw new PuertaError('rate_limited', 429, 'Demasiados intentos. Espera unos minutos y reintenta.');
+      throw new PuertaError('rate_limited', 429, DEMASIADOS);
     }
     if (m.includes('email not confirmed')) {
       throw new PuertaError('email_not_confirmed', 403, 'Confirma tu correo en Franky antes de entrar.');
@@ -174,6 +151,11 @@ async function verificarEnFranky(
 }
 
 // ── 2 y 3. Usuario NIVL y token de un solo uso ───────────────────────
+// La cuenta NIVL se encuentra por correo pero se ATA a la cuenta Franky por
+// su id, en `app_metadata.franky_id` (solo lo escribe el servidor). Sin ese
+// vínculo, quien consiguiera una cuenta NIVL con el correo de otra persona
+// (alta directa en Auth de NIVL o cambio de correo) recibiría la sesión de la
+// víctima en cuanto esta entrara con Franky. Ver docs/security-audit/a-rls-auth.md.
 async function emitirTokenNivl(
   email: string,
   frankyId: string,
@@ -189,20 +171,47 @@ async function emitirTokenNivl(
   const { error: createErr } = await admin.auth.admin.createUser({
     email,
     email_confirm: true,
-    user_metadata: { franky_id: frankyId, ...(fullName ? { full_name: fullName } : {}) },
+    app_metadata: { franky_id: frankyId },
+    user_metadata: fullName ? { full_name: fullName } : {},
   });
   if (!createErr) {
     created = true;
   } else if (createErr.code !== 'email_exists' && !/already.*(registered|exists)/i.test(createErr.message)) {
-    console.error('[franky-auth] createUser falló', createErr.code, createErr.message);
+    console.error('[franky-auth] createUser falló', createErr.code);
     throw new PuertaError('nivl_unavailable', 502, 'NIVL no ha podido preparar tu cuenta. Inténtalo en unos minutos.');
   }
 
   const { data, error } = await admin.auth.admin.generateLink({ type: 'magiclink', email });
   const tokenHash = data?.properties?.hashed_token;
-  if (error || !tokenHash) {
-    console.error('[franky-auth] generateLink falló', error?.code, error?.message);
+  const usuario = data?.user;
+  if (error || !tokenHash || !usuario) {
+    console.error('[franky-auth] generateLink falló', error?.code);
     throw new PuertaError('nivl_unavailable', 502, 'NIVL no ha podido abrirte la puerta. Inténtalo en unos minutos.');
+  }
+
+  const { vinculo, reiniciarPassword } = decidirVinculo(usuario, frankyId);
+  if (vinculo === 'conflicto') {
+    // Sin correo ni ids en el registro: solo que pasó.
+    console.error('[franky-auth] cuenta NIVL atada a otra cuenta Franky; no se entrega sesión');
+    throw new PuertaError(
+      'account_conflict',
+      409,
+      'Esta cuenta de NIVL pertenece a otra cuenta de Franky. Escríbenos desde soporte para recuperarla.',
+    );
+  }
+  if (vinculo === 'vincular') {
+    // Cuenta anterior al vínculo (o creada fuera del puente): se ata ahora. Si
+    // no estaba confirmada, pudo crearla un tercero con signUp: su contraseña
+    // se sustituye por una aleatoria en la MISMA llamada. Si no se puede atar,
+    // no se entra: abrirla sin vínculo es justo el agujero.
+    const { error: linkErr } = await admin.auth.admin.updateUserById(usuario.id, {
+      app_metadata: { ...(usuario.app_metadata ?? {}), franky_id: frankyId },
+      ...(reiniciarPassword ? { password: passwordAleatoria() } : {}),
+    });
+    if (linkErr) {
+      console.error('[franky-auth] no se pudo vincular la cuenta', linkErr.code);
+      throw new PuertaError('nivl_unavailable', 502, 'NIVL no ha podido abrirte la puerta. Inténtalo en unos minutos.');
+    }
   }
   return { tokenHash, created };
 }
@@ -217,16 +226,14 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'desconocida';
-    frenar(ip);
+    if (!frenoIp.intentar(ipDe(req.headers))) throw new PuertaError('rate_limited', 429, DEMASIADOS);
 
     const body = (await req.json().catch(() => ({}))) as Body;
-    if (body.action != null && body.action !== 'login' && body.action !== 'register') {
-      return json(400, { error: 'invalid_action', message: 'Acción no admitida.' });
-    }
-    const action: Action = body.action === 'register' ? 'register' : 'login';
+    const action = accionDe(body?.action);
+    if (!action) return json(400, { error: 'invalid_action', message: 'Acción no admitida.' });
     const email = limpiarEmail(body.email);
     const password = limpiarPassword(body.password);
+    if (!frenoCorreo.intentar(email)) throw new PuertaError('rate_limited', 429, DEMASIADOS);
 
     if (action === 'register') {
       const name = typeof body.name === 'string' ? body.name.trim().slice(0, 80) : '';
@@ -242,7 +249,7 @@ Deno.serve(async (req) => {
     if (e instanceof PuertaError) {
       return json(e.status, { error: e.code, message: e.message });
     }
-    console.error('[franky-auth] error inesperado', e instanceof Error ? e.message : e);
+    console.error('[franky-auth] error inesperado', e instanceof Error ? e.name : typeof e);
     return json(500, { error: 'internal', message: 'Fallo inesperado en la puerta de Franky.' });
   }
 });

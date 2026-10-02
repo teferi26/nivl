@@ -11,19 +11,30 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { SystemButton } from '@/components/SystemButton';
-import { mapAuthError } from '@/lib/authErrors';
-import {
-  FRANKY_PRIVACY_URL,
-  FRANKY_RECOVER_URL,
-  FRANKY_TERMS_URL,
-  frankyLogin,
-  frankyRegister,
-} from '@/lib/frankyAuth';
-import { supabase } from '@/lib/supabase';
+import { entrar, pedirRecuperacion, registrar } from '@/lib/authFlow';
+import { LEGAL_URLS } from '@/lib/proplans';
 import { colors, fonts } from '@/lib/theme';
-import { checkPassword, isValidEmail, isValidName, NAME_MAX_LENGTH } from '@/lib/validation';
+import {
+  checkPassword,
+  isValidEmail,
+  isValidName,
+  mensajeSistema,
+  NAME_MAX_LENGTH,
+  PASSWORD_MIN_LENGTH,
+} from '@/lib/validation';
 
-type Mode = 'signin' | 'signup';
+// La cuenta es de NIVL (Supabase Auth propio). Los mensajes de error y la
+// lógica viven en authFlow.ts (Chat 3): esta pantalla solo pinta.
+type Mode = 'signin' | 'signup' | 'recover';
+
+// Texto acordado con el Chat 3 (seguridad y datos).
+const CASILLA_LEGAL = 'He leído y acepto los Términos de NIVL y he leído su Política de privacidad.';
+
+// Anti-enumeración: valen igual exista o no la cuenta (contrato de authFlow).
+const AVISO_REGISTRO =
+  'Si el correo es nuevo, te hemos enviado un enlace para confirmarlo. Ábrelo en este móvil y después entra con tu contraseña.';
+const AVISO_RECUPERACION =
+  'Si ese correo tiene cuenta, te hemos enviado un enlace. Ábrelo en este móvil para elegir una contraseña nueva.';
 
 const STRENGTH_META = {
   debil: { label: 'Débil', color: colors.red, bars: 1 },
@@ -31,11 +42,14 @@ const STRENGTH_META = {
   fuerte: { label: 'Fuerte', color: colors.accent, bars: 4 },
 } as const;
 
+const INTRO: Record<Mode, string> = {
+  signin: 'Entra con tu correo y tu contraseña de NIVL.',
+  signup: 'Crea tu cuenta de NIVL. Te enviaremos un enlace para confirmar el correo.',
+  recover: 'Escribe el correo de tu cuenta y te enviaremos un enlace para elegir una contraseña nueva.',
+};
+
 export default function Login() {
   const [mode, setMode] = useState<Mode>('signin');
-  // Cuenta antigua de NIVL (anterior a la puerta de Franky): entra directo
-  // contra Auth de NIVL. Es una vía de escape, no la puerta principal.
-  const [legacy, setLegacy] = useState(false);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -49,13 +63,15 @@ export default function Login() {
 
   const emailValid = isValidEmail(email);
   const nameValid = isValidName(name);
-  const pw = checkPassword(password);
+  const pw = checkPassword(password, email);
   const confirmMatch = password === confirm;
 
   const canSubmit =
     mode === 'signin'
       ? emailValid && password.length > 0
-      : nameValid && emailValid && pw.ok && confirmMatch && accepted;
+      : mode === 'recover'
+        ? emailValid
+        : nameValid && emailValid && pw.ok && confirmMatch && accepted;
 
   const reset = () => {
     setError(null);
@@ -65,7 +81,6 @@ export default function Login() {
   const switchMode = (next: Mode) => {
     if (next === mode) return;
     setMode(next);
-    setLegacy(false);
     reset();
     setConfirm('');
     setTouched({ name: false, email: false, password: false, confirm: false });
@@ -77,46 +92,26 @@ export default function Login() {
     reset();
     try {
       if (mode === 'signin') {
-        if (legacy) {
-          const { error: err } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
-          if (err) throw err;
-        } else {
-          await frankyLogin(email, password);
-        }
+        await entrar(email, password);
         // La puerta de sesión de _layout redirige al detectar la sesión.
+      } else if (mode === 'recover') {
+        await pedirRecuperacion(email);
+        setNotice(AVISO_RECUPERACION);
       } else {
-        await frankyRegister(name, email, password);
+        const r = await registrar(email, password, name);
+        if (r === 'confirmar_email') {
+          // Se vuelve a Entrar con el correo puesto: lo siguiente es confirmar y entrar.
+          setMode('signin');
+          setPassword('');
+          setConfirm('');
+          setNotice(AVISO_REGISTRO);
+        }
       }
     } catch (e) {
-      setError(mapAuthError(e instanceof Error ? e.message : 'Fallo desconocido'));
+      setError(mensajeSistema(e));
     } finally {
       setBusy(false);
     }
-  };
-
-  const forgotPassword = () => {
-    reset();
-    if (legacy) {
-      if (!emailValid) {
-        setTouched((t) => ({ ...t, email: true }));
-        setError('Escribe tu correo arriba para enviarte el enlace de recuperación.');
-        return;
-      }
-      setBusy(true);
-      supabase.auth
-        .resetPasswordForEmail(email.trim())
-        .then(({ error: err }) => {
-          if (err) throw err;
-          setNotice('Te hemos enviado un enlace para restablecer la contraseña. Revisa tu correo.');
-        })
-        .catch((e: unknown) => setError(mapAuthError(e instanceof Error ? e.message : 'Fallo desconocido')))
-        .finally(() => setBusy(false));
-      return;
-    }
-    // La contraseña es la de Franky: se cambia donde vive.
-    Linking.openURL(FRANKY_RECOVER_URL).catch(() => {
-      setError(`Abre ${FRANKY_RECOVER_URL} en tu navegador para cambiar la contraseña.`);
-    });
   };
 
   const showNameError = mode === 'signup' && touched.name && name.length > 0 && !nameValid;
@@ -137,41 +132,37 @@ export default function Login() {
         >
           <View style={styles.hero}>
             <Text style={styles.brand}>NIVL</Text>
-            <View style={styles.byRow}>
-              <View style={styles.byDot} />
-              <Text style={styles.by}>by Franky</Text>
-            </View>
             <Text style={styles.tagline}>UN 1 % MEJOR CADA DÍA</Text>
           </View>
 
-          <View style={styles.toggle}>
-            <Pressable
-              onPress={() => switchMode('signin')}
-              style={[styles.toggleBtn, mode === 'signin' && styles.toggleBtnOn]}
-              accessibilityRole="button"
-              accessibilityState={{ selected: mode === 'signin' }}
-              accessibilityLabel="Entrar con cuenta existente"
-            >
-              <Text style={[styles.toggleText, mode === 'signin' && styles.toggleTextOn]}>ENTRAR</Text>
-            </Pressable>
-            <Pressable
-              onPress={() => switchMode('signup')}
-              style={[styles.toggleBtn, mode === 'signup' && styles.toggleBtnOn]}
-              accessibilityRole="button"
-              accessibilityState={{ selected: mode === 'signup' }}
-              accessibilityLabel="Crear una cuenta nueva"
-            >
-              <Text style={[styles.toggleText, mode === 'signup' && styles.toggleTextOn]}>CREAR CUENTA</Text>
-            </Pressable>
-          </View>
+          {mode !== 'recover' ? (
+            <View style={styles.toggle}>
+              <Pressable
+                onPress={() => switchMode('signin')}
+                style={[styles.toggleBtn, mode === 'signin' && styles.toggleBtnOn]}
+                accessibilityRole="button"
+                accessibilityState={{ selected: mode === 'signin' }}
+                accessibilityLabel="Entrar con cuenta existente"
+              >
+                <Text style={[styles.toggleText, mode === 'signin' && styles.toggleTextOn]}>ENTRAR</Text>
+              </Pressable>
+              <Pressable
+                onPress={() => switchMode('signup')}
+                style={[styles.toggleBtn, mode === 'signup' && styles.toggleBtnOn]}
+                accessibilityRole="button"
+                accessibilityState={{ selected: mode === 'signup' }}
+                accessibilityLabel="Crear una cuenta nueva"
+              >
+                <Text style={[styles.toggleText, mode === 'signup' && styles.toggleTextOn]}>CREAR CUENTA</Text>
+              </Pressable>
+            </View>
+          ) : (
+            <Text style={styles.recoverTitle} accessibilityRole="header">
+              RECUPERAR CONTRASEÑA
+            </Text>
+          )}
 
-          <Text style={styles.intro}>
-            {mode === 'signin'
-              ? legacy
-                ? 'Cuenta antigua de NIVL: entra con la contraseña que tenías aquí.'
-                : 'Tu cuenta de Franky vale aquí. Mismo correo, misma contraseña.'
-              : 'Una sola cuenta para Franky y NIVL. La creas aquí y te sirve en las dos.'}
-          </Text>
+          <Text style={styles.intro}>{INTRO[mode]}</Text>
 
           <View style={styles.form}>
             {mode === 'signup' ? (
@@ -207,34 +198,39 @@ export default function Login() {
               placeholder="tu@correo.com"
               placeholderTextColor={colors.textFaint}
               accessibilityLabel="Correo electrónico"
+              onSubmitEditing={mode === 'recover' ? submit : undefined}
             />
             {showEmailError ? <Text style={styles.fieldError}>Formato de correo no válido.</Text> : null}
 
-            <Text style={styles.label}>Contraseña</Text>
-            <View style={styles.passwordRow}>
-              <TextInput
-                style={[styles.input, styles.passwordInput]}
-                value={password}
-                onChangeText={setPassword}
-                onBlur={() => setTouched((t) => ({ ...t, password: true }))}
-                secureTextEntry={!showPassword}
-                autoCapitalize="none"
-                autoComplete={mode === 'signin' ? 'current-password' : 'new-password'}
-                placeholder={mode === 'signup' ? 'Una frase que recuerdes' : '••••••••••••'}
-                placeholderTextColor={colors.textFaint}
-                accessibilityLabel="Contraseña"
-                onSubmitEditing={mode === 'signin' ? submit : undefined}
-              />
-              <Pressable
-                onPress={() => setShowPassword((s) => !s)}
-                style={styles.eye}
-                hitSlop={8}
-                accessibilityRole="button"
-                accessibilityLabel={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
-              >
-                <Ionicons name={showPassword ? 'eye-off-outline' : 'eye-outline'} size={20} color={colors.textDim} />
-              </Pressable>
-            </View>
+            {mode !== 'recover' ? (
+              <>
+                <Text style={styles.label}>Contraseña</Text>
+                <View style={styles.passwordRow}>
+                  <TextInput
+                    style={[styles.input, styles.passwordInput]}
+                    value={password}
+                    onChangeText={setPassword}
+                    onBlur={() => setTouched((t) => ({ ...t, password: true }))}
+                    secureTextEntry={!showPassword}
+                    autoCapitalize="none"
+                    autoComplete={mode === 'signin' ? 'current-password' : 'new-password'}
+                    placeholder={mode === 'signup' ? 'Una frase que recuerdes' : '••••••••••'}
+                    placeholderTextColor={colors.textFaint}
+                    accessibilityLabel="Contraseña"
+                    onSubmitEditing={mode === 'signin' ? submit : undefined}
+                  />
+                  <Pressable
+                    onPress={() => setShowPassword((s) => !s)}
+                    style={styles.eye}
+                    hitSlop={8}
+                    accessibilityRole="button"
+                    accessibilityLabel={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                  >
+                    <Ionicons name={showPassword ? 'eye-off-outline' : 'eye-outline'} size={20} color={colors.textDim} />
+                  </Pressable>
+                </View>
+              </>
+            ) : null}
 
             {mode === 'signup' && password.length > 0 ? (
               <View style={styles.strengthWrap}>
@@ -256,7 +252,9 @@ export default function Login() {
               <Text style={styles.hint}>Le falta: {pw.missing.join(', ')}.</Text>
             ) : null}
             {mode === 'signup' && password.length === 0 ? (
-              <Text style={styles.hint}>Sin reglas raras: 12 caracteres o más. Una frase que recuerdes es perfecta.</Text>
+              <Text style={styles.hint}>
+                Sin reglas raras: {PASSWORD_MIN_LENGTH} caracteres o más. Una frase que recuerdes es perfecta.
+              </Text>
             ) : null}
 
             {mode === 'signup' ? (
@@ -270,7 +268,7 @@ export default function Login() {
                   secureTextEntry={!showPassword}
                   autoCapitalize="none"
                   autoComplete="new-password"
-                  placeholder="••••••••••••"
+                  placeholder="••••••••••"
                   placeholderTextColor={colors.textFaint}
                   accessibilityLabel="Repite la contraseña"
                 />
@@ -281,31 +279,49 @@ export default function Login() {
                   style={styles.checkRow}
                   accessibilityRole="checkbox"
                   accessibilityState={{ checked: accepted }}
-                  accessibilityLabel="Acepto los términos y la política de privacidad de Franky"
+                  accessibilityLabel={CASILLA_LEGAL}
                 >
                   <View style={[styles.checkbox, accepted && styles.checkboxOn]}>
                     {accepted ? <Ionicons name="checkmark" size={14} color={colors.bg} /> : null}
                   </View>
-                  <Text style={styles.checkText}>
-                    Acepto los{' '}
-                    <Text style={styles.link} onPress={() => Linking.openURL(FRANKY_TERMS_URL)}>
-                      términos
-                    </Text>{' '}
-                    y la{' '}
-                    <Text style={styles.link} onPress={() => Linking.openURL(FRANKY_PRIVACY_URL)}>
-                      política de privacidad
-                    </Text>{' '}
-                    de Franky.
-                  </Text>
+                  <Text style={styles.checkText}>{CASILLA_LEGAL}</Text>
                 </Pressable>
+                {/* Los enlaces van fuera de la casilla: dentro, VoiceOver y
+                    TalkBack leían la casilla entera y no llegaban a ellos. */}
+                <View style={styles.legalesRegistro}>
+                  {(
+                    [
+                      ['Términos de NIVL', LEGAL_URLS.terminos],
+                      ['Privacidad de NIVL', LEGAL_URLS.privacidad],
+                    ] as const
+                  ).map(([texto, url]) => (
+                    <Pressable
+                      key={url}
+                      onPress={() => Linking.openURL(url).catch(() => {})}
+                      hitSlop={12}
+                      accessibilityRole="link"
+                      accessibilityLabel={texto}
+                    >
+                      <Text style={styles.legalLink}>{texto}</Text>
+                    </Pressable>
+                  ))}
+                </View>
               </>
             ) : null}
 
-            {error ? <Text style={styles.error}>{error}</Text> : null}
-            {notice ? <Text style={styles.notice}>{notice}</Text> : null}
+            {error ? (
+              <Text style={styles.error} accessibilityRole="alert" accessibilityLiveRegion="assertive">
+                {error}
+              </Text>
+            ) : null}
+            {notice ? (
+              <Text style={styles.notice} accessibilityRole="alert" accessibilityLiveRegion="polite">
+                {notice}
+              </Text>
+            ) : null}
 
             <SystemButton
-              title={mode === 'signin' ? (legacy ? 'Entrar con cuenta NIVL' : 'Entrar con Franky') : 'Crear cuenta Franky'}
+              title={mode === 'signin' ? 'Entrar' : mode === 'recover' ? 'Enviar enlace' : 'Crear cuenta'}
               onPress={submit}
               loading={busy}
               disabled={!canSubmit}
@@ -313,37 +329,54 @@ export default function Login() {
             />
 
             {mode === 'signin' ? (
-              <>
-                <Pressable
-                  onPress={forgotPassword}
-                  disabled={busy}
-                  style={styles.forgot}
-                  accessibilityRole="button"
-                  accessibilityLabel="Recuperar contraseña olvidada"
-                >
-                  <Text style={styles.forgotText}>
-                    {legacy ? '¿Olvidaste tu contraseña?' : '¿Olvidaste tu contraseña? Recupérala en franky.es'}
-                  </Text>
-                </Pressable>
-                <Pressable
-                  onPress={() => {
-                    setLegacy((l) => !l);
-                    reset();
-                  }}
-                  disabled={busy}
-                  style={styles.legacy}
-                  accessibilityRole="button"
-                >
-                  <Text style={styles.legacyText}>
-                    {legacy ? 'Volver a entrar con Franky' : '¿Cuenta antigua de NIVL? Entrar con ella'}
-                  </Text>
-                </Pressable>
-              </>
+              <Pressable
+                onPress={() => switchMode('recover')}
+                disabled={busy}
+                style={styles.forgot}
+                hitSlop={8}
+                accessibilityRole="button"
+                accessibilityLabel="Recuperar contraseña olvidada"
+              >
+                <Text style={styles.forgotText}>¿Olvidaste tu contraseña?</Text>
+              </Pressable>
+            ) : mode === 'recover' ? (
+              <Pressable
+                onPress={() => switchMode('signin')}
+                disabled={busy}
+                style={styles.forgot}
+                hitSlop={8}
+                accessibilityRole="button"
+                accessibilityLabel="Volver a entrar"
+              >
+                <Text style={styles.forgotText}>Volver a entrar</Text>
+              </Pressable>
             ) : (
-              <Text style={styles.legal}>
-                Tus hábitos, misiones y progreso se guardan en NIVL. Tu identidad es la de Franky.
-              </Text>
+              <Text style={styles.legal}>Tus hábitos, misiones y progreso se guardan en tu cuenta de NIVL.</Text>
             )}
+
+            {/* Los textos legales, a la vista antes de entrar. Al crear cuenta
+                ya van junto a la casilla. */}
+            {mode !== 'signup' ? (
+              <View style={styles.legales}>
+                <Pressable
+                  onPress={() => Linking.openURL(LEGAL_URLS.terminos).catch(() => {})}
+                  hitSlop={12}
+                  accessibilityRole="link"
+                  accessibilityLabel="Términos de uso de NIVL"
+                >
+                  <Text style={styles.legalLink}>Términos de NIVL</Text>
+                </Pressable>
+                <Text style={styles.legalSep}>·</Text>
+                <Pressable
+                  onPress={() => Linking.openURL(LEGAL_URLS.privacidad).catch(() => {})}
+                  hitSlop={12}
+                  accessibilityRole="link"
+                  accessibilityLabel="Política de privacidad de NIVL"
+                >
+                  <Text style={styles.legalLink}>Privacidad de NIVL</Text>
+                </Pressable>
+              </View>
+            ) : null}
           </View>
         </ScrollView>
       </View>
@@ -362,9 +395,6 @@ const styles = StyleSheet.create({
     color: colors.accent,
     textAlign: 'center',
   },
-  byRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4 },
-  byDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: colors.franky },
-  by: { fontFamily: fonts.semibold, fontSize: 13, color: colors.textDim, letterSpacing: 1 },
   tagline: {
     fontFamily: fonts.heading,
     fontSize: 12,
@@ -383,6 +413,14 @@ const styles = StyleSheet.create({
   toggleBtnOn: { backgroundColor: colors.accent },
   toggleText: { fontFamily: fonts.heading, fontSize: 13, letterSpacing: 2, color: colors.textDim },
   toggleTextOn: { color: colors.bg },
+  recoverTitle: {
+    fontFamily: fonts.heading,
+    fontSize: 13,
+    letterSpacing: 2,
+    color: colors.text,
+    textAlign: 'center',
+    marginBottom: 14,
+  },
   intro: { fontFamily: fonts.body, fontSize: 13, color: colors.textDim, lineHeight: 19, textAlign: 'center' },
   form: { width: '100%' },
   label: {
@@ -426,13 +464,14 @@ const styles = StyleSheet.create({
   },
   checkboxOn: { backgroundColor: colors.accent, borderColor: colors.accent },
   checkText: { flex: 1, fontFamily: fonts.body, fontSize: 13, color: colors.textDim, lineHeight: 19 },
-  link: { color: colors.accentText, textDecorationLine: 'underline' },
   error: { fontFamily: fonts.semibold, fontSize: 13, color: colors.red, marginTop: 16, lineHeight: 18 },
   notice: { fontFamily: fonts.semibold, fontSize: 13, color: colors.accentText, marginTop: 16, lineHeight: 18 },
   forgot: { marginTop: 18, alignItems: 'center' },
   forgotText: { fontFamily: fonts.semibold, fontSize: 13, color: colors.accentText },
-  legacy: { marginTop: 14, alignItems: 'center' },
-  legacyText: { fontFamily: fonts.body, fontSize: 12, color: colors.textFaint },
+  legalesRegistro: { flexDirection: 'row', flexWrap: 'wrap', columnGap: 14, rowGap: 8, marginTop: 10, paddingLeft: 32 },
+  legales: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 10, marginTop: 22 },
+  legalLink: { fontFamily: fonts.body, fontSize: 12, color: colors.textDim, textDecorationLine: 'underline' },
+  legalSep: { fontFamily: fonts.body, fontSize: 12, color: colors.textFaint },
   legal: {
     fontFamily: fonts.body,
     fontSize: 11,

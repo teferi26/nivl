@@ -6,7 +6,7 @@ import { useCallback, useRef, useState } from 'react';
 import {
   Platform,
   KeyboardAvoidingView,
-  Alert,
+  Linking,
   Modal,
   Pressable,
   StyleSheet,
@@ -34,6 +34,8 @@ import {
   StatRow,
   Tag,
 } from '@/components/ui';
+import { avisar, confirmar } from '@/components/ui/confirmar';
+import { volver } from '@/components/ui/Screen';
 import { evaluateAchievements, unlockAchievements } from '@/lib/achievements';
 import { useAuth } from '@/lib/auth';
 import { fetchPrescription, type Prescription } from '@/lib/bodywork';
@@ -50,7 +52,7 @@ import {
   fetchSessionForDate,
   insertLifts,
 } from '@/lib/body';
-import { ensureProfile, insertEvent } from '@/lib/data';
+import { ensureProfile, fetchCompletionsForDate, fetchQuests, insertEvent } from '@/lib/data';
 import { dateKey, isoWeekday } from '@/lib/dates';
 import { awardXp } from '@/lib/engine';
 import { propagarActo, restoDelModulo } from '@/lib/links';
@@ -58,8 +60,12 @@ import { GYM_SESSION_XP, PR_XP } from '@/lib/game';
 import { supabase } from '@/lib/supabase';
 import { subirFotoMision } from '@/lib/photos';
 import { colors, fonts } from '@/lib/theme';
-import { voice } from '@/lib/voice';
+import { mensajeSistema } from '@/lib/validation';
+import { deMisiones, desgloseXp, voice } from '@/lib/voice';
 import type { GymDay, GymExercise, GymSession } from '@/lib/types';
+// Pedido por el Chat 5 (economía): con el tope diario de award_xp, pagar más
+// récords se recortaría en silencio. En la primera sesión todo es récord.
+const MAX_PR_PAGADOS = 4;
 
 const DAY_NAMES = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
 
@@ -108,6 +114,10 @@ export default function Gym() {
   const [exWeight, setExWeight] = useState('');
   const [levelUp, setLevelUp] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
+  // XP que han pagado hoy las misiones enlazadas al gimnasio. La sesión guarda
+  // solo lo que paga el módulo (el resto hasta su base y los récords): sin
+  // sumar esto, la tarjeta decía +25 mientras la misión enseñaba +50.
+  const [xpMisionHoy, setXpMisionHoy] = useState(0);
   const saving = useRef(false);
 
   const today = dateKey();
@@ -115,12 +125,24 @@ export default function Gym() {
 
   const load = useCallback(async () => {
     try {
-      setDays(await fetchGymDays());
-      setExercises(await fetchGymExercises());
-      setTodaySession(await fetchSessionForDate(dateKey()));
-      setPrescrito(await fetchPrescription(dateKey()).catch(() => []));
+      const hoy = dateKey();
+      // En paralelo: eran cuatro viajes en serie al abrir la pantalla.
+      const [d, ex, sesion, presc, quests, hechas] = await Promise.all([
+        fetchGymDays(),
+        fetchGymExercises(),
+        fetchSessionForDate(hoy),
+        fetchPrescription(hoy).catch(() => []),
+        fetchQuests().catch(() => []),
+        fetchCompletionsForDate(hoy).catch(() => []),
+      ]);
+      const deGym = new Set(quests.filter((q) => q.link === 'gym').map((q) => q.id));
+      setDays(d);
+      setExercises(ex);
+      setTodaySession(sesion);
+      setPrescrito(presc);
+      setXpMisionHoy(hechas.filter((c) => deGym.has(c.quest_id)).reduce((s, c) => s + c.xp_awarded, 0));
     } catch (e) {
-      Alert.alert('Error del sistema', e instanceof Error ? e.message : 'Fallo desconocido');
+      avisar('Error del sistema', mensajeSistema(e));
     }
   }, []);
 
@@ -216,7 +238,7 @@ export default function Gym() {
       const gymSession = await createSession(userId, {
         date: today,
         gym_day_id: todayPlan?.id ?? null,
-        xp_awarded: GYM_SESSION_XP + prs.length * PR_XP,
+        xp_awarded: GYM_SESSION_XP + Math.min(prs.length, MAX_PR_PAGADOS) * PR_XP,
         notes: notas.trim() || null,
       });
 
@@ -239,10 +261,10 @@ export default function Gym() {
       // misión no haya pagado ya (más los récords): el mismo entreno no cobra
       // dos veces.
       const eco = await propagarActo(await ensureProfile(userId), 'gym', today);
-      const totalXp = restoDelModulo(GYM_SESSION_XP, eco) + prs.length * PR_XP;
-      if (totalXp !== gymSession.xp_awarded) {
-        await supabase.from('gym_sessions').update({ xp_awarded: totalXp }).eq('id', gymSession.id);
-      }
+      // Récords pagados: como mucho MAX_PR_PAGADOS (50 + 4×25 = 150, el tope
+      // diario). Los récords se registran todos; lo que se limita es el pago.
+      const prsPagados = Math.min(prs.length, MAX_PR_PAGADOS);
+      const totalXp = restoDelModulo(GYM_SESSION_XP, eco) + prsPagados * PR_XP;
 
       const res =
         totalXp > 0
@@ -250,7 +272,13 @@ export default function Gym() {
               day: todayPlan?.name ?? 'libre',
               prs: prs.map((p) => p.exercise_name),
             })
-          : { leveledUp: false, newLevel: 0 };
+          : { profile: eco.profile, leveledUp: false, newLevel: 0 };
+      // Lo PAGADO, no lo calculado: si el servidor recorta por tope, la sesión
+      // y el aviso dicen lo que de verdad ha entrado.
+      const pagado = Math.max(0, Math.min(totalXp, res.profile.xp_total - eco.profile.xp_total));
+      if (pagado !== gymSession.xp_awarded) {
+        await supabase.from('gym_sessions').update({ xp_awarded: pagado }).eq('id', gymSession.id);
+      }
       for (const pr of prs) {
         await insertEvent(userId, 'gym_pr', { exercise: pr.exercise_name, weight: pr.weight });
       }
@@ -264,11 +292,17 @@ export default function Gym() {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       const prText = prs.length > 0 ? `\n${prs.map((p) => voice.pr(p.exercise_name)).join('\n')}` : '';
       const achText = fresh.length > 0 ? `\nLogro: ${fresh.map((a) => a.name).join(', ')}` : '';
-      const ecoText = eco.marcadas.length > 0 ? `\nMarcado solo: ${eco.marcadas.join(', ')}` : '';
-      const pagado = totalXp + eco.xp;
-      Alert.alert(
-        'SESIÓN REGISTRADA',
-        `${pagado > 0 ? `+${pagado} XP a FUE` : 'La misión de hoy ya estaba marcada y pagada.'}${ecoText}${prText}${achText}`,
+      // El desglose cuadra con lo que luego enseña la misión enlazada.
+      const xpSesion = Math.min(pagado, totalXp - prsPagados * PR_XP);
+      const xpRecords = pagado - xpSesion;
+      const desglose = desgloseXp([
+        { xp: eco.xp, de: deMisiones(eco.marcadas) },
+        { xp: xpSesion, de: 'a FUE por la sesión' },
+        { xp: xpRecords, de: `a FUE por ${prsPagados === 1 ? '1 récord' : `${prsPagados} récords`}` },
+      ]);
+      avisar(
+        'Sesión registrada',
+        `${desglose || 'La misión de hoy ya estaba marcada y pagada.'}${prText}${achText}`,
       );
       if (res.leveledUp) setLevelUp(res.newLevel);
       else if (eco.leveledUp) setLevelUp(eco.newLevel);
@@ -277,7 +311,7 @@ export default function Gym() {
       setFotoB64(null);
       await load();
     } catch (e) {
-      Alert.alert('Error del sistema', e instanceof Error ? e.message : 'Fallo desconocido');
+      avisar('Error del sistema', mensajeSistema(e));
     } finally {
       saving.current = false;
       setBusy(false);
@@ -327,7 +361,12 @@ export default function Gym() {
   const fotoSesion = async () => {
     const perm = await ImagePicker.requestCameraPermissionsAsync();
     if (!perm.granted) {
-      Alert.alert('Sin cámara', 'El sistema necesita la cámara para el registro del entreno.');
+      const mensaje = 'El sistema necesita la cámara para el registro del entreno.';
+      if (Platform.OS === 'web') {
+        avisar('Sin cámara', mensaje);
+      } else if (await confirmar({ titulo: 'Sin cámara', mensaje, confirmar: 'Abrir ajustes' })) {
+        Linking.openSettings().catch(() => {});
+      }
       return;
     }
     const r = await ImagePicker.launchCameraAsync({ mediaTypes: ['images'], quality: 0.4, base64: true });
@@ -336,31 +375,34 @@ export default function Gym() {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
   };
 
-  const confirmarBorrarDia = (d: GymDay) =>
-    Alert.alert('Eliminar día', `¿Eliminar ${d.name} y sus ejercicios?`, [
-      { text: 'Cancelar', style: 'cancel' },
-      {
-        text: 'Eliminar',
-        style: 'destructive',
-        onPress: async () => {
-          await deleteGymDay(d.id);
-          await load();
-        },
-      },
-    ]);
+  const confirmarBorrarDia = async (d: GymDay) => {
+    const ok = await confirmar({
+      titulo: 'Eliminar día',
+      mensaje: `¿Eliminar ${d.name} y sus ejercicios?`,
+      confirmar: 'Eliminar',
+      destructivo: true,
+    });
+    if (!ok) return;
+    try {
+      await deleteGymDay(d.id);
+    } catch (err) {
+      avisar('Error del sistema', mensajeSistema(err));
+      return;
+    }
+    await load();
+  };
 
-  const confirmarBorrarEjercicio = (e: GymExercise) =>
-    Alert.alert('Eliminar ejercicio', e.name, [
-      { text: 'Cancelar', style: 'cancel' },
-      {
-        text: 'Eliminar',
-        style: 'destructive',
-        onPress: async () => {
-          await deleteGymExercise(e.id);
-          await load();
-        },
-      },
-    ]);
+  const confirmarBorrarEjercicio = async (e: GymExercise) => {
+    const ok = await confirmar({ titulo: 'Eliminar ejercicio', mensaje: e.name, confirmar: 'Eliminar', destructivo: true });
+    if (!ok) return;
+    try {
+      await deleteGymExercise(e.id);
+    } catch (err) {
+      avisar('Error del sistema', mensajeSistema(err));
+      return;
+    }
+    await load();
+  };
 
   const cerrarFormEjercicio = () => {
     setExEditando(null);
@@ -370,8 +412,10 @@ export default function Gym() {
   // Solo presentación: el dato del día para el subtítulo de la cabecera.
   const nombreHoy = DAY_NAMES[todayWd - 1] ?? '';
   const ejerciciosHoy = todayPlan ? exercisesFor(todayPlan.id) : [];
+  // Lo ganado hoy por entrenar: lo del módulo más lo de la misión enlazada.
+  const xpHoy = (todaySession?.xp_awarded ?? 0) + xpMisionHoy;
   const subtitulo = todaySession
-    ? `Sesión registrada. +${todaySession.xp_awarded} XP a FUE.`
+    ? `Sesión registrada. +${xpHoy} XP hoy.`
     : training && todayPlan
       ? `${todayPlan.name}, serie a serie.`
       : todayPlan
@@ -383,7 +427,7 @@ export default function Gym() {
       <Stagger>
         <FadeIn index={0}>
           <ScreenHeader
-            onBack={() => router.back()}
+            onBack={() => volver(router)}
             eyebrow="Cuerpo"
             title="Gimnasio"
             subtitle={subtitulo}
@@ -397,7 +441,7 @@ export default function Gym() {
               <Stat value={days.length} label="Días / semana" />
               <Stat value={exercises.length} label="Ejercicios" />
               <Stat
-                value={todaySession ? todaySession.xp_awarded : GYM_SESSION_XP}
+                value={todaySession ? xpHoy : GYM_SESSION_XP}
                 unit="XP"
                 label={todaySession ? 'Ganados hoy' : 'En juego'}
                 tone={todaySession ? 'accent' : 'text'}
@@ -435,7 +479,11 @@ export default function Gym() {
                   <Check checked />
                   <View style={styles.hechoTexto}>
                     <Text style={styles.hechoTitulo}>Sesión registrada</Text>
-                    <Text style={styles.hechoDetalle}>+{todaySession.xp_awarded} XP a FUE. FUE crece.</Text>
+                    <Text style={styles.hechoDetalle}>
+                      {xpMisionHoy > 0
+                        ? `+${xpHoy} XP hoy: ${xpMisionHoy} de la misión enlazada${todaySession.xp_awarded > 0 ? ` y ${todaySession.xp_awarded} a FUE` : ''}.`
+                        : `+${todaySession.xp_awarded} XP a FUE. FUE crece.`}
+                    </Text>
                   </View>
                 </View>
               </Card>
@@ -812,7 +860,7 @@ const styles = StyleSheet.create({
   serieEtiqueta: {
     flex: 1,
     fontFamily: fonts.heading,
-    fontSize: 9.5,
+    fontSize: 11,
     letterSpacing: 1.5,
     textTransform: 'uppercase',
     color: colors.textFaint,
@@ -861,7 +909,7 @@ const styles = StyleSheet.create({
   dayTexto: { flex: 1, minWidth: 0 },
   dayEyebrow: {
     fontFamily: fonts.heading,
-    fontSize: 10,
+    fontSize: 11,
     letterSpacing: 2,
     textTransform: 'uppercase',
     color: colors.textFaint,

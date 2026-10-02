@@ -4,13 +4,15 @@ import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   // Clipboard sigue en el núcleo de RN 0.81 (módulo nativo incluido). Está
   // marcado como obsoleto, pero la alternativa es una dependencia nueva y un
   // build nativo solo para copiar ocho letras. Si un día desaparece, `copiar`
   // cae al compartir del sistema, que también deja copiar.
   Clipboard,
   LayoutAnimation,
+  Linking,
+  Modal,
+  ScrollView,
   Pressable,
   Share,
   StyleSheet,
@@ -39,6 +41,8 @@ import {
   Stagger,
   Tag,
 } from '@/components/ui';
+import { avisar, confirmar } from '@/components/ui/confirmar';
+import { volver } from '@/components/ui/Screen';
 import { useAuth } from '@/lib/auth';
 import {
   conInsignias,
@@ -56,6 +60,11 @@ import { levelFromXp } from '@/lib/game';
 import { kindMeta, type ProfileKind } from '@/lib/kinds';
 import { fetchAiStatus, type Tier } from '@/lib/pro';
 import {
+  blockSocialUser,
+  fetchBlockedUsers,
+  reportSocialUser,
+  unblockSocialUser,
+  type BlockedUser,
   fetchBoard,
   fetchEliteBadges,
   fetchGroupBoard,
@@ -88,6 +97,7 @@ import {
   type Ventana,
 } from '@/lib/socialmath';
 import { colors, fonts } from '@/lib/theme';
+import { REPORT_REASONS, SOCIAL_SUPPORT_URL, type ReportReason } from '@/lib/socialSafety';
 import { useCountUp } from '@/lib/useCountUp';
 import { mensajeSistema } from '@/lib/validation';
 
@@ -119,12 +129,14 @@ function ListaRanking({
   metrica,
   atenuado,
   onLongPress,
+  onSafety,
 }: {
   filas: readonly Fila[];
   metrica: Metrica;
   atenuado?: boolean;
   /** Sin él (ludus) no se puede quitar a nadie desde aquí. */
   onLongPress?: (b: BoardEntry) => void;
+  onSafety: (b: BoardEntry) => void;
 }) {
   return (
     <Card padded={false} style={[styles.lista, atenuado && styles.atenuado]}>
@@ -158,14 +170,18 @@ function ListaRanking({
               </View>
             }
             trailing={
-              <ValorRanking
-                valor={c.valor}
-                metrica={metrica}
-                tone={metrica === 'racha' && (c.valor ?? 0) > 0 ? 'gold' : b.isMe ? 'accent' : 'dim'}
-              />
+              <View style={styles.respuestas}>
+                <ValorRanking
+                  valor={c.valor}
+                  metrica={metrica}
+                  tone={metrica === 'racha' && (c.valor ?? 0) > 0 ? 'gold' : b.isMe ? 'accent' : 'dim'}
+                />
+                {!b.isMe ? <SafetyButton name={b.name} onPress={() => onSafety(b)} /> : null}
+              </View>
             }
+            onPress={!b.isMe ? () => onSafety(b) : undefined}
             onLongPress={quitar}
-            accessibilityLabel={`${c.valor === null ? 'Sin puesto' : `Puesto ${c.posicion}`}. ${b.isMe ? 'Tú' : b.name}${c.insignia ? `, ${INSIGNIA_ELITE_LABEL}` : ''}, nivel ${nivel}, ${valor}.${quitar ? ' Mantén pulsado para quitar.' : ''}`}
+            accessibilityLabel={`${c.valor === null ? 'Sin puesto' : `Puesto ${c.posicion}`}. ${b.isMe ? 'Tú' : b.name}${c.insignia ? `, ${INSIGNIA_ELITE_LABEL}` : ''}, nivel ${nivel}, ${valor}.${!b.isMe ? ' Toca para denunciar o bloquear.' : ''}${quitar ? ' Mantén pulsado para quitar.' : ''}`}
           />
         );
       })}
@@ -173,10 +189,24 @@ function ListaRanking({
   );
 }
 
+function SafetyButton({ name, onPress }: { name: string; onPress: () => void }) {
+  return <Pressable onPress={onPress} style={styles.safetyButton} accessibilityRole="button"
+    accessibilityLabel={`Denunciar o bloquear a ${name}`}>
+    <Ionicons name="ellipsis-horizontal" size={20} color={colors.textDim} />
+  </Pressable>;
+}
+
 export default function Amigos() {
   const { session } = useAuth();
   const userId = session?.user.id;
 
+  const [safetyUser, setSafetyUser] = useState<{ userId: string; name: string } | null>(null);
+  const [reportReason, setReportReason] = useState<ReportReason | null>(null);
+  const [safetyBusy, setSafetyBusy] = useState(false);
+  const [safetyMessage, setSafetyMessage] = useState<string | null>(null);
+  const [blockedUsers, setBlockedUsers] = useState<BlockedUser[]>([]);
+  // An older in-flight response must not put a just-blocked user back on screen.
+  const blockedLocally = useRef(new Set<string>());
   const [yo, setYo] = useState<SocialSelf | null>(null);
   const [board, setBoard] = useState<BoardEntry[]>([]);
   const [requests, setRequests] = useState<FriendRequest[]>([]);
@@ -223,10 +253,11 @@ export default function Amigos() {
       if (!userId) return;
       ventanaViva.current = v;
       try {
-        const [self, filas, pendientes] = await Promise.all([
+        const [self, filas, pendientes, bloqueados] = await Promise.all([
           fetchSocialSelf(userId),
           fetchBoard(DIAS_VENTANA[v]),
           fetchRequests(),
+          fetchBlockedUsers(),
         ]);
         if (ventanaViva.current !== v) return;
         // Si el orden cambia con los datos nuevos, las filas se recolocan con
@@ -234,8 +265,9 @@ export default function Amigos() {
         if (hayRanking.current) LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
         hayRanking.current = true;
         setYo(self);
-        setBoard(filas);
-        setRequests(pendientes);
+        setBoard(filas.filter((person) => !blockedLocally.current.has(person.userId)));
+        setRequests(pendientes.filter((person) => !blockedLocally.current.has(person.userId)));
+        setBlockedUsers(bloqueados);
         setFallo(null);
       } catch (e) {
         setFallo(mensajeSistema(e));
@@ -268,7 +300,7 @@ export default function Amigos() {
       if (estadoLudus(ia.tier, mio) === 'miembro') {
         const filas = await fetchGroupBoard(DIAS_VENTANA[v]);
         if (ventanaLudusViva.current !== v) return;
-        setLudusBoard(filas);
+        setLudusBoard(filas.filter((person) => !blockedLocally.current.has(person.userId)));
       } else {
         setLudusBoard([]);
       }
@@ -288,6 +320,85 @@ export default function Amigos() {
     await Promise.all([load(ventana), loadLudus(ventanaLudus)]);
     setRefrescando(false);
   };
+
+  const abrirSeguridad = (person: { userId: string; name: string }) => {
+    setSafetyUser(person); setReportReason(null); setSafetyMessage(null);
+  };
+  const denunciar = async () => {
+    if (!safetyUser || !reportReason || lock.current) return;
+    lock.current = true; setSafetyBusy(true); setSafetyMessage(null);
+    try {
+      await reportSocialUser(safetyUser.userId, reportReason);
+      setSafetyMessage('Denuncia registrada para revisión. También puedes bloquear a esta persona.');
+      setReportReason(null);
+    } catch (e) { setSafetyMessage(mensajeSistema(e)); }
+    finally { lock.current = false; setSafetyBusy(false); }
+  };
+  // Bloquear y desbloquear: la acción solo corre tras la confirmación
+  // explícita (`confirmar` también pinta en la web, donde el Alert de botones
+  // no aparece), y la pantalla solo cambia cuando el servidor lo ha hecho.
+  const bloquear = async () => {
+    if (!safetyUser || lock.current) return;
+    const person = safetyUser;
+    const ok = await confirmar({
+      titulo: 'Bloquear usuario',
+      mensaje: 'Dejaréis de veros en solicitudes y rankings, también en el ludus. La amistad se eliminará.',
+      confirmar: 'Bloquear',
+      destructivo: true,
+    });
+    if (!ok || lock.current) return;
+    lock.current = true; setSafetyBusy(true);
+    try {
+      await blockSocialUser(person.userId);
+    } catch (e) {
+      setSafetyMessage(mensajeSistema(e));
+      lock.current = false; setSafetyBusy(false);
+      return;
+    }
+    // Hecho en el servidor: fuera de la pantalla al momento, aunque el
+    // refresco de después no tenga red.
+    blockedLocally.current.add(person.userId);
+    setBoard((rows) => rows.filter((r) => r.userId !== person.userId));
+    setLudusBoard((rows) => rows.filter((r) => r.userId !== person.userId));
+    setRequests((rows) => rows.filter((r) => r.userId !== person.userId));
+    setSafetyUser(null);
+    try {
+      await Promise.all([load(ventana), loadLudus(ventanaLudus)]);
+    } catch {
+      // El bloqueo ya está hecho; la lista se pondrá al día en el próximo foco.
+    } finally {
+      lock.current = false; setSafetyBusy(false);
+    }
+  };
+  const desbloquear = async (person: BlockedUser) => {
+    if (lock.current) return;
+    const ok = await confirmar({
+      titulo: 'Desbloquear usuario',
+      mensaje: 'Podrá volver a solicitar amistad. La amistad anterior no se recupera. Si compartís ludus, volverá a aparecer.',
+      confirmar: 'Desbloquear',
+    });
+    if (!ok || lock.current) return;
+    lock.current = true; setSafetyBusy(true);
+    try {
+      await unblockSocialUser(person.userId);
+    } catch (e) {
+      // Sigue bloqueado y la lista lo sigue diciendo.
+      avisar('Error del sistema', mensajeSistema(e));
+      lock.current = false; setSafetyBusy(false);
+      return;
+    }
+    blockedLocally.current.delete(person.userId);
+    setBlockedUsers((rows) => rows.filter((r) => r.userId !== person.userId));
+    try {
+      await refrescar();
+    } catch {
+      // Desbloqueado en el servidor; el resto se pondrá al día en el próximo foco.
+    } finally {
+      lock.current = false; setSafetyBusy(false);
+    }
+  };
+  const abrirSoporte = () => Linking.openURL(SOCIAL_SUPPORT_URL).catch(() =>
+    avisar('No se ha abierto soporte', SOCIAL_SUPPORT_URL));
 
   const visibles = useMemo(() => board.filter((b) => b.visible), [board]);
   const ocultos = useMemo(() => board.filter((b) => !b.visible && !b.isMe), [board]);
@@ -322,7 +433,7 @@ export default function Amigos() {
     try {
       await Share.share({ message: mensajeInvitacion(yo.friendCode) });
     } catch (e) {
-      Alert.alert('Error del sistema', mensajeSistema(e));
+      avisar('Error del sistema', mensajeSistema(e));
     }
   };
 
@@ -384,33 +495,34 @@ export default function Amigos() {
       if (aceptar) Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       await load(ventana);
     } catch (e) {
-      Alert.alert('Error del sistema', mensajeSistema(e));
+      avisar('Error del sistema', mensajeSistema(e));
     } finally {
       lock.current = false;
       setOcupada(null);
     }
   };
 
-  const quitar = (friendshipId: string, titulo: string, cuerpo: string, accion: string) => {
-    Alert.alert(titulo, cuerpo, [
-      { text: 'Cancelar', style: 'cancel' },
-      {
-        text: accion,
-        style: 'destructive',
-        onPress: async () => {
-          if (lock.current) return;
-          lock.current = true;
-          try {
-            await removeFriend(friendshipId);
-            await load(ventana);
-          } catch (e) {
-            Alert.alert('Error del sistema', mensajeSistema(e));
-          } finally {
-            lock.current = false;
-          }
-        },
-      },
-    ]);
+  const quitar = async (friendshipId: string, titulo: string, cuerpo: string, accion: string) => {
+    if (lock.current) return;
+    if (!(await confirmar({ titulo, mensaje: cuerpo, confirmar: accion, destructivo: true }))) return;
+    if (lock.current) return;
+    lock.current = true;
+    try {
+      // Sin cambio optimista: la fila solo desaparece con la recarga que sigue
+      // a un borrado hecho.
+      await removeFriend(friendshipId);
+    } catch (e) {
+      avisar('Error del sistema', mensajeSistema(e));
+      lock.current = false;
+      return;
+    }
+    try {
+      await load(ventana);
+    } catch {
+      // Quitado en el servidor; la lista se pondrá al día en el próximo foco.
+    } finally {
+      lock.current = false;
+    }
   };
 
   const quitarAmigo = (b: BoardEntry) => {
@@ -469,7 +581,7 @@ export default function Amigos() {
       await setSocialVisible(userId, visible);
     } catch (e) {
       setYo(antes);
-      Alert.alert('Error del sistema', mensajeSistema(e));
+      avisar('Error del sistema', mensajeSistema(e));
     }
   };
 
@@ -488,7 +600,7 @@ export default function Amigos() {
         }),
       );
     } catch (e) {
-      Alert.alert('Error del sistema', mensajeSistema(e));
+      avisar('Error del sistema', mensajeSistema(e));
     } finally {
       setPreparando(false);
     }
@@ -504,7 +616,7 @@ export default function Amigos() {
       <Stagger>
         <FadeIn index={0}>
           <ScreenHeader
-            onBack={() => router.back()}
+            onBack={() => volver(router)}
             eyebrow="Arena"
             title="Amigos"
             subtitle={subtitulo}
@@ -636,6 +748,7 @@ export default function Amigos() {
                             <ActivityIndicator size="small" color={colors.accent} />
                           ) : (
                             <View style={styles.respuestas}>
+                              <SafetyButton name={r.name} onPress={() => abrirSeguridad(r)} />
                               <Chip
                                 label="Aceptar"
                                 small
@@ -666,6 +779,8 @@ export default function Amigos() {
                         muted
                         detail={`Nivel ${r.level} · esperando su respuesta`}
                         trailing={
+                          <View style={styles.respuestas}>
+                          <SafetyButton name={r.name} onPress={() => abrirSeguridad(r)} />
                           <Chip
                             label="Retirar"
                             small
@@ -674,6 +789,7 @@ export default function Amigos() {
                             }
                             accessibilityLabel={`Retirar la solicitud enviada a ${r.name}`}
                           />
+                          </View>
                         }
                       />
                     ))}
@@ -727,7 +843,7 @@ export default function Amigos() {
                           ? 'Tu ludus aún se está formando. El sistema suma gladiadores de tu mismo objetivo.'
                           : lineaRivalidad(rankingLudus, metricaLudus, ventanaLudus)}
                       </Text>
-                      <ListaRanking filas={rankingLudus} metrica={metricaLudus} />
+                      <ListaRanking filas={rankingLudus} metrica={metricaLudus} onSafety={abrirSeguridad} />
                       <Text style={styles.hint}>
                         Las mismas cifras que el ranking de amigos: las penalizaciones no cuentan y nadie compra
                         puestos. Sin chat: en el ludus se compite con hechos.
@@ -850,7 +966,7 @@ export default function Amigos() {
                       {lineaRivalidad(ranking, metrica, ventana)}
                     </Text>
 
-                    <ListaRanking filas={ranking} metrica={metrica} atenuado={cambiando} onLongPress={quitarAmigo} />
+                    <ListaRanking filas={ranking} metrica={metrica} atenuado={cambiando} onLongPress={quitarAmigo} onSafety={abrirSeguridad} />
                     <Text style={styles.hint}>
                       {metrica === 'xp'
                         ? 'XP ganado con misiones en el periodo. Las de penalización no cuentan: recuperar no es adelantar.'
@@ -884,14 +1000,25 @@ export default function Amigos() {
                         title={b.name}
                         muted
                         detail="Ha ocultado su marcador. Sigue siendo tu amigo."
+                        trailing={<SafetyButton name={b.name} onPress={() => abrirSeguridad(b)} />}
+                        onPress={() => abrirSeguridad(b)}
                         onLongPress={() => quitarAmigo(b)}
-                        accessibilityLabel={`${b.name}, fuera del ranking. Mantén pulsado para quitar.`}
+                        accessibilityLabel={`${b.name}, fuera del ranking. Toca para denunciar o bloquear. Mantén pulsado para quitar.`}
                       />
                     ))}
                   </Card>
                 </Section>
               </FadeIn>
             ) : null}
+
+            <Section title="Convivencia y seguridad">
+              <Text style={styles.safetyText}>No se permite acoso, amenazas, suplantación ni contenido ofensivo. Los nombres, títulos y fotos se revisan antes de mostrarse a otros: mientras tanto verán un alias y una imagen neutros. Tu perfil conserva tus datos.</Text>
+              <SystemButton title="Contactar con soporte" icon="help-circle-outline" variant="outline" onPress={abrirSoporte} style={{ marginTop: 12 }} />
+              {blockedUsers.length > 0 ? <Card padded={false} style={styles.lista}>
+                {blockedUsers.map((person, i) => <Row key={person.userId} first={i === 0} title={person.name}
+                  detail="Usuario bloqueado" trailing={<Chip label="Desbloquear" small disabled={safetyBusy} onPress={() => desbloquear(person)} />} />)}
+              </Card> : null}
+            </Section>
 
             <FadeIn index={7}>
               <Section title="Privacidad">
@@ -923,12 +1050,36 @@ export default function Amigos() {
         ) : null}
       </Stagger>
 
+      <Modal visible={safetyUser !== null} transparent animationType="slide" onRequestClose={() => { if (!safetyBusy) setSafetyUser(null); }}>
+        <View style={styles.safetyBackdrop}>
+          <Pressable style={{ flex: 1 }} onPress={() => { if (!safetyBusy) setSafetyUser(null); }} accessibilityLabel="Cerrar seguridad" accessibilityRole="button" />
+          <ScrollView style={styles.safetySheet} contentContainerStyle={{ padding: 20, paddingBottom: 34 }} accessibilityViewIsModal>
+            <Text style={styles.safetyTitle}>Seguridad · {safetyUser?.name}</Text>
+            <Text style={styles.safetyText}>Elige qué quieres denunciar. El equipo revisará el perfil y podrá retirar contenido o suspender su acceso social.</Text>
+            <ChipWrap style={{ marginTop: 16 }}>
+              {REPORT_REASONS.map((reason) => <Chip key={reason.value} label={reason.label}
+                selected={reportReason === reason.value} disabled={safetyBusy} onPress={() => setReportReason(reason.value)} />)}
+            </ChipWrap>
+            {safetyMessage ? <Text style={styles.safetyText} accessibilityRole="alert">{safetyMessage}</Text> : null}
+            <SystemButton title="Enviar denuncia" icon="flag-outline" variant="outline" disabled={!reportReason || safetyBusy} loading={safetyBusy}
+              onPress={denunciar} style={{ marginTop: 16 }} />
+            <SystemButton title="Bloquear usuario" icon="ban-outline" variant="outline" disabled={safetyBusy} onPress={bloquear} style={{ marginTop: 10 }} />
+            <SystemButton title="Contactar con soporte" variant="ghost" disabled={safetyBusy} onPress={abrirSoporte} />
+            <SystemButton title="Cerrar" variant="ghost" disabled={safetyBusy} onPress={() => setSafetyUser(null)} />
+          </ScrollView>
+        </View>
+      </Modal>
       <ShareSemanaModal visible={tarjeta !== null} datos={tarjeta} onClose={() => setTarjeta(null)} />
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
+  safetyButton: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
+  safetyBackdrop: { flex: 1, backgroundColor: colors.bg, justifyContent: 'flex-end' },
+  safetySheet: { maxHeight: '85%', backgroundColor: colors.panel, borderTopWidth: 1, borderTopColor: colors.line },
+  safetyTitle: { color: colors.text, fontFamily: fonts.heading, fontSize: 20 },
+  safetyText: { color: colors.textDim, fontFamily: fonts.body, fontSize: 13, lineHeight: 19, marginTop: 10 },
   lista: { paddingHorizontal: 16, paddingVertical: 2 },
   huecoTarjeta: { marginBottom: 26 },
   huecoRotulo: { marginBottom: 12 },

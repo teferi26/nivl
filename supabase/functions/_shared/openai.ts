@@ -16,7 +16,7 @@
 // ida y a la vuelta, así que las 21 herramientas, el estudio, la doctrina y la
 // memoria funcionan igual con cualquier proveedor.
 
-import type { ApiMessage, ContentBlock, Turn, Usage } from './anthropic.ts';
+import { estimarFichas, LlamadaFallida, PLAZO_LLAMADA_MS, type ApiMessage, type ContentBlock, type Turn, type Usage } from './anthropic.ts';
 
 export interface OpcionesCompat {
   baseUrl: string;
@@ -27,6 +27,8 @@ export interface OpcionesCompat {
   tools?: unknown[];
   maxTokens?: number;
   onText?: (delta: string) => void;
+  /** Corta la llamada (plazo del turno). Sin él, PLAZO_LLAMADA_MS. */
+  signal?: AbortSignal;
 }
 
 interface MensajeChat {
@@ -130,22 +132,25 @@ function aFunciones(tools: unknown[] | undefined) {
  * están hablando.
  */
 export async function callOpenAICompat(opts: OpcionesCompat): Promise<Turn> {
+  const cuerpo = JSON.stringify({
+    model: opts.model,
+    max_tokens: opts.maxTokens ?? 8000,
+    messages: aFormatoChat(opts.system, opts.messages),
+    ...(aFunciones(opts.tools) ? { tools: aFunciones(opts.tools) } : {}),
+    stream: true,
+    // Pide el desglose de uso en el último fragmento; sin esto no hay forma
+    // de saber lo que costó el turno y la contabilidad se queda a ciegas.
+    stream_options: { include_usage: true },
+  });
+  const signal = opts.signal ?? AbortSignal.timeout(PLAZO_LLAMADA_MS);
   const res = await fetch(`${opts.baseUrl.replace(/\/$/, '')}/chat/completions`, {
     method: 'POST',
+    signal,
     headers: {
       authorization: `Bearer ${opts.apiKey}`,
       'content-type': 'application/json',
     },
-    body: JSON.stringify({
-      model: opts.model,
-      max_tokens: opts.maxTokens ?? 8000,
-      messages: aFormatoChat(opts.system, opts.messages),
-      ...(aFunciones(opts.tools) ? { tools: aFunciones(opts.tools) } : {}),
-      stream: true,
-      // Pide el desglose de uso en el último fragmento; sin esto no hay forma
-      // de saber lo que costó el turno y la contabilidad se queda a ciegas.
-      stream_options: { include_usage: true },
-    }),
+    body: cuerpo,
   });
 
   if (!res.ok || !res.body) {
@@ -164,9 +169,15 @@ export async function callOpenAICompat(opts: OpcionesCompat): Promise<Turn> {
   // Las llamadas llegan a trozos: el nombre en el primer fragmento y los
   // argumentos repartidos entre los siguientes. Se acumulan por índice.
   const llamadas = new Map<number, { id: string; name: string; args: string }>();
+  let salida = 0;
+  // El plazo corta también la lectura del stream (ver callClaude).
+  const cortar = () => { lector.cancel().catch(() => {}); };
+  signal.addEventListener('abort', cortar, { once: true });
 
+  try {
   while (true) {
     const { done, value } = await lector.read();
+    if (signal.aborted) throw signal.reason ?? new Error('abortado');
     if (done) break;
     buffer += decodificador.decode(value, { stream: true });
 
@@ -203,6 +214,7 @@ export async function callOpenAICompat(opts: OpcionesCompat): Promise<Turn> {
 
       if (typeof delta.content === 'string' && delta.content) {
         texto += delta.content;
+        salida += delta.content.length;
         opts.onText?.(delta.content);
       }
 
@@ -214,8 +226,20 @@ export async function callOpenAICompat(opts: OpcionesCompat): Promise<Turn> {
           name: tc.function?.name || previa.name,
           args: previa.args + (tc.function?.arguments ?? ''),
         });
+        salida += String(tc.function?.arguments ?? '').length;
       }
     }
+  }
+  } catch (e) {
+    // El uso real llega en el último fragmento; si el stream muere antes, se
+    // estima a la alta (entrada ~4 caracteres por ficha, salida ~3) para que
+    // el gasto conste igualmente.
+    const parcial: Usage = usage.input_tokens
+      ? usage
+      : { input_tokens: Math.ceil(cuerpo.length / 4), output_tokens: estimarFichas(salida) };
+    throw new LlamadaFallida(`proveedor stream: ${e instanceof Error ? e.name : 'error'}`, parcial, modelo);
+  } finally {
+    signal.removeEventListener('abort', cortar);
   }
 
   const content: ContentBlock[] = [];

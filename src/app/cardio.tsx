@@ -5,7 +5,6 @@ import { useCallback, useState } from 'react';
 import {
   Platform,
   KeyboardAvoidingView,
-  Alert,
   Modal,
   Pressable,
   ScrollView,
@@ -31,6 +30,8 @@ import {
   Stat,
   StatRow,
 } from '@/components/ui';
+import { avisar, confirmar } from '@/components/ui/confirmar';
+import { volver } from '@/components/ui/Screen';
 import { useAuth } from '@/lib/auth';
 import {
   CARDIO_KINDS,
@@ -50,7 +51,8 @@ import { awardXp } from '@/lib/engine';
 import { propagarActo, restoDelModulo } from '@/lib/links';
 import { CARDIO_DAILY_CAP, cardioXp } from '@/lib/game';
 import { colors, fonts } from '@/lib/theme';
-import { voice } from '@/lib/voice';
+import { mensajeSistema } from '@/lib/validation';
+import { deMisiones, desgloseXp } from '@/lib/voice';
 
 const ICONO: Record<CardioKind, keyof typeof Ionicons.glyphMap> = {
   correr: 'walk-outline',
@@ -103,7 +105,7 @@ export default function Cardio() {
     try {
       setSesiones(await fetchCardio(addDays(dateKey(), -56)));
     } catch (e) {
-      Alert.alert('Error del sistema', e instanceof Error ? e.message : 'Fallo desconocido');
+      avisar('Error del sistema', mensajeSistema(e));
     }
   }, []);
 
@@ -125,17 +127,17 @@ export default function Cardio() {
     if (!userId || guardando) return;
     const min = Number(duracion.replace(',', '.'));
     if (!min || min <= 0) {
-      Alert.alert('Falta la duración', 'Sin minutos no hay sesión que registrar.');
+      avisar('Falta la duración', 'Sin minutos no hay sesión que registrar.');
       return;
     }
     const km = distancia.trim() ? Number(distancia.replace(',', '.')) : null;
     if (km !== null && (!Number.isFinite(km) || km <= 0)) {
-      Alert.alert('Distancia inválida', 'Escribe los kilómetros con números, por ejemplo 5,2.');
+      avisar('Distancia inválida', 'Escribe los kilómetros con números, por ejemplo 5,2.');
       return;
     }
     const esfuerzo = rpe.trim() ? Number(rpe.replace(',', '.')) : null;
     if (esfuerzo !== null && (esfuerzo < 1 || esfuerzo > 10)) {
-      Alert.alert('RPE fuera de rango', 'El esfuerzo va de 1 a 10.');
+      avisar('RPE fuera de rango', 'El esfuerzo va de 1 a 10.');
       return;
     }
 
@@ -185,37 +187,47 @@ export default function Cardio() {
       setAbierto(false);
       limpiar();
       await cargar();
-      Alert.alert(
+      // Misión enlazada y resto del módulo pueden pagar a la vez: se dicen las dos.
+      const desglose = desgloseXp([
+        { xp: eco?.xp ?? 0, de: deMisiones(eco?.marcadas ?? []) },
+        { xp: nuevo, de: 'a FUE por la sesión' },
+      ]);
+      avisar(
         'Sesión registrada',
         nuevo > 0
-          ? `${voice.allDone()}\n+${nuevo} XP a FUE.`
+          ? desglose
           : eco && eco.xpMisiones > 0
             ? eco.marcadas.length > 0
-              ? `${voice.allDone()}\nMarcado solo: ${eco.marcadas.join(', ')} · +${eco.xp} XP.`
+              ? desglose
               : 'Anotada. La misión de hoy ya estaba marcada y pagada.'
             : esCorreccion
               ? 'El sistema corrige el registro. El XP de esta sesión ya estaba pagado.'
             : `Anotada. Hoy ya has cobrado el máximo de cardio (${CARDIO_DAILY_CAP} XP), pero la sesión cuenta igual para tu estudio.`,
       );
     } catch (e) {
-      Alert.alert('Error del sistema', e instanceof Error ? e.message : 'Fallo desconocido');
+      avisar('Error del sistema', mensajeSistema(e));
     } finally {
       setGuardando(false);
     }
   };
 
-  const borrar = (s: CardioSession) =>
-    Alert.alert('Eliminar sesión', `${s.kind} del ${s.date}`, [
-      { text: 'Cancelar', style: 'cancel' },
-      {
-        text: 'Eliminar',
-        style: 'destructive',
-        onPress: async () => {
-          await deleteCardio(s.id).catch(() => {});
-          await cargar();
-        },
-      },
-    ]);
+  const borrar = async (s: CardioSession) => {
+    const ok = await confirmar({
+      titulo: 'Eliminar sesión',
+      mensaje: `${s.kind} del ${s.date}`,
+      confirmar: 'Eliminar',
+      destructivo: true,
+    });
+    if (!ok) return;
+    try {
+      await deleteCardio(s.id);
+    } catch (e) {
+      // Antes el fallo se tragaba y la sesión seguía ahí sin explicación.
+      avisar('Error del sistema', mensajeSistema(e));
+      return;
+    }
+    await cargar();
+  };
 
   const km28 = sesiones
     .filter((s) => s.date >= addDays(dateKey(), -28))
@@ -235,7 +247,7 @@ export default function Cardio() {
       <Stagger>
         <FadeIn index={0}>
           <ScreenHeader
-            onBack={() => router.back()}
+            onBack={() => volver(router)}
             eyebrow="Cuerpo"
             title="Cardio"
             subtitle={subtitulo}

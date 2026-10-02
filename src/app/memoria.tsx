@@ -1,9 +1,10 @@
 import { router } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
-import { Alert, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { TextoSistema } from '@/components/TextoSistema';
 import {
+  avisar,
   Card,
   Chip,
   ChipRow,
@@ -14,10 +15,13 @@ import {
   Screen,
   ScreenHeader,
   Section,
+  Skeleton,
+  SkeletonRows,
   Stagger,
   Stat,
   StatRow,
   Tag,
+  volver,
 } from '@/components/ui';
 import {
   fetchDossier,
@@ -26,6 +30,7 @@ import {
   type CoachFact,
 } from '@/lib/coach';
 import { colors } from '@/lib/theme';
+import { mensajeSistema } from '@/lib/validation';
 
 const CATEGORIAS: { clave: string; etiqueta: string }[] = [
   { clave: 'todo', etiqueta: 'Todo' },
@@ -69,7 +74,7 @@ export default function MemoriaScreen() {
       setHechos(h);
       setGasto(g);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'No se pudo leer la memoria.');
+      setError(mensajeSistema(e));
     } finally {
       setCargando(false);
     }
@@ -86,8 +91,12 @@ export default function MemoriaScreen() {
   if (cargando) {
     return (
       <Screen>
-        <ScreenHeader onBack={() => router.back()} eyebrow="El sistema recuerda" title="Memoria" />
-        <EmptyState icon="library-outline" title="Leyendo la memoria" body="Un momento." />
+        <ScreenHeader onBack={() => volver(router)} eyebrow="El sistema recuerda" title="Memoria" />
+        <View accessibilityRole="progressbar" accessibilityLabel="Leyendo la memoria">
+          <Skeleton height={76} style={styles.skCard} />
+          <Skeleton height={11} width={110} style={styles.skEyebrow} />
+          <SkeletonRows rows={5} />
+        </View>
       </Screen>
     );
   }
@@ -102,7 +111,7 @@ export default function MemoriaScreen() {
     <Screen>
       <Stagger>
         <FadeIn index={0}>
-          <ScreenHeader onBack={() => router.back()} eyebrow="El sistema recuerda" title="Memoria" subtitle={subtitulo} />
+          <ScreenHeader onBack={() => volver(router)} eyebrow="El sistema recuerda" title="Memoria" subtitle={subtitulo} />
         </FadeIn>
 
         {error ? (
@@ -193,7 +202,7 @@ export default function MemoriaScreen() {
                     title={h.content}
                     detail={filtro === 'todo' ? <Tag>{etiquetaCategoria(h.category)}</Tag> : undefined}
                     trailing={<RowValue>{fechaCorta(h.date)}</RowValue>}
-                    onPress={() => Alert.alert(`${etiquetaCategoria(h.category)} · ${h.date}`, h.content)}
+                    onPress={() => avisar(`${etiquetaCategoria(h.category)} · ${h.date}`, h.content)}
                     accessibilityLabel={`${etiquetaCategoria(h.category)}, ${h.date}: ${h.content}`}
                   />
                 ))}
@@ -220,6 +229,8 @@ export default function MemoriaScreen() {
 }
 
 const styles = StyleSheet.create({
+  skCard: { marginBottom: 10 },
+  skEyebrow: { marginBottom: 12, marginTop: 16 },
   dossierPlegado: { maxHeight: 168, overflow: 'hidden' },
   dossierVelo: { position: 'absolute', left: 0, right: 0, bottom: 0, height: 28, backgroundColor: colors.panel, opacity: 0.85 },
   filtros: { marginBottom: 12 },

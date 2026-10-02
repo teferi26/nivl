@@ -48,7 +48,7 @@ const styles = StyleSheet.create({
   unit: { fontFamily: fonts.heading, fontSize: 11, letterSpacing: 1, opacity: 0.8 },
   label: {
     fontFamily: fonts.heading,
-    fontSize: 10.5,
+    fontSize: 11,
     letterSpacing: 1.8,
     textTransform: 'uppercase',
     color: colors.textFaint,

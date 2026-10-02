@@ -1,5 +1,6 @@
 import { File, Paths } from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
+import { Platform } from 'react-native';
 import { supabase } from './supabase';
 
 // TODA tabla con datos del gladiador va aquí. La lista se quedó corta durante
@@ -74,7 +75,13 @@ export async function exportAllData(): Promise<void> {
     if (!Array.isArray(dump?.[table])) throw new Error('La exportación está incompleta.');
   }
 
-  const file = new File(Paths.cache, `nivl-export-${Date.now()}.json`);
+  const nombre = `nivl-export-${Date.now()}.json`;
+  if (Platform.OS === 'web') {
+    descargarEnWeb(nombre, JSON.stringify(dump, null, 2));
+    return;
+  }
+
+  const file = new File(Paths.cache, nombre);
   file.write(JSON.stringify(dump, null, 2));
 
   try {
@@ -92,5 +99,29 @@ export async function exportAllData(): Promise<void> {
     } catch {
       // ignora: si no se puede borrar, la caché del SO lo hará
     }
+  }
+}
+
+// En web, expo-file-system es un stub (no hay `File.write`): el volcado se
+// descarga como Blob con un <a download> temporal. La URL se revoca siempre,
+// para no dejar el JSON con datos personales colgado de la sesión del navegador.
+function descargarEnWeb(nombre: string, contenido: string): void {
+  if (typeof document === 'undefined' || typeof URL === 'undefined' || typeof URL.createObjectURL !== 'function') {
+    throw new Error('La descarga no está disponible en este navegador.');
+  }
+  const url = URL.createObjectURL(new Blob([contenido], { type: 'application/json' }));
+  const enlace = document.createElement('a');
+  try {
+    enlace.href = url;
+    enlace.download = nombre;
+    enlace.rel = 'noopener';
+    enlace.style.display = 'none';
+    document.body.appendChild(enlace);
+    enlace.click();
+  } finally {
+    enlace.remove();
+    // El clic ya ha copiado el Blob a la descarga; revocar en el siguiente
+    // ciclo evita cortarla en navegadores que la inician de forma asíncrona.
+    setTimeout(() => URL.revokeObjectURL(url), 0);
   }
 }
