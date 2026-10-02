@@ -1,3 +1,7 @@
+-- 0042_push_token · claim_push_token: el token push pasa al usuario que entra (Chat 3 · Seguridad; número asignado por el coordinador 02/10/2026).
+-- Huella: to_regprocedure('public.claim_push_token(text,text)') is not null
+-- Test: 0042_push_token.test.sql (ejecutar en una transacción que se revierte).
+--
 -- PROPUESTA (Chat 3 · subagente a «RLS y auth»). NO es una migración aplicada.
 -- Para aplicarla: copiar como supabase/migrations/00NN_claim_push_token.sql
 -- (siguiente número libre), añadir su huella en HUELLAS de
