@@ -12,4 +12,4 @@ export function isReportReason(value: unknown): value is ReportReason {
   return REPORT_REASONS.some((reason) => reason.value === value);
 }
 
-export const SOCIAL_SUPPORT_URL = 'https://nivl-web.vercel.app/soporte';
+export const SOCIAL_SUPPORT_URL = 'https://nivl.app/soporte';
