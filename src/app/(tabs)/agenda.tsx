@@ -1,20 +1,11 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { useFocusEffect } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import {
-  KeyboardAvoidingView,
-  Modal,
-  Platform,
-  Pressable,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { LineaDeTiempo, type ItemAgenda } from '@/components/LineaDeTiempo';
-import { SystemButton } from '@/components/SystemButton';
 import {
   avisar,
+  Button,
   Card,
   Check,
   Chip,
@@ -26,6 +17,7 @@ import {
   Screen,
   ScreenHeader,
   Section,
+  Sheet,
   Skeleton,
   SkeletonRows,
   Stagger,
@@ -33,6 +25,9 @@ import {
   useAlVolver,
 } from '@/components/ui';
 import { confirmar } from '@/components/ui/confirmar';
+import { vibrar } from '@/design/haptics';
+import { ink, stroke } from '@/design/tokens';
+import { useSizeClass } from '@/design/useSizeClass';
 import { useAuth } from '@/lib/auth';
 import { questsScheduledOn } from '@/lib/closing';
 import { fetchCompletionsForDate, fetchQuests } from '@/lib/data';
@@ -117,10 +112,24 @@ function plural(n: number, uno: string, varios: string): string {
   return `${n} ${n === 1 ? uno : varios}`;
 }
 
+/** Lo que dice en voz alta una celda del mes: el día y sus recuentos. */
+function etiquetaCelda(day: string, eventos: number, plazos: number, misiones: number): string {
+  const partes = [nombreDia(day)];
+  if (eventos) partes.push(plural(eventos, 'evento', 'eventos'));
+  if (plazos) partes.push(plural(plazos, 'plazo de campaña', 'plazos de campaña'));
+  if (misiones) partes.push(plural(misiones, 'misión', 'misiones'));
+  return partes.join(', ');
+}
+
 export default function Agenda() {
   const { session } = useAuth();
   const userId = session?.user.id;
   const today = dateKey();
+  const router = useRouter();
+  // En compact la Agenda no tiene pestaña: es un destino secundario de Hoy
+  // (navItems.ts), así que lleva su flecha de vuelta. En el raíl y la barra
+  // lateral es un destino más y no la necesita.
+  const enBarraInferior = useSizeClass().nav === 'tabs';
 
   const [view, setView] = useState<ViewMode>('dia');
   const [anchor, setAnchor] = useState(today);
@@ -295,6 +304,7 @@ export default function Agenda() {
   const removeEvent = async (e: CalendarEvent) => {
     const ok = await confirmar({ titulo: 'Eliminar evento', mensaje: e.title, confirmar: 'Eliminar', destructivo: true });
     if (!ok) return;
+    vibrar('destructiva');
     try {
       await deleteCalendarEvent(e.id);
     } catch (err) {
@@ -352,6 +362,7 @@ export default function Agenda() {
             title={titulo}
             subtitle={loaded && !loadError ? subtitulo : undefined}
             action={{ icon: 'add', label: 'Nuevo evento', onPress: abrirFormulario, solid: true }}
+            onBack={enBarraInferior ? () => router.navigate('/(tabs)') : undefined}
           />
         </FadeIn>
 
@@ -469,17 +480,22 @@ export default function Agenda() {
                       style={({ pressed }) => [styles.cell, sel && styles.cellSelected, pressed && styles.pressed]}
                       accessibilityRole="radio"
                       accessibilityState={{ selected: sel }}
-                      accessibilityLabel={nombreDia(day)}
+                      accessibilityLabel={etiquetaCelda(
+                        day,
+                        c.dayEvents.length,
+                        c.dayTasks.length,
+                        c.dayQuests.length,
+                      )}
                     >
                       <Text style={[styles.cellNum, esHoy && styles.cellNumToday, sel && styles.cellNumSel]}>
                         {Number(day.slice(8))}
                       </Text>
-                      <View style={styles.dots}>
-                        {c.dayEvents.length ? <View style={[styles.dot, { backgroundColor: colors.gold }]} /> : null}
-                        {c.dayTasks.length ? <View style={[styles.dot, { backgroundColor: colors.steel }]} /> : null}
-                        {n === 0 && c.dayQuests.length ? (
-                          <View style={[styles.dot, { backgroundColor: colors.accentDim }]} />
-                        ) : null}
+                      {/* Por forma, no por color: evento = punto sólido, plazo
+                          de campaña = aro hueco, solo misiones = guion. */}
+                      <View style={styles.dots} accessible={false}>
+                        {c.dayEvents.length ? <View style={styles.dotEvento} /> : null}
+                        {c.dayTasks.length ? <View style={styles.dotPlazo} /> : null}
+                        {n === 0 && c.dayQuests.length ? <View style={styles.dotMisiones} /> : null}
                       </View>
                     </Pressable>
                   );
@@ -529,7 +545,7 @@ export default function Agenda() {
           <>
             {eventosOrdenados.length > 0 ? (
               <FadeIn index={3}>
-                <Section title="Eventos" meta={`${eventosOrdenados.length}`} tone="gold">
+                <Section title="Eventos" meta={`${eventosOrdenados.length}`}>
                   <Card padded={false} style={styles.lista}>
                     {eventosOrdenados.map((e, i) => {
                       const min = horaAMinutos(e.time);
@@ -538,11 +554,11 @@ export default function Agenda() {
                         <Row
                           key={e.id}
                           first={i === 0}
-                          leading={<Ionicons name="calendar-outline" size={18} color={colors.gold} />}
+                          leading={<Ionicons name="ellipse" size={10} color={ink.ink9} />}
                           title={e.title}
                           detail={e.notes ?? undefined}
                           trailing={
-                            <RowValue tone="gold" strong>
+                            <RowValue tone="accent" strong>
                               {hora}
                             </RowValue>
                           }
@@ -598,10 +614,10 @@ export default function Agenda() {
                       <Row
                         key={t.id}
                         first={i === 0}
-                        leading={<Ionicons name="flag-outline" size={18} color={colors.steel} />}
+                        leading={<Ionicons name="ellipse-outline" size={10} color={ink.ink9} />}
                         title={t.title}
                         detail={t.is_boss ? 'Jefe final de campaña. Vence ese día.' : 'Tarea de campaña. Vence ese día.'}
-                        trailing={t.is_boss ? <Tag tone="steel">Jefe</Tag> : <RowValue tone="steel">Plazo</RowValue>}
+                        trailing={t.is_boss ? <Tag tone="dim">Jefe</Tag> : <RowValue tone="dim">Plazo</RowValue>}
                       />
                     ))}
                     {dayQuests.map((q, i) => {
@@ -610,11 +626,11 @@ export default function Agenda() {
                         <Row
                           key={q.id}
                           first={dayTasks.length === 0 && i === 0}
-                          leading={<Check checked={hecha} size={24} tone={q.is_penalty ? 'red' : 'accent'} />}
+                          leading={<Check checked={hecha} size={24} />}
                           title={q.title}
                           done={hecha}
                           detail={`Misión · ${q.stat}`}
-                          trailing={q.is_penalty && !hecha ? <Tag tone="red">Penalización</Tag> : undefined}
+                          trailing={q.is_penalty && !hecha ? <Tag tone="alerta">Penalización</Tag> : undefined}
                         />
                       );
                     })}
@@ -627,84 +643,80 @@ export default function Agenda() {
         )}
       </Stagger>
 
-      <Modal visible={formOpen} transparent animationType="slide" onRequestClose={() => setFormOpen(false)}>
-        <KeyboardAvoidingView style={styles.backdrop} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-          <Pressable
-            style={styles.backdropTap}
-            onPress={() => setFormOpen(false)}
-            accessibilityRole="button"
-            accessibilityLabel="Cerrar"
+      <Sheet
+        visible={formOpen}
+        onClose={() => setFormOpen(false)}
+        eyebrow="Nuevo evento"
+        title="¿Qué hay que recordar?"
+        footer={
+          <>
+            <Button title="Añadir evento" onPress={addEvent} disabled={!title.trim()} />
+            <Button title="Cancelar" variant="ghost" onPress={() => setFormOpen(false)} />
+          </>
+        }
+      >
+        <Text style={[styles.label, styles.labelPrimero]}>Nombre</Text>
+        <TextInput
+          style={styles.input}
+          value={title}
+          onChangeText={setTitle}
+          placeholder="Llamada, cita, demo, examen"
+          placeholderTextColor={colors.textFaint}
+          accessibilityLabel="Nombre del evento"
+          autoFocus
+        />
+        <Text style={styles.label}>Día</Text>
+        <ChipWrap style={styles.chipsDia}>
+          <Chip small label="Hoy" selected={date === today} onPress={() => setDate(today)} accessibilityLabel="Hoy" />
+          <Chip
+            small
+            label="Mañana"
+            selected={date === addDays(today, 1)}
+            onPress={() => setDate(addDays(today, 1))}
+            accessibilityLabel="Mañana"
           />
-          <View style={styles.sheet}>
-            <View style={styles.sheetHandle} />
-            <Text style={styles.sheetEyebrow}>NUEVO EVENTO</Text>
-            <Text style={styles.sheetTitle}>¿Qué hay que recordar?</Text>
-            <Text style={styles.label}>Nombre</Text>
-            <TextInput
-              style={styles.input}
-              value={title}
-              onChangeText={setTitle}
-              placeholder="Llamada, cita, demo, examen"
-              placeholderTextColor={colors.textFaint}
-              accessibilityLabel="Nombre del evento"
-              autoFocus
+          {anchor !== today && anchor !== addDays(today, 1) ? (
+            <Chip
+              small
+              label={tituloDelDia(anchor, today)}
+              selected={date === anchor}
+              onPress={() => setDate(anchor)}
+              accessibilityLabel={`El día elegido, ${nombreDia(anchor)}`}
             />
-            <Text style={styles.label}>Día</Text>
-            <ChipWrap style={styles.chipsDia}>
-              <Chip small label="Hoy" selected={date === today} onPress={() => setDate(today)} accessibilityLabel="Hoy" />
-              <Chip
-                small
-                label="Mañana"
-                selected={date === addDays(today, 1)}
-                onPress={() => setDate(addDays(today, 1))}
-                accessibilityLabel="Mañana"
-              />
-              {anchor !== today && anchor !== addDays(today, 1) ? (
-                <Chip
-                  small
-                  label={tituloDelDia(anchor, today)}
-                  selected={date === anchor}
-                  onPress={() => setDate(anchor)}
-                  accessibilityLabel={`El día elegido, ${nombreDia(anchor)}`}
-                />
-              ) : null}
-            </ChipWrap>
-            <TextInput
-              style={styles.input}
-              value={date}
-              onChangeText={setDate}
-              placeholder="AAAA-MM-DD"
-              placeholderTextColor={colors.textFaint}
-              accessibilityLabel="Fecha"
-              autoCapitalize="none"
-            />
-            <Text style={styles.label}>Hora</Text>
-            <View style={styles.inline}>
-              <TextInput
-                style={[styles.input, styles.inputHora]}
-                value={time}
-                onChangeText={setTime}
-                placeholder="09:30"
-                placeholderTextColor={colors.textFaint}
-                accessibilityLabel="Hora"
-                keyboardType="numbers-and-punctuation"
-              />
-              <Chip
-                small
-                label="Todo el día"
-                selected={!time.trim()}
-                onPress={() => setTime('')}
-                accessibilityLabel="Sin hora, todo el día"
-              />
-            </View>
-            <Text style={styles.hint}>
-              Con hora, el evento se pinta sobre el eje del día. Sin hora, cuenta como de todo el día.
-            </Text>
-            <SystemButton title="Añadir evento" onPress={addEvent} disabled={!title.trim()} style={{ marginTop: 22 }} />
-            <SystemButton title="Cancelar" variant="ghost" onPress={() => setFormOpen(false)} style={{ marginTop: 6 }} />
-          </View>
-        </KeyboardAvoidingView>
-      </Modal>
+          ) : null}
+        </ChipWrap>
+        <TextInput
+          style={styles.input}
+          value={date}
+          onChangeText={setDate}
+          placeholder="AAAA-MM-DD"
+          placeholderTextColor={colors.textFaint}
+          accessibilityLabel="Fecha"
+          autoCapitalize="none"
+        />
+        <Text style={styles.label}>Hora</Text>
+        <View style={styles.inline}>
+          <TextInput
+            style={[styles.input, styles.inputHora]}
+            value={time}
+            onChangeText={setTime}
+            placeholder="09:30"
+            placeholderTextColor={colors.textFaint}
+            accessibilityLabel="Hora"
+            keyboardType="numbers-and-punctuation"
+          />
+          <Chip
+            small
+            label="Todo el día"
+            selected={!time.trim()}
+            onPress={() => setTime('')}
+            accessibilityLabel="Sin hora, todo el día"
+          />
+        </View>
+        <Text style={styles.hint}>
+          Con hora, el evento se pinta sobre el eje del día. Sin hora, cuenta como de todo el día.
+        </Text>
+      </Sheet>
     </Screen>
   );
 }
@@ -746,7 +758,8 @@ const styles = StyleSheet.create({
   diaSemanaLetraSel: { color: colors.accentText },
   diaSemanaNum: { fontFamily: fonts.number, fontSize: 15, color: colors.text, marginTop: 3 },
   diaSemanaNumSel: { color: colors.accent },
-  diaHoy: { color: colors.gold },
+  // Hoy se marca subrayando el número, no con un color.
+  diaHoy: { textDecorationLine: 'underline' },
   cargaPista: { width: 16, height: 18, backgroundColor: colors.track, marginTop: 6, justifyContent: 'flex-end' },
   cargaRelleno: { backgroundColor: colors.accentDim, width: '100%' },
 
@@ -773,34 +786,16 @@ const styles = StyleSheet.create({
   },
   cellSelected: { backgroundColor: colors.accentFaint, borderColor: colors.accent },
   cellNum: { fontFamily: fonts.number, fontSize: 13, color: colors.textDim },
-  cellNumToday: { color: colors.gold },
+  cellNumToday: { textDecorationLine: 'underline', color: colors.text },
   cellNumSel: { color: colors.accent },
-  dots: { flexDirection: 'row', gap: 3, marginTop: 3, height: 5 },
-  dot: { width: 4, height: 4, borderRadius: 2 },
+  dots: { flexDirection: 'row', alignItems: 'center', gap: 3, marginTop: 3, height: 5 },
+  dotEvento: { width: 5, height: 5, borderRadius: 2.5, backgroundColor: ink.ink9 },
+  dotPlazo: { width: 5, height: 5, borderRadius: 2.5, borderWidth: stroke.hairline, borderColor: ink.ink9 },
+  dotMisiones: { width: 6, height: 1.5, backgroundColor: ink.ink6 },
 
   lista: { paddingHorizontal: 16, paddingVertical: 2 },
   nota: { fontFamily: fonts.body, fontSize: 12, lineHeight: 17, color: colors.textFaint, marginTop: 2 },
 
-  backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'flex-end' },
-  backdropTap: { flex: 1 },
-  sheet: {
-    backgroundColor: colors.panel,
-    borderTopWidth: 1,
-    borderTopColor: colors.line,
-    paddingHorizontal: 20,
-    paddingTop: 10,
-    paddingBottom: 34,
-  },
-  sheetHandle: { alignSelf: 'center', width: 36, height: 3, backgroundColor: colors.accentDim, marginBottom: 16 },
-  sheetEyebrow: { fontFamily: fonts.heading, fontSize: 11, letterSpacing: 2.5, color: colors.gold },
-  sheetTitle: {
-    fontFamily: fonts.heading,
-    fontSize: 24,
-    letterSpacing: -0.5,
-    color: colors.text,
-    marginTop: 6,
-    marginBottom: 4,
-  },
   label: {
     fontFamily: fonts.heading,
     fontSize: 11,
@@ -810,6 +805,7 @@ const styles = StyleSheet.create({
     marginTop: 18,
     marginBottom: 8,
   },
+  labelPrimero: { marginTop: 0 },
   hint: { fontFamily: fonts.body, fontSize: 12, color: colors.textFaint, marginTop: 8, lineHeight: 17 },
   chipsDia: { marginBottom: 8 },
   inline: { flexDirection: 'row', alignItems: 'center', gap: 10 },

@@ -28,13 +28,17 @@ SplashScreen.preventAutoHideAsync().catch(() => {});
 // es siempre el mismo (solo cambian el estilo y el valor): si cambiara al
 // entrar o salir de las pestañas, el Stack se volvería a montar y se perdería
 // el historial.
+//
+// La galería del kit (/kit, solo en desarrollo) tampoco se acota: tiene que
+// poder verse a 744, 1024 y 1440 para verificar el sistema.
 function ColumnaWeb({ children }: { children: ReactNode }) {
-  const enPestanas = useSegments()[0] === '(tabs)';
+  const seg = useSegments();
+  const anchoLibre = seg[0] === '(tabs)' || (__DEV__ && seg[0] === 'kit');
   if (Platform.OS !== 'web') return <>{children}</>;
   return (
     <View style={webStyles.fuera}>
-      <View style={[webStyles.dentro, enPestanas && webStyles.ancho]}>
-        <TopeAncho.Provider value={enPestanas ? null : ANCHO_COLUMNA_WEB}>{children}</TopeAncho.Provider>
+      <View style={[webStyles.dentro, anchoLibre && webStyles.ancho]}>
+        <TopeAncho.Provider value={anchoLibre ? null : ANCHO_COLUMNA_WEB}>{children}</TopeAncho.Provider>
       </View>
     </View>
   );

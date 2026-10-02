@@ -1,6 +1,7 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { StyleSheet, Text, View } from 'react-native';
-import { Check, Row, RowValue, Tag } from '@/components/ui';
+import { Check, Row, RowValue, Tag, Trama } from '@/components/ui';
+import { ink } from '@/design/tokens';
 import { BONUS_BY_DIFFICULTY, questXp, STAT_LABEL } from '@/lib/game';
 import { colors, fonts } from '@/lib/theme';
 import type { Quest } from '@/lib/types';
@@ -37,11 +38,15 @@ export function QuestItem({ quest, completed, xpAwarded, busy, streakDays, onCom
       first={first}
       leading={
         cerrada ? (
+          // Bloqueada = rayado (SISTEMA §0) dentro del aro, con el candado encima.
           <View style={styles.candado}>
-            <Ionicons name="lock-closed-outline" size={14} color={colors.textDim} />
+            <Trama />
+            <View style={styles.candadoPlaca}>
+              <Ionicons name="lock-closed-outline" size={12} color={ink.ink9} />
+            </View>
           </View>
         ) : (
-          <Check checked={completed} busy={busy} tone={quest.is_penalty ? 'red' : 'accent'} />
+          <Check checked={completed} busy={busy} />
         )
       }
       title={quest.title}
@@ -50,20 +55,20 @@ export function QuestItem({ quest, completed, xpAwarded, busy, streakDays, onCom
         <View>
           <View style={styles.meta}>
             {quest.is_penalty ? (
-              <Tag tone="red">Penalización</Tag>
+              <Tag tone="alerta">Penalización</Tag>
             ) : (
               <Text style={styles.metaText}>
                 {quest.stat} · {STAT_LABEL[quest.stat]}
               </Text>
             )}
             {quest.requires_evidence ? <Ionicons name="camera-outline" size={13} color={colors.textDim} /> : null}
-            {quest.is_bonus ? <Tag tone="gold">Extra</Tag> : null}
+            {quest.is_bonus ? <Tag tone="logro">Extra</Tag> : null}
           </View>
           {cerrada ? <Text style={styles.cerrada}>{TEXTO_RECUPERACION_CERRADA}</Text> : null}
         </View>
       }
       trailing={
-        <RowValue tone={completed ? 'accent' : quest.is_bonus ? 'gold' : 'dim'} strong={completed}>
+        <RowValue tone={completed ? 'accent' : 'dim'} strong={completed}>
           +{shown} {unit}
         </RowValue>
       }
@@ -91,7 +96,17 @@ const styles = StyleSheet.create({
     height: 26,
     borderRadius: 13,
     borderWidth: 1,
-    borderColor: colors.accentDim,
+    borderColor: ink.ink4,
+    overflow: 'hidden',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  // Placa lisa bajo el candado: el icono no se pinta sobre el rayado.
+  candadoPlaca: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: ink.ink0,
     alignItems: 'center',
     justifyContent: 'center',
   },

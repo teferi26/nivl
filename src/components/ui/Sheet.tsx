@@ -3,16 +3,21 @@
 // expanded) es un modal centrado de 560 como máximo, nunca de ancho completo.
 //
 // Teclado: el mismo patrón que src/components/HojaTeclado.tsx.
-//   1. KeyboardAvoidingView con 'padding' en iOS levanta la hoja.
+//   1. KeyboardAvoidingView levanta la hoja: 'padding' en iOS y 'height' en
+//      Android. Con edge-to-edge (SDK 54) y `statusBarTranslucent` la ventana
+//      ya no se redimensiona sola al abrir el teclado, así que sin
+//      comportamiento en Android el pie quedaba debajo del teclado.
 //   2. keyboardShouldPersistTaps="handled": los botones responden con el
 //      teclado abierto.
 //   3. Tocar el fondo cierra primero el teclado y, al siguiente toque, la hoja.
 //
 // `onClose` se llama siempre que la hoja se cierra por sí misma. `onDismiss`,
 // además, cuando la cierra el usuario sin decidir (arrastre del asa, toque en el
-// fondo o botón atrás de Android), para que quien la abrió pueda anotar
-// «cerrada» (p. ej. la oferta del Chat 2).
+// fondo, botón atrás de Android, X de la cabecera o el gesto de escape del
+// lector de pantalla), para que quien la abrió pueda anotar «cerrada» (p. ej.
+// la oferta del Chat 2).
 
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { useEffect, useRef, type ReactNode } from 'react';
 import {
   Animated,
@@ -35,7 +40,7 @@ import { useMovimientoReducido } from './motion';
 interface Props {
   visible: boolean;
   onClose: () => void;
-  /** Cierre sin decidir: arrastre, fondo o atrás de Android. Se llama antes que onClose. */
+  /** Cierre sin decidir: arrastre, fondo, X, escape o atrás de Android. Se llama antes que onClose. */
   onDismiss?: () => void;
   eyebrow?: string;
   title?: string;
@@ -122,15 +127,17 @@ export function Sheet({ visible, onClose, onDismiss, eyebrow, title, children, f
   const transform = [
     { translateY: Animated.add(entrada.interpolate({ inputRange: [0, 1], outputRange: [desplazamiento, 0] }), arrastre) },
   ];
-  const abajo = Math.max(insets.bottom, space.s4);
+  // En tablet la hoja es un modal centrado: no toca el borde inferior y no
+  // necesita la safe area.
+  const abajo = tablet ? space.s4 : Math.max(insets.bottom, space.s4);
 
   const cabecera = (
     <View {...pan.panHandlers}>
       <View style={styles.asaZona} accessible={false}>
         <View style={styles.asa} />
       </View>
-      {eyebrow || title ? (
-        <View style={styles.cabecera}>
+      <View style={styles.cabecera}>
+        <View style={styles.cabeceraTexto}>
           {eyebrow ? (
             <Text maxFontSizeMultiplier={1.35} style={styles.eyebrow}>
               {eyebrow}
@@ -142,7 +149,17 @@ export function Sheet({ visible, onClose, onDismiss, eyebrow, title, children, f
             </Text>
           ) : null}
         </View>
-      ) : null}
+        {/* Cierre explícito de 44: el arrastre del asa y el toque en el fondo
+            no los encuentra un lector de pantalla ni un teclado. */}
+        <Pressable
+          onPress={() => cerrarRef.current()}
+          style={({ pressed }) => [styles.cerrar, pressed && styles.cerrarPulsado]}
+          accessibilityRole="button"
+          accessibilityLabel="Cerrar"
+        >
+          <Ionicons name="close" size={22} color={ink.ink9} />
+        </Pressable>
+      </View>
     </View>
   );
 
@@ -170,7 +187,7 @@ export function Sheet({ visible, onClose, onDismiss, eyebrow, title, children, f
     >
       <KeyboardAvoidingView
         style={[styles.fondo, tablet ? styles.fondoCentrado : styles.fondoAbajo]}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        behavior={Platform.OS === 'ios' ? 'padding' : Platform.OS === 'android' ? 'height' : undefined}
       >
         <Pressable
           style={StyleSheet.absoluteFill}
@@ -180,6 +197,7 @@ export function Sheet({ visible, onClose, onDismiss, eyebrow, title, children, f
         />
         <Animated.View
           accessibilityViewIsModal
+          onAccessibilityEscape={() => cerrarRef.current()}
           style={[styles.hoja, tablet ? styles.hojaTablet : styles.hojaMovil, { transform }]}
         >
           {cabecera}
@@ -200,7 +218,17 @@ const styles = StyleSheet.create({
   hojaTablet: { width: '100%', maxWidth: 560, borderWidth: stroke.hairline, borderColor: ink.ink3 },
   asaZona: { alignItems: 'center', paddingTop: space.s3, paddingBottom: space.s2 },
   asa: { width: 40, height: 4, backgroundColor: ink.ink4 },
-  cabecera: { paddingHorizontal: space.s5, paddingTop: space.s2, paddingBottom: space.s3, gap: space.s1 },
+  cabecera: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: space.s2,
+    paddingLeft: space.s5,
+    paddingRight: space.s2,
+    paddingBottom: space.s3,
+  },
+  cabeceraTexto: { flex: 1, minWidth: 0, gap: space.s1, paddingTop: space.s2 },
+  cerrar: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
+  cerrarPulsado: { backgroundColor: ink.ink2 },
   eyebrow: {
     fontFamily: type.label.family,
     fontSize: type.label.size,

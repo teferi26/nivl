@@ -1,5 +1,4 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import * as Haptics from 'expo-haptics';
 import { useFocusEffect } from 'expo-router';
 import { useCallback, useRef, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
@@ -25,6 +24,8 @@ import {
   useAlVolver,
 } from '@/components/ui';
 import { confirmar } from '@/components/ui/confirmar';
+import { vibrar } from '@/design/haptics';
+import { sincronizarRango } from '@/lib/achievements';
 import { useAuth } from '@/lib/auth';
 import { createQuest, deleteQuest, ensureProfile, updateQuest } from '@/lib/data';
 import { dateKey } from '@/lib/dates';
@@ -131,7 +132,7 @@ export default function Habitos() {
     try {
       if (estaba) await desmarcarRegla(r.id, hoy);
       else await marcarReglaCumplida(userId, r.id, hoy);
-      if (!estaba) Haptics.selectionAsync().catch(() => {});
+      if (!estaba) vibrar('seleccion');
     } catch (e) {
       setCumplidas((prev) => {
         const s = new Set(prev);
@@ -163,8 +164,10 @@ export default function Habitos() {
         quest: q.title,
         dias: p.racha,
       });
+      // El rango se recalcula en segundo plano: no bloquea ni rompe el cobro.
+      sincronizarRango().catch(() => []);
       const pagado = Math.max(0, res.profile.xp_total - perfil.xp_total);
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      vibrar('rachaHito');
       await cargar();
       avisar('El sistema lo da por tuyo', `${q.title} ya no se te va a pedir.\n${pagado > 0 ? `+${pagado} XP a ${q.stat}.` : 'Ese premio ya estaba cobrado.'}`);
     } catch (e) {
@@ -231,7 +234,7 @@ export default function Habitos() {
             <Card>
               <StatRow>
                 <Stat value={enCurso.length} label="En forja" />
-                <Stat value={mejorRacha} label="Mejor racha" unit="d" tone={mejorRacha >= HABIT_TARGET_DAYS ? 'gold' : 'text'} />
+                <Stat value={mejorRacha} label="Mejor racha" unit="d" tone={mejorRacha >= HABIT_TARGET_DAYS ? 'accent' : 'text'} />
                 <Stat value={listos} label="Listos" tone={listos > 0 ? 'accent' : 'text'} />
                 <Stat value={adquiridos.length} label="Adquiridos" />
               </StatRow>
@@ -243,10 +246,10 @@ export default function Habitos() {
           <FadeIn index={2}>
             <Section
               title="Reglas del contrato · hoy"
-              tone={pendientesReglas > 0 ? 'red' : 'accent'}
+              tone={pendientesReglas > 0 ? 'alerta' : undefined}
               meta={`${reglas.length - pendientesReglas}/${reglas.length}`}
             >
-              <Card padded={false} style={styles.lista} accent={pendientesReglas > 0 ? colors.red : undefined}>
+              <Card padded={false} style={styles.lista}>
                 {reglas.map((r, i) => {
                   const ok = cumplidas.has(r.id);
                   return (
@@ -297,7 +300,7 @@ export default function Habitos() {
                         setEditando(q);
                         setFormOpen(true);
                       }}
-                      accent={p.consolidable ? colors.gold : undefined}
+                      variant={p.consolidable ? 'logro' : 'surface'}
                       accessibilityLabel={`Editar ${q.title}`}
                     >
                       <View style={styles.fila}>
@@ -314,7 +317,6 @@ export default function Habitos() {
                           ratio={Math.min(1, p.racha / p.objetivo)}
                           height={8}
                           segments={p.objetivo}
-                          color={p.consolidable ? colors.gold : colors.accent}
                         />
                       </View>
                       <View style={styles.metaFila}>
@@ -346,17 +348,17 @@ export default function Habitos() {
 
         {loaded && adquiridos.length > 0 ? (
           <FadeIn index={4}>
-            <Section title="Adquiridos" meta={`${adquiridos.length}`} tone="gold">
+            <Section title="Adquiridos" meta={`${adquiridos.length}`} tone="logro">
               <Card padded={false} style={styles.lista}>
                 {adquiridos.map((q, i) => (
                   <Row
                     key={q.id}
                     first={i === 0}
-                    leading={<Ionicons name="ribbon" size={18} color={colors.gold} />}
+                    leading={<Ionicons name="ribbon" size={18} color={colors.text} />}
                     title={q.title}
                     muted
                     detail="Ya no se te pide. Mantén pulsado para volver a exigirlo."
-                    trailing={<RowValue tone="gold">{q.acquired_streak ?? '—'} d</RowValue>}
+                    trailing={<RowValue tone="accent">{q.acquired_streak ?? '—'} d</RowValue>}
                     onLongPress={() => reactivar(q)}
                     accessibilityLabel={`${q.title}, adquirido. Mantén pulsado para volver a exigirlo.`}
                   />
@@ -398,7 +400,7 @@ const styles = StyleSheet.create({
   fila: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', gap: 10 },
   nombre: { fontFamily: fonts.heading, fontSize: 17, letterSpacing: -0.2, color: colors.text, flex: 1, minWidth: 0 },
   racha: { fontFamily: fonts.number, fontSize: 18, color: colors.text },
-  rachaListo: { color: colors.gold },
+  rachaListo: { color: colors.accent },
   rachaObjetivo: { fontFamily: fonts.body, fontSize: 12, color: colors.textFaint },
   metaFila: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 12, gap: 10 },
   semana: { flexDirection: 'row', gap: 4 },
@@ -407,7 +409,7 @@ const styles = StyleSheet.create({
   diaTexto: { fontFamily: fonts.heading, fontSize: 11, color: colors.textFaint },
   diaTextoOn: { color: colors.text },
   meta: { fontFamily: fonts.body, fontSize: 12, color: colors.textDim, flexShrink: 1, textAlign: 'right' },
-  metaListo: { color: colors.gold, fontFamily: fonts.semibold },
+  metaListo: { color: colors.accent, fontFamily: fonts.semibold },
   skEyebrow: { marginBottom: 12, marginTop: 16 },
   skCard: { marginBottom: 10 },
 });

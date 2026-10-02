@@ -1,20 +1,19 @@
 import { useHealthConsent } from '@/components/ConsentimientoSalud';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import * as Haptics from 'expo-haptics';
 import * as ImagePicker from 'expo-image-picker';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { AccessibilityInfo, Animated, Linking, Platform, Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
-import { Avatar } from '@/components/Avatar';
+import { AccessibilityInfo, Animated, Linking, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { CompletarSheet, type ModoCompletar } from '@/components/CompletarSheet';
 import { LevelUpOverlay } from '@/components/LevelUpOverlay';
 import { OrdenDelDia } from '@/components/OrdenDelDia';
+import { lineaEnJuego } from '@/components/hoy/enJuego';
+import { PanelHoy } from '@/components/hoy/PanelHoy';
+import { TarjetaRango } from '@/components/hoy/TarjetaRango';
 import { QuestItem } from '@/components/QuestItem';
 import { prepararDatosSemana, ShareSemanaModal, type DatosSemana } from '@/components/ShareCardSemana';
-import { SystemButton } from '@/components/SystemButton';
-import { XpToast } from '@/components/XpToast';
-import { XPBar } from '@/components/XPBar';
 import {
+  Button,
   Card,
   EmptyState,
   FadeIn,
@@ -26,19 +25,33 @@ import {
   Skeleton,
   SkeletonRows,
   Stagger,
+  Toast,
   useAlVolver,
 } from '@/components/ui';
 import { avisar, confirmar } from '@/components/ui/confirmar';
-import { evaluateAchievements, unlockAchievements } from '@/lib/achievements';
+import { useMovimientoReducido } from '@/components/ui/motion';
+import { vibrar } from '@/design/haptics';
+import { cabeAside } from '@/design/responsive';
+import { ink } from '@/design/tokens';
+import { useAnchoUtil, useSizeClass } from '@/design/useSizeClass';
+import { evaluateAchievements, fetchUnlocked, sincronizarRango, unlockAchievements } from '@/lib/achievements';
+import { tocarApertura } from '@/lib/apertura';
 import { useAuth } from '@/lib/auth';
-import { completionStats, ensureProfile, fetchCompletionsForDate, fetchQuests } from '@/lib/data';
+import {
+  completionStats,
+  ensureProfile,
+  fetchCompletionsForDate,
+  fetchCompletionsSince,
+  fetchQuests,
+} from '@/lib/data';
 import { fetchPlan, horaAMinutos, setBlockDone, type DayBlock, type PlanConBloques } from '@/lib/dayplan';
-import { dateKey, formatLongDate, isValidKey, nombreDia } from '@/lib/dates';
+import { addDays, dateKey, formatLongDate, isValidKey, nombreDia } from '@/lib/dates';
 import { completeQuest, processPendingDays, questsScheduledOn, type DayCloseResult } from '@/lib/engine';
-import { rachaVisible, recuperacionDesbloqueada } from '@/lib/closing';
-import { levelFromXp, rankForLevel, streakMultiplier } from '@/lib/game';
-import { kindMeta, modulesFor } from '@/lib/kinds';
+import { enJuegoHoy, rachaVisible, recuperacionDesbloqueada, rotosSeguidosAntes } from '@/lib/closing';
+import { levelFromXp } from '@/lib/game';
+import { modulesFor } from '@/lib/kinds';
 import { RUTA_DE_ACTO } from '@/lib/links';
+import { compararRangos, estadoDe, type RangoId } from '@/lib/progression';
 import {
   inicializarAvisos,
   programarDespertador,
@@ -49,7 +62,6 @@ import { registrarDispositivo } from '@/lib/push';
 import { fetchBoard, type BoardEntry } from '@/lib/social';
 import { clasificar, DIAS_VENTANA, lineaRivalidad } from '@/lib/socialmath';
 import { colors, fonts } from '@/lib/theme';
-import { useCountUp } from '@/lib/useCountUp';
 import { mensajeSistema } from '@/lib/validation';
 import { voice } from '@/lib/voice';
 import type { Completion, Profile, Quest } from '@/lib/types';
@@ -60,14 +72,25 @@ function saludo(nombre: string): string {
   return `${franja}, ${nombre}.`;
 }
 
-// Padding horizontal de `Screen` (20 por lado) y hueco de la rejilla de módulos.
-const PADDING_PANTALLA = 40;
+// Hueco de la rejilla de módulos.
 const HUECO_MODULOS = 8;
 const COLUMNAS_MODULOS = 4;
 
 // Lo último que se supo de si la cuenta tiene coach. Vive fuera del componente
 // para que volver a la pestaña no repinte Hoy "sin saberlo" medio segundo.
 let ultimoPro: boolean | null = null;
+
+/** Rango más alto de una lista de códigos `rango_X` (null si no hay ninguno). */
+function rangoMasAlto(codigos: string[]): RangoId | null {
+  let max: RangoId | null = null;
+  for (const c of codigos) {
+    const m = /^rango_([EDCBAS])$/.exec(c);
+    if (!m) continue;
+    const r = m[1] as RangoId;
+    if (max === null || compararRangos(r, max) > 0) max = r;
+  }
+  return max;
+}
 
 /** Da tiempo a que la hoja (un Modal) termine de cerrarse antes de abrir la cámara: en iOS, presentar encima de un modal que se está yendo no abre nada. */
 const esperarCierreDeHoja = () => new Promise<void>((ok) => setTimeout(ok, 420));
@@ -84,7 +107,7 @@ export default function Hoy() {
   const [levelUp, setLevelUp] = useState<number | null>(null);
   const [busyQuestId, setBusyQuestId] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
-  const [toast, setToast] = useState<{ xp: number; bonus: boolean; unit: 'XP' | 'PB' } | null>(null);
+  const [toast, setToast] = useState<string | null>(null);
   const [plan, setPlan] = useState<PlanConBloques | null>(null);
   const [showMore, setShowMore] = useState(false);
   // Hasta la primera carga no se sabe si hay misiones o plan: se pintan huecos,
@@ -99,8 +122,22 @@ export default function Hoy() {
   const [avisoRecuperacion, setAvisoRecuperacion] = useState(false);
   const [tarjeta, setTarjeta] = useState<DatosSemana | null>(null);
   const [preparandoTarjeta, setPreparandoTarjeta] = useState(false);
-  const { width } = useWindowDimensions();
+  // Rango vigente (estadoDe con los logros). null = aún no se sabe: hueco.
+  const [rango, setRango] = useState<RangoId | null>(null);
+  // Días rotos seguidos antes de hoy (solo con la racha a cero, RET-02): con
+  // ellos enJuegoHoy sabe si hoy ya no costaría XP.
+  const [rotosPrevios, setRotosPrevios] = useState(0);
+  // Ancho real de la rejilla de módulos (onLayout), no el de la ventana.
+  const [anchoRejilla, setAnchoRejilla] = useState(0);
   const pulso = useRef(new Animated.Value(1)).current;
+  const reducido = useMovimientoReducido();
+  const ancho = useAnchoUtil();
+  const { nav } = useSizeClass();
+  // Con el panel lateral (expanded), rango y rivalidad van ahí y no se repiten.
+  const conPanel = cabeAside(ancho);
+  // El cierre que ya ha vibrado: processPendingDays puede devolver el mismo
+  // resultado a dos cargas seguidas (cierre en vuelo compartido).
+  const cierreVibrado = useRef<DayCloseResult | null>(null);
   // La misión de la hoja, también en ref: se vacía de forma SÍNCRONA al elegir
   // para que un doble toque en una opción no complete dos veces.
   const sheetRef = useRef<Quest | null>(null);
@@ -108,8 +145,30 @@ export default function Hoy() {
   const completing = useRef<Set<string>>(new Set());
   const clearToast = useCallback(() => setToast(null), []);
 
+  /**
+   * Pide al servidor el rango merecido. No bloquea nada ni lanza: si sube,
+   * vibra, lo dice en el aviso y recarga el rango que se enseña.
+   */
+  const sincronizar = useCallback((prof: Profile) => {
+    sincronizarRango()
+      .catch(() => [] as string[])
+      .then((nuevos) => {
+        const letra = rangoMasAlto(nuevos);
+        if (!letra) return;
+        // TODO(L3): ceremonia
+        vibrar('rango');
+        setToast(`RANGO ${letra}`);
+        fetchUnlocked()
+          .then((logros) => setRango(estadoDe(prof, logros).rango))
+          .catch(() => setRango((r) => (r && compararRangos(r, letra) > 0 ? r : letra)));
+      })
+      .catch(() => {});
+  }, []);
+
   const load = useCallback(async () => {
     if (!userId) return;
+    // Última apertura del día (avisos del servidor). Accesorio: no se espera.
+    tocarApertura().catch(() => {});
     // Lo accesorio va por su cuenta y nunca bloquea ni tumba Hoy: si la cuenta
     // tiene coach (decide qué se ofrece cuando no hay plan) y el marcador de
     // amigos (la línea de rivalidad).
@@ -127,16 +186,36 @@ export default function Hoy() {
       // misiones" en el onboarding, o borró las suyas, ve el estado vacío.
       // Las misiones se leen por RLS y no dependen de que el perfil exista:
       // las dos lecturas van a la vez.
-      let [prof, quests] = await Promise.all([ensureProfile(userId), fetchQuests()]);
-      const { profile: processed, result } = await processPendingDays(prof, quests);
-      prof = processed;
+      // Los logros (de ellos sale el rango) van a la vez y no tumban Hoy.
+      const [perfil, misiones, logros] = await Promise.all([
+        ensureProfile(userId),
+        fetchQuests(),
+        fetchUnlocked().catch(() => null),
+      ]);
+      let quests = misiones;
+      const { profile: prof, result } = await processPendingDays(perfil, quests);
       if (result && result.penaltyXp > 0) {
         quests = await fetchQuests();
       }
       const today = dateKey();
-      const [done, planDeHoy] = await Promise.all([
+      const todasLasMisiones = quests;
+      const [done, planDeHoy, rotos] = await Promise.all([
         fetchCompletionsForDate(today),
         fetchPlan(today).catch(() => null),
+        // Solo hace falta con la racha a cero; si falla, 0 (lo prudente: la
+        // línea dirá que cuesta XP).
+        prof.streak_days === 0
+          ? fetchCompletionsSince(addDays(today, -8))
+              .then((cs) =>
+                rotosSeguidosAntes({
+                  fromDate: today,
+                  quests: todasLasMisiones,
+                  completedKeys: new Set(cs.map((c) => `${c.date}|${c.quest_id}`)),
+                  freezeUntil: prof.freeze_until,
+                }),
+              )
+              .catch(() => 0)
+          : Promise.resolve(0),
       ]);
       const map: Record<string, Completion> = {};
       for (const c of done) map[c.quest_id] = c;
@@ -156,9 +235,18 @@ export default function Hoy() {
             penaltyRedeemed: false,
           }),
         ).catch(() => {});
+        sincronizar(prof);
+        if ((result.penaltyXp > 0 || result.streakLost) && cierreVibrado.current !== result) {
+          cierreVibrado.current = result;
+          vibrar('penalizacion');
+        }
       }
 
       setProfile(prof);
+      setRotosPrevios(rotos);
+      // Contrato del Chat 5: el rango sale de estadoDe aunque sin la 0051 sea E.
+      if (logros) setRango(estadoDe(prof, logros).rango);
+      else setRango((r) => r ?? 'E');
       setPlan(planDeHoy);
       setTodayQuests(questsScheduledOn(quests, today));
       setCompletions(map);
@@ -173,7 +261,7 @@ export default function Hoy() {
     } finally {
       setLoaded(true);
     }
-  }, [userId]);
+  }, [userId, sincronizar]);
 
   useFocusEffect(
     useCallback(() => {
@@ -235,13 +323,10 @@ export default function Hoy() {
     const today = dateKey();
     try {
       const res = await completeQuest(profile, quest, evidence);
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      vibrar(evidence !== null || res.bonusEarned > 0 || quest.is_bonus ? 'misionExtra' : 'mision');
       setProfile(res.profile);
-      setToast(
-        res.bonusEarned > 0
-          ? { xp: res.bonusEarned, bonus: false, unit: 'PB' }
-          : { xp: res.xp, bonus: evidence !== null, unit: 'XP' },
-      );
+      setToast(res.bonusEarned > 0 ? `+${res.bonusEarned} PB` : `+${res.xp} XP · ${quest.stat}`);
+      sincronizar(res.profile);
       setCompletions((prev) => ({
         ...prev,
         [quest.id]: {
@@ -260,6 +345,8 @@ export default function Hoy() {
       // se dice en pantalla y al lector de pantalla.
       if (!quest.is_penalty && !recuperacionAbierta && todayQuests.some((q) => q.is_penalty && !completions[q.id])) {
         setAvisoRecuperacion(true);
+        // Después del golpe de la misión: dos a la vez se funden en uno en iOS.
+        setTimeout(() => vibrar('recuperacion'), 300);
         AccessibilityInfo.announceForAccessibility('La recuperación está abierta. Recupera lo perdido.');
       }
 
@@ -269,11 +356,15 @@ export default function Hoy() {
       if (quedan === 0 && todayQuests.length > 0) {
         setDiaPerfecto(true);
         pulso.setValue(1);
-        Animated.sequence([
-          Animated.spring(pulso, { toValue: 1.18, useNativeDriver: true, speed: 30, bounciness: 12 }),
-          Animated.spring(pulso, { toValue: 1, useNativeDriver: true, speed: 24, bounciness: 8 }),
-        ]).start();
-        setTimeout(() => Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {}), 260);
+        // Con «reducir movimiento» el anillo no late: el día perfecto se dice
+        // con la tarjeta y la vibración.
+        if (!reducido) {
+          Animated.sequence([
+            Animated.spring(pulso, { toValue: 1.18, useNativeDriver: true, speed: 30, bounciness: 12 }),
+            Animated.spring(pulso, { toValue: 1, useNativeDriver: true, speed: 24, bounciness: 8 }),
+          ]).start();
+        }
+        setTimeout(() => vibrar('diaPerfecto'), 260);
       }
 
       // La misión ya está pagada: un fallo al calcular logros no puede
@@ -402,7 +493,6 @@ export default function Hoy() {
   };
 
   const today = dateKey();
-  const lvl = profile ? levelFromXp(profile.xp_total) : null;
   const frozen = profile?.freeze_until != null && profile.freeze_until >= today;
   const sorted = [...todayQuests].sort((a, b) => Number(b.is_penalty) - Number(a.is_penalty));
   // RET-03 «Regreso a la arena»: la penalización de hoy se abre al completar
@@ -420,11 +510,33 @@ export default function Hoy() {
   );
   const pendingCount = sorted.length - completedCount;
   const modulos = modulesFor(profile?.profile_kind);
-  const kind = kindMeta(profile?.profile_kind);
-  // Cuatro por fila, medido: con `width: '23.5%'` + gap 8 la cuarta no cabía
-  // en ningún móvil y la rejilla caía a tres columnas.
-  const tile = Math.floor((width - PADDING_PANTALLA - HUECO_MODULOS * (COLUMNAS_MODULOS - 1)) / COLUMNAS_MODULOS);
-  const xpEnNivel = useCountUp(lvl?.into ?? 0, 600);
+  // Cuatro por fila, medido sobre el ancho REAL de la rejilla (onLayout): con
+  // `width: '23.5%'` + gap 8 la cuarta no cabía, y con el ancho de la ventana
+  // salía mal en tablet (márgenes de 32/48, raíl, panel lateral).
+  const tile =
+    anchoRejilla > 0 ? Math.floor((anchoRejilla - HUECO_MODULOS * (COLUMNAS_MODULOS - 1)) / COLUMNAS_MODULOS) : 0;
+  // RET-05: lo que hay en juego hoy, con el criterio del cierre. Congelado no
+  // se juzga, así que no se calcula.
+  const enJuego =
+    profile && !frozen
+      ? lineaEnJuego(
+          enJuegoHoy({
+            questsHoy: todayQuests,
+            completadasHoy: new Set(Object.keys(completions)),
+            streak: profile.streak_days,
+            stones: profile.protection_stones,
+            rotosSeguidosPrevios: profile.streak_days === 0 ? rotosPrevios : 0,
+          }),
+          profile.streak_days,
+        )
+      : null;
+  const cierreAlerta = !!dayResult && (dayResult.penaltyXp > 0 || dayResult.streakLost);
+  const cierreSinNada =
+    !!dayResult &&
+    !cierreAlerta &&
+    dayResult.stonesUsed === 0 &&
+    dayResult.diasSinCobrar === 0 &&
+    dayResult.stonesEarned === 0;
   const celebrando = diaPerfecto && pendingCount === 0 && sorted.length > 0;
   const hayPlan = !!plan && plan.bloques.length > 0;
   // La rivalidad solo existe con al menos un amigo visible en el marcador.
@@ -452,7 +564,10 @@ export default function Hoy() {
     <Screen
       refreshing={refreshing}
       onRefresh={onRefresh}
-      overlay={<XpToast xp={toast?.xp ?? null} bonus={toast?.bonus} unit={toast?.unit} onDone={clearToast} />}
+      overlay={<Toast message={toast} onDone={clearToast} />}
+      aside={
+        <PanelHoy loaded={loaded} profile={profile} rango={rango} racha={racha} rivalidad={rivalidad} esPro={esPro} />
+      }
     >
       <Stagger>
         <FadeIn index={0}>
@@ -460,6 +575,13 @@ export default function Hoy() {
             eyebrow={formatLongDate()}
             title={profile ? saludo(profile.name) : 'Hoy'}
             subtitle={subtitulo}
+            // En compact la Agenda no está en la barra inferior: se llega desde
+            // aquí. En el raíl y la barra lateral es un destino propio.
+            action={
+              nav === 'tabs'
+                ? { icon: 'calendar-outline', label: 'Abrir la agenda', onPress: () => router.push('/(tabs)/agenda') }
+                : undefined
+            }
             right={
               sorted.length > 0 ? (
                 <Animated.View style={{ transform: [{ scale: pulso }] }}>
@@ -467,7 +589,7 @@ export default function Hoy() {
                     ratio={completedCount / sorted.length}
                     size={66}
                     stroke={4}
-                    color={celebrando ? colors.gold : colors.accent}
+                    color={ink.ink10}
                     label={`${completedCount}/${sorted.length}`}
                     sublabel="hoy"
                   />
@@ -478,7 +600,7 @@ export default function Hoy() {
         </FadeIn>
 
         {loadError ? (
-          <Card variant="outline" accent={colors.redDim}>
+          <Card variant="outline">
             <EmptyState
               compact
               icon="cloud-offline-outline"
@@ -499,53 +621,13 @@ export default function Hoy() {
           </View>
         ) : null}
 
-        {loaded && profile && lvl ? (
+        {loaded && profile && !conPanel ? (
           <FadeIn index={1}>
-            <Card>
-              <View style={styles.profileRow}>
-                <Avatar size={52} avatarPath={profile.avatar_url} name={profile.name} />
-                <View style={styles.profileInfo}>
-                  <Text style={styles.name} numberOfLines={1}>
-                    {profile.equipped_title ? `« ${profile.equipped_title} »` : kind.title}
-                  </Text>
-                  <Text style={styles.rank}>
-                    RANGO {rankForLevel(lvl.level)} · {lvl.next > 0 ? `${xpEnNivel} / ${lvl.next} XP` : 'NIVEL MÁXIMO'}
-                  </Text>
-                </View>
-                <View style={styles.levelBox}>
-                  <Text style={styles.lvLabel}>NIVEL</Text>
-                  <Text style={styles.lvValue}>{lvl.level}</Text>
-                </View>
-              </View>
-              <View style={{ marginTop: 14 }}>
-                <XPBar ratio={lvl.next > 0 ? lvl.into / lvl.next : 1} height={4} />
-              </View>
-              <View style={styles.badges}>
-                <View style={styles.badge}>
-                  <Ionicons name="flame" size={13} color={racha.hoyCerrado ? colors.gold : colors.textDim} />
-                  <Text style={[styles.badgeText, racha.hoyCerrado && styles.badgeGold]}>
-                    Racha {racha.valor} · ×{streakMultiplier(profile.streak_days).toFixed(1)}
-                  </Text>
-                </View>
-                <Text style={styles.badgeHint}>
-                  {racha.hoyCerrado
-                    ? racha.perfecto
-                      ? 'Día perfecto'
-                      : 'Hoy cuenta'
-                    : racha.faltan > 0
-                      ? `${racha.faltan} para salvar el día`
-                      : ''}
-                </Text>
-                <View style={styles.badge}>
-                  <Ionicons name="shield-half-outline" size={13} color={colors.textDim} />
-                  <Text style={styles.badgeText}>{profile.protection_stones}</Text>
-                </View>
-              </View>
-            </Card>
+            <TarjetaRango profile={profile} rango={rango} racha={racha} />
           </FadeIn>
         ) : null}
 
-        {loaded && rivalidad ? (
+        {loaded && rivalidad && !conPanel ? (
           <FadeIn index={2}>
             <Card padded={false} style={styles.rivalCard}>
               <Row
@@ -576,10 +658,8 @@ export default function Hoy() {
 
         {loaded && dayResult ? (
           <FadeIn index={2}>
-            <Card variant="outline" accent={dayResult.penaltyXp > 0 ? colors.red : colors.gold}>
-              <Text style={[styles.alertTitle, { color: dayResult.penaltyXp > 0 ? colors.red : colors.gold }]}>
-                {dayResult.penaltyXp > 0 ? 'ALERTA DEL SISTEMA' : 'INFORME DEL CIERRE'}
-              </Text>
+            <Card variant={cierreAlerta ? 'alerta' : 'logro'}>
+              <Text style={styles.alertTitle}>{cierreAlerta ? 'ALERTA DEL SISTEMA' : 'INFORME DEL CIERRE'}</Text>
               {dayResult.stonesUsed > 0 ? <Text style={styles.alertBody}>{voice.stoneUsed()}</Text> : null}
               {dayResult.penaltyXp > 0 ? (
                 <Text style={styles.alertBody}>
@@ -599,6 +679,8 @@ export default function Hoy() {
                 </Text>
               ) : null}
               {dayResult.stonesEarned > 0 ? <Text style={styles.alertBody}>{voice.stoneEarned()}</Text> : null}
+              {/* Un cierre limpio sin nada que contar no deja la tarjeta vacía. */}
+              {cierreSinNada ? <Text style={styles.alertBody}>Día cerrado. Racha {profile?.streak_days ?? 0}.</Text> : null}
             </Card>
           </FadeIn>
         ) : null}
@@ -619,13 +701,13 @@ export default function Hoy() {
 
         {celebrando ? (
           <FadeIn>
-            <Card variant="outline" accent={colors.gold}>
-              <Text style={[styles.alertTitle, { color: colors.gold }]}>DÍA PERFECTO</Text>
+            <Card variant="logro">
+              <Text style={styles.alertTitle}>DÍA PERFECTO</Text>
               <Text style={styles.alertBody}>Día perfecto. Racha {racha.valor}.</Text>
-              <SystemButton
+              <Button
                 title="Compartir"
                 icon="share-social-outline"
-                variant="outline"
+                variant="secondary"
                 size="sm"
                 onPress={compartirDia}
                 loading={preparandoTarjeta}
@@ -637,7 +719,11 @@ export default function Hoy() {
 
         {loaded ? (
         <FadeIn index={4}>
-          <Section title="Misiones de hoy" meta={sorted.length > 0 ? `${completedCount}/${sorted.length}` : undefined}>
+          <Section
+            title="Misiones de hoy"
+            meta={sorted.length > 0 ? `${completedCount}/${sorted.length}` : undefined}
+            tone={enJuego?.alerta ? 'alerta' : undefined}
+          >
             {sorted.length === 0 ? (
               // Con la carga fallida no se sabe si hay misiones: el aviso de
               // arriba ya lo dice y aquí no se afirma "Nada programado".
@@ -678,7 +764,9 @@ export default function Hoy() {
               <Text style={styles.allDone}>{voice.allDone()}</Text>
             ) : null}
             {pendingCount > 0 && !frozen ? (
-              <Text style={styles.pendingNote}>A medianoche, lo pendiente se penaliza.</Text>
+              <Text style={[styles.pendingNote, enJuego?.alerta && styles.pendingAlerta]}>
+                {enJuego ? enJuego.texto : 'A medianoche, lo pendiente se penaliza.'}
+              </Text>
             ) : null}
             {/* Una sola línea, callada y DEBAJO de las misiones: lo gratis va
                 primero y el coach se ofrece sin cortar el paso. */}
@@ -712,21 +800,23 @@ export default function Hoy() {
                 : undefined
             }
           >
-            <View style={styles.moduleGrid}>
-              {[...modulos.primary, ...(showMore ? modulos.secondary : [])].map((m) => (
-                <Pressable
-                  key={m.route}
-                  onPress={() => router.push(m.route)}
-                  style={({ pressed }) => [styles.module, { width: tile, height: tile }, pressed && styles.modulePressed]}
-                  accessibilityRole="button"
-                  accessibilityLabel={`Abrir ${m.label}`}
-                >
-                  <Ionicons name={m.icon as never} size={22} color={colors.text} />
-                  <Text style={styles.moduleLabel} numberOfLines={1}>
-                    {m.label}
-                  </Text>
-                </Pressable>
-              ))}
+            <View style={styles.moduleGrid} onLayout={(e) => setAnchoRejilla(e.nativeEvent.layout.width)}>
+              {/* Hasta medir no se pintan: con un lado inventado saltaban. */}
+              {tile > 0 &&
+                [...modulos.primary, ...(showMore ? modulos.secondary : [])].map((m) => (
+                  <Pressable
+                    key={m.route}
+                    onPress={() => router.push(m.route)}
+                    style={({ pressed }) => [styles.module, { width: tile, height: tile }, pressed && styles.modulePressed]}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Abrir ${m.label}`}
+                  >
+                    <Ionicons name={m.icon as never} size={22} color={colors.text} />
+                    <Text style={styles.moduleLabel} numberOfLines={1}>
+                      {m.label}
+                    </Text>
+                  </Pressable>
+                ))}
             </View>
           </Section>
         </FadeIn>
@@ -744,29 +834,11 @@ export default function Hoy() {
 }
 
 const styles = StyleSheet.create({
-  profileRow: { flexDirection: 'row', alignItems: 'center', gap: 14 },
-  profileInfo: { flex: 1, minWidth: 0 },
-  name: { fontFamily: fonts.heading, fontSize: 16, letterSpacing: 0.5, color: colors.text },
-  rank: {
-    fontFamily: fonts.heading,
-    fontSize: 11,
-    letterSpacing: 1.5,
-    color: colors.textFaint,
-    marginTop: 4,
-  },
-  levelBox: { alignItems: 'flex-end' },
-  lvLabel: { fontFamily: fonts.heading, fontSize: 11, letterSpacing: 1.7, color: colors.textFaint },
-  lvValue: { fontFamily: fonts.brand, fontSize: 32, lineHeight: 36, color: colors.accent },
-  badges: { flexDirection: 'row', alignItems: 'center', gap: 12, marginTop: 12 },
-  badge: { flexDirection: 'row', alignItems: 'center', gap: 5 },
-  badgeText: { fontFamily: fonts.semibold, fontSize: 12.5, color: colors.textDim },
-  badgeGold: { color: colors.gold },
-  badgeHint: { flex: 1, fontFamily: fonts.body, fontSize: 12, color: colors.textFaint },
   alertTitle: {
     fontFamily: fonts.heading,
     fontSize: 11,
     letterSpacing: 2.5,
-    color: colors.accentText,
+    color: ink.ink9,
     marginBottom: 6,
   },
   alertBody: {
@@ -780,8 +852,9 @@ const styles = StyleSheet.create({
   allDone: { fontFamily: fonts.semibold, fontSize: 13, color: colors.accent, marginTop: 4 },
   recuperacionAbierta: { fontFamily: fonts.semibold, fontSize: 13, color: colors.text, marginTop: 10 },
   pendingNote: { fontFamily: fonts.body, fontSize: 12, color: colors.textFaint, marginTop: 4 },
+  pendingAlerta: { fontFamily: fonts.semibold, color: ink.ink9 },
   moduleGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: HUECO_MODULOS },
-  // El lado del azulejo se calcula con el ancho de la ventana (ver `tile`).
+  // El lado del azulejo se calcula con el ancho medido de la rejilla (ver `tile`).
   module: {
     backgroundColor: colors.panel,
     alignItems: 'center',

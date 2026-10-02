@@ -6,12 +6,15 @@
 //   · danger    → contorno con trama y texto blanco: el peligro es la trama, no el rojo.
 // Alto 52 (lg), 44 (md), 36 (sm; con hitSlop para llegar a 44 de zona táctil).
 // Dentro de una Card inverse (SuperficieContext) se invierten los colores.
+// Desactivado: sin opacidad (rompe el contraste del texto); borde ink4 y texto
+// ink6 sobre el fondo, en cualquier variante.
+// Rótulo: Outfit 700 en mayúsculas, 15 · 14 · 12 (lg · md · sm). Es el único
+// texto del kit fuera de la escala `type`; está documentado en SISTEMA §5.
 
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useContext, useRef } from 'react';
 import { ActivityIndicator, Animated, Pressable, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
-import { ink } from '@/design/tokens';
-import { fonts } from '@/lib/theme';
+import { ink, type as tipo } from '@/design/tokens';
 import { SuperficieContext } from './Card';
 import { splitStyle, useMovimientoReducido } from './motion';
 import { Trama } from './Texture';
@@ -43,7 +46,8 @@ export function Button({ title, onPress, variant = 'primary', size = 'md', icon,
   const primary = variant === 'primary';
   const danger = variant === 'danger';
   const ghost = variant === 'ghost';
-  const fg = primary ? oscuro : claro;
+  const apagado = !!disabled && !loading;
+  const fg = apagado ? ink.ink6 : primary ? oscuro : claro;
   // El layout (márgenes, alignSelf, flex, ancho) va al Pressable, que es quien
   // ocupa sitio en el padre; lo visual, a la vista que escala.
   const { outer, inner } = splitStyle(style);
@@ -76,12 +80,13 @@ export function Button({ title, onPress, variant = 'primary', size = 'md', icon,
           primary && { backgroundColor: claro },
           ghost && styles.ghost,
           danger && [styles.danger, { backgroundColor: oscuro }],
-          (disabled || loading) && styles.disabled,
+          // La ghost apagada solo cambia el texto: un borde la convertiría en otra variante.
+          apagado && !ghost && [styles.apagado, { backgroundColor: oscuro }],
           inner,
           { transform: [{ scale }] },
         ]}
       >
-        {danger ? (
+        {danger && !apagado ? (
           <>
             {/* ink6 sobre negro: con ink4 un borde de 3 pt no se distingue de un botón apagado. */}
             <Trama color={invertida ? ink.ink4 : ink.ink6} />
@@ -122,9 +127,10 @@ const styles = StyleSheet.create({
   // La trama hace de borde: 3 pt de rayado alrededor del fondo.
   danger: { borderWidth: 0, overflow: 'hidden' },
   dangerDentro: { position: 'absolute', top: 3, left: 3, right: 3, bottom: 3 },
-  disabled: { opacity: 0.4 },
+  // Gana a primary y danger: sin relleno blanco, sin trama, borde ink4.
+  apagado: { borderWidth: 1.5, borderColor: ink.ink4 },
   label: {
-    fontFamily: fonts.heading,
+    fontFamily: tipo.label.family,
     fontSize: 14,
     letterSpacing: 2,
     textTransform: 'uppercase',

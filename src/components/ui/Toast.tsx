@@ -1,6 +1,10 @@
 // NIVL · Toast v2 (SISTEMA.md §5): pastilla invertida arriba, «+50 XP · FUE».
 // Entra en 180 ms (motion.quick), se queda un momento y se va. Se anuncia al
-// lector de pantalla. Con «reducir movimiento» no se desplaza: solo aparece y
+// lector de pantalla UNA vez, con announceForAccessibility (con además
+// accessibilityLiveRegion, Android lo leía dos veces).
+// Va en el `overlay` de Screen, hijo absoluto de su SafeAreaView: un `top`
+// explícito se mide desde el borde del padding, no desde debajo de la safe
+// area, así que aquí sí hay que sumar insets.top (no se cuenta dos veces). Con «reducir movimiento» no se desplaza: solo aparece y
 // se apaga. Sustituirá a XpToast cuando se migren las pantallas.
 
 import { useEffect, useRef } from 'react';
@@ -54,10 +58,9 @@ export function Toast({ message, onDone }: Props) {
   return (
     <Animated.View
       pointerEvents="none"
-      accessibilityLiveRegion="polite"
       style={[styles.wrap, { top: insets.top + space.s3, opacity, transform: [{ translateY }] }]}
     >
-      <Text maxFontSizeMultiplier={1.35} style={styles.texto}>
+      <Text maxFontSizeMultiplier={1.35} numberOfLines={2} style={styles.texto}>
         {message}
       </Text>
     </Animated.View>
@@ -68,6 +71,7 @@ const styles = StyleSheet.create({
   wrap: {
     position: 'absolute',
     alignSelf: 'center',
+    maxWidth: '90%',
     backgroundColor: ink.ink10,
     borderRadius: 999,
     paddingHorizontal: space.s5,
@@ -80,6 +84,7 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     letterSpacing: 1,
     textTransform: 'uppercase',
+    textAlign: 'center',
     color: ink.ink0,
   },
 });

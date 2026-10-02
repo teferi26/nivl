@@ -1,10 +1,11 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
 import { memo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { TextoSistema } from '@/components/TextoSistema';
 import { Card, EmptyState, Section } from '@/components/ui';
+import { vibrar } from '@/design/haptics';
+import { ink, stroke } from '@/design/tokens';
 import {
   bloqueActual,
   hhmm,
@@ -75,7 +76,7 @@ export const OrdenDelDia = memo(function OrdenDelDia({ plan, bloques, onToggle, 
             <Pressable
               key={b.id}
               onPress={() => {
-                Haptics.selectionAsync().catch(() => {});
+                vibrar('seleccion');
                 onToggle(b);
               }}
               style={({ pressed }) => [styles.bloque, pressed && styles.pressed]}
@@ -131,8 +132,8 @@ export const OrdenDelDia = memo(function OrdenDelDia({ plan, bloques, onToggle, 
 
 const styles = StyleSheet.create({
   veredicto: {
-    borderLeftWidth: 2,
-    borderLeftColor: colors.gold,
+    borderLeftWidth: stroke.rule,
+    borderLeftColor: ink.ink10,
     paddingLeft: 12,
     marginBottom: 12,
   },
