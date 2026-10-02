@@ -217,9 +217,13 @@ export interface PortalCreador {
 
 // ── Lo que enseña cada sitio: tienda sin importes, web con todo ─────
 
-export const AVISO_GANANCIAS = 'Tus ganancias se gestionan en nivl.app.';
+// Sin portal web de creadores todavía: no se remite a ninguna web (el
+// desglose llega con cada liquidación, condiciones del programa §4). En la app
+// de tienda solo se dice que es fuera de la app (dictamen del Chat 1).
+export const AVISO_GANANCIAS = 'Tus ganancias se gestionan fuera de la app.';
 /** Enlace informativo (no un botón de cobro). */
-export const ENLACE_GANANCIAS = ORIGEN_ENLACE_CREADOR;
+/** Sin portal de creadores: no hay enlace. Si llega un portal, se pone aquí. */
+export const ENLACE_GANANCIAS: string | null = null;
 
 /** Un texto con pinta de importe (€, $, £, «euros»). */
 // Importes, porcentajes y vocabulario de cobro (auditoría UX de Chat 4): en
@@ -263,7 +267,7 @@ export interface PanelCreadorTienda {
   tabla: CreatorBoardRow[];
   historico: { month: string; sales: number }[];
   aviso: string;
-  enlaceAviso: string;
+  enlaceAviso: string | null;
 }
 
 /** La web: todo lo anterior y además el dinero propio. */

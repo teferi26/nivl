@@ -149,8 +149,8 @@ describe('vistaPanelCreador: en tienda, ni un importe', () => {
       { month: '2026-09', sales: 2 },
     ]);
     expect(v.aviso).toBe(AVISO_GANANCIAS);
-    expect(v.aviso).toBe('Tus ganancias se gestionan en nivl.app.');
-    expect(v.enlaceAviso).toBe('https://nivl.app');
+    expect(v.aviso).toBe('Tus ganancias se gestionan fuera de la app.');
+    expect(v.enlaceAviso).toBeNull();
     expect(v.enlace).toBe('https://nivl.app/c/AAA_TEST');
   });
 
