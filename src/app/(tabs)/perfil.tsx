@@ -46,6 +46,7 @@ import {
 } from '@/components/ui';
 import { ACHIEVEMENTS, fetchUnlocked } from '@/lib/achievements';
 import { useAuth } from '@/lib/auth';
+import { cerrarSesion } from '@/lib/authFlow';
 import {
   completionStats,
   ensureProfile,
@@ -76,7 +77,6 @@ import {
   type EstadoAvisos,
 } from '@/lib/notifications';
 import { registrarDispositivo } from '@/lib/push';
-import { setApiKey } from '@/lib/oracle';
 import { fetchAiStatus, isElite, isPro } from '@/lib/pro';
 import { LEGAL_URLS } from '@/lib/proplans';
 import {
@@ -97,7 +97,6 @@ import {
   STATS,
   streakMultiplier,
 } from '@/lib/game';
-import { supabase } from '@/lib/supabase';
 import { KINDS, kindMeta, PROFILE_KINDS, type ProfileKind } from '@/lib/kinds';
 import { colors, fonts } from '@/lib/theme';
 import type { Profile } from '@/lib/types';
@@ -345,12 +344,10 @@ export default function Perfil() {
   };
 
   const signOut = async () => {
-    // Borra la API key del dispositivo: en un móvil compartido el siguiente
-    // usuario heredaría la key de pago de Anthropic.
-    // Que falle no puede impedir salir: en la web SecureStore no existe y el
-    // throw dejaba "Cerrar sesión" sin efecto.
-    await setApiKey('').catch(() => {});
-    await supabase.auth.signOut();
+    // cerrarSesion (authFlow, Chat 3) limpia lo que heredaría el siguiente
+    // usuario de este móvil: token push, avisos locales, key del Oráculo,
+    // consentimiento y código de creador. Nunca impide salir.
+    await cerrarSesion().catch(() => {});
     router.replace('/login');
   };
 
@@ -888,7 +885,7 @@ export default function Perfil() {
                 <Row
                   leading={<Ionicons name="log-out-outline" size={20} color={colors.text} />}
                   title="Cerrar sesión"
-                  detail="Tu cuenta de Franky sigue intacta."
+                  detail="Tu progreso queda guardado en tu cuenta."
                   chevron
                   onPress={signOut}
                   accessibilityLabel="Cerrar sesión"

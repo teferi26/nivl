@@ -3,9 +3,9 @@ import { useEffect, useState } from 'react';
 import { ActivityIndicator, Text, View } from 'react-native';
 import { SystemButton } from '@/components/SystemButton';
 import { useAuth } from '@/lib/auth';
+import { cerrarSesion } from '@/lib/authFlow';
 import { reintentarCodigoPendiente } from '@/lib/creators';
 import { ensureProfile } from '@/lib/data';
-import { supabase } from '@/lib/supabase';
 import { colors, fonts } from '@/lib/theme';
 import { mensajeSistema } from '@/lib/validation';
 
@@ -67,7 +67,7 @@ export default function Index() {
           title="Cerrar sesión"
           variant="ghost"
           onPress={() => {
-            supabase.auth.signOut().catch(() => {});
+            cerrarSesion().catch(() => {});
           }}
           style={{ marginTop: 6, alignSelf: 'stretch' }}
         />

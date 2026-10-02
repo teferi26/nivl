@@ -70,7 +70,9 @@ function ProtectedStack() {
     const inAuthArea = segments[0] === 'login';
     // `c` (nivl://c/CODIGO) también es pública: guarda el código de creador y
     // salta sola a '/'. Sin esto el guard iba a /login antes de guardarlo.
-    const inPublicArea = inAuthArea || segments[0] === 'c';
+    // `auth` (nivl://auth/confirmar y /restablecer) llega sin sesión: es el
+    // enlace del correo el que la abre.
+    const inPublicArea = inAuthArea || segments[0] === 'c' || segments[0] === 'auth';
     if (!session && !inPublicArea) {
       router.replace('/login');
     } else if (session && inAuthArea) {
