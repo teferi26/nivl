@@ -18,13 +18,16 @@
 // para el Oráculo y para la web.
 
 import { Linking, NativeModules, Platform } from 'react-native';
-import Purchases, {
+// `./tienda` es RevenueCat en iOS/Android (tienda.native.ts) y un stub en web
+// (tienda.ts): el SDK no entra en el bundle web.
+import {
   PURCHASES_ERROR_CODE,
+  Purchases,
   type CustomerInfo,
   type PurchasesError,
   type PurchasesPackage,
   type StoreProductChangeInfo,
-} from 'react-native-purchases';
+} from './tienda';
 import {
   compraReflejada,
   esProductoNivl,
