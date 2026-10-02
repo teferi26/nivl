@@ -55,7 +55,7 @@ Lo publicado en ASC no se ha podido leer entero (ver apple-privacidad-datos.md �
 Respuestas generales:
 - ¿Recoge o comparte datos? **Sí**, los recoge.
 - ¿Están cifrados en tránsito? **Sí** (HTTPS/TLS con Supabase, RevenueCat y los proveedores de IA).
-- ¿Se puede pedir el borrado? **Sí**: en la app (Perfil > Cuenta > «Eliminar cuenta») y en una **URL web** que aún falta (Chat 4/3, P0 de Play).
+- ¿Se puede pedir el borrado? **Sí**: en la app (Perfil > Cuenta > «Eliminar cuenta») y en la URL web https://nivl-web.vercel.app/borrar-cuenta (200, verificada el 02/10).
 - ¿Usa el ID de publicidad? **No** (PROPUESTA en app.json: bloquear `com.google.android.gms.permission.AD_ID`).
 - **Compartir:** los proveedores que tratan datos por cuenta de NIVL (Supabase, RevenueCat, DeepSeek, Anthropic y Expo push) son **encargados del tratamiento**, y según la definición de Google eso no es «compartir». Se declara **no compartido**, con la condición de que el usuario confirme que existen los contratos de encargado con DeepSeek y Anthropic (sus condiciones de API). Si no es así, se declaran como compartidos para la funcionalidad de la app.
 
