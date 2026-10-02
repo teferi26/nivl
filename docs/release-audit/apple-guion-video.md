@@ -55,7 +55,7 @@ Es una grabación de un iPhone y aporta valor como demostración parcial (`coord
 - «Hábitos», una campaña o proyecto y «Agenda» (crear un evento).
 - Permisos separados: abrir un módulo de salud → la casilla aparece desmarcada → «Ahora no» → las funciones generales siguen funcionando. Después, Perfil > «Salud y bienestar» > «Revisar permiso de salud» → marcar la casilla → «Aceptar y activar salud».
 
-**4. Coach e IA.** Perfil > fila «NIVL Pro» → «Probar el coach 7 días» si la cuenta tiene derecho → aparece el consentimiento de IA con los proveedores → «Acepto y activo el coach» → pestaña Coach → enviar «Ayúdame a organizar mi día de mañana» → mostrar la respuesta.
+**4. Coach e IA.** (La salud tiene que estar aceptada en la escena 3: hoy `start_trial` falla si se rechazó el consentimiento de salud, trigger 0030, hasta que se integre el arreglo del Chat 3.) Perfil > fila «NIVL Pro» → «Probar el coach 7 días» si la cuenta tiene derecho → aparece el consentimiento de IA con los proveedores → «Acepto y activo el coach» → pestaña Coach → enviar «Ayúdame a organizar mi día de mañana» → mostrar la respuesta.
 
 **5. Suscripciones (lo que más mira Apple).**
 - Volver a «NIVL Pro» → «Suscribirme» (con la prueba activa) o directamente el selector de planes.

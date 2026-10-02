@@ -94,7 +94,7 @@ Users can buy auto-renewable subscriptions in the "NIVL" subscription group. The
 
 How to reach the purchase flow: open Perfil and tap the "NIVL Pro" row below the profile header (or use the Pro control in Coach). Choose "Pro" or "Élite" and a plan. During the 7-day trial, tap "Suscribirme"; a Pro subscriber can tap "Ver NIVL Élite". [PAYWALL] The screen shows each plan's title, duration and localised App Store price, what is included, the renewal terms, "Restaurar compras", and links to the Terms of Use and the Privacy Policy.
 
-The 7-day trial ("Probar el coach 7 días") is granted by our server: it asks for no payment details and does not renew. Subscriptions do not buy XP, ranking advantages or prizes. Élite lets users request a ludus place but does not guarantee immediate assignment.
+Eligible accounts can start a one-time 7-day free trial of the AI coach at the standard (Pro) level ("Probar el coach 7 días"), capped at a small AI usage allowance. It requires no payment information and does not auto-renew or convert into a paid subscription; it never unlocks Élite features. After the trial ends, the coach is only available by purchasing a subscription through In-App Purchase. Subscriptions do not buy XP, ranking advantages or prizes. Élite lets users request a ludus place but does not guarantee immediate assignment.
 
 Support: https://nivl-web.vercel.app/soporte
 Terms of Use: https://nivl-web.vercel.app/terminos (the Apple Standard EULA also applies)
