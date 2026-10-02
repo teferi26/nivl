@@ -14,9 +14,11 @@
 // (~120 ms) y, en un rango, el segundo golpe con la corona (~1040 ms).
 // Es un Modal de RN: la hoja de compartir NO va aquí dentro (en Android la
 // captura sale negra); `onCompartir` la abre fuera, en la capa raíz.
-// Red de seguridad: si el Modal no llega a presentarse (onShow) en 1 s —en
-// iOS no sale con un UIAlertController abierto— se cierra solo para no
-// bloquear la cola.
+// Red de seguridad: si el Modal no llega a presentarse (onShow) en 1 s (en
+// iOS no sale con un UIAlertController abierto) se da por fallida con
+// `onFallida` (la cola la dice en un toast) para no bloquear la cola.
+// El fondo no atiende toques los primeros 300 ms: el toque que la provocó
+// (o uno que ya venía) no la cierra antes de verse.
 
 import { useEffect, useRef, useState } from 'react';
 import { AccessibilityInfo, Animated, Easing, Modal, Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
@@ -39,6 +41,8 @@ export interface CeremonyProps {
   siguiente: EstadoProgreso['siguienteRango'];
   avatar: { path: string | null; name: string };
   onCerrar: () => void;
+  /** El Modal no llegó a presentarse; sin él, onCerrar. */
+  onFallida?: () => void;
   /** Sin él no hay botón Compartir. */
   onCompartir?: () => void;
 }
@@ -46,6 +50,8 @@ export interface CeremonyProps {
 const ANCHO_MAX = 560;
 /** Sin onShow en este tiempo, la ceremonia se da por perdida. */
 const ESPERA_ONSHOW_MS = 1000;
+/** El fondo ignora toques este tiempo tras montar cada ceremonia. */
+const GRACIA_FONDO_MS = 300;
 /** Fases de la épica: sale la letra (120), sube (420), mezcla (500): la corona. */
 const MS_CIFRA = 120;
 const MS_CORONA = 120 + 420 + 500;
@@ -94,10 +100,10 @@ function piezas(c: Celebracion): { viejo: string; nuevo: string; eyebrow: string
   }
 }
 
-export function Ceremony({ celebracion, forma, resumen, siguiente, avatar, onCerrar, onCompartir }: CeremonyProps) {
+export function Ceremony({ celebracion, forma, resumen, siguiente, avatar, onCerrar, onFallida, onCompartir }: CeremonyProps) {
   const visible = celebracion !== null && (celebracion.tipo === 'rango' || celebracion.tipo === 'grado' || celebracion.tipo === 'nivel');
-  const onCerrarRef = useRef(onCerrar);
-  onCerrarRef.current = onCerrar;
+  const onFallidaRef = useRef(onFallida ?? onCerrar);
+  onFallidaRef.current = onFallida ?? onCerrar;
   const presentado = useRef(false);
 
   // Se arma al pasar a visible (no en cada clave: dos ceremonias seguidas
@@ -109,7 +115,7 @@ export function Ceremony({ celebracion, forma, resumen, siguiente, avatar, onCer
     }
     if (presentado.current) return;
     const t = setTimeout(() => {
-      if (!presentado.current) onCerrarRef.current();
+      if (!presentado.current) onFallidaRef.current();
     }, ESPERA_ONSHOW_MS);
     return () => clearTimeout(t);
   }, [visible]);
@@ -165,6 +171,12 @@ function Contenido({ c, forma, resumen, siguiente, avatar, onCerrar, onCompartir
   const resto = useRef(new Animated.Value(0)).current;
   const barra = useRef(new Animated.Value(0)).current;
   const [terminado, setTerminado] = useState(false);
+  // Gracia del fondo: un toque en los primeros 300 ms no cierra.
+  const montada = useRef(Date.now());
+  const alTocarFondo = () => {
+    if (Date.now() - montada.current < GRACIA_FONDO_MS) return;
+    onCerrar();
+  };
 
   // Barra de la corta: el nivel se completa; en un grado, el tramo del rango.
   const llenado = c.tipo === 'grado' ? c.grado / 3 : 1;
@@ -260,7 +272,7 @@ function Contenido({ c, forma, resumen, siguiente, avatar, onCerrar, onCompartir
           (un botón dentro de otro rompe la web y el lector de pantalla). */}
       <Pressable
         style={StyleSheet.absoluteFill}
-        onPress={onCerrar}
+        onPress={alTocarFondo}
         accessibilityRole="button"
         accessibilityLabel="Cerrar la celebración"
       />
@@ -359,7 +371,7 @@ function Contenido({ c, forma, resumen, siguiente, avatar, onCerrar, onCompartir
               <Button title="Seguir" variant="ghost" size="lg" onPress={onCerrar} />
             </View>
             <Text style={styles.micro} pointerEvents="none">
-              Toca en cualquier parte para saltar
+              {terminado ? 'Toca en cualquier parte para cerrar' : 'Toca en cualquier parte para saltar'}
             </Text>
           </Animated.View>
         </View>

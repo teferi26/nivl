@@ -51,6 +51,7 @@ import {
   fetchQuests,
 } from '@/lib/data';
 import { fetchPlan, horaAMinutos, setBlockDone, type DayBlock, type PlanConBloques } from '@/lib/dayplan';
+import { celebracionesDeRacha } from '@/lib/celebracionCola';
 import { addDays, dateKey, formatLongDate, isValidKey, nombreDia } from '@/lib/dates';
 import { completeQuest, processPendingDays, questsScheduledOn, type DayCloseResult } from '@/lib/engine';
 import { enJuegoHoy, rachaVisible, recuperacionDesbloqueada, rotosSeguidosAntes } from '@/lib/closing';
@@ -243,7 +244,10 @@ export default function Hoy() {
           perfilAntes: perfil,
           perfilDespues: prof,
           logrosAntes: logros ?? undefined,
-          fecha: dateKey(),
+          // El día CERRADO (el primero del tramo), no hoy: la racha hito ya se
+          // celebró al completar la misión de ese día con su fecha, y así la
+          // clave coincide y la cola no la repite.
+          fecha: perfil.last_day_processed ? addDays(perfil.last_day_processed, 1) : dateKey(),
         });
         completionStats()
           .then((stats) =>
@@ -377,19 +381,6 @@ export default function Hoy() {
       const res = await completeQuest(profile, quest, evidence);
       vibrar(evidence !== null || res.bonusEarned > 0 || quest.is_bonus ? 'misionExtra' : 'mision');
       setProfile(res.profile);
-      // Una acción en la cola: el XP va en el resumen; nivel, rango, racha y
-      // logros los decide el contrato. La penalización cumplida se dice como
-      // recuperación (sin repetir el XP en el resumen).
-      const accion = `mision:${quest.id}:${Date.now()}`;
-      celebrar({
-        accion,
-        perfilAntes: profile,
-        perfilDespues: res.profile,
-        logrosAntes,
-        fecha: today,
-        recuperadoXp: res.wasPenalty && res.xp > 0 ? res.xp : undefined,
-        resumen: res.wasPenalty ? [] : [res.bonusEarned > 0 ? `+${res.bonusEarned} PB` : `+${res.xp} XP · ${quest.stat}`],
-      });
       // Antes y después, leídos del espejo síncrono y no del estado del render.
       const antes = completionsRef.current;
       const despues: Record<string, Completion> = {
@@ -407,6 +398,48 @@ export default function Hoy() {
       completionsRef.current = despues;
       setCompletions(despues);
 
+      // Día perfecto: era la última pendiente. Solo se celebra cuando pasa
+      // delante del usuario, no al cargar un día que ya estaba cerrado.
+      const quedan = todayQuests.filter((q) => !despues[q.id]).length;
+      const esDiaPerfecto = quedan === 0 && todayQuests.length > 0;
+
+      // La racha hito (7, 30, 100…) se celebra cuando la racha A LA VISTA la
+      // cruza, no al cierre de mañana: completeQuest no toca streak_days. La
+      // clave es la misma que dará el cierre de este día (fecha = hoy), así
+      // que la cola no la repite mañana.
+      const rachaAntes = rachaVisible(profile.streak_days, todayQuests, new Set(Object.keys(antes))).valor;
+      const rachaDespues = rachaVisible(profile.streak_days, todayQuests, new Set(Object.keys(despues))).valor;
+      const hitosRacha = celebracionesDeRacha(rachaAntes, rachaDespues, today);
+
+      // Lo PAGADO, no lo calculado: con el tope diario no se anuncia «+0 XP».
+      const pagado = Math.min(res.xp, Math.max(0, res.profile.xp_total - profile.xp_total));
+      const lineaXp =
+        res.bonusEarned > 0
+          ? `+${res.bonusEarned} PB`
+          : pagado > 0
+            ? `+${pagado} XP · ${quest.stat}`
+            : res.awarded && !quest.is_bonus
+              ? 'Tope diario de XP alcanzado'
+              : null;
+
+      // Una acción en la cola: el XP y el día perfecto van en el resumen;
+      // nivel, rango, racha y logros los decide el contrato. La penalización
+      // cumplida se dice como recuperación (sin repetir el XP en el resumen).
+      const accion = `mision:${quest.id}:${Date.now()}`;
+      celebrar({
+        accion,
+        perfilAntes: profile,
+        perfilDespues: res.profile,
+        logrosAntes,
+        fecha: today,
+        recuperadoXp: res.wasPenalty && res.xp > 0 ? res.xp : undefined,
+        extra: hitosRacha,
+        resumen: [
+          ...(!res.wasPenalty && lineaXp ? [lineaXp] : []),
+          ...(esDiaPerfecto ? ['Día perfecto'] : []),
+        ],
+      });
+
       // RET-03: esta misión abre la recuperación. Es el momento que motiva:
       // se dice en pantalla y al lector de pantalla.
       const abiertaAntes = recuperacionDesbloqueada(todayQuests, new Set(Object.keys(antes)), today);
@@ -417,21 +450,20 @@ export default function Hoy() {
         AccessibilityInfo.announceForAccessibility('La recuperación está abierta. Recupera lo perdido.');
       }
 
-      // Día perfecto: era la última pendiente. Solo se celebra cuando pasa
-      // delante del usuario, no al cargar un día que ya estaba cerrado.
-      const quedan = todayQuests.filter((q) => !despues[q.id]).length;
-      if (quedan === 0 && todayQuests.length > 0) {
+      if (esDiaPerfecto) {
         setDiaPerfecto(true);
         pulso.setValue(1);
         // Con «reducir movimiento» el anillo no late: el día perfecto se dice
-        // con la tarjeta y la vibración.
+        // con la tarjeta, el resumen de la cola y la vibración.
         if (!reducido) {
           Animated.sequence([
             Animated.spring(pulso, { toValue: 1.18, useNativeDriver: true, speed: 30, bounciness: 12 }),
             Animated.spring(pulso, { toValue: 1, useNativeDriver: true, speed: 24, bounciness: 8 }),
           ]).start();
         }
-        setTimeout(() => vibrar('diaPerfecto'), 260);
+        // Si sube de nivel, vibra su ceremonia: dos golpes seguidos se pisan.
+        const subeNivel = levelFromXp(res.profile.xp_total).level > levelFromXp(profile.xp_total).level;
+        if (!subeNivel) setTimeout(() => vibrar('diaPerfecto'), 260);
       }
 
       // La misión ya está pagada: un fallo al calcular logros no puede

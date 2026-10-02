@@ -73,6 +73,11 @@ export type EventoCola =
   | { tipo: 'avisar'; id: string; texto: string }
   /** El momento visible terminó (toast apagado o ceremonia cerrada). */
   | { tipo: 'ocultar' }
+  /**
+   * La ceremonia no llegó a presentarse (red de seguridad de Ceremony): sus
+   * claves se desmarcan (no se dan por vistas) y su texto sale en un toast.
+   */
+  | { tipo: 'fallida' }
   | { tipo: 'pausar'; pausa: boolean };
 
 export const MAX_VISTAS = 300;
@@ -83,6 +88,21 @@ const CERO: PerfilEco = { xp_total: 0, streak_days: 0, protection_stones: 0 };
 
 export function estadoInicial(): EstadoCola {
   return { acciones: new Map(), mostrando: null, vistas: new Set(), cargado: false, listas: [], pausa: false, historico: new Map() };
+}
+
+/**
+ * Hitos de racha cruzados entre dos rachas (p. ej. la visible antes y después
+ * de completar una misión), con la MISMA forma y clave que dará celebrarCambio
+ * al cerrar ese día con `fecha` = el día cerrado: la cola no los repite.
+ */
+export function celebracionesDeRacha(antes: number, despues: number, fecha: string): Celebracion[] {
+  if (despues <= antes) return [];
+  return celebrarCambio({
+    perfilAntes: { ...CERO, streak_days: antes },
+    perfilDespues: { ...CERO, streak_days: despues },
+    logrosAntes: [],
+    fecha,
+  }).filter((c) => c.tipo === 'racha');
 }
 
 /** Lo que dice la celebración en una línea (toast y resumen). */
@@ -191,8 +211,13 @@ export function decidir(accion: string | null, ac: Acumulado, vistas: ReadonlySe
   return { principal, resumen, clavesResto: resto.map((c) => c.clave), forma: formaDe(principal), accion, estado };
 }
 
+/** Claves que marca un momento al enseñarse. */
+function clavesDe(m: Momento): string[] {
+  return [...(m.principal ? [m.principal.clave] : []), ...m.clavesResto];
+}
+
 function marcarVistas(vistas: Set<string>, m: Momento): Set<string> {
-  const claves = [...(m.principal ? [m.principal.clave] : []), ...m.clavesResto];
+  const claves = clavesDe(m);
   if (claves.length === 0) return vistas;
   const orden = [...vistas].filter((k) => !claves.includes(k));
   orden.push(...claves);
@@ -287,6 +312,15 @@ export function reducir(s: EstadoCola, e: EventoCola): EstadoCola {
     }
     case 'ocultar':
       return avanzar({ ...s, mostrando: null });
+    case 'fallida': {
+      const m = s.mostrando;
+      if (!m || m.forma === 'toast') return avanzar({ ...s, mostrando: null });
+      const claves = new Set(clavesDe(m));
+      const vistas = new Set([...s.vistas].filter((k) => !claves.has(k)));
+      // Un toast suelto (sin acción: nada lo absorbe) con todas sus líneas.
+      const toast: Momento = { principal: null, resumen: lineasDe(m), clavesResto: [], forma: 'toast', accion: null, estado: m.estado };
+      return { ...s, vistas, mostrando: toast };
+    }
     case 'pausar':
       return avanzar({ ...s, pausa: e.pausa });
   }

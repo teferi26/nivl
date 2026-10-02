@@ -199,13 +199,15 @@ export default function DungeonDetail() {
       });
       vibrar(task.is_boss ? 'misionExtra' : 'mision');
       const accion = `tarea:${task.id}:${Date.now()}`;
+      const pagadoTarea = Math.max(0, res.profile.xp_total - profile.xp_total);
       celebrar({
         accion,
         perfilAntes: profile,
         perfilDespues: res.profile,
         logrosAntes,
         fecha: dateKey(),
-        resumen: [`+${Math.max(0, res.profile.xp_total - profile.xp_total)} XP · ${dungeon.stat}`],
+        // Con 0 por el tope diario de award_xp no se anuncia un «+0 XP».
+        resumen: [pagadoTarea > 0 ? `+${pagadoTarea} XP · ${dungeon.stat}` : 'Tope diario de XP alcanzado'],
       });
       // El rango se recalcula en segundo plano: no bloquea ni rompe el cobro.
       cerrarConRango(accion);
@@ -265,7 +267,8 @@ export default function DungeonDetail() {
         logrosAntes,
         logrosNuevos: fresh.map(logroInfo),
         fecha: dateKey(),
-        resumen: [`Campaña despejada · +${pagado} XP`],
+        // Sin «+0 XP»: el botín puede no pagar (menos de 3 tareas, ya cobrado).
+        resumen: [pagado > 0 ? `Campaña despejada · +${pagado} XP` : 'Campaña despejada'],
       });
       cerrarConRango(accion);
       await load();

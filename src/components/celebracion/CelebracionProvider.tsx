@@ -26,6 +26,7 @@ import { Toast } from '@/components/ui/Toast';
 import { vibrar } from '@/design/haptics';
 import { useAuth } from '@/lib/auth';
 import { estadoInicial, hayAlgo, lineasDe, reducir, textoToast, VENTANA_MS, type Momento } from '@/lib/celebracionCola';
+import { signedUrlCached } from '@/lib/data';
 import { dateKey } from '@/lib/dates';
 import { rangoPorId, type Celebracion } from '@/lib/progression';
 import { tarjetaDeCelebracion, type Tarjeta } from '@/lib/sharecard';
@@ -203,8 +204,15 @@ export function CelebracionProvider({ children }: { children: ReactNode }) {
   const mostrandoRef = useRef(m);
   mostrandoRef.current = m;
 
-  const compartir = useCallback((t: Tarjeta, opciones?: OpcionesCompartir) => {
-    const retratoUri = opciones?.retratoUri ?? null;
+  const yoRef = useRef(yo);
+  yoRef.current = yo;
+
+  /**
+   * Abre la hoja. `retrato` puede llegar tarde (la firma del avatar desde la
+   * ceremonia): se pide en paralelo con la salida del Modal y no espera más
+   * que el código de amigo.
+   */
+  const abrirHoja = useCallback((t: Tarjeta, retrato: Promise<string | null>) => {
     // Nada nuevo sale mientras la hoja está abierta.
     dispatch({ tipo: 'pausar', pausa: true });
     const vis = mostrandoRef.current;
@@ -230,6 +238,8 @@ export function CelebracionProvider({ children }: { children: ReactNode }) {
         dispatch({ tipo: 'pausar', pausa: false });
         return;
       }
+      const retratoUri = await Promise.race([retrato, espera(ESPERA_CODIGO_MS).then(() => null)]);
+      if (aperturas.current !== n) return;
       setHoja({ tarjeta: t, codigo: codigoListo, retratoUri });
       if (codigoListo || !uid) return;
       const tarde = await Promise.race([codigo, espera(ESPERA_CODIGO_MS).then(() => null)]);
@@ -237,6 +247,21 @@ export function CelebracionProvider({ children }: { children: ReactNode }) {
       setHoja((h) => (h && h.tarjeta === t ? { ...h, codigo: tarde } : h));
     })();
   }, []);
+
+  const compartir = useCallback(
+    (t: Tarjeta, opciones?: OpcionesCompartir) => abrirHoja(t, Promise.resolve(opciones?.retratoUri ?? null)),
+    [abrirHoja],
+  );
+
+  // Desde la ceremonia: el retrato es el avatar que ya se relee (yo), firmado
+  // al abrir (la firma dura un minuto: no se guarda de antes).
+  const compartirDesdeCeremonia = useCallback(
+    (t: Tarjeta) => {
+      const path = yoRef.current.path;
+      abrirHoja(t, path ? signedUrlCached('avatars', path).catch(() => null) : Promise.resolve(null));
+    },
+    [abrirHoja],
+  );
 
   const cerrarHoja = useCallback(() => {
     aperturas.current += 1;
@@ -256,6 +281,9 @@ export function CelebracionProvider({ children }: { children: ReactNode }) {
   }, [hojaAbierta, cerrarHoja]);
 
   const ocultar = useCallback(() => dispatch({ tipo: 'ocultar' }), []);
+  // La ceremonia no se presentó: sus claves no cuentan como vistas y su texto
+  // sale en un toast.
+  const fallida = useCallback(() => dispatch({ tipo: 'fallida' }), []);
 
   // También con la cola en pausa: la hoja se está abriendo o está abierta.
   const celebrando = hayAlgo(estado) || hojaAbierta || estado.pausa;
@@ -305,7 +333,8 @@ export function CelebracionProvider({ children }: { children: ReactNode }) {
         siguiente={ceremonia?.estado?.siguienteRango ?? null}
         avatar={yo}
         onCerrar={ocultar}
-        onCompartir={tarjeta ? () => compartir(tarjeta) : undefined}
+        onFallida={fallida}
+        onCompartir={tarjeta ? () => compartirDesdeCeremonia(tarjeta) : undefined}
       />
     </CelebracionContext.Provider>
   );

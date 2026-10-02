@@ -223,16 +223,21 @@ export default function Perfil() {
     fetchConsentimiento({ fresco: true })
       .then(setConsent)
       .catch(() => setConsent(null));
+    // El perfil se pide una vez y lo usan la ficha y la celebración del rango
+    // (sin él la ceremonia no sabe el «siguiente» ni la tarjeta de nivel).
+    const perfilPromesa = ensureProfile(userId);
+    perfilPromesa.catch(() => {});
     // Rango y días activos, en paralelo y sin bloquear: si el servidor registra
     // un rango nuevo aquí, se celebra por la cola como en cualquier pantalla.
     sincronizarRangoDetalle()
       .then(async ({ nuevos, diasActivos: dias }) => {
         setDiasActivos(dias);
         if (nuevos.length === 0) return;
-        const logros = await fetchUnlocked();
+        const [logros, perfil] = await Promise.all([fetchUnlocked(), perfilPromesa.catch(() => null)]);
         setUnlocked(logros);
         celebrar({
           accion: `perfil:rango:${Date.now()}`,
+          perfilDespues: perfil ?? undefined,
           logrosAntes: [...logros].filter((c) => !nuevos.includes(c)),
           logrosNuevos: nuevos.map(logroDeCodigo),
           diasActivos: dias,
@@ -241,7 +246,7 @@ export default function Perfil() {
       })
       .catch(() => {});
     try {
-      const prof = await ensureProfile(userId);
+      const prof = await perfilPromesa;
       setProfile(prof);
       setName(prof.name);
       // La foto, ANTES que el resto. Iba la última, detrás de dos consultas que

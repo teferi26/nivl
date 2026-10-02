@@ -24,7 +24,6 @@ import { EliteBadge } from '@/components/EliteBadge';
 import { Aviso } from '@/components/amigos/Aviso';
 import { Competicion, type Amigo } from '@/components/amigos/Competicion';
 import { prepararDatosSemana, tarjetaDeSemana } from '@/components/ShareCardSemana';
-import { HojaCompartir } from '@/components/share/HojaCompartir';
 import { SystemButton } from '@/components/SystemButton';
 import {
   Avatar,
@@ -72,7 +71,6 @@ import { fetchMyInvites, UMBRALES_INVITACION, type MyInvites } from '@/lib/invit
 import { kindMeta, type ProfileKind } from '@/lib/kinds';
 import { fetchAiStatus, type Tier } from '@/lib/pro';
 import { celebracionInsignia, estadoDe, INSIGNIAS, nivelInsignia, type Celebracion } from '@/lib/progression';
-import type { Tarjeta } from '@/lib/sharecard';
 import {
   blockSocialUser,
   fetchBlockedUsers,
@@ -272,14 +270,13 @@ export default function Amigos() {
   const [logros, setLogros] = useState<ReadonlySet<string> | null>(null);
   const [rangos, setRangos] = useState<ReadonlyMap<string, Rank>>(() => new Map());
   const [invitaciones, setInvitaciones] = useState<MyInvites | null>(null);
-  const { celebrar } = useCelebracion();
+  const { celebrar, compartir } = useCelebracion();
 
   // ── Competición (0048): duelos y ligas. Va por su cuenta en <Competicion>.
   const [competicion, setCompeticion] = useState(true);
   const [retarA, setRetarA] = useState<Amigo | null>(null);
   const [recarga, setRecarga] = useState(0);
 
-  const [tarjeta, setTarjeta] = useState<{ tarjeta: Tarjeta; codigo: string } | null>(null);
   const [preparando, setPreparando] = useState(false);
   const lock = useRef(false);
   // La ventana pedida más reciente: si tocas Semana → Mes → Semana deprisa, la
@@ -678,9 +675,10 @@ export default function Amigos() {
         semana: ventana === 'semana' ? board : undefined,
         friendCode: yo.friendCode,
       });
-      // El código solo sale si se enciende «Añadir mi enlace de invitación»
-      // en la hoja: lo decide HojaCompartir, no esta pantalla.
-      setTarjeta({ tarjeta: tarjetaDeSemana(datos), codigo: datos.friendCode });
+      // La hoja va por la cola (capa raíz): pide el código de amigo, cierra
+      // con atrás de Android y oculta lo de debajo al lector de pantalla. El
+      // código solo sale si se enciende «Añadir mi enlace de invitación».
+      compartir(tarjetaDeSemana(datos));
     } catch (e) {
       avisar('Error del sistema', mensajeSistema(e));
     } finally {
@@ -705,25 +703,7 @@ export default function Amigos() {
       : `${numAmigos} ${numAmigos === 1 ? 'rival' : 'rivales'} en tu arena${entrantes.length > 0 ? ` · ${entrantes.length} por responder` : ''}.`;
 
   return (
-    <Screen
-      refreshing={refrescando}
-      onRefresh={refrescar}
-      overlay={
-        // En la capa de Screen, nunca en un Modal: capturar dentro de un Modal
-        // da un PNG negro en Android. Alias null: no hay alias aprobado que
-        // leer desde el cliente, así que la hoja no ofrece firmar.
-        tarjeta ? (
-          <HojaCompartir
-            visible
-            onCerrar={() => setTarjeta(null)}
-            tarjeta={tarjeta.tarjeta}
-            contexto={{ puedeCompartirFotos: false }}
-            alias={null}
-            codigoAmigo={tarjeta.codigo}
-          />
-        ) : null
-      }
-    >
+    <Screen refreshing={refrescando} onRefresh={refrescar}>
       <Stagger>
         <FadeIn index={0}>
           <ScreenHeader

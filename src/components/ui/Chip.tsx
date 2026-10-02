@@ -19,6 +19,8 @@ interface ChipProps {
   style?: StyleProp<ViewStyle>;
 }
 
+const HITSLOP_SMALL = { top: 7, bottom: 7, left: 0, right: 0 };
+
 /**
  * Seleccionado SIN invertir (SISTEMA §0: una sola inversión por pantalla, y la
  * gastan los botones primarios): marco de 2 pt en ink10, texto ink10 y placa
@@ -29,8 +31,8 @@ interface ChipProps {
 export function Chip({ label, selected, onPress, icon, small, disabled, accessibilityLabel, style }: ChipProps) {
   const content = (
     <>
-      {icon ? <Ionicons name={icon} size={small ? 12 : 14} color={selected ? ink.ink10 : colors.textDim} /> : null}
-      <Text style={[styles.text, small && styles.textSmall, selected && styles.textSelected]}>{label}</Text>
+      {icon ? <Ionicons name={icon} size={small ? 12 : 14} color={disabled ? ink.ink6 : selected ? ink.ink10 : colors.textDim} /> : null}
+      <Text style={[styles.text, small && styles.textSmall, selected && styles.textSelected, disabled && styles.textDisabled]}>{label}</Text>
     </>
   );
   const box = [
@@ -48,6 +50,8 @@ export function Chip({ label, selected, onPress, icon, small, disabled, accessib
       accessibilityRole={selected === undefined ? 'button' : 'radio'}
       accessibilityState={selected === undefined ? undefined : { selected }}
       accessibilityLabel={accessibilityLabel ?? label}
+      // El pequeño mide ~30 de alto: el hitSlop lo lleva a 44 de zona táctil.
+      hitSlop={small ? HITSLOP_SMALL : undefined}
       style={({ pressed }) => [box, pressed && styles.pressed]}
     >
       {content}
@@ -128,7 +132,9 @@ const styles = StyleSheet.create({
   textSelected: { color: ink.ink10 },
   text: { fontFamily: fonts.semibold, fontSize: 13, color: colors.text },
   textSmall: { fontSize: 12 },
-  disabled: { opacity: 0.4 },
+  // Desactivado sin opacidad (SISTEMA v2): marco ink4 y texto ink6.
+  disabled: { borderColor: ink.ink4 },
+  textDisabled: { color: ink.ink6 },
   pressed: { opacity: 0.7 },
   rowScroll: { marginHorizontal: -20 },
   rowContent: { paddingHorizontal: 20, gap: 8 },
