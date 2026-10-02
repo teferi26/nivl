@@ -19,6 +19,7 @@ import {
   frankyLogin,
   frankyRegister,
 } from '@/lib/frankyAuth';
+import { LEGAL_URLS } from '@/lib/proplans';
 import { supabase } from '@/lib/supabase';
 import { colors, fonts } from '@/lib/theme';
 import { checkPassword, isValidEmail, isValidName, NAME_MAX_LENGTH } from '@/lib/validation';
@@ -344,6 +345,28 @@ export default function Login() {
                 Tus hábitos, misiones y progreso se guardan en NIVL. Tu identidad es la de Franky.
               </Text>
             )}
+
+            {/* Los textos legales de NIVL, a la vista antes de entrar: la
+                casilla de arriba es la de Franky, que es quien guarda la cuenta. */}
+            <View style={styles.legales}>
+              <Pressable
+                onPress={() => Linking.openURL(LEGAL_URLS.terminos).catch(() => {})}
+                hitSlop={8}
+                accessibilityRole="link"
+                accessibilityLabel="Términos de uso de NIVL"
+              >
+                <Text style={styles.legalLink}>Términos de NIVL</Text>
+              </Pressable>
+              <Text style={styles.legalSep}>·</Text>
+              <Pressable
+                onPress={() => Linking.openURL(LEGAL_URLS.privacidad).catch(() => {})}
+                hitSlop={8}
+                accessibilityRole="link"
+                accessibilityLabel="Política de privacidad de NIVL"
+              >
+                <Text style={styles.legalLink}>Privacidad de NIVL</Text>
+              </Pressable>
+            </View>
           </View>
         </ScrollView>
       </View>
@@ -433,6 +456,9 @@ const styles = StyleSheet.create({
   forgotText: { fontFamily: fonts.semibold, fontSize: 13, color: colors.accentText },
   legacy: { marginTop: 14, alignItems: 'center' },
   legacyText: { fontFamily: fonts.body, fontSize: 12, color: colors.textFaint },
+  legales: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 10, marginTop: 22 },
+  legalLink: { fontFamily: fonts.body, fontSize: 12, color: colors.textDim, textDecorationLine: 'underline' },
+  legalSep: { fontFamily: fonts.body, fontSize: 12, color: colors.textFaint },
   legal: {
     fontFamily: fonts.body,
     fontSize: 11,

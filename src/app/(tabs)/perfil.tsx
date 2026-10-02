@@ -10,6 +10,7 @@ import {
   ActivityIndicator,
   Alert,
   KeyboardAvoidingView,
+  Linking,
   Modal,
   Platform,
   Pressable,
@@ -31,6 +32,7 @@ import {
   Card,
   Chip,
   ChipWrap,
+  confirmar,
   EmptyState,
   FadeIn,
   Row,
@@ -75,6 +77,7 @@ import {
 } from '@/lib/notifications';
 import { setApiKey } from '@/lib/oracle';
 import { fetchAiStatus, isElite, isPro } from '@/lib/pro';
+import { LEGAL_URLS } from '@/lib/proplans';
 import {
   fetchSubscription,
   isPremium,
@@ -333,7 +336,9 @@ export default function Perfil() {
   const signOut = async () => {
     // Borra la API key del dispositivo: en un móvil compartido el siguiente
     // usuario heredaría la key de pago de Anthropic.
-    await setApiKey('');
+    // Que falle no puede impedir salir: en la web SecureStore no existe y el
+    // throw dejaba "Cerrar sesión" sin efecto.
+    await setApiKey('').catch(() => {});
     await supabase.auth.signOut();
     router.replace('/login');
   };
@@ -387,16 +392,17 @@ export default function Perfil() {
     }
   };
 
-  const confirmarBorrado = () => {
+  const confirmarBorrado = async () => {
     if (borrando) return;
-    Alert.alert(
-      '¿Estás totalmente seguro?',
-      'Se borra tu cuenta de NIVL. El sistema no puede deshacerlo.',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        { text: 'Eliminar para siempre', style: 'destructive', onPress: ejecutarBorrado },
-      ],
-    );
+    // `confirmar` y no Alert.alert: en la web el Alert no se pinta y el
+    // borrado se quedaba sin hacer.
+    const ok = await confirmar({
+      titulo: '¿Estás totalmente seguro?',
+      mensaje: 'Se borra tu cuenta de NIVL. El sistema no puede deshacerlo.',
+      confirmar: 'Eliminar para siempre',
+      destructivo: true,
+    });
+    if (ok) await ejecutarBorrado();
   };
 
   // Aceptado: retirar (con confirmación). Sin aceptar: la hoja.
@@ -878,6 +884,22 @@ export default function Perfil() {
                   chevron
                   onPress={signOut}
                   accessibilityLabel="Cerrar sesión"
+                />
+                <Row
+                  leading={<Ionicons name="document-text-outline" size={20} color={colors.text} />}
+                  title="Términos de uso"
+                  chevron
+                  onPress={() => Linking.openURL(LEGAL_URLS.terminos).catch(() => {})}
+                  accessibilityRole="link"
+                  accessibilityLabel="Términos de uso de NIVL"
+                />
+                <Row
+                  leading={<Ionicons name="shield-checkmark-outline" size={20} color={colors.text} />}
+                  title="Política de privacidad"
+                  chevron
+                  onPress={() => Linking.openURL(LEGAL_URLS.privacidad).catch(() => {})}
+                  accessibilityRole="link"
+                  accessibilityLabel="Política de privacidad de NIVL"
                 />
               </Card>
               <SystemButton

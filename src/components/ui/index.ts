@@ -1,6 +1,7 @@
 // NIVL · Kit de interfaz. Importa desde '@/components/ui'.
 export { Card } from './Card';
 export { Chip, ChipRow, ChipWrap, Tag } from './Chip';
+export { avisar, confirmar } from './confirmar';
 export { EmptyState } from './EmptyState';
 export { FadeIn, PressScale, Stagger } from './motion';
 export { ProgressRing } from './ProgressRing';
