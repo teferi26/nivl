@@ -12,6 +12,7 @@
 // `pro.ts`.
 
 import { kindMeta, type ProfileKind } from './kinds';
+import type { CopyKey, Momento, TierOferta } from './paywallmoment';
 
 /**
  * Los valores de `subscriptions.plan` (0024). 'mensual' y 'anual' son los
@@ -423,8 +424,8 @@ export function proSampleBrief(kind: unknown): readonly string[] {
 }
 
 export const LEGAL_URLS = {
-  terminos: 'https://nivl-web.vercel.app/terminos',
-  privacidad: 'https://nivl-web.vercel.app/privacidad',
+  terminos: 'https://nivl.app/terminos',
+  privacidad: 'https://nivl.app/privacidad',
   /** NIVL no tiene EULA propio en App Store Connect: aplica el estándar de Apple. Se enlaza en iOS. */
   eulaApple: 'https://www.apple.com/legal/internet-services/itunes/dev/stdeula/',
 } as const;
@@ -641,4 +642,118 @@ export function puedeMejorarEnTienda(status: AiStatus | null | undefined, provid
 /** El producto de tienda que corresponde a un `subscriptions.plan`, o null (cortesía, owner, Stripe heredado). */
 export function productoDePlan(plan: string | null | undefined): ProPlanId | null {
   return PRO_PLANS.find((p) => p.plan === plan)?.id ?? null;
+}
+
+// ── La oferta en contexto (fase 2, D1) ──────────────────────────────
+// Lo que dice el sistema cuando la oferta llega por un momento concreto
+// (`paywallmoment.ts`). Reglas: voz del sistema, sin urgencias falsas ni
+// cuentas atrás, sin prometer nada que no exista. La voz del coach NO existe
+// hoy: su texto lo dice así y no la vende. El modo profundo es solo Élite y las
+// fotos al coach ya funcionan con Pro.
+
+
+export interface CopyUpsell {
+  /** La línea no modal (`ProUpsellLine`). */
+  linea: string;
+  /** El texto del enlace de la línea. */
+  enlace: string;
+  /** La línea de contexto arriba de la oferta completa (`ProOffer motivo`). */
+  contexto: string;
+  /** Título del beneficio (de PRO_BENEFITS o ELITE_BENEFITS) que va primero, si hay uno que case. */
+  beneficio: string | null;
+}
+
+export const COPY_UPSELL: Record<CopyKey, CopyUpsell> = {
+  'firma.pro': {
+    linea: 'Tu juramento está sellado. El coach puede dirigir tu día desde mañana.',
+    enlace: 'Ver NIVL Pro',
+    contexto: 'Tu juramento está sellado. NIVL sigue gratis entera; Pro añade el coach que lo dirige.',
+    beneficio: 'Brief cada mañana',
+  },
+  'firma.elite': {
+    linea: 'Tu juramento está sellado. Élite es el coach a máxima potencia.',
+    enlace: 'Ver NIVL Élite',
+    contexto: 'Tu juramento está sellado. NIVL sigue gratis entera; Élite añade el coach a máxima potencia.',
+    beneficio: 'Máxima potencia',
+  },
+  'primer_dia.pro': {
+    linea: 'Primer día en la arena. El coach puede escribir el plan de mañana.',
+    enlace: 'Ver NIVL Pro',
+    contexto: 'Primer día en la arena. Lo que has hecho sigue siendo tuyo y gratis; Pro añade quien lo ordena cada mañana.',
+    beneficio: 'Plan del día, bloque a bloque',
+  },
+  'primer_dia.elite': {
+    linea: 'Primer día en la arena. Élite es el coach a máxima potencia.',
+    enlace: 'Ver NIVL Élite',
+    contexto: 'Primer día en la arena. Lo que has hecho sigue siendo tuyo y gratis.',
+    beneficio: 'Máxima potencia',
+  },
+  'coach_profundo.pro': {
+    linea: 'El modo profundo es de NIVL Élite.',
+    enlace: 'Ver NIVL Élite',
+    contexto: 'El modo profundo es de NIVL Élite: el coach se toma su tiempo con lo que pide pensarlo a fondo.',
+    beneficio: 'Modo profundo',
+  },
+  'coach_profundo.elite': {
+    linea: 'El modo profundo es de NIVL Élite.',
+    enlace: 'Ver NIVL Élite',
+    contexto: 'El modo profundo es de NIVL Élite: el coach se toma su tiempo con lo que pide pensarlo a fondo.',
+    beneficio: 'Modo profundo',
+  },
+  'voz_premium.pro': {
+    linea: 'La voz del coach aún no está disponible. Cuando lo esté, la verás en tu plan.',
+    enlace: 'Ver planes',
+    contexto: 'La voz del coach aún no está disponible y no forma parte de ningún plan. Esto es lo que incluye hoy cada uno.',
+    beneficio: null,
+  },
+  'voz_premium.elite': {
+    linea: 'La voz del coach aún no está disponible. Cuando lo esté, la verás en tu plan.',
+    enlace: 'Ver planes',
+    contexto: 'La voz del coach aún no está disponible y no forma parte de ningún plan. Esto es lo que incluye hoy cada uno.',
+    beneficio: null,
+  },
+  'analisis_foto.pro': {
+    linea: 'Con NIVL Pro, el coach mira tus fotos y te responde sobre ellas.',
+    enlace: 'Ver NIVL Pro',
+    contexto: 'Con Pro le mandas fotos al coach por el chat (un plato, una máquina, un apunte) y responde sobre ellas.',
+    beneficio: 'Control total por chat',
+  },
+  'analisis_foto.elite': {
+    linea: 'Con NIVL Élite, tus fotos las mira el modelo de primera línea.',
+    enlace: 'Ver NIVL Élite',
+    contexto: 'Con Élite, cada foto que mandas al coach la lee el modelo de primera línea.',
+    beneficio: 'Máxima potencia',
+  },
+  'energia_agotada.pro': {
+    linea: 'La energía de tu prueba se ha agotado. Lo gratuito sigue funcionando.',
+    enlace: 'Ver NIVL Pro',
+    contexto: 'La energía del coach se ha agotado. Tus misiones, tu racha y todos los módulos siguen funcionando.',
+    beneficio: 'Brief cada mañana',
+  },
+  'energia_agotada.elite': {
+    linea: 'Energía agotada hasta la recarga. NIVL Élite tiene su propio presupuesto mensual.',
+    enlace: 'Ver NIVL Élite',
+    contexto: 'La energía del coach se recarga cada mes. Élite tiene su propio presupuesto mensual, con modelo de primera línea y modo profundo.',
+    beneficio: 'Máxima potencia',
+  },
+};
+
+export function copyUpsell(momento: Momento, tier: TierOferta): CopyUpsell {
+  return COPY_UPSELL[`${momento}.${tier}`];
+}
+
+/**
+ * Los beneficios en el orden en que se enseñan: si el motivo casa con uno, va
+ * primero; el resto, en su orden. Nunca quita ni añade ninguno.
+ */
+export function beneficiosPorMotivo(
+  beneficios: readonly ProBenefit[],
+  motivo: Momento | null | undefined,
+  tier: TierOferta,
+): readonly ProBenefit[] {
+  if (!motivo) return beneficios;
+  const titulo = copyUpsell(motivo, tier).beneficio;
+  const i = titulo ? beneficios.findIndex((b) => b.title === titulo) : -1;
+  if (i <= 0) return beneficios;
+  return [beneficios[i]!, ...beneficios.slice(0, i), ...beneficios.slice(i + 1)];
 }

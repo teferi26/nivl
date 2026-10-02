@@ -1,5 +1,6 @@
 // El programa de creadores (efectos): "¿Quién te trajo?", el código pendiente
-// que deja el enlace nivl://c/CODIGO y el panel del creador. La lógica pura
+// que deja el enlace https://nivl.app/c/CODIGO (o nivl://c/CODIGO) y el panel
+// del creador, más el progreso, el histórico y las tablas por periodo (0046). La lógica pura
 // —normalizar, la cuenta de comisiones, el texto del panel— vive en
 // creatormath.ts.
 //
@@ -9,8 +10,20 @@
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { codigoValido, type CreatorRank, type ReferralReason } from './creatormath';
+import {
+  mesesHistorico,
+  parseCreatorBoard,
+  parseCreatorHistory,
+  parseCreatorProgress,
+  periodoTabla,
+  type CreatorBoardRow,
+  type CreatorHistoryMonth,
+  type CreatorProgress,
+} from './creatorprogram';
 import { marcarCreadorEnTienda } from './pro';
 import { supabase } from './supabase';
+
+export type { CreatorBoardRow, CreatorChallenge, CreatorHistoryMonth, CreatorProgress } from './creatorprogram';
 
 // ── El código pendiente ─────────────────────────────────────────────
 // El enlace puede llegar antes de iniciar sesión, o el onboarding puede
@@ -192,13 +205,6 @@ export async function fetchCreatorPanel(): Promise<CreatorPanel | null> {
   };
 }
 
-export interface CreatorBoardRow {
-  alias: string;
-  sales: number;
-  pos: number;
-  isMe: boolean;
-}
-
 /** El ranking del mes: alias y ventas. Nunca dinero ajeno. Vacío si no eres creador. */
 export async function fetchCreatorBoard(): Promise<CreatorBoardRow[]> {
   const { data, error } = await supabase.rpc('creator_board');
@@ -210,4 +216,33 @@ export async function fetchCreatorBoard(): Promise<CreatorBoardRow[]> {
     pos: num(r.pos),
     isMe: !!r.is_me,
   }));
+}
+
+// ── Programa gamificado (0046) ──────────────────────────────────────
+// Solo lectura y solo lo propio. Las RPC devuelven céntimos (la web los
+// enseña); en la app de tienda el panel los quita con `vistaPanelCreador`
+// (creatorprogram.ts) antes de pintar. El parseo defensivo es puro y vive en
+// creatorprogram.ts para que el portal web (Chat 4) use el mismo.
+
+/** Lo del creador que llama, o null si no es creador activo. */
+export async function fetchCreatorProgress(): Promise<CreatorProgress | null> {
+  const { data, error } = await supabase.rpc('creator_progress');
+  if (error) throw error;
+  return parseCreatorProgress(data);
+}
+
+/** El histórico mensual propio, del mes en curso hacia atrás (1-24 meses; el servidor también lo recorta). */
+export async function fetchCreatorHistory(months = 12): Promise<CreatorHistoryMonth[]> {
+  const { data, error } = await supabase.rpc('creator_sales_history', { p_months: mesesHistorico(months) });
+  if (error) throw error;
+  return parseCreatorHistory(data);
+}
+
+/** La tabla del mes o de un reto: alias y ventas, nunca dinero ajeno. Vacía si no eres creador o el periodo no vale. */
+export async function fetchCreatorBoardPeriod(period: string): Promise<CreatorBoardRow[]> {
+  const p = periodoTabla(period);
+  if (!p) return [];
+  const { data, error } = await supabase.rpc('creator_board_period', { p_period: p });
+  if (error) throw error;
+  return parseCreatorBoard(data);
 }

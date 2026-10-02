@@ -5,8 +5,14 @@
 // su plan, la energía que le queda este mes y, en Élite, sus turnos profundos.
 // La energía es el presupuesto de IA del candado (0020) enseñado SIEMPRE como
 // porcentaje: los dólares son cosa nuestra, no del usuario.
+//
+// Fase 2 (D1): `/pro?motivo=…&tier=…` llega desde una línea de upsell o desde
+// una hoja decidida por `ofrecerSi`. El motivo pone su contexto en la oferta y
+// el nivel la abre en Pro o Élite. Al salir, comprar o empezar la prueba se
+// apunta la respuesta (`anotarOferta`): es lo que hace respetar los topes y las
+// 72 h tras un «Ahora no». Sin motivo, la pantalla no apunta nada.
 
-import { router, useFocusEffect } from 'expo-router';
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Platform, StyleSheet, Text, View } from 'react-native';
 import { ProOffer } from '@/components/ProOffer';
@@ -17,7 +23,9 @@ import { useAuth } from '@/lib/auth';
 import { ensureProfile } from '@/lib/data';
 import { isValidKey, nombreDia } from '@/lib/dates';
 import {
+  anotarOferta,
   energiaAgotada,
+  esMomento,
   energiaRestante,
   fetchAiStatus,
   gestionarSuscripcion,
@@ -33,6 +41,8 @@ import {
   puedeMejorarEnTienda,
   turnosProfundos,
   type AiStatus,
+  type OfferTier,
+  type RespuestaOferta,
 } from '@/lib/pro';
 import { fetchSubscription } from '@/lib/subscription';
 import { colors, fonts } from '@/lib/theme';
@@ -46,6 +56,9 @@ function fechaLegible(valor: string | null | undefined): string | null {
 }
 
 export default function Pro() {
+  const params = useLocalSearchParams<{ motivo?: string; tier?: string }>();
+  const motivo = esMomento(params.motivo) ? params.motivo : null;
+  const tierParam: OfferTier | undefined = params.tier === 'elite' || params.tier === 'pro' ? params.tier : undefined;
   const { session } = useAuth();
   const userId = session?.user.id;
   const [status, setStatus] = useState<AiStatus | null>(null);
@@ -55,7 +68,16 @@ export default function Pro() {
   const [avisoGestion, setAvisoGestion] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [verOferta, setVerOferta] = useState(false);
+  // Quien llega desde una línea de upsell ya pidió ver la oferta: abierta.
+  const [verOferta, setVerOferta] = useState(motivo !== null);
+  // Una sola respuesta por visita: salir después de comprar no es un «Ahora no».
+  const [respondida, setRespondida] = useState(false);
+
+  const responder = (r: RespuestaOferta) => {
+    if (!motivo || respondida) return;
+    setRespondida(true);
+    void anotarOferta(motivo, r, 'linea');
+  };
 
   const load = useCallback(async () => {
     // Sin sesión no hay nada que leer, pero la pantalla no puede quedarse
@@ -83,6 +105,7 @@ export default function Pro() {
   );
 
   const salir = () => {
+    responder('cerrada');
     if (router.canGoBack()) router.back();
     else router.replace('/(tabs)');
   };
@@ -235,11 +258,16 @@ export default function Pro() {
                     userId={userId}
                     kind={kind}
                     compact
-                    initialTier={prueba ? 'pro' : 'elite'}
+                    initialTier={prueba ? (tierParam ?? 'pro') : 'elite'}
+                    motivo={motivo}
                     planActual={deTienda ? productoDePlan(status?.plan) : null}
                     exitLabel={prueba ? 'Seguir con la prueba' : 'Seguir con Pro'}
-                    onExit={() => setVerOferta(false)}
+                    onExit={() => {
+                      responder('cerrada');
+                      setVerOferta(false);
+                    }}
                     onPurchased={() => {
+                      responder('compra');
                       setVerOferta(false);
                       load();
                     }}
@@ -275,11 +303,19 @@ export default function Pro() {
           <ProOffer
             userId={userId}
             kind={kind}
+            initialTier={tierParam}
+            motivo={motivo}
             exitLabel="Seguir gratis"
             onExit={salir}
-            onPurchased={load}
+            onPurchased={() => {
+              responder('compra');
+              load();
+            }}
             trialAvailable={!!status?.trialAvailable}
-            onTrialStarted={load}
+            onTrialStarted={() => {
+              responder('prueba');
+              load();
+            }}
           />
         </FadeIn>
       </Stagger>

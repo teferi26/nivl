@@ -3,17 +3,20 @@ import {
   codigoValido,
   comisionCents,
   enlaceCreador,
+  estadoReto,
   fechaPago,
   importe,
   lineaPosicion,
   lineaRango,
   liquidacionCents,
+  mensajeInvitacionCreador,
   motivoReferral,
   netoCents,
   normalizarCodigo,
   pctEfectivo,
   pctLabel,
   porVentaAnual,
+  progresoRango,
   rangoLabel,
   redondear,
   topeCents,
@@ -71,8 +74,15 @@ describe('código de creador', () => {
     expect(codigoValido('')).toBeNull();
   });
 
-  it('el enlace es nivl://c/CODIGO', () => {
-    expect(enlaceCreador('pepe')).toBe('nivl://c/PEPE');
+  it('el enlace es https://nivl.app/c/CODIGO (dominio de marca; AASA /c/* lo cierra Chat 1)', () => {
+    expect(enlaceCreador(' pepe ')).toBe('https://nivl.app/c/PEPE');
+  });
+
+  it('el mensaje lleva el código y el enlace universal, sin esquema nivl://', () => {
+    const m = mensajeInvitacionCreador('pepe');
+    expect(m).toContain('PEPE');
+    expect(m).toContain('https://nivl.app/c/PEPE');
+    expect(m).not.toContain('nivl://');
   });
 
   it('cada rechazo tiene su línea y lo desconocido cae en el genérico', () => {
@@ -252,5 +262,55 @@ describe('el panel', () => {
     expect(lineaPosicion(1, 4, 3)).toBe('Primero del mes de 4.');
     expect(lineaPosicion(2, 4, 1)).toBe('Puesto 2 de 4 este mes.');
     expect(lineaPosicion(1, 1, 1)).toBe('Primero del mes.');
+  });
+});
+
+describe('progreso de rango (solo propone)', () => {
+  const REGLAS = [
+    { rank: 'pro' as const, minSales90d: 5, minMonthsActive: 2 },
+    { rank: 'elite' as const, minSales90d: 20 },
+  ];
+
+  it('sin reglas: novato y sin siguiente', () => {
+    expect(progresoRango(50, [])).toEqual({ merecido: 'novato', siguiente: null, umbral: null, faltan: null, fraccion: 1 });
+  });
+
+  it('cuenta lo que falta hasta el siguiente umbral', () => {
+    expect(progresoRango(3, REGLAS, 2)).toEqual({ merecido: 'novato', siguiente: 'pro', umbral: 5, faltan: 2, fraccion: 0.6 });
+  });
+
+  it('el umbral de meses también cuenta', () => {
+    expect(progresoRango(6, REGLAS, 1).merecido).toBe('novato');
+    expect(progresoRango(6, REGLAS, 2)).toMatchObject({ merecido: 'pro', siguiente: 'elite', faltan: 14 });
+  });
+
+  it('élite: sin siguiente', () => {
+    expect(progresoRango(25, REGLAS, 3)).toMatchObject({ merecido: 'elite', siguiente: null, fraccion: 1 });
+  });
+
+  it('salta un rango sin regla y descarta reglas raras', () => {
+    const raras = [{ rank: 'dios' as never, minSales90d: 1 }, { rank: 'elite' as const, minSales90d: Number.NaN }];
+    expect(progresoRango(9, [...raras, { rank: 'elite' as const, minSales90d: 10 }])).toMatchObject({ siguiente: 'elite', faltan: 1 });
+    expect(progresoRango(-4, REGLAS).faltan).toBe(5);
+  });
+});
+
+describe('estado de un reto', () => {
+  const t0 = Date.parse('2026-10-10T12:00:00Z');
+  const RETO = { startsAt: '2026-10-05T00:00:00Z', endsAt: '2026-10-15T00:00:00Z', goalSales: 3 };
+
+  it('próximo, activo, cumplido y terminado', () => {
+    expect(estadoReto(RETO, 0, Date.parse('2026-10-03T00:00:00Z'))).toMatchObject({ fase: 'proximo', dias: 2 });
+    expect(estadoReto(RETO, 1, t0)).toEqual({
+      fase: 'activo', fraccion: 1 / 3, faltan: 2, dias: 5, linea: '1 venta de 3. Quedan 5 días.',
+    });
+    expect(estadoReto(RETO, 3, t0)).toMatchObject({ fase: 'cumplido', fraccion: 1, faltan: 0 });
+    expect(estadoReto(RETO, 4, Date.parse('2026-11-01T00:00:00Z')).fase).toBe('cumplido');
+    expect(estadoReto(RETO, 2, new Date('2026-11-01T00:00:00Z'))).toMatchObject({ fase: 'terminado', dias: 0, faltan: 1 });
+  });
+
+  it('fechas inválidas nunca cuentan como activo', () => {
+    expect(estadoReto({ startsAt: 'x', endsAt: 'y', goalSales: 2 }, 0, t0).fase).toBe('terminado');
+    expect(estadoReto({ ...RETO, endsAt: RETO.startsAt }, 0, t0).fase).toBe('terminado');
   });
 });
