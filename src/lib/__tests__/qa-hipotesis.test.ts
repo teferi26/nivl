@@ -169,3 +169,16 @@ describe('medianoche · Hoy cargada ayer y tocada hoy', () => {
     expect(mockSrv.profile.xp_total).toBe(1050);
   });
 });
+
+describe('RET-01 · la recuperación devuelve lo descontado de verdad, no lo calculado', () => {
+  test('con 120 XP y 200 de penalización, el servidor topa en 0 y la recuperación devuelve 120', async () => {
+    ausenciaDeDosDias();
+    mockSrv.profile = { ...mockSrv.profile, xp_total: 120 };
+    const { profile } = await processPendingDays({ ...mockSrv.profile }, mockSrv.quests);
+    expect(mockSrv.profile.xp_total).toBe(0);
+    const [pen] = penalizaciones();
+    expect(pen!.penalty_xp).toBe(120);
+    await completeQuest(profile, pen!, null);
+    expect(mockSrv.profile.xp_total).toBe(120); // ni un punto más del que tenía
+  });
+});

@@ -149,6 +149,15 @@ async function cerrarDias(profile: Profile, quests: Quest[]): Promise<CierreResu
   });
   const levelAfter = levelFromXp(updated.xp_total).level;
 
+  // El servidor no deja bajar de 0 (greatest(0, …)): quien tenía 120 XP y
+  // pierde 200 solo pierde 120. La recuperación devuelve lo DESCONTADO, no lo
+  // calculado, o volver de una ausencia larga regalaría XP (invariante 2:
+  // "exactamente"). Primero las misiones, luego las reglas.
+  const calculado = close.penaltyXp + xpReglas;
+  const descontado = updated.xp_total > 0 ? calculado : Math.min(calculado, profile.xp_total);
+  const recuperaMisiones = Math.min(close.penaltyXp, descontado);
+  const recuperaReglas = Math.min(xpReglas, descontado - recuperaMisiones);
+
   const recuperaciones: Recuperacion[] = [];
 
   // Las roturas quedan registradas una a una (para el histórico de cada regla),
@@ -164,7 +173,7 @@ async function cerrarDias(profile: Profile, quests: Quest[]): Promise<CierreResu
 
     const ultimo = diasConReglasRotas[diasConReglasRotas.length - 1]!;
     const cuantas = new Set(diasConReglasRotas.flatMap((d) => d.rotas.map((r) => r.id))).size;
-    recuperaciones.push({
+    if (recuperaReglas > 0) recuperaciones.push({
       health_data: diasConReglasRotas.some(d => d.rotas.some(r => reglasActivas.some(original => original.id === r.id && original.health_data))),
       user_id: profile.id,
       title:
@@ -177,11 +186,11 @@ async function cerrarDias(profile: Profile, quests: Quest[]): Promise<CierreResu
       requires_evidence: false,
       is_penalty: true,
       penalty_date: today,
-      penalty_xp: xpReglas,
+      penalty_xp: recuperaReglas,
     });
   }
 
-  if (close.penaltyXp > 0) {
+  if (recuperaMisiones > 0) {
     recuperaciones.push({
       user_id: profile.id,
       title: 'Misión de penalización',
@@ -191,7 +200,7 @@ async function cerrarDias(profile: Profile, quests: Quest[]): Promise<CierreResu
       requires_evidence: false,
       is_penalty: true,
       penalty_date: today,
-      penalty_xp: close.penaltyXp,
+      penalty_xp: recuperaMisiones,
     });
   }
 
