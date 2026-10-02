@@ -6,7 +6,7 @@ Responde al mensaje de Apple del 29/09/2026 1:16 (Guideline 2.1 — Information 
 
 | Campo | Fuente que lo acredita | Hecho |
 |---|---|---|
-| `[BUILD]` = **21** | Fijado por el coordinador el 02/10 (SHA c87df0d). Falta: VALID por GET y asociada a la 1.0.7 en ASC antes de «Volver a enviar» (lo hace el coordinador con el usuario) | ☐ |
+| `[BUILD]` = **21** | Fijado por el coordinador el 02/10 (SHA c87df0d). VALID por GET el 02/10 (subida 05:40:59 -07:00; SDK 23C57; minOS 15.1; sin cifrado no exento). Falta: asociarla a la 1.0.7 en ASC antes de «Volver a enviar» (lo hace el coordinador con el usuario) | ☐ |
 | `[DEVICE]`, `[IOS]`, `[DATE]` | Ajustes > General > Información del iPhone que grabó. Debe ser la última versión pública: el 02/10/2026 era iOS 27.0.1 ([Apple security releases](https://support.apple.com/en-us/100100)) | ☐ |
 | `[VIDEO]` | Nombre del adjunto o enlace probado sin iniciar sesión | ☐ |
 | `[TIMESTAMPS]` | Marcas tomadas viendo el vídeo final, no este guion | ☐ |
