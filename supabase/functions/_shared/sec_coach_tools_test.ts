@@ -56,7 +56,7 @@ Deno.test('herramientas: un id ajeno se ejecuta como el usuario y filtrado por s
   }
 });
 
-Deno.test('herramientas [P2, propuesta]: regla_categoria deja inyectar condiciones en el filtro or=()', async () => {
+Deno.test('herramientas [P2, corregido c-03]: regla_categoria ya no deja inyectar condiciones en el filtro or=()', async () => {
   const fake = instalar();
   try {
     const sb = userClient(USER_TOKEN);
@@ -66,12 +66,13 @@ Deno.test('herramientas [P2, propuesta]: regla_categoria deja inyectar condicion
       { sb, userId: USER_ID, today: '2026-10-02' },
     ).catch(() => {});
     const patch = fake.llamadas.find((l) => l.url.pathname === '/rest/v1/transactions' && l.method === 'PATCH');
-    ok(patch, 'hubo update de transactions');
-    const or = patch!.url.searchParams.get('or') ?? '';
-    // El patrón ha metido una condición nueva que casa con TODO lo pendiente
-    // del usuario (siempre acotado a su user_id y a sin_clasificar).
-    ok(or.includes(',category.eq.sin_clasificar,'), `filtro resultante: ${or}`);
-    equal(patch!.url.searchParams.get('user_id'), `eq.${USER_ID}`, 'sigue acotado a su cuenta');
+    // Tras c-03 el patrón con separadores de filtro se rechaza o se escapa:
+    // ninguna condición nueva llega al or=() de PostgREST.
+    if (patch) {
+      const or = patch.url.searchParams.get('or') ?? '';
+      ok(!or.includes(',category.eq.sin_clasificar,'), `filtro resultante: ${or}`);
+      equal(patch.url.searchParams.get('user_id'), `eq.${USER_ID}`, 'sigue acotado a su cuenta');
+    }
   } finally {
     fake.restaurar();
   }

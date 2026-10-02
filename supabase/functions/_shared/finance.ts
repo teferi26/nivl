@@ -375,7 +375,10 @@ export async function construirEstudioEconomico(
         'clasifiquen solos a partir de ahora.',
     );
     for (const m of sinClasificar.sort((a, b) => a.amount - b.amount).slice(0, 5)) {
-      push(`  · ${m.date} ${eur2(-m.amount)} — ${m.description}`);
+      // El concepto lo escribe un tercero (quien te hace la transferencia, el
+      // comercio): sin saltos de línea ni marcas, y corto, para que no pueda
+      // fingir una sección del estado ni colar órdenes largas al coach.
+      push(`  · ${m.date} ${eur2(-m.amount)} — ${String(m.description).replace(/[\r\n\t<>#`]+/g, ' ').slice(0, 80)}`);
     }
   }
 
