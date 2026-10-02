@@ -17,7 +17,7 @@ describe('callPremiumOracle ante el candado de gasto', () => {
 
   it('402 presupuesto_agotado → aviso visible con el texto del servidor, no paywall', async () => {
     responde(402, { reason: 'presupuesto_agotado', error: 'Se recarga el 1 de noviembre.' });
-    const e = await callPremiumOracle('generate', {}).catch((x: Error) => x);
+    const e = (await callPremiumOracle('generate', {}).catch((x: Error) => x)) as Error;
     expect(e).toBeInstanceOf(ErrorVisible);
     expect(e).not.toBeInstanceOf(PaywallError);
     expect(e.message).toBe('Se recarga el 1 de noviembre.');
@@ -25,7 +25,7 @@ describe('callPremiumOracle ante el candado de gasto', () => {
 
   it('429 turno_en_curso → aviso visible de espera', async () => {
     responde(429, { reason: 'turno_en_curso' });
-    const e = await callPremiumOracle('weekly', {}).catch((x: Error) => x);
+    const e = (await callPremiumOracle('weekly', {}).catch((x: Error) => x)) as Error;
     expect(e).toBeInstanceOf(ErrorVisible);
     expect(e.message).toMatch(/unos segundos/);
   });
