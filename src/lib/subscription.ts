@@ -7,6 +7,8 @@ export interface Subscription {
   user_id: string;
   status: 'none' | 'active' | 'trialing' | 'past_due' | 'canceled';
   current_period_end: string | null;
+  /** Quién cobra (0020): 'stripe' | 'apple' | 'google' | 'manual'. Decide si se puede comprar en la tienda sin duplicar cobro. */
+  provider?: string | null;
 }
 
 // Payment Link de Stripe (se crea en el dashboard de Stripe, sin código).
@@ -54,7 +56,7 @@ export function paymentsConfigured(): boolean {
 export async function fetchSubscription(userId: string): Promise<Subscription | null> {
   const { data, error } = await supabase
     .from('subscriptions')
-    .select('user_id, status, current_period_end')
+    .select('user_id, status, current_period_end, provider')
     .eq('user_id', userId)
     .maybeSingle();
   if (error) throw error;

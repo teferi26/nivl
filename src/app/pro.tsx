@@ -8,7 +8,7 @@
 
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Platform, StyleSheet, Text, View } from 'react-native';
 import { ProOffer } from '@/components/ProOffer';
 import { SystemButton } from '@/components/SystemButton';
 import { XPBar } from '@/components/XPBar';
@@ -20,18 +20,23 @@ import {
   energiaAgotada,
   energiaRestante,
   fetchAiStatus,
+  gestionarSuscripcion,
   isElite,
   isPro,
   lineaProfundos,
   planDePago,
   planLabel,
+  productoDePlan,
+  textoGestionTienda,
   puedeProfundo,
   purchasesAvailable,
+  puedeMejorarEnTienda,
   turnosProfundos,
   type AiStatus,
 } from '@/lib/pro';
 import { fetchSubscription } from '@/lib/subscription';
 import { colors, fonts } from '@/lib/theme';
+import { mensajeSistema } from '@/lib/validation';
 
 /** "jueves, 1 de octubre" a partir de una clave o de un ISO completo. */
 function fechaLegible(valor: string | null | undefined): string | null {
@@ -46,6 +51,8 @@ export default function Pro() {
   const [status, setStatus] = useState<AiStatus | null>(null);
   const [kind, setKind] = useState<unknown>('general');
   const [periodEnd, setPeriodEnd] = useState<string | null>(null);
+  const [provider, setProvider] = useState<string | null>(null);
+  const [avisoGestion, setAvisoGestion] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [verOferta, setVerOferta] = useState(false);
@@ -62,7 +69,10 @@ export default function Pro() {
     const [st, prof, sub] = await Promise.allSettled([fetchAiStatus(), ensureProfile(userId), fetchSubscription(userId)]);
     if (st.status === 'fulfilled') setStatus(st.value);
     if (prof.status === 'fulfilled') setKind(prof.value.profile_kind);
-    if (sub.status === 'fulfilled') setPeriodEnd(sub.value?.current_period_end ?? null);
+    if (sub.status === 'fulfilled') {
+      setPeriodEnd(sub.value?.current_period_end ?? null);
+      setProvider(sub.value?.provider ?? null);
+    }
     setLoading(false);
   }, [userId]);
 
@@ -112,7 +122,19 @@ export default function Pro() {
     const elite = isElite(status);
     const conProfundo = !!status?.deepAllowed;
     const turnos = turnosProfundos(status);
-    const mejorable = purchasesAvailable() && !elite && status?.tier !== 'owner';
+    // Sin segunda suscripción: ni al Élite/dueño, ni a quien paga por Stripe
+    // (web) o con plan heredado de Stripe. La tienda decide el resto.
+    const mejorable = purchasesAvailable() && puedeMejorarEnTienda(status, provider);
+    // Se gestiona en la tienda solo lo que se pagó en una tienda.
+    const deTienda = dePago && (provider === 'apple' || provider === 'google');
+    const gestionar = async () => {
+      setAvisoGestion(null);
+      try {
+        await gestionarSuscripcion();
+      } catch (e) {
+        setAvisoGestion(mensajeSistema(e));
+      }
+    };
     return (
       <Screen refreshing={refreshing} onRefresh={refrescar}>
         <Stagger>
@@ -169,10 +191,30 @@ export default function Pro() {
                   />
                 ) : null}
               </Card>
-              {dePago ? (
+              {deTienda ? (
+                <>
+                  <SystemButton
+                    title="Gestionar o cancelar suscripción"
+                    variant="ghost"
+                    size="sm"
+                    icon="open-outline"
+                    onPress={gestionar}
+                    style={styles.gestionar}
+                  />
+                  <Text style={styles.nota}>
+                    Ahí cambias de plan, ves la renovación o la cancelas. {textoGestionTienda(Platform.OS)}
+                  </Text>
+                  {avisoGestion ? (
+                    <Text style={styles.nota} accessibilityRole="alert">
+                      {avisoGestion}
+                    </Text>
+                  ) : null}
+                </>
+              ) : dePago ? (
                 <Text style={styles.nota}>
-                  La suscripción se gestiona y se cancela en los ajustes de suscripciones de tu tienda (App Store o
-                  Google Play).
+                  {provider === 'stripe'
+                    ? 'Esta suscripción se paga en la web de NIVL: se gestiona y se cancela desde allí.'
+                    : textoGestionTienda(Platform.OS)}
                 </Text>
               ) : null}
             </Section>
@@ -194,6 +236,7 @@ export default function Pro() {
                     kind={kind}
                     compact
                     initialTier={prueba ? 'pro' : 'elite'}
+                    planActual={deTienda ? productoDePlan(status?.plan) : null}
                     exitLabel={prueba ? 'Seguir con la prueba' : 'Seguir con Pro'}
                     onExit={() => setVerOferta(false)}
                     onPurchased={() => {
@@ -253,5 +296,6 @@ const styles = StyleSheet.create({
   valor: { fontFamily: fonts.semibold, fontSize: 13, color: colors.text },
   nota: { fontFamily: fonts.body, fontSize: 12, lineHeight: 17, color: colors.textFaint, marginTop: 4 },
   mejorar: { marginTop: 10 },
+  gestionar: { marginTop: 8, alignSelf: 'flex-start' },
   oferta: { marginTop: 22, borderTopWidth: 1, borderTopColor: colors.line, paddingTop: 18 },
 });

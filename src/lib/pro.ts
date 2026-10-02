@@ -17,13 +17,24 @@
 // web). `subscription.ts` (Stripe, EXPO_PUBLIC_PAYWALL) se queda como está
 // para el Oráculo y para la web.
 
-import { NativeModules, Platform } from 'react-native';
-import Purchases, { PURCHASES_ERROR_CODE, type PurchasesError, type PurchasesPackage } from 'react-native-purchases';
+import { Linking, NativeModules, Platform } from 'react-native';
+import Purchases, {
+  PURCHASES_ERROR_CODE,
+  type CustomerInfo,
+  type PurchasesError,
+  type PurchasesPackage,
+  type StoreProductChangeInfo,
+} from 'react-native-purchases';
 import {
   compraReflejada,
   esProductoNivl,
+  modoReemplazoGoogle,
+  planExacto,
   precioVisible,
   productoBase,
+  proPlan,
+  textoIntro,
+  tipoCambio,
   type AiStatus,
   type PlanKey,
   type PreciosTienda,
@@ -74,7 +85,11 @@ export async function startTrial(): Promise<{ ok: boolean; reason?: 'ya_usada'; 
   if (error) throw error;
   const r = (data ?? {}) as { ok?: boolean; reason?: string; ends?: string };
   if (r.ok) return { ok: true, ends: r.ends };
-  return { ok: false, reason: 'ya_usada' };
+  // Solo "ya_usada" es "ya usada". Otro motivo (p. ej. el trigger de
+  // consentimiento de salud de la 0030) sale como fallo genérico, no como
+  // una prueba gastada que el usuario nunca tuvo.
+  if (!r.reason || r.reason === 'ya_usada') return { ok: false, reason: 'ya_usada' };
+  throw new Error(`start_trial: ${r.reason}`);
 }
 
 /** Se lanza al intentar comprar o restaurar cuando esta build no tiene tienda. */
@@ -152,14 +167,30 @@ export function identificarEnTienda(userId: string | null): Promise<void> {
   return cola;
 }
 
-/** Antes de cobrar: la tienda TIENE que estar a nombre de la cuenta con sesión. */
+/**
+ * Antes de cobrar o restaurar: la tienda TIENE que estar a nombre de la cuenta
+ * con sesión. El cambio va por la MISMA cola que `identificarEnTienda` (un
+ * cambio de sesión a medias no puede colarse entre medias) y después se
+ * pregunta al SDK quién es: si `logIn` falló, la compra quedaría a nombre de
+ * la cuenta anterior, así que no se cobra.
+ */
 async function asegurarUsuario(): Promise<void> {
   if (!purchasesAvailable()) throw new PurchasesUnavailableError();
   const { data } = await supabase.auth.getSession();
   const uid = data.session?.user.id;
   if (!uid) throw new ErrorVisible('Inicia sesión para suscribirte.');
-  await cola;
-  await aplicarUsuario(uid);
+  const paso = cola.then(() => aplicarUsuario(uid));
+  cola = paso.catch(() => {});
+  await paso;
+  let actual: string | null = null;
+  try {
+    actual = await Purchases.getAppUserID();
+  } catch {
+    actual = null;
+  }
+  if (actual !== uid) {
+    throw new ErrorVisible('La tienda aún no está vinculada a esta cuenta. Cierra y vuelve a abrir NIVL e inténtalo de nuevo.');
+  }
 }
 
 /**
@@ -189,12 +220,25 @@ function traducir(e: unknown): unknown {
   if (!esErrorDeTienda(e)) return e;
   switch (e.code) {
     case PURCHASES_ERROR_CODE.PAYMENT_PENDING_ERROR:
-      return new ErrorVisible('El pago está pendiente de aprobación en la tienda. El coach se activará cuando se confirme.');
+      // Ask to Buy (iOS) o pago diferido (Google Play): no hay cobro todavía.
+      return new ErrorVisible(
+        'El pago está pendiente de aprobación en la tienda. Hoy no se ha cobrado nada: el coach se activará cuando la tienda lo confirme. Si tarda, pulsa Restaurar compras.',
+      );
+    case PURCHASES_ERROR_CODE.RECEIPT_ALREADY_IN_USE_ERROR:
+    case PURCHASES_ERROR_CODE.RECEIPT_IN_USE_BY_OTHER_SUBSCRIBER_ERROR:
+      return new ErrorVisible('Esta compra de la tienda pertenece a otra cuenta de NIVL. Entra con esa cuenta para usarla.');
+    case PURCHASES_ERROR_CODE.PRODUCT_ALREADY_PURCHASED_ERROR:
+      return new ErrorVisible('Tu cuenta de la tienda ya tiene esta suscripción. Pulsa Restaurar compras para recuperarla.');
+    case PURCHASES_ERROR_CODE.OPERATION_ALREADY_IN_PROGRESS_ERROR:
+      return new ErrorVisible('Ya hay una operación con la tienda en curso. Espera a que termine.');
+    case PURCHASES_ERROR_CODE.STORE_PROBLEM_ERROR:
+      return new ErrorVisible('La tienda no responde ahora mismo. No se ha completado ningún cobro nuevo: inténtalo en unos minutos.');
     case PURCHASES_ERROR_CODE.PURCHASE_NOT_ALLOWED_ERROR:
       return new ErrorVisible('Este dispositivo no permite compras. Revisa las restricciones de la tienda.');
     case PURCHASES_ERROR_CODE.PRODUCT_NOT_AVAILABLE_FOR_PURCHASE_ERROR:
       return new ErrorVisible('Ese plan no está disponible ahora mismo en la tienda.');
     case PURCHASES_ERROR_CODE.NETWORK_ERROR:
+    case PURCHASES_ERROR_CODE.OFFLINE_CONNECTION_ERROR:
       // `mensajeSistema` lo reconoce como falta de red.
       return new Error('network');
     default:
@@ -221,6 +265,40 @@ export async function preciosDeTienda(): Promise<PreciosTienda> {
     const id = productoBase(p.product.identifier);
     const precio = precioVisible(p.product.priceString);
     if (esProductoNivl(id) && !out[id] && precio) out[id] = precio;
+  }
+  return out;
+}
+
+/**
+ * La oferta introductoria que declara la tienda para cada producto, ya en
+ * frase (`textoIntro`). Hoy ningún producto de App Store Connect la tiene
+ * (la prueba de 7 días es del servidor): esto existe para que, si un día se
+ * configura una en una tienda, el paywall la declare en vez de callarla. En
+ * iOS se pregunta la elegibilidad: inelegible → no se dice; desconocida → se
+ * dice como condicional. En Google Play la opción por defecto ya solo trae
+ * la oferta si la cuenta es elegible.
+ */
+export async function introsDeTienda(): Promise<Partial<Record<ProPlanId, string>>> {
+  await asegurarUsuario();
+  const out: Partial<Record<ProPlanId, string>> = {};
+  const conIntro = (await todosLosPaquetes()).filter((p) => esProductoNivl(p.product.identifier) && p.product.introPrice);
+  if (!conIntro.length) return out;
+  let elegibilidad: Record<string, { status: number }> = {};
+  if (Platform.OS === 'ios') {
+    try {
+      elegibilidad = await Purchases.checkTrialOrIntroductoryPriceEligibility(conIntro.map((p) => p.product.identifier));
+    } catch {
+      elegibilidad = {};
+    }
+  }
+  for (const p of conIntro) {
+    const id = productoBase(p.product.identifier) as ProPlanId;
+    if (out[id]) continue;
+    const st = elegibilidad[p.product.identifier]?.status;
+    // 1 = INELIGIBLE, 3 = NO_INTRO_OFFER_EXISTS (INTRO_ELIGIBILITY_STATUS).
+    if (Platform.OS === 'ios' && (st === 1 || st === 3)) continue;
+    const t = textoIntro(p.product.introPrice, Platform.OS === 'ios' && st !== 2);
+    if (t) out[id] = t;
   }
   return out;
 }
@@ -254,12 +332,12 @@ async function reconciliarCompra(): Promise<void> {
  * Espera a que el webhook escriba la compra: reintentos cortos, unos 12 s en
  * total. True si el servidor ya la refleja.
  */
-async function esperarDerecho(planId: ProPlanId | null): Promise<boolean> {
+async function esperarDerecho(reflejada: (st: AiStatus) => boolean): Promise<boolean> {
   for (let i = 0; i < 6; i++) {
     if (i > 0) await pausa(2000);
     try {
       const st = await fetchAiStatus();
-      if (planId ? compraReflejada(st, planId) : st.entitled && !st.trial) return true;
+      if (reflejada(st)) return true;
     } catch {
       /* sin red un momento: se reintenta */
     }
@@ -268,12 +346,15 @@ async function esperarDerecho(planId: ProPlanId | null): Promise<boolean> {
 }
 
 /**
- * - `activa`: la tienda cobró y el servidor ya da el coach.
- * - `pendiente`: la tienda cobró y el webhook aún no ha llegado; se activa en
- *   segundos (la pantalla lo dice y vuelve a leer el estado).
+ * - `activa`: la tienda cobró y el servidor ya da el coach (o el plan nuevo).
+ * - `pendiente`: la tienda cobró y el servidor aún no lo refleja; se activa en
+ *   segundos (la pantalla lo dice, vuelve a leer el estado y Restaurar
+ *   compras lo reintenta).
+ * - `programada`: cambio de plan que la tienda aplica al renovar (Élite → Pro,
+ *   o anual ↔ mensual). Hasta entonces sigue el plan actual.
  * - `cancelada`: el usuario cerró la hoja de pago. No es un error.
  */
-export type ResultadoCompra = 'activa' | 'pendiente' | 'cancelada';
+export type ResultadoCompra = 'activa' | 'pendiente' | 'programada' | 'cancelada';
 
 /** El importe cambió entre la oferta y el cobro: hay que volver a mostrarlo. */
 export class StorePriceChangedError extends ErrorVisible {
@@ -281,6 +362,55 @@ export class StorePriceChangedError extends ErrorVisible {
     super('El precio de la tienda ha cambiado. Revisa el importe actualizado antes de comprar.');
     this.name = 'StorePriceChangedError';
   }
+}
+
+/** La tienda de ESTE dispositivo, con el nombre que usa RevenueCat. */
+function tiendaDelDispositivo(): string {
+  return Platform.OS === 'ios' ? 'APP_STORE' : 'PLAY_STORE';
+}
+
+// Sin nombrar la tienda de la otra plataforma (Apple 2.3.10).
+const NOMBRE_TIENDA: Record<string, string> = {
+  STRIPE: 'la web de NIVL',
+  RC_BILLING: 'la web de NIVL',
+};
+
+export interface SuscripcionTienda {
+  /** El producto de NIVL activo, sin la parte de base plan de Google Play. */
+  producto: ProPlanId;
+  /** "PLAY_STORE"/"APP_STORE"/…; null si el SDK no lo dice (se asume este dispositivo). */
+  store: string | null;
+  /** El id tal cual lo da la tienda (en Google Play, "producto:baseplan"). */
+  idTienda: string;
+  managementURL: string | null;
+}
+
+/**
+ * Las suscripciones de NIVL vivas en RevenueCat para la cuenta atada. Se mira
+ * `subscriptionsByProductIdentifier`, `activeSubscriptions` y los
+ * entitlements activos: cualquiera de los tres basta (en Google Play los ids
+ * llegan como "producto:baseplan").
+ */
+function suscripcionesNivl(info: CustomerInfo | null | undefined): SuscripcionTienda[] {
+  if (!info) return [];
+  const out = new Map<ProPlanId, SuscripcionTienda>();
+  const poner = (idTienda: string | null | undefined, store: string | null, url: string | null) => {
+    if (!idTienda || !esProductoNivl(idTienda)) return;
+    const producto = productoBase(idTienda) as ProPlanId;
+    const previo = out.get(producto);
+    if (previo && (previo.store || !store)) return;
+    out.set(producto, { producto, store, idTienda, managementURL: url ?? info.managementURL ?? null });
+  };
+  for (const [id, sub] of Object.entries(info.subscriptionsByProductIdentifier ?? {})) {
+    if (sub?.isActive) poner(sub.productIdentifier || id, sub.store ?? null, sub.managementURL ?? null);
+  }
+  for (const id of info.activeSubscriptions ?? []) poner(id, null, null);
+  for (const e of Object.values(info.entitlements?.active ?? {})) {
+    if (e?.isActive !== false) poner(e?.productIdentifier, e?.store ?? null, null);
+  }
+  // Élite antes que Pro: si hubiera dos, la de más nivel es la que manda.
+  const rango = (s: SuscripcionTienda) => (proPlan(s.producto).tier === 'elite' ? 1 : 0);
+  return [...out.values()].sort((a, b) => rango(b) - rango(a));
 }
 
 /** Compra solo al precio mostrado y espera a que el servidor refleje el derecho. */
@@ -295,14 +425,44 @@ export async function purchase(planId: ProPlanId, precioMostrado: string): Promi
   }
   if (!paquete) throw new ErrorVisible('Ese plan no está disponible ahora mismo en la tienda.');
   if (precioVisible(paquete.product.priceString) !== precioMostrado.trim()) throw new StorePriceChangedError();
+
+  // Sin saber qué tiene ya, no se cobra: en Google Play comprar otro producto
+  // sin `productChangeInfo` abre una SEGUNDA suscripción (doble cobro).
+  let actual: SuscripcionTienda | null;
   try {
-    await Purchases.purchasePackage(paquete);
+    actual = suscripcionesNivl(await Purchases.getCustomerInfo())[0] ?? null;
+  } catch (e) {
+    throw traducir(e);
+  }
+  const tipo = tipoCambio(actual?.producto, planId);
+  if (tipo === 'mismo') {
+    throw new ErrorVisible('Ya tienes este plan activo en la tienda. Si no lo ves en NIVL, pulsa Restaurar compras.');
+  }
+  if (actual?.store && actual.store !== tiendaDelDispositivo()) {
+    // Otra tienda (o la web): cambiar aquí sería pagar dos suscripciones.
+    const donde = NOMBRE_TIENDA[actual.store] ?? 'otra tienda (la de tu otro dispositivo)';
+    throw new ErrorVisible(`Tu suscripción de NIVL se paga en ${donde}. Cámbiala o cancélala allí: comprar aquí sería un segundo cobro.`);
+  }
+
+  let cambio: StoreProductChangeInfo | null = null;
+  if (actual && Platform.OS === 'android') {
+    cambio = {
+      oldProductIdentifier: productoBase(actual.idTienda),
+      replacementMode: modoReemplazoGoogle(tipo) as StoreProductChangeInfo['replacementMode'],
+    };
+  }
+  try {
+    if (cambio) await Purchases.purchasePackage(paquete, null, cambio);
+    else await Purchases.purchasePackage(paquete);
   } catch (e) {
     if (cancelada(e)) return 'cancelada';
     throw traducir(e);
   }
   await reconciliarCompra();
-  return (await esperarDerecho(planId)) ? 'activa' : 'pendiente';
+  if (tipo === 'nueva') return (await esperarDerecho((st) => compraReflejada(st, planId))) ? 'activa' : 'pendiente';
+  // Cambio dentro del grupo: solo cuenta el plan EXACTO; el anterior ya daba derecho.
+  if (await esperarDerecho((st) => planExacto(st, planId))) return 'activa';
+  return tipo === 'subida' ? 'pendiente' : 'programada';
 }
 
 /**
@@ -311,17 +471,58 @@ export async function purchase(planId: ProPlanId, precioMostrado: string): Promi
  */
 export type ResultadoRestaurar = 'activa' | 'pendiente' | 'nada';
 
-/** Recupera una compra hecha con la misma cuenta de tienda (obligatorio en iOS). */
+/**
+ * Recupera una compra hecha con la misma cuenta de tienda (obligatorio en
+ * iOS), también tras borrar la cuenta de NIVL y crear otra: RevenueCat la
+ * transfiere al uuid nuevo y `store-reconcile` (cuerpo vacío: el servidor
+ * solo mira la sesión) la aplica sin esperar al webhook.
+ */
 export async function restorePurchases(): Promise<ResultadoRestaurar> {
   await asegurarUsuario();
-  let activas: string[];
+  let activas: SuscripcionTienda[];
   try {
-    const info = await Purchases.restorePurchases();
-    activas = info.activeSubscriptions ?? [];
+    activas = suscripcionesNivl(await Purchases.restorePurchases());
   } catch (e) {
     throw traducir(e);
   }
-  if (!activas.some((id) => esProductoNivl(id))) return 'nada';
+  if (!activas.length) return 'nada';
   await reconciliarCompra();
-  return (await esperarDerecho(null)) ? 'activa' : 'pendiente';
+  return (await esperarDerecho((st) => st.entitled && !st.trial)) ? 'activa' : 'pendiente';
+}
+
+const GESTION_TIENDA = {
+  ios: 'https://apps.apple.com/account/subscriptions',
+  android: 'https://play.google.com/store/account/subscriptions',
+} as const;
+
+/**
+ * Abre la gestión de la suscripción (cambiar, cancelar, ver la renovación).
+ * En iOS, la hoja nativa de la App Store si la suscripción es de allí; si no,
+ * la `managementURL` que da RevenueCat o la página de la tienda. No toca el
+ * derecho: lo que pase en la tienda llega al servidor por el webhook.
+ */
+export async function gestionarSuscripcion(): Promise<void> {
+  let sub: SuscripcionTienda | null = null;
+  let url: string | null = null;
+  if (purchasesAvailable()) {
+    try {
+      await asegurarUsuario();
+      const info = await Purchases.getCustomerInfo();
+      sub = suscripcionesNivl(info)[0] ?? null;
+      url = sub?.managementURL ?? info.managementURL ?? null;
+    } catch {
+      /* sin red: se abre la página de la tienda */
+    }
+    if (Platform.OS === 'ios' && (!sub?.store || sub.store === 'APP_STORE')) {
+      try {
+        await Purchases.showManageSubscriptions();
+        return;
+      } catch {
+        /* sin hoja nativa: la página */
+      }
+    }
+  }
+  const destino = url ?? (Platform.OS === 'ios' ? GESTION_TIENDA.ios : Platform.OS === 'android' ? GESTION_TIENDA.android : null);
+  if (!destino) throw new ErrorVisible('Gestiona tu suscripción desde la tienda donde la contrataste.');
+  await Linking.openURL(destino);
 }
