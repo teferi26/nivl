@@ -11,7 +11,10 @@
     "ios": {
       "bundleIdentifier": "com.teferi.nivl",
       "supportsTablet": true,
-      "associatedDomains": ["applinks:nivl.app", "applinks:nivl-web.vercel.app"],
+      "associatedDomains": [
+        "applinks:nivl.app",
+        "applinks:nivl-web.vercel.app"
+      ],
       "infoPlist": {
         "NSCameraUsageDescription": "NIVL usa la cámara para las fotos de evidencia de tus misiones, tu diario y tus entrenos. Solo se hace una foto cuando tú lo pides.",
         "NSPhotoLibraryUsageDescription": "NIVL accede a tus fotos para tu retrato y para las imágenes que decidas enviar a tu coach de IA, que las procesa un proveedor de IA externo.",
@@ -34,19 +37,25 @@
         {
           "action": "VIEW",
           "autoVerify": true,
-          "data": [{ "scheme": "https", "host": "nivl.app", "pathPrefix": "/c/" }],
-          "category": ["BROWSABLE", "DEFAULT"]
+          "data": [
+            {
+              "scheme": "https",
+              "host": "nivl.app",
+              "pathPrefix": "/c/"
+            }
+          ],
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
         }
       ],
       "permissions": [
         "android.permission.POST_NOTIFICATIONS",
-        "android.permission.SCHEDULE_EXACT_ALARM",
-        "android.permission.POST_NOTIFICATIONS",
         "android.permission.SCHEDULE_EXACT_ALARM"
       ],
       "blockedPermissions": [
-        "android.permission.RECORD_AUDIO",
-        "android.permission.RECORD_AUDIO"
+        "com.google.android.gms.permission.AD_ID"
       ]
     },
     "web": {
@@ -69,7 +78,7 @@
         {
           "cameraPermission": "NIVL usa la cámara para las fotos de evidencia de tus misiones, tu diario y tus entrenos. Solo se hace una foto cuando tú lo pides.",
           "photosPermission": "NIVL accede a tus fotos para tu retrato y para las imágenes que decidas enviar a tu coach de IA, que las procesa un proveedor de IA externo.",
-          "microphonePermission": false
+          "microphonePermission": "NIVL usa el micrófono solo cuando grabas un vídeo de evidencia o hablas con tu coach. No graba nada en segundo plano."
         }
       ],
       [
@@ -81,7 +90,14 @@
           "resizeMode": "contain"
         }
       ],
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "expo-speech-recognition",
+        {
+          "microphonePermission": "NIVL usa el micrófono para que puedas hablar con tu coach. Solo escucha mientras mantienes pulsado el botón de voz.",
+          "speechRecognitionPermission": "NIVL convierte tu voz en texto para enviárselo a tu coach. Se procesa en tu dispositivo cuando es posible."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,
