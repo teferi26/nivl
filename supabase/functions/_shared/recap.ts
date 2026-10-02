@@ -80,9 +80,15 @@ export async function construirResumen(
   userId: string,
   kind: 'semanal' | 'mensual',
   hoy: string,
+  /**
+   * Cliente con el que se comprueba el consentimiento de IA. Tiene que ser el
+   * de servicio: `ai_consent_ok` solo la ejecuta service_role (0028) y con el
+   * del usuario la comprobación devolvía siempre error → resumen imposible.
+   */
+  consentDb: Db = sb,
 ): Promise<Resultado> {
   await requireHealth(sb, userId);
-  if (await consentimientoIa(sb, userId) !== true) throw new Error(SIN_CONSENTIMIENTO);
+  if (await consentimientoIa(consentDb, userId) !== true) throw new Error(SIN_CONSENTIMIENTO);
   const { desde, hasta } = kind === 'semanal' ? periodoSemanal(hoy) : periodoMensual(hoy);
 
   const [fotosRes, compRes, diarioRes, gymRes, cardioRes, perfilRes, logrosRes] = await Promise.all([
@@ -159,7 +165,7 @@ export async function construirResumen(
     .join('\n');
 
   await requireHealth(sb, userId);
-  if (await consentimientoIa(sb, userId) !== true) throw new Error(SIN_CONSENTIMIENTO);
+  if (await consentimientoIa(consentDb, userId) !== true) throw new Error(SIN_CONSENTIMIENTO);
   const turn = await callClaude({
     system: [{ type: 'text', text: SISTEMA }],
     messages: [{ role: 'user', content: [{ type: 'text', text: datos }] }],

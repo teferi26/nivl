@@ -7,6 +7,12 @@ const json = (status: number, body: unknown) => new Response(JSON.stringify(body
   status, headers: { 'content-type': 'application/json', 'cache-control': 'no-store' },
 });
 const pending = () => json(503, { ok: false, pending: true, error: 'El borrado sigue pendiente. Reintenta para completarlo.' });
+// Auth signs the token and then reports that its subject no longer exists:
+// the account was already erased (lost response, concurrent retry). Only this
+// exact code counts; an expired or revoked session is NOT proof of erasure.
+const userGone = (error: unknown) => !!error && typeof error === 'object'
+  && ((error as { code?: unknown }).code === 'user_not_found' || (error as { status?: unknown }).status === 404);
+const erased = () => json(200, { ok: true });
 
 function ownObjects(value: unknown, userId: string): value is OwnedObject[] {
   return Array.isArray(value) && value.length <= 100 && value.every(item => {
@@ -17,8 +23,44 @@ function ownObjects(value: unknown, userId: string): value is OwnedObject[] {
   });
 }
 
+export interface ErasureOptions {
+  /** RevenueCat SECRET key (sk_…). Public SDK keys can't delete and are ignored. */
+  revenueCatKey?: string;
+  fetcher?: typeof fetch;
+  timeoutMs?: number;
+}
+
+/**
+ * RevenueCat customer erasure (GDPR). 200 and 404 both mean "ensure deleted"
+ * (https://www.revenuecat.com/docs/api-v1/customers#tag/customers/operation/delete-subscriber).
+ * Runs before Auth deletion: if it fails, Auth stays and the app's idempotent
+ * retry repeats it. It does NOT cancel a store subscription.
+ */
+async function eraseRevenueCatCustomer(userId: string, opts: ErasureOptions): Promise<boolean> {
+  const key = opts.revenueCatKey?.trim() ?? '';
+  if (!key.startsWith('sk_')) {
+    // No personal data in the log line; deployment config issue only.
+    console.warn('account-erasure: REVENUECAT_API_KEY (secret) not configured; RevenueCat customer not erased');
+    return true;
+  }
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), opts.timeoutMs ?? 10_000);
+  try {
+    const response = await (opts.fetcher ?? fetch)(
+      `https://api.revenuecat.com/v1/subscribers/${encodeURIComponent(userId)}`,
+      { method: 'DELETE', headers: { Authorization: `Bearer ${key}`, Accept: 'application/json' }, signal: controller.signal },
+    );
+    await response.body?.cancel().catch(() => undefined);
+    return response.status === 200 || response.status === 404;
+  } catch {
+    return false;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 /** Auth stays alive until all real files have been removed. No SQL object DELETE. */
-export const accountErasureHandler = (admin: Db) => async (request: Request): Promise<Response> => {
+export const accountErasureHandler = (admin: Db, opts: ErasureOptions = {}) => async (request: Request): Promise<Response> => {
   if (request.method !== 'POST') return json(405, { error: 'Método no permitido' });
   const match = /^Bearer\s+(\S+)$/i.exec(request.headers.get('authorization') ?? '');
   if (!match) return json(401, { error: 'No autenticado' });
@@ -26,6 +68,7 @@ export const accountErasureHandler = (admin: Db) => async (request: Request): Pr
   try {
     // Body IDs are never trusted: every operation targets the verified caller.
     const { data: auth, error: authError } = await admin.auth.getUser(match[1]);
+    if (authError && (authError as { code?: unknown }).code === 'user_not_found') return erased();
     if (authError || !auth.user) return json(401, { error: 'Sesión inválida' });
     let body: unknown;
     try { body = await request.json(); } catch { return json(400, { error: 'Confirmación inválida' }); }
@@ -46,8 +89,9 @@ export const accountErasureHandler = (admin: Db) => async (request: Request): Pr
         // The upload trigger keeps this result valid until Auth is deleted.
         const { data: ready, error: readyError } = await admin.rpc('account_erasure_ready', args);
         if (readyError || ready !== true) return pending();
+        if (!(await eraseRevenueCatCustomer(userId, opts))) return pending();
         const { error: deleteError } = await admin.auth.admin.deleteUser(userId, false);
-        return deleteError ? pending() : json(200, { ok: true });
+        return !deleteError || userGone(deleteError) ? erased() : pending();
       }
       for (const bucket of BUCKETS) {
         const paths = objects.filter(item => item.bucket === bucket).map(item => item.path);

@@ -26,21 +26,21 @@ describe('isValidEmail', () => {
   });
 });
 
-describe('checkPassword (política Franky, NIST 800-63B)', () => {
-  test('menos de 12 caracteres no es válida para registrar', () => {
+describe('checkPassword (política NIVL, NIST 800-63B)', () => {
+  test('menos de 10 caracteres no es válida para registrar', () => {
     const r = checkPassword('Ab1cdefg');
     expect(r.ok).toBe(false);
-    expect(r.missing[0]).toContain('12 caracteres');
+    expect(r.missing[0]).toContain('10 caracteres');
   });
 
-  test('una frase en minúsculas de 12+ es válida: no hay reglas de composición', () => {
+  test('una frase en minúsculas de 10+ es válida: no hay reglas de composición', () => {
     const r = checkPassword('el gato de mi abuela ronca');
     expect(r.ok).toBe(true);
     expect(r.missing).toHaveLength(0);
     expect(r.strength).toBe('fuerte');
   });
 
-  test('12 caracteres repetitivos se rechazan aunque cumplan la longitud', () => {
+  test('caracteres repetitivos se rechazan aunque cumplan la longitud', () => {
     const r = checkPassword('aaaaaaaaaaaa');
     expect(r.ok).toBe(false);
     expect(r.missing).toContain('más variedad de caracteres');
