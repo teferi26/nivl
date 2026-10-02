@@ -67,6 +67,7 @@ async function sql(query) {
 
 // Cada migración se reconoce por un objeto que solo ella crea.
 const HUELLAS = {
+  '0060': `coalesce(obj_description(to_regprocedure('public.export_my_data()'),'pg_proc') like '%nivl:export-v5%', false)`,
   '0053': `to_regprocedure('public.my_share_alias()') is not null`,
   '0052': `to_regprocedure('public.friends_ranks()') is not null`,
   '0047': `exists(select 1 from information_schema.columns where table_schema = 'public' and table_name = 'coach_runs' and column_name = 'state_chars')`,
