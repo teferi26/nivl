@@ -67,6 +67,9 @@ async function sql(query) {
 
 // Cada migración se reconoce por un objeto que solo ella crea.
 const HUELLAS = {
+  '0041': `to_regclass('public.xp_daily_ledger') is not null`,
+  '0042': `to_regprocedure('public.claim_push_token(text,text)') is not null`,
+  '0043': `not has_table_privilege('authenticated','public.quests','TRUNCATE')`,
   '0038': `pg_get_constraintdef((select oid from pg_constraint where conname='coach_runs_kind_check' and conrelid='public.coach_runs'::regclass)) like '%titular%'`,
   '0039': `to_regprocedure('public.store_events_redact(text)') is not null`,
   '0040': `coalesce(obj_description(to_regprocedure('public.export_my_data()'), 'pg_proc') like '%nivl:export-completo%', false)`,
