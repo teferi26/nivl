@@ -13,6 +13,8 @@
 - Manifiestos de privacidad de los SDK del binario (`node_modules` del checkout de integración): async-storage, expo-application, constants, device, file-system, notifications, system-ui y react-native **no declaran ningún dato recogido**, y los que lo indican, `NSPrivacyTracking=false`. No hay SDK de analítica, publicidad, atribución ni informes de fallos (Chat 3 y `package.json`).
 - RevenueCat ([Apple App Privacy](https://www.revenuecat.com/docs/platform-resources/apple-platform-resources/apple-app-privacy), consultada el 02/10/2026): obliga a declarar **Purchases** con las finalidades **Analytics** y **App Functionality**.
 
+**Actualización (Chat 3 @e5eeefa, 02/10):** se añade **Resend** como proveedor del envío de los correos de Auth (confirmación, recuperación y cambio de correo). Recibe el correo electrónico y el contenido del mensaje (un enlace de un solo uso). Sin tracking. **No añade categorías** en Apple: el correo ya está declarado, vinculado y con finalidad App Functionality. En Data Safety actúa como encargado, así que no cuenta como «compartido». Región: **NO VERIFICADA** (pendiente del panel del dueño).
+
 ## 1. App Privacy de Apple
 
 **¿Recoge datos?** Sí. **¿Tracking?** **No**: no hay IDFA, ni ATT, ni datos combinados con terceros para publicidad, ni brókeres de datos. **Vinculados a la identidad:** todos, porque la app exige cuenta.

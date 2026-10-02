@@ -25,7 +25,7 @@ ACCOUNT DELETION
 Perfil > "Cuenta" section > "Eliminar cuenta" > "Eliminar para siempre" (sheet) > "Eliminar para siempre" (alert). It deletes the NIVL account, its data and files. Please test deletion with a newly created account, not the review accounts. Deleting the account does not cancel an Apple subscription. "Exportar mis datos" is in the same section.
 
 SERVICES
-Supabase (Frankfurt): auth, data, storage, functions. Apple IAP + RevenueCat: subscriptions. AI after consent: DeepSeek (Pro and trial), Anthropic (Élite and short tasks). No analytics, ads or tracking SDKs. Expo/APNs: optional notifications and updates. Vercel: web pages.
+Supabase (Frankfurt): auth, data, storage, functions. Resend: account emails. Apple IAP + RevenueCat: subscriptions. AI after consent: DeepSeek (Pro and trial), Anthropic (Élite and short tasks). No analytics, ads or tracking SDKs. Expo/APNs: optional notifications and updates. Vercel: web pages.
 
 REGIONS
 Same features in all 165 enabled territories; Spanish interface; prices follow the storefront.

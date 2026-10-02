@@ -70,6 +70,7 @@ Account deletion. In Perfil, scroll to the "Cuenta" section, tap "Eliminar cuent
 **4. External services**
 
 - Supabase (database hosted in Frankfurt, Germany): authentication, database, file storage and server functions.
+- Resend: delivery of account emails (sign-up confirmation, password reset and email change).
 - Apple In-App Purchase (StoreKit) and RevenueCat: subscription purchases, restores and subscription status. All iOS purchases use Apple's purchase sheet.
 - AI services used by the optional coach, only after the user's consent: DeepSeek (Pro coach and the 7-day trial) and Anthropic (Claude: the Élite coach and other requests listed in the consent screen). The in-app consent screen names each provider, when it is used and its processing locations. NIVL has no analytics, advertising or cross-app tracking SDKs.
 - Expo and Apple Push Notification service: optional notifications and compatible over-the-air updates of the app's JavaScript.
