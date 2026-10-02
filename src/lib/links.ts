@@ -50,8 +50,21 @@ export function restoDelModulo(base: number, eco: Pick<Propagado, 'xpMisiones'> 
 export async function propagarActo(profile: Profile, link: ActLink, date: string): Promise<Propagado> {
   const out: Propagado = { xpMisiones: 0, xp: 0, marcadas: [], profile, leveledUp: false, newLevel: 0 };
 
+  // Una lectura fallida no puede convertirse en "no había misión": el módulo
+  // cobraría su base y la misión, marcada luego a mano, cobraría otra vez
+  // (QA Chat 5, H2). Se reintenta una vez.
+  const leer = () => Promise.all([fetchQuests(), fetchCompletionsForDate(date)]);
+  const pagadoHoy = async (questId: string): Promise<number | null> => {
+    try {
+      const c = (await fetchCompletionsForDate(date)).find((x) => x.quest_id === questId);
+      return c ? c.xp_awarded : null;
+    } catch {
+      return null;
+    }
+  };
+
   try {
-    const [quests, completions] = await Promise.all([fetchQuests(), fetchCompletionsForDate(date)]);
+    const [quests, completions] = await leer().catch(leer);
     const hechas = new Map(completions.map((c) => [c.quest_id, c.xp_awarded]));
     const enlazadas = questsScheduledOn(quests, date).filter((q) => q.link === link);
 
@@ -63,6 +76,12 @@ export async function propagarActo(profile: Profile, link: ActLink, date: string
       try {
         const res = await completeQuest(out.profile, q, null);
         out.profile = res.profile;
+        if (!res.awarded) {
+          // Otro dispositivo (o un toque en Hoy) la completó entre la lectura
+          // y la marca: ya está pagada, y lo pagado cuenta.
+          out.xpMisiones += (await pagadoHoy(q.id)) ?? 0;
+          continue;
+        }
         out.xp += res.xp;
         out.xpMisiones += res.xp;
         out.marcadas.push(q.title);
@@ -71,7 +90,15 @@ export async function propagarActo(profile: Profile, link: ActLink, date: string
           out.newLevel = res.newLevel;
         }
       } catch {
-        /* esa misión se queda pendiente y se puede marcar a mano */
+        // La RPC pudo confirmar y perder la respuesta: se comprueba antes de
+        // dejar que el módulo cobre lo que la misión ya pagó.
+        const pagado = await pagadoHoy(q.id);
+        if (pagado !== null) {
+          out.xp += pagado;
+          out.xpMisiones += pagado;
+          out.marcadas.push(q.title);
+        }
+        /* si no, esa misión se queda pendiente y se puede marcar a mano */
       }
     }
   } catch {

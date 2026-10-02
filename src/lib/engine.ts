@@ -13,6 +13,7 @@ import { addDays, dateKey } from './dates';
 import { BONUS_BY_DIFFICULTY, DAILY_PENALTY_CAP, levelFromXp, questXp, RULE_BREAK_XP, STAT_COLUMN } from './game';
 import { supabase } from './supabase';
 import type { Profile, Quest } from './types';
+import { ErrorVisible } from './validation';
 
 export { questsScheduledOn };
 
@@ -25,14 +26,65 @@ export interface DayCloseResult {
   stonesEarned: number;
 }
 
+type CierreResultado = { profile: Profile; result: DayCloseResult | null };
+
+// Un cierre en vuelo por usuario. Hoy recarga en cada foco: volver a la
+// pestaña mientras el primer cierre aún espera a la red lanzaba un segundo
+// cierre con el mismo perfil obsoleto, y como `apply_day_close` no compara
+// `last_day_processed`, descontaba dos veces y creaba dos misiones de
+// penalización idénticas (QA Chat 5, H3). El segundo llamante recibe el
+// resultado del primero. Entre dos DISPOSITIVOS esto no basta: eso lo cierra
+// el servidor (PROPUESTA 0035, docs/qa-audit).
+const cierresEnVuelo = new Map<string, Promise<CierreResultado>>();
+
+// Misiones de recuperación que no se pudieron crear tras un cierre ya
+// aplicado. Se reintentan en el siguiente cierre de esta sesión.
+type Recuperacion = Record<string, unknown> & { penalty_date: string };
+const recuperacionesPendientes = new Map<string, Recuperacion[]>();
+const INTENTOS_RECUPERACION = 3;
+
+async function insertarRecuperacion(fila: Recuperacion): Promise<boolean> {
+  for (let i = 0; i < INTENTOS_RECUPERACION; i++) {
+    try {
+      // supabase-js no lanza: devuelve `{ error }`. Antes se ignoraba, y un
+      // fallo de red aquí dejaba el XP descontado sin misión que lo devolviera.
+      const { error } = await supabase.from('quests').insert(fila);
+      if (!error) return true;
+    } catch {
+      /* se reintenta */
+    }
+  }
+  return false;
+}
+
 // Cierra los días pendientes desde el último procesado hasta ayer.
 // Orden de defensas: congelación → piedras de protección → penalización
 // (con tope diario). Detalle puro en closing.ts.
-export async function processPendingDays(
-  profile: Profile,
-  quests: Quest[],
-): Promise<{ profile: Profile; result: DayCloseResult | null }> {
+export function processPendingDays(profile: Profile, quests: Quest[]): Promise<CierreResultado> {
+  const enVuelo = cierresEnVuelo.get(profile.id);
+  if (enVuelo) return enVuelo;
+  const cierre = cerrarDias(profile, quests).finally(() => cierresEnVuelo.delete(profile.id));
+  cierresEnVuelo.set(profile.id, cierre);
+  return cierre;
+}
+
+async function reintentarRecuperaciones(userId: string, today: string): Promise<void> {
+  const pendientes = recuperacionesPendientes.get(userId);
+  if (!pendientes?.length) return;
+  const quedan: Recuperacion[] = [];
+  for (const fila of pendientes) {
+    // Una recuperación solo vale el día de su cierre (invariante 2): pasado
+    // ese día, la pérdida se habría consolidado igualmente.
+    if (fila.penalty_date !== today) continue;
+    if (!(await insertarRecuperacion(fila))) quedan.push(fila);
+  }
+  if (quedan.length) recuperacionesPendientes.set(userId, quedan);
+  else recuperacionesPendientes.delete(userId);
+}
+
+async function cerrarDias(profile: Profile, quests: Quest[]): Promise<CierreResultado> {
   const today = dateKey();
+  await reintentarRecuperaciones(profile.id, today);
   const yesterday = addDays(today, -1);
 
   // Limpia una congelación vencida aunque hoy no haya días que cerrar; antes solo
@@ -97,6 +149,8 @@ export async function processPendingDays(
   });
   const levelAfter = levelFromXp(updated.xp_total).level;
 
+  const recuperaciones: Recuperacion[] = [];
+
   // Las roturas quedan registradas una a una (para el histórico de cada regla),
   // pero la consecuencia es UNA sola: seis misiones de castigo el mismo día no
   // se hacen, se abandonan.
@@ -110,7 +164,7 @@ export async function processPendingDays(
 
     const ultimo = diasConReglasRotas[diasConReglasRotas.length - 1]!;
     const cuantas = new Set(diasConReglasRotas.flatMap((d) => d.rotas.map((r) => r.id))).size;
-    await supabase.from('quests').insert({
+    recuperaciones.push({
       health_data: diasConReglasRotas.some(d => d.rotas.some(r => reglasActivas.some(original => original.id === r.id && original.health_data))),
       user_id: profile.id,
       title:
@@ -128,7 +182,7 @@ export async function processPendingDays(
   }
 
   if (close.penaltyXp > 0) {
-    await supabase.from('quests').insert({
+    recuperaciones.push({
       user_id: profile.id,
       title: 'Misión de penalización',
       stat: 'AGI',
@@ -139,8 +193,27 @@ export async function processPendingDays(
       penalty_date: today,
       penalty_xp: close.penaltyXp,
     });
+  }
+
+  // El XP ya está descontado: cada recuperación tiene que existir o el fallo
+  // tiene que verse (invariante 2). Lo atómico de verdad es crearlas en la
+  // misma transacción que el cierre (PROPUESTA 0035); mientras, se reintenta,
+  // se apunta en el evento y se avisa.
+  const fallidas: Recuperacion[] = [];
+  for (const fila of recuperaciones) {
+    if (!(await insertarRecuperacion(fila))) fallidas.push(fila);
+  }
+  if (fallidas.length) {
+    recuperacionesPendientes.set(profile.id, [...(recuperacionesPendientes.get(profile.id) ?? []), ...fallidas]);
+  }
+  const recuperacionFallida = fallidas.some((f) => f.title === 'Misión de penalización');
+
+  if (close.penaltyXp > 0) {
     await insertEvent(profile.id, 'penalty', { xp: close.penaltyXp, missed: close.missedTitles,
       health_data: quests.some(q => q.health_data && close.missedTitles.includes(q.title)),
+      ...(recuperacionFallida ? { recuperacion: 'fallida' } : {}),
+    }).catch(() => {
+      /* el aviso de abajo sigue saliendo */
     });
   }
   if (close.stonesUsed > 0) {
@@ -151,6 +224,12 @@ export async function processPendingDays(
   }
   if (close.streakLost) {
     await insertEvent(profile.id, 'streak_lost', { missed: close.missedTitles });
+  }
+
+  if (fallidas.length) {
+    throw new ErrorVisible(
+      'El día se cerró, pero no se pudo crear la misión para recuperar lo perdido. Vuelve a abrir Hoy con conexión para reintentarlo.',
+    );
   }
 
   const result: DayCloseResult | null =
@@ -175,6 +254,8 @@ export interface CompleteResult {
   newLevel: number;
   profile: Profile;
   wasPenalty: boolean;
+  /** false si la misión ya estaba completada hoy (doble toque, otro dispositivo). */
+  awarded: boolean;
 }
 
 export async function completeQuest(
@@ -183,6 +264,19 @@ export async function completeQuest(
   evidenceBase64: string | null,
 ): Promise<CompleteResult> {
   const today = dateKey();
+
+  // Hoy no se recarga sola a medianoche: una pantalla cargada el día D y
+  // tocada el D+1 completaba la misión con fecha D+1. La de penalización se
+  // cobraba fuera de su día (invariante 2: solo ese día) y una diaria quedaba
+  // fallada en D y "hecha" en D+1. El espejo del coach (_shared/tools.ts) ya
+  // rechaza lo mismo.
+  if (questsScheduledOn([quest], today).length === 0) {
+    throw new ErrorVisible(
+      quest.is_penalty
+        ? 'Esta misión de penalización caducó a medianoche: la pérdida ya se consolidó.'
+        : 'El día ha cambiado. Vuelve a abrir Hoy para ver las misiones de hoy.',
+    );
+  }
 
   let evidencePath: string | null = null;
   if (evidenceBase64) {
@@ -245,6 +339,7 @@ export async function completeQuest(
     newLevel: after,
     profile: updated,
     wasPenalty: quest.is_penalty,
+    awarded,
   };
 }
 
