@@ -54,9 +54,9 @@ export function sse(eventos: unknown[]): Response {
 }
 
 /** Un turno de Anthropic con texto y un uso concreto (lo que "cuesta"). */
-export function turnoTexto(texto: string, uso = { input_tokens: 100_000, output_tokens: 2_000 }): Response {
+export function turnoTexto(texto: string, uso = { input_tokens: 100_000, output_tokens: 2_000 }, modelo = 'claude-sonnet-5'): Response {
   return sse([
-    { type: 'message_start', message: { model: 'claude-sonnet-5', usage: { input_tokens: uso.input_tokens, output_tokens: 0 } } },
+    { type: 'message_start', message: { model: modelo, usage: { input_tokens: uso.input_tokens, output_tokens: 0 } } },
     { type: 'content_block_start', index: 0, content_block: { type: 'text', text: '' } },
     { type: 'content_block_delta', index: 0, delta: { type: 'text_delta', text: texto } },
     { type: 'content_block_stop', index: 0 },
@@ -64,14 +64,20 @@ export function turnoTexto(texto: string, uso = { input_tokens: 100_000, output_
   ]);
 }
 
-/** Un turno de Anthropic que pide una herramienta. */
-export function turnoHerramienta(nombre: string, input: unknown, id = `tu_${nombre}`): Response {
+/** Un turno de Anthropic que pide una herramienta. `uso` y `modelo` opcionales (por defecto, 50 k fichas de Sonnet). */
+export function turnoHerramienta(
+  nombre: string,
+  input: unknown,
+  id = `tu_${nombre}`,
+  uso = { input_tokens: 50_000, output_tokens: 300 },
+  modelo = 'claude-sonnet-5',
+): Response {
   return sse([
-    { type: 'message_start', message: { model: 'claude-sonnet-5', usage: { input_tokens: 50_000, output_tokens: 0 } } },
+    { type: 'message_start', message: { model: modelo, usage: { input_tokens: uso.input_tokens, output_tokens: 0 } } },
     { type: 'content_block_start', index: 0, content_block: { type: 'tool_use', id, name: nombre, input: {} } },
     { type: 'content_block_delta', index: 0, delta: { type: 'input_json_delta', partial_json: JSON.stringify(input) } },
     { type: 'content_block_stop', index: 0 },
-    { type: 'message_delta', delta: { stop_reason: 'tool_use' }, usage: { output_tokens: 300 } },
+    { type: 'message_delta', delta: { stop_reason: 'tool_use' }, usage: { output_tokens: uso.output_tokens } },
   ]);
 }
 
