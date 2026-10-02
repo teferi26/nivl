@@ -2,7 +2,7 @@
 
 Base auditada: `fix/appstore-review-20260929@bf32d28` y el esquema **vivo** del proyecto NIVL (`dueyufxxkiixdxighpaz`), consultado el 02/10/2026 solo en lectura: cada prueba corre dentro de `BEGIN … ROLLBACK` con usuarios ficticios `@example.invalid` (nada queda escrito; comprobado con una tabla temporal que desaparece tras la consulta). No se leyó ningún dato de usuarios reales.
 
-Propuesta SQL: `proposals/c3-economia-cierre.sql` (sin número; lo asigna el coordinador). Test: `proposals/c3-economia-cierre.test.sql`.
+Migración: `proposals/0035-integridad-cierre-economia.sql` (número asignado por el coordinador el 02/10; conjunta con Chat 5). Test: `proposals/0035-integridad-cierre-economia.test.sql` — **33/33 PASS** contra el esquema vivo en rollback (02/10).
 
 ## Hallazgos
 
@@ -39,3 +39,10 @@ NO PROBADO: concurrencia real con dos conexiones simultáneas (el test es secuen
 3. Fase 2 (E7): tabla de eventos permitidos y topes diarios de `award_xp`, diseñada con Chat 5 y `nivl-game-balancer`.
 
 Riesgo de la propuesta: un cliente que hoy dependa de escribir `completions` o `profiles` directamente fallaría; se buscó en `src/` y `supabase/functions/` y no existe tal escritura.
+
+## Añadidos en 0035 (02/10, tras la revisión cruzada con Chat 5)
+
+- **EV-1 (P1, reproducido)**: sin consentimiento de salud, `start_trial()` y el evento `pro_interest` fallan con `42501 sin_consentimiento_salud` (también `creator_referral`), porque `require_health_write` (0030) trata todo tipo de evento desconocido como salud. Bloquea la prueba de 7 días y «avísame de Pro» a quien rechace la salud, un camino que Apple puede recorrer. Fix: esos tres tipos pasan a la lista de eventos generales, y `general_event_payload` admite `ends`, `source`/`tier`/`plan` (≤40 caracteres) y `recuperacion` ∈ {fallida, ok}. Un evento con claves de salud (p. ej. `weight`) sigue bloqueado, igual que cualquier tipo desconocido.
+- **`close_day_v2(p_expected_last_day, p_last_day, …, p_recoveries jsonb)`** → `{applied, recoveries, profile}`. Compara contra el `last_day_processed` que vio el cliente y crea las recuperaciones en la misma transacción, limitadas a lo realmente descontado. Cubre la petición del Chat 5: CAS, H1 y RET-01.
+- `complete_quest`: una penalización ignora `p_xp`, paga su `penalty_xp` y solo vale en su `penalty_date`.
+- Casos nuevos PASS: penalización en otro día rechazada · v2 aplica una vez · v2 descuenta lo real (100, no 300) · v2 recuperación = lo perdido · start_trial sin salud · pro_interest sin salud · weigh_in sigue bloqueado · tipo desconocido sigue bloqueado · pro_interest con dato de salud bloqueado · payloads conservados/filtrados. **Total 33/33.**

@@ -1,22 +1,10 @@
--- PROPUESTA Chat 3 · Seguridad (sin número: lo asigna el coordinador).
--- Integridad de la economía y del cierre del día. Compatible con los clientes
--- existentes (1.0.6/1.0.7): ninguna firma cambia y ningún flujo legítimo falla.
---
--- Hallazgos que cierra (ver docs/security-audit/c3-cierre-y-economia.md):
---   E1 Borrar y recrear el propio perfil con xp_total/streak/bonus inventados.
---   E2 Borrar una completion y volver a cobrar la misma misión el mismo día.
---   E3 apply_day_close_safe sin comparación: dos cierres con estado obsoleto
---      descuentan dos veces (1000 → 850 → 700 reproducido).
---   E4 apply_day_close_safe acepta racha 100000, last_day en 2036 (ninguna
---      penalización futura) o retroceder last_day.
---   E5 Misiones de penalización forjables: el cliente inserta is_penalty con
---      penalty_xp arbitrario y complete_quest paga hasta 50000.
---   E6 Recuperaciones duplicadas (misma penalización dos veces).
---
--- Orden de despliegue: esta migración ANTES de cualquier OTA que la use. No
--- requiere OTA: los clientes actuales siguen funcionando sin cambios.
--- Huella sugerida: to_regclass('public.recovery_credits') is not null
-
+-- 0035 · Integridad del cierre del día, la economía y los eventos sin salud.
+-- PROPUESTA conjunta Chat 3 (seguridad) + Chat 5 (economía); número asignado
+-- por el coordinador el 02/10/2026. Compatible con clientes 1.0.6/1.0.7:
+-- ninguna firma existente cambia; close_day_v2 es nueva y opcional.
+-- Huella: to_regclass('public.recovery_credits') is not null
+-- Detalle y pruebas: docs/security-audit/c3-cierre-y-economia.md
+-- Tests: 0035-integridad-cierre-economia.test.sql (33 casos en rollback).
 begin;
 
 -- ── E1: el perfil solo nace con su id; borrarlo es cosa del servidor ──────
@@ -224,6 +212,52 @@ drop trigger if exists quests_penalty_guard on public.quests;
 create trigger quests_penalty_guard before insert or update on public.quests
   for each row execute function public.quests_penalty_guard();
 
+-- ── close_day_v2: cierre + recuperación en UNA transacción (clientes nuevos) ─
+-- p_expected_last_day es el last_day_processed que vio el cliente: si otro
+-- cierre se adelantó, devuelve applied=false y no toca nada. Las
+-- recuperaciones ([{title, health_data, xp}]) pasan por quests_penalty_guard,
+-- que las limita a lo realmente descontado (xp antes − xp después).
+create or replace function public.close_day_v2(
+  p_expected_last_day date, p_last_day date,
+  p_streak integer default null, p_stones integer default null, p_penalty_xp integer default 0,
+  p_clear_freeze boolean default false, p_perfect_streak integer default null,
+  p_recoveries jsonb default '[]'::jsonb
+) returns jsonb language plpgsql security definer set search_path = public as $$
+declare
+  v_uid uuid := auth.uid();
+  v_seen date;
+  v_profile public.profiles;
+  v_rec jsonb;
+  v_created integer := 0;
+begin
+  if v_uid is null then raise exception 'No autenticado' using errcode = '42501'; end if;
+  if p_last_day is null then raise exception 'Falta el día de cierre' using errcode = '22023'; end if;
+  if jsonb_typeof(coalesce(p_recoveries, '[]'::jsonb)) <> 'array' or jsonb_array_length(coalesce(p_recoveries, '[]'::jsonb)) > 2 then
+    raise exception 'Recuperaciones inválidas' using errcode = '22023';
+  end if;
+  perform pg_advisory_xact_lock(hashtextextended(v_uid::text, 630030));
+  select last_day_processed into v_seen from public.profiles where id = v_uid for update;
+  if v_seen is distinct from p_expected_last_day then
+    select * into v_profile from public.profiles where id = v_uid;
+    return jsonb_build_object('applied', false, 'recoveries', 0, 'profile', to_jsonb(v_profile));
+  end if;
+
+  v_profile := public.apply_day_close_safe(p_last_day, p_streak, p_stones, p_penalty_xp, p_clear_freeze, p_perfect_streak);
+
+  for v_rec in select * from jsonb_array_elements(coalesce(p_recoveries, '[]'::jsonb)) loop
+    insert into public.quests(user_id, title, stat, difficulty, days_of_week, requires_evidence,
+                              is_penalty, penalty_date, penalty_xp, health_data)
+    values (v_uid, left(coalesce(v_rec->>'title', 'Misión de penalización'), 200), 'AGI', 'media', '{}', false,
+            true, p_last_day + 1, greatest(0, coalesce((v_rec->>'xp')::integer, 0)),
+            coalesce((v_rec->>'health_data')::boolean, false));
+    if found then v_created := v_created + 1; end if;
+  end loop;
+
+  return jsonb_build_object('applied', true, 'recoveries', v_created, 'profile', to_jsonb(v_profile));
+end $$;
+revoke all on function public.close_day_v2(date,date,integer,integer,integer,boolean,integer,jsonb) from public, anon;
+grant execute on function public.close_day_v2(date,date,integer,integer,integer,boolean,integer,jsonb) to authenticated;
+
 -- ── complete_quest: el pago se acota a lo que la misión puede valer ───────
 -- Penalización: exactamente su penalty_xp. Resto: épica (250) × evidencia
 -- (1,25) × racha máxima (1,5) = 469. Se recorta en vez de fallar, para no
@@ -252,7 +286,12 @@ begin
   perform pg_advisory_xact_lock(hashtextextended(v_uid::text,630030));
   select * into v_quest from public.quests where id = p_quest_id and user_id = v_uid;
   if not found then raise exception 'Misión no encontrada'; end if;
-  p_xp := case when v_quest.is_penalty then least(p_xp, coalesce(v_quest.penalty_xp, 0))
+  -- La penalización ignora p_xp: paga su penalty_xp (hasta 9.000 tras 30 días
+  -- con reglas) y solo el día para el que se creó.
+  if v_quest.is_penalty and p_date is distinct from v_quest.penalty_date then
+    raise exception 'La penalización solo vale su día' using errcode = '22023';
+  end if;
+  p_xp := case when v_quest.is_penalty then coalesce(v_quest.penalty_xp, 0)
                else least(p_xp, 469) end;
   v_health:=public.health_row('quests',to_jsonb(v_quest)) or nullif(p_evidence_url,'') is not null;
   if v_health then perform public.assert_health_write(v_uid); end if;
@@ -291,4 +330,102 @@ end $$;
 revoke all on function public.complete_quest(uuid,date,integer,integer,boolean,text) from public, anon;
 grant execute on function public.complete_quest(uuid,date,integer,integer,boolean,text) to authenticated;
 
+
+-- ── Eventos generales sin consentimiento de salud (bug de 0030) ──────────
+CREATE OR REPLACE FUNCTION public.require_health_write()
+ RETURNS trigger
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+declare u uuid:=new.user_id; is_health boolean; parent_table text; parent_key text; parent_owned boolean;
+begin
+  -- Deleting the account remains available after withdrawal. Cascades may
+  -- clear nullable references while auth.users is already gone; no new data
+  -- can survive that transaction (all owner FKs cascade from auth.users).
+  if pg_trigger_depth()>1 and not exists(select 1 from auth.users where id=u) then return new; end if;
+  if tg_op='UPDATE' then
+    if new.user_id is distinct from old.user_id then raise exception 'No se puede cambiar el titular' using errcode='42501'; end if;
+    -- Narrow redaction-only escape for the service erasure RPC after an
+    -- explicitly requested pending job. Every economic field must be identical.
+    if tg_table_name in ('money_plan','budgets','transactions','category_rules') then
+      if auth.role()='service_role' and old.health_note and not new.health_note
+        and exists(select 1 from public.health_erasure_jobs where user_id=u and status='pending') then
+        if tg_table_name in ('money_plan','budgets') then
+          if new.rationale is null and (to_jsonb(new)-array['rationale','health_note'])=(to_jsonb(old)-array['rationale','health_note']) then return new; end if;
+        elsif tg_table_name='transactions' then
+          if new.description='Descripción retirada' and (to_jsonb(new)-array['description','health_note'])=(to_jsonb(old)-array['description','health_note']) then return new; end if;
+        elsif tg_table_name='category_rules' then
+          if not new.active and new.pattern='__nivl_removed_'||new.id::text
+            and (to_jsonb(new)-array['pattern','active','health_note'])=(to_jsonb(old)-array['pattern','active','health_note']) then return new; end if;
+        end if;
+      end if;
+    end if;
+    if tg_table_name='completions' then
+      if auth.role()='service_role' and new.evidence_url is null
+        and (to_jsonb(new)-'evidence_url')=(to_jsonb(old)-'evidence_url')
+        and exists(select 1 from public.health_erasure_jobs where user_id=u and status='pending') then return new; end if;
+    end if;
+  end if;
+  -- RLS on a child alone does not enforce ownership of its referenced parent.
+  select x.t,x.k into parent_table,parent_key from (values
+    ('completions','quests','quest_id'),('quest_photos','quests','quest_id'),
+    ('rule_checks','rules','rule_id'),('rule_breaks','rules','rule_id'),
+    ('dungeon_tasks','dungeons','dungeon_id'),('gym_exercises','gym_days','gym_day_id'),
+    ('gym_sessions','gym_days','gym_day_id'),('gym_lifts','gym_sessions','session_id'),
+    ('day_blocks','day_plans','plan_id'),('coach_messages','coach_threads','thread_id')
+  ) x(child,t,k) where x.child=tg_table_name;
+  if parent_table is not null and to_jsonb(new)->>parent_key is not null then
+    execute format('select exists(select 1 from public.%I where id=$1 and user_id=$2)',parent_table)
+      into parent_owned using (to_jsonb(new)->>parent_key)::uuid,u;
+    if not parent_owned then raise exception 'Referencia ajena' using errcode='42501'; end if;
+  end if;
+  if tg_table_name='events' then
+    -- Old client APIs pass titles rather than IDs. Preserve known provenance
+    -- when they copy a health-tagged mission, rule, campaign or goal.
+    if exists(select 1 from public.quests q where q.user_id=u and q.title=new.payload->>'quest' and public.health_row('quests',to_jsonb(q)))
+      or exists(select 1 from public.rules r where r.user_id=u and r.text=new.payload->>'rule' and public.health_row('rules',to_jsonb(r)))
+      or exists(select 1 from public.dungeons d where d.user_id=u and d.title=new.payload->>'dungeon' and public.health_row('dungeons',to_jsonb(d)))
+      or exists(select 1 from public.goals g where g.user_id=u and g.title=new.payload->>'goal' and public.health_row('goals',to_jsonb(g))) then new.health_data:=true; end if;
+  end if;
+  is_health:=public.health_row(tg_table_name,to_jsonb(new));
+  if tg_op='UPDATE' then is_health:=is_health or public.health_row(tg_table_name,to_jsonb(old)); end if;
+  if is_health then
+    perform public.assert_health_write(u);
+    -- A health-derived record cannot be laundered by clearing its marker.
+    if to_jsonb(new) ? 'health_data' then new:=jsonb_populate_record(new,jsonb_build_object('health_data',true)); end if;
+    if to_jsonb(new) ? 'health_note' then new:=jsonb_populate_record(new,jsonb_build_object('health_note',true)); end if;
+  end if;
+  if tg_table_name='events' then
+    if not is_health then
+      if new.type not in ('quest_completed','bonus_earned','habit_acquired','dungeon_task','dungeon_cleared','goal_achieved','rule_broken','penalty','stone_used','stone_earned','streak_lost','level_up','freeze_on','freeze_off','commitment_signed','onboarding_goal','trial_started','creator_referral','pro_interest') then
+        perform public.assert_health_write(u);
+        new.health_data:=true;
+      else new.payload:=public.general_event_payload(new.payload);
+      end if;
+    end if;
+  end if;
+  return new;
+end $function$
+;
+CREATE OR REPLACE FUNCTION public.general_event_payload(p_payload jsonb)
+ RETURNS jsonb
+ LANGUAGE sql
+ IMMUTABLE
+ SET search_path TO 'public'
+AS $function$
+  select coalesce(jsonb_object_agg(key,value),'{}'::jsonb)
+  from jsonb_each(case when jsonb_typeof(p_payload)='object' then p_payload else '{}'::jsonb end)
+  where (key in ('xp','pb','level','count','years','dias') and jsonb_typeof(value)='number')
+    or (key in ('evidence','boss') and jsonb_typeof(value)='boolean')
+    or (key='stat' and (value='null'::jsonb or value #>> '{}' in ('FUE','VIT','INT','AGI','PER')))
+    or (key='rank' and value #>> '{}' in ('E','D','C','B','A','S'))
+    or (key in ('date','until','open_at','ends') and value #>> '{}' ~ '^\d{4}-\d{2}-\d{2}([T ][0-9:.+Z-]+)?$')
+    or (key in ('quest_id','rule_id','dungeon_id','task_id','goal_id') and value #>> '{}' ~ '^[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}$')
+    or (key in ('source','tier','plan') and (value='null'::jsonb or (jsonb_typeof(value)='string' and length(value #>> '{}')<=40)))
+    or (key='recuperacion' and value #>> '{}' in ('fallida','ok'))
+    or (key in ('quest','goal','rule','consequence','dungeon','task','target','deadline','kind','reason')
+      and (value='null'::jsonb or (jsonb_typeof(value)='string' and length(value #>> '{}')<=500)))
+$function$
+;
 commit;
