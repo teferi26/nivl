@@ -42,7 +42,26 @@ export interface Usage {
   input_tokens?: number;
   output_tokens?: number;
   cache_read_input_tokens?: number;
+  /** Total escrito en caché: suma de los dos TTL de `cache_creation`. */
   cache_creation_input_tokens?: number;
+  /**
+   * Desglose de la escritura por TTL (doc de prompt caching, contrastada el
+   * 2026-10-02): `cache_creation_input_tokens` = 5m + 1h. La de 1 h cuesta 2×
+   * la entrada y la de 5 min 1,25×, así que hace falta separarlas.
+   */
+  cache_creation?: { ephemeral_5m_input_tokens?: number; ephemeral_1h_input_tokens?: number };
+}
+
+/** Un punto de caché. `ttl: '1h'` no pide cabecera beta; escribe a 2×. */
+export interface CacheControl {
+  type: 'ephemeral';
+  ttl?: '5m' | '1h';
+}
+
+export interface SystemBlock {
+  type: 'text';
+  text: string;
+  cache_control?: CacheControl;
 }
 
 export interface Turn {
@@ -90,18 +109,51 @@ const PRICE_PER_MTOK: Record<string, { in: number; out: number }> = {
 export function costMicroUsd(model: string, u: Usage): number {
   const p = PRICE_PER_MTOK[model] ?? PRICE_PER_MTOK['claude-opus-5'];
   const cacheRead = (u.cache_read_input_tokens ?? 0) * p.in * 0.1;
-  const cacheWrite = (u.cache_creation_input_tokens ?? 0) * p.in * 1.25;
+  // La escritura de 1 h (2×) llega aparte en `cache_creation`; el resto del
+  // total es de 5 min (1,25×). Sin desglose, todo es de 5 min, como antes.
+  const total = u.cache_creation_input_tokens ?? 0;
+  const unaHora = Math.min(total, Math.max(0, u.cache_creation?.ephemeral_1h_input_tokens ?? 0));
+  const cacheWrite = (total - unaHora) * p.in * 1.25 + unaHora * p.in * 2;
   return Math.round((u.input_tokens ?? 0) * p.in + cacheRead + cacheWrite + (u.output_tokens ?? 0) * p.out);
 }
 
 export function addUsage(a: Usage, b: Usage): Usage {
-  return {
+  const suma: Usage = {
     input_tokens: (a.input_tokens ?? 0) + (b.input_tokens ?? 0),
     output_tokens: (a.output_tokens ?? 0) + (b.output_tokens ?? 0),
     cache_read_input_tokens: (a.cache_read_input_tokens ?? 0) + (b.cache_read_input_tokens ?? 0),
     cache_creation_input_tokens:
       (a.cache_creation_input_tokens ?? 0) + (b.cache_creation_input_tokens ?? 0),
   };
+  if (a.cache_creation || b.cache_creation) {
+    suma.cache_creation = {
+      ephemeral_5m_input_tokens:
+        (a.cache_creation?.ephemeral_5m_input_tokens ?? 0) + (b.cache_creation?.ephemeral_5m_input_tokens ?? 0),
+      ephemeral_1h_input_tokens:
+        (a.cache_creation?.ephemeral_1h_input_tokens ?? 0) + (b.cache_creation?.ephemeral_1h_input_tokens ?? 0),
+    };
+  }
+  return suma;
+}
+
+/**
+ * El uso de UNA llamada en streaming: el de `message_start` corregido por el de
+ * `message_delta`.
+ *
+ * La doc de streaming dice que las cifras de `message_delta.usage` son
+ * ACUMULADAS, y que pueden traer también entrada y caché (no solo la salida).
+ * Antes se sumaban a las de `message_start`: si el delta repetía la entrada,
+ * el turno se apuntaba con la entrada y la caché dos veces. Ahora cada cifra
+ * que trae el delta sustituye a la de arranque; la que no trae, se queda.
+ */
+export function usoDeStream(inicio: Usage, delta: Usage): Usage {
+  const out: Usage = { ...inicio };
+  for (const k of ['input_tokens', 'output_tokens', 'cache_read_input_tokens', 'cache_creation_input_tokens'] as const) {
+    const v = delta[k];
+    if (typeof v === 'number' && Number.isFinite(v)) out[k] = v;
+  }
+  if (delta.cache_creation && typeof delta.cache_creation === 'object') out.cache_creation = { ...delta.cache_creation };
+  return out;
 }
 
 /**
@@ -141,9 +193,16 @@ export class RefusalError extends Error {
 
 export interface CallOptions {
   model?: string;
-  system: Array<{ type: 'text'; text: string; cache_control?: { type: 'ephemeral' } }>;
+  system: SystemBlock[];
   messages: ApiMessage[];
   tools?: unknown[];
+  /**
+   * `none` para pedir texto SIN quitar las herramientas: quitarlas cambia el
+   * prefijo (rompe toda la caché) y con tool_use en el historial da 400. Un
+   * cambio de tool_choice solo invalida la caché de mensajes (doc de prompt
+   * caching, 2026-10-02). Sin herramientas no se envía.
+   */
+  toolChoice?: { type: 'auto' | 'none' };
   maxTokens?: number;
   effort?: Effort;
   /** Se invoca con cada fragmento de texto visible según llega. */
@@ -221,7 +280,9 @@ export async function callClaude(opts: CallOptions): Promise<Turn> {
       ...(admiteReserva(model) ? { fallbacks: 'default' } : {}),
       system: opts.system,
       messages: opts.messages,
-      ...(opts.tools?.length ? { tools: opts.tools } : {}),
+      ...(opts.tools?.length
+        ? { tools: opts.tools, ...(opts.toolChoice ? { tool_choice: opts.toolChoice } : {}) }
+        : {}),
       stream: true,
     }),
   });
@@ -276,7 +337,7 @@ export async function callClaude(opts: CallOptions): Promise<Turn> {
 
       switch (ev.type) {
         case 'message_start':
-          usage = addUsage(usage, ev.message?.usage ?? {});
+          usage = usoDeStream(usage, ev.message?.usage ?? {});
           servedModel = ev.message?.model ?? model;
           break;
         case 'content_block_start': {
@@ -320,7 +381,8 @@ export async function callClaude(opts: CallOptions): Promise<Turn> {
           stopReason = ev.delta?.stop_reason ?? stopReason;
           stopCategory = ev.delta?.stop_details?.category ?? stopCategory;
           if (ev.usage) {
-            usage = addUsage(usage, ev.usage);
+            // Acumulado, no incremento: sustituye (ver usoDeStream).
+            usage = usoDeStream(usage, ev.usage);
             salidaContada = true;
           }
           break;

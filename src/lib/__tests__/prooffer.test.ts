@@ -1,10 +1,13 @@
 import { act, createElement, type ReactElement } from 'react';
-import { ProOfferActions, ProOfferBody, ProOfferLegal, useProOffer } from '@/components/ProOffer';
-import { introsDeTienda, preciosDeTienda, purchase, restorePurchases, startTrial, StorePriceChangedError, type PreciosTienda, type ProPlanId } from '../pro';
+import { router } from 'expo-router';
+import { ProOfferActions, ProOfferBody, ProOfferLegal, ProUpsellLine, useProOffer } from '@/components/ProOffer';
+import { introsDeTienda, preciosDeTienda, purchase, restorePurchases, startTrial, StorePriceChangedError, type Momento, type OfferTier, type PreciosTienda, type ProPlanId } from '../pro';
 
 const mockOS = { OS: 'ios' };
+jest.mock('expo-router', () => ({ router: { push: jest.fn() } }));
 jest.mock('@/lib/pro', () => ({
   ...jest.requireActual('@/lib/proplans'),
+  ...jest.requireActual('@/lib/paywallmoment'),
   StorePriceChangedError: class extends Error {},
   purchasesAvailable: () => true,
   fetchFounderSeatsLeft: jest.fn().mockResolvedValue(10),
@@ -51,10 +54,11 @@ const restore = jest.mocked(restorePurchases);
 
 const intros = jest.mocked(introsDeTienda);
 
-function Harness({ trialAvailable = false, planActual = null }: { trialAvailable?: boolean; planActual?: ProPlanId | null }) {
-  control = useProOffer({ userId: 'user-test', trialAvailable, planActual });
+interface HarnessProps { trialAvailable?: boolean; planActual?: ProPlanId | null; motivo?: Momento | null; initialTier?: OfferTier }
+function Harness({ trialAvailable = false, planActual = null, motivo = null, initialTier }: HarnessProps) {
+  control = useProOffer({ userId: 'user-test', trialAvailable, planActual, initialTier });
   return createElement('View', null,
-    createElement(ProOfferBody, { oferta: control, kind: 'general' }),
+    createElement(ProOfferBody, { oferta: control, kind: 'general', motivo }),
     createElement(ProOfferActions, { oferta: control, exitLabel: 'Seguir gratis', onExit: () => {} }),
     createElement(ProOfferLegal, { oferta: control }),
   );
@@ -62,8 +66,8 @@ function Harness({ trialAvailable = false, planActual = null }: { trialAvailable
 
 const button = (title: string) => renderer!.root.findByProps({ title });
 const content = () => JSON.stringify(renderer!.toJSON());
-const mount = async (trialAvailable = false, planActual: ProPlanId | null = null) => {
-  await act(async () => { renderer = create(createElement(Harness, { trialAvailable, planActual })); });
+const mount = async (trialAvailable = false, planActual: ProPlanId | null = null, extra: Omit<HarnessProps, 'trialAvailable' | 'planActual'> = {}) => {
+  await act(async () => { renderer = create(createElement(Harness, { trialAvailable, planActual, ...extra })); });
 };
 
 beforeEach(() => {
@@ -253,4 +257,60 @@ test('doble toque en Activar solo lanza una compra', async () => {
   await act(async () => { void control.onPrincipal(); void control.onPrincipal(); });
   expect(buy).toHaveBeenCalledTimes(1);
   await act(async () => soltar('activa'));
+});
+
+describe('fase 2: oferta con motivo y línea de upsell', () => {
+  const at = (texto: string, aguja: string) => texto.indexOf(aguja);
+
+  test('el motivo abre con su línea de contexto y pone su beneficio primero', async () => {
+    prices.mockResolvedValue(CATALOGO);
+    await mount(false, null, { motivo: 'coach_profundo', initialTier: 'elite' });
+    const texto = content();
+    expect(control.tier).toBe('elite');
+    expect(texto).toContain('El modo profundo es de NIVL Élite');
+    expect(at(texto, '"Modo profundo"')).toBeGreaterThan(-1);
+    expect(at(texto, '"Modo profundo"')).toBeLessThan(at(texto, '"Máxima potencia"'));
+  });
+
+  test('sin motivo, el orden de siempre y sin línea de contexto', async () => {
+    prices.mockResolvedValue(CATALOGO);
+    await mount(false, null, { initialTier: 'elite' });
+    const texto = content();
+    expect(texto).not.toContain('El modo profundo es de NIVL Élite');
+    expect(at(texto, '"Máxima potencia"')).toBeLessThan(at(texto, '"Modo profundo"'));
+  });
+
+  test('con motivo siguen visibles la salida, Restaurar, Términos y Privacidad', async () => {
+    prices.mockResolvedValue(CATALOGO);
+    await mount(true, null, { motivo: 'primer_dia' });
+    const texto = content();
+    expect(button('Seguir gratis').props.disabled).toBe(false);
+    expect(button('Restaurar compras').props.disabled).toBe(false);
+    expect(texto).toContain('Términos de uso');
+    expect(texto).toContain('Política de privacidad');
+    expect(texto).toContain('Primer día en la arena');
+  });
+
+  test('el importe que se cobra es la cifra del plan: ningún equivalente mensual de un anual compite con él', async () => {
+    prices.mockResolvedValue(CATALOGO);
+    await mount(false, null, { motivo: 'firma' });
+    const texto = content();
+    expect(texto).not.toMatch(/≈|\/mes|8,33|20,75|24,92/);
+    expect(button('Activar NIVL Pro anual · 99,99 €/año').props.disabled).toBe(false);
+  });
+
+  test('la voz no se vende: el contexto dice que no existe y no reordena', async () => {
+    prices.mockResolvedValue(CATALOGO);
+    await mount(false, null, { motivo: 'voz_premium' });
+    expect(content()).toContain('aún no está disponible');
+  });
+
+  test('ProUpsellLine: una fila (no modal) que lleva a /pro con motivo y nivel', async () => {
+    await act(async () => { renderer = create(createElement(ProUpsellLine, { momento: 'coach_profundo', tier: 'elite' })); });
+    expect(content()).toContain('El modo profundo es de NIVL Élite.');
+    expect(content()).toContain('Ver NIVL Élite');
+    const fila = renderer!.root.findByProps({ accessibilityRole: 'link' });
+    await act(async () => fila.props.onPress());
+    expect(router.push).toHaveBeenCalledWith('/pro?motivo=coach_profundo&tier=elite');
+  });
 });

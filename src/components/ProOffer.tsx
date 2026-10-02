@@ -20,9 +20,17 @@
 // El nivel elegido (Pro / Élite) vive en `useProOffer`, no en el cuerpo: así el
 // pie fijo del onboarding y el cuerpo del scroll hablan del mismo nivel. Si la
 // cuenta nunca tuvo coach, la acción principal es la prueba de 7 días.
+//
+// Fase 2 (D1): con `motivo` (el momento que trajo aquí, `paywallmoment.ts`) la
+// oferta abre con una línea de contexto y pone primero el beneficio que casa;
+// no quita ni añade ninguno. El importe que se cobra (el `priceString` de la
+// tienda) es SIEMPRE la cifra más destacada de cada plan: ningún equivalente
+// mensual de un anual compite con él. `ProUpsellLine` es la versión no modal
+// (fila con icono, una línea y chevron) que lleva a `/pro?motivo=…&tier=…`.
 
 import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Haptics from 'expo-haptics';
+import { router } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { Linking, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useConsentimientoIA } from '@/components/ConsentimientoIA';
@@ -38,6 +46,8 @@ import {
   PRO_BENEFITS,
   StorePriceChangedError,
   TIERS,
+  beneficiosPorMotivo,
+  copyUpsell,
   duracionPlan,
   fetchFounderSeatsLeft,
   introsDeTienda,
@@ -53,10 +63,12 @@ import {
   purchase,
   purchasesAvailable,
   restorePurchases,
+  rutaOferta,
   seleccionDeTienda,
   startTrial,
   tierOffer,
   tituloPlan,
+  type Momento,
   type OfferTier,
   type PreciosTienda,
   type ProPlanId,
@@ -308,13 +320,16 @@ interface BodyProps {
   kind: unknown;
   /** Versión condensada para el onboarding: beneficios a dos columnas, sin énfasis. */
   compact?: boolean;
+  /** El momento que trajo a la oferta: línea de contexto y su beneficio primero. */
+  motivo?: Momento | null;
 }
 
 /** Qué hace el coach y cuánto cuesta. Sin botones. */
-export function ProOfferBody({ oferta, kind, compact }: BodyProps) {
+export function ProOfferBody({ oferta, kind, compact, motivo }: BodyProps) {
   const { tier, nivel, planes, planId, precioDe, catalogo, faltan, planActual, busy, reintentarPrecios, disponible, elegir, elegirNivel, prueba } = oferta;
   const sinNivel = disponible && catalogo === 'listo' && planes.length > 0 && !planes.some((p) => p.tier === tier);
-  const beneficios = tier === 'elite' ? [...ELITE_BENEFITS, ...PRO_BENEFITS] : PRO_BENEFITS;
+  const beneficios = beneficiosPorMotivo(tier === 'elite' ? [...ELITE_BENEFITS, ...PRO_BENEFITS] : PRO_BENEFITS, motivo, tier);
+  const contexto = motivo ? copyUpsell(motivo, tier).contexto : null;
   // Con la tienda abierta en /pro, los planes (título, duración y precio) van
   // antes que los beneficios: es lo que Apple pide ver sin buscarlo (2.1).
   const planesArriba = disponible && !compact;
@@ -425,6 +440,7 @@ export function ProOfferBody({ oferta, kind, compact }: BodyProps) {
   );
   return (
     <View>
+      {contexto ? <Text style={[styles.emphasis, styles.contexto]}>{contexto}</Text> : null}
       {compact ? null : (
         <Card variant="outline" accent={colors.accentDim}>
           <Text style={styles.emphasis}>{proEmphasis(kind)}</Text>
@@ -623,6 +639,8 @@ export function ProOfferLegal({ oferta }: { oferta: ProOfferState }) {
 interface Props extends OfferOptions, Omit<ActionsProps, 'oferta'> {
   kind: unknown;
   compact?: boolean;
+  /** El momento que trajo a la oferta (`/pro?motivo=…`). */
+  motivo?: Momento | null;
 }
 
 /** La oferta entera, en columna: la pantalla `/pro`. */
@@ -638,19 +656,58 @@ export function ProOffer({
   onTrialStarted,
   initialTier,
   planActual,
+  motivo,
 }: Props) {
   const oferta = useProOffer({ userId, onPurchased, trialAvailable, onTrialStarted, initialTier, planActual });
   return (
     <View>
-      <ProOfferBody oferta={oferta} kind={kind} compact={compact} />
+      <ProOfferBody oferta={oferta} kind={kind} compact={compact} motivo={motivo} />
       <ProOfferActions oferta={oferta} exitLabel={exitLabel} onExit={onExit} exitLoading={exitLoading} />
       <ProOfferLegal oferta={oferta} />
     </View>
   );
 }
 
+interface UpsellLineProps {
+  momento: Momento;
+  /** El nivel que se ofrece (`decidirOferta(...).tier`). */
+  tier: OfferTier;
+  /** Por defecto abre `/pro?motivo=…&tier=…`. */
+  onPress?: () => void;
+}
+
+/**
+ * La oferta NO modal: una fila con icono, una línea y chevron, para ponerla
+ * junto a la función (modo profundo, fotos, energía). No tapa nada ni se abre
+ * sola: la oferta completa solo aparece si el usuario la toca.
+ */
+export function ProUpsellLine({ momento, tier, onPress }: UpsellLineProps) {
+  const copy = copyUpsell(momento, tier);
+  const abrir = onPress ?? (() => router.push(rutaOferta(momento, tier) as never));
+  return (
+    <Pressable
+      onPress={abrir}
+      style={({ pressed }) => [styles.upsell, pressed && styles.pressed]}
+      accessibilityRole="link"
+      accessibilityLabel={`${copy.linea} ${copy.enlace}`}
+      accessibilityHint="Abre los planes. No se cobra nada sin confirmarlo en la tienda."
+    >
+      <Ionicons name={(tier === 'elite' ? 'flash-outline' : 'sparkles-outline') as never} size={16} color={colors.accentText} />
+      <View style={styles.planBody}>
+        <Text style={styles.benefitDetail} numberOfLines={2}>
+          {copy.linea}
+        </Text>
+        <Text style={styles.link}>{copy.enlace}</Text>
+      </View>
+      <Ionicons name={'chevron-forward' as never} size={16} color={colors.textFaint} />
+    </Pressable>
+  );
+}
+
 const styles = StyleSheet.create({
   emphasis: { fontFamily: fonts.semibold, fontSize: 14, lineHeight: 21, color: colors.text },
+  contexto: { marginBottom: 12 },
+  upsell: { flexDirection: 'row', alignItems: 'center', gap: 12, borderTopWidth: 1, borderTopColor: colors.line, paddingVertical: 11 },
   niveles: { flexDirection: 'row', gap: 8, marginTop: 4 },
   potencia: { fontFamily: fonts.body, fontSize: 13, lineHeight: 19, color: colors.textDim, marginTop: 8, marginBottom: 6 },
   benefits: { marginTop: 6, marginBottom: 18 },

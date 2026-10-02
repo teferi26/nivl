@@ -1,6 +1,6 @@
 // Respuestas nuevas de la función coach (Chat 3, 11be33f): hilo perdido (404)
 // y fotos rechazadas (400).
-import { HiloPerdidoError, streamCoach } from '../coach';
+import { HiloPerdidoError, runRitual, streamCoach } from '../coach';
 import { ErrorVisible } from '../validation';
 
 const mockFetch = jest.fn();
@@ -52,4 +52,30 @@ test('otro 400: error normal, no visible tal cual', async () => {
   mockFetch.mockResolvedValueOnce(respuesta(400, { error: 'kind inválido: x' }));
   const e = await streamCoach({ message: 'x', onEvent: () => {} }).catch((x) => x);
   expect(e).not.toBeInstanceOf(ErrorVisible);
+});
+
+// L1 «nunca contradecir sin comprobar»: el turno lleva el "hoy" del móvil.
+// Sin él, el servidor usaba la fecha UTC y de 00:00 a 02:00 en Madrid el coach
+// miraba el día de ayer y negaba lo que acababas de registrar.
+test('el cuerpo del turno lleva la fecha local del móvil', async () => {
+  const { dateKey } = jest.requireActual('../dates') as typeof import('../dates');
+  mockFetch.mockResolvedValueOnce(respuesta(400, { error: 'kind inválido: x' }));
+  await streamCoach({ message: 'te he subido el gym', onEvent: () => {} }).catch(() => {});
+  const cuerpo = cuerpoEnviado(0) as { date?: string };
+  expect(cuerpo.date).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+  expect(cuerpo.date).toBe(dateKey());
+});
+
+test('runRitual también manda la fecha local', async () => {
+  const { dateKey } = jest.requireActual('../dates') as typeof import('../dates');
+  const original = global.fetch;
+  const espia = jest.fn(async () => ({ ok: true, status: 200, json: async () => ({ text: 'ok' }) }));
+  global.fetch = espia as unknown as typeof fetch;
+  try {
+    await runRitual('brief');
+    const cuerpo = JSON.parse((espia.mock.calls[0] as unknown as [string, { body: string }])[1].body);
+    expect(cuerpo.date).toBe(dateKey());
+  } finally {
+    global.fetch = original;
+  }
 });

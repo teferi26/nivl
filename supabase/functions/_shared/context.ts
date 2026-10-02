@@ -8,6 +8,7 @@ import { construirEstudio } from './analytics.ts';
 import { construirEstudioEconomico } from './finance.ts';
 import type { Db } from './db.ts';
 import { kindLines } from './kinds.ts';
+import { leerRegistros, lineasDelDia } from './comprobacion.ts';
 
 // Espejo de levelFromXp/rankForLevel de src/lib/game.ts. La fuente de verdad
 // es game.ts: si allí cambia la curva, hay que tocar aquí. Se replica porque
@@ -168,6 +169,11 @@ export async function buildContext(
   const since60 = new Date(new Date(today).getTime() - 60 * 86400000).toISOString().slice(0, 10);
   const weekday = ((new Date(today).getDay() + 6) % 7) + 1; // 1=lunes … 7=domingo
 
+  // Lo registrado hoy, módulo a módulo, con la MISMA lectura que consultar_dia
+  // y que la comprobación del servidor (comprobacion.ts). En paralelo con el
+  // resto: son consultas pequeñas y acotadas.
+  const registradoHoyP = leerRegistros(sb, userId, today, today);
+
   const [
     profileRes,
     dossierRes,
@@ -301,7 +307,15 @@ export async function buildContext(
   push(
     'Un solo gesto: lo que pone "se marca sola" no se le pide dos veces. Registrar el acto real ' +
       '(la sesión, el pesaje, el diario) marca la misión, la regla enlazada y el bloque del plan. ' +
-      'Si dice que lo hizo y sigue PENDIENTE, es que no lo ha registrado: pídele el registro, no la marca.',
+      'Si dice que lo hizo y sigue PENDIENTE, compruébalo con consultar_dia; si está registrado, márcala.',
+  );
+  push();
+
+  push(`## Registrado hoy (${today})`);
+  for (const l of lineasDelDia(await registradoHoyP, today)) push(`- ${l}`);
+  push(
+    'Esto es lo que consta hoy, leído al construir este estado. Si dice haber hecho algo que no ' +
+      'aparece aquí, compruébalo con consultar_dia (también mira el día anterior) antes de negarlo.',
   );
   push();
 
@@ -577,4 +591,78 @@ export async function buildContext(
     text: `${lines.join('\n')}\n\n${estudio}\n\n${economia}`,
     dossier: (dossierRes.data as any)?.content ?? '',
   };
+}
+
+/**
+ * El estado MÍNIMO de la ruta estrecha «registro» (coach v2, L3): quién es,
+ * qué misiones y reglas tocan HOY y cómo van, y lo registrado hoy (la misma
+ * lectura que consultar_dia y la comprobación del servidor). Nada de dossier,
+ * hechos, diario, estudios ni historial largo: para apuntar un parte no hacen
+ * falta y son la parte cara del estado completo (~50 k fichas frente a ~1 k).
+ *
+ * Mismo permiso que buildContext: sin consentimiento de salud vigente, no se
+ * construye (y leerRegistros, además, no lee las tablas de salud sin él).
+ */
+export async function buildContextMinimo(sb: Db, userId: string, today: string): Promise<BuiltContext> {
+  await requireHealth(sb, userId);
+  const weekday = diaSemana(today);
+  const registradoHoyP = leerRegistros(sb, userId, today, today);
+
+  const [profileRes, questsRes, todayDoneRes, rulesRes, checksRes] = await Promise.all([
+    sb.from('profiles').select('name, profile_kind, streak_days').eq('id', userId).maybeSingle(),
+    sb.from('quests').select('id, title, days_of_week, link, is_penalty, penalty_date, acquired_at, is_bonus')
+      .eq('user_id', userId).eq('active', true).limit(60),
+    sb.from('completions').select('quest_id').eq('user_id', userId).eq('date', today).limit(100),
+    sb.from('rules').select('id, text, link').eq('user_id', userId).eq('active', true).limit(30),
+    sb.from('rule_checks').select('rule_id').eq('user_id', userId).eq('date', today).limit(60),
+  ]);
+
+  const p = profileRes.data as Record<string, any> | null;
+  if (!p) throw new Error('Perfil no encontrado');
+
+  const hechas = new Set(((todayDoneRes.data ?? []) as any[]).map((c) => String(c.quest_id)));
+  const todas = (questsRes.data ?? []) as any[];
+  const deHoy = todas.filter((q) => !q.is_penalty && !q.acquired_at && (q.days_of_week ?? []).includes(weekday));
+  const penalizaciones = todas.filter((q) => q.is_penalty && q.penalty_date === today);
+
+  const lines: string[] = [];
+  const push = (s = '') => lines.push(s);
+
+  push(`# PARTE DEL GLADIADOR · ${today}`);
+  push(`Nombre: ${p.name ?? 'gladiador'} · racha ${p.streak_days ?? 0} días`);
+  push(kindLines(p.profile_kind)[0]);
+  push();
+
+  push('## Misiones de hoy');
+  if (!deHoy.length && !penalizaciones.length) push('Ninguna programada hoy.');
+  for (const q of [...deHoy, ...penalizaciones]) {
+    push(
+      `- [${q.id}] "${q.title}" · ${hechas.has(String(q.id)) ? 'HECHA HOY' : 'PENDIENTE HOY'}` +
+        `${q.is_penalty ? ' · penalización' : ''}${q.is_bonus ? ' · extra' : ''}` +
+        `${ENLACE[q.link] ? ` · se marca sola al registrar ${ENLACE[q.link]}` : ''}`,
+    );
+  }
+  push();
+
+  const reglas = (rulesRes.data ?? []) as any[];
+  if (reglas.length) {
+    const cumplidas = new Set(((checksRes.data ?? []) as any[]).map((c) => String(c.rule_id)));
+    push('## Reglas del contrato hoy');
+    for (const r of reglas) {
+      push(
+        `- [${r.id}] "${r.text}" · ${cumplidas.has(String(r.id)) ? 'CUMPLIDA HOY' : 'pendiente hoy'}` +
+          `${ENLACE[r.link] ? ` · se marca sola al registrar ${ENLACE[r.link]}` : ''}`,
+      );
+    }
+    push();
+  }
+
+  push(`## Registrado hoy (${today})`);
+  for (const l of lineasDelDia(await registradoHoyP, today)) push(`- ${l}`);
+  push(
+    'Lo que pone "se marca sola" no se marca a mano: registrar el acto real la marca. Si dice haber ' +
+      'hecho algo que no aparece aquí, compruébalo con consultar_dia (mira también el día anterior) antes de negarlo.',
+  );
+
+  return { text: lines.join('\n'), dossier: '' };
 }

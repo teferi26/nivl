@@ -17,6 +17,16 @@
 //   node scripts/creadores.mjs informe [AAAA-MM] [--csv]
 //   node scripts/creadores.mjs liquidar CODIGO ["nota"]
 //   node scripts/creadores.mjs pago CODIGO euros fijo_mensual|premio|contenido_externo|ajuste ["nota"]
+//   node scripts/creadores.mjs rol CODIGO creador|comercial|clipper
+//   node scripts/creadores.mjs reto lista
+//   node scripts/creadores.mjs reto alta "título" AAAA-MM-DD AAAA-MM-DD objetivo ["premio"] [--rol clipper] [--desc "texto"]
+//   node scripts/creadores.mjs reto cerrar ID
+//   node scripts/creadores.mjs umbral pro|elite ventas90 [meses]   (umbral RANGO --quitar para borrarlo)
+//   node scripts/creadores.mjs revisar-rangos [--aplicar --confirmar]
+//
+// rol, reto, umbral y revisar-rangos necesitan la 0046. `revisar-rangos`
+// solo PROPONE: subir de rango sube la comisión y eso lo decide el dueño.
+// Con `--aplicar` no cambia nada si no va también `--confirmar`.
 //
 // Los exportes (--csv) van a privado/, que está gitignorado. Nunca pegues la
 // salida de este script en un commit, un issue ni una captura.
@@ -86,6 +96,7 @@ function q(v) {
 }
 
 const RANGOS = ['novato', 'pro', 'elite'];
+const ROLES = ['creador', 'comercial', 'clipper'];
 const TIPOS_PAGO = ['fijo_mensual', 'premio', 'contenido_externo', 'ajuste'];
 
 function codigo(raw) {
@@ -166,7 +177,7 @@ async function alta(rawCode, alias, rawRango = 'novato') {
      on conflict (code) do nothing returning code;`,
   );
   if (!res.length) fallo(`El código ${c} ya existe.`);
-  console.log(`Alta: ${c} · ${a} · creador ${r}. Enlace: nivl://c/${c}`);
+  console.log(`Alta: ${c} · ${a} · creador ${r}. Enlace: https://nivl.app/c/${c}`);
   console.log('Para que vea su panel en la app: vincular CODIGO email-de-su-cuenta');
 }
 
@@ -335,6 +346,189 @@ async function pago(rawCode, euros, tipo, nota) {
   console.log(`Apuntado: ${eur(cents)} (${tipo}) a ${cr.code}.`);
 }
 
+// ── Programa gamificado (0046) ──────────────────────────────────────
+
+function rol(raw) {
+  const r = String(raw ?? '').toLowerCase();
+  if (!ROLES.includes(r)) fallo(`Rol no válido: «${raw ?? ''}». Usa ${ROLES.join(' | ')}.`);
+  return r;
+}
+
+/** "AAAA-MM-DD" → expresión SQL del inicio de ese día (o del siguiente) en hora de Madrid. */
+function diaMadrid(raw, { masUno = false } = {}) {
+  const d = String(raw ?? '');
+  if (!/^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/.test(d)) fallo(`Fecha no válida: «${d}». Usa AAAA-MM-DD.`);
+  return `((${q(d)}::date${masUno ? " + interval '1 day'" : ''})::timestamp at time zone 'Europe/Madrid')`;
+}
+
+/** Saca `--nombre valor` de la lista de argumentos. */
+function opcion(args, nombre) {
+  const i = args.indexOf(nombre);
+  if (i < 0) return undefined;
+  const v = args[i + 1];
+  if (v === undefined || v.startsWith('--')) fallo(`Falta el valor de ${nombre}.`);
+  args.splice(i, 2);
+  return v;
+}
+
+async function cambiarRol(rawCode, rawRol) {
+  const c = codigo(rawCode);
+  const r = rol(rawRol);
+  const res = await sql(`update public.creators set role = ${q(r)} where code = ${q(c)} returning code;`);
+  if (!res.length) fallo(`No hay ningún creador con el código ${c}.`);
+  console.log(`${c} ahora es ${r}. Cambia qué retos ve; la comisión sigue siendo la de su rango.`);
+}
+
+async function reto(sub, ...resto) {
+  const args = [...resto];
+  if (sub === 'lista') {
+    const rows = await sql(
+      `select id, title, role, goal_sales as objetivo,
+              to_char(starts_at at time zone 'Europe/Madrid', 'YYYY-MM-DD HH24:MI') as desde,
+              to_char(ends_at at time zone 'Europe/Madrid', 'YYYY-MM-DD HH24:MI') as hasta,
+              case when now() < starts_at then 'próximo' when now() < ends_at then 'activo' else 'terminado' end as estado
+       from public.creator_challenges order by starts_at desc limit 50;`,
+    );
+    if (!rows.length) return console.log('No hay retos. Crea uno con: reto alta "título" desde hasta objetivo');
+    return console.table(rows);
+  }
+  if (sub === 'alta') {
+    const r = opcion(args, '--rol');
+    const desc = opcion(args, '--desc');
+    const [titulo, desde, hasta, objetivo, premioTxt] = args;
+    const t = String(titulo ?? '').trim();
+    if (!t || t.length > 80) fallo('El título va entre comillas y tiene de 1 a 80 caracteres.');
+    const n = Number(objetivo);
+    if (!Number.isInteger(n) || n <= 0 || n > 100000) fallo('El objetivo es un número entero de ventas mayor que 0.');
+    const d = desc === undefined ? null : String(desc).trim();
+    if (d !== null && d.length > 300) fallo('La descripción tiene como mucho 300 caracteres.');
+    const p = premioTxt === undefined ? null : String(premioTxt).trim();
+    if (p !== null && p.length > 200) fallo('El premio tiene como mucho 200 caracteres.');
+    const ini = diaMadrid(desde);
+    const fin = diaMadrid(hasta, { masUno: true }); // el último día entra entero
+    const [row] = await sql(
+      `insert into public.creator_challenges (title, description, starts_at, ends_at, goal_sales, prize_text, role)
+       values (${q(t)}, ${d ? q(d) : 'null'}, ${ini}, ${fin}, ${n}, ${p ? q(p) : 'null'}, ${r ? q(rol(r)) : 'null'})
+       returning id;`,
+    );
+    console.log(`Reto creado: ${row?.id}. ${r ? `Solo ${rol(r)}.` : 'Para todos los roles.'}`);
+    console.log('En la app de tienda un premio que hable de dinero no se enseña; en la web, sí.');
+    return;
+  }
+  if (sub === 'cerrar') {
+    const id = String(args[0] ?? '');
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) {
+      fallo('ID de reto no válido (uuid; míralo con: reto lista).');
+    }
+    // Si aún no ha empezado, se borra; si está en curso, termina ahora.
+    const borrado = await sql(`delete from public.creator_challenges where id = ${q(id)} and starts_at > now() returning id;`);
+    if (borrado.length) return console.log('El reto no había empezado: borrado.');
+    const res = await sql(
+      `update public.creator_challenges set ends_at = now() where id = ${q(id)} and ends_at > now() returning id;`,
+    );
+    if (!res.length) fallo('No hay ningún reto activo con ese ID (o ya había terminado).');
+    console.log('Reto cerrado: termina ahora y su tabla queda congelada.');
+    return;
+  }
+  fallo('Usa: reto lista | reto alta … | reto cerrar ID');
+}
+
+async function umbral(rawRango, ventas, meses) {
+  const r = rango(rawRango);
+  if (r === 'novato') fallo('Novato es el rango de entrada: no lleva umbral.');
+  if (ventas === '--quitar') {
+    await sql(`delete from public.creator_rank_rules where rank = ${q(r)};`);
+    return console.log(`Umbral de ${r} quitado.`);
+  }
+  const v = Number(ventas);
+  const m = meses === undefined ? 0 : Number(meses);
+  if (!Number.isInteger(v) || v < 0 || v > 100000) fallo('Las ventas de 90 días son un entero ≥ 0.');
+  if (!Number.isInteger(m) || m < 0 || m > 120) fallo('Los meses seguidos son un entero entre 0 y 120.');
+  await sql(
+    `insert into public.creator_rank_rules (rank, min_sales_90d, min_months_active, updated_at)
+     values (${q(r)}, ${v}, ${m}, now())
+     on conflict (rank) do update set min_sales_90d = excluded.min_sales_90d,
+       min_months_active = excluded.min_months_active, updated_at = now();`,
+  );
+  console.log(`Umbral de ${r}: ${v} ventas en 90 días${m ? ` y ${m} meses seguidos con venta` : ''}. Solo sirve para proponer.`);
+}
+
+/** Meses seguidos con venta, como creator_progress: el mes en curso no rompe la racha. */
+function racha(meses, mesActual) {
+  const set = new Set(meses);
+  let [y, m] = mesActual.split('-').map(Number);
+  const atras = () => {
+    m -= 1;
+    if (m === 0) {
+      m = 12;
+      y -= 1;
+    }
+  };
+  const clave = () => `${y}-${String(m).padStart(2, '0')}`;
+  if (!set.has(clave())) atras();
+  let n = 0;
+  while (set.has(clave()) && n < 120) {
+    n++;
+    atras();
+  }
+  return n;
+}
+
+async function revisarRangos(...flags) {
+  const desconocidas = flags.filter((f) => f !== '--aplicar' && f !== '--confirmar');
+  if (desconocidas.length) fallo(`Opción desconocida: ${desconocidas.join(' ')}`);
+  const aplicar = flags.includes('--aplicar');
+  const confirmado = flags.includes('--confirmar');
+  const reglas = await sql('select rank, min_sales_90d, min_months_active from public.creator_rank_rules;');
+  if (!reglas.length) return console.log('No hay umbrales. Fíjalos con: umbral pro|elite ventas90 [meses]');
+  const regla = Object.fromEntries(reglas.map((r) => [r.rank, r]));
+  // Venta = la de creator_panel/creator_board: primer cobro con comisión viva.
+  const rows = await sql(
+    `select c.code, c.alias, c.rank,
+       (select count(distinct s.user_id) from public.store_sales s
+          join public.commissions k on k.sale_id = s.id and k.status <> 'anulada'
+          where s.creator_id = c.id and s.payment_number = 1 and s.purchased_at >= now() - interval '90 days')::int as ventas90,
+       coalesce((select string_agg(distinct to_char(s.purchased_at at time zone 'Europe/Madrid', 'YYYY-MM'), ',')
+          from public.store_sales s join public.commissions k on k.sale_id = s.id and k.status <> 'anulada'
+          where s.creator_id = c.id and s.payment_number = 1), '') as meses
+     from public.creators c where c.active order by c.code;`,
+  );
+  const mes = mesActualMadrid();
+  const propuestas = [];
+  for (const r of rows) {
+    const seguidos = racha(String(r.meses ?? '').split(',').filter(Boolean), mes);
+    let merecido = 'novato';
+    for (const k of RANGOS) {
+      const g = regla[k];
+      if (k !== 'novato' && g && r.ventas90 >= g.min_sales_90d && seguidos >= g.min_months_active) merecido = k;
+    }
+    if (merecido !== r.rank) {
+      const sube = RANGOS.indexOf(merecido) > RANGOS.indexOf(r.rank);
+      propuestas.push({
+        code: r.code,
+        alias: r.alias,
+        actual: r.rank,
+        propuesto: merecido,
+        ventas90: r.ventas90,
+        meses_seguidos: seguidos,
+        cambio: sube ? 'sube' : 'baja',
+      });
+    }
+  }
+  if (!propuestas.length) return console.log('Todos los creadores activos están en el rango que marcan los umbrales.');
+  console.log('Propuestas (nada se aplica sin --aplicar --confirmar):');
+  console.table(propuestas);
+  if (!aplicar) return console.log('Para aplicarlas: revisar-rangos --aplicar --confirmar');
+  if (!confirmado) return console.log('Falta --confirmar. No se ha cambiado nada.');
+  for (const p of propuestas) {
+    // Solo si sigue en el rango que se revisó: si alguien lo cambió entre medias, no se pisa.
+    await sql(
+      `update public.creators set rank = ${q(rango(p.propuesto))} where code = ${q(codigo(p.code))} and rank = ${q(rango(p.actual))};`,
+    );
+  }
+  console.log(`Aplicadas ${propuestas.length}. Las comisiones ya generadas conservan su % (foto del cobro).`);
+}
+
 // ── Entrada ─────────────────────────────────────────────────────────
 
 const COMANDOS = {
@@ -349,6 +543,10 @@ const COMANDOS = {
   informe,
   liquidar,
   pago,
+  rol: cambiarRol,
+  reto,
+  umbral,
+  'revisar-rangos': revisarRangos,
 };
 
 const [cmd, ...args] = process.argv.slice(2);

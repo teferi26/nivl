@@ -1,6 +1,6 @@
 // QA Chat 5 · RET-02/03 en las piezas puras de closing.ts.
 
-import { computeDayClose, recuperacionDesbloqueada, rotosSeguidosAntes } from '../closing';
+import { computeDayClose, enJuegoHoy, recuperacionDesbloqueada, rotosSeguidosAntes } from '../closing';
 import { mision } from './qa/servidor';
 
 const q = mision({ id: 'q', difficulty: 'media' });
@@ -62,4 +62,28 @@ test('sin piedras, abrir cada día o volver de golpe cobra lo mismo', () => {
   }
   expect(bloque.penaltyXp).toBe(75);
   expect(diario).toBe(bloque.penaltyXp);
+});
+
+describe('RET-05 · enJuegoHoy dice lo mismo que dirá el cierre', () => {
+  const qs = [1, 2, 3, 4].map((i) => mision({ id: `m${i}`, difficulty: 'media' }));
+  test('con 4 misiones se perdona 1: con 2 pendientes falta 1 para salvar y cuestan 50', () => {
+    const r = enJuegoHoy({ questsHoy: qs, completadasHoy: new Set(['m1', 'm2']), streak: 10, stones: 0 });
+    expect(r).toEqual({ pendientes: 2, faltanParaSalvar: 1, rachaEnRiesgo: true, gastariaPiedra: false, xpEnJuego: 50 });
+    // Y el cierre coincide.
+    const c = computeDayClose({ fromDate: '2026-10-09', today: '2026-10-10', quests: qs.map((q) => ({ ...q })),
+      completedKeys: new Set(['2026-10-09|m1', '2026-10-09|m2']), streak: 10, stones: 0, freezeUntil: null });
+    expect([c.streakLost, c.penaltyXp]).toEqual([true, 50]);
+  });
+  test('salvada por la tolerancia: sin riesgo de racha pero lo pendiente cuesta', () => {
+    const r = enJuegoHoy({ questsHoy: qs, completadasHoy: new Set(['m1', 'm2', 'm3']), streak: 10, stones: 0 });
+    expect(r).toMatchObject({ faltanParaSalvar: 0, rachaEnRiesgo: false, xpEnJuego: 25 });
+  });
+  test('una piedra la salvaría: sin coste', () => {
+    expect(enJuegoHoy({ questsHoy: qs, completadasHoy: new Set(), streak: 10, stones: 1 }))
+      .toMatchObject({ gastariaPiedra: true, xpEnJuego: 0, rachaEnRiesgo: false });
+  });
+  test('cuarto día roto seguido con racha 0: no cuesta (RET-02)', () => {
+    expect(enJuegoHoy({ questsHoy: qs, completadasHoy: new Set(), streak: 0, stones: 2, rotosSeguidosPrevios: 3 }))
+      .toMatchObject({ xpEnJuego: 0, gastariaPiedra: false, rachaEnRiesgo: false });
+  });
 });

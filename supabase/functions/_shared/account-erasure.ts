@@ -1,7 +1,8 @@
 import type { Db } from './db.ts';
 
 const CONFIRMATION = 'BORRAR_CUENTA_NIVL';
-const BUCKETS = ['evidence', 'avatars'] as const;
+// Same list as account_erasure_paths/account_erasure_ready/require_account_storage_active in SQL.
+const BUCKETS = ['evidence', 'avatars', 'progress'] as const;
 type OwnedObject = { bucket: typeof BUCKETS[number]; path: string };
 const json = (status: number, body: unknown) => new Response(JSON.stringify(body), {
   status, headers: { 'content-type': 'application/json', 'cache-control': 'no-store' },

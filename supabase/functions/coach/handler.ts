@@ -16,6 +16,7 @@
 
 import {
   callClaude,
+  CHEAP_MODEL,
   COACH_MODEL,
   costMicroUsd,
   LlamadaFallida,
@@ -30,14 +31,18 @@ import {
 import { clasificarPendientes, ClasificacionConsentimientoError } from '../_shared/clasificar.ts';
 import { callOpenAICompat } from '../_shared/openai.ts';
 import { construirResumen, periodoMensual, periodoSemanal } from '../_shared/recap.ts';
-import { buildContext } from '../_shared/context.ts';
+import { buildContext, buildContextMinimo } from '../_shared/context.ts';
 import { consentimientoIa, MENSAJE_SIN_CONSENTIMIENTO, SIN_CONSENTIMIENTO } from '../_shared/consent.ts';
 import { healthConsent, healthGuardedResult, healthRevision, healthScopedClient, HEALTH_REQUIRED, requireHealth } from '../_shared/health.ts';
 import { adminClient, userClient, type Db } from '../_shared/db.ts';
-import { buildSystem } from '../_shared/prompt.ts';
+import { buildSystem, buildSystemRegistro, DATOS_ABRE, DATOS_CIERRA, neutralizarDatos } from '../_shared/prompt.ts';
 import { elegirModelo, modoDeCabecera, proveedorDe, type Modo, type Routes } from '../_shared/routing.ts';
 import { executeTool, TOOL_DEFS } from '../_shared/tools.ts';
-import { controlHerramientas, fechaDelTurno, Gasto, mensajeDeFallo, validarImagenes } from './guard.ts';
+import { controlHerramientas, fechaAceptable, fechaDelTurno, Gasto, mensajeDeFallo, reloj, validarImagenes } from './guard.ts';
+import { pareceAfirmacion, rutaDelTurno, type Ruta } from '../_shared/intencion.ts';
+import { fueraDelPack, PACK_REGISTRO, TOOL_DEFS_REGISTRO } from '../_shared/packs.ts';
+import { bloqueComprobacion } from '../_shared/comprobacion.ts';
+import { insertarRun, type Telemetria } from '../_shared/telemetria.ts';
 
 // Cinco vueltas, no ocho. Cada vuelta reenvía el contexto entero y genera
 // pensamiento: con ocho, un turno se comía el presupuesto de tiempo de la
@@ -73,6 +78,18 @@ const MAX_COST_MICRO_USD = 750_000; // 0,75 $
 // su bolsillo.
 const MAX_COST_PROFUNDO_MICRO_USD = 1_500_000; // 1,50 $
 const MAX_TOKENS_PROFUNDO = 16000;
+
+// Ruta estrecha «registro» (L3): un parte («he hecho…», «peso 94,2») con el
+// modelo barato, el estado de hoy y cuatro herramientas. Tres vueltas bastan
+// (comprobar, apuntar, contestar) y la última se fuerza a texto. Su freno es
+// mucho más bajo: un parte que pasa de 5 céntimos es que algo se ha torcido.
+const MAX_TOOL_ITERATIONS_REGISTRO = 3;
+const MAX_COST_REGISTRO_MICRO_USD = 50_000; // 0,05 $
+const MAX_TOKENS_REGISTRO = 4000;
+// Los 4 últimos mensajes del hilo, solo su texto: para un parte basta con saber
+// de qué se hablaba, y sin tool_use viejos no hay que reenviar herramientas
+// que esta ruta no ofrece.
+const HISTORY_LIMIT_REGISTRO = 4;
 
 const KINDS = ['chat', 'brief', 'plan', 'revision_semanal', 'cierre_mensual', 'escalada'] as const;
 type Kind = (typeof KINDS)[number];
@@ -131,6 +148,43 @@ function resolverModelo(
   if (compat) return { model, compat };
   console.warn(`Modelo ${model} sin COACH_BASE_URL/COACH_API_KEY: se atiende con ${COACH_MODEL}.`);
   return { model: COACH_MODEL, compat: null };
+}
+
+/**
+ * El modelo de la ruta de registro: `routes.registro` del plan y, si no hay,
+ * CHEAP_MODEL. A propósito NO cae al `default` del plan (que es el coach caro)
+ * ni a `profundo`: un parte es leer y transformar, no decidir (AGENTS.md).
+ */
+function resolverModeloRegistro(routes: Routes): { model: string; compat: { baseUrl: string; apiKey: string } | null } {
+  const model = elegirModelo({ registro: routes.registro }, 'registro', 'estandar', () => CHEAP_MODEL);
+  if (proveedorDe(model) === 'anthropic') return { model, compat: null };
+  const compat = proveedorCompatible();
+  if (compat) return { model, compat };
+  console.warn(`Modelo ${model} sin COACH_BASE_URL/COACH_API_KEY: el registro se atiende con ${CHEAP_MODEL}.`);
+  return { model: CHEAP_MODEL, compat: null };
+}
+
+/**
+ * El historial de la ruta de registro: los últimos mensajes con TEXTO, sin
+ * tool_use ni tool_result ni pensamiento (las herramientas de entonces no
+ * están en este pack) y empezando por un mensaje del gladiador.
+ */
+function historialDeTexto(messages: ApiMessage[], limite: number): ApiMessage[] {
+  const planos: ApiMessage[] = [];
+  for (const m of messages) {
+    const texto = typeof m.content === 'string'
+      ? m.content
+      : (Array.isArray(m.content) ? m.content : [])
+        .filter((b) => b.type === 'text')
+        .map((b) => b.text ?? '')
+        .join('\n')
+        .trim();
+    if (!texto) continue;
+    planos.push({ role: m.role, content: [{ type: 'text', text: texto.slice(0, 1500) }] as ContentBlock[] });
+  }
+  let out = planos.slice(-limite);
+  while (out.length && out[0].role !== 'user') out = out.slice(1);
+  return out;
 }
 
 // Los rituales que deciden el rumbo piensan más que una charla suelta.
@@ -241,12 +295,18 @@ function aligerarHistorial(messages: ApiMessage[]): ApiMessage[] {
 /**
  * Marca el final del historial como punto de caché.
  *
- * El prefijo (voz + dossier + herramientas) ya se cachea desde el bloque de
- * sistema, pero la conversación crece turno a turno y volvía a pagarse entera
- * a precio completo en cada llamada: 13.300 tokens de entrada por turno medidos
- * en la primera prueba real. Con este segundo punto, todo lo anterior al turno
- * actual se lee a una décima parte. El estado fresco y el mensaje nuevo van
+ * El prefijo (herramientas + sistema fijo, y luego dossier + estado) ya se
+ * cachea en dos escalones desde el bloque de sistema (prompt.ts), pero la
+ * conversación crece turno a turno y volvía a pagarse entera a precio completo
+ * en cada llamada: 13.300 tokens de entrada por turno medidos en la primera
+ * prueba real. Con este tercer punto (de los 4 que admite la API), todo lo
+ * anterior al turno actual se lee a una décima parte. El mensaje nuevo va
  * después, así que el prefijo se mantiene byte a byte estable.
+ *
+ * Ojo: el historial va recortado a HISTORY_LIMIT filas. Con el hilo lleno, cada
+ * turno nuevo desplaza la ventana y cambia su primer mensaje, así que entre
+ * turnos esta caché se reescribe igualmente; donde rinde es dentro del bucle
+ * de herramientas de un mismo turno (lo resuelve el resumen del hilo, L4).
  */
 /**
  * Un error legible para el modelo.
@@ -269,6 +329,17 @@ function describirFallo(e: unknown): string {
     }
   }
   return String(e);
+}
+
+/** La zona horaria del perfil (`profiles.timezone`), o null si no se puede leer. */
+async function zonaDelPerfil(sb: Db, userId: string): Promise<string | null> {
+  try {
+    const { data } = await sb.from('profiles').select('timezone').eq('id', userId).maybeSingle();
+    const zona = (data as { timezone?: unknown } | null)?.timezone;
+    return typeof zona === 'string' && zona ? zona : null;
+  } catch {
+    return null;
+  }
 }
 
 function markCacheable(messages: ApiMessage[]): ApiMessage[] {
@@ -319,14 +390,35 @@ interface RunArgs {
   compat: { baseUrl: string; apiKey: string } | null;
   modo: Modo;
   emit: (event: string, data: unknown) => void;
+  /** Telemetría del turno (0047), rellenada al momento: la lee finish aunque el turno falle. */
+  telemetria: Telemetria;
+  /** 'registro' = ruta estrecha (L3); 'completa' = el coach con todo. */
+  ruta: Ruta;
+}
+
+/**
+ * TTL del punto de caché fijo (ver OpcionesSistema en prompt.ts). Apagado por
+ * defecto: con el tráfico medido el 2026-10-02 la escritura a 2× no compensa.
+ */
+function ttlFijoDeEnv(): '1h' | undefined {
+  return Deno.env.get('COACH_CACHE_TTL_FIJO')?.trim() === '1h' ? '1h' : undefined;
 }
 
 async function runCoach(args: RunArgs): Promise<{ text: string; usage: Usage; model: string }> {
-  const { sb, admin, userId, kind, threadId, userText, today, imagenes, topeMicro, modelo, compat, modo, emit, gasto, deadline } =
+  const { sb, admin, userId, kind, threadId, userText, today, imagenes, topeMicro, modelo, compat, modo, emit, gasto, deadline, telemetria, ruta } =
     args;
 
-  const ctx = await buildContext(sb, userId, today);
-  const system = buildSystem(ctx.dossier, kind, ctx.text);
+  // La ruta estrecha cambia TRES cosas y nada más: el estado (mínimo), el
+  // sistema (voz corta) y las herramientas (pack fijo). El candado, el
+  // consentimiento, la persistencia del hilo y la comprobación del servidor
+  // son los mismos que en la ruta completa.
+  const estrecha = ruta === 'registro';
+  const ctx = estrecha ? await buildContextMinimo(sb, userId, today) : await buildContext(sb, userId, today);
+  const system = estrecha ? buildSystemRegistro(ctx.text) : buildSystem(ctx.dossier, kind, ctx.text, { ttlFijo: ttlFijoDeEnv() });
+  const herramientas: readonly unknown[] = estrecha ? TOOL_DEFS_REGISTRO : TOOL_DEFS;
+  const maxVueltas = estrecha ? MAX_TOOL_ITERATIONS_REGISTRO : MAX_TOOL_ITERATIONS;
+  telemetria.state_chars = ctx.text.length;
+  telemetria.tools_offered = herramientas.length;
   const control = controlHerramientas(kind, ctx.dossier);
 
   // Descendente y luego la vuelta: pidiendo ascendente con LIMIT se traen los
@@ -339,7 +431,9 @@ async function runCoach(args: RunArgs): Promise<{ text: string; usage: Usage; mo
     .select('role, content')
     .eq('thread_id', threadId)
     .order('created_at', { ascending: false })
-    .limit(HISTORY_LIMIT);
+    // En la estrecha se piden algunas filas de más: las de herramientas no
+    // tienen texto y se descartan.
+    .limit(estrecha ? HISTORY_LIMIT_REGISTRO * 2 : HISTORY_LIMIT);
 
   const history: ApiMessage[] = ((rows ?? []) as any[])
     .reverse()
@@ -348,7 +442,9 @@ async function runCoach(args: RunArgs): Promise<{ text: string; usage: Usage; mo
   // El estado se reconstruye en cada llamada (así nunca ve datos caducados)
   // pero viaja en el bloque de sistema, no aquí: ver la explicación de coste
   // en buildSystem. El turno del usuario lleva solo lo que él ha dicho.
-  const previos = markCacheable(aligerarHistorial(trimHistory(history)));
+  const previos = estrecha
+    ? historialDeTexto(history, HISTORY_LIMIT_REGISTRO)
+    : markCacheable(aligerarHistorial(trimHistory(history)));
 
   // Las fotos van DELANTE del texto: el modelo lee mejor una imagen cuando la
   // pregunta viene después de verla, no antes.
@@ -359,6 +455,26 @@ async function runCoach(args: RunArgs): Promise<{ text: string; usage: Usage; mo
     })),
     { type: 'text', text: userText },
   ] as ContentBlock[];
+
+  // «Te he subido el gym»: si afirma haber hecho o registrado algo, el servidor
+  // mira antes de que conteste el modelo y le pega lo que consta (la misma
+  // lectura que consultar_dia). Va en el mensaje de ESTE turno, después del
+  // punto de caché, y no se guarda en el hilo. Si la lectura falla, el turno
+  // sigue sin ella: el modelo aún tiene consultar_dia.
+  const afirma = kind === 'chat' && pareceAfirmacion(userText);
+  // En la ruta de registro sin afirmación es un dato suelto («peso 94,2»).
+  telemetria.intent = kind === 'chat' ? (afirma ? 'afirmacion' : estrecha ? 'dato' : 'general') : null;
+  if (afirma) {
+    try {
+      const comprobacion = await bloqueComprobacion(sb, userId, today);
+      bloquesUsuario.push({
+        type: 'text',
+        text: `${DATOS_ABRE}\n${neutralizarDatos(comprobacion)}\n${DATOS_CIERRA}`,
+      } as ContentBlock);
+    } catch (e) {
+      console.warn('comprobación del sistema no disponible:', describirFallo(e));
+    }
+  }
 
   const messages: ApiMessage[] = [...previos, { role: 'user', content: bloquesUsuario }];
 
@@ -382,19 +498,23 @@ ${userText}` : userText,
   const elegido = modelo;
   // El profundo piensa a fondo y con más sitio para escribir; el estándar,
   // lo de cada kind.
-  const esfuerzo: Effort = modo === 'profundo' ? 'xhigh' : EFFORT_BY_KIND[kind];
-  const techo =
-    modo === 'profundo' ? Math.max(MAX_TOKENS_PROFUNDO, MAX_TOKENS_BY_KIND[kind]) : MAX_TOKENS_BY_KIND[kind];
+  const esfuerzo: Effort = estrecha ? 'low' : modo === 'profundo' ? 'xhigh' : EFFORT_BY_KIND[kind];
+  const techo = estrecha
+    ? MAX_TOKENS_REGISTRO
+    : modo === 'profundo'
+      ? Math.max(MAX_TOKENS_PROFUNDO, MAX_TOKENS_BY_KIND[kind])
+      : MAX_TOKENS_BY_KIND[kind];
   // Arranca en el elegido, pero lo que se apunta en la contabilidad es el que
   // devuelve la API: con el mecanismo de reserva puede resolver en otro.
   let model = elegido;
 
   const arranque = Date.now();
 
-  for (let i = 0; i < MAX_TOOL_ITERATIONS; i++) {
+  for (let i = 0; i < maxVueltas; i++) {
     // Si ya no queda reloj, se corta el encadenado: con lo que hay se contesta,
-    // y sin él la función muere sin dejar nada.
-    const sinTiempo = Date.now() - arranque > PRESUPUESTO_MS;
+    // y sin él la función muere sin dejar nada. En la ruta estrecha, la última
+    // vuelta también va a texto: tres vueltas y siempre hay respuesta.
+    const sinTiempo = Date.now() - arranque > PRESUPUESTO_MS || (estrecha && i === maxVueltas - 1);
     const pedirTurno = async (maxTokens: number, effort: Effort) => {
       // Un turno puede encadenar varias llamadas y reintentos. La aceptación
       // de su inicio no autoriza llamadas nuevas después de una retirada.
@@ -407,6 +527,7 @@ ${userText}` : userText,
       // responde (o falla a medias): las comprobaciones de consentimiento que
       // vienen después pueden cortar el turno, pero lo cobrado ya no se borra.
       const llamar = async (): Promise<Turn> => {
+        telemetria.iterations = (telemetria.iterations ?? 0) + 1;
         try {
           const t = await (compat
             ? callOpenAICompat({
@@ -415,7 +536,11 @@ ${userText}` : userText,
                 model: elegido,
                 system,
                 messages,
-                tools: sinTiempo ? undefined : TOOL_DEFS,
+                // Sin tiempo: las MISMAS herramientas con tool_choice 'none'.
+                // Quitarlas cambiaba el prefijo (toda la caché a reescribir) y,
+                // con tool_use en el historial, la API respondía 400.
+                tools: [...herramientas],
+                ...(sinTiempo ? { toolChoice: 'none' as const } : {}),
                 maxTokens,
                 signal,
                 onText: (d) => { buffered += d; },
@@ -424,7 +549,8 @@ ${userText}` : userText,
                 model: elegido,
                 system,
                 messages,
-                tools: sinTiempo ? undefined : TOOL_DEFS,
+                tools: [...herramientas],
+                ...(sinTiempo ? { toolChoice: { type: 'none' as const } } : {}),
                 maxTokens,
                 effort,
                 signal,
@@ -514,6 +640,7 @@ ${userText}` : userText,
     // Todos los resultados vuelven en UN solo mensaje de usuario: partirlos
     // enseña al modelo a dejar de pedir herramientas en paralelo.
     const results: ContentBlock[] = [];
+    telemetria.tool_calls = (telemetria.tool_calls ?? 0) + toolUses.length;
     for (const call of toolUses) {
       let text: string;
       let isError = false;
@@ -523,6 +650,10 @@ ${userText}` : userText,
         // vuelve al modelo como error de herramienta, sin ejecutar nada.
         const veto = control.revisar(call.name!, input);
         if (veto) throw new Error(veto);
+        // Segunda llave de la ruta estrecha: lo que no está en el pack no se
+        // ejecuta, aunque el proveedor lo devuelva sin habérselo ofrecido.
+        const ajena = estrecha ? fueraDelPack(call.name!, PACK_REGISTRO) : null;
+        if (ajena) throw new Error(ajena);
         text = await executeTool(call.name!, input, {
           sb,
           userId,
@@ -681,7 +812,7 @@ async function atender(
   if (body.kind === KIND_MECANICO) {
     try {
       const r = await clasificarPendientes(sbTemprano, admin, userId);
-      const { error: ledgerErr } = await admin.from('coach_runs').insert({
+      const { error: ledgerErr } = await insertarRun(admin, {
         user_id: userId,
         kind: KIND_MECANICO,
         mode: modo,
@@ -691,7 +822,7 @@ async function atender(
         cache_write_tokens: r.usage.cache_creation_input_tokens ?? 0,
         out_tokens: r.usage.output_tokens ?? 0,
         cost_micro_usd: costMicroUsd(r.model, r.usage),
-      });
+      }, { route: 'mecanica', tools_offered: 0, tool_calls: 0, iterations: 1 });
       if (ledgerErr) console.error('coach_runs insert failed:', ledgerErr.message);
       return json(200, { revisados: r.revisados, clasificados: r.clasificados, texto: r.resumen });
     } catch (e) {
@@ -744,7 +875,7 @@ async function atender(
         .single();
       if (error) throw error;
 
-      await admin.from('coach_runs').insert({
+      await insertarRun(admin, {
         user_id: userId,
         kind: `resumen_${periodo}`,
         mode: modo,
@@ -754,7 +885,7 @@ async function atender(
         cache_write_tokens: r.usage.cache_creation_input_tokens ?? 0,
         out_tokens: r.usage.output_tokens ?? 0,
         cost_micro_usd: costMicroUsd(r.model, r.usage),
-      });
+      }, { route: 'mecanica', tools_offered: 0, tool_calls: 0, iterations: 1 });
 
       return json(200, { id: (guardado as { id: string }).id, slides: r.slides, fotos: r.fotos });
     } catch (e) {
@@ -776,7 +907,10 @@ async function atender(
   // usuario creado arriba. El cliente admin solo valida el token.
   const sb = sbTemprano;
 
-  const today = fechaDelTurno(body.date);
+  // El "hoy" lo manda el móvil; la app 1.0.7 no lo manda, y entonces manda la
+  // zona de su perfil, no el día UTC (ver fechaDelTurno).
+  const ahora = reloj.ahora();
+  const today = fechaAceptable(body.date, ahora) ?? fechaDelTurno(null, ahora, await zonaDelPerfil(sb, userId));
 
   // Un hilo continuo por defecto: el coach lleva años de conversación, no
   // sesiones sueltas.
@@ -819,10 +953,19 @@ async function atender(
   // La "revisión semanal profunda" del Élite no es un modo: sale de sus routes
   // (Sonnet, y revision_semanal ya piensa en 'xhigh'), cuenta en el bolsillo
   // estándar y no gasta turnos profundos del usuario.
-  const { model: modelo, compat } = resolverModelo(routes, kind, modo);
-  const topeMicro = Math.min(modo === 'profundo' ? MAX_COST_PROFUNDO_MICRO_USD : MAX_COST_MICRO_USD, restanteMicro);
+  //
+  // Ruta del turno (L3). Un parte claro va por la estrecha; con fotos o en
+  // modo profundo (lo pidió y lo paga de su bolsillo profundo), por la
+  // completa: el profundo no aplica a la ruta de registro.
+  const ruta: Ruta = !fotos.imagenes.length && modo !== 'profundo' ? rutaDelTurno(userText, kind) : 'completa';
+  const { model: modelo, compat } = ruta === 'registro' ? resolverModeloRegistro(routes) : resolverModelo(routes, kind, modo);
+  const topeMicro = Math.min(
+    ruta === 'registro' ? MAX_COST_REGISTRO_MICRO_USD : modo === 'profundo' ? MAX_COST_PROFUNDO_MICRO_USD : MAX_COST_MICRO_USD,
+    restanteMicro,
+  );
   // Lo gastado en este turno, sumado según se cobra (ver Gasto en guard.ts).
   const gasto = new Gasto(modelo);
+  const telemetria: Telemetria = { route: ruta, tool_calls: 0, iterations: 0 };
 
   // El libro de cuentas lo escribe el SERVIDOR, no el usuario: coach_runs solo
   // tiene política de lectura, así que con el cliente del usuario la inserción
@@ -835,7 +978,7 @@ async function atender(
     error: string | null,
   ) => {
     const u: Usage = gasto.usage;
-    const { error: ledgerErr } = await admin.from('coach_runs').insert({
+    const { error: ledgerErr } = await insertarRun(admin, {
       user_id: userId,
       kind,
       mode: modo,
@@ -846,7 +989,7 @@ async function atender(
       out_tokens: u.output_tokens ?? 0,
       cost_micro_usd: gasto.micro(),
       error: error ? 'turn_failed' : null,
-    });
+    }, telemetria);
     // Que falle la contabilidad no debe tumbar el turno, pero tampoco puede
     // desaparecer sin dejar rastro: sin esto, el coste se pierde en silencio.
     if (ledgerErr) console.error('coach_runs insert failed:', ledgerErr.message);
@@ -884,6 +1027,8 @@ async function atender(
         compat,
         modo,
         emit: () => {},
+        telemetria,
+        ruta,
       });
       await requireHealth(sb, userId);
       await finish(result, null);
@@ -935,6 +1080,8 @@ async function atender(
           compat,
           modo,
           emit,
+          telemetria,
+          ruta,
         });
         await requireHealth(sb, userId);
         await finish(result, null);

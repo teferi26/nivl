@@ -277,6 +277,9 @@ describe('tienda: cambios de plan, títulos y ofertas (auditoría 2026-10-02)', 
     expect(P.duracionPlan('nivl_elite_fundador')).toBe('Anual · 1 año');
     expect(P.duracionPlan('nivl_elite_mensual')).toBe('Mensual · 1 mes');
     expect(P.LEGAL_URLS.eulaApple).toBe('https://www.apple.com/legal/internet-services/itunes/dev/stdeula/');
+    // 1.0.8: el dominio propio (Chat 1 + coordinador, verificadas 200 en el apex).
+    expect(P.LEGAL_URLS.terminos).toBe('https://nivl.app/terminos');
+    expect(P.LEGAL_URLS.privacidad).toBe('https://nivl.app/privacidad');
   });
 
   test('tipo de cambio y modo de sustitución de Google Play', () => {

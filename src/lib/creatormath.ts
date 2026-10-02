@@ -26,17 +26,25 @@ export function codigoValido(raw: string | null | undefined): string | null {
   return CODIGO_RE.test(c) ? c : null;
 }
 
-/** El enlace que comparte el creador. Solo abre la app si ya está instalada. */
+/**
+ * Origen de los enlaces de creador. Es el dominio de la marca (docs/PRECIOS.md),
+ * no `URL_NIVL` de socialmath.ts (la web provisional): el enlace que un creador
+ * pega en un vídeo tiene que durar. Que `https://nivl.app/c/*` abra la app
+ * (AASA / assetlinks) y que la web recoja el código si no está instalada lo
+ * cierra el Chat 1 (dominio) y el Chat 4 (página /c/CODIGO).
+ */
+export const ORIGEN_ENLACE_CREADOR = 'https://nivl.app';
+
+/** El enlace que comparte el creador: https://nivl.app/c/CODIGO. */
 export function enlaceCreador(code: string): string {
-  return `nivl://c/${normalizarCodigo(code)}`;
+  return `${ORIGEN_ENLACE_CREADOR}/c/${normalizarCodigo(code)}`;
 }
 
 export function mensajeInvitacionCreador(code: string): string {
   const c = normalizarCodigo(code);
   return (
     `Entra en NIVL con mi código: ${c}. ` +
-    `Escríbelo en «¿Quién te trajo?» al crear tu cuenta. ` +
-    `Si ya tienes la app: ${enlaceCreador(c)}`
+    `Escríbelo en «¿Quién te trajo?» al crear tu cuenta, o entra desde ${enlaceCreador(c)}`
   );
 }
 
@@ -71,6 +79,130 @@ export const RANGO_LABEL: Record<CreatorRank, string> = {
 
 export function rangoLabel(rank: string | null | undefined): string {
   return RANGO_LABEL[rank as CreatorRank] ?? RANGO_LABEL.novato;
+}
+
+// ── Rol (0046) ──────────────────────────────────────────────────────
+
+export type CreatorRole = 'creador' | 'comercial' | 'clipper';
+
+export const ROL_LABEL: Record<CreatorRole, string> = {
+  creador: 'Creador',
+  comercial: 'Comercial',
+  clipper: 'Clipper',
+};
+
+/** Un rol desconocido cae en 'creador' (el valor por defecto de la columna). */
+export function rolValido(role: unknown): CreatorRole {
+  return role === 'comercial' || role === 'clipper' ? role : 'creador';
+}
+
+export const ORDEN_RANGO: readonly CreatorRank[] = ['novato', 'pro', 'elite'];
+
+/** Un rango desconocido cae en 'novato'. */
+export function rangoValido(rank: unknown): CreatorRank {
+  return rank === 'pro' || rank === 'elite' ? rank : 'novato';
+}
+
+/** Umbral para PROPONER un rango (`creator_rank_rules`, 0046). El ascenso lo aplica el dueño. */
+export interface ReglaRango {
+  rank: CreatorRank;
+  minSales90d: number;
+  minMonthsActive?: number;
+}
+
+export interface ProgresoRango {
+  /** El rango más alto cuyas reglas se cumplen (novato si no hay reglas o no llega a ninguna). */
+  merecido: CreatorRank;
+  /** El siguiente rango con regla por encima del merecido, o null si no hay. */
+  siguiente: CreatorRank | null;
+  umbral: number | null;
+  faltan: number | null;
+  /** 0..1 hacia el siguiente umbral (1 si no hay siguiente). */
+  fraccion: number;
+}
+
+/**
+ * Dónde está un creador según sus ventas de 90 días y las reglas del dueño.
+ * Solo PROPONE: subir de rango sube la comisión y lo aplica el dueño a mano
+ * (scripts/creadores.mjs revisar-rangos). Reglas con rango desconocido o
+ * umbral no numérico se ignoran.
+ */
+export function progresoRango(ventas90: number, reglas: readonly ReglaRango[], mesesActivo = 0): ProgresoRango {
+  const v = Math.max(0, Math.floor(Number(ventas90) || 0));
+  const meses = Math.max(0, Math.floor(Number(mesesActivo) || 0));
+  const validas = reglas.filter(
+    (r) => ORDEN_RANGO.includes(r.rank) && Number.isFinite(r.minSales90d) && r.minSales90d >= 0,
+  );
+  const regla = (rank: CreatorRank) => validas.find((r) => r.rank === rank);
+  const cumple = (r: ReglaRango) => v >= r.minSales90d && meses >= (r.minMonthsActive ?? 0);
+
+  let merecido: CreatorRank = 'novato';
+  for (const rank of ORDEN_RANGO) {
+    const r = regla(rank);
+    if (rank !== 'novato' && r && cumple(r)) merecido = rank;
+  }
+  const idx = ORDEN_RANGO.indexOf(merecido);
+  const sig = ORDEN_RANGO.slice(idx + 1).map(regla).find((r): r is ReglaRango => !!r) ?? null;
+  if (!sig) return { merecido, siguiente: null, umbral: null, faltan: null, fraccion: 1 };
+  const faltan = Math.max(0, sig.minSales90d - v);
+  const fraccion = sig.minSales90d === 0 ? 1 : Math.min(1, v / sig.minSales90d);
+  return { merecido, siguiente: sig.rank, umbral: sig.minSales90d, faltan, fraccion };
+}
+
+// ── Retos ───────────────────────────────────────────────────────────
+
+export interface Reto {
+  startsAt: string;
+  endsAt: string;
+  goalSales: number;
+}
+
+export type FaseReto = 'proximo' | 'activo' | 'cumplido' | 'terminado';
+
+export interface EstadoReto {
+  fase: FaseReto;
+  /** 0..1 hacia el objetivo. */
+  fraccion: number;
+  faltan: number;
+  /** Días que quedan (redondeo hacia arriba); 0 si ya terminó. Antes de empezar, días para que empiece. */
+  dias: number;
+  linea: string;
+}
+
+/**
+ * La fase de un reto para quien lo mira. `cumplido` gana a `activo` y a
+ * `terminado`: si llegó al objetivo, eso es lo que se ve. Fechas inválidas
+ * cuentan como terminado (nunca como activo).
+ */
+export function estadoReto(reto: Reto, ventas: number, ahora: Date | number = Date.now()): EstadoReto {
+  const t = typeof ahora === 'number' ? ahora : ahora.getTime();
+  const ini = new Date(reto.startsAt).getTime();
+  const fin = new Date(reto.endsAt).getTime();
+  const meta = Math.max(1, Math.floor(Number(reto.goalSales) || 1));
+  const v = Math.max(0, Math.floor(Number(ventas) || 0));
+  const faltan = Math.max(0, meta - v);
+  const fraccion = Math.min(1, v / meta);
+  const dia = 86_400_000;
+  const valido = Number.isFinite(ini) && Number.isFinite(fin) && fin > ini;
+
+  if (valido && t < ini) {
+    const dias = Math.ceil((ini - t) / dia);
+    return { fase: 'proximo', fraccion: 0, faltan: meta, dias, linea: `Empieza en ${dias} ${dias === 1 ? 'día' : 'días'}.` };
+  }
+  if (v >= meta) {
+    return { fase: 'cumplido', fraccion: 1, faltan: 0, dias: valido ? Math.max(0, Math.ceil((fin - t) / dia)) : 0, linea: 'Reto cumplido.' };
+  }
+  if (valido && t < fin) {
+    const dias = Math.ceil((fin - t) / dia);
+    return {
+      fase: 'activo',
+      fraccion,
+      faltan,
+      dias,
+      linea: `${ventasLabel(v)} de ${meta}. Quedan ${dias} ${dias === 1 ? 'día' : 'días'}.`,
+    };
+  }
+  return { fase: 'terminado', fraccion, faltan, dias: 0, linea: `Terminado con ${ventasLabel(v)} de ${meta}.` };
 }
 
 // ── La cuenta ───────────────────────────────────────────────────────

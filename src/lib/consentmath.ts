@@ -6,7 +6,7 @@
 // sitios y todo el mundo vuelve a aceptar.
 //
 // Lo que dice esta hoja tiene que decir lo mismo que la política publicada
-// (https://nivl-web.vercel.app/privacidad). Se distinguen almacenamiento y
+// (https://nivl.app/privacidad). Se distinguen almacenamiento y
 // procesamiento del proveedor. Aceptar esta hoja no sustituye las obligaciones
 // del responsable sobre transferencias internacionales y datos de salud.
 

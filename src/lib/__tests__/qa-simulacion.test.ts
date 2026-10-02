@@ -8,6 +8,7 @@ import { addDays } from '../dates';
 import { levelFromXp, questXp, STAT_COLUMN } from '../game';
 import type { Quest, Stat } from '../types';
 import { mision } from './qa/servidor';
+import { rangoDeNivel } from '../progression';
 
 // Un día "normal" de 5 misiones: 2 fáciles, 2 medias, 1 difícil = 250 XP base,
 // dentro del presupuesto diario de la skill (150–300).
@@ -149,4 +150,29 @@ describe('vuelta en la semana 40 tras una ausencia', () => {
       }
     });
   }
+});
+
+describe('sistema v2: rangos a 30, 90 y 365 días', () => {
+  const irregular60: Perfil = { adherencia: 0.6, recupera: false };
+  test('el constante (80 %) entra en D la primera semana, C hacia el mes 1–2, B antes del año; S no antes de un año', () => {
+    const rango = (d: number, p: Perfil) => rangoDeNivel(simular(d, p).nivel);
+    const r7 = rango(7, constante), r30 = rango(30, constante), r90 = rango(90, constante), r365 = rango(365, constante);
+    if (process.env.QA_SIM_PRINT) {
+      console.log('rangos constante', { d7: r7.rango.id + r7.grado, d30: r30.rango.id + r30.grado, d90: r90.rango.id + r90.grado, d365: r365.rango.id + r365.grado,
+        niveles: [7, 30, 90, 365].map((d) => simular(d, constante).nivel) });
+      const ri = [30, 90, 365].map((d) => { const x = rango(d, irregular60); return x.rango.id + x.grado; });
+      console.log('rangos irregular60', ri);
+    }
+    expect(['E', 'D']).toContain(r7.rango.id);
+    expect(['D', 'C']).toContain(r30.rango.id);
+    expect(['C', 'B']).toContain(r90.rango.id);
+    expect(['B', 'A']).toContain(r365.rango.id);
+  });
+
+  test('en un año hay al menos 8 hitos cualitativos (rango o grado) para el constante', () => {
+    const hitos = new Set<string>();
+    const n = simular(365, constante).niveles;
+    for (const lvl of n) { const r = rangoDeNivel(lvl); hitos.add(r.rango.id + r.grado); }
+    expect(hitos.size).toBeGreaterThanOrEqual(8);
+  });
 });
