@@ -473,7 +473,9 @@ export default function Onboarding() {
         <ScrollView
           ref={scroll}
           scrollEnabled={!holding}
-          contentContainerStyle={styles.content}
+          // La firma es un documento: se lee desde arriba. Centrada, en
+          // pantallas altas dejaba un hueco negro sobre el título.
+          contentContainerStyle={[styles.content, step === 5 && styles.contentArriba]}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
@@ -679,7 +681,7 @@ export default function Onboarding() {
                 ))}
               </View>
               {/* El texto se revela párrafo a párrafo: se lee, no se acepta. */}
-              <TablillaContrato parrafos={contrato.split(/\n\s*\n/)} abreEl={fechaConAnio(abreEl)} />
+              <TablillaContrato parrafos={contrato.split(/\n\s*\n/)} abreEl={fechaConAnio(abreEl)} rellenar={false} />
               <Text style={styles.smallPrint}>
                 Hasta entonces lo guarda Contrato, sellado. Tus normas y sus consecuencias las escribes allí cuando
                 entres.
@@ -811,6 +813,7 @@ const styles = StyleSheet.create({
   // Zona táctil de 44 × 44; el margen negativo deja la flecha alineada al canal.
   back: { alignSelf: 'flex-start', width: 44, height: 44, marginLeft: -12, alignItems: 'center', justifyContent: 'center' },
   content: { flexGrow: 1, justifyContent: 'center', paddingHorizontal: GUTTER, paddingTop: 20, paddingBottom: 24 },
+  contentArriba: { justifyContent: 'flex-start' },
   ofertaEspera: { gap: 10, marginTop: 8 },
   footer: {
     paddingHorizontal: GUTTER,

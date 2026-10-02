@@ -14,33 +14,43 @@ export interface TablillaContratoProps {
   parrafos: readonly string[];
   /** Fecha de apertura ya escrita: «lunes, 2 de octubre de 2028». */
   abreEl: string;
+  /**
+   * Ocupa el alto que sobre en el cuerpo y deja la losa arriba, pegada al
+   * título: en un cuerpo centrado y alto (tableta) el paso no flota con negro
+   * encima. Por defecto sí; el onboarding real lo apaga porque tras la losa
+   * vienen la firma y el anillo, y el hueco quedaría entre medias.
+   */
+  rellenar?: boolean;
 }
 
-export function TablillaContrato({ parrafos, abreEl }: TablillaContratoProps) {
+export function TablillaContrato({ parrafos, abreEl, rellenar = true }: TablillaContratoProps) {
   return (
-    <TarjetaArena variante="piedra" remaches zocalo>
-      <Meandro alto={8} />
-      <Text style={styles.rotulo} accessibilityRole="header" maxFontSizeMultiplier={1.35}>
-        CONTRATO
-      </Text>
-      {/* Clave por posición: al cambiar el plazo cambia el texto, pero los
-          párrafos ya leídos no vuelven a entrar. */}
-      {parrafos.map((p, i) => (
-        <Entrada key={i} indice={i + 1}>
-          <Text style={[styles.parrafo, i > 0 && styles.parrafoSig]} maxFontSizeMultiplier={1.35}>
-            {p}
-          </Text>
-        </Entrada>
-      ))}
-      <Meandro alto={8} style={styles.meandroPie} />
-      <Text style={styles.fecha} maxFontSizeMultiplier={1.35}>
-        SE ABRE EL {abreEl.toUpperCase()}
-      </Text>
-    </TarjetaArena>
+    <View style={rellenar ? styles.relleno : null}>
+      <TarjetaArena variante="piedra" remaches zocalo>
+        <Meandro alto={8} />
+        <Text style={styles.rotulo} accessibilityRole="header" maxFontSizeMultiplier={1.35}>
+          CONTRATO
+        </Text>
+        {/* Clave por posición: al cambiar el plazo cambia el texto, pero los
+            párrafos ya leídos no vuelven a entrar. */}
+        {parrafos.map((p, i) => (
+          <Entrada key={i} indice={i + 1}>
+            <Text style={[styles.parrafo, i > 0 && styles.parrafoSig]} maxFontSizeMultiplier={1.35}>
+              {p}
+            </Text>
+          </Entrada>
+        ))}
+        <Meandro alto={8} style={styles.meandroPie} />
+        <Text style={styles.fecha} maxFontSizeMultiplier={1.35}>
+          SE ABRE EL {abreEl.toUpperCase()}
+        </Text>
+      </TarjetaArena>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  relleno: { flexGrow: 1 },
   rotulo: {
     fontFamily: tipo.inscripcion.family,
     fontSize: tipo.inscripcion.size,

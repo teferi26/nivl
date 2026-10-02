@@ -6,13 +6,30 @@
 // aquí: la única inversión del paso es «Entrar en la arena», en el pie.
 
 import { useState } from 'react';
-import { StyleSheet, Text, View, type LayoutChangeEvent } from 'react-native';
+import { StyleSheet, Text, View, useWindowDimensions, type LayoutChangeEvent } from 'react-native';
 import { Arena, ASangre, Entrada, Laurel, TarjetaArena } from '@/components/arena';
 import { ink, space, type as tipo } from '@/design/tokens';
 import { DESCARGO_SALUD } from '@/lib/consentmath';
 
-/** Alto del graderío. */
-const ALTO_ARENA = 200;
+/** Alto mínimo del graderío: el de 375 × 667, donde la portada ya se desplaza. */
+const ALTO_ARENA_MIN = 200;
+/** Alto máximo: en tableta, más arena sería un muro. */
+const ALTO_ARENA_MAX = 320;
+/** Parte del alto de la ventana que ocupa el graderío. */
+const PARTE_ALTO = 0.3;
+/** Proporción máxima alto/ancho: un arco más alto que esto deja de ser arco. */
+const PARTE_ANCHO = 0.45;
+
+/**
+ * Alto del graderío según la ventana real: crece con el alto disponible (y el
+ * ancho lo frena), para que en 430 × 932 o en tableta la fachada llene el
+ * tercio superior en vez de quedarse en un arco bajo con negro encima.
+ */
+export function altoArena(anchoEscena: number, altoVentana: number): number {
+  const porAlto = altoVentana * PARTE_ALTO;
+  const porAncho = anchoEscena > 0 ? anchoEscena * PARTE_ANCHO : ALTO_ARENA_MIN;
+  return Math.round(Math.max(ALTO_ARENA_MIN, Math.min(ALTO_ARENA_MAX, porAlto, porAncho)));
+}
 /** Tracking de la marca: más abierto que el `display` normal, es una fachada. */
 const TRACKING_MARCA = 16;
 /** Tracking del lema: una línea a 375 entre los laureles. */
@@ -37,14 +54,21 @@ export function PortadaArena({ descargo = DESCARGO_SALUD }: PortadaArenaProps) {
     const w = Math.round(e.nativeEvent.layout.width);
     if (w !== ancho) setAncho(w);
   };
+  const { height: altoVentana } = useWindowDimensions();
+  const alto = altoArena(ancho, altoVentana);
 
+  // La portada ocupa todo el alto del cuerpo y reparte lo que sobra 1 : 2
+  // (arriba : abajo): la fachada queda en el tercio superior y no flota en el
+  // centro con media pantalla negra encima. Si no cabe, los huecos valen 0 y
+  // el cuerpo se desplaza como antes.
   return (
-    <View>
+    <View style={styles.portada}>
+      <View style={styles.huecoArriba} />
       <Entrada indice={0}>
         <ASangre>
-          <View style={styles.escena} onLayout={medir}>
+          <View style={[styles.escena, { height: alto }]} onLayout={medir}>
             {ancho > 0 ? (
-              <Arena ancho={ancho} alto={ALTO_ARENA} variante="arco" gradas={4} color={ink.ink4} style={styles.arena} />
+              <Arena ancho={ancho} alto={alto} variante="arco" gradas={4} color={ink.ink4} style={styles.arena} />
             ) : null}
             <View style={styles.placa}>
               <Text
@@ -91,12 +115,16 @@ export function PortadaArena({ descargo = DESCARGO_SALUD }: PortadaArenaProps) {
           {descargo}
         </Text>
       </Entrada>
+      <View style={styles.huecoAbajo} />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  escena: { height: ALTO_ARENA, justifyContent: 'flex-end', alignItems: 'center' },
+  portada: { flexGrow: 1 },
+  huecoArriba: { flexGrow: 1 },
+  huecoAbajo: { flexGrow: 2 },
+  escena: { justifyContent: 'flex-end', alignItems: 'center' },
   arena: { position: 'absolute', left: 0, bottom: 0 },
   // Placa negra bajo la marca: tapa los arranques del graderío detrás de las
   // letras, que quedan de pie sobre la arena en vez de cruzadas por el trazo.
