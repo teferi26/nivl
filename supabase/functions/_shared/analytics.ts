@@ -269,7 +269,7 @@ export async function construirEstudio(sb: Db, userId: string, hoy: string): Pro
   } else {
     push();
     push('## Cardio');
-    push('- Sin sesiones registradas en 56 días. Con un IRONMAN en 2029, esto es el agujero más grande.');
+    push('- Sin sesiones registradas en 56 días. Si su ficha o sus metas tienen un objetivo de resistencia, este es el agujero más grande.');
   }
 
   // ── Nutrición ───────────────────────────────────────────────────
