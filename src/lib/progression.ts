@@ -102,6 +102,8 @@ export interface EstadoProgreso {
   racha: number;
   piedras: number;
   logros: ReadonlySet<string>;
+  /** Próximo rango y niveles que faltan («6 niveles para Leyenda»); null en S. */
+  siguienteRango: { rango: RangoId; nombre: string; nivel: number; faltan: number } | null;
 }
 
 export function estadoDe(p: {
@@ -115,9 +117,13 @@ export function estadoDe(p: {
   const registrado = rangoRegistrado(set);
   const rango = compararRangos(porNivel.rango.id, registrado) >= 0 ? porNivel.rango.id : registrado;
   const grado: Grado = rango === porNivel.rango.id ? porNivel.grado : 1;
+  const sig = RANGOS[ORDEN.indexOf(rango) + 1];
   return {
     xp: p.xp_total, nivel: lvl.level, xpEnNivel: lvl.into, xpSiguiente: lvl.next,
     rango, grado, racha: p.streak_days, piedras: p.protection_stones, logros: set,
+    siguienteRango: sig
+      ? { rango: sig.id, nombre: sig.nombre, nivel: sig.grados[0], faltan: Math.max(0, sig.grados[0] - lvl.level) }
+      : null,
   };
 }
 

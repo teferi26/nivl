@@ -53,6 +53,8 @@ describe('el rango no baja nunca', () => {
     expect(e.nivel).toBe(9);
     expect(e.rango).toBe('C');
     expect(e.grado).toBe(1);
+    expect(e.siguienteRango).toEqual({ rango: 'B', nombre: 'Campeón', nivel: 15, faltan: 6 });
+    expect(estadoDe(perfil(31), ['rango_S']).siguienteRango).toBeNull();
   });
 
   test('evaluateAchievements registra los rangos alcanzados y no los repite', () => {
