@@ -16,9 +16,8 @@ import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Platform, StyleSheet, Text, View } from 'react-native';
 import { ProOffer } from '@/components/ProOffer';
-import { SystemButton } from '@/components/SystemButton';
 import { XPBar } from '@/components/XPBar';
-import { Card, FadeIn, Row, RowValue, Screen, ScreenHeader, Section, Skeleton, Stagger } from '@/components/ui';
+import { Button, Card, FadeIn, Row, Screen, ScreenHeader, Section, Skeleton, Stagger } from '@/components/ui';
 import { useAuth } from '@/lib/auth';
 import { ensureProfile } from '@/lib/data';
 import { isValidKey, nombreDia } from '@/lib/dates';
@@ -45,7 +44,7 @@ import {
   type RespuestaOferta,
 } from '@/lib/pro';
 import { fetchSubscription } from '@/lib/subscription';
-import { colors, fonts } from '@/lib/theme';
+import { ink, type as tipo } from '@/design/tokens';
 import { mensajeSistema } from '@/lib/validation';
 
 /** "jueves, 1 de octubre" a partir de una clave o de un ISO completo. */
@@ -178,7 +177,7 @@ export default function Pro() {
 
           <FadeIn index={1}>
             <Section title="Energía del coach este mes" meta={`${pct} %`}>
-              <XPBar ratio={queda} height={8} color={agotada ? colors.accentDim : colors.accent} />
+              <XPBar ratio={queda} height={8} color={agotada ? ink.ink6 : ink.ink10} trackColor={ink.ink4} />
               <Text style={styles.energia}>
                 {agotada
                   ? `Agotada por este mes. ${recarga ? `Se recarga el ${recarga}.` : 'Se recarga el día 1.'} Tus misiones, tu racha y todos los módulos siguen funcionando.`
@@ -194,9 +193,8 @@ export default function Pro() {
                   first
                   title="Plan"
                   trailing={
-                    <RowValue tone="accent" strong>
-                      {prueba ? 'Prueba de 7 días' : planLabel(status?.plan ?? null)}
-                    </RowValue>
+                    // RowValue por defecto pinta en ink6 y en Cinzel: el plan es el dato fuerte, en ink9.
+                    <Text style={styles.planValor}>{prueba ? 'Prueba de 7 días' : planLabel(status?.plan ?? null)}</Text>
                   }
                 />
                 {renueva ? (
@@ -216,7 +214,7 @@ export default function Pro() {
               </Card>
               {deTienda ? (
                 <>
-                  <SystemButton
+                  <Button
                     title="Gestionar o cancelar suscripción"
                     variant="ghost"
                     size="sm"
@@ -244,7 +242,7 @@ export default function Pro() {
           </FadeIn>
 
           <FadeIn index={3}>
-            <SystemButton title="Hablar con el coach" icon="shield-half" onPress={() => router.replace('/(tabs)/coach')} />
+            <Button title="Hablar con el coach" variant="primary" icon="shield-half" onPress={() => router.replace('/(tabs)/coach')} />
           </FadeIn>
 
           {/* Con la tienda abierta: quien está en la prueba puede suscribirse
@@ -274,9 +272,9 @@ export default function Pro() {
                   />
                 </View>
               ) : (
-                <SystemButton
+                <Button
                   title={prueba ? 'Suscribirme' : 'Ver NIVL Élite'}
-                  variant="outline"
+                  variant="secondary"
                   onPress={() => setVerOferta(true)}
                   style={styles.mejorar}
                 />
@@ -327,11 +325,12 @@ const styles = StyleSheet.create({
   hueco: { marginBottom: 18 },
   huecoLinea: { marginBottom: 12 },
   huecoBloque: { marginTop: 14 },
-  energia: { fontFamily: fonts.body, fontSize: 13.5, lineHeight: 20, color: colors.textDim, marginTop: 10 },
+  energia: { fontFamily: tipo.body.family, fontSize: tipo.body.size, lineHeight: tipo.body.lineHeight, color: ink.ink8, marginTop: 10 },
   lista: { paddingHorizontal: 16, paddingVertical: 2 },
-  valor: { fontFamily: fonts.semibold, fontSize: 13, color: colors.text },
-  nota: { fontFamily: fonts.body, fontSize: 12, lineHeight: 17, color: colors.textFaint, marginTop: 4 },
+  valor: { fontFamily: 'Outfit_600SemiBold', fontSize: 13, color: ink.ink9 },
+  planValor: { fontFamily: tipo.headline.family, fontSize: 14, color: ink.ink9 },
+  nota: { fontFamily: tipo.bodySm.family, fontSize: tipo.bodySm.size, lineHeight: tipo.bodySm.lineHeight, color: ink.ink6, marginTop: 4 },
   mejorar: { marginTop: 10 },
   gestionar: { marginTop: 8, alignSelf: 'flex-start' },
-  oferta: { marginTop: 22, borderTopWidth: 1, borderTopColor: colors.line, paddingTop: 18 },
+  oferta: { marginTop: 22, borderTopWidth: 1, borderTopColor: ink.ink3, paddingTop: 18 },
 });

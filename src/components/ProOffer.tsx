@@ -34,8 +34,8 @@ import { router } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { Linking, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useConsentimientoIA } from '@/components/ConsentimientoIA';
-import { SystemButton } from '@/components/SystemButton';
-import { Card, Chip, Skeleton, Tag } from '@/components/ui';
+import { Button, Card, Chip, Skeleton, Tag } from '@/components/ui';
+import { ink, type as tipo } from '@/design/tokens';
 import { insertEvent } from '@/lib/data';
 import {
   COACH_USAGE_NOTICE,
@@ -73,7 +73,7 @@ import {
   type PreciosTienda,
   type ProPlanId,
 } from '@/lib/pro';
-import { colors, fonts } from '@/lib/theme';
+import { fonts } from '@/lib/theme';
 import { mensajeSistema } from '@/lib/validation';
 
 /** La tienda cobró pero el servidor aún no refleja la suscripción. Con salida: Restaurar. */
@@ -346,7 +346,7 @@ export function ProOfferBody({ oferta, kind, compact, motivo }: BodyProps) {
               ? 'No se han podido cargar los precios de la tienda. Puedes reintentarlo o seguir gratis.'
               : `La tienda no tiene planes de ${nivel.name} disponibles ahora. Puedes reintentarlo o seguir gratis.`}
           </Text>
-          <SystemButton title="Reintentar precios" variant="outline" size="sm" onPress={reintentarPrecios} disabled={busy !== null} />
+          <Button title="Reintentar precios" variant="secondary" size="sm" onPress={reintentarPrecios} disabled={busy !== null} />
         </Card>
       ) : disponible ? (
         <View accessibilityRole="radiogroup" accessibilityLabel="Suscripciones" style={styles.plans}>
@@ -356,7 +356,7 @@ export function ProOfferBody({ oferta, kind, compact, motivo }: BodyProps) {
             </Text>
           ) : null}
           {sinNivel ? (
-            <SystemButton title="Reintentar precios" variant="outline" size="sm" onPress={reintentarPrecios} disabled={busy !== null} />
+            <Button title="Reintentar precios" variant="secondary" size="sm" onPress={reintentarPrecios} disabled={busy !== null} />
           ) : null}
           {planes.map((p) => {
             const actual = p.id === planActual;
@@ -416,14 +416,14 @@ export function ProOfferBody({ oferta, kind, compact, motivo }: BodyProps) {
               key={p.id}
               style={[styles.priceRow, i > 0 && styles.sep]}
               accessible
-              accessibilityLabel={`${nivel.name} ${p.label.toLowerCase()}: ${p.price} al ${p.period}. ${p.pitch}`}
+              accessibilityLabel={`${nivel.name} ${p.label.toLowerCase()}: ${p.price} al ${p.period}. ${pitchVisible(p)}`}
             >
               <View style={styles.planBody}>
                 <View style={styles.planHead}>
                   <Text style={styles.planLabel}>{p.label.toUpperCase()}</Text>
                   {p.savings ? <Tag>{p.savings}</Tag> : null}
                 </View>
-                <Text style={styles.planPitch}>{p.pitch}</Text>
+                <Text style={styles.planPitch}>{pitchVisible(p)}</Text>
               </View>
               <View style={styles.planPrice}>
                 <Text style={styles.price}>{p.price}</Text>
@@ -442,7 +442,7 @@ export function ProOfferBody({ oferta, kind, compact, motivo }: BodyProps) {
     <View>
       {contexto ? <Text style={[styles.emphasis, styles.contexto]}>{contexto}</Text> : null}
       {compact ? null : (
-        <Card variant="outline" accent={colors.accentDim}>
+        <Card variant="outline">
           <Text style={styles.emphasis}>{proEmphasis(kind)}</Text>
         </Card>
       )}
@@ -465,7 +465,7 @@ export function ProOfferBody({ oferta, kind, compact, motivo }: BodyProps) {
         <View style={styles.benefitGrid}>
           {beneficios.map((b) => (
             <View key={b.title} style={styles.benefitCell}>
-              <Ionicons name={b.icon as never} size={15} color={colors.accentText} style={styles.benefitIcon} />
+              <Ionicons name={b.icon as never} size={15} color={ink.ink9} style={styles.benefitIcon} />
               <Text style={styles.benefitCellTitle} numberOfLines={2}>
                 {b.title}
               </Text>
@@ -476,7 +476,7 @@ export function ProOfferBody({ oferta, kind, compact, motivo }: BodyProps) {
         <View style={styles.benefits}>
           {beneficios.map((b, i) => (
             <View key={b.title} style={[styles.benefit, i > 0 && styles.sep]}>
-              <Ionicons name={b.icon as never} size={18} color={colors.accentText} style={styles.benefitIcon} />
+              <Ionicons name={b.icon as never} size={18} color={ink.ink9} style={styles.benefitIcon} />
               <View style={styles.benefitBody}>
                 <Text style={styles.benefitTitle}>{b.title}</Text>
                 <Text style={styles.benefitDetail}>{b.detail}</Text>
@@ -511,7 +511,7 @@ interface ActionsProps {
 export function ProOfferActions({ oferta, exitLabel, onExit, exitLoading }: ActionsProps) {
   const { plan, precioDe, catalogo, puedeComprar, busy, anotado, aviso, disponible, prueba, onPrincipal, onPrueba, hojaConsentimiento } = oferta;
   const activar = puedeComprar
-    ? `Activar ${tituloPlan(plan.id)} · ${precioDe(plan.id)}/${plan.period}`
+    ? `Activar ${tituloPlan(plan.id)} · ${precioDe(plan.id)} al ${plan.period}`
     : catalogo === 'cargando' ? 'Cargando precios de la tienda' : 'Compra no disponible';
   return (
     <View>
@@ -527,8 +527,9 @@ export function ProOfferActions({ oferta, exitLabel, onExit, exitLoading }: Acti
       ) : null}
       {prueba ? (
         <>
-          <SystemButton
+          <Button
             title="Probar el coach 7 días"
+            variant="primary"
             size="lg"
             icon="hourglass-outline"
             onPress={onPrueba}
@@ -538,7 +539,7 @@ export function ProOfferActions({ oferta, exitLabel, onExit, exitLoading }: Acti
           {/* Con la tienda abierta, quien ya lo tiene claro no pasa por la
               prueba: el plan elegido en el selector, en un botón discreto. */}
           {disponible ? (
-            <SystemButton
+            <Button
               title={activar}
               variant="ghost"
               size="sm"
@@ -550,8 +551,9 @@ export function ProOfferActions({ oferta, exitLabel, onExit, exitLoading }: Acti
           ) : null}
         </>
       ) : (
-        <SystemButton
+        <Button
           title={disponible ? activar : anotado ? 'Anotado' : 'Avísame cuando abra'}
+          variant="primary"
           size="lg"
           icon={disponible ? undefined : anotado ? 'checkmark' : 'notifications-outline'}
           onPress={onPrincipal}
@@ -559,9 +561,10 @@ export function ProOfferActions({ oferta, exitLabel, onExit, exitLoading }: Acti
           disabled={anotado || (disponible && !puedeComprar) || (busy !== null && busy !== 'compra')}
         />
       )}
-      <SystemButton
+      {/* La salida gratuita: mismo alto que la acción de pago (lg, 52), nunca ghost. */}
+      <Button
         title={exitLabel}
-        variant="outline"
+        variant="secondary"
         size="lg"
         onPress={onExit}
         loading={exitLoading}
@@ -584,7 +587,7 @@ export function ProOfferLegal({ oferta }: { oferta: ProOfferState }) {
   if (!disponible) return null;
   return (
     <View>
-      <SystemButton
+      <Button
         title="Restaurar compras"
         variant="ghost"
         size="sm"
@@ -597,7 +600,8 @@ export function ProOfferLegal({ oferta }: { oferta: ProOfferState }) {
       <View style={styles.links}>
         <Pressable
           onPress={() => abrir(LEGAL_URLS.terminos)}
-          hitSlop={{ top: 14, bottom: 14, left: 8, right: 8 }}
+          hitSlop={{ top: 0, bottom: 0, left: 8, right: 8 }}
+          style={styles.linkHit}
           accessibilityRole="link"
           accessibilityLabel="Términos de uso"
         >
@@ -606,7 +610,8 @@ export function ProOfferLegal({ oferta }: { oferta: ProOfferState }) {
         <Text style={styles.linkSep}>·</Text>
         <Pressable
           onPress={() => abrir(LEGAL_URLS.privacidad)}
-          hitSlop={{ top: 14, bottom: 14, left: 8, right: 8 }}
+          hitSlop={{ top: 0, bottom: 0, left: 8, right: 8 }}
+          style={styles.linkHit}
           accessibilityRole="link"
           accessibilityLabel="Política de privacidad"
         >
@@ -618,7 +623,8 @@ export function ProOfferLegal({ oferta }: { oferta: ProOfferState }) {
             <Text style={styles.linkSep}>·</Text>
             <Pressable
               onPress={() => abrir(LEGAL_URLS.eulaApple)}
-              hitSlop={{ top: 14, bottom: 14, left: 8, right: 8 }}
+              hitSlop={{ top: 0, bottom: 0, left: 8, right: 8 }}
+          style={styles.linkHit}
               accessibilityRole="link"
               accessibilityLabel="Contrato de licencia de usuario final de Apple (EULA)"
             >
@@ -692,31 +698,44 @@ export function ProUpsellLine({ momento, tier, onPress }: UpsellLineProps) {
       accessibilityLabel={`${copy.linea} ${copy.enlace}`}
       accessibilityHint="Abre los planes. No se cobra nada sin confirmarlo en la tienda."
     >
-      <Ionicons name={(tier === 'elite' ? 'flash-outline' : 'sparkles-outline') as never} size={16} color={colors.accentText} />
+      <Ionicons name={(tier === 'elite' ? 'flash-outline' : 'sparkles-outline') as never} size={16} color={ink.ink8} />
       <View style={styles.planBody}>
-        <Text style={styles.benefitDetail} numberOfLines={2}>
+        <Text style={styles.upsellLinea} numberOfLines={2}>
           {copy.linea}
         </Text>
-        <Text style={styles.link}>{copy.enlace}</Text>
+        <Text style={styles.upsellEnlace}>{copy.enlace}</Text>
       </View>
-      <Ionicons name={'chevron-forward' as never} size={16} color={colors.textFaint} />
+      <Ionicons name={'chevron-forward' as never} size={16} color={ink.ink6} />
     </Pressable>
   );
 }
 
+/** Un estilo de la escala `type` (SISTEMA §2) como estilo de texto. */
+const texto = (t: (typeof tipo)[keyof typeof tipo]) => ({
+  fontFamily: t.family,
+  fontSize: t.size,
+  lineHeight: t.lineHeight,
+  letterSpacing: t.tracking,
+});
+
+// v2 «Mármol y tinta»: solo la escala ink. La única superficie invertida de la
+// oferta es el botón principal; planes, beneficios y letra pequeña van en
+// tinta sobre negro, con la jerarquía en el trazo y en el brillo del texto.
 const styles = StyleSheet.create({
-  emphasis: { fontFamily: fonts.semibold, fontSize: 14, lineHeight: 21, color: colors.text },
+  emphasis: { fontFamily: fonts.semibold, fontSize: 14, lineHeight: 21, color: ink.ink9 },
   contexto: { marginBottom: 12 },
-  upsell: { flexDirection: 'row', alignItems: 'center', gap: 12, borderTopWidth: 1, borderTopColor: colors.line, paddingVertical: 11 },
+  upsell: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 44, borderTopWidth: 1, borderTopColor: ink.ink3, paddingVertical: 11 },
+  upsellLinea: { ...texto(tipo.bodySm), color: ink.ink9 },
+  upsellEnlace: { ...texto(tipo.bodySm), color: ink.ink10, textDecorationLine: 'underline', marginTop: 2 },
   niveles: { flexDirection: 'row', gap: 8, marginTop: 4 },
-  potencia: { fontFamily: fonts.body, fontSize: 13, lineHeight: 19, color: colors.textDim, marginTop: 8, marginBottom: 6 },
+  potencia: { ...texto(tipo.bodySm), color: ink.ink8, marginTop: 8, marginBottom: 6 },
   benefits: { marginTop: 6, marginBottom: 18 },
   benefit: { flexDirection: 'row', gap: 12, paddingVertical: 11 },
-  sep: { borderTopWidth: 1, borderTopColor: colors.line },
+  sep: { borderTopWidth: 1, borderTopColor: ink.ink3 },
   benefitIcon: { marginTop: 1 },
   benefitBody: { flex: 1, minWidth: 0 },
-  benefitTitle: { fontFamily: fonts.semibold, fontSize: 14.5, lineHeight: 20, color: colors.text },
-  benefitDetail: { fontFamily: fonts.body, fontSize: 13, lineHeight: 18, color: colors.textDim, marginTop: 2 },
+  benefitTitle: { fontFamily: fonts.semibold, fontSize: 14.5, lineHeight: 20, color: ink.ink9 },
+  benefitDetail: { ...texto(tipo.bodySm), color: ink.ink8, marginTop: 2 },
   benefitGrid: { flexDirection: 'row', flexWrap: 'wrap', marginBottom: 12 },
   benefitCell: {
     width: '50%',
@@ -726,67 +745,72 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     paddingRight: 10,
   },
-  benefitCellTitle: { flex: 1, minWidth: 0, fontFamily: fonts.semibold, fontSize: 13, lineHeight: 17, color: colors.text },
+  benefitCellTitle: { flex: 1, minWidth: 0, fontFamily: fonts.semibold, fontSize: 13, lineHeight: 17, color: ink.ink9 },
   plans: { gap: 10, marginBottom: 16 },
+  // El plan es una Card outline (hairline ink3 sobre ink0); elegido, borde
+  // ink10 de 1,5 y el fondo igual: sin relleno de color.
   plan: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
     borderWidth: 1,
-    borderColor: colors.line,
-    backgroundColor: colors.bg,
+    borderColor: ink.ink3,
+    backgroundColor: ink.ink0,
     paddingVertical: 11,
     paddingHorizontal: 14,
   },
-  planOn: { borderColor: colors.accent, borderWidth: 1.5, backgroundColor: colors.accentFaint },
+  // Se resta medio punto al relleno para que el plan no crezca al elegirlo.
+  planOn: { borderColor: ink.ink10, borderWidth: 1.5, paddingVertical: 10.5, paddingHorizontal: 13.5 },
   pressed: { opacity: 0.7 },
   priceList: {
     borderWidth: 1,
-    borderColor: colors.line,
+    borderColor: ink.ink3,
+    backgroundColor: ink.ink0,
     paddingHorizontal: 14,
     paddingVertical: 12,
     marginBottom: 16,
   },
-  priceListTitle: { fontFamily: fonts.heading, fontSize: 11, letterSpacing: 2.2, color: colors.textFaint, marginBottom: 2 },
+  priceListTitle: { ...texto(tipo.micro), color: ink.ink6, marginBottom: 2 },
   priceRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 10 },
   radio: {
     width: 20,
     height: 20,
     borderRadius: 10,
     borderWidth: 1.5,
-    borderColor: colors.accentDim,
+    borderColor: ink.ink4,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  radioOn: { borderColor: colors.accent },
-  radioDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: colors.accent },
+  radioOn: { borderColor: ink.ink10 },
+  radioDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: ink.ink10 },
   planBody: { flex: 1, minWidth: 0 },
   planHead: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  planLabel: { fontFamily: fonts.heading, fontSize: 13, letterSpacing: 2, color: colors.text },
-  planTitle: { fontFamily: fonts.semibold, fontSize: 14.5, lineHeight: 19, color: colors.text },
-  planDuration: { fontFamily: fonts.body, fontSize: 12, lineHeight: 16, color: colors.accentText, marginTop: 2 },
-  planPitch: { fontFamily: fonts.body, fontSize: 12.5, lineHeight: 17, color: colors.textDim, marginTop: 3 },
+  planLabel: { fontFamily: fonts.heading, fontSize: 13, letterSpacing: 2, color: ink.ink9 },
+  planTitle: { fontFamily: fonts.semibold, fontSize: 14.5, lineHeight: 19, color: ink.ink9 },
+  planDuration: { ...texto(tipo.bodySm), color: ink.ink8, marginTop: 2 },
+  planPitch: { ...texto(tipo.bodySm), color: ink.ink8, marginTop: 3 },
   planPrice: { alignItems: 'flex-end' },
-  price: { fontFamily: fonts.number, fontSize: 17, color: colors.text },
-  period: { fontFamily: fonts.body, fontSize: 11, color: colors.textFaint, marginTop: 1 },
+  price: { fontFamily: tipo.number.family, fontSize: 17, color: ink.ink9 },
+  period: { ...texto(tipo.bodySm), color: ink.ink6, marginTop: 1 },
   exit: { marginTop: 10 },
   directo: { marginTop: 6, alignSelf: 'center' },
   notice: {
-    fontFamily: fonts.body,
-    fontSize: 12.5,
-    lineHeight: 18,
-    color: colors.accentText,
+    ...texto(tipo.bodySm),
+    color: ink.ink8,
     textAlign: 'center',
     marginTop: 12,
   },
   noticeLeft: { textAlign: 'left', marginTop: 8 },
   noticeAbove: { marginTop: 0, marginBottom: 10 },
   noticeBelow: { marginTop: 0, marginBottom: 16 },
-  noticeWarn: { color: colors.textDim },
-  usageNotice: { fontFamily: fonts.body, fontSize: 13, lineHeight: 19, color: colors.textDim, marginBottom: 14 },
+  // Aviso: regla izquierda de 2 pt ink6, no color.
+  noticeWarn: { color: ink.ink9, textAlign: 'left', borderLeftWidth: 2, borderLeftColor: ink.ink6, paddingLeft: 10 },
+  usageNotice: { ...texto(tipo.bodySm), color: ink.ink8, marginBottom: 14 },
   restore: { marginTop: 6, alignSelf: 'center' },
-  legal: { fontFamily: fonts.body, fontSize: 12, lineHeight: 17, color: colors.textFaint, marginTop: 8 },
-  links: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center', gap: 10, marginTop: 10 },
-  link: { fontFamily: fonts.semibold, fontSize: 12, color: colors.accentText, textDecorationLine: 'underline' },
-  linkSep: { fontFamily: fonts.body, fontSize: 12, color: colors.textFaint },
+  legal: { ...texto(tipo.bodySm), color: ink.ink6, marginTop: 8 },
+  links: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center', columnGap: 10, marginTop: 4 },
+  // Zona táctil de 44 de alto en cada enlace legal.
+  linkHit: { minHeight: 44, justifyContent: 'center' },
+  link: { ...texto(tipo.bodySm), color: ink.ink9, textDecorationLine: 'underline' },
+  linkSep: { ...texto(tipo.bodySm), color: ink.ink6 },
 });

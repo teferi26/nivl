@@ -4,12 +4,13 @@ import { ProOfferActions, ProOfferBody, ProOfferLegal, ProUpsellLine, useProOffe
 import { introsDeTienda, preciosDeTienda, purchase, restorePurchases, startTrial, StorePriceChangedError, type Momento, type OfferTier, type PreciosTienda, type ProPlanId } from '../pro';
 
 const mockOS = { OS: 'ios' };
+const mockTienda = { abierta: true };
 jest.mock('expo-router', () => ({ router: { push: jest.fn() } }));
 jest.mock('@/lib/pro', () => ({
   ...jest.requireActual('@/lib/proplans'),
   ...jest.requireActual('@/lib/paywallmoment'),
   StorePriceChangedError: class extends Error {},
-  purchasesAvailable: () => true,
+  purchasesAvailable: () => mockTienda.abierta,
   fetchFounderSeatsLeft: jest.fn().mockResolvedValue(10),
   preciosDeTienda: jest.fn(),
   introsDeTienda: jest.fn(),
@@ -29,8 +30,7 @@ jest.mock('react-native', () => ({
 }));
 jest.mock('@expo/vector-icons/Ionicons', () => 'Ionicons');
 jest.mock('@/design/haptics', () => ({ vibrar: jest.fn() }));
-jest.mock('@/components/SystemButton', () => ({ SystemButton: 'SystemButton' }));
-jest.mock('@/components/ui', () => ({ Card: 'Card', Chip: 'Chip', Skeleton: 'Skeleton', Tag: 'Tag' }));
+jest.mock('@/components/ui', () => ({ Button: 'Button', Card: 'Card', Chip: 'Chip', Skeleton: 'Skeleton', Tag: 'Tag' }));
 
 const { create } = jest.requireActual<{
   create: (element: ReactElement) => {
@@ -69,6 +69,7 @@ const mount = async (trialAvailable = false, planActual: ProPlanId | null = null
 beforeEach(() => {
   jest.clearAllMocks();
   mockOS.OS = 'ios';
+  mockTienda.abierta = true;
   prices.mockReset().mockResolvedValue({ nivl_pro_anual: '$109.99' });
   intros.mockReset().mockResolvedValue({});
   buy.mockReset().mockResolvedValue('cancelada');
@@ -92,7 +93,7 @@ test('mientras carga no inventa precio ni permite comprar; después muestra el r
   expect(buy).not.toHaveBeenCalled();
   await act(async () => resolve({ nivl_pro_anual: '$109.99' }));
   expect(control.puedeComprar).toBe(true);
-  expect(button('Activar NIVL Pro anual · $109.99/año').props.disabled).toBe(false);
+  expect(button('Activar NIVL Pro anual · $109.99 al año').props.disabled).toBe(false);
   expect(content()).toContain('$109.99 cada año');
 });
 
@@ -143,7 +144,7 @@ test('si cambia precio lo recarga y exige un nuevo toque; no vuelve a comprar so
   await act(async () => control.onPrincipal());
   expect(prices).toHaveBeenCalledTimes(2);
   expect(buy).toHaveBeenCalledTimes(1);
-  expect(button('Activar NIVL Pro anual · $119.99/año').props.disabled).toBe(false);
+  expect(button('Activar NIVL Pro anual · $119.99 al año').props.disabled).toBe(false);
   expect(content()).toContain('$119.99 cada año');
   expect(content()).not.toContain('$109.99');
 });
@@ -183,7 +184,7 @@ test('el fundador se describe como suscripción anual autorrenovable, no vitalic
   const texto = content();
   expect(texto).toContain('NIVL Élite fundador es una suscripción anual (1 año) de renovación automática: 249,00 € cada año.');
   expect(texto).toMatch(/no es un pago único ni vitalicio/);
-  expect(button('Activar NIVL Élite fundador · 249,00 €/año').props.disabled).toBe(false);
+  expect(button('Activar NIVL Élite fundador · 249,00 € al año').props.disabled).toBe(false);
 });
 
 test('en Android no se enlaza el EULA de Apple', async () => {
@@ -292,7 +293,26 @@ describe('fase 2: oferta con motivo y línea de upsell', () => {
     await mount(false, null, { motivo: 'firma' });
     const texto = content();
     expect(texto).not.toMatch(/≈|\/mes|8,33|20,75|24,92/);
-    expect(button('Activar NIVL Pro anual · 99,99 €/año').props.disabled).toBe(false);
+    expect(button('Activar NIVL Pro anual · 99,99 € al año').props.disabled).toBe(false);
+    // El plan mensual: el rótulo dice «al mes», nunca «/mes».
+    await act(async () => control.elegir('nivl_pro_mensual'));
+    expect(content()).not.toMatch(/≈|\/mes|8,33|20,75|24,92/);
+    expect(button('Activar NIVL Pro mensual · 12,99 € al mes').props.disabled).toBe(false);
+  });
+
+  test('con la tienda cerrada tampoco: la lista de referencia no enseña equivalentes mensuales', async () => {
+    mockTienda.abierta = false;
+    for (const tier of ['pro', 'elite'] as const) {
+      await mount(false, null, { motivo: 'firma', initialTier: tier });
+      const texto = content();
+      expect(texto).toContain('PRECIOS DE REFERENCIA');
+      expect(texto).not.toMatch(/≈|\/mes|8,33|20,75|24,92|meses gratis/);
+      expect(texto).toContain('Se cobra una vez al año');
+      expect(button('Seguir gratis').props.disabled).toBe(false);
+      expect(button('Avísame cuando abra').props.disabled).toBe(false);
+      await act(async () => renderer!.unmount());
+      renderer = null;
+    }
   });
 
   test('voz: el contexto dice que va con el coach y no reordena beneficios', async () => {
