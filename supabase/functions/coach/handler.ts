@@ -43,6 +43,7 @@ import { pareceAfirmacion, rutaDelTurno, type Ruta } from '../_shared/intencion.
 import { fueraDelPack, PACK_REGISTRO, TOOL_DEFS_REGISTRO } from '../_shared/packs.ts';
 import { bloqueComprobacion } from '../_shared/comprobacion.ts';
 import { insertarRun, type Telemetria } from '../_shared/telemetria.ts';
+import { enSegundoPlano, leerResumen, MIN_NUEVOS, resumirHilo } from '../_shared/resumenhilo.ts';
 
 // Cinco vueltas, no ocho. Cada vuelta reenvía el contexto entero y genera
 // pensamiento: con ocho, un turno se comía el presupuesto de tiempo de la
@@ -412,7 +413,15 @@ function ttlFijoDeEnv(): '1h' | undefined {
   return Deno.env.get('COACH_CACHE_TTL_FIJO')?.trim() === '1h' ? '1h' : undefined;
 }
 
-async function runCoach(args: RunArgs): Promise<{ text: string; usage: Usage; model: string }> {
+interface ResultadoTurno {
+  text: string;
+  usage: Usage;
+  model: string;
+  /** L4: el hilo ya acumula MIN_NUEVOS mensajes sin resumir; se compacta tras 'done'. */
+  pideResumen?: boolean;
+}
+
+async function runCoach(args: RunArgs): Promise<ResultadoTurno> {
   const { sb, admin, userId, kind, threadId, userText, today, imagenes, topeMicro, modelo, compat, modo, emit, gasto, deadline, telemetria, ruta, usuarioYaGuardado } =
     args;
 
@@ -421,8 +430,15 @@ async function runCoach(args: RunArgs): Promise<{ text: string; usage: Usage; mo
   // consentimiento, la persistencia del hilo y la comprobación del servidor
   // son los mismos que en la ruta completa.
   const estrecha = ruta === 'registro';
-  const ctx = estrecha ? await buildContextMinimo(sb, userId, today) : await buildContext(sb, userId, today);
-  const system = estrecha ? buildSystemRegistro(ctx.text) : buildSystem(ctx.dossier, kind, ctx.text, { ttlFijo: ttlFijoDeEnv() });
+  // L4: en la ruta completa, el resumen del hilo sustituye a los mensajes
+  // anteriores a summary_until (viaja como DATO en el sistema; ver prompt.ts).
+  const [ctx, hilo] = await Promise.all([
+    estrecha ? buildContextMinimo(sb, userId, today) : buildContext(sb, userId, today),
+    estrecha ? Promise.resolve({ summary: null, summary_until: null }) : leerResumen(sb, threadId),
+  ]);
+  const system = estrecha
+    ? buildSystemRegistro(ctx.text)
+    : buildSystem(ctx.dossier, kind, ctx.text, { ttlFijo: ttlFijoDeEnv(), resumenHilo: hilo.summary });
   const herramientas: readonly unknown[] = estrecha ? TOOL_DEFS_REGISTRO : TOOL_DEFS;
   const maxVueltas = estrecha ? MAX_TOOL_ITERATIONS_REGISTRO : MAX_TOOL_ITERATIONS;
   telemetria.state_chars = ctx.text.length;
@@ -434,16 +450,27 @@ async function runCoach(args: RunArgs): Promise<{ text: string; usage: Usage; mo
   // quedaba anclado en el principio de la conversación y dejaba de ver lo
   // último que le habías dicho. La memoria larga vive en el dossier y en los
   // hechos; el hilo solo aporta lo reciente.
-  const { data: rows } = await sb
+  let consulta = sb
     .from('coach_messages')
-    .select('role, content')
-    .eq('thread_id', threadId)
+    .select('role, content, created_at')
+    .eq('thread_id', threadId);
+  // Lo ya resumido no se reenvía: el resumen ocupa su lugar.
+  if (hilo.summary_until) consulta = consulta.gt('created_at', hilo.summary_until);
+  const { data: rows } = await consulta
     .order('created_at', { ascending: false })
     // En la estrecha se piden algunas filas de más: las de herramientas no
     // tienen texto y se descartan.
     .limit(estrecha ? HISTORY_LIMIT_REGISTRO * 2 : HISTORY_LIMIT);
 
-  const history: ApiMessage[] = ((rows ?? []) as any[])
+  const sinResumir = ((rows ?? []) as any[]).filter(
+    (r) => !hilo.summary_until || typeof r.created_at !== 'string' || r.created_at > hilo.summary_until,
+  );
+  // L4: ¿toca compactar? Se decide con lo que YA se ha leído (sin otra
+  // consulta): si las filas posteriores al resumen llenan el tope, hay al
+  // menos MIN_NUEVOS sin resumir. Solo en la ruta completa.
+  const pideResumen = !estrecha && sinResumir.length >= Math.min(MIN_NUEVOS, HISTORY_LIMIT);
+
+  const history: ApiMessage[] = sinResumir
     .reverse()
     .map((r) => ({ role: r.role, content: r.content }));
 
@@ -696,7 +723,7 @@ ${userText}` : userText,
     .update({ last_message_at: new Date().toISOString() })
     .eq('id', threadId);
 
-  return { text: finalText, usage: gasto.usage, model: gasto.model || model };
+  return { text: finalText, usage: gasto.usage, model: gasto.model || model, pideResumen };
 }
 
 export async function handler(req: Request): Promise<Response> {
@@ -1030,6 +1057,16 @@ async function atender(
     if (ledgerErr) console.error('coach_runs insert failed:', ledgerErr.message);
   };
 
+  // L4: el resumen del hilo, DESPUÉS de contestar y sin esperarlo. Lo que
+  // queda de bolsillo tras el turno es su techo (resumenhilo.ts no gasta si no
+  // llega al mínimo); su coste se apunta aparte como 'resumen_hilo'.
+  const programarResumen = (result: ResultadoTurno) => {
+    if (!result.pideResumen) return;
+    enSegundoPlano(resumirHilo({
+      sb, admin, userId, threadId: threadId!, presupuestoMicro: restanteMicro - gasto.micro(), modo,
+    }));
+  };
+
   const describe = (e: unknown): string => {
     if (e instanceof RefusalError) return 'El sistema no puede responder a eso.';
     if (e instanceof Error && e.message === HEALTH_REQUIRED) return 'El permiso de salud ya no está activo. Revisa Perfil antes de continuar.';
@@ -1049,6 +1086,7 @@ async function atender(
       const result = await ejecutarTurno(() => {});
       await requireHealth(sb, userId);
       await finish(result, null);
+      programarResumen(result);
       return json(200, { thread_id: threadId, text: result.text });
     } catch (e) {
       const message = describe(e);
@@ -1089,6 +1127,7 @@ async function atender(
           text: result.text,
           cost_micro_usd: gasto.micro(),
         });
+        programarResumen(result);
       } catch (e) {
         const message = describe(e);
         await finish(null, message);

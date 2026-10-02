@@ -8,16 +8,35 @@
 //   · revision       — domingo por la tarde
 //   · cierre_mensual — el día 1
 //   · escalada       — si lleva días en silencio (la carta con tres puertas)
+//   · checkin        — (L6) si no le toca nada de lo anterior: una pregunta
+//                      breve de seguimiento, con tope (ver _shared/checkin.ts)
 //
-// Después empuja el resultado por notificación push. Si no hay token, el
-// ritual igual queda escrito y lo verá al abrir la app.
+// Después empuja el resultado por notificación push, con la política del
+// servidor (_shared/pushpolicy.ts, espejo de src/lib/pushPolicy.ts): solo si
+// abrió la app hace ≤6 días, dentro de su ventana despierto y 1 push al día
+// como mucho. Si no hay token o la política calla, el ritual igual queda
+// escrito y lo verá al abrir la app.
 //
 // Despliegue:
 //   supabase functions deploy ritual --no-verify-jwt
 //   supabase secrets set RITUAL_SECRET=<cadena larga al azar>
 
-import { callClaude, CHEAP_MODEL, costMicroUsd } from '../_shared/anthropic.ts';
-import { insertarRun } from '../_shared/telemetria.ts';
+import { callClaude, CHEAP_MODEL, costMicroUsd, LlamadaFallida, type Usage } from '../_shared/anthropic.ts';
+import { esColumnaInexistente, insertarRun } from '../_shared/telemetria.ts';
+import { AI_SAFETY_RULES } from '../_shared/ai-safety.ts';
+import { buildContextMinimo } from '../_shared/context.ts';
+import { DATOS_ABRE, DATOS_CIERRA, neutralizarDatos, REGLA_DATOS } from '../_shared/prompt.ts';
+import { pushDelServidorPermitido, type Momento } from '../_shared/pushpolicy.ts';
+import {
+  checkinPermitido,
+  desdeParaMensajes,
+  esMensajeDelGladiador,
+  horaDelCheckin,
+  KINDS_CON_PUSH,
+  limpiarCheckin,
+  MAX_CARACTERES_CHECKIN,
+  pushesDeHoy,
+} from '../_shared/checkin.ts';
 import { consentimientoIa } from '../_shared/consent.ts';
 import { healthConsent, healthRevision, healthScopedClient, requireHealth } from '../_shared/health.ts';
 import { adminClient, type Db } from '../_shared/db.ts';
@@ -32,7 +51,12 @@ interface Perfil {
   wake_time: string;
   sleep_time: string;
   coach_mode: string;
+  /** Última apertura de la app, fecha local (0048). null = cliente antiguo o migración sin aplicar. */
+  last_open_on?: string | null;
 }
+
+/** El reloj del ritual. Los tests lo sustituyen para fijar la hora. */
+export const relojRitual = { ahora: (): Date => new Date() };
 
 function json(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {
@@ -43,7 +67,7 @@ function json(status: number, body: unknown): Response {
 
 /** Hora local del gladiador, sin librerías: Intl ya sabe de husos y de DST. */
 function ahoraLocal(timezone: string): { fecha: string; hora: number; minuto: number; diaSemana: number } {
-  const ahora = new Date();
+  const ahora = relojRitual.ahora();
   const fmt = new Intl.DateTimeFormat('en-CA', {
     timeZone: timezone,
     year: 'numeric',
@@ -293,6 +317,266 @@ async function jwtDeUsuario(sb: Db, email: string): Promise<string | null> {
   return new URLSearchParams(loc.split('#')[1] ?? '').get('access_token');
 }
 
+// ── Política de push del servidor y checkin (L6) ─────────────────────────
+
+/** El instante local de pared que entiende pushpolicy. */
+function momentoLocal(timezone: string): Momento {
+  const l = ahoraLocal(timezone);
+  return { fecha: l.fecha, min: l.hora * 60 + l.minuto };
+}
+
+interface RunLigero {
+  kind?: unknown;
+  created_at?: unknown;
+  error?: unknown;
+}
+
+/**
+ * Los rituales y checkins de los últimos 8 días (para contar push del día y
+ * topes del checkin). Se filtra otra vez en código: la consulta solo acota.
+ */
+async function ritualesRecientes(sb: Db, userId: string): Promise<RunLigero[]> {
+  const desde = new Date(relojRitual.ahora().getTime() - 8 * 86_400_000).toISOString();
+  const { data, error } = await sb
+    .from('coach_runs')
+    .select('kind, created_at, error')
+    .eq('user_id', userId)
+    .in('kind', [...KINDS_CON_PUSH])
+    .gte('created_at', desde)
+    .order('created_at', { ascending: false })
+    .limit(200);
+  if (error) throw new Error('coach_runs no disponible');
+  return (data ?? []) as RunLigero[];
+}
+
+/** ¿Puede el servidor empujar un push ahora? (pushpolicy, la regla del Chat 5). */
+function politicaPush(p: Perfil, pushesHoy: number) {
+  return pushDelServidorPermitido(
+    { ultimaApertura: p.last_open_on ?? null, wakeTime: p.wake_time, sleepTime: p.sleep_time, pushesHoy },
+    momentoLocal(p.timezone),
+  );
+}
+
+/** Lo que devuelve `ai_begin_turn` (0020/0024). */
+interface Puerta {
+  allowed?: boolean;
+  reason?: string;
+  turn_budget?: number;
+  remaining?: number;
+}
+
+/** Por debajo de esto (1 céntimo) no se abre un checkin: cuesta ~0,002 $. */
+const MIN_PRESUPUESTO_CHECKIN = 10_000;
+
+const SISTEMA_CHECKIN = `Eres "el sistema" de NIVL: el coach de un gladiador, dentro de su móvil. Ahora le escribes TÚ, sin que él haya preguntado: un mensaje proactivo y breve en su chat.
+- Como mucho ${MAX_CARACTERES_CHECKIN} caracteres. Segunda persona, tuteo, sin emojis, sin markdown, sin saludos de relleno.
+- Termina en UNA sola pregunta concreta de seguimiento sobre algo de sus datos: una misión pendiente de hoy o un objetivo abierto. Nómbralo tal cual aparece.
+- Voz del sistema: seca, firme, de quien lleva la cuenta. Nunca culpa, reproche, sarcasmo ni humillación: si algo va atrás, preguntas qué hace falta para moverlo, no se lo echas en cara.
+- No inventes nada que no esté en los datos. No escribes en su plan ni puedes marcar nada: solo preguntas.
+- Devuelves solo el mensaje.`;
+
+/** Los objetivos abiertos (máximo 3) para que la pregunta pueda apuntar a uno. */
+async function objetivosAbiertos(sb: Db, userId: string): Promise<string[]> {
+  const { data, error } = await sb
+    .from('goals')
+    .select('title, deadline')
+    .eq('user_id', userId)
+    .eq('status', 'active')
+    .order('created_at', { ascending: false })
+    .limit(3);
+  if (error) return [];
+  return ((data ?? []) as { title?: unknown; deadline?: unknown }[])
+    .filter((g) => typeof g.title === 'string' && g.title.trim())
+    .map((g) => `- "${String(g.title).slice(0, 120)}"${typeof g.deadline === 'string' ? ` · fecha límite ${g.deadline}` : ''}`);
+}
+
+/** El hilo principal (el que abre la app: el más reciente sin archivar); si no hay, se crea. */
+async function hiloPrincipal(sb: Db, userId: string): Promise<string | null> {
+  const { data: existente } = await sb
+    .from('coach_threads')
+    .select('id')
+    .eq('user_id', userId)
+    .eq('archived', false)
+    .order('last_message_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  const id = (existente as { id?: unknown } | null)?.id;
+  if (typeof id === 'string' && id) return id;
+  const { data: creado, error } = await sb
+    .from('coach_threads')
+    .insert({ user_id: userId, title: 'El sistema' })
+    .select('id')
+    .single();
+  if (error) return null;
+  return (creado as { id?: string } | null)?.id ?? null;
+}
+
+/**
+ * El checkin (L6): un mensaje proactivo breve del coach, con tope.
+ *
+ * Solo llega aquí quien ya pasó los consentimientos de IA y de salud (bucle
+ * del handler) y no tiene ningún ritual en esta pasada. Orden de las llaves:
+ *   1. la hora del checkin (antes de tocar la base: se mira cada hora);
+ *   2. topes de checkin.ts (1/día, 3/semana, 6 h, sueño, retiro);
+ *   3. la política de push: caducada (7+ días sin abrir) o fuera de la
+ *      ventana → nada; tope de push del día → se escribe en el hilo SIN push;
+ *   4. el candado de gasto (ai_begin_turn/ai_end_turn), como un turno más.
+ * Haiku sin herramientas y con el contexto mínimo; el coste va a coach_runs.
+ *
+ * Devuelve el motivo (para los logs y los tests). Puede lanzar: quien llama lo
+ * recoge sin tumbar el ritual.
+ */
+export async function intentarCheckin(admin: Db, sb: Db, p: Perfil): Promise<string> {
+  if (p.coach_mode === 'pausa') return 'pausa';
+  const ahora = momentoLocal(p.timezone);
+  // Llave barata primero: fuera de su hora, ni una consulta.
+  if (Math.floor(ahora.min / 60) !== horaDelCheckin(p.wake_time, p.sleep_time)) return 'hora';
+
+  const ahoraMs = relojRitual.ahora().getTime();
+  const runs = await ritualesRecientes(sb, p.id);
+  const deCheckin = runs.filter((r) => r.kind === 'checkin' && typeof r.created_at === 'string');
+  const intentos = deCheckin.map((r) => String(r.created_at));
+  const checkins = deCheckin.filter((r) => !r.error).map((r) => String(r.created_at));
+
+  const { data: suyos, error: msgErr } = await sb
+    .from('coach_messages')
+    .select('created_at, tipo:content->0->>type, texto:content->0->>text')
+    .eq('user_id', p.id)
+    .eq('role', 'user')
+    .gte('created_at', desdeParaMensajes(checkins, ahoraMs))
+    .order('created_at', { ascending: false })
+    .limit(300);
+  if (msgErr) throw new Error('coach_messages no disponible');
+  const mensajesGladiador = ((suyos ?? []) as { created_at?: unknown; tipo?: unknown; texto?: unknown }[])
+    .filter((m) => typeof m.created_at === 'string' && esMensajeDelGladiador(m.tipo, m.texto))
+    .map((m) => String(m.created_at));
+
+  const regla = checkinPermitido({
+    ahora, ahoraMs, timezone: p.timezone, wakeTime: p.wake_time, sleepTime: p.sleep_time,
+    checkins, intentos, mensajesGladiador,
+  });
+  if (!regla.ok) return regla.motivo;
+
+  const politica = politicaPush(p, pushesDeHoy(runs, ahora.fecha, p.timezone));
+  // Caducada (lleva 7+ días sin abrir: las vueltas son locales) o fuera de su
+  // ventana: ni se genera. Con el push del día ya gastado, se escribe en el
+  // hilo y lo verá al abrir.
+  if (!politica.ok && politica.motivo !== 'tope') return `push_${politica.motivo}`;
+
+  // El candado de gasto manda también aquí: suscripción, presupuesto y ningún
+  // otro turno en marcha. Si NO se concede, no se suelta (soltar liberaría el
+  // turno en curso de otro).
+  const { data: puerta, error: puertaErr } = await admin.rpc('ai_begin_turn', { p_user: p.id, p_mode: 'estandar' });
+  if (puertaErr) return 'candado_no_disponible';
+  const estado = puerta as Puerta | null;
+  if (!estado || estado.allowed !== true) return `candado_${estado?.reason ?? 'cerrado'}`;
+
+  let uso: Usage = {};
+  let modelo = CHEAP_MODEL;
+  let fallo: string | null = null;
+  let llamado = false;
+  let stateChars = 0;
+  try {
+    if ((Number(estado.turn_budget ?? estado.remaining) || 0) < MIN_PRESUPUESTO_CHECKIN) return 'candado_presupuesto';
+
+    const ctx = await buildContextMinimo(sb, p.id, ahora.fecha);
+    const objetivos = await objetivosAbiertos(sb, p.id);
+    const datos = [
+      ctx.text.slice(0, 3500),
+      '',
+      '## Objetivos abiertos',
+      ...(objetivos.length ? objetivos : ['Ninguno.']),
+    ].join('\n');
+    stateChars = datos.length;
+    const hhmm = `${String(Math.floor(ahora.min / 60)).padStart(2, '0')}:${String(ahora.min % 60).padStart(2, '0')}`;
+
+    if ((await consentimientoIa(admin, p.id)) !== true) return 'sin_consentimiento';
+    llamado = true;
+    let texto = '';
+    try {
+      const turn = await callClaude({
+        model: CHEAP_MODEL,
+        signal: AbortSignal.timeout(30_000),
+        system: [{ type: 'text', text: `${SISTEMA_CHECKIN}\n\n${AI_SAFETY_RULES}\n\n${REGLA_DATOS}` }],
+        messages: [{
+          role: 'user',
+          content: [{
+            type: 'text',
+            text: `${DATOS_ABRE}\n${neutralizarDatos(datos)}\n${DATOS_CIERRA}\n\nEscribe el mensaje de seguimiento de hoy (${ahora.fecha}, ${hhmm}).`,
+          }],
+        }],
+        maxTokens: 200,
+        // Sin herramientas: el checkin no escribe nada.
+      });
+      uso = turn.usage;
+      modelo = turn.model;
+      texto = turn.content.filter((b) => b.type === 'text').map((b) => b.text ?? '').join('').trim();
+    } catch (e) {
+      if (e instanceof LlamadaFallida) {
+        uso = e.usage;
+        modelo = e.model;
+      }
+      fallo = 'checkin_failed';
+      return 'modelo_fallo';
+    }
+
+    const limpio = limpiarCheckin(texto);
+    if (!limpio) {
+      fallo = 'sin_pregunta';
+      return 'sin_pregunta';
+    }
+
+    // El consentimiento pudo retirarse mientras el modelo escribía.
+    await requireHealth(sb, p.id);
+    if ((await consentimientoIa(admin, p.id)) !== true) {
+      fallo = 'sin_consentimiento';
+      return 'sin_consentimiento';
+    }
+
+    const hilo = await hiloPrincipal(sb, p.id);
+    if (!hilo) {
+      fallo = 'sin_hilo';
+      return 'sin_hilo';
+    }
+    const { error: msgInsErr } = await sb.from('coach_messages').insert({
+      thread_id: hilo,
+      user_id: p.id,
+      role: 'assistant',
+      content: [{ type: 'text', text: limpio }],
+    });
+    if (msgInsErr) {
+      fallo = 'sin_mensaje';
+      return 'sin_mensaje';
+    }
+    await sb.from('coach_threads').update({ last_message_at: relojRitual.ahora().toISOString() }).eq('id', hilo);
+
+    if (politica.ok) {
+      await empujar(sb, p.id, 'El sistema', limpio, '/(tabs)/coach');
+      return 'enviado';
+    }
+    return 'escrito_sin_push';
+  } finally {
+    if (llamado) {
+      // Al libro SIEMPRE que se llamó al modelo, también si falló: el candado
+      // tiene que ver lo gastado. Con error, no cuenta para los topes.
+      const { error: ledgerErr } = await insertarRun(admin, {
+        user_id: p.id,
+        kind: 'checkin',
+        mode: 'estandar',
+        model: modelo,
+        in_tokens: uso.input_tokens ?? 0,
+        cache_read_tokens: uso.cache_read_input_tokens ?? 0,
+        cache_write_tokens: uso.cache_creation_input_tokens ?? 0,
+        out_tokens: uso.output_tokens ?? 0,
+        cost_micro_usd: costMicroUsd(modelo, uso),
+        error: fallo,
+      }, { route: 'checkin', tools_offered: 0, tool_calls: 0, iterations: 1, state_chars: stateChars });
+      if (ledgerErr) console.error('coach_runs insert failed (checkin):', ledgerErr.message);
+    }
+    await admin.rpc('ai_end_turn', { p_user: p.id }).then(() => {}, () => {});
+  }
+}
+
 interface Decision {
   kind: string;
   message: string;
@@ -390,9 +674,16 @@ export async function handler(req: Request): Promise<Response> {
   }
 
   const admin = adminClient();
-  const { data: perfiles } = await admin
+  // last_open_on llega con la 0048; si aún no está, se lee sin ella (null =
+  // cliente antiguo, que la política trata como abierta hoy).
+  let { data: perfiles, error: perfilesErr } = await admin
     .from('profiles')
-    .select('id, name, timezone, wake_time, sleep_time, coach_mode');
+    .select('id, name, timezone, wake_time, sleep_time, coach_mode, last_open_on');
+  if (perfilesErr && esColumnaInexistente(perfilesErr)) {
+    ({ data: perfiles } = await admin
+      .from('profiles')
+      .select('id, name, timezone, wake_time, sleep_time, coach_mode'));
+  }
 
   const hechos: { user: string; kind: string }[] = [];
   const fallos: { user: string; error: string }[] = [];
@@ -406,7 +697,17 @@ export async function handler(req: Request): Promise<Response> {
       const revision = await healthRevision(admin, p.id);
       const sb = healthScopedClient(adminClient(revision), revision);
       const decision = await decidir(sb, p);
-      if (!decision) continue;
+      if (!decision) {
+        // Sin ritual en esta pasada: quizá un checkin (L6). Su fallo nunca
+        // tumba el ritual ni el resto de usuarios.
+        try {
+          const motivo = await intentarCheckin(admin, sb, p);
+          if (motivo === 'enviado' || motivo === 'escrito_sin_push') hechos.push({ user: p.id, kind: 'checkin' });
+        } catch (_e) {
+          fallos.push({ user: p.id, error: 'checkin_failed' });
+        }
+        continue;
+      }
 
       // Sin IA contratada (o con la del mes agotada) no hay ritual. El coach
       // lo rechazaría igual —el candado está allí—, pero así ni se fabrica la
@@ -424,6 +725,12 @@ export async function handler(req: Request): Promise<Response> {
       const { data: usuario } = await sb.auth.admin.getUserById(p.id);
       const email = usuario?.user?.email;
       if (!email) continue;
+
+      // Push del día ANTES de que el coach apunte este ritual (si no, se
+      // contaría a sí mismo). Si la política calla, el ritual se escribe
+      // igual y se ve al abrir la app.
+      const pushesHoy = pushesDeHoy(await ritualesRecientes(sb, p.id).catch(() => []), ahoraLocal(p.timezone).fecha, p.timezone);
+      const puedeEmpujar = politicaPush(p, pushesHoy).ok;
 
       jwt = await jwtDeUsuario(sb, email);
       if (!jwt) {
@@ -457,15 +764,30 @@ export async function handler(req: Request): Promise<Response> {
       }
 
       if ((await consentimientoIa(sb, p.id)) !== true) continue;
-      const tituloPush = await titular(sb, p.id, texto || 'El sistema tiene algo para ti.');
-      if ((await consentimientoIa(sb, p.id)) !== true) continue;
-      await empujar(
-        sb,
-        p.id,
-        decision.titulo,
-        tituloPush,
-        decision.ruta,
-      );
+
+      // El día 1 el único push del día es el del mes (prioridad acordada:
+      // escalada > mensual > brief > check-in). Si hay pase de fotos, sale
+      // «Tu mes en imágenes» y el cierre queda en el hilo; si no, el cierre.
+      const fotosMes = decision.kind === 'cierre_mensual' ? await resumenMensual(jwt).catch(() => null) : null;
+      if (fotosMes && puedeEmpujar) {
+        await empujar(
+          sb,
+          p.id,
+          'Tu mes en imágenes',
+          `${fotosMes} fotos. El sistema ha montado el pase y cerrado el mes: toca para verlo.`,
+          '/resumen',
+        );
+      } else if (puedeEmpujar) {
+        const tituloPush = await titular(sb, p.id, texto || 'El sistema tiene algo para ti.');
+        if ((await consentimientoIa(sb, p.id)) !== true) continue;
+        await empujar(
+          sb,
+          p.id,
+          decision.titulo,
+          tituloPush,
+          decision.ruta,
+        );
+      }
 
       // Espejo a la página del CEREBRO, para que el coach de escritorio lea lo
       // mismo. Solo los rituales que dejan huella: el brief diario cambia cada
@@ -475,20 +797,6 @@ export async function handler(req: Request): Promise<Response> {
       // usuarios (fuga de datos personales a un tercero, Notion).
       if (espejoActivo() && estadoIa?.tier === 'owner' && decision.kind !== 'brief' && texto && await healthConsent(sb, p.id) === true && await consentimientoIa(sb, p.id) === true) {
         await espejarEntrada(ahoraLocal(p.timezone).fecha, decision.titulo, texto);
-      }
-
-      // El día 1, además del cierre, se monta el pase de diapositivas del mes.
-      if (decision.kind === 'cierre_mensual') {
-        const fotos = await resumenMensual(jwt).catch(() => null);
-        if (fotos) {
-          await empujar(
-            sb,
-            p.id,
-            'Tu mes en imágenes',
-            `${fotos} fotos. El sistema ha montado el pase: toca para verlo.`,
-            '/resumen',
-          );
-        }
       }
 
       hechos.push({ user: p.id, kind: decision.kind });
