@@ -1,12 +1,17 @@
 // NIVL · Resumen incremental del hilo del coach (coach v2, L4).
 //
-// El hilo es continuo, pero a la API solo viajan los últimos HISTORY_LIMIT
-// mensajes. Todo lo anterior se perdía. Con esto, cuando se acumulan
-// MIN_NUEVOS mensajes sin resumir, Haiku (CHEAP_MODEL: leer y transformar, no
-// decidir) compacta el resumen previo + esos mensajes en ≤ TOPE_RESUMEN
-// caracteres y lo guarda en coach_threads.summary / summary_until (0047). En la
-// ruta completa, el resumen sustituye a los mensajes anteriores a summary_until
-// y los posteriores siguen viajando tal cual (con el tope de siempre).
+// El hilo es continuo, pero a la API solo viajan los últimos mensajes. Todo lo
+// anterior se perdía. Con esto, cuando se acumulan MIN_NUEVOS mensajes sin
+// resumir, Haiku (CHEAP_MODEL: leer y transformar, no decidir) compacta el
+// resumen previo + esos mensajes en ≤ TOPE_RESUMEN caracteres y lo guarda en
+// coach_threads.summary / summary_until (0047). En la ruta completa, el resumen
+// sustituye a los mensajes anteriores a summary_until y los posteriores siguen
+// viajando (solo su texto, ver L8 en coach/handler.ts).
+//
+// L8 «historial ligero»: con resumen, la ventana del historial es de
+// VENTANA_HISTORIAL filas. Para que nada caiga en el vacío, se compacta en
+// cuanto hay MIN_NUEVOS (= la ventana) sin resumir y lo que se deja fuera del
+// resumen cabe siempre en ella.
 //
 // Garantías:
 //   · No bloquea la respuesta: se lanza DESPUÉS de emitir 'done', en segundo
@@ -31,9 +36,17 @@ import { healthConsent, healthGuardedResult } from './health.ts';
 import { DATOS_ABRE, DATOS_CIERRA, neutralizarDatos } from './prompt.ts';
 import { insertarRun } from './telemetria.ts';
 
-/** Mensajes sin resumir a partir de los cuales se compacta. */
-export const MIN_NUEVOS = 12;
-/** Los últimos mensajes que se quedan fuera del resumen (viajan literales). */
+/**
+ * Filas del hilo que viajan en la ruta completa cuando hay resumen al día (L8).
+ * Antes eran 12; con el resumen, lo anterior ya está compactado en el sistema.
+ */
+export const VENTANA_HISTORIAL = 6;
+/**
+ * Mensajes sin resumir a partir de los cuales se compacta: los mismos que caben
+ * en la ventana, para que lo que sale de ella esté ya en el resumen.
+ */
+export const MIN_NUEVOS = VENTANA_HISTORIAL;
+/** Los últimos mensajes que se quedan fuera del resumen (viajan como texto). */
 export const MANTENER_RECIENTES = 4;
 /** Tope duro del resumen que se guarda. */
 export const TOPE_RESUMEN = 1500;
@@ -92,16 +105,32 @@ export function textoDeMensaje(role: string, content: unknown): string {
  * Qué se compacta: todos los mensajes nuevos menos los MANTENER_RECIENTES
  * últimos, cortando para que lo que queda empiece en un mensaje de texto del
  * gladiador (si se puede). null si no hay MIN_NUEVOS o no queda nada que compactar.
+ *
+ * L8: lo que queda fuera del resumen tiene que caber en VENTANA_HISTORIAL. Si
+ * para empezar en una pregunta habría que retroceder más (un turno largo de
+ * herramientas), se busca la siguiente pregunta hacia delante; y si no la hay,
+ * se corta donde toque: el historial ligero convierte en texto lo que quede
+ * (un tool_result suelto deja de ser un problema).
  */
 export function seleccionarParaResumir(filas: Fila[]): { compactar: Fila[]; hasta: string } | null {
   if (filas.length < MIN_NUEVOS) return null;
   const esInicio = (f: Fila) =>
     f.role === 'user' && !(Array.isArray(f.content) && (f.content as { type?: string }[]).some((b) => b?.type === 'tool_result'));
-  let corte = filas.length - MANTENER_RECIENTES;
-  for (let i = corte; i > 0; i--) {
+  const base = filas.length - MANTENER_RECIENTES;
+  const minimo = Math.max(1, filas.length - VENTANA_HISTORIAL);
+  let corte = base;
+  let hallado = false;
+  for (let i = base; i >= minimo; i--) {
     if (esInicio(filas[i])) {
       corte = i;
+      hallado = true;
       break;
+    }
+  }
+  for (let i = base + 1; !hallado && i < filas.length; i++) {
+    if (esInicio(filas[i])) {
+      corte = i;
+      hallado = true;
     }
   }
   const compactar = filas.slice(0, corte);
