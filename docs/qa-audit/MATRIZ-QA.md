@@ -31,6 +31,7 @@ La matriz dice **qué está probado, dónde, con qué build y con qué cuenta**.
 | `CI=true npx jest --ci --runInBand` | **`2ae57c4`** | ídem | **PASS**: 33/33 suites, 432/432 tests (incluye `close_day_v2` con dos dispositivos y paridad app/coach) |
 | `CI=true npm run lint` | **`2ae57c4`** | ídem | **PASS** (0 avisos) |
 | `deno check functions/coach/index.ts` + `deno test tools_paridad_test.ts` con el parche del espejo | `2ae57c4` + parche | **copia aislada** en el scratchpad, no el repo | **PASS** (1/1) |
+| **Regresión en el SHA integrado `c87df0d`** (worktree `qa-c87df0d`, sin cambios locales) | `c87df0d` | limpio | typecheck **PASS** · Jest **PASS** 42/42 suites, 551/551 (52 `qa-*`) · lint **PASS** (0 avisos) · `deno check` coach **PASS** · `deno test tools_paridad_test.ts` **PASS** |
 
 Ejecutado el 02/10/2026 en Windows 11 con zona `Europe/Madrid` (el 25/10/2026 dura 25 h en esta máquina, así que el test de cambio de hora ejercita el DST real), en el worktree `winter-chat5`. No se ejecutaron `expo export`, Deno ni pruebas SQL: corresponden al coordinador en el SHA integrado.
 
@@ -158,7 +159,7 @@ Columnas: Auto = Jest/tsc/lint @`d3dccae` (si no se indica otra cosa) · SimI = 
 
 ## GO / NO-GO
 
-**Dictamen a 02/10/2026 (SHA `2ae57c4`): NO-GO para reenviar a Apple.** Todos los bloqueantes siguen en NO PROBADO en el binario final; no hay binario ni OTA integrados que contengan las correcciones. No queda ningún FAIL automático abierto en economía.
+**Dictamen a 02/10/2026 (SHA integrado `c87df0d`, build 21 compilándose): NO-GO para reenviar a Apple.** La automática del SHA integrado está en verde. Todos los bloqueantes físicos siguen en NO PROBADO hasta ejecutar `GRABACION-BUILD-21.md` en la build 21 de TestFlight.
 
 Los identificadores `Chat1-A#` y `Chat1-B#` son los de la lista mínima del Chat 1 (`docs/release-audit/pruebas-fisicas-minimas.md`). No hay que confundirlos con las filas A1–A5 de la matriz. **Cada bloqueante necesita PASS físico** con la misma build `[BUILD]` de TestFlight, con la OTA final aplicada si la hay, y anotando `updateId`, dispositivo e iOS. Ninguno puede quedar en NO PROBADO ni en FAIL.
 
