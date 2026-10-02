@@ -46,3 +46,20 @@ test('recuperacionDesbloqueada: sin misiones válidas hoy no hay candado; bonus 
   expect(recuperacionDesbloqueada([q, bonus], new Set(['q']), hoy)).toBe(true);
   expect(recuperacionDesbloqueada([mision({ id: 'x', created_at: '2026-10-10T07:00:00' })], new Set(), hoy)).toBe(true);
 });
+
+test('sin piedras, abrir cada día o volver de golpe cobra lo mismo', () => {
+  const desde = '2026-10-01';
+  const hasta = '2026-10-07'; // 6 días rotos: 01–06
+  const bloque = computeDayClose({ fromDate: desde, today: hasta, quests: [q], completedKeys: new Set(), streak: 0, stones: 0, freezeUntil: null });
+  let diario = 0;
+  let streak = 0;
+  for (const [d, mañana] of [['01', '02'], ['02', '03'], ['03', '04'], ['04', '05'], ['05', '06'], ['06', '07']]) {
+    const fromDate = `2026-10-${d}`;
+    const r = computeDayClose({ fromDate, today: `2026-10-${mañana}`, quests: [q], completedKeys: new Set(), streak, stones: 0, freezeUntil: null,
+      rotosSeguidosPrevios: rotosSeguidosAntes({ fromDate, quests: [mision({ id: 'q', difficulty: 'media', created_at: '2026-10-01T00:00:00' })], completedKeys: new Set(), freezeUntil: null }) });
+    diario += r.penaltyXp;
+    streak = r.streak;
+  }
+  expect(bloque.penaltyXp).toBe(75);
+  expect(diario).toBe(bloque.penaltyXp);
+});

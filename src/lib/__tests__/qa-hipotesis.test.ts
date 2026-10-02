@@ -306,3 +306,18 @@ describe('RET-08 · tope único de 150 por día para misiones y reglas', () => {
     expect(pens).toEqual([50, 100]); // reglas 50 (lo que cabe), misiones 100
   });
 });
+
+describe('congelación vencida que se cierra al volver', () => {
+  test('los días congelados no se cobran aunque la congelación ya haya vencido', async () => {
+    mockSrv.quests = [mision({ id: 'q1' })];
+    for (let d = 1; d <= 3; d++) {
+      mockSrv.completions.push({ id: `h${d}`, user_id: 'u1', quest_id: 'q1', date: `2026-10-0${d}`, completed_at: '', xp_awarded: 50, evidence_url: null });
+    }
+    // Congeló del 4 al 8, no abrió la app, vuelve el 10: solo el 9 se juzga.
+    mockSrv.profile = { ...mockSrv.profile, last_day_processed: '2026-10-03', freeze_until: '2026-10-08', freeze_reason: 'vacaciones', streak_days: 5, xp_total: 1000 };
+    const { result } = await processPendingDays({ ...mockSrv.profile }, mockSrv.quests);
+    expect(mockSrv.profile.xp_total).toBe(1000 - 25);
+    expect(result!.penaltyXp).toBe(25);
+    expect(mockSrv.profile.freeze_until).toBeNull();
+  });
+});
