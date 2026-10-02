@@ -122,6 +122,20 @@ await fails(() => as(A, () => db.query('select public.league_invite($1, $2)', [l
 await db.query('insert into public.social_blocks values ($1, $2)', [B, D]);
 await as(A, () => db.query('select public.league_invite($1, $2)', [liga, D]));
 await fails(() => as(D, () => db.query('select public.league_accept($1)', [liga])), '42501'); // bloqueo con un miembro
+// Un ex-amigo del dueño no entra aunque tuviera invitación.
+const F = uid(6);
+await db.query('insert into auth.users(id) values ($1)', [F]);
+await db.query("insert into public.profiles(id) values ($1)", [F]);
+await friends(A, F);
+await as(A, () => db.query('select public.league_invite($1, $2)', [liga, F]));
+await db.query("delete from public.friendships where addressee = $1", [F]);
+await fails(() => as(F, () => db.query('select public.league_accept($1)', [liga])), '42501');
+// Rechazar impide reinvitar durante 7 días.
+await friends(A, F);
+await as(A, () => db.query('select public.league_invite($1, $2)', [liga, F]));
+await as(F, () => db.query('select public.league_decline($1)', [liga]));
+await fails(() => as(A, () => db.query('select public.league_invite($1, $2)', [liga, F])), '22023');
+check((await as(F, () => rows('select * from public.my_league_invites()'))).length, 0, 'rechazada no aparece');
 // RLS sin recursión ni sondeo: un miembro ve los miembros; un ajeno no ve nada.
 check(Number(await as(B, () => one('select count(*) from public.league_members where league_id = $1', [liga]))), 2, 'miembro ve la liga');
 check(Number(await as(C, () => one('select count(*) from public.league_members'))), 0, 'ajeno no ve nada');
@@ -170,6 +184,29 @@ const qhoy = (await rows("insert into public.quests(user_id, difficulty) values 
 await db.query('update public.quests set active = false where id = $1', [qhoy]);
 check(await one('select programadas_xp from public._dia_en_vivo($1, $2::date)', [C, hoy]), 250, 'desactivada hoy sigue contando hoy');
 check(await one("select programadas_xp from public._dia_en_vivo($1, ($2::date + 1))", [C, hoy]), 0, 'mañana ya no');
+
+// P1-h: borrar la misión fallada, o quitarle el día, ANTES del cierre no
+// saca el fallo (se congela el día pendiente con la misión como estaba).
+const E = uid(5);
+await db.query('insert into auth.users(id) values ($1)', [E]);
+await db.query("insert into public.profiles(id, timezone, last_day_processed) values ($1, 'Europe/Madrid', $2::date - 2)", [E, hoy]);
+const qe1 = (await rows("insert into public.quests(user_id, difficulty) values ($1, 'media') returning id", [E]))[0].id;
+const qe2 = (await rows("insert into public.quests(user_id, difficulty) values ($1, 'dificil') returning id", [E]))[0].id;
+await db.query('delete from public.quests where id = $1', [qe2]);           // borrar la fallada
+await db.query("update public.quests set days_of_week = '{}' where id = $1", [qe1]); // quitarle el día
+await db.query('update public.quests set days_of_week = $2 where id = $1', [qe1, '{1,2,3,4,5,6,7}']);
+await db.query('update public.profiles set last_day_processed = $2::date - 1 where id = $1', [E, hoy]); // cierre de ayer
+check(await one('select programadas_xp from public.daily_scorecards where user_id = $1 and day = $2::date - 1', [E, hoy]), 150, 'borrar o editar antes del cierre no saca el fallo');
+// deactivated_at no se fija al insertar.
+const qx = (await rows("insert into public.quests(user_id, active, deactivated_at) values ($1, true, now() - interval '9 days') returning deactivated_at", [E]))[0];
+check(qx.deactivated_at, null, 'deactivated_at ignorado al insertar');
+// El borrado de cuenta en cascada no choca con el congelado.
+await db.query('alter table public.quests drop constraint if exists quests_user_id_fkey');
+await db.query('alter table public.quests add constraint quests_user_id_fkey foreign key (user_id) references auth.users(id) on delete cascade');
+await db.query('alter table public.profiles drop constraint if exists profiles_id_fkey');
+await db.query('alter table public.profiles add constraint profiles_id_fkey foreign key (id) references auth.users(id) on delete cascade');
+await db.query('delete from auth.users where id = $1', [E]);
+check(Number(await one('select count(*) from public.quests where user_id = $1', [E])), 0, 'borrado de cuenta en cascada OK');
 
 // ── Duelos ──────────────────────────────────────────────────────────────
 const duelo = await as(A, () => one('select public.duel_challenge($1)', [B]));
