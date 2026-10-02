@@ -19,7 +19,6 @@
 
 import {
   enlaceCreador,
-  ORIGEN_ENLACE_CREADOR,
   progresoRango,
   rangoLabel,
   rangoValido,
