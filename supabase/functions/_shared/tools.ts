@@ -525,6 +525,35 @@ async function completarMision(ctx: ToolCtx, questId: string): Promise<string> {
   }
   if (quest.acquired_at) throw new Error('Ese hábito ya está adquirido: no se marca ni se cobra.');
   const diaSemana = ((new Date(today).getDay() + 6) % 7) + 1;
+  // RET-03 «Regreso a la arena», espejo de closing.recuperacionDesbloqueada:
+  // la penalización se abre con una misión normal de hoy ya completada (no
+  // vale una creada hoy). Si hoy no hay ninguna válida, no hay candado.
+  if (quest.is_penalty) {
+    const { data: normales, error: e2 } = await sb
+      .from('quests')
+      .select('id, days_of_week, created_at')
+      .eq('user_id', userId)
+      .eq('active', true)
+      .eq('is_penalty', false)
+      .eq('is_bonus', false)
+      .is('acquired_at', null);
+    if (e2) throw e2;
+    const validas = ((normales ?? []) as any[]).filter(
+      (n) => (n.days_of_week ?? []).includes(diaSemana) && String(n.created_at ?? '').slice(0, 10) < today,
+    );
+    if (validas.length) {
+      const { count, error: e3 } = await sb
+        .from('completions')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', userId)
+        .eq('date', today)
+        .in('quest_id', validas.map((n) => n.id));
+      if (e3) throw e3;
+      if (!count) {
+        throw new Error('La recuperación sigue cerrada: primero tiene que completar hoy una de sus misiones normales. Pídeselo; no la marques.');
+      }
+    }
+  }
   if (!quest.is_penalty && !(quest.days_of_week ?? []).includes(diaSemana)) {
     throw new Error(`"${quest.title}" no toca hoy. Solo se marca lo programado para hoy.`);
   }
