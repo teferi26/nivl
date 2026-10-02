@@ -213,3 +213,8 @@ Dueños: Chat 3; permisos del Chat 1.
   select relname from pg_class where relnamespace='public'::regnamespace and relkind='r' and not relrowsecurity;
   ```
 - Política de privacidad y App Privacy: añadir fotos de progreso (salud), la visión y su destino, la voz, compartir e invitaciones.
+
+### Actualización §4 (02/10) · dictamen de tiendas del Chat 1 (`winter2/chat1-compartir @ aa45a00`, fase2/dominio-y-cumplimiento-108.md, fila 8)
+- **MUST**: en iOS la recompensa por invitar es un **código de oferta** de App Store/Play (o oferta promocional para quien invita) o una recompensa **no monetaria** (insignia, cosmético). **No** se conceden días de Pro escribiendo en la base de datos en iOS (riesgo 3.1.1).
+- **MUST**: nada a cambio de valorar o reseñar (3.2.2(x)).
+- Los requisitos antiabuso de §4 siguen vigentes para decidir **a quién** se entrega un código (7 días de uso real del invitado, 3/mes y 12/año, antifraude por token push o transacción repetida). El código se reparte desde el servidor, un código por recompensa, registrado (quién, cuándo, qué invitación); nunca se muestran ni guardan en el cliente códigos ajenos. El límite por código y la caducidad se fijan en App Store Connect/Play Console.
