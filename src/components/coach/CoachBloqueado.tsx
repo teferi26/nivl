@@ -1,6 +1,7 @@
 // NIVL · El Coach de una cuenta sin NIVL Pro (L-RADICAL §B.2.3, movido de la
 // ruta). El mismo contenido que el vacío, pero la galea va en una losa de
-// trama con remaches: la puerta del coach, cerrada. Debajo, lo que haría hoy
+// contorno con remaches: la puerta del coach, cerrada. No es trama: la trama
+// es alerta y una cuenta sin Pro no es un error. Debajo, lo que haría hoy
 // por este perfil y una muestra de su brief. La inversión de este estado es
 // el botón de respaldo «Ver NIVL Pro» (sin compositor no hay enviar).
 
@@ -35,7 +36,7 @@ export function CoachBloqueado({
   return (
     <View style={styles.bloqueado}>
       <Entrada indice={0}>
-        <TarjetaArena variante="trama" remaches>
+        <TarjetaArena variante="contorno" remaches>
           <View style={styles.losa}>
             <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants" pointerEvents="none">
               <Galea kind="casco" size={GALEA} color={ink.ink10} />

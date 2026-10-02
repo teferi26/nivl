@@ -6,10 +6,10 @@ import { StyleSheet, View } from 'react-native';
 import { Crown } from '@/components/ui';
 import { ink } from '@/design/tokens';
 
-export type CoachMarkSize = 16 | 24 | 48;
+export type CoachMarkSize = 16 | 24 | 48 | 64;
 
 /** El casco ocupa algo más de la mitad del círculo: se lee sin tocar el borde. */
-const CASCO: Record<CoachMarkSize, number> = { 16: 11, 24: 16, 48: 30 };
+const CASCO: Record<CoachMarkSize, number> = { 16: 11, 24: 16, 48: 30, 64: 40 };
 
 export function CoachMark({ size }: { size: CoachMarkSize }) {
   return (

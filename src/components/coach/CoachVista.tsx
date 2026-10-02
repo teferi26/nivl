@@ -2,12 +2,15 @@
 // datos y los efectos viven en useCoach; la galería (/kit/pantallas) la pinta
 // con datos de mentira (demo.tsx).
 //
-// Composición de la arena: cabecera fija con la marca (CoachMark 48) y
+// Composición de la arena: cabecera fija con la marca (CoachMark 64) y
 // «COACH» grabado en Cinzel; vacío con la planta de la arena y la galea en el
-// centro; burbuja del usuario en ink2 sin marco; compositor con micrófono en
-// aro y enviar en círculo blanco. La única inversión de la pantalla es ENVIAR
-// (con el micrófono en su sitio, nadie: grabando, el micrófono se enciende
-// porque enviar no está). CoachMark no cuenta como superficie (L-RADICAL R6).
+// centro; el coach habla en losas con la regla ink10 y firma «EL SISTEMA» al
+// empezar cada bloque; burbuja del usuario en ink2 sin marco; días separados
+// por una inscripción entre dos reglas; acciones rápidas sobre el cuadro;
+// compositor con micrófono en aro siempre a la vista y enviar en círculo
+// blanco. La única inversión de la pantalla es ENVIAR (grabando, enviar se
+// aparta y el micrófono se enciende). CoachMark no cuenta como superficie
+// (L-RADICAL R6).
 
 import Ionicons from '@expo/vector-icons/Ionicons';
 import type { RefObject } from 'react';
@@ -91,7 +94,7 @@ export interface CoachVistaProps {
     onEnviar: () => void;
     /** Un turno en vuelo: adjuntar y dictar se apagan. */
     ocupado: boolean;
-    /** El micrófono ocupa el sitio de enviar. */
+    /** Se puede dictar: el micrófono va junto a enviar. */
     conDictado: boolean;
     /** Grabando o preparando el dictado. */
     grabando: boolean;
@@ -109,6 +112,19 @@ const ATAJOS: { etiqueta: string; mensaje: string; icono: keyof typeof Ionicons.
   { etiqueta: 'Reporte', mensaje: 'Voy a reportar. Pregúntame lo que necesites saber de hoy.', icono: 'clipboard-outline' },
   { etiqueta: 'Dojo de ventas', mensaje: 'Entréname 15 minutos de ventas. Empieza con una objeción real.', icono: 'flash-outline' },
   { etiqueta: 'Revísame', mensaje: 'Haz la revisión de mis últimos 14 días con honestidad brutal.', icono: 'analytics-outline' },
+];
+
+// Acciones rápidas sobre el cuadro, con el hilo ya empezado. Hacen lo mismo
+// que los atajos del vacío: se lo envían al coach (onAtajo).
+const RAPIDAS: { etiqueta: string; mensaje: string; icono: keyof typeof Ionicons.glyphMap }[] = [
+  { etiqueta: 'Plan de hoy', mensaje: 'Planifica el resto de mi día de hoy.', icono: 'list-outline' },
+  { etiqueta: 'Registrar', mensaje: 'Voy a reportar. Pregúntame lo que necesites saber de hoy.', icono: 'clipboard-outline' },
+  { etiqueta: '¿Qué entreno?', mensaje: '¿Qué entreno hoy? Decídelo con mi historial y cómo vengo.', icono: 'barbell-outline' },
+  {
+    etiqueta: 'Resumen de la semana',
+    mensaje: 'Hazme el resumen de mi semana: lo que cumplí, lo que no y qué cambio para la próxima.',
+    icono: 'calendar-outline',
+  },
 ];
 
 /** Por debajo de este ancho útil, «COACH» baja de `rank` (32) a inscripción de 20. */
@@ -138,7 +154,7 @@ function Cabecera({ p }: { p: Pick<CoachVistaProps, 'cargando' | 'sinPro' | 'con
   const grande = useAnchoUtil() >= ANCHO_TITULO_GRANDE;
   return (
     <View style={styles.header}>
-      <CoachMark size={48} />
+      <CoachMark size={64} />
       <View style={styles.headerTextos}>
         <View style={styles.headerTituloFila}>
           <Text
@@ -231,9 +247,55 @@ function Vacio({ onAtajo }: { onAtajo: (mensaje: string) => void }) {
   );
 }
 
+/**
+ * Las acciones rápidas sobre el cuadro, con el hilo empezado: píldoras que se
+ * desplazan en horizontal. Se las envían al coach como los atajos del vacío.
+ */
+function Rapidas({
+  onAtajo,
+  desactivadas,
+  conLinea,
+}: {
+  onAtajo: (mensaje: string) => void;
+  desactivadas: boolean;
+  /** Sin el selector de potencia encima, la fila pone el filete. */
+  conLinea: boolean;
+}) {
+  return (
+    <ScrollView
+      horizontal
+      style={conLinea && styles.rapidasFila}
+      contentContainerStyle={styles.rapidas}
+      showsHorizontalScrollIndicator={false}
+      keyboardShouldPersistTaps="handled"
+      accessibilityLabel="Acciones rápidas"
+    >
+      {RAPIDAS.map((a) => (
+        <Pressable
+          key={a.etiqueta}
+          onPress={() => onAtajo(a.mensaje)}
+          disabled={desactivadas}
+          hitSlop={ZONA_PILDORA}
+          style={({ pressed }) => [styles.pildora, desactivadas && styles.pildoraOff, pressed && styles.pulsado]}
+          accessibilityRole="button"
+          accessibilityLabel={a.etiqueta}
+          accessibilityHint="Se lo envía al coach"
+          accessibilityState={{ disabled: desactivadas }}
+        >
+          <Ionicons name={a.icono} size={14} color={ink.ink8} />
+          <Text style={styles.pildoraTexto} maxFontSizeMultiplier={1.35}>
+            {a.etiqueta}
+          </Text>
+        </Pressable>
+      ))}
+    </ScrollView>
+  );
+}
+
 // Las píldoras miden 38: con esto llegan a 44 de zona táctil.
 const ZONA_PILDORA = { top: 3, bottom: 3, left: 0, right: 0 };
 
+/** «HOY», «AYER»: inscripción grabada entre dos reglas. */
 function Separador({ texto }: { texto: string }) {
   return (
     <View style={styles.separador} accessibilityRole="header">
@@ -270,6 +332,11 @@ export function CoachVista(p: CoachVistaProps) {
   const { vacio, sinPro, falloCarga } = p;
   const hoy = dateKey();
   let diaPrevio: string | null = null;
+  // Las acciones rápidas: con el hilo empezado y el cuadro libre.
+  const conRapidas = !vacio && !sinPro && !c.texto.trim() && !c.grabando && !p.adjuntas;
+  // La firma «EL SISTEMA» va en el primer mensaje del coach de cada bloque
+  // seguido; un separador de día también abre bloque.
+  let rolPrevio: BurbujaVista['role'] | null = null;
 
   return (
     <Screen plain>
@@ -293,7 +360,12 @@ export function CoachVista(p: CoachVistaProps) {
           {vacio && !sinPro && falloCarga ? (
             <Entrada indice={0}>
               <Card variant="outline" style={styles.falloCarga}>
-                <Text style={styles.falloCargaTexto}>No se ha podido cargar la conversación.</Text>
+                <Text style={styles.falloCargaTitulo} accessibilityRole="header" maxFontSizeMultiplier={1.35}>
+                  EL SISTEMA NO RESPONDE
+                </Text>
+                <Text style={styles.falloCargaTexto}>
+                  No se ha podido cargar la conversación. Revisa la conexión y vuelve a intentarlo.
+                </Text>
                 <Button
                   title="Reintentar"
                   variant="secondary"
@@ -313,6 +385,8 @@ export function CoachVista(p: CoachVistaProps) {
             const dia = rotuloDia(b.fecha, hoy);
             const separa = dia !== null && dia !== diaPrevio;
             if (dia !== null) diaPrevio = dia;
+            const firma = b.role === 'assistant' && (separa || rolPrevio !== 'assistant');
+            rolPrevio = b.role;
             return (
               <View key={b.id}>
                 {separa && dia ? <Separador texto={dia} /> : null}
@@ -323,7 +397,14 @@ export function CoachVista(p: CoachVistaProps) {
                     </View>
                   </View>
                 ) : (
-                  <MensajeCoach texto={b.text} acciones={b.acciones} cita={b.cita} voz={b.voz} onDenunciar={b.onDenunciar} />
+                  <MensajeCoach
+                    texto={b.text}
+                    acciones={b.acciones}
+                    cita={b.cita}
+                    voz={b.voz}
+                    onDenunciar={b.onDenunciar}
+                    firma={firma}
+                  />
                 )}
               </View>
             );
@@ -335,6 +416,7 @@ export function CoachVista(p: CoachVistaProps) {
               pensando={p.enCurso.pensando}
               acciones={p.enCurso.acciones}
               cita={p.enCurso.cita}
+              firma={p.burbujas[p.burbujas.length - 1]?.role !== 'assistant'}
             />
           ) : null}
 
@@ -438,8 +520,11 @@ export function CoachVista(p: CoachVistaProps) {
           )
         ) : (
           <View>
+            {conRapidas ? <Rapidas onAtajo={p.onAtajo} desactivadas={c.ocupado} conLinea={!p.potencia} /> : null}
             <FranjaGrabacion dictado={c.dictado} aviso={c.avisoDictado} />
-            <View style={[styles.barra, (!!p.potencia || c.grabando || !!c.avisoDictado) && styles.barraSinLinea]}>
+            <View
+              style={[styles.barra, (!!p.potencia || conRapidas || c.grabando || !!c.avisoDictado) && styles.barraSinLinea]}
+            >
               <Pressable
                 onPress={c.onAdjuntar}
                 disabled={c.ocupado}
@@ -459,10 +544,11 @@ export function CoachVista(p: CoachVistaProps) {
                 onKeyPress={c.onTeclear}
                 accessibilityLabel="Mensaje para el sistema"
               />
-              {c.conDictado ? (
-                <BotonDictar dictado={c.dictado} disabled={c.ocupado} />
-              ) : (
+              {/* El micrófono, siempre a la vista junto a enviar. */}
+              {c.conDictado ? <BotonDictar dictado={c.dictado} disabled={c.ocupado} /> : null}
+              {c.grabando ? null : (
                 // La inversión de la pantalla: el círculo blanco con la flecha negra.
+                // Grabando se aparta: el micrófono encendido es entonces lo único.
                 <Pressable
                   onPress={c.onEnviar}
                   disabled={!c.puedeEnviar}
@@ -532,20 +618,28 @@ const styles = StyleSheet.create({
     paddingHorizontal: space.s3 + 2,
   },
   textoUsuario: { ...conversacion, color: ink.ink9 },
-  separador: { flexDirection: 'row', alignItems: 'center', gap: space.s3, marginBottom: space.s5 },
-  separadorLinea: { flex: 1, height: stroke.hairline, backgroundColor: ink.ink3 },
+  separador: { flexDirection: 'row', alignItems: 'center', gap: space.s3, marginTop: space.s1, marginBottom: space.s5 },
+  separadorLinea: { flex: 1, height: stroke.rule, backgroundColor: ink.ink4 },
   separadorTexto: {
-    fontFamily: type.micro.family,
-    fontSize: type.micro.size,
-    lineHeight: type.micro.lineHeight,
-    letterSpacing: type.label.tracking,
-    color: ink.ink6,
+    fontFamily: type.inscripcion.family,
+    fontSize: type.inscripcion.size,
+    lineHeight: type.inscripcion.lineHeight,
+    letterSpacing: type.inscripcion.tracking,
+    color: ink.ink8,
   },
   errorTarjeta: { marginTop: space.s1, marginBottom: 0 },
   error: { flexDirection: 'row', alignItems: 'center', gap: space.s2, paddingHorizontal: space.s3, paddingVertical: space.s3 - 2 },
   errorTexto: { ...lectura, color: ink.ink9, flex: 1 },
   falloCarga: { marginTop: space.s8, alignItems: 'center', paddingVertical: space.s6 },
-  falloCargaTexto: { ...lectura, color: ink.ink9, textAlign: 'center' },
+  falloCargaTitulo: {
+    fontFamily: type.inscripcion.family,
+    fontSize: type.inscripcion.size,
+    lineHeight: type.inscripcion.lineHeight,
+    letterSpacing: type.inscripcion.tracking,
+    color: ink.ink10,
+    textAlign: 'center',
+  },
+  falloCargaTexto: { ...lectura, color: ink.ink8, textAlign: 'center', marginTop: space.s2 },
   falloCargaBoton: { marginTop: space.s4 },
   vacio: { alignItems: 'center', paddingTop: space.s6, paddingBottom: space.s6 },
   arenaGalea: { width: ARENA_ANCHO, height: ARENA_ALTO, alignItems: 'center', justifyContent: 'center' },
@@ -587,7 +681,10 @@ const styles = StyleSheet.create({
     borderWidth: stroke.hairline,
     borderColor: ink.ink4,
   },
+  pildoraOff: { opacity: 0.35 },
   pildoraTexto: { fontFamily: type.bodySm.family, fontSize: type.bodySm.size, lineHeight: 18, color: ink.ink9 },
+  rapidas: { gap: space.s2, paddingHorizontal: space.s5, paddingTop: space.s3 - 2, paddingBottom: space.s1 + 3 },
+  rapidasFila: { borderTopWidth: stroke.hairline, borderTopColor: ink.ink3 },
   cargandoCuerpo: { paddingHorizontal: space.s5, paddingTop: space.s5 },
   cargandoLinea: { marginTop: space.s3 - 2 },
   cargandoBloque: { marginTop: space.s6 },

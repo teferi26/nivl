@@ -1,6 +1,10 @@
-// NIVL · Un mensaje del coach (L4, A2): sin burbuja, con la galea a la
-// izquierda. Orden: texto, la cita de lo consultado, las acciones que cambió
-// y una fila de texto con «Escuchar» / «Parar» y «Denunciar respuesta».
+// NIVL · Un mensaje del coach (L-RADICAL §B.2.4): una losa de la arena, no
+// una burbuja de chat. Superficie ink1 con filete ink3 y una regla izquierda
+// de 2 en ink10: se distingue de un vistazo de la burbuja del usuario (ink2,
+// sin marco). El primero de cada bloque seguido va firmado: la galea y
+// «EL SISTEMA» grabado en Cinzel encima de la losa. Orden dentro: texto, la
+// cita de lo consultado, las acciones que cambió y una fila de texto con
+// «Escuchar» / «Parar» y «Denunciar respuesta». Sin animación por mensaje.
 
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
@@ -23,21 +27,28 @@ interface Props {
   /** Solo si el dispositivo puede hablar y el mensaje está cerrado. */
   voz?: VozMensaje;
   onDenunciar?: () => void;
+  /** El primero de un bloque seguido del coach: lleva la firma encima. */
+  firma?: boolean;
 }
 
 // Los enlaces del pie miden 28 de alto: con esto llegan a 44 de zona táctil.
 const ZONA_ENLACE = { top: 10, bottom: 10, left: 8, right: 8 };
 
-export function MensajeCoach({ texto, acciones, pensando, cita, voz, onDenunciar }: Props) {
+export function MensajeCoach({ texto, acciones, pensando, cita, voz, onDenunciar, firma }: Props) {
   const conTexto = !!texto;
   const hablando = voz?.estado === 'hablando';
   const filaPie = conTexto && (voz || onDenunciar);
   return (
-    <View style={styles.fila}>
-      <View style={styles.marca}>
-        <CoachMark size={24} />
-      </View>
-      <View style={styles.cuerpo}>
+    <View style={[styles.fila, !firma && styles.filaSeguida]}>
+      {firma ? (
+        <View style={styles.firma}>
+          <CoachMark size={24} />
+          <Text style={styles.firmaTexto} maxFontSizeMultiplier={1.35}>
+            EL SISTEMA
+          </Text>
+        </View>
+      ) : null}
+      <View style={styles.losa}>
         {pensando && !texto ? (
           <View style={styles.pensandoFila}>
             <ActivityIndicator size="small" color={ink.ink8} />
@@ -50,7 +61,7 @@ export function MensajeCoach({ texto, acciones, pensando, cita, voz, onDenunciar
           <View style={styles.acciones}>
             {acciones.map((a, i) => (
               <View key={i} style={styles.accion}>
-                <Ionicons name={a.ok ? 'checkmark-circle' : 'alert-circle'} size={13} color={a.ok ? ink.ink8 : ink.ink10} />
+                <Ionicons name={a.ok ? 'checkmark-circle' : 'alert-circle'} size={14} color={a.ok ? ink.ink8 : ink.ink10} />
                 <Text style={styles.accionTexto}>{a.texto}</Text>
               </View>
             ))}
@@ -91,11 +102,30 @@ export function MensajeCoach({ texto, acciones, pensando, cita, voz, onDenunciar
 }
 
 const styles = StyleSheet.create({
-  fila: { flexDirection: 'row', gap: space.s3, marginBottom: space.s5 },
-  marca: { marginTop: 1 },
-  cuerpo: { flex: 1, minWidth: 0 },
+  fila: { marginBottom: space.s5 },
+  // Dentro de un bloque seguido, las losas van más juntas.
+  filaSeguida: { marginTop: -space.s2 },
+  firma: { flexDirection: 'row', alignItems: 'center', gap: space.s2, marginBottom: space.s2 },
+  firmaTexto: {
+    fontFamily: type.inscripcion.family,
+    fontSize: 11,
+    lineHeight: 14,
+    letterSpacing: type.inscripcion.tracking - 1,
+    color: ink.ink8,
+  },
+  losa: {
+    minWidth: 0,
+    backgroundColor: ink.ink1,
+    borderWidth: stroke.hairline,
+    borderColor: ink.ink3,
+    borderLeftWidth: stroke.rule,
+    borderLeftColor: ink.ink10,
+    paddingVertical: space.s3,
+    paddingLeft: space.s3 + 2,
+    paddingRight: space.s4,
+  },
   pensandoFila: { flexDirection: 'row', alignItems: 'center', gap: space.s2 },
-  pensando: { fontFamily: type.bodySm.family, fontSize: 13, color: ink.ink8 },
+  pensando: { fontFamily: type.bodySm.family, fontSize: type.bodySm.size, lineHeight: type.bodySm.lineHeight, color: ink.ink8 },
   cita: {
     fontFamily: type.bodySm.family,
     fontSize: type.bodySm.size,
@@ -108,7 +138,13 @@ const styles = StyleSheet.create({
   },
   acciones: { marginTop: space.s2, borderLeftWidth: stroke.hairline, borderLeftColor: ink.ink3, paddingLeft: 10, gap: space.s1 },
   accion: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  accionTexto: { fontFamily: type.bodySm.family, fontSize: 12.5, color: ink.ink8, flexShrink: 1 },
+  accionTexto: {
+    fontFamily: type.bodySm.family,
+    fontSize: type.bodySm.size,
+    lineHeight: type.bodySm.lineHeight,
+    color: ink.ink8,
+    flexShrink: 1,
+  },
   pie: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: space.s5, marginTop: space.s2 },
   // 28 de alto + 10 arriba y abajo de hitSlop = 48 de zona táctil.
   enlace: { flexDirection: 'row', alignItems: 'center', gap: 5, minHeight: 28 },

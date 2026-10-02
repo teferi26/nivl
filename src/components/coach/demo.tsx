@@ -98,7 +98,7 @@ export const DEMO: DemoPantalla | null = {
           {...base({
             profundo: true,
             potencia: { modo: 'profundo', profundoAbierto: true, linea: 'Te quedan 3 turnos profundos este mes.', onElegir: nada },
-            compositor: { ...compositor, texto: 'Y mañana, ¿cuánto peso en remo?', puedeEnviar: true, conDictado: false },
+            compositor: { ...compositor, texto: 'Y mañana, ¿cuánto peso en remo?', puedeEnviar: true },
           })}
         />
       ),

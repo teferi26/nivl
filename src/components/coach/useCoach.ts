@@ -507,10 +507,10 @@ export function useCoach(): { vista: CoachVistaProps; hojas: HojasCoach } {
       ? `La energía del coach de este mes se ha agotado. ${recarga ? `Se recarga el ${recarga}.` : 'Se recarga el día 1.'}`
       : null);
   const puedeEnviar = (!!texto.trim() || adjuntas.length > 0) && !enviando.current;
-  // El micrófono ocupa el sitio de «enviar» cuando no hay nada que enviar; y se
-  // queda mientras graba, aunque llegue texto, para no soltar el gesto a medias.
+  // El micrófono está siempre junto a «enviar» si se puede dictar (lo dictado
+  // se suma al texto); grabando, enviar se aparta en la vista.
   const grabandoUi = dictado.grabando || dictado.preparando;
-  const conDictado = puedeDictar && ((!texto.trim() && !adjuntas.length) || grabandoUi);
+  const conDictado = puedeDictar;
   // El selector de potencia solo existe si el plan incluye el modo profundo.
   const conPotencia = !sinPro && !!estado?.deepAllowed;
   const profundoAbierto = puedeProfundo(estado);
