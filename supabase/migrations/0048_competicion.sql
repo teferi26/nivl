@@ -8,7 +8,7 @@
 -- Sin XP en juego: la competición mide, no paga. Las fórmulas replican
 -- src/lib/competition.ts (si tocas una, toca la otra).
 --
--- Huella: to_regclass('public.daily_scorecards') is not null
+-- Huella: ver HUELLAS en scripts/apply-migrations.mjs
 
 begin;
 
