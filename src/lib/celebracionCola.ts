@@ -40,6 +40,7 @@ export interface Acumulado {
   recuperadoXp?: number;
   extra: Celebracion[];
   resumen: string[];
+  diasActivos?: number | null;
   /** Ventana cerrada: lista para decidirse. */
   cerrada: boolean;
 }
@@ -158,6 +159,7 @@ export function fusionar(prev: Acumulado | undefined, a: AccionCelebrable): Acum
     recuperadoXp: Math.max(prev?.recuperadoXp ?? 0, a.recuperadoXp ?? 0) || undefined,
     extra: sinClaveRepetida([...(prev?.extra ?? []), ...(a.extra ?? [])]),
     resumen: [...(prev?.resumen ?? []), ...(a.resumen ?? [])],
+    diasActivos: a.diasActivos ?? prev?.diasActivos,
     cerrada: false,
   };
 }
@@ -184,7 +186,7 @@ export function decidir(accion: string | null, ac: Acumulado, vistas: ReadonlySe
   // Un rango que llega en `extra` también cuenta para el «siguiente».
   const rangos = lista.flatMap((c) => (c.tipo === 'rango' ? [codigoRango(c.rango)] : []));
   const estado = ac.perfilDespues
-    ? estadoDe(ac.perfilDespues, [...logrosAntes, ...ac.logrosNuevos.map((l) => l.codigo), ...rangos])
+    ? estadoDe(ac.perfilDespues, [...logrosAntes, ...ac.logrosNuevos.map((l) => l.codigo), ...rangos], ac.diasActivos ?? undefined)
     : null;
   return { principal, resumen, clavesResto: resto.map((c) => c.clave), forma: formaDe(principal), accion, estado };
 }

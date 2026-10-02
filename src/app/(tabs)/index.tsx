@@ -178,8 +178,8 @@ export default function Hoy() {
   const sincronizar = useCallback((prof: Profile, accion: string) => {
     sincronizarRangoDetalle()
       .catch(() => ({ nuevos: [] as string[], diasActivos: null }))
-      .then(({ nuevos }) => {
-        celebrar({ accion, logrosNuevos: nuevos.map(logroDeCodigo), final: true });
+      .then(({ nuevos, diasActivos }) => {
+        celebrar({ accion, logrosNuevos: nuevos.map(logroDeCodigo), diasActivos, final: true });
         const letra = rangoMasAlto(nuevos);
         if (!letra) return;
         if (logrosRef.current) for (const c of nuevos) logrosRef.current.add(c);

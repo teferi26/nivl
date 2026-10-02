@@ -131,7 +131,7 @@ export default function DungeonDetail() {
   const cerrarConRango = (accion: string) => {
     sincronizarRangoDetalle()
       .catch(() => ({ nuevos: [] as string[], diasActivos: null }))
-      .then(({ nuevos }) => celebrar({ accion, logrosNuevos: nuevos.map(logroDeCodigo), final: true }))
+      .then(({ nuevos, diasActivos }) => celebrar({ accion, logrosNuevos: nuevos.map(logroDeCodigo), diasActivos, final: true }))
       .catch(() => {});
   };
 

@@ -235,6 +235,7 @@ export default function Perfil() {
           accion: `perfil:rango:${Date.now()}`,
           logrosAntes: [...logros].filter((c) => !nuevos.includes(c)),
           logrosNuevos: nuevos.map(logroDeCodigo),
+          diasActivos: dias,
           final: true,
         });
       })

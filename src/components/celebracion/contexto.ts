@@ -28,6 +28,8 @@ export interface AccionCelebrable {
   resumen?: string[];
   /** Cierra la ventana de la acción. */
   final?: boolean;
+  /** Días activos de sincronizarRangoDetalle(): da la cifra del «siguiente rango». */
+  diasActivos?: number | null;
 }
 
 export interface CelebracionApi {
