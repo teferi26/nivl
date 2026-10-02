@@ -16,8 +16,8 @@
         "applinks:nivl-web.vercel.app"
       ],
       "infoPlist": {
-        "NSCameraUsageDescription": "NIVL usa la cámara para las fotos de evidencia de tus misiones, tu diario y tus entrenos. Solo se hace una foto cuando tú lo pides.",
-        "NSPhotoLibraryUsageDescription": "NIVL accede a tus fotos para tu retrato y para las imágenes que decidas enviar a tu coach de IA, que las procesa un proveedor de IA externo.",
+        "NSCameraUsageDescription": "NIVL usa la cámara para tus evidencias, tu foto de perfil y tus fotos de progreso. Las imágenes solo se envían al coach cuando tú se las mandas.",
+        "NSPhotoLibraryUsageDescription": "NIVL usa tu galería para elegir evidencias, tu foto de perfil y tus fotos de progreso. Las imágenes solo se envían al coach cuando tú se las mandas.",
         "ITSAppUsesNonExemptEncryption": false
       },
       "entitlements": {
@@ -76,8 +76,8 @@
       [
         "expo-image-picker",
         {
-          "cameraPermission": "NIVL usa la cámara para las fotos de evidencia de tus misiones, tu diario y tus entrenos. Solo se hace una foto cuando tú lo pides.",
-          "photosPermission": "NIVL accede a tus fotos para tu retrato y para las imágenes que decidas enviar a tu coach de IA, que las procesa un proveedor de IA externo.",
+          "cameraPermission": "NIVL usa la cámara para tus evidencias, tu foto de perfil y tus fotos de progreso. Las imágenes solo se envían al coach cuando tú se las mandas.",
+          "photosPermission": "NIVL usa tu galería para elegir evidencias, tu foto de perfil y tus fotos de progreso. Las imágenes solo se envían al coach cuando tú se las mandas.",
           "microphonePermission": "NIVL usa el micrófono solo cuando grabas un vídeo de evidencia o hablas con tu coach. No graba nada en segundo plano."
         }
       ],
