@@ -165,16 +165,27 @@ export async function unlockAchievements(
 }
 
 /**
- * Pide al servidor que registre el rango merecido (nivel y días activos) y
- * devuelve los códigos `rango_X` nuevos, para celebrarlos. Si la RPC aún no
- * existe en el servidor, no hace nada: el rango se queda en lo registrado.
+ * Pide al servidor que registre el rango merecido (nivel y días activos).
+ * Devuelve los códigos `rango_X` nuevos (para celebrarlos) y los días activos
+ * que usó el servidor (para «N días activos para Campeón»). Sin la 0051 en el
+ * servidor: `{ nuevos: [], diasActivos: null }`, sin lanzar.
  */
-export async function sincronizarRango(): Promise<string[]> {
+export async function sincronizarRangoDetalle(): Promise<{ nuevos: string[]; diasActivos: number | null }> {
   const { data, error } = await supabase.rpc('sync_rank');
   if (error) {
-    if (error.code === 'PGRST202' || error.code === '42883') return [];
+    if (error.code === 'PGRST202' || error.code === '42883') return { nuevos: [], diasActivos: null };
     throw error;
   }
-  const nuevos = (data as { nuevos?: unknown } | null)?.nuevos;
-  return Array.isArray(nuevos) ? nuevos.filter((c): c is string => typeof c === 'string' && /^rango_[DCBAS]$/.test(c)) : [];
+  const row = data as { nuevos?: unknown; dias_activos?: unknown } | null;
+  const nuevos = Array.isArray(row?.nuevos)
+    ? row!.nuevos.filter((c): c is string => typeof c === 'string' && /^rango_[DCBAS]$/.test(c))
+    : [];
+  const d = row?.dias_activos;
+  const diasActivos = typeof d === 'number' && Number.isFinite(d) && d >= 0 ? Math.floor(d) : null;
+  return { nuevos, diasActivos };
+}
+
+/** Como sincronizarRangoDetalle, solo los rangos nuevos (firma estable). */
+export async function sincronizarRango(): Promise<string[]> {
+  return (await sincronizarRangoDetalle()).nuevos;
 }
