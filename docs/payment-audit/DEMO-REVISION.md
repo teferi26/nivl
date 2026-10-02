@@ -75,7 +75,7 @@ returning u.email, s.status, s.plan;
 commit;
 ```
 
-Si se retira la demo Élite, su ludus deja de validar Élite (trigger de 0026): sacarla antes con `scripts/ludus.mjs` si el grupo debe seguir.
+El trigger de 0026 (`elite_group_members_guard`) solo valida Élite al insertar/actualizar miembros: retirar la concesión no saca a la cuenta de su ludus. Si debe salir, hacerlo con `scripts/ludus.mjs`.
 
 ## 4. Registro privado (`nivl/privado/`, fuera del repo)
 
