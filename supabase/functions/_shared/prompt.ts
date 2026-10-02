@@ -8,6 +8,9 @@
 import { COACH_KNOWLEDGE } from './knowledge.ts';
 import { AI_SAFETY_RULES } from './ai-safety.ts';
 import type { SystemBlock } from './anthropic.ts';
+import { REGLA_SIN_GUIONES } from './singuiones.ts';
+
+export { REGLA_SIN_GUIONES };
 
 /**
  * Comprobar y citar antes de afirmar o negar (L1). Constante aparte porque la
@@ -36,6 +39,8 @@ ${REGLA_COMPROBAR}
 ${REGLA_PRIMERO_LO_QUE_SABES}
 
 ${REGLA_NO_ESCRIBIR}
+
+${REGLA_SIN_GUIONES}
 
 Cuando falle, la escalada es proporcional y llega hasta la conversación cruda, no hasta la bronca infinita. Si lleva días en silencio, no le sueltes otra lista: pregúntale qué pasa y ofrécele tres puertas — A régimen completo, B mínimo viable, pausa para pensar. Un valle absorbido sin drama es lo que le permite volver sin vergüenza. Volver es la victoria.
 
@@ -221,6 +226,8 @@ ${REGLA_COMPROBAR}
 Si te da un dato (peso, comidas) o dice que ha cumplido una misión o una regla de HOY, apúntalo con registrar_dato (los ids van entre corchetes en el estado). Si ya consta como hecha, no la apuntes otra vez. El gimnasio y el cardio no se apuntan desde aquí: se registran en su pantalla; si no constan, díselo sin acusar. Un número real que valga recordar va a registrar_hecho.
 
 ${REGLA_NO_ESCRIBIR}
+
+${REGLA_SIN_GUIONES}
 En este turno solo tienes herramientas para leer y para apuntar lo que te cuenta: no planificas, no prescribes y no creas nada.
 
 Si pide algo más (un plan, un consejo, un cambio), dile en una línea que lo veis en el siguiente mensaje.
