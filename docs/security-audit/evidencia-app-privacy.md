@@ -12,7 +12,7 @@ Fuente: el **código** de este worktree y el catálogo de la BD remota de NIVL (
 
 | Dato | Finalidad | Proveedor(es) que lo recibe(n) | Vinculado | Tracking | Prueba (archivo:línea) |
 |---|---|---|---|---|---|
-| Email | Cuenta, acceso, confirmación y recuperación | Supabase (Auth); envío de correo: [PENDIENTE: proveedor SMTP] | Sí | No | Auth de Supabase (`auth.users`); hoy `franky-auth/index.ts:189` crea el usuario |
+| Email | Cuenta, acceso, confirmación y recuperación | Supabase (Auth); envío de correo: Resend (SMTP de Auth, remitente team@nivl.app, activo desde el 02/10) | Sí | No | Auth de Supabase (`auth.users`); con el login nativo, `authFlow.ts` (signUp); el puente `franky-auth` sigue desplegado hasta retirarlo |
 | Nombre / alias, retrato | Perfil; lo ven tus amigos | Supabase; **el alias va al proveedor de IA** en cada turno | Sí | No | `_shared/context.ts:248` (`Nombre: ${p.name}`); `src/lib/data.ts:208` (bucket `avatars`); `friends_board` (0030) |
 | User ID (uuid) | Identificar la cuenta; compras | Supabase; RevenueCat (`appUserID` = uuid) | Sí | No | `src/lib/pro.ts:126,132` |
 | Salud y forma física: peso, ficha física (altura, año de nacimiento, sexo, lesiones, salud), gimnasio, cardio, nutrición, diario de ánimo, energía y sueño | Mostrar la evolución; coach | Supabase; **proveedor de IA** (solo con consentimiento de IA **y** de salud) | Sí | No | Tablas en la lista de la 0030 (`body_profile`…`nutrition_logs`); `src/lib/bodywork.ts:67`, `src/lib/body.ts:82`; doble control en `coach/handler.ts:543,670` y `oracle/handler.ts:98,103` |
