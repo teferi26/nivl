@@ -19,7 +19,14 @@
 // - Lo gratuito nunca se bloquea: la decisión no tiene campo de «bloquear»;
 //   solo dice si se ENSEÑA algo y de qué forma.
 
-export type Momento = 'firma' | 'primer_dia' | 'coach_profundo' | 'voz_premium' | 'analisis_foto' | 'energia_agotada';
+export type Momento =
+  | 'firma'
+  | 'primer_dia'
+  | 'coach_profundo'
+  | 'voz_premium'
+  | 'analisis_foto'
+  | 'energia_agotada'
+  | 'coach_cerrado';
 
 export const MOMENTOS: readonly Momento[] = [
   'firma',
@@ -28,6 +35,7 @@ export const MOMENTOS: readonly Momento[] = [
   'voz_premium',
   'analisis_foto',
   'energia_agotada',
+  'coach_cerrado',
 ];
 
 export function esMomento(v: unknown): v is Momento {
@@ -116,11 +124,14 @@ const TIER_SIN_PAGO: Record<Momento, TierOferta> = {
   primer_dia: 'pro',
   // El modo profundo es solo Élite.
   coach_profundo: 'elite',
-  // La voz no existe aún; si llega, es de Élite (lo que se le ofrece a un Pro).
-  voz_premium: 'elite',
+  // La voz (en el dispositivo, coste 0) va con el coach: se ofrece Pro y a
+  // quien ya tiene coach no se le vende nada por ella.
+  voz_premium: 'pro',
   // Las fotos al coach ya funcionan con Pro.
   analisis_foto: 'pro',
   energia_agotada: 'pro',
+  // La pantalla del coach sin acceso: lo que antes era «Ver NIVL Pro».
+  coach_cerrado: 'pro',
 };
 
 function decision(momento: Momento, tier: TierOferta, d: Partial<DecisionOferta> & { razon: string }): DecisionOferta {
@@ -157,8 +168,18 @@ export function decidirOferta(momento: Momento, ctx: ContextoOferta): DecisionOf
   if (ctx.celebrando) return decision(momento, TIER_SIN_PAGO[momento], { razon: 'celebrando' });
   if (nivel === 'top') return decision(momento, 'elite', { razon: 'ya_elite' });
 
+  // Coach cerrado: solo existe para quien no tiene coach. Es la propia pantalla
+  // que el usuario ha abierto, así que no gasta topes ni respeta la espera de
+  // 72 h: es una línea fija con la salida a mano, no una interrupción.
+  if (momento === 'coach_cerrado') {
+    if (nivel !== 'free') return decision(momento, 'pro', { razon: 'tiene_coach' });
+    return decision(momento, 'pro', { mostrar: true, forma: 'linea', prueba: ctx.trialAvailable, razon: 'coach_cerrado' });
+  }
+
   if (nivel === 'pro') {
     if (ctx.mejorable === false) return decision(momento, 'elite', { razon: 'no_mejorable' });
+    // La voz va con el coach: a quien ya lo tiene no se le vende por ella.
+    if (momento === 'voz_premium') return decision(momento, 'elite', { razon: 'voz_incluida' });
     const funcion = MOMENTOS_FUNCION.includes(momento) || momento === 'energia_agotada';
     if (!funcion) return decision(momento, 'elite', { razon: 'pro_sin_momento' });
     return decision(momento, 'elite', { mostrar: true, forma: 'linea', razon: 'pro_a_elite' });
