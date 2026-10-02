@@ -3,21 +3,23 @@
 #   maestro test -e NIVL_QA_EMAIL=... -e NIVL_QA_PASSWORD=... e2e/maestro/<flujo>.yaml
 # Nunca escribirlas en este archivo ni en el repositorio. No usar la cuenta
 # revisora de Apple ni las del ludus de demostración en flujos que escriben.
-# Selectores tomados de src/app/login.tsx en bf32d28 (accessibilityLabel);
+# Rótulos del acceso sin Franky (Chat 4 @09a6b99; antes, src/app/login.tsx en bf32d28);
 # NO verificados todavía en un dispositivo: confirmar en la primera ejecución.
 appId: com.teferi.nivl
 name: NIVL login (subflujo)
 ---
 - extendedWaitUntil:
-    visible: '^Entrar con cuenta existente$'
+    visible: '^ENTRAR$'
     timeout: 30000
-- tapOn: '^Entrar con cuenta existente$'
-- tapOn: '^Correo electrónico$'
+- tapOn: '^ENTRAR$'
+- tapOn: '^(Correo|CORREO|Correo electrónico)$'
 - inputText: ${NIVL_QA_EMAIL}
-- tapOn: '^Contraseña$'
+- tapOn: '^(Contraseña|CONTRASEÑA)$'
 - inputText: ${NIVL_QA_PASSWORD}
 - hideKeyboard
-- tapOn: '^Entrar con Franky$'
+- tapOn:
+    text: '^ENTRAR$'
+    index: 1
 - extendedWaitUntil:
     visible: '^Hoy$'
     timeout: 30000

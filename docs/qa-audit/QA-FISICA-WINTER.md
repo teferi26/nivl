@@ -82,10 +82,10 @@ Se graba **en una sola toma** (unos 6–9 minutos) con la grabación de pantalla
 |---|---|---|
 | 0 Identificación (opcional) | Ajustes → General → Información (modelo e iOS, sin número de serie ni IMEI) y la ficha de TestFlight con «1.0.7 ([BUILD])» | Ficha |
 | 1 Lanzamiento | Pantalla de inicio → icono → carga → Acceso | O-01 / A1 |
-| 2 Registro y login | «CREAR CUENTA» con D (contraseña oculta) → casilla de términos → «Crear cuenta Franky» → confirmación. Cerrar sesión y volver a entrar con D. Enseñar, sin usarlo, «¿Cuenta antigua de NIVL? Entrar con ella» | O-02 / A2, O-03 / A3 (parcial) |
+| 2 Registro y login | «CREAR CUENTA» → NOMBRE, CORREO, CONTRASEÑA, REPITE LA CONTRASEÑA (contraseña oculta) → casilla de Términos/Privacidad → «CREAR CUENTA» → aviso → enlace del correo en el MISMO iPhone → «CONFIRMAR CUENTA» → entra solo. Cerrar sesión → «ENTRAR» con correo y contraseña → «ENTRAR» (guion del Chat 1 @c1c6a58; rótulos del Chat 4 @09a6b99) | O-02 / A2, O-03 / A3 |
 | 3 Flujo típico | Edad y onboarding → crear misión o hábito → completarlo en Hoy (XP y racha) → Hábitos, campaña, evento de Agenda → módulo de salud: casilla desmarcada → «Ahora no» → todo sigue funcionando → Perfil → «Salud y bienestar» → «Revisar permiso de salud» → marcar → «Aceptar y activar salud» | O-06, O-07 / A4, O-04, O-05 / A5 |
 | 4 Coach e IA | «NIVL Pro» → «Probar el coach 7 días» si corresponde → consentimiento de IA → «Acepto y activo el coach» → Coach: «Ayúdame a organizar mi día de mañana» → respuesta | O-05, O-12 / A5 |
-| 5 Suscripciones | Los **cinco planes** (Pro mensual y anual; Élite mensual, anual y fundador), unos 2 s cada uno → renovación automática y aviso de energía → abrir **Términos** y volver → abrir **Privacidad** y volver → compra sandbox → acceso activo en NIVL → «Restaurar compras» | O-09 / A6, O-08 / A7, O-10 / A8 (sin reinstalar) |
+| 5 Suscripciones | **Siempre desde Perfil → «NIVL Pro» (/pro)**, no desde el onboarding. Comprobación previa sin grabar: si aparece «Algún plan no está disponible…», es FAIL de A6 y NO se graba. Los **cinco planes** (Pro mensual y anual; Élite mensual, anual y fundador), unos 2 s cada uno → renovación automática y aviso de energía → abrir **Términos** y volver → abrir **Privacidad** y volver → compra sandbox → acceso activo en NIVL → «Restaurar compras» | O-09 / A6, O-08 / A7, O-10 / A8 (sin reinstalar) |
 | 6 Denuncia y bloqueo | Amigos → U2 → tres puntos → motivo → «Enviar denuncia» → confirmación → «Bloquear usuario» → «Bloquear» → desaparece → «Convivencia y seguridad» → «Desbloquear» y «Contactar con soporte» | O-13 / A9 |
 | 7 Datos y borrado | «Exportar mis datos» (cancelar la hoja de compartir) → «Envío de datos al coach» → enseñar «Retirar» → con D: «Eliminar cuenta» → «Eliminar para siempre» (hoja) → «Eliminar para siempre» (alerta) → Acceso → intentar entrar con D. El borrado de la cuenta Franky depende de la decisión del usuario (ver guion) | O-15, O-14 (parcial), O-16 / A10 |
 | 8 Cierre | Pantalla de acceso → parar la grabación | — |
@@ -135,3 +135,27 @@ El Chat 1 ya ha aportado su lista mínima (fusionada arriba: A-11, D-01 a D-04 y
 - **W-21 / W-22 (P0):** la prueba Pro, la compra y la restauración con el consentimiento de salud **rechazado**. Por código, el trigger de `events` de la 0030 hacía fallar `start_trial` a quien rechazaba la salud. El Chat 2 lo confirmó por código y la 0035 lo corrige en SQL. Falta la prueba en el teléfono.
 - **CAP-01 a CAP-05 (P0, pedidas por el Chat 1):** una captura de revisión por suscripción (`nivl_pro_mensual`, `nivl_pro_anual`, `nivl_elite_mensual`, `nivl_elite_anual`, `nivl_elite_fundador`), en el paywall real con StoreKit sandbox, a 1320×2868. Se hacen cuando el Chat 2 entregue el SHA del paywall final. Las de App Store Connect muestran hoy el paywall antiguo.
 - Los casos W-01, W-02, W-19 y W-20 necesitan una build u OTA que contenga `486b1cb`. En la build 20 fallarían por diseño.
+
+- **A6 y CAP-01 a CAP-05 (Chat 1, guion @8f5cbe4):** se graban y capturan siempre en Perfil → «NIVL Pro», con el paywall candidato del Chat 2 (@b11c2d2). Antes de grabar se hace una comprobación: si sale «Algún plan no está disponible…», es FAIL y no se graba.
+
+## Compras (Chat 2 @464d2a3): PAY-01 a PAY-21
+
+Precondiciones para que cuenten:
+- un binario con el cliente del Chat 2, no una OTA de primer arranque;
+- en el servidor, las funciones de 56eecf3 o posteriores y la 0036 aplicada;
+- en RevenueCat, Restore Behavior = Transfer;
+- en iOS, TestFlight con cuenta sandbox; en Android, pista interna con license tester.
+
+Un mock no acredita una compra.
+
+Prioridad P0: PAY-01, 02, 10, 11, 12 y 20. **PAY-12** (restaurar tras borrar y recrear la cuenta) es obligatorio para el reenvío.
+
+Casos que coinciden con otros de la lista:
+- PAY-01 = O-09/A6;
+- PAY-11 = O-10/A8;
+- PAY-20 = W-21.
+- Ajustes del Chat 2:
+  - PAY-03 y PAY-13 son **P0 para el lanzamiento en Android** (doble cobro en Play) y P1 en iOS.
+  - PAY-21 sube a P1 (Apple 2.3.10).
+  - PAY-01 se graba en la build que lleve el paywall empaquetado. Si llega por OTA, el primer arranque muestra el paywall antiguo: se graba después del segundo arranque y se anota.
+- **A2/A3 sin Franky (Chat 4 @09a6b99, guion del Chat 1 @c1c6a58):** se han actualizado los rótulos. Se añade **A3b** (recuperar contraseña, P1), que no sale en el vídeo pero que un revisor puede tocar.

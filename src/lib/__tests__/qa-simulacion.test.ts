@@ -129,9 +129,11 @@ describe('vuelta en la semana 40 tras una ausencia', () => {
       const antes = simular(SEMANA40, constante);
       const sinRecuperar = simular(SEMANA40 + fuera + 1, { ...constante, recupera: false, ausente });
       const recuperando = simular(SEMANA40 + fuera + 1, { ...constante, ausente });
-      // 126 XP por día fallado: 2×13 + 2×25 + 50, bajo el tope de 150. Se
-      // suma lo fallado el último día presente, que se cierra al volver.
-      const extra = sinRecuperar.perdido - antes.perdido - fuera * 126;
+      // 126 XP por día fallado (2×13 + 2×25 + 50, bajo el tope de 150), pero
+      // RET-02 solo cobra los 3 primeros días rotos seguidos: 378 tanto para
+      // 14 como para 30 días fuera. Se suma lo fallado el último día
+      // presente, que se cierra al volver.
+      const extra = sinRecuperar.perdido - antes.perdido - 3 * 126;
       expect(extra).toBeGreaterThanOrEqual(0);
       expect(extra).toBeLessThan(126);
       // Recuperarla el día de la vuelta lo devuelve exacto (invariante 2).
@@ -140,9 +142,9 @@ describe('vuelta en la semana 40 tras una ausencia', () => {
       if (process.env.QA_SIM_PRINT) {
         console.log(`vuelta tras ${fuera}d`, {
           nivelAntes: antes.nivel,
-          nivelAlVolverSinRecuperar: levelFromXp(antes.xp - fuera * 126).level,
-          xpPerdido: fuera * 126,
-          diasNormalesParaReponer: +(fuera * 126 / 200).toFixed(1),
+          nivelAlVolverSinRecuperar: levelFromXp(antes.xp - (sinRecuperar.perdido - antes.perdido)).level,
+          xpPerdido: sinRecuperar.perdido - antes.perdido,
+          antesDeRET02: fuera * 126,
         });
       }
     });

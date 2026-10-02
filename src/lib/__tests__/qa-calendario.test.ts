@@ -43,9 +43,11 @@ describe('cambio de hora europeo', () => {
     const q = mision({ id: 'q', difficulty: 'media' });
     const r = computeDayClose({ fromDate: '2026-10-23', today: '2026-10-28', quests: [q],
       completedKeys: new Set(), streak: 10, stones: 0, freezeUntil: null });
-    // 5 días (23–27) × 25 de penalización.
-    expect(r.penaltyXp).toBe(125);
-    expect(r.missedTitles).toHaveLength(5);
+    // 5 días (23–27): cada uno juzgado una vez. RET-02 cobra los 3 primeros
+    // rotos seguidos (3 × 25) y deja exentos los otros 2.
+    expect(r.penaltyXp).toBe(75);
+    expect(r.missedTitles).toHaveLength(3);
+    expect(r.diasExentos).toEqual(['2026-10-26', '2026-10-27']);
   });
 
   test('"Ayer" sigue siendo ayer el lunes después del cambio', () => {
