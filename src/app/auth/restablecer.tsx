@@ -2,9 +2,11 @@
 // contraseña».
 //
 // Ruta PÚBLICA: el enlace abre una sesión de recuperación (authFlow) y aquí se
-// elige la contraseña nueva. Si ya había sesión abierta por el enlace (se llegó
-// desde /auth/confirmar con un enlace de recuperación), el formulario sale sin
-// volver a canjear nada.
+// elige la contraseña nueva. El formulario sale SOLO si en esta ejecución de
+// la app el enlace se ha canjeado como recuperación (estado en memoria de
+// useEnlaceCorreo; si se llegó desde /auth/confirmar, reutiliza ese canje).
+// Una sesión normal no basta (Chat 3): con el móvil desbloqueado unos segundos
+// cualquiera podría cambiar la contraseña y quedarse la cuenta.
 
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { router } from 'expo-router';
@@ -32,12 +34,11 @@ export default function Restablecer() {
   const coinciden = nueva === repite;
   const puede = pw.ok && coinciden && !busy;
 
-  // Con el enlace canjeado, o con la sesión de recuperación ya abierta.
-  const listo = estado.fase === 'listo' || (estado.fase === 'sin_enlace' && !!session);
+  const listo = estado.fase === 'listo' && estado.destino === 'recuperacion';
   const fallo =
     estado.fase === 'error'
       ? estado.mensaje
-      : estado.fase === 'sin_enlace' && !session
+      : estado.fase === 'sin_enlace' || (estado.fase === 'listo' && estado.destino !== 'recuperacion')
         ? 'Este enlace no es válido o ha caducado. Pide uno nuevo desde «¿Olvidaste tu contraseña?».'
         : null;
 
