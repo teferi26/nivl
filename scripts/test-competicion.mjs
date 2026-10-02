@@ -73,6 +73,10 @@ await db.exec(`
   create table public.rules (id uuid, user_id uuid, text text);
   create table public.dungeons (id uuid, user_id uuid, title text);
   create table public.goals (id uuid, user_id uuid, title text);
+  create table public.social_profile_reviews (user_id uuid primary key, status text default 'pending', approved_name text, approved_avatar text);
+  create function public.social_public_name(p_user uuid) returns text language sql stable security definer set search_path = public as $$
+    select coalesce((select r.approved_name from public.social_profile_reviews r where r.user_id = p_user and r.status = 'approved'),
+                    'Gladiador ' || left(p_user::text, 6)) $$;
 
   -- Dobles de 0030/0035 (la salud no es objeto de esta prueba).
   create function public.safe_tz(tz text) returns text language sql immutable as $$ select coalesce(tz, 'UTC') $$;
@@ -82,8 +86,13 @@ await db.exec(`
   create function public.general_event_payload(p jsonb) returns jsonb language sql immutable as $$ select p $$;
 `);
 
+// Mientras el Chat 3 no dé el PASS, viven en docs/game-v2/propuestas; después,
+// en supabase/migrations. Se usa la que exista (preferencia: migrations).
+const { existsSync } = await import('node:fs');
 for (const f of ['0048_competicion.sql', '0051_rango.sql']) {
-  const sql = await readFile(resolve(root, 'supabase/migrations', f), 'utf8');
+  const ruta = ['supabase/migrations', 'docs/game-v2/propuestas'].map((d) => resolve(root, d, f)).find((x) => existsSync(x));
+  if (!ruta) throw new Error(`No encuentro ${f}`);
+  const sql = await readFile(ruta, 'utf8');
   await db.exec(sql);
   await db.exec(sql); // idempotente
 }
@@ -102,16 +111,27 @@ const hoy = await one("select (now() at time zone 'Europe/Madrid')::date::text")
 // ── Ligas ───────────────────────────────────────────────────────────────
 const liga = await as(A, () => one("select public.league_create('  Los\n del gym ')"));
 check(await one('select name from public.private_leagues where id = $1', [liga]), 'Los del gym', 'nombre limpio');
-await as(A, () => db.query('select public.league_add_member($1, $2)', [liga, B]));
-await fails(() => as(B, () => db.query('select public.league_add_member($1, $2)', [liga, C])), '42501'); // solo el dueño
-await fails(() => as(A, () => db.query('select public.league_add_member($1, $2)', [liga, uid(9)])), '42501'); // no amigo
+// Consentimiento: el dueño INVITA y el amigo acepta (P1-3 del Chat 3).
+await as(A, () => db.query('select public.league_invite($1, $2)', [liga, B]));
+check(Number(await as(B, () => one('select count(*) from public.league_members where league_id = $1', [liga]))), 0, 'invitar no mete a nadie');
+check((await as(B, () => rows('select nombre, de from public.my_league_invites()'))).length, 1, 'B ve su invitación');
+await as(B, () => db.query('select public.league_accept($1)', [liga]));
+await fails(() => as(C, () => db.query('select public.league_accept($1)', [liga])), '42501'); // sin invitación
+await fails(() => as(B, () => db.query('select public.league_invite($1, $2)', [liga, C])), '42501'); // solo el dueño
+await fails(() => as(A, () => db.query('select public.league_invite($1, $2)', [liga, uid(9)])), '42501'); // no amigo
 await db.query('insert into public.social_blocks values ($1, $2)', [B, D]);
-await fails(() => as(A, () => db.query('select public.league_add_member($1, $2)', [liga, D])), '42501'); // bloqueo con un miembro
-// RLS sin recursión: un miembro ve los miembros; un ajeno no ve nada.
+await as(A, () => db.query('select public.league_invite($1, $2)', [liga, D]));
+await fails(() => as(D, () => db.query('select public.league_accept($1)', [liga])), '42501'); // bloqueo con un miembro
+// RLS sin recursión ni sondeo: un miembro ve los miembros; un ajeno no ve nada.
 check(Number(await as(B, () => one('select count(*) from public.league_members where league_id = $1', [liga]))), 2, 'miembro ve la liga');
 check(Number(await as(C, () => one('select count(*) from public.league_members'))), 0, 'ajeno no ve nada');
 check(Number(await as(C, () => one('select count(*) from public.private_leagues'))), 0, 'ajeno no ve ligas');
+await fails(() => as(C, () => one('select public._es_miembro($1, $2)', [liga, A])), '42501'); // sin sondeo
 await fails(() => as(B, () => db.query("insert into public.league_members values ($1, $2)", [liga, C])));  // sin escritura directa
+// Límite de 3 ligas nuevas al día.
+await as(C, () => one("select public.league_create('L1')")); await as(C, () => one("select public.league_create('L2')"));
+await as(C, () => one("select public.league_create('L3')"));
+await fails(() => as(C, () => one("select public.league_create('L4')")), '22023');
 
 // Tablero: alias y métricas, sin uuid ajenos.
 const qa = (await rows("insert into public.quests(user_id) values ($1) returning id", [A]))[0].id;
@@ -120,6 +140,17 @@ const tablero = await as(B, () => rows('select * from public.league_board($1)', 
 check(tablero.length, 2, 'tablero con dos');
 check(Object.keys(tablero[0]).includes('user_id'), false, 'sin uuid');
 await fails(() => as(C, () => rows('select * from public.league_board($1)', [liga])), '42501');
+// El tablero usa el alias APROBADO, no profiles.name.
+check(tablero.find((t) => !t.es_yo).alias.startsWith('Gladiador '), true, 'alias aprobado o genérico');
+// Un miembro suspendido desaparece del tablero ajeno.
+await db.query("insert into public.social_profile_reviews(user_id, status) values ($1, 'suspended')", [A]);
+check((await as(B, () => rows('select * from public.league_board($1)', [liga]))).length, 1, 'suspendido oculto');
+await db.query('delete from public.social_profile_reviews where user_id = $1', [A]);
+// my_league_standing funciona en una transacción de SOLO LECTURA (GET de PostgREST).
+await db.exec('begin read only');
+await as(A, () => rows('select * from public.my_league_standing()'));
+await db.exec('commit');
+checks++;
 const pos = await as(A, () => rows('select * from public.my_league_standing()'));
 check(pos.length, 1, 'mi liga');
 check(Object.keys(pos[0]).sort(), ['indice', 'league_id', 'miembros', 'nombre', 'puesto', 'velocidad'], 'columnas de standing');
@@ -134,6 +165,11 @@ check(foto, [{ programadas_xp: 100, cumplidas_xp: 0 }], 'foto fija con la misió
 await db.query('update public.quests set active = false where id = $1', [qb]);
 const m = await rows('select programadas_xp, cumplidas_xp from public._marcador($1, $2::date, $2::date)', [B, ayer]);
 check(m, [{ programadas_xp: 100, cumplidas_xp: 0 }], 'desactivar no borra el fallo');
+// Desactivar HOY una misión de hoy, antes del cierre, tampoco la saca de hoy.
+const qhoy = (await rows("insert into public.quests(user_id, difficulty) values ($1, 'epica') returning id", [C]))[0].id;
+await db.query('update public.quests set active = false where id = $1', [qhoy]);
+check(await one('select programadas_xp from public._dia_en_vivo($1, $2::date)', [C, hoy]), 250, 'desactivada hoy sigue contando hoy');
+check(await one("select programadas_xp from public._dia_en_vivo($1, ($2::date + 1))", [C, hoy]), 0, 'mañana ya no');
 
 // ── Duelos ──────────────────────────────────────────────────────────────
 const duelo = await as(A, () => one('select public.duel_challenge($1)', [B]));
@@ -143,6 +179,11 @@ await fails(() => as(C, () => db.query('select public.duel_respond($1, true)', [
 await as(B, () => db.query('select public.duel_respond($1, true)', [duelo]));
 check((await as(A, () => rows('select status from public.my_duels()')))[0].status, 'accepted', 'duelo aceptado');
 check(Number(await as(C, () => one('select count(*) from public.duels'))), 0, 'tercero no ve duelos');
+// Un bloqueo posterior anula el duelo y oculta el nombre del rival.
+await db.query('insert into public.social_blocks values ($1, $2)', [A, B]);
+const anulado = (await as(A, () => rows('select status, rival from public.my_duels()')))[0];
+check([anulado.status, anulado.rival], ['cancelled', null], 'bloqueo anula y oculta');
+await db.query('delete from public.social_blocks where blocker = $1 and blocked = $2', [A, B]);
 
 // ── last_open_on ────────────────────────────────────────────────────────
 check(await as(A, () => one('select public.touch_open()::text')), hoy, 'touch_open devuelve hoy local');
@@ -155,6 +196,10 @@ await fails(() => as(A, () => db.query("insert into public.events(user_id, type,
 
 // ── 0051 rango ──────────────────────────────────────────────────────────
 await fails(() => as(A, () => db.query("insert into public.achievements(user_id, code) values ($1, 'rango_S')", [A])), '42501');
+await fails(() => as(A, async () => {
+  await db.query("select set_config('nivl.sync_rank', 'on', false)");
+  await db.query("insert into public.achievements(user_id, code) values ($1, 'rango_S')", [A]);
+}), '42501'); // ya no hay bandera que valga
 await as(A, () => db.query("insert into public.achievements(user_id, code) values ($1, 'first_quest')", [A])); // lo de 1.0.7 sigue
 // Nivel 31 de XP pero 1 día activo → rango E (los días mandan).
 await db.query('update public.profiles set xp_total = 200000 where id = $1', [A]);

@@ -51,21 +51,24 @@ revoke all on public.private_leagues, public.league_members, public.duels from a
 -- Lectura solo de lo propio; toda escritura va por RPC.
 grant select on public.private_leagues, public.league_members, public.duels to authenticated;
 
--- Pertenencia por función security definer: una política de league_members
--- que consultara league_members entraría en recursión de RLS.
+-- Pertenencia SIN sondeo (revisión Chat 3): las políticas solo preguntan por
+-- el propio usuario; _es_miembro queda para uso interno (revocada).
 create or replace function public._es_miembro(p_league uuid, p_user uuid) returns boolean
 language sql stable security definer set search_path = public as $$
   select exists (select 1 from public.league_members m where m.league_id = p_league and m.user_id = p_user);
 $$;
-revoke all on function public._es_miembro(uuid, uuid) from public, anon;
-grant execute on function public._es_miembro(uuid, uuid) to authenticated;
-
+create or replace function public._soy_miembro(p_league uuid) returns boolean
+language sql stable security definer set search_path = public as $$
+  select exists (select 1 from public.league_members m where m.league_id = p_league and m.user_id = auth.uid());
+$$;
+revoke all on function public._soy_miembro(uuid) from public, anon;
+grant execute on function public._soy_miembro(uuid) to authenticated;
+revoke all on function public._es_miembro(uuid, uuid) from public, anon, authenticated;
 drop policy if exists "ligas: solo miembros" on public.private_leagues;
-create policy "ligas: solo miembros" on public.private_leagues for select to authenticated
-  using (public._es_miembro(id, auth.uid()));
 drop policy if exists "miembros: solo de mis ligas" on public.league_members;
-create policy "miembros: solo de mis ligas" on public.league_members for select to authenticated
-  using (public._es_miembro(league_id, auth.uid()));
+create policy "ligas: solo miembros" on public.private_leagues for select to authenticated using (public._soy_miembro(id));
+create policy "miembros: solo de mis ligas" on public.league_members for select to authenticated using (public._soy_miembro(league_id));
+
 drop policy if exists "duelos: solo las partes" on public.duels;
 create policy "duelos: solo las partes" on public.duels for select to authenticated
   using (auth.uid() in (challenger, opponent));
@@ -84,6 +87,15 @@ language sql stable security definer set search_path = public as $$
     where (s.blocker = a and s.blocked = b) or (s.blocker = b and s.blocked = a));
 $$;
 
+-- Bloqueo O suspensión (social_pair_allowed exige auth.uid() en la pareja).
+create or replace function public._pareja_ok(a uuid, b uuid) returns boolean
+language sql stable security definer set search_path = public as $$
+  select a = b or (not public._bloqueo_entre(a, b)
+    and not exists (select 1 from public.social_profile_reviews r where r.user_id in (a, b) and r.status = 'suspended'));
+$$;
+revoke all on function public._pareja_ok(uuid, uuid) from public, anon, authenticated;
+
+
 -- Foto fija diaria (revisión de nivl-game-balancer): lo programado de cada día
 -- se congela en el servidor cuando ese día se cierra, para que desactivar o
 -- borrar una misión fallada no reescriba la semana. La escribe un trigger al
@@ -98,6 +110,26 @@ create table if not exists public.daily_scorecards (
 );
 alter table public.daily_scorecards enable row level security;
 revoke all on public.daily_scorecards from anon, authenticated;
+
+-- Desactivar una misión el MISMO día en que se iba a fallar tampoco la borra
+-- de ese día: se guarda cuándo se desactivó y ese día sigue contando
+-- (revisión Chat 3 / nivl-game-balancer). Borrarla del todo sí la saca: es
+-- renunciar a su historial, un precio que no compensa.
+alter table public.quests add column if not exists deactivated_at timestamptz;
+create or replace function public._quest_deactivated_at() returns trigger
+language plpgsql set search_path = public as $$
+begin
+  if new.active is distinct from old.active then
+    new.deactivated_at := case when new.active then null else now() end;
+  elsif new.deactivated_at is distinct from old.deactivated_at then
+    new.deactivated_at := old.deactivated_at; -- no se edita a mano
+  end if;
+  return new;
+end $$;
+revoke all on function public._quest_deactivated_at() from public, anon, authenticated;
+drop trigger if exists quests_deactivated_at on public.quests;
+create trigger quests_deactivated_at before update on public.quests
+  for each row execute function public._quest_deactivated_at();
 
 create or replace function public._xp_base(p_dificultad text) returns integer
 language sql immutable as $$
@@ -116,7 +148,8 @@ language sql stable security definer set search_path = public as $$
   from public.quests q
   join public.profiles p on p.id = q.user_id
   left join public.completions c on c.user_id = p_user and c.quest_id = q.id and c.date = p_dia
-  where q.user_id = p_user and q.active and not q.is_penalty and not q.is_bonus and q.acquired_at is null
+  where q.user_id = p_user and not q.is_penalty and not q.is_bonus and q.acquired_at is null
+    and (q.active or (q.deactivated_at is not null and (q.deactivated_at at time zone public.safe_tz(p.timezone))::date >= p_dia))
     and (not public.health_row('quests', to_jsonb(q)) or public.health_consent_active(p_user))
     and extract(isodow from p_dia)::integer = any (q.days_of_week)
     and p_dia >= (q.created_at at time zone public.safe_tz(p.timezone))::date;
@@ -186,6 +219,8 @@ language sql immutable as $$
     else round(least(2, (greatest(p_xp, 0)::numeric / p_dias) / (p_base::numeric / greatest(p_dias_base, 1))), 2) end;
 $$;
 
+revoke all on function public._xp_base(text), public._indice(integer, integer), public._velocidad(integer, integer, integer, integer)
+  from public, anon;
 revoke all on function public._son_amigos(uuid, uuid), public._bloqueo_entre(uuid, uuid),
   public._marcador(uuid, date, date), public._dia_en_vivo(uuid, date), public._scorecard_al_cerrar()
   from public, anon, authenticated;
@@ -202,28 +237,79 @@ begin
   if (select count(*) from public.private_leagues where owner = u) >= 5 then
     raise exception 'Máximo 5 ligas propias' using errcode = '22023';
   end if;
+  if (select count(*) from public.private_leagues where owner = u and created_at > now() - interval '1 day') >= 3 then
+    raise exception 'Máximo 3 ligas nuevas al día' using errcode = '22023';
+  end if;
   insert into public.private_leagues(owner, name) values (u, v_name) returning id into v_id;
   insert into public.league_members(league_id, user_id) values (v_id, u);
   return v_id;
 end $$;
 
--- El dueño añade a un AMIGO suyo. Nadie entra si hay bloqueo con algún miembro.
-create or replace function public.league_add_member(p_league uuid, p_friend uuid) returns void
+-- Entrar en una liga exige CONSENTIMIENTO (revisión Chat 3, P1-3): el dueño
+-- invita a un amigo suyo y el invitado acepta; la invitación caduca a los 7
+-- días. Al aceptar se comprueba que no haya bloqueo ni suspensión con NINGÚN
+-- miembro: aceptar es consentir que los miembros vean sus métricas.
+create table if not exists public.league_invites (
+  league_id uuid not null references public.private_leagues(id) on delete cascade,
+  invitee uuid not null references auth.users(id) on delete cascade,
+  created_at timestamptz not null default now(),
+  primary key (league_id, invitee)
+);
+alter table public.league_invites enable row level security;
+revoke all on public.league_invites from anon, authenticated;
+
+create or replace function public.league_invite(p_league uuid, p_friend uuid) returns void
 language plpgsql security definer set search_path = public as $$
 declare u uuid := auth.uid();
 begin
   if u is null then raise exception 'No autenticado' using errcode = '42501'; end if;
   perform 1 from public.private_leagues where id = p_league and owner = u for update;
-  if not found then raise exception 'Solo el dueño añade miembros' using errcode = '42501'; end if;
-  if not public._son_amigos(u, p_friend) then raise exception 'Solo amigos' using errcode = '42501'; end if;
-  if exists (select 1 from public.league_members m where m.league_id = p_league and public._bloqueo_entre(m.user_id, p_friend)) then
-    raise exception 'No se puede añadir' using errcode = '42501';
+  if not found then raise exception 'Solo el dueño invita' using errcode = '42501'; end if;
+  if not public._son_amigos(u, p_friend) or not public._pareja_ok(u, p_friend) then
+    raise exception 'Solo amigos' using errcode = '42501';
+  end if;
+  if public._es_miembro(p_league, p_friend) then return; end if;
+  if (select count(*) from public.league_members where league_id = p_league)
+     + (select count(*) from public.league_invites where league_id = p_league and created_at > now() - interval '7 days') >= 20 then
+    raise exception 'La liga está llena (20)' using errcode = '22023';
+  end if;
+  insert into public.league_invites(league_id, invitee) values (p_league, p_friend)
+    on conflict (league_id, invitee) do update set created_at = now();
+end $$;
+
+create or replace function public.league_accept(p_league uuid) returns void
+language plpgsql security definer set search_path = public as $$
+declare u uuid := auth.uid();
+begin
+  if u is null then raise exception 'No autenticado' using errcode = '42501'; end if;
+  delete from public.league_invites where league_id = p_league and invitee = u and created_at > now() - interval '7 days';
+  if not found then raise exception 'Invitación no disponible' using errcode = '42501'; end if;
+  perform 1 from public.private_leagues where id = p_league for update;
+  if exists (select 1 from public.league_members m where m.league_id = p_league and not public._pareja_ok(m.user_id, u)) then
+    raise exception 'No se puede entrar' using errcode = '42501';
   end if;
   if (select count(*) from public.league_members where league_id = p_league) >= 20 then
     raise exception 'La liga está llena (20)' using errcode = '22023';
   end if;
-  insert into public.league_members(league_id, user_id) values (p_league, p_friend) on conflict do nothing;
+  insert into public.league_members(league_id, user_id) values (p_league, u) on conflict do nothing;
 end $$;
+
+create or replace function public.league_decline(p_league uuid) returns void
+language sql security definer set search_path = public as $$
+  delete from public.league_invites where league_id = p_league and invitee = auth.uid();
+$$;
+
+-- Mis invitaciones vigentes: nombre de la liga y alias aprobado de quien invita.
+create or replace function public.my_league_invites()
+returns table (league_id uuid, nombre text, de text, caduca timestamptz)
+language sql stable security definer set search_path = public as $$
+  select i.league_id, left(regexp_replace(pl.name, '[\r\n\t]', ' ', 'g'), 40),
+         public.social_public_name(pl.owner), i.created_at + interval '7 days'
+  from public.league_invites i join public.private_leagues pl on pl.id = i.league_id
+  where i.invitee = auth.uid() and i.created_at > now() - interval '7 days'
+    and public._pareja_ok(pl.owner, auth.uid())
+  order by i.created_at desc limit 20;
+$$;
 
 create or replace function public.league_leave(p_league uuid) returns void
 language plpgsql security definer set search_path = public as $$
@@ -244,16 +330,19 @@ language plpgsql stable security definer set search_path = public as $$
 declare u uuid := auth.uid();
 begin
   if u is null then raise exception 'No autenticado' using errcode = '42501'; end if;
-  if not exists (select 1 from public.league_members where league_id = p_league and user_id = u) then
+  if not public._es_miembro(p_league, u) then
     raise exception 'No eres de esta liga' using errcode = '42501';
   end if;
   return query
   with m as (
-    select lm.user_id, p.name, p.avatar_url, p.social_visible,
+    select lm.user_id,
+      case when lm.user_id = u then p.name else public.social_public_name(lm.user_id) end as name,
+      case when lm.user_id = u then p.avatar_url when r.status = 'approved' and r.approved_avatar = p.avatar_url then p.avatar_url end as avatar_url,
       (now() at time zone public.safe_tz(p.timezone))::date as hoy,
       date_trunc('week', (now() at time zone public.safe_tz(p.timezone)))::date as lunes
     from public.league_members lm join public.profiles p on p.id = lm.user_id
-    where lm.league_id = p_league and (lm.user_id = u or not public._bloqueo_entre(u, lm.user_id))
+    left join public.social_profile_reviews r on r.user_id = lm.user_id
+    where lm.league_id = p_league and (lm.user_id = u or (p.social_visible and public._pareja_ok(u, lm.user_id)))
     limit 20
   )
   select m.user_id = u, left(m.name, 40),
@@ -270,26 +359,22 @@ end $$;
 -- de otros, nombre acotado. Como mucho 10 ligas.
 create or replace function public.my_league_standing()
 returns table (league_id uuid, nombre text, puesto integer, miembros integer, indice integer, velocidad numeric)
-language plpgsql volatile security definer set search_path = public as $$
-declare u uuid := auth.uid(); l record; yo record; v_n integer; v_delante integer;
+language plpgsql stable security definer set search_path = public as $$
+declare u uuid := auth.uid(); l record;
 begin
   if u is null then raise exception 'No autenticado' using errcode = '42501'; end if;
-  for l in select pl.id, left(regexp_replace(pl.name, '[\r\n\t]', ' ', 'g'), 40) as nombre
+  for l in select pl.id, left(regexp_replace(pl.name, '[
+
+	]', ' ', 'g'), 40) as nombre
            from public.private_leagues pl join public.league_members lm on lm.league_id = pl.id and lm.user_id = u
            order by pl.created_at limit 10 loop
-    -- El tablero se calcula UNA vez por liga.
-    create temp table if not exists _tablero (es_yo boolean, indice integer, velocidad numeric, dias_activos integer, sin_datos boolean) on commit drop;
-    delete from _tablero;
-    insert into _tablero select b.es_yo, b.indice, b.velocidad, b.dias_activos, b.sin_datos from public.league_board(l.id) b;
-    select * into yo from _tablero t where t.es_yo limit 1;
-    select count(*)::integer into v_n from _tablero;
-    select count(*)::integer into v_delante from _tablero t
-      where not t.es_yo and not t.sin_datos and not coalesce(yo.sin_datos, true)
-        and (t.indice, t.velocidad, t.dias_activos) > (yo.indice, yo.velocidad, yo.dias_activos);
-    league_id := l.id; nombre := l.nombre; miembros := v_n;
-    puesto := case when coalesce(yo.sin_datos, true) then 0 else v_delante + 1 end;
-    indice := yo.indice; velocidad := yo.velocidad;
-    return next;
+    return query
+    with b as materialized (select * from public.league_board(l.id)),
+         y as (select * from b where b.es_yo)
+    select l.id, l.nombre::text,
+      (1 + count(*) filter (where not b.sin_datos and (b.indice, b.velocidad, b.dias_activos) > (y.indice, y.velocidad, y.dias_activos)))::integer,
+      count(*)::integer, max(y.indice), max(y.velocidad)
+    from b cross join y;
   end loop;
 end $$;
 
@@ -300,11 +385,14 @@ language plpgsql security definer set search_path = public as $$
 declare u uuid := auth.uid(); v_id uuid; v_lunes date;
 begin
   if u is null then raise exception 'No autenticado' using errcode = '42501'; end if;
-  if not public._son_amigos(u, p_opponent) or public._bloqueo_entre(u, p_opponent) then
+  if not public._son_amigos(u, p_opponent) or not public._pareja_ok(u, p_opponent) then
     raise exception 'Solo entre amigos' using errcode = '42501';
   end if;
   if (select count(*) from public.duels where challenger = u and status = 'pending') >= 3 then
     raise exception 'Máximo 3 retos pendientes' using errcode = '22023';
+  end if;
+  if (select count(*) from public.duels where u in (challenger, opponent) and status in ('pending', 'accepted')) >= 5 then
+    raise exception 'Máximo 5 duelos activos' using errcode = '22023';
   end if;
   select date_trunc('week', (now() at time zone public.safe_tz(p.timezone)))::date into v_lunes
     from public.profiles p where p.id = u;
@@ -320,12 +408,19 @@ declare u uuid := auth.uid();
 begin
   if u is null then raise exception 'No autenticado' using errcode = '42501'; end if;
   update public.duels set status = case when p_accept then 'accepted' else 'declined' end
-    where id = p_duel and opponent = u and status = 'pending';
+    where id = p_duel and opponent = u and status = 'pending' and public._pareja_ok(challenger, opponent);
   if not found then raise exception 'Duelo no disponible' using errcode = '42501'; end if;
 end $$;
 
 -- Mis duelos con el marcador en vivo; al pasar la semana se resuelve una sola
 -- vez (result idempotente). Gana la disciplina, desempatan los días activos.
+create or replace function public._duelos_anular_bloqueados(u uuid) returns void
+language sql security definer set search_path = public as $$
+  update public.duels set status = 'cancelled', result = jsonb_build_object('retador', 'anulado')
+  where u in (challenger, opponent) and status in ('pending', 'accepted') and not public._pareja_ok(challenger, opponent);
+$$;
+revoke all on function public._duelos_anular_bloqueados(uuid) from public, anon, authenticated;
+
 create or replace function public.my_duels()
 returns table (id uuid, soy_retador boolean, rival text, week_start date, status text,
                mi_indice integer, su_indice integer, mis_dias integer, sus_dias integer, resultado text)
@@ -333,13 +428,14 @@ language plpgsql security definer set search_path = public as $$
 declare u uuid := auth.uid(); d record; a record; b record; ia integer; ib integer; r text;
 begin
   if u is null then raise exception 'No autenticado' using errcode = '42501'; end if;
+  perform public._duelos_anular_bloqueados(u);
   for d in select * from public.duels x where u in (x.challenger, x.opponent)
            and x.week_start >= (now()::date - 35) order by x.week_start desc limit 20 loop
     select * into a from public._marcador(u, d.week_start, d.week_start + 6);
     select * into b from public._marcador(case when d.challenger = u then d.opponent else d.challenger end, d.week_start, d.week_start + 6);
     ia := public._indice(a.cumplidas_xp, a.programadas_xp); ib := public._indice(b.cumplidas_xp, b.programadas_xp);
     r := null;
-    if d.status in ('accepted', 'done') and now()::date > d.week_start + 7 then
+    if d.status in ('accepted', 'done') and public._pareja_ok(d.challenger, d.opponent) and now()::date > d.week_start + 7 then
       r := case when a.programadas_xp < 150 or b.programadas_xp < 150 then 'sin_datos'
                 when ia > ib then 'gano' when ia < ib then 'pierdo'
                 when a.dias_activos > b.dias_activos then 'gano' when a.dias_activos < b.dias_activos then 'pierdo'
@@ -353,17 +449,17 @@ begin
       end if;
     end if;
     id := d.id; soy_retador := d.challenger = u;
-    rival := (select left(p.name, 40) from public.profiles p where p.id = case when d.challenger = u then d.opponent else d.challenger end);
+    rival := (select case when public._pareja_ok(d.challenger, d.opponent) then public.social_public_name(p.id) end from public.profiles p where p.id = case when d.challenger = u then d.opponent else d.challenger end);
     week_start := d.week_start; status := d.status; mi_indice := ia; su_indice := ib;
     mis_dias := a.dias_activos; sus_dias := b.dias_activos; resultado := r;
     return next;
   end loop;
 end $$;
 
-revoke all on function public.league_create(text), public.league_add_member(uuid, uuid), public.league_leave(uuid),
+revoke all on function public.league_create(text), public.league_invite(uuid, uuid), public.league_accept(uuid), public.league_decline(uuid), public.my_league_invites(), public.league_leave(uuid),
   public.league_board(uuid), public.my_league_standing(), public.duel_challenge(uuid), public.duel_respond(uuid, boolean),
   public.my_duels() from public, anon;
-grant execute on function public.league_create(text), public.league_add_member(uuid, uuid), public.league_leave(uuid),
+grant execute on function public.league_create(text), public.league_invite(uuid, uuid), public.league_accept(uuid), public.league_decline(uuid), public.my_league_invites(), public.league_leave(uuid),
   public.league_board(uuid), public.my_league_standing(), public.duel_challenge(uuid), public.duel_respond(uuid, boolean),
   public.my_duels() to authenticated;
 

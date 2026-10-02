@@ -48,14 +48,12 @@ begin
     from public.completions c join public.quests q on q.id = c.quest_id and not q.is_penalty
     where c.user_id = u;
   v_rango := public._rango_merecido(coalesce(v_nivel, 1), coalesce(v_dias, 0));
-  perform set_config('nivl.sync_rank', 'on', true);
   foreach r in array v_orden loop
     exit when array_position(array['E','D','C','B','A','S'], r) > array_position(array['E','D','C','B','A','S'], v_rango);
     insert into public.achievements(user_id, code) values (u, 'rango_' || r)
       on conflict (user_id, code) do nothing;
     if found then v_nuevos := v_nuevos || ('rango_' || r); end if;
   end loop;
-  perform set_config('nivl.sync_rank', 'off', true);
   return jsonb_build_object(
     'rango', coalesce((select (array['E','D','C','B','A','S'])[max(array_position(array['E','D','C','B','A','S'], substr(a.code, 7)))]
                         from public.achievements a where a.user_id = u and a.code ~ '^rango_[DCBAS]$'), 'E'),
@@ -67,13 +65,13 @@ revoke all on function public.sync_rank() from public, anon;
 grant execute on function public.sync_rank() to authenticated;
 revoke all on function public._nivel_de_xp(integer), public._rango_merecido(integer, integer) from public, anon, authenticated;
 
--- El cliente ya no puede escribir `rango_%`: solo sync_rank (bandera de sesión
--- local a la transacción). El resto de logros sigue como estaba.
+-- El cliente ya no puede escribir `rango_%`: el trigger es INVOKER y mira
+-- current_user (revisión Chat 3: una bandera de sesión la puede poner
+-- cualquiera). sync_rank es security definer y escribe como su dueño.
 create or replace function public._achievements_rango_guard() returns trigger
-language plpgsql security definer set search_path = public as $$
+language plpgsql set search_path = public as $$
 begin
-  if new.code like 'rango\_%' escape '\' and coalesce(current_setting('nivl.sync_rank', true), 'off') <> 'on'
-     and coalesce(auth.role(), '') = 'authenticated' then
+  if new.code like 'rango\_%' escape '\' and current_user in ('authenticated', 'anon') then
     raise exception 'El rango lo registra el servidor' using errcode = '42501';
   end if;
   return new;
