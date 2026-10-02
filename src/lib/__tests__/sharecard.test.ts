@@ -16,7 +16,7 @@ import {
 } from '../sharecard';
 import { DOMINIO_NIVL, URL_NIVL } from '../socialmath';
 
-const todo: OpcionesTarjeta = { mostrarNombre: true, mostrarFotos: true, mostrarPeso: true };
+const todo: OpcionesTarjeta = { mostrarNombre: true, mostrarFotos: true, mostrarPeso: true, incluirInvitacion: true };
 const progreso: Tarjeta = {
   tipo: 'antesDespues',
   antes: { uri: 'file:///cache/a.jpg', fecha: '2026-07-01' },
@@ -151,16 +151,20 @@ describe('archivo y enlace', () => {
     expect(nombreArchivo({ tipo: 'racha', dias: 3 }, 'stories', 'png', 'x')).toBe('nivl-racha-hoy-stories.png');
   });
 
-  it('enlace con código válido lleva a la invitación', () => {
-    expect(enlace('abcd2345')).toBe(`${URL_NIVL}/c/ABCD2345`);
-    expect(enlace('ab')).toBe(URL_NIVL);
-    expect(enlace('../x')).toBe(URL_NIVL);
-    expect(enlace(null)).toBe(URL_NIVL);
+  it('el código de invitación solo sale si se elige', () => {
+    expect(enlace('abcd2345')).toBe(URL_NIVL);
+    expect(enlace('abcd2345', true)).toBe(`${URL_NIVL}/c/ABCD2345`);
+    expect(enlace('ab', true)).toBe(URL_NIVL);
+    expect(enlace('../x', true)).toBe(URL_NIVL);
+    expect(enlace(null, true)).toBe(URL_NIVL);
   });
 
   it('el mensaje lleva el titular y el enlace', () => {
     expect(mensaje({ tipo: 'nivel', nivel: 7 })).toBe(`Nivel 7 en NIVL. ${URL_NIVL}`);
     expect(mensaje({ tipo: 'logro', titulo: 'Primer paso' }, OPCIONES_POR_DEFECTO, 'ABCD2345')).toBe(
+      `Logro desbloqueado: Primer paso en NIVL. ${URL_NIVL}`,
+    );
+    expect(mensaje({ tipo: 'logro', titulo: 'Primer paso' }, todo, 'ABCD2345')).toBe(
       `Logro desbloqueado: Primer paso en NIVL. ${URL_NIVL}/c/ABCD2345`,
     );
   });

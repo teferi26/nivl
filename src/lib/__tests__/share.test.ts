@@ -87,7 +87,7 @@ test('un doble toque no abre dos hojas', async () => {
 test('sin hoja de compartir, comparte solo el texto con el enlace', async () => {
   jest.mocked(Sharing.isAvailableAsync).mockResolvedValueOnce(false);
   const share = jest.spyOn(Share, 'share').mockResolvedValue({ action: 'sharedAction' });
-  await expect(compartirTarjeta({ ...base, codigoAmigo: 'ABCD2345' })).resolves.toBe('solo-texto');
+  await expect(compartirTarjeta({ ...base, codigoAmigo: 'ABCD2345', opciones: { ...OPCIONES_POR_DEFECTO, incluirInvitacion: true } })).resolves.toBe('solo-texto');
   expect(share).toHaveBeenCalledWith({ message: expect.stringContaining('/c/ABCD2345') });
   expect(captureRef).not.toHaveBeenCalled();
   expect(mockDelete).not.toHaveBeenCalled();

@@ -66,12 +66,15 @@ export interface OpcionesTarjeta {
   mostrarFotos: boolean;
   /** Peso (y su diferencia): dato de salud. */
   mostrarPeso: boolean;
+  /** Añadir el enlace de invitación con el código de amigo (nivl.app/c/CODIGO). */
+  incluirInvitacion: boolean;
 }
 
 export const OPCIONES_POR_DEFECTO: OpcionesTarjeta = Object.freeze({
   mostrarNombre: false,
   mostrarFotos: false,
   mostrarPeso: false,
+  incluirInvitacion: false,
 });
 
 export interface Lienzo {
@@ -239,10 +242,13 @@ export function nombreArchivo(t: Tarjeta, formato: FormatoTarjeta, extension: 'p
   return `nivl-${tipo}-${fecha}-${formato}.${extension}`;
 }
 
-/** Enlace que acompaña a la tarjeta: con código de amigo lleva a la invitación. */
-export function enlace(codigoAmigo?: string | null): string {
+/**
+ * Enlace que acompaña a la tarjeta. Solo lleva a la invitación (con el código
+ * de amigo) si el usuario lo ha elegido; si no, la web a secas.
+ */
+export function enlace(codigoAmigo?: string | null, incluirInvitacion = false): string {
   const codigo = (codigoAmigo ?? '').trim().toUpperCase();
-  return /^[A-Z0-9]{4,12}$/.test(codigo) ? `${URL_NIVL}/c/${codigo}` : URL_NIVL;
+  return incluirInvitacion && /^[A-Z0-9]{4,12}$/.test(codigo) ? `${URL_NIVL}/c/${codigo}` : URL_NIVL;
 }
 
 /** Texto que viaja con la imagen en la hoja del sistema (y solo él si no hay imagen). */
@@ -250,5 +256,5 @@ export function mensaje(t: Tarjeta, opciones: OpcionesTarjeta = OPCIONES_POR_DEF
   const x = textos(t, opciones);
   const titular = x.titular.charAt(0) + x.titular.slice(1).toLowerCase();
   const cuerpo = t.tipo === 'logro' ? `${x.antetitulo.charAt(0)}${x.antetitulo.slice(1).toLowerCase()}: ${x.titular}` : titular;
-  return `${cuerpo} en NIVL. ${enlace(codigoAmigo)}`;
+  return `${cuerpo} en NIVL. ${enlace(codigoAmigo, opciones.incluirInvitacion)}`;
 }
