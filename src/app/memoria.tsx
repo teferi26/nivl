@@ -23,6 +23,7 @@ import {
   Tag,
   volver,
 } from '@/components/ui';
+import { SIN_DATO } from '@/components/ui/sinDato';
 import {
   fetchDossier,
   fetchFacts,
@@ -133,7 +134,7 @@ export default function MemoriaScreen() {
             <StatRow>
               <Stat value={hechos.length} label="Hechos" />
               <Stat value={`v${dossier?.version ?? 0}`} label="Dossier" />
-              <Stat value={gasto === null ? '—' : gasto.toFixed(2).replace('.', ',')} unit={gasto === null ? undefined : '$'} label="Este mes" />
+              <Stat value={gasto === null ? SIN_DATO : gasto.toFixed(2).replace('.', ',')} unit={gasto === null ? undefined : '$'} label="Este mes" />
             </StatRow>
           </Card>
         </FadeIn>

@@ -45,6 +45,7 @@ import {
   StatRow,
   Tag,
 } from '@/components/ui';
+import { SIN_DATO } from '@/components/ui/sinDato';
 import { useCelebracion } from '@/components/celebracion/contexto';
 import { Interruptor } from '@/components/ui/Interruptor';
 import { vibrar } from '@/design/haptics';
@@ -170,8 +171,11 @@ function ListaRanking({
             style={b.isMe ? styles.miFila : undefined}
             leading={
               <View style={styles.puesto}>
-                <Text style={[styles.puestoTexto, c.posicion === 1 && c.valor !== null && styles.oro]}>
-                  {c.valor === null ? '—' : etiquetaPosicion(c.posicion)}
+                <Text
+                  style={[styles.puestoTexto, c.posicion === 1 && c.valor !== null && styles.oro]}
+                  accessibilityLabel={c.valor === null ? 'sin puesto' : undefined}
+                >
+                  {c.valor === null ? SIN_DATO : etiquetaPosicion(c.posicion)}
                 </Text>
                 <Avatar
                   size={40}

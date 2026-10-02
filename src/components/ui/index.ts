@@ -14,6 +14,7 @@ export { Eyebrow, Screen, ScreenHeader, volver } from './Screen';
 export { Rule, Section } from './Section';
 export { Sheet } from './Sheet';
 export { Skeleton, SkeletonRows } from './Skeleton';
+export { LEIDO_SIN_DATO, SIN_DATO } from './sinDato';
 export { Stat, StatRow } from './Stat';
 export { TabBar } from './TabBar';
 export { Grano, Trama } from './Texture';

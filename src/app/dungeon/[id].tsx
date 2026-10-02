@@ -26,6 +26,7 @@ import {
   Tag,
   volver,
 } from '@/components/ui';
+import { SIN_DATO } from '@/components/ui/sinDato';
 import { confirmar } from '@/components/ui/confirmar';
 import { vibrar } from '@/design/haptics';
 import { ink } from '@/design/tokens';
@@ -64,7 +65,7 @@ import { mensajeSistema } from '@/lib/validation';
  * sube el dato a blanco puro.
  */
 function plazo(fecha: string | null): { valor: string; label: string; urgente: boolean; vencida: boolean } {
-  if (!fecha) return { valor: '—', label: 'Sin fecha', urgente: false, vencida: false };
+  if (!fecha) return { valor: SIN_DATO, label: 'Sin fecha', urgente: false, vencida: false };
   const hoy = new Date();
   hoy.setHours(0, 0, 0, 0);
   const objetivo = new Date(`${fecha}T00:00:00`);
@@ -386,7 +387,7 @@ export default function DungeonDetail() {
               <ProgressRing ratio={ratio} size={84} stroke={5} sublabel={cleared ? 'despejada' : 'hecho'} />
               <StatRow style={styles.stats}>
                 <Stat value={`${done}/${tasks.length}`} label="Tareas" size="sm" />
-                <Stat value={bosses.length > 0 ? `${bossesDone}/${bosses.length}` : '—'} label="Jefes" size="sm" />
+                <Stat value={bosses.length > 0 ? `${bossesDone}/${bosses.length}` : SIN_DATO} label="Jefes" size="sm" />
                 <Stat value={fecha.valor} label={fecha.label} size="sm" tone={active && fecha.urgente ? 'accent' : 'text'} />
               </StatRow>
             </View>

@@ -10,6 +10,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { StyleSheet, Text, View } from 'react-native';
 import { TrendLine } from '@/components/TrendLine';
 import { Card } from '@/components/ui';
+import { SIN_DATO } from '@/components/ui/sinDato';
 import { MIN_DATOS_MEDIA, formatoDecimal, type ResumenTendencia } from '@/lib/journalmath';
 import { colors, fonts } from '@/lib/theme';
 
@@ -76,13 +77,13 @@ export function MoodTrend({ resumen, animo, energia, width }: Props) {
       <View style={styles.cifras}>
         <Cifra
           rotulo="Ánimo · 7 días"
-          valor={a.actual === null ? '—' : formatoDecimal(a.actual)}
+          valor={a.actual === null ? SIN_DATO : formatoDecimal(a.actual)}
           delta={a.delta}
           leido={leidoAnimo}
         />
         <Cifra
           rotulo="Sueño · 7 días"
-          valor={sueno.actual === null ? '—' : formatoDecimal(sueno.actual)}
+          valor={sueno.actual === null ? SIN_DATO : formatoDecimal(sueno.actual)}
           unidad={sueno.actual === null ? undefined : 'h'}
           delta={sueno.delta}
           leido={

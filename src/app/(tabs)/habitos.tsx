@@ -24,6 +24,7 @@ import {
   StatRow,
   useAlVolver,
 } from '@/components/ui';
+import { SIN_DATO } from '@/components/ui/sinDato';
 import { confirmar } from '@/components/ui/confirmar';
 import { vibrar } from '@/design/haptics';
 import { sincronizarRango } from '@/lib/achievements';
@@ -384,7 +385,7 @@ export default function Habitos() {
                     title={q.title}
                     muted
                     detail="Ya no se te pide. Mantén pulsado para volver a exigirlo."
-                    trailing={<RowValue tone="accent">{q.acquired_streak ?? '—'} d</RowValue>}
+                    trailing={<RowValue tone="accent">{q.acquired_streak == null ? SIN_DATO : `${q.acquired_streak} d`}</RowValue>}
                     onLongPress={() => reactivar(q)}
                     accessibilityLabel={`${q.title}, adquirido. Mantén pulsado para volver a exigirlo.`}
                   />

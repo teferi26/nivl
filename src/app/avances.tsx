@@ -32,6 +32,7 @@ import {
   Stat,
   StatRow,
 } from '@/components/ui';
+import { SIN_DATO } from '@/components/ui/sinDato';
 import { avisar, confirmar } from '@/components/ui/confirmar';
 import { volver } from '@/components/ui/Screen';
 import { useAuth } from '@/lib/auth';
@@ -271,7 +272,7 @@ export default function Avances() {
         {health.accepted ? <FadeIn index={1}>
           <Card>
             <StatRow>
-              <Stat value={latestWeight ?? '—'} unit={latestWeight === null ? undefined : 'kg'} label="Peso" size="lg" />
+              <Stat value={latestWeight ?? SIN_DATO} unit={latestWeight === null ? undefined : 'kg'} label="Peso" size="lg" />
               <Stat value={activeGoals.length} label="Metas" />
               <Stat value={achievedGoals.length} label="Logradas" tone={achievedGoals.length > 0 ? 'gold' : 'text'} />
               <Stat value={prs.length} label="Récords" />

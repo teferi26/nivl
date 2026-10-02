@@ -6,6 +6,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { useEffect, useRef, type ReactNode } from 'react';
 import { ActivityIndicator, Animated, Pressable, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 import { colors, fonts } from '@/lib/theme';
+import { LEIDO_SIN_DATO, SIN_DATO } from './sinDato';
 
 interface CheckProps {
   checked: boolean;
@@ -166,7 +167,14 @@ export function Row({
 export function RowValue({ children, tone = 'dim', strong }: { children: ReactNode; tone?: 'dim' | 'accent' | 'gold' | 'red' | 'steel'; strong?: boolean }) {
   const color =
     tone === 'accent' ? colors.accent : tone === 'gold' ? colors.gold : tone === 'red' ? colors.red : tone === 'steel' ? colors.steel : colors.textFaint;
-  return <Text style={[styles.value, { color }, strong && styles.valueStrong]}>{children}</Text>;
+  return (
+    <Text
+      style={[styles.value, { color }, strong && styles.valueStrong]}
+      accessibilityLabel={children === SIN_DATO ? LEIDO_SIN_DATO : undefined}
+    >
+      {children}
+    </Text>
+  );
 }
 
 const styles = StyleSheet.create({

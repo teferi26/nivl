@@ -14,6 +14,7 @@ import { useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Avatar, Button, Card, Chip, ChipWrap, confirmar, Row, Section, Sheet } from '@/components/ui';
+import { SIN_DATO } from '@/components/ui/sinDato';
 import { vibrar } from '@/design/haptics';
 import { ink } from '@/design/tokens';
 import {
@@ -713,7 +714,7 @@ function LigaSheet({
               style={f.es_yo ? styles.miFila : undefined}
               leading={
                 <View style={styles.puesto}>
-                  <Text style={styles.puestoTexto}>{f.puesto > 0 ? `${f.puesto}.º` : '—'}</Text>
+                  <Text style={styles.puestoTexto}>{f.puesto > 0 ? `${f.puesto}.º` : SIN_DATO}</Text>
                   <Avatar size={32} avatarPath={f.retrato} name={f.alias} rank={null} />
                 </View>
               }
@@ -723,7 +724,7 @@ function LigaSheet({
                   ? 'Aún sin datos esta semana'
                   : `${f.dias_activos} días activos · ritmo ×${Number(f.velocidad).toFixed(1).replace('.', ',')}`
               }
-              trailing={<Text style={styles.indice}>{f.sin_datos ? '—' : f.indice}</Text>}
+              trailing={<Text style={styles.indice}>{f.sin_datos ? SIN_DATO : f.indice}</Text>}
               accessibilityLabel={`${f.puesto > 0 ? `Puesto ${f.puesto}` : 'Sin puesto'}. ${f.es_yo ? 'Tú' : f.alias}. ${
                 f.sin_datos ? 'Aún sin datos esta semana' : `Disciplina ${f.indice}, ${f.dias_activos} días activos`
               }.`}

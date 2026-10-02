@@ -837,7 +837,7 @@ export default function Gym() {
                   value={exWeight}
                   onChangeText={setExWeight}
                   keyboardType="decimal-pad"
-                  placeholder="—"
+                  placeholder="-"
                   placeholderTextColor={colors.textFaint}
                   accessibilityLabel="Peso de referencia en kilos"
                 />
