@@ -82,7 +82,7 @@ Se graba **en una sola toma** (unos 6–9 minutos) con la grabación de pantalla
 |---|---|---|
 | 0 Identificación (opcional) | Ajustes → General → Información (modelo e iOS, sin número de serie ni IMEI) y la ficha de TestFlight con «1.0.7 ([BUILD])» | Ficha |
 | 1 Lanzamiento | Pantalla de inicio → icono → carga → Acceso | O-01 / A1 |
-| 2 Registro y login | «CREAR CUENTA» con D (contraseña oculta) → casilla de términos → «Crear cuenta Franky» → confirmación. Cerrar sesión y volver a entrar con D. Enseñar, sin usarlo, «¿Cuenta antigua de NIVL? Entrar con ella» | O-02 / A2, O-03 / A3 (parcial) |
+| 2 Registro y login | «CREAR CUENTA» → NOMBRE, CORREO, CONTRASEÑA, REPITE LA CONTRASEÑA (contraseña oculta) → casilla de Términos/Privacidad → «CREAR CUENTA» → aviso → enlace del correo en el MISMO iPhone → «CONFIRMAR CUENTA» → entra solo. Cerrar sesión → «ENTRAR» con correo y contraseña → «ENTRAR» (guion del Chat 1 @c1c6a58; rótulos del Chat 4 @09a6b99) | O-02 / A2, O-03 / A3 |
 | 3 Flujo típico | Edad y onboarding → crear misión o hábito → completarlo en Hoy (XP y racha) → Hábitos, campaña, evento de Agenda → módulo de salud: casilla desmarcada → «Ahora no» → todo sigue funcionando → Perfil → «Salud y bienestar» → «Revisar permiso de salud» → marcar → «Aceptar y activar salud» | O-06, O-07 / A4, O-04, O-05 / A5 |
 | 4 Coach e IA | «NIVL Pro» → «Probar el coach 7 días» si corresponde → consentimiento de IA → «Acepto y activo el coach» → Coach: «Ayúdame a organizar mi día de mañana» → respuesta | O-05, O-12 / A5 |
 | 5 Suscripciones | **Siempre desde Perfil → «NIVL Pro» (/pro)**, no desde el onboarding. Comprobación previa sin grabar: si aparece «Algún plan no está disponible…», es FAIL de A6 y NO se graba. Los **cinco planes** (Pro mensual y anual; Élite mensual, anual y fundador), unos 2 s cada uno → renovación automática y aviso de energía → abrir **Términos** y volver → abrir **Privacidad** y volver → compra sandbox → acceso activo en NIVL → «Restaurar compras» | O-09 / A6, O-08 / A7, O-10 / A8 (sin reinstalar) |
@@ -158,3 +158,4 @@ Casos que coinciden con otros de la lista:
   - PAY-03 y PAY-13 son **P0 para el lanzamiento en Android** (doble cobro en Play) y P1 en iOS.
   - PAY-21 sube a P1 (Apple 2.3.10).
   - PAY-01 se graba en la build que lleve el paywall empaquetado. Si llega por OTA, el primer arranque muestra el paywall antiguo: se graba después del segundo arranque y se anota.
+- **A2/A3 sin Franky (Chat 4 @09a6b99, guion del Chat 1 @c1c6a58):** se han actualizado los rótulos. Se añade **A3b** (recuperar contraseña, P1), que no sale en el vídeo pero que un revisor puede tocar.
