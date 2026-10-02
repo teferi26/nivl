@@ -11,6 +11,7 @@
 import { fetch as streamingFetch } from 'expo/fetch';
 import type { Slide } from './photos';
 import { supabase } from './supabase';
+import { dateKey } from './dates';
 import { requireHealthConsent } from './health';
 import { ErrorVisible } from './validation';
 
@@ -223,6 +224,10 @@ export async function streamCoach(opts: {
       message: opts.message,
       thread_id: opts.threadId,
       imagenes: opts.imagenes,
+      // El "hoy" del móvil (su zona horaria). Sin él, el servidor vivía en la
+      // fecha UTC y de 00:00 a 02:00 en Madrid el coach miraba el día de ayer:
+      // negaba la sesión que acababas de registrar.
+      date: dateKey(),
     }),
   });
 
@@ -302,7 +307,7 @@ export async function runRitual(kind: CoachKind, message = ''): Promise<string> 
   const res = await fetch(functionsUrl(), {
     method: 'POST',
     headers: await authHeaders(),
-    body: JSON.stringify({ kind, message, stream: false }),
+    body: JSON.stringify({ kind, message, stream: false, date: dateKey() }),
   });
   if (!res.ok) throw await errorDe(res);
   const body = (await res.json().catch(() => ({}))) as { text?: string };
@@ -321,7 +326,7 @@ export async function generarResumen(
   const res = await fetch(functionsUrl(), {
     method: 'POST',
     headers: await authHeaders(),
-    body: JSON.stringify({ kind: 'resumen', periodo }),
+    body: JSON.stringify({ kind: 'resumen', periodo, date: dateKey() }),
   });
   if (!res.ok) throw await errorDe(res);
   const body = (await res.json().catch(() => ({}))) as {
@@ -441,6 +446,7 @@ const ACCION_LEGIBLE: Record<string, string> = {
   fijar_ficha: 'ha actualizado tu ficha física',
   escribir_diario: 'ha escrito en tu diario',
   consultar_historial: 'ha consultado tu historial',
+  consultar_dia: 'ha comprobado lo registrado ese día',
 };
 
 export function describeAction(name: string): string {

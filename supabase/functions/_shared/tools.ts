@@ -9,6 +9,7 @@
 // de la tabla de game.ts (10/25/50/100/250). Así no puede inflar el nivel.
 
 import type { Db } from './db.ts';
+import { leerDiaYAnterior } from './comprobacion.ts';
 
 const STATS = ['FUE', 'VIT', 'INT', 'AGI', 'PER'];
 
@@ -468,7 +469,7 @@ export const TOOL_DEFS = [
 
   tool(
     'consultar_historial',
-    'Consulta datos que no vienen en el estado inicial. Úsala cuando necesites comprobar algo concreto antes de afirmarlo: si de verdad falló una misión, cuánto levantó hace un mes, qué pesaba en enero, cuánto se gastó en algo. No la uses para lo que ya tienes delante.',
+    'Consulta datos que no vienen en el estado inicial. Úsala cuando necesites comprobar algo concreto antes de afirmarlo: si de verdad falló una misión, cuánto levantó hace un mes, qué pesaba en enero, cuánto se gastó en algo. Úsala para comprobar lo que el gladiador dice haber hecho. Devuelve lo más reciente primero.',
     {
       que: enumOf(
         ['completadas', 'eventos', 'peso', 'gym', 'cardio', 'nutricion', 'comidas', 'diario', 'reglas_rotas', 'hechos', 'movimientos'],
@@ -477,6 +478,16 @@ export const TOOL_DEFS = [
       desde: str('YYYY-MM-DD'),
       hasta: str('YYYY-MM-DD'),
       filtro: opt('Texto de filtro, p. ej. nombre de ejercicio'),
+    },
+  ),
+
+  // Solo lectura. La comprobación de «te he subido el gym»: antes de afirmar O
+  // NEGAR que algo se registró, se mira aquí (L1, ver comprobacion.ts).
+  tool(
+    'consultar_dia',
+    'Lo registrado en una fecha y en la anterior: sesiones de gimnasio con sus series (kg×reps, también peso corporal), cardio, peso, parte de comidas, si hay diario y las misiones completadas. Solo lee. Llámala SIEMPRE que diga que ha hecho o registrado algo, antes de contestarle, y cita lo que veas (ejercicio, kg×reps, fecha). Si no aparece, dile qué fechas has mirado y pregúntale dónde lo registró.',
+    {
+      fecha: opt('YYYY-MM-DD; vacía = hoy'),
     },
   ),
 ];
@@ -1493,7 +1504,8 @@ export async function executeTool(
           .eq('user_id', userId)
           .gte('date', desde)
           .lte('date', hasta)
-          .order('date');
+          .order('date', { ascending: false })
+          .limit(LIMIT);
         if (e1) throw e1;
         if (!sesiones?.length) return ok(`Sin sesiones de gimnasio entre ${desde} y ${hasta}.`);
 
@@ -1516,9 +1528,13 @@ export async function executeTool(
             reps: l.reps,
             rpe: l.rpe,
           }))
-          .sort((a, b) => String(a.fecha).localeCompare(String(b.fecha)) || a.serie - b.serie);
+          // Lo más reciente primero: el recorte de abajo corta por el final, y
+          // antes se perdía justo lo de hoy, que es lo que se viene a comprobar.
+          .sort((a, b) => String(b.fecha).localeCompare(String(a.fecha)) || a.serie - b.serie);
 
         const notas = (sesiones as { date: string; notes: string | null }[])
+          .slice()
+          .sort((a, b) => b.date.localeCompare(a.date))
           .filter((x) => x.notes)
           .map((x) => `${x.date}: ${x.notes}`);
         return ok(
@@ -1542,11 +1558,17 @@ export async function executeTool(
 
       const spec = table[input.que];
       if (!spec) throw new Error(`Serie desconocida: ${input.que}`);
-      let q = sb.from(spec.t).select(spec.cols).eq('user_id', userId).limit(LIMIT);
-      q = q.gte(spec.dateCol, desde).lte(spec.dateCol, spec.dateCol === 'created_at' ? `${hasta}T23:59:59` : hasta);
+      // Lo más reciente primero, en la consulta (para que el LIMIT se quede con
+      // lo último y no con lo más viejo) y en el texto (el recorte va por el final).
+      const q = sb.from(spec.t).select(spec.cols).eq('user_id', userId)
+        .gte(spec.dateCol, desde).lte(spec.dateCol, spec.dateCol === 'created_at' ? `${hasta}T23:59:59` : hasta)
+        .order(spec.dateCol, { ascending: false })
+        .limit(LIMIT);
       const { data, error } = await q;
       if (error) throw error;
-      let rows = data ?? [];
+      let rows = ((data ?? []) as unknown as Record<string, unknown>[])
+        .slice()
+        .sort((a, b) => String(b[spec.dateCol] ?? '').localeCompare(String(a[spec.dateCol] ?? '')));
       const needleRaw = val(filtro);
       if (needleRaw) {
         const needle = needleRaw.toLowerCase();
@@ -1554,6 +1576,11 @@ export async function executeTool(
       }
       if (!rows.length) return ok(`Sin datos de ${input.que} entre ${desde} y ${hasta}.`);
       return ok(JSON.stringify(rows).slice(0, 12000));
+    }
+
+    case 'consultar_dia': {
+      const fecha = val(input.fecha) ? fechaValida(input.fecha) : ctx.today;
+      return ok(await leerDiaYAnterior(sb, userId, fecha));
     }
 
     default:

@@ -8,6 +8,7 @@ import { construirEstudio } from './analytics.ts';
 import { construirEstudioEconomico } from './finance.ts';
 import type { Db } from './db.ts';
 import { kindLines } from './kinds.ts';
+import { leerRegistros, lineasDelDia } from './comprobacion.ts';
 
 // Espejo de levelFromXp/rankForLevel de src/lib/game.ts. La fuente de verdad
 // es game.ts: si allí cambia la curva, hay que tocar aquí. Se replica porque
@@ -168,6 +169,11 @@ export async function buildContext(
   const since60 = new Date(new Date(today).getTime() - 60 * 86400000).toISOString().slice(0, 10);
   const weekday = ((new Date(today).getDay() + 6) % 7) + 1; // 1=lunes … 7=domingo
 
+  // Lo registrado hoy, módulo a módulo, con la MISMA lectura que consultar_dia
+  // y que la comprobación del servidor (comprobacion.ts). En paralelo con el
+  // resto: son consultas pequeñas y acotadas.
+  const registradoHoyP = leerRegistros(sb, userId, today, today);
+
   const [
     profileRes,
     dossierRes,
@@ -301,7 +307,15 @@ export async function buildContext(
   push(
     'Un solo gesto: lo que pone "se marca sola" no se le pide dos veces. Registrar el acto real ' +
       '(la sesión, el pesaje, el diario) marca la misión, la regla enlazada y el bloque del plan. ' +
-      'Si dice que lo hizo y sigue PENDIENTE, es que no lo ha registrado: pídele el registro, no la marca.',
+      'Si dice que lo hizo y sigue PENDIENTE, compruébalo con consultar_dia; si está registrado, márcala.',
+  );
+  push();
+
+  push(`## Registrado hoy (${today})`);
+  for (const l of lineasDelDia(await registradoHoyP, today)) push(`- ${l}`);
+  push(
+    'Esto es lo que consta hoy, leído al construir este estado. Si dice haber hecho algo que no ' +
+      'aparece aquí, compruébalo con consultar_dia (también mira el día anterior) antes de negarlo.',
   );
   push();
 
