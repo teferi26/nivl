@@ -1,4 +1,4 @@
--- Test de c3-moderacion.sql (aplicar sin begin/commit, en una transacción que se revierte).
+-- Test de 0037_moderacion.sql (aplicar sin begin/commit, en una transacción que se revierte).
 create temp table r(caso text, ok boolean, detalle text);
 grant all on r to authenticated, anon, service_role;
 insert into auth.users(id, instance_id, aud, role, email, raw_app_meta_data, raw_user_meta_data, created_at, updated_at) values

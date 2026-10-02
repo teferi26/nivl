@@ -1,4 +1,4 @@
--- PROPUESTA Chat 3 · Seguridad (sin número). Moderación con responsable.
+-- 0037 · Moderación con responsable (Chat 3 · Seguridad; número asignado por el coordinador 02/10/2026).
 --
 -- SOC-1 (P1): las denuncias de perfiles (social_reports, 0032) y los perfiles
 -- pendientes de revisión no avisan a nadie; solo se ven abriendo el SQL Editor.
