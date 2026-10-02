@@ -18,7 +18,7 @@ PURCHASES
 Perfil > "NIVL Pro" row (below the profile header) > choose "Pro" or "Élite" and a plan. During the trial, tap "Suscribirme"; Pro subscribers can tap "Ver NIVL Élite". Products: nivl_pro_mensual (1 month), nivl_pro_anual (1 year), nivl_elite_mensual (1 month), nivl_elite_anual (1 year), nivl_elite_fundador (1 year, limited). The screen shows title, duration and price, renewal terms, "Restaurar compras", and Terms and Privacy links. "Probar el coach 7 días" is a server trial: no payment details and no renewal.
 
 REPORT AND BLOCK
-Perfil > "Amigos" > another user's three-dot button (or their row in a ranking) > reason > "Enviar denuncia". The same sheet has "Bloquear usuario" > "Bloquear". "Convivencia y seguridad" has "Desbloquear" and "Contactar con soporte". The developer reviews every report personally, is notified of each new one and acts within [PLAZO]. Names and photos stay private until approved. There is no user-to-user messaging.
+Perfil > "Amigos" > another user's three-dot button (or their row in a ranking) > reason > "Enviar denuncia". The same sheet has "Bloquear usuario" > "Bloquear". "Convivencia y seguridad" has "Desbloquear" and "Contactar con soporte". The developer reviews every report personally, is notified of each new one and acts within 24 hours. Names and photos stay private until approved. There is no user-to-user messaging.
 
 ACCOUNT DELETION
 Perfil > "Cuenta" section > "Eliminar cuenta" > "Eliminar para siempre" (sheet) > "Eliminar para siempre" (alert). It deletes the NIVL account, its data and files. Please test deletion with a newly created account, not the review accounts. Deleting the account does not cancel an Apple subscription. "Exportar mis datos" is in the same section.

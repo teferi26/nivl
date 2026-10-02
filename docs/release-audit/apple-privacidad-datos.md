@@ -144,3 +144,16 @@ Definiciones: [App privacy details](https://developer.apple.com/app-store/app-pr
 - Apple, [App privacy details](https://developer.apple.com/app-store/app-privacy-details/): categorías, «linked», «tracking», divulgación opcional, texto libre y SDK de terceros.
 - Apple, [Offering account deletion in your app](https://developer.apple.com/support/offering-account-deletion-in-your-app/).
 - NIVL, [Política de privacidad](https://nivl-web.vercel.app/privacidad), versión 1.2 del 29/09/2026: nombra Supabase (Frankfurt), Anthropic, DeepSeek (China), RevenueCat, Expo, Apple/Google, Franky, Vercel y Google Fonts.
+
+## 10. Respuestas del Chat 3 (02/10/2026, solo lectura: Management API GET y catálogo SQL)
+
+| # | Pregunta (§8) | Respuesta | Consecuencia para las declaraciones |
+|---|---|---|---|
+| 1 | Región | eu-central-1 (Frankfurt). Storage, en el mismo proyecto | «Frankfurt» en la respuesta a Apple y en la política: **PASS** |
+| 2 | Rutas de IA | `pro_*`, `mensual`, `anual` y `cortesia` (prueba) → `deepseek-v4-flash`; `elite_*` → `claude-sonnet-5`. COACH_BASE_URL y COACH_API_KEY configurados, pero su valor no se ha leído | Coherente con `consentmath.ts:39-42` y con el punto 4 de la respuesta. **Falta que el dueño confirme que COACH_BASE_URL es DeepSeek** |
+| 3 | Despliegue | 0028–0036 aplicadas. coach v58, oracle v9, ritual v29, revenuecat-webhook v4, account-erasure v1 y store-reconcile v1 (29/09); health-erasure v2 y franky-auth v6 (27/09). No se ha verificado que el código desplegado sea el de esta base | El SHA desplegado lo tiene que acreditar el coordinador antes del reenvío |
+| 4 | RevenueCat | Sin SDK de atribución ni de publicidad, y sin IDFA, en el código. Las integraciones del panel de RevenueCat **NO VERIFICADAS** | «Tracking = No» queda condicionado a que el dueño revise el panel (Integrations) |
+| 5 | Expo | Solo token push y Updates. EAS Insights en la cuenta **NO VERIFICADO** | Ídem: el dueño revisa la cuenta de Expo |
+| 6 | Conservación | `store_sales`: importe y transaction_id con `user_id=NULL`. Comisiones sin user_id. **No hay ningún plazo legal definido** (no declarar «6 años»). `store_events`: seudonimización propuesta, no aplicada. Suscriptor de RevenueCat: se borrará (DELETE), **aún no desplegado** | La frase de la respuesta («limited records may be kept only where the law requires») es correcta si lo que queda está desvinculado. Antes de reenviar hay que verificar que el borrado de RevenueCat y de `store_events` está desplegado, o ajustar la política |
+| 7 | Buckets | `evidence` y `avatars`: privados, 5 MB, sin listado, RLS por carpeta y URL firmadas | PASS (caducidad de las firmadas pendiente en el informe de RLS) |
+| 8 | Franky | Tras la auth nativa, el cliente no envía nada a Franky. No hay migración: las 8 cuentas antiguas conservan su uuid. **La función franky-auth sigue desplegada** | Si la build enviada ya no usa Franky, retirar o desactivar franky-auth antes del reenvío y quitar Franky de App Privacy y Data Safety. Si se envía una build que aún lo usa, Franky es destinatario de nombre, correo y contraseña y hay que declararlo |
