@@ -110,18 +110,18 @@ Requisitos según las [App Review Guidelines](https://developer.apple.com/app-st
 - **P1-5 · China continental y Rusia en la disponibilidad.** La app tiene IA generativa con proveedor en China y no tiene licencia MIIT/CAC ni ICP. Apple retiró más de 100 apps de IA generativa de la tienda china en 2023 ([TechNode, 02/08/2023](https://technode.com/2023/08/02/apple-widely-removing-generative-ai-apps-from-chinas-app-store/), consultada el 02/10/2026; **no se ha encontrado una página oficial de Apple**, así que el requisito está NO PROBADO en fuente primaria). Además, la app está solo en español. Afecta a la respuesta 5 (diferencias regionales).
 - **P2-1 · Capturas de la ficha anteriores a los cambios de seguridad social y de salud** (§3.1).
 - **P2-2 · `multiSeatStatus: ENABLED` y mercados `APPLE_BUSINESS`/`APPLE_SCHOOL`** en los cinco productos: significado NO PROBADO.
-- **P2-3 · «Élite: modelo de mayor capacidad»** depende de `ai_plans.routes`: NO PROBADO.
+- **P2-3 · «Élite: modelo de mayor capacidad»**: rutas confirmadas por el Chat 3 el 02/10 (`elite_*` → claude-sonnet-5; `pro_*` → deepseek-v4-flash). Solo falta que el dueño confirme COACH_BASE_URL.
 
 ## 7. Correcciones propuestas
 
 ### 7.1 Puede hacerlas Chat 1 en ASC (a través del coordinador, con permiso del dueño; nada se ha ejecutado)
 
-1. **Disponibilidad**: quitar China continental (y valorar Rusia) antes de reenviar. Respuesta 5, texto propuesto: «NIVL funciona igual en todos los territorios donde se distribuye. La interfaz está en español. No se distribuye en China continental.»
+1. **Disponibilidad**: HECHO el 02/10 (165 territorios). Respuesta 5, texto propuesto: «NIVL funciona igual en todos los territorios donde se distribuye. La interfaz está en español. No se distribuye en China continental.»
 2. **DSA**: que el titular complete o verifique el estado de comerciante (lo hace el dueño; Chat 1 comprueba después por GET que desaparece `TRADER_STATUS_NOT_PROVIDED`).
 3. **Capturas de revisión de los 5 productos**: sustituirlas en cuanto haya capturas del binario corregido que muestren precio, periodo, botón, «Restaurar compras», letra legal y enlaces en un mismo encuadre (o en dos capturas).
 4. **EULA**, una de estas dos opciones: (a) mantener la EULA estándar y pedir que `/terminos` añada este párrafo: «Si descargas NIVL desde la App Store, también se aplica el Acuerdo de licencia de usuario final estándar de Apple: https://www.apple.com/legal/internet-services/itunes/dev/stdeula/»; o (b) subir una EULA propia en ASC. Recomendada la (a), porque la web la cambia el dueño sin binario.
 5. **Descripción**: sin cambios obligatorios. Si Chat 3 no confirma que Élite usa un modelo superior, cambiar «Élite incluye un modelo de mayor capacidad, modo profundo, …» por «Élite incluye modo profundo, revisión semanal ampliada y la insignia de laurel.» Si se pasa la prueba a oferta introductoria (7.2-3), cambiar el párrafo de la prueba por: «NIVL Pro incluye una semana de prueba gratuita para cuentas elegibles. Al terminar, se cobra el precio del plan elegido salvo que canceles al menos 24 horas antes.»
-6. **Notas de revisión**: añadir la ruta de borrado de la cuenta Franky (ver `apple-privacidad-datos.md`, R-PRIV-3) y quitar «Anthropic y DeepSeek» si Chat 3 no confirma DeepSeek en producción.
+6. **Notas de revisión**: sin Franky (decisión del 02/10). ~~añadir la ruta de borrado de la cuenta Franky (ver `apple-privacidad-datos.md`, R-PRIV-3) y quitar «Anthropic y DeepSeek» si Chat 3 no confirma DeepSeek en producción.
 7. **Productos**: revisar en la UI de ASC qué significan `multiSeatStatus` y los mercados Business/School, y desactivarlos si no proceden en una app de consumo (pendiente de confirmar que sea seguro).
 
 ### 7.3 Diff de la descripción de ASC (es-ES) tras la decisión «sin Franky» — PROPUESTA, no aplicada
@@ -144,7 +144,7 @@ Comprobaciones hechas por GET el 02/10/2026:
 3. **Chat 2 (pagos)**: decidir si la prueba de 7 días pasa a oferta introductoria de IAP (y adaptar `start_trial`, `ProOffer.tsx:420-444` y el webhook) o se mantiene como prueba de servidor, justificada en las notas.
 4. **Chat 4 (UI)**, `src/app/pro.tsx:174-175`: «La suscripción se gestiona y se cancela en Ajustes > tu nombre > Suscripciones.»
 5. **Chat 4 (UI)**, `src/app/(tabs)/perfil.tsx:921-922`: «Borrar la cuenta no cancela una suscripción de NIVL Pro: cancélala en Ajustes > tu nombre > Suscripciones.»
-6. **Chat 4 (UI)**: fila permanente «Privacidad y términos» en Perfil > Cuenta (5.1.1(i)) y enlace para borrar la cuenta de Franky en la hoja de borrado.
+6. **Chat 4 (UI)**: fila permanente «Privacidad y términos» en Perfil > Cuenta (5.1.1(i)).
 7. **Chat 4 (UI)**: nueva serie de capturas (ficha y revisión de productos) desde el binario corregido, con el mismo arnés de datos de ejemplo.
 
 Los cambios 7.2-1, 2, 4, 5 y 6 son solo JS: pueden salir por OTA en la 1.0.7, pero **el binario que se adjunte a la revisión debe llevarlos ya** (o la OTA debe estar publicada antes de que el revisor abra la app).

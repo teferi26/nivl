@@ -78,7 +78,7 @@ Se basa **solo en lo que hace el cliente**. La retención, los proveedores y las
 
 | Categoría de Play | ¿Se recoge? | Evidencia | ¿Opcional? | Finalidad | Notas |
 |---|---|---|---|---|---|
-| Información personal → Correo electrónico | Sí | `src/app/login.tsx:81,84,88` (login y registro con email, puente Franky `src/lib/frankyAuth.ts`) | No | Gestión de la cuenta | **Pendiente Chat 3**: qué recibe Franky (servicio del mismo responsable o tercero) |
+| Información personal → Correo electrónico | Sí | `src/app/login.tsx:81,84,88` (login y registro con email, puente Franky `src/lib/frankyAuth.ts`; **sin Franky en la build final**: decisión del 02/10 y privacidad §10, fila 8) | No | Gestión de la cuenta | **Pendiente Chat 3**: qué recibe Franky (servicio del mismo responsable o tercero) |
 | Información personal → Nombre | Sí | `src/app/onboarding.tsx:181`, `src/lib/data.ts:33` (`profiles`) | No (se puede usar un alias) | Funcionalidad de la app, social | Visible para amigos (`amigos.tsx`) |
 | Información personal → Otros (edad mínima confirmada) | Sí (booleano) | `src/lib/age.ts:14-18` (`confirm_minimum_age`, 16) | No | Cumplimiento | — |
 | Salud y forma física → Salud | Sí | `src/lib/progress.ts:8` (`body_metrics`), `src/lib/health.ts` (consentimiento explícito) | Sí | Funcionalidad de la app, personalización (coach) | Consentimiento de salud (migración 0030) |
@@ -112,7 +112,7 @@ Se basa **solo en lo que hace el cliente**. La retención, los proveedores y las
 | https://nivl-web.vercel.app/privacidad | PASS (200) | Usada también en la app (`proplans.ts:427`). Debe nombrar a Google Play como canal de pago (Chat 4). |
 | https://nivl-web.vercel.app/soporte | PASS (200) / FAIL de contenido | Solo da instrucciones para iPhone (`soporte.html:30,34`). Añadir Android (Chat 4). |
 | https://nivl-web.vercel.app/terminos | PASS (200) | — |
-| https://nivl.app | FAIL | El dominio no resuelve (curl devuelve 000). Es un bloqueo ya conocido (dominio pendiente). |
+| https://nivl.app | NO APLICABLE | Fuera de alcance: dominio único `nivl-web.vercel.app` (decisión del usuario del 02/10). |
 
 ## 6. Deep links / App Links
 
@@ -126,7 +126,7 @@ Se basa **solo en lo que hace el cliente**. La retención, los proveedores y las
 
 | # | Punto | Estado | Evidencia | Acción · dueño |
 |---|---|---|---|---|
-| 7.1 | Acceso a la app (cuenta de prueba) | NO PROBADO | Hay cuentas de revisión de Apple en `privado/` (no se copian aquí). Toda la app exige iniciar sesión (`login.tsx`). | Crear o reutilizar una cuenta demo **para Google** (Pro y Élite, como en Apple) con instrucciones de acceso, incluido que la cuenta ya ha confirmado la edad y los consentimientos. Las credenciales van directamente en Play Console, no en el repo. · Chat 3 + Usuario |
+| 7.1 | Acceso a la app (cuenta de prueba) | NO PROBADO | Hay cuentas de revisión de Apple en `privado/` (no se copian aquí). Toda la app exige iniciar sesión (`login.tsx`). | Mismo criterio que en Apple: ninguna cuenta con la edad ni los consentimientos aceptados; los pasos van en las instrucciones de acceso. Crear o reutilizar una cuenta demo **para Google** (Pro y Élite, como en Apple) con instrucciones de acceso, incluido que la cuenta ya ha confirmado la edad y los consentimientos. Las credenciales van directamente en Play Console, no en el repo. · Chat 3 + Usuario |
 | 7.2 | Clasificación IARC | NO PROBADO | Contenido: interacción entre usuarios (amigos, nombres y avatares), chat con IA, compras digitales, sin violencia real (la estética de arena y gladiador es simbólica), sin apuestas. | Rellenar el cuestionario con coherencia con la clasificación de Apple (`privado/asc-age-rating-applied.json`): «Los usuarios interactúan», «Compras digitales». · Coordinador + Usuario |
 | 7.3 | Público objetivo | NO PROBADO | Edad mínima de 16 (`src/lib/consentmath.ts:16`, `privacidad.html:129`). | Marcar solo los tramos **16-17 y 18+** (ningún tramo por debajo de 13, para no entrar en la política de Familias). Valorar 18+ si legal lo prefiere por salud e IA. · Usuario |
 | 7.4 | IA generativa: denuncia dentro de la app | **FAIL** | Fuente: https://support.google.com/googleplay/android-developer/answer/13985936 (02/10/2026): las apps que generan contenido con IA deben permitir **denunciar o marcar contenido ofensivo sin salir de la app**. En `src/app/(tabs)/coach.tsx` y `src/lib/coach.ts` no hay ninguna acción de denunciar una respuesta (búsqueda de report/denunci/flag el 02/10/2026). La denuncia existente es solo social. | Añadir «Denunciar respuesta» (pulsación larga o menú en cada mensaje del coach y del Oráculo) que guarde el mensaje y el motivo en el servidor. **Bloquea Play.** · Chat 3 (tabla y RPC) + coordinador (UI) |
@@ -142,7 +142,7 @@ Se basa **solo en lo que hace el cliente**. La retención, los proveedores y las
 | # | Punto | Estado | Evidencia | Acción · dueño |
 |---|---|---|---|---|
 | 8.1 | Cuenta de Play Console | NO PROBADO (bloqueo externo) | No hay rastro de ella (§0). | El usuario crea o confirma la cuenta (personal u organización), verifica su identidad y paga la cuota. · Usuario |
-| 8.2 | Requisito de pruebas cerradas | Aplica **si la cuenta es personal y se creó después del 13/11/2023** | Fuente: https://support.google.com/googleplay/android-developer/answer/14151465 (02/10/2026): «a minimum of 12 testers who have been opted in continuously for at least 14 days» antes de solicitar el acceso a producción. | Planificar 12 o más testers con Gmail en una pista **cerrada** durante 14 días seguidos (la pista interna no cuenta). Esto supone un mínimo de unas 2-3 semanas hasta producción. Con una cuenta de **organización** (requiere D-U-N-S) no se aplica. · Usuario |
+| 8.2 | Requisito de pruebas cerradas | **Aplica**: la cuenta es personal y reciente (decisión del usuario, 02/10/2026) | Fuente: https://support.google.com/googleplay/android-developer/answer/14151465 (02/10/2026): «a minimum of 12 testers who have been opted in continuously for at least 14 days» antes de solicitar el acceso a producción. | Planificar 12 o más testers con Gmail en una pista **cerrada** durante 14 días seguidos (la pista interna no cuenta). Esto supone un mínimo de unas 2-3 semanas hasta producción. Con una cuenta de **organización** (requiere D-U-N-S) no se aplica. · Usuario |
 | 8.3 | Pista interna para QA | NO PROBADO | — | Pista interna con hasta 100 testers para QA y para el *license tester* de pagos. · Coordinador |
 
 ## 9. Ficha de Play
@@ -170,9 +170,8 @@ Se basa **solo en lo que hace el cliente**. La retención, los proveedores y las
          {
            "action": "VIEW",
            "autoVerify": true,
--          "data": [{ "scheme": "https", "host": "nivl.app", "pathPrefix": "/c/" }],
+-          "data": [{ "scheme": "https", "host": "nivl.app", "pathPrefix": "/c/" }],   (se sustituye: decisión del 02/10, dominio único nivl-web.vercel.app)
 +          "data": [
-+            { "scheme": "https", "host": "nivl.app", "pathPrefix": "/c/" },
 +            { "scheme": "https", "host": "nivl-web.vercel.app", "pathPrefix": "/c/" }
 +          ],
            "category": ["BROWSABLE", "DEFAULT"]

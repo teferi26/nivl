@@ -16,7 +16,8 @@ Apple: «If the app has multiple account types, provide credentials for each typ
 ## Antes de enviar (coordinador)
 
 - [ ] Las tres cuentas de revisión entran por `[LOGIN_ROUTE]` en la build `[BUILD]`. Probado el ____ en ____ (dispositivo).
-- [ ] Pro y Élite muestran su nivel sin haber comprado. La concesión dura al menos 60 días desde el reenvío.
+- [ ] La cuenta Gratis de los campos de acceso de ASC entra con la build `[BUILD]` (Auth propio, sin Franky). Si no entra, crear una nueva y sustituir las credenciales en ASC.
+- [ ] Pro y Élite muestran su nivel sin haber comprado. La concesión dura al menos 60 días desde el reenvío. Si se reutiliza la Élite existente (vence el 28/11/2026), ampliarla hasta al menos la fecha de reenvío + 60 días.
 - [ ] La cuenta Gratis puede iniciar la prueba, o las notas dicen que ya la usó.
 - [ ] Ninguna tiene aceptadas la edad, la salud ni la IA. Si un ensayo las aceptó, se retiran o se recrea la cuenta.
 - [ ] Los marcadores `[PRO_USER]`, `[PRO_PASS]`, `[ELITE_USER]` y `[ELITE_PASS]` se han sustituido en las notas pegadas en ASC y en ningún archivo de git.

@@ -40,7 +40,7 @@ Es una grabación de un iPhone y aporta valor como demostración parcial (`coord
 
 ## Recorrido (una sola toma; unos 6–9 minutos)
 
-**0. Identificación (opcional, recomendable).** Antes de abrir la app, mostrar Ajustes > General > Información (modelo e iOS) y la ficha de TestFlight de NIVL con «1.0.7 ([BUILD])». No mostrar el número de serie ni el IMEI. Si se prefiere no enseñar Ajustes, estos datos van solo en el texto de la respuesta.
+**0. Identificación (fuera del vídeo).** El modelo, el iOS y la build se anotan en la respuesta (`[DEVICE]`, `[IOS]`, `[BUILD]`). Si se quieren enseñar, se graban en un clip aparte que no se pone al principio del recorrido. El vídeo empieza en la pantalla de inicio con la app cerrada.
 
 **1. Lanzamiento.** Pantalla de inicio → tocar el icono de NIVL → pantalla de carga → pantalla de acceso.
 
@@ -69,7 +69,7 @@ Es una grabación de un iPhone y aporta valor como demostración parcial (`coord
 **6. Contenido de usuarios: denuncia y bloqueo.**
 - Perfil > «Amigos» → localizar a U2 → botón de tres puntos (en un ranking también vale tocar su fila) → elegir un motivo → «Enviar denuncia» → confirmación.
 - En la misma hoja, «Bloquear usuario» → «Bloquear» → U2 desaparece de solicitudes y rankings.
-- «Convivencia y seguridad» → enseñar «Desbloquear» y «Contactar con soporte».
+- «Convivencia y seguridad» → tocar «Desbloquear» y confirmar en la alerta → enseñar «Contactar con soporte».
 - Se puede decir, o rotular, que las denuncias las revisa una persona y que no hay mensajería entre usuarios. No afirmar que la denuncia ya está resuelta.
 
 **7. Datos y borrado de cuenta.**

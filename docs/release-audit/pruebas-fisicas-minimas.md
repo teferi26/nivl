@@ -34,6 +34,6 @@ Todas las pruebas se hacen con la **misma build `[BUILD]`** instalada desde Test
 
 ## C. Fuera del mínimo de Apple (matriz del Chat 5)
 
-Modo «Designed for iPhone» en Mac, Android, tablet, plegable y web: ver [matriz-dispositivos.md](matriz-dispositivos.md). No bloquean el reenvío de iOS salvo que la ficha prometa ese soporte. El Mac sale disponible por defecto (`computedMinMacOsVersion` 12.0): o se prueba lo básico (B4-Mac) o se propone desactivar la disponibilidad en Mac en ASC.
+Modo «Designed for iPhone» en Mac, Android, tablet, plegable y web: ver [matriz-dispositivos.md](matriz-dispositivos.md). No bloquean el reenvío de iOS salvo que la ficha prometa ese soporte. Mac y Vision Pro se desmarcan en ASC (decisión del 02/10), así que no se prueban.
 
 Relación con `docs/appstore-review-2026-09-29/QA-FISICA.csv`: los 22 casos de ese archivo siguen siendo válidos y están cubiertos o ampliados aquí. A1–A11 y B1–B7 son el subconjunto que bloquea el reenvío.

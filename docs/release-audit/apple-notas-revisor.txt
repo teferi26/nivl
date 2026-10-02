@@ -1,4 +1,5 @@
-NIVL 1.0.7 ([BUILD]). Full answers to your 29 Sep message (Guideline 2.1) are in our App Review reply.
+NIVL 1.0.7 (build [BUILD]). Full answers to your 29 September message (Guideline 2.1) are in our Resolution Center reply.
+Screen recording: [VIDEO] (physical [DEVICE], iOS [IOS], build [BUILD]).
 
 WHAT IT IS
 NIVL is a Spanish-language habit and organisation app for individual users aged 16+. Habits, projects, calendar, training, nutrition, journal and finances are free. Optional auto-renewable subscriptions (Pro, Élite) add an AI coach.
@@ -9,16 +10,16 @@ Pro account: [PRO_USER] / [PRO_PASS]
 Élite account: [ELITE_USER] / [ELITE_PASS]
 Pro and Élite access was granted manually on our server. Please do not buy or restore with these two accounts: a sandbox purchase would replace the granted access, which would then expire.
 Sign in: [LOGIN_ROUTE_SHORT]. New account: [SIGNUP_ROUTE_SHORT].
-No permission has been accepted for you: the age declaration and the health and AI consents are asked in the app.
+None of the accounts has accepted the age declaration or the health and AI consents; the app asks for them on first use.
 
 PERMISSIONS AND COACH
-Health: Perfil > "Salud y bienestar" > "Revisar permiso de salud" > tick the box > "Aceptar y activar salud". AI: separate consent, "Acepto y activo el coach". Declining keeps the free features. Then open Coach and send, for example, "Ayúdame a organizar mi día de mañana".
+Health: Perfil > "Salud y bienestar" > "Revisar permiso de salud" > tick the box > "Aceptar y activar salud". AI: separate consent, "Acepto y activo el coach". Declining keeps the free features. To try the coach, accept both, then open Coach and send, for example, "Ayúdame a organizar mi día de mañana".
 
 PURCHASES
 Perfil > "NIVL Pro" row (below the profile header) > choose "Pro" or "Élite" and a plan. During the trial, tap "Suscribirme"; Pro subscribers can tap "Ver NIVL Élite". Products: nivl_pro_mensual (1 month), nivl_pro_anual (1 year), nivl_elite_mensual (1 month), nivl_elite_anual (1 year), nivl_elite_fundador (1 year, limited). The screen shows title, duration and price, renewal terms, "Restaurar compras", and Terms and Privacy links. "Probar el coach 7 días": one-time 7-day Pro-level coach trial with a small usage cap; no payment details, no renewal or conversion, no Élite features. Afterwards the coach requires an In-App Purchase subscription.
 
 REPORT AND BLOCK
-Perfil > "Amigos" > another user's three-dot button (or their row in a ranking) > reason > "Enviar denuncia". The same sheet has "Bloquear usuario" > "Bloquear". "Convivencia y seguridad" has "Desbloquear" and "Contactar con soporte". The developer reviews every report personally, is notified of each new one and acts within 24 hours. Names and photos stay private until approved. There is no user-to-user messaging.
+Perfil > "Amigos" > another user's three-dot button (or their row in a ranking) > reason > "Enviar denuncia". The same sheet has "Bloquear usuario" > "Bloquear". "Convivencia y seguridad" has "Desbloquear" and "Contactar con soporte". The developer checks the queue personally every day and acts within 24 hours. Names and photos stay private until approved. There is no user-to-user messaging.
 
 ACCOUNT DELETION
 Perfil > "Cuenta" section > "Eliminar cuenta" > "Eliminar para siempre" (sheet) > "Eliminar para siempre" (alert). It deletes the NIVL account, its data and files. Please test deletion with a newly created account, not the review accounts. Deleting the account does not cancel an Apple subscription. "Exportar mis datos" is in the same section.

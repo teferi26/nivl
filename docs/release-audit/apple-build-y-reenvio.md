@@ -7,9 +7,9 @@ Estado leído por GET el 02/10/2026 (`nivl/privado/asc-chat1-readonly-20261002.j
 | Versión 1.0.7 | REJECTED; build asociada **18**; lanzamiento AFTER_APPROVAL |
 | Build 20 | VALID, subida el 29/09/2026, minOS 15.1, SDK 23C57 (iOS 26.2), arm64, `usesNonExemptEncryption=false`. Disponible en Mac a partir de macOS 12 («Designed for iPhone») |
 | Build 18 | VALID, el mismo SDK. Es la rechazada y no lleva las correcciones del 29/09 |
-| Envío `fb26cf6b-…` | UNRESOLVED_ISSUES. 7 elementos: grupo + 5 suscripciones READY_FOR_REVIEW + versión |
+| Envío `fb26cf6b-…` | UNRESOLVED_ISSUES. 7 elementos: grupo + 5 suscripciones + versión. Las suscripciones están como READY_FOR_REVIEW en el envío (`reviewSubmissionItems`), aunque su estado como producto es READY_TO_SUBMIT. No hay contradicción: van en este envío |
 | Notas de App Review | 3.975/4.000 caracteres (versión anterior) |
-| Territorios | 175 → 173 (CHN y RUS retirados por el coordinador el 02/10). Pendiente la propuesta de retirar 8 más (ver más abajo) |
+| Territorios | 175 → **165** (02/10: retirados CHN, RUS, HKG, MAC, BLR, VEN, MMR, AFG, YEM y XKS; se mantienen 6 territorios británicos de ultramar). Aplicado por el coordinador y comprobado por GET |
 
 Requisito de SDK: Apple exige compilar con el SDK de iOS 26 o posterior desde el 28/04/2026 ([Upcoming requirements](https://developer.apple.com/news/upcoming-requirements/), consultado el 02/10/2026). La 23C57 lo cumple. Cualquier build nueva que haga EAS tiene que conservar un Xcode 26.x o posterior.
 
@@ -36,13 +36,16 @@ Requisito de SDK: Apple exige compilar con el SDK de iOS 26 o posterior desde el
 
 - [ ] Vídeo nuevo grabado con `[BUILD]` en iOS de última versión ([apple-guion-video.md](apple-guion-video.md)).
 - [ ] Pruebas físicas mínimas en PASS sobre `[BUILD]` ([pruebas-fisicas-minimas.md](pruebas-fisicas-minimas.md)).
-- [ ] Resuelto el borrado de la cuenta Franky, o asumido el riesgo por escrito por el usuario.
+- [ ] La build `[BUILD]` no llama a franky.es (Auth propio). franky-auth retirado (ver arriba).
+- [ ] El arreglo del Chat 3 a `start_trial` está integrado, o A5 prueba que la prueba arranca con la salud rechazada.
+- [ ] Sin «Google Play» en la UI de iOS (Chat 2: proplans/pro.tsx; Chat 4: perfil.tsx).
+- [ ] `/privacidad` coherente con lo que se conserva de verdad (sin plazo legal fijado) y `/terminos` citando la EULA estándar de Apple, o la frase de la respuesta ajustada.
 - [ ] Paywall con los 5 planes y enlaces legales confirmado por el Chat 2 en `[BUILD]`.
-- [ ] Territorios decididos y `[N]` sustituido.
+- [x] Territorios decididos (165) y `[N]` sustituido.
 - [ ] Cuentas Pro y Élite con la concesión vigente ([cuentas-demo.md](cuentas-demo.md)).
 - [ ] Capturas coherentes con la build final ([apple-ficha-capturas-productos.md](apple-ficha-capturas-productos.md)).
 
-## Territorios: propuesta pendiente de decisión del usuario
+## Territorios: DECIDIDO el 02/10 (se retiran los 8; se mantienen AIA, BMU, VGB, CYM, MSR y TCA)
 
 La [lista oficial de regiones de la API de Anthropic](https://www.anthropic.com/supported-countries) (consultada el 02/10/2026) no incluye estos territorios, que siguen habilitados:
 
