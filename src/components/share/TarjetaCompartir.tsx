@@ -25,6 +25,8 @@ import { forwardRef, useEffect, useMemo, useRef } from 'react';
 import { Image, Platform, StyleSheet, Text, View, type TextStyle } from 'react-native';
 import Svg, { Circle, Path } from 'react-native-svg';
 import {
+  cifrasSemana,
+  codigoVisible,
   fotosEnBN,
   fotosVisibles,
   lienzo,
@@ -50,12 +52,14 @@ export interface TarjetaCompartirProps {
   retratoUri?: string | null;
   /** Ancho en puntos en el que se pinta (1080 para capturar 1:1). */
   ancho?: number;
+  /** Código de amigo: la tarjeta de semana lo pinta solo con `incluirInvitacion`. */
+  codigoAmigo?: string | null;
   /** Se llama una vez, cuando todo lo que hay que pintar ha cargado. */
   onListo?: () => void;
 }
 
 export const TarjetaCompartir = forwardRef<View, TarjetaCompartirProps>(function TarjetaCompartir(
-  { tarjeta, formato, opciones, contexto, alias, retratoUri, ancho, onListo },
+  { tarjeta, formato, opciones, contexto, alias, retratoUri, ancho, codigoAmigo, onListo },
   ref,
 ) {
   const l = useMemo(() => lienzo(formato, ancho), [formato, ancho]);
@@ -196,6 +200,62 @@ export const TarjetaCompartir = forwardRef<View, TarjetaCompartirProps>(function
           </>
         ) : null}
 
+        {tarjeta.tipo === 'semana' ? (
+          <>
+            <Text allowFontScaling={false} numberOfLines={1} adjustsFontSizeToFit style={txt(fonts.brand, 150, ink.ink10, { lineHeight: px(160) })}>
+              {x.titular}
+            </Text>
+            {x.detalle ? (
+              <Text allowFontScaling={false} style={txt(fonts.body, 36, ink.ink8, { marginTop: -px(16) })}>
+                {x.detalle}
+              </Text>
+            ) : null}
+            <View style={{ flexDirection: 'row', alignSelf: 'stretch', justifyContent: 'space-around', borderTopWidth: px(2), borderBottomWidth: px(2), borderColor: ink.ink3, paddingVertical: px(36) }}>
+              {cifrasSemana(tarjeta).map((c) => (
+                <View key={c.rotulo} style={{ alignItems: 'center', flex: 1 }}>
+                  <Text allowFontScaling={false} style={txt(fonts.number, 72, ink.ink10)}>
+                    {c.valor}
+                  </Text>
+                  <Text allowFontScaling={false} numberOfLines={1} adjustsFontSizeToFit style={txt(fonts.heading, 22, ink.ink6, { letterSpacing: px(4), marginTop: px(10) })}>
+                    {c.rotulo}
+                  </Text>
+                </View>
+              ))}
+            </View>
+            {codigoVisible(opciones, codigoAmigo) ? (
+              <View style={{ alignItems: 'center' }}>
+                <Text allowFontScaling={false} style={txt(fonts.heading, 28, ink.ink6, { letterSpacing: px(8) })}>
+                  MÍDETE CONMIGO
+                </Text>
+                <Text allowFontScaling={false} style={txt(fonts.brand, 64, ink.ink10, { letterSpacing: px(10), marginTop: px(12) })}>
+                  {codigoVisible(opciones, codigoAmigo)}
+                </Text>
+              </View>
+            ) : null}
+          </>
+        ) : null}
+
+        {tarjeta.tipo === 'recuerdo' ? (
+          <>
+            {fotos.length === 1 ? (
+              <View style={{ alignSelf: 'stretch', height: px(formato === 'stories' ? 760 : 480), flexShrink: 1, minHeight: 0, backgroundColor: ink.ink2, borderWidth: px(2), borderColor: ink.ink4, overflow: 'hidden', isolation: 'isolate', ...(bn && Platform.OS === 'android' ? { filter: [{ grayscale: 1 }] } : null) }}>
+                <Image source={{ uri: fotos[0].uri }} onLoad={unaMenos} onError={unaMenos} style={StyleSheet.absoluteFillObject} resizeMode="cover" />
+                {bn && Platform.OS !== 'android' ? (
+                  <View pointerEvents="none" style={[StyleSheet.absoluteFillObject, { backgroundColor: ink.ink0, mixBlendMode: 'saturation' }]} />
+                ) : null}
+              </View>
+            ) : null}
+            {tarjeta.dato ? (
+              <Text allowFontScaling={false} numberOfLines={1} adjustsFontSizeToFit style={txt(fonts.brand, 110, ink.ink10, { lineHeight: px(120) })}>
+                {tarjeta.dato}
+              </Text>
+            ) : null}
+            <Text allowFontScaling={false} numberOfLines={3} style={txt(fonts.heading, 60, ink.ink10, { lineHeight: px(70), textAlign: 'center' })}>
+              {x.titular}
+            </Text>
+          </>
+        ) : null}
+
         {tarjeta.tipo === 'antesDespues' && fotos.length === 2 ? (
           // Las fotos ceden alto si el texto no cabe (en RN el interlineado es
           // mayor que en la maqueta HTML): nunca más de 980/720, nunca encima del
@@ -226,7 +286,7 @@ export const TarjetaCompartir = forwardRef<View, TarjetaCompartirProps>(function
           </View>
         ) : null}
 
-        {x.detalle && tarjeta.tipo !== 'racha' ? (
+        {x.detalle && tarjeta.tipo !== 'racha' && tarjeta.tipo !== 'semana' ? (
           <Text
             allowFontScaling={false}
             numberOfLines={3}

@@ -27,6 +27,7 @@ import {
   type OpcionesTarjeta,
   type Tarjeta,
 } from '@/lib/sharecard';
+import { Trama } from '@/components/ui/Texture';
 import { ink } from '@/design/tokens';
 import { fonts } from '@/lib/theme';
 import { mensajeSistema } from '@/lib/validation';
@@ -71,10 +72,12 @@ export function HojaCompartir({ visible, onCerrar, tarjeta, contexto, alias, ret
 
   if (!visible) return null;
 
-  const clave = `${formato}|${opciones.mostrarNombre}|${opciones.mostrarFotos}|${opciones.mostrarPeso}|${opciones.incluirInvitacion}`;
+  const clave = `${formato}|${opciones.mostrarNombre}|${opciones.mostrarFotos}|${opciones.mostrarPeso}|${opciones.incluirInvitacion}|${opciones.mostrarTextoCoach}`;
   const listo = listoPara === clave;
 
   const esProgreso = tarjeta.tipo === 'antesDespues';
+  const fotoRecuerdo = tarjeta.tipo === 'recuerdo' && !!tarjeta.foto?.uri;
+  const textoRecuerdo = tarjeta.tipo === 'recuerdo' && !!tarjeta.texto;
   const hayPeso = esProgreso && typeof tarjeta.pesoAntesKg === 'number' && typeof tarjeta.pesoDespuesKg === 'number';
   const motivo = bloqueo(tarjeta, opciones, ctx);
   const aviso = avisoColor(tarjeta, opciones, ctx, Platform.OS);
@@ -121,6 +124,7 @@ export function HojaCompartir({ visible, onCerrar, tarjeta, contexto, alias, ret
           alias={alias}
           retratoUri={retratoUri}
           ancho={anchoCaptura}
+          codigoAmigo={codigoAmigo}
           key={clave}
           onListo={() => setListoPara(clave)}
         />
@@ -136,7 +140,16 @@ export function HojaCompartir({ visible, onCerrar, tarjeta, contexto, alias, ret
 
         <ScrollView contentContainerStyle={styles.contenido}>
           <View style={styles.previa} accessible accessibilityLabel="Vista previa de la tarjeta">
-            <TarjetaCompartir tarjeta={tarjeta} formato={formato} opciones={opciones} contexto={ctx} alias={alias} retratoUri={retratoUri} ancho={anchoPrevia} />
+            <TarjetaCompartir
+              tarjeta={tarjeta}
+              formato={formato}
+              opciones={opciones}
+              contexto={ctx}
+              alias={alias}
+              retratoUri={retratoUri}
+              codigoAmigo={codigoAmigo}
+              ancho={anchoPrevia}
+            />
           </View>
 
           <View style={styles.formatos} accessibilityRole="radiogroup">
@@ -165,6 +178,12 @@ export function HojaCompartir({ visible, onCerrar, tarjeta, contexto, alias, ret
           {esProgreso && ctx.puedeCompartirFotos ? (
             <Interruptor rotulo="Incluir mis fotos de progreso" valor={opciones.mostrarFotos} onCambio={cambiar('mostrarFotos')} />
           ) : null}
+          {fotoRecuerdo && ctx.puedeCompartirFotos ? (
+            <Interruptor rotulo="Incluir la foto" valor={opciones.mostrarFotos} onCambio={cambiar('mostrarFotos')} />
+          ) : null}
+          {textoRecuerdo ? (
+            <Interruptor rotulo="Incluir el texto del coach" valor={opciones.mostrarTextoCoach} onCambio={cambiar('mostrarTextoCoach')} />
+          ) : null}
           {esProgreso && hayPeso && opciones.mostrarFotos ? (
             <Interruptor rotulo="Mostrar el peso" valor={opciones.mostrarPeso} onCambio={cambiar('mostrarPeso')} />
           ) : null}
@@ -175,7 +194,8 @@ export function HojaCompartir({ visible, onCerrar, tarjeta, contexto, alias, ret
 
         <View ref={boton} collapsable={false} style={styles.pie}>
           {/* Avisos justo encima del botón (Chat 4). Bloqueo y error con trama:
-              hasta integrar <Trama/> de ui/Texture.tsx, un borde ink6. */}
+              un marco <Trama/> ink6 de 3 pt alrededor de una placa ink1, como
+              la Card alerta del kit. */}
           {motivo ? <Aviso texto={motivo} trama /> : null}
           {aviso ? <Aviso texto={aviso} /> : null}
           {error ? <Aviso texto={error} trama alerta /> : null}
@@ -195,14 +215,26 @@ export function HojaCompartir({ visible, onCerrar, tarjeta, contexto, alias, ret
 }
 
 function Aviso({ texto, trama = false, alerta = false }: { texto: string; trama?: boolean; alerta?: boolean }) {
+  const linea = (
+    <>
+      <Ionicons name="information-circle-outline" size={16} color={ink.ink8} />
+      <Text style={styles.nota}>{texto}</Text>
+    </>
+  );
   return (
     <View
-      style={[styles.aviso, trama && styles.avisoTrama]}
+      style={trama ? styles.avisoMarco : styles.aviso}
       accessibilityRole={alerta ? 'alert' : undefined}
       accessibilityLiveRegion={alerta ? 'polite' : undefined}
     >
-      <Ionicons name="information-circle-outline" size={16} color={ink.ink8} />
-      <Text style={styles.nota}>{texto}</Text>
+      {trama ? (
+        <>
+          <Trama color={ink.ink6} />
+          <View style={styles.avisoPlaca}>{linea}</View>
+        </>
+      ) : (
+        linea
+      )}
     </View>
   );
 }
@@ -244,7 +276,9 @@ const styles = StyleSheet.create({
   filaTexto: { fontFamily: fonts.body, fontSize: 16, color: ink.ink9, flexShrink: 1 },
   nota: { fontFamily: fonts.body, fontSize: 14, lineHeight: 20, color: ink.ink8, flexShrink: 1 },
   aviso: { flexDirection: 'row', alignItems: 'flex-start', gap: 8, marginBottom: 12 },
-  avisoTrama: { borderWidth: 1, borderColor: ink.ink6, padding: 10 },
+  // La trama hace de borde de 3 pt; el texto va en la placa lisa, nunca encima del rayado.
+  avisoMarco: { marginBottom: 12, padding: 3, backgroundColor: ink.ink0, overflow: 'hidden' },
+  avisoPlaca: { flexDirection: 'row', alignItems: 'flex-start', gap: 8, padding: 10, backgroundColor: ink.ink1 },
   pie: { paddingHorizontal: 20, paddingTop: 12, paddingBottom: 32, borderTopWidth: 1, borderTopColor: ink.ink3 },
   boton: { minHeight: 52, backgroundColor: ink.ink10, alignItems: 'center', justifyContent: 'center' },
   botonApagado: { backgroundColor: ink.ink1, borderWidth: 1, borderColor: ink.ink4 },
