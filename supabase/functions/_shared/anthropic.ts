@@ -104,6 +104,34 @@ export function addUsage(a: Usage, b: Usage): Usage {
   };
 }
 
+/**
+ * Una llamada que falló DESPUÉS de que el proveedor empezara a cobrar (el
+ * stream se cortó, venció el plazo, llegó basura). Lleva lo que ya se había
+ * consumido para que la contabilidad no lo pierda: un turno que falla también
+ * se paga, y si se apuntara a 0 el candado de gasto (0020) no lo vería nunca.
+ *
+ * La salida a medias no llega con su cifra (Anthropic la da en el último
+ * evento), así que se estima por caracteres, a la alta: ~3 por ficha.
+ */
+export class LlamadaFallida extends Error {
+  constructor(message: string, public usage: Usage, public model: string) {
+    super(message);
+    this.name = 'LlamadaFallida';
+  }
+}
+
+/** Fichas de salida estimadas a partir de los caracteres recibidos. */
+export function estimarFichas(caracteres: number): number {
+  return Math.ceil(Math.max(0, caracteres) / 3);
+}
+
+/**
+ * Plazo por defecto de una llamada al proveedor si quien llama no pone uno.
+ * Una Edge Function se corta sobre los 150 s y entonces no queda NI respuesta
+ * NI registro de gasto; mejor cortar nosotros antes y apuntarlo.
+ */
+export const PLAZO_LLAMADA_MS = 120_000;
+
 export class RefusalError extends Error {
   constructor(public category: string | null) {
     super('El sistema no puede responder a eso.');
@@ -122,6 +150,8 @@ export interface CallOptions {
   onText?: (delta: string) => void;
   /** Se invoca cuando el modelo empieza a pensar (para pintar el indicador). */
   onThinking?: () => void;
+  /** Corta la llamada (plazo del turno). Sin él, PLAZO_LLAMADA_MS. */
+  signal?: AbortSignal;
 }
 
 const BETAS = [
@@ -171,8 +201,10 @@ export function proveedorCompatible(): { baseUrl: string; apiKey: string } | nul
  */
 export async function callClaude(opts: CallOptions): Promise<Turn> {
   const model = opts.model ?? COACH_MODEL;
+  const signal = opts.signal ?? AbortSignal.timeout(PLAZO_LLAMADA_MS);
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
+    signal,
     headers: {
       'x-api-key': Deno.env.get('ANTHROPIC_API_KEY') ?? '',
       'anthropic-version': '2023-06-01',
@@ -195,6 +227,8 @@ export async function callClaude(opts: CallOptions): Promise<Turn> {
   });
 
   if (!res.ok || !res.body) {
+    // El cuerpo del error se queda en el servidor: puede hablar de la cuenta
+    // del dueño (saldo, límites) y no es asunto de quien usa la app.
     const detail = await res.text().catch(() => '');
     throw new Error(`anthropic ${res.status}: ${detail.slice(0, 400)}`);
   }
@@ -209,9 +243,20 @@ export async function callClaude(opts: CallOptions): Promise<Turn> {
   const reader = res.body.getReader();
   const decoder = new TextDecoder();
   let buffer = '';
+  // Caracteres de salida recibidos, por si el stream se corta antes del
+  // último evento (el que trae la cifra de salida de verdad).
+  let salida = 0;
+  let salidaContada = false;
+  // El plazo corta también la LECTURA del stream, no solo la conexión: un
+  // proveedor que deja el stream abierto sin mandar nada no puede retener el
+  // turno (ni el cerrojo de gasto) hasta que la plataforma mate la función.
+  const cortar = () => { reader.cancel().catch(() => {}); };
+  signal.addEventListener('abort', cortar, { once: true });
 
+  try {
   while (true) {
     const { done, value } = await reader.read();
+    if (signal.aborted) throw signal.reason ?? new Error('abortado');
     if (done) break;
     buffer += decoder.decode(value, { stream: true });
 
@@ -247,13 +292,16 @@ export async function callClaude(opts: CallOptions): Promise<Turn> {
           const d = ev.delta ?? {};
           if (d.type === 'text_delta') {
             b.text = (b.text ?? '') + d.text;
+            salida += String(d.text ?? '').length;
             opts.onText?.(d.text);
           } else if (d.type === 'thinking_delta') {
             b.thinking = (b.thinking ?? '') + d.thinking;
+            salida += String(d.thinking ?? '').length;
           } else if (d.type === 'signature_delta') {
             b.signature = (b.signature ?? '') + d.signature;
           } else if (d.type === 'input_json_delta') {
             partialJson[ev.index] = (partialJson[ev.index] ?? '') + d.partial_json;
+            salida += String(d.partial_json ?? '').length;
           }
           break;
         }
@@ -271,10 +319,20 @@ export async function callClaude(opts: CallOptions): Promise<Turn> {
         case 'message_delta':
           stopReason = ev.delta?.stop_reason ?? stopReason;
           stopCategory = ev.delta?.stop_details?.category ?? stopCategory;
-          if (ev.usage) usage = addUsage(usage, ev.usage);
+          if (ev.usage) {
+            usage = addUsage(usage, ev.usage);
+            salidaContada = true;
+          }
           break;
       }
     }
+  }
+  } catch (e) {
+    // Lo consumido hasta aquí se paga igual: viaja en el error.
+    const parcial = salidaContada ? usage : addUsage(usage, { output_tokens: estimarFichas(salida) });
+    throw new LlamadaFallida(`anthropic stream: ${e instanceof Error ? e.name : 'error'}`, parcial, servedModel);
+  } finally {
+    signal.removeEventListener('abort', cortar);
   }
 
   // Comprobar el rechazo ANTES de leer el contenido: en un rechazo los

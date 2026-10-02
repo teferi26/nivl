@@ -1,9 +1,13 @@
 import { deleteAccount } from '../account';
+import { olvidarConsentimiento } from '../consent';
+import { cancelarTodo } from '../notifications';
 import { setApiKey } from '../oracle';
 import { supabase } from '../supabase';
 import { ErrorVisible } from '../validation';
 
 jest.mock('../oracle', () => ({ setApiKey: jest.fn() }));
+jest.mock('../notifications', () => ({ cancelarTodo: jest.fn() }));
+jest.mock('../consent', () => ({ olvidarConsentimiento: jest.fn() }));
 jest.mock('../supabase', () => ({
   supabase: { functions: { invoke: jest.fn() }, auth: { signOut: jest.fn() } },
 }));
@@ -16,6 +20,7 @@ beforeEach(() => {
   invoke.mockResolvedValue({ data: { ok: true }, error: null });
   signOut.mockResolvedValue({ error: null });
   jest.mocked(setApiKey).mockResolvedValue(undefined);
+  jest.mocked(cancelarTodo).mockResolvedValue(undefined);
 });
 
 test('only confirmed NIVL erasure succeeds before local cleanup', async () => {
@@ -54,6 +59,7 @@ test.each([
   await expect(deleteAccount()).rejects.toBeInstanceOf(ErrorVisible);
   expect(setApiKey).not.toHaveBeenCalled();
   expect(signOut).not.toHaveBeenCalled();
+  expect(cancelarTodo).not.toHaveBeenCalled();
 });
 
 test('network interruption keeps the local session', async () => {
@@ -65,5 +71,20 @@ test('network interruption keeps the local session', async () => {
 test('failed legacy-key cleanup does not leave a deleted account signed in', async () => {
   jest.mocked(setApiKey).mockRejectedValueOnce(new Error('local key error'));
   await deleteAccount();
+  expect(signOut).toHaveBeenCalledWith({ scope: 'local' });
+});
+
+test('confirmed erasure cancels local reminders and forgets the cached AI consent', async () => {
+  await deleteAccount();
+  expect(cancelarTodo).toHaveBeenCalledTimes(1);
+  expect(olvidarConsentimiento).toHaveBeenCalledTimes(1);
+  expect(signOut).toHaveBeenCalledWith({ scope: 'local' });
+});
+
+test('local cleanup failures never surface as a failed erasure nor keep the session', async () => {
+  jest.mocked(cancelarTodo).mockRejectedValueOnce(new Error('os error'));
+  jest.mocked(olvidarConsentimiento).mockImplementationOnce(() => { throw new Error('cache'); });
+  signOut.mockRejectedValueOnce(new Error('storage'));
+  await expect(deleteAccount()).resolves.toBeUndefined();
   expect(signOut).toHaveBeenCalledWith({ scope: 'local' });
 });

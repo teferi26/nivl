@@ -67,6 +67,15 @@ async function sql(query) {
 
 // Cada migración se reconoce por un objeto que solo ella crea.
 const HUELLAS = {
+  '0041': `to_regclass('public.xp_daily_ledger') is not null`,
+  '0042': `to_regprocedure('public.claim_push_token(text,text)') is not null`,
+  '0043': `not has_table_privilege('authenticated','public.quests','TRUNCATE')`,
+  '0038': `pg_get_constraintdef((select oid from pg_constraint where conname='coach_runs_kind_check' and conrelid='public.coach_runs'::regclass)) like '%titular%'`,
+  '0039': `to_regprocedure('public.store_events_redact(text)') is not null`,
+  '0040': `coalesce(obj_description(to_regprocedure('public.export_my_data()'), 'pg_proc') like '%nivl:export-completo%', false)`,
+  '0037': `to_regclass('public.ai_reports') is not null`,
+  '0035': `to_regclass('public.recovery_credits') is not null`,
+  '0036': `exists(select 1 from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='public' and p.proname='apply_store_reconciliation' and obj_description(p.oid, 'pg_proc') like '%nivl:store-manual-grants-20261002%')`,
   '0034': `exists(select 1 from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='public' and p.proname='ai_consent_version' and obj_description(p.oid, 'pg_proc') like '%nivl:consent-destinations-20260929%')`,
   '0031': `to_regclass('public.account_erasure_jobs') is not null and to_regprocedure('public.account_erasure_ready(uuid,uuid)') is not null and exists(select 1 from pg_trigger where tgrelid='storage.objects'::regclass and tgname='account_upload_guard')`,
   '0032': `to_regclass('public.social_reports') is not null and to_regclass('public.social_avatar_paths') is not null and to_regprocedure('public.social_blocked_users()') is not null and exists(select 1 from pg_trigger where tgrelid='storage.objects'::regclass and tgname='social_avatar_immutable')`,

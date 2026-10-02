@@ -1,0 +1,172 @@
+diff --git a/supabase/functions/_shared/tools.ts b/supabase/functions/_shared/tools.ts
+index aaa4685..1c2af4d 100644
+--- a/supabase/functions/_shared/tools.ts
++++ b/supabase/functions/_shared/tools.ts
+@@ -85,6 +85,27 @@ const enumOpt = (values: string[], description: string) => ({
+   description: `${description}. Cadena vacía para no tocarlo.`,
+ });
+ 
++// Topes del ejecutor (Chat 3 · c). El esquema solo los SUGIERE al modelo (no
++// hay `strict`), y varias columnas no tienen CHECK de rango ni de longitud:
++// sin esto, una respuesta desbocada o una orden inyectada escribe cientos de
++// filas o importes absurdos en una sola llamada.
++const FECHA = /^\d{4}-\d{2}-\d{2}$/;
++function fechaValida(v: unknown, campo = 'fecha'): string {
++  const f = String(v ?? '');
++  if (!FECHA.test(f) || Number.isNaN(Date.parse(`${f}T00:00:00Z`))) throw new Error(`${campo} inválida: ${f} (YYYY-MM-DD)`);
++  return f;
++}
++function texto(v: unknown, max: number, campo: string): string {
++  const t = String(v ?? '');
++  if (t.length > max) throw new Error(`${campo} demasiado largo (${t.length} > ${max} caracteres).`);
++  return t;
++}
++function lista<T>(v: unknown, max: number, campo: string): T[] {
++  const l = Array.isArray(v) ? (v as T[]) : [];
++  if (l.length > max) throw new Error(`Demasiados ${campo}: ${l.length} (máximo ${max}).`);
++  return l;
++}
++
+ /** Normaliza el centinela: '' y null pasan a undefined. */
+ const val = (v: unknown): string | undefined => {
+   const s = typeof v === 'string' ? v.trim() : v == null ? '' : String(v);
+@@ -631,8 +652,10 @@ export async function executeTool(
+     }
+ 
+     case 'planificar_dia': {
+-      const bloques = (input.bloques ?? []) as any[];
++      const bloques = lista<any>(input.bloques, 16, 'bloques');
+       if (!bloques.length) throw new Error('Un plan sin bloques no es un plan.');
++      fechaValida(input.fecha);
++      texto(input.brief, 4000, 'brief');
+ 
+       const { data: plan, error: planErr } = await sb
+         .from('day_plans')
+@@ -678,8 +701,8 @@ export async function executeTool(
+     case 'programar_evento': {
+       const { error } = await sb.from('calendar_events').insert({
+         user_id: userId,
+-        title: input.titulo,
+-        date: input.fecha,
++        title: texto(input.titulo, 200, 'titulo'),
++        date: fechaValida(input.fecha),
+         time: val(input.hora) ?? null,
+         notes: val(input.notas) ?? null,
+       });
+@@ -713,8 +736,8 @@ export async function executeTool(
+       const { error } = await sb.from('coach_facts').insert({
+         user_id: userId,
+         category: input.categoria,
+-        content: input.contenido,
+-        date: val(input.fecha) ?? ctx.today,
++        content: texto(input.contenido, 2000, 'contenido'),
++        date: val(input.fecha) ? fechaValida(input.fecha) : ctx.today,
+         source: 'coach',
+       });
+       if (error) throw error;
+@@ -730,7 +753,7 @@ export async function executeTool(
+       const { error } = await sb.from('coach_dossier').upsert(
+         {
+           user_id: userId,
+-          content: input.contenido,
++          content: texto(input.contenido, 60_000, 'dossier'),
+           version: (prev?.version ?? 0) + 1,
+           updated_at: new Date().toISOString(),
+         },
+@@ -791,6 +814,10 @@ export async function executeTool(
+     }
+ 
+     case 'ajustar_meta': {
++      for (const k of ['valor_inicial', 'valor_objetivo']) {
++        const n = Number(input[k]);
++        if (!Number.isFinite(n) || Math.abs(n) > 1_000_000) throw new Error(`${k} fuera de rango: ${input[k]}`);
++      }
+       const { error } = await sb.from('goals').insert({
+         user_id: userId,
+         title: input.titulo,
+@@ -807,8 +834,9 @@ export async function executeTool(
+     }
+ 
+     case 'prescribir_entreno': {
+-      const ejercicios = (input.ejercicios ?? []) as any[];
++      const ejercicios = lista<any>(input.ejercicios, 12, 'ejercicios');
+       if (!ejercicios.length) throw new Error('Una sesión sin ejercicios no es una sesión.');
++      fechaValida(input.fecha);
+ 
+       // Sustitución completa: reprogramar no debe dejar ejercicios zombis de
+       // una versión anterior del plan.
+@@ -851,6 +879,15 @@ export async function executeTool(
+         throw new Error(`${prot} g de proteína está fuera de rango.`);
+       }
+ 
++      // Línea roja de salud (menores): sin objetivos de calorías para quien
++      // declara tener menos de 18. Decisión de producto pendiente del dueño:
++      // el umbral y si aplica también a prescribir_entreno.
++      const { data: ficha } = await sb.from('body_profile').select('birth_year').eq('user_id', userId).maybeSingle();
++      const nacido = Number((ficha as { birth_year?: number } | null)?.birth_year);
++      if (Number.isFinite(nacido) && new Date().getUTCFullYear() - nacido < 18) {
++        throw new Error('Es menor de edad: no se fijan calorías. Recomiéndale hablarlo con un profesional y su familia.');
++      }
++
+       // Solo un objetivo vigente: el anterior queda archivado, no borrado.
+       await sb
+         .from('nutrition_targets')
+@@ -875,8 +912,13 @@ export async function executeTool(
+     case 'planificar_comidas': {
+       const dia = Number(input.dia_semana);
+       if (!(dia >= 1 && dia <= 7)) throw new Error(`Día de la semana inválido: ${input.dia_semana}`);
+-      const comidas = (input.comidas ?? []) as any[];
++      const comidas = lista<any>(input.comidas, 8, 'comidas');
+       if (!comidas.length) throw new Error('Un día sin comidas no es un plan.');
++      for (const c of comidas) {
++        const k = Number(c.kcal) || 0;
++        if (k < 0 || k > 3000) throw new Error(`Calorías de una comida fuera de rango: ${c.kcal}`);
++        texto(c.descripcion, 1000, 'descripcion');
++      }
+ 
+       await sb.from('meal_slots').delete().eq('user_id', userId).eq('day_of_week', dia);
+ 
+@@ -906,7 +948,13 @@ export async function executeTool(
+       if (!(dia >= 1 && dia <= 7)) throw new Error(`Día de la semana inválido: ${input.dia_semana}`);
+       const nombre = String(input.nombre ?? '').trim();
+       if (!nombre) throw new Error('El día necesita un nombre: PUSH, PULL, LEGS, Descanso…');
+-      const ejercicios = (input.ejercicios ?? []) as any[];
++      const ejercicios = lista<any>(input.ejercicios, 20, 'ejercicios');
++      for (const e of ejercicios) {
++        const series = Number(e.series), reps = Number(e.reps), peso = Number(e.peso) || 0;
++        if (!(series >= 1 && series <= 20) || !(reps >= 1 && reps <= 100) || !(peso >= 0 && peso < 1000)) {
++          throw new Error(`Ejercicio fuera de rango: ${e.nombre} ${e.series}×${e.reps} @${e.peso}`);
++        }
++      }
+ 
+       // El día se reescribe entero. Las SESIONES ya registradas no se tocan:
+       // gym_sessions apunta al día por gym_day_id, y borrar el día se lo
+@@ -1020,6 +1068,13 @@ export async function executeTool(
+     case 'regla_categoria': {
+       const patron = String(input.patron ?? '').trim();
+       if (patron.length < 2) throw new Error('El patrón necesita al menos dos caracteres.');
++      // Va dentro de un filtro `or=(…)` de PostgREST: una coma o un paréntesis
++      // añadían condiciones propias (probado: `zz,category.eq.sin_clasificar,…`
++      // recategorizaba TODO lo pendiente). Acotado a su cuenta, pero no es lo
++      // que se pidió.
++      if (/[,()"\\]/.test(patron) || patron.length > 80) {
++        throw new Error('El patrón no puede llevar comas, paréntesis, comillas ni pasar de 80 caracteres.');
++      }
+ 
+       const { error } = await sb
+         .from('category_rules')
+@@ -1049,11 +1104,11 @@ export async function executeTool(
+ 
+     case 'registrar_movimiento': {
+       const importe = Number(input.importe);
+-      if (!Number.isFinite(importe) || importe === 0) {
++      if (!Number.isFinite(importe) || importe === 0 || Math.abs(importe) > 1_000_000) {
+         throw new Error(`Importe inválido: ${input.importe}. Negativo si es gasto, positivo si es ingreso.`);
+       }
+-      const fecha = String(input.fecha);
+-      const desc = String(input.descripcion ?? '').trim();
++      const fecha = fechaValida(input.fecha);
++      const desc = texto(String(input.descripcion ?? '').trim(), 200, 'descripcion');
+       if (!desc) throw new Error('Un movimiento sin descripción no sirve de nada dentro de un mes.');
+ 
+       // Misma huella que usa el importador: si el mismo movimiento acaba

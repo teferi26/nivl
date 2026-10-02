@@ -1,3 +1,5 @@
+import { olvidarConsentimiento } from './consent';
+import { cancelarTodo } from './notifications';
 import { setApiKey } from './oracle';
 import { supabase } from './supabase';
 import { ErrorVisible } from './validation';
@@ -14,8 +16,14 @@ export async function deleteAccount(): Promise<void> {
     // Never discard the session while files or the account still need erasing.
     throw new ErrorVisible('El borrado no ha terminado. Reintenta desde Eliminar cuenta para completarlo.');
   }
-  // Auth has already been deleted. A failed legacy-key cleanup must not keep
-  // the app signed in to an account that no longer exists.
-  await setApiKey('').catch(() => undefined);
-  await supabase.auth.signOut({ scope: 'local' });
+  // Auth has already been deleted. No local cleanup failure may keep the app
+  // signed in to an account that no longer exists, so each step is isolated.
+  // Scheduled local reminders carry mission/plan titles: they must not keep
+  // firing for an erased account on this device.
+  await Promise.allSettled([
+    setApiKey(''),
+    cancelarTodo(),
+    Promise.resolve().then(olvidarConsentimiento),
+  ]);
+  await supabase.auth.signOut({ scope: 'local' }).catch(() => undefined);
 }

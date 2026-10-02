@@ -7,6 +7,8 @@ export interface Subscription {
   user_id: string;
   status: 'none' | 'active' | 'trialing' | 'past_due' | 'canceled';
   current_period_end: string | null;
+  /** Quién cobra (0020): 'stripe' | 'apple' | 'google' | 'manual'. Decide si se puede comprar en la tienda sin duplicar cobro. */
+  provider?: string | null;
 }
 
 // Payment Link de Stripe (se crea en el dashboard de Stripe, sin código).
@@ -54,7 +56,7 @@ export function paymentsConfigured(): boolean {
 export async function fetchSubscription(userId: string): Promise<Subscription | null> {
   const { data, error } = await supabase
     .from('subscriptions')
-    .select('user_id, status, current_period_end')
+    .select('user_id, status, current_period_end, provider')
     .eq('user_id', userId)
     .maybeSingle();
   if (error) throw error;
@@ -114,6 +116,14 @@ export async function callPremiumOracle<T>(
   }
 
   const body = (await res.json().catch(() => ({}))) as { result?: T; error?: string; reason?: string };
+  // El Oráculo pasa por el candado de gasto (ai_begin_turn): son negativas
+  // serenas, no errores técnicos. Solo "sin suscripción" lleva a /pro.
+  if (res.status === 402 && body.reason === 'presupuesto_agotado') {
+    throw new ErrorVisible(body.error || 'La energía del coach de este mes se ha agotado. Se recarga el día 1.');
+  }
+  if (res.status === 429 && body.reason === 'turno_en_curso') {
+    throw new ErrorVisible('El sistema sigue respondiendo a tu petición anterior. Dale unos segundos.');
+  }
   if (res.status === 402) throw new PaywallError();
   if (res.status === 403 && body.reason === 'sin_consentimiento') throw new ConsentRequiredError();
   // El cupo del mes: el servidor ya lo dice para la persona.

@@ -2,7 +2,7 @@
 // Only after verification do we obtain authoritative Customer Info; the RPC
 // keeps the existing financial event processor and applies access atomically.
 import type { Db } from './db.ts';
-import { eventUsers, reconcileStore } from './store-reconcile.ts';
+import { eventUsers, reconcileStore, type ReconcileOptions } from './store-reconcile.ts';
 
 async function igualSeguro(a: string, b: string): Promise<boolean> {
   const enc = new TextEncoder();
@@ -16,7 +16,9 @@ async function igualSeguro(a: string, b: string): Promise<boolean> {
 }
 const json = (status: number, body: unknown) => new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
 
-export const storeWebhookHandler = (admin: Db, auth: string, apiKey: string, fetcher: typeof fetch = fetch) => async (req: Request): Promise<Response> => {
+export const storeWebhookHandler = (
+  admin: Db, auth: string, apiKey: string, fetcher: typeof fetch = fetch, options: ReconcileOptions = {},
+) => async (req: Request): Promise<Response> => {
   if (req.method !== 'POST') return json(405, { error: 'method' });
   if (!auth) return json(401, { error: 'unauthorized' });
   const received = req.headers.get('authorization') ?? '';
@@ -27,9 +29,15 @@ export const storeWebhookHandler = (admin: Db, auth: string, apiKey: string, fet
   if (!event || typeof event !== 'object' || typeof (event as { id?: unknown }).id !== 'string') {
     return json(200, { ok: false, ignored: 'sin_evento' });
   }
+  if (!apiKey.trim()) {
+    // Retryable and explicit in RevenueCat's delivery log: never acknowledge an
+    // event that could not be verified (RevenueCat retries 5 times: 5–80 min).
+    console.error('revenuecat-webhook: REVENUECAT_API_KEY (RevenueCat v1 secret key) is not configured');
+    return json(503, { error: 'store_not_configured' });
+  }
   try {
     const verified = event as Record<string, unknown>;
-    const result = await reconcileStore(admin, eventUsers(verified), apiKey, verified, fetcher);
+    const result = await reconcileStore(admin, eventUsers(verified), apiKey, verified, fetcher, options);
     // A conflict or unavailable provider is retryable, never a successful
     // acknowledgement of a transfer whose entitlement has not been applied.
     return result.ok ? json(200, result) : json(503, { error: 'pending' });

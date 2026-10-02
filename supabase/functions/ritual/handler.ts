@@ -1,0 +1,505 @@
+// NIVL · Edge Function: LOS RITUALES.
+//
+// Esto es lo que convierte a NIVL en un coach que trabaja para ti y no en una
+// app que abres. pg_cron la llama cada hora; ella mira qué hora es en la zona
+// de cada gladiador y decide si le toca algo:
+//
+//   · brief          — a la hora de despertar, con el plan del día escrito
+//   · revision       — domingo por la tarde
+//   · cierre_mensual — el día 1
+//   · escalada       — si lleva días en silencio (la carta con tres puertas)
+//
+// Después empuja el resultado por notificación push. Si no hay token, el
+// ritual igual queda escrito y lo verá al abrir la app.
+//
+// Despliegue:
+//   supabase functions deploy ritual --no-verify-jwt
+//   supabase secrets set RITUAL_SECRET=<cadena larga al azar>
+
+import { callClaude, CHEAP_MODEL, costMicroUsd } from '../_shared/anthropic.ts';
+import { consentimientoIa } from '../_shared/consent.ts';
+import { healthConsent, healthRevision, healthScopedClient, requireHealth } from '../_shared/health.ts';
+import { adminClient, type Db } from '../_shared/db.ts';
+import { espejarEntrada, espejoActivo } from '../_shared/notion.ts';
+
+const EXPO_PUSH = 'https://exp.host/--/api/v2/push/send';
+
+interface Perfil {
+  id: string;
+  name: string;
+  timezone: string;
+  wake_time: string;
+  sleep_time: string;
+  coach_mode: string;
+}
+
+function json(status: number, body: unknown): Response {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { 'content-type': 'application/json' },
+  });
+}
+
+/** Hora local del gladiador, sin librerías: Intl ya sabe de husos y de DST. */
+function ahoraLocal(timezone: string): { fecha: string; hora: number; minuto: number; diaSemana: number } {
+  const ahora = new Date();
+  const fmt = new Intl.DateTimeFormat('en-CA', {
+    timeZone: timezone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+    weekday: 'short',
+  });
+  const partes = Object.fromEntries(fmt.formatToParts(ahora).map((p) => [p.type, p.value]));
+  const dias: Record<string, number> = { Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6, Sun: 7 };
+  return {
+    fecha: `${partes.year}-${partes.month}-${partes.day}`,
+    hora: Number(partes.hour) % 24,
+    minuto: Number(partes.minute),
+    diaSemana: dias[partes.weekday] ?? 1,
+  };
+}
+
+/**
+ * Compara el secreto del cron en tiempo constante. Con `!==` la comparación se
+ * corta en el primer carácter distinto, y el tiempo de respuesta filtra
+ * cuántos ha acertado quien prueba desde fuera (la función es pública:
+ * --no-verify-jwt).
+ */
+export function secretoValido(recibido: string | null, esperado: string | undefined): boolean {
+  if (!esperado || recibido === null) return false;
+  const enc = new TextEncoder();
+  const a = enc.encode(recibido);
+  const b = enc.encode(esperado);
+  let diff = a.length ^ b.length;
+  for (let i = 0; i < b.length; i++) diff |= (a[i] ?? 0) ^ b[i];
+  return diff === 0;
+}
+
+function horaDe(t: string): number {
+  return Number(String(t).slice(0, 2));
+}
+
+/**
+ * Convierte el ritual entero en una línea para la notificación.
+ *
+ * Antes se cortaba por el carácter 240, que en un brief que empieza con
+ * "**El veredicto: tu gasto no es el problema…**" daba una notificación con
+ * asteriscos y partida a mitad de frase. Y una notificación es lo único que ves
+ * si no abres la app: si no dice nada, el ritual no ha servido de nada.
+ *
+ * Lo hace Haiku porque resumir en una línea un texto que ya está escrito no
+ * pide criterio, y con la tarifa del coach este resumen costaría más que
+ * generar el brief. Si falla, se cae al recorte de siempre: quedarse sin push
+ * por no tener titular sería peor.
+ */
+async function titular(sb: Db, userId: string, cuerpo: string): Promise<string> {
+  await requireHealth(sb, userId);
+  const plano = cuerpo.replace(/[*#_`]/g, '').replace(/\s+/g, ' ').trim();
+  if (plano.length <= 180) return plano;
+  try {
+    if ((await consentimientoIa(sb, userId)) !== true) return plano.slice(0, 240);
+    const turn = await callClaude({
+      model: CHEAP_MODEL,
+      signal: AbortSignal.timeout(30_000),
+      system: [{
+        type: 'text',
+        text: 'Resumes en UNA sola frase de menos de 180 caracteres lo que un coach acaba de escribirle a su cliente. Tono seco y directo, en segunda persona, sin emojis, sin markdown, sin comillas. Si hay una cifra o una hora concretas, van dentro. Devuelves solo la frase.',
+      }],
+      messages: [{ role: 'user', content: [{ type: 'text', text: plano.slice(0, 6000) }] }],
+      maxTokens: 200,
+      effort: 'low',
+    });
+    // También esto cuesta y también va al libro: sin fila, el candado no lo
+    // ve. (kind 'titular' necesita la propuesta c-coach-runs-kinds.sql; hasta
+    // aplicarla el insert falla y queda en el log.)
+    const { error: ledgerErr } = await sb.from('coach_runs').insert({
+      user_id: userId,
+      kind: 'titular',
+      mode: 'estandar',
+      model: turn.model,
+      in_tokens: turn.usage.input_tokens ?? 0,
+      cache_read_tokens: turn.usage.cache_read_input_tokens ?? 0,
+      cache_write_tokens: turn.usage.cache_creation_input_tokens ?? 0,
+      out_tokens: turn.usage.output_tokens ?? 0,
+      cost_micro_usd: costMicroUsd(turn.model, turn.usage),
+    });
+    if (ledgerErr) console.error('coach_runs insert failed (titular):', ledgerErr.message);
+    const t = turn.content.filter((b) => b.type === 'text').map((b) => b.text ?? '').join('').trim();
+    if (t) return t.slice(0, 240);
+  } catch (e) {
+    console.error('titular failed');
+  }
+  return plano.slice(0, 240);
+}
+
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/**
+ * Aviso operativo de moderación (propuesta 0037_moderacion.sql).
+ *
+ * Al final de cada pasada del cron se pregunta a `moderation_digest()` (solo
+ * service_role) cuántas denuncias o revisiones han entrado desde el último
+ * aviso. Si hay alguna, se empuja un push a los dispositivos de las cuentas
+ * owner que devuelve la propia RPC.
+ *
+ *   · Solo recuentos: NI una palabra del contenido de las denuncias.
+ *   · No depende de los consentimientos de IA ni de salud: es operativo y no
+ *     llama a ningún modelo.
+ *   · Si la RPC aún no existe (42883 / PGRST202) se ignora con un aviso sin
+ *     datos, para poder desplegar el ritual antes que la migración.
+ *   · Nada de aquí puede tumbar el ritual: todo va dentro de un try.
+ *
+ * Devuelve a cuántos dispositivos se ha enviado (para los tests).
+ */
+export async function avisarModeracion(admin: Db): Promise<number> {
+  try {
+    const { data, error } = await admin.rpc('moderation_digest');
+    if (error) {
+      const code = (error as { code?: string }).code;
+      if (code === '42883' || code === 'PGRST202') console.warn('moderation_digest todavía no existe: aviso omitido.');
+      else console.warn('moderation_digest falló: aviso omitido.');
+      return 0;
+    }
+    const d = data as { nuevos?: unknown; abiertos?: unknown; owners?: unknown } | null;
+    const nuevos = Math.max(0, Math.trunc(Number(d?.nuevos) || 0));
+    if (!nuevos) return 0;
+    const abiertos = Math.max(nuevos, Math.trunc(Number(d?.abiertos) || 0));
+    const owners = (Array.isArray(d?.owners) ? d!.owners : []).filter(
+      (u): u is string => typeof u === 'string' && UUID.test(u),
+    );
+    if (!owners.length) return 0;
+
+    const { data: filas, error: tokErr } = await admin.from('push_tokens').select('token').in('user_id', owners);
+    if (tokErr) {
+      console.warn('push_tokens de moderación no disponibles: aviso omitido.');
+      return 0;
+    }
+    const tokens = [...new Set(((filas ?? []) as { token?: unknown }[]).map((t) => t.token).filter((t): t is string => typeof t === 'string' && !!t))];
+    if (!tokens.length) return 0;
+
+    const cuerpo = `${nuevos} denuncias o revisiones nuevas · ${abiertos} abiertas`;
+    // Expo admite hasta 100 mensajes por petición.
+    for (let i = 0; i < tokens.length; i += 100) {
+      await fetch(EXPO_PUSH, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(
+          tokens.slice(i, i + 100).map((to) => ({
+            to,
+            title: 'Moderación',
+            body: cuerpo,
+            sound: 'default',
+            priority: 'high',
+            channelId: 'sistema',
+          })),
+        ),
+      }).catch(() => {});
+    }
+    return tokens.length;
+  } catch (_e) {
+    console.warn('aviso de moderación falló: omitido.');
+    return 0;
+  }
+}
+
+async function empujar(sb: Db, userId: string, titulo: string, cuerpo: string, ruta: string) {
+  await requireHealth(sb, userId);
+  const { data: tokens } = await sb.from('push_tokens').select('token').eq('user_id', userId);
+  const lista = (tokens ?? []).map((t: { token: string }) => t.token);
+  if (!lista.length) return;
+
+  if (await healthConsent(sb, userId) !== true || await consentimientoIa(sb, userId) !== true) return;
+  await fetch(EXPO_PUSH, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify(
+      lista.map((to) => ({
+        to,
+        title: titulo,
+        body: cuerpo,
+        sound: 'default',
+        priority: 'high',
+        channelId: 'sistema',
+        data: { ruta },
+      })),
+    ),
+  }).catch(() => {});
+}
+
+/**
+ * El resumen del mes, automático el día 1. El semanal NO se genera solo: es un
+ * momento y se pide cuando apetece verlo; el mensual llega sin pedirlo porque
+ * si no, no se mira nunca.
+ *
+ * Devuelve null si no hubo fotos ese mes. En ese caso no se avisa de nada: un
+ * push diciendo "no hay resumen" es peor que el silencio.
+ */
+async function resumenMensual(userJwt: string): Promise<number | null> {
+  const url = `${Deno.env.get('SUPABASE_URL')}/functions/v1/coach`;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: {
+      authorization: `Bearer ${userJwt}`,
+      apikey: Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      'content-type': 'application/json',
+    },
+    body: JSON.stringify({ kind: 'resumen', periodo: 'mensual' }),
+  });
+  if (!res.ok) return null;
+  const body = (await res.json().catch(() => ({}))) as { slides?: unknown[]; fotos?: number };
+  return body.slides?.length ? (body.fotos ?? 0) : null;
+}
+
+/** Llama a la función `coach` como lo haría la app, pero desde el servidor. */
+async function invocarCoach(userJwt: string, kind: string, message: string): Promise<string> {
+  const url = `${Deno.env.get('SUPABASE_URL')}/functions/v1/coach`;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: {
+      authorization: `Bearer ${userJwt}`,
+      apikey: Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      'content-type': 'application/json',
+    },
+    body: JSON.stringify({ kind, message, stream: false }),
+  });
+  const body = (await res.json().catch(() => ({}))) as { text?: string; error?: string };
+  if (!res.ok) throw new Error(body.error ?? `coach HTTP ${res.status}`);
+  return body.text ?? '';
+}
+
+/**
+ * Sesión de servidor para un usuario concreto. El coach ejecuta sus
+ * herramientas con el JWT de quien llama para que RLS siga aplicando, así que
+ * el cron necesita un token de verdad: se emite uno de un solo uso.
+ */
+async function jwtDeUsuario(sb: Db, email: string): Promise<string | null> {
+  const { data, error } = await sb.auth.admin.generateLink({ type: 'magiclink', email });
+  if (error || !data) return null;
+  const hashed = (data.properties as { hashed_token?: string } | undefined)?.hashed_token;
+  if (!hashed) return null;
+
+  const url = `${Deno.env.get('SUPABASE_URL')}/auth/v1/verify?token=${encodeURIComponent(hashed)}&type=magiclink&redirect_to=${encodeURIComponent('http://localhost/')}`;
+  const res = await fetch(url, {
+    headers: { apikey: Deno.env.get('SUPABASE_ANON_KEY') ?? '' },
+    redirect: 'manual',
+  });
+  const loc = res.headers.get('location') ?? '';
+  return new URLSearchParams(loc.split('#')[1] ?? '').get('access_token');
+}
+
+interface Decision {
+  kind: string;
+  message: string;
+  titulo: string;
+  ruta: string;
+}
+
+async function decidir(sb: Db, p: Perfil): Promise<Decision | null> {
+  const local = ahoraLocal(p.timezone);
+
+  // En pausa no se le persigue: es una de las tres puertas.
+  if (p.coach_mode === 'pausa') return null;
+
+  const yaHecho = async (kind: string, desde: string) => {
+    const { data } = await sb
+      .from('coach_runs')
+      .select('id')
+      .eq('user_id', p.id)
+      .eq('kind', kind)
+      .is('error', null)
+      .gte('created_at', desde)
+      .limit(1);
+    return !!data?.length;
+  };
+
+  const inicioDia = `${local.fecha}T00:00:00Z`;
+
+  // 1) Cierre mensual: el día 1, a la hora de despertar.
+  if (local.fecha.endsWith('-01') && local.hora === horaDe(p.wake_time)) {
+    const mes = local.fecha.slice(0, 7);
+    if (!(await yaHecho('cierre_mensual', `${mes}-01T00:00:00Z`))) {
+      return {
+        kind: 'cierre_mensual',
+        message: 'Cierra el mes.',
+        titulo: 'Cierre del mes',
+        ruta: '/(tabs)/coach',
+      };
+    }
+  }
+
+  // 2) Revisión semanal: domingo a las 20:00 locales.
+  if (local.diaSemana === 7 && local.hora === 20) {
+    const hace6dias = new Date(Date.now() - 6 * 86400000).toISOString();
+    if (!(await yaHecho('revision_semanal', hace6dias))) {
+      return {
+        kind: 'revision_semanal',
+        message: 'Haz la revisión de la semana.',
+        titulo: 'Revisión de la semana',
+        ruta: '/(tabs)/coach',
+      };
+    }
+  }
+
+  // 3) Brief diario, a la hora de despertar.
+  if (local.hora === horaDe(p.wake_time)) {
+    if (!(await yaHecho('brief', inicioDia))) {
+      return {
+        kind: 'brief',
+        message: `Es ${local.fecha}. Dicta el brief de hoy y escribe el plan.`,
+        titulo: 'Órdenes del día',
+        ruta: '/(tabs)',
+      };
+    }
+  }
+
+  // 4) Escalada: cuatro días sin que él diga nada, a media mañana.
+  if (local.hora === 11) {
+    const hace4dias = new Date(Date.now() - 4 * 86400000).toISOString();
+    const { data: suyos } = await sb
+      .from('coach_messages')
+      .select('id')
+      .eq('user_id', p.id)
+      .eq('role', 'user')
+      .gte('created_at', hace4dias)
+      .limit(1);
+    const hace7dias = new Date(Date.now() - 7 * 86400000).toISOString();
+    if (!suyos?.length && !(await yaHecho('escalada', hace7dias))) {
+      return {
+        kind: 'escalada',
+        message: 'Lleva cuatro días en silencio.',
+        titulo: 'El sistema te espera',
+        ruta: '/(tabs)/coach',
+      };
+    }
+  }
+
+  return null;
+}
+
+export async function handler(req: Request): Promise<Response> {
+  // Autenticación propia: la función va con --no-verify-jwt porque la llama
+  // pg_cron, no un usuario. El secreto compartido es el candado.
+  if (!secretoValido(req.headers.get('x-ritual-secret'), Deno.env.get('RITUAL_SECRET'))) {
+    return json(401, { error: 'No autorizado' });
+  }
+
+  const admin = adminClient();
+  const { data: perfiles } = await admin
+    .from('profiles')
+    .select('id, name, timezone, wake_time, sleep_time, coach_mode');
+
+  const hechos: { user: string; kind: string }[] = [];
+  const fallos: { user: string; error: string }[] = [];
+
+  for (const p of (perfiles ?? []) as Perfil[]) {
+    // La sesión que se abre por el gladiador (magic link) se cierra al acabar
+    // con él: antes se quedaba viva, con su refresh token, una por ritual.
+    let jwt: string | null = null;
+    try {
+      if (await healthConsent(admin, p.id) !== true || await consentimientoIa(admin, p.id) !== true) continue;
+      const revision = await healthRevision(admin, p.id);
+      const sb = healthScopedClient(adminClient(revision), revision);
+      const decision = await decidir(sb, p);
+      if (!decision) continue;
+
+      // Sin IA contratada (o con la del mes agotada) no hay ritual. El coach
+      // lo rechazaría igual —el candado está allí—, pero así ni se fabrica la
+      // sesión ni se apunta como fallo algo que es lo esperado en una cuenta
+      // gratuita.
+      const { data: ia } = await sb.rpc('ai_state', { p_user: p.id });
+      const estadoIa = ia as { entitled?: boolean; remaining?: number; tier?: string } | null;
+      if (!estadoIa?.entitled || (estadoIa.remaining ?? 0) < 20000) continue;
+
+      // Sin consentimiento vigente para la IA (0028), ni ritual ni push: el
+      // coach lo rechazaría igual, pero así no se abre una sesión para nada.
+      // Retirarlo en Perfil tiene que parar TAMBIÉN lo que dispara el cron.
+      if ((await consentimientoIa(sb, p.id)) !== true) continue;
+
+      const { data: usuario } = await sb.auth.admin.getUserById(p.id);
+      const email = usuario?.user?.email;
+      if (!email) continue;
+
+      jwt = await jwtDeUsuario(sb, email);
+      if (!jwt) {
+        fallos.push({ user: p.id, error: 'no se pudo abrir sesión' });
+        continue;
+      }
+
+      const texto = await invocarCoach(jwt, decision.kind, decision.message);
+
+      // El brief tiene que dejar el plan del dia escrito. Se le dice en su
+      // instruccion con todas las letras, y aun asi hay dias que no lo hace:
+      // se le acaba el sitio antes de llegar a la llamada, o simplemente
+      // decide que no. El precio de ese fallo lo paga el usuario levantandose
+      // sin nada que hacer, y sin ningun error que lo explique.
+      //
+      // Asi que no se confia en que lo haya hecho: se comprueba. Si no hay
+      // plan, se pide aparte, que es un turno corto y con un solo trabajo.
+      if (decision.kind === 'brief') {
+        await requireHealth(sb, p.id);
+        const hoy = ahoraLocal(p.timezone).fecha;
+        const { count } = await sb
+          .from('day_plans')
+          .select('id', { count: 'exact', head: true })
+          .eq('user_id', p.id)
+          .eq('date', hoy);
+        if (!count) {
+          await invocarCoach(jwt, 'plan', `Es ${hoy}. Escribe el plan del dia completo.`).catch(
+            () => fallos.push({ user: p.id, error: 'fallback_plan_failed' }),
+          );
+        }
+      }
+
+      if ((await consentimientoIa(sb, p.id)) !== true) continue;
+      const tituloPush = await titular(sb, p.id, texto || 'El sistema tiene algo para ti.');
+      if ((await consentimientoIa(sb, p.id)) !== true) continue;
+      await empujar(
+        sb,
+        p.id,
+        decision.titulo,
+        tituloPush,
+        decision.ruta,
+      );
+
+      // Espejo a la página del CEREBRO, para que el coach de escritorio lea lo
+      // mismo. Solo los rituales que dejan huella: el brief diario cambia cada
+      // día y llenaría la página de ruido.
+      // SOLO la cuenta del dueño: la página del CEREBRO es suya y privada. Sin
+      // este filtro se copiaban ahí las revisiones y cierres de todos los
+      // usuarios (fuga de datos personales a un tercero, Notion).
+      if (espejoActivo() && estadoIa?.tier === 'owner' && decision.kind !== 'brief' && texto && await healthConsent(sb, p.id) === true && await consentimientoIa(sb, p.id) === true) {
+        await espejarEntrada(ahoraLocal(p.timezone).fecha, decision.titulo, texto);
+      }
+
+      // El día 1, además del cierre, se monta el pase de diapositivas del mes.
+      if (decision.kind === 'cierre_mensual') {
+        const fotos = await resumenMensual(jwt).catch(() => null);
+        if (fotos) {
+          await empujar(
+            sb,
+            p.id,
+            'Tu mes en imágenes',
+            `${fotos} fotos. El sistema ha montado el pase: toca para verlo.`,
+            '/resumen',
+          );
+        }
+      }
+
+      hechos.push({ user: p.id, kind: decision.kind });
+    } catch (_e) {
+      fallos.push({ user: p.id, error: 'ritual_failed' });
+    } finally {
+      if (jwt) await admin.auth.admin.signOut(jwt, 'local').catch(() => {});
+    }
+  }
+
+  // Aviso operativo de moderación: al final, con el cliente de servicio y
+  // fuera de cualquier consentimiento. Nunca lanza.
+  await avisarModeracion(admin);
+
+  return json(200, { hechos, fallos });
+}

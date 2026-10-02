@@ -85,6 +85,27 @@ const enumOpt = (values: string[], description: string) => ({
   description: `${description}. Cadena vacía para no tocarlo.`,
 });
 
+// Topes del ejecutor (Chat 3 · c). El esquema solo los SUGIERE al modelo (no
+// hay `strict`), y varias columnas no tienen CHECK de rango ni de longitud:
+// sin esto, una respuesta desbocada o una orden inyectada escribe cientos de
+// filas o importes absurdos en una sola llamada.
+const FECHA = /^\d{4}-\d{2}-\d{2}$/;
+function fechaValida(v: unknown, campo = 'fecha'): string {
+  const f = String(v ?? '');
+  if (!FECHA.test(f) || Number.isNaN(Date.parse(`${f}T00:00:00Z`))) throw new Error(`${campo} inválida: ${f} (YYYY-MM-DD)`);
+  return f;
+}
+function texto(v: unknown, max: number, campo: string): string {
+  const t = String(v ?? '');
+  if (t.length > max) throw new Error(`${campo} demasiado largo (${t.length} > ${max} caracteres).`);
+  return t;
+}
+function lista<T>(v: unknown, max: number, campo: string): T[] {
+  const l = Array.isArray(v) ? (v as T[]) : [];
+  if (l.length > max) throw new Error(`Demasiados ${campo}: ${l.length} (máximo ${max}).`);
+  return l;
+}
+
 /** Normaliza el centinela: '' y null pasan a undefined. */
 const val = (v: unknown): string | undefined => {
   const s = typeof v === 'string' ? v.trim() : v == null ? '' : String(v);
@@ -504,6 +525,35 @@ async function completarMision(ctx: ToolCtx, questId: string): Promise<string> {
   }
   if (quest.acquired_at) throw new Error('Ese hábito ya está adquirido: no se marca ni se cobra.');
   const diaSemana = ((new Date(today).getDay() + 6) % 7) + 1;
+  // RET-03 «Regreso a la arena», espejo de closing.recuperacionDesbloqueada:
+  // la penalización se abre con una misión normal de hoy ya completada (no
+  // vale una creada hoy). Si hoy no hay ninguna válida, no hay candado.
+  if (quest.is_penalty) {
+    const { data: normales, error: e2 } = await sb
+      .from('quests')
+      .select('id, days_of_week, created_at')
+      .eq('user_id', userId)
+      .eq('active', true)
+      .eq('is_penalty', false)
+      .eq('is_bonus', false)
+      .is('acquired_at', null);
+    if (e2) throw e2;
+    const validas = ((normales ?? []) as any[]).filter(
+      (n) => (n.days_of_week ?? []).includes(diaSemana) && String(n.created_at ?? '').slice(0, 10) < today,
+    );
+    if (validas.length) {
+      const { count, error: e3 } = await sb
+        .from('completions')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', userId)
+        .eq('date', today)
+        .in('quest_id', validas.map((n) => n.id));
+      if (e3) throw e3;
+      if (!count) {
+        throw new Error('La recuperación sigue cerrada: primero tiene que completar hoy una de sus misiones normales. Pídeselo; no la marques.');
+      }
+    }
+  }
   if (!quest.is_penalty && !(quest.days_of_week ?? []).includes(diaSemana)) {
     throw new Error(`"${quest.title}" no toca hoy. Solo se marca lo programado para hoy.`);
   }
@@ -533,13 +583,29 @@ async function completarMision(ctx: ToolCtx, questId: string): Promise<string> {
     : `"${quest.title}" marcada como hecha hoy: +${pb ? `${pb} PB` : `${xp} XP`}.`;
 }
 
-async function propagarActo(ctx: ToolCtx, link: string): Promise<{ texto: string; enlazadas: number }> {
+/**
+ * Lo que le queda por pagar al módulo una vez descontado lo que pagaron hoy
+ * sus misiones enlazadas. ESPEJO de restoDelModulo en src/lib/links.ts: si
+ * tocas uno, toca el otro (test de paridad en tools_paridad_test.ts y en
+ * src/lib/__tests__/qa-paridad.test.ts, misma tabla).
+ * `pagadoMisiones === null` = no se pudo comprobar: paga el módulo entero,
+ * igual que la app cuando no ve misiones.
+ */
+export function restoDelModulo(base: number, pagadoMisiones: number | null): number {
+  return Math.max(0, base - (pagadoMisiones ?? 0));
+}
+
+async function propagarActo(
+  ctx: ToolCtx,
+  link: string,
+): Promise<{ texto: string; enlazadas: number; pagadoMisiones: number | null }> {
   const { sb, userId, today } = ctx;
   const weekday = ((new Date(today).getDay() + 6) % 7) + 1;
   const marcadas: string[] = [];
   let enlazadas = 0;
+  let pagadoMisiones: number | null = null;
   try {
-    const { data: quests } = await sb
+    const { data: quests, error } = await sb
       .from('quests')
       .select('id, title, days_of_week')
       .eq('user_id', userId)
@@ -547,12 +613,35 @@ async function propagarActo(ctx: ToolCtx, link: string): Promise<{ texto: string
       .eq('link', link)
       .eq('is_penalty', false)
       .is('acquired_at', null);
-    for (const q of (quests ?? []) as any[]) {
-      if (!(q.days_of_week ?? []).includes(weekday)) continue;
+    if (error) throw error;
+    const hoy = ((quests ?? []) as any[]).filter((q) => (q.days_of_week ?? []).includes(weekday));
+    for (const q of hoy) {
       enlazadas += 1;
-      const r = await completarMision(ctx, q.id);
-      if (!r.includes('ya estaba')) marcadas.push(q.title);
+      try {
+        const r = await completarMision(ctx, q.id);
+        if (!r.includes('ya estaba')) marcadas.push(q.title);
+      } catch {
+        /* se mira abajo si llegó a pagarse */
+      }
     }
+    // Lo pagado se LEE, no se deduce de las respuestas: cuenta lo marcado ahora,
+    // lo marcado antes a mano y lo que confirmó con la respuesta perdida.
+    if (hoy.length) {
+      const { data: hechas, error: e2 } = await sb
+        .from('completions')
+        .select('xp_awarded')
+        .eq('user_id', userId)
+        .eq('date', today)
+        .in('quest_id', hoy.map((q) => q.id));
+      if (e2) throw e2;
+      pagadoMisiones = ((hechas ?? []) as any[]).reduce((a, c) => a + (c.xp_awarded ?? 0), 0);
+    } else {
+      pagadoMisiones = 0;
+    }
+  } catch {
+    /* el dato ya está guardado; lo enlazado se puede marcar aparte */
+  }
+  try {
     // Una marca automática no puede ser la que arranque el juicio diario de
     // las reglas (ver src/lib/links.ts): solo si él ya las marca por su cuenta.
     const { count } = await sb
@@ -568,9 +657,9 @@ async function propagarActo(ctx: ToolCtx, link: string): Promise<{ texto: string
         .upsert({ user_id: userId, rule_id: r.id, date: today }, { onConflict: 'user_id,rule_id,date' });
     }
   } catch {
-    /* el dato ya está guardado; lo enlazado se puede marcar aparte */
+    /* ídem */
   }
-  return { texto: marcadas.length ? ` Marcado solo: ${marcadas.join(', ')}.` : '', enlazadas };
+  return { texto: marcadas.length ? ` Marcado solo: ${marcadas.join(', ')}.` : '', enlazadas, pagadoMisiones };
 }
 
 /** Ejecuta una herramienta y devuelve el texto que verá el modelo. */
@@ -631,8 +720,10 @@ export async function executeTool(
     }
 
     case 'planificar_dia': {
-      const bloques = (input.bloques ?? []) as any[];
+      const bloques = lista<any>(input.bloques, 16, 'bloques');
       if (!bloques.length) throw new Error('Un plan sin bloques no es un plan.');
+      fechaValida(input.fecha);
+      texto(input.brief, 4000, 'brief');
 
       const { data: plan, error: planErr } = await sb
         .from('day_plans')
@@ -678,8 +769,8 @@ export async function executeTool(
     case 'programar_evento': {
       const { error } = await sb.from('calendar_events').insert({
         user_id: userId,
-        title: input.titulo,
-        date: input.fecha,
+        title: texto(input.titulo, 200, 'titulo'),
+        date: fechaValida(input.fecha),
         time: val(input.hora) ?? null,
         notes: val(input.notas) ?? null,
       });
@@ -713,8 +804,8 @@ export async function executeTool(
       const { error } = await sb.from('coach_facts').insert({
         user_id: userId,
         category: input.categoria,
-        content: input.contenido,
-        date: val(input.fecha) ?? ctx.today,
+        content: texto(input.contenido, 2000, 'contenido'),
+        date: val(input.fecha) ? fechaValida(input.fecha) : ctx.today,
         source: 'coach',
       });
       if (error) throw error;
@@ -730,7 +821,7 @@ export async function executeTool(
       const { error } = await sb.from('coach_dossier').upsert(
         {
           user_id: userId,
-          content: input.contenido,
+          content: texto(input.contenido, 60_000, 'dossier'),
           version: (prev?.version ?? 0) + 1,
           updated_at: new Date().toISOString(),
         },
@@ -791,6 +882,10 @@ export async function executeTool(
     }
 
     case 'ajustar_meta': {
+      for (const k of ['valor_inicial', 'valor_objetivo']) {
+        const n = Number(input[k]);
+        if (!Number.isFinite(n) || Math.abs(n) > 1_000_000) throw new Error(`${k} fuera de rango: ${input[k]}`);
+      }
       const { error } = await sb.from('goals').insert({
         user_id: userId,
         title: input.titulo,
@@ -807,8 +902,9 @@ export async function executeTool(
     }
 
     case 'prescribir_entreno': {
-      const ejercicios = (input.ejercicios ?? []) as any[];
+      const ejercicios = lista<any>(input.ejercicios, 12, 'ejercicios');
       if (!ejercicios.length) throw new Error('Una sesión sin ejercicios no es una sesión.');
+      fechaValida(input.fecha);
 
       // Sustitución completa: reprogramar no debe dejar ejercicios zombis de
       // una versión anterior del plan.
@@ -851,6 +947,15 @@ export async function executeTool(
         throw new Error(`${prot} g de proteína está fuera de rango.`);
       }
 
+      // Línea roja de salud (menores): sin objetivos de calorías para quien
+      // declara tener menos de 18. Decisión de producto pendiente del dueño:
+      // el umbral y si aplica también a prescribir_entreno.
+      const { data: ficha } = await sb.from('body_profile').select('birth_year').eq('user_id', userId).maybeSingle();
+      const nacido = Number((ficha as { birth_year?: number } | null)?.birth_year);
+      if (Number.isFinite(nacido) && new Date().getUTCFullYear() - nacido < 18) {
+        throw new Error('Es menor de edad: no se fijan calorías. Recomiéndale hablarlo con un profesional y su familia.');
+      }
+
       // Solo un objetivo vigente: el anterior queda archivado, no borrado.
       await sb
         .from('nutrition_targets')
@@ -875,8 +980,13 @@ export async function executeTool(
     case 'planificar_comidas': {
       const dia = Number(input.dia_semana);
       if (!(dia >= 1 && dia <= 7)) throw new Error(`Día de la semana inválido: ${input.dia_semana}`);
-      const comidas = (input.comidas ?? []) as any[];
+      const comidas = lista<any>(input.comidas, 8, 'comidas');
       if (!comidas.length) throw new Error('Un día sin comidas no es un plan.');
+      for (const c of comidas) {
+        const k = Number(c.kcal) || 0;
+        if (k < 0 || k > 3000) throw new Error(`Calorías de una comida fuera de rango: ${c.kcal}`);
+        texto(c.descripcion, 1000, 'descripcion');
+      }
 
       await sb.from('meal_slots').delete().eq('user_id', userId).eq('day_of_week', dia);
 
@@ -906,7 +1016,13 @@ export async function executeTool(
       if (!(dia >= 1 && dia <= 7)) throw new Error(`Día de la semana inválido: ${input.dia_semana}`);
       const nombre = String(input.nombre ?? '').trim();
       if (!nombre) throw new Error('El día necesita un nombre: PUSH, PULL, LEGS, Descanso…');
-      const ejercicios = (input.ejercicios ?? []) as any[];
+      const ejercicios = lista<any>(input.ejercicios, 20, 'ejercicios');
+      for (const e of ejercicios) {
+        const series = Number(e.series), reps = Number(e.reps), peso = Number(e.peso) || 0;
+        if (!(series >= 1 && series <= 20) || !(reps >= 1 && reps <= 100) || !(peso >= 0 && peso < 1000)) {
+          throw new Error(`Ejercicio fuera de rango: ${e.nombre} ${e.series}×${e.reps} @${e.peso}`);
+        }
+      }
 
       // El día se reescribe entero. Las SESIONES ya registradas no se tocan:
       // gym_sessions apunta al día por gym_day_id, y borrar el día se lo
@@ -1020,6 +1136,13 @@ export async function executeTool(
     case 'regla_categoria': {
       const patron = String(input.patron ?? '').trim();
       if (patron.length < 2) throw new Error('El patrón necesita al menos dos caracteres.');
+      // Va dentro de un filtro `or=(…)` de PostgREST: una coma o un paréntesis
+      // añadían condiciones propias (probado: `zz,category.eq.sin_clasificar,…`
+      // recategorizaba TODO lo pendiente). Acotado a su cuenta, pero no es lo
+      // que se pidió.
+      if (/[,()"\\]/.test(patron) || patron.length > 80) {
+        throw new Error('El patrón no puede llevar comas, paréntesis, comillas ni pasar de 80 caracteres.');
+      }
 
       const { error } = await sb
         .from('category_rules')
@@ -1049,11 +1172,11 @@ export async function executeTool(
 
     case 'registrar_movimiento': {
       const importe = Number(input.importe);
-      if (!Number.isFinite(importe) || importe === 0) {
+      if (!Number.isFinite(importe) || importe === 0 || Math.abs(importe) > 1_000_000) {
         throw new Error(`Importe inválido: ${input.importe}. Negativo si es gasto, positivo si es ingreso.`);
       }
-      const fecha = String(input.fecha);
-      const desc = String(input.descripcion ?? '').trim();
+      const fecha = fechaValida(input.fecha);
+      const desc = texto(String(input.descripcion ?? '').trim(), 200, 'descripcion');
       if (!desc) throw new Error('Un movimiento sin descripción no sirve de nada dentro de un mes.');
 
       // Misma huella que usa el importador: si el mismo movimiento acaba
@@ -1175,8 +1298,9 @@ export async function executeTool(
           const eco = await propagarActo(ctx, 'peso');
           // Igual que en la app: el primer pesaje del día paga 5 XP salvo que
           // ya lo haya pagado una misión enlazada (WEIGH_IN_XP en game.ts).
-          if (!previo && eco.enlazadas === 0) {
-            await sb.rpc('award_xp', { p_amount: 5, p_stat: 'VIT', p_event: 'weigh_in', p_payload: { weight: kg, via: 'coach' } });
+          const restoPeso = previo ? 0 : restoDelModulo(5, eco.pagadoMisiones);
+          if (restoPeso > 0) {
+            await sb.rpc('award_xp', { p_amount: restoPeso, p_stat: 'VIT', p_event: 'weigh_in', p_payload: { weight: kg, via: 'coach' } });
           }
           return ok(`Peso de hoy anotado: ${kg} kg.${eco.texto}`);
         }
@@ -1306,11 +1430,12 @@ export async function executeTool(
 
       // Igual que en la app: la primera entrada del día paga 15 XP a PER
       // salvo que ya lo pague una misión enlazada (JOURNAL_XP en game.ts).
-      let eco = { texto: '', enlazadas: 0 };
+      let eco: { texto: string; enlazadas: number; pagadoMisiones: number | null } = { texto: '', enlazadas: 0, pagadoMisiones: 0 };
       if (!antes) {
         eco = await propagarActo(ctx, 'diario');
-        if (eco.enlazadas === 0) {
-          await sb.rpc('award_xp', { p_amount: 15, p_stat: 'PER', p_event: 'journal_entry', p_payload: { date: hoy, via: 'coach' } });
+        const restoDiario = restoDelModulo(15, eco.pagadoMisiones);
+        if (restoDiario > 0) {
+          await sb.rpc('award_xp', { p_amount: restoDiario, p_stat: 'PER', p_event: 'journal_entry', p_payload: { date: hoy, via: 'coach' } });
         }
       }
       return ok(
