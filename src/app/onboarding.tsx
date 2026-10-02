@@ -26,10 +26,15 @@ import {
   SALIDA_ESPERA_MS,
 } from '@/components/onboarding/pasoOferta';
 import { useCelebracion } from '@/components/celebracion/contexto';
+import { PortadaArena } from '@/components/onboarding/PortadaArena';
+import { ProgresoPasos } from '@/components/onboarding/ProgresoPasos';
+import { TablillaContrato } from '@/components/onboarding/TablillaContrato';
+import { TituloPaso } from '@/components/onboarding/TituloPaso';
 import { ProOfferActions, ProOfferBody, ProOfferLegal, ProUpsellLine, useProOffer } from '@/components/ProOffer';
 import { SystemButton } from '@/components/SystemButton';
-import { Button, Card, Chip, FadeIn, Skeleton, Stagger } from '@/components/ui';
+import { Button, Card, Chip, FadeIn, Skeleton } from '@/components/ui';
 import { avisar } from '@/components/ui/confirmar';
+import { GutterContext } from '@/components/ui/Screen';
 import { useAuth } from '@/lib/auth';
 import {
   GOAL_DETAIL_MAX_LENGTH,
@@ -41,7 +46,6 @@ import {
   textoCompromiso,
   type Horizonte,
 } from '@/lib/compromiso';
-import { DESCARGO_SALUD } from '@/lib/consentmath';
 import { fetchLetter, sealLetter } from '@/lib/contract';
 import { CODIGO_MAX_LENGTH, motivoReferral, normalizarCodigo } from '@/lib/creatormath';
 import {
@@ -71,6 +75,8 @@ const PRIMER_PASO_CON_VUELTA = 1;
 const ULTIMO_PASO_CON_VUELTA = 5;
 /** Lo que dura el sello en pantalla si no se toca. */
 const MS_SELLO = 1400;
+/** Margen lateral del onboarding; lo publica GutterContext para lo que va a sangre. */
+const GUTTER = 24;
 
 // Nombres por defecto de la fila de perfil: si es uno de estos, no se
 // prerrellena (que escriba el suyo).
@@ -440,7 +446,9 @@ export default function Onboarding() {
     <SafeAreaView style={styles.screen}>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         {/* Cabecera fija: la vuelta atrás y el progreso. La fila de la flecha
-            ocupa siempre su alto para que el progreso no salte entre pasos. */}
+            ocupa siempre su alto para que el progreso no salte entre pasos. La
+            portada no la lleva: es la fachada entera. */}
+        {step > 0 ? (
         <View style={styles.top}>
           <View style={styles.backRow}>
             {puedeVolver ? (
@@ -455,16 +463,9 @@ export default function Onboarding() {
               </Pressable>
             ) : null}
           </View>
-          <View
-            style={styles.dots}
-            accessibilityRole="progressbar"
-            accessibilityLabel={`Paso ${step + 1} de ${STEPS}`}
-          >
-            {Array.from({ length: STEPS }, (_, i) => (
-              <View key={i} style={[styles.dot, i <= step && styles.dotOn]} />
-            ))}
-          </View>
+          <ProgresoPasos paso={step + 1} total={STEPS} />
         </View>
+        ) : null}
 
         {/* Solo el KeyboardAvoidingView empuja: junto a
             automaticallyAdjustKeyboardInsets, iOS sumaba el teclado dos veces. */}
@@ -475,29 +476,13 @@ export default function Onboarding() {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
+          <GutterContext.Provider value={GUTTER}>
 
-          {step === 0 ? (
-            <FadeIn key="paso-0">
-              <Text style={styles.brand}>NIVL</Text>
-              <Text style={styles.tagline}>UN 1 % MEJOR CADA DÍA</Text>
-              <Card variant="outline">
-                <Text style={styles.lore}>
-                  Esto no es una lista de tareas. Es una arena.{'\n\n'}
-                  Cada día tienes misiones. Cumplirlas da XP y sube tu nivel; fallarlas lo
-                  resta. La racha multiplica. Los proyectos grandes son campañas con un jefe
-                  final. Y hay un coach que dicta tu día, te juzga por la noche y recuerda
-                  todo lo que aprende de ti.{'\n\n'}
-                  Nada de trampas: las evidencias se hacen con la cámara, en el momento. El
-                  sistema no opina. Registra.
-                </Text>
-              </Card>
-              <Text style={styles.descargo}>{DESCARGO_SALUD}</Text>
-            </FadeIn>
-          ) : null}
+          {step === 0 ? <PortadaArena key="paso-0" /> : null}
 
           {step === 1 ? (
             <FadeIn key="paso-1">
-              <Text style={styles.stepTitle}>¿Cómo te llamas?</Text>
+              <TituloPaso inscripcion="El nombre" titulo="¿Cómo te llamas?" />
               <Card variant="outline">
                 <Text style={styles.label}>Tu nombre en el sistema</Text>
                 <TextInput
@@ -544,11 +529,11 @@ export default function Onboarding() {
 
           {step === 2 ? (
             <FadeIn key="paso-2">
-              <Text style={styles.stepTitle}>¿Para qué vas a usar NIVL?</Text>
-              <Text style={styles.stepHint}>
-                Cambia lo que ves primero y lo que el coach te pide. Todo sigue disponible y lo
-                puedes cambiar en Perfil.
-              </Text>
+              <TituloPaso
+                inscripcion="El camino"
+                titulo="¿Para qué vas a usar NIVL?"
+                pista="Cambia lo que ves primero y lo que el coach te pide. Todo sigue disponible y lo puedes cambiar en Perfil."
+              />
               {PROFILE_KINDS.map((k) => {
                 const m = KINDS[k];
                 const on = kind === k;
@@ -561,7 +546,7 @@ export default function Onboarding() {
                     accessibilityState={{ selected: on }}
                     accessibilityLabel={m.label}
                   >
-                    <Ionicons name={m.icon as never} size={22} color={on ? colors.bg : colors.accent} />
+                    <Ionicons name={m.icon as never} size={22} color={colors.accent} />
                     <View style={{ flex: 1, minWidth: 0 }}>
                       <Text style={[styles.kindLabel, on && styles.kindLabelOn]}>{m.label.toUpperCase()}</Text>
                       <Text style={[styles.kindTagline, on && styles.kindTaglineOn]}>{m.tagline}</Text>
@@ -580,10 +565,11 @@ export default function Onboarding() {
 
           {step === 3 && meta ? (
             <FadeIn key="paso-3">
-              <Text style={styles.stepTitle}>¿A qué has venido?</Text>
-              <Text style={styles.stepHint}>
-                Una sola cosa, en una frase. No «mejorar»: lo que quieres haber conseguido. Es lo que vas a firmar.
-              </Text>
+              <TituloPaso
+                inscripcion="El objetivo"
+                titulo="¿A qué has venido?"
+                pista="Una sola cosa, en una frase. No «mejorar»: lo que quieres haber conseguido. Es lo que vas a firmar."
+              />
               <Card variant="outline">
                 <Text style={styles.label}>Tu objetivo</Text>
                 <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: healthGoal }}
@@ -636,11 +622,11 @@ export default function Onboarding() {
 
           {step === 4 && meta ? (
             <FadeIn key="paso-4">
-              <Text style={styles.stepTitle}>Tus primeras misiones</Text>
-              <Text style={styles.stepHint}>
-                Propuestas para un {meta.label.toLowerCase() === 'en general' ? 'gladiador' : meta.label.toLowerCase()}.
-                Quita las que no vayan contigo; podrás crear las tuyas en Hábitos.
-              </Text>
+              <TituloPaso
+                inscripcion="Las misiones"
+                titulo="Tus primeras misiones"
+                pista={`Propuestas para un ${meta.label.toLowerCase() === 'en general' ? 'gladiador' : meta.label.toLowerCase()}. Quita las que no vayan contigo; podrás crear las tuyas en Hábitos.`}
+              />
               <Card variant="outline">
                 {meta.starterQuests.map((q, i) => {
                   const on = chosen.has(i);
@@ -672,10 +658,11 @@ export default function Onboarding() {
 
           {step === 5 ? (
             <FadeIn key="paso-5">
-              <Text style={styles.stepTitle}>Fírmalo contigo</Text>
-              <Text style={styles.stepHint}>
-                Nadie más lo va a leer. Se sella hoy y se abre cuando venza el plazo. Elige cuánto te das.
-              </Text>
+              <TituloPaso
+                inscripcion="La firma"
+                titulo="Fírmalo contigo"
+                pista="Nadie más lo va a leer. Se sella hoy y se abre cuando venza el plazo. Elige cuánto te das."
+              />
               <View style={styles.horizontes} accessibilityRole="radiogroup">
                 {HORIZONTES.map((h) => (
                   <View key={h.years} style={styles.horizonte}>
@@ -690,16 +677,8 @@ export default function Onboarding() {
                   </View>
                 ))}
               </View>
-              <Card variant="outline" accent={colors.accentDim}>
-                {/* El texto se revela párrafo a párrafo: se lee, no se acepta. */}
-                <Stagger step={140} base={120}>
-                  {contrato.split(/\n\s*\n/).map((parrafo, i) => (
-                    <FadeIn key={i} index={i} from={8}>
-                      <Text style={[styles.contrato, i > 0 && styles.contratoParrafo]}>{parrafo}</Text>
-                    </FadeIn>
-                  ))}
-                </Stagger>
-              </Card>
+              {/* El texto se revela párrafo a párrafo: se lee, no se acepta. */}
+              <TablillaContrato parrafos={contrato.split(/\n\s*\n/)} abreEl={fechaConAnio(abreEl)} />
               <Text style={styles.smallPrint}>
                 Se abrirá el {fechaConAnio(abreEl)}. Hasta entonces lo guarda Contrato, sellado. Tus normas y sus
                 consecuencias las escribes allí cuando entres.
@@ -732,12 +711,14 @@ export default function Onboarding() {
 
           {step === 6 ? (
             <FadeIn key="paso-6">
-              <Text style={styles.stepTitle}>Firmado. Ahora, quién lo dirige.</Text>
-              <Text style={styles.stepHint}>
-                Tus hábitos, tu organización y tu progreso son gratis. Los planes de pago añaden el coach de IA y,
-                con Élite, insignia y solicitud de plaza en un ludus.
-                {forma === 'hoja' ? ' Decide ahora o más adelante: el compromiso vale igual.' : null}
-              </Text>
+              <TituloPaso
+                inscripcion="El coach"
+                titulo="Firmado. Ahora, quién lo dirige."
+                pista={
+                  'Tus hábitos, tu organización y tu progreso son gratis. Los planes de pago añaden el coach de IA y, con Élite, insignia y solicitud de plaza en un ludus.' +
+                  (forma === 'hoja' ? ' Decide ahora o más adelante: el compromiso vale igual.' : '')
+                }
+              />
               {forma === 'esperar' ? (
                 <View style={styles.ofertaEspera} accessibilityRole="progressbar" accessibilityLabel="Preparando tu entrada">
                   <Skeleton height={86} />
@@ -754,6 +735,7 @@ export default function Onboarding() {
               {forma === 'linea' && decisionOferta ? <ProUpsellLine momento="firma" tier={decisionOferta.tier} /> : null}
             </FadeIn>
           ) : null}
+          </GutterContext.Provider>
         </ScrollView>
 
         {/* Pie fijo: la acción del paso siempre a la vista, también en 667 pt y
@@ -823,47 +805,18 @@ export default function Onboarding() {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.bg },
-  descargo: { fontFamily: fonts.body, fontSize: 12, lineHeight: 17, color: colors.textFaint, marginTop: 8 },
-  top: { paddingHorizontal: 24, paddingTop: 8 },
-  backRow: { height: 32, justifyContent: 'center' },
+  top: { paddingHorizontal: GUTTER, paddingTop: 8 },
+  backRow: { height: 32, justifyContent: 'center', marginBottom: 4 },
   back: { alignSelf: 'flex-start', marginLeft: -4, padding: 4 },
-  content: { flexGrow: 1, justifyContent: 'center', paddingHorizontal: 24, paddingTop: 20, paddingBottom: 24 },
+  content: { flexGrow: 1, justifyContent: 'center', paddingHorizontal: GUTTER, paddingTop: 20, paddingBottom: 24 },
   ofertaEspera: { gap: 10, marginTop: 8 },
   footer: {
-    paddingHorizontal: 24,
+    paddingHorizontal: GUTTER,
     paddingTop: 12,
     paddingBottom: 12,
     borderTopWidth: 1,
     borderTopColor: colors.line,
     backgroundColor: colors.bg,
-  },
-  dots: { flexDirection: 'row', gap: 8, justifyContent: 'center', marginTop: 4 },
-  dot: { width: 22, height: 3, backgroundColor: colors.track },
-  dotOn: { backgroundColor: colors.accent },
-  brand: {
-    fontFamily: fonts.brand,
-    fontSize: 44,
-    letterSpacing: 12,
-    color: colors.accent,
-    textAlign: 'center',
-  },
-  tagline: {
-    fontFamily: fonts.heading,
-    fontSize: 12,
-    letterSpacing: 4,
-    color: colors.textFaint,
-    textAlign: 'center',
-    marginTop: 10,
-    marginBottom: 24,
-  },
-  stepTitle: {
-    fontFamily: fonts.heading,
-    fontSize: 26,
-    letterSpacing: -0.5,
-    lineHeight: 31,
-    color: colors.text,
-    textAlign: 'center',
-    marginBottom: 10,
   },
   stepHint: {
     fontFamily: fonts.body,
@@ -873,7 +826,6 @@ const styles = StyleSheet.create({
     lineHeight: 19,
     marginBottom: 16,
   },
-  lore: { fontFamily: fonts.semibold, fontSize: 14, color: colors.text, lineHeight: 22 },
   label: {
     fontFamily: fonts.heading,
     fontSize: 12,
@@ -906,11 +858,13 @@ const styles = StyleSheet.create({
     padding: 14,
     marginBottom: 10,
   },
-  kindCardOn: { backgroundColor: colors.accent, borderColor: colors.accent },
+  // Elegido = marco de 3 en blanco, no invertido: la inversión del paso es «Continuar».
+  // El padding baja lo que sube el borde para que la tarjeta no crezca al elegirla.
+  kindCardOn: { borderWidth: 3, borderColor: colors.accent, padding: 12 },
   kindLabel: { fontFamily: fonts.heading, fontSize: 14, letterSpacing: 2, color: colors.text },
-  kindLabelOn: { color: colors.bg },
+  kindLabelOn: { color: colors.accent },
   kindTagline: { fontFamily: fonts.body, fontSize: 12, color: colors.textDim, marginTop: 3, lineHeight: 17 },
-  kindTaglineOn: { color: colors.panelDeep },
+  kindTaglineOn: { color: colors.text },
   detailTitle: { fontFamily: fonts.heading, fontSize: 11, letterSpacing: 2.5, color: colors.textFaint, marginBottom: 6 },
   detail: { fontFamily: fonts.body, fontSize: 13, color: colors.text, lineHeight: 19 },
   starterRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 10 },
@@ -939,8 +893,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 6,
   },
-  contrato: { fontFamily: fonts.body, fontSize: 14, lineHeight: 22, color: colors.text },
-  contratoParrafo: { marginTop: 12 },
   sello: {
     position: 'absolute',
     top: 0,
