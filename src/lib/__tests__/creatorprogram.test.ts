@@ -159,6 +159,32 @@ describe('vistaPanelCreador: en tienda, ni un importe', () => {
     expect(v.alias).toBe('AAA_TEST');
   });
 
+  it.each([
+    '+10 % de comisión',
+    'Sube tu comisión',
+    'Cobras al instante',
+    'Pago doble este mes',
+    'Te pagamos el viaje',
+    'Más dinero',
+    'Ganancias x2',
+  ])('reto con vocabulario de cobro («%s») no llega a la tienda', (texto) => {
+    const base = parseCreatorProgress({
+      ...PROGRESO_RPC,
+      challenges: [{ ...PROGRESO_RPC.challenges[1], title: texto, description: texto, prize: texto }],
+    });
+    const v = vistaPanelCreador('ios', { panel: PANEL, progreso: base })!;
+    expect(v.retos[0]).toMatchObject({ title: 'Reto', description: null, prize: null });
+  });
+
+  it('textos neutros pasan en tienda', () => {
+    const base = parseCreatorProgress({
+      ...PROGRESO_RPC,
+      challenges: [{ ...PROGRESO_RPC.challenges[1], title: 'Reto de octubre: 5 altas', description: 'Página de tu código', prize: 'Sudadera' }],
+    });
+    const v = vistaPanelCreador('android', { panel: PANEL, progreso: base })!;
+    expect(v.retos[0]).toMatchObject({ title: 'Reto de octubre: 5 altas', description: 'Página de tu código', prize: 'Sudadera' });
+  });
+
   it('web: con importes', () => {
     const v = vistaPanelCreador('web', datos())!;
     expect(v.conImportes).toBe(true);
