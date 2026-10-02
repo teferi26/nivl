@@ -29,7 +29,7 @@ Es una grabación de un iPhone y aporta valor como demostración parcial (`coord
 
 ## Preparación (fuera de cámara)
 
-1. Instalar **NIVL 1.0.7 ([BUILD])** desde TestFlight, la misma build que se asociará al envío. No grabar una build anterior, una de desarrollo ni Expo Go. Si después se publica una OTA que cambie pantallas del vídeo, decidir con el coordinador si hay que repetir la grabación.
+1. Instalar **NIVL 1.0.7 (21)** desde TestFlight, la misma build que se asociará al envío. No grabar una build anterior, una de desarrollo ni Expo Go. Si después se publica una OTA que cambie pantallas del vídeo, decidir con el coordinador si hay que repetir la grabación.
 2. Actualizar el iPhone a la última versión pública de iOS y anotar el modelo y la versión.
 3. Activar «No molestar». Quitar notificaciones y datos personales. Iniciar sesión en el iPhone con una **cuenta sandbox de Apple** (Ajustes > App Store > Cuenta Sandbox) para que la compra no sea real.
 4. Preparar las cuentas ([cuentas-demo.md](cuentas-demo.md)):
@@ -41,7 +41,7 @@ Es una grabación de un iPhone y aporta valor como demostración parcial (`coord
 
 ## Recorrido (una sola toma; unos 6–9 minutos)
 
-**0. Identificación (fuera del vídeo).** El modelo, el iOS y la build se anotan en la respuesta (`[DEVICE]`, `[IOS]`, `[BUILD]`). Si se quieren enseñar, se graban en un clip aparte que no se pone al principio del recorrido. El vídeo empieza en la pantalla de inicio con la app cerrada.
+**0. Identificación (fuera del vídeo).** El modelo, el iOS y la build se anotan en la respuesta (`[DEVICE]`, `[IOS]`, `21`). Si se quieren enseñar, se graban en un clip aparte que no se pone al principio del recorrido. El vídeo empieza en la pantalla de inicio con la app cerrada.
 
 **1. Lanzamiento.** Pantalla de inicio → tocar el icono de NIVL → pantalla de carga → pantalla de acceso.
 

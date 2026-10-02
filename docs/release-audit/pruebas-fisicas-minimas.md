@@ -2,7 +2,7 @@
 
 Es el **mínimo que exige el reenvío**, derivado del mensaje de Apple del 29/09/2026 y de la Guideline 2.1 («Apps are reviewed on physical devices… Test the app on each supported device platform»). No sustituye la matriz completa del Chat 5, que es el dueño de los resultados y del GO/NO-GO. Los casos sin evidencia real se quedan en **NO PROBADO**. Ninguno se da por PASS solo por el vídeo del 01/10.
 
-Todas las pruebas se hacen con la **misma build `[BUILD]`** instalada desde TestFlight, y con la OTA final ya aplicada si la hay (anotar el `updateId`). En cada fila se anotan dispositivo, iOS, build, fecha, resultado y evidencia (marca de tiempo del vídeo o captura en `privado/`).
+Todas las pruebas se hacen con la **misma build `21`** instalada desde TestFlight, y con la OTA final ya aplicada si la hay (anotar el `updateId`). En cada fila se anotan dispositivo, iOS, build, fecha, resultado y evidencia (marca de tiempo del vídeo o captura en `privado/`).
 
 ## A. Imprescindibles para Apple (el vídeo los muestra)
 

@@ -20,7 +20,7 @@ Requisito de SDK: Apple exige compilar con el SDK de iOS 26 o posterior desde el
 
 ## Pasos para reenviar (los hace el coordinador con el usuario; Chat 1 no los ejecuta)
 
-1. Página de la versión 1.0.7 → sección Compilación → quitar la 18 y añadir `[BUILD]`. Verificarlo después con GET: `appStoreVersions/{id}/build`.
+1. Página de la versión 1.0.7 → sección Compilación → quitar la 18 y añadir `21`. Verificarlo después con GET: `appStoreVersions/{id}/build`.
 2. App Review Information: pegar [apple-notas-revisor.txt](apple-notas-revisor.txt) ya completado (menos de 4.000 caracteres) y comprobar que los campos de acceso tienen las credenciales de la cuenta Gratis.
 3. Exportación y cifrado: la build declara `usesNonExemptEncryption=false`. Si la build nueva cambia algo de cifrado, revisarlo de nuevo.
 4. Comprobar que las 5 suscripciones siguen en el envío y READY. Si se crea un envío nuevo, añadirlas otra vez (Guideline 3.1.1: «In-App Purchase products should be configured and submitted alongside the app»).
@@ -31,16 +31,16 @@ Requisito de SDK: Apple exige compilar con el SDK de iOS 26 o posterior desde el
 
 ## Condiciones previas (puertas de COORDINACION.md)
 
-- [ ] Todas las Edge Functions redesplegadas desde `[SHA_INTEGRADO]` (incluidos el borrado del suscriptor de RevenueCat y la seudonimización de `store_events`); `franky-auth` y los secretos `FRANKY_*` retirados. Anotar SHA y versiones.
+- [ ] Todas las Edge Functions redesplegadas desde `c87df0d` (incluidos el borrado del suscriptor de RevenueCat y la seudonimización de `store_events`); `franky-auth` y los secretos `FRANKY_*` retirados. Anotar SHA y versiones.
 - [ ] COACH_BASE_URL = DeepSeek (☑ 02/10) y EAS Insights desactivado (☑ 02/10, confirmado por el usuario). Pendiente: el panel de RevenueCat sin integraciones publicitarias (lo comprueba el coordinador) → App Privacy y Data Safety sin tracking y sin Franky.
 
-- [ ] Vídeo nuevo grabado con `[BUILD]` en iOS de última versión ([apple-guion-video.md](apple-guion-video.md)).
-- [ ] Pruebas físicas mínimas en PASS sobre `[BUILD]` ([pruebas-fisicas-minimas.md](pruebas-fisicas-minimas.md)).
-- [ ] La build `[BUILD]` no llama a franky.es (Auth propio). franky-auth retirado (ver arriba).
+- [ ] Vídeo nuevo grabado con `21` en iOS de última versión ([apple-guion-video.md](apple-guion-video.md)).
+- [ ] Pruebas físicas mínimas en PASS sobre `21` ([pruebas-fisicas-minimas.md](pruebas-fisicas-minimas.md)).
+- [ ] La build `21` no llama a franky.es (Auth propio). franky-auth retirado (ver arriba).
 - [ ] El arreglo del Chat 3 a `start_trial` está integrado, o A5 prueba que la prueba arranca con la salud rechazada.
 - [ ] Sin «Google Play» en la UI de iOS (Chat 2: proplans/pro.tsx; Chat 4: perfil.tsx).
 - [ ] `/privacidad` coherente con lo que se conserva de verdad (sin plazo legal fijado) y `/terminos` citando la EULA estándar de Apple, o la frase de la respuesta ajustada.
-- [ ] Paywall con los 5 planes y enlaces legales confirmado por el Chat 2 en `[BUILD]` (candidato @b11c2d2). La offering de RevenueCat devuelve los 5 productos, sin «Algún plan no está disponible…».
+- [ ] Paywall con los 5 planes y enlaces legales confirmado por el Chat 2 en `21` (candidato @b11c2d2). La offering de RevenueCat devuelve los 5 productos, sin «Algún plan no está disponible…».
 - [x] Territorios decididos (165) y `[N]` sustituido.
 - [ ] Cuentas Pro y Élite con la concesión vigente ([cuentas-demo.md](cuentas-demo.md)).
 - [ ] Capturas coherentes con la build final ([apple-ficha-capturas-productos.md](apple-ficha-capturas-productos.md)).

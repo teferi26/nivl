@@ -6,20 +6,20 @@ Responde al mensaje de Apple del 29/09/2026 1:16 (Guideline 2.1 — Information 
 
 | Campo | Fuente que lo acredita | Hecho |
 |---|---|---|
-| `[BUILD]` | Build asociada a la 1.0.7 en ASC antes de «Volver a enviar» (decide el coordinador) | ☐ |
+| `[BUILD]` = **21** | Fijado por el coordinador el 02/10 (SHA c87df0d). Falta: VALID por GET y asociada a la 1.0.7 en ASC antes de «Volver a enviar» (lo hace el coordinador con el usuario) | ☐ |
 | `[DEVICE]`, `[IOS]`, `[DATE]` | Ajustes > General > Información del iPhone que grabó. Debe ser la última versión pública: el 02/10/2026 era iOS 27.0.1 ([Apple security releases](https://support.apple.com/en-us/100100)) | ☐ |
 | `[VIDEO]` | Nombre del adjunto o enlace probado sin iniciar sesión | ☐ |
 | `[TIMESTAMPS]` | Marcas tomadas viendo el vídeo final, no este guion | ☐ |
 | `[N]` | Sustituido por 165 (02/10: retirados CHN, RUS, HKG, MAC, BLR, VEN, MMR, AFG, YEM y XKS; se mantienen los 6 territorios británicos de ultramar por decisión del usuario) | ☑ |
-| `[LOGIN_LABEL]`, `[SIGNUP_LABEL]` y sus `_SHORT` | RELLENADOS con los rótulos verificados en pantalla por el Chat 4 (web 375×812, winter/chat4-experiencia @09a6b99, sin Franky): pestañas «ENTRAR» / «CREAR CUENTA», casilla de Términos/Privacidad sin marcar, confirmación por correo (nivl://auth/confirmar), recuperación «¿Olvidaste tu contraseña?». Correo real de confirmación en iPhone: NO PROBADO. La frase «NIVL accounts are NIVL's own» exige que `[BUILD]` no llame a franky.es | ☑ |
+| `[LOGIN_LABEL]`, `[SIGNUP_LABEL]` y sus `_SHORT` | RELLENADOS con los rótulos verificados en pantalla por el Chat 4 (web 375×812, winter/chat4-experiencia @09a6b99, sin Franky): pestañas «ENTRAR» / «CREAR CUENTA», casilla de Términos/Privacidad sin marcar, confirmación por correo (nivl://auth/confirmar), recuperación «¿Olvidaste tu contraseña?». Correo real de confirmación en iPhone: NO PROBADO. La frase «NIVL accounts are NIVL's own» exige que `21` no llame a franky.es | ☑ |
 | Borrado | Comprobar en la build final que el borrado elimina la cuenta de Auth de NIVL, sus datos y Storage. Antes había un marcador `[DELETION]` por la cuenta Franky; desaparece con la decisión del 02/10 | ☐ |
 | `[PLAZO]` | Sustituido por «24 hours» (confirmado por el usuario el 02/10). Moderación: el propio dueño de la cuenta, avisado por push desde `ritual` (migración 0037, pendiente de integrar). No poner datos personales | ☐ |
-| `[AI_REPORT]` | RELLENADO con lo que hay en Chat 4 @bb8f695: «Denunciar respuesta» bajo cada respuesta del coach → «¿Qué falla en esta respuesta?» → motivo → «Enviar denuncia». Hoy el envío abre un correo a soporte, hasta que exista la RPC del Chat 3; por eso el texto no dice «same queue». Comprobar que está en `[BUILD]`; si no está, quitar la frase. El Oráculo es BYOK y no está en la build de tienda: no se menciona | ☐ |
-| `[SHA_INTEGRADO]` (interno, no va en el texto) | El coordinador redespliega TODAS las funciones desde el SHA integrado y retira franky-auth y los secretos FRANKY_* antes del reenvío. La frase de borrado («limited records may be kept only where the law requires») depende de que ese despliegue incluya el borrado del suscriptor de RevenueCat y la seudonimización de `store_events`. No se declara ningún plazo de conservación | ☐ |
+| `[AI_REPORT]` | RELLENADO con lo que hay en Chat 4 @bb8f695: «Denunciar respuesta» bajo cada respuesta del coach → «¿Qué falla en esta respuesta?» → motivo → «Enviar denuncia». Hoy el envío abre un correo a soporte, hasta que exista la RPC del Chat 3; por eso el texto no dice «same queue». Comprobar que está en `21`; si no está, quitar la frase. El Oráculo es BYOK y no está en la build de tienda: no se menciona | ☐ |
+| `[SHA_INTEGRADO]` = **c87df0d** (interno, no va en el texto) | El coordinador redespliega TODAS las funciones desde el SHA integrado y retira franky-auth y los secretos FRANKY_* antes del reenvío. La frase de borrado («limited records may be kept only where the law requires») depende de que ese despliegue incluya el borrado del suscriptor de RevenueCat y la seudonimización de `store_events`. No se declara ningún plazo de conservación | ☐ |
 | `[AI_ROUTING]` (interno) | RESUELTO el 02/10: el usuario confirma COACH_BASE_URL = DeepSeek y el coordinador verificó que cortesía y Pro usan deepseek-v4-flash | ☑ |
 | `[MOD_PUSH]` (opcional) | Solo si la 0037 (push al dueño por cada denuncia) está integrada, desplegada y probada, se puede añadir «and receives a notification for each new report». Hoy el texto no lo afirma | ☐ |
 | `[TRIAL_STATE]` | Si la cuenta Gratis ya gastó la prueba y no se puede restablecer, añadir a la respuesta y a las notas: «The Free account has already used its trial; the paywall shows the paid plans directly.» | ☐ |
-| `[PAYWALL]` | CANDIDATO A FINAL en Chat 2 @b11c2d2 (solo JS, con la revisión UX aplicada; pendiente la revisión de seguridad del Chat 2, que no debería cambiar el aspecto): 5 productos en lista con título de ASC, duración y priceString; fundador anual auto-renovable mientras queden plazas; Términos, Privacidad y «EULA de Apple»; sin «Google Play» en iOS. Requisito: las 5 en la offering de RevenueCat, sin el aviso «Algún plan no está disponible…». Si llega por OTA y no en el binario, ver el riesgo del primer arranque en apple-build-y-reenvio.md. Falta la confirmación del Chat 2 de que la build `[BUILD]` muestra los 5 planes con título, periodo y precio, y los enlaces | ☐ |
+| `[PAYWALL]` | CANDIDATO A FINAL en Chat 2 @b11c2d2 (solo JS, con la revisión UX aplicada; pendiente la revisión de seguridad del Chat 2, que no debería cambiar el aspecto): 5 productos en lista con título de ASC, duración y priceString; fundador anual auto-renovable mientras queden plazas; Términos, Privacidad y «EULA de Apple»; sin «Google Play» en iOS. Requisito: las 5 en la offering de RevenueCat, sin el aviso «Algún plan no está disponible…». Si llega por OTA y no en el binario, ver el riesgo del primer arranque en apple-build-y-reenvio.md. Falta la confirmación del Chat 2 de que la build `21` muestra los 5 planes con título, periodo y precio, y los enlaces | ☐ |
 
 Límites: el Resolution Center admite texto largo. Las **notas** de App Review Information tienen un máximo de 4.000 caracteres y van en [apple-notas-revisor.txt](apple-notas-revisor.txt), en versión compacta.
 
@@ -27,12 +27,12 @@ Límites: el Resolution Center admite texto largo. Las **notas** de App Review I
 
 Hello App Review Team,
 
-Thank you for your message of 29 September. Below is the information requested under Guideline 2.1, numbered as in your message. A compact version has also been added to the App Review Information notes. This submission now includes NIVL 1.0.7 (build [BUILD]).
+Thank you for your message of 29 September. Below is the information requested under Guideline 2.1, numbered as in your message. A compact version has also been added to the App Review Information notes. This submission now includes NIVL 1.0.7 (build 21).
 
 **1. Screen recording on a physical device**
 
 Recording: [VIDEO]
-Device: [DEVICE], iOS [IOS] (latest public release on the recording date). App: NIVL 1.0.7 (build [BUILD]), installed from TestFlight. Recorded on [DATE].
+Device: [DEVICE], iOS [IOS] (latest public release on the recording date). App: NIVL 1.0.7 (build 21), installed from TestFlight. Recorded on [DATE].
 
 The recording starts on the Home Screen by launching NIVL and shows, in order (times refer to the recording; [TIMESTAMPS] = one time per bullet, e.g. "[00:00]"):
 - registration of a new account and login;
