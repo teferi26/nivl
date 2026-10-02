@@ -159,3 +159,5 @@ Casos que coinciden con otros de la lista:
   - PAY-21 sube a P1 (Apple 2.3.10).
   - PAY-01 se graba en la build que lleve el paywall empaquetado. Si llega por OTA, el primer arranque muestra el paywall antiguo: se graba después del segundo arranque y se anota.
 - **A2/A3 sin Franky (Chat 4 @09a6b99, guion del Chat 1 @c1c6a58):** se han actualizado los rótulos. Se añade **A3b** (recuperar contraseña, P1), que no sale en el vídeo pero que un revisor puede tocar.
+
+- **RET-02/03 y congelación (W-25 a W-30):** necesitan una build u OTA con el Chat 5 @cb8a3bb y el Chat 4 @1b548d7. Hoy se recarga al volver a primer plano pasada la medianoche (useAlVolver).
