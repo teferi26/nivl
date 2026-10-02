@@ -8,7 +8,7 @@ import { addDays } from '../dates';
 import { levelFromXp, questXp, STAT_COLUMN } from '../game';
 import type { Quest, Stat } from '../types';
 import { mision } from './qa/servidor';
-import { rangoDeNivel } from '../progression';
+import { rangoDeNivel, rangoMerecido } from '../progression';
 
 // Un día "normal" de 5 misiones: 2 fáciles, 2 medias, 1 difícil = 250 XP base,
 // dentro del presupuesto diario de la skill (150–300).
@@ -174,5 +174,27 @@ describe('sistema v2: rangos a 30, 90 y 365 días', () => {
     const n = simular(365, constante).niveles;
     for (const lvl of n) { const r = rangoDeNivel(lvl); hitos.add(r.rango.id + r.grado); }
     expect(hitos.size).toBeGreaterThanOrEqual(8);
+  });
+});
+
+describe('sistema v2: rango merecido (nivel y días activos) a 30, 90, 365 y 730 días', () => {
+  // En la simulación todos los días presentes tienen alguna misión cumplida.
+  const rango = (d: number, p: Perfil) => rangoMerecido(simular(d, p).nivel, d);
+  test('constante (80 %): D en semana 1, C hacia el mes 2, B hacia el mes 4, A ~año, S no antes de 600 días', () => {
+    const r = Object.fromEntries([7, 14, 30, 60, 120, 365, 599, 730].map((d) => [d, rango(d, constante)]));
+    if (process.env.QA_SIM_PRINT) console.log('rango merecido constante', r);
+    expect(['E', 'D']).toContain(r[7]); // nivel 4 el día 7: D llega hacia el día 8–10
+    expect(r[14]).toBe('D');
+    expect(['D', 'C']).toContain(r[30]);
+    expect(r[60]).toBe('C');
+    expect(r[120]).toBe('B');
+    expect(['B', 'A']).toContain(r[365]);
+    expect(r[599]).not.toBe('S');
+    expect(r[730]).toBe('S');
+  });
+  test('ni con 1,5× de XP diario se llega a S antes de 600 días activos', () => {
+    // Nivel muy alto con pocos días: los días mandan.
+    expect(rangoMerecido(40, 400)).toBe('A');
+    expect(rangoMerecido(40, 600)).toBe('S');
   });
 });
