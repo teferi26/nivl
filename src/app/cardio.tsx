@@ -52,7 +52,7 @@ import { propagarActo, restoDelModulo } from '@/lib/links';
 import { CARDIO_DAILY_CAP, cardioXp } from '@/lib/game';
 import { colors, fonts } from '@/lib/theme';
 import { mensajeSistema } from '@/lib/validation';
-import { deMisiones, desgloseXp, voice } from '@/lib/voice';
+import { deMisiones, desgloseXp } from '@/lib/voice';
 
 const ICONO: Record<CardioKind, keyof typeof Ionicons.glyphMap> = {
   correr: 'walk-outline',
@@ -195,10 +195,10 @@ export default function Cardio() {
       avisar(
         'Sesión registrada',
         nuevo > 0
-          ? `${voice.allDone()}\n${desglose}`
+          ? desglose
           : eco && eco.xpMisiones > 0
             ? eco.marcadas.length > 0
-              ? `${voice.allDone()}\n${desglose}`
+              ? desglose
               : 'Anotada. La misión de hoy ya estaba marcada y pagada.'
             : esCorreccion
               ? 'El sistema corrige el registro. El XP de esta sesión ya estaba pagado.'

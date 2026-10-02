@@ -63,6 +63,9 @@ import { colors, fonts } from '@/lib/theme';
 import { mensajeSistema } from '@/lib/validation';
 import { deMisiones, desgloseXp, voice } from '@/lib/voice';
 import type { GymDay, GymExercise, GymSession } from '@/lib/types';
+// Pedido por el Chat 5 (economía): con el tope diario de award_xp, pagar más
+// récords se recortaría en silencio. En la primera sesión todo es récord.
+const MAX_PR_PAGADOS = 4;
 
 const DAY_NAMES = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
 
@@ -235,7 +238,7 @@ export default function Gym() {
       const gymSession = await createSession(userId, {
         date: today,
         gym_day_id: todayPlan?.id ?? null,
-        xp_awarded: GYM_SESSION_XP + prs.length * PR_XP,
+        xp_awarded: GYM_SESSION_XP + Math.min(prs.length, MAX_PR_PAGADOS) * PR_XP,
         notes: notas.trim() || null,
       });
 
@@ -258,10 +261,10 @@ export default function Gym() {
       // misión no haya pagado ya (más los récords): el mismo entreno no cobra
       // dos veces.
       const eco = await propagarActo(await ensureProfile(userId), 'gym', today);
-      const totalXp = restoDelModulo(GYM_SESSION_XP, eco) + prs.length * PR_XP;
-      if (totalXp !== gymSession.xp_awarded) {
-        await supabase.from('gym_sessions').update({ xp_awarded: totalXp }).eq('id', gymSession.id);
-      }
+      // Récords pagados: como mucho MAX_PR_PAGADOS (50 + 4×25 = 150, el tope
+      // diario). Los récords se registran todos; lo que se limita es el pago.
+      const prsPagados = Math.min(prs.length, MAX_PR_PAGADOS);
+      const totalXp = restoDelModulo(GYM_SESSION_XP, eco) + prsPagados * PR_XP;
 
       const res =
         totalXp > 0
@@ -269,7 +272,13 @@ export default function Gym() {
               day: todayPlan?.name ?? 'libre',
               prs: prs.map((p) => p.exercise_name),
             })
-          : { leveledUp: false, newLevel: 0 };
+          : { profile: eco.profile, leveledUp: false, newLevel: 0 };
+      // Lo PAGADO, no lo calculado: si el servidor recorta por tope, la sesión
+      // y el aviso dicen lo que de verdad ha entrado.
+      const pagado = Math.max(0, Math.min(totalXp, res.profile.xp_total - eco.profile.xp_total));
+      if (pagado !== gymSession.xp_awarded) {
+        await supabase.from('gym_sessions').update({ xp_awarded: pagado }).eq('id', gymSession.id);
+      }
       for (const pr of prs) {
         await insertEvent(userId, 'gym_pr', { exercise: pr.exercise_name, weight: pr.weight });
       }
@@ -284,14 +293,15 @@ export default function Gym() {
       const prText = prs.length > 0 ? `\n${prs.map((p) => voice.pr(p.exercise_name)).join('\n')}` : '';
       const achText = fresh.length > 0 ? `\nLogro: ${fresh.map((a) => a.name).join(', ')}` : '';
       // El desglose cuadra con lo que luego enseña la misión enlazada.
-      const xpRecords = prs.length * PR_XP;
+      const xpSesion = Math.min(pagado, totalXp - prsPagados * PR_XP);
+      const xpRecords = pagado - xpSesion;
       const desglose = desgloseXp([
         { xp: eco.xp, de: deMisiones(eco.marcadas) },
-        { xp: totalXp - xpRecords, de: 'a FUE por la sesión' },
-        { xp: xpRecords, de: `a FUE por ${prs.length === 1 ? '1 récord' : `${prs.length} récords`}` },
+        { xp: xpSesion, de: 'a FUE por la sesión' },
+        { xp: xpRecords, de: `a FUE por ${prsPagados === 1 ? '1 récord' : `${prsPagados} récords`}` },
       ]);
       avisar(
-        'SESIÓN REGISTRADA',
+        'Sesión registrada',
         `${desglose || 'La misión de hoy ya estaba marcada y pagada.'}${prText}${achText}`,
       );
       if (res.leveledUp) setLevelUp(res.newLevel);

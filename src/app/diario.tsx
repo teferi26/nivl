@@ -394,13 +394,13 @@ export default function Diario() {
         const fresh = await unlockAchievements(userId, evaluateAchievements({ journalCount: total }));
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         avisar(
-          'ENTRADA REGISTRADA',
+          'Entrada registrada',
           `${desglose || 'La misión del diario ya estaba marcada y pagada.'}${fresh.length > 0 ? `\nLogro: ${fresh.map((a) => a.name).join(', ')}` : ''}`,
         );
       }
       if (isNew && !(dia === dateKey() || dia === addDays(dateKey(), -1))) {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        avisar('ENTRADA REGISTRADA', 'Día completado en tu archivo. Sin XP: solo lo paga el día en caliente.');
+        avisar('Entrada registrada', 'Día completado en tu archivo. Sin XP: solo lo paga el día en caliente.');
       }
       if (!isNew) {
         Haptics.selectionAsync().catch(() => {});

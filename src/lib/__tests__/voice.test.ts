@@ -17,7 +17,7 @@ describe('desgloseXp', () => {
         { xp: 10, de: deMisiones(['Escribir el diario']) },
         { xp: 5, de: 'a PER por el diario' },
       ]),
-    ).toBe('+15 XP: 10 de la misión «Escribir el diario», marcada sola + 5 a PER por el diario.');
+    ).toBe('+15 XP: 10 de la misión «Escribir el diario» (marcada sola) + 5 a PER por el diario.');
   });
 
   it('omite las partes a cero aunque haya varias', () => {
@@ -27,13 +27,13 @@ describe('desgloseXp', () => {
         { xp: 0, de: 'a FUE por la sesión' },
         { xp: 25, de: 'a FUE por 1 récord' },
       ]),
-    ).toBe('+75 XP: 50 de la misión «Entrenar», marcada sola + 25 a FUE por 1 récord.');
+    ).toBe('+75 XP: 50 de la misión «Entrenar» (marcada sola) + 25 a FUE por 1 récord.');
   });
 });
 
 describe('deMisiones', () => {
   it('concuerda en número', () => {
-    expect(deMisiones(['A'])).toBe('de la misión «A», marcada sola');
-    expect(deMisiones(['A', 'B'])).toBe('de las misiones «A», «B», marcadas solas');
+    expect(deMisiones(['A'])).toBe('de la misión «A» (marcada sola)');
+    expect(deMisiones(['A', 'B'])).toBe('de las misiones «A», «B» (marcadas solas)');
   });
 });

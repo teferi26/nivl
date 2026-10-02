@@ -26,6 +26,7 @@ import {
   Skeleton,
   SkeletonRows,
   Stagger,
+  useAlVolver,
 } from '@/components/ui';
 import { avisar, confirmar } from '@/components/ui/confirmar';
 import { evaluateAchievements, unlockAchievements } from '@/lib/achievements';
@@ -177,6 +178,9 @@ export default function Hoy() {
       load();
     }, [load]),
   );
+  // Volver a la app al día siguiente sin cambiar de pestaña: sin esto Hoy
+  // enseñaba las misiones de ayer como hechas y no aplicaba el cierre.
+  useAlVolver(load);
 
   // Los avisos se derivan del plan: se inicializan una vez y se reconcilian
   // cada vez que cambia el plan o los horarios. Ojo con lo que había antes

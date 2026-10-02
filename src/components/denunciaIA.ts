@@ -36,13 +36,20 @@ export function faltaLaRpc(error: { code?: string; message?: string } | null | u
 }
 
 /** El correo de respaldo: id y motivo, nunca el contenido de la respuesta. */
-export function correoDenuncia(fuente: FuenteIA, motivo: MotivoIA, messageId: string | null): string {
+export function correoDenuncia(
+  fuente: FuenteIA,
+  motivo: MotivoIA,
+  messageId: string | null,
+  contexto?: string,
+): string {
   const asunto = encodeURIComponent('Denuncia de respuesta de IA · NIVL');
   const cuerpo = encodeURIComponent(
     [
       `Origen: ${fuente === 'coach' ? 'coach' : 'Oráculo'}`,
       `Motivo: ${MOTIVOS_IA.find((m) => m.value === motivo)?.label ?? motivo}`,
       `Mensaje: ${messageId ?? 'sin identificador'}`,
+      // Sin id de servidor (respuesta recién llegada), el hilo y la hora la localizan.
+      ...(contexto ? [`Contexto: ${contexto}`] : []),
     ].join('\n'),
   );
   return `mailto:${CORREO_SOPORTE}?subject=${asunto}&body=${cuerpo}`;

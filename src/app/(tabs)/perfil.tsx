@@ -951,7 +951,9 @@ export default function Perfil() {
               {/* En iOS no se nombra Google Play (guideline 2.3.10), y al revés. */}
               {Platform.OS === 'android'
                 ? 'Borrar la cuenta no cancela una suscripción de NIVL Pro: cancélala en Play Store > Pagos y suscripciones > Suscripciones.'
-                : 'Borrar la cuenta no cancela una suscripción de NIVL Pro: cancélala en Ajustes > tu nombre > Suscripciones.'}
+                : Platform.OS === 'ios'
+                  ? 'Borrar la cuenta no cancela una suscripción de NIVL Pro: cancélala en Ajustes > tu nombre > Suscripciones.'
+                  : 'Borrar la cuenta no cancela una suscripción de NIVL Pro: cancélala en la tienda donde la contrataste.'}
             </Text>
             {avisoBorrar ? (
               <Text style={styles.avisoCodigo} accessibilityRole="alert">

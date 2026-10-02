@@ -194,7 +194,7 @@ export default function Avances() {
     try {
       await updateGoal(goal.id, { status: 'achieved', achieved_at: new Date().toISOString() });
       const profile = await ensureProfile(userId);
-      await awardXp(profile, GOAL_ACHIEVED_XP, 'AGI', 'goal_achieved', { goal: goal.title });
+      await awardXp(profile, GOAL_ACHIEVED_XP, 'AGI', 'goal_achieved', { goal_id: goal.id, goal: goal.title });
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       await load();
     } catch (e) {

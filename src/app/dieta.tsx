@@ -109,9 +109,15 @@ export default function Dieta() {
 
   const removeSlot = async () => {
     if (!editing?.existing) return;
-    await deleteMealSlot(editing.existing.id);
-    setEditing(null);
-    await load();
+    const ok = await confirmar({ titulo: 'Quitar comida', mensaje: editing.existing.description, confirmar: 'Quitar', destructivo: true });
+    if (!ok) return;
+    try {
+      await deleteMealSlot(editing.existing.id);
+      setEditing(null);
+      await load();
+    } catch (e) {
+      avisar('Error del sistema', mensajeSistema(e));
+    }
   };
 
   const generateList = async () => {

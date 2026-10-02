@@ -25,5 +25,8 @@ describe('denuncia de respuestas de IA', () => {
     expect(cuerpo).toContain('abc-123');
     expect(cuerpo).toContain('Consejo de salud peligroso');
     expect(correoDenuncia('oraculo', 'otro', null)).toContain(encodeURIComponent('sin identificador'));
+    // Sin id de servidor, el hilo y la hora localizan la respuesta (nunca el texto).
+    const conContexto = decodeURIComponent(correoDenuncia('coach', 'danino', null, 'hilo t1 · 2026-10-02T10:00:00Z').split('body=')[1]);
+    expect(conContexto).toContain('Contexto: hilo t1');
   });
 });

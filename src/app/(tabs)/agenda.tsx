@@ -175,7 +175,16 @@ export default function Agenda() {
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [load]),
   );
-  useAlVolver(() => load(anchor));
+  // Quien miraba "hoy" sigue mirando hoy al volver al día siguiente; quien
+  // había navegado a otro día, se queda en él.
+  const hoyVisto = useRef(today);
+  useAlVolver(() => {
+    const hoy = dateKey();
+    const seguiaEnHoy = anchor === hoyVisto.current;
+    hoyVisto.current = hoy;
+    if (seguiaEnHoy && hoy !== anchor) setAnchor(hoy);
+    load(seguiaEnHoy ? hoy : anchor);
+  });
 
   useEffect(() => {
     const r = rangeRef.current;
@@ -286,7 +295,11 @@ export default function Agenda() {
   const removeEvent = async (e: CalendarEvent) => {
     const ok = await confirmar({ titulo: 'Eliminar evento', mensaje: e.title, confirmar: 'Eliminar', destructivo: true });
     if (!ok) return;
-    await deleteCalendarEvent(e.id).catch(() => {});
+    try {
+      await deleteCalendarEvent(e.id);
+    } catch (err) {
+      avisar('Error del sistema', mensajeSistema(err));
+    }
     await load(anchor);
   };
 
@@ -337,7 +350,7 @@ export default function Agenda() {
           <ScreenHeader
             eyebrow={monthLabel(anchor)}
             title={titulo}
-            subtitle={loaded ? subtitulo : undefined}
+            subtitle={loaded && !loadError ? subtitulo : undefined}
             action={{ icon: 'add', label: 'Nuevo evento', onPress: abrirFormulario, solid: true }}
           />
         </FadeIn>
@@ -495,7 +508,7 @@ export default function Agenda() {
             <Skeleton height={11} width={80} style={styles.skEyebrow} />
             <Skeleton height={160} />
           </View>
-        ) : vacioTotal ? (
+        ) : loadError ? null : vacioTotal ? (
           <FadeIn index={3}>
             <Card variant="outline">
               <EmptyState

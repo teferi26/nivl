@@ -308,7 +308,7 @@ export default function Login() {
                     <Pressable
                       key={url}
                       onPress={() => Linking.openURL(url).catch(() => {})}
-                      hitSlop={6}
+                      hitSlop={12}
                       accessibilityRole="link"
                       accessibilityLabel={texto}
                     >

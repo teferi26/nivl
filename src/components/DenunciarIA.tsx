@@ -8,18 +8,21 @@
 import * as Linking from 'expo-linking';
 import { useRef, useState } from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { SystemButton } from '@/components/SystemButton';
 import { ChipWrap, Chip } from '@/components/ui';
 import { supabase } from '@/lib/supabase';
 import { colors, fonts } from '@/lib/theme';
 import { mensajeSistema } from '@/lib/validation';
-import { correoDenuncia, extractoDenuncia, faltaLaRpc, MOTIVOS_IA, type FuenteIA, type MotivoIA } from './denunciaIA';
+import { CORREO_SOPORTE, correoDenuncia, extractoDenuncia, faltaLaRpc, MOTIVOS_IA, type FuenteIA, type MotivoIA } from './denunciaIA';
 
 export interface RespuestaDenunciada {
   fuente: FuenteIA;
   /** Id del mensaje en servidor; null en el Oráculo, que no los guarda. */
   messageId: string | null;
   texto: string;
+  /** Hilo y hora, para localizarla si no hay id de servidor. Nunca el texto. */
+  contexto?: string;
 }
 
 interface Props {
@@ -34,6 +37,7 @@ export function DenunciarIA({ respuesta, onClose }: Props) {
   const [enviada, setEnviada] = useState(false);
   const [busy, setBusy] = useState(false);
   const lock = useRef(false);
+  const insets = useSafeAreaInsets();
 
   const cerrar = () => {
     if (lock.current) return;
@@ -57,9 +61,14 @@ export function DenunciarIA({ respuesta, onClose }: Props) {
       });
       if (error && faltaLaRpc(error)) {
         // Aún sin la función en el servidor: el correo de respaldo, sin el texto.
-        await Linking.openURL(correoDenuncia(respuesta.fuente, motivo, respuesta.messageId));
+        try {
+          await Linking.openURL(correoDenuncia(respuesta.fuente, motivo, respuesta.messageId, respuesta.contexto));
+          setAviso('Se ha abierto tu correo con la denuncia. Envíalo para que llegue a revisión.');
+        } catch {
+          // Sin app de correo: que sepa a dónde escribir.
+          setAviso(`No se ha podido abrir el correo. Escribe a ${CORREO_SOPORTE} con el motivo de la denuncia.`);
+        }
         setEnviada(true);
-        setAviso('Se ha abierto tu correo con la denuncia. Envíalo para que llegue a revisión.');
       } else if (error) {
         throw error;
       } else {
@@ -78,7 +87,11 @@ export function DenunciarIA({ respuesta, onClose }: Props) {
     <Modal visible={respuesta !== null} transparent animationType="slide" onRequestClose={cerrar}>
       <View style={styles.backdrop}>
         <Pressable style={styles.backdropTap} onPress={cerrar} accessibilityRole="button" accessibilityLabel="Cerrar" />
-        <ScrollView style={styles.sheet} contentContainerStyle={styles.sheetContent} accessibilityViewIsModal>
+        <ScrollView
+          style={styles.sheet}
+          contentContainerStyle={[styles.sheetContent, { paddingBottom: Math.max(34, insets.bottom + 20) }]}
+          accessibilityViewIsModal
+        >
           <View style={styles.sheetHandle} />
           <Text style={styles.sheetEyebrow}>DENUNCIAR RESPUESTA</Text>
           <Text style={styles.sheetTitle}>¿Qué falla en esta respuesta?</Text>
@@ -95,7 +108,7 @@ export function DenunciarIA({ respuesta, onClose }: Props) {
           ) : null}
 
           {aviso ? (
-            <Text style={styles.aviso} accessibilityRole="alert">
+            <Text style={styles.aviso} accessibilityRole="alert" selectable>
               {aviso}
             </Text>
           ) : null}

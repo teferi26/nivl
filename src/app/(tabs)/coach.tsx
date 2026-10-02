@@ -549,7 +549,12 @@ function CoachContent() {
                 texto={b.text}
                 acciones={b.acciones.map((texto) => ({ texto, ok: true }))}
                 onDenunciar={() =>
-                  setDenuncia({ fuente: 'coach', messageId: ES_UUID.test(b.id) ? b.id : null, texto: b.text })
+                  setDenuncia({
+                    fuente: 'coach',
+                    messageId: ES_UUID.test(b.id) ? b.id : null,
+                    texto: b.text,
+                    contexto: `hilo ${threadId ?? 'desconocido'} · ${new Date().toISOString()}`,
+                  })
                 }
               />
             ),

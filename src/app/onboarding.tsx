@@ -278,7 +278,7 @@ export default function Onboarding() {
       // sella otra carta igual ni repite el evento: si la última carta es
       // esta misma firma, se da por sellada.
       const previa = await fetchLetter();
-      const yaSellada = !!previa && (previa.body === contrato || previa.open_at === abreEl);
+      const yaSellada = !!previa && previa.body === contrato && previa.open_at === abreEl;
       if (!yaSellada) {
         await sealLetter(userId!, contrato, abreEl, healthGoal);
         await insertEvent(userId!, 'commitment_signed', { years: horizonte.years, open_at: abreEl }).catch(() => {});

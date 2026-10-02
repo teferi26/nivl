@@ -152,6 +152,8 @@ export default function DungeonDetail() {
       const profile = await ensureProfile(userId);
       const xp = dungeonTaskXp(task.difficulty, task.is_boss);
       const res = await awardXp(profile, xp, dungeon.stat, 'dungeon_task', {
+        dungeon_id: dungeon.id,
+        task_id: task.id,
         dungeon: dungeon.title,
         task: task.title,
         boss: task.is_boss,
@@ -179,6 +181,7 @@ export default function DungeonDetail() {
       const profile = await ensureProfile(userId);
       const loot = DUNGEON_CLEAR_XP[dungeon.rank];
       const res = await awardXp(profile, loot, dungeon.stat, 'dungeon_cleared', {
+        dungeon_id: dungeon.id,
         dungeon: dungeon.title,
         rank: dungeon.rank,
       });
@@ -187,7 +190,7 @@ export default function DungeonDetail() {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       avisar(
         'CAMPAÑA DESPEJADA',
-        `${voice.dungeonCleared(dungeon.title)}\n\nBotín: +${loot} XP${fresh.length > 0 ? `\n${voice.achievement()} ${fresh.map((a) => a.name).join(', ')}` : ''}`,
+        `${voice.dungeonCleared(dungeon.title)}\n\nBotín: +${Math.max(0, res.profile.xp_total - profile.xp_total)} XP${fresh.length > 0 ? `\n${voice.achievement()} ${fresh.map((a) => a.name).join(', ')}` : ''}`,
       );
       if (res.leveledUp) setLevelUp(res.newLevel);
       await load();

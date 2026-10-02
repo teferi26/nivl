@@ -5,6 +5,7 @@ import { SystemButton } from '@/components/SystemButton';
 import { useAuth } from '@/lib/auth';
 import { reintentarCodigoPendiente } from '@/lib/creators';
 import { ensureProfile } from '@/lib/data';
+import { supabase } from '@/lib/supabase';
 import { colors, fonts } from '@/lib/theme';
 import { mensajeSistema } from '@/lib/validation';
 
@@ -46,9 +47,12 @@ export default function Index() {
       <View
         style={{ flex: 1, backgroundColor: colors.bg, alignItems: 'center', justifyContent: 'center', padding: 32 }}
       >
+        <Text style={{ fontFamily: fonts.heading, fontSize: 22, color: colors.text, textAlign: 'center' }}>
+          El sistema no responde
+        </Text>
         <Text
           accessibilityRole="alert"
-          style={{ fontFamily: fonts.body, fontSize: 15, lineHeight: 21, color: colors.textDim, textAlign: 'center' }}
+          style={{ fontFamily: fonts.body, fontSize: 15, lineHeight: 21, color: colors.textDim, textAlign: 'center', marginTop: 10 }}
         >
           {error}
         </Text>
@@ -57,6 +61,15 @@ export default function Index() {
           variant="outline"
           onPress={() => setIntento((n) => n + 1)}
           style={{ marginTop: 20, alignSelf: 'stretch' }}
+        />
+        {/* Salida si la cuenta no carga nunca: sin esto no había forma de cambiar de cuenta. */}
+        <SystemButton
+          title="Cerrar sesión"
+          variant="ghost"
+          onPress={() => {
+            supabase.auth.signOut().catch(() => {});
+          }}
+          style={{ marginTop: 6, alignSelf: 'stretch' }}
         />
       </View>
     );

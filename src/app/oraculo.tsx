@@ -135,7 +135,7 @@ export default function Oraculo() {
       // muerto. Ahora es una confirmación que funciona en las dos.
       const ver = await confirmar({
         titulo: 'MISIONES ASIGNADAS',
-        mensaje: `El sistema ha registrado ${n} nueva(s) misión(es).`,
+        mensaje: `El sistema ha registrado ${n === 1 ? 'una misión nueva' : `${n} misiones nuevas`}.`,
         confirmar: 'Ver misiones',
         cancelar: 'Quedarme aquí',
       });

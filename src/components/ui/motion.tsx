@@ -10,23 +10,37 @@ import { createContext, useContext, useEffect, useRef, useState, type PropsWithC
 import { AccessibilityInfo, Animated, Pressable, StyleSheet, type PressableProps, type StyleProp, type ViewStyle } from 'react-native';
 
 /**
- * ¿Ha pedido el usuario "reducir movimiento"? Empieza en false, lo lee al
- * montar y sigue el cambio en vivo si lo activa con la app abierta. Con true,
- * las entradas, los bucles y los escalados se quedan quietos.
+ * ¿Ha pedido el usuario "reducir movimiento"? Una sola lectura y una sola
+ * suscripción para toda la app (antes cada FadeIn, barra y anillo abría la
+ * suya y empezaba en false: el primer frame animaba y luego saltaba). El valor
+ * se guarda aquí y los componentes que montan después lo leen ya resuelto.
  */
+let reducidoCache = false;
+const oyentes = new Set<(v: boolean) => void>();
+let suscrito = false;
+
+function suscribir() {
+  if (suscrito) return;
+  suscrito = true;
+  const avisarTodos = (v: boolean) => {
+    reducidoCache = v;
+    oyentes.forEach((f) => f(v));
+  };
+  AccessibilityInfo.isReduceMotionEnabled()
+    .catch(() => false)
+    .then(avisarTodos);
+  AccessibilityInfo.addEventListener('reduceMotionChanged', avisarTodos);
+}
+suscribir();
+
 export function useMovimientoReducido(): boolean {
-  const [reducido, setReducido] = useState(false);
+  const [reducido, setReducido] = useState(reducidoCache);
   useEffect(() => {
-    let vivo = true;
-    AccessibilityInfo.isReduceMotionEnabled()
-      .catch(() => false)
-      .then((v) => {
-        if (vivo) setReducido(v);
-      });
-    const sub = AccessibilityInfo.addEventListener('reduceMotionChanged', (v) => setReducido(v));
+    oyentes.add(setReducido);
+    // Por si se resolvió entre el render y el efecto.
+    setReducido(reducidoCache);
     return () => {
-      vivo = false;
-      sub?.remove();
+      oyentes.delete(setReducido);
     };
   }, []);
   return reducido;

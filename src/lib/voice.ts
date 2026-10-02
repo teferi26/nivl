@@ -28,7 +28,7 @@ export function desgloseXp(partes: ParteXp[]): string {
 /** «la misión «A»» o «las misiones «A», «B»», marcadas solas por el acto. */
 export function deMisiones(titulos: string[]): string {
   const lista = titulos.map((t) => `«${t}»`).join(', ');
-  return titulos.length === 1 ? `de la misión ${lista}, marcada sola` : `de las misiones ${lista}, marcadas solas`;
+  return titulos.length === 1 ? `de la misión ${lista} (marcada sola)` : `de las misiones ${lista} (marcadas solas)`;
 }
 
 export const voice = {

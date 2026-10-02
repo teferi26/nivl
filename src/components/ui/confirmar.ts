@@ -19,7 +19,8 @@ interface Confirmacion {
 /** Pide confirmación. Resuelve true solo si se acepta. */
 export function confirmar({ titulo, mensaje, confirmar: ok, cancelar = 'Cancelar', destructivo }: Confirmacion): Promise<boolean> {
   if (Platform.OS === 'web') {
-    const texto = mensaje ? `${titulo}\n\n${mensaje}` : titulo;
+    // El diálogo del navegador solo tiene Aceptar/Cancelar: se dice qué hace cada uno.
+    const texto = `${mensaje ? `${titulo}\n\n${mensaje}` : titulo}\n\nAceptar: ${ok}. Cancelar: ${cancelar}.`;
     return Promise.resolve(typeof window !== 'undefined' && typeof window.confirm === 'function' ? window.confirm(texto) : false);
   }
   return new Promise((resolve) => {

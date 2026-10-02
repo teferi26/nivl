@@ -157,13 +157,16 @@ export default function Habitos() {
     try {
       await consolidarHabito(q.id, p.racha);
       const perfil = await ensureProfile(userId);
-      await awardXp(perfil, HABIT_ACQUIRED_XP, q.stat, 'habit_acquired', {
+      const res = await awardXp(perfil, HABIT_ACQUIRED_XP, q.stat, 'habit_acquired', {
+        // quest_id: clave del premio de una sola vez (lista blanca del servidor).
+        quest_id: q.id,
         quest: q.title,
         dias: p.racha,
       });
+      const pagado = Math.max(0, res.profile.xp_total - perfil.xp_total);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       await cargar();
-      avisar('El sistema lo da por tuyo', `${q.title} ya no se te va a pedir.\n+${HABIT_ACQUIRED_XP} XP a ${q.stat}.`);
+      avisar('El sistema lo da por tuyo', `${q.title} ya no se te va a pedir.\n${pagado > 0 ? `+${pagado} XP a ${q.stat}.` : 'Ese premio ya estaba cobrado.'}`);
     } catch (e) {
       avisar('Error del sistema', mensajeSistema(e));
     } finally {
@@ -179,7 +182,11 @@ export default function Habitos() {
       confirmar: 'Volver a exigirlo',
     });
     if (!ok) return;
-    await reactivarHabito(q.id).catch(() => {});
+    try {
+      await reactivarHabito(q.id);
+    } catch (e) {
+      avisar('Error del sistema', mensajeSistema(e));
+    }
     await cargar();
   };
 
@@ -219,7 +226,7 @@ export default function Habitos() {
           </Card>
         ) : null}
 
-        {loaded ? (
+        {loaded && !loadError ? (
           <FadeIn index={1}>
             <Card>
               <StatRow>
