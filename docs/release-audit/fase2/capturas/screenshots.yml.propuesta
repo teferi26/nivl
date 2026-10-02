@@ -1,0 +1,136 @@
+# PROPUESTA (Chat 1 → coordinador): .github/workflows/screenshots.yml
+# Capturas de la App Store para 1.0.8 en simulador: iPhone 6,9" y iPad 13".
+# Solo se lanza a mano. No sube nada a App Store Connect: las capturas quedan
+# como artefacto y el coordinador las sube con el usuario.
+#
+# Avisos:
+# - El repo es PÚBLICO: cualquiera con cuenta en GitHub puede descargar los
+#   artefactos durante `retention-days`. Las capturas usan SOLO la cuenta demo
+#   de capturas, con datos ficticios y sin nombres reales. Nunca la revisora
+#   de Apple ni cuentas de personas. Retención: 3 días.
+# - Las credenciales de la demo van como secretos del repo:
+#   NIVL_SHOTS_EMAIL / NIVL_SHOTS_PASSWORD (las pone el usuario).
+# - Apple admite capturas hechas en simulador para la ficha. NO sirven como el
+#   vídeo de dispositivo físico que pidió App Review.
+
+name: Capturas App Store (simulador)
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'SHA o rama de la que sacar las capturas'
+        required: true
+        default: 'winter2/integracion'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: screenshots
+  cancel-in-progress: true
+
+jobs:
+  capturas:
+    runs-on: macos-15
+    timeout-minutes: 120
+    env:
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+      NIVL_SHOTS_EMAIL: ${{ secrets.NIVL_SHOTS_EMAIL }}
+      NIVL_SHOTS_PASSWORD: ${{ secrets.NIVL_SHOTS_PASSWORD }}
+      # Versión fijada de Maestro (la del arnés del Chat 5).
+      MAESTRO_VERSION: 2.10.0
+    steps:
+      - name: Faltan secretos
+        if: ${{ env.EXPO_TOKEN == '' || env.NIVL_SHOTS_EMAIL == '' || env.NIVL_SHOTS_PASSWORD == '' }}
+        run: |
+          echo "::error::Faltan EXPO_TOKEN, NIVL_SHOTS_EMAIL o NIVL_SHOTS_PASSWORD en los secretos del repo."
+          exit 1
+
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+          persist-credentials: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.14.0
+          cache: npm
+
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - run: npm ci
+      - run: npm install --global eas-cli@latest
+
+      # Build de SIMULADOR, Release, con el perfil `screenshots` (propuesta de
+      # eas.json en LEEME.md). Mismo JS que la 1.0.8 de TestFlight.
+      - name: Compilar para simulador
+        run: |
+          eas build --platform ios --profile screenshots --local \
+            --non-interactive --output "$RUNNER_TEMP/nivl-sim.tar.gz"
+          mkdir -p "$RUNNER_TEMP/app"
+          tar -xzf "$RUNNER_TEMP/nivl-sim.tar.gz" -C "$RUNNER_TEMP/app"
+          echo "APP_PATH=$(find "$RUNNER_TEMP/app" -maxdepth 2 -name '*.app' | head -1)" >> "$GITHUB_ENV"
+
+      - name: Instalar Maestro
+        run: |
+          curl -Ls "https://get.maestro.mobile.dev" | bash
+          echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
+
+      - name: Capturas
+        run: |
+          set -euo pipefail
+          RUNTIME=$(xcrun simctl list runtimes -j | python3 scripts/ci/simruntime.py)
+          for DEV in "iPhone 16 Pro Max:iphone-69" "iPad Pro 13-inch (M4):ipad-13"; do
+            NAME="${DEV%%:*}"; SLUG="${DEV##*:}"
+            TYPE=$(xcrun simctl list devicetypes -j | python3 scripts/ci/simdevicetype.py "$NAME")
+            UDID=$(xcrun simctl create "nivl-$SLUG" "$TYPE" "$RUNTIME")
+            # Español de España antes de arrancar.
+            PLIST="$HOME/Library/Developer/CoreSimulator/Devices/$UDID/data/Library/Preferences/.GlobalPreferences.plist"
+            mkdir -p "$(dirname "$PLIST")"
+            [ -f "$PLIST" ] || plutil -create xml1 "$PLIST"
+            plutil -replace AppleLanguages -json '["es-ES"]' "$PLIST"
+            plutil -replace AppleLocale -string es_ES "$PLIST"
+            xcrun simctl boot "$UDID"
+            xcrun simctl bootstatus "$UDID" -b
+            # Barra de estado limpia (9:41, batería llena, sin operador).
+            xcrun simctl status_bar "$UDID" override --time "9:41" --batteryState charged --batteryLevel 100 --cellularBars 4 --wifiBars 3 --operatorName ""
+            xcrun simctl ui "$UDID" appearance dark
+            xcrun simctl install "$UDID" "$APP_PATH"
+            maestro --device "$UDID" test \
+              -e NIVL_QA_EMAIL="$NIVL_SHOTS_EMAIL" -e NIVL_QA_PASSWORD="$NIVL_SHOTS_PASSWORD" \
+              -e SLUG="$SLUG" \
+              --test-output-dir "$RUNNER_TEMP/shots/$SLUG" \
+              e2e/maestro/capturas-108.yaml
+            xcrun simctl shutdown "$UDID"
+          done
+
+      # Apple rechaza tamaños que no sean los oficiales: se comprueban aquí.
+      - name: Comprobar tamaños (1320×2868 y 2064×2752)
+        run: |
+          set -euo pipefail
+          fallos=0
+          for f in $(find "$RUNNER_TEMP/shots" -name 'capt-*.png'); do
+            w=$(sips -g pixelWidth "$f" | awk '/pixelWidth/{print $2}')
+            h=$(sips -g pixelHeight "$f" | awk '/pixelHeight/{print $2}')
+            case "$f" in
+              *iphone-69*) esperado="1320x2868" ;;
+              *ipad-13*)   esperado="2064x2752" ;;
+            esac
+            if [ "${w}x${h}" != "$esperado" ]; then echo "::error::$f mide ${w}x${h}, se esperaba $esperado"; fallos=1; fi
+          done
+          exit $fallos
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: capturas-appstore-${{ github.run_number }}
+          path: ${{ runner.temp }}/shots/**/capt-*.png
+          retention-days: 3
+          if-no-files-found: error
