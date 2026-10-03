@@ -255,6 +255,15 @@ export async function cerrarSesion(): Promise<void> {
     olvidarCodigoPendiente(),
     Promise.resolve().then(olvidarConsentimiento),
   ]);
+  await cerrarSoloSesion();
+}
+
+/**
+ * Solo la sesión, sin lo del dispositivo. Es el cierre del portal de
+ * creadores (`src/lib/sitio.ts`), donde no hay avisos, push, Oráculo ni
+ * consentimiento que olvidar.
+ */
+export async function cerrarSoloSesion(): Promise<void> {
   // global: revoca también el refresh token en el servidor. Si la red falla,
   // al menos se cierra aquí (supabase-js no borra la sesión local si el
   // servidor no contesta).
