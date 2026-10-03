@@ -166,3 +166,10 @@ Pendiente antes del DNS:
 1. Volver a desplegar con `38b0f27` o posterior. El preview cierra sesión con alcance global (echaría al creador de la app del móvil) y el login todavía dice «Cámbiala».
 2. Fuentes: `/assets/node_modules/**` no se sube y el fallback SPA devuelve `index.html` («OTS parsing error»). No es de seguridad, pero retrasa la redirección y llena la consola.
 3. Pruebas 5.2–5.4 por una persona, sobre el despliegue corregido.
+
+### 6.1 Nuevo despliegue (03/10/2026, `entry-2979eb90…`, con 9d3acf7, 38b0f27 y 7839808)
+
+- 5.1 sin sesión: **PASS.** `/coach`, `/onboarding`, `/`, `/fotos` y `/auth/confirmar?code=…` llevan a `/login` en menos de 2,5 s. Ninguna petición a Supabase; almacenamiento y cookies vacíos.
+- 5.5 cabeceras: **PASS** (sin cambios). Consola sin violaciones de CSP ni errores de fuentes. Solo queda un aviso de `expo-notifications` por importar el módulo, que no hace ninguna petición.
+- 5.6 bundle: **PASS.** Sin secretos ni analítica. Lleva `signOut({ scope: 'local' })` y el texto «Recupérala desde la app». Las fuentes salen de `assets/nm` con `200 font/ttf`.
+- 5.2–5.4 con sesión: **pendiente.** Las coordina el coordinador con el usuario; hacen falta capturas de la pestaña Red, con importes y correos tapados.
