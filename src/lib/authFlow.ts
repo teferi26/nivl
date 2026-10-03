@@ -263,10 +263,13 @@ export async function cerrarSesion(): Promise<void> {
  * creadores (`src/lib/sitio.ts`), donde no hay avisos, push, Oráculo ni
  * consentimiento que olvidar.
  */
-export async function cerrarSoloSesion(): Promise<void> {
-  // global: revoca también el refresh token en el servidor. Si la red falla,
-  // al menos se cierra aquí (supabase-js no borra la sesión local si el
-  // servidor no contesta).
-  const { error } = await supabase.auth.signOut().catch((e: unknown) => ({ error: e }));
+export async function cerrarSoloSesion(alcance: 'global' | 'local' = 'global'): Promise<void> {
+  // global (la app): revoca todas las sesiones del usuario en el servidor.
+  // local (el portal, Chat 3): revoca solo la de este navegador, sin echar al
+  // creador de la app en su móvil. Si la red falla, al menos se cierra aquí
+  // (supabase-js no borra la sesión local si el servidor no contesta).
+  // Sin argumentos en global: es la llamada de siempre (sec-auth-flow.test).
+  const salir = alcance === 'local' ? supabase.auth.signOut({ scope: 'local' }) : supabase.auth.signOut();
+  const { error } = await salir.catch((e: unknown) => ({ error: e }));
   if (error) await supabase.auth.signOut({ scope: 'local' }).catch(() => undefined);
 }

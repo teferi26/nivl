@@ -53,7 +53,7 @@ const INTRO: Record<Mode, string> = {
 // de creador es manual) ni restablecer contraseña (el enlace del correo abre
 // la app, no este sitio; R1 del Chat 3).
 const INTRO_PORTAL = 'Entra con tu cuenta de NIVL para ver tu panel de creador.';
-const OLVIDO_PORTAL = '¿Olvidaste la contraseña? Cámbiala desde la app de NIVL y vuelve aquí.';
+const OLVIDO_PORTAL = '¿Olvidaste la contraseña? Recupérala desde la app de NIVL («¿Olvidaste la contraseña?» en la pantalla de entrar) y vuelve aquí.';
 
 export default function Login() {
   const [mode, setMode] = useState<Mode>('signin');

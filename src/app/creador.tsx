@@ -155,7 +155,8 @@ export default function Creador() {
     setPanel(null);
     setError(null);
     try {
-      await cerrarSoloSesion();
+      // Solo este navegador: la sesión de la app en el móvil sigue abierta.
+      await cerrarSoloSesion('local');
     } finally {
       setCerrando(false);
     }
