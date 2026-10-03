@@ -13,6 +13,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { SystemButton } from '@/components/SystemButton';
 import { entrar, pedirRecuperacion, registrar } from '@/lib/authFlow';
 import { LEGAL_URLS } from '@/lib/proplans';
+import { SITIO_CREADORES } from '@/lib/sitio';
 import { colors, fonts } from '@/lib/theme';
 import {
   checkPassword,
@@ -47,6 +48,12 @@ const INTRO: Record<Mode, string> = {
   signup: 'Crea tu cuenta de NIVL. Te enviaremos un enlace para confirmar el correo.',
   recover: 'Escribe el correo de tu cuenta y te enviaremos un enlace para elegir una contraseña nueva.',
 };
+
+// Portal de creadores (`src/lib/sitio.ts`): solo entrar. Sin registro (el alta
+// de creador es manual) ni restablecer contraseña (el enlace del correo abre
+// la app, no este sitio; R1 del Chat 3).
+const INTRO_PORTAL = 'Entra con tu cuenta de NIVL para ver tu panel de creador.';
+const OLVIDO_PORTAL = '¿Olvidaste la contraseña? Cámbiala desde la app de NIVL y vuelve aquí.';
 
 export default function Login() {
   const [mode, setMode] = useState<Mode>('signin');
@@ -132,10 +139,10 @@ export default function Login() {
         >
           <View style={styles.hero}>
             <Text style={styles.brand}>NIVL</Text>
-            <Text style={styles.tagline}>UN 1 % MEJOR CADA DÍA</Text>
+            <Text style={styles.tagline}>{SITIO_CREADORES ? 'PORTAL DE CREADORES' : 'UN 1 % MEJOR CADA DÍA'}</Text>
           </View>
 
-          {mode !== 'recover' ? (
+          {SITIO_CREADORES ? null : mode !== 'recover' ? (
             <View style={styles.toggle}>
               <Pressable
                 onPress={() => switchMode('signin')}
@@ -162,7 +169,7 @@ export default function Login() {
             </Text>
           )}
 
-          <Text style={styles.intro}>{INTRO[mode]}</Text>
+          <Text style={styles.intro}>{SITIO_CREADORES ? INTRO_PORTAL : INTRO[mode]}</Text>
 
           <View style={styles.form}>
             {mode === 'signup' ? (
@@ -328,7 +335,9 @@ export default function Login() {
               style={{ marginTop: 22 }}
             />
 
-            {mode === 'signin' ? (
+            {SITIO_CREADORES ? (
+              <Text style={styles.legal}>{OLVIDO_PORTAL}</Text>
+            ) : mode === 'signin' ? (
               <Pressable
                 onPress={() => switchMode('recover')}
                 disabled={busy}

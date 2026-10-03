@@ -9,6 +9,11 @@
 // cobrado, fijo, reembolsos y pagos. De los demás creadores, alias y ventas;
 // nunca su dinero (lo garantiza la RPC, no esta pantalla).
 //
+// En el portal de creadores (creadores.nivl.app, `src/lib/sitio.ts`) es la
+// única pantalla con sesión: sin flecha de volver y con «Cerrar sesión» a la
+// vista (R2 del Chat 3). Al cerrar se borra el estado del panel antes de soltar
+// la sesión, y la puerta del layout lleva al login.
+//
 // "Cuentas", no "instalaciones": sin SDK de atribución no se puede contar
 // quién instaló por el enlace; se cuenta quién metió el código.
 
@@ -43,6 +48,7 @@ import {
   Tag,
 } from '@/components/ui';
 import { vibrar } from '@/design/haptics';
+import { cerrarSoloSesion } from '@/lib/authFlow';
 import { ink, space, stroke, type as tipo } from '@/design/tokens';
 import {
   estadoReto,
@@ -71,6 +77,7 @@ import {
   fetchCreatorProgress,
   type CreatorPanel,
 } from '@/lib/creators';
+import { SITIO_CREADORES } from '@/lib/sitio';
 import { mensajeSistema } from '@/lib/validation';
 
 const MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sept', 'oct', 'nov', 'dic'];
@@ -96,6 +103,7 @@ export default function Creador() {
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [copiado, setCopiado] = useState(false);
+  const [cerrando, setCerrando] = useState(false);
   const copiadoTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const load = useCallback(async () => {
@@ -138,6 +146,34 @@ export default function Creador() {
     else router.replace('/(tabs)/perfil');
   };
 
+  // Portal: sin flecha (no hay adónde volver) y con salida de la cuenta.
+  const volver = SITIO_CREADORES ? undefined : salir;
+  const cerrarSesion = async () => {
+    if (cerrando) return;
+    setCerrando(true);
+    setVista(null);
+    setPanel(null);
+    setError(null);
+    try {
+      await cerrarSoloSesion();
+    } finally {
+      setCerrando(false);
+    }
+  };
+  const accionSesion = SITIO_CREADORES
+    ? { icon: 'log-out-outline' as const, label: 'Cerrar sesión', onPress: cerrarSesion }
+    : undefined;
+  const pieSesion = SITIO_CREADORES ? (
+    <Button
+      title="Cerrar sesión"
+      icon="log-out-outline"
+      variant="secondary"
+      onPress={cerrarSesion}
+      loading={cerrando}
+      style={styles.salirPortal}
+    />
+  ) : null;
+
   const compartir = async () => {
     if (!vista?.code) return;
     try {
@@ -163,7 +199,7 @@ export default function Creador() {
   if (!loaded) {
     return (
       <Screen>
-        <ScreenHeader onBack={salir} eyebrow="Programa de creadores" title="Tu panel" />
+        <ScreenHeader onBack={volver} action={accionSesion} eyebrow="Programa de creadores" title="Tu panel" />
         <View accessibilityRole="progressbar" accessibilityLabel="Cargando el panel de creador">
           <Skeleton height={96} style={styles.hueco} />
           <Skeleton height={72} style={styles.hueco} />
@@ -178,13 +214,20 @@ export default function Creador() {
   if (!vista) {
     return (
       <Screen refreshing={refreshing} onRefresh={refrescar}>
-        <ScreenHeader onBack={salir} eyebrow="Programa de creadores" title="Tu panel" />
+        <ScreenHeader onBack={volver} action={accionSesion} eyebrow="Programa de creadores" title="Tu panel" />
         {error ? (
           <EmptyState
             icon="cloud-offline-outline"
             title="El sistema no responde"
             body={error}
             action={{ label: 'Reintentar', onPress: refrescar }}
+          />
+        ) : SITIO_CREADORES ? (
+          // Neutro: no dice nada de la cuenta más allá de que no tiene panel.
+          <EmptyState
+            icon="megaphone-outline"
+            title="Este panel es para creadores del programa"
+            body="Con esta cuenta no hay panel que mostrar."
           />
         ) : (
           <EmptyState
@@ -194,6 +237,7 @@ export default function Creador() {
             action={{ label: 'Volver', onPress: salir, variant: 'outline' }}
           />
         )}
+        {pieSesion}
       </Screen>
     );
   }
@@ -205,7 +249,13 @@ export default function Creador() {
     <Screen refreshing={refreshing} onRefresh={refrescar}>
       <Stagger>
         <FadeIn index={0}>
-          <ScreenHeader onBack={salir} eyebrow="Programa de creadores" title={vista.alias || vista.code} subtitle={subtitulo} />
+          <ScreenHeader
+            onBack={volver}
+            action={accionSesion}
+            eyebrow="Programa de creadores"
+            title={vista.alias || vista.code}
+            subtitle={subtitulo}
+          />
         </FadeIn>
 
         {error ? (
@@ -341,6 +391,7 @@ export default function Creador() {
           // Texto plano: ni botón ni enlace (dictamen de tiendas, SISTEMA §10 bis).
           <Text style={styles.aviso}>{vista.aviso}</Text>
         )}
+        {pieSesion}
       </Stagger>
     </Screen>
   );
@@ -483,6 +534,7 @@ function PagosWeb({ web }: { web: PanelCreadorWeb }) {
 
 const styles = StyleSheet.create({
   hueco: { marginBottom: 14 },
+  salirPortal: { marginTop: space.s4, marginBottom: space.s6 },
   huecoLinea: { marginBottom: 12 },
   codigo: { fontFamily: tipo.number.family, fontSize: 30, letterSpacing: 4, color: ink.ink10 },
   enlace: { fontFamily: tipo.bodySm.family, fontSize: 13, color: ink.ink8, marginTop: 6 },
