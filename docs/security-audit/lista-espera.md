@@ -22,7 +22,7 @@ Chat 3 · 03/10/2026. Encargo del coordinador, aprobado por el usuario.
 `POST https://dueyufxxkiixdxighpaz.supabase.co/functions/v1/espera`
 
 - **Cabeceras:** solo `Content-Type: application/json`. **Sin `apikey` ni `Authorization`**: la función va sin JWT y no hace falta exponer nada más.
-- **CORS:** solo `https://nivl.app`. Cualquier otro origen, y la ausencia de `Origin`, reciben 403 sin cabeceras CORS. Eso incluye `www.nivl.app`, `nivl-web.vercel.app` y los previews de Vercel. Si el formulario tiene que funcionar en otro dominio, me lo pedís y lo añado a la lista; no se abre con comodín.
+- **CORS:** solo `https://nivl.app` y `https://nivl-web.vercel.app` (la misma web; los binarios 1.0.7 abren ahí los legales). Cualquier otro origen, y la ausencia de `Origin`, reciben 403 sin cabeceras CORS. Eso incluye `www.nivl.app` (redirige a `nivl.app`) y los previews de Vercel. Si el formulario tiene que funcionar en otro dominio, me lo pedís y lo añado a la lista; no se abre con comodín.
 - **Cuerpo** (JSON, máximo 2 KB):
 
   ```json
@@ -70,6 +70,10 @@ Va como **subapartado de «11. Esta web»**, con el ancla `id="lista-espera"`. A
 > - **Conservación:** hasta el lanzamiento y tres meses más; después se borra la lista entera.
 > - **Freno de abusos:** para frenar envíos automáticos tratamos durante 48 horas una huella irreversible de tu dirección IP. Nunca la IP en claro, y la huella no se guarda con tu correo. La base legal es nuestro interés legítimo en proteger el servicio.
 > - **Quién la trata:** la lista se guarda en Supabase. Cuando enviemos el aviso, lo hará Resend. Los dos figuran en «4. Con quién compartimos datos».
+
+En «4. Con quién compartimos datos», la celda de finalidad de Resend pasa a:
+
+> Envío de los emails de confirmación de cuenta, recuperación de contraseña y cambio de correo, y del aviso de lanzamiento a la lista de espera.
 
 En «7. Cuánto tiempo los guardamos», añadir:
 
