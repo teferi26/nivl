@@ -14,6 +14,7 @@ import { TopeAncho } from '@/design/useSizeClass';
 import { AuthProvider, useAuth } from '@/lib/auth';
 import { identificarEnTienda } from '@/lib/pro';
 import { registrarDispositivo } from '@/lib/push';
+import { destinoPortal, SITIO_CREADORES } from '@/lib/sitio';
 import { colors } from '@/lib/theme';
 import { useNotificationRouting } from '@/lib/useNotificationRouting';
 
@@ -51,6 +52,7 @@ const webStyles = StyleSheet.create({
   fuera: { flex: 1, alignItems: 'center', backgroundColor: colors.bg },
   dentro: { flex: 1, width: '100%', maxWidth: ANCHO_COLUMNA_WEB },
   ancho: { maxWidth: '100%' },
+  vacio: { flex: 1, backgroundColor: colors.bg },
 });
 
 // Puerta de sesión única para TODA la app: cubre deep links a pantallas
@@ -116,6 +118,41 @@ function ProtectedStack() {
   );
 }
 
+// Portal de creadores (EXPO_PUBLIC_SITIO=creadores, `src/lib/sitio.ts`): solo
+// el login y /creador. Sin sesión todo va al login; con sesión, a /creador. Es
+// un árbol aparte a propósito: aquí no se monta nada de la app (avisos,
+// dispositivo, tienda, consentimiento de salud con su realtime, celebraciones,
+// confirmación de edad) y ninguna otra pantalla llega a montarse: el
+// `screenLayout` las deja en blanco mientras la puerta redirige.
+function PortalStack() {
+  const { session, loading } = useAuth();
+  const segments = useSegments();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (loading) return;
+    const destino = destinoPortal(segments[0], !!session);
+    if (destino) router.replace(destino);
+  }, [session, loading, segments, router]);
+
+  return (
+    <ColumnaWeb>
+      <Stack
+        // Se pinta solo la pantalla en la que la puerta deja quedarse: ni
+        // /creador sin sesión (llamaría a las RPC sin token) ni el resto de
+        // la app con ella.
+        screenLayout={({ children, route }) =>
+          !loading && destinoPortal(route.name, !!session) === null ? children : <View style={webStyles.vacio} />
+        }
+        screenOptions={{
+          headerShown: false,
+          contentStyle: { backgroundColor: colors.bg },
+        }}
+      />
+    </ColumnaWeb>
+  );
+}
+
 export default function RootLayout() {
   // Cinzel para la piedra (marca y cifras), Outfit para todo lo que habla:
   // la misma familia que Franky en web y app.
@@ -131,6 +168,18 @@ export default function RootLayout() {
   // traductores lo leían como inglés.
   useEffect(() => {
     if (typeof document !== 'undefined') document.documentElement.lang = 'es';
+  }, []);
+
+  // El portal no se indexa. Con `web.output: single` no hay +html.tsx que
+  // valga: la meta se pone al arrancar. La garantía es la cabecera
+  // X-Robots-Tag del despliegue (R4); esto es para quien ejecute el JS.
+  useEffect(() => {
+    if (!SITIO_CREADORES || typeof document === 'undefined') return;
+    const meta = document.createElement('meta');
+    meta.name = 'robots';
+    meta.content = 'noindex, nofollow';
+    document.head.appendChild(meta);
+    document.title = 'NIVL · Creadores';
   }, []);
 
   useEffect(() => {
@@ -149,12 +198,16 @@ export default function RootLayout() {
     <ErrorBoundary>
       <AuthProvider>
         <StatusBar style="light" />
-        {/* Por fuera de ColumnaWeb: en web la ceremonia y el toast cubren toda la ventana. */}
-        <CelebracionProvider>
-          <EdadMinimaProvider>
-            <HealthConsentProvider><ProtectedStack /></HealthConsentProvider>
-          </EdadMinimaProvider>
-        </CelebracionProvider>
+        {SITIO_CREADORES ? (
+          <PortalStack />
+        ) : (
+          // Por fuera de ColumnaWeb: en web la ceremonia y el toast cubren toda la ventana.
+          <CelebracionProvider>
+            <EdadMinimaProvider>
+              <HealthConsentProvider><ProtectedStack /></HealthConsentProvider>
+            </EdadMinimaProvider>
+          </CelebracionProvider>
+        )}
       </AuthProvider>
     </ErrorBoundary>
   );

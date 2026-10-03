@@ -15,11 +15,25 @@
 // Ahora los avisos se derivan del plan del día que escribe el coach, se
 // reconcilian en vez de borrarse a lo bruto, y el estado es consultable.
 
+import type AsyncStorageTipo from '@react-native-async-storage/async-storage';
 import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
+import {
+  clavesDuelo,
+  dentroDeRet06,
+  diasDespertador,
+  fechasSinCierre,
+  historialAGuardar,
+  historialDisparado,
+  parsearHistorialAvisos,
+  type AvisoGuardado,
+} from './avisosPlan';
+import type { Duelo } from './competicionData';
+import { dateKey } from './dates';
+import { cuandoDe, fechaDeAviso, momentoDe, planDeAvisos, type EstadoPlanAvisos } from './notifyPlan';
 import type { DayBlock } from './plan';
 import { hhmm } from './plan';
-import { RUTA_AVISO, voice } from './voice';
+import { RUTA_AVISO, rutaSegura, textoAviso, voice } from './voice';
 import { requireHealthConsent } from './health';
 import { MENSAJE_FALLO, mensajeSistema } from './validation';
 
@@ -37,7 +51,11 @@ export const CATEGORIAS = {
 
 // Identificadores estables: permiten cancelar solo lo de un día concreto sin
 // tocar el resto de lo programado.
+// El despertador de antes era un único DAILY sin fin (`nivl.despertar`); ahora
+// es uno por día hasta ultimoDiaConAvisos (RET-06). El id viejo se cancela.
 const ID_DESPERTAR = 'nivl.despertar';
+const PREFIJO_DESPERTAR = 'nivl.despertar.';
+const PREFIJO_AVISO = 'nivl.aviso.';
 const idBloque = (fecha: string, blockId: string) => `nivl.bloque.${fecha}.${blockId}`;
 const idCierre = (fecha: string) => `nivl.cierre.${fecha}`;
 let healthGeneration = 0;
@@ -187,30 +205,77 @@ function fechaLocal(fecha: string, minutos: number): Date {
   return new Date(a, m - 1, d, Math.floor(minutos / 60), minutos % 60, 0, 0);
 }
 
-/** El despertador, a la hora pactada, todos los días. */
+/** Lo último que se programó del despertador: no se rehace si no cambia. */
+let despertadorHecho: string | null = null;
+
+/**
+ * El despertador, a la hora pactada, de hoy a ultimoDiaConAvisos(hoy): uno por
+ * día (`nivl.despertar.<fecha>`). RET-06: si no se abre la app, deja de sonar
+ * a los 7 días. Cada apertura lo vuelve a extender. El DAILY antiguo
+ * (`nivl.despertar`) se cancela.
+ */
 export async function programarDespertador(horaMin: number | null): Promise<void> {
   try {
+    const ahora = momentoDe(new Date());
+    const firma = `${ahora.fecha}|${horaMin}`;
+    if (despertadorHecho === firma) return;
+    despertadorHecho = firma;
     await Notifications.cancelScheduledNotificationAsync(ID_DESPERTAR).catch(() => {});
+    const programadas = await Notifications.getAllScheduledNotificationsAsync();
+    await Promise.all(
+      programadas
+        .filter((n) => n.identifier?.startsWith(PREFIJO_DESPERTAR))
+        .map((n) => Notifications.cancelScheduledNotificationAsync(n.identifier)),
+    );
     if (horaMin === null) return;
-    await Notifications.scheduleNotificationAsync({
-      identifier: ID_DESPERTAR,
-      content: {
-        title: 'Arriba, gladiador',
-        body: voice.morningNotif(),
-        sound: 'default',
-        interruptionLevel: 'timeSensitive',
-        data: { ruta: RUTA_AVISO.despertar },
-      },
-      trigger: {
-        type: Notifications.SchedulableTriggerInputTypes.DAILY,
-        hour: Math.floor(horaMin / 60),
-        minute: horaMin % 60,
-        channelId: CANALES.despertar,
-      },
-    });
+    for (const fecha of diasDespertador(ahora.fecha, ahora.min, horaMin)) {
+      await Notifications.scheduleNotificationAsync({
+        identifier: `${PREFIJO_DESPERTAR}${fecha}`,
+        content: {
+          title: 'Arriba, gladiador',
+          body: voice.morningNotif(),
+          sound: 'default',
+          interruptionLevel: 'timeSensitive',
+          data: { ruta: RUTA_AVISO.despertar },
+        },
+        trigger: {
+          type: Notifications.SchedulableTriggerInputTypes.DATE,
+          date: fechaLocal(fecha, horaMin),
+          channelId: CANALES.despertar,
+        },
+      });
+    }
   } catch (e) {
+    despertadorHecho = null;
     ultimoError = errorDeAvisos(e, 'No se pudo programar el despertador.');
   }
+}
+
+// Anti-spam del cierre (L6-0): los días con aviso de racha del plan no llevan
+// «cierre» fijo. Lo decide programarAvisosDelPlan; reconciliarAvisosDelDia lo
+// respeta y apunta su último cierre para poder quitarlo o devolverlo.
+let diasSinCierre = new Set<string>();
+let ultimoCierre: { fecha: string; min: number; generation: number } | null = null;
+
+async function programarCierre(fecha: string, horaCierreMin: number): Promise<boolean> {
+  const cuando = fechaLocal(fecha, horaCierreMin);
+  if (cuando <= new Date()) return false;
+  await Notifications.scheduleNotificationAsync({
+    identifier: idCierre(fecha),
+    content: {
+      title: 'El cierre del día se acerca',
+      body: voice.eveningNotif(),
+      sound: 'default',
+      categoryIdentifier: CATEGORIAS.cierre,
+      data: { ruta: RUTA_AVISO.cierre },
+    },
+    trigger: {
+      type: Notifications.SchedulableTriggerInputTypes.DATE,
+      date: cuando,
+      channelId: CANALES.cierre,
+    },
+  });
+  return true;
 }
 
 /**
@@ -218,7 +283,9 @@ export async function programarDespertador(horaMin: number | null): Promise<void
  *
  * Cancela SOLO los de esa fecha (por identificador estable) y reprograma los
  * que siguen en el futuro. Nada de borrar todo lo programado: el despertador y
- * los avisos de otros días sobreviven.
+ * los avisos de otros días sobreviven. RET-06: un día más allá de
+ * ultimoDiaConAvisos(hoy) no lleva bloques; y sin cierre si ese día hay aviso
+ * de racha.
  */
 export async function reconciliarAvisosDelDia(
   fecha: string,
@@ -238,8 +305,10 @@ export async function reconciliarAvisosDelDia(
 
     const ahora = new Date();
     let puestas = 0;
+    const conBloques = dentroDeRet06(fecha, dateKey(ahora));
 
     for (const b of bloques) {
+      if (!conBloques) break;
       if (!b.notify || b.done) continue;
       const cuando = fechaLocal(fecha, b.start_min);
       if (cuando <= ahora) continue;
@@ -265,26 +334,9 @@ export async function reconciliarAvisosDelDia(
       puestas++;
     }
 
-    if (horaCierreMin !== null) {
-      const cuando = fechaLocal(fecha, horaCierreMin);
-      if (cuando > ahora) {
-        await Notifications.scheduleNotificationAsync({
-          identifier: idCierre(fecha),
-          content: {
-            title: 'El cierre del día se acerca',
-            body: voice.eveningNotif(),
-            sound: 'default',
-            categoryIdentifier: CATEGORIAS.cierre,
-            data: { ruta: RUTA_AVISO.cierre },
-          },
-          trigger: {
-            type: Notifications.SchedulableTriggerInputTypes.DATE,
-            date: cuando,
-            channelId: CANALES.cierre,
-          },
-        });
-        puestas++;
-      }
+    ultimoCierre = horaCierreMin === null ? null : { fecha, min: horaCierreMin, generation };
+    if (horaCierreMin !== null && !diasSinCierre.has(fecha) && (await programarCierre(fecha, horaCierreMin))) {
+      puestas++;
     }
 
     if (generation !== healthGeneration) { await cancelarAvisosSalud(); return 0; }
@@ -326,9 +378,227 @@ export async function avisarEn(
 }
 
 export async function cancelarTodo(): Promise<void> {
+  // Al salir de la cuenta: nada del plan del anterior sobrevive en memoria.
+  if (reloj) clearTimeout(reloj);
+  reloj = null;
+  despertadorHecho = null;
+  diasSinCierre = new Set();
+  ultimoCierre = null;
+  try {
+    await almacen().removeItem(CLAVE_HISTORIAL);
+  } catch {
+    /* sin almacenamiento no hay historial que borrar */
+  }
   try {
     await Notifications.cancelAllScheduledNotificationsAsync();
   } catch {
     /* nada que cancelar */
   }
+}
+
+// ─── L6-0 · El plan de avisos (notifyPlan.planDeAvisos), conectado ──────────
+//
+// Contrato: docs/design-v2/L6-0-avisos.md. El estado lo arma avisosPlan.ts
+// (puro) con lo que da la fuente que registra Hoy; aquí solo se programa.
+
+// Carga perezosa (require en la llamada), como en pro.ts: un import estático
+// arrastraría el módulo nativo a todos los tests que importan notifications.
+type Almacen = Pick<typeof AsyncStorageTipo, 'getItem' | 'setItem' | 'removeItem'>;
+function almacen(): Almacen {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const m = require('@react-native-async-storage/async-storage') as { default?: Almacen } & Almacen;
+  return m.default ?? m;
+}
+
+/** Los avisos del plan programados, con su `cuando`: sin esto el tope de 2 al día no aguanta una recarga. */
+const CLAVE_HISTORIAL = 'nivl:avisos:historial';
+/** Las novedades de duelos ya vistas en Amigos (claves de clavesDuelo). */
+const CLAVE_DUELOS_VISTOS = 'nivl:duelos:vistos';
+const MAX_DUELOS_VISTOS = 300;
+
+async function leerHistorial(): Promise<AvisoGuardado[]> {
+  try {
+    return parsearHistorialAvisos(await almacen().getItem(CLAVE_HISTORIAL));
+  } catch {
+    return [];
+  }
+}
+
+async function guardarHistorial(h: AvisoGuardado[]): Promise<void> {
+  try {
+    await almacen().setItem(CLAVE_HISTORIAL, JSON.stringify(h));
+  } catch {
+    /* sin almacenamiento, el tope solo vale dentro de la sesión */
+  }
+}
+
+async function leerLista(clave: string): Promise<Set<string> | null> {
+  const raw = await almacen().getItem(clave);
+  if (raw === null) return null;
+  const x: unknown = JSON.parse(raw);
+  return new Set(Array.isArray(x) ? x.filter((k): k is string => typeof k === 'string') : []);
+}
+
+/** Novedades de duelos ya vistas. Nunca lanza: si no se puede leer, null. */
+export async function leerDuelosVistos(): Promise<Set<string> | null> {
+  try {
+    return await leerLista(CLAVE_DUELOS_VISTOS);
+  } catch {
+    return null;
+  }
+}
+
+/** Apunta como vistas las novedades de los duelos que se acaban de enseñar. Nunca lanza. */
+export async function marcarDuelosVistos(duelos: readonly Duelo[]): Promise<void> {
+  try {
+    const nuevas = duelos.flatMap(clavesDuelo);
+    if (nuevas.length === 0) return;
+    const previas = (await leerDuelosVistos()) ?? new Set<string>();
+    if (nuevas.every((c) => previas.has(c))) return;
+    const todas = [...previas, ...nuevas.filter((c) => !previas.has(c))].slice(-MAX_DUELOS_VISTOS);
+    await almacen().setItem(CLAVE_DUELOS_VISTOS, JSON.stringify(todas));
+  } catch {
+    /* sin almacenamiento, el aviso de duelo puede repetirse (24 h de enfriamiento) */
+  }
+}
+
+/** Las claves que ya enseñó la cola de celebraciones (CelebracionProvider). null = nunca guardadas o ilegibles. */
+export async function leerClavesCelebradas(userId: string): Promise<Set<string> | null> {
+  try {
+    return await leerLista(`nivl:celebradas:${userId}`);
+  } catch {
+    return null;
+  }
+}
+
+/** Devuelve el cierre fijo o lo quita según los días con aviso de racha. */
+async function ajustarCierre(sin: Set<string>): Promise<void> {
+  const antes = diasSinCierre;
+  diasSinCierre = sin;
+  const c = ultimoCierre;
+  if (!c) return;
+  if (sin.has(c.fecha)) {
+    await Notifications.cancelScheduledNotificationAsync(idCierre(c.fecha)).catch(() => {});
+    return;
+  }
+  // Se había quitado y ya no hay racha (día cerrado a tiempo): vuelve, salvo
+  // que entretanto se haya retirado el permiso de salud.
+  if (antes.has(c.fecha) && c.generation === healthGeneration) await programarCierre(c.fecha, c.min);
+}
+
+/**
+ * Programa los avisos del plan. Cancela SOLO los `nivl.aviso.*` y pone los
+ * que da planDeAvisos ahora, con el copy de textoAviso y la ruta de
+ * RUTA_AVISO pasada por rutaSegura. El historial (lo ya sonado) sale del
+ * dispositivo si el estado no lo trae. Aplica la regla «racha sí, cierre no».
+ * En web o sin permiso no hace nada. Nunca lanza: devuelve cuántos puso.
+ */
+export async function programarAvisosDelPlan(estado: EstadoPlanAvisos): Promise<number> {
+  if (Platform.OS === 'web') return 0;
+  try {
+    const permiso = await Notifications.getPermissionsAsync();
+    if (!permiso.granted) return 0;
+    const generation = healthGeneration;
+    const ahora = momentoDe(new Date());
+    const ahoraCuando = cuandoDe(ahora);
+    const guardados = await leerHistorial();
+    const disparados = historialDisparado(guardados, ahoraCuando);
+    const avisos = planDeAvisos({ ...estado, historial: estado.historial ?? disparados }, ahora);
+
+    const programadas = await Notifications.getAllScheduledNotificationsAsync();
+    await Promise.all(
+      programadas
+        .filter((n) => n.identifier?.startsWith(PREFIJO_AVISO))
+        .map((n) => Notifications.cancelScheduledNotificationAsync(n.identifier)),
+    );
+
+    const puestos: typeof avisos = [];
+    for (const a of avisos) {
+      const cuando = fechaDeAviso(a.cuando);
+      if (!cuando || cuando <= new Date()) continue;
+      // La foto es dato de salud: si el permiso se retiró a mitad, no sale.
+      if (a.tipo === 'foto' && generation !== healthGeneration) continue;
+      const { titulo, cuerpo } = textoAviso(a.datos);
+      await Notifications.scheduleNotificationAsync({
+        identifier: a.id,
+        content: {
+          title: titulo,
+          body: cuerpo,
+          sound: 'default',
+          data: { ruta: rutaSegura(RUTA_AVISO[a.tipo]) },
+        },
+        trigger: {
+          type: Notifications.SchedulableTriggerInputTypes.DATE,
+          date: cuando,
+          channelId: CANALES.sistema,
+        },
+      });
+      puestos.push(a);
+    }
+
+    await guardarHistorial(historialAGuardar(guardados, puestos, ahoraCuando));
+    await ajustarCierre(fechasSinCierre(puestos, disparados));
+    return puestos.length;
+  } catch (e) {
+    ultimoError = errorDeAvisos(e, 'No se pudieron programar los avisos del sistema.');
+    return 0;
+  }
+}
+
+/** Quien sabe armar el estado (Hoy, con sus datos ya cargados). */
+export type FuenteAvisos = () => Promise<EstadoPlanAvisos | null>;
+
+/** Debounce: varias llamadas seguidas (cargar, volver, completar) programan una vez. */
+export const ESPERA_AVISOS_MS = 2000;
+
+let fuente: FuenteAvisos | null = null;
+let reloj: ReturnType<typeof setTimeout> | null = null;
+let enCurso = false;
+let otraVez = false;
+
+/** Hoy registra su fuente al montarse; la función devuelta la quita. */
+export function registrarFuenteAvisos(f: FuenteAvisos): () => void {
+  fuente = f;
+  return () => {
+    if (fuente === f) fuente = null;
+  };
+}
+
+async function ejecutarReprogramacion(): Promise<void> {
+  if (enCurso) {
+    otraVez = true;
+    return;
+  }
+  const f = fuente;
+  if (!f) return;
+  enCurso = true;
+  try {
+    // Sin permiso no se pide nada a la red.
+    if ((await Notifications.getPermissionsAsync()).granted) {
+      const estado = await f();
+      if (estado) await programarAvisosDelPlan(estado);
+    }
+  } catch (e) {
+    ultimoError = errorDeAvisos(e, 'No se pudieron programar los avisos del sistema.');
+  } finally {
+    enCurso = false;
+  }
+  if (otraVez) {
+    otraVez = false;
+    reprogramarAvisosDelPlan();
+  }
+}
+
+/**
+ * Pide recalcular el plan de avisos (al cargar Hoy, al volver, al completar,
+ * al aceptar un duelo, al ver una celebración). No bloquea ni lanza: corre en
+ * segundo plano ESPERA_AVISOS_MS después de la última llamada. En web, nada.
+ */
+export function reprogramarAvisosDelPlan(): void {
+  if (Platform.OS === 'web') return;
+  if (reloj) clearTimeout(reloj);
+  reloj = setTimeout(() => {
+    reloj = null;
+    void ejecutarReprogramacion();
+  }, ESPERA_AVISOS_MS);
 }
