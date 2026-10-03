@@ -87,6 +87,15 @@ Deno.test('CORS: solo https://nivl.app; otro origen o ninguno, 403 sin cabeceras
   }
 });
 
+Deno.test('CORS: nivl-web.vercel.app también (misma web); sus previews y www no', async () => {
+  const ok = await espia().h(peticion({ email: 'a@b.es', consentimiento: true }, { origin: 'https://nivl-web.vercel.app' }));
+  assertEquals(ok.status, 200);
+  assertEquals(ok.headers.get('access-control-allow-origin'), 'https://nivl-web.vercel.app');
+  for (const origin of ['https://nivl-web-git-main-teferi26.vercel.app', 'https://www.nivl.app', 'https://evil.vercel.app']) {
+    assertEquals((await espia().h(peticion({ email: 'a@b.es', consentimiento: true }, { origin }))).status, 403);
+  }
+});
+
 Deno.test('método, tipo, tamaño y JSON', async () => {
   assertEquals((await espia().h(peticion(null, { method: 'GET' }))).status, 405);
   assertEquals((await espia().h(peticion('email=a@b.es', { ct: 'application/x-www-form-urlencoded' }))).status, 415);

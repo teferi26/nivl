@@ -8,7 +8,8 @@
 
 /** Versión del texto de consentimiento que acepta la casilla. La fija el servidor. */
 export const VERSION_CONSENTIMIENTO = 'espera-v1';
-export const ORIGENES_PERMITIDOS = ['https://nivl.app'];
+// nivl-web.vercel.app sirve la misma web (los binarios 1.0.7 abren ahí los legales). www redirige a nivl.app.
+export const ORIGENES_PERMITIDOS = ['https://nivl.app', 'https://nivl-web.vercel.app'];
 const MAX_CUERPO = 2048;
 
 export type ResultadoAlta = 'ok' | 'correo' | 'frenado';
