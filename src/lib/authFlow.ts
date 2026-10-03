@@ -268,8 +268,8 @@ export async function cerrarSoloSesion(alcance: 'global' | 'local' = 'global'): 
   // local (el portal, Chat 3): revoca solo la de este navegador, sin echar al
   // creador de la app en su móvil. Si la red falla, al menos se cierra aquí
   // (supabase-js no borra la sesión local si el servidor no contesta).
-  const { error } = await supabase.auth
-    .signOut(alcance === 'local' ? { scope: 'local' } : undefined)
-    .catch((e: unknown) => ({ error: e }));
+  // Sin argumentos en global: es la llamada de siempre (sec-auth-flow.test).
+  const salir = alcance === 'local' ? supabase.auth.signOut({ scope: 'local' }) : supabase.auth.signOut();
+  const { error } = await salir.catch((e: unknown) => ({ error: e }));
   if (error) await supabase.auth.signOut({ scope: 'local' }).catch(() => undefined);
 }
