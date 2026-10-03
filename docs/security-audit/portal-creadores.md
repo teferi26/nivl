@@ -149,3 +149,20 @@ Con cuentas ficticias de creador X, creador Y, un usuario normal y sin sesión. 
 7. El preview no es indexable y Vercel no lo enlaza públicamente (Deployment Protection o noindex).
 
 Cuando estén, lo marco como cerrado con la evidencia redactada.
+
+## 6. Resultados sobre el preview (03/10/2026, https://nivl-creadores.vercel.app)
+
+Build `entry-9a884d88…` (de `2f081a5`, **sin** los ajustes `38b0f27`).
+
+| § | Prueba | Resultado |
+|---|---|---|
+| 5.1 | Sin sesión: `/`, `/creador`, `/fotos`, `/oraculo`, `/pro`, `/onboarding`, `/auth/confirmar?code=…`, `/c/ABC`, `/kit/pantallas` | **PASS.** Todas terminan en `/login`. La redirección tarda 3–8 s por el fallo de fuentes (abajo). No hay ninguna petición a `supabase.co`. `localStorage`, `sessionStorage` y cookies están vacíos |
+| 5.5 | Cabeceras (`curl -sI` de `/`, `/creador`, `/coach`, `/robots.txt`) | **PASS.** CSP, HSTS, nosniff, no-referrer, Permissions-Policy y X-Robots-Tag son exactamente los de R4. `frame-ancestors 'none'` comprobado: el navegador bloquea un iframe incluso desde el mismo origen. Consola sin violaciones de CSP |
+| 5.6 | Bundle desplegado | **PASS.** Sin `service_role`, `sb_secret`, `sbp_`, el ref de Franky, `appl_`/`goog_` ni Stripe. `sk-ant-`/`sk-proj-` solo aparecen como texto de ayuda. Sin Vercel Analytics ni Speed Insights |
+| 5.7 | No indexable | **PASS.** `X-Robots-Tag` en todas las respuestas, `robots.txt` con `Disallow: /` y la meta robots puesta por JS |
+| 5.2–5.4 | Creador X, creador Y y usuario normal con sesión | **NO HECHO.** No puedo introducir contraseñas ni crear cuentas en un sitio desplegado; tiene que hacerlo una persona (pasos en el mensaje al coordinador). La parte de servidor está PROBADA en §2 |
+
+Pendiente antes del DNS:
+1. Volver a desplegar con `38b0f27` o posterior. El preview cierra sesión con alcance global (echaría al creador de la app del móvil) y el login todavía dice «Cámbiala».
+2. Fuentes: `/assets/node_modules/**` no se sube y el fallback SPA devuelve `index.html` («OTS parsing error»). No es de seguridad, pero retrasa la redirección y llena la consola.
+3. Pruebas 5.2–5.4 por una persona, sobre el despliegue corregido.
