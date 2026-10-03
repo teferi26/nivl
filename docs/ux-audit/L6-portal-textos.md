@@ -20,8 +20,11 @@ hoy en `nivl-web-v2`.
 > rango, tus ventas atribuidas, tus retos, tu puesto en la tabla y tus importes: en retención,
 > disponibles, pagados y anulados, y las últimas liquidaciones recibidas. Es solo de consulta: no cobra,
 > no liquida y no pide ni guarda datos bancarios ni fiscales, que se siguen acordando por escrito
-> como dice este apartado. Si una cifra del portal no casa con el desglose de una liquidación,
-> manda el desglose; escríbenos y lo revisamos.
+> como dice este apartado. Las cifras del portal son informativas: los importes pendientes pueden
+> cambiar por reembolsos durante los 30 días de retención. Lo que se paga es lo que figura en el
+> desglose de cada liquidación. Si ves una diferencia, escríbenos y lo revisamos.
+
+**PENDIENTE DE CONFIRMACIÓN DEL USUARIO** (texto de condiciones con creadores; redacción del Chat 2, que evita una cláusula de prelación). No se publica hasta que el usuario la confirme a través del coordinador.
 
 Y en el punto «Liquidación», la última frase pasa a:
 
