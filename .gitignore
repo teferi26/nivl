@@ -68,3 +68,4 @@ banco-estado.json
 # de creadores (códigos, alias, emails, pagos). El repo es público.
 privado/
 scripts/*.local.*
+dist-creadores/
