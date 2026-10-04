@@ -1,8 +1,10 @@
 import type { Duelo, FilaTablero } from '@/lib/competicionData';
 import {
+  amigoDelDuelo,
   datosRival,
   detalleResuelto,
   diasRestantes,
+  duelosConRivalEnTablero,
   etiquetaDuelo,
   faltanDatos,
   lineaDuelo,
@@ -243,5 +245,34 @@ describe('textoQuedan', () => {
   it('habla claro del último día', () => {
     expect(textoQuedan(1)).toBe('último día');
     expect(textoQuedan(4)).toBe('quedan 4 días');
+  });
+});
+
+describe('duelos y marcador de amigos', () => {
+  const tablero = [
+    { userId: 'u1', name: 'Gladiador 1' },
+    { userId: 'u2', name: 'Lucía' },
+    { userId: 'u3', name: 'Lucía' },
+  ];
+
+  it('oculta los duelos cuyo rival ya no está en el marcador o llega null', () => {
+    const ds = [
+      duelo({ id: 'a', rival: 'Gladiador 1' }),
+      duelo({ id: 'b', rival: 'Ya no amigo' }),
+      { ...duelo({ id: 'c' }), rival: null } as unknown as Duelo,
+      duelo({ id: 'd', rival: '  Gladiador 1 ' }),
+    ];
+    expect(duelosConRivalEnTablero(ds, tablero).map((d) => d.id)).toEqual(['a', 'd']);
+  });
+
+  it('sin marcador no queda ningún duelo', () => {
+    expect(duelosConRivalEnTablero([duelo({})], [])).toEqual([]);
+  });
+
+  it('identifica al amigo del duelo solo si el alias es único', () => {
+    expect(amigoDelDuelo(duelo({ rival: 'Gladiador 1' }), tablero)?.userId).toBe('u1');
+    expect(amigoDelDuelo(duelo({ rival: 'Lucía' }), tablero)).toBeNull();
+    expect(amigoDelDuelo({ rival: null }, tablero)).toBeNull();
+    expect(amigoDelDuelo(duelo({ rival: 'Otro' }), tablero)).toBeNull();
   });
 });

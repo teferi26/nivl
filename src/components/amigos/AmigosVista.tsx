@@ -9,7 +9,7 @@
 //   3. El ranking, que sube justo detrás: chips, línea de rivalidad y la lista
 //      con MI FILA INVERTIDA = la única inversión de la pantalla. Con la arena
 //      vacía no hay fila mía: la inversión pasa a «Invitar al primero».
-//   4. Duelos y ligas (slot). 5. Solicitudes. 6. Tu código, en piedra con
+//   4. Duelos (slot; las ligas, apagadas en 1.0.8). 5. Solicitudes. 6. Tu código, en piedra con
 //      remaches. 7. Añadir por código, Tu ludus, Tus invitados. 8. Fuera del
 //      ranking, Convivencia y Privacidad.
 // `Entrada` solo en los bloques (8 como mucho), nunca en las filas.
@@ -46,7 +46,7 @@ const VENTANAS: { key: Ventana; label: string }[] = [
 const METRICAS: Metrica[] = ['xp', 'cumplimiento', 'racha'];
 
 export type AmigosVistaProps = DatosAmigos['vista'] & {
-  /** <Competicion> (duelos y ligas). null en la galería. */
+  /** <Competicion> (duelos; ligas apagadas en 1.0.8). null en la galería. */
   competicion: ReactNode;
 };
 

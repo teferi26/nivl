@@ -8,10 +8,14 @@
 //   lo demás, con mensajeSistema. Siempre con el aviso de trama.
 // - Las hojas son <Sheet> del kit; no hay captura de imagen aquí, así que el
 //   Modal de la hoja no es problema.
+// - 1.0.8: las ligas están apagadas con LIGAS_VISIBLES (./flags): ni se piden,
+//   ni se crean, ni se pintan. Vuelven en 1.0.9 con moderación.
+// - Solo se enseñan los duelos cuyo rival sigue en el marcador de amigos, y
+//   cada uno lleva su «…» con la hoja de seguridad (denunciar, bloquear).
 
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useFocusEffect } from 'expo-router';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Barra, Campo, CargaArena, ErrorSistema } from '@/components/arena';
 import { Avatar, Button, Card, Chip, ChipWrap, confirmar, Row, Section, Sheet } from '@/components/ui';
@@ -42,10 +46,13 @@ import { marcarDuelosVistos, reprogramarAvisosDelPlan } from '@/lib/notification
 import { fonts } from '@/lib/theme';
 import { mensajeSistema } from '@/lib/validation';
 import { Aviso } from './Aviso';
+import { LIGAS_VISIBLES } from './flags';
 import {
+  amigoDelDuelo,
   datosRival,
   detalleResuelto,
   diasRestantes,
+  duelosConRivalEnTablero,
   etiquetaDuelo,
   lineaDuelo,
   nombreRival,
@@ -71,6 +78,13 @@ interface Props {
   onRetarA: (a: Amigo | null) => void;
   /** false si el servidor aún no tiene la competición: el padre oculta el «Retar» de las filas. */
   onDisponible: (v: boolean) => void;
+  /**
+   * El marcador de amigos (friends_board, sin mí); null mientras no ha
+   * cargado. Un duelo cuyo rival no está aquí no se enseña.
+   */
+  tablero: readonly Amigo[] | null;
+  /** Abre la hoja de seguridad (denunciar, bloquear) de esa persona. */
+  onSeguridad: (a: Amigo) => void;
 }
 
 type AvisoEstado = { texto: string; error: boolean } | null;
@@ -78,7 +92,7 @@ type AvisoEstado = { texto: string; error: boolean } | null;
 const REGLA =
   'Se mide la disciplina: qué parte de lo tuyo cumples, ponderado por dificultad. No gana quien más misiones se pone. A igualdad, más días activos.';
 
-export function Competicion({ amigos, recarga, retarA, onRetarA, onDisponible }: Props) {
+export function Competicion({ amigos, recarga, retarA, onRetarA, onDisponible, tablero, onSeguridad }: Props) {
   const [disponible, setDisponible] = useState(true);
   const [cargado, setCargado] = useState(false);
   const [fallo, setFallo] = useState<string | null>(null);
@@ -96,7 +110,11 @@ export function Competicion({ amigos, recarga, retarA, onRetarA, onDisponible }:
 
   const cargar = useCallback(async () => {
     try {
-      const [d, l, i] = await Promise.all([misDuelos(), misLigas(), misInvitacionesDeLiga()]);
+      const [d, l, i] = await Promise.all([
+        misDuelos(),
+        LIGAS_VISIBLES ? misLigas() : Promise.resolve<MiPosicion[]>([]),
+        LIGAS_VISIBLES ? misInvitacionesDeLiga() : Promise.resolve<InvitacionLiga[]>([]),
+      ]);
       setDuelos(d);
       // L6-0: lo que se enseña aquí deja de ser novedad para el aviso de duelo.
       void marcarDuelosVistos(d);
@@ -132,7 +150,17 @@ export function Competicion({ amigos, recarga, retarA, onRetarA, onDisponible }:
   }, [recarga, cargar]);
 
   const hoy = dateKey();
-  const vista = useMemo(() => repartirDuelos(duelos, hoy), [duelos, hoy]);
+  // Sin el marcador aún no se sabe qué duelos enseñar: se espera (carga).
+  const vista = useMemo(
+    () => repartirDuelos(tablero ? duelosConRivalEnTablero(duelos, tablero) : [], hoy),
+    [duelos, tablero, hoy],
+  );
+  const listo = cargado && tablero !== null;
+  /** El «…» de un duelo: solo si el rival es una persona concreta del marcador. */
+  const masOpciones = (d: Duelo) => {
+    const persona = tablero ? amigoDelDuelo(d, tablero) : null;
+    return persona ? <MasOpciones alias={persona.name} onPress={() => onSeguridad(persona)} /> : null;
+  };
 
   const responder = async (d: Duelo, aceptar: boolean) => {
     if (lock.current) return;
@@ -190,7 +218,7 @@ export function Competicion({ amigos, recarga, retarA, onRetarA, onDisponible }:
 
   return (
     <Section title="Competición" meta={vista.activos.length > 0 ? `${vista.activos.length}` : undefined}>
-      {!cargado ? (
+      {!listo ? (
         <CargaArena etiqueta="Cargando la competición" formas={['filas']} filas={2} />
       ) : (
         <>
@@ -214,6 +242,7 @@ export function Competicion({ amigos, recarga, retarA, onRetarA, onDisponible }:
                       <View style={styles.respuestas}>
                         <Button title="Aceptar" size="sm" variant="secondary" onPress={() => responder(d, true)} />
                         <Rechazar etiqueta={`Rechazar el duelo de ${nombreRival(d)}`} onPress={() => responder(d, false)} />
+                        {masOpciones(d)}
                       </View>
                     )
                   }
@@ -223,7 +252,7 @@ export function Competicion({ amigos, recarga, retarA, onRetarA, onDisponible }:
           ) : null}
 
           {vista.activos.map((d) => (
-            <DueloActivo key={d.id} d={d} hoy={hoy} />
+            <DueloActivo key={d.id} d={d} hoy={hoy} opciones={masOpciones(d)} />
           ))}
 
           {vista.enviados.length > 0 || vista.cerrados.length > 0 || vista.resueltos.length > 0 ? (
@@ -236,6 +265,7 @@ export function Competicion({ amigos, recarga, retarA, onRetarA, onDisponible }:
                   leading={<Ionicons name="hourglass-outline" size={18} color={ink.ink6} />}
                   title={nombreRival(d)}
                   detail="Reto enviado · falta su respuesta"
+                  trailing={masOpciones(d)}
                 />
               ))}
               {vista.cerrados.map((d, i) => (
@@ -246,6 +276,7 @@ export function Competicion({ amigos, recarga, retarA, onRetarA, onDisponible }:
                   leading={<Ionicons name="hourglass-outline" size={18} color={ink.ink6} />}
                   title={nombreRival(d)}
                   detail="Semana cerrada · resolviendo"
+                  trailing={masOpciones(d)}
                 />
               ))}
               {vista.resueltos.map((d, i) => {
@@ -265,11 +296,14 @@ export function Competicion({ amigos, recarga, retarA, onRetarA, onDisponible }:
                     title={nombreRival(d)}
                     detail={detalleResuelto(d, rival !== null)}
                     trailing={
-                      rival ? (
-                        <Button title="Revancha" size="sm" variant="secondary" onPress={() => onRetarA(rival)} />
-                      ) : (
-                        <Text style={styles.resultado}>{TEXTO_RESULTADO[d.resultado!]}</Text>
-                      )
+                      <View style={styles.respuestas}>
+                        {rival ? (
+                          <Button title="Revancha" size="sm" variant="secondary" onPress={() => onRetarA(rival)} />
+                        ) : (
+                          <Text style={styles.resultado}>{TEXTO_RESULTADO[d.resultado!]}</Text>
+                        )}
+                        {masOpciones(d)}
+                      </View>
                     }
                   />
                 );
@@ -277,7 +311,7 @@ export function Competicion({ amigos, recarga, retarA, onRetarA, onDisponible }:
             </Card>
           ) : null}
 
-          {invitaciones.length > 0 ? (
+          {LIGAS_VISIBLES && invitaciones.length > 0 ? (
             <Card padded={false} style={styles.lista}>
               {invitaciones.map((inv, i) => (
                 <Row
@@ -301,7 +335,7 @@ export function Competicion({ amigos, recarga, retarA, onRetarA, onDisponible }:
             </Card>
           ) : null}
 
-          {ligas.length > 0 ? (
+          {LIGAS_VISIBLES && ligas.length > 0 ? (
             <Card padded={false} style={styles.lista}>
               {ligas.map((l, i) => (
                 <Row
@@ -328,7 +362,8 @@ export function Competicion({ amigos, recarga, retarA, onRetarA, onDisponible }:
             <>
               <Text style={styles.vacio}>Esta semana nadie te mide. Reta a un amigo.</Text>
               <Text style={styles.hint}>
-                Un duelo dura una semana, de lunes a domingo. Una liga reúne hasta {LIGA_MAX} amigos. {REGLA}
+                Un duelo dura una semana, de lunes a domingo.
+                {LIGAS_VISIBLES ? ` Una liga reúne hasta ${LIGA_MAX} amigos.` : ''} {REGLA}
               </Text>
             </>
           ) : null}
@@ -343,9 +378,11 @@ export function Competicion({ amigos, recarga, retarA, onRetarA, onDisponible }:
                 onPress={() => setEligiendoRival(true)}
               />
             </View>
-            <View style={styles.boton}>
-              <Button title="Crear liga" icon="trophy-outline" variant="secondary" onPress={() => setCreando(true)} />
-            </View>
+            {LIGAS_VISIBLES ? (
+              <View style={styles.boton}>
+                <Button title="Crear liga" icon="trophy-outline" variant="secondary" onPress={() => setCreando(true)} />
+              </View>
+            ) : null}
           </View>
           {sinAmigos ? <Text style={styles.hint}>Para retar a alguien, primero tiene que ser tu amigo.</Text> : null}
         </>
@@ -362,16 +399,20 @@ export function Competicion({ amigos, recarga, retarA, onRetarA, onDisponible }:
         }}
         onHecho={cargar}
       />
-      <CrearLigaSheet
-        visible={creando}
-        onCerrar={() => setCreando(false)}
-        onCreada={(id, nombre) => {
-          setCreando(false);
-          cargar();
-          setLigaAbierta({ id, nombre });
-        }}
-      />
-      <LigaSheet liga={ligaAbierta} amigos={amigos} onCerrar={() => setLigaAbierta(null)} onCambio={cargar} />
+      {LIGAS_VISIBLES ? (
+        <>
+          <CrearLigaSheet
+            visible={creando}
+            onCerrar={() => setCreando(false)}
+            onCreada={(id, nombre) => {
+              setCreando(false);
+              cargar();
+              setLigaAbierta({ id, nombre });
+            }}
+          />
+          <LigaSheet liga={ligaAbierta} amigos={amigos} onCerrar={() => setLigaAbierta(null)} onCambio={cargar} />
+        </>
+      ) : null}
     </Section>
   );
 }
@@ -390,12 +431,30 @@ function Rechazar({ etiqueta, onPress }: { etiqueta: string; onPress: () => void
   );
 }
 
+/** El «…» de un duelo: 44 pt, abre la hoja de seguridad de ese rival. */
+function MasOpciones({ alias, onPress }: { alias: string; onPress: () => void }) {
+  return (
+    <Pressable
+      onPress={() => {
+        vibrar('seleccion');
+        onPress();
+      }}
+      style={({ pressed }) => [styles.mas, pressed && styles.pulsado]}
+      accessibilityRole="button"
+      accessibilityLabel={`Más opciones del duelo con ${alias}`}
+      accessibilityHint="Enviar denuncia o bloquear usuario"
+    >
+      <Ionicons name="ellipsis-horizontal" size={18} color={ink.ink8} />
+    </Pressable>
+  );
+}
+
 /**
  * Un duelo en curso: quién va delante, con una barra por cada uno (0–100).
  * Con el rival oculto (sus datos llegan null) solo va mi barra: ni la suya,
  * ni su índice, ni sus días, ni «va delante».
  */
-function DueloActivo({ d, hoy }: { d: Duelo; hoy: string }) {
+function DueloActivo({ d, hoy, opciones }: { d: Duelo; hoy: string; opciones: ReactNode }) {
   const quedan = diasRestantes(d.week_start, hoy);
   const rival = datosRival(d);
   const nombre = nombreRival(d);
@@ -406,6 +465,7 @@ function DueloActivo({ d, hoy }: { d: Duelo; hoy: string }) {
           Tú contra {nombre}
         </Text>
         <Text style={styles.dueloMeta}>{textoQuedan(quedan)}</Text>
+        {opciones}
       </View>
       <BarraDuelo etiqueta="Tú" valor={d.mi_indice} dias={d.mis_dias} mia />
       {rival ? <BarraDuelo etiqueta={rival.nombre} valor={rival.indice} dias={rival.dias} /> : null}
@@ -790,13 +850,14 @@ const styles = StyleSheet.create({
   respuestas: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   rechazar: { width: 32, height: 32, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: ink.ink3 },
   pulsado: { opacity: 0.6 },
+  mas: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center', marginRight: -10 },
   resultado: { fontFamily: fonts.semibold, fontSize: 14, color: ink.ink9 },
   vacio: { fontFamily: fonts.semibold, fontSize: 14, color: ink.ink9, marginTop: 4 },
   hint: { fontFamily: tipo.bodySm.family, fontSize: tipo.bodySm.size, lineHeight: tipo.bodySm.lineHeight, color: ink.ink8, marginTop: 10 },
   botones: { flexDirection: 'row', gap: 8, marginTop: 6 },
   boton: { flex: 1 },
   duelo: { gap: 8 },
-  dueloCabecera: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', gap: 8 },
+  dueloCabecera: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
   dueloTitulo: { flex: 1, fontFamily: fonts.semibold, fontSize: 15, color: ink.ink9 },
   dueloMeta: { fontFamily: fonts.body, fontSize: 12, color: ink.ink6 },
   dueloLinea: { fontFamily: fonts.body, fontSize: 14, lineHeight: 20, color: ink.ink8, marginTop: 2 },

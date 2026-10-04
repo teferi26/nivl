@@ -28,7 +28,7 @@ import { fetchUnlocked, tituloVigente } from '@/lib/achievements';
 import { fetchRangosAmigos } from '@/lib/amigosRango';
 import { useAuth } from '@/lib/auth';
 import { conInsignias, estadoLudus, SIN_LUDUS, type MiLudus } from '@/lib/elite';
-import { fetchMyInvites, UMBRALES_INVITACION, type MyInvites } from '@/lib/invites';
+import { fetchMyInvites, settleMyInvites, UMBRALES_INVITACION, type MyInvites } from '@/lib/invites';
 import type { ProfileKind } from '@/lib/kinds';
 import { fetchAiStatus, type Tier } from '@/lib/pro';
 import { celebracionInsignia, estadoDe, INSIGNIAS, nivelInsignia, type Celebracion } from '@/lib/progression';
@@ -124,7 +124,7 @@ export function useAmigos() {
   const [invitaciones, setInvitaciones] = useState<MyInvites | null>(null);
   const { celebrar, compartir } = useCelebracion();
 
-  // ── Competición (0048): duelos y ligas. Va por su cuenta en <Competicion>.
+  // ── Competición (0048): duelos (y ligas, apagadas en 1.0.8 con LIGAS_VISIBLES). Va por su cuenta en <Competicion>.
   const [competicion, setCompeticion] = useState(true);
   const [retarA, setRetarA] = useState<Amigo | null>(null);
   const [recarga, setRecarga] = useState(0);
@@ -184,7 +184,11 @@ export function useAmigos() {
       .then((l) => setLogros(new Set(l)))
       .catch(() => {});
     fetchRangosAmigos().then(setRangos);
-    fetchMyInvites()
+    // Primero se liquidan las invitaciones (las altas que ya cuentan como
+    // activas); sin esto el contador no sube y la insignia no llega nunca.
+    settleMyInvites()
+      .catch(() => null)
+      .then(() => fetchMyInvites())
       .catch(() => null)
       .then(async (inv) => {
         setInvitaciones(inv);
@@ -335,10 +339,16 @@ export function useAmigos() {
       ? estadoDe({ xp_total: yoEnMarcador.xpTotal, streak_days: yoEnMarcador.streakDays, protection_stones: 0 }, logros)
           .rango
       : null;
-  // A quién se puede retar o invitar a una liga: amigos aceptados.
+  // A quién se puede retar (o invitar a una liga, hoy apagadas): amigos aceptados.
   const amigos = useMemo<Amigo[]>(
     () => board.filter((b) => !b.isMe && b.friendshipId).map((b) => ({ userId: b.userId, name: b.name })),
     [board],
+  );
+  // El marcador entero (sin mí) para la competición: un duelo cuyo rival ya no
+  // está aquí no se enseña. null hasta la primera carga.
+  const tablero = useMemo<Amigo[] | null>(
+    () => (cargando ? null : board.filter((b) => !b.isMe).map((b) => ({ userId: b.userId, name: b.name }))),
+    [board, cargando],
   );
 
   const elegirVentana = (v: Ventana) => {
@@ -625,7 +635,15 @@ export function useAmigos() {
       desbloquear,
       cambiarVisible,
     },
-    competicion: { amigos, recarga, retarA, onRetarA: setRetarA, onDisponible: setCompeticion },
+    competicion: {
+      amigos,
+      recarga,
+      retarA,
+      onRetarA: setRetarA,
+      onDisponible: setCompeticion,
+      tablero,
+      onSeguridad: abrirSeguridad,
+    },
     hojas: {
       safetyUser,
       setSafetyUser,

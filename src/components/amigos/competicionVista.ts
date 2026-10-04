@@ -227,3 +227,36 @@ export function textoQuedan(dias: number): string {
   if (dias <= 1) return 'último día';
   return `quedan ${dias} días`;
 }
+
+/** Clave de comparación de un alias: sin espacios de los bordes y cortado a 40, como el tablero. */
+function claveAlias(nombre: string): string {
+  return nombre.trim().slice(0, 40);
+}
+
+/**
+ * Los duelos cuyo rival sigue en el marcador de amigos (friends_board). El
+ * duelo no trae el id del rival, solo su alias, así que se cruza por nombre.
+ * Con el rival null (bloqueo o suspensión) o fuera del marcador, el duelo no
+ * se enseña: no hay a quién denunciar ni con quién medirse.
+ */
+export function duelosConRivalEnTablero<D extends Pick<DueloAmpliado, 'rival'>>(
+  duelos: readonly D[],
+  tablero: readonly { name: string }[],
+): D[] {
+  const nombres = new Set(tablero.map((t) => claveAlias(t.name)));
+  return duelos.filter((d) => d.rival != null && nombres.has(claveAlias(String(d.rival))));
+}
+
+/**
+ * El amigo del duelo, para abrir su hoja de seguridad: solo si su alias señala
+ * a una única persona del marcador. Con dos homónimos, null (no se adivina).
+ */
+export function amigoDelDuelo<A extends { userId: string; name: string }>(
+  d: Pick<DueloAmpliado, 'rival'>,
+  tablero: readonly A[],
+): A | null {
+  if (d.rival == null) return null;
+  const clave = claveAlias(String(d.rival));
+  const mismos = tablero.filter((t) => claveAlias(t.name) === clave);
+  return mismos.length === 1 ? mismos[0]! : null;
+}
