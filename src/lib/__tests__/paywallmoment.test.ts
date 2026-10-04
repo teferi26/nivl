@@ -87,14 +87,20 @@ describe('formas', () => {
     expect(decidirOferta('analisis_foto', libre()).tier).toBe('pro');
   });
 
-  test('en prueba: solo línea, también en la firma y el primer día', () => {
+  test('en prueba: solo línea, y nunca por lo que la prueba ya incluye', () => {
     const enPrueba = libre({ tier: 'pro', entitled: true, trial: true, trialAvailable: false });
     for (const m of MOMENTOS) {
       const d = decidirOferta(m, enPrueba);
       if (d.mostrar) expect(d.forma).toBe('linea');
       expect(d.prueba).toBe(false);
     }
-    expect(decidirOferta('firma', enPrueba).mostrar).toBe(true);
+    // Ya tiene el coach: ni la firma, ni el primer día, ni fotos, ni voz.
+    for (const m of ['firma', 'primer_dia', 'analisis_foto', 'voz_premium', 'fin_prueba'] as const) {
+      expect(decidirOferta(m, enPrueba)).toMatchObject({ mostrar: false, razon: 'en_prueba' });
+    }
+    // Lo que la prueba no tiene sí se dice: el modo profundo (Élite) y la energía agotada.
+    expect(decidirOferta('coach_profundo', enPrueba)).toMatchObject({ mostrar: true, forma: 'linea', tier: 'elite' });
+    expect(decidirOferta('energia_agotada', enPrueba)).toMatchObject({ mostrar: true, forma: 'linea', tier: 'pro' });
   });
 
   test('con la tienda cerrada: línea', () => {
@@ -288,5 +294,54 @@ describe('copy y ruta', () => {
     expect(esMomento('firma')).toBe(true);
     expect(esMomento('otro')).toBe(false);
     expect(esMomento(undefined)).toBe(false);
+  });
+});
+
+describe('fin de la prueba (fase 3)', () => {
+  const vuelta = (extra: Partial<ContextoOferta> = {}) => libre({ trialAvailable: false, ...extra });
+  const empezo = { momento: 'firma' as const, at: AHORA - 8 * DIA, respuesta: 'prueba' as const, forma: 'hoja' as const };
+
+  test('hoja una vez cuando la cuenta vuelve a gratis tras su prueba; sin prueba no se ofrece', () => {
+    expect(decidirOferta('fin_prueba', vuelta({ historial: [empezo] }))).toMatchObject({ mostrar: true, forma: 'hoja', tier: 'pro', prueba: false });
+    expect(decidirOferta('fin_prueba', vuelta())).toMatchObject({ mostrar: false, razon: 'sin_prueba' });
+    // Aún puede empezarla: no hay «fin».
+    expect(decidirOferta('fin_prueba', libre({ historial: [empezo] })).mostrar).toBe(false);
+    // Lo dice el servidor aunque el historial del dispositivo esté vacío.
+    expect(decidirOferta('fin_prueba', vuelta({ pruebaTerminada: true })).forma).toBe('hoja');
+    expect(decidirOferta('fin_prueba', vuelta({ historial: [empezo], pruebaTerminada: false })).mostrar).toBe(false);
+  });
+
+  test('una sola vez en la vida, con topes, sin celebración y con la tienda cerrada en línea', () => {
+    const visto = hoja('fin_prueba', AHORA - 3 * DIA, 'cerrada');
+    expect(decidirOferta('fin_prueba', vuelta({ historial: [empezo, visto] }))).toMatchObject({ mostrar: false, razon: 'fin_prueba_ya_visto' });
+    const hoyYa = hoja('primer_dia', AHORA - HORA, 'compra');
+    expect(decidirOferta('fin_prueba', vuelta({ historial: [empezo, hoyYa] }))).toMatchObject({ mostrar: true, forma: 'linea', razon: 'tope_dia' });
+    expect(decidirOferta('fin_prueba', vuelta({ historial: [empezo], celebrando: true })).mostrar).toBe(false);
+    expect(decidirOferta('fin_prueba', vuelta({ historial: [empezo], tiendaAbierta: false }))).toMatchObject({ mostrar: true, forma: 'linea' });
+  });
+
+  test('a quien paga, nada', () => {
+    expect(decidirOferta('fin_prueba', pro({ historial: [empezo] })).mostrar).toBe(false);
+    expect(decidirOferta('fin_prueba', libre({ tier: 'elite', entitled: true, historial: [empezo] })).mostrar).toBe(false);
+  });
+
+  test('copy de la cabecera para cada momento y nivel, y el fin de la prueba dice que no se cobró', () => {
+    for (const m of MOMENTOS) {
+      for (const t of ['pro', 'elite'] as const) {
+        const c = copyUpsell(m, t);
+        expect(c.eyebrow.length).toBeGreaterThan(0);
+        expect(c.eyebrow.length).toBeLessThanOrEqual(24);
+        expect(c.titulo).toMatch(/\.$/);
+        expect(`${c.eyebrow} ${c.titulo}`).not.toMatch(/!|últim|quedan|expira|solo hoy/i);
+      }
+    }
+    expect(copyUpsell('fin_prueba', 'pro').contexto).toMatch(/no se ha cobrado nada/);
+    expect(copyUpsell('fin_prueba', 'pro').linea).toMatch(/sin cobro/);
+  });
+
+  test('energía agotada a Élite: no promete más energía ni turnos', () => {
+    const c = copyUpsell('energia_agotada', 'elite');
+    expect(`${c.linea} ${c.contexto}`).not.toMatch(/más energía|más turnos|presupuesto propio|su propio presupuesto/i);
+    expect(c.contexto).toMatch(/límite mensual/);
   });
 });

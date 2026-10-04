@@ -16,6 +16,9 @@
 // - A Élite/dueño, nada. A un Pro, solo Élite y solo en momentos de función o
 //   con la energía agotada (línea). En prueba o con la tienda cerrada, línea.
 // - `prueba` solo si la cuenta puede empezarla.
+// - En prueba no se vende lo que ya se tiene: ni la firma, ni el primer día,
+//   ni las fotos, ni la voz. El momento de la prueba es su final
+//   («fin_prueba»: una hoja, una vez, cuando la cuenta vuelve a gratis).
 // - Lo gratuito nunca se bloquea: la decisión no tiene campo de «bloquear»;
 //   solo dice si se ENSEÑA algo y de qué forma.
 
@@ -26,7 +29,8 @@ export type Momento =
   | 'voz_premium'
   | 'analisis_foto'
   | 'energia_agotada'
-  | 'coach_cerrado';
+  | 'coach_cerrado'
+  | 'fin_prueba';
 
 export const MOMENTOS: readonly Momento[] = [
   'firma',
@@ -36,6 +40,7 @@ export const MOMENTOS: readonly Momento[] = [
   'analisis_foto',
   'energia_agotada',
   'coach_cerrado',
+  'fin_prueba',
 ];
 
 export function esMomento(v: unknown): v is Momento {
@@ -75,6 +80,12 @@ export interface ContextoOferta {
    * no a quien paga por Stripe o con plan heredado). Por defecto, sí.
    */
   mejorable?: boolean;
+  /**
+   * La cuenta tuvo la prueba de 7 días (o una cortesía) y ya acabó. Si no se
+   * pasa, se deduce del historial: una respuesta «prueba» en los últimos 30
+   * días y la cuenta de nuevo en gratis.
+   */
+  pruebaTerminada?: boolean;
 }
 
 export type CopyKey = `${Momento}.${TierOferta}`;
@@ -132,7 +143,12 @@ const TIER_SIN_PAGO: Record<Momento, TierOferta> = {
   energia_agotada: 'pro',
   // La pantalla del coach sin acceso: lo que antes era «Ver NIVL Pro».
   coach_cerrado: 'pro',
+  // Acabó la prueba (que es de Pro): se ofrece lo que se probó.
+  fin_prueba: 'pro',
 };
+
+/** En prueba ya se tiene el coach: estos momentos no venden nada. */
+const INCLUIDO_EN_PRUEBA: readonly Momento[] = ['firma', 'primer_dia', 'analisis_foto', 'voz_premium'];
 
 function decision(momento: Momento, tier: TierOferta, d: Partial<DecisionOferta> & { razon: string }): DecisionOferta {
   return {
@@ -186,6 +202,23 @@ export function decidirOferta(momento: Momento, ctx: ContextoOferta): DecisionOf
   }
 
   const tier = TIER_SIN_PAGO[momento];
+  if (nivel === 'trial' && (INCLUIDO_EN_PRUEBA.includes(momento) || momento === 'fin_prueba')) {
+    return decision(momento, tier, { razon: 'en_prueba' });
+  }
+
+  // Fin de la prueba: una hoja una vez en la vida, cuando la cuenta vuelve a
+  // gratis. Respeta los topes y la espera de 72 h; con la tienda cerrada, línea.
+  if (momento === 'fin_prueba') {
+    const terminada =
+      nivel === 'free' && !ctx.trialAvailable && (ctx.pruebaTerminada ?? historial.some((e) => e.respuesta === 'prueba'));
+    if (!terminada) return decision(momento, tier, { razon: 'sin_prueba' });
+    if (!ctx.tiendaAbierta) return decision(momento, tier, { mostrar: true, forma: 'linea', razon: 'tienda_cerrada' });
+    if (historial.some((e) => e.momento === 'fin_prueba' && esHoja(e))) return decision(momento, tier, { razon: 'fin_prueba_ya_visto' });
+    const bloqueo = bloqueoDeHoja(historial, ctx.ahora);
+    if (bloqueo) return decision(momento, tier, { mostrar: true, forma: 'linea', razon: bloqueo });
+    return decision(momento, tier, { mostrar: true, forma: 'hoja', razon: 'fin_prueba' });
+  }
+
   // Sin coach no hay energía que agotar.
   if (momento === 'energia_agotada' && nivel === 'free') return decision(momento, tier, { razon: 'sin_energia' });
 
