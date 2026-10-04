@@ -1,0 +1,44 @@
+NIVL 1.0.8 (build 23). Full answers to your 29 September message (Guideline 2.1) are in our Resolution Center reply.
+Screen recording: [VIDEO] (physical [DEVICE], iOS [IOS]). Launch 0:00, sign-up 0:03, sign-in 1:00, subscriptions 3:00, coach 4:36, report/block 5:45, Terms/Privacy 6:27, deletion 7:42.
+
+WHAT IT IS
+Spanish-language habit and organisation app for individual users aged 16+. Habits, missions, campaigns, calendar, training, nutrition, journal, finances, progress photos, friends, leagues and duels are free. Optional auto-renewable subscriptions (Pro, Élite) add an AI coach.
+
+ACCOUNTS
+Free account: credentials in the sign-in fields. Use it for the purchase, sandbox payment and "Restaurar compras".
+Pro account: [PRO_USER] / [PRO_PASS]
+Élite account: [ELITE_USER] / [ELITE_PASS]
+Pro and Élite access was granted manually on our server. Please do not buy or restore with these two accounts.
+Sign in (all accounts): "ENTRAR" tab > email and password > "ENTRAR". New account: "CREAR CUENTA" > details > tick Terms/Privacy > "CREAR CUENTA" > open the email link on the device > sign in.
+No consent has been accepted for you; the app asks on first use.
+
+PERMISSIONS AND COACH
+Health: Perfil > "Salud y bienestar" > "Revisar permiso de salud" > tick > "Aceptar y activar salud". AI: separate consent, "Acepto y activo el coach". To try the coach, accept both. Voice (Pro/Élite): hold the microphone button in Coach to dictate; "Escuchar" reads a reply. The microphone is used only while the button is held.
+
+PURCHASES
+Last onboarding step, or Perfil > "NIVL Pro" > "Pro" or "Élite" and a plan. Products: nivl_pro_mensual, nivl_pro_anual, nivl_elite_mensual, nivl_elite_anual, nivl_elite_fundador (1 year). The screen shows title, duration, price, renewal terms, "Restaurar compras", Terms, Privacy and Apple EULA. "Probar el coach 7 días": one-time Pro-level trial, no payment details, no renewal.
+
+PROGRESS PHOTOS (18+)
+"Avances" > "Fotos de progreso". Requires an 18+ confirmation and the health permission. Private storage, screenshots blocked on that screen, never analysed by AI.
+
+FRIENDS, LEAGUES AND DUELS
+Perfil > "Amigos y duelos": ranking, private leagues and weekly duels based on consistency (nothing staked). Report a user with "Enviar denuncia" or block with "Bloquear usuario"; "Convivencia y seguridad" has "Desbloquear" and support. AI replies: "Denunciar respuesta". The developer checks the queue daily and acts within 24 hours. No user-to-user messaging.
+
+SHARING
+Level, rank, week, before/after and recap cards (9:16 or 4:5) through the system share sheet. Alias, photos and weight are off by default.
+
+IPAD
+Supported, portrait, with side navigation.
+
+ACCOUNT DELETION
+Perfil > "Cuenta" > "Eliminar cuenta" > "Eliminar para siempre" (sheet) > "Eliminar para siempre" (alert). Deletes the NIVL account, its data and files. Please test with a new account.
+
+CREATORS
+Invite-only creator accounts see a read-only progress panel. Earnings are handled outside the app.
+
+SERVICES
+Supabase (Frankfurt), Resend (account emails), Apple IAP + RevenueCat, DeepSeek (Pro, trial) and Anthropic (Élite) after AI consent, Apple speech services, Expo/APNs. No analytics, ads or tracking SDKs.
+
+Support: https://nivl.app/soporte
+Terms: https://nivl.app/terminos
+Privacy: https://nivl.app/privacidad
