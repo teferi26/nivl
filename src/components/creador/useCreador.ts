@@ -93,12 +93,15 @@ export function useCreador(): CreadorVistaProps {
   const cerrarSesion = async () => {
     if (cerrando) return;
     setCerrando(true);
-    setVista(null);
-    setPanel(null);
-    setError(null);
     try {
       // Solo este navegador: la sesión de la app en el móvil sigue abierta.
       await cerrarSoloSesion('local');
+      // La vista se limpia DESPUÉS: si el cierre falla, el panel sigue ahí.
+      setVista(null);
+      setPanel(null);
+      setError(null);
+    } catch (e) {
+      avisar('El sistema no responde', mensajeSistema(e));
     } finally {
       setCerrando(false);
     }

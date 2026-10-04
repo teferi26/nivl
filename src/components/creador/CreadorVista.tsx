@@ -258,7 +258,7 @@ export function CreadorVista({
             </View>
           </View>
           <Text style={styles.nota} maxFontSizeMultiplier={1.35}>
-            Una venta es una cuenta tuya que paga por primera vez.
+            Una venta es una cuenta tuya que se suscribe por primera vez.
           </Text>
           {web ? (
             <Text style={styles.nota} maxFontSizeMultiplier={1.35}>
@@ -534,7 +534,7 @@ const styles = StyleSheet.create({
     marginTop: space.s2,
   },
   cifra: {
-    fontFamily: 'Cinzel_600SemiBold',
+    fontFamily: tipo.number.family,
     fontSize: 16,
     lineHeight: 20,
     color: ink.ink10,
@@ -558,7 +558,7 @@ const styles = StyleSheet.create({
     color: ink.ink9,
   },
   puesto: {
-    fontFamily: 'Cinzel_600SemiBold',
+    fontFamily: tipo.number.family,
     fontSize: 16,
     lineHeight: 20,
     color: ink.ink6,

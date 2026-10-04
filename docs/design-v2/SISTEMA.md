@@ -227,7 +227,7 @@ En las apps de tienda (iOS y Android), el panel de creador **no muestra importes
 - ventas atribuidas (número);
 - retos;
 - tabla del periodo;
-- y la línea «Tus ganancias se gestionan en nivl.app», sin botón de cobro.
+- y la línea «Tus ganancias se gestionan fuera de la app», sin botón de cobro.
 
 Los importes (pendiente, disponible, pagado) solo están en el portal web. La vista sale de `vistaPanelCreador(plataforma, datos)` del Chat 2.
 
@@ -282,7 +282,7 @@ Plan y reparto en `docs/design-v2/FASE3.md`. Lo que queda como norma para cualqu
 | Fallo de una acción del usuario | `penalizacion` en el catch de la acción principal (no en las cargas) | ninguno |
 | Entrar en una pantalla | ninguna | `Entrada` en los bloques 0 a 7, escalón de 55 ms |
 
-- **En desuso** (`@deprecated` y aviso de `no-restricted-imports` en `eslint.config.js`; `npx eslint src --quiet` no los cuenta): `ScreenHeader` (→ `EncabezadoArena`), `FadeIn`/`Stagger` (→ `Entrada`), `Stat`/`StatRow` (→ `FranjaCifras`), `XPBar` (→ `Barra`), `Hexagon` y el `Avatar` de `src/components/Avatar.tsx` (→ `Avatar` del kit; `useRetrato` vive en `ui/useRetrato.ts`), `SystemButton` (→ `Button`), `Card` con `accent` o las variantes `raised`/`tinted` (→ `TarjetaArena`). Quedan a propósito: las puertas de salud e IA (`ScreenHeader inscrito`, `SystemButton`, `HojaPuerta` con `Modal`) porque las pruebas de Seguridad simulan esos módulos, y `src/app/pro.tsx` (fuera del barrido).
+- **En desuso** (`@deprecated` y aviso de `no-restricted-imports` en `eslint.config.js`; `npx eslint src --quiet` no los cuenta): `ScreenHeader` (→ `EncabezadoArena`), `FadeIn`/`Stagger` (→ `Entrada`), `Stat`/`StatRow` (→ `FranjaCifras`), `XPBar` (→ `Barra`), `Hexagon` y el `Avatar` viejo ya borrados (→ `Avatar` del kit; `useRetrato` vive en `ui/useRetrato.ts`), `SystemButton` (→ `Button`), `Card` con `accent` o las variantes `raised`/`tinted` (→ `TarjetaArena`). Quedan a propósito: las puertas de salud e IA (`ScreenHeader inscrito`, `SystemButton`, `HojaPuerta` con `Modal`) porque las pruebas de Seguridad simulan esos módulos. `src/app/pro.tsx` ya usa el kit arena (Compras, c98cb18); le falta el reparto `useX` + `XVista` + `demo.tsx`.
 
 ## 13. Qué NO cambia
 

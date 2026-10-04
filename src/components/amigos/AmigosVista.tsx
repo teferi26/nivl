@@ -16,8 +16,8 @@
 
 import Ionicons from '@expo/vector-icons/Ionicons';
 import type { ReactNode } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View, useWindowDimensions } from 'react-native';
-import { Arena, EncabezadoArena, Entrada, FranjaCifras, TarjetaArena } from '@/components/arena';
+import { ActivityIndicator, Pressable, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import { Arena, Campo, EncabezadoArena, Entrada, FranjaCifras, TarjetaArena } from '@/components/arena';
 import { TAM_BOTON } from '@/components/arena/EncabezadoArena';
 import { Button, Chip, ChipWrap, EmptyState, Row, Screen, Section, Skeleton, SkeletonRows, Tag } from '@/components/ui';
 import { Interruptor } from '@/components/ui/Interruptor';
@@ -494,15 +494,15 @@ function AnadirCodigo({
         {/* El campo va envuelto: en la web un input no encoge por debajo de
             su ancho propio y empujaba «Enviar» fuera del margen a 375. */}
         <View style={styles.flex}>
-          <TextInput
-            style={styles.input}
+          <Campo
+            etiqueta="Código de amigo"
+            style={styles.codigoCampo}
             value={codigo}
             onChangeText={(v) => {
               setCodigo(normalizarCodigo(v));
               setAvisoCodigo(null);
             }}
             placeholder="ABCD2345"
-            placeholderTextColor={ink.ink6}
             autoCapitalize="characters"
             autoCorrect={false}
             maxLength={LARGO_CODIGO}
@@ -615,12 +615,12 @@ function Ludus(p: AmigosVistaProps) {
               />
             ))}
           </ChipWrap>
-          <TextInput
-            style={styles.nota}
+          <Campo
+            etiqueta="Nota (opcional)"
+            estiloBloque={styles.nota}
             value={nota}
             onChangeText={setNota}
-            placeholder="Qué persigues ahora mismo (opcional)"
-            placeholderTextColor={ink.ink6}
+            placeholder="Qué persigues ahora mismo"
             multiline
             maxLength={NOTA_LUDUS_MAX}
             accessibilityLabel="Nota para tu ludus, opcional"
@@ -825,19 +825,14 @@ const styles = StyleSheet.create({
     marginTop: 14,
   },
   insignias: { flexDirection: 'row', flexWrap: 'wrap', gap: space.s2, marginTop: space.s3 },
-  anadirFila: { flexDirection: 'row', gap: space.s2, alignItems: 'center' },
-  input: {
-    width: '100%',
-    minHeight: 48,
-    borderWidth: stroke.hairline,
-    borderColor: ink.ink4,
-    backgroundColor: ink.ink2,
+  // El botón se alinea con la caja del Campo (la etiqueta va encima).
+  anadirFila: { flexDirection: 'row', gap: space.s2, alignItems: 'flex-end' },
+  // El código en Cinzel espaciado; caja, foco y relleno los pone Campo.
+  codigoCampo: {
     color: ink.ink10,
     fontFamily: tipo.number.family,
     fontSize: 17,
     letterSpacing: 3,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
   },
   respuestas: { flexDirection: 'row', alignItems: 'center', gap: space.s2 },
   rechazar: {
@@ -876,20 +871,7 @@ const styles = StyleSheet.create({
     color: ink.ink8,
     marginTop: 2,
   },
-  nota: {
-    borderWidth: stroke.hairline,
-    borderColor: ink.ink4,
-    backgroundColor: ink.ink2,
-    color: ink.ink9,
-    fontFamily: tipo.bodySm.family,
-    fontSize: 14,
-    lineHeight: 20,
-    minHeight: 84,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    marginTop: 14,
-    textAlignVertical: 'top',
-  },
+  nota: { marginTop: 14 },
   contador: {
     fontFamily: tipo.micro.family,
     fontSize: tipo.micro.size,
