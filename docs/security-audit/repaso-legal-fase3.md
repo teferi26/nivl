@@ -62,3 +62,31 @@ NIVL - Seguridad · 04/10/2026.
 - Derechos: plazo de un mes y AEPD.
 - Desistimiento y cláusulas de Apple.
 - Aviso de que no es consejo médico ni financiero, con el 024.
+
+## Anexo · Transferencias a EE. UU. verificadas (04/10/2026)
+
+**Criterio del usuario:** el Marco de Privacidad de Datos UE-EE. UU. (DPF) cuando el proveedor está adherido; si no, las cláusulas contractuales tipo (SCC) de su acuerdo de tratamiento (DPA).
+
+**Fuentes:**
+- la lista oficial `dataprivacyframework.gov/list`, buscando el nombre de cada proveedor, con Microsoft como control de que el buscador funciona;
+- el DPA publicado de cada proveedor.
+
+| Proveedor | DPF (lista oficial, 04/10/2026) | DPA | Texto |
+|---|---|---|---|
+| Supabase | no figura | supabase.com/legal/dpa (act. 01/08/2026): SCC, módulos 2 y 3 | SCC |
+| Anthropic | no figura | anthropic.com/legal/data-processing-addendum (vigente desde 24/02/2025): SCC, módulos 2 y 3 | SCC |
+| RevenueCat | no figura | revenuecat.com/dpa (nuevo DPA, agosto de 2026): SCC (Decisión 2021/914) | SCC |
+| Expo (650 Industries, Inc.) | **activo** (UE-EE. UU., Suiza y Reino Unido); próxima recertificación el 23/10/2026 | expo.dev/dpa da 404: no consultado | DPF |
+| Vercel Inc. | **activo** (UE-EE. UU., Suiza y Reino Unido) | vercel.com/legal/dpa (17/03/2026): también SCC 2021/914 | DPF (y SCC en su DPA) |
+| Resend | **activo, con la recertificación en revisión** | resend.com/legal/dpa (31/12/2025): DPF y además SCC, módulo 2 | DPF y SCC |
+
+**Texto para privacidad §6** (literal):
+
+> Transferencias a Estados Unidos (consultado el 4 de octubre de 2026): Expo (650 Industries, Inc.) y Vercel Inc. están adheridos al Marco de Privacidad de Datos UE-EE. UU.; Resend también lo está y, además, su acuerdo de tratamiento incorpora las cláusulas contractuales tipo de la Comisión Europea. Con Supabase, Anthropic y RevenueCat la transferencia se ampara en las cláusulas contractuales tipo aprobadas por la Comisión Europea (Decisión 2021/914), incorporadas en sus acuerdos de tratamiento de datos. Puedes pedir más información en teferilaforga@gmail.com.
+
+**Revisar otra vez:**
+- después del **23/10/2026**, la recertificación del DPF de Expo;
+- cuando se resuelva la de Resend;
+- cada vez que se añada un proveedor.
+
+Si Expo cayera del DPF, su línea pasaría a SCC, pero su DPA no se ha podido leer (404). Hay que pedírselo antes.
