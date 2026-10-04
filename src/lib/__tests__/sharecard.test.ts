@@ -111,7 +111,7 @@ describe('textos', () => {
 
   it('el peso del antes/después solo sale con permiso', () => {
     expect(textos(progreso, { ...todo, mostrarPeso: false }).detalle).toBe('13 semanas');
-    expect(textos(progreso, todo).detalle).toBe('13 semanas · 84,3 kg → 80 kg');
+    expect(textos(progreso, todo).detalle).toBe('13 semanas · 84,3 kg → 80 kg (-4,3 kg)');
     expect(textos(progreso, todo).fechas).toEqual(['1 jul 2026', '1 oct 2026']);
     expect(textos({ ...progreso, despues: { uri: 'x', fecha: '2026-07-04' } } as Tarjeta).detalle).toBe('3 días');
   });
@@ -256,7 +256,7 @@ describe('semana y recuerdo (migración de ShareCardSemana y resumen)', () => {
   const semana: Tarjeta = { tipo: 'semana', xpSemana: 1240, nivel: 9, cumplimientoPct: 85.4, diasActivos: 5, rachaDias: 12, posicion: '2.º de 5' };
 
   it('semana: XP de la semana o el nivel si no hubo XP', () => {
-    expect(textos(semana).titular).toBe('+1240 XP'.replace('1240', (1240).toLocaleString('es-ES')));
+    expect(textos(semana).titular).toBe('+1.240 XP');
     expect(textos({ ...semana, xpSemana: 0 } as Tarjeta).titular).toBe('NIVEL 9');
     expect(textos(semana).antetitulo).toBe('PARTE DE LA SEMANA');
   });
@@ -298,5 +298,20 @@ describe('semana y recuerdo (migración de ShareCardSemana y resumen)', () => {
     expect(fotosVisibles(recuerdo, OPCIONES_POR_DEFECTO, { puedeCompartirFotos: true })).toEqual([]);
     expect(bloqueo(recuerdo, OPCIONES_POR_DEFECTO)).toBeNull();
     expect(bloqueo({ ...recuerdo, titulo: ' ' } as Tarjeta, OPCIONES_POR_DEFECTO)).not.toBeNull();
+  });
+});
+
+describe('coherencia con la app (auditoría de Juego y QA)', () => {
+  it('el mensaje conserva las mayúsculas de cada dato', () => {
+    expect(mensaje({ tipo: 'rango', rango: 'B' })).toMatch(/^Rango B en NIVL\./);
+    expect(mensaje({ tipo: 'semana', xpSemana: 1840, nivel: 9, cumplimientoPct: 80, diasActivos: 5, rachaDias: 3, posicion: null })).toMatch(
+      /^\+1\.840 XP esta semana en NIVL\./,
+    );
+    expect(mensaje({ tipo: 'racha', dias: 38 })).toMatch(/^38 días de racha en NIVL\./);
+  });
+
+  it('el mes de septiembre se escribe como en Fotos', () => {
+    const t: Tarjeta = { tipo: 'antesDespues', antes: { uri: 'a', fecha: '2026-09-02' }, despues: { uri: 'b', fecha: '2026-10-02' } };
+    expect(textos(t).fechas).toEqual(['2 sept 2026', '2 oct 2026']);
   });
 });
