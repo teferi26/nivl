@@ -1,8 +1,8 @@
-NIVL 1.0.8 (build 23). Full answers to your 29 September message (Guideline 2.1) are in our Resolution Center reply.
+NIVL 1.0.8 (build 24). Full answers to your 29 September message (Guideline 2.1) are in our Resolution Center reply.
 Screen recording: [VIDEO] (iPhone 17 Pro, iOS [IOS]). Launch 0:00, sign-up 0:03, sign-in 1:00, subscriptions 3:00, coach 4:36, report/block 5:45, Terms/Privacy 6:27, deletion 7:42.
 
 WHAT IT IS
-Spanish-language habit and organisation app for individual users aged 16+. Habits, missions, campaigns, calendar, training, nutrition, journal, finances, progress photos, friends, leagues and duels are free. Optional auto-renewable subscriptions (Pro, Élite) add an AI coach.
+Spanish-language habit and organisation app for individual users aged 16+. Habits, missions, campaigns, calendar, training, nutrition, journal, finances, progress photos, friends and duels are free. Optional auto-renewable subscriptions (Pro, Élite) add an AI coach.
 
 ACCOUNTS
 Free account: credentials in the sign-in fields. Use it for the free features and to buy NIVL Pro in the sandbox; then test "Restaurar compras".
@@ -20,8 +20,8 @@ Last onboarding step, or Perfil > "NIVL Pro" > "Pro" or "Élite" and a plan. Pro
 PROGRESS PHOTOS (18+)
 "Avances" > "Fotos de progreso". Requires an 18+ confirmation and the health permission. Private storage, screenshots blocked on that screen, never analysed by AI.
 
-FRIENDS, LEAGUES AND DUELS
-Perfil > "Amigos y duelos": ranking, private leagues and weekly duels based on consistency (nothing staked). Report a user with "Enviar denuncia" or block with "Bloquear usuario"; "Convivencia y seguridad" has "Desbloquear" and support. AI replies: "Denunciar respuesta". The developer checks the queue daily and acts within 24 hours. No user-to-user messaging.
+FRIENDS AND DUELS
+Perfil > "Amigos y duelos": ranking and weekly duels based on consistency (nothing staked). Report a user with "Enviar denuncia" or block with "Bloquear usuario"; "Convivencia y seguridad" has "Desbloquear" and support. AI replies: "Denunciar respuesta". The developer checks the queue daily and acts within 24 hours. No user-to-user messaging.
 
 SHARING
 Level, rank, week, before/after and recap cards (9:16 or 4:5) through the system share sheet. Alias, photos and weight are off by default.
@@ -36,7 +36,7 @@ CREATORS
 Accounts that our team registers manually as creators (not available to the public) see a read-only progress panel: rank, attributed sign-ups and challenges. No purchases and no amounts in the app; earnings are handled outside the app.
 
 SERVICES
-Supabase (Frankfurt), Resend (account emails), Apple IAP + RevenueCat, DeepSeek (Pro, trial) and Anthropic (Élite) after AI consent, Apple speech services, Expo/APNs. No analytics, ads or tracking SDKs.
+Supabase (Frankfurt), Resend (account emails), Apple IAP + RevenueCat, DeepSeek (Pro, trial) and Anthropic (Élite and some requests in every plan) after AI consent, Apple speech services, Expo/APNs. No analytics, ads or tracking SDKs.
 
 Support: https://nivl.app/soporte
 Terms: https://nivl.app/terminos

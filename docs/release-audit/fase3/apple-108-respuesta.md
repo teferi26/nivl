@@ -1,6 +1,6 @@
-# Respuesta al Resolution Center para la 1.0.8 (build 23)
+# Respuesta al Resolution Center para la 1.0.8 (build 24)
 
-Cambio de plan del 04/10/2026: el envío rechazado (versión renombrada a **1.0.8**, build **23**, publicación MANUAL, PREPARE_FOR_SUBMISSION por GET del 04/10) responde al mensaje de Apple del 29/09 (Guideline 2.1, Information Needed). Texto literal del mensaje: `winter/chat1-tiendas`, `docs/release-audit/00-apple-rechazo-literal.md`.
+Cambio de plan del 04/10/2026: el envío rechazado (versión renombrada a **1.0.8**, build **24** (decisión del 04/10: build nueva por NSPhotoLibraryAddUsageDescription), publicación MANUAL, PREPARE_FOR_SUBMISSION por GET del 04/10) responde al mensaje de Apple del 29/09 (Guideline 2.1, Information Needed). Texto literal del mensaje: `winter/chat1-tiendas`, `docs/release-audit/00-apple-rechazo-literal.md`.
 
 **Uso interno: no enviar esta cabecera.** Lo pega y lo envía el coordinador con el usuario. Antes de enviar:
 
@@ -19,12 +19,12 @@ Cambio de plan del 04/10/2026: el envío rechazado (versión renombrada a **1.0.
 
 Hello App Review Team,
 
-Thank you for your message of 29 September (Guideline 2.1, Information Needed). This submission now contains NIVL 1.0.8 (build 23), which replaces the previously submitted build. Below is the information you requested, numbered as in your message. A compact version has also been added to the App Review Information notes.
+Thank you for your message of 29 September (Guideline 2.1, Information Needed). This submission now contains NIVL 1.0.8 (build 24), which replaces the previously submitted build. Below is the information you requested, numbered as in your message. A compact version has also been added to the App Review Information notes.
 
 **1. Screen recording on a physical device**
 
 Recording: [VIDEO]
-Device: iPhone 17 Pro, iOS [IOS]. App: NIVL 1.0.8 (build 23) installed from TestFlight. Recorded on [DATE] in one continuous take (8:20) with a newly created account.
+Device: iPhone 17 Pro, iOS [IOS]. App: NIVL 1.0.8 (build 24) installed from TestFlight. Recorded on [DATE] in one continuous take (8:20) with a newly created account.
 
 - 0:00 Launch from the Home Screen.
 - 0:03 to 0:57 Account registration and email confirmation.
@@ -50,7 +50,7 @@ The subscription screen also has "Términos de uso" and "Política de privacidad
 
 **2. Purpose and target audience**
 
-NIVL is a Spanish-language habit and personal-organisation app for individual users aged 16 and over, such as students, professionals, entrepreneurs and people building training routines. It turns routines and goals into daily missions with levels, ranks and streaks, and brings habits, campaigns, a calendar, training, nutrition, a journal, finances and progress photos together. The problem it addresses is consistency: users plan in one place, see what to do each day and track their progress. All tracking and organisation features are free. Optional subscriptions add an AI coach. NIVL is a general consumer app, not intended for a specific business or organisation.
+NIVL is a Spanish-language habit and personal-organisation app for individual users aged 16 and over, such as students, professionals, entrepreneurs and people building training routines. It turns routines and goals into daily missions with levels, ranks and streaks, and brings habits, campaigns, a calendar, training, nutrition, a journal, finances, progress photos and weekly duels with friends together. The problem it addresses is consistency: users plan in one place, see what to do each day and track their progress. All tracking and organisation features are free. Optional subscriptions add an AI coach. NIVL is a general consumer app, not intended for a specific business or organisation.
 
 **3. Setup and access to the main features**
 
@@ -71,7 +71,7 @@ Coach voice (Pro and Élite): hold the microphone button in Coach to dictate, an
 
 Progress photos: "Avances" > "Fotos de progreso". They require an 18+ confirmation and the health permission, are stored privately, screenshots are blocked on that screen, and they are never analysed by AI.
 
-User-generated content: Perfil > "Amigos y duelos". Tap another user's three-dot button (or their row in a ranking), choose a reason and tap "Enviar denuncia"; the same sheet offers "Bloquear usuario". "Convivencia y seguridad" lists blocked users with "Desbloquear" and offers "Contactar con soporte". Leagues and weekly duels compare consistency only; nothing is staked. AI coach replies can also be reported with "Denunciar respuesta". The developer reviews the report queue personally every day and acts within 24 hours, for example by replacing the reported name or photo with a neutral one or by suspending the account from social features. There is no messaging between users.
+User-generated content: Perfil > "Amigos y duelos". Tap another user's three-dot button (or their row in a ranking), choose a reason and tap "Enviar denuncia"; the same sheet offers "Bloquear usuario". "Convivencia y seguridad" lists blocked users with "Desbloquear" and offers "Contactar con soporte". Weekly duels compare consistency only; nothing is staked. AI coach replies can also be reported with "Denunciar respuesta". The developer reviews the report queue personally every day and acts within 24 hours, for example by replacing the reported name or photo with a neutral one or by suspending the account from social features. There is no messaging between users.
 
 Account deletion: Perfil > "Cuenta" section > "Eliminar cuenta" > "Eliminar para siempre" in the sheet and again in the final alert. It permanently deletes the NIVL account, its personal data and stored files; limited records may be kept only where the law requires, as described in the Privacy Policy. Deleting the account does not cancel an Apple subscription (Settings > [your name] > Subscriptions). Please test deletion with a new account, not the review accounts.
 
@@ -80,7 +80,7 @@ Account deletion: Perfil > "Cuenta" section > "Eliminar cuenta" > "Eliminar para
 - Supabase (database hosted in Frankfurt, Germany): authentication, database, private file storage and server functions.
 - Resend: account emails (sign-up confirmation and password reset).
 - Apple In-App Purchase (StoreKit) and RevenueCat: subscriptions, restores and subscription status. All iOS purchases use Apple's purchase sheet.
-- AI services used by the optional coach, only after the user's consent: DeepSeek (Pro coach and the 7-day trial) and Anthropic (Claude: the Élite coach and other requests listed in the consent screen).
+- AI services used by the optional coach, only after the user's consent: DeepSeek (Pro coach and the 7-day trial) and Anthropic (Claude: the Élite coach and some requests in every plan, including Pro, as listed in the consent screen).
 - Apple speech services: on-device speech recognition when available for dictation, and text-to-speech for reading replies.
 - Expo and Apple Push Notification service: optional notifications and over-the-air updates of the app's JavaScript.
 - Vercel: hosting of the public website, support and legal pages.
