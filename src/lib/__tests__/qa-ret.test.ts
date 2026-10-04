@@ -1,6 +1,6 @@
 // QA Chat 5 · RET-02/03 en las piezas puras de closing.ts.
 
-import { computeDayClose, enJuegoHoy, recuperacionDesbloqueada, rotosSeguidosAntes } from '../closing';
+import { computeDayClose, enJuegoHoy, rachaVisible, recuperacionDesbloqueada, rotosSeguidosAntes } from '../closing';
 import { mision } from './qa/servidor';
 
 const q = mision({ id: 'q', difficulty: 'media' });
@@ -85,5 +85,29 @@ describe('RET-05 · enJuegoHoy dice lo mismo que dirá el cierre', () => {
   test('cuarto día roto seguido con racha 0: no cuesta (RET-02)', () => {
     expect(enJuegoHoy({ questsHoy: qs, completadasHoy: new Set(), streak: 0, stones: 2, rotosSeguidosPrevios: 3 }))
       .toMatchObject({ xpEnJuego: 0, gastariaPiedra: false, rachaEnRiesgo: false });
+  });
+});
+
+describe('auditoría de coherencia (fase 3)', () => {
+  const media = (id: string, extra = {}) => mision({ id, difficulty: 'media', ...extra });
+  test('las misiones extra no se juzgan: ni rompen la racha ni cobran XP', () => {
+    const qs = [media('a'), media('b'), mision({ id: 'x', difficulty: 'dificil', is_bonus: true })];
+    const r = computeDayClose({ fromDate: '2026-10-09', today: '2026-10-10', quests: qs,
+      completedKeys: new Set(['2026-10-09|a', '2026-10-09|b']), streak: 10, stones: 0, freezeUntil: null });
+    expect(r).toMatchObject({ streak: 11, streakLost: false, penaltyXp: 0 });
+    expect(rachaVisible(10, qs, new Set(['a', 'b']))).toMatchObject({ valor: 11, perfecto: true });
+  });
+  test('con congelación vigente, la racha visible no suma ni celebra', () => {
+    const qs = [media('a')];
+    expect(rachaVisible(6, qs, new Set(['a']), { hoy: '2026-10-10', freezeUntil: '2026-10-10' }))
+      .toMatchObject({ valor: 6, hoyCerrado: false });
+    expect(rachaVisible(6, qs, new Set(['a']), { hoy: '2026-10-11', freezeUntil: '2026-10-10' }))
+      .toMatchObject({ valor: 7, hoyCerrado: true });
+  });
+  test('enJuegoHoy suma las reglas sin marcar con el tope común de 150 (y la piedra no las absorbe)', () => {
+    const qs = [media('a')];
+    expect(enJuegoHoy({ questsHoy: qs, completadasHoy: new Set(), streak: 10, stones: 0, reglasSinMarcar: 3 }).xpEnJuego).toBe(100);
+    expect(enJuegoHoy({ questsHoy: qs, completadasHoy: new Set(), streak: 10, stones: 1, reglasSinMarcar: 3 }).xpEnJuego).toBe(75);
+    expect(enJuegoHoy({ questsHoy: [1, 2, 3, 4, 5].map((i) => media(`m${i}`)), completadasHoy: new Set(), streak: 10, stones: 0, reglasSinMarcar: 6 }).xpEnJuego).toBe(150);
   });
 });
