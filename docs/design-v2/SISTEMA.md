@@ -83,14 +83,15 @@ Se conserva la API del kit actual cuando se puede (para que la migración sea me
 | Componente | Cambio v2 |
 |---|---|
 | `Screen` | Se mide con el **hueco real**, no con la ventana: dentro de las pestañas, `(tabs)/_layout.tsx` publica en `TopeAncho` la ventana menos el raíl (72) o la barra lateral (240) y el inset izquierdo (`huecoContenido` en `responsive.ts`). A 1024 el contenido mide 784 (`medium`). El panel contextual (320) solo se pinta si el hueco es `expanded` y le quedan al contenido 560 + 2·32 (`cabeAside`); si no, se oculta y el margen es 32. |
-| `ScreenHeader` | Título `title`, eyebrow `label`, acción. En `expanded` el título se alinea con la retícula de contenido. |
+| `ScreenHeader` | **`@deprecated`** (FASE3): las pantallas rediseñadas usan `EncabezadoArena`. Título `title`, eyebrow `label`, acción. `inscrito` pinta el título en Cinzel `rank` mayúscula con `textTransform` (el texto no cambia): plan B de las puertas, cuyas pruebas simulan `@/components/ui`. |
 | `Section` | El rótulo `label` va con una regla de 1 px que llega al borde. Sin `tone` de color: `tone` pasa a `default` · `alerta` (la regla es una banda de trama de 6) · `logro` (banda de grano). Acepta los valores viejos: `red` → `alerta`, `gold` → `logro`, el resto → `default`. |
 | `Card` | Variantes `surface` (ink1), `outline` (hairline ink3), `inverse` (blanco con texto negro: solo una por pantalla; el contenido lo sabe por `SuperficieContext`), `alerta` (borde de trama ink6 de 3 alrededor de una placa ink1) y `logro` (marco de grano ink6 de 6 alrededor de una placa ink1: el texto nunca va encima de la textura). Trama y grano en ink6 (6,25:1); grano r 0,7 cada 4. |
-| `Row` / `Check` | `Check` hecho = círculo blanco sólido con marca negra. Pendiente = aro ink4. Bloqueado = aro con trama y candado. |
+| `Row` / `Check` | `Check` hecho = círculo blanco sólido con marca negra. Pendiente = aro ink4. Bloqueado = aro con trama y candado. El rebote del Check y el destello de la fila no se pintan con «reducir movimiento» (se pregunta en el momento de marcar). |
 | `Button` (antes `SystemButton`) | `primary` (blanco sólido), `secondary` (contorno blanco 1,5), `ghost`, `danger` (contorno con trama y texto blanco; el peligro es la trama, no el rojo). Alto 52 (lg), 44 (md), 36 (sm). Rótulo: Outfit 700 en mayúsculas, 15/2,5 · 14/2 · 12/1,5 (tamaño/tracking en lg · md · sm), la única excepción a la escala `type`. Desactivado: sin opacidad, borde ink4 y texto ink6. |
-| `Chip` / `Tag` | Chip seleccionado = invertido. `Tag` = contorno; `Tag tone="alerta"` = pastilla con borde de trama y `tone="logro"` = con borde de grano, ambas con el texto `micro` ink9 sobre una placa ink0. |
+| `Interruptor` | Pista blanca con pomo negro frente a pista ink4 con pomo ink8. Cada cambio vibra `seleccion`. |
+| `Chip` / `Tag` | Chip seleccionado = marco de 2 ink10 sobre ink1, sin invertir. Con `selected` definido (modo radio) vibra `seleccion` al pasar a elegido; tocar el ya elegido no vibra. `Tag` = contorno; `Tag tone="alerta"` = pastilla con borde de trama y `tone="logro"` = con borde de grano, ambas con el texto `micro` ink9 sobre una placa ink0. |
 | `Stat`, `ProgressRing`, `XPBar` | Barras con relleno blanco sobre ink4. Los segmentos se marcan con un corte de 2 px en negro. |
-| `EmptyState`, `Skeleton` | Esqueleto ink2↔ink3 que respira (se para con «reducir movimiento»). |
+| `EmptyState`, `Skeleton` | Esqueleto ink2 que respira hasta ink3 (capa ink3 con opacidad en el driver nativo); con «reducir movimiento» se queda en ink2, también si el ajuste cambia en vivo (`useMovimientoReducido`). Vacío: icono ink6, título `headline` ink9, cuerpo `bodySm` ink8 y la acción en `Button secondary sm` (`variant: 'solid'` la pide primary). Misma API. |
 | `Sheet` (nuevo) | La hoja inferior única (sustituye a los `Modal` sueltos): asa, eyebrow, título, botón «Cerrar» de 44, contenido con scroll, pie fijo. Safe area real en el móvil; en tablet, centrada y con pie de 16 (sin inset). Teclado: `padding` en iOS, `height` en Android. El gesto de escape del lector de pantalla la cierra. |
 | `Avatar` (nuevo, sustituye a `Hexagon`) | Círculo con el **marco de rango** (§7). |
 | `Toast` (nuevo, sustituye a `XpToast`) | Pastilla invertida arriba: «+50 XP · FUE». Máx. 90 % de ancho y 2 líneas. Se anuncia al lector una vez (`announceForAccessibility`, sin región viva). |
@@ -115,21 +116,24 @@ La base que hace que la app se lea como una arena y no como un recoloreado. Se i
 | `FranjaCifras` | 2 a 4 celdas con hairlines verticales ink3: cifra en `type.cifra` y rótulo `micro` ink6. Cada celda se lee «rótulo: valor». |
 | `HeroRango` | `hoy`: a sangre, nivel monumental entre laureles con la arena detrás, rango grabado, línea, barra de 10 segmentos, franja y meandro de cierre. `perfil`: avatar de 120 sobre el óvalo, nombre, título grabado, franja, barra y borde inferior de 3. El lector oye un resumen; avatar y agenda son botones aparte. |
 | `ASangre` | Saca el contenido al borde con el margen que publica `Screen` en `GutterContext` (0 con `plain`). |
+| `ErrorSistema` | `{ mensaje, onReintentar?, reintentando?, compacto?, rotulo?, style? }`. TarjetaArena contorno con el rótulo grabado «El sistema no responde», el mensaje en `bodySm` ink8 y `Button secondary` «Reintentar» (md; sm en `compacto`). Sin `onReintentar` no hay botón. Se anuncia como alerta (región viva). No gasta la inversión. |
+| `CargaArena` | `{ etiqueta, formas, filas?, style? }` con `formas: ('franja' \| 'rotulo' \| 'tarjeta' \| 'filas')[]`. Un solo `progressbar` con la etiqueta; dentro, `Skeleton` con la forma final: franja de 3 celdas con hairlines, rótulo con regla, tarjeta ink1 con hairline, filas (`SkeletonRows`, 3 por defecto). |
+| `Campo` | `{ etiqueta, error?, ayuda?, grande?: 'rank', estiloBloque? } & TextInputProps`, con ref. Etiqueta `label` ink6 en mayúsculas; caja ink2 con borde ink4 de 1 y alto ≥ 48; foco = borde 2 ink10 (el relleno se compensa); texto `body` ink9; `outlineStyle: none` en la web. Error: borde discontinuo ink8 y la frase en `bodySm` ink9 con icono, región viva; sin rojo. `grande="rank"`: Cinzel `rank` centrado, alto 64 (códigos, «ELIMINAR»). Ayuda en `bodySm` ink6. |
 
 **Tres excepciones deliberadas** a lo anterior:
 1. **Títulos de pantalla en Cinzel mayúscula** (`EncabezadoArena`). Hasta aquí Cinzel era solo marca y cifras; en las pantallas rediseñadas el título es una inscripción.
 2. **Grano ink3 de fondo en los Hero** (rango B en adelante). Es decoración de bajo contraste, no significa «logro»: el grano de logro sigue siendo ink6 y en marco.
 3. **La inversión puede ser una fila de una lista** («lo activo»): la siguiente misión de Hoy, mi fila en el ranking. Sigue habiendo una sola por pantalla.
 
-Galería de verificación (solo desarrollo): `/kit/pantallas?pantalla=<id>&estado=<estado>&ancho=375|430|744|1024|1440`. La página «arena» enseña cada pieza; cada pantalla lee su `src/components/<carpeta>/demo.tsx`.
+Galería de verificación (solo desarrollo): `/kit/pantallas?pantalla=<id>&estado=<estado>&ancho=375|430|744|1024|1440` (`&quieto=1` sin animaciones, `&solo=1` sin selectores). La página «arena» enseña cada pieza, también ErrorSistema, CargaArena, Campo y EmptyState; cada pantalla lee su `src/components/<carpeta>/demo.tsx`. Desde la Fase 3 la galería conoce todas las carpetas (acceso, puertas, agenda, diario, gym, cardio, nutricion, dieta, compra, avances, informe, resumen, oraculo, contrato, memoria, economia, creador) y cada lote solo rellena su `DEMO`. `DemoPantalla.marco`: `pestanas` (por defecto, el hueco resta raíl o barra lateral) o `pila` (pantalla de la pila: el hueco es el ancho entero).
 
 ## 6. Estados
 
 | Estado | Cómo se ve |
 |---|---|
-| Cargando | `Skeleton` con la forma final; nunca spinner suelto ni vacío antes de tiempo. |
+| Cargando | `CargaArena` (o `Skeleton`) con la forma final; nunca spinner suelto ni vacío antes de tiempo. |
 | Vacío | Icono suelto + frase en voz del sistema + una acción. Explica qué hacer, no culpa. |
-| Error | `Card outline` + «El sistema no responde» + `mensajeSistema(e)` + «Reintentar». |
+| Error | `ErrorSistema`: TarjetaArena contorno + «El sistema no responde» + `mensajeSistema(e)` + «Reintentar» secondary. Fallo de render de toda la app: `ErrorBoundary` (galea 48, «EL SISTEMA HA FALLADO», Button primary). |
 | Sin conexión | Banda fina arriba con trama: «Sin conexión. Lo que hagas se guarda al volver.» (solo si la acción admite cola; si no, se desactiva con explicación). |
 | Bloqueado | Trama + candado + la razón en una línea (patrón RET-03). |
 | Hecho | Inversión (Check blanco) y texto ink6 con tachado fino. |

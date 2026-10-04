@@ -181,9 +181,9 @@ describe('duelos pendientes', () => {
     expect(clavesDuelo(duelo({ soy_retador: false }))).toEqual([]);
     expect(clavesDuelo(duelo({ status: 'done', resultado: 'gano' }))).toEqual(['d1:resultado']);
     expect(clavesDuelo(duelo({ status: 'declined' }))).toEqual([]);
-    // 0055: el rival oculto (null) no anula el duelo; un anulado sí.
-    expect(clavesDuelo(duelo({ rival: null }))).toEqual(['d1:aceptado']);
-    expect(clavesDuelo(duelo({ rival: null, status: 'cancelled' }))).toEqual([]);
+    // 0055: no se avisa de un rival oculto (null) ni de un anulado.
+    expect(clavesDuelo(duelo({ rival: null }))).toEqual([]);
+    expect(clavesDuelo(duelo({ status: 'cancelled' }))).toEqual([]);
     expect(duelosPendientesDe([duelo()], new Set(), LUNES)).toBe(1);
     expect(duelosPendientesDe([duelo()], null, LUNES)).toBe(1);
     expect(duelosPendientesDe([duelo()], new Set(['d1:aceptado']), LUNES)).toBe(0);

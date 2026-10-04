@@ -8,7 +8,8 @@
 //
 // Arriba, los selectores; debajo, un marco del ancho elegido (acotado a la
 // ventana) con el hueco de contenido que tendría la app a ese ancho
-// (`huecoContenido`: a 1024 son 784, a 1440 son 1200). La página «arena»
+// (`huecoContenido`: a 1024 son 784, a 1440 son 1200; si el demo declara
+// `marco: 'pila'`, el hueco es el ancho entero). La página «arena»
 // enseña cada pieza de la base (src/components/arena); las demás leen el
 // `DEMO` de src/components/<pantalla>/demo.tsx y, si es null, «Pendiente».
 // En un build de release (__DEV__ false) redirige a la raíz.
@@ -20,10 +21,13 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   Arena,
   Barra,
+  Campo,
+  CargaArena,
   Columna,
   Contador,
   EncabezadoArena,
   Entrada,
+  ErrorSistema,
   FranjaCifras,
   Galea,
   HeroRango,
@@ -38,15 +42,32 @@ import {
   type VarianteArena,
 } from '@/components/arena';
 import { fijarQuieto } from '@/components/arena/quieto';
+import { DEMO as demoAcceso } from '@/components/acceso/demo';
+import { DEMO as demoAgenda } from '@/components/agenda/demo';
 import { DEMO as demoAmigos } from '@/components/amigos/demo';
+import { DEMO as demoAvances } from '@/components/avances/demo';
 import { DEMO as demoCampanas } from '@/components/campanas/demo';
+import { DEMO as demoCardio } from '@/components/cardio/demo';
 import { DEMO as demoCoach } from '@/components/coach/demo';
+import { DEMO as demoCompra } from '@/components/compra/demo';
+import { DEMO as demoContrato } from '@/components/contrato/demo';
+import { DEMO as demoCreador } from '@/components/creador/demo';
+import { DEMO as demoDiario } from '@/components/diario/demo';
+import { DEMO as demoDieta } from '@/components/dieta/demo';
+import { DEMO as demoEconomia } from '@/components/economia/demo';
 import { DEMO as demoFotos } from '@/components/fotos/demo';
+import { DEMO as demoGym } from '@/components/gym/demo';
 import { DEMO as demoHabitos } from '@/components/habitos/demo';
 import { DEMO as demoHoy } from '@/components/hoy/demo';
+import { DEMO as demoInforme } from '@/components/informe/demo';
+import { DEMO as demoMemoria } from '@/components/memoria/demo';
+import { DEMO as demoNutricion } from '@/components/nutricion/demo';
 import { DEMO as demoOnboarding } from '@/components/onboarding/demo';
+import { DEMO as demoOraculo } from '@/components/oraculo/demo';
 import { DEMO as demoPerfil } from '@/components/perfil/demo';
-import { Button, Chip, ChipRow, Screen, Section, Tag } from '@/components/ui';
+import { DEMO as demoPuertas } from '@/components/puertas/demo';
+import { DEMO as demoResumen } from '@/components/resumen/demo';
+import { Button, Chip, ChipRow, EmptyState, Screen, Section, Tag } from '@/components/ui';
 import { huecoContenido } from '@/design/responsive';
 import { ink, space, stroke, type as tipo, VERIFY_WIDTHS } from '@/design/tokens';
 import { TopeAncho } from '@/design/useSizeClass';
@@ -60,6 +81,23 @@ const DEMOS: Record<IdPantalla, DemoPantalla | null> = {
   habitos: demoHabitos,
   campanas: demoCampanas,
   fotos: demoFotos,
+  acceso: demoAcceso,
+  puertas: demoPuertas,
+  agenda: demoAgenda,
+  diario: demoDiario,
+  gym: demoGym,
+  cardio: demoCardio,
+  nutricion: demoNutricion,
+  dieta: demoDieta,
+  compra: demoCompra,
+  avances: demoAvances,
+  informe: demoInforme,
+  resumen: demoResumen,
+  oraculo: demoOraculo,
+  contrato: demoContrato,
+  memoria: demoMemoria,
+  economia: demoEconomia,
+  creador: demoCreador,
 };
 
 type IdPagina = 'arena' | IdPantalla;
@@ -91,7 +129,8 @@ export default function GaleriaPantallas() {
   const demo = pagina === 'arena' ? null : DEMOS[pagina];
   const estado = demo ? (demo.estados.find((e) => e.id === params.estado) ?? demo.estados[0] ?? null) : null;
   const marco = Math.min(ancho, ventana);
-  const hueco = huecoContenido(ancho).ancho;
+  // Las pantallas de la pila no tienen raíl ni barra lateral al lado.
+  const hueco = demo?.marco === 'pila' ? ancho : huecoContenido(ancho).ancho;
 
   const ir = (cambio: { pantalla?: string; estado?: string; ancho?: string }) => router.setParams(cambio);
 
@@ -218,7 +257,14 @@ function PaginaArena() {
   const [vuelta, setVuelta] = useState(0);
   const [xp, setXp] = useState(1840);
   const [ocupado, setOcupado] = useState(false);
+  const [reintentando, setReintentando] = useState(false);
+  const [codigo, setCodigo] = useState('');
+  const [correo, setCorreo] = useState('teferi@');
   const repetir = () => setVuelta((v) => v + 1);
+  const reintentar = () => {
+    setReintentando(true);
+    setTimeout(() => setReintentando(false), 1500);
+  };
 
   return (
     <Screen>
@@ -229,6 +275,70 @@ function PaginaArena() {
         accion={{ icono: 'refresh', etiqueta: 'Repetir las animaciones', onPress: repetir }}
         meandro
       />
+
+      <Section title="Error del sistema">
+        <View style={styles.pila}>
+          <ErrorSistema
+            mensaje="No se ha podido cargar la agenda. Comprueba la conexión y vuelve a intentarlo."
+            onReintentar={reintentar}
+            reintentando={reintentando}
+          />
+          <Text style={styles.pie}>ErrorSistema · contorno · secondary «Reintentar» (pulsa: gira 1,5 s)</Text>
+          <ErrorSistema compacto mensaje="El diario no se ha guardado. Tus respuestas siguen aquí." onReintentar={reintentar} />
+          <Text style={styles.pie}>compacto · dentro de una sección o una hoja</Text>
+          <ErrorSistema compacto mensaje="Esta campaña ya no existe." />
+          <Text style={styles.pie}>sin onReintentar · sin botón</Text>
+        </View>
+      </Section>
+
+      <Section title="Cargando">
+        <View style={styles.pila}>
+          <CargaArena etiqueta="Cargando el gimnasio" formas={['franja', 'rotulo', 'tarjeta', 'filas']} />
+          <Text style={styles.pie}>CargaArena · franja · rótulo · tarjeta · filas (3) · un progressbar</Text>
+        </View>
+      </Section>
+
+      <Section title="Campo">
+        <View style={styles.pila}>
+          <Campo
+            etiqueta="Correo"
+            value={correo}
+            onChangeText={setCorreo}
+            placeholder="tu@correo.com"
+            autoCapitalize="none"
+            autoComplete="email"
+            keyboardType="email-address"
+            textContentType="emailAddress"
+          />
+          <Campo etiqueta="Nombre" placeholder="Cómo te llama la arena" ayuda="Lo verán tus rivales en el ranking." />
+          <Campo etiqueta="Contraseña" value="corta" secureTextEntry error="Mínimo 8 caracteres, con una cifra." />
+          <Campo
+            etiqueta="Código de invitación"
+            grande="rank"
+            value={codigo}
+            onChangeText={(t) => setCodigo(t.toUpperCase())}
+            placeholder="AB12CD"
+            autoCapitalize="characters"
+            maxLength={8}
+          />
+          <Campo etiqueta="Notas" multiline placeholder="Qué ha pasado hoy" />
+          <Campo etiqueta="Peso corporal" value="78,4 kg" editable={false} ayuda="Se cambia en Perfil." />
+          <Text style={styles.pie}>Campo · ink2 borde ink4 · foco 2 ink10 · error discontinuo · rank · multilínea · apagado</Text>
+        </View>
+      </Section>
+
+      <Section title="Vacío">
+        <TarjetaArena variante="contorno" padded={false}>
+          <EmptyState
+            icon="calendar-outline"
+            title="Nada programado hoy"
+            body="Añade un evento o una misión con hora y aparecerá aquí."
+            action={{ label: 'Añadir evento', onPress: nada }}
+          />
+        </TarjetaArena>
+        <EmptyState compact icon="barbell-outline" title="Sin ejercicios" body="Este día de la rutina está vacío." />
+        <Text style={styles.pie}>EmptyState · icono ink6 · headline ink9 · bodySm ink8 · secondary sm</Text>
+      </Section>
 
       <Section title="Motivos">
         <View style={styles.muestras}>
