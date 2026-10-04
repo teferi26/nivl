@@ -24,14 +24,13 @@ import {
   sqlInforme,
   sqlLiquidarSiIgual,
   fichaRetirada,
-  ALIAS_RETIRADO,
 } from './creadores.mjs';
 
-// Ficha retirada por borrado (0056, condiciones §7): no se liquida ni se apunta pago.
-assert.equal(fichaRetirada({ active: false, vinculado: false, alias: ALIAS_RETIRADO }), true);
-assert.equal(fichaRetirada({ active: false, vinculado: false, alias: 'Alfa' }), false); // desactivado a mano: sí se liquida
-assert.equal(fichaRetirada({ active: false, vinculado: true, alias: ALIAS_RETIRADO }), false);
-assert.equal(fichaRetirada({ active: true, vinculado: false, alias: ALIAS_RETIRADO }), false);
+// Ficha inactiva y sin cuenta (p. ej. retirada por borrado, 0056): se avisa, no se bloquea:
+// lo devengado se le sigue debiendo (condiciones §7, decisión del dueño).
+assert.equal(fichaRetirada({ active: false, vinculado: false }), true);
+assert.equal(fichaRetirada({ active: false, vinculado: true }), false);
+assert.equal(fichaRetirada({ active: true, vinculado: false }), false);
 
 if (!process.argv[2]) throw new Error('Pasa la ruta de un módulo PGlite existente; esta prueba no instala nada.');
 const { PGlite } = await import(pathToFileURL(resolve(process.argv[2])).href);

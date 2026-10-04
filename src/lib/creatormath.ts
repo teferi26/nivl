@@ -264,6 +264,38 @@ export function topeCents(baseCents: number, pct: number): number {
 
 export type ComisionKind = 'primer_pago' | 'mensual' | 'renovacion';
 
+/** Lo que trae el evento de RevenueCat para decidir si un cobro viene de una oferta rebajada. */
+export interface CobroTienda {
+  /** `offer_code` del webhook (null o '' = sin código). */
+  offerCode?: string | null;
+  /** `period_type`: TRIAL | INTRO | NORMAL | PROMOTIONAL | PREPAID. */
+  periodType?: string | null;
+  /** ISO 4217 de `price_in_purchased_currency`. */
+  currency?: string | null;
+  /** `price_in_purchased_currency` en céntimos. */
+  precioCents: number;
+  /** `store_products.list_price_cents` (EUR con IVA). null = sin catálogo. */
+  catalogoCents?: number | null;
+}
+
+export const NOTA_OFERTA_SIN_REFERENCIA = 'oferta sin referencia: comisión completa';
+
+/**
+ * El factor pagado/catálogo, como `apply_store_event` (propuesta
+ * comisión proporcional, 1.0.9). Solo baja de 1 en una OFERTA (offer_code, o
+ * period_type INTRO/PROMOTIONAL) pagada en EUR con catálogo: un precio
+ * regional sin oferta nunca recorta. Una oferta sin referencia (otra moneda o
+ * sin catálogo) cobra completa y deja la nota.
+ */
+export function factorOferta(c: CobroTienda): { factor: number; nota: string | null } {
+  const oferta = !!c.offerCode || c.periodType === 'INTRO' || c.periodType === 'PROMOTIONAL';
+  if (!oferta) return { factor: 1, nota: null };
+  if (c.currency === 'EUR' && c.catalogoCents != null && c.catalogoCents > 0) {
+    return { factor: Math.max(0, Math.min(1, c.precioCents / c.catalogoCents)), nota: null };
+  }
+  return { factor: 1, nota: NOTA_OFERTA_SIN_REFERENCIA };
+}
+
 export interface Comision {
   kind: ComisionKind;
   pct: number;
@@ -276,9 +308,11 @@ export interface Comision {
  *
  * - `acumuladoCents`: lo que esta cuenta ya ha generado en `primer_pago` y
  *   `mensual`, sin las anuladas (un reembolso devuelve hueco al tope).
- * - Anual con hueco: paga lo que falte hasta el tope de golpe.
- * - Mensual con hueco: su % del neto del mes, sin pasarse del tope.
- * - Anual con el tope lleno: `renewalPct` sobre la base (0 = nada).
+ * - `factorPrecio` (0–1, por defecto 1): lo de `factorOferta`.
+ * - Anual con hueco: lo que falte hasta el tope, sin pasar de tope × factor.
+ * - Mensual con hueco: su % del neto del mes, sin pasarse del tope (ya es
+ *   proporcional a lo cobrado: el factor NO se aplica otra vez).
+ * - Anual con el tope lleno: `renewalPct` sobre la base × factor (0 = nada).
  * - Mensual con el tope lleno: nada.
  *
  * Devuelve null cuando no hay comisión (o sería de 0).
@@ -289,8 +323,10 @@ export function comisionCents(args: {
   netCents: number;
   acumuladoCents: number;
   ajustes: Ajustes;
+  factorPrecio?: number;
 }): Comision | null {
   const { rangoPct, producto, netCents, acumuladoCents, ajustes } = args;
+  const factor = Math.max(0, Math.min(1, args.factorPrecio ?? 1));
   const pct = pctEfectivo(rangoPct, producto, ajustes);
   const base = producto.commissionBaseCents ?? ajustes.baseCents;
   const cap = topeCents(base, pct);
@@ -302,12 +338,12 @@ export function comisionCents(args: {
     kind = producto.period === 'anual' ? 'primer_pago' : 'mensual';
     amount =
       producto.period === 'anual'
-        ? cap - acumuladoCents
+        ? Math.min(cap - acumuladoCents, redondear(cap * factor))
         : Math.min(redondear((netCents * pct) / 100), cap - acumuladoCents);
   } else if (producto.period === 'anual' && ajustes.renewalPct > 0) {
     kind = 'renovacion';
     pctFinal = ajustes.renewalPct;
-    amount = redondear((base * ajustes.renewalPct) / 100);
+    amount = redondear(((base * ajustes.renewalPct) / 100) * factor);
   } else {
     return null;
   }

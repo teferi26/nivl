@@ -3,6 +3,7 @@ import {
   codigoValido,
   comisionCents,
   enlaceCreador,
+  factorOferta,
   estadoReto,
   fechaPago,
   importe,
@@ -11,6 +12,7 @@ import {
   liquidacionCents,
   mensajeInvitacionCreador,
   motivoReferral,
+  NOTA_OFERTA_SIN_REFERENCIA,
   netoCents,
   normalizarCodigo,
   pctEfectivo,
@@ -224,6 +226,75 @@ describe('comisión por cobro (espejo de record_sale)', () => {
       ajustes: CON_SBP,
     });
     expect(c?.amountCents).toBe(3000);
+  });
+});
+
+describe('oferta rebajada: comisión proporcional (propuesta 1.0.9)', () => {
+  it('sin oferta el factor es 1, aunque el precio regional sea menor', () => {
+    expect(factorOferta({ currency: 'USD', precioCents: 16075, catalogoCents: 29900 })).toEqual({ factor: 1, nota: null });
+    expect(factorOferta({ currency: 'EUR', precioCents: 14950, catalogoCents: 29900, periodType: 'NORMAL' })).toEqual({
+      factor: 1,
+      nota: null,
+    });
+  });
+
+  it('oferta en EUR: pagado / catálogo, con tope 1', () => {
+    expect(factorOferta({ offerCode: 'winback_50', currency: 'EUR', precioCents: 14950, catalogoCents: 29900 }).factor).toBe(0.5);
+    expect(factorOferta({ periodType: 'INTRO', currency: 'EUR', precioCents: 650, catalogoCents: 1300 }).factor).toBe(0.5);
+    expect(factorOferta({ periodType: 'PROMOTIONAL', currency: 'EUR', precioCents: 35000, catalogoCents: 29900 }).factor).toBe(1);
+  });
+
+  it('oferta sin referencia (otra moneda o sin catálogo): completa y con nota', () => {
+    expect(factorOferta({ offerCode: 'x', currency: 'USD', precioCents: 16075, catalogoCents: 29900 })).toEqual({
+      factor: 1,
+      nota: NOTA_OFERTA_SIN_REFERENCIA,
+    });
+    expect(factorOferta({ offerCode: 'x', currency: 'EUR', precioCents: 10000, catalogoCents: null }).nota).toBe(
+      NOTA_OFERTA_SIN_REFERENCIA,
+    );
+  });
+
+  it('anual con oferta al 50 %: la mitad del tope; completo, el tope', () => {
+    const base = { rangoPct: 50, producto: ELITE_ANUAL, netCents: 0, acumuladoCents: 0, ajustes: CON_SBP };
+    expect(comisionCents({ ...base, factorPrecio: 0.5 })?.amountCents).toBe(2500);
+    expect(comisionCents(base)?.amountCents).toBe(5000);
+    // Pro anual a 49,995 €: 0,49995 × 5000 = 2499,75 → 2500.
+    expect(comisionCents({ ...base, producto: PRO_ANUAL, factorPrecio: 4999.5 / 9999 })?.amountCents).toBe(2500);
+  });
+
+  it('anual con oferta y hueco menor: no pasa de lo que falta', () => {
+    const c = comisionCents({ rangoPct: 50, producto: ELITE_ANUAL, netCents: 0, acumuladoCents: 4000, ajustes: CON_SBP, factorPrecio: 0.5 });
+    expect(c?.amountCents).toBe(1000);
+  });
+
+  it('mensual: el factor no se aplica dos veces (ya es % del neto cobrado)', () => {
+    const c = comisionCents({
+      rangoPct: 50,
+      producto: PRO_MENSUAL,
+      netCents: netoCents(650, CON_SBP),
+      acumuladoCents: 0,
+      ajustes: CON_SBP,
+      factorPrecio: 0.5,
+    });
+    expect(c?.amountCents).toBe(redondear(netoCents(650, CON_SBP) * 0.5));
+  });
+
+  it('renovación con renewal_pct y oferta al 50 %: la mitad', () => {
+    const c = comisionCents({
+      rangoPct: 50,
+      producto: ELITE_ANUAL,
+      netCents: 0,
+      acumuladoCents: 5000,
+      ajustes: { ...CON_SBP, renewalPct: 10 },
+      factorPrecio: 0.5,
+    });
+    expect(c).toEqual({ kind: 'renovacion', pct: 10, capCents: 5000, amountCents: 500 });
+  });
+
+  it('un factor fuera de rango se recorta a 0–1', () => {
+    const base = { rangoPct: 50, producto: ELITE_ANUAL, netCents: 0, acumuladoCents: 0, ajustes: CON_SBP };
+    expect(comisionCents({ ...base, factorPrecio: 3 })?.amountCents).toBe(5000);
+    expect(comisionCents({ ...base, factorPrecio: -1 })).toBeNull();
   });
 });
 

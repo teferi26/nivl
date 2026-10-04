@@ -595,26 +595,29 @@ ayuda (es una escritura en la base, no una consulta).
 - Al borrar la cuenta, la ficha se **retira sola**: queda inactiva para
   siempre, sin cuenta, y el alias pasa a «Creador retirado». Su código deja de
   aceptarse y no genera comisiones nuevas.
-- **Su saldo pendiente se pierde** (disponible y en retención). Lo decidiste
-  así el 04/10/2026 y lo dicen las condiciones (§7). `liquidar` y `pago`
-  rechazan una ficha retirada.
-- Comisiones y pagos se conservan **seis años** por obligación contable y
-  fiscal, sin derecho a cobro.
-- **Antes de que borre**, si te escribe un creador con saldo, avísale de que lo
-  pierde y ofrécele liquidar primero lo disponible (ver plantilla). Es la
-  recomendación de Seguridad para que la cláusula no resulte sorpresiva: si el
-  creador pide cobrar antes de borrar, liquídale lo disponible y después que
-  borre.
+- **Lo ya devengado se le sigue debiendo** (decisión tuya del 04/10/2026,
+  condiciones §7: «si lo ha ganado se le pagará»). Procedimiento:
+  1. El creador te escribe por soporte con sus datos de pago (como ya no tiene
+     cuenta, identifícalo por su código y el correo con el que se dio de alta).
+  2. Liquida lo disponible con `liquidar CODIGO` y haz la transferencia. El
+     script avisa de que la ficha está inactiva y sin cuenta, pero liquida.
+  3. Lo que siga en retención madura a los 30 días: vuelve a lanzar `liquidar`
+     en los meses siguientes hasta que no quede nada.
+  4. Los reembolsos posteriores descuentan igual (clawback) de lo que quede.
+- No genera comisiones nuevas: su código ya no se acepta y `record_sale` exige
+  un creador activo.
+- Comisiones, liquidaciones y los datos de pago que te mande se conservan
+  **seis años** por obligación contable y fiscal.
 - Las ventas (`store_sales`) de cualquier comprador que borra su cuenta se
   conservan sin el usuario; los eventos de tienda se seudonimizan.
 
 ### 6.2 Plantillas de respuesta
 
-> **Creador con saldo que quiere borrar su cuenta:** Hola. Antes de borrarla:
-> si eliminas tu cuenta, tu código se desactiva y pierdes el saldo pendiente de
-> cobro (condiciones, apartado 7). Si quieres, te liquido ahora lo que ya está
-> disponible y después borras la cuenta. Lo que siga en retención no se podrá
-> cobrar.
+> **Creador que borra (o quiere borrar) su cuenta:** Hola. Si eliminas tu
+> cuenta, tu código se desactiva, pero lo que ya has generado se te sigue
+> pagando (condiciones, apartado 7). Mándanos por aquí tus datos de pago: te
+> liquidamos lo disponible y lo que esté en retención te lo pagamos cuando
+> madure.
 
 > **Venta que no aparece:** Hola. He mirado tu código: esa cuenta no lo metió
 > en sus primeros 14 días (o pagó antes de meterlo), así que no queda
@@ -794,8 +797,9 @@ Lo que hay que tener presente:
   hoy un comando; propuesta: `exportar CODIGO` que escriba un JSON en
   `privado/`.
 - **Borrado.** Con la 0056, al borrar la cuenta la ficha se retira sola:
-  inactiva, sin cuenta, alias «Creador retirado» y notas borradas. Comisiones y
-  pagos se conservan seis años sin derecho a cobro (condiciones §7).
+  inactiva, sin cuenta, alias «Creador retirado» y notas borradas. Lo
+  devengado se le sigue pagando (condiciones §7); comisiones, pagos y sus datos
+  de pago se conservan seis años por obligación contable y fiscal.
 - **Exportes del script.** Los CSV de `privado/` llevan alias: son datos
   personales. Guárdalos solo el tiempo necesario y no los compartas.
 - La política de privacidad y el apartado 7 de las condiciones cubren estos
