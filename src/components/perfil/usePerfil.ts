@@ -430,6 +430,7 @@ export function usePerfil(): UsePerfil {
         setReferral({ alias: r.alias, since: new Date().toISOString(), claimable: false });
         setCodigoOpen(false);
       } else {
+        vibrar('penalizacion');
         setAvisoCodigo(motivoReferral(r.reason));
         // Ya asignado o fuera de plazo: la fila deja de tener sentido.
         if (r.reason === 'ya_asignado' || r.reason === 'fuera_de_plazo' || r.reason === 'ya_pagas') {
@@ -437,6 +438,7 @@ export function usePerfil(): UsePerfil {
         }
       }
     } catch (e) {
+      vibrar('penalizacion');
       setAvisoCodigo(mensajeSistema(e));
     } finally {
       setCodigoBusy(false);
@@ -457,6 +459,7 @@ export function usePerfil(): UsePerfil {
       setBorrarOpen(false);
       router.replace('/login');
     } catch (e) {
+      vibrar('penalizacion');
       setAvisoBorrar(mensajeSistema(e));
     } finally {
       setBorrando(false);
@@ -473,7 +476,9 @@ export function usePerfil(): UsePerfil {
       confirmar: 'Eliminar para siempre',
       destructivo: true,
     });
-    if (ok) await ejecutarBorrado();
+    if (!ok) return;
+    vibrar('destructiva');
+    await ejecutarBorrado();
   };
 
   // Aceptado: retirar (con confirmación). Sin aceptar: la hoja.

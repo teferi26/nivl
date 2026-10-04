@@ -1,15 +1,19 @@
 // NIVL · Amigos (L-RADICAL §B.4 y §C). Los datos y efectos viven en
 // useAmigos; la vista pura en AmigosVista. Aquí quedan la hoja de seguridad
 // (denunciar, bloquear, retar) y el slot de <Competicion>.
+//
+// La hoja de seguridad es la Sheet del kit (FASE3 Lote B2): centrada a 560 en
+// tablet y web, cierre de 44 y escape del lector. Mientras hay una acción en
+// curso no se cierra (mismo cerrojo `safetyBusy` que antes). Sin inversión:
+// denunciar y bloquear no son la acción principal de la pantalla.
 
-import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { AmigosVista } from '@/components/amigos/AmigosVista';
 import { Competicion } from '@/components/amigos/Competicion';
 import { useAmigos } from '@/components/amigos/useAmigos';
-import { SystemButton } from '@/components/SystemButton';
-import { Chip, ChipWrap } from '@/components/ui';
+import { Button, Chip, ChipWrap, Sheet } from '@/components/ui';
+import { ink, space, type as tipo } from '@/design/tokens';
 import { REPORT_REASONS } from '@/lib/socialSafety';
-import { colors, fonts } from '@/lib/theme';
 
 export default function Amigos() {
   const { vista, competicion: comp, hojas } = useAmigos();
@@ -28,60 +32,109 @@ export default function Amigos() {
     abrirSoporte,
   } = hojas;
 
+  const cerrar = () => {
+    if (!safetyBusy) setSafetyUser(null);
+  };
+  const puedeRetar = !!competicion && !!safetyUser && amigos.some((a) => a.userId === safetyUser.userId);
+
   return (
     <>
       <AmigosVista {...vista} competicion={<Competicion {...comp} />} />
 
-      <Modal visible={safetyUser !== null} transparent animationType="slide" onRequestClose={() => { if (!safetyBusy) setSafetyUser(null); }}>
-        <View style={styles.safetyBackdrop}>
-          <Pressable style={{ flex: 1 }} onPress={() => { if (!safetyBusy) setSafetyUser(null); }} accessibilityLabel="Cerrar seguridad" accessibilityRole="button" />
-          <ScrollView style={styles.safetySheet} contentContainerStyle={{ padding: 20, paddingBottom: 34 }} accessibilityViewIsModal>
-            <Text style={styles.safetyTitle}>{safetyUser?.name}</Text>
-            {competicion && safetyUser && amigos.some((a) => a.userId === safetyUser.userId) ? (
-              <SystemButton
-                title="Retar a un duelo"
-                icon="flash-outline"
-                variant="outline"
-                disabled={safetyBusy}
-                onPress={() => {
-                  const rival = amigos.find((a) => a.userId === safetyUser.userId) ?? null;
-                  setSafetyUser(null);
-                  // La hoja del duelo es otro Modal: en iOS no se presenta
-                  // mientras este aún se está cerrando.
-                  setTimeout(() => setRetarA(rival), 350);
-                }}
-                style={{ marginTop: 14 }}
-              />
-            ) : null}
-            <Text style={[styles.eyebrow, { marginTop: 22 }]}>Seguridad</Text>
-            <Text style={styles.safetyText}>Elige qué quieres denunciar. El equipo revisará el perfil y podrá retirar contenido o suspender su acceso social.</Text>
-            <ChipWrap style={{ marginTop: 16 }}>
-              {REPORT_REASONS.map((reason) => <Chip key={reason.value} label={reason.label}
-                selected={reportReason === reason.value} disabled={safetyBusy} onPress={() => setReportReason(reason.value)} />)}
+      <Sheet
+        visible={safetyUser !== null}
+        onClose={cerrar}
+        eyebrow="Seguridad"
+        title={safetyUser?.name ?? ''}
+        footer={
+          <>
+            <Button title="Contactar con soporte" variant="ghost" disabled={safetyBusy} onPress={abrirSoporte} />
+            <Button title="Cerrar" variant="ghost" disabled={safetyBusy} onPress={cerrar} />
+          </>
+        }
+      >
+        <View style={styles.pila}>
+          {puedeRetar ? (
+            <Button
+              title="Retar a un duelo"
+              icon="flash-outline"
+              variant="secondary"
+              disabled={safetyBusy}
+              onPress={() => {
+                const rival = amigos.find((a) => a.userId === safetyUser?.userId) ?? null;
+                setSafetyUser(null);
+                // La hoja del duelo es otro Modal: en iOS no se presenta
+                // mientras este aún se está cerrando.
+                setTimeout(() => setRetarA(rival), 350);
+              }}
+            />
+          ) : null}
+
+          <View style={styles.grupo}>
+            <Text style={styles.etiqueta} maxFontSizeMultiplier={1.35}>
+              Denunciar
+            </Text>
+            <Text style={styles.cuerpo}>
+              Elige qué quieres denunciar. El equipo revisará el perfil y podrá retirar contenido o suspender su acceso
+              social.
+            </Text>
+            <ChipWrap>
+              {REPORT_REASONS.map((reason) => (
+                <Chip
+                  key={reason.value}
+                  label={reason.label}
+                  selected={reportReason === reason.value}
+                  disabled={safetyBusy}
+                  onPress={() => setReportReason(reason.value)}
+                />
+              ))}
             </ChipWrap>
-            {safetyMessage ? <Text style={styles.safetyText} accessibilityRole="alert">{safetyMessage}</Text> : null}
-            <SystemButton title="Enviar denuncia" icon="flag-outline" variant="outline" disabled={!reportReason || safetyBusy} loading={safetyBusy}
-              onPress={denunciar} style={{ marginTop: 16 }} />
-            <SystemButton title="Bloquear usuario" icon="ban-outline" variant="outline" disabled={safetyBusy} onPress={bloquear} style={{ marginTop: 10 }} />
-            <SystemButton title="Contactar con soporte" variant="ghost" disabled={safetyBusy} onPress={abrirSoporte} />
-            <SystemButton title="Cerrar" variant="ghost" disabled={safetyBusy} onPress={() => setSafetyUser(null)} />
-          </ScrollView>
+          </View>
+
+          {safetyMessage ? (
+            <Text style={styles.mensaje} accessibilityRole="alert" accessibilityLiveRegion="polite">
+              {safetyMessage}
+            </Text>
+          ) : null}
+
+          <View style={styles.grupo}>
+            <Button
+              title="Enviar denuncia"
+              icon="flag-outline"
+              variant="secondary"
+              disabled={!reportReason || safetyBusy}
+              loading={safetyBusy}
+              onPress={denunciar}
+            />
+            <Button title="Bloquear usuario" icon="ban-outline" variant="secondary" disabled={safetyBusy} onPress={bloquear} />
+          </View>
         </View>
-      </Modal>
+      </Sheet>
     </>
   );
 }
 
 const styles = StyleSheet.create({
-  safetyBackdrop: { flex: 1, backgroundColor: colors.bg, justifyContent: 'flex-end' },
-  safetySheet: { maxHeight: '85%', backgroundColor: colors.panel, borderTopWidth: 1, borderTopColor: colors.line },
-  safetyTitle: { color: colors.text, fontFamily: fonts.heading, fontSize: 20 },
-  safetyText: { color: colors.textDim, fontFamily: fonts.body, fontSize: 13, lineHeight: 19, marginTop: 10 },
-  eyebrow: {
-    fontFamily: fonts.heading,
-    fontSize: 11,
-    letterSpacing: 2.5,
+  pila: { gap: space.s5 },
+  grupo: { gap: space.s3 },
+  etiqueta: {
+    fontFamily: tipo.label.family,
+    fontSize: tipo.label.size,
+    lineHeight: tipo.label.lineHeight,
+    letterSpacing: tipo.label.tracking,
     textTransform: 'uppercase',
-    color: colors.textFaint,
+    color: ink.ink6,
+  },
+  cuerpo: {
+    fontFamily: tipo.bodySm.family,
+    fontSize: tipo.bodySm.size,
+    lineHeight: tipo.bodySm.lineHeight,
+    color: ink.ink8,
+  },
+  mensaje: {
+    fontFamily: tipo.bodySm.family,
+    fontSize: tipo.bodySm.size,
+    lineHeight: tipo.bodySm.lineHeight,
+    color: ink.ink9,
   },
 });
