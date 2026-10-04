@@ -590,17 +590,31 @@ anular comisiones. Propuesta: `anular CODIGO --motivo "…" --confirmar`.
 Mientras, desactívalo y no lo liquides; si hay que anular de verdad, hazlo con
 ayuda (es una escritura en la base, no una consulta).
 
-**«Quiero borrar mi cuenta de NIVL.»** Lo que pasa hoy:
+**«Quiero borrar mi cuenta de NIVL.»** Lo que pasa (con la 0056 aplicada):
 
-- Su fila de creador **se queda** (código, alias, rango, comisiones y pagos),
-  solo se rompe el enlace con su cuenta. Es lo correcto para la contabilidad:
-  los pagos hay que conservarlos por obligaciones fiscales.
-- **Pero sigue activo**: su código se seguiría aceptando y generando comisiones.
-  Desactívalo en cuanto lo sepas (comando de arriba) y liquida lo pendiente.
+- Al borrar la cuenta, la ficha se **retira sola**: queda inactiva para
+  siempre, sin cuenta, y el alias pasa a «Creador retirado». Su código deja de
+  aceptarse y no genera comisiones nuevas.
+- **Su saldo pendiente se pierde** (disponible y en retención). Lo decidiste
+  así el 04/10/2026 y lo dicen las condiciones (§7). `liquidar` y `pago`
+  rechazan una ficha retirada.
+- Comisiones y pagos se conservan **seis años** por obligación contable y
+  fiscal, sin derecho a cobro.
+- **Antes de que borre**, si te escribe un creador con saldo, avísale de que lo
+  pierde y ofrécele liquidar primero lo disponible (ver plantilla). Es la
+  recomendación de Seguridad para que la cláusula no resulte sorpresiva: si el
+  creador pide cobrar antes de borrar, liquídale lo disponible y después que
+  borre.
 - Las ventas (`store_sales`) de cualquier comprador que borra su cuenta se
   conservan sin el usuario; los eventos de tienda se seudonimizan.
 
 ### 6.2 Plantillas de respuesta
+
+> **Creador con saldo que quiere borrar su cuenta:** Hola. Antes de borrarla:
+> si eliminas tu cuenta, tu código se desactiva y pierdes el saldo pendiente de
+> cobro (condiciones, apartado 7). Si quieres, te liquido ahora lo que ya está
+> disponible y después borras la cuenta. Lo que siga en retención no se podrá
+> cobrar.
 
 > **Venta que no aparece:** Hola. He mirado tu código: esa cuenta no lo metió
 > en sus primeros 14 días (o pagó antes de meterlo), así que no queda
@@ -779,11 +793,9 @@ Lo que hay que tener presente:
   con las consultas A, F y G (o con el portal, que enseña casi todo). No existe
   hoy un comando; propuesta: `exportar CODIGO` que escriba un JSON en
   `privado/`.
-- **Borrado.** Si borra su cuenta, su fila de creador se conserva sin enlace
-  (necesaria para la contabilidad y las obligaciones fiscales). Desactívalo. No
-  existe hoy un comando para seudonimizar el alias tras la baja; propuesta:
-  `seudonimizar CODIGO`, que ponga un alias neutro cuando ya no haya nada
-  pendiente.
+- **Borrado.** Con la 0056, al borrar la cuenta la ficha se retira sola:
+  inactiva, sin cuenta, alias «Creador retirado» y notas borradas. Comisiones y
+  pagos se conservan seis años sin derecho a cobro (condiciones §7).
 - **Exportes del script.** Los CSV de `privado/` llevan alias: son datos
   personales. Guárdalos solo el tiempo necesario y no los compartas.
 - La política de privacidad y el apartado 7 de las condiciones cubren estos
