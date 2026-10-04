@@ -149,3 +149,8 @@ Reparto:
 - Las cuentas ficticias (correo y contraseña) las crea el usuario.
 - El coordinador ejecuta la siembra sin `--sesiones`, con la clave de servicio.
 - Lo que necesita sesión (`sync_rank`, amistades, liga) lo ejecuta el usuario con sus credenciales en el entorno.
+
+## Dos cuentas de capturas (04/10/2026)
+
+- **Cuenta de capturas de la ficha** (`capturas-108.yaml`): con Pro por concesión manual del coordinador, para que el Coach muestre conversación.
+- **Cuenta de capturas de revisión de IAP** (`pro-planes.yaml`): **sin** Pro y sin prueba usada. Con Pro, `/pro` enseña «Tu plan» y no los 5 planes. Tiene que estar también en `CAPTURE_IDS` si se siembra, y en ningún caso en `PROTECTED_IDS`. La crea el usuario.
