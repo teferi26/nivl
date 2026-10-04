@@ -93,7 +93,7 @@ export function useCampanas(): { vista: CampanasVistaProps; hojas: { nueva: Hoja
       setTitle('');
       router.push({ pathname: '/dungeon/[id]', params: { id: d.id } });
     } catch (e) {
-      avisar('Error del sistema', mensajeSistema(e));
+      avisar('El sistema no responde', mensajeSistema(e));
     } finally {
       creando.current = false;
       setSaving(false);

@@ -61,7 +61,7 @@ export function useCompra(): CompraVistaProps {
       await load();
     } catch (e) {
       vibrar('penalizacion');
-      avisar('Error del sistema', mensajeSistema(e));
+      avisar('El sistema no responde', mensajeSistema(e));
     } finally {
       anadiendoRef.current = false;
       setAnadiendo(false);
@@ -77,7 +77,7 @@ export function useCompra(): CompraVistaProps {
       // Optimista: si no se guarda, vuelve a como estaba.
       setItems((prev) => prev.map((i) => (i.id === item.id ? { ...i, done: item.done } : i)));
       vibrar('penalizacion');
-      avisar('Error del sistema', mensajeSistema(e));
+      avisar('El sistema no responde', mensajeSistema(e));
     }
   };
 
@@ -89,7 +89,7 @@ export function useCompra(): CompraVistaProps {
       await load();
     } catch (e) {
       vibrar('penalizacion');
-      avisar('Error del sistema', mensajeSistema(e));
+      avisar('El sistema no responde', mensajeSistema(e));
     } finally {
       setVaciando(false);
     }

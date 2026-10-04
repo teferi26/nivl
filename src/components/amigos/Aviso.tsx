@@ -26,8 +26,8 @@ export function Aviso({ texto, error, style }: { texto: string; error?: boolean;
 }
 
 const styles = StyleSheet.create({
-  linea: { fontFamily: fonts.body, fontSize: 13, lineHeight: 18, color: ink.ink8, marginTop: 10 },
+  linea: { fontFamily: fonts.body, fontSize: 14, lineHeight: 20, color: ink.ink8, marginTop: 10 },
   marco: { marginTop: 10, padding: 3, backgroundColor: ink.ink0, overflow: 'hidden' },
   placa: { backgroundColor: ink.ink1, paddingHorizontal: 12, paddingVertical: 10 },
-  textoError: { fontFamily: fonts.body, fontSize: 13, lineHeight: 18, color: ink.ink9 },
+  textoError: { fontFamily: fonts.body, fontSize: 14, lineHeight: 20, color: ink.ink9 },
 });

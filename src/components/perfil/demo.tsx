@@ -8,6 +8,7 @@
 import type { ReactNode } from 'react';
 import { HOY_DEMO, perfilDemo, YO_DEMO } from '@/components/arena/demoDatos';
 import type { DemoPantalla } from '@/components/arena/galeria';
+import { SaludAjustesVista, type SaludAjustesVistaProps } from '@/components/puertas/SaludPerfilVista';
 import { Screen } from '@/components/ui';
 import type { EstadoAvisos } from '@/lib/notifications';
 import { estadoDe, type RangoId } from '@/lib/progression';
@@ -127,6 +128,24 @@ const datosYo = () =>
 const AVISOS_ACTIVOS: EstadoAvisos = { permitido: true, puedePreguntar: false, programados: 6, error: null };
 const AVISOS_SIN_PERMISO: EstadoAvisos = { permitido: false, puedePreguntar: true, programados: 0, error: null };
 
+/** El bloque «Salud y bienestar» con datos fijos (el de verdad lee el contexto de salud). */
+function saludDemo(p: Partial<SaludAjustesVistaProps> = {}): ReactNode {
+  return (
+    <SaludAjustesVista
+      cargando={false}
+      errorComprobar={null}
+      error={null}
+      borradoPendiente={false}
+      aceptado
+      ocupada={false}
+      onReintentar={nada}
+      onRevisar={nada}
+      onRetirar={nada}
+      {...p}
+    />
+  );
+}
+
 function ajustesDemo(datos: PerfilDatos, p: Partial<PerfilAjustesProps> = {}): ReactNode {
   return (
     <PerfilAjustes
@@ -148,7 +167,7 @@ function ajustesDemo(datos: PerfilDatos, p: Partial<PerfilAjustesProps> = {}): R
       onExportar={nada}
       onCerrarSesion={nada}
       onBorrar={nada}
-      sinSalud
+      salud={saludDemo()}
       {...p}
     />
   );
@@ -249,6 +268,21 @@ export const DEMO: DemoPantalla | null = {
       render: () => {
         const datos = datosYo();
         return <Pantalla datos={datos} ajustes={ajustesDemo(datos)} />;
+      },
+    },
+    {
+      id: 'ajustes-salud-pendiente',
+      titulo: 'Ajustes con el borrado de salud pendiente',
+      render: () => {
+        const datos = datosYo();
+        return (
+          <Pantalla
+            datos={datos}
+            ajustes={ajustesDemo(datos, {
+              salud: saludDemo({ aceptado: false, borradoPendiente: true, error: 'No se ha podido terminar el borrado. Reinténtalo.' }),
+            })}
+          />
+        );
       },
     },
     {

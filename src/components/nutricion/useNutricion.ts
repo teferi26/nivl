@@ -142,7 +142,7 @@ export function useNutricion(): NutricionVistaProps {
       avisar('Parte registrado', desglose ? `El sistema toma nota. ${desglose}` : 'El sistema toma nota.');
     } catch (e) {
       vibrar('penalizacion');
-      avisar('Error del sistema', mensajeSistema(e));
+      avisar('El sistema no responde', mensajeSistema(e));
     } finally {
       setGuardando(false);
     }

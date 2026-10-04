@@ -140,7 +140,7 @@ export function useCampana(): { vista: CampanaVistaProps; hojas: { tarea: HojaNu
       setFormOpen(false);
       await load();
     } catch (e) {
-      avisar('Error del sistema', mensajeSistema(e));
+      avisar('El sistema no responde', mensajeSistema(e));
     } finally {
       anadiendo.current = false;
       setAdding(false);
@@ -196,7 +196,7 @@ export function useCampana(): { vista: CampanaVistaProps; hojas: { tarea: HojaNu
       // que se pueda volver a intentar (el premio va por task_id: no se paga
       // dos veces). Si esto también falla, la próxima carga dirá la verdad.
       if (marcadaEnServidor) setTaskDone(task.id, false).catch(() => undefined);
-      avisar('Error del sistema', mensajeSistema(e));
+      avisar('El sistema no responde', mensajeSistema(e));
     } finally {
       saving.current = false;
       setMarcando(null);
@@ -224,7 +224,7 @@ export function useCampana(): { vista: CampanaVistaProps; hojas: { tarea: HojaNu
         rank: dungeon.rank,
       });
       // Los logros van en su propio try: el botín ya está pagado, y si fallan
-      // no puede salir «Error del sistema» (parecería que el cobro no entró).
+      // no puede salir «El sistema no responde» (parecería que el cobro no entró).
       let fresh: AchievementDef[] = [];
       try {
         const cleared = await countClearedDungeons();
@@ -251,7 +251,7 @@ export function useCampana(): { vista: CampanaVistaProps; hojas: { tarea: HojaNu
       cerrarConRango(accion);
       await load();
     } catch (e) {
-      avisar('Error del sistema', mensajeSistema(e));
+      avisar('El sistema no responde', mensajeSistema(e));
     } finally {
       cobrando.current = false;
       setBusy(false);
@@ -273,7 +273,7 @@ export function useCampana(): { vista: CampanaVistaProps; hojas: { tarea: HojaNu
       vibrar('destructiva');
       volver(router);
     } catch (e) {
-      avisar('Error del sistema', mensajeSistema(e));
+      avisar('El sistema no responde', mensajeSistema(e));
     }
   };
 
@@ -285,7 +285,7 @@ export function useCampana(): { vista: CampanaVistaProps; hojas: { tarea: HojaNu
       vibrar('destructiva');
       await load();
     } catch (e) {
-      avisar('Error del sistema', mensajeSistema(e));
+      avisar('El sistema no responde', mensajeSistema(e));
     }
   };
 

@@ -19,7 +19,6 @@ import type { ReactNode } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View, useWindowDimensions } from 'react-native';
 import { Arena, EncabezadoArena, Entrada, FranjaCifras, TarjetaArena } from '@/components/arena';
 import { TAM_BOTON } from '@/components/arena/EncabezadoArena';
-import { SystemButton } from '@/components/SystemButton';
 import { Button, Chip, ChipWrap, EmptyState, Row, Screen, Section, Skeleton, SkeletonRows, Tag } from '@/components/ui';
 import { Interruptor } from '@/components/ui/Interruptor';
 import { ink, space, stroke, type as tipo } from '@/design/tokens';
@@ -697,10 +696,10 @@ function Convivencia({
         No se permite acoso, amenazas, suplantación ni contenido ofensivo. Los nombres, títulos y fotos se revisan antes
         de mostrarse a otros: mientras tanto verán un alias y una imagen neutros. Tu perfil conserva tus datos.
       </Text>
-      <SystemButton
+      <Button
         title="Contactar con soporte"
         icon="help-circle-outline"
-        variant="outline"
+        variant="secondary"
         onPress={abrirSoporte}
         style={styles.compartir}
       />
@@ -810,8 +809,8 @@ const styles = StyleSheet.create({
   },
   hint: {
     fontFamily: tipo.bodySm.family,
-    fontSize: 12,
-    lineHeight: 17,
+    fontSize: tipo.bodySm.size,
+    lineHeight: tipo.bodySm.lineHeight,
     color: ink.ink6,
     marginTop: space.s3,
   },
@@ -872,8 +871,8 @@ const styles = StyleSheet.create({
   },
   ludusLinea: {
     fontFamily: tipo.bodySm.family,
-    fontSize: 13,
-    lineHeight: 18,
+    fontSize: tipo.bodySm.size,
+    lineHeight: tipo.bodySm.lineHeight,
     color: ink.ink8,
     marginTop: 2,
   },

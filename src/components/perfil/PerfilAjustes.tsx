@@ -7,6 +7,7 @@
 // danger (la trama es el peligro, no el rojo).
 
 import Ionicons from '@expo/vector-icons/Ionicons';
+import type { ReactNode } from 'react';
 import { ActivityIndicator, Linking, StyleSheet, Text, View } from 'react-native';
 import { HealthPrivacySection } from '@/components/ConsentimientoSalud';
 import { Version } from '@/components/Version';
@@ -48,6 +49,8 @@ export interface PerfilAjustesProps {
   onBorrar: () => void;
   /** Solo la galería: sin la sección de salud (consulta el permiso a Supabase). */
   sinSalud?: boolean;
+  /** Solo la galería: la vista del bloque de salud con datos fijos (SaludAjustesVista). */
+  salud?: ReactNode;
 }
 
 export function PerfilAjustes({
@@ -70,6 +73,7 @@ export function PerfilAjustes({
   onCerrarSesion,
   onBorrar,
   sinSalud,
+  salud,
 }: PerfilAjustesProps) {
   const kind = kindMeta(profile.profile_kind);
   const sinPermiso = !!avisos && !avisos.permitido;
@@ -226,7 +230,7 @@ export function PerfilAjustes({
         <Text style={styles.nota}>{`${DESCARGO_SALUD} ${LINEA_CRISIS}`}</Text>
       </Section>
 
-      {sinSalud ? null : <HealthPrivacySection />}
+      {salud ?? (sinSalud ? null : <HealthPrivacySection />)}
       <Section title="Cuenta">
         <Card padded={false} style={styles.lista}>
           <Row

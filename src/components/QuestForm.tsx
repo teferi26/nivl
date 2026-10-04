@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Campo } from '@/components/arena';
 import { Button, Chip, ChipWrap, Sheet } from '@/components/ui';
 import { avisar, confirmar } from '@/components/ui/confirmar';
 import { vibrar } from '@/design/haptics';
-import { ink } from '@/design/tokens';
+import { ink, stroke, type as tipo } from '@/design/tokens';
 import type { QuestInput } from '@/lib/data';
 import {
   BONUS_BY_DIFFICULTY,
@@ -13,7 +14,6 @@ import {
   STATS,
   XP_BY_DIFFICULTY,
 } from '@/lib/game';
-import { colors, fonts } from '@/lib/theme';
 import { mensajeSistema } from '@/lib/validation';
 import type { Difficulty, Quest, Stat } from '@/lib/types';
 
@@ -125,7 +125,7 @@ export function QuestForm({ visible, onClose, onSubmit, initial, onDelete, susta
       });
       onClose();
     } catch (e) {
-      avisar('Error del sistema', mensajeSistema(e));
+      avisar('El sistema no responde', mensajeSistema(e));
     } finally {
       guardando.current = false;
       setSaving(false);
@@ -148,7 +148,7 @@ export function QuestForm({ visible, onClose, onSubmit, initial, onDelete, susta
       vibrar('destructiva');
       onClose();
     } catch (e) {
-      avisar('Error del sistema', mensajeSistema(e));
+      avisar('El sistema no responde', mensajeSistema(e));
     }
   };
 
@@ -178,15 +178,14 @@ export function QuestForm({ visible, onClose, onSubmit, initial, onDelete, susta
         </>
       }
     >
-      <Text style={[styles.label, styles.labelPrimero]}>{t.campo}</Text>
-      <TextInput
-        style={styles.input}
+      <Campo
+        etiqueta={t.campo}
         value={title}
         onChangeText={setTitle}
         placeholder="Ej. Gimnasio · pierna"
-        placeholderTextColor={colors.textFaint}
         autoFocus={!editing}
         accessibilityLabel={t.campoA11y}
+        estiloBloque={styles.campo}
       />
 
       <Text style={styles.label}>Qué entrena</Text>
@@ -225,7 +224,7 @@ export function QuestForm({ visible, onClose, onSubmit, initial, onDelete, susta
               accessibilityState={{ checked: on }}
               accessibilityLabel={DAY_NAMES[i]}
             >
-              <Text style={[styles.dayText, on && styles.dayTextOn]}>{label}</Text>
+              <Text style={[styles.dayText, on && styles.dayTextOn]} maxFontSizeMultiplier={1.35}>{label}</Text>
             </Pressable>
           );
         })}
@@ -266,39 +265,31 @@ export function QuestForm({ visible, onClose, onSubmit, initial, onDelete, susta
 
 const styles = StyleSheet.create({
   label: {
-    fontFamily: fonts.heading,
-    fontSize: 11,
-    letterSpacing: 2,
-    color: colors.textFaint,
+    fontFamily: tipo.label.family,
+    fontSize: tipo.label.size,
+    lineHeight: tipo.label.lineHeight,
+    letterSpacing: tipo.label.tracking,
+    color: ink.ink6,
     textTransform: 'uppercase',
     marginTop: 18,
     marginBottom: 8,
   },
-  labelPrimero: { marginTop: 4 },
-  hint: { fontFamily: fonts.body, fontSize: 12, color: colors.textFaint, marginTop: 8, lineHeight: 17 },
-  hintAviso: { fontFamily: fonts.semibold, color: ink.ink9 },
-  input: {
-    borderWidth: 1,
-    borderColor: colors.accentDim,
-    backgroundColor: colors.bg,
-    color: colors.text,
-    fontFamily: fonts.semibold,
-    fontSize: 16,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-  },
+  campo: { marginTop: 4 },
+  hint: { fontFamily: tipo.bodySm.family, fontSize: tipo.bodySm.size, lineHeight: tipo.bodySm.lineHeight, color: ink.ink8, marginTop: 8 },
+  hintAviso: { fontFamily: 'Outfit_600SemiBold', color: ink.ink9 },
   days: { flexDirection: 'row', gap: 6 },
   day: {
     flex: 1,
     // 44: la zona táctil mínima; con 7 en fila no hay hitSlop lateral posible.
     height: 44,
-    borderWidth: 1,
-    borderColor: colors.accentDim,
+    borderWidth: stroke.hairline,
+    borderColor: ink.ink4,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  dayOn: { backgroundColor: colors.accent, borderColor: colors.accent },
-  dayText: { fontFamily: fonts.heading, fontSize: 13, color: colors.text },
-  dayTextOn: { color: colors.bg },
+  // Elegido = marco de 2 ink10 sobre ink1, como el Chip: la inversión es «Crear».
+  dayOn: { backgroundColor: ink.ink1, borderColor: ink.ink10, borderWidth: stroke.rule },
+  dayText: { fontFamily: 'Outfit_700Bold', fontSize: 14, color: ink.ink8 },
+  dayTextOn: { color: ink.ink10 },
   pressed: { opacity: 0.7 },
 });

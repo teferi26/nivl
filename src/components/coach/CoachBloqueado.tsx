@@ -9,7 +9,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { StyleSheet, Text, View } from 'react-native';
 import { Entrada, Galea, TarjetaArena } from '@/components/arena';
 import { ProUpsellLine } from '@/components/ProOffer';
-import { SystemButton } from '@/components/SystemButton';
+import { Button } from '@/components/ui';
 import { ink, space, stroke, type } from '@/design/tokens';
 import type { DecisionOferta } from '@/lib/paywallmoment';
 import { proSampleBrief, proToday } from '@/lib/proplans';
@@ -84,7 +84,7 @@ export function CoachBloqueado({
         {oferta ? (
           <ProUpsellLine momento="coach_cerrado" tier={oferta} />
         ) : (
-          <SystemButton title="Ver NIVL Pro" onPress={onPro} />
+          <Button title="Ver NIVL Pro" onPress={onPro} />
         )}
       </Entrada>
     </View>

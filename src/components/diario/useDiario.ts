@@ -244,7 +244,7 @@ export function useDiario(): DiarioVistaProps {
       vibrar('misionExtra');
       loadArchivo();
     } catch (e) {
-      avisar('Error del sistema', mensajeSistema(e));
+      avisar('El sistema no responde', mensajeSistema(e));
     } finally {
       saving.current = false;
     }
@@ -266,7 +266,7 @@ export function useDiario(): DiarioVistaProps {
       vibrar('destructiva');
       loadArchivo();
     } catch (e) {
-      avisar('Error del sistema', mensajeSistema(e));
+      avisar('El sistema no responde', mensajeSistema(e));
     }
   };
 

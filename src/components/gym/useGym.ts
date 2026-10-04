@@ -322,7 +322,7 @@ export function useGym(): UseGym {
       await load();
     } catch (e) {
       vibrar('penalizacion');
-      avisar('Error del sistema', mensajeSistema(e));
+      avisar('El sistema no responde', mensajeSistema(e));
     } finally {
       saving.current = false;
       setBusy(false);
@@ -430,7 +430,7 @@ export function useGym(): UseGym {
     try {
       await deleteGymDay(d.id);
     } catch (err) {
-      avisar('Error del sistema', mensajeSistema(err));
+      avisar('El sistema no responde', mensajeSistema(err));
       return;
     }
     await load();
@@ -443,7 +443,7 @@ export function useGym(): UseGym {
     try {
       await deleteGymExercise(e.id);
     } catch (err) {
-      avisar('Error del sistema', mensajeSistema(err));
+      avisar('El sistema no responde', mensajeSistema(err));
       return;
     }
     await load();

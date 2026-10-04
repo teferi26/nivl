@@ -149,7 +149,7 @@ export function useDieta(): { vista: DietaVistaProps; hoja: HojaComidaProps } {
       if (ver) router.push('/compra');
     } catch (e) {
       vibrar('penalizacion');
-      avisar('Error del sistema', mensajeSistema(e));
+      avisar('El sistema no responde', mensajeSistema(e));
     } finally {
       setBusy(false);
     }

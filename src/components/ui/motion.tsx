@@ -59,7 +59,11 @@ interface FadeInProps {
   children: ReactNode;
 }
 
-/** Entrada al montar: fundido más una subida corta. */
+/**
+ * Entrada al montar: fundido más una subida corta.
+ * @deprecated Usa `Entrada` de '@/components/arena' (FASE3): anima en el hilo
+ * de UI con Reanimated, con tope en el octavo bloque y escalón de 55 ms.
+ */
 export function FadeIn({ delay = 0, index = 0, from = 14, duration = 260, style, children }: FadeInProps) {
   const stagger = useContext(StaggerContext);
   const reducido = useMovimientoReducido();
@@ -95,7 +99,10 @@ interface StaggerProps {
   children: ReactNode;
 }
 
-/** Envuelve una lista de FadeIn con `index` para que entren en cascada. */
+/**
+ * Envuelve una lista de FadeIn con `index` para que entren en cascada.
+ * @deprecated Usa `Entrada` con `indice` de '@/components/arena' (FASE3).
+ */
 export function Stagger({ step = 55, base = 40, children }: StaggerProps) {
   return <StaggerContext.Provider value={{ step, base }}>{children}</StaggerContext.Provider>;
 }

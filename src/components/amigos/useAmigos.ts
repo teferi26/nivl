@@ -301,7 +301,7 @@ export function useAmigos() {
       await unblockSocialUser(person.userId);
     } catch (e) {
       // Sigue bloqueado y la lista lo sigue diciendo.
-      avisar('Error del sistema', mensajeSistema(e));
+      avisar('El sistema no responde', mensajeSistema(e));
       lock.current = false; setSafetyBusy(false);
       return;
     }
@@ -363,7 +363,7 @@ export function useAmigos() {
     try {
       await Share.share({ message: mensajeInvitacion(yo.friendCode) });
     } catch (e) {
-      avisar('Error del sistema', mensajeSistema(e));
+      avisar('El sistema no responde', mensajeSistema(e));
     }
   };
 
@@ -425,7 +425,7 @@ export function useAmigos() {
       if (aceptar) vibrar('mision');
       await load(ventana);
     } catch (e) {
-      avisar('Error del sistema', mensajeSistema(e));
+      avisar('El sistema no responde', mensajeSistema(e));
     } finally {
       lock.current = false;
       setOcupada(null);
@@ -442,7 +442,7 @@ export function useAmigos() {
       // a un borrado hecho.
       await removeFriend(friendshipId);
     } catch (e) {
-      avisar('Error del sistema', mensajeSistema(e));
+      avisar('El sistema no responde', mensajeSistema(e));
       lock.current = false;
       return;
     }
@@ -511,7 +511,7 @@ export function useAmigos() {
       await setSocialVisible(userId, visible);
     } catch (e) {
       setYo(antes);
-      avisar('Error del sistema', mensajeSistema(e));
+      avisar('El sistema no responde', mensajeSistema(e));
     }
   };
 
@@ -532,7 +532,7 @@ export function useAmigos() {
       // código solo sale si se enciende «Añadir mi enlace de invitación».
       compartir(tarjetaDeSemana(datos));
     } catch (e) {
-      avisar('Error del sistema', mensajeSistema(e));
+      avisar('El sistema no responde', mensajeSistema(e));
     } finally {
       setPreparando(false);
     }

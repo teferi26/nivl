@@ -261,6 +261,29 @@ La lógica de cuándo (tope diario, silencio nocturno) es del Chat 5.
 
 Cada lote se cierra con `nivl-ux-auditor` y capturas a 375, 744 y 1440.
 
+## 12 bis. Fase 3 cerrada (barrido de pantallas)
+
+Plan y reparto en `docs/design-v2/FASE3.md`. Lo que queda como norma para cualquier pantalla nueva o tocada:
+
+- **Una pantalla = `useX()` + `XVista` + `demo.tsx`.** `useX` lleva los efectos (copiados, no reescritos: cerrojos, guardas, `celebrar()`); `XVista` es pura y recibe datos y acciones; la ruta de `src/app` queda en unas 30 líneas con sus hojas debajo. `demo.tsx` rellena `DEMO` con los estados (vacío, lleno, cargando, error, hojas) y la galería lo pinta en `/kit/pantallas?pantalla=<id>&estado=<e>&ancho=<w>&quieto=1&solo=1`. Lo que lee un contexto (salud, celebración) entra como hueco `ReactNode` y en la demo va su vista pura (p. ej. `AvisoSaludVista`, `SaludAjustesVista`).
+- **Formularios en `Sheet`**, nunca un `Modal` suelto: asa, eyebrow, título, contenido con scroll y pie fijo con la acción. Sin `KeyboardAvoidingView` propio (la hoja ya lo hace): un solo mecanismo de teclado por pantalla. Campos con `Campo` (etiqueta, ayuda, error sin rojo), no `TextInput` a mano, salvo celdas compactas de una tabla o el compositor del coach.
+- **Estados con piezas comunes:** cargando = `CargaArena` con la forma final; error de carga = `ErrorSistema` con «Reintentar» (secondary, no gasta la inversión); fallo de una acción = `avisar('El sistema no responde', mensajeSistema(e))` o el error en línea de la hoja. Nunca un spinner suelto ni un vacío antes de tiempo.
+- **Una inversión por estado** (Button primary o la fila activa); lo demás secondary, ghost o danger (trama). Texto de lectura a 14 como mínimo (`bodySm`); por debajo solo rótulos (`label`, `micro`) y metadatos.
+- **XP que el servidor puede recortar** (topes diarios, multiplicadores, racha): el botón y el texto dicen «hasta +N XP», nunca un «+N XP» que luego no llega. La cifra exacta solo cuando la ha devuelto el servidor (Toast, ceremonia).
+- **Vibraciones** (el mapa de §9, por gesto):
+
+| Gesto | Vibración | Movimiento |
+|---|---|---|
+| Elegir chip, pestaña, día o paso | `seleccion` (ya dentro de Chip, Interruptor y pestañas) | ninguno |
+| Marcar un elemento | `seleccion` | rebote del Check de 180 ms (nada con reducir movimiento) |
+| Guardar con XP o firmar | `mision` (`misionExtra` con foto o bonus); nada si la cola abre ceremonia | Contador o Barra en la cifra que cambia |
+| Guardar sin XP | ninguna | cierre de la hoja |
+| Borrado confirmado | `destructiva` justo después de `confirmar` (p. ej. «Retirar y borrar» la salud) | ninguno |
+| Fallo de una acción del usuario | `penalizacion` en el catch de la acción principal (no en las cargas) | ninguno |
+| Entrar en una pantalla | ninguna | `Entrada` en los bloques 0 a 7, escalón de 55 ms |
+
+- **En desuso** (`@deprecated` y aviso de `no-restricted-imports` en `eslint.config.js`; `npx eslint src --quiet` no los cuenta): `ScreenHeader` (→ `EncabezadoArena`), `FadeIn`/`Stagger` (→ `Entrada`), `Stat`/`StatRow` (→ `FranjaCifras`), `XPBar` (→ `Barra`), `Hexagon` y el `Avatar` de `src/components/Avatar.tsx` (→ `Avatar` del kit; `useRetrato` vive en `ui/useRetrato.ts`), `SystemButton` (→ `Button`), `Card` con `accent` o las variantes `raised`/`tinted` (→ `TarjetaArena`). Quedan a propósito: las puertas de salud e IA (`ScreenHeader inscrito`, `SystemButton`, `HojaPuerta` con `Modal`) porque las pruebas de Seguridad simulan esos módulos, y `src/app/pro.tsx` (fuera del barrido).
+
 ## 13. Qué NO cambia
 
 - La economía (Chat 5).

@@ -126,7 +126,7 @@ export function useHabitos(): { vista: HabitosVistaProps; hoja: HojaHabito } {
       if (!estaba) vibrar('seleccion');
     } catch (e) {
       fijarRegla(r.id, estaba);
-      avisar('Error del sistema', mensajeSistema(e));
+      avisar('El sistema no responde', mensajeSistema(e));
     } finally {
       reglasEnVuelo.current.delete(r.id);
     }
@@ -170,7 +170,7 @@ export function useHabitos(): { vista: HabitosVistaProps; hoja: HojaHabito } {
         }`,
       );
     } catch (e) {
-      avisar('Error del sistema', mensajeSistema(e));
+      avisar('El sistema no responde', mensajeSistema(e));
     } finally {
       consolidando.current = false;
       setBusy(false);
@@ -187,7 +187,7 @@ export function useHabitos(): { vista: HabitosVistaProps; hoja: HojaHabito } {
     try {
       await reactivarHabito(q.id);
     } catch (e) {
-      avisar('Error del sistema', mensajeSistema(e));
+      avisar('El sistema no responde', mensajeSistema(e));
     }
     await cargar();
   };

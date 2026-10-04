@@ -203,7 +203,7 @@ export function useAgenda(): { vista: AgendaVistaProps; hojaEvento: HojaEventoPr
       setDetalleAbierto(false);
       await load(anchor);
     } catch (err) {
-      avisar('Error del sistema', mensajeSistema(err));
+      avisar('El sistema no responde', mensajeSistema(err));
     } finally {
       borrando.current = false;
       setEliminando(false);

@@ -503,7 +503,7 @@ export function useHoy() {
       }
 
       // La misión ya está pagada: un fallo al calcular logros no puede
-      // enseñar "Error del sistema" sobre algo que sí ha salido bien.
+      // enseñar "El sistema no responde" sobre algo que sí ha salido bien.
       try {
         const stats = await completionStats();
         const fresh = await unlockAchievements(
@@ -527,7 +527,7 @@ export function useHoy() {
       sincronizar(res.profile, accion);
     } catch (e) {
       vibrar('penalizacion');
-      avisar('Error del sistema', mensajeSistema(e));
+      avisar('El sistema no responde', mensajeSistema(e));
     }
   };
 
