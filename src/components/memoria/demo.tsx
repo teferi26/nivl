@@ -38,11 +38,13 @@ function base(cambios: Partial<MemoriaVistaProps> = {}): MemoriaVistaProps {
     gasto: 1.87,
     filtro: 'todo',
     dossierAbierto: false,
+    borrando: new Set<string>(),
     acciones: {
       onVolver: nada,
       onFiltro: nada,
       onAlternarDossier: nada,
       onAbrirHecho: nada,
+      onBorrarHecho: nada,
       onReintentar: nada,
     },
     ...cambios,
@@ -56,6 +58,11 @@ export const DEMO: DemoPantalla | null = {
   estados: [
     { id: 'llena', titulo: 'Llena', render: () => <MemoriaVista {...base()} /> },
     { id: 'dossier-abierto', titulo: 'Dossier abierto', render: () => <MemoriaVista {...base({ dossierAbierto: true })} /> },
+    {
+      id: 'borrando',
+      titulo: 'Borrando un recuerdo',
+      render: () => <MemoriaVista {...base({ borrando: new Set(['h2']) })} />,
+    },
     { id: 'filtrada', titulo: 'Filtrada por ventas', render: () => <MemoriaVista {...base({ filtro: 'venta' })} /> },
     {
       id: 'vacia',

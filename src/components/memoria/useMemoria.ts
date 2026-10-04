@@ -3,15 +3,19 @@
 // coach y el gasto del mes, con su carga al volver a la pantalla. El filtro
 // por categoría y el dossier plegado son estado de la vista y viven aquí.
 //
-// La memoria se lee, no se borra: src/lib/coach.ts no tiene cómo borrar un
-// hecho, y sin eso no hay botón de borrar (no se inventa en la vista).
+// Cada hecho se puede borrar (borrarHecho de src/lib/coach.ts): se confirma,
+// se cierra por fila (un Set con los ids que se están borrando) y, si sale
+// bien, se quita de la lista local sin recargar todo. El coach deja de usarlo
+// desde su siguiente turno; lo que ya dijo en el chat, en el resumen del hilo
+// o en el dossier no se reescribe (y la vista no lo promete).
 
 import { useFocusEffect } from '@react-navigation/native';
 import { router } from 'expo-router';
-import { useCallback, useState } from 'react';
-import { avisar } from '@/components/ui/confirmar';
+import { useCallback, useRef, useState } from 'react';
+import { avisar, confirmar } from '@/components/ui/confirmar';
 import { volver } from '@/components/ui/Screen';
-import { fetchDossier, fetchFacts, fetchMonthCost, type CoachFact } from '@/lib/coach';
+import { vibrar } from '@/design/haptics';
+import { borrarHecho, fetchDossier, fetchFacts, fetchMonthCost, type CoachFact } from '@/lib/coach';
 import { mensajeSistema } from '@/lib/validation';
 import { etiquetaCategoria, type MemoriaVistaProps } from './MemoriaVista';
 
@@ -23,6 +27,9 @@ export function useMemoria(): MemoriaVistaProps {
   const [error, setError] = useState<string | null>(null);
   const [filtro, setFiltro] = useState('todo');
   const [dossierAbierto, setDossierAbierto] = useState(false);
+  const [borrando, setBorrando] = useState<ReadonlySet<string>>(new Set());
+  // El cerrojo por fila, síncrono: el estado llega tarde para un doble toque.
+  const enCurso = useRef(new Set<string>());
 
   const cargar = useCallback(async () => {
     try {
@@ -44,6 +51,41 @@ export function useMemoria(): MemoriaVistaProps {
     }, [cargar]),
   );
 
+  const soltar = (id: string) => {
+    enCurso.current.delete(id);
+    setBorrando((s) => {
+      const n = new Set(s);
+      n.delete(id);
+      return n;
+    });
+  };
+
+  const onBorrarHecho = async (h: CoachFact) => {
+    if (enCurso.current.has(h.id)) return;
+    const ok = await confirmar({
+      titulo: 'Borrar recuerdo',
+      mensaje: 'Borrar este recuerdo. El coach deja de usar este dato desde ahora.',
+      confirmar: 'Borrar',
+      destructivo: true,
+    });
+    if (!ok || enCurso.current.has(h.id)) return;
+    enCurso.current.add(h.id);
+    setBorrando((s) => new Set(s).add(h.id));
+    try {
+      await borrarHecho(h.id);
+      vibrar('destructiva');
+      // El detalle es un aviso modal: no puede seguir abierto al llegar aquí.
+      setHechos((lista) => lista.filter((x) => x.id !== h.id));
+    } catch (e) {
+      vibrar('penalizacion');
+      avisar('Error del sistema', mensajeSistema(e));
+      // Puede que ya no estuviera: se vuelve a leer la memoria.
+      cargar();
+    } finally {
+      soltar(h.id);
+    }
+  };
+
   return {
     cargando,
     error,
@@ -52,11 +94,13 @@ export function useMemoria(): MemoriaVistaProps {
     gasto,
     filtro,
     dossierAbierto,
+    borrando,
     acciones: {
       onVolver: () => volver(router),
       onFiltro: setFiltro,
       onAlternarDossier: () => setDossierAbierto((v) => !v),
       onAbrirHecho: (h) => avisar(`${etiquetaCategoria(h.category)} · ${h.date}`, h.content),
+      onBorrarHecho,
       onReintentar: () => {
         cargar();
       },

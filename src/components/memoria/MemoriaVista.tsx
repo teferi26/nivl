@@ -6,13 +6,13 @@
 // hechos, versión del dossier y gasto del mes, el dossier («Quién eres para
 // el sistema») en una losa remachada que se pliega, y los hechos con su
 // filtro por categoría como filas entre hairlines (fecha en Cinzel a la
-// izquierda, el hecho, y su categoría si no se filtra).
+// izquierda, el hecho, y su categoría si no se filtra) con «Borrar» a la
+// derecha de cada una (también como acción de accesibilidad de la fila).
 //
 // Sin superficie invertida: aquí no hay una acción principal, se lee.
-// No hay borrado de hechos: la capa de datos no lo ofrece (ver useMemoria).
 
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import { CargaArena, EncabezadoArena, Entrada, ErrorSistema, FranjaCifras, TarjetaArena } from '@/components/arena';
 import { TextoSistema } from '@/components/TextoSistema';
 import { Chip, ChipRow, EmptyState, Screen, Section, Tag } from '@/components/ui';
@@ -55,50 +55,86 @@ export interface MemoriaVistaProps {
   gasto: number | null;
   filtro: string;
   dossierAbierto: boolean;
+  /** Ids de los hechos que se están borrando: su fila queda cerrada. */
+  borrando: ReadonlySet<string>;
   acciones: {
     onVolver: () => void;
     onFiltro: (clave: string) => void;
     onAlternarDossier: () => void;
     onAbrirHecho: (h: CoachFact) => void;
+    onBorrarHecho: (h: CoachFact) => void;
     onReintentar: () => void;
   };
 }
 
-/** Un hecho: la fecha grabada a la izquierda, el texto y su categoría. */
+/** Un hecho: la fecha grabada a la izquierda, el texto y su categoría; «Borrar» a la derecha. */
 function FilaHecho({
   hecho,
   primero,
   conCategoria,
+  borrando,
   onPress,
+  onBorrar,
 }: {
   hecho: CoachFact;
   primero: boolean;
   conCategoria: boolean;
+  borrando: boolean;
   onPress: () => void;
+  onBorrar: () => void;
 }) {
   const categoria = etiquetaCategoria(hecho.category);
   return (
-    <Pressable
-      onPress={onPress}
-      style={({ pressed }) => [styles.hecho, !primero && styles.hairline, pressed && styles.pulsado]}
-      accessibilityRole="button"
-      accessibilityLabel={`${categoria}, ${hecho.date}: ${hecho.content}`}
-      accessibilityHint="Toca para leerlo entero."
-    >
-      <Text style={styles.fecha} maxFontSizeMultiplier={1.35}>
-        {fechaCorta(hecho.date).toUpperCase()}
-      </Text>
-      <View style={styles.hechoCuerpo}>
-        <Text style={styles.hechoTexto} numberOfLines={3} maxFontSizeMultiplier={1.35}>
-          {hecho.content}
+    <View style={[styles.fila, !primero && styles.hairline]}>
+      <Pressable
+        onPress={onPress}
+        disabled={borrando}
+        style={({ pressed }) => [styles.hecho, pressed && styles.pulsado]}
+        accessibilityRole="button"
+        accessibilityLabel={`${categoria}, ${hecho.date}: ${hecho.content}`}
+        accessibilityHint="Toca para leerlo entero."
+        accessibilityState={{ disabled: borrando, busy: borrando }}
+        accessibilityActions={[
+          { name: 'activate', label: 'Leerlo entero' },
+          { name: 'borrar', label: 'Borrar este recuerdo' },
+        ]}
+        onAccessibilityAction={(e) => {
+          if (e.nativeEvent.actionName === 'borrar') {
+            if (!borrando) onBorrar();
+          } else onPress();
+        }}
+      >
+        <Text style={styles.fecha} maxFontSizeMultiplier={1.35}>
+          {fechaCorta(hecho.date).toUpperCase()}
         </Text>
-        {conCategoria ? (
-          <View style={styles.tag}>
-            <Tag>{categoria}</Tag>
-          </View>
-        ) : null}
-      </View>
-    </Pressable>
+        <View style={styles.hechoCuerpo}>
+          <Text style={[styles.hechoTexto, borrando && styles.apagado]} numberOfLines={3} maxFontSizeMultiplier={1.35}>
+            {hecho.content}
+          </Text>
+          {conCategoria ? (
+            <View style={styles.tag}>
+              <Tag>{categoria}</Tag>
+            </View>
+          ) : null}
+        </View>
+      </Pressable>
+      <Pressable
+        onPress={onBorrar}
+        disabled={borrando}
+        style={({ pressed }) => [styles.borrar, pressed && styles.pulsado]}
+        accessibilityRole="button"
+        accessibilityLabel="Borrar este recuerdo"
+        accessibilityState={{ disabled: borrando, busy: borrando }}
+      >
+        {borrando ? (
+          <ActivityIndicator color={ink.ink6} size="small" accessibilityLabel="Borrando" />
+        ) : (
+          <Text style={styles.borrarTexto} maxFontSizeMultiplier={1.35}>
+            Borrar
+          </Text>
+        )}
+      </Pressable>
+    </View>
   );
 }
 
@@ -110,6 +146,7 @@ export function MemoriaVista({
   gasto,
   filtro,
   dossierAbierto,
+  borrando,
   acciones,
 }: MemoriaVistaProps) {
   if (cargando) {
@@ -243,7 +280,9 @@ export function MemoriaVista({
                       hecho={h}
                       primero={i === 0}
                       conCategoria={filtro === 'todo'}
+                      borrando={borrando.has(h.id)}
                       onPress={() => acciones.onAbrirHecho(h)}
+                      onBorrar={() => acciones.onBorrarHecho(h)}
                     />
                   ))}
                 </View>
@@ -290,7 +329,18 @@ const styles = StyleSheet.create({
     color: ink.ink8,
   },
   filtros: { marginBottom: space.s3 },
-  hecho: { flexDirection: 'row', alignItems: 'flex-start', gap: space.s3, minHeight: 44, paddingVertical: space.s3 },
+  fila: { flexDirection: 'row', alignItems: 'stretch' },
+  hecho: { flex: 1, minWidth: 0, flexDirection: 'row', alignItems: 'flex-start', gap: space.s3, minHeight: 44, paddingVertical: space.s3 },
+  // Acción de fila: un ghost sm (rótulo del Button) con zona táctil de 44 × 44.
+  borrar: { minWidth: 64, minHeight: 44, alignItems: 'flex-end', justifyContent: 'flex-start', paddingTop: space.s3, paddingLeft: space.s2 },
+  borrarTexto: {
+    fontFamily: tipo.label.family,
+    fontSize: 12,
+    lineHeight: 20,
+    letterSpacing: 1.5,
+    textTransform: 'uppercase',
+    color: ink.ink8,
+  },
   pulsado: { backgroundColor: ink.ink2 },
   fecha: {
     width: 56,
@@ -306,5 +356,7 @@ const styles = StyleSheet.create({
     lineHeight: tipo.bodySm.lineHeight,
     color: ink.ink9,
   },
+  // Mientras se borra, el texto baja a ink6 (sin opacidad).
+  apagado: { color: ink.ink6 },
   tag: { flexDirection: 'row', marginTop: space.s2 },
 });
