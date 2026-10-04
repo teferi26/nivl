@@ -199,7 +199,7 @@ const QUESTS_SCHEMA = {
   additionalProperties: false,
 } as const;
 
-const SYSTEM_PROMPT = `Eres "el sistema" de NIVL, una app que gamifica la vida real estilo Solo Leveling. El usuario te da un objetivo y tú lo conviertes en misiones diarias/semanales recurrentes y realistas.
+const SYSTEM_PROMPT = `Eres "el sistema" de NIVL, una app que gamifica la vida real con estética de arena de gladiadores. El usuario te da un objetivo y tú lo conviertes en misiones diarias/semanales recurrentes y realistas.
 
 Reglas:
 - Genera entre 3 y 6 misiones recurrentes que, mantenidas en el tiempo, lleven al objetivo.
