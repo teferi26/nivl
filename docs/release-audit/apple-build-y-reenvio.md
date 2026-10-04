@@ -13,6 +13,20 @@ Estado leído por GET el 02/10/2026 (`nivl/privado/asc-chat1-readonly-20261002.j
 
 Requisito de SDK: Apple exige compilar con el SDK de iOS 26 o posterior desde el 28/04/2026 ([Upcoming requirements](https://developer.apple.com/news/upcoming-requirements/), consultado el 02/10/2026). La 23C57 lo cumple. Cualquier build nueva que haga EAS tiene que conservar un Xcode 26.x o posterior.
 
+## Estado al 04/10/2026 (GET, `privado/asc-chat1-estado-20261004.mjs`)
+
+| Dato | Valor |
+|---|---|
+| Versión 1.0.7 | REJECTED, `releaseType=MANUAL` (ya aplicado: tras la aprobación no sale sola), **build asociada: 18 todavía** |
+| Envío `fb26cf6b…` | UNRESOLVED_ISSUES. Sigue habiendo un solo mensaje de Apple (29/09) y ninguna respuesta nuestra |
+| Builds | 22 (1.0.8) VALID y suelta · **21 (1.0.7) VALID, la que hay que asociar** · 20 y 18 VALID |
+| Notas de App Review en ASC | Siguen siendo las antiguas (3.975 caracteres). Hay que pegar `apple-notas-revisor.txt` |
+
+**Lo que bloquea el reenvío, por dueño:**
+- **Usuario:** el vídeo nuevo en un iPhone con la build 21 (el 2.º vídeo; el del 01/10 no basta, ver `apple-guion-video.md`); las pruebas físicas A1–A11 y B1–B7 sobre la 21; el estado de comerciante DSA en la UE.
+- **Coordinador con el usuario:** asociar la 21 a la 1.0.7; pegar las notas con las credenciales Pro y Élite; desmarcar Mac y Vision Pro; ampliar la Élite demo; aplicar el diff de la descripción (sin Franky); responder en el Resolution Center y «Volver a enviar».
+- **Chat 1 (yo):** rellenar `[VIDEO]`, `[DEVICE]`, `[IOS]`, `[DATE]` y `[TIMESTAMPS]` en cuanto haya vídeo, y verificar por GET la asociación y el envío.
+
 ## Qué build enviar
 
 - **Si los cambios integrados de los chats 2, 3 y 4 son solo JS/OTA:** enviar la **20** y publicar antes la OTA en el canal de producción de ese binario. Riesgo: el revisor puede abrir la app sin conexión o antes de que se descargue la actualización, y ver el JS que venía en el binario. Con Expo Updates por defecto, la OTA se aplica en el **segundo** arranque. Por eso el vídeo y las pruebas físicas tienen que hacerse con la OTA ya aplicada, y conviene comprobar en «Información» o en los registros el `updateId` que se está ejecutando. **Recomendación: si la OTA cambia el paywall, el borrado o la denuncia, que es lo que Apple mira, compilar una build nueva en lugar de depender de la OTA.**
@@ -32,7 +46,7 @@ Requisito de SDK: Apple exige compilar con el SDK de iOS 26 o posterior desde el
 ## Condiciones previas (puertas de COORDINACION.md)
 
 - [ ] Todas las Edge Functions redesplegadas desde `c87df0d` (incluidos el borrado del suscriptor de RevenueCat y la seudonimización de `store_events`); `franky-auth` y los secretos `FRANKY_*` retirados. Anotar SHA y versiones.
-- [ ] COACH_BASE_URL = DeepSeek (☑ 02/10) y EAS Insights desactivado (☑ 02/10, confirmado por el usuario). Pendiente: el panel de RevenueCat sin integraciones publicitarias (lo comprueba el coordinador) → App Privacy y Data Safety sin tracking y sin Franky.
+- [x] COACH_BASE_URL = DeepSeek (02/10), EAS Insights desactivado (02/10) y RevenueCat solo con Webhooks (02/10, el usuario). App Privacy: tracking = No y sin Franky (`declaraciones-privacidad-finales.md`). Falta aplicarlo en ASC.
 
 - [ ] Vídeo nuevo grabado con `21` en iOS de última versión ([apple-guion-video.md](apple-guion-video.md)).
 - [ ] Pruebas físicas mínimas en PASS sobre `21` ([pruebas-fisicas-minimas.md](pruebas-fisicas-minimas.md)).
@@ -40,7 +54,7 @@ Requisito de SDK: Apple exige compilar con el SDK de iOS 26 o posterior desde el
 - [ ] El arreglo del Chat 3 a `start_trial` está integrado, o A5 prueba que la prueba arranca con la salud rechazada.
 - [ ] Sin «Google Play» en la UI de iOS (Chat 2: proplans/pro.tsx; Chat 4: perfil.tsx).
 - [ ] `/privacidad` coherente con lo que se conserva de verdad (sin plazo legal fijado) y `/terminos` citando la EULA estándar de Apple, o la frase de la respuesta ajustada.
-- [ ] Paywall con los 5 planes y enlaces legales confirmado por el Chat 2 en `21` (candidato @b11c2d2). La offering de RevenueCat devuelve los 5 productos, sin «Algún plan no está disponible…».
+- [ ] Paywall con los 5 planes y enlaces legales en `21`: el código final va dentro de la 21 (c87df0d incluye b11c2d2 + 464d2a3, confirmado por el coordinador). Falta verlo con precios reales en el iPhone (A6) (antes, candidato @b11c2d2). La offering de RevenueCat devuelve los 5 productos, sin «Algún plan no está disponible…».
 - [x] Territorios decididos (165) y `[N]` sustituido.
 - [ ] Cuentas Pro y Élite con la concesión vigente ([cuentas-demo.md](cuentas-demo.md)).
 - [ ] Capturas coherentes con la build final ([apple-ficha-capturas-productos.md](apple-ficha-capturas-productos.md)).
