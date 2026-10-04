@@ -6,8 +6,8 @@ import { SystemButton } from '@/components/SystemButton';
 import { Card, Check, Screen, ScreenHeader, Skeleton } from '@/components/ui';
 import { confirmarEdad, fetchEdadConfirmada } from '@/lib/age';
 import { useAuth } from '@/lib/auth';
+import { cerrarSesion } from '@/lib/authFlow';
 import { EDAD_MINIMA } from '@/lib/consentmath';
-import { supabase } from '@/lib/supabase';
 import { colors, fonts } from '@/lib/theme';
 import { mensajeSistema } from '@/lib/validation';
 
@@ -104,8 +104,9 @@ function ConfirmacionEdad({ autenticado }: { autenticado: boolean }) {
     setSaliendo(true);
     setAvisoSalida(null);
     try {
-      const { error } = await supabase.auth.signOut({ scope: 'local' });
-      if (error) throw error;
+      // La misma salida que Perfil: olvida el dispositivo (push, avisos, claves
+      // locales) antes del signOut, para no dejar restos (auditoría 1.0.8).
+      await cerrarSesion();
     } catch (e) {
       setAvisoSalida(mensajeSistema(e));
     } finally {

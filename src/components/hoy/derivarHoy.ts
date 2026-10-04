@@ -2,7 +2,7 @@
 //
 // useHoy trae el perfil, las misiones, el plan y el marcador; aquí se decide
 // qué se enseña: la misión que va SIGUIENTE (la inversión de Hoy), el informe
-// del cierre, la línea de lo que hay en juego, el duelo de la semana y la
+// del cierre, la línea de lo que hay en juego, el rival cercano y la
 // línea del sistema bajo el nivel. `hoy` y `hora` llegan de fuera: así la
 // función no lee el reloj y el test fija el día.
 //
@@ -80,6 +80,13 @@ export interface LadoDuelo {
   /** 0..1 respecto al mayor de los dos. */
   ratio: number;
 }
+
+/**
+ * Título de la sección. No es el duelo de Amigos (disciplina, aceptado por los
+ * dos): es el XP de 7 días frente al amigo que va justo delante (o detrás, si
+ * lideras). Por eso no se llama «duelo».
+ */
+export const TITULO_RIVAL_CERCANO = 'Rival cercano';
 
 export interface DueloHoy {
   linea: string;
