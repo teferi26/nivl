@@ -14,6 +14,7 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Linking, Pressable, StyleSheet, Text, View } from 'react-native';
 import { TarjetaArena } from '@/components/arena';
+// eslint-disable-next-line no-restricted-imports -- consentguard.test.ts (Seguridad) simula SystemButton por nombre.
 import { SystemButton } from '@/components/SystemButton';
 import { ink, space, type as tipo } from '@/design/tokens';
 import { DATOS_IA, DESCARGO_SALUD, LINEA_CRISIS, PROVEEDORES_IA, TEXTO_CONSENTIMIENTO as T } from '@/lib/consentmath';

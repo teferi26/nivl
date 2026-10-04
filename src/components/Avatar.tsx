@@ -7,6 +7,7 @@
 
 import { Image } from 'expo-image';
 import { StyleSheet, Text } from 'react-native';
+// eslint-disable-next-line no-restricted-imports -- este Avatar viejo está en desuso y es el único que aún pinta el hexágono.
 import { Hexagon } from '@/components/Hexagon';
 import { useRetrato } from '@/components/ui/useRetrato';
 import { colors, fonts } from '@/lib/theme';

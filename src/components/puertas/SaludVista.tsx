@@ -16,6 +16,7 @@
 // una sola casilla con accessibilityRole 'checkbox' en todo el árbol.
 import { Linking, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Entrada, TarjetaArena } from '@/components/arena';
+// eslint-disable-next-line no-restricted-imports -- health.test.ts (Seguridad) busca el título por ScreenHeader.
 import { Button, Check, Screen, ScreenHeader, Skeleton } from '@/components/ui';
 import { ink, space, stroke, type as tipo } from '@/design/tokens';
 import { HEALTH_COPY as T } from '@/lib/healthmath';
