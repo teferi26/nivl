@@ -134,3 +134,34 @@ Que no salgan el pie de diagnóstico ni ningún «llega pronto».
 No queda ningún INCUMPLE ni ningún P0 abierto en el código.
 
 **El GO final depende de la prueba física de la build 24** (`docs/qa-audit/PRUEBA-108-BUILD24.md`): todas las filas ✅, y en especial PAY-01/02/12, las ligas (7) y el iPad (13). Además, el vídeo y las capturas de los IAP deben grabarse en la 24 con una cuenta de prueba.
+
+## Prueba física de la build 24 y dictamen final (04/10/2026)
+
+Resultado transmitido por el coordinador: el usuario hizo 5 comprobaciones rápidas, más lo que se ve en el vídeo de la 24.
+
+| Fila | Resultado | Fuente |
+|---|---|---|
+| 1 · GL-01 arranque | ✅ | Vídeo: sin errores ni pie de diagnóstico. |
+| 2 · GL-05 demos | ⏭ | No probado. |
+| 3 · GL-06 onboarding sin salud | ⏭ | No probado. |
+| 4 · PAY-01 tienda | ✅ | 5 planes, Restaurar y legales en el vídeo; «Activar…» abre la hoja de StoreKit. |
+| 5 · PAY-02 compra sandbox | ⏭ | La hoja sale, pero no se completó la compra. |
+| 6 · PAY-12 borrar y Restaurar | ⏭ | No probado. |
+| 7 · Ligas ocultas | ✅ | Usuario. |
+| 8 · GL-04 «…» del duelo | ⏭ | Denunciar y bloquear se ven en el vídeo, pero no consta que fuera desde un duelo. |
+| 9 · Denunciar, bloquear y desbloquear | ✅ | Vídeo. |
+| 10 · Guardar imagen | ✅ | Usuario: pide permiso de añadir a Fotos y la guarda. |
+| 11 · GL-02 Reclutador | ⏭ | Necesita un invitado real y un día. |
+| 12 · Coach | ✅ | Indicador en el vídeo; el teclado ya no tapa el campo. |
+| 13 · iPad | ✅ parcial | Nada cortado. Split View y giro sin detallar. |
+
+### Dictamen: **GO condicionado**
+
+Nada ha salido ❌, y todo lo que Apple señaló en el rechazo anterior está ✅: la tienda abierta, los enlaces legales, el pie de diagnóstico, el error del login, el indicador del coach, la moderación y el iPad. Por eso no hay motivo para retirar el envío.
+
+Quedan dos huecos con riesgo real. Como la publicación es manual, se cierran **antes de pulsar «Publicar»**, no antes de la revisión:
+
+1. **GL-05, login de las cuentas demo en la 24 (2.1).** Si la cuenta de las notas no entra, Apple rechaza sin mirar nada más. La Élite está en las notas. Basta con entrar y salir, sin tocar nada.
+2. **PAY-02 y PAY-12, compra sandbox completa y Restaurar en otra cuenta (3.1.1).** Abrir la hoja de StoreKit no demuestra que el recibo llegue a RevenueCat ni que Pro se active. Es la ruta del dinero: si falla, el primer cliente paga y no recibe nada.
+
+El resto (GL-06, GL-04 desde un duelo, GL-02 y Split View) es RIESGO bajo. Se puede probar después de publicar y arreglar en la 1.0.9.
