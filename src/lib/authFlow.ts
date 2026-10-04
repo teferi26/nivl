@@ -14,6 +14,7 @@
 // un alta repetida igual que a una nueva; la recuperación responde siempre igual.
 
 import * as Linking from 'expo-linking';
+import { olvidarRedDictado } from '@/components/coach/redDictado';
 import { olvidarConsentimiento } from './consent';
 import { olvidarCodigoPendiente } from './creators';
 import { cancelarTodo } from './notifications';
@@ -47,6 +48,7 @@ export const MSG_ENLACE = 'El enlace no es válido o ha caducado. Pide uno nuevo
 export const MSG_ENLACE_OTRO_DISPOSITIVO =
   'No hemos podido abrir la sesión con este enlace. Ábrelo en el mismo móvil donde lo pediste o, si ya confirmaste el correo, entra con tu contraseña.';
 export const MSG_CORREO = 'El correo no tiene un formato válido.';
+export const MSG_CAPTCHA = 'No se ha podido comprobar que no eres un robot. Vuelve a intentarlo.';
 export const MSG_SIN_SESION = 'Tu sesión ha caducado. Abre de nuevo el enlace del correo.';
 
 interface ErrorAuthLike {
@@ -87,7 +89,23 @@ export function traducirErrorAuth(e: unknown): unknown {
     return new ErrorVisible(MSG_DEBIL);
   }
   if (code === 'same_password') return new ErrorVisible(MSG_MISMA);
+  if (esFalloCaptcha(e)) return new ErrorVisible(MSG_CAPTCHA);
   return e;
+}
+
+/** El servidor exige o rechaza la prueba anti-robots (Turnstile, 1.0.9). */
+function esFalloCaptcha(e: unknown): boolean {
+  const { code, message } = campos(e);
+  return code === 'captcha_failed' || message.includes('captcha');
+}
+
+/**
+ * Token de Turnstile (1.0.9) para las llamadas que Supabase protege con
+ * CAPTCHA. Sin token no se manda el campo: hasta que se active el CAPTCHA en
+ * el proyecto, todo sigue igual que en la 1.0.8.
+ */
+function conCaptcha<T extends object>(opciones: T, captcha?: string): T & { captchaToken?: string } {
+  return captcha ? { ...opciones, captchaToken: captcha } : opciones;
 }
 
 function lanzar(e: unknown): never {
@@ -113,14 +131,14 @@ function exigirContrasenaNueva(password: string, email?: string): void {
  * correo. Un correo que YA tiene cuenta también da 'confirmar_email': no se
  * revela si existe.
  */
-export async function registrar(email: string, password: string, nombre: string): Promise<'sesion' | 'confirmar_email'> {
+export async function registrar(email: string, password: string, nombre: string, captcha?: string): Promise<'sesion' | 'confirmar_email'> {
   const correo = limpiarCorreo(email);
   if (!isValidName(nombre)) throw new ErrorVisible(`Escribe un nombre de 1 a ${NAME_MAX_LENGTH} caracteres.`);
   exigirContrasenaNueva(password, correo);
   const { data, error } = await supabase.auth.signUp({
     email: correo,
     password,
-    options: { emailRedirectTo: urlConfirmar(), data: { full_name: nombre.trim() } },
+    options: conCaptcha({ emailRedirectTo: urlConfirmar(), data: { full_name: nombre.trim() } }, captcha),
   });
   if (error) {
     const { code, message } = campos(error);
@@ -134,10 +152,12 @@ export async function registrar(email: string, password: string, nombre: string)
 }
 
 /** Entra con correo y contraseña de NIVL. */
-export async function entrar(email: string, password: string): Promise<void> {
+export async function entrar(email: string, password: string, captcha?: string): Promise<void> {
   const correo = limpiarCorreo(email);
   if (!password) throw new ErrorVisible(MSG_CREDENCIALES);
-  const { error } = await supabase.auth.signInWithPassword({ email: correo, password });
+  const { error } = await supabase.auth.signInWithPassword(
+    captcha ? { email: correo, password, options: { captchaToken: captcha } } : { email: correo, password },
+  );
   if (error) lanzar(error);
 }
 
@@ -147,13 +167,16 @@ export async function entrar(email: string, password: string): Promise<void> {
  * por correo, …) se tragan. Solo se propaga un fallo de red, que no dice nada
  * de la cuenta y sí le sirve al usuario para reintentar.
  */
-export async function pedirRecuperacion(email: string): Promise<void> {
+export async function pedirRecuperacion(email: string, captcha?: string): Promise<void> {
   const correo = limpiarCorreo(email);
   try {
-    const { error } = await supabase.auth.resetPasswordForEmail(correo, { redirectTo: urlRestablecer() });
-    if (error && esFalloDeRed(error)) throw error;
+    const { error } = await supabase.auth.resetPasswordForEmail(correo, conCaptcha({ redirectTo: urlRestablecer() }, captcha));
+    if (error && (esFalloDeRed(error) || esFalloCaptcha(error))) throw error;
   } catch (e) {
     if (esFalloDeRed(e)) throw e;
+    // El CAPTCHA fallido tampoco dice nada de la cuenta, y tragárselo haría
+    // creer que el correo ha salido.
+    if (esFalloCaptcha(e)) throw new ErrorVisible(MSG_CAPTCHA);
   }
 }
 
@@ -254,6 +277,7 @@ export async function cerrarSesion(): Promise<void> {
     setApiKey(''),
     olvidarCodigoPendiente(),
     Promise.resolve().then(olvidarConsentimiento),
+    olvidarRedDictado(),
   ]);
   await cerrarSoloSesion();
 }

@@ -85,3 +85,17 @@ En «7. Cuánto tiempo los guardamos», añadir:
 - **CSP de nivl.app:** hoy no tiene CSP y este hotfix no necesita añadirla. Si algún día se añade, `connect-src` tiene que incluir `https://dueyufxxkiixdxighpaz.supabase.co`.
 - **Envío con Resend:** el día que se importe la lista, cada correo lleva un enlace o una instrucción de baja. Después de enviar el aviso, el plazo de 3 meses empieza a contar.
 - **Pendiente para después del despliegue:** una prueba real con `curl` y un correo `@example.invalid`, que se borra al terminar, contra la función desplegada. Antes del despliegue, el servidor solo está probado con Deno (handler) y con SQL (RPC).
+
+## 6. Cierre (04/10/2026)
+
+- **Despliegue:** 0054 aplicada (huella OK) y `espera` desplegada con `cb1e86c` por el coordinador.
+- **Preflight comprobado por el Chat 3 contra la función desplegada:** `https://nivl.app` 204, `https://nivl-web.vercel.app` 204, origen ajeno 403.
+- **Prueba de punta a punta del coordinador desde la página real** (nivl-web `44e9ea9`):
+  - sin casilla no se envía nada;
+  - alta: 200;
+  - duplicado: el mismo mensaje y una sola fila;
+  - la fila de prueba se borró.
+- **Estado: CERRADO.**
+- **Pendiente para más adelante, fuera de este encargo:**
+  - borrar la lista entera tres meses después del lanzamiento;
+  - en el envío con Resend, cada correo debe llevar cómo darse de baja.
