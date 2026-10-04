@@ -64,3 +64,12 @@ Usar `dismissed` si la investigación no encuentra infracción, dejando explicac
 Límite técnico: las URLs de Storage ya firmadas y las imágenes previamente descargadas pueden permanecer accesibles hasta caducar o en caché; el bloqueo impide emitir nuevas firmas y las rutas inmutables impiden sustituir los bytes de una foto previamente aprobada. No prometer revocación inmediata de copias anteriores. Las denuncias y revisiones se borran en cascada al eliminar la cuenta correspondiente.
 
 Prueba SQL local: `node scripts/test-social-safety.mjs`. Requiere `@electric-sql/pglite` en el entorno de pruebas, o `PGLITE_PACKAGE_ROOT` apuntando al directorio que contiene su package.json y node_modules. No conecta a Supabase ni modifica datos reales.
+
+## Aviso, responsable y plazo (04/10/2026)
+
+- **Aviso.** El cron `nivl-rituales` corre cada hora y llama a `moderation_digest()`. Cuenta lo nuevo desde el último aviso: denuncias sociales abiertas, denuncias de respuestas de la IA y perfiles pendientes de revisar. Manda un push «Moderación» a los dispositivos de las cuentas con nivel `owner` (`ritual/handler.ts`, `avisarModeracion`).
+  - Comprobado en producción con BEGIN…ROLLBACK: una denuncia nueva entra en `nuevos`, y la cuenta owner tiene tokens de push.
+  - Una denuncia llega al responsable en **menos de 1 hora**.
+- **Responsable.** El titular (cuenta `owner`). **Antes de publicar, el usuario tiene que designar un suplente.**
+- **Plazo.** Objetivo de revisión: **24 horas** desde la denuncia. Si es contenido grave (amenazas, datos personales de otros o contenido sexual), en cuanto se lea el aviso: se suspende la cuenta (`suspended`) y después se revisa.
+- **Denuncias anónimas (0062).** Si quien denuncia borra su cuenta, la denuncia sigue abierta con `reporter` vacío y se revisa igual, porque lo denunciado está copiado en `displayed_*`. Si el denunciado borra su cuenta, sus denuncias se borran con ella: lo denunciado deja de mostrarse.
