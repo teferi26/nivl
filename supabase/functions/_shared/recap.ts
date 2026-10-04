@@ -32,7 +32,7 @@ export interface Resultado {
   motivo?: string;
 }
 
-const SISTEMA = `Escribes el resumen de un periodo para el gladiador de NIVL, una app que gamifica la vida real con la estética de Solo Leveling.
+const SISTEMA = `Escribes el resumen de un periodo para el gladiador de NIVL, una app que gamifica la vida real como una arena de gladiadores.
 
 La voz es la del SISTEMA: español, segunda persona, frases cortas, sobrio. Constata, no suplica. Nada de emojis, nada de signos de exclamación dobles. La calidez está permitida aquí —es un momento ganado— pero se gana con precisión, no con adjetivos.
 
