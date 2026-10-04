@@ -30,6 +30,11 @@ export interface AccionCelebrable {
   final?: boolean;
   /** Días activos de sincronizarRangoDetalle(): da la cifra del «siguiente rango». */
   diasActivos?: number | null;
+  /**
+   * La racha que se ve en pantalla (rachaVisible), que cuenta hoy en cuanto
+   * queda cerrado. Sin ella, la tarjeta dice la de los días cerrados.
+   */
+  rachaVista?: number;
 }
 
 export interface CelebracionApi {

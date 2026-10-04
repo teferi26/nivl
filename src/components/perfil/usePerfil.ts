@@ -274,6 +274,8 @@ export function usePerfil(): UsePerfil {
             prof.streak_days,
             questsScheduledOn(quests, dia),
             new Set(hechas.map((c) => c.quest_id)),
+            // Congelado, el día no se juzga: la racha se enseña protegida.
+            { hoy: dia, freezeUntil: prof.freeze_until },
           );
           setRachaHoy({ valor: r.valor, hoyCerrado: r.hoyCerrado });
         })
@@ -620,7 +622,7 @@ export function usePerfil(): UsePerfil {
       abierta: borrarOpen,
       cerrar: () => setBorrarOpen(false),
       aviso: avisoBorrar,
-      // Con ficha de creador: pierde el saldo pendiente al borrar (0056).
+      // Con ficha de creador: lo ganado se le sigue pagando; que escriba a soporte.
       esCreador,
       borrando,
       confirmar: confirmarBorrado,

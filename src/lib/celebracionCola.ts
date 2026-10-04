@@ -41,6 +41,8 @@ export interface Acumulado {
   extra: Celebracion[];
   resumen: string[];
   diasActivos?: number | null;
+  /** La racha a la vista (rachaVisible); manda sobre streak_days en la tarjeta. */
+  rachaVista?: number;
   /** Ventana cerrada: lista para decidirse. */
   cerrada: boolean;
 }
@@ -180,6 +182,7 @@ export function fusionar(prev: Acumulado | undefined, a: AccionCelebrable): Acum
     extra: sinClaveRepetida([...(prev?.extra ?? []), ...(a.extra ?? [])]),
     resumen: [...(prev?.resumen ?? []), ...(a.resumen ?? [])],
     diasActivos: a.diasActivos ?? prev?.diasActivos,
+    rachaVista: a.rachaVista ?? prev?.rachaVista,
     cerrada: false,
   };
 }
@@ -206,7 +209,13 @@ export function decidir(accion: string | null, ac: Acumulado, vistas: ReadonlySe
   // Un rango que llega en `extra` también cuenta para el «siguiente».
   const rangos = lista.flatMap((c) => (c.tipo === 'rango' ? [codigoRango(c.rango)] : []));
   const estado = ac.perfilDespues
-    ? estadoDe(ac.perfilDespues, [...logrosAntes, ...ac.logrosNuevos.map((l) => l.codigo), ...rangos], ac.diasActivos ?? undefined)
+    ? estadoDe(
+        // La racha de la tarjeta es la que ve el usuario (rachaVista), no la
+        // de los días cerrados, que va un día por detrás.
+        ac.rachaVista !== undefined ? { ...ac.perfilDespues, streak_days: ac.rachaVista } : ac.perfilDespues,
+        [...logrosAntes, ...ac.logrosNuevos.map((l) => l.codigo), ...rangos],
+        ac.diasActivos ?? undefined,
+      )
     : null;
   return { principal, resumen, clavesResto: resto.map((c) => c.clave), forma: formaDe(principal), accion, estado };
 }

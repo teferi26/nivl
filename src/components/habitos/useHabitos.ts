@@ -15,6 +15,7 @@ import { dateKey } from '@/lib/dates';
 import { awardXp } from '@/lib/engine';
 import { desmarcarRegla, fetchRuleChecks, fetchRules, marcarReglaCumplida } from '@/lib/contract';
 import { HABIT_ACQUIRED_XP } from '@/lib/game';
+import { xpPagado } from '@/lib/pagoActo';
 import {
   consolidarHabito,
   fetchHabitos,
@@ -153,10 +154,21 @@ export function useHabitos(): { vista: HabitosVistaProps; hoja: HojaHabito } {
       });
       // El rango se recalcula en segundo plano: no bloquea ni rompe el cobro.
       sincronizarRango().catch(() => []);
-      const pagado = Math.max(0, res.profile.xp_total - perfil.xp_total);
+      // Lo PAGADO, acotado al premio: otro XP que entre a la vez no se cuenta.
+      const pagado = xpPagado(HABIT_ACQUIRED_XP, perfil.xp_total, res.profile.xp_total);
       vibrar('rachaHito');
       await cargar();
-      avisar('El sistema lo da por tuyo', `${q.title} ya no se te va a pedir.\n${pagado > 0 ? `+${pagado} XP a ${q.stat}.` : 'Ese premio ya estaba cobrado.'}`);
+      // Sin pago puede ser premio ya cobrado (una vez por misión) o el tope
+      // diario de hábitos adquiridos: el cliente no distingue cuál, así que no
+      // afirma ninguno de los dos.
+      avisar(
+        'El sistema lo da por tuyo',
+        `${q.title} ya no se te va a pedir.\n${
+          pagado > 0
+            ? `+${pagado} XP a ${q.stat}.`
+            : 'Este premio no suma hoy: ya estaba cobrado o has llegado al tope diario.'
+        }`,
+      );
     } catch (e) {
       avisar('Error del sistema', mensajeSistema(e));
     } finally {

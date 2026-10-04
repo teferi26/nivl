@@ -34,6 +34,8 @@ export function CompletarSheet({ quest, onElegir, onClose }: Props) {
   const q = quest ?? ultima.current;
   const acto = q?.link && q.link !== 'ninguno' ? q.link : null;
   const exigeFoto = !!q?.requires_evidence;
+  // Una extra paga PB fijos: la foto no le suma nada (engine.completeQuest).
+  const extra = !!q?.is_bonus;
 
   return (
     <Sheet
@@ -49,7 +51,7 @@ export function CompletarSheet({ quest, onElegir, onClose }: Props) {
             <>
               <Button title="Completar" icon="checkmark" size="lg" onPress={() => onElegir('directo')} />
               <Button
-                title="Con foto · +25 %"
+                title={extra ? 'Con foto' : 'Con foto · +25 %'}
                 icon="camera-outline"
                 variant="secondary"
                 size="lg"
@@ -72,7 +74,9 @@ export function CompletarSheet({ quest, onElegir, onClose }: Props) {
       <Text style={styles.hint}>
         {exigeFoto
           ? 'Esta misión exige evidencia: se completa con una foto hecha ahora.'
-          : `Con foto suma un 25 % de ${q?.is_bonus ? 'PB' : 'XP'} y el domingo entra en tu resumen.`}
+          : extra
+            ? 'Con foto, el domingo entra en tu resumen.'
+            : 'Con foto suma un 25 % de XP y el domingo entra en tu resumen.'}
         {acto ? ` También se marca sola al registrar ${NOMBRE_DE_ACTO[acto]}.` : ''}
       </Text>
     </Sheet>
