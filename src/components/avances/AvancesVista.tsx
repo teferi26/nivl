@@ -243,7 +243,7 @@ export function AvancesVista(p: AvancesVistaProps) {
             />
             <View style={styles.pesajeBoton}>
               <Button
-                title={p.pesadoHoy ? 'Corregir' : `Pesar +${WEIGH_IN_XP} XP`}
+                title={p.pesadoHoy ? 'Corregir' : `Pesar · hasta +${WEIGH_IN_XP} XP`}
                 variant="secondary"
                 onPress={acciones.onPesar}
                 loading={p.pesando}

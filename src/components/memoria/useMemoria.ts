@@ -64,7 +64,9 @@ export function useMemoria(): MemoriaVistaProps {
     if (enCurso.current.has(h.id)) return;
     const ok = await confirmar({
       titulo: 'Borrar recuerdo',
-      mensaje: 'Borrar este recuerdo. El coach deja de usar este dato desde ahora.',
+      mensaje: `«${h.content.length > 80 ? `${h.content.slice(0, 80)}…` : h.content}»
+
+Se borra de los recuerdos del coach. Si también aparece en el dossier o en la conversación, ahí sigue hasta que se reescriban.`,
       confirmar: 'Borrar',
       destructivo: true,
     });

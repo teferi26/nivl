@@ -227,7 +227,7 @@ export function NutricionVista({
               <Text style={styles.nota} maxFontSizeMultiplier={1.35}>
                 {diaPagado
                   ? 'El día ya está registrado y pagado. Puedes corregir el parte sin que vuelva a premiar.'
-                  : `Cumplir las dos cosas paga +${xpDia} XP a VIT.`}
+                  : `Cumplir las dos cosas paga hasta +${xpDia} XP a VIT.`}
               </Text>
             </Section>
           </Entrada>

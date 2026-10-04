@@ -122,7 +122,7 @@ export function GymVista({
     { valor: ejercicios.length, rotulo: 'Ejercicios' },
     sesionHoy
       ? { valor: xpHoy, rotulo: 'XP de hoy' }
-      : { valor: GYM_SESSION_XP, rotulo: 'XP en juego' },
+      : { valor: GYM_SESSION_XP, rotulo: 'XP máx.' },
   ];
 
   const contenido: ViewStyle | undefined = entrenando
@@ -230,7 +230,7 @@ export function GymVista({
             ))
           )}
         </TarjetaArena>
-        <Button title={`Entrenar · +${GYM_SESSION_XP} XP`} size="lg" icon="barbell-outline" onPress={acciones.onEntrenar} />
+        <Button title={`Entrenar · hasta +${GYM_SESSION_XP} XP`} size="lg" icon="barbell-outline" onPress={acciones.onEntrenar} />
       </View>
     );
   } else {

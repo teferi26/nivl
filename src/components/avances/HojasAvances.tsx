@@ -118,7 +118,7 @@ export function HojaMeta(p: HojaMetaProps) {
         </View>
 
         <Text style={styles.ayuda} maxFontSizeMultiplier={1.6}>
-          Al alcanzarla, el sistema paga +{GOAL_ACHIEVED_XP} XP.
+          Al alcanzarla, hasta +{GOAL_ACHIEVED_XP} XP (con el tope diario de metas).
         </Text>
 
         {p.error ? (
