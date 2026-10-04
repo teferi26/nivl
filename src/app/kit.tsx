@@ -7,7 +7,8 @@
 
 import { Redirect, router } from 'expo-router';
 import { useContext, useMemo, useState, type ReactNode } from 'react';
-import { StyleSheet, Text, TextInput, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
+import { Campo, EncabezadoArena } from '@/components/arena';
 import { useCelebracion } from '@/components/celebracion/contexto';
 import { CoachMark } from '@/components/coach/CoachMark';
 import { FranjaGrabacion, type Dictado } from '@/components/coach/Dictado';
@@ -15,7 +16,7 @@ import { HojaPrivacidadDictado } from '@/components/coach/HojaPrivacidadDictado'
 import { MensajeCoach } from '@/components/coach/MensajeCoach';
 import { Heatmap } from '@/components/Heatmap';
 import { ProUpsellLine } from '@/components/ProOffer';
-import { Avatar, Button, Card, Crown, Section, Screen, ScreenHeader, Sheet, SuperficieContext, Tag, Toast } from '@/components/ui';
+import { Avatar, Button, Card, Crown, Section, Screen, Sheet, SuperficieContext, Tag, Toast } from '@/components/ui';
 import { alturaCorona } from '@/components/ui/Avatar';
 import { addDays, dateKey } from '@/lib/dates';
 import { xpCostForLevel } from '@/lib/game';
@@ -115,10 +116,10 @@ export default function Kit() {
         </View>
       }
     >
-      <ScreenHeader
+      <EncabezadoArena
         eyebrow="Diseño v2"
-        title="Kit"
-        subtitle={`Hueco ${Math.round(ancho)} · clase ${marco.sizeClass} · margen ${marco.gutter} · máx. ${marco.maxContent}`}
+        titulo="Kit"
+        subtitulo={`Hueco ${Math.round(ancho)} · clase ${marco.sizeClass} · margen ${marco.gutter} · máx. ${marco.maxContent}`}
       />
 
       <Button
@@ -268,13 +269,12 @@ export default function Kit() {
           Centrada a 560 en tablet, a ancho completo en el móvil, con safe area real. El campo comprueba que el
           teclado no tapa el pie (Android edge-to-edge).
         </Text>
-        <TextInput
+        <Campo
+          etiqueta="Campo de prueba"
           value={nota}
           onChangeText={setNota}
           placeholder="Escribe algo"
-          placeholderTextColor={ink.ink6}
-          accessibilityLabel="Campo de prueba"
-          style={styles.campo}
+          estiloBloque={styles.campo}
         />
       </Sheet>
     </Screen>
@@ -295,15 +295,5 @@ const styles = StyleSheet.create({
   fila: { flexDirection: 'row', flexWrap: 'wrap', gap: 18, alignItems: 'flex-end' },
   rango: { alignItems: 'center', gap: 6, width: 84 },
   muestra: { alignItems: 'center', gap: 6 },
-  campo: {
-    marginTop: space.s4,
-    minHeight: 48,
-    paddingHorizontal: space.s3,
-    backgroundColor: ink.ink2,
-    borderWidth: 1,
-    borderColor: ink.ink4,
-    color: ink.ink9,
-    fontFamily: type.body.family,
-    fontSize: type.body.size,
-  },
+  campo: { marginTop: space.s4 },
 });

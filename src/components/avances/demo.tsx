@@ -2,14 +2,11 @@
 //
 // AvancesVista con datos de mentira: sin sesión ni Supabase. Los huecos con
 // efectos propios no se pintan de verdad: la fila de fotos va vacía y el
-// aviso de salud es un doble con el mismo texto (HealthConsentNotice lee el
-// contexto de salud). Las acciones no hacen nada.
-import { StyleSheet, Text } from 'react-native';
-import { TarjetaArena } from '@/components/arena';
+// aviso de salud es su vista pura, AvisoSaludVista (HealthConsentNotice lee
+// el contexto de salud). Las acciones no hacen nada.
 import type { DemoPantalla } from '@/components/arena/galeria';
+import { AvisoSaludVista } from '@/components/puertas/SaludPerfilVista';
 import { HOY_DEMO } from '@/components/arena/demoDatos';
-import { Button } from '@/components/ui';
-import { ink, space, type as tipo } from '@/design/tokens';
 import { addDays } from '@/lib/dates';
 import { goalProgress } from '@/lib/game';
 import type { BodyMetric, Goal } from '@/lib/types';
@@ -72,14 +69,9 @@ const LOGRADAS: Goal[] = [
   meta('g5', { title: 'Terminar el curso de inglés B2', start_value: 0, target_value: 4, unit: 'módulos', status: 'achieved', achieved_at: `${addDays(HOY_DEMO, -40)}T19:00:00Z` }),
 ];
 
-/** Doble del aviso de salud (el de verdad lee el contexto de salud). */
+/** El aviso de salud con datos fijos (el de verdad lee el contexto de salud). */
 function AvisoSaludDoble() {
-  return (
-    <TarjetaArena variante="contorno">
-      <Text style={styles.aviso}>Los registros de salud están desactivados. Las metas generales siguen disponibles.</Text>
-      <Button title="Revisar permiso de salud" variant="secondary" size="sm" onPress={nada} style={styles.avisoBoton} />
-    </TarjetaArena>
-  );
+  return <AvisoSaludVista cargando={false} error={null} borradoPendiente={false} onReintentar={nada} onRevisar={nada} />;
 }
 
 function base(cambios: Partial<AvancesVistaProps> = {}): AvancesVistaProps {
@@ -219,8 +211,3 @@ export const DEMO: DemoPantalla | null = {
     },
   ],
 };
-
-const styles = StyleSheet.create({
-  aviso: { fontFamily: tipo.bodySm.family, fontSize: tipo.bodySm.size, lineHeight: tipo.bodySm.lineHeight, color: ink.ink8 },
-  avisoBoton: { marginTop: space.s3, alignSelf: 'flex-start' },
-});

@@ -10,6 +10,7 @@ interface Props {
   children?: ReactNode;
 }
 
+/** @deprecated El retrato es `Avatar` de '@/components/ui' (círculo con el marco de rango, SISTEMA §5). */
 export function Hexagon({ size, color = colors.accent, fill = colors.accentFaint, children }: Props) {
   const w = size;
   const h = size;

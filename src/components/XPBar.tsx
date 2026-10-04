@@ -15,6 +15,10 @@ interface Props {
 
 // Toda barra de progreso de NIVL. Relleno blanco sobre pista ink4 (SISTEMA §5). El relleno se anima al cambiar: subir de XP
 // se ve, no solo se lee.
+/**
+ * @deprecated Usa `Barra` de '@/components/arena' (FASE3): anima en el hilo de
+ * UI y se lee como progressbar 0-100. Solo la usa aún src/app/pro.tsx.
+ */
 export function XPBar({ ratio, color = colors.accent, trackColor = ink.ink4, height = 6, segments }: Props) {
   const pct = Math.min(100, Math.max(0, ratio * 100));
   const width = useRef(new Animated.Value(pct)).current;

@@ -35,8 +35,13 @@ type Variante =
   | 'tinted';
 
 interface Props {
+  /** Las variantes viejas `raised` y `tinted` están en desuso; la losa con remaches, zócalo y rótulo es `TarjetaArena`. */
   variant?: Variante;
-  /** Color del borde (outline) o de una barra lateral izquierda de 2 px. */
+  /**
+   * Color del borde (outline) o de una barra lateral izquierda de 2 px.
+   * @deprecated Sin color en NIVL v2: el significado va en la variante (`alerta`, `logro`)
+   * o en `TarjetaArena` con `marco` (FASE3).
+   */
   accent?: string;
   padded?: boolean;
   onPress?: () => void;

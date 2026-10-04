@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type PropsWithChildren } from 'react';
-import { AppState, StyleSheet, Text, View } from 'react-native';
+import { AppState, StyleSheet, View } from 'react-native';
 import { router } from 'expo-router';
 import { Image } from 'expo-image';
 import { useAuth } from '@/lib/auth';
@@ -7,17 +7,19 @@ import { acceptHealthConsent, fetchHealthConsent, withdrawAndEraseHealth, HEALTH
 import { clearEvidenceSignatures } from '@/lib/data';
 import { cancelarAvisosSalud } from '@/lib/notifications';
 import { supabase } from '@/lib/supabase';
-import { colors, fonts } from '@/lib/theme';
 import { mensajeSistema } from '@/lib/validation';
-import { SystemButton } from './SystemButton';
+import { AvisoSaludVista, SaludAjustesVista } from './puertas/SaludPerfilVista';
 import { HojaSaludVista, PuertaSaludVista } from './puertas/SaludVista';
-import { Card, Section, Skeleton } from './ui';
 import { confirmar } from './ui/confirmar';
 
 // La vibración de la casilla se carga al tocarla: así la puerta no arrastra el
 // módulo nativo de vibraciones a sus tests ni a su primer pintado.
 const vibrarSeleccion = () => {
   import('@/design/haptics').then((m) => m.vibrar('seleccion')).catch(() => {});
+};
+// Igual para el borrado confirmado (tabla de vibraciones de FASE3).
+const vibrarDestructiva = () => {
+  import('@/design/haptics').then((m) => m.vibrar('destructiva')).catch(() => {});
 };
 
 interface State extends HealthConsent { loading: boolean; error: string | null; epoch: number; }
@@ -91,12 +93,13 @@ export function HealthConsentGuard({ children, routeName }: PropsWithChildren<{ 
 export function HealthConsentNotice() {
   const health = useHealthConsent();
   if (health.accepted) return null;
-  if (health.loading) return <View accessibilityRole="progressbar" accessibilityLabel="Comprobando permiso de salud"><Skeleton height={90} /></View>;
-  if (health.error) return <Card><Text style={styles.body}>No se ha podido comprobar el permiso de salud. Tus metas generales siguen disponibles.</Text>
-    <SystemButton title="Volver a comprobar" variant="outline" onPress={() => void health.refresh()} /></Card>;
-  return <Card><Text style={styles.body}>Los registros de salud están desactivados. Las metas generales siguen disponibles.</Text>
-    <SystemButton title="Revisar permiso de salud" variant="outline" onPress={health.ask} disabled={health.erasurePending} />
-  </Card>;
+  return <AvisoSaludVista
+    cargando={health.loading}
+    error={health.error}
+    borradoPendiente={health.erasurePending}
+    onReintentar={() => void health.refresh()}
+    onRevisar={health.ask}
+  />;
 }
 
 export function HealthConsentSheet({ visible, close, accepted }: { visible: boolean; close: () => void; accepted: () => Promise<void> }) {
@@ -141,22 +144,26 @@ export function HealthPrivacySection() {
     catch (e) { if (alive.current) setError(mensajeSistema(e)); }
     finally { await health.refresh(); lock.current = false; if (alive.current) setBusy(false); }
   };
-  return <Section title="Salud y bienestar">
-    <Card><Text style={styles.body}>{health.loading ? 'Comprobando el permiso…' : health.error ? 'No se ha podido comprobar el permiso de salud.' : health.erasurePending ? 'Permiso retirado. Falta terminar el borrado; reinténtalo.' : health.accepted ? 'Has permitido guardar y utilizar tus datos de salud. Puedes retirar el permiso y borrarlos.' : 'Sin permiso. NIVL no utiliza los registros de salud. Puedes exportar los datos anteriores o pedir su borrado.'}</Text>
-      {health.error ? <SystemButton title="Volver a comprobar" variant="outline" onPress={() => void health.refresh()} disabled={busy} /> : !health.accepted && !health.erasurePending ? <SystemButton title="Revisar permiso de salud" variant="outline" onPress={health.ask} disabled={health.loading || busy} /> : null}
-      <SystemButton title={health.erasurePending ? 'Terminar borrado' : 'Retirar y borrar salud'} variant="ghost" onPress={async () => {
-        // Solo con un "Retirar y borrar" explícito. `confirmar` también pinta en
-        // la web; el estado lo decide después `health.refresh()`, no la UI.
-        if (await confirmar({ titulo: 'Retirar permiso y borrar', mensaje: T.erase, confirmar: 'Retirar y borrar', destructivo: true })) await erase();
-      }} loading={busy} disabled={health.loading} />
-      <Text style={styles.body}>La exportación y la eliminación de cuenta siguen disponibles debajo. Las direcciones temporales de fotos ya compartidas pueden seguir siendo válidas hasta que se elimine el archivo o caduquen.</Text>
-      {error || health.error ? <Text style={styles.error} accessibilityRole="alert">{error ?? health.error}</Text> : null}
-    </Card>
-  </Section>;
+  return <SaludAjustesVista
+    cargando={health.loading}
+    errorComprobar={health.error}
+    error={error}
+    borradoPendiente={health.erasurePending}
+    aceptado={health.accepted}
+    ocupada={busy}
+    onReintentar={() => void health.refresh()}
+    onRevisar={health.ask}
+    onRetirar={async () => {
+      // Solo con un "Retirar y borrar" explícito. `confirmar` también pinta en
+      // la web; el estado lo decide después `health.refresh()`, no la UI.
+      if (await confirmar({ titulo: 'Retirar permiso y borrar', mensaje: T.erase, confirmar: 'Retirar y borrar', destructivo: true })) {
+        vibrarDestructiva();
+        await erase();
+      }
+    }}
+  />;
 }
 
 const styles = StyleSheet.create({
   flex: { flex: 1 },
-  body: { fontFamily: fonts.body, fontSize: 14, lineHeight: 21, color: colors.textDim, marginBottom: 14 },
-  error: { fontFamily: fonts.body, fontSize: 13, color: colors.red, marginBottom: 12 },
 });

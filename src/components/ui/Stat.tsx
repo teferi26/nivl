@@ -25,6 +25,7 @@ const TONE = {
 
 const SIZE = { sm: 20, md: 28, lg: 44 } as const;
 
+/** @deprecated Usa `FranjaCifras` de '@/components/arena' (FASE3). */
 export function Stat({ value, label, unit, size = 'md', tone = 'text', align = 'left', style }: StatProps) {
   return (
     <View style={[align === 'center' && styles.center, style]}>
@@ -43,6 +44,7 @@ export function Stat({ value, label, unit, size = 'md', tone = 'text', align = '
 }
 
 /** Rejilla de cifras en una fila, separadas por líneas verticales. */
+/** @deprecated Usa `FranjaCifras` de '@/components/arena' (FASE3). */
 export function StatRow({ children, style }: { children: React.ReactNode; style?: StyleProp<ViewStyle> }) {
   return <View style={[styles.row, style]}>{children}</View>;
 }

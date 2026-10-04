@@ -14,14 +14,14 @@
 //     `paddingTop` (`alturaCorona`) para que no pise lo que haya encima;
 //   · `shimmer` → una pasada de brillo por el aro interior cada 8 s. Quieto si
 //     el usuario pide reducir movimiento.
-// La foto la resuelve useRetrato (src/components/Avatar.tsx), con el mismo
+// La foto la resuelve useRetrato (./useRetrato.ts), con el mismo
 // comportamiento que el retrato antiguo (incluido `onReady` para compartir).
 
 import { Image } from 'expo-image';
 import { useEffect, useRef } from 'react';
 import { Animated, Easing, StyleSheet, Text, View } from 'react-native';
 import Svg, { Circle, Path } from 'react-native-svg';
-import { useRetrato } from '@/components/Avatar';
+import { useRetrato } from './useRetrato';
 import { ink, RANK_THEME, type Rank, type RankTheme } from '@/design/tokens';
 import { fonts } from '@/lib/theme';
 import { BASE_CORONA, Crown } from './Crown';

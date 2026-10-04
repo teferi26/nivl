@@ -28,7 +28,6 @@ import {
 } from 'react-native';
 import { Arena, BotonArena, Entrada, Galea } from '@/components/arena';
 import { ProUpsellLine } from '@/components/ProOffer';
-import { SystemButton } from '@/components/SystemButton';
 import { Button, Card, Chip, Screen, Skeleton, Tag } from '@/components/ui';
 import { ink, space, stroke, type } from '@/design/tokens';
 import { useAnchoUtil } from '@/design/useSizeClass';
@@ -520,7 +519,7 @@ export function CoachVista(p: CoachVistaProps) {
               {p.ofertaCerrado ? (
                 <ProUpsellLine momento="coach_cerrado" tier={p.ofertaCerrado} />
               ) : (
-                <SystemButton title="Ver NIVL Pro" size="sm" onPress={p.onPro} />
+                <Button title="Ver NIVL Pro" size="sm" onPress={p.onPro} />
               )}
             </View>
           )

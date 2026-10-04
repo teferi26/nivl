@@ -3,12 +3,12 @@
 
 import { StyleSheet, Text } from 'react-native';
 import { DESCARGO_SALUD } from '@/lib/consentmath';
-import { colors, fonts } from '@/lib/theme';
+import { ink, type as tipo } from '@/design/tokens';
 
 export function DescargoSalud() {
-  return <Text style={styles.texto}>{DESCARGO_SALUD}</Text>;
+  return <Text style={styles.texto} maxFontSizeMultiplier={1.6}>{DESCARGO_SALUD}</Text>;
 }
 
 const styles = StyleSheet.create({
-  texto: { fontFamily: fonts.body, fontSize: 12, lineHeight: 17, color: colors.textFaint, marginTop: 8, marginBottom: 8 },
+  texto: { fontFamily: tipo.bodySm.family, fontSize: tipo.bodySm.size, lineHeight: tipo.bodySm.lineHeight, color: ink.ink6, marginTop: 8, marginBottom: 8 },
 });

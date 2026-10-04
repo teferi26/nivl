@@ -12,12 +12,13 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Barra } from '@/components/arena';
+import { Campo } from '@/components/arena';
 import { Avatar, Button, Card, Chip, ChipWrap, confirmar, Row, Section, Sheet } from '@/components/ui';
 import { SIN_DATO } from '@/components/ui/sinDato';
 import { vibrar } from '@/design/haptics';
-import { ink } from '@/design/tokens';
+import { ink, type as tipo } from '@/design/tokens';
 import {
   aceptarLiga,
   crearLiga,
@@ -39,7 +40,7 @@ import {
 import { LIGA_MAX, NOMBRE_LIGA_MAX, nombreDeLiga } from '@/lib/competition';
 import { dateKey } from '@/lib/dates';
 import { marcarDuelosVistos, reprogramarAvisosDelPlan } from '@/lib/notifications';
-import { colors, fonts } from '@/lib/theme';
+import { fonts } from '@/lib/theme';
 import { mensajeSistema } from '@/lib/validation';
 import { Aviso } from './Aviso';
 import {
@@ -392,7 +393,7 @@ function Rechazar({ etiqueta, onPress }: { etiqueta: string; onPress: () => void
       accessibilityRole="button"
       accessibilityLabel={etiqueta}
     >
-      <Ionicons name="close" size={18} color={colors.textDim} />
+      <Ionicons name="close" size={18} color={ink.ink8} />
     </Pressable>
   );
 }
@@ -607,15 +608,14 @@ function CrearLigaSheet({
       title="Crear liga"
       footer={<Button title="Crear" icon="trophy-outline" onPress={crear} loading={enviando} />}
     >
-      <TextInput
-        style={styles.input}
+      <Campo
+        etiqueta="Nombre de la liga"
         value={nombre}
         onChangeText={(v) => {
           setNombre(v);
           setAviso(null);
         }}
         placeholder="Nombre de la liga"
-        placeholderTextColor={colors.textFaint}
         maxLength={NOMBRE_LIGA_MAX}
         returnKeyType="done"
         onSubmitEditing={crear}
@@ -799,48 +799,39 @@ const styles = StyleSheet.create({
   lista: { paddingHorizontal: 16, paddingVertical: 2 },
   separado: { marginTop: 14 },
   respuestas: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  rechazar: { width: 32, height: 32, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: colors.line },
+  rechazar: { width: 32, height: 32, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: ink.ink3 },
   pulsado: { opacity: 0.6 },
-  resultado: { fontFamily: fonts.semibold, fontSize: 13, color: ink.ink9 },
+  resultado: { fontFamily: fonts.semibold, fontSize: 14, color: ink.ink9 },
   reintentar: { alignSelf: 'flex-start', marginTop: 8 },
   vacio: { fontFamily: fonts.semibold, fontSize: 14, color: ink.ink9, marginTop: 4 },
-  hint: { fontFamily: fonts.body, fontSize: 12, color: colors.textFaint, marginTop: 10, lineHeight: 17 },
+  hint: { fontFamily: tipo.bodySm.family, fontSize: tipo.bodySm.size, lineHeight: tipo.bodySm.lineHeight, color: ink.ink8, marginTop: 10 },
   botones: { flexDirection: 'row', gap: 8, marginTop: 6 },
   boton: { flex: 1 },
   duelo: { gap: 8 },
   dueloCabecera: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', gap: 8 },
   dueloTitulo: { flex: 1, fontFamily: fonts.semibold, fontSize: 15, color: ink.ink9 },
   dueloMeta: { fontFamily: fonts.body, fontSize: 12, color: ink.ink6 },
-  dueloLinea: { fontFamily: fonts.body, fontSize: 13, color: ink.ink8, marginTop: 2 },
+  dueloLinea: { fontFamily: fonts.body, fontSize: 14, lineHeight: 20, color: ink.ink8, marginTop: 2 },
   barraFila: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   barraEtiqueta: { width: 72, fontFamily: fonts.body, fontSize: 12.5, color: ink.ink8 },
   pista: { flex: 1 },
   barraValor: { width: 28, textAlign: 'right', fontFamily: fonts.number, fontSize: 13, color: ink.ink9 },
   barraDias: { width: 28, textAlign: 'right', fontFamily: fonts.body, fontSize: 11, color: ink.ink6 },
   rotulo: {
-    fontFamily: fonts.heading,
-    fontSize: 11,
-    letterSpacing: 2.5,
+    fontFamily: tipo.label.family,
+    fontSize: tipo.label.size,
+    lineHeight: tipo.label.lineHeight,
+    letterSpacing: tipo.label.tracking,
     textTransform: 'uppercase',
-    color: colors.textFaint,
+    color: ink.ink6,
     marginBottom: 10,
   },
   ficha: { marginTop: 16, borderTopWidth: 1, borderTopColor: ink.ink3 },
   fichaLinea: { flexDirection: 'row', gap: 12, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: ink.ink3 },
-  fichaRotulo: { width: 80, fontFamily: fonts.body, fontSize: 13, color: ink.ink6 },
-  fichaValor: { flex: 1, fontFamily: fonts.semibold, fontSize: 13.5, color: ink.ink9 },
-  input: {
-    borderWidth: 1,
-    borderColor: colors.accentDim,
-    backgroundColor: colors.bg,
-    color: colors.text,
-    fontFamily: fonts.body,
-    fontSize: 16,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-  },
+  fichaRotulo: { width: 80, fontFamily: fonts.body, fontSize: 14, lineHeight: 20, color: ink.ink6 },
+  fichaValor: { flex: 1, fontFamily: fonts.semibold, fontSize: 14, lineHeight: 20, color: ink.ink9 },
   miFila: { backgroundColor: ink.ink2 },
   puesto: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  puestoTexto: { width: 28, fontFamily: fonts.number, fontSize: 13, color: colors.textDim },
+  puestoTexto: { width: 28, fontFamily: fonts.number, fontSize: 13, color: ink.ink8 },
   indice: { fontFamily: fonts.number, fontSize: 15, color: ink.ink9 },
 });

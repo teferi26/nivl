@@ -51,7 +51,7 @@ export function TextoSistema({ texto, tono = 'normal' }: { texto: string; tono?:
 
 const styles = StyleSheet.create({
   normal: { fontFamily: fonts.body, fontSize: 14.5, lineHeight: 21, color: colors.text },
-  tenue: { fontFamily: fonts.body, fontSize: 13, lineHeight: 19, color: colors.textDim },
+  tenue: { fontFamily: fonts.body, fontSize: 14, lineHeight: 20, color: colors.textDim },
   negrita: { fontFamily: fonts.semibold, color: colors.accentText },
   titulo: {
     fontFamily: fonts.heading,

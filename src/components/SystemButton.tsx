@@ -27,6 +27,10 @@ const VARIANTE: Record<NonNullable<Props['variant']>, ButtonVariant> = {
   danger: 'danger',
 };
 
+/**
+ * @deprecated Usa `Button` de '@/components/ui'. Solo lo conservan las puertas
+ * (ConsentimientoIAVista) porque las pruebas de Seguridad simulan este módulo.
+ */
 export function SystemButton({ variant = 'solid', ...rest }: Props) {
   return <Button variant={VARIANTE[variant]} {...rest} />;
 }

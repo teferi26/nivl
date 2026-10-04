@@ -16,7 +16,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { TarjetaArena } from '@/components/arena';
+import { Campo, Entrada, TarjetaArena } from '@/components/arena';
 import { HoldToSign } from '@/components/HoldToSign';
 import { useHealthConsent } from '@/components/ConsentimientoSalud';
 import {
@@ -32,8 +32,7 @@ import { ProgresoPasos } from '@/components/onboarding/ProgresoPasos';
 import { TablillaContrato } from '@/components/onboarding/TablillaContrato';
 import { TituloPaso } from '@/components/onboarding/TituloPaso';
 import { ProOfferActions, ProOfferBody, ProOfferLegal, ProUpsellLine, useProOffer } from '@/components/ProOffer';
-import { SystemButton } from '@/components/SystemButton';
-import { Button, Card, Chip, FadeIn, Skeleton } from '@/components/ui';
+import { Button, Chip, Skeleton } from '@/components/ui';
 import { avisar } from '@/components/ui/confirmar';
 import { GutterContext } from '@/components/ui/Screen';
 import { useAuth } from '@/lib/auth';
@@ -62,6 +61,7 @@ import { KINDS, PROFILE_KINDS, type ProfileKind } from '@/lib/kinds';
 import { DIFFICULTY_LABEL, STAT_LABEL } from '@/lib/game';
 import { anotarOferta, fetchAiStatus, isPro, ofrecerSi, type AiStatus, type DecisionOferta, type RespuestaOferta } from '@/lib/pro';
 import { colors, fonts } from '@/lib/theme';
+import { ink, type as tipo } from '@/design/tokens';
 import { mensajeSistema, NAME_MAX_LENGTH } from '@/lib/validation';
 
 // Bienvenida · Nombre · Para qué · El objetivo · Primeros hábitos · La firma · NIVL Pro
@@ -166,7 +166,7 @@ export default function Onboarding() {
     try {
       await fn();
     } catch (e) {
-      avisar('Error del sistema', mensajeSistema(e));
+      avisar('El sistema no responde', mensajeSistema(e));
     } finally {
       lock.current = false;
       setBusy(false);
@@ -484,16 +484,14 @@ export default function Onboarding() {
           {step === 0 ? <PortadaArena key="paso-0" /> : null}
 
           {step === 1 ? (
-            <FadeIn key="paso-1">
+            <Entrada key="paso-1" indice={0}>
               <TituloPaso inscripcion="El nombre" titulo="¿Cómo te llamas?" />
               <TarjetaArena variante="contorno" remaches>
-                <Text style={styles.label}>Tu nombre en el sistema</Text>
-                <TextInput
-                  style={styles.input}
+                <Campo
+                  etiqueta="Tu nombre en el sistema"
                   value={name}
                   onChangeText={setName}
                   placeholder="Cómo quieres que te llame"
-                  placeholderTextColor={colors.textFaint}
                   maxLength={NAME_MAX_LENGTH}
                   autoCapitalize="words"
                   returnKeyType="done"
@@ -502,16 +500,16 @@ export default function Onboarding() {
                 />
               </TarjetaArena>
               <TarjetaArena variante="contorno" remaches>
-                <Text style={styles.label}>¿Quién te trajo? · opcional</Text>
-                <TextInput
-                  style={styles.input}
+                <Campo
+                  etiqueta="¿Quién te trajo? · opcional"
+                  error={avisoCodigo ?? undefined}
+                  ayuda="Si te lo recomendó alguien, escribe su código. No cambia nada para ti."
                   value={codigo}
                   onChangeText={(t) => {
                     setCodigo(t);
                     setAvisoCodigo(null);
                   }}
                   placeholder="Código de creador"
-                  placeholderTextColor={colors.textFaint}
                   maxLength={CODIGO_MAX_LENGTH + 4}
                   autoCapitalize="characters"
                   autoCorrect={false}
@@ -519,19 +517,12 @@ export default function Onboarding() {
                   onSubmitEditing={saveName}
                   accessibilityLabel="Código del creador que te trajo, opcional"
                 />
-                {avisoCodigo ? (
-                  <Text style={styles.avisoCodigo} accessibilityRole="alert">
-                    {avisoCodigo}
-                  </Text>
-                ) : (
-                  <Text style={styles.codigoHint}>Si te lo recomendó alguien, escribe su código. No cambia nada para ti.</Text>
-                )}
               </TarjetaArena>
-            </FadeIn>
+            </Entrada>
           ) : null}
 
           {step === 2 ? (
-            <FadeIn key="paso-2">
+            <Entrada key="paso-2" indice={0}>
               <TituloPaso
                 inscripcion="El camino"
                 titulo="¿Para qué vas a usar NIVL?"
@@ -563,11 +554,11 @@ export default function Onboarding() {
                   <Text style={styles.detail}>{meta.description}</Text>
                 </TarjetaArena>
               ) : null}
-            </FadeIn>
+            </Entrada>
           ) : null}
 
           {step === 3 && meta ? (
-            <FadeIn key="paso-3">
+            <Entrada key="paso-3" indice={0}>
               <TituloPaso
                 inscripcion="El objetivo"
                 titulo="¿A qué has venido?"
@@ -588,43 +579,41 @@ export default function Onboarding() {
                   value={goal}
                   onChangeText={setGoal}
                   placeholder={healthGoal ? meta.goalExample : 'Leer doce libros este año'}
-                  placeholderTextColor={colors.textFaint}
+                  placeholderTextColor={ink.ink6}
                   maxLength={GOAL_MAX_LENGTH}
                   multiline
                   accessibilityLabel="Tu objetivo, en una frase"
                 />
                 <View style={styles.pair}>
                   <View style={styles.pairItem}>
-                    <Text style={[styles.label, styles.labelGap]}>Cifra · opcional</Text>
-                    <TextInput
-                      style={styles.input}
+                    <Campo
+                      etiqueta="Cifra · opcional"
+                      estiloBloque={styles.labelGap}
                       value={target}
                       onChangeText={setTarget}
                       placeholder={healthGoal ? '78 kg, 5.000 €…' : '12 libros, 5.000 €…'}
-                      placeholderTextColor={colors.textFaint}
                       maxLength={GOAL_DETAIL_MAX_LENGTH}
                       accessibilityLabel="Cifra del objetivo, opcional"
                     />
                   </View>
                   <View style={styles.pairItem}>
-                    <Text style={[styles.label, styles.labelGap]}>Fecha · opcional</Text>
-                    <TextInput
-                      style={styles.input}
+                    <Campo
+                      etiqueta="Fecha · opcional"
+                      estiloBloque={styles.labelGap}
                       value={deadline}
                       onChangeText={setDeadline}
                       placeholder="junio de 2027"
-                      placeholderTextColor={colors.textFaint}
                       maxLength={GOAL_DETAIL_MAX_LENGTH}
                       accessibilityLabel="Fecha del objetivo, opcional"
                     />
                   </View>
                 </View>
               </TarjetaArena>
-            </FadeIn>
+            </Entrada>
           ) : null}
 
           {step === 4 && meta ? (
-            <FadeIn key="paso-4">
+            <Entrada key="paso-4" indice={0}>
               <TituloPaso
                 inscripcion="Las misiones"
                 titulo="Tus primeras misiones"
@@ -656,11 +645,11 @@ export default function Onboarding() {
                   );
                 })}
               </TarjetaArena>
-            </FadeIn>
+            </Entrada>
           ) : null}
 
           {step === 5 ? (
-            <FadeIn key="paso-5">
+            <Entrada key="paso-5" indice={0}>
               <TituloPaso
                 inscripcion="La firma"
                 titulo="Fírmalo contigo"
@@ -686,14 +675,12 @@ export default function Onboarding() {
                 Hasta entonces lo guarda Contrato, sellado. Tus normas y sus consecuencias las escribes allí cuando
                 entres.
               </Text>
-              <Card variant="outline" style={styles.firmaCard}>
-                <Text style={styles.label}>Escribe tu nombre para firmar</Text>
-                <TextInput
-                  style={styles.input}
+              <TarjetaArena variante="contorno" style={styles.firmaCard}>
+                <Campo
+                  etiqueta="Escribe tu nombre para firmar"
                   value={firma}
                   onChangeText={setFirma}
                   placeholder={name.trim()}
-                  placeholderTextColor={colors.textFaint}
                   maxLength={NAME_MAX_LENGTH}
                   autoCapitalize="words"
                   autoCorrect={false}
@@ -701,7 +688,7 @@ export default function Onboarding() {
                   onSubmitEditing={Keyboard.dismiss}
                   accessibilityLabel="Escribe tu nombre para firmar"
                 />
-              </Card>
+              </TarjetaArena>
               <HoldToSign
                 label={firmaOk ? 'Mantén pulsado para firmar' : 'Escribe tu nombre'}
                 onComplete={sign}
@@ -709,11 +696,11 @@ export default function Onboarding() {
                 disabled={!firmaOk}
                 loading={busy}
               />
-            </FadeIn>
+            </Entrada>
           ) : null}
 
           {step === 6 ? (
-            <FadeIn key="paso-6">
+            <Entrada key="paso-6" indice={0}>
               <TituloPaso
                 inscripcion="El coach"
                 titulo="Firmado. Ahora, quién lo dirige."
@@ -736,7 +723,7 @@ export default function Onboarding() {
                 </>
               ) : null}
               {forma === 'linea' && decisionOferta ? <ProUpsellLine momento="firma" tier={decisionOferta.tier} /> : null}
-            </FadeIn>
+            </Entrada>
           ) : null}
           </GutterContext.Provider>
         </ScrollView>
@@ -746,19 +733,19 @@ export default function Onboarding() {
         {step !== 5 ? (
           <View style={styles.footer}>
             {step === 0 ? (
-              <SystemButton title="Entrar en la arena" size="lg" onPress={() => setStep(1)} />
+              <Button title="Entrar en la arena" size="lg" onPress={() => setStep(1)} />
             ) : null}
             {step === 1 ? (
-              <SystemButton title="Continuar" size="lg" onPress={saveName} loading={busy} disabled={!name.trim()} />
+              <Button title="Continuar" size="lg" onPress={saveName} loading={busy} disabled={!name.trim()} />
             ) : null}
             {step === 2 ? (
-              <SystemButton title="Continuar" size="lg" onPress={saveKind} loading={busy} disabled={!kind} />
+              <Button title="Continuar" size="lg" onPress={saveKind} loading={busy} disabled={!kind} />
             ) : null}
             {step === 3 ? (
-              <SystemButton title="Continuar" size="lg" onPress={saveGoal} loading={busy} disabled={!limpiarFrase(goal)} />
+              <Button title="Continuar" size="lg" onPress={saveGoal} loading={busy} disabled={!limpiarFrase(goal)} />
             ) : null}
             {step === 4 ? (
-              <SystemButton
+              <Button
                 title={chosen.size > 0 ? `Crear ${chosen.size} ${chosen.size === 1 ? 'misión' : 'misiones'}` : 'Empezar sin misiones'}
                 size="lg"
                 onPress={saveStarters}
@@ -824,29 +811,32 @@ const styles = StyleSheet.create({
     backgroundColor: colors.bg,
   },
   stepHint: {
-    fontFamily: fonts.body,
-    fontSize: 13,
-    color: colors.textDim,
+    fontFamily: tipo.bodySm.family,
+    fontSize: tipo.bodySm.size,
+    color: ink.ink8,
     textAlign: 'center',
-    lineHeight: 19,
+    lineHeight: tipo.bodySm.lineHeight,
     marginBottom: 16,
   },
   label: {
-    fontFamily: fonts.heading,
-    fontSize: 12,
-    letterSpacing: 1.5,
-    color: colors.textDim,
+    fontFamily: tipo.label.family,
+    fontSize: tipo.label.size,
+    lineHeight: tipo.label.lineHeight,
+    letterSpacing: tipo.label.tracking,
+    color: ink.ink6,
     textTransform: 'uppercase',
     marginBottom: 7,
   },
   labelGap: { marginTop: 14 },
+  // Solo el objetivo (multilínea, con la casilla de salud entre el rótulo y
+  // la caja); el resto de campos son Campo. Misma caja que Campo.
   input: {
     borderWidth: 1,
-    borderColor: colors.accentDim,
-    backgroundColor: colors.bg,
-    color: colors.text,
-    fontFamily: fonts.semibold,
-    fontSize: 16,
+    borderColor: ink.ink4,
+    backgroundColor: ink.ink2,
+    color: ink.ink9,
+    fontFamily: tipo.body.family,
+    fontSize: tipo.body.size,
     paddingHorizontal: 14,
     paddingVertical: 12,
   },
@@ -868,10 +858,10 @@ const styles = StyleSheet.create({
   kindCardOn: { borderWidth: 3, borderColor: colors.accent, padding: 12 },
   kindLabel: { fontFamily: fonts.heading, fontSize: 14, letterSpacing: 2, color: colors.text },
   kindLabelOn: { color: colors.accent },
-  kindTagline: { fontFamily: fonts.body, fontSize: 12, color: colors.textDim, marginTop: 3, lineHeight: 17 },
+  kindTagline: { fontFamily: tipo.bodySm.family, fontSize: tipo.bodySm.size, color: ink.ink8, marginTop: 3, lineHeight: tipo.bodySm.lineHeight },
   kindTaglineOn: { color: colors.text },
-  detailTitle: { fontFamily: fonts.heading, fontSize: 11, letterSpacing: 2.5, color: colors.textFaint, marginBottom: 6 },
-  detail: { fontFamily: fonts.body, fontSize: 13, color: colors.text, lineHeight: 19 },
+  detailTitle: { fontFamily: tipo.label.family, fontSize: tipo.label.size, lineHeight: tipo.label.lineHeight, letterSpacing: tipo.label.tracking, color: ink.ink6, marginBottom: 6 },
+  detail: { fontFamily: tipo.bodySm.family, fontSize: tipo.bodySm.size, color: ink.ink9, lineHeight: tipo.bodySm.lineHeight },
   starterRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 10 },
   starterRowSep: { borderTopWidth: 1, borderTopColor: colors.line },
   checkbox: {
@@ -921,14 +911,12 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   firmaCard: { marginTop: 14 },
-  codigoHint: { fontFamily: fonts.body, fontSize: 12, lineHeight: 17, color: colors.textFaint, marginTop: 8 },
-  avisoCodigo: { fontFamily: fonts.body, fontSize: 13, lineHeight: 18, color: colors.red, marginTop: 8 },
   smallPrint: {
-    fontFamily: fonts.body,
-    fontSize: 12,
-    color: colors.textFaint,
+    fontFamily: tipo.bodySm.family,
+    fontSize: tipo.bodySm.size,
+    color: ink.ink6,
     textAlign: 'center',
-    lineHeight: 17,
+    lineHeight: tipo.bodySm.lineHeight,
     marginTop: 4,
   },
 });

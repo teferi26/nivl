@@ -5,6 +5,7 @@
 // de clasificarHabitos con el «hoy» fijo de la galería, así que se ven igual
 // cualquier día. Las acciones no hacen nada.
 import type { DemoPantalla } from '@/components/arena/galeria';
+import { QuestForm } from '@/components/QuestForm';
 import { HOY_DEMO, misionDemo } from '@/components/arena/demoDatos';
 import { addDays } from '@/lib/dates';
 import type { Rule } from '@/lib/types';
@@ -106,6 +107,16 @@ export const DEMO: DemoPantalla | null = {
             reglas: [],
           })}
         />
+      ),
+    },
+    {
+      id: 'hoja-habito',
+      titulo: 'Hoja «Nuevo hábito» (QuestForm)',
+      render: () => (
+        <>
+          <HabitosVista {...base()} />
+          <QuestForm visible onClose={nada} onSubmit={async () => {}} sustantivo="hábito" />
+        </>
       ),
     },
   ],
