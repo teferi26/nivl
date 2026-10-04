@@ -1,5 +1,6 @@
 import { act, createElement, type ReactElement } from 'react';
 import { router } from 'expo-router';
+import { vibrar } from '@/design/haptics';
 import { ProOfferActions, ProOfferBody, ProOfferLegal, ProUpsellLine, useProOffer } from '@/components/ProOffer';
 import { introsDeTienda, preciosDeTienda, purchase, restorePurchases, startTrial, StorePriceChangedError, type Momento, type OfferTier, type PreciosTienda, type ProPlanId } from '../pro';
 
@@ -31,6 +32,14 @@ jest.mock('react-native', () => ({
 jest.mock('@expo/vector-icons/Ionicons', () => 'Ionicons');
 jest.mock('@/design/haptics', () => ({ vibrar: jest.fn() }));
 jest.mock('@/components/ui', () => ({ Button: 'Button', Card: 'Card', Chip: 'Chip', Skeleton: 'Skeleton', Tag: 'Tag' }));
+// ErrorSistema del kit: el mensaje y, con `onReintentar`, su botón «Reintentar».
+jest.mock('@/components/arena', () => {
+  const { createElement: h } = jest.requireActual<typeof import('react')>('react');
+  return {
+    ErrorSistema: ({ mensaje, onReintentar }: { mensaje: string; onReintentar?: () => void }) =>
+      h('ErrorSistema', null, h('Text', null, mensaje), onReintentar ? h('Button', { title: 'Reintentar', onPress: onReintentar }) : null),
+  };
+});
 
 const { create } = jest.requireActual<{
   create: (element: ReactElement) => {
@@ -106,7 +115,8 @@ test('si falla catálogo permite restaurar y reintentar; nunca usa euros de resp
   expect(button('Restaurar compras').props.disabled).toBe(false);
   await act(async () => button('Restaurar compras').props.onPress());
   expect(restore).toHaveBeenCalledTimes(1);
-  await act(async () => button('Reintentar precios').props.onPress());
+  expect(content()).toContain('No se han podido cargar los precios de la tienda.');
+  await act(async () => button('Reintentar').props.onPress());
   expect(prices).toHaveBeenCalledTimes(2);
   expect(control.puedeComprar).toBe(true);
   await act(async () => control.onPrincipal());
@@ -238,6 +248,24 @@ test('compra pendiente: el aviso da salida (Restaurar compras)', async () => {
   await mount();
   await act(async () => control.onPrincipal());
   expect(control.aviso).toMatch(/Restaurar compras/);
+});
+
+test('compra fallida: aviso en línea y vibración de penalización', async () => {
+  prices.mockResolvedValue(CATALOGO);
+  buy.mockRejectedValueOnce(new Error('boom'));
+  await mount();
+  await act(async () => control.onPrincipal());
+  expect(control.aviso).toBeTruthy();
+  expect(jest.mocked(vibrar)).toHaveBeenCalledWith('penalizacion');
+});
+
+test('catálogo vacío: el error del sistema ofrece reintentar los precios', async () => {
+  prices.mockResolvedValueOnce({}).mockResolvedValue(CATALOGO);
+  await mount();
+  expect(content()).toContain('La tienda no tiene planes de NIVL Pro disponibles ahora.');
+  await act(async () => button('Reintentar').props.onPress());
+  expect(prices).toHaveBeenCalledTimes(2);
+  expect(control.puedeComprar).toBe(true);
 });
 
 test('catálogo parcial avisa de que falta algún plan en vez de callarlo', async () => {

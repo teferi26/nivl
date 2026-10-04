@@ -34,6 +34,7 @@ import { router } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { Linking, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useConsentimientoIA } from '@/components/ConsentimientoIA';
+import { ErrorSistema } from '@/components/arena';
 import { Button, Card, Chip, Skeleton, Tag } from '@/components/ui';
 import { ink, type as tipo } from '@/design/tokens';
 import { insertEvent } from '@/lib/data';
@@ -75,7 +76,6 @@ import {
   type PreciosTienda,
   type ProPlanId,
 } from '@/lib/pro';
-import { fonts } from '@/lib/theme';
 import { mensajeSistema } from '@/lib/validation';
 
 /** La tienda cobró pero el servidor aún no refleja la suscripción. Con salida: Restaurar. */
@@ -188,6 +188,7 @@ export function useProOffer({ userId, onPurchased, trialAvailable, onTrialStarte
     try {
       await fn();
     } catch (e) {
+      vibrar('penalizacion');
       setAviso(mensajeSistema(e));
     } finally {
       lock.current = false;
@@ -328,118 +329,119 @@ interface BodyProps {
 
 /** Qué hace el coach y cuánto cuesta. Sin botones. */
 export function ProOfferBody({ oferta, kind, compact, motivo }: BodyProps) {
-  const { tier, nivel, planes, planId, precioDe, catalogo, faltan, planActual, busy, reintentarPrecios, disponible, elegir, elegirNivel, prueba } = oferta;
+  const { tier, nivel, planes, planId, precioDe, catalogo, faltan, planActual, reintentarPrecios, disponible, elegir, elegirNivel, prueba } = oferta;
   const sinNivel = disponible && catalogo === 'listo' && planes.length > 0 && !planes.some((p) => p.tier === tier);
   const beneficios = beneficiosPorMotivo(tier === 'elite' ? [...ELITE_BENEFITS, ...PRO_BENEFITS] : PRO_BENEFITS, motivo, tier);
   const contexto = motivo ? copyUpsell(motivo, tier).contexto : null;
   // Con la tienda abierta en /pro, los planes (título, duración y precio) van
   // antes que los beneficios: es lo que Apple pide ver sin buscarlo (2.1).
   const planesArriba = disponible && !compact;
-  const catalogoVista = (disponible && catalogo === 'cargando' ? (
-        <View style={styles.plans} accessibilityRole="progressbar" accessibilityLabel="Cargando precios de la tienda">
-          {[0, 1, 2, 3, 4].map((i) => (
-            <Skeleton key={i} height={70} />
-          ))}
-        </View>
-      ) : disponible && (catalogo === 'error' || planes.length === 0) ? (
-        <Card variant="outline">
-          <Text style={[styles.notice, styles.noticeAbove]} accessibilityRole="alert">
-            {catalogo === 'error'
-              ? 'No se han podido cargar los precios de la tienda. Puedes reintentarlo o seguir gratis.'
-              : `La tienda no tiene planes de ${nivel.name} disponibles ahora. Puedes reintentarlo o seguir gratis.`}
-          </Text>
-          <Button title="Reintentar precios" variant="secondary" size="sm" onPress={reintentarPrecios} disabled={busy !== null} />
-        </Card>
-      ) : disponible ? (
-        <View accessibilityRole="radiogroup" accessibilityLabel="Suscripciones" style={styles.plans}>
-          {sinNivel ? (
-            <Text style={[styles.notice, styles.noticeLeft]} accessibilityRole="alert">
-              {`La tienda no tiene planes de ${nivel.name} disponibles ahora.`}
-            </Text>
-          ) : null}
-          {sinNivel ? (
-            <Button title="Reintentar precios" variant="secondary" size="sm" onPress={reintentarPrecios} disabled={busy !== null} />
-          ) : null}
-          {planes.map((p) => {
-            const actual = p.id === planActual;
-            const on = p.id === planId && !actual;
-            const precio = precioDe(p.id);
-            const titulo = tituloPlan(p.id);
-            const duracion = duracionPlan(p.id);
-            const pitch = pitchVisible(p);
-            return (
-              <Pressable
-                key={p.id}
-                onPress={() => elegir(p.id)}
-                disabled={actual}
-                style={({ pressed }) => [styles.plan, on && styles.planOn, pressed && !actual && styles.pressed]}
-                accessibilityRole="radio"
-                accessibilityState={{ selected: on, disabled: actual }}
-                accessibilityLabel={`${titulo}. Suscripción ${p.period === 'mes' ? 'mensual' : 'anual'} de renovación automática, ${precio} al ${p.period}. ${actual ? 'Tu plan actual' : pitch}`}
-              >
-                {actual ? null : (
-                  <View style={[styles.radio, on && styles.radioOn]}>{on ? <View style={styles.radioDot} /> : null}</View>
-                )}
-                <View style={styles.planBody}>
-                  {actual ? (
-                    <View style={styles.planHead}>
-                      <Tag>Tu plan actual</Tag>
-                    </View>
-                  ) : null}
-                  <Text style={styles.planTitle} numberOfLines={2}>
-                    {titulo}
-                  </Text>
-                  <Text style={styles.planDuration} numberOfLines={2}>
-                    {`${duracion} · renovación automática · ${pitch}`}
-                  </Text>
-                </View>
-                <View style={styles.planPrice}>
-                  <Text style={styles.price} numberOfLines={1}>
-                    {precio}
-                  </Text>
-                  <Text style={styles.period}>al {p.period}</Text>
-                </View>
-              </Pressable>
-            );
-          })}
-          {faltan > 0 ? (
-            <Text style={[styles.notice, styles.noticeLeft]}>
-              Algún plan no está disponible ahora mismo en la tienda. Solo se muestran los que la tienda confirma.
-            </Text>
-          ) : null}
-        </View>
-      ) : (
-        // Sin tienda no hay nada que elegir: los precios se enseñan, no se
-        // seleccionan. Un selector que no selecciona nada era media mentira.
-        <View style={styles.priceList}>
-          <Text style={styles.priceListTitle}>PRECIOS DE REFERENCIA · {nivel.name.toUpperCase()}</Text>
-          {planes.map((p, i) => (
-            <View
+  const catalogoVista =
+    disponible && catalogo === 'cargando' ? (
+      <View style={styles.plans} accessibilityRole="progressbar" accessibilityLabel="Cargando precios de la tienda">
+        {[0, 1, 2, 3, 4].map((i) => (
+          <Skeleton key={i} height={70} />
+        ))}
+      </View>
+    ) : disponible && (catalogo === 'error' || planes.length === 0) ? (
+      <ErrorSistema
+        compacto
+        mensaje={
+          catalogo === 'error'
+            ? 'No se han podido cargar los precios de la tienda. Puedes reintentarlo o seguir gratis.'
+            : `La tienda no tiene planes de ${nivel.name} disponibles ahora. Puedes reintentarlo o seguir gratis.`
+        }
+        onReintentar={reintentarPrecios}
+        style={styles.plans}
+      />
+    ) : disponible ? (
+      <View accessibilityRole="radiogroup" accessibilityLabel="Suscripciones" style={styles.plans}>
+        {sinNivel ? (
+          <ErrorSistema
+            compacto
+            mensaje={`La tienda no tiene planes de ${nivel.name} disponibles ahora.`}
+            onReintentar={reintentarPrecios}
+          />
+        ) : null}
+        {planes.map((p) => {
+          const actual = p.id === planActual;
+          const on = p.id === planId && !actual;
+          const precio = precioDe(p.id);
+          const titulo = tituloPlan(p.id);
+          const duracion = duracionPlan(p.id);
+          const pitch = pitchVisible(p);
+          return (
+            <Pressable
               key={p.id}
-              style={[styles.priceRow, i > 0 && styles.sep]}
-              accessible
-              accessibilityLabel={`${nivel.name} ${p.label.toLowerCase()}: ${p.price} al ${p.period}. ${pitchVisible(p)}`}
+              onPress={() => elegir(p.id)}
+              disabled={actual}
+              style={({ pressed }) => [styles.plan, on && styles.planOn, pressed && !actual && styles.pressed]}
+              accessibilityRole="radio"
+              accessibilityState={{ selected: on, disabled: actual }}
+              accessibilityLabel={`${titulo}. Suscripción ${p.period === 'mes' ? 'mensual' : 'anual'} de renovación automática, ${precio} al ${p.period}. ${actual ? 'Tu plan actual' : pitch}`}
             >
+              {actual ? null : (
+                <View style={[styles.radio, on && styles.radioOn]}>{on ? <View style={styles.radioDot} /> : null}</View>
+              )}
               <View style={styles.planBody}>
-                <View style={styles.planHead}>
-                  <Text style={styles.planLabel}>{p.label.toUpperCase()}</Text>
-                  {p.savings ? <Tag>{p.savings}</Tag> : null}
-                </View>
-                <Text style={styles.planPitch}>{pitchVisible(p)}</Text>
+                {actual ? (
+                  <View style={styles.planHead}>
+                    <Tag>Tu plan actual</Tag>
+                  </View>
+                ) : null}
+                <Text style={styles.planTitle} numberOfLines={2}>
+                  {titulo}
+                </Text>
+                <Text style={styles.planDuration} numberOfLines={2}>
+                  {`${duracion} · renovación automática · ${pitch}`}
+                </Text>
               </View>
               <View style={styles.planPrice}>
-                <Text style={styles.price}>{p.price}</Text>
+                <Text style={styles.price} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.7}>
+                  {precio}
+                </Text>
                 <Text style={styles.period}>al {p.period}</Text>
               </View>
-            </View>
-          ))}
+            </Pressable>
+          );
+        })}
+        {faltan > 0 ? (
           <Text style={[styles.notice, styles.noticeLeft]}>
-            Precios de referencia en euros. La tienda confirma el importe y la moneda al abrir las suscripciones.
-            Las compras no están disponibles en esta versión. Hoy no se cobra nada.
+            Algún plan no está disponible ahora mismo en la tienda. Solo se muestran los que la tienda confirma.
           </Text>
-        </View>
-      )
-  );
+        ) : null}
+      </View>
+    ) : (
+      // Sin tienda no hay nada que elegir: los precios se enseñan, no se
+      // seleccionan. Un selector que no selecciona nada era media mentira.
+      <View style={styles.priceList}>
+        <Text style={styles.priceListTitle}>PRECIOS DE REFERENCIA · {nivel.name.toUpperCase()}</Text>
+        {planes.map((p, i) => (
+          <View
+            key={p.id}
+            style={[styles.priceRow, i > 0 && styles.sep]}
+            accessible
+            accessibilityLabel={`${nivel.name} ${p.label.toLowerCase()}: ${p.price} al ${p.period}. ${pitchVisible(p)}`}
+          >
+            <View style={styles.planBody}>
+              <View style={styles.planHead}>
+                <Text style={styles.planLabel}>{p.label.toUpperCase()}</Text>
+                {p.savings ? <Tag>{p.savings}</Tag> : null}
+              </View>
+              <Text style={styles.planPitch}>{pitchVisible(p)}</Text>
+            </View>
+            <View style={styles.planPrice}>
+              <Text style={styles.price}>{p.price}</Text>
+              <Text style={styles.period}>al {p.period}</Text>
+            </View>
+          </View>
+        ))}
+        <Text style={[styles.notice, styles.noticeLeft]}>
+          Precios de referencia en euros. La tienda confirma el importe y la moneda al abrir las suscripciones.
+          Las compras no están disponibles en esta versión. Hoy no se cobra nada.
+        </Text>
+      </View>
+    );
   return (
     <View>
       {contexto ? <Text style={[styles.emphasis, styles.contexto]}>{contexto}</Text> : null}
@@ -626,7 +628,7 @@ export function ProOfferLegal({ oferta }: { oferta: ProOfferState }) {
             <Pressable
               onPress={() => abrir(LEGAL_URLS.eulaApple)}
               hitSlop={{ top: 0, bottom: 0, left: 8, right: 8 }}
-          style={styles.linkHit}
+              style={styles.linkHit}
               accessibilityRole="link"
               accessibilityLabel="Contrato de licencia de usuario final de Apple (EULA)"
             >
@@ -724,7 +726,7 @@ const texto = (t: (typeof tipo)[keyof typeof tipo]) => ({
 // oferta es el botón principal; planes, beneficios y letra pequeña van en
 // tinta sobre negro, con la jerarquía en el trazo y en el brillo del texto.
 const styles = StyleSheet.create({
-  emphasis: { fontFamily: fonts.semibold, fontSize: 14, lineHeight: 21, color: ink.ink9 },
+  emphasis: { ...texto(tipo.bodySm), fontFamily: tipo.micro.family, color: ink.ink9 },
   contexto: { marginBottom: 12 },
   upsell: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 44, borderTopWidth: 1, borderTopColor: ink.ink3, paddingVertical: 11 },
   upsellLinea: { ...texto(tipo.bodySm), color: ink.ink9 },
@@ -736,7 +738,7 @@ const styles = StyleSheet.create({
   sep: { borderTopWidth: 1, borderTopColor: ink.ink3 },
   benefitIcon: { marginTop: 1 },
   benefitBody: { flex: 1, minWidth: 0 },
-  benefitTitle: { fontFamily: fonts.semibold, fontSize: 14.5, lineHeight: 20, color: ink.ink9 },
+  benefitTitle: { ...texto(tipo.bodySm), fontFamily: tipo.micro.family, color: ink.ink9 },
   benefitDetail: { ...texto(tipo.bodySm), color: ink.ink8, marginTop: 2 },
   benefitGrid: { flexDirection: 'row', flexWrap: 'wrap', marginBottom: 12 },
   benefitCell: {
@@ -747,7 +749,7 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     paddingRight: 10,
   },
-  benefitCellTitle: { flex: 1, minWidth: 0, fontFamily: fonts.semibold, fontSize: 13, lineHeight: 17, color: ink.ink9 },
+  benefitCellTitle: { flex: 1, minWidth: 0, ...texto(tipo.bodySm), fontFamily: tipo.micro.family, color: ink.ink9 },
   plans: { gap: 10, marginBottom: 16 },
   // El plan es una Card outline (hairline ink3 sobre ink0); elegido, borde
   // ink10 de 1,5 y el fondo igual: sin relleno de color.
@@ -787,12 +789,12 @@ const styles = StyleSheet.create({
   radioDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: ink.ink10 },
   planBody: { flex: 1, minWidth: 0 },
   planHead: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  planLabel: { fontFamily: fonts.heading, fontSize: 13, letterSpacing: 2, color: ink.ink9 },
-  planTitle: { fontFamily: fonts.semibold, fontSize: 14.5, lineHeight: 19, color: ink.ink9 },
+  planLabel: { ...texto(tipo.inscripcion), color: ink.ink9 },
+  planTitle: { ...texto(tipo.bodySm), fontFamily: tipo.micro.family, color: ink.ink9 },
   planDuration: { ...texto(tipo.bodySm), color: ink.ink8, marginTop: 2 },
   planPitch: { ...texto(tipo.bodySm), color: ink.ink8, marginTop: 3 },
   planPrice: { alignItems: 'flex-end' },
-  price: { fontFamily: tipo.number.family, fontSize: 17, color: ink.ink9 },
+  price: { ...texto(tipo.number), color: ink.ink9 },
   period: { ...texto(tipo.bodySm), color: ink.ink6, marginTop: 1 },
   exit: { marginTop: 10 },
   directo: { marginTop: 6, alignSelf: 'center' },
