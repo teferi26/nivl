@@ -600,6 +600,7 @@ export function useCoach(): { vista: CoachVistaProps; hojas: HojasCoach } {
       dictado,
       avisoDictado,
       onAdjuntar: () => void adjuntar(),
+      conFotos: estado ? estado.tier === 'elite' || estado.tier === 'owner' : null,
     },
     onPro: () => router.push('/pro'),
     onMemoria: () => router.push('/memoria'),

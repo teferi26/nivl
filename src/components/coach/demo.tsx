@@ -77,6 +77,7 @@ function base(cambios: Partial<CoachVistaProps> = {}): CoachVistaProps {
       dictado: dictadoDemo(false),
       avisoDictado: null,
       onAdjuntar: nada,
+      conFotos: true,
     },
     onPro: () => router.push('/pro'),
     onMemoria: () => router.push('/memoria'),

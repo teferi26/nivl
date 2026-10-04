@@ -101,6 +101,12 @@ export interface CoachVistaProps {
     dictado: Dictado;
     avisoDictado: string | null;
     onAdjuntar: () => void;
+    /**
+     * El plan tiene un modelo con visión (Élite u owner). Sin él no se ofrece
+     * adjuntar: el servidor corta las fotos con un 400 (Seguridad, 1.0.8).
+     * null mientras no se sabe: tampoco se ofrece.
+     */
+    conFotos: boolean | null;
   };
   onPro: () => void;
   onMemoria: () => void;
@@ -522,18 +528,21 @@ export function CoachVista(p: CoachVistaProps) {
           <View>
             {conRapidas ? <Rapidas onAtajo={p.onAtajo} desactivadas={c.ocupado} conLinea={!p.potencia} /> : null}
             <FranjaGrabacion dictado={c.dictado} aviso={c.avisoDictado} />
+            {c.conFotos === false ? <Text style={styles.sinFotos}>Las fotos al coach son de Élite</Text> : null}
             <View
               style={[styles.barra, (!!p.potencia || conRapidas || c.grabando || !!c.avisoDictado) && styles.barraSinLinea]}
             >
-              <Pressable
-                onPress={c.onAdjuntar}
-                disabled={c.ocupado}
-                style={({ pressed }) => [styles.adjuntar, pressed && styles.pulsado]}
-                accessibilityRole="button"
-                accessibilityLabel="Adjuntar una foto"
-              >
-                <Ionicons name="add" size={26} color={ink.ink8} />
-              </Pressable>
+              {c.conFotos ? (
+                <Pressable
+                  onPress={c.onAdjuntar}
+                  disabled={c.ocupado}
+                  style={({ pressed }) => [styles.adjuntar, pressed && styles.pulsado]}
+                  accessibilityRole="button"
+                  accessibilityLabel="Adjuntar una foto"
+                >
+                  <Ionicons name="add" size={26} color={ink.ink8} />
+                </Pressable>
+              ) : null}
               <TextInput
                 style={styles.input}
                 value={c.texto}
@@ -752,6 +761,15 @@ const styles = StyleSheet.create({
     backgroundColor: ink.ink10,
   },
   enviarOff: { opacity: 0.35 },
+  sinFotos: {
+    fontFamily: type.micro.family,
+    fontSize: type.micro.size,
+    lineHeight: type.micro.lineHeight,
+    letterSpacing: type.micro.tracking,
+    color: ink.ink6,
+    paddingHorizontal: space.s5,
+    paddingTop: space.s2,
+  },
   adjuntar: {
     width: 44,
     height: CIRCULO,
