@@ -284,7 +284,13 @@ export function DiarioVista({
 
   return (
     <Screen plain>
-      <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+      <KeyboardAvoidingView
+        style={styles.flex}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        // Marco relativo al padre frente a teclado en coordenadas de pantalla:
+        // el padre empieza bajo la zona segura de arriba (ver CoachVista).
+        keyboardVerticalOffset={Platform.OS === 'ios' ? insets.top : 0}
+      >
         <ScrollView
           ref={scrollRef}
           keyboardShouldPersistTaps="handled"

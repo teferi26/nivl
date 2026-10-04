@@ -359,7 +359,11 @@ export function CoachVista(p: CoachVistaProps) {
       <KeyboardAvoidingView
         style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 8 : 0}
+        // El KAV mide su marco respecto a su padre (onLayout), pero el teclado
+        // llega en coordenadas de pantalla: el desfase es la zona segura de
+        // arriba (el padre empieza debajo de la isla). Con 8 fijo el teclado
+        // tapaba la barra de entrada unos 50 pt en el iPhone.
+        keyboardVerticalOffset={Platform.OS === 'ios' ? insets.top : 0}
       >
         <ScrollView
           ref={p.scrollRef}
