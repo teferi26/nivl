@@ -43,9 +43,12 @@ import { colors, fonts } from '@/lib/theme';
 import { mensajeSistema } from '@/lib/validation';
 import { Aviso } from './Aviso';
 import {
+  datosRival,
   detalleResuelto,
   diasRestantes,
+  etiquetaDuelo,
   lineaDuelo,
+  nombreRival,
   ordenarTablero,
   repartirDuelos,
   TEXTO_RESULTADO,
@@ -209,7 +212,7 @@ export function Competicion({ amigos, recarga, retarA, onRetarA, onDisponible }:
                   key={d.id}
                   first={i === 0}
                   leading={<Ionicons name="flash-outline" size={18} color={ink.ink9} />}
-                  title={`${d.rival} te reta`}
+                  title={`${nombreRival(d)} te reta`}
                   detail={`Duelo de disciplina · ${textoQuedan(diasRestantes(d.week_start, hoy))}`}
                   trailing={
                     ocupado === d.id ? (
@@ -217,7 +220,7 @@ export function Competicion({ amigos, recarga, retarA, onRetarA, onDisponible }:
                     ) : (
                       <View style={styles.respuestas}>
                         <Button title="Aceptar" size="sm" variant="secondary" onPress={() => responder(d, true)} />
-                        <Rechazar etiqueta={`Rechazar el duelo de ${d.rival}`} onPress={() => responder(d, false)} />
+                        <Rechazar etiqueta={`Rechazar el duelo de ${nombreRival(d)}`} onPress={() => responder(d, false)} />
                       </View>
                     )
                   }
@@ -238,7 +241,7 @@ export function Competicion({ amigos, recarga, retarA, onRetarA, onDisponible }:
                   first={i === 0}
                   muted
                   leading={<Ionicons name="hourglass-outline" size={18} color={ink.ink6} />}
-                  title={d.rival ?? ''}
+                  title={nombreRival(d)}
                   detail="Reto enviado · falta su respuesta"
                 />
               ))}
@@ -248,21 +251,25 @@ export function Competicion({ amigos, recarga, retarA, onRetarA, onDisponible }:
                   first={vista.enviados.length === 0 && i === 0}
                   muted
                   leading={<Ionicons name="hourglass-outline" size={18} color={ink.ink6} />}
-                  title={d.rival ?? ''}
+                  title={nombreRival(d)}
                   detail="Semana cerrada · resolviendo"
                 />
               ))}
               {vista.resueltos.map((d, i) => {
                 // Revancha: solo si el rival se identifica sin duda entre tus
-                // amigos (el duelo trae su nombre, no su id).
-                const mismos = d.resultado === 'pierdo' && d.rival ? amigos.filter((a) => a.name === d.rival) : [];
+                // amigos (el duelo trae su nombre, no su id). Con el rival
+                // oculto (null) no hay a quién retar.
+                const mismos =
+                  d.resultado === 'pierdo' && d.rival != null && d.rival !== ''
+                    ? amigos.filter((a) => a.name === d.rival)
+                    : [];
                 const rival = mismos.length === 1 ? mismos[0]! : null;
                 return (
                   <Row
                     key={d.id}
                     first={vista.enviados.length + vista.cerrados.length === 0 && i === 0}
                     leading={<Ionicons name="flag-outline" size={18} color={ink.ink6} />}
-                    title={d.rival ?? ''}
+                    title={nombreRival(d)}
                     detail={detalleResuelto(d, rival !== null)}
                     trailing={
                       rival ? (
@@ -390,24 +397,28 @@ function Rechazar({ etiqueta, onPress }: { etiqueta: string; onPress: () => void
   );
 }
 
-/** Un duelo en curso: quién va delante, con una barra por cada uno (0–100). */
+/**
+ * Un duelo en curso: quién va delante, con una barra por cada uno (0–100).
+ * Con el rival oculto (sus datos llegan null) solo va mi barra: ni la suya,
+ * ni su índice, ni sus días, ni «va delante».
+ */
 function DueloActivo({ d, hoy }: { d: Duelo; hoy: string }) {
   const quedan = diasRestantes(d.week_start, hoy);
-  const linea = lineaDuelo(d);
+  const rival = datosRival(d);
+  const nombre = nombreRival(d);
   return (
-    <Card
-      style={styles.duelo}
-      accessibilityLabel={`Duelo con ${d.rival}, ${textoQuedan(quedan)}. Tu disciplina ${d.mi_indice}, la suya ${d.su_indice}. ${linea}.`}
-    >
+    <Card style={styles.duelo} accessibilityLabel={etiquetaDuelo(d, quedan)}>
       <View style={styles.dueloCabecera}>
         <Text style={styles.dueloTitulo} numberOfLines={1}>
-          Tú contra {d.rival}
+          Tú contra {nombre}
         </Text>
         <Text style={styles.dueloMeta}>{textoQuedan(quedan)}</Text>
       </View>
       <BarraDuelo etiqueta="Tú" valor={d.mi_indice} dias={d.mis_dias} mia />
-      <BarraDuelo etiqueta={d.rival ?? ''} valor={d.su_indice} dias={d.sus_dias} />
-      <Text style={styles.dueloLinea}>{linea} · disciplina de la semana</Text>
+      {rival ? <BarraDuelo etiqueta={rival.nombre} valor={rival.indice} dias={rival.dias} /> : null}
+      <Text style={styles.dueloLinea}>
+        {rival ? `${lineaDuelo(d)} · disciplina de la semana` : 'Sin datos del rival · disciplina de la semana'}
+      </Text>
     </Card>
   );
 }
