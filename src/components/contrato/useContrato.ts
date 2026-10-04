@@ -1,6 +1,6 @@
 // NIVL · Contrato: datos, efectos y cerrojos (patrón L-RADICAL §C, FASE3 G1).
 // Cortado y pegado de la ruta: la carga, la plantilla del cuaderno, firmar,
-// confesar y eliminar normas, canjear PB y la carta sellada. Cómo se guardan
+// confesar, editar y eliminar normas, canjear PB y la carta sellada. Cómo se guardan
 // y cobran las normas es de src/lib/contract.ts y aquí solo se consume.
 //
 // Cambios de presentación respecto a la ruta vieja:
@@ -11,6 +11,10 @@
 //     aviso mientras su hoja se cierra: la tarjeta «Sellada» lo dice.
 //   · Vibraciones según la tabla de FASE3: `destructiva` tras borrar,
 //     `penalizacion` en el catch de cada acción del usuario.
+//   · Editar una norma (editarRegla) reutiliza la hoja de la norma nueva en
+//     modo edición. La regla vieja se archiva y vuelve una nueva con otro id:
+//     se sustituye en la lista por la devuelta, sin recargar, y su id queda en
+//     `editadas` (solo esta sesión) para decir debajo que se ha editado hoy.
 
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useRef, useState } from 'react';
@@ -22,6 +26,7 @@ import {
   breakRule,
   createRule,
   deleteRule,
+  editarRegla,
   fetchLetter,
   fetchRedemptionsThisWeek,
   fetchRules,
@@ -69,6 +74,9 @@ export function useContrato(): UsoContrato {
   const [ruleConsequence, setRuleConsequence] = useState('');
   const [firmando, setFirmando] = useState(false);
   const [errorNorma, setErrorNorma] = useState<string | null>(null);
+  // La norma que se edita en la hoja (null: la hoja firma una nueva).
+  const [editando, setEditando] = useState<Rule | null>(null);
+  const [editadas, setEditadas] = useState<ReadonlySet<string>>(new Set());
   const [letterFormOpen, setLetterFormOpen] = useState(false);
   const [letterBody, setLetterBody] = useState('');
   const [letterYears, setLetterYears] = useState(OPCIONES_APERTURA[2]!);
@@ -141,6 +149,42 @@ export function useContrato(): UsoContrato {
       await load();
     } catch (e) {
       vibrar('penalizacion');
+      setErrorNorma(mensajeSistema(e));
+    } finally {
+      lock.current = false;
+      setFirmando(false);
+    }
+  };
+
+  const abrirEdicion = (rule: Rule) => {
+    if (lock.current || !profile) return;
+    setEditando(rule);
+    setRuleText(rule.text);
+    setRuleConsequence(rule.consequence);
+    setErrorNorma(null);
+    setRuleFormOpen(true);
+  };
+
+  const guardarEdicion = async () => {
+    const vieja = editando;
+    if (!vieja || !profile || lock.current) return;
+    lock.current = true;
+    setFirmando(true);
+    setErrorNorma(null);
+    try {
+      const nueva = await editarRegla(profile, vieja, { text: ruleText, consequence: ruleConsequence });
+      if (nueva !== vieja) {
+        setRules((rs) => rs.map((r) => (r.id === vieja.id ? nueva : r)));
+        setEditadas((s) => new Set(s).add(nueva.id));
+        vibrar('seleccion');
+      }
+      setRuleFormOpen(false);
+      setEditando(null);
+      setRuleText('');
+      setRuleConsequence('');
+    } catch (e) {
+      vibrar('penalizacion');
+      // ErrorVisible (días sin cerrar, campos vacíos) pasa tal cual.
       setErrorNorma(mensajeSistema(e));
     } finally {
       lock.current = false;
@@ -264,6 +308,12 @@ export function useContrato(): UsoContrato {
   const cerrarNorma = () => {
     setRuleFormOpen(false);
     setErrorNorma(null);
+    // Lo escrito para editar no se queda en la hoja de la norma nueva.
+    if (editando) {
+      setEditando(null);
+      setRuleText('');
+      setRuleConsequence('');
+    }
   };
   const cerrarCarta = () => {
     setLetterFormOpen(false);
@@ -277,6 +327,7 @@ export function useContrato(): UsoContrato {
       hoy: today,
       conPerfil: !!profile,
       reglas: rules.filter((r) => r.active),
+      editadas,
       bonus: profile?.bonus_points ?? 0,
       gastadoSemana: spentWeek,
       carta: letter,
@@ -286,6 +337,7 @@ export function useContrato(): UsoContrato {
         onNuevaNorma: () => setRuleFormOpen(true),
         onRomper: onBreakRule,
         onEliminar: onDeleteRule,
+        onEditar: abrirEdicion,
         onCanjear: onRedeem,
         onCargarPlantilla: seedTemplate,
         onEscribirCarta: () => setLetterFormOpen(true),
@@ -295,13 +347,14 @@ export function useContrato(): UsoContrato {
     },
     hojaNorma: {
       visible: ruleFormOpen,
+      modo: editando ? 'editar' : 'nueva',
       texto: ruleText,
       consecuencia: ruleConsequence,
       guardando: firmando,
       error: errorNorma,
       onTexto: setRuleText,
       onConsecuencia: setRuleConsequence,
-      onGuardar: addRule,
+      onGuardar: editando ? guardarEdicion : addRule,
       onCerrar: cerrarNorma,
     },
     hojaCarta: {

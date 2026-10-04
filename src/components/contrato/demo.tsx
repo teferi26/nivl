@@ -54,6 +54,7 @@ function base(cambios: Partial<ContratoVistaProps> = {}): ContratoVistaProps {
     hoy: HOY_DEMO,
     conPerfil: true,
     reglas: REGLAS,
+    editadas: new Set<string>(),
     bonus: 40,
     gastadoSemana: 25,
     carta: CARTA_SELLADA,
@@ -63,6 +64,7 @@ function base(cambios: Partial<ContratoVistaProps> = {}): ContratoVistaProps {
       onNuevaNorma: nada,
       onRomper: nada,
       onEliminar: nada,
+      onEditar: nada,
       onCanjear: nada,
       onCargarPlantilla: nada,
       onEscribirCarta: nada,
@@ -110,6 +112,7 @@ export const DEMO: DemoPantalla | null = {
           <ContratoVista {...base()} />
           <HojaNorma
             visible
+            modo="nueva"
             texto="Nada de redes sociales antes de las 12"
             consecuencia="Correr 5 km"
             guardando={false}
@@ -120,6 +123,60 @@ export const DEMO: DemoPantalla | null = {
             onCerrar={nada}
           />
         </>
+      ),
+    },
+    {
+      id: 'hoja-editar',
+      titulo: 'Hoja · editar norma',
+      render: () => (
+        <>
+          <ContratoVista {...base()} />
+          <HojaNorma
+            visible
+            modo="editar"
+            texto="Nada de alcohol entre semana"
+            consecuencia={REGLAS[1]!.consequence}
+            guardando={false}
+            error={null}
+            onTexto={nada}
+            onConsecuencia={nada}
+            onGuardar={nada}
+            onCerrar={nada}
+          />
+        </>
+      ),
+    },
+    {
+      id: 'hoja-editar-error',
+      titulo: 'Hoja · editar con días sin cerrar',
+      render: () => (
+        <>
+          <ContratoVista {...base()} />
+          <HojaNorma
+            visible
+            modo="editar"
+            texto="Nada de alcohol entre semana"
+            consecuencia={REGLAS[1]!.consequence}
+            guardando={false}
+            error="Abre Hoy para cerrar los días pendientes antes de editar una regla."
+            onTexto={nada}
+            onConsecuencia={nada}
+            onGuardar={nada}
+            onCerrar={nada}
+          />
+        </>
+      ),
+    },
+    {
+      id: 'editada',
+      titulo: 'Norma editada hoy',
+      render: () => (
+        <ContratoVista
+          {...base({
+            reglas: REGLAS.map((r) => (r.id === 'r1' ? { ...r, id: 'r9', text: 'Nada de alcohol entre semana' } : r)),
+            editadas: new Set(['r9']),
+          })}
+        />
       ),
     },
     {

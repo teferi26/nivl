@@ -3,6 +3,10 @@
 //
 //   · HojaNorma → Campo «La norma» y Campo «Consecuencia si la rompes», con
 //     lo que cuesta romperla debajo. Pie: primary «Firmar la norma» + ghost.
+//     En modo «editar» llega rellena con la norma y su pie es «Guardar
+//     cambios»; la versión anterior se archiva con sus roturas (editarRegla).
+//     Al editar el botón no se apaga con un campo vacío: el sistema contesta
+//     en línea por qué no se puede dejar así.
 //   · HojaCarta → Campo de varias líneas para la carta y chips radio del
 //     plazo (1, 3 o 5 años) con la fecha en que se abrirá. Pie: primary
 //     «Sellar la carta» + ghost.
@@ -29,6 +33,8 @@ export const OPCIONES_APERTURA: readonly OpcionApertura[] = [
 
 export interface HojaNormaProps {
   visible: boolean;
+  /** «nueva» firma una norma; «editar» cambia la que se ha abierto. */
+  modo: 'nueva' | 'editar';
   texto: string;
   consecuencia: string;
   guardando: boolean;
@@ -42,6 +48,7 @@ export interface HojaNormaProps {
 
 export function HojaNorma({
   visible,
+  modo,
   texto,
   consecuencia,
   guardando,
@@ -51,16 +58,22 @@ export function HojaNorma({
   onGuardar,
   onCerrar,
 }: HojaNormaProps) {
-  const lista = !!texto.trim() && !!consecuencia.trim();
+  const editar = modo === 'editar';
+  const lista = editar || (!!texto.trim() && !!consecuencia.trim());
   return (
     <Sheet
       visible={visible}
       onClose={onCerrar}
-      eyebrow="Nueva norma"
-      title="¿Qué te prohíbes?"
+      eyebrow={editar ? 'Editar norma' : 'Nueva norma'}
+      title={editar ? 'Ajusta lo que firmaste' : '¿Qué te prohíbes?'}
       footer={
         <>
-          <Button title="Firmar la norma" onPress={onGuardar} loading={guardando} disabled={!lista} />
+          <Button
+            title={editar ? 'Guardar cambios' : 'Firmar la norma'}
+            onPress={onGuardar}
+            loading={guardando}
+            disabled={!lista}
+          />
           <Button title="Cancelar" variant="ghost" onPress={onCerrar} />
         </>
       }
@@ -80,7 +93,11 @@ export function HojaNorma({
           onChangeText={onConsecuencia}
           placeholder="Ej. Correr 5 km"
           accessibilityLabel="Consecuencia de romper la norma"
-          ayuda={`Romperla cuesta −${RULE_BREAK_XP} XP. Cumplir la consecuencia el mismo día lo recupera.`}
+          ayuda={
+            editar
+              ? `Rige desde hoy. La versión anterior se archiva con sus roturas. Romperla cuesta −${RULE_BREAK_XP} XP.`
+              : `Romperla cuesta −${RULE_BREAK_XP} XP. Cumplir la consecuencia el mismo día lo recupera.`
+          }
         />
         {error ? <ErrorSistema compacto mensaje={error} /> : null}
       </View>

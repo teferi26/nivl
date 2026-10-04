@@ -10,7 +10,9 @@
 //
 // La tablilla es propia y no la TablillaContrato del onboarding: aquella
 // pinta párrafos que se leen; aquí cada norma es un botón (tocar = confesar
-// que se ha roto; mantener = eliminarla).
+// que se ha roto; mantener = eliminarla) con un lápiz al lado para editarla
+// (también como acción de accesibilidad de la fila). Una norma editada en esta
+// sesión lo dice debajo: las roturas de antes siguen en la versión archivada.
 //
 // INVERSIÓN única: con normas, la acción «Firmar una norma nueva» del
 // encabezado; sin normas, «Firmar la primera norma» dentro de la tablilla
@@ -63,6 +65,8 @@ export interface ContratoVistaProps {
   conPerfil: boolean;
   /** Solo las activas, en su orden. */
   reglas: Rule[];
+  /** Ids de las normas editadas en esta sesión. */
+  editadas: ReadonlySet<string>;
   bonus: number;
   gastadoSemana: number;
   carta: Letter | null;
@@ -73,6 +77,7 @@ export interface ContratoVistaProps {
     onNuevaNorma: () => void;
     onRomper: (r: Rule) => void;
     onEliminar: (r: Rule) => void;
+    onEditar: (r: Rule) => void;
     onCanjear: () => void;
     onCargarPlantilla: () => void;
     onEscribirCarta: () => void;
@@ -135,51 +140,72 @@ function Tabla({ filas }: { filas: { label: string; value: string }[] }) {
   );
 }
 
-/** Una norma de la tablilla: tocar = confesar; mantener = eliminar. */
+/** Una norma de la tablilla: tocar = confesar; mantener = eliminar; el lápiz, editar. */
 function FilaNorma({
   regla,
   indice,
+  editada,
   onRomper,
   onEliminar,
+  onEditar,
 }: {
   regla: Rule;
   indice: number;
+  editada: boolean;
   onRomper: (r: Rule) => void;
   onEliminar: (r: Rule) => void;
+  onEditar: (r: Rule) => void;
 }) {
   const numeral = romano(indice + 1);
   return (
-    <Pressable
-      onPress={() => onRomper(regla)}
-      onLongPress={() => onEliminar(regla)}
-      style={({ pressed }) => [styles.norma, indice > 0 && styles.hairline, pressed && styles.normaPulsada]}
-      accessibilityRole="button"
-      accessibilityLabel={`Norma ${indice + 1}: ${regla.text}. Si la rompes: ${regla.consequence}. Cuesta ${RULE_BREAK_XP} XP.`}
-      accessibilityHint="Toca para confesar que la has roto. Mantén pulsado para eliminarla."
-      accessibilityActions={[
-        { name: 'activate', label: 'Confesar que la has roto' },
-        { name: 'longpress', label: 'Eliminar la norma' },
-      ]}
-      onAccessibilityAction={(e) => {
-        if (e.nativeEvent.actionName === 'longpress') onEliminar(regla);
-        else onRomper(regla);
-      }}
-    >
-      <Text style={styles.numeral} maxFontSizeMultiplier={1.35}>
-        {numeral}
-      </Text>
-      <View style={styles.normaCuerpo}>
-        <Text style={styles.normaTexto} maxFontSizeMultiplier={1.35}>
-          {regla.text}
+    <View style={[styles.normaFila, indice > 0 && styles.hairline]}>
+      <Pressable
+        onPress={() => onRomper(regla)}
+        onLongPress={() => onEliminar(regla)}
+        style={({ pressed }) => [styles.norma, pressed && styles.normaPulsada]}
+        accessibilityRole="button"
+        accessibilityLabel={`Norma ${indice + 1}: ${regla.text}. Si la rompes: ${regla.consequence}. Cuesta ${RULE_BREAK_XP} XP.${editada ? ' Editada hoy.' : ''}`}
+        accessibilityHint="Toca para confesar que la has roto. Mantén pulsado para eliminarla."
+        accessibilityActions={[
+          { name: 'activate', label: 'Confesar que la has roto' },
+          { name: 'editar', label: 'Editar la norma' },
+          { name: 'longpress', label: 'Eliminar la norma' },
+        ]}
+        onAccessibilityAction={(e) => {
+          if (e.nativeEvent.actionName === 'longpress') onEliminar(regla);
+          else if (e.nativeEvent.actionName === 'editar') onEditar(regla);
+          else onRomper(regla);
+        }}
+      >
+        <Text style={styles.numeral} maxFontSizeMultiplier={1.35}>
+          {numeral}
         </Text>
-        <Text style={styles.normaConsecuencia} maxFontSizeMultiplier={1.35}>
-          Si la rompes: {regla.consequence}
+        <View style={styles.normaCuerpo}>
+          <Text style={styles.normaTexto} maxFontSizeMultiplier={1.35}>
+            {regla.text}
+          </Text>
+          <Text style={styles.normaConsecuencia} maxFontSizeMultiplier={1.35}>
+            Si la rompes: {regla.consequence}
+          </Text>
+          {editada ? (
+            <Text style={styles.normaEditada} maxFontSizeMultiplier={1.35}>
+              Editada hoy. Las roturas anteriores quedan en la versión archivada.
+            </Text>
+          ) : null}
+        </View>
+        <Text style={styles.normaCoste} maxFontSizeMultiplier={1.35}>
+          −{RULE_BREAK_XP}
         </Text>
-      </View>
-      <Text style={styles.normaCoste} maxFontSizeMultiplier={1.35}>
-        −{RULE_BREAK_XP}
-      </Text>
-    </Pressable>
+      </Pressable>
+      <Pressable
+        onPress={() => onEditar(regla)}
+        style={({ pressed }) => [styles.editar, pressed && styles.normaPulsada]}
+        accessibilityRole="button"
+        accessibilityLabel={`Editar la norma ${indice + 1}`}
+      >
+        <Ionicons name="create-outline" size={18} color={ink.ink8} />
+      </Pressable>
+    </View>
   );
 }
 
@@ -253,6 +279,7 @@ export function ContratoVista({
   hoy,
   conPerfil,
   reglas,
+  editadas,
   bonus,
   gastadoSemana,
   carta,
@@ -320,7 +347,15 @@ export function ContratoVista({
             </Text>
             {hayReglas ? (
               reglas.map((r, i) => (
-                <FilaNorma key={r.id} regla={r} indice={i} onRomper={acciones.onRomper} onEliminar={acciones.onEliminar} />
+                <FilaNorma
+                  key={r.id}
+                  regla={r}
+                  indice={i}
+                  editada={editadas.has(r.id)}
+                  onRomper={acciones.onRomper}
+                  onEliminar={acciones.onEliminar}
+                  onEditar={acciones.onEditar}
+                />
               ))
             ) : (
               <View style={styles.vacio}>
@@ -344,8 +379,8 @@ export function ContratoVista({
           </TarjetaArena>
           {hayReglas ? (
             <Text style={styles.nota} maxFontSizeMultiplier={1.35}>
-              Toca una norma para confesar que la has roto. Mantén pulsada para eliminarla. Cada noche se marcan las
-              cumplidas en Hábitos.
+              Toca una norma para confesar que la has roto. Mantén pulsada para eliminarla. El lápiz la edita desde
+              hoy. Cada noche se marcan las cumplidas en Hábitos.
             </Text>
           ) : null}
         </View>
@@ -415,7 +450,10 @@ const styles = StyleSheet.create({
     marginBottom: space.s3,
   },
   meandroPie: { marginTop: space.s4 },
+  normaFila: { flexDirection: 'row', alignItems: 'stretch' },
   norma: {
+    flex: 1,
+    minWidth: 0,
     flexDirection: 'row',
     alignItems: 'flex-start',
     gap: space.s3,
@@ -438,6 +476,16 @@ const styles = StyleSheet.create({
     lineHeight: tipo.bodySm.lineHeight,
     color: ink.ink8,
   },
+  normaEditada: {
+    fontFamily: tipo.micro.family,
+    fontSize: tipo.micro.size,
+    lineHeight: tipo.micro.lineHeight,
+    letterSpacing: tipo.micro.tracking,
+    color: ink.ink6,
+    marginTop: space.s1,
+  },
+  // Zona táctil de 44 × 44, alineada con la primera línea de la norma.
+  editar: { width: 44, minHeight: 44, alignItems: 'flex-end', justifyContent: 'flex-start', paddingTop: space.s3 + 2 },
   normaCoste: { fontFamily: tipo.number.family, fontSize: 14, lineHeight: 22, color: ink.ink8 },
   vacio: { gap: space.s3, paddingVertical: space.s2 },
   vacioTitulo: {
