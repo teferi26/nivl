@@ -310,6 +310,29 @@ export const DEMO: DemoPantalla | null = {
       ),
     },
     {
+      id: 'hoja-pausa-error',
+      titulo: 'Hoja: pausa que no se ha activado',
+      render: () => (
+        <ConHoja
+          hoja={
+            <HojaPausa
+              abierta
+              cerrar={nada}
+              motivo="Vacaciones"
+              setMotivo={nada}
+              dias={3}
+              setDias={nada}
+              activar={nada}
+              aviso="El sistema no responde. Revisa la conexión y vuelve a intentarlo."
+              today={HOY_DEMO}
+              motivos={['Exámenes', 'Enfermedad', 'Vacaciones']}
+              duraciones={[1, 3, 7, 14]}
+            />
+          }
+        />
+      ),
+    },
+    {
       id: 'hoja-codigo',
       titulo: 'Hoja: código de creador con error',
       render: () => (

@@ -14,6 +14,12 @@ import { HojaSaludVista, PuertaSaludVista } from './puertas/SaludVista';
 import { Card, Section, Skeleton } from './ui';
 import { confirmar } from './ui/confirmar';
 
+// La vibración de la casilla se carga al tocarla: así la puerta no arrastra el
+// módulo nativo de vibraciones a sus tests ni a su primer pintado.
+const vibrarSeleccion = () => {
+  import('@/design/haptics').then((m) => m.vibrar('seleccion')).catch(() => {});
+};
+
 interface State extends HealthConsent { loading: boolean; error: string | null; epoch: number; }
 interface Context extends State { refresh: () => Promise<void>; ask: () => void; }
 const EMPTY: State = { accepted: false, revision: 0, erasurePending: false, loading: true, error: null, epoch: 0 };
@@ -114,7 +120,7 @@ export function HealthConsentSheet({ visible, close, accepted }: { visible: bool
     marcada={checked}
     ocupada={busy}
     error={error}
-    onMarcar={() => setChecked(value => !value)}
+    onMarcar={() => { vibrarSeleccion(); setChecked(value => !value); }}
     onAceptar={() => void accept()}
     onCancelar={cancel}
     onErrorEnlace={setError}

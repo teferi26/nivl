@@ -125,7 +125,7 @@ export function useContrato(): UsoContrato {
       await load();
     } catch (e) {
       vibrar('penalizacion');
-      avisar('Error del sistema', mensajeSistema(e));
+      avisar('El sistema no responde', mensajeSistema(e));
     } finally {
       lock.current = false;
       setBusy(false);
@@ -176,7 +176,6 @@ export function useContrato(): UsoContrato {
       if (nueva !== vieja) {
         setRules((rs) => rs.map((r) => (r.id === vieja.id ? nueva : r)));
         setEditadas((s) => new Set(s).add(nueva.id));
-        vibrar('seleccion');
       }
       setRuleFormOpen(false);
       setEditando(null);
@@ -213,7 +212,7 @@ export function useContrato(): UsoContrato {
       await load();
     } catch (e) {
       vibrar('penalizacion');
-      avisar('Error del sistema', mensajeSistema(e));
+      avisar('El sistema no responde', mensajeSistema(e));
     } finally {
       lock.current = false;
     }
@@ -234,7 +233,7 @@ export function useContrato(): UsoContrato {
       await load();
     } catch (e) {
       vibrar('penalizacion');
-      avisar('Error del sistema', mensajeSistema(e));
+      avisar('El sistema no responde', mensajeSistema(e));
     }
   };
 
@@ -263,7 +262,7 @@ export function useContrato(): UsoContrato {
       avisar('DESCANSO GANADO', 'Disfrútalo sin culpa: lo has pagado con esfuerzo.');
     } catch (e) {
       vibrar('penalizacion');
-      avisar('Error del sistema', mensajeSistema(e));
+      avisar('El sistema no responde', mensajeSistema(e));
     } finally {
       lock.current = false;
     }
@@ -299,7 +298,7 @@ export function useContrato(): UsoContrato {
       vibrar('mision');
     } catch (e) {
       vibrar('penalizacion');
-      avisar('Error del sistema', mensajeSistema(e));
+      avisar('El sistema no responde', mensajeSistema(e));
     } finally {
       lock.current = false;
     }
@@ -348,6 +347,7 @@ export function useContrato(): UsoContrato {
     hojaNorma: {
       visible: ruleFormOpen,
       modo: editando ? 'editar' : 'nueva',
+      original: editando ? { texto: editando.text, consecuencia: editando.consequence } : null,
       texto: ruleText,
       consecuencia: ruleConsequence,
       guardando: firmando,

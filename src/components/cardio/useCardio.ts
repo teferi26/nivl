@@ -39,6 +39,7 @@ import { anuncioCardio, pagoDelModulo, primeraSesionQuePropaga, xpPagado } from 
 import { mensajeSistema } from '@/lib/validation';
 import type { AnuncioCardio, CardioVistaProps } from './CardioVista';
 import type { ErroresCardio, HojaCardioProps } from './HojaCardio';
+import { ETIQUETA, fechaCorta } from './tipos';
 
 export interface UseCardio {
   vista: CardioVistaProps;
@@ -204,7 +205,7 @@ export function useCardio(): UseCardio {
   const borrar = async (s: CardioSession) => {
     const ok = await confirmar({
       titulo: 'Eliminar sesión',
-      mensaje: `${s.kind} del ${s.date}`,
+      mensaje: `${ETIQUETA[s.kind]} del ${fechaCorta(s.date)}`,
       confirmar: 'Eliminar',
       destructivo: true,
     });
@@ -214,7 +215,7 @@ export function useCardio(): UseCardio {
       await deleteCardio(s.id);
     } catch (e) {
       // Antes el fallo se tragaba y la sesión seguía ahí sin explicación.
-      avisar('Error del sistema', mensajeSistema(e));
+      avisar('El sistema no responde', mensajeSistema(e));
       return;
     }
     await cargar();

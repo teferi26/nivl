@@ -45,6 +45,24 @@ export function useInforme(): { vista: InformeVistaProps; hoja: ReactNode } {
   const [errorCarga, setErrorCarga] = useState<string | null>(null);
   const [errorOraculo, setErrorOraculo] = useState<string | null>(null);
   const lock = useRef(false);
+  // Un cerrojo por ajuste o misión nueva: el doble toque en «Aplicar» o
+  // «Crear» creaba misiones duplicadas.
+  const aplicandoLock = useRef<Set<string>>(new Set());
+  const [aplicando, setAplicando] = useState<Set<string>>(new Set());
+  const empezarAplicar = (key: string) => {
+    if (aplicandoLock.current.has(key)) return false;
+    aplicandoLock.current.add(key);
+    setAplicando((prev) => new Set(prev).add(key));
+    return true;
+  };
+  const terminarAplicar = (key: string) => {
+    aplicandoLock.current.delete(key);
+    setAplicando((prev) => {
+      const next = new Set(prev);
+      next.delete(key);
+      return next;
+    });
+  };
 
   // El sistema se mejora a sí mismo: manda los datos reales de 14 días a la IA
   // y devuelve ajustes concretos que se aplican con un toque.
@@ -134,6 +152,8 @@ export function useInforme(): { vista: InformeVistaProps; hoja: ReactNode } {
   };
 
   const applyAdjustment = async (adj: WeeklyAdvice['adjustments'][number]) => {
+    const key = adj.quest_id;
+    if (!empezarAplicar(key)) return;
     try {
       if (adj.action === 'desactivar') {
         await updateQuest(adj.quest_id, { active: false, health_data: true });
@@ -143,12 +163,14 @@ export function useInforme(): { vista: InformeVistaProps; hoja: ReactNode } {
       setApplied((prev) => new Set(prev).add(adj.quest_id));
       await load();
     } catch (e) {
-      avisar('Error del sistema', mensajeSistema(e));
+      avisar('El sistema no responde', mensajeSistema(e));
+    } finally {
+      terminarAplicar(key);
     }
   };
 
   const applyNewQuest = async (q: WeeklyAdvice['new_quests'][number], key: string) => {
-    if (!userId) return;
+    if (!userId || !empezarAplicar(key)) return;
     try {
       await createQuest(userId, {
         health_data: true,
@@ -161,7 +183,9 @@ export function useInforme(): { vista: InformeVistaProps; hoja: ReactNode } {
       setApplied((prev) => new Set(prev).add(key));
       await load();
     } catch (e) {
-      avisar('Error del sistema', mensajeSistema(e));
+      avisar('El sistema no responde', mensajeSistema(e));
+    } finally {
+      terminarAplicar(key);
     }
   };
 
@@ -198,6 +222,7 @@ export function useInforme(): { vista: InformeVistaProps; hoja: ReactNode } {
       datos: derivarInforme(completions, quests, today),
       advice,
       aplicados: applied,
+      aplicando,
       consultando: consulting,
       errorOraculo,
       refrescando,

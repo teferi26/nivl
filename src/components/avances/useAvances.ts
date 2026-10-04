@@ -157,7 +157,7 @@ export function useAvances(): UseAvances {
       else avisar('Pesaje registrado', mensaje);
     } catch (e) {
       vibrar('penalizacion');
-      avisar('Error del sistema', mensajeSistema(e));
+      avisar('El sistema no responde', mensajeSistema(e));
     } finally {
       lock.current = false;
       setBusy(false);
@@ -233,7 +233,7 @@ export function useAvances(): UseAvances {
       }
     } catch (e) {
       vibrar('penalizacion');
-      avisar('Error del sistema', mensajeSistema(e));
+      avisar('El sistema no responde', mensajeSistema(e));
     } finally {
       lock.current = false;
     }
@@ -247,28 +247,36 @@ export function useAvances(): UseAvances {
       await deleteGoal(goal.id);
       await load();
     } catch (e) {
-      avisar('Error del sistema', mensajeSistema(e));
+      avisar('El sistema no responde', mensajeSistema(e));
     }
   };
 
   const [freeGoal, setFreeGoal] = useState<Goal | null>(null);
   const [freeValue, setFreeValue] = useState('');
+  const [guardandoValor, setGuardandoValor] = useState(false);
 
   const saveFreeGoal = async () => {
-    if (!freeGoal) return;
+    if (!freeGoal || lock.current) return;
     const v = parseFloat(freeValue.replace(',', '.'));
     if (!Number.isFinite(v)) {
       setErrorValor('Valor inválido: introduce un número.');
       return;
     }
     setErrorValor(null);
+    lock.current = true;
+    setGuardandoValor(true);
     try {
       await updateGoal(freeGoal.id, { current_value: v });
       setFreeGoal(null);
       setFreeValue('');
       await load();
     } catch (e) {
+      // Con la hoja abierta: el fallo va dentro de ella, con lo escrito intacto.
+      vibrar('penalizacion');
       setErrorValor(mensajeSistema(e));
+    } finally {
+      lock.current = false;
+      setGuardandoValor(false);
     }
   };
 
@@ -277,7 +285,7 @@ export function useAvances(): UseAvances {
       const s = await fetchExerciseSeries(exercise);
       setSeries({ exercise, values: s.map((p) => p.weight) });
     } catch (e) {
-      avisar('Error del sistema', mensajeSistema(e));
+      avisar('El sistema no responde', mensajeSistema(e));
     }
   };
 
@@ -360,12 +368,15 @@ export function useAvances(): UseAvances {
       meta: freeGoal,
       valor: freeValue,
       error: errorValor,
+      guardando: guardandoValor,
       onValor: (v: string) => {
         setFreeValue(v);
         if (errorValor) setErrorValor(null);
       },
       onGuardar: saveFreeGoal,
-      onCerrar: () => setFreeGoal(null),
+      onCerrar: () => {
+        if (!lock.current) setFreeGoal(null);
+      },
     },
   };
 }

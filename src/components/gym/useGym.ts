@@ -321,6 +321,7 @@ export function useGym(): UseGym {
       setFotoB64(null);
       await load();
     } catch (e) {
+      vibrar('penalizacion');
       avisar('Error del sistema', mensajeSistema(e));
     } finally {
       saving.current = false;

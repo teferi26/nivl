@@ -47,7 +47,7 @@ export function HojaClave({ visible, clave, guardada, onClave, onGuardar, onCerr
           ayuda={
             guardada
               ? 'Hay una clave guardada. Pega otra para sustituirla, o bórrala y guarda para quitarla.'
-              : 'Nunca sale del dispositivo.'
+              : 'Solo se envía a OpenAI o Anthropic, nunca a NIVL.'
           }
         />
       </View>

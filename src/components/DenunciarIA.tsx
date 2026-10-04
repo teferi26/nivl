@@ -8,6 +8,7 @@
 import * as Linking from 'expo-linking';
 import { useRef, useState } from 'react';
 import { DenunciaVista } from '@/components/puertas/DenunciaVista';
+import { vibrar } from '@/design/haptics';
 import { supabase } from '@/lib/supabase';
 import { mensajeSistema } from '@/lib/validation';
 import { CORREO_SOPORTE, correoDenuncia, extractoDenuncia, faltaLaRpc, type FuenteIA, type MotivoIA } from './denunciaIA';
@@ -71,6 +72,7 @@ export function DenunciarIA({ respuesta, onClose }: Props) {
         setAviso('Denuncia registrada. El equipo revisará esta respuesta.');
       }
     } catch (e) {
+      vibrar('penalizacion');
       setAviso(mensajeSistema(e));
     } finally {
       lock.current = false;

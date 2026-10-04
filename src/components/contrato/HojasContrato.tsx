@@ -5,8 +5,8 @@
 //     lo que cuesta romperla debajo. Pie: primary «Firmar la norma» + ghost.
 //     En modo «editar» llega rellena con la norma y su pie es «Guardar
 //     cambios»; la versión anterior se archiva con sus roturas (editarRegla).
-//     Al editar el botón no se apaga con un campo vacío: el sistema contesta
-//     en línea por qué no se puede dejar así.
+//     Al editar, el botón solo se enciende con los dos campos escritos y algo
+//     cambiado respecto a la norma de partida (`original`).
 //   · HojaCarta → Campo de varias líneas para la carta y chips radio del
 //     plazo (1, 3 o 5 años) con la fecha en que se abrirá. Pie: primary
 //     «Sellar la carta» + ghost.
@@ -35,6 +35,8 @@ export interface HojaNormaProps {
   visible: boolean;
   /** «nueva» firma una norma; «editar» cambia la que se ha abierto. */
   modo: 'nueva' | 'editar';
+  /** En «editar», la norma de partida: sin cambios, no hay nada que guardar. */
+  original?: { texto: string; consecuencia: string } | null;
   texto: string;
   consecuencia: string;
   guardando: boolean;
@@ -49,6 +51,7 @@ export interface HojaNormaProps {
 export function HojaNorma({
   visible,
   modo,
+  original = null,
   texto,
   consecuencia,
   guardando,
@@ -59,7 +62,10 @@ export function HojaNorma({
   onCerrar,
 }: HojaNormaProps) {
   const editar = modo === 'editar';
-  const lista = editar || (!!texto.trim() && !!consecuencia.trim());
+  const rellena = !!texto.trim() && !!consecuencia.trim();
+  const cambiada =
+    !editar || !original || texto.trim() !== original.texto || consecuencia.trim() !== original.consecuencia;
+  const lista = rellena && cambiada;
   return (
     <Sheet
       visible={visible}

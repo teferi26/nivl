@@ -130,6 +130,10 @@ export interface HojaPausaProps {
   dias: number;
   setDias: (d: number) => void;
   activar: () => void;
+  /** El fallo al activar, en línea dentro de la hoja. */
+  aviso?: string | null;
+  /** Activando: el botón muestra la carga y no admite un segundo toque. */
+  ocupado?: boolean;
   /** Hoy (AAAA-MM-DD): de aquí sale el día en que se reanuda. */
   today: string;
   motivos: readonly string[];
@@ -138,17 +142,33 @@ export interface HojaPausaProps {
 
 const textoDias = (d: number) => `${d} día${d > 1 ? 's' : ''}`;
 
-export function HojaPausa({ abierta, cerrar, motivo, setMotivo, dias, setDias, activar, today, motivos, duraciones }: HojaPausaProps) {
+export function HojaPausa({
+  abierta,
+  cerrar,
+  motivo,
+  setMotivo,
+  dias,
+  setDias,
+  activar,
+  aviso = null,
+  ocupado = false,
+  today,
+  motivos,
+  duraciones,
+}: HojaPausaProps) {
+  const cerrarSiSePuede = () => {
+    if (!ocupado) cerrar();
+  };
   return (
     <Sheet
       visible={abierta}
-      onClose={cerrar}
+      onClose={cerrarSiSePuede}
       eyebrow="Pausar el sistema"
       title="¿Cuánto tiempo?"
       footer={
         <>
-          <Button title="Activar pausa" size="lg" icon="snow-outline" onPress={activar} />
-          <Button title="Cancelar" variant="ghost" onPress={cerrar} />
+          <Button title="Activar pausa" size="lg" icon="snow-outline" onPress={activar} loading={ocupado} />
+          <Button title="Cancelar" variant="ghost" onPress={cerrarSiSePuede} disabled={ocupado} />
         </>
       }
     >
@@ -187,6 +207,8 @@ export function HojaPausa({ abierta, cerrar, motivo, setMotivo, dias, setDias, a
             {nombreDia(addDays(today, dias)).toLocaleUpperCase('es-ES')}
           </Text>
         </View>
+
+        {aviso ? <ErrorSistema compacto mensaje={aviso} /> : null}
       </View>
     </Sheet>
   );

@@ -134,6 +134,7 @@ export const DEMO: DemoPantalla | null = {
           <HojaNorma
             visible
             modo="editar"
+            original={{ texto: REGLAS[1]!.text, consecuencia: REGLAS[1]!.consequence }}
             texto="Nada de alcohol entre semana"
             consecuencia={REGLAS[1]!.consequence}
             guardando={false}
@@ -155,6 +156,7 @@ export const DEMO: DemoPantalla | null = {
           <HojaNorma
             visible
             modo="editar"
+            original={{ texto: REGLAS[1]!.text, consecuencia: REGLAS[1]!.consequence }}
             texto="Nada de alcohol entre semana"
             consecuencia={REGLAS[1]!.consequence}
             guardando={false}
