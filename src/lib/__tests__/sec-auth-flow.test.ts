@@ -60,6 +60,18 @@ jest.mock('../notifications', () => ({ cancelarTodo: jest.fn(async () => { mockO
 jest.mock('../oracle', () => ({ setApiKey: jest.fn(async (k: string) => { mockOrden.push(`oraculo:${k}`); }) }));
 jest.mock('../creators', () => ({ olvidarCodigoPendiente: jest.fn(async () => { mockOrden.push('creador'); }) }));
 jest.mock('../consent', () => ({ olvidarConsentimiento: jest.fn(() => { mockOrden.push('consentimiento'); }) }));
+jest.mock('@/components/coach/redDictado', () => ({ olvidarRedDictado: jest.fn(async () => { mockOrden.push('dictado'); }) }));
+jest.mock('@react-native-async-storage/async-storage', () => ({
+  __esModule: true,
+  default: { multiRemove: jest.fn(async (k: string[]) => { mockOrden.push(`claves:${k.join('+')}`); }) },
+}));
+jest.mock('expo-notifications', () => ({ dismissAllNotificationsAsync: jest.fn(async () => { mockOrden.push('avisos-mostrados'); }) }));
+jest.mock('expo-image', () => ({
+  Image: {
+    clearMemoryCache: jest.fn(async () => { mockOrden.push('imagenes-memoria'); return true; }),
+    clearDiskCache: jest.fn(async () => { mockOrden.push('imagenes-disco'); return true; }),
+  },
+}));
 
 const apiError = (message: string, status: number, code?: string) =>
   Object.assign(new Error(message), { name: 'AuthApiError', status, code });
@@ -273,9 +285,12 @@ describe('cerrarSesion', () => {
       return { error: null };
     });
   });
-  test('borra token push, avisos locales, key, código y consentimiento ANTES del signOut global', async () => {
+  test('borra token push, avisos locales y mostrados, key, código, consentimiento, permiso de dictado, imágenes y claves sin uid ANTES del signOut global', async () => {
     await cerrarSesion();
-    expect(mockOrden.slice(0, -1).sort()).toEqual(['consentimiento', 'creador', 'locales', 'oraculo:', 'push'].sort());
+    expect(mockOrden.slice(0, -1).sort()).toEqual([
+      'consentimiento', 'creador', 'locales', 'oraculo:', 'push', 'dictado',
+      'claves:nivl:duelos:vistos+nivl.ofertas.v1', 'avisos-mostrados', 'imagenes-memoria', 'imagenes-disco',
+    ].sort());
     expect(mockOrden[mockOrden.length - 1]).toBe('signOut');
     expect(mockAuth.signOut).toHaveBeenCalledTimes(1);
     expect(mockAuth.signOut).toHaveBeenCalledWith();
