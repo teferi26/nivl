@@ -128,7 +128,7 @@ export async function reintentarCodigoPendiente(): Promise<void> {
   const p = await leerCodigoPendiente();
   if (!p) return;
   try {
-    await claimReferral(p.code, p.source);
+    await reclamarQuienTeTrajo(p.code, p.source);
     await olvidarCodigoPendiente();
   } catch {
     /* sin red: sigue pendiente */

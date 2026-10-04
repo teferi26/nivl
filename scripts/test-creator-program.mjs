@@ -2,7 +2,7 @@
 // Uso: node scripts/test-creator-program.mjs /ruta/a/@electric-sql/pglite/dist/index.js
 //
 // Carga un esquema previo mínimo (roles, auth.users, auth.uid(), subscriptions,
-// events), la 0025 REAL y la propuesta 0046 DOS veces, y comprueba las RPC
+// events), la 0025 y la 0046 REALES (la 0046 dos veces), y comprueba las RPC
 // nuevas del programa de creadores con datos sintéticos (ningún dato real).
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
@@ -71,7 +71,7 @@ try {
     create table public.events(id bigserial primary key, user_id uuid, type text, payload jsonb, created_at timestamptz default now());
   `);
   await db.exec(await readFile(resolve(root, 'supabase/migrations/0025_creadores.sql'), 'utf8'));
-  const m0046 = await readFile(resolve(root, 'docs/payment-audit/propuestas/0046_programa_creadores.sql'), 'utf8');
+  const m0046 = await readFile(resolve(root, 'supabase/migrations/0046_programa_creadores.sql'), 'utf8');
   await db.exec(m0046);
   await db.exec(m0046); // re-ejecutable
 

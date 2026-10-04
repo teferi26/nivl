@@ -66,7 +66,9 @@ import {
   rutaOferta,
   seleccionDeTienda,
   startTrial,
+  textoPrueba,
   tierOffer,
+  tituloBotonPrueba,
   tituloPlan,
   type Momento,
   type OfferTier,
@@ -490,10 +492,10 @@ export function ProOfferBody({ oferta, kind, compact, motivo }: BodyProps) {
       {tier === 'elite' ? <Text style={styles.usageNotice}>{ELITE_USAGE_NOTICE}</Text> : null}
 
       {planesArriba ? null : catalogoVista}
-      {disponible && prueba ? (
-        <Text style={[styles.notice, styles.noticeLeft, styles.noticeBelow]}>
-          Siete días con el coach, sin tarjeta y sin cobro. Al acabar, tus hábitos y tu progreso siguen disponibles gratis.
-        </Text>
+      {/* Las condiciones de la prueba, siempre que se ofrece (también con la
+          tienda cerrada): qué incluye, que no pide tarjeta y que no se renueva. */}
+      {prueba ? (
+        <Text style={[styles.notice, styles.noticeLeft, styles.noticeBelow]}>{textoPrueba(tier)}</Text>
       ) : null}
     </View>
   );
@@ -509,7 +511,7 @@ interface ActionsProps {
 
 /** Los dos botones, del mismo tamaño, y lo que el sistema responde al pulsarlos. */
 export function ProOfferActions({ oferta, exitLabel, onExit, exitLoading }: ActionsProps) {
-  const { plan, precioDe, catalogo, puedeComprar, busy, anotado, aviso, disponible, prueba, onPrincipal, onPrueba, hojaConsentimiento } = oferta;
+  const { tier, plan, precioDe, catalogo, puedeComprar, busy, anotado, aviso, disponible, prueba, onPrincipal, onPrueba, hojaConsentimiento } = oferta;
   const activar = puedeComprar
     ? `Activar ${tituloPlan(plan.id)} · ${precioDe(plan.id)} al ${plan.period}`
     : catalogo === 'cargando' ? 'Cargando precios de la tienda' : 'Compra no disponible';
@@ -528,7 +530,7 @@ export function ProOfferActions({ oferta, exitLabel, onExit, exitLoading }: Acti
       {prueba ? (
         <>
           <Button
-            title="Probar el coach 7 días"
+            title={tituloBotonPrueba(tier)}
             variant="primary"
             size="lg"
             icon="hourglass-outline"
