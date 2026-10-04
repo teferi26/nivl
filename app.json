@@ -19,7 +19,8 @@
         "NSCameraUsageDescription": "NIVL usa la cámara para tus evidencias, tu foto de perfil y tus fotos de progreso. Las imágenes solo se envían al coach cuando tú se las mandas.",
         "NSPhotoLibraryUsageDescription": "NIVL usa tu galería para elegir evidencias, tu foto de perfil y tus fotos de progreso. Las imágenes solo se envían al coach cuando tú se las mandas.",
         "ITSAppUsesNonExemptEncryption": false,
-        "NSMicrophoneUsageDescription": "NIVL usa el micrófono solo cuando tú lo pides: para dictarle a tu coach mientras mantienes pulsado el botón de voz. Nunca graba en segundo plano."
+        "NSMicrophoneUsageDescription": "NIVL usa el micrófono solo cuando tú lo pides: para dictarle a tu coach mientras mantienes pulsado el botón de voz. Nunca graba en segundo plano.",
+        "NSPhotoLibraryAddUsageDescription": "NIVL guarda en tus fotos solo las tarjetas que tú decides guardar al compartir."
       },
       "entitlements": {
         "com.apple.developer.usernotifications.time-sensitive": true
