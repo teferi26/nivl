@@ -37,7 +37,7 @@ export interface ProveedorIa {
 
 /** A quién va, y cuándo. */
 export const PROVEEDORES_IA: readonly ProveedorIa[] = [
-  { nombre: 'Anthropic (Claude)', donde: 'Almacenamiento en EE. UU.; procesamiento por defecto en EE. UU., Europa, Asia y Australia.', cuando: 'NIVL Élite y otras solicitudes que utilicen Claude.' },
+  { nombre: 'Anthropic (Claude)', donde: 'Almacenamiento en EE. UU.; procesamiento por defecto en EE. UU., Europa, Asia y Australia.', cuando: 'NIVL Élite y, en todos los planes, las fotos que adjuntes al coach, los resúmenes, los textos de los avisos, la clasificación de movimientos y otras tareas cortas.' },
   { nombre: 'DeepSeek', donde: 'República Popular China', cuando: 'NIVL Pro y la prueba de 7 días.' },
 ];
 

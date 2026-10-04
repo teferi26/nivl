@@ -38,7 +38,6 @@ import {
   pushesDeHoy,
 } from '../_shared/checkin.ts';
 import { consentimientoIa } from '../_shared/consent.ts';
-import { sinGuiones } from '../_shared/singuiones.ts';
 import { healthConsent, healthRevision, healthScopedClient, requireHealth } from '../_shared/health.ts';
 import { adminClient, type Db } from '../_shared/db.ts';
 import { espejarEntrada, espejoActivo } from '../_shared/notion.ts';
@@ -110,58 +109,21 @@ function horaDe(t: string): number {
 }
 
 /**
- * Convierte el ritual entero en una línea para la notificación.
- *
- * Antes se cortaba por el carácter 240, que en un brief que empieza con
- * "**El veredicto: tu gasto no es el problema…**" daba una notificación con
- * asteriscos y partida a mitad de frase. Y una notificación es lo único que ves
- * si no abres la app: si no dice nada, el ritual no ha servido de nada.
- *
- * Lo hace Haiku porque resumir en una línea un texto que ya está escrito no
- * pide criterio, y con la tarifa del coach este resumen costaría más que
- * generar el brief. Si falla, se cae al recorte de siempre: quedarse sin push
- * por no tener titular sería peor.
+ * Cuerpos de push FIJOS por tipo (guideline 4.5.4: nada sensible en un push).
+ * El texto del coach puede llevar peso, kcal, dinero o salud: se queda en la
+ * app. Sin «—» (orden del dueño).
  */
-async function titular(sb: Db, userId: string, cuerpo: string): Promise<string> {
-  await requireHealth(sb, userId);
-  const plano = cuerpo.replace(/[*#_`]/g, '').replace(/\s+/g, ' ').trim();
-  if (plano.length <= 180) return sinGuiones(plano);
-  try {
-    if ((await consentimientoIa(sb, userId)) !== true) return sinGuiones(plano.slice(0, 240));
-    const turn = await callClaude({
-      model: CHEAP_MODEL,
-      signal: AbortSignal.timeout(30_000),
-      system: [{
-        type: 'text',
-        text: 'Resumes en UNA sola frase de menos de 180 caracteres lo que un coach acaba de escribirle a su cliente. Tono seco y directo, en segunda persona, sin emojis, sin markdown, sin comillas. Si hay una cifra o una hora concretas, van dentro. Devuelves solo la frase.',
-      }],
-      messages: [{ role: 'user', content: [{ type: 'text', text: plano.slice(0, 6000) }] }],
-      maxTokens: 200,
-      effort: 'low',
-    });
-    // También esto cuesta y también va al libro: sin fila, el candado no lo
-    // ve. (kind 'titular' necesita la propuesta c-coach-runs-kinds.sql; hasta
-    // aplicarla el insert falla y queda en el log.)
-    // Con telemetría de la 0047 si ya está aplicada; si no, sin ella.
-    const { error: ledgerErr } = await insertarRun(sb, {
-      user_id: userId,
-      kind: 'titular',
-      mode: 'estandar',
-      model: turn.model,
-      in_tokens: turn.usage.input_tokens ?? 0,
-      cache_read_tokens: turn.usage.cache_read_input_tokens ?? 0,
-      cache_write_tokens: turn.usage.cache_creation_input_tokens ?? 0,
-      out_tokens: turn.usage.output_tokens ?? 0,
-      cost_micro_usd: costMicroUsd(turn.model, turn.usage),
-    }, { route: 'mecanica', tools_offered: 0, tool_calls: 0, iterations: 1 });
-    if (ledgerErr) console.error('coach_runs insert failed (titular):', ledgerErr.message);
-    const t = turn.content.filter((b) => b.type === 'text').map((b) => b.text ?? '').join('').trim();
-    if (t) return sinGuiones(t.slice(0, 240));
-  } catch (e) {
-    console.error('titular failed');
-  }
-  return sinGuiones(plano.slice(0, 240));
+export const CUERPO_PUSH_CHECKIN = 'Tu coach te ha hecho una pregunta.';
+const CUERPOS_PUSH: Record<string, string> = {
+  brief: 'Tu coach ha dejado el brief de hoy.',
+  revision_semanal: 'Tu coach ha dejado la revisión de la semana.',
+  cierre_mensual: 'Tu coach ha cerrado el mes.',
+  escalada: 'Tu coach te ha escrito.',
+};
+export function cuerpoPush(kind: string): string {
+  return CUERPOS_PUSH[kind] ?? 'Tu coach te ha escrito.';
 }
+
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -554,7 +516,8 @@ export async function intentarCheckin(admin: Db, sb: Db, p: Perfil): Promise<str
     await sb.from('coach_threads').update({ last_message_at: relojRitual.ahora().toISOString() }).eq('id', hilo);
 
     if (politica.ok) {
-      await empujar(sb, p.id, 'Una pregunta del coach', limpio, '/(tabs)/coach');
+      // 4.5.4: la pregunta (que puede nombrar una misión u objetivo) se lee en la app.
+      await empujar(sb, p.id, 'Una pregunta del coach', CUERPO_PUSH_CHECKIN, '/(tabs)/coach');
       return 'enviado';
     }
     return 'escrito_sin_push';
@@ -780,16 +743,11 @@ export async function handler(req: Request): Promise<Response> {
           `${fotosMes} ${fotosMes === 1 ? 'foto' : 'fotos'}. El sistema ha montado el pase y cerrado el mes: toca para verlo.`,
           '/resumen',
         );
-      } else if (puedeEmpujar) {
-        const tituloPush = await titular(sb, p.id, texto || 'El sistema tiene algo para ti.');
-        if ((await consentimientoIa(sb, p.id)) !== true) continue;
-        await empujar(
-          sb,
-          p.id,
-          decision.titulo,
-          tituloPush,
-          decision.ruta,
-        );
+      } else if (puedeEmpujar && texto) {
+        // 4.5.4: el push se ve en la pantalla bloqueada y pasa por Expo y
+        // Apple. Cuerpo FIJO por tipo: ni peso, ni kcal, ni dinero, ni salud.
+        // Lo que ha escrito el coach se lee dentro de la app.
+        await empujar(sb, p.id, decision.titulo, cuerpoPush(decision.kind), decision.ruta);
       }
 
       // Espejo a la página del CEREBRO, para que el coach de escritorio lea lo

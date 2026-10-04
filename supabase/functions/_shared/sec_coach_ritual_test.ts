@@ -6,7 +6,7 @@ import { equal, ok } from 'node:assert/strict';
 import { instalar, SUPABASE_URL, turnoTexto, USER_ID, USER_TOKEN } from './sec_coach_fake_test.ts';
 
 Deno.env.set('RITUAL_SECRET', 'secreto-del-cron-de-prueba-0123456789');
-const { handler, secretoValido } = await import('../ritual/handler.ts');
+const { handler, secretoValido, cuerpoPush, CUERPO_PUSH_CHECKIN } = await import('../ritual/handler.ts');
 
 function llamadaCron(secreto?: string): Request {
   return new Request('http://localhost/functions/v1/ritual', {
@@ -39,7 +39,7 @@ Deno.test('ritual: comparación del secreto', () => {
   ok(!secretoValido('', ''));
 });
 
-Deno.test('ritual: la sesión abierta por el gladiador se cierra y el titular se apunta', async () => {
+Deno.test('ritual: la sesión abierta por el gladiador se cierra y el push lleva un cuerpo fijo (4.5.4)', async () => {
   // Que le toque algo ahora: el brief a su hora de despertar = la hora actual.
   const hora = new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Madrid', hour: '2-digit', hour12: false })
     .format(new Date())
@@ -65,8 +65,8 @@ Deno.test('ritual: la sesión abierta por el gladiador se cierra y el titular se
         return new Response(null, { status: 303, headers: { location: `http://localhost/#access_token=${USER_TOKEN}&token_type=bearer` } });
       }
       if (ruta === '/functions/v1/coach') {
-        // Un brief largo: el titular lo resume Haiku.
-        return new Response(JSON.stringify({ text: 'Brief. '.repeat(60) }), { headers: { 'content-type': 'application/json' } });
+        // Un brief con datos sensibles: no pueden salir en el push.
+        return new Response(JSON.stringify({ text: 'Pesas 82,4 kg, llevas 1.800 kcal y has gastado 45 €. ' + 'Brief. '.repeat(60) }), { headers: { 'content-type': 'application/json' } });
       }
       if (ruta === '/auth/v1/logout') return new Response(null, { status: 204 });
       return undefined;
@@ -81,11 +81,19 @@ Deno.test('ritual: la sesión abierta por el gladiador se cierra y el titular se
     equal(logout.length, 1, 'se revoca la sesión minteada');
     equal(logout[0].headers.get('authorization'), `Bearer ${USER_TOKEN}`);
     equal(logout[0].url.searchParams.get('scope'), 'local');
-    const titular = fake.escrituras('coach_runs').map((l) => l.body as Record<string, unknown>);
-    equal(titular.length, 1);
-    equal(titular[0].kind, 'titular');
-    ok(Number(titular[0].cost_micro_usd) > 0);
+    // Sin titular de Haiku: ni llamada ni gasto.
+    equal(fake.escrituras('coach_runs').length, 0);
   } finally {
     fake.restaurar();
   }
+});
+
+Deno.test('4.5.4: los cuerpos de push son fijos y no llevan datos', () => {
+  for (const kind of ['brief', 'revision_semanal', 'cierre_mensual', 'escalada', 'otro']) {
+    const c = cuerpoPush(kind);
+    ok(c.startsWith('Tu coach'), c);
+    ok(!/\d|kcal|kg|€|[20142013]/.test(c), c);
+  }
+  equal(cuerpoPush('brief'), 'Tu coach ha dejado el brief de hoy.');
+  ok(!/\d|kcal|kg|€/.test(CUERPO_PUSH_CHECKIN));
 });

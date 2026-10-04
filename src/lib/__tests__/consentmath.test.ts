@@ -39,6 +39,10 @@ describe('consentimiento IA · lo que dice la hoja', () => {
     const location = PROVEEDORES_IA.find((p) => p.nombre.startsWith('Anthropic'))?.donde ?? '';
     for (const region of ['Almacenamiento en EE. UU.', 'procesamiento', 'Europa', 'Asia', 'Australia']) expect(location).toContain(region);
     expect(PROVEEDORES_IA.find((p) => p.nombre === 'DeepSeek')?.donde).toContain('China');
+    // Guideline 5.1.2(i): cada proveedor, con lo que recibe. Pro también usa Anthropic (fotos, resúmenes, avisos, clasificar).
+    const anthropic = PROVEEDORES_IA.find((p) => p.nombre.startsWith('Anthropic'))?.cuando ?? '';
+    expect(anthropic).toMatch(/todos los planes/);
+    expect(anthropic).toMatch(/fotos/);
   });
 });
 

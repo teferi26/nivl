@@ -97,7 +97,9 @@ Deno.test('L6 ritual: checkin a su hora → Haiku sin herramientas, mensaje en e
   equal(p.length, 1);
   const envio = (p[0].body as { title: string; body: string; data: { ruta: string } }[])[0];
   equal(envio.title, 'Una pregunta del coach');
-  equal(envio.body, TEXTO);
+  // 4.5.4: el push no lleva lo que escribió el coach, solo un cuerpo fijo.
+  equal(envio.body, 'Tu coach te ha hecho una pregunta.');
+  ok(!envio.body.includes(TEXTO));
   equal(envio.data.ruta, '/(tabs)/coach');
 
   equal(rpcs(f, 'ai_begin_turn').length, 1);
