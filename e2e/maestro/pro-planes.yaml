@@ -2,6 +2,10 @@
 # scripts/screenshots/pro-review.yaml (rama chore/ios-screenshots-107).
 #
 # Diferencias con el original:
+# Selectores revisados contra ProOffer en winter2/integracion @bc277ef (aviso
+# de NIVL - Compras, fase 3): las filas se anuncian como «NIVL Pro anual.
+# Suscripción anual de renovación automática, <precio> al año. …» y el CTA es
+# «Activar NIVL Pro anual · <precio> al año» (ya no «/año»).
 # - El original usaba un catálogo FICTICIO con precios fijos (12,99 / 99,99 /
 #   29,99 / 299,00 / 249,00 €). Aquí los precios vienen de StoreKit/Play, así que
 #   solo se exige que haya un precio, no un importe concreto. Anotar a mano los
@@ -20,38 +24,28 @@ name: NIVL planes Pro (solo lectura)
     clearState: false
     permissions:
       notifications: deny
-- extendedWaitUntil:
-    visible: '^Hoy$'
-    timeout: 30000
-- tapOn: '^Perfil$'
-- scrollUntilVisible:
-    element:
-      text: '^NIVL Pro$'
-    direction: DOWN
-- tapOn: '^NIVL Pro$'
+- openLink: nivl://pro
 - extendedWaitUntil:
     notVisible: '^Cargando precios de la tienda$'
     timeout: 30000
+# Si la tienda no devuelve los 5 productos, es FAIL de A6: no seguir.
+- assertNotVisible: '^Algún plan no está disponible.*'
 # Nivel Pro
-- scrollUntilVisible:
-    element:
-      text: '^NIVL Pro\. El coach en potencia estándar\.$'
-    direction: DOWN
 - tapOn: '^NIVL Pro\. El coach en potencia estándar\.$'
 - scrollUntilVisible:
     element:
-      text: '^NIVL Pro mensual, .+ al mes\..*'
+      text: '^NIVL Pro mensual\. Suscripción mensual.*'
     direction: DOWN
-- tapOn: '^NIVL Pro mensual, .+ al mes\..*'
-- assertVisible: '^Activar NIVL Pro · .+/mes$'
-- takeScreenshot: pro-10-mensual
+- tapOn: '^NIVL Pro mensual\. Suscripción mensual.*'
+- assertVisible: '^Activar NIVL Pro mensual · .+ al mes$'
+- takeScreenshot: iap-review_nivl_pro_mensual
 - scrollUntilVisible:
     element:
-      text: '^NIVL Pro anual, .+ al año\..*'
+      text: '^NIVL Pro anual\. Suscripción anual.*'
     direction: UP
-- tapOn: '^NIVL Pro anual, .+ al año\..*'
-- assertVisible: '^Activar NIVL Pro · .+/año$'
-- takeScreenshot: pro-11-anual
+- tapOn: '^NIVL Pro anual\. Suscripción anual.*'
+- assertVisible: '^Activar NIVL Pro anual · .+ al año$'
+- takeScreenshot: iap-review_nivl_pro_anual
 # Nivel Élite
 - scrollUntilVisible:
     element:
@@ -60,30 +54,32 @@ name: NIVL planes Pro (solo lectura)
 - tapOn: '^NIVL Élite\. El coach a máxima potencia, con modo profundo\.$'
 - scrollUntilVisible:
     element:
-      text: '^NIVL Élite mensual, .+ al mes\..*'
+      text: '^NIVL Élite mensual\. Suscripción mensual.*'
     direction: DOWN
-- tapOn: '^NIVL Élite mensual, .+ al mes\..*'
-- assertVisible: '^Activar NIVL Élite · .+/mes$'
-- takeScreenshot: pro-12-elite-mensual
+- tapOn: '^NIVL Élite mensual\. Suscripción mensual.*'
+- assertVisible: '^Activar NIVL Élite mensual · .+ al mes$'
+- takeScreenshot: iap-review_nivl_elite_mensual
 - scrollUntilVisible:
     element:
-      text: '^NIVL Élite anual, .+ al año\..*'
+      text: '^NIVL Élite anual\. Suscripción anual.*'
     direction: UP
-- tapOn: '^NIVL Élite anual, .+ al año\..*'
-- assertVisible: '^Activar NIVL Élite · .+/año$'
-- takeScreenshot: pro-13-elite-anual
+- tapOn: '^NIVL Élite anual\. Suscripción anual.*'
+- assertVisible: '^Activar NIVL Élite anual · .+ al año$'
+- takeScreenshot: iap-review_nivl_elite_anual
+# El fundador solo sale mientras la tienda lo ofrezca.
 - runFlow:
     when:
-      visible: '^NIVL Élite fundador, .+ al año\..*'
+      visible: '^NIVL Élite fundador\. Suscripción anual.*'
     commands:
-      - tapOn: '^NIVL Élite fundador, .+ al año\..*'
-      - takeScreenshot: pro-14-elite-fundador
-# Enlaces legales: deben existir. Abrirlos sale de la app (navegador); se
-# comprueba solo su presencia para no depender del navegador del dispositivo.
+      - tapOn: '^NIVL Élite fundador\. Suscripción anual.*'
+      - assertVisible: '^Activar NIVL Élite fundador · .+ al año$'
+      - takeScreenshot: iap-review_nivl_elite_fundador
+# Enlaces legales y restaurar: presencia (abrirlos sale de la app).
 - scrollUntilVisible:
     element:
       text: '^Términos de uso$'
     direction: DOWN
+- assertVisible: '^Restaurar compras$'
 - assertVisible: '^Términos de uso$'
 - assertVisible: '^Política de privacidad$'
-- takeScreenshot: pro-15-legal
+- takeScreenshot: iap-review_legal
