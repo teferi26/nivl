@@ -27,6 +27,7 @@ jest.mock('react-native', () => ({
 jest.mock('@expo/vector-icons/Ionicons', () => 'Ionicons');
 jest.mock('@/design/haptics', () => ({ vibrar: jest.fn() }));
 jest.mock('@/components/SystemButton', () => ({ SystemButton: 'SystemButton' }));
+jest.mock('@/components/arena', () => ({ EncabezadoArena: 'EncabezadoArena', BotonArena: 'BotonArena', TarjetaArena: 'TarjetaArena', Entrada: 'Entrada', FranjaCifras: 'FranjaCifras', Meandro: 'Meandro', Galea: 'Galea', Laurel: 'Laurel' }));
 
 // El renderer viene con jest-expo; este contrato mínimo evita añadir tipos
 // o dependencias solo para montar el hook y la hoja.

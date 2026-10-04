@@ -17,7 +17,8 @@ jest.mock('react-native', () => ({
   StyleSheet: { create: (styles: unknown) => styles },
 }));
 jest.mock('../../components/SystemButton', () => ({ SystemButton: 'SystemButton' }));
-jest.mock('../../components/ui', () => ({ Screen: 'Screen', ScreenHeader: 'ScreenHeader', Card: 'Card', Check: 'Check', Skeleton: 'Skeleton' }));
+jest.mock('../../components/ui', () => ({ Screen: 'Screen', ScreenHeader: 'ScreenHeader', Card: 'Card', Check: 'Check', Skeleton: 'Skeleton', Section: 'Section', Button: 'Button' }));
+jest.mock('../../components/arena', () => ({ EncabezadoArena: 'EncabezadoArena', BotonArena: 'BotonArena', TarjetaArena: 'TarjetaArena', Entrada: 'Entrada', FranjaCifras: 'FranjaCifras', Meandro: 'Meandro', Galea: 'Galea', Laurel: 'Laurel' }));
 
 // jest-expo ya incluye el renderer de la versión de React instalada.
 // Contrato mínimo del renderer, sin añadir sus tipos como dependencia.
