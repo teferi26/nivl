@@ -66,6 +66,7 @@ jest.mock('@react-native-async-storage/async-storage', () => ({
   default: { multiRemove: jest.fn(async (k: string[]) => { mockOrden.push(`claves:${k.join('+')}`); }) },
 }));
 jest.mock('expo-notifications', () => ({ dismissAllNotificationsAsync: jest.fn(async () => { mockOrden.push('avisos-mostrados'); }) }));
+jest.mock('@/components/fotos/datos', () => ({ borrarTemporalesFotos: jest.fn(async () => { mockOrden.push('fotos-temporales'); }) }));
 jest.mock('expo-image', () => ({
   Image: {
     clearMemoryCache: jest.fn(async () => { mockOrden.push('imagenes-memoria'); return true; }),
@@ -289,7 +290,7 @@ describe('cerrarSesion', () => {
     await cerrarSesion();
     expect(mockOrden.slice(0, -1).sort()).toEqual([
       'consentimiento', 'creador', 'locales', 'oraculo:', 'push', 'dictado',
-      'claves:nivl:duelos:vistos+nivl.ofertas.v1', 'avisos-mostrados', 'imagenes-memoria', 'imagenes-disco',
+      'claves:nivl:duelos:vistos+nivl.ofertas.v1', 'avisos-mostrados', 'fotos-temporales', 'imagenes-memoria', 'imagenes-disco',
     ].sort());
     expect(mockOrden[mockOrden.length - 1]).toBe('signOut');
     expect(mockAuth.signOut).toHaveBeenCalledTimes(1);

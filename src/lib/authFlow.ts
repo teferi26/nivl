@@ -304,6 +304,11 @@ async function olvidarRestosDelDispositivo(): Promise<void> {
       await N.dismissAllNotificationsAsync?.();
     }),
     Promise.resolve().then(async () => {
+      // Copias de comparar fotos y caché del selector (fotos/datos.ts, Experiencia).
+      const f = require('@/components/fotos/datos') as { borrarTemporalesFotos?: () => Promise<void> };
+      await f.borrarTemporalesFotos?.();
+    }),
+    Promise.resolve().then(async () => {
       const { Image } = require('expo-image') as { Image: { clearDiskCache: () => Promise<boolean>; clearMemoryCache: () => Promise<boolean> } };
       await Promise.allSettled([Image.clearMemoryCache(), Image.clearDiskCache()]);
     }),

@@ -8,6 +8,9 @@ let mockSession: { user: { id: string } } | null = { user: { id: 'usuario-a' } }
 let mockLoading = false;
 jest.mock('../supabase', () => ({ supabase: { rpc: (...args: unknown[]) => mockRpc(...args), auth: { signOut: (...args: unknown[]) => mockSignOut(...args) } } }));
 jest.mock('../auth', () => ({ useAuth: () => ({ session: mockSession, loading: mockLoading }) }));
+// «Salir» puede ir por cerrarSesion (limpieza completa del dispositivo) o por el
+// signOut local directo: en los dos casos la sesión se cierra solo en local.
+jest.mock('../authFlow', () => ({ cerrarSesion: jest.fn(async () => mockSignOut({ scope: 'local' })) }));
 // Las primitivas solo transportan props e hijos. El proveedor, el guard y sus
 // efectos siguen siendo reales; no necesitamos cargar la plataforma nativa.
 jest.mock('react-native', () => ({

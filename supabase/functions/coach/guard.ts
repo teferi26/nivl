@@ -62,6 +62,18 @@ export function validarImagenes(raw: unknown): { ok: true; imagenes: Imagen[] } 
   return { ok: true, imagenes: salida };
 }
 
+/**
+ * Las fotos solo las ve Claude (Anthropic). Con un modelo compatible OpenAI
+ * (DeepSeek, el de Pro) el adaptador las mandaría como image_url: los bytes
+ * saldrían a ese proveedor aunque luego los rechazara. Auditoría 1.0.8: se
+ * cortan aquí, antes de cualquier llamada. null si se puede seguir; si no, el
+ * mensaje (lleva «foto»: el cliente lo enseña tal cual, src/lib/coach.ts).
+ */
+export const MSG_FOTOS_SOLO_CLAUDE = 'Con tu plan el coach no ve fotos. Cuéntale con palabras lo que hay en ellas.';
+export function fotosSinVision(nFotos: number, compat: unknown): string | null {
+  return nFotos > 0 && compat ? MSG_FOTOS_SOLO_CLAUDE : null;
+}
+
 // ── Fecha del turno ──────────────────────────────────────────────────
 /**
  * El "hoy" del turno lo manda el móvil (su zona horaria), pero no puede ser

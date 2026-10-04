@@ -4,7 +4,7 @@ NIVL - Seguridad · 04/10/2026.
 
 - **Diff revisado:** `c87df0d..winter2/integracion`, 397 archivos (+52.770 / −7.314).
 - **Método:** dos revisiones por lectura en paralelo (servidor y cliente) y, para cada P1, reproducción propia.
-- **Resultado:** 0 P0, 3 P1 y 15 P2.
+- **Resultado:** 0 P0, 4 P1 y 15 P2.
 
 Leyenda de la evidencia:
 - **R** = reproducido en producción con BEGIN…ROLLBACK (`rosql.mjs`, cuentas `@example.invalid`);
@@ -49,17 +49,26 @@ Leyenda de la evidencia:
 - **Estado en producción (R):** la función actual SÍ borra `progress` y `progress_photos`, y `health_daily_steps` no existe, así que 0049 no está aplicada. Hoy no hay fallo.
 - **Arreglo:** antes de integrar 0049, partir de la definición de 0050 y añadir `health_daily_steps`. Añadir una huella o un test que exija `'progress'` en `complete_health_erasure`.
 
+### P1-4 · Las fotos del chat del coach salían a DeepSeek con el plan Pro (L, ARREGLADO en el servidor)
+- **Archivos:** `coach/handler.ts`, donde con fotos la ruta es la completa y `resolverModelo` da `deepseek-v4-flash` a Pro (`ai_plans` en producción), y `_shared/openai.ts:79-91`, donde el adaptador compatible convierte las imágenes en `image_url` base64.
+- **Reproducción:** un usuario Pro adjunta una foto al coach (`useCoach.adjuntar`) y los bytes van a DeepSeek, lo acepte el proveedor o no.
+- **Impacto:** las fotos pueden ser corporales o de comida, es decir, datos de salud. Contradice la decisión «la visión solo con Claude» y la política, que solo menciona texto con DeepSeek.
+- **Arreglo:** `fotosSinVision` (`coach/guard.ts`) corta antes de cualquier llamada con un 400: «Con tu plan el coach no ve fotos…». El cliente ya enseña tal cual los 400 que hablan de fotos.
+- **Tests:** `sec_fotos_vision_test.ts`. Deno 236/236.
+- **Queda pendiente:**
+  · ocultar «adjuntar» en el cliente para los planes sin visión (Experiencia);
+  · decidir si Pro debe ver fotos con un modelo Claude (producto y coste).
+
 ## P2
 
 ### Servidor
 1. **Ligas (L):** `league_members` y `private_leagues` dejan leer el `user_id` de los demás miembros y el `owner` por REST (`0048:52,69-70`), también de quien está oculto o te ha bloqueado. Arreglo: política `user_id = auth.uid()` y sin `select` directo de `private_leagues`; ya existen `league_board` y `my_league_standing`.
 2. **Borrado de cuenta pendiente (L):** las tablas de 0048 no tienen `account_write_guard`, y `league_*`/`duel_*` no miran `account_erasure_pending`. Quien tiene el borrado pendiente sigue saliendo en `league_board` y en `my_duels`.
 3. **Exportación (L):** la 0060 no incluye los datos propios de quien es creador (`creators` con alias, código, rango y `role`, sus `commissions` y sus `creator_payouts`). Hay que añadirlos sin `user_id` de compradores.
-4. **Lista de espera (H):**
-   - Si el proxy de Supabase conserva el `x-forwarded-for` que manda el cliente, rotarlo salta el freno por IP; queda el de 3 por correo y hora.
-   - Sin doble confirmación, se puede apuntar el correo de otra persona.
-   - Para medirlo hacen falta 7 altas de prueba y borrarlas: necesita permiso del coordinador.
-   - Arreglo: tomar la IP de `cf-connecting-ip` o del último salto de confianza, y doble confirmación cuando se envíe con Resend.
+4. **Lista de espera (R, CERRADO: no se puede saltar el freno):**
+   - Prueba del 04/10, autorizada por el coordinador: 7 altas `xff-prueba-N@example.invalid`, cada una con un `X-Forwarded-For` falso y distinto (203.0.113.1-7). Resultado: 1-5 → 200 y 6-7 → **429**.
+   - El proxy de Supabase no deja que el cliente elija la IP: el freno por IP funciona. Las 5 filas de prueba las borra el coordinador.
+   - Sigue pendiente la doble confirmación cuando se envíe con Resend: se puede apuntar el correo de otra persona.
 5. **Inyección por el nombre de una liga (L, residual):** el nombre lo escribe otra persona y entra en el contexto del coach. Ya está mitigado (40 caracteres, `neutralizarDatos`, cliente con RLS, tope de acciones destructivas). Opcional: vetar imperativos en `league_create`.
 6. **Push del check-in (H):** `ritual/handler.ts:557` manda el texto generado, que puede nombrar una misión u objetivo, a la pantalla bloqueada y a Expo. Recomendación: cuerpo genérico y el texto dentro de la app.
 7. **Repo público (L):**
@@ -101,5 +110,5 @@ Leyenda de la evidencia:
 - **Terceros:** ni analítica ni SDK de terceros nuevos; `AD_ID` bloqueado.
 
 ## Lo que no se ha comprobado
-- P2-4 (cabecera IP) y P2-9 (EXIF) necesitan una prueba en real.
+- P2-9 (EXIF) necesita una prueba en un Android.
 - No se ha revisado el diff de la web (repo aparte).
