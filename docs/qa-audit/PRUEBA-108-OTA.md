@@ -1,8 +1,8 @@
 # Prueba en dispositivo · NIVL 1.0.8 (OTA sobre la build 22)
 
-**Candidato:** OTA del grupo `75d4bb6c` sobre la build **22**, código `winter2/integracion @ 762928d` (sustituye a `9a483144` / `7e92f75`).
+**Candidato:** OTA del grupo `197dd82b` sobre la build **22**, código `winter2/integracion @ 94cb39b` (sustituye a `75d4bb6c` / `762928d`). Servidor con las migraciones 0055–0058 aplicadas.
 
-**Pruebas automáticas en `762928d`** (Chat 5, worktree aparte sin cambios, 03/10/2026): typecheck PASS · Jest 83/83 suites, 1401/1401 tests · lint con 0 avisos · arnés SQL PGlite (0048, 0051 y 0052) 53/53 · `expo export --platform ios` OK · app.json 1.0.8. Nada de esto es evidencia física.
+**Pruebas automáticas en `94cb39b`** (Juego y QA, worktree aparte sin cambios, 04/10/2026): typecheck PASS · Jest 88/88 suites, 1518/1518 tests · lint con 0 avisos · arnés SQL PGlite (0048, 0051, 0052 y 0055) 57/57 · `expo export` iOS, Android y web OK. Contiene el cliente de la 0055 (rival oculto) y el bloque B de XP. Nada de esto es evidencia física.
 
 **Para quién:** el usuario, en su iPhone y, si puede, en Android. Son **15 pasos**, de mayor a menor importancia. Si se acaba el tiempo, quedan hechos los críticos.
 
@@ -53,6 +53,15 @@
 | B4 | Deja misiones que rompan la racha y no abras la app por la noche. | Un aviso de racha ~90 min antes de dormir y **no** el de «El cierre del día se acerca». Como mucho 2 avisos del sistema en el día. (AV-01/02) | |
 
 La lista completa de fotos y avisos (FOT-01..08, AV-01..08) está en `QA-FISICA-108.csv`.
+
+## Bloque C · Números que tienen que cuadrar (nuevo en este candidato)
+
+| # | Qué hacer | Qué debe pasar | ✅ ❌ ⏭ |
+|---|---|---|---|
+| C1 | Registra dos sesiones de cardio el mismo día (por ejemplo, correr y bici), con una misión «Correr» programada. Mira tu XP en Perfil antes y después de cada una. | Lo que dice cada aviso es exactamente lo que sube el XP de Perfil. La segunda sesión cobra lo suyo (hasta el tope de 60 al día). | |
+| C2 | Deja un día con misiones sin hacer y una regla del contrato sin marcar (si usas reglas). Abre la app al día siguiente. | La tarjeta del cierre dice cuánto por misiones y cuánto por cada regla, y la suma es lo que baja tu XP. | |
+| C3 | Con un amigo que te rete a duelo, que lo acepte y después oculte su perfil (o ten un reto pendiente). Mira Amigos → duelos. | Sale «Rival oculto», sin cifras ni barra ni «va delante». Un reto pendiente de alguien oculto no aparece para aceptar. | |
+| C4 | Crea una misión **extra** difícil y no la hagas; completa las normales. Abre la app al día siguiente. | La racha sube y no te cobra nada por la extra. | |
 
 ## Qué NO cubre esta lista
 
