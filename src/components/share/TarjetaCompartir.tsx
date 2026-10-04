@@ -37,7 +37,9 @@ import {
   type OpcionesTarjeta,
   type Tarjeta,
 } from '@/lib/sharecard';
+import { Crown } from '@/components/ui/Crown';
 import { ink } from '@/design/tokens';
+import { cosmeticosDe, type RangoId } from '@/lib/progression';
 import { fonts } from '@/lib/theme';
 
 
@@ -72,6 +74,10 @@ export const TarjetaCompartir = forwardRef<View, TarjetaCompartirProps>(function
   const fotos = fotosVisibles(tarjeta, opciones, contexto);
   const retrato = tarjeta.tipo === 'rango' && retratoUri ? retratoUri : null;
   const bn = fotosEnBN(Platform.OS);
+  const corona =
+    tarjeta.tipo === 'rango' && (['E', 'D', 'C', 'B', 'A', 'S'] as const).includes(tarjeta.rango as RangoId)
+      ? (cosmeticosDe(tarjeta.rango as RangoId).corona ?? null)
+      : null;
   const imagenes = fotos.length + (retrato ? 1 : 0);
 
   // Avisar una sola vez cuando todas las imágenes han cargado (o fallado).
@@ -154,14 +160,12 @@ export const TarjetaCompartir = forwardRef<View, TarjetaCompartirProps>(function
         {tarjeta.tipo === 'rango' ? (
           <>
             <View style={{ width: px(340 * r), height: px(400 * r), alignItems: 'center', justifyContent: 'flex-end' }}>
-              <View style={{ position: 'absolute', top: 0, left: px(75 * r) }}>
-                <Svg width={px(190 * r)} height={px(90 * r)} viewBox="0 0 120 56" fill="none" stroke={ink.ink10} strokeWidth={3}>
-                  <Path d="M20 50 C20 24 38 10 60 10 C82 10 100 24 100 50 Z" />
-                  <Path d="M60 2 C74 4 86 10 92 20" strokeWidth={5} />
-                  <Path d="M34 50 V34 H86 V50" />
-                  <Path d="M60 34 V50" />
-                </Svg>
-              </View>
+              {/* La corona del rango (contrato del Chat 5): E, D y C sin corona; B casco, A laurel, S corona de la arena. */}
+              {corona ? (
+                <View style={{ position: 'absolute', top: 0, left: 0, right: 0, alignItems: 'center' }}>
+                  <Crown kind={corona} size={px(150 * r)} color={ink.ink10} />
+                </View>
+              ) : null}
               {/* Aro exterior fino (el box-shadow de la maqueta) y aro de 8 con el retrato. */}
               <View style={{ width: px(330 * r), height: px(330 * r), borderRadius: px(165 * r), borderWidth: px(3), borderColor: ink.ink8, alignItems: 'center', justifyContent: 'center', marginBottom: -px(15 * r) }}>
                 <View style={{ width: px(300 * r), height: px(300 * r), borderRadius: px(150 * r), borderWidth: px(8), borderColor: ink.ink10, backgroundColor: ink.ink2, overflow: 'hidden' }}>
