@@ -345,20 +345,24 @@ export function useCoach(): { vista: CoachVistaProps; hojas: HojasCoach } {
   const alFondo = () => requestAnimationFrame(() => scrollRef.current?.scrollToEnd({ animated: true }));
 
   const adjuntar = async () => {
-    const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!perm.granted) {
-      setError('El sistema necesita permiso para leer tus fotos.');
+    // Sin pedir acceso a la fototeca: el selector del sistema (PHPicker en
+    // iOS, el del sistema en Android) solo entrega lo que eliges y no lo
+    // necesita. Pedirlo y no tenerlo dejaba el clip sin salida.
+    let r: ImagePicker.ImagePickerResult;
+    try {
+      r = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        // Calidad baja a propósito: una foto de móvil sin comprimir son varios
+        // megas de base64, y eso se paga como miles de fichas en cada turno.
+        quality: 0.35,
+        base64: true,
+        selectionLimit: 3,
+        allowsMultipleSelection: true,
+      });
+    } catch (e) {
+      setError(mensajeSistema(e));
       return;
     }
-    const r = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
-      // Calidad baja a propósito: una foto de móvil sin comprimir son varios
-      // megas de base64, y eso se paga como miles de fichas en cada turno.
-      quality: 0.35,
-      base64: true,
-      selectionLimit: 3,
-      allowsMultipleSelection: true,
-    });
     if (r.canceled) return;
     setAdjuntas(
       r.assets

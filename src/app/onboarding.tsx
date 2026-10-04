@@ -862,7 +862,7 @@ const styles = StyleSheet.create({
   kindTaglineOn: { color: colors.text },
   detailTitle: { fontFamily: tipo.label.family, fontSize: tipo.label.size, lineHeight: tipo.label.lineHeight, letterSpacing: tipo.label.tracking, color: ink.ink6, marginBottom: 6 },
   detail: { fontFamily: tipo.bodySm.family, fontSize: tipo.bodySm.size, color: ink.ink9, lineHeight: tipo.bodySm.lineHeight },
-  starterRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 10 },
+  starterRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 10, minHeight: 44 },
   starterRowSep: { borderTopWidth: 1, borderTopColor: colors.line },
   checkbox: {
     width: 22,

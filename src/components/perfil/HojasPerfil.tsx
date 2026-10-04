@@ -17,7 +17,7 @@
 import { useEffect, useState } from 'react';
 import { Platform, StyleSheet, Text, View } from 'react-native';
 import { Campo, ErrorSistema, TarjetaArena } from '@/components/arena';
-import { Button, Chip, ChipWrap, Sheet } from '@/components/ui';
+import { Button, Chip, ChipWrap, Sheet, useAnunciar } from '@/components/ui';
 import { ink, space, type as tipo } from '@/design/tokens';
 import { CODIGO_MAX_LENGTH } from '@/lib/creatormath';
 import { addDays, nombreDia } from '@/lib/dates';
@@ -57,6 +57,8 @@ export function HojaBorrar({ abierta, cerrar, aviso, esCreador, borrando, confir
   }, [abierta, escritoInicial]);
 
   const cuadra = palabraCuadra(escrito);
+  // Quien no ve el botón tiene que saber que ya se ha encendido.
+  useAnunciar(abierta && cuadra ? 'El botón Eliminar para siempre ya está activo.' : null);
   const cerrarSiSePuede = () => {
     if (!borrando) cerrar();
   };

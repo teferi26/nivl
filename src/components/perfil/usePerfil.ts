@@ -12,7 +12,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } fro
 import { Linking, Platform } from 'react-native';
 import { useCelebracion } from '@/components/celebracion/contexto';
 import { useConsentimientoIA } from '@/components/ConsentimientoIA';
-import { avisar, confirmar } from '@/components/ui';
+import { anunciar, avisar, confirmar } from '@/components/ui';
 import {
   ACHIEVEMENT_BY_CODE,
   ACHIEVEMENTS,
@@ -480,6 +480,7 @@ export function usePerfil(): UsePerfil {
     try {
       await deleteAccount();
       setBorrarOpen(false);
+      anunciar('Cuenta eliminada.');
       router.replace('/login');
     } catch (e) {
       vibrar('penalizacion');

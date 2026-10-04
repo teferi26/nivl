@@ -9,7 +9,7 @@
 
 import { useMemo, useState } from 'react';
 import { StyleSheet, View, useWindowDimensions } from 'react-native';
-import { CargaArena, Entrada, FranjaCifras, TarjetaArena } from '@/components/arena';
+import { CargaArena, Entrada, ErrorSistema, FranjaCifras, TarjetaArena } from '@/components/arena';
 import { Button, EmptyState, Section } from '@/components/ui';
 import { ink, space, stroke } from '@/design/tokens';
 import { useSizeClass } from '@/design/useSizeClass';
@@ -35,11 +35,15 @@ interface Props {
   recuerdos: JournalEntry[];
   photoCounts: Map<string, number>;
   loadPhotos: (date: string) => Promise<string[]>;
+  /** Fallo al cargar: sin días, ocupa el sitio del vacío; con días, va encima. */
+  error?: string | null;
+  reintentando?: boolean;
+  onReintentar?: () => void;
   onOpen: (date: string) => void;
   onWriteToday: () => void;
 }
 
-export function Archivo({ loaded, hoy, entries, recuerdos, photoCounts, loadPhotos, onOpen, onWriteToday }: Props) {
+export function Archivo({ loaded, hoy, entries, recuerdos, photoCounts, loadPhotos, error, reintentando, onReintentar, onOpen, onWriteToday }: Props) {
   const [visibles, setVisibles] = useState(TANDA);
   const { sizeClass } = useSizeClass();
   const { fontScale } = useWindowDimensions();
@@ -53,6 +57,14 @@ export function Archivo({ loaded, hoy, entries, recuerdos, photoCounts, loadPhot
 
   if (!loaded) {
     return <CargaArena etiqueta="Cargando tu archivo" formas={['franja', 'tarjeta', 'rotulo', 'filas']} />;
+  }
+
+  if (error && entries.length === 0) {
+    return (
+      <Entrada indice={1}>
+        <ErrorSistema mensaje={error} onReintentar={onReintentar} reintentando={reintentando} />
+      </Entrada>
+    );
   }
 
   if (entries.length === 0) {
@@ -108,6 +120,9 @@ export function Archivo({ loaded, hoy, entries, recuerdos, photoCounts, loadPhot
 
   return (
     <>
+      {error ? (
+        <ErrorSistema mensaje={error} onReintentar={onReintentar} reintentando={reintentando} compacto style={styles.error} />
+      ) : null}
       <Entrada indice={1} style={styles.franja}>
         <FranjaCifras cifras={cifrasTendencia(resumen, entries.length)} />
       </Entrada>
@@ -134,6 +149,7 @@ export function Archivo({ loaded, hoy, entries, recuerdos, photoCounts, loadPhot
 }
 
 const styles = StyleSheet.create({
+  error: { marginBottom: space.s5 },
   franja: {
     marginBottom: space.s6,
     paddingVertical: space.s3,

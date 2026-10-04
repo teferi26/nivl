@@ -349,6 +349,7 @@ export function HabitosVista({
                     </Text>
                   }
                   onLongPress={() => acciones.onReactivar(q)}
+                  accessibilityLongPressLabel="Reactivar"
                   accessibilityLabel={`${q.title}, adquirido${dias == null ? '' : ` a los ${dias} días`}. Mantén pulsado para volver a exigirlo.`}
                 />
               );

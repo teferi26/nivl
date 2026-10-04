@@ -16,6 +16,7 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { forwardRef, useState } from 'react';
 import { Platform, StyleSheet, Text, TextInput, View, type StyleProp, type TextInputProps, type ViewStyle } from 'react-native';
+import { useAnunciar } from '@/components/ui/useAnunciar';
 import { ink, space, stroke, type as tipo } from '@/design/tokens';
 
 export type CampoProps = {
@@ -39,6 +40,8 @@ export const Campo = forwardRef<TextInput, CampoProps>(function Campo(
   ref,
 ) {
   const [foco, setFoco] = useState(false);
+  // En iOS la región viva no habla: el error se anuncia a mano.
+  useAnunciar(error);
   const rank = grande === 'rank';
   const conError = !!error;
   // El borde de 2 come 1 de relleno por lado: la caja no cambia de tamaño.

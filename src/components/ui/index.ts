@@ -20,3 +20,4 @@ export { TabBar } from './TabBar';
 export { Grano, Trama } from './Texture';
 export { Toast } from './Toast';
 export { debeRecargar, useAlVolver } from './useAlVolver';
+export { anunciar, useAnunciar } from './useAnunciar';

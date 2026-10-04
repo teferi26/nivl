@@ -7,7 +7,7 @@
 // Alto 52 (lg), 44 (md), 36 (sm; con hitSlop para llegar a 44 de zona táctil).
 // Dentro de una Card inverse (SuperficieContext) se invierten los colores.
 // Desactivado: sin opacidad (rompe el contraste del texto); borde ink4 y texto
-// ink6 sobre el fondo, en cualquier variante.
+// ink6 sobre el fondo (ink4 si la superficie está invertida), en cualquier variante.
 // Rótulo: Outfit 700 en mayúsculas, 15 · 14 · 12 (lg · md · sm). Es el único
 // texto del kit fuera de la escala `type`; está documentado en SISTEMA §5.
 
@@ -49,7 +49,9 @@ export function Button({ title, onPress, variant = 'primary', size = 'md', icon,
   const danger = variant === 'danger';
   const ghost = variant === 'ghost';
   const apagado = !!disabled && !loading;
-  const fg = apagado ? ink.ink6 : primary ? oscuro : claro;
+  // Apagado sobre una superficie invertida (hueso): ink4, no ink6; ink6 sobre
+  // ink10 no llega al contraste de texto.
+  const fg = apagado ? (invertida ? ink.ink4 : ink.ink6) : primary ? oscuro : claro;
   // El layout (márgenes, alignSelf, flex, ancho) va al Pressable, que es quien
   // ocupa sitio en el padre; lo visual, a la vista que escala.
   const { outer, inner } = splitStyle(style);

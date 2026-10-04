@@ -8,6 +8,7 @@
 import * as Linking from 'expo-linking';
 import { useRef, useState } from 'react';
 import { DenunciaVista } from '@/components/puertas/DenunciaVista';
+import { useAnunciar } from '@/components/ui/useAnunciar';
 import { vibrar } from '@/design/haptics';
 import { supabase } from '@/lib/supabase';
 import { mensajeSistema } from '@/lib/validation';
@@ -34,6 +35,8 @@ export function DenunciarIA({ respuesta, onClose }: Props) {
   const [enviada, setEnviada] = useState(false);
   const [busy, setBusy] = useState(false);
   const lock = useRef(false);
+  // En iOS el rol alerta no habla: enviada o fallida, el aviso se anuncia.
+  useAnunciar(aviso);
 
   const cerrar = () => {
     if (lock.current) return;

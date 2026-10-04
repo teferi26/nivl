@@ -243,6 +243,7 @@ function Contenido(p: AmigosVistaProps & { yo: NonNullable<AmigosVistaProps['yo'
                   trailing={<Ionicons name="ellipsis-horizontal" size={20} color={ink.ink6} style={styles.mas} />}
                   onPress={() => p.abrirSeguridad(b)}
                   onLongPress={() => p.quitarAmigo(b)}
+                  accessibilityLongPressLabel="Quitar amigo"
                   accessibilityLabel={`${b.name}, fuera del ranking. Toca para denunciar o bloquear. Mantén pulsado para quitar.`}
                   style={styles.filaLista}
                 />

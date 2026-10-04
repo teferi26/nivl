@@ -172,6 +172,9 @@ function base(cambios: Partial<DiarioVistaProps> = {}): DiarioVistaProps {
       recuerdos: RECUERDOS,
       photoCounts: new Map([[ENTRADAS[0]!.date, 2]]),
       loadPhotos: () => Promise.resolve([]),
+      error: null,
+      reintentando: false,
+      onReintentar: nada,
     },
     acciones: {
       onVolver: nada,
@@ -227,6 +230,23 @@ export const DEMO: DemoPantalla | null = {
       titulo: 'Archivo · vacío',
       render: () => (
         <DiarioVista {...base({ segmento: 'archivo', archivo: { ...base().archivo, entries: [], recuerdos: [] } })} />
+      ),
+    },
+    {
+      id: 'archivo-error',
+      titulo: 'Archivo · no ha cargado',
+      render: () => (
+        <DiarioVista
+          {...base({
+            segmento: 'archivo',
+            archivo: {
+              ...base().archivo,
+              entries: [],
+              recuerdos: [],
+              error: 'Sin conexión. Tu archivo sigue guardado: vuelve a intentarlo.',
+            },
+          })}
+        />
       ),
     },
     {
