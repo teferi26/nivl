@@ -317,9 +317,10 @@ export async function reconciliarAvisosDelDia(
         identifier: idBloque(fecha, b.id),
         content: {
           title: `${hhmm(b.start_min)} · ${b.title}`,
-          // El texto sale del plan en el momento de programar cada día, así
-          // que refleja las órdenes reales de hoy y no un texto fósil.
-          body: b.detail?.trim() || 'Es la hora de este bloque.',
+          // Cuerpo fijo a propósito (Apple 4.5.4): el detalle del plan lleva
+          // cargas, gramos o cifras de salud y no debe verse en la pantalla
+          // bloqueada. El detalle se lee dentro de la app, en Hoy.
+          body: 'Es la hora de este bloque. El detalle está en Hoy.',
           sound: 'default',
           interruptionLevel: 'timeSensitive',
           categoryIdentifier: CATEGORIAS.bloque,
