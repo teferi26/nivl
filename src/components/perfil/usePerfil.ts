@@ -116,6 +116,7 @@ export interface PerfilHojas {
     abierta: boolean;
     cerrar: () => void;
     aviso: string | null;
+    esCreador: boolean;
     borrando: boolean;
     confirmar: () => void;
   };
@@ -619,6 +620,8 @@ export function usePerfil(): UsePerfil {
       abierta: borrarOpen,
       cerrar: () => setBorrarOpen(false),
       aviso: avisoBorrar,
+      // Con ficha de creador: pierde el saldo pendiente al borrar (0056).
+      esCreador,
       borrando,
       confirmar: confirmarBorrado,
     },
