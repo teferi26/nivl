@@ -18,8 +18,9 @@ import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Platform, StyleSheet, Text, View } from 'react-native';
 import { ProOffer } from '@/components/ProOffer';
-import { Barra, EncabezadoArena, Entrada } from '@/components/arena';
-import { Button, Card, Row, Screen, Section, Skeleton } from '@/components/ui';
+import { Barra, CargaArena, EncabezadoArena, Entrada, ErrorSistema, TarjetaArena } from '@/components/arena';
+import { Button, Row, Screen, Section } from '@/components/ui';
+import { vibrar } from '@/design/haptics';
 import { useAuth } from '@/lib/auth';
 import { ensureProfile } from '@/lib/data';
 import { isValidKey, nombreDia } from '@/lib/dates';
@@ -47,7 +48,7 @@ import {
   type RespuestaOferta,
 } from '@/lib/pro';
 import { fetchSubscription } from '@/lib/subscription';
-import { ink, type as tipo } from '@/design/tokens';
+import { ink, space, type as tipo } from '@/design/tokens';
 import { mensajeSistema } from '@/lib/validation';
 
 /** "jueves, 1 de octubre" a partir de una clave o de un ISO completo. */
@@ -68,6 +69,10 @@ export default function Pro() {
   const [periodEnd, setPeriodEnd] = useState<string | null>(null);
   const [provider, setProvider] = useState<string | null>(null);
   const [avisoGestion, setAvisoGestion] = useState<string | null>(null);
+  // No se pudo leer el estado del coach (sin red, servidor caído). Sin estado
+  // no se sabe si la cuenta ya paga: a quien paga nunca se le vende por un
+  // fallo de red, así que sin estado no hay oferta, solo el error y la salida.
+  const [errorEstado, setErrorEstado] = useState(false);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   // Quien llega desde una línea de upsell ya pidió ver la oferta: abierta.
@@ -106,6 +111,7 @@ export default function Pro() {
     // el perfil general. Una pantalla de venta nunca se queda en blanco.
     const [st, prof, sub] = await Promise.allSettled([fetchAiStatus(), ensureProfile(userId), fetchSubscription(userId)]);
     if (st.status === 'fulfilled') setStatus(st.value);
+    setErrorEstado(st.status === 'rejected');
     if (prof.status === 'fulfilled') setKind(prof.value.profile_kind);
     if (sub.status === 'fulfilled') {
       setPeriodEnd(sub.value?.current_period_end ?? null);
@@ -134,18 +140,40 @@ export default function Pro() {
 
   if (loading) {
     // La cabecera (con su vuelta atrás) desde el primer fotograma; debajo,
-    // huecos. Aún no se sabe qué cara toca, así que el título es neutro.
+    // huecos. Aún no se sabe qué cara toca: solo el eyebrow, sin un título
+    // que luego salte a otro.
     return (
       <Screen>
-        <EncabezadoArena onVolver={salir} eyebrow="NIVL Pro" titulo="El coach" />
-        <View accessibilityRole="progressbar" accessibilityLabel="Cargando NIVL Pro">
-          <Skeleton height={64} style={styles.hueco} />
-          <Skeleton height={14} width="82%" style={styles.huecoLinea} />
-          <Skeleton height={14} width="68%" style={styles.huecoLinea} />
-          <Skeleton height={14} width="74%" style={styles.huecoLinea} />
-          <Skeleton height={120} style={styles.huecoBloque} />
-          <Skeleton height={56} style={styles.huecoBloque} />
-        </View>
+        <EncabezadoArena onVolver={salir} eyebrow="NIVL Pro" titulo="" />
+        <CargaArena etiqueta="Cargando NIVL Pro" formas={['rotulo', 'filas', 'tarjeta']} />
+      </Screen>
+    );
+  }
+
+  const errorPlan = errorEstado ? (
+    <ErrorSistema
+      compacto
+      mensaje="No se ha podido comprobar tu plan."
+      onReintentar={refrescar}
+      reintentando={refreshing}
+      style={styles.error}
+    />
+  ) : null;
+
+  // Sin estado no hay cara que enseñar: ni la del plan (no se sabe cuál es) ni
+  // la de venta (podría ser de alguien que ya paga). Solo el error y la salida.
+  if (errorEstado && !status) {
+    return (
+      <Screen refreshing={refreshing} onRefresh={refrescar}>
+        <>
+          <Entrada indice={0}>
+            <EncabezadoArena onVolver={salir} eyebrow="NIVL Pro" titulo="Tu plan" />
+          </Entrada>
+          <Entrada indice={1}>{errorPlan}</Entrada>
+          <Entrada indice={2}>
+            <Button title="Volver" variant="secondary" onPress={salir} />
+          </Entrada>
+        </>
       </Screen>
     );
   }
@@ -171,6 +199,7 @@ export default function Pro() {
       try {
         await gestionarSuscripcion();
       } catch (e) {
+        vibrar('penalizacion');
         setAvisoGestion(mensajeSistema(e));
       }
     };
@@ -192,6 +221,8 @@ export default function Pro() {
             />
           </Entrada>
 
+          {errorPlan}
+
           <Entrada indice={1}>
             <Section title="Energía del coach este mes" meta={`${pct} %`}>
               <Barra ratio={queda} alto={8} tono={agotada ? 'ink8' : 'blanco'} etiqueta={`Energía del coach: ${pct} %`} />
@@ -204,8 +235,8 @@ export default function Pro() {
           </Entrada>
 
           <Entrada indice={2}>
-            <Section title="Tu plan">
-              <Card padded={false} style={styles.lista}>
+            <View style={styles.bloque}>
+              <TarjetaArena variante="contorno" rotulo="Tu plan">
                 <Row
                   first
                   title="Plan"
@@ -228,13 +259,13 @@ export default function Pro() {
                     trailing={<Text style={styles.valor}>{puedeProfundo(status) ? turnos : 'Agotados'}</Text>}
                   />
                 ) : null}
-              </Card>
+              </TarjetaArena>
               {deTienda ? (
                 <>
                   <Button
                     title="Gestionar o cancelar suscripción"
                     variant="ghost"
-                    size="sm"
+                    size="md"
                     icon="open-outline"
                     onPress={gestionar}
                     style={styles.gestionar}
@@ -243,7 +274,7 @@ export default function Pro() {
                     Ahí cambias de plan, ves la renovación o la cancelas. {textoGestionTienda(Platform.OS)}
                   </Text>
                   {avisoGestion ? (
-                    <Text style={styles.nota} accessibilityRole="alert">
+                    <Text style={[styles.nota, styles.aviso]} accessibilityRole="alert">
                       {avisoGestion}
                     </Text>
                   ) : null}
@@ -255,18 +286,24 @@ export default function Pro() {
                     : textoGestionTienda(Platform.OS)}
                 </Text>
               ) : null}
-            </Section>
+            </View>
           </Entrada>
 
           <Entrada indice={3}>
-            <Button title="Hablar con el coach" variant="primary" icon="shield-half" onPress={() => router.replace('/(tabs)/coach')} />
+            {/* Una inversión por estado: con la oferta abierta, manda su acción. */}
+            <Button
+              title="Hablar con el coach"
+              variant={mejorable && verOferta ? 'secondary' : 'primary'}
+              icon="shield-half"
+              onPress={() => router.replace('/(tabs)/coach')}
+            />
           </Entrada>
 
           {/* Con la tienda abierta: quien está en la prueba puede suscribirse
               sin esperar a que acabe, y un Pro puede pasar a Élite (el cambio
               dentro del grupo de suscripción lo gestiona la tienda). */}
           {mejorable ? (
-            <Entrada indice={4}>
+            <Entrada key={verOferta ? 'oferta' : 'boton'} indice={4}>
               {verOferta ? (
                 <View style={styles.oferta}>
                   <ProOffer
@@ -318,6 +355,7 @@ export default function Pro() {
             subtitulo={`NIVL es gratis entera: misiones, racha, campañas, gym, dieta, economía, amigos. Pro añade el coach: la IA que lo dirige todo por ti.${conPrueba}`}
           />
         </Entrada>
+        {errorPlan}
         <Entrada indice={1}>
           <ProOffer
             userId={userId}
@@ -343,15 +381,24 @@ export default function Pro() {
   );
 }
 
+/** Un estilo de la escala `type` (SISTEMA §2) como estilo de texto. */
+const texto = (t: (typeof tipo)[keyof typeof tipo]) => ({
+  fontFamily: t.family,
+  fontSize: t.size,
+  lineHeight: t.lineHeight,
+  letterSpacing: t.tracking,
+});
+
 const styles = StyleSheet.create({
-  hueco: { marginBottom: 18 },
-  huecoLinea: { marginBottom: 12 },
-  huecoBloque: { marginTop: 14 },
-  energia: { fontFamily: tipo.body.family, fontSize: tipo.body.size, lineHeight: tipo.body.lineHeight, color: ink.ink8, marginTop: 10 },
-  lista: { paddingHorizontal: 16, paddingVertical: 2 },
-  valor: { fontFamily: 'Outfit_600SemiBold', fontSize: 13, color: ink.ink9 },
-  planValor: { fontFamily: tipo.headline.family, fontSize: 14, color: ink.ink9 },
-  nota: { fontFamily: tipo.bodySm.family, fontSize: tipo.bodySm.size, lineHeight: tipo.bodySm.lineHeight, color: ink.ink6, marginTop: 4 },
+  error: { marginBottom: space.s5 },
+  energia: { ...texto(tipo.body), color: ink.ink8, marginTop: 10 },
+  bloque: { marginBottom: 26 },
+  valor: { ...texto(tipo.bodySm), color: ink.ink9 },
+  // El plan es el dato fuerte: misma talla, peso de headline.
+  planValor: { ...texto(tipo.bodySm), fontFamily: tipo.headline.family, color: ink.ink9 },
+  nota: { ...texto(tipo.bodySm), color: ink.ink6, marginTop: 4 },
+  // Aviso: regla izquierda de 2 pt ink6, no color (el mismo de la oferta).
+  aviso: { color: ink.ink9, borderLeftWidth: 2, borderLeftColor: ink.ink6, paddingLeft: 10, marginTop: 8 },
   mejorar: { marginTop: 10 },
   gestionar: { marginTop: 8, alignSelf: 'flex-start' },
   oferta: { marginTop: 22, borderTopWidth: 1, borderTopColor: ink.ink3, paddingTop: 18 },
