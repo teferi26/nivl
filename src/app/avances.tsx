@@ -133,6 +133,9 @@ export default function Avances() {
     try {
       const { isNew } = await upsertWeight(userId, dateKey(), value);
       let mensaje = 'El sistema corrige el pesaje de hoy. Ya estaba cobrado.';
+      // Lo que entró de verdad (misión enlazada incluida): solo eso vibra.
+      // Corregir el peso de hoy no paga nada y no vibra.
+      let entrado = 0;
       if (isNew) {
         // Un solo gesto: pesarse marca sola la misión de pesarse. Si la había,
         // paga ella y el módulo no vuelve a cobrar.
@@ -144,6 +147,7 @@ export default function Avances() {
           const res = await awardXp(eco.profile, resto, 'VIT', 'weigh_in', { weight: value });
           pagado = xpPagado(resto, eco.profile.xp_total, res.profile.xp_total);
         }
+        entrado = eco.xp + pagado;
         // Lo que entró de verdad: la misión marcada ahora y el resto del módulo.
         mensaje =
           anuncioActo({ xpMision: eco.xp, marcadas: eco.marcadas, xpModulo: pagado, deModulo: 'a VIT por el pesaje' }) ||
@@ -151,7 +155,7 @@ export default function Avances() {
             ? 'Anotado. Hoy ya has llegado al tope diario de XP.'
             : 'Anotado. La misión de hoy ya estaba marcada y pagada.');
       }
-      vibrar('mision');
+      if (entrado > 0) vibrar('mision');
       setWeightInput('');
       await load();
       avisar('Pesaje registrado', mensaje);
@@ -202,7 +206,7 @@ export default function Avances() {
     if (lock.current) return;
     const ok = await confirmar({
       titulo: 'META CONSEGUIDA',
-      mensaje: `"${goal.title}": el sistema otorgará +${GOAL_ACHIEVED_XP} XP.`,
+      mensaje: `«${goal.title}»: el sistema otorgará +${GOAL_ACHIEVED_XP} XP.`,
       confirmar: 'Reclamar',
       cancelar: 'Aún no',
     });
@@ -215,13 +219,13 @@ export default function Avances() {
       // Lo PAGADO: una meta ya cobrada (el servidor paga una vez por meta) o el
       // tope diario dejan la cifra por debajo de lo prometido.
       const pagado = xpPagado(GOAL_ACHIEVED_XP, profile.xp_total, res.profile.xp_total);
-      vibrar('mision');
+      if (pagado > 0) vibrar('mision');
       await load();
       avisar(
         'Meta conseguida',
         pagado > 0
-          ? `"${goal.title}": +${pagado} XP a AGI.`
-          : `"${goal.title}" queda como lograda. Este premio no suma hoy: ya estaba cobrado o has llegado al tope diario.`,
+          ? `«${goal.title}»: +${pagado} XP a AGI.`
+          : `«${goal.title}» queda como lograda. Este premio no suma hoy: ya estaba cobrado o has llegado al tope diario.`,
       );
     } catch (e) {
       avisar('Error del sistema', mensajeSistema(e));
@@ -359,7 +363,7 @@ export default function Avances() {
                       </View>
                       <View style={styles.metaPie}>
                         <Text style={styles.metaDetalle} numberOfLines={1}>
-                          {g.start_value} → <Text style={styles.metaActual}>{current ?? '?'}</Text> → {g.target_value} {g.unit}
+                          {g.start_value} → <Text style={styles.metaActual}>{current ?? SIN_DATO}</Text> → {g.target_value} {g.unit}
                         </Text>
                         <View style={styles.metaAcciones}>
                           {done ? (

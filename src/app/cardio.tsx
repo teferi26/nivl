@@ -186,8 +186,10 @@ export default function Cardio() {
         const perfil = await ensureProfile(userId);
         const res = await awardXp(perfil, nuevo, 'FUE', 'cardio_session', { kind, km, min, zone });
         pagado = xpPagado(nuevo, perfil.xp_total, res.profile.xp_total);
-        vibrar('mision');
       }
+      // Vibra solo lo que entró de verdad: la misión enlazada y lo pagado por
+      // el módulo. Una corrección o un día ya en el tope no vibran.
+      if ((eco?.xp ?? 0) + pagado > 0) vibrar('mision');
       if (!esCorreccion && pagado !== base) await saveCardio(userId, { ...fila, xp: pagado });
 
       setAbierto(false);

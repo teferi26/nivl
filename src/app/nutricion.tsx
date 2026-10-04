@@ -124,7 +124,6 @@ export default function Nutricion() {
         const perfil = await ensureProfile(userId);
         const res = await awardXp(perfil, NUTRITION_DAY_XP, 'VIT', 'nutrition_day', { kcal, prote, date: hoy });
         pagadoDia = xpPagado(NUTRITION_DAY_XP, perfil.xp_total, res.profile.xp_total);
-        vibrar('mision');
       }
 
       // Un solo gesto: el parte marca solo la misión de registrar comidas. Los
@@ -133,6 +132,8 @@ export default function Nutricion() {
       // Las misiones viven en el día del dispositivo (Hoy, completeQuest): la
       // propagación va con ese día, no con el del parte.
       const eco = await propagarActo(await ensureProfile(userId), 'nutricion', dateKey());
+      // Vibra solo lo que entró de verdad: el día cumplido y la misión enlazada.
+      if (eco.xp + pagadoDia > 0) vibrar('mision');
 
       await cargar();
       // Las dos partes pueden pagar a la vez: callar la misión infravaloraba el
