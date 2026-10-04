@@ -243,8 +243,12 @@ export function duelosConRivalEnTablero<D extends Pick<DueloAmpliado, 'rival'>>(
   duelos: readonly D[],
   tablero: readonly { name: string }[],
 ): D[] {
-  const nombres = new Set(tablero.map((t) => claveAlias(t.name)));
-  return duelos.filter((d) => d.rival != null && nombres.has(claveAlias(String(d.rival))));
+  // Solo los duelos cuyo alias señala a UNA persona del marcador: con dos
+  // homónimos no se sabe a quién denunciar o bloquear, y un duelo visible
+  // sin «…» no se permite (lo mismo que decide amigoDelDuelo).
+  const cuenta = new Map<string, number>();
+  for (const t of tablero) cuenta.set(claveAlias(t.name), (cuenta.get(claveAlias(t.name)) ?? 0) + 1);
+  return duelos.filter((d) => d.rival != null && cuenta.get(claveAlias(String(d.rival))) === 1);
 }
 
 /**
