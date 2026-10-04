@@ -59,7 +59,9 @@ export function NavSidebar({ state, descriptors, navigation, rango }: NavSidebar
             <Pressable
               key={route.key}
               onPress={() => pulsarDestino(navigation, route, focused)}
-              style={({ pressed }) => [styles.fila, (focused || pressed) && styles.filaOn]}
+              // Activo y pulsado no se confunden: el activo lleva ink2 (y su
+              // indicador); la pulsación, un ink1 más tenue que dura lo que el dedo.
+              style={({ pressed }) => [styles.fila, focused ? styles.filaOn : pressed && styles.filaPulsada]}
               accessibilityRole="tab"
               accessibilityState={{ selected: focused }}
               accessibilityLabel={meta.label}
@@ -114,6 +116,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: space.s3,
   },
   filaOn: { backgroundColor: ink.ink2 },
+  filaPulsada: { backgroundColor: ink.ink1 },
   indicador: {
     position: 'absolute',
     left: 0,

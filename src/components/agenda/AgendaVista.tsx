@@ -91,6 +91,12 @@ const VISTAS: { id: ViewMode; label: string; unidad: string }[] = [
 
 /** Con el texto por encima de esto, todo a una columna. */
 const ESCALA_DOS_COLUMNAS = 1.35;
+/**
+ * El mes a dos columnas pide más hueco que semana y día: por debajo de esto
+ * (y fuera de `expanded`) la rejilla queda estrecha al lado del día, así que
+ * va arriba y el día debajo.
+ */
+const HUECO_MES_DOS_COLUMNAS = 900;
 /** Ancho máximo del contenido a dos columnas (márgenes incluidos). */
 const ANCHO_DOS_COLUMNAS = 1152;
 
@@ -115,6 +121,8 @@ export function AgendaVista({
   // El hueco real (la ventana menos el raíl o la barra lateral).
   const hueco = useAnchoUtil();
   const dosColumnas = sizeClass !== 'compact' && fontScale <= ESCALA_DOS_COLUMNAS;
+  // Semana y día siguen con `dosColumnas`; el mes además pide 900 o `expanded`.
+  const mesDosColumnas = dosColumnas && (hueco >= HUECO_MES_DOS_COLUMNAS || sizeClass === 'expanded');
 
   const listo = estado === 'listo';
   const datos = { quests, events, dueTasks };
@@ -145,7 +153,8 @@ export function AgendaVista({
       esPro={esPro}
       ahoraMin={ahoraMin === undefined ? (dia === hoy ? minutosAhora() : null) : ahoraMin}
       // En el mes a dos columnas el día va en la columna estrecha: una sola.
-      columnas={dosColumnas && modo !== 'mes'}
+      // Con la rejilla arriba, el día tiene el ancho entero, como en la vista Día.
+      columnas={dosColumnas && !(modo === 'mes' && mesDosColumnas)}
       acciones={acciones}
     />
   );
@@ -200,7 +209,7 @@ export function AgendaVista({
         </View>
       </Entrada>
 
-      {modo === 'mes' && dosColumnas ? (
+      {modo === 'mes' && mesDosColumnas ? (
         <View style={styles.dos}>
           <Entrada indice={2} style={styles.colMes}>
             {calendario}

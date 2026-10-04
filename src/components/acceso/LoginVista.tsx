@@ -87,6 +87,8 @@ export function LoginVista(p: LoginVistaProps) {
   const ev = evaluarLogin(modo, campos, tocados);
   const alta = modo === 'signup';
   const recuperar = modo === 'recover';
+  // Alta con todo bien salvo la casilla: el botón apagado debe decir por qué.
+  const faltaCasilla = alta && !campos.aceptado && evaluarLogin(modo, { ...campos, aceptado: true }, tocados).puedeEnviar;
 
   return (
     <Screen contentStyle={styles.contenido}>
@@ -266,6 +268,11 @@ export function LoginVista(p: LoginVistaProps) {
             disabled={!ev.puedeEnviar}
             style={styles.principal}
           />
+          {faltaCasilla ? (
+            <Text style={styles.faltaCasilla} accessibilityLiveRegion="polite" maxFontSizeMultiplier={1.6}>
+              Marca la casilla de Términos para continuar.
+            </Text>
+          ) : null}
 
           {portal ? (
             <Text style={styles.nota} maxFontSizeMultiplier={1.6}>
@@ -485,6 +492,14 @@ const styles = StyleSheet.create({
   },
   principal: { marginTop: space.s6 },
   enlace: { marginTop: space.s2, alignSelf: 'center' },
+  faltaCasilla: {
+    fontFamily: tipo.bodySm.family,
+    fontSize: tipo.bodySm.size,
+    lineHeight: tipo.bodySm.lineHeight,
+    color: ink.ink6,
+    textAlign: 'center',
+    marginTop: space.s2,
+  },
   nota: {
     fontFamily: tipo.bodySm.family,
     fontSize: tipo.bodySm.size,
