@@ -143,6 +143,19 @@ function mesActualMadrid() {
 
 const eur = (cents) => `${(Number(cents ?? 0) / 100).toFixed(2).replace('.', ',')} €`;
 
+/**
+ * Ficha retirada al borrar la cuenta (0056): inactiva, sin cuenta y con el
+ * alias anonimizado. Decisión del dueño (04/10/2026, condiciones §7): su saldo
+ * pendiente se pierde; la contabilidad se conserva sin derecho a cobro.
+ */
+export const ALIAS_RETIRADO = 'Creador retirado';
+export function fichaRetirada(cr) {
+  return !!cr && cr.active === false && !cr.vinculado && cr.alias === ALIAS_RETIRADO;
+}
+export const AVISO_RETIRADA =
+  'Ficha retirada por borrado de cuenta: según las condiciones (§7), su saldo pendiente se pierde y no se liquida. ' +
+  'La contabilidad se conserva, pero no se apunta ningún pago.';
+
 async function creadorPorCodigo(c) {
   const [row] = await sql(
     `select id, code, alias, rank, active, monthly_fixed_cents, user_id is not null as vinculado, user_id
@@ -370,6 +383,7 @@ async function informe(...args) {
 async function liquidar(rawCode, nota) {
   const c = codigo(rawCode);
   const cr = await creadorPorCodigo(c);
+  if (fichaRetirada(cr)) fallo(AVISO_RETIRADA);
   const [detalle, [claw]] = [await sql(sqlDetalleLiquidacion(cr.id)), await sql(sqlFotoDescuentos(cr.id))];
   const foto = fotoLiquidacion(detalle, claw);
 
@@ -491,6 +505,7 @@ async function pago(rawCode, euros, tipo, ...resto) {
   if (args.length > 1) fallo('Sobran argumentos: la nota va entre comillas y como mucho una.');
   const nota = args[0];
   const cr = await creadorPorCodigo(c);
+  if (fichaRetirada(cr)) fallo(AVISO_RETIRADA);
   const nt = nota ? String(nota).slice(0, 280) : null;
   if (!(await confirmar(`¿Apuntar ${eur(cents)} (${tipo}, periodo ${mes}) a ${cr.code}?`, cr.code))) {
     return console.log('Cancelado.');
