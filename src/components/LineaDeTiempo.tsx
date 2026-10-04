@@ -16,7 +16,8 @@ export interface ItemAgenda extends ItemTiempo {
   icono?: string;
 }
 
-const ANCHO_HORAS = 46;
+/** Columna de las horas, en Cinzel (FASE3 Lote C). */
+const ANCHO_HORAS = 48;
 /** Lado de la marca de evento (punto) y de campaña (aro). */
 const MARCA = 7;
 /** Alto del lienzo de la línea de «ahora»: cabe el trazo de 1,5 sin cortarse. */
@@ -99,7 +100,7 @@ export function LineaDeTiempo({
               {altoItem >= ALTO_HORA * 0.6 ? (
                 <Text style={styles.bloqueHora} numberOfLines={1}>
                   {hhmm(item.inicio)}
-                  {item.fin > item.inicio ? `–${hhmm(item.fin)}` : ''}
+                  {item.fin > item.inicio ? ` a ${hhmm(item.fin)}` : ''}
                   {item.detalle ? ` · ${item.detalle}` : ''}
                 </Text>
               ) : null}
@@ -157,9 +158,10 @@ const styles = StyleSheet.create({
   filaHora: { position: 'absolute', left: 0, right: 0, flexDirection: 'row', alignItems: 'center' },
   horaTexto: {
     width: ANCHO_HORAS,
-    fontFamily: fonts.body,
+    fontFamily: 'Cinzel_600SemiBold',
     fontSize: 11,
     color: ink.ink6,
+    fontVariant: ['tabular-nums'],
   },
   reglaHora: { flex: 1, height: stroke.hairline, backgroundColor: ink.ink3 },
   carril: { position: 'absolute', top: 0, bottom: 0, left: ANCHO_HORAS, right: 0 },
@@ -203,7 +205,7 @@ const styles = StyleSheet.create({
   // Fondo negro: tapa la "hh:00" de debajo si la hora actual cae cerca.
   ahoraHora: {
     width: ANCHO_HORAS,
-    fontFamily: fonts.semibold,
+    fontFamily: 'Cinzel_700Bold',
     fontSize: 11,
     lineHeight: 14,
     color: ink.ink10,

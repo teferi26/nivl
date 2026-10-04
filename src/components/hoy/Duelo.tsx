@@ -1,7 +1,8 @@
-// NIVL · Hoy: el duelo de la semana (HoyiPad.dc). Sustituye a la fila de
+// NIVL · Hoy: el rival cercano (HoyiPad.dc). Sustituye a la fila de
 // rivalidad: tú y quien va justo delante (o detrás, si lideras), cada uno con
 // su XP de la semana en Cinzel y su barra (la tuya blanca, la suya ink8), y
-// debajo la línea del sistema. Todo el bloque abre Amigos.
+// debajo la línea del sistema. Todo el bloque abre Amigos. No es el duelo de
+// Amigos (ese mide disciplina): aquí es el XP de 7 días.
 
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { router } from 'expo-router';
@@ -10,7 +11,7 @@ import { Barra, formatoMiles } from '@/components/arena';
 import { Section } from '@/components/ui';
 import { ink, space, type as tipo } from '@/design/tokens';
 import { fonts } from '@/lib/theme';
-import type { DueloHoy, LadoDuelo } from './derivarHoy';
+import { TITULO_RIVAL_CERCANO, type DueloHoy, type LadoDuelo } from './derivarHoy';
 
 function Lado({ lado, rival }: { lado: LadoDuelo; rival?: boolean }) {
   return (
@@ -36,11 +37,11 @@ function Lado({ lado, rival }: { lado: LadoDuelo; rival?: boolean }) {
 
 export function Duelo({ duelo, style }: { duelo: DueloHoy; style?: StyleProp<ViewStyle> }) {
   return (
-    <Section title="Duelo de la semana" style={style}>
+    <Section title={TITULO_RIVAL_CERCANO} style={style}>
       <Pressable
         onPress={() => router.push('/amigos')}
         accessibilityRole="button"
-        accessibilityLabel={`${duelo.linea} Tú, ${formatoMiles(duelo.yo.xp)} XP${
+        accessibilityLabel={`${TITULO_RIVAL_CERCANO}. ${duelo.linea} Tú, ${formatoMiles(duelo.yo.xp)} XP${
           duelo.rival ? `; ${duelo.rival.nombre}, ${formatoMiles(duelo.rival.xp)} XP` : ''
         }. Abrir Amigos`}
         style={({ pressed }) => [styles.caja, pressed && styles.pulsado]}

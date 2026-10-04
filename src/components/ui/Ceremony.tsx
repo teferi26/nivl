@@ -24,9 +24,10 @@ import { useEffect, useRef, useState } from 'react';
 import { AccessibilityInfo, Animated, Easing, Modal, Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { vibrar } from '@/design/haptics';
 import { ink, motion, RANK_THEME, sizeClass, space, type } from '@/design/tokens';
-import { RANGOS, type Celebracion, type EstadoProgreso, type RangoId } from '@/lib/progression';
+import type { Celebracion, EstadoProgreso, RangoId } from '@/lib/progression';
 import { Avatar, alturaCorona } from './Avatar';
 import { Button } from './Button';
+import { lineaFaltan, piezasCeremonia, rangoDeSalida } from './ceremoniaTexto';
 import { Crown } from './Crown';
 import { useMovimientoReducido } from './motion';
 
@@ -58,47 +59,6 @@ const MS_CORONA = 120 + 420 + 500;
 
 /** Claves ya anunciadas al lector de pantalla (una vez por clave). */
 const anunciadas = new Set<string>();
-
-function romano(n: number): string {
-  return n === 3 ? 'III' : n === 2 ? 'II' : 'I';
-}
-
-function rangoAnterior(r: RangoId): RangoId {
-  const i = RANGOS.findIndex((x) => x.id === r);
-  return RANGOS[Math.max(0, i - 1)]!.id;
-}
-
-/** Qué cifra sale y cuál entra, rótulos y texto para el lector. */
-function piezas(c: Celebracion): { viejo: string; nuevo: string; eyebrow: string; titulo: string; anuncio: string } {
-  switch (c.tipo) {
-    case 'rango':
-      return {
-        viejo: rangoAnterior(c.rango),
-        nuevo: c.rango,
-        eyebrow: 'NUEVO RANGO',
-        titulo: c.nombre,
-        anuncio: `Nuevo rango: ${c.rango}, ${c.nombre}. ${c.lema}`,
-      };
-    case 'grado':
-      return {
-        viejo: romano(Math.max(1, c.grado - 1)),
-        nuevo: romano(c.grado),
-        eyebrow: 'NUEVO GRADO',
-        titulo: `${c.nombre} ${romano(c.grado)}`,
-        anuncio: `Nuevo grado: ${c.nombre} ${romano(c.grado)}`,
-      };
-    case 'nivel':
-      return {
-        viejo: String(Math.max(1, c.nivel - 1)),
-        nuevo: String(c.nivel),
-        eyebrow: 'SUBES DE NIVEL',
-        titulo: `Nivel ${c.nivel}`,
-        anuncio: `Subes al nivel ${c.nivel}`,
-      };
-    default:
-      return { viejo: '', nuevo: '', eyebrow: '', titulo: '', anuncio: '' };
-  }
-}
 
 export function Ceremony({ celebracion, forma, resumen, siguiente, avatar, onCerrar, onFallida, onCompartir }: CeremonyProps) {
   const visible = celebracion !== null && (celebracion.tipo === 'rango' || celebracion.tipo === 'grado' || celebracion.tipo === 'nivel');
@@ -155,10 +115,11 @@ function Contenido({ c, forma, resumen, siguiente, avatar, onCerrar, onCompartir
   const { width } = useWindowDimensions();
   const reducido = useMovimientoReducido();
   const epica = forma === 'ceremonia-epica' && c.tipo === 'rango';
-  const p = piezas(c);
+  const p = piezasCeremonia(c);
   const tam = sizeClass(width) === 'compact' ? 128 : 160;
   const nuevo: RangoId = c.tipo === 'rango' ? c.rango : 'E';
-  const viejoRango = rangoAnterior(nuevo);
+  // El rango de antes de la acción (subir dos de golpe no pasa por el de en medio).
+  const viejoRango = rangoDeSalida(c);
 
   const raiz = useRef(new Animated.Value(reducido ? 0 : 1)).current;
   const viejoOp = useRef(new Animated.Value(1)).current;
@@ -265,6 +226,7 @@ function Contenido({ c, forma, resumen, siguiente, avatar, onCerrar, onCompartir
   const coronaTam = Math.round(tam * 0.5);
   const mostrarSiguiente = epica && siguiente !== null && nuevo !== 'S';
   const faltanDias = siguiente?.faltanDias ?? null;
+  const faltan = siguiente ? lineaFaltan(siguiente.faltan, faltanDias) : null;
 
   return (
     <Animated.View style={[styles.fondo, { opacity: raiz }]} accessibilityViewIsModal>
@@ -351,12 +313,7 @@ function Contenido({ c, forma, resumen, siguiente, avatar, onCerrar, onCompartir
                 <Text style={styles.sigTexto}>
                   Siguiente: {siguiente.nombre} en el nivel {siguiente.nivel}
                 </Text>
-                {siguiente.faltan > 0 || (faltanDias ?? 0) > 0 ? (
-                  <Text style={styles.sigTexto}>
-                    Faltan {siguiente.faltan} {siguiente.faltan === 1 ? 'nivel' : 'niveles'}
-                    {faltanDias !== null && faltanDias > 0 ? ` y ${faltanDias} ${faltanDias === 1 ? 'día activo' : 'días activos'}` : ''}
-                  </Text>
-                ) : null}
+                {faltan ? <Text style={styles.sigTexto}>{faltan}</Text> : null}
                 {/* Sin los días activos no se puede dar a entender que basten los niveles. */}
                 {faltanDias === null && siguiente.dias > 0 ? (
                   <Text style={styles.sigTexto}>{siguiente.nombre} pide además días activos en la arena</Text>

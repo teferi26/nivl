@@ -300,8 +300,10 @@ describe('RET-08 · tope único de 150 por día para misiones y reglas', () => {
     const reglas = [1, 2, 3].map((i) => ({ id: `r${i}`, text: `Regla ${i}`, consequence: `C${i}`, active: true }));
     mockSrv.contract.fetchRules = async () => reglas;
     mockSrv.contract.fetchRuleChecksRange = async () => new Map([['2026-10-08', new Set(['r1', 'r2', 'r3'])], ['2026-10-09', new Set<string>()]]);
-    await processPendingDays({ ...mockSrv.profile }, mockSrv.quests);
+    const { result } = await processPendingDays({ ...mockSrv.profile }, mockSrv.quests);
     expect(mockSrv.profile.xp_total).toBe(1000 - 150);
+    // La tarjeta del cierre dice lo descontado de verdad: misiones + reglas.
+    expect(result).toMatchObject({ penaltyXp: 150, penaltyReglas: 50 });
     const pens = penalizaciones().map((q) => q.penalty_xp).sort((a, b) => a! - b!);
     expect(pens).toEqual([50, 100]); // reglas 50 (lo que cabe), misiones 100
   });

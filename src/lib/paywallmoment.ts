@@ -14,8 +14,12 @@
 // - Los momentos de función (modo profundo, voz, fotos) son una LÍNEA no
 //   modal: la hoja solo se abre si el usuario la toca.
 // - A Élite/dueño, nada. A un Pro, solo Élite y solo en momentos de función o
-//   con la energía agotada (línea). En prueba o con la tienda cerrada, línea.
+//   con la energía agotada (línea). En prueba, línea. Con la tienda cerrada,
+//   línea salvo que la cuenta pueda empezar la prueba (es del servidor).
 // - `prueba` solo si la cuenta puede empezarla.
+// - En prueba no se vende lo que ya se tiene: ni la firma, ni el primer día,
+//   ni las fotos, ni la voz. El momento de la prueba es su final
+//   («fin_prueba»: una hoja, una vez, cuando la cuenta vuelve a gratis).
 // - Lo gratuito nunca se bloquea: la decisión no tiene campo de «bloquear»;
 //   solo dice si se ENSEÑA algo y de qué forma.
 
@@ -26,7 +30,8 @@ export type Momento =
   | 'voz_premium'
   | 'analisis_foto'
   | 'energia_agotada'
-  | 'coach_cerrado';
+  | 'coach_cerrado'
+  | 'fin_prueba';
 
 export const MOMENTOS: readonly Momento[] = [
   'firma',
@@ -36,6 +41,7 @@ export const MOMENTOS: readonly Momento[] = [
   'analisis_foto',
   'energia_agotada',
   'coach_cerrado',
+  'fin_prueba',
 ];
 
 export function esMomento(v: unknown): v is Momento {
@@ -75,6 +81,12 @@ export interface ContextoOferta {
    * no a quien paga por Stripe o con plan heredado). Por defecto, sí.
    */
   mejorable?: boolean;
+  /**
+   * La cuenta tuvo la prueba de 7 días (o una cortesía) y ya acabó. Si no se
+   * pasa, se deduce del historial: una respuesta «prueba» en los últimos 30
+   * días y la cuenta de nuevo en gratis.
+   */
+  pruebaTerminada?: boolean;
 }
 
 export type CopyKey = `${Momento}.${TierOferta}`;
@@ -127,12 +139,17 @@ const TIER_SIN_PAGO: Record<Momento, TierOferta> = {
   // La voz (en el dispositivo, coste 0) va con el coach: se ofrece Pro y a
   // quien ya tiene coach no se le vende nada por ella.
   voz_premium: 'pro',
-  // Las fotos al coach ya funcionan con Pro.
-  analisis_foto: 'pro',
+  // Las fotos al coach solo las ve Élite (Pro y la prueba, sin visión).
+  analisis_foto: 'elite',
   energia_agotada: 'pro',
   // La pantalla del coach sin acceso: lo que antes era «Ver NIVL Pro».
   coach_cerrado: 'pro',
+  // Acabó la prueba (que es de Pro): se ofrece lo que se probó.
+  fin_prueba: 'pro',
 };
+
+/** En prueba ya se tiene el coach: estos momentos no venden nada. */
+const INCLUIDO_EN_PRUEBA: readonly Momento[] = ['firma', 'primer_dia', 'voz_premium'];
 
 function decision(momento: Momento, tier: TierOferta, d: Partial<DecisionOferta> & { razon: string }): DecisionOferta {
   return {
@@ -186,6 +203,23 @@ export function decidirOferta(momento: Momento, ctx: ContextoOferta): DecisionOf
   }
 
   const tier = TIER_SIN_PAGO[momento];
+  if (nivel === 'trial' && (INCLUIDO_EN_PRUEBA.includes(momento) || momento === 'fin_prueba')) {
+    return decision(momento, tier, { razon: 'en_prueba' });
+  }
+
+  // Fin de la prueba: una hoja una vez en la vida, cuando la cuenta vuelve a
+  // gratis. Respeta los topes y la espera de 72 h; con la tienda cerrada, línea.
+  if (momento === 'fin_prueba') {
+    const terminada =
+      nivel === 'free' && !ctx.trialAvailable && (ctx.pruebaTerminada ?? historial.some((e) => e.respuesta === 'prueba'));
+    if (!terminada) return decision(momento, tier, { razon: 'sin_prueba' });
+    if (!ctx.tiendaAbierta) return decision(momento, tier, { mostrar: true, forma: 'linea', razon: 'tienda_cerrada' });
+    if (historial.some((e) => e.momento === 'fin_prueba' && esHoja(e))) return decision(momento, tier, { razon: 'fin_prueba_ya_visto' });
+    const bloqueo = bloqueoDeHoja(historial, ctx.ahora);
+    if (bloqueo) return decision(momento, tier, { mostrar: true, forma: 'linea', razon: bloqueo });
+    return decision(momento, tier, { mostrar: true, forma: 'hoja', razon: 'fin_prueba' });
+  }
+
   // Sin coach no hay energía que agotar.
   if (momento === 'energia_agotada' && nivel === 'free') return decision(momento, tier, { razon: 'sin_energia' });
 
@@ -194,14 +228,23 @@ export function decidirOferta(momento: Momento, ctx: ContextoOferta): DecisionOf
   if (MOMENTOS_FUNCION.includes(momento)) {
     return decision(momento, tier, { mostrar: true, forma: 'linea', prueba, razon: 'funcion' });
   }
-  if (nivel === 'trial') return decision(momento, tier, { mostrar: true, forma: 'linea', razon: 'en_prueba' });
-  if (!ctx.tiendaAbierta) return decision(momento, tier, { mostrar: true, forma: 'linea', prueba, razon: 'tienda_cerrada' });
-
-  if (momento === 'primer_dia' && historial.some((e) => e.momento === 'primer_dia' && esHoja(e))) {
-    // Una vez en la vida: la entrada se conserva mientras dure el historial y,
-    // pasado ese plazo, el evento «primer día» ya no vuelve a dispararse.
-    return decision(momento, tier, { razon: 'primer_dia_ya_visto' });
+  // Primer día (decisión del coordinador, fase 3): LÍNEA no modal tras la
+  // celebración, nunca hoja (no se vende en plena euforia). Una vez en la vida:
+  // `ofrecerSi` la anota como vista. Respeta la espera de 72 h tras un «no».
+  if (momento === 'primer_dia') {
+    if (historial.some((e) => e.momento === 'primer_dia')) return decision(momento, tier, { razon: 'primer_dia_ya_visto' });
+    const cerradaHace = historial.some(
+      (e) => e.respuesta === 'cerrada' && e.at <= ctx.ahora && ctx.ahora - e.at < ESPERA_TRAS_CERRAR,
+    );
+    if (cerradaHace) return decision(momento, tier, { razon: 'espera_72h' });
+    return decision(momento, tier, { mostrar: true, forma: 'linea', prueba, razon: 'primer_dia' });
   }
+
+  if (nivel === 'trial') return decision(momento, tier, { mostrar: true, forma: 'linea', razon: 'en_prueba' });
+  // Con la tienda cerrada no hay nada que comprar, pero la prueba es del
+  // servidor y sí se puede empezar: con prueba, la hoja sigue (con sus topes);
+  // sin ella, línea.
+  if (!ctx.tiendaAbierta && !prueba) return decision(momento, tier, { mostrar: true, forma: 'linea', razon: 'tienda_cerrada' });
 
   const primeraFirma = momento === 'firma' && !historial.some((e) => e.momento === 'firma');
   if (!primeraFirma) {

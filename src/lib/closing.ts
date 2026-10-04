@@ -60,8 +60,17 @@ export function rachaVisible(
   streakDays: number,
   questsHoy: Quest[],
   completadasHoy: Set<string>,
+  /**
+   * Con congelación vigente hoy (hoy ≤ freezeUntil) el cierre no juzga el día:
+   * ni suma ni rompe. Sin esto se mostraba (y se celebraba) un +1 que no llega.
+   */
+  opciones?: { hoy: string; freezeUntil: string | null },
 ): { valor: number; hoyCerrado: boolean; perfecto: boolean; faltan: number } {
-  const pendientes = questsHoy.filter((q) => !q.is_penalty);
+  const congelado = !!(opciones?.freezeUntil && opciones.hoy <= opciones.freezeUntil.slice(0, 10));
+  if (congelado) return { valor: streakDays, hoyCerrado: false, perfecto: false, faltan: 0 };
+  // Ni penalizaciones ni misiones extra: la extra «no da XP ni cuenta para la
+  // racha» (QuestForm), igual que en friends_board y daily_scorecards.
+  const pendientes = questsHoy.filter((q) => !q.is_penalty && !q.is_bonus);
   const fallos = pendientes.filter((q) => !completadasHoy.has(q.id)).length;
   // El mismo criterio que el cierre, o el número a la vista mentiría: verías
   // "hoy cerrado" y mañana la racha rota, o al revés.
@@ -141,6 +150,20 @@ export function reglasIncumplidas(input: {
   return salida;
 }
 
+/**
+ * Reglas del contrato que HOY siguen sin marcar y que el cierre cobraría: el
+ * mismo criterio que reglasIncumplidas. Si nunca ha marcado ninguna regla, el
+ * juicio no ha empezado y no cuenta ninguna (`juicioEmpezado`).
+ */
+export function reglasSinMarcarHoy(input: {
+  reglas: { id: string }[];
+  marcadasHoy: ReadonlySet<string>;
+  juicioEmpezado: boolean;
+}): number {
+  if (!input.juicioEmpezado) return 0;
+  return input.reglas.filter((r) => !input.marcadasHoy.has(r.id)).length;
+}
+
 export interface CloseInput {
   fromDate: string;
   today: string;
@@ -185,7 +208,7 @@ export function diaDeAlta(q: Pick<Quest, 'created_at'>): string | null {
 
 function rompeElDia(quests: Quest[], day: string, completedKeys: Set<string>): boolean | null {
   const programadas = questsScheduledOn(quests, day).filter((q) => {
-    if (q.is_penalty) return false;
+    if (q.is_penalty || q.is_bonus) return false;
     // Una misión creada después de ese día no se le podía pedir.
     const alta = diaDeAlta(q);
     return !alta || alta <= day;
@@ -295,7 +318,10 @@ export function computeDayClose(input: CloseInput): CloseOutput {
     // pendiente, que es justo el momento en el que hace falta poder.
     //
     // Ignorarla sigue teniendo su precio: consolida la pérdida de XP.
-    const scheduled = questsScheduledOn(input.quests, day).filter((q) => !q.is_penalty);
+    // Las misiones extra tampoco: pagan PB, no XP, y la interfaz promete que no
+    // cuentan para la racha (auditoría de coherencia, fase 3: se cobraba −50 XP
+    // por una extra difícil sin hacer y hasta se rompía la racha).
+    const scheduled = questsScheduledOn(input.quests, day).filter((q) => !q.is_penalty && !q.is_bonus);
     const missed = scheduled.filter((q) => !input.completedKeys.has(`${day}|${q.id}`));
 
     // El XP de lo fallado se cobra igual esté el día cumplido o no: la
@@ -372,6 +398,13 @@ export function enJuegoHoy(input: {
   streak: number;
   stones: number;
   rotosSeguidosPrevios?: number;
+  /**
+   * Reglas del contrato que hoy siguen sin marcar (solo si el juicio de reglas
+   * ya ha empezado: reglasIncumplidas). Cuestan RULE_BREAK_XP cada una, con el
+   * tope COMÚN de 150 con las misiones (RET-08), y una piedra no las absorbe.
+   */
+  reglasSinMarcar?: number;
+  xpPorRegla?: number;
 }): {
   /** Misiones normales pendientes hoy. */
   pendientes: number;
@@ -394,10 +427,13 @@ export function enJuegoHoy(input: {
     DAILY_PENALTY_CAP,
     pendientes.reduce((a, q) => a + Math.round(XP_BY_DIFFICULTY[q.difficulty] * PENALTY_FACTOR), 0),
   );
-  // Una piedra absorbe el día entero; un día exento no cobra. Un día salvado
-  // por la tolerancia SÍ cobra lo fallado (la tolerancia salva la racha, no el
-  // bolsillo).
-  const xpEnJuego = gastariaPiedra || exento ? 0 : coste;
+  // Una piedra absorbe el día de MISIONES; un día exento no cobra nada (ni
+  // reglas, RET-02). Un día salvado por la tolerancia SÍ cobra lo fallado (la
+  // tolerancia salva la racha, no el bolsillo). Las reglas suman con el tope
+  // común de 150 (engine.ts, RET-08).
+  const misiones = gastariaPiedra || exento ? 0 : coste;
+  const reglas = exento ? 0 : Math.max(0, input.reglasSinMarcar ?? 0) * (input.xpPorRegla ?? 25);
+  const xpEnJuego = Math.min(DAILY_PENALTY_CAP, misiones + reglas);
   return {
     pendientes: pendientes.length,
     faltanParaSalvar,

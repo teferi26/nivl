@@ -76,6 +76,8 @@ export function rachaProtegidaDe(e: Pick<EntradaEstadoAvisos, 'hoy' | 'perfil' |
  * es una; que salga el resultado, otra. Aceptar tú no es novedad para ti.
  */
 export function clavesDuelo(d: Duelo): string[] {
+  // Con la 0055 el rival puede llegar null (oculto): no se avisa de alguien
+  // que se ha ocultado (Juego y QA); tampoco de los anulados.
   if (d.rival === null || d.status === 'declined' || d.status === 'cancelled') return [];
   if (d.resultado) return [`${d.id}:resultado`];
   if (d.status === 'accepted' && d.soy_retador) return [`${d.id}:aceptado`];

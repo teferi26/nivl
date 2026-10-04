@@ -1,17 +1,17 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type PropsWithChildren } from 'react';
-import { AppState, Linking, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { AppState, StyleSheet, Text, View } from 'react-native';
 import { router } from 'expo-router';
 import { Image } from 'expo-image';
 import { useAuth } from '@/lib/auth';
 import { acceptHealthConsent, fetchHealthConsent, withdrawAndEraseHealth, HEALTH_COPY as T, HEALTH_ROUTES, type HealthConsent } from '@/lib/health';
 import { clearEvidenceSignatures } from '@/lib/data';
 import { cancelarAvisosSalud } from '@/lib/notifications';
-import { LEGAL_URLS } from '@/lib/proplans';
 import { supabase } from '@/lib/supabase';
 import { colors, fonts } from '@/lib/theme';
 import { mensajeSistema } from '@/lib/validation';
 import { SystemButton } from './SystemButton';
-import { Card, Check, Screen, ScreenHeader, Section, Skeleton } from './ui';
+import { HojaSaludVista, PuertaSaludVista } from './puertas/SaludVista';
+import { Card, Section, Skeleton } from './ui';
 import { confirmar } from './ui/confirmar';
 
 interface State extends HealthConsent { loading: boolean; error: string | null; epoch: number; }
@@ -71,15 +71,15 @@ export function useHealthConsent() {
 export function HealthConsentGuard({ children, routeName }: PropsWithChildren<{ routeName: string }>) {
   const health = useHealthConsent();
   if (!HEALTH_ROUTES.has(routeName) || health.accepted) return <View key={routeName === 'onboarding' ? 'setup' : health.epoch} style={styles.flex}>{children}</View>;
-  return <Screen>
-    <ScreenHeader eyebrow="Opcional" title="Tu salud, con permiso" onBack={() => router.canGoBack() ? router.back() : router.replace('/(tabs)')} />
-    {health.loading ? <View accessibilityRole="progressbar" accessibilityLabel="Comprobando permiso de salud"><Skeleton height={110} /></View> : <>
-      <Card><Text style={styles.body}>{health.erasurePending ? 'Tu permiso está retirado y hay un borrado pendiente. Puedes terminarlo en Perfil.' : 'Antes de abrir este registro, revisa qué datos de salud guarda NIVL y decide si quieres activarlo.'}</Text></Card>
-      {health.error ? <Text style={styles.error} accessibilityRole="alert">{health.error}</Text> : null}
-      <SystemButton title={health.error ? 'Volver a comprobar' : 'Revisar permiso'} onPress={health.error ? () => void health.refresh() : health.ask} disabled={health.erasurePending} />
-      <SystemButton title="Ir a Perfil" variant="ghost" onPress={() => router.push('/(tabs)/perfil')} />
-    </>}
-  </Screen>;
+  return <PuertaSaludVista
+    cargando={health.loading}
+    error={health.error}
+    borradoPendiente={health.erasurePending}
+    onVolver={() => router.canGoBack() ? router.back() : router.replace('/(tabs)')}
+    onRevisar={health.ask}
+    onReintentar={() => void health.refresh()}
+    onPerfil={() => router.push('/(tabs)/perfil')}
+  />;
 }
 
 export function HealthConsentNotice() {
@@ -109,23 +109,16 @@ export function HealthConsentSheet({ visible, close, accepted }: { visible: bool
     finally { lock.current = false; if (alive.current) setBusy(false); }
   };
   const cancel = () => { if (!lock.current) close(); };
-  return <Modal visible={visible} transparent animationType="slide" onRequestClose={cancel}>
-    <View style={styles.backdrop}><View style={styles.sheet}>
-      <ScrollView contentContainerStyle={styles.copy}>
-        <Text style={styles.title}>{T.title}</Text>
-        {[T.purpose, T.storage, T.choice, T.withdrawal].map(text => <Text key={text} style={styles.body}>{text}</Text>)}
-        <Pressable accessibilityRole="link" accessibilityLabel="Leer la política de privacidad" onPress={() => Linking.openURL(LEGAL_URLS.privacidad).catch(() => setError('No se ha podido abrir la política.'))}>
-          <Text style={styles.link}>Leer la política de privacidad</Text>
-        </Pressable>
-        <Pressable style={styles.check} accessibilityRole="checkbox" accessibilityLabel={T.checkbox} accessibilityState={{ checked, disabled: busy }} disabled={busy} onPress={() => setChecked(value => !value)}>
-          <Check checked={checked} size={24} /><Text style={[styles.body, styles.flex]}>{T.checkbox}</Text>
-        </Pressable>
-      </ScrollView>
-      {error ? <Text style={styles.error} accessibilityRole="alert">{error}</Text> : null}
-      <SystemButton title="Aceptar y activar salud" onPress={() => void accept()} disabled={!checked} loading={busy} />
-      <SystemButton title="Ahora no" variant="ghost" onPress={cancel} disabled={busy} />
-    </View></View>
-  </Modal>;
+  return <HojaSaludVista
+    visible={visible}
+    marcada={checked}
+    ocupada={busy}
+    error={error}
+    onMarcar={() => setChecked(value => !value)}
+    onAceptar={() => void accept()}
+    onCancelar={cancel}
+    onErrorEnlace={setError}
+  />;
 }
 
 export function HealthPrivacySection() {
@@ -158,12 +151,6 @@ export function HealthPrivacySection() {
 
 const styles = StyleSheet.create({
   flex: { flex: 1 },
-  backdrop: { flex: 1, justifyContent: 'flex-end', backgroundColor: colors.bg },
-  sheet: { maxHeight: '92%', padding: 20, paddingBottom: 32, backgroundColor: colors.panel, borderTopWidth: 1, borderColor: colors.line },
-  copy: { paddingBottom: 16 },
-  title: { fontFamily: fonts.heading, fontSize: 27, color: colors.text, marginBottom: 18 },
   body: { fontFamily: fonts.body, fontSize: 14, lineHeight: 21, color: colors.textDim, marginBottom: 14 },
-  check: { flexDirection: 'row', gap: 12, alignItems: 'center', marginTop: 18, minHeight: 52 },
-  link: { fontFamily: fonts.semibold, fontSize: 14, color: colors.accentText, textDecorationLine: 'underline' },
   error: { fontFamily: fonts.body, fontSize: 13, color: colors.red, marginBottom: 12 },
 });

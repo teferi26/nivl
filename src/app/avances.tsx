@@ -42,6 +42,7 @@ import { ensureProfile } from '@/lib/data';
 import { dateKey } from '@/lib/dates';
 import { awardXp } from '@/lib/engine';
 import { propagarActo, restoDelModulo } from '@/lib/links';
+import { anuncioActo, xpPagado } from '@/lib/pagoActo';
 import { GOAL_ACHIEVED_XP, goalProgress, WEIGH_IN_XP } from '@/lib/game';
 import {
   createGoal,
@@ -116,6 +117,8 @@ export default function Avances() {
   };
 
   const latestWeight = weights.length > 0 ? weights[weights.length - 1]!.weight_kg : null;
+  // Ya se ha pesado hoy: volver a pesar corrige el dato, no vuelve a pagar.
+  const pesadoHoy = weights.some((w) => w.date === dateKey());
 
   const saveWeight = async () => {
     if (!health.accepted) { health.ask(); return; }
@@ -129,17 +132,33 @@ export default function Avances() {
     setBusy(true);
     try {
       const { isNew } = await upsertWeight(userId, dateKey(), value);
+      let mensaje = 'El sistema corrige el pesaje de hoy. Ya estaba cobrado.';
+      // Lo que entró de verdad (misión enlazada incluida): solo eso vibra.
+      // Corregir el peso de hoy no paga nada y no vibra.
+      let entrado = 0;
       if (isNew) {
         // Un solo gesto: pesarse marca sola la misión de pesarse. Si la había,
         // paga ella y el módulo no vuelve a cobrar.
         const profile = await ensureProfile(userId);
         const eco = await propagarActo(profile, 'peso', dateKey());
         const resto = restoDelModulo(WEIGH_IN_XP, eco);
-        if (resto > 0) await awardXp(eco.profile, resto, 'VIT', 'weigh_in', { weight: value });
+        let pagado = 0;
+        if (resto > 0) {
+          const res = await awardXp(eco.profile, resto, 'VIT', 'weigh_in', { weight: value });
+          pagado = xpPagado(resto, eco.profile.xp_total, res.profile.xp_total);
+        }
+        entrado = eco.xp + pagado;
+        // Lo que entró de verdad: la misión marcada ahora y el resto del módulo.
+        mensaje =
+          anuncioActo({ xpMision: eco.xp, marcadas: eco.marcadas, xpModulo: pagado, deModulo: 'a VIT por el pesaje' }) ||
+          (resto > 0
+            ? 'Anotado. Hoy ya has llegado al tope diario de XP.'
+            : 'Anotado. La misión de hoy ya estaba marcada y pagada.');
       }
-      vibrar('mision');
+      if (entrado > 0) vibrar('mision');
       setWeightInput('');
       await load();
+      avisar('Pesaje registrado', mensaje);
     } catch (e) {
       avisar('Error del sistema', mensajeSistema(e));
     } finally {
@@ -187,7 +206,7 @@ export default function Avances() {
     if (lock.current) return;
     const ok = await confirmar({
       titulo: 'META CONSEGUIDA',
-      mensaje: `"${goal.title}": el sistema otorgará +${GOAL_ACHIEVED_XP} XP.`,
+      mensaje: `«${goal.title}»: el sistema otorgará +${GOAL_ACHIEVED_XP} XP.`,
       confirmar: 'Reclamar',
       cancelar: 'Aún no',
     });
@@ -196,9 +215,18 @@ export default function Avances() {
     try {
       await updateGoal(goal.id, { status: 'achieved', achieved_at: new Date().toISOString() });
       const profile = await ensureProfile(userId);
-      await awardXp(profile, GOAL_ACHIEVED_XP, 'AGI', 'goal_achieved', { goal_id: goal.id, goal: goal.title });
-      vibrar('mision');
+      const res = await awardXp(profile, GOAL_ACHIEVED_XP, 'AGI', 'goal_achieved', { goal_id: goal.id, goal: goal.title });
+      // Lo PAGADO: una meta ya cobrada (el servidor paga una vez por meta) o el
+      // tope diario dejan la cifra por debajo de lo prometido.
+      const pagado = xpPagado(GOAL_ACHIEVED_XP, profile.xp_total, res.profile.xp_total);
+      if (pagado > 0) vibrar('mision');
       await load();
+      avisar(
+        'Meta conseguida',
+        pagado > 0
+          ? `«${goal.title}»: +${pagado} XP a AGI.`
+          : `«${goal.title}» queda como lograda. Este premio no suma hoy: ya estaba cobrado o has llegado al tope diario.`,
+      );
     } catch (e) {
       avisar('Error del sistema', mensajeSistema(e));
     } finally {
@@ -288,7 +316,12 @@ export default function Avances() {
                 placeholderTextColor={colors.textFaint}
                 accessibilityLabel="Peso de hoy en kilogramos"
               />
-              <SystemButton title={`Pesar +${WEIGH_IN_XP} XP`} variant="outline" onPress={saveWeight} loading={busy} />
+              <SystemButton
+                title={pesadoHoy ? 'Corregir' : `Pesar +${WEIGH_IN_XP} XP`}
+                variant="outline"
+                onPress={saveWeight}
+                loading={busy}
+              />
             </View>
             {weights.length > 1 ? (
               <View style={styles.grafica}>
@@ -330,7 +363,7 @@ export default function Avances() {
                       </View>
                       <View style={styles.metaPie}>
                         <Text style={styles.metaDetalle} numberOfLines={1}>
-                          {g.start_value} → <Text style={styles.metaActual}>{current ?? '?'}</Text> → {g.target_value} {g.unit}
+                          {g.start_value} → <Text style={styles.metaActual}>{current ?? SIN_DATO}</Text> → {g.target_value} {g.unit}
                         </Text>
                         <View style={styles.metaAcciones}>
                           {done ? (

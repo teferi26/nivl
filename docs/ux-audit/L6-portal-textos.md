@@ -25,7 +25,7 @@ hoy en `nivl-web-v2`.
 > se descuenta de la siguiente liquidación. Lo que se paga es lo que figura en el desglose de cada
 > liquidación. Si ves una diferencia, escríbenos y lo revisamos.
 
-**PENDIENTE DE CONFIRMACIÓN DEL USUARIO** (texto de condiciones con creadores; redacción del Chat 2, que evita una cláusula de prelación, con las precisiones del Chat 3: la retención remite a este mismo §4, que ya fija 30 días, y se menciona el descuento tras un pago, como dice §4). No se publica hasta que el usuario la confirme a través del coordinador.
+**APROBADA POR EL USUARIO** (vía coordinador, 03/10/2026) (texto de condiciones con creadores; redacción del Chat 2, que evita una cláusula de prelación, con las precisiones del Chat 3: la retención remite a este mismo §4, que ya fija 30 días, y se menciona el descuento tras un pago, como dice §4). Aplicada en nivl-web `winter2/chat4-web-v2` @ab1da51 (condiciones 1.2, privacidad 1.4), junto con §7 y el párrafo de privacidad.
 
 Y en el punto «Liquidación», la última frase pasa a:
 
@@ -76,7 +76,7 @@ Notas para el Chat 3 sobre este párrafo:
 ## 3. Textos en el propio portal (ya en el código, para que el Chat 3 los vea juntos)
 
 - Login: «PORTAL DE CREADORES» · «Entra con tu cuenta de NIVL para ver tu panel de creador.» ·
-  «¿Olvidaste la contraseña? Cámbiala desde la app de NIVL y vuelve aquí.» · enlaces a Términos y
+  «¿Olvidaste la contraseña? Recupérala desde la app de NIVL («¿Olvidaste la contraseña?» en la pantalla de entrar) y vuelve aquí.» · enlaces a Términos y
   Privacidad. Sin registro ni restablecer contraseña.
 - Cuenta sin panel: «Este panel es para creadores del programa» · «Con esta cuenta no hay panel
   que mostrar.» No dice si la cuenta existió como creador ni si está inactiva.

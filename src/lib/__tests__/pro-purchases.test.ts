@@ -15,6 +15,7 @@ import {
   restorePurchases,
   startTrial,
   StorePriceChangedError,
+  fetchAiStatus,
 } from '../pro';
 import { supabase } from '../supabase';
 
@@ -469,5 +470,27 @@ describe('momento de la oferta: historial local', () => {
     const proStripe = { ...SIN_IA, entitled: true, tier: 'pro' as const, plan: 'pro_anual' as const };
     expect((await ofrecerSi('coach_profundo', proStripe, { celebrando: false, provider: 'stripe', ahora: AHORA })).mostrar).toBe(false);
     expect((await ofrecerSi('coach_profundo', proStripe, { celebrando: false, provider: 'apple', ahora: AHORA })).mostrar).toBe(true);
+  });
+
+  test('ofrecerSi fin_prueba: el inicio de la prueba apuntado (como línea) basta; o lo dice el servidor', async () => {
+    const vuelta = { ...SIN_IA, trialAvailable: false };
+    expect((await ofrecerSi('fin_prueba', vuelta, { celebrando: false, ahora: AHORA })).mostrar).toBe(false);
+    // Lo que apunta /pro al empezar la prueba sin motivo: línea, no gasta topes.
+    await anotarOferta('coach_cerrado', 'prueba', 'linea', AHORA - 8 * 24 * 3600 * 1000);
+    const d = await ofrecerSi('fin_prueba', vuelta, { celebrando: false, ahora: AHORA });
+    expect(d).toMatchObject({ mostrar: true, forma: 'hoja', tier: 'pro', prueba: false });
+    await AsyncStorage.clear();
+    expect((await ofrecerSi('fin_prueba', vuelta, { celebrando: false, pruebaTerminada: true, ahora: AHORA })).forma).toBe('hoja');
+  });
+});
+
+describe('fetchAiStatus: visión del coach', () => {
+  test('vision viene del servidor; sin la clave (servidor sin la migración) es null', async () => {
+    status.mockResolvedValueOnce({ data: { entitled: true, plan: 'elite_anual', tier: 'elite', vision: true }, error: null } as never);
+    expect((await fetchAiStatus()).vision).toBe(true);
+    status.mockResolvedValueOnce({ data: { entitled: true, plan: 'pro_anual', tier: 'pro' }, error: null } as never);
+    expect((await fetchAiStatus()).vision).toBeNull();
+    status.mockResolvedValueOnce({ data: { entitled: true, plan: 'pro_anual', tier: 'pro', vision: false }, error: null } as never);
+    expect((await fetchAiStatus()).vision).toBe(false);
   });
 });

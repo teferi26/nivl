@@ -2,24 +2,32 @@
 // Mac, PC). SISTEMA.md §3.
 //
 // 240 pt: la marca NIVL en Cinzel arriba, filas de 44 con icono y rótulo, y
-// abajo un hueco reservado para el rango del gladiador (lote L3). La fila
-// activa va invertida (blanco con texto negro): es la única superficie blanca
-// de la navegación.
+// abajo el lema entre dos laureles (o el rango del gladiador si se pasa). La
+// fila activa habla como el raíl: regla de 2 pegada a la izquierda, fondo ink2,
+// icono sólido y rótulo en ink10. No se invierte: la inversión queda para la
+// acción principal de cada pantalla.
 
 import Ionicons from '@expo/vector-icons/Ionicons';
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import type { ReactNode } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Laurel } from '@/components/arena';
 import { ANCHO_SIDEBAR } from '@/design/responsive';
 import { ink, space, stroke, type as tipo } from '@/design/tokens';
 import { fonts } from '@/lib/theme';
 import { navItemDe, pulsarDestino } from './navItems';
 
 interface NavSidebarProps extends BottomTabBarProps {
-  /** Hueco del rango (L3: avatar con su marco, título y nivel). */
+  /** Hueco del pie: si no se pasa nada, el lema entre laureles. */
   rango?: ReactNode;
 }
+
+// El lema en dos líneas fijas: en una no cabe en 240 ni a 11 (≈194 de 188
+// útiles, `anchoInscripcion`), y partido a mano no queda «DÍA» huérfano. La
+// línea larga, «UN 1 % MEJOR», mide ≈162 a 14/3.
+const LEMA = 'UN 1 % MEJOR\nCADA DÍA';
+const LAUREL_LEMA = 16;
 
 export function NavSidebar({ state, descriptors, navigation, rango }: NavSidebarProps) {
   const insets = useSafeAreaInsets();
@@ -51,12 +59,15 @@ export function NavSidebar({ state, descriptors, navigation, rango }: NavSidebar
             <Pressable
               key={route.key}
               onPress={() => pulsarDestino(navigation, route, focused)}
-              style={({ pressed }) => [styles.fila, focused ? styles.filaOn : pressed && styles.pressed]}
+              // Activo y pulsado no se confunden: el activo lleva ink2 (y su
+              // indicador); la pulsación, un ink1 más tenue que dura lo que el dedo.
+              style={({ pressed }) => [styles.fila, focused ? styles.filaOn : pressed && styles.filaPulsada]}
               accessibilityRole="tab"
               accessibilityState={{ selected: focused }}
               accessibilityLabel={meta.label}
             >
-              <Ionicons name={focused ? meta.on : meta.off} size={20} color={focused ? ink.ink0 : ink.ink8} />
+              {focused ? <View style={styles.indicador} /> : null}
+              <Ionicons name={focused ? meta.on : meta.off} size={20} color={focused ? ink.ink10 : ink.ink8} />
               <Text style={[styles.rotulo, focused && styles.rotuloOn]} numberOfLines={1} maxFontSizeMultiplier={1.35}>
                 {meta.label}
               </Text>
@@ -64,9 +75,17 @@ export function NavSidebar({ state, descriptors, navigation, rango }: NavSidebar
           );
         })}
       </ScrollView>
-      {/* Reservado para el rango (L3). Mantiene su alto aunque esté vacío para
-          que la navegación no salte cuando llegue. */}
-      <View style={styles.rango}>{rango}</View>
+      <View style={styles.pie}>
+        {rango ?? (
+          <View style={styles.lema} accessible accessibilityLabel="Un 1 % mejor cada día">
+            <Laurel alto={LAUREL_LEMA} lado="izq" />
+            <Text style={styles.lemaTexto} maxFontSizeMultiplier={1} numberOfLines={2}>
+              {LEMA}
+            </Text>
+            <Laurel alto={LAUREL_LEMA} lado="der" />
+          </View>
+        )}
+      </View>
     </View>
   );
 }
@@ -96,8 +115,16 @@ const styles = StyleSheet.create({
     gap: space.s3,
     paddingHorizontal: space.s3,
   },
-  filaOn: { backgroundColor: ink.ink10 },
-  pressed: { backgroundColor: ink.ink2 },
+  filaOn: { backgroundColor: ink.ink2 },
+  filaPulsada: { backgroundColor: ink.ink1 },
+  indicador: {
+    position: 'absolute',
+    left: 0,
+    top: space.s2,
+    bottom: space.s2,
+    width: stroke.rule,
+    backgroundColor: ink.ink10,
+  },
   rotulo: {
     flex: 1,
     minWidth: 0,
@@ -105,13 +132,27 @@ const styles = StyleSheet.create({
     fontSize: tipo.body.size,
     color: ink.ink8,
   },
-  rotuloOn: { fontFamily: tipo.headline.family, color: ink.ink0 },
-  rango: {
-    minHeight: 88,
+  rotuloOn: { fontFamily: tipo.headline.family, color: ink.ink10 },
+  pie: {
     marginHorizontal: space.s3,
     marginBottom: space.s4,
     borderTopWidth: stroke.hairline,
     borderTopColor: ink.ink3,
     paddingTop: space.s4,
+  },
+  lema: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: space.s2,
+  },
+  lemaTexto: {
+    flexShrink: 1,
+    fontFamily: tipo.inscripcion.family,
+    fontSize: tipo.inscripcion.size,
+    lineHeight: tipo.inscripcion.lineHeight,
+    letterSpacing: 3,
+    color: ink.ink6,
+    textAlign: 'center',
   },
 });

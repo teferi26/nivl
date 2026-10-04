@@ -2,12 +2,18 @@
 // de esta pantalla del rediseño L-RADICAL (docs/design-v2/L-RADICAL.md §C).
 //
 // Perfil sin sesión ni Supabase: PerfilVista con un perfil de mentira y la
-// vitrina escrita a mano (ACHIEVEMENTS vive junto a supabase). Ajustes = null.
-import { perfilDemo, YO_DEMO } from '@/components/arena/demoDatos';
+// vitrina escrita a mano (ACHIEVEMENTS vive junto a supabase). Los estados de
+// rango van sin ajustes; los de «ajustes» y las hojas (FASE3 Lote B2) los
+// pintan con PerfilAjustes sin la sección de salud (consulta a Supabase).
+import type { ReactNode } from 'react';
+import { HOY_DEMO, perfilDemo, YO_DEMO } from '@/components/arena/demoDatos';
 import type { DemoPantalla } from '@/components/arena/galeria';
 import { Screen } from '@/components/ui';
+import type { EstadoAvisos } from '@/lib/notifications';
 import { estadoDe, type RangoId } from '@/lib/progression';
 import type { Profile } from '@/lib/types';
+import { HojaBorrar, HojaCodigo, HojaPausa } from './HojasPerfil';
+import { PerfilAjustes, type PerfilAjustesProps } from './PerfilAjustes';
 import { PerfilVista, type LogroVitrina, type PerfilAcciones, type PerfilDatos } from './PerfilVista';
 
 const nada = () => {};
@@ -79,7 +85,17 @@ function datosDemo(p: {
   };
 }
 
-function Pantalla({ datos, error = null }: { datos: PerfilDatos | null; error?: string | null }) {
+function Pantalla({
+  datos,
+  error = null,
+  ajustes = null,
+  hoja = null,
+}: {
+  datos: PerfilDatos | null;
+  error?: string | null;
+  ajustes?: ReactNode;
+  hoja?: ReactNode;
+}) {
   return (
     <Screen>
       <PerfilVista
@@ -89,10 +105,59 @@ function Pantalla({ datos, error = null }: { datos: PerfilDatos | null; error?: 
         nombre={datos?.profile.name ?? ''}
         subiendoFoto={false}
         acciones={ACCIONES}
-        ajustes={null}
+        ajustes={ajustes}
       />
+      {hoja}
     </Screen>
   );
+}
+
+/** El perfil de «Yo» (rango A) para los estados de ajustes y hojas. */
+const datosYo = () =>
+  datosDemo({
+    perfil: {},
+    rango: YO_DEMO.rango,
+    ganados: 7,
+    titulo: YO_DEMO.titulo,
+    diasActivos: 312,
+    stats: { total: 418, withEvidence: 151 },
+    rachaFrase: '12 días seguidos. La arena ya sabe tu nombre.',
+  });
+
+const AVISOS_ACTIVOS: EstadoAvisos = { permitido: true, puedePreguntar: false, programados: 6, error: null };
+const AVISOS_SIN_PERMISO: EstadoAvisos = { permitido: false, puedePreguntar: true, programados: 0, error: null };
+
+function ajustesDemo(datos: PerfilDatos, p: Partial<PerfilAjustesProps> = {}): ReactNode {
+  return (
+    <PerfilAjustes
+      profile={datos.profile}
+      busy={false}
+      frozen={false}
+      onPerfilDeUso={nada}
+      onPausar={nada}
+      onReanudar={nada}
+      vibraciones
+      onVibraciones={nada}
+      avisos={AVISOS_ACTIVOS}
+      onActivarAvisos={nada}
+      premium={false}
+      subscription={null}
+      onCheckout={nada}
+      consent={null}
+      onConsentimiento={nada}
+      onExportar={nada}
+      onCerrarSesion={nada}
+      onBorrar={nada}
+      sinSalud
+      {...p}
+    />
+  );
+}
+
+/** Perfil de «Yo» con una hoja abierta encima. */
+function ConHoja({ hoja }: { hoja: ReactNode }) {
+  const datos = datosYo();
+  return <Pantalla datos={datos} hoja={hoja} />;
 }
 
 export const DEMO: DemoPantalla | null = {
@@ -175,6 +240,92 @@ export const DEMO: DemoPantalla | null = {
             stats: { total: 1873, withEvidence: 1204 },
             rachaFrase: '214 días. Ya no compites con nadie más que contigo.',
           })}
+        />
+      ),
+    },
+    {
+      id: 'ajustes',
+      titulo: 'Ajustes',
+      render: () => {
+        const datos = datosYo();
+        return <Pantalla datos={datos} ajustes={ajustesDemo(datos)} />;
+      },
+    },
+    {
+      id: 'ajustes-sin-avisos',
+      titulo: 'Ajustes sin permiso de avisos',
+      render: () => {
+        const datos = datosYo();
+        return <Pantalla datos={datos} ajustes={ajustesDemo(datos, { avisos: AVISOS_SIN_PERMISO })} />;
+      },
+    },
+    {
+      id: 'hoja-borrar',
+      titulo: 'Hoja: borrar la cuenta',
+      render: () => (
+        <ConHoja
+          hoja={<HojaBorrar abierta cerrar={nada} aviso={null} esCreador={false} borrando={false} confirmar={nada} />}
+        />
+      ),
+    },
+    {
+      id: 'hoja-borrar-lista',
+      titulo: 'Hoja: borrar, creador y ELIMINAR escrito',
+      render: () => (
+        <ConHoja
+          hoja={
+            <HojaBorrar
+              abierta
+              cerrar={nada}
+              aviso={null}
+              esCreador
+              borrando={false}
+              confirmar={nada}
+              escritoInicial="ELIMINAR"
+            />
+          }
+        />
+      ),
+    },
+    {
+      id: 'hoja-pausa',
+      titulo: 'Hoja: pausar el sistema',
+      render: () => (
+        <ConHoja
+          hoja={
+            <HojaPausa
+              abierta
+              cerrar={nada}
+              motivo="Exámenes"
+              setMotivo={nada}
+              dias={7}
+              setDias={nada}
+              activar={nada}
+              today={HOY_DEMO}
+              motivos={['Exámenes', 'Enfermedad', 'Vacaciones']}
+              duraciones={[1, 3, 7, 14]}
+            />
+          }
+        />
+      ),
+    },
+    {
+      id: 'hoja-codigo',
+      titulo: 'Hoja: código de creador con error',
+      render: () => (
+        <ConHoja
+          hoja={
+            <HojaCodigo
+              abierta
+              cerrar={nada}
+              valor="LUCIAFIT"
+              cambiar={nada}
+              aviso="Ese código no existe. Revisa que esté bien escrito."
+              ocupado={false}
+              enviar={nada}
+              autoFocus={false}
+            />
+          }
         />
       ),
     },

@@ -600,6 +600,9 @@ export function useCoach(): { vista: CoachVistaProps; hojas: HojasCoach } {
       dictado,
       avisoDictado,
       onAdjuntar: () => void adjuntar(),
+      // Manda ai_status.vision (Seguridad/Compras). Hasta que el campo llegue
+      // integrado, el nivel: solo Élite y owner van por un modelo con visión.
+      conFotos: estado ? puedeVerFotos(estado) : null,
     },
     onPro: () => router.push('/pro'),
     onMemoria: () => router.push('/memoria'),
@@ -613,4 +616,10 @@ export function useCoach(): { vista: CoachVistaProps; hojas: HojasCoach } {
       denuncia: { respuesta: denuncia, onClose: () => setDenuncia(null) },
     },
   };
+}
+
+function puedeVerFotos(estado: { tier?: string | null }): boolean {
+  const vision = (estado as { vision?: unknown }).vision;
+  if (typeof vision === 'boolean') return vision;
+  return estado.tier === 'elite' || estado.tier === 'owner';
 }

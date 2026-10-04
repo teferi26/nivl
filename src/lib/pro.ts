@@ -11,7 +11,7 @@
 // `subscriptions` (supabase/functions/revenuecat-webhook → apply_store_event,
 // 0027), así que tras comprar se vuelve a preguntar al servidor.
 //
-// `purchasesAvailable()` es false —y la oferta se pinta de solo lectura— si
+// `purchasesAvailable()` es false (y la oferta se pinta de solo lectura) si
 // falta la clave pública de la plataforma (EXPO_PUBLIC_RC_IOS_KEY /
 // EXPO_PUBLIC_RC_ANDROID_KEY, variables de EAS) o el módulo nativo (Expo Go,
 // web). `subscription.ts` (Stripe, EXPO_PUBLIC_PAYWALL) se queda como está
@@ -88,6 +88,7 @@ export async function fetchAiStatus(): Promise<AiStatus> {
     deepRemaining: Number(s.deep_remaining ?? 0),
     deepTurns: Number(s.deep_turns ?? 0),
     trialAvailable: s.trial_available === true,
+    vision: typeof s.vision === 'boolean' ? s.vision : null,
   };
 }
 
@@ -594,7 +595,7 @@ export async function gestionarSuscripcion(): Promise<void> {
 export const CLAVE_OFERTAS = 'nivl.ofertas.v1';
 
 // Carga perezosa (require en la llamada): un import estático arrastraría el
-// módulo nativo a todos los tests que importan `pro.ts` —también de rebote—
+// módulo nativo a todos los tests que importan `pro.ts` (también de rebote)
 // sin mock, y `import()` no lo transforma Jest. Dentro del try de quien llama:
 // si el módulo no está, el historial queda vacío.
 type Almacen = Pick<typeof AsyncStorageTipo, 'getItem' | 'setItem'>;
@@ -640,6 +641,12 @@ export interface OpcionesOferta {
   provider?: string | null;
   /** Por defecto, una hoja que se decide enseñar se apunta ya como `vista`. */
   anotar?: boolean;
+  /**
+   * Para `fin_prueba`: la cuenta tuvo la prueba o una cortesía y ya acabó
+   * (p. ej. `subscriptions.plan = 'cortesia'` con el periodo vencido). Sin
+   * él, se deduce del historial del dispositivo.
+   */
+  pruebaTerminada?: boolean;
   ahora?: number;
 }
 
@@ -662,8 +669,11 @@ export async function ofrecerSi(momento: Momento, status: AiStatus | null | unde
     ahora,
     historial,
     mejorable: status?.entitled && !status?.trial ? puedeMejorarEnTienda(status, opts.provider ?? null) : true,
+    ...(opts.pruebaTerminada !== undefined ? { pruebaTerminada: opts.pruebaTerminada } : {}),
   });
   if (!status) return { ...d, mostrar: false, razon: 'sin_estado' };
   if (d.mostrar && d.forma === 'hoja' && opts.anotar !== false) await anotarOferta(momento, 'vista', 'hoja', ahora);
+  // El primer día es línea pero una vez en la vida: se anota al enseñarla.
+  else if (d.mostrar && momento === 'primer_dia' && opts.anotar !== false) await anotarOferta(momento, 'vista', 'linea', ahora);
   return d;
 }

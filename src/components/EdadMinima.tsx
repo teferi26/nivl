@@ -1,14 +1,11 @@
 // Se aplica a cada pantalla del Stack sin desmontar el navegador. Las pantallas
 // protegidas ni se montan hasta comprobar la confirmación guardada en el servidor.
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type PropsWithChildren } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { SystemButton } from '@/components/SystemButton';
-import { Card, Check, Screen, ScreenHeader, Skeleton } from '@/components/ui';
+import { EdadVista } from '@/components/puertas/EdadVista';
 import { confirmarEdad, fetchEdadConfirmada } from '@/lib/age';
 import { useAuth } from '@/lib/auth';
 import { EDAD_MINIMA } from '@/lib/consentmath';
 import { supabase } from '@/lib/supabase';
-import { colors, fonts } from '@/lib/theme';
 import { mensajeSistema } from '@/lib/validation';
 
 type Estado = 'cargando' | 'pendiente' | 'guardando' | 'confirmada' | 'error';
@@ -98,7 +95,6 @@ function ConfirmacionEdad({ autenticado }: { autenticado: boolean }) {
   const [marcada, setMarcada] = useState(false);
   const [saliendo, setSaliendo] = useState(false);
   const [avisoSalida, setAvisoSalida] = useState<string | null>(null);
-  const pendiente = estado === 'pendiente' || estado === 'guardando';
   const salir = async () => {
     if (saliendo) return;
     setSaliendo(true);
@@ -114,50 +110,18 @@ function ConfirmacionEdad({ autenticado }: { autenticado: boolean }) {
   };
 
   return (
-    <Screen contentStyle={styles.screen}>
-      <ScreenHeader eyebrow="Antes de entrar" title="Tu edad" subtitle={`NIVL es para personas de ${EDAD_MINIMA} años o más.`} />
-      {!autenticado || estado === 'cargando' ? (
-        <View accessibilityRole="progressbar" accessibilityLabel="Comprobando la confirmación de edad">
-          <Skeleton height={96} />
-        </View>
-      ) : pendiente ? (
-        <Card variant="outline">
-          <Text style={styles.body}>Confirma que cumples la edad mínima para continuar. No hace falta indicar tu fecha de nacimiento.</Text>
-          <Pressable
-            style={styles.check}
-            accessibilityRole="checkbox"
-            accessibilityLabel={`Tengo ${EDAD_MINIMA} años o más`}
-            accessibilityState={{ checked: marcada, disabled: estado === 'guardando' || saliendo }}
-            disabled={estado === 'guardando' || saliendo}
-            onPress={() => setMarcada((v) => !v)}
-          >
-            <Check checked={marcada} size={24} />
-            <Text style={styles.label}>Tengo {EDAD_MINIMA} años o más.</Text>
-          </Pressable>
-          <SystemButton
-            title="Confirmar y continuar"
-            onPress={() => { if (marcada) void confirmar(); }}
-            disabled={!marcada || saliendo}
-            loading={estado === 'guardando'}
-          />
-        </Card>
-      ) : (
-        <SystemButton title="Volver a comprobar" onPress={() => void consultar()} disabled={saliendo} />
-      )}
-      {autenticado && aviso ? <Text style={styles.error} accessibilityRole="alert">{aviso}</Text> : null}
-      {avisoSalida ? <Text style={styles.error} accessibilityRole="alert">{avisoSalida}</Text> : null}
-      {autenticado ? (
-        <SystemButton title="Cerrar sesión" variant="ghost" onPress={() => void salir()} loading={saliendo} style={styles.exit} />
-      ) : null}
-    </Screen>
+    <EdadVista
+      edadMinima={EDAD_MINIMA}
+      autenticado={autenticado}
+      estado={estado}
+      aviso={aviso}
+      avisoSalida={avisoSalida}
+      marcada={marcada}
+      saliendo={saliendo}
+      onMarcar={() => setMarcada((v) => !v)}
+      onConfirmar={() => { if (marcada) void confirmar(); }}
+      onReintentar={() => void consultar()}
+      onSalir={() => void salir()}
+    />
   );
 }
-
-const styles = StyleSheet.create({
-  screen: { paddingTop: 32 },
-  body: { fontFamily: fonts.body, fontSize: 14, lineHeight: 21, color: colors.textDim },
-  check: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 52, marginVertical: 14 },
-  label: { flex: 1, minWidth: 0, fontFamily: fonts.semibold, fontSize: 15, color: colors.text },
-  error: { fontFamily: fonts.body, fontSize: 13, lineHeight: 19, color: colors.red, marginTop: 14 },
-  exit: { marginTop: 14 },
-});

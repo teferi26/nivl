@@ -55,6 +55,12 @@ export interface AiStatus {
   deepTurns: number;
   /** Nunca tuvo suscripción ni prueba: puede empezar la de 7 días. */
   trialAvailable: boolean;
+  /**
+   * El coach de este plan ve fotos (modelo Claude). Lo dice el servidor
+   * (`ai_status.vision`); null si el servidor aún no lo manda (sin la
+   * migración): quien pinta decide por el nivel. Pro (DeepSeek) y la prueba no.
+   */
+  vision: boolean | null;
 }
 
 /** Una cuenta sin nada: lo que se pinta cuando el servidor dice que no hay IA. */
@@ -70,6 +76,7 @@ export const SIN_IA: AiStatus = {
   deepRemaining: 0,
   deepTurns: 0,
   trialAvailable: false,
+  vision: null,
 };
 
 /** Tiene coach: suscripción viva, prueba, cortesía o dueño. Lo decide el servidor. */
@@ -318,6 +325,23 @@ export const COACH_USAGE_NOTICE =
   'Chats, briefs, planes y revisiones consumen energía según su extensión. ' +
   'Al agotarla, el coach se pausa hasta la recarga; el resto de NIVL sigue disponible.';
 
+/**
+ * La prueba de 7 días, tal cual es (`start_trial`, 0024): del servidor, sin
+ * tarjeta, sin renovación, coach estándar con energía propia (0,50 $) y sin
+ * modo profundo. Se dice siempre que se ofrece, con la tienda abierta o no.
+ */
+export function textoPrueba(tier: OfferTier): string {
+  if (tier === 'elite') {
+    return 'La prueba de 7 días es del coach estándar de Pro, con energía limitada y sin modo profundo. Sin tarjeta y sin cobro: no se renueva sola.';
+  }
+  return 'Siete días con el coach estándar y energía limitada, sin tarjeta y sin cobro. No se renueva sola. Al acabar, tus hábitos y tu progreso siguen disponibles gratis.';
+}
+
+/** El botón de la prueba. Mirando Élite dice de qué es la prueba: de Pro. */
+export function tituloBotonPrueba(tier: OfferTier): string {
+  return tier === 'elite' ? 'Probar Pro 7 días' : 'Probar el coach 7 días';
+}
+
 export const ELITE_USAGE_NOTICE =
   'El modo profundo tiene su propio límite mensual. El ludus se solicita desde Amigos y se asigna manualmente ' +
   'según las plazas disponibles; puede requerir espera.';
@@ -388,14 +412,14 @@ export function proToday(kind: unknown): readonly string[] {
 const PRO_SAMPLE_BRIEF: Record<ProfileKind, readonly string[]> = {
   emprendedor: [
     'Ayer: 6 contactos de 10 y ninguna reunión cerrada. La caja no se mueve sola.',
-    '09:00–10:30 · Prospección: 10 contactos antes de abrir el correo.',
-    '11:00–13:00 · Trabajo profundo: la propuesta de 1.800 € sale hoy.',
+    '09:00-10:30 · Prospección: 10 contactos antes de abrir el correo.',
+    '11:00-13:00 · Trabajo profundo: la propuesta de 1.800 € sale hoy.',
     'Esta noche te pido dos cifras: contactos hechos y reuniones agendadas.',
   ],
   trabajador: [
     'Ayer cerraste 4 de 5 misiones. Falló el entreno: hoy va antes de la jornada.',
-    '07:15–08:00 · Fuerza, 45 min. Sin móvil hasta terminar.',
-    '09:30–11:30 · Bloque de foco: el informe trimestral, y solo eso.',
+    '07:15-08:00 · Fuerza, 45 min. Sin móvil hasta terminar.',
+    '09:30-11:30 · Bloque de foco: el informe trimestral, y solo eso.',
     'Cena antes de las 21:30 y pantalla fuera a las 23:00. Mañana lo compruebo.',
   ],
   deportista: [
@@ -405,15 +429,15 @@ const PRO_SAMPLE_BRIEF: Record<ProfileKind, readonly string[]> = {
     'Esta noche reviso la sesión. Si las series salen a RPE 9, la semana que viene se descarga.',
   ],
   estudiante: [
-    'Quedan 12 días para Estadística y llevas 5 de 9 temas. Hoy caen dos.',
-    '09:00–10:30 · Tema 6: contrastes de hipótesis. Sin apuntes delante al final.',
-    '16:00–17:30 · 20 problemas del tema 5. Se corrigen hoy, no mañana.',
+    'El examen de Estadística es en 12 días y llevas 5 de 9 temas. Hoy caen dos.',
+    '09:00-10:30 · Tema 6: contrastes de hipótesis. Sin apuntes delante al final.',
+    '16:00-17:30 · 20 problemas del tema 5. Se corrigen hoy, no mañana.',
     'Ayer estudiaste 2 h 10 min de las 4 previstas. Esta noche te pido la cifra real.',
   ],
   general: [
     'Ayer: 5 de 6 misiones y la racha en 9. Hoy no se rompe.',
     '07:30 · Arriba. 20 min de movimiento antes del primer café.',
-    '18:00–19:00 · Lo que llevas tres días aplazando. Hoy se cierra.',
+    '18:00-19:00 · Lo que llevas tres días aplazando. Hoy se cierra.',
     'A las 22:30 te pido cuentas. Lo pendiente a medianoche se penaliza.',
   ],
 };
@@ -647,12 +671,18 @@ export function productoDePlan(plan: string | null | undefined): ProPlanId | nul
 // ── La oferta en contexto (fase 2, D1) ──────────────────────────────
 // Lo que dice el sistema cuando la oferta llega por un momento concreto
 // (`paywallmoment.ts`). Reglas: voz del sistema, sin urgencias falsas ni
-// cuentas atrás, sin prometer nada que no exista. La voz del coach NO existe
-// hoy: su texto lo dice así y no la vende. El modo profundo es solo Élite y las
-// fotos al coach ya funcionan con Pro.
+// cuentas atrás, sin prometer nada que no exista. La voz va con el coach (Pro
+// y Élite), no se vende aparte. El modo profundo es solo Élite, con su límite
+// mensual, y las fotos al coach solo las ve Élite (Pro y la prueba van con un
+// modelo sin visión; `ai_status.vision`). `eyebrow` y `titulo` son
+// la cabecera de `/pro` con ese motivo (L-RADICAL §B.5 e).
 
 
 export interface CopyUpsell {
+  /** Rótulo corto de la cabecera de `/pro` cuando llega con este motivo. */
+  eyebrow: string;
+  /** Título de la cabecera de `/pro` con este motivo. */
+  titulo: string;
   /** La línea no modal (`ProUpsellLine`). */
   linea: string;
   /** El texto del enlace de la línea. */
@@ -665,87 +695,131 @@ export interface CopyUpsell {
 
 export const COPY_UPSELL: Record<CopyKey, CopyUpsell> = {
   'firma.pro': {
+    eyebrow: 'Juramento sellado',
+    titulo: 'Ahora, quién lo dirige.',
     linea: 'Tu juramento está sellado. El coach puede dirigir tu día desde mañana.',
     enlace: 'Ver NIVL Pro',
     contexto: 'Tu juramento está sellado. NIVL sigue gratis entera; Pro añade el coach que lo dirige.',
     beneficio: 'Brief cada mañana',
   },
   'firma.elite': {
+    eyebrow: 'Juramento sellado',
+    titulo: 'El coach a máxima potencia.',
     linea: 'Tu juramento está sellado. Élite es el coach a máxima potencia.',
     enlace: 'Ver NIVL Élite',
     contexto: 'Tu juramento está sellado. NIVL sigue gratis entera; Élite añade el coach a máxima potencia.',
     beneficio: 'Máxima potencia',
   },
   'primer_dia.pro': {
+    eyebrow: 'Primer día',
+    titulo: 'Mañana, con el plan escrito.',
     linea: 'Primer día en la arena. El coach puede escribir el plan de mañana.',
     enlace: 'Ver NIVL Pro',
     contexto: 'Primer día en la arena. Lo que has hecho sigue siendo tuyo y gratis; Pro añade quien lo ordena cada mañana.',
     beneficio: 'Plan del día, bloque a bloque',
   },
   'primer_dia.elite': {
+    eyebrow: 'Primer día',
+    titulo: 'El coach a máxima potencia.',
     linea: 'Primer día en la arena. Élite es el coach a máxima potencia.',
     enlace: 'Ver NIVL Élite',
     contexto: 'Primer día en la arena. Lo que has hecho sigue siendo tuyo y gratis.',
     beneficio: 'Máxima potencia',
   },
   'coach_profundo.pro': {
+    eyebrow: 'Modo profundo',
+    titulo: 'Para lo que pide pensarlo a fondo.',
     linea: 'El modo profundo es de NIVL Élite.',
     enlace: 'Ver NIVL Élite',
     contexto: 'El modo profundo es de NIVL Élite: el coach se toma su tiempo con lo que pide pensarlo a fondo.',
     beneficio: 'Modo profundo',
   },
   'coach_profundo.elite': {
+    eyebrow: 'Modo profundo',
+    titulo: 'Para lo que pide pensarlo a fondo.',
     linea: 'El modo profundo es de NIVL Élite.',
     enlace: 'Ver NIVL Élite',
     contexto: 'El modo profundo es de NIVL Élite: el coach se toma su tiempo con lo que pide pensarlo a fondo.',
     beneficio: 'Modo profundo',
   },
   'voz_premium.pro': {
+    eyebrow: 'La voz del coach',
+    titulo: 'Te lee y te escucha.',
     linea: 'El coach te lee su respuesta y te escucha si le dictas. Va con NIVL Pro.',
     enlace: 'Ver NIVL Pro',
     contexto: 'La voz va con el coach: te lee sus respuestas y puedes dictarle. NIVL sigue gratis entera; Pro añade el coach.',
     beneficio: null,
   },
   'voz_premium.elite': {
+    eyebrow: 'La voz del coach',
+    titulo: 'Incluida con el coach.',
     linea: 'La voz va incluida con el coach.',
     enlace: 'Ver planes',
     contexto: 'La voz va incluida con el coach, en Pro y en Élite.',
     beneficio: null,
   },
   'coach_cerrado.pro': {
+    eyebrow: 'El coach',
+    titulo: 'Un coach que manda en tu día.',
     linea: 'El coach es parte de NIVL Pro. Todo lo demás sigue siendo tuyo y gratis.',
     enlace: 'Ver NIVL Pro',
     contexto: 'El coach es parte de NIVL Pro: brief cada mañana, plan del día y chat. Todo lo demás sigue gratis.',
     beneficio: 'Brief cada mañana',
   },
   'coach_cerrado.elite': {
+    eyebrow: 'El coach',
+    titulo: 'Un coach que manda en tu día.',
     linea: 'El coach es parte de NIVL Pro y de NIVL Élite.',
     enlace: 'Ver planes',
     contexto: 'El coach es parte de NIVL Pro y de NIVL Élite. Todo lo demás sigue gratis.',
     beneficio: null,
   },
   'analisis_foto.pro': {
-    linea: 'Con NIVL Pro, el coach mira tus fotos y te responde sobre ellas.',
-    enlace: 'Ver NIVL Pro',
-    contexto: 'Con Pro le mandas fotos al coach por el chat (un plato, una máquina, un apunte) y responde sobre ellas.',
-    beneficio: 'Control total por chat',
+    eyebrow: 'Fotos al coach',
+    titulo: 'Mira lo que le mandas.',
+    linea: 'Que el coach mire tus fotos es de NIVL Élite.',
+    enlace: 'Ver NIVL Élite',
+    contexto: 'Que el coach mire tus fotos (un plato, una máquina, un apunte) es de NIVL Élite. Con Pro, el coach trabaja con lo que le escribes.',
+    beneficio: null,
   },
   'analisis_foto.elite': {
-    linea: 'Con NIVL Élite, tus fotos las mira el modelo de primera línea.',
+    eyebrow: 'Fotos al coach',
+    titulo: 'Con el modelo de primera línea.',
+    linea: 'Con NIVL Élite, el coach mira tus fotos y te responde sobre ellas.',
     enlace: 'Ver NIVL Élite',
-    contexto: 'Con Élite, cada foto que mandas al coach la lee el modelo de primera línea.',
+    contexto: 'Con Élite, el coach mira las fotos que le mandas por el chat (un plato, una máquina, un apunte) y responde sobre ellas.',
     beneficio: 'Máxima potencia',
   },
   'energia_agotada.pro': {
+    eyebrow: 'Energía agotada',
+    titulo: 'El coach se ha pausado.',
     linea: 'La energía de tu prueba se ha agotado. Lo gratuito sigue funcionando.',
     enlace: 'Ver NIVL Pro',
     contexto: 'La energía del coach se ha agotado. Tus misiones, tu racha y todos los módulos siguen funcionando.',
     beneficio: 'Brief cada mañana',
   },
   'energia_agotada.elite': {
-    linea: 'Energía agotada hasta la recarga. NIVL Élite tiene su propio presupuesto mensual.',
+    eyebrow: 'Energía agotada',
+    titulo: 'El coach se ha pausado.',
+    linea: 'Energía agotada hasta la recarga. El resto de NIVL sigue funcionando.',
     enlace: 'Ver NIVL Élite',
-    contexto: 'La energía del coach se recarga cada mes. Élite tiene su propio presupuesto mensual, con modelo de primera línea y modo profundo.',
+    contexto: 'La energía del coach se recarga cada mes. Élite cambia la potencia: modelo de primera línea y modo profundo, cada uno con su límite mensual.',
+    beneficio: 'Máxima potencia',
+  },
+  'fin_prueba.pro': {
+    eyebrow: 'Fin de la prueba',
+    titulo: 'Tu prueba ha terminado.',
+    linea: 'Tu prueba ha terminado sin cobro. Todo lo tuyo sigue aquí.',
+    enlace: 'Ver NIVL Pro',
+    contexto: 'Tu prueba ha terminado y no se ha cobrado nada. Tus misiones, tu racha y tus datos siguen; Pro mantiene el coach que has probado.',
+    beneficio: 'Brief cada mañana',
+  },
+  'fin_prueba.elite': {
+    eyebrow: 'Fin de la prueba',
+    titulo: 'Tu prueba ha terminado.',
+    linea: 'Tu prueba ha terminado sin cobro. Élite es el coach a máxima potencia.',
+    enlace: 'Ver NIVL Élite',
+    contexto: 'Tu prueba ha terminado y no se ha cobrado nada. Élite añade el modelo de primera línea y el modo profundo, con su límite mensual.',
     beneficio: 'Máxima potencia',
   },
 };

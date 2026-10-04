@@ -39,7 +39,8 @@ import { fetchPlan, horaAMinutos, setBlockDone, type DayBlock, type PlanConBloqu
 import { celebracionesDeRacha } from '@/lib/celebracionCola';
 import { addDays, dateKey } from '@/lib/dates';
 import { completeQuest, processPendingDays, questsScheduledOn, type DayCloseResult } from '@/lib/engine';
-import { rachaVisible, recuperacionDesbloqueada, rotosSeguidosAntes } from '@/lib/closing';
+import { rachaVisible, recuperacionDesbloqueada, reglasSinMarcarHoy, rotosSeguidosAntes } from '@/lib/closing';
+import { fetchRuleChecks, fetchRules, haMarcadoReglas } from '@/lib/contract';
 import { levelFromXp } from '@/lib/game';
 import { RUTA_DE_ACTO } from '@/lib/links';
 import { compararRangos, estadoDe, type LogroInfo, type RangoId } from '@/lib/progression';
@@ -135,6 +136,9 @@ export function useHoy() {
   // Días rotos seguidos antes de hoy (solo con la racha a cero, RET-02): con
   // ellos enJuegoHoy sabe si hoy ya no costaría XP.
   const [rotosPrevios, setRotosPrevios] = useState(0);
+  // Reglas del contrato sin marcar hoy (solo con el juicio de reglas ya
+  // empezado): también cuestan al cierre y entran en lo que hay en juego.
+  const [reglasSinMarcar, setReglasSinMarcar] = useState(0);
   // De dónde suben el nivel, la barra y la racha del Hero al montarse.
   const [desdeHero] = useState<DesdeHero>(() => ultimoHero ?? DESDE_CERO);
   // El cierre que ya ha vibrado: processPendingDays puede devolver el mismo
@@ -264,6 +268,12 @@ export function useHoy() {
       }
       const today = dateKey();
       const todasLasMisiones = quests;
+      // Accesorio: si falla, 0 (la línea solo deja de contar las reglas).
+      Promise.all([fetchRules(), fetchRuleChecks(today), haMarcadoReglas()])
+        .then(([reglas, marcadasHoy, juicioEmpezado]) =>
+          setReglasSinMarcar(reglasSinMarcarHoy({ reglas, marcadasHoy, juicioEmpezado })),
+        )
+        .catch(() => setReglasSinMarcar(0));
       const [done, planDeHoy, rotos] = await Promise.all([
         fetchCompletionsForDate(today),
         fetchPlan(today).catch(() => null),
@@ -435,8 +445,10 @@ export function useHoy() {
       // cruza, no al cierre de mañana: completeQuest no toca streak_days. La
       // clave es la misma que dará el cierre de este día (fecha = hoy), así
       // que la cola no la repite mañana.
-      const rachaAntes = rachaVisible(profile.streak_days, todayQuests, new Set(Object.keys(antes))).valor;
-      const rachaDespues = rachaVisible(profile.streak_days, todayQuests, new Set(Object.keys(despues))).valor;
+      // Con congelación vigente el día no se juzga: ni +1 ni hito que celebrar.
+      const congelacion = { hoy: today, freezeUntil: profile.freeze_until };
+      const rachaAntes = rachaVisible(profile.streak_days, todayQuests, new Set(Object.keys(antes)), congelacion).valor;
+      const rachaDespues = rachaVisible(profile.streak_days, todayQuests, new Set(Object.keys(despues)), congelacion).valor;
       const hitosRacha = celebracionesDeRacha(rachaAntes, rachaDespues, today);
 
       // Lo PAGADO, no lo calculado: con el tope diario no se anuncia «+0 XP».
@@ -462,6 +474,9 @@ export function useHoy() {
         fecha: today,
         recuperadoXp: res.wasPenalty && res.xp > 0 ? res.xp : undefined,
         extra: hitosRacha,
+        // La racha que dice la tarjeta es la que se ve en Hoy, no la de los
+        // días cerrados (va un día por detrás).
+        rachaVista: rachaDespues,
         resumen: [
           ...(!res.wasPenalty && lineaXp ? [lineaXp] : []),
           ...(esDiaPerfecto ? ['Día perfecto'] : []),
@@ -643,8 +658,9 @@ export function useHoy() {
         rotosPrevios,
         diaPerfecto,
         avisoRecuperacion,
+        reglasSinMarcar,
       }),
-    [hoy, hora, profile, rango, tituloEquipado, todayQuests, completions, dayResult, plan, esPro, board, rotosPrevios, diaPerfecto, avisoRecuperacion],
+    [hoy, hora, profile, rango, tituloEquipado, todayQuests, completions, dayResult, plan, esPro, board, rotosPrevios, diaPerfecto, avisoRecuperacion, reglasSinMarcar],
   );
 
   const heroVisto = datos.hero;

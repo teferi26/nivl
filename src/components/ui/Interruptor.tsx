@@ -1,8 +1,9 @@
 // NIVL · Interruptor B/N. Encendido y apagado se distinguen por la forma y
 // el peso, no por el color: pista blanca con pomo negro frente a pista hierro
-// con pomo gris (SISTEMA §5).
+// con pomo gris (SISTEMA §5). Cada cambio vibra `seleccion` (FASE3).
 
 import { Switch } from 'react-native';
+import { vibrar } from '@/design/haptics';
 import { ink } from '@/design/tokens';
 
 interface Props {
@@ -16,7 +17,10 @@ export function Interruptor({ value, onValueChange, accessibilityLabel, disabled
   return (
     <Switch
       value={value}
-      onValueChange={onValueChange}
+      onValueChange={(v) => {
+        vibrar('seleccion');
+        onValueChange(v);
+      }}
       disabled={disabled}
       trackColor={{ false: ink.ink4, true: ink.ink10 }}
       thumbColor={value ? ink.ink0 : ink.ink8}

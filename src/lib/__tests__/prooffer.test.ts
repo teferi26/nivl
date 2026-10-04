@@ -329,4 +329,31 @@ describe('fase 2: oferta con motivo y línea de upsell', () => {
     await act(async () => fila.props.onPress());
     expect(router.push).toHaveBeenCalledWith('/pro?motivo=coach_profundo&tier=elite');
   });
+
+  test('fase 3: las condiciones de la prueba se dicen también con la tienda cerrada', async () => {
+    mockTienda.abierta = false;
+    await mount(true);
+    const texto = content();
+    expect(texto).toContain('sin tarjeta y sin cobro');
+    expect(texto).toContain('No se renueva sola');
+    expect(button('Probar el coach 7 días').props.disabled).toBeFalsy();
+    expect(button('Seguir gratis').props.disabled).toBe(false);
+  });
+
+  test('fase 3: mirando Élite, la prueba dice que es de Pro y sin modo profundo', async () => {
+    prices.mockResolvedValue(CATALOGO);
+    await mount(true, null, { initialTier: 'elite' });
+    expect(content()).toContain('sin modo profundo');
+    await act(async () => button('Probar Pro 7 días').props.onPress());
+    expect(startTrial).toHaveBeenCalledTimes(1);
+    await act(async () => control.elegirNivel('pro'));
+    expect(button('Probar el coach 7 días')).toBeTruthy();
+  });
+
+  test('fase 3: sin prueba disponible no se menciona ninguna prueba', async () => {
+    prices.mockResolvedValue(CATALOGO);
+    await mount(false);
+    expect(content()).not.toMatch(/sin tarjeta|Probar|7 días/);
+  });
 });
+

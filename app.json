@@ -18,7 +18,8 @@
       "infoPlist": {
         "NSCameraUsageDescription": "NIVL usa la cámara para tus evidencias, tu foto de perfil y tus fotos de progreso. Las imágenes solo se envían al coach cuando tú se las mandas.",
         "NSPhotoLibraryUsageDescription": "NIVL usa tu galería para elegir evidencias, tu foto de perfil y tus fotos de progreso. Las imágenes solo se envían al coach cuando tú se las mandas.",
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSMicrophoneUsageDescription": "NIVL usa el micrófono solo cuando tú lo pides: para dictarle a tu coach mientras mantienes pulsado el botón de voz. Nunca graba en segundo plano."
       },
       "entitlements": {
         "com.apple.developer.usernotifications.time-sensitive": true
@@ -51,11 +52,12 @@
         }
       ],
       "permissions": [
-        "android.permission.POST_NOTIFICATIONS",
-        "android.permission.SCHEDULE_EXACT_ALARM"
+        "android.permission.POST_NOTIFICATIONS"
       ],
       "blockedPermissions": [
-        "com.google.android.gms.permission.AD_ID"
+        "com.google.android.gms.permission.AD_ID",
+        "android.permission.SCHEDULE_EXACT_ALARM",
+        "android.permission.USE_EXACT_ALARM"
       ]
     },
     "web": {
@@ -78,7 +80,7 @@
         {
           "cameraPermission": "NIVL usa la cámara para tus evidencias, tu foto de perfil y tus fotos de progreso. Las imágenes solo se envían al coach cuando tú se las mandas.",
           "photosPermission": "NIVL usa tu galería para elegir evidencias, tu foto de perfil y tus fotos de progreso. Las imágenes solo se envían al coach cuando tú se las mandas.",
-          "microphonePermission": "NIVL usa el micrófono solo cuando grabas un vídeo de evidencia o hablas con tu coach. No graba nada en segundo plano."
+          "microphonePermission": "NIVL usa el micrófono solo cuando tú lo pides: para dictarle a tu coach mientras mantienes pulsado el botón de voz. Nunca graba en segundo plano."
         }
       ],
       [
@@ -94,7 +96,7 @@
       [
         "expo-speech-recognition",
         {
-          "microphonePermission": "NIVL usa el micrófono para que puedas hablar con tu coach. Solo escucha mientras mantienes pulsado el botón de voz.",
+          "microphonePermission": "NIVL usa el micrófono solo cuando tú lo pides: para dictarle a tu coach mientras mantienes pulsado el botón de voz. Nunca graba en segundo plano.",
           "speechRecognitionPermission": "NIVL convierte tu voz en texto para enviárselo a tu coach. Se procesa en tu dispositivo cuando es posible."
         }
       ]

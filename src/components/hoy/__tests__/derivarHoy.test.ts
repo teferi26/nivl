@@ -3,7 +3,7 @@ import { HOY_DEMO, misionDemo, perfilDemo } from '@/components/arena/demoDatos';
 import type { DayCloseResult } from '@/lib/engine';
 import type { BoardEntry } from '@/lib/social';
 import type { Completion, Quest } from '@/lib/types';
-import { derivarHoy, saludo, type EntradaHoy } from '../derivarHoy';
+import { derivarHoy, desglosePena, listaReglas, saludo, TITULO_RIVAL_CERCANO, type EntradaHoy } from '../derivarHoy';
 
 const hecha = (q: Quest, xp = 30): Completion => ({
   id: `c-${q.id}`,
@@ -35,6 +35,7 @@ const entrada = (p: Partial<EntradaHoy> = {}): EntradaHoy => ({
 
 const cierre = (p: Partial<DayCloseResult> = {}): DayCloseResult => ({
   penaltyXp: 0,
+  penaltyReglas: 0,
   missedTitles: [],
   streakLost: false,
   levelsLost: 0,
@@ -178,6 +179,11 @@ describe('derivarHoy', () => {
     expect(d.rivalidad).toContain('Marta te saca 100 XP');
   });
 
+  test('la sección se llama «Rival cercano», no «duelo»: no es el duelo de Amigos', () => {
+    expect(TITULO_RIVAL_CERCANO).toBe('Rival cercano');
+    expect(TITULO_RIVAL_CERCANO.toLowerCase()).not.toContain('duelo');
+  });
+
   test('sin amigos visibles no hay duelo', () => {
     const board = [fila({ userId: 'yo', name: 'Teferi', isMe: true }), fila({ userId: 'x', name: 'X', visible: false })];
     expect(derivarHoy(entrada({ board })).duelo).toBeNull();
@@ -193,5 +199,88 @@ describe('derivarHoy', () => {
   test('título: el equipado o el del rango', () => {
     expect(derivarHoy(entrada()).hero?.titulo).toBe('Héroe de la arena');
     expect(derivarHoy(entrada({ tituloEquipado: 'El Constante' })).hero?.titulo).toBe('El Constante');
+  });
+});
+
+describe('derivarHoy · bloque B (QA)', () => {
+  const leer = misionDemo({ title: 'Leer 20 páginas' });
+  const entrenar = misionDemo({ title: 'Entrenar · empuje', stat: 'FUE' });
+
+  test('congelado: la racha se enseña protegida, sin +1 aunque el día esté hecho', () => {
+    const profile = perfilDemo({ streak_days: 12, freeze_until: '2026-10-05' });
+    const d = derivarHoy(entrada({ profile, quests: [leer], completions: { [leer.id]: hecha(leer) } }));
+    expect(d.racha).toEqual({ valor: 12, hoyCerrado: false, perfecto: false, faltan: 0 });
+    expect(d.hero?.racha).toBe(12);
+    expect(d.hero?.rachaCerrada).toBe(false);
+  });
+
+  test('congelación ya vencida: el día cuenta como siempre', () => {
+    const profile = perfilDemo({ streak_days: 12, freeze_until: '2026-09-30' });
+    const d = derivarHoy(entrada({ profile, quests: [leer], completions: { [leer.id]: hecha(leer) } }));
+    expect(d.racha.valor).toBe(13);
+    expect(d.racha.hoyCerrado).toBe(true);
+  });
+
+  test('el multiplicador sale de los días CERRADOS, no de la racha a la vista', () => {
+    const profile = perfilDemo({ streak_days: 13 });
+    const d = derivarHoy(entrada({ profile, quests: [leer], completions: { [leer.id]: hecha(leer) } }));
+    expect(d.racha.valor).toBe(14);
+    expect(d.diasMultiplicador).toBe(13);
+  });
+
+  test('las reglas sin marcar entran en lo que hay en juego', () => {
+    const profile = perfilDemo({ streak_days: 5, protection_stones: 0 });
+    const sin = derivarHoy(entrada({ profile, quests: [leer, entrenar] }));
+    const con = derivarHoy(entrada({ profile, quests: [leer, entrenar], reglasSinMarcar: 2 }));
+    expect(sin.enJuego?.texto).toContain('−50 XP');
+    expect(con.enJuego?.texto).toContain('−100 XP');
+  });
+
+  test('misiones hechas y reglas sin marcar: la nota lo dice con su cifra', () => {
+    const profile = perfilDemo({ streak_days: 5 });
+    const d = derivarHoy(
+      entrada({ profile, quests: [leer], completions: { [leer.id]: hecha(leer) }, reglasSinMarcar: 1 }),
+    );
+    expect(d.notaPendiente).toEqual({ texto: 'Te quedan reglas del contrato por marcar. Si no, −25 XP.', alerta: false });
+  });
+
+  test('cierre con reglas: total y desglose con los textos de las reglas', () => {
+    const d = derivarHoy(
+      entrada({
+        dayResult: cierre({ penaltyXp: 75, penaltyReglas: 50, reglasRotas: ['Sin azúcar', 'Dormir a las 23'] }),
+      }),
+    );
+    expect(d.cierre?.alerta).toBe(true);
+    expect(d.cierre?.lineas[0]).toBe('El sistema ha aplicado −75 XP.');
+    expect(d.cierre?.lineas[1]).toBe(
+      '−25 XP por misiones sin hacer y −50 XP por las reglas «Sin azúcar» y «Dormir a las 23».',
+    );
+  });
+
+  test('cierre solo de misiones: sin desglose', () => {
+    const d = derivarHoy(entrada({ dayResult: cierre({ penaltyXp: 50 }) }));
+    expect(d.cierre?.lineas.some((l) => l.includes('regla'))).toBe(false);
+  });
+});
+
+describe('desglosePena y listaReglas', () => {
+  test('sin reglas cobradas: null', () => {
+    expect(desglosePena({ penaltyXp: 40, penaltyReglas: 0 })).toBeNull();
+  });
+  test('solo reglas, una', () => {
+    expect(desglosePena({ penaltyXp: 25, penaltyReglas: 25, reglasRotas: ['Sin móvil en la cama'] })).toBe(
+      '−25 XP por la regla «Sin móvil en la cama».',
+    );
+  });
+  test('reglas sin texto conocido', () => {
+    expect(desglosePena({ penaltyXp: 25, penaltyReglas: 25 })).toBe('−25 XP por reglas del contrato sin marcar.');
+  });
+  test('las reglas nunca superan el total', () => {
+    expect(desglosePena({ penaltyXp: 10, penaltyReglas: 25, reglasRotas: ['A'] })).toBe('−10 XP por la regla «A».');
+  });
+  test('lista con tope de tres', () => {
+    expect(listaReglas(['A'])).toBe('«A»');
+    expect(listaReglas(['A', 'B', 'C'])).toBe('«A», «B» y «C»');
+    expect(listaReglas(['A', 'B', 'C', 'D', 'E'])).toBe('«A», «B», «C» y 2 más');
   });
 });

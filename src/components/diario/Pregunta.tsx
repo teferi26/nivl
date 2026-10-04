@@ -1,57 +1,96 @@
-// NIVL · Diario — una pregunta del cierre del día.
+// NIVL · Diario: una pregunta del cierre del día (FASE3 Lote D).
 //
-// El fallo del diario viejo era no saber qué iba en cada caja. Aquí cada
-// sección es UNA pregunta con su número romano: la estructura se lee de un
-// vistazo (I · cómo me sentí, II · cómo dormí…) y una marca discreta dice
-// cuáles están ya respondidas. Ninguna es obligatoria.
+// Cada sección es UNA pregunta con su número romano grabado en una columna de
+// 48: la estructura se lee de un vistazo (I · cómo me sentí, II · cómo
+// dormí...). Respondida, el numeral pasa a ink10 con una regla de 2 debajo;
+// sin responder, ink6. El título en headline, la pista en bodySm ink8 y, entre
+// pregunta y pregunta, una hairline: nada de tarjetas. Ninguna es obligatoria.
 
-import Ionicons from '@expo/vector-icons/Ionicons';
 import type { ReactNode } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { colors, fonts } from '@/lib/theme';
+import { ink, space, stroke, type as tipo } from '@/design/tokens';
 
 interface Props {
-  /** "I", "II"… Cinzel no tiene minúsculas: los romanos le sientan bien. */
+  /** "I", "II"... Cinzel no tiene minúsculas: los romanos le sientan bien. */
   numeral: string;
   title: string;
   /** Una línea que dice qué se espera ahí. */
   hint?: string;
-  /** Respondida: enciende el rótulo y pinta la marca. */
+  /** Respondida: enciende el numeral y pinta su regla. */
   done?: boolean;
+  /** La primera no lleva hairline encima. */
+  primera?: boolean;
   children: ReactNode;
 }
 
-export function Pregunta({ numeral, title, hint, done, children }: Props) {
+/** Ancho de la columna del numeral. */
+export const COL_NUMERAL = 48;
+
+export function Pregunta({ numeral, title, hint, done, primera, children }: Props) {
   return (
-    <View style={styles.wrap}>
-      <View style={styles.head} accessibilityRole="header" accessible accessibilityLabel={`${title}${done ? ', respondida' : ''}`}>
-        <Text style={[styles.numeral, done && styles.encendido]}>{numeral}</Text>
-        <View style={styles.raya} />
-        <Text style={[styles.title, done && styles.encendido]} numberOfLines={1}>
-          {title}
-        </Text>
-        {done ? <Ionicons name="checkmark" size={14} color={colors.accentText} /> : null}
+    <View style={[styles.wrap, !primera && styles.conRegla]}>
+      <View style={styles.cabeza}>
+        <View style={styles.col} importantForAccessibility="no-hide-descendants" accessibilityElementsHidden>
+          {/* Sin numberOfLines: en la web no hay adjustsFontSizeToFit y «VIII» se cortaba en «VI…». */}
+          <Text style={[styles.numeral, done && styles.encendido]} maxFontSizeMultiplier={1}>
+            {numeral}
+          </Text>
+          <View style={[styles.regla, done && styles.reglaOn]} />
+        </View>
+        <View style={styles.textos}>
+          <Text
+            style={styles.title}
+            accessibilityRole="header"
+            accessibilityLabel={`${numeral}. ${title}${done ? ', respondida' : ''}`}
+            maxFontSizeMultiplier={1.35}
+          >
+            {title}
+          </Text>
+          {hint ? (
+            <Text style={styles.hint} maxFontSizeMultiplier={1.6}>
+              {hint}
+            </Text>
+          ) : null}
+        </View>
       </View>
-      {hint ? <Text style={styles.hint}>{hint}</Text> : null}
-      {children}
+      <View style={styles.cuerpo}>{children}</View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  wrap: { marginBottom: 30 },
-  head: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 },
-  numeral: { fontFamily: fonts.number, fontSize: 13, letterSpacing: 1, color: colors.textFaint, minWidth: 18 },
-  raya: { width: 10, height: 1, backgroundColor: colors.accentDim },
-  title: {
-    flex: 1,
-    minWidth: 0,
-    fontFamily: fonts.heading,
-    fontSize: 11.5,
-    letterSpacing: 2.5,
-    textTransform: 'uppercase',
-    color: colors.textFaint,
+  wrap: { paddingVertical: space.s6 },
+  conRegla: { borderTopWidth: stroke.hairline, borderTopColor: ink.ink3 },
+  cabeza: { flexDirection: 'row', alignItems: 'flex-start' },
+  col: { width: COL_NUMERAL, paddingTop: 2 },
+  numeral: {
+    fontFamily: tipo.number.family,
+    // 18 y sin tracking: «VIII», el más ancho, cabe en la columna de 48.
+    fontSize: 18,
+    lineHeight: 24,
+    letterSpacing: 0,
+    color: ink.ink6,
+    alignSelf: 'flex-start',
   },
-  encendido: { color: colors.accentText },
-  hint: { fontFamily: fonts.body, fontSize: 13, lineHeight: 18, color: colors.textDim, marginBottom: 12 },
+  encendido: { color: ink.ink10 },
+  // Sin responder no hay regla, pero el hueco se guarda: el título no salta.
+  regla: { width: 20, height: stroke.rule, marginTop: space.s1, backgroundColor: 'transparent' },
+  reglaOn: { backgroundColor: ink.ink10 },
+  textos: { flex: 1, minWidth: 0 },
+  title: {
+    fontFamily: tipo.headline.family,
+    fontSize: tipo.headline.size,
+    lineHeight: tipo.headline.lineHeight,
+    letterSpacing: tipo.headline.tracking,
+    color: ink.ink9,
+  },
+  hint: {
+    fontFamily: tipo.bodySm.family,
+    fontSize: tipo.bodySm.size,
+    lineHeight: tipo.bodySm.lineHeight,
+    color: ink.ink8,
+    marginTop: space.s1,
+  },
+  // El cuerpo va bajo el título, alineado con él (no bajo el numeral).
+  cuerpo: { marginTop: space.s4, marginLeft: COL_NUMERAL },
 });

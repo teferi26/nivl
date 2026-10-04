@@ -21,6 +21,8 @@
 // (`OpcionesTarjeta`), que abre siempre con todo apagado. Una tarjeta
 // antes/después sin permiso para las fotos no se puede generar.
 
+import { formatoMiles } from '@/components/arena/cifras';
+import { textoDifKg, textoKg } from '@/components/fotos/modelo';
 import { DOMINIO_NIVL, URL_NIVL } from './socialmath';
 
 export type FormatoTarjeta = 'stories' | 'post';
@@ -191,7 +193,8 @@ function dias(n: number): string {
 function fechaCorta(iso: string): string {
   const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso);
   if (!m) return '';
-  const meses = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+  // La misma abreviatura que la pantalla de Fotos (fotos/modelo.ts): «sept».
+  const meses = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sept', 'oct', 'nov', 'dic'];
   const mes = meses[Number(m[2]) - 1];
   return mes ? `${Number(m[3])} ${mes} ${m[1]}` : '';
 }
@@ -207,9 +210,6 @@ function semanasEntre(desdeIso: string, hastaIso: string): string | null {
   return w === 1 ? '1 semana' : `${w} semanas`;
 }
 
-function kg(n: number): string {
-  return `${(Math.round(n * 10) / 10).toLocaleString('es-ES', { maximumFractionDigits: 1 })} kg`;
-}
 
 /**
  * El copy de la tarjeta, en la voz del sistema: constata, sin exclamaciones ni
@@ -262,7 +262,7 @@ export function textos(t: Tarjeta, opciones: OpcionesTarjeta = OPCIONES_POR_DEFE
       const periodo = semanasEntre(t.antes.fecha, t.despues.fecha);
       const pesos =
         opciones.mostrarPeso && typeof t.pesoAntesKg === 'number' && typeof t.pesoDespuesKg === 'number'
-          ? `${kg(t.pesoAntesKg)} → ${kg(t.pesoDespuesKg)}`
+          ? `${textoKg(t.pesoAntesKg)} → ${textoKg(t.pesoDespuesKg)} (${textoDifKg(t.pesoDespuesKg - t.pesoAntesKg)})`
           : null;
       return {
         antetitulo: 'ANTES / DESPUÉS',
@@ -276,7 +276,7 @@ export function textos(t: Tarjeta, opciones: OpcionesTarjeta = OPCIONES_POR_DEFE
       const xp = Math.max(0, Math.floor(t.xpSemana));
       return {
         antetitulo: 'PARTE DE LA SEMANA',
-        titular: xp > 0 ? `+${xp.toLocaleString('es-ES')} XP` : `NIVEL ${Math.max(1, Math.floor(t.nivel))}`,
+        titular: xp > 0 ? `+${formatoMiles(xp)} XP` : `NIVEL ${Math.max(1, Math.floor(t.nivel))}`,
         detalle: xp > 0 ? 'Ganados en los últimos 7 días.' : null,
         ...pie,
       };
@@ -407,11 +407,39 @@ export function enlace(codigoAmigo?: string | null, incluirInvitacion = false): 
   return incluirInvitacion && /^[A-Z0-9]{4,12}$/.test(codigo) ? `${URL_NIVL}/c/${codigo}` : URL_NIVL;
 }
 
-/** Texto que viaja con la imagen en la hoja del sistema (y solo él si no hay imagen). */
+/**
+ * Texto que viaja con la imagen en la hoja del sistema (y solo él si no hay
+ * imagen). Con las mayúsculas propias de cada dato: «Rango B», «+1.840 XP».
+ */
 export function mensaje(t: Tarjeta, opciones: OpcionesTarjeta = OPCIONES_POR_DEFECTO, codigoAmigo?: string | null): string {
-  const x = textos(t, opciones);
-  const titular = x.titular.charAt(0) + x.titular.slice(1).toLowerCase();
-  const cuerpo = t.tipo === 'logro' ? `${x.antetitulo.charAt(0)}${x.antetitulo.slice(1).toLowerCase()}: ${x.titular}` : titular;
+  let cuerpo: string;
+  switch (t.tipo) {
+    case 'logro':
+      cuerpo = `Logro desbloqueado: ${recortar(t.titulo, MAX_TITULAR)}`;
+      break;
+    case 'nivel':
+      cuerpo = `Nivel ${Math.max(1, Math.floor(t.nivel))}`;
+      break;
+    case 'rango':
+      cuerpo = `Rango ${t.rango}`;
+      break;
+    case 'racha': {
+      const n = Math.max(0, Math.floor(t.dias));
+      cuerpo = `${dias(n)} de racha`;
+      break;
+    }
+    case 'semana': {
+      const xp = Math.max(0, Math.floor(t.xpSemana));
+      cuerpo = xp > 0 ? `+${formatoMiles(xp)} XP esta semana` : `Nivel ${Math.max(1, Math.floor(t.nivel))}`;
+      break;
+    }
+    case 'antesDespues':
+      cuerpo = 'Mi progreso';
+      break;
+    case 'recuerdo':
+      cuerpo = recortar(t.titulo, 60);
+      break;
+  }
   return `${cuerpo} en NIVL. ${enlace(codigoAmigo, opciones.incluirInvitacion)}`;
 }
 

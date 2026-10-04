@@ -137,7 +137,7 @@ export async function cardioExists(date: string, kind: CardioKind): Promise<bool
 export async function cardioDayState(
   date: string,
   kind: CardioKind,
-): Promise<{ pagadoHoy: number; pagadoEsteTipo: number | null }> {
+): Promise<{ pagadoHoy: number; pagadoEsteTipo: number | null; tiposHoy: CardioKind[] }> {
   const { data, error } = await supabase
     .from('cardio_sessions')
     .select('kind, xp_awarded')
@@ -148,6 +148,9 @@ export async function cardioDayState(
   return {
     pagadoHoy: filas.reduce((a, f) => a + Number(f.xp_awarded ?? 0), 0),
     pagadoEsteTipo: propia ? Number(propia.xp_awarded ?? 0) : null,
+    // Las sesiones ya registradas hoy: la misión enlazada solo se descuenta
+    // a la primera que la propaga (pagoActo.descuentoDeMision).
+    tiposHoy: filas.map((f) => f.kind),
   };
 }
 

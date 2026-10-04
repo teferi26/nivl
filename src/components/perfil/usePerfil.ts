@@ -116,6 +116,7 @@ export interface PerfilHojas {
     abierta: boolean;
     cerrar: () => void;
     aviso: string | null;
+    esCreador: boolean;
     borrando: boolean;
     confirmar: () => void;
   };
@@ -273,6 +274,8 @@ export function usePerfil(): UsePerfil {
             prof.streak_days,
             questsScheduledOn(quests, dia),
             new Set(hechas.map((c) => c.quest_id)),
+            // Congelado, el día no se juzga: la racha se enseña protegida.
+            { hoy: dia, freezeUntil: prof.freeze_until },
           );
           setRachaHoy({ valor: r.valor, hoyCerrado: r.hoyCerrado });
         })
@@ -350,15 +353,25 @@ export function usePerfil(): UsePerfil {
   const activateFreeze = async () => {
     if (!profile) return;
     const until = addDays(today, freezeDays - 1);
-    const updated = await setFreeze(profile, until, freezeReason);
-    setProfile(updated);
-    setFreezeOpen(false);
+    try {
+      const updated = await setFreeze(profile, until, freezeReason);
+      setProfile(updated);
+      setFreezeOpen(false);
+    } catch (e) {
+      // La hoja sigue abierta: el aviso no compite con su cierre.
+      vibrar('penalizacion');
+      avisar('No se ha activado la pausa', mensajeSistema(e));
+    }
   };
 
   const deactivateFreeze = async () => {
     if (!profile) return;
-    const updated = await setFreeze(profile, null, null);
-    setProfile(updated);
+    try {
+      const updated = await setFreeze(profile, null, null);
+      setProfile(updated);
+    } catch (e) {
+      avisar('No se ha reanudado', mensajeSistema(e));
+    }
   };
 
   const onAchievementTap = async (code: string) => {
@@ -427,6 +440,7 @@ export function usePerfil(): UsePerfil {
         setReferral({ alias: r.alias, since: new Date().toISOString(), claimable: false });
         setCodigoOpen(false);
       } else {
+        vibrar('penalizacion');
         setAvisoCodigo(motivoReferral(r.reason));
         // Ya asignado o fuera de plazo: la fila deja de tener sentido.
         if (r.reason === 'ya_asignado' || r.reason === 'fuera_de_plazo' || r.reason === 'ya_pagas') {
@@ -434,6 +448,7 @@ export function usePerfil(): UsePerfil {
         }
       }
     } catch (e) {
+      vibrar('penalizacion');
       setAvisoCodigo(mensajeSistema(e));
     } finally {
       setCodigoBusy(false);
@@ -454,6 +469,7 @@ export function usePerfil(): UsePerfil {
       setBorrarOpen(false);
       router.replace('/login');
     } catch (e) {
+      vibrar('penalizacion');
       setAvisoBorrar(mensajeSistema(e));
     } finally {
       setBorrando(false);
@@ -470,7 +486,9 @@ export function usePerfil(): UsePerfil {
       confirmar: 'Eliminar para siempre',
       destructivo: true,
     });
-    if (ok) await ejecutarBorrado();
+    if (!ok) return;
+    vibrar('destructiva');
+    await ejecutarBorrado();
   };
 
   // Aceptado: retirar (con confirmación). Sin aceptar: la hoja.
@@ -619,6 +637,8 @@ export function usePerfil(): UsePerfil {
       abierta: borrarOpen,
       cerrar: () => setBorrarOpen(false),
       aviso: avisoBorrar,
+      // Con ficha de creador: lo ganado se le sigue pagando; que escriba a soporte.
+      esCreador,
       borrando,
       confirmar: confirmarBorrado,
     },

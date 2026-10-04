@@ -1,4 +1,4 @@
-// NIVL · Diario — lo que registró el sistema ese día.
+// NIVL · Diario: lo que registró el sistema ese día.
 //
 // La crónica era una lista de solo lectura al fondo de la pantalla. Ahora vive
 // debajo de las victorias y cada línea se puede reclamar con un toque: lo que
@@ -7,10 +7,11 @@
 
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { StyleSheet, Text, View } from 'react-native';
-import { Card, EmptyState, Row } from '@/components/ui';
+import { TarjetaArena } from '@/components/arena';
+import { Row } from '@/components/ui';
+import { ink, space, type as tipo } from '@/design/tokens';
 import type { SystemEvent } from '@/lib/journal';
 import { MAX_LARGO_VICTORIA } from '@/lib/journalmath';
-import { colors, fonts } from '@/lib/theme';
 
 export interface LineaCronica {
   id: string;
@@ -68,15 +69,16 @@ interface Props {
 
 export function Cronica({ lineas, reclamadas, cabenMas, onReclamar }: Props) {
   if (lineas.length === 0) {
+    // Una línea y no una tarjeta: que el sistema no viera nada no es un aviso.
     return (
-      <Card variant="outline">
-        <EmptyState compact icon="time-outline" title="Sin actividad ese día" body="El sistema no registró nada." />
-      </Card>
+      <Text style={styles.vacio} maxFontSizeMultiplier={1.6}>
+        Sin actividad ese día: el sistema no registró nada.
+      </Text>
     );
   }
   return (
     <>
-      <Card padded={false} style={styles.lista}>
+      <TarjetaArena variante="contorno" padded={false} style={styles.lista}>
         {lineas.map((l, i) => {
           const hecha = l.victoria !== null && reclamadas.has(l.victoria.toLocaleLowerCase('es'));
           const pulsable = l.victoria !== null && !hecha && cabenMas;
@@ -89,7 +91,7 @@ export function Cronica({ lineas, reclamadas, cabenMas, onReclamar }: Props) {
                   <Ionicons
                     name={hecha ? 'checkmark-circle' : l.victoria ? 'add-circle-outline' : 'ellipse'}
                     size={l.victoria ? 18 : 6}
-                    color={hecha ? colors.accent : colors.accentDim}
+                    color={hecha ? ink.ink10 : ink.ink6}
                   />
                 </View>
               }
@@ -100,14 +102,23 @@ export function Cronica({ lineas, reclamadas, cabenMas, onReclamar }: Props) {
             />
           );
         })}
-      </Card>
-      <Text style={styles.nota}>Toca una línea para reclamarla como victoria.</Text>
+      </TarjetaArena>
+      <Text style={styles.nota} maxFontSizeMultiplier={1.6}>
+        Toca una línea para reclamarla como victoria.
+      </Text>
     </>
   );
 }
 
 const styles = StyleSheet.create({
-  lista: { paddingHorizontal: 16, paddingVertical: 2 },
+  lista: { paddingHorizontal: space.s4, paddingVertical: 2 },
   marca: { width: 18, alignItems: 'center' },
-  nota: { fontFamily: fonts.body, fontSize: 12, lineHeight: 17, color: colors.textFaint, marginTop: -2 },
+  nota: {
+    fontFamily: tipo.bodySm.family,
+    fontSize: tipo.bodySm.size,
+    lineHeight: tipo.bodySm.lineHeight,
+    color: ink.ink6,
+    marginTop: space.s2,
+  },
+  vacio: { fontFamily: tipo.bodySm.family, fontSize: tipo.bodySm.size, lineHeight: tipo.bodySm.lineHeight, color: ink.ink6 },
 });

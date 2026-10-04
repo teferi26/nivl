@@ -9,7 +9,7 @@
 // solo le llega SU dinero; de los demás, alias y ventas del mes.
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { codigoValido, type CreatorRank, type ReferralReason } from './creatormath';
+import { codigoValido, motivoReferral, type CreatorRank, type ReferralReason } from './creatormath';
 import {
   mesesHistorico,
   parseCreatorBoard,
@@ -21,6 +21,7 @@ import {
   type CreatorProgress,
 } from './creatorprogram';
 import { marcarCreadorEnTienda } from './pro';
+import { claimInvite, mensajeInvite, normalizarCodigo as normalizarCodigoAmigo, type InviteReason } from './invites';
 import { supabase } from './supabase';
 
 export type { CreatorBoardRow, CreatorChallenge, CreatorHistoryMonth, CreatorProgress } from './creatorprogram';
@@ -127,7 +128,7 @@ export async function reintentarCodigoPendiente(): Promise<void> {
   const p = await leerCodigoPendiente();
   if (!p) return;
   try {
-    await claimReferral(p.code, p.source);
+    await reclamarQuienTeTrajo(p.code, p.source);
     await olvidarCodigoPendiente();
   } catch {
     /* sin red: sigue pendiente */
@@ -245,4 +246,33 @@ export async function fetchCreatorBoardPeriod(period: string): Promise<CreatorBo
   const { data, error } = await supabase.rpc('creator_board_period', { p_period: p });
   if (error) throw error;
   return parseCreatorBoard(data);
+}
+
+// ── «¿Quién te trajo?»: un solo campo para creador o amigo ─────────────
+
+export type ResultadoQuienTeTrajo =
+  | { ok: true; tipo: 'creador'; alias: string }
+  | { ok: true; tipo: 'amigo' }
+  | { ok: false; tipo: 'creador' | 'amigo'; reason: ReferralReason | InviteReason; mensaje: string };
+
+/**
+ * El mismo campo del onboarding (y de Perfil) acepta el código de un creador
+ * (0025) o el código de amigo de quien te invitó (0045). Primero se prueba como
+ * creador si tiene forma de código de creador; si el servidor no lo conoce y
+ * tiene forma de código de amigo (8 caracteres), se prueba como invitación.
+ * Lanza solo si falla la red (el llamante lo guarda como pendiente).
+ */
+export async function reclamarQuienTeTrajo(code: string, source: ReferralSource): Promise<ResultadoQuienTeTrajo> {
+  const amigo = normalizarCodigoAmigo(code);
+  if (codigoValido(code)) {
+    const r = await claimReferral(code, source);
+    if (r.ok) return { ok: true, tipo: 'creador', alias: r.alias };
+    if (!(r.reason === 'desconocido' && amigo)) {
+      return { ok: false, tipo: 'creador', reason: r.reason, mensaje: motivoReferral(r.reason) };
+    }
+  }
+  if (!amigo) return { ok: false, tipo: 'creador', reason: 'formato', mensaje: motivoReferral('formato') };
+  const i = await claimInvite(amigo);
+  if (i.ok) return { ok: true, tipo: 'amigo' };
+  return { ok: false, tipo: 'amigo', reason: i.reason, mensaje: mensajeInvite(i.reason) };
 }

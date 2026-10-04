@@ -10,10 +10,12 @@
 // una hoja decidida por `ofrecerSi`. El motivo pone su contexto en la oferta y
 // el nivel la abre en Pro o Élite. Al salir, comprar o empezar la prueba se
 // apunta la respuesta (`anotarOferta`): es lo que hace respetar los topes y las
-// 72 h tras un «Ahora no». Sin motivo, la pantalla no apunta nada.
+// 72 h tras un «Ahora no». Sin motivo solo se apunta el inicio de la prueba
+// (como línea, sin gastar topes): es lo que permite ofrecer `fin_prueba` al
+// acabar. La cabecera, con motivo, sale de COPY_UPSELL (`eyebrow`, `titulo`).
 
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Platform, StyleSheet, Text, View } from 'react-native';
 import { ProOffer } from '@/components/ProOffer';
 import { XPBar } from '@/components/XPBar';
@@ -23,6 +25,7 @@ import { ensureProfile } from '@/lib/data';
 import { isValidKey, nombreDia } from '@/lib/dates';
 import {
   anotarOferta,
+  copyUpsell,
   energiaAgotada,
   esMomento,
   energiaRestante,
@@ -71,12 +74,26 @@ export default function Pro() {
   const [verOferta, setVerOferta] = useState(motivo !== null);
   // Una sola respuesta por visita: salir después de comprar no es un «Ahora no».
   const [respondida, setRespondida] = useState(false);
+  const respondidaRef = useRef(false);
 
   const responder = (r: RespuestaOferta) => {
-    if (!motivo || respondida) return;
+    if (!motivo || respondida || respondidaRef.current) return;
+    respondidaRef.current = true;
     setRespondida(true);
     void anotarOferta(motivo, r, 'linea');
   };
+
+  // Salir sin responder por cualquier camino (gesto atrás, botón atrás de
+  // Android, cambiar de pestaña que desmonta) también es un «Ahora no»: así
+  // arranca la pausa de 72 h y no se insiste.
+  useEffect(() => {
+    return () => {
+      if (motivo && !respondidaRef.current) {
+        respondidaRef.current = true;
+        void anotarOferta(motivo, 'cerrada', 'linea');
+      }
+    };
+  }, [motivo]);
 
   const load = useCallback(async () => {
     // Sin sesión no hay nada que leer, pero la pantalla no puede quedarse
@@ -169,7 +186,7 @@ export default function Pro() {
                 elite
                   ? 'Máxima potencia y modo profundo. Brief, plan del día, entreno, dieta, revisión semanal y memoria.'
                   : prueba
-                    ? 'Tu prueba de 7 días. Brief, plan del día, entreno, dieta, revisión semanal y memoria.'
+                    ? 'Tu prueba de 7 días. Brief, plan del día, entreno, dieta, revisión semanal y memoria. Al acabar no se cobra nada: no se renueva sola.'
                     : 'Brief, plan del día, entreno, dieta, revisión semanal y memoria. Todo activo.'
               }
             />
@@ -286,15 +303,19 @@ export default function Pro() {
     );
   }
 
+  // Con motivo, la cabecera es la del momento; sin él, la de siempre. La prueba
+  // se anuncia arriba solo si la cuenta puede empezarla.
+  const cabecera = motivo ? copyUpsell(motivo, tierParam ?? 'pro') : null;
+  const conPrueba = status?.trialAvailable ? ' Pruébalo 7 días, sin tarjeta.' : '';
   return (
     <Screen refreshing={refreshing} onRefresh={refrescar}>
       <Stagger>
         <FadeIn index={0}>
           <ScreenHeader
             onBack={salir}
-            eyebrow="NIVL Pro"
-            title="Un coach que manda en tu día."
-            subtitle="NIVL es gratis entera: misiones, racha, campañas, gym, dieta, economía, amigos. Pro añade el coach: la IA que lo dirige todo por ti."
+            eyebrow={cabecera?.eyebrow ?? 'NIVL Pro'}
+            title={cabecera?.titulo ?? 'Un coach que manda en tu día.'}
+            subtitle={`NIVL es gratis entera: misiones, racha, campañas, gym, dieta, economía, amigos. Pro añade el coach: la IA que lo dirige todo por ti.${conPrueba}`}
           />
         </FadeIn>
         <FadeIn index={1}>
@@ -311,7 +332,8 @@ export default function Pro() {
             }}
             trialAvailable={!!status?.trialAvailable}
             onTrialStarted={() => {
-              responder('prueba');
+              if (motivo) responder('prueba');
+              else void anotarOferta('coach_cerrado', 'prueba', 'linea');
               load();
             }}
           />
