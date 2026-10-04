@@ -29,6 +29,7 @@ import {
   type PurchasesPackage,
   type StoreProductChangeInfo,
 } from './tienda';
+import { conLimiteDeRed } from './limiteRed';
 import {
   compraReflejada,
   esProductoNivl,
@@ -276,7 +277,9 @@ function traducir(e: unknown): unknown {
 }
 
 async function todosLosPaquetes(): Promise<PurchasesPackage[]> {
-  const offerings = await Purchases.getOfferings();
+  // Con tope: una tienda que no contesta deja el catálogo en error (Reintentar
+  // precios), nunca cargando para siempre.
+  const offerings = await conLimiteDeRed(Purchases.getOfferings());
   // La offering actual primero: si un producto está en dos, manda la actual.
   const todas = [offerings.current, ...Object.values(offerings.all)];
   return todas.flatMap((o) => o?.availablePackages ?? []);
