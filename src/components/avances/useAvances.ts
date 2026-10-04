@@ -208,7 +208,7 @@ export function useAvances(): UseAvances {
     if (lock.current) return;
     const ok = await confirmar({
       titulo: 'META CONSEGUIDA',
-      mensaje: `«${goal.title}»: el sistema otorgará +${GOAL_ACHIEVED_XP} XP.`,
+      mensaje: `«${goal.title}»: hasta +${GOAL_ACHIEVED_XP} XP si hoy no has llegado al tope de metas.`,
       confirmar: 'Reclamar',
       cancelar: 'Aún no',
     });
