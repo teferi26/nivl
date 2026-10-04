@@ -48,8 +48,8 @@ export default function Perfil() {
             </Text>
             {borrar.esCreador ? (
               <Text style={styles.hint}>
-                Eres creador del programa. Si borras la cuenta, pierdes el saldo pendiente de cobro. Si quieres cobrar lo
-                disponible, escríbenos a soporte antes de borrar.
+                Eres creador del programa. Si borras la cuenta, tu código se desactiva; el saldo ya generado se te sigue
+                pagando: escríbenos a soporte para darnos tus datos de pago.
               </Text>
             ) : null}
             {borrar.aviso ? (
