@@ -15,8 +15,17 @@
 // `Entrada` solo en los bloques (8 como mucho), nunca en las filas.
 
 import Ionicons from '@expo/vector-icons/Ionicons';
-import type { ReactNode } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import { useRef, type ReactNode, type RefObject } from 'react';
+import {
+  ActivityIndicator,
+  findNodeHandle,
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+  useWindowDimensions,
+} from 'react-native';
 import { Arena, Campo, EncabezadoArena, Entrada, FranjaCifras, TarjetaArena } from '@/components/arena';
 import { TAM_BOTON } from '@/components/arena/EncabezadoArena';
 import { Button, Chip, ChipWrap, EmptyState, Row, Screen, Section, Skeleton, SkeletonRows, Tag } from '@/components/ui';
@@ -259,6 +268,12 @@ function Contenido(p: AmigosVistaProps & { yo: NonNullable<AmigosVistaProps['yo'
   );
 }
 
+/** iPad: nodo nativo del botón para anclar la hoja de compartir (solo iOS; en web findNodeHandle lanza). */
+function nodoAncla(ref: RefObject<View | null>): number | undefined {
+  if (Platform.OS !== 'ios' || !ref.current) return undefined;
+  return findNodeHandle(ref.current) ?? undefined;
+}
+
 // ── Ranking ─────────────────────────────────────────────────────────────
 
 function Ranking(p: AmigosVistaProps) {
@@ -277,6 +292,7 @@ function Ranking(p: AmigosVistaProps) {
     miRango,
     rangos,
   } = p;
+  const vacio = useRef<View>(null);
   return (
     <Section title="Ranking" meta={numAmigos > 0 ? `${visibles.length}` : undefined}>
       {numAmigos === 0 ? (
@@ -286,14 +302,17 @@ function Ranking(p: AmigosVistaProps) {
                 lo exige), así no se repite. */}
             <Arena ancho={ARENA_VACIA.ancho} alto={ARENA_VACIA.alto} variante="ovalo" />
           </View>
-          {/* La inversión de la pantalla cuando no hay fila mía: invitar. */}
-          <EmptyState
-            compact
-            icon="person-add-outline"
-            title="Tu arena está vacía"
-            body="A solas se afloja. Con un rival mirando, el día que ibas a saltarte se cumple. Pásale tu código a quien te apriete de verdad: basta uno."
-            action={{ label: 'Invitar al primero', onPress: invitar, variant: 'solid' }}
-          />
+          {/* La inversión de la pantalla cuando no hay fila mía: invitar.
+              EmptyState no expone el ref de su botón: la hoja se ancla al bloque. */}
+          <View ref={vacio} collapsable={false}>
+            <EmptyState
+              compact
+              icon="person-add-outline"
+              title="Tu arena está vacía"
+              body="A solas se afloja. Con un rival mirando, el día que ibas a saltarte se cumple. Pásale tu código a quien te apriete de verdad: basta uno."
+              action={{ label: 'Invitar al primero', onPress: () => invitar(nodoAncla(vacio)), variant: 'solid' }}
+            />
+          </View>
         </TarjetaArena>
       ) : (
         <>
@@ -448,6 +467,7 @@ function Solicitudes({
 function TuCodigo({ yo, copiado, copiar, invitar }: Pick<AmigosVistaProps, 'copiado' | 'copiar' | 'invitar'> & {
   yo: NonNullable<AmigosVistaProps['yo']>;
 }) {
+  const boton = useRef<View>(null);
   return (
     <TarjetaArena variante="piedra" remaches rotulo="Tu código" style={styles.bloque}>
       <Text
@@ -473,7 +493,9 @@ function TuCodigo({ yo, copiado, copiar, invitar }: Pick<AmigosVistaProps, 'copi
           style={styles.boton}
         />
         {/* Secundario: la inversión de la pantalla es mi fila del ranking. */}
-        <Button title="Invitar" icon="paper-plane-outline" variant="secondary" onPress={invitar} style={styles.boton} />
+        <View ref={boton} collapsable={false} style={styles.boton}>
+          <Button title="Invitar" icon="paper-plane-outline" variant="secondary" onPress={() => invitar(nodoAncla(boton))} />
+        </View>
       </View>
     </TarjetaArena>
   );

@@ -107,10 +107,11 @@ export function useCreador(): CreadorVistaProps {
     }
   };
 
-  const compartir = async () => {
+  // `anchor`: nodo del botón (findNodeHandle, solo iOS) para el iPad.
+  const compartir = async (anchor?: number) => {
     if (!vista?.code) return;
     try {
-      await Share.share({ message: mensajeInvitacionCreador(vista.code) });
+      await Share.share({ message: mensajeInvitacionCreador(vista.code) }, anchor != null ? { anchor } : undefined);
     } catch (e) {
       vibrar('penalizacion');
       avisar('El sistema no responde', mensajeSistema(e));

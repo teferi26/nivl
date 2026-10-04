@@ -41,6 +41,7 @@ import { questsScheduledOn, rachaVisible } from '@/lib/closing';
 import { addDays, dateKey } from '@/lib/dates';
 import { setFreeze } from '@/lib/engine';
 import { exportAllData } from '@/lib/exporter';
+import type { Ancla } from '@/lib/share';
 import { deleteAccount } from '@/lib/account';
 import {
   consentimientoVigente,
@@ -417,11 +418,11 @@ export function usePerfil(): UsePerfil {
     if (v) vibrar('seleccion');
   };
 
-  const onExport = async () => {
+  const onExport = async (ancla?: Ancla | null) => {
     if (busy) return;
     setBusy(true);
     try {
-      await exportAllData();
+      await exportAllData(ancla);
     } catch (e) {
       avisar('El sistema no responde', mensajeSistema(e));
     } finally {

@@ -66,7 +66,9 @@ const TABLES = [
 
 // Export completo de los datos del usuario a un JSON compartible.
 // Las evidencias (Storage) no se incluyen: solo sus rutas.
-export async function exportAllData(): Promise<void> {
+// `ancla`: rectángulo del botón en coordenadas de ventana; en iPad la hoja
+// apunta a él (sin ancla, expo-sharing la abre abajo en el centro).
+export async function exportAllData(ancla?: { x: number; y: number; width: number; height: number } | null): Promise<void> {
   // The owner-only rights RPC includes data isolated after withdrawal. Normal
   // SELECT would silently omit it under the health RLS policies.
   const { data: dump, error } = await supabase.rpc('export_my_data');
@@ -91,6 +93,7 @@ export async function exportAllData(): Promise<void> {
     await Sharing.shareAsync(file.uri, {
       mimeType: 'application/json',
       dialogTitle: 'Exportar datos de NIVL',
+      ...(ancla ? { anchor: ancla } : {}),
     });
   } finally {
     // No dejar el volcado con datos personales en la caché del dispositivo.
