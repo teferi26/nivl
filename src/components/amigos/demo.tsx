@@ -174,6 +174,7 @@ function base(board: readonly BoardEntry[], cambios: Partial<AmigosVistaProps> =
 export const DEMO: DemoPantalla | null = {
   id: 'amigos',
   titulo: 'Amigos',
+  marco: 'pila',
   estados: [
     {
       id: 'lleno',

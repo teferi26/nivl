@@ -27,7 +27,15 @@ describe('tokens v2: contraste AA', () => {
 
 describe('clases de tamaño', () => {
   it('reparte los anchos de verificación', () => {
-    expect(VERIFY_WIDTHS.map(sizeClass)).toEqual(['compact', 'compact', 'medium', 'expanded', 'expanded']);
+    expect(VERIFY_WIDTHS.map(sizeClass)).toEqual([
+      'compact',
+      'compact',
+      'medium',
+      'medium',
+      'expanded',
+      'expanded',
+      'expanded',
+    ]);
     expect(sizeClass(599)).toBe('compact');
     expect(sizeClass(600)).toBe('medium');
   });

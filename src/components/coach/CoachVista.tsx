@@ -26,11 +26,13 @@ import {
   type NativeSyntheticEvent,
   type TextInputKeyPressEventData,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Arena, BotonArena, Entrada, Galea } from '@/components/arena';
 import { ProUpsellLine } from '@/components/ProOffer';
 import { Button, Card, Chip, Screen, Skeleton, Tag } from '@/components/ui';
+import { useTecladoAbierto } from '@/components/ui/useTecladoAbierto';
 import { ink, space, stroke, type } from '@/design/tokens';
-import { useAnchoUtil } from '@/design/useSizeClass';
+import { useAnchoUtil, useNavActual } from '@/design/useSizeClass';
 import type { CoachMode } from '@/lib/coach';
 import { DESCARGO_SALUD, LINEA_CRISIS } from '@/lib/consentmath';
 import { dateKey, relativoDe } from '@/lib/dates';
@@ -315,6 +317,13 @@ function Separador({ texto }: { texto: string }) {
 
 export function CoachVista(p: CoachVistaProps) {
   const { compositor: c } = p;
+  // Con la barra de pestañas abajo, ella ya cubre el indicador de inicio. Con
+  // el raíl o la barra lateral (iPad) no hay nada debajo: el pie suma el margen
+  // seguro, salvo con el teclado fuera, que ya lo tapa.
+  const insets = useSafeAreaInsets();
+  const nav = useNavActual();
+  const teclado = useTecladoAbierto();
+  const fondoSeguro = nav !== 'tabs' && !teclado ? insets.bottom : 0;
 
   if (p.cargando) {
     // La cabecera ya, y el cuerpo en hueco: un spinner solo en mitad del negro
@@ -511,7 +520,7 @@ export function CoachVista(p: CoachVistaProps) {
             el estado bloqueado de arriba ya lleva su propio botón. */}
         {sinPro ? (
           vacio ? null : (
-            <View style={styles.bandaPro}>
+            <View style={[styles.bandaPro, { paddingBottom: styles.bandaPro.paddingBottom + fondoSeguro }]}>
               {/* La línea de la oferta ya dice que el coach es parte de NIVL Pro. */}
               <Text style={styles.bandaProTexto}>
                 {p.ofertaCerrado ? 'Tu conversación se conserva.' : 'El coach es parte de NIVL Pro. Tu conversación se conserva.'}
@@ -529,7 +538,11 @@ export function CoachVista(p: CoachVistaProps) {
             <FranjaGrabacion dictado={c.dictado} aviso={c.avisoDictado} />
             {c.conFotos === false ? <Text style={styles.sinFotos}>Las fotos al coach son de Élite</Text> : null}
             <View
-              style={[styles.barra, (!!p.potencia || conRapidas || c.grabando || !!c.avisoDictado) && styles.barraSinLinea]}
+              style={[
+                styles.barra,
+                (!!p.potencia || conRapidas || c.grabando || !!c.avisoDictado) && styles.barraSinLinea,
+                { paddingBottom: styles.barra.paddingBottom + fondoSeguro },
+              ]}
             >
               {c.conFotos ? (
                 <Pressable

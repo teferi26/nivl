@@ -62,6 +62,7 @@ import { DIFFICULTY_LABEL, STAT_LABEL } from '@/lib/game';
 import { anotarOferta, fetchAiStatus, isPro, ofrecerSi, type AiStatus, type DecisionOferta, type RespuestaOferta } from '@/lib/pro';
 import { colors, fonts } from '@/lib/theme';
 import { ink, type as tipo } from '@/design/tokens';
+import { TopeAncho } from '@/design/useSizeClass';
 import { mensajeSistema, NAME_MAX_LENGTH } from '@/lib/validation';
 
 // Bienvenida · Nombre · Para qué · El objetivo · Primeros hábitos · La firma · NIVL Pro
@@ -78,6 +79,8 @@ const ULTIMO_PASO_CON_VUELTA = 5;
 const MS_SELLO = 1400;
 /** Margen lateral del onboarding; lo publica GutterContext para lo que va a sangre. */
 const GUTTER = 24;
+/** Ancho útil de la columna del onboarding (sin el canal). */
+const ANCHO_COLUMNA = 560;
 
 // Nombres por defecto de la fila de perfil: si es uno de estos, no se
 // prerrellena (que escriba el suyo).
@@ -446,6 +449,11 @@ export default function Onboarding() {
   return (
     <SafeAreaView style={styles.screen}>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        {/* Columna centrada: en iPad (1024-1366 pt) las tarjetas y los botones
+            ocupaban todo el ancho. Cabecera, contenido y pie comparten el tope,
+            y TopeAncho hace que la portada y las tarjetas midan contra él. */}
+        <TopeAncho.Provider value={ANCHO_COLUMNA}>
+        <View style={styles.columna}>
         {/* Cabecera fija: la vuelta atrás y el progreso. La fila de la flecha
             ocupa siempre su alto para que el progreso no salte entre pasos. La
             portada no la lleva: es la fachada entera. */}
@@ -770,6 +778,8 @@ export default function Onboarding() {
             ) : null}
           </View>
         ) : null}
+        </View>
+        </TopeAncho.Provider>
       </KeyboardAvoidingView>
 
       {sello ? (
@@ -795,6 +805,7 @@ export default function Onboarding() {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.bg },
+  columna: { flex: 1, width: '100%', maxWidth: ANCHO_COLUMNA + 2 * GUTTER, alignSelf: 'center' },
   top: { paddingHorizontal: GUTTER, paddingTop: 8 },
   backRow: { height: 44, justifyContent: 'center' },
   // Zona táctil de 44 × 44; el margen negativo deja la flecha alineada al canal.
