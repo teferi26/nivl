@@ -1,14 +1,13 @@
 NIVL 1.0.8 (build 23). Full answers to your 29 September message (Guideline 2.1) are in our Resolution Center reply.
-Screen recording: [VIDEO] (physical [DEVICE], iOS [IOS]). Launch 0:00, sign-up 0:03, sign-in 1:00, subscriptions 3:00, coach 4:36, report/block 5:45, Terms/Privacy 6:27, deletion 7:42.
+Screen recording: [VIDEO] (iPhone 17 Pro, iOS [IOS]). Launch 0:00, sign-up 0:03, sign-in 1:00, subscriptions 3:00, coach 4:36, report/block 5:45, Terms/Privacy 6:27, deletion 7:42.
 
 WHAT IT IS
 Spanish-language habit and organisation app for individual users aged 16+. Habits, missions, campaigns, calendar, training, nutrition, journal, finances, progress photos, friends, leagues and duels are free. Optional auto-renewable subscriptions (Pro, Élite) add an AI coach.
 
 ACCOUNTS
-Free account: credentials in the sign-in fields. Use it for the purchase, sandbox payment and "Restaurar compras".
-Pro account: [PRO_USER] / [PRO_PASS]
+Free account: credentials in the sign-in fields. Use it for the free features and to buy NIVL Pro in the sandbox; then test "Restaurar compras".
 Élite account: [ELITE_USER] / [ELITE_PASS]
-Pro and Élite access was granted manually on our server. Please do not buy or restore with these two accounts.
+Élite access was granted manually on our server until 15 January 2027. Please do not buy or restore with it. There is no separate Pro demo account.
 Sign in (all accounts): "ENTRAR" tab > email and password > "ENTRAR". New account: "CREAR CUENTA" > details > tick Terms/Privacy > "CREAR CUENTA" > open the email link on the device > sign in.
 No consent has been accepted for you; the app asks on first use.
 

@@ -7,7 +7,7 @@ Cambio de plan del 04/10/2026: el envío rechazado (versión renombrada a **1.0.
 | Marcador | Qué poner | Quién |
 |---|---|---|
 | `[VIDEO]` | Nombre del adjunto o enlace que se abra sin iniciar sesión | Coordinador + usuario |
-| `[DEVICE]`, `[IOS]` | Modelo del iPhone y versión de iOS del vídeo (Ajustes > General > Información). El archivo no lleva esos metadatos. Última versión pública el 04/10/2026: **iOS 27.0.1** ([Apple security releases](https://support.apple.com/en-us/100100)). Si el iPhone tenía otra, actualizar y avisar | Usuario |
+| `[IOS]` | El vídeo se grabó en un **iPhone 17 Pro con iOS 26.6.1** (dato del coordinador). Apple pidió «running the latest operating system», y el 04/10/2026 la última versión pública es **iOS 27.0.1** ([Apple security releases](https://support.apple.com/en-us/100100)). **Para riesgo cero: actualizar el iPhone a 27.0.1 y repetir la toma.** Si se envía tal cual, poner «iOS 26.6.1» (nunca una versión que no sea la real) | Usuario |
 | `[DATE]` | Fecha de la grabación | Usuario |
 | Credenciales de Pro y Élite | Solo en las notas de ASC, nunca aquí | Coordinador + usuario |
 
@@ -22,7 +22,7 @@ Thank you for your message of 29 September (Guideline 2.1, Information Needed). 
 **1. Screen recording on a physical device**
 
 Recording: [VIDEO]
-Device: [DEVICE], iOS [IOS]. App: NIVL 1.0.8 (build 23) installed from TestFlight. Recorded on [DATE] in one continuous take (8:20) with a newly created account.
+Device: iPhone 17 Pro, iOS [IOS]. App: NIVL 1.0.8 (build 23) installed from TestFlight. Recorded on [DATE] in one continuous take (8:20) with a newly created account.
 
 - 0:00 Launch from the Home Screen.
 - 0:03 to 0:57 Account registration and email confirmation.
@@ -54,10 +54,10 @@ NIVL is a Spanish-language habit and personal-organisation app for individual us
 
 No sample files, external hardware, bank connections or personal API keys are needed.
 
-Review accounts, one per access level:
-- Free account (credentials in the App Review sign-in fields): use it to test the purchase, the sandbox payment and "Restaurar compras".
-- Pro account and Élite account (credentials in the App Review notes): their access was granted manually on our server so you can see the paid features without paying. Please do not buy or restore with these two accounts, because a sandbox purchase would replace the granted access, which would then expire.
-None of the accounts has accepted the age declaration or the health and AI consents on your behalf; the app asks on first use.
+Review accounts:
+- Free account (credentials in the App Review sign-in fields): use it to see the free features and to test the subscription purchase in the sandbox. Buying NIVL Pro with it gives you the Pro features; "Restaurar compras" can be tested afterwards with the same account.
+- Élite account (credentials in the App Review notes): its access was granted manually on our server until 15 January 2027, so you can see the Élite features without paying. Please do not buy or restore with this account, because a sandbox purchase would replace the granted access.
+There is no separate Pro demo account: Pro is reached by purchasing with the Free account. None of the accounts has accepted the age declaration or the health and AI consents on your behalf; the app asks on first use.
 
 Signing in: on the access screen, stay on the "ENTRAR" tab, enter the email and password and tap "ENTRAR". To create an account, open "CREAR CUENTA", fill in the details, tick the (initially unticked) Terms and Privacy box, tap "CREAR CUENTA" and open the confirmation link sent by email on the same device. NIVL accounts are NIVL's own; no third-party account is needed.
 
