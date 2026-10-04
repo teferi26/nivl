@@ -28,7 +28,7 @@ import { fetchUnlocked, tituloVigente } from '@/lib/achievements';
 import { fetchRangosAmigos } from '@/lib/amigosRango';
 import { useAuth } from '@/lib/auth';
 import { conInsignias, estadoLudus, SIN_LUDUS, type MiLudus } from '@/lib/elite';
-import { fetchMyInvites, UMBRALES_INVITACION, type MyInvites } from '@/lib/invites';
+import { fetchMyInvites, settleMyInvites, UMBRALES_INVITACION, type MyInvites } from '@/lib/invites';
 import type { ProfileKind } from '@/lib/kinds';
 import { fetchAiStatus, type Tier } from '@/lib/pro';
 import { celebracionInsignia, estadoDe, INSIGNIAS, nivelInsignia, type Celebracion } from '@/lib/progression';
@@ -184,7 +184,11 @@ export function useAmigos() {
       .then((l) => setLogros(new Set(l)))
       .catch(() => {});
     fetchRangosAmigos().then(setRangos);
-    fetchMyInvites()
+    // Primero se liquidan las invitaciones (las altas que ya cuentan como
+    // activas); sin esto el contador no sube y la insignia no llega nunca.
+    settleMyInvites()
+      .catch(() => null)
+      .then(() => fetchMyInvites())
       .catch(() => null)
       .then(async (inv) => {
         setInvitaciones(inv);
