@@ -38,7 +38,7 @@ import { adminClient, userClient, type Db } from '../_shared/db.ts';
 import { buildSystem, buildSystemRegistro, DATOS_ABRE, DATOS_CIERRA, neutralizarDatos } from '../_shared/prompt.ts';
 import { elegirModelo, modoDeCabecera, proveedorDe, type Modo, type Routes } from '../_shared/routing.ts';
 import { executeTool, TOOL_DEFS } from '../_shared/tools.ts';
-import { controlHerramientas, fechaAceptable, fechaDelTurno, Gasto, mensajeDeFallo, reloj, validarImagenes } from './guard.ts';
+import { controlHerramientas, fechaAceptable, fechaDelTurno, fotosSinVision, Gasto, mensajeDeFallo, reloj, validarImagenes } from './guard.ts';
 import { pareceAfirmacion, rutaDelTurno, type Ruta } from '../_shared/intencion.ts';
 import { fueraDelPack, PACK_REGISTRO, TOOL_DEFS_REGISTRO } from '../_shared/packs.ts';
 import { bloqueComprobacion } from '../_shared/comprobacion.ts';
@@ -1032,6 +1032,9 @@ async function atender(
   // completa: el profundo no aplica a la ruta de registro.
   const ruta: Ruta = !fotos.imagenes.length && modo !== 'profundo' ? rutaDelTurno(userText, kind) : 'completa';
   const { model: modelo, compat } = ruta === 'registro' ? resolverModeloRegistro(routes) : resolverModelo(routes, kind, modo);
+  // Las fotos nunca salen a un proveedor sin visión acordada (solo Claude).
+  const sinVision = fotosSinVision(fotos.imagenes.length, compat);
+  if (sinVision) return json(400, { error: sinVision });
   const topeMicro = Math.min(
     ruta === 'registro' ? MAX_COST_REGISTRO_MICRO_USD : modo === 'profundo' ? MAX_COST_PROFUNDO_MICRO_USD : MAX_COST_MICRO_USD,
     restanteMicro,

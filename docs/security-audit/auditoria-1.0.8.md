@@ -4,7 +4,7 @@ NIVL - Seguridad · 04/10/2026.
 
 - **Diff revisado:** `c87df0d..winter2/integracion`, 397 archivos (+52.770 / −7.314).
 - **Método:** dos revisiones por lectura en paralelo (servidor y cliente) y, para cada P1, reproducción propia.
-- **Resultado:** 0 P0, 3 P1 y 15 P2.
+- **Resultado:** 0 P0, 4 P1 y 15 P2.
 
 Leyenda de la evidencia:
 - **R** = reproducido en producción con BEGIN…ROLLBACK (`rosql.mjs`, cuentas `@example.invalid`);
@@ -48,6 +48,16 @@ Leyenda de la evidencia:
 - **Archivo:** `docs/release-audit/fase2/0049_origen_salud.sql:74-120` redefine `complete_health_erasure` a partir de la versión anterior a 0050: no mira el bucket `progress` ni la tabla `progress_photos`.
 - **Estado en producción (R):** la función actual SÍ borra `progress` y `progress_photos`, y `health_daily_steps` no existe, así que 0049 no está aplicada. Hoy no hay fallo.
 - **Arreglo:** antes de integrar 0049, partir de la definición de 0050 y añadir `health_daily_steps`. Añadir una huella o un test que exija `'progress'` en `complete_health_erasure`.
+
+### P1-4 · Las fotos del chat del coach salían a DeepSeek con el plan Pro (L, ARREGLADO en el servidor)
+- **Archivos:** `coach/handler.ts`, donde con fotos la ruta es la completa y `resolverModelo` da `deepseek-v4-flash` a Pro (`ai_plans` en producción), y `_shared/openai.ts:79-91`, donde el adaptador compatible convierte las imágenes en `image_url` base64.
+- **Reproducción:** un usuario Pro adjunta una foto al coach (`useCoach.adjuntar`) y los bytes van a DeepSeek, lo acepte el proveedor o no.
+- **Impacto:** las fotos pueden ser corporales o de comida, es decir, datos de salud. Contradice la decisión «la visión solo con Claude» y la política, que solo menciona texto con DeepSeek.
+- **Arreglo:** `fotosSinVision` (`coach/guard.ts`) corta antes de cualquier llamada con un 400: «Con tu plan el coach no ve fotos…». El cliente ya enseña tal cual los 400 que hablan de fotos.
+- **Tests:** `sec_fotos_vision_test.ts`. Deno 236/236.
+- **Queda pendiente:**
+  · ocultar «adjuntar» en el cliente para los planes sin visión (Experiencia);
+  · decidir si Pro debe ver fotos con un modelo Claude (producto y coste).
 
 ## P2
 
