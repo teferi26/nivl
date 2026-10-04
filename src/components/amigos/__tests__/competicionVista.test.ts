@@ -1,11 +1,17 @@
 import type { Duelo, FilaTablero } from '@/lib/competicionData';
 import {
+  datosRival,
   detalleResuelto,
   diasRestantes,
+  etiquetaDuelo,
+  faltanDatos,
   lineaDuelo,
+  nombreRival,
   ordenarTablero,
   quienVaDelante,
   repartirDuelos,
+  RIVAL_OCULTO,
+  rivalOculto,
   semanaCerrada,
   textoQuedan,
   textoRitmo,
@@ -55,7 +61,7 @@ describe('repartirDuelos', () => {
         duelo({ id: 'b', status: 'pending', soy_retador: false }),
         duelo({ id: 'c', status: 'pending' }),
         duelo({ id: 'd', status: 'declined' }),
-        duelo({ id: 'e', rival: null }),
+        duelo({ id: 'e', status: 'cancelled' }),
         duelo({ id: 'f', status: 'pending', week_start: '2026-09-21' }),
         duelo({ id: 'g', status: 'done', week_start: '2026-09-21', resultado: 'gano' }),
       ],
@@ -65,6 +71,84 @@ describe('repartirDuelos', () => {
     expect(v.porResponder.map((d) => d.id)).toEqual(['b']);
     expect(v.enviados.map((d) => d.id)).toEqual(['c']);
     expect(v.resueltos.map((d) => d.id)).toEqual(['g']);
+  });
+});
+
+describe('rival oculto (0055: lo del rival llega null)', () => {
+  const hoy = '2026-10-02';
+  const oculto = (p: Partial<DueloAmpliado> = {}): DueloAmpliado => ({
+    ...duelo({}),
+    rival: null,
+    su_indice: null,
+    sus_dias: null,
+    mi_suficiente: true,
+    su_suficiente: null,
+    semana_cerrada: false,
+    ...p,
+  });
+
+  it('el nombre visible es «Rival oculto» y no hay datos que pintar', () => {
+    expect(nombreRival(oculto())).toBe(RIVAL_OCULTO);
+    expect(nombreRival(oculto({ rival: '  ' }))).toBe(RIVAL_OCULTO);
+    expect(nombreRival(duelo({}))).toBe('Gladiador 1');
+    expect(datosRival(oculto())).toBeNull();
+    expect(rivalOculto(oculto())).toBe(true);
+    expect(datosRival(duelo({ su_indice: 64, sus_dias: 3 }))).toEqual({ nombre: 'Gladiador 1', indice: 64, dias: 3 });
+  });
+
+  it('basta un campo null para que el rival quede oculto', () => {
+    expect(rivalOculto(oculto({ rival: 'Marta', sus_dias: 2 }))).toBe(true);
+    expect(rivalOculto(oculto({ rival: 'Marta', su_indice: 60 }))).toBe(true);
+    expect(rivalOculto(oculto({ su_indice: 60, sus_dias: 2 }))).toBe(true);
+    expect(rivalOculto(oculto({ rival: 'Marta', su_indice: 60, sus_dias: 2 }))).toBe(false);
+  });
+
+  it('quienVaDelante con null devuelve el caso sin datos', () => {
+    expect(quienVaDelante({ mi_indice: 80, su_indice: null, mis_dias: 3, sus_dias: null })).toBe('sin_datos');
+    expect(quienVaDelante({ mi_indice: 80, su_indice: 10, mis_dias: 3, sus_dias: null })).toBe('sin_datos');
+    expect(quienVaDelante({ mi_indice: 80, su_indice: null, mis_dias: 3, sus_dias: 1 })).toBe('sin_datos');
+  });
+
+  it('lineaDuelo no dice quién va delante ni nombra a nadie', () => {
+    expect(faltanDatos(oculto())).toBe(true);
+    expect(lineaDuelo(oculto({ mi_indice: 99 }))).toBe('Aún sin datos suficientes');
+    // Con nombre pero sin cifras tampoco.
+    expect(lineaDuelo(oculto({ rival: 'Marta', mi_indice: 99 }))).toBe('Aún sin datos suficientes');
+    // Con cifras pero sin nombre (servidor anterior, bloqueo) tampoco.
+    expect(lineaDuelo(oculto({ su_indice: 10, sus_dias: 0 }))).toBe('Aún sin datos suficientes');
+  });
+
+  it('detalleResuelto con null va como «-», con o sin revancha', () => {
+    expect(detalleResuelto(oculto({ resultado: 'gano', status: 'done' }), false)).toBe('Semana pasada · - frente a -');
+    expect(detalleResuelto(oculto({ resultado: 'pierdo', status: 'done' }), true)).toBe(
+      'Semana pasada · - frente a - · Perdiste',
+    );
+  });
+
+  it('la etiqueta accesible no anuncia nada del rival', () => {
+    const t = etiquetaDuelo(oculto({ mi_indice: 72 }), 3);
+    expect(t).toBe('Duelo con Rival oculto, quedan 3 días. Tu disciplina 72. Sin datos del rival.');
+    expect(t).not.toMatch(/delante|la suya/);
+    expect(etiquetaDuelo(duelo({ mi_indice: 80, su_indice: 60 }), 1)).toBe(
+      'Duelo con Gladiador 1, último día. Tu disciplina 80, la suya 60. Vas delante.',
+    );
+  });
+
+  it('el duelo con rival oculto no desaparece; el reto recibido de alguien oculto sí', () => {
+    const v = repartirDuelos(
+      [
+        oculto({ id: 'a' }),
+        oculto({ id: 'b', status: 'pending', soy_retador: false }),
+        oculto({ id: 'c', status: 'pending', soy_retador: true }),
+        oculto({ id: 'r', status: 'done', week_start: '2026-09-21', resultado: 'pierdo' }),
+        oculto({ id: 'x', status: 'cancelled' }),
+      ],
+      hoy,
+    );
+    expect(v.activos.map((d) => d.id)).toEqual(['a']);
+    expect(v.porResponder).toEqual([]);
+    expect(v.enviados.map((d) => d.id)).toEqual(['c']);
+    expect(v.resueltos.map((d) => d.id)).toEqual(['r']);
   });
 });
 
