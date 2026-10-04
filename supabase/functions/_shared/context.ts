@@ -44,6 +44,7 @@ const ENLACE: Record<string, string> = {
 };
 
 // Espejo de mantenimientoKcal en src/lib/bodymath.ts (allí están los tests).
+// Mismo rango de edad: de EDAD_MINIMA (16, src/lib/consentmath.ts) a 100.
 const FACTOR_ACTIVIDAD: Record<string, number> = {
   sedentario: 1.2, ligero: 1.375, moderado: 1.55, alto: 1.725, muy_alto: 1.9,
 };
@@ -54,7 +55,7 @@ function mantenimientoKcal(
   sexo: string | null,
   actividad: string | null,
 ): { basal: number; mantenimiento: number } | null {
-  if (!(pesoKg > 20) || !alturaCm || !edad || !sexo || !actividad || !FACTOR_ACTIVIDAD[actividad]) return null;
+  if (!(pesoKg > 20) || !alturaCm || !edad || edad < 16 || edad > 100 || !sexo || !actividad || !FACTOR_ACTIVIDAD[actividad]) return null;
   const basal = 10 * pesoKg + 6.25 * alturaCm - 5 * edad + (sexo === 'hombre' ? 5 : -161);
   return { basal: Math.round(basal), mantenimiento: Math.round((basal * FACTOR_ACTIVIDAD[actividad]) / 10) * 10 };
 }
