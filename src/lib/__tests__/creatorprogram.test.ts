@@ -141,7 +141,8 @@ describe('vistaPanelCreador: en tienda, ni un importe', () => {
     expect(v).toMatchObject({ rank: 'novato', rangoLabel: 'Creador novato', sales: 3, salesMonth: 1, sales90d: 3, installs: 10 });
     expect(v.retos).toHaveLength(2);
     expect(v.retos[0].prize).toBeNull();
-    expect(v.retos[1].prize).toBe('Sudadera');
+    // Apple 5.3.2: ni siquiera un premio en especie llega a la tienda.
+    expect(v.retos[1].prize).toBeNull();
     expect(v.retos[1].description).toBeNull();
     expect(v.tabla.map((r) => r.alias)).toEqual(['Beta', 'Creador', 'Alfa']);
     expect(v.historico).toEqual([
@@ -176,13 +177,18 @@ describe('vistaPanelCreador: en tienda, ni un importe', () => {
     expect(v.retos[0]).toMatchObject({ title: 'Reto', description: null, prize: null });
   });
 
-  it('textos neutros pasan en tienda', () => {
+  it('textos neutros pasan en tienda; el premio, aunque sea en especie, no (Apple 5.3.2)', () => {
     const base = parseCreatorProgress({
       ...PROGRESO_RPC,
       challenges: [{ ...PROGRESO_RPC.challenges[1], title: 'Reto de octubre: 5 altas', description: 'Página de tu código', prize: 'Sudadera' }],
     });
-    const v = vistaPanelCreador('android', { panel: PANEL, progreso: base })!;
-    expect(v.retos[0]).toMatchObject({ title: 'Reto de octubre: 5 altas', description: 'Página de tu código', prize: 'Sudadera' });
+    for (const plataforma of ['ios', 'android']) {
+      const v = vistaPanelCreador(plataforma, { panel: PANEL, progreso: base })!;
+      expect(v.retos[0]).toMatchObject({ title: 'Reto de octubre: 5 altas', description: 'Página de tu código', prize: null });
+    }
+    // En la web el premio sigue a la vista.
+    const web = vistaPanelCreador('web', { panel: PANEL, progreso: base })!;
+    expect(web.retos[0].prize).toBe('Sudadera');
   });
 
   it('web: con importes', () => {

@@ -7,7 +7,8 @@
 // cuentas atrás, ni testimonios; la salida gratuita pesa lo mismo que la
 // compra; y mientras la tienda no esté conectada (`purchasesAvailable()`), el
 // botón apunta el interés y lo dice, en vez de fingir un cobro: sin selector
-// de plan, sin "restaurar compras" y sin letra de renovación automática.
+// de plan, sin "restaurar compras" y sin letra de renovación automática,
+// pero con Términos, Privacidad y (iOS) el EULA de Apple siempre a la vista.
 //
 // Con la tienda abierta (binario 1.0.7 con clave de RevenueCat): selector con
 // los precios QUE DA LA TIENDA (son los que se cobran), "Restaurar compras",
@@ -82,6 +83,9 @@ import { mensajeSistema } from '@/lib/validation';
 const AVISO_PENDIENTE =
   'Compra confirmada por la tienda. El coach se activa en unos segundos; si no aparece, pulsa Restaurar compras.';
 /** Cambio de plan que la tienda aplica en la próxima renovación (Élite → Pro, anual ↔ mensual). */
+/** Se rechazó el consentimiento para la IA antes de comprar o probar: se dice, nunca en silencio. */
+export const AVISO_SIN_PERMISO =
+  'Para usar el coach hace falta aceptar el envío de tus datos al proveedor de IA. Sin ese permiso no se cobra nada.';
 const AVISO_PROGRAMADA =
   'Cambio confirmado por la tienda. Se aplica en tu próxima renovación; hasta entonces sigues con tu plan actual.';
 
@@ -111,6 +115,8 @@ export function useProOffer({ userId, onPurchased, trialAvailable, onTrialStarte
   const [busy, setBusy] = useState<'compra' | 'restaurar' | 'prueba' | null>(null);
   const [anotado, setAnotado] = useState(false);
   const [aviso, setAviso] = useState<string | null>(null);
+  // El aviso actual es el del permiso de la IA rechazado: lleva «Revisar el permiso».
+  const [sinPermiso, setSinPermiso] = useState(false);
   // El servidor dijo "ya_usada": la prueba desaparece aunque el estado leído
   // al abrir dijera lo contrario.
   const [pruebaUsada, setPruebaUsada] = useState(false);
@@ -185,6 +191,7 @@ export function useProOffer({ userId, onPurchased, trialAvailable, onTrialStarte
     lock.current = true;
     setBusy(que);
     setAviso(null);
+    setSinPermiso(false);
     try {
       await fn();
     } catch (e) {
@@ -196,11 +203,25 @@ export function useProOffer({ userId, onPurchased, trialAvailable, onTrialStarte
     }
   };
 
+  /** Pide el consentimiento; si no se da, deja el aviso con su salida. */
+  const permiso = async (): Promise<boolean> => {
+    const ok = await consentimiento.asegurar();
+    setSinPermiso(!ok);
+    setAviso(ok ? null : AVISO_SIN_PERMISO);
+    return ok;
+  };
+  /** «Revisar el permiso»: vuelve a abrir la hoja. No compra ni empieza nada solo. */
+  const revisarPermiso = async () => {
+    if (lock.current) return;
+    await permiso();
+  };
   const onPrincipal = async () => {
     if (lock.current) return;
     const precio = precioDe(planId);
     if (disponible && (!puedeComprar || !precio)) return;
-    if (disponible && !(await consentimiento.asegurar())) return;
+    // El consentimiento va antes de pagar (es el permiso para enviar datos al
+    // proveedor de IA de lo que se compra). Si no se acepta, se dice.
+    if (disponible && !(await permiso())) return;
     return conCerrojo('compra', async () => {
       if (disponible) {
         const r = await purchase(planId, precio!).catch((e: unknown) => {
@@ -237,7 +258,7 @@ export function useProOffer({ userId, onPurchased, trialAvailable, onTrialStarte
 
   const onPrueba = async () => {
     if (lock.current) return;
-    if (!(await consentimiento.asegurar())) return;
+    if (!(await permiso())) return;
     return conCerrojo('prueba', async () => {
       const r = await startTrial();
       if (!r.ok) {
@@ -302,6 +323,8 @@ export function useProOffer({ userId, onPurchased, trialAvailable, onTrialStarte
     busy,
     anotado,
     aviso,
+    sinPermiso,
+    revisarPermiso,
     avisoEnlace,
     disponible,
     prueba,
@@ -513,7 +536,7 @@ interface ActionsProps {
 
 /** Los dos botones, del mismo tamaño, y lo que el sistema responde al pulsarlos. */
 export function ProOfferActions({ oferta, exitLabel, onExit, exitLoading }: ActionsProps) {
-  const { tier, plan, precioDe, catalogo, puedeComprar, busy, anotado, aviso, disponible, prueba, onPrincipal, onPrueba, hojaConsentimiento } = oferta;
+  const { tier, plan, precioDe, catalogo, puedeComprar, busy, anotado, aviso, sinPermiso, revisarPermiso, disponible, prueba, onPrincipal, onPrueba, hojaConsentimiento } = oferta;
   const activar = puedeComprar
     ? `Activar ${tituloPlan(plan.id)} · ${precioDe(plan.id)} al ${plan.period}`
     : catalogo === 'cargando' ? 'Cargando precios de la tienda' : 'Compra no disponible';
@@ -528,6 +551,16 @@ export function ProOfferActions({ oferta, exitLabel, onExit, exitLoading }: Acti
         <Text style={[styles.notice, styles.noticeAbove, styles.noticeWarn]} accessibilityRole="alert">
           {aviso}
         </Text>
+      ) : null}
+      {aviso && sinPermiso ? (
+        <Button
+          title="Revisar el permiso"
+          variant="ghost"
+          size="sm"
+          onPress={revisarPermiso}
+          disabled={busy !== null}
+          style={styles.directo}
+        />
       ) : null}
       {prueba ? (
         <>
@@ -582,25 +615,32 @@ export function ProOfferActions({ oferta, exitLabel, onExit, exitLoading }: Acti
 
 /**
  * Lo que exigen las tiendas para una suscripción autorrenovable: restaurar, la
- * letra pequeña y los enlaces legales. SOLO cuando se puede comprar: con la
- * tienda cerrada, hablar de renovación automática y ofrecer "restaurar" una
- * compra que no puede existir contradecía el "hoy no se cobra nada".
+ * letra pequeña y los enlaces legales. Restaurar y la letra de renovación,
+ * SOLO cuando se puede comprar: con la tienda cerrada, hablar de renovación
+ * automática y ofrecer "restaurar" una compra que no puede existir contradecía
+ * el "hoy no se cobra nada". Los enlaces (Términos, Privacidad y, en iOS, el
+ * EULA de Apple) salen SIEMPRE, también con la tienda cerrada (Apple 3.1.2 y
+ * 2.1): una OTA de 1.0.8 sin la clave de la tienda dejó el paywall sin ellos
+ * delante de un revisor.
  */
 export function ProOfferLegal({ oferta }: { oferta: ProOfferState }) {
   const { planId, precios, intros, puedeComprar, busy, disponible, avisoEnlace, onRestaurar, abrir } = oferta;
-  if (!disponible) return null;
   return (
     <View>
-      <Button
-        title="Restaurar compras"
-        variant="ghost"
-        size="sm"
-        onPress={onRestaurar}
-        loading={busy === 'restaurar'}
-        disabled={busy !== null && busy !== 'restaurar'}
-        style={styles.restore}
-      />
-      {puedeComprar ? <Text style={styles.legal}>{legalText(planId, precios[planId], intros[planId], Platform.OS)}</Text> : null}
+      {disponible ? (
+        <Button
+          title="Restaurar compras"
+          variant="ghost"
+          size="sm"
+          onPress={onRestaurar}
+          loading={busy === 'restaurar'}
+          disabled={busy !== null && busy !== 'restaurar'}
+          style={styles.restore}
+        />
+      ) : null}
+      {disponible && puedeComprar ? (
+        <Text style={styles.legal}>{legalText(planId, precios[planId], intros[planId], Platform.OS)}</Text>
+      ) : null}
       <View style={styles.links}>
         <Pressable
           onPress={() => abrir(LEGAL_URLS.terminos)}
