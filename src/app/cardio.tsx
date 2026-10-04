@@ -48,11 +48,11 @@ import {
 import { ensureProfile } from '@/lib/data';
 import { addDays, dateKey } from '@/lib/dates';
 import { awardXp } from '@/lib/engine';
-import { propagarActo, restoDelModulo } from '@/lib/links';
+import { propagarActo } from '@/lib/links';
 import { CARDIO_DAILY_CAP, cardioXp } from '@/lib/game';
+import { anuncioCardio, kmES, numeroES, pagoDelModulo, primeraSesionQuePropaga, xpPagado } from '@/lib/pagoActo';
 import { colors, fonts } from '@/lib/theme';
 import { mensajeSistema } from '@/lib/validation';
-import { deMisiones, desgloseXp } from '@/lib/voice';
 
 const ICONO: Record<CardioKind, keyof typeof Ionicons.glyphMap> = {
   correr: 'walk-outline',
@@ -147,7 +147,7 @@ export default function Cardio() {
       // Dos reglas a la vez: corregir una sesión ya registrada no vuelve a
       // premiar (y conserva lo que pagó en su día, o el tope se recalcularía
       // mal), y el total del día no puede pasar de CARDIO_DAILY_CAP.
-      const { pagadoHoy, pagadoEsteTipo } = await cardioDayState(hoy, kind);
+      const { pagadoHoy, pagadoEsteTipo, tiposHoy } = await cardioDayState(hoy, kind);
       const esCorreccion = pagadoEsteTipo !== null;
 
       const base = esCorreccion ? 0 : cardioXp(kind, pagadoHoy);
@@ -167,42 +167,45 @@ export default function Cardio() {
 
       // Un solo gesto: con la sesión guardada se marcan solas la misión, la
       // regla y el bloque aeróbico. Caminar no: un paseo no salda un "Correr
-      // 5 km". La misión descuenta solo a la PRIMERA sesión del día — la doble
-      // sesión real sigue cobrando lo suyo, con el tope de siempre.
+      // 5 km". La misión descuenta solo a la PRIMERA sesión del día que la
+      // marca: la doble sesión real sigue cobrando lo suyo, con el tope de
+      // siempre. Antes se miraba `pagadoHoy === 0`, y como la primera sesión
+      // descontada guarda 0 XP, la segunda volvía a perder la misión.
+      const primera = primeraSesionQuePropaga(tiposHoy);
       const eco =
         !esCorreccion && kind !== 'caminar'
           ? await propagarActo(await ensureProfile(userId), 'cardio', hoy)
           : null;
-      const nuevo = pagadoHoy === 0 ? restoDelModulo(base, eco) : base;
-      if (!esCorreccion && nuevo !== base) await saveCardio(userId, { ...fila, xp: nuevo });
+      const nuevo = esCorreccion ? 0 : pagoDelModulo(base, eco, primera);
 
       // Se paga `nuevo`, nunca `xp`: `xp` solo conserva en la fila lo que ya se
-      // cobró en su momento.
+      // cobró en su momento. Y se apunta lo PAGADO (el servidor recorta por
+      // topes): de `xp` sale el tope diario de cardio.
+      let pagado = 0;
       if (nuevo > 0) {
         const perfil = await ensureProfile(userId);
-        await awardXp(perfil, nuevo, 'FUE', 'cardio_session', { kind, km, min, zone });
+        const res = await awardXp(perfil, nuevo, 'FUE', 'cardio_session', { kind, km, min, zone });
+        pagado = xpPagado(nuevo, perfil.xp_total, res.profile.xp_total);
         vibrar('mision');
       }
+      if (!esCorreccion && pagado !== base) await saveCardio(userId, { ...fila, xp: pagado });
 
       setAbierto(false);
       limpiar();
       await cargar();
-      // Misión enlazada y resto del módulo pueden pagar a la vez: se dicen las dos.
-      const desglose = desgloseXp([
-        { xp: eco?.xp ?? 0, de: deMisiones(eco?.marcadas ?? []) },
-        { xp: nuevo, de: 'a FUE por la sesión' },
-      ]);
+      // Lo que entró de verdad: la misión enlazada marcada ahora y lo que pagó
+      // el módulo. Si no entró nada, por qué.
       avisar(
         'Sesión registrada',
-        nuevo > 0
-          ? desglose
-          : eco && eco.xpMisiones > 0
-            ? eco.marcadas.length > 0
-              ? desglose
-              : 'Anotada. La misión de hoy ya estaba marcada y pagada.'
-            : esCorreccion
-              ? 'El sistema corrige el registro. El XP de esta sesión ya estaba pagado.'
-            : `Anotada. Hoy ya has cobrado el máximo de cardio (${CARDIO_DAILY_CAP} XP), pero la sesión cuenta igual para tu estudio.`,
+        anuncioCardio({
+          xpMision: eco?.xp ?? 0,
+          marcadas: eco?.marcadas ?? [],
+          xpModulo: pagado,
+          pedidoModulo: nuevo,
+          misionYaPagada: primera && (eco?.xpMisiones ?? 0) > 0,
+          esCorreccion,
+          topeDiario: CARDIO_DAILY_CAP,
+        }),
       );
     } catch (e) {
       avisar('Error del sistema', mensajeSistema(e));
@@ -240,7 +243,7 @@ export default function Cardio() {
   const subtitulo =
     sesiones.length === 0
       ? 'Nada registrado aún. Cada sesión ajusta la siguiente.'
-      : `${km28.toFixed(1)} km y ${ultimas28.length} ${ultimas28.length === 1 ? 'sesión' : 'sesiones'} en 28 días.`;
+      : `${numeroES(km28, 1)} km y ${ultimas28.length} ${ultimas28.length === 1 ? 'sesión' : 'sesiones'} en 28 días.`;
 
   return (
     <Screen>
@@ -258,7 +261,7 @@ export default function Cardio() {
         <FadeIn index={1}>
           <Card>
             <StatRow>
-              <Stat value={km28.toFixed(1)} unit="km" label="28 días" />
+              <Stat value={numeroES(km28, 1)} unit="km" label="28 días" />
               <Stat value={ultimas28.length} label="Sesiones" />
               <Stat value={Math.round(min28)} unit="min" label="En movimiento" />
             </StatRow>
@@ -285,7 +288,7 @@ export default function Cardio() {
                 {sesiones.map((s, i) => {
                   const ritmo = paceOf(s.distance_km, s.duration_min);
                   const datos = [
-                    s.distance_km ? `${s.distance_km} km` : null,
+                    s.distance_km ? kmES(Number(s.distance_km)) : null,
                     `${s.duration_min} min`,
                     ritmo ? `${ritmo} min/km` : null,
                     s.zone,

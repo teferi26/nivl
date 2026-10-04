@@ -152,7 +152,7 @@ export function HoyVista({
               completed={m.hecha}
               xpAwarded={m.xpPagado}
               busy={ocupada === m.quest.id}
-              streakDays={d.racha.valor}
+              streakDays={d.diasMultiplicador}
               onComplete={acciones.onCompletar}
               bloqueada={m.bloqueada}
               siguiente={m.siguiente}

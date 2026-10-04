@@ -6,7 +6,9 @@
 //   · piedra           → que una piedra protegerá la racha (o, con la racha a
 //                        cero, evitará la penalización) esta noche;
 //   · sin riesgo       → lo pendiente y lo que costaría dejarlo.
-// Todo hecho → null (Hoy ya dice que el día está cerrado).
+//   · reglas           → las reglas del contrato sin marcar también cuestan
+//                        (xpEnJuego ya las incluye, closing.enJuegoHoy).
+// Todo hecho y nada más en juego → null (Hoy ya dice que el día está cerrado).
 
 import type { enJuegoHoy } from '@/lib/closing';
 
@@ -22,7 +24,13 @@ export interface LineaEnJuego {
 const coste = (xp: number): string => (xp > 0 ? ` Si no, −${xp} XP.` : '');
 
 export function lineaEnJuego(j: EnJuego, rachaDias: number): LineaEnJuego | null {
-  if (j.pendientes <= 0) return null;
+  if (j.pendientes <= 0) {
+    // Misiones hechas, pero el contrato sigue sin marcar: es lo único que
+    // queda en juego y se dice con su cifra.
+    return j.xpEnJuego > 0
+      ? { texto: `Te quedan reglas del contrato por marcar. Si no, −${j.xpEnJuego} XP.`, alerta: false }
+      : null;
+  }
 
   if (j.rachaEnRiesgo && j.faltanParaSalvar > 0) {
     const n = j.faltanParaSalvar;
@@ -38,11 +46,13 @@ export function lineaEnJuego(j: EnJuego, rachaDias: number): LineaEnJuego | null
   if (j.gastariaPiedra) {
     // Con la racha a cero el cierre también gasta la piedra: lo que salva es
     // el XP, no una racha que no existe.
+    // La piedra no absorbe las reglas: si cuestan algo, se dice aparte.
+    const reglas = j.xpEnJuego > 0 ? ` Las reglas sin marcar costarían −${j.xpEnJuego} XP.` : '';
     return {
       texto:
         rachaDias > 0
-          ? 'Si no llegas, una piedra protegerá tu racha esta noche.'
-          : 'Si no llegas, una piedra evitará la penalización esta noche.',
+          ? `Si no llegas, una piedra protegerá tu racha esta noche.${reglas}`
+          : `Si no llegas, una piedra evitará la penalización${reglas ? ' de misiones' : ''} esta noche.${reglas}`,
       alerta: false,
     };
   }

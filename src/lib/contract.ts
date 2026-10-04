@@ -99,6 +99,16 @@ export async function fetchRuleChecks(date: string): Promise<Set<string>> {
   return new Set((data ?? []).map((r) => (r as { rule_id: string }).rule_id));
 }
 
+/**
+ * ¿Ha marcado alguna vez una regla? El juicio diario de las reglas arranca con
+ * la primera marca (closing.reglasIncumplidas): antes, nada cuenta como roto.
+ */
+export async function haMarcadoReglas(): Promise<boolean> {
+  const { count, error } = await supabase.from('rule_checks').select('id', { count: 'exact', head: true });
+  if (error) throw error;
+  return (count ?? 0) > 0;
+}
+
 /** Marcas de un rango, agrupadas por fecha. Para el cierre de varios días. */
 export async function fetchRuleChecksRange(desde: string, hasta: string): Promise<Map<string, Set<string>>> {
   const { data, error } = await supabase

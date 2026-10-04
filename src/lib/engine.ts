@@ -34,6 +34,11 @@ export interface DayCloseResult {
   penaltyXp: number;
   /** De ese total, lo que corresponde a reglas del contrato. */
   penaltyReglas: number;
+  /**
+   * Las reglas del contrato que causaron `penaltyReglas` (su texto, sin
+   * repetir). Vacío o ausente si las reglas no costaron nada.
+   */
+  reglasRotas?: string[];
   missedTitles: string[];
   streakLost: boolean;
   levelsLost: number;
@@ -368,6 +373,11 @@ async function cerrarDias(profile: Profile, quests: Quest[]): Promise<CierreResu
       ? {
           penaltyXp: descontado,
           penaltyReglas: Math.max(0, descontado - (reparto.find((pl) => pl.deMisiones)?.xp ?? 0)),
+          reglasRotas: [
+            ...new Set(
+              diasConReglasRotas.filter((d) => reglasCobradas.has(d.date)).flatMap((d) => d.rotas.map((r) => r.text)),
+            ),
+          ],
           missedTitles: close.missedTitles,
           streakLost: close.streakLost,
           levelsLost: Math.max(0, levelBefore - levelAfter),

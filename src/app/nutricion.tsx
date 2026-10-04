@@ -33,11 +33,11 @@ import {
   type NutritionTarget,
 } from '@/lib/bodywork';
 import { ensureProfile } from '@/lib/data';
-import { addDays, dateKey } from '@/lib/dates';
+import { addDays, dateKey, dateKeyEnZona } from '@/lib/dates';
 import { awardXp } from '@/lib/engine';
 import { propagarActo } from '@/lib/links';
 import { mensajeSistema } from '@/lib/validation';
-import { deMisiones, desgloseXp } from '@/lib/voice';
+import { anuncioActo, xpPagado } from '@/lib/pagoActo';
 import { NUTRITION_DAY_XP } from '@/lib/game';
 import { supabase } from '@/lib/supabase';
 import { colors, fonts } from '@/lib/theme';
@@ -45,7 +45,10 @@ import { colors, fonts } from '@/lib/theme';
 export default function Nutricion() {
   const { session } = useAuth();
   const userId = session?.user.id;
-  const hoy = dateKey();
+  // «Hoy» es el día en la zona del perfil, la misma con la que el coach
+  // registra el parte y cobra el recibo: con la del dispositivo, un viaje o
+  // una zona distinta partían el mismo día en dos.
+  const [hoy, setHoy] = useState(() => dateKeyEnZona(null));
 
   const [objetivo, setObjetivo] = useState<NutritionTarget | null>(null);
   const [hoyLog, setHoyLog] = useState<NutritionLog | null>(null);
@@ -58,10 +61,13 @@ export default function Nutricion() {
 
   const cargar = useCallback(async () => {
     try {
+      const perfil = userId ? await ensureProfile(userId).catch(() => null) : null;
+      const dia = dateKeyEnZona(perfil?.timezone);
+      setHoy(dia);
       const [obj, log, hist] = await Promise.all([
         fetchNutritionTarget(),
-        fetchNutritionLog(hoy),
-        fetchNutritionLogs(addDays(hoy, -28)),
+        fetchNutritionLog(dia),
+        fetchNutritionLogs(addDays(dia, -28)),
       ]);
       setObjetivo(obj);
       setHoyLog(log);
@@ -76,7 +82,7 @@ export default function Nutricion() {
     } finally {
       setLoaded(true);
     }
-  }, [hoy]);
+  }, [userId]);
 
   useFocusEffect(
     useCallback(() => {
@@ -93,11 +99,14 @@ export default function Nutricion() {
       //
       // El recibo es el evento del día, no el parte guardado: mirando el parte,
       // desmarcar-guardar-marcar-guardar pagaba 10 XP en cada vuelta, sin fin.
+      // Se busca por la fecha del payload (la del perfil), igual que el coach
+      // (_shared/tools.ts): así la pantalla y el chat no cobran el mismo día
+      // dos veces por mirar medianoches de zonas distintas.
       const { count: recibos } = await supabase
         .from('events')
         .select('id', { count: 'exact', head: true })
         .eq('type', 'nutrition_day')
-        .gte('created_at', new Date(`${hoy}T00:00:00`).toISOString());
+        .eq('payload->>date', hoy);
       const merece = kcal && prote && !recibos;
 
       await saveNutritionLog(userId, {
@@ -110,23 +119,30 @@ export default function Nutricion() {
         notes: notas.trim() || null,
       });
 
+      let pagadoDia = 0;
       if (merece) {
         const perfil = await ensureProfile(userId);
-        await awardXp(perfil, NUTRITION_DAY_XP, 'VIT', 'nutrition_day', { kcal, prote, date: hoy });
+        const res = await awardXp(perfil, NUTRITION_DAY_XP, 'VIT', 'nutrition_day', { kcal, prote, date: hoy });
+        pagadoDia = xpPagado(NUTRITION_DAY_XP, perfil.xp_total, res.profile.xp_total);
         vibrar('mision');
       }
 
       // Un solo gesto: el parte marca solo la misión de registrar comidas. Los
       // 10 XP de arriba son por CUMPLIR los dos objetivos, no por registrar,
       // así que aquí no hay doble pago que evitar.
-      const eco = await propagarActo(await ensureProfile(userId), 'nutricion', hoy);
+      // Las misiones viven en el día del dispositivo (Hoy, completeQuest): la
+      // propagación va con ese día, no con el del parte.
+      const eco = await propagarActo(await ensureProfile(userId), 'nutricion', dateKey());
 
       await cargar();
-      // Las dos partes pueden pagar a la vez: callar la misión infravaloraba el aviso.
-      const desglose = desgloseXp([
-        { xp: eco.xp, de: deMisiones(eco.marcadas) },
-        { xp: merece ? NUTRITION_DAY_XP : 0, de: 'a VIT por cumplir kcal y proteína' },
-      ]);
+      // Las dos partes pueden pagar a la vez: callar la misión infravaloraba el
+      // aviso. Y se dice lo PAGADO, no lo calculado (el servidor recorta).
+      const desglose = anuncioActo({
+        xpMision: eco.xp,
+        marcadas: eco.marcadas,
+        xpModulo: pagadoDia,
+        deModulo: 'a VIT por cumplir kcal y proteína',
+      });
       avisar('Parte registrado', desglose ? `El sistema toma nota. ${desglose}` : 'El sistema toma nota.');
     } catch (e) {
       avisar('Error del sistema', mensajeSistema(e));

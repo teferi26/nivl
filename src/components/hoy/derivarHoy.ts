@@ -55,6 +55,11 @@ export interface EntradaHoy {
   diaPerfecto: boolean;
   /** RET-03: la misión recién completada abrió la recuperación. */
   avisoRecuperacion: boolean;
+  /**
+   * Reglas del contrato que hoy siguen sin marcar, solo si el juicio de reglas
+   * ya empezó (reglasSinMarcarHoy). Ausente = 0.
+   */
+  reglasSinMarcar?: number;
 }
 
 export interface MisionHoy {
@@ -132,6 +137,12 @@ export interface HoyDatos {
   total: number;
   pendientes: number;
   racha: RachaHoy;
+  /**
+   * Días de racha con los que se calcula el multiplicador de XP: los CERRADOS
+   * (profiles.streak_days), igual que game.ts → questXp. La racha a la vista
+   * puede ir un día por delante y no debe inflar el XP que se anuncia.
+   */
+  diasMultiplicador: number;
   enJuego: LineaEnJuego | null;
   /** Tono de la sección de misiones (sin repetir la trama del cierre). */
   tonoMisiones: 'alerta' | undefined;
@@ -178,6 +189,8 @@ function lineasCierre(r: DayCloseResult, alerta: boolean, streak: number, penali
         r.levelsLost > 0 ? ` Has perdido ${r.levelsLost} ${r.levelsLost === 1 ? 'nivel' : 'niveles'}.` : ''
       }`,
     );
+    const desglose = desglosePena(r);
+    if (desglose) lineas.push(desglose);
   } else if (r.streakLost) {
     lineas.push('Racha perdida. El contador vuelve a cero.');
   }
@@ -195,6 +208,34 @@ function lineasCierre(r: DayCloseResult, alerta: boolean, streak: number, penali
   // La tarjeta termina SIEMPRE con la salida si hay algo que recuperar.
   if (penalizacionPendiente) lineas.push('Hoy puedes recuperarlo: completa una de tus misiones y se abre la arena.');
   return lineas;
+}
+
+/** «A», «B» y 2 más: como mucho tres títulos a la vista. */
+export function listaReglas(textos: string[]): string {
+  const vistos = textos.slice(0, 3).map((t) => `«${t}»`);
+  const resto = textos.length - vistos.length;
+  if (resto > 0) return `${vistos.join(', ')} y ${resto} más`;
+  if (vistos.length <= 1) return vistos.join('');
+  return `${vistos.slice(0, -1).join(', ')} y ${vistos[vistos.length - 1]}`;
+}
+
+/**
+ * De dónde sale la penalización cuando las reglas del contrato han costado
+ * algo: misiones por un lado, reglas (con su texto) por otro. null si todo
+ * fue de misiones (la línea del total ya lo dice).
+ */
+export function desglosePena(r: Pick<DayCloseResult, 'penaltyXp' | 'penaltyReglas' | 'reglasRotas'>): string | null {
+  const reglas = Math.min(Math.max(0, r.penaltyReglas), r.penaltyXp);
+  if (reglas <= 0) return null;
+  const misiones = r.penaltyXp - reglas;
+  const textos = r.reglasRotas ?? [];
+  const deReglas =
+    textos.length === 0
+      ? 'reglas del contrato sin marcar'
+      : `${textos.length === 1 ? 'la regla' : 'las reglas'} ${listaReglas(textos)}`;
+  return misiones > 0
+    ? `−${misiones} XP por misiones sin hacer y −${reglas} XP por ${deReglas}.`
+    : `−${reglas} XP por ${deReglas}.`;
 }
 
 function dueloDe(board: BoardEntry[] | null): { rivalidad: string | null; duelo: DueloHoy | null } {
@@ -231,8 +272,12 @@ export function derivarHoy(e: EntradaHoy): HoyDatos {
   const total = sorted.length;
   const pendientes = total - hechas;
   // La racha que se enseña cuenta el día de hoy en cuanto queda cerrado. El
-  // multiplicador sigue saliendo de los días CERRADOS.
-  const racha = rachaVisible(profile?.streak_days ?? 0, sorted, hechasSet);
+  // multiplicador sigue saliendo de los días CERRADOS. Con congelación
+  // vigente el día no se juzga: la racha se enseña protegida, sin +1.
+  const racha = rachaVisible(profile?.streak_days ?? 0, sorted, hechasSet, {
+    hoy,
+    freezeUntil: profile?.freeze_until ?? null,
+  });
 
   const siguienteId = sorted.find((q) => !q.is_penalty && !q.is_bonus && !completions[q.id])?.id ?? null;
   const misiones: MisionHoy[] = sorted.map((q) => ({
@@ -254,6 +299,8 @@ export function derivarHoy(e: EntradaHoy): HoyDatos {
             streak: profile.streak_days,
             stones: profile.protection_stones,
             rotosSeguidosPrevios: profile.streak_days === 0 ? e.rotosPrevios : 0,
+            // Las reglas sin marcar también cuestan al cierre (RET-08).
+            reglasSinMarcar: e.reglasSinMarcar ?? 0,
           }),
           profile.streak_days,
         )
@@ -330,6 +377,7 @@ export function derivarHoy(e: EntradaHoy): HoyDatos {
     total,
     pendientes,
     racha,
+    diasMultiplicador: Math.max(0, profile?.streak_days ?? 0),
     enJuego,
     // La tarjeta de alerta del cierre lleva la trama de la pantalla: la
     // sección de misiones no la repite (SISTEMA §0, sin acumular).
@@ -340,7 +388,7 @@ export function derivarHoy(e: EntradaHoy): HoyDatos {
     // Sin línea RET-05 y con solo extras o la penalización por hacer,
     // «A medianoche…» no es verdad: no se pinta.
     notaPendiente:
-      pendientes > 0 && !frozen && (enJuego || quedanNormales)
+      !frozen && ((pendientes > 0 && (enJuego || quedanNormales)) || (pendientes === 0 && enJuego))
         ? enJuego
           ? { texto: enJuego.texto, alerta: enJuego.alerta }
           : { texto: 'A medianoche, lo pendiente se penaliza.', alerta: false }

@@ -15,6 +15,28 @@ export function dateKey(d: Date = new Date()): string {
   return `${y}-${m}-${day}`;
 }
 
+/**
+ * La clave del día en una zona horaria IANA (la del perfil: `profiles.timezone`),
+ * la misma con la que el servidor y el coach deciden qué es «hoy». Sin zona o
+ * con una zona inválida, la del dispositivo (dateKey).
+ */
+export function dateKeyEnZona(timezone: string | null | undefined, d: Date = new Date()): string {
+  if (!timezone) return dateKey(d);
+  try {
+    const partes = new Intl.DateTimeFormat('en-CA', {
+      timeZone: timezone,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    }).formatToParts(d);
+    const v = (t: string) => partes.find((p) => p.type === t)?.value ?? '';
+    const key = `${v('year')}-${v('month')}-${v('day')}`;
+    return isValidKey(key) ? key : dateKey(d);
+  } catch {
+    return dateKey(d);
+  }
+}
+
 function parseKey(key: string): Date {
   if (!isValidKey(key)) throw new Error(`Clave de fecha inválida: ${key}`);
   const [y, m, d] = key.split('-').map(Number);
