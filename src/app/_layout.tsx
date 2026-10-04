@@ -20,27 +20,30 @@ import { useNotificationRouting } from '@/lib/useNotificationRouting';
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
-// En la web la app es una columna de móvil centrada: a 1440 px las filas, los
-// chips y la barra de pestañas se estiraban de lado a lado. Solo en web; en
-// nativo no se añade ninguna vista. Los `Modal` de react-native-web son
-// portales a `body` y quedan fuera de esta columna (a ancho completo).
-// Las pestañas no se acotan: allí el raíl, la barra lateral y `Screen` ya
-// colocan el contenido según la clase de tamaño. El tope llega a
-// `useSizeClass` por `TopeAncho` para que lo de dentro se mida a 560. El árbol
-// es siempre el mismo (solo cambian el estilo y el valor): si cambiara al
-// entrar o salir de las pestañas, el Stack se volvería a montar y se perdería
-// el historial.
+// En la web, las pantallas de acceso (login, auth/*, c/*, onboarding) son una
+// columna de móvil centrada de 560: a 1440 px el formulario se estiraba de lado
+// a lado. Solo en web; en nativo no se añade ninguna vista. Los `Modal` de
+// react-native-web son portales a `body` y quedan fuera de esta columna.
+// El portal de creadores (SITIO_CREADORES) va entero en la columna, como antes.
+// El resto (pestañas y pantallas de la pila con sesión) no se acota: el raíl,
+// la barra lateral y `Screen` ya colocan el contenido según la clase de tamaño
+// (máx. 720 en expanded). El tope llega a `useSizeClass` por `TopeAncho` para
+// que lo de dentro se mida a 560. El árbol es siempre el mismo (solo cambian el
+// estilo y el valor): si cambiara al entrar o salir de una pantalla acotada, el
+// Stack se volvería a montar y se perdería el historial.
 //
 // La galería del kit (/kit, solo en desarrollo) tampoco se acota: tiene que
 // poder verse a 744, 1024 y 1440 para verificar el sistema.
+const SEGMENTOS_ACOTADOS = new Set(['login', 'auth', 'c', 'onboarding']);
+
 function ColumnaWeb({ children }: { children: ReactNode }) {
   const seg = useSegments();
-  const anchoLibre = seg[0] === '(tabs)' || (__DEV__ && seg[0] === 'kit');
+  const acotada = SITIO_CREADORES || SEGMENTOS_ACOTADOS.has(seg[0] ?? '');
   if (Platform.OS !== 'web') return <>{children}</>;
   return (
     <View style={webStyles.fuera}>
-      <View style={[webStyles.dentro, anchoLibre && webStyles.ancho]}>
-        <TopeAncho.Provider value={anchoLibre ? null : ANCHO_COLUMNA_WEB}>{children}</TopeAncho.Provider>
+      <View style={[webStyles.dentro, !acotada && webStyles.ancho]}>
+        <TopeAncho.Provider value={acotada ? ANCHO_COLUMNA_WEB : null}>{children}</TopeAncho.Provider>
       </View>
     </View>
   );

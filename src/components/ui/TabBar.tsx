@@ -14,7 +14,8 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { colors, fonts } from '@/lib/theme';
+import { ink, stroke } from '@/design/tokens';
+import { fonts } from '@/lib/theme';
 import { destinoActivo, destinosDe, navItemDe, pulsarDestino } from './navItems';
 
 export function TabBar({ state, descriptors, navigation }: BottomTabBarProps) {
@@ -45,7 +46,7 @@ export function TabBar({ state, descriptors, navigation }: BottomTabBarProps) {
             accessibilityLabel={label}
           >
             <View style={[styles.indicator, focused && styles.indicatorOn]} />
-            <Ionicons name={focused ? meta.on : meta.off} size={21} color={focused ? colors.accent : colors.textFaint} />
+            <Ionicons name={focused ? meta.on : meta.off} size={21} color={focused ? ink.ink10 : ink.ink6} />
             {/* La barra no crece con el texto: con tamaño dinámico alto, cinco
                 rótulos no caben en 375. El nombre completo va en el label. */}
             <Text style={[styles.label, focused && styles.labelOn]} numberOfLines={1} maxFontSizeMultiplier={1.2}>
@@ -61,19 +62,19 @@ export function TabBar({ state, descriptors, navigation }: BottomTabBarProps) {
 const styles = StyleSheet.create({
   bar: {
     flexDirection: 'row',
-    backgroundColor: colors.tabBar,
-    borderTopWidth: 1,
-    borderTopColor: colors.line,
+    backgroundColor: ink.ink0,
+    borderTopWidth: stroke.hairline,
+    borderTopColor: ink.ink3,
   },
   item: { flex: 1, alignItems: 'center', paddingTop: 10, gap: 4 },
   indicator: {
     position: 'absolute',
     top: -1,
     width: 28,
-    height: 2,
+    height: stroke.rule,
     backgroundColor: 'transparent',
   },
-  indicatorOn: { backgroundColor: colors.accent },
-  label: { fontFamily: fonts.semibold, fontSize: 11, color: colors.textFaint, letterSpacing: 0 },
-  labelOn: { color: colors.accent },
+  indicatorOn: { backgroundColor: ink.ink10 },
+  label: { fontFamily: fonts.semibold, fontSize: 11, color: ink.ink6, letterSpacing: 0 },
+  labelOn: { color: ink.ink10 },
 });

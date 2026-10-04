@@ -1,7 +1,7 @@
 // NIVL · Perfil (L-RADICAL B.3). La ruta solo junta las piezas: usePerfil
 // (datos y efectos), PerfilVista (la pantalla), PerfilAjustes (los ajustes) y,
 // debajo, las tres hojas: borrar la cuenta, pausar y el código de creador.
-import { KeyboardAvoidingView, Linking, Modal, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { KeyboardAvoidingView, Modal, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { PerfilAjustes } from '@/components/perfil/PerfilAjustes';
 import { PerfilVista } from '@/components/perfil/PerfilVista';
 import { FREEZE_DAYS, FREEZE_REASONS, usePerfil } from '@/components/perfil/usePerfil';
@@ -49,15 +49,7 @@ export default function Perfil() {
             {borrar.esCreador ? (
               <Text style={styles.hint}>
                 Eres creador del programa. Si borras la cuenta, pierdes el saldo pendiente de cobro. Si quieres cobrar lo
-                disponible,{' '}
-                <Text
-                  style={styles.enlace}
-                  onPress={() => Linking.openURL('https://nivl.app/soporte').catch(() => {})}
-                  accessibilityRole="link"
-                >
-                  escríbenos antes
-                </Text>
-                .
+                disponible, escríbenos a soporte antes de borrar.
               </Text>
             ) : null}
             {borrar.aviso ? (
@@ -182,7 +174,6 @@ export default function Perfil() {
 }
 
 const styles = StyleSheet.create({
-  enlace: { color: colors.text, textDecorationLine: 'underline' },
   backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'flex-end' },
   backdropTap: { flex: 1 },
   sheet: {
