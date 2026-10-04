@@ -19,7 +19,7 @@
         "NSCameraUsageDescription": "NIVL usa la cámara para tus evidencias, tu foto de perfil y tus fotos de progreso. Las imágenes solo se envían al coach cuando tú se las mandas.",
         "NSPhotoLibraryUsageDescription": "NIVL usa tu galería para elegir evidencias, tu foto de perfil y tus fotos de progreso. Las imágenes solo se envían al coach cuando tú se las mandas.",
         "ITSAppUsesNonExemptEncryption": false,
-        "NSMicrophoneUsageDescription": "NIVL usa el micrófono solo cuando tú lo pides: para dictarle a tu coach mientras mantienes pulsado el botón de voz y cuando grabas un vídeo de evidencia. Nunca graba en segundo plano."
+        "NSMicrophoneUsageDescription": "NIVL usa el micrófono solo cuando tú lo pides: para dictarle a tu coach mientras mantienes pulsado el botón de voz. Nunca graba en segundo plano."
       },
       "entitlements": {
         "com.apple.developer.usernotifications.time-sensitive": true
@@ -80,7 +80,7 @@
         {
           "cameraPermission": "NIVL usa la cámara para tus evidencias, tu foto de perfil y tus fotos de progreso. Las imágenes solo se envían al coach cuando tú se las mandas.",
           "photosPermission": "NIVL usa tu galería para elegir evidencias, tu foto de perfil y tus fotos de progreso. Las imágenes solo se envían al coach cuando tú se las mandas.",
-          "microphonePermission": "NIVL usa el micrófono solo cuando tú lo pides: para dictarle a tu coach mientras mantienes pulsado el botón de voz y cuando grabas un vídeo de evidencia. Nunca graba en segundo plano."
+          "microphonePermission": "NIVL usa el micrófono solo cuando tú lo pides: para dictarle a tu coach mientras mantienes pulsado el botón de voz. Nunca graba en segundo plano."
         }
       ],
       [
@@ -96,7 +96,7 @@
       [
         "expo-speech-recognition",
         {
-          "microphonePermission": "NIVL usa el micrófono solo cuando tú lo pides: para dictarle a tu coach mientras mantienes pulsado el botón de voz y cuando grabas un vídeo de evidencia. Nunca graba en segundo plano.",
+          "microphonePermission": "NIVL usa el micrófono solo cuando tú lo pides: para dictarle a tu coach mientras mantienes pulsado el botón de voz. Nunca graba en segundo plano.",
           "speechRecognitionPermission": "NIVL convierte tu voz en texto para enviárselo a tu coach. Se procesa en tu dispositivo cuando es posible."
         }
       ]

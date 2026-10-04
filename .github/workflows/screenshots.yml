@@ -35,17 +35,20 @@ jobs:
     runs-on: macos-15
     timeout-minutes: 120
     env:
-      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
-      NIVL_SHOTS_EMAIL: ${{ secrets.NIVL_SHOTS_EMAIL }}
-      NIVL_SHOTS_PASSWORD: ${{ secrets.NIVL_SHOTS_PASSWORD }}
-      # Versión fijada de Maestro (la del arnés del Chat 5).
+      # Versión fijada de Maestro (la del arnés del Chat 5). Los secretos van
+      # solo en el entorno de los pasos que los usan, no en todo el job.
       MAESTRO_VERSION: 2.10.0
     steps:
       - name: Faltan secretos
-        if: ${{ env.EXPO_TOKEN == '' || env.NIVL_SHOTS_EMAIL == '' || env.NIVL_SHOTS_PASSWORD == '' }}
+        env:
+          HAY_EXPO: ${{ secrets.EXPO_TOKEN != '' }}
+          HAY_EMAIL: ${{ secrets.NIVL_SHOTS_EMAIL != '' }}
+          HAY_PASS: ${{ secrets.NIVL_SHOTS_PASSWORD != '' }}
         run: |
-          echo "::error::Faltan EXPO_TOKEN, NIVL_SHOTS_EMAIL o NIVL_SHOTS_PASSWORD en los secretos del repo."
-          exit 1
+          if [ "$HAY_EXPO" != "true" ] || [ "$HAY_EMAIL" != "true" ] || [ "$HAY_PASS" != "true" ]; then
+            echo "::error::Faltan EXPO_TOKEN, NIVL_SHOTS_EMAIL o NIVL_SHOTS_PASSWORD en los secretos del repo."
+            exit 1
+          fi
 
       - uses: actions/checkout@v4
         with:
@@ -67,11 +70,13 @@ jobs:
           java-version: '17'
 
       - run: npm ci
-      - run: npm install --global eas-cli@latest
+      - run: npm install --global eas-cli@21.2.0
 
       # Build de SIMULADOR, Release, con el perfil `screenshots` (propuesta de
       # eas.json en LEEME.md). Mismo JS que la 1.0.8 de TestFlight.
       - name: Compilar para simulador
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
         run: |
           eas build --platform ios --profile screenshots --local \
             --non-interactive --output "$RUNNER_TEMP/nivl-sim.tar.gz"
@@ -94,6 +99,9 @@ jobs:
           echo "$HOME/maestro-cli/maestro/bin" >> "$GITHUB_PATH"
 
       - name: Capturas
+        env:
+          NIVL_SHOTS_EMAIL: ${{ secrets.NIVL_SHOTS_EMAIL }}
+          NIVL_SHOTS_PASSWORD: ${{ secrets.NIVL_SHOTS_PASSWORD }}
         run: |
           set -euo pipefail
           RUNTIME=$(xcrun simctl list runtimes -j | python3 scripts/ci/simruntime.py)
