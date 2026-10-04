@@ -6,13 +6,15 @@ NIVL - Tiendas, 04/10/2026. Método:
 - Estado real de ASC por GET de solo lectura (`privado/asc-chat1-auditoria-20261004.mjs` e `asc-chat1-iap-20261004.mjs`; credenciales y contacto redactados).
 - Capturas de `coordinacion-winter-arc/capturas-1.0.8` y capturas de revisión de los 5 productos descargadas de ASC.
 
-**Veredicto: NO LISTO PARA ENVIAR.** Hay 4 INCUMPLE que bloquean y 6 RIESGOS. Todos se resuelven en ASC o con el usuario; no hace falta tocar código de la app. Riesgo cero de rechazo no se puede garantizar, pero sí cerrar todo lo que depende de nosotros.
+**Veredicto: NO LISTO PARA ENVIAR.** Hay 6 INCUMPLE que bloquean y 6 RIESGOS. Dos los aportó Juego y QA (`guidelines-qa.md`, winter2/chat5-juego @1e2998a): **tienda cerrada en la 23** y **datos personales en el vídeo**. La tienda cerrada se arregla republicando la OTA con el entorno de producción; el resto, en ASC o con el usuario. Riesgo cero de rechazo no se puede garantizar, pero sí cerrar todo lo que depende de nosotros.
 
 ## Tabla
 
 | Regla | Estado | Prueba | Arreglo (quién) |
 |---|---|---|---|
 | **2.1 Information Needed, vídeo** «on a physical device, running the latest operating system… must begin with launching the app» | **INCUMPLE (SO)** | Vídeo de 8:20, una toma, empieza en el icono (0:00) y cubre registro, login, borrado, denuncia y bloqueo, y los planes. Pero se grabó en **iOS 26.6.1**, y la última versión pública el 04/10 es **iOS 27.0.1** (support.apple.com/100100). Además, el archivo que tenemos mide 384 × 848 (comprimido) | Actualizar el iPhone a 27.0.1 y **repetir la toma** con el mismo guion; adjuntar el **original del Carrete**. Si no se repite, la respuesta dirá «iOS 26.6.1», nunca otra versión (usuario) |
+| **2.1 / 2.1(b) / 3.1.1 · TIENDA CERRADA en la build 23 (P0, Juego y QA)** | **INCUMPLE** | En el vídeo, Pro muestra «Las compras no están disponibles en esta versión» (`ProOffer.tsx:441`): no hay botón de compra, ni periodo ni renovación, ni enlaces legales. Un revisor no podría comprar con la cuenta Gratis, que es justo lo que le pedimos | Republicar la OTA del runtime 1.0.8 con `--environment production` (clave de RevenueCat) (coordinador); mostrar los enlaces legales también con la tienda cerrada (Compras); verificarlo en la 23 con PAY-01 (Juego y QA) **antes** de grabar |
+| **2.1 vídeo · datos personales** | **INCUMPLE** | Salen el correo personal, el nombre real, el NIF, la dirección, la bandeja de Gmail y cifras de objetivos (Juego y QA). No es una regla de Apple, pero se adjunta a un revisor externo y expone datos del dueño | **Repetir la toma** con una cuenta y un correo de prueba, sin abrir el Gmail personal (para la confirmación, un buzón de pruebas) (usuario) |
 | **2.1 Information Needed, puntos 2 a 7** | CUMPLE (texto listo) | `apple-108-respuesta.md`: los 7 puntos con las marcas del vídeo | Pegar en el Resolution Center (coordinador) |
 | **2.1(a)** demo account «include demo account info» | RIESGO | ASC: `demoAccountRequired=true` y credenciales presentes (sin leerlas). Cuenta Gratis en los campos y Élite con concesión hasta el 15/01/2027. No hay cuenta Pro: se compra en sandbox con la Gratis | Comprobar en la 23 que la cuenta Gratis entra por «ENTRAR», que no ha gastado la prueba y que puede comprar en sandbox. Poner las credenciales de Élite en las notas (coordinador + usuario) |
 | **2.1(a)** «tested on-device… crash or obvious technical problems» | RIESGO | iPhone: vídeo completo en la 23. iPad (`supportsTablet: true`): **sin probar**. La app es solo vertical; en iPadOS 26 no se puede forzar la pantalla completa | Juego y QA: B4/D-04 en un iPad o en el simulador de 13" (redimensionar, Split View, login, compra, borrado). Si se ve roto, decidir entre arreglarlo o `supportsTablet:false` (build nueva) |
@@ -37,7 +39,15 @@ NIVL - Tiendas, 04/10/2026. Método:
 
 ## Orden para dejarlo listo (todo en ASC o del usuario)
 
-1. **Usuario:** iPhone a iOS 27.0.1, repetir la toma (el mismo guion que el vídeo de 8:20) y exportar el original del Carrete.
+0. **Coordinador:** republicar la OTA de la 1.0.8 con el entorno de producción y que Juego y QA confirme en la 23 que la tienda está abierta (PAY-01: precios de StoreKit, compra sandbox, Restaurar y enlaces legales).
+1. **Usuario:** iPhone a iOS 27.0.1, repetir la toma con una **cuenta y un correo de prueba** (sin datos personales) y con la **tienda abierta**: icono, registro, confirmación, login, flujo típico, paywall con los 5 planes y el pie con los enlaces, **compra sandbox y Restaurar**, coach, denuncia y bloqueo, Términos y Privacidad, exportar, cerrar sesión y borrar. Exportar el original del Carrete.
 2. **Coordinador:** descripción de `ficha-108.md`; capturas iPhone 02, iPad 02 e iPad 03 con «Con NIVL Pro o Élite» (y, si se puede, iPhone 03 y 05 e iPad 04 sin alcohol ni selfi); 5 capturas de revisión de IAP nuevas; App Privacy final; notas `apple-108-notas.txt` con las credenciales de Élite; URLs a nivl.app.
 3. **Juego y QA:** el iPad (B4) y la cuenta Gratis en la 23 (login, prueba sin gastar, compra sandbox, Restaurar). Ocultar o cablear «Tus invitados».
-4. **Tiendas:** rellenar `[VIDEO]`, `[IOS]` y `[DATE]` y volver a verificar por GET justo antes de «Volver a enviar».
+4. **Tiendas:** reescribir las marcas de tiempo de la respuesta con la toma nueva, rellenar `[VIDEO]`, `[IOS]` y `[DATE]` y volver a verificar por GET justo antes de «Volver a enviar».
+
+## Peticiones de Juego y QA para las notas (04/10): atendidas
+
+- **2.3.1(a), panel de creadores:** las notas dicen qué es (panel de solo lectura), quién entra (solo cuentas dadas de alta a mano por el equipo, no accesible para el público) y que no tiene compras ni importes.
+- **3.1.1/3.1.2, prueba de 7 días:** las notas la describen como prueba gratuita del servicio concedida por nuestro servidor, sin compra en la tienda, sin datos de pago, sin renovación ni conversión.
+- **2.5.2, OTA:** política escrita en `politica-ota.md` (solo arreglos, textos y ajustes; las funciones nuevas van en binario). No se añade a las notas: las actualizaciones por OTA ya se declaran en el punto 4 de la respuesta.
+- **Cuentas demo:** Gratis y Élite en las notas. Su login en la 23 está SIN PROBAR (usuario).

@@ -15,7 +15,7 @@ PERMISSIONS AND COACH
 Health: Perfil > "Salud y bienestar" > "Revisar permiso de salud" > tick > "Aceptar y activar salud". AI: separate consent, "Acepto y activo el coach". To try the coach, accept both. Voice (Pro/Élite): hold the microphone button in Coach to dictate; "Escuchar" reads a reply. The microphone is used only while the button is held.
 
 PURCHASES
-Last onboarding step, or Perfil > "NIVL Pro" > "Pro" or "Élite" and a plan. Products: nivl_pro_mensual, nivl_pro_anual, nivl_elite_mensual, nivl_elite_anual, nivl_elite_fundador (1 year). The screen shows title, duration, price, renewal terms, "Restaurar compras", Terms, Privacy and Apple EULA. "Probar el coach 7 días": one-time Pro-level trial, no payment details, no renewal.
+Last onboarding step, or Perfil > "NIVL Pro" > "Pro" or "Élite" and a plan. Products: nivl_pro_mensual, nivl_pro_anual, nivl_elite_mensual, nivl_elite_anual, nivl_elite_fundador (1 year). The screen shows title, duration, price, renewal terms, "Restaurar compras", Terms, Privacy and Apple EULA. "Probar el coach 7 días": a one-time free trial of the coach service granted by our server, not an In-App Purchase: no payment details, no renewal and no conversion to a paid plan.
 
 PROGRESS PHOTOS (18+)
 "Avances" > "Fotos de progreso". Requires an 18+ confirmation and the health permission. Private storage, screenshots blocked on that screen, never analysed by AI.
@@ -33,7 +33,7 @@ ACCOUNT DELETION
 Perfil > "Cuenta" > "Eliminar cuenta" > "Eliminar para siempre" (sheet) > "Eliminar para siempre" (alert). Deletes the NIVL account, its data and files. Please test with a new account.
 
 CREATORS
-Invite-only creator accounts see a read-only progress panel. Earnings are handled outside the app.
+Accounts that our team registers manually as creators (not available to the public) see a read-only progress panel: rank, attributed sign-ups and challenges. No purchases and no amounts in the app; earnings are handled outside the app.
 
 SERVICES
 Supabase (Frankfurt), Resend (account emails), Apple IAP + RevenueCat, DeepSeek (Pro, trial) and Anthropic (Élite) after AI consent, Apple speech services, Expo/APNs. No analytics, ads or tracking SDKs.

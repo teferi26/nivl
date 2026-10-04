@@ -11,6 +11,8 @@ Cambio de plan del 04/10/2026: el envío rechazado (versión renombrada a **1.0.
 | `[DATE]` | Fecha de la grabación | Usuario |
 | Credenciales de Pro y Élite | Solo en las notas de ASC, nunca aquí | Coordinador + usuario |
 
+**EL VÍDEO HAY QUE REPETIRLO (04/10):** en el de 8:20 la tienda está cerrada («Las compras no están disponibles en esta versión») y salen datos personales (Juego y QA). Las marcas de tiempo del punto 1 son las de esa toma y **se reescriben con la nueva**. Sus líneas sobre los 5 planes, la compra y los enlaces solo valen si la nueva toma lo enseña de verdad (tienda abierta, compra sandbox, «Restaurar compras» y enlaces al pie del paywall).
+
 **Calidad del vídeo:** el archivo `videoCompletoNivl.mp4` mide **384 × 848** (80 MB, 8:20), la misma resolución reducida que la copia de WhatsApp del 01/10. Hay que adjuntar el **original del Carrete** del iPhone, a resolución completa, para que Apple pueda leer precios y textos legales. Las marcas de tiempo valen igual si es la misma toma.
 
 ---
