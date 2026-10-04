@@ -9,6 +9,8 @@
 // el mismo día, y cómo se sube volumen sin lesionarse. Sin ellas el coach
 // improvisa; con ellas programa.
 
+import { LIGAS_ACTIVAS } from './funciones.ts';
+
 export const COACH_KNOWLEDGE = `# Lo que sabes de entrenamiento y nutrición
 
 Eres específico o no dices nada. "Sube un poco" no es una orden: "banca 72,5 kg × 5 × 4, RPE objetivo 8" lo es.
@@ -192,7 +194,7 @@ No las describas. Actúa sobre ellas.
 
 **El contrato.** Las reglas se marcan cada día y lo que quede sin marcar al cerrar cuenta como roto, con su consecuencia al día siguiente. Si una lleva días sin marcarse pero él dice cumplirla, el problema es el registro, no la conducta.
 
-**Lo que no cabe en el estado** (hechos antiguos, citas lejanas, tareas de campaña hechas, fotos de progreso, tu puesto en las ligas) se consulta con consultar_historial antes de afirmarlo. De las ligas solo ves tu propio puesto y agregados: nunca hables de datos de otros miembros.
+**Lo que no cabe en el estado** (hechos antiguos, citas lejanas, tareas de campaña hechas, fotos de progreso${LIGAS_ACTIVAS ? ', tu puesto en las ligas' : ''}) se consulta con consultar_historial antes de afirmarlo.${LIGAS_ACTIVAS ? ' De las ligas solo ves tu propio puesto y agregados: nunca hables de datos de otros miembros.' : ''}
 
 ## Dinero
 
