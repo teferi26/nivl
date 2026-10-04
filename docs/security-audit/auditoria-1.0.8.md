@@ -21,7 +21,7 @@ Leyenda de la evidencia:
   - un reto que nunca se acepta sirve para mirar el índice semanal de otra persona durante 5 semanas;
   - se salta el «ocultarse» de 0021 y el bloqueo de 0032;
   - el índice puede incluir misiones de salud.
-- **Arreglo:** `docs/security-audit/propuestas/duelos_privacidad.sql`, aditiva y con la misma firma. Las cifras y el nombre solo salen si el duelo está aceptado o terminado, la pareja está bien y el rival es visible; si no, `null`.
+- **Arreglo:** dentro de la 0055 de Juego y QA, que también reescribe `my_duels`: `docs/security-audit/propuestas/0055_competicion_privacidad.sql`. Las cifras y el nombre solo salen si el duelo está aceptado o terminado, la pareja está bien y el rival es visible; si no, `null`.
 - **Probado (R):**
 
   | Rival | Estado | Resultado |
