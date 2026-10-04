@@ -27,7 +27,13 @@ import { ErrorVisible } from './validation';
 export { questsScheduledOn };
 
 export interface DayCloseResult {
+  /**
+   * XP REALMENTE descontado por el cierre: misiones + reglas, acotado a lo
+   * que había (el servidor no baja de 0). Es lo que debe decir la tarjeta.
+   */
   penaltyXp: number;
+  /** De ese total, lo que corresponde a reglas del contrato. */
+  penaltyReglas: number;
   missedTitles: string[];
   streakLost: boolean;
   levelsLost: number;
@@ -358,9 +364,10 @@ async function cerrarDias(profile: Profile, quests: Quest[]): Promise<CierreResu
   }
 
   const result: DayCloseResult | null =
-    penaMisiones > 0 || close.streakLost || close.stonesUsed > 0 || close.diasExentos.length > 0 || close.diasCumplidos > 0
+    descontado > 0 || close.streakLost || close.stonesUsed > 0 || close.diasExentos.length > 0 || close.diasCumplidos > 0
       ? {
-          penaltyXp: penaMisiones,
+          penaltyXp: descontado,
+          penaltyReglas: Math.max(0, descontado - (reparto.find((pl) => pl.deMisiones)?.xp ?? 0)),
           missedTitles: close.missedTitles,
           streakLost: close.streakLost,
           levelsLost: Math.max(0, levelBefore - levelAfter),
@@ -427,7 +434,8 @@ export async function completeQuest(
   }
 
   // Misión extra (contrato, regla 6): da Puntos Bonus canjeables por descanso,
-  // no XP. La completion se registra igual (cuenta para la racha del día).
+  // no XP. La completion se registra igual, pero NO cuenta para la racha ni se
+  // penaliza si falta (closing.ts excluye las extra del juicio del día).
   const isBonus = quest.is_bonus;
   const pb = isBonus ? BONUS_BY_DIFFICULTY[quest.difficulty] : 0;
   const xp = isBonus

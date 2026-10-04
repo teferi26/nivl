@@ -89,6 +89,15 @@ export interface Duelo {
   sus_dias: number;
   /** Solo al pasar la semana: 'gano' | 'pierdo' | 'empate' | 'sin_datos'. */
   resultado: 'gano' | 'pierdo' | 'empate' | 'sin_datos' | null;
+  /**
+   * Ajustes de la fase 3 (llegan cuando el servidor tenga la migración; antes,
+   * undefined): si cada lado llega al mínimo de 150 XP programados (sin eso el
+   * índice es solo el prior y no se debe decir «va delante») y si la semana
+   * ya ha terminado en la hora local («Semana cerrada · resolviendo»).
+   */
+  mi_suficiente?: boolean;
+  su_suficiente?: boolean;
+  semana_cerrada?: boolean;
 }
 
 export const retarADuelo = (amigo: string) => rpc<string>('duel_challenge', { p_opponent: amigo });
