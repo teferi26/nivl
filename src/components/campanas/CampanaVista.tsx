@@ -113,7 +113,7 @@ export function CampanaVista(p: CampanaVistaProps) {
   const vencida = active && fecha.vencida;
 
   const subtitulo = cleared
-    ? `Despejada${fechaCorta(d.cleared_at) ? ` el ${fechaCorta(d.cleared_at)}` : ''}. Botín cobrado: +${loot} XP.`
+    ? `Campaña despejada${fechaCorta(d.cleared_at) ? ` el ${fechaCorta(d.cleared_at)}` : ''}.`
     : tasks.length === 0
       ? `Entrena ${d.stat}. Botín al despejar: ${loot} XP.`
       : allDone
@@ -148,7 +148,6 @@ export function CampanaVista(p: CampanaVistaProps) {
                 cifras={[
                   { valor: `${done}/${tasks.length}`, rotulo: 'Tareas', etiqueta: `Tareas: ${done} de ${tasks.length}` },
                   jefes,
-                  { valor: loot, rotulo: 'Botín', sufijo: ' XP', etiqueta: `Botín cobrado: ${formatoMiles(loot)} XP` },
                 ]}
               />
             </View>
@@ -199,10 +198,10 @@ export function CampanaVista(p: CampanaVistaProps) {
         <Entrada indice={3} style={styles.bloque}>
           {/* La única inversión de la pantalla: el Button primario de dentro
               se invierte solo (SuperficieContext) y queda negro sobre blanco. */}
-          <TarjetaArena variante="invertida" remaches rotulo="Botín disponible" meta={`+${formatoMiles(loot)} XP`}>
+          <TarjetaArena variante="invertida" remaches rotulo="Botín disponible" meta={`hasta +${formatoMiles(loot)} XP`}>
             <Text style={styles.botinTexto}>Cada tarea y cada jefe han caído. Reclama lo que es tuyo.</Text>
             <Button
-              title={`Reclamar botín · +${loot} XP`}
+              title={`Reclamar botín · hasta +${loot} XP`}
               size="lg"
               onPress={p.onReclamar}
               loading={p.ocupada}

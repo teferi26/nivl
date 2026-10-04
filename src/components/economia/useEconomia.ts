@@ -18,7 +18,7 @@
 //     sin vibración.
 
 import { router, useFocusEffect } from 'expo-router';
-import { useCallback, useMemo, useState, type ReactNode } from 'react';
+import { useCallback, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useConsentimientoIA } from '@/components/ConsentimientoIA';
 import { avisar, confirmar } from '@/components/ui/confirmar';
 import { volver } from '@/components/ui/Screen';
@@ -77,6 +77,11 @@ export function useEconomia(): UsoEconomia {
   const [errorConcepto, setErrorConcepto] = useState<string | null>(null);
   const [errorEfectivo, setErrorEfectivo] = useState<string | null>(null);
   const [aprendido, setAprendido] = useState<string | null>(null);
+  const [reintentando, setReintentando] = useState(false);
+  // Recategorizar: la categoría que se está aplicando (la hoja la marca y
+  // bloquea las demás) y su cerrojo síncrono contra el doble toque.
+  const [aplicando, setAplicando] = useState<Categoria | null>(null);
+  const aplicandoRef = useRef(false);
 
   const cargar = useCallback(async () => {
     try {
@@ -108,6 +113,13 @@ export function useEconomia(): UsoEconomia {
     setRefrescando(true);
     await cargar();
     setRefrescando(false);
+  };
+
+  const reintentar = async () => {
+    if (reintentando) return;
+    setReintentando(true);
+    await cargar();
+    setReintentando(false);
   };
 
   const datos = useMemo(() => calcularEconomia(movs, cuentas, plan, hoy), [movs, cuentas, plan, hoy]);
@@ -152,7 +164,9 @@ export function useEconomia(): UsoEconomia {
   };
 
   const aplicarCategoria = async (cat: Categoria) => {
-    if (!editando || !userId) return;
+    if (!editando || !userId || aplicandoRef.current) return;
+    aplicandoRef.current = true;
+    setAplicando(cat);
     setErrorClasificar(null);
     try {
       const n = await recategorizar(userId, editando, cat, true);
@@ -164,6 +178,9 @@ export function useEconomia(): UsoEconomia {
     } catch (e) {
       vibrar('penalizacion');
       setErrorClasificar(mensajeSistema(e));
+    } finally {
+      aplicandoRef.current = false;
+      setAplicando(null);
     }
   };
 
@@ -202,6 +219,7 @@ export function useEconomia(): UsoEconomia {
   };
 
   const cerrarClasificar = () => {
+    if (aplicandoRef.current) return;
     setEditando(null);
     setErrorClasificar(null);
   };
@@ -217,6 +235,7 @@ export function useEconomia(): UsoEconomia {
       cargado,
       errorCarga,
       refrescando,
+      reintentando,
       hayMovimientos: movs.length > 0,
       datos,
       plan,
@@ -226,7 +245,7 @@ export function useEconomia(): UsoEconomia {
       acciones: {
         onVolver: () => volver(router),
         onRefrescar: refrescar,
-        onReintentar: cargar,
+        onReintentar: reintentar,
         onNuevo: () => setNuevoAbierto(true),
         onEditar: (m) => {
           setAprendido(null);
@@ -240,6 +259,7 @@ export function useEconomia(): UsoEconomia {
     hojaClasificar: {
       movimiento: editando,
       error: errorClasificar,
+      aplicando,
       onElegir: aplicarCategoria,
       onCerrar: cerrarClasificar,
     },

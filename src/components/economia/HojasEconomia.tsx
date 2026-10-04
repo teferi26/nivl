@@ -24,11 +24,13 @@ export interface HojaClasificarProps {
   /** El movimiento que se clasifica; null con la hoja cerrada. */
   movimiento: Transaction | null;
   error: string | null;
+  /** La categoría que se está aplicando: se marca y las demás se bloquean. */
+  aplicando?: Categoria | null;
   onElegir: (c: Categoria) => void;
   onCerrar: () => void;
 }
 
-export function HojaClasificar({ movimiento, error, onElegir, onCerrar }: HojaClasificarProps) {
+export function HojaClasificar({ movimiento, error, aplicando = null, onElegir, onCerrar }: HojaClasificarProps) {
   // Mientras la hoja se va, sigue enseñando el último movimiento.
   const [ultimo, setUltimo] = useState<Transaction | null>(movimiento);
   if (movimiento && movimiento !== ultimo) setUltimo(movimiento);
@@ -58,7 +60,11 @@ export function HojaClasificar({ movimiento, error, onElegir, onCerrar }: HojaCl
             <Chip
               key={c}
               label={NOMBRE_CATEGORIA[c] ?? c}
-              onPress={() => onElegir(c)}
+              selected={aplicando ? aplicando === c : undefined}
+              disabled={aplicando !== null && aplicando !== c}
+              onPress={() => {
+                if (!aplicando) onElegir(c);
+              }}
               accessibilityLabel={`Clasificar como ${NOMBRE_CATEGORIA[c] ?? c}`}
             />
           ))}
@@ -171,7 +177,7 @@ const styles = StyleSheet.create({
     lineHeight: tipo.body.lineHeight,
     color: ink.ink9,
   },
-  importe: { fontFamily: 'Cinzel_600SemiBold', fontSize: 18, lineHeight: 22, color: ink.ink10 },
+  importe: { fontFamily: tipo.number.family, fontSize: 18, lineHeight: 22, color: ink.ink10 },
   unidad: { fontFamily: tipo.micro.family, fontSize: tipo.micro.size, letterSpacing: tipo.micro.tracking, color: ink.ink6 },
   sub: {
     fontFamily: tipo.bodySm.family,

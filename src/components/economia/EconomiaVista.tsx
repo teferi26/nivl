@@ -32,6 +32,7 @@ import { Button, EmptyState, Row, Screen, Section, SIN_DATO, Tag } from '@/compo
 import { ink, space, stroke, type as tipo } from '@/design/tokens';
 import { NOMBRE_CATEGORIA, type Budget, type MoneyPlan, type Transaction } from '@/lib/money';
 import { tasaAhorro, type ResumenMes, type Suscripcion } from '@/lib/moneymath';
+import { fechaCorta } from '@/components/fecha';
 import { eur, eurSigno, num } from './formato';
 
 
@@ -67,6 +68,8 @@ export interface EconomiaVistaProps {
   /** Fallo de la última carga, ya escrito para el usuario. */
   errorCarga: string | null;
   refrescando: boolean;
+  /** Reintentando la carga tras un fallo (el botón del ErrorSistema gira). */
+  reintentando?: boolean;
   /** Hay movimientos en los últimos seis meses. */
   hayMovimientos: boolean;
   datos: EconomiaDatos;
@@ -146,6 +149,7 @@ export function EconomiaVista({
   cargado,
   errorCarga,
   refrescando,
+  reintentando,
   hayMovimientos,
   datos: vista,
   plan,
@@ -205,7 +209,7 @@ export function EconomiaVista({
     return (
       <Screen refreshing={refrescando} onRefresh={acciones.onRefrescar}>
         {encabezado}
-        <ErrorSistema mensaje={errorCarga ?? ''} onReintentar={acciones.onReintentar} />
+        <ErrorSistema mensaje={errorCarga ?? ''} onReintentar={acciones.onReintentar} reintentando={reintentando} />
       </Screen>
     );
   }
@@ -242,7 +246,13 @@ export function EconomiaVista({
 
       {errorCarga ? (
         <Entrada indice={1}>
-          <ErrorSistema compacto mensaje={errorCarga} onReintentar={acciones.onReintentar} style={styles.bloque} />
+          <ErrorSistema
+            compacto
+            mensaje={errorCarga}
+            onReintentar={acciones.onReintentar}
+            reintentando={reintentando}
+            style={styles.bloque}
+          />
         </Entrada>
       ) : null}
 
@@ -258,6 +268,9 @@ export function EconomiaVista({
             <Text style={styles.texto} maxFontSizeMultiplier={1.35}>
               {aprendido}
             </Text>
+            <Text style={styles.ocultar} maxFontSizeMultiplier={1.35}>
+              Toca para ocultar
+            </Text>
           </TarjetaArena>
         </Entrada>
       ) : null}
@@ -269,11 +282,9 @@ export function EconomiaVista({
               compact
               icon="wallet-outline"
               title="El sistema no ve tu dinero"
-              body="Exporta el extracto de Revolut en Excel o CSV (Menú → Extractos) e impórtalo desde el ordenador. Hasta entonces el coach no te dirá en qué se te va: no lo sabe, y no se lo va a inventar."
+              body="Registra lo que pagas en efectivo con el botón de arriba. Los extractos del banco llegan pronto."
+              action={{ label: 'Registrar movimiento', onPress: acciones.onNuevo }}
             />
-            <Text style={styles.mono} selectable maxFontSizeMultiplier={1.35}>
-              node scripts/import-revolut.mjs extracto.csv
-            </Text>
           </TarjetaArena>
         </Entrada>
       ) : (
@@ -369,11 +380,11 @@ export function EconomiaVista({
                       first={i === 0}
                       leading={<Ionicons name="help-circle-outline" size={18} color={ink.ink6} />}
                       title={m.description}
-                      detail={m.date}
+                      detail={fechaCorta(m.date)}
                       trailing={<ImporteSigno n={m.amount} />}
                       chevron
                       onPress={() => acciones.onEditar(m)}
-                      accessibilityLabel={`Clasificar ${m.description} de ${Math.abs(m.amount)} euros`}
+                      accessibilityLabel={`Clasificar ${m.description}, ${m.amount < 0 ? 'gasto' : 'ingreso'} de ${eur(Math.abs(m.amount), 2)}, el ${fechaCorta(m.date)}`}
                     />
                   ))}
                 </View>
@@ -461,7 +472,7 @@ export function EconomiaVista({
                         first={i === 0}
                         leading={<Ionicons name="repeat-outline" size={18} color={ink.ink6} />}
                         title={s.cobrador}
-                        detail={`${eur(s.importeMedio, 2)} al mes · ${s.meses} meses · último ${s.ultimo}`}
+                        detail={`${eur(s.importeMedio, 2)} al mes · ${s.meses} meses · último ${fechaCorta(s.ultimo)}`}
                         trailing={<Importe texto={num(s.anual)} unidad=" €/año" />}
                         accessibilityLabel={`${s.cobrador}: ${eur(s.anual)} al año`}
                       />
@@ -532,7 +543,7 @@ const styles = StyleSheet.create({
     color: ink.ink9,
   },
   importe: {
-    fontFamily: 'Cinzel_600SemiBold',
+    fontFamily: tipo.number.family,
     fontSize: 16,
     lineHeight: 20,
     color: ink.ink10,
@@ -578,13 +589,13 @@ const styles = StyleSheet.create({
     color: ink.ink8,
   },
   boton: { alignSelf: 'flex-start', marginTop: space.s4 },
-  mono: {
+  ocultar: {
     fontFamily: tipo.micro.family,
-    fontSize: 13,
-    lineHeight: 18,
-    color: ink.ink8,
-    textAlign: 'center',
+    fontSize: tipo.micro.size,
+    lineHeight: tipo.micro.lineHeight,
+    letterSpacing: tipo.micro.tracking,
+    textTransform: 'uppercase',
+    color: ink.ink6,
     marginTop: space.s2,
-    marginBottom: space.s3,
   },
 });

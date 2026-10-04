@@ -14,6 +14,7 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import { CargaArena, EncabezadoArena, Entrada, ErrorSistema, FranjaCifras, TarjetaArena } from '@/components/arena';
+import { fechaCorta } from '@/components/fecha';
 import { TextoSistema } from '@/components/TextoSistema';
 import { Chip, ChipRow, EmptyState, Screen, Section, Tag } from '@/components/ui';
 import { SIN_DATO } from '@/components/ui/sinDato';
@@ -32,14 +33,9 @@ export const CATEGORIAS: { clave: string; etiqueta: string }[] = [
   { clave: 'perfil', etiqueta: 'Perfil' },
 ];
 
-const MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
-
-/** "2026-09-14" → "14 sep". Si no parece una fecha, se devuelve tal cual. */
-export function fechaCorta(iso: string): string {
-  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso);
-  if (!m) return iso;
-  return `${Number(m[3])} ${MESES[Number(m[2]) - 1] ?? ''}`;
-}
+// La fecha corta vive en '@/components/fecha' (la comparte Economía); se
+// reexporta para quien ya la importaba de aquí.
+export { fechaCorta };
 
 export function etiquetaCategoria(clave: string): string {
   return CATEGORIAS.find((c) => c.clave === clave)?.etiqueta ?? clave;

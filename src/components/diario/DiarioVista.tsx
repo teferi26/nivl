@@ -11,7 +11,7 @@
 // ocho preguntas I a VIII entre hairlines. Si la carga del día falla, un
 // ErrorSistema con «Reintentar» ocupa el formulario y el pie desaparece: una
 // entrada que ya existe nunca se pisa con un formulario en blanco.
-// INVERSIÓN única: el pie fijo «Registrar el día · +N XP».
+// INVERSIÓN única: el pie fijo «Registrar el día · hasta +N XP».
 //
 // Archivo: «ARCHIVO» y su contenido (Archivo.tsx), con su propia inversión
 // («Escribir hoy») solo si el día de hoy falta.
@@ -212,7 +212,7 @@ function EstadoDia({
       ? 'Ya está en tu archivo. Puedes corregirlo cuando quieras.'
       : 'El cierre del día. Siete preguntas cortas; los comprobantes se guardan solos.';
   return (
-    <TarjetaArena variante={variante} rotulo={rotulo} meta={enCaliente && !registrado ? `+${xp} XP` : undefined}>
+    <TarjetaArena variante={variante} rotulo={rotulo} meta={enCaliente && !registrado ? `hasta +${xp} XP` : undefined}>
       <Barra
         ratio={total > 0 ? hechas / total : 0}
         alto={4}
@@ -527,7 +527,7 @@ export function DiarioVista({
                 </Text>
               ) : null}
               <Button
-                title={registrado ? 'Guardar cambios' : enCaliente ? `Registrar el día · +${xp} XP` : 'Registrar el día'}
+                title={registrado ? 'Guardar cambios' : enCaliente ? `Registrar el día · hasta +${xp} XP` : 'Registrar el día'}
                 onPress={acciones.onGuardar}
                 loading={ocupado}
                 size="lg"

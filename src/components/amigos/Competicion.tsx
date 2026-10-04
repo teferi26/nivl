@@ -13,7 +13,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
-import { Barra, Campo } from '@/components/arena';
+import { Barra, Campo, CargaArena, ErrorSistema } from '@/components/arena';
 import { Avatar, Button, Card, Chip, ChipWrap, confirmar, Row, Section, Sheet } from '@/components/ui';
 import { SIN_DATO } from '@/components/ui/sinDato';
 import { vibrar } from '@/design/haptics';
@@ -191,18 +191,11 @@ export function Competicion({ amigos, recarga, retarA, onRetarA, onDisponible }:
   return (
     <Section title="Competición" meta={vista.activos.length > 0 ? `${vista.activos.length}` : undefined}>
       {!cargado ? (
-        <View style={styles.cargando} accessibilityLabel="Cargando la competición" accessibilityRole="progressbar">
-          <ActivityIndicator size="small" color={ink.ink6} />
-        </View>
+        <CargaArena etiqueta="Cargando la competición" formas={['filas']} filas={2} />
       ) : (
         <>
           {fallo ? (
-            <View style={styles.separado}>
-              <Aviso texto={`No se ha podido cargar: ${fallo}`} error />
-              <View style={styles.reintentar}>
-                <Button title="Reintentar" icon="refresh" variant="secondary" size="sm" onPress={cargar} />
-              </View>
-            </View>
+            <ErrorSistema compacto mensaje={fallo} onReintentar={cargar} style={styles.separado} />
           ) : null}
 
           {vista.porResponder.length > 0 ? (
@@ -614,7 +607,7 @@ function CrearLigaSheet({
           setNombre(v);
           setAviso(null);
         }}
-        placeholder="Nombre de la liga"
+        placeholder="Los del gimnasio"
         maxLength={NOMBRE_LIGA_MAX}
         returnKeyType="done"
         onSubmitEditing={crear}
@@ -733,9 +726,7 @@ function LigaSheet({
       footer={<Button title="Salir de la liga" variant="danger" onPress={salir} loading={saliendo} />}
     >
       {filas === null ? (
-        <View style={styles.cargando} accessibilityLabel="Cargando el tablero" accessibilityRole="progressbar">
-          <ActivityIndicator size="small" color={ink.ink6} />
-        </View>
+        <CargaArena etiqueta="Cargando el tablero" formas={['filas']} />
       ) : (
         <View>
           {tabla.map((f, i) => (
@@ -762,7 +753,7 @@ function LigaSheet({
             />
           ))}
           <Text style={styles.hint}>
-            La cifra es la disciplina de la semana (0–100). Desempata el ritmo frente a tus cuatro semanas previas.
+            La cifra es la disciplina de la semana, de 0 a 100. Desempata el ritmo frente a tus cuatro semanas previas.
           </Text>
         </View>
       )}
@@ -794,14 +785,12 @@ function LigaSheet({
 }
 
 const styles = StyleSheet.create({
-  cargando: { paddingVertical: 18, alignItems: 'center' },
   lista: { paddingHorizontal: 16, paddingVertical: 2 },
   separado: { marginTop: 14 },
   respuestas: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   rechazar: { width: 32, height: 32, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: ink.ink3 },
   pulsado: { opacity: 0.6 },
   resultado: { fontFamily: fonts.semibold, fontSize: 14, color: ink.ink9 },
-  reintentar: { alignSelf: 'flex-start', marginTop: 8 },
   vacio: { fontFamily: fonts.semibold, fontSize: 14, color: ink.ink9, marginTop: 4 },
   hint: { fontFamily: tipo.bodySm.family, fontSize: tipo.bodySm.size, lineHeight: tipo.bodySm.lineHeight, color: ink.ink8, marginTop: 10 },
   botones: { flexDirection: 'row', gap: 8, marginTop: 6 },

@@ -205,14 +205,15 @@ export function OraculoVista({
                       }
                       trailing={
                         <Text style={[styles.xp, !on && styles.xpApagado]} maxFontSizeMultiplier={1.35}>
-                          +{XP_BY_DIFFICULTY[p.difficulty]}
+                          {/* Cinzel no tiene minúsculas: «hasta» va en Outfit, como la unidad. */}
+                          <Text style={styles.xpUnidad}>hasta </Text>+{XP_BY_DIFFICULTY[p.difficulty]}
                           <Text style={styles.xpUnidad}> XP</Text>
                         </Text>
                       }
                       onPress={() => acciones.onAlternar(i)}
                       accessibilityRole="checkbox"
                       accessibilityState={{ checked: on }}
-                      accessibilityLabel={`Misión propuesta: ${p.title}, ${on ? 'aceptada' : 'descartada'}`}
+                      accessibilityLabel={`Misión propuesta: ${p.title}, hasta ${XP_BY_DIFFICULTY[p.difficulty]} XP, ${on ? 'aceptada' : 'descartada'}`}
                     />
                   );
                 })}
