@@ -265,6 +265,10 @@ describe('duelos y marcador de amigos', () => {
     expect(duelosConRivalEnTablero(ds, tablero).map((d) => d.id)).toEqual(['a', 'd']);
   });
 
+  it('oculta el duelo si el alias señala a dos homónimos (no se podría denunciar ni bloquear)', () => {
+    expect(duelosConRivalEnTablero([duelo({ id: 'l', rival: 'Lucía' })], tablero)).toEqual([]);
+  });
+
   it('sin marcador no queda ningún duelo', () => {
     expect(duelosConRivalEnTablero([duelo({})], [])).toEqual([]);
   });

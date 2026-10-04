@@ -7,8 +7,9 @@
 // pinta y llama.
 
 import * as Linking from 'expo-linking';
-import { useEffect, useState } from 'react';
-import { Keyboard, Platform } from 'react-native';
+import { useFocusEffect } from 'expo-router';
+import { useCallback, useEffect, useState } from 'react';
+import { AppState, Keyboard, Platform } from 'react-native';
 import { vibrar } from '@/design/haptics';
 import { entrar, pedirRecuperacion, registrar } from '@/lib/authFlow';
 import { SITIO_CREADORES } from '@/lib/sitio';
@@ -102,6 +103,36 @@ export function useLogin(): LoginVistaProps {
       setBusy(false);
     }
   };
+
+  // Lo de un intento anterior no se queda a la vista (revisión de Apple: el
+  // login abría ya con «Correo o contraseña incorrectos» y la contraseña
+  // puesta). El estado es local y se monta limpio, pero la misma instancia
+  // sobrevive a dos salidas: la app a segundo plano (iOS la conserva en
+  // memoria y «abrirla» es volver a esta pantalla tal cual) y, si el login
+  // quedara debajo en la pila, volver a él. En las dos se borran el error y
+  // la contraseña; el correo se queda. El aviso («revisa tu correo») sigue
+  // si solo se ha ido a mirar el correo.
+  const olvidarIntento = useCallback((tambienAviso: boolean) => {
+    setPassword('');
+    setConfirm('');
+    setShowPassword(false);
+    setError(null);
+    if (tambienAviso) setNotice(null);
+    setTouched(SIN_TOCAR);
+  }, []);
+
+  // Al perder el foco (no al ganarlo: el aviso de «revisa tu correo» tras el
+  // registro tiene que verse).
+  useFocusEffect(useCallback(() => () => olvidarIntento(true), [olvidarIntento]));
+
+  useEffect(() => {
+    // Solo 'background': 'inactive' salta también con el Face ID del
+    // autorrelleno de contraseñas de iOS y borraría lo que acaba de rellenar.
+    const sub = AppState.addEventListener('change', (s) => {
+      if (s === 'background') olvidarIntento(false);
+    });
+    return () => sub.remove();
+  }, [olvidarIntento]);
 
   const tocar = (campo: CampoTocable) => setTouched((t) => ({ ...t, [campo]: true }));
 
