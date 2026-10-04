@@ -18,8 +18,8 @@ import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Platform, StyleSheet, Text, View } from 'react-native';
 import { ProOffer } from '@/components/ProOffer';
-import { XPBar } from '@/components/XPBar';
-import { Button, Card, FadeIn, Row, Screen, ScreenHeader, Section, Skeleton, Stagger } from '@/components/ui';
+import { Barra, EncabezadoArena, Entrada } from '@/components/arena';
+import { Button, Card, Row, Screen, Section, Skeleton } from '@/components/ui';
 import { useAuth } from '@/lib/auth';
 import { ensureProfile } from '@/lib/data';
 import { isValidKey, nombreDia } from '@/lib/dates';
@@ -137,7 +137,7 @@ export default function Pro() {
     // huecos. Aún no se sabe qué cara toca, así que el título es neutro.
     return (
       <Screen>
-        <ScreenHeader onBack={salir} eyebrow="NIVL Pro" title="El coach" />
+        <EncabezadoArena onVolver={salir} eyebrow="NIVL Pro" titulo="El coach" />
         <View accessibilityRole="progressbar" accessibilityLabel="Cargando NIVL Pro">
           <Skeleton height={64} style={styles.hueco} />
           <Skeleton height={14} width="82%" style={styles.huecoLinea} />
@@ -176,13 +176,13 @@ export default function Pro() {
     };
     return (
       <Screen refreshing={refreshing} onRefresh={refrescar}>
-        <Stagger>
-          <FadeIn index={0}>
-            <ScreenHeader
-              onBack={salir}
+        <>
+          <Entrada indice={0}>
+            <EncabezadoArena
+              onVolver={salir}
               eyebrow={elite ? 'NIVL Élite' : 'NIVL Pro'}
-              title="El coach está contigo."
-              subtitle={
+              titulo="El coach está contigo."
+              subtitulo={
                 elite
                   ? 'Máxima potencia y modo profundo. Brief, plan del día, entreno, dieta, revisión semanal y memoria.'
                   : prueba
@@ -190,20 +190,20 @@ export default function Pro() {
                     : 'Brief, plan del día, entreno, dieta, revisión semanal y memoria. Todo activo.'
               }
             />
-          </FadeIn>
+          </Entrada>
 
-          <FadeIn index={1}>
+          <Entrada indice={1}>
             <Section title="Energía del coach este mes" meta={`${pct} %`}>
-              <XPBar ratio={queda} height={8} color={agotada ? ink.ink6 : ink.ink10} trackColor={ink.ink4} />
+              <Barra ratio={queda} alto={8} tono={agotada ? 'ink8' : 'blanco'} etiqueta={`Energía del coach: ${pct} %`} />
               <Text style={styles.energia}>
                 {agotada
                   ? `Agotada por este mes. ${recarga ? `Se recarga el ${recarga}.` : 'Se recarga el día 1.'} Tus misiones, tu racha y todos los módulos siguen funcionando.`
                   : `Queda el ${pct} % de lo que el coach puede pensar por ti este mes.${recarga ? ` Se recarga entera el ${recarga}.` : ''}`}
               </Text>
             </Section>
-          </FadeIn>
+          </Entrada>
 
-          <FadeIn index={2}>
+          <Entrada indice={2}>
             <Section title="Tu plan">
               <Card padded={false} style={styles.lista}>
                 <Row
@@ -256,17 +256,17 @@ export default function Pro() {
                 </Text>
               ) : null}
             </Section>
-          </FadeIn>
+          </Entrada>
 
-          <FadeIn index={3}>
+          <Entrada indice={3}>
             <Button title="Hablar con el coach" variant="primary" icon="shield-half" onPress={() => router.replace('/(tabs)/coach')} />
-          </FadeIn>
+          </Entrada>
 
           {/* Con la tienda abierta: quien está en la prueba puede suscribirse
               sin esperar a que acabe, y un Pro puede pasar a Élite (el cambio
               dentro del grupo de suscripción lo gestiona la tienda). */}
           {mejorable ? (
-            <FadeIn index={4}>
+            <Entrada indice={4}>
               {verOferta ? (
                 <View style={styles.oferta}>
                   <ProOffer
@@ -296,9 +296,9 @@ export default function Pro() {
                   style={styles.mejorar}
                 />
               )}
-            </FadeIn>
+            </Entrada>
           ) : null}
-        </Stagger>
+        </>
       </Screen>
     );
   }
@@ -309,16 +309,16 @@ export default function Pro() {
   const conPrueba = status?.trialAvailable ? ' Pruébalo 7 días, sin tarjeta.' : '';
   return (
     <Screen refreshing={refreshing} onRefresh={refrescar}>
-      <Stagger>
-        <FadeIn index={0}>
-          <ScreenHeader
-            onBack={salir}
+      <>
+        <Entrada indice={0}>
+          <EncabezadoArena
+            onVolver={salir}
             eyebrow={cabecera?.eyebrow ?? 'NIVL Pro'}
-            title={cabecera?.titulo ?? 'Un coach que manda en tu día.'}
-            subtitle={`NIVL es gratis entera: misiones, racha, campañas, gym, dieta, economía, amigos. Pro añade el coach: la IA que lo dirige todo por ti.${conPrueba}`}
+            titulo={cabecera?.titulo ?? 'Un coach que manda en tu día.'}
+            subtitulo={`NIVL es gratis entera: misiones, racha, campañas, gym, dieta, economía, amigos. Pro añade el coach: la IA que lo dirige todo por ti.${conPrueba}`}
           />
-        </FadeIn>
-        <FadeIn index={1}>
+        </Entrada>
+        <Entrada indice={1}>
           <ProOffer
             userId={userId}
             kind={kind}
@@ -337,8 +337,8 @@ export default function Pro() {
               load();
             }}
           />
-        </FadeIn>
-      </Stagger>
+        </Entrada>
+      </>
     </Screen>
   );
 }
