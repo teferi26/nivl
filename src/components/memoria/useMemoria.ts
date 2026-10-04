@@ -16,7 +16,7 @@ import { avisar, confirmar } from '@/components/ui/confirmar';
 import { volver } from '@/components/ui/Screen';
 import { vibrar } from '@/design/haptics';
 import { borrarHecho, fetchDossier, fetchFacts, fetchMonthCost, type CoachFact } from '@/lib/coach';
-import { mensajeSistema } from '@/lib/validation';
+import { ErrorVisible, mensajeSistema } from '@/lib/validation';
 import { etiquetaCategoria, type MemoriaVistaProps } from './MemoriaVista';
 
 export function useMemoria(): MemoriaVistaProps {
@@ -78,7 +78,7 @@ export function useMemoria(): MemoriaVistaProps {
       setHechos((lista) => lista.filter((x) => x.id !== h.id));
     } catch (e) {
       vibrar('penalizacion');
-      avisar('Error del sistema', mensajeSistema(e));
+      avisar(e instanceof ErrorVisible ? 'Memoria' : 'Error del sistema', mensajeSistema(e));
       // Puede que ya no estuviera: se vuelve a leer la memoria.
       cargar();
     } finally {
