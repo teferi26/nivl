@@ -57,9 +57,10 @@ export interface AiStatus {
   trialAvailable: boolean;
   /**
    * El coach de este plan ve fotos (modelo Claude). Lo dice el servidor
-   * (`ai_status.vision`); sin la migración, false. Pro (DeepSeek) y la prueba no.
+   * (`ai_status.vision`); null si el servidor aún no lo manda (sin la
+   * migración): quien pinta decide por el nivel. Pro (DeepSeek) y la prueba no.
    */
-  vision: boolean;
+  vision: boolean | null;
 }
 
 /** Una cuenta sin nada: lo que se pinta cuando el servidor dice que no hay IA. */
@@ -75,7 +76,7 @@ export const SIN_IA: AiStatus = {
   deepRemaining: 0,
   deepTurns: 0,
   trialAvailable: false,
-  vision: false,
+  vision: null,
 };
 
 /** Tiene coach: suscripción viva, prueba, cortesía o dueño. Lo decide el servidor. */

@@ -88,7 +88,7 @@ export async function fetchAiStatus(): Promise<AiStatus> {
     deepRemaining: Number(s.deep_remaining ?? 0),
     deepTurns: Number(s.deep_turns ?? 0),
     trialAvailable: s.trial_available === true,
-    vision: s.vision === true,
+    vision: typeof s.vision === 'boolean' ? s.vision : null,
   };
 }
 

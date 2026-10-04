@@ -485,10 +485,12 @@ describe('momento de la oferta: historial local', () => {
 });
 
 describe('fetchAiStatus: visión del coach', () => {
-  test('vision viene del servidor; sin la clave (servidor sin la migración) es false', async () => {
+  test('vision viene del servidor; sin la clave (servidor sin la migración) es null', async () => {
     status.mockResolvedValueOnce({ data: { entitled: true, plan: 'elite_anual', tier: 'elite', vision: true }, error: null } as never);
     expect((await fetchAiStatus()).vision).toBe(true);
     status.mockResolvedValueOnce({ data: { entitled: true, plan: 'pro_anual', tier: 'pro' }, error: null } as never);
+    expect((await fetchAiStatus()).vision).toBeNull();
+    status.mockResolvedValueOnce({ data: { entitled: true, plan: 'pro_anual', tier: 'pro', vision: false }, error: null } as never);
     expect((await fetchAiStatus()).vision).toBe(false);
   });
 });
