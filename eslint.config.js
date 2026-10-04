@@ -39,19 +39,11 @@ module.exports = defineConfig([
             importNames: ["Stat", "StatRow"],
             message: "En desuso (FASE3): usa FranjaCifras de '@/components/arena'.",
           },
-          {
-            name: "@/components/Avatar",
-            message: "En desuso (FASE3): el retrato es Avatar de '@/components/ui'; useRetrato está en '@/components/ui/useRetrato'.",
-          },
         ],
         patterns: [
           {
             group: ["**/XPBar"],
             message: "En desuso (FASE3): usa Barra de '@/components/arena'.",
-          },
-          {
-            group: ["**/Hexagon"],
-            message: "En desuso (FASE3): usa Avatar de '@/components/ui'.",
           },
           {
             group: ["**/SystemButton"],
