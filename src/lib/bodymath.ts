@@ -4,6 +4,8 @@
 // Supabase, y eso arrastra AsyncStorage, y con AsyncStorage dentro los tests
 // de este archivo no arrancarían. Aquí solo hay números.
 
+import { EDAD_MINIMA } from './consentmath';
+
 /** Ritmo en minutos por kilómetro, formateado como 5:42. */
 export function paceOf(distanciaKm: number | null, duracionMin: number): string | null {
   if (!distanciaKm || distanciaKm <= 0 || duracionMin <= 0) return null;
@@ -59,7 +61,8 @@ const FACTOR_ACTIVIDAD: Record<NivelActividad, number> = {
 /**
  * Mantenimiento calórico estimado: metabolismo basal por Mifflin-St Jeor por
  * el factor de actividad. Es un PUNTO DE PARTIDA con ±10 % de error: a las
- * tres semanas manda la tendencia real del peso, no esta fórmula.
+ * tres semanas manda la tendencia real del peso, no esta fórmula. Fuera de
+ * 16-100 años (la edad mínima de NIVL) no da número.
  */
 export function mantenimientoKcal(f: {
   pesoKg: number;
@@ -68,7 +71,7 @@ export function mantenimientoKcal(f: {
   sexo: 'hombre' | 'mujer';
   actividad: NivelActividad;
 }): { basal: number; mantenimiento: number } | null {
-  if (!(f.pesoKg > 20) || !(f.alturaCm > 100) || !(f.edad >= 14 && f.edad <= 100)) return null;
+  if (!(f.pesoKg > 20) || !(f.alturaCm > 100) || !(f.edad >= EDAD_MINIMA && f.edad <= 100)) return null;
   const basal = 10 * f.pesoKg + 6.25 * f.alturaCm - 5 * f.edad + (f.sexo === 'hombre' ? 5 : -161);
   return { basal: Math.round(basal), mantenimiento: Math.round((basal * FACTOR_ACTIVIDAD[f.actividad]) / 10) * 10 };
 }

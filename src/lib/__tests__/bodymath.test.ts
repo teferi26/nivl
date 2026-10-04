@@ -111,4 +111,12 @@ describe('mantenimientoKcal', () => {
     expect(mantenimientoKcal({ pesoKg: 0, alturaCm: 181, edad: 25, sexo: 'hombre', actividad: 'ligero' })).toBeNull();
     expect(mantenimientoKcal({ pesoKg: 80, alturaCm: 181, edad: 5, sexo: 'hombre', actividad: 'ligero' })).toBeNull();
   });
+
+  it('la edad mínima es 16, la de NIVL: con 14 o 15 no hay número', () => {
+    const ficha = { pesoKg: 60, alturaCm: 170, sexo: 'mujer' as const, actividad: 'moderado' as const };
+    expect(mantenimientoKcal({ ...ficha, edad: 14 })).toBeNull();
+    expect(mantenimientoKcal({ ...ficha, edad: 15 })).toBeNull();
+    expect(mantenimientoKcal({ ...ficha, edad: 16 })).not.toBeNull();
+    expect(mantenimientoKcal({ ...ficha, edad: 101 })).toBeNull();
+  });
 });
