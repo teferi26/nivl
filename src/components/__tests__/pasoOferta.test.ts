@@ -76,14 +76,17 @@ describe('el último paso del onboarding según la decisión real', () => {
     expect(pasoOferta(dec, false)).toBe('hoja');
   });
 
-  test('tienda CERRADA: siempre línea (cambio visible respecto a la hoja con «Avísame»)', () => {
+  // Política de Compras (FASE3-CONVERSION, ab2e826+): con la tienda cerrada la
+  // firma vuelve a enseñar la hoja (precios de solo lectura y «Avísame»).
+  test('tienda CERRADA: hoja de solo lectura', () => {
     const dec = decidirOferta('firma', ctx({ tiendaAbierta: false }));
-    expect(pasoOferta(dec, false)).toBe('linea');
+    expect(pasoOferta(dec, false)).toBe('hoja');
   });
 
-  test('cuenta en prueba: línea, nunca hoja', () => {
+  // Quien ya está en prueba no recibe oferta en la firma: se entra.
+  test('cuenta en prueba: no se ofrece nada y se entra', () => {
     const dec = decidirOferta('firma', ctx({ tier: 'pro', entitled: true, trial: true, trialAvailable: false }));
-    expect(pasoOferta(dec, false)).toBe('linea');
+    expect(pasoOferta(dec, false)).toBe('saltar');
   });
 
   test('cuenta Élite: no se ofrece nada y se entra', () => {
