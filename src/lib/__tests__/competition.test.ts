@@ -60,6 +60,12 @@ describe('ligas privadas', () => {
     expect(t[0]!.alias).toBe('bea');
   });
 
+  test('la velocidad usa los días ya transcurridos, como league_board', () => {
+    // Miércoles (3 días): 600 XP frente a una base de 5600/28 = 200/día → ×1.
+    expect(tablaLiga([fila('ana', 18, 20, { xpSemana: 600 })], 3)[0]!.velocidad).toBe(1);
+    expect(tablaLiga([fila('ana', 18, 20, { xpSemana: 600 })])[0]!.velocidad).toBe(0.43);
+  });
+
   test('el nombre de liga se acota a una línea de 40 caracteres', () => {
     expect(nombreDeLiga('  Los\n del   gym\t')).toBe('Los del gym');
     expect(nombreDeLiga('x'.repeat(60))).toHaveLength(40);

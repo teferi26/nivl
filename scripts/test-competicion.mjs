@@ -91,7 +91,8 @@ await db.exec(`
 const { existsSync } = await import('node:fs');
 const { readdirSync } = await import('node:fs');
 const amigos = [...readdirSync(resolve(root, 'supabase/migrations')).filter((x) => /rango_amigos\.sql$/.test(x)), 'rango_amigos.sql'][0];
-for (const f of ['0048_competicion.sql', '0051_rango.sql', amigos]) {
+const ajustes = [...readdirSync(resolve(root, 'supabase/migrations')).filter((x) => /competicion_ajustes\.sql$/.test(x)), 'competicion_ajustes.sql'][0];
+for (const f of ['0048_competicion.sql', '0051_rango.sql', amigos, ajustes]) {
   const ruta = ['supabase/migrations', 'docs/game-v2/propuestas'].map((d) => resolve(root, d, f)).find((x) => existsSync(x));
   if (!ruta) throw new Error(`No encuentro ${f}`);
   const sql = await readFile(ruta, 'utf8');
@@ -270,4 +271,13 @@ await db.query('delete from public.social_blocks where blocker = $1 and blocked 
 await db.query("update public.profiles set social_visible = false where id = $1", [A]);
 check(await rangoDe(B, A), undefined, 'no visible: oculto');
 
-console.log(`OK: ${checks} comprobaciones (0048 + 0051 + rango de amigos, cada una aplicada dos veces)`);
+// ── Ajustes de la auditoría de coherencia (competicion_ajustes.sql) ─────
+// Sin datos esta semana: puesto 0, no «último».
+const ligaX = await as(F, () => one("select public.league_create('Sin datos')"));
+check((await as(F, () => rows('select puesto from public.my_league_standing() where league_id = $1', [ligaX])))[0].puesto, 0, 'sin datos → puesto 0');
+// my_duels trae suficiencia y semana_cerrada; un duelo de hace dos semanas se resuelve.
+const viejo = (await rows("insert into public.duels(challenger, opponent, week_start, status) values ($1, $2, date_trunc('week', now())::date - 14, 'accepted') returning id", [A, C]))[0].id;
+const md = (await as(A, () => rows('select * from public.my_duels() where id = $1', [viejo])))[0];
+check([md.semana_cerrada, md.mi_suficiente === true || md.mi_suficiente === false, md.resultado !== null], [true, true, true], 'duelo pasado resuelto con suficiencia y semana cerrada');
+
+console.log(`OK: ${checks} comprobaciones (0048 + 0051 + 0052 + ajustes, cada una aplicada dos veces)`);

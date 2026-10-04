@@ -126,11 +126,14 @@ export interface PuestoLiga {
  * activos. Los empates comparten puesto (1, 1, 3). Quien no llega al mínimo
  * de misiones queda al final sin puesto: no se le humilla con un «último».
  */
-export function tablaLiga(filas: FilaLiga[]): PuestoLiga[] {
+export function tablaLiga(filas: FilaLiga[], diasTranscurridos = 7): PuestoLiga[] {
+  // Espejo de league_board (0048): la velocidad usa los días YA transcurridos
+  // de la semana (lunes = 1), no 7 fijos.
+  const dias = Math.min(7, Math.max(1, Math.floor(diasTranscurridos)));
   const calc = filas.map((f) => ({
     id: f.id, alias: f.alias,
     indice: indiceDisciplina(f.cumplidasXp, f.programadasXp),
-    velocidad: velocidad(f.xpSemana, 7, f.xpBase28),
+    velocidad: velocidad(f.xpSemana, dias, f.xpBase28),
     diasActivos: f.diasActivos,
     sinDatos: f.programadasXp < MIN_XP_DUELO,
   }));
