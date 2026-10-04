@@ -58,3 +58,50 @@ describe('fetchCreatorBoardPeriod', () => {
     expect(rpc).toHaveBeenLastCalledWith('creator_board_period', { p_period: 'mes' });
   });
 });
+
+describe('reclamarQuienTeTrajo: un solo campo para creador o amigo', () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { reclamarQuienTeTrajo } = require('../creators') as typeof import('../creators');
+  beforeEach(() => rpc.mockReset());
+
+  it('código de creador conocido → creador', async () => {
+    rpc.mockResolvedValueOnce({ data: { ok: true, alias: 'Alfa' }, error: null });
+    await expect(reclamarQuienTeTrajo('AAA_TEST', 'onboarding')).resolves.toEqual({ ok: true, tipo: 'creador', alias: 'Alfa' });
+    expect(rpc).toHaveBeenCalledWith('claim_referral', { p_code: 'AAA_TEST', p_source: 'onboarding' });
+    expect(rpc).toHaveBeenCalledTimes(1);
+  });
+
+  it('8 caracteres que no son de ningún creador → se prueba como invitación de amigo', async () => {
+    rpc.mockResolvedValueOnce({ data: { ok: false, reason: 'desconocido' }, error: null });
+    rpc.mockResolvedValueOnce({ data: { ok: true }, error: null });
+    await expect(reclamarQuienTeTrajo('ABCDEFGH', 'onboarding')).resolves.toEqual({ ok: true, tipo: 'amigo' });
+    expect(rpc).toHaveBeenLastCalledWith('claim_invite', { p_code: 'ABCDEFGH' });
+  });
+
+  it('código de amigo con guion (no vale como creador) → directo a invitación', async () => {
+    rpc.mockResolvedValueOnce({ data: { ok: true }, error: null });
+    await expect(reclamarQuienTeTrajo('abcd-efgh', 'onboarding')).resolves.toEqual({ ok: true, tipo: 'amigo' });
+    expect(rpc).toHaveBeenCalledTimes(1);
+    expect(rpc).toHaveBeenCalledWith('claim_invite', { p_code: 'ABCDEFGH' });
+  });
+
+  it('creador rechaza por otro motivo (p. ej. ya pagas) → no se prueba como amigo', async () => {
+    rpc.mockResolvedValueOnce({ data: { ok: false, reason: 'ya_pagas' }, error: null });
+    const r = await reclamarQuienTeTrajo('ABCDEFGH', 'perfil');
+    expect(r).toMatchObject({ ok: false, tipo: 'creador', reason: 'ya_pagas' });
+    expect(rpc).toHaveBeenCalledTimes(1);
+  });
+
+  it('invitación rechazada → mensaje de invitación', async () => {
+    rpc.mockResolvedValueOnce({ data: { ok: false, reason: 'desconocido' }, error: null });
+    rpc.mockResolvedValueOnce({ data: { ok: false, reason: 'fuera_de_plazo' }, error: null });
+    const r = await reclamarQuienTeTrajo('ABCDEFGH', 'onboarding');
+    expect(r).toMatchObject({ ok: false, tipo: 'amigo', reason: 'fuera_de_plazo' });
+    if (!r.ok) expect(r.mensaje).toMatch(/7 días/);
+  });
+
+  it('sin red: lanza (el llamante lo guarda como pendiente)', async () => {
+    rpc.mockResolvedValueOnce({ data: null, error: new Error('network') });
+    await expect(reclamarQuienTeTrajo('AAA_TEST', 'onboarding')).rejects.toThrow('network');
+  });
+});
