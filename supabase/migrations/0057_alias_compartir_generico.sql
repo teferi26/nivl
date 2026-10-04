@@ -1,6 +1,7 @@
--- NIVL · PROPUESTA (NIVL - Seguridad, 04/10/2026; auditoría 1.0.8 P2-13) — número y huella del coordinador.
--- Huella sugerida: coalesce(obj_description(to_regprocedure('public.my_share_alias()'),'pg_proc') like '%nivl:alias-generico%', false)
+-- NIVL · 0057 — Alias genérico en las tarjetas de compartir (NIVL - Seguridad, 04/10/2026; auditoría 1.0.8 P2-13).
+-- Huella para scripts/apply-migrations.mjs: coalesce(obj_description(to_regprocedure('public.my_share_alias()'),'pg_proc') like '%nivl:alias-generico%', false)
 --
+-- Probada en producción con BEGIN…ROLLBACK (04/10/2026): sin aprobar → «Gladiador de NIVL» (aprobado=false); aprobado → su alias; anon 42501.
 -- my_share_alias (0053) devolvía social_public_name: sin alias aprobado, «Gladiador» + los 6 primeros
 -- caracteres del uuid. En una tarjeta que se comparte en redes eso son 24 bits estables del uuid: deja
 -- enlazar entre sí todas las tarjetas de la misma persona. En la tabla de amigos sí hace falta distinguir
@@ -31,3 +32,5 @@ comment on function public.my_share_alias() is
   'nivl:alias-generico — alias para las tarjetas de compartir: el aprobado o «Gladiador de NIVL», nunca un trozo del uuid.';
 revoke all on function public.my_share_alias() from public, anon;
 grant execute on function public.my_share_alias() to authenticated;
+
+notify pgrst, 'reload schema';
