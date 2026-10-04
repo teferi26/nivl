@@ -149,3 +149,17 @@ export function borrarCacheSelector(): void {
     /* ya no estaba */
   }
 }
+
+/**
+ * Todo lo temporal de las fotos de progreso: las copias de compartir y la
+ * caché del selector. Lo llama cerrarSesion (Chat 3, auditoría 1.0.8) para
+ * que no queden fotos de salud en el móvil al salir. Nunca lanza.
+ */
+export function borrarTemporalesFotos(): void {
+  try {
+    borrarTemporales([TEMP_ANTES, TEMP_DESPUES]);
+    borrarCacheSelector();
+  } catch {
+    /* nada que borrar */
+  }
+}
