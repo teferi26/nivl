@@ -97,6 +97,7 @@ function base(cambios: Partial<FotosVistaProps> = {}): FotosVistaProps {
 export const DEMO: DemoPantalla | null = {
   id: 'fotos',
   titulo: 'Fotos',
+  marco: 'pila',
   estados: [
     { id: 'con-fotos', titulo: 'Con fotos', render: () => <FotosVista {...base()} /> },
     { id: 'sin-fotos', titulo: 'Sin fotos', render: () => <FotosVista {...base({ fotos: [], pesos: [], urls: {} })} /> },

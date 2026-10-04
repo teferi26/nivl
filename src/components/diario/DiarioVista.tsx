@@ -48,6 +48,7 @@ import {
   type VarianteArena,
 } from '@/components/arena';
 import { Button, Chip, Screen } from '@/components/ui';
+import { useTecladoAbierto } from '@/components/ui/useTecladoAbierto';
 import { ink, space, stroke, type as tipo } from '@/design/tokens';
 import { useSizeClass } from '@/design/useSizeClass';
 import { addDays, nombreDia, relativoDe } from '@/lib/dates';
@@ -258,6 +259,10 @@ export function DiarioVista({
   acciones,
 }: DiarioVistaProps) {
   const insets = useSafeAreaInsets();
+  // Con el teclado fuera, él ya tapa el indicador de inicio: sumar el margen
+  // seguro dejaba el pie flotando sobre el teclado.
+  const teclado = useTecladoAbierto();
+  const fondoSeguro = teclado ? 0 : insets.bottom;
   const { gutter } = useSizeClass();
   const { mood, energy, emotions, sleep, wins, text, lesson, gratitude, plan } = respuestas;
   const lista = (s: SeccionId) => hecho.porSeccion[s];
@@ -520,7 +525,7 @@ export function DiarioVista({
         {/* Pie fijo: registrar siempre a mano, sin bajar ocho preguntas. La
             única inversión de la escritura. */}
         {escribiendo && cargado && !errorCarga ? (
-          <View style={[styles.pie, { paddingBottom: space.s3 + insets.bottom }]}>
+          <View style={[styles.pie, { paddingBottom: space.s3 + fondoSeguro }]}>
             <View style={[styles.pieDentro, { maxWidth: ANCHO_ESCRITURA + 2 * gutter, paddingHorizontal: gutter }]}>
               {errorGuardado ? (
                 <ErrorSistema compacto rotulo="No se ha guardado" mensaje={errorGuardado} style={styles.pieAviso} />

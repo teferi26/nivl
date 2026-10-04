@@ -61,8 +61,12 @@ export const layout = {
   expanded: { gutter: 48, maxContent: 720, nav: 'sidebar' },
 } as const;
 
-/** Anchos en los que se verifica cada pantalla. */
-export const VERIFY_WIDTHS = [375, 430, 744, 1024, 1440] as const;
+/**
+ * Anchos en los que se verifica cada pantalla. 768 (iPad mini / 9,7" vertical)
+ * y 1366 (iPad Pro 12,9" apaisado) solo para la galería: los dos iPad que se
+ * escapaban entre 744 y 1440.
+ */
+export const VERIFY_WIDTHS = [375, 430, 744, 768, 1024, 1366, 1440] as const;
 
 // ── Rango → tema ──────────────────────────────────────────────────────
 export type Rank = 'E' | 'D' | 'C' | 'B' | 'A' | 'S';

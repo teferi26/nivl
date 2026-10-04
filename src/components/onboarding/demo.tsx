@@ -11,6 +11,7 @@ import type { DemoPantalla } from '@/components/arena/galeria';
 import { Button } from '@/components/ui';
 import { GutterContext } from '@/components/ui/Screen';
 import { ink, space, stroke } from '@/design/tokens';
+import { TopeAncho } from '@/design/useSizeClass';
 import { HORIZONTE_POR_DEFECTO, textoCompromiso } from '@/lib/compromiso';
 import { addDays, fechaConAnio } from '@/lib/dates';
 import { PortadaArena } from './PortadaArena';
@@ -19,6 +20,7 @@ import { TablillaContrato } from './TablillaContrato';
 import { TituloPaso } from './TituloPaso';
 
 const GUTTER = 24;
+const ANCHO_COLUMNA = 560;
 const TOTAL = 7;
 const nada = () => {};
 
@@ -37,11 +39,16 @@ const CONTRATO = textoCompromiso({
 function Marco({ cabecera, pie, children }: { cabecera?: ReactNode; pie?: ReactNode; children: ReactNode }) {
   return (
     <View style={styles.pantalla}>
-      {cabecera ? <View style={styles.cabecera}>{cabecera}</View> : null}
-      <ScrollView contentContainerStyle={styles.cuerpo} showsVerticalScrollIndicator={false}>
-        <GutterContext.Provider value={GUTTER}>{children}</GutterContext.Provider>
-      </ScrollView>
-      {pie ? <View style={styles.pie}>{pie}</View> : null}
+      {/* La misma columna de 560 que la pantalla real (iPad sin tope = 1320 pt). */}
+      <TopeAncho.Provider value={ANCHO_COLUMNA}>
+        <View style={styles.columna}>
+          {cabecera ? <View style={styles.cabecera}>{cabecera}</View> : null}
+          <ScrollView contentContainerStyle={styles.cuerpo} showsVerticalScrollIndicator={false}>
+            <GutterContext.Provider value={GUTTER}>{children}</GutterContext.Provider>
+          </ScrollView>
+          {pie ? <View style={styles.pie}>{pie}</View> : null}
+        </View>
+      </TopeAncho.Provider>
     </View>
   );
 }
@@ -49,6 +56,7 @@ function Marco({ cabecera, pie, children }: { cabecera?: ReactNode; pie?: ReactN
 export const DEMO: DemoPantalla | null = {
   id: 'onboarding',
   titulo: 'Onboarding',
+  marco: 'pila',
   estados: [
     {
       id: 'portada',
@@ -95,6 +103,7 @@ export const DEMO: DemoPantalla | null = {
 
 const styles = StyleSheet.create({
   pantalla: { flex: 1, backgroundColor: ink.ink0 },
+  columna: { flex: 1, width: '100%', maxWidth: ANCHO_COLUMNA + 2 * GUTTER, alignSelf: 'center' },
   cabecera: { paddingHorizontal: GUTTER, paddingTop: space.s4 },
   cuerpo: { flexGrow: 1, justifyContent: 'center', paddingHorizontal: GUTTER, paddingTop: space.s5, paddingBottom: space.s6 },
   pasos: { gap: space.s6, marginTop: space.s4 },
