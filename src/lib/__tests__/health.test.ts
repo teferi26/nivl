@@ -29,7 +29,8 @@ jest.mock('react-native', () => ({
   StyleSheet: { create: (s: unknown) => s },
 }));
 jest.mock('../../components/SystemButton', () => ({ SystemButton: 'SystemButton' }));
-jest.mock('../../components/ui', () => ({ Card: 'Card', Check: 'Check', Screen: 'Screen', ScreenHeader: 'ScreenHeader', Section: 'Section', Skeleton: 'Skeleton' }));
+jest.mock('../../components/ui', () => ({ Card: 'Card', Check: 'Check', Screen: 'Screen', ScreenHeader: 'ScreenHeader', Section: 'Section', Skeleton: 'Skeleton', Button: 'Button' }));
+jest.mock('../../components/arena', () => ({ EncabezadoArena: 'EncabezadoArena', BotonArena: 'BotonArena', TarjetaArena: 'TarjetaArena', Entrada: 'Entrada', FranjaCifras: 'FranjaCifras', Meandro: 'Meandro', Galea: 'Galea', Laurel: 'Laurel' }));
 
 interface Node { props: { onPress: () => void; disabled?: boolean; visible?: boolean }; }
 const { create, act } = jest.requireActual<{
