@@ -49,6 +49,9 @@ export function useAgenda(): { vista: AgendaVistaProps; hojaEvento: HojaEventoPr
   const [title, setTitle] = useState('');
   const [date, setDate] = useState(today);
   const [time, setTime] = useState('');
+  // Los fallos del formulario se enseñan en la hoja, no en un aviso encima.
+  const [errorFecha, setErrorFecha] = useState<string | null>(null);
+  const [errorGuardar, setErrorGuardar] = useState<string | null>(null);
   const saving = useRef(false);
   // Espejo del cerrojo para el botón: el ref no repinta.
   const [guardando, setGuardando] = useState(false);
@@ -154,11 +157,12 @@ export function useAgenda(): { vista: AgendaVistaProps; hojaEvento: HojaEventoPr
   const addEvent = async () => {
     if (!userId || !title.trim() || saving.current) return;
     if (!isValidKey(date)) {
-      avisar('Fecha inválida', 'Usa el formato AAAA-MM-DD, ej. 2026-06-15');
+      setErrorFecha('Fecha inválida. Usa el formato AAAA-MM-DD, ej. 2026-06-15.');
       return;
     }
     saving.current = true;
     setGuardando(true);
+    setErrorGuardar(null);
     try {
       await createCalendarEvent(userId, { title: title.trim(), date, time: time.trim() || null });
       setTitle('');
@@ -166,7 +170,10 @@ export function useAgenda(): { vista: AgendaVistaProps; hojaEvento: HojaEventoPr
       setFormOpen(false);
       await load(anchor);
     } catch (e) {
-      avisar('Error del sistema', mensajeSistema(e));
+      // Fallo de la acción principal: vibración de penalización y el motivo
+      // en la hoja, que sigue abierta con lo escrito.
+      vibrar('penalizacion');
+      setErrorGuardar(mensajeSistema(e));
     } finally {
       saving.current = false;
       setGuardando(false);
@@ -205,7 +212,15 @@ export function useAgenda(): { vista: AgendaVistaProps; hojaEvento: HojaEventoPr
 
   const abrirFormulario = () => {
     setDate(anchor);
+    setErrorFecha(null);
+    setErrorGuardar(null);
     setFormOpen(true);
+  };
+
+  /** Tocar un día del calendario: vibra solo si cambia (FASE3, tabla de vibraciones). */
+  const elegirDia = (d: string) => {
+    if (d !== anchor) vibrar('seleccion');
+    setAnchor(d);
   };
 
   const vista: AgendaVistaProps = {
@@ -224,6 +239,7 @@ export function useAgenda(): { vista: AgendaVistaProps; hojaEvento: HojaEventoPr
     acciones: {
       onModo: setView,
       onDia: setAnchor,
+      onElegirDia: elegirDia,
       onNuevo: abrirFormulario,
       onDetalle: abrirDetalle,
       onReintentar: () => load(anchor),
@@ -238,8 +254,13 @@ export function useAgenda(): { vista: AgendaVistaProps; hojaEvento: HojaEventoPr
     fecha: date,
     hora: time,
     guardando,
+    errorFecha,
+    errorGuardar,
     onTitulo: setTitle,
-    onFecha: setDate,
+    onFecha: (v) => {
+      setDate(v);
+      setErrorFecha(null);
+    },
     onHora: setTime,
     onGuardar: addEvent,
     onCerrar: () => setFormOpen(false),

@@ -1,13 +1,22 @@
-// NIVL · Agenda: las dos hojas (nuevo evento y detalle). Puras: el estado del
+// NIVL · Agenda: las dos hojas (FASE3 Lote C). Puras: el estado del
 // formulario y los cerrojos viven en useAgenda.
+//
+//   · HojaEvento → Campo nombre, chips del día con su Campo de fecha, Campo de
+//     hora con «Todo el día». Los fallos van en línea (la fecha en su Campo,
+//     el del servidor en ErrorSistema compacto): nada de avisos encima de una
+//     hoja abierta. Pie: primary «Añadir evento» + ghost «Cancelar».
+//   · HojaDetalle → la fecha en inscripción, la hora en Cinzel y la nota; pie
+//     danger «Eliminar evento» (con confirmar y vibración `destructiva`, en
+//     useAgenda) + ghost «Cerrar».
 
-import { StyleSheet, Text, TextInput, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
+import { Campo, ErrorSistema } from '@/components/arena';
 import { Button, Chip, ChipWrap, Sheet } from '@/components/ui';
+import { ink, space, type as tipo } from '@/design/tokens';
 import { addDays, nombreDia } from '@/lib/dates';
 import { hhmm, horaAMinutos } from '@/lib/plan';
-import { colors, fonts } from '@/lib/theme';
 import type { CalendarEvent } from '@/lib/types';
-import { tituloDelDia } from './AgendaVista';
+import { diaCorto, fechaInscrita } from './derivarAgenda';
 
 export interface HojaEventoProps {
   visible: boolean;
@@ -18,6 +27,10 @@ export interface HojaEventoProps {
   fecha: string;
   hora: string;
   guardando: boolean;
+  /** La fecha escrita no vale (se enseña en su campo). */
+  errorFecha: string | null;
+  /** Lo que ha contestado el sistema al guardar, ya escrito para el usuario. */
+  errorGuardar: string | null;
   onTitulo: (v: string) => void;
   onFecha: (v: string) => void;
   onHora: (v: string) => void;
@@ -33,20 +46,15 @@ export function HojaEvento({
   fecha,
   hora,
   guardando,
+  errorFecha,
+  errorGuardar,
   onTitulo,
   onFecha,
   onHora,
   onGuardar,
   onCerrar,
 }: HojaEventoProps) {
-  const today = hoy;
-  const anchor = dia;
-  const title = titulo;
-  const date = fecha;
-  const time = hora;
-  const setTitle = onTitulo;
-  const setDate = onFecha;
-  const setTime = onHora;
+  const manana = addDays(hoy, 1);
   return (
     <Sheet
       visible={visible}
@@ -55,72 +63,72 @@ export function HojaEvento({
       title="¿Qué hay que recordar?"
       footer={
         <>
-          <Button title="Añadir evento" onPress={onGuardar} loading={guardando} disabled={!title.trim()} />
+          <Button title="Añadir evento" onPress={onGuardar} loading={guardando} disabled={!titulo.trim()} />
           <Button title="Cancelar" variant="ghost" onPress={onCerrar} />
         </>
       }
     >
-      <Text style={[styles.label, styles.labelPrimero]}>Nombre</Text>
-      <TextInput
-        style={styles.input}
-        value={title}
-        onChangeText={setTitle}
-        placeholder="Llamada, cita, demo, examen"
-        placeholderTextColor={colors.textFaint}
-        accessibilityLabel="Nombre del evento"
-        autoFocus
-      />
-      <Text style={styles.label}>Día</Text>
-      <ChipWrap style={styles.chipsDia}>
-        <Chip small label="Hoy" selected={date === today} onPress={() => setDate(today)} accessibilityLabel="Hoy" />
-        <Chip
-          small
-          label="Mañana"
-          selected={date === addDays(today, 1)}
-          onPress={() => setDate(addDays(today, 1))}
-          accessibilityLabel="Mañana"
+      <View style={styles.pila}>
+        <Campo
+          etiqueta="Nombre"
+          value={titulo}
+          onChangeText={onTitulo}
+          placeholder="Llamada, cita, demo, examen"
+          accessibilityLabel="Nombre del evento"
+          autoFocus
         />
-        {anchor !== today && anchor !== addDays(today, 1) ? (
+
+        <View style={styles.grupo}>
+          <Text style={styles.etiqueta} maxFontSizeMultiplier={1.35}>
+            Día
+          </Text>
+          <ChipWrap>
+            <Chip small label="Hoy" selected={fecha === hoy} onPress={() => onFecha(hoy)} accessibilityLabel="Hoy" />
+            <Chip small label="Mañana" selected={fecha === manana} onPress={() => onFecha(manana)} accessibilityLabel="Mañana" />
+            {dia !== hoy && dia !== manana ? (
+              <Chip
+                small
+                label={diaCorto(dia)}
+                selected={fecha === dia}
+                onPress={() => onFecha(dia)}
+                accessibilityLabel={`El día elegido, ${nombreDia(dia)}`}
+              />
+            ) : null}
+          </ChipWrap>
+          <Campo
+            etiqueta="Fecha"
+            value={fecha}
+            onChangeText={onFecha}
+            placeholder="AAAA-MM-DD"
+            autoCapitalize="none"
+            error={errorFecha}
+          />
+        </View>
+
+        <View style={styles.horaFila}>
+          <Campo
+            etiqueta="Hora"
+            value={hora}
+            onChangeText={onHora}
+            placeholder="09:30"
+            keyboardType="numbers-and-punctuation"
+            estiloBloque={styles.horaCampo}
+          />
           <Chip
             small
-            label={tituloDelDia(anchor, today)}
-            selected={date === anchor}
-            onPress={() => setDate(anchor)}
-            accessibilityLabel={`El día elegido, ${nombreDia(anchor)}`}
+            label="Todo el día"
+            selected={!hora.trim()}
+            onPress={() => onHora('')}
+            accessibilityLabel="Sin hora, todo el día"
+            style={styles.todoElDia}
           />
-        ) : null}
-      </ChipWrap>
-      <TextInput
-        style={styles.input}
-        value={date}
-        onChangeText={setDate}
-        placeholder="AAAA-MM-DD"
-        placeholderTextColor={colors.textFaint}
-        accessibilityLabel="Fecha"
-        autoCapitalize="none"
-      />
-      <Text style={styles.label}>Hora</Text>
-      <View style={styles.inline}>
-        <TextInput
-          style={[styles.input, styles.inputHora]}
-          value={time}
-          onChangeText={setTime}
-          placeholder="09:30"
-          placeholderTextColor={colors.textFaint}
-          accessibilityLabel="Hora"
-          keyboardType="numbers-and-punctuation"
-        />
-        <Chip
-          small
-          label="Todo el día"
-          selected={!time.trim()}
-          onPress={() => setTime('')}
-          accessibilityLabel="Sin hora, todo el día"
-        />
+        </View>
+        <Text style={styles.ayuda} maxFontSizeMultiplier={1.35}>
+          Con hora, el evento se pinta sobre el eje del día. Sin hora, cuenta como de todo el día.
+        </Text>
+
+        {errorGuardar ? <ErrorSistema compacto mensaje={errorGuardar} /> : null}
       </View>
-      <Text style={styles.hint}>
-        Con hora, el evento se pinta sobre el eje del día. Sin hora, cuenta como de todo el día.
-      </Text>
     </Sheet>
   );
 }
@@ -135,70 +143,96 @@ export interface HojaDetalleProps {
 }
 
 export function HojaDetalle({ visible, evento, eliminando, onEliminar, onCerrar }: HojaDetalleProps) {
-  const detalle = evento;
+  const min = evento ? horaAMinutos(evento.time) : null;
   return (
     <Sheet
       visible={visible}
       onClose={onCerrar}
       eyebrow="Evento"
-      title={detalle?.title ?? ''}
+      title={evento?.title ?? ''}
       footer={
         <>
-          <Button
-            title="Eliminar evento"
-            variant="danger"
-            icon="trash-outline"
-            loading={eliminando}
-            onPress={onEliminar}
-          />
+          <Button title="Eliminar evento" variant="danger" icon="trash-outline" loading={eliminando} onPress={onEliminar} />
           <Button title="Cerrar" variant="ghost" onPress={onCerrar} />
         </>
       }
     >
-      {detalle ? (
-        <>
-          <Text style={[styles.label, styles.labelPrimero]}>Fecha</Text>
-          <Text style={styles.detalleValor}>{nombreDia(detalle.date)}</Text>
-          <Text style={styles.label}>Hora</Text>
-          <Text style={styles.detalleValor}>
-            {horaAMinutos(detalle.time) === null ? 'Todo el día' : hhmm(horaAMinutos(detalle.time) ?? 0)}
-          </Text>
-          {detalle.notes ? (
-            <>
-              <Text style={styles.label}>Nota</Text>
-              <Text style={styles.detalleValor}>{detalle.notes}</Text>
-            </>
+      {evento ? (
+        <View style={styles.pila}>
+          <View style={styles.grupo} accessible accessibilityLabel={`Fecha: ${nombreDia(evento.date)}`}>
+            <Text style={styles.etiqueta}>Fecha</Text>
+            <Text style={styles.fecha} maxFontSizeMultiplier={1.35}>
+              {fechaInscrita(evento.date)}
+            </Text>
+          </View>
+          <View
+            style={styles.grupo}
+            accessible
+            accessibilityLabel={min === null ? 'Hora: todo el día' : `Hora: ${hhmm(min)}`}
+          >
+            <Text style={styles.etiqueta}>Hora</Text>
+            {min === null ? (
+              <Text style={styles.fecha} maxFontSizeMultiplier={1.35}>
+                TODO EL DÍA
+              </Text>
+            ) : (
+              <Text style={styles.hora} maxFontSizeMultiplier={1.2}>
+                {hhmm(min)}
+              </Text>
+            )}
+          </View>
+          {evento.notes ? (
+            <View style={styles.grupo}>
+              <Text style={styles.etiqueta}>Nota</Text>
+              <Text style={styles.nota}>{evento.notes}</Text>
+            </View>
           ) : null}
-        </>
+        </View>
       ) : null}
     </Sheet>
   );
 }
 
 const styles = StyleSheet.create({
-  label: {
-    fontFamily: fonts.heading,
-    fontSize: 11,
-    letterSpacing: 2,
-    color: colors.textFaint,
+  pila: { gap: space.s5 },
+  grupo: { gap: space.s2 },
+  etiqueta: {
+    fontFamily: tipo.label.family,
+    fontSize: tipo.label.size,
+    lineHeight: tipo.label.lineHeight,
+    letterSpacing: tipo.label.tracking,
     textTransform: 'uppercase',
-    marginTop: 18,
-    marginBottom: 8,
+    color: ink.ink6,
   },
-  labelPrimero: { marginTop: 0 },
-  hint: { fontFamily: fonts.body, fontSize: 12, color: colors.textFaint, marginTop: 8, lineHeight: 17 },
-  detalleValor: { fontFamily: fonts.body, fontSize: 15, lineHeight: 21, color: colors.text },
-  chipsDia: { marginBottom: 8 },
-  inline: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  input: {
-    borderWidth: 1,
-    borderColor: colors.accentDim,
-    backgroundColor: colors.bg,
-    color: colors.text,
-    fontFamily: fonts.semibold,
-    fontSize: 16,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
+  horaFila: { flexDirection: 'row', alignItems: 'flex-end', gap: space.s3 },
+  horaCampo: { flex: 1, minWidth: 0 },
+  // El chip se alinea con la caja de 48 del campo, no con su etiqueta.
+  todoElDia: { marginBottom: 8 },
+  ayuda: {
+    fontFamily: tipo.bodySm.family,
+    fontSize: tipo.bodySm.size,
+    lineHeight: tipo.bodySm.lineHeight,
+    color: ink.ink6,
+    marginTop: -space.s2,
   },
-  inputHora: { flex: 1, minWidth: 0 },
+  fecha: {
+    fontFamily: tipo.inscripcion.family,
+    fontSize: tipo.inscripcion.size,
+    lineHeight: tipo.inscripcion.lineHeight,
+    letterSpacing: tipo.inscripcion.tracking,
+    color: ink.ink9,
+  },
+  hora: {
+    fontFamily: tipo.cifra.family,
+    fontSize: tipo.cifra.size,
+    lineHeight: tipo.cifra.lineHeight,
+    color: ink.ink10,
+    fontVariant: ['tabular-nums'],
+  },
+  nota: {
+    fontFamily: tipo.body.family,
+    fontSize: tipo.body.size,
+    lineHeight: tipo.body.lineHeight,
+    color: ink.ink9,
+  },
 });
