@@ -1,138 +1,127 @@
-// NIVL · Diario — la tendencia que abre el Archivo.
+// NIVL · Diario: la tendencia del Archivo (FASE3 Lote D).
 //
-// Tres cifras (ánimo de la semana contra la anterior, sueño, racha de días
-// escritos), las dos curvas de las últimas 30 entradas y las emociones que más
-// se repiten. Las cuentas vienen hechas de `journalmath.ts`; aquí solo se
-// pintan. Sin tres datos en la ventana no hay media: mejor una raya que una
-// tendencia inventada.
+// Las cifras (ánimo y sueño de la semana, racha de días escritos, entradas)
+// van en la FranjaCifras del Archivo: `cifrasTendencia` las prepara. Aquí,
+// la comparación con la semana anterior en una línea, las dos curvas de las
+// últimas 30 entradas (línea ink10 sobre una pista ink4) y las emociones que
+// más se repiten. Las cuentas vienen hechas de `journalmath.ts`. Sin tres
+// datos en la ventana no hay media: mejor una raya que una tendencia inventada.
+//
+// El ancho de las curvas se mide con onLayout: el hueco real (galería, iPad
+// a dos columnas) no es el de la ventana.
 
-import Ionicons from '@expo/vector-icons/Ionicons';
-import { StyleSheet, Text, View } from 'react-native';
+import { useState } from 'react';
+import { StyleSheet, Text, View, type LayoutChangeEvent } from 'react-native';
+import type { Cifra } from '@/components/arena';
 import { TrendLine } from '@/components/TrendLine';
-import { Card } from '@/components/ui';
-import { LEIDO_SIN_DATO, SIN_DATO } from '@/components/ui/sinDato';
+import { ink, space, stroke, type as tipo } from '@/design/tokens';
 import { MIN_DATOS_MEDIA, formatoDecimal, type ResumenTendencia } from '@/lib/journalmath';
-import { colors, fonts } from '@/lib/theme';
 
 interface Props {
   resumen: ResumenTendencia;
   /** Series cronológicas, sin nulos (`serieDe`). */
   animo: number[];
   energia: number[];
-  /** Ancho útil dentro de la tarjeta. */
-  width: number;
 }
 
-function Cifra({
-  rotulo,
-  valor,
-  unidad,
-  delta,
-  tono = 'text',
-  leido,
-}: {
-  rotulo: string;
-  valor: string;
-  unidad?: string;
-  delta?: number | null;
-  tono?: 'text' | 'gold';
-  leido: string;
-}) {
-  const sube = (delta ?? 0) > 0;
-  // La cifra entera se lee con `leido` («faltan datos»): el guion nunca suena
-  // suelto. Si un lector llegara al texto, oye «sin dato», no «guion».
+const ALTO_CURVA = 64;
+/** Margen interior de TrendLine: la pista va donde cae el valor mínimo. */
+const PAD_CURVA = 6;
+const HUECO = space.s4;
+
+/** Las cuatro cifras de la franja del Archivo. */
+export function cifrasTendencia(resumen: ResumenTendencia, entradas: number): Cifra[] {
+  const { animo: a, sueno, racha } = resumen;
+  return [
+    {
+      valor: a.actual === null ? '' : formatoDecimal(a.actual),
+      rotulo: 'Ánimo',
+      etiqueta:
+        a.actual === null
+          ? `Ánimo de los últimos 7 días: faltan datos, hacen falta ${MIN_DATOS_MEDIA}`
+          : `Ánimo medio de los últimos 7 días: ${formatoDecimal(a.actual)} de 5`,
+    },
+    {
+      valor: sueno.actual === null ? '' : formatoDecimal(sueno.actual),
+      sufijo: sueno.actual === null ? undefined : 'h',
+      rotulo: 'Sueño',
+      etiqueta:
+        sueno.actual === null
+          ? 'Sueño medio de los últimos 7 días: faltan datos'
+          : `Sueño medio de los últimos 7 días: ${formatoDecimal(sueno.actual)} horas`,
+    },
+    {
+      valor: racha,
+      sufijo: 'd',
+      rotulo: 'Racha',
+      etiqueta: `Racha de ${racha} ${racha === 1 ? 'día escrito' : 'días escritos'}`,
+    },
+    { valor: entradas, rotulo: 'Días', etiqueta: `${entradas} ${entradas === 1 ? 'día escrito' : 'días escritos'} en el archivo` },
+  ];
+}
+
+/** La frase que acompaña a la franja: cómo va la semana frente a la anterior. */
+function lineaComparativa(resumen: ResumenTendencia): string | null {
+  const { animo: a, sueno } = resumen;
+  if (a.actual === null || sueno.actual === null) {
+    return `Una media necesita ${MIN_DATOS_MEDIA} días con dato en la semana. Con menos sería una anécdota.`;
+  }
+  if (a.delta === null) return null;
+  if (a.delta === 0) return 'El ánimo, igual que los 7 días anteriores.';
+  return `El ánimo ${a.delta > 0 ? 'sube' : 'baja'} ${formatoDecimal(Math.abs(a.delta))} frente a los 7 días anteriores.`;
+}
+
+function Curva({ rotulo, valores, ancho }: { rotulo: string; valores: number[]; ancho: number }) {
   return (
-    <View style={styles.cifra} accessible accessibilityLabel={leido}>
-      <View style={styles.cifraFila}>
-        <Text
-          style={[styles.cifraValor, tono === 'gold' && { color: colors.gold }]}
-          accessibilityLabel={valor === SIN_DATO ? LEIDO_SIN_DATO : undefined}
-        >
-          {valor}
-        </Text>
-        {unidad ? <Text style={[styles.cifraUnidad, tono === 'gold' && { color: colors.gold }]}>{unidad}</Text> : null}
+    <View style={{ width: ancho }}>
+      <Text style={styles.rotulo} maxFontSizeMultiplier={1.35}>
+        {rotulo}
+      </Text>
+      <View>
+        {/* La pista: la línea de base sobre la que corre la curva. */}
+        <View style={styles.pista} pointerEvents="none" />
+        <TrendLine values={valores} width={ancho} height={ALTO_CURVA} unit="" color={ink.ink10} />
       </View>
-      {delta != null && delta !== 0 ? (
-        <View style={styles.deltaFila}>
-          <Ionicons name={sube ? 'caret-up' : 'caret-down'} size={11} color={sube ? colors.accent : colors.red} />
-          <Text style={[styles.delta, { color: sube ? colors.accent : colors.red }]}>
-            {formatoDecimal(Math.abs(delta))}
-          </Text>
-        </View>
-      ) : delta === 0 ? (
-        <Text style={styles.deltaIgual}>Igual</Text>
-      ) : null}
-      <Text style={styles.cifraRotulo}>{rotulo}</Text>
     </View>
   );
 }
 
-export function MoodTrend({ resumen, animo, energia, width }: Props) {
-  const { animo: a, sueno, racha, emociones } = resumen;
-  const mitad = Math.max(120, Math.floor((width - 16) / 2));
+export function MoodTrend({ resumen, animo, energia }: Props) {
+  const [ancho, setAncho] = useState(0);
+  const alMedir = (e: LayoutChangeEvent) => setAncho(Math.round(e.nativeEvent.layout.width));
+  const mitad = Math.floor((ancho - HUECO) / 2);
   const hayCurvas = animo.length > 1 || energia.length > 1;
-
-  const leidoAnimo =
-    a.actual === null
-      ? `Ánimo de los últimos 7 días: faltan datos, hacen falta ${MIN_DATOS_MEDIA}`
-      : `Ánimo medio de los últimos 7 días: ${formatoDecimal(a.actual)} de 5${
-          a.delta === null ? '' : a.delta === 0 ? ', igual que los 7 anteriores' : `, ${a.delta > 0 ? 'sube' : 'baja'} ${formatoDecimal(Math.abs(a.delta))} frente a los 7 anteriores`
-        }`;
+  const linea = lineaComparativa(resumen);
+  const { emociones } = resumen;
 
   return (
-    <Card>
-      <View style={styles.cifras}>
-        <Cifra
-          rotulo="Ánimo · 7 días"
-          valor={a.actual === null ? SIN_DATO : formatoDecimal(a.actual)}
-          delta={a.delta}
-          leido={leidoAnimo}
-        />
-        <Cifra
-          rotulo="Sueño · 7 días"
-          valor={sueno.actual === null ? SIN_DATO : formatoDecimal(sueno.actual)}
-          unidad={sueno.actual === null ? undefined : 'h'}
-          delta={sueno.delta}
-          leido={
-            sueno.actual === null
-              ? 'Sueño medio de los últimos 7 días: faltan datos'
-              : `Sueño medio de los últimos 7 días: ${formatoDecimal(sueno.actual)} horas`
-          }
-        />
-        <Cifra
-          rotulo={racha === 1 ? 'Día seguido' : 'Días seguidos'}
-          valor={String(racha)}
-          tono={racha > 0 ? 'gold' : 'text'}
-          leido={`Racha de ${racha} ${racha === 1 ? 'día escrito' : 'días escritos'}`}
-        />
-      </View>
-      {a.actual === null || sueno.actual === null ? (
-        <Text style={styles.nota}>
-          Una media necesita {MIN_DATOS_MEDIA} días con dato en la semana. Con menos sería una anécdota.
+    <View onLayout={alMedir}>
+      {linea ? (
+        <Text style={styles.nota} maxFontSizeMultiplier={1.6}>
+          {linea}
         </Text>
-      ) : a.delta !== null ? (
-        <Text style={styles.nota}>La flecha compara con los 7 días anteriores.</Text>
       ) : null}
 
-      {hayCurvas ? (
+      {hayCurvas && mitad > 0 ? (
         <View style={styles.curvas}>
-          <View style={{ width: mitad }}>
-            <Text style={styles.curvaRotulo}>Ánimo</Text>
-            <TrendLine values={animo} width={mitad} height={64} unit="" />
-          </View>
-          <View style={{ width: mitad }}>
-            <Text style={styles.curvaRotulo}>Energía</Text>
-            <TrendLine values={energia} width={mitad} height={64} unit="" color={colors.accentText} />
-          </View>
+          <Curva rotulo="Ánimo" valores={animo} ancho={mitad} />
+          <Curva rotulo="Energía" valores={energia} ancho={mitad} />
         </View>
       ) : null}
 
       {emociones.length > 0 ? (
         <View style={styles.emociones}>
-          <Text style={styles.curvaRotulo}>Lo que más se repite · 14 días</Text>
+          <Text style={styles.rotulo} maxFontSizeMultiplier={1.35}>
+            Lo que más se repite · 14 días
+          </Text>
           <View style={styles.emocionesFila}>
             {emociones.map((e) => (
-              <View key={e.id} style={styles.emocion} accessible accessibilityLabel={`${e.label}, ${e.count} ${e.count === 1 ? 'día' : 'días'}`}>
+              <View
+                key={e.id}
+                style={styles.emocion}
+                accessible
+                accessibilityLabel={`${e.label}, ${e.count} ${e.count === 1 ? 'día' : 'días'}`}
+              >
                 <Text style={styles.emocionTexto}>{e.label}</Text>
                 <Text style={styles.emocionCuenta}>{e.count}</Text>
               </View>
@@ -140,55 +129,46 @@ export function MoodTrend({ resumen, animo, energia, width }: Props) {
           </View>
         </View>
       ) : null}
-    </Card>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  cifras: { flexDirection: 'row', gap: 12 },
-  cifra: { flex: 1, minWidth: 0 },
-  cifraFila: { flexDirection: 'row', alignItems: 'baseline', gap: 4 },
-  cifraValor: { fontFamily: fonts.number, fontSize: 26, letterSpacing: 0.5, color: colors.text },
-  cifraUnidad: { fontFamily: fonts.heading, fontSize: 12, letterSpacing: 1, color: colors.textDim },
-  deltaFila: { flexDirection: 'row', alignItems: 'center', gap: 3, marginTop: 2 },
-  delta: { fontFamily: fonts.heading, fontSize: 12 },
-  deltaIgual: { fontFamily: fonts.body, fontSize: 12, color: colors.textFaint, marginTop: 2 },
-  cifraRotulo: {
-    fontFamily: fonts.heading,
-    fontSize: 11,
-    letterSpacing: 1.4,
+  nota: { fontFamily: tipo.bodySm.family, fontSize: tipo.bodySm.size, lineHeight: tipo.bodySm.lineHeight, color: ink.ink8 },
+  curvas: { flexDirection: 'row', justifyContent: 'space-between', gap: HUECO, marginTop: space.s5 },
+  pista: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: ALTO_CURVA - PAD_CURVA,
+    height: stroke.hairline,
+    backgroundColor: ink.ink4,
+  },
+  rotulo: {
+    fontFamily: tipo.micro.family,
+    fontSize: tipo.micro.size,
+    lineHeight: tipo.micro.lineHeight,
+    letterSpacing: tipo.micro.tracking,
     textTransform: 'uppercase',
-    color: colors.textFaint,
-    marginTop: 4,
+    color: ink.ink6,
+    marginBottom: space.s2,
   },
-  nota: { fontFamily: fonts.body, fontSize: 12, lineHeight: 17, color: colors.textFaint, marginTop: 12 },
-  curvas: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 16,
-    paddingTop: 14,
-    borderTopWidth: 1,
-    borderTopColor: colors.line,
+  emociones: {
+    marginTop: space.s5,
+    paddingTop: space.s4,
+    borderTopWidth: stroke.hairline,
+    borderTopColor: ink.ink3,
   },
-  curvaRotulo: {
-    fontFamily: fonts.heading,
-    fontSize: 11,
-    letterSpacing: 2,
-    textTransform: 'uppercase',
-    color: colors.textFaint,
-    marginBottom: 6,
-  },
-  emociones: { marginTop: 16, paddingTop: 14, borderTopWidth: 1, borderTopColor: colors.line },
-  emocionesFila: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+  emocionesFila: { flexDirection: 'row', flexWrap: 'wrap', gap: space.s2 },
   emocion: {
     flexDirection: 'row',
     alignItems: 'baseline',
-    gap: 6,
-    borderWidth: 1,
-    borderColor: colors.accentDim,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
+    gap: space.s2,
+    borderWidth: stroke.hairline,
+    borderColor: ink.ink4,
+    paddingHorizontal: space.s2,
+    paddingVertical: 2,
   },
-  emocionTexto: { fontFamily: fonts.semibold, fontSize: 12, color: colors.accentText },
-  emocionCuenta: { fontFamily: fonts.number, fontSize: 12, color: colors.text },
+  emocionTexto: { fontFamily: tipo.micro.family, fontSize: 12, lineHeight: 16, color: ink.ink8 },
+  emocionCuenta: { fontFamily: tipo.number.family, fontSize: 12, color: ink.ink10 },
 });

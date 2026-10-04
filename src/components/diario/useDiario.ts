@@ -68,6 +68,8 @@ export function useDiario(): DiarioVistaProps {
   const [loaded, setLoaded] = useState(false);
   const [chronicle, setChronicle] = useState<LineaCronica[]>([]);
   const [aviso, setAviso] = useState<string | null>(null);
+  // Fallo del guardado, en línea sobre el botón (lo escrito sigue en pantalla).
+  const [errorGuardado, setErrorGuardado] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const saving = useRef(false);
@@ -89,6 +91,7 @@ export function useDiario(): DiarioVistaProps {
     sucioRef.current = true;
     setSucio(true);
     setAviso(null);
+    setErrorGuardado(null);
   };
 
   const loadDia = useCallback(async () => {
@@ -187,6 +190,7 @@ export function useDiario(): DiarioVistaProps {
       sucioRef.current = false;
       setSucio(false);
       setAviso(null);
+      setErrorGuardado(null);
       if (next !== dia) {
         setLoaded(false);
         setDia(next);
@@ -251,6 +255,8 @@ export function useDiario(): DiarioVistaProps {
       // La foto sale de la pantalla solo si se ha borrado de verdad.
       await deleteJournalPhoto(item.photo);
       setPhotos((prev) => prev.filter((p) => p.photo.id !== item.photo.id));
+      // Borrado confirmado (FASE3, tabla de vibraciones).
+      vibrar('destructiva');
       loadArchivo();
     } catch (e) {
       avisar('Error del sistema', mensajeSistema(e));
@@ -297,6 +303,7 @@ export function useDiario(): DiarioVistaProps {
     saving.current = true;
     setBusy(true);
     setAviso(null);
+    setErrorGuardado(null);
     try {
       const { isNew } = await upsertEntry(userId, { date: dia, ...borrador });
       // El XP solo se paga por escribir el día en caliente: hoy o ayer. Rellenar
@@ -321,24 +328,26 @@ export function useDiario(): DiarioVistaProps {
         ]);
         const total = await countEntries();
         const fresh = await unlockAchievements(userId, evaluateAchievements({ journalCount: total }));
+        // Guardar con XP (FASE3, tabla de vibraciones).
         vibrar('mision');
         avisar(
           'Entrada registrada',
           `${desglose || 'La misión del diario ya estaba marcada y pagada.'}${fresh.length > 0 ? `\nLogro: ${fresh.map((a) => a.name).join(', ')}` : ''}`,
         );
       }
+      // Guardar sin XP no vibra (FASE3): ni el día atrasado ni los cambios.
       if (isNew && !(dia === dateKey() || dia === addDays(dateKey(), -1))) {
-        vibrar('mision');
         avisar('Entrada registrada', 'Día completado en tu archivo. Sin XP: solo lo paga el día en caliente.');
       }
       if (!isNew) {
-        vibrar('seleccion');
         setAviso('Cambios guardados.');
       }
       setRegistrado(true);
       await Promise.all([loadDia(), loadArchivo()]);
     } catch (e) {
-      avisar('Error del sistema', mensajeSistema(e));
+      // Fallo de la acción principal: en línea, sobre el botón, y con su vibración.
+      vibrar('penalizacion');
+      setErrorGuardado(`${mensajeSistema(e)} Tus respuestas siguen aquí.`);
     } finally {
       saving.current = false;
       setBusy(false);
@@ -361,6 +370,7 @@ export function useDiario(): DiarioVistaProps {
     ocupado: busy,
     refrescando: refreshing,
     aviso,
+    errorGuardado,
     xp: JOURNAL_XP,
     pista: promptForDate(dia),
     respuestas: { mood, energy, emotions, sleep, wins, text, lesson, gratitude, plan },
