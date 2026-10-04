@@ -67,6 +67,7 @@ async function sql(query) {
 
 // Cada migración se reconoce por un objeto que solo ella crea.
 const HUELLAS = {
+  '0056': `coalesce(obj_description('public.export_my_data()'::regprocedure,'pg_proc') like '%nivl:export-v6%', false)`,
   '0054': `coalesce(obj_description(to_regprocedure('public.waitlist_join(text,text,text,text)'),'pg_proc') like '%nivl:waitlist-0054%', false)`,
   '0060': `coalesce(obj_description(to_regprocedure('public.export_my_data()'),'pg_proc') like '%nivl:export-v5%', false)`,
   '0053': `to_regprocedure('public.my_share_alias()') is not null`,
