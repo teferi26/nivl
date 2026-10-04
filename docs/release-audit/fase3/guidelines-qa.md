@@ -97,3 +97,10 @@ Que no salgan el pie de diagnóstico ni ningún «llega pronto».
 | GL-04 | Abre un duelo con un rival que ya no es tu amigo. | No se ve, o tiene «…». |
 | GL-05 | Entra con la cuenta demo Gratis y con la Élite. | Las dos entran. La Gratis va al onboarding; la Élite ve el coach y su ludus. |
 | GL-06 | Haz el onboarding con la salud rechazada. | No se cierra (arreglo de `477c545` por OTA). |
+
+## Actualización · decisiones del coordinador (04/10/2026)
+
+- **1.2 ligas:** se ocultan en la 1.0.8 (Experiencia). Los duelos llevan «…» y desaparecen los de rivales que ya no son amigos. La moderación de ligas llega en la 1.0.9 con Seguridad. La fila de ligas pasa a CUMPLE cuando la fila 7 de la prueba física salga ✅.
+- **Tienda cerrada:** causa confirmada (OTA sin `--environment production`). La OTA `cb9ae001` se ha republicado desde `477c545` con la clave. Queda por verificar en el dispositivo (PAY-01).
+- **Build 24** por `NSPhotoLibraryAddUsageDescription` (`eda459c`), con toda esta ronda. El vídeo y las capturas de los IAP se graban en la 24. Prueba mínima: `docs/qa-audit/PRUEBA-108-BUILD24.md`, que sustituye a la de la 23.
+- El dictamen sigue en **NO-GO** hasta tener la regresión de la ronda integrada y la prueba de la 24 en ✅.
