@@ -82,5 +82,6 @@ begin
 end $$;
 revoke all on function public.my_duels() from public, anon;
 grant execute on function public.my_duels() to authenticated;
+comment on function public.my_duels() is 'nivl:competicion-0055 · resolución en todos los husos, suficiencia y semana_cerrada';
 
 commit;
