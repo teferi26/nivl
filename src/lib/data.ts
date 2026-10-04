@@ -293,7 +293,9 @@ export async function createStarterQuests(
   if (quests.length === 0) return [];
   const { data, error } = await supabase
     .from('quests')
-    .insert(quests.map((q) => ({ user_id: userId, ...q })))
+    // Todas las filas con las mismas claves: supabase-js manda NULL en las que
+    // faltan y health_data es NOT NULL (fallo del onboarding, 04/10/2026).
+    .insert(quests.map((q) => ({ user_id: userId, ...q, health_data: q.health_data === true })))
     .select('id, title');
   if (error) throw error;
   return (data ?? []) as { id: string; title: string }[];

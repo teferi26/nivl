@@ -72,6 +72,7 @@ const HUELLAS = {
   '0056': `coalesce(obj_description('public.export_my_data()'::regprocedure,'pg_proc') like '%nivl:export-v6%', false)`,
   '0054': `coalesce(obj_description(to_regprocedure('public.waitlist_join(text,text,text,text)'),'pg_proc') like '%nivl:waitlist-0054%', false)`,
   '0060': `coalesce(obj_description(to_regprocedure('public.export_my_data()'),'pg_proc') like '%nivl:export-v5%', false)`,
+  '0061': `coalesce(obj_description(to_regprocedure('public._health_data_nulo_es_falso()'),'pg_proc') like '%nivl:0061%', false)`,
   '0053': `to_regprocedure('public.my_share_alias()') is not null`,
   '0052': `to_regprocedure('public.friends_ranks()') is not null`,
   '0047': `exists(select 1 from information_schema.columns where table_schema = 'public' and table_name = 'coach_runs' and column_name = 'state_chars')`,
