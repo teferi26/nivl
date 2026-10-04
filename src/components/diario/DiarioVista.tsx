@@ -6,7 +6,11 @@
 // «DIARIO», con la acción «Archivo» en contorno), la fila del día con sus
 // flechas de 44, el estado del día en una TarjetaArena (grano «Registrado»,
 // trama «Cambios sin guardar», contorno «Sin registrar») con la barra de
-// 8 segmentos de lo respondido, y las ocho preguntas I a VIII entre hairlines.
+// 7 segmentos de lo respondido (las preguntas que cuenta el guardado; los
+// comprobantes, VIII, se guardan solos y quedan fuera de la cuenta), y las
+// ocho preguntas I a VIII entre hairlines. Si la carga del día falla, un
+// ErrorSistema con «Reintentar» ocupa el formulario y el pie desaparece: una
+// entrada que ya existe nunca se pisa con un formulario en blanco.
 // INVERSIÓN única: el pie fijo «Registrar el día · +N XP».
 //
 // Archivo: «ARCHIVO» y su contenido (Archivo.tsx), con su propia inversión
@@ -91,6 +95,8 @@ export interface DiarioVistaProps {
   aviso: string | null;
   /** Fallo del último guardado, ya escrito para el usuario. */
   errorGuardado: string | null;
+  /** Fallo al cargar el día, ya escrito para el usuario: sin formulario ni pie. */
+  errorCarga: string | null;
   /** XP del día en caliente (JOURNAL_XP). */
   xp: number;
   /** La pista de «Lo vivido» de ese día (promptForDate). */
@@ -129,6 +135,8 @@ export interface DiarioVistaProps {
     onQuitarFoto: (item: FotoDiario) => void;
     onGuardar: () => void;
     onRefrescar: () => void;
+    /** Vuelve a pedir el día tras un fallo de carga. */
+    onReintentarCarga: () => void;
   };
 }
 
@@ -202,7 +210,7 @@ function EstadoDia({
     ? 'Lo que has cambiado aún no está guardado.'
     : registrado
       ? 'Ya está en tu archivo. Puedes corregirlo cuando quieras.'
-      : 'El cierre del día. Ocho preguntas cortas, ninguna obligatoria: responde las que hoy tengan algo que decir.';
+      : 'El cierre del día. Siete preguntas cortas; los comprobantes se guardan solos.';
   return (
     <TarjetaArena variante={variante} rotulo={rotulo} meta={enCaliente && !registrado ? `+${xp} XP` : undefined}>
       <Barra
@@ -232,6 +240,7 @@ export function DiarioVista({
   refrescando,
   aviso,
   errorGuardado,
+  errorCarga,
   xp,
   pista,
   respuestas,
@@ -253,10 +262,11 @@ export function DiarioVista({
   const enCaliente = dia === hoy || dia === addDays(hoy, -1);
   const esHoy = dia >= hoy;
   const escribiendo = segmento === 'escribir';
-  // Ocho preguntas a la vista (I a VIII): los comprobantes cuentan en la
-  // barra aunque `completitud` (y el guardado) no los cuente.
-  const total = hecho.total + 1;
-  const hechas = hecho.hechas + (fotos.length > 0 ? 1 : 0);
+  // La barra cuenta lo mismo que el guardado (`completitud`): las siete
+  // preguntas I a VII. Los comprobantes (VIII) se guardan solos al hacerlos y
+  // no entran en la cuenta, aunque su numeral se marque si hay alguno.
+  const total = hecho.total;
+  const hechas = hecho.hechas;
 
   // La escritura se acota a 640; el Archivo usa la columna entera de la pantalla.
   const columna: ViewStyle = escribiendo
@@ -265,7 +275,7 @@ export function DiarioVista({
 
   return (
     <Screen plain>
-      <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         <ScrollView
           ref={scrollRef}
           keyboardShouldPersistTaps="handled"
@@ -331,7 +341,10 @@ export function DiarioVista({
                 </Pressable>
               </View>
 
-              {!cargado ? (
+              {errorCarga ? (
+                // Sin el día no hay formulario: guardar uno en blanco pisaría la entrada.
+                <ErrorSistema mensaje={errorCarga} onReintentar={acciones.onReintentarCarga} />
+              ) : !cargado ? (
                 <CargaArena etiqueta="Cargando el día" formas={['tarjeta', 'rotulo', 'filas', 'rotulo', 'filas']} />
               ) : (
                 // La clave remonta el formulario al cambiar de día: ninguna fila de
@@ -441,19 +454,38 @@ export function DiarioVista({
                   >
                     <View style={styles.fotos}>
                       {fotos.map((item) => (
-                        <Pressable
-                          key={item.photo.id}
-                          onLongPress={() => acciones.onQuitarFoto(item)}
-                          style={({ pressed }) => pressed && styles.pulsado}
-                          accessibilityRole="imagebutton"
-                          accessibilityLabel="Comprobante del diario; mantén pulsado para eliminar"
-                        >
-                          {item.url ? (
-                            <Image source={{ uri: item.url }} style={styles.foto} contentFit="cover" />
-                          ) : (
-                            <View style={styles.foto} />
-                          )}
-                        </Pressable>
+                        <View key={item.photo.id} style={styles.fotoMarco}>
+                          <Pressable
+                            onLongPress={() => acciones.onQuitarFoto(item)}
+                            style={({ pressed }) => pressed && styles.pulsado}
+                            accessibilityRole="imagebutton"
+                            accessibilityLabel="Comprobante del diario; mantén pulsado para eliminar"
+                            // Lectores de pantalla: borrar sin depender de la pulsación larga.
+                            accessibilityActions={[{ name: 'delete', label: 'Eliminar comprobante' }]}
+                            onAccessibilityAction={(e) => {
+                              if (e.nativeEvent.actionName === 'delete') acciones.onQuitarFoto(item);
+                            }}
+                          >
+                            {item.url ? (
+                              <Image source={{ uri: item.url }} style={styles.foto} contentFit="cover" />
+                            ) : (
+                              <View style={styles.foto} />
+                            )}
+                          </Pressable>
+                          {Platform.OS === 'web' ? (
+                            // En la web no hay pulsación larga fiable: una «x» con su blanco de 44.
+                            <Pressable
+                              onPress={() => acciones.onQuitarFoto(item)}
+                              style={({ pressed }) => [styles.fotoQuitar, pressed && styles.pulsado]}
+                              accessibilityRole="button"
+                              accessibilityLabel="Eliminar comprobante"
+                            >
+                              <View style={styles.fotoQuitarMarca}>
+                                <Ionicons name="close" size={14} color={ink.ink10} />
+                              </View>
+                            </Pressable>
+                          ) : null}
+                        </View>
                       ))}
                       <Pressable
                         onPress={acciones.onAnadirFoto}
@@ -466,7 +498,9 @@ export function DiarioVista({
                     </View>
                     {fotos.length > 0 ? (
                       <Text style={styles.nota} maxFontSizeMultiplier={1.6}>
-                        Mantén pulsada una foto para eliminarla.
+                        {Platform.OS === 'web'
+                          ? 'Toca la x de una foto para eliminarla.'
+                          : 'Mantén pulsada una foto para eliminarla.'}
                       </Text>
                     ) : null}
                   </Pregunta>
@@ -478,7 +512,7 @@ export function DiarioVista({
 
         {/* Pie fijo: registrar siempre a mano, sin bajar ocho preguntas. La
             única inversión de la escritura. */}
-        {escribiendo && cargado ? (
+        {escribiendo && cargado && !errorCarga ? (
           <View style={[styles.pie, { paddingBottom: space.s3 + insets.bottom }]}>
             <View style={[styles.pieDentro, { maxWidth: ANCHO_ESCRITURA + 2 * gutter, paddingHorizontal: gutter }]}>
               {errorGuardado ? (
@@ -581,6 +615,28 @@ const styles = StyleSheet.create({
   largo: { minHeight: 130 },
   fotos: { flexDirection: 'row', flexWrap: 'wrap', gap: space.s2 },
   foto: { width: FOTO, height: FOTO, backgroundColor: ink.ink2, borderWidth: stroke.hairline, borderColor: ink.ink4 },
+  fotoMarco: { position: 'relative' },
+  // El blanco de 44 sobresale por la esquina; la marca visible es pequeña.
+  fotoQuitar: {
+    position: 'absolute',
+    top: -space.s2,
+    right: -space.s2,
+    width: BOTON,
+    height: BOTON,
+    alignItems: 'flex-end',
+    justifyContent: 'flex-start',
+  },
+  fotoQuitarMarca: {
+    width: 22,
+    height: 22,
+    marginTop: space.s2,
+    marginRight: space.s2,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: ink.ink0,
+    borderWidth: stroke.hairline,
+    borderColor: ink.ink6,
+  },
   fotoNueva: { backgroundColor: 'transparent', alignItems: 'center', justifyContent: 'center' },
   nota: {
     fontFamily: tipo.bodySm.family,

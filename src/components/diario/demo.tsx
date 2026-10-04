@@ -147,6 +147,7 @@ function base(cambios: Partial<DiarioVistaProps> = {}): DiarioVistaProps {
     refrescando: false,
     aviso: null,
     errorGuardado: null,
+    errorCarga: null,
     xp: 10,
     pista: '¿Qué pasó hoy que quieras recordar dentro de un año?',
     respuestas,
@@ -190,6 +191,7 @@ function base(cambios: Partial<DiarioVistaProps> = {}): DiarioVistaProps {
       onQuitarFoto: nada,
       onGuardar: nada,
       onRefrescar: nada,
+      onReintentarCarga: nada,
     },
     ...cambios,
   };
@@ -231,6 +233,13 @@ export const DEMO: DemoPantalla | null = {
       id: 'cargando',
       titulo: 'Cargando',
       render: () => <DiarioVista {...base({ cargado: false })} />,
+    },
+    {
+      id: 'error-carga',
+      titulo: 'Error al cargar el día',
+      render: () => (
+        <DiarioVista {...base({ errorCarga: 'Sin conexión. Revisa la red y vuelve a intentarlo.' })} />
+      ),
     },
     {
       id: 'error-guardado',

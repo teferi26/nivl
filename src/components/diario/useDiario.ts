@@ -70,6 +70,9 @@ export function useDiario(): DiarioVistaProps {
   const [aviso, setAviso] = useState<string | null>(null);
   // Fallo del guardado, en línea sobre el botón (lo escrito sigue en pantalla).
   const [errorGuardado, setErrorGuardado] = useState<string | null>(null);
+  // Fallo al cargar el día: la vista no enseña el formulario ni el pie, así
+  // que una entrada existente nunca se guarda encima con todo en blanco.
+  const [errorCarga, setErrorCarga] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const saving = useRef(false);
@@ -125,8 +128,11 @@ export function useDiario(): DiarioVistaProps {
       setSucio(false);
       setPhotos(conUrl);
       setChronicle(events.map(lineaDeCronica).filter((l): l is LineaCronica => l !== null));
+      // El error se quita solo con el día ya en pantalla: mientras tanto el
+      // formulario (vacío o de otro día) no se enseña ni se puede guardar.
+      setErrorCarga(null);
     } catch (e) {
-      if (mio === turno.current) avisar('Error del sistema', mensajeSistema(e));
+      if (mio === turno.current) setErrorCarga(mensajeSistema(e));
     } finally {
       if (mio === turno.current) setLoaded(true);
     }
@@ -193,6 +199,7 @@ export function useDiario(): DiarioVistaProps {
       setErrorGuardado(null);
       if (next !== dia) {
         setLoaded(false);
+        setErrorCarga(null);
         setDia(next);
       }
       if (alEscribir) setSegmento('escribir');
@@ -294,10 +301,14 @@ export function useDiario(): DiarioVistaProps {
 
   const save = async () => {
     // Cerrojo síncrono: dos toques rápidos ya no insertan dos entradas ni duplican XP.
-    if (!userId || busy || saving.current) return;
+    if (!userId || busy || saving.current || errorCarga) return;
     // Una entrada en blanco no es un cierre: ni ocupa el archivo ni cobra XP.
     if (entradaVacia(borrador)) {
-      setAviso('Aún no hay nada que registrar. Responde al menos una pregunta; las demás pueden esperar.');
+      setAviso(
+        photos.length > 0
+          ? 'Tus fotos ya están guardadas. Para registrar el día, responde al menos una pregunta.'
+          : 'Aún no hay nada que registrar. Responde al menos una pregunta; las demás pueden esperar.',
+      );
       return;
     }
     saving.current = true;
@@ -371,6 +382,7 @@ export function useDiario(): DiarioVistaProps {
     refrescando: refreshing,
     aviso,
     errorGuardado,
+    errorCarga,
     xp: JOURNAL_XP,
     pista: promptForDate(dia),
     respuestas: { mood, energy, emotions, sleep, wins, text, lesson, gratitude, plan },
@@ -426,6 +438,12 @@ export function useDiario(): DiarioVistaProps {
       onQuitarFoto: removePhoto,
       onGuardar: save,
       onRefrescar: refrescar,
+      onReintentarCarga: () => {
+        // Huecos mientras se reintenta, nunca el formulario sin datos.
+        setErrorCarga(null);
+        setLoaded(false);
+        void loadDia();
+      },
     },
   };
 }
