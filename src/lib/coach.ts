@@ -12,7 +12,7 @@ import { fetch as streamingFetch } from 'expo/fetch';
 import type { Slide } from './photos';
 import { supabase } from './supabase';
 import { dateKey } from './dates';
-import { requireHealthConsent } from './health';
+import { fetchHealthConsent, requireHealthConsent } from './health';
 import { ErrorVisible } from './validation';
 import { sinGuiones } from './singuiones';
 
@@ -428,8 +428,15 @@ export const MSG_HECHO_NO_EXISTE = 'Ese recuerdo ya no está en la memoria del c
  * Desde el turno siguiente el coach ya no lo ve: los hechos se leen en cada
  * turno, no se guardan en caché.
  */
+export const MSG_MEMORIA_SIN_PERMISO =
+  'Con el permiso de salud retirado, la memoria del coach se borra entera: termina el borrado pendiente en Perfil.';
+
 export async function borrarHecho(id: string): Promise<void> {
-  await requireHealthConsent();
+  // Sin permiso de salud la RLS no deja tocar coach_facts (política
+  // restrictiva health_permission). No es un muro para borrar: retirar el
+  // permiso BORRA toda la memoria (complete_health_erasure: hechos, dossier y
+  // conversación). El aviso lleva ahí, nunca a aceptar.
+  if (!(await fetchHealthConsent()).accepted) throw new ErrorVisible(MSG_MEMORIA_SIN_PERMISO);
   const { data, error } = await supabase.from('coach_facts').delete().eq('id', id).select('id');
   if (error) throw error;
   if (!data?.length) throw new ErrorVisible(MSG_HECHO_NO_EXISTE);

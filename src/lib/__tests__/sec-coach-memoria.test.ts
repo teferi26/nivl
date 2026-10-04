@@ -2,17 +2,17 @@
 // La RLS de coach_facts está probada en producción con BEGIN…ROLLBACK: A borra
 // el suyo (1 fila) y no el de B (0 filas). Aquí, el cliente.
 
-import { borrarHecho, MSG_HECHO_NO_EXISTE } from '../coach';
+import { borrarHecho, MSG_HECHO_NO_EXISTE, MSG_MEMORIA_SIN_PERMISO } from '../coach';
 import { ErrorVisible } from '../validation';
 
 const mockSelect = jest.fn();
 const mockEq = jest.fn(() => ({ select: mockSelect }));
 const mockDelete = jest.fn(() => ({ eq: mockEq }));
 const mockFrom = jest.fn((_tabla: string) => ({ delete: mockDelete }));
-const mockRequireHealth = jest.fn(async () => undefined);
+const mockConsent = jest.fn(async () => ({ accepted: true, erasurePending: false }));
 jest.mock('expo/fetch', () => ({ fetch: jest.fn() }));
 jest.mock('../supabase', () => ({ supabase: { from: (t: string) => mockFrom(t) } }));
-jest.mock('../health', () => ({ requireHealthConsent: () => mockRequireHealth() }));
+jest.mock('../health', () => ({ fetchHealthConsent: () => mockConsent(), requireHealthConsent: jest.fn() }));
 
 beforeEach(() => jest.clearAllMocks());
 
@@ -29,9 +29,10 @@ test('si no se borra nada (id ajeno o ya borrado), avisa en vez de fingir éxito
   await expect(borrarHecho('ajeno')).rejects.toEqual(new ErrorVisible(MSG_HECHO_NO_EXISTE));
 });
 
-test('sin permiso de salud no se intenta borrar (la RLS lo bloquearía en silencio)', async () => {
-  mockRequireHealth.mockRejectedValueOnce(new ErrorVisible('Activa el permiso de salud'));
-  await expect(borrarHecho('f1')).rejects.toBeInstanceOf(ErrorVisible);
+test('sin permiso de salud no se intenta borrar y el aviso lleva al borrado, nunca a aceptar', async () => {
+  mockConsent.mockResolvedValueOnce({ accepted: false, erasurePending: true });
+  await expect(borrarHecho('f1')).rejects.toEqual(new ErrorVisible(MSG_MEMORIA_SIN_PERMISO));
+  expect(MSG_MEMORIA_SIN_PERMISO).not.toMatch(/activa|acepta/i);
   expect(mockFrom).not.toHaveBeenCalled();
 });
 
