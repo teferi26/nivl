@@ -15,7 +15,7 @@
 // acabar. La cabecera, con motivo, sale de COPY_UPSELL (`eyebrow`, `titulo`).
 
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Platform, StyleSheet, Text, View } from 'react-native';
 import { ProOffer } from '@/components/ProOffer';
 import { XPBar } from '@/components/XPBar';
@@ -74,12 +74,26 @@ export default function Pro() {
   const [verOferta, setVerOferta] = useState(motivo !== null);
   // Una sola respuesta por visita: salir después de comprar no es un «Ahora no».
   const [respondida, setRespondida] = useState(false);
+  const respondidaRef = useRef(false);
 
   const responder = (r: RespuestaOferta) => {
-    if (!motivo || respondida) return;
+    if (!motivo || respondida || respondidaRef.current) return;
+    respondidaRef.current = true;
     setRespondida(true);
     void anotarOferta(motivo, r, 'linea');
   };
+
+  // Salir sin responder por cualquier camino (gesto atrás, botón atrás de
+  // Android, cambiar de pestaña que desmonta) también es un «Ahora no»: así
+  // arranca la pausa de 72 h y no se insiste.
+  useEffect(() => {
+    return () => {
+      if (motivo && !respondidaRef.current) {
+        respondidaRef.current = true;
+        void anotarOferta(motivo, 'cerrada', 'linea');
+      }
+    };
+  }, [motivo]);
 
   const load = useCallback(async () => {
     // Sin sesión no hay nada que leer, pero la pantalla no puede quedarse
