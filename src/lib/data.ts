@@ -1,11 +1,20 @@
 import { requireHealthConsent } from './health';
 import { decode } from 'base64-arraybuffer';
 import { kindMeta, type StarterQuest } from './kinds';
+import { conLimiteDeRed } from './limiteRed';
 import { supabase } from './supabase';
 import type { Completion, Difficulty, Profile, Quest, Stat } from './types';
 
-export async function ensureProfile(userId: string): Promise<Profile> {
-  const { data } = await supabase.from('profiles').select('*').eq('id', userId).maybeSingle();
+/**
+ * El perfil (creándolo si aún no existe). Con tope de espera: una red colgada
+ * falla con «sin conexión» en vez de dejar el arranque en «cargando».
+ */
+export function ensureProfile(userId: string): Promise<Profile> {
+  return conLimiteDeRed(leerOCrearPerfil(userId));
+}
+
+async function leerOCrearPerfil(userId: string): Promise<Profile> {
+  const { data } =await supabase.from('profiles').select('*').eq('id', userId).maybeSingle();
   if (data) return data as Profile;
   // ON CONFLICT DO NOTHING (ignoreDuplicates): el trigger handle_new_user ya
   // pudo crear la fila en esta misma carrera. Un insert pelado lanzaba
