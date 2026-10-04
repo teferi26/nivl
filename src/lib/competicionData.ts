@@ -84,9 +84,14 @@ export interface Duelo {
   week_start: string;
   status: 'pending' | 'accepted' | 'declined' | 'done' | 'cancelled';
   mi_indice: number;
-  su_indice: number;
+  /**
+   * Del rival solo con duelo aceptado o terminado, sin bloqueo ni suspensión
+   * y si el rival es visible (0055, Seguridad). Si no: null = «oculto»
+   * (sin barra ni «va delante»).
+   */
+  su_indice: number | null;
   mis_dias: number;
-  sus_dias: number;
+  sus_dias: number | null;
   /** Solo al pasar la semana: 'gano' | 'pierdo' | 'empate' | 'sin_datos'. */
   resultado: 'gano' | 'pierdo' | 'empate' | 'sin_datos' | null;
   /**
@@ -96,7 +101,7 @@ export interface Duelo {
    * ya ha terminado en la hora local («Semana cerrada · resolviendo»).
    */
   mi_suficiente?: boolean;
-  su_suficiente?: boolean;
+  su_suficiente?: boolean | null;
   semana_cerrada?: boolean;
 }
 
