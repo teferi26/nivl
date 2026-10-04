@@ -1,11 +1,12 @@
 import { act, createElement, type ReactElement } from 'react';
 import { router } from 'expo-router';
 import { vibrar } from '@/design/haptics';
-import { ProOfferActions, ProOfferBody, ProOfferLegal, ProUpsellLine, useProOffer } from '@/components/ProOffer';
+import { AVISO_SIN_PERMISO, ProOfferActions, ProOfferBody, ProOfferLegal, ProUpsellLine, useProOffer } from '@/components/ProOffer';
 import { introsDeTienda, preciosDeTienda, purchase, restorePurchases, startTrial, StorePriceChangedError, type Momento, type OfferTier, type PreciosTienda, type ProPlanId } from '../pro';
 
 const mockOS = { OS: 'ios' };
 const mockTienda = { abierta: true };
+const mockPermiso = { asegurar: jest.fn(() => Promise.resolve(true)) };
 jest.mock('expo-router', () => ({ router: { push: jest.fn() } }));
 jest.mock('@/lib/pro', () => ({
   ...jest.requireActual('@/lib/proplans'),
@@ -21,7 +22,7 @@ jest.mock('@/lib/pro', () => ({
 }));
 jest.mock('@/lib/data', () => ({ insertEvent: jest.fn() }));
 jest.mock('@/components/ConsentimientoIA', () => ({
-  useConsentimientoIA: () => ({ asegurar: () => Promise.resolve(true), hoja: null }),
+  useConsentimientoIA: () => ({ asegurar: () => mockPermiso.asegurar(), hoja: null }),
 }));
 jest.mock('react-native', () => ({
   Linking: { openURL: jest.fn().mockResolvedValue(undefined) },
@@ -79,6 +80,7 @@ beforeEach(() => {
   jest.clearAllMocks();
   mockOS.OS = 'ios';
   mockTienda.abierta = true;
+  mockPermiso.asegurar.mockReset().mockResolvedValue(true);
   prices.mockReset().mockResolvedValue({ nivl_pro_anual: '$109.99' });
   intros.mockReset().mockResolvedValue({});
   buy.mockReset().mockResolvedValue('cancelada');
@@ -362,8 +364,9 @@ describe('fase 2: oferta con motivo y línea de upsell', () => {
     mockTienda.abierta = false;
     await mount(true);
     const texto = content();
-    expect(texto).toContain('sin tarjeta y sin cobro');
+    expect(texto).toContain('gratis y una sola vez por cuenta');
     expect(texto).toContain('No se renueva sola');
+    expect(texto).not.toMatch(/tarjeta/);
     expect(button('Probar el coach 7 días').props.disabled).toBeFalsy();
     expect(button('Seguir gratis').props.disabled).toBe(false);
   });
@@ -378,10 +381,67 @@ describe('fase 2: oferta con motivo y línea de upsell', () => {
     expect(button('Probar el coach 7 días')).toBeTruthy();
   });
 
+  test('tienda cerrada: Términos, Privacidad y EULA (iOS) siguen a la vista; sin Restaurar ni renovación', async () => {
+    mockTienda.abierta = false;
+    await mount(false, null, { motivo: 'firma' });
+    const texto = content();
+    expect(texto).toContain('Términos de uso');
+    expect(texto).toContain('Política de privacidad');
+    expect(texto).toContain('EULA de Apple');
+    expect(texto).not.toContain('Restaurar compras');
+    expect(texto).not.toContain('renovación automática');
+    const { Linking } = jest.requireMock<{ Linking: { openURL: jest.Mock } }>('react-native');
+    await act(async () => renderer!.root.findByProps({ accessibilityLabel: 'Términos de uso' }).props.onPress());
+    await act(async () => renderer!.root.findByProps({ accessibilityLabel: 'Política de privacidad' }).props.onPress());
+    expect(Linking.openURL).toHaveBeenCalledWith('https://nivl.app/terminos');
+    expect(Linking.openURL).toHaveBeenCalledWith('https://nivl.app/privacidad');
+    await act(async () => renderer!.unmount());
+    renderer = null;
+    // En Android, con la tienda cerrada, los dos enlaces y ningún EULA de Apple.
+    mockOS.OS = 'android';
+    await mount(false);
+    expect(content()).toContain('Términos de uso');
+    expect(content()).toContain('Política de privacidad');
+    expect(content()).not.toContain('EULA');
+  });
+
+  test('sin permiso de IA al comprar: aviso visible, sin cobro, y «Revisar el permiso» reabre la hoja', async () => {
+    prices.mockResolvedValue(CATALOGO);
+    mockPermiso.asegurar.mockResolvedValue(false);
+    await mount();
+    await act(async () => button('Activar NIVL Pro anual · 99,99 € al año').props.onPress());
+    expect(buy).not.toHaveBeenCalled();
+    expect(content()).toContain(AVISO_SIN_PERMISO);
+    expect(vibrar).not.toHaveBeenCalledWith('mision');
+    // Revisar y aceptar: el aviso se va y no se compra solo.
+    mockPermiso.asegurar.mockResolvedValue(true);
+    await act(async () => button('Revisar el permiso').props.onPress());
+    expect(mockPermiso.asegurar).toHaveBeenCalledTimes(2);
+    expect(content()).not.toContain(AVISO_SIN_PERMISO);
+    expect(content()).not.toContain('Revisar el permiso');
+    expect(buy).not.toHaveBeenCalled();
+    // Con el permiso dado, la compra sigue su camino de siempre.
+    await act(async () => button('Activar NIVL Pro anual · 99,99 € al año').props.onPress());
+    expect(buy).toHaveBeenCalledTimes(1);
+  });
+
+  test('sin permiso de IA al probar: aviso visible, la prueba no empieza, y se puede revisar', async () => {
+    prices.mockResolvedValue(CATALOGO);
+    mockPermiso.asegurar.mockResolvedValue(false);
+    await mount(true);
+    await act(async () => button('Probar el coach 7 días').props.onPress());
+    expect(startTrial).not.toHaveBeenCalled();
+    expect(content()).toContain(AVISO_SIN_PERMISO);
+    await act(async () => button('Revisar el permiso').props.onPress());
+    expect(mockPermiso.asegurar).toHaveBeenCalledTimes(2);
+    expect(content()).toContain(AVISO_SIN_PERMISO);
+    expect(startTrial).not.toHaveBeenCalled();
+  });
+
   test('fase 3: sin prueba disponible no se menciona ninguna prueba', async () => {
     prices.mockResolvedValue(CATALOGO);
     await mount(false);
-    expect(content()).not.toMatch(/sin tarjeta|Probar|7 días/);
+    expect(content()).not.toMatch(/una sola vez por cuenta|Probar|7 días/);
   });
 });
 
