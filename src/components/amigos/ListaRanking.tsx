@@ -91,7 +91,7 @@ export function ListaRanking({
               onPress={!b.isMe ? () => onSafety(b) : undefined}
               onLongPress={quitar}
               disabled={b.isMe}
-              accessibilityActions={quitar ? [{ name: 'longpress', label: 'Quitar' }] : undefined}
+              accessibilityActions={quitar ? [{ name: 'longpress', label: 'Quitar amigo' }] : undefined}
               onAccessibilityAction={
                 quitar
                   ? (e) => {

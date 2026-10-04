@@ -14,7 +14,7 @@
 import type { ReactNode } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Campo, CargaArena, EncabezadoArena, Entrada, TarjetaArena } from '@/components/arena';
-import { Button, Screen } from '@/components/ui';
+import { Button, Screen, useAnunciar } from '@/components/ui';
 import { ink, space, type as tipo } from '@/design/tokens';
 import { checkPassword } from '@/lib/validation';
 import { AYUDA_CONTRASENA, FUERZA } from './formulario';
@@ -61,6 +61,8 @@ function Resultado({
   boton: string;
   onPress: () => void;
 }) {
+  // En iOS el rol alerta no habla: el resultado se anuncia a mano.
+  useAnunciar(`${rotulo}. ${mensaje}`);
   return (
     <View style={styles.pila}>
       <View accessibilityRole="alert" accessibilityLiveRegion="polite">
@@ -103,6 +105,7 @@ export function RestablecerVista(p: RestablecerVistaProps) {
   const pw = checkPassword(p.nueva, p.correo);
   const coinciden = p.nueva === p.repite;
   const puede = pw.ok && coinciden && !p.enviando;
+  useAnunciar(p.error);
 
   let cuerpo: ReactNode;
   if (p.fase === 'hecho') {

@@ -306,6 +306,7 @@ function FilaTarea({
       }
       onPress={onPress}
       onLongPress={onLongPress}
+      accessibilityLongPressLabel="Borrar tarea"
       disabled={t.done}
       accessibilityRole="checkbox"
       accessibilityState={{ checked: t.done, disabled: t.done }}

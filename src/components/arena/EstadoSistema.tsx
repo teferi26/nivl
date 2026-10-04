@@ -3,7 +3,7 @@
 //   · ErrorSistema → una carga o una acción que no ha salido. TarjetaArena
 //     contorno con el rótulo grabado «El sistema no responde», el mensaje en
 //     bodySm ink8 y «Reintentar» en secondary (no gasta la inversión de la
-//     pantalla). Se anuncia al lector como alerta.
+//     pantalla). Se anuncia al lector (useAnunciar: en iOS el rol alerta no habla).
 //   · CargaArena → el hueco con la forma final mientras carga: franja de
 //     cifras, rótulo, tarjeta o filas. Un solo `progressbar` con su etiqueta;
 //     los bloques de dentro son mudos (Skeleton).
@@ -14,6 +14,7 @@
 import { StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 import { Button } from '@/components/ui/Button';
 import { Skeleton, SkeletonRows } from '@/components/ui/Skeleton';
+import { useAnunciar } from '@/components/ui/useAnunciar';
 import { ink, space, stroke, type as tipo } from '@/design/tokens';
 import { TarjetaArena } from './TarjetaArena';
 
@@ -39,6 +40,8 @@ export function ErrorSistema({
   rotulo = 'El sistema no responde',
   style,
 }: ErrorSistemaProps) {
+  // VoiceOver no habla con role="alert": se anuncia a mano.
+  useAnunciar(mensaje);
   return (
     <View accessibilityRole="alert" accessibilityLiveRegion="polite" style={style}>
       <TarjetaArena variante="contorno" rotulo={rotulo} style={compacto ? styles.compacta : undefined}>

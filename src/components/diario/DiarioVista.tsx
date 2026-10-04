@@ -114,6 +114,10 @@ export interface DiarioVistaProps {
     recuerdos: JournalEntry[];
     photoCounts: Map<string, number>;
     loadPhotos: (date: string) => Promise<string[]>;
+    /** El Archivo no ha cargado (mensajeSistema). */
+    error: string | null;
+    reintentando: boolean;
+    onReintentar: () => void;
   };
   /** El hook vuelve arriba al cambiar de día o de segmento. */
   scrollRef?: RefObject<ScrollView | null>;
@@ -311,6 +315,9 @@ export function DiarioVista({
               recuerdos={archivo.recuerdos}
               photoCounts={archivo.photoCounts}
               loadPhotos={archivo.loadPhotos}
+              error={archivo.error}
+              reintentando={archivo.reintentando}
+              onReintentar={archivo.onReintentar}
               onOpen={(date) => irADia(date, true)}
               onWriteToday={() => irADia(hoy, true)}
             />

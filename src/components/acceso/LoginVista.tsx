@@ -21,7 +21,7 @@
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View, type LayoutChangeEvent } from 'react-native';
 import { Arena, ASangre, Campo, Entrada, Laurel, TarjetaArena } from '@/components/arena';
-import { Button, Check, Screen } from '@/components/ui';
+import { Button, Check, Screen, useAnunciar } from '@/components/ui';
 import { vibrar } from '@/design/haptics';
 import { ink, space, stroke, type as tipo } from '@/design/tokens';
 import { LEGAL_URLS } from '@/lib/proplans';
@@ -83,6 +83,9 @@ const ANCHO_FORM = 440;
 
 export function LoginVista(p: LoginVistaProps) {
   const { portal, modo, campos, tocados, verContrasena, error, aviso, enviando, plegada } = p;
+  // En iOS el rol alerta no habla: el error y el aviso se anuncian a mano.
+  useAnunciar(error);
+  useAnunciar(aviso);
   const ev = evaluarLogin(modo, campos, tocados);
   const alta = modo === 'signup';
   const recuperar = modo === 'recover';

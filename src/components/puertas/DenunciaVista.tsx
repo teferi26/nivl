@@ -63,17 +63,19 @@ export function DenunciaVista(p: DenunciaVistaProps) {
           <Text style={texto.etiqueta} maxFontSizeMultiplier={1.35}>
             Motivo
           </Text>
-          <ChipWrap>
-            {MOTIVOS_IA.map((m) => (
-              <Chip
-                key={m.value}
-                label={m.label}
-                selected={p.motivo === m.value}
-                disabled={p.ocupada}
-                onPress={() => p.onMotivo(m.value)}
-              />
-            ))}
-          </ChipWrap>
+          <View accessibilityRole="radiogroup" accessibilityLabel="Motivo">
+            <ChipWrap>
+              {MOTIVOS_IA.map((m) => (
+                <Chip
+                  key={m.value}
+                  label={m.label}
+                  selected={p.motivo === m.value}
+                  disabled={p.ocupada}
+                  onPress={() => p.onMotivo(m.value)}
+                />
+              ))}
+            </ChipWrap>
+          </View>
         </View>
       ) : null}
 

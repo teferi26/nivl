@@ -87,6 +87,10 @@ export function useDiario(): DiarioVistaProps {
   const [recuerdos, setRecuerdos] = useState<JournalEntry[]>([]);
   const [photoCounts, setPhotoCounts] = useState<Map<string, number>>(new Map());
   const [archivoLoaded, setArchivoLoaded] = useState(false);
+  // Si el Archivo no carga, se dice y se puede reintentar: un fallo no se
+  // disfraza de «Tu archivo empieza hoy».
+  const [errorArchivo, setErrorArchivo] = useState<string | null>(null);
+  const [archivoCargando, setArchivoCargando] = useState(false);
   const fotosPorDia = useRef(new Map<string, JournalPhoto[]>());
   const urlsPorDia = useRef(new Map<string, Promise<string[]>>());
 
@@ -139,6 +143,7 @@ export function useDiario(): DiarioVistaProps {
   }, [dia]);
 
   const loadArchivo = useCallback(async () => {
+    setArchivoCargando(true);
     try {
       const hoy = dateKey();
       const [entries, viejas] = await Promise.all([
@@ -155,10 +160,14 @@ export function useDiario(): DiarioVistaProps {
       setPhotoCounts(new Map([...porDia].map(([d, l]) => [d, l.length])));
       setRecent(entries);
       setRecuerdos(viejas);
-    } catch {
-      // El Archivo es lectura: si falla, se queda lo que hubiera y escribir sigue funcionando.
+      setErrorArchivo(null);
+    } catch (e) {
+      // El Archivo es lectura: si falla, se queda lo que hubiera y escribir
+      // sigue funcionando; el Archivo enseña el fallo con «Reintentar».
+      setErrorArchivo(mensajeSistema(e));
     } finally {
       setArchivoLoaded(true);
+      setArchivoCargando(false);
     }
   }, []);
 
@@ -391,7 +400,16 @@ export function useDiario(): DiarioVistaProps {
     cabenMas,
     fotos: photos,
     cronica: chronicle,
-    archivo: { cargado: archivoLoaded, entries: recent, recuerdos, photoCounts, loadPhotos },
+    archivo: {
+      cargado: archivoLoaded,
+      entries: recent,
+      recuerdos,
+      photoCounts,
+      loadPhotos,
+      error: errorArchivo,
+      reintentando: archivoCargando,
+      onReintentar: () => void loadArchivo(),
+    },
     scrollRef: scroll,
     acciones: {
       onVolver: () => volver(router),

@@ -92,6 +92,8 @@ interface RowProps {
   muted?: boolean;
   onPress?: () => void;
   onLongPress?: () => void;
+  /** Lo que oye el lector como acción de la pulsación larga («Quitar amigo»). */
+  accessibilityLongPressLabel?: string;
   disabled?: boolean;
   /** Sin línea superior (primera fila de un grupo). */
   first?: boolean;
@@ -112,6 +114,7 @@ export function Row({
   muted,
   onPress,
   onLongPress,
+  accessibilityLongPressLabel,
   disabled,
   first,
   chevron,
@@ -179,6 +182,15 @@ export function Row({
         accessibilityRole={accessibilityRole ?? 'button'}
         accessibilityLabel={accessibilityLabel ?? title}
         accessibilityState={accessibilityState}
+        // La pulsación larga no se descubre con el lector: va como acción.
+        accessibilityActions={onLongPress && !disabled ? [{ name: 'longpress', label: accessibilityLongPressLabel ?? 'Más opciones' }] : undefined}
+        onAccessibilityAction={
+          onLongPress && !disabled
+            ? (e) => {
+                if (e.nativeEvent.actionName === 'longpress') onLongPress();
+              }
+            : undefined
+        }
         style={({ pressed }) => [styles.row, !first && styles.sep, pressed && styles.pressed, style]}
       >
         {body}
@@ -208,6 +220,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 12,
     paddingVertical: 12,
+    minHeight: 44,
   },
   sep: { borderTopWidth: 1, borderTopColor: colors.line },
   // Sangra 16 a cada lado: es el padding de las tarjetas-lista, así el destello
