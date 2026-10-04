@@ -43,8 +43,6 @@ export const colors = {
   textFaint: ink.ink6,
   // Pista de barras y primer escalón del Heatmap: [track, accentFaint, accentDim, accent] crece.
   track: ink.ink2,
-  // Antes el violeta de Franky; ahora blanco (la marca va en la forma, no en el color).
-  franky: ink.ink10,
 } as const;
 
 export const fonts = {
