@@ -18,6 +18,8 @@ test('llama a las RPC de la 0048 con sus parámetros', async () => {
 test('los límites de negocio (22023) llegan como ErrorVisible; lo demás no', async () => {
   mockRpc.mockResolvedValueOnce({ data: null, error: { code: '22023', message: 'Máximo 3 ligas nuevas al día' } });
   await expect(crearLiga('x')).rejects.toBeInstanceOf(ErrorVisible);
+  mockRpc.mockResolvedValueOnce({ data: null, error: { code: '22023', message: 'invalid value for parameter "TimeZone": "Marte/Olympus"' } });
+  expect(await crearLiga('x').catch((x) => x)).not.toBeInstanceOf(ErrorVisible); // 22023 técnico de Postgres: no se enseña
   mockRpc.mockResolvedValueOnce({ data: null, error: { code: '42501', message: 'Invitación no disponible' } });
   const e = await aceptarLiga('l').catch((x) => x);
   expect(e).not.toBeInstanceOf(ErrorVisible);

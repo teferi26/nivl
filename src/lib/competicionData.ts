@@ -12,8 +12,24 @@ import { ErrorVisible } from './validation';
 
 type RpcError = { code?: string; message?: string } | null;
 
+// Solo los textos que escribimos en la 0048/0055 llegan tal cual al usuario.
+// Postgres también lanza 22023 por su cuenta (p. ej. un valor de parámetro
+// inválido) con texto técnico: eso no pasa (revisión de Seguridad).
+const MENSAJES_DE_NEGOCIO = new Set([
+  'La liga está llena (20)',
+  'Máximo 3 ligas nuevas al día',
+  'Máximo 3 retos pendientes',
+  'Máximo 5 duelos activos',
+  'Máximo 5 ligas propias',
+  'Nombre de liga demasiado corto',
+  'Rechazó la invitación hace poco',
+  'Ya hay un duelo esta semana',
+]);
+
 function lanzar(error: RpcError): never {
-  if (error?.code === '22023' && error.message) throw new ErrorVisible(error.message);
+  if (error?.code === '22023' && error.message && MENSAJES_DE_NEGOCIO.has(error.message)) {
+    throw new ErrorVisible(error.message);
+  }
   throw error ?? new Error('Sin respuesta');
 }
 
@@ -84,9 +100,14 @@ export interface Duelo {
   week_start: string;
   status: 'pending' | 'accepted' | 'declined' | 'done' | 'cancelled';
   mi_indice: number;
-  su_indice: number;
+  /**
+   * Del rival solo con duelo aceptado o terminado, sin bloqueo ni suspensión
+   * y si el rival es visible (0055, Seguridad). Si no: null = «oculto»
+   * (sin barra ni «va delante»).
+   */
+  su_indice: number | null;
   mis_dias: number;
-  sus_dias: number;
+  sus_dias: number | null;
   /** Solo al pasar la semana: 'gano' | 'pierdo' | 'empate' | 'sin_datos'. */
   resultado: 'gano' | 'pierdo' | 'empate' | 'sin_datos' | null;
   /**
@@ -96,7 +117,7 @@ export interface Duelo {
    * ya ha terminado en la hora local («Semana cerrada · resolviendo»).
    */
   mi_suficiente?: boolean;
-  su_suficiente?: boolean;
+  su_suficiente?: boolean | null;
   semana_cerrada?: boolean;
 }
 

@@ -1,3 +1,10 @@
+-- NIVL · 0055 — Ajustes de competición (Juego y QA) con privacidad del rival (Seguridad).
+-- Aprobada por NIVL - Seguridad (BEGIN…ROLLBACK en producción). Huella: ver HUELLAS.
+-- Versión con privacidad (NIVL - Seguridad, 04/10/2026) de docs/game-v2/propuestas/competicion_ajustes.sql (Juego y QA, 0e1b4fe).
+-- Sustituye a docs/security-audit/propuestas/duelos_privacidad.sql: las dos redefinían my_duels y la que se aplicara después pisaba a la otra.
+-- Cambios sobre la de Juego y QA: del rival (rival, su_indice, sus_dias, su_suficiente) solo con duelo aceptado o terminado, _pareja_ok y social_visible;
+-- search_path con pg_temp; notify pgrst (cambia la forma de la tabla). Probada en producción con BEGIN…ROLLBACK.
+
 -- PROPUESTA (NIVL - Juego y QA) · Ajustes de la competición tras la auditoría
 -- de coherencia de la fase 3. La 0048 ya está aplicada en producción: esto va
 -- en una migración NUEVA (número del coordinador). Aditiva para 1.0.7, que no
@@ -18,7 +25,7 @@ begin;
 
 create or replace function public.my_league_standing()
 returns table (league_id uuid, nombre text, puesto integer, miembros integer, indice integer, velocidad numeric)
-language plpgsql stable security definer set search_path = public as $$
+language plpgsql stable security definer set search_path = public, pg_temp as $$
 declare u uuid := auth.uid(); l record;
 begin
   if u is null then raise exception 'No autenticado' using errcode = '42501'; end if;
@@ -43,22 +50,27 @@ create function public.my_duels()
 returns table (id uuid, soy_retador boolean, rival text, week_start date, status text,
                mi_indice integer, su_indice integer, mis_dias integer, sus_dias integer, resultado text,
                mi_suficiente boolean, su_suficiente boolean, semana_cerrada boolean)
-language plpgsql security definer set search_path = public as $$
+language plpgsql security definer set search_path = public, pg_temp as $$
 declare u uuid := auth.uid(); d record; a record; b record; ia integer; ib integer; r text; v_hoy date;
+        v_otro uuid; v_ok boolean; v_ver boolean;
 begin
   if u is null then raise exception 'No autenticado' using errcode = '42501'; end if;
   perform public._duelos_anular_bloqueados(u);
   select (now() at time zone public.safe_tz(p.timezone))::date into v_hoy from public.profiles p where p.id = u;
   for d in select * from public.duels x where u in (x.challenger, x.opponent)
            and x.week_start >= (now()::date - 35) order by x.week_start desc limit 20 loop
+    v_otro := case when d.challenger = u then d.opponent else d.challenger end;
+    v_ok := d.status in ('accepted', 'done') and public._pareja_ok(d.challenger, d.opponent);
+    -- Privacidad (auditoría 1.0.8, P1): del rival solo se enseña algo si el
+    -- duelo está aceptado o terminado, la pareja está bien y él es visible.
+    v_ver := v_ok and coalesce((select p.social_visible from public.profiles p where p.id = v_otro), false);
     select * into a from public._marcador(u, d.week_start, d.week_start + 6);
-    select * into b from public._marcador(case when d.challenger = u then d.opponent else d.challenger end, d.week_start, d.week_start + 6);
+    select * into b from public._marcador(v_otro, d.week_start, d.week_start + 6);
     ia := public._indice(a.cumplidas_xp, a.programadas_xp); ib := public._indice(b.cumplidas_xp, b.programadas_xp);
     r := null;
     -- La semana ha terminado en todos los husos: el lunes siguiente ya ha
     -- empezado incluso en UTC−12.
-    if d.status in ('accepted', 'done') and public._pareja_ok(d.challenger, d.opponent)
-       and (now() at time zone 'Etc/GMT+12')::date >= d.week_start + 7 then
+    if v_ok and (now() at time zone 'Etc/GMT+12')::date >= d.week_start + 7 then
       r := case when a.programadas_xp < 150 or b.programadas_xp < 150 then 'sin_datos'
                 when ia > ib then 'gano' when ia < ib then 'pierdo'
                 when a.dias_activos > b.dias_activos then 'gano' when a.dias_activos < b.dias_activos then 'pierdo'
@@ -72,16 +84,24 @@ begin
       end if;
     end if;
     id := d.id; soy_retador := d.challenger = u;
-    rival := (select case when public._pareja_ok(d.challenger, d.opponent) then public.social_public_name(p.id) end from public.profiles p where p.id = case when d.challenger = u then d.opponent else d.challenger end);
-    week_start := d.week_start; status := d.status; mi_indice := ia; su_indice := ib;
-    mis_dias := a.dias_activos; sus_dias := b.dias_activos; resultado := r;
-    mi_suficiente := a.programadas_xp >= 150; su_suficiente := b.programadas_xp >= 150;
+    rival := case when public._pareja_ok(d.challenger, d.opponent)
+                       and coalesce((select p.social_visible from public.profiles p where p.id = v_otro), false)
+                  then public.social_public_name(v_otro) end;
+    week_start := d.week_start; status := d.status; mi_indice := ia;
+    mis_dias := a.dias_activos; resultado := r;
+    mi_suficiente := a.programadas_xp >= 150;
+    su_indice := case when v_ver then ib end;
+    sus_dias := case when v_ver then b.dias_activos end;
+    su_suficiente := case when v_ver then b.programadas_xp >= 150 end;
     semana_cerrada := coalesce(v_hoy, now()::date) >= d.week_start + 7;
     return next;
   end loop;
 end $$;
 revoke all on function public.my_duels() from public, anon;
 grant execute on function public.my_duels() to authenticated;
-comment on function public.my_duels() is 'nivl:competicion-0055 · resolución en todos los husos, suficiencia y semana_cerrada';
+comment on function public.my_duels() is 'nivl:competicion-0055 · resolución en todos los husos, suficiencia y semana_cerrada; del rival solo con duelo aceptado o terminado, pareja bien y rival visible';
+
+-- La forma de my_duels ha cambiado: PostgREST tiene que recargar su caché.
+notify pgrst, 'reload schema';
 
 commit;

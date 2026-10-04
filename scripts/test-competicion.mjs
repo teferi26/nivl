@@ -279,5 +279,12 @@ check((await as(F, () => rows('select puesto from public.my_league_standing() wh
 const viejo = (await rows("insert into public.duels(challenger, opponent, week_start, status) values ($1, $2, date_trunc('week', now())::date - 14, 'accepted') returning id", [A, C]))[0].id;
 const md = (await as(A, () => rows('select * from public.my_duels() where id = $1', [viejo])))[0];
 check([md.semana_cerrada, md.mi_suficiente === true || md.mi_suficiente === false, md.resultado !== null], [true, true, true], 'duelo pasado resuelto con suficiencia y semana cerrada');
+// Privacidad (Seguridad, 0055): de un duelo pendiente o de un rival oculto no se ven sus cifras.
+const pend = (await rows("insert into public.duels(challenger, opponent, week_start, status) values ($1, $2, date_trunc('week', now())::date - 7, 'pending') returning id", [A, F]))[0].id;
+const mp = (await as(A, () => rows('select su_indice, sus_dias, su_suficiente from public.my_duels() where id = $1', [pend])))[0];
+check([mp.su_indice, mp.sus_dias, mp.su_suficiente], [null, null, null], 'pendiente: sin cifras del rival');
+await db.query('update public.profiles set social_visible = false where id = $1', [C]);
+const mo = (await as(A, () => rows('select rival, su_indice from public.my_duels() where id = $1', [viejo])))[0];
+check([mo.rival, mo.su_indice], [null, null], 'rival oculto: sin nombre ni cifras');
 
 console.log(`OK: ${checks} comprobaciones (0048 + 0051 + 0052 + ajustes, cada una aplicada dos veces)`);
