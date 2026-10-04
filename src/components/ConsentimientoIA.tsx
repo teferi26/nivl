@@ -11,7 +11,6 @@
 // `if (!(await consentimiento.asegurar())) return;`. La pantalla pinta
 // `{consentimiento.hoja}` en cualquier parte de su árbol.
 
-import { vibrar } from '@/design/haptics';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ConsentimientoIAVista } from '@/components/puertas/ConsentimientoIAVista';
 import {
@@ -42,10 +41,8 @@ export function ConsentimientoSheet({ visible, onAceptado, onCerrar }: SheetProp
       setAviso(null);
     },
     alTerminar: () => setBusy(false),
-    alAceptar: () => {
-      vibrar('mision');
-      onAceptado();
-    },
+    // Sin vibración al aceptar: decir sí y decir no pesan lo mismo.
+    alAceptar: () => onAceptado(),
     alFallar: (e) => setAviso(mensajeSistema(e)),
   };
   const [cerrojo] = useState(() => crearCerrojoAceptacion(() => acciones.current!));

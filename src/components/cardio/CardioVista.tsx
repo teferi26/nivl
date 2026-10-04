@@ -204,8 +204,9 @@ export function CardioVista({ cargado, errorCarga, hoy, sesiones, anuncio, accio
         <View
           style={styles.arena}
           onLayout={(e) => setAnchoArena(Math.round(e.nativeEvent.layout.width))}
-          accessible
-          accessibilityLabel="El volumen semanal no debe subir más de un 10 %."
+          // La nota de debajo ya lo dice entero: el óvalo no se lee dos veces.
+          importantForAccessibility="no-hide-descendants"
+          accessibilityElementsHidden
         >
           {anchoArena > 0 ? (
             <Arena ancho={anchoArena} alto={ALTO_ARENA} variante="ovalo" style={styles.arenaFondo} />

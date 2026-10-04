@@ -91,7 +91,7 @@ function FilaHecho({
         disabled={borrando}
         style={({ pressed }) => [styles.hecho, pressed && styles.pulsado]}
         accessibilityRole="button"
-        accessibilityLabel={`${categoria}, ${hecho.date}: ${hecho.content}`}
+        accessibilityLabel={`${categoria}, ${fechaCorta(hecho.date)}: ${hecho.content}`}
         accessibilityHint="Toca para leerlo entero."
         accessibilityState={{ disabled: borrando, busy: borrando }}
         accessibilityActions={[
@@ -123,7 +123,7 @@ function FilaHecho({
         disabled={borrando}
         style={({ pressed }) => [styles.borrar, pressed && styles.pulsado]}
         accessibilityRole="button"
-        accessibilityLabel="Borrar este recuerdo"
+        accessibilityLabel={`Borrar el recuerdo: ${hecho.content.slice(0, 60)}`}
         accessibilityState={{ disabled: borrando, busy: borrando }}
       >
         {borrando ? (

@@ -40,6 +40,8 @@ export interface InformeVistaProps {
   advice: WeeklyAdvice | null;
   /** Ids de ajustes aplicados y claves `new-<i>` de misiones creadas. */
   aplicados: Set<string>;
+  /** Los que están en curso (cerrojo por clave): su botón muestra la carga. */
+  aplicando: Set<string>;
   consultando: boolean;
   /** El silencio del Oráculo, ya escrito para el usuario. */
   errorOraculo: string | null;
@@ -63,6 +65,7 @@ function FilaAjuste({
   hecho,
   rotuloBoton,
   primera,
+  cargando,
   onPress,
 }: {
   icono: keyof typeof Ionicons.glyphMap;
@@ -71,6 +74,7 @@ function FilaAjuste({
   hecho: boolean;
   rotuloBoton: string;
   primera: boolean;
+  cargando: boolean;
   onPress: () => void;
 }) {
   return (
@@ -91,7 +95,14 @@ function FilaAjuste({
           <Ionicons name="checkmark-circle" size={22} color={ink.ink10} />
         </View>
       ) : (
-        <Button title={rotuloBoton} variant="secondary" size="sm" onPress={onPress} />
+        <Button
+          title={rotuloBoton}
+          variant="secondary"
+          size="sm"
+          loading={cargando}
+          accessibilityLabel={`${rotuloBoton}: ${titulo}`}
+          onPress={onPress}
+        />
       )}
     </View>
   );
@@ -104,6 +115,7 @@ export function InformeVista({
   datos,
   advice,
   aplicados,
+  aplicando,
   consultando,
   errorOraculo,
   refrescando,
@@ -240,6 +252,7 @@ export function InformeVista({
                       } · ${adj.reasoning}`}
                       hecho={aplicados.has(adj.quest_id)}
                       rotuloBoton="Aplicar"
+                      cargando={aplicando.has(adj.quest_id)}
                       onPress={() => acciones.onAplicar(adj)}
                     />
                   ))}
@@ -254,6 +267,7 @@ export function InformeVista({
                         detalle={`Nueva · ${q.stat} · ${DIFFICULTY_LABEL[q.difficulty]} · ${q.reasoning}`}
                         hecho={aplicados.has(key)}
                         rotuloBoton="Crear"
+                        cargando={aplicando.has(key)}
                         onPress={() => acciones.onCrear(q, key)}
                       />
                     );

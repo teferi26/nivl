@@ -8,7 +8,7 @@
 
 import * as ImagePicker from 'expo-image-picker';
 import { router, useFocusEffect } from 'expo-router';
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Linking, Platform } from 'react-native';
 import { useCelebracion } from '@/components/celebracion/contexto';
 import { useConsentimientoIA } from '@/components/ConsentimientoIA';
@@ -102,6 +102,8 @@ export interface PerfilHojas {
     dias: number;
     setDias: (d: number) => void;
     activar: () => void;
+    aviso: string | null;
+    ocupado: boolean;
   };
   codigo: {
     abierta: boolean;
@@ -151,6 +153,10 @@ export function usePerfil(): UsePerfil {
   const [freezeOpen, setFreezeOpen] = useState(false);
   const [freezeReason, setFreezeReason] = useState(FREEZE_REASONS[0]!);
   const [freezeDays, setFreezeDays] = useState(3);
+  // Cerrojo de «Activar pausa» (el doble toque) y su fallo, en línea en la hoja.
+  const freezeLock = useRef(false);
+  const [freezeBusy, setFreezeBusy] = useState(false);
+  const [avisoFreeze, setAvisoFreeze] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [avisos, setAvisos] = useState<EstadoAvisos | null>(null);
@@ -208,7 +214,7 @@ export function usePerfil(): UsePerfil {
       await updateProfile(userId, { profile_kind: k });
     } catch (e) {
       setProfile((p) => (p ? { ...p, profile_kind: anterior } : p));
-      avisar('Error del sistema', mensajeSistema(e));
+      avisar('El sistema no responde', mensajeSistema(e));
     }
   };
 
@@ -331,7 +337,7 @@ export function usePerfil(): UsePerfil {
       olvidarFirma('avatars', path);
       setAvatarUri(await signedUrlCached('avatars', path));
     } catch (e) {
-      avisar('Error del sistema', mensajeSistema(e));
+      avisar('El sistema no responde', mensajeSistema(e));
     } finally {
       setUploadingPhoto(false);
     }
@@ -351,16 +357,23 @@ export function usePerfil(): UsePerfil {
   };
 
   const activateFreeze = async () => {
-    if (!profile) return;
+    if (!profile || freezeLock.current) return;
+    freezeLock.current = true;
+    setFreezeBusy(true);
+    setAvisoFreeze(null);
     const until = addDays(today, freezeDays - 1);
     try {
       const updated = await setFreeze(profile, until, freezeReason);
       setProfile(updated);
       setFreezeOpen(false);
     } catch (e) {
-      // La hoja sigue abierta: el aviso no compite con su cierre.
+      // La hoja sigue abierta: el fallo va en línea dentro de ella, nada de
+      // avisos encima de una hoja abierta.
       vibrar('penalizacion');
-      avisar('No se ha activado la pausa', mensajeSistema(e));
+      setAvisoFreeze(mensajeSistema(e));
+    } finally {
+      freezeLock.current = false;
+      setFreezeBusy(false);
     }
   };
 
@@ -395,7 +408,7 @@ export function usePerfil(): UsePerfil {
       await updateProfile(userId, { equipped_title: next });
       setProfile({ ...profile, equipped_title: next });
     } catch (e) {
-      avisar('Error del sistema', mensajeSistema(e));
+      avisar('El sistema no responde', mensajeSistema(e));
     }
   };
 
@@ -410,7 +423,7 @@ export function usePerfil(): UsePerfil {
     try {
       await exportAllData();
     } catch (e) {
-      avisar('Error del sistema', mensajeSistema(e));
+      avisar('El sistema no responde', mensajeSistema(e));
     } finally {
       setBusy(false);
     }
@@ -508,7 +521,7 @@ export function usePerfil(): UsePerfil {
         await retirarConsentimiento();
         setConsent(await fetchConsentimiento({ fresco: true }));
       } catch (e) {
-        avisar('Error del sistema', mensajeSistema(e));
+        avisar('El sistema no responde', mensajeSistema(e));
       }
       return;
     }
@@ -590,7 +603,10 @@ export function usePerfil(): UsePerfil {
         busy,
         frozen,
         onPerfilDeUso: cambiarPerfilDeUso,
-        onPausar: () => setFreezeOpen(true),
+        onPausar: () => {
+          setAvisoFreeze(null);
+          setFreezeOpen(true);
+        },
         onReanudar: deactivateFreeze,
         vibraciones,
         onVibraciones: cambiarVibraciones,
@@ -614,12 +630,16 @@ export function usePerfil(): UsePerfil {
     consentimientoHoja: consentimiento.hoja,
     pausa: {
       abierta: freezeOpen,
-      cerrar: () => setFreezeOpen(false),
+      cerrar: () => {
+        if (!freezeLock.current) setFreezeOpen(false);
+      },
       motivo: freezeReason,
       setMotivo: setFreezeReason,
       dias: freezeDays,
       setDias: setFreezeDays,
       activar: activateFreeze,
+      aviso: avisoFreeze,
+      ocupado: freezeBusy,
     },
     codigo: {
       abierta: codigoOpen,

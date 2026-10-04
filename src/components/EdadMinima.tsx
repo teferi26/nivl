@@ -8,6 +8,12 @@ import { EDAD_MINIMA } from '@/lib/consentmath';
 import { supabase } from '@/lib/supabase';
 import { mensajeSistema } from '@/lib/validation';
 
+// La vibración de la casilla se carga al tocarla: así la puerta no arrastra el
+// módulo nativo de vibraciones a sus tests ni a su primer pintado.
+const vibrarSeleccion = () => {
+  import('@/design/haptics').then((m) => m.vibrar('seleccion')).catch(() => {});
+};
+
 type Estado = 'cargando' | 'pendiente' | 'guardando' | 'confirmada' | 'error';
 interface Lectura {
   userId: string | null;
@@ -118,7 +124,10 @@ function ConfirmacionEdad({ autenticado }: { autenticado: boolean }) {
       avisoSalida={avisoSalida}
       marcada={marcada}
       saliendo={saliendo}
-      onMarcar={() => setMarcada((v) => !v)}
+      onMarcar={() => {
+        vibrarSeleccion();
+        setMarcada((v) => !v);
+      }}
       onConfirmar={() => { if (marcada) void confirmar(); }}
       onReintentar={() => void consultar()}
       onSalir={() => void salir()}

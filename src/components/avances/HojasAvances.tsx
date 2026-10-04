@@ -139,12 +139,14 @@ export interface HojaValorProps {
   meta: Goal | null;
   valor: string;
   error: string | null;
+  /** Guardando: el botón muestra la carga y no admite un segundo toque. */
+  guardando?: boolean;
   onValor: (v: string) => void;
   onGuardar: () => void;
   onCerrar: () => void;
 }
 
-export function HojaValor({ meta, valor, error, onValor, onGuardar, onCerrar }: HojaValorProps) {
+export function HojaValor({ meta, valor, error, guardando = false, onValor, onGuardar, onCerrar }: HojaValorProps) {
   return (
     <Sheet
       visible={meta !== null}
@@ -153,8 +155,8 @@ export function HojaValor({ meta, valor, error, onValor, onGuardar, onCerrar }: 
       title={meta?.title}
       footer={
         <>
-          <Button title="Guardar" onPress={onGuardar} />
-          <Button title="Cancelar" variant="ghost" onPress={onCerrar} />
+          <Button title="Guardar" onPress={onGuardar} loading={guardando} />
+          <Button title="Cancelar" variant="ghost" onPress={onCerrar} disabled={guardando} />
         </>
       }
     >

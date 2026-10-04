@@ -17,7 +17,7 @@ import { volver } from '@/components/ui/Screen';
 import { vibrar } from '@/design/haptics';
 import { borrarHecho, fetchDossier, fetchFacts, fetchMonthCost, type CoachFact } from '@/lib/coach';
 import { ErrorVisible, mensajeSistema } from '@/lib/validation';
-import { etiquetaCategoria, type MemoriaVistaProps } from './MemoriaVista';
+import { etiquetaCategoria, fechaCorta, type MemoriaVistaProps } from './MemoriaVista';
 
 export function useMemoria(): MemoriaVistaProps {
   const [dossier, setDossier] = useState<{ content: string; version: number } | null>(null);
@@ -80,7 +80,7 @@ Se borra de los recuerdos del coach. Si también aparece en el dossier o en la c
       setHechos((lista) => lista.filter((x) => x.id !== h.id));
     } catch (e) {
       vibrar('penalizacion');
-      avisar(e instanceof ErrorVisible ? 'Memoria' : 'Error del sistema', mensajeSistema(e));
+      avisar(e instanceof ErrorVisible ? 'Memoria' : 'El sistema no responde', mensajeSistema(e));
       // Puede que ya no estuviera: se vuelve a leer la memoria.
       cargar();
     } finally {
@@ -101,7 +101,7 @@ Se borra de los recuerdos del coach. Si también aparece en el dossier o en la c
       onVolver: () => volver(router),
       onFiltro: setFiltro,
       onAlternarDossier: () => setDossierAbierto((v) => !v),
-      onAbrirHecho: (h) => avisar(`${etiquetaCategoria(h.category)} · ${h.date}`, h.content),
+      onAbrirHecho: (h) => avisar(`${etiquetaCategoria(h.category)} · ${fechaCorta(h.date)}`, h.content),
       onBorrarHecho,
       onReintentar: () => {
         cargar();

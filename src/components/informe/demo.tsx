@@ -89,6 +89,7 @@ function base(cambios: Partial<InformeVistaProps> = {}, completions: Completion[
     datos: derivarInforme(completions, QUESTS, HOY_DEMO),
     advice: null,
     aplicados: new Set(),
+    aplicando: new Set(),
     consultando: false,
     errorOraculo: null,
     refrescando: false,

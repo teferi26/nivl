@@ -19,6 +19,7 @@ import {
   lineaPerfil,
   type EstadoConsentimiento,
 } from '@/lib/consent';
+import { addDays, nombreDia } from '@/lib/dates';
 import type { EstadoAvisos } from '@/lib/notifications';
 import { LEGAL_URLS } from '@/lib/proplans';
 import { paymentsConfigured, paywallEnabled, type Subscription } from '@/lib/subscription';
@@ -110,7 +111,7 @@ export function PerfilAjustes({
             title={frozen ? `En pausa · ${profile.freeze_reason ?? 'pausa'}` : 'Pausar el sistema'}
             detail={
               frozen
-                ? `Hasta el ${profile.freeze_until}. Toca para reanudar antes.`
+                ? `${profile.freeze_until ? `Vuelve el ${nombreDia(addDays(profile.freeze_until, 1)).toLocaleLowerCase('es-ES')}. ` : ''}Toca para reanudar antes.`
                 : 'Exámenes, enfermedad, viaje. Sin misiones ni penalizaciones mientras dure.'
             }
             trailing={frozen ? <Tag tone="accent">Pausa</Tag> : undefined}

@@ -31,12 +31,14 @@ export interface ButtonProps {
   disabled?: boolean;
   loading?: boolean;
   style?: StyleProp<ViewStyle>;
+  /** Etiqueta para el lector cuando el rótulo solo no basta (por defecto, el rótulo). */
+  accessibilityLabel?: string;
 }
 
 const ALTO: Record<ButtonSize, number> = { sm: 36, md: 44, lg: 52 };
 const ZONA_TACTIL = 44;
 
-export function Button({ title, onPress, variant = 'primary', size = 'md', icon, disabled, loading, style }: ButtonProps) {
+export function Button({ title, onPress, variant = 'primary', size = 'md', icon, disabled, loading, style, accessibilityLabel }: ButtonProps) {
   const scale = useRef(new Animated.Value(1)).current;
   const reducido = useMovimientoReducido();
   const invertida = useContext(SuperficieContext) === 'inverse';
@@ -67,7 +69,7 @@ export function Button({ title, onPress, variant = 'primary', size = 'md', icon,
       onPressOut={() => animar(1)}
       hitSlop={hitSlop}
       accessibilityRole="button"
-      accessibilityLabel={title}
+      accessibilityLabel={accessibilityLabel ?? title}
       accessibilityState={{ disabled: !!disabled, busy: !!loading }}
       style={outer}
     >

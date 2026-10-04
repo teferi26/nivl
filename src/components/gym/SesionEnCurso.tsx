@@ -177,7 +177,7 @@ export function SesionEnCurso({
                   disabled={unica}
                   style={({ pressed }) => [styles.colQuitar, styles.quitar, pressed && styles.pulsado]}
                   accessibilityRole="button"
-                  accessibilityLabel={`Quitar la serie ${si + 1}`}
+                  accessibilityLabel={`Quitar la serie ${si + 1} de ${l.exercise}`}
                   accessibilityState={{ disabled: unica }}
                 >
                   <Ionicons name="close" size={18} color={unica ? ink.ink4 : ink.ink6} />
