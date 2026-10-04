@@ -15,7 +15,7 @@
 //   node scripts/creadores.mjs premio "texto"        (premio --quitar para borrarlo)
 //   node scripts/creadores.mjs sbp si|no              (Small Business Program de Apple)
 //   node scripts/creadores.mjs informe [AAAA-MM] [--csv]
-//   node scripts/creadores.mjs liquidar CODIGO ["nota"] [--forzar]
+//   node scripts/creadores.mjs liquidar CODIGO ["nota"]
 //   node scripts/creadores.mjs pago CODIGO euros fijo_mensual|premio|contenido_externo|ajuste ["nota"] [--mes AAAA-MM]
 //   node scripts/creadores.mjs rol CODIGO creador|comercial|clipper
 //   node scripts/creadores.mjs reto lista
@@ -144,21 +144,17 @@ function mesActualMadrid() {
 const eur = (cents) => `${(Number(cents ?? 0) / 100).toFixed(2).replace('.', ',')} €`;
 
 /**
- * Ficha retirada al borrar la cuenta (0056): inactiva, sin cuenta y con el
- * alias anonimizado. Decisión del dueño (04/10/2026, condiciones §7): su saldo
- * pendiente se pierde; la contabilidad se conserva sin derecho a cobro.
+ * Ficha inactiva y sin cuenta: típicamente retirada al borrar la cuenta (0056).
+ * Decisión del dueño (04/10/2026, condiciones §7): lo ya devengado SE LE SIGUE
+ * DEBIENDO. Se liquida lo disponible y lo retenido se paga al madurar, si el
+ * creador facilita sus datos de pago por soporte. Solo se avisa, no se bloquea.
  */
-export const ALIAS_RETIRADO = 'Creador retirado';
-// La regla es «inactiva y sin cuenta» (lo que deja siempre el trigger de la
-// 0056), no el alias, que se puede cambiar a mano. Un creador desactivado a
-// mano que nunca vinculó cuenta también cae aquí: para ese caso raro existe
-// `--forzar`, con confirmación.
 export function fichaRetirada(cr) {
   return !!cr && cr.active === false && !cr.vinculado;
 }
 export const AVISO_RETIRADA =
-  'Ficha retirada por borrado de cuenta: según las condiciones (§7), su saldo pendiente se pierde y no se liquida. ' +
-  'La contabilidad se conserva, pero no se apunta ningún pago.';
+  'Ficha inactiva y sin cuenta (probablemente retirada por borrado). Lo devengado se le sigue debiendo (condiciones §7): ' +
+  'liquida solo si ya tienes sus datos de pago por soporte.';
 
 async function creadorPorCodigo(c) {
   const [row] = await sql(
@@ -384,16 +380,10 @@ async function informe(...args) {
   }
 }
 
-async function liquidar(rawCode, ...resto) {
-  const forzar = resto.includes('--forzar');
-  const nota = resto.filter((a) => a !== '--forzar')[0];
+async function liquidar(rawCode, nota) {
   const c = codigo(rawCode);
   const cr = await creadorPorCodigo(c);
-  if (fichaRetirada(cr)) {
-    if (!forzar) fallo(`${AVISO_RETIRADA} Si es un creador desactivado a mano que nunca vinculó cuenta (no un borrado), repite con --forzar.`);
-    if (cr.alias === ALIAS_RETIRADO) fallo(`${AVISO_RETIRADA} (--forzar no vale para una ficha retirada por borrado.)`);
-    console.log('Aviso: creador inactivo y sin cuenta. Solo sigue si NO borró su cuenta.');
-  }
+  if (fichaRetirada(cr)) console.log(`Aviso: ${AVISO_RETIRADA}`);
   const [detalle, [claw]] = [await sql(sqlDetalleLiquidacion(cr.id)), await sql(sqlFotoDescuentos(cr.id))];
   const foto = fotoLiquidacion(detalle, claw);
 
@@ -515,8 +505,7 @@ async function pago(rawCode, euros, tipo, ...resto) {
   if (args.length > 1) fallo('Sobran argumentos: la nota va entre comillas y como mucho una.');
   const nota = args[0];
   const cr = await creadorPorCodigo(c);
-  if (fichaRetirada(cr) && cr.alias === ALIAS_RETIRADO) fallo(AVISO_RETIRADA);
-  if (fichaRetirada(cr)) console.log('Aviso: creador inactivo y sin cuenta. Si borró su cuenta, no apuntes nada (condiciones §7).');
+  if (fichaRetirada(cr)) console.log(`Aviso: ${AVISO_RETIRADA}`);
   const nt = nota ? String(nota).slice(0, 280) : null;
   if (!(await confirmar(`¿Apuntar ${eur(cents)} (${tipo}, periodo ${mes}) a ${cr.code}?`, cr.code))) {
     return console.log('Cancelado.');
