@@ -11,6 +11,7 @@ import { executeTool, TOOL_DEFS } from './tools.ts';
 import { buildContext } from './context.ts';
 import { userClient } from './db.ts';
 import { ESCRITURA_DE_PLANIFICACION, PACK_REGISTRO } from './packs.ts';
+import { LIGAS_ACTIVAS } from './funciones.ts';
 
 const HOY = '2026-10-02';
 const UUID = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
@@ -47,7 +48,10 @@ const LIGAS_DE_LA_BASE = [
 Deno.test('L5 definición: consultar_historial admite fotos, liga y tareas sin parámetros nuevos; 26 herramientas clasificadas', () => {
   const def = TOOL_DEFS.find((t) => t.name === 'consultar_historial')! as any;
   const que = def.input_schema.properties.que.enum as string[];
-  for (const m of ['fotos', 'liga', 'tareas']) ok(que.includes(m), m);
+  for (const m of ['fotos', 'tareas']) ok(que.includes(m), m);
+  // Ligas ocultas en la 1.0.8 (funciones.ts): sin 'liga' en el enum ni en la descripción.
+  equal(que.includes('liga'), LIGAS_ACTIVAS);
+  equal(/liga privada/.test(def.description), LIGAS_ACTIVAS);
   equal(Object.keys(def.input_schema.properties).sort(), ['desde', 'filtro', 'hasta', 'que']);
   ok(!JSON.stringify(def.input_schema).includes('"type":['), 'sin tipos unión');
   equal(TOOL_DEFS.length, 26, 'ninguna herramienta nueva');
@@ -92,7 +96,7 @@ for (const [motivo, espera] of [
 
 // ── Liga ─────────────────────────────────────────────────────────────────
 
-Deno.test('L5 liga: puesto e índices propios; sin uuid (ni de la liga), sin correos y el nombre como dato en una línea', async () => {
+Deno.test({ name: 'L5 liga: puesto e índices propios; sin uuid (ni de la liga), sin correos y el nombre como dato en una línea', ignore: !LIGAS_ACTIVAS, fn: async () => {
   const fake = instalar({ rpc: { my_league_standing: () => LIGAS_DE_LA_BASE } });
   try {
     const out = await executeTool('consultar_historial', { que: 'liga', desde: '2026-01-01', hasta: HOY }, ctx());
@@ -109,9 +113,9 @@ Deno.test('L5 liga: puesto e índices propios; sin uuid (ni de la liga), sin cor
   } finally {
     fake.restaurar();
   }
-});
+} });
 
-Deno.test('L5 liga: sin ligas → lo dice; RPC inexistente → «no disponible», sin error', async () => {
+Deno.test({ name: 'L5 liga: sin ligas → lo dice; RPC inexistente → «no disponible», sin error', ignore: !LIGAS_ACTIVAS, fn: async () => {
   const vacio = instalar({ rpc: { my_league_standing: () => [] } });
   try {
     equal(await executeTool('consultar_historial', { que: 'liga', desde: HOY, hasta: HOY }, ctx()), 'No está en ninguna liga privada.');
@@ -124,7 +128,7 @@ Deno.test('L5 liga: sin ligas → lo dice; RPC inexistente → «no disponible»
   } finally {
     sinRpc.restaurar();
   }
-});
+} });
 
 // ── Tareas ───────────────────────────────────────────────────────────────
 
@@ -173,19 +177,21 @@ Deno.test('L5: consultar fotos, liga y tareas no escribe nada (solo GET y RPC de
 
 // ── Una línea por módulo en el estado ────────────────────────────────────
 
-Deno.test('L5 estado: una línea de fotos (nº y última) y una de ligas (tu puesto), sin uuid ni correos', async () => {
+Deno.test('L5 estado: una línea de fotos (nº y última) y, con ligas activas, una de ligas (tu puesto), sin uuid ni correos', async () => {
   const fake = instalar({ rpc: { my_progress_photos_meta: () => FOTOS_DE_LA_BASE, my_league_standing: () => LIGAS_DE_LA_BASE } });
   try {
     const { text } = await buildContext(sb(), USER_ID, HOY);
-    const i = text.indexOf('## Fotos y ligas');
+    const titulo = LIGAS_ACTIVAS ? '## Fotos y ligas' : '## Fotos\n';
+    const i = text.indexOf(titulo);
     ok(i >= 0, 'sección presente');
     const sec = text.slice(i, text.indexOf('\n\n', i));
     ok(sec.includes('Fotos de progreso: 3 · la última del 2026-09-28 (frente)'), sec);
-    ok(/Ligas privadas .*2\.º de 5 \(índice 78\).*1\.º de 3/.test(sec), sec);
+    if (LIGAS_ACTIVAS) ok(/Ligas privadas .*2\.º de 5 \(índice 78\).*1\.º de 3/.test(sec), sec);
+    else ok(!/liga/i.test(sec) && !text.includes('Ligas privadas'), 'ligas ocultas: el coach no las ve');
     ok(!UUID.test(sec) && !EMAIL.test(sec), sec);
     ok(!sec.includes('datos_del_gladiador') && !/https?:/.test(sec), sec);
     equal(sec.split('\n').filter((l) => l.startsWith('Fotos de progreso')).length, 1);
-    equal(sec.split('\n').filter((l) => l.startsWith('Ligas privadas')).length, 1);
+    equal(sec.split('\n').filter((l) => l.startsWith('Ligas privadas')).length, LIGAS_ACTIVAS ? 1 : 0);
   } finally {
     fake.restaurar();
   }
@@ -198,7 +204,7 @@ Deno.test('L5 estado: sin acceso a fotos (42501) y sin ligas → ninguna línea,
   });
   try {
     const { text } = await buildContext(sb(), USER_ID, HOY);
-    ok(!text.includes('## Fotos y ligas'));
+    ok(!text.includes('## Fotos y ligas') && !text.includes('## Fotos\n'));
     ok(!text.includes('Fotos de progreso'));
     ok(text.includes('# ESTADO DEL GLADIADOR'));
   } finally {

@@ -4,6 +4,7 @@
 // el system: si cambiara el system se invalidaría la caché del dossier entero
 // en cada llamada y el coste se multiplicaría.
 
+import { LIGAS_ACTIVAS } from './funciones.ts';
 import { construirEstudio } from './analytics.ts';
 import { construirEstudioEconomico } from './finance.ts';
 import type { Db } from './db.ts';
@@ -256,7 +257,7 @@ export async function buildContext(
   const registradoHoyP = leerRegistros(sb, userId, today, today);
   // L5: una línea por módulo social/fotos, con las RPC acotadas del servidor
   // (nunca leen datos de terceros). En paralelo; si fallan, no hay línea.
-  const ligaP = lineaLiga(sb);
+  const ligaP = LIGAS_ACTIVAS ? lineaLiga(sb) : Promise.resolve(null);
   const fotosP = lineaFotos(sb);
 
   const [
@@ -495,10 +496,12 @@ export async function buildContext(
   {
     const [liga, fotos] = await Promise.all([ligaP, fotosP]);
     if (liga || fotos) {
-      push('## Fotos y ligas');
+      push(LIGAS_ACTIVAS ? '## Fotos y ligas' : '## Fotos');
       if (fotos) push(fotos);
       if (liga) push(liga);
-      push('El detalle, con consultar_historial (fotos, liga). De las ligas solo ves tu puesto: nunca datos de los demás.');
+      push(LIGAS_ACTIVAS
+        ? 'El detalle, con consultar_historial (fotos, liga). De las ligas solo ves tu puesto: nunca datos de los demás.'
+        : 'El detalle, con consultar_historial (fotos).');
       push();
     }
   }
