@@ -161,13 +161,13 @@ async function confirmar(pregunta, esperado) {
 
 // ── Comandos ────────────────────────────────────────────────────────
 
-async function lista() {
-  const rows = await sql(
-    `select c.code, c.alias, c.role as rol, c.rank, c.active as activo, c.user_id is not null as vinculado,
+export const SQL_LISTA = `select c.code, c.alias, c.role as rol, c.rank, c.active as activo, c.user_id is not null as vinculado,
             c.monthly_fixed_cents as fijo,
             (select count(*) from public.referrals r where r.creator_id = c.id)::int as cuentas
-     from public.creators c order by c.active desc, c.created_at;`,
-  );
+     from public.creators c order by c.active desc, c.created_at;`;
+
+async function lista() {
+  const rows = await sql(SQL_LISTA);
   if (!rows.length) return console.log('Aún no hay creadores. Da de alta uno con: alta CODIGO "alias" [rango]');
   console.table(rows.map((r) => ({ ...r, fijo: eur(r.fijo) })));
 }
@@ -186,16 +186,19 @@ async function alta(rawCode, alias, rawRango = 'novato') {
   console.log('Para que vea su panel en la app: vincular CODIGO email-de-su-cuenta');
 }
 
+/** La cuenta de ese email y, si ya es de un creador, su código (user_id es único). */
+export function sqlCuentaParaVincular(email) {
+  return `select u.id::text as id, (select code from public.creators where user_id = u.id) as otro
+     from auth.users u where lower(u.email) = ${q(String(email).trim().toLowerCase())} limit 1;`;
+}
+
 async function vincular(rawCode, email) {
   const c = codigo(rawCode);
   const e = String(email ?? '').trim().toLowerCase();
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)) fallo('Email no válido.');
   const cr = await creadorPorCodigo(c);
   // Antes de escribir: la cuenta existe y no es ya de otro creador (user_id es único).
-  const [u] = await sql(
-    `select u.id, (select code from public.creators where user_id = u.id) as otro
-     from auth.users u where lower(u.email) = ${q(e)} limit 1;`,
-  );
+  const [u] = await sql(sqlCuentaParaVincular(e));
   if (!u) fallo('No se ha vinculado: esa cuenta no ha entrado nunca en NIVL. Pídele que abra la app y entre, y repite.');
   if (u.otro === c) return console.log(`${c} ya estaba vinculado a esa cuenta. No se ha cambiado nada.`);
   if (u.otro) {
@@ -304,15 +307,12 @@ async function sbp(valor) {
   );
 }
 
-async function informe(...args) {
-  const csv = args.includes('--csv');
-  const mes = args.find((a) => a !== '--csv') ?? mesActualMadrid();
-  if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(mes)) fallo('El mes va como AAAA-MM.');
+/** Resumen por creador del mes AAAA-MM (hora de Madrid); el mes ya validado. */
+export function sqlInforme(mes) {
   const desde = `(${q(`${mes}-01`)}::timestamp at time zone 'Europe/Madrid')`;
   const hasta = `((${q(`${mes}-01`)}::timestamp + interval '1 month') at time zone 'Europe/Madrid')`;
 
-  const rows = await sql(
-    `select c.code, c.alias, c.role as rol, c.rank, c.active,
+  return `select c.code, c.alias, c.role as rol, c.rank, c.active,
        (select count(*) from public.referrals r where r.creator_id = c.id)::int as cuentas,
        (select count(*) from public.referrals r where r.creator_id = c.id
           and r.created_at >= ${desde} and r.created_at < ${hasta})::int as cuentas_mes,
@@ -333,8 +333,14 @@ async function informe(...args) {
        (select coalesce(sum(amount_cents), 0) from public.creator_payouts p where p.creator_id = c.id)::int as pagado_total,
        c.monthly_fixed_cents as fijo
      from public.creators c
-     order by ventas_mes desc, c.alias;`,
-  );
+     order by ventas_mes desc, c.alias;`;
+}
+
+async function informe(...args) {
+  const csv = args.includes('--csv');
+  const mes = args.find((a) => a !== '--csv') ?? mesActualMadrid();
+  if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(mes)) fallo('El mes va como AAAA-MM.');
+  const rows = await sql(sqlInforme(mes));
   const [ajustes] = await sql(
     'select small_business_program, hold_days, renewal_pct, claim_window_days, prize_text from public.creator_settings;',
   );
@@ -513,7 +519,7 @@ function rol(raw) {
 }
 
 /** "AAAA-MM-DD" → expresión SQL del inicio de ese día (o del siguiente) en hora de Madrid. */
-function diaMadrid(raw, { masUno = false } = {}) {
+export function diaMadrid(raw, { masUno = false } = {}) {
   const d = String(raw ?? '');
   if (!/^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/.test(d)) fallo(`Fecha no válida: «${d}». Usa AAAA-MM-DD.`);
   return `((${q(d)}::date${masUno ? " + interval '1 day'" : ''})::timestamp at time zone 'Europe/Madrid')`;

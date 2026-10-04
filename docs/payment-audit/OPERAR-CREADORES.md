@@ -42,7 +42,7 @@ Palabras que salen mucho:
 | El repo clonado | tu ordenador | el script se lanza desde la raíz |
 | `EXPO_PUBLIC_SUPABASE_URL` | archivo `.env` de la raíz, o variable de entorno | de ahí saca el proyecto de Supabase |
 | Token personal de Supabase | `supabase-token.txt` en la raíz (gitignorado), o variable `SUPABASE_ACCESS_TOKEN` | se crea en supabase.com → Account → Access tokens; el mismo que usa `apply-migrations.mjs` |
-| Una terminal interactiva | — | `liquidar` y `pago` te piden escribir el código para confirmar |
+| Una terminal interactiva | — | `liquidar`, `pago`, `activo … no`, `premio`, `fijo` mayor que 0 y `vincular` cuando sustituye otra cuenta te piden escribir algo para confirmar |
 
 El token personal da acceso total a tus proyectos de Supabase: trátalo como la
 llave de casa. No lo pegues en chats, no lo subas, y si sospechas que se ha
@@ -139,8 +139,9 @@ el código no existe o esa cuenta no ha entrado nunca en NIVL», pídele que abr
 la app y entre, y repite.
 
 Una cuenta solo puede estar vinculada a un creador. Si intentas vincular una
-que ya lo está, la base lo rechaza con un error técnico (`duplicate key`): no
-pasa nada, simplemente no se hace.
+que ya es de otro creador, el script te dice de cuál y no hace nada. Si ya
+estaba vinculada a este mismo, no cambia nada; si sustituye otra cuenta del
+mismo creador, te avisa y te pide escribir el código.
 
 No existe hoy un comando para **desvincular**. Para pasar el panel a otra
 cuenta del mismo creador, basta con volver a lanzar `vincular` con el email
@@ -308,6 +309,16 @@ node scripts/creadores.mjs revisar-rangos --aplicar --confirmar
 
 Con `--aplicar` solo, no cambia nada. Si alguien cambió un rango entre medias,
 ese no se pisa.
+
+Para aplicar solo algunas, añade `--solo` con los códigos separados por comas
+(si alguno no tiene propuesta, no se aplica ninguna):
+
+```bash
+node scripts/creadores.mjs revisar-rangos --aplicar --confirmar --solo AAA_TEST,BBB_TEST
+```
+
+Ojo con las bajadas: la base no sabe si un rango lo pactaste a mano. Cuando hay
+bajadas, el script lo avisa con los códigos; revisa esos antes de aplicar.
 
 Cuidado: `--aplicar` aplica la lista entera, también las bajadas. Si has subido
 a alguien a mano por encima de lo que marcan los umbrales, aparecerá propuesto
@@ -481,7 +492,7 @@ Un ajuste puede ser negativo (para corregir un apunte):
 node scripts/creadores.mjs pago AAA_TEST -5 ajuste "Corrección de ejemplo"
 ```
 
-El pago se apunta siempre en el mes en curso; no se puede elegir otro mes.
+El pago se apunta en el mes en curso. Para otro mes pasado, añade `--mes AAAA-MM` (no admite meses futuros).
 
 Hay también un comando para fijar un fijo mensual que se ve en el panel:
 
@@ -561,7 +572,7 @@ node scripts/creadores.mjs activo AAA_TEST no
 ```
 
 Qué pasa al desactivar: su código deja de aceptarse, sus cuentas atribuidas
-dejan de generar comisiones nuevas (para siempre, aunque lo reactives), y **deja
+no generan comisión por los cobros mientras está desactivado (esos se pierden para siempre; los cobros posteriores a reactivarlo sí generan), y **deja
 de ver su panel**. Lo ya generado sigue en la base: según las condiciones, se le
 pagan las comisiones confirmadas (salvo fraude). `liquidar` funciona igual con
 un creador desactivado. Ojo: lo que aún esté en retención madura después;
@@ -803,47 +814,88 @@ Lo que hay que tener presente:
 
 | Comando | Qué hace | Cambia datos | Pide confirmar |
 |---|---|---|---|
-| `lista` | creadores con rango, activo, vinculado, fijo y cuentas | no | no |
+| `lista` | creadores con rol, rango, activo, vinculado, fijo y cuentas | no | no |
 | `alta CODIGO "alias" [novato\|pro\|elite]` | da de alta (novato por defecto) | sí | no |
-| `vincular CODIGO email` | une el creador a su cuenta de NIVL | sí | no |
+| `vincular CODIGO email` | une el creador a su cuenta de NIVL (rechaza con mensaje claro una cuenta que ya es de otro creador) | sí | escribir el código solo si sustituye otra cuenta |
 | `rol CODIGO creador\|comercial\|clipper` | cambia el rol (qué retos ve) | sí | no |
 | `rango CODIGO novato\|pro\|elite` | cambia el rango | sí | no |
-| `activo CODIGO si\|no` | activa o desactiva | sí | no |
-| `fijo CODIGO euros` | fija el fijo mensual que se enseña (no lo paga) | sí | no |
-| `premio "texto"` / `premio --quitar` | premio del mes en el panel | sí | no |
+| `activo CODIGO si\|no` | activa o desactiva (al desactivar enseña qué implica y cuánto se le debe) | sí | escribir el código al desactivar |
+| `fijo CODIGO euros` | fija el fijo mensual que se enseña (no lo paga); avisa de que hoy no hay fijo | sí | escribir el código si es mayor que 0 |
+| `premio "texto"` / `premio --quitar` | premio del mes en el panel; avisa de que hoy no hay premio | sí | escribir PREMIO (quitar no pide) |
 | `sbp si\|no` | Small Business Program de Apple | sí | no |
-| `informe [AAAA-MM] [--csv]` | resumen del mes; CSV en `privado/` | no | no |
-| `liquidar CODIGO ["nota"]` | desglose y apunte del pago de comisiones | sí | escribir el código |
-| `pago CODIGO euros fijo_mensual\|premio\|contenido_externo\|ajuste ["nota"]` | apunta otro pago (ajuste puede ser negativo) | sí | escribir el código |
+| `informe [AAAA-MM] [--csv]` | resumen del mes con rol; CSV en `privado/` | no | no |
+| `liquidar CODIGO ["nota"]` | desglose y apunte del pago de comisiones; si algo cambió desde la vista previa, no apunta | sí | escribir el código |
+| `pago CODIGO euros fijo_mensual\|premio\|contenido_externo\|ajuste ["nota"] [--mes AAAA-MM]` | apunta otro pago (ajuste puede ser negativo); periodo = mes en curso o `--mes` (no futuro) | sí | escribir el código |
 | `reto lista` | retos con estado | no | no |
-| `reto alta "título" AAAA-MM-DD AAAA-MM-DD objetivo ["premio"] [--rol R] [--desc "texto"]` | crea un reto | sí | no |
+| `reto alta "título" AAAA-MM-DD AAAA-MM-DD objetivo ["premio"] [--rol R] [--desc "texto"]` | crea un reto (valida que las fechas existan y que el fin no vaya antes del inicio) | sí | no |
 | `reto cerrar ID` | borra (si no empezó) o termina ahora | sí | no |
 | `umbral pro\|elite ventas90 [meses]` / `umbral RANGO --quitar` | umbrales para proponer rango | sí | no |
-| `revisar-rangos [--aplicar --confirmar]` | propone; aplica todo solo con las dos marcas | solo con las dos marcas | las dos marcas |
+| `revisar-rangos [--aplicar --confirmar] [--solo CODIGO,CODIGO]` | propone; aplica con las dos marcas, todo o solo los códigos de `--solo`; avisa de las bajadas | solo con las dos marcas | las dos marcas |
 
 **No existen hoy** (propuestas): `desvincular`, `atribuir CODIGO email`,
 `alias CODIGO "nuevo"`, `codigo VIEJO NUEVO`, `anular CODIGO`, `umbral lista`,
 `detalle CODIGO`, `cuenta email`, `exportar CODIGO`, `seudonimizar CODIGO`, y un
 comando para retención, renovación y plazo del código.
 
-### Notas sobre el script (sin corregir; para quien lo mantenga)
+### Notas sobre el script (estado a 2026-10-04)
 
-1. `liquidar` calcula la vista previa en una consulta y paga con
-   `liquidate_creator` en otra: si algo madura o se reembolsa entre medias, el
-   importe apuntado difiere del previsto. El script imprime el real; el manual
-   pide transferir ese. Mejor: enseñar el `r.amount` con más énfasis o volver a
-   pedir confirmación si difiere.
-2. `revisar-rangos --aplicar` es todo o nada: no permite aplicar solo algunas
-   propuestas, y propone bajar a quien se subió a mano.
-3. `activo no` no avisa de que el creador pierde el panel ni de que los cobros
-   de sus cuentas mientras esté desactivado no se le atribuirán nunca.
-4. `premio` y `fijo` no avisan de que las condiciones publicadas dicen que no
-   hay premio ni fijo.
-5. `vincular` con una cuenta ya vinculada a otro creador y `reto alta` con fin
-   anterior al inicio acaban en un error técnico de la base en vez de un
-   mensaje claro (no se escribe nada).
-6. `pago` fija siempre el mes en curso como periodo.
-7. `lista` e `informe` no enseñan el rol.
+Corregidas en `scripts/creadores.mjs` sin SQL nuevo. Prueba:
+`node scripts/test-creadores-cli.mjs <ruta a pglite/dist/index.js>` (las piezas
+puras del script y su SQL contra la 0025 y la 0046 reales, con datos
+sintéticos).
+
+1. **Corregido.** `liquidar`: la vista previa guarda la lista exacta de
+   comisiones disponibles y descuentos (ids e importes). Al confirmar, una sola
+   sentencia llama a `liquidate_creator` solo si la base sigue teniendo esa
+   misma lista; dentro de una sentencia `now()` no avanza, así que nada madura
+   entre la comprobación y el apunte. Si algo cambió (maduró una comisión, llegó
+   un reembolso, otra liquidación se adelantó), no apunta nada y pide volver a
+   lanzarlo. Si aun así la base devolviera otra cifra, lo dice en grande y manda
+   transferir la apuntada. Lo normal ahora: «Apuntado: X, la misma cifra de la
+   vista previa».
+2. **Corregido en parte.** `revisar-rangos --aplicar --confirmar --solo
+   CODIGO,CODIGO` aplica solo esos (si alguno no tiene propuesta, aborta sin
+   tocar nada) e informa de cuántas aplicó y cuáles saltó porque su rango cambió
+   entre medias. **La base no guarda si un rango se fijó a mano**, así que el
+   script no puede dejar de proponer esas bajadas: cuando hay bajadas, imprime un
+   aviso con los códigos y recomienda `--solo`. Propuesta SQL (migración nueva):
+   `alter table public.creators add column rank_locked boolean not null default
+   false`, que `rango` lo ponga a true (por ejemplo con `--fijar`) y que
+   `revisar-rangos` no proponga bajar a quien lo tenga.
+3. **Corregido.** `activo CODIGO no` explica antes qué implica, según el
+   código: deja de ver su panel; su código no se acepta; los cobros de sus
+   cuentas mientras esté inactivo no le generan comisión, ni ahora ni al
+   reactivarlo (`record_sale` guarda la venta sin creador); lo ya generado
+   sigue y se puede liquidar. Enseña lo disponible y lo que está en retención y
+   pide escribir el código. Reactivar no pide confirmación. Ojo: el «para
+   siempre, aunque lo reactives» de 6.1 vale para los cobros de mientras estuvo
+   inactivo; los posteriores a reactivarlo sí generan comisión.
+4. **Corregido.** `premio "texto"` avisa de que hoy no hay convocatoria de
+   premios y pide escribir `PREMIO`; `fijo CODIGO euros` con importe mayor que 0
+   avisa de que hoy no hay fijo y pide escribir el código. `premio --quitar` y
+   `fijo CODIGO 0` no piden nada.
+5. **Corregido.** `vincular` comprueba antes: si la cuenta no existe, si ya es
+   de otro creador (dice de cuál y no escribe), si ya estaba vinculada a ese
+   mismo creador (no hace nada) o si el creador tenía otra cuenta (avisa de que
+   la sustituye y pide escribir el código). `reto alta` valida que las dos
+   fechas existan (2026-02-30 no) y que el fin no vaya antes del inicio; un reto
+   de un solo día vale.
+6. **Corregido.** `pago … [--mes AAAA-MM]`: el periodo es el mes en curso por
+   defecto o el que digas (no futuro). El esquema lo permite (`period` es texto
+   libre). El informe sigue contando `pagado_mes` por la fecha del apunte, no
+   por el periodo; el script lo recuerda al usar un mes pasado.
+7. **Corregido.** `lista`, `informe` y su `--csv` llevan la columna `rol`
+   (necesitan la 0046, igual que `rol`).
+
+Los párrafos afectados (1, 2.2, 4.2, 5.4 y 6.1) ya describen el comportamiento corregido.
+
+Propuesta SQL aparte, por dinero: `liquidate_creator` suma y luego marca como
+pagadas las comisiones en sentencias distintas sin bloquear sus filas; un
+`record_refund` que entrase justo en medio podría dejar apuntado un importe que
+incluye una comisión ya anulada. El script ya no deja una ventana de minutos
+entre la vista previa y el apunte (solo la de dentro de la función), pero lo
+limpio es una migración que haga `select … for update` de esas comisiones
+dentro de `liquidate_creator` y pague exactamente las filas bloqueadas.
 
 Huecos fuera del script: las ventas web por Stripe no generan comisión; un
 `REFUND_REVERSED` no restaura la comisión; la exportación RGPD no incluye los
