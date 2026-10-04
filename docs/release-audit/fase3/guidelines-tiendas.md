@@ -40,6 +40,7 @@ NIVL - Tiendas, 04/10/2026. Método:
 ## Orden para dejarlo listo (todo en ASC o del usuario)
 
 0. **Coordinador:** republicar la OTA de la 1.0.8 con el entorno de producción y que Juego y QA confirme en la 23 que la tienda está abierta (PAY-01: precios de StoreKit, compra sandbox, Restaurar y enlaces legales).
+   Orden acordado con Juego y QA: **OTA buena (solo el entorno y arreglos ya revisados, sin funciones nuevas) → PAY-01 en verde → 5 capturas de revisión de IAP con `e2e/maestro/pro-planes.yaml` (Perfil > NIVL Pro, una por plan) → volver a grabar el vídeo.**
 1. **Usuario:** iPhone a iOS 27.0.1, repetir la toma con una **cuenta y un correo de prueba** (sin datos personales) y con la **tienda abierta**: icono, registro, confirmación, login, flujo típico, paywall con los 5 planes y el pie con los enlaces, **compra sandbox y Restaurar**, coach, denuncia y bloqueo, Términos y Privacidad, exportar, cerrar sesión y borrar. Exportar el original del Carrete.
 2. **Coordinador:** descripción de `ficha-108.md`; capturas iPhone 02, iPad 02 e iPad 03 con «Con NIVL Pro o Élite» (y, si se puede, iPhone 03 y 05 e iPad 04 sin alcohol ni selfi); 5 capturas de revisión de IAP nuevas; App Privacy final; notas `apple-108-notas.txt` con las credenciales de Élite; URLs a nivl.app.
 3. **Juego y QA:** el iPad (B4) y la cuenta Gratis en la 23 (login, prueba sin gastar, compra sandbox, Restaurar). Ocultar o cablear «Tus invitados».
