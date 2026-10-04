@@ -104,3 +104,33 @@ Que no salgan el pie de diagnóstico ni ningún «llega pronto».
 - **Tienda cerrada:** causa confirmada (OTA sin `--environment production`). La OTA `cb9ae001` se ha republicado desde `477c545` con la clave. Queda por verificar en el dispositivo (PAY-01).
 - **Build 24** por `NSPhotoLibraryAddUsageDescription` (`eda459c`), con toda esta ronda. El vídeo y las capturas de los IAP se graban en la 24. Prueba mínima: `docs/qa-audit/PRUEBA-108-BUILD24.md`, que sustituye a la de la 23.
 - El dictamen sigue en **NO-GO** hasta tener la regresión de la ronda integrada y la prueba de la 24 en ✅.
+
+## Regresión de la ronda integrada · `80066a7` (04/10/2026)
+
+| Commit | Typecheck | Jest | Lint | SQL PGlite | Export |
+|---|---|---|---|---|---|
+| `80066a7` | PASS | 94/94 suites · 1552/1552 | 0 avisos | 57/57 | iOS · Android OK |
+
+**Comprobado en el código:**
+- La build 24 (`5a75adb`) lleva `NSPhotoLibraryAddUsageDescription`.
+- Entre `5a75adb` y `80066a7` no hay cambios nativos (`app.json`, `package*.json`, `eas.json`), así que lo posterior puede ir por OTA.
+- Ligas: `LIGAS_VISIBLES = false` en la app y `LIGAS_ACTIVAS = false` en el coach (6a5654a).
+- Duelos: solo se ven los de un rival único del marcador, y siempre con «…» (e7d86b4).
+- 0062 aplicada y con su huella.
+- Compras (9f59495): enlaces legales siempre visibles, la prueba sin «sin tarjeta», y los premios de retos fuera de la app de tienda (5.3).
+
+**Sin verificar desde aquí:**
+- Que la OTA `cbb1837b` lleve la clave de RevenueCat. Lo afirma el coordinador (grep `appl_` = 1); mi export local va sin entorno y no sirve como prueba.
+- La compra real en sandbox y la build 24 en un dispositivo.
+
+**Cambio de estado:**
+- 1.2 ligas, duelos e invitaciones: **CUMPLE en código**.
+- 1.2 denuncias: **CUMPLE** (0062 aplicada).
+- 2.1, P0 de la tienda: **CUMPLE en código**. Falta verificarla en el dispositivo (PAY-01 y PAY-02).
+- Pie de diagnóstico, «llegan pronto», error del login, indicador del coach y Reclutador: **arreglados en código**.
+
+### Dictamen de código: **GO**
+
+No queda ningún INCUMPLE ni ningún P0 abierto en el código.
+
+**El GO final depende de la prueba física de la build 24** (`docs/qa-audit/PRUEBA-108-BUILD24.md`): todas las filas ✅, y en especial PAY-01/02/12, las ligas (7) y el iPad (13). Además, el vídeo y las capturas de los IAP deben grabarse en la 24 con una cuenta de prueba.
