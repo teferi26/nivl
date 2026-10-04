@@ -55,11 +55,10 @@ Leyenda de la evidencia:
 1. **Ligas (L):** `league_members` y `private_leagues` dejan leer el `user_id` de los demás miembros y el `owner` por REST (`0048:52,69-70`), también de quien está oculto o te ha bloqueado. Arreglo: política `user_id = auth.uid()` y sin `select` directo de `private_leagues`; ya existen `league_board` y `my_league_standing`.
 2. **Borrado de cuenta pendiente (L):** las tablas de 0048 no tienen `account_write_guard`, y `league_*`/`duel_*` no miran `account_erasure_pending`. Quien tiene el borrado pendiente sigue saliendo en `league_board` y en `my_duels`.
 3. **Exportación (L):** la 0060 no incluye los datos propios de quien es creador (`creators` con alias, código, rango y `role`, sus `commissions` y sus `creator_payouts`). Hay que añadirlos sin `user_id` de compradores.
-4. **Lista de espera (H):**
-   - Si el proxy de Supabase conserva el `x-forwarded-for` que manda el cliente, rotarlo salta el freno por IP; queda el de 3 por correo y hora.
-   - Sin doble confirmación, se puede apuntar el correo de otra persona.
-   - Para medirlo hacen falta 7 altas de prueba y borrarlas: necesita permiso del coordinador.
-   - Arreglo: tomar la IP de `cf-connecting-ip` o del último salto de confianza, y doble confirmación cuando se envíe con Resend.
+4. **Lista de espera (R, CERRADO: no se puede saltar el freno):**
+   - Prueba del 04/10, autorizada por el coordinador: 7 altas `xff-prueba-N@example.invalid`, cada una con un `X-Forwarded-For` falso y distinto (203.0.113.1-7). Resultado: 1-5 → 200 y 6-7 → **429**.
+   - El proxy de Supabase no deja que el cliente elija la IP: el freno por IP funciona. Las 5 filas de prueba las borra el coordinador.
+   - Sigue pendiente la doble confirmación cuando se envíe con Resend: se puede apuntar el correo de otra persona.
 5. **Inyección por el nombre de una liga (L, residual):** el nombre lo escribe otra persona y entra en el contexto del coach. Ya está mitigado (40 caracteres, `neutralizarDatos`, cliente con RLS, tope de acciones destructivas). Opcional: vetar imperativos en `league_create`.
 6. **Push del check-in (H):** `ritual/handler.ts:557` manda el texto generado, que puede nombrar una misión u objetivo, a la pantalla bloqueada y a Expo. Recomendación: cuerpo genérico y el texto dentro de la app.
 7. **Repo público (L):**
@@ -101,5 +100,5 @@ Leyenda de la evidencia:
 - **Terceros:** ni analítica ni SDK de terceros nuevos; `AD_ID` bloqueado.
 
 ## Lo que no se ha comprobado
-- P2-4 (cabecera IP) y P2-9 (EXIF) necesitan una prueba en real.
+- P2-9 (EXIF) necesita una prueba en un Android.
 - No se ha revisado el diff de la web (repo aparte).
