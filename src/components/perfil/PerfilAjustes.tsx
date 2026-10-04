@@ -7,7 +7,7 @@
 // danger (la trama es el peligro, no el rojo).
 
 import Ionicons from '@expo/vector-icons/Ionicons';
-import type { ReactNode } from 'react';
+import { useRef, type ReactNode } from 'react';
 import { ActivityIndicator, Linking, StyleSheet, Text, View } from 'react-native';
 import { HealthPrivacySection } from '@/components/ConsentimientoSalud';
 import { Version } from '@/components/Version';
@@ -26,6 +26,7 @@ import { LEGAL_URLS } from '@/lib/proplans';
 import { paymentsConfigured, paywallEnabled, type Subscription } from '@/lib/subscription';
 import { MAX_STONES } from '@/lib/game';
 import { KINDS, kindMeta, PROFILE_KINDS, type ProfileKind } from '@/lib/kinds';
+import type { Ancla } from '@/lib/share';
 import type { Profile } from '@/lib/types';
 
 export interface PerfilAjustesProps {
@@ -44,7 +45,8 @@ export interface PerfilAjustesProps {
   onCheckout: () => void;
   consent: EstadoConsentimiento | null;
   onConsentimiento: () => void;
-  onExportar: () => void;
+  /** Recibe el rectángulo de la fila (ventana) para anclar la hoja en iPad. */
+  onExportar: (ancla?: Ancla | null) => void;
   onCerrarSesion: () => void;
   onBorrar: () => void;
   /** Solo la galería: sin la sección de salud (consulta el permiso a Supabase). */
@@ -76,6 +78,13 @@ export function PerfilAjustes({
   salud,
 }: PerfilAjustesProps) {
   const kind = kindMeta(profile.profile_kind);
+  // iPad: la hoja de compartir apunta a la fila que la abrió (patrón HojaCompartir).
+  const filaExportar = useRef<View>(null);
+  const exportar = () => {
+    const fila = filaExportar.current;
+    if (!fila) return onExportar(null);
+    fila.measureInWindow((x, y, width, height) => onExportar({ x, y, width, height }));
+  };
   const sinPermiso = !!avisos && !avisos.permitido;
 
   return (
@@ -233,18 +242,20 @@ export function PerfilAjustes({
       {salud ?? (sinSalud ? null : <HealthPrivacySection />)}
       <Section title="Cuenta">
         <Card padded={false} style={styles.lista}>
-          <Row
-            first
-            leading={<Ionicons name="download-outline" size={20} color={ink.ink9} />}
-            title="Exportar mis datos"
-            detail="Copia de seguridad con todo tu progreso."
-            trailing={busy ? <ActivityIndicator size="small" color={ink.ink10} /> : undefined}
-            chevron={!busy}
-            onPress={onExportar}
-            disabled={busy}
-            accessibilityLabel="Exportar mis datos"
-            accessibilityState={{ disabled: busy }}
-          />
+          <View ref={filaExportar} collapsable={false}>
+            <Row
+              first
+              leading={<Ionicons name="download-outline" size={20} color={ink.ink9} />}
+              title="Exportar mis datos"
+              detail="Copia de seguridad con todo tu progreso."
+              trailing={busy ? <ActivityIndicator size="small" color={ink.ink10} /> : undefined}
+              chevron={!busy}
+              onPress={exportar}
+              disabled={busy}
+              accessibilityLabel="Exportar mis datos"
+              accessibilityState={{ disabled: busy }}
+            />
+          </View>
           <Row
             leading={<Ionicons name="log-out-outline" size={20} color={ink.ink9} />}
             title="Cerrar sesión"

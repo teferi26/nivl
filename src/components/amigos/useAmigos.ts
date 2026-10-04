@@ -368,10 +368,12 @@ export function useAmigos() {
   const salientes = requests.filter((r) => r.direction === 'outgoing');
 
   // ── Mi código ─────────────────────────────────────────────────────
-  const invitar = async () => {
+  // `anchor`: nodo del botón (findNodeHandle, solo iOS) para que en iPad la
+  // hoja apunte a él; sin él, RN la centra.
+  const invitar = async (anchor?: number) => {
     if (!yo) return;
     try {
-      await Share.share({ message: mensajeInvitacion(yo.friendCode) });
+      await Share.share({ message: mensajeInvitacion(yo.friendCode) }, anchor != null ? { anchor } : undefined);
     } catch (e) {
       avisar('El sistema no responde', mensajeSistema(e));
     }

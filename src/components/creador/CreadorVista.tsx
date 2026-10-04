@@ -27,7 +27,8 @@
 // INVERSIÓN única: «Compartir» en la losa del código.
 
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { StyleSheet, Text, View } from 'react-native';
+import { useRef } from 'react';
+import { findNodeHandle, Platform, StyleSheet, Text, View } from 'react-native';
 import {
   Barra,
   CargaArena,
@@ -87,7 +88,8 @@ export interface CreadorVistaProps {
     onSalir: () => void;
     onRefrescar: () => void;
     onCerrarSesion: () => void;
-    onCompartir: () => void;
+    /** `anchor`: nodo del botón (solo iOS) para anclar la hoja en iPad. */
+    onCompartir: (anchor?: number) => void;
     onCopiar: () => void;
   };
 }
@@ -115,6 +117,12 @@ export function CreadorVista({
 }: CreadorVistaProps) {
   // Portal: sin flecha (no hay adónde volver) y con salida de la cuenta.
   const volver = portal ? undefined : acciones.onSalir;
+  // iPad: la hoja apunta al botón. findNodeHandle solo en iOS (en web lanza).
+  const botonCompartir = useRef<View>(null);
+  const compartir = () => {
+    const nodo = Platform.OS === 'ios' && botonCompartir.current ? findNodeHandle(botonCompartir.current) : null;
+    acciones.onCompartir(nodo ?? undefined);
+  };
   const accionSesion: AccionArena | undefined = portal
     ? { icono: 'log-out-outline', etiqueta: 'Cerrar sesión', onPress: acciones.onCerrarSesion }
     : undefined;
@@ -218,7 +226,9 @@ export function CreadorVista({
               {vista.enlace}
             </Text>
             <View style={styles.botones}>
-              <Button title="Compartir" icon="share-social-outline" onPress={acciones.onCompartir} style={styles.boton} />
+              <View ref={botonCompartir} collapsable={false} style={styles.boton}>
+                <Button title="Compartir" icon="share-social-outline" onPress={compartir} />
+              </View>
               <Button
                 title={copiado ? 'Copiado' : 'Copiar código'}
                 icon={copiado ? 'checkmark' : 'copy-outline'}
