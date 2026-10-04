@@ -1,5 +1,5 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import * as Haptics from 'expo-haptics';
+import { vibrar } from '@/design/haptics';
 import { router } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
@@ -16,12 +16,26 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { TarjetaArena } from '@/components/arena';
 import { HoldToSign } from '@/components/HoldToSign';
 import { useHealthConsent } from '@/components/ConsentimientoSalud';
-import { ProOfferActions, ProOfferBody, ProOfferLegal, useProOffer } from '@/components/ProOffer';
+import {
+  conTiempoLimite,
+  DECISION_SALTAR,
+  LECTURA_MAX_MS,
+  pasoOferta,
+  SALIDA_ESPERA_MS,
+} from '@/components/onboarding/pasoOferta';
+import { useCelebracion } from '@/components/celebracion/contexto';
+import { PortadaArena } from '@/components/onboarding/PortadaArena';
+import { ProgresoPasos } from '@/components/onboarding/ProgresoPasos';
+import { TablillaContrato } from '@/components/onboarding/TablillaContrato';
+import { TituloPaso } from '@/components/onboarding/TituloPaso';
+import { ProOfferActions, ProOfferBody, ProOfferLegal, ProUpsellLine, useProOffer } from '@/components/ProOffer';
 import { SystemButton } from '@/components/SystemButton';
-import { Card, Chip, FadeIn, Stagger } from '@/components/ui';
+import { Button, Card, Chip, FadeIn, Skeleton } from '@/components/ui';
 import { avisar } from '@/components/ui/confirmar';
+import { GutterContext } from '@/components/ui/Screen';
 import { useAuth } from '@/lib/auth';
 import {
   GOAL_DETAIL_MAX_LENGTH,
@@ -33,7 +47,6 @@ import {
   textoCompromiso,
   type Horizonte,
 } from '@/lib/compromiso';
-import { DESCARGO_SALUD } from '@/lib/consentmath';
 import { fetchLetter, sealLetter } from '@/lib/contract';
 import { CODIGO_MAX_LENGTH, motivoReferral, normalizarCodigo } from '@/lib/creatormath';
 import {
@@ -47,7 +60,7 @@ import { createStarterQuests, deleteQuest, ensureProfile, fetchQuests, insertEve
 import { addDays, dateKey, fechaConAnio } from '@/lib/dates';
 import { KINDS, PROFILE_KINDS, type ProfileKind } from '@/lib/kinds';
 import { DIFFICULTY_LABEL, STAT_LABEL } from '@/lib/game';
-import { fetchAiStatus, isPro } from '@/lib/pro';
+import { anotarOferta, fetchAiStatus, isPro, ofrecerSi, type AiStatus, type DecisionOferta, type RespuestaOferta } from '@/lib/pro';
 import { colors, fonts } from '@/lib/theme';
 import { mensajeSistema, NAME_MAX_LENGTH } from '@/lib/validation';
 
@@ -63,6 +76,8 @@ const PRIMER_PASO_CON_VUELTA = 1;
 const ULTIMO_PASO_CON_VUELTA = 5;
 /** Lo que dura el sello en pantalla si no se toca. */
 const MS_SELLO = 1400;
+/** Margen lateral del onboarding; lo publica GutterContext para lo que va a sangre. */
+const GUTTER = 24;
 
 // Nombres por defecto de la fila de perfil: si es uno de estos, no se
 // prerrellena (que escriba el suyo).
@@ -96,6 +111,14 @@ export default function Onboarding() {
   const yaEsPro = useRef(false);
   // La cuenta nunca tuvo coach: el paso 6 ofrece la prueba de 7 días.
   const [pruebaDisponible, setPruebaDisponible] = useState(false);
+  // El estado entero de la IA: el paso 6 lo necesita para decidir la oferta
+  // (`ofrecerSi`). null = aún no leído o sin red.
+  const estadoIA = useRef<AiStatus | null>(null);
+  // Qué decidió `ofrecerSi('firma', …)` para el paso 6. null = aún no.
+  const [decisionOferta, setDecisionOferta] = useState<DecisionOferta | null>(null);
+  // Una sola petición aunque StrictMode monte el efecto dos veces.
+  const pidiendoOferta = useRef(false);
+  const { celebrando } = useCelebracion();
   // Volver atrás no puede duplicar nada. Las misiones creadas se recuerdan
   // (título → id) para reconciliar si se cambia la selección al volver a
   // pasar; el objetivo solo se reescribe en la crónica si ha cambiado; y el
@@ -129,6 +152,7 @@ export default function Onboarding() {
       .catch(() => {});
     fetchAiStatus()
       .then((s) => {
+        estadoIA.current = s;
         yaEsPro.current = isPro(s);
         setPruebaDisponible(s.trialAvailable);
       })
@@ -300,7 +324,7 @@ export default function Onboarding() {
     if (!sello) return;
     selloEscala.setValue(1.5);
     selloOpacidad.setValue(0);
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy).catch(() => {});
+    vibrar('nivel');
     Animated.parallel([
       Animated.spring(selloEscala, { toValue: 1, useNativeDriver: true, friction: 6, tension: 80 }),
       Animated.timing(selloOpacidad, { toValue: 1, duration: 160, useNativeDriver: true }),
@@ -338,9 +362,62 @@ export default function Onboarding() {
 
   const meta = kind ? KINDS[kind] : null;
   const firmaOk = firmaValida(firma, name);
-  // Mientras la tienda esté cerrada, la prueba de 7 días es la acción principal
-  // de este paso (si la cuenta nunca tuvo coach). Empezarla cierra el onboarding.
-  const oferta = useProOffer({ userId, onPurchased: finish, trialAvailable: pruebaDisponible, onTrialStarted: finish });
+  // Salir del paso 6. La respuesta solo se apunta si se enseñó la hoja: la
+  // línea no cuenta contra los topes y no hay nada que cerrar.
+  const salir = async (respuesta: RespuestaOferta) => {
+    if (decisionOferta?.forma === 'hoja') await anotarOferta('firma', respuesta, 'hoja');
+    await finish();
+  };
+
+  // La prueba de 7 días solo si la cuenta nunca tuvo coach Y la decisión la
+  // incluye. Empezarla o comprar cierra el onboarding.
+  const oferta = useProOffer({
+    userId,
+    onPurchased: () => void salir('compra'),
+    trialAvailable: pruebaDisponible && (decisionOferta?.prueba ?? false),
+    onTrialStarted: () => void salir('prueba'),
+  });
+  const forma = pasoOferta(decisionOferta, celebrando);
+  // Si la espera se alarga (red lenta, una celebración que no se cierra), el
+  // pie enseña una salida discreta: el paso nunca se queda sin puerta.
+  const [salidaEspera, setSalidaEspera] = useState(false);
+  useEffect(() => {
+    if (step !== 6 || forma !== 'esperar') {
+      setSalidaEspera(false);
+      return;
+    }
+    const t = setTimeout(() => setSalidaEspera(true), SALIDA_ESPERA_MS);
+    return () => clearTimeout(t);
+  }, [step, forma]);
+
+  // Paso 6: se decide la oferta UNA vez, nunca con una celebración en
+  // pantalla. Sin estado de la IA (sin red) no se ofrece a ciegas: se entra.
+  // Si la decisión pide otro nivel (Élite), se ajusta el que enseña la hoja.
+  const { elegirNivel, tier: tierOferta } = oferta;
+  useEffect(() => {
+    if (step !== 6 || decisionOferta || celebrando || pidiendoOferta.current) return;
+    pidiendoOferta.current = true;
+    (async () => {
+      // La lectura tiene tiempo límite: si vence, se entra sin oferta.
+      const s = estadoIA.current ?? (await conTiempoLimite(fetchAiStatus(), LECTURA_MAX_MS, 'vencida' as const));
+      if (s === 'vencida') {
+        setDecisionOferta(DECISION_SALTAR);
+        await finish();
+        return;
+      }
+      if (s) estadoIA.current = s;
+      const d = await ofrecerSi('firma', s, { celebrando: false });
+      // Se guarda también el «no»: si entrar falla, el pie da el botón para reintentarlo.
+      if (d.mostrar && d.tier !== tierOferta) elegirNivel(d.tier);
+      setDecisionOferta(d);
+      if (!d.mostrar) await finish();
+    })().catch(() => {
+      // ofrecerSi no lanza; si algo falla igual, se entra sin oferta.
+      setDecisionOferta({ ...DECISION_SALTAR, razon: 'error' });
+      void finish();
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- `finish` y el nivel se leen al decidir, una sola vez
+  }, [step, decisionOferta, celebrando]);
 
   // Con el nombre bien escrito el teclado sobra: tapaba justo el anillo que
   // hay que mantener pulsado. Se recoge solo y se baja hasta la firma.
@@ -358,11 +435,11 @@ export default function Onboarding() {
   }, [step]);
 
   const elegirKind = (k: ProfileKind) => {
-    Haptics.selectionAsync().catch(() => {});
+    vibrar('seleccion');
     setKind(k);
   };
   const elegirHorizonte = (h: Horizonte) => {
-    Haptics.selectionAsync().catch(() => {});
+    vibrar('seleccion');
     setHorizonte(h);
   };
 
@@ -370,7 +447,9 @@ export default function Onboarding() {
     <SafeAreaView style={styles.screen}>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         {/* Cabecera fija: la vuelta atrás y el progreso. La fila de la flecha
-            ocupa siempre su alto para que el progreso no salte entre pasos. */}
+            ocupa siempre su alto para que el progreso no salte entre pasos. La
+            portada no la lleva: es la fachada entera. */}
+        {step > 0 ? (
         <View style={styles.top}>
           <View style={styles.backRow}>
             {puedeVolver ? (
@@ -385,50 +464,29 @@ export default function Onboarding() {
               </Pressable>
             ) : null}
           </View>
-          <View
-            style={styles.dots}
-            accessibilityRole="progressbar"
-            accessibilityLabel={`Paso ${step + 1} de ${STEPS}`}
-          >
-            {Array.from({ length: STEPS }, (_, i) => (
-              <View key={i} style={[styles.dot, i <= step && styles.dotOn]} />
-            ))}
-          </View>
+          <ProgresoPasos paso={step + 1} total={STEPS} />
         </View>
+        ) : null}
 
         {/* Solo el KeyboardAvoidingView empuja: junto a
             automaticallyAdjustKeyboardInsets, iOS sumaba el teclado dos veces. */}
         <ScrollView
           ref={scroll}
           scrollEnabled={!holding}
-          contentContainerStyle={styles.content}
+          // La firma es un documento: se lee desde arriba. Centrada, en
+          // pantallas altas dejaba un hueco negro sobre el título.
+          contentContainerStyle={[styles.content, step === 5 && styles.contentArriba]}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
+          <GutterContext.Provider value={GUTTER}>
 
-          {step === 0 ? (
-            <FadeIn key="paso-0">
-              <Text style={styles.brand}>NIVL</Text>
-              <Text style={styles.tagline}>UN 1 % MEJOR CADA DÍA</Text>
-              <Card variant="outline">
-                <Text style={styles.lore}>
-                  Esto no es una lista de tareas. Es una arena.{'\n\n'}
-                  Cada día tienes misiones. Cumplirlas da XP y sube tu nivel; fallarlas lo
-                  resta. La racha multiplica. Los proyectos grandes son campañas con un jefe
-                  final. Y hay un coach que dicta tu día, te juzga por la noche y recuerda
-                  todo lo que aprende de ti.{'\n\n'}
-                  Nada de trampas: las evidencias se hacen con la cámara, en el momento. El
-                  sistema no opina. Registra.
-                </Text>
-              </Card>
-              <Text style={styles.descargo}>{DESCARGO_SALUD}</Text>
-            </FadeIn>
-          ) : null}
+          {step === 0 ? <PortadaArena key="paso-0" /> : null}
 
           {step === 1 ? (
             <FadeIn key="paso-1">
-              <Text style={styles.stepTitle}>¿Cómo te llamas?</Text>
-              <Card variant="outline">
+              <TituloPaso inscripcion="El nombre" titulo="¿Cómo te llamas?" />
+              <TarjetaArena variante="contorno" remaches>
                 <Text style={styles.label}>Tu nombre en el sistema</Text>
                 <TextInput
                   style={styles.input}
@@ -442,8 +500,8 @@ export default function Onboarding() {
                   onSubmitEditing={saveName}
                   accessibilityLabel="Tu nombre"
                 />
-              </Card>
-              <Card variant="outline">
+              </TarjetaArena>
+              <TarjetaArena variante="contorno" remaches>
                 <Text style={styles.label}>¿Quién te trajo? · opcional</Text>
                 <TextInput
                   style={styles.input}
@@ -468,17 +526,17 @@ export default function Onboarding() {
                 ) : (
                   <Text style={styles.codigoHint}>Si te lo recomendó alguien, escribe su código. No cambia nada para ti.</Text>
                 )}
-              </Card>
+              </TarjetaArena>
             </FadeIn>
           ) : null}
 
           {step === 2 ? (
             <FadeIn key="paso-2">
-              <Text style={styles.stepTitle}>¿Para qué vas a usar NIVL?</Text>
-              <Text style={styles.stepHint}>
-                Cambia lo que ves primero y lo que el coach te pide. Todo sigue disponible y lo
-                puedes cambiar en Perfil.
-              </Text>
+              <TituloPaso
+                inscripcion="El camino"
+                titulo="¿Para qué vas a usar NIVL?"
+                pista="Cambia lo que ves primero y lo que el coach te pide. Todo sigue disponible y lo puedes cambiar en Perfil."
+              />
               {PROFILE_KINDS.map((k) => {
                 const m = KINDS[k];
                 const on = kind === k;
@@ -491,7 +549,7 @@ export default function Onboarding() {
                     accessibilityState={{ selected: on }}
                     accessibilityLabel={m.label}
                   >
-                    <Ionicons name={m.icon as never} size={22} color={on ? colors.bg : colors.accent} />
+                    <Ionicons name={m.icon as never} size={22} color={colors.accent} />
                     <View style={{ flex: 1, minWidth: 0 }}>
                       <Text style={[styles.kindLabel, on && styles.kindLabelOn]}>{m.label.toUpperCase()}</Text>
                       <Text style={[styles.kindTagline, on && styles.kindTaglineOn]}>{m.tagline}</Text>
@@ -500,21 +558,22 @@ export default function Onboarding() {
                 );
               })}
               {meta ? (
-                <Card variant="outline" style={{ marginTop: 6 }}>
+                <TarjetaArena variante="contorno" remaches style={{ marginTop: 6 }}>
                   <Text style={styles.detailTitle}>QUÉ SE ACTIVA</Text>
                   <Text style={styles.detail}>{meta.description}</Text>
-                </Card>
+                </TarjetaArena>
               ) : null}
             </FadeIn>
           ) : null}
 
           {step === 3 && meta ? (
             <FadeIn key="paso-3">
-              <Text style={styles.stepTitle}>¿A qué has venido?</Text>
-              <Text style={styles.stepHint}>
-                Una sola cosa, en una frase. No «mejorar»: lo que quieres haber conseguido. Es lo que vas a firmar.
-              </Text>
-              <Card variant="outline">
+              <TituloPaso
+                inscripcion="El objetivo"
+                titulo="¿A qué has venido?"
+                pista="Una sola cosa, en una frase. No «mejorar»: lo que quieres haber conseguido. Es lo que vas a firmar."
+              />
+              <TarjetaArena variante="contorno" remaches>
                 <Text style={styles.label}>Tu objetivo</Text>
                 <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: healthGoal }}
                   accessibilityLabel="Mi objetivo incluye salud o entrenamiento"
@@ -560,18 +619,18 @@ export default function Onboarding() {
                     />
                   </View>
                 </View>
-              </Card>
+              </TarjetaArena>
             </FadeIn>
           ) : null}
 
           {step === 4 && meta ? (
             <FadeIn key="paso-4">
-              <Text style={styles.stepTitle}>Tus primeras misiones</Text>
-              <Text style={styles.stepHint}>
-                Propuestas para un {meta.label.toLowerCase() === 'en general' ? 'gladiador' : meta.label.toLowerCase()}.
-                Quita las que no vayan contigo; podrás crear las tuyas en Hábitos.
-              </Text>
-              <Card variant="outline">
+              <TituloPaso
+                inscripcion="Las misiones"
+                titulo="Tus primeras misiones"
+                pista={`Propuestas para un ${meta.label.toLowerCase() === 'en general' ? 'gladiador' : meta.label.toLowerCase()}. Quita las que no vayan contigo; podrás crear las tuyas en Hábitos.`}
+              />
+              <TarjetaArena variante="contorno" remaches>
                 {meta.starterQuests.map((q, i) => {
                   const on = chosen.has(i);
                   return (
@@ -596,16 +655,17 @@ export default function Onboarding() {
                     </Pressable>
                   );
                 })}
-              </Card>
+              </TarjetaArena>
             </FadeIn>
           ) : null}
 
           {step === 5 ? (
             <FadeIn key="paso-5">
-              <Text style={styles.stepTitle}>Fírmalo contigo</Text>
-              <Text style={styles.stepHint}>
-                Nadie más lo va a leer. Se sella hoy y se abre cuando venza el plazo. Elige cuánto te das.
-              </Text>
+              <TituloPaso
+                inscripcion="La firma"
+                titulo="Fírmalo contigo"
+                pista="Nadie más lo va a leer. Se sella hoy y se abre cuando venza el plazo. Elige cuánto te das."
+              />
               <View style={styles.horizontes} accessibilityRole="radiogroup">
                 {HORIZONTES.map((h) => (
                   <View key={h.years} style={styles.horizonte}>
@@ -620,19 +680,11 @@ export default function Onboarding() {
                   </View>
                 ))}
               </View>
-              <Card variant="outline" accent={colors.accentDim}>
-                {/* El texto se revela párrafo a párrafo: se lee, no se acepta. */}
-                <Stagger step={140} base={120}>
-                  {contrato.split(/\n\s*\n/).map((parrafo, i) => (
-                    <FadeIn key={i} index={i} from={8}>
-                      <Text style={[styles.contrato, i > 0 && styles.contratoParrafo]}>{parrafo}</Text>
-                    </FadeIn>
-                  ))}
-                </Stagger>
-              </Card>
+              {/* El texto se revela párrafo a párrafo: se lee, no se acepta. */}
+              <TablillaContrato parrafos={contrato.split(/\n\s*\n/)} abreEl={fechaConAnio(abreEl)} rellenar={false} />
               <Text style={styles.smallPrint}>
-                Se abrirá el {fechaConAnio(abreEl)}. Hasta entonces lo guarda Contrato, sellado. Tus normas y sus
-                consecuencias las escribes allí cuando entres.
+                Hasta entonces lo guarda Contrato, sellado. Tus normas y sus consecuencias las escribes allí cuando
+                entres.
               </Text>
               <Card variant="outline" style={styles.firmaCard}>
                 <Text style={styles.label}>Escribe tu nombre para firmar</Text>
@@ -662,15 +714,31 @@ export default function Onboarding() {
 
           {step === 6 ? (
             <FadeIn key="paso-6">
-              <Text style={styles.stepTitle}>Firmado. Ahora, quién lo dirige.</Text>
-              <Text style={styles.stepHint}>
-                Tus hábitos, tu organización y tu progreso son gratis. Los planes de pago añaden el coach de IA y,
-                con Élite, insignia y solicitud de plaza en un ludus. Decide ahora o más adelante: el compromiso vale igual.
-              </Text>
-              <ProOfferBody oferta={oferta} kind={kind} compact />
-              <ProOfferLegal oferta={oferta} />
+              <TituloPaso
+                inscripcion="El coach"
+                titulo="Firmado. Ahora, quién lo dirige."
+                pista={
+                  'Tus hábitos, tu organización y tu progreso son gratis. Los planes de pago añaden el coach de IA y, con Élite, insignia y solicitud de plaza en un ludus.' +
+                  (forma === 'hoja' ? ' Decide ahora o más adelante: el compromiso vale igual.' : '')
+                }
+              />
+              {forma === 'esperar' ? (
+                <View style={styles.ofertaEspera} accessibilityRole="progressbar" accessibilityLabel="Preparando tu entrada">
+                  <Skeleton height={86} />
+                  <Skeleton height={70} />
+                  <Skeleton height={70} />
+                </View>
+              ) : null}
+              {forma === 'hoja' ? (
+                <>
+                  <ProOfferBody oferta={oferta} kind={kind} compact motivo="firma" />
+                  <ProOfferLegal oferta={oferta} />
+                </>
+              ) : null}
+              {forma === 'linea' && decisionOferta ? <ProUpsellLine momento="firma" tier={decisionOferta.tier} /> : null}
             </FadeIn>
           ) : null}
+          </GutterContext.Provider>
         </ScrollView>
 
         {/* Pie fijo: la acción del paso siempre a la vista, también en 667 pt y
@@ -697,8 +765,21 @@ export default function Onboarding() {
                 loading={busy}
               />
             ) : null}
-            {step === 6 ? (
-              <ProOfferActions oferta={oferta} exitLabel="Seguir gratis por ahora" onExit={finish} exitLoading={busy} />
+            {/* Mientras se decide, el pie queda vacío: ningún botón que cambie de
+                sitio bajo el dedo. Si la espera se alarga, aparece una salida. */}
+            {step === 6 && forma === 'esperar' && salidaEspera ? (
+              <Button title="Entrar en la arena" variant="ghost" size="lg" onPress={() => void finish()} loading={busy} />
+            ) : null}
+            {step === 6 && forma === 'hoja' ? (
+              <ProOfferActions
+                oferta={oferta}
+                exitLabel="Seguir gratis por ahora"
+                onExit={() => void salir('cerrada')}
+                exitLoading={busy}
+              />
+            ) : null}
+            {step === 6 && (forma === 'linea' || forma === 'saltar') ? (
+              <Button title="Entrar en la arena" size="lg" onPress={() => void finish()} loading={busy} />
             ) : null}
           </View>
         ) : null}
@@ -727,46 +808,20 @@ export default function Onboarding() {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.bg },
-  descargo: { fontFamily: fonts.body, fontSize: 12, lineHeight: 17, color: colors.textFaint, marginTop: 8 },
-  top: { paddingHorizontal: 24, paddingTop: 8 },
-  backRow: { height: 32, justifyContent: 'center' },
-  back: { alignSelf: 'flex-start', marginLeft: -4, padding: 4 },
-  content: { flexGrow: 1, justifyContent: 'center', paddingHorizontal: 24, paddingTop: 20, paddingBottom: 24 },
+  top: { paddingHorizontal: GUTTER, paddingTop: 8 },
+  backRow: { height: 44, justifyContent: 'center' },
+  // Zona táctil de 44 × 44; el margen negativo deja la flecha alineada al canal.
+  back: { alignSelf: 'flex-start', width: 44, height: 44, marginLeft: -12, alignItems: 'center', justifyContent: 'center' },
+  content: { flexGrow: 1, justifyContent: 'center', paddingHorizontal: GUTTER, paddingTop: 20, paddingBottom: 24 },
+  contentArriba: { justifyContent: 'flex-start' },
+  ofertaEspera: { gap: 10, marginTop: 8 },
   footer: {
-    paddingHorizontal: 24,
+    paddingHorizontal: GUTTER,
     paddingTop: 12,
     paddingBottom: 12,
     borderTopWidth: 1,
     borderTopColor: colors.line,
     backgroundColor: colors.bg,
-  },
-  dots: { flexDirection: 'row', gap: 8, justifyContent: 'center', marginTop: 4 },
-  dot: { width: 22, height: 3, backgroundColor: colors.track },
-  dotOn: { backgroundColor: colors.accent },
-  brand: {
-    fontFamily: fonts.brand,
-    fontSize: 44,
-    letterSpacing: 12,
-    color: colors.accent,
-    textAlign: 'center',
-  },
-  tagline: {
-    fontFamily: fonts.heading,
-    fontSize: 12,
-    letterSpacing: 4,
-    color: colors.textFaint,
-    textAlign: 'center',
-    marginTop: 10,
-    marginBottom: 24,
-  },
-  stepTitle: {
-    fontFamily: fonts.heading,
-    fontSize: 26,
-    letterSpacing: -0.5,
-    lineHeight: 31,
-    color: colors.text,
-    textAlign: 'center',
-    marginBottom: 10,
   },
   stepHint: {
     fontFamily: fonts.body,
@@ -776,7 +831,6 @@ const styles = StyleSheet.create({
     lineHeight: 19,
     marginBottom: 16,
   },
-  lore: { fontFamily: fonts.semibold, fontSize: 14, color: colors.text, lineHeight: 22 },
   label: {
     fontFamily: fonts.heading,
     fontSize: 12,
@@ -809,11 +863,13 @@ const styles = StyleSheet.create({
     padding: 14,
     marginBottom: 10,
   },
-  kindCardOn: { backgroundColor: colors.accent, borderColor: colors.accent },
+  // Elegido = marco de 3 en blanco, no invertido: la inversión del paso es «Continuar».
+  // El padding baja lo que sube el borde para que la tarjeta no crezca al elegirla.
+  kindCardOn: { borderWidth: 3, borderColor: colors.accent, padding: 12 },
   kindLabel: { fontFamily: fonts.heading, fontSize: 14, letterSpacing: 2, color: colors.text },
-  kindLabelOn: { color: colors.bg },
+  kindLabelOn: { color: colors.accent },
   kindTagline: { fontFamily: fonts.body, fontSize: 12, color: colors.textDim, marginTop: 3, lineHeight: 17 },
-  kindTaglineOn: { color: colors.panelDeep },
+  kindTaglineOn: { color: colors.text },
   detailTitle: { fontFamily: fonts.heading, fontSize: 11, letterSpacing: 2.5, color: colors.textFaint, marginBottom: 6 },
   detail: { fontFamily: fonts.body, fontSize: 13, color: colors.text, lineHeight: 19 },
   starterRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 10 },
@@ -842,8 +898,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 6,
   },
-  contrato: { fontFamily: fonts.body, fontSize: 14, lineHeight: 22, color: colors.text },
-  contratoParrafo: { marginTop: 12 },
   sello: {
     position: 'absolute',
     top: 0,

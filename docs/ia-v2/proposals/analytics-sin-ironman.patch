@@ -1,0 +1,13 @@
+diff --git a/supabase/functions/_shared/analytics.ts b/supabase/functions/_shared/analytics.ts
+index 2be49e2..066e0e4 100644
+--- a/supabase/functions/_shared/analytics.ts
++++ b/supabase/functions/_shared/analytics.ts
+@@ -269,7 +269,7 @@ export async function construirEstudio(sb: Db, userId: string, hoy: string): Pro
+   } else {
+     push();
+     push('## Cardio');
+-    push('- Sin sesiones registradas en 56 días. Con un IRONMAN en 2029, esto es el agujero más grande.');
++    push('- Sin sesiones registradas en 56 días. Si su ficha o sus metas tienen un objetivo de resistencia, este es el agujero más grande.');
+   }
+ 
+   // ── Nutrición ───────────────────────────────────────────────────

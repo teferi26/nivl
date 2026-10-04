@@ -192,9 +192,12 @@ interface Base {
 }
 
 export type Celebracion =
-  | (Base & { tipo: 'rango'; rango: RangoId; nombre: string; titulo: string; marco: MarcoId; corona: CoronaId | null; lema: string })
-  | (Base & { tipo: 'grado'; rango: RangoId; nombre: string; grado: Grado })
-  | (Base & { tipo: 'nivel'; nivel: number; xpEnNivel: number; xpSiguiente: number })
+  // `desde`: lo que había antes (la ceremonia lo enseña saliendo). Opcional:
+  // sin él se supone el inmediatamente anterior. Subir dos rangos o varios
+  // niveles de golpe enseñaba un «antes» que nunca existió.
+  | (Base & { tipo: 'rango'; rango: RangoId; nombre: string; titulo: string; marco: MarcoId; corona: CoronaId | null; lema: string; desde?: RangoId })
+  | (Base & { tipo: 'grado'; rango: RangoId; nombre: string; grado: Grado; desde?: Grado })
+  | (Base & { tipo: 'nivel'; nivel: number; xpEnNivel: number; xpSiguiente: number; desde?: number })
   | (Base & { tipo: 'logro'; codigo: string; nombre: string; desc: string; titulo: string | null })
   | (Base & { tipo: 'racha'; dias: number })
   | (Base & { tipo: 'piedra'; total: number })
@@ -264,13 +267,13 @@ export function celebracionesEntre(
   if (rangoNuevo) {
     const r = rangoPorId(despues.rango);
     out.push({ tipo: 'rango', clave: `rango:${r.id}`, intensidad: 'epica', rango: r.id, nombre: r.nombre,
-      titulo: r.titulo, marco: r.marco, corona: r.corona, lema: r.lema });
+      titulo: r.titulo, marco: r.marco, corona: r.corona, lema: r.lema, desde: antes.rango });
   } else if (despues.rango === antes.rango && despues.grado > antes.grado && despues.nivel > antes.nivel) {
     const r = rangoPorId(despues.rango);
-    out.push({ tipo: 'grado', clave: `grado:${r.id}:${despues.grado}`, intensidad: 'media', rango: r.id, nombre: r.nombre, grado: despues.grado });
+    out.push({ tipo: 'grado', clave: `grado:${r.id}:${despues.grado}`, intensidad: 'media', rango: r.id, nombre: r.nombre, grado: despues.grado, desde: antes.grado });
   } else if (despues.nivel > antes.nivel) {
     out.push({ tipo: 'nivel', clave: `nivel:${despues.nivel}`, intensidad: 'media', nivel: despues.nivel,
-      xpEnNivel: despues.xpEnNivel, xpSiguiente: despues.xpSiguiente });
+      xpEnNivel: despues.xpEnNivel, xpSiguiente: despues.xpSiguiente, desde: antes.nivel });
   }
 
   for (const h of HITOS_RACHA) {

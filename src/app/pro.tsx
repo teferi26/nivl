@@ -5,19 +5,29 @@
 // su plan, la energía que le queda este mes y, en Élite, sus turnos profundos.
 // La energía es el presupuesto de IA del candado (0020) enseñado SIEMPRE como
 // porcentaje: los dólares son cosa nuestra, no del usuario.
+//
+// Fase 2 (D1): `/pro?motivo=…&tier=…` llega desde una línea de upsell o desde
+// una hoja decidida por `ofrecerSi`. El motivo pone su contexto en la oferta y
+// el nivel la abre en Pro o Élite. Al salir, comprar o empezar la prueba se
+// apunta la respuesta (`anotarOferta`): es lo que hace respetar los topes y las
+// 72 h tras un «Ahora no». Sin motivo solo se apunta el inicio de la prueba
+// (como línea, sin gastar topes): es lo que permite ofrecer `fin_prueba` al
+// acabar. La cabecera, con motivo, sale de COPY_UPSELL (`eyebrow`, `titulo`).
 
-import { router, useFocusEffect } from 'expo-router';
-import { useCallback, useState } from 'react';
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Platform, StyleSheet, Text, View } from 'react-native';
 import { ProOffer } from '@/components/ProOffer';
-import { SystemButton } from '@/components/SystemButton';
 import { XPBar } from '@/components/XPBar';
-import { Card, FadeIn, Row, RowValue, Screen, ScreenHeader, Section, Skeleton, Stagger } from '@/components/ui';
+import { Button, Card, FadeIn, Row, Screen, ScreenHeader, Section, Skeleton, Stagger } from '@/components/ui';
 import { useAuth } from '@/lib/auth';
 import { ensureProfile } from '@/lib/data';
 import { isValidKey, nombreDia } from '@/lib/dates';
 import {
+  anotarOferta,
+  copyUpsell,
   energiaAgotada,
+  esMomento,
   energiaRestante,
   fetchAiStatus,
   gestionarSuscripcion,
@@ -33,9 +43,11 @@ import {
   puedeMejorarEnTienda,
   turnosProfundos,
   type AiStatus,
+  type OfferTier,
+  type RespuestaOferta,
 } from '@/lib/pro';
 import { fetchSubscription } from '@/lib/subscription';
-import { colors, fonts } from '@/lib/theme';
+import { ink, type as tipo } from '@/design/tokens';
 import { mensajeSistema } from '@/lib/validation';
 
 /** "jueves, 1 de octubre" a partir de una clave o de un ISO completo. */
@@ -46,6 +58,9 @@ function fechaLegible(valor: string | null | undefined): string | null {
 }
 
 export default function Pro() {
+  const params = useLocalSearchParams<{ motivo?: string; tier?: string }>();
+  const motivo = esMomento(params.motivo) ? params.motivo : null;
+  const tierParam: OfferTier | undefined = params.tier === 'elite' || params.tier === 'pro' ? params.tier : undefined;
   const { session } = useAuth();
   const userId = session?.user.id;
   const [status, setStatus] = useState<AiStatus | null>(null);
@@ -55,7 +70,30 @@ export default function Pro() {
   const [avisoGestion, setAvisoGestion] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [verOferta, setVerOferta] = useState(false);
+  // Quien llega desde una línea de upsell ya pidió ver la oferta: abierta.
+  const [verOferta, setVerOferta] = useState(motivo !== null);
+  // Una sola respuesta por visita: salir después de comprar no es un «Ahora no».
+  const [respondida, setRespondida] = useState(false);
+  const respondidaRef = useRef(false);
+
+  const responder = (r: RespuestaOferta) => {
+    if (!motivo || respondida || respondidaRef.current) return;
+    respondidaRef.current = true;
+    setRespondida(true);
+    void anotarOferta(motivo, r, 'linea');
+  };
+
+  // Salir sin responder por cualquier camino (gesto atrás, botón atrás de
+  // Android, cambiar de pestaña que desmonta) también es un «Ahora no»: así
+  // arranca la pausa de 72 h y no se insiste.
+  useEffect(() => {
+    return () => {
+      if (motivo && !respondidaRef.current) {
+        respondidaRef.current = true;
+        void anotarOferta(motivo, 'cerrada', 'linea');
+      }
+    };
+  }, [motivo]);
 
   const load = useCallback(async () => {
     // Sin sesión no hay nada que leer, pero la pantalla no puede quedarse
@@ -83,6 +121,7 @@ export default function Pro() {
   );
 
   const salir = () => {
+    responder('cerrada');
     if (router.canGoBack()) router.back();
     else router.replace('/(tabs)');
   };
@@ -147,7 +186,7 @@ export default function Pro() {
                 elite
                   ? 'Máxima potencia y modo profundo. Brief, plan del día, entreno, dieta, revisión semanal y memoria.'
                   : prueba
-                    ? 'Tu prueba de 7 días. Brief, plan del día, entreno, dieta, revisión semanal y memoria.'
+                    ? 'Tu prueba de 7 días. Brief, plan del día, entreno, dieta, revisión semanal y memoria. Al acabar no se cobra nada: no se renueva sola.'
                     : 'Brief, plan del día, entreno, dieta, revisión semanal y memoria. Todo activo.'
               }
             />
@@ -155,7 +194,7 @@ export default function Pro() {
 
           <FadeIn index={1}>
             <Section title="Energía del coach este mes" meta={`${pct} %`}>
-              <XPBar ratio={queda} height={8} color={agotada ? colors.accentDim : colors.accent} />
+              <XPBar ratio={queda} height={8} color={agotada ? ink.ink6 : ink.ink10} trackColor={ink.ink4} />
               <Text style={styles.energia}>
                 {agotada
                   ? `Agotada por este mes. ${recarga ? `Se recarga el ${recarga}.` : 'Se recarga el día 1.'} Tus misiones, tu racha y todos los módulos siguen funcionando.`
@@ -171,9 +210,8 @@ export default function Pro() {
                   first
                   title="Plan"
                   trailing={
-                    <RowValue tone="accent" strong>
-                      {prueba ? 'Prueba de 7 días' : planLabel(status?.plan ?? null)}
-                    </RowValue>
+                    // RowValue por defecto pinta en ink6 y en Cinzel: el plan es el dato fuerte, en ink9.
+                    <Text style={styles.planValor}>{prueba ? 'Prueba de 7 días' : planLabel(status?.plan ?? null)}</Text>
                   }
                 />
                 {renueva ? (
@@ -193,7 +231,7 @@ export default function Pro() {
               </Card>
               {deTienda ? (
                 <>
-                  <SystemButton
+                  <Button
                     title="Gestionar o cancelar suscripción"
                     variant="ghost"
                     size="sm"
@@ -221,7 +259,7 @@ export default function Pro() {
           </FadeIn>
 
           <FadeIn index={3}>
-            <SystemButton title="Hablar con el coach" icon="shield-half" onPress={() => router.replace('/(tabs)/coach')} />
+            <Button title="Hablar con el coach" variant="primary" icon="shield-half" onPress={() => router.replace('/(tabs)/coach')} />
           </FadeIn>
 
           {/* Con la tienda abierta: quien está en la prueba puede suscribirse
@@ -235,20 +273,25 @@ export default function Pro() {
                     userId={userId}
                     kind={kind}
                     compact
-                    initialTier={prueba ? 'pro' : 'elite'}
+                    initialTier={prueba ? (tierParam ?? 'pro') : 'elite'}
+                    motivo={motivo}
                     planActual={deTienda ? productoDePlan(status?.plan) : null}
                     exitLabel={prueba ? 'Seguir con la prueba' : 'Seguir con Pro'}
-                    onExit={() => setVerOferta(false)}
+                    onExit={() => {
+                      responder('cerrada');
+                      setVerOferta(false);
+                    }}
                     onPurchased={() => {
+                      responder('compra');
                       setVerOferta(false);
                       load();
                     }}
                   />
                 </View>
               ) : (
-                <SystemButton
+                <Button
                   title={prueba ? 'Suscribirme' : 'Ver NIVL Élite'}
-                  variant="outline"
+                  variant="secondary"
                   onPress={() => setVerOferta(true)}
                   style={styles.mejorar}
                 />
@@ -260,26 +303,39 @@ export default function Pro() {
     );
   }
 
+  // Con motivo, la cabecera es la del momento; sin él, la de siempre. La prueba
+  // se anuncia arriba solo si la cuenta puede empezarla.
+  const cabecera = motivo ? copyUpsell(motivo, tierParam ?? 'pro') : null;
+  const conPrueba = status?.trialAvailable ? ' Pruébalo 7 días, sin tarjeta.' : '';
   return (
     <Screen refreshing={refreshing} onRefresh={refrescar}>
       <Stagger>
         <FadeIn index={0}>
           <ScreenHeader
             onBack={salir}
-            eyebrow="NIVL Pro"
-            title="Un coach que manda en tu día."
-            subtitle="NIVL es gratis entera: misiones, racha, campañas, gym, dieta, economía, amigos. Pro añade el coach: la IA que lo dirige todo por ti."
+            eyebrow={cabecera?.eyebrow ?? 'NIVL Pro'}
+            title={cabecera?.titulo ?? 'Un coach que manda en tu día.'}
+            subtitle={`NIVL es gratis entera: misiones, racha, campañas, gym, dieta, economía, amigos. Pro añade el coach: la IA que lo dirige todo por ti.${conPrueba}`}
           />
         </FadeIn>
         <FadeIn index={1}>
           <ProOffer
             userId={userId}
             kind={kind}
+            initialTier={tierParam}
+            motivo={motivo}
             exitLabel="Seguir gratis"
             onExit={salir}
-            onPurchased={load}
+            onPurchased={() => {
+              responder('compra');
+              load();
+            }}
             trialAvailable={!!status?.trialAvailable}
-            onTrialStarted={load}
+            onTrialStarted={() => {
+              if (motivo) responder('prueba');
+              else void anotarOferta('coach_cerrado', 'prueba', 'linea');
+              load();
+            }}
           />
         </FadeIn>
       </Stagger>
@@ -291,11 +347,12 @@ const styles = StyleSheet.create({
   hueco: { marginBottom: 18 },
   huecoLinea: { marginBottom: 12 },
   huecoBloque: { marginTop: 14 },
-  energia: { fontFamily: fonts.body, fontSize: 13.5, lineHeight: 20, color: colors.textDim, marginTop: 10 },
+  energia: { fontFamily: tipo.body.family, fontSize: tipo.body.size, lineHeight: tipo.body.lineHeight, color: ink.ink8, marginTop: 10 },
   lista: { paddingHorizontal: 16, paddingVertical: 2 },
-  valor: { fontFamily: fonts.semibold, fontSize: 13, color: colors.text },
-  nota: { fontFamily: fonts.body, fontSize: 12, lineHeight: 17, color: colors.textFaint, marginTop: 4 },
+  valor: { fontFamily: 'Outfit_600SemiBold', fontSize: 13, color: ink.ink9 },
+  planValor: { fontFamily: tipo.headline.family, fontSize: 14, color: ink.ink9 },
+  nota: { fontFamily: tipo.bodySm.family, fontSize: tipo.bodySm.size, lineHeight: tipo.bodySm.lineHeight, color: ink.ink6, marginTop: 4 },
   mejorar: { marginTop: 10 },
   gestionar: { marginTop: 8, alignSelf: 'flex-start' },
-  oferta: { marginTop: 22, borderTopWidth: 1, borderTopColor: colors.line, paddingTop: 18 },
+  oferta: { marginTop: 22, borderTopWidth: 1, borderTopColor: ink.ink3, paddingTop: 18 },
 });

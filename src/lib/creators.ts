@@ -1,5 +1,6 @@
 // El programa de creadores (efectos): "¿Quién te trajo?", el código pendiente
-// que deja el enlace nivl://c/CODIGO y el panel del creador. La lógica pura
+// que deja el enlace https://nivl.app/c/CODIGO (o nivl://c/CODIGO) y el panel
+// del creador, más el progreso, el histórico y las tablas por periodo (0046). La lógica pura
 // —normalizar, la cuenta de comisiones, el texto del panel— vive en
 // creatormath.ts.
 //
@@ -8,9 +9,22 @@
 // solo le llega SU dinero; de los demás, alias y ventas del mes.
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { codigoValido, type CreatorRank, type ReferralReason } from './creatormath';
+import { codigoValido, motivoReferral, type CreatorRank, type ReferralReason } from './creatormath';
+import {
+  mesesHistorico,
+  parseCreatorBoard,
+  parseCreatorHistory,
+  parseCreatorProgress,
+  periodoTabla,
+  type CreatorBoardRow,
+  type CreatorHistoryMonth,
+  type CreatorProgress,
+} from './creatorprogram';
 import { marcarCreadorEnTienda } from './pro';
+import { claimInvite, mensajeInvite, normalizarCodigo as normalizarCodigoAmigo, type InviteReason } from './invites';
 import { supabase } from './supabase';
+
+export type { CreatorBoardRow, CreatorChallenge, CreatorHistoryMonth, CreatorProgress } from './creatorprogram';
 
 // ── El código pendiente ─────────────────────────────────────────────
 // El enlace puede llegar antes de iniciar sesión, o el onboarding puede
@@ -114,7 +128,7 @@ export async function reintentarCodigoPendiente(): Promise<void> {
   const p = await leerCodigoPendiente();
   if (!p) return;
   try {
-    await claimReferral(p.code, p.source);
+    await reclamarQuienTeTrajo(p.code, p.source);
     await olvidarCodigoPendiente();
   } catch {
     /* sin red: sigue pendiente */
@@ -192,13 +206,6 @@ export async function fetchCreatorPanel(): Promise<CreatorPanel | null> {
   };
 }
 
-export interface CreatorBoardRow {
-  alias: string;
-  sales: number;
-  pos: number;
-  isMe: boolean;
-}
-
 /** El ranking del mes: alias y ventas. Nunca dinero ajeno. Vacío si no eres creador. */
 export async function fetchCreatorBoard(): Promise<CreatorBoardRow[]> {
   const { data, error } = await supabase.rpc('creator_board');
@@ -210,4 +217,62 @@ export async function fetchCreatorBoard(): Promise<CreatorBoardRow[]> {
     pos: num(r.pos),
     isMe: !!r.is_me,
   }));
+}
+
+// ── Programa gamificado (0046) ──────────────────────────────────────
+// Solo lectura y solo lo propio. Las RPC devuelven céntimos (la web los
+// enseña); en la app de tienda el panel los quita con `vistaPanelCreador`
+// (creatorprogram.ts) antes de pintar. El parseo defensivo es puro y vive en
+// creatorprogram.ts para que el portal web (Chat 4) use el mismo.
+
+/** Lo del creador que llama, o null si no es creador activo. */
+export async function fetchCreatorProgress(): Promise<CreatorProgress | null> {
+  const { data, error } = await supabase.rpc('creator_progress');
+  if (error) throw error;
+  return parseCreatorProgress(data);
+}
+
+/** El histórico mensual propio, del mes en curso hacia atrás (1-24 meses; el servidor también lo recorta). */
+export async function fetchCreatorHistory(months = 12): Promise<CreatorHistoryMonth[]> {
+  const { data, error } = await supabase.rpc('creator_sales_history', { p_months: mesesHistorico(months) });
+  if (error) throw error;
+  return parseCreatorHistory(data);
+}
+
+/** La tabla del mes o de un reto: alias y ventas, nunca dinero ajeno. Vacía si no eres creador o el periodo no vale. */
+export async function fetchCreatorBoardPeriod(period: string): Promise<CreatorBoardRow[]> {
+  const p = periodoTabla(period);
+  if (!p) return [];
+  const { data, error } = await supabase.rpc('creator_board_period', { p_period: p });
+  if (error) throw error;
+  return parseCreatorBoard(data);
+}
+
+// ── «¿Quién te trajo?»: un solo campo para creador o amigo ─────────────
+
+export type ResultadoQuienTeTrajo =
+  | { ok: true; tipo: 'creador'; alias: string }
+  | { ok: true; tipo: 'amigo' }
+  | { ok: false; tipo: 'creador' | 'amigo'; reason: ReferralReason | InviteReason; mensaje: string };
+
+/**
+ * El mismo campo del onboarding (y de Perfil) acepta el código de un creador
+ * (0025) o el código de amigo de quien te invitó (0045). Primero se prueba como
+ * creador si tiene forma de código de creador; si el servidor no lo conoce y
+ * tiene forma de código de amigo (8 caracteres), se prueba como invitación.
+ * Lanza solo si falla la red (el llamante lo guarda como pendiente).
+ */
+export async function reclamarQuienTeTrajo(code: string, source: ReferralSource): Promise<ResultadoQuienTeTrajo> {
+  const amigo = normalizarCodigoAmigo(code);
+  if (codigoValido(code)) {
+    const r = await claimReferral(code, source);
+    if (r.ok) return { ok: true, tipo: 'creador', alias: r.alias };
+    if (!(r.reason === 'desconocido' && amigo)) {
+      return { ok: false, tipo: 'creador', reason: r.reason, mensaje: motivoReferral(r.reason) };
+    }
+  }
+  if (!amigo) return { ok: false, tipo: 'creador', reason: 'formato', mensaje: motivoReferral('formato') };
+  const i = await claimInvite(amigo);
+  if (i.ok) return { ok: true, tipo: 'amigo' };
+  return { ok: false, tipo: 'amigo', reason: i.reason, mensaje: mensajeInvite(i.reason) };
 }

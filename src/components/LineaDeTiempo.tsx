@@ -1,8 +1,10 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import Svg, { Line } from 'react-native-svg';
+import { ink, stroke } from '@/design/tokens';
 import { hhmm } from '@/lib/plan';
 import { ALTO_HORA, disponer, rangoHoras, yDeMinuto, type ItemTiempo } from '@/lib/timeline';
-import { colors, fonts } from '@/lib/theme';
+import { fonts } from '@/lib/theme';
 
 export type TipoItem = 'bloque' | 'evento' | 'campaña';
 
@@ -14,13 +16,23 @@ export interface ItemAgenda extends ItemTiempo {
   icono?: string;
 }
 
-const COLOR: Record<TipoItem, string> = {
-  bloque: colors.accent,
-  evento: colors.gold,
-  campaña: colors.steel,
-};
+/** Columna de las horas, en Cinzel (FASE3 Lote C). */
+const ANCHO_HORAS = 48;
+/** Lado de la marca de evento (punto) y de campaña (aro). */
+const MARCA = 7;
+/** Alto del lienzo de la línea de «ahora»: cabe el trazo de 1,5 sin cortarse. */
+const ALTO_AHORA = 4;
 
-const ANCHO_HORAS = 46;
+/**
+ * Qué es cada cosa se dice con la forma, no con el color (SISTEMA §0): el
+ * bloque del plan lleva su icono; el evento, un punto sólido; el plazo de
+ * campaña, un aro hueco.
+ */
+function Marca({ item }: { item: ItemAgenda }) {
+  if (item.tipo === 'evento') return <View style={styles.punto} />;
+  if (item.tipo === 'campaña') return <View style={styles.aro} />;
+  return item.icono ? <Ionicons name={item.icono as never} size={11} color={ink.ink9} /> : null;
+}
 
 /**
  * El día sobre un eje de horas, como en un calendario de verdad.
@@ -58,52 +70,83 @@ export function LineaDeTiempo({
         </View>
       ))}
 
-      {colocados.map(({ item, top, alto: altoItem, columna, columnas }) => {
-        const anchoPct = 100 / columnas;
-        return (
-          <Pressable
-            key={item.id}
-            onPress={() => onPress?.(item)}
-            style={[
-              styles.bloque,
-              {
-                top,
-                height: altoItem - 3,
-                left: `${columna * anchoPct}%`,
-                width: `${anchoPct}%`,
-                borderLeftColor: COLOR[item.tipo],
-              },
-              item.hecho && styles.bloqueHecho,
-            ]}
-            accessibilityRole="button"
-            accessibilityLabel={`${hhmm(item.inicio)} ${item.titulo}`}
-          >
-            <View style={styles.bloqueCabecera}>
-              {item.icono ? (
-                <Ionicons name={item.icono as never} size={11} color={COLOR[item.tipo]} />
+      {/* El carril de los bloques empieza donde acaba la columna de horas. Con
+          el margen en el propio bloque y left/width en %, el % se medía sobre
+          la caja entera y el bloque se salía 46 pt por la derecha. */}
+      <View style={styles.carril} pointerEvents="box-none">
+        {colocados.map(({ item, top, alto: altoItem, columna, columnas }) => {
+          const anchoPct = 100 / columnas;
+          const estilo = [
+            styles.bloque,
+            {
+              top,
+              height: altoItem - 3,
+              left: `${columna * anchoPct}%` as const,
+              width: `${anchoPct}%` as const,
+            },
+          ];
+          const etiqueta = `${hhmm(item.inicio)} ${item.titulo}${item.hecho ? ', hecho' : ''}`;
+          const contenido = (
+            <>
+              <View style={styles.bloqueCabecera}>
+                <Marca item={item} />
+                <Text style={[styles.bloqueTitulo, item.hecho && styles.tachado]} numberOfLines={1}>
+                  {item.titulo}
+                </Text>
+                {item.hecho ? <Ionicons name="checkmark" size={12} color={ink.ink10} /> : null}
+              </View>
+              {/* La hora solo cabe si el bloque pasa de media hora; en uno de 20
+                  minutos taparía el título, que es lo que de verdad importa. */}
+              {altoItem >= ALTO_HORA * 0.6 ? (
+                <Text style={styles.bloqueHora} numberOfLines={1}>
+                  {hhmm(item.inicio)}
+                  {item.fin > item.inicio ? ` a ${hhmm(item.fin)}` : ''}
+                  {item.detalle ? ` · ${item.detalle}` : ''}
+                </Text>
               ) : null}
-              <Text style={[styles.bloqueTitulo, item.hecho && styles.tachado]} numberOfLines={1}>
-                {item.titulo}
-              </Text>
-              {item.hecho ? <Ionicons name="checkmark" size={12} color={colors.accent} /> : null}
-            </View>
-            {/* La hora solo cabe si el bloque pasa de media hora; en uno de 20
-                minutos taparía el título, que es lo que de verdad importa. */}
-            {altoItem >= ALTO_HORA * 0.6 ? (
-              <Text style={styles.bloqueHora} numberOfLines={1}>
-                {hhmm(item.inicio)}
-                {item.fin > item.inicio ? `–${hhmm(item.fin)}` : ''}
-                {item.detalle ? ` · ${item.detalle}` : ''}
-              </Text>
-            ) : null}
-          </Pressable>
-        );
-      })}
+            </>
+          );
+          // Los bloques del plan no hacen nada al tocarlos en la Agenda (se
+          // marcan desde Hoy): no se anuncian como botón. Los eventos, sí.
+          if (!onPress || item.tipo === 'bloque') {
+            return (
+              <View key={item.id} style={estilo} accessible accessibilityRole="text" accessibilityLabel={etiqueta}>
+                {contenido}
+              </View>
+            );
+          }
+          return (
+            <Pressable
+              key={item.id}
+              onPress={() => onPress(item)}
+              style={estilo}
+              accessibilityRole="button"
+              accessibilityLabel={etiqueta}
+            >
+              {contenido}
+            </Pressable>
+          );
+        })}
+      </View>
 
-      {yAhora !== null ? (
-        <View style={[styles.ahora, { top: yAhora }]} pointerEvents="none">
-          <View style={styles.ahoraPunto} />
-          <View style={styles.ahoraLinea} />
+      {/* «Ahora»: una línea discontinua blanca sobre el carril y la hora exacta
+          en la columna de horas. Sin punto rojo: el blanco ya es el acento. */}
+      {yAhora !== null && ahoraMin != null ? (
+        <View style={[styles.ahora, { top: yAhora - ALTO_AHORA / 2 }]} pointerEvents="none">
+          <Text style={styles.ahoraHora} accessibilityLabel={`Ahora, ${hhmm(ahoraMin)}`}>
+            {hhmm(ahoraMin)}
+          </Text>
+          <Svg style={styles.ahoraLienzo} height={ALTO_AHORA}>
+            <Line
+              x1="0"
+              y1={ALTO_AHORA / 2}
+              x2="100%"
+              y2={ALTO_AHORA / 2}
+              stroke={ink.ink10}
+              strokeWidth={1.5}
+              strokeDasharray="4 3"
+            />
+          </Svg>
         </View>
       ) : null}
     </View>
@@ -115,47 +158,58 @@ const styles = StyleSheet.create({
   filaHora: { position: 'absolute', left: 0, right: 0, flexDirection: 'row', alignItems: 'center' },
   horaTexto: {
     width: ANCHO_HORAS,
-    fontFamily: fonts.body,
+    fontFamily: 'Cinzel_600SemiBold',
     fontSize: 11,
-    color: colors.textFaint,
+    color: ink.ink6,
+    fontVariant: ['tabular-nums'],
   },
-  reglaHora: { flex: 1, height: 1, backgroundColor: colors.line },
+  reglaHora: { flex: 1, height: stroke.hairline, backgroundColor: ink.ink3 },
+  carril: { position: 'absolute', top: 0, bottom: 0, left: ANCHO_HORAS, right: 0 },
   bloque: {
     position: 'absolute',
-    marginLeft: ANCHO_HORAS,
-    // El left/width van en % del contenedor, así que el margen de las horas se
-    // compensa con padding para que el bloque no se salga por la derecha.
     paddingLeft: 8,
     paddingRight: 6,
     paddingVertical: 4,
-    backgroundColor: colors.panel,
-    borderLeftWidth: 2.5,
-    borderTopWidth: 1,
-    borderRightWidth: 1,
-    borderBottomWidth: 1,
-    borderTopColor: colors.line,
-    borderRightColor: colors.line,
-    borderBottomColor: colors.line,
+    backgroundColor: ink.ink1,
+    // Borde izquierdo igual para todo: el tipo lo dice la marca de la cabecera.
+    borderLeftWidth: stroke.rule,
+    borderLeftColor: ink.ink6,
+    borderTopWidth: stroke.hairline,
+    borderRightWidth: stroke.hairline,
+    borderBottomWidth: stroke.hairline,
+    borderTopColor: ink.ink3,
+    borderRightColor: ink.ink3,
+    borderBottomColor: ink.ink3,
     overflow: 'hidden',
   },
-  bloqueHecho: { opacity: 0.55 },
   bloqueCabecera: { flexDirection: 'row', alignItems: 'center', gap: 5 },
+  punto: { width: MARCA, height: MARCA, borderRadius: MARCA / 2, backgroundColor: ink.ink9 },
+  aro: {
+    width: MARCA,
+    height: MARCA,
+    borderRadius: MARCA / 2,
+    borderWidth: stroke.hairline,
+    borderColor: ink.ink9,
+  },
   bloqueTitulo: {
     flex: 1,
     minWidth: 0,
     fontFamily: fonts.semibold,
     fontSize: 12.5,
-    color: colors.text,
+    color: ink.ink9,
   },
-  tachado: { textDecorationLine: 'line-through', color: colors.textDim },
-  bloqueHora: { fontFamily: fonts.body, fontSize: 11, color: colors.textFaint, marginTop: 2 },
-  ahora: { position: 'absolute', left: 0, right: 0, flexDirection: 'row', alignItems: 'center' },
-  ahoraPunto: {
-    width: 7,
-    height: 7,
-    borderRadius: 4,
-    backgroundColor: colors.red,
-    marginLeft: ANCHO_HORAS - 4,
+  // Hecho: tachado y en terciario. Nada de opacidad sobre texto.
+  tachado: { textDecorationLine: 'line-through', color: ink.ink6 },
+  bloqueHora: { fontFamily: fonts.body, fontSize: 11, color: ink.ink6, marginTop: 2 },
+  ahora: { position: 'absolute', left: 0, right: 0, height: ALTO_AHORA, flexDirection: 'row', alignItems: 'center' },
+  // Fondo negro: tapa la "hh:00" de debajo si la hora actual cae cerca.
+  ahoraHora: {
+    width: ANCHO_HORAS,
+    fontFamily: 'Cinzel_700Bold',
+    fontSize: 11,
+    lineHeight: 14,
+    color: ink.ink10,
+    backgroundColor: ink.ink0,
   },
-  ahoraLinea: { flex: 1, height: 1.5, backgroundColor: colors.red },
+  ahoraLienzo: { flex: 1 },
 });

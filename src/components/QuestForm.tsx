@@ -1,17 +1,9 @@
-import { useEffect, useState } from 'react';
-import {
-  KeyboardAvoidingView,
-  Modal,
-  Platform,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
-import { Chip, ChipWrap } from '@/components/ui';
+import { useEffect, useRef, useState } from 'react';
+import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Button, Chip, ChipWrap, Sheet } from '@/components/ui';
 import { avisar, confirmar } from '@/components/ui/confirmar';
+import { vibrar } from '@/design/haptics';
+import { ink } from '@/design/tokens';
 import type { QuestInput } from '@/lib/data';
 import {
   BONUS_BY_DIFFICULTY,
@@ -24,7 +16,6 @@ import {
 import { colors, fonts } from '@/lib/theme';
 import { mensajeSistema } from '@/lib/validation';
 import type { Difficulty, Quest, Stat } from '@/lib/types';
-import { SystemButton } from './SystemButton';
 
 const DAY_LABELS = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
 const DAY_NAMES = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
@@ -41,14 +32,48 @@ interface Props {
   // Modo edición: precarga la misión y muestra Guardar/Eliminar.
   initial?: Quest | null;
   onDelete?: (quest: Quest) => Promise<void>;
+  /**
+   * Cómo se llama lo que se crea: cambia el eyebrow, el título, los botones y
+   * la confirmación de borrado para que digan lo mismo que el botón que abrió
+   * la hoja («Nuevo hábito» abre «NUEVO HÁBITO»). Por defecto, misión.
+   */
+  sustantivo?: 'misión' | 'hábito';
+  /** Eyebrow propio; si no, sale de `sustantivo`. */
+  eyebrow?: string;
+  /** Título propio; si no, sale de `sustantivo`. */
+  title?: string;
 }
 
+const TEXTOS = {
+  misión: {
+    nuevo: 'Nueva misión',
+    editar: 'Editar misión',
+    tituloNuevo: '¿Qué vas a exigirte?',
+    tituloEditar: 'Ajusta la misión',
+    crear: 'Crear misión',
+    eliminar: 'Eliminar misión',
+    campo: 'Misión',
+    campoA11y: 'Nombre de la misión',
+  },
+  hábito: {
+    nuevo: 'Nuevo hábito',
+    editar: 'Editar hábito',
+    tituloNuevo: '¿Qué quieres que te salga solo?',
+    tituloEditar: 'Ajusta el hábito',
+    crear: 'Crear hábito',
+    eliminar: 'Eliminar hábito',
+    campo: 'Hábito',
+    campoA11y: 'Nombre del hábito',
+  },
+} as const;
+
 /**
- * El formulario de misión, en hoja inferior: la misma gramática que la hoja de
- * campañas (asa, rótulo, título grande, chips) para que crear una misión y
- * abrir una campaña se sientan el mismo gesto.
+ * El formulario de misión, en la hoja del kit (Sheet): la misma gramática que
+ * la hoja de campañas para que crear una misión y abrir una campaña se sientan
+ * el mismo gesto. El teclado lo gestiona la hoja; las acciones van en su pie.
  */
-export function QuestForm({ visible, onClose, onSubmit, initial, onDelete }: Props) {
+export function QuestForm({ visible, onClose, onSubmit, initial, onDelete, sustantivo = 'misión', eyebrow, title: tituloHoja }: Props) {
+  const t = TEXTOS[sustantivo];
   const [title, setTitle] = useState('');
   const [stat, setStat] = useState<Stat>('FUE');
   const [difficulty, setDifficulty] = useState<Difficulty>('media');
@@ -56,6 +81,9 @@ export function QuestForm({ visible, onClose, onSubmit, initial, onDelete }: Pro
   const [requiresEvidence, setRequiresEvidence] = useState(false);
   const [isBonus, setIsBonus] = useState(false);
   const [saving, setSaving] = useState(false);
+  // Cerrojo síncrono: `saving` no se ve hasta el siguiente render, así que dos
+  // toques seguidos en «Crear» entraban los dos y creaban dos misiones.
+  const guardando = useRef(false);
 
   const editing = !!initial;
 
@@ -83,7 +111,8 @@ export function QuestForm({ visible, onClose, onSubmit, initial, onDelete }: Pro
   };
 
   const submit = async () => {
-    if (!title.trim() || days.length === 0 || saving) return;
+    if (!title.trim() || days.length === 0 || guardando.current) return;
+    guardando.current = true;
     setSaving(true);
     try {
       await onSubmit({
@@ -98,6 +127,7 @@ export function QuestForm({ visible, onClose, onSubmit, initial, onDelete }: Pro
     } catch (e) {
       avisar('Error del sistema', mensajeSistema(e));
     } finally {
+      guardando.current = false;
       setSaving(false);
     }
   };
@@ -105,15 +135,17 @@ export function QuestForm({ visible, onClose, onSubmit, initial, onDelete }: Pro
   const confirmDelete = async () => {
     if (!initial || !onDelete) return;
     const ok = await confirmar({
-      titulo: 'Eliminar misión',
+      titulo: t.eliminar,
       mensaje: `"${initial.title}" y todo su historial de completadas. Esta acción no se puede deshacer.`,
       confirmar: 'Eliminar',
       destructivo: true,
     });
     if (!ok) return;
     try {
-      // La hoja solo se cierra si se ha borrado de verdad.
+      // La hoja solo se cierra si se ha borrado de verdad, y la háptica de
+      // borrado solo suena entonces: si falla, no ha habido nada destructivo.
       await onDelete(initial);
+      vibrar('destructiva');
       onClose();
     } catch (e) {
       avisar('Error del sistema', mensajeSistema(e));
@@ -125,131 +157,114 @@ export function QuestForm({ visible, onClose, onSubmit, initial, onDelete }: Pro
     : `${XP_BY_DIFFICULTY[difficulty]} XP base. Con foto, +25 %; la racha lo multiplica.`;
 
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <KeyboardAvoidingView style={styles.backdrop} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <Pressable style={styles.backdropTap} onPress={onClose} accessibilityRole="button" accessibilityLabel="Cerrar" />
-        <View style={styles.sheet}>
-          <View style={styles.sheetHandle} />
-          <ScrollView keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
-            <Text style={styles.sheetEyebrow}>{editing ? 'EDITAR MISIÓN' : 'NUEVA MISIÓN'}</Text>
-            <Text style={styles.sheetTitle}>{editing ? 'Ajusta la misión' : '¿Qué vas a exigirte?'}</Text>
+    <Sheet
+      visible={visible}
+      onClose={onClose}
+      eyebrow={eyebrow ?? (editing ? t.editar : t.nuevo)}
+      title={tituloHoja ?? (editing ? t.tituloEditar : t.tituloNuevo)}
+      footer={
+        <>
+          <Button
+            title={editing ? 'Guardar cambios' : t.crear}
+            size="lg"
+            onPress={submit}
+            loading={saving}
+            disabled={!title.trim() || days.length === 0}
+          />
+          {editing && onDelete ? (
+            <Button title={t.eliminar} variant="danger" icon="trash-outline" onPress={confirmDelete} />
+          ) : null}
+          <Button title="Cancelar" variant="ghost" onPress={onClose} />
+        </>
+      }
+    >
+      <Text style={[styles.label, styles.labelPrimero]}>{t.campo}</Text>
+      <TextInput
+        style={styles.input}
+        value={title}
+        onChangeText={setTitle}
+        placeholder="Ej. Gimnasio · pierna"
+        placeholderTextColor={colors.textFaint}
+        autoFocus={!editing}
+        accessibilityLabel={t.campoA11y}
+      />
 
-            <Text style={styles.label}>Misión</Text>
-            <TextInput
-              style={styles.input}
-              value={title}
-              onChangeText={setTitle}
-              placeholder="Ej. Gimnasio · pierna"
-              placeholderTextColor={colors.textFaint}
-              autoFocus={!editing}
-              accessibilityLabel="Nombre de la misión"
-            />
+      <Text style={styles.label}>Qué entrena</Text>
+      <ChipWrap>
+        {STATS.map((s) => (
+          <Chip key={s} label={s} selected={stat === s} onPress={() => setStat(s)} accessibilityLabel={STAT_LABEL[s]} />
+        ))}
+      </ChipWrap>
+      <Text style={styles.hint}>{STAT_LABEL[stat]}</Text>
 
-            <Text style={styles.label}>Qué entrena</Text>
-            <ChipWrap>
-              {STATS.map((s) => (
-                <Chip key={s} label={s} selected={stat === s} onPress={() => setStat(s)} accessibilityLabel={STAT_LABEL[s]} />
-              ))}
-            </ChipWrap>
-            <Text style={styles.hint}>{STAT_LABEL[stat]}</Text>
+      <Text style={styles.label}>Dificultad</Text>
+      <ChipWrap>
+        {DIFFICULTIES.map((d) => (
+          <Chip
+            key={d}
+            label={DIFFICULTY_LABEL[d]}
+            selected={difficulty === d}
+            onPress={() => setDifficulty(d)}
+            accessibilityLabel={`Dificultad ${DIFFICULTY_LABEL[d]}`}
+          />
+        ))}
+      </ChipWrap>
+      <Text style={styles.hint}>{pago}</Text>
 
-            <Text style={styles.label}>Dificultad</Text>
-            <ChipWrap>
-              {DIFFICULTIES.map((d) => (
-                <Chip
-                  key={d}
-                  label={DIFFICULTY_LABEL[d]}
-                  selected={difficulty === d}
-                  onPress={() => setDifficulty(d)}
-                  accessibilityLabel={`Dificultad ${DIFFICULTY_LABEL[d]}`}
-                />
-              ))}
-            </ChipWrap>
-            <Text style={styles.hint}>{pago}</Text>
+      <Text style={styles.label}>Días</Text>
+      <View style={styles.days}>
+        {DAY_LABELS.map((label, i) => {
+          const d = i + 1;
+          const on = days.includes(d);
+          return (
+            <Pressable
+              key={d}
+              onPress={() => toggleDay(d)}
+              style={({ pressed }) => [styles.day, on && styles.dayOn, pressed && styles.pressed]}
+              accessibilityRole="checkbox"
+              accessibilityState={{ checked: on }}
+              accessibilityLabel={DAY_NAMES[i]}
+            >
+              <Text style={[styles.dayText, on && styles.dayTextOn]}>{label}</Text>
+            </Pressable>
+          );
+        })}
+      </View>
+      <ChipWrap style={{ marginTop: 10 }}>
+        <Chip small label="Diaria" selected={mismosDias(days, DIARIA)} onPress={() => setDays(DIARIA)} accessibilityLabel="Todos los días" />
+        <Chip small label="Entre semana" selected={mismosDias(days, LABORABLES)} onPress={() => setDays(LABORABLES)} accessibilityLabel="De lunes a viernes" />
+        <Chip small label="Finde" selected={mismosDias(days, FINDE)} onPress={() => setDays(FINDE)} accessibilityLabel="Sábado y domingo" />
+      </ChipWrap>
+      {days.length === 0 ? <Text style={[styles.hint, styles.hintAviso]}>Elige al menos un día.</Text> : null}
 
-            <Text style={styles.label}>Días</Text>
-            <View style={styles.days}>
-              {DAY_LABELS.map((label, i) => {
-                const d = i + 1;
-                const on = days.includes(d);
-                return (
-                  <Pressable
-                    key={d}
-                    onPress={() => toggleDay(d)}
-                    style={({ pressed }) => [styles.day, on && styles.dayOn, pressed && styles.pressed]}
-                    accessibilityRole="checkbox"
-                    accessibilityState={{ checked: on }}
-                    accessibilityLabel={DAY_NAMES[i]}
-                  >
-                    <Text style={[styles.dayText, on && styles.dayTextOn]}>{label}</Text>
-                  </Pressable>
-                );
-              })}
-            </View>
-            <ChipWrap style={{ marginTop: 10 }}>
-              <Chip small label="Diaria" selected={mismosDias(days, DIARIA)} onPress={() => setDays(DIARIA)} accessibilityLabel="Todos los días" />
-              <Chip small label="Entre semana" selected={mismosDias(days, LABORABLES)} onPress={() => setDays(LABORABLES)} accessibilityLabel="De lunes a viernes" />
-              <Chip small label="Finde" selected={mismosDias(days, FINDE)} onPress={() => setDays(FINDE)} accessibilityLabel="Sábado y domingo" />
-            </ChipWrap>
-            {days.length === 0 ? <Text style={[styles.hint, styles.hintRed]}>Elige al menos un día.</Text> : null}
+      <Text style={styles.label}>Evidencia</Text>
+      <ChipWrap>
+        <Chip label="Sin foto" selected={!requiresEvidence} onPress={() => setRequiresEvidence(false)} accessibilityLabel="Sin evidencia obligatoria" />
+        <Chip
+          label="Foto obligatoria"
+          icon="camera-outline"
+          selected={requiresEvidence}
+          onPress={() => setRequiresEvidence(true)}
+          accessibilityLabel="Exigir foto al completar la misión"
+        />
+      </ChipWrap>
+      <Text style={styles.hint}>{requiresEvidence ? 'No se podrá completar sin foto. Paga un 25 % más.' : 'La foto es opcional al completar.'}</Text>
 
-            <Text style={styles.label}>Evidencia</Text>
-            <ChipWrap>
-              <Chip label="Sin foto" selected={!requiresEvidence} onPress={() => setRequiresEvidence(false)} accessibilityLabel="Sin evidencia obligatoria" />
-              <Chip
-                label="Foto obligatoria"
-                icon="camera-outline"
-                selected={requiresEvidence}
-                onPress={() => setRequiresEvidence(true)}
-                accessibilityLabel="Exigir foto al completar la misión"
-              />
-            </ChipWrap>
-            <Text style={styles.hint}>{requiresEvidence ? 'No se podrá completar sin foto. Paga un 25 % más.' : 'La foto es opcional al completar.'}</Text>
-
-            <Text style={styles.label}>Qué paga</Text>
-            <ChipWrap>
-              <Chip label="XP" selected={!isBonus} onPress={() => setIsBonus(false)} accessibilityLabel="Misión normal: paga XP" />
-              <Chip label="Puntos bonus" tone="gold" selected={isBonus} onPress={() => setIsBonus(true)} accessibilityLabel="Misión extra: paga puntos bonus" />
-            </ChipWrap>
-            <Text style={styles.hint}>
-              {isBonus
-                ? 'Misión extra: no da XP ni cuenta para la racha. Sus PB se canjean por descanso en el contrato.'
-                : 'Misión del día: cuenta para la racha y se penaliza si queda sin hacer.'}
-            </Text>
-
-            <SystemButton
-              title={editing ? 'Guardar cambios' : 'Crear misión'}
-              onPress={submit}
-              loading={saving}
-              disabled={!title.trim() || days.length === 0}
-              style={{ marginTop: 24 }}
-            />
-            {editing && onDelete ? (
-              <SystemButton title="Eliminar misión" variant="danger" icon="trash-outline" onPress={confirmDelete} style={{ marginTop: 10 }} />
-            ) : null}
-            <SystemButton title="Cancelar" variant="ghost" onPress={onClose} style={{ marginTop: 6 }} />
-          </ScrollView>
-        </View>
-      </KeyboardAvoidingView>
-    </Modal>
+      <Text style={styles.label}>Qué paga</Text>
+      <ChipWrap>
+        <Chip label="XP" selected={!isBonus} onPress={() => setIsBonus(false)} accessibilityLabel="Misión normal: paga XP" />
+        <Chip label="Puntos bonus" selected={isBonus} onPress={() => setIsBonus(true)} accessibilityLabel="Misión extra: paga puntos bonus" />
+      </ChipWrap>
+      <Text style={styles.hint}>
+        {isBonus
+          ? 'Misión extra: no da XP ni cuenta para la racha. Sus PB se canjean por descanso en el contrato.'
+          : 'Misión del día: cuenta para la racha y se penaliza si queda sin hacer.'}
+      </Text>
+    </Sheet>
   );
 }
 
 const styles = StyleSheet.create({
-  backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'flex-end' },
-  backdropTap: { flex: 1 },
-  sheet: {
-    backgroundColor: colors.panel,
-    borderTopWidth: 1,
-    borderTopColor: colors.line,
-    paddingHorizontal: 20,
-    paddingTop: 10,
-    paddingBottom: 34,
-    maxHeight: '90%',
-  },
-  sheetHandle: { alignSelf: 'center', width: 36, height: 3, backgroundColor: colors.accentDim, marginBottom: 16 },
-  sheetEyebrow: { fontFamily: fonts.heading, fontSize: 11, letterSpacing: 2.5, color: colors.accentText },
-  sheetTitle: { fontFamily: fonts.heading, fontSize: 24, letterSpacing: -0.5, color: colors.text, marginTop: 6, marginBottom: 4 },
   label: {
     fontFamily: fonts.heading,
     fontSize: 11,
@@ -259,8 +274,9 @@ const styles = StyleSheet.create({
     marginTop: 18,
     marginBottom: 8,
   },
+  labelPrimero: { marginTop: 4 },
   hint: { fontFamily: fonts.body, fontSize: 12, color: colors.textFaint, marginTop: 8, lineHeight: 17 },
-  hintRed: { color: colors.red },
+  hintAviso: { fontFamily: fonts.semibold, color: ink.ink9 },
   input: {
     borderWidth: 1,
     borderColor: colors.accentDim,
@@ -274,7 +290,8 @@ const styles = StyleSheet.create({
   days: { flexDirection: 'row', gap: 6 },
   day: {
     flex: 1,
-    height: 40,
+    // 44: la zona táctil mínima; con 7 en fila no hay hitSlop lateral posible.
+    height: 44,
     borderWidth: 1,
     borderColor: colors.accentDim,
     alignItems: 'center',

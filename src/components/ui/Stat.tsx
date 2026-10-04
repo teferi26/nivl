@@ -2,6 +2,7 @@
 
 import { StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 import { colors, fonts } from '@/lib/theme';
+import { LEIDO_SIN_DATO, SIN_DATO } from './sinDato';
 
 interface StatProps {
   value: string | number;
@@ -28,7 +29,12 @@ export function Stat({ value, label, unit, size = 'md', tone = 'text', align = '
   return (
     <View style={[align === 'center' && styles.center, style]}>
       <View style={[styles.valueRow, align === 'center' && styles.center]}>
-        <Text style={[styles.value, { fontSize: SIZE[size], color: TONE[tone] }]}>{value}</Text>
+        <Text
+          style={[styles.value, { fontSize: SIZE[size], color: TONE[tone] }]}
+          accessibilityLabel={value === SIN_DATO ? LEIDO_SIN_DATO : undefined}
+        >
+          {value}
+        </Text>
         {unit ? <Text style={[styles.unit, { color: TONE[tone] }]}>{unit}</Text> : null}
       </View>
       <Text style={[styles.label, align === 'center' && styles.labelCenter]}>{label}</Text>

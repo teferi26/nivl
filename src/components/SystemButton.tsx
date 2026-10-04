@@ -1,14 +1,17 @@
-import Ionicons from '@expo/vector-icons/Ionicons';
-import { useRef } from 'react';
-import { ActivityIndicator, Animated, Pressable, StyleSheet, Text, type StyleProp, type ViewStyle } from 'react-native';
-import { splitStyle } from '@/components/ui/motion';
-import { colors, fonts } from '@/lib/theme';
+// NIVL · SystemButton: envoltorio de compatibilidad sobre el Button v2
+// (src/components/ui/Button.tsx). Se mantiene para no tocar sus imports; el
+// código nuevo usa `Button` desde '@/components/ui'.
+//   solid → primary · outline → secondary · ghost → ghost · danger → danger (trama).
+
+import type Ionicons from '@expo/vector-icons/Ionicons';
+import type { StyleProp, ViewStyle } from 'react-native';
+import { Button, type ButtonVariant } from '@/components/ui/Button';
 
 interface Props {
   title: string;
   onPress: () => void;
   /** solid: blanco con texto negro (la acción principal, una por pantalla).
-   *  outline: marco de hierro. ghost: solo texto. danger: rojo. */
+   *  outline: contorno blanco. ghost: solo texto. danger: contorno con trama. */
   variant?: 'solid' | 'outline' | 'ghost' | 'danger';
   size?: 'sm' | 'md' | 'lg';
   icon?: keyof typeof Ionicons.glyphMap;
@@ -17,81 +20,13 @@ interface Props {
   style?: StyleProp<ViewStyle>;
 }
 
-export function SystemButton({ title, onPress, variant = 'solid', size = 'md', icon, disabled, loading, style }: Props) {
-  const scale = useRef(new Animated.Value(1)).current;
-  const solid = variant === 'solid';
-  const danger = variant === 'danger';
-  const ghost = variant === 'ghost';
-  const fg = solid ? colors.bg : danger ? colors.red : colors.accent;
-  // El layout (márgenes, alignSelf, flex, ancho) va al Pressable, que es quien
-  // ocupa sitio en el padre; lo visual, a la vista que escala. Antes todo caía
-  // dentro y un `alignSelf: 'stretch'` o un `flex: 1` no hacían nada.
-  const { outer, inner } = splitStyle(style);
-  const animar = (v: number) => Animated.spring(scale, { toValue: v, useNativeDriver: true, speed: 40, bounciness: 4 }).start();
+const VARIANTE: Record<NonNullable<Props['variant']>, ButtonVariant> = {
+  solid: 'primary',
+  outline: 'secondary',
+  ghost: 'ghost',
+  danger: 'danger',
+};
 
-  return (
-    <Pressable
-      onPress={onPress}
-      disabled={disabled || loading}
-      onPressIn={() => animar(0.97)}
-      onPressOut={() => animar(1)}
-      accessibilityRole="button"
-      accessibilityLabel={title}
-      accessibilityState={{ disabled: !!disabled, busy: !!loading }}
-      style={outer}
-    >
-      <Animated.View
-        style={[
-          styles.base,
-          size === 'sm' && styles.sm,
-          size === 'lg' && styles.lg,
-          solid && styles.solid,
-          danger && styles.danger,
-          ghost && styles.ghost,
-          (disabled || loading) && styles.disabled,
-          inner,
-          { transform: [{ scale }] },
-        ]}
-      >
-        {loading ? (
-          <ActivityIndicator color={fg} size="small" />
-        ) : (
-          <>
-            {icon ? <Ionicons name={icon} size={size === 'sm' ? 14 : 17} color={fg} /> : null}
-            <Text style={[styles.label, size === 'sm' && styles.labelSm, size === 'lg' && styles.labelLg, { color: fg }]}>
-              {title}
-            </Text>
-          </>
-        )}
-      </Animated.View>
-    </Pressable>
-  );
+export function SystemButton({ variant = 'solid', ...rest }: Props) {
+  return <Button variant={VARIANTE[variant]} {...rest} />;
 }
-
-const styles = StyleSheet.create({
-  base: {
-    flexDirection: 'row',
-    gap: 8,
-    borderWidth: 1.5,
-    borderColor: colors.accent,
-    minHeight: 50,
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  sm: { minHeight: 38, paddingVertical: 8, paddingHorizontal: 14 },
-  lg: { minHeight: 56, paddingVertical: 15 },
-  solid: { backgroundColor: colors.accent },
-  danger: { borderColor: colors.redDim, backgroundColor: 'transparent' },
-  ghost: { borderColor: 'transparent', backgroundColor: 'transparent', minHeight: 40 },
-  disabled: { opacity: 0.4 },
-  label: {
-    fontFamily: fonts.heading,
-    fontSize: 14,
-    letterSpacing: 2,
-    textTransform: 'uppercase',
-  },
-  labelSm: { fontSize: 12, letterSpacing: 1.5 },
-  labelLg: { fontSize: 15, letterSpacing: 2.5 },
-});

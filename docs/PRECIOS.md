@@ -15,9 +15,9 @@ Instagram, TikTok y YouTube.
 | Gym, cardio, nutrición, peso, diario, avances, economía | sí | sí | sí |
 | Amigos, ranking y compartir progreso | sí | sí | sí |
 | Coach de IA (brief, plan del día, chat, revisión semanal, entreno y dieta) | no | **Estándar** (DeepSeek) | **Máxima potencia** (Sonnet) + modo profundo (Sonnet a `xhigh`) |
-| Comunidad privada, grupos de 5-8 por objetivo, ranking propio | no | no | sí |
-| Revisión semanal profunda (semana + ficha física + fotos) | no | no | sí |
-| Insignia dorado laurel, acceso anticipado, retos trimestrales con premio | no | no | sí |
+| Solicita plaza en un ludus (5-8), asignación manual según disponibilidad | no | no | sí |
+| Revisión semanal profunda (semana + ficha física + progreso) | no | no | sí |
+| Insignia de laurel (estatus, no puntos) | no | no | sí |
 
 | Plan | Mensual | Anual |
 |---|---|---|
@@ -89,9 +89,10 @@ Reglas:
    llegar a lo mismo que en el anual (25/35/50 €). Sustituye a la idea de
    «pagar entera al tercer mes»: con el Pro mensual, 3 meses dejan 27 € limpios
    y pagar 50 € ese día pierde dinero si el usuario se va en el cuarto.
-5. El rango se gana por resultados; los Élite pueden llevar además un fijo
-   mensual y el premio del primero del ranking, que salen del presupuesto de
-   marketing, no de esta tabla.
+5. El rango se gana por resultados. Un fijo mensual para los Élite o un premio
+   al primero del ranking son palancas posibles, del presupuesto de marketing y
+   no de esta tabla; **hoy no hay ninguno activo** (las condiciones publicadas
+   lo dicen así). Si se activa uno, con bases publicadas antes.
 6. Las vistas (CPM) se pagan fuera, en Whop Content Rewards, también con
    presupuesto de marketing.
 

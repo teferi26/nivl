@@ -8,6 +8,7 @@ import { construirEstudio } from './analytics.ts';
 import { construirEstudioEconomico } from './finance.ts';
 import type { Db } from './db.ts';
 import { kindLines } from './kinds.ts';
+import { leerRegistros, lineasDelDia } from './comprobacion.ts';
 
 // Espejo de levelFromXp/rankForLevel de src/lib/game.ts. La fuente de verdad
 // es game.ts: si allí cambia la curva, hay que tocar aquí. Se replica porque
@@ -157,6 +158,87 @@ function diarioDeDias(
 
 import { requireHealth } from './health.ts';
 
+// ── L4: recortes FIJOS del estado completo ──────────────────────────────
+//
+// Fijos a propósito: nunca dependen de la intención del mensaje ni del día, así
+// el estado solo cambia cuando cambian los datos y la caché del segundo punto
+// (prompt.ts) sobrevive entre turnos. Medido con datos sintéticos realistas en
+// ia2_l4_contexto_test.ts (antes/después impreso allí). Lo recortado no se
+// pierde: está en consultar_historial y, lo estable, en el dossier.
+//
+//   · Diario: 21 entradas enteras → 7 (3 en detalle, 4 en una línea), con la
+//     tendencia de 7 contra 7 días calculada aún sobre 14 días de cifras.
+//   · Hechos (coach_facts): 25 → 12 (hasta 6 perdurables —aprendizaje, regla—
+//     y el resto los más recientes), recortados a 250 caracteres (antes 400).
+//   · Agenda: 15 citas → 8, título a 120 y notas a 80 caracteres.
+//   · Campañas: 40 tareas pendientes → 30, y 5 por campaña (antes 8) con el
+//     número de las que quedan fuera.
+//   · Sin cambio: misiones de 30 días (una línea por misión, es el núcleo del
+//     juicio diario), plan de hoy, contrato, 14 días uno a uno, ficha y peso.
+export const LIMITE_HECHOS = 12;
+export const HECHOS_PERDURABLES = 6;
+const CATEGORIAS_PERDURABLES = ['aprendizaje', 'regla'];
+const TOPE_HECHO = 250;
+export const DIARIO_EN_LINEAS = 7;
+export const DIARIO_EN_DETALLE = 3;
+export const LIMITE_AGENDA = 8;
+const TAREAS_POR_CAMPANA = 5;
+
+/** El texto de un dato de terceros o del usuario en una sola línea, sin etiquetas de datos y acotado. */
+function enUnaLinea(texto: unknown, tope: number): string {
+  return String(texto ?? '')
+    .replace(/<\/?\s*datos_del_gladiador\s*>/gi, '')
+    // Un correo escrito en un nombre (de liga, de campaña) no le sirve al coach.
+    .replace(/[^\s@<>]+@[^\s@<>]+\.[a-z]{2,}/gi, '[correo]')
+    // deno-lint-ignore no-control-regex
+    .replace(/[\u0000-\u001f\u007f]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, tope);
+}
+
+/**
+ * L5 · Liga: tu puesto en cada liga privada, con `my_league_standing()` (0048)
+ * y el cliente del USUARIO. La RPC solo devuelve las ligas propias, sin uuid de
+ * nadie más y con el nombre ya acotado en SQL; aquí además se descarta el id de
+ * la liga y el nombre se trata como dato (una línea, sin etiquetas). Si falla
+ * (sin migración, sin sesión) no hay línea.
+ */
+async function lineaLiga(sb: Db): Promise<string | null> {
+  try {
+    const { data, error } = await sb.rpc('my_league_standing');
+    if (error || !Array.isArray(data) || !data.length) return null;
+    const partes = (data as Record<string, unknown>[]).slice(0, 10).map((l) =>
+      `«${enUnaLinea(l.nombre, 40)}» ${Number(l.puesto) || '?'}.º de ${Number(l.miembros) || '?'}` +
+      (l.indice === null || l.indice === undefined ? '' : ` (índice ${Number(l.indice)})`)
+    );
+    return `Ligas privadas (tu puesto, solo agregados): ${partes.join(' · ')}.`;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * L5 · Fotos de progreso: cuántas hay y la fecha de la última, con
+ * `my_progress_photos_meta()` (0050) y el cliente del USUARIO. Solo metadatos
+ * (nunca id, ruta ni URL). Sin permiso de salud, sin 18+ o con borrado
+ * pendiente, la RPC da 42501 y no hay línea: el coach no sugiere fotos a quien
+ * no puede tenerlas.
+ */
+async function lineaFotos(sb: Db): Promise<string | null> {
+  try {
+    const { data, error } = await sb.rpc('my_progress_photos_meta', { p_from: null });
+    if (error || !Array.isArray(data)) return null;
+    const fotos = data as { fecha?: unknown; pose?: unknown }[];
+    if (!fotos.length) return 'Fotos de progreso: ninguna todavía.';
+    const ultima = fotos[0];
+    const pose = ['frente', 'lado', 'espalda'].includes(String(ultima.pose)) ? ` (${ultima.pose})` : '';
+    return `Fotos de progreso: ${fotos.length}${fotos.length >= 200 ? '+' : ''} · la última del ${enUnaLinea(ultima.fecha, 10)}${pose}. Solo metadatos; tú no ves las imágenes.`;
+  } catch {
+    return null;
+  }
+}
+
 export async function buildContext(
   sb: Db,
   userId: string,
@@ -167,6 +249,15 @@ export async function buildContext(
   const since30 = new Date(new Date(today).getTime() - 30 * 86400000).toISOString().slice(0, 10);
   const since60 = new Date(new Date(today).getTime() - 60 * 86400000).toISOString().slice(0, 10);
   const weekday = ((new Date(today).getDay() + 6) % 7) + 1; // 1=lunes … 7=domingo
+
+  // Lo registrado hoy, módulo a módulo, con la MISMA lectura que consultar_dia
+  // y que la comprobación del servidor (comprobacion.ts). En paralelo con el
+  // resto: son consultas pequeñas y acotadas.
+  const registradoHoyP = leerRegistros(sb, userId, today, today);
+  // L5: una línea por módulo social/fotos, con las RPC acotadas del servidor
+  // (nunca leen datos de terceros). En paralelo; si fallan, no hay línea.
+  const ligaP = lineaLiga(sb);
+  const fotosP = lineaFotos(sb);
 
   const [
     profileRes,
@@ -187,6 +278,8 @@ export async function buildContext(
     fichaRes,
     origenRes,
     tareasRes,
+    hechosRes,
+    diarioDetalleRes,
   ] = await Promise.all([
     sb.from('profiles').select('*').eq('id', userId).maybeSingle(),
     sb.from('coach_dossier').select('content').eq('user_id', userId).maybeSingle(),
@@ -202,27 +295,45 @@ export async function buildContext(
     // las está cumpliendo, solo si las rompió en el pasado.
     sb.from('rule_checks').select('rule_id, date').eq('user_id', userId).gte('date', since14),
     sb.from('dungeons').select('id, title, rank, status, deadline').eq('user_id', userId).eq('status', 'active'),
-    sb.from('calendar_events').select('id, title, date, time, notes').eq('user_id', userId).gte('date', today).order('date').limit(15),
-    // 40 y no 120: los hechos son la parte más gorda del estado (8.700 fichas
-    // con 46 filas) y se pagan en cada turno. Lo estable de verdad vive en el
-    // dossier, que para eso se destila.
-    sb.from('coach_facts').select('date, category, content').eq('user_id', userId).order('date', { ascending: false }).limit(25),
+    // L4: 8 citas (antes 15), notas recortadas abajo. Lo más lejano se
+    // consulta con consultar_historial('eventos') si hace falta.
+    sb.from('calendar_events').select('id, title, date, time, notes').eq('user_id', userId).gte('date', today).order('date').limit(LIMITE_AGENDA),
+    // L4: 12 hechos (antes 25). coach_facts no tiene columna de "importante":
+    // lo más parecido son las categorías perdurables (aprendizaje y regla), que
+    // van aparte para que un mes de registros sueltos no las expulse. Lo
+    // estable de verdad vive en el dossier, que para eso se destila; lo demás,
+    // consultar_historial('hechos').
+    sb.from('coach_facts').select('date, category, content').eq('user_id', userId)
+      .in('category', CATEGORIAS_PERDURABLES).order('date', { ascending: false }).limit(HECHOS_PERDURABLES),
     // El diario es donde de verdad se conoce a alguien: ánimo, energía y sus
     // propias palabras sobre cómo fue el día. Sin esto el coach solo veía qué
     // hizo, nunca cómo lo llevó, y ese es justo el dato que permite ajustar
     // antes de que algo se rompa.
+    //
+    // L4: dos lecturas en vez de 21 entradas enteras. Las cifras (ánimo,
+    // energía, sueño, emociones) de 14 días, que son baratas y sostienen la
+    // tendencia de 7 contra 7; y el texto solo de las 3 últimas. Se pintan 7
+    // entradas: 3 en detalle y 4 en una línea.
     sb.from('journal_entries')
-      .select('date, mood, energy, sleep_hours, emotions, wins, text, lesson, gratitude, plan')
+      .select('date, mood, energy, sleep_hours, emotions')
       .eq('user_id', userId)
-      .order('date', { ascending: false }).limit(21),
+      .order('date', { ascending: false }).limit(14),
     sb.from('body_profile').select('*').eq('user_id', userId).maybeSingle(),
     // Lo que escribió y firmó el día que entró: para qué está aquí y a cuántos
     // años se comprometió. En una cuenta nueva es TODO lo que el coach sabe de
     // sus motivos, y sin ello el primer brief sería genérico.
     sb.from('events').select('type, payload, created_at').eq('user_id', userId)
       .in('type', ['onboarding_goal', 'commitment_signed']).order('created_at', { ascending: false }).limit(4),
+    // L4: 30 tareas pendientes (antes 40) y 5 por campaña (antes 8).
     sb.from('dungeon_tasks').select('id, dungeon_id, title, is_boss, due_date').eq('user_id', userId)
-      .eq('done', false).order('position').limit(40),
+      .eq('done', false).order('position').limit(30),
+    sb.from('coach_facts').select('date, category, content').eq('user_id', userId)
+      .not('category', 'in', `(${CATEGORIAS_PERDURABLES.join(',')})`)
+      .order('date', { ascending: false }).limit(LIMITE_HECHOS),
+    sb.from('journal_entries')
+      .select('date, wins, text, lesson, gratitude, plan')
+      .eq('user_id', userId)
+      .order('date', { ascending: false }).limit(DIARIO_EN_DETALLE),
   ]);
 
   const p = profileRes.data as Record<string, any> | null;
@@ -298,10 +409,16 @@ export async function buildContext(
       `- [${q.id}] "${q.title}" · ${q.stat} · ${q.difficulty} · días ${dias} · adherencia ${adh}${abandono} · ${estado}${q.is_bonus ? ' · EXTRA (paga PB)' : ''}${ENLACE[q.link] ? ` · se marca sola al registrar ${ENLACE[q.link]}` : ''}`,
     );
   }
+  // L4: las notas de lectura fijas (un solo gesto, bitácora, diario, contrato)
+  // viven en knowledge.ts («Cómo se lee el estado»): son iguales para todos y
+  // allí van en la parte fija cacheada, no en el estado de cada turno.
+  push();
+
+  push(`## Registrado hoy (${today})`);
+  for (const l of lineasDelDia(await registradoHoyP, today)) push(`- ${l}`);
   push(
-    'Un solo gesto: lo que pone "se marca sola" no se le pide dos veces. Registrar el acto real ' +
-      '(la sesión, el pesaje, el diario) marca la misión, la regla enlazada y el bloque del plan. ' +
-      'Si dice que lo hizo y sigue PENDIENTE, es que no lo ha registrado: pídele el registro, no la marca.',
+    'Esto es lo que consta hoy, leído al construir este estado. Si dice haber hecho algo que no ' +
+      'aparece aquí, compruébalo con consultar_dia (también mira el día anterior) antes de negarlo.',
   );
   push();
 
@@ -309,11 +426,6 @@ export async function buildContext(
   const bitacora = diarioDeDias(quests, (completionsRes.data ?? []) as any[], since14, today);
   if (!bitacora.length) push('Sin días con misiones programadas.');
   for (const fila of bitacora) push(`- ${fila}`);
-  push(
-    'PERFECTO = todo hecho · cumplido = falló poco y la racha aguanta · FALLADO = racha rota. ' +
-      'Un día sin ninguna marca es un día en que no abrió la app, no un día en que lo hizo mal: ' +
-      'son cosas distintas y se tratan distinto.',
-  );
   push();
 
   if (adquiridos.length) {
@@ -357,10 +469,11 @@ export async function buildContext(
     push('## Mazmorras activas');
     for (const d of dungeonsRes.data as any[]) {
       push(`- [${d.id}] "${d.title}" rango ${d.rank}${d.deadline ? ` · límite ${d.deadline}` : ''}`);
-      const pendientes = ((tareasRes.data ?? []) as any[]).filter((t) => t.dungeon_id === d.id).slice(0, 8);
-      for (const t of pendientes) {
+      const suyas = ((tareasRes.data ?? []) as any[]).filter((t) => t.dungeon_id === d.id);
+      for (const t of suyas.slice(0, TAREAS_POR_CAMPANA)) {
         push(`  · [${t.id}] ${t.title}${t.is_boss ? ' (JEFE)' : ''}${t.due_date ? ` · ${t.due_date}` : ''}`);
       }
+      if (suyas.length > TAREAS_POR_CAMPANA) push(`  · (+${suyas.length - TAREAS_POR_CAMPANA} pendientes más)`);
     }
     push();
   }
@@ -377,6 +490,17 @@ export async function buildContext(
     push('## Peso (más reciente primero)');
     push((weightRes.data as any[]).map((w) => `${w.date}: ${w.weight_kg} kg`).join(' · '));
     push();
+  }
+
+  {
+    const [liga, fotos] = await Promise.all([ligaP, fotosP]);
+    if (liga || fotos) {
+      push('## Fotos y ligas');
+      if (fotos) push(fotos);
+      if (liga) push(liga);
+      push('El detalle, con consultar_historial (fotos, liga). De las ligas solo ves tu puesto: nunca datos de los demás.');
+      push();
+    }
   }
 
   {
@@ -452,8 +576,12 @@ export async function buildContext(
     if (tendencia.length) push(`Últimos 7 días: ${tendencia.join(' · ')} · escribió ${ultimos.length} de 7 días.`);
     if (top.length) push(`Emociones más repetidas en 14 días: ${top.map(([e, n]) => `${e} ×${n}`).join(', ')}.`);
 
-    // Solo las 10 últimas en detalle: el resto ya está en la tendencia.
-    for (const d of diario.slice(0, 10)) {
+    // L4: 7 entradas; las 3 últimas en detalle (su texto llega en una lectura
+    // aparte) y las otras 4 solo con sus cifras. El resto, en la tendencia y
+    // en consultar_historial('diario').
+    const detalle = new Map(((diarioDetalleRes.data ?? []) as any[]).map((d) => [String(d.date), d]));
+    for (const [i, base] of diario.slice(0, DIARIO_EN_LINEAS).entries()) {
+      const d = { ...base, ...(i < DIARIO_EN_DETALLE ? detalle.get(String(base.date)) ?? {} : {}) };
       const cabecera = [
         d.date,
         d.mood ? `ánimo ${d.mood}/5` : null,
@@ -465,22 +593,13 @@ export async function buildContext(
       // resto del estado, y se paga en cada turno.
       const lineas = [
         (d.wins ?? []).length ? `Victorias: ${(d.wins as string[]).join(' · ').slice(0, 300)}` : null,
-        d.text ? `Vivido: ${String(d.text).slice(0, 400)}` : null,
+        d.text ? `Vivido: ${String(d.text).slice(0, 300)}` : null,
         d.lesson ? `Aprendió: ${String(d.lesson).slice(0, 200)}` : null,
         d.gratitude ? `Agradece: ${String(d.gratitude).slice(0, 120)}` : null,
         d.plan ? `Mañana, lo primero: ${String(d.plan).slice(0, 160)}` : null,
       ].filter(Boolean);
       push(`- ${cabecera}${lineas.map((l) => `\n  ${l}`).join('')}`);
     }
-    push(
-      'Lectura: cada entrada tiene forma — cómo se sintió (con nombre), cuánto durmió, qué logró, ' +
-        'qué vivió, qué aprendió y lo primero de mañana. Úsalo: "Mañana, lo primero" de ayer es lo ' +
-        'PRIMERO que compruebas en el brief; una victoria que él escribió vale más citada que cualquier ' +
-        'elogio tuyo; y una lección que se repite tres veces es un cambio de sistema que aún no has hecho. ' +
-        'El ánimo y la energía anticipan lo que los números confirman una semana después. ' +
-        'Dos días seguidos por debajo de 3 son una señal, no una queja. Y lo que escribe con sus ' +
-        'palabras vale más que cualquier métrica para saber qué le mueve y qué le hunde.',
-    );
     push();
   }
 
@@ -503,39 +622,41 @@ export async function buildContext(
           `${n ? ` · rota ${n} veces en 60d` : ''}`,
       );
     }
-    push(
-      'Las reglas se marcan cada día y lo que quede sin marcar al cerrar cuenta como roto, ' +
-        'con su consecuencia al día siguiente. ' +
-        (diasConMarcas === 0
-          ? 'AVISO: no ha marcado ninguna regla ningún día. O no sabe que hay que marcarlas, o el contrato está muerto. Pregúntaselo antes de castigarle por ello.'
-          : 'Si una lleva días sin marcarse pero él dice cumplirla, el problema es el registro, no la conducta.'),
-    );
+    // La lectura general del contrato está en knowledge.ts; aquí, solo el
+    // aviso que depende de SUS datos.
+    if (diasConMarcas === 0) {
+      push('AVISO: no ha marcado ninguna regla ningún día. O no sabe que hay que marcarlas, o el contrato está muerto. Pregúntaselo antes de castigarle por ello.');
+    }
     push();
   }
 
   if (eventsRes.data?.length) {
     push('## Agenda próxima');
     for (const e of eventsRes.data as any[]) {
-      push(`- [${e.id}] ${e.date}${e.time ? ` ${e.time}` : ''} · ${e.title}${e.notes ? ` (${e.notes})` : ''}`);
+      const notas = e.notes ? String(e.notes).slice(0, 80) + (String(e.notes).length > 80 ? '…' : '') : '';
+      push(`- [${e.id}] ${e.date}${e.time ? ` ${e.time}` : ''} · ${String(e.title).slice(0, 120)}${notas ? ` (${notas})` : ''}`);
     }
     push();
   }
 
-  const facts = (factsRes.data ?? []) as any[];
-  if (facts.length) {
-    // Lo perdurable no caduca; lo demás, solo lo reciente.
-    const perdurable = facts.filter((f) => f.category === 'aprendizaje' || f.category === 'regla');
-    const reciente = facts.filter((f) => f.category !== 'aprendizaje' && f.category !== 'regla').slice(0, 15);
-
-    // Recortados a 400 caracteres. Un hecho importado del coach anterior puede
-    // ocupar 1.500 y son decenas: sin recorte, el registro solo ya se comía
-    // varios miles de fichas en CADA turno, y eso es lo que hacía que un "hola"
-    // tardase minutos. Lo que no quepa aquí está entero en el dossier.
-    const corto = (t: string) => (t.length > 400 ? `${t.slice(0, 400)}…` : t);
+  // Lo perdurable no caduca; lo demás, solo lo reciente. Entre los dos, como
+  // mucho LIMITE_HECHOS (L4). Se vuelve a filtrar por categoría aquí: las dos
+  // lecturas pueden solaparse y el estado no debe repetir un hecho.
+  const esPerdurable = (f: any) => CATEGORIAS_PERDURABLES.includes(f.category);
+  const perdurable = ((factsRes.data ?? []) as any[]).filter(esPerdurable).slice(0, HECHOS_PERDURABLES);
+  const reciente = ((hechosRes.data ?? []) as any[]).filter((f) => !esPerdurable(f))
+    .slice(0, LIMITE_HECHOS - perdurable.length);
+  if (perdurable.length || reciente.length) {
+    // Recortados a TOPE_HECHO caracteres. Un hecho importado del coach anterior
+    // puede ocupar 1.500 y son decenas: sin recorte, el registro solo ya se
+    // comía varios miles de fichas en CADA turno, y eso es lo que hacía que un
+    // "hola" tardase minutos. Lo que no quepa aquí está entero en el dossier o
+    // en consultar_historial('hechos').
+    const corto = (t: string) => (t.length > TOPE_HECHO ? `${t.slice(0, TOPE_HECHO)}…` : t);
 
     if (perdurable.length) {
       push('## Lo que has aprendido sobre él');
-      for (const f of perdurable.slice(0, 12)) push(`- (${f.date}) ${corto(f.content)}`);
+      for (const f of perdurable) push(`- (${f.date}) ${corto(f.content)}`);
       push();
     }
     if (reciente.length) {
@@ -577,4 +698,78 @@ export async function buildContext(
     text: `${lines.join('\n')}\n\n${estudio}\n\n${economia}`,
     dossier: (dossierRes.data as any)?.content ?? '',
   };
+}
+
+/**
+ * El estado MÍNIMO de la ruta estrecha «registro» (coach v2, L3): quién es,
+ * qué misiones y reglas tocan HOY y cómo van, y lo registrado hoy (la misma
+ * lectura que consultar_dia y la comprobación del servidor). Nada de dossier,
+ * hechos, diario, estudios ni historial largo: para apuntar un parte no hacen
+ * falta y son la parte cara del estado completo (~50 k fichas frente a ~1 k).
+ *
+ * Mismo permiso que buildContext: sin consentimiento de salud vigente, no se
+ * construye (y leerRegistros, además, no lee las tablas de salud sin él).
+ */
+export async function buildContextMinimo(sb: Db, userId: string, today: string): Promise<BuiltContext> {
+  await requireHealth(sb, userId);
+  const weekday = diaSemana(today);
+  const registradoHoyP = leerRegistros(sb, userId, today, today);
+
+  const [profileRes, questsRes, todayDoneRes, rulesRes, checksRes] = await Promise.all([
+    sb.from('profiles').select('name, profile_kind, streak_days').eq('id', userId).maybeSingle(),
+    sb.from('quests').select('id, title, days_of_week, link, is_penalty, penalty_date, acquired_at, is_bonus')
+      .eq('user_id', userId).eq('active', true).limit(60),
+    sb.from('completions').select('quest_id').eq('user_id', userId).eq('date', today).limit(100),
+    sb.from('rules').select('id, text, link').eq('user_id', userId).eq('active', true).limit(30),
+    sb.from('rule_checks').select('rule_id').eq('user_id', userId).eq('date', today).limit(60),
+  ]);
+
+  const p = profileRes.data as Record<string, any> | null;
+  if (!p) throw new Error('Perfil no encontrado');
+
+  const hechas = new Set(((todayDoneRes.data ?? []) as any[]).map((c) => String(c.quest_id)));
+  const todas = (questsRes.data ?? []) as any[];
+  const deHoy = todas.filter((q) => !q.is_penalty && !q.acquired_at && (q.days_of_week ?? []).includes(weekday));
+  const penalizaciones = todas.filter((q) => q.is_penalty && q.penalty_date === today);
+
+  const lines: string[] = [];
+  const push = (s = '') => lines.push(s);
+
+  push(`# PARTE DEL GLADIADOR · ${today}`);
+  push(`Nombre: ${p.name ?? 'gladiador'} · racha ${p.streak_days ?? 0} días`);
+  push(kindLines(p.profile_kind)[0]);
+  push();
+
+  push('## Misiones de hoy');
+  if (!deHoy.length && !penalizaciones.length) push('Ninguna programada hoy.');
+  for (const q of [...deHoy, ...penalizaciones]) {
+    push(
+      `- [${q.id}] "${q.title}" · ${hechas.has(String(q.id)) ? 'HECHA HOY' : 'PENDIENTE HOY'}` +
+        `${q.is_penalty ? ' · penalización' : ''}${q.is_bonus ? ' · extra' : ''}` +
+        `${ENLACE[q.link] ? ` · se marca sola al registrar ${ENLACE[q.link]}` : ''}`,
+    );
+  }
+  push();
+
+  const reglas = (rulesRes.data ?? []) as any[];
+  if (reglas.length) {
+    const cumplidas = new Set(((checksRes.data ?? []) as any[]).map((c) => String(c.rule_id)));
+    push('## Reglas del contrato hoy');
+    for (const r of reglas) {
+      push(
+        `- [${r.id}] "${r.text}" · ${cumplidas.has(String(r.id)) ? 'CUMPLIDA HOY' : 'pendiente hoy'}` +
+          `${ENLACE[r.link] ? ` · se marca sola al registrar ${ENLACE[r.link]}` : ''}`,
+      );
+    }
+    push();
+  }
+
+  push(`## Registrado hoy (${today})`);
+  for (const l of lineasDelDia(await registradoHoyP, today)) push(`- ${l}`);
+  push(
+    'Lo que pone "se marca sola" no se marca a mano: registrar el acto real la marca. Si dice haber ' +
+      'hecho algo que no aparece aquí, compruébalo con consultar_dia (mira también el día anterior) antes de negarlo.',
+  );
+
+  return { text: lines.join('\n'), dossier: '' };
 }

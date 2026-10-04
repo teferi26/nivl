@@ -29,7 +29,8 @@ jest.mock('react-native', () => ({
   StyleSheet: { create: (s: unknown) => s },
 }));
 jest.mock('../../components/SystemButton', () => ({ SystemButton: 'SystemButton' }));
-jest.mock('../../components/ui', () => ({ Card: 'Card', Check: 'Check', Screen: 'Screen', ScreenHeader: 'ScreenHeader', Section: 'Section', Skeleton: 'Skeleton' }));
+jest.mock('../../components/ui', () => ({ Card: 'Card', Check: 'Check', Screen: 'Screen', ScreenHeader: 'ScreenHeader', Section: 'Section', Skeleton: 'Skeleton', Button: 'Button' }));
+jest.mock('../../components/arena', () => ({ EncabezadoArena: 'EncabezadoArena', BotonArena: 'BotonArena', TarjetaArena: 'TarjetaArena', Entrada: 'Entrada', FranjaCifras: 'FranjaCifras', Meandro: 'Meandro', Galea: 'Galea', Laurel: 'Laurel' }));
 
 interface Node { props: { onPress: () => void; disabled?: boolean; visible?: boolean }; }
 const { create, act } = jest.requireActual<{
@@ -61,6 +62,10 @@ test('sin permiso no se monta ni lee la pantalla; los módulos generales siguen 
   await mount(); expect(mounted).not.toHaveBeenCalled();
   await act(async () => rendered!.update(tree('(tabs)')));
   expect(mounted).toHaveBeenCalled();
+});
+
+test('las fotos de progreso son ruta de salud: sin permiso no se montan', async () => {
+  await mount('fotos'); expect(mounted).not.toHaveBeenCalled();
 });
 
 test('sin red no abre; una comprobación vigente tras reintentar sí abre', async () => {

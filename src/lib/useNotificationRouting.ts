@@ -15,9 +15,11 @@ import { useRouter } from 'expo-router';
 import { useEffect, useRef } from 'react';
 import { setBlockDone } from './dayplan';
 import { avisarEn } from './notifications';
+import { rutaSegura } from './voice';
 
 interface Datos {
-  ruta?: string;
+  // Lo escribe quien manda el aviso (también un push remoto): no se fía.
+  ruta?: unknown;
   blockId?: string;
   fecha?: string;
 }
@@ -36,14 +38,16 @@ async function aplicar(respuesta: Notifications.NotificationResponse, ir: (r: st
     await avisarEn(
       `nivl.posponer.${datos.blockId}`,
       new Date(Date.now() + 10 * 60 * 1000),
-      contenido.title ?? 'El sistema insiste',
+      contenido.title ?? 'Recordatorio',
       contenido.body ?? 'Sigue pendiente.',
-      datos.ruta,
+      rutaSegura(datos.ruta),
     );
     return;
   }
 
-  if (datos.ruta) ir(datos.ruta);
+  // Solo rutas de la lista (RUTAS_PERMITIDAS); cualquier otra lleva a Hoy.
+  // Sin ruta no se mueve: el toque solo abre la app donde estaba.
+  if (datos.ruta !== undefined && datos.ruta !== null) ir(rutaSegura(datos.ruta));
 }
 
 export function useNotificationRouting(listo: boolean) {

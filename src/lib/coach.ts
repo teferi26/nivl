@@ -11,8 +11,10 @@
 import { fetch as streamingFetch } from 'expo/fetch';
 import type { Slide } from './photos';
 import { supabase } from './supabase';
+import { dateKey } from './dates';
 import { requireHealthConsent } from './health';
 import { ErrorVisible } from './validation';
+import { sinGuiones } from './singuiones';
 
 export type CoachKind =
   | 'chat'
@@ -223,6 +225,10 @@ export async function streamCoach(opts: {
       message: opts.message,
       thread_id: opts.threadId,
       imagenes: opts.imagenes,
+      // El "hoy" del móvil (su zona horaria). Sin él, el servidor vivía en la
+      // fecha UTC y de 00:00 a 02:00 en Madrid el coach miraba el día de ayer:
+      // negaba la sesión que acababas de registrar.
+      date: dateKey(),
     }),
   });
 
@@ -281,7 +287,7 @@ export async function streamCoach(opts: {
           opts.onEvent({
             type: 'done',
             threadId: d.thread_id,
-            text: d.text ?? '',
+            text: sinGuiones(d.text ?? ''),
             costMicroUsd: d.cost_micro_usd ?? 0,
           });
           break;
@@ -302,7 +308,7 @@ export async function runRitual(kind: CoachKind, message = ''): Promise<string> 
   const res = await fetch(functionsUrl(), {
     method: 'POST',
     headers: await authHeaders(),
-    body: JSON.stringify({ kind, message, stream: false }),
+    body: JSON.stringify({ kind, message, stream: false, date: dateKey() }),
   });
   if (!res.ok) throw await errorDe(res);
   const body = (await res.json().catch(() => ({}))) as { text?: string };
@@ -321,7 +327,7 @@ export async function generarResumen(
   const res = await fetch(functionsUrl(), {
     method: 'POST',
     headers: await authHeaders(),
-    body: JSON.stringify({ kind: 'resumen', periodo }),
+    body: JSON.stringify({ kind: 'resumen', periodo, date: dateKey() }),
   });
   if (!res.ok) throw await errorDe(res);
   const body = (await res.json().catch(() => ({}))) as {
@@ -366,6 +372,19 @@ export async function fetchMainThread(): Promise<CoachThread | null> {
   return (data as CoachThread) ?? null;
 }
 
+/** Sanea los bloques de texto de un mensaje del coach (los del usuario no se tocan). */
+export function sinGuionesEnMensaje(m: CoachMessage): CoachMessage {
+  if (m.role !== 'assistant' || !Array.isArray(m.content)) return m;
+  return {
+    ...m,
+    content: m.content.map((b) =>
+      b && (b as { type?: string }).type === 'text' && typeof (b as { text?: unknown }).text === 'string'
+        ? { ...b, text: sinGuiones((b as { text: string }).text) }
+        : b,
+    ),
+  };
+}
+
 export async function fetchMessages(threadId: string, limit = 60): Promise<CoachMessage[]> {
   const { data, error } = await supabase
     .from('coach_messages')
@@ -376,7 +395,8 @@ export async function fetchMessages(threadId: string, limit = 60): Promise<Coach
   if (error) throw error;
   // Se pide del más nuevo al más viejo para quedarnos con los últimos, pero se
   // pinta en orden cronológico.
-  return ((data ?? []) as CoachMessage[]).reverse();
+  // Orden del dueño: ningún texto de la IA con «—» ni «–», tampoco los ya guardados.
+  return ((data ?? []) as CoachMessage[]).reverse().map(sinGuionesEnMensaje);
 }
 
 export async function fetchDossier(): Promise<{ content: string; version: number } | null> {
@@ -441,6 +461,7 @@ const ACCION_LEGIBLE: Record<string, string> = {
   fijar_ficha: 'ha actualizado tu ficha física',
   escribir_diario: 'ha escrito en tu diario',
   consultar_historial: 'ha consultado tu historial',
+  consultar_dia: 'ha comprobado lo registrado ese día',
 };
 
 export function describeAction(name: string): string {

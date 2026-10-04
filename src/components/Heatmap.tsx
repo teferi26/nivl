@@ -1,7 +1,8 @@
 import { Text, View } from 'react-native';
 import Svg, { Rect } from 'react-native-svg';
 import { addDays, dateKey } from '@/lib/dates';
-import { colors, fonts } from '@/lib/theme';
+import { ink } from '@/design/tokens';
+import { fonts } from '@/lib/theme';
 
 interface Props {
   counts: Record<string, number>;
@@ -11,11 +12,14 @@ interface Props {
 const CELL = 11;
 const GAP = 3;
 
+// Escala neutra de cuatro pasos (SISTEMA §1): de la pista ink4 al blanco.
+const ESCALA = [ink.ink4, ink.ink6, ink.ink8, ink.ink10] as const;
+
 function cellColor(count: number): string {
-  if (count <= 0) return colors.track;
-  if (count <= 2) return colors.accentFaint;
-  if (count <= 4) return colors.accentDim;
-  return colors.accent;
+  if (count <= 0) return ESCALA[0];
+  if (count <= 2) return ESCALA[1];
+  if (count <= 4) return ESCALA[2];
+  return ESCALA[3];
 }
 
 // Heatmap de actividad estilo GitHub: columnas = semanas, filas = L→D.
@@ -52,11 +56,11 @@ export function Heatmap({ counts, weeks = 13 }: Props) {
         ))}
       </Svg>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 8 }}>
-        <Text style={{ fontFamily: fonts.body, fontSize: 11, color: colors.textFaint }}>Menos</Text>
-        {[colors.track, colors.accentFaint, colors.accentDim, colors.accent].map((c) => (
+        <Text style={{ fontFamily: fonts.body, fontSize: 11, color: ink.ink6 }}>Menos</Text>
+        {ESCALA.map((c) => (
           <View key={c} style={{ width: 10, height: 10, backgroundColor: c }} />
         ))}
-        <Text style={{ fontFamily: fonts.body, fontSize: 11, color: colors.textFaint }}>Más</Text>
+        <Text style={{ fontFamily: fonts.body, fontSize: 11, color: ink.ink6 }}>Más</Text>
       </View>
     </View>
   );

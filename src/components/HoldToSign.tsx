@@ -8,7 +8,7 @@
 // "activar" firma directamente: la deliberación ahí ya la pone el doble toque.
 
 import Ionicons from '@expo/vector-icons/Ionicons';
-import * as Haptics from 'expo-haptics';
+import { vibrar } from '@/design/haptics';
 import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Animated, Easing, Pressable, StyleSheet, Text, View } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
@@ -81,16 +81,16 @@ export function HoldToSign({ label, holdingLabel = 'No sueltes', onComplete, dis
   const empezar = () => {
     if (disabled || loading || hecho.current) return;
     setHolding(true);
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+    vibrar('seleccion');
     latido.current = setInterval(() => {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+      vibrar('seleccion');
     }, 220);
     Animated.timing(progress, { toValue: 1, duration, easing: Easing.linear, useNativeDriver: false }).start(({ finished }) => {
       if (!finished) return;
       parar();
       hecho.current = true;
       setHolding(false);
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+      vibrar('mision');
       onComplete();
     });
   };

@@ -218,3 +218,23 @@ export async function reportSocialUser(userId: string, reason: ReportReason): Pr
   const { error } = await supabase.rpc('social_report_user', { p_user: userId, p_reason: reason });
   if (error) throw error;
 }
+
+// ── Alias propio para compartir (0053) ───────────────────────────────
+// Las tarjetas firman con el alias público, nunca con el nombre real. El
+// servidor solo devuelve el de quien llama. Sin la 0053 (servidor anterior),
+// null: la tarjeta va sin firma.
+export interface AliasCompartir {
+  alias: string;
+  aprobado: boolean;
+}
+
+export async function fetchAliasCompartir(): Promise<AliasCompartir | null> {
+  const { data, error } = await supabase.rpc('my_share_alias');
+  if (error) {
+    if (error.code === 'PGRST202' || error.code === '42883' || /could not find the function/i.test(error.message ?? '')) return null;
+    throw error;
+  }
+  const d = data as { alias?: unknown; aprobado?: unknown } | null;
+  if (!d || typeof d.alias !== 'string' || !d.alias.trim()) return null;
+  return { alias: d.alias, aprobado: d.aprobado === true };
+}

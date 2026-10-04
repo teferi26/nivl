@@ -6,6 +6,7 @@ import {
   cerrarSesion,
   completarEnlace,
   entrar,
+  MSG_CAPTCHA,
   MSG_CREDENCIALES,
   MSG_DEBIL,
   MSG_DEMASIADOS,
@@ -59,6 +60,19 @@ jest.mock('../notifications', () => ({ cancelarTodo: jest.fn(async () => { mockO
 jest.mock('../oracle', () => ({ setApiKey: jest.fn(async (k: string) => { mockOrden.push(`oraculo:${k}`); }) }));
 jest.mock('../creators', () => ({ olvidarCodigoPendiente: jest.fn(async () => { mockOrden.push('creador'); }) }));
 jest.mock('../consent', () => ({ olvidarConsentimiento: jest.fn(() => { mockOrden.push('consentimiento'); }) }));
+jest.mock('@/components/coach/redDictado', () => ({ olvidarRedDictado: jest.fn(async () => { mockOrden.push('dictado'); }) }));
+jest.mock('@react-native-async-storage/async-storage', () => ({
+  __esModule: true,
+  default: { multiRemove: jest.fn(async (k: string[]) => { mockOrden.push(`claves:${k.join('+')}`); }) },
+}));
+jest.mock('expo-notifications', () => ({ dismissAllNotificationsAsync: jest.fn(async () => { mockOrden.push('avisos-mostrados'); }) }));
+jest.mock('@/components/fotos/datos', () => ({ borrarTemporalesFotos: jest.fn(async () => { mockOrden.push('fotos-temporales'); }) }));
+jest.mock('expo-image', () => ({
+  Image: {
+    clearMemoryCache: jest.fn(async () => { mockOrden.push('imagenes-memoria'); return true; }),
+    clearDiskCache: jest.fn(async () => { mockOrden.push('imagenes-disco'); return true; }),
+  },
+}));
 
 const apiError = (message: string, status: number, code?: string) =>
   Object.assign(new Error(message), { name: 'AuthApiError', status, code });
@@ -165,6 +179,35 @@ describe('pedirRecuperacion (anti-enumeración)', () => {
   });
 });
 
+describe('Turnstile (1.0.9): token opcional', () => {
+  test('sin token, las llamadas son idénticas a la 1.0.8', async () => {
+    mockAuth.signInWithPassword.mockResolvedValue({ data: {}, error: null });
+    await entrar('a@b.es', 'x');
+    expect(mockAuth.signInWithPassword).toHaveBeenCalledWith({ email: 'a@b.es', password: 'x' });
+    mockAuth.signUp.mockResolvedValue({ data: { session: null }, error: null });
+    await registrar('a@b.es', 'una contraseña larga', 'Ana');
+    expect(mockAuth.signUp.mock.calls[0][0].options).not.toHaveProperty('captchaToken');
+  });
+  test('con token, viaja como options.captchaToken en entrar, registrar y recuperar', async () => {
+    mockAuth.signInWithPassword.mockResolvedValue({ data: {}, error: null });
+    await entrar('a@b.es', 'x', 'tok-1');
+    expect(mockAuth.signInWithPassword).toHaveBeenCalledWith({ email: 'a@b.es', password: 'x', options: { captchaToken: 'tok-1' } });
+    mockAuth.signUp.mockResolvedValue({ data: { session: null }, error: null });
+    await registrar('a@b.es', 'una contraseña larga', 'Ana', 'tok-2');
+    expect(mockAuth.signUp.mock.calls[0][0].options).toMatchObject({ captchaToken: 'tok-2', emailRedirectTo: 'nivl://auth/confirmar' });
+    mockAuth.resetPasswordForEmail.mockResolvedValue({ data: {}, error: null });
+    await pedirRecuperacion('a@b.es', 'tok-3');
+    expect(mockAuth.resetPasswordForEmail).toHaveBeenCalledWith('a@b.es', { redirectTo: 'nivl://auth/restablecer', captchaToken: 'tok-3' });
+  });
+  test('CAPTCHA rechazado: mensaje propio, también en recuperar (no se finge que el correo salió)', async () => {
+    const err = apiError('captcha protection: request disallowed (timeout-or-duplicate)', 400, 'captcha_failed');
+    mockAuth.signInWithPassword.mockResolvedValue({ data: {}, error: err });
+    expect(await errorDe(entrar('a@b.es', 'x', 'viejo'))).toEqual(new ErrorVisible(MSG_CAPTCHA));
+    mockAuth.resetPasswordForEmail.mockResolvedValue({ data: {}, error: err });
+    expect(await errorDe(pedirRecuperacion('a@b.es', 'viejo'))).toEqual(new ErrorVisible(MSG_CAPTCHA));
+  });
+});
+
 describe('completarEnlace', () => {
   test('PKCE de confirmación', async () => {
     mockAuth.exchangeCodeForSession.mockResolvedValue({ data: {}, error: null });
@@ -243,9 +286,12 @@ describe('cerrarSesion', () => {
       return { error: null };
     });
   });
-  test('borra token push, avisos locales, key, código y consentimiento ANTES del signOut global', async () => {
+  test('borra token push, avisos locales y mostrados, key, código, consentimiento, permiso de dictado, imágenes y claves sin uid ANTES del signOut global', async () => {
     await cerrarSesion();
-    expect(mockOrden.slice(0, -1).sort()).toEqual(['consentimiento', 'creador', 'locales', 'oraculo:', 'push'].sort());
+    expect(mockOrden.slice(0, -1).sort()).toEqual([
+      'consentimiento', 'creador', 'locales', 'oraculo:', 'push', 'dictado',
+      'claves:nivl:duelos:vistos+nivl.ofertas.v1', 'avisos-mostrados', 'fotos-temporales', 'imagenes-memoria', 'imagenes-disco',
+    ].sort());
     expect(mockOrden[mockOrden.length - 1]).toBe('signOut');
     expect(mockAuth.signOut).toHaveBeenCalledTimes(1);
     expect(mockAuth.signOut).toHaveBeenCalledWith();

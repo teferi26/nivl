@@ -16,6 +16,7 @@
 
 import {
   callClaude,
+  CHEAP_MODEL,
   COACH_MODEL,
   costMicroUsd,
   LlamadaFallida,
@@ -30,14 +31,19 @@ import {
 import { clasificarPendientes, ClasificacionConsentimientoError } from '../_shared/clasificar.ts';
 import { callOpenAICompat } from '../_shared/openai.ts';
 import { construirResumen, periodoMensual, periodoSemanal } from '../_shared/recap.ts';
-import { buildContext } from '../_shared/context.ts';
+import { buildContext, buildContextMinimo } from '../_shared/context.ts';
 import { consentimientoIa, MENSAJE_SIN_CONSENTIMIENTO, SIN_CONSENTIMIENTO } from '../_shared/consent.ts';
 import { healthConsent, healthGuardedResult, healthRevision, healthScopedClient, HEALTH_REQUIRED, requireHealth } from '../_shared/health.ts';
 import { adminClient, userClient, type Db } from '../_shared/db.ts';
-import { buildSystem } from '../_shared/prompt.ts';
+import { buildSystem, buildSystemRegistro, DATOS_ABRE, DATOS_CIERRA, neutralizarDatos } from '../_shared/prompt.ts';
 import { elegirModelo, modoDeCabecera, proveedorDe, type Modo, type Routes } from '../_shared/routing.ts';
 import { executeTool, TOOL_DEFS } from '../_shared/tools.ts';
-import { controlHerramientas, fechaDelTurno, Gasto, mensajeDeFallo, validarImagenes } from './guard.ts';
+import { controlHerramientas, fechaAceptable, fechaDelTurno, fotosSinVision, Gasto, mensajeDeFallo, reloj, validarImagenes } from './guard.ts';
+import { pareceAfirmacion, rutaDelTurno, type Ruta } from '../_shared/intencion.ts';
+import { fueraDelPack, PACK_REGISTRO, TOOL_DEFS_REGISTRO } from '../_shared/packs.ts';
+import { bloqueComprobacion } from '../_shared/comprobacion.ts';
+import { insertarRun, type Telemetria } from '../_shared/telemetria.ts';
+import { enSegundoPlano, leerResumen, MIN_NUEVOS, resumirHilo, VENTANA_HISTORIAL } from '../_shared/resumenhilo.ts';
 
 // Cinco vueltas, no ocho. Cada vuelta reenvía el contexto entero y genera
 // pensamiento: con ocho, un turno se comía el presupuesto de tiempo de la
@@ -57,12 +63,25 @@ const PRESUPUESTO_MS = 100_000;
 // coach_runs y ese gasto no lo ve el candado: hay que cortar antes nosotros,
 // con margen para guardar la respuesta y la contabilidad.
 const PLAZO_DURO_MS = 130_000;
-// Doce intercambios. El hilo es continuo de cara a ti, pero lo que se reenvía
-// a la API tiene tope: la memoria larga vive en el dossier y en coach_facts,
-// no en el transcript. Sin tope, la conversación crece sin fin y a los seis
-// meses cada turno arrastra cientos de miles de tokens, primero caros y luego
-// imposibles. Si algo de un turno viejo importa, el coach lo anota como hecho.
-const HISTORY_LIMIT = 12;
+// El hilo es continuo de cara a ti, pero lo que se reenvía a la API tiene tope:
+// la memoria larga vive en el dossier, en coach_facts y en el resumen del hilo
+// (L4), no en el transcript. Sin tope, la conversación crece sin fin y a los
+// seis meses cada turno arrastra cientos de miles de tokens.
+//
+// L8: con resumen al día viajan 6 filas (VENTANA_HISTORIAL), y el resumen se
+// compacta en cuanto hay 6 sin resumir, así que lo que sale de la ventana ya
+// está en él. Sin resumen todavía (hilos antiguos) o con el resumen atrasado
+// (el del turno anterior aún no se ha escrito, o falló), el tope de antes: 12.
+// Medido el 02/10: el historial era la mayor parte dinámica del prefijo (las
+// respuestas del asistente promediaban 4.000 caracteres con tool_use/
+// tool_result serializados).
+const HISTORY_LIMIT = VENTANA_HISTORIAL;
+const HISTORY_LIMIT_SIN_RESUMEN = 12;
+// Un turno añade como mínimo 2 filas (su mensaje y la respuesta): con eso se
+// decide, sin otra consulta, si tras el turno tocará compactar.
+const FILAS_POR_TURNO = 2;
+// Lo más largo que viaja de una respuesta vieja del asistente (L8).
+const TOPE_ASISTENTE_VIEJO = 1500;
 // Freno de mano: si un turno encadena tantas herramientas que ya ha costado
 // esto, algo se ha ido de madre y es mejor cortar que despertarse con la
 // sorpresa. Con Sonnet un turno normal ronda 0,07 $ y un brief con herramientas
@@ -73,6 +92,18 @@ const MAX_COST_MICRO_USD = 750_000; // 0,75 $
 // su bolsillo.
 const MAX_COST_PROFUNDO_MICRO_USD = 1_500_000; // 1,50 $
 const MAX_TOKENS_PROFUNDO = 16000;
+
+// Ruta estrecha «registro» (L3): un parte («he hecho…», «peso 94,2») con el
+// modelo barato, el estado de hoy y cuatro herramientas. Tres vueltas bastan
+// (comprobar, apuntar, contestar) y la última se fuerza a texto. Su freno es
+// mucho más bajo: un parte que pasa de 5 céntimos es que algo se ha torcido.
+const MAX_TOOL_ITERATIONS_REGISTRO = 3;
+const MAX_COST_REGISTRO_MICRO_USD = 50_000; // 0,05 $
+const MAX_TOKENS_REGISTRO = 4000;
+// Los 4 últimos mensajes del hilo, solo su texto: para un parte basta con saber
+// de qué se hablaba, y sin tool_use viejos no hay que reenviar herramientas
+// que esta ruta no ofrece.
+const HISTORY_LIMIT_REGISTRO = 4;
 
 const KINDS = ['chat', 'brief', 'plan', 'revision_semanal', 'cierre_mensual', 'escalada'] as const;
 type Kind = (typeof KINDS)[number];
@@ -133,6 +164,43 @@ function resolverModelo(
   return { model: COACH_MODEL, compat: null };
 }
 
+/**
+ * El modelo de la ruta de registro: `routes.registro` del plan y, si no hay,
+ * CHEAP_MODEL. A propósito NO cae al `default` del plan (que es el coach caro)
+ * ni a `profundo`: un parte es leer y transformar, no decidir (AGENTS.md).
+ */
+function resolverModeloRegistro(routes: Routes): { model: string; compat: { baseUrl: string; apiKey: string } | null } {
+  const model = elegirModelo({ registro: routes.registro }, 'registro', 'estandar', () => CHEAP_MODEL);
+  if (proveedorDe(model) === 'anthropic') return { model, compat: null };
+  const compat = proveedorCompatible();
+  if (compat) return { model, compat };
+  console.warn(`Modelo ${model} sin COACH_BASE_URL/COACH_API_KEY: el registro se atiende con ${CHEAP_MODEL}.`);
+  return { model: CHEAP_MODEL, compat: null };
+}
+
+/**
+ * El historial de la ruta de registro: los últimos mensajes con TEXTO, sin
+ * tool_use ni tool_result ni pensamiento (las herramientas de entonces no
+ * están en este pack) y empezando por un mensaje del gladiador.
+ */
+function historialDeTexto(messages: ApiMessage[], limite: number): ApiMessage[] {
+  const planos: ApiMessage[] = [];
+  for (const m of messages) {
+    const texto = typeof m.content === 'string'
+      ? m.content
+      : (Array.isArray(m.content) ? m.content : [])
+        .filter((b) => b.type === 'text')
+        .map((b) => b.text ?? '')
+        .join('\n')
+        .trim();
+    if (!texto) continue;
+    planos.push({ role: m.role, content: [{ type: 'text', text: texto.slice(0, 1500) }] as ContentBlock[] });
+  }
+  let out = planos.slice(-limite);
+  while (out.length && out[0].role !== 'user') out = out.slice(1);
+  return out;
+}
+
 // Los rituales que deciden el rumbo piensan más que una charla suelta.
 //
 // El chat baja a 'medium' por una razón medida: con 'high' un turno generaba
@@ -184,69 +252,89 @@ function json(status: number, body: unknown): Response {
   });
 }
 
-/**
- * Recorta el historial sin partir un turno por la mitad. Si la primera
- * entrada fuese un tool_result huérfano (o un turno del asistente), la API
- * rechaza la petición: hay que empezar siempre en un mensaje de usuario que
- * sea texto de verdad.
- */
-function trimHistory(messages: ApiMessage[]): ApiMessage[] {
-  let out = messages.slice(-HISTORY_LIMIT);
-  while (out.length) {
-    const first = out[0];
-    const blocks = Array.isArray(first.content) ? first.content : [];
-    const isToolResult = blocks.some((b) => b.type === 'tool_result');
-    if (first.role === 'user' && !isToolResult) break;
-    out = out.slice(1);
-  }
-  return out;
+// Marcas de texto del historial ligero (L8). Deterministas: el mismo hilo da
+// los mismos bytes en cada llamada del turno y no rompe la caché.
+const MARCA_SIN_TEXTO = '[el sistema consultó/registró datos]';
+const MARCA_INICIO = '[sigue la conversación]';
+const MARCA_SIN_RESPUESTA = '[sin respuesta]';
+
+/** Recorta a `tope` caracteres con «…», sin partir un par sustituto (emoji). */
+function recortar(texto: string, tope: number): string {
+  if (texto.length <= tope) return texto;
+  let corte = tope - 1;
+  const c = texto.charCodeAt(corte - 1);
+  if (c >= 0xd800 && c <= 0xdbff) corte--;
+  return `${texto.slice(0, corte).trimEnd()}…`;
 }
 
 /**
- * Aligera el historial antes de reenviarlo.
+ * L8 «historial ligero»: los mensajes ANTERIORES al turno, solo como texto.
  *
- * Dos cosas engordan un hilo viejo hasta hacerlo caro: los bloques de
- * pensamiento y los resultados de herramienta, que pueden llegar a 12.000
- * caracteres cada uno. Ninguno de los dos aporta nada pasado su turno — lo que
- * hay que recordar ya está en el dossier y en los hechos — pero se pagan
- * enteros en cada llamada. Medido: 74.000 tokens de historia por turno.
+ * Antes viajaban con sus tool_use (con el input entero), sus tool_result
+ * (recortados a 600) y, si se colaba, el pensamiento: de media 4.000
+ * caracteres por respuesta del asistente, hasta 46.000. Pasado su turno nada
+ * de eso le sirve al modelo — lo que importa ya está en el estado, el dossier,
+ * los hechos y el resumen — y se pagaba entero en cada turno. Ahora:
  *
- * El pensamiento solo es obligatorio dentro del turno que se está resolviendo,
- * y ese turno todavía no está en la tabla cuando se lee esto. Si al quitarlo un
- * mensaje se quedara sin contenido, se deja intacto: la API rechaza los
- * mensajes vacíos, y un tool_use sin su tool_result detrás también.
+ *   · Se quedan solo los bloques de texto. De las herramientas queda una marca
+ *     con su nombre («[usó consultar_dia]»), para que sepa qué se hizo.
+ *   · Las filas del usuario que solo llevaban tool_result desaparecen y las
+ *     respuestas del asistente que quedan seguidas se juntan en un mensaje:
+ *     un turno de herramientas queda en pregunta + respuesta.
+ *   · Cada respuesta vieja del asistente, a TOPE_ASISTENTE_VIEJO con «…».
+ *   · Alternancia user/assistant estricta y el primero del usuario: si el
+ *     primero que queda es del asistente se antepone una marca, si dos del
+ *     usuario van seguidos se juntan, y si el último es del usuario (un turno
+ *     que no llegó a contestarse) se cierra con una marca. Un mensaje vacío
+ *     (un turno que solo pensó) se sustituye por una marca, nunca se manda vacío.
+ *
+ * Puro y determinista. El bucle de herramientas del turno en curso NO pasa por
+ * aquí: se añade después y viaja completo y emparejado.
  */
-function aligerarHistorial(messages: ApiMessage[]): ApiMessage[] {
-  const TOPE_RESULTADO = 600;
-  return messages.map((m) => {
-    if (!Array.isArray(m.content)) return m;
-    const blocks = m.content
-      .filter((b) => b.type !== 'thinking' && b.type !== 'redacted_thinking')
-      .map((b) => {
-        if (b.type !== 'tool_result') return b;
-        const c = (b as { content?: unknown }).content;
-        if (typeof c !== 'string' || c.length <= TOPE_RESULTADO) return b;
-        return { ...b, content: `${c.slice(0, TOPE_RESULTADO)}\n[…recortado]` };
-      });
-    return { ...m, content: blocks as ContentBlock[] };
-  })
-  // Un mensaje que se queda SIN bloques al quitarle el pensamiento era un turno
-  // que solo pensó y no llegó a decir ni a hacer nada — lo que pasaba cuando el
-  // turno se cortaba a mitad. No aporta nada al siguiente y la API rechaza los
-  // mensajes vacíos, así que desaparece. Antes se devolvía el original CON su
-  // pensamiento, y eso es lo que reventaba la petición más abajo.
-  .filter((m) => !Array.isArray(m.content) || m.content.length > 0);
+export function historialLigero(messages: ApiMessage[]): ApiMessage[] {
+  const planos: { role: 'user' | 'assistant'; partes: string[] }[] = [];
+  for (const m of messages) {
+    const role = m.role === 'assistant' ? 'assistant' : 'user';
+    const bloques: ContentBlock[] = typeof m.content === 'string'
+      ? [{ type: 'text', text: m.content } as ContentBlock]
+      : Array.isArray(m.content) ? m.content : [];
+    const textos = bloques
+      .filter((b) => b.type === 'text' && typeof b.text === 'string' && b.text.trim())
+      .map((b) => (b.text as string).trim());
+    const usadas = role === 'assistant'
+      ? [...new Set(bloques.filter((b) => b.type === 'tool_use' && b.name).map((b) => String(b.name).slice(0, 40)))]
+      : [];
+    if (usadas.length) textos.push(`[usó ${usadas.join(', ')}]`);
+    // Una fila del usuario sin texto es un tool_result: su tool_use ya no viaja.
+    if (!textos.length && role === 'user') continue;
+    const previo = planos[planos.length - 1];
+    if (previo && previo.role === role) previo.partes.push(...textos);
+    else planos.push({ role, partes: textos });
+  }
+  if (planos.length && planos[0].role !== 'user') planos.unshift({ role: 'user', partes: [MARCA_INICIO] });
+  if (planos.length && planos[planos.length - 1].role === 'user') planos.push({ role: 'assistant', partes: [MARCA_SIN_RESPUESTA] });
+  return planos.map(({ role, partes }) => {
+    let texto = partes.join('\n\n') || MARCA_SIN_TEXTO;
+    if (role === 'assistant') texto = recortar(texto, TOPE_ASISTENTE_VIEJO);
+    return { role, content: [{ type: 'text', text: texto }] as ContentBlock[] };
+  });
 }
 
 /**
  * Marca el final del historial como punto de caché.
  *
- * El prefijo (voz + dossier + herramientas) ya se cachea desde el bloque de
- * sistema, pero la conversación crece turno a turno y volvía a pagarse entera
- * a precio completo en cada llamada: 13.300 tokens de entrada por turno medidos
- * en la primera prueba real. Con este segundo punto, todo lo anterior al turno
- * actual se lee a una décima parte. El estado fresco y el mensaje nuevo van
+ * El prefijo (herramientas + sistema fijo, y luego dossier + estado) ya se
+ * cachea en dos escalones desde el bloque de sistema (prompt.ts), pero la
+ * conversación crece turno a turno y volvía a pagarse entera a precio completo
+ * en cada llamada: 13.300 tokens de entrada por turno medidos en la primera
+ * prueba real. Con este tercer punto (de los 4 que admite la API), todo lo
+ * anterior al turno actual se lee a una décima parte. El mensaje nuevo va
  * después, así que el prefijo se mantiene byte a byte estable.
+ *
+ * Ojo: el historial va recortado a HISTORY_LIMIT filas. Con el hilo lleno, cada
+ * turno nuevo desplaza la ventana y cambia su primer mensaje, así que entre
+ * turnos esta caché se reescribe igualmente; donde rinde es dentro del bucle
+ * de herramientas de un mismo turno (lo resuelve el resumen del hilo, L4).
  */
 /**
  * Un error legible para el modelo.
@@ -269,6 +357,17 @@ function describirFallo(e: unknown): string {
     }
   }
   return String(e);
+}
+
+/** La zona horaria del perfil (`profiles.timezone`), o null si no se puede leer. */
+async function zonaDelPerfil(sb: Db, userId: string): Promise<string | null> {
+  try {
+    const { data } = await sb.from('profiles').select('timezone').eq('id', userId).maybeSingle();
+    const zona = (data as { timezone?: unknown } | null)?.timezone;
+    return typeof zona === 'string' && zona ? zona : null;
+  } catch {
+    return null;
+  }
 }
 
 function markCacheable(messages: ApiMessage[]): ApiMessage[] {
@@ -319,14 +418,58 @@ interface RunArgs {
   compat: { baseUrl: string; apiKey: string } | null;
   modo: Modo;
   emit: (event: string, data: unknown) => void;
+  /** Telemetría del turno (0047), rellenada al momento: la lee finish aunque el turno falle. */
+  telemetria: Telemetria;
+  /** 'registro' = ruta estrecha (L3); 'completa' = el coach con todo. */
+  ruta: Ruta;
+  /** Reintento tras un rechazo de la ruta estrecha: el mensaje ya está guardado. */
+  usuarioYaGuardado?: boolean;
 }
 
-async function runCoach(args: RunArgs): Promise<{ text: string; usage: Usage; model: string }> {
-  const { sb, admin, userId, kind, threadId, userText, today, imagenes, topeMicro, modelo, compat, modo, emit, gasto, deadline } =
+/** ¿El proveedor rechazó la petición (4xx)? Es lo único que justifica reintentar por la completa. */
+export function rechazoDelProveedor(e: unknown): boolean {
+  const texto = e instanceof Error ? e.message : String(e);
+  return /(?:anthropic|proveedor) 4\d\d/.test(texto);
+}
+
+/**
+ * TTL del punto de caché fijo (ver OpcionesSistema en prompt.ts). Apagado por
+ * defecto: con el tráfico medido el 2026-10-02 la escritura a 2× no compensa.
+ */
+function ttlFijoDeEnv(): '1h' | undefined {
+  return Deno.env.get('COACH_CACHE_TTL_FIJO')?.trim() === '1h' ? '1h' : undefined;
+}
+
+interface ResultadoTurno {
+  text: string;
+  usage: Usage;
+  model: string;
+  /** L4: el hilo ya acumula MIN_NUEVOS mensajes sin resumir; se compacta tras 'done'. */
+  pideResumen?: boolean;
+}
+
+async function runCoach(args: RunArgs): Promise<ResultadoTurno> {
+  const { sb, admin, userId, kind, threadId, userText, today, imagenes, topeMicro, modelo, compat, modo, emit, gasto, deadline, telemetria, ruta, usuarioYaGuardado } =
     args;
 
-  const ctx = await buildContext(sb, userId, today);
-  const system = buildSystem(ctx.dossier, kind, ctx.text);
+  // La ruta estrecha cambia TRES cosas y nada más: el estado (mínimo), el
+  // sistema (voz corta) y las herramientas (pack fijo). El candado, el
+  // consentimiento, la persistencia del hilo y la comprobación del servidor
+  // son los mismos que en la ruta completa.
+  const estrecha = ruta === 'registro';
+  // L4: en la ruta completa, el resumen del hilo sustituye a los mensajes
+  // anteriores a summary_until (viaja como DATO en el sistema; ver prompt.ts).
+  const [ctx, hilo] = await Promise.all([
+    estrecha ? buildContextMinimo(sb, userId, today) : buildContext(sb, userId, today),
+    estrecha ? Promise.resolve({ summary: null, summary_until: null }) : leerResumen(sb, threadId),
+  ]);
+  const system = estrecha
+    ? buildSystemRegistro(ctx.text)
+    : buildSystem(ctx.dossier, kind, ctx.text, { ttlFijo: ttlFijoDeEnv(), resumenHilo: hilo.summary });
+  const herramientas: readonly unknown[] = estrecha ? TOOL_DEFS_REGISTRO : TOOL_DEFS;
+  const maxVueltas = estrecha ? MAX_TOOL_ITERATIONS_REGISTRO : MAX_TOOL_ITERATIONS;
+  telemetria.state_chars = ctx.text.length;
+  telemetria.tools_offered = herramientas.length;
   const control = controlHerramientas(kind, ctx.dossier);
 
   // Descendente y luego la vuelta: pidiendo ascendente con LIMIT se traen los
@@ -334,21 +477,47 @@ async function runCoach(args: RunArgs): Promise<{ text: string; usage: Usage; mo
   // quedaba anclado en el principio de la conversación y dejaba de ver lo
   // último que le habías dicho. La memoria larga vive en el dossier y en los
   // hechos; el hilo solo aporta lo reciente.
-  const { data: rows } = await sb
+  let consulta = sb
     .from('coach_messages')
-    .select('role, content')
-    .eq('thread_id', threadId)
+    .select('role, content, created_at')
+    .eq('thread_id', threadId);
+  // Lo ya resumido no se reenvía: el resumen ocupa su lugar.
+  if (hilo.summary_until) consulta = consulta.gt('created_at', hilo.summary_until);
+  const { data: rows } = await consulta
     .order('created_at', { ascending: false })
-    .limit(HISTORY_LIMIT);
+    // En la estrecha se piden algunas filas de más: las de herramientas no
+    // tienen texto y se descartan. En la completa se lee hasta el tope sin
+    // resumen: así se sabe si el resumen va atrasado.
+    .limit(estrecha ? HISTORY_LIMIT_REGISTRO * 2 : HISTORY_LIMIT_SIN_RESUMEN);
 
-  const history: ApiMessage[] = ((rows ?? []) as any[])
+  let sinResumir = ((rows ?? []) as any[]).filter(
+    (r) => !hilo.summary_until || typeof r.created_at !== 'string' || r.created_at > hilo.summary_until,
+  );
+  // Reintento por la completa tras un rechazo de la estrecha: el mensaje de
+  // este turno ya está en la tabla y va a ir otra vez abajo. No se duplica.
+  if (usuarioYaGuardado && sinResumir[0]?.role === 'user') sinResumir = sinResumir.slice(1);
+  // L4/L8: ¿toca compactar? Se decide con lo que YA se ha leído (sin otra
+  // consulta): lo sin resumir más las filas que añade este turno. Solo en la
+  // ruta completa (resumirHilo vuelve a contar y no gasta si no llega).
+  const pideResumen = !estrecha && sinResumir.length + FILAS_POR_TURNO >= MIN_NUEVOS;
+  // L8: con resumen al día, la ventana corta (en régimen normal todo lo sin
+  // resumir cabe en ella). Sin resumen o con el resumen atrasado, el tope de
+  // antes: lo que no está resumido no se tira mientras quepa en él.
+  const ventana = hilo.summary && sinResumir.length <= HISTORY_LIMIT ? HISTORY_LIMIT : HISTORY_LIMIT_SIN_RESUMEN;
+
+  const history: ApiMessage[] = sinResumir
+    .slice(0, estrecha ? sinResumir.length : ventana)
     .reverse()
     .map((r) => ({ role: r.role, content: r.content }));
 
   // El estado se reconstruye en cada llamada (así nunca ve datos caducados)
   // pero viaja en el bloque de sistema, no aquí: ver la explicación de coste
   // en buildSystem. El turno del usuario lleva solo lo que él ha dicho.
-  const previos = markCacheable(aligerarHistorial(trimHistory(history)));
+  // Se calcula UNA vez por turno: todas las vueltas del bucle llevan los
+  // mismos bytes delante (la caché del historial se lee dentro del turno).
+  const previos = estrecha
+    ? historialDeTexto(history, HISTORY_LIMIT_REGISTRO)
+    : markCacheable(historialLigero(history));
 
   // Las fotos van DELANTE del texto: el modelo lee mejor una imagen cuando la
   // pregunta viene después de verla, no antes.
@@ -360,12 +529,32 @@ async function runCoach(args: RunArgs): Promise<{ text: string; usage: Usage; mo
     { type: 'text', text: userText },
   ] as ContentBlock[];
 
+  // «Te he subido el gym»: si afirma haber hecho o registrado algo, el servidor
+  // mira antes de que conteste el modelo y le pega lo que consta (la misma
+  // lectura que consultar_dia). Va en el mensaje de ESTE turno, después del
+  // punto de caché, y no se guarda en el hilo. Si la lectura falla, el turno
+  // sigue sin ella: el modelo aún tiene consultar_dia.
+  const afirma = kind === 'chat' && pareceAfirmacion(userText);
+  // En la ruta de registro sin afirmación es un dato suelto («peso 94,2»).
+  telemetria.intent = kind === 'chat' ? (afirma ? 'afirmacion' : estrecha ? 'dato' : 'general') : null;
+  if (afirma) {
+    try {
+      const comprobacion = await bloqueComprobacion(sb, userId, today);
+      bloquesUsuario.push({
+        type: 'text',
+        text: `${DATOS_ABRE}\n${neutralizarDatos(comprobacion)}\n${DATOS_CIERRA}`,
+      } as ContentBlock);
+    } catch (e) {
+      console.warn('comprobación del sistema no disponible:', describirFallo(e));
+    }
+  }
+
   const messages: ApiMessage[] = [...previos, { role: 'user', content: bloquesUsuario }];
 
   // Solo se persiste lo que dijo él, sin el volcado de estado. Y de las fotos
   // solo la marca, nunca los bytes: guardar base64 en el historial lo haría
   // crecer megabytes y se reenviaría entero en cada turno siguiente.
-  await sb.from('coach_messages').insert({
+  if (!usuarioYaGuardado) await sb.from('coach_messages').insert({
     thread_id: threadId,
     user_id: userId,
     role: 'user',
@@ -382,19 +571,23 @@ ${userText}` : userText,
   const elegido = modelo;
   // El profundo piensa a fondo y con más sitio para escribir; el estándar,
   // lo de cada kind.
-  const esfuerzo: Effort = modo === 'profundo' ? 'xhigh' : EFFORT_BY_KIND[kind];
-  const techo =
-    modo === 'profundo' ? Math.max(MAX_TOKENS_PROFUNDO, MAX_TOKENS_BY_KIND[kind]) : MAX_TOKENS_BY_KIND[kind];
+  const esfuerzo: Effort = estrecha ? 'low' : modo === 'profundo' ? 'xhigh' : EFFORT_BY_KIND[kind];
+  const techo = estrecha
+    ? MAX_TOKENS_REGISTRO
+    : modo === 'profundo'
+      ? Math.max(MAX_TOKENS_PROFUNDO, MAX_TOKENS_BY_KIND[kind])
+      : MAX_TOKENS_BY_KIND[kind];
   // Arranca en el elegido, pero lo que se apunta en la contabilidad es el que
   // devuelve la API: con el mecanismo de reserva puede resolver en otro.
   let model = elegido;
 
   const arranque = Date.now();
 
-  for (let i = 0; i < MAX_TOOL_ITERATIONS; i++) {
+  for (let i = 0; i < maxVueltas; i++) {
     // Si ya no queda reloj, se corta el encadenado: con lo que hay se contesta,
-    // y sin él la función muere sin dejar nada.
-    const sinTiempo = Date.now() - arranque > PRESUPUESTO_MS;
+    // y sin él la función muere sin dejar nada. En la ruta estrecha, la última
+    // vuelta también va a texto: tres vueltas y siempre hay respuesta.
+    const sinTiempo = Date.now() - arranque > PRESUPUESTO_MS || (estrecha && i === maxVueltas - 1);
     const pedirTurno = async (maxTokens: number, effort: Effort) => {
       // Un turno puede encadenar varias llamadas y reintentos. La aceptación
       // de su inicio no autoriza llamadas nuevas después de una retirada.
@@ -407,6 +600,7 @@ ${userText}` : userText,
       // responde (o falla a medias): las comprobaciones de consentimiento que
       // vienen después pueden cortar el turno, pero lo cobrado ya no se borra.
       const llamar = async (): Promise<Turn> => {
+        telemetria.iterations = (telemetria.iterations ?? 0) + 1;
         try {
           const t = await (compat
             ? callOpenAICompat({
@@ -415,7 +609,11 @@ ${userText}` : userText,
                 model: elegido,
                 system,
                 messages,
-                tools: sinTiempo ? undefined : TOOL_DEFS,
+                // Sin tiempo: las MISMAS herramientas con tool_choice 'none'.
+                // Quitarlas cambiaba el prefijo (toda la caché a reescribir) y,
+                // con tool_use en el historial, la API respondía 400.
+                tools: [...herramientas],
+                ...(sinTiempo ? { toolChoice: 'none' as const } : {}),
                 maxTokens,
                 signal,
                 onText: (d) => { buffered += d; },
@@ -424,7 +622,8 @@ ${userText}` : userText,
                 model: elegido,
                 system,
                 messages,
-                tools: sinTiempo ? undefined : TOOL_DEFS,
+                tools: [...herramientas],
+                ...(sinTiempo ? { toolChoice: { type: 'none' as const } } : {}),
                 maxTokens,
                 effort,
                 signal,
@@ -514,6 +713,7 @@ ${userText}` : userText,
     // Todos los resultados vuelven en UN solo mensaje de usuario: partirlos
     // enseña al modelo a dejar de pedir herramientas en paralelo.
     const results: ContentBlock[] = [];
+    telemetria.tool_calls = (telemetria.tool_calls ?? 0) + toolUses.length;
     for (const call of toolUses) {
       let text: string;
       let isError = false;
@@ -523,6 +723,10 @@ ${userText}` : userText,
         // vuelve al modelo como error de herramienta, sin ejecutar nada.
         const veto = control.revisar(call.name!, input);
         if (veto) throw new Error(veto);
+        // Segunda llave de la ruta estrecha: lo que no está en el pack no se
+        // ejecuta, aunque el proveedor lo devuelva sin habérselo ofrecido.
+        const ajena = estrecha ? fueraDelPack(call.name!, PACK_REGISTRO) : null;
+        if (ajena) throw new Error(ajena);
         text = await executeTool(call.name!, input, {
           sb,
           userId,
@@ -557,7 +761,7 @@ ${userText}` : userText,
     .update({ last_message_at: new Date().toISOString() })
     .eq('id', threadId);
 
-  return { text: finalText, usage: gasto.usage, model: gasto.model || model };
+  return { text: finalText, usage: gasto.usage, model: gasto.model || model, pideResumen };
 }
 
 export async function handler(req: Request): Promise<Response> {
@@ -681,7 +885,7 @@ async function atender(
   if (body.kind === KIND_MECANICO) {
     try {
       const r = await clasificarPendientes(sbTemprano, admin, userId);
-      const { error: ledgerErr } = await admin.from('coach_runs').insert({
+      const { error: ledgerErr } = await insertarRun(admin, {
         user_id: userId,
         kind: KIND_MECANICO,
         mode: modo,
@@ -691,7 +895,7 @@ async function atender(
         cache_write_tokens: r.usage.cache_creation_input_tokens ?? 0,
         out_tokens: r.usage.output_tokens ?? 0,
         cost_micro_usd: costMicroUsd(r.model, r.usage),
-      });
+      }, { route: 'mecanica', tools_offered: 0, tool_calls: 0, iterations: 1 });
       if (ledgerErr) console.error('coach_runs insert failed:', ledgerErr.message);
       return json(200, { revisados: r.revisados, clasificados: r.clasificados, texto: r.resumen });
     } catch (e) {
@@ -744,7 +948,7 @@ async function atender(
         .single();
       if (error) throw error;
 
-      await admin.from('coach_runs').insert({
+      await insertarRun(admin, {
         user_id: userId,
         kind: `resumen_${periodo}`,
         mode: modo,
@@ -754,7 +958,7 @@ async function atender(
         cache_write_tokens: r.usage.cache_creation_input_tokens ?? 0,
         out_tokens: r.usage.output_tokens ?? 0,
         cost_micro_usd: costMicroUsd(r.model, r.usage),
-      });
+      }, { route: 'mecanica', tools_offered: 0, tool_calls: 0, iterations: 1 });
 
       return json(200, { id: (guardado as { id: string }).id, slides: r.slides, fotos: r.fotos });
     } catch (e) {
@@ -776,7 +980,10 @@ async function atender(
   // usuario creado arriba. El cliente admin solo valida el token.
   const sb = sbTemprano;
 
-  const today = fechaDelTurno(body.date);
+  // El "hoy" lo manda el móvil; la app 1.0.7 no lo manda, y entonces manda la
+  // zona de su perfil, no el día UTC (ver fechaDelTurno).
+  const ahora = reloj.ahora();
+  const today = fechaAceptable(body.date, ahora) ?? fechaDelTurno(null, ahora, await zonaDelPerfil(sb, userId));
 
   // Un hilo continuo por defecto: el coach lleva años de conversación, no
   // sesiones sueltas.
@@ -819,10 +1026,49 @@ async function atender(
   // La "revisión semanal profunda" del Élite no es un modo: sale de sus routes
   // (Sonnet, y revision_semanal ya piensa en 'xhigh'), cuenta en el bolsillo
   // estándar y no gasta turnos profundos del usuario.
-  const { model: modelo, compat } = resolverModelo(routes, kind, modo);
-  const topeMicro = Math.min(modo === 'profundo' ? MAX_COST_PROFUNDO_MICRO_USD : MAX_COST_MICRO_USD, restanteMicro);
+  //
+  // Ruta del turno (L3). Un parte claro va por la estrecha; con fotos o en
+  // modo profundo (lo pidió y lo paga de su bolsillo profundo), por la
+  // completa: el profundo no aplica a la ruta de registro.
+  const ruta: Ruta = !fotos.imagenes.length && modo !== 'profundo' ? rutaDelTurno(userText, kind) : 'completa';
+  const { model: modelo, compat } = ruta === 'registro' ? resolverModeloRegistro(routes) : resolverModelo(routes, kind, modo);
+  // Las fotos nunca salen a un proveedor sin visión acordada (solo Claude).
+  const sinVision = fotosSinVision(fotos.imagenes.length, compat);
+  if (sinVision) return json(400, { error: sinVision });
+  const topeMicro = Math.min(
+    ruta === 'registro' ? MAX_COST_REGISTRO_MICRO_USD : modo === 'profundo' ? MAX_COST_PROFUNDO_MICRO_USD : MAX_COST_MICRO_USD,
+    restanteMicro,
+  );
   // Lo gastado en este turno, sumado según se cobra (ver Gasto en guard.ts).
   const gasto = new Gasto(modelo);
+  const telemetria: Telemetria = { route: ruta, tool_calls: 0, iterations: 0 };
+
+  // Si el proveedor RECHAZA la ruta estrecha (4xx: parámetros que un modelo no
+  // admite, nombre de modelo mal puesto en routes.registro…), el turno se
+  // atiende por la completa en vez de devolver un error al usuario. El mensaje
+  // ya quedó guardado en el primer intento; lo gastado se sigue sumando.
+  const ejecutarTurno = async (emitir: (event: string, data: unknown) => void) => {
+    const base = {
+      sb, admin, userId, kind, threadId: threadId!, userText: prompt, today,
+      imagenes: fotos.imagenes, gasto, deadline, modo, emit: emitir, telemetria,
+    };
+    try {
+      return await runCoach({ ...base, topeMicro, modelo, compat, ruta });
+    } catch (e) {
+      if (ruta !== 'registro' || !rechazoDelProveedor(e)) throw e;
+      console.warn('ruta de registro rechazada por el proveedor: se reintenta por la completa');
+      const completa = resolverModelo(routes, kind, modo);
+      telemetria.route = 'registro_reintento';
+      return await runCoach({
+        ...base,
+        topeMicro: Math.max(0, Math.min(MAX_COST_MICRO_USD, restanteMicro) - gasto.micro()),
+        modelo: completa.model,
+        compat: completa.compat,
+        ruta: 'completa',
+        usuarioYaGuardado: true,
+      });
+    }
+  };
 
   // El libro de cuentas lo escribe el SERVIDOR, no el usuario: coach_runs solo
   // tiene política de lectura, así que con el cliente del usuario la inserción
@@ -835,7 +1081,7 @@ async function atender(
     error: string | null,
   ) => {
     const u: Usage = gasto.usage;
-    const { error: ledgerErr } = await admin.from('coach_runs').insert({
+    const { error: ledgerErr } = await insertarRun(admin, {
       user_id: userId,
       kind,
       mode: modo,
@@ -846,10 +1092,20 @@ async function atender(
       out_tokens: u.output_tokens ?? 0,
       cost_micro_usd: gasto.micro(),
       error: error ? 'turn_failed' : null,
-    });
+    }, telemetria);
     // Que falle la contabilidad no debe tumbar el turno, pero tampoco puede
     // desaparecer sin dejar rastro: sin esto, el coste se pierde en silencio.
     if (ledgerErr) console.error('coach_runs insert failed:', ledgerErr.message);
+  };
+
+  // L4: el resumen del hilo, DESPUÉS de contestar y sin esperarlo. Lo que
+  // queda de bolsillo tras el turno es su techo (resumenhilo.ts no gasta si no
+  // llega al mínimo); su coste se apunta aparte como 'resumen_hilo'.
+  const programarResumen = (result: ResultadoTurno) => {
+    if (!result.pideResumen) return;
+    enSegundoPlano(resumirHilo({
+      sb, admin, userId, threadId: threadId!, presupuestoMicro: restanteMicro - gasto.micro(), modo,
+    }));
   };
 
   const describe = (e: unknown): string => {
@@ -868,25 +1124,10 @@ async function atender(
 
   if (!wantsStream) {
     try {
-      const result = await runCoach({
-        sb,
-        admin,
-        userId,
-        kind,
-        threadId: threadId!,
-        userText: prompt,
-        today,
-        imagenes: fotos.imagenes,
-        topeMicro,
-        gasto,
-        deadline,
-        modelo,
-        compat,
-        modo,
-        emit: () => {},
-      });
+      const result = await ejecutarTurno(() => {});
       await requireHealth(sb, userId);
       await finish(result, null);
+      programarResumen(result);
       return json(200, { thread_id: threadId, text: result.text });
     } catch (e) {
       const message = describe(e);
@@ -919,23 +1160,7 @@ async function atender(
       };
       emit('start', { thread_id: threadId });
       try {
-        const result = await runCoach({
-          sb,
-          admin,
-          userId,
-          kind,
-          threadId: threadId!,
-          userText: prompt,
-          today,
-          imagenes: fotos.imagenes,
-          topeMicro,
-          gasto,
-          deadline,
-          modelo,
-          compat,
-          modo,
-          emit,
-        });
+        const result = await ejecutarTurno(emit);
         await requireHealth(sb, userId);
         await finish(result, null);
         emit('done', {
@@ -943,6 +1168,7 @@ async function atender(
           text: result.text,
           cost_micro_usd: gasto.micro(),
         });
+        programarResumen(result);
       } catch (e) {
         const message = describe(e);
         await finish(null, message);

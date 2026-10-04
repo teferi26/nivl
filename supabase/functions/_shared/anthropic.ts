@@ -1,6 +1,8 @@
 // NIVL · Cliente de la API de Claude para las Edge Functions.
 // La key vive como secret del servidor y jamás llega al cliente.
 
+import { FiltroGuiones, sanearPeticion, sinGuiones, sinGuionesProfundo } from './singuiones.ts';
+
 // Sonnet 5 es el coach. La decisión es de coste medido, no de gusto: con Opus
 // el turno salía a 0,42 $ en frío, que para el uso real que se le va a dar son
 // del orden de 150 €/mes. La tarea de coach no lo necesita — es leer un estudio
@@ -42,7 +44,26 @@ export interface Usage {
   input_tokens?: number;
   output_tokens?: number;
   cache_read_input_tokens?: number;
+  /** Total escrito en caché: suma de los dos TTL de `cache_creation`. */
   cache_creation_input_tokens?: number;
+  /**
+   * Desglose de la escritura por TTL (doc de prompt caching, contrastada el
+   * 2026-10-02): `cache_creation_input_tokens` = 5m + 1h. La de 1 h cuesta 2×
+   * la entrada y la de 5 min 1,25×, así que hace falta separarlas.
+   */
+  cache_creation?: { ephemeral_5m_input_tokens?: number; ephemeral_1h_input_tokens?: number };
+}
+
+/** Un punto de caché. `ttl: '1h'` no pide cabecera beta; escribe a 2×. */
+export interface CacheControl {
+  type: 'ephemeral';
+  ttl?: '5m' | '1h';
+}
+
+export interface SystemBlock {
+  type: 'text';
+  text: string;
+  cache_control?: CacheControl;
 }
 
 export interface Turn {
@@ -87,21 +108,65 @@ const PRICE_PER_MTOK: Record<string, { in: number; out: number }> = {
   'kimi-k2': { in: 0.6, out: 2.5 },
 };
 
+/**
+ * La tarifa de un modelo. La API responde a veces con el id fechado
+ * (`claude-haiku-4-5-20251001`, comprobado en producción el 2026-10-02): sin
+ * quitar la fecha caía en la tarifa de Opus y un turno de Haiku de 0,0075 $ se
+ * apuntaba (y descontaba del candado) como 0,0373 $, cinco veces más.
+ */
+export function tarifa(model: string): { in: number; out: number } {
+  const id = model.trim().toLowerCase();
+  return PRICE_PER_MTOK[id] ?? PRICE_PER_MTOK[id.replace(/-\d{8}$/, '')] ?? PRICE_PER_MTOK['claude-opus-5'];
+}
+
 export function costMicroUsd(model: string, u: Usage): number {
-  const p = PRICE_PER_MTOK[model] ?? PRICE_PER_MTOK['claude-opus-5'];
+  const p = tarifa(model);
   const cacheRead = (u.cache_read_input_tokens ?? 0) * p.in * 0.1;
-  const cacheWrite = (u.cache_creation_input_tokens ?? 0) * p.in * 1.25;
+  // La escritura de 1 h (2×) llega aparte en `cache_creation`; el resto del
+  // total es de 5 min (1,25×). Sin desglose, todo es de 5 min, como antes.
+  const total = u.cache_creation_input_tokens ?? 0;
+  const unaHora = Math.min(total, Math.max(0, u.cache_creation?.ephemeral_1h_input_tokens ?? 0));
+  const cacheWrite = (total - unaHora) * p.in * 1.25 + unaHora * p.in * 2;
   return Math.round((u.input_tokens ?? 0) * p.in + cacheRead + cacheWrite + (u.output_tokens ?? 0) * p.out);
 }
 
 export function addUsage(a: Usage, b: Usage): Usage {
-  return {
+  const suma: Usage = {
     input_tokens: (a.input_tokens ?? 0) + (b.input_tokens ?? 0),
     output_tokens: (a.output_tokens ?? 0) + (b.output_tokens ?? 0),
     cache_read_input_tokens: (a.cache_read_input_tokens ?? 0) + (b.cache_read_input_tokens ?? 0),
     cache_creation_input_tokens:
       (a.cache_creation_input_tokens ?? 0) + (b.cache_creation_input_tokens ?? 0),
   };
+  if (a.cache_creation || b.cache_creation) {
+    suma.cache_creation = {
+      ephemeral_5m_input_tokens:
+        (a.cache_creation?.ephemeral_5m_input_tokens ?? 0) + (b.cache_creation?.ephemeral_5m_input_tokens ?? 0),
+      ephemeral_1h_input_tokens:
+        (a.cache_creation?.ephemeral_1h_input_tokens ?? 0) + (b.cache_creation?.ephemeral_1h_input_tokens ?? 0),
+    };
+  }
+  return suma;
+}
+
+/**
+ * El uso de UNA llamada en streaming: el de `message_start` corregido por el de
+ * `message_delta`.
+ *
+ * La doc de streaming dice que las cifras de `message_delta.usage` son
+ * ACUMULADAS, y que pueden traer también entrada y caché (no solo la salida).
+ * Antes se sumaban a las de `message_start`: si el delta repetía la entrada,
+ * el turno se apuntaba con la entrada y la caché dos veces. Ahora cada cifra
+ * que trae el delta sustituye a la de arranque; la que no trae, se queda.
+ */
+export function usoDeStream(inicio: Usage, delta: Usage): Usage {
+  const out: Usage = { ...inicio };
+  for (const k of ['input_tokens', 'output_tokens', 'cache_read_input_tokens', 'cache_creation_input_tokens'] as const) {
+    const v = delta[k];
+    if (typeof v === 'number' && Number.isFinite(v)) out[k] = v;
+  }
+  if (delta.cache_creation && typeof delta.cache_creation === 'object') out.cache_creation = { ...delta.cache_creation };
+  return out;
 }
 
 /**
@@ -141,9 +206,16 @@ export class RefusalError extends Error {
 
 export interface CallOptions {
   model?: string;
-  system: Array<{ type: 'text'; text: string; cache_control?: { type: 'ephemeral' } }>;
+  system: SystemBlock[];
   messages: ApiMessage[];
   tools?: unknown[];
+  /**
+   * `none` para pedir texto SIN quitar las herramientas: quitarlas cambia el
+   * prefijo (rompe toda la caché) y con tool_use en el historial da 400. Un
+   * cambio de tool_choice solo invalida la caché de mensajes (doc de prompt
+   * caching, 2026-10-02). Sin herramientas no se envía.
+   */
+  toolChoice?: { type: 'auto' | 'none' };
   maxTokens?: number;
   effort?: Effort;
   /** Se invoca con cada fragmento de texto visible según llega. */
@@ -175,6 +247,16 @@ function admiteReserva(model: string): boolean {
 }
 
 /**
+ * Pensamiento adaptativo y `output_config.effort`: solo modelos 4.6 en
+ * adelante. Haiku 4.5 responde 400 a los dos (guía de la API, 2026-10-02):
+ * con él no se manda ninguno de los dos y responde sin pensamiento extendido.
+ * Rompía la ruta de registro (L3) y, en silencio, clasificar y el titular.
+ */
+export function admitePensamientoAdaptativo(model: string): boolean {
+  return !/^claude-haiku-4-5/.test(model.trim().toLowerCase());
+}
+
+/**
  * Las credenciales de la API compatible con OpenAI — DeepSeek, Gemini por su
  * capa compatible, Qwen, Kimi, Groq o la propia OpenAI —, si están puestas
  * (COACH_BASE_URL y COACH_API_KEY en los secretos del panel).
@@ -199,7 +281,7 @@ export function proveedorCompatible(): { baseUrl: string; apiKey: string } | nul
  * completos (texto, pensamiento y llamadas a herramientas) listos para
  * reenviarse tal cual en el siguiente turno.
  */
-export async function callClaude(opts: CallOptions): Promise<Turn> {
+async function callClaudeCrudo(opts: CallOptions): Promise<Turn> {
   const model = opts.model ?? COACH_MODEL;
   const signal = opts.signal ?? AbortSignal.timeout(PLAZO_LLAMADA_MS);
   const res = await fetch('https://api.anthropic.com/v1/messages', {
@@ -216,12 +298,18 @@ export async function callClaude(opts: CallOptions): Promise<Turn> {
       max_tokens: opts.maxTokens ?? 16000,
       // El pensamiento va en adaptativo (por defecto en Opus 5) y resumido
       // para poder mostrar "el sistema está pensando" en la app.
-      thinking: { type: 'adaptive', display: 'summarized' },
-      output_config: { effort: opts.effort ?? 'high' },
+      ...(admitePensamientoAdaptativo(model)
+        ? {
+            thinking: { type: 'adaptive', display: 'summarized' },
+            output_config: { effort: opts.effort ?? 'high' },
+          }
+        : {}),
       ...(admiteReserva(model) ? { fallbacks: 'default' } : {}),
       system: opts.system,
       messages: opts.messages,
-      ...(opts.tools?.length ? { tools: opts.tools } : {}),
+      ...(opts.tools?.length
+        ? { tools: opts.tools, ...(opts.toolChoice ? { tool_choice: opts.toolChoice } : {}) }
+        : {}),
       stream: true,
     }),
   });
@@ -276,7 +364,7 @@ export async function callClaude(opts: CallOptions): Promise<Turn> {
 
       switch (ev.type) {
         case 'message_start':
-          usage = addUsage(usage, ev.message?.usage ?? {});
+          usage = usoDeStream(usage, ev.message?.usage ?? {});
           servedModel = ev.message?.model ?? model;
           break;
         case 'content_block_start': {
@@ -320,7 +408,8 @@ export async function callClaude(opts: CallOptions): Promise<Turn> {
           stopReason = ev.delta?.stop_reason ?? stopReason;
           stopCategory = ev.delta?.stop_details?.category ?? stopCategory;
           if (ev.usage) {
-            usage = addUsage(usage, ev.usage);
+            // Acumulado, no incremento: sustituye (ver usoDeStream).
+            usage = usoDeStream(usage, ev.usage);
             salidaContada = true;
           }
           break;
@@ -340,4 +429,39 @@ export async function callClaude(opts: CallOptions): Promise<Turn> {
   if (stopReason === 'refusal') throw new RefusalError(stopCategory);
 
   return { content: blocks.filter(Boolean), stopReason, usage, model: servedModel };
+}
+
+/**
+ * Orden del dueño (02/10/2026): ningún texto de la IA lleva «—» ni «–». Todo
+ * pasa por aquí: los fragmentos en streaming (filtrados por líneas, para no
+ * romper un guion partido) y el turno final (texto y entradas de herramientas,
+ * que también acaban a la vista: títulos, planes, diario). El pensamiento no se
+ * toca: la API exige devolverlo tal cual.
+ */
+export function sanearTurno(turn: Turn): Turn {
+  return {
+    ...turn,
+    content: turn.content.map((b) =>
+      b.type === 'text' && typeof b.text === 'string'
+        ? { ...b, text: sinGuiones(b.text) }
+        : b.type === 'tool_use' && b.input !== undefined
+        ? { ...b, input: sinGuionesProfundo(b.input) }
+        : b
+    ),
+  };
+}
+
+/** callClaudeCrudo con el saneado de guiones en el stream y en el resultado. */
+export async function callClaude(opts: CallOptions): Promise<Turn> {
+  const filtro = new FiltroGuiones();
+  const onText = opts.onText
+    ? (d: string) => {
+      const s = filtro.push(d);
+      if (s) opts.onText!(s);
+    }
+    : undefined;
+  const turn = await callClaudeCrudo(sanearPeticion({ ...opts, onText }));
+  const resto = filtro.fin();
+  if (resto && opts.onText) opts.onText(resto);
+  return sanearTurno(turn);
 }

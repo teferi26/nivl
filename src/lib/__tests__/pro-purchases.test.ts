@@ -1,14 +1,21 @@
 import { Linking } from 'react-native';
 import Purchases from 'react-native-purchases';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
+  anotarOferta,
+  CLAVE_OFERTAS,
   gestionarSuscripcion,
   identificarEnTienda,
   introsDeTienda,
+  leerHistorialOfertas,
+  ofrecerSi,
+  SIN_IA,
   preciosDeTienda,
   purchase,
   restorePurchases,
   startTrial,
   StorePriceChangedError,
+  fetchAiStatus,
 } from '../pro';
 import { supabase } from '../supabase';
 
@@ -33,6 +40,8 @@ jest.mock('react-native-purchases', () => ({
     OFFLINE_CONNECTION_ERROR: 'offline',
   },
 }));
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+jest.mock('@react-native-async-storage/async-storage', () => require('@react-native-async-storage/async-storage/jest/async-storage-mock'));
 jest.mock('../supabase', () => ({ supabase: {
   auth: { getSession: jest.fn() },
   rpc: jest.fn(),
@@ -397,5 +406,91 @@ describe('prueba de 7 días (servidor)', () => {
     await expect(startTrial()).rejects.toThrow(/otro_motivo/);
     status.mockResolvedValueOnce({ data: { ok: false, reason: 'ya_usada' }, error: null } as never);
     await expect(startTrial()).resolves.toEqual({ ok: false, reason: 'ya_usada' });
+  });
+});
+
+describe('momento de la oferta: historial local', () => {
+  const AHORA = new Date(2026, 9, 1, 18, 0).getTime();
+  const libre = { ...SIN_IA, trialAvailable: true };
+
+  beforeEach(async () => {
+    await AsyncStorage.clear();
+  });
+
+  test('sin nada guardado, historial vacío; anotar guarda en nivl.ofertas.v1', async () => {
+    expect(CLAVE_OFERTAS).toBe('nivl.ofertas.v1');
+    expect(await leerHistorialOfertas(AHORA)).toEqual([]);
+    await anotarOferta('primer_dia', 'cerrada', 'hoja', AHORA);
+    expect(JSON.parse((await AsyncStorage.getItem(CLAVE_OFERTAS))!)).toEqual([
+      { momento: 'primer_dia', at: AHORA, respuesta: 'cerrada', forma: 'hoja' },
+    ]);
+  });
+
+  test('JSON corrupto: se lee vacío y el siguiente apunte lo sustituye', async () => {
+    await AsyncStorage.setItem(CLAVE_OFERTAS, '{[roto');
+    expect(await leerHistorialOfertas(AHORA)).toEqual([]);
+    await anotarOferta('firma', 'compra', 'hoja', AHORA);
+    expect(await leerHistorialOfertas(AHORA)).toHaveLength(1);
+  });
+
+  test('recorta a 30 días al guardar', async () => {
+    const viejo = AHORA - 40 * 24 * 3600 * 1000;
+    await AsyncStorage.setItem(CLAVE_OFERTAS, JSON.stringify([{ momento: 'firma', at: viejo, respuesta: 'vista', forma: 'hoja' }]));
+    await anotarOferta('primer_dia', 'vista', 'hoja', AHORA);
+    expect(JSON.parse((await AsyncStorage.getItem(CLAVE_OFERTAS))!)).toHaveLength(1);
+  });
+
+  test('si el almacenamiento falla, ni leer ni anotar lanzan', async () => {
+    jest.mocked(AsyncStorage.getItem).mockRejectedValueOnce(new Error('disco'));
+    await expect(leerHistorialOfertas(AHORA)).resolves.toEqual([]);
+    jest.mocked(AsyncStorage.setItem).mockRejectedValueOnce(new Error('disco'));
+    await expect(anotarOferta('firma', 'cerrada', 'hoja', AHORA)).resolves.toBeUndefined();
+  });
+
+  test('ofrecerSi: hoja de firma la primera vez y la apunta como vista; luego respeta el tope', async () => {
+    const d = await ofrecerSi('firma', libre, { celebrando: false, ahora: AHORA });
+    expect(d).toMatchObject({ mostrar: true, forma: 'hoja', tier: 'pro', prueba: true });
+    expect(await leerHistorialOfertas(AHORA)).toEqual([{ momento: 'firma', at: AHORA, respuesta: 'vista', forma: 'hoja' }]);
+    // «Seguir gratis» desde la hoja: se funde con la vista (una sola hoja).
+    await anotarOferta('firma', 'cerrada', 'linea', AHORA + 60_000);
+    expect(await leerHistorialOfertas(AHORA + 60_000)).toEqual([{ momento: 'firma', at: AHORA, respuesta: 'cerrada', forma: 'hoja' }]);
+    const luego = await ofrecerSi('primer_dia', libre, { celebrando: false, ahora: AHORA + 2 * 3600 * 1000 });
+    expect(luego.mostrar).toBe(false);
+  });
+
+  test('ofrecerSi: nunca con celebración, nunca sin estado, y una línea no se apunta', async () => {
+    expect((await ofrecerSi('primer_dia', libre, { celebrando: true, ahora: AHORA })).mostrar).toBe(false);
+    expect((await ofrecerSi('primer_dia', null, { celebrando: false, ahora: AHORA })).mostrar).toBe(false);
+    const linea = await ofrecerSi('coach_profundo', libre, { celebrando: false, ahora: AHORA });
+    expect(linea).toMatchObject({ mostrar: true, forma: 'linea', tier: 'elite' });
+    expect(await leerHistorialOfertas(AHORA)).toEqual([]);
+  });
+
+  test('ofrecerSi: a quien paga Pro por Stripe no se le ofrece Élite en la tienda', async () => {
+    const proStripe = { ...SIN_IA, entitled: true, tier: 'pro' as const, plan: 'pro_anual' as const };
+    expect((await ofrecerSi('coach_profundo', proStripe, { celebrando: false, provider: 'stripe', ahora: AHORA })).mostrar).toBe(false);
+    expect((await ofrecerSi('coach_profundo', proStripe, { celebrando: false, provider: 'apple', ahora: AHORA })).mostrar).toBe(true);
+  });
+
+  test('ofrecerSi fin_prueba: el inicio de la prueba apuntado (como línea) basta; o lo dice el servidor', async () => {
+    const vuelta = { ...SIN_IA, trialAvailable: false };
+    expect((await ofrecerSi('fin_prueba', vuelta, { celebrando: false, ahora: AHORA })).mostrar).toBe(false);
+    // Lo que apunta /pro al empezar la prueba sin motivo: línea, no gasta topes.
+    await anotarOferta('coach_cerrado', 'prueba', 'linea', AHORA - 8 * 24 * 3600 * 1000);
+    const d = await ofrecerSi('fin_prueba', vuelta, { celebrando: false, ahora: AHORA });
+    expect(d).toMatchObject({ mostrar: true, forma: 'hoja', tier: 'pro', prueba: false });
+    await AsyncStorage.clear();
+    expect((await ofrecerSi('fin_prueba', vuelta, { celebrando: false, pruebaTerminada: true, ahora: AHORA })).forma).toBe('hoja');
+  });
+});
+
+describe('fetchAiStatus: visión del coach', () => {
+  test('vision viene del servidor; sin la clave (servidor sin la migración) es null', async () => {
+    status.mockResolvedValueOnce({ data: { entitled: true, plan: 'elite_anual', tier: 'elite', vision: true }, error: null } as never);
+    expect((await fetchAiStatus()).vision).toBe(true);
+    status.mockResolvedValueOnce({ data: { entitled: true, plan: 'pro_anual', tier: 'pro' }, error: null } as never);
+    expect((await fetchAiStatus()).vision).toBeNull();
+    status.mockResolvedValueOnce({ data: { entitled: true, plan: 'pro_anual', tier: 'pro', vision: false }, error: null } as never);
+    expect((await fetchAiStatus()).vision).toBe(false);
   });
 });

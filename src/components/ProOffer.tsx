@@ -20,14 +20,22 @@
 // El nivel elegido (Pro / Élite) vive en `useProOffer`, no en el cuerpo: así el
 // pie fijo del onboarding y el cuerpo del scroll hablan del mismo nivel. Si la
 // cuenta nunca tuvo coach, la acción principal es la prueba de 7 días.
+//
+// Fase 2 (D1): con `motivo` (el momento que trajo aquí, `paywallmoment.ts`) la
+// oferta abre con una línea de contexto y pone primero el beneficio que casa;
+// no quita ni añade ninguno. El importe que se cobra (el `priceString` de la
+// tienda) es SIEMPRE la cifra más destacada de cada plan: ningún equivalente
+// mensual de un anual compite con él. `ProUpsellLine` es la versión no modal
+// (fila con icono, una línea y chevron) que lleva a `/pro?motivo=…&tier=…`.
 
 import Ionicons from '@expo/vector-icons/Ionicons';
-import * as Haptics from 'expo-haptics';
+import { vibrar } from '@/design/haptics';
+import { router } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { Linking, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useConsentimientoIA } from '@/components/ConsentimientoIA';
-import { SystemButton } from '@/components/SystemButton';
-import { Card, Chip, Skeleton, Tag } from '@/components/ui';
+import { Button, Card, Chip, Skeleton, Tag } from '@/components/ui';
+import { ink, type as tipo } from '@/design/tokens';
 import { insertEvent } from '@/lib/data';
 import {
   COACH_USAGE_NOTICE,
@@ -38,6 +46,8 @@ import {
   PRO_BENEFITS,
   StorePriceChangedError,
   TIERS,
+  beneficiosPorMotivo,
+  copyUpsell,
   duracionPlan,
   fetchFounderSeatsLeft,
   introsDeTienda,
@@ -53,15 +63,19 @@ import {
   purchase,
   purchasesAvailable,
   restorePurchases,
+  rutaOferta,
   seleccionDeTienda,
   startTrial,
+  textoPrueba,
   tierOffer,
+  tituloBotonPrueba,
   tituloPlan,
+  type Momento,
   type OfferTier,
   type PreciosTienda,
   type ProPlanId,
 } from '@/lib/pro';
-import { colors, fonts } from '@/lib/theme';
+import { fonts } from '@/lib/theme';
 import { mensajeSistema } from '@/lib/validation';
 
 /** La tienda cobró pero el servidor aún no refleja la suscripción. Con salida: Restaurar. */
@@ -200,7 +214,7 @@ export function useProOffer({ userId, onPurchased, trialAvailable, onTrialStarte
         if (r === 'cancelada') return;
         if (r === 'pendiente') setAviso(AVISO_PENDIENTE);
         if (r === 'programada') setAviso(AVISO_PROGRAMADA);
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+        vibrar('mision');
         onPurchased?.();
         return;
       }
@@ -216,7 +230,7 @@ export function useProOffer({ userId, onPurchased, trialAvailable, onTrialStarte
         }
       }
       setAnotado(true);
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+      vibrar('mision');
     });
   };
 
@@ -230,7 +244,7 @@ export function useProOffer({ userId, onPurchased, trialAvailable, onTrialStarte
         setAviso('La prueba ya se usó en esta cuenta.');
         return;
       }
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+      vibrar('mision');
       onTrialStarted?.();
     });
   };
@@ -243,13 +257,13 @@ export function useProOffer({ userId, onPurchased, trialAvailable, onTrialStarte
         return;
       }
       if (r === 'pendiente') setAviso(AVISO_PENDIENTE);
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+      vibrar('mision');
       onPurchased?.();
     });
 
   const elegir = (id: ProPlanId) => {
     if (lock.current || (disponible && !comprables.some((p) => p.id === id))) return;
-    Haptics.selectionAsync().catch(() => {});
+    vibrar('seleccion');
     setPlanId(id);
     // Elegir un plan del otro nivel cambia también lo que se enseña de él.
     setTier(proPlan(id).tier);
@@ -257,7 +271,7 @@ export function useProOffer({ userId, onPurchased, trialAvailable, onTrialStarte
 
   const elegirNivel = (t: OfferTier) => {
     if (lock.current || t === tier) return;
-    Haptics.selectionAsync().catch(() => {});
+    vibrar('seleccion');
     setTier(t);
     setPlanId(planPorDefecto(t, plazas));
   };
@@ -308,13 +322,16 @@ interface BodyProps {
   kind: unknown;
   /** Versión condensada para el onboarding: beneficios a dos columnas, sin énfasis. */
   compact?: boolean;
+  /** El momento que trajo a la oferta: línea de contexto y su beneficio primero. */
+  motivo?: Momento | null;
 }
 
 /** Qué hace el coach y cuánto cuesta. Sin botones. */
-export function ProOfferBody({ oferta, kind, compact }: BodyProps) {
+export function ProOfferBody({ oferta, kind, compact, motivo }: BodyProps) {
   const { tier, nivel, planes, planId, precioDe, catalogo, faltan, planActual, busy, reintentarPrecios, disponible, elegir, elegirNivel, prueba } = oferta;
   const sinNivel = disponible && catalogo === 'listo' && planes.length > 0 && !planes.some((p) => p.tier === tier);
-  const beneficios = tier === 'elite' ? [...ELITE_BENEFITS, ...PRO_BENEFITS] : PRO_BENEFITS;
+  const beneficios = beneficiosPorMotivo(tier === 'elite' ? [...ELITE_BENEFITS, ...PRO_BENEFITS] : PRO_BENEFITS, motivo, tier);
+  const contexto = motivo ? copyUpsell(motivo, tier).contexto : null;
   // Con la tienda abierta en /pro, los planes (título, duración y precio) van
   // antes que los beneficios: es lo que Apple pide ver sin buscarlo (2.1).
   const planesArriba = disponible && !compact;
@@ -331,7 +348,7 @@ export function ProOfferBody({ oferta, kind, compact }: BodyProps) {
               ? 'No se han podido cargar los precios de la tienda. Puedes reintentarlo o seguir gratis.'
               : `La tienda no tiene planes de ${nivel.name} disponibles ahora. Puedes reintentarlo o seguir gratis.`}
           </Text>
-          <SystemButton title="Reintentar precios" variant="outline" size="sm" onPress={reintentarPrecios} disabled={busy !== null} />
+          <Button title="Reintentar precios" variant="secondary" size="sm" onPress={reintentarPrecios} disabled={busy !== null} />
         </Card>
       ) : disponible ? (
         <View accessibilityRole="radiogroup" accessibilityLabel="Suscripciones" style={styles.plans}>
@@ -341,7 +358,7 @@ export function ProOfferBody({ oferta, kind, compact }: BodyProps) {
             </Text>
           ) : null}
           {sinNivel ? (
-            <SystemButton title="Reintentar precios" variant="outline" size="sm" onPress={reintentarPrecios} disabled={busy !== null} />
+            <Button title="Reintentar precios" variant="secondary" size="sm" onPress={reintentarPrecios} disabled={busy !== null} />
           ) : null}
           {planes.map((p) => {
             const actual = p.id === planActual;
@@ -401,14 +418,14 @@ export function ProOfferBody({ oferta, kind, compact }: BodyProps) {
               key={p.id}
               style={[styles.priceRow, i > 0 && styles.sep]}
               accessible
-              accessibilityLabel={`${nivel.name} ${p.label.toLowerCase()}: ${p.price} al ${p.period}. ${p.pitch}`}
+              accessibilityLabel={`${nivel.name} ${p.label.toLowerCase()}: ${p.price} al ${p.period}. ${pitchVisible(p)}`}
             >
               <View style={styles.planBody}>
                 <View style={styles.planHead}>
                   <Text style={styles.planLabel}>{p.label.toUpperCase()}</Text>
                   {p.savings ? <Tag>{p.savings}</Tag> : null}
                 </View>
-                <Text style={styles.planPitch}>{p.pitch}</Text>
+                <Text style={styles.planPitch}>{pitchVisible(p)}</Text>
               </View>
               <View style={styles.planPrice}>
                 <Text style={styles.price}>{p.price}</Text>
@@ -425,8 +442,9 @@ export function ProOfferBody({ oferta, kind, compact }: BodyProps) {
   );
   return (
     <View>
+      {contexto ? <Text style={[styles.emphasis, styles.contexto]}>{contexto}</Text> : null}
       {compact ? null : (
-        <Card variant="outline" accent={colors.accentDim}>
+        <Card variant="outline">
           <Text style={styles.emphasis}>{proEmphasis(kind)}</Text>
         </Card>
       )}
@@ -449,7 +467,7 @@ export function ProOfferBody({ oferta, kind, compact }: BodyProps) {
         <View style={styles.benefitGrid}>
           {beneficios.map((b) => (
             <View key={b.title} style={styles.benefitCell}>
-              <Ionicons name={b.icon as never} size={15} color={colors.accentText} style={styles.benefitIcon} />
+              <Ionicons name={b.icon as never} size={15} color={ink.ink9} style={styles.benefitIcon} />
               <Text style={styles.benefitCellTitle} numberOfLines={2}>
                 {b.title}
               </Text>
@@ -460,7 +478,7 @@ export function ProOfferBody({ oferta, kind, compact }: BodyProps) {
         <View style={styles.benefits}>
           {beneficios.map((b, i) => (
             <View key={b.title} style={[styles.benefit, i > 0 && styles.sep]}>
-              <Ionicons name={b.icon as never} size={18} color={colors.accentText} style={styles.benefitIcon} />
+              <Ionicons name={b.icon as never} size={18} color={ink.ink9} style={styles.benefitIcon} />
               <View style={styles.benefitBody}>
                 <Text style={styles.benefitTitle}>{b.title}</Text>
                 <Text style={styles.benefitDetail}>{b.detail}</Text>
@@ -474,10 +492,10 @@ export function ProOfferBody({ oferta, kind, compact }: BodyProps) {
       {tier === 'elite' ? <Text style={styles.usageNotice}>{ELITE_USAGE_NOTICE}</Text> : null}
 
       {planesArriba ? null : catalogoVista}
-      {disponible && prueba ? (
-        <Text style={[styles.notice, styles.noticeLeft, styles.noticeBelow]}>
-          Siete días con el coach, sin tarjeta y sin cobro. Al acabar, tus hábitos y tu progreso siguen disponibles gratis.
-        </Text>
+      {/* Las condiciones de la prueba, siempre que se ofrece (también con la
+          tienda cerrada): qué incluye, que no pide tarjeta y que no se renueva. */}
+      {prueba ? (
+        <Text style={[styles.notice, styles.noticeLeft, styles.noticeBelow]}>{textoPrueba(tier)}</Text>
       ) : null}
     </View>
   );
@@ -493,9 +511,9 @@ interface ActionsProps {
 
 /** Los dos botones, del mismo tamaño, y lo que el sistema responde al pulsarlos. */
 export function ProOfferActions({ oferta, exitLabel, onExit, exitLoading }: ActionsProps) {
-  const { plan, precioDe, catalogo, puedeComprar, busy, anotado, aviso, disponible, prueba, onPrincipal, onPrueba, hojaConsentimiento } = oferta;
+  const { tier, plan, precioDe, catalogo, puedeComprar, busy, anotado, aviso, disponible, prueba, onPrincipal, onPrueba, hojaConsentimiento } = oferta;
   const activar = puedeComprar
-    ? `Activar ${tituloPlan(plan.id)} · ${precioDe(plan.id)}/${plan.period}`
+    ? `Activar ${tituloPlan(plan.id)} · ${precioDe(plan.id)} al ${plan.period}`
     : catalogo === 'cargando' ? 'Cargando precios de la tienda' : 'Compra no disponible';
   return (
     <View>
@@ -511,8 +529,9 @@ export function ProOfferActions({ oferta, exitLabel, onExit, exitLoading }: Acti
       ) : null}
       {prueba ? (
         <>
-          <SystemButton
-            title="Probar el coach 7 días"
+          <Button
+            title={tituloBotonPrueba(tier)}
+            variant="primary"
             size="lg"
             icon="hourglass-outline"
             onPress={onPrueba}
@@ -522,7 +541,7 @@ export function ProOfferActions({ oferta, exitLabel, onExit, exitLoading }: Acti
           {/* Con la tienda abierta, quien ya lo tiene claro no pasa por la
               prueba: el plan elegido en el selector, en un botón discreto. */}
           {disponible ? (
-            <SystemButton
+            <Button
               title={activar}
               variant="ghost"
               size="sm"
@@ -534,8 +553,9 @@ export function ProOfferActions({ oferta, exitLabel, onExit, exitLoading }: Acti
           ) : null}
         </>
       ) : (
-        <SystemButton
+        <Button
           title={disponible ? activar : anotado ? 'Anotado' : 'Avísame cuando abra'}
+          variant="primary"
           size="lg"
           icon={disponible ? undefined : anotado ? 'checkmark' : 'notifications-outline'}
           onPress={onPrincipal}
@@ -543,9 +563,10 @@ export function ProOfferActions({ oferta, exitLabel, onExit, exitLoading }: Acti
           disabled={anotado || (disponible && !puedeComprar) || (busy !== null && busy !== 'compra')}
         />
       )}
-      <SystemButton
+      {/* La salida gratuita: mismo alto que la acción de pago (lg, 52), nunca ghost. */}
+      <Button
         title={exitLabel}
-        variant="outline"
+        variant="secondary"
         size="lg"
         onPress={onExit}
         loading={exitLoading}
@@ -568,7 +589,7 @@ export function ProOfferLegal({ oferta }: { oferta: ProOfferState }) {
   if (!disponible) return null;
   return (
     <View>
-      <SystemButton
+      <Button
         title="Restaurar compras"
         variant="ghost"
         size="sm"
@@ -581,7 +602,8 @@ export function ProOfferLegal({ oferta }: { oferta: ProOfferState }) {
       <View style={styles.links}>
         <Pressable
           onPress={() => abrir(LEGAL_URLS.terminos)}
-          hitSlop={{ top: 14, bottom: 14, left: 8, right: 8 }}
+          hitSlop={{ top: 0, bottom: 0, left: 8, right: 8 }}
+          style={styles.linkHit}
           accessibilityRole="link"
           accessibilityLabel="Términos de uso"
         >
@@ -590,7 +612,8 @@ export function ProOfferLegal({ oferta }: { oferta: ProOfferState }) {
         <Text style={styles.linkSep}>·</Text>
         <Pressable
           onPress={() => abrir(LEGAL_URLS.privacidad)}
-          hitSlop={{ top: 14, bottom: 14, left: 8, right: 8 }}
+          hitSlop={{ top: 0, bottom: 0, left: 8, right: 8 }}
+          style={styles.linkHit}
           accessibilityRole="link"
           accessibilityLabel="Política de privacidad"
         >
@@ -602,7 +625,8 @@ export function ProOfferLegal({ oferta }: { oferta: ProOfferState }) {
             <Text style={styles.linkSep}>·</Text>
             <Pressable
               onPress={() => abrir(LEGAL_URLS.eulaApple)}
-              hitSlop={{ top: 14, bottom: 14, left: 8, right: 8 }}
+              hitSlop={{ top: 0, bottom: 0, left: 8, right: 8 }}
+          style={styles.linkHit}
               accessibilityRole="link"
               accessibilityLabel="Contrato de licencia de usuario final de Apple (EULA)"
             >
@@ -623,6 +647,8 @@ export function ProOfferLegal({ oferta }: { oferta: ProOfferState }) {
 interface Props extends OfferOptions, Omit<ActionsProps, 'oferta'> {
   kind: unknown;
   compact?: boolean;
+  /** El momento que trajo a la oferta (`/pro?motivo=…`). */
+  motivo?: Momento | null;
 }
 
 /** La oferta entera, en columna: la pantalla `/pro`. */
@@ -638,28 +664,80 @@ export function ProOffer({
   onTrialStarted,
   initialTier,
   planActual,
+  motivo,
 }: Props) {
   const oferta = useProOffer({ userId, onPurchased, trialAvailable, onTrialStarted, initialTier, planActual });
   return (
     <View>
-      <ProOfferBody oferta={oferta} kind={kind} compact={compact} />
+      <ProOfferBody oferta={oferta} kind={kind} compact={compact} motivo={motivo} />
       <ProOfferActions oferta={oferta} exitLabel={exitLabel} onExit={onExit} exitLoading={exitLoading} />
       <ProOfferLegal oferta={oferta} />
     </View>
   );
 }
 
+interface UpsellLineProps {
+  momento: Momento;
+  /** El nivel que se ofrece (`decidirOferta(...).tier`). */
+  tier: OfferTier;
+  /** Por defecto abre `/pro?motivo=…&tier=…`. */
+  onPress?: () => void;
+}
+
+/**
+ * La oferta NO modal: una fila con icono, una línea y chevron, para ponerla
+ * junto a la función (modo profundo, fotos, energía). No tapa nada ni se abre
+ * sola: la oferta completa solo aparece si el usuario la toca.
+ */
+export function ProUpsellLine({ momento, tier, onPress }: UpsellLineProps) {
+  const copy = copyUpsell(momento, tier);
+  const abrir = onPress ?? (() => router.push(rutaOferta(momento, tier) as never));
+  return (
+    <Pressable
+      onPress={abrir}
+      style={({ pressed }) => [styles.upsell, pressed && styles.pressed]}
+      accessibilityRole="link"
+      accessibilityLabel={`${copy.linea} ${copy.enlace}`}
+      accessibilityHint="Abre los planes. No se cobra nada sin confirmarlo en la tienda."
+    >
+      <Ionicons name={(tier === 'elite' ? 'flash-outline' : 'sparkles-outline') as never} size={16} color={ink.ink8} />
+      <View style={styles.planBody}>
+        <Text style={styles.upsellLinea} numberOfLines={2}>
+          {copy.linea}
+        </Text>
+        <Text style={styles.upsellEnlace}>{copy.enlace}</Text>
+      </View>
+      <Ionicons name={'chevron-forward' as never} size={16} color={ink.ink6} />
+    </Pressable>
+  );
+}
+
+/** Un estilo de la escala `type` (SISTEMA §2) como estilo de texto. */
+const texto = (t: (typeof tipo)[keyof typeof tipo]) => ({
+  fontFamily: t.family,
+  fontSize: t.size,
+  lineHeight: t.lineHeight,
+  letterSpacing: t.tracking,
+});
+
+// v2 «Mármol y tinta»: solo la escala ink. La única superficie invertida de la
+// oferta es el botón principal; planes, beneficios y letra pequeña van en
+// tinta sobre negro, con la jerarquía en el trazo y en el brillo del texto.
 const styles = StyleSheet.create({
-  emphasis: { fontFamily: fonts.semibold, fontSize: 14, lineHeight: 21, color: colors.text },
+  emphasis: { fontFamily: fonts.semibold, fontSize: 14, lineHeight: 21, color: ink.ink9 },
+  contexto: { marginBottom: 12 },
+  upsell: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 44, borderTopWidth: 1, borderTopColor: ink.ink3, paddingVertical: 11 },
+  upsellLinea: { ...texto(tipo.bodySm), color: ink.ink9 },
+  upsellEnlace: { ...texto(tipo.bodySm), color: ink.ink10, textDecorationLine: 'underline', marginTop: 2 },
   niveles: { flexDirection: 'row', gap: 8, marginTop: 4 },
-  potencia: { fontFamily: fonts.body, fontSize: 13, lineHeight: 19, color: colors.textDim, marginTop: 8, marginBottom: 6 },
+  potencia: { ...texto(tipo.bodySm), color: ink.ink8, marginTop: 8, marginBottom: 6 },
   benefits: { marginTop: 6, marginBottom: 18 },
   benefit: { flexDirection: 'row', gap: 12, paddingVertical: 11 },
-  sep: { borderTopWidth: 1, borderTopColor: colors.line },
+  sep: { borderTopWidth: 1, borderTopColor: ink.ink3 },
   benefitIcon: { marginTop: 1 },
   benefitBody: { flex: 1, minWidth: 0 },
-  benefitTitle: { fontFamily: fonts.semibold, fontSize: 14.5, lineHeight: 20, color: colors.text },
-  benefitDetail: { fontFamily: fonts.body, fontSize: 13, lineHeight: 18, color: colors.textDim, marginTop: 2 },
+  benefitTitle: { fontFamily: fonts.semibold, fontSize: 14.5, lineHeight: 20, color: ink.ink9 },
+  benefitDetail: { ...texto(tipo.bodySm), color: ink.ink8, marginTop: 2 },
   benefitGrid: { flexDirection: 'row', flexWrap: 'wrap', marginBottom: 12 },
   benefitCell: {
     width: '50%',
@@ -669,67 +747,72 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     paddingRight: 10,
   },
-  benefitCellTitle: { flex: 1, minWidth: 0, fontFamily: fonts.semibold, fontSize: 13, lineHeight: 17, color: colors.text },
+  benefitCellTitle: { flex: 1, minWidth: 0, fontFamily: fonts.semibold, fontSize: 13, lineHeight: 17, color: ink.ink9 },
   plans: { gap: 10, marginBottom: 16 },
+  // El plan es una Card outline (hairline ink3 sobre ink0); elegido, borde
+  // ink10 de 1,5 y el fondo igual: sin relleno de color.
   plan: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
     borderWidth: 1,
-    borderColor: colors.line,
-    backgroundColor: colors.bg,
+    borderColor: ink.ink3,
+    backgroundColor: ink.ink0,
     paddingVertical: 11,
     paddingHorizontal: 14,
   },
-  planOn: { borderColor: colors.accent, borderWidth: 1.5, backgroundColor: colors.accentFaint },
+  // Se resta medio punto al relleno para que el plan no crezca al elegirlo.
+  planOn: { borderColor: ink.ink10, borderWidth: 1.5, paddingVertical: 10.5, paddingHorizontal: 13.5 },
   pressed: { opacity: 0.7 },
   priceList: {
     borderWidth: 1,
-    borderColor: colors.line,
+    borderColor: ink.ink3,
+    backgroundColor: ink.ink0,
     paddingHorizontal: 14,
     paddingVertical: 12,
     marginBottom: 16,
   },
-  priceListTitle: { fontFamily: fonts.heading, fontSize: 11, letterSpacing: 2.2, color: colors.textFaint, marginBottom: 2 },
+  priceListTitle: { ...texto(tipo.micro), color: ink.ink6, marginBottom: 2 },
   priceRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 10 },
   radio: {
     width: 20,
     height: 20,
     borderRadius: 10,
     borderWidth: 1.5,
-    borderColor: colors.accentDim,
+    borderColor: ink.ink4,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  radioOn: { borderColor: colors.accent },
-  radioDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: colors.accent },
+  radioOn: { borderColor: ink.ink10 },
+  radioDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: ink.ink10 },
   planBody: { flex: 1, minWidth: 0 },
   planHead: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  planLabel: { fontFamily: fonts.heading, fontSize: 13, letterSpacing: 2, color: colors.text },
-  planTitle: { fontFamily: fonts.semibold, fontSize: 14.5, lineHeight: 19, color: colors.text },
-  planDuration: { fontFamily: fonts.body, fontSize: 12, lineHeight: 16, color: colors.accentText, marginTop: 2 },
-  planPitch: { fontFamily: fonts.body, fontSize: 12.5, lineHeight: 17, color: colors.textDim, marginTop: 3 },
+  planLabel: { fontFamily: fonts.heading, fontSize: 13, letterSpacing: 2, color: ink.ink9 },
+  planTitle: { fontFamily: fonts.semibold, fontSize: 14.5, lineHeight: 19, color: ink.ink9 },
+  planDuration: { ...texto(tipo.bodySm), color: ink.ink8, marginTop: 2 },
+  planPitch: { ...texto(tipo.bodySm), color: ink.ink8, marginTop: 3 },
   planPrice: { alignItems: 'flex-end' },
-  price: { fontFamily: fonts.number, fontSize: 17, color: colors.text },
-  period: { fontFamily: fonts.body, fontSize: 11, color: colors.textFaint, marginTop: 1 },
+  price: { fontFamily: tipo.number.family, fontSize: 17, color: ink.ink9 },
+  period: { ...texto(tipo.bodySm), color: ink.ink6, marginTop: 1 },
   exit: { marginTop: 10 },
   directo: { marginTop: 6, alignSelf: 'center' },
   notice: {
-    fontFamily: fonts.body,
-    fontSize: 12.5,
-    lineHeight: 18,
-    color: colors.accentText,
+    ...texto(tipo.bodySm),
+    color: ink.ink8,
     textAlign: 'center',
     marginTop: 12,
   },
   noticeLeft: { textAlign: 'left', marginTop: 8 },
   noticeAbove: { marginTop: 0, marginBottom: 10 },
   noticeBelow: { marginTop: 0, marginBottom: 16 },
-  noticeWarn: { color: colors.textDim },
-  usageNotice: { fontFamily: fonts.body, fontSize: 13, lineHeight: 19, color: colors.textDim, marginBottom: 14 },
+  // Aviso: regla izquierda de 2 pt ink6, no color.
+  noticeWarn: { color: ink.ink9, textAlign: 'left', borderLeftWidth: 2, borderLeftColor: ink.ink6, paddingLeft: 10 },
+  usageNotice: { ...texto(tipo.bodySm), color: ink.ink8, marginBottom: 14 },
   restore: { marginTop: 6, alignSelf: 'center' },
-  legal: { fontFamily: fonts.body, fontSize: 12, lineHeight: 17, color: colors.textFaint, marginTop: 8 },
-  links: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center', gap: 10, marginTop: 10 },
-  link: { fontFamily: fonts.semibold, fontSize: 12, color: colors.accentText, textDecorationLine: 'underline' },
-  linkSep: { fontFamily: fonts.body, fontSize: 12, color: colors.textFaint },
+  legal: { ...texto(tipo.bodySm), color: ink.ink6, marginTop: 8 },
+  links: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center', columnGap: 10, marginTop: 4 },
+  // Zona táctil de 44 de alto en cada enlace legal.
+  linkHit: { minHeight: 44, justifyContent: 'center' },
+  link: { ...texto(tipo.bodySm), color: ink.ink9, textDecorationLine: 'underline' },
+  linkSep: { ...texto(tipo.bodySm), color: ink.ink6 },
 });

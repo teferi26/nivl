@@ -24,6 +24,7 @@ import {
   StatRow,
   volver,
 } from '@/components/ui';
+import { SIN_DATO } from '@/components/ui/sinDato';
 import { confirmar } from '@/components/ui/confirmar';
 import { useAuth } from '@/lib/auth';
 import { questsScheduledOn } from '@/lib/closing';
@@ -295,7 +296,7 @@ export default function Informe() {
                   <Stat value={xpWeek} unit="XP" label="Esta semana" tone="accent" />
                   <Stat value={thisWeek.length} label="Misiones" />
                   <Stat
-                    value={delta === null ? '—' : `${delta >= 0 ? '+' : ''}${delta}`}
+                    value={delta === null ? SIN_DATO : `${delta >= 0 ? '+' : ''}${delta}`}
                     unit={delta === null ? undefined : '%'}
                     label="Vs. previa"
                     tone={delta !== null && delta < 0 ? 'red' : 'text'}

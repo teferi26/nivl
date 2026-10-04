@@ -150,6 +150,20 @@ export function reglasIncumplidas(input: {
   return salida;
 }
 
+/**
+ * Reglas del contrato que HOY siguen sin marcar y que el cierre cobraría: el
+ * mismo criterio que reglasIncumplidas. Si nunca ha marcado ninguna regla, el
+ * juicio no ha empezado y no cuenta ninguna (`juicioEmpezado`).
+ */
+export function reglasSinMarcarHoy(input: {
+  reglas: { id: string }[];
+  marcadasHoy: ReadonlySet<string>;
+  juicioEmpezado: boolean;
+}): number {
+  if (!input.juicioEmpezado) return 0;
+  return input.reglas.filter((r) => !input.marcadasHoy.has(r.id)).length;
+}
+
 export interface CloseInput {
   fromDate: string;
   today: string;

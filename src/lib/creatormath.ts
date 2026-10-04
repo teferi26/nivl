@@ -26,17 +26,25 @@ export function codigoValido(raw: string | null | undefined): string | null {
   return CODIGO_RE.test(c) ? c : null;
 }
 
-/** El enlace que comparte el creador. Solo abre la app si ya está instalada. */
+/**
+ * Origen de los enlaces de creador. Es el dominio de la marca (docs/PRECIOS.md),
+ * no `URL_NIVL` de socialmath.ts (la web provisional): el enlace que un creador
+ * pega en un vídeo tiene que durar. Que `https://nivl.app/c/*` abra la app
+ * (AASA / assetlinks) y que la web recoja el código si no está instalada lo
+ * cierra el Chat 1 (dominio) y el Chat 4 (página /c/CODIGO).
+ */
+export const ORIGEN_ENLACE_CREADOR = 'https://nivl.app';
+
+/** El enlace que comparte el creador: https://nivl.app/c/CODIGO. */
 export function enlaceCreador(code: string): string {
-  return `nivl://c/${normalizarCodigo(code)}`;
+  return `${ORIGEN_ENLACE_CREADOR}/c/${normalizarCodigo(code)}`;
 }
 
 export function mensajeInvitacionCreador(code: string): string {
   const c = normalizarCodigo(code);
   return (
     `Entra en NIVL con mi código: ${c}. ` +
-    `Escríbelo en «¿Quién te trajo?» al crear tu cuenta. ` +
-    `Si ya tienes la app: ${enlaceCreador(c)}`
+    `Escríbelo en «¿Quién te trajo?» al crear tu cuenta, o entra desde ${enlaceCreador(c)}`
   );
 }
 
@@ -71,6 +79,130 @@ export const RANGO_LABEL: Record<CreatorRank, string> = {
 
 export function rangoLabel(rank: string | null | undefined): string {
   return RANGO_LABEL[rank as CreatorRank] ?? RANGO_LABEL.novato;
+}
+
+// ── Rol (0046) ──────────────────────────────────────────────────────
+
+export type CreatorRole = 'creador' | 'comercial' | 'clipper';
+
+export const ROL_LABEL: Record<CreatorRole, string> = {
+  creador: 'Creador',
+  comercial: 'Comercial',
+  clipper: 'Clipper',
+};
+
+/** Un rol desconocido cae en 'creador' (el valor por defecto de la columna). */
+export function rolValido(role: unknown): CreatorRole {
+  return role === 'comercial' || role === 'clipper' ? role : 'creador';
+}
+
+export const ORDEN_RANGO: readonly CreatorRank[] = ['novato', 'pro', 'elite'];
+
+/** Un rango desconocido cae en 'novato'. */
+export function rangoValido(rank: unknown): CreatorRank {
+  return rank === 'pro' || rank === 'elite' ? rank : 'novato';
+}
+
+/** Umbral para PROPONER un rango (`creator_rank_rules`, 0046). El ascenso lo aplica el dueño. */
+export interface ReglaRango {
+  rank: CreatorRank;
+  minSales90d: number;
+  minMonthsActive?: number;
+}
+
+export interface ProgresoRango {
+  /** El rango más alto cuyas reglas se cumplen (novato si no hay reglas o no llega a ninguna). */
+  merecido: CreatorRank;
+  /** El siguiente rango con regla por encima del merecido, o null si no hay. */
+  siguiente: CreatorRank | null;
+  umbral: number | null;
+  faltan: number | null;
+  /** 0..1 hacia el siguiente umbral (1 si no hay siguiente). */
+  fraccion: number;
+}
+
+/**
+ * Dónde está un creador según sus ventas de 90 días y las reglas del dueño.
+ * Solo PROPONE: subir de rango sube la comisión y lo aplica el dueño a mano
+ * (scripts/creadores.mjs revisar-rangos). Reglas con rango desconocido o
+ * umbral no numérico se ignoran.
+ */
+export function progresoRango(ventas90: number, reglas: readonly ReglaRango[], mesesActivo = 0): ProgresoRango {
+  const v = Math.max(0, Math.floor(Number(ventas90) || 0));
+  const meses = Math.max(0, Math.floor(Number(mesesActivo) || 0));
+  const validas = reglas.filter(
+    (r) => ORDEN_RANGO.includes(r.rank) && Number.isFinite(r.minSales90d) && r.minSales90d >= 0,
+  );
+  const regla = (rank: CreatorRank) => validas.find((r) => r.rank === rank);
+  const cumple = (r: ReglaRango) => v >= r.minSales90d && meses >= (r.minMonthsActive ?? 0);
+
+  let merecido: CreatorRank = 'novato';
+  for (const rank of ORDEN_RANGO) {
+    const r = regla(rank);
+    if (rank !== 'novato' && r && cumple(r)) merecido = rank;
+  }
+  const idx = ORDEN_RANGO.indexOf(merecido);
+  const sig = ORDEN_RANGO.slice(idx + 1).map(regla).find((r): r is ReglaRango => !!r) ?? null;
+  if (!sig) return { merecido, siguiente: null, umbral: null, faltan: null, fraccion: 1 };
+  const faltan = Math.max(0, sig.minSales90d - v);
+  const fraccion = sig.minSales90d === 0 ? 1 : Math.min(1, v / sig.minSales90d);
+  return { merecido, siguiente: sig.rank, umbral: sig.minSales90d, faltan, fraccion };
+}
+
+// ── Retos ───────────────────────────────────────────────────────────
+
+export interface Reto {
+  startsAt: string;
+  endsAt: string;
+  goalSales: number;
+}
+
+export type FaseReto = 'proximo' | 'activo' | 'cumplido' | 'terminado';
+
+export interface EstadoReto {
+  fase: FaseReto;
+  /** 0..1 hacia el objetivo. */
+  fraccion: number;
+  faltan: number;
+  /** Días que quedan (redondeo hacia arriba); 0 si ya terminó. Antes de empezar, días para que empiece. */
+  dias: number;
+  linea: string;
+}
+
+/**
+ * La fase de un reto para quien lo mira. `cumplido` gana a `activo` y a
+ * `terminado`: si llegó al objetivo, eso es lo que se ve. Fechas inválidas
+ * cuentan como terminado (nunca como activo).
+ */
+export function estadoReto(reto: Reto, ventas: number, ahora: Date | number = Date.now()): EstadoReto {
+  const t = typeof ahora === 'number' ? ahora : ahora.getTime();
+  const ini = new Date(reto.startsAt).getTime();
+  const fin = new Date(reto.endsAt).getTime();
+  const meta = Math.max(1, Math.floor(Number(reto.goalSales) || 1));
+  const v = Math.max(0, Math.floor(Number(ventas) || 0));
+  const faltan = Math.max(0, meta - v);
+  const fraccion = Math.min(1, v / meta);
+  const dia = 86_400_000;
+  const valido = Number.isFinite(ini) && Number.isFinite(fin) && fin > ini;
+
+  if (valido && t < ini) {
+    const dias = Math.ceil((ini - t) / dia);
+    return { fase: 'proximo', fraccion: 0, faltan: meta, dias, linea: `Empieza en ${dias} ${dias === 1 ? 'día' : 'días'}.` };
+  }
+  if (v >= meta) {
+    return { fase: 'cumplido', fraccion: 1, faltan: 0, dias: valido ? Math.max(0, Math.ceil((fin - t) / dia)) : 0, linea: 'Reto cumplido.' };
+  }
+  if (valido && t < fin) {
+    const dias = Math.ceil((fin - t) / dia);
+    return {
+      fase: 'activo',
+      fraccion,
+      faltan,
+      dias,
+      linea: `${ventasLabel(v)} de ${meta}. Quedan ${dias} ${dias === 1 ? 'día' : 'días'}.`,
+    };
+  }
+  return { fase: 'terminado', fraccion, faltan, dias: 0, linea: `Terminado con ${ventasLabel(v)} de ${meta}.` };
 }
 
 // ── La cuenta ───────────────────────────────────────────────────────
@@ -132,6 +264,38 @@ export function topeCents(baseCents: number, pct: number): number {
 
 export type ComisionKind = 'primer_pago' | 'mensual' | 'renovacion';
 
+/** Lo que trae el evento de RevenueCat para decidir si un cobro viene de una oferta rebajada. */
+export interface CobroTienda {
+  /** `offer_code` del webhook (null o '' = sin código). */
+  offerCode?: string | null;
+  /** `period_type`: TRIAL | INTRO | NORMAL | PROMOTIONAL | PREPAID. */
+  periodType?: string | null;
+  /** ISO 4217 de `price_in_purchased_currency`. */
+  currency?: string | null;
+  /** `price_in_purchased_currency` en céntimos. */
+  precioCents: number;
+  /** `store_products.list_price_cents` (EUR con IVA). null = sin catálogo. */
+  catalogoCents?: number | null;
+}
+
+export const NOTA_OFERTA_SIN_REFERENCIA = 'oferta sin referencia: comisión completa';
+
+/**
+ * El factor pagado/catálogo, como `apply_store_event` (propuesta
+ * comisión proporcional, 1.0.9). Solo baja de 1 en una OFERTA (offer_code, o
+ * period_type INTRO/PROMOTIONAL) pagada en EUR con catálogo: un precio
+ * regional sin oferta nunca recorta. Una oferta sin referencia (otra moneda o
+ * sin catálogo) cobra completa y deja la nota.
+ */
+export function factorOferta(c: CobroTienda): { factor: number; nota: string | null } {
+  const oferta = !!c.offerCode || c.periodType === 'INTRO' || c.periodType === 'PROMOTIONAL';
+  if (!oferta) return { factor: 1, nota: null };
+  if (c.currency === 'EUR' && c.catalogoCents != null && c.catalogoCents > 0) {
+    return { factor: Math.max(0, Math.min(1, c.precioCents / c.catalogoCents)), nota: null };
+  }
+  return { factor: 1, nota: NOTA_OFERTA_SIN_REFERENCIA };
+}
+
 export interface Comision {
   kind: ComisionKind;
   pct: number;
@@ -144,9 +308,11 @@ export interface Comision {
  *
  * - `acumuladoCents`: lo que esta cuenta ya ha generado en `primer_pago` y
  *   `mensual`, sin las anuladas (un reembolso devuelve hueco al tope).
- * - Anual con hueco: paga lo que falte hasta el tope de golpe.
- * - Mensual con hueco: su % del neto del mes, sin pasarse del tope.
- * - Anual con el tope lleno: `renewalPct` sobre la base (0 = nada).
+ * - `factorPrecio` (0–1, por defecto 1): lo de `factorOferta`.
+ * - Anual con hueco: lo que falte hasta el tope, sin pasar de tope × factor.
+ * - Mensual con hueco: su % del neto del mes, sin pasarse del tope (ya es
+ *   proporcional a lo cobrado: el factor NO se aplica otra vez).
+ * - Anual con el tope lleno: `renewalPct` sobre la base × factor (0 = nada).
  * - Mensual con el tope lleno: nada.
  *
  * Devuelve null cuando no hay comisión (o sería de 0).
@@ -157,8 +323,10 @@ export function comisionCents(args: {
   netCents: number;
   acumuladoCents: number;
   ajustes: Ajustes;
+  factorPrecio?: number;
 }): Comision | null {
   const { rangoPct, producto, netCents, acumuladoCents, ajustes } = args;
+  const factor = Math.max(0, Math.min(1, args.factorPrecio ?? 1));
   const pct = pctEfectivo(rangoPct, producto, ajustes);
   const base = producto.commissionBaseCents ?? ajustes.baseCents;
   const cap = topeCents(base, pct);
@@ -170,12 +338,12 @@ export function comisionCents(args: {
     kind = producto.period === 'anual' ? 'primer_pago' : 'mensual';
     amount =
       producto.period === 'anual'
-        ? cap - acumuladoCents
+        ? Math.min(cap - acumuladoCents, redondear(cap * factor))
         : Math.min(redondear((netCents * pct) / 100), cap - acumuladoCents);
   } else if (producto.period === 'anual' && ajustes.renewalPct > 0) {
     kind = 'renovacion';
     pctFinal = ajustes.renewalPct;
-    amount = redondear((base * ajustes.renewalPct) / 100);
+    amount = redondear(((base * ajustes.renewalPct) / 100) * factor);
   } else {
     return null;
   }

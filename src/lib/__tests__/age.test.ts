@@ -8,6 +8,9 @@ let mockSession: { user: { id: string } } | null = { user: { id: 'usuario-a' } }
 let mockLoading = false;
 jest.mock('../supabase', () => ({ supabase: { rpc: (...args: unknown[]) => mockRpc(...args), auth: { signOut: (...args: unknown[]) => mockSignOut(...args) } } }));
 jest.mock('../auth', () => ({ useAuth: () => ({ session: mockSession, loading: mockLoading }) }));
+// «Salir» puede ir por cerrarSesion (limpieza completa del dispositivo) o por el
+// signOut local directo: en los dos casos la sesión se cierra solo en local.
+jest.mock('../authFlow', () => ({ cerrarSesion: jest.fn(async () => mockSignOut({ scope: 'local' })) }));
 // Las primitivas solo transportan props e hijos. El proveedor, el guard y sus
 // efectos siguen siendo reales; no necesitamos cargar la plataforma nativa.
 jest.mock('react-native', () => ({
@@ -17,7 +20,8 @@ jest.mock('react-native', () => ({
   StyleSheet: { create: (styles: unknown) => styles },
 }));
 jest.mock('../../components/SystemButton', () => ({ SystemButton: 'SystemButton' }));
-jest.mock('../../components/ui', () => ({ Screen: 'Screen', ScreenHeader: 'ScreenHeader', Card: 'Card', Check: 'Check', Skeleton: 'Skeleton' }));
+jest.mock('../../components/ui', () => ({ Screen: 'Screen', ScreenHeader: 'ScreenHeader', Card: 'Card', Check: 'Check', Skeleton: 'Skeleton', Section: 'Section', Button: 'Button' }));
+jest.mock('../../components/arena', () => ({ EncabezadoArena: 'EncabezadoArena', BotonArena: 'BotonArena', TarjetaArena: 'TarjetaArena', Entrada: 'Entrada', FranjaCifras: 'FranjaCifras', Meandro: 'Meandro', Galea: 'Galea', Laurel: 'Laurel' }));
 
 // jest-expo ya incluye el renderer de la versión de React instalada.
 // Contrato mínimo del renderer, sin añadir sus tipos como dependencia.

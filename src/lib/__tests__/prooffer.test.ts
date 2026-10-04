@@ -1,12 +1,16 @@
 import { act, createElement, type ReactElement } from 'react';
-import { ProOfferActions, ProOfferBody, ProOfferLegal, useProOffer } from '@/components/ProOffer';
-import { introsDeTienda, preciosDeTienda, purchase, restorePurchases, startTrial, StorePriceChangedError, type PreciosTienda, type ProPlanId } from '../pro';
+import { router } from 'expo-router';
+import { ProOfferActions, ProOfferBody, ProOfferLegal, ProUpsellLine, useProOffer } from '@/components/ProOffer';
+import { introsDeTienda, preciosDeTienda, purchase, restorePurchases, startTrial, StorePriceChangedError, type Momento, type OfferTier, type PreciosTienda, type ProPlanId } from '../pro';
 
 const mockOS = { OS: 'ios' };
+const mockTienda = { abierta: true };
+jest.mock('expo-router', () => ({ router: { push: jest.fn() } }));
 jest.mock('@/lib/pro', () => ({
   ...jest.requireActual('@/lib/proplans'),
+  ...jest.requireActual('@/lib/paywallmoment'),
   StorePriceChangedError: class extends Error {},
-  purchasesAvailable: () => true,
+  purchasesAvailable: () => mockTienda.abierta,
   fetchFounderSeatsLeft: jest.fn().mockResolvedValue(10),
   preciosDeTienda: jest.fn(),
   introsDeTienda: jest.fn(),
@@ -25,13 +29,8 @@ jest.mock('react-native', () => ({
   StyleSheet: { create: (styles: unknown) => styles },
 }));
 jest.mock('@expo/vector-icons/Ionicons', () => 'Ionicons');
-jest.mock('expo-haptics', () => ({
-  NotificationFeedbackType: { Success: 'success' },
-  notificationAsync: jest.fn().mockResolvedValue(undefined),
-  selectionAsync: jest.fn().mockResolvedValue(undefined),
-}));
-jest.mock('@/components/SystemButton', () => ({ SystemButton: 'SystemButton' }));
-jest.mock('@/components/ui', () => ({ Card: 'Card', Chip: 'Chip', Skeleton: 'Skeleton', Tag: 'Tag' }));
+jest.mock('@/design/haptics', () => ({ vibrar: jest.fn() }));
+jest.mock('@/components/ui', () => ({ Button: 'Button', Card: 'Card', Chip: 'Chip', Skeleton: 'Skeleton', Tag: 'Tag' }));
 
 const { create } = jest.requireActual<{
   create: (element: ReactElement) => {
@@ -51,10 +50,11 @@ const restore = jest.mocked(restorePurchases);
 
 const intros = jest.mocked(introsDeTienda);
 
-function Harness({ trialAvailable = false, planActual = null }: { trialAvailable?: boolean; planActual?: ProPlanId | null }) {
-  control = useProOffer({ userId: 'user-test', trialAvailable, planActual });
+interface HarnessProps { trialAvailable?: boolean; planActual?: ProPlanId | null; motivo?: Momento | null; initialTier?: OfferTier }
+function Harness({ trialAvailable = false, planActual = null, motivo = null, initialTier }: HarnessProps) {
+  control = useProOffer({ userId: 'user-test', trialAvailable, planActual, initialTier });
   return createElement('View', null,
-    createElement(ProOfferBody, { oferta: control, kind: 'general' }),
+    createElement(ProOfferBody, { oferta: control, kind: 'general', motivo }),
     createElement(ProOfferActions, { oferta: control, exitLabel: 'Seguir gratis', onExit: () => {} }),
     createElement(ProOfferLegal, { oferta: control }),
   );
@@ -62,13 +62,14 @@ function Harness({ trialAvailable = false, planActual = null }: { trialAvailable
 
 const button = (title: string) => renderer!.root.findByProps({ title });
 const content = () => JSON.stringify(renderer!.toJSON());
-const mount = async (trialAvailable = false, planActual: ProPlanId | null = null) => {
-  await act(async () => { renderer = create(createElement(Harness, { trialAvailable, planActual })); });
+const mount = async (trialAvailable = false, planActual: ProPlanId | null = null, extra: Omit<HarnessProps, 'trialAvailable' | 'planActual'> = {}) => {
+  await act(async () => { renderer = create(createElement(Harness, { trialAvailable, planActual, ...extra })); });
 };
 
 beforeEach(() => {
   jest.clearAllMocks();
   mockOS.OS = 'ios';
+  mockTienda.abierta = true;
   prices.mockReset().mockResolvedValue({ nivl_pro_anual: '$109.99' });
   intros.mockReset().mockResolvedValue({});
   buy.mockReset().mockResolvedValue('cancelada');
@@ -92,7 +93,7 @@ test('mientras carga no inventa precio ni permite comprar; después muestra el r
   expect(buy).not.toHaveBeenCalled();
   await act(async () => resolve({ nivl_pro_anual: '$109.99' }));
   expect(control.puedeComprar).toBe(true);
-  expect(button('Activar NIVL Pro anual · $109.99/año').props.disabled).toBe(false);
+  expect(button('Activar NIVL Pro anual · $109.99 al año').props.disabled).toBe(false);
   expect(content()).toContain('$109.99 cada año');
 });
 
@@ -143,7 +144,7 @@ test('si cambia precio lo recarga y exige un nuevo toque; no vuelve a comprar so
   await act(async () => control.onPrincipal());
   expect(prices).toHaveBeenCalledTimes(2);
   expect(buy).toHaveBeenCalledTimes(1);
-  expect(button('Activar NIVL Pro anual · $119.99/año').props.disabled).toBe(false);
+  expect(button('Activar NIVL Pro anual · $119.99 al año').props.disabled).toBe(false);
   expect(content()).toContain('$119.99 cada año');
   expect(content()).not.toContain('$109.99');
 });
@@ -183,7 +184,7 @@ test('el fundador se describe como suscripción anual autorrenovable, no vitalic
   const texto = content();
   expect(texto).toContain('NIVL Élite fundador es una suscripción anual (1 año) de renovación automática: 249,00 € cada año.');
   expect(texto).toMatch(/no es un pago único ni vitalicio/);
-  expect(button('Activar NIVL Élite fundador · 249,00 €/año').props.disabled).toBe(false);
+  expect(button('Activar NIVL Élite fundador · 249,00 € al año').props.disabled).toBe(false);
 });
 
 test('en Android no se enlaza el EULA de Apple', async () => {
@@ -254,3 +255,105 @@ test('doble toque en Activar solo lanza una compra', async () => {
   expect(buy).toHaveBeenCalledTimes(1);
   await act(async () => soltar('activa'));
 });
+
+describe('fase 2: oferta con motivo y línea de upsell', () => {
+  const at = (texto: string, aguja: string) => texto.indexOf(aguja);
+
+  test('el motivo abre con su línea de contexto y pone su beneficio primero', async () => {
+    prices.mockResolvedValue(CATALOGO);
+    await mount(false, null, { motivo: 'coach_profundo', initialTier: 'elite' });
+    const texto = content();
+    expect(control.tier).toBe('elite');
+    expect(texto).toContain('El modo profundo es de NIVL Élite');
+    expect(at(texto, '"Modo profundo"')).toBeGreaterThan(-1);
+    expect(at(texto, '"Modo profundo"')).toBeLessThan(at(texto, '"Máxima potencia"'));
+  });
+
+  test('sin motivo, el orden de siempre y sin línea de contexto', async () => {
+    prices.mockResolvedValue(CATALOGO);
+    await mount(false, null, { initialTier: 'elite' });
+    const texto = content();
+    expect(texto).not.toContain('El modo profundo es de NIVL Élite');
+    expect(at(texto, '"Máxima potencia"')).toBeLessThan(at(texto, '"Modo profundo"'));
+  });
+
+  test('con motivo siguen visibles la salida, Restaurar, Términos y Privacidad', async () => {
+    prices.mockResolvedValue(CATALOGO);
+    await mount(true, null, { motivo: 'primer_dia' });
+    const texto = content();
+    expect(button('Seguir gratis').props.disabled).toBe(false);
+    expect(button('Restaurar compras').props.disabled).toBe(false);
+    expect(texto).toContain('Términos de uso');
+    expect(texto).toContain('Política de privacidad');
+    expect(texto).toContain('Primer día en la arena');
+  });
+
+  test('el importe que se cobra es la cifra del plan: ningún equivalente mensual de un anual compite con él', async () => {
+    prices.mockResolvedValue(CATALOGO);
+    await mount(false, null, { motivo: 'firma' });
+    const texto = content();
+    expect(texto).not.toMatch(/≈|\/mes|8,33|20,75|24,92/);
+    expect(button('Activar NIVL Pro anual · 99,99 € al año').props.disabled).toBe(false);
+    // El plan mensual: el rótulo dice «al mes», nunca «/mes».
+    await act(async () => control.elegir('nivl_pro_mensual'));
+    expect(content()).not.toMatch(/≈|\/mes|8,33|20,75|24,92/);
+    expect(button('Activar NIVL Pro mensual · 12,99 € al mes').props.disabled).toBe(false);
+  });
+
+  test('con la tienda cerrada tampoco: la lista de referencia no enseña equivalentes mensuales', async () => {
+    mockTienda.abierta = false;
+    for (const tier of ['pro', 'elite'] as const) {
+      await mount(false, null, { motivo: 'firma', initialTier: tier });
+      const texto = content();
+      expect(texto).toContain('PRECIOS DE REFERENCIA');
+      expect(texto).not.toMatch(/≈|\/mes|8,33|20,75|24,92|meses gratis/);
+      expect(texto).toContain('Se cobra una vez al año');
+      expect(button('Seguir gratis').props.disabled).toBe(false);
+      expect(button('Avísame cuando abra').props.disabled).toBe(false);
+      await act(async () => renderer!.unmount());
+      renderer = null;
+    }
+  });
+
+  test('voz: el contexto dice que va con el coach y no reordena beneficios', async () => {
+    prices.mockResolvedValue(CATALOGO);
+    await mount(false, null, { motivo: 'voz_premium' });
+    expect(content()).toContain('La voz va con el coach');
+  });
+
+  test('ProUpsellLine: una fila (no modal) que lleva a /pro con motivo y nivel', async () => {
+    await act(async () => { renderer = create(createElement(ProUpsellLine, { momento: 'coach_profundo', tier: 'elite' })); });
+    expect(content()).toContain('El modo profundo es de NIVL Élite.');
+    expect(content()).toContain('Ver NIVL Élite');
+    const fila = renderer!.root.findByProps({ accessibilityRole: 'link' });
+    await act(async () => fila.props.onPress());
+    expect(router.push).toHaveBeenCalledWith('/pro?motivo=coach_profundo&tier=elite');
+  });
+
+  test('fase 3: las condiciones de la prueba se dicen también con la tienda cerrada', async () => {
+    mockTienda.abierta = false;
+    await mount(true);
+    const texto = content();
+    expect(texto).toContain('sin tarjeta y sin cobro');
+    expect(texto).toContain('No se renueva sola');
+    expect(button('Probar el coach 7 días').props.disabled).toBeFalsy();
+    expect(button('Seguir gratis').props.disabled).toBe(false);
+  });
+
+  test('fase 3: mirando Élite, la prueba dice que es de Pro y sin modo profundo', async () => {
+    prices.mockResolvedValue(CATALOGO);
+    await mount(true, null, { initialTier: 'elite' });
+    expect(content()).toContain('sin modo profundo');
+    await act(async () => button('Probar Pro 7 días').props.onPress());
+    expect(startTrial).toHaveBeenCalledTimes(1);
+    await act(async () => control.elegirNivel('pro'));
+    expect(button('Probar el coach 7 días')).toBeTruthy();
+  });
+
+  test('fase 3: sin prueba disponible no se menciona ninguna prueba', async () => {
+    prices.mockResolvedValue(CATALOGO);
+    await mount(false);
+    expect(content()).not.toMatch(/sin tarjeta|Probar|7 días/);
+  });
+});
+

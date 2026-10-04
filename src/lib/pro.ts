@@ -11,12 +11,13 @@
 // `subscriptions` (supabase/functions/revenuecat-webhook → apply_store_event,
 // 0027), así que tras comprar se vuelve a preguntar al servidor.
 //
-// `purchasesAvailable()` es false —y la oferta se pinta de solo lectura— si
+// `purchasesAvailable()` es false (y la oferta se pinta de solo lectura) si
 // falta la clave pública de la plataforma (EXPO_PUBLIC_RC_IOS_KEY /
 // EXPO_PUBLIC_RC_ANDROID_KEY, variables de EAS) o el módulo nativo (Expo Go,
 // web). `subscription.ts` (Stripe, EXPO_PUBLIC_PAYWALL) se queda como está
 // para el Oráculo y para la web.
 
+import type AsyncStorageTipo from '@react-native-async-storage/async-storage';
 import { Linking, NativeModules, Platform } from 'react-native';
 // `./tienda` es RevenueCat en iOS/Android (tienda.native.ts) y un stub en web
 // (tienda.ts): el SDK no entra en el bundle web.
@@ -31,6 +32,7 @@ import {
 import {
   compraReflejada,
   esProductoNivl,
+  puedeMejorarEnTienda,
   modoReemplazoGoogle,
   planExacto,
   precioVisible,
@@ -44,10 +46,21 @@ import {
   type ProPlanId,
   type Tier,
 } from './proplans';
+import {
+  anotarEn,
+  decidirOferta,
+  parsearHistorial,
+  type DecisionOferta,
+  type EntradaOferta,
+  type FormaOferta,
+  type Momento,
+  type RespuestaOferta,
+} from './paywallmoment';
 import { supabase } from './supabase';
 import { ErrorVisible } from './validation';
 
 export * from './proplans';
+export * from './paywallmoment';
 
 const TIERS_CONOCIDOS: readonly Tier[] = ['free', 'pro', 'elite', 'owner'];
 
@@ -75,6 +88,7 @@ export async function fetchAiStatus(): Promise<AiStatus> {
     deepRemaining: Number(s.deep_remaining ?? 0),
     deepTurns: Number(s.deep_turns ?? 0),
     trialAvailable: s.trial_available === true,
+    vision: typeof s.vision === 'boolean' ? s.vision : null,
   };
 }
 
@@ -571,4 +585,95 @@ export async function gestionarSuscripcion(): Promise<void> {
   const destino = url ?? (Platform.OS === 'ios' ? GESTION_TIENDA.ios : Platform.OS === 'android' ? GESTION_TIENDA.android : null);
   if (!destino) throw new ErrorVisible('Gestiona tu suscripción desde la tienda donde la contrataste.');
   await Linking.openURL(destino);
+}
+
+// ── El momento de la oferta (fase 2, D1) ───────────────────────────
+// El historial de ofertas enseñadas vive en el dispositivo (AsyncStorage): no
+// es un dato de negocio, solo sirve para no insistir. Si se pierde (otro
+// móvil, reinstalar), lo peor que pasa es UNA hoja más, con sus topes.
+
+export const CLAVE_OFERTAS = 'nivl.ofertas.v1';
+
+// Carga perezosa (require en la llamada): un import estático arrastraría el
+// módulo nativo a todos los tests que importan `pro.ts` (también de rebote)
+// sin mock, y `import()` no lo transforma Jest. Dentro del try de quien llama:
+// si el módulo no está, el historial queda vacío.
+type Almacen = Pick<typeof AsyncStorageTipo, 'getItem' | 'setItem'>;
+function almacen(): Almacen {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const m = require('@react-native-async-storage/async-storage') as { default?: Almacen } & Almacen;
+  return m.default ?? m;
+}
+
+/** Lo enseñado en los últimos 30 días. Nunca lanza: sin almacenamiento o con JSON roto, vacío. */
+export async function leerHistorialOfertas(ahora = Date.now()): Promise<EntradaOferta[]> {
+  try {
+    return parsearHistorial(await almacen().getItem(CLAVE_OFERTAS), ahora);
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Apunta que se enseñó una oferta (`vista`) o cómo respondió el usuario
+ * (`cerrada`, `compra`, `prueba`). Una respuesta a una hoja recién vista la
+ * sustituye (una sola hoja). Recorta a 30 días. Nunca lanza.
+ */
+export async function anotarOferta(
+  momento: Momento,
+  respuesta: RespuestaOferta,
+  forma?: FormaOferta,
+  ahora = Date.now(),
+): Promise<void> {
+  try {
+    const previo = await leerHistorialOfertas(ahora);
+    const nuevo = anotarEn(previo, { momento, respuesta, forma }, ahora);
+    await almacen().setItem(CLAVE_OFERTAS, JSON.stringify(nuevo));
+  } catch {
+    /* sin almacenamiento: se pierde el apunte, nunca la pantalla */
+  }
+}
+
+export interface OpcionesOferta {
+  /** Hay una celebración en pantalla. Con true, nunca se ofrece nada. */
+  celebrando: boolean;
+  /** `subscriptions.provider` si se sabe: a quien paga por Stripe no se le ofrece una segunda suscripción. */
+  provider?: string | null;
+  /** Por defecto, una hoja que se decide enseñar se apunta ya como `vista`. */
+  anotar?: boolean;
+  /**
+   * Para `fin_prueba`: la cuenta tuvo la prueba o una cortesía y ya acabó
+   * (p. ej. `subscriptions.plan = 'cortesia'` con el periodo vencido). Sin
+   * él, se deduce del historial del dispositivo.
+   */
+  pruebaTerminada?: boolean;
+  ahora?: number;
+}
+
+/**
+ * Lee el historial y decide (`decidirOferta`). Si la decisión es una hoja, la
+ * apunta como `vista` en el acto: quien llama se compromete a enseñarla, y si
+ * al final no lo hace, el tope cuenta igual (lo prudente). Sin estado de la IA
+ * (sin red), nada: no se ofrece a ciegas. Nunca lanza.
+ */
+export async function ofrecerSi(momento: Momento, status: AiStatus | null | undefined, opts: OpcionesOferta): Promise<DecisionOferta> {
+  const ahora = opts.ahora ?? Date.now();
+  const historial = await leerHistorialOfertas(ahora);
+  const d = decidirOferta(momento, {
+    tier: status?.tier ?? 'free',
+    entitled: !!status?.entitled,
+    trial: !!status?.trial,
+    trialAvailable: !!status?.trialAvailable,
+    tiendaAbierta: purchasesAvailable(),
+    celebrando: opts.celebrando,
+    ahora,
+    historial,
+    mejorable: status?.entitled && !status?.trial ? puedeMejorarEnTienda(status, opts.provider ?? null) : true,
+    ...(opts.pruebaTerminada !== undefined ? { pruebaTerminada: opts.pruebaTerminada } : {}),
+  });
+  if (!status) return { ...d, mostrar: false, razon: 'sin_estado' };
+  if (d.mostrar && d.forma === 'hoja' && opts.anotar !== false) await anotarOferta(momento, 'vista', 'hoja', ahora);
+  // El primer día es línea pero una vez en la vida: se anota al enseñarla.
+  else if (d.mostrar && momento === 'primer_dia' && opts.anotar !== false) await anotarOferta(momento, 'vista', 'linea', ahora);
+  return d;
 }

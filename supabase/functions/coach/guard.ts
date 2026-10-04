@@ -62,22 +62,67 @@ export function validarImagenes(raw: unknown): { ok: true; imagenes: Imagen[] } 
   return { ok: true, imagenes: salida };
 }
 
+/**
+ * Las fotos solo las ve Claude (Anthropic). Con un modelo compatible OpenAI
+ * (DeepSeek, el de Pro) el adaptador las mandaría como image_url: los bytes
+ * saldrían a ese proveedor aunque luego los rechazara. Auditoría 1.0.8: se
+ * cortan aquí, antes de cualquier llamada. null si se puede seguir; si no, el
+ * mensaje (lleva «foto»: el cliente lo enseña tal cual, src/lib/coach.ts).
+ */
+export const MSG_FOTOS_SOLO_CLAUDE = 'Con tu plan el coach no ve fotos. Cuéntale con palabras lo que hay en ellas.';
+export function fotosSinVision(nFotos: number, compat: unknown): string | null {
+  return nFotos > 0 && compat ? MSG_FOTOS_SOLO_CLAUDE : null;
+}
+
 // ── Fecha del turno ──────────────────────────────────────────────────
 /**
  * El "hoy" del turno lo manda el móvil (su zona horaria), pero no puede ser
  * cualquier día: con él se marcan misiones y se pagan XP. Se acepta solo si es
  * una fecha válida a ±1 día de la del servidor (cubre de UTC−12 a UTC+14).
  */
-export function fechaDelTurno(raw: unknown, ahora = new Date()): string {
-  const servidor = ahora.toISOString().slice(0, 10);
-  if (typeof raw !== 'string') return servidor;
-  const f = raw.slice(0, 10);
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(f)) return servidor;
-  const t = Date.parse(`${f}T12:00:00Z`);
-  if (!Number.isFinite(t) || new Date(t).toISOString().slice(0, 10) !== f) return servidor;
-  const dias = Math.abs(t - Date.parse(`${servidor}T12:00:00Z`)) / 86_400_000;
-  return dias <= 1 ? f : servidor;
+export function fechaDelTurno(raw: unknown, ahora = new Date(), zona?: string | null): string {
+  const aceptada = fechaAceptable(raw, ahora);
+  if (aceptada) return aceptada;
+  // Sin fecha del móvil (la app 1.0.7 no la manda) o con una fuera de rango:
+  // el día local según la zona de su perfil antes que el día UTC. Con UTC, de
+  // 00:00 a 02:00 en Madrid el coach vivía en "ayer" y negaba lo registrado.
+  return (zona ? fechaLocal(zona, ahora) : null) ?? ahora.toISOString().slice(0, 10);
 }
+
+/** La fecha del móvil si es válida y está a ±1 día de la del servidor; si no, null. */
+export function fechaAceptable(raw: unknown, ahora = new Date()): string | null {
+  if (typeof raw !== 'string') return null;
+  const servidor = ahora.toISOString().slice(0, 10);
+  const f = raw.slice(0, 10);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(f)) return null;
+  const t = Date.parse(`${f}T12:00:00Z`);
+  if (!Number.isFinite(t) || new Date(t).toISOString().slice(0, 10) !== f) return null;
+  const dias = Math.abs(t - Date.parse(`${servidor}T12:00:00Z`)) / 86_400_000;
+  return dias <= 1 ? f : null;
+}
+
+/**
+ * El día local en una zona IANA (la de `profiles.timezone`), como `ahoraLocal`
+ * de ritual/handler.ts: Intl ya sabe de husos y de horario de verano. Una zona
+ * inválida devuelve null (y el turno cae a UTC). Cualquier zona real está a
+ * ±1 día de UTC, así que respeta la misma tolerancia que la fecha del móvil.
+ */
+export function fechaLocal(zona: string, ahora = new Date()): string | null {
+  try {
+    const partes = Object.fromEntries(
+      new Intl.DateTimeFormat('en-CA', { timeZone: zona, year: 'numeric', month: '2-digit', day: '2-digit' })
+        .formatToParts(ahora)
+        .map((p) => [p.type, p.value]),
+    );
+    const f = `${partes.year}-${partes.month}-${partes.day}`;
+    return fechaAceptable(f, ahora);
+  } catch {
+    return null;
+  }
+}
+
+/** El reloj del turno. Solo existe para que los tests puedan fijar la hora. */
+export const reloj = { ahora: (): Date => new Date() };
 
 // ── Las manos del modelo ─────────────────────────────────────────────
 export const MAX_HERRAMIENTAS_POR_TURNO = 30;

@@ -4,6 +4,7 @@
 import { useEffect, useRef, type ReactNode } from 'react';
 import { Animated, StyleSheet, Text, View } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
+import { ink } from '@/design/tokens';
 import { colors, fonts } from '@/lib/theme';
 import { useMovimientoReducido } from './motion';
 
@@ -28,7 +29,7 @@ export function ProgressRing({
   size = 84,
   stroke = 5,
   color = colors.accent,
-  track = colors.track,
+  track = ink.ink4,
   label,
   sublabel,
   children,

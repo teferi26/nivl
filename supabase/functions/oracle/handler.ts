@@ -12,6 +12,7 @@ import { healthConsent, healthRevision, healthScopedClient, HEALTH_REQUIRED } fr
 import { adminClient, userClient, type Db } from '../_shared/db.ts';
 import { AI_SAFETY_RULES } from '../_shared/ai-safety.ts';
 import { costMicroUsd, type Usage } from '../_shared/anthropic.ts';
+import { sinGuionesProfundo } from '../_shared/singuiones.ts';
 
 const MODEL = 'claude-haiku-4-5';
 const MONTHLY_CAP = 100; // consultas premium por usuario y mes (control de coste)
@@ -252,7 +253,8 @@ async function consultar(req: Request, userId: string, healthDb: Db): Promise<Re
   if (!text) return json(502, { error: 'Respuesta vacía del oráculo.' });
   let result: unknown;
   try {
-    result = JSON.parse(text);
+    // Orden del dueño: sin «—» ni «–» en ningún texto del oráculo.
+    result = sinGuionesProfundo(JSON.parse(text));
   } catch {
     return json(502, { error: 'El oráculo no responde. Reintenta en un momento.' });
   }

@@ -16,6 +16,8 @@
 // ida y a la vuelta, así que las 21 herramientas, el estudio, la doctrina y la
 // memoria funcionan igual con cualquier proveedor.
 
+import { FiltroGuiones, sanearPeticion } from './singuiones.ts';
+import { sanearTurno } from './anthropic.ts';
 import { estimarFichas, LlamadaFallida, PLAZO_LLAMADA_MS, type ApiMessage, type ContentBlock, type Turn, type Usage } from './anthropic.ts';
 
 export interface OpcionesCompat {
@@ -25,6 +27,8 @@ export interface OpcionesCompat {
   system: Array<{ type: 'text'; text: string }>;
   messages: ApiMessage[];
   tools?: unknown[];
+  /** 'none': responde en texto sin quitar las herramientas (ver CallOptions.toolChoice). */
+  toolChoice?: 'auto' | 'none';
   maxTokens?: number;
   onText?: (delta: string) => void;
   /** Corta la llamada (plazo del turno). Sin él, PLAZO_LLAMADA_MS. */
@@ -131,12 +135,14 @@ function aFunciones(tools: unknown[] | undefined) {
  * herramientas, la contabilidad y la persistencia no se enteran de con quién
  * están hablando.
  */
-export async function callOpenAICompat(opts: OpcionesCompat): Promise<Turn> {
+async function callOpenAICompatCrudo(opts: OpcionesCompat): Promise<Turn> {
   const cuerpo = JSON.stringify({
     model: opts.model,
     max_tokens: opts.maxTokens ?? 8000,
     messages: aFormatoChat(opts.system, opts.messages),
-    ...(aFunciones(opts.tools) ? { tools: aFunciones(opts.tools) } : {}),
+    ...(aFunciones(opts.tools)
+      ? { tools: aFunciones(opts.tools), ...(opts.toolChoice ? { tool_choice: opts.toolChoice } : {}) }
+      : {}),
     stream: true,
     // Pide el desglose de uso en el último fragmento; sin esto no hay forma
     // de saber lo que costó el turno y la contabilidad se queda a ciegas.
@@ -198,14 +204,7 @@ export async function callOpenAICompat(opts: OpcionesCompat): Promise<Turn> {
 
       if (d.model) modelo = d.model;
       if (d.usage) {
-        usage = {
-          input_tokens: d.usage.prompt_tokens ?? 0,
-          output_tokens: d.usage.completion_tokens ?? 0,
-          // Casi todos los compatibles informan del acierto de caché aquí.
-          cache_read_input_tokens:
-            d.usage.prompt_tokens_details?.cached_tokens ?? d.usage.prompt_cache_hit_tokens ?? 0,
-          cache_creation_input_tokens: 0,
-        };
+        usage = usoCompatible(d.usage);
       }
 
       const delta = d.choices?.[0]?.delta;
@@ -263,4 +262,40 @@ export async function callOpenAICompat(opts: OpcionesCompat): Promise<Turn> {
     usage,
     model: modelo,
   };
+}
+
+/**
+ * Uso de una API compatible con OpenAI en el formato de Anthropic.
+ * prompt_tokens YA incluye los tokens leídos de caché: se restan para no
+ * cobrarlos dos veces (a precio completo y otra vez a 0,1×), lo que inflaba el
+ * gasto apuntado de DeepSeek y hacía saltar antes el candado de los Pro.
+ */
+// deno-lint-ignore no-explicit-any
+export function usoCompatible(u: any): Usage {
+  const prompt = Math.max(0, Number(u?.prompt_tokens) || 0);
+  const cacheados = Math.max(
+    0,
+    Math.min(prompt, Number(u?.prompt_tokens_details?.cached_tokens ?? u?.prompt_cache_hit_tokens) || 0),
+  );
+  return {
+    input_tokens: prompt - cacheados,
+    output_tokens: Math.max(0, Number(u?.completion_tokens) || 0),
+    cache_read_input_tokens: cacheados,
+    cache_creation_input_tokens: 0,
+  };
+}
+
+/** callOpenAICompatCrudo con el saneado de guiones (ver sanearTurno en anthropic.ts). */
+export async function callOpenAICompat(opts: OpcionesCompat): Promise<Turn> {
+  const filtro = new FiltroGuiones();
+  const onText = opts.onText
+    ? (d: string) => {
+      const s = filtro.push(d);
+      if (s) opts.onText!(s);
+    }
+    : undefined;
+  const turn = await callOpenAICompatCrudo(sanearPeticion({ ...opts, onText }));
+  const resto = filtro.fin();
+  if (resto && opts.onText) opts.onText(resto);
+  return sanearTurno(turn);
 }

@@ -9,6 +9,7 @@
 // de la tabla de game.ts (10/25/50/100/250). Así no puede inflar el nivel.
 
 import type { Db } from './db.ts';
+import { leerDiaYAnterior } from './comprobacion.ts';
 
 const STATS = ['FUE', 'VIT', 'INT', 'AGI', 'PER'];
 
@@ -468,15 +469,25 @@ export const TOOL_DEFS = [
 
   tool(
     'consultar_historial',
-    'Consulta datos que no vienen en el estado inicial. Úsala cuando necesites comprobar algo concreto antes de afirmarlo: si de verdad falló una misión, cuánto levantó hace un mes, qué pesaba en enero, cuánto se gastó en algo. No la uses para lo que ya tienes delante.',
+    'Consulta datos que no vienen en el estado inicial. Úsala cuando necesites comprobar algo concreto antes de afirmarlo: si de verdad falló una misión, cuánto levantó hace un mes, qué pesaba en enero, cuánto se gastó en algo. Úsala para comprobar lo que el gladiador dice haber hecho. Devuelve lo más reciente primero. fotos = sus fotos de progreso, solo fecha, pose y peso de ese día (nunca ves la imagen). liga = su puesto en cada liga privada ahora (ignora las fechas; nunca datos de otros miembros). tareas = tareas de campaña que completó en el rango.',
     {
       que: enumOf(
-        ['completadas', 'eventos', 'peso', 'gym', 'cardio', 'nutricion', 'comidas', 'diario', 'reglas_rotas', 'hechos', 'movimientos'],
+        ['completadas', 'eventos', 'peso', 'gym', 'cardio', 'nutricion', 'comidas', 'diario', 'reglas_rotas', 'hechos', 'movimientos', 'fotos', 'liga', 'tareas'],
         'Qué serie quieres',
       ),
       desde: str('YYYY-MM-DD'),
       hasta: str('YYYY-MM-DD'),
       filtro: opt('Texto de filtro, p. ej. nombre de ejercicio'),
+    },
+  ),
+
+  // Solo lectura. La comprobación de «te he subido el gym»: antes de afirmar O
+  // NEGAR que algo se registró, se mira aquí (L1, ver comprobacion.ts).
+  tool(
+    'consultar_dia',
+    'Lo registrado en una fecha y en la anterior: sesiones de gimnasio con sus series (kg×reps, también peso corporal), cardio, peso, parte de comidas, si hay diario y las misiones completadas. Solo lee. Llámala SIEMPRE que diga que ha hecho o registrado algo, antes de contestarle, y cita lo que veas (ejercicio, kg×reps, fecha). Si no aparece, dile qué fechas has mirado y pregúntale dónde lo registró.',
+    {
+      fecha: opt('YYYY-MM-DD; vacía = hoy'),
     },
   ),
 ];
@@ -660,6 +671,119 @@ async function propagarActo(
     /* ídem */
   }
   return { texto: marcadas.length ? ` Marcado solo: ${marcadas.join(', ')}.` : '', enlazadas, pagadoMisiones };
+}
+
+// ── L5: fotos, liga y tareas en consultar_historial ─────────────────
+//
+// Solo lectura, con el cliente del USUARIO (RLS y auth.uid() en las RPC), y
+// nada de terceros: de las fotos solo fecha, pose y peso (nunca id, ruta ni
+// URL); de la liga solo tu puesto y agregados (la RPC ya no da uuid de nadie y
+// aquí se quita también el de la liga); de las tareas, las tuyas.
+
+const FECHA_ISO = /^\d{4}-\d{2}-\d{2}$/;
+const fechaOpcional = (v: unknown): string | null => {
+  const s = typeof v === 'string' ? v.trim() : '';
+  return FECHA_ISO.test(s) && !Number.isNaN(Date.parse(`${s}T00:00:00Z`)) ? s : null;
+};
+
+/** Un texto de usuario o de terceros en una línea, sin etiquetas de datos ni controles, acotado. */
+function datoEnLinea(v: unknown, tope: number): string {
+  return String(v ?? '')
+    .replace(/<\/?\s*datos_del_gladiador\s*>/gi, '')
+    // Un correo escrito en un nombre (de liga, de campaña) no le sirve al coach.
+    .replace(/[^\s@<>]+@[^\s@<>]+\.[a-z]{2,}/gi, '[correo]')
+    // deno-lint-ignore no-control-regex
+    .replace(/[\u0000-\u001f\u007f]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, tope);
+}
+
+/** Por qué una RPC de fotos dijo 42501, en palabras para el modelo. */
+function motivoSinAcceso(mensaje: string): string {
+  if (/sin_consentimiento_salud/.test(mensaje)) return 'sin acceso: no tiene activo el permiso de salud.';
+  if (/sin_confirmacion_adulto/.test(mensaje)) return 'sin acceso: no ha confirmado ser mayor de 18 años; no le propongas fotos corporales.';
+  if (/borrado_cuenta_pendiente/.test(mensaje)) return 'sin acceso: la cuenta tiene un borrado pendiente.';
+  return 'sin acceso: las fotos de progreso no están disponibles para esta cuenta.';
+}
+
+async function consultarFotos(sb: Db, desde: unknown, hasta: unknown): Promise<string> {
+  const d = fechaOpcional(desde);
+  const h = fechaOpcional(hasta);
+  const { data, error } = await sb.rpc('my_progress_photos_meta', { p_from: d });
+  if (error) {
+    const e = error as { code?: string; message?: string };
+    if (e.code === '42501' || /sin_consentimiento_salud|sin_confirmacion_adulto|borrado_cuenta_pendiente|No autenticado/.test(e.message ?? '')) {
+      return motivoSinAcceso(e.message ?? '');
+    }
+    if (e.code === 'PGRST202' || e.code === '42883') return 'Las fotos de progreso aún no están disponibles.';
+    throw error;
+  }
+  const filas = (Array.isArray(data) ? data : []) as Record<string, unknown>[];
+  // Lista blanca: fecha, pose y peso del día. El id (uuid) no sale nunca.
+  const fotos = filas
+    .map((f) => ({
+      fecha: fechaOpcional(f.fecha),
+      pose: ['frente', 'lado', 'espalda'].includes(String(f.pose)) ? String(f.pose) : null,
+      peso_kg: Number.isFinite(Number(f.peso_kg)) && f.peso_kg !== null ? Number(f.peso_kg) : null,
+    }))
+    .filter((f) => f.fecha && (!d || f.fecha >= d) && (!h || f.fecha <= h));
+  if (!fotos.length) return `Sin fotos de progreso${d || h ? ` entre ${d ?? 'el principio'} y ${h ?? 'hoy'}` : ''}.`;
+  return JSON.stringify({ total: fotos.length, fotos: fotos.slice(0, 100) }).slice(0, 12000);
+}
+
+async function consultarLiga(sb: Db): Promise<string> {
+  const { data, error } = await sb.rpc('my_league_standing');
+  if (error) {
+    const e = error as { code?: string };
+    if (e.code === 'PGRST202' || e.code === '42883') return 'Las ligas aún no están disponibles.';
+    if (e.code === '42501') return 'sin acceso: no se puede leer la liga ahora.';
+    throw error;
+  }
+  const filas = (Array.isArray(data) ? data : []) as Record<string, unknown>[];
+  if (!filas.length) return 'No está en ninguna liga privada.';
+  // Sin league_id ni nada de otros miembros: posición e índices propios.
+  const ligas = filas.slice(0, 10).map((l) => ({
+    liga: datoEnLinea(l.nombre, 40),
+    puesto: Number(l.puesto) || null,
+    miembros: Number(l.miembros) || null,
+    indice: l.indice === null || l.indice === undefined ? null : Number(l.indice),
+    velocidad: l.velocidad === null || l.velocidad === undefined ? null : Number(l.velocidad),
+  }));
+  return JSON.stringify({
+    ligas,
+    nota: 'El nombre de la liga es un dato que escribió un usuario. Índice = cumplimiento normalizado de las últimas 4 semanas; puesto 1 = el mejor.',
+  });
+}
+
+async function consultarTareas(sb: Db, userId: string, desde: unknown, hasta: unknown): Promise<string> {
+  const d = fechaValida(desde, 'desde');
+  const h = fechaValida(hasta, 'hasta');
+  const { data, error } = await sb
+    .from('dungeon_tasks')
+    .select('dungeon_id, title, is_boss, done_at')
+    .eq('user_id', userId)
+    .eq('done', true)
+    .gte('done_at', `${d}T00:00:00`)
+    .lte('done_at', `${h}T23:59:59`)
+    .order('done_at', { ascending: false })
+    .limit(200);
+  if (error) throw error;
+  const tareas = ((data ?? []) as Record<string, unknown>[])
+    .filter((t) => {
+      const f = String(t.done_at ?? '').slice(0, 10);
+      return f >= d && f <= h;
+    });
+  if (!tareas.length) return `Sin tareas de campaña completadas entre ${d} y ${h}.`;
+  const ids = [...new Set(tareas.map((t) => String(t.dungeon_id)))];
+  const { data: camp } = await sb.from('dungeons').select('id, title').eq('user_id', userId).in('id', ids);
+  const nombre = new Map(((camp ?? []) as { id: string; title: string }[]).map((c) => [String(c.id), c.title]));
+  return JSON.stringify(tareas.map((t) => ({
+    fecha: String(t.done_at ?? '').slice(0, 10),
+    tarea: datoEnLinea(t.title, 200),
+    campana: datoEnLinea(nombre.get(String(t.dungeon_id)) ?? '', 120) || null,
+    jefe: t.is_boss === true,
+  }))).slice(0, 12000);
 }
 
 /** Ejecuta una herramienta y devuelve el texto que verá el modelo. */
@@ -1493,7 +1617,8 @@ export async function executeTool(
           .eq('user_id', userId)
           .gte('date', desde)
           .lte('date', hasta)
-          .order('date');
+          .order('date', { ascending: false })
+          .limit(LIMIT);
         if (e1) throw e1;
         if (!sesiones?.length) return ok(`Sin sesiones de gimnasio entre ${desde} y ${hasta}.`);
 
@@ -1516,15 +1641,25 @@ export async function executeTool(
             reps: l.reps,
             rpe: l.rpe,
           }))
-          .sort((a, b) => String(a.fecha).localeCompare(String(b.fecha)) || a.serie - b.serie);
+          // Lo más reciente primero: el recorte de abajo corta por el final, y
+          // antes se perdía justo lo de hoy, que es lo que se viene a comprobar.
+          .sort((a, b) => String(b.fecha).localeCompare(String(a.fecha)) || a.serie - b.serie);
 
         const notas = (sesiones as { date: string; notes: string | null }[])
+          .slice()
+          .sort((a, b) => b.date.localeCompare(a.date))
           .filter((x) => x.notes)
           .map((x) => `${x.date}: ${x.notes}`);
         return ok(
           JSON.stringify({ series: filas, notas }).slice(0, 12000),
         );
       }
+
+      // L5: módulos nuevos, solo lectura y sin datos de terceros (ver
+      // consultarFotos / consultarLiga / consultarTareas más abajo).
+      if (input.que === 'fotos') return ok(await consultarFotos(sb, desde, hasta));
+      if (input.que === 'liga') return ok(await consultarLiga(sb));
+      if (input.que === 'tareas') return ok(await consultarTareas(sb, userId, desde, hasta));
 
       // El plan de comidas es semanal, no una serie temporal: filtrarlo por
       // fechas no tiene sentido y la tabla ni siquiera tiene columna de fecha.
@@ -1542,11 +1677,17 @@ export async function executeTool(
 
       const spec = table[input.que];
       if (!spec) throw new Error(`Serie desconocida: ${input.que}`);
-      let q = sb.from(spec.t).select(spec.cols).eq('user_id', userId).limit(LIMIT);
-      q = q.gte(spec.dateCol, desde).lte(spec.dateCol, spec.dateCol === 'created_at' ? `${hasta}T23:59:59` : hasta);
+      // Lo más reciente primero, en la consulta (para que el LIMIT se quede con
+      // lo último y no con lo más viejo) y en el texto (el recorte va por el final).
+      const q = sb.from(spec.t).select(spec.cols).eq('user_id', userId)
+        .gte(spec.dateCol, desde).lte(spec.dateCol, spec.dateCol === 'created_at' ? `${hasta}T23:59:59` : hasta)
+        .order(spec.dateCol, { ascending: false })
+        .limit(LIMIT);
       const { data, error } = await q;
       if (error) throw error;
-      let rows = data ?? [];
+      let rows = ((data ?? []) as unknown as Record<string, unknown>[])
+        .slice()
+        .sort((a, b) => String(b[spec.dateCol] ?? '').localeCompare(String(a[spec.dateCol] ?? '')));
       const needleRaw = val(filtro);
       if (needleRaw) {
         const needle = needleRaw.toLowerCase();
@@ -1554,6 +1695,11 @@ export async function executeTool(
       }
       if (!rows.length) return ok(`Sin datos de ${input.que} entre ${desde} y ${hasta}.`);
       return ok(JSON.stringify(rows).slice(0, 12000));
+    }
+
+    case 'consultar_dia': {
+      const fecha = val(input.fecha) ? fechaValida(input.fecha) : ctx.today;
+      return ok(await leerDiaYAnterior(sb, userId, fecha));
     }
 
     default:

@@ -105,7 +105,7 @@ export function posicionEntreAmigos(clasificados: readonly Clasificado[]): strin
 }
 
 export function formatoValor(valor: number | null, metrica: Metrica): string {
-  if (valor === null) return '—';
+  if (valor === null) return '-';
   if (metrica === 'xp') return `${valor.toLocaleString('es-ES')} XP`;
   if (metrica === 'cumplimiento') return `${valor} %`;
   return valor === 1 ? '1 día' : `${valor} días`;
@@ -233,9 +233,9 @@ export function codigoLegible(codigo: string): string {
 }
 
 /** La web de NIVL. ÚNICA definición: la invitación y la tarjeta salen de aquí. */
-export const URL_NIVL = 'https://nivl-web.vercel.app';
+export const URL_NIVL = 'https://nivl.app';
 
-/** "nivl-web.vercel.app": la URL sin protocolo, como se escribe en una tarjeta. */
+/** "nivl.app": la URL sin protocolo, como se escribe en una tarjeta. */
 export const DOMINIO_NIVL = URL_NIVL.replace(/^https?:\/\//, '');
 
 export function mensajeInvitacion(codigo: string): string {

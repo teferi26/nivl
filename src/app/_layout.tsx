@@ -9,30 +9,53 @@ import { Platform, StyleSheet, View } from 'react-native';
 import { EdadMinimaGuard, EdadMinimaProvider, useEdadMinima } from '@/components/EdadMinima';
 import { HealthConsentGuard, HealthConsentProvider } from '@/components/ConsentimientoSalud';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { CelebracionProvider } from '@/components/celebracion/CelebracionProvider';
+import { TopeAncho } from '@/design/useSizeClass';
 import { AuthProvider, useAuth } from '@/lib/auth';
 import { identificarEnTienda } from '@/lib/pro';
 import { registrarDispositivo } from '@/lib/push';
+import { destinoPortal, SITIO_CREADORES } from '@/lib/sitio';
 import { colors } from '@/lib/theme';
 import { useNotificationRouting } from '@/lib/useNotificationRouting';
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
-// En la web la app es una columna de móvil centrada: a 1440 px las filas, los
-// chips y la barra de pestañas se estiraban de lado a lado. Solo en web; en
-// nativo no se añade ninguna vista. Los `Modal` de react-native-web son
-// portales a `body` y quedan fuera de esta columna (a ancho completo).
+// En la web, las pantallas de acceso (login, auth/*, c/*, onboarding) son una
+// columna de móvil centrada de 560: a 1440 px el formulario se estiraba de lado
+// a lado. Solo en web; en nativo no se añade ninguna vista. Los `Modal` de
+// react-native-web son portales a `body` y quedan fuera de esta columna.
+// El portal de creadores (SITIO_CREADORES) va entero en la columna, como antes.
+// El resto (pestañas y pantallas de la pila con sesión) no se acota: el raíl,
+// la barra lateral y `Screen` ya colocan el contenido según la clase de tamaño
+// (máx. 720 en expanded). El tope llega a `useSizeClass` por `TopeAncho` para
+// que lo de dentro se mida a 560. El árbol es siempre el mismo (solo cambian el
+// estilo y el valor): si cambiara al entrar o salir de una pantalla acotada, el
+// Stack se volvería a montar y se perdería el historial.
+//
+// La galería del kit (/kit, solo en desarrollo) tampoco se acota: tiene que
+// poder verse a 744, 1024 y 1440 para verificar el sistema.
+const SEGMENTOS_ACOTADOS = new Set(['login', 'auth', 'c', 'onboarding']);
+
 function ColumnaWeb({ children }: { children: ReactNode }) {
+  const seg = useSegments();
+  const acotada = SITIO_CREADORES || SEGMENTOS_ACOTADOS.has(seg[0] ?? '');
   if (Platform.OS !== 'web') return <>{children}</>;
   return (
     <View style={webStyles.fuera}>
-      <View style={webStyles.dentro}>{children}</View>
+      <View style={[webStyles.dentro, !acotada && webStyles.ancho]}>
+        <TopeAncho.Provider value={acotada ? ANCHO_COLUMNA_WEB : null}>{children}</TopeAncho.Provider>
+      </View>
     </View>
   );
 }
 
+const ANCHO_COLUMNA_WEB = 560;
+
 const webStyles = StyleSheet.create({
   fuera: { flex: 1, alignItems: 'center', backgroundColor: colors.bg },
-  dentro: { flex: 1, width: '100%', maxWidth: 560 },
+  dentro: { flex: 1, width: '100%', maxWidth: ANCHO_COLUMNA_WEB },
+  ancho: { maxWidth: '100%' },
+  vacio: { flex: 1, backgroundColor: colors.bg },
 });
 
 // Puerta de sesión única para TODA la app: cubre deep links a pantallas
@@ -72,7 +95,7 @@ function ProtectedStack() {
     // salta sola a '/'. Sin esto el guard iba a /login antes de guardarlo.
     // `auth` (nivl://auth/confirmar y /restablecer) llega sin sesión: es el
     // enlace del correo el que la abre.
-    const inPublicArea = inAuthArea || segments[0] === 'c' || segments[0] === 'auth';
+    const inPublicArea = inAuthArea || segments[0] === 'c' || segments[0] === 'auth' || (__DEV__ && segments[0] === 'kit');
     if (!session && !inPublicArea) {
       router.replace('/login');
     } else if (session && inAuthArea) {
@@ -89,6 +112,41 @@ function ProtectedStack() {
     <ColumnaWeb>
       <Stack
         screenLayout={({ children, route }) => <EdadMinimaGuard routeName={route.name}><HealthConsentGuard routeName={route.name}>{children}</HealthConsentGuard></EdadMinimaGuard>}
+        screenOptions={{
+          headerShown: false,
+          contentStyle: { backgroundColor: colors.bg },
+        }}
+      />
+    </ColumnaWeb>
+  );
+}
+
+// Portal de creadores (EXPO_PUBLIC_SITIO=creadores, `src/lib/sitio.ts`): solo
+// el login y /creador. Sin sesión todo va al login; con sesión, a /creador. Es
+// un árbol aparte a propósito: aquí no se monta nada de la app (avisos,
+// dispositivo, tienda, consentimiento de salud con su realtime, celebraciones,
+// confirmación de edad) y ninguna otra pantalla llega a montarse: el
+// `screenLayout` las deja en blanco mientras la puerta redirige.
+function PortalStack() {
+  const { session, loading } = useAuth();
+  const segments = useSegments();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (loading) return;
+    const destino = destinoPortal(segments[0], !!session);
+    if (destino) router.replace(destino);
+  }, [session, loading, segments, router]);
+
+  return (
+    <ColumnaWeb>
+      <Stack
+        // Se pinta solo la pantalla en la que la puerta deja quedarse: ni
+        // /creador sin sesión (llamaría a las RPC sin token) ni el resto de
+        // la app con ella.
+        screenLayout={({ children, route }) =>
+          !loading && destinoPortal(route.name, !!session) === null ? children : <View style={webStyles.vacio} />
+        }
         screenOptions={{
           headerShown: false,
           contentStyle: { backgroundColor: colors.bg },
@@ -115,6 +173,18 @@ export default function RootLayout() {
     if (typeof document !== 'undefined') document.documentElement.lang = 'es';
   }, []);
 
+  // El portal no se indexa. Con `web.output: single` no hay +html.tsx que
+  // valga: la meta se pone al arrancar. La garantía es la cabecera
+  // X-Robots-Tag del despliegue (R4); esto es para quien ejecute el JS.
+  useEffect(() => {
+    if (!SITIO_CREADORES || typeof document === 'undefined') return;
+    const meta = document.createElement('meta');
+    meta.name = 'robots';
+    meta.content = 'noindex, nofollow';
+    document.head.appendChild(meta);
+    document.title = 'NIVL · Creadores';
+  }, []);
+
   useEffect(() => {
     // También con error: si una fuente falla, ocultar el splash igualmente para
     // no quedar en pantalla negra permanente.
@@ -131,9 +201,16 @@ export default function RootLayout() {
     <ErrorBoundary>
       <AuthProvider>
         <StatusBar style="light" />
-        <EdadMinimaProvider>
-          <HealthConsentProvider><ProtectedStack /></HealthConsentProvider>
-        </EdadMinimaProvider>
+        {SITIO_CREADORES ? (
+          <PortalStack />
+        ) : (
+          // Por fuera de ColumnaWeb: en web la ceremonia y el toast cubren toda la ventana.
+          <CelebracionProvider>
+            <EdadMinimaProvider>
+              <HealthConsentProvider><ProtectedStack /></HealthConsentProvider>
+            </EdadMinimaProvider>
+          </CelebracionProvider>
+        )}
       </AuthProvider>
     </ErrorBoundary>
   );

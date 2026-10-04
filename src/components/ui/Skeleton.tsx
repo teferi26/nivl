@@ -1,17 +1,21 @@
 // NIVL · El hueco mientras carga.
 //
-// Un bloque de `panel` que respira entre 0,4 y 0,8 de opacidad. Sustituye al
+// Un bloque ink2 que respira hasta ink3 y vuelve (SISTEMA §6). Sustituye al
 // spinner suelto y, sobre todo, al estado vacío pintado antes de tiempo: una
 // pantalla que dice "Nada programado" medio segundo y luego enseña seis
-// misiones miente dos veces. Con "reducir movimiento" activado se queda quieto.
+// misiones miente dos veces. Con "reducir movimiento" se queda quieto en ink2,
+// también si el ajuste cambia con la pantalla abierta (useMovimientoReducido).
+// La respiración es una capa ink3 encima cuya opacidad va de 0 a 1 (driver
+// nativo: el color de fondo no se puede animar en el hilo de UI).
 //
 // Uso: <Skeleton height={86} /> para una tarjeta, <SkeletonRows rows={4} />
 // para una lista de filas. Siempre dentro de un contenedor con
 // accessibilityRole="progressbar" y una etiqueta: el bloque en sí es mudo.
 
 import { useEffect, useRef } from 'react';
-import { AccessibilityInfo, Animated, StyleSheet, View, type DimensionValue, type StyleProp, type ViewStyle } from 'react-native';
-import { colors } from '@/lib/theme';
+import { Animated, StyleSheet, View, type DimensionValue, type StyleProp, type ViewStyle } from 'react-native';
+import { ink, stroke } from '@/design/tokens';
+import { useMovimientoReducido } from './motion';
 
 interface SkeletonProps {
   height?: number;
@@ -22,41 +26,34 @@ interface SkeletonProps {
 }
 
 export function Skeleton({ height = 16, width = '100%', round, style }: SkeletonProps) {
-  const opacity = useRef(new Animated.Value(0.6)).current;
+  const reducido = useMovimientoReducido();
+  const aliento = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    let vivo = true;
-    let bucle: Animated.CompositeAnimation | null = null;
-    AccessibilityInfo.isReduceMotionEnabled()
-      .catch(() => false)
-      .then((quieto) => {
-        if (!vivo || quieto) return;
-        opacity.setValue(0.4);
-        bucle = Animated.loop(
-          Animated.sequence([
-            Animated.timing(opacity, { toValue: 0.8, duration: 700, useNativeDriver: true }),
-            Animated.timing(opacity, { toValue: 0.4, duration: 700, useNativeDriver: true }),
-          ]),
-        );
-        bucle.start();
-      });
-    return () => {
-      vivo = false;
-      bucle?.stop();
-    };
-  }, [opacity]);
+    if (reducido) {
+      aliento.setValue(0);
+      return;
+    }
+    aliento.setValue(0);
+    const bucle = Animated.loop(
+      Animated.sequence([
+        Animated.timing(aliento, { toValue: 1, duration: 700, useNativeDriver: true }),
+        Animated.timing(aliento, { toValue: 0, duration: 700, useNativeDriver: true }),
+      ]),
+    );
+    bucle.start();
+    return () => bucle.stop();
+  }, [reducido, aliento]);
 
+  const radio = round ? { borderRadius: height / 2 } : null;
   return (
-    <Animated.View
+    <View
       accessible={false}
       importantForAccessibility="no-hide-descendants"
-      style={[
-        styles.block,
-        { height, width: round ? height : width, opacity },
-        round && { borderRadius: height / 2 },
-        style,
-      ]}
-    />
+      style={[styles.block, { height, width: round ? height : width }, radio, style]}
+    >
+      <Animated.View pointerEvents="none" style={[styles.aliento, radio, { opacity: aliento }]} />
+    </View>
   );
 }
 
@@ -78,9 +75,10 @@ export function SkeletonRows({ rows = 3, style }: { rows?: number; style?: Style
 }
 
 const styles = StyleSheet.create({
-  block: { backgroundColor: colors.panel },
+  block: { backgroundColor: ink.ink2, overflow: 'hidden' },
+  aliento: { ...StyleSheet.absoluteFillObject, backgroundColor: ink.ink3 },
   row: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 13 },
-  sep: { borderTopWidth: 1, borderTopColor: colors.line },
+  sep: { borderTopWidth: stroke.hairline, borderTopColor: ink.ink3 },
   lines: { flex: 1, minWidth: 0 },
   second: { marginTop: 7 },
 });
