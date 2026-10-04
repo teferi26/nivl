@@ -3,7 +3,7 @@ import { HOY_DEMO, misionDemo, perfilDemo } from '@/components/arena/demoDatos';
 import type { DayCloseResult } from '@/lib/engine';
 import type { BoardEntry } from '@/lib/social';
 import type { Completion, Quest } from '@/lib/types';
-import { derivarHoy, saludo, type EntradaHoy } from '../derivarHoy';
+import { derivarHoy, saludo, TITULO_RIVAL_CERCANO, type EntradaHoy } from '../derivarHoy';
 
 const hecha = (q: Quest, xp = 30): Completion => ({
   id: `c-${q.id}`,
@@ -176,6 +176,11 @@ describe('derivarHoy', () => {
     expect(d.duelo?.yo).toEqual({ nombre: 'Tú', xp: 300, ratio: 0.75 });
     expect(d.duelo?.rival?.ratio).toBe(1);
     expect(d.rivalidad).toContain('Marta te saca 100 XP');
+  });
+
+  test('la sección se llama «Rival cercano», no «duelo»: no es el duelo de Amigos', () => {
+    expect(TITULO_RIVAL_CERCANO).toBe('Rival cercano');
+    expect(TITULO_RIVAL_CERCANO.toLowerCase()).not.toContain('duelo');
   });
 
   test('sin amigos visibles no hay duelo', () => {

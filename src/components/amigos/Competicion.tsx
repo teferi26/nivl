@@ -43,12 +43,14 @@ import { colors, fonts } from '@/lib/theme';
 import { mensajeSistema } from '@/lib/validation';
 import { Aviso } from './Aviso';
 import {
+  detalleResuelto,
   diasRestantes,
+  lineaDuelo,
   ordenarTablero,
-  quienVaDelante,
   repartirDuelos,
   TEXTO_RESULTADO,
   textoQuedan,
+  textoRitmo,
 } from './competicionVista';
 
 export interface Amigo {
@@ -173,7 +175,12 @@ export function Competicion({ amigos, recarga, retarA, onRetarA, onDisponible }:
   if (!disponible) return null;
 
   const nada =
-    vista.porResponder.length + vista.activos.length + vista.enviados.length + vista.resueltos.length === 0 &&
+    vista.porResponder.length +
+      vista.activos.length +
+      vista.enviados.length +
+      vista.cerrados.length +
+      vista.resueltos.length ===
+      0 &&
     ligas.length === 0 &&
     invitaciones.length === 0;
   const sinAmigos = amigos.length === 0;
@@ -223,7 +230,7 @@ export function Competicion({ amigos, recarga, retarA, onRetarA, onDisponible }:
             <DueloActivo key={d.id} d={d} hoy={hoy} />
           ))}
 
-          {vista.enviados.length > 0 || vista.resueltos.length > 0 ? (
+          {vista.enviados.length > 0 || vista.cerrados.length > 0 || vista.resueltos.length > 0 ? (
             <Card padded={false} style={styles.lista}>
               {vista.enviados.map((d, i) => (
                 <Row
@@ -235,6 +242,16 @@ export function Competicion({ amigos, recarga, retarA, onRetarA, onDisponible }:
                   detail="Reto enviado · falta su respuesta"
                 />
               ))}
+              {vista.cerrados.map((d, i) => (
+                <Row
+                  key={d.id}
+                  first={vista.enviados.length === 0 && i === 0}
+                  muted
+                  leading={<Ionicons name="hourglass-outline" size={18} color={ink.ink6} />}
+                  title={d.rival ?? ''}
+                  detail="Semana cerrada · resolviendo"
+                />
+              ))}
               {vista.resueltos.map((d, i) => {
                 // Revancha: solo si el rival se identifica sin duda entre tus
                 // amigos (el duelo trae su nombre, no su id).
@@ -243,10 +260,10 @@ export function Competicion({ amigos, recarga, retarA, onRetarA, onDisponible }:
                 return (
                   <Row
                     key={d.id}
-                    first={vista.enviados.length === 0 && i === 0}
+                    first={vista.enviados.length + vista.cerrados.length === 0 && i === 0}
                     leading={<Ionicons name="flag-outline" size={18} color={ink.ink6} />}
                     title={d.rival ?? ''}
-                    detail={`Semana pasada · ${d.mi_indice} frente a ${d.su_indice} · ${TEXTO_RESULTADO[d.resultado!]}`}
+                    detail={detalleResuelto(d, rival !== null)}
                     trailing={
                       rival ? (
                         <Button title="Revancha" size="sm" variant="secondary" onPress={() => onRetarA(rival)} />
@@ -375,10 +392,8 @@ function Rechazar({ etiqueta, onPress }: { etiqueta: string; onPress: () => void
 
 /** Un duelo en curso: quién va delante, con una barra por cada uno (0–100). */
 function DueloActivo({ d, hoy }: { d: Duelo; hoy: string }) {
-  const delante = quienVaDelante(d);
   const quedan = diasRestantes(d.week_start, hoy);
-  const linea =
-    delante === 'yo' ? 'Vas delante' : delante === 'rival' ? `${d.rival} va delante` : 'Vais empatados';
+  const linea = lineaDuelo(d);
   return (
     <Card
       style={styles.duelo}
@@ -728,7 +743,7 @@ function LigaSheet({
               detail={
                 f.sin_datos
                   ? 'Aún sin datos esta semana'
-                  : `${f.dias_activos} días activos · ritmo ×${Number(f.velocidad).toFixed(1).replace('.', ',')}`
+                  : `${f.dias_activos} días activos · ritmo ${textoRitmo(f.velocidad)}`
               }
               trailing={<Text style={styles.indice}>{f.sin_datos ? SIN_DATO : f.indice}</Text>}
               accessibilityLabel={`${f.puesto > 0 ? `Puesto ${f.puesto}` : 'Sin puesto'}. ${f.es_yo ? 'Tú' : f.alias}. ${
