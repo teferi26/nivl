@@ -282,7 +282,7 @@ export function EconomiaVista({
               compact
               icon="wallet-outline"
               title="El sistema no ve tu dinero"
-              body="Registra lo que pagas en efectivo con el botón de arriba. Los extractos del banco llegan pronto."
+              body="Registra lo que pagas en efectivo con el botón de arriba."
               action={{ label: 'Registrar movimiento', onPress: acciones.onNuevo }}
             />
           </TarjetaArena>

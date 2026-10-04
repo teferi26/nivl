@@ -7,7 +7,18 @@
 // «Escuchar» / «Parar» y «Denunciar respuesta». Sin animación por mensaje.
 
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useEffect } from 'react';
+import { AccessibilityInfo, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import Animated, {
+  cancelAnimation,
+  useAnimatedStyle,
+  useSharedValue,
+  withDelay,
+  withRepeat,
+  withSequence,
+  withTiming,
+} from 'react-native-reanimated';
+import { useMovimientoReducido } from '@/components/ui/motion';
 import { TextoSistema } from '@/components/TextoSistema';
 import { ink, space, stroke, type } from '@/design/tokens';
 import { CoachMark } from './CoachMark';
@@ -49,12 +60,7 @@ export function MensajeCoach({ texto, acciones, pensando, cita, voz, onDenunciar
         </View>
       ) : null}
       <View style={styles.losa}>
-        {pensando && !texto ? (
-          <View style={styles.pensandoFila}>
-            <ActivityIndicator size="small" color={ink.ink8} />
-            <Text style={styles.pensando}>El sistema piensa</Text>
-          </View>
-        ) : null}
+        {pensando && !texto ? <Pensando /> : null}
         {texto ? <TextoSistema texto={texto} /> : null}
         {cita ? <Text style={styles.cita}>{cita}</Text> : null}
         {acciones.length > 0 ? (
@@ -101,6 +107,58 @@ export function MensajeCoach({ texto, acciones, pensando, cita, voz, onDenunciar
   );
 }
 
+const PENSANDO = 'El sistema está pensando…';
+
+/**
+ * Lo que se ve desde que sale el mensaje hasta el primer texto del coach.
+ * Tres puntos que laten en sucesión; con «reducir movimiento», quietos. Se
+ * anuncia una vez al lector de pantalla (región viva educada en Android y
+ * anuncio explícito en iOS, que no tiene regiones vivas).
+ */
+function Pensando() {
+  useEffect(() => {
+    if (Platform.OS === 'ios') AccessibilityInfo.announceForAccessibility(PENSANDO);
+  }, []);
+  return (
+    <View
+      style={styles.pensandoFila}
+      accessible
+      accessibilityRole="progressbar"
+      accessibilityLabel={PENSANDO}
+      accessibilityLiveRegion="polite"
+    >
+      <View style={styles.puntos}>
+        <Punto indice={0} />
+        <Punto indice={1} />
+        <Punto indice={2} />
+      </View>
+      <Text style={styles.pensando} maxFontSizeMultiplier={1.35}>
+        {PENSANDO}
+      </Text>
+    </View>
+  );
+}
+
+function Punto({ indice }: { indice: number }) {
+  const reducido = useMovimientoReducido();
+  const o = useSharedValue(reducido ? 1 : 0.25);
+  useEffect(() => {
+    if (reducido) {
+      cancelAnimation(o);
+      o.value = 1;
+      return;
+    }
+    o.value = 0.25;
+    o.value = withDelay(
+      indice * 180,
+      withRepeat(withSequence(withTiming(1, { duration: 360 }), withTiming(0.25, { duration: 360 })), -1, false),
+    );
+    return () => cancelAnimation(o);
+  }, [reducido, indice, o]);
+  const estilo = useAnimatedStyle(() => ({ opacity: o.value }));
+  return <Animated.View style={[styles.punto, estilo]} />;
+}
+
 const styles = StyleSheet.create({
   fila: { marginBottom: space.s5 },
   // Dentro de un bloque seguido, las losas van más juntas.
@@ -124,7 +182,9 @@ const styles = StyleSheet.create({
     paddingLeft: space.s3 + 2,
     paddingRight: space.s4,
   },
-  pensandoFila: { flexDirection: 'row', alignItems: 'center', gap: space.s2 },
+  pensandoFila: { flexDirection: 'row', alignItems: 'center', gap: space.s2, minHeight: 24 },
+  puntos: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  punto: { width: 6, height: 6, borderRadius: 3, backgroundColor: ink.ink8 },
   pensando: { fontFamily: type.bodySm.family, fontSize: type.bodySm.size, lineHeight: type.bodySm.lineHeight, color: ink.ink8 },
   cita: {
     fontFamily: type.bodySm.family,

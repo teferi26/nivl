@@ -12,7 +12,7 @@
 //      una Barra de 4 segmentos y lo que falta.
 //   4. El aviso (contorno) o el error del servidor (trama compacta, alerta).
 //   5. LA INVERSIÓN: el botón principal en lg. Debajo, enlaces ghost de 44,
-//      los legales en micro y la versión (no en el portal).
+//      y los legales en micro (la versión, solo en Perfil).
 //
 // Modo portal (SITIO_CREADORES): solo entrar. Sin registro (el alta de
 // creador es manual) ni restablecer (el enlace del correo abre la app, no
@@ -22,7 +22,6 @@ import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View, type LayoutChangeEvent } from 'react-native';
 import { Arena, ASangre, Campo, Entrada, Laurel, TarjetaArena } from '@/components/arena';
 import { Button, Check, Screen } from '@/components/ui';
-import { Version } from '@/components/Version';
 import { vibrar } from '@/design/haptics';
 import { ink, space, stroke, type as tipo } from '@/design/tokens';
 import { LEGAL_URLS } from '@/lib/proplans';
@@ -318,8 +317,7 @@ export function LoginVista(p: LoginVistaProps) {
             </View>
           )}
 
-          {/* Qué código corre (binario y OTA). En el portal, web y sin OTA, no dice nada. */}
-          {portal ? null : <Version />}
+          {/* La versión no va en el acceso: solo en Perfil (Version.tsx). */}
         </View>
       </Entrada>
     </Screen>

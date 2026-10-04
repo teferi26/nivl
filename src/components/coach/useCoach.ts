@@ -130,6 +130,13 @@ export function useCoach(): { vista: CoachVistaProps; hojas: HojasCoach } {
   const [texto, setTexto] = useState('');
   const [cargando, setCargando] = useState(true);
   const [pensando, setPensando] = useState(false);
+  // El turno en marcha, en estado (el cerrojo `enviando` es una ref y no
+  // repinta): desde que sale el mensaje hasta que llega lo primero del coach
+  // (`esperando`) y hasta que se cierra el turno (`ocupado`). Sin esto, entre
+  // enviar y el primer token (el servidor arma el contexto y el modelo puede
+  // no emitir `thinking`, p. ej. por DeepSeek) no se veía nada en ~20 s.
+  const [esperando, setEsperando] = useState(false);
+  const [ocupado, setOcupado] = useState(false);
   const [enCurso, setEnCurso] = useState('');
   const [acciones, setAcciones] = useState<CoachAction[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -375,6 +382,8 @@ export function useCoach(): { vista: CoachVistaProps; hojas: HojasCoach } {
     setTexto('');
     setAcciones([]);
     setEnCurso('');
+    setEsperando(true);
+    setOcupado(true);
     const fotos = adjuntas;
     setAdjuntas([]);
     const localId = `local-${Date.now()}`;
@@ -411,16 +420,20 @@ export function useCoach(): { vista: CoachVistaProps; hojas: HojasCoach } {
               break;
             case 'text':
               setPensando(false);
+              setEsperando(false);
               acumulado += e.delta;
               setEnCurso(acumulado);
               alFondo();
               break;
             case 'tool':
+              // Una herramienta no es la respuesta: «pensando» sigue hasta el
+              // primer texto.
               ejecutadas.push(e.action);
               setAcciones([...ejecutadas]);
               alFondo();
               break;
             case 'done':
+              setEsperando(false);
               setBurbujas((b) => [
                 ...b,
                 {
@@ -436,6 +449,7 @@ export function useCoach(): { vista: CoachVistaProps; hojas: HojasCoach } {
               alFondo();
               break;
             case 'error':
+              setEsperando(false);
               setError(mensajeSistema(e));
               break;
           }
@@ -471,6 +485,8 @@ export function useCoach(): { vista: CoachVistaProps; hojas: HojasCoach } {
       setEnCurso('');
     } finally {
       setPensando(false);
+      setEsperando(false);
+      setOcupado(false);
       enviando.current = false;
       // Tras un turno profundo (o su negativa), de vuelta a estándar y con los
       // turnos que quedan releídos del servidor.
@@ -506,7 +522,7 @@ export function useCoach(): { vista: CoachVistaProps; hojas: HojasCoach } {
     (energiaAgotada(estado)
       ? `La energía del coach de este mes se ha agotado. ${recarga ? `Se recarga el ${recarga}.` : 'Se recarga el día 1.'}`
       : null);
-  const puedeEnviar = (!!texto.trim() || adjuntas.length > 0) && !enviando.current;
+  const puedeEnviar = (!!texto.trim() || adjuntas.length > 0) && !ocupado && !enviando.current;
   // El micrófono está siempre junto a «enviar» si se puede dictar (lo dictado
   // se suma al texto); grabando, enviar se aparta en la vista.
   const grabandoUi = dictado.grabando || dictado.preparando;
@@ -563,10 +579,10 @@ export function useCoach(): { vista: CoachVistaProps; hojas: HojasCoach } {
     profundo: conPotencia && modoVisible === 'profundo',
     burbujas: vistaBurbujas,
     enCurso:
-      enCurso || pensando || acciones.length
+      enCurso || pensando || esperando || acciones.length
         ? {
             texto: enCurso,
-            pensando,
+            pensando: pensando || esperando,
             acciones: acciones.filter((a) => !esConsulta(a.name)).map((a) => ({ texto: describeAction(a.name), ok: a.ok })),
             cita: citaDe(acciones.filter((a) => a.ok).map((a) => a.name)),
           }
@@ -594,7 +610,7 @@ export function useCoach(): { vista: CoachVistaProps; hojas: HojasCoach } {
       onTeclear: alTeclear,
       puedeEnviar,
       onEnviar: () => void enviar(texto),
-      ocupado: enviando.current,
+      ocupado: ocupado || enviando.current,
       conDictado,
       grabando: grabandoUi,
       dictado,

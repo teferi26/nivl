@@ -223,7 +223,9 @@ export function HoyVista({
             linea={h?.linea}
             avatar={h?.avatar ?? { path: null, nombre: '' }}
             cifraExtra={{ valor: h?.misiones ?? '', rotulo: 'Misiones' }}
-            desde={desde}
+            // La barra de otro nivel no dice nada de este: si el nivel ha
+            // cambiado desde lo último visto, se llena desde vacío.
+            desde={desde && h && desde.nivel !== h.nivel ? { ...desde, xpRatio: 0 } : desde}
             accion={
               // En compact la Agenda no está en la barra inferior: se llega
               // desde aquí. En el raíl y la barra lateral es un destino propio.

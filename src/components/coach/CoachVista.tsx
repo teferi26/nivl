@@ -562,10 +562,11 @@ export function CoachVista(p: CoachVistaProps) {
                   disabled={!c.puedeEnviar}
                   style={({ pressed }) => [styles.enviar, !c.puedeEnviar && styles.enviarOff, pressed && styles.pulsado]}
                   accessibilityRole="button"
-                  accessibilityLabel="Enviar mensaje"
-                  accessibilityState={{ disabled: !c.puedeEnviar }}
+                  accessibilityLabel={c.ocupado ? 'Enviando: el sistema está pensando' : 'Enviar mensaje'}
+                  accessibilityState={{ disabled: !c.puedeEnviar, busy: c.ocupado }}
                 >
-                  <Ionicons name="arrow-up" size={22} color={ink.ink0} />
+                  {/* Con el turno en marcha, apagado y con los puntos: no se manda otro. */}
+                  <Ionicons name={c.ocupado ? 'ellipsis-horizontal' : 'arrow-up'} size={22} color={ink.ink0} />
                 </Pressable>
               )}
             </View>

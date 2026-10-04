@@ -78,12 +78,16 @@ const logroDeCodigo = (codigo: string): LogroInfo => {
 
 // Lo último que se supo de si la cuenta tiene coach. Vive fuera del componente
 // para que volver a la pestaña no repinte Hoy "sin saberlo" medio segundo.
-let ultimoPro: boolean | null = null;
+// Va con el uid: tras cerrar sesión y entrar con otra cuenta no vale.
+let ultimoPro: { uid: string; valor: boolean } | null = null;
 
 // Lo último que enseñó el Hero (nivel, barra y racha). Vive fuera del
 // componente: al volver a Hoy los números suben desde ahí y no desde cero; la
-// primera carga de la sesión sí sube desde cero.
-let ultimoHero: DesdeHero | null = null;
+// primera carga de la sesión sí sube desde cero. Va con el uid: sin él, tras
+// cerrar sesión y entrar con otra cuenta (la revisión de Apple), el Hero de la
+// nueva salía contando desde el nivel y la barra de la anterior («NIVEL 2» y
+// la barra a medias con «0 / 100 XP · SIGUIENTE · 2»).
+let ultimoHero: (DesdeHero & { uid: string }) | null = null;
 const DESDE_CERO: DesdeHero = { nivel: 0, xpRatio: 0, racha: 0 };
 
 /** Rango más alto de una lista de códigos `rango_X` (null si no hay ninguno). */
@@ -124,7 +128,9 @@ export function useHoy() {
   // no un "Nada programado" que medio segundo después es mentira.
   const [loaded, setLoaded] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const [esPro, setEsPro] = useState<boolean | null>(ultimoPro);
+  const [esPro, setEsPro] = useState<boolean | null>(() =>
+    ultimoPro && ultimoPro.uid === userId ? ultimoPro.valor : null,
+  );
   const [board, setBoard] = useState<BoardEntry[] | null>(null);
   const [sheetQuest, setSheetQuest] = useState<Quest | null>(null);
   const [diaPerfecto, setDiaPerfecto] = useState(false);
@@ -140,7 +146,11 @@ export function useHoy() {
   // empezado): también cuestan al cierre y entran en lo que hay en juego.
   const [reglasSinMarcar, setReglasSinMarcar] = useState(0);
   // De dónde suben el nivel, la barra y la racha del Hero al montarse.
-  const [desdeHero] = useState<DesdeHero>(() => ultimoHero ?? DESDE_CERO);
+  const [desdeHero] = useState<DesdeHero>(() =>
+    ultimoHero && ultimoHero.uid === userId
+      ? { nivel: ultimoHero.nivel, xpRatio: ultimoHero.xpRatio, racha: ultimoHero.racha }
+      : DESDE_CERO,
+  );
   // El cierre que ya ha vibrado: processPendingDays puede devolver el mismo
   // resultado a dos cargas seguidas (cierre en vuelo compartido).
   const cierreVibrado = useRef<DayCloseResult | null>(null);
@@ -192,8 +202,9 @@ export function useHoy() {
     // amigos (la línea de rivalidad).
     fetchAiStatus()
       .then((s) => {
-        ultimoPro = isPro(s);
-        setEsPro(ultimoPro);
+        const pro = isPro(s);
+        if (userId) ultimoPro = { uid: userId, valor: pro };
+        setEsPro(pro);
       })
       .catch(() => {});
     fetchBoard(DIAS_VENTANA.semana)
@@ -665,13 +676,14 @@ export function useHoy() {
 
   const heroVisto = datos.hero;
   useEffect(() => {
-    if (!heroVisto) return;
+    if (!heroVisto || !userId) return;
     ultimoHero = {
+      uid: userId,
       nivel: heroVisto.nivel,
       xpRatio: heroVisto.xpSiguiente > 0 ? heroVisto.xpEnNivel / heroVisto.xpSiguiente : 1,
       racha: heroVisto.racha,
     };
-  }, [heroVisto]);
+  }, [heroVisto, userId]);
 
   const vista: HoyVistaProps = {
     estado: loaded ? 'listo' : 'cargando',
