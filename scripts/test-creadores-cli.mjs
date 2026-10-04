@@ -29,7 +29,7 @@ import {
 
 // Ficha retirada por borrado (0056, condiciones §7): no se liquida ni se apunta pago.
 assert.equal(fichaRetirada({ active: false, vinculado: false, alias: ALIAS_RETIRADO }), true);
-assert.equal(fichaRetirada({ active: false, vinculado: false, alias: 'Alfa' }), false); // desactivado a mano: sí se liquida
+assert.equal(fichaRetirada({ active: false, vinculado: false, alias: 'Alfa' }), true); // inactiva y sin cuenta: bloqueada (el alias no cuenta; --forzar si no fue un borrado)
 assert.equal(fichaRetirada({ active: false, vinculado: true, alias: ALIAS_RETIRADO }), false);
 assert.equal(fichaRetirada({ active: true, vinculado: false, alias: ALIAS_RETIRADO }), false);
 

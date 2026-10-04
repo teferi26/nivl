@@ -596,8 +596,10 @@ ayuda (es una escritura en la base, no una consulta).
   siempre, sin cuenta, y el alias pasa a «Creador retirado». Su código deja de
   aceptarse y no genera comisiones nuevas.
 - **Su saldo pendiente se pierde** (disponible y en retención). Lo decidiste
-  así el 04/10/2026 y lo dicen las condiciones (§7). `liquidar` y `pago`
-  rechazan una ficha retirada.
+  así el 04/10/2026 y lo dicen las condiciones (§7). `liquidar` rechaza
+  cualquier ficha inactiva y sin cuenta (la regla no depende del alias). Si es
+  un creador que desactivaste tú y nunca vinculó cuenta (no un borrado), añade
+  `--forzar`; con alias «Creador retirado» no vale ni así. `pago` avisa.
 - Comisiones y pagos se conservan **seis años** por obligación contable y
   fiscal, sin derecho a cobro.
 - **Antes de que borre**, si te escribe un creador con saldo, avísale de que lo
