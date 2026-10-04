@@ -108,7 +108,7 @@ describe('formas', () => {
     expect(decidirOferta('firma', libre(sinPrueba))).toMatchObject({ mostrar: true, forma: 'linea', prueba: false });
     expect(decidirOferta('primer_dia', libre(sinPrueba))).toMatchObject({ mostrar: true, forma: 'linea', prueba: false });
     expect(decidirOferta('firma', libre({ tiendaAbierta: false }))).toMatchObject({ mostrar: true, forma: 'hoja', prueba: true });
-    expect(decidirOferta('primer_dia', libre({ tiendaAbierta: false }))).toMatchObject({ mostrar: true, forma: 'hoja', prueba: true });
+    expect(decidirOferta('primer_dia', libre({ tiendaAbierta: false }))).toMatchObject({ mostrar: true, forma: 'linea', prueba: true });
     // Con prueba y tienda cerrada, la hoja respeta igual los topes.
     const historial = [hoja('firma', AHORA - HORA, 'cerrada')];
     expect(decidirOferta('primer_dia', libre({ tiendaAbierta: false, historial })).mostrar).toBe(false);
@@ -139,7 +139,7 @@ describe('prueba', () => {
 describe('topes', () => {
   test('≤1 hoja por día natural', () => {
     const historial = [hoja('firma', AHORA - 3 * HORA, 'compra')];
-    expect(decidirOferta('primer_dia', libre({ historial }))).toMatchObject({ mostrar: false, razon: 'tope_dia' });
+    expect(decidirOferta('firma', libre({ historial }))).toMatchObject({ mostrar: true, forma: 'linea', razon: 'tope_dia' });
   });
 
   test('el día natural es local: una hoja a las 23:30 de ayer no gasta el tope de hoy', () => {
@@ -179,15 +179,15 @@ describe('topes', () => {
 });
 
 describe('primer día', () => {
-  test('hoja una sola vez en la vida', () => {
-    expect(decidirOferta('primer_dia', libre())).toMatchObject({ mostrar: true, forma: 'hoja' });
-    const historial = [hoja('primer_dia', AHORA - 10 * DIA, 'cerrada')];
-    expect(decidirOferta('primer_dia', libre({ historial }))).toMatchObject({ mostrar: false, razon: 'primer_dia_ya_visto' });
+  test('línea (nunca hoja: decisión del coordinador) y una sola vez en la vida', () => {
+    expect(decidirOferta('primer_dia', libre())).toMatchObject({ mostrar: true, forma: 'linea' });
+    const vista = [{ momento: 'primer_dia' as const, at: AHORA - 10 * DIA, respuesta: 'vista' as const, forma: 'linea' as const }];
+    expect(decidirOferta('primer_dia', libre({ historial: vista }))).toMatchObject({ mostrar: false, razon: 'primer_dia_ya_visto' });
   });
 
-  test('tras la firma de ayer (hoja), el primer día de hoy sí sale', () => {
-    const historial = [hoja('firma', AHORA - DIA, 'vista')];
-    expect(decidirOferta('primer_dia', libre({ historial }))).toMatchObject({ mostrar: true, forma: 'hoja' });
+  test('tras la firma de ayer (hoja), el primer día de hoy sí sale como línea; tras un «no» reciente, no', () => {
+    expect(decidirOferta('primer_dia', libre({ historial: [hoja('firma', AHORA - DIA, 'vista')] }))).toMatchObject({ mostrar: true, forma: 'linea' });
+    expect(decidirOferta('primer_dia', libre({ historial: [hoja('firma', AHORA - HORA, 'cerrada')] }))).toMatchObject({ mostrar: false, razon: 'espera_72h' });
   });
 });
 
