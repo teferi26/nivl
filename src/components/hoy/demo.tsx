@@ -103,6 +103,7 @@ const MARCADOR: BoardEntry[] = [
 
 const CIERRE_PENA: DayCloseResult = {
   penaltyXp: 204,
+  penaltyReglas: 0,
   missedTitles: ['Leer 20 páginas', 'Escribir el diario'],
   streakLost: true,
   levelsLost: 0,

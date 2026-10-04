@@ -35,6 +35,7 @@ const entrada = (p: Partial<EntradaHoy> = {}): EntradaHoy => ({
 
 const cierre = (p: Partial<DayCloseResult> = {}): DayCloseResult => ({
   penaltyXp: 0,
+  penaltyReglas: 0,
   missedTitles: [],
   streakLost: false,
   levelsLost: 0,
