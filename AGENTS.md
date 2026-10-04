@@ -96,7 +96,7 @@ Agentes (`.claude/agents/`): `nivl-planner`, `nivl-ux-auditor`, `nivl-game-balan
 **Si el cambio es solo JavaScript/TypeScript o assets, sale por OTA. Gratis, en un minuto, sin build:**
 
 ```bash
-npx eas-cli update --channel production --platform ios --message "…" --non-interactive
+npx eas-cli update --channel production --platform ios --environment production --message "…" --non-interactive   # SIEMPRE --environment production: sin él la OTA sale sin EXPO_PUBLIC_RC_IOS_KEY y la tienda queda cerrada
 ```
 
 Comprobado el 2026-09-19 en el móvil del dueño: llega. Se descarga en un arranque y se aplica en el siguiente (a veces tarda un par de aperturas).
