@@ -92,12 +92,15 @@ const PRICE_PER_MTOK: Record<string, { in: number; out: number }> = {
   // ella, casi el doble. Aqui va SIEMPRE la tarifa de punta: el freno de gasto
   // tiene que pecar de caro, no llevarse la sorpresa. Fuera de punta lo real
   // es la mitad de lo que veras apuntado.
-  'deepseek-v4-flash': { in: 0.44, out: 1.32 },
+  // 2026-09-10: V4.1 Flash sustituye a V4 Flash con el nombre `deepseek-flash`;
+  // `deepseek-v4-flash` solo se redirige temporalmente. Las rutas de ai_plans
+  // usan `deepseek-flash` desde el 2026-10-04.
+  'deepseek-v4-flash': { in: 0.3, out: 1.2 },
   // La API acepta `deepseek-v4-flash` pero responde con `model: "deepseek-flash"`
   // (comprobado el 2026-09-25), y el coste se calcula con lo que responde: sin
   // este alias cada turno de Pro se apuntaba como Opus, ~11 veces de más.
-  'deepseek-flash': { in: 0.44, out: 1.32 },
-  'deepseek-v4-pro': { in: 1.1, out: 4.4 },
+  'deepseek-flash': { in: 0.3, out: 1.2 },
+  'deepseek-v4-pro': { in: 1.32, out: 3.96 },
   'deepseek-chat': { in: 0.27, out: 1.1 },
   'deepseek-reasoner': { in: 0.55, out: 2.19 },
   'gpt-5-mini': { in: 0.25, out: 2 },
