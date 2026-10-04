@@ -14,7 +14,8 @@
 // - Los momentos de función (modo profundo, voz, fotos) son una LÍNEA no
 //   modal: la hoja solo se abre si el usuario la toca.
 // - A Élite/dueño, nada. A un Pro, solo Élite y solo en momentos de función o
-//   con la energía agotada (línea). En prueba o con la tienda cerrada, línea.
+//   con la energía agotada (línea). En prueba, línea. Con la tienda cerrada,
+//   línea salvo que la cuenta pueda empezar la prueba (es del servidor).
 // - `prueba` solo si la cuenta puede empezarla.
 // - En prueba no se vende lo que ya se tiene: ni la firma, ni el primer día,
 //   ni las fotos, ni la voz. El momento de la prueba es su final
@@ -228,7 +229,10 @@ export function decidirOferta(momento: Momento, ctx: ContextoOferta): DecisionOf
     return decision(momento, tier, { mostrar: true, forma: 'linea', prueba, razon: 'funcion' });
   }
   if (nivel === 'trial') return decision(momento, tier, { mostrar: true, forma: 'linea', razon: 'en_prueba' });
-  if (!ctx.tiendaAbierta) return decision(momento, tier, { mostrar: true, forma: 'linea', prueba, razon: 'tienda_cerrada' });
+  // Con la tienda cerrada no hay nada que comprar, pero la prueba es del
+  // servidor y sí se puede empezar: con prueba, la hoja sigue (con sus topes);
+  // sin ella, línea.
+  if (!ctx.tiendaAbierta && !prueba) return decision(momento, tier, { mostrar: true, forma: 'linea', razon: 'tienda_cerrada' });
 
   if (momento === 'primer_dia' && historial.some((e) => e.momento === 'primer_dia' && esHoja(e))) {
     // Una vez en la vida: la entrada se conserva mientras dure el historial y,

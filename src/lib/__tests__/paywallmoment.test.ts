@@ -103,9 +103,15 @@ describe('formas', () => {
     expect(decidirOferta('energia_agotada', enPrueba)).toMatchObject({ mostrar: true, forma: 'linea', tier: 'pro' });
   });
 
-  test('con la tienda cerrada: línea', () => {
-    expect(decidirOferta('firma', libre({ tiendaAbierta: false }))).toMatchObject({ mostrar: true, forma: 'linea' });
-    expect(decidirOferta('primer_dia', libre({ tiendaAbierta: false }))).toMatchObject({ mostrar: true, forma: 'linea' });
+  test('con la tienda cerrada: línea, salvo que se pueda empezar la prueba (es del servidor)', () => {
+    const sinPrueba = { tiendaAbierta: false, trialAvailable: false };
+    expect(decidirOferta('firma', libre(sinPrueba))).toMatchObject({ mostrar: true, forma: 'linea', prueba: false });
+    expect(decidirOferta('primer_dia', libre(sinPrueba))).toMatchObject({ mostrar: true, forma: 'linea', prueba: false });
+    expect(decidirOferta('firma', libre({ tiendaAbierta: false }))).toMatchObject({ mostrar: true, forma: 'hoja', prueba: true });
+    expect(decidirOferta('primer_dia', libre({ tiendaAbierta: false }))).toMatchObject({ mostrar: true, forma: 'hoja', prueba: true });
+    // Con prueba y tienda cerrada, la hoja respeta igual los topes.
+    const historial = [hoja('firma', AHORA - HORA, 'cerrada')];
+    expect(decidirOferta('primer_dia', libre({ tiendaAbierta: false, historial })).mostrar).toBe(false);
   });
 
   test('la firma, la primera vez, es hoja aunque ya hubiera otra hoja hoy', () => {
