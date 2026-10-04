@@ -1,12 +1,10 @@
 import { Redirect } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Text, View } from 'react-native';
-import { SystemButton } from '@/components/SystemButton';
+import { ArranqueCargando, ArranqueError } from '@/components/acceso/Arranque';
 import { useAuth } from '@/lib/auth';
 import { cerrarSesion } from '@/lib/authFlow';
 import { reintentarCodigoPendiente } from '@/lib/creators';
 import { ensureProfile } from '@/lib/data';
-import { colors, fonts } from '@/lib/theme';
 import { mensajeSistema } from '@/lib/validation';
 
 export default function Index() {
@@ -44,43 +42,18 @@ export default function Index() {
 
   if (session && onboarded === null && error) {
     return (
-      <View
-        style={{ flex: 1, backgroundColor: colors.bg, alignItems: 'center', justifyContent: 'center', padding: 32 }}
-      >
-        <Text style={{ fontFamily: fonts.heading, fontSize: 22, color: colors.text, textAlign: 'center' }}>
-          El sistema no responde
-        </Text>
-        <Text
-          accessibilityRole="alert"
-          style={{ fontFamily: fonts.body, fontSize: 15, lineHeight: 21, color: colors.textDim, textAlign: 'center', marginTop: 10 }}
-        >
-          {error}
-        </Text>
-        <SystemButton
-          title="Reintentar"
-          variant="outline"
-          onPress={() => setIntento((n) => n + 1)}
-          style={{ marginTop: 20, alignSelf: 'stretch' }}
-        />
-        {/* Salida si la cuenta no carga nunca: sin esto no había forma de cambiar de cuenta. */}
-        <SystemButton
-          title="Cerrar sesión"
-          variant="ghost"
-          onPress={() => {
-            cerrarSesion().catch(() => {});
-          }}
-          style={{ marginTop: 6, alignSelf: 'stretch' }}
-        />
-      </View>
+      <ArranqueError
+        mensaje={error}
+        onReintentar={() => setIntento((n) => n + 1)}
+        onCerrarSesion={() => {
+          cerrarSesion().catch(() => {});
+        }}
+      />
     );
   }
 
   if (loading || (session && onboarded === null)) {
-    return (
-      <View style={{ flex: 1, backgroundColor: colors.bg, alignItems: 'center', justifyContent: 'center' }}>
-        <ActivityIndicator color={colors.accent} accessibilityLabel="Cargando" />
-      </View>
-    );
+    return <ArranqueCargando />;
   }
 
   if (!session) return <Redirect href="/login" />;

@@ -14,7 +14,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect } from 'react';
 import { View } from 'react-native';
 import { guardarCodigoPendiente } from '@/lib/creators';
-import { colors } from '@/lib/theme';
+import { ink } from '@/design/tokens';
 
 export default function EnlaceCreador() {
   const { code } = useLocalSearchParams<{ code: string }>();
@@ -30,5 +30,5 @@ export default function EnlaceCreador() {
     };
   }, [code]);
 
-  return <View style={{ flex: 1, backgroundColor: colors.bg }} />;
+  return <View style={{ flex: 1, backgroundColor: ink.ink0 }} />;
 }
