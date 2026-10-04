@@ -37,9 +37,11 @@ El dictamen definitivo se emite por escrito cuando el coordinador reenvíe esos 
 | Commit | Typecheck | Jest | Lint | SQL PGlite | Export |
 |---|---|---|---|---|---|
 | `8922888` (build 23) | PASS | 91/91 suites · 1530/1530 | 0 avisos | 57/57 | iOS · Android · web OK |
-| `477c545` (HEAD) | PASS | 92/92 suites · 1536/1536 | 0 avisos | 57/57 | (en curso) |
+| `477c545` (HEAD) | PASS | 92/92 suites · 1536/1536 | 0 avisos | 57/57 | iOS · Android OK |
 
 `477c545` es posterior a la build 23. Arregla un cierre del onboarding cuando `health_data` es NULL, así que **necesita OTA antes de la revisión**: sin ella, el revisor puede dar con ese cierre (2.1).
+
+Entre la build 23 y `477c545` hay 22 commits (87 archivos, +3507/−1894). **No hay cambios nativos**: `app.json`, `package.json` y `eas.json` son idénticos, así que todo puede salir por OTA sobre la build 23. Pero el lote incluye el barrido visual Arena (fase 3, lotes G2 y Z, y las olas 2 y 3 de la auditoría), no solo arreglos. Por la 2.5.2 y la política de OTA, **esa OTA tiene que publicarse ANTES de enviar a revisión** y las capturas y el vídeo se graban sobre ella. Publicarla durante la revisión cambiaría la interfaz que está viendo el revisor.
 
 ## Tabla de directrices
 
