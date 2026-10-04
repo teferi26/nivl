@@ -1,10 +1,14 @@
 import { EDAD_MINIMA } from './consentmath';
+import { conLimiteDeRed } from './limiteRed';
 import { supabase } from './supabase';
 import { ErrorVisible } from './validation';
 
-/** Solo una respuesta positiva del servidor abre las pantallas de la cuenta. */
+/**
+ * Solo una respuesta positiva del servidor abre las pantallas de la cuenta.
+ * Con tope de espera: sin respuesta, error («sin conexión») y Reintentar.
+ */
 export async function fetchEdadConfirmada(): Promise<boolean> {
-  const { data, error } = await supabase.rpc('my_age_confirmation');
+  const { data, error } = await conLimiteDeRed(supabase.rpc('my_age_confirmation'));
   if (error) throw error;
   if (typeof data !== 'boolean') throw new Error('Respuesta de edad inválida');
   return data;
