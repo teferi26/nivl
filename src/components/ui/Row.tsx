@@ -4,7 +4,7 @@
 
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useEffect, useRef, type ReactNode } from 'react';
-import { ActivityIndicator, Animated, Pressable, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
+import { AccessibilityInfo, ActivityIndicator, Animated, Pressable, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 import { colors, fonts } from '@/lib/theme';
 import { ink, type } from '@/design/tokens';
 import { LEIDO_SIN_DATO, SIN_DATO } from './sinDato';
@@ -18,6 +18,24 @@ interface CheckProps {
 
 const TONE = { accent: colors.accent, red: colors.red, gold: colors.gold, steel: colors.steel } as const;
 
+/**
+ * Anima solo si el usuario no ha pedido «reducir movimiento». Se pregunta en
+ * el momento (no al cargar el módulo): así vale el ajuste de ahora y este
+ * archivo no arrastra la suscripción de motion.tsx a las pruebas que lo
+ * importan con un react-native simulado. Si no se puede saber, anima.
+ */
+function siHayMovimiento(animar: () => void): void {
+  try {
+    AccessibilityInfo.isReduceMotionEnabled()
+      .catch(() => false)
+      .then((reducido) => {
+        if (!reducido) animar();
+      });
+  } catch {
+    animar();
+  }
+}
+
 /** Marca de completar: círculo de hierro que se rellena de blanco. */
 export function Check({ checked, busy, tone = 'accent', size = 26 }: CheckProps) {
   const c = TONE[tone];
@@ -28,11 +46,14 @@ export function Check({ checked, busy, tone = 'accent', size = 26 }: CheckProps)
   const antes = useRef(checked);
   useEffect(() => {
     if (checked && !antes.current) {
-      scale.setValue(0.8);
-      Animated.sequence([
-        Animated.spring(scale, { toValue: 1.15, useNativeDriver: true, speed: 38, bounciness: 10 }),
-        Animated.spring(scale, { toValue: 1, useNativeDriver: true, speed: 30, bounciness: 6 }),
-      ]).start();
+      // Con «reducir movimiento», la marca aparece sin rebote.
+      siHayMovimiento(() => {
+        scale.setValue(0.8);
+        Animated.sequence([
+          Animated.spring(scale, { toValue: 1.15, useNativeDriver: true, speed: 38, bounciness: 10 }),
+          Animated.spring(scale, { toValue: 1, useNativeDriver: true, speed: 30, bounciness: 6 }),
+        ]).start();
+      });
     }
     antes.current = checked;
   }, [checked, scale]);
@@ -100,13 +121,16 @@ export function Row({
   style,
 }: RowProps) {
   // Al pasar a hecha, la fila entera se enciende un instante (accentFaint) y
-  // se apaga: el ojo encuentra qué ha cambiado sin leer.
+  // se apaga: el ojo encuentra qué ha cambiado sin leer. Con «reducir
+  // movimiento», nada: el tachado ya lo dice.
   const flash = useRef(new Animated.Value(0)).current;
   const eraHecha = useRef(!!done);
   useEffect(() => {
     if (done && !eraHecha.current) {
-      flash.setValue(1);
-      Animated.timing(flash, { toValue: 0, duration: 320, delay: 80, useNativeDriver: true }).start();
+      siHayMovimiento(() => {
+        flash.setValue(1);
+        Animated.timing(flash, { toValue: 0, duration: 320, delay: 80, useNativeDriver: true }).start();
+      });
     }
     eraHecha.current = !!done;
   }, [done, flash]);

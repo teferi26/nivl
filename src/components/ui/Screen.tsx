@@ -21,7 +21,7 @@ import {
   type ViewStyle,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ink, space, stroke } from '@/design/tokens';
+import { ink, space, stroke, type as tipo } from '@/design/tokens';
 import { ANCHO_ASIDE, cabeAside, marcoDe } from '@/design/responsive';
 import { useAnchoUtil } from '@/design/useSizeClass';
 import { colors, fonts } from '@/lib/theme';
@@ -161,10 +161,22 @@ interface ScreenHeaderProps {
   right?: ReactNode;
   /** Título compacto para pantallas densas. */
   compact?: boolean;
+  /**
+   * Título grabado como el de `EncabezadoArena`: Cinzel `rank` en mayúsculas
+   * (por estilo, `textTransform`; el texto y su `title` no cambian, así las
+   * pruebas que lo buscan siguen encontrándolo). Plan B de las pantallas que
+   * no pueden importar `@/components/arena` (las puertas).
+   */
+  inscrito?: boolean;
   style?: StyleProp<ViewStyle>;
 }
 
-export function ScreenHeader({ eyebrow, title, subtitle, action, onBack, right, compact, style }: ScreenHeaderProps) {
+/**
+ * @deprecated Usa `EncabezadoArena` de `@/components/arena` (FASE3). Se
+ * conserva para las pantallas aún sin migrar y para las puertas, cuyas
+ * pruebas simulan `@/components/ui`; ahí, con `inscrito`.
+ */
+export function ScreenHeader({ eyebrow, title, subtitle, action, onBack, right, compact, inscrito, style }: ScreenHeaderProps) {
   return (
     <View style={[styles.header, style]}>
       {onBack ? (
@@ -181,7 +193,11 @@ export function ScreenHeader({ eyebrow, title, subtitle, action, onBack, right, 
       <View style={styles.headerRow}>
         <View style={styles.headerText}>
           {eyebrow ? <Text style={styles.eyebrow}>{eyebrow}</Text> : null}
-          <Text style={[styles.title, compact && styles.titleCompact]} numberOfLines={2}>
+          <Text
+            style={[styles.title, compact && styles.titleCompact, inscrito && styles.titleInscrito]}
+            numberOfLines={2}
+            accessibilityRole={inscrito ? 'header' : undefined}
+          >
             {title}
           </Text>
           {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
@@ -238,6 +254,14 @@ const styles = StyleSheet.create({
     color: colors.text,
   },
   titleCompact: { fontSize: 22, lineHeight: 26, letterSpacing: -0.4 },
+  titleInscrito: {
+    fontFamily: tipo.rank.family,
+    fontSize: tipo.rank.size,
+    lineHeight: tipo.rank.lineHeight,
+    letterSpacing: tipo.rank.tracking,
+    textTransform: 'uppercase',
+    color: ink.ink10,
+  },
   subtitle: {
     fontFamily: fonts.body,
     fontSize: 14,

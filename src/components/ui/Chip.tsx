@@ -3,6 +3,7 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import type { ReactNode } from 'react';
 import { Platform, Pressable, ScrollView, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
+import { vibrar } from '@/design/haptics';
 import { ink, space, type as tipo } from '@/design/tokens';
 import { colors, fonts } from '@/lib/theme';
 import { Grano, Trama } from './Texture';
@@ -27,6 +28,10 @@ const HITSLOP_SMALL = { top: 7, bottom: 7, left: 0, right: 0 };
  * ink1. El no seleccionado lleva marco de 1 pt ink4 y texto ink9: se distingue
  * por el grosor y el brillo del marco, no por un relleno blanco. `tone` se
  * conserva por compatibilidad; en v2 el seleccionado es siempre monocromo.
+ *
+ * Con `selected` definido es un chip de elegir (radio): al pasar a elegido
+ * vibra `seleccion` (FASE3, tabla de vibraciones). Tocar el que ya está
+ * elegido no vibra. Sin `selected` es un botón y no vibra.
  */
 export function Chip({ label, selected, onPress, icon, small, disabled, accessibilityLabel, style }: ChipProps) {
   const content = (
@@ -43,9 +48,13 @@ export function Chip({ label, selected, onPress, icon, small, disabled, accessib
     style,
   ];
   if (!onPress) return <View style={box}>{content}</View>;
+  const pulsar = () => {
+    if (selected === false) vibrar('seleccion');
+    onPress();
+  };
   return (
     <Pressable
-      onPress={onPress}
+      onPress={pulsar}
       disabled={disabled}
       accessibilityRole={selected === undefined ? 'button' : 'radio'}
       accessibilityState={{ selected, disabled: !!disabled }}
