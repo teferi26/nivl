@@ -353,15 +353,25 @@ export function usePerfil(): UsePerfil {
   const activateFreeze = async () => {
     if (!profile) return;
     const until = addDays(today, freezeDays - 1);
-    const updated = await setFreeze(profile, until, freezeReason);
-    setProfile(updated);
-    setFreezeOpen(false);
+    try {
+      const updated = await setFreeze(profile, until, freezeReason);
+      setProfile(updated);
+      setFreezeOpen(false);
+    } catch (e) {
+      // La hoja sigue abierta: el aviso no compite con su cierre.
+      vibrar('penalizacion');
+      avisar('No se ha activado la pausa', mensajeSistema(e));
+    }
   };
 
   const deactivateFreeze = async () => {
     if (!profile) return;
-    const updated = await setFreeze(profile, null, null);
-    setProfile(updated);
+    try {
+      const updated = await setFreeze(profile, null, null);
+      setProfile(updated);
+    } catch (e) {
+      avisar('No se ha reanudado', mensajeSistema(e));
+    }
   };
 
   const onAchievementTap = async (code: string) => {
