@@ -418,6 +418,23 @@ export async function fetchFacts(limit = 100): Promise<CoachFact[]> {
   return (data ?? []) as CoachFact[];
 }
 
+export const MSG_HECHO_NO_EXISTE = 'Ese recuerdo ya no está en la memoria del coach.';
+
+/**
+ * Borra un hecho de la memoria del coach (RGPD: supresión; la persona decide
+ * qué recuerda la IA de ella). Solo los propios: la RLS de coach_facts
+ * («own coach_facts», 0008) deja borrar las filas con user_id = auth.uid() y
+ * ninguna otra; con un id ajeno o inexistente no se borra nada y se avisa.
+ * Desde el turno siguiente el coach ya no lo ve: los hechos se leen en cada
+ * turno, no se guardan en caché.
+ */
+export async function borrarHecho(id: string): Promise<void> {
+  await requireHealthConsent();
+  const { data, error } = await supabase.from('coach_facts').delete().eq('id', id).select('id');
+  if (error) throw error;
+  if (!data?.length) throw new ErrorVisible(MSG_HECHO_NO_EXISTE);
+}
+
 /** Gasto de IA del mes en curso, en dólares. */
 export async function fetchMonthCost(): Promise<number> {
   const desde = `${new Date().toISOString().slice(0, 7)}-01`;
