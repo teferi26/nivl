@@ -139,8 +139,8 @@ const TIER_SIN_PAGO: Record<Momento, TierOferta> = {
   // La voz (en el dispositivo, coste 0) va con el coach: se ofrece Pro y a
   // quien ya tiene coach no se le vende nada por ella.
   voz_premium: 'pro',
-  // Las fotos al coach ya funcionan con Pro.
-  analisis_foto: 'pro',
+  // Las fotos al coach solo las ve Élite (Pro y la prueba, sin visión).
+  analisis_foto: 'elite',
   energia_agotada: 'pro',
   // La pantalla del coach sin acceso: lo que antes era «Ver NIVL Pro».
   coach_cerrado: 'pro',
@@ -149,7 +149,7 @@ const TIER_SIN_PAGO: Record<Momento, TierOferta> = {
 };
 
 /** En prueba ya se tiene el coach: estos momentos no venden nada. */
-const INCLUIDO_EN_PRUEBA: readonly Momento[] = ['firma', 'primer_dia', 'analisis_foto', 'voz_premium'];
+const INCLUIDO_EN_PRUEBA: readonly Momento[] = ['firma', 'primer_dia', 'voz_premium'];
 
 function decision(momento: Momento, tier: TierOferta, d: Partial<DecisionOferta> & { razon: string }): DecisionOferta {
   return {

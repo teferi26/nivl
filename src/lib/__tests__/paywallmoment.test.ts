@@ -84,7 +84,8 @@ describe('formas', () => {
       expect(decidirOferta(m, libre()).mostrar).toBe(true);
     }
     expect(decidirOferta('coach_profundo', libre()).tier).toBe('elite');
-    expect(decidirOferta('analisis_foto', libre()).tier).toBe('pro');
+    // Las fotos al coach solo las ve Élite (Pro y la prueba van sin visión).
+    expect(decidirOferta('analisis_foto', libre()).tier).toBe('elite');
   });
 
   test('en prueba: solo línea, y nunca por lo que la prueba ya incluye', () => {
@@ -94,12 +95,13 @@ describe('formas', () => {
       if (d.mostrar) expect(d.forma).toBe('linea');
       expect(d.prueba).toBe(false);
     }
-    // Ya tiene el coach: ni la firma, ni el primer día, ni fotos, ni voz.
-    for (const m of ['firma', 'primer_dia', 'analisis_foto', 'voz_premium', 'fin_prueba'] as const) {
+    // Ya tiene el coach: ni la firma, ni el primer día, ni voz.
+    for (const m of ['firma', 'primer_dia', 'voz_premium', 'fin_prueba'] as const) {
       expect(decidirOferta(m, enPrueba)).toMatchObject({ mostrar: false, razon: 'en_prueba' });
     }
-    // Lo que la prueba no tiene sí se dice: el modo profundo (Élite) y la energía agotada.
+    // Lo que la prueba no tiene sí se dice: modo profundo y fotos (Élite) y la energía agotada.
     expect(decidirOferta('coach_profundo', enPrueba)).toMatchObject({ mostrar: true, forma: 'linea', tier: 'elite' });
+    expect(decidirOferta('analisis_foto', enPrueba)).toMatchObject({ mostrar: true, forma: 'linea', tier: 'elite' });
     expect(decidirOferta('energia_agotada', enPrueba)).toMatchObject({ mostrar: true, forma: 'linea', tier: 'pro' });
   });
 

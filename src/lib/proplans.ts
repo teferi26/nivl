@@ -55,6 +55,11 @@ export interface AiStatus {
   deepTurns: number;
   /** Nunca tuvo suscripción ni prueba: puede empezar la de 7 días. */
   trialAvailable: boolean;
+  /**
+   * El coach de este plan ve fotos (modelo Claude). Lo dice el servidor
+   * (`ai_status.vision`); sin la migración, false. Pro (DeepSeek) y la prueba no.
+   */
+  vision: boolean;
 }
 
 /** Una cuenta sin nada: lo que se pinta cuando el servidor dice que no hay IA. */
@@ -70,6 +75,7 @@ export const SIN_IA: AiStatus = {
   deepRemaining: 0,
   deepTurns: 0,
   trialAvailable: false,
+  vision: false,
 };
 
 /** Tiene coach: suscripción viva, prueba, cortesía o dueño. Lo decide el servidor. */
@@ -666,7 +672,8 @@ export function productoDePlan(plan: string | null | undefined): ProPlanId | nul
 // (`paywallmoment.ts`). Reglas: voz del sistema, sin urgencias falsas ni
 // cuentas atrás, sin prometer nada que no exista. La voz va con el coach (Pro
 // y Élite), no se vende aparte. El modo profundo es solo Élite, con su límite
-// mensual, y las fotos al coach ya funcionan con Pro. `eyebrow` y `titulo` son
+// mensual, y las fotos al coach solo las ve Élite (Pro y la prueba van con un
+// modelo sin visión; `ai_status.vision`). `eyebrow` y `titulo` son
 // la cabecera de `/pro` con ese motivo (L-RADICAL §B.5 e).
 
 
@@ -769,17 +776,17 @@ export const COPY_UPSELL: Record<CopyKey, CopyUpsell> = {
   'analisis_foto.pro': {
     eyebrow: 'Fotos al coach',
     titulo: 'Mira lo que le mandas.',
-    linea: 'Con NIVL Pro, el coach mira tus fotos y te responde sobre ellas.',
-    enlace: 'Ver NIVL Pro',
-    contexto: 'Con Pro le mandas fotos al coach por el chat (un plato, una máquina, un apunte) y responde sobre ellas.',
-    beneficio: 'Control total por chat',
+    linea: 'Que el coach mire tus fotos es de NIVL Élite.',
+    enlace: 'Ver NIVL Élite',
+    contexto: 'Que el coach mire tus fotos (un plato, una máquina, un apunte) es de NIVL Élite. Con Pro, el coach trabaja con lo que le escribes.',
+    beneficio: null,
   },
   'analisis_foto.elite': {
     eyebrow: 'Fotos al coach',
     titulo: 'Con el modelo de primera línea.',
-    linea: 'Con NIVL Élite, tus fotos las mira el modelo de primera línea.',
+    linea: 'Con NIVL Élite, el coach mira tus fotos y te responde sobre ellas.',
     enlace: 'Ver NIVL Élite',
-    contexto: 'Con Élite, cada foto que mandas al coach la lee el modelo de primera línea.',
+    contexto: 'Con Élite, el coach mira las fotos que le mandas por el chat (un plato, una máquina, un apunte) y responde sobre ellas.',
     beneficio: 'Máxima potencia',
   },
   'energia_agotada.pro': {

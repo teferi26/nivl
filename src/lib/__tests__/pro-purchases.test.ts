@@ -15,6 +15,7 @@ import {
   restorePurchases,
   startTrial,
   StorePriceChangedError,
+  fetchAiStatus,
 } from '../pro';
 import { supabase } from '../supabase';
 
@@ -480,5 +481,14 @@ describe('momento de la oferta: historial local', () => {
     expect(d).toMatchObject({ mostrar: true, forma: 'hoja', tier: 'pro', prueba: false });
     await AsyncStorage.clear();
     expect((await ofrecerSi('fin_prueba', vuelta, { celebrando: false, pruebaTerminada: true, ahora: AHORA })).forma).toBe('hoja');
+  });
+});
+
+describe('fetchAiStatus: visión del coach', () => {
+  test('vision viene del servidor; sin la clave (servidor sin la migración) es false', async () => {
+    status.mockResolvedValueOnce({ data: { entitled: true, plan: 'elite_anual', tier: 'elite', vision: true }, error: null } as never);
+    expect((await fetchAiStatus()).vision).toBe(true);
+    status.mockResolvedValueOnce({ data: { entitled: true, plan: 'pro_anual', tier: 'pro' }, error: null } as never);
+    expect((await fetchAiStatus()).vision).toBe(false);
   });
 });
