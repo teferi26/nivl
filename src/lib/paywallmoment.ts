@@ -139,8 +139,8 @@ const TIER_SIN_PAGO: Record<Momento, TierOferta> = {
   // La voz (en el dispositivo, coste 0) va con el coach: se ofrece Pro y a
   // quien ya tiene coach no se le vende nada por ella.
   voz_premium: 'pro',
-  // Las fotos al coach ya funcionan con Pro.
-  analisis_foto: 'pro',
+  // Las fotos al coach solo las ve Élite (Pro y la prueba, sin visión).
+  analisis_foto: 'elite',
   energia_agotada: 'pro',
   // La pantalla del coach sin acceso: lo que antes era «Ver NIVL Pro».
   coach_cerrado: 'pro',
@@ -149,7 +149,7 @@ const TIER_SIN_PAGO: Record<Momento, TierOferta> = {
 };
 
 /** En prueba ya se tiene el coach: estos momentos no venden nada. */
-const INCLUIDO_EN_PRUEBA: readonly Momento[] = ['firma', 'primer_dia', 'analisis_foto', 'voz_premium'];
+const INCLUIDO_EN_PRUEBA: readonly Momento[] = ['firma', 'primer_dia', 'voz_premium'];
 
 function decision(momento: Momento, tier: TierOferta, d: Partial<DecisionOferta> & { razon: string }): DecisionOferta {
   return {
@@ -228,17 +228,23 @@ export function decidirOferta(momento: Momento, ctx: ContextoOferta): DecisionOf
   if (MOMENTOS_FUNCION.includes(momento)) {
     return decision(momento, tier, { mostrar: true, forma: 'linea', prueba, razon: 'funcion' });
   }
+  // Primer día (decisión del coordinador, fase 3): LÍNEA no modal tras la
+  // celebración, nunca hoja (no se vende en plena euforia). Una vez en la vida:
+  // `ofrecerSi` la anota como vista. Respeta la espera de 72 h tras un «no».
+  if (momento === 'primer_dia') {
+    if (historial.some((e) => e.momento === 'primer_dia')) return decision(momento, tier, { razon: 'primer_dia_ya_visto' });
+    const cerradaHace = historial.some(
+      (e) => e.respuesta === 'cerrada' && e.at <= ctx.ahora && ctx.ahora - e.at < ESPERA_TRAS_CERRAR,
+    );
+    if (cerradaHace) return decision(momento, tier, { razon: 'espera_72h' });
+    return decision(momento, tier, { mostrar: true, forma: 'linea', prueba, razon: 'primer_dia' });
+  }
+
   if (nivel === 'trial') return decision(momento, tier, { mostrar: true, forma: 'linea', razon: 'en_prueba' });
   // Con la tienda cerrada no hay nada que comprar, pero la prueba es del
   // servidor y sí se puede empezar: con prueba, la hoja sigue (con sus topes);
   // sin ella, línea.
   if (!ctx.tiendaAbierta && !prueba) return decision(momento, tier, { mostrar: true, forma: 'linea', razon: 'tienda_cerrada' });
-
-  if (momento === 'primer_dia' && historial.some((e) => e.momento === 'primer_dia' && esHoja(e))) {
-    // Una vez en la vida: la entrada se conserva mientras dure el historial y,
-    // pasado ese plazo, el evento «primer día» ya no vuelve a dispararse.
-    return decision(momento, tier, { razon: 'primer_dia_ya_visto' });
-  }
 
   const primeraFirma = momento === 'firma' && !historial.some((e) => e.momento === 'firma');
   if (!primeraFirma) {

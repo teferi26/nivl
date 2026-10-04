@@ -88,6 +88,7 @@ export async function fetchAiStatus(): Promise<AiStatus> {
     deepRemaining: Number(s.deep_remaining ?? 0),
     deepTurns: Number(s.deep_turns ?? 0),
     trialAvailable: s.trial_available === true,
+    vision: s.vision === true,
   };
 }
 
@@ -672,5 +673,7 @@ export async function ofrecerSi(momento: Momento, status: AiStatus | null | unde
   });
   if (!status) return { ...d, mostrar: false, razon: 'sin_estado' };
   if (d.mostrar && d.forma === 'hoja' && opts.anotar !== false) await anotarOferta(momento, 'vista', 'hoja', ahora);
+  // El primer día es línea pero una vez en la vida: se anota al enseñarla.
+  else if (d.mostrar && momento === 'primer_dia' && opts.anotar !== false) await anotarOferta(momento, 'vista', 'linea', ahora);
   return d;
 }
