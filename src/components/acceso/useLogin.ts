@@ -66,7 +66,8 @@ export function useLogin(): LoginVistaProps {
   };
 
   const switchMode = (next: ModoLogin) => {
-    if (next === mode) return;
+    // En el portal de creadores solo se entra: ni alta ni recuperar.
+    if (next === mode || (SITIO_CREADORES && next !== 'signin')) return;
     setMode(next);
     reset();
     setConfirm('');
