@@ -97,7 +97,13 @@ export function rachaVisible(
 export function reglasIncumplidas(input: {
   fromDate: string;
   today: string;
-  reglas: { id: string; text: string; consequence: string }[];
+  /**
+   * `creadaEl` (YYYY-MM-DD local): una regla no se juzga en días anteriores a
+   * su creación. Así una regla nueva —o editada, que es una nueva que la
+   * sustituye (contract.editarRegla)— cuenta desde hoy y no cobra días
+   * pendientes de cierre en los que no existía.
+   */
+  reglas: { id: string; text: string; consequence: string; creadaEl?: string | null }[];
   checksPorDia: Map<string, Set<string>>;
   freezeUntil: string | null;
   xpPorRegla: number;
@@ -137,7 +143,7 @@ export function reglasIncumplidas(input: {
       continue;
     }
     const marcadas = input.checksPorDia.get(day) ?? new Set<string>();
-    const rotas = input.reglas.filter((r) => !marcadas.has(r.id));
+    const rotas = input.reglas.filter((r) => !marcadas.has(r.id) && !(r.creadaEl && day < r.creadaEl));
     if (rotas.length) {
       salida.push({
         date: day,

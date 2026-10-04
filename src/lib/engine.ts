@@ -217,7 +217,10 @@ async function cerrarDias(profile: Profile, quests: Quest[]): Promise<CierreResu
   const diasConReglasRotas = reglasIncumplidas({
     fromDate,
     today,
-    reglas: reglasActivas.map((r) => ({ id: r.id, text: r.text, consequence: r.consequence })),
+    reglas: reglasActivas.map((r) => ({
+      id: r.id, text: r.text, consequence: r.consequence,
+      creadaEl: r.created_at ? dateKey(new Date(r.created_at)) : null,
+    })),
     checksPorDia,
     freezeUntil: profile.freeze_until,
     xpPorRegla: RULE_BREAK_XP,

@@ -1,9 +1,10 @@
 import { decode } from 'base64-arraybuffer';
 import { awardXpRpc } from './data';
-import { dateKey } from './dates';
+import { addDays, dateKey } from './dates';
 import { RULE_BREAK_XP } from './game';
 import { supabase } from './supabase';
 import type { BonusRedemption, JournalPhoto, Letter, Profile, Rule } from './types';
+import { ErrorVisible } from './validation';
 
 // ── Reglas del juego ────────────────────────────────────────────────
 // Solo las VIGENTES. Una regla eliminada (por el coach o desde Contrato) se
@@ -43,6 +44,58 @@ export async function setRuleActive(id: string, active: boolean): Promise<void> 
 export async function deleteRule(id: string): Promise<void> {
   const { error } = await supabase.from('rules').delete().eq('id', id);
   if (error) throw error;
+}
+
+// Editar una regla SIN reescribir el pasado: la regla vieja se archiva
+// (active=false) con su historial de marcas y roturas intacto, y la nueva la
+// sustituye desde hoy (closing.reglasIncumplidas no la juzga antes de su
+// creación). Si hoy ya estaba marcada, la marca pasa a la nueva.
+//
+// Solo con los días ya cerrados (last_day_processed ≥ ayer): editar una regla
+// rota antes de que se cierren los días pendientes la libraría del cobro.
+export async function editarRegla(
+  profile: Pick<Profile, 'id' | 'last_day_processed'>,
+  rule: Rule,
+  cambios: { text?: string; consequence?: string },
+): Promise<Rule> {
+  const hoy = dateKey();
+  if (!profile.last_day_processed || profile.last_day_processed < addDays(hoy, -1)) {
+    throw new ErrorVisible('Abre Hoy para cerrar los días pendientes antes de editar una regla.');
+  }
+  const text = (cambios.text ?? rule.text).trim();
+  const consequence = (cambios.consequence ?? rule.consequence).trim();
+  if (!text || !consequence) throw new ErrorVisible('La regla y su consecuencia no pueden quedar vacías.');
+  if (text === rule.text && consequence === rule.consequence) return rule;
+
+  // Primero la nueva; si falla, la vieja sigue vigente.
+  const { data, error } = await supabase
+    .from('rules')
+    .insert({
+      user_id: profile.id,
+      text,
+      consequence,
+      position: rule.position,
+      ...(rule.health_data ? { health_data: true } : {}),
+    })
+    .select()
+    .single();
+  if (error) throw error;
+  const nueva = data as Rule;
+
+  const { error: archivar } = await supabase.from('rules').update({ active: false }).eq('id', rule.id);
+  if (archivar) {
+    // Sin dos reglas vigentes para lo mismo: se deshace la nueva.
+    await supabase.from('rules').delete().eq('id', nueva.id);
+    throw archivar;
+  }
+
+  const marcadasHoy = await fetchRuleChecks(hoy).catch(() => new Set<string>());
+  if (marcadasHoy.has(rule.id)) {
+    await marcarReglaCumplida(profile.id, nueva.id, hoy).catch(() => {
+      /* la regla ya está editada; la marca de hoy se puede volver a poner */
+    });
+  }
+  return nueva;
 }
 
 // Romper una regla: −25 XP inmediatos (recuperables) + misión de consecuencia
