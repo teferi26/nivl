@@ -193,7 +193,8 @@ function postgrest(datos: Record<string, Fila[]>) {
   };
 }
 
-const HOY = '2026-10-03';
+// Hoy de verdad (Europe/Madrid): el servidor solo acepta la fecha del cliente a ±1 día de la suya.
+const HOY = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Madrid' }).format(new Date());
 const DOSSIER = 'MARCA-DOSSIER: objetivo 88 kg, trabaja de noche, odia el cardio. ' + 'Contexto largo del dossier. '.repeat(300);
 const TODOS_LOS_DIAS = [1, 2, 3, 4, 5, 6, 7];
 
