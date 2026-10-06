@@ -103,7 +103,7 @@ describe('la voz del sistema', () => {
   it('sin comillas rectas: los títulos van entre «»', () => {
     expect(lineas.filter((l) => l.includes('"'))).toEqual([]);
     expect(variantes(() => voice.dungeonCleared('A'))).toEqual(
-      expect.arrayContaining(['Campaña «A» completada. Todas las etapas cerradas.']),
+      expect.arrayContaining(['Campaña «A» despejada. El botín es tuyo.']),
     );
   });
 
