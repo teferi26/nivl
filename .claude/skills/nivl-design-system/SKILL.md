@@ -1,100 +1,172 @@
 ---
 name: nivl-design-system
-description: Use when building or modifying ANY UI in NIVL (screens, components, animations, system copy) — encodes the "arena" monochrome visual language (black, bone white, iron grey, one drop of blood red, laurel gold), exact palette and typography from theme.ts, SystemWindow patterns, motion rules, the voice of "el sistema", and the per-profile (emprendedor/deportista/estudiante/general) rules. Trigger on any edit under src/app or src/components, new screens, visual polish, or copy shown to the user.
+description: Use when building or modifying ANY UI in NIVL (screens, components, animations, system copy). Encodes the monochrome "Mármol y tinta" system (ink0 to ink10 only, meaning carried by inversion, stroke weight, hatching and grain, never by colour), Cinzel titles and Outfit body from src/design/tokens.ts, the arena kit (@/components/arena), the useX + XVista + demo screen pattern, Sheet, loading/error states, the haptics table, accessibility, the voice of "el sistema", gladiator vocabulary, logo usage and the per-profile rules. Trigger on any edit under src/app or src/components, new screens, visual polish, or copy shown to the user.
 ---
 
-# NIVL design system — "la arena"
+# NIVL design system: «Mármol y tinta»
 
-NIVL es la app de hábitos de la gente de Franky: un gladiador que quiere ser un 1 % mejor cada día. Todo lo visible debe sentirse como piedra tallada sobre negro: marcos de un píxel, blanco hueso, hierro, y color solo cuando significa algo. Nada de neón, nada de azul cazador, nada de Solo Leveling.
+NIVL es una arena de gladiador con un coach dentro. Todo lo visible es piedra y tinta: negro, blanco y grises neutros, marcos de trazo fino, Cinzel grabada y Outfit para leer. Nada de neón, nada de color, nada de Solo Leveling.
 
-## Paleta (única fuente: `src/lib/theme.ts` — importa SIEMPRE de ahí, nunca hex sueltos)
+Fuentes de verdad (esta skill es el resumen; ante duda, mandan ellas):
+- `docs/design-v2/SISTEMA.md` (v2; §5 bis Arena, §10 bis Creadores, §12 bis Fase 3 cerrada)
+- `docs/design-v2/L-RADICAL.md` (composición de las pantallas principales) y `docs/design-v2/FASE3.md` (patrón y vibraciones)
+- `src/design/tokens.ts` (tokens, con test de contraste), `src/lib/theme.ts` (nombres viejos mapeados a ink), `src/components/arena/index.ts` (el kit arena)
+- Manual de marca: `coordinacion-winter-arc/branding/index.html` (fuera del repo `nivl/`): esencia, logo, color, tipografía
+
+## 1. Principio: solo blanco y negro
+
+El significado no va en el color. Va en cuatro recursos:
+
+| Recurso | Significa |
+|---|---|
+| **Inversión** (blanco con texto negro) | Lo activo, lo hecho, la acción principal. **Una sola superficie invertida por pantalla** (o por estado). |
+| **Peso del trazo** (`stroke`: hairline 1 · rule 2 · frame 3) | Jerarquía y rango. |
+| **Trama** (rayado a 45°, `Card alerta`, `TarjetaArena trama`, `Tag tone="alerta"`) | Alerta, penalización, bloqueado, peligro. Sustituye al rojo. |
+| **Grano** (puntos finos, `Card logro`, `TarjetaArena grano`, `Tag tone="logro"`) | Logro, racha, Élite. Sustituye al oro. El texto nunca va encima de la textura. |
+
+Reglas: una idea en blanco sólido por pantalla; lo importante del día a ≤ 2 toques; toda celebración se salta con un toque y respeta «reducir movimiento».
+
+## 2. Color (`ink` de `src/design/tokens.ts`; no hay ink5 ni ink7)
 
 | Token | Hex | Uso |
 |---|---|---|
-| bg / panel / panelDeep | #050505 / #0D0D0D / #090909 | fondo de pantalla, relleno de ventana, relleno hundido |
-| accent | #FFFFFF | el idioma: nivel, XP, CTAs, activo, iconos de módulo |
-| accentDim | #5A5A5A | bordes de ventana estándar (hierro) |
-| accentFaint | #191919 | fills sutiles (checkbox done, KPI, chip activo) |
-| accentText | #CFCBC2 | texto acento secundario, enlaces |
-| steel / steelDim / steelPanel / steelText | #B9B9B9 / #454545 / #0B0B0B / #D8D8D8 | SOLO campañas (proyectos) |
-| red / redDim / redPanel / redText | #D8414F / #6B242B / #140A0B / #E8C9CD | SOLO alertas y penalización |
-| gold / goldDim | #D6B76A / #4A3E1E | SOLO rachas, hitos y el estatus Élite (el laurel: la insignia `EliteBadge` y la sección "Tu ludus") |
-| text / textDim / textFaint | #ECE9E2 / #A5A29A / #7A776F | jerarquía de texto |
-| line, track | #262626 / #1C1C1C | separadores, pistas de barras |
-| franky | #8B5CF6 | SOLO la marca "by Franky" y el botón de cuenta Franky. Nunca como color de interfaz |
+| `ink0` | #000000 | Fondo de la app |
+| `ink1` | #0B0B0B | Superficie: tarjetas, hojas |
+| `ink2` | #161616 | Superficie elevada, campo de texto |
+| `ink3` | #242424 | Hairline, separadores (nunca texto) |
+| `ink4` | #3A3A3A | Pista de barras, borde de control (nunca texto) |
+| `ink6` | #8C8C8C | Texto terciario: metadatos, fechas, rótulos; también trama y grano |
+| `ink8` | #BDBDBD | Texto secundario |
+| `ink9` | #EDEDED | Texto principal |
+| `ink10` | #FFFFFF | La inversión: CTA, lo activo, el número de nivel |
 
-Regla de color: el blanco es el idioma; acero, rojo y oro son palabras reservadas con un solo significado cada una. No introducir colores nuevos sin añadirlos a theme.ts. Un botón sólido es blanco con texto negro.
+- Importa `ink` de `@/design/tokens`. `colors.*` de `theme.ts` sigue existiendo solo como mapa de compatibilidad: `red`, `gold`, `steel` valen grises o blanco; decir «alerta» o «logro» es trama o grano, no ese nombre.
+- Prohibido: hex sueltos en pantallas, opacidad para texto (rompe el contraste), cualquier color fuera de la escala. Excepción: logotipos de terceros (Apple, Google) en botones de tienda.
+- Sobre la inversión, el texto va en ink0 o ink3 (ink6 sobre blanco no llega a AA).
+- Ya no existen: rojo #D8414F, oro #D6B76A, acero, el violeta de Franky. El manual de marca los guarda como **«acentos opcionales no aprobados»**; no se usan en ninguna pieza. `EliteBadge` es un laurel blanco.
+- Fuera de la app, la marca usa además hueso #E9E3D5 (escudo y logotipo) y hierro #5E5E5E (filete del escudo, barra del logotipo). Ninguno de los dos es color de interfaz ni de texto.
 
-## Tipografía (de `theme.ts → fonts`)
+## 3. Tipografía (`type` de `tokens.ts`)
 
-- `brand` Cinzel 700: SOLO marca NIVL, letra de rango y momentos épicos. Nunca en párrafos. Cinzel no tiene minúsculas: úsala en mayúsculas.
-- `number` Cinzel 600: cifras destacadas (nivel, KPIs).
-- `heading` Outfit 700 + letterSpacing 1.5–4 + MAYÚSCULAS: títulos de ventana ("MISIONES DE HOY"). Outfit es la familia de Franky: la app y la web se sienten el mismo producto.
-- `semibold` Outfit 600: texto principal de items.
-- `body` Outfit 500: secundario/hints.
-- Mínimos: 11px; texto de lectura ≥13px.
+| Estilo | Familia | Tamaño/interlínea | Tracking | Uso |
+|---|---|---|---|---|
+| `monumento` / `monumentoSm` | Cinzel 700 | 112/112 · 72/72 | 0 | Nivel del Hero (3 cifras en hueco < 360 → Sm) |
+| `display` | Cinzel 700 | 56/60 | 2 | Ceremonia, marca |
+| `rank` | Cinzel 700 | 32/36 | 4 | **Título de pantalla** (`EncabezadoArena`), letra de rango |
+| `title` | Outfit 700 | 30/34 | -0,6 | Título grande en Outfit (hojas, pasos, paywall) |
+| `headline` | Outfit 700 | 20/26 | -0,2 | Título de tarjeta u hoja |
+| `body` | Outfit 500 | 16/24 | 0 | Lectura |
+| `bodySm` | Outfit 500 | 14/20 | 0 | Detalle de fila. **Mínimo de lectura** |
+| `label` | Outfit 700 | 12/16 | 2, MAYÚSCULAS | Rótulo de sección (eyebrow) |
+| `inscripcion` | Cinzel 700 | 14/18 | 4, MAYÚSCULAS | Lo grabado: «RANGO A · HÉROE DE LA ARENA», sellos |
+| `cifra` | Cinzel 600 | 32/36 | 0 | Números de una franja |
+| `number` | Cinzel 600 | 24/28 | 0 | Cifras en Stat |
+| `micro` | Outfit 600 | 11/14 | 1 | Etiquetas (`Tag`). Mínimo absoluto |
 
-## El kit (`src/components/ui`, importa desde `@/components/ui`)
+- **Títulos en Cinzel** mayúscula; **Outfit para todo lo que se lee**. Cinzel solo en mayúsculas o cifras, nunca en párrafos. Las cifras siempre en Cinzel 600.
+- Lectura ≥ 14; nada < 11. Botones: Outfit 700 mayúsculas 15/2,5 · 14/2 · 12/1,5 (lg · md · sm), la única excepción a la escala.
+- `label` (Outfit) para secciones de interfaz, `inscripcion` (Cinzel) para lo grabado; nunca los dos en el mismo bloque.
+- Cifra vacía: `SIN_DATO` («-», en `@/components/ui/sinDato`, con `LEIDO_SIN_DATO` para el lector) o `CIFRA_VACIA` de `@/components/arena`. Miles con `formatoMiles` (1.840), no `toLocaleString`.
 
-La pantalla es editorial: cabecera grande, secciones con rótulo pequeño y SIN caja, y tarjetas solo para lo que es una unidad (una misión, una campaña, un aviso). Referencias hechas: `src/app/(tabs)/index.tsx` (Hoy), `habitos.tsx`, `mazmorras.tsx`, `coach.tsx`.
+## 4. Espacio y forma
 
-- `Screen` — SafeArea + ScrollView con padding 20 y pull-to-refresh (`refreshing`, `onRefresh`). `plain` para pantallas que gestionan su propio scroll (chat).
-- `ScreenHeader` — `eyebrow` (rótulo pequeño: fecha, sección), `title` (Outfit 30, tracking negativo; `compact` para 22), `subtitle` (una línea de contexto), `action` ({icon,label,onPress,solid}) o `right` (un anillo, una cifra), `onBack` en pantallas fuera de las pestañas.
-- `Section` — `title` (eyebrow), `meta` ("2/6"), `action` ({label,onPress}), `tone` (dim|accent|gold|red|steel). Debajo, el contenido sin caja. `Rule` para un separador fino.
-- `Card` — `variant` raised (superficie #0D0D0D sin borde, lo normal) | outline (marco, para avisos y vacíos) | tinted (activo/hecho). `accent` pinta una barra izquierda de 2 px (rojo alerta, oro hito). `onPress` la hace pulsable con encogido. `padded={false}` + `style={{paddingHorizontal:16, paddingVertical:2}}` para listas de `Row`.
-- `Row` + `Check` + `RowValue` — la fila de lista: `leading` (un `Check` redondo de 26, un icono, una letra), `title`, `detail` (texto o nodo), `trailing` (`RowValue` con tono), `done` (tachado), `muted`, `first` (sin línea superior), `chevron`, `onPress`/`onLongPress`.
-- `Chip`, `ChipRow` (desplazable, sangra el padding), `ChipWrap` (envuelve), `Tag` (etiqueta de estado sin interacción: PENALIZACIÓN, JEFE, HOY).
-- `Stat` + `StatRow` — cifras en Cinzel con rótulo: `value`, `label`, `unit`, `size` sm|md|lg, `tone`.
-- `ProgressRing` — anillo SVG animado: `ratio`, `size`, `label`, `sublabel`.
-- `EmptyState` — icono suelto + título + frase + `action`. `compact` dentro de una Card outline.
-- `Skeleton` / `SkeletonRows` — el estado de carga: bloques de `panel` que respiran (0,4↔0,8) y respetan "reducir movimiento". Sustituyen al spinner suelto y al estado vacío pintado antes de tiempo. Dentro de un contenedor con `accessibilityRole="progressbar"`.
-- `Screen overlay={…}` — lo que flota sobre la pantalla (el aviso de XP) va aquí, nunca dentro del scroll.
-- `CompletarSheet` (`src/components`) — la hoja inferior de completar misión; patrón para cualquier elección de 2–3 opciones en vez de `Alert.alert`.
-- `FadeIn` / `Stagger` / `PressScale` — entrada al montar con `index` para la cascada; envuelve cada bloque de una pantalla en `<FadeIn index={i}>` dentro de un `<Stagger>`.
-- `SystemButton` — `variant` solid (blanco, UNA por pantalla) | outline | ghost | danger; `size` sm|md|lg; `icon`.
-- `XPBar` — barra animada; `segments` para marcar tramos (los 21 días de un hábito).
-- `TabBar` — la barra de pestañas propia (línea blanca arriba en la activa).
-- `SystemWindow` sigue existiendo para compatibilidad, pero en pantallas nuevas o rediseñadas NO se usa: sustituir por `Section` + `Card`.
-- `EliteBadge` (`src/components`) — el laurel dorado de la insignia Élite, junto al nombre (`Row titleAddon`, cabecera de Perfil). Estética pura: nunca ordena ni da puntos.
-- `Hexagon` para avatares y emblemas. Esquinas rectas en todo (borderRadius 0 salvo `Check`, avatar y el emblema del coach). Sin sombras difusas ni degradados.
+Base 4 (`space`: 4 · 8 · 12 · 16 · 20 · 24 · 32 · 40 · 56 · 80). Margen lateral 20 / 32 / 48 (compact < 600 · medium 600 a 1023 · expanded ≥ 1024). Radio 0 en todo salvo avatar, `Check` y pastilla de chip. Sin sombras ni degradados (la profundidad es el `zocalo`). Verificar a 375, 430, 744, 1024 y 1440. `Sheet` se centra a 560 en medium y expanded.
 
-### Anatomía de una pantalla rediseñada
+## 5. El kit
 
-```tsx
-<Screen refreshing={r} onRefresh={load}>
-  <Stagger>
-    <FadeIn index={0}><ScreenHeader eyebrow="Cuerpo" title="Gimnasio" subtitle="Hoy toca empuje." action={{icon:'add',label:'Nueva sesión',onPress,solid:true}} /></FadeIn>
-    <FadeIn index={1}><Card><StatRow><Stat value={3} label="Sesiones" /><Stat value="72,5" unit="kg" label="Banca 1RM" /></StatRow></Card></FadeIn>
-    <FadeIn index={2}><Section title="Rutina de hoy" meta="4 ejercicios"><Card padded={false} style={{paddingHorizontal:16,paddingVertical:2}}>{items.map((it,i)=><Row key={it.id} first={i===0} leading={<Check checked={it.done}/>} title={it.name} detail="3×8" trailing={<RowValue>72,5 kg</RowValue>} onPress={...}/>)}</Card></Section></FadeIn>
-    <FadeIn index={3}><Section title="Historial"><EmptyState compact icon="barbell-outline" title="Sin sesiones aún" body="..." /></Section></FadeIn>
-  </Stagger>
-</Screen>
-```
+**Arena** (`@/components/arena`, no desde `@/components/ui`): `EncabezadoArena` (título de pantalla en Cinzel `rank`, eyebrow, subtítulo, volver, acción de 44, `meandro` uno por pantalla) · `TarjetaArena` (variantes piedra · contorno · trama · grano · invertida; `remaches`, `zocalo`, `marco` 1 a 3, `rotulo`) · `FranjaCifras` (2 a 4 celdas «rótulo: valor») · `HeroRango` (`hoy` · `perfil`) · `Barra` (progreso, pista ink4) · `Contador` (máx. 4 por pantalla, nunca en filas) · `Entrada` · `ASangre` · `Campo` (inputs: etiqueta, ayuda, error sin rojo; `grande="rank"`) · `CargaArena` · `ErrorSistema` · motivos `Laurel`, `Columna`, `Arena`, `Meandro`, `Galea` (un trazo, ocultos al lector) · `formatoMiles`, `romano`, `ordinal`, `ratioSeguro`.
 
-Reglas: una acción sólida por pantalla; los formularios en hoja inferior (`Modal` + `sheet` como en `mazmorras.tsx`) con `sheetHandle`, eyebrow, título grande y chips; los inputs con borde `accentDim` sobre `bg`; los estados vacío/cargando/error SIEMPRE definidos; textos largos con `numberOfLines`/`minWidth: 0`.
+**Base** (`@/components/ui`): `Screen` (`plain` si gestiona su scroll; `overlay` para lo que flota), `Section` (`tone` default · alerta · logro), `Card` (surface · outline · inverse · alerta · logro), `Row` + `Check`, `Chip`/`Tag`, `Button` (primary = la inversión · secondary · ghost · danger con trama), `Interruptor`, `Sheet`, `Avatar` + `Crown` (marco y corona por rango, §7 de SISTEMA), `Toast`, `Ceremony`, `EmptyState`, `Skeleton`, `avisar`/`confirmar`, `useAnunciar`.
 
-## Perfiles de uso (`src/lib/kinds.ts`)
+**En desuso** (`@deprecated` + aviso de `no-restricted-imports`):
 
-El perfil (`profiles.profile_kind`: emprendedor · deportista · estudiante · general) NO oculta nada: ordena. En Hoy van delante sus módulos (`modulesFor`) y el resto bajo "MÁS". Las campañas se llaman como diga `kindMeta(kind).campaignsLabel` (Proyectos, Bloques, Asignaturas, Campañas). La cabecera de perfil dice `kindMeta(kind).title` (EMPRENDEDOR · RANGO C). Si añades un módulo, añádelo a `MODULES` y decide en qué perfiles va delante. El coach recibe el mismo perfil desde `supabase/functions/_shared/kinds.ts` (duplicado a propósito; si tocas uno, toca el otro).
+| Viejo | Usa |
+|---|---|
+| `ScreenHeader` | `EncabezadoArena` |
+| `FadeIn` / `Stagger` | `Entrada` |
+| `Stat` / `StatRow` | `FranjaCifras` |
+| `XPBar` | `Barra` |
+| `SystemButton` | `Button` |
+| `SystemWindow` (borrado) | `Section` + `TarjetaArena` |
+| `Card` con `accent` o `raised`/`tinted` | `TarjetaArena` |
+| `Hexagon` y el Avatar viejo (borrados) | `Avatar` del kit (`useRetrato` en `ui/useRetrato.ts`) |
+| `Modal` suelto | `Sheet` |
+| `TextInput` a mano | `Campo` (salvo celdas compactas de tabla y el compositor del coach) |
 
-## Layout
+Excepción a propósito: las puertas de salud e IA (`ScreenHeader inscrito`, `SystemButton`, `HojaPuerta`) porque las pruebas de Seguridad simulan esos módulos.
 
-Pantallas: `Screen` (padding horizontal 20, inferior 40) → `ScreenHeader` → secciones (`Section`, margen inferior 26) con sus tarjetas (`Card`, margen inferior 10). Cabecera: eyebrow + título grande + subtítulo, acción a la derecha. Nada de títulos en mayúsculas espaciadas como cabecera de pantalla: eso es solo para eyebrows y rótulos de sección.
+Excepciones deliberadas de la arena: títulos de pantalla en Cinzel; grano ink3 de fondo en los Hero (decoración, no «logro»); la inversión puede ser una fila («lo activo»: la siguiente misión, mi fila del ranking).
 
-## La voz del sistema (copy)
+## 6. Patrón de pantalla
 
-- Español, segunda persona, frases cortas, dramatismo sobrio: "El sistema ha aplicado −38 XP." / "El sistema está satisfecho."
-- El sistema nunca suplica ni usa signos de exclamación dobles; constata. La calidez se permite solo en momentos ganados (level-up, racha hito).
-- Términos fijos: ludus (el grupo de 5 a 8 Élite; nunca "escuadra" en UI; en BD `elite_groups`), misiones (no "tareas" en UI de hábitos), campañas (proyectos; en las herramientas del coach y en las rutas siguen llamándose mazmorra/dungeon), gladiador (usuario), cierre (medianoche), evidencia, penalización, racha. Nada de "cazador", "sistema de Solo Leveling", "despertar como jugador".
-- Sin emojis en la UI; iconos Ionicons/MaterialCommunityIcons outline.
-- La cuenta es de Franky: en pantallas de acceso se dice "tu cuenta de Franky", nunca "tu proyecto de Supabase".
+**Una pantalla = `useX()` + `XVista` + `demo.tsx`.**
+- `useX` lleva los efectos (Supabase, cerrojos, guardas, `celebrar()`), movidos sin reescribir.
+- `XVista` es pura: recibe datos y acciones; importa módulos con efectos solo con `import type`. Lo que lee un contexto entra como hueco `ReactNode`.
+- La ruta de `src/app` queda en ~30 líneas con sus hojas debajo.
+- `demo.tsx` rellena `DEMO` con los estados (vacío, lleno, cargando, error, hojas). Galería solo en desarrollo: `/kit/pantallas?pantalla=<id>&estado=<e>&ancho=<w>&quieto=1&solo=1`.
 
-## Motion y juice
+Estados:
+- Cargando: `CargaArena` con la forma final (`franja`, `rotulo`, `tarjeta`, `filas`). Nunca spinner suelto ni vacío antes de tiempo.
+- Error de carga: `ErrorSistema` (rótulo **«El sistema no responde»**, `mensajeSistema(e)`, «Reintentar» secondary; no gasta la inversión).
+- Fallo de una acción: `avisar('El sistema no responde', mensajeSistema(e))` o el error en línea de la hoja. Ningún `e.message` llega al usuario.
+- Vacío: `EmptyState` (icono, frase en voz del sistema, una acción). Bloqueado: trama + candado + razón. Hecho: Check blanco y texto ink6 tachado.
 
-- Animated/Reanimated, 150–300ms, spring para entradas (LevelUpOverlay como referencia).
-- Todo logro visible tiene par háptico: éxito → `Haptics.notificationAsync(Success)`; level-up → impacto fuerte.
-- Nunca bloquear el gesto del usuario por una animación; las celebraciones se pueden saltar con un tap.
+Formularios en `Sheet` (asa, eyebrow, título, contenido con scroll, pie fijo con la acción). Una inversión por estado; lo demás secondary, ghost o danger.
 
-## Checklist antes de dar por buena una UI
+## 7. Movimiento y vibraciones
 
-1. ¿Colores y fuentes importados de theme.ts? 2. ¿Paneles en SystemWindow? 3. ¿Copy con la voz del sistema y sin vocabulario de cazador? 4. ¿Funciona con textos largos (numberOfLines/minWidth 0)? 5. ¿Estados vacío/cargando/error definidos? 6. ¿Tiene sentido para los cuatro perfiles? 7. `npm run typecheck` limpio.
+`motion`: instant 100 · quick 180 · base 260 · slow 420 · ceremony 1600 · escalon 55. `Entrada` (fundido 260, subida 14) **solo en los bloques 0 a 7** de una pantalla o los 8 primeros de una lista; nunca `layout` de Reanimated, nunca `Entrada`/`Contador` en filas. Todo respeta «reducir movimiento».
+
+Vibraciones: una sola función `vibrar(evento)` (`src/design/haptics.ts`); ninguna pantalla llama a expo-haptics a mano.
+
+| Gesto | Vibración | Movimiento |
+|---|---|---|
+| Elegir chip, pestaña, día o paso | `seleccion` (ya dentro de Chip, Interruptor y pestañas) | ninguno |
+| Marcar un elemento | `seleccion` | rebote del Check 180 ms (nada con reducir movimiento) |
+| Guardar con XP o firmar | `mision` (`misionExtra` con foto o bonus); nada si abre ceremonia | Contador o Barra en la cifra que cambia |
+| Guardar sin XP | ninguna | cierre de la hoja |
+| Borrado confirmado | `destructiva` justo tras `confirmar` | ninguno |
+| Fallo de una acción del usuario | `penalizacion` en el catch de la acción principal (no en cargas) | ninguno |
+| Llegar al final de algo que se mira | ninguna | ninguno |
+| Entrar en una pantalla | ninguna | `Entrada` bloques 0 a 7, escalón 55 ms |
+
+Además: `diaPerfecto`, `nivel`, `rango`, `rachaHito`, `recuperacion` (los disparan ceremonia y celebraciones). Nunca la notificación de error: el sistema no castiga con el cuerpo.
+
+## 8. Accesibilidad, zona segura y teclado
+
+- Zona táctil ≥ 44 × 44 (`hitSlop` si el glifo es menor).
+- `maxFontSizeMultiplier={1.35}` en rótulos y texto; `1` en monumentos y cifras de franja (con `adjustsFontSizeToFit`). Con `fontScale > 1.35`, una columna.
+- VoiceOver no lee `accessibilityRole="alert"` ni las regiones vivas en iOS: lo que aparece y hay que oír (errores, avisos) pasa por `useAnunciar(texto)`.
+- Pulsación larga siempre con alternativa: `accessibilityActions={[{ name: 'longpress', label: '…' }]}` + `onAccessibilityAction`. Lo decorativo, oculto (`accessibilityElementsHidden`, `importantForAccessibility="no-hide-descendants"`). Grupos (Hero, celdas de franja) con un resumen legible.
+- **Un solo mecanismo de teclado por pantalla**: `KeyboardAvoidingView` o `automaticallyAdjustKeyboardInsets`, nunca los dos. `Sheet` ya lo hace: dentro, sin KAV propio. Un KAV dentro de `Screen plain` lleva `keyboardVerticalOffset={Platform.OS === 'ios' ? insets.top : 0}` (el padre empieza bajo la zona segura; ver `CoachVista`, `DiarioVista`).
+- Zona segura real con `useSafeAreaInsets`; pie fijo fuera del ScrollView para la acción principal en flujos por pasos.
+
+## 9. Logo
+
+El emblema es **el escudo con la N** (contorno hueso, filete interior de hierro, N de Cinzel); el logotipo es «NIVL» en Cinzel 700 espaciada con barra de hierro. Versiones: horizontal (principal), vertical, escudo solo (icono, avatar, favicon), logotipo solo (plantillas de compartir con `nivl.app` abajo). Solo hueso, hierro y negro; positivo, negativo y monocromo. Área de respeto x = H/4. Mínimos en pantalla: escudo 24 px de alto, horizontal 32, vertical 64, logotipo solo 80 de ancho, avatar 110, icono iOS 29 pt. Nunca estirar, girar, recolorear, sombrear, perfilar ni recomponer. Archivos en `branding/fuentes/logo/`. Para todo lo demás, el manual de marca.
+
+## 10. Voz del sistema y vocabulario
+
+- Español, tú, presente, frases cortas, dramatismo sobrio. El sistema constata, no suplica: «Tus misiones de hoy están listas. La primera es la que cuesta.» La calidez solo en momentos ganados (nivel, rango, racha hito).
+- Sin exclamaciones dobles, sin emojis en la interfaz, sin mayúsculas para gritar, sin prometer resultados, sin culpar al volver.
+- **Nunca guion largo ni guion medio** (U+2014, U+2013) en ningún texto visible (rangos con «a»: «6 A 12 OCT»; el servidor lo filtra además en la IA).
+- XP que el servidor puede recortar (topes, multiplicadores, racha): **«hasta +N XP»**; la cifra exacta solo cuando la devuelve el servidor (Toast, ceremonia).
+- Vocabulario fijo: gladiador (usuario), misiones (no «tareas»), campañas (no «mazmorras»; en rutas y herramientas del coach siguen `mazmorras`/`dungeon`), ludus (no «escuadra»), cierre (medianoche), racha, evidencia, penalización, arena. **Nunca** «cazador», «mazmorra», «Solo Leveling», «despertar como jugador».
+- La cuenta es de Franky: «tu cuenta de Franky».
+
+## 11. Perfiles de uso (`src/lib/kinds.ts`)
+
+El perfil (`profiles.profile_kind`: emprendedor · trabajador (profesional) · deportista · estudiante · general) NO oculta nada: ordena. En Hoy van delante sus módulos (`modulesFor(kind).primary`) y el resto bajo «Más». Las campañas se llaman como diga `kindMeta(kind).campaignsLabel` (Proyectos, Objetivos, Bloques, Asignaturas, Campañas) con `campaignsHint`. La cabecera de perfil usa `kindMeta(kind).title`. Un módulo nuevo va en `MODULES` y se decide en qué perfiles va delante. El coach tiene la copia en `supabase/functions/_shared/kinds.ts`: si tocas uno, toca el otro.
+
+## 12. Checklist antes de dar por buena una UI
+
+1. Solo `ink` (sin hex ni opacidad en texto) y `type`; títulos Cinzel, lectura Outfit ≥ 14.
+2. Una inversión por estado; alerta con trama, logro con grano.
+3. Kit arena y nada de lo que está en desuso; formularios en `Sheet` con `Campo`.
+4. `useX` + `XVista` + `demo.tsx`, con todos los estados en la galería a 375, 744, 1024 y 1440.
+5. Cargando con `CargaArena`, error con `ErrorSistema`, vacío con `EmptyState`.
+6. Vibraciones según la tabla; `Entrada` solo en bloques 0 a 7.
+7. 44 pt, `maxFontSizeMultiplier`, `useAnunciar`, `accessibilityActions` en pulsación larga, un solo mecanismo de teclado.
+8. Copy en voz del sistema, sin guion largo ni medio, vocabulario de gladiador, «hasta +N XP» si el servidor puede recortar, cifra vacía «-».
+9. Tiene sentido para los cinco perfiles.
+10. `npx tsc --noEmit`, `npx eslint src --quiet`, `CI=true npx jest --ci`, `npx expo export --platform ios` (y web si tocas base o animación); `rg -n "[\x{2014}\x{2013}]"` sobre tus archivos.
