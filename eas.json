@@ -37,6 +37,9 @@
       "ios": {
         "simulator": true,
         "buildConfiguration": "Release"
+      },
+      "android": {
+        "buildType": "apk"
       }
     },
     "production": {
