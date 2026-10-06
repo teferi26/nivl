@@ -71,13 +71,12 @@ jobs:
           # El paquete «tools» ya no existe en el sdkmanager actual y hace fallar el paso.
           packages: 'platform-tools'
 
-      - name: Memoria para Gradle (evita OutOfMemoryError: Metaspace en ksp)
+      - name: "Memoria para Gradle (evita OutOfMemoryError Metaspace en ksp)"
         run: |
           mkdir -p ~/.gradle
-          printf 'org.gradle.jvmargs=-Xmx6g -XX:MaxMetaspaceSize=2g -XX:+HeapDumpOnOutOfMemoryError
-org.gradle.daemon=false
-kotlin.daemon.jvmargs=-Xmx3g -XX:MaxMetaspaceSize=1g
-' >> ~/.gradle/gradle.properties
+          echo 'org.gradle.jvmargs=-Xmx6g -XX:MaxMetaspaceSize=2g -XX:+HeapDumpOnOutOfMemoryError' >> ~/.gradle/gradle.properties
+          echo 'org.gradle.daemon=false' >> ~/.gradle/gradle.properties
+          echo 'kotlin.daemon.jvmargs=-Xmx3g -XX:MaxMetaspaceSize=1g' >> ~/.gradle/gradle.properties
 
       - run: npm ci
       - run: npm install --global eas-cli@21.2.0
