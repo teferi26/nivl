@@ -36,7 +36,7 @@ concurrency:
 jobs:
   capturas:
     runs-on: ubuntu-24.04
-    timeout-minutes: 120
+    timeout-minutes: 90
     env:
       MAESTRO_VERSION: 2.10.0
     steps:
@@ -70,6 +70,14 @@ jobs:
         with:
           # El paquete «tools» ya no existe en el sdkmanager actual y hace fallar el paso.
           packages: 'platform-tools'
+
+      - name: Memoria para Gradle (evita OutOfMemoryError: Metaspace en ksp)
+        run: |
+          mkdir -p ~/.gradle
+          printf 'org.gradle.jvmargs=-Xmx6g -XX:MaxMetaspaceSize=2g -XX:+HeapDumpOnOutOfMemoryError
+org.gradle.daemon=false
+kotlin.daemon.jvmargs=-Xmx3g -XX:MaxMetaspaceSize=1g
+' >> ~/.gradle/gradle.properties
 
       - run: npm ci
       - run: npm install --global eas-cli@21.2.0
