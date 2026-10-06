@@ -1,6 +1,6 @@
 // Lista de espera (0054): la función `espera` sin red ni base de datos.
 import { assertEquals } from 'jsr:@std/assert@1';
-import { esperaHandler, ipDe, limpiarOrigen, VERSION_CONSENTIMIENTO, type ResultadoAlta } from '../espera/handler.ts';
+import { esperaHandler, ipDe, limpiarOrigen, VERSION_CONSENTIMIENTO, versionDe, type ResultadoAlta } from '../espera/handler.ts';
 
 const NIVL = 'https://nivl.app';
 
@@ -116,4 +116,30 @@ Deno.test('origen: lo que no encaja se descarta (null), no se rechaza', () => {
 Deno.test('ipDe: primera IP de x-forwarded-for; sin cabecera, cadena vacía', () => {
   assertEquals(ipDe(new Request('https://x', { headers: { 'x-forwarded-for': ' 9.9.9.9 ,1.1.1.1' } })), '9.9.9.9');
   assertEquals(ipDe(new Request('https://x')), '');
+});
+
+Deno.test('idioma: en y fr con su versión; es, ausente u otro valor → la española; nunca una versión del cliente', async () => {
+  const casos: [unknown, string][] = [
+    ['en', 'espera-v1.4-en'],
+    ['fr', 'espera-v1.4-fr'],
+    ['es', VERSION_CONSENTIMIENTO],
+    [undefined, VERSION_CONSENTIMIENTO],
+    ['de', VERSION_CONSENTIMIENTO],
+    ['EN', VERSION_CONSENTIMIENTO],
+    ['espera-v9', VERSION_CONSENTIMIENTO],
+    ['__proto__', VERSION_CONSENTIMIENTO],
+    ['toString', VERSION_CONSENTIMIENTO],
+    [42, VERSION_CONSENTIMIENTO],
+  ];
+  for (const [idioma, version] of casos) {
+    const { h, llamadas } = espia('ok');
+    const cuerpo: Record<string, unknown> = { email: 'a@b.es', consentimiento: true, version: 'espera-v666' };
+    if (idioma !== undefined) cuerpo.idioma = idioma;
+    const r = await h(peticion(cuerpo));
+    assertEquals(r.status, 200, String(idioma));
+    assertEquals(llamadas[0][1], version, String(idioma));
+    assertEquals(versionDe(idioma), version);
+  }
+  // Las versiones cumplen el CHECK de waitlist (0054): ^[a-z0-9.-]{1,32}$
+  for (const v of ['espera-v1.4-en', 'espera-v1.4-fr', VERSION_CONSENTIMIENTO]) assertEquals(/^[a-z0-9.-]{1,32}$/.test(v), true, v);
 });
