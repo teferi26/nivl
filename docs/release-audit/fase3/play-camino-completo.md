@@ -1,6 +1,8 @@
 # Google Play para NIVL: cuenta, ficha y 12 testers (para Teferi)
 
-Preparado por NIVL - Tiendas el 06/10/2026, por encargo de COACH. **No se ha hecho nada en Google Play**: esto es lo que hay que hacer, en orden. La build 24 que está en revisión en Apple no se toca.
+Preparado por NIVL - Tiendas el 06/10/2026, por encargo de COACH.
+
+**Estado (06/10):** Teferi ya ha creado y pagado la cuenta (personal). Desde este chat no se ha tocado nada en Google Play. Lo que necesitamos de él está todo junto en el §0. La build 24 que está en revisión en Apple no se toca.
 
 **Por qué empezar ya:** una cuenta personal nueva necesita **12 testers dentro de una prueba cerrada durante 14 días seguidos** antes de poder publicar. Después, Google revisa la solicitud de acceso a producción (según Google, normalmente 7 días o menos). Desde que se abre la prueba hasta que se publica hay, como mínimo, **unas 3 semanas**.
 
@@ -11,7 +13,20 @@ Fuentes oficiales consultadas el 06/10/2026:
 
 Lo que no esté en esas páginas va marcado como **NO PROBADO**.
 
-## 1. Crear la cuenta de desarrollador (lo hace Teferi)
+## 0. Lo que necesitamos de Teferi (lista única)
+
+Lo demás lo dejamos preparado el coordinador y este chat.
+
+1. **Terminar la verificación** si Play Console la pide (aviso en la parte de arriba de la consola): documento de identidad, teléfono y correo. Si pide verificar un **móvil Android**, hay que instalar la app Google Play Console en ese móvil y entrar con la cuenta de desarrollador. Si no tiene Android, sirve uno prestado durante unos minutos.
+2. **Poner la dirección y el teléfono públicos** (Play Console > Configuración > Detalles de la cuenta de desarrollador). Que no sean los de casa: un apartado de correos o una dirección profesional, y un número solo para NIVL.
+3. **Dar acceso al coordinador** si quiere que él cargue la ficha, las suscripciones y la prueba: Play Console > Usuarios y permisos > Invitar, con el correo que diga el coordinador y solo los permisos que hagan falta. Si prefiere hacerlo él, la ficha está lista para copiar y pegar en el §3.
+4. **Crear el Grupo de Google de testers** (2 minutos): groups.google.com > Crear grupo > nombre «Testers NIVL» > quién puede unirse: «Cualquier persona con el enlace» o «Cualquiera puede pedir unirse». Después, pasar el correo del grupo al coordinador.
+5. **Dar el OK para cada envío a Google:** ficha, clasificación de contenido, Seguridad de los datos, suscripciones, AAB y apertura de la prueba cerrada. Nada se envía sin ese OK.
+6. **Mandar las invitaciones:** primero el texto A a amigos y familia con Android; después, el texto B a la comunidad. Si no salen 12, se pasa al plan B del §4.
+7. **Llevar la cuenta privada de los testers** (quién y qué día), fuera de git.
+8. **Decidir sobre la cuenta de organización.** Recomendación: **no por ahora**, salvo que ya seas autónomo o tengas empresa (ver §4.2).
+
+## 1. Crear la cuenta de desarrollador (HECHO por Teferi el 06/10)
 
 **Cuánto cuesta:** **25 USD, un único pago** con tarjeta. No hay cuota anual.
 
@@ -25,7 +40,7 @@ Lo que no esté en esas páginas va marcado como **NO PROBADO**.
 
 **Pasos:**
 1. **Entrar** en https://play.google.com/console/signup con la cuenta de Google elegida.
-2. **Elegir «Personal»** como tipo de cuenta (eres tú, como persona física). La de organización pide una empresa y un número D-U-N-S, y no tiene la prueba obligatoria de 12 testers. Para NIVL, hoy, personal: es lo que se decidió el 02/10.
+2. **Elegir «Personal»** como tipo de cuenta (eres tú, como persona física). La de organización pide un número D-U-N-S y no tiene la prueba obligatoria de 12 testers (ver §4.2). Para NIVL, personal: se decidió el 02/10 y es la que se ha creado. Ojo: Google exige cuenta de organización a las apps **médicas** y de investigación con personas. NIVL es de bienestar (actividad, nutrición y hábitos) y no entra ahí, así que la cuenta personal le vale.
 3. **Poner el nombre de desarrollador** que verá la gente. Propuesta: «NIVL».
 4. **Pagar** los 25 USD.
 5. **Verificar la identidad:** subir el DNI o el pasaporte.
@@ -143,13 +158,13 @@ Privacy: https://nivl.app/privacidad
 Delete your account: https://nivl.app/borrar-cuenta
 ```
 
-### Gráficos (todavía no existen)
+### Gráficos
 
 | Recurso | Medida | De dónde sale |
 |---|---|---|
-| Icono | 512 × 512, PNG | El de la app (`assets/images/icon.png`), reducido |
-| Gráfico destacado | 1024 × 500 | Nuevo: fondo negro, la marca NIVL en Cinzel y el lema «Un 1 % mejor cada día». Lo diseña Experiencia |
-| Capturas de teléfono | De 2 a 8; para que la app pueda salir recomendada, al menos 4 de 1080 px o más | **Hechas en Android**, en un móvil real o en el emulador, con el mismo flujo de Maestro que las de iOS. Las de iPhone no valen: llevan la barra de estado y el aspecto de iOS |
+| Icono | 512 × 512, PNG | **Listo** (escudo nuevo, del coordinador): `coordinacion-winter-arc/logo-propuestas/final/nivl-icono-play-512.png`. El icono del launcher de Android ya lleva el escudo (integración @a9e93e5); el de iOS cambia en la 1.0.9 |
+| Gráfico destacado | 1024 × 500 | **Listo:** `play-graficos/play-grafico-destacado-1024x500.png`. Escudo, NIVL en Cinzel y «UN 1 % MEJOR CADA DÍA» |
+| Capturas de teléfono | De 2 a 8; para que la app pueda salir recomendada, al menos 4 de 1080 px o más. El lado largo no puede pasar del doble del corto (1080 × 2400 no vale; 1080 × 1920 sí) | **Propuesta lista:** `capturas-android/` (workflow de emulador, el gemelo del de iOS). La activa el coordinador. Las de iPhone no valen |
 | Capturas de tablet de 7" y 10" | Opcionales | Solo si se prueba en una tablet de verdad |
 
 Las escenas son las mismas que en iOS:
@@ -177,52 +192,110 @@ Las respuestas, una por una, están en `play-puesta-en-marcha.md` §2. En resume
 
 ## 4. Conseguir 12 testers reales (apuntar a 20)
 
-**La regla de Google:** cuentan quienes se apuntan a la prueba cerrada **y siguen dentro 14 días seguidos**. Quien se sale antes no cuenta. Por eso la meta es **20 personas**, con margen.
+**La regla de Google:** cuentan quienes se apuntan a la prueba cerrada **y siguen dentro 14 días seguidos**. Si alguien se sale, su cuenta atrás empieza de cero.
+
+Además, Google no solo cuenta a los apuntados: según la experiencia de otros desarrolladores, rechaza el acceso a producción cuando los testers no abren la app. Y al pedir producción pregunta:
+- cómo se reclutó a los testers;
+- si usaron la app como la usaría un usuario normal;
+- qué se cambió con lo que dijeron.
+
+Por eso la meta es **20 personas que la usen de verdad**, no 12 nombres.
 
 **Qué necesita cada tester:**
-- Un **móvil Android**.
-- Una **cuenta de Google**.
+- Un **móvil Android**. Con iPhone no sirve.
+- Una **cuenta de Google**. Cada persona, la suya: dos cuentas de la misma persona no se deben contar como dos testers.
 - Unos minutos al día durante dos semanas.
 
-Quien tenga iPhone no sirve para esta prueba.
+**Condiciones:** los testers usan NIVL **igual que cualquier usuario**. Todo lo gratuito y, si quieren el coach, la prueba de 7 días o la suscripción. **No hay Élite gratis.** El gancho es:
+- entrar los primeros;
+- que su opinión cambie la app de verdad;
+- salir en las notas de la versión como testers fundadores, solo si lo aceptan.
 
-**De dónde salen:**
+### 4.1 De dónde salen, en orden
 
-| Fuente | Cuántos | Cómo |
+| Orden | Fuente | Cuántos (estimación) | Cómo |
+|---|---|---|---|
+| 1 | Amigos y familia con Android | 3 a 8 | Mensaje directo (texto A). Son los que más aguantan los 14 días |
+| 2 | Comunidad de tafatips (TikTok, unos 6.000 seguidores, e IG) | 5 a 12 | Un vídeo o historia corta y una publicación (texto B); a quien escriba «NIVL», el enlace por privado. Fijar el comentario y repetir la historia a los 2 días. Si responde el 0,2 % de 6.000 son 12, pero no todos tienen Android: estimación, **NO PROBADO** |
+| 3 | Cuentas de clips y creadores | 2 a 4 | Mensaje directo (texto A). De paso, graban contenido real |
+| 4 | Grupos de universitarios de Franky | 3 a 8 | **Solo publicaciones** en los grupos y canales de estudiantes donde Teferi ya está, o en las redes de Franky (texto B adaptado). **No escribir a usuarios de Franky** con sus correos ni por notificaciones de Franky: esos datos se dieron para Franky, no para promocionar otra app, y hacerlo choca con el RGPD |
+| 5 | Comunidades de intercambio de testers (r/AndroidClosedTesting, r/TestersCommunity) | 5 a 15 | Personas reales que prueban tu app a cambio de que pruebes la suya. Texto D. Detalles abajo |
+
+**Intercambio de testers (fuente 5):**
+
+- **Ventajas:**
+  - Es rápido: suelen salir testers en pocos días.
+  - Son personas reales, con su cuenta y su móvil.
+  - Google no prohíbe esta vía en la página oficial de requisitos.
+- **Coste:**
+  - Teferi (o alguien con Android) tiene que instalar y abrir **las apps de los demás** durante 14 días: uno por uno.
+  - La app solo está en español, así que su uso será corto. Eso pesa poco en la parte de «uso como un usuario normal». Por eso es **complemento**, no la base: mejor que la mayoría venga de las fuentes 1 a 4.
+- **No pagar testers** (Fiverr, servicios de «12 testers garantizados»). No los permite ninguna página oficial, el uso suele ser falso y Google puede rechazar el acceso a producción. Tampoco pedir reseñas en Play a cambio de nada.
+
+**Organización:**
+1. **Grupo de Google** «Testers NIVL» como lista de la prueba cerrada. Cada persona entra en el grupo y después acepta en el enlace de la prueba.
+2. **Registro privado** de quién se apuntó y qué día, fuera de git (el repositorio es público). Se cuenta a 12 desde el día en que el duodécimo está dentro.
+3. **Canal de opiniones claro**, como pide Google: un formulario corto y el correo de soporte. Apuntar cada cambio hecho con lo que digan: es la respuesta para el formulario de producción.
+4. **Recordatorio a mitad de la prueba** (texto C).
+
+### 4.2 ¿Cuenta de organización en vez de personal?
+
+**Lo que dice Google:**
+- La prueba de 12 testers durante 14 días solo se exige a las **cuentas personales** creadas después del 13/11/2023.
+- La de organización necesita un **número D-U-N-S**: es gratis y se pide a Dun & Bradstreet. Google avisa de que **puede tardar hasta 30 días** y, después, **hasta 5 días hábiles** en llegar a Google.
+- La cuenta personal se puede **convertir** a organización desde Play Console. Al revés, no.
+- En la organización se publica el nombre de la empresa, no el tuyo, y hay que verificar la web oficial.
+
+| | Personal (la que hay) | Organización |
 |---|---|---|
-| Amigos y familia con Android | De 6 a 8 | Mensaje directo (texto A). Son los que más aguantan los 14 días |
-| Comunidad de tafatips | De 8 a 12 | Una historia o una publicación (texto B), y a quien responda se le manda el enlace por privado. Antes, preguntar si tiene Android |
-| Cuentas de clips y creadores de NIVL | De 2 a 4 | Mensaje directo (texto A). De paso, graban contenido real de la app |
+| Prueba 12 × 14 | Obligatoria | No se exige a las cuentas de organización. **NO PROBADO:** si una cuenta personal **convertida** se libra de ella. Google no lo dice |
+| Requisito legal | Persona física | Una organización con existencia legal: empresa o, como mínimo, autónomo dado de alta. **NO PROBADO:** que D&B dé D-U-N-S a un autónomo español; Google no lo aclara |
+| Plazo | Unas 3 semanas (prueba más revisión) | D-U-N-S hasta 30 días, más 5 días hábiles, más verificación. **Igual o más lento** |
+| Coste | 0 € más | D-U-N-S gratis. Si no eres autónomo: alta, cuota mensual y gestoría |
+| Ficha pública | Tu nombre legal y la dirección que pongas | El nombre y la dirección de la empresa |
 
-**Cómo se organiza:**
-1. **Crear un Grupo de Google** (por ejemplo, «Testers NIVL») y ponerlo como lista de testers de la prueba cerrada. Cada persona entra en el grupo y después acepta en el **enlace de la prueba** de Play.
-2. **Llevar un registro privado** de quién se apunta y qué día, fuera de git (el repositorio es público). El día 14 se comprueba que al menos 12 siguen dentro desde el principio.
-3. **Mantenerlos activos:** un recordatorio a mitad de la prueba (texto C) y un formulario corto de opiniones. Al pedir producción, Google pregunta cómo se reclutó a los testers, cuánto usaron la app y qué se cambió con lo que dijeron. Hay que poder contestar con datos reales.
-4. **No pagar ni pedir reseñas en Play**: está prohibido. Lo que sí se puede es dar Élite gratis a los testers mientras dura la prueba, con una concesión desde el servidor. Es un beneficio de la prueba, no un pago por opinar. **Lo decide el coordinador con Teferi.**
+**Recomendación:**
+- **No crear una empresa ni darse de alta como autónomo solo para esto.** Tarda lo mismo o más que la prueba y cuesta dinero cada mes.
+- Si Teferi **ya es autónomo o tiene empresa**, pedir el D-U-N-S en paralelo: no estorba y sirve después, también para Apple.
+- Lo más rápido sigue siendo abrir ya la prueba cerrada con las fuentes 1 a 5.
+
+Fuentes oficiales, consultadas el 06/10/2026:
+- [Tipos de cuenta](https://support.google.com/googleplay/android-developer/answer/13634885).
+- [Cambiar a organización y D-U-N-S](https://support.google.com/googleplay/android-developer/answer/13634888).
+- [Requisitos de prueba](https://support.google.com/googleplay/android-developer/answer/14151465).
 
 ### Texto A: mensaje directo (amigos, familia y creadores)
 
-> ¡Hola! Estoy lanzando NIVL, mi app de hábitos, y antes de publicarla en Google Play necesito 12 personas con Android que la prueben durante 14 días. ¿Me echas una mano?
+> ¡Hola! Estoy lanzando NIVL, mi app de hábitos, y antes de publicarla en Google Play necesito personas con Android que la prueben durante 14 días. ¿Me echas una mano?
 >
 > 1. Entra en este grupo con tu cuenta de Google: [ENLACE DEL GRUPO]
 > 2. Acepta la prueba aquí e instala la app: [ENLACE DE LA PRUEBA]
-> 3. Úsala unos minutos al día: completa alguna misión y prueba el coach.
+> 3. Úsala unos minutos al día: crea tus hábitos y completa alguna misión.
 >
-> Lo único importante: **no te salgas de la prueba antes de 14 días**, porque Google solo cuenta a quien sigue dentro todo ese tiempo. Si algo falla o no te gusta, dímelo sin filtro. ¡Gracias!
+> Lo único importante: **no te salgas de la prueba antes de 14 días**, porque Google solo cuenta a quien sigue dentro todo ese tiempo. Y dime sin filtro qué falla o qué cambiarías: lo que me digas lo voy a cambiar de verdad. ¡Gracias!
 
-### Texto B: comunidad de tafatips (historia o publicación)
+### Texto B: comunidad de tafatips y grupos de estudiantes (vídeo, historia o publicación)
 
-> Estoy a punto de sacar **NIVL**, la app con la que convierto mis hábitos en misiones y subo de nivel cada día. Antes de publicarla en Android necesito **testers con móvil Android** durante 2 semanas.
+> Estoy a punto de sacar **NIVL**, la app con la que convierto mis hábitos en misiones y subo de nivel cada día. Antes de publicarla en Android busco **testers con móvil Android** durante 2 semanas.
 >
-> Si te apuntas, entras antes que nadie, me dices qué mejorarías y tienes el coach desbloqueado durante la prueba.
+> Entras antes que nadie y lo que me digas cambia la app: lo leo todo y lo arreglo.
 >
 > Escríbeme «NIVL» por privado y te paso el enlace. Solo Android, y solo si puedes estar los 14 días dentro.
-
-Si no se aprueba el Élite gratis, quitar «y tienes el coach desbloqueado durante la prueba». En ese caso, en Android el coach se prueba con los 7 días gratis, si la build de Android los tiene. **NO PROBADO.**
 
 ### Texto C: recordatorio a mitad de la prueba (día 7)
 
 > ¡Vamos por la mitad! Gracias por seguir dentro. Si tienes 2 minutos, cuéntame qué es lo que más te ha servido y qué cambiarías: [ENLACE DEL FORMULARIO]. Recuerda no salirte de la prueba hasta el [FECHA DEL DÍA 14].
+
+### Texto D: comunidades de intercambio (en inglés)
+
+> **[Test exchange] NIVL: habits as daily missions (Spanish UI)**
+>
+> Solo dev here, looking for testers for my closed test. NIVL turns your habits into daily missions with levels, ranks and streaks. The interface is in Spanish, but you only need to open it and tap around a bit each day.
+>
+> 1. Join the group: [GROUP LINK]
+> 2. Opt in and install: [TEST LINK]
+>
+> I will test your app back for the full 14 days. Drop your links below and I will join today. Please stay opted in for 14 days. Thanks!
 
 ## 5. Calendario orientativo
 
@@ -236,10 +309,6 @@ Si no se aprueba el Élite gratis, quitar «y tienes el coach desbloqueado duran
 | 16 | Se cumplen 14 días con 12 o más dentro: **solicitar el acceso a producción** |
 | Hacia el 23 | Si Google lo aprueba, publicación en producción por fases |
 
-**Lo que decide Teferi:**
-- Abrir la cuenta como personal.
-- Qué dirección y qué teléfono salen en público.
-- Si los testers tienen Élite gratis durante la prueba.
-- A quién le manda el texto A.
+Ya decidido (06/10, vía COACH): cuenta personal, dirección pública que no sea la de casa (la pone él) y **sin Élite gratis para los testers**.
 
 No se ha enviado nada a Google ni a Apple.
