@@ -152,7 +152,7 @@ El emblema es **el escudo con la N** (contorno hueso, filete interior de hierro,
 - **Nunca guion largo ni guion medio** (U+2014, U+2013) en ningún texto visible (rangos con «a»: «6 A 12 OCT»; el servidor lo filtra además en la IA).
 - XP que el servidor puede recortar (topes, multiplicadores, racha): **«hasta +N XP»**; la cifra exacta solo cuando la devuelve el servidor (Toast, ceremonia).
 - Vocabulario fijo: gladiador (usuario), misiones (no «tareas»), campañas (no «mazmorras»; en rutas y herramientas del coach siguen `mazmorras`/`dungeon`), ludus (no «escuadra»), cierre (medianoche), racha, evidencia, penalización, arena. **Nunca** «cazador», «mazmorra», «Solo Leveling», «despertar como jugador».
-- La cuenta es de Franky: «tu cuenta de Franky».
+- La cuenta es de NIVL (correo y contraseña propios): «tu cuenta de NIVL». Franky ya no forma parte del acceso.
 
 ## 11. Perfiles de uso (`src/lib/kinds.ts`)
 
