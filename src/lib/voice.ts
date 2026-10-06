@@ -41,27 +41,27 @@ export const voice = {
   allDone: () =>
     pick([
       'Todas las misiones completadas. El sistema está satisfecho.',
-      'Día cerrado sin bajas. Continúa así, gladiador.',
-      'Objetivos del día neutralizados. Descansa: lo has ganado.',
+      'Día cumplido, gladiador. Mañana, las siguientes.',
+      'Misiones del día completadas. Descansa: lo has ganado.',
       'El sistema registra un día impecable.',
     ]),
   levelUp: () =>
     pick([
-      'Tu poder ha aumentado.',
+      'Subes de nivel. El sistema lo registra.',
       'El sistema reconoce tu progreso.',
-      'Has roto tu límite anterior.',
+      'Nivel nuevo. Sumado misión a misión.',
       'Un nivel más. La arena lo ha visto.',
     ]),
   penaltyApplied: (xp: number) =>
     pick([
       `El sistema ha restado ${xp} XP. Tienes una misión de recuperación en Hoy.`,
       `Día sin cerrar: −${xp} XP. La recuperación ya está en tu lista.`,
-      `−${xp} XP registrados. Un día no te define: la recuperación te espera.`,
+      `−${xp} XP registrados. La misión de recuperación está en Hoy.`,
     ]),
   stoneUsed: () =>
     pick([
-      'Una Piedra de Protección se ha hecho añicos en tu lugar. La racha sobrevive.',
-      'El sistema ha consumido una Piedra de Protección. Sin daño esta vez.',
+      'Se ha gastado una Piedra de Protección. La racha sigue.',
+      'El sistema ha usado una Piedra de Protección. La racha se mantiene.',
     ]),
   stoneEarned: () =>
     pick([
@@ -71,13 +71,13 @@ export const voice = {
   frozen: (reason: string) =>
     pick([
       `Sistema en pausa (${reason}). Sin misiones, sin restas, sin juicio.`,
-      `Modo ${reason} activo. El sistema protege tu retirada.`,
+      `Pausa activa: ${reason}. Nada se resta mientras dure.`,
     ]),
   morningNotif: () =>
     pick([
       'El sistema ha asignado tus misiones de hoy. Empieza por la primera.',
-      'Nuevas misiones disponibles. El día es una campaña: entra primero.',
-      'Tus misiones esperan. Cada una completada te acerca al siguiente rango.',
+      'Tus misiones de hoy están listas. La primera es la que cuesta.',
+      'Misiones asignadas. Cada una suma XP hacia el siguiente rango.',
     ]),
   eveningNotif: () =>
     pick([
@@ -87,32 +87,32 @@ export const voice = {
     ]),
   dungeonCleared: (title: string) =>
     pick([
-      `Campaña «${title}» despejada. El botín es tuyo.`,
+      `Campaña «${title}» completada. Todas las etapas cerradas.`,
       `«${title}» ha caído. El sistema registra tu victoria.`,
     ]),
   pr: (exercise: string) =>
     pick([
-      `Nuevo récord en ${exercise}. Tu límite anterior ya no existe.`,
-      `${exercise}: marca personal superada. FUE responde.`,
+      `Nuevo récord en ${exercise}. El sistema lo anota.`,
+      `${exercise}: marca personal superada. Queda como referencia.`,
     ]),
   achievement: () =>
     pick([
       'Logro desbloqueado.',
-      'El sistema certifica tu hazaña.',
+      'Logro registrado. Ya está en tu perfil.',
       'Nueva entrada en tu leyenda.',
     ]),
   // Mensaje motivacional de racha para el perfil: lo primero que ve el gladiador.
   streakHype: (days: number) => {
     if (days <= 0) {
       return pick([
-        'Hoy es el día perfecto para encender la racha. El sistema observa.',
-        'Racha a cero. Los grandes gladiadores también empezaron aquí. Enciéndela hoy.',
+        'Sin racha por ahora. Cierra el día de hoy y empieza a contar.',
+        'Racha a cero. Un día cerrado la pone en marcha.',
       ]);
     }
     if (days < 3) {
       return pick([
-        'La racha está encendida. Los primeros días forjan al gladiador.',
-        'La cadena ha empezado. Protégela: hoy solo tienes que no romperla.',
+        'La racha está encendida. Cierra hoy y suma otro día.',
+        `${days} ${plural(days, 'día', 'días')} de racha. Hoy toca uno más.`,
       ]);
     }
     if (days < 7) {
@@ -124,18 +124,18 @@ export const voice = {
     if (days < 14) {
       return pick([
         'Una semana entera en pie. Tu multiplicador ya paga: cada misión vale más.',
-        `${days} días. Esto ya se parece a la disciplina que prometiste.`,
+        `${days} días seguidos. Mañana, el siguiente.`,
       ]);
     }
     if (days < 30) {
       return pick([
-        `${days} días seguidos. Esto ya no es suerte: es quién eres.`,
-        `${days} días. Los que te rodean aún no lo saben, pero estás cambiando.`,
+        `${days} días seguidos. La racha la sostienes tú, día a día.`,
+        `${days} días. Cada uno cerrado, ninguno regalado.`,
       ]);
     }
     return pick([
-      `${days} días. Así se llega a ${nombreRango('S')}: un día más, cada día.`,
-      `${days} días de racha. El gladiador de hace ${days} días no te reconocería.`,
+      `${days} días. El camino a ${nombreRango('S')} es este: un día más, cada día.`,
+      `${days} días de racha. El sistema los ha contado todos.`,
     ]);
   },
 };
