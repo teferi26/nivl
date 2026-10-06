@@ -67,6 +67,9 @@ jobs:
           java-version: '17'
 
       - uses: android-actions/setup-android@v3
+        with:
+          # El paquete «tools» ya no existe en el sdkmanager actual y hace fallar el paso.
+          packages: 'platform-tools'
 
       - run: npm ci
       - run: npm install --global eas-cli@21.2.0
