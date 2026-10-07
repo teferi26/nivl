@@ -67,6 +67,9 @@ async function sql(query) {
 
 // Cada migración se reconoce por un objeto que solo ella crea.
 const HUELLAS = {
+  '0065': `coalesce(obj_description(to_regprocedure('public.seal_letter(uuid,text,date,boolean)'), 'pg_proc') like '%nivl:idempotent-letter-seal-0065%', false)`,
+  '0064': `coalesce(obj_description(to_regprocedure('public.claim_store_erasure_cleanup(integer)'), 'pg_proc') like '%nivl:final-horizon-delete-0064%', false) and coalesce(obj_description(to_regprocedure('public.export_my_data()'), 'pg_proc') like '%nivl:store-cleanup-export-0064%', false)`,
+  '0063': `coalesce(obj_description(to_regprocedure('public.store_account_active(uuid)'), 'pg_proc') like '%nivl:store-late-identities-0063%', false)`,
   '0057': `coalesce(obj_description(to_regprocedure('public.my_share_alias()'),'pg_proc') like '%nivl:alias-generico%', false)`,
   '0058': `coalesce(obj_description('public.ai_status()'::regprocedure,'pg_proc') like '%nivl:ai-status-vision%', false)`,
   '0056': `coalesce(obj_description('public.export_my_data()'::regprocedure,'pg_proc') like '%nivl:export-v6%', false)`,
@@ -140,59 +143,65 @@ const probe = Object.entries(HUELLAS)
   .map(([n, expr]) => `${expr} as m${n}`)
   .join(',\n  ');
 
-console.log(`Proyecto      ${REF}`);
-const [estado] = await sql(`select\n  ${probe};`);
+async function applyPendingMigrations() {
+  console.log(`Proyecto      ${REF}`);
+  const [estado] = await sql(`select\n  ${probe};`);
 
-// Una migración sin huella se considera PENDIENTE, no "ya aplicada": antes se
-// filtraba en silencio y una migración nueva podía no llegar a ejecutarse
-// nunca sin que nadie se enterase.
-const sinHuella = archivos.filter((f) => !HUELLAS[f.slice(0, 4)]);
-const pendientes = archivos.filter((f) => {
-  const n = f.slice(0, 4);
-  return !HUELLAS[n] || estado[`m${n}`] === false;
-});
+  // Una migración sin huella se considera PENDIENTE, no "ya aplicada": antes se
+  // filtraba en silencio y una migración nueva podía no llegar a ejecutarse
+  // nunca sin que nadie se enterase.
+  const sinHuella = archivos.filter((f) => !HUELLAS[f.slice(0, 4)]);
+  const pendientes = archivos.filter((f) => {
+    const n = f.slice(0, 4);
+    return !HUELLAS[n] || estado[`m${n}`] === false;
+  });
 
-for (const f of archivos) {
-  const n = f.slice(0, 4);
-  const aplicada = HUELLAS[n] && estado[`m${n}`];
-  console.log(`  ${aplicada ? 'ya aplicada ' : 'PENDIENTE  '} ${f}${HUELLAS[n] ? '' : '  (sin huella)'}`);
-}
-
-if (sinHuella.length) {
-  console.log(
-    `\nAviso: ${sinHuella.join(', ')} no tiene huella en este script. Se intentará` +
-      ' aplicar cada vez hasta que se le añada una en HUELLAS.',
-  );
-}
-
-if (!pendientes.length) {
-  console.log('\nNada que hacer: el esquema está al día.');
-  process.exit(0);
-}
-
-if (DRY) {
-  console.log(`\n(--dry) Se aplicarían ${pendientes.length}: ${pendientes.join(', ')}`);
-  process.exit(0);
-}
-
-console.log(`\nAplicando ${pendientes.length} migración(es)…\n`);
-for (const f of pendientes) {
-  const contenido = readFileSync(join(MIGRATIONS, f), 'utf8');
-  process.stdout.write(`  ${f} … `);
-  try {
-    await sql(contenido);
-    console.log('OK');
-  } catch (e) {
-    console.log('FALLÓ');
-    console.error(`\n${e.message}\n`);
-    console.error('Se ha detenido aquí: las anteriores sí se aplicaron.');
-    process.exit(1);
+  for (const f of archivos) {
+    const n = f.slice(0, 4);
+    const aplicada = HUELLAS[n] && estado[`m${n}`];
+    console.log(`  ${aplicada ? 'ya aplicada ' : 'PENDIENTE  '} ${f}${HUELLAS[n] ? '' : '  (sin huella)'}`);
   }
+
+  if (sinHuella.length) {
+    console.log(
+      `\nAviso: ${sinHuella.join(', ')} no tiene huella en este script. Se intentará` +
+        ' aplicar cada vez hasta que se le añada una en HUELLAS.',
+    );
+  }
+
+  if (!pendientes.length) {
+    console.log('\nNada que hacer: el esquema está al día.');
+    return;
+  }
+
+  if (DRY) {
+    console.log(`\n(--dry) Se aplicarían ${pendientes.length}: ${pendientes.join(', ')}`);
+    return;
+  }
+
+  console.log(`\nAplicando ${pendientes.length} migración(es)…\n`);
+  for (const f of pendientes) {
+    const contenido = readFileSync(join(MIGRATIONS, f), 'utf8');
+    process.stdout.write(`  ${f} … `);
+    try {
+      await sql(contenido);
+      console.log('OK');
+    } catch (e) {
+      console.log('FALLÓ');
+      console.error(`\n${e.message}\n`);
+      console.error('Se ha detenido aquí: las anteriores sí se aplicaron.');
+      process.exitCode = 1;
+      return;
+    }
+  }
+
+  // Comprobación final: releer las huellas para confirmar que quedó todo.
+  const [final] = await sql(`select\n  ${probe};`);
+  const faltan = Object.keys(HUELLAS).filter((n) => final[`m${n}`] === false);
+  console.log(
+    faltan.length ? `\nAtención: siguen sin detectarse ${faltan.join(', ')}.` : '\nEsquema al día.',
+  );
+
 }
 
-// Comprobación final: releer las huellas para confirmar que quedó todo.
-const [final] = await sql(`select\n  ${probe};`);
-const faltan = Object.keys(HUELLAS).filter((n) => final[`m${n}`] === false);
-console.log(
-  faltan.length ? `\nAtención: siguen sin detectarse ${faltan.join(', ')}.` : '\nEsquema al día.',
-);
+await applyPendingMigrations();

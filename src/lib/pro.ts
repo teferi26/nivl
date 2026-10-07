@@ -150,6 +150,7 @@ export function purchasesAvailable(): boolean {
 // cambios de sesión seguidos no se pisan.
 let configurada = false;
 let usuarioTienda: string | null = null;
+let usuarioSolicitado: string | null = null;
 let cola: Promise<void> = Promise.resolve();
 
 async function aplicarUsuario(userId: string | null): Promise<void> {
@@ -181,6 +182,7 @@ async function aplicarUsuario(userId: string | null): Promise<void> {
  * puede tumbar la entrada, y `purchase` lo vuelve a intentar.
  */
 export function identificarEnTienda(userId: string | null): Promise<void> {
+  usuarioSolicitado = userId;
   cola = cola.then(() => aplicarUsuario(userId)).catch(() => {});
   return cola;
 }
@@ -197,6 +199,7 @@ async function asegurarUsuario(): Promise<string> {
   const { data } = await supabase.auth.getSession();
   const uid = data.session?.user.id;
   if (!uid) throw new ErrorVisible('Inicia sesión para suscribirte.');
+  usuarioSolicitado = uid;
   const paso = cola.then(() => aplicarUsuario(uid));
   cola = paso.catch(() => {});
   await paso;
@@ -221,6 +224,15 @@ function enColaDeTienda<T>(fn: () => Promise<T>): Promise<T> {
   const paso = cola.then(fn);
   cola = paso.then(() => {}, () => {});
   return paso;
+}
+
+/** No atribuye un resultado de tienda a una sesión que cambió mientras esperaba. */
+async function comprobarCuenta(uid: string): Promise<void> {
+  const { data, error } = await supabase.auth.getSession();
+  const tienda = await Purchases.getAppUserID();
+  if (error || data.session?.user.id !== uid || tienda !== uid || usuarioSolicitado !== uid) {
+    throw new ErrorVisible('La cuenta ha cambiado. Vuelve a intentarlo.');
+  }
 }
 
 /**
@@ -352,27 +364,32 @@ const pausa = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 /** Verifica en servidor el derecho actual, incluso con la cuenta original
  * borrada. Nunca se envía un plan ni un recibo decidido por el cliente. */
-async function reconciliarCompra(): Promise<void> {
+async function reconciliarCompra(uid: string): Promise<void> {
+  await comprobarCuenta(uid);
   try {
     await supabase.functions.invoke('store-reconcile', { body: {}, timeout: 15000 });
   } catch {
     // El webhook aún puede completar la verificación. Restaurar permite reintentar.
   }
+  await comprobarCuenta(uid);
 }
 
 /**
  * Espera a que el webhook escriba la compra: reintentos cortos, unos 12 s en
  * total. True si el servidor ya la refleja.
  */
-async function esperarDerecho(reflejada: (st: AiStatus) => boolean): Promise<boolean> {
+async function esperarDerecho(uid: string, reflejada: (st: AiStatus) => boolean): Promise<boolean> {
   for (let i = 0; i < 6; i++) {
     if (i > 0) await pausa(2000);
+    await comprobarCuenta(uid);
+    let st: AiStatus | null = null;
     try {
-      const st = await fetchAiStatus();
-      if (reflejada(st)) return true;
+      st = await fetchAiStatus();
     } catch {
       /* sin red un momento: se reintenta */
     }
+    await comprobarCuenta(uid);
+    if (st && reflejada(st)) return true;
   }
   return false;
 }
@@ -454,6 +471,11 @@ function suscripcionesNivl(info: CustomerInfo | null | undefined): SuscripcionTi
 export async function purchase(planId: ProPlanId, precioMostrado: string): Promise<ResultadoCompra> {
   if (!precioVisible(precioMostrado)) throw new ErrorVisible('Espera a que se cargue el precio de la tienda.');
   const uid = await asegurarUsuario();
+  return enColaDeTienda(() => comprarEnCuenta(uid, planId, precioMostrado));
+}
+
+async function comprarEnCuenta(uid: string, planId: ProPlanId, precioMostrado: string): Promise<ResultadoCompra> {
+  await comprobarCuenta(uid);
   let paquete: PurchasesPackage | null;
   try {
     paquete = await paqueteDe(planId);
@@ -468,6 +490,7 @@ export async function purchase(planId: ProPlanId, precioMostrado: string): Promi
   let actual: SuscripcionTienda | null;
   try {
     actual = suscripcionesNivl(await Purchases.getCustomerInfo())[0] ?? null;
+    await comprobarCuenta(uid);
     // Android: una suscripción de Google Play viva que RevenueCat aún no asocia
     // a esta cuenta (p. ej. borró la cuenta NIVL y creó otra sin restaurar) no
     // aparece arriba, y comprar otro plan sin productChangeInfo abriría una
@@ -478,14 +501,15 @@ export async function purchase(planId: ProPlanId, precioMostrado: string): Promi
   } catch (e) {
     throw traducir(e);
   }
+  await comprobarCuenta(uid);
   const tipo = tipoCambio(actual?.producto, planId);
   if (tipo === 'mismo') {
     if (actual?.renueva === false) {
       throw new ErrorVisible('Tu suscripción a este plan está cancelada pero sigue vigente. Reactívala desde Gestionar o cancelar suscripción.');
     }
     // Puede que acabe de recuperarse (sincronización de arriba): que el servidor la refleje.
-    await reconciliarCompra();
-    if (await esperarDerecho((st) => planExacto(st, planId))) return 'activa';
+    await reconciliarCompra(uid);
+    if (await esperarDerecho(uid, (st) => planExacto(st, planId))) return 'activa';
     throw new ErrorVisible('Ya tienes este plan activo en la tienda. Si no lo ves en NIVL, pulsa Restaurar compras.');
   }
   if (actual?.store && actual.store !== tiendaDelDispositivo()) {
@@ -502,15 +526,8 @@ export async function purchase(planId: ProPlanId, precioMostrado: string): Promi
     };
   }
   const compra = cambio;
-  const cobrada = await enColaDeTienda(async () => {
-    // Última comprobación, ya sin cambios de cuenta posibles hasta cobrar.
-    let actualId: string | null = null;
-    try {
-      actualId = await Purchases.getAppUserID();
-    } catch {
-      actualId = null;
-    }
-    if (actualId !== uid) throw new ErrorVisible('La cuenta ha cambiado. Vuelve a intentarlo.');
+  const cobrada = await (async () => {
+    await comprobarCuenta(uid);
     try {
       if (compra) await Purchases.purchasePackage(paquete, null, compra);
       else await Purchases.purchasePackage(paquete);
@@ -519,12 +536,12 @@ export async function purchase(planId: ProPlanId, precioMostrado: string): Promi
       if (cancelada(e)) return false;
       throw traducir(e);
     }
-  });
+  })();
   if (!cobrada) return 'cancelada';
-  await reconciliarCompra();
-  if (tipo === 'nueva') return (await esperarDerecho((st) => compraReflejada(st, planId))) ? 'activa' : 'pendiente';
+  await reconciliarCompra(uid);
+  if (tipo === 'nueva') return (await esperarDerecho(uid, (st) => compraReflejada(st, planId))) ? 'activa' : 'pendiente';
   // Cambio dentro del grupo: solo cuenta el plan EXACTO; el anterior ya daba derecho.
-  if (await esperarDerecho((st) => planExacto(st, planId))) return 'activa';
+  if (await esperarDerecho(uid, (st) => planExacto(st, planId))) return 'activa';
   return tipo === 'subida' ? 'pendiente' : 'programada';
 }
 
@@ -541,16 +558,20 @@ export type ResultadoRestaurar = 'activa' | 'pendiente' | 'nada';
  * solo mira la sesión) la aplica sin esperar al webhook.
  */
 export async function restorePurchases(): Promise<ResultadoRestaurar> {
-  await asegurarUsuario();
-  let activas: SuscripcionTienda[];
-  try {
-    activas = suscripcionesNivl(await Purchases.restorePurchases());
-  } catch (e) {
-    throw traducir(e);
-  }
-  if (!activas.length) return 'nada';
-  await reconciliarCompra();
-  return (await esperarDerecho((st) => st.entitled && !st.trial)) ? 'activa' : 'pendiente';
+  const uid = await asegurarUsuario();
+  return enColaDeTienda(async () => {
+    await comprobarCuenta(uid);
+    let activas: SuscripcionTienda[];
+    try {
+      activas = suscripcionesNivl(await Purchases.restorePurchases());
+    } catch (e) {
+      throw traducir(e);
+    }
+    await comprobarCuenta(uid);
+    if (!activas.length) return 'nada';
+    await reconciliarCompra(uid);
+    return (await esperarDerecho(uid, (st) => compraReflejada(st, activas[0].producto))) ? 'activa' : 'pendiente';
+  });
 }
 
 const GESTION_TIENDA = {

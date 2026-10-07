@@ -1,4 +1,4 @@
-import { fetchEdadConfirmada } from '../age';
+import { confirmarEdad, fetchEdadConfirmada } from '../age';
 import { ensureProfile } from '../data';
 import { conLimiteDeRed, ErrorTiempoAgotado, LIMITE_RED_MS } from '../limiteRed';
 import { supabase } from '../supabase';
@@ -77,5 +77,35 @@ describe('fetchEdadConfirmada con red colgada', () => {
   it('con respuesta a tiempo no cambia nada', async () => {
     rpc.mockResolvedValue({ data: true, error: null } as never);
     await expect(fetchEdadConfirmada()).resolves.toBe(true);
+  });
+});
+
+describe('ensureProfile distingue ausencia de error', () => {
+  it('un fallo de lectura se conserva sin intentar crear el perfil', async () => {
+    const error = new Error('offline');
+    const upsert = jest.fn();
+    const query = { select: jest.fn(), eq: jest.fn(), maybeSingle: jest.fn().mockResolvedValue({ data: null, error }), upsert };
+    query.select.mockReturnValue(query);
+    query.eq.mockReturnValue(query);
+    from.mockReturnValue(query as never);
+    await expect(ensureProfile('u1')).rejects.toBe(error);
+    expect(upsert).not.toHaveBeenCalled();
+    expect(from).toHaveBeenCalledTimes(1);
+  });
+});
+describe('confirmarEdad con red colgada', () => {
+  it('la escritura no mantiene la puerta guardando para siempre', async () => {
+    rpc.mockReturnValue(colgada() as never);
+    const expectativa = expect(confirmarEdad()).rejects.toBeInstanceOf(ErrorTiempoAgotado);
+    await jest.advanceTimersByTimeAsync(LIMITE_RED_MS);
+    await expectativa;
+  });
+
+  it('la verificación de persistencia también tiene un límite', async () => {
+    rpc.mockResolvedValueOnce({ data: true, error: null } as never);
+    rpc.mockReturnValueOnce(colgada() as never);
+    const expectativa = expect(confirmarEdad()).rejects.toBeInstanceOf(ErrorTiempoAgotado);
+    await jest.advanceTimersByTimeAsync(LIMITE_RED_MS);
+    await expectativa;
   });
 });

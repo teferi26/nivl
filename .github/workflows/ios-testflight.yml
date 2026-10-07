@@ -40,8 +40,15 @@ jobs:
   preflight:
     uses: ./.github/workflows/ci.yml
 
-  build:
+  onboarding-qa:
     needs: preflight
+    uses: ./.github/workflows/qa-onboarding-ios.yml
+    with:
+      sha: ${{ github.sha }}
+    secrets: inherit
+
+  build:
+    needs: [preflight, onboarding-qa]
     runs-on: macos-15
     timeout-minutes: 90
     env:
@@ -73,7 +80,7 @@ jobs:
 
       - run: npm ci
 
-      - run: npm install --global eas-cli@latest
+      - run: npm install --global eas-cli@21.2.0
 
       - name: Compilar en este runner
         run: |

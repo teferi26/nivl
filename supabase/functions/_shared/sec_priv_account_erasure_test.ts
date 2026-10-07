@@ -51,6 +51,7 @@ function backend(opts: ErasureOptions = {}) {
     },
     rpc: (name: string, args: unknown) => {
       trace.push([name, args]);
+      if (name === 'request_store_erasure_cleanup') return Promise.resolve({ data: true, error: null });
       if (name === 'begin_account_erasure') return Promise.resolve({ data: { ok: true, job_id: JOB }, error: null });
       if (name === 'account_erasure_paths') {
         if (s.listFailsAfterRemovals >= 0 && s.removals > s.listFailsAfterRemovals) return Promise.resolve({ data: null, error: {} });
@@ -71,7 +72,7 @@ function backend(opts: ErasureOptions = {}) {
       }),
     },
   } as unknown as Db;
-  return { s, trace, handler: accountErasureHandler(admin, opts), deletes: () => trace.filter(t => t[0] === 'deleteUser') };
+  return { s, trace, handler: accountErasureHandler(admin, { revenueCatKey: 'sk_testOnly123', fetcher: (() => Promise.resolve(new Response(null, { status: 200 }))) as typeof fetch, ...opts }), deletes: () => trace.filter(t => t[0] === 'deleteUser') };
 }
 
 Deno.test('respuesta perdida: el reintento con el mismo token confirma el borrado sin repetir ninguna operación', async () => {
@@ -154,12 +155,12 @@ function rcFetch(statuses: (number | 'throw' | 'hang')[], log: unknown[][]) {
 
 Deno.test('RevenueCat 200: DELETE con clave secreta, después de vaciar Storage y JUSTO antes de borrar Auth', async () => {
   const log: unknown[][] = [];
-  const b = backend({ revenueCatKey: 'sk_test_only', fetcher: rcFetch([200], log) });
+  const b = backend({ revenueCatKey: 'sk_testOnly123', fetcher: rcFetch([200], log) });
   // Al llegar a deleteUser, RevenueCat ya se ha llamado exactamente una vez.
   const merged = b.trace;
   b.s.beforeDelete = () => { merged.push(['(rc antes)', log.length]); };
   equal((await b.handler(request())).status, 200);
-  equal(log, [['rc', `https://api.revenuecat.com/v1/subscribers/${UID}`, 'DELETE', 'Bearer sk_test_only']]);
+  equal(log, [['rc', `https://api.revenuecat.com/v1/subscribers/${UID}`, 'DELETE', 'Bearer sk_testOnly123']]);
   const names = merged.map(t => t[0]);
   equal(names.indexOf('account_erasure_ready') < names.indexOf('deleteUser'), true);
   equal(merged.find(t => t[0] === '(rc antes)'), ['(rc antes)', 1]);
@@ -168,14 +169,14 @@ Deno.test('RevenueCat 200: DELETE con clave secreta, después de vaciar Storage 
 
 Deno.test('RevenueCat 404 cuenta como hecho', async () => {
   const log: unknown[][] = [];
-  const b = backend({ revenueCatKey: 'sk_test_only', fetcher: rcFetch([404], log) });
+  const b = backend({ revenueCatKey: 'sk_testOnly123', fetcher: rcFetch([404], log) });
   equal((await b.handler(request())).status, 200); equal(b.deletes().length, 1);
 });
 
 Deno.test('RevenueCat 500 o 401: 503 pendiente, Auth intacta; el reintento lo repite y termina', async () => {
   for (const fail of [500, 401, 429, 'throw'] as const) {
     const log: unknown[][] = [];
-    const b = backend({ revenueCatKey: 'sk_test_only', fetcher: rcFetch([fail, 200], log) });
+    const b = backend({ revenueCatKey: 'sk_testOnly123', fetcher: rcFetch([fail, 200], log) });
     const first = await b.handler(request());
     equal(first.status, 503); equal((await first.json()).pending, true);
     equal(b.deletes(), []); equal(b.s.userExists, true);
@@ -186,22 +187,23 @@ Deno.test('RevenueCat 500 o 401: 503 pendiente, Auth intacta; el reintento lo re
 
 Deno.test('RevenueCat que no responde: se corta por timeout y queda pendiente', async () => {
   const log: unknown[][] = [];
-  const b = backend({ revenueCatKey: 'sk_test_only', fetcher: rcFetch(['hang'], log), timeoutMs: 20 });
+  const b = backend({ revenueCatKey: 'sk_testOnly123', fetcher: rcFetch(['hang'], log), timeoutMs: 20 });
   const started = Date.now();
   equal((await b.handler(request())).status, 503);
   equal(Date.now() - started < 5000, true); equal(b.deletes(), []);
 });
 
-Deno.test('sin clave (o con la pública del SDK): no bloquea, avisa sin datos personales y no llama a RevenueCat', async () => {
-  for (const revenueCatKey of [undefined, '', '   ', 'appl_public_sdk_key', 'goog_public_sdk_key']) {
+Deno.test('sin clave válida del servidor: mantiene Auth y borrado pendiente, sin revelar datos ni llamar al proveedor', async () => {
+  for (const revenueCatKey of [undefined, '', '   ', 'sk_', 'sk_short', 'appl_public_sdk_key', 'goog_public_sdk_key']) {
     const log: unknown[][] = [];
     const warnings: string[] = [];
     const original = console.warn;
     console.warn = (...args: unknown[]) => { warnings.push(args.map(String).join(' ')); };
     try {
       const b = backend({ revenueCatKey, fetcher: rcFetch([500], log) });
-      equal((await b.handler(request())).status, 200);
-      equal(log, []); equal(b.deletes().length, 1);
+      equal((await b.handler(request())).status, 503);
+      equal(log, []); equal(b.deletes().length, 0);
+      equal(b.s.userExists, true);
       equal(warnings.length, 1); equal(warnings[0].includes(UID), false);
     } finally {
       console.warn = original;

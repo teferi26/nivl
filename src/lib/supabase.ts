@@ -1,7 +1,7 @@
 import 'react-native-url-polyfill/auto';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createClient } from '@supabase/supabase-js';
-import { AppState } from 'react-native';
+import { AppState, Platform } from 'react-native';
 
 const url = process.env.EXPO_PUBLIC_SUPABASE_URL;
 const key = process.env.EXPO_PUBLIC_SUPABASE_KEY;
@@ -12,7 +12,7 @@ if (!url || !key) {
 
 // En el render web de Node (SSR de expo-router) no hay window ni AsyncStorage:
 // sin esta guarda, abrir la versión web mata Metro entero.
-const isServer = typeof window === 'undefined';
+const isServer = Platform.OS === 'web' && typeof window === 'undefined';
 
 export const supabase = createClient(url, key, {
   auth: {

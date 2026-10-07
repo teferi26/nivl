@@ -246,60 +246,67 @@ export async function streamCoach(opts: {
   const decoder = new TextDecoder();
   let buffer = '';
   let fallo: string | null = null;
+  let terminado = false;
 
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    buffer += decoder.decode(value, { stream: true });
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
 
-    // Los eventos SSE se separan por línea en blanco y pueden llegar partidos
-    // entre dos chunks: solo se procesa lo que ya está completo.
-    let sep: number;
-    while ((sep = buffer.indexOf('\n\n')) !== -1) {
-      const raw = buffer.slice(0, sep);
-      buffer = buffer.slice(sep + 2);
-      const evento = raw.match(/^event:\s*(.*)$/m)?.[1];
-      const datos = raw.match(/^data:\s*(.*)$/m)?.[1];
-      if (!evento || !datos) continue;
-      let d: Record<string, any>;
-      try {
-        d = JSON.parse(datos);
-      } catch {
-        continue;
-      }
-      switch (evento) {
-        case 'start':
-          opts.onEvent({ type: 'start', threadId: d.thread_id });
-          break;
-        case 'thinking':
-          opts.onEvent({ type: 'thinking' });
-          break;
-        case 'text':
-          opts.onEvent({ type: 'text', delta: d.delta ?? '' });
-          break;
-        case 'tool':
-          opts.onEvent({
-            type: 'tool',
-            action: { name: d.name, ok: !!d.ok, detail: d.detail ?? '' },
-          });
-          break;
-        case 'done':
-          opts.onEvent({
-            type: 'done',
-            threadId: d.thread_id,
-            text: sinGuiones(d.text ?? ''),
-            costMicroUsd: d.cost_micro_usd ?? 0,
-          });
-          break;
-        case 'error':
-          fallo = d.message ?? 'El sistema no responde.';
-          opts.onEvent({ type: 'error', message: fallo! });
-          break;
+      // Los eventos SSE se separan por línea en blanco y pueden llegar partidos
+      // entre dos chunks: solo se procesa lo que ya está completo.
+      let separador: RegExpExecArray | null;
+      while ((separador = /\r?\n\r?\n/.exec(buffer)) !== null) {
+        const raw = buffer.slice(0, separador.index);
+        buffer = buffer.slice(separador.index + separador[0].length);
+        const evento = raw.match(/^event:\s*(.*)$/m)?.[1];
+        const datos = raw.match(/^data:\s*(.*)$/m)?.[1];
+        if (!evento || !datos) continue;
+        let d: Record<string, any>;
+        try {
+          d = JSON.parse(datos);
+        } catch {
+          continue;
+        }
+        switch (evento) {
+          case 'start':
+            opts.onEvent({ type: 'start', threadId: d.thread_id });
+            break;
+          case 'thinking':
+            opts.onEvent({ type: 'thinking' });
+            break;
+          case 'text':
+            opts.onEvent({ type: 'text', delta: d.delta ?? '' });
+            break;
+          case 'tool':
+            opts.onEvent({
+              type: 'tool',
+              action: { name: d.name, ok: !!d.ok, detail: d.detail ?? '' },
+            });
+            break;
+          case 'done':
+            terminado = true;
+            opts.onEvent({
+              type: 'done',
+              threadId: d.thread_id,
+              text: sinGuiones(d.text ?? ''),
+              costMicroUsd: d.cost_micro_usd ?? 0,
+            });
+            break;
+          case 'error':
+            fallo = d.message ?? 'El sistema no responde.';
+            opts.onEvent({ type: 'error', message: fallo! });
+            break;
+        }
       }
     }
+  } finally {
+    reader.releaseLock();
   }
 
   if (fallo) throw new Error(fallo);
+  if (!terminado) throw new Error('La respuesta del coach se ha interrumpido.');
 }
 
 /** Ritual sin streaming (brief, revisión…): devuelve el texto ya completo. */

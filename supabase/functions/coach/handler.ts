@@ -589,6 +589,10 @@ ${userText}` : userText,
     // vuelta también va a texto: tres vueltas y siempre hay respuesta.
     const sinTiempo = Date.now() - arranque > PRESUPUESTO_MS || (estrecha && i === maxVueltas - 1);
     const pedirTurno = async (maxTokens: number, effort: Effort) => {
+      // La última vuelta debe responder con lo ya calculado, no gastar el
+      // margen restante en otra deliberación profunda sin herramientas.
+      const tokensDeSalida = sinTiempo ? Math.min(maxTokens, 8000) : maxTokens;
+      const esfuerzoDeSalida: Effort = sinTiempo ? 'low' : effort;
       // Un turno puede encadenar varias llamadas y reintentos. La aceptación
       // de su inicio no autoriza llamadas nuevas después de una retirada.
       if ((await consentimientoIa(admin, userId)) !== true || (await healthConsent(sb, userId)) !== true) return null;
@@ -614,7 +618,7 @@ ${userText}` : userText,
                 // con tool_use en el historial, la API respondía 400.
                 tools: [...herramientas],
                 ...(sinTiempo ? { toolChoice: 'none' as const } : {}),
-                maxTokens,
+                maxTokens: tokensDeSalida,
                 signal,
                 onText: (d) => { buffered += d; },
               })
@@ -624,8 +628,8 @@ ${userText}` : userText,
                 messages,
                 tools: [...herramientas],
                 ...(sinTiempo ? { toolChoice: { type: 'none' as const } } : {}),
-                maxTokens,
-                effort,
+                maxTokens: tokensDeSalida,
+                effort: esfuerzoDeSalida,
                 signal,
                 onText: (d) => { buffered += d; },
                 onThinking: () => emit('thinking', {}),

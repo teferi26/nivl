@@ -14,7 +14,8 @@ export function ensureProfile(userId: string): Promise<Profile> {
 }
 
 async function leerOCrearPerfil(userId: string): Promise<Profile> {
-  const { data } =await supabase.from('profiles').select('*').eq('id', userId).maybeSingle();
+  const { data, error: initialReadError } = await supabase.from('profiles').select('*').eq('id', userId).maybeSingle();
+  if (initialReadError) throw initialReadError;
   if (data) return data as Profile;
   // ON CONFLICT DO NOTHING (ignoreDuplicates): el trigger handle_new_user ya
   // pudo crear la fila en esta misma carrera. Un insert pelado lanzaba

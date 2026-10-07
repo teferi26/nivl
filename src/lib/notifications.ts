@@ -59,6 +59,9 @@ const PREFIJO_AVISO = 'nivl.aviso.';
 const idBloque = (fecha: string, blockId: string) => `nivl.bloque.${fecha}.${blockId}`;
 const idCierre = (fecha: string) => `nivl.cierre.${fecha}`;
 let healthGeneration = 0;
+let accountGeneration = 0;
+let cancellationDepth = 0;
+const planJobs = new Set<Promise<number>>();
 
 // Lo que deriva de datos de salud: el plan del coach (bloques y cierre) y el
 // aviso de las fotos de progreso (planDeAvisos: `nivl.aviso.foto.<fecha>`).
@@ -379,12 +382,21 @@ export async function avisarEn(
 }
 
 export async function cancelarTodo(): Promise<void> {
-  // Al salir de la cuenta: nada del plan del anterior sobrevive en memoria.
+  // Al salir de la cuenta: invalida también una lectura pendiente de Hoy.
+  sourceGeneration++;
+  healthGeneration++;
+  accountGeneration++;
+  cancellationDepth++;
+  const pendientes = [...planJobs];
+  fuente = null;
+  otraVez = false;
   if (reloj) clearTimeout(reloj);
   reloj = null;
   despertadorHecho = null;
   diasSinCierre = new Set();
   ultimoCierre = null;
+  // Espera las operaciones nativas iniciadas antes de borrar definitivamente.
+  await Promise.allSettled(pendientes);
   try {
     await almacen().removeItem(CLAVE_HISTORIAL);
   } catch {
@@ -394,6 +406,8 @@ export async function cancelarTodo(): Promise<void> {
     await Notifications.cancelAllScheduledNotificationsAsync();
   } catch {
     /* nada que cancelar */
+  } finally {
+    cancellationDepth--;
   }
 }
 
@@ -495,26 +509,41 @@ async function ajustarCierre(sin: Set<string>): Promise<void> {
  * En web o sin permiso no hace nada. Nunca lanza: devuelve cuántos puso.
  */
 export async function programarAvisosDelPlan(estado: EstadoPlanAvisos): Promise<number> {
-  if (Platform.OS === 'web') return 0;
+  if (Platform.OS === 'web' || cancellationDepth > 0) return 0;
+  const job = programarPlanVigente(estado, accountGeneration);
+  planJobs.add(job);
+  try {
+    return await job;
+  } finally {
+    planJobs.delete(job);
+  }
+}
+
+async function programarPlanVigente(estado: EstadoPlanAvisos, account: number): Promise<number> {
+  const vigente = () => account === accountGeneration;
   try {
     const permiso = await Notifications.getPermissionsAsync();
-    if (!permiso.granted) return 0;
+    if (!permiso.granted || !vigente()) return 0;
     const generation = healthGeneration;
     const ahora = momentoDe(new Date());
     const ahoraCuando = cuandoDe(ahora);
     const guardados = await leerHistorial();
+    if (!vigente()) return 0;
     const disparados = historialDisparado(guardados, ahoraCuando);
     const avisos = planDeAvisos({ ...estado, historial: estado.historial ?? disparados }, ahora);
 
     const programadas = await Notifications.getAllScheduledNotificationsAsync();
+    if (!vigente()) return 0;
     await Promise.all(
       programadas
         .filter((n) => n.identifier?.startsWith(PREFIJO_AVISO))
         .map((n) => Notifications.cancelScheduledNotificationAsync(n.identifier)),
     );
 
+    if (!vigente()) return 0;
     const puestos: typeof avisos = [];
     for (const a of avisos) {
+      if (!vigente()) return 0;
       const cuando = fechaDeAviso(a.cuando);
       if (!cuando || cuando <= new Date()) continue;
       // La foto es dato de salud: si el permiso se retiró a mitad, no sale.
@@ -534,12 +563,19 @@ export async function programarAvisosDelPlan(estado: EstadoPlanAvisos): Promise<
           channelId: CANALES.sistema,
         },
       });
+      if (!vigente()) return 0;
+      if (a.tipo === 'foto' && generation !== healthGeneration) {
+        await Notifications.cancelScheduledNotificationAsync(a.id);
+        continue;
+      }
       puestos.push(a);
     }
 
+    if (!vigente()) return 0;
     await guardarHistorial(historialAGuardar(guardados, puestos, ahoraCuando));
+    if (!vigente()) return 0;
     await ajustarCierre(fechasSinCierre(puestos, disparados));
-    return puestos.length;
+    return vigente() ? puestos.length : 0;
   } catch (e) {
     ultimoError = errorDeAvisos(e, 'No se pudieron programar los avisos del sistema.');
     return 0;
@@ -553,15 +589,20 @@ export type FuenteAvisos = () => Promise<EstadoPlanAvisos | null>;
 export const ESPERA_AVISOS_MS = 2000;
 
 let fuente: FuenteAvisos | null = null;
+let sourceGeneration = 0;
 let reloj: ReturnType<typeof setTimeout> | null = null;
 let enCurso = false;
 let otraVez = false;
 
 /** Hoy registra su fuente al montarse; la función devuelta la quita. */
 export function registrarFuenteAvisos(f: FuenteAvisos): () => void {
+  sourceGeneration++;
   fuente = f;
   return () => {
-    if (fuente === f) fuente = null;
+    if (fuente === f) {
+      sourceGeneration++;
+      fuente = null;
+    }
   };
 }
 
@@ -572,12 +613,19 @@ async function ejecutarReprogramacion(): Promise<void> {
   }
   const f = fuente;
   if (!f) return;
+  const generation = sourceGeneration;
   enCurso = true;
   try {
     // Sin permiso no se pide nada a la red.
-    if ((await Notifications.getPermissionsAsync()).granted) {
+    if (
+      (await Notifications.getPermissionsAsync()).granted &&
+      generation === sourceGeneration &&
+      fuente === f
+    ) {
       const estado = await f();
-      if (estado) await programarAvisosDelPlan(estado);
+      if (estado && generation === sourceGeneration && fuente === f) {
+        await programarAvisosDelPlan(estado);
+      }
     }
   } catch (e) {
     ultimoError = errorDeAvisos(e, 'No se pudieron programar los avisos del sistema.');

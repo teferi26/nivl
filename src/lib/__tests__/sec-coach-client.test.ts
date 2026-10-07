@@ -79,3 +79,34 @@ test('runRitual también manda la fecha local', async () => {
     global.fetch = original;
   }
 });
+
+function streamResponse(chunks: string[]) {
+  let cursor = 0;
+  return {
+    ok: true, status: 200,
+    body: { getReader: () => ({
+      read: async () => cursor < chunks.length
+        ? { done: false, value: new TextEncoder().encode(chunks[cursor++]) }
+        : { done: true, value: undefined },
+      releaseLock: jest.fn(),
+    }) },
+  };
+}
+
+test('un stream cortado antes de done nunca se confirma como éxito', async () => {
+  mockFetch.mockResolvedValueOnce(streamResponse([
+    'event: text\ndata: {"delta":"parcial"}\n\n',
+  ]));
+  await expect(streamCoach({ message: 'hola', onEvent: () => {} })).rejects.toThrow();
+});
+
+test('el stream acepta CRLF incluso si el separador llega partido', async () => {
+  mockFetch.mockResolvedValueOnce(streamResponse([
+    'event: text\r\ndata: {"delta":"hola"}\r',
+    '\n\r\nevent: done\r\ndata: {"thread_id":"h","text":"hola"}\r\n\r\n',
+  ]));
+  const eventos = jest.fn();
+  await streamCoach({ message: 'hola', onEvent: eventos });
+  expect(eventos).toHaveBeenCalledWith({ type: 'text', delta: 'hola' });
+  expect(eventos).toHaveBeenCalledWith({ type: 'done', threadId: 'h', text: 'hola', costMicroUsd: 0 });
+});

@@ -9,8 +9,8 @@
 
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { vibrar } from '@/design/haptics';
-import { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Animated, Easing, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { ActivityIndicator, Animated, AppState, Easing, Pressable, StyleSheet, Text, View } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
 import { colors, fonts } from '@/lib/theme';
 
@@ -25,8 +25,10 @@ interface Props {
   label: string;
   /** Rótulo mientras el dedo está puesto. */
   holdingLabel?: string;
-  onComplete: () => void;
+  onComplete: () => void | Promise<void>;
   disabled?: boolean;
+  /** Pending input stays actionable without allowing a signature. */
+  onRequestInput?: () => void;
   loading?: boolean;
   /** Milisegundos que hay que aguantar. */
   duration?: number;
@@ -42,91 +44,141 @@ interface Props {
 // Cuánto puede alejarse el dedo del anillo sin que cuente como soltar.
 const MARGEN_DEL_DEDO = { top: 60, bottom: 60, left: 60, right: 60 } as const;
 
-export function HoldToSign({ label, holdingLabel = 'No sueltes', onComplete, disabled, loading, duration = 1600, onHoldChange }: Props) {
+export function HoldToSign({ label, holdingLabel = 'No sueltes', onComplete, onRequestInput, disabled, loading, duration = 1600, onHoldChange }: Props) {
   const progress = useRef(new Animated.Value(0)).current;
   const latido = useRef<ReturnType<typeof setInterval> | null>(null);
+  const animation = useRef<Animated.CompositeAnimation | null>(null);
+  const generation = useRef(0);
+  const mounted = useRef(true);
+  const active = useRef(AppState.currentState !== 'background' && AppState.currentState !== 'inactive');
   const hecho = useRef(false);
+  const pendingCompletion = useRef(false);
+  const completionId = useRef(0);
+  const inProgress = useRef(false);
   const [holding, setHoldingState] = useState(false);
-  const avisar = useRef(onHoldChange);
-  avisar.current = onHoldChange;
-  const setHolding = (h: boolean) => {
-    setHoldingState(h);
-    avisar.current?.(h);
-  };
+  const latest = useRef({ disabled, loading, onComplete, onRequestInput, onHoldChange });
+  latest.current = { disabled, loading, onComplete, onRequestInput, onHoldChange };
 
-  const parar = () => {
+  const setHolding = useCallback((value: boolean) => {
+    if (mounted.current) setHoldingState(value);
+    latest.current.onHoldChange?.(value);
+  }, []);
+
+  const parar = useCallback(() => {
     if (latido.current) clearInterval(latido.current);
     latido.current = null;
-  };
+  }, []);
 
-  // Al desmontar (la firma ha ido bien y se cambia de paso) el padre no puede
-  // quedarse con el scroll apagado.
-  useEffect(
-    () => () => {
-      parar();
-      avisar.current?.(false);
-    },
-    [],
-  );
+  const cancelar = useCallback(() => {
+    generation.current++;
+    inProgress.current = false;
+    animation.current?.stop();
+    animation.current = null;
+    progress.stopAnimation();
+    progress.setValue(0);
+    parar();
+    setHolding(false);
+  }, [parar, progress, setHolding]);
 
-  // Si la firma falla (sin red), el padre vuelve a habilitar el botón: el
-  // anillo tiene que volver a cero para poder repetir el gesto.
   useEffect(() => {
-    if (!loading && hecho.current) {
+    mounted.current = true;
+    const subscription = AppState.addEventListener('change', (state) => {
+      active.current = state === 'active';
+      if (!active.current) cancelar();
+    });
+    return () => {
+      mounted.current = false;
+      cancelar();
+      subscription.remove();
+    };
+  }, [cancelar]);
+
+  useEffect(() => {
+    if (disabled || loading) cancelar();
+    if (!loading && hecho.current && !pendingCompletion.current) {
       hecho.current = false;
       progress.setValue(0);
     }
-  }, [loading, progress]);
+  }, [disabled, loading, cancelar, progress]);
+
+  const completar = (attempt: number) => {
+    const current = latest.current;
+    if (!mounted.current || !active.current || attempt !== generation.current || current.disabled || current.loading || hecho.current) return;
+    parar();
+    inProgress.current = false;
+    animation.current = null;
+    hecho.current = true;
+    setHolding(false);
+    vibrar('mision');
+    pendingCompletion.current = true;
+    const ownCompletion = ++completionId.current;
+    const release = () => {
+      if (ownCompletion !== completionId.current) return;
+      pendingCompletion.current = false;
+      hecho.current = false;
+      // Invalidate late callbacks from this completed animation before rearming.
+      if (generation.current === attempt) generation.current++;
+      if (mounted.current && !latest.current.loading) progress.setValue(0);
+    };
+    try {
+      Promise.resolve(current.onComplete()).then(release, release);
+    } catch {
+      release();
+    }
+  };
 
   const empezar = () => {
-    if (disabled || loading || hecho.current) return;
+    if (!active.current || latest.current.disabled || latest.current.loading || hecho.current || inProgress.current) return;
+    const attempt = ++generation.current;
+    inProgress.current = true;
     setHolding(true);
     vibrar('seleccion');
-    latido.current = setInterval(() => {
-      vibrar('seleccion');
-    }, 220);
-    Animated.timing(progress, { toValue: 1, duration, easing: Easing.linear, useNativeDriver: false }).start(({ finished }) => {
-      if (!finished) return;
-      parar();
-      hecho.current = true;
-      setHolding(false);
-      vibrar('mision');
-      onComplete();
+    latido.current = setInterval(() => { vibrar('seleccion'); }, 220);
+    animation.current = Animated.timing(progress, { toValue: 1, duration, easing: Easing.linear, useNativeDriver: false });
+    animation.current.start(({ finished }) => {
+      if (finished) completar(attempt);
     });
   };
 
   const soltar = () => {
-    parar();
-    setHolding(false);
-    if (hecho.current) return;
-    // Corta la animación en curso (su callback llega con finished = false) y
-    // deshace el anillo deprisa: soltar no es un error, es no haber firmado.
-    Animated.timing(progress, { toValue: 0, duration: 220, useNativeDriver: false }).start();
+    if (hecho.current) {
+      parar();
+      setHolding(false);
+      return;
+    }
+    cancelar();
   };
+
+  const pedirEntrada = () => {
+    if (!latest.current.loading && latest.current.disabled) latest.current.onRequestInput?.();
+  };
+  const bloqueado = !!loading || (!!disabled && !onRequestInput);
 
   const dashOffset = progress.interpolate({ inputRange: [0, 1], outputRange: [C, 0] });
   const fill = progress.interpolate({ inputRange: [0, 1], outputRange: [0, 1] });
 
   return (
-    <View style={styles.wrap}>
-      <Pressable
+    <Pressable
         onPressIn={empezar}
         onPressOut={soltar}
         pressRetentionOffset={MARGEN_DEL_DEDO}
-        disabled={disabled || loading}
+        onPress={pedirEntrada}
+        disabled={bloqueado}
         accessibilityRole="button"
         accessibilityLabel={label}
-        accessibilityHint="Mantén pulsado hasta que el anillo se cierre para firmar"
-        accessibilityState={{ disabled: !!disabled, busy: !!loading }}
+        accessibilityHint={disabled && onRequestInput ? 'Escribe tu nombre para firmar' : 'Mantén pulsado hasta que el anillo se cierre para firmar'}
+        accessibilityState={{ disabled: bloqueado, busy: !!loading }}
         accessibilityActions={[{ name: 'activate', label }]}
         onAccessibilityAction={(e) => {
-          if (e.nativeEvent.actionName !== 'activate' || disabled || loading || hecho.current) return;
-          hecho.current = true;
+          if (e.nativeEvent.actionName !== 'activate' || latest.current.loading || hecho.current) return;
+          if (latest.current.disabled) { pedirEntrada(); return; }
+          cancelar();
           progress.setValue(1);
-          onComplete();
+          completar(generation.current);
         }}
-        style={[styles.button, disabled && styles.disabled]}
+        style={styles.wrap}
       >
+        <View style={[styles.button, disabled && styles.disabled]}>
         <Svg width={SIZE} height={SIZE} style={StyleSheet.absoluteFill}>
           <Circle cx={SIZE / 2} cy={SIZE / 2} r={R} stroke={colors.track} strokeWidth={STROKE} fill="none" />
           <AnimatedCircle
@@ -148,9 +200,9 @@ export function HoldToSign({ label, holdingLabel = 'No sueltes', onComplete, dis
         ) : (
           <Ionicons name="finger-print-outline" size={40} color={colors.text} />
         )}
-      </Pressable>
+        </View>
       <Text style={styles.label}>{loading ? 'Sellando' : holding ? holdingLabel : label}</Text>
-    </View>
+    </Pressable>
   );
 }
 

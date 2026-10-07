@@ -1,9 +1,16 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Notifications from 'expo-notifications';
+import { Image } from 'expo-image';
+import { olvidarCodigoPendiente } from '../creators';
+import { borrarTemporalesFotos } from '@/components/fotos/datos';
+import { olvidarRedDictado } from '@/components/coach/redDictado';
 import { deleteAccount } from '../account';
 import { olvidarConsentimiento } from '../consent';
 import { cancelarTodo } from '../notifications';
 import { setApiKey } from '../oracle';
 import { supabase } from '../supabase';
 import { ErrorVisible } from '../validation';
+import { olvidarDispositivo } from '../push';
 
 jest.mock('../oracle', () => ({ setApiKey: jest.fn() }));
 jest.mock('../notifications', () => ({ cancelarTodo: jest.fn() }));
@@ -86,5 +93,50 @@ test('local cleanup failures never surface as a failed erasure nor keep the sess
   jest.mocked(olvidarConsentimiento).mockImplementationOnce(() => { throw new Error('cache'); });
   signOut.mockRejectedValueOnce(new Error('storage'));
   await expect(deleteAccount()).resolves.toBeUndefined();
+  expect(signOut).toHaveBeenCalledWith({ scope: 'local' });
+});
+
+jest.mock('../creators', () => ({ olvidarCodigoPendiente: jest.fn() }));
+jest.mock('../push', () => ({ olvidarDispositivo: jest.fn() }));
+jest.mock('@/components/coach/redDictado', () => ({ olvidarRedDictado: jest.fn() }));
+jest.mock('@/components/fotos/datos', () => ({ borrarTemporalesFotos: jest.fn() }));
+jest.mock('@react-native-async-storage/async-storage', () => ({ __esModule: true, default: { multiRemove: jest.fn() } }));
+jest.mock('expo-notifications', () => ({ dismissAllNotificationsAsync: jest.fn() }));
+jest.mock('expo-image', () => ({ Image: { clearMemoryCache: jest.fn(), clearDiskCache: jest.fn() } }));
+
+test('confirmed erasure removes the same private device traces as logout', async () => {
+  await deleteAccount();
+  expect(AsyncStorage.multiRemove).toHaveBeenCalledWith(['nivl:duelos:vistos', 'nivl.ofertas.v1']);
+  expect(Notifications.dismissAllNotificationsAsync).toHaveBeenCalledTimes(1);
+  expect(olvidarCodigoPendiente).toHaveBeenCalledTimes(1);
+  expect(olvidarRedDictado).toHaveBeenCalledTimes(1);
+  expect(borrarTemporalesFotos).toHaveBeenCalledTimes(1);
+  expect(Image.clearMemoryCache).toHaveBeenCalledTimes(1);
+  expect(Image.clearDiskCache).toHaveBeenCalledTimes(1);
+  expect(signOut).toHaveBeenCalledWith({ scope: 'local' });
+});
+test('erased Auth only signs out locally and does not try authenticated push deletion', async () => {
+  await deleteAccount();
+  expect(olvidarDispositivo).not.toHaveBeenCalled();
+  expect(signOut).toHaveBeenCalledTimes(1);
+  expect(signOut).toHaveBeenCalledWith({ scope: 'local' });
+});
+
+test('incomplete erasure preserves all device traces so the account can retry', async () => {
+  invoke.mockResolvedValueOnce({ data: { pending: true }, error: null });
+  await expect(deleteAccount()).rejects.toBeInstanceOf(ErrorVisible);
+  expect(AsyncStorage.multiRemove).not.toHaveBeenCalled();
+  expect(Notifications.dismissAllNotificationsAsync).not.toHaveBeenCalled();
+  expect(olvidarCodigoPendiente).not.toHaveBeenCalled();
+  expect(borrarTemporalesFotos).not.toHaveBeenCalled();
+  expect(signOut).not.toHaveBeenCalled();
+});
+
+test('failed image and temporary-file cleanup does not stop other cleanup or local logout', async () => {
+  jest.mocked(borrarTemporalesFotos).mockImplementationOnce(() => { throw new Error('filesystem'); });
+  jest.mocked(Image.clearMemoryCache).mockRejectedValueOnce(new Error('images'));
+  await expect(deleteAccount()).resolves.toBeUndefined();
+  expect(Image.clearDiskCache).toHaveBeenCalled();
+  expect(AsyncStorage.multiRemove).toHaveBeenCalled();
   expect(signOut).toHaveBeenCalledWith({ scope: 'local' });
 });

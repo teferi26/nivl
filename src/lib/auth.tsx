@@ -14,19 +14,32 @@ export function AuthProvider({ children }: PropsWithChildren) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // .catch obligatorio: si getSession rechaza (storage corrupto, fallo nativo)
-    // sin él setLoading(false) no corre y la app queda colgada en "cargando".
+    let active = true;
+    let authEventReceived = false;
+    // Subscribe first: a login or logout while storage is loading takes
+    // precedence over the earlier snapshot returned by getSession.
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, next) => {
+      authEventReceived = true;
+      if (!active) return;
+      setSession(next);
+      setLoading(false);
+    });
     supabase.auth
       .getSession()
-      .then(({ data }) => setSession(data.session))
-      .catch(() => setSession(null))
-      .finally(() => setLoading(false));
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, next) => {
-      setSession(next);
-    });
-    return () => sub.subscription.unsubscribe();
+      .then(({ data }) => {
+        if (active && !authEventReceived) setSession(data.session);
+      })
+      .catch(() => {
+        if (active && !authEventReceived) setSession(null);
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+      sub.subscription.unsubscribe();
+    };
   }, []);
-
   return <AuthContext.Provider value={{ session, loading }}>{children}</AuthContext.Provider>;
 }
 

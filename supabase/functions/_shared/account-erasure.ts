@@ -1,4 +1,5 @@
 import type { Db } from './db.ts';
+import { revenueCatServerKey } from './store-config.ts';
 
 const CONFIRMATION = 'BORRAR_CUENTA_NIVL';
 // Same list as account_erasure_paths/account_erasure_ready/require_account_storage_active in SQL.
@@ -38,11 +39,11 @@ export interface ErasureOptions {
  * retry repeats it. It does NOT cancel a store subscription.
  */
 async function eraseRevenueCatCustomer(userId: string, opts: ErasureOptions): Promise<boolean> {
-  const key = opts.revenueCatKey?.trim() ?? '';
-  if (!key.startsWith('sk_')) {
+  const key = revenueCatServerKey(() => opts.revenueCatKey);
+  if (!key) {
     // No personal data in the log line; deployment config issue only.
     console.warn('account-erasure: REVENUECAT_API_KEY (secret) not configured; RevenueCat customer not erased');
-    return true;
+    return false;
   }
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), opts.timeoutMs ?? 10_000);
@@ -81,6 +82,10 @@ export const accountErasureHandler = (admin: Db, opts: ErasureOptions = {}) => a
     const { data: job, error: beginError } = await admin.rpc('begin_account_erasure', { p_user: userId });
     if (beginError || job?.ok !== true || typeof job.job_id !== 'string') return pending();
     started = true;
+    // Persisted independently of Auth. Do not hard-delete without a cleanup
+    // tombstone: an aborted provider GET can recreate its customer much later.
+    const { data: queued, error: queueError } = await admin.rpc('request_store_erasure_cleanup', { p_user: userId });
+    if (queueError || queued !== true) return pending();
     for (let batch = 0; batch < 20; batch++) {
       const args = { p_user: userId, p_job: job.job_id };
       const { data: objects, error } = await admin.rpc('account_erasure_paths', args);

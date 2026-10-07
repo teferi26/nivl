@@ -44,3 +44,7 @@ jobs:
         run: npm test -- --ci --runInBand
       - name: Lint
         run: npm run lint
+      - name: Backend tests
+        run: npx --yes deno@2.9.6 test --allow-read --allow-env supabase/functions/_shared supabase/functions/coach/deadline_test.ts
+      - name: Backend typecheck
+        run: npx --yes deno@2.9.6 check supabase/functions/coach/index.ts supabase/functions/account-erasure/index.ts supabase/functions/store-reconcile/index.ts supabase/functions/revenuecat-webhook/index.ts supabase/functions/store-erasure-cleanup/index.ts

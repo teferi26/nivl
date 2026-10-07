@@ -35,6 +35,7 @@ function accountBackend(initial: Obj[]) {
     },
     rpc: (name: string) => {
       st.s.trace.push([name]);
+      if (name === 'request_store_erasure_cleanup') return Promise.resolve({ data: true, error: null });
       if (name === 'begin_account_erasure') return Promise.resolve({ data: { ok: true, job_id: JOB }, error: null });
       if (name === 'account_erasure_paths') return Promise.resolve({ data: st.s.objects.slice(0, 100), error: null });
       if (name === 'account_erasure_ready') return Promise.resolve({ data: st.s.objects.length === 0, error: null });
@@ -42,7 +43,7 @@ function accountBackend(initial: Obj[]) {
     },
     storage: { from: st.from },
   } as unknown as Db;
-  return { ...st, handler: accountErasureHandler(admin), deleted: () => deleted };
+  return { ...st, handler: accountErasureHandler(admin, { revenueCatKey: 'sk_testOnly123', fetcher: (() => Promise.resolve(new Response(null, { status: 200 }))) as typeof fetch }), deleted: () => deleted };
 }
 
 function healthBackend(list: () => unknown, st: ReturnType<typeof storage>) {
@@ -91,6 +92,7 @@ Deno.test('borrado de cuenta: mientras quede una foto de progreso, ready=false y
     auth: { getUser: () => Promise.resolve({ data: { user: { id: UID } }, error: null }),
       admin: { deleteUser: () => { throw new Error('no debe borrarse Auth'); } } },
     rpc: (name: string) => {
+      if (name === 'request_store_erasure_cleanup') return Promise.resolve({ data: true, error: null });
       if (name === 'begin_account_erasure') return Promise.resolve({ data: { ok: true, job_id: JOB }, error: null });
       if (name === 'account_erasure_paths') return Promise.resolve({ data: stale.s.objects, error: null });
       if (name === 'account_erasure_ready') return Promise.resolve({ data: stale.s.objects.length === 0, error: null });
