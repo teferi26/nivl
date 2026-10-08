@@ -1,7 +1,7 @@
 # Reviewable simulator regression, existing NIVL_SHOTS demo ONLY.
 # WRITES the demo's display name, general profile, fictitious book goal and letter.
-# No new user, consent acceptance, purchase, trial, mission completion, XP or AI turn.
-# Clean simulator installation != new-user onboarding: this demo already has age/onboarding accepted.
+# No new Auth user, health consent, purchase, trial, mission completion, XP or AI turn.
+# Clean simulator install uses existing demo; pending minimum age/onboarding is completed through UI.
 # Exact pinned source runs with OTA disabled only in the disposable simulator checkout.
 # Native selectors/gestures require the first actual simulator run; this file is not execution evidence.
 # Maestro 2.10 longPressOn = native 3s press; tapOn is shorter than the 1600ms signing threshold.
@@ -20,21 +20,31 @@ name: NIVL 1.0.9 demo onboarding and cold reopen
     env:
       NIVL_QA_EMAIL: ${NIVL_QA_EMAIL}
       NIVL_QA_PASSWORD: ${NIVL_QA_PASSWORD}
-- assertNotVisible: '^Tu edad$'
-
-# Reopening a completed account: no clearing storage/keychain between launches.
-- repeat:
-    times: 3
+# Existing owned fictitious demo may have pending minimum age/onboarding.
+# EDAD_MINIMA=16 in consentmath; no health/adult/AI consent is accepted.
+- runFlow:
+    when:
+      visible: '^Tu edad$'
     commands:
-      - stopApp
-      - launchApp
+      - tapOn: '^Tengo 16 años o más$'
+      - tapOn: '^Confirmar y continuar$'
       - extendedWaitUntil:
-          visible: '^Hoy$'
+          visible: '^(Hoy|Entrar en la arena)$'
           timeout: 30000
-      - assertNotVisible: '^Tu edad$'
-
-# A completed demo can explicitly open the existing route. Never reset production flags or Auth.
-- openLink: 'nivl://onboarding'
+- runFlow:
+    when:
+      visible: '^Hoy$'
+    commands:
+      - repeat:
+          times: 3
+          commands:
+            - stopApp
+            - launchApp
+            - extendedWaitUntil:
+                visible: '^Hoy$'
+                timeout: 30000
+            - assertNotVisible: '^Tu edad$'
+      - openLink: 'nivl://onboarding'
 - extendedWaitUntil:
     visible: '^Entrar en la arena$'
     timeout: 30000
@@ -142,10 +152,13 @@ name: NIVL 1.0.9 demo onboarding and cold reopen
     timeout: 30000
 - assertNotVisible: '^Tu edad$'
 - takeScreenshot: '${QA_EVIDENCE_ROOT}/qa-03-valid-hold-completed'
-- stopApp
-- launchApp
-- extendedWaitUntil:
-    visible: '^Hoy$'
-    timeout: 30000
-- assertNotVisible: '^Tu edad$'
+- repeat:
+    times: 3
+    commands:
+      - stopApp
+      - launchApp
+      - extendedWaitUntil:
+          visible: '^Hoy$'
+          timeout: 30000
+      - assertNotVisible: '^Tu edad$'
 - takeScreenshot: '${QA_EVIDENCE_ROOT}/qa-04-cold-reopen-completed'

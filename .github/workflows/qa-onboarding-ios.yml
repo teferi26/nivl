@@ -1,6 +1,6 @@
 # Manual, reviewable native QA. No TestFlight submission, App Store publication or OTA.
 # Only the existing fictitious screenshots demo may be used. The flow writes its
-# QA display name/general profile/book goal/letter; no purchases, trials, health input or AI calls.
+# QA display name/general profile/book goal/letter and minimum age via UI only; no health consent or AI calls.
 # Repository artifacts can be public: upload ONLY curated screenshots after login,
 # never Maestro debug/report directories, login screens, logs, app binaries or credentials.
 name: QA onboarding iOS 1.0.9 (demo simulator)
@@ -163,8 +163,7 @@ jobs:
                 console.log('QA_PREFLIGHT auth=true onboarding_done=' + onboardingDone + ' age_confirmed=' + ageConfirmed);
                 if (profileError || ageError || !profile || typeof age !== 'boolean') {
                   fail('READINESS_QUERY_FAILED');
-                } else if (!onboardingDone || !ageConfirmed) {
-                  fail('DEMO_NOT_READY');
+
                 }
               }
               await client.auth.signOut({ scope: 'local' });
@@ -238,11 +237,11 @@ jobs:
           Device: $QA_DEVICE_NAME
           Runtime: $QA_RUNTIME
           Native profile: screenshots Release; OTA disabled in disposable checkout
-          Account: existing fictitious screenshots demo, already onboarded and age accepted
+          Account: existing fictitious screenshots demo; initial readiness flags logged by preflight
           Covered: label focuses empty signature, invalid 3-second hold does not sign,
           short release does not sign, background after release resumes, valid hold signs,
           completed account reopens without age screen at settled assertions.
-          NOT COVERED: new-user onboarding, migration from installed 1.0.8(24), physical iPad/iPhone,
+          NOT COVERED: newly created Auth account, migration from installed 1.0.8(24), physical iPad/iPhone,
           background DURING hold, transient first-frame age flash, purchases or restoration.
           AppState during-hold cancellation has separate component-test evidence, not native evidence here.
           EOF

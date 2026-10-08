@@ -23,6 +23,10 @@ name: iOS a TestFlight
 on:
   workflow_dispatch:
     inputs:
+      compilar:
+        description: Compilar y subir IPA además de QA
+        type: boolean
+        default: true
       enviar:
         description: Subir a TestFlight al terminar
         type: boolean
@@ -32,7 +36,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: ios-testflight
+  group: ${{ inputs.compilar == false && 'ios-onboarding-qa' || 'ios-testflight' }}
   cancel-in-progress: false
 
 jobs:
@@ -49,6 +53,7 @@ jobs:
 
   # Build/upload runs alongside simulator QA; App Review still requires QA success.
   build:
+    if: ${{ inputs.compilar != false }}
     needs: preflight
     runs-on: macos-15
     timeout-minutes: 90

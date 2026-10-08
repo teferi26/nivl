@@ -34,7 +34,6 @@ name: NIVL login (subflujo)
 - assertNotVisible: '^Demasiados intentos\..*$'
 - assertNotVisible: '^Confirma tu correo antes de entrar\..*$'
 - assertNotVisible: '^No se ha podido comprobar que no eres un robot\..*$'
-- assertNotVisible: '^Tu edad$'
 - extendedWaitUntil:
-    visible: '^Hoy$'
+    visible: '^(Hoy|Tu edad|Entrar en la arena)$'
     timeout: 30000
