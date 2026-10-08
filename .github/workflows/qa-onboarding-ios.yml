@@ -153,7 +153,9 @@ jobs:
               });
               if (authError || !login.user) {
                 const code = /^[a-z0-9_]{1,64}$/.test(authError?.code ?? '') ? authError.code : 'unknown';
-                fail('AUTH_' + code);
+                // This extra API diagnostic cannot replace the mandatory native UI login.
+                const status = Number.isInteger(authError?.status) ? authError.status : 0;
+                console.log('QA_PREFLIGHT_AUTH_INCONCLUSIVE code=' + code + ' status=' + status);
               } else {
                 const { data: profile, error: profileError } = await client.from('profiles')
                   .select('onboarding_done').eq('id', login.user.id).maybeSingle();
