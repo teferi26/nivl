@@ -1,42 +1,10 @@
-# Subflujo: entrar con una cuenta de PRUEBA de NIVL.
-# Las credenciales llegan SOLO por variables de entorno en la línea de órdenes:
-#   maestro test -e NIVL_QA_EMAIL=... -e NIVL_QA_PASSWORD=... e2e/maestro/<flujo>.yaml
-# Nunca escribirlas en este archivo ni en el repositorio. No usar la cuenta
-# revisora de Apple ni las del ludus de demostración en flujos que escriben.
-# Selectores revisados contra winter2/integracion (CAPTURAS-108.md): «Correo
-# electrónico» y el SEGUNDO «Contraseña» son los campos (los primeros son
-# rótulos), y el envío es el «Entrar» que queda debajo del campo.
-# NO verificados todavía en un dispositivo: confirmar en la primera ejecución.
+# Compatibility login wrapper: explicit submit and postchecks.
 appId: com.teferi.nivl
-name: NIVL login (subflujo)
+name: NIVL login
 ---
-- extendedWaitUntil:
-    visible: 'Entra con tu correo y tu contraseña de NIVL\.'
-    timeout: 30000
-- tapOn: '^Correo electrónico$'
-- assertVisible:
-    text: '^Correo electrónico$'
-    focused: true
-- inputText: ${NIVL_QA_EMAIL}
-- tapOn:
-    text: '^Contraseña$'
-    index: 1
-- assertVisible:
-    text: '^Contraseña$'
-    focused: true
-- inputText: ${NIVL_QA_PASSWORD}
-# Submit from the focused native password field; no ambiguous label tap.
-- pressKey: Enter
 - runFlow:
-    when:
-      visible: '^(Ahora no|Not Now)$'
-    commands:
-      - tapOn: '^(Ahora no|Not Now)$'
-# Sanitized diagnostics: assert only fixed product strings, never field values.
-- assertNotVisible: '^Correo o contraseña incorrectos\.$'
-- assertNotVisible: '^Demasiados intentos\..*$'
-- assertNotVisible: '^Confirma tu correo antes de entrar\..*$'
-- assertNotVisible: '^No se ha podido comprobar que no eres un robot\..*$'
-- extendedWaitUntil:
-    visible: '^(Hoy|Tu edad|Entrar en la arena)$'
-    timeout: 30000
+    file: login-submit.yaml
+    env:
+      NIVL_QA_EMAIL: ${NIVL_QA_EMAIL}
+      NIVL_QA_PASSWORD: ${NIVL_QA_PASSWORD}
+- runFlow: login-postchecks.yaml

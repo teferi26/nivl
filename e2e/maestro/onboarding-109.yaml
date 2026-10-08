@@ -16,11 +16,7 @@ name: NIVL 1.0.9 demo onboarding and cold reopen
     permissions:
       notifications: deny
 - runFlow:
-    file: login.yaml
+    file: login-submit.yaml
     env:
       NIVL_QA_EMAIL: ${NIVL_QA_EMAIL}
       NIVL_QA_PASSWORD: ${NIVL_QA_PASSWORD}
-- runFlow:
-    file: onboarding-109-body.yaml
-    env:
-      QA_EVIDENCE_ROOT: ${QA_EVIDENCE_ROOT}

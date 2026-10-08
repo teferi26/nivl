@@ -232,9 +232,16 @@ jobs:
           maestro --device "$UDID" test \
             -e NIVL_QA_EMAIL="$NIVL_SHOTS_EMAIL" -e NIVL_QA_PASSWORD="$NIVL_SHOTS_PASSWORD" \
             -e QA_EVIDENCE_ROOT="$RUNNER_TEMP/qa-evidence" \
-            --test-output-dir "$RUNNER_TEMP/qa-private-debug" \
-            --debug-output "$RUNNER_TEMP/qa-private-debug" \
+            --test-output-dir "$RUNNER_TEMP/qa-private-debug/login-submit" \
+            --debug-output "$RUNNER_TEMP/qa-private-debug/login-submit" \
             e2e/maestro/onboarding-109.yaml > "$RUNNER_TEMP/qa-private-debug/maestro-command.log" 2>&1
+          # Resolve only the fixed password alert, then verify post-login and the full body.
+          bash scripts/ci/nivl-qa-dismiss-password.sh "$UDID" "$RUNNER_TEMP/qa-private-debug/modal-original"
+          maestro --device "$UDID" test \
+            -e QA_EVIDENCE_ROOT="$RUNNER_TEMP/qa-evidence" \
+            --test-output-dir "$RUNNER_TEMP/qa-private-debug/onboarding-body" \
+            --debug-output "$RUNNER_TEMP/qa-private-debug/onboarding-body" \
+            e2e/maestro/onboarding-109-continue.yaml > "$RUNNER_TEMP/qa-private-debug/body-command.log" 2>&1
           cat > "$RUNNER_TEMP/qa-evidence/simulator-result.txt" <<EOF
           Status: PASS SIMULATOR ONLY
           Reviewed source SHA: $QA_SHA
@@ -267,7 +274,7 @@ jobs:
           images = [p for p in root.rglob('*.png') if 'screenshots' in p.parts
                     and p.name != 'final.png' and 'recovery' not in p.relative_to(root).parts
                     and not p.is_symlink() and p.stat().st_size <= 20*1024*1024]
-          for image in sorted(images, key=lambda p: p.stat().st_mtime, reverse=True)[:3]:
+          for image in sorted(images, key=lambda p: p.stat().st_mtime, reverse=True)[:1]:
               print(image)
           PY
           IMAGES=()
@@ -285,6 +292,11 @@ jobs:
         run: |
           umask 077
           mkdir -p "$RUNNER_TEMP/qa-private-debug/recovery" "$RUNNER_TEMP/qa-private-debug/recovery-evidence"
+          # Resolve alert in the current screen before any launch/driver foreground change.
+          if ! bash scripts/ci/nivl-qa-dismiss-password.sh "$QA_UDID" "$RUNNER_TEMP/qa-private-debug/recovery/modal"; then
+            echo 'QA_RECOVERY_STATUS FAIL_DIAGNOSTIC_ONLY_ORIGINAL_FAILED'
+            exit 0
+          fi
           if maestro --device "$QA_UDID" test \
             -e QA_EVIDENCE_ROOT="$RUNNER_TEMP/qa-private-debug/recovery-evidence" \
             --test-output-dir "$RUNNER_TEMP/qa-private-debug/recovery" \
@@ -310,18 +322,18 @@ jobs:
           images = [p for p in root.rglob('*.png') if 'screenshots' in p.parts
                     and p.name != 'final.png' and 'recovery' not in p.relative_to(root).parts
                     and not p.is_symlink() and p.stat().st_size <= 20*1024*1024]
-          for image in sorted(images, key=lambda p: p.stat().st_mtime, reverse=True)[:3]:
+          for image in sorted(images, key=lambda p: p.stat().st_mtime, reverse=True)[:1]:
               print(image)
           PY
           IMAGES=()
-          while IFS= read -r image; do IMAGES+=("$image"); done < "$RUNNER_TEMP/qa-private-images.list"
-          if ! swift scripts/ci/nivl-qa-ocr.swift "${IMAGES[@]}" > "$OCR_PRIVATE" 2> "$RUNNER_TEMP/qa-private-ocr.err"; then
+          while IFS= read -r image; do IMAGES+=("$image"); done < "$RUNNER_TEMP/qa-private-recovery-images.list"
+          if ! swift scripts/ci/nivl-qa-ocr.swift "${IMAGES[@]}" > "$OCR_PRIVATE" 2> "$RUNNER_TEMP/qa-private-recovery-ocr.err"; then
             printf '[]' > "$OCR_PRIVATE"
           fi
           python3 scripts/ci/nivl-qa-screen-state.py "$PRIVATE" "$OCR_PRIVATE" --recovery \
             "$HOME/Library/Logs/DiagnosticReports" \
             "$HOME/Library/Developer/CoreSimulator/Devices/$QA_UDID/data/Library/Logs/CrashReporter"
-          rm -f "$OCR_PRIVATE" "$RUNNER_TEMP/qa-private-images.list" "$RUNNER_TEMP/qa-private-ocr.err"
+          rm -f "$OCR_PRIVATE" "$RUNNER_TEMP/qa-private-recovery-images.list" "$RUNNER_TEMP/qa-private-recovery-ocr.err"
 
       - name: Upload only curated fictitious-demo evidence
         if: success()

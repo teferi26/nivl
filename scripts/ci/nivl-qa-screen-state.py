@@ -140,7 +140,7 @@ def visit(node):
 trees = [p for p in source.rglob('*.json')
          if 'screen-hierarchy' in p.parts and not p.is_symlink()
          and 'recovery' not in p.relative_to(source).parts and p.stat().st_size <= 20*1024*1024]
-for item in sorted(trees, key=lambda p: p.stat().st_mtime, reverse=True)[:3]:
+for item in sorted(trees, key=lambda p: p.stat().st_mtime, reverse=True)[:1]:
     try:
         visit(json.loads(item.read_text(encoding='utf-8')))
         parsed_count += 1
@@ -161,6 +161,36 @@ try:
         ocr_available = bool(recognized)
 except Exception:
     pass
+# Command metadata is parsed separately, never fed into label/field matching.
+# Official MaestroCommand field names map only to a fixed public enum.
+command_types = {
+    'tapOnElement': 'TAP_ELEMENT', 'tapOnPoint': 'TAP_POINT',
+    'tapOnPointV2Command': 'TAP_POINT', 'assertConditionCommand': 'ASSERT_CONDITION',
+    'assertCommand': 'ASSERT_CONDITION', 'inputTextCommand': 'INPUT_TEXT',
+    'pressKeyCommand': 'PRESS_KEY', 'launchAppCommand': 'LAUNCH_APP',
+    'openLinkCommand': 'OPEN_LINK', 'scrollUntilVisibleCommand': 'SCROLL_UNTIL_VISIBLE',
+    'scrollCommand': 'SCROLL', 'runFlowCommand': 'RUN_FLOW',
+}
+failed_command_type = 'UNKNOWN'
+command_files = [p for p in source.rglob('commands.json') if not p.is_symlink()
+                 and 'recovery' not in p.relative_to(source).parts
+                 and p.stat().st_size <= 20*1024*1024]
+for command_file in sorted(command_files, key=lambda p: p.stat().st_mtime, reverse=True):
+    try:
+        records = json.loads(command_file.read_text(encoding='utf-8'))
+        if not isinstance(records, list): continue
+        for record in records:
+            if not isinstance(record, dict) or record.get('metadata', {}).get('status') != 'FAILED': continue
+            command = record.get('command', {})
+            if not isinstance(command, dict): continue
+            matches = [enum for key, enum in command_types.items() if command.get(key) is not None]
+            if len(matches) == 1 and matches[0] != 'RUN_FLOW':
+                failed_command_type = matches[0]
+                break
+        if failed_command_type != 'UNKNOWN': break
+    except Exception:
+        pass
+
 # Publish only agreement across safely identified controls, otherwise unknown/null.
 control_flags = {key: values[0] if values and all(value == values[0] for value in values) else None
                  for key, values in field_states.items()}
@@ -169,6 +199,7 @@ print(prefix + ' ' + json.dumps({
     'diagnostic_available': parsed_count > 0,
     'ocr_available': ocr_available,
     'node_count': node_count,
+    'failed_command_type': failed_command_type,
     **found,
     **technical_found,
     **control_flags,

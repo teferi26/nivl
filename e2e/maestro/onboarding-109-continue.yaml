@@ -1,0 +1,9 @@
+# Continue the exact existing simulator session after password-dialog verification.
+appId: com.teferi.nivl
+name: NIVL QA signing and reopen after login
+---
+- runFlow: login-postchecks.yaml
+- runFlow:
+    file: onboarding-109-body.yaml
+    env:
+      QA_EVIDENCE_ROOT: ${QA_EVIDENCE_ROOT}
