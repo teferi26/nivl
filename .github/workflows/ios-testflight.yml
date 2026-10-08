@@ -47,8 +47,9 @@ jobs:
       sha: ${{ github.sha }}
     secrets: inherit
 
+  # Build/upload runs alongside simulator QA; App Review still requires QA success.
   build:
-    needs: [preflight, onboarding-qa]
+    needs: preflight
     runs-on: macos-15
     timeout-minutes: 90
     env:

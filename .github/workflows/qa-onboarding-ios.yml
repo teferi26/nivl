@@ -114,6 +114,65 @@ jobs:
 
       - run: npm install --global eas-cli@21.2.0
 
+      - name: Check existing demo authentication and readiness before native build
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+          NIVL_SHOTS_EMAIL: ${{ secrets.NIVL_SHOTS_EMAIL }}
+          NIVL_SHOTS_PASSWORD: ${{ secrets.NIVL_SHOTS_PASSWORD }}
+        run: |
+          set -euo pipefail
+          umask 077
+          QA_ENV_FILE=$(mktemp "$RUNNER_TEMP/nivl-qa-env.XXXXXX")
+          rm -f "$QA_ENV_FILE"
+          export QA_ENV_FILE
+          trap 'rm -f "$QA_ENV_FILE"' EXIT
+          # Suppress ALL EAS output: it may contain variable values.
+          if ! eas env:pull --environment production --non-interactive --path "$QA_ENV_FILE" >/dev/null 2>&1; then
+            echo "::error::QA_ENV_PULL_FAILED (details withheld)."
+            exit 1
+          fi
+          node --input-type=module <<'JS'
+          import fs from 'node:fs';
+          import { parseEnv } from 'node:util';
+          import { createClient } from '@supabase/supabase-js';
+          const fail = (code) => { console.log('::error::QA_PREFLIGHT_' + code); process.exitCode = 1; };
+          try {
+            const config = parseEnv(fs.readFileSync(process.env.QA_ENV_FILE, 'utf8'));
+            const url = process.env.EXPO_PUBLIC_SUPABASE_URL ?? config.EXPO_PUBLIC_SUPABASE_URL;
+            const key = process.env.EXPO_PUBLIC_SUPABASE_KEY ?? config.EXPO_PUBLIC_SUPABASE_KEY;
+            if (url !== 'https://dueyufxxkiixdxighpaz.supabase.co' || !key) {
+              fail('PUBLIC_CONFIG_INVALID');
+            } else {
+              const client = createClient(url, key, {
+                auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
+                global: { fetch: (input, init) => fetch(input, { ...init, signal: AbortSignal.timeout(30_000) }) },
+              });
+              const { data: login, error: authError } = await client.auth.signInWithPassword({
+                email: process.env.NIVL_SHOTS_EMAIL,
+                password: process.env.NIVL_SHOTS_PASSWORD,
+              });
+              if (authError || !login.user) {
+                const code = /^[a-z0-9_]{1,64}$/.test(authError?.code ?? '') ? authError.code : 'unknown';
+                fail('AUTH_' + code);
+              } else {
+                const { data: profile, error: profileError } = await client.from('profiles')
+                  .select('onboarding_done').eq('id', login.user.id).maybeSingle();
+                const { data: age, error: ageError } = await client.rpc('my_age_confirmation');
+                const onboardingDone = profile?.onboarding_done === true;
+                const ageConfirmed = age === true;
+                console.log('QA_PREFLIGHT auth=true onboarding_done=' + onboardingDone + ' age_confirmed=' + ageConfirmed);
+                if (profileError || ageError || !profile || typeof age !== 'boolean') {
+                  fail('READINESS_QUERY_FAILED');
+                } else if (!onboardingDone || !ageConfirmed) {
+                  fail('DEMO_NOT_READY');
+                }
+              }
+              await client.auth.signOut({ scope: 'local' });
+            }
+          } catch {
+            fail('NETWORK_OR_CONFIG_FAILED');
+          }
+          JS
       - name: Pin embedded JavaScript in the disposable simulator checkout
         run: |
           # screenshots uses the production channel; an OTA must not replace the reviewed SHA.

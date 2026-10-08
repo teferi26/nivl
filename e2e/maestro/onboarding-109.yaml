@@ -15,7 +15,11 @@ name: NIVL 1.0.9 demo onboarding and cold reopen
     clearKeychain: true
     permissions:
       notifications: deny
-- runFlow: login.yaml
+- runFlow:
+    file: login.yaml
+    env:
+      NIVL_QA_EMAIL: ${NIVL_QA_EMAIL}
+      NIVL_QA_PASSWORD: ${NIVL_QA_PASSWORD}
 - assertNotVisible: '^Tu edad$'
 
 # Reopening a completed account: no clearing storage/keychain between launches.

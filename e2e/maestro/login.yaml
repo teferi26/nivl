@@ -29,6 +29,12 @@ name: NIVL login (subflujo)
       visible: '^(Ahora no|Not Now)$'
     commands:
       - tapOn: '^(Ahora no|Not Now)$'
+# Sanitized diagnostics: assert only fixed product strings, never field values.
+- assertNotVisible: '^Correo o contraseña incorrectos\.$'
+- assertNotVisible: '^Demasiados intentos\..*$'
+- assertNotVisible: '^Confirma tu correo antes de entrar\..*$'
+- assertNotVisible: '^No se ha podido comprobar que no eres un robot\..*$'
+- assertNotVisible: '^Tu edad$'
 - extendedWaitUntil:
     visible: '^Hoy$'
     timeout: 30000
