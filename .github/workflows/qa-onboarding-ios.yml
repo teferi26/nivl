@@ -248,6 +248,50 @@ jobs:
           AppState during-hold cancellation has separate component-test evidence, not native evidence here.
           EOF
 
+      - name: Report only fixed screen-state booleans after a native failure
+        if: failure() && env.QA_UDID != ''
+        run: |
+          umask 077
+          PRIVATE_TREE="$RUNNER_TEMP/qa-private-tree.json"
+          PRIVATE_ERR="$RUNNER_TEMP/qa-private-tree.err"
+          maestro --device "$QA_UDID" hierarchy --no-reinstall-driver > "$PRIVATE_TREE" 2> "$PRIVATE_ERR" || true
+          python3 - "$PRIVATE_TREE" <<'PY'
+          import json, sys
+          labels = {
+              'login_intro': 'Entra con tu correo y tu contraseña de NIVL.',
+              'email_field': 'Correo electrónico',
+              'password_field': 'Contraseña',
+              'submit': 'Entrar',
+              'age_heading': 'Tu edad',
+              'age_check': 'Tengo 16 años o más',
+              'age_retry': 'Volver a comprobar',
+              'loading': 'Cargando',
+              'onboarding_start': 'Entrar en la arena',
+              'today': 'Hoy',
+              'crash': 'EL SISTEMA HA FALLADO',
+              'bad_credentials': 'Correo o contraseña incorrectos.',
+          }
+          found = {key: False for key in labels}
+          states = {'submit_enabled': False, 'password_focused': False}
+          def visit(node):
+              attrs = node.get('attributes', {})
+              # No input value is emitted, stored in evidence, or interpolated into output.
+              for key, label in labels.items():
+                  if any(isinstance(attrs.get(a), str) and attrs[a].casefold() == label.casefold()
+                         for a in ('text', 'hintText', 'accessibilityText')):
+                      found[key] = True
+                      if key == 'submit': states['submit_enabled'] |= node.get('enabled') is True
+                      if key == 'password_field': states['password_focused'] |= node.get('focused') is True
+              for child in node.get('children', []): visit(child)
+          try:
+              with open(sys.argv[1], encoding='utf-8') as source: tree = json.load(source)
+              visit(tree)
+              print('QA_SCREEN_STATE ' + json.dumps({'diagnostic_available': True, **found, **states}, sort_keys=True))
+          except Exception:
+              print('QA_SCREEN_STATE {"diagnostic_available": false}')
+          PY
+          rm -f "$PRIVATE_TREE" "$PRIVATE_ERR"
+
       - name: Upload only curated fictitious-demo evidence
         if: success()
         uses: actions/upload-artifact@v4

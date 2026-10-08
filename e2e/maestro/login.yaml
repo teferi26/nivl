@@ -14,12 +14,23 @@ name: NIVL login (subflujo)
     visible: 'Entra con tu correo y tu contraseña de NIVL\.'
     timeout: 30000
 - tapOn: '^Correo electrónico$'
+- assertVisible:
+    text: '^Correo electrónico$'
+    focused: true
 - inputText: ${NIVL_QA_EMAIL}
 - tapOn:
     text: '^Contraseña$'
     index: 1
+- assertVisible:
+    text: '^Contraseña$'
+    focused: true
 - inputText: ${NIVL_QA_PASSWORD}
 - hideKeyboard
+- assertVisible:
+    text: '^Entrar$'
+    enabled: true
+    below:
+      text: '^Contraseña$'
 - tapOn:
     text: '^Entrar$'
     below:
