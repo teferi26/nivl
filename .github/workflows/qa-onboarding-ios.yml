@@ -226,13 +226,15 @@ jobs:
           xcrun simctl status_bar "$UDID" override --time '9:41' --batteryState charged --batteryLevel 100 --cellularBars 4 --wifiBars 3 --operatorName ''
           xcrun simctl ui "$UDID" appearance dark
           xcrun simctl install "$UDID" "$APP_PATH"
-          mkdir -p "$RUNNER_TEMP/qa-evidence"
+          umask 077
+          mkdir -p "$RUNNER_TEMP/qa-evidence" "$RUNNER_TEMP/qa-private-debug"
           # Raw Maestro failure screenshots/reports remain separate and are NEVER uploaded.
           maestro --device "$UDID" test \
             -e NIVL_QA_EMAIL="$NIVL_SHOTS_EMAIL" -e NIVL_QA_PASSWORD="$NIVL_SHOTS_PASSWORD" \
             -e QA_EVIDENCE_ROOT="$RUNNER_TEMP/qa-evidence" \
             --test-output-dir "$RUNNER_TEMP/qa-private-debug" \
-            e2e/maestro/onboarding-109.yaml
+            --debug-output "$RUNNER_TEMP/qa-private-debug" \
+            e2e/maestro/onboarding-109.yaml > "$RUNNER_TEMP/qa-private-debug/maestro-command.log" 2>&1
           cat > "$RUNNER_TEMP/qa-evidence/simulator-result.txt" <<EOF
           Status: PASS SIMULATOR ONLY
           Reviewed source SHA: $QA_SHA
@@ -248,49 +250,76 @@ jobs:
           AppState during-hold cancellation has separate component-test evidence, not native evidence here.
           EOF
 
-      - name: Report only fixed screen-state booleans after a native failure
+      - name: Report fixed indicators from original failure artifacts before recovery
         if: failure() && env.QA_UDID != ''
         run: |
           umask 077
-          PRIVATE_TREE="$RUNNER_TEMP/qa-private-tree.json"
-          PRIVATE_ERR="$RUNNER_TEMP/qa-private-tree.err"
-          maestro --device "$QA_UDID" hierarchy --no-reinstall-driver > "$PRIVATE_TREE" 2> "$PRIVATE_ERR" || true
-          python3 - "$PRIVATE_TREE" <<'PY'
-          import json, sys
-          labels = {
-              'login_intro': 'Entra con tu correo y tu contraseña de NIVL.',
-              'email_field': 'Correo electrónico',
-              'password_field': 'Contraseña',
-              'submit': 'Entrar',
-              'age_heading': 'Tu edad',
-              'age_check': 'Tengo 16 años o más',
-              'age_retry': 'Volver a comprobar',
-              'loading': 'Cargando',
-              'onboarding_start': 'Entrar en la arena',
-              'today': 'Hoy',
-              'crash': 'EL SISTEMA HA FALLADO',
-              'bad_credentials': 'Correo o contraseña incorrectos.',
-          }
-          found = {key: False for key in labels}
-          states = {'submit_enabled': False, 'password_focused': False}
-          def visit(node):
-              attrs = node.get('attributes', {})
-              # No input value is emitted, stored in evidence, or interpolated into output.
-              for key, label in labels.items():
-                  if any(isinstance(attrs.get(a), str) and attrs[a].casefold() == label.casefold()
-                         for a in ('text', 'hintText', 'accessibilityText')):
-                      found[key] = True
-                      if key == 'submit': states['submit_enabled'] |= node.get('enabled') is True
-                      if key == 'password_field': states['password_focused'] |= node.get('focused') is True
-              for child in node.get('children', []): visit(child)
-          try:
-              with open(sys.argv[1], encoding='utf-8') as source: tree = json.load(source)
-              visit(tree)
-              print('QA_SCREEN_STATE ' + json.dumps({'diagnostic_available': True, **found, **states}, sort_keys=True))
-          except Exception:
-              print('QA_SCREEN_STATE {"diagnostic_available": false}')
+          PRIVATE="$RUNNER_TEMP/qa-private-debug"
+          OCR_PRIVATE="$RUNNER_TEMP/qa-private-ocr.json"
+          export PRIVATE
+          # Only original failed-step screenshots, never final.png or recovery images.
+          # Paths and OCR strings remain private; no screenshot/log/tree is uploaded.
+          python3 - <<'PY' > "$RUNNER_TEMP/qa-private-images.list"
+          import os, pathlib
+          root = pathlib.Path(os.environ['PRIVATE'])
+          images = [p for p in root.rglob('*.png') if 'screenshots' in p.parts
+                    and p.name != 'final.png' and 'recovery' not in p.relative_to(root).parts
+                    and not p.is_symlink() and p.stat().st_size <= 20*1024*1024]
+          for image in sorted(images, key=lambda p: p.stat().st_mtime, reverse=True)[:3]:
+              print(image)
           PY
-          rm -f "$PRIVATE_TREE" "$PRIVATE_ERR"
+          IMAGES=()
+          while IFS= read -r image; do IMAGES+=("$image"); done < "$RUNNER_TEMP/qa-private-images.list"
+          if ! swift scripts/ci/nivl-qa-ocr.swift "${IMAGES[@]}" > "$OCR_PRIVATE" 2> "$RUNNER_TEMP/qa-private-ocr.err"; then
+            printf '[]' > "$OCR_PRIVATE"
+          fi
+          python3 scripts/ci/nivl-qa-screen-state.py "$PRIVATE" "$OCR_PRIVATE" \
+            "$HOME/Library/Logs/DiagnosticReports" \
+            "$HOME/Library/Developer/CoreSimulator/Devices/$QA_UDID/data/Library/Logs/CrashReporter"
+          rm -f "$OCR_PRIVATE" "$RUNNER_TEMP/qa-private-images.list" "$RUNNER_TEMP/qa-private-ocr.err"
+
+      - name: Diagnostic recovery in same demo session (original QA remains failed)
+        if: failure() && env.QA_UDID != ''
+        run: |
+          umask 077
+          mkdir -p "$RUNNER_TEMP/qa-private-debug/recovery" "$RUNNER_TEMP/qa-private-debug/recovery-evidence"
+          if maestro --device "$QA_UDID" test \
+            -e QA_EVIDENCE_ROOT="$RUNNER_TEMP/qa-private-debug/recovery-evidence" \
+            --test-output-dir "$RUNNER_TEMP/qa-private-debug/recovery" \
+            --debug-output "$RUNNER_TEMP/qa-private-debug/recovery" \
+            e2e/maestro/onboarding-109-recovery.yaml > "$RUNNER_TEMP/qa-private-debug/recovery-command.log" 2>&1; then
+            echo 'QA_RECOVERY_STATUS PASS_DIAGNOSTIC_ONLY_ORIGINAL_FAILED'
+          else
+            echo 'QA_RECOVERY_STATUS FAIL_DIAGNOSTIC_ONLY_ORIGINAL_FAILED'
+          fi
+
+      - name: Report fixed indicators from recovery artifacts
+        if: failure() && env.QA_UDID != ''
+        run: |
+          umask 077
+          PRIVATE="$RUNNER_TEMP/qa-private-debug/recovery"
+          OCR_PRIVATE="$RUNNER_TEMP/qa-private-recovery-ocr.json"
+          export PRIVATE
+          # Only original failed-step screenshots, never final.png or recovery images.
+          # Paths and OCR strings remain private; no screenshot/log/tree is uploaded.
+          python3 - <<'PY' > "$RUNNER_TEMP/qa-private-recovery-images.list"
+          import os, pathlib
+          root = pathlib.Path(os.environ['PRIVATE'])
+          images = [p for p in root.rglob('*.png') if 'screenshots' in p.parts
+                    and p.name != 'final.png' and 'recovery' not in p.relative_to(root).parts
+                    and not p.is_symlink() and p.stat().st_size <= 20*1024*1024]
+          for image in sorted(images, key=lambda p: p.stat().st_mtime, reverse=True)[:3]:
+              print(image)
+          PY
+          IMAGES=()
+          while IFS= read -r image; do IMAGES+=("$image"); done < "$RUNNER_TEMP/qa-private-images.list"
+          if ! swift scripts/ci/nivl-qa-ocr.swift "${IMAGES[@]}" > "$OCR_PRIVATE" 2> "$RUNNER_TEMP/qa-private-ocr.err"; then
+            printf '[]' > "$OCR_PRIVATE"
+          fi
+          python3 scripts/ci/nivl-qa-screen-state.py "$PRIVATE" "$OCR_PRIVATE" --recovery \
+            "$HOME/Library/Logs/DiagnosticReports" \
+            "$HOME/Library/Developer/CoreSimulator/Devices/$QA_UDID/data/Library/Logs/CrashReporter"
+          rm -f "$OCR_PRIVATE" "$RUNNER_TEMP/qa-private-images.list" "$RUNNER_TEMP/qa-private-ocr.err"
 
       - name: Upload only curated fictitious-demo evidence
         if: success()
