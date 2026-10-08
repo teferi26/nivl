@@ -1,5 +1,6 @@
 """Read private native evidence; emit only fixed booleans and counts."""
 import json
+import os
 import pathlib
 import sys
 import time
@@ -24,6 +25,13 @@ labels = {
     'today': 'Hoy',
     'crash': 'EL SISTEMA HA FALLADO',
     'bad_credentials': 'Correo o contraseña incorrectos.',
+    'invalid_email_format': 'Formato de correo no válido.',
+    'invalid_email': 'El correo no tiene un formato válido.',
+    'rate_limited': 'Demasiados intentos. Espera unos minutos y vuelve a probar.',
+    'captcha_failed': 'No se ha podido comprobar que no eres un robot. Vuelve a intentarlo.',
+    'session_expired': 'Tu sesión ha caducado. Abre de nuevo el enlace del correo.',
+    'offline': 'Sin conexión. El sistema lo reintentará cuando vuelvas a tener red.',
+    'generic_failure': 'El sistema no ha podido completar la operación.',
     'save_password': 'Guardar contraseña',
     'save_password_en': 'Save Password',
     'not_now': 'Ahora no',
@@ -49,6 +57,43 @@ technical = {
 technical_found = {key: False for key in technical}
 node_count = 0
 parsed_count = 0
+field_states = {'email_equals_fixture': [], 'password_nonempty': [],
+                'submit_ax_enabled': [], 'submit_ax_busy': []}
+
+
+def native_bool(value):
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, str) and value.casefold() in ('true', 'false'):
+        return value.casefold() == 'true'
+    return None
+
+
+def inspect_controls(node, attrs):
+    # Unknown remains null: label-only nodes cannot prove control identity.
+    label = attrs.get('accessibilityText', attrs.get('label', ''))
+    if not isinstance(label, str):
+        return
+    role = str(attrs.get('role', attrs.get('accessibilityRole', attrs.get('elementType', '')))).casefold()
+    focused = node.get('focused') is True or native_bool(attrs.get('focused')) is True
+    is_input = focused or role in ('textfield', 'securetextfield', 'xcuielementtypetextfield', 'xcuielementtypesecuretextfield')
+    hint = attrs.get('hintText')
+    if label.casefold() == 'correo electrónico' and (is_input or hint == 'tu@correo.com'):
+        value = attrs.get('value')
+        fixture = os.environ.get('NIVL_SHOTS_EMAIL') or os.environ.get('NIVL_QA_EMAIL')
+        if isinstance(value, str) and fixture and value != hint:
+            field_states['email_equals_fixture'].append(value.strip().casefold() == fixture.strip().casefold())
+    if label.casefold() == 'contraseña' and (is_input or hint == '••••••••••'):
+        value = attrs.get('value')
+        if isinstance(value, str) and value != hint and value != 'Contraseña':
+            field_states['password_nonempty'].append(bool(value))
+    if label.casefold() == 'entrar' and role in ('button', 'xcuielementtypebutton'):
+        enabled = native_bool(node.get('enabled', attrs.get('enabled')))
+        busy = native_bool(node.get('busy', attrs.get('busy')))
+        if enabled is not None:
+            field_states['submit_ax_enabled'].append(enabled)
+        if busy is not None:
+            field_states['submit_ax_busy'].append(busy)
 
 
 def match(value):
@@ -81,6 +126,7 @@ def visit(node):
         attrs = node.get('attributes')
         if isinstance(attrs, dict):
             node_count += 1
+            inspect_controls(node, attrs)
             for field in ('text', 'hintText', 'accessibilityText', 'label'):
                 match(attrs.get(field))
         # Wrappers may contain a root/tree or arrays; consume only hierarchy files.
@@ -115,6 +161,9 @@ try:
         ocr_available = bool(recognized)
 except Exception:
     pass
+# Publish only agreement across safely identified controls, otherwise unknown/null.
+control_flags = {key: values[0] if values and all(value == values[0] for value in values) else None
+                 for key, values in field_states.items()}
 prefix = 'QA_RECOVERY_SCREEN_STATE' if recovery else 'QA_ORIGINAL_SCREEN_STATE'
 print(prefix + ' ' + json.dumps({
     'diagnostic_available': parsed_count > 0,
@@ -122,6 +171,7 @@ print(prefix + ' ' + json.dumps({
     'node_count': node_count,
     **found,
     **technical_found,
+    **control_flags,
 }, sort_keys=True))
 
 crash_count = 0

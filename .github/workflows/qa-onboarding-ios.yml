@@ -252,6 +252,8 @@ jobs:
 
       - name: Report fixed indicators from original failure artifacts before recovery
         if: failure() && env.QA_UDID != ''
+        env:
+          NIVL_SHOTS_EMAIL: ${{ secrets.NIVL_SHOTS_EMAIL }}
         run: |
           umask 077
           PRIVATE="$RUNNER_TEMP/qa-private-debug"

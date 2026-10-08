@@ -25,16 +25,8 @@ name: NIVL login (subflujo)
     text: '^Contraseña$'
     focused: true
 - inputText: ${NIVL_QA_PASSWORD}
-- hideKeyboard
-- assertVisible:
-    text: '^Entrar$'
-    enabled: true
-    below:
-      text: '^Contraseña$'
-- tapOn:
-    text: '^Entrar$'
-    below:
-      text: '^Contraseña$'
+# Submit from the focused native password field; no ambiguous label tap.
+- pressKey: Enter
 - runFlow:
     when:
       visible: '^(Ahora no|Not Now)$'
