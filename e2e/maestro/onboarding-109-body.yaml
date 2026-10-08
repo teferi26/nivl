@@ -41,7 +41,15 @@ name: NIVL onboarding signing and reopen QA body
 - assertVisible:
     text: '^Mi objetivo incluye salud o entrenamiento$'
     checked: false
-- tapOn: '^Tu objetivo, en una frase$'
+- scrollUntilVisible:
+    element:
+      text: '^(Tu objetivo, en una frase|Leer doce libros este año)$'
+    direction: DOWN
+    timeout: 10000
+- tapOn: '^(Tu objetivo, en una frase|Leer doce libros este año)$'
+- assertVisible:
+    text: '^(Tu objetivo, en una frase|Leer doce libros este año)$'
+    focused: true
 - inputText: 'Leer doce libros de ficcion'
 - hideKeyboard
 - tapOn: '^Continuar$'

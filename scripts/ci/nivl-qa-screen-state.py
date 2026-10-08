@@ -23,6 +23,34 @@ labels = {
     'retry': 'Reintentar',
     'onboarding_start': 'Entrar en la arena',
     'today': 'Hoy',
+    "name_header": "¿Cómo te llamas?",
+    "name_inscription": "El nombre",
+    "name_field": "Tu nombre",
+    "kind_header": "¿Para qué vas a usar NIVL?",
+    "kind_inscription": "El camino",
+    "kind_general": "En general",
+    "goal_header": "¿A qué has venido?",
+    "goal_inscription": "El objetivo",
+    "goal_field": "Tu objetivo, en una frase",
+    "goal_placeholder": "Leer doce libros este año",
+    "goal_health_checkbox": "Mi objetivo incluye salud o entrenamiento",
+    "quests_header": "Tus primeras misiones",
+    "quests_inscription": "Las misiones",
+    "quests_training": "Entrenar",
+    "quests_work": "Trabajo o estudio 2 h",
+    "quests_food": "Registrar comidas del día",
+    "quests_reading": "Leer 20 minutos",
+    "quests_diary": "Diario del día",
+    "quests_skip": "Empezar sin misiones",
+    "signature_header": "Fírmalo contigo",
+    "signature_inscription": "La firma",
+    "signature_label": "Escribe tu nombre",
+    "signature_field": "Escribe tu nombre para firmar",
+    "signature_hold": "Mantén pulsado para firmar",
+    "signature_sealed": "Sellado.",
+    "offer_header": "Firmado. Ahora, quién lo dirige.",
+    "offer_inscription": "El coach",
+    "offer_skip": "Seguir gratis por ahora",
     'crash': 'EL SISTEMA HA FALLADO',
     'bad_credentials': 'Correo o contraseña incorrectos.',
     'invalid_email_format': 'Formato de correo no válido.',
@@ -109,6 +137,8 @@ def match(value):
         expected = label.casefold()
         if normalized == expected:
             found[key] = True
+    if normalized.startswith('sellado.'):
+        found['signature_sealed'] = True
     # Only fixed system-dialog prefixes; never emit their suffix or unknown text.
     for key, prefix in [('save_password', '¿guardar contraseña'),
                         ('save_password_en', 'would you like to save this password'),
@@ -171,7 +201,33 @@ command_types = {
     'openLinkCommand': 'OPEN_LINK', 'scrollUntilVisibleCommand': 'SCROLL_UNTIL_VISIBLE',
     'scrollCommand': 'SCROLL', 'runFlowCommand': 'RUN_FLOW',
 }
+tap_selectors = {
+    "^Correo electrónico$": "LOGIN_EMAIL",
+    "^Contraseña$": "LOGIN_PASSWORD",
+    "^Entrar$": "LOGIN_SUBMIT",
+    "Ahora no|Not Now|No guardar|Más tarde": "DISMISS_SYSTEM_DIALOG",
+    "^Tengo 16 años o más$": "AGE_CHECKBOX",
+    "^Confirmar y continuar$": "AGE_CONFIRM",
+    "^Entrar en la arena$": "ONBOARDING_START",
+    "^Tu nombre$": "NAME_INPUT",
+    "^Continuar$": "CONTINUE",
+    "^En general$": "KIND_GENERAL",
+    "^Tu objetivo, en una frase$": "GOAL_INPUT",
+    "^Leer doce libros este año$": "GOAL_INPUT",
+    "^(Tu objetivo, en una frase|Leer doce libros este año)$": "GOAL_INPUT",
+    "^Entrenar$": "QUEST_TRAINING",
+    "^Trabajo o estudio 2 h$": "QUEST_WORK",
+    "^Registrar comidas del día$": "QUEST_FOOD",
+    "^Leer 20 minutos$": "QUEST_READING",
+    "^Diario del día$": "QUEST_DIARY",
+    "^Empezar sin misiones$": "QUEST_SKIP",
+    "^Escribe tu nombre$": "SIGNATURE_LABEL",
+    "^Escribe tu nombre para firmar$": "SIGNATURE_INPUT",
+    "^Mantén pulsado para firmar$": "SIGNATURE_HOLD",
+    "^Seguir gratis por ahora$": "OFFER_SKIP",
+}
 failed_command_type = 'UNKNOWN'
+failed_tap_selector = 'UNKNOWN'
 command_files = [p for p in source.rglob('commands.json') if not p.is_symlink()
                  and 'recovery' not in p.relative_to(source).parts
                  and p.stat().st_size <= 20*1024*1024]
@@ -179,13 +235,21 @@ for command_file in sorted(command_files, key=lambda p: p.stat().st_mtime, rever
     try:
         records = json.loads(command_file.read_text(encoding='utf-8'))
         if not isinstance(records, list): continue
-        for record in records:
+        for record in reversed(records):
             if not isinstance(record, dict) or record.get('metadata', {}).get('status') != 'FAILED': continue
             command = record.get('command', {})
             if not isinstance(command, dict): continue
             matches = [enum for key, enum in command_types.items() if command.get(key) is not None]
             if len(matches) == 1 and matches[0] != 'RUN_FLOW':
                 failed_command_type = matches[0]
+                if failed_command_type == 'TAP_POINT':
+                    failed_tap_selector = 'POINT'
+                elif failed_command_type == 'TAP_ELEMENT':
+                    tap = command.get('tapOnElement')
+                    if isinstance(tap, dict) and isinstance(tap.get('selector'), dict):
+                        selector = tap['selector'].get('textRegex')
+                        if isinstance(selector, str):
+                            failed_tap_selector = tap_selectors.get(selector, 'UNKNOWN')
                 break
         if failed_command_type != 'UNKNOWN': break
     except Exception:
@@ -200,6 +264,7 @@ print(prefix + ' ' + json.dumps({
     'ocr_available': ocr_available,
     'node_count': node_count,
     'failed_command_type': failed_command_type,
+    'failed_tap_selector': failed_tap_selector,
     **found,
     **technical_found,
     **control_flags,
