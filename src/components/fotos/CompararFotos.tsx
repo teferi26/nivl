@@ -15,10 +15,11 @@ import { StyleSheet, Text, View } from 'react-native';
 import { Button, Chip, ChipWrap } from '@/components/ui';
 import { Interruptor } from '@/components/ui/Interruptor';
 import { ink, space, stroke, type as tipo } from '@/design/tokens';
+import { t } from '@/i18n';
 import { parAntesDespues, POSES, type FotoProgreso, type ParAntesDespues, type PesoDia, type Pose } from '@/lib/progressPhotos';
 import { borrarTemporales, TEMP_ANTES, TEMP_DESPUES } from './datos';
 import { Miniatura } from './LineaFotos';
-import { fechaCorta, NOMBRE_POSE, textoDifKg, textoDias, textoKg } from './modelo';
+import { fechaCorta, nombrePose, textoDifKg, textoDias, textoKg } from './modelo';
 
 export const PLAZOS = [30, 90, 180] as const;
 export type Plazo = (typeof PLAZOS)[number];
@@ -74,24 +75,24 @@ export function CompararFotos({
     <View style={styles.wrap}>
       <ChipWrap>
         {POSES.map((p) => (
-          <Chip key={p} label={NOMBRE_POSE[p]} selected={p === pose} onPress={() => setPose(p)} />
+          <Chip key={p} label={nombrePose(p)} selected={p === pose} onPress={() => setPose(p)} />
         ))}
       </ChipWrap>
       <ChipWrap>
         {PLAZOS.map((d) => (
           <Chip
             key={d}
-            label={`${d} días`}
+            label={t('fotos:comparar.plazo', { n: d })}
             selected={d === plazo}
             onPress={() => setPlazo(d)}
-            accessibilityLabel={`Comparar con hace unos ${d} días`}
+            accessibilityLabel={t('fotos:comparar.plazoA11y', { n: d })}
           />
         ))}
       </ChipWrap>
 
       {!par ? (
         <Text style={styles.vacio} maxFontSizeMultiplier={1.35}>
-          Hacen falta dos fotos de {NOMBRE_POSE[pose].toLowerCase()} en días distintos para comparar.
+          {t('fotos:comparar.faltanDos', { pose: nombrePose(pose).toLowerCase() })}
         </Text>
       ) : (
         <>
@@ -100,8 +101,8 @@ export function CompararFotos({
               const f = par[k];
               // Una sola etiqueta por columna; lo de dentro no se repite al lector.
               const etiqueta = [
-                k === 'antes' ? 'Antes' : 'Después',
-                NOMBRE_POSE[f.pose].toLowerCase(),
+                k === 'antes' ? t('fotos:comparar.antes') : t('fotos:comparar.despues'),
+                nombrePose(f.pose).toLowerCase(),
                 fechaCorta(f.fecha, hoy),
                 ...(mostrarPeso && f.pesoKg !== null ? [textoKg(f.pesoKg)] : []),
               ].join(', ');
@@ -114,7 +115,9 @@ export function CompararFotos({
                     accessibilityElementsHidden
                     importantForAccessibility="no"
                   >
-                    {k === 'antes' ? 'ANTES' : 'DESPUÉS'} · {fechaCorta(f.fecha, hoy)}
+                    {t(k === 'antes' ? 'fotos:comparar.rotuloAntes' : 'fotos:comparar.rotuloDespues', {
+                      fecha: fechaCorta(f.fecha, hoy),
+                    })}
                   </Text>
                   {mostrarPeso ? (
                     <Text
@@ -131,12 +134,14 @@ export function CompararFotos({
             })}
           </View>
 
-          <View style={styles.dias} accessible accessibilityLabel={`${textoDias(par.dias)} entre las dos fotos`}>
+          <View style={styles.dias} accessible accessibilityLabel={t('fotos:comparar.entreA11y', { dias: textoDias(par.dias) })}
+          >
             <Text style={styles.cifra} maxFontSizeMultiplier={1}>
               {par.dias}
             </Text>
             <Text style={styles.diasTexto} maxFontSizeMultiplier={1.35}>
-              {par.dias === 1 ? 'DÍA ENTRE ELLAS' : 'DÍAS ENTRE ELLAS'}
+              {/* La cifra va aparte, en grande: el rótulo no la lleva y no cabe un plural con {{count}}. */}
+              {t(par.dias === 1 ? 'fotos:comparar.entreUno' : 'fotos:comparar.entreVarios')}
             </Text>
             {mostrarPeso && par.difPesoKg !== null ? (
               <Text style={styles.dif} maxFontSizeMultiplier={1.35}>
@@ -148,15 +153,19 @@ export function CompararFotos({
           {hayPeso ? (
             <View style={styles.interruptor}>
               <Text style={styles.interruptorTexto} maxFontSizeMultiplier={1.35}>
-                Mostrar el peso
+                {t('fotos:comparar.mostrarPeso')}
               </Text>
-              <Interruptor value={mostrarPeso} onValueChange={setMostrarPeso} accessibilityLabel="Mostrar el peso" />
+              <Interruptor
+                value={mostrarPeso}
+                onValueChange={setMostrarPeso}
+                accessibilityLabel={t('fotos:comparar.mostrarPeso')}
+              />
             </View>
           ) : null}
 
           {puedeCompartir ? (
             <Button
-              title="Compartir"
+              title={t('comun:compartir')}
               icon="share-outline"
               variant="secondary"
               onPress={() => onCompartir(par, mostrarPeso)}

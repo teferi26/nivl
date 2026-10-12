@@ -30,6 +30,7 @@ import {
 } from '@/components/arena';
 import { Button, Check, EmptyState, Row, Screen, Section, SIN_DATO, Tag } from '@/components/ui';
 import { ink, space, stroke, type as tipo } from '@/design/tokens';
+import { t } from '@/i18n';
 import type { NutritionLog, NutritionTarget } from '@/lib/bodywork';
 
 export interface NutricionVistaProps {
@@ -84,40 +85,40 @@ export function NutricionVista({
   const subtitulo = !cargado || errorCarga
     ? undefined
     : objetivo
-      ? `${formatoMiles(objetivo.kcal)} kcal y ${objetivo.protein_g} g de proteína al día.`
-      : 'Sin objetivo fijado todavía.';
+      ? t('nutricion:vista.subObjetivo', { kcal: formatoMiles(objetivo.kcal), prote: objetivo.protein_g })
+      : t('nutricion:vista.subSinObjetivo');
 
   const cifras: Cifra[] = [
     objetivo
-      ? { valor: objetivo.kcal, rotulo: 'Kcal objetivo' }
-      : { valor: SIN_DATO, rotulo: 'Kcal objetivo', etiqueta: 'Kcal objetivo: sin dato' },
+      ? { valor: objetivo.kcal, rotulo: t('nutricion:vista.cifraKcal') }
+      : { valor: SIN_DATO, rotulo: t('nutricion:vista.cifraKcal'), etiqueta: t('nutricion:vista.cifraKcalSinDato') },
     objetivo
-      ? { valor: objetivo.protein_g, sufijo: ' g', rotulo: 'Proteína' }
-      : { valor: SIN_DATO, rotulo: 'Proteína', etiqueta: 'Proteína: sin dato' },
+      ? { valor: objetivo.protein_g, sufijo: ' g', rotulo: t('nutricion:vista.cifraProte') }
+      : { valor: SIN_DATO, rotulo: t('nutricion:vista.cifraProte'), etiqueta: t('nutricion:vista.cifraProteSinDato') },
     {
       valor: `${cumplidosHoy}/2`,
-      rotulo: 'Parte de hoy',
-      etiqueta: `Parte de hoy: ${cumplidosHoy} de 2 cumplidos`,
+      rotulo: t('nutricion:vista.cifraParte'),
+      etiqueta: t('nutricion:vista.cifraParteA11y', { n: cumplidosHoy }),
     },
   ];
 
   // Lo que estimó el coach desde el chat para hoy, si lo hizo.
-  const estimado =
-    hoyLog && (hoyLog.kcal_est !== null || hoyLog.protein_est !== null)
-      ? [
-          hoyLog.kcal_est !== null ? `${formatoMiles(hoyLog.kcal_est)} kcal` : null,
-          hoyLog.protein_est !== null ? `${hoyLog.protein_est} g de proteína` : null,
-        ]
-          .filter(Boolean)
-          .join(' y ')
-      : null;
+  const estimado = !hoyLog
+    ? null
+    : hoyLog.kcal_est !== null && hoyLog.protein_est !== null
+      ? t('nutricion:vista.estimadoAmbos', { kcal: formatoMiles(hoyLog.kcal_est), prote: hoyLog.protein_est })
+      : hoyLog.kcal_est !== null
+        ? t('nutricion:vista.estimadoKcal', { kcal: formatoMiles(hoyLog.kcal_est) })
+        : hoyLog.protein_est !== null
+          ? t('nutricion:vista.estimadoProte', { prote: hoyLog.protein_est })
+          : null;
 
   return (
     <Screen>
       <Entrada indice={0}>
         <EncabezadoArena
-          eyebrow="Cuerpo"
-          titulo="Nutrición"
+          eyebrow={t('nutricion:vista.eyebrow')}
+          titulo={t('nutricion:vista.titulo')}
           subtitulo={subtitulo}
           onVolver={acciones.onVolver}
           meandro
@@ -125,7 +126,7 @@ export function NutricionVista({
       </Entrada>
 
       {!cargado ? (
-        <CargaArena etiqueta="Cargando tu nutrición" formas={['franja', 'rotulo', 'filas', 'rotulo', 'filas']} />
+        <CargaArena etiqueta={t('nutricion:vista.cargando')} formas={['franja', 'rotulo', 'filas', 'rotulo', 'filas']} />
       ) : errorCarga ? (
         <Entrada indice={1}>
           <ErrorSistema mensaje={errorCarga} onReintentar={acciones.onReintentar} style={styles.bloque} />
@@ -138,23 +139,25 @@ export function NutricionVista({
 
           <Entrada indice={2}>
             {objetivo ? (
-              <Section title="Objetivo">
+              <Section title={t('nutricion:vista.objetivo')}>
                 {objetivo.carbs_g || objetivo.fat_g ? (
                   <View style={styles.lista}>
                     {objetivo.carbs_g ? (
                       <Row
                         first
-                        title="Carbohidratos"
+                        title={t('nutricion:vista.carbos')}
+                        // i18n-ok: unidad
                         trailing={<Text style={styles.cifraFila} maxFontSizeMultiplier={1.2}>{objetivo.carbs_g}<Text style={styles.unidad}> g</Text></Text>}
-                        accessibilityLabel={`Carbohidratos: ${objetivo.carbs_g} gramos al día`}
+                        accessibilityLabel={t('nutricion:vista.carbosA11y', { g: objetivo.carbs_g })}
                       />
                     ) : null}
                     {objetivo.fat_g ? (
                       <Row
                         first={!objetivo.carbs_g}
-                        title="Grasa"
+                        title={t('nutricion:vista.grasa')}
+                        // i18n-ok: unidad
                         trailing={<Text style={styles.cifraFila} maxFontSizeMultiplier={1.2}>{objetivo.fat_g}<Text style={styles.unidad}> g</Text></Text>}
-                        accessibilityLabel={`Grasa: ${objetivo.fat_g} gramos al día`}
+                        accessibilityLabel={t('nutricion:vista.grasaA11y', { g: objetivo.fat_g })}
                       />
                     ) : null}
                   </View>
@@ -170,55 +173,63 @@ export function NutricionVista({
                 <EmptyState
                   compact
                   icon="nutrition-outline"
-                  title="Sin objetivo fijado"
-                  body="Pídeselo al coach: lo calculará con tu peso, tu entrenamiento y el ritmo que buscas."
-                  action={{ label: 'Hablar con el coach', onPress: acciones.onCoach, variant: 'outline' }}
+                  title={t('nutricion:vista.sinObjetivo')}
+                  body={t('nutricion:vista.sinObjetivoCuerpo')}
+                  action={{ label: t('nutricion:vista.hablarCoach'), onPress: acciones.onCoach, variant: 'outline' }}
                 />
               </TarjetaArena>
             )}
           </Entrada>
 
           <Entrada indice={3}>
-            <Section title="Parte de hoy" meta={`${cumplidosHoy}/2`} tone={cumplidosHoy === 2 ? 'accent' : 'dim'}>
+            <Section title={t('nutricion:vista.parteHoy')} meta={`${cumplidosHoy}/2`} tone={cumplidosHoy === 2 ? 'accent' : 'dim'}>
               <View style={styles.lista}>
                 <Row
                   first
                   leading={<Check checked={kcal} size={24} />}
-                  title="Calorías"
-                  detail={objetivo ? `Objetivo: ${formatoMiles(objetivo.kcal)} kcal` : 'Sin objetivo fijado'}
-                  trailing={kcal ? <Tag tone="dim">Cumplido</Tag> : undefined}
+                  title={t('nutricion:vista.calorias')}
+                  detail={
+                    objetivo
+                      ? t('nutricion:vista.objetivoKcal', { kcal: formatoMiles(objetivo.kcal) })
+                      : t('nutricion:vista.sinObjetivo')
+                  }
+                  trailing={kcal ? <Tag tone="dim">{t('nutricion:vista.cumplido')}</Tag> : undefined}
                   onPress={acciones.onKcal}
                   accessibilityRole="checkbox"
                   accessibilityState={{ checked: kcal }}
-                  accessibilityLabel="He cumplido las calorías"
+                  accessibilityLabel={t('nutricion:vista.kcalA11y')}
                 />
                 <Row
                   leading={<Check checked={prote} size={24} />}
-                  title="Proteína"
-                  detail={objetivo ? `Objetivo: ${objetivo.protein_g} g` : 'Sin objetivo fijado'}
-                  trailing={prote ? <Tag tone="dim">Cumplido</Tag> : undefined}
+                  title={t('nutricion:vista.proteina')}
+                  detail={
+                    objetivo
+                      ? t('nutricion:vista.objetivoProte', { prote: objetivo.protein_g })
+                      : t('nutricion:vista.sinObjetivo')
+                  }
+                  trailing={prote ? <Tag tone="dim">{t('nutricion:vista.cumplido')}</Tag> : undefined}
                   onPress={acciones.onProte}
                   accessibilityRole="checkbox"
                   accessibilityState={{ checked: prote }}
-                  accessibilityLabel="He cumplido la proteína"
+                  accessibilityLabel={t('nutricion:vista.proteA11y')}
                 />
               </View>
               {estimado ? (
                 <Text style={styles.nota} maxFontSizeMultiplier={1.35}>
-                  El coach estimó hoy {estimado}.
+                  {estimado}
                 </Text>
               ) : null}
               <Campo
-                etiqueta="Notas del día"
+                etiqueta={t('nutricion:vista.notas')}
                 value={notas}
                 onChangeText={acciones.onNotas}
-                placeholder="Qué se torció, o qué comiste de más"
+                placeholder={t('nutricion:vista.notasPlaceholder')}
                 multiline
                 estiloBloque={styles.campo}
                 style={styles.notas}
               />
               <Button
-                title={diaPagado ? 'Corregir el parte' : 'Registrar el día'}
+                title={diaPagado ? t('nutricion:vista.corregir') : t('nutricion:vista.registrar')}
                 size="lg"
                 onPress={acciones.onGuardar}
                 loading={guardando}
@@ -226,23 +237,25 @@ export function NutricionVista({
               />
               <Text style={styles.nota} maxFontSizeMultiplier={1.35}>
                 {diaPagado
-                  ? 'El día ya está registrado y pagado. Puedes corregir el parte sin que vuelva a premiar.'
-                  : `Cumplir las dos cosas paga hasta +${xpDia} XP a VIT.`}
+                  ? t('nutricion:vista.yaPagado')
+                  : t('nutricion:vista.paga', { xp: xpDia })}
               </Text>
             </Section>
           </Entrada>
 
           <Entrada indice={4}>
-            <Section title="Adherencia · 28 días" meta={dias ? `${dias} ${dias === 1 ? 'parte' : 'partes'}` : undefined}>
+            <Section
+              title={t('nutricion:vista.adherencia')}
+              meta={dias ? t('nutricion:vista.partes', { count: dias }) : undefined}
+            >
               {dias ? (
                 <>
                   <View style={styles.lista}>
-                    <FilaAdherencia primera rotulo="Calorías" pct={pctKcal} />
-                    <FilaAdherencia rotulo="Proteína" pct={pctProte} />
+                    <FilaAdherencia primera rotulo={t('nutricion:vista.calorias')} pct={pctKcal} />
+                    <FilaAdherencia rotulo={t('nutricion:vista.proteina')} pct={pctProte} />
                   </View>
                   <Text style={styles.nota} maxFontSizeMultiplier={1.35}>
-                    Si la adherencia es alta y el peso no se mueve dos semanas, el fallo es del objetivo, no tuyo: el
-                    sistema lo recalculará.
+                    {t('nutricion:vista.adherenciaNota')}
                   </Text>
                 </>
               ) : (
@@ -250,8 +263,8 @@ export function NutricionVista({
                   <EmptyState
                     compact
                     icon="analytics-outline"
-                    title="Sin partes todavía"
-                    body="Son dos toques al día y son lo que permite al sistema saber si hay que tocar las calorías o apretar."
+                    title={t('nutricion:vista.sinPartes')}
+                    body={t('nutricion:vista.sinPartesCuerpo')}
                   />
                 </TarjetaArena>
               )}
@@ -271,7 +284,10 @@ function FilaAdherencia({ rotulo, pct, primera }: { rotulo: string; pct: number;
     <View
       style={[styles.adherencia, !primera && styles.conRegla]}
       accessible
-      accessibilityLabel={`${rotulo}: ${pct} % de los días${pct >= ADHERENCIA_BUENA ? ', buena adherencia' : ''}`}
+      accessibilityLabel={t(
+        pct >= ADHERENCIA_BUENA ? 'nutricion:vista.adherenciaBuenaA11y' : 'nutricion:vista.adherenciaA11y',
+        { rotulo, pct },
+      )}
     >
       <View style={styles.adherenciaCab}>
         <Text style={styles.adherenciaRotulo} maxFontSizeMultiplier={1.35}>

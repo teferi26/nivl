@@ -7,6 +7,8 @@
 // Contrato de 0050: la ruta es exactamente `{uid}/{id}.jpg` con el id de la
 // fila, que genera el cliente. Sin fecha ni pose en la ruta.
 
+import { t } from '@/i18n';
+import { decimal } from '@/i18n/formato';
 import { isValidKey } from '@/lib/dates';
 import type { ParAntesDespues, Pose } from '@/lib/progressPhotos';
 import type { Tarjeta } from '@/lib/sharecard';
@@ -90,22 +92,26 @@ export function fechaCorta(fecha: string, hoy?: string): string {
 // ---------------------------------------------------------------------------
 // Textos
 
-export const NOMBRE_POSE: Record<Pose, string> = { frente: 'Frente', lado: 'Lado', espalda: 'Espalda' };
+/** El nombre de la pose: «Frente». */
+export function nombrePose(pose: Pose): string {
+  return t(`fotos:pose.${pose}`);
+}
 
 /** «1 semana seguida», «4 semanas seguidas». */
 export function textoSemanas(n: number): string {
-  return `${n} ${n === 1 ? 'semana seguida' : 'semanas seguidas'}`;
+  return t('fotos:semanasSeguidas', { count: n });
 }
 
 /** «1 día», «92 días». */
 export function textoDias(n: number): string {
-  return `${n} ${n === 1 ? 'día' : 'días'}`;
+  return t('fotos:dias', { count: n });
 }
 
 /** «78,4 kg». */
 export function textoKg(kg: number | null | undefined): string {
   if (typeof kg !== 'number' || !Number.isFinite(kg)) return '-';
-  return `${(Math.round(kg * 10) / 10).toString().replace('.', ',')} kg`;
+  const r = Math.round(kg * 10) / 10;
+  return `${decimal(r, Number.isInteger(r) ? 0 : 1)} kg`; // i18n-ok: unidad
 }
 
 /** «+1,2 kg», «-3 kg», «0 kg». */
@@ -118,10 +124,19 @@ export function textoDifKg(kg: number | null | undefined): string {
 // ---------------------------------------------------------------------------
 // Errores
 
-/** 0050 cuenta 12 fotos en una ventana móvil de 24 h, no por día natural. */
+/**
+ * @deprecated Usa `mensajeErrorFotos` (o `t('fotos:error.*')`): una constante
+ * no cambia de idioma. Se quedan, iguales al catálogo en español, solo porque
+ * modelo.test.ts las fija.
+ */
+// 0050 cuenta 12 fotos en una ventana móvil de 24 h, no por día natural.
+// i18n-ok: alias congelado de fotos:error.limite, ver arriba
 export const MENSAJE_LIMITE = 'Has guardado 12 fotos en las últimas 24 horas. Podrás seguir más tarde.';
+// i18n-ok: alias congelado de fotos:error.gate
 export const MENSAJE_GATE = 'Ha cambiado el permiso de las fotos. Vuelve a comprobarlo.';
+// i18n-ok: alias congelado de fotos:error.peso
 export const MENSAJE_PESO = 'La foto pesa demasiado. Recórtala o hazla de nuevo.';
+// i18n-ok: alias congelado de fotos:error.fecha
 export const MENSAJE_FECHA = 'La fecha de la foto no es válida.';
 
 function texto(e: unknown): string {
@@ -138,15 +153,15 @@ function texto(e: unknown): string {
  * del gate de 0050 (salud o 18+ retirados mientras tanto) piden refresco.
  */
 export function mensajeErrorFotos(e: unknown): { mensaje: string; refrescar: boolean } {
-  const t = texto(e);
-  if (/limite_fotos_progreso/.test(t)) return { mensaje: MENSAJE_LIMITE, refrescar: false };
-  if (/sin_consentimiento_salud|sin_confirmacion_adulto|sin_permiso_fotos_progreso/.test(t)) {
-    return { mensaje: MENSAJE_GATE, refrescar: true };
+  const crudo = texto(e);
+  if (/limite_fotos_progreso/.test(crudo)) return { mensaje: t('fotos:error.limite'), refrescar: false };
+  if (/sin_consentimiento_salud|sin_confirmacion_adulto|sin_permiso_fotos_progreso/.test(crudo)) {
+    return { mensaje: t('fotos:error.gate'), refrescar: true };
   }
-  if (/payload too large|entity too large|exceeded the maximum allowed size|\b413\b/i.test(t)) {
-    return { mensaje: MENSAJE_PESO, refrescar: false };
+  if (/payload too large|entity too large|exceeded the maximum allowed size|\b413\b/i.test(crudo)) {
+    return { mensaje: t('fotos:error.peso'), refrescar: false };
   }
-  if (/Fecha de foto no válida/.test(t)) return { mensaje: MENSAJE_FECHA, refrescar: false };
+  if (/Fecha de foto no válida/.test(crudo)) return { mensaje: t('fotos:error.fecha'), refrescar: false };
   return { mensaje: mensajeSistema(e), refrescar: false };
 }
 

@@ -17,6 +17,7 @@ import { useCallback, useRef, useState } from 'react';
 import { avisar, volver } from '@/components/ui';
 import { confirmar } from '@/components/ui/confirmar';
 import { vibrar } from '@/design/haptics';
+import { t } from '@/i18n';
 import { mensajeSistema } from '@/lib/validation';
 import { useAuth } from '@/lib/auth';
 import {
@@ -109,7 +110,12 @@ export function useDieta(): { vista: DietaVistaProps; hoja: HojaComidaProps } {
 
   const removeSlot = async () => {
     if (!editing?.existing) return;
-    const ok = await confirmar({ titulo: 'Quitar comida', mensaje: editing.existing.description, confirmar: 'Quitar', destructivo: true });
+    const ok = await confirmar({
+      titulo: t('dieta:hoja.quitarComida'),
+      mensaje: editing.existing.description,
+      confirmar: t('comun:quitar'),
+      destructivo: true,
+    });
     if (!ok) return;
     setQuitando(true);
     setErrorHoja(null);
@@ -130,10 +136,7 @@ export function useDieta(): { vista: DietaVistaProps; hoja: HojaComidaProps } {
     if (!userId || busy) return;
     const items = ingredientsFromPlan(slots);
     if (items.length === 0) {
-      avisar(
-        'Sin ingredientes',
-        'Añade ingredientes a tus comidas (separados por comas) y el sistema generará la lista.',
-      );
+      avisar(t('dieta:acciones.sinIngredientes'), t('dieta:acciones.sinIngredientesCuerpo'));
       return;
     }
     setBusy(true);
@@ -141,15 +144,15 @@ export function useDieta(): { vista: DietaVistaProps; hoja: HojaComidaProps } {
       await addShoppingItems(userId, items.map((name) => ({ name })));
       setBusy(false);
       const ver = await confirmar({
-        titulo: 'Lista generada',
-        mensaje: `${items.length} ingredientes enviados a la lista de la compra.`,
-        confirmar: 'Ver lista',
-        cancelar: 'Entendido',
+        titulo: t('dieta:acciones.listaGenerada'),
+        mensaje: t('dieta:acciones.listaGeneradaCuerpo', { n: items.length }),
+        confirmar: t('dieta:acciones.verLista'),
+        cancelar: t('dieta:acciones.entendido'),
       });
       if (ver) router.push('/compra');
     } catch (e) {
       vibrar('penalizacion');
-      avisar('El sistema no responde', mensajeSistema(e));
+      avisar(t('comun:sistemaNoResponde'), mensajeSistema(e));
     } finally {
       setBusy(false);
     }

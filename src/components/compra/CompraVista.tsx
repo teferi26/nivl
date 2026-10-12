@@ -26,6 +26,7 @@ import {
 } from '@/components/arena';
 import { Check, EmptyState, Row, Screen, Section } from '@/components/ui';
 import { ink, space, stroke } from '@/design/tokens';
+import { t } from '@/i18n';
 import type { ShoppingItem } from '@/lib/types';
 
 export interface CompraVistaProps {
@@ -63,27 +64,33 @@ export function CompraVista({ cargado, errorCarga, items, nuevo, anadiendo, vaci
     !cargado || errorCarga
       ? undefined
       : items.length === 0
-        ? 'Nada en la lista.'
+        ? t('compra:vista.subVacia')
         : pending.length === 0
-          ? 'Todo en el carro. Compra hecha.'
-          : `${pending.length} ${pending.length === 1 ? 'artículo pendiente' : 'artículos pendientes'}.`;
+          ? t('compra:vista.subHecha')
+          : t('compra:vista.subPendientes', { count: pending.length });
 
   return (
     <Screen>
       <Entrada indice={0}>
-        <EncabezadoArena eyebrow="Cuerpo" titulo="Compra" subtitulo={subtitulo} onVolver={acciones.onVolver} meandro />
+        <EncabezadoArena
+          eyebrow={t('compra:vista.eyebrow')}
+          titulo={t('compra:vista.titulo')}
+          subtitulo={subtitulo}
+          onVolver={acciones.onVolver}
+          meandro
+        />
       </Entrada>
 
       {/* Sin Entrada: un campo con el foco no debe moverse al aparecer. */}
       <View style={styles.anadir}>
         <Campo
-          etiqueta="Añadir artículo"
+          etiqueta={t('compra:vista.anadirArticulo')}
           value={nuevo}
           onChangeText={acciones.onNuevo}
-          placeholder="Huevos, avena, café"
+          placeholder={t('compra:vista.anadirPlaceholder')}
           onSubmitEditing={acciones.onAnadir}
           returnKeyType="done"
-          accessibilityLabel="Nuevo artículo"
+          accessibilityLabel={t('compra:vista.nuevoA11y')}
           estiloBloque={styles.campo}
         />
         <Pressable
@@ -96,7 +103,7 @@ export function CompraVista({ cargado, errorCarga, items, nuevo, anadiendo, vaci
             pressed && styles.pulsado,
           ]}
           accessibilityRole="button"
-          accessibilityLabel="Añadir a la lista"
+          accessibilityLabel={t('compra:vista.anadirA11y')}
           accessibilityState={{ disabled: !puedeAnadir, busy: anadiendo }}
         >
           <Ionicons name="add" size={22} color={hayTexto ? ink.ink0 : ink.ink6} />
@@ -104,7 +111,7 @@ export function CompraVista({ cargado, errorCarga, items, nuevo, anadiendo, vaci
       </View>
 
       {!cargado ? (
-        <CargaArena etiqueta="Cargando la lista" formas={['franja', 'rotulo', 'filas']} filas={4} />
+        <CargaArena etiqueta={t('compra:vista.cargando')} formas={['franja', 'rotulo', 'filas']} filas={4} />
       ) : errorCarga ? (
         <Entrada indice={1}>
           <ErrorSistema mensaje={errorCarga} onReintentar={acciones.onReintentar} style={styles.bloque} />
@@ -115,9 +122,9 @@ export function CompraVista({ cargado, errorCarga, items, nuevo, anadiendo, vaci
             <Entrada indice={1} style={styles.franja}>
               <FranjaCifras
                 cifras={[
-                  { valor: pending.length, rotulo: 'Pendientes' },
-                  { valor: done.length, rotulo: 'En el carro' },
-                  { valor: items.length, rotulo: 'En la lista' },
+                  { valor: pending.length, rotulo: t('compra:vista.cifraPendientes') },
+                  { valor: done.length, rotulo: t('compra:vista.cifraCarro') },
+                  { valor: items.length, rotulo: t('compra:vista.cifraLista') },
                 ]}
               />
               <View style={styles.barra}>
@@ -125,26 +132,30 @@ export function CompraVista({ cargado, errorCarga, items, nuevo, anadiendo, vaci
                   ratio={done.length / items.length}
                   alto={4}
                   segmentos={items.length <= MAX_SEGMENTOS ? items.length : undefined}
-                  etiqueta={`En el carro: ${done.length} de ${items.length}`}
+                  etiqueta={t('compra:vista.barraA11y', { hechos: done.length, total: items.length })}
                 />
               </View>
             </Entrada>
           ) : null}
 
           <Entrada indice={2}>
-            <Section title="Pendiente" meta={pending.length > 0 ? `${pending.length}` : undefined}>
+            <Section title={t('compra:vista.pendiente')} meta={pending.length > 0 ? `${pending.length}` : undefined}>
               {pending.length === 0 ? (
                 <TarjetaArena variante={items.length > 0 ? 'grano' : 'contorno'}>
                   <EmptyState
                     compact
                     icon="cart-outline"
-                    title={items.length > 0 ? 'Compra hecha' : 'Nada pendiente'}
+                    title={items.length > 0 ? t('compra:vista.compraHecha') : t('compra:vista.nadaPendiente')}
                     body={
                       items.length > 0
-                        ? 'Todo está en el carro. Vacía lo comprado cuando lo guardes.'
-                        : 'Genera la lista desde la dieta o añade artículos arriba.'
+                        ? t('compra:vista.compraHechaCuerpo')
+                        : t('compra:vista.nadaPendienteCuerpo')
                     }
-                    action={items.length > 0 ? undefined : { label: 'Ir a la dieta', onPress: acciones.onDieta, variant: 'outline' }}
+                    action={
+                      items.length > 0
+                        ? undefined
+                        : { label: t('compra:vista.irDieta'), onPress: acciones.onDieta, variant: 'outline' }
+                    }
                   />
                 </TarjetaArena>
               ) : (
@@ -159,7 +170,11 @@ export function CompraVista({ cargado, errorCarga, items, nuevo, anadiendo, vaci
                       onPress={() => acciones.onMarcar(i)}
                       accessibilityRole="checkbox"
                       accessibilityState={{ checked: false }}
-                      accessibilityLabel={`${i.name}${i.qty ? `, ${i.qty}` : ''}, pendiente`}
+                      accessibilityLabel={
+                        i.qty
+                          ? t('compra:vista.pendienteCantidadA11y', { nombre: i.name, cantidad: i.qty })
+                          : t('compra:vista.pendienteA11y', { nombre: i.name })
+                      }
                     />
                   ))}
                 </View>
@@ -170,9 +185,13 @@ export function CompraVista({ cargado, errorCarga, items, nuevo, anadiendo, vaci
           {done.length > 0 ? (
             <Entrada indice={3}>
               <Section
-                title="En el carro"
+                title={t('compra:vista.enCarro')}
                 meta={`${done.length}`}
-                action={{ label: vaciando ? 'Vaciando' : 'Vaciar comprados', icon: 'trash-outline', onPress: acciones.onVaciar }}
+                action={{
+                  label: vaciando ? t('compra:vista.vaciando') : t('compra:vista.vaciar'),
+                  icon: 'trash-outline',
+                  onPress: acciones.onVaciar,
+                }}
               >
                 <View style={styles.lista}>
                   {done.map((i, idx) => (
@@ -186,7 +205,11 @@ export function CompraVista({ cargado, errorCarga, items, nuevo, anadiendo, vaci
                       onPress={() => acciones.onMarcar(i)}
                       accessibilityRole="checkbox"
                       accessibilityState={{ checked: true }}
-                      accessibilityLabel={`${i.name}${i.qty ? `, ${i.qty}` : ''}, en el carro`}
+                      accessibilityLabel={
+                        i.qty
+                          ? t('compra:vista.enCarroCantidadA11y', { nombre: i.name, cantidad: i.qty })
+                          : t('compra:vista.enCarroA11y', { nombre: i.name })
+                      }
                     />
                   ))}
                 </View>

@@ -25,6 +25,7 @@ import { useHealthConsent } from '@/components/ConsentimientoSalud';
 import { usePermisoFotos } from '@/components/permisoFotos';
 import { avisar, confirmar } from '@/components/ui/confirmar';
 import { volver } from '@/components/ui/Screen';
+import { t } from '@/i18n';
 import { confirmarMayorDeEdad } from '@/lib/age';
 import { useAuth } from '@/lib/auth';
 import { dateKey } from '@/lib/dates';
@@ -33,7 +34,7 @@ import { estadoSemanal, lineaTemporal, type FotoConPeso, type FotoProgreso, type
 import { mensajeSistema } from '@/lib/validation';
 import { borrarFoto, descargarParaCompartir, firmar, listarFotos, TEMP_ANTES, TEMP_DESPUES } from './datos';
 import { SEMANAS_POR_PAGINA, type FotosVistaProps } from './FotosVista';
-import { fechaCorta, mensajeErrorFotos, NOMBRE_POSE, tarjetaAntesDespues } from './modelo';
+import { fechaCorta, mensajeErrorFotos, nombrePose, tarjetaAntesDespues } from './modelo';
 
 export function useFotos() {
   const { session } = useAuth();
@@ -191,13 +192,13 @@ export function useFotos() {
         r[par.despues.id] ? descargarParaCompartir(r[par.despues.id], TEMP_DESPUES) : Promise.resolve(null),
       ]);
       if (!a || !d) {
-        avisar('No se ha podido preparar', 'Las fotos no se han descargado. Vuelve a intentarlo con conexión.');
+        avisar(t('fotos:acciones.noPreparar'), t('fotos:acciones.noPrepararCuerpo'));
         return;
       }
       abrirHoja(tarjetaAntesDespues(par, a, d, conPeso));
     } catch (e) {
       const m = mensajeErrorFotos(e);
-      avisar('No se ha podido compartir', m.mensaje);
+      avisar(t('fotos:acciones.noCompartir'), m.mensaje);
       if (m.refrescar) gate();
     } finally {
       if (vivo.current) setCompartiendo(false);
@@ -207,9 +208,9 @@ export function useFotos() {
   const borrar = async (f: FotoConPeso) => {
     if (!uid || borrando) return;
     const ok = await confirmar({
-      titulo: 'Borrar foto',
-      mensaje: `${NOMBRE_POSE[f.pose]} del ${fechaCorta(f.fecha, hoy)}. Se borra de NIVL para siempre.`,
-      confirmar: 'Borrar',
+      titulo: t('fotos:acciones.borrarFoto'),
+      mensaje: t('fotos:acciones.borrarMensaje', { pose: nombrePose(f.pose), fecha: fechaCorta(f.fecha, hoy) }),
+      confirmar: t('fotos:acciones.borrar'),
       destructivo: true,
     });
     if (!ok) return;
@@ -225,7 +226,7 @@ export function useFotos() {
       setVista(null);
     } catch (e) {
       const m = mensajeErrorFotos(e);
-      avisar('No se ha podido borrar', m.mensaje);
+      avisar(t('fotos:acciones.noBorrar'), m.mensaje);
       if (m.refrescar) gate();
     } finally {
       if (vivo.current) setBorrando(false);
@@ -282,7 +283,7 @@ export function useFotos() {
       cerrar: () => setNueva(false),
       guardada: (f: FotoProgreso) => {
         setFotos((xs) => [f, ...xs]);
-        avisarCola(`Foto guardada · ${NOMBRE_POSE[f.pose]}`);
+        avisarCola(t('fotos:acciones.guardada', { pose: nombrePose(f.pose) }));
         void cargar();
       },
       gate,

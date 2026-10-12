@@ -18,6 +18,7 @@ import { useCelebracion } from '@/components/celebracion/contexto';
 import { avisar, confirmar } from '@/components/ui/confirmar';
 import { volver } from '@/components/ui/Screen';
 import { vibrar } from '@/design/haptics';
+import { t } from '@/i18n';
 import {
   ACHIEVEMENT_BY_CODE,
   evaluateAchievements,
@@ -242,7 +243,10 @@ export function useGym(): UseGym {
           questId: null,
           completionId: null,
           date: today,
-          caption: `Entreno ${todayPlan?.name ?? 'libre'}${notas.trim() ? `: ${notas.trim()}` : ''}`,
+          caption: t(notas.trim() ? 'gym:acciones.fotoPieNotas' : 'gym:acciones.fotoPie', {
+            dia: todayPlan?.name ?? t('gym:acciones.libre'),
+            notas: notas.trim(),
+          }),
         }).catch(() => {});
       }
       await insertLifts(userId, gymSession.id, valid);
@@ -291,11 +295,11 @@ export function useGym(): UseGym {
       const xpTotal = eco.xp + pagado;
       const lineaXp =
         xpTotal > 0
-          ? `+${xpTotal} XP · FUE`
+          ? t('gym:acciones.lineaXp', { xp: xpTotal })
           : totalXp > 0
-            ? 'Tope diario de XP alcanzado'
-            : 'Sesión registrada · la misión de hoy ya estaba pagada';
-      const resumen = [lineaXp, ...prs.map((p) => `Récord · ${p.exercise_name}`)];
+            ? t('comun:topeDiarioXp')
+            : t('gym:acciones.yaPagada');
+      const resumen = [lineaXp, ...prs.map((p) => t('gym:acciones.record', { ejercicio: p.exercise_name }))];
       // El nivel vibra en su ceremonia; el rango, si llega del servidor, en la
       // suya. Sin nivel nuevo, misión cumplida.
       const subeNivel = levelFromXp(res.profile.xp_total).level > levelFromXp(perfilAntes.xp_total).level;
@@ -322,7 +326,7 @@ export function useGym(): UseGym {
       await load();
     } catch (e) {
       vibrar('penalizacion');
-      avisar('El sistema no responde', mensajeSistema(e));
+      avisar(t('comun:sistemaNoResponde'), mensajeSistema(e));
     } finally {
       saving.current = false;
       setBusy(false);
@@ -404,10 +408,10 @@ export function useGym(): UseGym {
   const fotoSesion = async () => {
     const perm = await ImagePicker.requestCameraPermissionsAsync();
     if (!perm.granted) {
-      const mensaje = 'El sistema necesita la cámara para el registro del entreno.';
+      const mensaje = t('gym:acciones.sinCamara');
       if (Platform.OS === 'web') {
-        avisar('Sin cámara', mensaje);
-      } else if (await confirmar({ titulo: 'Sin cámara', mensaje, confirmar: 'Abrir ajustes' })) {
+        avisar(t('comun:sinCamara'), mensaje);
+      } else if (await confirmar({ titulo: t('comun:sinCamara'), mensaje, confirmar: t('comun:abrirAjustes') })) {
         Linking.openSettings().catch(() => {});
       }
       return;
@@ -420,9 +424,9 @@ export function useGym(): UseGym {
 
   const confirmarBorrarDia = async (d: GymDay) => {
     const ok = await confirmar({
-      titulo: 'Eliminar día',
-      mensaje: `¿Eliminar ${d.name} y sus ejercicios?`,
-      confirmar: 'Eliminar',
+      titulo: t('gym:acciones.eliminarDia'),
+      mensaje: t('gym:acciones.eliminarDiaMensaje', { dia: d.name }),
+      confirmar: t('comun:eliminar'),
       destructivo: true,
     });
     if (!ok) return;
@@ -430,20 +434,25 @@ export function useGym(): UseGym {
     try {
       await deleteGymDay(d.id);
     } catch (err) {
-      avisar('El sistema no responde', mensajeSistema(err));
+      avisar(t('comun:sistemaNoResponde'), mensajeSistema(err));
       return;
     }
     await load();
   };
 
   const confirmarBorrarEjercicio = async (e: GymExercise) => {
-    const ok = await confirmar({ titulo: 'Eliminar ejercicio', mensaje: e.name, confirmar: 'Eliminar', destructivo: true });
+    const ok = await confirmar({
+      titulo: t('gym:acciones.eliminarEjercicio'),
+      mensaje: e.name,
+      confirmar: t('comun:eliminar'),
+      destructivo: true,
+    });
     if (!ok) return;
     vibrar('destructiva');
     try {
       await deleteGymExercise(e.id);
     } catch (err) {
-      avisar('El sistema no responde', mensajeSistema(err));
+      avisar(t('comun:sistemaNoResponde'), mensajeSistema(err));
       return;
     }
     await load();

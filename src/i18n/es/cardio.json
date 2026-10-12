@@ -1,1 +1,79 @@
-{}
+{
+  "tipo": {
+    "correr": "Correr",
+    "nadar": "Nadar",
+    "bici": "Bici",
+    "caminar": "Caminar",
+    "remo": "Remo",
+    "otro": "Otro"
+  },
+  "zona": {
+    "Z1": "Z1",
+    "Z2": "Z2",
+    "Z3": "Z3",
+    "Z4": "Z4",
+    "Z5": "Z5",
+    "intervalos": "Intervalos",
+    "libre": "Libre"
+  },
+  "sesionDel": "{{tipo}} del {{fecha}}",
+  "fila": {
+    "rpe": "RPE {{rpe}}",
+    "pulso": "{{ppm}} ppm",
+    "leido": "{{tipo}} del {{fecha}}, zona {{zona}}. {{cifras}}. Mantén pulsado para eliminar.",
+    "leidoExtra": "{{tipo}} del {{fecha}}, zona {{zona}}. {{cifras}}. {{extra}}. Mantén pulsado para eliminar.",
+    "leidoXp": "{{tipo}} del {{fecha}}, zona {{zona}}. {{cifras}}. Más {{xp}} XP. Mantén pulsado para eliminar.",
+    "leidoExtraXp": "{{tipo}} del {{fecha}}, zona {{zona}}. {{cifras}}. {{extra}}. Más {{xp}} XP. Mantén pulsado para eliminar.",
+    "eliminar": "Eliminar"
+  },
+  "vista": {
+    "eyebrow": "Cuerpo",
+    "titulo": "Cardio",
+    "subVacio": "Nada registrado aún. Cada sesión ajusta la siguiente.",
+    "sub_one": "{{km}} km y {{count}} sesión en 28 días.",
+    "sub_other": "{{km}} km y {{count}} sesiones en 28 días.",
+    "registrar": "Registrar sesión",
+    "cargando": "Cargando el cardio",
+    "sesionRegistrada": "Sesión registrada",
+    "cerrarAvisoA11y": "Cerrar el aviso",
+    "cifraKm": "Km · 28 días",
+    "cifraKmA11y": "{{km}} kilómetros en 28 días",
+    "cifraSesiones": "Sesiones",
+    "cifraMin": "Min en marcha",
+    "regla": "+10 % POR SEMANA",
+    "reglaPie": "COMO MUCHO",
+    "reglaNota": "El volumen semanal no debe subir más de un 10 %. El sistema lo vigila y ajusta tus órdenes con estos datos.",
+    "sesiones": "Sesiones",
+    "vacioTitulo": "Nada registrado",
+    "vacioCuerpo": "Cada carrera y cada largo que anotes aquí es lo que el sistema usa para calcular tu ritmo y ajustar lo siguiente.",
+    "registrarPrimera": "Registrar la primera"
+  },
+  "hoja": {
+    "eyebrow": "Nueva sesión",
+    "titulo": "¿Qué has movido hoy?",
+    "tipo": "Tipo",
+    "tipoA11y": "Tipo de sesión",
+    "zona": "Zona",
+    "zonaA11y": "Zona de esfuerzo",
+    "zonaChipA11y": "Zona {{zona}}",
+    "zonaAyuda": "Z2 es el motor: ritmo al que puedes hablar en frases completas. Es el 80 % del volumen y el que construye la base.",
+    "duracion": "Duración (min)",
+    "duracionA11y": "Duración en minutos",
+    "distancia": "Distancia (km)",
+    "distanciaA11y": "Distancia en kilómetros",
+    "esfuerzo": "Esfuerzo (RPE 1-10)",
+    "esfuerzoA11y": "Esfuerzo percibido de 1 a 10",
+    "pulso": "Pulso medio",
+    "pulsoA11y": "Pulsaciones medias",
+    "notas": "Notas",
+    "notasPlaceholder": "Cómo fue, molestias, terreno",
+    "notasA11y": "Notas de la sesión"
+  },
+  "acciones": {
+    "faltaDuracion": "Falta la duración. Sin minutos no hay sesión que registrar.",
+    "kmNumeros": "Escribe los kilómetros con números, por ejemplo {{ejemplo}}.",
+    "rpeRango": "El esfuerzo va de 1 a 10.",
+    "registradaA11y": "Sesión registrada. {{texto}}",
+    "eliminarSesion": "Eliminar sesión"
+  }
+}

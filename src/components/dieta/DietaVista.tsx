@@ -25,19 +25,23 @@ import {
 } from '@/components/arena';
 import { Button, Chip, ChipWrap, Row, Screen, Section, SIN_DATO } from '@/components/ui';
 import { ink, space, stroke, type as tipo } from '@/design/tokens';
+import { t } from '@/i18n';
+import { capital, nombreDia as diaDeSemana } from '@/i18n/formato';
 import { MEAL_SLOTS } from '@/lib/body';
 import type { MealSlot, MealSlotName } from '@/lib/types';
 
-export const DIAS_CORTOS = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
-export const DIAS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+/** Los siete días, 1 (lunes) a 7 (domingo). */
+const DIAS_SEMANA = [1, 2, 3, 4, 5, 6, 7];
 
-export const NOMBRE_COMIDA: Record<MealSlotName, string> = {
-  desayuno: 'Desayuno',
-  comida: 'Comida',
-  merienda: 'Merienda',
-  cena: 'Cena',
-  snack: 'Snack',
-};
+/** El día 1 (lunes) a 7 con mayúscula: «Lunes». Fuera de rango, vacío. */
+export function nombreDiaDieta(dia: number): string {
+  return dia >= 1 && dia <= 7 ? capital(diaDeSemana(dia - 1)) : '';
+}
+
+/** El nombre de una comida: «Desayuno». */
+export function nombreComida(slot: MealSlotName): string {
+  return t(`dieta:comida.${slot}`);
+}
 
 export interface DietaVistaProps {
   /** Hasta la primera carga se pintan huecos. */
@@ -67,7 +71,7 @@ export function DietaVista({ cargado, errorCarga, slots, dia, hoy, generando, ac
   // a mano no llevan cifras y no deben falsear el total del día.
   const kcalDia = daySlots.reduce((a, s) => a + (s.kcal ?? 0), 0);
   const proteDia = daySlots.reduce((a, s) => a + (s.protein_g ?? 0), 0);
-  const nombreDia = DIAS[dia - 1] ?? '';
+  const nombreDia = nombreDiaDieta(dia);
   const esHoy = dia === hoy;
   const conIngredientes = slots.some((s) => !!s.ingredients?.trim());
 
@@ -75,33 +79,33 @@ export function DietaVista({ cargado, errorCarga, slots, dia, hoy, generando, ac
     !cargado || errorCarga
       ? undefined
       : kcalDia > 0
-        ? `${nombreDia}: ${formatoMiles(kcalDia)} kcal y ${proteDia} g de proteína planificados.`
+        ? t('dieta:vista.subMacros', { dia: nombreDia, kcal: formatoMiles(kcalDia), prote: proteDia })
         : daySlots.length > 0
-          ? `${nombreDia}: ${daySlots.length} ${daySlots.length === 1 ? 'comida planificada' : 'comidas planificadas'}.`
-          : `${nombreDia} sin planificar todavía.`;
+          ? t('dieta:vista.subComidas', { dia: nombreDia, count: daySlots.length })
+          : t('dieta:vista.subVacio', { dia: nombreDia });
 
   return (
     <Screen>
       <Entrada indice={0}>
         <EncabezadoArena
-          eyebrow="Cuerpo"
-          titulo="Dieta"
+          eyebrow={t('dieta:vista.eyebrow')}
+          titulo={t('dieta:vista.titulo')}
           subtitulo={subtitulo}
           onVolver={acciones.onVolver}
-          accion={{ icono: 'cart-outline', etiqueta: 'Ir a la lista de la compra', onPress: acciones.onCompra }}
+          accion={{ icono: 'cart-outline', etiqueta: t('dieta:vista.irCompra'), onPress: acciones.onCompra }}
           meandro
         />
       </Entrada>
 
       <Entrada indice={1} style={styles.dias}>
         <ChipWrap>
-          {DIAS_CORTOS.map((letra, i) => (
+          {DIAS_SEMANA.map((d) => (
             <Chip
-              key={letra}
-              label={letra}
-              selected={dia === i + 1}
-              onPress={() => acciones.onDia(i + 1)}
-              accessibilityLabel={`${DIAS[i]}${i + 1 === hoy ? ', hoy' : ''}`}
+              key={d}
+              label={diaDeSemana(d - 1, 'letra')}
+              selected={dia === d}
+              onPress={() => acciones.onDia(d)}
+              accessibilityLabel={d === hoy ? t('dieta:vista.diaHoyA11y', { dia: nombreDiaDieta(d) }) : nombreDiaDieta(d)}
               style={styles.chipDia}
             />
           ))}
@@ -109,7 +113,7 @@ export function DietaVista({ cargado, errorCarga, slots, dia, hoy, generando, ac
       </Entrada>
 
       {!cargado ? (
-        <CargaArena etiqueta="Cargando tu dieta" formas={['franja', 'rotulo', 'filas', 'rotulo']} filas={5} />
+        <CargaArena etiqueta={t('dieta:vista.cargando')} formas={['franja', 'rotulo', 'filas', 'rotulo']} filas={5} />
       ) : errorCarga ? (
         <Entrada indice={2}>
           <ErrorSistema mensaje={errorCarga} onReintentar={acciones.onReintentar} style={styles.bloque} />
@@ -120,31 +124,31 @@ export function DietaVista({ cargado, errorCarga, slots, dia, hoy, generando, ac
             <FranjaCifras
               cifras={[
                 kcalDia > 0
-                  ? { valor: kcalDia, rotulo: 'Kcal' }
-                  : { valor: SIN_DATO, rotulo: 'Kcal', etiqueta: 'Kcal: sin dato' },
+                  ? { valor: kcalDia, rotulo: t('dieta:vista.cifraKcal') }
+                  : { valor: SIN_DATO, rotulo: t('dieta:vista.cifraKcal'), etiqueta: t('dieta:vista.cifraKcalSinDato') },
                 proteDia > 0
-                  ? { valor: proteDia, sufijo: ' g', rotulo: 'Proteína' }
-                  : { valor: SIN_DATO, rotulo: 'Proteína', etiqueta: 'Proteína: sin dato' },
+                  ? { valor: proteDia, sufijo: ' g', rotulo: t('dieta:vista.cifraProte') }
+                  : { valor: SIN_DATO, rotulo: t('dieta:vista.cifraProte'), etiqueta: t('dieta:vista.cifraProteSinDato') },
                 {
                   valor: `${daySlots.length}/${MEAL_SLOTS.length}`,
-                  rotulo: 'Comidas',
-                  etiqueta: `Comidas: ${daySlots.length} de ${MEAL_SLOTS.length} planificadas`,
+                  rotulo: t('dieta:vista.cifraComidas'),
+                  etiqueta: t('dieta:vista.cifraComidasA11y', { n: daySlots.length, total: MEAL_SLOTS.length }),
                 },
               ]}
             />
           </Entrada>
           {kcalDia === 0 && daySlots.length > 0 ? (
             <Text style={[styles.nota, styles.notaFranja]} maxFontSizeMultiplier={1.35}>
-              Las comidas escritas a mano no llevan macros; solo suman las que planifica el coach.
+              {t('dieta:vista.notaMano')}
             </Text>
           ) : null}
 
           <Entrada indice={3}>
-            <Section title={esHoy ? `Hoy · ${nombreDia}` : nombreDia} meta={`${daySlots.length}/${MEAL_SLOTS.length}`}>
+            <Section title={esHoy ? t('dieta:vista.hoyDia', { dia: nombreDia }) : nombreDia} meta={`${daySlots.length}/${MEAL_SLOTS.length}`}>
               <View style={styles.lista}>
                 {MEAL_SLOTS.map((slotName, i) => {
                   const existing = daySlots.find((s) => s.slot === slotName);
-                  const nombre = NOMBRE_COMIDA[slotName];
+                  const nombre = nombreComida(slotName);
                   return (
                     <Row
                       key={slotName}
@@ -161,12 +165,21 @@ export function DietaVista({ cargado, errorCarga, slots, dia, hoy, generando, ac
                       detail={
                         existing
                           ? [nombre, existing.ingredients].filter(Boolean).join(' · ')
-                          : 'Sin planificar. Toca para añadir.'
+                          : t('dieta:vista.sinPlanificar')
                       }
                       trailing={existing ? <Macros comida={existing} /> : undefined}
                       chevron
                       onPress={() => acciones.onComida(slotName)}
-                      accessibilityLabel={`${existing ? `Editar ${nombre.toLowerCase()}: ${existing.description}` : `Planificar ${nombre.toLowerCase()}`} del ${nombreDia.toLowerCase()}${macrosLeidas(existing)}`}
+                      accessibilityLabel={comidaLeida(
+                        existing
+                          ? t('dieta:vista.editarA11y', {
+                              comida: nombre.toLowerCase(),
+                              descripcion: existing.description,
+                              dia: nombreDia.toLowerCase(),
+                            })
+                          : t('dieta:vista.planificarA11y', { comida: nombre.toLowerCase(), dia: nombreDia.toLowerCase() }),
+                        existing,
+                      )}
                     />
                   );
                 })}
@@ -175,9 +188,9 @@ export function DietaVista({ cargado, errorCarga, slots, dia, hoy, generando, ac
           </Entrada>
 
           <Entrada indice={4}>
-            <Section title="Lista de la compra">
+            <Section title={t('dieta:vista.listaCompra')}>
               <Button
-                title="Generar la lista"
+                title={t('dieta:vista.generar')}
                 icon="cart-outline"
                 size="lg"
                 variant={conIngredientes ? 'primary' : 'secondary'}
@@ -186,8 +199,8 @@ export function DietaVista({ cargado, errorCarga, slots, dia, hoy, generando, ac
               />
               <Text style={styles.nota} maxFontSizeMultiplier={1.35}>
                 {conIngredientes
-                  ? 'El sistema junta los ingredientes de las 7 jornadas, elimina duplicados y los envía a la lista.'
-                  : 'Escribe los ingredientes de tus comidas, separados por comas, y el sistema hará la lista.'}
+                  ? t('dieta:vista.generarConIngredientes')
+                  : t('dieta:vista.generarSinIngredientes')}
               </Text>
             </Section>
           </Entrada>
@@ -207,25 +220,30 @@ function Macros({ comida }: { comida: MealSlot }) {
       {comida.kcal ? (
         <Text style={styles.cifraFila} maxFontSizeMultiplier={1.2}>
           {formatoMiles(comida.kcal)}
+          {/* i18n-ok: unidad */}
           <Text style={styles.unidad}> kcal</Text>
         </Text>
       ) : null}
       {comida.protein_g ? (
         <Text style={styles.cifraSec} maxFontSizeMultiplier={1.2}>
           {comida.protein_g}
-          <Text style={styles.unidad}> g prot.</Text>
+          <Text style={styles.unidad}> {t('dieta:vista.gProt')}</Text>
         </Text>
       ) : null}
     </View>
   );
 }
 
-function macrosLeidas(c: MealSlot | undefined): string {
-  if (!c) return '';
-  const partes = [c.kcal ? `${c.kcal} kcal` : null, c.protein_g ? `${c.protein_g} gramos de proteína` : null].filter(
-    Boolean,
-  );
-  return partes.length ? `, ${partes.join(' y ')}` : '';
+/** Lo que lee el lector de pantalla de una comida, con sus macros si las tiene. */
+function comidaLeida(texto: string, c: MealSlot | undefined): string {
+  if (!c || (!c.kcal && !c.protein_g)) return texto;
+  const macros =
+    c.kcal && c.protein_g
+      ? t('dieta:vista.macrosKcalProteA11y', { kcal: c.kcal, prote: c.protein_g })
+      : c.kcal
+        ? t('dieta:vista.macrosKcalA11y', { kcal: c.kcal })
+        : t('dieta:vista.macrosProteA11y', { prote: c.protein_g });
+  return t('dieta:vista.conMacrosA11y', { texto, macros });
 }
 
 const LETRA = 30;

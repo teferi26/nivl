@@ -8,11 +8,12 @@ import { StyleSheet, Text, View } from 'react-native';
 import { FotosVista } from '@/components/fotos/FotosVista';
 import { HojaNuevaFoto } from '@/components/fotos/HojaNuevaFoto';
 import { Miniatura } from '@/components/fotos/LineaFotos';
-import { fechaCorta, NOMBRE_POSE } from '@/components/fotos/modelo';
+import { fechaCorta, nombrePose } from '@/components/fotos/modelo';
 import { useSinCapturas } from '@/components/fotos/sinCapturas';
 import { useFotos } from '@/components/fotos/useFotos';
 import { Button, Sheet } from '@/components/ui';
 import { ink, space, type as tipo } from '@/design/tokens';
+import { t } from '@/i18n';
 
 export default function Fotos() {
   const f = useFotos();
@@ -38,13 +39,21 @@ export default function Fotos() {
             visible={foto !== null}
             onClose={f.ver.cerrar}
             eyebrow={foto ? fechaCorta(foto.fecha, f.hoy) : undefined}
-            title={foto ? NOMBRE_POSE[foto.pose] : undefined}
-            footer={<Button title="Borrar foto" variant="danger" icon="trash-outline" onPress={f.ver.borrar} loading={f.ver.borrando} />}
+            title={foto ? nombrePose(foto.pose) : undefined}
+            footer={
+              <Button
+                title={t('fotos:acciones.borrarFoto')}
+                variant="danger"
+                icon="trash-outline"
+                onPress={f.ver.borrar}
+                loading={f.ver.borrando}
+              />
+            }
           >
             {foto ? (
               <View style={styles.grande}>
                 <Miniatura url={f.ver.url} pose={foto.pose} fecha={foto.fecha} hoy={f.hoy} grande onFallo={() => f.ver.fallo(foto.id)} />
-                <Text style={styles.nota}>Solo la ves tú.</Text>
+                <Text style={styles.nota}>{t('fotos:ver.soloTu')}</Text>
               </View>
             ) : null}
           </Sheet>

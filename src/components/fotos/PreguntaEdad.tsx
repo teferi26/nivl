@@ -5,9 +5,12 @@
 import { StyleSheet, Text, View } from 'react-native';
 import { Button } from '@/components/ui';
 import { ink, space, type as tipo } from '@/design/tokens';
+import { t } from '@/i18n';
 
-export const PREGUNTA_EDAD = 'Las fotos de progreso son para mayores de 18. ¿Los tienes?';
-export const NOTA_EDAD = 'Es una declaración tuya. Puedes seguir usando NIVL igual si dices que no.';
+/** «Las fotos de progreso son para mayores de 18. ¿Los tienes?» */
+export function preguntaEdad(): string {
+  return t('fotos:edad.pregunta');
+}
 
 interface Props {
   onSi: () => void;
@@ -23,11 +26,11 @@ export function PreguntaEdad({ onSi, onNo, ocupado, error, sinPregunta }: Props)
     <View style={styles.wrap}>
       {sinPregunta ? null : (
         <Text style={styles.pregunta} maxFontSizeMultiplier={1.35}>
-          {PREGUNTA_EDAD}
+          {preguntaEdad()}
         </Text>
       )}
       <Text style={styles.nota} maxFontSizeMultiplier={1.35}>
-        {NOTA_EDAD}
+        {t('fotos:edad.nota')}
       </Text>
       {error ? (
         <Text style={styles.error} accessibilityRole="alert">
@@ -35,8 +38,8 @@ export function PreguntaEdad({ onSi, onNo, ocupado, error, sinPregunta }: Props)
         </Text>
       ) : null}
       <View style={styles.botones}>
-        <Button title="Tengo 18 o más" variant="secondary" onPress={onSi} loading={ocupado} style={styles.boton} />
-        <Button title="Ahora no" variant="secondary" onPress={onNo} disabled={ocupado} style={styles.boton} />
+        <Button title={t('fotos:edad.si')} variant="secondary" onPress={onSi} loading={ocupado} style={styles.boton} />
+        <Button title={t('comun:ahoraNo')} variant="secondary" onPress={onNo} disabled={ocupado} style={styles.boton} />
       </View>
     </View>
   );

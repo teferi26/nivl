@@ -20,6 +20,8 @@ import { AccessibilityInfo } from 'react-native';
 import { avisar, confirmar } from '@/components/ui/confirmar';
 import { volver } from '@/components/ui/Screen';
 import { vibrar } from '@/design/haptics';
+import { t } from '@/i18n';
+import { decimal } from '@/i18n/formato';
 import { useAuth } from '@/lib/auth';
 import {
   cardioDayState,
@@ -39,7 +41,7 @@ import { anuncioCardio, pagoDelModulo, primeraSesionQuePropaga, xpPagado } from 
 import { mensajeSistema } from '@/lib/validation';
 import type { AnuncioCardio, CardioVistaProps } from './CardioVista';
 import type { ErroresCardio, HojaCardioProps } from './HojaCardio';
-import { ETIQUETA, fechaCorta } from './tipos';
+import { etiquetaCardio, fechaCorta } from './tipos';
 
 export interface UseCardio {
   vista: CardioVistaProps;
@@ -110,17 +112,17 @@ export function useCardio(): UseCardio {
     if (!userId || guardando) return;
     const min = Number(duracion.replace(',', '.'));
     if (!min || min <= 0) {
-      setErrores({ ...SIN_ERRORES, duracion: 'Falta la duración. Sin minutos no hay sesión que registrar.' });
+      setErrores({ ...SIN_ERRORES, duracion: t('cardio:acciones.faltaDuracion') });
       return;
     }
     const km = distancia.trim() ? Number(distancia.replace(',', '.')) : null;
     if (km !== null && (!Number.isFinite(km) || km <= 0)) {
-      setErrores({ ...SIN_ERRORES, distancia: 'Escribe los kilómetros con números, por ejemplo 5,2.' });
+      setErrores({ ...SIN_ERRORES, distancia: t('cardio:acciones.kmNumeros', { ejemplo: decimal(5.2, 1) }) });
       return;
     }
     const esfuerzo = rpe.trim() ? Number(rpe.replace(',', '.')) : null;
     if (esfuerzo !== null && (esfuerzo < 1 || esfuerzo > 10)) {
-      setErrores({ ...SIN_ERRORES, rpe: 'El esfuerzo va de 1 a 10.' });
+      setErrores({ ...SIN_ERRORES, rpe: t('cardio:acciones.rpeRango') });
       return;
     }
     setErrores(SIN_ERRORES);
@@ -192,7 +194,7 @@ export function useCardio(): UseCardio {
         topeDiario: CARDIO_DAILY_CAP,
       });
       setAnuncio({ texto, pagado: (eco?.xp ?? 0) + pagado > 0 });
-      AccessibilityInfo.announceForAccessibility(`Sesión registrada. ${texto}`);
+      AccessibilityInfo.announceForAccessibility(t('cardio:acciones.registradaA11y', { texto }));
     } catch (e) {
       // Con la hoja abierta: el fallo va dentro de ella, con lo escrito intacto.
       setErrores({ ...SIN_ERRORES, servidor: mensajeSistema(e) });
@@ -204,9 +206,9 @@ export function useCardio(): UseCardio {
 
   const borrar = async (s: CardioSession) => {
     const ok = await confirmar({
-      titulo: 'Eliminar sesión',
-      mensaje: `${ETIQUETA[s.kind]} del ${fechaCorta(s.date)}`,
-      confirmar: 'Eliminar',
+      titulo: t('cardio:acciones.eliminarSesion'),
+      mensaje: t('cardio:sesionDel', { tipo: etiquetaCardio(s.kind), fecha: fechaCorta(s.date) }),
+      confirmar: t('comun:eliminar'),
       destructivo: true,
     });
     if (!ok) return;
@@ -215,7 +217,7 @@ export function useCardio(): UseCardio {
       await deleteCardio(s.id);
     } catch (e) {
       // Antes el fallo se tragaba y la sesión seguía ahí sin explicación.
-      avisar('El sistema no responde', mensajeSistema(e));
+      avisar(t('comun:sistemaNoResponde'), mensajeSistema(e));
       return;
     }
     await cargar();

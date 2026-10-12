@@ -13,6 +13,7 @@
 //     `penalizacion` (tabla de vibraciones de FASE3).
 
 import { vibrar } from '@/design/haptics';
+import { t } from '@/i18n';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { avisar, volver } from '@/components/ui';
@@ -137,12 +138,15 @@ export function useNutricion(): NutricionVistaProps {
         xpMision: eco.xp,
         marcadas: eco.marcadas,
         xpModulo: pagadoDia,
-        deModulo: 'a VIT por cumplir kcal y proteína',
+        deModulo: t('nutricion:acciones.deModulo'),
       });
-      avisar('Parte registrado', desglose ? `El sistema toma nota. ${desglose}` : 'El sistema toma nota.');
+      avisar(
+        t('nutricion:acciones.parteRegistrado'),
+        desglose ? t('nutricion:acciones.tomaNotaDesglose', { desglose }) : t('nutricion:acciones.tomaNota'),
+      );
     } catch (e) {
       vibrar('penalizacion');
-      avisar('El sistema no responde', mensajeSistema(e));
+      avisar(t('comun:sistemaNoResponde'), mensajeSistema(e));
     } finally {
       setGuardando(false);
     }

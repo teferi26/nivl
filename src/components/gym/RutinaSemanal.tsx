@@ -12,13 +12,26 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { BotonArena, TarjetaArena } from '@/components/arena';
 import { Button, EmptyState, Tag } from '@/components/ui';
 import { ink, space, stroke, type as tipo } from '@/design/tokens';
+import { t } from '@/i18n';
+import { capital, decimal, nombreDia } from '@/i18n/formato';
 import type { GymDay, GymExercise } from '@/lib/types';
 
-export const DAY_NAMES = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+/** El día de la semana ISO (1 lunes … 7 domingo) con mayúscula: «Lunes». */
+export function nombreDiaIso(diaIso: number): string {
+  return capital(nombreDia(diaIso - 1));
+}
+
+/** El peso con los decimales que traiga y la coma del idioma: 62.5 → «62,5». */
+function pesoTexto(kg: number): string {
+  const decimales = (String(kg).split('.')[1] ?? '').length;
+  return decimal(kg, decimales);
+}
 
 /** «3×8 · 60 kg»; sin peso, «3×8». */
 export function cargaTexto(sets: number, reps: number | string, kg: number | null): string {
-  return kg !== null ? `${sets}×${reps} · ${String(kg).replace('.', ',')} kg` : `${sets}×${reps}`;
+  return kg !== null
+    ? t('gym:carga.conPeso', { series: sets, reps, kg: pesoTexto(kg) })
+    : t('gym:carga.sinPeso', { series: sets, reps });
 }
 
 /**
@@ -82,7 +95,7 @@ export function FilaEjercicio({
       onLongPress={onLongPress}
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel ?? `${nombre}, ${carga}`}
-      accessibilityActions={onLongPress ? [{ name: 'longpress', label: 'Eliminar' }] : undefined}
+      accessibilityActions={onLongPress ? [{ name: 'longpress', label: t('gym:rutina.eliminar') }] : undefined}
       onAccessibilityAction={(e) => {
         if (e.nativeEvent.actionName === 'longpress') onLongPress?.();
       }}
@@ -121,9 +134,9 @@ export function RutinaSemanal({
         <EmptyState
           compact
           icon="calendar-outline"
-          title="Sin rutina aún"
-          body="Crea tus días de entreno, por ejemplo Lunes · Empuje, y añade ejercicios a cada uno."
-          action={{ label: 'Crear el primer día', onPress: onNuevoDia }}
+          title={t('gym:rutina.vacioTitulo')}
+          body={t('gym:rutina.vacioCuerpo')}
+          action={{ label: t('gym:rutina.crearPrimero'), onPress: onNuevoDia }}
         />
       </TarjetaArena>
     );
@@ -140,20 +153,20 @@ export function RutinaSemanal({
               <View style={styles.cabeceraTexto}>
                 <View style={styles.eyebrowFila}>
                   <Text style={styles.eyebrow} maxFontSizeMultiplier={1.35}>
-                    {DAY_NAMES[d.day_of_week - 1]}
+                    {nombreDiaIso(d.day_of_week)}
                   </Text>
-                  {esHoy ? <Tag>Hoy</Tag> : null}
+                  {esHoy ? <Tag>{t('gym:rutina.hoy')}</Tag> : null}
                 </View>
                 <Text style={styles.titulo} numberOfLines={2} maxFontSizeMultiplier={1.35}>
                   {d.name}
                 </Text>
               </View>
-              <BotonArena icono="add" etiqueta={`Añadir ejercicio a ${d.name}`} onPress={() => onNuevoEjercicio(d)} />
+              <BotonArena icono="add" etiqueta={t('gym:rutina.anadirEjercicioA11y', { dia: d.name })} onPress={() => onNuevoEjercicio(d)} />
             </View>
 
             {exs.length === 0 ? (
               <Text style={styles.sinEjercicios} maxFontSizeMultiplier={1.6}>
-                Sin ejercicios. Toca + para añadir el primero.
+                {t('gym:rutina.sinEjercicios')}
               </Text>
             ) : (
               <View style={styles.lista}>
@@ -163,10 +176,10 @@ export function RutinaSemanal({
                     primera={i === 0}
                     nombre={e.name}
                     carga={cargaTexto(e.sets, e.reps, e.weight)}
-                    detalle={e.weight !== null ? null : 'Sin peso de referencia'}
+                    detalle={e.weight !== null ? null : t('gym:rutina.sinPeso')}
                     onPress={() => onEditarEjercicio(d, e)}
                     onLongPress={() => onBorrarEjercicio(e)}
-                    accessibilityLabel={`Editar ${e.name}, ${cargaTexto(e.sets, e.reps, e.weight)}. Mantén pulsado para eliminarlo.`}
+                    accessibilityLabel={t('gym:rutina.editarA11y', { nombre: e.name, carga: cargaTexto(e.sets, e.reps, e.weight) })}
                   />
                 ))}
               </View>
@@ -174,7 +187,7 @@ export function RutinaSemanal({
 
             <View style={styles.pie}>
               <Button
-                title="Borrar día"
+                title={t('gym:rutina.borrarDia')}
                 variant="danger"
                 size="sm"
                 icon="trash-outline"

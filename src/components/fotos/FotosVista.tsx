@@ -24,6 +24,8 @@ import { EncabezadoArena, Entrada, FranjaCifras, TarjetaArena } from '@/componen
 import type { AccesoFotos } from '@/components/permisoFotos';
 import { Button, Screen, Section, Skeleton } from '@/components/ui';
 import { ink, space, type as tipo } from '@/design/tokens';
+import { t } from '@/i18n';
+import { mayus } from '@/i18n/formato';
 import {
   estadoSemanal,
   lineaTemporal,
@@ -36,10 +38,9 @@ import {
 } from '@/lib/progressPhotos';
 import { CompararFotos, type CompararFotosProps } from './CompararFotos';
 import { LineaFotos } from './LineaFotos';
-import { NOMBRE_POSE } from './modelo';
+import { nombrePose } from './modelo';
 import { PreguntaEdad } from './PreguntaEdad';
 
-export const PIE_PRIVACIDAD = 'Tus fotos son privadas. Solo salen de NIVL si las compartes tú.';
 /** Semanas que se firman y se pintan de cada vez. */
 export const SEMANAS_POR_PAGINA = 8;
 
@@ -81,7 +82,9 @@ export interface FotosVistaProps {
 
 /** «frente», «frente y lado», «frente, lado y espalda». */
 function enLista(xs: string[]): string {
-  return xs.length <= 1 ? (xs[0] ?? '') : `${xs.slice(0, -1).join(', ')} y ${xs[xs.length - 1]}`;
+  if (xs.length <= 1) return xs[0] ?? '';
+  if (xs.length === 2) return t('fotos:vista.listaDos', { a: xs[0], b: xs[1] });
+  return t('fotos:vista.listaTres', { a: xs.slice(0, -2).join(', '), b: xs[xs.length - 2], c: xs[xs.length - 1] });
 }
 
 export function FotosVista(p: FotosVistaProps) {
@@ -94,19 +97,26 @@ export function FotosVista(p: FotosVistaProps) {
   const visibles = semanas.slice(0, semanasVisibles);
 
   const subtitulo = !abierto
-    ? 'Frente, lado y espalda. Una vez por semana.'
+    ? t('fotos:vista.subPoses')
     : !cargado
       ? undefined
       : fotos.length === 0
-        ? 'Frente, lado y espalda. Una vez por semana.'
+        ? t('fotos:vista.subPoses')
         : semana.completa
-          ? 'Semana cerrada. La siguiente empieza el lunes.'
-          : `Esta semana: ${semana.hechas.length} de 3.`;
+          ? t('fotos:vista.subCerrada')
+          : t('fotos:vista.subSemana', { n: semana.hechas.length });
+
+  const textoSemana = semana.completa
+    ? t('fotos:vista.tresHechas')
+    : t('fotos:vista.falta', { poses: enLista(semana.faltan.map((x) => nombrePose(x).toLowerCase())) });
+  const notaSemana = racha.siguienteHito
+    ? t('fotos:vista.conHito', { texto: textoSemana, n: racha.siguienteHito })
+    : textoSemana;
 
   let cuerpo: ReactNode;
   if (acceso === 'cargando' || (abierto && !cargado)) {
     cuerpo = (
-      <View style={styles.pila} accessibilityRole="progressbar" accessibilityLabel="Cargando tus fotos">
+      <View style={styles.pila} accessibilityRole="progressbar" accessibilityLabel={t('fotos:vista.cargandoA11y')}>
         <Skeleton height={56} />
         <Skeleton height={120} />
         <Skeleton height={220} />
@@ -115,50 +125,49 @@ export function FotosVista(p: FotosVistaProps) {
   } else if (acceso === 'error') {
     cuerpo = (
       <Entrada>
-        <TarjetaArena variante="contorno" rotulo="El sistema no responde">
+        <TarjetaArena variante="contorno" rotulo={t('comun:sistemaNoResponde')}>
           <Text style={styles.texto} maxFontSizeMultiplier={1.35}>
-            No se ha podido comprobar el permiso de las fotos. Revisa la conexión.
+            {t('fotos:vista.errorPermiso')}
           </Text>
-          <Button title="Volver a intentarlo" variant="secondary" onPress={a.onReintentarAcceso} style={styles.boton} />
+          <Button title={t('fotos:vista.reintentar')} variant="secondary" onPress={a.onReintentarAcceso} style={styles.boton} />
         </TarjetaArena>
       </Entrada>
     );
   } else if (acceso === 'sin_salud') {
     cuerpo = (
       <Entrada>
-        <TarjetaArena variante="contorno" rotulo="Permiso de salud">
+        <TarjetaArena variante="contorno" rotulo={t('fotos:vista.permisoSalud')}>
           <Text style={styles.texto} maxFontSizeMultiplier={1.35}>
-            Las fotos de progreso son un dato de salud. Para guardarlas, NIVL necesita tu permiso de salud.
+            {t('fotos:vista.permisoSaludTexto')}
           </Text>
-          <Button title="Revisar permiso de salud" variant="secondary" onPress={a.onRevisarSalud} style={styles.boton} />
+          <Button title={t('fotos:vista.revisarSalud')} variant="secondary" onPress={a.onRevisarSalud} style={styles.boton} />
         </TarjetaArena>
       </Entrada>
     );
   } else if (acceso === 'confirmar_edad') {
     cuerpo = (
       <Entrada>
-        <TarjetaArena variante="contorno" remaches rotulo="Solo 18+">
+        <TarjetaArena variante="contorno" remaches rotulo={t('fotos:vista.solo18')}>
           <PreguntaEdad onSi={a.onConfirmarEdad} onNo={a.onAhoraNo} ocupado={p.confirmandoEdad} error={p.errorEdad} />
         </TarjetaArena>
       </Entrada>
     );
   } else if (error) {
     cuerpo = (
-      <TarjetaArena variante="trama" rotulo="Sin fotos por ahora">
+      <TarjetaArena variante="trama" rotulo={t('fotos:vista.sinFotos')}>
         <Text style={styles.texto}>{error}</Text>
-        <Button title="Volver a intentarlo" variant="secondary" onPress={a.onReintentar} style={styles.boton} />
+        <Button title={t('fotos:vista.reintentar')} variant="secondary" onPress={a.onReintentar} style={styles.boton} />
       </TarjetaArena>
     );
   } else if (fotos.length === 0) {
     cuerpo = (
       <Entrada>
-        <TarjetaArena variante="contorno" remaches rotulo="La primera semana">
+        <TarjetaArena variante="contorno" remaches rotulo={t('fotos:vista.primeraSemana')}>
           <Text style={styles.texto} maxFontSizeMultiplier={1.35}>
-            Tres fotos: de frente, de lado y de espalda. Con la misma luz y a la misma hora, dentro de unas semanas
-            verás lo que el espejo no enseña.
+            {t('fotos:vista.primeraSemanaTexto')}
           </Text>
           <Text style={styles.nota} maxFontSizeMultiplier={1.35}>
-            No dan XP y nadie más las ve.
+            {t('fotos:vista.primeraSemanaNota')}
           </Text>
         </TarjetaArena>
       </Entrada>
@@ -171,14 +180,18 @@ export function FotosVista(p: FotosVistaProps) {
             cifras={
               racha.semanas > 0
                 ? [
-                    { valor: racha.semanas, rotulo: 'Semanas seguidas', etiqueta: `Semanas seguidas: ${racha.semanas}` },
-                    { valor: `${semana.hechas.length}/3`, rotulo: 'Esta semana' },
-                    { valor: fotos.length, rotulo: 'Fotos' },
+                    {
+                      valor: racha.semanas,
+                      rotulo: t('fotos:vista.cifraSemanas'),
+                      etiqueta: t('fotos:vista.cifraSemanasA11y', { n: racha.semanas }),
+                    },
+                    { valor: `${semana.hechas.length}/3`, rotulo: t('fotos:vista.cifraSemana') },
+                    { valor: fotos.length, rotulo: t('fotos:vista.cifraFotos') },
                   ]
                 : // Sin racha no se enseña un 0: primero la semana en curso.
                   [
-                    { valor: `${semana.hechas.length}/3`, rotulo: 'Esta semana' },
-                    { valor: fotos.length, rotulo: 'Fotos' },
+                    { valor: `${semana.hechas.length}/3`, rotulo: t('fotos:vista.cifraSemana') },
+                    { valor: fotos.length, rotulo: t('fotos:vista.cifraFotos') },
                   ]
             }
           />
@@ -187,7 +200,7 @@ export function FotosVista(p: FotosVistaProps) {
         <Entrada indice={1}>
           <TarjetaArena
             variante={semana.completa ? 'grano' : 'piedra'}
-            rotulo="Esta semana"
+            rotulo={t('fotos:vista.estaSemana')}
             meta={`${semana.hechas.length}/3`}
           >
             <View style={styles.poses}>
@@ -198,26 +211,25 @@ export function FotosVista(p: FotosVistaProps) {
                     key={pose}
                     style={[styles.pose, hecha && styles.poseHecha]}
                     accessible
-                    accessibilityLabel={`${NOMBRE_POSE[pose]}: ${hecha ? 'hecha' : 'falta'}`}
+                    accessibilityLabel={t(hecha ? 'fotos:vista.poseHechaA11y' : 'fotos:vista.poseFaltaA11y', {
+                      pose: nombrePose(pose),
+                    })}
                   >
                     <Text style={[styles.poseTexto, !hecha && styles.poseFalta]} maxFontSizeMultiplier={1.35}>
-                      {NOMBRE_POSE[pose].toUpperCase()}
+                      {mayus(nombrePose(pose))}
                     </Text>
                   </View>
                 );
               })}
             </View>
             <Text style={styles.nota} maxFontSizeMultiplier={1.35}>
-              {semana.completa
-                ? 'Las tres poses de la semana, hechas.'
-                : `Falta ${enLista(semana.faltan.map((x) => NOMBRE_POSE[x].toLowerCase()))}.`}
-              {racha.siguienteHito ? ` Próximo hito: ${racha.siguienteHito} semanas.` : ''}
+              {notaSemana}
             </Text>
           </TarjetaArena>
         </Entrada>
 
         <Entrada indice={2}>
-          <Section title="Antes y después">
+          <Section title={t('fotos:vista.antesDespues')}>
             <CompararFotos
               fotos={fotos}
               pesos={pesos}
@@ -234,7 +246,7 @@ export function FotosVista(p: FotosVistaProps) {
         </Entrada>
 
         <Entrada indice={3}>
-          <Section title="Semana a semana" meta={`${semanas.length}`}>
+          <Section title={t('fotos:vista.semanaASemana')} meta={`${semanas.length}`}>
             <LineaFotos
               semanas={visibles}
               urls={urls}
@@ -253,11 +265,15 @@ export function FotosVista(p: FotosVistaProps) {
   return (
     <Screen>
       <EncabezadoArena
-        eyebrow="Progreso"
-        titulo="Fotos"
+        eyebrow={t('fotos:vista.eyebrow')}
+        titulo={t('fotos:vista.titulo')}
         subtitulo={subtitulo}
         onVolver={a.onVolver}
-        accion={abierto && cargado && !error ? { icono: 'camera-outline', etiqueta: 'Nueva foto', onPress: a.onNueva, solida: true } : undefined}
+        accion={
+          abierto && cargado && !error
+            ? { icono: 'camera-outline', etiqueta: t('fotos:vista.nueva'), onPress: a.onNueva, solida: true }
+            : undefined
+        }
         meandro
       />
       <View style={styles.pila}>
@@ -271,7 +287,7 @@ export function FotosVista(p: FotosVistaProps) {
         ) : null}
       </View>
       <Text style={styles.pie} maxFontSizeMultiplier={1.35}>
-        {PIE_PRIVACIDAD}
+        {t('fotos:vista.pie')}
       </Text>
       {p.hojas}
     </Screen>

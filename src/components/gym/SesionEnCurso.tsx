@@ -15,6 +15,7 @@ import { useState } from 'react';
 import { Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Campo, TarjetaArena } from '@/components/arena';
 import { ink, space, stroke, type as tipo } from '@/design/tokens';
+import { t } from '@/i18n';
 
 export interface SerieInput {
   weight: string;
@@ -101,8 +102,7 @@ export function SesionEnCurso({
   return (
     <View style={styles.pila}>
       <Text style={styles.pista} maxFontSizeMultiplier={1.6}>
-        RPE = cuánto te quedaba. 7 son tres repeticiones en el depósito, 10 es no poder con una más.
-        Es el dato con el que el sistema decide la carga de la próxima.
+        {t('gym:sesion.pista')}
       </Text>
 
       {series.map((l, i) => (
@@ -114,26 +114,26 @@ export function SesionEnCurso({
             <Pressable
               onPress={() => onAnadirSerie(i)}
               accessibilityRole="button"
-              accessibilityLabel={`Añadir serie a ${l.exercise}`}
+              accessibilityLabel={t('gym:sesion.anadirSerieA11y', { ejercicio: l.exercise })}
               style={({ pressed }) => [styles.mas, pressed && styles.pulsado]}
             >
               <Ionicons name="add" size={16} color={ink.ink10} />
               <Text style={styles.masTexto} maxFontSizeMultiplier={1.35}>
-                Serie
+                {t('gym:sesion.serie')}
               </Text>
             </Pressable>
           </View>
 
           <View style={styles.fila} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
             <Text style={[styles.colNum, styles.rotulo]}>#</Text>
-            <Text style={[styles.colDato, styles.rotulo]} maxFontSizeMultiplier={1.35}>
+            <Text style={[styles.colDato, styles.rotulo]} maxFontSizeMultiplier={1.35}>{/* i18n-ok: unidad */}
               Kg
             </Text>
             <Text style={[styles.colDato, styles.rotulo]} maxFontSizeMultiplier={1.35}>
-              Reps
+              {t('gym:sesion.reps')}
             </Text>
             <Text style={[styles.colDato, styles.rotulo]} maxFontSizeMultiplier={1.35}>
-              RPE
+              {t('gym:sesion.rpe')}
             </Text>
             <View style={styles.colQuitar} />
           </View>
@@ -149,27 +149,27 @@ export function SesionEnCurso({
                   <CeldaSerie
                     value={serie.weight}
                     onChangeText={(v) => onCambiarSerie(i, si, 'weight', v)}
-                    placeholder="kg"
+                    placeholder="kg" // i18n-ok: unidad
                     decimal
-                    accessibilityLabel={`Peso de la serie ${si + 1} de ${l.exercise}`}
+                    accessibilityLabel={t('gym:sesion.pesoA11y', { n: si + 1, ejercicio: l.exercise })}
                   />
                 </View>
                 <View style={styles.colDato}>
                   <CeldaSerie
                     value={serie.reps}
                     onChangeText={(v) => onCambiarSerie(i, si, 'reps', v)}
-                    placeholder="reps"
+                    placeholder={t('gym:sesion.repsPlaceholder')}
                     decimal={false}
-                    accessibilityLabel={`Repeticiones de la serie ${si + 1} de ${l.exercise}`}
+                    accessibilityLabel={t('gym:sesion.repsA11y', { n: si + 1, ejercicio: l.exercise })}
                   />
                 </View>
                 <View style={styles.colDato}>
                   <CeldaSerie
                     value={serie.rpe}
                     onChangeText={(v) => onCambiarSerie(i, si, 'rpe', v)}
-                    placeholder="RPE"
+                    placeholder={t('gym:sesion.rpe')}
                     decimal
-                    accessibilityLabel={`Esfuerzo de la serie ${si + 1} de ${l.exercise}`}
+                    accessibilityLabel={t('gym:sesion.esfuerzoA11y', { n: si + 1, ejercicio: l.exercise })}
                   />
                 </View>
                 <Pressable
@@ -177,7 +177,7 @@ export function SesionEnCurso({
                   disabled={unica}
                   style={({ pressed }) => [styles.colQuitar, styles.quitar, pressed && styles.pulsado]}
                   accessibilityRole="button"
-                  accessibilityLabel={`Quitar la serie ${si + 1} de ${l.exercise}`}
+                  accessibilityLabel={t('gym:sesion.quitarA11y', { n: si + 1, ejercicio: l.exercise })}
                   accessibilityState={{ disabled: unica }}
                 >
                   <Ionicons name="close" size={18} color={unica ? ink.ink4 : ink.ink6} />
@@ -188,25 +188,25 @@ export function SesionEnCurso({
         </TarjetaArena>
       ))}
 
-      <TarjetaArena variante="contorno" rotulo="Cómo fue">
+      <TarjetaArena variante="contorno" rotulo={t('gym:sesion.comoFue')}>
         <View style={styles.notas}>
           <Campo
-            etiqueta="Notas de la sesión"
+            etiqueta={t('gym:sesion.notas')}
             value={notas}
             onChangeText={onNotas}
-            placeholder="Cómo te has encontrado, qué se torció, qué notaste"
+            placeholder={t('gym:sesion.notasPlaceholder')}
             multiline
-            ayuda="Esto lo lee el coach: es lo que le dice por qué un día salió mal aunque los kilos fueran los mismos."
+            ayuda={t('gym:sesion.notasAyuda')}
           />
           <Pressable
             onPress={onFoto}
             style={({ pressed }) => [styles.foto, fotoLista && styles.fotoLista, pressed && styles.pulsado]}
             accessibilityRole="button"
-            accessibilityLabel={fotoLista ? 'Foto lista. Hacer otra foto del entreno' : 'Hacer una foto del entreno'}
+            accessibilityLabel={fotoLista ? t('gym:sesion.fotoListaA11y') : t('gym:sesion.fotoA11y')}
           >
             <Ionicons name={fotoLista ? 'checkmark-circle' : 'camera-outline'} size={18} color={ink.ink10} />
             <Text style={styles.fotoTexto} maxFontSizeMultiplier={1.35}>
-              {fotoLista ? 'Foto lista. Entra en tu resumen.' : 'Foto del entreno'}
+              {fotoLista ? t('gym:sesion.fotoLista') : t('gym:sesion.foto')}
             </Text>
           </Pressable>
         </View>

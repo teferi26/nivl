@@ -11,8 +11,9 @@ import { StyleSheet, View } from 'react-native';
 import { Campo, ErrorSistema } from '@/components/arena';
 import { Button, Sheet } from '@/components/ui';
 import { space } from '@/design/tokens';
+import { t } from '@/i18n';
 import type { MealSlotName } from '@/lib/types';
-import { DIAS, NOMBRE_COMIDA } from './DietaVista';
+import { nombreComida, nombreDiaDieta } from './DietaVista';
 
 export interface HojaComidaProps {
   visible: boolean;
@@ -51,19 +52,19 @@ export function HojaComida({
   onQuitar,
   onCerrar,
 }: HojaComidaProps) {
-  const nombre = slot ? NOMBRE_COMIDA[slot] : '';
+  const nombre = slot ? nombreComida(slot) : '';
   return (
     <Sheet
       visible={visible}
       onClose={onCerrar}
-      eyebrow={`${nombre} · ${DIAS[dia - 1] ?? ''}`}
-      title={existe ? 'Ajusta la comida' : '¿Qué vas a comer?'}
+      eyebrow={t('dieta:hoja.eyebrow', { comida: nombre, dia: nombreDiaDieta(dia) })}
+      title={existe ? t('dieta:hoja.tituloAjustar') : t('dieta:hoja.tituloNueva')}
       footer={
         <>
-          <Button title="Guardar" onPress={onGuardar} loading={guardando} disabled={!descripcion.trim() || quitando} />
+          <Button title={t('comun:guardar')} onPress={onGuardar} loading={guardando} disabled={!descripcion.trim() || quitando} />
           {existe ? (
             <Button
-              title="Quitar comida"
+              title={t('dieta:hoja.quitarComida')}
               variant="danger"
               icon="trash-outline"
               onPress={onQuitar}
@@ -71,26 +72,26 @@ export function HojaComida({
               disabled={guardando}
             />
           ) : null}
-          <Button title="Cancelar" variant="ghost" onPress={onCerrar} />
+          <Button title={t('comun:cancelar')} variant="ghost" onPress={onCerrar} />
         </>
       }
     >
       <View style={styles.pila}>
         <Campo
-          etiqueta="Comida"
+          etiqueta={t('dieta:hoja.comida')}
           value={descripcion}
           onChangeText={onDescripcion}
-          placeholder="Pollo con arroz y brócoli"
-          accessibilityLabel="Descripción de la comida"
+          placeholder={t('dieta:hoja.comidaPlaceholder')}
+          accessibilityLabel={t('dieta:hoja.comidaA11y')}
         />
         <Campo
-          etiqueta="Ingredientes"
+          etiqueta={t('dieta:hoja.ingredientes')}
           value={ingredientes}
           onChangeText={onIngredientes}
-          placeholder="pollo, arroz, brócoli, aceite de oliva"
+          placeholder={t('dieta:hoja.ingredientesPlaceholder')}
           multiline
-          ayuda="Separados por comas: de aquí sale la lista de la compra."
-          accessibilityLabel="Ingredientes separados por comas"
+          ayuda={t('dieta:hoja.ingredientesAyuda')}
+          accessibilityLabel={t('dieta:hoja.ingredientesA11y')}
           style={styles.multilinea}
         />
         {error ? <ErrorSistema compacto mensaje={error} /> : null}

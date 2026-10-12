@@ -1,1 +1,61 @@
-{}
+{
+  "comida": {
+    "desayuno": "Desayuno",
+    "comida": "Comida",
+    "merienda": "Merienda",
+    "cena": "Cena",
+    "snack": "Snack"
+  },
+  "vista": {
+    "eyebrow": "Cuerpo",
+    "titulo": "Dieta",
+    "subMacros": "{{dia}}: {{kcal}} kcal y {{prote}} g de proteína planificados.",
+    "subComidas_one": "{{dia}}: {{count}} comida planificada.",
+    "subComidas_other": "{{dia}}: {{count}} comidas planificadas.",
+    "subVacio": "{{dia}} sin planificar todavía.",
+    "irCompra": "Ir a la lista de la compra",
+    "diaHoyA11y": "{{dia}}, hoy",
+    "cargando": "Cargando tu dieta",
+    "cifraKcal": "Kcal",
+    "cifraKcalSinDato": "Kcal: sin dato",
+    "cifraProte": "Proteína",
+    "cifraProteSinDato": "Proteína: sin dato",
+    "cifraComidas": "Comidas",
+    "cifraComidasA11y": "Comidas: {{n}} de {{total}} planificadas",
+    "notaMano": "Las comidas escritas a mano no llevan macros; solo suman las que planifica el coach.",
+    "hoyDia": "Hoy · {{dia}}",
+    "sinPlanificar": "Sin planificar. Toca para añadir.",
+    "editarA11y": "Editar {{comida}}: {{descripcion}} del {{dia}}",
+    "planificarA11y": "Planificar {{comida}} del {{dia}}",
+    "conMacrosA11y": "{{texto}}, {{macros}}",
+    "macrosKcalProteA11y": "{{kcal}} kcal y {{prote}} gramos de proteína",
+    "macrosKcalA11y": "{{kcal}} kcal",
+    "macrosProteA11y": "{{prote}} gramos de proteína",
+    "listaCompra": "Lista de la compra",
+    "generar": "Generar la lista",
+    "generarConIngredientes": "El sistema junta los ingredientes de las 7 jornadas, elimina duplicados y los envía a la lista.",
+    "generarSinIngredientes": "Escribe los ingredientes de tus comidas, separados por comas, y el sistema hará la lista.",
+    "gProt": "g prot."
+  },
+  "hoja": {
+    "eyebrow": "{{comida}} · {{dia}}",
+    "tituloAjustar": "Ajusta la comida",
+    "tituloNueva": "¿Qué vas a comer?",
+    "quitarComida": "Quitar comida",
+    "comida": "Comida",
+    "comidaPlaceholder": "Pollo con arroz y brócoli",
+    "comidaA11y": "Descripción de la comida",
+    "ingredientes": "Ingredientes",
+    "ingredientesPlaceholder": "pollo, arroz, brócoli, aceite de oliva",
+    "ingredientesAyuda": "Separados por comas: de aquí sale la lista de la compra.",
+    "ingredientesA11y": "Ingredientes separados por comas"
+  },
+  "acciones": {
+    "sinIngredientes": "Sin ingredientes",
+    "sinIngredientesCuerpo": "Añade ingredientes a tus comidas (separados por comas) y el sistema generará la lista.",
+    "listaGenerada": "Lista generada",
+    "listaGeneradaCuerpo": "{{n}} ingredientes enviados a la lista de la compra.",
+    "verLista": "Ver lista",
+    "entendido": "Entendido"
+  }
+}

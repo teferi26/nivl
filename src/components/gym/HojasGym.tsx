@@ -13,8 +13,12 @@ import { StyleSheet, Text, View } from 'react-native';
 import { Campo, ErrorSistema } from '@/components/arena';
 import { Button, Chip, ChipWrap, Sheet } from '@/components/ui';
 import { ink, space, type as tipo } from '@/design/tokens';
+import { t } from '@/i18n';
 import type { GymDay, GymExercise } from '@/lib/types';
-import { DAY_NAMES } from './RutinaSemanal';
+import { nombreDiaIso } from './RutinaSemanal';
+
+/** Los siete días ISO (1 lunes … 7 domingo). */
+const DIAS_ISO = [1, 2, 3, 4, 5, 6, 7];
 
 export interface HojaDiaProps {
   visible: boolean;
@@ -34,40 +38,43 @@ export function HojaDia({ visible, diaSemana, nombre, guardando, error, onDiaSem
     <Sheet
       visible={visible}
       onClose={onCerrar}
-      eyebrow="Nuevo día de rutina"
-      title="¿Qué día entrenas?"
+      eyebrow={t('gym:hojaDia.eyebrow')}
+      title={t('gym:hojaDia.titulo')}
       footer={
         <>
-          <Button title="Crear día" onPress={onGuardar} loading={guardando} disabled={!nombre.trim()} />
-          <Button title="Cancelar" variant="ghost" onPress={onCerrar} />
+          <Button title={t('gym:hojaDia.crear')} onPress={onGuardar} loading={guardando} disabled={!nombre.trim()} />
+          <Button title={t('comun:cancelar')} variant="ghost" onPress={onCerrar} />
         </>
       }
     >
       <View style={styles.pila}>
         <View style={styles.grupo}>
           <Text style={styles.etiqueta} maxFontSizeMultiplier={1.35}>
-            Día
+            {t('gym:hojaDia.dia')}
           </Text>
-          <View accessibilityRole="radiogroup" accessibilityLabel="Día de la semana">
+          <View accessibilityRole="radiogroup" accessibilityLabel={t('gym:hojaDia.diaA11y')}>
             <ChipWrap>
-              {DAY_NAMES.map((name, i) => (
-                <Chip
-                  key={name}
-                  label={name.slice(0, 3)}
-                  selected={diaSemana === i + 1}
-                  onPress={() => onDiaSemana(i + 1)}
-                  accessibilityLabel={name}
-                />
-              ))}
+              {DIAS_ISO.map((d) => {
+                const nombreDia = nombreDiaIso(d);
+                return (
+                  <Chip
+                    key={d}
+                    label={nombreDia.slice(0, 3)}
+                    selected={diaSemana === d}
+                    onPress={() => onDiaSemana(d)}
+                    accessibilityLabel={nombreDia}
+                  />
+                );
+              })}
             </ChipWrap>
           </View>
         </View>
         <Campo
-          etiqueta="Nombre"
+          etiqueta={t('gym:hojaDia.nombre')}
           value={nombre}
           onChangeText={onNombre}
-          placeholder="Ej. Empuje · Pierna · Full body"
-          accessibilityLabel="Nombre del día de rutina"
+          placeholder={t('gym:hojaDia.nombrePlaceholder')}
+          accessibilityLabel={t('gym:hojaDia.nombreA11y')}
           returnKeyType="done"
           onSubmitEditing={() => {
             if (nombre.trim()) onGuardar();
@@ -120,57 +127,61 @@ export function HojaEjercicio({
     <Sheet
       visible={visible}
       onClose={onCerrar}
-      eyebrow={`${editando ? 'Editar ejercicio' : 'Nuevo ejercicio'}${dia ? ` · ${dia.name}` : ''}`}
-      title={editando ? editando.name : '¿Qué movimiento?'}
+      eyebrow={
+        dia
+          ? t(editando ? 'gym:hojaEjercicio.eyebrowEditarDia' : 'gym:hojaEjercicio.eyebrowNuevoDia', { dia: dia.name })
+          : t(editando ? 'gym:hojaEjercicio.eyebrowEditar' : 'gym:hojaEjercicio.eyebrowNuevo')
+      }
+      title={editando ? editando.name : t('gym:hojaEjercicio.tituloNuevo')}
       footer={
         <>
           <Button
-            title={editando ? 'Guardar cambios' : 'Añadir ejercicio'}
+            title={editando ? t('comun:guardarCambios') : t('gym:hojaEjercicio.anadir')}
             onPress={onGuardar}
             loading={guardando}
             disabled={!nombre.trim()}
           />
-          <Button title="Cancelar" variant="ghost" onPress={onCerrar} />
+          <Button title={t('comun:cancelar')} variant="ghost" onPress={onCerrar} />
         </>
       }
     >
       <View style={styles.pila}>
         <Campo
-          etiqueta="Ejercicio"
+          etiqueta={t('gym:hojaEjercicio.ejercicio')}
           value={nombre}
           onChangeText={onNombre}
-          placeholder="Ej. Press banca"
-          accessibilityLabel="Nombre del ejercicio"
+          placeholder={t('gym:hojaEjercicio.ejercicioPlaceholder')}
+          accessibilityLabel={t('gym:hojaEjercicio.ejercicioA11y')}
         />
         <View style={styles.tres}>
           <Campo
-            etiqueta="Series"
+            etiqueta={t('gym:hojaEjercicio.series')}
             value={series}
             onChangeText={onSeries}
             keyboardType="number-pad"
-            accessibilityLabel="Número de series"
+            accessibilityLabel={t('gym:hojaEjercicio.seriesA11y')}
             estiloBloque={styles.columna}
           />
           <Campo
-            etiqueta="Reps"
+            etiqueta={t('gym:hojaEjercicio.reps')}
             value={reps}
             onChangeText={onReps}
             keyboardType="number-pad"
-            accessibilityLabel="Repeticiones por serie"
+            accessibilityLabel={t('gym:hojaEjercicio.repsA11y')}
             estiloBloque={styles.columna}
           />
           <Campo
-            etiqueta="Kg"
+            etiqueta="Kg" // i18n-ok: unidad
             value={kg}
             onChangeText={onKg}
             keyboardType="decimal-pad"
             placeholder="-"
-            accessibilityLabel="Peso de referencia en kilos"
+            accessibilityLabel={t('gym:hojaEjercicio.kgA11y')}
             estiloBloque={styles.columna}
           />
         </View>
         <Text style={styles.ayuda} maxFontSizeMultiplier={1.6}>
-          Al entrenar, cada serie sale ya rellena con este peso y estas repeticiones: solo tocas lo que cambie.
+          {t('gym:hojaEjercicio.ayuda')}
         </Text>
         {error ? <ErrorSistema compacto mensaje={error} /> : null}
       </View>

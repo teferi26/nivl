@@ -30,10 +30,12 @@ import { DescargoSalud } from '@/components/DescargoSalud';
 import { Button, Check, Screen, Section } from '@/components/ui';
 import { ink, space, type as tipo } from '@/design/tokens';
 import { useAnchoUtil, useSizeClass } from '@/design/useSizeClass';
+import { t } from '@/i18n';
+import { nombreDia } from '@/i18n/formato';
 import type { Prescription } from '@/lib/bodywork';
 import { GYM_SESSION_XP } from '@/lib/game';
 import type { GymDay, GymExercise, GymSession } from '@/lib/types';
-import { DAY_NAMES, FilaEjercicio, RutinaSemanal, cargaTexto } from './RutinaSemanal';
+import { FilaEjercicio, RutinaSemanal, cargaTexto, nombreDiaIso } from './RutinaSemanal';
 import { SesionEnCurso, type LiftInput, type SerieInput } from './SesionEnCurso';
 
 export interface GymVistaProps {
@@ -103,26 +105,27 @@ export function GymVista({
 
   const planHoy = dias.find((d) => d.day_of_week === hoyDia);
   const ejerciciosHoy = planHoy ? ejercicios.filter((e) => e.gym_day_id === planHoy.id) : [];
-  const nombreHoy = DAY_NAMES[hoyDia - 1] ?? '';
+  const nombreHoy = nombreDiaIso(hoyDia);
+  const nombreHoyMin = nombreDia(hoyDia - 1);
   // Lo ganado hoy por entrenar: lo del módulo más lo de la misión enlazada.
   const xpHoy = (sesionHoy?.xp_awarded ?? 0) + xpMisionHoy;
 
   const subtitulo = !cargado
     ? undefined
     : sesionHoy
-      ? `Sesión registrada. +${xpHoy} XP hoy.`
+      ? t('gym:vista.subRegistrada', { xp: xpHoy })
       : entrenando && planHoy
-        ? `${planHoy.name}, serie a serie.`
+        ? t('gym:vista.subEntrenando', { dia: planHoy.name })
         : planHoy
-          ? `Hoy toca ${planHoy.name}. ${ejerciciosHoy.length} ${ejerciciosHoy.length === 1 ? 'ejercicio' : 'ejercicios'}.`
-          : `Hoy, ${nombreHoy.toLowerCase()}, no hay rutina asignada.`;
+          ? t('gym:vista.subToca', { dia: planHoy.name, count: ejerciciosHoy.length })
+          : t('gym:vista.subSinRutina', { dia: nombreHoyMin });
 
   const cifras: Cifra[] = [
-    { valor: dias.length, rotulo: 'Días/semana' },
-    { valor: ejercicios.length, rotulo: 'Ejercicios' },
+    { valor: dias.length, rotulo: t('gym:vista.cifraDias') },
+    { valor: ejercicios.length, rotulo: t('gym:vista.cifraEjercicios') },
     sesionHoy
-      ? { valor: xpHoy, rotulo: 'XP de hoy' }
-      : { valor: GYM_SESSION_XP, rotulo: 'XP máx.' },
+      ? { valor: xpHoy, rotulo: t('gym:vista.cifraXpHoy') }
+      : { valor: GYM_SESSION_XP, rotulo: t('gym:vista.cifraXpMax') },
   ];
 
   const contenido: ViewStyle | undefined = entrenando
@@ -135,10 +138,10 @@ export function GymVista({
     <Entrada indice={0}>
       <EncabezadoArena
         onVolver={acciones.onVolver}
-        eyebrow="Cuerpo"
-        titulo="Gimnasio"
+        eyebrow={t('gym:vista.eyebrow')}
+        titulo={t('gym:vista.titulo')}
         subtitulo={subtitulo}
-        accion={{ icono: 'add', etiqueta: 'Nuevo día', onPress: acciones.onNuevoDia }}
+        accion={{ icono: 'add', etiqueta: t('gym:vista.nuevoDia'), onPress: acciones.onNuevoDia }}
         meandro
       />
     </Entrada>
@@ -151,7 +154,7 @@ export function GymVista({
         {errorCarga ? (
           <ErrorSistema mensaje={errorCarga} onReintentar={acciones.onReintentar} />
         ) : (
-          <CargaArena etiqueta="Cargando el gimnasio" formas={['franja', 'tarjeta', 'rotulo', 'filas']} />
+          <CargaArena etiqueta={t('gym:vista.cargando')} formas={['franja', 'tarjeta', 'rotulo', 'filas']} />
         )}
       </Screen>
     );
@@ -159,7 +162,7 @@ export function GymVista({
 
   const prescritoBloque =
     prescrito.length > 0 ? (
-      <Section title="Prescrito por el sistema" meta={`${prescrito.length}`}>
+      <Section title={t('gym:vista.prescrito')} meta={`${prescrito.length}`}>
         {prescrito.map((p, i) => (
           <FilaEjercicio
             key={p.id}
@@ -167,7 +170,7 @@ export function GymVista({
             ordinal={i + 1}
             nombre={p.exercise_name}
             carga={cargaTexto(p.sets, p.reps, p.weight ? p.weight : null)}
-            detalle={[p.rpe_target ? `RPE ${p.rpe_target}` : null, p.notes].filter(Boolean).join(' · ') || null}
+            detalle={[p.rpe_target ? t('gym:vista.rpe', { rpe: p.rpe_target }) : null, p.notes].filter(Boolean).join(' · ') || null}
           />
         ))}
       </Section>
@@ -176,13 +179,15 @@ export function GymVista({
   let sesion: ReactNode;
   if (sesionHoy) {
     sesion = (
-      <TarjetaArena variante="grano" rotulo="Sesión registrada" meta={`+${xpHoy} XP`}>
+      <TarjetaArena variante="grano" rotulo={t('gym:vista.sesionRegistrada')} meta={`+${xpHoy} XP`}>
         <View style={styles.hecho}>
           <Check checked />
           <Text style={styles.hechoTexto} maxFontSizeMultiplier={1.6}>
             {xpMisionHoy > 0
-              ? `+${xpHoy} XP hoy: ${xpMisionHoy} de la misión enlazada${sesionHoy.xp_awarded > 0 ? ` y ${sesionHoy.xp_awarded} a FUE` : ''}.`
-              : `+${sesionHoy.xp_awarded} XP a FUE. FUE crece.`}
+              ? sesionHoy.xp_awarded > 0
+                ? t('gym:vista.hechoMisionYFue', { xp: xpHoy, mision: xpMisionHoy, fue: sesionHoy.xp_awarded })
+                : t('gym:vista.hechoMision', { xp: xpHoy, mision: xpMisionHoy })
+              : t('gym:vista.hechoFue', { xp: sesionHoy.xp_awarded })}
           </Text>
         </View>
       </TarjetaArena>
@@ -190,12 +195,12 @@ export function GymVista({
   } else if (!planHoy) {
     sesion =
       dias.length === 0 ? null : (
-        <TarjetaArena variante="contorno" rotulo="Descanso">
+        <TarjetaArena variante="contorno" rotulo={t('gym:vista.descanso')}>
           <Text style={styles.linea} maxFontSizeMultiplier={1.6}>
-            Hoy, {nombreHoy.toLowerCase()}, no toca rutina. Si quieres entrenar los {nombreHoy.toLowerCase()}, añade un día.
+            {t('gym:vista.descansoLinea', { dia: nombreHoyMin })}
           </Text>
           <Button
-            title="Añadir día"
+            title={t('gym:vista.anadirDia')}
             variant="secondary"
             size="sm"
             icon="add"
@@ -212,11 +217,11 @@ export function GymVista({
           remaches
           zocalo
           rotulo={planHoy.name}
-          meta={`${ejerciciosHoy.length} ${ejerciciosHoy.length === 1 ? 'ejercicio' : 'ejercicios'}`}
+          meta={t('gym:vista.numEjercicios', { count: ejerciciosHoy.length })}
         >
           {ejerciciosHoy.length === 0 ? (
             <Text style={styles.linea} maxFontSizeMultiplier={1.6}>
-              Sin ejercicios en {planHoy.name}. Añádelos en la rutina semanal.
+              {t('gym:vista.sinEjercicios', { dia: planHoy.name })}
             </Text>
           ) : (
             ejerciciosHoy.map((e, i) => (
@@ -230,7 +235,7 @@ export function GymVista({
             ))
           )}
         </TarjetaArena>
-        <Button title={`Entrenar · hasta +${GYM_SESSION_XP} XP`} size="lg" icon="barbell-outline" onPress={acciones.onEntrenar} />
+        <Button title={t('gym:vista.entrenar', { xp: GYM_SESSION_XP })} size="lg" icon="barbell-outline" onPress={acciones.onEntrenar} />
       </View>
     );
   } else {
@@ -246,19 +251,19 @@ export function GymVista({
           onNotas={acciones.onNotas}
           onFoto={acciones.onFoto}
         />
-        <Button title="Terminar sesión" size="lg" icon="checkmark" onPress={acciones.onTerminar} loading={ocupado} />
+        <Button title={t('gym:vista.terminar')} size="lg" icon="checkmark" onPress={acciones.onTerminar} loading={ocupado} />
       </View>
     );
   }
 
   const sesionBloque = sesion ? (
-    <Section title="Sesión de hoy" meta={nombreHoy}>
+    <Section title={t('gym:vista.sesionHoy')} meta={nombreHoy}>
       {sesion}
     </Section>
   ) : null;
 
   const rutina = (
-    <Section title="Rutina semanal" meta={dias.length > 0 ? `${dias.length}` : undefined}>
+    <Section title={t('gym:vista.rutina')} meta={dias.length > 0 ? `${dias.length}` : undefined}>
       <RutinaSemanal
         dias={dias}
         ejercicios={ejercicios}

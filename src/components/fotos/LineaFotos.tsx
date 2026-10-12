@@ -11,8 +11,9 @@ import { Image } from 'expo-image';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Button } from '@/components/ui';
 import { ink, space, stroke, type as tipo } from '@/design/tokens';
+import { t } from '@/i18n';
 import { POSES, type FotoConPeso, type Pose, type SemanaFotos } from '@/lib/progressPhotos';
-import { fechaCorta, NOMBRE_POSE } from './modelo';
+import { fechaCorta, nombrePose } from './modelo';
 
 interface MiniaturaProps {
   url?: string;
@@ -32,8 +33,8 @@ interface MiniaturaProps {
 /** Una foto (o su hueco) en proporción 3:4. */
 export function Miniatura({ url, pose, fecha, hoy, vacia, onPress, onFallo, grande, oculta }: MiniaturaProps) {
   const etiqueta = vacia
-    ? `${NOMBRE_POSE[pose]}: sin foto esta semana`
-    : `Foto de ${NOMBRE_POSE[pose].toLowerCase()} del ${fecha ? fechaCorta(fecha, hoy) : ''}`;
+    ? t('fotos:linea.vaciaA11y', { pose: nombrePose(pose) })
+    : t('fotos:linea.fotoA11y', { pose: nombrePose(pose).toLowerCase(), fecha: fecha ? fechaCorta(fecha, hoy) : '' });
   const caja = (
     <View style={[styles.marco, vacia && styles.marcoVacio, grande && styles.marcoGrande]}>
       {vacia ? (
@@ -73,7 +74,7 @@ export function Miniatura({ url, pose, fecha, hoy, vacia, onPress, onFallo, gran
       style={({ pressed }) => [styles.flex, pressed && styles.pulsado]}
       accessibilityRole="button"
       accessibilityLabel={etiqueta}
-      accessibilityHint="Abre la foto"
+      accessibilityHint={t('fotos:linea.abrePista')}
     >
       {caja}
     </Pressable>
@@ -97,14 +98,14 @@ export function LineaFotos({ semanas, urls, hoy, hayMas, onVerMas, onAbrir, onFa
         <View key={s.semana} style={[styles.semana, i > 0 && styles.conRegla]}>
           <View style={styles.cabecera}>
             <Text style={styles.numero} maxFontSizeMultiplier={1.35}>
-              SEMANA {s.numeroIso}
+              {t('fotos:linea.semana', { n: s.numeroIso })}
             </Text>
             <Text style={styles.fecha} maxFontSizeMultiplier={1.35}>
               {fechaCorta(s.semana, hoy)}
             </Text>
             <View style={styles.hueco} />
             <Text style={styles.cuenta} maxFontSizeMultiplier={1.35}>
-              {s.completa ? 'COMPLETA' : `${s.fotos.length}/3`}
+              {s.completa ? t('fotos:linea.completa') : `${s.fotos.length}/3`}
             </Text>
           </View>
           <View style={styles.fila}>
@@ -131,7 +132,7 @@ export function LineaFotos({ semanas, urls, hoy, hayMas, onVerMas, onAbrir, onFa
                     accessibilityElementsHidden
                     importantForAccessibility="no"
                   >
-                    {NOMBRE_POSE[p]}
+                    {nombrePose(p)}
                   </Text>
                 </View>
               );
@@ -139,7 +140,7 @@ export function LineaFotos({ semanas, urls, hoy, hayMas, onVerMas, onAbrir, onFa
           </View>
         </View>
       ))}
-      {hayMas ? <Button title="Ver más" variant="ghost" size="sm" onPress={onVerMas} style={styles.verMas} /> : null}
+      {hayMas ? <Button title={t('fotos:linea.verMas')} variant="ghost" size="sm" onPress={onVerMas} style={styles.verMas} /> : null}
     </View>
   );
 }

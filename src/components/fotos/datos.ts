@@ -13,11 +13,12 @@
 import { decode } from 'base64-arraybuffer';
 import { Directory, File, Paths } from 'expo-file-system';
 import { Platform } from 'react-native';
+import { t } from '@/i18n';
 import { requireHealthConsent } from '@/lib/health';
 import type { FotoProgreso, Pose } from '@/lib/progressPhotos';
 import { supabase } from '@/lib/supabase';
 import { ErrorVisible } from '@/lib/validation';
-import { cabe, MENSAJE_PESO, rutaFoto, uuidV4 } from './modelo';
+import { cabe, rutaFoto, uuidV4 } from './modelo';
 
 const BUCKET = 'progress';
 /** La firma dura lo justo para pintar la miniatura. */
@@ -64,7 +65,7 @@ export async function subirFoto(
   foto: { base64: string; fecha: string; pose: Pose },
 ): Promise<FotoProgreso> {
   await requireHealthConsent();
-  if (!cabe(foto.base64)) throw new ErrorVisible(MENSAJE_PESO);
+  if (!cabe(foto.base64)) throw new ErrorVisible(t('fotos:error.peso'));
   const id = uuidV4();
   const path = rutaFoto(uid, id);
   const { error: errFila } = await supabase

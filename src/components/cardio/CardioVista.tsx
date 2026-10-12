@@ -24,11 +24,11 @@ import {
 import { DescargoSalud } from '@/components/DescargoSalud';
 import { EmptyState, Screen, Section, Tag } from '@/components/ui';
 import { ink, space, stroke, type as tipo } from '@/design/tokens';
+import { t } from '@/i18n';
 import { paceOf } from '@/lib/bodymath';
 import type { CardioSession } from '@/lib/bodywork';
 import { addDays } from '@/lib/dates';
-import { kmES, numeroES } from '@/lib/pagoActo';
-import { ETIQUETA, ICONO, ZONA, fechaCorta } from './tipos';
+import { ICONO, cifraCorta, etiquetaCardio, fechaCorta, zonaCardio } from './tipos';
 
 export interface AnuncioCardio {
   /** El texto de anuncioCardio: lo que entró de verdad, o por qué no entró nada. */
@@ -60,23 +60,35 @@ const BOTON = 44;
 function FilaCardio({ s, primera, onBorrar }: { s: CardioSession; primera: boolean; onBorrar: () => void }) {
   const ritmo = paceOf(s.distance_km, s.duration_min);
   const cifras = [
-    s.distance_km ? kmES(Number(s.distance_km)) : null,
-    `${numeroES(Number(s.duration_min), 1)} min`,
-    ritmo ? `${ritmo} min/km` : null,
+    s.distance_km ? `${cifraCorta(Number(s.distance_km))} km` : null, // i18n-ok: unidad
+    `${cifraCorta(Number(s.duration_min), 1)} min`, // i18n-ok: unidad
+    ritmo ? `${ritmo} min/km` : null, // i18n-ok: unidad
   ]
     .filter(Boolean)
     .join(' · ');
-  const extra = [s.rpe ? `RPE ${numeroES(Number(s.rpe), 1)}` : null, s.avg_hr ? `${s.avg_hr} ppm` : null]
+  const extra = [
+    s.rpe ? t('cardio:fila.rpe', { rpe: cifraCorta(Number(s.rpe), 1) }) : null,
+    s.avg_hr ? t('cardio:fila.pulso', { ppm: s.avg_hr }) : null,
+  ]
     .filter(Boolean)
     .join(' · ');
-  const leido = `${ETIQUETA[s.kind]} del ${fechaCorta(s.date)}, zona ${ZONA[s.zone]}. ${cifras}${extra ? `. ${extra}` : ''}${
-    s.xp_awarded > 0 ? `. Más ${s.xp_awarded} XP` : ''
-  }. Mantén pulsado para eliminar.`;
+  const datosLeido = {
+    tipo: etiquetaCardio(s.kind),
+    fecha: fechaCorta(s.date),
+    zona: zonaCardio(s.zone),
+    cifras,
+    extra,
+    xp: s.xp_awarded,
+  };
+  const leido =
+    s.xp_awarded > 0
+      ? t(extra ? 'cardio:fila.leidoExtraXp' : 'cardio:fila.leidoXp', datosLeido)
+      : t(extra ? 'cardio:fila.leidoExtra' : 'cardio:fila.leido', datosLeido);
   return (
     <Pressable
       onLongPress={onBorrar}
       accessibilityLabel={leido}
-      accessibilityActions={[{ name: 'longpress', label: 'Eliminar' }]}
+      accessibilityActions={[{ name: 'longpress', label: t('cardio:fila.eliminar') }]}
       onAccessibilityAction={(e) => {
         if (e.nativeEvent.actionName === 'longpress') onBorrar();
       }}
@@ -88,9 +100,9 @@ function FilaCardio({ s, primera, onBorrar }: { s: CardioSession; primera: boole
       <View style={styles.filaTexto}>
         <View style={styles.tituloFila}>
           <Text style={styles.titulo} numberOfLines={1} maxFontSizeMultiplier={1.35}>
-            {ETIQUETA[s.kind]}
+            {etiquetaCardio(s.kind)}
           </Text>
-          <Tag>{ZONA[s.zone]}</Tag>
+          <Tag>{zonaCardio(s.zone)}</Tag>
         </View>
         <Text style={styles.cifras} maxFontSizeMultiplier={1.35}>
           {cifras}
@@ -111,7 +123,7 @@ function FilaCardio({ s, primera, onBorrar }: { s: CardioSession; primera: boole
           {fechaCorta(s.date)}
         </Text>
         {s.xp_awarded > 0 ? (
-          <Text style={styles.xp} maxFontSizeMultiplier={1.35}>
+          <Text style={styles.xp} maxFontSizeMultiplier={1.35}>{/* i18n-ok: unidad */}
             +{s.xp_awarded} XP
           </Text>
         ) : null}
@@ -130,17 +142,17 @@ export function CardioVista({ cargado, errorCarga, hoy, sesiones, anuncio, accio
   const subtitulo = !cargado
     ? undefined
     : sesiones.length === 0
-      ? 'Nada registrado aún. Cada sesión ajusta la siguiente.'
-      : `${numeroES(km28, 1)} km y ${ultimas28.length} ${ultimas28.length === 1 ? 'sesión' : 'sesiones'} en 28 días.`;
+      ? t('cardio:vista.subVacio')
+      : t('cardio:vista.sub', { km: cifraCorta(km28, 1), count: ultimas28.length });
 
   const encabezado = (
     <Entrada indice={0}>
       <EncabezadoArena
         onVolver={acciones.onVolver}
-        eyebrow="Cuerpo"
-        titulo="Cardio"
+        eyebrow={t('cardio:vista.eyebrow')}
+        titulo={t('cardio:vista.titulo')}
         subtitulo={subtitulo}
-        accion={{ icono: 'add', etiqueta: 'Registrar sesión', onPress: acciones.onRegistrar, solida: true }}
+        accion={{ icono: 'add', etiqueta: t('cardio:vista.registrar'), onPress: acciones.onRegistrar, solida: true }}
         meandro
       />
     </Entrada>
@@ -153,7 +165,7 @@ export function CardioVista({ cargado, errorCarga, hoy, sesiones, anuncio, accio
         {errorCarga ? (
           <ErrorSistema mensaje={errorCarga} onReintentar={acciones.onReintentar} />
         ) : (
-          <CargaArena etiqueta="Cargando el cardio" formas={['franja', 'tarjeta', 'rotulo', 'filas']} />
+          <CargaArena etiqueta={t('cardio:vista.cargando')} formas={['franja', 'tarjeta', 'rotulo', 'filas']} />
         )}
       </Screen>
     );
@@ -170,7 +182,7 @@ export function CardioVista({ cargado, errorCarga, hoy, sesiones, anuncio, accio
       {anuncio ? (
         <TarjetaArena
           variante={anuncio.pagado ? 'grano' : 'contorno'}
-          rotulo="Sesión registrada"
+          rotulo={t('cardio:vista.sesionRegistrada')}
           style={styles.bloque}
         >
           <View style={styles.anuncio}>
@@ -181,7 +193,7 @@ export function CardioVista({ cargado, errorCarga, hoy, sesiones, anuncio, accio
               onPress={acciones.onCerrarAnuncio}
               style={({ pressed }) => [styles.cerrar, pressed && styles.pulsado]}
               accessibilityRole="button"
-              accessibilityLabel="Cerrar el aviso"
+              accessibilityLabel={t('cardio:vista.cerrarAvisoA11y')}
             >
               <Ionicons name="close" size={20} color={ink.ink8} />
             </Pressable>
@@ -193,9 +205,13 @@ export function CardioVista({ cargado, errorCarga, hoy, sesiones, anuncio, accio
         <FranjaCifras
           cifras={[
             // Cadena (no número): la coma decimal no la pone el Contador.
-            { valor: numeroES(km28, 1), rotulo: 'Km · 28 días', etiqueta: `${numeroES(km28, 1)} kilómetros en 28 días` },
-            { valor: ultimas28.length, rotulo: 'Sesiones' },
-            { valor: Math.round(min28), rotulo: 'Min en marcha' },
+            {
+              valor: cifraCorta(km28, 1),
+              rotulo: t('cardio:vista.cifraKm'),
+              etiqueta: t('cardio:vista.cifraKmA11y', { km: cifraCorta(km28, 1) }),
+            },
+            { valor: ultimas28.length, rotulo: t('cardio:vista.cifraSesiones') },
+            { valor: Math.round(min28), rotulo: t('cardio:vista.cifraMin') },
           ]}
         />
       </Entrada>
@@ -212,27 +228,27 @@ export function CardioVista({ cargado, errorCarga, hoy, sesiones, anuncio, accio
             <Arena ancho={anchoArena} alto={ALTO_ARENA} variante="ovalo" style={styles.arenaFondo} />
           ) : null}
           <Text style={styles.regla} maxFontSizeMultiplier={1.2}>
-            +10 % POR SEMANA
+            {t('cardio:vista.regla')}
           </Text>
           <Text style={styles.reglaPie} maxFontSizeMultiplier={1.2}>
-            COMO MUCHO
+            {t('cardio:vista.reglaPie')}
           </Text>
         </View>
         <Text style={styles.nota} maxFontSizeMultiplier={1.6}>
-          El volumen semanal no debe subir más de un 10 %. El sistema lo vigila y ajusta tus órdenes con estos datos.
+          {t('cardio:vista.reglaNota')}
         </Text>
       </Entrada>
 
       <Entrada indice={3}>
-        <Section title="Sesiones" meta={sesiones.length > 0 ? `${sesiones.length}` : undefined}>
+        <Section title={t('cardio:vista.sesiones')} meta={sesiones.length > 0 ? `${sesiones.length}` : undefined}>
           {sesiones.length === 0 ? (
             <TarjetaArena variante="contorno">
               <EmptyState
                 compact
                 icon="pulse-outline"
-                title="Nada registrado"
-                body="Cada carrera y cada largo que anotes aquí es lo que el sistema usa para calcular tu ritmo y ajustar lo siguiente."
-                action={{ label: 'Registrar la primera', onPress: acciones.onRegistrar }}
+                title={t('cardio:vista.vacioTitulo')}
+                body={t('cardio:vista.vacioCuerpo')}
+                action={{ label: t('cardio:vista.registrarPrimera'), onPress: acciones.onRegistrar }}
               />
             </TarjetaArena>
           ) : (

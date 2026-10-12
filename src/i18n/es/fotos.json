@@ -1,1 +1,118 @@
-{}
+{
+  "fotosProgreso": "Fotos de progreso",
+  "pose": {
+    "frente": "Frente",
+    "lado": "Lado",
+    "espalda": "Espalda"
+  },
+  "semanasSeguidas_one": "{{count}} semana seguida",
+  "semanasSeguidas_other": "{{count}} semanas seguidas",
+  "dias_one": "{{count}} día",
+  "dias_other": "{{count}} días",
+  "error": {
+    "limite": "Has guardado 12 fotos en las últimas 24 horas. Podrás seguir más tarde.",
+    "gate": "Ha cambiado el permiso de las fotos. Vuelve a comprobarlo.",
+    "peso": "La foto pesa demasiado. Recórtala o hazla de nuevo.",
+    "fecha": "La fecha de la foto no es válida."
+  },
+  "edad": {
+    "pregunta": "Las fotos de progreso son para mayores de 18. ¿Los tienes?",
+    "nota": "Es una declaración tuya. Puedes seguir usando NIVL igual si dices que no.",
+    "si": "Tengo 18 o más"
+  },
+  "fila": {
+    "errorDetalle": "No se ha podido comprobar. Toca para reintentar.",
+    "errorA11y": "Fotos de progreso. No se ha podido comprobar el permiso. Toca para reintentar.",
+    "detalle": "Frente, lado y espalda, una vez por semana.",
+    "semanasA11y": "Fotos de progreso. {{semanas}}",
+    "titulo18": "Fotos de progreso · 18+",
+    "detalle18": "Privadas. Solo para mayores de 18.",
+    "a11y18": "Fotos de progreso, solo para mayores de 18"
+  },
+  "vista": {
+    "pie": "Tus fotos son privadas. Solo salen de NIVL si las compartes tú.",
+    "subPoses": "Frente, lado y espalda. Una vez por semana.",
+    "subCerrada": "Semana cerrada. La siguiente empieza el lunes.",
+    "subSemana": "Esta semana: {{n}} de 3.",
+    "cargandoA11y": "Cargando tus fotos",
+    "errorPermiso": "No se ha podido comprobar el permiso de las fotos. Revisa la conexión.",
+    "reintentar": "Volver a intentarlo",
+    "permisoSalud": "Permiso de salud",
+    "permisoSaludTexto": "Las fotos de progreso son un dato de salud. Para guardarlas, NIVL necesita tu permiso de salud.",
+    "revisarSalud": "Revisar permiso de salud",
+    "solo18": "Solo 18+",
+    "sinFotos": "Sin fotos por ahora",
+    "primeraSemana": "La primera semana",
+    "primeraSemanaTexto": "Tres fotos: de frente, de lado y de espalda. Con la misma luz y a la misma hora, dentro de unas semanas verás lo que el espejo no enseña.",
+    "primeraSemanaNota": "No dan XP y nadie más las ve.",
+    "cifraSemanas": "Semanas seguidas",
+    "cifraSemanasA11y": "Semanas seguidas: {{n}}",
+    "cifraSemana": "Esta semana",
+    "cifraFotos": "Fotos",
+    "estaSemana": "Esta semana",
+    "poseHechaA11y": "{{pose}}: hecha",
+    "poseFaltaA11y": "{{pose}}: falta",
+    "tresHechas": "Las tres poses de la semana, hechas.",
+    "falta": "Falta {{poses}}.",
+    "listaDos": "{{a}} y {{b}}",
+    "listaTres": "{{a}}, {{b}} y {{c}}",
+    "conHito": "{{texto}} Próximo hito: {{n}} semanas.",
+    "antesDespues": "Antes y después",
+    "semanaASemana": "Semana a semana",
+    "eyebrow": "Progreso",
+    "titulo": "Fotos",
+    "nueva": "Nueva foto"
+  },
+  "comparar": {
+    "plazo": "{{n}} días",
+    "plazoA11y": "Comparar con hace unos {{n}} días",
+    "faltanDos": "Hacen falta dos fotos de {{pose}} en días distintos para comparar.",
+    "antes": "Antes",
+    "despues": "Después",
+    "rotuloAntes": "ANTES · {{fecha}}",
+    "rotuloDespues": "DESPUÉS · {{fecha}}",
+    "entreA11y": "{{dias}} entre las dos fotos",
+    "entreUno": "DÍA ENTRE ELLAS",
+    "entreVarios": "DÍAS ENTRE ELLAS",
+    "mostrarPeso": "Mostrar el peso"
+  },
+  "linea": {
+    "vaciaA11y": "{{pose}}: sin foto esta semana",
+    "fotoA11y": "Foto de {{pose}} del {{fecha}}",
+    "abrePista": "Abre la foto",
+    "semana": "SEMANA {{n}}",
+    "completa": "COMPLETA",
+    "verMas": "Ver más"
+  },
+  "hoja": {
+    "soloJpg": "Solo fotos JPG",
+    "soloJpgCuerpo": "Ese formato no sirve. Hazla con la cámara o elige otra.",
+    "sinCamara": "Para hacer la foto desde aquí, NIVL necesita la cámara. También puedes elegirla de la galería.",
+    "fechaFutura": "La fecha no puede ser futura.",
+    "hoy": "Hoy",
+    "ayer": "Ayer",
+    "eligePose": "Elige la pose",
+    "previaA11y": "Vista previa de la foto",
+    "hacerFoto": "Hacer la foto",
+    "galeria": "De la galería",
+    "consejo": "Misma luz, misma distancia y la misma hora: así se ven los cambios.",
+    "pose": "Pose",
+    "fecha": "Fecha",
+    "antesA11y": "Un día antes",
+    "despuesA11y": "Un día después",
+    "nota": "Se guarda en privado. No da XP: es para ti."
+  },
+  "acciones": {
+    "noPreparar": "No se ha podido preparar",
+    "noPrepararCuerpo": "Las fotos no se han descargado. Vuelve a intentarlo con conexión.",
+    "noCompartir": "No se ha podido compartir",
+    "borrarFoto": "Borrar foto",
+    "borrarMensaje": "{{pose}} del {{fecha}}. Se borra de NIVL para siempre.",
+    "borrar": "Borrar",
+    "noBorrar": "No se ha podido borrar",
+    "guardada": "Foto guardada · {{pose}}"
+  },
+  "ver": {
+    "soloTu": "Solo la ves tú."
+  }
+}

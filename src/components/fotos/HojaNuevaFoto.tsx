@@ -19,10 +19,11 @@ import { Button, Chip, ChipWrap, Sheet } from '@/components/ui';
 import { avisar, confirmar } from '@/components/ui/confirmar';
 import { vibrar } from '@/design/haptics';
 import { ink, space, stroke, type as tipo } from '@/design/tokens';
+import { t } from '@/i18n';
 import { addDays, isValidKey } from '@/lib/dates';
 import { POSES, type FotoProgreso, type Pose } from '@/lib/progressPhotos';
 import { borrarCacheSelector, borrarTemporales, subirFoto } from './datos';
-import { DIAS_ATRAS_MAX, fechaCorta, fechaFotoValida, mensajeErrorFotos, NOMBRE_POSE } from './modelo';
+import { DIAS_ATRAS_MAX, fechaCorta, fechaFotoValida, mensajeErrorFotos, nombrePose } from './modelo';
 
 interface Props {
   visible: boolean;
@@ -105,7 +106,7 @@ export function HojaNuevaFoto({ visible, onCerrar, uid, hoy, onGuardada, onGate,
     if (!a?.base64) return;
     if (!esJpeg(a)) {
       if (!a.uri.startsWith('data:')) borrarTemporales([], [a.uri]);
-      avisar('Solo fotos JPG', 'Ese formato no sirve. Hazla con la cámara o elige otra.');
+      avisar(t('fotos:hoja.soloJpg'), t('fotos:hoja.soloJpgCuerpo'));
       return;
     }
     soltarTemporal();
@@ -117,9 +118,16 @@ export function HojaNuevaFoto({ visible, onCerrar, uid, hoy, onGuardada, onGate,
   const camara = async () => {
     const perm = await ImagePicker.requestCameraPermissionsAsync();
     if (!perm.granted) {
-      const mensaje = 'Para hacer la foto desde aquí, NIVL necesita la cámara. También puedes elegirla de la galería.';
-      if (Platform.OS === 'web') avisar('Sin cámara', mensaje);
-      else if (await confirmar({ titulo: 'Sin cámara', mensaje, confirmar: 'Abrir ajustes', cancelar: 'Ahora no' })) {
+      const mensaje = t('fotos:hoja.sinCamara');
+      if (Platform.OS === 'web') avisar(t('comun:sinCamara'), mensaje);
+      else if (
+        await confirmar({
+          titulo: t('comun:sinCamara'),
+          mensaje,
+          confirmar: t('comun:abrirAjustes'),
+          cancelar: t('comun:ahoraNo'),
+        })
+      ) {
         Linking.openSettings().catch(() => {});
       }
       return;
@@ -135,7 +143,7 @@ export function HojaNuevaFoto({ visible, onCerrar, uid, hoy, onGuardada, onGate,
   const guardar = async () => {
     if (!uid || !elegida || !pose || cerrojo.current) return;
     if (!fechaFotoValida(fecha, hoy)) {
-      setError('La fecha no puede ser futura.');
+      setError(t('fotos:hoja.fechaFutura'));
       return;
     }
     cerrojo.current = true;
@@ -164,7 +172,8 @@ export function HojaNuevaFoto({ visible, onCerrar, uid, hoy, onGuardada, onGate,
   const minimo = addDays(hoy, -DIAS_ATRAS_MAX);
   const puedeAtras = isValidKey(fecha) && fecha > minimo;
   const puedeAdelante = isValidKey(fecha) && fecha < hoy;
-  const nombreFecha = fecha === hoy ? 'Hoy' : fecha === addDays(hoy, -1) ? 'Ayer' : fechaCorta(fecha, hoy);
+  const nombreFecha =
+    fecha === hoy ? t('fotos:hoja.hoy') : fecha === addDays(hoy, -1) ? t('fotos:hoja.ayer') : fechaCorta(fecha, hoy);
 
   return (
     <Sheet
@@ -172,8 +181,8 @@ export function HojaNuevaFoto({ visible, onCerrar, uid, hoy, onGuardada, onGate,
       onClose={() => {
         if (!cerrojo.current) onCerrar();
       }}
-      eyebrow="Fotos de progreso"
-      title="Nueva foto"
+      eyebrow={t('fotos:fotosProgreso')}
+      title={t('fotos:vista.nueva')}
       footer={
         <>
           {error ? (
@@ -182,10 +191,10 @@ export function HojaNuevaFoto({ visible, onCerrar, uid, hoy, onGuardada, onGate,
             </Text>
           ) : !pose ? (
             <Text style={styles.falta} maxFontSizeMultiplier={1.35}>
-              Elige la pose
+              {t('fotos:hoja.eligePose')}
             </Text>
           ) : null}
-          <Button title="Guardar" onPress={guardar} disabled={!elegida || !pose || !uid} loading={guardando} />
+          <Button title={t('comun:guardar')} onPress={guardar} disabled={!elegida || !pose || !uid} loading={guardando} />
         </>
       }
     >
@@ -198,36 +207,50 @@ export function HojaNuevaFoto({ visible, onCerrar, uid, hoy, onGuardada, onGate,
                 style={StyleSheet.absoluteFill}
                 contentFit="cover"
                 cachePolicy="memory"
-                accessibilityLabel="Vista previa de la foto"
+                accessibilityLabel={t('fotos:hoja.previaA11y')}
               />
             ) : (
               <Ionicons name="camera-outline" size={28} color={ink.ink4} />
             )}
           </View>
           <View style={styles.fuentes}>
-            <Button title="Hacer la foto" icon="camera-outline" variant="secondary" size="sm" onPress={camara} disabled={guardando} />
-            <Button title="De la galería" icon="images-outline" variant="secondary" size="sm" onPress={galeria} disabled={guardando} />
+            <Button
+              title={t('fotos:hoja.hacerFoto')}
+              icon="camera-outline"
+              variant="secondary"
+              size="sm"
+              onPress={camara}
+              disabled={guardando}
+            />
+            <Button
+              title={t('fotos:hoja.galeria')}
+              icon="images-outline"
+              variant="secondary"
+              size="sm"
+              onPress={galeria}
+              disabled={guardando}
+            />
             <Text style={styles.consejo} maxFontSizeMultiplier={1.35}>
-              Misma luz, misma distancia y la misma hora: así se ven los cambios.
+              {t('fotos:hoja.consejo')}
             </Text>
           </View>
         </View>
 
-        <Text style={styles.label}>Pose</Text>
+        <Text style={styles.label}>{t('fotos:hoja.pose')}</Text>
         <ChipWrap>
           {POSES.map((p) => (
-            <Chip key={p} label={NOMBRE_POSE[p]} selected={pose === p} onPress={() => setPose(p)} />
+            <Chip key={p} label={nombrePose(p)} selected={pose === p} onPress={() => setPose(p)} />
           ))}
         </ChipWrap>
 
-        <Text style={styles.label}>Fecha</Text>
+        <Text style={styles.label}>{t('fotos:hoja.fecha')}</Text>
         <View style={styles.fecha}>
           <Pressable
             onPress={() => puedeAtras && setFecha(addDays(fecha, -1))}
             disabled={!puedeAtras || guardando}
             style={({ pressed }) => [styles.paso, (!puedeAtras || pressed) && styles.pasoApagado]}
             accessibilityRole="button"
-            accessibilityLabel="Un día antes"
+            accessibilityLabel={t('fotos:hoja.antesA11y')}
           >
             <Ionicons name="chevron-back" size={20} color={ink.ink9} />
           </Pressable>
@@ -239,14 +262,14 @@ export function HojaNuevaFoto({ visible, onCerrar, uid, hoy, onGuardada, onGate,
             disabled={!puedeAdelante || guardando}
             style={({ pressed }) => [styles.paso, (!puedeAdelante || pressed) && styles.pasoApagado]}
             accessibilityRole="button"
-            accessibilityLabel="Un día después"
+            accessibilityLabel={t('fotos:hoja.despuesA11y')}
           >
             <Ionicons name="chevron-forward" size={20} color={ink.ink9} />
           </Pressable>
         </View>
 
         <Text style={styles.nota} maxFontSizeMultiplier={1.35}>
-          Se guarda en privado. No da XP: es para ti.
+          {t('fotos:hoja.nota')}
         </Text>
       </View>
     </Sheet>

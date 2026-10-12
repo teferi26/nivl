@@ -17,13 +17,14 @@ import { StyleSheet, View } from 'react-native';
 import { usePermisoFotos } from '@/components/permisoFotos';
 import { Card, Row, RowValue, Sheet } from '@/components/ui';
 import { ink } from '@/design/tokens';
+import { t } from '@/i18n';
 import { confirmarMayorDeEdad } from '@/lib/age';
 import { dateKey } from '@/lib/dates';
 import { rachaFotosSemanal } from '@/lib/progressPhotos';
 import { mensajeSistema } from '@/lib/validation';
 import { listarFotos } from './datos';
 import { textoSemanas } from './modelo';
-import { PREGUNTA_EDAD, PreguntaEdad } from './PreguntaEdad';
+import { PreguntaEdad, preguntaEdad } from './PreguntaEdad';
 
 export function FilaFotosAvances() {
   const { estado, recargar, reintentar } = usePermisoFotos();
@@ -84,38 +85,43 @@ export function FilaFotosAvances() {
           <Row
             first
             leading={icono}
-            title="Fotos de progreso"
-            detail="No se ha podido comprobar. Toca para reintentar."
+            title={t('fotos:fotosProgreso')}
+            detail={t('fotos:fila.errorDetalle')}
             onPress={reintentar}
-            accessibilityLabel="Fotos de progreso. No se ha podido comprobar el permiso. Toca para reintentar."
+            accessibilityLabel={t('fotos:fila.errorA11y')}
           />
         ) : abierto ? (
           <Row
             first
             leading={icono}
-            title="Fotos de progreso"
-            detail={semanas ? textoSemanas(semanas) : 'Frente, lado y espalda, una vez por semana.'}
+            title={t('fotos:fotosProgreso')}
+            detail={semanas ? textoSemanas(semanas) : t('fotos:fila.detalle')}
             trailing={semanas ? <RowValue strong>{semanas}</RowValue> : undefined}
             chevron
             onPress={() => router.push('/fotos')}
-            accessibilityLabel={semanas ? `Fotos de progreso. ${textoSemanas(semanas)}` : 'Fotos de progreso'}
+            accessibilityLabel={
+              semanas ? t('fotos:fila.semanasA11y', { semanas: textoSemanas(semanas) }) : t('fotos:fotosProgreso')
+            }
           />
         ) : (
           <Row
             first
             leading={icono}
-            title="Fotos de progreso · 18+"
-            detail="Privadas. Solo para mayores de 18."
+            title={t('fotos:fila.titulo18')}
+            detail={t('fotos:fila.detalle18')}
             chevron
             onPress={() => {
               setError(null);
               setHoja(true);
             }}
-            accessibilityLabel="Fotos de progreso, solo para mayores de 18"
+            accessibilityLabel={t('fotos:fila.a11y18')}
           />
         )}
       </Card>
-      <Sheet visible={hoja} onClose={() => !cerrojo.current && setHoja(false)} eyebrow="Fotos de progreso" title={PREGUNTA_EDAD} scroll={false}>
+      <Sheet visible={hoja} onClose={() => !cerrojo.current && setHoja(false)} eyebrow={t('fotos:fotosProgreso')}
+        title={preguntaEdad()}
+        scroll={false}
+      >
         <PreguntaEdad sinPregunta onSi={() => void si()} onNo={() => setHoja(false)} ocupado={ocupado} error={error} />
       </Sheet>
     </View>

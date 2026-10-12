@@ -11,7 +11,9 @@ import { Campo, ErrorSistema } from '@/components/arena';
 import { Button, Chip, ChipWrap, Sheet } from '@/components/ui';
 import { ink, space, type as tipo } from '@/design/tokens';
 import type { CardioKind, CardioZone } from '@/lib/bodywork';
-import { ETIQUETA, ICONO, PIDE_DISTANCIA, TIPOS, ZONA, ZONAS } from './tipos';
+import { t } from '@/i18n';
+import { decimal } from '@/i18n/formato';
+import { ICONO, PIDE_DISTANCIA, TIPOS, ZONAS, etiquetaCardio, zonaCardio } from './tipos';
 
 export interface ErroresCardio {
   duracion: string | null;
@@ -68,30 +70,30 @@ export function HojaCardio({
     <Sheet
       visible={visible}
       onClose={onCerrar}
-      eyebrow="Nueva sesión"
-      title="¿Qué has movido hoy?"
+      eyebrow={t('cardio:hoja.eyebrow')}
+      title={t('cardio:hoja.titulo')}
       footer={
         <>
-          <Button title="Registrar sesión" onPress={onGuardar} loading={guardando} />
-          <Button title="Cancelar" variant="ghost" onPress={onCerrar} />
+          <Button title={t('cardio:vista.registrar')} onPress={onGuardar} loading={guardando} />
+          <Button title={t('comun:cancelar')} variant="ghost" onPress={onCerrar} />
         </>
       }
     >
       <View style={styles.pila}>
         <View style={styles.grupo}>
           <Text style={styles.etiqueta} maxFontSizeMultiplier={1.35}>
-            Tipo
+            {t('cardio:hoja.tipo')}
           </Text>
-          <View accessibilityRole="radiogroup" accessibilityLabel="Tipo de sesión">
+          <View accessibilityRole="radiogroup" accessibilityLabel={t('cardio:hoja.tipoA11y')}>
             <ChipWrap>
               {TIPOS.map((k) => (
                 <Chip
                   key={k}
-                  label={ETIQUETA[k]}
+                  label={etiquetaCardio(k)}
                   icon={ICONO[k]}
                   selected={kind === k}
                   onPress={() => onKind(k)}
-                  accessibilityLabel={ETIQUETA[k]}
+                  accessibilityLabel={etiquetaCardio(k)}
                 />
               ))}
             </ChipWrap>
@@ -100,46 +102,45 @@ export function HojaCardio({
 
         <View style={styles.grupo}>
           <Text style={styles.etiqueta} maxFontSizeMultiplier={1.35}>
-            Zona
+            {t('cardio:hoja.zona')}
           </Text>
-          <View accessibilityRole="radiogroup" accessibilityLabel="Zona de esfuerzo">
+          <View accessibilityRole="radiogroup" accessibilityLabel={t('cardio:hoja.zonaA11y')}>
             <ChipWrap>
               {ZONAS.map((z) => (
                 <Chip
                   key={z}
-                  label={ZONA[z]}
+                  label={zonaCardio(z)}
                   selected={zone === z}
                   onPress={() => onZone(z)}
-                  accessibilityLabel={`Zona ${ZONA[z]}`}
+                  accessibilityLabel={t('cardio:hoja.zonaChipA11y', { zona: zonaCardio(z) })}
                 />
               ))}
             </ChipWrap>
           </View>
           <Text style={styles.ayuda} maxFontSizeMultiplier={1.6}>
-            Z2 es el motor: ritmo al que puedes hablar en frases completas. Es el 80 % del volumen y el que
-            construye la base.
+            {t('cardio:hoja.zonaAyuda')}
           </Text>
         </View>
 
         <View style={styles.dos}>
           <Campo
-            etiqueta="Duración (min)"
+            etiqueta={t('cardio:hoja.duracion')}
             value={duracion}
             onChangeText={onDuracion}
             keyboardType="decimal-pad"
             placeholder="30"
-            accessibilityLabel="Duración en minutos"
+            accessibilityLabel={t('cardio:hoja.duracionA11y')}
             error={errores.duracion}
             estiloBloque={styles.columna}
           />
           {PIDE_DISTANCIA[kind] ? (
             <Campo
-              etiqueta="Distancia (km)"
+              etiqueta={t('cardio:hoja.distancia')}
               value={distancia}
               onChangeText={onDistancia}
               keyboardType="decimal-pad"
-              placeholder="5,2"
-              accessibilityLabel="Distancia en kilómetros"
+              placeholder={decimal(5.2, 1)}
+              accessibilityLabel={t('cardio:hoja.distanciaA11y')}
               error={errores.distancia}
               estiloBloque={styles.columna}
             />
@@ -150,33 +151,33 @@ export function HojaCardio({
 
         <View style={styles.dos}>
           <Campo
-            etiqueta="Esfuerzo (RPE 1-10)"
+            etiqueta={t('cardio:hoja.esfuerzo')}
             value={rpe}
             onChangeText={onRpe}
             keyboardType="decimal-pad"
             placeholder="6"
-            accessibilityLabel="Esfuerzo percibido de 1 a 10"
+            accessibilityLabel={t('cardio:hoja.esfuerzoA11y')}
             error={errores.rpe}
             estiloBloque={styles.columna}
           />
           <Campo
-            etiqueta="Pulso medio"
+            etiqueta={t('cardio:hoja.pulso')}
             value={pulso}
             onChangeText={onPulso}
             keyboardType="number-pad"
             placeholder="142"
-            accessibilityLabel="Pulsaciones medias"
+            accessibilityLabel={t('cardio:hoja.pulsoA11y')}
             estiloBloque={styles.columna}
           />
         </View>
 
         <Campo
-          etiqueta="Notas"
+          etiqueta={t('cardio:hoja.notas')}
           value={notas}
           onChangeText={onNotas}
           multiline
-          placeholder="Cómo fue, molestias, terreno"
-          accessibilityLabel="Notas de la sesión"
+          placeholder={t('cardio:hoja.notasPlaceholder')}
+          accessibilityLabel={t('cardio:hoja.notasA11y')}
         />
 
         {errores.servidor ? <ErrorSistema compacto mensaje={errores.servidor} /> : null}
