@@ -8,6 +8,7 @@ import { CampanaVista } from '@/components/campanas/CampanaVista';
 import { useCampana } from '@/components/campanas/useCampana';
 import { Button, Chip, ChipWrap, Sheet } from '@/components/ui';
 import { ink, space, type as tipo } from '@/design/tokens';
+import { t } from '@/i18n';
 import { DIFFICULTIES, DIFFICULTY_LABEL, dungeonTaskXp } from '@/lib/game';
 
 export default function DungeonDetail() {
@@ -19,27 +20,33 @@ export default function DungeonDetail() {
       <Sheet
         visible={h.visible}
         onClose={h.onClose}
-        eyebrow="Nueva tarea"
-        title="¿Cuál es el siguiente paso?"
+        eyebrow={t('campanas:hojas.nuevaTarea')}
+        title={t('campanas:hojas.siguientePaso')}
         footer={
           <>
-            <Button title="Añadir tarea" size="lg" onPress={h.addTask} loading={h.adding} disabled={!h.taskTitle.trim()} />
-            <Button title="Cancelar" variant="ghost" onPress={h.onClose} />
+            <Button
+              title={t('campanas:hojas.anadirTarea')}
+              size="lg"
+              onPress={h.addTask}
+              loading={h.adding}
+              disabled={!h.taskTitle.trim()}
+            />
+            <Button title={t('comun:cancelar')} variant="ghost" onPress={h.onClose} />
           </>
         }
       >
         <View style={styles.pila}>
           <Campo
-            etiqueta="Tarea"
+            etiqueta={t('campanas:hojas.tarea')}
             value={h.taskTitle}
             onChangeText={h.setTaskTitle}
-            placeholder="Ej. Redactar el capítulo 2"
+            placeholder={t('campanas:hojas.placeholderTarea')}
             autoFocus
-            accessibilityLabel="Nombre de la tarea"
+            accessibilityLabel={t('campanas:hojas.nombreTareaA11y')}
           />
           <View style={styles.grupo}>
             <Text style={styles.etiqueta} maxFontSizeMultiplier={1.35}>
-              Dificultad
+              {t('campanas:hojas.dificultad')}
             </Text>
             <ChipWrap>
               {DIFFICULTIES.map((d) => (
@@ -48,22 +55,34 @@ export default function DungeonDetail() {
                   label={DIFFICULTY_LABEL[d]}
                   selected={h.difficulty === d}
                   onPress={() => h.setDifficulty(d)}
-                  accessibilityLabel={`Dificultad ${DIFFICULTY_LABEL[d]}`}
+                  accessibilityLabel={t('campanas:hojas.dificultadA11y', { dificultad: DIFFICULTY_LABEL[d] })}
                 />
               ))}
             </ChipWrap>
           </View>
           <View style={styles.grupo}>
             <Text style={styles.etiqueta} maxFontSizeMultiplier={1.35}>
-              Tipo
+              {t('campanas:hojas.tipo')}
             </Text>
             <ChipWrap>
-              <Chip label="Tarea" selected={!h.isBoss} onPress={() => h.setIsBoss(false)} accessibilityLabel="Tarea normal" />
-              <Chip label="Jefe" icon="skull-outline" selected={h.isBoss} onPress={() => h.setIsBoss(true)} accessibilityLabel="Jefe: hito que paga el doble" />
+              <Chip
+                label={t('campanas:hojas.tarea')}
+                selected={!h.isBoss}
+                onPress={() => h.setIsBoss(false)}
+                accessibilityLabel={t('campanas:hojas.tareaNormalA11y')}
+              />
+              <Chip
+                label={t('campanas:hojas.jefe')}
+                icon="skull-outline"
+                selected={h.isBoss}
+                onPress={() => h.setIsBoss(true)}
+                accessibilityLabel={t('campanas:hojas.jefeA11y')}
+              />
             </ChipWrap>
             <Text style={styles.ayuda}>
-              {h.isBoss ? 'Un jefe es un hito. Paga el doble: ' : 'Paga '}
-              {dungeonTaskXp(h.difficulty, h.isBoss)} XP al caer.
+              {t(h.isBoss ? 'campanas:hojas.ayudaJefe' : 'campanas:hojas.ayudaTarea', {
+                xp: dungeonTaskXp(h.difficulty, h.isBoss),
+              })}
             </Text>
           </View>
         </View>

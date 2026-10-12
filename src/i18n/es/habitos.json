@@ -1,1 +1,52 @@
-{}
+{
+  "derivar": {
+    "listo": "Listo para ser tuyo",
+    "faltan_one": "Falta {{count}} día",
+    "faltan_other": "Faltan {{count}} días",
+    "resumen_one": "{{titulo}}. Racha de {{count}} día de {{objetivo}}. {{restantes}}.",
+    "resumen_other": "{{titulo}}. Racha de {{count}} días de {{objetivo}}. {{restantes}}.",
+    "subtitulo": "A los {{dias}} días seguidos un hábito es tuyo. Cada uno cuenta su propia racha."
+  },
+  "vista": {
+    "todosLosDias": "todos los días",
+    "ningunDia": "ningún día",
+    "listaY": "{{lista}} y {{ultimo}}",
+    "semanaA11y": "Toca {{dias}}",
+    "barraA11y": "Racha de {{titulo}}: {{racha}} de {{objetivo}} días",
+    "losaA11y": "{{resumen}} Se pide {{dias}}. Toca para editar.",
+    "forjado": "Forjado",
+    "darloPorAdquirido": "Darlo por adquirido",
+    "cargandoA11y": "Cargando tus hábitos",
+    "eyebrow": "Constancia",
+    "nuevoHabito": "Nuevo hábito",
+    "enForja": "En forja",
+    "mejorRacha": "Mejor racha",
+    "mejorRachaA11y": "Mejor racha: {{dias}} días",
+    "listos": "Listos",
+    "tuyos": "Tuyos",
+    "tuyosA11y": "Hábitos tuyos: {{n}}",
+    "reglasHoy": "Reglas del contrato · hoy",
+    "siNo": "Si no: {{consecuencia}}",
+    "reglasCumplidas": "Las has cumplido todas hoy. El sistema toma nota.",
+    "reglasPendientes": "Lo que quede sin marcar al cierre cuenta como roto: {{xp}} XP por regla y su consecuencia mañana.",
+    "vacioTitulo": "Ningún hábito en forja",
+    "vacioCuerpo": "Lectura, correr, las llamadas en frío, dormir a tu hora. Lo que quieras que un día te salga solo.",
+    "anadirPrimero": "Añadir el primero",
+    "nadaEnForja": "Nada en forja ahora mismo. Lo que ya es tuyo sigue abajo.",
+    "adquiridos": "Adquiridos",
+    "adquiridoDetalle": "Ya no se te pide. Mantén pulsado para volver a exigirlo.",
+    "reactivar": "Reactivar",
+    "adquiridoA11y": "{{titulo}}, adquirido. Mantén pulsado para volver a exigirlo.",
+    "adquiridoDiasA11y": "{{titulo}}, adquirido a los {{dias}} días. Mantén pulsado para volver a exigirlo."
+  },
+  "hook": {
+    "adquiridoTitulo": "HÁBITO ADQUIRIDO",
+    "adquiridoMensaje": "{{titulo}} lleva {{dias}} días seguidos.\n\nSi lo das por adquirido, deja de pedirte el toque diario y deja de poder romperte la racha. Puedes seguir marcándolo cuando quieras.\n\nSi prefieres seguir contando, no pasa nada: sigue sumando.",
+    "seguirContando": "Seguir contando",
+    "esTuyoTitulo": "El sistema lo da por tuyo",
+    "esTuyoPagado": "{{titulo}} ya no se te va a pedir.\n+{{xp}} XP a {{stat}}.",
+    "esTuyoSinPago": "{{titulo}} ya no se te va a pedir.\nEste premio no suma hoy: ya estaba cobrado o has llegado al tope diario.",
+    "volverAExigirlo": "Volver a exigirlo",
+    "volverAExigirloMensaje": "{{titulo}} vuelve a pedirse cada día y vuelve a contar para la racha."
+  }
+}

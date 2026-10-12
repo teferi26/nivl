@@ -10,6 +10,7 @@
 //                        (xpEnJuego ya las incluye, closing.enJuegoHoy).
 // Todo hecho y nada más en juego → null (Hoy ya dice que el día está cerrado).
 
+import { t } from '@/i18n';
 import type { enJuegoHoy } from '@/lib/closing';
 
 export type EnJuego = ReturnType<typeof enJuegoHoy>;
@@ -20,25 +21,23 @@ export interface LineaEnJuego {
   alerta: boolean;
 }
 
-/** « Si no, −75 XP.», o nada si no cuesta XP. */
-const coste = (xp: number): string => (xp > 0 ? ` Si no, −${xp} XP.` : '');
+/** La frase con « Si no, −75 XP.» detrás, o tal cual si no cuesta XP. */
+const conCoste = (frase: string, xp: number): string => (xp > 0 ? t('hoy:enJuego.conCoste', { frase, xp }) : frase);
 
 export function lineaEnJuego(j: EnJuego, rachaDias: number): LineaEnJuego | null {
   if (j.pendientes <= 0) {
     // Misiones hechas, pero el contrato sigue sin marcar: es lo único que
     // queda en juego y se dice con su cifra.
-    return j.xpEnJuego > 0
-      ? { texto: `Te quedan reglas del contrato por marcar. Si no, −${j.xpEnJuego} XP.`, alerta: false }
-      : null;
+    return j.xpEnJuego > 0 ? { texto: t('hoy:enJuego.soloReglas', { xp: j.xpEnJuego }), alerta: false } : null;
   }
 
   if (j.rachaEnRiesgo && j.faltanParaSalvar > 0) {
-    const n = j.faltanParaSalvar;
-    const verbo = n === 1 ? 'falta' : 'faltan';
-    const misiones = n === 1 ? 'misión' : 'misiones';
-    const dias = rachaDias === 1 ? 'día' : 'días';
+    const frase = t('hoy:enJuego.salvarRacha', {
+      count: j.faltanParaSalvar,
+      dias: t('hoy:enJuego.dias', { count: rachaDias }),
+    });
     return {
-      texto: `Te ${verbo} ${n} ${misiones} para salvar tu racha de ${rachaDias} ${dias}.${coste(j.xpEnJuego)}`,
+      texto: conCoste(frase, j.xpEnJuego),
       alerta: true,
     };
   }
@@ -47,19 +46,23 @@ export function lineaEnJuego(j: EnJuego, rachaDias: number): LineaEnJuego | null
     // Con la racha a cero el cierre también gasta la piedra: lo que salva es
     // el XP, no una racha que no existe.
     // La piedra no absorbe las reglas: si cuestan algo, se dice aparte.
-    const reglas = j.xpEnJuego > 0 ? ` Las reglas sin marcar costarían −${j.xpEnJuego} XP.` : '';
+    const reglas = j.xpEnJuego > 0;
+    const clave =
+      rachaDias > 0
+        ? reglas
+          ? 'hoy:enJuego.piedraRachaReglas'
+          : 'hoy:enJuego.piedraRacha'
+        : reglas
+          ? 'hoy:enJuego.piedraPenaReglas'
+          : 'hoy:enJuego.piedraPena';
     return {
-      texto:
-        rachaDias > 0
-          ? `Si no llegas, una piedra protegerá tu racha esta noche.${reglas}`
-          : `Si no llegas, una piedra evitará la penalización${reglas ? ' de misiones' : ''} esta noche.${reglas}`,
+      texto: t(clave, { xp: j.xpEnJuego }),
       alerta: false,
     };
   }
 
-  const n = j.pendientes;
   return {
-    texto: `${n} ${n === 1 ? 'pendiente' : 'pendientes'}.${coste(j.xpEnJuego)}`,
+    texto: conCoste(t('hoy:enJuego.pendientes', { count: j.pendientes }), j.xpEnJuego),
     alerta: false,
   };
 }

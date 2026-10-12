@@ -26,6 +26,7 @@ import { QuestItem } from '@/components/QuestItem';
 import { Button, EmptyState, Row, Screen, Section, SkeletonRows } from '@/components/ui';
 import { cabeAside } from '@/design/responsive';
 import { ink, space, stroke, type as tipo } from '@/design/tokens';
+import { t } from '@/i18n';
 import { useAnchoUtil, useNavActual, useSizeClass } from '@/design/useSizeClass';
 import type { DayBlock } from '@/lib/plan';
 import { fonts } from '@/lib/theme';
@@ -69,7 +70,6 @@ const HUECO_MODULOS = 8;
 const LADO_MODULO = 112;
 /** Por encima, el texto no cabe en dos columnas: una sola. */
 const ESCALA_DOS_COLUMNAS = 1.35;
-const LEMA = 'UN 1 % MEJOR CADA DÍA';
 const LAUREL_LEMA = 20;
 /** Lo que el lema no puede usar: dos laureles de 20 y sus dos huecos. */
 const MARCO_LEMA = 2 * ((LAUREL_LEMA * LAUREL_ANCHO) / LAUREL_ALTO) + 2 * space.s3;
@@ -110,7 +110,8 @@ export function HoyVista({
   // El lema en UNA línea (en la web no hay adjustsFontSizeToFit): tracking 3
   // de partida y, si aun así no cabe, más apretado.
   const huecoLema = Math.min(ancho, maxContent + 2 * gutter) - 2 * gutter - MARCO_LEMA;
-  const ajusteLema = ajustarInscripcion(LEMA, huecoLema, { size: tipo.inscripcion.size, tracking: 3 });
+  const lema = t('comun:lema');
+  const ajusteLema = ajustarInscripcion(lema, huecoLema, { size: tipo.inscripcion.size, tracking: 3 });
 
   const modulos = d.modulos;
   const columnas = Math.max(4, Math.floor(anchoRejilla / LADO_MODULO));
@@ -121,12 +122,12 @@ export function HoyVista({
   // arriba lo dice y la sección no se pinta vacía.
   const misiones = !cargando && d.total === 0 && error ? null : (
     <Section
-      title="Misiones de hoy"
+      title={t('hoy:vista.misionesDeHoy')}
       meta={!cargando && d.total > 0 ? `${d.hechas}/${d.total}` : undefined}
       tone={cargando ? undefined : d.tonoMisiones}
     >
       {cargando ? (
-        <View accessibilityRole="progressbar" accessibilityLabel="Cargando tus misiones">
+        <View accessibilityRole="progressbar" accessibilityLabel={t('hoy:vista.cargandoMisionesA11y')}>
           <SkeletonRows rows={4} />
         </View>
       ) : d.total === 0 ? (
@@ -137,9 +138,9 @@ export function HoyVista({
             <EmptyState
               compact
               icon="repeat-outline"
-              title="Nada programado para hoy"
-              body={d.esPro === true ? 'Crea tus misiones en Hábitos o pídeselas al coach.' : 'Crea tus misiones en Hábitos.'}
-              action={{ label: 'Ir a Hábitos', onPress: () => router.push('/(tabs)/habitos') }}
+              title={t('hoy:vista.vacioTitulo')}
+              body={d.esPro === true ? t('hoy:vista.vacioCuerpoPro') : t('hoy:vista.vacioCuerpo')}
+              action={{ label: t('hoy:vista.irAHabitos'), onPress: () => router.push('/(tabs)/habitos') }}
             />
           </TarjetaArena>
         )
@@ -174,9 +175,9 @@ export function HoyVista({
             chevron
             muted
             leading={<Ionicons name="shield-half-outline" size={18} color={ink.ink6} />}
-            title="El plan del día lo escribe el coach · NIVL Pro"
+            title={t('hoy:vista.lineaPro')}
             onPress={() => router.push('/pro')}
-            accessibilityLabel="El plan del día lo escribe el coach. Ver NIVL Pro"
+            accessibilityLabel={t('hoy:vista.lineaProA11y')}
           />
         </View>
       ) : null}
@@ -222,7 +223,7 @@ export function HoyVista({
             eyebrow={d.fecha}
             linea={h?.linea}
             avatar={h?.avatar ?? { path: null, nombre: '' }}
-            cifraExtra={{ valor: h?.misiones ?? '', rotulo: 'Misiones' }}
+            cifraExtra={{ valor: h?.misiones ?? '', rotulo: t('hoy:vista.cifraMisiones') }}
             // La barra de otro nivel no dice nada de este: si el nivel ha
             // cambiado desde lo último visto, se llena desde vacío.
             desde={desde && h && desde.nivel !== h.nivel ? { ...desde, xpRatio: 0 } : desde}
@@ -230,14 +231,14 @@ export function HoyVista({
               // En compact la Agenda no está en la barra inferior: se llega
               // desde aquí. En el raíl y la barra lateral es un destino propio.
               navActual === 'tabs'
-                ? { icono: 'calendar-outline', etiqueta: 'Abrir la agenda', onPress: () => router.push('/(tabs)/agenda') }
+                ? { icono: 'calendar-outline', etiqueta: t('hoy:vista.abrirAgenda'), onPress: () => router.push('/(tabs)/agenda') }
                 : undefined
             }
             onAvatar={() => router.push('/(tabs)/perfil')}
           />
         </Entrada>
       ) : (
-        <EncabezadoArena eyebrow={d.fecha} titulo="Hoy" meandro />
+        <EncabezadoArena eyebrow={d.fecha} titulo={t('hoy:derivar.titulo')} meandro />
       )}
 
       {/* 2 · Avisos del sistema. */}
@@ -247,9 +248,9 @@ export function HoyVista({
             <EmptyState
               compact
               icon="cloud-offline-outline"
-              title={d.perfil ? 'No se ha podido actualizar' : 'El sistema no responde'}
+              title={d.perfil ? t('hoy:vista.errorTitulo') : t('comun:sistemaNoResponde')}
               body={error}
-              action={{ label: 'Reintentar', onPress: acciones.onReintentar }}
+              action={{ label: t('comun:reintentar'), onPress: acciones.onReintentar }}
             />
           </TarjetaArena>
         </Entrada>
@@ -257,7 +258,7 @@ export function HoyVista({
 
       {!cargando && d.pausa ? (
         <Entrada indice={2} style={styles.bloque}>
-          <TarjetaArena variante="contorno" rotulo="Sistema en pausa">
+          <TarjetaArena variante="contorno" rotulo={t('hoy:vista.pausaRotulo')}>
             <View style={styles.pausa}>
               <Ionicons name="snow-outline" size={16} color={ink.ink8} />
               <Text style={[styles.cuerpo, styles.flex]}>{d.pausa}</Text>
@@ -270,7 +271,7 @@ export function HoyVista({
         <Entrada indice={2} style={styles.bloque}>
           <TarjetaArena
             variante={d.cierre.alerta ? 'trama' : 'contorno'}
-            rotulo={d.cierre.alerta ? 'Alerta del sistema' : 'Informe del cierre'}
+            rotulo={d.cierre.alerta ? t('hoy:vista.alertaRotulo') : t('hoy:vista.informeRotulo')}
           >
             {d.cierre.lineas.map((l) => (
               <Text key={l} style={[styles.cuerpo, styles.linea]}>
@@ -284,12 +285,10 @@ export function HoyVista({
       {/* 3 · Día perfecto: la inversión cuando no queda nada. */}
       {!cargando && d.celebrando ? (
         <Entrada indice={2} style={styles.bloque}>
-          <TarjetaArena variante="grano" rotulo="Día perfecto" meta={`${d.hechas}/${d.total}`}>
-            <Text style={styles.cuerpo}>
-              Todas cumplidas. Racha de {d.racha.valor} {d.racha.valor === 1 ? 'día' : 'días'}.
-            </Text>
+          <TarjetaArena variante="grano" rotulo={t('hoy:vista.perfectoRotulo')} meta={`${d.hechas}/${d.total}`}>
+            <Text style={styles.cuerpo}>{t('hoy:vista.perfectoCuerpo', { count: d.racha.valor })}</Text>
             <Button
-              title="Compartir"
+              title={t('comun:compartir')}
               icon="share-social-outline"
               variant="primary"
               size="sm"
@@ -320,11 +319,11 @@ export function HoyVista({
       {/* 7 · Módulos. */}
       <Entrada key={cargando ? 'modulos-sk' : 'modulos-ok'} indice={4}>
         <Section
-          title="Módulos"
+          title={t('hoy:vista.modulos')}
           action={
             modulos.secondary.length > 0
               ? {
-                  label: verMas ? 'Menos' : `Más · ${modulos.secondary.length}`,
+                  label: verMas ? t('hoy:vista.menos') : t('hoy:vista.mas', { n: modulos.secondary.length }),
                   icon: verMas ? 'chevron-up' : 'chevron-down',
                   onPress: () => setVerMas((v) => !v),
                 }
@@ -340,7 +339,7 @@ export function HoyVista({
                   onPress={() => router.push(m.route)}
                   style={({ pressed }) => [styles.azulejo, { width: tile, height: tile }, pressed && styles.azulejoPulsado]}
                   accessibilityRole="button"
-                  accessibilityLabel={`Abrir ${m.label}`}
+                  accessibilityLabel={t('hoy:vista.abrirModulo', { modulo: m.label })}
                 >
                   <Ionicons name={m.icon as never} size={22} color={ink.ink10} />
                   <Text style={styles.azulejoRotulo} numberOfLines={1} maxFontSizeMultiplier={1.35}>
@@ -354,14 +353,14 @@ export function HoyVista({
 
       {/* 8 · El lema entre laureles. */}
       <Entrada indice={5}>
-        <View style={styles.lema} accessible accessibilityLabel="Un 1 % mejor cada día">
+        <View style={styles.lema} accessible accessibilityLabel={t('hoy:vista.lemaA11y')}>
           <Laurel alto={LAUREL_LEMA} lado="izq" />
           <Text
             style={[styles.lemaTexto, { fontSize: ajusteLema.size, letterSpacing: ajusteLema.tracking }]}
             maxFontSizeMultiplier={1.35}
             numberOfLines={ajusteLema.cabe ? 1 : 2}
           >
-            {LEMA}
+            {lema}
           </Text>
           <Laurel alto={LAUREL_LEMA} lado="der" />
         </View>

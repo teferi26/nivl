@@ -8,6 +8,7 @@ import { CampanasVista } from '@/components/campanas/CampanasVista';
 import { useCampanas } from '@/components/campanas/useCampanas';
 import { Button, Chip, ChipWrap, Sheet } from '@/components/ui';
 import { ink, space, type as tipo } from '@/design/tokens';
+import { t } from '@/i18n';
 import { DUNGEON_CLEAR_XP, DUNGEON_RANKS, STATS } from '@/lib/game';
 
 export default function Campañas() {
@@ -19,42 +20,60 @@ export default function Campañas() {
       <Sheet
         visible={h.visible}
         onClose={h.onClose}
-        eyebrow="Nueva campaña"
-        title="¿Qué vas a conquistar?"
+        eyebrow={t('campanas:hojas.nuevaCampana')}
+        title={t('campanas:hojas.queConquistar')}
         footer={
           <>
-            <Button title="Abrir campaña" size="lg" onPress={h.onCreate} loading={h.saving} disabled={!h.title.trim()} />
-            <Button title="Cancelar" variant="ghost" onPress={h.onClose} />
+            <Button
+              title={t('campanas:hojas.abrirCampana')}
+              size="lg"
+              onPress={h.onCreate}
+              loading={h.saving}
+              disabled={!h.title.trim()}
+            />
+            <Button title={t('comun:cancelar')} variant="ghost" onPress={h.onClose} />
           </>
         }
       >
         <View style={styles.pila}>
           <Campo
-            etiqueta="Nombre"
+            etiqueta={t('comun:nombre')}
             value={h.title}
             onChangeText={h.setTitle}
-            placeholder="Ej. Lanzar la web · Aprobar Cálculo · Media maratón"
+            placeholder={t('campanas:hojas.placeholderCampana')}
             autoFocus
-            accessibilityLabel="Nombre de la campaña"
+            accessibilityLabel={t('campanas:hojas.nombreCampanaA11y')}
           />
           <View style={styles.grupo}>
             <Text style={styles.etiqueta} maxFontSizeMultiplier={1.35}>
-              Envergadura
+              {t('campanas:hojas.envergadura')}
             </Text>
             <ChipWrap>
               {DUNGEON_RANKS.map((r) => (
-                <Chip key={r} label={r} selected={h.rank === r} onPress={() => h.setRank(r)} accessibilityLabel={`Rango ${r}`} />
+                <Chip
+                  key={r}
+                  label={r}
+                  selected={h.rank === r}
+                  onPress={() => h.setRank(r)}
+                  accessibilityLabel={t('campanas:comun.rangoA11y', { rango: r })}
+                />
               ))}
             </ChipWrap>
-            <Text style={styles.ayuda}>De E (una semana) a S (una temporada entera). Botín al despejar: {DUNGEON_CLEAR_XP[h.rank]} XP.</Text>
+            <Text style={styles.ayuda}>{t('campanas:hojas.ayudaRango', { xp: DUNGEON_CLEAR_XP[h.rank] })}</Text>
           </View>
           <View style={styles.grupo}>
             <Text style={styles.etiqueta} maxFontSizeMultiplier={1.35}>
-              Qué entrena
+              {t('campanas:hojas.queEntrena')}
             </Text>
             <ChipWrap>
               {STATS.map((s) => (
-                <Chip key={s} label={s} selected={h.stat === s} onPress={() => h.setStat(s)} accessibilityLabel={`Estadística ${s}`} />
+                <Chip
+                  key={s}
+                  label={s}
+                  selected={h.stat === s}
+                  onPress={() => h.setStat(s)}
+                  accessibilityLabel={t('campanas:hojas.estadisticaA11y', { stat: s })}
+                />
               ))}
             </ChipWrap>
           </View>

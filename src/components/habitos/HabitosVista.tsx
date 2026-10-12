@@ -23,6 +23,8 @@ import { Button, Check, EmptyState, PressScale, Row, Screen, Section, Skeleton, 
 import { SIN_DATO } from '@/components/ui/sinDato';
 import { ink, space, stroke, type as tipo } from '@/design/tokens';
 import { useSizeClass } from '@/design/useSizeClass';
+import { t } from '@/i18n';
+import { nombreDia } from '@/i18n/formato';
 import { RULE_BREAK_XP } from '@/lib/game';
 import type { ProgresoHabito } from '@/lib/habits';
 import type { Quest, Rule } from '@/lib/types';
@@ -30,7 +32,7 @@ import {
   reglasPendientes,
   resumenHabito,
   resumenHabitos,
-  SUBTITULO_HABITOS,
+  subtituloHabitos,
   textoRestantes,
 } from './derivarHabitos';
 
@@ -60,25 +62,26 @@ export interface HabitosVistaProps {
 /** Con el texto por encima de esto, las losas vuelven a una columna. */
 const ESCALA_DOS_COLUMNAS = 1.35;
 
-const DIAS = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
-const DIAS_LARGOS = ['lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado', 'domingo'];
+/** Los siete días, de lunes (0) a domingo (6). */
+const SIETE = [0, 1, 2, 3, 4, 5, 6];
 
 /** «lunes, miércoles y viernes» (o «todos los días»). */
 function diasLeidos(dias: number[]): string {
-  const nombres = DIAS_LARGOS.filter((_, i) => dias.includes(i + 1));
-  if (nombres.length === 7) return 'todos los días';
-  if (nombres.length <= 1) return nombres[0] ?? 'ningún día';
-  return `${nombres.slice(0, -1).join(', ')} y ${nombres[nombres.length - 1]}`;
+  const nombres = SIETE.filter((i) => dias.includes(i + 1)).map((i) => nombreDia(i));
+  if (nombres.length === 7) return t('habitos:vista.todosLosDias');
+  if (nombres.length <= 1) return nombres[0] ?? t('habitos:vista.ningunDia');
+  return t('habitos:vista.listaY', { lista: nombres.slice(0, -1).join(', '), ultimo: nombres[nombres.length - 1] });
 }
 
 /** Los siete días: los que toca en contorno blanco, el resto en hierro. */
 function Semana({ dias }: { dias: number[] }) {
   return (
-    <View style={styles.semana} accessible accessibilityLabel={`Toca ${diasLeidos(dias)}`}>
-      {DIAS.map((d, i) => {
+    <View style={styles.semana} accessible accessibilityLabel={t('habitos:vista.semanaA11y', { dias: diasLeidos(dias) })}>
+      {SIETE.map((i) => {
         const on = dias.includes(i + 1);
+        const d = nombreDia(i, 'letra');
         return (
-          <View key={d} style={[styles.dia, on && styles.diaOn]}>
+          <View key={i} style={[styles.dia, on && styles.diaOn]}>
             <Text style={[styles.diaTexto, on && styles.diaTextoOn]} maxFontSizeMultiplier={1.2}>
               {d}
             </Text>
@@ -118,7 +121,7 @@ function CuerpoHabito({ q, p, animar }: { q: Quest; p: ProgresoHabito; animar: b
             desde={animar ? 0 : null}
             alto={8}
             segmentos={p.objetivo}
-            etiqueta={`Racha de ${q.title}: ${p.racha} de ${p.objetivo} días`}
+            etiqueta={t('habitos:vista.barraA11y', { titulo: q.title, racha: p.racha, objetivo: p.objetivo })}
           />
         </View>
         <View style={styles.pie}>
@@ -150,7 +153,7 @@ function LosaHabito({
 }) {
   const editar = () => acciones.onEditar(q);
   const animar = indice < LOSAS_ANIMADAS;
-  const etiqueta = `${resumenHabito(q.title, p)} Se pide ${diasLeidos(q.days_of_week ?? [])}. Toca para editar.`;
+  const etiqueta = t('habitos:vista.losaA11y', { resumen: resumenHabito(q.title, p), dias: diasLeidos(q.days_of_week ?? []) });
   if (!p.consolidable) {
     return (
       <TarjetaArena variante="piedra" zocalo onPress={editar} accessibilityLabel={etiqueta}>
@@ -162,12 +165,12 @@ function LosaHabito({
   // para VoiceOver. Lo que edita es el cuerpo; «Darlo por adquirido» queda
   // como botón propio debajo.
   return (
-    <TarjetaArena variante="grano" zocalo rotulo="Forjado">
+    <TarjetaArena variante="grano" zocalo rotulo={t('habitos:vista.forjado')}>
       <PressScale onPress={editar} accessibilityRole="button" accessibilityLabel={etiqueta}>
         <CuerpoHabito q={q} p={p} animar={animar} />
       </PressScale>
       <Button
-        title="Darlo por adquirido"
+        title={t('habitos:vista.darloPorAdquirido')}
         variant="secondary"
         onPress={() => acciones.onConsolidar(q, p)}
         loading={ocupado}
@@ -180,7 +183,7 @@ function LosaHabito({
 
 function Cargando() {
   return (
-    <View accessibilityRole="progressbar" accessibilityLabel="Cargando tus hábitos">
+    <View accessibilityRole="progressbar" accessibilityLabel={t('habitos:vista.cargandoA11y')}>
       <Skeleton height={56} style={styles.skFranja} />
       <Skeleton height={11} width={110} style={styles.skEyebrow} />
       <Skeleton height={124} style={styles.skCard} />
@@ -214,14 +217,14 @@ export function HabitosVista({
     <Screen>
       <Entrada indice={0}>
         <EncabezadoArena
-          eyebrow="Constancia"
-          titulo="Hábitos"
-          subtitulo={SUBTITULO_HABITOS}
+          eyebrow={t('habitos:vista.eyebrow')}
+          titulo={t('comun:destino.habitos')}
+          subtitulo={subtituloHabitos()}
           meandro
           // Sólida salvo en el vacío: allí la acción principal (la única
           // inversión) es «Añadir el primero». Con todo adquirido y nada en
           // forja, esta es la acción clara.
-          accion={{ icono: 'add', etiqueta: 'Nuevo hábito', onPress: acciones.onNuevo, solida: !vacio }}
+          accion={{ icono: 'add', etiqueta: t('habitos:vista.nuevoHabito'), onPress: acciones.onNuevo, solida: !vacio }}
         />
       </Entrada>
 
@@ -232,9 +235,9 @@ export function HabitosVista({
           <EmptyState
             compact
             icon="cloud-offline-outline"
-            title="El sistema no responde"
+            title={t('comun:sistemaNoResponde')}
             body={error}
-            action={{ label: 'Reintentar', onPress: acciones.onReintentar }}
+            action={{ label: t('comun:reintentar'), onPress: acciones.onReintentar }}
           />
         </TarjetaArena>
       ) : null}
@@ -244,12 +247,17 @@ export function HabitosVista({
         <Entrada indice={1} style={styles.franja}>
           <FranjaCifras
             cifras={[
-              { valor: resumen.enForja, rotulo: 'En forja' },
-              { valor: resumen.mejorRacha, rotulo: 'Mejor racha', sufijo: 'd', etiqueta: `Mejor racha: ${resumen.mejorRacha} días` },
-              { valor: resumen.listos, rotulo: 'Listos' },
+              { valor: resumen.enForja, rotulo: t('habitos:vista.enForja') },
+              {
+                valor: resumen.mejorRacha,
+                rotulo: t('habitos:vista.mejorRacha'),
+                sufijo: 'd', // i18n-ok: unidad
+                etiqueta: t('habitos:vista.mejorRachaA11y', { dias: resumen.mejorRacha }),
+              },
+              { valor: resumen.listos, rotulo: t('habitos:vista.listos') },
               // «Tuyos» y no «Adquiridos»: a 375 la celda mide ~60 pt y la
               // palabra larga se partía.
-              { valor: resumen.adquiridos, rotulo: 'Tuyos', etiqueta: `Hábitos tuyos: ${resumen.adquiridos}` },
+              { valor: resumen.adquiridos, rotulo: t('habitos:vista.tuyos'), etiqueta: t('habitos:vista.tuyosA11y', { n: resumen.adquiridos }) },
             ]}
           />
         </Entrada>
@@ -258,7 +266,7 @@ export function HabitosVista({
       {listo && reglas.length > 0 ? (
         <Entrada indice={2}>
           <Section
-            title="Reglas del contrato · hoy"
+            title={t('habitos:vista.reglasHoy')}
             tone={pendientes > 0 ? 'alerta' : undefined}
             meta={`${reglas.length - pendientes}/${reglas.length}`}
           >
@@ -272,7 +280,7 @@ export function HabitosVista({
                     leading={<Check checked={ok} size={24} />}
                     title={r.text}
                     done={ok}
-                    detail={!ok ? `Si no: ${r.consequence}` : undefined}
+                    detail={!ok ? t('habitos:vista.siNo', { consecuencia: r.consequence }) : undefined}
                     onPress={() => acciones.onAlternarRegla(r)}
                     accessibilityRole="checkbox"
                     accessibilityState={{ checked: ok }}
@@ -282,8 +290,8 @@ export function HabitosVista({
             </TarjetaArena>
             <Text style={styles.nota} maxFontSizeMultiplier={1.35}>
               {pendientes === 0
-                ? 'Las has cumplido todas hoy. El sistema toma nota.'
-                : `Lo que quede sin marcar al cierre cuenta como roto: ${RULE_BREAK_XP} XP por regla y su consecuencia mañana.`}
+                ? t('habitos:vista.reglasCumplidas')
+                : t('habitos:vista.reglasPendientes', { xp: RULE_BREAK_XP })}
             </Text>
           </Section>
         </Entrada>
@@ -294,21 +302,21 @@ export function HabitosVista({
           losas no llevan Entrada propia: anidada, sumaría subida y retraso. */}
       {listo && !(error && enCurso.length === 0) ? (
         <Entrada indice={3}>
-          <Section title="En forja" meta={enCurso.length > 0 ? `${enCurso.length}` : undefined}>
+          <Section title={t('habitos:vista.enForja')} meta={enCurso.length > 0 ? `${enCurso.length}` : undefined}>
             {vacio ? (
               <TarjetaArena variante="contorno" remaches>
                 <EmptyState
                   icon="hammer-outline"
-                  title="Ningún hábito en forja"
-                  body="Lectura, correr, las llamadas en frío, dormir a tu hora. Lo que quieras que un día te salga solo."
-                  action={{ label: 'Añadir el primero', onPress: acciones.onNuevo, variant: 'solid' }}
+                  title={t('habitos:vista.vacioTitulo')}
+                  body={t('habitos:vista.vacioCuerpo')}
+                  action={{ label: t('habitos:vista.anadirPrimero'), onPress: acciones.onNuevo, variant: 'solid' }}
                 />
               </TarjetaArena>
             ) : null}
 
             {!vacio && !error && enCurso.length === 0 ? (
               <Text style={styles.nota} maxFontSizeMultiplier={1.35}>
-                Nada en forja ahora mismo. Lo que ya es tuyo sigue abajo.
+                {t('habitos:vista.nadaEnForja')}
               </Text>
             ) : null}
 
@@ -330,7 +338,7 @@ export function HabitosVista({
       ) : null}
 
       {listo && adquiridos.length > 0 ? (
-        <Section title="Adquiridos" tone="logro" meta={`${adquiridos.length}`}>
+        <Section title={t('habitos:vista.adquiridos')} tone="logro" meta={`${adquiridos.length}`}>
           <TarjetaArena variante="contorno" padded={false} style={styles.lista}>
             {adquiridos.map((q, i) => {
               const dias = q.acquired_streak;
@@ -341,16 +349,23 @@ export function HabitosVista({
                   leading={<Laurel alto={18} lado="izq" color={ink.ink8} />}
                   title={q.title}
                   muted
-                  detail="Ya no se te pide. Mantén pulsado para volver a exigirlo."
+                  detail={t('habitos:vista.adquiridoDetalle')}
                   trailing={
                     <Text style={styles.adquirido} maxFontSizeMultiplier={1}>
                       {dias == null ? SIN_DATO : dias}
-                      {dias == null ? null : <Text style={styles.adquiridoUnidad}> d</Text>}
+                      {dias == null ? null : (
+                        // i18n-ok: unidad
+                        <Text style={styles.adquiridoUnidad}> d</Text>
+                      )}
                     </Text>
                   }
                   onLongPress={() => acciones.onReactivar(q)}
-                  accessibilityLongPressLabel="Reactivar"
-                  accessibilityLabel={`${q.title}, adquirido${dias == null ? '' : ` a los ${dias} días`}. Mantén pulsado para volver a exigirlo.`}
+                  accessibilityLongPressLabel={t('habitos:vista.reactivar')}
+                  accessibilityLabel={
+                    dias == null
+                      ? t('habitos:vista.adquiridoA11y', { titulo: q.title })
+                      : t('habitos:vista.adquiridoDiasA11y', { titulo: q.title, dias })
+                  }
                 />
               );
             })}

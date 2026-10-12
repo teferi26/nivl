@@ -17,6 +17,7 @@ import { prepararDatosSemana, tarjetaDeSemana } from '@/components/ShareCardSema
 import { useAlVolver } from '@/components/ui';
 import { avisar, confirmar } from '@/components/ui/confirmar';
 import { vibrar } from '@/design/haptics';
+import { t } from '@/i18n';
 import {
   ACHIEVEMENT_BY_CODE,
   evaluateAchievements,
@@ -403,10 +404,10 @@ export function useHoy() {
     if (!health.accepted) { health.ask(); return null; }
     const perm = await ImagePicker.requestCameraPermissionsAsync();
     if (!perm.granted) {
-      const mensaje = 'El sistema necesita la cámara para registrar evidencias.';
+      const mensaje = t('hoy:hook.camaraMensaje');
       if (Platform.OS === 'web') {
-        avisar('Sin cámara', mensaje);
-      } else if (await confirmar({ titulo: 'Sin cámara', mensaje, confirmar: 'Abrir ajustes' })) {
+        avisar(t('comun:sinCamara'), mensaje);
+      } else if (await confirmar({ titulo: t('comun:sinCamara'), mensaje, confirmar: t('comun:abrirAjustes') })) {
         Linking.openSettings().catch(() => {});
       }
       return null;
@@ -470,7 +471,7 @@ export function useHoy() {
           : pagado > 0
             ? `+${pagado} XP · ${quest.stat}`
             : res.awarded && !quest.is_bonus
-              ? 'Tope diario de XP alcanzado'
+              ? t('comun:topeDiarioXp')
               : null;
 
       // Una acción en la cola: el XP y el día perfecto van en el resumen;
@@ -490,7 +491,7 @@ export function useHoy() {
         rachaVista: rachaDespues,
         resumen: [
           ...(!res.wasPenalty && lineaXp ? [lineaXp] : []),
-          ...(esDiaPerfecto ? ['Día perfecto'] : []),
+          ...(esDiaPerfecto ? [t('hoy:hook.diaPerfecto')] : []),
         ],
       });
 
@@ -501,7 +502,7 @@ export function useHoy() {
         setAvisoRecuperacion(true);
         // Después del golpe de la misión: dos a la vez se funden en uno en iOS.
         setTimeout(() => vibrar('recuperacion'), 300);
-        AccessibilityInfo.announceForAccessibility('La recuperación está abierta. Recupera lo perdido.');
+        AccessibilityInfo.announceForAccessibility(t('hoy:hook.recuperacionAbierta'));
       }
 
       if (esDiaPerfecto) {
@@ -538,7 +539,7 @@ export function useHoy() {
       sincronizar(res.profile, accion);
     } catch (e) {
       vibrar('penalizacion');
-      avisar('El sistema no responde', mensajeSistema(e));
+      avisar(t('comun:sistemaNoResponde'), mensajeSistema(e));
     }
   };
 

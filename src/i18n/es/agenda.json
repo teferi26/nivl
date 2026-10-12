@@ -1,1 +1,119 @@
-{}
+{
+  "derivar": {
+    "meses": {
+      "m1": "enero",
+      "m2": "febrero",
+      "m3": "marzo",
+      "m4": "abril",
+      "m5": "mayo",
+      "m6": "junio",
+      "m7": "julio",
+      "m8": "agosto",
+      "m9": "septiembre",
+      "m10": "octubre",
+      "m11": "noviembre",
+      "m12": "diciembre"
+    },
+    "semanaN": "Semana {{n}}",
+    "rangoSemana": "{{ini}} a {{fin}}",
+    "mesDeAnio": "{{mes}} de {{anio}}",
+    "semanaLeida": "Semana {{n}}, del {{dia1}} de {{mes1}} al {{dia2}} de {{mes2}}",
+    "bloques_one": "{{count}} bloque del plan",
+    "bloques_other": "{{count}} bloques del plan",
+    "eventos_one": "{{count}} evento",
+    "eventos_other": "{{count}} eventos",
+    "plazos_one": "{{count}} plazo",
+    "plazos_other": "{{count}} plazos",
+    "plazosCampana_one": "{{count}} plazo de campaña",
+    "plazosCampana_other": "{{count}} plazos de campaña",
+    "misiones_one": "{{count}} misión",
+    "misiones_other": "{{count}} misiones",
+    "vacioFuturo": "{{cuando}}. Nada programado todavía.",
+    "vacioPasado": "{{cuando}}. Ese día no quedó nada registrado.",
+    "hoy": "hoy"
+  },
+  "vista": {
+    "modo": {
+      "dia": "Día",
+      "semana": "Semana",
+      "mes": "Mes"
+    },
+    "vistaPor": {
+      "dia": "Vista por día",
+      "semana": "Vista por semana",
+      "mes": "Vista por mes"
+    },
+    "anterior": {
+      "dia": "Día anterior",
+      "semana": "Semana anterior",
+      "mes": "Mes anterior"
+    },
+    "siguiente": {
+      "dia": "Día siguiente",
+      "semana": "Semana siguiente",
+      "mes": "Mes siguiente"
+    },
+    "hoy": "Hoy",
+    "volverAHoy": "Volver a hoy",
+    "nuevoEvento": "Nuevo evento",
+    "cargandoA11y": "Cargando tu agenda",
+    "nadaProgramado": "Nada programado",
+    "diaEnBlanco": "Un día en blanco",
+    "vacioCuerpoPro": "Pídele al coach que planifique el día o añade un evento. Las misiones programadas aparecen aquí.",
+    "vacioCuerpo": "Añade un evento. Las misiones programadas aparecen aquí.",
+    "vacioPasado": "El sistema no tiene nada registrado para ese día.",
+    "anadirEvento": "Añadir evento",
+    "eventos": "Eventos",
+    "conHora": "Con hora",
+    "conHoraA11y": "Con hora: {{n}}",
+    "misiones": "Misiones",
+    "misionesA11y": "Misiones: {{hechas}} de {{total}} hechas",
+    "todoElDia": "Todo el día",
+    "eventoA11yTodoElDia": "{{titulo}}, todo el día. Toca para ver el detalle.",
+    "eventoA11yHora": "{{titulo}}, a las {{hora}}. Toca para ver el detalle.",
+    "tocaEvento": "Toca un evento para ver su detalle.",
+    "porHoras": "Por horas",
+    "sinHoraPro": "Nada a una hora concreta. Pídele al coach que planifique el día, o añade un evento con hora.",
+    "sinHora": "Nada a una hora concreta. Añade un evento con hora y se pinta aquí.",
+    "sinHoraPasado": "Ese día no tuvo plan por horas.",
+    "misionesYPlazos": "Misiones y plazos",
+    "jefeFinalDetalle": "Jefe final de campaña.",
+    "tareaDetalle": "Tarea de campaña.",
+    "venceHoy": "Vence hoy",
+    "jefe": "Jefe",
+    "plazo": "Plazo",
+    "jefeVenceHoyA11y": "{{titulo}}, jefe final de campaña, vence hoy.",
+    "jefeVenceA11y": "{{titulo}}, jefe final de campaña, vence ese día.",
+    "tareaVenceHoyA11y": "{{titulo}}, tarea de campaña, vence hoy.",
+    "tareaVenceA11y": "{{titulo}}, tarea de campaña, vence ese día.",
+    "misionDetalle": "Misión · {{stat}}",
+    "penalizacion": "Penalización",
+    "seCompletanEnHoy": "Las misiones se completan desde Hoy."
+  },
+  "calendario": {
+    "diasSemanaA11y": "Días de la semana",
+    "diasMesA11y": "Días del mes"
+  },
+  "hojas": {
+    "pregunta": "¿Qué hay que recordar?",
+    "placeholderNombre": "Llamada, cita, demo, examen",
+    "nombreA11y": "Nombre del evento",
+    "dia": "Día",
+    "manana": "Mañana",
+    "diaElegidoA11y": "El día elegido, {{dia}}",
+    "fecha": "Fecha",
+    "placeholderFecha": "AAAA-MM-DD",
+    "hora": "Hora",
+    "sinHoraA11y": "Sin hora, todo el día",
+    "ayudaHora": "Con hora, el evento se pinta sobre el eje del día. Sin hora, cuenta como de todo el día.",
+    "evento": "Evento",
+    "eliminarEvento": "Eliminar evento",
+    "fechaA11y": "Fecha: {{dia}}",
+    "horaTodoElDiaA11y": "Hora: todo el día",
+    "horaA11y": "Hora: {{hora}}",
+    "nota": "Nota"
+  },
+  "hook": {
+    "fechaInvalida": "Fecha inválida. Usa el formato AAAA-MM-DD, ej. 2026-06-15."
+  }
+}

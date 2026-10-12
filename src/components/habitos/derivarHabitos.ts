@@ -4,6 +4,7 @@
 // y el día, y devuelve lo que pinta la vista. El día llega desde fuera para
 // que la galería y los tests no dependan del reloj.
 
+import { t } from '@/i18n';
 import { HABIT_TARGET_DAYS, ordenarPorCercania, progresoHabito, type ProgresoHabito } from '@/lib/habits';
 import type { Quest, Rule } from '@/lib/types';
 
@@ -57,15 +58,16 @@ export function reglasPendientes(reglas: Rule[], cumplidas: Set<string>): number
 
 /** «Listo para ser tuyo», «Falta 1 día», «Faltan 8 días». */
 export function textoRestantes(p: ProgresoHabito): string {
-  if (p.consolidable) return 'Listo para ser tuyo';
-  return p.restantes === 1 ? 'Falta 1 día' : `Faltan ${p.restantes} días`;
+  if (p.consolidable) return t('habitos:derivar.listo');
+  return t('habitos:derivar.faltan', { count: p.restantes });
 }
 
 /** Lo que oye el lector de una tarjeta de hábito. */
 export function resumenHabito(titulo: string, p: ProgresoHabito): string {
-  const dias = p.racha === 1 ? 'día' : 'días';
-  return `${titulo}. Racha de ${p.racha} ${dias} de ${p.objetivo}. ${textoRestantes(p)}.`;
+  return t('habitos:derivar.resumen', { titulo, count: p.racha, objetivo: p.objetivo, restantes: textoRestantes(p) });
 }
 
 /** «A los 21 días seguidos un hábito es tuyo…» */
-export const SUBTITULO_HABITOS = `A los ${HABIT_TARGET_DAYS} días seguidos un hábito es tuyo. Cada uno cuenta su propia racha.`;
+export function subtituloHabitos(): string {
+  return t('habitos:derivar.subtitulo', { dias: HABIT_TARGET_DAYS });
+}

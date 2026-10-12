@@ -8,6 +8,7 @@ import { useCallback, useRef, useState } from 'react';
 import { avisar, useAlVolver } from '@/components/ui';
 import { confirmar } from '@/components/ui/confirmar';
 import { vibrar } from '@/design/haptics';
+import { t } from '@/i18n';
 import { sincronizarRango } from '@/lib/achievements';
 import { useAuth } from '@/lib/auth';
 import { createQuest, deleteQuest, ensureProfile, updateQuest, type QuestInput } from '@/lib/data';
@@ -126,7 +127,7 @@ export function useHabitos(): { vista: HabitosVistaProps; hoja: HojaHabito } {
       if (!estaba) vibrar('seleccion');
     } catch (e) {
       fijarRegla(r.id, estaba);
-      avisar('El sistema no responde', mensajeSistema(e));
+      avisar(t('comun:sistemaNoResponde'), mensajeSistema(e));
     } finally {
       reglasEnVuelo.current.delete(r.id);
     }
@@ -134,10 +135,10 @@ export function useHabitos(): { vista: HabitosVistaProps; hoja: HojaHabito } {
 
   const consolidar = async (q: Quest, p: ProgresoHabito) => {
     const ok = await confirmar({
-      titulo: 'HÁBITO ADQUIRIDO',
-      mensaje: `${q.title} lleva ${p.racha} días seguidos.\n\nSi lo das por adquirido, deja de pedirte el toque diario y deja de poder romperte la racha. Puedes seguir marcándolo cuando quieras.\n\nSi prefieres seguir contando, no pasa nada: sigue sumando.`,
-      confirmar: 'Darlo por adquirido',
-      cancelar: 'Seguir contando',
+      titulo: t('habitos:hook.adquiridoTitulo'),
+      mensaje: t('habitos:hook.adquiridoMensaje', { titulo: q.title, dias: p.racha }),
+      confirmar: t('habitos:vista.darloPorAdquirido'),
+      cancelar: t('habitos:hook.seguirContando'),
     });
     // Cerrojo síncrono además de `busy`: el XP del hábito adquirido se paga una vez.
     if (!ok || !userId || busy || consolidando.current) return;
@@ -162,15 +163,13 @@ export function useHabitos(): { vista: HabitosVistaProps; hoja: HojaHabito } {
       // diario de hábitos adquiridos: el cliente no distingue cuál, así que no
       // afirma ninguno de los dos.
       avisar(
-        'El sistema lo da por tuyo',
-        `${q.title} ya no se te va a pedir.\n${
-          pagado > 0
-            ? `+${pagado} XP a ${q.stat}.`
-            : 'Este premio no suma hoy: ya estaba cobrado o has llegado al tope diario.'
-        }`,
+        t('habitos:hook.esTuyoTitulo'),
+        pagado > 0
+          ? t('habitos:hook.esTuyoPagado', { titulo: q.title, xp: pagado, stat: q.stat })
+          : t('habitos:hook.esTuyoSinPago', { titulo: q.title }),
       );
     } catch (e) {
-      avisar('El sistema no responde', mensajeSistema(e));
+      avisar(t('comun:sistemaNoResponde'), mensajeSistema(e));
     } finally {
       consolidando.current = false;
       setBusy(false);
@@ -179,15 +178,15 @@ export function useHabitos(): { vista: HabitosVistaProps; hoja: HojaHabito } {
 
   const reactivar = async (q: Quest) => {
     const ok = await confirmar({
-      titulo: 'Volver a exigirlo',
-      mensaje: `${q.title} vuelve a pedirse cada día y vuelve a contar para la racha.`,
-      confirmar: 'Volver a exigirlo',
+      titulo: t('habitos:hook.volverAExigirlo'),
+      mensaje: t('habitos:hook.volverAExigirloMensaje', { titulo: q.title }),
+      confirmar: t('habitos:hook.volverAExigirlo'),
     });
     if (!ok) return;
     try {
       await reactivarHabito(q.id);
     } catch (e) {
-      avisar('El sistema no responde', mensajeSistema(e));
+      avisar(t('comun:sistemaNoResponde'), mensajeSistema(e));
     }
     await cargar();
   };

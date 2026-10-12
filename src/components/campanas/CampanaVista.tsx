@@ -17,6 +17,7 @@ import { Barra, EncabezadoArena, Entrada, FranjaCifras, Galea, Meandro, TarjetaA
 import { Button, Check, EmptyState, Row, Screen, Section, Skeleton, SkeletonRows, Tag } from '@/components/ui';
 import { SIN_DATO } from '@/components/ui/sinDato';
 import { ink, space, type as tipo } from '@/design/tokens';
+import { t } from '@/i18n';
 import { DIFFICULTY_LABEL, DUNGEON_CLEAR_XP, dungeonTaskXp } from '@/lib/game';
 import type { Dungeon, DungeonTask } from '@/lib/types';
 import { voice } from '@/lib/voice';
@@ -60,7 +61,12 @@ export function CampanaVista(p: CampanaVistaProps) {
     return (
       <Screen>
         {p.cargado ? (
-          <EncabezadoArena onVolver={p.onVolver} eyebrow="Campaña" titulo="Campaña" meandro />
+          <EncabezadoArena
+            onVolver={p.onVolver}
+            eyebrow={t('campanas:detalle.campana')}
+            titulo={t('campanas:detalle.campana')}
+            meandro
+          />
         ) : (
           // Cargando: el título en hueco, no un «ABRIENDO» que luego cambia.
           <View style={styles.cabecera}>
@@ -68,19 +74,19 @@ export function CampanaVista(p: CampanaVistaProps) {
               onPress={p.onVolver}
               style={({ pressed }) => [styles.volver, pressed && styles.pulsado]}
               accessibilityRole="button"
-              accessibilityLabel="Volver"
+              accessibilityLabel={t('comun:volver')}
             >
               <Ionicons name="arrow-back" size={20} color={ink.ink9} />
             </Pressable>
             <Text style={styles.eyebrow} maxFontSizeMultiplier={1.35} numberOfLines={1}>
-              Campaña
+              {t('campanas:detalle.campana')}
             </Text>
             <Skeleton height={tipo.rank.lineHeight} width={220} />
             <Meandro alto={8} style={styles.meandro} />
           </View>
         )}
         {!p.cargado ? (
-          <View accessibilityRole="progressbar" accessibilityLabel="Cargando la campaña">
+          <View accessibilityRole="progressbar" accessibilityLabel={t('campanas:detalle.cargandoA11y')}>
             <Skeleton height={116} style={styles.skCard} />
             <Skeleton height={11} width={90} style={styles.skEyebrow} />
             <SkeletonRows rows={4} />
@@ -90,9 +96,13 @@ export function CampanaVista(p: CampanaVistaProps) {
             <EmptyState
               compact
               icon={p.error ? 'cloud-offline-outline' : 'flag-outline'}
-              title={p.error ? 'El sistema no responde' : 'La campaña no está'}
-              body={p.error ?? 'Puede que se haya borrado desde otro dispositivo.'}
-              action={p.error ? { label: 'Reintentar', onPress: p.onReintentar } : { label: 'Volver', onPress: p.onVolver }}
+              title={p.error ? t('comun:sistemaNoResponde') : t('campanas:detalle.noEsta')}
+              body={p.error ?? t('campanas:detalle.noEstaCuerpo')}
+              action={
+                p.error
+                  ? { label: t('comun:reintentar'), onPress: p.onReintentar }
+                  : { label: t('comun:volver'), onPress: p.onVolver }
+              }
             />
           </TarjetaArena>
         )}
@@ -101,9 +111,9 @@ export function CampanaVista(p: CampanaVistaProps) {
   }
 
   const tasks = p.tareas;
-  const done = tasks.filter((t) => t.done).length;
-  const bosses = tasks.filter((t) => t.is_boss);
-  const bossesDone = bosses.filter((t) => t.done).length;
+  const done = tasks.filter((x) => x.done).length;
+  const bosses = tasks.filter((x) => x.is_boss);
+  const bossesDone = bosses.filter((x) => x.done).length;
   const allDone = tasks.length > 0 && done === tasks.length;
   const active = d.status === 'active';
   const cleared = d.status === 'cleared';
@@ -112,18 +122,24 @@ export function CampanaVista(p: CampanaVistaProps) {
   const fecha = plazo(d.deadline);
   const vencida = active && fecha.vencida;
 
+  const despejadaEl = fechaCorta(d.cleared_at);
   const subtitulo = cleared
-    ? `Campaña despejada${fechaCorta(d.cleared_at) ? ` el ${fechaCorta(d.cleared_at)}` : ''}.`
+    ? despejadaEl
+      ? t('campanas:detalle.subDespejadaEl', { fecha: despejadaEl })
+      : t('campanas:detalle.subDespejada')
     : tasks.length === 0
-      ? `Entrena ${d.stat}. Botín al despejar: ${loot} XP.`
+      ? t('campanas:detalle.subSinTareas', { stat: d.stat, xp: loot })
       : allDone
-        ? 'Todas las tareas hechas. El botín espera.'
-        : `${done}/${tasks.length} tareas · entrena ${d.stat} · botín ${loot} XP`;
+        ? t('campanas:detalle.subTodoHecho')
+        : t('campanas:detalle.subAvance', { hechas: done, total: tasks.length, stat: d.stat, xp: loot });
 
   const jefes = {
     valor: bosses.length > 0 ? `${bossesDone}/${bosses.length}` : SIN_DATO,
-    rotulo: 'Jefes',
-    etiqueta: bosses.length > 0 ? `Jefes: ${bossesDone} de ${bosses.length}` : 'Jefes: ninguno',
+    rotulo: t('campanas:detalle.jefes'),
+    etiqueta:
+      bosses.length > 0
+        ? t('campanas:detalle.jefesA11y', { hechos: bossesDone, total: bosses.length })
+        : t('campanas:detalle.jefesNinguno'),
   };
 
   return (
@@ -131,7 +147,7 @@ export function CampanaVista(p: CampanaVistaProps) {
       <Entrada indice={0}>
         <CabeceraCampana
           titulo={d.title}
-          eyebrow={`Campaña · Rango ${d.rank}`}
+          eyebrow={t('campanas:detalle.eyebrow', { rango: d.rank })}
           subtitulo={subtitulo}
           rango={d.rank}
           onVolver={p.onVolver}
@@ -141,12 +157,16 @@ export function CampanaVista(p: CampanaVistaProps) {
       {cleared ? (
         <Entrada indice={1} style={styles.bloque}>
           {/* Despejada: el grano va solo aquí (una textura por pantalla, SISTEMA §0). */}
-          <TarjetaArena variante="grano" rotulo="Campaña despejada" meta={fechaCorta(d.cleared_at) ?? undefined}>
+          <TarjetaArena variante="grano" rotulo={t('campanas:comun.despejada')} meta={fechaCorta(d.cleared_at) ?? undefined}>
             <Text style={styles.frase}>{fraseDespejada}</Text>
             <View style={styles.franjaDentro}>
               <FranjaCifras
                 cifras={[
-                  { valor: `${done}/${tasks.length}`, rotulo: 'Tareas', etiqueta: `Tareas: ${done} de ${tasks.length}` },
+                  {
+                    valor: `${done}/${tasks.length}`,
+                    rotulo: t('campanas:detalle.tareas'),
+                    etiqueta: t('campanas:detalle.tareasA11y', { hechas: done, total: tasks.length }),
+                  },
                   jefes,
                 ]}
               />
@@ -157,18 +177,25 @@ export function CampanaVista(p: CampanaVistaProps) {
         <Entrada indice={1} style={styles.bloque}>
           <TarjetaArena
             variante={vencida ? 'trama' : 'piedra'}
-            rotulo={vencida ? 'Plazo vencido' : 'Plazo'}
-            meta={fechaCorta(d.deadline) ?? 'Sin fecha'}
+            rotulo={vencida ? t('campanas:detalle.plazoVencido') : t('campanas:detalle.plazo')}
+            meta={fechaCorta(d.deadline) ?? t('campanas:comun.sinFecha')}
           >
             <FranjaCifras
               cifras={[
                 {
                   valor: fecha.valor,
                   rotulo: fecha.label,
-                  etiqueta: d.deadline ? `${fecha.label}: ${fecha.valor}` : 'Sin fecha límite',
+                  etiqueta: d.deadline
+                    ? t('campanas:detalle.cifraA11y', { rotulo: fecha.label, valor: fecha.valor })
+                    : t('campanas:detalle.sinFechaLimite'),
                 },
                 jefes,
-                { valor: loot, rotulo: 'Botín', sufijo: ' XP', etiqueta: `Botín al despejar: ${formatoMiles(loot)} XP` },
+                {
+                  valor: loot,
+                  rotulo: t('campanas:comun.botin'),
+                  sufijo: ' XP', // i18n-ok: unidad
+                  etiqueta: t('campanas:detalle.botinA11y', { xp: formatoMiles(loot) }),
+                },
               ]}
             />
           </TarjetaArena>
@@ -179,7 +206,7 @@ export function CampanaVista(p: CampanaVistaProps) {
         <Entrada indice={2} style={styles.bloque}>
           <View style={styles.avancePie}>
             <Text style={[styles.micro, styles.mayus]}>
-              {done}/{tasks.length} tareas
+              {t('campanas:detalle.tareasCuenta', { hechas: done, total: tasks.length })}
             </Text>
             <Text style={styles.pct} maxFontSizeMultiplier={1.35}>
               {Math.round(ratio * 100)}%
@@ -189,7 +216,7 @@ export function CampanaVista(p: CampanaVistaProps) {
             ratio={ratio}
             alto={6}
             segmentos={Math.min(tasks.length, MAX_SEGMENTOS)}
-            etiqueta={`Avance de la campaña: ${done} de ${tasks.length} tareas`}
+            etiqueta={t('campanas:detalle.avanceA11y', { hechas: done, total: tasks.length })}
           />
         </Entrada>
       ) : null}
@@ -198,10 +225,15 @@ export function CampanaVista(p: CampanaVistaProps) {
         <Entrada indice={3} style={styles.bloque}>
           {/* La única inversión de la pantalla: el Button primario de dentro
               se invierte solo (SuperficieContext) y queda negro sobre blanco. */}
-          <TarjetaArena variante="invertida" remaches rotulo="Botín disponible" meta={`hasta +${formatoMiles(loot)} XP`}>
-            <Text style={styles.botinTexto}>Cada tarea y cada jefe han caído. Reclama lo que es tuyo.</Text>
+          <TarjetaArena
+            variante="invertida"
+            remaches
+            rotulo={t('campanas:detalle.botinDisponible')}
+            meta={t('campanas:detalle.hastaXp', { xp: formatoMiles(loot) })}
+          >
+            <Text style={styles.botinTexto}>{t('campanas:detalle.botinCuerpo')}</Text>
             <Button
-              title={`Reclamar botín · hasta +${loot} XP`}
+              title={t('campanas:detalle.reclamar', { xp: loot })}
               size="lg"
               onPress={p.onReclamar}
               loading={p.ocupada}
@@ -214,53 +246,53 @@ export function CampanaVista(p: CampanaVistaProps) {
 
       <Entrada indice={4}>
         <Section
-          title="Tareas"
+          title={t('campanas:detalle.tareas')}
           meta={tasks.length > 0 ? `${done}/${tasks.length}` : undefined}
-          action={active && tasks.length > 0 ? { label: 'Añadir', icon: 'add', onPress: p.onNuevaTarea } : undefined}
+          action={active && tasks.length > 0 ? { label: t('campanas:detalle.anadir'), icon: 'add', onPress: p.onNuevaTarea } : undefined}
         >
           {tasks.length === 0 ? (
             <TarjetaArena variante="contorno">
               <EmptyState
                 compact
                 icon="list-outline"
-                title="Sin tareas todavía"
-                body="Desglosa la campaña: cada tarea es un paso y cada hito, un jefe que paga el doble."
-                action={active ? { label: 'Añadir la primera', onPress: p.onNuevaTarea } : undefined}
+                title={t('campanas:detalle.sinTareas')}
+                body={t('campanas:detalle.sinTareasCuerpo')}
+                action={active ? { label: t('campanas:detalle.anadirPrimera'), onPress: p.onNuevaTarea } : undefined}
               />
             </TarjetaArena>
           ) : (
             <View>
-              {tasks.map((t, i) => {
+              {tasks.map((tarea, i) => {
                 const fila = (
                   <FilaTarea
-                    tarea={t}
-                    primera={i === 0 || (t.is_boss && !t.done)}
-                    marcando={p.marcando === t.id}
-                    onPress={() => p.onTarea(t)}
-                    onLongPress={() => p.onBorrarTarea(t)}
+                    tarea={tarea}
+                    primera={i === 0 || (tarea.is_boss && !tarea.done)}
+                    marcando={p.marcando === tarea.id}
+                    onPress={() => p.onTarea(tarea)}
+                    onLongPress={() => p.onBorrarTarea(tarea)}
                   />
                 );
                 // El jefe final pendiente se siente jefe: losa de piedra con
                 // marco 2 y la galea grande. Caído, vuelve a la lista.
-                return t.is_boss && !t.done ? (
-                  <TarjetaArena key={t.id} variante="piedra" marco={2} style={styles.jefe}>
+                return tarea.is_boss && !tarea.done ? (
+                  <TarjetaArena key={tarea.id} variante="piedra" marco={2} style={styles.jefe}>
                     {fila}
                   </TarjetaArena>
                 ) : (
-                  <View key={t.id}>{fila}</View>
+                  <View key={tarea.id}>{fila}</View>
                 );
               })}
             </View>
           )}
           {tasks.length > 0 && active ? (
-            <Text style={styles.nota}>Toca una tarea para darla por hecha. Mantén pulsada para eliminarla.</Text>
+            <Text style={styles.nota}>{t('campanas:detalle.nota')}</Text>
           ) : null}
         </Section>
       </Entrada>
 
       <Entrada indice={5}>
         <Button
-          title={cleared ? 'Borrar la campaña' : 'Abandonar la campaña'}
+          title={cleared ? t('campanas:detalle.borrar') : t('campanas:detalle.abandonar')}
           variant="danger"
           icon="trash-outline"
           onPress={p.onBorrarCampana}
@@ -272,7 +304,7 @@ export function CampanaVista(p: CampanaVistaProps) {
 
 /** Una tarea: Check, título y XP. El jefe final lleva la galea y su placa. */
 function FilaTarea({
-  tarea: t,
+  tarea,
   primera,
   marcando,
   onPress,
@@ -284,33 +316,47 @@ function FilaTarea({
   onPress: () => void;
   onLongPress: () => void;
 }) {
-  const xp = dungeonTaskXp(t.difficulty, t.is_boss);
+  const xp = dungeonTaskXp(tarea.difficulty, tarea.is_boss);
   return (
     <Row
       first={primera}
-      leading={<Check checked={t.done} busy={marcando} />}
-      title={t.title}
-      titleAddon={t.is_boss ? <Galea kind="casco" size={t.done ? 20 : 32} color={t.done ? ink.ink6 : ink.ink10} /> : undefined}
-      done={t.done}
+      leading={<Check checked={tarea.done} busy={marcando} />}
+      title={tarea.title}
+      titleAddon={
+        tarea.is_boss ? (
+          <Galea kind="casco" size={tarea.done ? 20 : 32} color={tarea.done ? ink.ink6 : ink.ink10} />
+        ) : undefined
+      }
+      done={tarea.done}
       detail={
         <View style={styles.tareaMeta}>
-          {t.is_boss ? <Tag tone="dim">Jefe final</Tag> : null}
-          <Text style={styles.micro}>{DIFFICULTY_LABEL[t.difficulty]}</Text>
+          {tarea.is_boss ? <Tag tone="dim">{t('campanas:detalle.jefeFinal')}</Tag> : null}
+          <Text style={styles.micro}>{DIFFICULTY_LABEL[tarea.difficulty]}</Text>
         </View>
       }
       trailing={
-        <Text style={[styles.xp, t.done && styles.xpHecha]} maxFontSizeMultiplier={1.35}>
+        <Text style={[styles.xp, tarea.done && styles.xpHecha]} maxFontSizeMultiplier={1.35}>
           +{xp}
+          {/* i18n-ok: unidad */}
           <Text style={styles.xpUnidad}> XP</Text>
         </Text>
       }
       onPress={onPress}
       onLongPress={onLongPress}
-      accessibilityLongPressLabel="Borrar tarea"
-      disabled={t.done}
+      accessibilityLongPressLabel={t('campanas:detalle.borrarTarea')}
+      disabled={tarea.done}
       accessibilityRole="checkbox"
-      accessibilityState={{ checked: t.done, disabled: t.done }}
-      accessibilityLabel={`${t.title}${t.is_boss ? ', jefe final' : ''}${t.done ? ', hecha' : `, pendiente, ${xp} XP`}. Mantén pulsado para eliminarla.`}
+      accessibilityState={{ checked: tarea.done, disabled: tarea.done }}
+      accessibilityLabel={t(
+        tarea.is_boss
+          ? tarea.done
+            ? 'campanas:detalle.jefeHechoA11y'
+            : 'campanas:detalle.jefePendienteA11y'
+          : tarea.done
+            ? 'campanas:detalle.tareaHechaA11y'
+            : 'campanas:detalle.tareaPendienteA11y',
+        { titulo: tarea.title, xp },
+      )}
     />
   );
 }
@@ -343,7 +389,7 @@ function CabeceraCampana({
         onPress={onVolver}
         style={({ pressed }) => [styles.volver, pressed && styles.pulsado]}
         accessibilityRole="button"
-        accessibilityLabel="Volver"
+        accessibilityLabel={t('comun:volver')}
       >
         <Ionicons name="arrow-back" size={20} color={ink.ink9} />
       </Pressable>
@@ -356,7 +402,7 @@ function CabeceraCampana({
             {largo <= TITULO_LARGO ? titulo.toUpperCase() : titulo}
           </Text>
         </View>
-        <Estandarte letra={rango} ancho={72} grosor={grosorDeRango(rango)} accessibilityLabel={`Rango ${rango}`} />
+        <Estandarte letra={rango} ancho={72} grosor={grosorDeRango(rango)} accessibilityLabel={t('campanas:comun.rangoA11y', { rango })} />
       </View>
       <Text style={styles.subtitulo} maxFontSizeMultiplier={1.35}>
         {subtitulo}

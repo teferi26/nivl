@@ -31,6 +31,7 @@ import {
 import { Check, Chip, ChipWrap, EmptyState, Row, Screen, Section, Tag } from '@/components/ui';
 import { ink, space, stroke, type as tipo } from '@/design/tokens';
 import { useAnchoUtil, useSizeClass } from '@/design/useSizeClass';
+import { t } from '@/i18n';
 import type { PlanConBloques } from '@/lib/dayplan';
 import { hhmm, horaAMinutos, minutosAhora } from '@/lib/plan';
 import type { CalendarEvent, DungeonTask, Quest } from '@/lib/types';
@@ -83,11 +84,8 @@ export interface AgendaVistaProps {
   };
 }
 
-const VISTAS: { id: ViewMode; label: string; unidad: string }[] = [
-  { id: 'dia', label: 'Día', unidad: 'Día' },
-  { id: 'semana', label: 'Semana', unidad: 'Semana' },
-  { id: 'mes', label: 'Mes', unidad: 'Mes' },
-];
+/** Los modos del selector; sus textos salen de `agenda:vista.modo.*` al pintar. */
+const VISTAS: ViewMode[] = ['dia', 'semana', 'mes'];
 
 /** Con el texto por encima de esto, todo a una columna. */
 const ESCALA_DOS_COLUMNAS = 1.35;
@@ -129,7 +127,6 @@ export function AgendaVista({
   const c = contenidoDe(datos, dia, hoy);
   const bloques = plan?.bloques.length ?? 0;
   const vacio = c.eventos.length + c.plazos.length + c.misiones.length + bloques === 0;
-  const unidad = VISTAS.find((v) => v.id === modo)?.unidad ?? 'Día';
   const leido = rangoLeido(modo, dia);
 
   const calendario =
@@ -169,7 +166,7 @@ export function AgendaVista({
           titulo={tituloAgenda(modo, dia)}
           subtitulo={listo && !error ? subtituloDia(c, bloques, dia, hoy) : undefined}
           onVolver={onVolver}
-          accion={{ icono: 'add', etiqueta: 'Nuevo evento', onPress: acciones.onNuevo }}
+          accion={{ icono: 'add', etiqueta: t('agenda:vista.nuevoEvento'), onPress: acciones.onNuevo }}
           meandro
         />
       </Entrada>
@@ -179,23 +176,29 @@ export function AgendaVista({
           <ChipWrap>
             {VISTAS.map((v) => (
               <Chip
-                key={v.id}
+                key={v}
                 small
-                label={v.label}
-                selected={modo === v.id}
-                onPress={() => acciones.onModo(v.id)}
-                accessibilityLabel={`Vista por ${v.label.toLowerCase()}`}
+                label={t(`agenda:vista.modo.${v}`)}
+                selected={modo === v}
+                onPress={() => acciones.onModo(v)}
+                accessibilityLabel={t(`agenda:vista.vistaPor.${v}`)}
               />
             ))}
           </ChipWrap>
           {dia !== hoy ? (
-            <Chip small icon="today-outline" label="Hoy" onPress={() => acciones.onDia(hoy)} accessibilityLabel="Volver a hoy" />
+            <Chip
+              small
+              icon="today-outline"
+              label={t('agenda:vista.hoy')}
+              onPress={() => acciones.onDia(hoy)}
+              accessibilityLabel={t('agenda:vista.volverAHoy')}
+            />
           ) : null}
         </View>
         <View style={styles.nav}>
           <BotonArena
             icono="chevron-back"
-            etiqueta={`${unidad} anterior`}
+            etiqueta={t(`agenda:vista.anterior.${modo}`)}
             onPress={() => acciones.onDia(moverAgenda(modo, dia, -1))}
           />
           <Text style={styles.rango} numberOfLines={1} maxFontSizeMultiplier={1.2} accessibilityLabel={leido}>
@@ -203,7 +206,7 @@ export function AgendaVista({
           </Text>
           <BotonArena
             icono="chevron-forward"
-            etiqueta={`${unidad} siguiente`}
+            etiqueta={t(`agenda:vista.siguiente.${modo}`)}
             onPress={() => acciones.onDia(moverAgenda(modo, dia, 1))}
           />
         </View>
@@ -265,7 +268,7 @@ function DetalleDia({
   if (!listo) {
     return (
       <CargaArena
-        etiqueta="Cargando tu agenda"
+        etiqueta={t('agenda:vista.cargandoA11y')}
         formas={['franja', 'rotulo', 'filas', 'rotulo', 'tarjeta']}
         style={styles.bloque}
       />
@@ -286,18 +289,18 @@ function DetalleDia({
         <TarjetaArena variante="contorno" style={styles.bloque}>
           <EmptyState
             icon="calendar-outline"
-            title={futuro ? 'Nada programado' : 'Un día en blanco'}
+            title={futuro ? t('agenda:vista.nadaProgramado') : t('agenda:vista.diaEnBlanco')}
             body={
               futuro
                 ? esPro === true
-                  ? 'Pídele al coach que planifique el día o añade un evento. Las misiones programadas aparecen aquí.'
-                  : 'Añade un evento. Las misiones programadas aparecen aquí.'
-                : 'El sistema no tiene nada registrado para ese día.'
+                  ? t('agenda:vista.vacioCuerpoPro')
+                  : t('agenda:vista.vacioCuerpo')
+                : t('agenda:vista.vacioPasado')
             }
             // En la vista por día no hay día invertido: la inversión es esta.
             action={
               futuro
-                ? { label: 'Añadir evento', onPress: acciones.onNuevo, variant: modo === 'dia' ? 'solid' : 'outline' }
+                ? { label: t('agenda:vista.anadirEvento'), onPress: acciones.onNuevo, variant: modo === 'dia' ? 'solid' : 'outline' }
                 : undefined
             }
           />
@@ -314,15 +317,15 @@ function DetalleDia({
     <Entrada indice={3} style={styles.franja}>
       <FranjaCifras
         cifras={[
-          { valor: c.eventos.length, rotulo: 'Eventos' },
-          { valor: items.length, rotulo: 'Con hora', etiqueta: `Con hora: ${items.length}` },
+          { valor: c.eventos.length, rotulo: t('agenda:vista.eventos') },
+          { valor: items.length, rotulo: t('agenda:vista.conHora'), etiqueta: t('agenda:vista.conHoraA11y', { n: items.length }) },
           c.misiones.length > 0
             ? {
                 valor: `${misionesHechas}/${c.misiones.length}`,
-                rotulo: 'Misiones',
-                etiqueta: `Misiones: ${misionesHechas} de ${c.misiones.length} hechas`,
+                rotulo: t('agenda:vista.misiones'),
+                etiqueta: t('agenda:vista.misionesA11y', { hechas: misionesHechas, total: c.misiones.length }),
               }
-            : { valor: 0, rotulo: 'Misiones' },
+            : { valor: 0, rotulo: t('agenda:vista.misiones') },
         ]}
       />
     </Entrada>
@@ -330,7 +333,7 @@ function DetalleDia({
 
   const seccionEventos =
     eventos.length > 0 ? (
-      <Section title="Eventos" meta={`${eventos.length}`}>
+      <Section title={t('agenda:vista.eventos')} meta={`${eventos.length}`}>
         <TarjetaArena variante="piedra" padded={false} style={styles.lista}>
           {eventos.map((e, i) => {
             const min = horaAMinutos(e.time);
@@ -344,7 +347,7 @@ function DetalleDia({
                 trailing={
                   min === null ? (
                     <Text style={styles.todoElDia} maxFontSizeMultiplier={1.35}>
-                      Todo el día
+                      {t('agenda:vista.todoElDia')}
                     </Text>
                   ) : (
                     <Text style={styles.hora} maxFontSizeMultiplier={1.2}>
@@ -353,26 +356,30 @@ function DetalleDia({
                   )
                 }
                 onPress={() => acciones.onDetalle(e)}
-                accessibilityLabel={`${e.title}, ${min === null ? 'todo el día' : `a las ${hhmm(min)}`}. Toca para ver el detalle.`}
+                accessibilityLabel={
+                  min === null
+                    ? t('agenda:vista.eventoA11yTodoElDia', { titulo: e.title })
+                    : t('agenda:vista.eventoA11yHora', { titulo: e.title, hora: hhmm(min) })
+                }
               />
             );
           })}
         </TarjetaArena>
         <Text style={styles.nota} maxFontSizeMultiplier={1.35}>
-          Toca un evento para ver su detalle.
+          {t('agenda:vista.tocaEvento')}
         </Text>
       </Section>
     ) : null;
 
   const seccionHoras = (
-    <Section title="Por horas" meta={items.length > 0 ? `${items.length}` : undefined}>
+    <Section title={t('agenda:vista.porHoras')} meta={items.length > 0 ? `${items.length}` : undefined}>
       {items.length === 0 ? (
         <Text style={styles.nota} maxFontSizeMultiplier={1.35}>
           {futuro
             ? esPro === true
-              ? 'Nada a una hora concreta. Pídele al coach que planifique el día, o añade un evento con hora.'
-              : 'Nada a una hora concreta. Añade un evento con hora y se pinta aquí.'
-            : 'Ese día no tuvo plan por horas.'}
+              ? t('agenda:vista.sinHoraPro')
+              : t('agenda:vista.sinHora')
+            : t('agenda:vista.sinHoraPasado')}
         </Text>
       ) : (
         <LineaDeTiempo
@@ -391,28 +398,37 @@ function DetalleDia({
   const seccionMisiones =
     c.plazos.length > 0 || c.misiones.length > 0 ? (
       <Section
-        title="Misiones y plazos"
+        title={t('agenda:vista.misionesYPlazos')}
         tone={venceHoy && c.plazos.length > 0 ? 'alerta' : undefined}
         meta={c.misiones.length > 0 ? `${misionesHechas}/${c.misiones.length}` : `${c.plazos.length}`}
       >
         <TarjetaArena variante="piedra" padded={false} style={styles.lista}>
-          {c.plazos.map((t, i) => (
+          {c.plazos.map((p, i) => (
             <Row
-              key={t.id}
+              key={p.id}
               first={i === 0}
               leading={<View style={styles.cuadro} />}
-              title={t.title}
-              detail={t.is_boss ? 'Jefe final de campaña.' : 'Tarea de campaña.'}
+              title={p.title}
+              detail={p.is_boss ? t('agenda:vista.jefeFinalDetalle') : t('agenda:vista.tareaDetalle')}
               trailing={
                 venceHoy ? (
-                  <Tag tone="alerta">Vence hoy</Tag>
-                ) : t.is_boss ? (
-                  <Tag tone="dim">Jefe</Tag>
+                  <Tag tone="alerta">{t('agenda:vista.venceHoy')}</Tag>
+                ) : p.is_boss ? (
+                  <Tag tone="dim">{t('agenda:vista.jefe')}</Tag>
                 ) : (
-                  <Text style={styles.todoElDia}>Plazo</Text>
+                  <Text style={styles.todoElDia}>{t('agenda:vista.plazo')}</Text>
                 )
               }
-              accessibilityLabel={`${t.title}, ${t.is_boss ? 'jefe final' : 'tarea'} de campaña, ${venceHoy ? 'vence hoy' : 'vence ese día'}.`}
+              accessibilityLabel={t(
+                p.is_boss
+                  ? venceHoy
+                    ? 'agenda:vista.jefeVenceHoyA11y'
+                    : 'agenda:vista.jefeVenceA11y'
+                  : venceHoy
+                    ? 'agenda:vista.tareaVenceHoyA11y'
+                    : 'agenda:vista.tareaVenceA11y',
+                { titulo: p.title },
+              )}
             />
           ))}
           {c.misiones.map((q, i) => {
@@ -424,14 +440,14 @@ function DetalleDia({
                 leading={<Check checked={hecha} size={24} />}
                 title={q.title}
                 done={hecha}
-                detail={`Misión · ${q.stat}`}
-                trailing={q.is_penalty && !hecha ? <Tag tone="alerta">Penalización</Tag> : undefined}
+                detail={t('agenda:vista.misionDetalle', { stat: q.stat })}
+                trailing={q.is_penalty && !hecha ? <Tag tone="alerta">{t('agenda:vista.penalizacion')}</Tag> : undefined}
               />
             );
           })}
         </TarjetaArena>
         <Text style={styles.nota} maxFontSizeMultiplier={1.35}>
-          Las misiones se completan desde Hoy.
+          {t('agenda:vista.seCompletanEnHoy')}
         </Text>
       </Section>
     ) : null;

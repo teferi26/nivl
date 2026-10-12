@@ -15,6 +15,8 @@ import { Barra, EncabezadoArena, Entrada, FranjaCifras, Meandro, TarjetaArena, f
 import { Button, EmptyState, Screen, Section, Skeleton, Tag } from '@/components/ui';
 import { ink, space, stroke, type as tipo } from '@/design/tokens';
 import { useAnchoUtil } from '@/design/useSizeClass';
+import { t } from '@/i18n';
+import { mayus } from '@/i18n/formato';
 import { DUNGEON_CLEAR_XP } from '@/lib/game';
 import type { Dungeon } from '@/lib/types';
 import { Estandarte, grosorDeRango } from './Estandarte';
@@ -54,7 +56,8 @@ export function CampanasVista(p: CampanasVistaProps) {
   const listo = p.cargado && !caido;
   const dosColumnas = ancho >= ANCHO_DOS_COLUMNAS;
   // Con el perfil «general» el título ya es «Campañas»: el eyebrow sobra.
-  const eyebrow = p.titulo != null && p.titulo.toLowerCase() === 'campañas' ? undefined : 'Campañas';
+  const campanas = t('comun:destino.campanas');
+  const eyebrow = p.titulo != null && p.titulo.toLowerCase() === campanas.toLowerCase() ? undefined : campanas;
   // Sin campañas no hay nada que contar: la franja de 0 · 0 · 0 no se pinta.
   const conFranja = p.campanas.length > 0;
   // Una recarga ha fallado pero hay campañas de antes: se enseñan con aviso.
@@ -73,7 +76,7 @@ export function CampanasVista(p: CampanasVistaProps) {
             meandro
             accion={{
               icono: 'flag-outline',
-              etiqueta: 'Abrir una campaña nueva',
+              etiqueta: t('campanas:lista.abrirNueva'),
               onPress: p.onNueva,
               // La inversión: con el vacío a la vista, la lleva su botón.
               solida: listo && abiertas.length > 0,
@@ -83,7 +86,7 @@ export function CampanasVista(p: CampanasVistaProps) {
       </Entrada>
 
       {!p.cargado ? (
-        <View accessibilityRole="progressbar" accessibilityLabel="Cargando tus campañas">
+        <View accessibilityRole="progressbar" accessibilityLabel={t('campanas:lista.cargandoA11y')}>
           <Skeleton height={52} style={styles.skFranja} />
           <Skeleton height={11} width={90} style={styles.skEyebrow} />
           <Skeleton height={132} style={styles.skCard} />
@@ -96,9 +99,9 @@ export function CampanasVista(p: CampanasVistaProps) {
           <EmptyState
             compact
             icon="cloud-offline-outline"
-            title="El sistema no responde"
+            title={t('comun:sistemaNoResponde')}
             body={p.error ?? undefined}
-            action={{ label: 'Reintentar', onPress: p.onReintentar }}
+            action={{ label: t('comun:reintentar'), onPress: p.onReintentar }}
           />
         </TarjetaArena>
       ) : null}
@@ -109,16 +112,16 @@ export function CampanasVista(p: CampanasVistaProps) {
             <View style={styles.aviso} accessibilityRole="alert">
               <Ionicons name="cloud-offline-outline" size={14} color={ink.ink6} />
               <Text style={[styles.micro, styles.avisoTexto]} maxFontSizeMultiplier={1.35} numberOfLines={2}>
-                La última recarga ha fallado: puede que no esté al día.
+                {t('campanas:lista.recargaFallida')}
               </Text>
               <Pressable
                 onPress={p.onReintentar}
                 accessibilityRole="button"
-                accessibilityLabel="Reintentar la carga"
+                accessibilityLabel={t('campanas:lista.reintentarA11y')}
                 hitSlop={12}
               >
                 <Text style={[styles.micro, styles.avisoAccion]} maxFontSizeMultiplier={1.35}>
-                  REINTENTAR
+                  {mayus(t('comun:reintentar'))}
                 </Text>
               </Pressable>
             </View>
@@ -128,20 +131,20 @@ export function CampanasVista(p: CampanasVistaProps) {
             <Entrada indice={1} style={styles.franja}>
               <FranjaCifras
                 cifras={[
-                  { valor: abiertas.length, rotulo: 'Abiertas' },
-                  { valor: despejadas.length, rotulo: 'Despejadas' },
+                  { valor: abiertas.length, rotulo: t('campanas:lista.abiertas') },
+                  { valor: despejadas.length, rotulo: t('campanas:lista.despejadas') },
                   {
                     valor: botinTotal,
-                    rotulo: 'Botín',
-                    sufijo: ' XP',
-                    etiqueta: `Botín ganado: ${formatoMiles(botinTotal)} XP`,
+                    rotulo: t('campanas:comun.botin'),
+                    sufijo: ' XP', // i18n-ok: unidad
+                    etiqueta: t('campanas:lista.botinA11y', { xp: formatoMiles(botinTotal) }),
                   },
                 ]}
               />
             </Entrada>
           ) : null}
 
-          <Section title="Abiertas" meta={abiertas.length > 0 ? `${abiertas.length}` : undefined}>
+          <Section title={t('campanas:lista.abiertas')} meta={abiertas.length > 0 ? `${abiertas.length}` : undefined}>
             {abiertas.length === 0 ? (
               <Entrada indice={2}>
                 <TarjetaArena variante="contorno" remaches>
@@ -149,13 +152,10 @@ export function CampanasVista(p: CampanasVistaProps) {
                   <View style={styles.vacio}>
                     <Estandarte letra="" ancho={72} grosor={1} />
                     <Text style={styles.vacioTitulo} accessibilityRole="header" maxFontSizeMultiplier={1.35}>
-                      Ninguna campaña abierta
+                      {t('campanas:lista.vacioTitulo')}
                     </Text>
-                    <Text style={styles.vacioTexto}>
-                      Cada proyecto u objetivo grande es una campaña: tareas, un jefe final y una fecha. Al despejarla hay
-                      botín.
-                    </Text>
-                    <Button title="Abrir la primera" icon="flag-outline" onPress={p.onNueva} style={styles.vacioBoton} />
+                    <Text style={styles.vacioTexto}>{t('campanas:lista.vacioCuerpo')}</Text>
+                    <Button title={t('campanas:lista.abrirPrimera')} icon="flag-outline" onPress={p.onNueva} style={styles.vacioBoton} />
                   </View>
                 </TarjetaArena>
               </Entrada>
@@ -182,7 +182,7 @@ export function CampanasVista(p: CampanasVistaProps) {
           {despejadas.length > 0 ? (
             <Entrada indice={3}>
               <Section
-                title="Despejadas"
+                title={t('campanas:lista.despejadas')}
                 meta={`${despejadas.length} · ${formatoMiles(botinTotal)} XP`}
                 tone="logro"
               >
@@ -221,7 +221,17 @@ function LosaCampana({ campana: d, onPress }: { campana: CampanaResumen; onPress
       variante="piedra"
       zocalo
       onPress={onPress}
-      accessibilityLabel={`Abrir la campaña ${d.title}, rango ${d.rank}. ${d.doneCount} de ${d.total} tareas${plazo ? `, ${plazo.texto}` : ''}.`}
+      accessibilityLabel={
+        plazo
+          ? t('campanas:lista.losaPlazoA11y', {
+              titulo: d.title,
+              rango: d.rank,
+              hechas: d.doneCount,
+              total: d.total,
+              plazo: plazo.texto,
+            })
+          : t('campanas:lista.losaA11y', { titulo: d.title, rango: d.rank, hechas: d.doneCount, total: d.total })
+      }
     >
       <View style={styles.losaFila}>
         <Estandarte letra={d.rank} ancho={40} grosor={grosorDeRango(d.rank)} />
@@ -231,7 +241,7 @@ function LosaCampana({ campana: d, onPress }: { campana: CampanaResumen; onPress
           </Text>
           <View style={styles.losaMeta}>
             <Text style={styles.micro}>
-              {d.doneCount}/{d.total} tareas · {d.stat}
+              {t('campanas:lista.tareasStat', { hechas: d.doneCount, total: d.total, stat: d.stat })}
             </Text>
             {plazo ? (
               plazo.urgente ? (
@@ -248,12 +258,12 @@ function LosaCampana({ campana: d, onPress }: { campana: CampanaResumen; onPress
         <Ionicons name="chevron-forward" size={18} color={ink.ink6} />
       </View>
       <View style={styles.avance}>
-        <Barra ratio={ratio} alto={4} etiqueta={`Avance de la campaña ${d.title}`} />
+        <Barra ratio={ratio} alto={4} etiqueta={t('campanas:lista.avanceA11y', { titulo: d.title })} />
         <View style={styles.avancePie}>
           <Text style={styles.pct} maxFontSizeMultiplier={1.35}>
             {pct}%
           </Text>
-          <Text style={[styles.micro, styles.mayus]}>Botín {formatoMiles(botin)} XP</Text>
+          <Text style={[styles.micro, styles.mayus]}>{t('campanas:lista.botinXp', { xp: formatoMiles(botin) })}</Text>
         </View>
       </View>
     </TarjetaArena>
@@ -267,7 +277,7 @@ function FilaDespejada({ campana: d, primera, onPress }: { campana: CampanaResum
     <Pressable
       onPress={onPress}
       accessibilityRole="button"
-      accessibilityLabel={`${d.title}, despejada. Botín: ${formatoMiles(botin)} XP.`}
+      accessibilityLabel={t('campanas:lista.despejadaA11y', { titulo: d.title, xp: formatoMiles(botin) })}
       style={({ pressed }) => [styles.fila, !primera && styles.filaRegla, pressed && styles.pulsada]}
     >
       <Estandarte letra={d.rank} ancho={40} grosor={1} />
@@ -275,10 +285,13 @@ function FilaDespejada({ campana: d, primera, onPress }: { campana: CampanaResum
         <Text style={styles.filaTitulo} numberOfLines={2}>
           {d.title}
         </Text>
-        {fechaCorta(d.cleared_at) ? <Text style={styles.micro}>Despejada el {fechaCorta(d.cleared_at)}</Text> : null}
+        {fechaCorta(d.cleared_at) ? (
+          <Text style={styles.micro}>{t('campanas:lista.despejadaEl', { fecha: fechaCorta(d.cleared_at) })}</Text>
+        ) : null}
       </View>
       <Text style={styles.botinCobrado} maxFontSizeMultiplier={1.35}>
         +{formatoMiles(botin)}
+        {/* i18n-ok: unidad */}
         <Text style={styles.botinXp}> XP</Text>
       </Text>
     </Pressable>

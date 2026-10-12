@@ -1,8 +1,9 @@
 // NIVL · Agenda: lo que se deriva de los datos (puro, con tests). Sin red y
 // sin Supabase: lo usan AgendaVista, el Calendario, las hojas y la galería.
 //
-// `dates.ts` solo se consume: los nombres de los días y los meses van aquí en
-// tablas propias para no depender de `toLocaleDateString` en los títulos.
+// `dates.ts` solo se consume. Los días y los meses cortos salen de
+// `@/i18n/formato` (nombreDia, fechaCorta); los meses largos, del catálogo
+// (`agenda:derivar.meses`), para no depender de `toLocaleDateString`.
 
 import { questsScheduledOn } from '@/lib/closing';
 import type { PlanConBloques } from '@/lib/dayplan';
@@ -10,16 +11,17 @@ import { addDays, dateKey, nombreDia, relativoDe, weekdayOfKey } from '@/lib/dat
 import { horaAMinutos, KIND_ICON } from '@/lib/plan';
 import type { CalendarEvent, DungeonTask, Quest } from '@/lib/types';
 import type { ItemAgenda } from '@/components/LineaDeTiempo';
+import { t } from '@/i18n';
+import { capital, fechaCorta, mayus, nombreDia as nombreDiaSemana } from '@/i18n/formato';
 
 export type ModoAgenda = 'dia' | 'semana' | 'mes';
 
-export const LETRAS_DIA = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
-const DIAS = ['lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado', 'domingo'];
-const MESES = [
-  'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
-  'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre',
-];
-const MESES_CORTOS = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+/** Las letras de lunes a domingo («L», «M», «X»…), al pintar. */
+export function letrasDia(): string[] {
+  return Array.from({ length: 7 }, (_, i) => nombreDiaSemana(i, 'letra'));
+}
+
+const CLAVES_MES = ['m1', 'm2', 'm3', 'm4', 'm5', 'm6', 'm7', 'm8', 'm9', 'm10', 'm11', 'm12'] as const;
 
 /** Duración que se le supone a un evento con hora (no guarda el final). */
 export const DURACION_EVENTO = 45;
@@ -27,7 +29,13 @@ export const DURACION_EVENTO = 45;
 const mesDe = (key: string) => Number(key.slice(5, 7));
 const diaDe = (key: string) => Number(key.slice(8));
 const anioDe = (key: string) => Number(key.slice(0, 4));
-const mayus = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+/** «octubre»: el mes largo de `key`, en minúscula. */
+const mesLargo = (key: string) => {
+  const clave = CLAVES_MES[mesDe(key) - 1];
+  return clave ? t(`agenda:derivar.meses.${clave}`) : '';
+};
+/** «miércoles»: el día de la semana de `key`. */
+const diaSemana = (key: string) => nombreDiaSemana(weekdayOfKey(key) - 1);
 
 /** El lunes de la semana de `key`. */
 export function inicioSemana(key: string): string {
@@ -49,18 +57,18 @@ export function semanaIso(key: string): number {
 
 /** «Miércoles 7». */
 export function diaCorto(key: string): string {
-  return `${mayus(DIAS[weekdayOfKey(key) - 1] ?? '')} ${diaDe(key)}`;
+  return `${capital(diaSemana(key))} ${diaDe(key)}`;
 }
 
 /** Eyebrow del encabezado: «Octubre 2026». */
 export function mesYAnio(key: string): string {
-  return `${mayus(MESES[mesDe(key) - 1] ?? '')} ${anioDe(key)}`;
+  return `${capital(mesLargo(key))} ${anioDe(key)}`;
 }
 
 /** Título grabado: «Miércoles 7», «Semana 41» u «Octubre» (EncabezadoArena lo pasa a mayúsculas). */
 export function tituloAgenda(modo: ModoAgenda, key: string): string {
-  if (modo === 'semana') return `Semana ${semanaIso(inicioSemana(key))}`;
-  if (modo === 'mes') return mayus(MESES[mesDe(key) - 1] ?? '');
+  if (modo === 'semana') return t('agenda:derivar.semanaN', { n: semanaIso(inicioSemana(key)) });
+  if (modo === 'mes') return capital(mesLargo(key));
   return diaCorto(key);
 }
 
@@ -69,23 +77,27 @@ export function tituloAgenda(modo: ModoAgenda, key: string): string {
  * «29 SEP A 5 OCT» si cruza de mes) y «OCTUBRE 2026». Sin guiones.
  */
 export function rangoAgenda(modo: ModoAgenda, key: string): string {
-  if (modo === 'mes') return `${MESES[mesDe(key) - 1]} ${anioDe(key)}`.toUpperCase();
-  if (modo === 'dia') return `${diaDe(key)} ${MESES_CORTOS[mesDe(key) - 1]} ${anioDe(key)}`.toUpperCase();
+  if (modo === 'mes') return mayus(`${mesLargo(key)} ${anioDe(key)}`);
+  if (modo === 'dia') return mayus(`${fechaCorta(key)} ${anioDe(key)}`);
   const ini = inicioSemana(key);
   const fin = addDays(ini, 6);
-  const m1 = MESES_CORTOS[mesDe(ini) - 1];
-  const m2 = MESES_CORTOS[mesDe(fin) - 1];
-  const texto = m1 === m2 ? `${diaDe(ini)} a ${diaDe(fin)} ${m2}` : `${diaDe(ini)} ${m1} a ${diaDe(fin)} ${m2}`;
-  return texto.toUpperCase();
+  const mismoMes = mesDe(ini) === mesDe(fin);
+  return mayus(t('agenda:derivar.rangoSemana', { ini: mismoMes ? diaDe(ini) : fechaCorta(ini), fin: fechaCorta(fin) }));
 }
 
 /** Lo que oye el lector en cada flecha y en el rango. */
 export function rangoLeido(modo: ModoAgenda, key: string): string {
-  if (modo === 'mes') return `${MESES[mesDe(key) - 1]} de ${anioDe(key)}`;
+  if (modo === 'mes') return t('agenda:derivar.mesDeAnio', { mes: mesLargo(key), anio: anioDe(key) });
   if (modo === 'dia') return nombreDia(key);
   const ini = inicioSemana(key);
   const fin = addDays(ini, 6);
-  return `Semana ${semanaIso(ini)}, del ${diaDe(ini)} de ${MESES[mesDe(ini) - 1]} al ${diaDe(fin)} de ${MESES[mesDe(fin) - 1]}`;
+  return t('agenda:derivar.semanaLeida', {
+    n: semanaIso(ini),
+    dia1: diaDe(ini),
+    mes1: mesLargo(ini),
+    dia2: diaDe(fin),
+    mes2: mesLargo(fin),
+  });
 }
 
 /** Siete días de la semana de `key`, de lunes a domingo. */
@@ -132,7 +144,7 @@ export function contenidoDe(datos: DatosAgenda, dia: string, hoy: string): Conte
     // Las penalizaciones solo se enseñan el día de hoy.
     misiones: questsScheduledOn(datos.quests, dia).filter((q) => !q.is_penalty || dia === hoy),
     eventos: datos.events.filter((e) => e.date === dia),
-    plazos: datos.dueTasks.filter((t) => t.due_date === dia),
+    plazos: datos.dueTasks.filter((x) => x.due_date === dia),
   };
 }
 
@@ -186,20 +198,16 @@ export function tramosDe(eventos: CalendarEvent[]): { id: string; inicio: number
     .map((m, i) => ({ id: `t${i}`, inicio: m, fin: m + DURACION_EVENTO }));
 }
 
-export function plural(n: number, uno: string, varios: string): string {
-  return `${n} ${n === 1 ? uno : varios}`;
-}
-
 /** «Hoy · 2 bloques del plan · 1 evento», o el vacío. */
 export function subtituloDia(c: ContenidoDia, bloques: number, dia: string, hoy: string): string {
   const partes: string[] = [];
-  if (bloques) partes.push(plural(bloques, 'bloque del plan', 'bloques del plan'));
-  if (c.eventos.length) partes.push(plural(c.eventos.length, 'evento', 'eventos'));
-  if (c.plazos.length) partes.push(plural(c.plazos.length, 'plazo', 'plazos'));
-  if (c.misiones.length) partes.push(plural(c.misiones.length, 'misión', 'misiones'));
+  if (bloques) partes.push(t('agenda:derivar.bloques', { count: bloques }));
+  if (c.eventos.length) partes.push(t('agenda:derivar.eventos', { count: c.eventos.length }));
+  if (c.plazos.length) partes.push(t('agenda:derivar.plazos', { count: c.plazos.length }));
+  if (c.misiones.length) partes.push(t('agenda:derivar.misiones', { count: c.misiones.length }));
   const cuando = relativoDe(dia, hoy);
   if (partes.length === 0) {
-    return dia >= hoy ? `${cuando}. Nada programado todavía.` : `${cuando}. Ese día no quedó nada registrado.`;
+    return dia >= hoy ? t('agenda:derivar.vacioFuturo', { cuando }) : t('agenda:derivar.vacioPasado', { cuando });
   }
   return `${cuando} · ${partes.join(' · ')}`;
 }
@@ -207,14 +215,14 @@ export function subtituloDia(c: ContenidoDia, bloques: number, dia: string, hoy:
 /** Lo que dice en voz alta un día del calendario: el día y sus recuentos. */
 export function etiquetaDia(dia: string, hoy: string, c: ContenidoDia): string {
   const partes = [nombreDia(dia)];
-  if (dia === hoy) partes.push('hoy');
-  if (c.eventos.length) partes.push(plural(c.eventos.length, 'evento', 'eventos'));
-  if (c.plazos.length) partes.push(plural(c.plazos.length, 'plazo de campaña', 'plazos de campaña'));
-  if (c.misiones.length) partes.push(plural(c.misiones.length, 'misión', 'misiones'));
+  if (dia === hoy) partes.push(t('agenda:derivar.hoy'));
+  if (c.eventos.length) partes.push(t('agenda:derivar.eventos', { count: c.eventos.length }));
+  if (c.plazos.length) partes.push(t('agenda:derivar.plazosCampana', { count: c.plazos.length }));
+  if (c.misiones.length) partes.push(t('agenda:derivar.misiones', { count: c.misiones.length }));
   return partes.join(', ');
 }
 
 /** «Miércoles, 7 de octubre» en mayúsculas cortas para la hoja: «MIÉRCOLES 7 OCT 2026». */
 export function fechaInscrita(key: string): string {
-  return `${DIAS[weekdayOfKey(key) - 1]} ${diaDe(key)} ${MESES_CORTOS[mesDe(key) - 1]} ${anioDe(key)}`.toUpperCase();
+  return mayus(`${diaSemana(key)} ${fechaCorta(key)} ${anioDe(key)}`);
 }

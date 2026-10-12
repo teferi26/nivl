@@ -21,6 +21,7 @@ import type { DayCloseResult } from '@/lib/engine';
 import type { DayBlock, DayPlan, PlanConBloques } from '@/lib/plan';
 import type { BoardEntry } from '@/lib/social';
 import type { Completion, Profile, Quest } from '@/lib/types';
+import { t } from '@/i18n';
 import { lineaEnJuego, type LineaEnJuego } from './enJuego';
 
 export interface RachaHoy {
@@ -91,7 +92,16 @@ export interface LadoDuelo {
  * dos): es el XP de 7 días frente al amigo que va justo delante (o detrás, si
  * lideras). Por eso no se llama «duelo».
  */
-export const TITULO_RIVAL_CERCANO = 'Rival cercano';
+export function tituloRivalCercano(): string {
+  return t('hoy:derivar.rivalCercano');
+}
+
+/**
+ * @deprecated Usa `tituloRivalCercano()`: una constante no cambia de idioma.
+ * Se queda, igual al texto de `hoy:derivar.rivalCercano` en español, solo
+ * porque derivarHoy.test.ts la fija.
+ */
+export const TITULO_RIVAL_CERCANO = 'Rival cercano'; // i18n-ok: alias congelado de hoy:derivar.rivalCercano, ver arriba
 
 export interface DueloHoy {
   linea: string;
@@ -167,14 +177,29 @@ export interface HoyDatos {
 }
 
 export function saludo(nombre: string, hora: number): string {
-  const franja = hora < 6 ? 'Buenas noches' : hora < 13 ? 'Buenos días' : hora < 20 ? 'Buenas tardes' : 'Buenas noches';
-  return `${franja}, ${nombre}.`;
+  const clave =
+    hora < 6
+      ? 'hoy:derivar.saludoNoche'
+      : hora < 13
+        ? 'hoy:derivar.saludoManana'
+        : hora < 20
+          ? 'hoy:derivar.saludoTarde'
+          : 'hoy:derivar.saludoNoche';
+  return t(clave, { nombre });
 }
 
 /** Solo el primer nombre, como en la línea de rivalidad. */
 function nombreCorto(name: string): string {
   const limpio = name.trim().split(/\s+/)[0] ?? '';
-  return limpio.length > 0 ? limpio.slice(0, 16) : 'Tu rival';
+  return limpio.length > 0 ? limpio.slice(0, 16) : t('hoy:derivar.tuRival');
+}
+
+/** El estado del día en una frase (subtítulo y línea del Hero). */
+function estadoDelDia(frozen: boolean, total: number, pendientes: number, cerrado: () => string): string {
+  if (frozen) return t('hoy:derivar.enPausa');
+  if (total === 0) return t('hoy:derivar.sinMisiones');
+  if (pendientes === 0) return cerrado();
+  return t('hoy:derivar.porDelante', { count: pendientes });
 }
 
 /** Las líneas del informe del cierre, en el orden de siempre. */
@@ -185,38 +210,34 @@ function lineasCierre(r: DayCloseResult, alerta: boolean, streak: number, penali
     // Frase neutra: voice.penaltyApplied puede amenazar («será permanente»)
     // y la salida ya se dice al final.
     lineas.push(
-      `El sistema ha aplicado −${r.penaltyXp} XP.${
-        r.levelsLost > 0 ? ` Has perdido ${r.levelsLost} ${r.levelsLost === 1 ? 'nivel' : 'niveles'}.` : ''
-      }`,
+      r.levelsLost > 0
+        ? t('hoy:derivar.penaAplicadaNiveles', { xp: r.penaltyXp, count: r.levelsLost })
+        : t('hoy:derivar.penaAplicada', { xp: r.penaltyXp }),
     );
     const desglose = desglosePena(r);
     if (desglose) lineas.push(desglose);
   } else if (r.streakLost) {
-    lineas.push('Racha perdida. El contador vuelve a cero.');
+    lineas.push(t('hoy:derivar.rachaPerdida'));
   }
   if (r.diasSinCobrar > 0) {
-    lineas.push(
-      `Solo se cobran los 3 primeros días: ${r.diasSinCobrar} ${
-        r.diasSinCobrar === 1 ? 'día no te cuesta' : 'días no te cuestan'
-      } XP.`,
-    );
+    lineas.push(t('hoy:derivar.diasSinCobrar', { count: r.diasSinCobrar }));
   }
   if (r.stonesEarned > 0) lineas.push(voice.stoneEarned());
   // Un cierre limpio sin nada que contar no deja la tarjeta vacía.
   const sinNada = !alerta && r.stonesUsed === 0 && r.diasSinCobrar === 0 && r.stonesEarned === 0;
-  if (sinNada) lineas.push(`Día cerrado. Racha ${streak}.`);
+  if (sinNada) lineas.push(t('hoy:derivar.cierreLimpio', { racha: streak }));
   // La tarjeta termina SIEMPRE con la salida si hay algo que recuperar.
-  if (penalizacionPendiente) lineas.push('Hoy puedes recuperarlo: completa una de tus misiones y se abre la arena.');
+  if (penalizacionPendiente) lineas.push(t('hoy:derivar.puedesRecuperar'));
   return lineas;
 }
 
 /** «A», «B» y 2 más: como mucho tres títulos a la vista. */
 export function listaReglas(textos: string[]): string {
-  const vistos = textos.slice(0, 3).map((t) => `«${t}»`);
+  const vistos = textos.slice(0, 3).map((texto) => t('hoy:derivar.regla', { texto }));
   const resto = textos.length - vistos.length;
-  if (resto > 0) return `${vistos.join(', ')} y ${resto} más`;
+  if (resto > 0) return t('hoy:derivar.listaYMas', { lista: vistos.join(', '), resto });
   if (vistos.length <= 1) return vistos.join('');
-  return `${vistos.slice(0, -1).join(', ')} y ${vistos[vistos.length - 1]}`;
+  return t('hoy:derivar.listaY', { lista: vistos.slice(0, -1).join(', '), ultimo: vistos[vistos.length - 1] });
 }
 
 /**
@@ -229,13 +250,19 @@ export function desglosePena(r: Pick<DayCloseResult, 'penaltyXp' | 'penaltyRegla
   if (reglas <= 0) return null;
   const misiones = r.penaltyXp - reglas;
   const textos = r.reglasRotas ?? [];
-  const deReglas =
-    textos.length === 0
-      ? 'reglas del contrato sin marcar'
-      : `${textos.length === 1 ? 'la regla' : 'las reglas'} ${listaReglas(textos)}`;
-  return misiones > 0
-    ? `−${misiones} XP por misiones sin hacer y −${reglas} XP por ${deReglas}.`
-    : `−${reglas} XP por ${deReglas}.`;
+  if (textos.length === 0) {
+    return misiones > 0
+      ? t('hoy:derivar.penaAmbosSinTexto', { misiones, reglas })
+      : t('hoy:derivar.penaReglasSinTexto', { reglas });
+  }
+  // «la regla «A»» o «las reglas «A» y «B»»: el número no se escribe (la
+  // lista ya lo dice), así que no es un plural con count sino dos frases.
+  const una = textos.length === 1;
+  const datos = { misiones, reglas, lista: listaReglas(textos) };
+  if (misiones > 0) {
+    return t(una ? 'hoy:derivar.penaAmbosUnaRegla' : 'hoy:derivar.penaAmbosVariasReglas', datos);
+  }
+  return t(una ? 'hoy:derivar.penaUnaRegla' : 'hoy:derivar.penaVariasReglas', datos);
 }
 
 function dueloDe(board: BoardEntry[] | null): { rivalidad: string | null; duelo: DueloHoy | null } {
@@ -253,7 +280,7 @@ function dueloDe(board: BoardEntry[] | null): { rivalidad: string | null; duelo:
     rivalidad: linea,
     duelo: {
       linea,
-      yo: { nombre: 'Tú', xp: yo.xpWindow, ratio: ratio(yo.xpWindow) },
+      yo: { nombre: t('hoy:derivar.tu'), xp: yo.xpWindow, ratio: ratio(yo.xpWindow) },
       rival: rival ? { nombre: nombreCorto(rival.name), xp: rival.xpWindow, ratio: ratio(rival.xpWindow) } : null,
     },
   };
@@ -321,15 +348,7 @@ export function derivarHoy(e: EntradaHoy): HoyDatos {
   const todoHecho = total > 0 && pendientes === 0 ? voice.allDone() : null;
   const subtitulo = !profile
     ? undefined
-    : frozen
-      ? 'Sistema en pausa. Hoy no se juzga.'
-      : total === 0
-        ? 'Sin misiones programadas para hoy.'
-        : pendientes === 0
-          ? (todoHecho ?? voice.allDone())
-          : pendientes === 1
-            ? 'Una misión por delante. Cierra el día.'
-            : `${pendientes} misiones por delante.`;
+    : estadoDelDia(frozen, total, pendientes, () => todoHecho ?? voice.allDone());
 
   const nivel = profile ? levelFromXp(profile.xp_total) : null;
   const hero: HeroHoy | null =
@@ -343,17 +362,10 @@ export function derivarHoy(e: EntradaHoy): HoyDatos {
           racha: racha.valor,
           rachaCerrada: racha.hoyCerrado,
           piedras: profile.protection_stones,
-          linea: `${saludo(profile.name, e.hora)} ${
-            frozen
-              ? 'Sistema en pausa. Hoy no se juzga.'
-              : total === 0
-                ? 'Sin misiones programadas para hoy.'
-                : pendientes === 0
-                  ? 'Día cerrado. No queda nada.'
-                  : pendientes === 1
-                    ? 'Una misión por delante. Cierra el día.'
-                    : `${pendientes} misiones por delante.`
-          }`,
+          linea: t('hoy:derivar.lineaHero', {
+            saludo: saludo(profile.name, e.hora),
+            estado: estadoDelDia(frozen, total, pendientes, () => t('hoy:derivar.nadaQueda')),
+          }),
           misiones: total > 0 ? `${hechas}/${total}` : '',
           avatar: { path: profile.avatar_url, nombre: profile.name },
         }
@@ -365,11 +377,13 @@ export function derivarHoy(e: EntradaHoy): HoyDatos {
     perfil: profile,
     rango: e.rango,
     hero,
-    saludo: profile ? saludo(profile.name, e.hora) : 'Hoy',
+    saludo: profile ? saludo(profile.name, e.hora) : t('hoy:derivar.titulo'),
     subtitulo,
     pausa:
       frozen && profile
-        ? `${voice.frozen(profile.freeze_reason ?? 'pausa')}${hastaCuando ? ` Hasta el ${hastaCuando}.` : ''}`
+        ? hastaCuando
+          ? t('hoy:derivar.pausaHasta', { frase: voice.frozen(profile.freeze_reason ?? 'pausa'), dia: hastaCuando })
+          : voice.frozen(profile.freeze_reason ?? 'pausa')
         : null,
     cierre: r ? { alerta: cierreAlerta, lineas: lineasCierre(r, cierreAlerta, profile?.streak_days ?? 0, penalizacionPendiente) } : null,
     misiones,
@@ -391,7 +405,7 @@ export function derivarHoy(e: EntradaHoy): HoyDatos {
       !frozen && ((pendientes > 0 && (enJuego || quedanNormales)) || (pendientes === 0 && enJuego))
         ? enJuego
           ? { texto: enJuego.texto, alerta: enJuego.alerta }
-          : { texto: 'A medianoche, lo pendiente se penaliza.', alerta: false }
+          : { texto: t('hoy:derivar.medianoche'), alerta: false }
         : null,
     // Una sola línea, callada y DEBAJO de las misiones: lo gratis va primero.
     lineaPro: e.esPro === false && !hayPlan,

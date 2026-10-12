@@ -11,6 +11,7 @@ import { TarjetaArena } from '@/components/arena';
 import { CoachMark } from '@/components/coach/CoachMark';
 import { Skeleton } from '@/components/ui';
 import { ink, space, type as tipo } from '@/design/tokens';
+import { t } from '@/i18n';
 import type { DueloHoy } from './derivarHoy';
 import { Duelo } from './Duelo';
 
@@ -25,7 +26,7 @@ interface Props {
 export function PanelHoy({ cargando, esPro, duelo }: Props) {
   if (cargando) {
     return (
-      <View accessibilityRole="progressbar" accessibilityLabel="Cargando el panel">
+      <View accessibilityRole="progressbar" accessibilityLabel={t('hoy:panel.cargandoA11y')}>
         <Skeleton height={96} style={styles.hueco} />
         <Skeleton height={11} width={140} style={styles.hueco} />
         <Skeleton height={72} />
@@ -39,17 +40,17 @@ export function PanelHoy({ cargando, esPro, duelo }: Props) {
         <TarjetaArena
           variante="contorno"
           onPress={() => router.push('/(tabs)/coach')}
-          accessibilityLabel="Abrir el coach. Pídele el plan, ajusta el día o pregúntale."
+          accessibilityLabel={t('hoy:panel.coachA11y')}
           style={styles.coach}
         >
           <View style={styles.coachFila}>
             <CoachMark size={48} />
             <View style={styles.coachTexto}>
               <Text style={styles.coachTitulo} maxFontSizeMultiplier={1.35}>
-                COACH
+                {t('hoy:panel.coachTitulo')}
               </Text>
               <Text style={styles.coachCuerpo} maxFontSizeMultiplier={1.35}>
-                Pídele el plan, ajusta el día o pregúntale.
+                {t('hoy:panel.coachCuerpo')}
               </Text>
             </View>
             <Ionicons name="chevron-forward" size={16} color={ink.ink6} />

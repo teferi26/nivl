@@ -10,8 +10,9 @@ import { Pressable, StyleSheet, Text, View, type StyleProp, type ViewStyle } fro
 import { Barra, formatoMiles } from '@/components/arena';
 import { Section } from '@/components/ui';
 import { ink, space, type as tipo } from '@/design/tokens';
+import { t } from '@/i18n';
 import { fonts } from '@/lib/theme';
-import { TITULO_RIVAL_CERCANO, type DueloHoy, type LadoDuelo } from './derivarHoy';
+import { tituloRivalCercano, type DueloHoy, type LadoDuelo } from './derivarHoy';
 
 function Lado({ lado, rival }: { lado: LadoDuelo; rival?: boolean }) {
   return (
@@ -20,7 +21,7 @@ function Lado({ lado, rival }: { lado: LadoDuelo; rival?: boolean }) {
         <Text style={[styles.nombre, rival && styles.nombreRival]} numberOfLines={1} maxFontSizeMultiplier={1.35}>
           {lado.nombre}
         </Text>
-        <Text style={[styles.xp, rival && styles.xpRival]} maxFontSizeMultiplier={1.35}>
+        <Text style={[styles.xp, rival && styles.xpRival]} maxFontSizeMultiplier={1.35}>{/* i18n-ok: unidad */}
           {formatoMiles(lado.xp)} XP
         </Text>
       </View>
@@ -29,21 +30,35 @@ function Lado({ lado, rival }: { lado: LadoDuelo; rival?: boolean }) {
         desde={0}
         alto={4}
         tono={rival ? 'ink8' : 'blanco'}
-        etiqueta={`${rival ? lado.nombre : 'Tu semana'}: ${formatoMiles(lado.xp)} XP`}
+        etiqueta={
+          rival
+            ? t('hoy:duelo.barraRival', { nombre: lado.nombre, xp: formatoMiles(lado.xp) })
+            : t('hoy:duelo.tuSemana', { xp: formatoMiles(lado.xp) })
+        }
       />
     </View>
   );
 }
 
 export function Duelo({ duelo, style }: { duelo: DueloHoy; style?: StyleProp<ViewStyle> }) {
+  const titulo = tituloRivalCercano();
+  const xp = formatoMiles(duelo.yo.xp);
   return (
-    <Section title={TITULO_RIVAL_CERCANO} style={style}>
+    <Section title={titulo} style={style}>
       <Pressable
         onPress={() => router.push('/amigos')}
         accessibilityRole="button"
-        accessibilityLabel={`${TITULO_RIVAL_CERCANO}. ${duelo.linea} Tú, ${formatoMiles(duelo.yo.xp)} XP${
-          duelo.rival ? `; ${duelo.rival.nombre}, ${formatoMiles(duelo.rival.xp)} XP` : ''
-        }. Abrir Amigos`}
+        accessibilityLabel={
+          duelo.rival
+            ? t('hoy:duelo.a11yRival', {
+                titulo,
+                linea: duelo.linea,
+                xp,
+                rival: duelo.rival.nombre,
+                xpRival: formatoMiles(duelo.rival.xp),
+              })
+            : t('hoy:duelo.a11y', { titulo, linea: duelo.linea, xp })
+        }
         style={({ pressed }) => [styles.caja, pressed && styles.pulsado]}
       >
         <Lado lado={duelo.yo} />

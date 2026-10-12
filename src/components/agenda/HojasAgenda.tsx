@@ -13,6 +13,8 @@ import { StyleSheet, Text, View } from 'react-native';
 import { Campo, ErrorSistema } from '@/components/arena';
 import { Button, Chip, ChipWrap, Sheet } from '@/components/ui';
 import { ink, space, type as tipo } from '@/design/tokens';
+import { mayus } from '@/i18n/formato';
+import { t } from '@/i18n';
 import { addDays, nombreDia } from '@/lib/dates';
 import { hhmm, horaAMinutos } from '@/lib/plan';
 import type { CalendarEvent } from '@/lib/types';
@@ -59,47 +61,59 @@ export function HojaEvento({
     <Sheet
       visible={visible}
       onClose={onCerrar}
-      eyebrow="Nuevo evento"
-      title="¿Qué hay que recordar?"
+      eyebrow={t('agenda:vista.nuevoEvento')}
+      title={t('agenda:hojas.pregunta')}
       footer={
         <>
-          <Button title="Añadir evento" onPress={onGuardar} loading={guardando} disabled={!titulo.trim()} />
-          <Button title="Cancelar" variant="ghost" onPress={onCerrar} />
+          <Button title={t('agenda:vista.anadirEvento')} onPress={onGuardar} loading={guardando} disabled={!titulo.trim()} />
+          <Button title={t('comun:cancelar')} variant="ghost" onPress={onCerrar} />
         </>
       }
     >
       <View style={styles.pila}>
         <Campo
-          etiqueta="Nombre"
+          etiqueta={t('comun:nombre')}
           value={titulo}
           onChangeText={onTitulo}
-          placeholder="Llamada, cita, demo, examen"
-          accessibilityLabel="Nombre del evento"
+          placeholder={t('agenda:hojas.placeholderNombre')}
+          accessibilityLabel={t('agenda:hojas.nombreA11y')}
           autoFocus
         />
 
         <View style={styles.grupo}>
           <Text style={styles.etiqueta} maxFontSizeMultiplier={1.35}>
-            Día
+            {t('agenda:hojas.dia')}
           </Text>
           <ChipWrap>
-            <Chip small label="Hoy" selected={fecha === hoy} onPress={() => onFecha(hoy)} accessibilityLabel="Hoy" />
-            <Chip small label="Mañana" selected={fecha === manana} onPress={() => onFecha(manana)} accessibilityLabel="Mañana" />
+            <Chip
+              small
+              label={t('agenda:vista.hoy')}
+              selected={fecha === hoy}
+              onPress={() => onFecha(hoy)}
+              accessibilityLabel={t('agenda:vista.hoy')}
+            />
+            <Chip
+              small
+              label={t('agenda:hojas.manana')}
+              selected={fecha === manana}
+              onPress={() => onFecha(manana)}
+              accessibilityLabel={t('agenda:hojas.manana')}
+            />
             {dia !== hoy && dia !== manana ? (
               <Chip
                 small
                 label={diaCorto(dia)}
                 selected={fecha === dia}
                 onPress={() => onFecha(dia)}
-                accessibilityLabel={`El día elegido, ${nombreDia(dia)}`}
+                accessibilityLabel={t('agenda:hojas.diaElegidoA11y', { dia: nombreDia(dia) })}
               />
             ) : null}
           </ChipWrap>
           <Campo
-            etiqueta="Fecha"
+            etiqueta={t('agenda:hojas.fecha')}
             value={fecha}
             onChangeText={onFecha}
-            placeholder="AAAA-MM-DD"
+            placeholder={t('agenda:hojas.placeholderFecha')}
             autoCapitalize="none"
             error={errorFecha}
           />
@@ -107,7 +121,7 @@ export function HojaEvento({
 
         <View style={styles.horaFila}>
           <Campo
-            etiqueta="Hora"
+            etiqueta={t('agenda:hojas.hora')}
             value={hora}
             onChangeText={onHora}
             placeholder="09:30"
@@ -116,15 +130,15 @@ export function HojaEvento({
           />
           <Chip
             small
-            label="Todo el día"
+            label={t('agenda:vista.todoElDia')}
             selected={!hora.trim()}
             onPress={() => onHora('')}
-            accessibilityLabel="Sin hora, todo el día"
+            accessibilityLabel={t('agenda:hojas.sinHoraA11y')}
             style={styles.todoElDia}
           />
         </View>
         <Text style={styles.ayuda} maxFontSizeMultiplier={1.35}>
-          Con hora, el evento se pinta sobre el eje del día. Sin hora, cuenta como de todo el día.
+          {t('agenda:hojas.ayudaHora')}
         </Text>
 
         {errorGuardar ? <ErrorSistema compacto mensaje={errorGuardar} /> : null}
@@ -148,19 +162,25 @@ export function HojaDetalle({ visible, evento, eliminando, onEliminar, onCerrar 
     <Sheet
       visible={visible}
       onClose={onCerrar}
-      eyebrow="Evento"
+      eyebrow={t('agenda:hojas.evento')}
       title={evento?.title ?? ''}
       footer={
         <>
-          <Button title="Eliminar evento" variant="danger" icon="trash-outline" loading={eliminando} onPress={onEliminar} />
-          <Button title="Cerrar" variant="ghost" onPress={onCerrar} />
+          <Button
+            title={t('agenda:hojas.eliminarEvento')}
+            variant="danger"
+            icon="trash-outline"
+            loading={eliminando}
+            onPress={onEliminar}
+          />
+          <Button title={t('comun:cerrar')} variant="ghost" onPress={onCerrar} />
         </>
       }
     >
       {evento ? (
         <View style={styles.pila}>
-          <View style={styles.grupo} accessible accessibilityLabel={`Fecha: ${nombreDia(evento.date)}`}>
-            <Text style={styles.etiqueta}>Fecha</Text>
+          <View style={styles.grupo} accessible accessibilityLabel={t('agenda:hojas.fechaA11y', { dia: nombreDia(evento.date) })}>
+            <Text style={styles.etiqueta}>{t('agenda:hojas.fecha')}</Text>
             <Text style={styles.fecha} maxFontSizeMultiplier={1.35}>
               {fechaInscrita(evento.date)}
             </Text>
@@ -168,12 +188,14 @@ export function HojaDetalle({ visible, evento, eliminando, onEliminar, onCerrar 
           <View
             style={styles.grupo}
             accessible
-            accessibilityLabel={min === null ? 'Hora: todo el día' : `Hora: ${hhmm(min)}`}
+            accessibilityLabel={
+              min === null ? t('agenda:hojas.horaTodoElDiaA11y') : t('agenda:hojas.horaA11y', { hora: hhmm(min) })
+            }
           >
-            <Text style={styles.etiqueta}>Hora</Text>
+            <Text style={styles.etiqueta}>{t('agenda:hojas.hora')}</Text>
             {min === null ? (
               <Text style={styles.fecha} maxFontSizeMultiplier={1.35}>
-                TODO EL DÍA
+                {mayus(t('agenda:vista.todoElDia'))}
               </Text>
             ) : (
               <Text style={styles.hora} maxFontSizeMultiplier={1.2}>
@@ -183,7 +205,7 @@ export function HojaDetalle({ visible, evento, eliminando, onEliminar, onCerrar 
           </View>
           {evento.notes ? (
             <View style={styles.grupo}>
-              <Text style={styles.etiqueta}>Nota</Text>
+              <Text style={styles.etiqueta}>{t('agenda:hojas.nota')}</Text>
               <Text style={styles.nota}>{evento.notes}</Text>
             </View>
           ) : null}

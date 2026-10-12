@@ -13,6 +13,7 @@ export default function Habitos() {
     <>
       <HabitosVista {...vista} />
       <QuestForm
+        // i18n-ok: valor de la prop (un identificador), no un texto
         sustantivo="hábito"
         visible={hoja.visible}
         initial={hoja.initial}

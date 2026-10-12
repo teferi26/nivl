@@ -7,6 +7,7 @@
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useRef, useState } from 'react';
 import { avisar, useAlVolver } from '@/components/ui';
+import { t } from '@/i18n';
 import { useAuth } from '@/lib/auth';
 import { ensureProfile } from '@/lib/data';
 import { createDungeon, fetchDungeons } from '@/lib/dungeons';
@@ -55,7 +56,7 @@ export function useCampanas(): { vista: CampanasVistaProps; hojas: { nueva: Hoja
       // Las tres consultas no dependen entre sí: van a la vez.
       const [all, { data: tasks, error: tasksError }, p] = await Promise.all([
         fetchDungeons(),
-        supabase.from('dungeon_tasks').select('dungeon_id, done'),
+        supabase.from('dungeon_tasks').select('dungeon_id, done'), // i18n-ok: columnas, no es texto
         userId ? ensureProfile(userId).catch(() => null) : Promise.resolve(null),
       ]);
       if (tasksError) throw tasksError;
@@ -63,8 +64,8 @@ export function useCampanas(): { vista: CampanasVistaProps; hojas: { nueva: Hoja
       setDungeons(
         all.map((d) => ({
           ...d,
-          total: rows.filter((t) => t.dungeon_id === d.id).length,
-          doneCount: rows.filter((t) => t.dungeon_id === d.id && t.done).length,
+          total: rows.filter((x) => x.dungeon_id === d.id).length,
+          doneCount: rows.filter((x) => x.dungeon_id === d.id && x.done).length,
         })),
       );
       if (p) setKind(p.profile_kind);
@@ -93,7 +94,7 @@ export function useCampanas(): { vista: CampanasVistaProps; hojas: { nueva: Hoja
       setTitle('');
       router.push({ pathname: '/dungeon/[id]', params: { id: d.id } });
     } catch (e) {
-      avisar('El sistema no responde', mensajeSistema(e));
+      avisar(t('comun:sistemaNoResponde'), mensajeSistema(e));
     } finally {
       creando.current = false;
       setSaving(false);

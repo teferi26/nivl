@@ -11,6 +11,7 @@ import { useCelebracion } from '@/components/celebracion/contexto';
 import { avisar, volver } from '@/components/ui';
 import { confirmar } from '@/components/ui/confirmar';
 import { vibrar } from '@/design/haptics';
+import { t } from '@/i18n';
 import {
   ACHIEVEMENT_BY_CODE,
   evaluateAchievements,
@@ -91,9 +92,9 @@ export function useCampana(): { vista: CampanaVistaProps; hojas: { tarea: HojaNu
       return;
     }
     try {
-      const [d, t] = await Promise.all([fetchDungeon(id), fetchTasks(id)]);
+      const [d, lista] = await Promise.all([fetchDungeon(id), fetchTasks(id)]);
       setDungeon(d);
-      setTasks(t);
+      setTasks(lista);
       setLoadError(null);
     } catch (e) {
       setLoadError(mensajeSistema(e));
@@ -133,14 +134,14 @@ export function useCampana(): { vista: CampanaVistaProps; hojas: { tarea: HojaNu
         is_boss: isBoss,
         // max(position)+1 en vez de length: tras borrar una tarea del medio,
         // length colisionaba con una position ya existente.
-        position: tasks.reduce((m, t) => Math.max(m, t.position), -1) + 1,
+        position: tasks.reduce((m, x) => Math.max(m, x.position), -1) + 1,
       });
       setTaskTitle('');
       setIsBoss(false);
       setFormOpen(false);
       await load();
     } catch (e) {
-      avisar('El sistema no responde', mensajeSistema(e));
+      avisar(t('comun:sistemaNoResponde'), mensajeSistema(e));
     } finally {
       anadiendo.current = false;
       setAdding(false);
@@ -157,7 +158,7 @@ export function useCampana(): { vista: CampanaVistaProps; hojas: { tarea: HojaNu
     // Optimista: la fila se marca al instante (y queda desactivada). Si algo
     // falla, se revierte.
     const fijarHecha = (hecha: boolean) =>
-      setTasks((prev) => prev.map((t) => (t.id === task.id ? { ...t, done: hecha } : t)));
+      setTasks((prev) => prev.map((x) => (x.id === task.id ? { ...x, done: hecha } : x)));
     fijarHecha(true);
     let marcadaEnServidor = false;
     try {
@@ -185,7 +186,7 @@ export function useCampana(): { vista: CampanaVistaProps; hojas: { tarea: HojaNu
         logrosAntes,
         fecha: dateKey(),
         // Con 0 por el tope diario de award_xp no se anuncia un «+0 XP».
-        resumen: [pagadoTarea > 0 ? `+${pagadoTarea} XP · ${dungeon.stat}` : 'Tope diario de XP alcanzado'],
+        resumen: [pagadoTarea > 0 ? `+${pagadoTarea} XP · ${dungeon.stat}` : t('comun:topeDiarioXp')],
       });
       // El rango se recalcula en segundo plano: no bloquea ni rompe el cobro.
       cerrarConRango(accion);
@@ -196,7 +197,7 @@ export function useCampana(): { vista: CampanaVistaProps; hojas: { tarea: HojaNu
       // que se pueda volver a intentar (el premio va por task_id: no se paga
       // dos veces). Si esto también falla, la próxima carga dirá la verdad.
       if (marcadaEnServidor) setTaskDone(task.id, false).catch(() => undefined);
-      avisar('El sistema no responde', mensajeSistema(e));
+      avisar(t('comun:sistemaNoResponde'), mensajeSistema(e));
     } finally {
       saving.current = false;
       setMarcando(null);
@@ -246,12 +247,12 @@ export function useCampana(): { vista: CampanaVistaProps; hojas: { tarea: HojaNu
         logrosNuevos: fresh.map(logroInfo),
         fecha: dateKey(),
         // Sin «+0 XP»: el botín puede no pagar (menos de 3 tareas, ya cobrado).
-        resumen: [pagado > 0 ? `Campaña despejada · +${pagado} XP` : 'Campaña despejada'],
+        resumen: [pagado > 0 ? t('campanas:hook.despejadaXp', { xp: pagado }) : t('campanas:comun.despejada')],
       });
       cerrarConRango(accion);
       await load();
     } catch (e) {
-      avisar('El sistema no responde', mensajeSistema(e));
+      avisar(t('comun:sistemaNoResponde'), mensajeSistema(e));
     } finally {
       cobrando.current = false;
       setBusy(false);
@@ -261,9 +262,9 @@ export function useCampana(): { vista: CampanaVistaProps; hojas: { tarea: HojaNu
   const removeDungeon = async () => {
     if (!dungeon) return;
     const ok = await confirmar({
-      titulo: 'Abandonar campaña',
-      mensaje: `¿Eliminar "${dungeon.title}" y todas sus tareas?`,
-      confirmar: 'Eliminar',
+      titulo: t('campanas:hook.abandonarTitulo'),
+      mensaje: t('campanas:hook.abandonarMensaje', { titulo: dungeon.title }),
+      confirmar: t('comun:eliminar'),
       destructivo: true,
     });
     if (!ok) return;
@@ -273,19 +274,24 @@ export function useCampana(): { vista: CampanaVistaProps; hojas: { tarea: HojaNu
       vibrar('destructiva');
       volver(router);
     } catch (e) {
-      avisar('El sistema no responde', mensajeSistema(e));
+      avisar(t('comun:sistemaNoResponde'), mensajeSistema(e));
     }
   };
 
-  const removeTask = async (t: DungeonTask) => {
-    const ok = await confirmar({ titulo: 'Eliminar tarea', mensaje: t.title, confirmar: 'Eliminar', destructivo: true });
+  const removeTask = async (tarea: DungeonTask) => {
+    const ok = await confirmar({
+      titulo: t('campanas:hook.eliminarTarea'),
+      mensaje: tarea.title,
+      confirmar: t('comun:eliminar'),
+      destructivo: true,
+    });
     if (!ok) return;
     try {
-      await deleteTask(t.id);
+      await deleteTask(tarea.id);
       vibrar('destructiva');
       await load();
     } catch (e) {
-      avisar('El sistema no responde', mensajeSistema(e));
+      avisar(t('comun:sistemaNoResponde'), mensajeSistema(e));
     }
   };
 

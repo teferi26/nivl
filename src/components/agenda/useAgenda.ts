@@ -9,6 +9,7 @@ import { avisar, useAlVolver } from '@/components/ui';
 import { confirmar } from '@/components/ui/confirmar';
 import { vibrar } from '@/design/haptics';
 import { useNavActual } from '@/design/useSizeClass';
+import { t } from '@/i18n';
 import { useAuth } from '@/lib/auth';
 import { fetchCompletionsForDate, fetchQuests } from '@/lib/data';
 import { fetchPlan, type PlanConBloques } from '@/lib/dayplan';
@@ -157,7 +158,7 @@ export function useAgenda(): { vista: AgendaVistaProps; hojaEvento: HojaEventoPr
   const addEvent = async () => {
     if (!userId || !title.trim() || saving.current) return;
     if (!isValidKey(date)) {
-      setErrorFecha('Fecha inválida. Usa el formato AAAA-MM-DD, ej. 2026-06-15.');
+      setErrorFecha(t('agenda:hook.fechaInvalida'));
       return;
     }
     saving.current = true;
@@ -192,7 +193,12 @@ export function useAgenda(): { vista: AgendaVistaProps; hojaEvento: HojaEventoPr
 
   const removeEvent = async (e: CalendarEvent) => {
     if (borrando.current) return;
-    const ok = await confirmar({ titulo: 'Eliminar evento', mensaje: e.title, confirmar: 'Eliminar', destructivo: true });
+    const ok = await confirmar({
+      titulo: t('agenda:hojas.eliminarEvento'),
+      mensaje: e.title,
+      confirmar: t('comun:eliminar'),
+      destructivo: true,
+    });
     if (!ok || borrando.current) return;
     borrando.current = true;
     setEliminando(true);
@@ -203,7 +209,7 @@ export function useAgenda(): { vista: AgendaVistaProps; hojaEvento: HojaEventoPr
       setDetalleAbierto(false);
       await load(anchor);
     } catch (err) {
-      avisar('El sistema no responde', mensajeSistema(err));
+      avisar(t('comun:sistemaNoResponde'), mensajeSistema(err));
     } finally {
       borrando.current = false;
       setEliminando(false);

@@ -13,12 +13,13 @@
 
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { ink, space, stroke, type as tipo } from '@/design/tokens';
+import { t } from '@/i18n';
 import { cargaDelDia } from '@/lib/timeline';
 import {
   contenidoDe,
   diasDeSemana,
   etiquetaDia,
-  LETRAS_DIA,
+  letrasDia,
   rejillaMes,
   tramosDe,
   type DatosAgenda,
@@ -36,8 +37,9 @@ const CELDA_MIN = 44;
 const MARCA = 5;
 
 export function TiraSemana({ datos, hoy, dia, onElegir }: CalendarioProps) {
+  const letras = letrasDia();
   return (
-    <View style={styles.tira} accessibilityRole="radiogroup" accessibilityLabel="Días de la semana">
+    <View style={styles.tira} accessibilityRole="radiogroup" accessibilityLabel={t('agenda:calendario.diasSemanaA11y')}>
       {diasDeSemana(dia).map((d, i) => {
         const c = contenidoDe(datos, d, hoy);
         const carga = cargaDelDia(tramosDe(c.eventos));
@@ -58,7 +60,7 @@ export function TiraSemana({ datos, hoy, dia, onElegir }: CalendarioProps) {
             accessibilityLabel={etiquetaDia(d, hoy, c)}
           >
             <Text style={[styles.letra, sel && styles.textoInvertido]} maxFontSizeMultiplier={1.2}>
-              {LETRAS_DIA[i]}
+              {letras[i]}
             </Text>
             <Text style={[styles.numTira, sel && styles.textoInvertido]} maxFontSizeMultiplier={1.2}>
               {Number(d.slice(8))}
@@ -68,6 +70,7 @@ export function TiraSemana({ datos, hoy, dia, onElegir }: CalendarioProps) {
                 style={[
                   styles.relleno,
                   sel && styles.rellenoInvertido,
+                  // i18n-ok: valor técnico (el alto en %)
                   { height: `${carga > 0 ? Math.max(10, carga * 100) : 0}%` },
                 ]}
               />
@@ -84,13 +87,14 @@ export function RejillaMes({ datos, hoy, dia, onElegir }: CalendarioProps) {
   return (
     <View>
       <View style={styles.cabecera} accessible={false} importantForAccessibility="no-hide-descendants">
-        {LETRAS_DIA.map((l) => (
-          <Text key={l} style={styles.letraMes} maxFontSizeMultiplier={1.2}>
+        {/* Por posición: en otro idioma dos días pueden compartir letra. */}
+        {letrasDia().map((l, i) => (
+          <Text key={i} style={styles.letraMes} maxFontSizeMultiplier={1.2}>
             {l}
           </Text>
         ))}
       </View>
-      <View style={styles.rejilla} accessibilityRole="radiogroup" accessibilityLabel="Días del mes">
+      <View style={styles.rejilla} accessibilityRole="radiogroup" accessibilityLabel={t('agenda:calendario.diasMesA11y')}>
         {celdas.map((d, i) => {
           if (!d) return <View key={`v-${i}`} style={styles.celda} />;
           const c = contenidoDe(datos, d, hoy);
