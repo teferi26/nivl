@@ -107,6 +107,10 @@ export default function Onboarding() {
   const [chosen, setChosen] = useState<Set<number>>(new Set());
   const [horizonte, setHorizonte] = useState<Horizonte>(HORIZONTE_POR_DEFECTO);
   const [firma, setFirma] = useState('');
+  const campoFirma = useRef<TextInput>(null);
+  const firmaPorResolver = useRef<{ body: string; openAt: string; years: Horizonte['years']; healthData: boolean } | null>(null);
+  const [firmaPendiente, setFirmaPendiente] = useState(false);
+  const [firmaSellada, setFirmaSellada] = useState<{ body: string; openAt: string } | null>(null);
   const [busy, setBusy] = useState(false);
   const lock = useRef(false);
   // Quien ya tiene coach (una cuenta de cortesía que rehace el onboarding) no
@@ -132,6 +136,7 @@ export default function Onboarding() {
   // Mientras el dedo firma, el scroll se apaga: un milímetro de deriva le daba
   // el gesto al ScrollView y el anillo volvía a cero.
   const [holding, setHolding] = useState(false);
+  const holdingRef = useRef(false);
   const [sello, setSello] = useState(false);
   const scroll = useRef<ScrollView>(null);
   const selloEscala = useRef(new Animated.Value(1.5)).current;
@@ -300,17 +305,29 @@ export default function Onboarding() {
   // crónica sin revelar el texto.
   const sign = () =>
     withLock(async () => {
+      if (sello || step !== 5) return;
+      if (!firmaValida(firma, name)) { campoFirma.current?.focus(); return; }
       if (healthGoal && !health.accepted) { health.ask(); return; }
       // Un reintento (falló lo de después, o la app se cerró en el sello) no
       // sella otra carta igual ni repite el evento: si la última carta es
       // esta misma firma, se da por sellada.
+      const intentoFirma = firmaPorResolver.current ?? {
+        body: contrato, openAt: abreEl, years: horizonte.years, healthData: healthGoal,
+      };
       const previa = await fetchLetter();
-      const yaSellada = !!previa && previa.body === contrato && previa.open_at === abreEl;
+      const yaSellada = !!previa && previa.body === intentoFirma.body && previa.open_at === intentoFirma.openAt;
       if (!yaSellada) {
-        await sealLetter(userId!, contrato, abreEl, healthGoal);
-        await insertEvent(userId!, 'commitment_signed', { years: horizonte.years, open_at: abreEl }).catch(() => {});
+        // Preserve the same attempt if an INSERT response is lost. Do not let
+        // a changed horizon silently replace an uncertain persisted letter.
+        firmaPorResolver.current = intentoFirma;
+        setFirmaPendiente(true);
+        await sealLetter(userId!, intentoFirma.body, intentoFirma.openAt, intentoFirma.healthData);
+        await insertEvent(userId!, 'commitment_signed', { years: intentoFirma.years, open_at: intentoFirma.openAt }).catch(() => {});
       }
       if (yaEsPro.current) await updateProfile(userId!, { onboarding_done: true });
+      setFirmaSellada(intentoFirma);
+      firmaPorResolver.current = null;
+      setFirmaPendiente(false);
       setSello(true);
     });
 
@@ -338,20 +355,20 @@ export default function Onboarding() {
     };
   }, [sello, selloEscala, selloOpacidad, trasElSello]);
 
-  const puedeVolver = step >= PRIMER_PASO_CON_VUELTA && step <= ULTIMO_PASO_CON_VUELTA && !busy && !sello;
+  const puedeVolver = step >= PRIMER_PASO_CON_VUELTA && step <= ULTIMO_PASO_CON_VUELTA && !busy && !sello && !firmaPendiente;
   const volver = useCallback(() => setStep((s) => Math.max(0, s - 1)), []);
 
-  // El botón físico de Android hace lo mismo que la flecha. En la bienvenida y
-  // tras la firma no se intercepta: ahí atrás es salir de la app.
+  // El botón físico respeta el bloqueo de la firma, incluso durante un reintento.
+  // Fuera de ese bloqueo sigue el mismo recorrido que la flecha.
   useEffect(() => {
     const sub = BackHandler.addEventListener('hardwareBackPress', () => {
-      if (sello) return true;
+      if (sello || busy || firmaPendiente || lock.current || holdingRef.current || firmaPorResolver.current) return true;
       if (!puedeVolver) return false;
       volver();
       return true;
     });
     return () => sub.remove();
-  }, [puedeVolver, sello, volver]);
+  }, [puedeVolver, sello, busy, firmaPendiente, holding, volver]);
 
   const toggleStarter = (i: number) => {
     if (kind && KINDS[kind].starterQuests[i]?.health_data && !health.accepted && !chosen.has(i)) { health.ask(); return; }
@@ -422,11 +439,10 @@ export default function Onboarding() {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- `finish` y el nivel se leen al decidir, una sola vez
   }, [step, decisionOferta, celebrando]);
 
-  // Con el nombre bien escrito el teclado sobra: tapaba justo el anillo que
-  // hay que mantener pulsado. Se recoge solo y se baja hasta la firma.
+  // Con una firma válida se baja hasta la acción. El teclado solo se cierra
+  // con Hecho para permitir corregir o pegar el nombre sin perder el foco.
   useEffect(() => {
     if (step !== 5 || !firmaOk) return;
-    Keyboard.dismiss();
     const t = setTimeout(() => scroll.current?.scrollToEnd({ animated: true }), 280);
     return () => clearTimeout(t);
   }, [firmaOk, step]);
@@ -442,6 +458,7 @@ export default function Onboarding() {
     setKind(k);
   };
   const elegirHorizonte = (h: Horizonte) => {
+    if (lock.current || holdingRef.current || firmaPorResolver.current || sello) return;
     vibrar('seleccion');
     setHorizonte(h);
   };
@@ -670,6 +687,7 @@ export default function Onboarding() {
                       label={h.label}
                       selected={horizonte.years === h.years}
                       onPress={() => elegirHorizonte(h)}
+                      disabled={busy || holding || firmaPendiente || sello}
                       accessibilityLabel={`Horizonte de ${h.label}${h.recomendado ? ', recomendado' : ''}`}
                       style={styles.horizonteChip}
                     />
@@ -678,16 +696,20 @@ export default function Onboarding() {
                 ))}
               </View>
               {/* El texto se revela párrafo a párrafo: se lee, no se acepta. */}
-              <TablillaContrato parrafos={contrato.split(/\n\s*\n/)} abreEl={fechaConAnio(abreEl)} rellenar={false} />
+              <TablillaContrato parrafos={(firmaPorResolver.current?.body ?? firmaSellada?.body ?? contrato).split(/\n\s*\n/)} abreEl={fechaConAnio(firmaPorResolver.current?.openAt ?? firmaSellada?.openAt ?? abreEl)} rellenar={false} />
               <Text style={styles.smallPrint}>
                 Hasta entonces lo guarda Contrato, sellado. Tus normas y sus consecuencias las escribes allí cuando
                 entres.
               </Text>
               <TarjetaArena variante="contorno" style={styles.firmaCard}>
                 <Campo
+                  ref={campoFirma}
+                  editable={!busy && !holding && !firmaPendiente && !sello}
                   etiqueta="Escribe tu nombre para firmar"
                   value={firma}
-                  onChangeText={setFirma}
+                  onChangeText={(value) => {
+                    if (!lock.current && !holdingRef.current && !firmaPorResolver.current && !sello) setFirma(value);
+                  }}
                   placeholder={name.trim()}
                   maxLength={NAME_MAX_LENGTH}
                   autoCapitalize="words"
@@ -700,7 +722,8 @@ export default function Onboarding() {
               <HoldToSign
                 label={firmaOk ? 'Mantén pulsado para firmar' : 'Escribe tu nombre'}
                 onComplete={sign}
-                onHoldChange={setHolding}
+                onRequestInput={() => campoFirma.current?.focus()}
+                onHoldChange={(value) => { holdingRef.current = value; setHolding(value); }}
                 disabled={!firmaOk}
                 loading={busy}
               />
@@ -787,7 +810,7 @@ export default function Onboarding() {
           style={styles.sello}
           onPress={trasElSello}
           accessibilityRole="button"
-          accessibilityLabel={`Sellado. Vence el ${fechaConAnio(abreEl)}. Toca para continuar`}
+          accessibilityLabel={`Sellado. Vence el ${fechaConAnio(firmaSellada?.openAt ?? abreEl)}. Toca para continuar`}
         >
           <Animated.View style={{ alignItems: 'center', opacity: selloOpacidad, transform: [{ scale: selloEscala }] }}>
             <View style={styles.selloMarco}>
@@ -795,7 +818,7 @@ export default function Onboarding() {
             </View>
           </Animated.View>
           <Animated.Text style={[styles.selloFecha, { opacity: selloOpacidad }]}>
-            Vence el {fechaConAnio(abreEl)}
+            Vence el {fechaConAnio(firmaSellada?.openAt ?? abreEl)}
           </Animated.Text>
         </Pressable>
       ) : null}

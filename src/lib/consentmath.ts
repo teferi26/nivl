@@ -3,7 +3,11 @@
 // Sin imports de Supabase: los efectos viven en `consent.ts`. La versión tiene
 // que casar con la última `ai_consent_version()` de las migraciones (un test
 // lo comprueba). Si el texto cambia de forma material, se sube en los dos
-// sitios y todo el mundo vuelve a aceptar.
+// sitios y todo el mundo vuelve a aceptar. Solo cuando la hoja declara MÁS
+// (un proveedor, un país o un dato nuevo): si declara menos, la versión se
+// queda. Así el 12/10/2026 salió DeepSeek (China) sin tocar '2026-09-29':
+// quien aceptó aquel texto ya consintió el envío a Anthropic con las mismas
+// ubicaciones, y obligarle a aceptar de nuevo solo le cortaría el coach.
 //
 // Lo que dice esta hoja tiene que decir lo mismo que la política publicada
 // (https://nivl.app/privacidad). Se distinguen almacenamiento y
@@ -37,8 +41,7 @@ export interface ProveedorIa {
 
 /** A quién va, y cuándo. */
 export const PROVEEDORES_IA: readonly ProveedorIa[] = [
-  { nombre: 'Anthropic (Claude)', donde: 'Almacenamiento en EE. UU.; procesamiento por defecto en EE. UU., Europa, Asia y Australia.', cuando: 'NIVL Élite y otras solicitudes que utilicen Claude.' },
-  { nombre: 'DeepSeek', donde: 'República Popular China', cuando: 'NIVL Pro y la prueba de 7 días.' },
+  { nombre: 'Anthropic (Claude)', donde: 'Almacenamiento en EE. UU.; procesamiento por defecto en EE. UU., Europa, Asia y Australia.', cuando: 'El coach en todos los planes (NIVL Pro, NIVL Élite y la prueba de 7 días), con las fotos que adjuntes, los resúmenes, los textos de los avisos, la clasificación de movimientos y otras tareas cortas.' },
 ];
 
 export const TEXTO_CONSENTIMIENTO = {
@@ -48,7 +51,7 @@ export const TEXTO_CONSENTIMIENTO = {
     'El coach funciona con modelos de IA de otras empresas. Para responderte y planificar tu día, NIVL les envía en cada turno:',
   aQuien: 'A quién se envía',
   fueraEee:
-    'China está fuera del Espacio Económico Europeo y la Comisión Europea no ha declarado que proteja los datos como la UE: allí tus datos podrían quedar menos protegidos.',
+    'Parte de ese tratamiento ocurre fuera del Espacio Económico Europeo, en países donde tus datos podrían no tener la misma protección que en la UE.',
   paraQue: 'NIVL envía estos datos para que el coach te responda. NIVL no los utiliza para publicidad.',
   consentimiento:
     'Al aceptar das tu consentimiento explícito para que se traten estos datos, incluidos los de salud, y para enviarlos a esos proveedores, también fuera del EEE. Puedes retirarlo cuando quieras en Perfil: se detienen las nuevas solicitudes de IA. Los datos de una solicitud ya enviada no se pueden recuperar.',

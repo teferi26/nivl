@@ -10,6 +10,7 @@ import {
   lineaPerfil,
   PROVEEDORES_IA,
   situacion,
+  TEXTO_CONSENTIMIENTO,
 } from '../consentmath';
 
 const aceptado = { current_version: AI_CONSENT_VERSION, granted: true, action: 'accept', version: AI_CONSENT_VERSION, at: '2026-09-27T10:00:00Z' };
@@ -35,10 +36,29 @@ describe('consentimiento IA · lo que dice la hoja', () => {
     for (const w of ['salud', 'diario', 'finanzas', 'fotos']) expect(t).toContain(w);
   });
 
-  test('distingue almacenamiento y procesamiento global de Anthropic y DeepSeek en China', () => {
+  test('distingue almacenamiento y procesamiento global de Anthropic', () => {
     const location = PROVEEDORES_IA.find((p) => p.nombre.startsWith('Anthropic'))?.donde ?? '';
     for (const region of ['Almacenamiento en EE. UU.', 'procesamiento', 'Europa', 'Asia', 'Australia']) expect(location).toContain(region);
-    expect(PROVEEDORES_IA.find((p) => p.nombre === 'DeepSeek')?.donde).toContain('China');
+    // Guideline 5.1.2(i): cada proveedor, con lo que recibe. Desde el 12/10/2026 todo el coach va por Anthropic.
+    const anthropic = PROVEEDORES_IA.find((p) => p.nombre.startsWith('Anthropic'))?.cuando ?? '';
+    for (const w of ['todos los planes', 'NIVL Pro', 'NIVL Élite', 'prueba de 7 días', 'fotos']) expect(anthropic).toContain(w);
+  });
+
+  test('ni DeepSeek ni China: desde el 12/10/2026 no se usa en ningún plan', () => {
+    const visible = JSON.stringify({ PROVEEDORES_IA, TEXTO_CONSENTIMIENTO, DATOS_IA });
+    expect(PROVEEDORES_IA.map((p) => p.nombre)).toEqual(['Anthropic (Claude)']);
+    expect(visible).not.toMatch(/deepseek|china|rep[uú]blica popular/i);
+    // El aviso de fuera del EEE se queda: Anthropic procesa también en EE. UU., Asia y Australia.
+    expect(TEXTO_CONSENTIMIENTO.fueraEee).toContain('fuera del Espacio Económico Europeo');
+  });
+
+  test('sin guion largo en la hoja', () => {
+    const visible = JSON.stringify({ PROVEEDORES_IA, TEXTO_CONSENTIMIENTO, DATOS_IA });
+    expect(visible).not.toMatch(/[–—]/);
+  });
+
+  test('la versión no sube por quitar un proveedor: quien aceptó no vuelve a aceptar', () => {
+    expect(AI_CONSENT_VERSION).toBe('2026-09-29');
   });
 });
 

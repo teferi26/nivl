@@ -352,7 +352,10 @@ export function vistaPanelCreador(plataforma: string, datos: DatosPanelCreador):
         ...r,
         title: PARECE_DINERO.test(r.title) ? 'Reto' : r.title,
         description: r.description && PARECE_DINERO.test(r.description) ? null : r.description,
-        prize: r.prize && !PARECE_DINERO.test(r.prize) ? r.prize : null,
+        // Ningún premio en la app de tienda, tampoco en especie: un reto con
+        // premio es un concurso y Apple 5.3.2 pide sus bases oficiales DENTRO
+        // de la app y decir que Apple no lo patrocina. Los premios, en la web.
+        prize: null,
       })),
       historico: (datos.historico ?? []).map((h) => ({ month: h.month, sales: h.sales })),
     };

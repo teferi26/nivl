@@ -13,7 +13,7 @@ const request = (body: unknown = { confirm: 'BORRAR_CUENTA_NIVL', user_id: OTHER
 function fixture() {
   const trace: unknown[][] = [];
   const state = {
-    authenticated: true, beginError: false, listError: false, ready: true,
+    authenticated: true, beginError: false, queueError: false, listError: false, ready: true,
     deleteError: false, removeError: '', throwRemove: false, staleList: false,
     objects: [{ bucket: 'evidence', path: `${UID}/nested/photo.jpg` }, { bucket: 'avatars', path: `${UID}/avatar.jpg` }] as unknown,
   };
@@ -30,6 +30,7 @@ function fixture() {
     },
     rpc: (name: string, args: unknown) => {
       trace.push([name, args]);
+      if (name === 'request_store_erasure_cleanup') return Promise.resolve({ data: !state.queueError, error: state.queueError ? {} : null });
       if (name === 'begin_account_erasure') return Promise.resolve({ data: { ok: true, job_id: JOB }, error: state.beginError ? {} : null });
       if (name === 'account_erasure_paths') return Promise.resolve({ data: state.objects, error: state.listError ? {} : null });
       if (name === 'account_erasure_ready') return Promise.resolve({ data: state.ready, error: null });
@@ -43,7 +44,7 @@ function fixture() {
       return Promise.resolve({ error: null });
     } }) },
   } as unknown as Db;
-  return { state, trace, handler: accountErasureHandler(admin), deletions: () => trace.filter(t => t[0] === 'deleteUser'), removals: () => trace.filter(t => t[0] === 'remove') };
+  return { state, trace, handler: accountErasureHandler(admin, { revenueCatKey: 'sk_testOnly123', fetcher: (() => Promise.resolve(new Response(null, { status: 200 }))) as typeof fetch }), deletions: () => trace.filter(t => t[0] === 'deleteUser'), removals: () => trace.filter(t => t[0] === 'remove') };
 }
 
 Deno.test('account erasure requires POST, verified owner, and exact confirmation before any mutation', async () => {
@@ -65,6 +66,7 @@ Deno.test('account erasure ignores body user_id, blocks first, removes both buck
   equal(response.status, 200); equal(await response.json(), { ok: true });
   equal(f.trace, [
     ['getUser', 'test-only'], ['begin_account_erasure', { p_user: UID }],
+    ['request_store_erasure_cleanup', { p_user: UID }],
     ['account_erasure_paths', { p_user: UID, p_job: JOB }],
     ['remove', 'evidence', [`${UID}/nested/photo.jpg`]], ['remove', 'avatars', [`${UID}/avatar.jpg`]],
     ['account_erasure_paths', { p_user: UID, p_job: JOB }],
@@ -115,4 +117,13 @@ Deno.test('bounded work returns pending when successful removals have not actual
   const f = fixture(); f.state.staleList = true;
   const response = await f.handler(request()); equal(response.status, 202); equal((await response.json()).ok, false);
   equal(f.deletions(), []); equal(f.trace.filter(t => t[0] === 'account_erasure_paths').length, 20);
+});
+
+
+Deno.test('account erasure cannot delete Auth when its durable provider cleanup queue fails', async () => {
+  const f = fixture(); f.state.queueError = true;
+  const response = await f.handler(request());
+  equal(response.status, 503);
+  equal((await response.json()).pending, true);
+  equal(f.deletions(), []); equal(f.removals(), []);
 });

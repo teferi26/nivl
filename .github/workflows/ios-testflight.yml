@@ -23,6 +23,10 @@ name: iOS a TestFlight
 on:
   workflow_dispatch:
     inputs:
+      compilar:
+        description: Compilar y subir IPA además de QA
+        type: boolean
+        default: true
       enviar:
         description: Subir a TestFlight al terminar
         type: boolean
@@ -32,7 +36,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: ios-testflight
+  group: ${{ inputs.compilar == false && 'ios-onboarding-qa' || 'ios-testflight' }}
   cancel-in-progress: false
 
 jobs:
@@ -40,7 +44,16 @@ jobs:
   preflight:
     uses: ./.github/workflows/ci.yml
 
+  onboarding-qa:
+    needs: preflight
+    uses: ./.github/workflows/qa-onboarding-ios.yml
+    with:
+      sha: ${{ github.sha }}
+    secrets: inherit
+
+  # Build/upload runs alongside simulator QA; App Review still requires QA success.
   build:
+    if: ${{ inputs.compilar != false }}
     needs: preflight
     runs-on: macos-15
     timeout-minutes: 90
@@ -73,7 +86,7 @@ jobs:
 
       - run: npm ci
 
-      - run: npm install --global eas-cli@latest
+      - run: npm install --global eas-cli@21.2.0
 
       - name: Compilar en este runner
         run: |

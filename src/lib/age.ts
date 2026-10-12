@@ -15,9 +15,11 @@ export async function fetchEdadConfirmada(): Promise<boolean> {
 }
 
 export async function confirmarEdad(): Promise<void> {
-  const { data, error } = await supabase.rpc('confirm_minimum_age', { p_min_age: EDAD_MINIMA });
+  const { data, error } = await conLimiteDeRed(supabase.rpc('confirm_minimum_age', { p_min_age: EDAD_MINIMA }));
   if (error) throw error;
-  if (data !== true) throw new ErrorVisible('No se ha guardado la confirmación. Vuelve a intentarlo.');
+  if (data !== true || !(await fetchEdadConfirmada())) {
+    throw new ErrorVisible('No se ha guardado la confirmación. Vuelve a intentarlo.');
+  }
 }
 
 // ── Mayoría de edad (18+) para fotos corporales, su análisis por IA y compartirlas.

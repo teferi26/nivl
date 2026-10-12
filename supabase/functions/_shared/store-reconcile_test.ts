@@ -29,7 +29,7 @@ function fixture() {
   const trace: unknown[][] = [];
   const state = {
     authenticated: true, reserveError: false, applyError: false, missingUser: false, stale: false,
-    status: 200, body: info() as unknown,
+    status: 200, body: info() as unknown, accountActive: true, guardError: false,
   };
   const admin = {
     auth: { getUser: (token: string) => {
@@ -38,6 +38,8 @@ function fixture() {
     } },
     rpc: (name: string, args: Record<string, unknown>) => {
       trace.push([name, args]);
+      if (name === 'request_store_erasure_cleanup') return Promise.resolve({ data: true, error: null });
+      if (name === 'store_account_active') return Promise.resolve({ data: state.accountActive, error: state.guardError ? {} : null });
       if (name === 'begin_store_reconciliation') return Promise.resolve({ data: state.missingUser ? [] : [{ user_id: UID, revision: 2 }], error: state.reserveError ? {} : null });
       if (name === 'apply_store_reconciliation') return Promise.resolve({ data: { ok: !state.stale }, error: state.applyError ? {} : null });
       throw new Error('Unexpected RPC');
@@ -82,7 +84,7 @@ Deno.test('customer parser rejects malformed/stale snapshots instead of interpre
 Deno.test('endpoint verifies JWT, ignores body identity/key/plan and uses pinned RevenueCat URL/key', async () => {
   const f = fixture();
   equal((await f.handler(request())).status, 200);
-  equal(f.trace.slice(0, 3), [
+  equal(f.trace.filter(t => t[0] !== 'store_account_active').slice(0, 3), [
     ['getUser', 'test-token'], ['begin_store_reconciliation', { p_users: [UID] }],
     ['fetch', `https://api.revenuecat.com/v1/subscribers/${UID}`, 'GET', { Authorization: 'Bearer pinned-public-key', Accept: 'application/json' }],
   ]);
@@ -181,4 +183,102 @@ Deno.test('webhook returns retryable failure for provider errors, database error
     equal(response.status, 503);
     if (failure === 'provider') equal(f.applies(), []);
   }
+});
+
+
+Deno.test('reconciliation compensates delayed GET that recreates a customer after account erasure', async () => {
+  const f = fixture();
+  let finish!: () => void;
+  let providerExists = true;
+  const methods: string[] = [];
+  const fetcher = ((_: string, options: RequestInit) => {
+    methods.push(options.method!);
+    if (options.method === 'DELETE') { providerExists = false; return Promise.resolve(new Response(null, { status: 200 })); }
+    return new Promise<Response>((resolve) => { finish = () => {
+      providerExists = true;
+      resolve(new Response(JSON.stringify(info()), { status: 200 }));
+    }; });
+  }) as typeof fetch;
+  const running = reconcileStore(f.admin, [UID], 'sk_server', undefined, fetcher);
+  for (let i = 0; i < 10; i++) await Promise.resolve();
+  f.state.accountActive = false;
+  providerExists = false;
+  finish();
+  let failed = false;
+  try { await running; } catch { failed = true; }
+  equal(failed, true);
+  equal(methods, ['GET', 'DELETE']);
+  equal(providerExists, false);
+  equal(f.applies(), []);
+});
+
+
+Deno.test('pending erasure before GET stops a provider read without deleting an active customer blindly', async () => {
+  const f = fixture(); f.state.accountActive = false;
+  let failed = false;
+  try { await reconcileStore(f.admin, [UID], 'sk_server', undefined, f.fetcher); } catch { failed = true; }
+  equal(failed, true);
+  equal(f.trace.filter(t => t[0] === 'fetch'), []);
+  equal(f.applies(), []);
+});
+
+Deno.test('account status lookup errors never trigger destructive provider cleanup', async () => {
+  const f = fixture();
+  const methods: string[] = [];
+  const fetcher = ((_: string, options: RequestInit) => {
+    methods.push(options.method!);
+    f.state.guardError = true;
+    return Promise.resolve(new Response(JSON.stringify(info()), { status: 200 }));
+  }) as typeof fetch;
+  let failed = false;
+  try { await reconcileStore(f.admin, [UID], 'sk_server', undefined, fetcher); } catch { failed = true; }
+  equal(failed, true); equal(methods, ['GET']); equal(f.applies(), []);
+});
+
+Deno.test('compensation runs even when a GET loses its response and never reports failed DELETE as success', async () => {
+  for (const deleteStatus of [200, 404, 500]) {
+    const f = fixture(); const methods: string[] = [];
+    const fetcher = ((_: string, options: RequestInit) => {
+      methods.push(options.method!);
+      if (options.method === 'DELETE') return Promise.resolve(new Response(null, { status: deleteStatus }));
+      f.state.accountActive = false;
+      return Promise.reject(new Error('Connection lost after provider creation'));
+    }) as typeof fetch;
+    let failed = false;
+    try { await reconcileStore(f.admin, [UID], 'sk_server', undefined, fetcher); } catch { failed = true; }
+    equal(failed, true);
+    equal(methods, deleteStatus === 500 ? ['GET', 'DELETE', 'DELETE', 'DELETE'] : ['GET', 'DELETE']);
+    equal(f.applies(), []);
+  }
+});
+
+Deno.test('erasure during SQL application is checked again before a successful response', async () => {
+  const f = fixture(); const rpc = f.admin.rpc.bind(f.admin);
+  f.admin.rpc = ((name: string, args: Record<string, unknown>) => {
+    if (name === 'apply_store_reconciliation') f.state.accountActive = false;
+    return rpc(name, args);
+  }) as Db['rpc'];
+  let failed = false;
+  try { await reconcileStore(f.admin, [UID], 'sk_server', undefined, f.fetcher); } catch { failed = true; }
+  equal(failed, true);
+  equal(f.trace.filter(t => t[0] === 'fetch').map(t => t[2]), ['GET', 'DELETE']);
+});
+
+
+Deno.test('compensation retries transient DELETE failures within a strict bound', async () => {
+  const f = fixture(); let deletes = 0; let providerExists = true;
+  const fetcher = ((_: string, options: RequestInit) => {
+    if (options.method === 'GET') {
+      f.state.accountActive = false;
+      return Promise.resolve(new Response(JSON.stringify(info()), { status: 200 }));
+    }
+    deletes++;
+    if (deletes === 1) return Promise.reject(new Error('Lost network'));
+    if (deletes === 2) return Promise.resolve(new Response(null, { status: 503 }));
+    providerExists = false;
+    return Promise.resolve(new Response(null, { status: 404 }));
+  }) as typeof fetch;
+  let failed = false;
+  try { await reconcileStore(f.admin, [UID], 'sk_server', undefined, fetcher); } catch { failed = true; }
+  equal(failed, true); equal(deletes, 3); equal(providerExists, false); equal(f.applies(), []);
 });

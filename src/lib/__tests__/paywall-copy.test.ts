@@ -86,9 +86,17 @@ describe('textos generados', () => {
     }
   });
 
-  test('la prueba se describe como es: estándar, sin tarjeta, sin renovación y sin modo profundo en Élite', () => {
-    expect(P.textoPrueba('pro')).toMatch(/sin tarjeta/);
-    expect(P.textoPrueba('pro')).toMatch(/No se renueva sola/);
+  test('la prueba se describe como es: estándar, gratis, una vez, sin renovación y sin modo profundo en Élite', () => {
+    for (const tier of ['pro', 'elite'] as const) {
+      expect(P.textoPrueba(tier)).toMatch(/[Gg]ratis/);
+      expect(P.textoPrueba(tier)).toMatch(/una sola vez por cuenta/);
+      expect(P.textoPrueba(tier)).toMatch(/no se renueva sola|No se renueva sola/);
+      expect(P.textoPrueba(tier)).toMatch(/no se cobra nada/);
+      // Apple 3.1.1: nada que contraponga la prueba al pago de la tienda.
+      expect(P.textoPrueba(tier)).not.toMatch(/tarjeta|método de pago|fuera de la tienda/i);
+    }
+    expect(P.LINEA_PRUEBA).toBe('Prueba el coach 7 días: gratis y sin renovación.');
+    expect(P.LINEA_PRUEBA).not.toMatch(/tarjeta/i);
     expect(P.textoPrueba('pro')).toMatch(/energía limitada/);
     expect(P.textoPrueba('elite')).toMatch(/de Pro/);
     expect(P.textoPrueba('elite')).toMatch(/sin modo profundo/);

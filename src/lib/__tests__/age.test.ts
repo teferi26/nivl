@@ -95,9 +95,10 @@ test('un fallo al guardar no abre; solo la confirmación persistida permite mont
   mockRpc.mockResolvedValueOnce({ data: null, error: new Error('offline') });
   await press('Confirmar y continuar');
   expect(privateMount).not.toHaveBeenCalled();
-  mockRpc.mockResolvedValueOnce({ data: true, error: null });
+  mockRpc.mockResolvedValueOnce({ data: true, error: null }).mockResolvedValueOnce({ data: true, error: null });
   await press('Confirmar y continuar');
-  expect(mockRpc).toHaveBeenLastCalledWith('confirm_minimum_age', { p_min_age: 16 });
+  expect(mockRpc).toHaveBeenCalledWith('confirm_minimum_age', { p_min_age: 16 });
+  expect(mockRpc).toHaveBeenLastCalledWith('my_age_confirmation');
   expect(privateMount).toHaveBeenCalled();
 });
 
@@ -140,4 +141,37 @@ test('las respuestas vacías o ambiguas de las RPC no cuentan como confirmación
   await expect(fetchEdadConfirmada()).rejects.toThrow();
   mockRpc.mockResolvedValueOnce({ data: 'true', error: null });
   await expect(confirmarEdad()).rejects.toThrow();
+});
+
+test('una escritura aceptada sin confirmación persistida no abre la cuenta', async () => {
+  mockRpc.mockResolvedValueOnce({ data: true, error: null }).mockResolvedValueOnce({ data: false, error: null });
+  await expect(confirmarEdad()).rejects.toThrow('No se ha guardado');
+  expect(mockRpc).toHaveBeenLastCalledWith('my_age_confirmation');
+});
+
+test('un error al verificar la escritura no se considera confirmación', async () => {
+  const error = new Error('offline');
+  mockRpc.mockResolvedValueOnce({ data: true, error: null }).mockResolvedValueOnce({ data: null, error });
+  await expect(confirmarEdad()).rejects.toBe(error);
+});
+
+test('la confirmación persistida continúa tras desmontar y volver a arrancar', async () => {
+  mockRpc.mockResolvedValue({ data: true, error: null });
+  await mount();
+  await act(async () => rendered!.unmount());
+  rendered = null;
+  await mount();
+  expect(rendered!.root.findAllByProps({ title: 'Confirmar y continuar' })).toHaveLength(0);
+  expect(mockRpc.mock.calls.every(([name]) => name === 'my_age_confirmation')).toBe(true);
+});
+test('a slow confirmed account sees neutral loading without an age prompt before the reply', async () => {
+  let reply!: (value: unknown) => void;
+  mockRpc.mockReturnValueOnce(new Promise((resolve) => { reply = resolve; }));
+  await mount();
+  expect(rendered!.root.findAllByProps({ titulo: 'Tu edad' })).toHaveLength(0);
+  expect(rendered!.root.findAllByProps({ title: 'Confirmar y continuar' })).toHaveLength(0);
+  expect(privateMount).not.toHaveBeenCalled();
+  await act(async () => reply({ data: true, error: null }));
+  expect(privateMount).toHaveBeenCalled();
+  expect(rendered!.root.findAllByProps({ titulo: 'Tu edad' })).toHaveLength(0);
 });

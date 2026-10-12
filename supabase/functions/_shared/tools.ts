@@ -8,6 +8,7 @@
 // Invariante de economía: el coach elige DIFICULTAD, nunca puntos. El XP sale
 // de la tabla de game.ts (10/25/50/100/250). Así no puede inflar el nivel.
 
+import { LIGAS_ACTIVAS } from './funciones.ts';
 import type { Db } from './db.ts';
 import { leerDiaYAnterior } from './comprobacion.ts';
 
@@ -469,10 +470,10 @@ export const TOOL_DEFS = [
 
   tool(
     'consultar_historial',
-    'Consulta datos que no vienen en el estado inicial. Úsala cuando necesites comprobar algo concreto antes de afirmarlo: si de verdad falló una misión, cuánto levantó hace un mes, qué pesaba en enero, cuánto se gastó en algo. Úsala para comprobar lo que el gladiador dice haber hecho. Devuelve lo más reciente primero. fotos = sus fotos de progreso, solo fecha, pose y peso de ese día (nunca ves la imagen). liga = su puesto en cada liga privada ahora (ignora las fechas; nunca datos de otros miembros). tareas = tareas de campaña que completó en el rango.',
+    'Consulta datos que no vienen en el estado inicial. Úsala cuando necesites comprobar algo concreto antes de afirmarlo: si de verdad falló una misión, cuánto levantó hace un mes, qué pesaba en enero, cuánto se gastó en algo. Úsala para comprobar lo que el gladiador dice haber hecho. Devuelve lo más reciente primero. fotos = sus fotos de progreso, solo fecha, pose y peso de ese día (nunca ves la imagen).' + (LIGAS_ACTIVAS ? ' liga = su puesto en cada liga privada ahora (ignora las fechas; nunca datos de otros miembros).' : '') + ' tareas = tareas de campaña que completó en el rango.',
     {
       que: enumOf(
-        ['completadas', 'eventos', 'peso', 'gym', 'cardio', 'nutricion', 'comidas', 'diario', 'reglas_rotas', 'hechos', 'movimientos', 'fotos', 'liga', 'tareas'],
+        ['completadas', 'eventos', 'peso', 'gym', 'cardio', 'nutricion', 'comidas', 'diario', 'reglas_rotas', 'hechos', 'movimientos', 'fotos', ...(LIGAS_ACTIVAS ? ['liga'] : []), 'tareas'],
         'Qué serie quieres',
       ),
       desde: str('YYYY-MM-DD'),
@@ -1658,7 +1659,7 @@ export async function executeTool(
       // L5: módulos nuevos, solo lectura y sin datos de terceros (ver
       // consultarFotos / consultarLiga / consultarTareas más abajo).
       if (input.que === 'fotos') return ok(await consultarFotos(sb, desde, hasta));
-      if (input.que === 'liga') return ok(await consultarLiga(sb));
+      if (input.que === 'liga') return ok(LIGAS_ACTIVAS ? await consultarLiga(sb) : 'Las ligas no están disponibles.');
       if (input.que === 'tareas') return ok(await consultarTareas(sb, userId, desde, hasta));
 
       // El plan de comidas es semanal, no una serie temporal: filtrarlo por

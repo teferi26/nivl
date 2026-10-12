@@ -600,3 +600,7 @@ campanas	-	dungeon_id, done
 habitos	-	hábito
 habitos	-	d
 hoy	-	XP
+# Merge de winter2/integracion @90d3829 (12/10): textos nuevos o cambiados en integración, no por la extracción.
+puertas	-	Comprobando la confirmación de edad
+puertas	+	Cargando
+raiz	+	Escribe tu nombre para firmar

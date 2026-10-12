@@ -34,6 +34,7 @@ import {
   gestionarSuscripcion,
   isElite,
   isPro,
+  LINEA_PRUEBA,
   lineaProfundos,
   planDePago,
   planLabel,
@@ -343,7 +344,7 @@ export default function Pro() {
   // Con motivo, la cabecera es la del momento; sin él, la de siempre. La prueba
   // se anuncia arriba solo si la cuenta puede empezarla.
   const cabecera = motivo ? copyUpsell(motivo, tierParam ?? 'pro') : null;
-  const conPrueba = status?.trialAvailable ? ' Pruébalo 7 días, sin tarjeta.' : '';
+  const conPrueba = status?.trialAvailable ? ` ${LINEA_PRUEBA}` : '';
   return (
     <Screen refreshing={refreshing} onRefresh={refrescar}>
       <>

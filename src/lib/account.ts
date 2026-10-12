@@ -1,6 +1,4 @@
-import { olvidarConsentimiento } from './consent';
-import { cancelarTodo } from './notifications';
-import { setApiKey } from './oracle';
+import { limpiarDatosDelDispositivo } from './deviceCleanup';
 import { supabase } from './supabase';
 import { ErrorVisible } from './validation';
 
@@ -20,10 +18,6 @@ export async function deleteAccount(): Promise<void> {
   // signed in to an account that no longer exists, so each step is isolated.
   // Scheduled local reminders carry mission/plan titles: they must not keep
   // firing for an erased account on this device.
-  await Promise.allSettled([
-    setApiKey(''),
-    cancelarTodo(),
-    Promise.resolve().then(olvidarConsentimiento),
-  ]);
+  await limpiarDatosDelDispositivo(false);
   await supabase.auth.signOut({ scope: 'local' }).catch(() => undefined);
 }

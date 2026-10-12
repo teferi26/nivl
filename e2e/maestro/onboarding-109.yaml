@@ -1,0 +1,22 @@
+# Reviewable simulator regression, existing NIVL_SHOTS demo ONLY.
+# WRITES the demo's display name, general profile, fictitious book goal and letter.
+# No new Auth user, health consent, purchase, trial, mission completion, XP or AI turn.
+# Clean simulator install uses existing demo; pending minimum age/onboarding is completed through UI.
+# Exact pinned source runs with OTA disabled only in the disposable simulator checkout.
+# Native selectors/gestures require the first actual simulator run; this file is not execution evidence.
+# Maestro 2.10 longPressOn = native 3s press; tapOn is shorter than the 1600ms signing threshold.
+# Background after release is covered below. Background DURING hold remains physical/manual,
+# separately covered by AppState component tests; sequential Maestro cannot interrupt its own gesture.
+appId: com.teferi.nivl
+name: NIVL 1.0.9 demo onboarding and cold reopen
+---
+- launchApp:
+    clearState: true
+    clearKeychain: true
+    permissions:
+      notifications: deny
+- runFlow:
+    file: login-submit.yaml
+    env:
+      NIVL_QA_EMAIL: ${NIVL_QA_EMAIL}
+      NIVL_QA_PASSWORD: ${NIVL_QA_PASSWORD}

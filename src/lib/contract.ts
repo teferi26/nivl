@@ -3,6 +3,7 @@ import { awardXpRpc } from './data';
 import { addDays, dateKey } from './dates';
 import { RULE_BREAK_XP } from './game';
 import { supabase } from './supabase';
+import { conLimiteDeRed } from './limiteRed';
 import type { BonusRedemption, JournalPhoto, Letter, Profile, Rule } from './types';
 import { ErrorVisible } from './validation';
 
@@ -240,13 +241,20 @@ export async function fetchLetter(): Promise<Letter | null> {
 }
 
 export async function sealLetter(userId: string, body: string, openAt: string, healthData = false): Promise<Letter> {
-  const { data, error } = await supabase
-    .from('letters')
-    .insert({ user_id: userId, body, open_at: openAt, health_data: healthData })
-    .select()
-    .single();
+  const { data: session, error: sessionError } = await conLimiteDeRed(supabase.auth.getSession());
+  if (sessionError) throw sessionError;
+  if (session.session?.user.id !== userId) throw new ErrorVisible('La cuenta ha cambiado. Vuelve a intentarlo.');
+  // The server binds the expected UID and same signed content to a unique
+  // key. Retrying after a lost response never creates another letter.
+  const { data, error } = await conLimiteDeRed(supabase.rpc('seal_letter', {
+    p_user: userId, p_body: body, p_open_at: openAt, p_health_data: healthData,
+  }));
   if (error) throw error;
-  return data as Letter;
+  const sealed = data as Letter | null;
+  if (!sealed?.id || sealed.user_id !== userId || sealed.body !== body || sealed.open_at !== openAt) {
+    throw new Error('No se ha podido confirmar la carta sellada.');
+  }
+  return sealed;
 }
 
 export async function openLetter(letter: Letter): Promise<Letter> {

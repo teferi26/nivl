@@ -53,18 +53,18 @@ export function EdadVista(p: EdadVistaProps) {
   return (
     <Screen contentStyle={styles.contenido}>
       <View style={styles.columna}>
-        <Entrada indice={0}>
+        {!cargando ? <Entrada indice={0}>
           <EncabezadoArena
             eyebrow="Antes de entrar"
             titulo="Tu edad"
             subtitulo={`NIVL es para personas de ${p.edadMinima} años o más.`}
             meandro
           />
-        </Entrada>
+        </Entrada> : null}
 
         <Entrada indice={1} style={styles.pila}>
           {cargando ? (
-            <View accessibilityRole="progressbar" accessibilityLabel="Comprobando la confirmación de edad">
+            <View accessibilityRole="progressbar" accessibilityLabel="Cargando">
               <Skeleton height={168} />
             </View>
           ) : pendiente ? (

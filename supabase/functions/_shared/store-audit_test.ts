@@ -26,6 +26,7 @@ function rcFixture() {
     auth: { getUser: () => Promise.resolve({ data: { user: { id: UID } }, error: null }) },
     rpc: (name: string, args: Record<string, unknown>) => {
       trace.push([name, args]);
+      if (name === 'store_account_active') return Promise.resolve({ data: true, error: null });
       if (name === 'begin_store_reconciliation') return Promise.resolve({ data: [{ user_id: UID, revision: 1 }], error: null });
       return Promise.resolve({ data: { ok: true }, error: null });
     },

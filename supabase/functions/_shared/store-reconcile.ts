@@ -82,6 +82,44 @@ export function normalizeStoreEvent(event: ObjectValue): ObjectValue {
 
 export type ReconcileOptions = { allowSandbox?: SandboxPolicy };
 
+/** One SQL statement checks Auth existence and the committed erasure guard. */
+async function accountActive(admin: Db, userId: string): Promise<boolean> {
+  const { data, error } = await admin.rpc('store_account_active', { p_user: userId });
+  // A database outage is not evidence that a customer's data should be erased.
+  if (error || typeof data !== 'boolean') throw new Error('Account verification unavailable');
+  return data;
+}
+
+async function requireActiveAfterRead(admin: Db, userId: string, apiKey: string, fetcher: typeof fetch): Promise<void> {
+  if (await accountActive(admin, userId)) return;
+  const { data: queued, error: queueError } = await admin.rpc('request_store_erasure_cleanup', { p_user: userId });
+  if (queueError || queued !== true) throw new Error('Store erasure queue unavailable');
+  // GET can create a subscriber. A read that finishes after erasure's DELETE
+  // must compensate even if the snapshot is malformed or SQL would reject it.
+  let erased = false;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      const response = await fetcher(`https://api.revenuecat.com/v1/subscribers/${encodeURIComponent(userId)}`, {
+        method: 'DELETE', headers: { Authorization: `Bearer ${apiKey.trim()}`, Accept: 'application/json' },
+        signal: AbortSignal.timeout(10_000),
+      });
+      await response.body?.cancel().catch(() => undefined);
+      if (response.status === 200 || response.status === 404) {
+        erased = true;
+        break;
+      }
+    } catch {
+      // A lost DELETE response can be retried safely; 404 confirms deletion.
+    }
+  }
+  // Immediate cleanup is best-effort. The independent tombstone repeats DELETE
+  // for the server's retention window even after 404, including process death
+  // and GET work that continues remotely after the caller aborts.
+  if (!erased) throw new Error('Store erasure unavailable');
+  throw new Error('Account unavailable');
+}
+
+
 export async function reconcileStore(
   admin: Db, users: string[], apiKey: string, event?: ObjectValue, fetcher: typeof fetch = fetch,
   options: ReconcileOptions = {},
@@ -98,28 +136,39 @@ export async function reconcileStore(
     return { user_id: value.user_id, revision: Number(value.revision) };
   });
   const results = await Promise.allSettled(reservations.map(async reservation => {
-    const response = await fetcher(`https://api.revenuecat.com/v1/subscribers/${encodeURIComponent(reservation.user_id)}`, {
-      method: 'GET', headers: { Authorization: `Bearer ${apiKey.trim()}`, Accept: 'application/json' },
-      signal: AbortSignal.timeout(10_000),
-    });
-    // Never treat an upstream error, including a 404, as "no subscription".
-    if (!response.ok) throw new Error('Store verification unavailable');
-    const snapshot = parseCustomerInfo(await response.json(), reservation, Date.now(), options.allowSandbox);
-    if (event && typeof event.event_timestamp_ms === 'number' && snapshot.requested_ms < event.event_timestamp_ms) {
-      throw new Error('Snapshot predates webhook');
+    if (!(await accountActive(admin, reservation.user_id))) throw new Error('Account unavailable');
+    try {
+      const response = await fetcher(`https://api.revenuecat.com/v1/subscribers/${encodeURIComponent(reservation.user_id)}`, {
+        method: 'GET', headers: { Authorization: `Bearer ${apiKey.trim()}`, Accept: 'application/json' },
+        signal: AbortSignal.timeout(10_000),
+      });
+      // Never treat an upstream error, including a 404, as "no subscription".
+      if (!response.ok) throw new Error('Store verification unavailable');
+      const snapshot = parseCustomerInfo(await response.json(), reservation, Date.now(), options.allowSandbox);
+      if (event && typeof event.event_timestamp_ms === 'number' && snapshot.requested_ms < event.event_timestamp_ms) {
+        throw new Error('Snapshot predates webhook');
+      }
+      return snapshot;
+    } finally {
+      await requireActiveAfterRead(admin, reservation.user_id, apiKey, fetcher);
     }
-    return snapshot;
   }));
   const snapshots = results.map(result => {
     if (result.status === 'rejected') throw new Error('Store verification unavailable');
     return result.value;
   });
   if (!event && snapshots.length !== 1) throw new Error('Account unavailable');
-  const { data: applied, error: applyError } = await admin.rpc('apply_store_reconciliation', {
-    p_snapshots: snapshots, p_event: event ? normalizeStoreEvent(event) : null,
-  });
-  if (applyError || !object(applied) || typeof applied.ok !== 'boolean') throw new Error('Cannot apply store verification');
-  return { ok: applied.ok, ...(applied.ok ? {} : { pending: true }) };
+  try {
+    const { data: applied, error: applyError } = await admin.rpc('apply_store_reconciliation', {
+      p_snapshots: snapshots, p_event: event ? normalizeStoreEvent(event) : null,
+    });
+    if (applyError || !object(applied) || typeof applied.ok !== 'boolean') throw new Error('Cannot apply store verification');
+    return { ok: applied.ok, ...(applied.ok ? {} : { pending: true }) };
+  } finally {
+    // Await every identity's compensation before returning a transfer failure.
+    const checks = await Promise.allSettled(reservations.map(r => requireActiveAfterRead(admin, r.user_id, apiKey, fetcher)));
+    if (checks.some(result => result.status === 'rejected')) throw new Error('Store account verification unavailable');
+  }
 }
 
 const json = (status: number, body: unknown) => new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json' } });

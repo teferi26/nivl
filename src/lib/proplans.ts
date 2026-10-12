@@ -330,12 +330,21 @@ export const COACH_USAGE_NOTICE =
  * tarjeta, sin renovación, coach estándar con energía propia (0,50 $) y sin
  * modo profundo. Se dice siempre que se ofrece, con la tienda abierta o no.
  */
+//
+// Redacción neutra (auditoría de guidelines, 04/10/2026): «gratis, una vez y
+// sin renovación», como las notas de revisión («requires no payment
+// information and does not auto-renew»). Nada de «sin tarjeta»: contrapone la
+// prueba al cobro de la tienda y la hace leer como un acceso por fuera de la
+// compra integrada (3.1.1), cuando solo es un regalo gratuito del servidor.
 export function textoPrueba(tier: OfferTier): string {
   if (tier === 'elite') {
-    return 'La prueba de 7 días es del coach estándar de Pro, con energía limitada y sin modo profundo. Sin tarjeta y sin cobro: no se renueva sola.';
+    return 'La prueba de 7 días es del coach estándar de Pro, con energía limitada y sin modo profundo. Gratis y una sola vez por cuenta: no se renueva sola y al acabar no se cobra nada.';
   }
-  return 'Siete días con el coach estándar y energía limitada, sin tarjeta y sin cobro. No se renueva sola. Al acabar, tus hábitos y tu progreso siguen disponibles gratis.';
+  return 'Siete días con el coach estándar y energía limitada, gratis y una sola vez por cuenta. No se renueva sola: al acabar no se cobra nada y tus hábitos y tu progreso siguen disponibles gratis.';
 }
+
+/** La línea de la cabecera de /pro cuando la cuenta puede empezar la prueba. */
+export const LINEA_PRUEBA = 'Prueba el coach 7 días: gratis y sin renovación.';
 
 /** El botón de la prueba. Mirando Élite dice de qué es la prueba: de Pro. */
 export function tituloBotonPrueba(tier: OfferTier): string {
@@ -531,7 +540,7 @@ const UNIDADES: Record<string, [string, string]> = {
  * La frase de la oferta introductoria, solo si la tienda la declara. Con
  * `condicional` (iOS sin elegibilidad confirmada) se dice que depende de la
  * tienda. Sin oferta, null: el paywall NUNCA promete una prueba de tienda que
- * no existe (la prueba de 7 días de NIVL es del servidor, sin tarjeta).
+ * no existe (la prueba de 7 días de NIVL es del servidor, gratis y sin renovación).
  */
 export function textoIntro(intro: IntroTienda | null | undefined, condicional = false): string | null {
   if (!intro || !UNIDADES[intro.periodUnit] || !(intro.periodNumberOfUnits > 0)) return null;

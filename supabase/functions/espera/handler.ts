@@ -8,6 +8,20 @@
 
 /** Versión del texto de consentimiento que acepta la casilla. La fija el servidor. */
 export const VERSION_CONSENTIMIENTO = 'espera-v1';
+/**
+ * Versión del texto según el idioma de la página (/espera en inglés y francés).
+ * Lista blanca: el cliente solo elige el IDIOMA; la versión la pone el
+ * servidor. 'es', ausente o cualquier otro valor → la versión en español.
+ */
+export const VERSIONES_POR_IDIOMA: Readonly<Record<string, string>> = Object.freeze({
+  en: 'espera-v1.4-en',
+  fr: 'espera-v1.4-fr',
+});
+export function versionDe(idioma: unknown): string {
+  return typeof idioma === 'string' && Object.hasOwn(VERSIONES_POR_IDIOMA, idioma)
+    ? VERSIONES_POR_IDIOMA[idioma]
+    : VERSION_CONSENTIMIENTO;
+}
 // nivl-web.vercel.app sirve la misma web (los binarios 1.0.7 abren ahí los legales). www redirige a nivl.app.
 export const ORIGENES_PERMITIDOS = ['https://nivl.app', 'https://nivl-web.vercel.app'];
 const MAX_CUERPO = 2048;
@@ -75,7 +89,7 @@ export function esperaHandler(apuntar: Apuntar) {
     if (typeof cuerpo.email !== 'string' || cuerpo.email.length > 254) return json(400, { error: 'correo' }, origin);
 
     try {
-      const r = await apuntar(cuerpo.email, VERSION_CONSENTIMIENTO, limpiarOrigen(cuerpo.origen), ipDe(req));
+      const r = await apuntar(cuerpo.email, versionDe(cuerpo.idioma), limpiarOrigen(cuerpo.origen), ipDe(req));
       if (r === 'correo') return json(400, { error: 'correo' }, origin);
       if (r === 'frenado') return json(429, { error: 'frenado' }, origin);
       return json(200, { ok: true }, origin);

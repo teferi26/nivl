@@ -494,3 +494,61 @@ describe('fetchAiStatus: visión del coach', () => {
     expect((await fetchAiStatus()).vision).toBe(false);
   });
 });
+
+
+describe('operaciones de tienda ligadas a su cuenta', () => {
+  test('restauración diferida no reconcilia ni confirma la sesión nueva', async () => {
+    let terminar!: (value: never) => void;
+    let arrancar!: () => void;
+    const iniciada = new Promise<void>((resolve) => { arrancar = resolve; });
+    rcRestore.mockImplementationOnce(() => {
+      arrancar();
+      return new Promise((resolve) => { terminar = resolve; });
+    });
+    const pendiente = restorePurchases();
+    const resultado = expect(pendiente).rejects.toThrow(/cuenta ha cambiado/);
+    await iniciada;
+    asUser('otra-cuenta');
+    const cambio = identificarEnTienda('otra-cuenta');
+    expect(logIn).not.toHaveBeenCalledWith('otra-cuenta');
+    terminar(info([['nivl_pro_anual', 'APP_STORE']]));
+    await resultado;
+    await cambio;
+    expect(reconcile).not.toHaveBeenCalled();
+    expect(status).not.toHaveBeenCalled();
+  });
+
+  test('Android tampoco restaura para comprar después de un cambio de sesión', async () => {
+    mockPlatform.OS = 'android';
+    let terminar!: (value: never) => void;
+    let arrancar!: () => void;
+    const iniciada = new Promise<void>((resolve) => { arrancar = resolve; });
+    rcRestore.mockImplementationOnce(() => {
+      arrancar();
+      return new Promise((resolve) => { terminar = resolve; });
+    });
+    const pendiente = purchase('nivl_pro_anual', '$109.99');
+    const resultado = expect(pendiente).rejects.toThrow(/cuenta ha cambiado/);
+    await iniciada;
+    asUser('otra-cuenta-android');
+    const cambio = identificarEnTienda('otra-cuenta-android');
+    expect(logIn).not.toHaveBeenCalledWith('otra-cuenta-android');
+    terminar(info());
+    await resultado;
+    await cambio;
+    expect(buy).not.toHaveBeenCalled();
+    expect(reconcile).not.toHaveBeenCalled();
+  });
+
+  test('restaurar Élite no se confirma con el derecho anterior Pro', async () => {
+    rcRestore.mockResolvedValue(info([['nivl_elite_anual', 'APP_STORE']]));
+    status.mockResolvedValue(server('pro_anual', 'pro'));
+    await expect(conReloj(() => restorePurchases())).resolves.toBe('pendiente');
+  });
+
+  test('restaurar conserva un derecho superior ya confirmado', async () => {
+    rcRestore.mockResolvedValue(info([['nivl_pro_anual', 'APP_STORE']]));
+    status.mockResolvedValue(server('elite_anual', 'elite'));
+    await expect(restorePurchases()).resolves.toBe('activa');
+  });
+});

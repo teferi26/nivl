@@ -32,6 +32,7 @@
   "holdToSign": {
     "noSueltes": "No sueltes",
     "pista": "Mantén pulsado hasta que el anillo se cierre para firmar",
+    "pistaNombre": "Escribe tu nombre para firmar",
     "sellando": "Sellando"
   },
   "lineaDeTiempo": {

@@ -1,0 +1,355 @@
+# Manual, reviewable native QA. No TestFlight submission, App Store publication or OTA.
+# Only the existing fictitious screenshots demo may be used. The flow writes its
+# QA display name/general profile/book goal/letter and minimum age via UI only; no health consent or AI calls.
+# Repository artifacts can be public: upload ONLY curated screenshots after login,
+# never Maestro debug/report directories, login screens, logs, app binaries or credentials.
+name: QA onboarding iOS 1.0.9 (demo simulator)
+
+on:
+  workflow_call:
+    inputs:
+      sha:
+        required: true
+        type: string
+    secrets:
+      EXPO_TOKEN:
+        required: true
+      NIVL_SHOTS_EMAIL:
+        required: true
+      NIVL_SHOTS_PASSWORD:
+        required: true
+  workflow_dispatch:
+    inputs:
+      sha:
+        description: 'Exact 40-character commit SHA reviewed for this simulator run'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: qa-onboarding-ios-demo
+  cancel-in-progress: false
+
+jobs:
+  onboarding-ipad:
+    runs-on: macos-15
+    timeout-minutes: 120
+    env:
+      MAESTRO_VERSION: 2.10.0
+    steps:
+      - name: Validate exact revision and existing secret names
+        env:
+          QA_SHA: ${{ inputs.sha }}
+          HAS_EXPO: ${{ secrets.EXPO_TOKEN != '' }}
+          HAS_EMAIL: ${{ secrets.NIVL_SHOTS_EMAIL != '' }}
+          HAS_PASSWORD: ${{ secrets.NIVL_SHOTS_PASSWORD != '' }}
+        run: |
+          set -euo pipefail
+          if [[ ! "$QA_SHA" =~ ^[a-fA-F0-9]{40}$ ]]; then
+            echo "::error::Use an exact 40-character reviewed commit SHA."
+            exit 1
+          fi
+          if [ "$HAS_EXPO" != "true" ] || [ "$HAS_EMAIL" != "true" ] || [ "$HAS_PASSWORD" != "true" ]; then
+            echo "::error::Missing existing EXPO_TOKEN/NIVL_SHOTS_EMAIL/NIVL_SHOTS_PASSWORD."
+            exit 1
+          fi
+
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.sha }}
+          persist-credentials: false
+
+      - name: Confirm checkout matches requested revision
+        env:
+          QA_SHA: ${{ inputs.sha }}
+        run: |
+          set -euo pipefail
+          [ "$(git rev-parse HEAD)" = "$(printf '%s' "$QA_SHA" | tr '[:upper:]' '[:lower:]')" ]
+          echo "QA_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.14.0
+          cache: npm
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Verify source before any native build
+        run: |
+          set -euo pipefail
+          npm ci
+          npm run typecheck
+          npm test -- --runInBand
+          npm run lint
+
+      - name: Select exact review device and actual installed runtime
+        run: |
+          set -euo pipefail
+          xcrun simctl list devicetypes -j > "$RUNNER_TEMP/device-types.json"
+          xcrun simctl list runtimes -j > "$RUNNER_TEMP/runtimes.json"
+          # No silent replacement with an iPad Pro. If missing, fail with available names.
+          python3 - "$RUNNER_TEMP/device-types.json" "$GITHUB_ENV" <<'PY'
+          import json, sys
+          types = json.load(open(sys.argv[1]))['devicetypes']
+          wanted = 'iPad Air 11-inch (M3)'
+          matches = [d for d in types if d['name'] == wanted]
+          if not matches:
+              print('::error::Requested review simulator missing: ' + wanted)
+              print('Available iPad types: ' + ', '.join(d['name'] for d in types if 'iPad' in d['name']))
+              sys.exit(1)
+          with open(sys.argv[2], 'a') as out:
+              out.write('QA_DEVICE_TYPE=' + matches[0]['identifier'] + '\n')
+              out.write('QA_DEVICE_NAME=' + wanted + '\n')
+          PY
+          RUNTIME=$(python3 scripts/ci/simruntime.py < "$RUNNER_TEMP/runtimes.json")
+          echo "QA_RUNTIME=$RUNTIME" >> "$GITHUB_ENV"
+          echo "Selected iPad Air 11-inch (M3), runtime $RUNTIME. This is not an assertion of iPadOS 27 availability."
+
+      - run: npm install --global eas-cli@21.2.0
+
+      - name: Check existing demo authentication and readiness before native build
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+          NIVL_SHOTS_EMAIL: ${{ secrets.NIVL_SHOTS_EMAIL }}
+          NIVL_SHOTS_PASSWORD: ${{ secrets.NIVL_SHOTS_PASSWORD }}
+        run: |
+          set -euo pipefail
+          umask 077
+          QA_ENV_FILE=$(mktemp "$RUNNER_TEMP/nivl-qa-env.XXXXXX")
+          rm -f "$QA_ENV_FILE"
+          export QA_ENV_FILE
+          trap 'rm -f "$QA_ENV_FILE"' EXIT
+          # Suppress ALL EAS output: it may contain variable values.
+          if ! eas env:pull --environment production --non-interactive --path "$QA_ENV_FILE" >/dev/null 2>&1; then
+            echo "::error::QA_ENV_PULL_FAILED (details withheld)."
+            exit 1
+          fi
+          node --input-type=module <<'JS'
+          import fs from 'node:fs';
+          import { parseEnv } from 'node:util';
+          import { createClient } from '@supabase/supabase-js';
+          const fail = (code) => { console.log('::error::QA_PREFLIGHT_' + code); process.exitCode = 1; };
+          try {
+            const config = parseEnv(fs.readFileSync(process.env.QA_ENV_FILE, 'utf8'));
+            const url = process.env.EXPO_PUBLIC_SUPABASE_URL ?? config.EXPO_PUBLIC_SUPABASE_URL;
+            const key = process.env.EXPO_PUBLIC_SUPABASE_KEY ?? config.EXPO_PUBLIC_SUPABASE_KEY;
+            if (url !== 'https://dueyufxxkiixdxighpaz.supabase.co' || !key) {
+              fail('PUBLIC_CONFIG_INVALID');
+            } else {
+              const client = createClient(url, key, {
+                auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
+                global: { fetch: (input, init) => fetch(input, { ...init, signal: AbortSignal.timeout(30_000) }) },
+              });
+              const { data: login, error: authError } = await client.auth.signInWithPassword({
+                email: process.env.NIVL_SHOTS_EMAIL,
+                password: process.env.NIVL_SHOTS_PASSWORD,
+              });
+              if (authError || !login.user) {
+                const code = /^[a-z0-9_]{1,64}$/.test(authError?.code ?? '') ? authError.code : 'unknown';
+                // This extra API diagnostic cannot replace the mandatory native UI login.
+                const status = Number.isInteger(authError?.status) ? authError.status : 0;
+                console.log('QA_PREFLIGHT_AUTH_INCONCLUSIVE code=' + code + ' status=' + status);
+              } else {
+                const { data: profile, error: profileError } = await client.from('profiles')
+                  .select('onboarding_done').eq('id', login.user.id).maybeSingle();
+                const { data: age, error: ageError } = await client.rpc('my_age_confirmation');
+                const onboardingDone = profile?.onboarding_done === true;
+                const ageConfirmed = age === true;
+                console.log('QA_PREFLIGHT auth=true onboarding_done=' + onboardingDone + ' age_confirmed=' + ageConfirmed);
+                if (profileError || ageError || !profile || typeof age !== 'boolean') {
+                  fail('READINESS_QUERY_FAILED');
+
+                }
+              }
+              await client.auth.signOut({ scope: 'local' });
+            }
+          } catch {
+            fail('NETWORK_OR_CONFIG_FAILED');
+          }
+          JS
+      - name: Pin embedded JavaScript in the disposable simulator checkout
+        run: |
+          # screenshots uses the production channel; an OTA must not replace the reviewed SHA.
+          # This modifies ONLY this ephemeral CI checkout, never the repository or TestFlight build.
+          node --input-type=module <<'JS'
+          import fs from 'node:fs';
+          const app = JSON.parse(fs.readFileSync('app.json', 'utf8'));
+          app.expo.updates = { ...app.expo.updates, enabled: false };
+          fs.writeFileSync('app.json', JSON.stringify(app, null, 2) + '\n');
+          JS
+
+      - name: Build simulator Release with the existing screenshots profile
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: |
+          set -euo pipefail
+          eas build --platform ios --profile screenshots --local --non-interactive \
+            --output "$RUNNER_TEMP/nivl-qa-sim.tar.gz"
+          mkdir -p "$RUNNER_TEMP/qa-app"
+          tar -xzf "$RUNNER_TEMP/nivl-qa-sim.tar.gz" -C "$RUNNER_TEMP/qa-app"
+          APP_PATH=$(find "$RUNNER_TEMP/qa-app" -maxdepth 2 -name '*.app' -print -quit)
+          [ -n "$APP_PATH" ]
+          echo "APP_PATH=$APP_PATH" >> "$GITHUB_ENV"
+
+      - name: Install checksum-verified Maestro
+        env:
+          MAESTRO_SHA256: 29b675e10cc12080e445e9bfb2e2b4e4dfb9c0f2e30d5884120d258b5e1cd991
+        run: |
+          set -euo pipefail
+          curl -fsSL -o "$RUNNER_TEMP/maestro.zip" "https://github.com/mobile-dev-inc/Maestro/releases/download/cli-${MAESTRO_VERSION}/maestro.zip"
+          echo "${MAESTRO_SHA256}  $RUNNER_TEMP/maestro.zip" | shasum -a 256 -c -
+          unzip -q "$RUNNER_TEMP/maestro.zip" -d "$HOME/maestro-qa-cli"
+          echo "$HOME/maestro-qa-cli/maestro/bin" >> "$GITHUB_PATH"
+
+      - name: Install fresh simulator and run existing demo regression
+        env:
+          NIVL_SHOTS_EMAIL: ${{ secrets.NIVL_SHOTS_EMAIL }}
+          NIVL_SHOTS_PASSWORD: ${{ secrets.NIVL_SHOTS_PASSWORD }}
+        run: |
+          set -euo pipefail
+          UDID=$(xcrun simctl create "nivl-qa-onboarding" "$QA_DEVICE_TYPE" "$QA_RUNTIME")
+          echo "QA_UDID=$UDID" >> "$GITHUB_ENV"
+          PLIST="$HOME/Library/Developer/CoreSimulator/Devices/$UDID/data/Library/Preferences/.GlobalPreferences.plist"
+          mkdir -p "$(dirname "$PLIST")"
+          [ -f "$PLIST" ] || plutil -create xml1 "$PLIST"
+          plutil -replace AppleLanguages -json '["es-ES"]' "$PLIST"
+          plutil -replace AppleLocale -string es_ES "$PLIST"
+          xcrun simctl boot "$UDID"
+          xcrun simctl bootstatus "$UDID" -b
+          xcrun simctl status_bar "$UDID" override --time '9:41' --batteryState charged --batteryLevel 100 --cellularBars 4 --wifiBars 3 --operatorName ''
+          xcrun simctl ui "$UDID" appearance dark
+          xcrun simctl install "$UDID" "$APP_PATH"
+          umask 077
+          mkdir -p "$RUNNER_TEMP/qa-evidence" "$RUNNER_TEMP/qa-private-debug"
+          # Raw Maestro failure screenshots/reports remain separate and are NEVER uploaded.
+          maestro --device "$UDID" test \
+            -e NIVL_QA_EMAIL="$NIVL_SHOTS_EMAIL" -e NIVL_QA_PASSWORD="$NIVL_SHOTS_PASSWORD" \
+            -e QA_EVIDENCE_ROOT="$RUNNER_TEMP/qa-evidence" \
+            --test-output-dir "$RUNNER_TEMP/qa-private-debug/login-submit" \
+            --debug-output "$RUNNER_TEMP/qa-private-debug/login-submit" \
+            e2e/maestro/onboarding-109.yaml > "$RUNNER_TEMP/qa-private-debug/maestro-command.log" 2>&1
+          # Resolve only the fixed password alert, then verify post-login and the full body.
+          bash scripts/ci/nivl-qa-dismiss-password.sh "$UDID" "$RUNNER_TEMP/qa-private-debug/modal-original"
+          maestro --device "$UDID" test \
+            -e QA_EVIDENCE_ROOT="$RUNNER_TEMP/qa-evidence" \
+            --test-output-dir "$RUNNER_TEMP/qa-private-debug/onboarding-body" \
+            --debug-output "$RUNNER_TEMP/qa-private-debug/onboarding-body" \
+            e2e/maestro/onboarding-109-continue.yaml > "$RUNNER_TEMP/qa-private-debug/body-command.log" 2>&1
+          cat > "$RUNNER_TEMP/qa-evidence/simulator-result.txt" <<EOF
+          Status: PASS SIMULATOR ONLY
+          Reviewed source SHA: $QA_SHA
+          Device: $QA_DEVICE_NAME
+          Runtime: $QA_RUNTIME
+          Native profile: screenshots Release; OTA disabled in disposable checkout
+          Account: existing fictitious screenshots demo; initial readiness flags logged by preflight
+          Covered: label focuses empty signature, invalid 3-second hold does not sign,
+          short release does not sign, background after release resumes, valid hold signs,
+          completed account reopens without age screen at settled assertions.
+          NOT COVERED: newly created Auth account, migration from installed 1.0.8(24), physical iPad/iPhone,
+          background DURING hold, transient first-frame age flash, purchases or restoration.
+          AppState during-hold cancellation has separate component-test evidence, not native evidence here.
+          EOF
+
+      - name: Report fixed indicators from original failure artifacts before recovery
+        if: failure() && env.QA_UDID != ''
+        env:
+          NIVL_SHOTS_EMAIL: ${{ secrets.NIVL_SHOTS_EMAIL }}
+        run: |
+          umask 077
+          PRIVATE="$RUNNER_TEMP/qa-private-debug"
+          OCR_PRIVATE="$RUNNER_TEMP/qa-private-ocr.json"
+          export PRIVATE
+          # Only original failed-step screenshots, never final.png or recovery images.
+          # Paths and OCR strings remain private; no screenshot/log/tree is uploaded.
+          python3 - <<'PY' > "$RUNNER_TEMP/qa-private-images.list"
+          import os, pathlib
+          root = pathlib.Path(os.environ['PRIVATE'])
+          images = [p for p in root.rglob('*.png') if 'screenshots' in p.parts
+                    and p.name != 'final.png' and 'recovery' not in p.relative_to(root).parts
+                    and not p.is_symlink() and p.stat().st_size <= 20*1024*1024]
+          for image in sorted(images, key=lambda p: p.stat().st_mtime, reverse=True)[:1]:
+              print(image)
+          PY
+          IMAGES=()
+          while IFS= read -r image; do IMAGES+=("$image"); done < "$RUNNER_TEMP/qa-private-images.list"
+          if ! swift scripts/ci/nivl-qa-ocr.swift "${IMAGES[@]}" > "$OCR_PRIVATE" 2> "$RUNNER_TEMP/qa-private-ocr.err"; then
+            printf '[]' > "$OCR_PRIVATE"
+          fi
+          python3 scripts/ci/nivl-qa-screen-state.py "$PRIVATE" "$OCR_PRIVATE" \
+            "$HOME/Library/Logs/DiagnosticReports" \
+            "$HOME/Library/Developer/CoreSimulator/Devices/$QA_UDID/data/Library/Logs/CrashReporter"
+          rm -f "$OCR_PRIVATE" "$RUNNER_TEMP/qa-private-images.list" "$RUNNER_TEMP/qa-private-ocr.err"
+
+      - name: Diagnostic recovery in same demo session (original QA remains failed)
+        if: failure() && env.QA_UDID != ''
+        run: |
+          umask 077
+          mkdir -p "$RUNNER_TEMP/qa-private-debug/recovery" "$RUNNER_TEMP/qa-private-debug/recovery-evidence"
+          # Resolve alert in the current screen before any launch/driver foreground change.
+          if ! bash scripts/ci/nivl-qa-dismiss-password.sh "$QA_UDID" "$RUNNER_TEMP/qa-private-debug/recovery/modal"; then
+            echo 'QA_RECOVERY_STATUS FAIL_DIAGNOSTIC_ONLY_ORIGINAL_FAILED'
+            exit 0
+          fi
+          if maestro --device "$QA_UDID" test \
+            -e QA_EVIDENCE_ROOT="$RUNNER_TEMP/qa-private-debug/recovery-evidence" \
+            --test-output-dir "$RUNNER_TEMP/qa-private-debug/recovery" \
+            --debug-output "$RUNNER_TEMP/qa-private-debug/recovery" \
+            e2e/maestro/onboarding-109-recovery.yaml > "$RUNNER_TEMP/qa-private-debug/recovery-command.log" 2>&1; then
+            echo 'QA_RECOVERY_STATUS PASS_DIAGNOSTIC_ONLY_ORIGINAL_FAILED'
+          else
+            echo 'QA_RECOVERY_STATUS FAIL_DIAGNOSTIC_ONLY_ORIGINAL_FAILED'
+          fi
+
+      - name: Report fixed indicators from recovery artifacts
+        if: failure() && env.QA_UDID != ''
+        run: |
+          umask 077
+          PRIVATE="$RUNNER_TEMP/qa-private-debug/recovery"
+          OCR_PRIVATE="$RUNNER_TEMP/qa-private-recovery-ocr.json"
+          export PRIVATE
+          # Only original failed-step screenshots, never final.png or recovery images.
+          # Paths and OCR strings remain private; no screenshot/log/tree is uploaded.
+          python3 - <<'PY' > "$RUNNER_TEMP/qa-private-recovery-images.list"
+          import os, pathlib
+          root = pathlib.Path(os.environ['PRIVATE'])
+          images = [p for p in root.rglob('*.png') if 'screenshots' in p.parts
+                    and p.name != 'final.png' and 'recovery' not in p.relative_to(root).parts
+                    and not p.is_symlink() and p.stat().st_size <= 20*1024*1024]
+          for image in sorted(images, key=lambda p: p.stat().st_mtime, reverse=True)[:1]:
+              print(image)
+          PY
+          IMAGES=()
+          while IFS= read -r image; do IMAGES+=("$image"); done < "$RUNNER_TEMP/qa-private-recovery-images.list"
+          if ! swift scripts/ci/nivl-qa-ocr.swift "${IMAGES[@]}" > "$OCR_PRIVATE" 2> "$RUNNER_TEMP/qa-private-recovery-ocr.err"; then
+            printf '[]' > "$OCR_PRIVATE"
+          fi
+          python3 scripts/ci/nivl-qa-screen-state.py "$PRIVATE" "$OCR_PRIVATE" --recovery \
+            "$HOME/Library/Logs/DiagnosticReports" \
+            "$HOME/Library/Developer/CoreSimulator/Devices/$QA_UDID/data/Library/Logs/CrashReporter"
+          rm -f "$OCR_PRIVATE" "$RUNNER_TEMP/qa-private-recovery-images.list" "$RUNNER_TEMP/qa-private-recovery-ocr.err"
+
+      - name: Upload only curated fictitious-demo evidence
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qa-onboarding-ios-${{ github.run_number }}
+          path: |
+            ${{ runner.temp }}/qa-evidence/qa-*.png
+            ${{ runner.temp }}/qa-evidence/simulator-result.txt
+          retention-days: 3
+          if-no-files-found: error
+
+      - name: Remove dedicated simulator
+        if: always()
+        run: |
+          if [ -n "${QA_UDID:-}" ]; then
+            xcrun simctl shutdown "$QA_UDID" || true
+            xcrun simctl delete "$QA_UDID" || true
+          fi
