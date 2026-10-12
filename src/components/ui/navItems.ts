@@ -11,8 +11,28 @@ import type Ionicons from '@expo/vector-icons/Ionicons';
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { vibrar } from '@/design/haptics';
 import type { NavKind } from '@/design/responsive';
+import { t } from '@/i18n';
 
 type Icon = keyof typeof Ionicons.glyphMap;
+
+/** Los destinos con nombre en `comun:destino.*` (también los títulos de (tabs)/_layout). */
+export type Destino = 'hoy' | 'agenda' | 'coach' | 'habitos' | 'campanas' | 'perfil';
+
+/** El nombre visible de un destino, en el idioma actual (al pintar, nunca al cargar). */
+export function nombreDestino(destino: Destino): string {
+  return t(`comun:destino.${destino}`);
+}
+
+export interface NavDestino {
+  off: Icon;
+  on: Icon;
+  /** Clave del rótulo: se traduce al pintar (`navItemDe`). */
+  destino: Destino;
+  /** Si sale en la barra inferior de `compact`. Por defecto, sí. */
+  compact?: boolean;
+  /** Destino que se marca como activo cuando se está en este (p. ej. Agenda → Hoy). */
+  padre?: string;
+}
 
 export interface NavItem {
   off: Icon;
@@ -24,13 +44,13 @@ export interface NavItem {
   padre?: string;
 }
 
-export const NAV_ITEMS: Record<string, NavItem> = {
-  index: { off: 'today-outline', on: 'today', label: 'Hoy' },
-  coach: { off: 'chatbubble-ellipses-outline', on: 'chatbubble-ellipses', label: 'Coach' },
-  habitos: { off: 'repeat-outline', on: 'repeat', label: 'Hábitos' },
-  mazmorras: { off: 'flag-outline', on: 'flag', label: 'Campañas' },
-  agenda: { off: 'calendar-outline', on: 'calendar', label: 'Agenda', compact: false, padre: 'index' },
-  perfil: { off: 'person-outline', on: 'person', label: 'Perfil' },
+export const NAV_ITEMS: Record<string, NavDestino> = {
+  index: { off: 'today-outline', on: 'today', destino: 'hoy' },
+  coach: { off: 'chatbubble-ellipses-outline', on: 'chatbubble-ellipses', destino: 'coach' },
+  habitos: { off: 'repeat-outline', on: 'repeat', destino: 'habitos' },
+  mazmorras: { off: 'flag-outline', on: 'flag', destino: 'campanas' },
+  agenda: { off: 'calendar-outline', on: 'calendar', destino: 'agenda', compact: false, padre: 'index' },
+  perfil: { off: 'person-outline', on: 'person', destino: 'perfil' },
 };
 
 type Route = BottomTabBarProps['state']['routes'][number];
@@ -61,9 +81,10 @@ export function destinoActivo(
 
 /** Icono y rótulo de una pestaña. El `title` de la pantalla gana al rótulo. */
 export function navItemDe(route: Route, descriptors: BottomTabBarProps['descriptors']): NavItem {
-  const meta = NAV_ITEMS[route.name] ?? { off: 'ellipse-outline', on: 'ellipse', label: route.name };
+  const d = NAV_ITEMS[route.name];
   const title = descriptors[route.key]?.options.title;
-  return typeof title === 'string' ? { ...meta, label: title } : meta;
+  const label = typeof title === 'string' ? title : d ? nombreDestino(d.destino) : route.name;
+  return d ? { off: d.off, on: d.on, label, compact: d.compact, padre: d.padre } : { off: 'ellipse-outline', on: 'ellipse', label };
 }
 
 /**

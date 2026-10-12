@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import { avisar, confirmar } from '@/components/ui/confirmar';
 import { SIN_DATO } from '@/components/ui/sinDato';
+import { t } from '@/i18n';
 import { colors, fonts } from '@/lib/theme';
 import { mensajeSistema } from '@/lib/validation';
 
@@ -36,9 +37,9 @@ export function Version() {
 
   // En Expo Go y en desarrollo estas propiedades no existen: se degrada a un
   // texto honesto en vez de reventar la pantalla de Perfil.
-  const canal = Updates.channel || 'sin canal';
+  const canal = Updates.channel || t('raiz:version.sinCanal');
   const paquete = Updates.isEmbeddedLaunch
-    ? 'embedded (sin OTA)'
+    ? t('raiz:version.embebido')
     : (Updates.updateId ?? SIN_DATO).slice(0, 8);
   const creado = Updates.createdAt ? Updates.createdAt.toISOString().slice(0, 16).replace('T', ' ') : null;
 
@@ -54,39 +55,33 @@ export function Version() {
   const buscar = async () => {
     if (buscando) return;
     if (!Updates.isEnabled) {
-      avisar(
-        'Actualizaciones desactivadas',
-        'Esta copia no tiene el sistema de actualizaciones activo (pasa en Expo Go y en desarrollo). Solo cambia con un build nuevo.',
-      );
+      avisar(t('raiz:version.desactivadasTitulo'), t('raiz:version.desactivadasTexto'));
       return;
     }
     setBuscando(true);
     try {
       const r = await Updates.checkForUpdateAsync();
       if (!r.isAvailable) {
-        avisar(
-          'Ya estás al día',
-          `No hay ninguna actualización nueva para la versión ${version} en el canal ${canal}.`,
-        );
+        avisar(t('raiz:version.alDiaTitulo'), t('raiz:version.alDiaTexto', { version, canal }));
         return;
       }
       await Updates.fetchUpdateAsync();
       setBuscando(false);
       const ahora = await confirmar({
-        titulo: 'Actualización lista',
-        mensaje: 'El sistema va a reiniciarse para aplicarla. Si lo dejas para más tarde, se aplica en el próximo arranque.',
-        confirmar: 'Reiniciar',
-        cancelar: 'Más tarde',
+        titulo: t('raiz:version.listaTitulo'),
+        mensaje: t('raiz:version.listaTexto'),
+        confirmar: t('raiz:version.reiniciar'),
+        cancelar: t('comun:masTarde'),
       });
       if (ahora) await Updates.reloadAsync();
     } catch (e) {
-      avisar('No se pudo actualizar', mensajeSistema(e));
+      avisar(t('raiz:version.errorTitulo'), mensajeSistema(e));
     } finally {
       setBuscando(false);
     }
   };
 
-  const titulo = `Versión ${version}${build ? ` (${build})` : ''}`;
+  const titulo = build ? t('raiz:version.tituloBuild', { version, build }) : t('raiz:version.titulo', { version });
   const alternar = () => setDetalle((d) => !d);
 
   return (
@@ -97,8 +92,8 @@ export function Version() {
         style={styles.version}
         accessibilityRole="text"
         accessibilityLabel={titulo}
-        accessibilityHint={detalle ? 'Mantén pulsado para ocultar los detalles' : 'Mantén pulsado para ver los detalles'}
-        accessibilityActions={[{ name: 'longpress', label: detalle ? 'Ocultar detalles' : 'Ver detalles' }]}
+        accessibilityHint={detalle ? t('raiz:version.pistaOcultar') : t('raiz:version.pistaVer')}
+        accessibilityActions={[{ name: 'longpress', label: detalle ? t('raiz:version.ocultarDetalles') : t('raiz:version.verDetalles') }]}
         onAccessibilityAction={(e) => {
           if (e.nativeEvent.actionName === 'longpress') alternar();
         }}
@@ -110,24 +105,24 @@ export function Version() {
       {detalle ? (
         <>
           <Text style={styles.linea} maxFontSizeMultiplier={1.35}>
-            Canal {canal}
+            {t('raiz:version.canal', { canal })}
           </Text>
           <Text style={styles.linea} maxFontSizeMultiplier={1.35}>
-            Paquete {paquete}
+            {t('raiz:version.paquete', { paquete })}
             {creado ? ` · ${creado}` : ''}
           </Text>
           <Pressable
             onPress={buscar}
             style={styles.boton}
             accessibilityRole="button"
-            accessibilityLabel="Buscar actualización del sistema"
+            accessibilityLabel={t('raiz:version.buscarA11y')}
             accessibilityState={{ busy: buscando }}
           >
             {buscando ? (
               <ActivityIndicator size="small" color={colors.accentText} />
             ) : (
               <Text style={styles.botonTexto} maxFontSizeMultiplier={1.35}>
-                BUSCAR ACTUALIZACIÓN
+                {t('raiz:version.buscar')}
               </Text>
             )}
           </Pressable>

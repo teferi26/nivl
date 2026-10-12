@@ -5,6 +5,7 @@
 // compartir unificada (tarjetaDeSemana). La pieza visual y la captura las pone
 // HojaCompartir, que se abre por la cola de celebraciones (useCelebracion().compartir).
 
+import { t } from '@/i18n';
 import { levelFromXp } from '@/lib/game';
 import type { Tarjeta } from '@/lib/sharecard';
 import { fetchBoard, fetchSocialSelf, type BoardEntry } from '@/lib/social';
@@ -41,7 +42,7 @@ export async function prepararDatosSemana(
     opciones.friendCode ? Promise.resolve(opciones.friendCode) : fetchSocialSelf(userId).then((s) => s.friendCode),
   ]);
   const mio = semana.find((b) => b.isMe);
-  if (!mio) throw new Error('El sistema no encuentra tu fila en el marcador.');
+  if (!mio) throw new Error(t('raiz:shareCardSemana.sinFila'));
   return {
     name: mio.name,
     avatarPath: mio.avatarPath,

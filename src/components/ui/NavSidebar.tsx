@@ -15,6 +15,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Laurel } from '@/components/arena';
 import { ANCHO_SIDEBAR } from '@/design/responsive';
 import { ink, space, stroke, type as tipo } from '@/design/tokens';
+import { t } from '@/i18n';
 import { fonts } from '@/lib/theme';
 import { navItemDe, pulsarDestino } from './navItems';
 
@@ -25,8 +26,8 @@ interface NavSidebarProps extends BottomTabBarProps {
 
 // El lema en dos líneas fijas: en una no cabe en 240 ni a 11 (≈194 de 188
 // útiles, `anchoInscripcion`), y partido a mano no queda «DÍA» huérfano. La
-// línea larga, «UN 1 % MEJOR», mide ≈162 a 14/3.
-const LEMA = 'UN 1 % MEJOR\nCADA DÍA';
+// línea larga, «UN 1 % MEJOR», mide ≈162 a 14/3. El salto va en el catálogo
+// (`ui:sidebar.lema`): cada idioma lo pone donde no deje una palabra huérfana.
 const LAUREL_LEMA = 16;
 
 export function NavSidebar({ state, descriptors, navigation, rango }: NavSidebarProps) {
@@ -43,7 +44,7 @@ export function NavSidebar({ state, descriptors, navigation, rango }: NavSidebar
         },
       ]}
     >
-      <Text style={styles.marca} accessibilityRole="header" maxFontSizeMultiplier={1}>
+      <Text style={styles.marca} accessibilityRole="header" maxFontSizeMultiplier={1}>{/* i18n-ok: la marca */}
         NIVL
       </Text>
       <ScrollView
@@ -77,10 +78,10 @@ export function NavSidebar({ state, descriptors, navigation, rango }: NavSidebar
       </ScrollView>
       <View style={styles.pie}>
         {rango ?? (
-          <View style={styles.lema} accessible accessibilityLabel="Un 1 % mejor cada día">
+          <View style={styles.lema} accessible accessibilityLabel={t('ui:sidebar.lemaA11y')}>
             <Laurel alto={LAUREL_LEMA} lado="izq" />
             <Text style={styles.lemaTexto} maxFontSizeMultiplier={1} numberOfLines={2}>
-              {LEMA}
+              {t('ui:sidebar.lema')}
             </Text>
             <Laurel alto={LAUREL_LEMA} lado="der" />
           </View>

@@ -10,6 +10,7 @@ import {
   View,
   type ViewStyle,
 } from 'react-native';
+import { t } from '@/i18n';
 import { colors } from '@/lib/theme';
 
 /**
@@ -85,7 +86,7 @@ export function HojaTeclado({
         style={StyleSheet.absoluteFill}
         onPress={salir}
         accessibilityRole="button"
-        accessibilityLabel="Cerrar"
+        accessibilityLabel={t('comun:cerrar')}
       />
       <Animated.View
         style={[

@@ -16,6 +16,7 @@ import { Button } from '@/components/ui/Button';
 import { Skeleton, SkeletonRows } from '@/components/ui/Skeleton';
 import { useAnunciar } from '@/components/ui/useAnunciar';
 import { ink, space, stroke, type as tipo } from '@/design/tokens';
+import { t } from '@/i18n';
 import { TarjetaArena } from './TarjetaArena';
 
 export interface ErrorSistemaProps {
@@ -37,7 +38,7 @@ export function ErrorSistema({
   onReintentar,
   reintentando,
   compacto,
-  rotulo = 'El sistema no responde',
+  rotulo = t('comun:sistemaNoResponde'),
   style,
 }: ErrorSistemaProps) {
   // VoiceOver no habla con role="alert": se anuncia a mano.
@@ -50,7 +51,7 @@ export function ErrorSistema({
         </Text>
         {onReintentar ? (
           <Button
-            title="Reintentar"
+            title={t('comun:reintentar')}
             icon="refresh"
             variant="secondary"
             size={compacto ? 'sm' : 'md'}

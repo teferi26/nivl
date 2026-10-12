@@ -13,3 +13,103 @@ perfil	+	¿En qué idioma te habla?
 perfil	+	El coach te escribe en este idioma: la conversación, los avisos que prepara y sus informes. La interfaz sigue en español.
 perfil	+	Sigue al teléfono. Si está en un idioma que el coach aún no habla, te escribe en español.
 perfil	+	Cerrar
+# Tanda 1 (ui, arena, raiz). Repetidos: el código decía el mismo texto en dos o más sitios y el catálogo lo guarda una vez (una clave por texto).
+arena	-	Racha
+arena	-	Racha
+arena	-	Piedras
+arena	-	Piedras
+arena	-	Nivel
+arena	-	Rango
+arena	-	Experiencia del nivel {}
+raiz	-	Orden del día
+ui	-	{}, rango {}
+# Tanda 1. Frases partidas en trozos (« , hecho», «Siguiente: » + título, «Falta»/«Faltan» + «nivel»...) que pasan a frases enteras con {{var}} y plurales con count.
+arena	-	1 día
+arena	+	{} día
+arena	+	{} días
+arena	-	Nivel {}{}` : ''}, {}.
+arena	-	, rango {}
+arena	+	Nivel {}, {}.
+arena	+	Nivel {}, rango {}, {}.
+arena	-	Racha de {}{}.
+arena	-	, hoy ya cuenta
+arena	+	Racha de {}.
+arena	+	Racha de {}, hoy ya cuenta.
+arena	-	Piedras: {} de {}` : p.piedras}.
+arena	-	Piedras: {} de {}` : p.piedras}
+arena	+	Piedras: {}.
+arena	+	Piedras: {}
+arena	+	{} de {}
+raiz	-	Mapa de actividad de {} semanas: {} {} con alguna misión completada.
+raiz	-	día
+raiz	-	días
+raiz	+	Mapa de actividad de {} semanas: {} día con alguna misión completada.
+raiz	+	Mapa de actividad de {} semanas: {} días con alguna misión completada.
+raiz	-	{} {}{}{}
+raiz	-	, ahora
+raiz	-	, hecho
+raiz	-	, hecho
+raiz	+	{} {}
+raiz	+	{} {}, ahora
+raiz	+	{} {}, hecho
+raiz	-	{}{}, {} {} por recuperar. {}` : `pendiente, {} {}` }
+raiz	-	Siguiente:
+raiz	-	cerrada, {} {} por recuperar. {}
+raiz	+	Siguiente: {}
+raiz	+	{}, completada
+raiz	+	{}, cerrada, {} {} por recuperar. {}
+raiz	+	{}, pendiente, {} {}
+raiz	-	Mín
+raiz	-	· Máx
+raiz	+	Mín {} · Máx {}{}
+raiz	-	Canal
+raiz	-	Paquete
+raiz	+	Canal {}
+raiz	+	Paquete {}
+ui	-	día activo
+ui	-	días activos
+ui	-	Falta
+ui	-	Faltan
+ui	+	Falta {} nivel
+ui	+	Faltan {} niveles
+ui	+	Falta {} día activo
+ui	+	Faltan {} días activos
+ui	+	Faltan {} y {}
+ui	+	{} nivel
+ui	+	{} niveles
+ui	+	{} día activo
+ui	+	{} días activos
+ui	-	Siguiente:
+ui	-	en el nivel
+ui	+	Siguiente: {} en el nivel {}
+ui	-	pide además días activos en la arena
+ui	+	{} pide además días activos en la arena
+# Tanda 1. Textos visibles que el inventario no veía en la línea base (plantillas con ${} que la heurística toma por código) y que ahora están en el catálogo. Dicen lo mismo que antes.
+arena	+	SIGUIENTE · {}
+arena	+	{} de {} XP.
+arena	+	RANGO {}
+arena	+	Racha: {}
+raiz	+	Penalización: {}
+raiz	+	embedded (sin OTA)
+raiz	+	Versión {}
+raiz	+	Versión {} ({})
+ui	+	Nuevo rango: {}, {}. {}
+ui	+	Nuevo grado: {} {}
+ui	+	Nivel {}
+ui	+	Aceptar: {}. Cancelar: {}.
+# Tanda 1. Los días de la semana de QuestForm salen de nombreDia/capital (src/i18n/formato.ts), no del catálogo: mismo texto en español.
+raiz	-	Lunes
+raiz	-	Martes
+raiz	-	Miércoles
+raiz	-	Jueves
+raiz	-	Viernes
+raiz	-	Sábado
+raiz	-	Domingo
+# Tanda 1. Se quedan en el código: la marca y la unidad XP (con i18n-ok), la meta robots (valor técnico, i18n-ok) y «- XP» de HeroRango, que ahora es `${CIFRA_VACIA} XP` (cifra vacía más unidad).
+ui	-	NIVL
+raiz	-	XP
+raiz	-	noindex, nofollow
+arena	-	- XP
+arena	-	- XP
+# Tanda 1. «misión» era el valor por defecto de la prop `sustantivo` de QuestForm (un identificador, no un texto visible): ya no hay valor por defecto.
+raiz	-	misión

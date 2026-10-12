@@ -35,6 +35,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ink, motion, sizeClass, space, stroke, type } from '@/design/tokens';
+import { t } from '@/i18n';
 import { useMovimientoReducido } from './motion';
 
 interface Props {
@@ -155,7 +156,7 @@ export function Sheet({ visible, onClose, onDismiss, eyebrow, title, children, f
           onPress={() => cerrarRef.current()}
           style={({ pressed }) => [styles.cerrar, pressed && styles.cerrarPulsado]}
           accessibilityRole="button"
-          accessibilityLabel="Cerrar"
+          accessibilityLabel={t('comun:cerrar')}
         >
           <Ionicons name="close" size={22} color={ink.ink9} />
         </Pressable>
@@ -193,7 +194,7 @@ export function Sheet({ visible, onClose, onDismiss, eyebrow, title, children, f
           style={StyleSheet.absoluteFill}
           onPress={tocarFondo}
           accessibilityRole="button"
-          accessibilityLabel="Cerrar"
+          accessibilityLabel={t('comun:cerrar')}
         />
         <Animated.View
           accessibilityViewIsModal

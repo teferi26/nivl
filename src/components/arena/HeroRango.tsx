@@ -24,9 +24,10 @@ import { Skeleton } from '@/components/ui/Skeleton';
 import { Grano } from '@/components/ui/Texture';
 import { ink, RANK_THEME, space, stroke, type as tipo, type Rank } from '@/design/tokens';
 import { useSizeClass, useAnchoUtil } from '@/design/useSizeClass';
+import { t } from '@/i18n';
 import { ASangre } from './ASangre';
 import { Barra } from './Barra';
-import { formatoMiles, ratioSeguro, rotuloSiguiente } from './cifras';
+import { CIFRA_VACIA, formatoMiles, ratioSeguro, rotuloSiguiente } from './cifras';
 import { Contador } from './Contador';
 import { ajustarInscripcion } from './medida';
 import { BotonArena, TAM_BOTON } from './EncabezadoArena';
@@ -74,18 +75,30 @@ const HUECO_MONUMENTO = 360;
 /** «NIVEL» sobre el número: la inscripción en pequeño. */
 const ROTULO_NIVEL = { size: 12, lineHeight: 16, tracking: 4 };
 
-const dias = (n: number) => (n === 1 ? '1 día' : `${formatoMiles(n)} días`);
+/** «1 día», «12 días», «1.840 días». */
+const dias = (n: number) => t('arena:heroRango.dias', { count: n });
+
+/** «3 de 5» o «3»: las piedras como las oye el lector. */
+function piedrasLeidas(p: HeroRangoProps): string {
+  return p.piedrasMax != null ? t('arena:heroRango.piedrasDe', { piedras: p.piedras, max: p.piedrasMax }) : String(p.piedras);
+}
 
 /** Lo que oye el lector del bloque central. */
 export function resumenHero(p: HeroRangoProps): string {
   const partes: string[] = [];
-  partes.push(`Nivel ${p.nivel}${p.rango ? `, rango ${p.rango}` : ''}, ${p.titulo}.`);
   partes.push(
-    p.xpSiguiente > 0 ? `${formatoMiles(p.xpEnNivel)} de ${formatoMiles(p.xpSiguiente)} XP.` : 'Nivel máximo.',
+    p.rango
+      ? t('arena:heroRango.a11yNivelRango', { nivel: p.nivel, rango: p.rango, titulo: p.titulo })
+      : t('arena:heroRango.a11yNivel', { nivel: p.nivel, titulo: p.titulo }),
   );
-  partes.push(`Racha de ${dias(p.racha)}${p.rachaCerrada ? ', hoy ya cuenta' : ''}.`);
+  partes.push(
+    p.xpSiguiente > 0
+      ? t('arena:heroRango.a11yXp', { actual: formatoMiles(p.xpEnNivel), total: formatoMiles(p.xpSiguiente) })
+      : t('arena:heroRango.a11yNivelMaximo'),
+  );
+  partes.push(t(p.rachaCerrada ? 'arena:heroRango.a11yRachaHoy' : 'arena:heroRango.a11yRacha', { dias: dias(p.racha) }));
   if (p.cifraExtra) partes.push(`${p.cifraExtra.rotulo}: ${textoCifra(p.cifraExtra)}.`);
-  partes.push(`Piedras: ${p.piedrasMax != null ? `${p.piedras} de ${p.piedrasMax}` : p.piedras}.`);
+  partes.push(t('arena:heroRango.a11yPiedras', { piedras: piedrasLeidas(p) }));
   return partes.join(' ');
 }
 
@@ -121,15 +134,15 @@ function HeroHoy(p: HeroRangoProps) {
   const cifras: Cifra[] = [
     {
       valor: p.cargando ? '' : p.racha,
-      rotulo: p.rachaCerrada ? 'Racha · hoy cuenta' : 'Racha',
+      rotulo: p.rachaCerrada ? t('arena:heroRango.rachaHoy') : t('arena:heroRango.racha'),
       sufijo: p.cargando ? undefined : 'd',
       desde: d?.racha ?? null,
-      etiqueta: p.cargando ? 'Racha: cargando' : `Racha: ${dias(p.racha)}`,
+      etiqueta: p.cargando ? t('arena:heroRango.rachaCargando') : t('arena:heroRango.rachaA11y', { dias: dias(p.racha) }),
     },
     ...(p.cifraExtra ? [p.cargando ? { ...p.cifraExtra, valor: '', desde: null } : p.cifraExtra] : []),
     {
       valor: p.cargando ? '' : p.piedrasMax != null ? `${p.piedras}/${p.piedrasMax}` : p.piedras,
-      rotulo: 'Piedras',
+      rotulo: t('arena:heroRango.piedras'),
     },
   ];
 
@@ -147,7 +160,7 @@ function HeroHoy(p: HeroRangoProps) {
           onPress={p.onAvatar}
           disabled={!p.onAvatar}
           accessibilityRole="button"
-          accessibilityLabel={`Tu perfil, ${p.avatar.nombre}`}
+          accessibilityLabel={t('arena:heroRango.tuPerfilA11y', { nombre: p.avatar.nombre })}
           style={({ pressed }) => [styles.avatarBoton, pressed && styles.pulsado]}
         >
           <View importantForAccessibility="no-hide-descendants" accessibilityElementsHidden>
@@ -159,7 +172,7 @@ function HeroHoy(p: HeroRangoProps) {
       {/* 2-6 · El monumento y sus cifras: un solo elemento para el lector. */}
       <View
         accessible
-        accessibilityLabel={p.cargando ? 'Cargando tu nivel' : resumenHero(p)}
+        accessibilityLabel={p.cargando ? t('arena:heroRango.cargandoA11y') : resumenHero(p)}
         accessibilityRole={p.cargando ? 'progressbar' : undefined}
       >
         <View
@@ -184,7 +197,7 @@ function HeroHoy(p: HeroRangoProps) {
               <View style={styles.nivelPila}>
                 {/* Qué es el número: sin esto, «23» no dice nada. */}
                 <Text style={styles.rotuloNivel} maxFontSizeMultiplier={1.35} numberOfLines={1}>
-                  NIVEL
+                  {t('arena:heroRango.rotuloNivel')}
                 </Text>
                 <Contador
                   valor={p.nivel}
@@ -213,7 +226,7 @@ function HeroHoy(p: HeroRangoProps) {
                   LA / ARENA». Si el título no cabe, se aprieta el tracking. */}
               {p.rango ? (
                 <Text style={styles.inscripcion} maxFontSizeMultiplier={1.35} numberOfLines={1}>
-                  {`RANGO ${p.rango}`}
+                  {t('arena:heroRango.inscripcionRango', { rango: p.rango })}
                 </Text>
               ) : null}
               <Text
@@ -238,7 +251,7 @@ function HeroHoy(p: HeroRangoProps) {
 
           <View style={styles.xpFila}>
             <Text style={styles.micro} maxFontSizeMultiplier={1.35}>
-              {p.cargando ? '- XP' : tope ? `${formatoMiles(p.xpEnNivel)} XP` : `${formatoMiles(p.xpEnNivel)} / ${formatoMiles(p.xpSiguiente)} XP`}
+              {p.cargando ? `${CIFRA_VACIA} XP` : tope ? `${formatoMiles(p.xpEnNivel)} XP` : `${formatoMiles(p.xpEnNivel)} / ${formatoMiles(p.xpSiguiente)} XP`}
             </Text>
             <Text style={styles.micro} maxFontSizeMultiplier={1.35}>
               {p.cargando ? '' : rotuloSiguiente(p.nivel, tope)}
@@ -252,7 +265,7 @@ function HeroHoy(p: HeroRangoProps) {
               desde={d?.xpRatio ?? null}
               alto={6}
               segmentos={10}
-              etiqueta={`Experiencia del nivel ${p.nivel}`}
+              etiqueta={t('arena:heroRango.experienciaA11y', { nivel: p.nivel })}
               enGrupo
             />
           )}
@@ -283,19 +296,25 @@ function HeroPerfil(p: HeroRangoProps) {
 
   const cifras: Cifra[] = p.cargando
     ? [
-        { valor: '', rotulo: 'Nivel' },
-        { valor: '', rotulo: 'Rango' },
-        { valor: '', rotulo: 'Racha' },
-        { valor: '', rotulo: 'Piedras' },
+        { valor: '', rotulo: t('arena:heroRango.nivel') },
+        { valor: '', rotulo: t('arena:heroRango.rango') },
+        { valor: '', rotulo: t('arena:heroRango.racha') },
+        { valor: '', rotulo: t('arena:heroRango.piedras') },
       ]
     : [
-        { valor: p.nivel, rotulo: 'Nivel', desde: d?.nivel ?? null },
-        { valor: p.rango ?? '', rotulo: 'Rango' },
-        { valor: p.racha, rotulo: 'Racha', sufijo: 'd', desde: d?.racha ?? null, etiqueta: `Racha: ${dias(p.racha)}` },
+        { valor: p.nivel, rotulo: t('arena:heroRango.nivel'), desde: d?.nivel ?? null },
+        { valor: p.rango ?? '', rotulo: t('arena:heroRango.rango') },
+        {
+          valor: p.racha,
+          rotulo: t('arena:heroRango.racha'),
+          sufijo: 'd',
+          desde: d?.racha ?? null,
+          etiqueta: t('arena:heroRango.rachaA11y', { dias: dias(p.racha) }),
+        },
         {
           valor: p.piedrasMax != null ? `${p.piedras}/${p.piedrasMax}` : p.piedras,
-          rotulo: 'Piedras',
-          etiqueta: `Piedras: ${p.piedrasMax != null ? `${p.piedras} de ${p.piedrasMax}` : p.piedras}`,
+          rotulo: t('arena:heroRango.piedras'),
+          etiqueta: t('arena:heroRango.piedrasA11y', { piedras: piedrasLeidas(p) }),
         },
       ];
 
@@ -309,7 +328,7 @@ function HeroPerfil(p: HeroRangoProps) {
           onPress={p.onAvatar}
           disabled={!p.onAvatar || p.avatarOcupado}
           accessibilityRole="button"
-          accessibilityLabel={p.onAvatar ? 'Cambiar foto de perfil' : p.avatar.nombre}
+          accessibilityLabel={p.onAvatar ? t('arena:heroRango.cambiarFoto') : p.avatar.nombre}
           accessibilityState={{ busy: !!p.avatarOcupado }}
           style={({ pressed }) => [pressed && styles.pulsado]}
         >
@@ -357,7 +376,7 @@ function HeroPerfil(p: HeroRangoProps) {
 
       <View style={styles.xpFila}>
         <Text style={styles.micro} maxFontSizeMultiplier={1.35}>
-          {p.cargando ? '- XP' : tope ? `${formatoMiles(p.xpEnNivel)} XP` : `${formatoMiles(p.xpEnNivel)} / ${formatoMiles(p.xpSiguiente)} XP`}
+          {p.cargando ? `${CIFRA_VACIA} XP` : tope ? `${formatoMiles(p.xpEnNivel)} XP` : `${formatoMiles(p.xpEnNivel)} / ${formatoMiles(p.xpSiguiente)} XP`}
         </Text>
         <Text style={styles.micro} maxFontSizeMultiplier={1.35}>
           {p.cargando ? '' : rotuloSiguiente(p.nivel, tope)}
@@ -366,7 +385,7 @@ function HeroPerfil(p: HeroRangoProps) {
       {p.cargando ? (
         <Skeleton height={6} />
       ) : (
-        <Barra ratio={ratio} desde={d?.xpRatio ?? null} alto={6} segmentos={10} etiqueta={`Experiencia del nivel ${p.nivel}`} />
+        <Barra ratio={ratio} desde={d?.xpRatio ?? null} alto={6} segmentos={10} etiqueta={t('arena:heroRango.experienciaA11y', { nivel: p.nivel })} />
       )}
     </ASangre>
   );

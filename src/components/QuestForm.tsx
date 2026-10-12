@@ -5,6 +5,8 @@ import { Button, Chip, ChipWrap, Sheet } from '@/components/ui';
 import { avisar, confirmar } from '@/components/ui/confirmar';
 import { vibrar } from '@/design/haptics';
 import { ink, stroke, type as tipo } from '@/design/tokens';
+import { t } from '@/i18n';
+import { capital, nombreDia } from '@/i18n/formato';
 import type { QuestInput } from '@/lib/data';
 import {
   BONUS_BY_DIFFICULTY,
@@ -17,8 +19,8 @@ import {
 import { mensajeSistema } from '@/lib/validation';
 import type { Difficulty, Quest, Stat } from '@/lib/types';
 
-const DAY_LABELS = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
-const DAY_NAMES = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+/** Lunes a domingo: índices 0..6 de `nombreDia` (el día de la misión es índice + 1). */
+const SEMANA = [0, 1, 2, 3, 4, 5, 6];
 const DIARIA = [1, 2, 3, 4, 5, 6, 7];
 const LABORABLES = [1, 2, 3, 4, 5];
 const FINDE = [6, 7];
@@ -44,36 +46,28 @@ interface Props {
   title?: string;
 }
 
-const TEXTOS = {
-  misión: {
-    nuevo: 'Nueva misión',
-    editar: 'Editar misión',
-    tituloNuevo: '¿Qué vas a exigirte?',
-    tituloEditar: 'Ajusta la misión',
-    crear: 'Crear misión',
-    eliminar: 'Eliminar misión',
-    campo: 'Misión',
-    campoA11y: 'Nombre de la misión',
-  },
-  hábito: {
-    nuevo: 'Nuevo hábito',
-    editar: 'Editar hábito',
-    tituloNuevo: '¿Qué quieres que te salga solo?',
-    tituloEditar: 'Ajusta el hábito',
-    crear: 'Crear hábito',
-    eliminar: 'Eliminar hábito',
-    campo: 'Hábito',
-    campoA11y: 'Nombre del hábito',
-  },
-} as const;
+/** Los textos que cambian con el sustantivo (raiz:questForm.mision.* y .habito.*), al pintar. */
+function textosDe(sustantivo: Props['sustantivo']) {
+  const s = sustantivo === 'hábito' ? 'habito' : 'mision';
+  return {
+    nuevo: t(`raiz:questForm.${s}.nuevo`),
+    editar: t(`raiz:questForm.${s}.editar`),
+    tituloNuevo: t(`raiz:questForm.${s}.tituloNuevo`),
+    tituloEditar: t(`raiz:questForm.${s}.tituloEditar`),
+    crear: t(`raiz:questForm.${s}.crear`),
+    eliminar: t(`raiz:questForm.${s}.eliminar`),
+    campo: t(`raiz:questForm.${s}.campo`),
+    campoA11y: t(`raiz:questForm.${s}.campoA11y`),
+  };
+}
 
 /**
  * El formulario de misión, en la hoja del kit (Sheet): la misma gramática que
  * la hoja de campañas para que crear una misión y abrir una campaña se sientan
  * el mismo gesto. El teclado lo gestiona la hoja; las acciones van en su pie.
  */
-export function QuestForm({ visible, onClose, onSubmit, initial, onDelete, sustantivo = 'misión', eyebrow, title: tituloHoja }: Props) {
-  const t = TEXTOS[sustantivo];
+export function QuestForm({ visible, onClose, onSubmit, initial, onDelete, sustantivo, eyebrow, title: tituloHoja }: Props) {
+  const tx = textosDe(sustantivo);
   const [title, setTitle] = useState('');
   const [stat, setStat] = useState<Stat>('FUE');
   const [difficulty, setDifficulty] = useState<Difficulty>('media');
@@ -125,7 +119,7 @@ export function QuestForm({ visible, onClose, onSubmit, initial, onDelete, susta
       });
       onClose();
     } catch (e) {
-      avisar('El sistema no responde', mensajeSistema(e));
+      avisar(t('comun:sistemaNoResponde'), mensajeSistema(e));
     } finally {
       guardando.current = false;
       setSaving(false);
@@ -135,9 +129,9 @@ export function QuestForm({ visible, onClose, onSubmit, initial, onDelete, susta
   const confirmDelete = async () => {
     if (!initial || !onDelete) return;
     const ok = await confirmar({
-      titulo: t.eliminar,
-      mensaje: `"${initial.title}" y todo su historial de completadas. Esta acción no se puede deshacer.`,
-      confirmar: 'Eliminar',
+      titulo: tx.eliminar,
+      mensaje: t('raiz:questForm.eliminarMensaje', { titulo: initial.title }),
+      confirmar: t('comun:eliminar'),
       destructivo: true,
     });
     if (!ok) return;
@@ -148,47 +142,47 @@ export function QuestForm({ visible, onClose, onSubmit, initial, onDelete, susta
       vibrar('destructiva');
       onClose();
     } catch (e) {
-      avisar('El sistema no responde', mensajeSistema(e));
+      avisar(t('comun:sistemaNoResponde'), mensajeSistema(e));
     }
   };
 
   const pago = isBonus
-    ? `${BONUS_BY_DIFFICULTY[difficulty]} PB al completarla, canjeables por descanso.`
-    : `${XP_BY_DIFFICULTY[difficulty]} XP base. Con foto, +25 %; la racha lo multiplica.`;
+    ? t('raiz:questForm.pagoBonus', { pb: BONUS_BY_DIFFICULTY[difficulty] })
+    : t('raiz:questForm.pagoXp', { xp: XP_BY_DIFFICULTY[difficulty] });
 
   return (
     <Sheet
       visible={visible}
       onClose={onClose}
-      eyebrow={eyebrow ?? (editing ? t.editar : t.nuevo)}
-      title={tituloHoja ?? (editing ? t.tituloEditar : t.tituloNuevo)}
+      eyebrow={eyebrow ?? (editing ? tx.editar : tx.nuevo)}
+      title={tituloHoja ?? (editing ? tx.tituloEditar : tx.tituloNuevo)}
       footer={
         <>
           <Button
-            title={editing ? 'Guardar cambios' : t.crear}
+            title={editing ? t('comun:guardarCambios') : tx.crear}
             size="lg"
             onPress={submit}
             loading={saving}
             disabled={!title.trim() || days.length === 0}
           />
           {editing && onDelete ? (
-            <Button title={t.eliminar} variant="danger" icon="trash-outline" onPress={confirmDelete} />
+            <Button title={tx.eliminar} variant="danger" icon="trash-outline" onPress={confirmDelete} />
           ) : null}
-          <Button title="Cancelar" variant="ghost" onPress={onClose} />
+          <Button title={t('comun:cancelar')} variant="ghost" onPress={onClose} />
         </>
       }
     >
       <Campo
-        etiqueta={t.campo}
+        etiqueta={tx.campo}
         value={title}
         onChangeText={setTitle}
-        placeholder="Ej. Gimnasio · pierna"
+        placeholder={t('raiz:questForm.placeholder')}
         autoFocus={!editing}
-        accessibilityLabel={t.campoA11y}
+        accessibilityLabel={tx.campoA11y}
         estiloBloque={styles.campo}
       />
 
-      <Text style={styles.label}>Qué entrena</Text>
+      <Text style={styles.label}>{t('raiz:questForm.queEntrena')}</Text>
       <ChipWrap>
         {STATS.map((s) => (
           <Chip key={s} label={s} selected={stat === s} onPress={() => setStat(s)} accessibilityLabel={STAT_LABEL[s]} />
@@ -196,7 +190,7 @@ export function QuestForm({ visible, onClose, onSubmit, initial, onDelete, susta
       </ChipWrap>
       <Text style={styles.hint}>{STAT_LABEL[stat]}</Text>
 
-      <Text style={styles.label}>Dificultad</Text>
+      <Text style={styles.label}>{t('raiz:questForm.dificultad')}</Text>
       <ChipWrap>
         {DIFFICULTIES.map((d) => (
           <Chip
@@ -204,15 +198,15 @@ export function QuestForm({ visible, onClose, onSubmit, initial, onDelete, susta
             label={DIFFICULTY_LABEL[d]}
             selected={difficulty === d}
             onPress={() => setDifficulty(d)}
-            accessibilityLabel={`Dificultad ${DIFFICULTY_LABEL[d]}`}
+            accessibilityLabel={t('raiz:questForm.dificultadA11y', { nivel: DIFFICULTY_LABEL[d] })}
           />
         ))}
       </ChipWrap>
       <Text style={styles.hint}>{pago}</Text>
 
-      <Text style={styles.label}>Días</Text>
+      <Text style={styles.label}>{t('raiz:questForm.dias')}</Text>
       <View style={styles.days}>
-        {DAY_LABELS.map((label, i) => {
+        {SEMANA.map((i) => {
           const d = i + 1;
           const on = days.includes(d);
           return (
@@ -222,42 +216,71 @@ export function QuestForm({ visible, onClose, onSubmit, initial, onDelete, susta
               style={({ pressed }) => [styles.day, on && styles.dayOn, pressed && styles.pressed]}
               accessibilityRole="checkbox"
               accessibilityState={{ checked: on }}
-              accessibilityLabel={DAY_NAMES[i]}
+              accessibilityLabel={capital(nombreDia(i))}
             >
-              <Text style={[styles.dayText, on && styles.dayTextOn]} maxFontSizeMultiplier={1.35}>{label}</Text>
+              <Text style={[styles.dayText, on && styles.dayTextOn]} maxFontSizeMultiplier={1.35}>{nombreDia(i, 'letra')}</Text>
             </Pressable>
           );
         })}
       </View>
       <ChipWrap style={{ marginTop: 10 }}>
-        <Chip small label="Diaria" selected={mismosDias(days, DIARIA)} onPress={() => setDays(DIARIA)} accessibilityLabel="Todos los días" />
-        <Chip small label="Entre semana" selected={mismosDias(days, LABORABLES)} onPress={() => setDays(LABORABLES)} accessibilityLabel="De lunes a viernes" />
-        <Chip small label="Finde" selected={mismosDias(days, FINDE)} onPress={() => setDays(FINDE)} accessibilityLabel="Sábado y domingo" />
-      </ChipWrap>
-      {days.length === 0 ? <Text style={[styles.hint, styles.hintAviso]}>Elige al menos un día.</Text> : null}
-
-      <Text style={styles.label}>Evidencia</Text>
-      <ChipWrap>
-        <Chip label="Sin foto" selected={!requiresEvidence} onPress={() => setRequiresEvidence(false)} accessibilityLabel="Sin evidencia obligatoria" />
         <Chip
-          label="Foto obligatoria"
+          small
+          label={t('raiz:questForm.diaria')}
+          selected={mismosDias(days, DIARIA)}
+          onPress={() => setDays(DIARIA)}
+          accessibilityLabel={t('raiz:questForm.diariaA11y')}
+        />
+        <Chip
+          small
+          label={t('raiz:questForm.entreSemana')}
+          selected={mismosDias(days, LABORABLES)}
+          onPress={() => setDays(LABORABLES)}
+          accessibilityLabel={t('raiz:questForm.entreSemanaA11y')}
+        />
+        <Chip
+          small
+          label={t('raiz:questForm.finde')}
+          selected={mismosDias(days, FINDE)}
+          onPress={() => setDays(FINDE)}
+          accessibilityLabel={t('raiz:questForm.findeA11y')}
+        />
+      </ChipWrap>
+      {days.length === 0 ? <Text style={[styles.hint, styles.hintAviso]}>{t('raiz:questForm.eligeDia')}</Text> : null}
+
+      <Text style={styles.label}>{t('raiz:questForm.evidencia')}</Text>
+      <ChipWrap>
+        <Chip
+          label={t('raiz:questForm.sinFoto')}
+          selected={!requiresEvidence}
+          onPress={() => setRequiresEvidence(false)}
+          accessibilityLabel={t('raiz:questForm.sinFotoA11y')}
+        />
+        <Chip
+          label={t('raiz:questForm.fotoObligatoria')}
           icon="camera-outline"
           selected={requiresEvidence}
           onPress={() => setRequiresEvidence(true)}
-          accessibilityLabel="Exigir foto al completar la misión"
+          accessibilityLabel={t('raiz:questForm.fotoObligatoriaA11y')}
         />
       </ChipWrap>
-      <Text style={styles.hint}>{requiresEvidence ? 'No se podrá completar sin foto. Paga un 25 % más.' : 'La foto es opcional al completar.'}</Text>
+      <Text style={styles.hint}>{requiresEvidence ? t('raiz:questForm.fotoObligatoriaAyuda') : t('raiz:questForm.fotoOpcionalAyuda')}</Text>
 
-      <Text style={styles.label}>Qué paga</Text>
+      <Text style={styles.label}>{t('raiz:questForm.quePaga')}</Text>
       <ChipWrap>
-        <Chip label="XP" selected={!isBonus} onPress={() => setIsBonus(false)} accessibilityLabel="Misión normal: paga XP" />
-        <Chip label="Puntos bonus" selected={isBonus} onPress={() => setIsBonus(true)} accessibilityLabel="Misión extra: paga puntos bonus" />
+        {/* i18n-ok: unidad */}
+        <Chip label="XP" selected={!isBonus} onPress={() => setIsBonus(false)} accessibilityLabel={t('raiz:questForm.xpA11y')} />
+        <Chip
+          label={t('raiz:questForm.puntosBonus')}
+          selected={isBonus}
+          onPress={() => setIsBonus(true)}
+          accessibilityLabel={t('raiz:questForm.puntosBonusA11y')}
+        />
       </ChipWrap>
       <Text style={styles.hint}>
         {isBonus
-          ? 'Misión extra: no da XP ni cuenta para la racha. Sus PB se canjean por descanso en el contrato.'
-          : 'Misión del día: cuenta para la racha y se penaliza si queda sin hacer.'}
+          ? t('raiz:questForm.extraAyuda')
+          : t('raiz:questForm.normalAyuda')}
       </Text>
     </Sheet>
   );

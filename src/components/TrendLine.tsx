@@ -9,6 +9,7 @@
 import { StyleSheet, Text, View } from 'react-native';
 import Svg, { Line, Polyline, Rect } from 'react-native-svg';
 import { ink, space, stroke, type as tipo } from '@/design/tokens';
+import { t } from '@/i18n';
 import { numeroES } from '@/lib/pagoActo';
 
 interface Props {
@@ -28,7 +29,7 @@ export function TrendLine({ values, width = 300, height = 90, color = ink.ink10,
   if (values.length === 0) {
     return (
       <Text style={styles.vacio} maxFontSizeMultiplier={1.6}>
-        Sin datos todavía.
+        {t('raiz:trendLine.sinDatos')}
       </Text>
     );
   }
@@ -51,7 +52,14 @@ export function TrendLine({ values, width = 300, height = 90, color = ink.ink10,
   const delta = Math.round((latest - first) * 10) / 10;
   const u = unit ? ` ${unit}` : '';
   const variacion = `${delta > 0 ? '+' : ''}${numeroES(delta, 1)}${u}`;
-  const leido = `Tendencia de ${values.length} datos: de ${numeroES(first, 1)} a ${numeroES(latest, 1)}${u}, mínimo ${numeroES(min, 1)}, máximo ${numeroES(max, 1)}.`;
+  const leido = t('raiz:trendLine.a11y', {
+    n: values.length,
+    primero: numeroES(first, 1),
+    ultimo: numeroES(latest, 1),
+    unidad: u,
+    min: numeroES(min, 1),
+    max: numeroES(max, 1),
+  });
   // La pista va donde cae el mínimo; el medio punto la deja en el píxel entero.
   const yPista = height - PAD + 0.5;
 
@@ -71,8 +79,7 @@ export function TrendLine({ values, width = 300, height = 90, color = ink.ink10,
       </Svg>
       <View style={[styles.pie, { width }]}>
         <Text style={styles.extremos} maxFontSizeMultiplier={1.35} numberOfLines={1}>
-          Mín {numeroES(min, 1)} · Máx {numeroES(max, 1)}
-          {u}
+          {t('raiz:trendLine.extremos', { min: numeroES(min, 1), max: numeroES(max, 1), unidad: u })}
         </Text>
         <Text style={[styles.delta, delta === 0 && styles.deltaPlano]} maxFontSizeMultiplier={1.35}>
           {variacion}

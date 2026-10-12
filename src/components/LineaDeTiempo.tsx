@@ -2,6 +2,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import Svg, { Line } from 'react-native-svg';
 import { ink, stroke } from '@/design/tokens';
+import { t } from '@/i18n';
 import { hhmm } from '@/lib/plan';
 import { ALTO_HORA, disponer, rangoHoras, yDeMinuto, type ItemTiempo } from '@/lib/timeline';
 import { fonts } from '@/lib/theme';
@@ -85,7 +86,7 @@ export function LineaDeTiempo({
               width: `${anchoPct}%` as const,
             },
           ];
-          const etiqueta = `${hhmm(item.inicio)} ${item.titulo}${item.hecho ? ', hecho' : ''}`;
+          const etiqueta = t(item.hecho ? 'raiz:bloque.a11yHecho' : 'raiz:bloque.a11y', { hora: hhmm(item.inicio), titulo: item.titulo });
           const contenido = (
             <>
               <View style={styles.bloqueCabecera}>
@@ -133,7 +134,7 @@ export function LineaDeTiempo({
           en la columna de horas. Sin punto rojo: el blanco ya es el acento. */}
       {yAhora !== null && ahoraMin != null ? (
         <View style={[styles.ahora, { top: yAhora - ALTO_AHORA / 2 }]} pointerEvents="none">
-          <Text style={styles.ahoraHora} accessibilityLabel={`Ahora, ${hhmm(ahoraMin)}`}>
+          <Text style={styles.ahoraHora} accessibilityLabel={t('raiz:lineaDeTiempo.ahoraA11y', { hora: hhmm(ahoraMin) })}>
             {hhmm(ahoraMin)}
           </Text>
           <Svg style={styles.ahoraLienzo} height={ALTO_AHORA}>

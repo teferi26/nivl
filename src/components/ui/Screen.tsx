@@ -24,6 +24,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ink, space, stroke, type as tipo } from '@/design/tokens';
 import { ANCHO_ASIDE, cabeAside, marcoDe } from '@/design/responsive';
 import { useAnchoUtil } from '@/design/useSizeClass';
+import { t } from '@/i18n';
 import { colors, fonts } from '@/lib/theme';
 
 /**
@@ -185,7 +186,7 @@ export function ScreenHeader({ eyebrow, title, subtitle, action, onBack, right, 
           hitSlop={12}
           style={styles.back}
           accessibilityRole="button"
-          accessibilityLabel="Volver"
+          accessibilityLabel={t('comun:volver')}
         >
           <Ionicons name="arrow-back" size={20} color={colors.text} />
         </Pressable>

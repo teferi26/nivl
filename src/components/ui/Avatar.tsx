@@ -23,6 +23,7 @@ import { Animated, Easing, StyleSheet, Text, View } from 'react-native';
 import Svg, { Circle, Path } from 'react-native-svg';
 import { useRetrato } from './useRetrato';
 import { ink, RANK_THEME, type Rank, type RankTheme } from '@/design/tokens';
+import { t } from '@/i18n';
 import { fonts } from '@/lib/theme';
 import { BASE_CORONA, Crown } from './Crown';
 import { useMovimientoReducido } from './motion';
@@ -192,7 +193,7 @@ export function Avatar({ size, avatarPath, name, rank: rankProp = 'E', titulo, o
     }
   }
 
-  const base = conRango ? `${name}, rango ${rank}` : name;
+  const base = conRango ? t('ui:avatar.a11yRango', { nombre: name, rango: rank }) : name;
   const etiqueta = titulo ? `${base}, ${titulo}` : base;
 
   return (

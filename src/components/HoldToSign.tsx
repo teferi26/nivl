@@ -12,6 +12,7 @@ import { vibrar } from '@/design/haptics';
 import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Animated, Easing, Pressable, StyleSheet, Text, View } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
+import { t } from '@/i18n';
 import { colors, fonts } from '@/lib/theme';
 
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
@@ -42,7 +43,7 @@ interface Props {
 // Cuánto puede alejarse el dedo del anillo sin que cuente como soltar.
 const MARGEN_DEL_DEDO = { top: 60, bottom: 60, left: 60, right: 60 } as const;
 
-export function HoldToSign({ label, holdingLabel = 'No sueltes', onComplete, disabled, loading, duration = 1600, onHoldChange }: Props) {
+export function HoldToSign({ label, holdingLabel = t('raiz:holdToSign.noSueltes'), onComplete, disabled, loading, duration = 1600, onHoldChange }: Props) {
   const progress = useRef(new Animated.Value(0)).current;
   const latido = useRef<ReturnType<typeof setInterval> | null>(null);
   const hecho = useRef(false);
@@ -116,7 +117,7 @@ export function HoldToSign({ label, holdingLabel = 'No sueltes', onComplete, dis
         disabled={disabled || loading}
         accessibilityRole="button"
         accessibilityLabel={label}
-        accessibilityHint="Mantén pulsado hasta que el anillo se cierre para firmar"
+        accessibilityHint={t('raiz:holdToSign.pista')}
         accessibilityState={{ disabled: !!disabled, busy: !!loading }}
         accessibilityActions={[{ name: 'activate', label }]}
         onAccessibilityAction={(e) => {
@@ -149,7 +150,7 @@ export function HoldToSign({ label, holdingLabel = 'No sueltes', onComplete, dis
           <Ionicons name="finger-print-outline" size={40} color={colors.text} />
         )}
       </Pressable>
-      <Text style={styles.label}>{loading ? 'Sellando' : holding ? holdingLabel : label}</Text>
+      <Text style={styles.label}>{loading ? t('raiz:holdToSign.sellando') : holding ? holdingLabel : label}</Text>
     </View>
   );
 }

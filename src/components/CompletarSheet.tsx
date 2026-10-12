@@ -13,6 +13,7 @@ import { useRef } from 'react';
 import { StyleSheet, Text } from 'react-native';
 import { Button, Sheet } from '@/components/ui';
 import { ink, space, type as tipo } from '@/design/tokens';
+import { t } from '@/i18n';
 import { MODULO_DE_ACTO, NOMBRE_DE_ACTO } from '@/lib/links';
 import type { Quest } from '@/lib/types';
 
@@ -41,17 +42,17 @@ export function CompletarSheet({ quest, onElegir, onClose }: Props) {
     <Sheet
       visible={quest !== null}
       onClose={onClose}
-      eyebrow="COMPLETAR MISIÓN"
+      eyebrow={t('raiz:completar.eyebrow')}
       title={q?.title ?? ''}
       footer={
         <>
           {exigeFoto ? (
-            <Button title="Completar con foto" icon="camera-outline" size="lg" onPress={() => onElegir('foto')} />
+            <Button title={t('raiz:completar.conFoto')} icon="camera-outline" size="lg" onPress={() => onElegir('foto')} />
           ) : (
             <>
-              <Button title="Completar" icon="checkmark" size="lg" onPress={() => onElegir('directo')} />
+              <Button title={t('raiz:completar.completar')} icon="checkmark" size="lg" onPress={() => onElegir('directo')} />
               <Button
-                title={extra ? 'Con foto' : 'Con foto · +25 %'}
+                title={extra ? t('raiz:completar.soloFoto') : t('raiz:completar.fotoBonus')}
                 icon="camera-outline"
                 variant="secondary"
                 size="lg"
@@ -61,7 +62,7 @@ export function CompletarSheet({ quest, onElegir, onClose }: Props) {
           )}
           {acto ? (
             <Button
-              title={`Registrar en ${MODULO_DE_ACTO[acto]}`}
+              title={t('raiz:completar.registrarEn', { modulo: MODULO_DE_ACTO[acto] })}
               icon="arrow-forward"
               variant="secondary"
               size="lg"
@@ -73,11 +74,11 @@ export function CompletarSheet({ quest, onElegir, onClose }: Props) {
     >
       <Text style={styles.hint}>
         {exigeFoto
-          ? 'Esta misión exige evidencia: se completa con una foto hecha ahora.'
+          ? t('raiz:completar.exigeFoto')
           : extra
-            ? 'Con foto, el domingo entra en tu resumen.'
-            : 'Con foto suma un 25 % de XP y el domingo entra en tu resumen.'}
-        {acto ? ` También se marca sola al registrar ${NOMBRE_DE_ACTO[acto]}.` : ''}
+            ? t('raiz:completar.extraFoto')
+            : t('raiz:completar.fotoSuma')}
+        {acto ? ` ${t('raiz:completar.tambienRegistrar', { acto: NOMBRE_DE_ACTO[acto] })}` : ''}
       </Text>
     </Sheet>
   );

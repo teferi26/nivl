@@ -7,6 +7,7 @@ import { TextoSistema } from '@/components/TextoSistema';
 import { Check, EmptyState, Section } from '@/components/ui';
 import { vibrar } from '@/design/haptics';
 import { ink, space, stroke, type as tipo } from '@/design/tokens';
+import { t } from '@/i18n';
 // De plan.ts (puro) y no de dayplan.ts: la vista no arrastra Supabase.
 import {
   bloqueActual,
@@ -41,14 +42,14 @@ export const OrdenDelDia = memo(function OrdenDelDia({ plan, bloques, onToggle, 
   if (!plan || !bloques.length) {
     if (!pro) return null;
     return (
-      <Section title="Orden del día">
+      <Section title={t('raiz:ordenDelDia.titulo')}>
         <TarjetaArena variante="contorno">
           <EmptyState
             compact
             icon="list-outline"
-            title="Sin órdenes para hoy"
-            body="Pídele el plan al coach y tendrás el día escrito bloque a bloque."
-            action={{ label: 'Pedir el plan', onPress: () => router.push('/(tabs)/coach') }}
+            title={t('raiz:ordenDelDia.vacioTitulo')}
+            body={t('raiz:ordenDelDia.vacioCuerpo')}
+            action={{ label: t('raiz:ordenDelDia.pedirPlan'), onPress: () => router.push('/(tabs)/coach') }}
           />
         </TarjetaArena>
       </Section>
@@ -60,7 +61,7 @@ export const OrdenDelDia = memo(function OrdenDelDia({ plan, bloques, onToggle, 
   const { hechos, total } = progresoDelPlan(bloques);
 
   return (
-    <Section title="Orden del día" meta={`${hechos}/${total}`}>
+    <Section title={t('raiz:ordenDelDia.titulo')} meta={`${hechos}/${total}`}>
       {plan.verdict ? (
         <View style={styles.veredicto}>
           <Text style={styles.veredictoTexto}>{plan.verdict}</Text>
@@ -86,7 +87,10 @@ export const OrdenDelDia = memo(function OrdenDelDia({ plan, bloques, onToggle, 
               style={({ pressed }) => [styles.bloque, i > 0 && styles.sep, pressed && styles.pressed]}
               accessibilityRole="checkbox"
               accessibilityState={{ checked: b.done }}
-              accessibilityLabel={`${hhmm(b.start_min)} ${b.title}${esActual ? ', ahora' : ''}${b.done ? ', hecho' : ''}`}
+              accessibilityLabel={t(esActual ? 'raiz:bloque.a11yAhora' : b.done ? 'raiz:bloque.a11yHecho' : 'raiz:bloque.a11y', {
+                hora: hhmm(b.start_min),
+                titulo: b.title,
+              })}
             >
               <View style={styles.horas}>
                 <Text style={[styles.hora, esActual && styles.horaActual]} maxFontSizeMultiplier={1.35}>
@@ -105,7 +109,7 @@ export const OrdenDelDia = memo(function OrdenDelDia({ plan, bloques, onToggle, 
                   >
                     {b.title}
                   </Text>
-                  {esActual ? <Text style={styles.ahora}>AHORA</Text> : null}
+                  {esActual ? <Text style={styles.ahora}>{t('raiz:ordenDelDia.ahora')}</Text> : null}
                 </View>
                 {b.detail ? (
                   <Text style={styles.detalle} numberOfLines={esActual ? undefined : 2}>

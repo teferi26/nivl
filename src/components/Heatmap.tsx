@@ -8,6 +8,7 @@
 import { StyleSheet, Text, View } from 'react-native';
 import Svg, { Rect } from 'react-native-svg';
 import { ink, space, type as tipo } from '@/design/tokens';
+import { t } from '@/i18n';
 import { addDays, dateKey } from '@/lib/dates';
 
 interface Props {
@@ -66,7 +67,7 @@ export function Heatmap({ counts, weeks = 13, ancho, hoy }: Props) {
     <View
       accessible
       accessibilityRole="image"
-      accessibilityLabel={`Mapa de actividad de ${weeks} semanas: ${activos} ${activos === 1 ? 'día' : 'días'} con alguna misión completada.`}
+      accessibilityLabel={t('raiz:heatmap.a11y', { semanas: weeks, count: activos })}
     >
       <Svg width={width} height={height}>
         {cells.map((c, i) => (
@@ -75,13 +76,13 @@ export function Heatmap({ counts, weeks = 13, ancho, hoy }: Props) {
       </Svg>
       <View style={styles.leyenda}>
         <Text style={styles.texto} maxFontSizeMultiplier={1.35}>
-          Menos
+          {t('raiz:heatmap.menos')}
         </Text>
         {ESCALA.map((c) => (
           <View key={c} style={[styles.muestra, { backgroundColor: c }]} />
         ))}
         <Text style={styles.texto} maxFontSizeMultiplier={1.35}>
-          Más
+          {t('raiz:heatmap.mas')}
         </Text>
       </View>
     </View>

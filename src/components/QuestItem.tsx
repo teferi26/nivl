@@ -16,6 +16,7 @@ import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-nati
 import { Entrada, TarjetaArena } from '@/components/arena';
 import { Check, Tag } from '@/components/ui';
 import { ink, space, stroke, type as tipo } from '@/design/tokens';
+import { t } from '@/i18n';
 import { BONUS_BY_DIFFICULTY, questXp, STAT_LABEL } from '@/lib/game';
 import { fonts } from '@/lib/theme';
 import type { Quest } from '@/lib/types';
@@ -36,16 +37,11 @@ interface Props {
   siguiente?: boolean;
 }
 
-export const TEXTO_RECUPERACION_CERRADA =
-  'Vuelve a la arena: completa una de las misiones que ya tenías y podrás recuperar lo perdido.';
-
-const TEXTO_RECUPERACION_ABIERTA = 'La arena está abierta. Recupera lo perdido.';
-
 const ARO = 26;
 
 /** «Penalización: 20 flexiones», sin repetirlo si el título ya lo dice. */
 function tituloPenalizacion(titulo: string): string {
-  return /penalizaci/i.test(titulo) ? titulo : `Penalización: ${titulo}`;
+  return /penalizaci/i.test(titulo) ? titulo : t('raiz:questItem.penalizacion', { titulo });
 }
 
 export function QuestItem({ quest, completed, xpAwarded, busy, streakDays, onComplete, bloqueada, siguiente }: Props) {
@@ -59,13 +55,17 @@ export function QuestItem({ quest, completed, xpAwarded, busy, streakDays, onCom
   const pulsar = () => {
     if (!inactiva) onComplete(quest);
   };
-  const etiqueta = `${siguiente && !completed ? 'Siguiente: ' : ''}${quest.title}, ${
-    completed
-      ? 'completada'
-      : cerrada
-        ? `cerrada, ${shown} ${unit} por recuperar. ${TEXTO_RECUPERACION_CERRADA}`
-        : `pendiente, ${shown} ${unit}`
-  }`;
+  const estado = completed
+    ? t('raiz:questItem.a11yCompletada', { titulo: quest.title })
+    : cerrada
+      ? t('raiz:questItem.a11yCerrada', {
+          titulo: quest.title,
+          cantidad: shown,
+          unidad: unit,
+          razon: t('raiz:questItem.recuperacionCerrada'),
+        })
+      : t('raiz:questItem.a11yPendiente', { titulo: quest.title, cantidad: shown, unidad: unit });
+  const etiqueta = siguiente && !completed ? t('raiz:questItem.a11ySiguiente', { etiqueta: estado }) : estado;
   const comunes = {
     onPress: pulsar,
     disabled: inactiva,
@@ -76,7 +76,7 @@ export function QuestItem({ quest, completed, xpAwarded, busy, streakDays, onCom
   const meta = (
     <>
       <Text style={[styles.meta, siguiente && styles.metaInvertida]} numberOfLines={1} maxFontSizeMultiplier={1.35}>
-        {quest.is_penalty ? 'Penalización · recuperada' : `${quest.stat} · ${STAT_LABEL[quest.stat]}`}
+        {quest.is_penalty ? t('raiz:questItem.penalizacionRecuperada') : `${quest.stat} · ${STAT_LABEL[quest.stat]}`}
       </Text>
       {quest.requires_evidence ? (
         <Ionicons name="camera-outline" size={13} color={siguiente ? ink.ink3 : ink.ink6} />
@@ -100,7 +100,7 @@ export function QuestItem({ quest, completed, xpAwarded, busy, streakDays, onCom
             <Text style={styles.tituloPena} numberOfLines={2}>
               {tituloPenalizacion(quest.title)}
             </Text>
-            <Text style={styles.textoPena}>{cerrada ? TEXTO_RECUPERACION_CERRADA : TEXTO_RECUPERACION_ABIERTA}</Text>
+            <Text style={styles.textoPena}>{cerrada ? t('raiz:questItem.recuperacionCerrada') : t('raiz:questItem.recuperacionAbierta')}</Text>
           </View>
           <Text style={styles.xpPena} maxFontSizeMultiplier={1.35}>
             +{shown}
@@ -123,7 +123,7 @@ export function QuestItem({ quest, completed, xpAwarded, busy, streakDays, onCom
           </View>
           <View style={styles.cuerpo}>
             <Text style={styles.rotuloSiguiente} maxFontSizeMultiplier={1.35}>
-              SIGUIENTE
+              {t('raiz:questItem.siguiente')}
             </Text>
             <Text style={styles.tituloSiguiente} numberOfLines={2}>
               {quest.title}
@@ -153,7 +153,7 @@ export function QuestItem({ quest, completed, xpAwarded, busy, streakDays, onCom
         </Text>
         <View style={styles.metaFila}>
           {meta}
-          {quest.is_bonus ? <Tag tone="logro">Extra</Tag> : null}
+          {quest.is_bonus ? <Tag tone="logro">{t('raiz:questItem.extra')}</Tag> : null}
         </View>
       </View>
       <View style={styles.xp}>

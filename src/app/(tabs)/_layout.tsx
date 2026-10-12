@@ -1,6 +1,7 @@
 import { Tabs } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NavRail } from '@/components/ui/NavRail';
+import { nombreDestino } from '@/components/ui/navItems';
 import { NavSidebar } from '@/components/ui/NavSidebar';
 import { TabBar } from '@/components/ui/TabBar';
 import { huecoContenido, marcoDe } from '@/design/responsive';
@@ -34,14 +35,14 @@ export default function TabsLayout() {
         }
         screenOptions={{ headerShown: false, tabBarPosition: sizeClass === 'compact' ? 'bottom' : 'left' }}
       >
-        <Tabs.Screen name="index" options={{ title: 'Hoy' }} />
+        <Tabs.Screen name="index" options={{ title: nombreDestino('hoy') }} />
         {/* Justo detrás de Hoy: en compact no tiene pestaña (navItems.ts) y es
             su destino secundario; en el raíl y la barra lateral va segunda. */}
-        <Tabs.Screen name="agenda" options={{ title: 'Agenda' }} />
-        <Tabs.Screen name="coach" options={{ title: 'Coach' }} />
-        <Tabs.Screen name="habitos" options={{ title: 'Hábitos' }} />
-        <Tabs.Screen name="mazmorras" options={{ title: 'Campañas' }} />
-        <Tabs.Screen name="perfil" options={{ title: 'Perfil' }} />
+        <Tabs.Screen name="agenda" options={{ title: nombreDestino('agenda') }} />
+        <Tabs.Screen name="coach" options={{ title: nombreDestino('coach') }} />
+        <Tabs.Screen name="habitos" options={{ title: nombreDestino('habitos') }} />
+        <Tabs.Screen name="mazmorras" options={{ title: nombreDestino('campanas') }} />
+        <Tabs.Screen name="perfil" options={{ title: nombreDestino('perfil') }} />
       </Tabs>
     </TopeAncho.Provider>
   );

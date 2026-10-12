@@ -23,6 +23,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { AccessibilityInfo, Animated, Easing, Modal, Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { vibrar } from '@/design/haptics';
+import { t } from '@/i18n';
 import { ink, motion, RANK_THEME, sizeClass, space, type } from '@/design/tokens';
 import type { Celebracion, EstadoProgreso, RangoId } from '@/lib/progression';
 import { Avatar, alturaCorona } from './Avatar';
@@ -74,10 +75,10 @@ export function Ceremony({ celebracion, forma, resumen, siguiente, avatar, onCer
       return;
     }
     if (presentado.current) return;
-    const t = setTimeout(() => {
+    const reloj = setTimeout(() => {
       if (!presentado.current) onFallidaRef.current();
     }, ESPERA_ONSHOW_MS);
-    return () => clearTimeout(t);
+    return () => clearTimeout(reloj);
   }, [visible]);
 
   return (
@@ -236,7 +237,7 @@ function Contenido({ c, forma, resumen, siguiente, avatar, onCerrar, onCompartir
         style={StyleSheet.absoluteFill}
         onPress={alTocarFondo}
         accessibilityRole="button"
-        accessibilityLabel="Cerrar la celebración"
+        accessibilityLabel={t('ui:ceremonia.cerrarA11y')}
       />
       <View style={styles.toque} pointerEvents="box-none">
         <View style={styles.columna} pointerEvents="box-none">
@@ -248,7 +249,7 @@ function Contenido({ c, forma, resumen, siguiente, avatar, onCerrar, onCompartir
               style={{ width: tam, height: tam + alto, marginTop: space.s6 }}
               accessible
               accessibilityRole="image"
-              accessibilityLabel={`${avatar.name}, rango ${nuevo}`}
+              accessibilityLabel={t('ui:avatar.a11yRango', { nombre: avatar.name, rango: nuevo })}
             >
               {terminado ? (
                 <Avatar size={tam} avatarPath={avatar.path} name={avatar.name} rank={nuevo} />
@@ -311,12 +312,12 @@ function Contenido({ c, forma, resumen, siguiente, avatar, onCerrar, onCompartir
             {mostrarSiguiente && siguiente ? (
               <View style={styles.siguiente}>
                 <Text style={styles.sigTexto}>
-                  Siguiente: {siguiente.nombre} en el nivel {siguiente.nivel}
+                  {t('ui:ceremonia.siguiente', { nombre: siguiente.nombre, nivel: siguiente.nivel })}
                 </Text>
                 {faltan ? <Text style={styles.sigTexto}>{faltan}</Text> : null}
                 {/* Sin los días activos no se puede dar a entender que basten los niveles. */}
                 {faltanDias === null && siguiente.dias > 0 ? (
-                  <Text style={styles.sigTexto}>{siguiente.nombre} pide además días activos en la arena</Text>
+                  <Text style={styles.sigTexto}>{t('ui:ceremonia.pideDias', { nombre: siguiente.nombre })}</Text>
                 ) : null}
               </View>
             ) : null}
@@ -324,11 +325,11 @@ function Contenido({ c, forma, resumen, siguiente, avatar, onCerrar, onCompartir
             </View>
 
             <View style={styles.botones}>
-              {onCompartir ? <Button title="Compartir" size="lg" onPress={onCompartir} /> : null}
-              <Button title="Seguir" variant="ghost" size="lg" onPress={onCerrar} />
+              {onCompartir ? <Button title={t('comun:compartir')} size="lg" onPress={onCompartir} /> : null}
+              <Button title={t('ui:ceremonia.seguir')} variant="ghost" size="lg" onPress={onCerrar} />
             </View>
             <Text style={styles.micro} pointerEvents="none">
-              {terminado ? 'Toca en cualquier parte para cerrar' : 'Toca en cualquier parte para saltar'}
+              {terminado ? t('ui:ceremonia.tocaCerrar') : t('ui:ceremonia.tocaSaltar')}
             </Text>
           </Animated.View>
         </View>

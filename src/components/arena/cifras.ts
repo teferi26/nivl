@@ -5,6 +5,7 @@
 // lo que se espera leer en un monumento («1.840 XP»). Desde 1.0.10 lo hace
 // `miles` de @/i18n/formato (igual en es; Intl en el resto de idiomas).
 
+import { t } from '@/i18n';
 import { miles } from '@/i18n/formato';
 
 /** Cifra vacía: un guion, nunca la raya larga (SISTEMA.md §0). */
@@ -60,5 +61,5 @@ export function ratioSeguro(a: number, b: number): number {
  * no parezca el actual («NIVEL 24» junto al «23» se leía como contradicción).
  */
 export function rotuloSiguiente(nivel: number, tope: boolean): string {
-  return tope ? 'NIVEL MÁXIMO' : `SIGUIENTE · ${nivel + 1}`;
+  return tope ? t('arena:cifras.nivelMaximo') : t('arena:cifras.siguiente', { nivel: nivel + 1 });
 }

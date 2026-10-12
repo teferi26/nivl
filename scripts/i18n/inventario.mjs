@@ -40,6 +40,12 @@ const RUTAS = {
   'src/app/(tabs)/mazmorras.tsx': 'campanas',
   'src/app/(tabs)/perfil.tsx': 'perfil',
   'src/app/login.tsx': 'acceso',
+  // Puertas que viven en la raíz de components (tanda 3, no la 1).
+  'src/components/EdadMinima.tsx': 'puertas',
+  'src/components/ConsentimientoSalud.tsx': 'puertas',
+  'src/components/ConsentimientoIA.tsx': 'puertas',
+  'src/components/DenunciarIA.tsx': 'puertas',
+  'src/components/denunciaIA.ts': 'puertas',
 };
 const RUTAS_CARPETA = { 'src/app/auth/': 'acceso', 'src/app/dungeon/': 'campanas', 'src/app/c/': 'creador' };
 const LIB = { 'src/lib/voice.ts': 'voz', 'src/lib/notifications.ts': 'avisos' };
@@ -112,11 +118,14 @@ function archivosGit(raiz, rev) {
 
 const PROPS_VISIBLES =
   /^(title|label|placeholder|accessibilityLabel|accessibilityHint|subtitle|hint|message|texto|text|cta|kicker|eyebrow|empty|confirmLabel|cancelLabel|descripcion|description|body|ayuda|etiqueta|titulo|subtitulo|vacio|aria-label)$/i;
-const PROPS_TECNICAS = /^(style|testID|name|icon|key|href|source|nativeID)$/;
+const PROPS_TECNICAS = /^(style|testID|name|icon|key|href|source|nativeID|d)$/;
+/** Datos de un trazado SVG («M0 9.5H10 M0.5 9.5V0.5»): no son texto. */
+const esTrazadoSvg = (s) => /^[Mm]\s?-?\d/.test(s.trim()) && /^[MmZzLlHhVvCcSsQqTtAa\d\s.,-]+$/.test(s.trim());
 const pareceHumano = (s) =>
   /[a-záéíóúñü]/i.test(s) && (/\s/.test(s.trim()) || /[áéíóúñü¿¡]/i.test(s) || /^[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+[.!?:]?$/.test(s.trim()));
 const pareceCodigo = (s) =>
   /^[@./#]|^https?:|^[a-z0-9_\-]+$|^[a-z]+[A-Z]\w*$|\.(png|ttf|json)$|^[A-Z_0-9]+$/.test(s.trim()) ||
+  esTrazadoSvg(s) ||
   /^(select|insert|update|from|order|eq|gte|lte)\b/i.test(s.trim()) ||
   (/[{}();=<>]/.test(s) && !/\s[a-záéíóú]{3,}\s/i.test(s));
 

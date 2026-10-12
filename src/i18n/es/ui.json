@@ -1,1 +1,39 @@
-{}
+{
+  "avatar": {
+    "a11yRango": "{{nombre}}, rango {{rango}}"
+  },
+  "ceremonia": {
+    "nuevoRango": "NUEVO RANGO",
+    "nuevoGrado": "NUEVO GRADO",
+    "subesNivel": "SUBES DE NIVEL",
+    "anuncioRango": "Nuevo rango: {{rango}}, {{nombre}}. {{lema}}",
+    "anuncioGrado": "Nuevo grado: {{nombre}} {{grado}}",
+    "anuncioNivel": "Subes al nivel {{nivel}}",
+    "tituloNivel": "Nivel {{nivel}}",
+    "faltaNiveles_one": "Falta {{count}} nivel",
+    "faltaNiveles_other": "Faltan {{count}} niveles",
+    "faltaDias_one": "Falta {{count}} día activo",
+    "faltaDias_other": "Faltan {{count}} días activos",
+    "faltanAmbos": "Faltan {{niveles}} y {{dias}}",
+    "niveles_one": "{{count}} nivel",
+    "niveles_other": "{{count}} niveles",
+    "diasActivos_one": "{{count}} día activo",
+    "diasActivos_other": "{{count}} días activos",
+    "cerrarA11y": "Cerrar la celebración",
+    "siguiente": "Siguiente: {{nombre}} en el nivel {{nivel}}",
+    "pideDias": "{{nombre}} pide además días activos en la arena",
+    "seguir": "Seguir",
+    "tocaCerrar": "Toca en cualquier parte para cerrar",
+    "tocaSaltar": "Toca en cualquier parte para saltar"
+  },
+  "confirmar": {
+    "botonesWeb": "Aceptar: {{ok}}. Cancelar: {{cancelar}}."
+  },
+  "sidebar": {
+    "lema": "UN 1 % MEJOR\nCADA DÍA",
+    "lemaA11y": "Un 1 % mejor cada día"
+  },
+  "row": {
+    "masOpciones": "Más opciones"
+  }
+}

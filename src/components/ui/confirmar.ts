@@ -6,6 +6,7 @@
 // móvil sigue con el Alert nativo de siempre.
 
 import { Alert, Platform } from 'react-native';
+import { t } from '@/i18n';
 
 interface Confirmacion {
   titulo: string;
@@ -17,10 +18,11 @@ interface Confirmacion {
 }
 
 /** Pide confirmación. Resuelve true solo si se acepta. */
-export function confirmar({ titulo, mensaje, confirmar: ok, cancelar = 'Cancelar', destructivo }: Confirmacion): Promise<boolean> {
+export function confirmar({ titulo, mensaje, confirmar: ok, cancelar = t('comun:cancelar'), destructivo }: Confirmacion): Promise<boolean> {
   if (Platform.OS === 'web') {
     // El diálogo del navegador solo tiene Aceptar/Cancelar: se dice qué hace cada uno.
-    const texto = `${mensaje ? `${titulo}\n\n${mensaje}` : titulo}\n\nAceptar: ${ok}. Cancelar: ${cancelar}.`;
+    const botones = t('ui:confirmar.botonesWeb', { ok, cancelar });
+    const texto = `${mensaje ? `${titulo}\n\n${mensaje}` : titulo}\n\n${botones}`;
     return Promise.resolve(typeof window !== 'undefined' && typeof window.confirm === 'function' ? window.confirm(texto) : false);
   }
   return new Promise((resolve) => {

@@ -7,7 +7,8 @@ import { useEffect, useRef, type ReactNode } from 'react';
 import { AccessibilityInfo, ActivityIndicator, Animated, Pressable, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 import { colors, fonts } from '@/lib/theme';
 import { ink, type } from '@/design/tokens';
-import { LEIDO_SIN_DATO, SIN_DATO } from './sinDato';
+import { t } from '@/i18n';
+import { leidoSinDato, SIN_DATO } from './sinDato';
 
 interface CheckProps {
   checked: boolean;
@@ -183,7 +184,7 @@ export function Row({
         accessibilityLabel={accessibilityLabel ?? title}
         accessibilityState={accessibilityState}
         // La pulsación larga no se descubre con el lector: va como acción.
-        accessibilityActions={onLongPress && !disabled ? [{ name: 'longpress', label: accessibilityLongPressLabel ?? 'Más opciones' }] : undefined}
+        accessibilityActions={onLongPress && !disabled ? [{ name: 'longpress', label: accessibilityLongPressLabel ?? t('ui:row.masOpciones') }] : undefined}
         onAccessibilityAction={
           onLongPress && !disabled
             ? (e) => {
@@ -207,7 +208,7 @@ export function RowValue({ children, tone = 'dim', strong }: { children: ReactNo
   return (
     <Text
       style={tone === 'strong' ? styles.valueTexto : [styles.value, { color }, strong && styles.valueStrong]}
-      accessibilityLabel={children === SIN_DATO ? LEIDO_SIN_DATO : undefined}
+      accessibilityLabel={children === SIN_DATO ? leidoSinDato() : undefined}
     >
       {children}
     </Text>

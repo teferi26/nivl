@@ -1,6 +1,6 @@
 // Idiomas antes que nada: el init de i18next es síncrono y `t()` tiene que
 // valer desde el primer módulo que lo use (docs/i18n/PLAN-1010.md).
-import { useIdiomaInterfaz } from '@/i18n';
+import { t, useIdiomaInterfaz } from '@/i18n';
 import { Cinzel_600SemiBold, Cinzel_700Bold } from '@expo-google-fonts/cinzel';
 import { Outfit_500Medium, Outfit_600SemiBold, Outfit_700Bold } from '@expo-google-fonts/outfit';
 import { useFonts } from 'expo-font';
@@ -198,9 +198,9 @@ export default function RootLayout() {
     if (!SITIO_CREADORES || typeof document === 'undefined') return;
     const meta = document.createElement('meta');
     meta.name = 'robots';
-    meta.content = 'noindex, nofollow';
+    meta.content = 'noindex, nofollow'; // i18n-ok: valor técnico de la meta, no se lee
     document.head.appendChild(meta);
-    document.title = 'NIVL · Creadores';
+    document.title = t('raiz:portal.tituloDocumento');
   }, []);
 
   useEffect(() => {

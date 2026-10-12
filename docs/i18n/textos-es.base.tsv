@@ -397,7 +397,6 @@ arena	src/components/arena/cifras.ts:69	lit	NIVEL MÁXIMO
 arena	src/components/arena/EncabezadoArena.tsx:43	prop:accessibilityLabel	Volver
 arena	src/components/arena/EstadoSistema.tsx:40	lit	El sistema no responde
 arena	src/components/arena/EstadoSistema.tsx:53	prop:title	Reintentar
-arena	src/components/arena/geometria.ts:271	lit	M0 9.5H10 M0.5 9.5V0.5H8.5V6.5H3.5V3.5H6
 arena	src/components/arena/HeroRango.tsx:77	lit	1 día
 arena	src/components/arena/HeroRango.tsx:82	lit	Nivel ${p.nivel}${p.rango ? `, rango ${p.rango}` : ''}, ${p.titulo}.
 arena	src/components/arena/HeroRango.tsx:82	lit	, rango ${p.rango}
@@ -2144,6 +2143,22 @@ perfil	src/components/perfil/usePerfil.ts:515	lit	Desde ahora no se envía nada 
 perfil	src/components/perfil/usePerfil.ts:516	lit	Retirar
 perfil	src/components/perfil/usePerfil.ts:526	lit	El sistema no responde
 perfil	src/components/perfil/usePerfil.ts:620	lit	Pagos no disponibles
+puertas	src/components/ConsentimientoSalud.tsx:75	lit	Falta HealthConsentProvider
+puertas	src/components/ConsentimientoSalud.tsx:159	lit	Retirar permiso y borrar
+puertas	src/components/ConsentimientoSalud.tsx:159	lit	Retirar y borrar
+puertas	src/components/denunciaIA.ts:15	lit	Puede hacer daño
+puertas	src/components/denunciaIA.ts:16	lit	Consejo de salud peligroso
+puertas	src/components/denunciaIA.ts:17	lit	Consejo de dinero peligroso
+puertas	src/components/denunciaIA.ts:18	lit	Información falsa
+puertas	src/components/denunciaIA.ts:19	lit	Ofensivo o inapropiado
+puertas	src/components/denunciaIA.ts:20	lit	Otro motivo
+puertas	src/components/denunciaIA.ts:45	lit	Denuncia de respuesta de IA · NIVL
+puertas	src/components/denunciaIA.ts:48	lit	Oráculo
+puertas	src/components/denunciaIA.ts:50	lit	sin identificador
+puertas	src/components/DenunciarIA.tsx:65	lit	Se ha abierto tu correo con la denuncia. Envíalo para que llegue a revisión.
+puertas	src/components/DenunciarIA.tsx:68	lit	No se ha podido abrir el correo. Escribe a ${CORREO_SOPORTE} con el motivo de la denuncia.
+puertas	src/components/DenunciarIA.tsx:75	lit	Denuncia registrada. El equipo revisará esta respuesta.
+puertas	src/components/EdadMinima.tsx:85	lit	Falta EdadMinimaProvider
 puertas	src/components/puertas/ConsentimientoIAVista.tsx:102	prop:accessibilityLabel	Leer la política de privacidad
 puertas	src/components/puertas/ConsentimientoIAVista.tsx:104	jsx	Leer la política de privacidad
 puertas	src/components/puertas/DenunciaVista.tsx:33	prop:eyebrow	Denunciar respuesta
@@ -2227,24 +2242,6 @@ raiz	src/components/CompletarSheet.tsx:76	lit	Esta misión exige evidencia: se c
 raiz	src/components/CompletarSheet.tsx:78	lit	Con foto, el domingo entra en tu resumen.
 raiz	src/components/CompletarSheet.tsx:79	lit	Con foto suma un 25 % de XP y el domingo entra en tu resumen.
 raiz	src/components/CompletarSheet.tsx:80	lit	También se marca sola al registrar ${NOMBRE_DE_ACTO[acto]}.
-raiz	src/components/ConsentimientoSalud.tsx:75	lit	Falta HealthConsentProvider
-raiz	src/components/ConsentimientoSalud.tsx:159	lit	Retirar permiso y borrar
-raiz	src/components/ConsentimientoSalud.tsx:159	lit	Retirar y borrar
-raiz	src/components/denunciaIA.ts:15	lit	Puede hacer daño
-raiz	src/components/denunciaIA.ts:16	lit	Consejo de salud peligroso
-raiz	src/components/denunciaIA.ts:17	lit	Consejo de dinero peligroso
-raiz	src/components/denunciaIA.ts:18	lit	Información falsa
-raiz	src/components/denunciaIA.ts:19	lit	Ofensivo o inapropiado
-raiz	src/components/denunciaIA.ts:20	lit	Otro motivo
-raiz	src/components/denunciaIA.ts:45	lit	Denuncia de respuesta de IA · NIVL
-raiz	src/components/denunciaIA.ts:48	lit	Oráculo
-raiz	src/components/denunciaIA.ts:50	lit	sin identificador
-raiz	src/components/DenunciarIA.tsx:65	lit	Se ha abierto tu correo con la denuncia. Envíalo para que llegue a revisión.
-raiz	src/components/DenunciarIA.tsx:68	lit	No se ha podido abrir el correo. Escribe a ${CORREO_SOPORTE} con el motivo de la denuncia.
-raiz	src/components/DenunciarIA.tsx:75	lit	Denuncia registrada. El equipo revisará esta respuesta.
-raiz	src/components/EdadMinima.tsx:85	lit	Falta EdadMinimaProvider
-raiz	src/components/EliteBadge.tsx:49	prop:d	M11 21.5 C 5.5 19.5 2.8 14.5 4.6 4
-raiz	src/components/EliteBadge.tsx:50	prop:d	M13 21.5 C 18.5 19.5 21.2 14.5 19.4 4
 raiz	src/components/ErrorBoundary.tsx:49	jsx	EL SISTEMA HA FALLADO
 raiz	src/components/ErrorBoundary.tsx:52	jsx	Algo se ha roto por dentro. Tus datos están a salvo: viven en el servidor, no en esta pantalla.
 raiz	src/components/ErrorBoundary.tsx:63	prop:title	Reintentar
@@ -2415,7 +2412,6 @@ share	src/components/share/HojaCompartir.tsx:252	prop:rotulo	Añadir mi enlace d
 share	src/components/share/HojaCompartir.tsx:262	prop:texto	Tu alias no está disponible ahora.
 share	src/components/share/HojaCompartir.tsx:263	prop:texto	No se ha podido traer tu alias. Prueba otra vez.
 share	src/components/share/TarjetaCompartir.tsx:124	jsx	NIVL
-share	src/components/share/TarjetaCompartir.tsx:136	prop:d	M16 25l5 5 11-12
 share	src/components/share/TarjetaCompartir.tsx:147	jsx	NIVEL
 share	src/components/share/TarjetaCompartir.tsx:188	jsx	DÍAS DE RACHA
 share	src/components/share/TarjetaCompartir.tsx:232	jsx	MÍDETE CONMIGO
@@ -2439,29 +2435,6 @@ ui	src/components/ui/Ceremony.tsx:328	prop:title	Seguir
 ui	src/components/ui/Ceremony.tsx:331	lit	Toca en cualquier parte para cerrar
 ui	src/components/ui/Ceremony.tsx:331	lit	Toca en cualquier parte para saltar
 ui	src/components/ui/confirmar.ts:20	lit	Cancelar
-ui	src/components/ui/Crown.tsx:27	lit	M7.4 8.4C6.6 4.6 9.6 1.4 14.2 1.2C16.8 2.8 17.8 6 16.8 9.6
-ui	src/components/ui/Crown.tsx:28	lit	M10.2 7.6L10.8 3M12.6 7.4L13.8 2.2M14.8 8L16.2 4
-ui	src/components/ui/Crown.tsx:29	lit	M4.6 12.5C4.6 9.2 7.6 7.4 11 7.4C14.4 7.4 17.4 9 17.8 12.5
-ui	src/components/ui/Crown.tsx:30	lit	M1.4 16.4C2.6 14.2 3.8 12.5 6 12.5H17.8C19.4 12.5 20.8 12.2 22.2 11.4
-ui	src/components/ui/Crown.tsx:31	lit	M7.4 12.5C7.4 16.4 8.4 19.2 10.8 20H16.8C18.6 20 19.6 18.8 19.7 16.6C19.8 14.6 19 13.2 17.8 12.5
-ui	src/components/ui/Crown.tsx:32	lit	M11.6 12.5V20M11.6 14.6H19.5M11.6 16.6H19.7M11.6 18.6H19.4
-ui	src/components/ui/Crown.tsx:41	lit	M10.8 6C10.8 3.2 11.2 1.2 12 1.2S13.2 3.2 13.2 6
-ui	src/components/ui/Crown.tsx:42	lit	M5.5 12.5V11.5C5.5 7.8 8.4 6 12 6S18.5 7.8 18.5 11.5V12.5
-ui	src/components/ui/Crown.tsx:43	lit	M1.5 14C3 12.9 4.5 12.5 6.5 12.5H17.5C19.5 12.5 21 12.9 22.5 14
-ui	src/components/ui/Crown.tsx:44	lit	M6.5 12.5L7.1 18Q7.4 20 9.4 20H14.6Q16.6 20 16.9 18L17.5 12.5
-ui	src/components/ui/Crown.tsx:45	lit	M9.2 15.6H14.8
-ui	src/components/ui/Crown.tsx:51	lit	M3 17.5Q12 13.5 21 17.5
-ui	src/components/ui/Crown.tsx:52	lit	M10.8 15.6C9.6 14.3 9.4 11.6 10 10C11.2 11.4 11.4 14 10.8 15.6Z
-ui	src/components/ui/Crown.tsx:53	lit	M8 16.2C6.6 15.1 6 12.8 6.4 11.2C7.8 12.3 8.4 14.6 8 16.2Z
-ui	src/components/ui/Crown.tsx:54	lit	M5.2 16.9C3.8 16.1 2.9 14.2 3 12.6C4.4 13.4 5.3 15.3 5.2 16.9Z
-ui	src/components/ui/Crown.tsx:55	lit	M13.2 15.6C14.4 14.3 14.6 11.6 14 10C12.8 11.4 12.6 14 13.2 15.6Z
-ui	src/components/ui/Crown.tsx:56	lit	M16 16.2C17.4 15.1 18 12.8 17.6 11.2C16.2 12.3 15.6 14.6 16 16.2Z
-ui	src/components/ui/Crown.tsx:57	lit	M18.8 16.9C20.2 16.1 21.1 14.2 21 12.6C19.6 13.4 18.7 15.3 18.8 16.9Z
-ui	src/components/ui/Crown.tsx:58	lit	M12 12.4V12.5
-ui	src/components/ui/Crown.tsx:59	lit	M3 17.5L2 20M21 17.5L22 20
-ui	src/components/ui/Crown.tsx:62	lit	M3.5 17.5L2.5 8.5L7.5 12L12 5.5L16.5 12L21.5 8.5L20.5 17.5Z
-ui	src/components/ui/Crown.tsx:63	lit	M3.5 20H20.5
-ui	src/components/ui/Crown.tsx:64	lit	M12 3.4V3.5M2.4 6.6V6.7M21.6 6.6V6.7
 ui	src/components/ui/navItems.ts:28	lit	Hoy
 ui	src/components/ui/navItems.ts:29	lit	Coach
 ui	src/components/ui/navItems.ts:30	lit	Hábitos

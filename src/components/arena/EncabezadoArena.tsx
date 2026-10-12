@@ -9,6 +9,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { ink, space, stroke, type as tipo } from '@/design/tokens';
+import { t } from '@/i18n';
 import { Meandro } from './Motivos';
 
 export interface AccionArena {
@@ -40,7 +41,7 @@ export function EncabezadoArena({ eyebrow, titulo, subtitulo, onVolver, accion, 
           onPress={onVolver}
           style={({ pressed }) => [styles.volver, pressed && styles.pulsado]}
           accessibilityRole="button"
-          accessibilityLabel="Volver"
+          accessibilityLabel={t('comun:volver')}
         >
           <Ionicons name="arrow-back" size={20} color={ink.ink9} />
         </Pressable>

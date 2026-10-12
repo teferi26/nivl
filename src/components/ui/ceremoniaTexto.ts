@@ -1,6 +1,7 @@
 // NIVL · Los textos de la ceremonia (Ceremony.tsx), puros para testearlos:
 // qué cifra sale, cuál entra y qué falta para el siguiente rango.
 
+import { t } from '@/i18n';
 import { RANGOS, type Celebracion, type RangoId } from '@/lib/progression';
 
 export function romano(n: number): string {
@@ -34,18 +35,18 @@ export function piezasCeremonia(c: Celebracion): PiezasCeremonia {
       return {
         viejo: rangoDeSalida(c),
         nuevo: c.rango,
-        eyebrow: 'NUEVO RANGO',
+        eyebrow: t('ui:ceremonia.nuevoRango'),
         titulo: c.nombre,
-        anuncio: `Nuevo rango: ${c.rango}, ${c.nombre}. ${c.lema}`,
+        anuncio: t('ui:ceremonia.anuncioRango', { rango: c.rango, nombre: c.nombre, lema: c.lema }),
       };
     case 'grado': {
       const desde = c.desde !== undefined && c.desde < c.grado ? c.desde : Math.max(1, c.grado - 1);
       return {
         viejo: romano(desde),
         nuevo: romano(c.grado),
-        eyebrow: 'NUEVO GRADO',
+        eyebrow: t('ui:ceremonia.nuevoGrado'),
         titulo: `${c.nombre} ${romano(c.grado)}`,
-        anuncio: `Nuevo grado: ${c.nombre} ${romano(c.grado)}`,
+        anuncio: t('ui:ceremonia.anuncioGrado', { nombre: c.nombre, grado: romano(c.grado) }),
       };
     }
     case 'nivel': {
@@ -53,9 +54,9 @@ export function piezasCeremonia(c: Celebracion): PiezasCeremonia {
       return {
         viejo: String(desde),
         nuevo: String(c.nivel),
-        eyebrow: 'SUBES DE NIVEL',
-        titulo: `Nivel ${c.nivel}`,
-        anuncio: `Subes al nivel ${c.nivel}`,
+        eyebrow: t('ui:ceremonia.subesNivel'),
+        titulo: t('ui:ceremonia.tituloNivel', { nivel: c.nivel }),
+        anuncio: t('ui:ceremonia.anuncioNivel', { nivel: c.nivel }),
       };
     }
     default:
@@ -68,10 +69,15 @@ export function piezasCeremonia(c: Celebracion): PiezasCeremonia {
  * nivel». null si no falta nada que se sepa (nunca «Faltan 0 niveles»).
  */
 export function lineaFaltan(faltan: number, faltanDias: number | null): string | null {
-  const partes: string[] = [];
-  if (faltan > 0) partes.push(`${faltan} ${faltan === 1 ? 'nivel' : 'niveles'}`);
-  if (faltanDias !== null && faltanDias > 0) partes.push(`${faltanDias} ${faltanDias === 1 ? 'día activo' : 'días activos'}`);
-  if (partes.length === 0) return null;
-  const singular = partes.length === 1 && (faltan === 1 || (faltan <= 0 && faltanDias === 1));
-  return `${singular ? 'Falta' : 'Faltan'} ${partes.join(' y ')}`;
+  const hayNiveles = faltan > 0;
+  const hayDias = faltanDias !== null && faltanDias > 0;
+  if (hayNiveles && hayDias) {
+    return t('ui:ceremonia.faltanAmbos', {
+      niveles: t('ui:ceremonia.niveles', { count: faltan }),
+      dias: t('ui:ceremonia.diasActivos', { count: faltanDias }),
+    });
+  }
+  if (hayNiveles) return t('ui:ceremonia.faltaNiveles', { count: faltan });
+  if (hayDias) return t('ui:ceremonia.faltaDias', { count: faltanDias });
+  return null;
 }

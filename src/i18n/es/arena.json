@@ -1,1 +1,32 @@
-{}
+{
+  "cifras": {
+    "nivelMaximo": "NIVEL MÁXIMO",
+    "siguiente": "SIGUIENTE · {{nivel}}"
+  },
+  "heroRango": {
+    "dias_one": "{{count}} día",
+    "dias_other": "{{count, miles}} días",
+    "a11yNivel": "Nivel {{nivel}}, {{titulo}}.",
+    "a11yNivelRango": "Nivel {{nivel}}, rango {{rango}}, {{titulo}}.",
+    "a11yXp": "{{actual}} de {{total}} XP.",
+    "a11yNivelMaximo": "Nivel máximo.",
+    "a11yRacha": "Racha de {{dias}}.",
+    "a11yRachaHoy": "Racha de {{dias}}, hoy ya cuenta.",
+    "a11yPiedras": "Piedras: {{piedras}}.",
+    "piedrasDe": "{{piedras}} de {{max}}",
+    "nivel": "Nivel",
+    "rango": "Rango",
+    "racha": "Racha",
+    "rachaHoy": "Racha · hoy cuenta",
+    "rachaCargando": "Racha: cargando",
+    "rachaA11y": "Racha: {{dias}}",
+    "piedras": "Piedras",
+    "piedrasA11y": "Piedras: {{piedras}}",
+    "tuPerfilA11y": "Tu perfil, {{nombre}}",
+    "cargandoA11y": "Cargando tu nivel",
+    "rotuloNivel": "NIVEL",
+    "inscripcionRango": "RANGO {{rango}}",
+    "experienciaA11y": "Experiencia del nivel {{nivel}}",
+    "cambiarFoto": "Cambiar foto de perfil"
+  }
+}

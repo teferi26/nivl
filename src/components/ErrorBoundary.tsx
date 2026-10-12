@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/Button';
 // directa: la red de seguridad carga lo mínimo.
 import { Crown as Galea } from '@/components/ui/Crown';
 import { ink, space, stroke, type as tipo } from '@/design/tokens';
+import { t } from '@/i18n';
 
 interface Props {
   children: ReactNode;
@@ -46,11 +47,10 @@ export class ErrorBoundary extends Component<Props, State> {
             <Galea kind="casco" size={48} color={ink.ink6} />
           </View>
           <Text style={styles.titulo} accessibilityRole="header">
-            EL SISTEMA HA FALLADO
+            {t('raiz:errorBoundary.titulo')}
           </Text>
           <Text style={styles.texto}>
-            Algo se ha roto por dentro. Tus datos están a salvo: viven en el servidor, no en esta
-            pantalla.
+            {t('raiz:errorBoundary.texto')}
           </Text>
           <View style={styles.caja}>
             <Text style={styles.mensaje}>{error.message || String(error)}</Text>
@@ -60,7 +60,7 @@ export class ErrorBoundary extends Component<Props, State> {
               </Text>
             ) : null}
           </View>
-          <Button title="Reintentar" icon="refresh" size="lg" onPress={this.reintentar} />
+          <Button title={t('comun:reintentar')} icon="refresh" size="lg" onPress={this.reintentar} />
         </ScrollView>
       </View>
     );
