@@ -12,6 +12,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { AccessibilityInfo, AppState, Pressable, StyleSheet, Text, View, type GestureResponderEvent } from 'react-native';
 import { vibrar } from '@/design/haptics';
 import { ink, space, type } from '@/design/tokens';
+import { t } from '@/i18n';
 import { cancelarDictado, detenerDictado, dictar, type ErrorDictado } from '@/lib/coachvoz';
 import { alSoltar, formatoGrabacion, UMBRAL_CANCELAR } from './dictadoGesto';
 import { redAceptada } from './redDictado';
@@ -28,7 +29,9 @@ interface OpcionesUseDictado {
 }
 
 /** Tras el diálogo de permiso el gesto ya se ha perdido: se dice qué hacer. */
-export const AVISO_MICROFONO_LISTO = 'Micrófono listo. Mantén pulsado para dictar.';
+export function avisoMicrofonoListo(): string {
+  return t('coach:dictado.microfonoListo');
+}
 // Un arranque más lento que esto casi siempre ha pasado por un diálogo del
 // sistema (el permiso), aunque la app no haya llegado a salir de primer plano.
 const ARRANQUE_CON_DIALOGO_MS = 1200;
@@ -92,8 +95,8 @@ export function useDictado({ onTexto, onError, onPedirPrivacidad, onAviso }: Opc
   useEffect(() => {
     if (!grabando || inicio === null) return;
     setAhora(Date.now());
-    const t = setInterval(() => setAhora(Date.now()), 250);
-    return () => clearInterval(t);
+    const reloj = setInterval(() => setAhora(Date.now()), 250);
+    return () => clearInterval(reloj);
   }, [grabando, inicio]);
 
   const empezar = useCallback(async (): Promise<boolean> => {
@@ -114,10 +117,10 @@ export function useDictado({ onTexto, onError, onPedirPrivacidad, onAviso }: Opc
     const red = await redAceptada();
     const r = await dictar({
       permitirRed: red,
-      onParcial: (t) => {
-        if (montado.current) setParcial(t);
+      onParcial: (texto) => {
+        if (montado.current) setParcial(texto);
       },
-      onFinal: (t) => cb.current.onTexto(t),
+      onFinal: (texto) => cb.current.onTexto(texto),
       // Los errores de arranque llegan también por el resultado: se atienden
       // ahí, una sola vez.
       onError: (e) => {
@@ -139,7 +142,7 @@ export function useDictado({ onTexto, onError, onPedirPrivacidad, onAviso }: Opc
       // Sin esto la sesión se cancelaba en silencio y parecía que el botón no
       // hacía nada. Ya hay permiso: el próximo pulsado graba.
       const tras = dialogo || Date.now() - t0 > ARRANQUE_CON_DIALOGO_MS;
-      if (montado.current && !descartado.current && tras) cb.current.onAviso?.(AVISO_MICROFONO_LISTO);
+      if (montado.current && !descartado.current && tras) cb.current.onAviso?.(avisoMicrofonoListo());
       return false;
     }
     activo.current = true;
@@ -172,11 +175,11 @@ export function useDictado({ onTexto, onError, onPedirPrivacidad, onAviso }: Opc
   const alternar = useCallback(() => {
     if (activo.current) {
       detenerDictado();
-      AccessibilityInfo.announceForAccessibility('Dictado terminado');
+      AccessibilityInfo.announceForAccessibility(t('coach:dictado.terminado'));
       return;
     }
     void empezar().then((ok) => {
-      if (ok) AccessibilityInfo.announceForAccessibility('Grabando');
+      if (ok) AccessibilityInfo.announceForAccessibility(t('coach:dictado.grabando'));
     });
   }, [empezar]);
 
@@ -236,7 +239,7 @@ export function BotonDictar({ dictado, disabled }: { dictado: Dictado; disabled?
     const descartar = () => {
       if (!enMarcha) return;
       dictado.cancelar();
-      AccessibilityInfo.announceForAccessibility('Dictado cancelado');
+      AccessibilityInfo.announceForAccessibility(t('coach:dictado.cancelado'));
     };
     return (
       <Pressable
@@ -244,10 +247,10 @@ export function BotonDictar({ dictado, disabled }: { dictado: Dictado; disabled?
         disabled={disabled}
         style={({ pressed }) => [styles.boton, enMarcha && styles.botonOn, pressed && styles.pulsado]}
         accessibilityRole="button"
-        accessibilityLabel={dictado.grabando ? 'Terminar el dictado' : 'Dictar un mensaje'}
-        accessibilityHint={dictado.grabando ? 'Lo dictado se escribe en el cuadro de texto' : 'Toca para empezar a grabar'}
+        accessibilityLabel={dictado.grabando ? t('coach:dictado.terminarA11y') : t('coach:dictado.dictarA11y')}
+        accessibilityHint={dictado.grabando ? t('coach:dictado.terminarPista') : t('coach:dictado.empezarPista')}
         accessibilityState={{ disabled: !!disabled, busy: dictado.grabando }}
-        accessibilityActions={enMarcha ? [{ name: 'escape', label: 'Cancelar el dictado' }] : undefined}
+        accessibilityActions={enMarcha ? [{ name: 'escape', label: t('coach:dictado.cancelarAccion') }] : undefined}
         onAccessibilityEscape={descartar}
         onAccessibilityAction={(e) => {
           if (e.nativeEvent.actionName === 'escape') descartar();
@@ -274,8 +277,8 @@ export function BotonDictar({ dictado, disabled }: { dictado: Dictado; disabled?
       onResponderTerminate={() => dictado.soltar(UMBRAL_CANCELAR)}
       accessible
       accessibilityRole="button"
-      accessibilityLabel="Dictar un mensaje"
-      accessibilityHint="Mantén pulsado para grabar y suelta para escribirlo"
+      accessibilityLabel={t('coach:dictado.dictarA11y')}
+      accessibilityHint={t('coach:dictado.mantenerPista')}
       accessibilityState={{ disabled: !!disabled, busy: dictado.grabando }}
     >
       <Ionicons name="mic-outline" size={20} color={enMarcha ? ink.ink0 : ink.ink10} />
@@ -300,17 +303,17 @@ export function FranjaGrabacion({ dictado, aviso }: { dictado: Dictado; aviso?: 
   }
   // Con lector se toca para empezar y para terminar: no hay soltar ni deslizar.
   const guia = lector
-    ? 'toca el micrófono para terminar'
+    ? t('coach:dictado.guiaLector')
     : dictado.cancelaria
-      ? 'suelta para cancelar'
-      : 'suelta para escribirlo, desliza arriba para cancelar';
+      ? t('coach:dictado.guiaCancelar')
+      : t('coach:dictado.guia');
   return (
     // Sin región viva: el reloj cambia cuatro veces por segundo y el lector lo
     // leería sin parar. El lector oye «Grabando» y «Dictado terminado».
     <View style={styles.franja}>
       <View style={styles.franjaFila}>
         <View style={[styles.punto, dictado.cancelaria && styles.puntoOff]} />
-        <Text style={styles.franjaRotulo}>{dictado.preparando ? 'PREPARANDO' : `GRABANDO ${formatoGrabacion(dictado.ms)}`}</Text>
+        <Text style={styles.franjaRotulo}>{dictado.preparando ? t('coach:dictado.preparando') : t('coach:dictado.grabandoReloj', { tiempo: formatoGrabacion(dictado.ms) })}</Text>
       </View>
       {/* Debajo y entera: a 375 en la misma fila se cortaba con puntos suspensivos. */}
       <Text style={styles.franjaGuia}>{guia}</Text>

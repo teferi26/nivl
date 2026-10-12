@@ -1,1 +1,46 @@
-{}
+{
+  "clave": {
+    "eyebrow": "Clave de API",
+    "titulo": "Tu propia clave",
+    "guardar": "Guardar la clave",
+    "cuerpo": "OpenAI o Anthropic. Se guarda solo en este dispositivo y pagas solo tu consumo.",
+    "etiqueta": "Clave",
+    "placeholder": "sk-proj-… (OpenAI) o sk-ant-… (Anthropic)",
+    "a11y": "Clave de API",
+    "guardadaAyuda": "Hay una clave guardada. Pega otra para sustituirla, o bórrala y guarda para quitarla.",
+    "ayuda": "Solo se envía a OpenAI o Anthropic, nunca a NIVL."
+  },
+  "vista": {
+    "todosLosDias": "todos los días",
+    "eyebrow": "El sistema forja",
+    "titulo": "Oráculo",
+    "subtituloClave": "Dile tu objetivo y lo convierte en misiones. Tu clave está en este dispositivo.",
+    "subtitulo": "Dile tu objetivo y lo convierte en misiones diarias con fecha y medida.",
+    "cambiarClave": "Cambiar la clave de API",
+    "usarClave": "Usar mi propia clave de API",
+    "objetivo": "Tu objetivo",
+    "objetivoPlaceholder": "Correr 10 km en mayo. Aprobar Cálculo con nota. Dormir 8 horas.",
+    "consultar": "Consultar al oráculo",
+    "delibera": "El oráculo delibera",
+    "deliberaCuerpo": "Unos segundos. Está midiendo tu objetivo contra tus días.",
+    "proTitulo": "El Oráculo es parte de NIVL Pro",
+    "proCuerpo": "Convertir objetivos en misiones con IA va con el coach. El resto de NIVL sigue siendo tuyo.",
+    "espera": "El oráculo espera",
+    "esperaCuerpo": "Un objetivo concreto, con fecha y medida, da mejores misiones. Tú eliges cuáles aceptar.",
+    "veredicto": "Veredicto del sistema",
+    "propuestas": "Misiones propuestas",
+    "hasta": "hasta",
+    "propuestaA11y": "Misión propuesta: {{titulo}}, hasta {{xp}} XP, aceptada",
+    "propuestaDescartadaA11y": "Misión propuesta: {{titulo}}, hasta {{xp}} XP, descartada",
+    "nota": "Desmarca las que no quieras. Las aceptadas pasan a Hábitos como misiones diarias.",
+    "aceptar_one": "Aceptar {{count}} misión",
+    "aceptar_other": "Aceptar {{count}} misiones"
+  },
+  "asignadas": {
+    "titulo": "MISIONES ASIGNADAS",
+    "mensaje_one": "El sistema ha registrado una misión nueva.",
+    "mensaje_other": "El sistema ha registrado {{count}} misiones nuevas.",
+    "ver": "Ver misiones",
+    "quedarme": "Quedarme aquí"
+  }
+}

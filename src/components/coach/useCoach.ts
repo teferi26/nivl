@@ -22,6 +22,7 @@ import { useCelebracion } from '@/components/celebracion/contexto';
 import { useConsentimientoIA } from '@/components/ConsentimientoIA';
 import type { RespuestaDenunciada } from '@/components/DenunciarIA';
 import { vibrar } from '@/design/haptics';
+import { t, useIdioma } from '@/i18n';
 import { useAuth } from '@/lib/auth';
 import {
   accessNotice,
@@ -57,6 +58,7 @@ import type { BurbujaVista, CoachVistaProps } from './CoachVista';
 import { useDictado } from './Dictado';
 import { unirDictado } from './dictadoGesto';
 import { aceptarRed } from './redDictado';
+import { conEscuchar } from './vozCoach';
 
 interface Burbuja {
   id: string;
@@ -166,6 +168,8 @@ export function useCoach(): { vista: CoachVistaProps; hojas: HojasCoach } {
   // la anterior: hablar() calla lo previo y eso avisa «no habla» antes de que
   // la nueva empiece.
   const [puedeHablar, setPuedeHablar] = useState(() => disponible());
+  // La voz lee en es-ES: con el coach en otro idioma no se ofrece «Escuchar».
+  const { coach: idiomaDelCoach } = useIdioma();
   const [vozId, setVozId] = useState<string | null>(null);
   const turnoVoz = useRef(0);
   const vozIniciada = useRef(-1);
@@ -177,14 +181,14 @@ export function useCoach(): { vista: CoachVistaProps; hojas: HojasCoach } {
     [],
   );
   const escuchar = (b: Burbuja) => {
-    const t = ++turnoVoz.current;
+    const turno = ++turnoVoz.current;
     setVozId(b.id);
     void hablar(b.text, {
       onInicio: () => {
-        vozIniciada.current = t;
+        vozIniciada.current = turno;
       },
       onFin: () => {
-        if (turnoVoz.current === t) setVozId(null);
+        if (turnoVoz.current === turno) setVozId(null);
       },
     });
   };
@@ -214,7 +218,7 @@ export function useCoach(): { vista: CoachVistaProps; hojas: HojasCoach } {
     [],
   );
   const dictado = useDictado({
-    onTexto: (t) => setTexto((previo) => unirDictado(previo, t)),
+    onTexto: (dicho) => setTexto((previo) => unirDictado(previo, dicho)),
     onError: (e) => mostrarAvisoDictado(e.mensaje),
     onPedirPrivacidad: () => setHojaDictado(true),
     onAviso: mostrarAvisoDictado,
@@ -222,7 +226,7 @@ export function useCoach(): { vista: CoachVistaProps; hojas: HojasCoach } {
   const dictarPorRed = () => {
     void aceptarRed();
     setHojaDictado(false);
-    mostrarAvisoDictado('Mantén pulsado para dictar');
+    mostrarAvisoDictado(t('coach:dictado.mantenerParaDictar'));
   };
 
   // Al salir de la pestaña (y al desmontar) se calla y se tira el dictado.
@@ -411,7 +415,7 @@ export function useCoach(): { vista: CoachVistaProps; hojas: HojasCoach } {
     try {
       await streamCoach({
         mode: modoTurno,
-        message: limpio || 'Mira esta foto.',
+        message: limpio || t('coach:turno.miraFoto'),
         threadId: threadId ?? undefined,
         imagenes: fotos.length ? fotos : undefined,
         onEvent: (e) => {
@@ -524,7 +528,9 @@ export function useCoach(): { vista: CoachVistaProps; hojas: HojasCoach } {
   const avisoEnergia =
     aviso?.texto ??
     (energiaAgotada(estado)
-      ? `La energía del coach de este mes se ha agotado. ${recarga ? `Se recarga el ${recarga}.` : 'Se recarga el día 1.'}`
+      ? recarga
+        ? t('coach:turno.energiaAgotadaDia', { dia: recarga })
+        : t('coach:turno.energiaAgotada')
       : null);
   const puedeEnviar = (!!texto.trim() || adjuntas.length > 0) && !ocupado && !enviando.current;
   // El micrófono está siempre junto a «enviar» si se puede dictar (lo dictado
@@ -547,11 +553,11 @@ export function useCoach(): { vista: CoachVistaProps; hojas: HojasCoach } {
           id: b.id,
           role: 'assistant',
           text: b.text,
-          acciones: b.acciones.map((t) => ({ texto: t, ok: true })),
+          acciones: b.acciones.map((texto) => ({ texto, ok: true })),
           cita: citaDe(b.herramientas),
           fecha: b.fecha,
           voz:
-            puedeHablar && b.text
+            conEscuchar(puedeHablar, b.text, idiomaDelCoach)
               ? {
                   estado: vozId === b.id ? 'hablando' : 'quieto',
                   onEscuchar: () => escuchar(b),

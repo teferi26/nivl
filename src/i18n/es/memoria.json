@@ -1,1 +1,53 @@
-{}
+{
+  "categoria": {
+    "todo": "Todo",
+    "aprendizaje": "Aprendizajes",
+    "venta": "Ventas",
+    "metrica": "Métricas",
+    "log": "Registro",
+    "objetivo": "Objetivos",
+    "proyecto": "Proyectos",
+    "regla": "Reglas",
+    "perfil": "Perfil"
+  },
+  "hecho": {
+    "a11y": "{{categoria}}, {{fecha}}: {{contenido}}",
+    "pista": "Toca para leerlo entero.",
+    "leerEntero": "Leerlo entero",
+    "borrarAccion": "Borrar este recuerdo",
+    "borrarA11y": "Borrar el recuerdo: {{contenido}}",
+    "borrando": "Borrando",
+    "borrar": "Borrar"
+  },
+  "vista": {
+    "eyebrow": "El sistema recuerda",
+    "titulo": "Memoria",
+    "cargando": "Leyendo la memoria",
+    "noResponde": "La memoria no responde.",
+    "vacioSubtitulo": "Todavía no hay nada anotado. Se escribe sola mientras hablas con el coach.",
+    "subtitulo_one": "{{count}} hecho anotado · dossier v{{version}}",
+    "subtitulo_other": "{{count}} hechos anotados · dossier v{{version}}",
+    "hechos": "Hechos",
+    "dossier": "Dossier",
+    "dossierA11y": "Dossier: versión {{version}}",
+    "esteMes": "Este mes",
+    "esteMesSinDato": "Este mes: sin dato",
+    "esteMesA11y": "Este mes: {{gasto}} dólares",
+    "quienEres": "Quién eres para el sistema",
+    "contraer": "Contraer",
+    "leerTodo": "Leer todo",
+    "sinDossierTitulo": "Sin memoria estable aún",
+    "sinDossierCuerpo": "Se escribe sola cuando algo estructural cambia: un objetivo nuevo, un proyecto que muere, una regla que pactas.",
+    "filtro": "{{categoria}} · {{n}}",
+    "filtroA11y": "Filtrar por {{categoria}}, {{n}}",
+    "vacioTitulo": "Nada anotado todavía",
+    "vacioCategoria": "Nada en esta categoría",
+    "vacioCuerpo": "Cada cifra, venta, aprendizaje o regla que le cuentes al coach queda aquí con su fecha.",
+    "otraCategoria": "Prueba otra categoría."
+  },
+  "borrar": {
+    "titulo": "Borrar recuerdo",
+    "mensaje": "«{{contenido}}»\n\nSe borra de los recuerdos del coach. Si también aparece en el dossier o en la conversación, ahí sigue hasta que se reescriban."
+  },
+  "avisoTitulo": "Memoria"
+}

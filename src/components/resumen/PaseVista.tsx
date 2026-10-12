@@ -21,8 +21,9 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ink, space, stroke, type as tipo } from '@/design/tokens';
+import { t } from '@/i18n';
 import type { Recap, Slide } from '@/lib/photos';
-import { EYEBROW_SLIDE, nombrePeriodo } from './tipos';
+import { eyebrowSlide, nombrePeriodo } from './tipos';
 
 const BOTON = 44;
 const MARGEN = 22;
@@ -73,7 +74,11 @@ export function PaseVista({
   const centrado = esPortada || esCierre;
   const ultima = i === slides.length - 1;
 
-  const pie = [`${i + 1} / ${slides.length}`, pausado ? 'En pausa' : null, ultima ? 'Toca para salir' : !auto ? 'Toca a la derecha para seguir' : null]
+  const pie = [
+    `${i + 1} / ${slides.length}`,
+    pausado ? t('resumen:pase.enPausa') : null,
+    ultima ? t('resumen:pase.tocaSalir') : !auto ? t('resumen:pase.tocaSeguir') : null,
+  ]
     .filter(Boolean)
     .join(' · ');
 
@@ -110,7 +115,7 @@ export function PaseVista({
                 onPress={onCompartir}
                 style={({ pressed }) => [styles.boton, pressed && styles.pulsado]}
                 accessibilityRole="button"
-                accessibilityLabel="Compartir esta diapositiva"
+                accessibilityLabel={t('resumen:pase.compartirA11y')}
                 accessibilityState={{ busy: compartiendo }}
               >
                 {compartiendo ? (
@@ -123,7 +128,7 @@ export function PaseVista({
                 onPress={onSalir}
                 style={({ pressed }) => [styles.boton, pressed && styles.pulsado]}
                 accessibilityRole="button"
-                accessibilityLabel="Cerrar el resumen"
+                accessibilityLabel={t('resumen:pase.cerrarA11y')}
               >
                 <Ionicons name="close" size={22} color={ink.ink10} />
               </Pressable>
@@ -140,7 +145,7 @@ export function PaseVista({
               onLongPress={onPausar}
               onPressOut={pausado ? onSeguir : undefined}
               accessibilityRole="button"
-              accessibilityLabel="Anterior"
+              accessibilityLabel={t('resumen:pase.anterior')}
             />
             <Pressable
               style={styles.zona}
@@ -148,7 +153,7 @@ export function PaseVista({
               onLongPress={onPausar}
               onPressOut={pausado ? onSeguir : undefined}
               accessibilityRole="button"
-              accessibilityLabel={ultima ? 'Salir' : 'Siguiente'}
+              accessibilityLabel={ultima ? t('resumen:pase.salir') : t('resumen:pase.siguiente')}
             />
           </View>
 
@@ -160,7 +165,7 @@ export function PaseVista({
           >
             {centrado ? <View style={styles.regla} /> : null}
             <Text style={[styles.eyebrow, centrado && styles.centrado]} maxFontSizeMultiplier={1.35}>
-              {EYEBROW_SLIDE[slide.tipo]}
+              {eyebrowSlide(slide.tipo)}
             </Text>
             {slide.dato ? (
               <Text style={[styles.dato, centrado && styles.centrado]} maxFontSizeMultiplier={1}>
@@ -180,7 +185,7 @@ export function PaseVista({
             {centrado ? <View style={styles.regla} /> : null}
             {esCierre ? (
               <Text style={styles.lema} maxFontSizeMultiplier={1.35}>
-                UN 1 % MEJOR CADA DÍA
+                {t('comun:lema')}
               </Text>
             ) : null}
             <Text style={[styles.pie, centrado && styles.centrado]} maxFontSizeMultiplier={1.35}>

@@ -19,6 +19,7 @@ import type { RespuestaDenunciada } from '@/components/DenunciarIA';
 import { confirmar } from '@/components/ui/confirmar';
 import { volver } from '@/components/ui/Screen';
 import { vibrar } from '@/design/haptics';
+import { t } from '@/i18n';
 import { useAuth } from '@/lib/auth';
 import { olvidarConsentimiento } from '@/lib/consent';
 import { createQuest } from '@/lib/data';
@@ -136,10 +137,10 @@ export function useOraculo(): UsoOraculo {
       // El aviso llevaba la navegación en su botón: en la web era un botón
       // muerto. Ahora es una confirmación que funciona en las dos.
       const ver = await confirmar({
-        titulo: 'MISIONES ASIGNADAS',
-        mensaje: `El sistema ha registrado ${n === 1 ? 'una misión nueva' : `${n} misiones nuevas`}.`,
-        confirmar: 'Ver misiones',
-        cancelar: 'Quedarme aquí',
+        titulo: t('oraculo:asignadas.titulo'),
+        mensaje: t('oraculo:asignadas.mensaje', { count: n }),
+        confirmar: t('oraculo:asignadas.ver'),
+        cancelar: t('oraculo:asignadas.quedarme'),
       });
       if (ver) router.replace('/(tabs)/habitos');
     } catch (e) {

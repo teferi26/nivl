@@ -6,6 +6,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { Campo } from '@/components/arena';
 import { Button, Sheet } from '@/components/ui';
 import { ink, space, type as tipo } from '@/design/tokens';
+import { t } from '@/i18n';
 
 export interface HojaClaveProps {
   visible: boolean;
@@ -22,32 +23,30 @@ export function HojaClave({ visible, clave, guardada, onClave, onGuardar, onCerr
     <Sheet
       visible={visible}
       onClose={onCerrar}
-      eyebrow="Clave de API"
-      title="Tu propia clave"
+      eyebrow={t('oraculo:clave.eyebrow')}
+      title={t('oraculo:clave.titulo')}
       footer={
         <>
-          <Button title="Guardar la clave" onPress={onGuardar} />
-          <Button title="Cancelar" variant="ghost" onPress={onCerrar} />
+          <Button title={t('oraculo:clave.guardar')} onPress={onGuardar} />
+          <Button title={t('comun:cancelar')} variant="ghost" onPress={onCerrar} />
         </>
       }
     >
       <View style={styles.pila}>
         <Text style={styles.texto} maxFontSizeMultiplier={1.35}>
-          OpenAI o Anthropic. Se guarda solo en este dispositivo y pagas solo tu consumo.
+          {t('oraculo:clave.cuerpo')}
         </Text>
         <Campo
-          etiqueta="Clave"
+          etiqueta={t('oraculo:clave.etiqueta')}
           value={clave}
           onChangeText={onClave}
-          placeholder="sk-proj-… (OpenAI) o sk-ant-… (Anthropic)"
+          placeholder={t('oraculo:clave.placeholder')}
           autoCapitalize="none"
           autoCorrect={false}
           secureTextEntry={guardada}
-          accessibilityLabel="Clave de API"
+          accessibilityLabel={t('oraculo:clave.a11y')}
           ayuda={
-            guardada
-              ? 'Hay una clave guardada. Pega otra para sustituirla, o bórrala y guarda para quitarla.'
-              : 'Solo se envía a OpenAI o Anthropic, nunca a NIVL.'
+            guardada ? t('oraculo:clave.guardadaAyuda') : t('oraculo:clave.ayuda')
           }
         />
       </View>

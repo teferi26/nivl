@@ -5,6 +5,7 @@
 import { StyleSheet, Text } from 'react-native';
 import { Button, Sheet } from '@/components/ui';
 import { ink, space, type } from '@/design/tokens';
+import { t } from '@/i18n';
 import { errorDictado } from '@/lib/coachvoz';
 
 interface Props {
@@ -19,20 +20,18 @@ export function HojaPrivacidadDictado({ visible, onAceptar, onClose }: Props) {
     <Sheet
       visible={visible}
       onClose={onClose}
-      eyebrow="PRIVACIDAD"
-      title="Dictar por la red"
+      eyebrow={t('coach:privacidad.eyebrow')}
+      title={t('coach:privacidad.titulo')}
       scroll={false}
       footer={
         <>
-          <Button title="Dictar igualmente" onPress={onAceptar} />
-          <Button title="Escribir" variant="ghost" onPress={onClose} />
+          <Button title={t('coach:privacidad.dictarIgualmente')} onPress={onAceptar} />
+          <Button title={t('coach:privacidad.escribir')} variant="ghost" onPress={onClose} />
         </>
       }
     >
       <Text style={styles.texto}>{errorDictado('sin_dictado_local').mensaje}</Text>
-      <Text style={[styles.texto, styles.segundo]}>
-        Lo que dictes se escribe en el cuadro y llega al coach igual que si lo hubieras escrito tú, cuando lo envíes.
-      </Text>
+      <Text style={[styles.texto, styles.segundo]}>{t('coach:privacidad.cuerpo')}</Text>
     </Sheet>
   );
 }

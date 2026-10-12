@@ -113,3 +113,490 @@ arena	-	- XP
 arena	-	- XP
 # Tanda 1. «misión» era el valor por defecto de la prop `sustantivo` de QuestForm (un identificador, no un texto visible): ya no hay valor por defecto.
 raiz	-	misión
+# lote 4 (coach, oraculo, memoria, resumen, informe)
+# lote 4. Repetidos: el mismo texto en dos o más sitios del namespace y una sola clave en el catálogo.
+coach	-	Se lo envía al coach
+coach	-	Dictar un mensaje
+memoria	-	El sistema recuerda
+memoria	-	Este mes
+memoria	-	Dossier
+memoria	-	Hechos
+memoria	-	Borrar
+memoria	-	Memoria
+oraculo	-	Tu objetivo
+oraculo	-	El oráculo delibera
+informe	-	Vs. previa
+# lote 4. Frases partidas que pasan a frase entera o a plural (la salida en español es la misma).
+coach	-	Ha leído tu día · {} {}
+coach	+	Ha leído tu día · {} consulta
+coach	+	Ha leído tu día · {} consultas
+coach	-	1 foto lista para enviar
+coach	+	{} foto lista para enviar
+coach	-	La energía del coach de este mes se ha agotado. {}.` : 'Se recarga el día 1.'}
+coach	-	Se recarga el {}.
+coach	-	Se recarga el día 1.
+coach	+	La energía del coach de este mes se ha agotado. Se recarga el día 1.
+coach	+	La energía del coach de este mes se ha agotado. Se recarga el {}.
+informe	-	{} XP en siete días{}{} % frente a la semana previa` : ''}.
+informe	-	· {}{} % frente a la semana previa
+informe	+	{} XP en siete días.
+informe	+	{} XP en siete días · {} % frente a la semana previa.
+informe	-	{}. {}{}
+informe	+	{}. {}
+informe	+	{}. {}. Hecho
+informe	-	Frente a la semana previa: {} {} %
+informe	-	más
+informe	+	Frente a la semana previa: más {} %
+informe	+	Frente a la semana previa: menos {} %
+informe	-	Desactivar
+informe	+	Desactivar · {}
+informe	+	Dificultad → {} · {}
+informe	+	Nueva · {} · {} · {}
+memoria	-	{} {} · dossier v{}
+memoria	-	hecho anotado
+memoria	-	hechos anotados
+memoria	+	{} hecho anotado · dossier v{}
+memoria	+	{} hechos anotados · dossier v{}
+oraculo	-	Misión propuesta: {}, hasta {} XP, {}
+oraculo	+	Misión propuesta: {}, hasta {} XP, aceptada
+oraculo	+	Misión propuesta: {}, hasta {} XP, descartada
+oraculo	-	Aceptar 1 misión
+oraculo	+	Aceptar {} misión
+oraculo	+	Aceptar {} misiones
+oraculo	-	El sistema ha registrado {} misiones nuevas`}.
+oraculo	-	una misión nueva
+oraculo	-	{} misiones nuevas
+oraculo	+	El sistema ha registrado una misión nueva.
+oraculo	+	El sistema ha registrado {} misiones nuevas.
+resumen	-	Abrir el pase: {}. {}. {}
+resumen	-	Visto
+resumen	-	Sin ver
+resumen	+	Abrir el pase: {}. {}. Visto
+resumen	+	Abrir el pase: {}. {}. Sin ver
+resumen	-	{} {} de {}.
+resumen	-	pase sin ver
+resumen	-	pases sin ver
+resumen	-	pase guardado
+resumen	-	pases guardados
+resumen	+	{} pase sin ver de {}.
+resumen	+	{} pases sin ver de {}.
+resumen	+	{} pase guardado.
+resumen	+	{} pases guardados.
+resumen	-	{} del {}
+resumen	-	Mes
+resumen	-	Semana
+resumen	+	Mes del {}
+resumen	+	Semana del {}
+# lote 4. Textos que la línea base no veía (plantillas con ${} o ternarios dentro de JSX).
+coach	+	Consultado: {}
+coach	+	Consultado: {} y {}
+coach	+	PREPARANDO
+coach	+	GRABANDO {}
+memoria	+	Este mes: {} dólares
+memoria	-	«{}…` : h.content}» Se borra de los recuerdos del coach. Si también aparece en el dossier o en la conversación, ahí sigue hasta que se reescriban.
+memoria	+	«{}» Se borra de los recuerdos del coach. Si también aparece en el dossier o en la conversación, ahí sigue hasta que se reescriban.
+# lote 4. Días que salen de formato (nombreDia).
+informe	-	miércoles
+informe	-	sábado
+# lote 4. Se quedan en el código con i18n-ok: la marca y la unidad XP.
+oraculo	-	NIVL Pro
+oraculo	-	XP
+informe	-	XP
+# lote 5 (gym, cardio, dieta, nutricion, compra, fotos)
+# lote 5. Repetidos: el mismo texto en dos o más sitios del namespace y una sola clave en el catálogo.
+cardio	-	Registrar sesión
+dieta	-	Kcal
+dieta	-	Proteína
+dieta	-	Quitar comida
+fotos	-	Mostrar el peso
+fotos	-	Fotos de progreso
+fotos	-	Fotos de progreso
+fotos	-	Fotos de progreso
+fotos	-	Frente, lado y espalda. Una vez por semana.
+fotos	-	Volver a intentarlo
+fotos	-	Esta semana
+fotos	-	Fotos
+fotos	-	Fotos de progreso
+fotos	-	Nueva foto
+fotos	-	Borrar foto
+gym	-	RPE
+nutricion	-	Kcal objetivo
+nutricion	-	Sin objetivo fijado
+nutricion	-	Proteína
+nutricion	-	Sin objetivo fijado
+nutricion	-	Cumplido
+nutricion	-	Calorías
+nutricion	-	Proteína
+# lote 5. Días que salen de formato (nombreDia/capital, y la letra de los chips de Dieta), no del catálogo: mismo texto en español.
+dieta	-	Lunes
+dieta	-	Martes
+dieta	-	Miércoles
+dieta	-	Jueves
+dieta	-	Viernes
+dieta	-	Sábado
+dieta	-	Domingo
+gym	-	Lunes
+gym	-	Martes
+gym	-	Miércoles
+gym	-	Jueves
+gym	-	Viernes
+gym	-	Sábado
+gym	-	Domingo
+# lote 5. Se quedan en el código con i18n-ok: unidades (XP, kg, Kg, kcal, g).
+cardio	-	XP
+dieta	-	kcal
+gym	-	Kg
+gym	-	Kg
+gym	-	kg
+nutricion	-	g
+nutricion	-	g
+# lote 5. Las zonas Z1 a Z5 de cardio eran valores del Record ZONA que el inventario no contaba; ahora salen del catálogo (cardio:zona.*) con el mismo texto.
+cardio	+	Z1
+cardio	+	Z2
+cardio	+	Z3
+cardio	+	Z4
+cardio	+	Z5
+# lote 5. El ejemplo «5,2» del aviso de kilómetros sale de formato (decimal), no del catálogo: mismo texto en español.
+cardio	-	Escribe los kilómetros con números, por ejemplo 5,2.
+cardio	+	Escribe los kilómetros con números, por ejemplo {}.
+# lote 5. Frases partidas (trozos en JSX, ternarios de singular/plural, sufijos opcionales) que pasan a frase entera o a plural con count: la salida en español es la misma.
+cardio	-	{} del {}, zona {}. {}{}` : ''}{} XP` : '' }. Mantén pulsado para eliminar.
+cardio	-	sesión
+compra	-	artículo pendiente
+compra	-	artículos pendientes
+compra	-	{}{}` : ''}, pendiente
+compra	-	{}{}` : ''}, en el carro
+dieta	-	comida planificada
+dieta	-	comidas planificadas
+dieta	-	{}{}
+dieta	-	, hoy
+dieta	-	{}: {}` : `Planificar {}`} del {}{}
+fotos	-	Hacen falta dos fotos de
+fotos	-	en días distintos para comparar.
+fotos	-	DESPUÉS
+fotos	-	{}: {}
+fotos	-	Próximo hito: {} semanas.
+fotos	-	SEMANA
+fotos	-	semana seguida
+fotos	-	semanas seguidas
+fotos	-	día
+fotos	-	días
+gym	-	Hoy toca {}. {} {}.
+gym	-	+{} XP hoy: {} de la misión enlazada{} a FUE` : ''}.
+gym	-	Hoy,
+gym	-	, no toca rutina. Si quieres entrenar los
+gym	-	, añade un día.
+gym	-	Sin ejercicios en
+gym	-	. Añádelos en la rutina semanal.
+gym	-	{}{}` : ''}
+nutricion	-	El coach estimó hoy
+nutricion	-	{}: {} % de los días{}
+nutricion	-	, buena adherencia
+# lote 5. Las frases enteras y plurales que sustituyen a esos trozos, y textos que la línea base no veía (plantillas con ${} o ternarios dentro de JSX, como «Sesión registrada. +N XP hoy.», «COMPLETA», «libre» o las etiquetas del lector). Dicen lo mismo que antes.
+cardio	+	RPE {}
+cardio	+	{} ppm
+cardio	+	{} del {}, zona {}. {}. Mantén pulsado para eliminar.
+cardio	+	{} del {}, zona {}. {}. {}. Mantén pulsado para eliminar.
+cardio	+	{} del {}, zona {}. {}. Más {} XP. Mantén pulsado para eliminar.
+cardio	+	{} del {}, zona {}. {}. {}. Más {} XP. Mantén pulsado para eliminar.
+cardio	+	{} km y {} sesión en 28 días.
+cardio	+	{} km y {} sesiones en 28 días.
+cardio	+	Sesión registrada. {}
+compra	+	{} artículo pendiente.
+compra	+	{} artículos pendientes.
+compra	+	{}, pendiente
+compra	+	{}, {}, pendiente
+compra	+	{}, en el carro
+compra	+	{}, {}, en el carro
+dieta	+	{}: {} comida planificada.
+dieta	+	{}: {} comidas planificadas.
+dieta	+	{}, hoy
+dieta	+	Comidas: {} de {} planificadas
+dieta	+	Hoy · {}
+dieta	+	Editar {}: {} del {}
+dieta	+	Planificar {} del {}
+dieta	+	{}, {}
+dieta	+	{} kcal y {} gramos de proteína
+dieta	+	{} kcal
+fotos	+	{} semana seguida
+fotos	+	{} semanas seguidas
+fotos	+	{} día
+fotos	+	Fotos de progreso. {}
+fotos	+	Esta semana: {} de 3.
+fotos	+	Semanas seguidas: {}
+fotos	+	{}: hecha
+fotos	+	{}: falta
+fotos	+	Falta {}.
+fotos	+	{} y {}
+fotos	+	{}, {} y {}
+fotos	+	{} Próximo hito: {} semanas.
+fotos	+	{} días
+fotos	+	Hacen falta dos fotos de {} en días distintos para comparar.
+fotos	+	ANTES · {}
+fotos	+	DESPUÉS · {}
+fotos	+	SEMANA {}
+fotos	+	COMPLETA
+gym	+	Sesión registrada. +{} XP hoy.
+gym	+	Hoy toca {}. {} ejercicio.
+gym	+	Hoy toca {}. {} ejercicios.
+gym	+	RPE {}
+gym	+	+{} XP hoy: {} de la misión enlazada y {} a FUE.
+gym	+	+{} XP hoy: {} de la misión enlazada.
+gym	+	Hoy, {}, no toca rutina. Si quieres entrenar los {}, añade un día.
+gym	+	{} ejercicio
+gym	+	{} ejercicios
+gym	+	Sin ejercicios en {}. Añádelos en la rutina semanal.
+gym	+	{}×{} · {} kg
+gym	+	{}×{}
+gym	+	Editar ejercicio · {}
+gym	+	Nuevo ejercicio · {}
+gym	+	+{} XP · FUE
+gym	+	Récord · {}
+gym	+	Entreno {}
+gym	+	Entreno {}: {}
+gym	+	libre
+nutricion	+	Parte de hoy: {} de 2 cumplidos
+nutricion	+	Objetivo: {} kcal
+nutricion	+	Objetivo: {} g
+nutricion	+	El coach estimó hoy {} kcal y {} g de proteína.
+nutricion	+	El coach estimó hoy {} kcal.
+nutricion	+	El coach estimó hoy {} g de proteína.
+nutricion	+	{} parte
+nutricion	+	{} partes
+nutricion	+	{}: {} % de los días
+nutricion	+	{}: {} % de los días, buena adherencia
+# lote 2 (hoy, habitos, agenda, campanas)
+# Tanda 2. Frases partidas, plantillas con ${} y condicionales que pasan a frases enteras con {{var}} o a plurales con count (saludos, cierre, desglose de la pena, lo que hay en juego, rachas, plazos, etiquetas del lector), los meses largos de la agenda que pasan al catálogo, y textos que la línea base no veía. En español dicen exactamente lo mismo (los tests de derivarHoy, enJuego, pagoActo, derivarHabitos y derivarAgenda lo fijan).
+agenda	-	Vista por {}
+agenda	-	{} anterior
+agenda	-	{} siguiente
+agenda	-	{}, {}`}. Toca para ver el detalle.
+agenda	-	todo el día
+agenda	-	a las {}
+agenda	-	{}, {} de campaña, {}.
+agenda	-	jefe final
+agenda	-	vence hoy
+agenda	-	vence ese día
+agenda	-	{} {}
+agenda	-	bloque del plan
+agenda	-	bloques del plan
+agenda	-	misión
+agenda	-	plazo de campaña
+agenda	-	plazos de campaña
+agenda	-	misión
+agenda	+	enero
+agenda	+	febrero
+agenda	+	marzo
+agenda	+	abril
+agenda	+	mayo
+agenda	+	junio
+agenda	+	julio
+agenda	+	agosto
+agenda	+	septiembre
+agenda	+	octubre
+agenda	+	noviembre
+agenda	+	diciembre
+agenda	+	Semana {}
+agenda	+	{} a {}
+agenda	+	{} de {}
+agenda	+	{} bloque del plan
+agenda	+	{} bloques del plan
+agenda	+	{} evento
+agenda	+	{} eventos
+agenda	+	{} plazo
+agenda	+	{} plazos
+agenda	+	{} plazo de campaña
+agenda	+	{} plazos de campaña
+agenda	+	{} misión
+agenda	+	{} misiones
+agenda	+	hoy
+agenda	+	Vista por día
+agenda	+	Vista por semana
+agenda	+	Vista por mes
+agenda	+	Día anterior
+agenda	+	Semana anterior
+agenda	+	Mes anterior
+agenda	+	Día siguiente
+agenda	+	Semana siguiente
+agenda	+	Mes siguiente
+agenda	+	Con hora: {}
+agenda	+	Misiones: {} de {} hechas
+agenda	+	{}, todo el día. Toca para ver el detalle.
+agenda	+	{}, a las {}. Toca para ver el detalle.
+agenda	+	{}, jefe final de campaña, vence hoy.
+agenda	+	{}, jefe final de campaña, vence ese día.
+agenda	+	{}, tarea de campaña, vence hoy.
+agenda	+	{}, tarea de campaña, vence ese día.
+agenda	+	Misión · {}
+agenda	+	Hora: {}
+campanas	-	De E (una semana) a S (una temporada entera). Botín al despejar:
+campanas	-	XP.
+campanas	-	Un jefe es un hito. Paga el doble:
+campanas	-	Paga
+campanas	-	XP al caer.
+campanas	-	Abrir la campaña {}, rango {}. {} de {} tareas{}` : ''}.
+campanas	-	tareas ·
+campanas	-	Despejada el
+campanas	-	tareas
+campanas	-	{}{}{} XP`}. Mantén pulsado para eliminarla.
+campanas	-	, jefe final
+campanas	-	, hecha
+campanas	+	{} d de retraso
+campanas	+	{} días
+campanas	+	Botín ganado: {} XP
+campanas	+	Abrir la campaña {}, rango {}. {} de {} tareas.
+campanas	+	Abrir la campaña {}, rango {}. {} de {} tareas, {}.
+campanas	+	{}/{} tareas · {}
+campanas	+	Botín {} XP
+campanas	+	Despejada el {}
+campanas	+	Campaña despejada.
+campanas	+	Campaña despejada el {}.
+campanas	+	Jefes: {} de {}
+campanas	+	Tareas: {} de {}
+campanas	+	{}: {}
+campanas	+	Botín al despejar: {} XP
+campanas	+	{}/{} tareas
+campanas	+	hasta +{} XP
+campanas	+	{}, hecha. Mantén pulsado para eliminarla.
+campanas	+	{}, pendiente, {} XP. Mantén pulsado para eliminarla.
+campanas	+	{}, jefe final, hecha. Mantén pulsado para eliminarla.
+campanas	+	{}, jefe final, pendiente, {} XP. Mantén pulsado para eliminarla.
+campanas	+	De E (una semana) a S (una temporada entera). Botín al despejar: {} XP.
+campanas	+	Un jefe es un hito. Paga el doble: {} XP al caer.
+campanas	+	Paga {} XP al caer.
+habitos	-	Falta 1 día
+habitos	-	día
+habitos	-	días
+habitos	-	{}. Racha de {} {} de {}. {}.
+habitos	-	{}, adquirido{} días`}. Mantén pulsado para volver a exigirlo.
+habitos	-	a los {} días
+habitos	-	{} lleva {} días seguidos.\n\nSi lo das por adquirido, deja de pedirte el toque diario y deja de poder romperte la racha. Puedes seguir marcándolo cuando quieras.\n\nSi prefieres seguir contando, no pasa nada: sigue sumando.
+habitos	-	{} ya no se te va a pedir.\n{} XP a {}.` : 'Este premio no suma hoy: ya estaba cobrado o has llegado al tope diario.' }
+habitos	-	Este premio no suma hoy: ya estaba cobrado o has llegado al tope diario.
+habitos	+	Falta {} día
+habitos	+	Faltan {} días
+habitos	+	{}. Racha de {} día de {}. {}.
+habitos	+	{}. Racha de {} días de {}. {}.
+habitos	+	{} y {}
+habitos	+	Mejor racha: {} días
+habitos	+	Hábitos tuyos: {}
+habitos	+	Si no: {}
+habitos	+	{}, adquirido. Mantén pulsado para volver a exigirlo.
+habitos	+	{}, adquirido a los {} días. Mantén pulsado para volver a exigirlo.
+habitos	+	{} lleva {} días seguidos. Si lo das por adquirido, deja de pedirte el toque diario y deja de poder romperte la racha. Puedes seguir marcándolo cuando quieras. Si prefieres seguir contando, no pasa nada: sigue sumando.
+habitos	+	{} ya no se te va a pedir. +{} XP a {}.
+habitos	+	{} ya no se te va a pedir. Este premio no suma hoy: ya estaba cobrado o has llegado al tope diario.
+hoy	-	Buenas noches
+hoy	-	Buenos días
+hoy	-	Buenas tardes
+hoy	-	Buenas noches
+hoy	-	El sistema ha aplicado −{} XP.{} {}.` : '' }
+hoy	-	Has perdido {} {}.
+hoy	-	Solo se cobran los 3 primeros días: {} {} XP.
+hoy	-	día no te cuesta
+hoy	-	días no te cuestan
+hoy	-	reglas del contrato sin marcar
+hoy	-	la regla
+hoy	-	las reglas
+hoy	-	−{} XP por misiones sin hacer y −{} XP por {}.
+hoy	-	−{} XP por {}.
+hoy	-	{} {} misiones por delante.` }
+hoy	-	Sistema en pausa. Hoy no se juzga.
+hoy	-	Sin misiones programadas para hoy.
+hoy	-	Una misión por delante. Cierra el día.
+hoy	-	{} misiones por delante.
+hoy	-	{}{}.` : ''}
+hoy	-	Hasta el {}.
+hoy	-	Tu semana
+hoy	-	{}. {} Tú, {} XP{}, {} XP` : '' }. Abrir Amigos
+hoy	-	misión
+hoy	-	día
+hoy	-	días
+hoy	-	Te {} {} {} para salvar tu racha de {} {}.{}
+hoy	-	Las reglas sin marcar costarían −{} XP.
+hoy	-	Si no llegas, una piedra protegerá tu racha esta noche.{}
+hoy	-	Si no llegas, una piedra evitará la penalización{} esta noche.{}
+hoy	-	de misiones
+hoy	-	Todas cumplidas. Racha de
+hoy	-	día
+hoy	-	días
+hoy	+	Buenas noches, {}.
+hoy	+	Buenos días, {}.
+hoy	+	Buenas tardes, {}.
+hoy	+	El sistema ha aplicado −{} XP.
+hoy	+	El sistema ha aplicado −{} XP. Has perdido {} nivel.
+hoy	+	El sistema ha aplicado −{} XP. Has perdido {} niveles.
+hoy	+	Solo se cobran los 3 primeros días: {} día no te cuesta XP.
+hoy	+	Solo se cobran los 3 primeros días: {} días no te cuestan XP.
+hoy	+	«{}»
+hoy	+	{} y {} más
+hoy	+	{} y {}
+hoy	+	−{} XP por reglas del contrato sin marcar.
+hoy	+	−{} XP por la regla {}.
+hoy	+	−{} XP por las reglas {}.
+hoy	+	−{} XP por misiones sin hacer y −{} XP por reglas del contrato sin marcar.
+hoy	+	−{} XP por misiones sin hacer y −{} XP por la regla {}.
+hoy	+	−{} XP por misiones sin hacer y −{} XP por las reglas {}.
+hoy	+	{} {}
+hoy	+	{} Hasta el {}.
+hoy	+	Te falta {} misión para salvar tu racha de {}.
+hoy	+	Te faltan {} misiones para salvar tu racha de {}.
+hoy	+	{} día
+hoy	+	{} días
+hoy	+	{} Si no, −{} XP.
+hoy	+	Si no llegas, una piedra protegerá tu racha esta noche.
+hoy	+	Si no llegas, una piedra protegerá tu racha esta noche. Las reglas sin marcar costarían −{} XP.
+hoy	+	Si no llegas, una piedra evitará la penalización esta noche.
+hoy	+	Si no llegas, una piedra evitará la penalización de misiones esta noche. Las reglas sin marcar costarían −{} XP.
+hoy	+	{} pendiente.
+hoy	+	{} pendientes.
+hoy	+	Tu semana: {} XP
+hoy	+	{}. {} Tú, {} XP. Abrir Amigos
+hoy	+	{}. {} Tú, {} XP; {}, {} XP. Abrir Amigos
+hoy	+	Todas cumplidas. Racha de {} día.
+hoy	+	Todas cumplidas. Racha de {} días.
+hoy	+	Más · {}
+# Tanda 2. Textos repetidos en el mismo namespace que el catálogo guarda una vez (Día, Semana y Mes del selector, Eventos, Misiones, Todo el día, Fecha, Hora, Campaña, Botín, Tareas, Darlo por adquirido...).
+agenda	-	Semana
+agenda	-	Mes
+agenda	-	Día
+agenda	-	Misiones
+agenda	-	Eventos
+agenda	-	Nuevo evento
+agenda	-	Añadir evento
+agenda	-	Día
+agenda	-	Mañana
+agenda	-	Todo el día
+agenda	-	Fecha
+agenda	-	Hora
+agenda	-	Eliminar evento
+campanas	-	Tarea
+campanas	-	Abiertas
+campanas	-	Despejadas
+campanas	-	Botín
+campanas	-	Campaña
+campanas	-	Campaña
+campanas	-	Botín
+campanas	-	Tareas
+campanas	-	Rango {}
+campanas	-	Sin fecha
+campanas	-	Campaña despejada
+habitos	-	En forja
+habitos	-	Darlo por adquirido
+habitos	-	Volver a exigirlo
+# Tanda 2. Días de la semana de nombreDia y mayúsculas de mayus (src/i18n/formato.ts) en vez de escritos a mano: mismo texto en español.
+agenda	-	miércoles
+agenda	-	sábado
+agenda	-	TODO EL DÍA
+campanas	-	REINTENTAR
+habitos	-	miércoles
+habitos	-	sábado
+# Tanda 2. Se quedan en el código con i18n-ok: unidades (XP, d), el alto en % de la tira de la agenda, las columnas de una consulta y el valor «hábito» de la prop sustantivo de QuestForm (un identificador).
+agenda	-	{}%
+campanas	-	XP
+campanas	-	XP
+campanas	-	XP
+campanas	-	dungeon_id, done
+habitos	-	hábito
+habitos	-	d
+hoy	-	XP

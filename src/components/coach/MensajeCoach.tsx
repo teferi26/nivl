@@ -21,6 +21,7 @@ import Animated, {
 import { useMovimientoReducido } from '@/components/ui/motion';
 import { TextoSistema } from '@/components/TextoSistema';
 import { ink, space, stroke, type } from '@/design/tokens';
+import { t } from '@/i18n';
 import { CoachMark } from './CoachMark';
 
 export interface VozMensaje {
@@ -55,7 +56,7 @@ export function MensajeCoach({ texto, acciones, pensando, cita, voz, onDenunciar
         <View style={styles.firma}>
           <CoachMark size={24} />
           <Text style={styles.firmaTexto} maxFontSizeMultiplier={1.35}>
-            EL SISTEMA
+            {t('coach:mensaje.firma')}
           </Text>
         </View>
       ) : null}
@@ -81,11 +82,11 @@ export function MensajeCoach({ texto, acciones, pensando, cita, voz, onDenunciar
                 hitSlop={ZONA_ENLACE}
                 style={({ pressed }) => [styles.enlace, pressed && styles.pulsado]}
                 accessibilityRole="button"
-                accessibilityLabel={hablando ? 'Parar la lectura' : 'Escuchar la respuesta'}
+                accessibilityLabel={hablando ? t('coach:mensaje.pararA11y') : t('coach:mensaje.escucharA11y')}
                 accessibilityState={{ busy: hablando }}
               >
                 <Ionicons name={hablando ? 'stop-outline' : 'volume-medium-outline'} size={13} color={ink.ink6} />
-                <Text style={styles.enlaceTexto}>{hablando ? 'Parar' : 'Escuchar'}</Text>
+                <Text style={styles.enlaceTexto}>{hablando ? t('coach:mensaje.parar') : t('coach:mensaje.escuchar')}</Text>
               </Pressable>
             ) : null}
             {onDenunciar ? (
@@ -94,10 +95,10 @@ export function MensajeCoach({ texto, acciones, pensando, cita, voz, onDenunciar
                 hitSlop={ZONA_ENLACE}
                 style={({ pressed }) => [styles.enlace, pressed && styles.pulsado]}
                 accessibilityRole="button"
-                accessibilityLabel="Denunciar respuesta"
+                accessibilityLabel={t('comun:denunciarRespuesta')}
               >
                 <Ionicons name="flag-outline" size={12} color={ink.ink6} />
-                <Text style={styles.enlaceTexto}>Denunciar respuesta</Text>
+                <Text style={styles.enlaceTexto}>{t('comun:denunciarRespuesta')}</Text>
               </Pressable>
             ) : null}
           </View>
@@ -107,8 +108,6 @@ export function MensajeCoach({ texto, acciones, pensando, cita, voz, onDenunciar
   );
 }
 
-const PENSANDO = 'El sistema está pensando…';
-
 /**
  * Lo que se ve desde que sale el mensaje hasta el primer texto del coach.
  * Tres puntos que laten en sucesión; con «reducir movimiento», quietos. Se
@@ -116,15 +115,16 @@ const PENSANDO = 'El sistema está pensando…';
  * anuncio explícito en iOS, que no tiene regiones vivas).
  */
 function Pensando() {
+  const pensando = t('coach:mensaje.pensando');
   useEffect(() => {
-    if (Platform.OS === 'ios') AccessibilityInfo.announceForAccessibility(PENSANDO);
+    if (Platform.OS === 'ios') AccessibilityInfo.announceForAccessibility(t('coach:mensaje.pensando'));
   }, []);
   return (
     <View
       style={styles.pensandoFila}
       accessible
       accessibilityRole="progressbar"
-      accessibilityLabel={PENSANDO}
+      accessibilityLabel={pensando}
       accessibilityLiveRegion="polite"
     >
       <View style={styles.puntos}>
@@ -133,7 +133,7 @@ function Pensando() {
         <Punto indice={2} />
       </View>
       <Text style={styles.pensando} maxFontSizeMultiplier={1.35}>
-        {PENSANDO}
+        {pensando}
       </Text>
     </View>
   );

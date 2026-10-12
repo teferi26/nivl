@@ -26,6 +26,7 @@ import { Heatmap } from '@/components/Heatmap';
 import { Button, EmptyState, Screen, Section } from '@/components/ui';
 import { SIN_DATO } from '@/components/ui/sinDato';
 import { ink, space, stroke, type as tipo } from '@/design/tokens';
+import { t } from '@/i18n';
 import { DIFFICULTY_LABEL, STAT_LABEL, STATS } from '@/lib/game';
 import type { WeeklyAdvice } from '@/lib/oracle';
 import type { DatosInforme } from './derivarInforme';
@@ -82,7 +83,7 @@ function FilaAjuste({
       <View style={styles.icono}>
         <Ionicons name={icono} size={18} color={hecho ? ink.ink6 : ink.ink9} />
       </View>
-      <View style={styles.filaTexto} accessible accessibilityLabel={`${titulo}. ${detalle}${hecho ? '. Hecho' : ''}`}>
+      <View style={styles.filaTexto} accessible accessibilityLabel={t(hecho ? 'informe:vista.hechoHechoA11y' : 'informe:vista.hechoA11y', { titulo, detalle })}>
         <Text style={[styles.filaTitulo, hecho && styles.hecho]} numberOfLines={2} maxFontSizeMultiplier={1.35}>
           {titulo}
         </Text>
@@ -100,7 +101,7 @@ function FilaAjuste({
           variant="secondary"
           size="sm"
           loading={cargando}
-          accessibilityLabel={`${rotuloBoton}: ${titulo}`}
+          accessibilityLabel={t('informe:vista.botonA11y', { rotulo: rotuloBoton, titulo })}
           onPress={onPress}
         />
       )}
@@ -128,8 +129,8 @@ export function InformeVista({
     <Entrada indice={0}>
       <EncabezadoArena
         onVolver={acciones.onVolver}
-        eyebrow="Progreso"
-        titulo="Informe"
+        eyebrow={t('informe:vista.eyebrow')}
+        titulo={t('informe:vista.titulo')}
         subtitulo={cargado ? datos.subtitulo : undefined}
         meandro
       />
@@ -143,7 +144,7 @@ export function InformeVista({
         {errorCarga ? (
           <ErrorSistema mensaje={errorCarga} onReintentar={acciones.onReintentar} />
         ) : (
-          <CargaArena etiqueta="Cargando el informe" formas={['franja', 'rotulo', 'tarjeta', 'filas']} />
+          <CargaArena etiqueta={t('informe:vista.cargando')} formas={['franja', 'rotulo', 'tarjeta', 'filas']} />
         )}
       </Screen>
     );
@@ -160,7 +161,7 @@ export function InformeVista({
   const falloOraculo = errorOraculo ? (
     <ErrorSistema
       compacto
-      rotulo="El oráculo guarda silencio"
+      rotulo={t('informe:vista.oraculoSilencio')}
       mensaje={errorOraculo}
       onReintentar={acciones.onConsultar}
       reintentando={consultando}
@@ -179,33 +180,35 @@ export function InformeVista({
       <Entrada indice={1} style={styles.bloque}>
         <FranjaCifras
           cifras={[
-            { valor: datos.xpWeek, rotulo: 'XP · 7 días' },
-            { valor: datos.misiones, rotulo: 'Misiones' },
+            { valor: datos.xpWeek, rotulo: t('informe:vista.xp7dias') },
+            { valor: datos.misiones, rotulo: t('informe:vista.misiones') },
             delta === null
-              ? { valor: SIN_DATO, rotulo: 'Vs. previa', etiqueta: 'Frente a la semana previa: sin dato' }
+              ? { valor: SIN_DATO, rotulo: t('informe:vista.vsPrevia'), etiqueta: t('informe:vista.vsPreviaSinDato') }
               : {
                   valor: `${delta >= 0 ? '+' : ''}${delta}`,
                   sufijo: '%',
-                  rotulo: 'Vs. previa',
-                  etiqueta: `Frente a la semana previa: ${delta >= 0 ? 'más' : 'menos'} ${Math.abs(delta)} %`,
+                  rotulo: t('informe:vista.vsPrevia'),
+                  etiqueta: t(delta >= 0 ? 'informe:vista.vsPreviaMas' : 'informe:vista.vsPreviaMenos', {
+                    delta: Math.abs(delta),
+                  }),
                 },
           ]}
         />
         <View style={styles.evidencia}>
           <View style={styles.evidenciaCabecera}>
             <Text style={styles.evidenciaRotulo} maxFontSizeMultiplier={1.35}>
-              Misiones con evidencia
+              {t('informe:vista.conEvidencia')}
             </Text>
             <Text style={styles.evidenciaCifra} maxFontSizeMultiplier={1.35}>
               {datos.evidencePct} %
             </Text>
           </View>
-          <Barra ratio={datos.evidencePct / 100} alto={4} etiqueta="Misiones de la semana con evidencia" />
+          <Barra ratio={datos.evidencePct / 100} alto={4} etiqueta={t('informe:vista.evidenciaA11y')} />
         </View>
       </Entrada>
 
       <Entrada indice={2}>
-        <Section title="Lectura semanal">
+        <Section title={t('informe:vista.lecturaSemanal')}>
           <Text style={styles.lectura} maxFontSizeMultiplier={1.6}>
             {datos.narrative}
           </Text>
@@ -213,17 +216,20 @@ export function InformeVista({
       </Entrada>
 
       <Entrada indice={3}>
-        <Section title="El sistema se ajusta" meta={pendientes > 0 ? `${pendientes} por aplicar` : undefined}>
+        <Section
+          title={t('informe:vista.seAjusta')}
+          meta={pendientes > 0 ? t('informe:vista.porAplicar', { n: pendientes }) : undefined}
+        >
           {!advice ? (
             <TarjetaArena variante="contorno">
               <EmptyState
                 compact
                 icon="sparkles-outline"
-                title="Sin análisis todavía"
-                body="El oráculo lee tus últimos 14 días y propone ajustes: bajar lo que siempre falla, subir lo que ya es trivial, cubrir huecos."
+                title={t('informe:vista.sinAnalisis')}
+                body={t('informe:vista.sinAnalisisCuerpo')}
               />
               <Button
-                title="Pedir análisis al oráculo"
+                title={t('informe:vista.pedirAnalisis')}
                 onPress={acciones.onConsultar}
                 loading={consultando}
                 icon="sparkles-outline"
@@ -232,7 +238,7 @@ export function InformeVista({
             </TarjetaArena>
           ) : (
             <View style={styles.pila}>
-              <TarjetaArena variante="contorno" rotulo="Lectura del oráculo">
+              <TarjetaArena variante="contorno" rotulo={t('informe:vista.lecturaOraculo')}>
                 <Text style={styles.lectura} maxFontSizeMultiplier={1.6}>
                   {advice.analysis}
                 </Text>
@@ -245,13 +251,16 @@ export function InformeVista({
                       primera={i === 0}
                       icono={adj.action === 'desactivar' ? 'pause-circle-outline' : 'swap-vertical-outline'}
                       titulo={adj.quest_title}
-                      detalle={`${
+                      detalle={
                         adj.action === 'desactivar'
-                          ? 'Desactivar'
-                          : `Dificultad → ${adj.new_difficulty ? DIFFICULTY_LABEL[adj.new_difficulty] : ''}`
-                      } · ${adj.reasoning}`}
+                          ? t('informe:vista.desactivar', { razon: adj.reasoning })
+                          : t('informe:vista.dificultad', {
+                              dificultad: adj.new_difficulty ? DIFFICULTY_LABEL[adj.new_difficulty] : '',
+                              razon: adj.reasoning,
+                            })
+                      }
                       hecho={aplicados.has(adj.quest_id)}
-                      rotuloBoton="Aplicar"
+                      rotuloBoton={t('informe:vista.aplicar')}
                       cargando={aplicando.has(adj.quest_id)}
                       onPress={() => acciones.onAplicar(adj)}
                     />
@@ -264,9 +273,13 @@ export function InformeVista({
                         primera={advice.adjustments.length === 0 && i === 0}
                         icono="add-circle-outline"
                         titulo={q.title}
-                        detalle={`Nueva · ${q.stat} · ${DIFFICULTY_LABEL[q.difficulty]} · ${q.reasoning}`}
+                        detalle={t('informe:vista.nueva', {
+                          stat: q.stat,
+                          dificultad: DIFFICULTY_LABEL[q.difficulty],
+                          razon: q.reasoning,
+                        })}
                         hecho={aplicados.has(key)}
-                        rotuloBoton="Crear"
+                        rotuloBoton={t('informe:vista.crear')}
                         cargando={aplicando.has(key)}
                         onPress={() => acciones.onCrear(q, key)}
                       />
@@ -280,7 +293,7 @@ export function InformeVista({
                 </Text>
               ) : null}
               <Button
-                title="Nuevo análisis"
+                title={t('informe:vista.nuevoAnalisis')}
                 variant="secondary"
                 onPress={acciones.onConsultar}
                 loading={consultando}
@@ -293,7 +306,7 @@ export function InformeVista({
       </Entrada>
 
       <Entrada indice={4}>
-        <Section title="XP por estadística" meta="7 días">
+        <Section title={t('informe:vista.xpPorStat')} meta={t('informe:vista.sieteDias')}>
           {STATS.map((s, i) => {
             const dominante = s === topStat && xpByStat[s] > 0;
             return (
@@ -305,10 +318,10 @@ export function InformeVista({
                   </Text>
                   {dominante ? (
                     <Text style={styles.dominante} maxFontSizeMultiplier={1.35}>
-                      Dominante
+                      {t('informe:vista.dominante')}
                     </Text>
                   ) : null}
-                  <Text style={[styles.statXp, dominante && styles.statTop]} maxFontSizeMultiplier={1.35}>
+                  <Text style={[styles.statXp, dominante && styles.statTop]} maxFontSizeMultiplier={1.35}>{/* i18n-ok: unidad */}
                     {xpByStat[s]} XP
                   </Text>
                 </View>
@@ -316,7 +329,7 @@ export function InformeVista({
                   ratio={xpByStat[s] / maxStat}
                   alto={4}
                   tono={dominante ? 'blanco' : 'ink8'}
-                  etiqueta={`${STAT_LABEL[s]}: ${xpByStat[s]} XP esta semana`}
+                  etiqueta={t('informe:vista.statA11y', { nombre: STAT_LABEL[s], xp: xpByStat[s] })}
                 />
               </View>
             );
@@ -325,14 +338,19 @@ export function InformeVista({
       </Entrada>
 
       <Entrada indice={5}>
-        <Section title="Mapa de actividad" meta="13 semanas">
+        <Section title={t('informe:vista.mapa')} meta={t('informe:vista.trece')}>
           {hayMapa ? (
             <View onLayout={medirMapa}>
               {anchoMapa > 0 ? <Heatmap counts={datos.byDay} hoy={hoy} ancho={anchoMapa} /> : null}
             </View>
           ) : (
             <TarjetaArena variante="contorno">
-              <EmptyState compact icon="grid-outline" title="Todavía en blanco" body="Cada misión completada enciende un día." />
+              <EmptyState
+                compact
+                icon="grid-outline"
+                title={t('informe:vista.mapaVacio')}
+                body={t('informe:vista.mapaVacioCuerpo')}
+              />
             </TarjetaArena>
           )}
         </Section>

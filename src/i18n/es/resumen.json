@@ -1,1 +1,53 @@
-{}
+{
+  "eyebrowSlide": {
+    "portada": "NIVL · Recuerdos",
+    "dato": "El dato",
+    "foto": "Evidencia",
+    "duro": "Lo duro",
+    "cierre": "Cierre"
+  },
+  "periodo": {
+    "mensual": "Mes del {{fecha}}",
+    "semanal": "Semana del {{fecha}}"
+  },
+  "fila": {
+    "detalle": "{{diapositivas}} diapositivas · {{fotos}} fotos",
+    "abrirA11y": "Abrir el pase: {{periodo}}. {{detalle}}. Visto",
+    "abrirSinVerA11y": "Abrir el pase: {{periodo}}. {{detalle}}. Sin ver",
+    "visto": "Visto",
+    "sinVer": "Sin ver"
+  },
+  "vista": {
+    "vacioSubtitulo": "Todavía no hay pases guardados.",
+    "sinVer_one": "{{count}} pase sin ver de {{total}}.",
+    "sinVer_other": "{{count}} pases sin ver de {{total}}.",
+    "guardados_one": "{{count}} pase guardado.",
+    "guardados_other": "{{count}} pases guardados.",
+    "eyebrow": "Recuerdos",
+    "titulo": "Tu semana en imágenes",
+    "estaSemana": "Esta semana",
+    "explicacion": "El sistema junta las fotos que has ido subiendo con cada misión y te cuenta la semana. Si no has subido ninguna, no hay resumen: un pase vacío no recuerda nada.",
+    "generar": "Generar el de esta semana",
+    "montando": "El sistema está montando tu semana…",
+    "notaMes": "El del mes lo genera el sistema solo, el día 1.",
+    "pases": "Pases",
+    "buscando": "Buscando tus recuerdos",
+    "vacioTitulo": "Todavía no hay recuerdos",
+    "vacioCuerpo": "Sube una foto al completar una misión y el domingo tendrás algo que mirar."
+  },
+  "pase": {
+    "enPausa": "En pausa",
+    "tocaSalir": "Toca para salir",
+    "tocaSeguir": "Toca a la derecha para seguir",
+    "compartirA11y": "Compartir esta diapositiva",
+    "cerrarA11y": "Cerrar el resumen",
+    "anterior": "Anterior",
+    "salir": "Salir",
+    "siguiente": "Siguiente",
+    "noCompartir": "No se pudo compartir"
+  },
+  "generar": {
+    "sinFotos": "Sin fotos esta semana.",
+    "sinPro": "El pase de la semana lo monta el coach, y el coach es parte de NIVL Pro. Tus fotos y tus recuerdos guardados siguen aquí."
+  }
+}

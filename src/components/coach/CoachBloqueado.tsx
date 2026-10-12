@@ -11,6 +11,7 @@ import { Entrada, Galea, TarjetaArena } from '@/components/arena';
 import { ProUpsellLine } from '@/components/ProOffer';
 import { Button } from '@/components/ui';
 import { ink, space, stroke, type } from '@/design/tokens';
+import { t } from '@/i18n';
 import type { DecisionOferta } from '@/lib/paywallmoment';
 import { proSampleBrief, proToday } from '@/lib/proplans';
 
@@ -44,18 +45,15 @@ export function CoachBloqueado({
             {/* Con la línea de la oferta, «El coach es parte de NIVL Pro» ya lo
                 dice ella: el título no lo repite. */}
             <Text style={styles.titulo} accessibilityRole="header" maxFontSizeMultiplier={1.35}>
-              {oferta ? 'EL COACH NO ESTÁ EN TU PLAN.' : 'EL COACH ES PARTE DE NIVL PRO.'}
+              {oferta ? t('coach:bloqueado.tituloOferta') : t('coach:bloqueado.titulo')}
             </Text>
-            <Text style={styles.texto}>
-              Tus misiones, tu racha, tus campañas y todos los módulos siguen siendo tuyos. Lo que falta es quien lo
-              dirige.
-            </Text>
+            <Text style={styles.texto}>{t('coach:bloqueado.cuerpo')}</Text>
           </View>
         </TarjetaArena>
       </Entrada>
 
       <Entrada indice={1}>
-        <TarjetaArena variante="contorno" rotulo="Hoy estaría">
+        <TarjetaArena variante="contorno" rotulo={t('coach:bloqueado.hoyEstaria')}>
           {proToday(kind).map((linea, i) => (
             <View key={linea} style={[styles.fila, i > 0 && styles.filaSep]}>
               <Ionicons name="remove-outline" size={14} color={ink.ink6} style={styles.filaIcono} />
@@ -68,8 +66,8 @@ export function CoachBloqueado({
       {/* Cómo suena un brief de verdad. Es una muestra y se dice: nada aquí
           sale de los datos de esta cuenta. */}
       <Entrada indice={2}>
-        <TarjetaArena variante="piedra" rotulo="Un brief suyo" meta="Ejemplo">
-          <View accessible accessibilityLabel={`Ejemplo de brief del coach. ${muestra.join(' ')}`}>
+        <TarjetaArena variante="piedra" rotulo={t('coach:bloqueado.unBrief')} meta={t('coach:bloqueado.ejemplo')}>
+          <View accessible accessibilityLabel={t('coach:bloqueado.ejemploA11y', { muestra: muestra.join(' ') })}>
             {muestra.map((linea, i) => (
               <Text key={linea} style={[styles.muestraLinea, i > 0 && styles.muestraSep]}>
                 {linea}
@@ -84,7 +82,7 @@ export function CoachBloqueado({
         {oferta ? (
           <ProUpsellLine momento="coach_cerrado" tier={oferta} />
         ) : (
-          <Button title="Ver NIVL Pro" onPress={onPro} />
+          <Button title={t('comun:verNivlPro')} onPress={onPro} />
         )}
       </Entrada>
     </View>

@@ -1,1 +1,128 @@
-{}
+{
+  "cita": {
+    "consultado": "Consultado: {{lista}}",
+    "consultadoVarias": "Consultado: {{primeras}} y {{ultima}}",
+    "fuente": {
+      "consultar_historial": "tu historial",
+      "consultar_dia": "tu registro del día"
+    }
+  },
+  "bloqueado": {
+    "tituloOferta": "EL COACH NO ESTÁ EN TU PLAN.",
+    "titulo": "EL COACH ES PARTE DE NIVL PRO.",
+    "cuerpo": "Tus misiones, tu racha, tus campañas y todos los módulos siguen siendo tuyos. Lo que falta es quien lo dirige.",
+    "hoyEstaria": "Hoy estaría",
+    "unBrief": "Un brief suyo",
+    "ejemplo": "Ejemplo",
+    "ejemploA11y": "Ejemplo de brief del coach. {{muestra}}"
+  },
+  "atajos": {
+    "planificaDia": {
+      "etiqueta": "Planifica mi día",
+      "mensaje": "Planifica el resto de mi día de hoy."
+    },
+    "reporte": {
+      "etiqueta": "Reporte",
+      "mensaje": "Voy a reportar. Pregúntame lo que necesites saber de hoy."
+    },
+    "dojo": {
+      "etiqueta": "Dojo de ventas",
+      "mensaje": "Entréname 15 minutos de ventas. Empieza con una objeción real."
+    },
+    "revisame": {
+      "etiqueta": "Revísame",
+      "mensaje": "Haz la revisión de mis últimos 14 días con honestidad brutal."
+    }
+  },
+  "rapidas": {
+    "planHoy": {
+      "etiqueta": "Plan de hoy",
+      "mensaje": "Planifica el resto de mi día de hoy."
+    },
+    "registrar": {
+      "etiqueta": "Registrar",
+      "mensaje": "Voy a reportar. Pregúntame lo que necesites saber de hoy."
+    },
+    "queEntreno": {
+      "etiqueta": "¿Qué entreno?",
+      "mensaje": "¿Qué entreno hoy? Decídelo con mi historial y cómo vengo."
+    },
+    "resumenSemana": {
+      "etiqueta": "Resumen de la semana",
+      "mensaje": "Hazme el resumen de mi semana: lo que cumplí, lo que no y qué cambio para la próxima."
+    }
+  },
+  "vista": {
+    "leyendo": "Leyendo tu día",
+    "partePro": "Parte de NIVL Pro",
+    "listo": "Listo para tu día",
+    "haLeido_one": "Ha leído tu día · {{count}} consulta",
+    "haLeido_other": "Ha leído tu día · {{count}} consultas",
+    "titulo": "COACH",
+    "profundoTag": "PROFUNDO",
+    "verPlan": "Ver tu plan y la energía del coach",
+    "verMemoria": "Ver la memoria del sistema",
+    "vacioTitulo": "EL SISTEMA TE ESCUCHA.",
+    "vacioCuerpo": "Manda en tu día, decide qué puntúa cada cosa, te juzga por la noche y recuerda todo lo que aprende de ti. Habla con él como hablarías con quien lleva tu vida.",
+    "atajosA11y": "Atajos",
+    "enviaPista": "Se lo envía al coach",
+    "rapidasA11y": "Acciones rápidas",
+    "cargandoA11y": "Cargando el coach",
+    "falloTitulo": "EL SISTEMA NO RESPONDE",
+    "falloCuerpo": "No se ha podido cargar la conversación. Revisa la conexión y vuelve a intentarlo.",
+    "fotosListas_one": "{{count}} foto lista para enviar",
+    "fotosListas_other": "{{count}} fotos listas para enviar",
+    "quitarFotosA11y": "Quitar las fotos",
+    "energiaA11y": "{{texto}} Ver la energía del coach",
+    "potenciaA11y": "Potencia del coach",
+    "estandar": "Estándar",
+    "profundo": "Profundo",
+    "profundoA11y": "Modo profundo. {{linea}}",
+    "conservada": "Tu conversación se conserva.",
+    "conservadaPro": "El coach es parte de NIVL Pro. Tu conversación se conserva.",
+    "fotosElite": "Las fotos al coach son de Élite",
+    "adjuntarA11y": "Adjuntar una foto",
+    "placeholder": "Habla con el sistema",
+    "mensajeA11y": "Mensaje para el sistema",
+    "enviandoA11y": "Enviando: el sistema está pensando",
+    "enviarA11y": "Enviar mensaje"
+  },
+  "dictado": {
+    "microfonoListo": "Micrófono listo. Mantén pulsado para dictar.",
+    "terminado": "Dictado terminado",
+    "grabando": "Grabando",
+    "cancelado": "Dictado cancelado",
+    "terminarA11y": "Terminar el dictado",
+    "dictarA11y": "Dictar un mensaje",
+    "terminarPista": "Lo dictado se escribe en el cuadro de texto",
+    "empezarPista": "Toca para empezar a grabar",
+    "cancelarAccion": "Cancelar el dictado",
+    "mantenerPista": "Mantén pulsado para grabar y suelta para escribirlo",
+    "guiaLector": "toca el micrófono para terminar",
+    "guiaCancelar": "suelta para cancelar",
+    "guia": "suelta para escribirlo, desliza arriba para cancelar",
+    "preparando": "PREPARANDO",
+    "grabandoReloj": "GRABANDO {{tiempo}}",
+    "mantenerParaDictar": "Mantén pulsado para dictar"
+  },
+  "privacidad": {
+    "eyebrow": "PRIVACIDAD",
+    "titulo": "Dictar por la red",
+    "dictarIgualmente": "Dictar igualmente",
+    "escribir": "Escribir",
+    "cuerpo": "Lo que dictes se escribe en el cuadro y llega al coach igual que si lo hubieras escrito tú, cuando lo envíes."
+  },
+  "mensaje": {
+    "firma": "EL SISTEMA",
+    "pararA11y": "Parar la lectura",
+    "escucharA11y": "Escuchar la respuesta",
+    "parar": "Parar",
+    "escuchar": "Escuchar",
+    "pensando": "El sistema está pensando…"
+  },
+  "turno": {
+    "miraFoto": "Mira esta foto.",
+    "energiaAgotada": "La energía del coach de este mes se ha agotado. Se recarga el día 1.",
+    "energiaAgotadaDia": "La energía del coach de este mes se ha agotado. Se recarga el {{dia}}."
+  }
+}

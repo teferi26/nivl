@@ -23,6 +23,8 @@ import { Campo, CargaArena, EncabezadoArena, Entrada, ErrorSistema, TarjetaArena
 import { TextoSistema } from '@/components/TextoSistema';
 import { Button, Check, Row, Screen, Section } from '@/components/ui';
 import { ink, space, type as tipo } from '@/design/tokens';
+import { t } from '@/i18n';
+import { nombreDia } from '@/i18n/formato';
 import { DIFFICULTY_LABEL, XP_BY_DIFFICULTY } from '@/lib/game';
 import type { ProposedQuest } from '@/lib/oracle';
 
@@ -54,8 +56,9 @@ export interface OraculoVistaProps {
   };
 }
 
-const DAY_LABELS = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
-const dias = (d: number[]) => (d.length === 7 ? 'todos los días' : d.map((x) => DAY_LABELS[x - 1]).join(' '));
+// days_of_week va de 1 (lunes) a 7; nombreDia cuenta el lunes en 0.
+const dias = (d: number[]) =>
+  d.length === 7 ? t('oraculo:vista.todosLosDias') : d.map((x) => nombreDia(x - 1, 'letra')).join(' ');
 
 export function OraculoVista({
   clavePropia,
@@ -79,18 +82,18 @@ export function OraculoVista({
       <Entrada indice={0}>
         <EncabezadoArena
           onVolver={acciones.onVolver}
-          eyebrow="El sistema forja"
-          titulo="Oráculo"
+          eyebrow={t('oraculo:vista.eyebrow')}
+          titulo={t('oraculo:vista.titulo')}
           subtitulo={
             clavePropia && claveGuardada
-              ? 'Dile tu objetivo y lo convierte en misiones. Tu clave está en este dispositivo.'
-              : 'Dile tu objetivo y lo convierte en misiones diarias con fecha y medida.'
+              ? t('oraculo:vista.subtituloClave')
+              : t('oraculo:vista.subtitulo')
           }
           accion={
             clavePropia
               ? {
                   icono: 'key-outline',
-                  etiqueta: claveGuardada ? 'Cambiar la clave de API' : 'Usar mi propia clave de API',
+                  etiqueta: claveGuardada ? t('oraculo:vista.cambiarClave') : t('oraculo:vista.usarClave'),
                   onPress: acciones.onAbrirClave,
                 }
               : undefined
@@ -102,17 +105,17 @@ export function OraculoVista({
       {/* El bloque con el campo no lleva Entrada: un campo con el foco no debe moverse al aparecer. */}
       <View style={styles.bloque}>
         <Campo
-          etiqueta="Tu objetivo"
+          etiqueta={t('oraculo:vista.objetivo')}
           value={objetivo}
           onChangeText={acciones.onObjetivo}
-          placeholder="Correr 10 km en mayo. Aprobar Cálculo con nota. Dormir 8 horas."
+          placeholder={t('oraculo:vista.objetivoPlaceholder')}
           multiline
           editable={!consultando}
-          accessibilityLabel="Tu objetivo"
+          accessibilityLabel={t('oraculo:vista.objetivo')}
           style={styles.objetivo}
         />
         <Button
-          title="Consultar al oráculo"
+          title={t('oraculo:vista.consultar')}
           icon="sparkles-outline"
           variant={hayPropuestas ? 'secondary' : 'primary'}
           size="lg"
@@ -128,39 +131,46 @@ export function OraculoVista({
 
       {consultando ? (
         <Entrada indice={1}>
-          <TarjetaArena variante="contorno" rotulo="El oráculo delibera">
+          <TarjetaArena variante="contorno" rotulo={t('oraculo:vista.delibera')}>
             <Text style={styles.texto} maxFontSizeMultiplier={1.35}>
-              Unos segundos. Está midiendo tu objetivo contra tus días.
+              {t('oraculo:vista.deliberaCuerpo')}
             </Text>
-            <CargaArena etiqueta="El oráculo delibera" formas={['filas']} style={styles.carga} />
+            <CargaArena etiqueta={t('oraculo:vista.delibera')} formas={['filas']} style={styles.carga} />
           </TarjetaArena>
         </Entrada>
       ) : null}
 
       {pidePro && !consultando ? (
         <Entrada indice={1}>
+          {/* i18n-ok: la marca */}
           <TarjetaArena variante="trama" remaches rotulo="NIVL Pro">
             <View style={styles.bloqueado}>
               <Ionicons name="lock-closed-outline" size={20} color={ink.ink9} style={styles.candado} />
               <View style={styles.flex}>
                 <Text style={styles.titulo} maxFontSizeMultiplier={1.35}>
-                  El Oráculo es parte de NIVL Pro
+                  {t('oraculo:vista.proTitulo')}
                 </Text>
                 <Text style={styles.texto} maxFontSizeMultiplier={1.35}>
-                  Convertir objetivos en misiones con IA va con el coach. El resto de NIVL sigue siendo tuyo.
+                  {t('oraculo:vista.proCuerpo')}
                 </Text>
               </View>
             </View>
-            <Button title="Ver NIVL Pro" variant="secondary" size="sm" onPress={acciones.onVerPro} style={styles.boton} />
+            <Button
+              title={t('comun:verNivlPro')}
+              variant="secondary"
+              size="sm"
+              onPress={acciones.onVerPro}
+              style={styles.boton}
+            />
           </TarjetaArena>
         </Entrada>
       ) : null}
 
       {!consultando && !hayPropuestas && !pidePro ? (
         <Entrada indice={1}>
-          <TarjetaArena variante="contorno" rotulo="El oráculo espera">
+          <TarjetaArena variante="contorno" rotulo={t('oraculo:vista.espera')}>
             <Text style={styles.texto} maxFontSizeMultiplier={1.35}>
-              Un objetivo concreto, con fecha y medida, da mejores misiones. Tú eliges cuáles aceptar.
+              {t('oraculo:vista.esperaCuerpo')}
             </Text>
           </TarjetaArena>
         </Entrada>
@@ -170,8 +180,8 @@ export function OraculoVista({
         <>
           <Entrada indice={1}>
             <Section
-              title="Veredicto del sistema"
-              action={{ label: 'Denunciar respuesta', icon: 'flag-outline', onPress: acciones.onDenunciar }}
+              title={t('oraculo:vista.veredicto')}
+              action={{ label: t('comun:denunciarRespuesta'), icon: 'flag-outline', onPress: acciones.onDenunciar }}
             >
               <TarjetaArena variante="piedra" remaches>
                 <TextoSistema texto={resumen} />
@@ -180,7 +190,7 @@ export function OraculoVista({
           </Entrada>
 
           <Entrada indice={2}>
-            <Section title="Misiones propuestas" meta={`${n}/${propuestas.length}`}>
+            <Section title={t('oraculo:vista.propuestas')} meta={`${n}/${propuestas.length}`}>
               <View>
                 {propuestas.map((p, i) => {
                   const on = seleccionadas.has(i);
@@ -206,24 +216,28 @@ export function OraculoVista({
                       trailing={
                         <Text style={[styles.xp, !on && styles.xpApagado]} maxFontSizeMultiplier={1.35}>
                           {/* Cinzel no tiene minúsculas: «hasta» va en Outfit, como la unidad. */}
-                          <Text style={styles.xpUnidad}>hasta </Text>+{XP_BY_DIFFICULTY[p.difficulty]}
+                          <Text style={styles.xpUnidad}>{`${t('oraculo:vista.hasta')} `}</Text>+{XP_BY_DIFFICULTY[p.difficulty]}
+                          {/* i18n-ok: unidad */}
                           <Text style={styles.xpUnidad}> XP</Text>
                         </Text>
                       }
                       onPress={() => acciones.onAlternar(i)}
                       accessibilityRole="checkbox"
                       accessibilityState={{ checked: on }}
-                      accessibilityLabel={`Misión propuesta: ${p.title}, hasta ${XP_BY_DIFFICULTY[p.difficulty]} XP, ${on ? 'aceptada' : 'descartada'}`}
+                      accessibilityLabel={t(on ? 'oraculo:vista.propuestaA11y' : 'oraculo:vista.propuestaDescartadaA11y', {
+                        titulo: p.title,
+                        xp: XP_BY_DIFFICULTY[p.difficulty],
+                      })}
                     />
                   );
                 })}
               </View>
               <Text style={styles.nota} maxFontSizeMultiplier={1.35}>
-                Desmarca las que no quieras. Las aceptadas pasan a Hábitos como misiones diarias.
+                {t('oraculo:vista.nota')}
               </Text>
               {errorAceptar ? <ErrorSistema compacto mensaje={errorAceptar} style={styles.error} /> : null}
               <Button
-                title={n === 1 ? 'Aceptar 1 misión' : `Aceptar ${n} misiones`}
+                title={t('oraculo:vista.aceptar', { count: n })}
                 icon="checkmark"
                 size="lg"
                 onPress={acciones.onAceptar}

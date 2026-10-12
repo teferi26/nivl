@@ -4,11 +4,11 @@
 // evidencia, XP por estadística (sin las de penalización), el mejor día, el
 // mapa de 13 semanas y la lectura en voz del sistema.
 
+import { t } from '@/i18n';
+import { nombreDia } from '@/i18n/formato';
 import { STAT_LABEL, STATS } from '@/lib/game';
 import { addDays } from '@/lib/dates';
 import type { Completion, Quest, Stat as StatKey } from '@/lib/types';
-
-const DAY_NAMES = ['lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado', 'domingo'];
 
 export interface DatosInforme {
   /** Misiones completadas en los últimos siete días. */
@@ -63,33 +63,35 @@ export function derivarInforme(completions: Completion[], quests: Quest[], today
 
   const narrative = (() => {
     if (thisWeek.length === 0) {
-      return 'El sistema no registra actividad esta semana. Toda leyenda tiene capítulos en blanco; el siguiente lo escribes hoy.';
+      return t('informe:lectura.sinActividad');
     }
     const parts: string[] = [];
-    parts.push(`Esta semana has completado ${thisWeek.length} misiones y ganado ${xpWeek} XP.`);
+    parts.push(t('informe:lectura.completadas', { misiones: thisWeek.length, xp: xpWeek }));
     if (delta !== null) {
       parts.push(
         delta >= 0
-          ? `Un ${delta}% más que la semana pasada: la curva sube.`
-          : `Un ${Math.abs(delta)}% menos que la semana pasada. No es una derrota; es información.`,
+          ? t('informe:lectura.sube', { delta })
+          : t('informe:lectura.baja', { delta: Math.abs(delta) }),
       );
     }
-    parts.push(`Tu área dominante ha sido ${topStat} (${STAT_LABEL[topStat]}).`);
+    parts.push(t('informe:lectura.dominante', { stat: topStat, nombre: STAT_LABEL[topStat] }));
     if (bestDay) {
       const [y, m, d] = bestDay.split('-').map(Number);
       const wd = new Date(y!, m! - 1, d!).getDay();
-      parts.push(`Tu mejor día fue el ${DAY_NAMES[wd === 0 ? 6 : wd - 1]} (+${bestDayXp} XP).`);
+      parts.push(t('informe:lectura.mejorDia', { dia: nombreDia(wd === 0 ? 6 : wd - 1), xp: bestDayXp }));
     }
     if (evidencePct >= 50) {
-      parts.push(`El ${evidencePct}% de tus misiones llevan evidencia: tu palabra está respaldada.`);
+      parts.push(t('informe:lectura.evidencia', { pct: evidencePct }));
     }
     return parts.join(' ');
   })();
 
   const subtitulo =
     thisWeek.length === 0
-      ? 'Sin actividad registrada en los últimos siete días.'
-      : `${xpWeek} XP en siete días${delta !== null ? ` · ${delta >= 0 ? '+' : ''}${delta} % frente a la semana previa` : ''}.`;
+      ? t('informe:lectura.subtituloVacio')
+      : delta !== null
+        ? t('informe:lectura.subtituloDelta', { xp: xpWeek, delta: `${delta >= 0 ? '+' : ''}${delta}` })
+        : t('informe:lectura.subtitulo', { xp: xpWeek });
 
   return { misiones: thisWeek.length, xpWeek, delta, evidencePct, xpByStat, topStat, byDay, narrative, subtitulo };
 }

@@ -20,11 +20,12 @@ import { useMovimientoArena } from '@/components/arena/quieto';
 import { useCelebracion } from '@/components/celebracion/contexto';
 import { leerPuedeCompartirFotos } from '@/components/permisoFotos';
 import { avisar } from '@/components/ui/confirmar';
+import { t } from '@/i18n';
 import { marcarVisto, urlFirmada, type Recap, type Slide } from '@/lib/photos';
 import type { Foto, Tarjeta } from '@/lib/sharecard';
 import { mensajeSistema } from '@/lib/validation';
 import { PaseVista, type PaseVistaProps } from './PaseVista';
-import { EYEBROW_SLIDE } from './tipos';
+import { eyebrowSlide } from './tipos';
 
 const DURACION_MS = 6000;
 
@@ -147,7 +148,7 @@ export function usePase(recap: Recap, onSalir: () => void): PaseVistaProps {
         slide.foto && (await leerPuedeCompartirFotos()) ? await fotoLocal(slide.foto, recap.period_start) : null;
       const tarjeta: Tarjeta = {
         tipo: 'recuerdo',
-        etiqueta: EYEBROW_SLIDE[slide.tipo],
+        etiqueta: eyebrowSlide(slide.tipo),
         dato: slide.dato ?? null,
         titulo: slide.titulo,
         texto: slide.texto || null,
@@ -155,7 +156,7 @@ export function usePase(recap: Recap, onSalir: () => void): PaseVistaProps {
       };
       abrirHoja(tarjeta);
     } catch (e) {
-      avisar('No se pudo compartir', mensajeSistema(e));
+      avisar(t('resumen:pase.noCompartir'), mensajeSistema(e));
     } finally {
       setCompartiendo(false);
     }

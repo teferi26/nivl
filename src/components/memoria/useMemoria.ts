@@ -15,6 +15,7 @@ import { useCallback, useRef, useState } from 'react';
 import { avisar, confirmar } from '@/components/ui/confirmar';
 import { volver } from '@/components/ui/Screen';
 import { vibrar } from '@/design/haptics';
+import { t } from '@/i18n';
 import { borrarHecho, fetchDossier, fetchFacts, fetchMonthCost, type CoachFact } from '@/lib/coach';
 import { ErrorVisible, mensajeSistema } from '@/lib/validation';
 import { etiquetaCategoria, fechaCorta, type MemoriaVistaProps } from './MemoriaVista';
@@ -63,11 +64,11 @@ export function useMemoria(): MemoriaVistaProps {
   const onBorrarHecho = async (h: CoachFact) => {
     if (enCurso.current.has(h.id)) return;
     const ok = await confirmar({
-      titulo: 'Borrar recuerdo',
-      mensaje: `«${h.content.length > 80 ? `${h.content.slice(0, 80)}…` : h.content}»
-
-Se borra de los recuerdos del coach. Si también aparece en el dossier o en la conversación, ahí sigue hasta que se reescriban.`,
-      confirmar: 'Borrar',
+      titulo: t('memoria:borrar.titulo'),
+      mensaje: t('memoria:borrar.mensaje', {
+        contenido: h.content.length > 80 ? `${h.content.slice(0, 80)}…` : h.content,
+      }),
+      confirmar: t('memoria:hecho.borrar'),
       destructivo: true,
     });
     if (!ok || enCurso.current.has(h.id)) return;
@@ -80,7 +81,7 @@ Se borra de los recuerdos del coach. Si también aparece en el dossier o en la c
       setHechos((lista) => lista.filter((x) => x.id !== h.id));
     } catch (e) {
       vibrar('penalizacion');
-      avisar(e instanceof ErrorVisible ? 'Memoria' : 'El sistema no responde', mensajeSistema(e));
+      avisar(e instanceof ErrorVisible ? t('memoria:avisoTitulo') : t('comun:sistemaNoResponde'), mensajeSistema(e));
       // Puede que ya no estuviera: se vuelve a leer la memoria.
       cargar();
     } finally {

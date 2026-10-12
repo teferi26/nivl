@@ -13,6 +13,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { CargaArena, EncabezadoArena, Entrada, ErrorSistema, TarjetaArena } from '@/components/arena';
 import { Button, EmptyState, Screen, Section, Tag } from '@/components/ui';
 import { ink, space, stroke, type as tipo } from '@/design/tokens';
+import { t } from '@/i18n';
 import type { Recap } from '@/lib/photos';
 import { nombrePeriodo } from './tipos';
 
@@ -40,13 +41,13 @@ const BOTON = 44;
 
 function FilaPase({ r, primera, onAbrir }: { r: Recap; primera: boolean; onAbrir: () => void }) {
   const visto = !!r.seen_at;
-  const detalle = `${r.slides.length} diapositivas · ${r.photo_count} fotos`;
+  const detalle = t('resumen:fila.detalle', { diapositivas: r.slides.length, fotos: r.photo_count });
   return (
     <Pressable
       onPress={onAbrir}
       style={({ pressed }) => [styles.fila, !primera && styles.conRegla, pressed && styles.pulsado]}
       accessibilityRole="button"
-      accessibilityLabel={`Abrir el pase: ${nombrePeriodo(r)}. ${detalle}. ${visto ? 'Visto' : 'Sin ver'}`}
+      accessibilityLabel={t(visto ? 'resumen:fila.abrirA11y' : 'resumen:fila.abrirSinVerA11y', { periodo: nombrePeriodo(r), detalle })}
     >
       <View style={styles.icono}>
         <Ionicons name={visto ? 'play-outline' : 'play'} size={20} color={visto ? ink.ink6 : ink.ink10} />
@@ -61,10 +62,10 @@ function FilaPase({ r, primera, onAbrir }: { r: Recap; primera: boolean; onAbrir
       </View>
       {visto ? (
         <Text style={styles.filaDetalle} maxFontSizeMultiplier={1.35}>
-          Visto
+          {t('resumen:fila.visto')}
         </Text>
       ) : (
-        <Tag>Sin ver</Tag>
+        <Tag>{t('resumen:fila.sinVer')}</Tag>
       )}
       <Ionicons name="chevron-forward" size={18} color={ink.ink6} />
     </Pressable>
@@ -76,32 +77,31 @@ export function ResumenVista({ cargado, errorCarga, recaps, generando, aviso, pi
   const subtitulo = !cargado
     ? undefined
     : recaps.length === 0
-      ? 'Todavía no hay pases guardados.'
+      ? t('resumen:vista.vacioSubtitulo')
       : sinVer > 0
-        ? `${sinVer} ${sinVer === 1 ? 'pase sin ver' : 'pases sin ver'} de ${recaps.length}.`
-        : `${recaps.length} ${recaps.length === 1 ? 'pase guardado' : 'pases guardados'}.`;
+        ? t('resumen:vista.sinVer', { count: sinVer, total: recaps.length })
+        : t('resumen:vista.guardados', { count: recaps.length });
 
   return (
     <Screen refreshing={refrescando} onRefresh={acciones.onRefrescar}>
       <Entrada indice={0}>
         <EncabezadoArena
           onVolver={acciones.onVolver}
-          eyebrow="Recuerdos"
-          titulo="Tu semana en imágenes"
+          eyebrow={t('resumen:vista.eyebrow')}
+          titulo={t('resumen:vista.titulo')}
           subtitulo={subtitulo}
           meandro
         />
       </Entrada>
 
       <Entrada indice={1}>
-        <Section title="Esta semana">
+        <Section title={t('resumen:vista.estaSemana')}>
           <TarjetaArena variante="piedra" remaches>
             <Text style={styles.texto} maxFontSizeMultiplier={1.6}>
-              El sistema junta las fotos que has ido subiendo con cada misión y te cuenta la semana. Si no has subido
-              ninguna, no hay resumen: un pase vacío no recuerda nada.
+              {t('resumen:vista.explicacion')}
             </Text>
             <Button
-              title="Generar el de esta semana"
+              title={t('resumen:vista.generar')}
               icon="sparkles-outline"
               onPress={acciones.onGenerar}
               loading={generando}
@@ -109,7 +109,7 @@ export function ResumenVista({ cargado, errorCarga, recaps, generando, aviso, pi
             />
             {generando ? (
               <Text style={styles.montando} maxFontSizeMultiplier={1.6} accessibilityLiveRegion="polite">
-                El sistema está montando tu semana…
+                {t('resumen:vista.montando')}
               </Text>
             ) : null}
             {aviso ? (
@@ -121,27 +121,33 @@ export function ResumenVista({ cargado, errorCarga, recaps, generando, aviso, pi
               </View>
             ) : null}
             {pidePro ? (
-              <Button title="Ver NIVL Pro" variant="secondary" size="sm" onPress={acciones.onVerPro} style={styles.pro} />
+              <Button
+                title={t('comun:verNivlPro')}
+                variant="secondary"
+                size="sm"
+                onPress={acciones.onVerPro}
+                style={styles.pro}
+              />
             ) : null}
             <Text style={styles.nota} maxFontSizeMultiplier={1.6}>
-              El del mes lo genera el sistema solo, el día 1.
+              {t('resumen:vista.notaMes')}
             </Text>
           </TarjetaArena>
         </Section>
       </Entrada>
 
       <Entrada indice={2}>
-        <Section title="Pases" meta={recaps.length > 0 ? `${recaps.length}` : undefined}>
+        <Section title={t('resumen:vista.pases')} meta={recaps.length > 0 ? `${recaps.length}` : undefined}>
           {!cargado ? (
-            <CargaArena etiqueta="Buscando tus recuerdos" formas={['filas']} />
+            <CargaArena etiqueta={t('resumen:vista.buscando')} formas={['filas']} />
           ) : errorCarga && recaps.length === 0 ? (
             <ErrorSistema mensaje={errorCarga} onReintentar={acciones.onReintentar} />
           ) : recaps.length === 0 ? (
             <TarjetaArena variante="contorno">
               <EmptyState
                 icon="images-outline"
-                title="Todavía no hay recuerdos"
-                body="Sube una foto al completar una misión y el domingo tendrás algo que mirar."
+                title={t('resumen:vista.vacioTitulo')}
+                body={t('resumen:vista.vacioCuerpo')}
               />
             </TarjetaArena>
           ) : (

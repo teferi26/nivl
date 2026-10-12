@@ -12,6 +12,7 @@ import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState, type ReactNode } from 'react';
 import { useConsentimientoIA } from '@/components/ConsentimientoIA';
 import { volver } from '@/components/ui/Screen';
+import { t } from '@/i18n';
 import { accessNotice, CoachAccessError, generarResumen } from '@/lib/coach';
 import { fetchRecaps, type Recap } from '@/lib/photos';
 import { mensajeSistema } from '@/lib/validation';
@@ -69,7 +70,7 @@ export function useResumen(): UseResumen {
     try {
       const r = await generarResumen('semanal');
       if (!r.slides.length) {
-        setAviso(r.motivo ?? 'Sin fotos esta semana.');
+        setAviso(r.motivo ?? t('resumen:generar.sinFotos'));
         return;
       }
       await cargar();
@@ -80,7 +81,7 @@ export function useResumen(): UseResumen {
         setPidePro(e.reason === 'sin_suscripcion');
         setAviso(
           e.reason === 'sin_suscripcion'
-            ? 'El pase de la semana lo monta el coach, y el coach es parte de NIVL Pro. Tus fotos y tus recuerdos guardados siguen aquí.'
+            ? t('resumen:generar.sinPro')
             : accessNotice(e),
         );
       } else {

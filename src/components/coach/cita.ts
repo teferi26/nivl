@@ -5,14 +5,15 @@
 //
 // Los nombres son los de supabase/functions/_shared/tools.ts.
 
-const CONSULTAS: Record<string, string> = {
-  consultar_historial: 'tu historial',
-  consultar_dia: 'tu registro del día',
-};
+import { t } from '@/i18n';
+
+// Las herramientas que se citan; su nombre legible está en coach:cita.fuente.
+const CONSULTAS = ['consultar_historial', 'consultar_dia'] as const;
+type Consulta = (typeof CONSULTAS)[number];
 
 /** ¿Es una herramienta de solo lectura que se cita en vez de listarse? */
-export function esConsulta(nombre: string): boolean {
-  return Object.prototype.hasOwnProperty.call(CONSULTAS, nombre);
+export function esConsulta(nombre: string): nombre is Consulta {
+  return (CONSULTAS as readonly string[]).includes(nombre);
 }
 
 /** La línea de la cita, o null si no hubo consultas. Sin duplicados, en orden de llegada. */
@@ -20,12 +21,12 @@ export function citaDe(nombres: readonly string[]): string | null {
   const vistos: string[] = [];
   for (const n of nombres) {
     if (!esConsulta(n)) continue;
-    const fuente = CONSULTAS[n];
+    const fuente = t(`coach:cita.fuente.${n}`);
     if (!vistos.includes(fuente)) vistos.push(fuente);
   }
   if (!vistos.length) return null;
-  const lista = vistos.length === 1 ? vistos[0] : `${vistos.slice(0, -1).join(', ')} y ${vistos[vistos.length - 1]}`;
-  return `Consultado: ${lista}`;
+  if (vistos.length === 1) return t('coach:cita.consultado', { lista: vistos[0] });
+  return t('coach:cita.consultadoVarias', { primeras: vistos.slice(0, -1).join(', '), ultima: vistos[vistos.length - 1] });
 }
 
 /** Los nombres que sí se pintan como acciones (todo lo que no es consulta). */

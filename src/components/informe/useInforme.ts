@@ -17,6 +17,7 @@ import { useConsentimientoIA } from '@/components/ConsentimientoIA';
 import { avisar, confirmar } from '@/components/ui/confirmar';
 import { volver } from '@/components/ui/Screen';
 import { vibrar } from '@/design/haptics';
+import { t } from '@/i18n';
 import { useAuth } from '@/lib/auth';
 import { questsScheduledOn } from '@/lib/closing';
 import { olvidarConsentimiento } from '@/lib/consent';
@@ -120,7 +121,7 @@ export function useInforme(): { vista: InformeVistaProps; hoja: ReactNode } {
           quests: snapshots,
           streakDays: prof.streak_days,
           level: levelFromXp(prof.xp_total).level,
-          rulesBroken: breaks ? [`${breaks} normas rotas en 14 días`] : [],
+          rulesBroken: breaks ? [t('informe:oraculo.normasRotas', { n: breaks })] : [],
           penaltiesXp,
         },
         userId,
@@ -132,10 +133,10 @@ export function useInforme(): { vista: InformeVistaProps; hoja: ReactNode } {
         // Todo lo de pago lleva a /pro (compra integrada): nada de Stripe ni
         // de clave propia en la app de tienda (Guideline 3.1.1).
         const verPro = await confirmar({
-          titulo: 'Análisis semanal',
-          mensaje: 'El análisis del Oráculo es parte de NIVL Pro. El informe sigue siendo tuyo.',
-          confirmar: 'Ver NIVL Pro',
-          cancelar: 'Ahora no',
+          titulo: t('informe:oraculo.proTitulo'),
+          mensaje: t('informe:oraculo.proMensaje'),
+          confirmar: t('comun:verNivlPro'),
+          cancelar: t('comun:ahoraNo'),
         });
         if (verPro) router.push('/pro');
       } else if (e instanceof ConsentRequiredError) {
@@ -163,7 +164,7 @@ export function useInforme(): { vista: InformeVistaProps; hoja: ReactNode } {
       setApplied((prev) => new Set(prev).add(adj.quest_id));
       await load();
     } catch (e) {
-      avisar('El sistema no responde', mensajeSistema(e));
+      avisar(t('comun:sistemaNoResponde'), mensajeSistema(e));
     } finally {
       terminarAplicar(key);
     }
@@ -183,7 +184,7 @@ export function useInforme(): { vista: InformeVistaProps; hoja: ReactNode } {
       setApplied((prev) => new Set(prev).add(key));
       await load();
     } catch (e) {
-      avisar('El sistema no responde', mensajeSistema(e));
+      avisar(t('comun:sistemaNoResponde'), mensajeSistema(e));
     } finally {
       terminarAplicar(key);
     }

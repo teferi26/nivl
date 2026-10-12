@@ -1,1 +1,57 @@
-{}
+{
+  "lectura": {
+    "sinActividad": "El sistema no registra actividad esta semana. Toda leyenda tiene capítulos en blanco; el siguiente lo escribes hoy.",
+    "completadas": "Esta semana has completado {{misiones}} misiones y ganado {{xp}} XP.",
+    "sube": "Un {{delta}}% más que la semana pasada: la curva sube.",
+    "baja": "Un {{delta}}% menos que la semana pasada. No es una derrota; es información.",
+    "dominante": "Tu área dominante ha sido {{stat}} ({{nombre}}).",
+    "mejorDia": "Tu mejor día fue el {{dia}} (+{{xp}} XP).",
+    "evidencia": "El {{pct}}% de tus misiones llevan evidencia: tu palabra está respaldada.",
+    "subtituloVacio": "Sin actividad registrada en los últimos siete días.",
+    "subtitulo": "{{xp}} XP en siete días.",
+    "subtituloDelta": "{{xp}} XP en siete días · {{delta}} % frente a la semana previa."
+  },
+  "oraculo": {
+    "normasRotas": "{{n}} normas rotas en 14 días",
+    "proTitulo": "Análisis semanal",
+    "proMensaje": "El análisis del Oráculo es parte de NIVL Pro. El informe sigue siendo tuyo."
+  },
+  "vista": {
+    "hechoA11y": "{{titulo}}. {{detalle}}",
+    "hechoHechoA11y": "{{titulo}}. {{detalle}}. Hecho",
+    "botonA11y": "{{rotulo}}: {{titulo}}",
+    "eyebrow": "Progreso",
+    "titulo": "Informe",
+    "cargando": "Cargando el informe",
+    "oraculoSilencio": "El oráculo guarda silencio",
+    "xp7dias": "XP · 7 días",
+    "misiones": "Misiones",
+    "vsPrevia": "Vs. previa",
+    "vsPreviaSinDato": "Frente a la semana previa: sin dato",
+    "vsPreviaMas": "Frente a la semana previa: más {{delta}} %",
+    "vsPreviaMenos": "Frente a la semana previa: menos {{delta}} %",
+    "conEvidencia": "Misiones con evidencia",
+    "evidenciaA11y": "Misiones de la semana con evidencia",
+    "lecturaSemanal": "Lectura semanal",
+    "seAjusta": "El sistema se ajusta",
+    "porAplicar": "{{n}} por aplicar",
+    "sinAnalisis": "Sin análisis todavía",
+    "sinAnalisisCuerpo": "El oráculo lee tus últimos 14 días y propone ajustes: bajar lo que siempre falla, subir lo que ya es trivial, cubrir huecos.",
+    "pedirAnalisis": "Pedir análisis al oráculo",
+    "lecturaOraculo": "Lectura del oráculo",
+    "desactivar": "Desactivar · {{razon}}",
+    "dificultad": "Dificultad → {{dificultad}} · {{razon}}",
+    "aplicar": "Aplicar",
+    "nueva": "Nueva · {{stat}} · {{dificultad}} · {{razon}}",
+    "crear": "Crear",
+    "nuevoAnalisis": "Nuevo análisis",
+    "xpPorStat": "XP por estadística",
+    "sieteDias": "7 días",
+    "dominante": "Dominante",
+    "statA11y": "{{nombre}}: {{xp}} XP esta semana",
+    "mapa": "Mapa de actividad",
+    "trece": "13 semanas",
+    "mapaVacio": "Todavía en blanco",
+    "mapaVacioCuerpo": "Cada misión completada enciende un día."
+  }
+}

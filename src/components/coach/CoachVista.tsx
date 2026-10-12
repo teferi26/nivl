@@ -33,6 +33,7 @@ import { Button, Card, Chip, Screen, Skeleton, Tag } from '@/components/ui';
 import { useTecladoAbierto } from '@/components/ui/useTecladoAbierto';
 import { ink, space, stroke, type } from '@/design/tokens';
 import { useAnchoUtil, useNavActual } from '@/design/useSizeClass';
+import { t } from '@/i18n';
 import type { CoachMode } from '@/lib/coach';
 import { DESCARGO_SALUD, LINEA_CRISIS } from '@/lib/consentmath';
 import { dateKey, relativoDe } from '@/lib/dates';
@@ -89,7 +90,7 @@ export interface CoachVistaProps {
   potencia: { modo: CoachMode; profundoAbierto: boolean; linea: string; onElegir: (m: CoachMode) => void } | null;
   compositor: {
     texto: string;
-    onCambiarTexto: (t: string) => void;
+    onCambiarTexto: (texto: string) => void;
     onTeclear: (e: NativeSyntheticEvent<TextInputKeyPressEventData>) => void;
     puedeEnviar: boolean;
     onEnviar: () => void;
@@ -114,25 +115,22 @@ export interface CoachVistaProps {
 }
 
 // Atajos a los rituales: lo que el coach anterior hacía por cadena programada.
-const ATAJOS: { etiqueta: string; mensaje: string; icono: keyof typeof Ionicons.glyphMap }[] = [
-  { etiqueta: 'Planifica mi día', mensaje: 'Planifica el resto de mi día de hoy.', icono: 'list-outline' },
-  { etiqueta: 'Reporte', mensaje: 'Voy a reportar. Pregúntame lo que necesites saber de hoy.', icono: 'clipboard-outline' },
-  { etiqueta: 'Dojo de ventas', mensaje: 'Entréname 15 minutos de ventas. Empieza con una objeción real.', icono: 'flash-outline' },
-  { etiqueta: 'Revísame', mensaje: 'Haz la revisión de mis últimos 14 días con honestidad brutal.', icono: 'analytics-outline' },
-];
+// La etiqueta y el mensaje están en coach:atajos.<clave>.
+const ATAJOS = [
+  { clave: 'planificaDia', icono: 'list-outline' },
+  { clave: 'reporte', icono: 'clipboard-outline' },
+  { clave: 'dojo', icono: 'flash-outline' },
+  { clave: 'revisame', icono: 'analytics-outline' },
+] as const satisfies readonly { clave: string; icono: keyof typeof Ionicons.glyphMap }[];
 
 // Acciones rápidas sobre el cuadro, con el hilo ya empezado. Hacen lo mismo
-// que los atajos del vacío: se lo envían al coach (onAtajo).
-const RAPIDAS: { etiqueta: string; mensaje: string; icono: keyof typeof Ionicons.glyphMap }[] = [
-  { etiqueta: 'Plan de hoy', mensaje: 'Planifica el resto de mi día de hoy.', icono: 'list-outline' },
-  { etiqueta: 'Registrar', mensaje: 'Voy a reportar. Pregúntame lo que necesites saber de hoy.', icono: 'clipboard-outline' },
-  { etiqueta: '¿Qué entreno?', mensaje: '¿Qué entreno hoy? Decídelo con mi historial y cómo vengo.', icono: 'barbell-outline' },
-  {
-    etiqueta: 'Resumen de la semana',
-    mensaje: 'Hazme el resumen de mi semana: lo que cumplí, lo que no y qué cambio para la próxima.',
-    icono: 'calendar-outline',
-  },
-];
+// que los atajos del vacío: se lo envían al coach (onAtajo). En coach:rapidas.<clave>.
+const RAPIDAS = [
+  { clave: 'planHoy', icono: 'list-outline' },
+  { clave: 'registrar', icono: 'clipboard-outline' },
+  { clave: 'queEntreno', icono: 'barbell-outline' },
+  { clave: 'resumenSemana', icono: 'calendar-outline' },
+] as const satisfies readonly { clave: string; icono: keyof typeof Ionicons.glyphMap }[];
 
 /** Por debajo de este ancho útil, «COACH» baja de `rank` (32) a inscripción de 20. */
 const ANCHO_TITULO_GRANDE = 400;
@@ -143,10 +141,10 @@ const GALEA = 96;
 
 /** «Ha leído tu día · 4 consultas», «Listo para tu día». */
 export function lineaCabecera(p: Pick<CoachVistaProps, 'cargando' | 'sinPro' | 'consultas'>): string {
-  if (p.cargando) return 'Leyendo tu día';
-  if (p.sinPro) return 'Parte de NIVL Pro';
-  if (p.consultas <= 0) return 'Listo para tu día';
-  return `Ha leído tu día · ${p.consultas} ${p.consultas === 1 ? 'consulta' : 'consultas'}`;
+  if (p.cargando) return t('coach:vista.leyendo');
+  if (p.sinPro) return t('coach:vista.partePro');
+  if (p.consultas <= 0) return t('coach:vista.listo');
+  return t('coach:vista.haLeido', { count: p.consultas });
 }
 
 /** «HOY», «AYER», «HACE 5 DÍAS» de una fecha ISO; null si no la hay o no se lee. */
@@ -171,9 +169,9 @@ function Cabecera({ p }: { p: Pick<CoachVistaProps, 'cargando' | 'sinPro' | 'con
             adjustsFontSizeToFit
             maxFontSizeMultiplier={1.35}
           >
-            COACH
+            {t('coach:vista.titulo')}
           </Text>
-          {p.profundo ? <Tag>PROFUNDO</Tag> : null}
+          {p.profundo ? <Tag>{t('coach:vista.profundoTag')}</Tag> : null}
         </View>
         <Text style={styles.headerLinea} numberOfLines={2} maxFontSizeMultiplier={1.35}>
           {lineaCabecera(p)}
@@ -185,12 +183,12 @@ function Cabecera({ p }: { p: Pick<CoachVistaProps, 'cargando' | 'sinPro' | 'con
               y la energía del mes si lo hay. */}
           <BotonArena
             icono="flash-outline"
-            etiqueta={p.sinPro ? 'Ver NIVL Pro' : 'Ver tu plan y la energía del coach'}
+            etiqueta={p.sinPro ? t('comun:verNivlPro') : t('coach:vista.verPlan')}
             onPress={p.onPro}
           />
           {/* La memoria es del coach: sin Pro no ha aprendido nada que
               enseñar. Vuelve en cuanto la cuenta tiene coach. */}
-          {p.sinPro ? null : <BotonArena icono="library-outline" etiqueta="Ver la memoria del sistema" onPress={p.onMemoria} />}
+          {p.sinPro ? null : <BotonArena icono="library-outline" etiqueta={t('coach:vista.verMemoria')} onPress={p.onMemoria} />}
         </View>
       )}
     </View>
@@ -220,34 +218,34 @@ function Vacio({ onAtajo }: { onAtajo: (mensaje: string) => void }) {
       </Entrada>
       <Entrada indice={1} style={styles.vacioTextos}>
         <Text style={styles.vacioTitulo} accessibilityRole="header" maxFontSizeMultiplier={1.35}>
-          EL SISTEMA TE ESCUCHA.
+          {t('coach:vista.vacioTitulo')}
         </Text>
-        <Text style={styles.vacioTexto}>
-          Manda en tu día, decide qué puntúa cada cosa, te juzga por la noche y recuerda todo lo que aprende de ti.
-          Habla con él como hablarías con quien lleva tu vida.
-        </Text>
+        <Text style={styles.vacioTexto}>{t('coach:vista.vacioCuerpo')}</Text>
         <Text style={styles.vacioDescargo}>
           {DESCARGO_SALUD} {LINEA_CRISIS}
         </Text>
       </Entrada>
       <Entrada indice={2}>
-        <View style={styles.atajos} accessibilityLabel="Atajos">
-          {ATAJOS.map((a) => (
-            <Pressable
-              key={a.etiqueta}
-              onPress={() => onAtajo(a.mensaje)}
-              hitSlop={ZONA_PILDORA}
-              style={({ pressed }) => [styles.pildora, pressed && styles.pulsado]}
-              accessibilityRole="button"
-              accessibilityLabel={a.etiqueta}
-              accessibilityHint="Se lo envía al coach"
-            >
-              <Ionicons name={a.icono} size={14} color={ink.ink8} />
-              <Text style={styles.pildoraTexto} maxFontSizeMultiplier={1.35}>
-                {a.etiqueta}
-              </Text>
-            </Pressable>
-          ))}
+        <View style={styles.atajos} accessibilityLabel={t('coach:vista.atajosA11y')}>
+          {ATAJOS.map((a) => {
+            const etiqueta = t(`coach:atajos.${a.clave}.etiqueta`);
+            return (
+              <Pressable
+                key={a.clave}
+                onPress={() => onAtajo(t(`coach:atajos.${a.clave}.mensaje`))}
+                hitSlop={ZONA_PILDORA}
+                style={({ pressed }) => [styles.pildora, pressed && styles.pulsado]}
+                accessibilityRole="button"
+                accessibilityLabel={etiqueta}
+                accessibilityHint={t('coach:vista.enviaPista')}
+              >
+                <Ionicons name={a.icono} size={14} color={ink.ink8} />
+                <Text style={styles.pildoraTexto} maxFontSizeMultiplier={1.35}>
+                  {etiqueta}
+                </Text>
+              </Pressable>
+            );
+          })}
         </View>
       </Entrada>
     </View>
@@ -275,26 +273,29 @@ function Rapidas({
       contentContainerStyle={styles.rapidas}
       showsHorizontalScrollIndicator={false}
       keyboardShouldPersistTaps="handled"
-      accessibilityLabel="Acciones rápidas"
+      accessibilityLabel={t('coach:vista.rapidasA11y')}
     >
-      {RAPIDAS.map((a) => (
-        <Pressable
-          key={a.etiqueta}
-          onPress={() => onAtajo(a.mensaje)}
-          disabled={desactivadas}
-          hitSlop={ZONA_PILDORA}
-          style={({ pressed }) => [styles.pildora, desactivadas && styles.pildoraOff, pressed && styles.pulsado]}
-          accessibilityRole="button"
-          accessibilityLabel={a.etiqueta}
-          accessibilityHint="Se lo envía al coach"
-          accessibilityState={{ disabled: desactivadas }}
-        >
-          <Ionicons name={a.icono} size={14} color={ink.ink8} />
-          <Text style={styles.pildoraTexto} maxFontSizeMultiplier={1.35}>
-            {a.etiqueta}
-          </Text>
-        </Pressable>
-      ))}
+      {RAPIDAS.map((a) => {
+        const etiqueta = t(`coach:rapidas.${a.clave}.etiqueta`);
+        return (
+          <Pressable
+            key={a.clave}
+            onPress={() => onAtajo(t(`coach:rapidas.${a.clave}.mensaje`))}
+            disabled={desactivadas}
+            hitSlop={ZONA_PILDORA}
+            style={({ pressed }) => [styles.pildora, desactivadas && styles.pildoraOff, pressed && styles.pulsado]}
+            accessibilityRole="button"
+            accessibilityLabel={etiqueta}
+            accessibilityHint={t('coach:vista.enviaPista')}
+            accessibilityState={{ disabled: desactivadas }}
+          >
+            <Ionicons name={a.icono} size={14} color={ink.ink8} />
+            <Text style={styles.pildoraTexto} maxFontSizeMultiplier={1.35}>
+              {etiqueta}
+            </Text>
+          </Pressable>
+        );
+      })}
     </ScrollView>
   );
 }
@@ -331,7 +332,7 @@ export function CoachVista(p: CoachVistaProps) {
     return (
       <Screen plain>
         <Cabecera p={p} />
-        <View style={styles.cargandoCuerpo} accessibilityRole="progressbar" accessibilityLabel="Cargando el coach">
+        <View style={styles.cargandoCuerpo} accessibilityRole="progressbar" accessibilityLabel={t('coach:vista.cargandoA11y')}>
           <Skeleton height={14} width="64%" />
           <Skeleton height={14} width="88%" style={styles.cargandoLinea} />
           <Skeleton height={14} width="46%" style={styles.cargandoLinea} />
@@ -379,13 +380,11 @@ export function CoachVista(p: CoachVistaProps) {
             <Entrada indice={0}>
               <Card variant="outline" style={styles.falloCarga}>
                 <Text style={styles.falloCargaTitulo} accessibilityRole="header" maxFontSizeMultiplier={1.35}>
-                  EL SISTEMA NO RESPONDE
+                  {t('coach:vista.falloTitulo')}
                 </Text>
-                <Text style={styles.falloCargaTexto}>
-                  No se ha podido cargar la conversación. Revisa la conexión y vuelve a intentarlo.
-                </Text>
+                <Text style={styles.falloCargaTexto}>{t('coach:vista.falloCuerpo')}</Text>
                 <Button
-                  title="Reintentar"
+                  title={t('comun:reintentar')}
                   variant="secondary"
                   size="sm"
                   onPress={p.onReintentar}
@@ -453,14 +452,14 @@ export function CoachVista(p: CoachVistaProps) {
           <View style={styles.adjuntas}>
             <Ionicons name="image-outline" size={14} color={ink.ink8} />
             <Text style={styles.adjuntasTexto}>
-              {p.adjuntas === 1 ? '1 foto lista para enviar' : `${p.adjuntas} fotos listas para enviar`}
+              {t('coach:vista.fotosListas', { count: p.adjuntas })}
             </Text>
             <Pressable
               onPress={p.onQuitarAdjuntas}
               hitSlop={14}
               style={styles.quitar}
               accessibilityRole="button"
-              accessibilityLabel="Quitar las fotos"
+              accessibilityLabel={t('coach:vista.quitarFotosA11y')}
             >
               <Ionicons name="close" size={16} color={ink.ink8} />
             </Pressable>
@@ -485,7 +484,7 @@ export function CoachVista(p: CoachVistaProps) {
               onPress={p.onPro}
               style={({ pressed }) => [styles.aviso, pressed && styles.pulsado]}
               accessibilityRole="button"
-              accessibilityLabel={`${p.energia.texto} Ver la energía del coach`}
+              accessibilityLabel={t('coach:vista.energiaA11y', { texto: p.energia.texto })}
             >
               <Ionicons name="hourglass-outline" size={14} color={ink.ink8} />
               <Text style={styles.avisoTexto}>{p.energia.texto}</Text>
@@ -496,21 +495,21 @@ export function CoachVista(p: CoachVistaProps) {
 
         {p.potencia ? (
           <View style={styles.potencia}>
-            <View style={styles.potenciaChips} accessibilityRole="radiogroup" accessibilityLabel="Potencia del coach">
+            <View style={styles.potenciaChips} accessibilityRole="radiogroup" accessibilityLabel={t('coach:vista.potenciaA11y')}>
               <Chip
                 small
-                label="Estándar"
+                label={t('coach:vista.estandar')}
                 selected={p.potencia.modo === 'estandar'}
                 onPress={() => p.potencia?.onElegir('estandar')}
               />
               <Chip
                 small
-                label="Profundo"
+                label={t('coach:vista.profundo')}
                 icon="telescope-outline"
                 selected={p.potencia.modo === 'profundo'}
                 onPress={() => p.potencia?.onElegir('profundo')}
                 disabled={!p.potencia.profundoAbierto}
-                accessibilityLabel={`Modo profundo. ${p.potencia.linea}`}
+                accessibilityLabel={t('coach:vista.profundoA11y', { linea: p.potencia.linea })}
               />
             </View>
             <Text style={styles.potenciaTexto} numberOfLines={2}>
@@ -527,12 +526,12 @@ export function CoachVista(p: CoachVistaProps) {
             <View style={[styles.bandaPro, { paddingBottom: styles.bandaPro.paddingBottom + fondoSeguro }]}>
               {/* La línea de la oferta ya dice que el coach es parte de NIVL Pro. */}
               <Text style={styles.bandaProTexto}>
-                {p.ofertaCerrado ? 'Tu conversación se conserva.' : 'El coach es parte de NIVL Pro. Tu conversación se conserva.'}
+                {p.ofertaCerrado ? t('coach:vista.conservada') : t('coach:vista.conservadaPro')}
               </Text>
               {p.ofertaCerrado ? (
                 <ProUpsellLine momento="coach_cerrado" tier={p.ofertaCerrado} />
               ) : (
-                <Button title="Ver NIVL Pro" size="sm" onPress={p.onPro} />
+                <Button title={t('comun:verNivlPro')} size="sm" onPress={p.onPro} />
               )}
             </View>
           )
@@ -540,7 +539,7 @@ export function CoachVista(p: CoachVistaProps) {
           <View>
             {conRapidas ? <Rapidas onAtajo={p.onAtajo} desactivadas={c.ocupado} conLinea={!p.potencia} /> : null}
             <FranjaGrabacion dictado={c.dictado} aviso={c.avisoDictado} />
-            {c.conFotos === false ? <Text style={styles.sinFotos}>Las fotos al coach son de Élite</Text> : null}
+            {c.conFotos === false ? <Text style={styles.sinFotos}>{t('coach:vista.fotosElite')}</Text> : null}
             <View
               style={[
                 styles.barra,
@@ -554,7 +553,7 @@ export function CoachVista(p: CoachVistaProps) {
                   disabled={c.ocupado}
                   style={({ pressed }) => [styles.adjuntar, pressed && styles.pulsado]}
                   accessibilityRole="button"
-                  accessibilityLabel="Adjuntar una foto"
+                  accessibilityLabel={t('coach:vista.adjuntarA11y')}
                 >
                   <Ionicons name="add" size={26} color={ink.ink8} />
                 </Pressable>
@@ -563,11 +562,11 @@ export function CoachVista(p: CoachVistaProps) {
                 style={styles.input}
                 value={c.texto}
                 onChangeText={c.onCambiarTexto}
-                placeholder="Habla con el sistema"
+                placeholder={t('coach:vista.placeholder')}
                 placeholderTextColor={ink.ink6}
                 multiline
                 onKeyPress={c.onTeclear}
-                accessibilityLabel="Mensaje para el sistema"
+                accessibilityLabel={t('coach:vista.mensajeA11y')}
               />
               {/* El micrófono, siempre a la vista junto a enviar. */}
               {c.conDictado ? <BotonDictar dictado={c.dictado} disabled={c.ocupado} /> : null}
@@ -579,7 +578,7 @@ export function CoachVista(p: CoachVistaProps) {
                   disabled={!c.puedeEnviar}
                   style={({ pressed }) => [styles.enviar, !c.puedeEnviar && styles.enviarOff, pressed && styles.pulsado]}
                   accessibilityRole="button"
-                  accessibilityLabel={c.ocupado ? 'Enviando: el sistema está pensando' : 'Enviar mensaje'}
+                  accessibilityLabel={c.ocupado ? t('coach:vista.enviandoA11y') : t('coach:vista.enviarA11y')}
                   accessibilityState={{ disabled: !c.puedeEnviar, busy: c.ocupado }}
                 >
                   {/* Con el turno en marcha, apagado y con los puntos: no se manda otro. */}

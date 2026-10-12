@@ -19,26 +19,20 @@ import { TextoSistema } from '@/components/TextoSistema';
 import { Chip, ChipRow, EmptyState, Screen, Section, Tag } from '@/components/ui';
 import { SIN_DATO } from '@/components/ui/sinDato';
 import { ink, space, stroke, type as tipo } from '@/design/tokens';
+import { t } from '@/i18n';
 import type { CoachFact } from '@/lib/coach';
 
-export const CATEGORIAS: { clave: string; etiqueta: string }[] = [
-  { clave: 'todo', etiqueta: 'Todo' },
-  { clave: 'aprendizaje', etiqueta: 'Aprendizajes' },
-  { clave: 'venta', etiqueta: 'Ventas' },
-  { clave: 'metrica', etiqueta: 'Métricas' },
-  { clave: 'log', etiqueta: 'Registro' },
-  { clave: 'objetivo', etiqueta: 'Objetivos' },
-  { clave: 'proyecto', etiqueta: 'Proyectos' },
-  { clave: 'regla', etiqueta: 'Reglas' },
-  { clave: 'perfil', etiqueta: 'Perfil' },
-];
+/** Las categorías del filtro, en orden. Su nombre está en memoria:categoria.<clave>. */
+export const CATEGORIAS = ['todo', 'aprendizaje', 'venta', 'metrica', 'log', 'objetivo', 'proyecto', 'regla', 'perfil'] as const;
+type Categoria = (typeof CATEGORIAS)[number];
+const esCategoria = (clave: string): clave is Categoria => (CATEGORIAS as readonly string[]).includes(clave);
 
 // La fecha corta vive en '@/components/fecha' (la comparte Economía); se
 // reexporta para quien ya la importaba de aquí.
 export { fechaCorta };
 
 export function etiquetaCategoria(clave: string): string {
-  return CATEGORIAS.find((c) => c.clave === clave)?.etiqueta ?? clave;
+  return esCategoria(clave) ? t(`memoria:categoria.${clave}`) : clave;
 }
 
 export interface MemoriaVistaProps {
@@ -87,12 +81,12 @@ function FilaHecho({
         disabled={borrando}
         style={({ pressed }) => [styles.hecho, pressed && styles.pulsado]}
         accessibilityRole="button"
-        accessibilityLabel={`${categoria}, ${fechaCorta(hecho.date)}: ${hecho.content}`}
-        accessibilityHint="Toca para leerlo entero."
+        accessibilityLabel={t('memoria:hecho.a11y', { categoria, fecha: fechaCorta(hecho.date), contenido: hecho.content })}
+        accessibilityHint={t('memoria:hecho.pista')}
         accessibilityState={{ disabled: borrando, busy: borrando }}
         accessibilityActions={[
-          { name: 'activate', label: 'Leerlo entero' },
-          { name: 'borrar', label: 'Borrar este recuerdo' },
+          { name: 'activate', label: t('memoria:hecho.leerEntero') },
+          { name: 'borrar', label: t('memoria:hecho.borrarAccion') },
         ]}
         onAccessibilityAction={(e) => {
           if (e.nativeEvent.actionName === 'borrar') {
@@ -119,14 +113,14 @@ function FilaHecho({
         disabled={borrando}
         style={({ pressed }) => [styles.borrar, pressed && styles.pulsado]}
         accessibilityRole="button"
-        accessibilityLabel={`Borrar el recuerdo: ${hecho.content.slice(0, 60)}`}
+        accessibilityLabel={t('memoria:hecho.borrarA11y', { contenido: hecho.content.slice(0, 60) })}
         accessibilityState={{ disabled: borrando, busy: borrando }}
       >
         {borrando ? (
-          <ActivityIndicator color={ink.ink6} size="small" accessibilityLabel="Borrando" />
+          <ActivityIndicator color={ink.ink6} size="small" accessibilityLabel={t('memoria:hecho.borrando')} />
         ) : (
           <Text style={styles.borrarTexto} maxFontSizeMultiplier={1.35}>
-            Borrar
+            {t('memoria:hecho.borrar')}
           </Text>
         )}
       </Pressable>
@@ -148,8 +142,13 @@ export function MemoriaVista({
   if (cargando) {
     return (
       <Screen>
-        <EncabezadoArena onVolver={acciones.onVolver} eyebrow="El sistema recuerda" titulo="Memoria" meandro />
-        <CargaArena etiqueta="Leyendo la memoria" formas={['franja', 'tarjeta', 'rotulo', 'filas']} filas={5} />
+        <EncabezadoArena
+          onVolver={acciones.onVolver}
+          eyebrow={t('memoria:vista.eyebrow')}
+          titulo={t('memoria:vista.titulo')}
+          meandro
+        />
+        <CargaArena etiqueta={t('memoria:vista.cargando')} formas={['franja', 'tarjeta', 'rotulo', 'filas']} filas={5} />
       </Screen>
     );
   }
@@ -157,10 +156,10 @@ export function MemoriaVista({
   const visibles = filtro === 'todo' ? hechos : hechos.filter((h) => h.category === filtro);
   const version = dossier?.version ?? 0;
   const subtitulo = error
-    ? 'La memoria no responde.'
+    ? t('memoria:vista.noResponde')
     : hechos.length === 0
-      ? 'Todavía no hay nada anotado. Se escribe sola mientras hablas con el coach.'
-      : `${hechos.length} ${hechos.length === 1 ? 'hecho anotado' : 'hechos anotados'} · dossier v${version}`;
+      ? t('memoria:vista.vacioSubtitulo')
+      : t('memoria:vista.subtitulo', { count: hechos.length, version });
   // Sin nada leído, el error ocupa la pantalla; con algo leído, va encima.
   const vacioPorError = !!error && hechos.length === 0 && !dossier;
 
@@ -169,8 +168,8 @@ export function MemoriaVista({
       <Entrada indice={0}>
         <EncabezadoArena
           onVolver={acciones.onVolver}
-          eyebrow="El sistema recuerda"
-          titulo="Memoria"
+          eyebrow={t('memoria:vista.eyebrow')}
+          titulo={t('memoria:vista.titulo')}
           subtitulo={subtitulo}
           meandro
         />
@@ -193,15 +192,19 @@ export function MemoriaVista({
             <View style={styles.bloque}>
               <FranjaCifras
                 cifras={[
-                  { valor: hechos.length, rotulo: 'Hechos' },
-                  { valor: `v${version}`, rotulo: 'Dossier', etiqueta: `Dossier: versión ${version}` },
+                  { valor: hechos.length, rotulo: t('memoria:vista.hechos') },
+                  {
+                    valor: `v${version}`,
+                    rotulo: t('memoria:vista.dossier'),
+                    etiqueta: t('memoria:vista.dossierA11y', { version }),
+                  },
                   gasto === null
-                    ? { valor: SIN_DATO, rotulo: 'Este mes', etiqueta: 'Este mes: sin dato' }
+                    ? { valor: SIN_DATO, rotulo: t('memoria:vista.esteMes'), etiqueta: t('memoria:vista.esteMesSinDato') }
                     : {
                         valor: gasto.toFixed(2).replace('.', ','),
-                        rotulo: 'Este mes',
+                        rotulo: t('memoria:vista.esteMes'),
                         sufijo: ' $',
-                        etiqueta: `Este mes: ${gasto.toFixed(2).replace('.', ',')} dólares`,
+                        etiqueta: t('memoria:vista.esteMesA11y', { gasto: gasto.toFixed(2).replace('.', ',') }),
                       },
                 ]}
               />
@@ -210,11 +213,11 @@ export function MemoriaVista({
 
           <Entrada indice={2}>
             <Section
-              title="Quién eres para el sistema"
+              title={t('memoria:vista.quienEres')}
               action={
                 dossier?.content
                   ? {
-                      label: dossierAbierto ? 'Contraer' : 'Leer todo',
+                      label: dossierAbierto ? t('memoria:vista.contraer') : t('memoria:vista.leerTodo'),
                       icon: dossierAbierto ? 'chevron-up' : 'chevron-down',
                       onPress: acciones.onAlternarDossier,
                     }
@@ -222,7 +225,7 @@ export function MemoriaVista({
               }
             >
               {dossier?.content ? (
-                <TarjetaArena variante="piedra" remaches rotulo="Dossier" meta={`v${version}`}>
+                <TarjetaArena variante="piedra" remaches rotulo={t('memoria:vista.dossier')} meta={`v${version}`}>
                   <View style={!dossierAbierto && styles.plegado}>
                     <TextoSistema texto={dossier.content} />
                   </View>
@@ -234,11 +237,10 @@ export function MemoriaVista({
                     <Ionicons name="library-outline" size={20} color={ink.ink6} style={styles.icono} />
                     <View style={styles.flex}>
                       <Text style={styles.titulo} maxFontSizeMultiplier={1.35}>
-                        Sin memoria estable aún
+                        {t('memoria:vista.sinDossierTitulo')}
                       </Text>
                       <Text style={styles.texto} maxFontSizeMultiplier={1.35}>
-                        Se escribe sola cuando algo estructural cambia: un objetivo nuevo, un proyecto que muere, una
-                        regla que pactas.
+                        {t('memoria:vista.sinDossierCuerpo')}
                       </Text>
                     </View>
                   </View>
@@ -248,20 +250,21 @@ export function MemoriaVista({
           </Entrada>
 
           <Entrada indice={3}>
-            <Section title="Hechos" meta={visibles.length > 0 ? `${visibles.length}` : undefined}>
+            <Section title={t('memoria:vista.hechos')} meta={visibles.length > 0 ? `${visibles.length}` : undefined}>
               {hechos.length > 0 ? (
                 <ChipRow style={styles.filtros}>
-                  {CATEGORIAS.map((c) => {
-                    const n = c.clave === 'todo' ? hechos.length : hechos.filter((h) => h.category === c.clave).length;
-                    if (!n && c.clave !== 'todo') return null;
+                  {CATEGORIAS.map((clave) => {
+                    const n = clave === 'todo' ? hechos.length : hechos.filter((h) => h.category === clave).length;
+                    if (!n && clave !== 'todo') return null;
+                    const categoria = t(`memoria:categoria.${clave}`);
                     return (
                       <Chip
-                        key={c.clave}
+                        key={clave}
                         small
-                        label={`${c.etiqueta} · ${n}`}
-                        selected={filtro === c.clave}
-                        onPress={() => acciones.onFiltro(c.clave)}
-                        accessibilityLabel={`Filtrar por ${c.etiqueta}, ${n}`}
+                        label={t('memoria:vista.filtro', { categoria, n })}
+                        selected={filtro === clave}
+                        onPress={() => acciones.onFiltro(clave)}
+                        accessibilityLabel={t('memoria:vista.filtroA11y', { categoria, n })}
                       />
                     );
                   })}
@@ -285,12 +288,8 @@ export function MemoriaVista({
               ) : (
                 <EmptyState
                   icon="time-outline"
-                  title={hechos.length === 0 ? 'Nada anotado todavía' : 'Nada en esta categoría'}
-                  body={
-                    hechos.length === 0
-                      ? 'Cada cifra, venta, aprendizaje o regla que le cuentes al coach queda aquí con su fecha.'
-                      : 'Prueba otra categoría.'
-                  }
+                  title={hechos.length === 0 ? t('memoria:vista.vacioTitulo') : t('memoria:vista.vacioCategoria')}
+                  body={hechos.length === 0 ? t('memoria:vista.vacioCuerpo') : t('memoria:vista.otraCategoria')}
                 />
               )}
             </Section>
