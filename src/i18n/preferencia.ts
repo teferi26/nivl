@@ -33,6 +33,28 @@ export async function leerPreferencia(): Promise<Preferencia | null> {
   }
 }
 
+export const CLAVE_CUENTA = 'nivl.idioma.cuenta.v1';
+
+/** La última cuenta que fijó la preferencia en este teléfono (o null). */
+export async function leerCuentaPreferencia(): Promise<string | null> {
+  try {
+    const a = await almacen();
+    return a ? await a.getItem(CLAVE_CUENTA) : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Anota qué cuenta ha fijado la preferencia. Nunca lanza. */
+export async function guardarCuentaPreferencia(userId: string): Promise<void> {
+  try {
+    const a = await almacen();
+    if (a) await a.setItem(CLAVE_CUENTA, userId);
+  } catch {
+    // Sin almacén, la regla de otra cuenta no se aplica: queda la del teléfono.
+  }
+}
+
 /** Guarda la preferencia. Nunca lanza: devuelve false si no se ha podido. */
 export async function guardarPreferencia(p: Preferencia): Promise<boolean> {
   try {

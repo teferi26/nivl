@@ -166,6 +166,22 @@ describe('regla de arranque (cuentas existentes → es; nuevas → automático)'
     expect(decidirPreferenciaInicial({ ...base, onboardingHecho: true })).toEqual({ preferencia: 'es', guardar: true });
   });
 
+  it('otra cuenta en el mismo teléfono: manda el idioma de su perfil si lo tiene; si no, el del teléfono', () => {
+    expect(decidirPreferenciaInicial({ ...base, guardada: 'it', onboardingHecho: true, locale: 'fr', otraCuenta: true })).toEqual({
+      preferencia: 'fr',
+      guardar: true,
+    });
+    // Sin la columna 0066 (locale undefined) o sin idioma en el perfil, sigue lo guardado.
+    expect(decidirPreferenciaInicial({ ...base, guardada: 'it', onboardingHecho: true, otraCuenta: true })).toEqual({
+      preferencia: 'it',
+      guardar: false,
+    });
+    expect(decidirPreferenciaInicial({ ...base, guardada: 'it', onboardingHecho: true, locale: null, otraCuenta: true })).toEqual({
+      preferencia: 'it',
+      guardar: false,
+    });
+  });
+
   it('una cuenta nueva sigue al teléfono', () => {
     expect(decidirPreferenciaInicial({ ...base })).toEqual({ preferencia: 'auto', guardar: true });
   });

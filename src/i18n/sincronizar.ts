@@ -18,6 +18,7 @@ import {
   preferenciaIdioma,
   type Idioma,
 } from './index';
+import { guardarCuentaPreferencia, leerCuentaPreferencia } from './preferencia';
 
 export interface IdiomaPerfil {
   onboardingHecho: boolean;
@@ -94,15 +95,21 @@ export function sincronizarIdioma(userId: string): () => void {
     const perfil = await leerIdiomaPerfil(userId);
     if (!vivo || !perfil) return;
     ultimo = { userId, locale: perfil.locale };
-    if (guardada === null) {
+    // La preferencia es del teléfono, pero si entra otra cuenta que ya tiene
+    // idioma en su perfil (columna 0066), manda el de esa cuenta.
+    const cuenta = await leerCuentaPreferencia();
+    const otraCuenta = cuenta !== null && cuenta !== userId;
+    if (guardada === null || otraCuenta) {
       const d = decidirPreferenciaInicial({
         guardada,
         onboardingHecho: perfil.onboardingHecho,
         locale: perfil.locale,
         dispositivo: idiomaDispositivo(),
+        otraCuenta,
       });
       if (d.guardar) await fijarPreferencia(d.preferencia);
     }
+    await guardarCuentaPreferencia(userId);
     if (!vivo) return;
     listo = true;
     await asegurarIdiomaPerfil(userId);

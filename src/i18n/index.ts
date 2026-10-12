@@ -175,6 +175,11 @@ export interface DatosArranque {
   locale: string | null | undefined;
   /** El idioma del teléfono. */
   dispositivo: string | null;
+  /**
+   * La cuenta que entra no es la última que fijó la preferencia en este
+   * teléfono: si su perfil ya trae idioma, manda el de la cuenta.
+   */
+  otraCuenta?: boolean;
 }
 
 /**
@@ -188,7 +193,9 @@ export interface DatosArranque {
  * `guardar` dice si hay que guardar la decisión en el teléfono.
  */
 export function decidirPreferenciaInicial(d: DatosArranque): { preferencia: Preferencia; guardar: boolean } {
-  if (d.guardada !== null) return { preferencia: d.guardada, guardar: false };
+  if (d.guardada !== null && !(d.otraCuenta && esIdioma(d.locale))) {
+    return { preferencia: d.guardada, guardar: false };
+  }
   if (esIdioma(d.locale)) {
     const auto = resolverIdiomaCoach('auto', d.dispositivo);
     return { preferencia: auto === d.locale ? 'auto' : d.locale, guardar: true };
