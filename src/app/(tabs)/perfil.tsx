@@ -1,8 +1,8 @@
 // NIVL · Perfil (L-RADICAL B.3). La ruta solo junta las piezas: usePerfil
 // (datos y efectos), PerfilVista (la pantalla), PerfilAjustes (los ajustes) y,
-// debajo, las tres hojas (HojasPerfil): borrar la cuenta, pausar y el código
-// de creador.
-import { HojaBorrar, HojaCodigo, HojaPausa } from '@/components/perfil/HojasPerfil';
+// debajo, las hojas (HojasPerfil): borrar la cuenta, pausar, el código de
+// creador y el idioma del coach.
+import { HojaBorrar, HojaCodigo, HojaIdioma, HojaPausa } from '@/components/perfil/HojasPerfil';
 import { PerfilAjustes } from '@/components/perfil/PerfilAjustes';
 import { PerfilVista } from '@/components/perfil/PerfilVista';
 import { FREEZE_DAYS, FREEZE_REASONS, usePerfil } from '@/components/perfil/usePerfil';
@@ -10,7 +10,7 @@ import { Screen } from '@/components/ui';
 
 export default function Perfil() {
   const { vista, ajustes, hojas } = usePerfil();
-  const { pausa, codigo, borrar, today } = hojas;
+  const { pausa, codigo, borrar, idioma, today } = hojas;
 
   return (
     <Screen>
@@ -21,6 +21,7 @@ export default function Perfil() {
       <HojaBorrar {...borrar} />
       <HojaPausa {...pausa} today={today} motivos={FREEZE_REASONS} duraciones={FREEZE_DAYS} />
       <HojaCodigo {...codigo} />
+      <HojaIdioma {...idioma} />
     </Screen>
   );
 }

@@ -10,6 +10,9 @@
 //     la segunda pregunta se queda aunque el Campo ya frene el roce.
 //   · HojaPausa  → chips del motivo y de los días; INVERSIÓN «Activar pausa».
 //   · HojaCodigo → Campo grande en Cinzel (rank); INVERSIÓN «Guardar código».
+//   · HojaIdioma → el idioma del coach (1.0.10): Automático + es, en, fr, de,
+//     pt, it. Elegir es un toque y cierra la hoja (Check en lo elegido);
+//     pie: ghost «Cerrar». La interfaz sigue en español.
 //
 // Los fallos van en línea (ErrorSistema compacto): nada de avisos encima de
 // una hoja abierta.
@@ -17,8 +20,10 @@
 import { useEffect, useState } from 'react';
 import { Platform, StyleSheet, Text, View } from 'react-native';
 import { Campo, ErrorSistema, TarjetaArena } from '@/components/arena';
-import { Button, Chip, ChipWrap, Sheet, useAnunciar } from '@/components/ui';
+import { Button, Card, Check, Chip, ChipWrap, Row, Sheet, useAnunciar } from '@/components/ui';
 import { ink, space, type as tipo } from '@/design/tokens';
+import { esIdioma, IDIOMAS, NOMBRE_IDIOMA, type Preferencia } from '@/i18n';
+import { idiomaBase } from '@/i18n/dispositivo';
 import { CODIGO_MAX_LENGTH } from '@/lib/creatormath';
 import { addDays, nombreDia } from '@/lib/dates';
 
@@ -269,8 +274,67 @@ export function HojaCodigo({ abierta, cerrar, valor, cambiar, aviso, ocupado, en
   );
 }
 
+export interface HojaIdiomaProps {
+  abierta: boolean;
+  cerrar: () => void;
+  /** Lo elegido (null: aún no se sabe; se marca como Español, que es lo que habla el coach entonces). */
+  preferencia: Preferencia | null;
+  /** El idioma del teléfono (BCP 47), para explicar qué hace «Automático». */
+  dispositivo: string | null;
+  elegir: (p: Preferencia) => void;
+}
+
+/** Qué hace «Automático» con este teléfono. */
+export function detalleAutomatico(dispositivo: string | null): string {
+  const base = idiomaBase(dispositivo);
+  if (esIdioma(base)) return `Sigue al teléfono: ahora, ${NOMBRE_IDIOMA[base]}.`;
+  return 'Sigue al teléfono. Si está en un idioma que el coach aún no habla, te escribe en español.';
+}
+
+export function HojaIdioma({ abierta, cerrar, preferencia, dispositivo, elegir }: HojaIdiomaProps) {
+  const elegida: Preferencia = preferencia ?? 'es';
+  const opciones: { valor: Preferencia; titulo: string; detalle?: string }[] = [
+    { valor: 'auto', titulo: 'Automático', detalle: detalleAutomatico(dispositivo) },
+    ...IDIOMAS.map((i) => ({ valor: i as Preferencia, titulo: NOMBRE_IDIOMA[i] })),
+  ];
+  return (
+    <Sheet
+      visible={abierta}
+      onClose={cerrar}
+      eyebrow="Idioma del coach"
+      title="¿En qué idioma te habla?"
+      footer={<Button title="Cerrar" variant="ghost" onPress={cerrar} />}
+    >
+      <View style={styles.pila}>
+        <Text style={styles.cuerpo}>
+          El coach te escribe en este idioma: la conversación, los avisos que prepara y sus informes. La interfaz sigue
+          en español.
+        </Text>
+        <Card padded={false} style={styles.lista}>
+          {opciones.map((o, i) => {
+            const marcada = elegida === o.valor;
+            return (
+              <Row
+                key={o.valor}
+                first={i === 0}
+                title={o.titulo}
+                detail={o.detalle}
+                trailing={<Check checked={marcada} size={22} />}
+                onPress={() => elegir(o.valor)}
+                accessibilityLabel={o.detalle ? `${o.titulo}. ${o.detalle}` : o.titulo}
+                accessibilityState={{ selected: marcada }}
+              />
+            );
+          })}
+        </Card>
+      </View>
+    </Sheet>
+  );
+}
+
 const styles = StyleSheet.create({
   pila: { gap: space.s5 },
+  lista: { paddingHorizontal: space.s4, paddingVertical: 2 },
   pilaCorta: { gap: space.s3 },
   grupo: { gap: space.s2 },
   etiqueta: {

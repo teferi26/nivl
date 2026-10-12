@@ -1,0 +1,14 @@
+{
+  "cancelar": "Cancelar",
+  "reintentar": "Reintentar",
+  "guardar": "Guardar",
+  "cerrar": "Cerrar",
+  "sistemaNoResponde": "El sistema no responde",
+  "sinConexion": "Sin conexión",
+  "mision_one": "{{count}} misión",
+  "mision_other": "{{count}} misiones",
+  "dia_one": "{{count}} día",
+  "dia_other": "{{count}} días",
+  "xp_one": "{{count, miles}} XP",
+  "xp_other": "{{count, miles}} XP"
+}

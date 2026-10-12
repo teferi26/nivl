@@ -1,3 +1,6 @@
+// Idiomas antes que nada: el init de i18next es síncrono y `t()` tiene que
+// valer desde el primer módulo que lo use (docs/i18n/PLAN-1010.md).
+import { useIdiomaInterfaz } from '@/i18n';
 import { Cinzel_600SemiBold, Cinzel_700Bold } from '@expo-google-fonts/cinzel';
 import { Outfit_500Medium, Outfit_600SemiBold, Outfit_700Bold } from '@expo-google-fonts/outfit';
 import { useFonts } from 'expo-font';
@@ -11,6 +14,7 @@ import { HealthConsentGuard, HealthConsentProvider } from '@/components/Consenti
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { CelebracionProvider } from '@/components/celebracion/CelebracionProvider';
 import { TopeAncho } from '@/design/useSizeClass';
+import { sincronizarIdioma } from '@/i18n/sincronizar';
 import { AuthProvider, useAuth } from '@/lib/auth';
 import { identificarEnTienda } from '@/lib/pro';
 import { registrarDispositivo } from '@/lib/push';
@@ -86,6 +90,15 @@ function ProtectedStack() {
   const userId = session?.user.id ?? null;
   useEffect(() => {
     if (!loading) identificarEnTienda(userId);
+  }, [loading, userId]);
+
+  // El idioma del coach: carga la preferencia del teléfono, decide la de
+  // arranque si no la hay (cuentas que ya existían → es; nuevas → automático)
+  // y deja `profiles.locale` con el idioma efectivo. Tolerante: sin la
+  // columna (migración de Seguridad aún sin aplicar) no escribe nada.
+  useEffect(() => {
+    if (loading || !userId) return;
+    return sincronizarIdioma(userId);
   }, [loading, userId]);
 
   useEffect(() => {
@@ -167,11 +180,16 @@ export default function RootLayout() {
     Outfit_700Bold,
   });
 
+  // El idioma de la interfaz (en 1.0.10, siempre es). Cambiarlo remonta el
+  // árbol entero (`key` de abajo): sin react-i18next y con el React Compiler,
+  // es lo que garantiza que ningún texto se quede en el idioma anterior.
+  const interfaz = useIdiomaInterfaz();
+
   // El HTML de `web.output: single` sale sin idioma: lectores de pantalla y
-  // traductores lo leían como inglés.
+  // traductores lo leían como inglés. El pseudoidioma (xx) se anuncia como es.
   useEffect(() => {
-    if (typeof document !== 'undefined') document.documentElement.lang = 'es';
-  }, []);
+    if (typeof document !== 'undefined') document.documentElement.lang = interfaz === 'xx' ? 'es' : interfaz;
+  }, [interfaz]);
 
   // El portal no se indexa. Con `web.output: single` no hay +html.tsx que
   // valga: la meta se pone al arrancar. La garantía es la cabecera
@@ -198,7 +216,7 @@ export default function RootLayout() {
   }
 
   return (
-    <ErrorBoundary>
+    <ErrorBoundary key={interfaz}>
       <AuthProvider>
         <StatusBar style="light" />
         {SITIO_CREADORES ? (

@@ -1,0 +1,15 @@
+# Cambios de texto a propósito frente a la línea base (scripts/i18n/verificar-es.mjs).
+# <ns> TAB + TAB <texto>: texto nuevo aceptado · <ns> TAB - TAB <texto>: texto que se va a propósito.
+# Tanda 0: el selector «Idioma del coach» de Perfil (PerfilAjustes y HojaIdioma).
+perfil	+	Idioma del coach
+perfil	+	Idioma del coach
+perfil	+	Te habla en
+perfil	+	Automático: sigue al idioma del teléfono.
+perfil	+	Idioma del coach: ${nombreIdioma}${idiomaAuto ? ', automático' : ''}. Cambiar
+perfil	+	, automático
+perfil	+	La interfaz sigue en español.
+perfil	+	Automático
+perfil	+	¿En qué idioma te habla?
+perfil	+	El coach te escribe en este idioma: la conversación, los avisos que prepara y sus informes. La interfaz sigue en español.
+perfil	+	Sigue al teléfono. Si está en un idioma que el coach aún no habla, te escribe en español.
+perfil	+	Cerrar

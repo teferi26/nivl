@@ -14,6 +14,7 @@ import { Version } from '@/components/Version';
 import { Button, Card, Chip, ChipWrap, Row, RowValue, Section, Tag } from '@/components/ui';
 import { Interruptor } from '@/components/ui/Interruptor';
 import { ink, space, type as tipo } from '@/design/tokens';
+import { NOMBRE_IDIOMA, type Idioma, type Preferencia } from '@/i18n';
 import {
   DESCARGO_SALUD,
   LINEA_CRISIS,
@@ -45,6 +46,10 @@ export interface PerfilAjustesProps {
   onCheckout: () => void;
   consent: EstadoConsentimiento | null;
   onConsentimiento: () => void;
+  /** El idioma del coach: lo elegido (null: aún no se sabe) y lo que habla ahora. */
+  idioma: { preferencia: Preferencia | null; coach: Idioma };
+  /** Abre la hoja del idioma (HojaIdioma). */
+  onIdioma: () => void;
   /** Recibe el rectángulo de la fila (ventana) para anclar la hoja en iPad. */
   onExportar: (ancla?: Ancla | null) => void;
   onCerrarSesion: () => void;
@@ -71,6 +76,8 @@ export function PerfilAjustes({
   onCheckout,
   consent,
   onConsentimiento,
+  idioma,
+  onIdioma,
   onExportar,
   onCerrarSesion,
   onBorrar,
@@ -86,6 +93,8 @@ export function PerfilAjustes({
     fila.measureInWindow((x, y, width, height) => onExportar({ x, y, width, height }));
   };
   const sinPermiso = !!avisos && !avisos.permitido;
+  const idiomaAuto = idioma.preferencia === 'auto';
+  const nombreIdioma = NOMBRE_IDIOMA[idioma.coach];
 
   return (
     <>
@@ -223,6 +232,24 @@ export function PerfilAjustes({
           </Card>
         </Section>
       ) : null}
+
+      {/* 1.0.10: solo el coach cambia de idioma; la interfaz sigue en español.
+          En 1.1.0 esta sección pasa a ser «Idioma». */}
+      <Section title="Idioma del coach">
+        <Card padded={false} style={styles.lista}>
+          <Row
+            first
+            leading={<Ionicons name="language-outline" size={20} color={ink.ink9} />}
+            title="Te habla en"
+            detail={idiomaAuto ? 'Automático: sigue al idioma del teléfono.' : undefined}
+            trailing={<RowValue strong>{nombreIdioma}</RowValue>}
+            chevron
+            onPress={onIdioma}
+            accessibilityLabel={`Idioma del coach: ${nombreIdioma}${idiomaAuto ? ', automático' : ''}. Cambiar`}
+          />
+        </Card>
+        <Text style={styles.nota}>La interfaz sigue en español.</Text>
+      </Section>
 
       <Section title="Datos y la IA">
         <Card padded={false} style={styles.lista}>

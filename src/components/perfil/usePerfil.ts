@@ -2,9 +2,9 @@
 //
 // Cortado y pegado de src/app/(tabs)/perfil.tsx sin reescribir: subir el
 // avatar, el nombre, sincronizarRangoDetalle con su celebración, avisos,
-// vibraciones, consentimiento, creadores, pausa y borrar la cuenta. Devuelve
-// `vista` (PerfilVista, pura), `ajustes` (PerfilAjustes) y `hojas` (las tres
-// hojas que pinta la ruta: pausa, código de creador y borrar).
+// vibraciones, consentimiento, creadores, pausa, idioma del coach y borrar la
+// cuenta. Devuelve `vista` (PerfilVista, pura), `ajustes` (PerfilAjustes) y
+// `hojas` (las que pinta la ruta: pausa, código de creador, idioma y borrar).
 
 import * as ImagePicker from 'expo-image-picker';
 import { router, useFocusEffect } from 'expo-router';
@@ -22,6 +22,8 @@ import {
   tituloVigente,
 } from '@/lib/achievements';
 import { useVibraciones, vibrar } from '@/design/haptics';
+import { fijarPreferencia, useIdioma, type Preferencia } from '@/i18n';
+import { asegurarIdiomaPerfil } from '@/i18n/sincronizar';
 import { useAuth } from '@/lib/auth';
 import { cerrarSesion } from '@/lib/authFlow';
 import {
@@ -52,6 +54,7 @@ import {
 import {
   estadoAvisos,
   inicializarAvisos,
+  reprogramarAvisosDelPlan,
   type EstadoAvisos,
 } from '@/lib/notifications';
 import { registrarDispositivo } from '@/lib/push';
@@ -123,6 +126,13 @@ export interface PerfilHojas {
     borrando: boolean;
     confirmar: () => void;
   };
+  idioma: {
+    abierta: boolean;
+    cerrar: () => void;
+    preferencia: Preferencia | null;
+    dispositivo: string | null;
+    elegir: (p: Preferencia) => void;
+  };
 }
 
 export interface UsePerfil {
@@ -183,6 +193,9 @@ export function usePerfil(): UsePerfil {
   const [borrarOpen, setBorrarOpen] = useState(false);
   const [borrando, setBorrando] = useState(false);
   const [avisoBorrar, setAvisoBorrar] = useState<string | null>(null);
+  // El idioma del coach (1.0.10): la preferencia vive en src/i18n.
+  const idioma = useIdioma();
+  const [idiomaOpen, setIdiomaOpen] = useState(false);
 
   const refrescarAvisos = useCallback(() => {
     estadoAvisos().then(setAvisos).catch(() => setAvisos(null));
@@ -413,6 +426,18 @@ export function usePerfil(): UsePerfil {
     }
   };
 
+  // Un toque elige y cierra. Se guarda en el teléfono, se escribe en el perfil
+  // el idioma efectivo (sin la columna de la migración, no pasa nada) y se
+  // reprograman los avisos. Nada de esto puede fallar a la vista.
+  const elegirIdioma = async (p: Preferencia) => {
+    setIdiomaOpen(false);
+    if (p === idioma.preferencia) return;
+    vibrar('seleccion');
+    await fijarPreferencia(p);
+    if (userId) await asegurarIdiomaPerfil(userId);
+    reprogramarAvisosDelPlan();
+  };
+
   const cambiarVibraciones = (v: boolean) => {
     setVibraciones(v);
     if (v) vibrar('seleccion');
@@ -621,6 +646,8 @@ export function usePerfil(): UsePerfil {
         },
         consent,
         onConsentimiento: tocarConsentimiento,
+        idioma: { preferencia: idioma.preferencia, coach: idioma.coach },
+        onIdioma: () => setIdiomaOpen(true),
         onExportar: onExport,
         onCerrarSesion: signOut,
         onBorrar: abrirBorrar,
@@ -663,6 +690,15 @@ export function usePerfil(): UsePerfil {
       esCreador,
       borrando,
       confirmar: confirmarBorrado,
+    },
+    idioma: {
+      abierta: idiomaOpen,
+      cerrar: () => setIdiomaOpen(false),
+      preferencia: idioma.preferencia,
+      dispositivo: idioma.dispositivo,
+      elegir: (p) => {
+        void elegirIdioma(p);
+      },
     },
   };
 

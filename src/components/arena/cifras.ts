@@ -2,7 +2,10 @@
 //
 // `toLocaleString('es-ES')` no agrupa los números de cuatro cifras (1840 sale
 // «1840») y en Hermes depende de Intl: aquí se agrupa a mano con punto, que es
-// lo que se espera leer en un monumento («1.840 XP»).
+// lo que se espera leer en un monumento («1.840 XP»). Desde 1.0.10 lo hace
+// `miles` de @/i18n/formato (igual en es; Intl en el resto de idiomas).
+
+import { miles } from '@/i18n/formato';
 
 /** Cifra vacía: un guion, nunca la raya larga (SISTEMA.md §0). */
 export const CIFRA_VACIA = '-';
@@ -10,16 +13,7 @@ export const CIFRA_VACIA = '-';
 /** 1840 → «1.840»; -12500 → «-12.500». Redondea; un no finito → «-». */
 export function formatoMiles(n: number): string {
   if (!Number.isFinite(n)) return CIFRA_VACIA;
-  const r = Math.round(n);
-  const signo = r < 0 ? '-' : '';
-  const digitos = String(Math.abs(r));
-  let out = '';
-  for (let i = 0; i < digitos.length; i++) {
-    const quedan = digitos.length - i;
-    out += digitos[i];
-    if (quedan > 1 && (quedan - 1) % 3 === 0) out += '.';
-  }
-  return signo + out;
+  return miles(n);
 }
 
 const ROMANOS: [number, string][] = [

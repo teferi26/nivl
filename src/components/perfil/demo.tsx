@@ -13,7 +13,7 @@ import { Screen } from '@/components/ui';
 import type { EstadoAvisos } from '@/lib/notifications';
 import { estadoDe, type RangoId } from '@/lib/progression';
 import type { Profile } from '@/lib/types';
-import { HojaBorrar, HojaCodigo, HojaPausa } from './HojasPerfil';
+import { HojaBorrar, HojaCodigo, HojaIdioma, HojaPausa } from './HojasPerfil';
 import { PerfilAjustes, type PerfilAjustesProps } from './PerfilAjustes';
 import { PerfilVista, type LogroVitrina, type PerfilAcciones, type PerfilDatos } from './PerfilVista';
 
@@ -164,6 +164,8 @@ function ajustesDemo(datos: PerfilDatos, p: Partial<PerfilAjustesProps> = {}): R
       onCheckout={nada}
       consent={null}
       onConsentimiento={nada}
+      idioma={{ preferencia: 'es', coach: 'es' }}
+      onIdioma={nada}
       onExportar={nada}
       onCerrarSesion={nada}
       onBorrar={nada}
@@ -291,6 +293,20 @@ export const DEMO: DemoPantalla | null = {
       render: () => {
         const datos = datosYo();
         return <Pantalla datos={datos} ajustes={ajustesDemo(datos, { avisos: AVISOS_SIN_PERMISO })} />;
+      },
+    },
+    {
+      id: 'ajustes-idioma',
+      titulo: 'Ajustes: idioma del coach (automático, teléfono en inglés)',
+      render: () => {
+        const datos = datosYo();
+        return (
+          <Pantalla
+            datos={datos}
+            ajustes={ajustesDemo(datos, { idioma: { preferencia: 'auto', coach: 'en' } })}
+            hoja={<HojaIdioma abierta cerrar={nada} preferencia="auto" dispositivo="en-US" elegir={nada} />}
+          />
+        );
       },
     },
     {
