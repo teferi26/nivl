@@ -9,6 +9,7 @@
 import { StyleSheet, Text, View } from 'react-native';
 import { Chip, ChipWrap } from '@/components/ui';
 import { ink, space, type as tipo } from '@/design/tokens';
+import { t } from '@/i18n';
 import { EMOCIONES, MAX_EMOCIONES, type Valencia } from '@/lib/journalmath';
 
 interface Props {
@@ -16,9 +17,9 @@ interface Props {
   onChange: (next: string[]) => void;
 }
 
-const FILAS: { valence: Valencia; rotulo: string }[] = [
-  { valence: 'up', rotulo: 'Lo que empuja' },
-  { valence: 'down', rotulo: 'Lo que pesa' },
+const FILAS: { valence: Valencia; rotulo: 'empuja' | 'pesa' }[] = [
+  { valence: 'up', rotulo: 'empuja' },
+  { valence: 'down', rotulo: 'pesa' },
 ];
 
 export function EmotionPicker({ value, onChange }: Props) {
@@ -33,9 +34,9 @@ export function EmotionPicker({ value, onChange }: Props) {
   return (
     <View>
       {FILAS.map((fila) => (
-        <View key={fila.valence} style={styles.fila} accessibilityLabel={fila.rotulo}>
+        <View key={fila.valence} style={styles.fila} accessibilityLabel={t(`diario:emociones.${fila.rotulo}`)}>
           <Text style={styles.rotulo} maxFontSizeMultiplier={1.35}>
-            {fila.rotulo}
+            {t(`diario:emociones.${fila.rotulo}`)}
           </Text>
           <ChipWrap>
             {EMOCIONES.filter((e) => e.valence === fila.valence).map((e) => {
@@ -48,7 +49,7 @@ export function EmotionPicker({ value, onChange }: Props) {
                   selected={marcada}
                   disabled={!marcada && lleno}
                   onPress={() => alternar(e.id)}
-                  accessibilityLabel={`${e.label}, ${marcada ? 'marcada' : 'sin marcar'}`}
+                  accessibilityLabel={t(marcada ? 'diario:emociones.marcadaA11y' : 'diario:emociones.sinMarcarA11y', { emocion: e.label })}
                 />
               );
             })}
@@ -57,8 +58,8 @@ export function EmotionPicker({ value, onChange }: Props) {
       ))}
       <Text style={styles.nota} maxFontSizeMultiplier={1.6}>
         {lleno
-          ? `Tope de ${MAX_EMOCIONES}. Quita una para marcar otra.`
-          : 'Ponle nombre: un 3 no dice nada, «frustrado» sí.'}
+          ? t('diario:emociones.tope', { max: MAX_EMOCIONES })
+          : t('diario:emociones.pista')}
       </Text>
     </View>
   );

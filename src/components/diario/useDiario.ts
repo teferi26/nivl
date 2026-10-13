@@ -10,6 +10,7 @@ import { Linking, Platform, type ScrollView } from 'react-native';
 import { avisar, confirmar } from '@/components/ui/confirmar';
 import { volver } from '@/components/ui/Screen';
 import { vibrar } from '@/design/haptics';
+import { t } from '@/i18n';
 import { evaluateAchievements, unlockAchievements } from '@/lib/achievements';
 import { useAuth } from '@/lib/auth';
 import {
@@ -216,10 +217,10 @@ export function useDiario(): DiarioVistaProps {
     };
     if (!sucioRef.current || next === dia) return ir();
     const descartar = await confirmar({
-      titulo: 'Cambios sin guardar',
-      mensaje: 'Si cambias de día se pierde lo que has escrito.',
-      confirmar: 'Descartar',
-      cancelar: 'Seguir escribiendo',
+      titulo: t('diario:compartido.cambiosSinGuardar'),
+      mensaje: t('diario:hook.cambiarDiaMensaje'),
+      confirmar: t('diario:hook.descartar'),
+      cancelar: t('diario:hook.seguirEscribiendo'),
       destructivo: true,
     });
     if (descartar) ir();
@@ -229,10 +230,10 @@ export function useDiario(): DiarioVistaProps {
     if (!userId || saving.current) return;
     const perm = await ImagePicker.requestCameraPermissionsAsync();
     if (!perm.granted) {
-      const mensaje = 'El sistema necesita la cámara para los comprobantes del diario.';
+      const mensaje = t('diario:hook.camaraMensaje');
       if (Platform.OS === 'web') {
-        avisar('Sin cámara', mensaje);
-      } else if (await confirmar({ titulo: 'Sin cámara', mensaje, confirmar: 'Abrir ajustes' })) {
+        avisar(t('comun:sinCamara'), mensaje);
+      } else if (await confirmar({ titulo: t('comun:sinCamara'), mensaje, confirmar: t('comun:abrirAjustes') })) {
         Linking.openSettings().catch(() => {});
       }
       return;
@@ -253,7 +254,7 @@ export function useDiario(): DiarioVistaProps {
       vibrar('misionExtra');
       loadArchivo();
     } catch (e) {
-      avisar('El sistema no responde', mensajeSistema(e));
+      avisar(t('comun:sistemaNoResponde'), mensajeSistema(e));
     } finally {
       saving.current = false;
     }
@@ -261,9 +262,9 @@ export function useDiario(): DiarioVistaProps {
 
   const removePhoto = async (item: FotoDiario) => {
     const ok = await confirmar({
-      titulo: 'Eliminar comprobante',
-      mensaje: '¿Borrar esta foto del diario?',
-      confirmar: 'Eliminar',
+      titulo: t('diario:compartido.eliminarComprobante'),
+      mensaje: t('diario:hook.borrarFoto'),
+      confirmar: t('comun:eliminar'),
       destructivo: true,
     });
     if (!ok) return;
@@ -275,7 +276,7 @@ export function useDiario(): DiarioVistaProps {
       vibrar('destructiva');
       loadArchivo();
     } catch (e) {
-      avisar('El sistema no responde', mensajeSistema(e));
+      avisar(t('comun:sistemaNoResponde'), mensajeSistema(e));
     }
   };
 
@@ -315,8 +316,8 @@ export function useDiario(): DiarioVistaProps {
     if (entradaVacia(borrador)) {
       setAviso(
         photos.length > 0
-          ? 'Tus fotos ya están guardadas. Para registrar el día, responde al menos una pregunta.'
-          : 'Aún no hay nada que registrar. Responde al menos una pregunta; las demás pueden esperar.',
+          ? t('diario:hook.vacioConFotos')
+          : t('diario:hook.vacio'),
       );
       return;
     }
@@ -344,30 +345,33 @@ export function useDiario(): DiarioVistaProps {
         // (+15 en el aviso frente a +10 en la misión era 10 + 5 sin decirlo).
         const desglose = desgloseXp([
           { xp: eco?.xp ?? 0, de: deMisiones(eco?.marcadas ?? []) },
-          { xp: resto, de: 'a PER por el diario' },
+          { xp: resto, de: t('diario:hook.desglosePer') },
         ]);
         const total = await countEntries();
         const fresh = await unlockAchievements(userId, evaluateAchievements({ journalCount: total }));
         // Guardar con XP (FASE3, tabla de vibraciones).
         vibrar('mision');
+        const cuerpo = desglose || t('diario:hook.yaPagada');
         avisar(
-          'Entrada registrada',
-          `${desglose || 'La misión del diario ya estaba marcada y pagada.'}${fresh.length > 0 ? `\nLogro: ${fresh.map((a) => a.name).join(', ')}` : ''}`,
+          t('diario:hook.registradaTitulo'),
+          fresh.length > 0
+            ? t('diario:hook.registradaConLogro', { desglose: cuerpo, logros: fresh.map((a) => a.name).join(', ') })
+            : cuerpo,
         );
       }
       // Guardar sin XP no vibra (FASE3): ni el día atrasado ni los cambios.
       if (isNew && !(dia === dateKey() || dia === addDays(dateKey(), -1))) {
-        avisar('Entrada registrada', 'Día completado en tu archivo. Sin XP: solo lo paga el día en caliente.');
+        avisar(t('diario:hook.registradaTitulo'), t('diario:hook.atrasada'));
       }
       if (!isNew) {
-        setAviso('Cambios guardados.');
+        setAviso(t('diario:hook.cambiosGuardados'));
       }
       setRegistrado(true);
       await Promise.all([loadDia(), loadArchivo()]);
     } catch (e) {
       // Fallo de la acción principal: en línea, sobre el botón, y con su vibración.
       vibrar('penalizacion');
-      setErrorGuardado(`${mensajeSistema(e)} Tus respuestas siguen aquí.`);
+      setErrorGuardado(t('diario:hook.errorGuardado', { error: mensajeSistema(e) }));
     } finally {
       saving.current = false;
       setBusy(false);

@@ -17,19 +17,25 @@ import { StyleSheet, Text, View } from 'react-native';
 import { Campo, ErrorSistema } from '@/components/arena';
 import { Button, Chip, ChipWrap, Sheet } from '@/components/ui';
 import { ink, space, type as tipo } from '@/design/tokens';
+import { t } from '@/i18n';
 import { addDays, fechaConAnio } from '@/lib/dates';
 import { RULE_BREAK_XP } from '@/lib/game';
 
 export interface OpcionApertura {
-  label: string;
+  anios: number;
   days: number;
 }
 
 export const OPCIONES_APERTURA: readonly OpcionApertura[] = [
-  { label: '1 año', days: 365 },
-  { label: '3 años', days: 365 * 3 },
-  { label: '5 años', days: 365 * 5 },
+  { anios: 1, days: 365 },
+  { anios: 3, days: 365 * 3 },
+  { anios: 5, days: 365 * 5 },
 ];
+
+/** «1 año», «3 años», «5 años». */
+export function etiquetaApertura(o: OpcionApertura): string {
+  return t('contrato:hojas.anios', { count: o.anios });
+}
 
 export interface HojaNormaProps {
   visible: boolean;
@@ -70,39 +76,39 @@ export function HojaNorma({
     <Sheet
       visible={visible}
       onClose={onCerrar}
-      eyebrow={editar ? 'Editar norma' : 'Nueva norma'}
-      title={editar ? 'Ajusta lo que firmaste' : '¿Qué te prohíbes?'}
+      eyebrow={editar ? t('contrato:hojas.norma.eyebrowEditar') : t('contrato:hojas.norma.eyebrowNueva')}
+      title={editar ? t('contrato:hojas.norma.tituloEditar') : t('contrato:hojas.norma.tituloNueva')}
       footer={
         <>
           <Button
-            title={editar ? 'Guardar cambios' : 'Firmar la norma'}
+            title={editar ? t('comun:guardarCambios') : t('contrato:hojas.norma.firmar')}
             onPress={onGuardar}
             loading={guardando}
             disabled={!lista}
           />
-          <Button title="Cancelar" variant="ghost" onPress={onCerrar} />
+          <Button title={t('comun:cancelar')} variant="ghost" onPress={onCerrar} />
         </>
       }
     >
       <View style={styles.pila}>
         <Campo
-          etiqueta="La norma"
+          etiqueta={t('contrato:hojas.norma.etiqueta')}
           value={texto}
           onChangeText={onTexto}
-          placeholder="Ej. Nada de redes sociales antes de las 12"
-          accessibilityLabel="Texto de la norma"
+          placeholder={t('contrato:hojas.norma.placeholder')}
+          accessibilityLabel={t('contrato:hojas.norma.a11y')}
           autoFocus
         />
         <Campo
-          etiqueta="Consecuencia si la rompes"
+          etiqueta={t('contrato:hojas.norma.consecuenciaEtiqueta')}
           value={consecuencia}
           onChangeText={onConsecuencia}
-          placeholder="Ej. Correr 5 km"
-          accessibilityLabel="Consecuencia de romper la norma"
+          placeholder={t('contrato:hojas.norma.consecuenciaPlaceholder')}
+          accessibilityLabel={t('contrato:hojas.norma.consecuenciaA11y')}
           ayuda={
             editar
-              ? `Rige desde hoy. La versión anterior se archiva con sus roturas. Romperla cuesta −${RULE_BREAK_XP} XP.`
-              : `Romperla cuesta −${RULE_BREAK_XP} XP. Cumplir la consecuencia el mismo día lo recupera.`
+              ? t('contrato:hojas.norma.ayudaEditar', { xp: RULE_BREAK_XP })
+              : t('contrato:hojas.norma.ayudaNueva', { xp: RULE_BREAK_XP })
           }
         />
         {error ? <ErrorSistema compacto mensaje={error} /> : null}
@@ -140,42 +146,42 @@ export function HojaCarta({
     <Sheet
       visible={visible}
       onClose={onCerrar}
-      eyebrow="Para tu yo del futuro"
-      title="Escríbele a quien serás"
+      eyebrow={t('contrato:hojas.carta.eyebrow')}
+      title={t('contrato:hojas.carta.titulo')}
       footer={
         <>
-          <Button title="Sellar la carta" onPress={onSellar} loading={sellando} disabled={!cuerpo.trim()} />
-          <Button title="Cancelar" variant="ghost" onPress={onCerrar} />
+          <Button title={t('contrato:hojas.carta.sellar')} onPress={onSellar} loading={sellando} disabled={!cuerpo.trim()} />
+          <Button title={t('comun:cancelar')} variant="ghost" onPress={onCerrar} />
         </>
       }
     >
       <View style={styles.pila}>
         <Campo
-          etiqueta="La carta"
+          etiqueta={t('contrato:hojas.carta.etiqueta')}
           value={cuerpo}
           onChangeText={onCuerpo}
-          placeholder="No sé cómo estarás, ni en qué situación…"
+          placeholder={t('contrato:hojas.carta.placeholder')}
           multiline
-          accessibilityLabel="Cuerpo de la carta"
+          accessibilityLabel={t('contrato:hojas.carta.a11y')}
           style={styles.carta}
         />
         <View style={styles.grupo}>
           <Text style={styles.etiqueta} maxFontSizeMultiplier={1.35}>
-            Se abrirá dentro de
+            {t('contrato:hojas.carta.dentroDe')}
           </Text>
           <ChipWrap>
             {OPCIONES_APERTURA.map((o) => (
               <Chip
-                key={o.label}
-                label={o.label}
-                selected={opcion.label === o.label}
+                key={o.days}
+                label={etiquetaApertura(o)}
+                selected={opcion.days === o.days}
                 onPress={() => onOpcion(o)}
-                accessibilityLabel={`Abrir dentro de ${o.label}`}
+                accessibilityLabel={t('contrato:hojas.carta.dentroDeA11y', { plazo: etiquetaApertura(o) })}
               />
             ))}
           </ChipWrap>
           <Text style={styles.ayuda} maxFontSizeMultiplier={1.35}>
-            Se abrirá el {fechaConAnio(addDays(hoy, opcion.days))}. Nadie podrá leerla antes, ni tú.
+            {t('contrato:hojas.carta.seAbrira', { fecha: fechaConAnio(addDays(hoy, opcion.days)) })}
           </Text>
         </View>
         {error ? <ErrorSistema compacto mensaje={error} /> : null}

@@ -51,6 +51,7 @@ import { Button, Chip, Screen } from '@/components/ui';
 import { useTecladoAbierto } from '@/components/ui/useTecladoAbierto';
 import { ink, space, stroke, type as tipo } from '@/design/tokens';
 import { useSizeClass } from '@/design/useSizeClass';
+import { t } from '@/i18n';
 import { addDays, nombreDia, relativoDe } from '@/lib/dates';
 import type { Completitud, SeccionId } from '@/lib/journalmath';
 import type { JournalEntry, JournalPhoto } from '@/lib/types';
@@ -145,9 +146,14 @@ export interface DiarioVistaProps {
   };
 }
 
-const MOOD_LABELS = ['Hundido', 'Bajo', 'Normal', 'Bien', 'Imparable'];
-const ENERGY_LABELS = ['Vacío', 'Poca', 'Normal', 'Alta', 'A tope'];
-const ESCALA = [1, 2, 3, 4, 5];
+const ESCALA = [1, 2, 3, 4, 5] as const;
+type Nota = (typeof ESCALA)[number];
+type TipoEscala = 'animo' | 'energia';
+
+/** La palabra de una nota: «Hundido» … «Imparable», «Vacío» … «A tope». */
+function etiquetaNota(tipo: TipoEscala, n: Nota): string {
+  return t(`diario:vista.${tipo}.n${n}`);
+}
 /** La escritura no pasa de aquí, ni en iPad ni en la web. */
 const ANCHO_ESCRITURA = 640;
 const BOTON = 44;
@@ -157,14 +163,13 @@ const FOTO = 76;
 function Escala({
   valor,
   onChange,
-  etiquetas,
-  nombre,
+  tipo,
 }: {
   valor: number | null;
   onChange: (n: number | null) => void;
-  etiquetas: string[];
-  nombre: string;
+  tipo: TipoEscala;
 }) {
+  const nombre = t(`diario:compartido.${tipo}`);
   return (
     <View style={styles.escalaBloque}>
       <View style={styles.escalaCabecera}>
@@ -172,7 +177,7 @@ function Escala({
           {nombre}
         </Text>
         <Text style={styles.escalaTexto} maxFontSizeMultiplier={1.35}>
-          {valor === null ? 'Sin puntuar' : etiquetas[valor - 1]}
+          {valor === null ? t('diario:vista.sinPuntuar') : etiquetaNota(tipo, valor as Nota)}
         </Text>
       </View>
       <View style={styles.escala} accessibilityRole="radiogroup" accessibilityLabel={nombre}>
@@ -185,7 +190,7 @@ function Escala({
             // El Chip ya vibra al elegir (Lote 0): aquí no se vuelve a vibrar.
             onPress={() => onChange(valor === n ? null : n)}
             style={styles.escalaChip}
-            accessibilityLabel={`${nombre} ${n} de 5: ${etiquetas[n - 1]}`}
+            accessibilityLabel={t('diario:vista.escalaA11y', { nombre, n, etiqueta: etiquetaNota(tipo, n) })}
           />
         ))}
       </View>
@@ -210,22 +215,26 @@ function EstadoDia({
   total: number;
 }) {
   const variante: VarianteArena = sucio ? 'trama' : registrado ? 'grano' : 'contorno';
-  const rotulo = sucio ? 'Cambios sin guardar' : registrado ? 'Registrado' : 'Sin registrar';
-  const linea = sucio
-    ? 'Lo que has cambiado aún no está guardado.'
+  const rotulo = sucio
+    ? t('diario:compartido.cambiosSinGuardar')
     : registrado
-      ? 'Ya está en tu archivo. Puedes corregirlo cuando quieras.'
-      : 'El cierre del día. Siete preguntas cortas; los comprobantes se guardan solos.';
+      ? t('diario:vista.registrado')
+      : t('diario:compartido.sinRegistrar');
+  const linea = sucio
+    ? t('diario:vista.lineaSucio')
+    : registrado
+      ? t('diario:vista.lineaRegistrado')
+      : t('diario:vista.lineaSinRegistrar');
   return (
-    <TarjetaArena variante={variante} rotulo={rotulo} meta={enCaliente && !registrado ? `hasta +${xp} XP` : undefined}>
+    <TarjetaArena variante={variante} rotulo={rotulo} meta={enCaliente && !registrado ? t('diario:vista.hastaXp', { xp }) : undefined}>
       <Barra
         ratio={total > 0 ? hechas / total : 0}
         alto={4}
         segmentos={total}
-        etiqueta={`${hechas} de ${total} preguntas respondidas`}
+        etiqueta={t('diario:vista.barraA11y', { hechas, total })}
       />
       <Text style={styles.respondidas} maxFontSizeMultiplier={1.35}>
-        {hechas} de {total} respondidas
+        {t('diario:vista.respondidas', { hechas, total })}
       </Text>
       <Text style={styles.estadoTexto} maxFontSizeMultiplier={1.6}>
         {linea}
@@ -303,17 +312,17 @@ export function DiarioVista({
             {escribiendo ? (
               <EncabezadoArena
                 onVolver={acciones.onVolver}
-                eyebrow={`Mente · ${relativoDe(dia, hoy)}`}
-                titulo="Diario"
-                accion={{ icono: 'library-outline', etiqueta: 'Archivo', onPress: () => acciones.onSegmento('archivo') }}
+                eyebrow={t('diario:vista.eyebrowEscribir', { relativo: relativoDe(dia, hoy) })}
+                titulo={t('diario:vista.titulo')}
+                accion={{ icono: 'library-outline', etiqueta: t('diario:vista.archivo'), onPress: () => acciones.onSegmento('archivo') }}
               />
             ) : (
               <EncabezadoArena
                 onVolver={acciones.onVolver}
-                eyebrow="Mente · Archivo"
-                titulo="Archivo"
-                subtitulo="Lo que has vivido, día a día."
-                accion={{ icono: 'create-outline', etiqueta: 'Escribir el día', onPress: () => acciones.onSegmento('escribir') }}
+                eyebrow={t('diario:vista.eyebrowArchivo')}
+                titulo={t('diario:vista.archivo')}
+                subtitulo={t('diario:vista.subtituloArchivo')}
+                accion={{ icono: 'create-outline', etiqueta: t('diario:vista.escribirDia'), onPress: () => acciones.onSegmento('escribir') }}
               />
             )}
           </Entrada>
@@ -340,7 +349,7 @@ export function DiarioVista({
                   onPress={() => irADia(addDays(dia, -1))}
                   style={({ pressed }) => [styles.navBoton, pressed && styles.pulsado]}
                   accessibilityRole="button"
-                  accessibilityLabel="Día anterior"
+                  accessibilityLabel={t('diario:vista.diaAnterior')}
                 >
                   <Ionicons name="chevron-back" size={20} color={ink.ink9} />
                 </Pressable>
@@ -352,7 +361,7 @@ export function DiarioVista({
                   disabled={esHoy}
                   style={({ pressed }) => [styles.navBoton, esHoy && styles.navOff, pressed && styles.pulsado]}
                   accessibilityRole="button"
-                  accessibilityLabel="Día siguiente"
+                  accessibilityLabel={t('diario:vista.diaSiguiente')}
                   accessibilityState={{ disabled: esHoy }}
                 >
                   <Ionicons name="chevron-forward" size={20} color={esHoy ? ink.ink4 : ink.ink9} />
@@ -363,7 +372,7 @@ export function DiarioVista({
                 // Sin el día no hay formulario: guardar uno en blanco pisaría la entrada.
                 <ErrorSistema mensaje={errorCarga} onReintentar={acciones.onReintentarCarga} />
               ) : !cargado ? (
-                <CargaArena etiqueta="Cargando el día" formas={['tarjeta', 'rotulo', 'filas', 'rotulo', 'filas']} />
+                <CargaArena etiqueta={t('diario:vista.cargandoDia')} formas={['tarjeta', 'rotulo', 'filas', 'rotulo', 'filas']} />
               ) : (
                 // La clave remonta el formulario al cambiar de día: ninguna fila de
                 // victorias ni foco se hereda del día anterior.
@@ -382,15 +391,21 @@ export function DiarioVista({
                   </Entrada>
 
                   <Entrada indice={2}>
-                    <Pregunta numeral="I" title="Cómo me sentí" hint="Dos notas y, sobre todo, un nombre." done={lista('sentir')} primera>
-                      <Escala valor={mood} etiquetas={MOOD_LABELS} nombre="Ánimo" onChange={acciones.onMood} />
-                      <Escala valor={energy} etiquetas={ENERGY_LABELS} nombre="Energía" onChange={acciones.onEnergy} />
+                    <Pregunta
+                      numeral="I"
+                      title={t('diario:vista.sentir.titulo')}
+                      hint={t('diario:vista.sentir.pista')}
+                      done={lista('sentir')}
+                      primera
+                    >
+                      <Escala valor={mood} tipo="animo" onChange={acciones.onMood} />
+                      <Escala valor={energy} tipo="energia" onChange={acciones.onEnergy} />
                       <EmotionPicker value={emotions} onChange={acciones.onEmotions} />
                     </Pregunta>
                   </Entrada>
 
                   <Entrada indice={3}>
-                    <Pregunta numeral="II" title="Cómo dormí" hint="El sueño es lo primero que mira el coach." done={lista('sueno')}>
+                    <Pregunta numeral="II" title={t('diario:vista.sueno.titulo')} hint={t('diario:vista.sueno.pista')} done={lista('sueno')}>
                       <SleepStepper value={sleep} onChange={acciones.onSleep} />
                     </Pregunta>
                   </Entrada>
@@ -398,76 +413,81 @@ export function DiarioVista({
                   {/* De aquí abajo hay campos de texto: sin Entrada. */}
                   <Pregunta
                     numeral="III"
-                    title="Qué logré"
-                    hint="Victorias del día. Una por línea, por pequeña que sea."
+                    title={t('diario:vista.victorias.titulo')}
+                    hint={t('diario:vista.victorias.pista')}
                     done={lista('victorias')}
                   >
                     <WinsEditor value={wins} onChange={acciones.onWins} />
                     <Text style={styles.subrotulo} maxFontSizeMultiplier={1.35}>
-                      Lo que registró el sistema
+                      {t('diario:vista.victorias.sistema')}
                     </Text>
                     <Cronica lineas={cronica} reclamadas={reclamadas} cabenMas={cabenMas} onReclamar={acciones.onReclamar} />
                   </Pregunta>
 
-                  <Pregunta numeral="IV" title="Lo vivido" hint={pista} done={lista('vivido')}>
+                  <Pregunta numeral="IV" title={t('diario:vista.vivido.titulo')} hint={pista} done={lista('vivido')}>
                     <Campo
-                      etiqueta="En tus palabras"
+                      etiqueta={t('diario:vista.vivido.etiqueta')}
                       value={text}
                       onChangeText={acciones.onText}
-                      placeholder="Lo que pasó, tal como lo contarías."
+                      placeholder={t('diario:vista.vivido.placeholder')}
                       multiline
                       scrollEnabled={false}
                       style={styles.largo}
-                      accessibilityLabel="Lo vivido"
+                      accessibilityLabel={t('diario:vista.vivido.titulo')}
                     />
                   </Pregunta>
 
-                  <Pregunta numeral="V" title="Qué aprendí" hint="Una lección. Lo que harías distinto." done={lista('leccion')}>
+                  <Pregunta numeral="V" title={t('diario:vista.leccion.titulo')} hint={t('diario:vista.leccion.pista')} done={lista('leccion')}>
                     <Campo
-                      etiqueta="La lección"
+                      etiqueta={t('diario:vista.leccion.etiqueta')}
                       value={lesson}
                       onChangeText={acciones.onLesson}
-                      placeholder="La próxima vez…"
+                      placeholder={t('diario:vista.leccion.placeholder')}
                       multiline
                       scrollEnabled={false}
                       maxLength={600}
-                      accessibilityLabel="Qué aprendí"
+                      accessibilityLabel={t('diario:vista.leccion.titulo')}
                     />
                   </Pregunta>
 
-                  <Pregunta numeral="VI" title="Qué agradezco" hint="Una línea. Opcional, como todo." done={lista('gratitud')}>
+                  <Pregunta
+                    numeral="VI"
+                    title={t('diario:vista.gratitud.titulo')}
+                    hint={t('diario:vista.gratitud.pista')}
+                    done={lista('gratitud')}
+                  >
                     <Campo
-                      etiqueta="A quién o a qué"
+                      etiqueta={t('diario:vista.gratitud.etiqueta')}
                       value={gratitude}
                       onChangeText={acciones.onGratitude}
-                      placeholder="Una línea"
+                      placeholder={t('diario:vista.gratitud.placeholder')}
                       maxLength={240}
                       returnKeyType="done"
-                      accessibilityLabel="Qué agradezco"
+                      accessibilityLabel={t('diario:vista.gratitud.titulo')}
                     />
                   </Pregunta>
 
                   <Pregunta
                     numeral="VII"
-                    title="Mañana, lo primero"
-                    hint="Una sola cosa, con hora si puedes. El plan entero lo escribe el coach."
+                    title={t('diario:vista.manana.titulo')}
+                    hint={t('diario:vista.manana.pista')}
                     done={lista('manana')}
                   >
                     <Campo
-                      etiqueta="Lo primero"
+                      etiqueta={t('diario:vista.manana.etiqueta')}
                       value={plan}
                       onChangeText={acciones.onPlan}
-                      placeholder="A las 8:00, …"
+                      placeholder={t('diario:vista.manana.placeholder')}
                       maxLength={240}
                       returnKeyType="done"
-                      accessibilityLabel="Mañana, lo primero"
+                      accessibilityLabel={t('diario:vista.manana.titulo')}
                     />
                   </Pregunta>
 
                   <Pregunta
                     numeral="VIII"
-                    title="Comprobantes"
-                    hint="Fotos hechas en el momento: la prueba de que cumples tus propias normas. Se guardan al hacerlas."
+                    title={t('diario:vista.comprobantes.titulo')}
+                    hint={t('diario:vista.comprobantes.pista')}
                     done={fotos.length > 0}
                   >
                     <View style={styles.fotos}>
@@ -477,9 +497,9 @@ export function DiarioVista({
                             onLongPress={() => acciones.onQuitarFoto(item)}
                             style={({ pressed }) => pressed && styles.pulsado}
                             accessibilityRole="imagebutton"
-                            accessibilityLabel="Comprobante del diario; mantén pulsado para eliminar"
+                            accessibilityLabel={t('diario:vista.comprobantes.fotoA11y')}
                             // Lectores de pantalla: borrar sin depender de la pulsación larga.
-                            accessibilityActions={[{ name: 'delete', label: 'Eliminar comprobante' }]}
+                            accessibilityActions={[{ name: 'delete', label: t('diario:compartido.eliminarComprobante') }]}
                             onAccessibilityAction={(e) => {
                               if (e.nativeEvent.actionName === 'delete') acciones.onQuitarFoto(item);
                             }}
@@ -496,7 +516,7 @@ export function DiarioVista({
                               onPress={() => acciones.onQuitarFoto(item)}
                               style={({ pressed }) => [styles.fotoQuitar, pressed && styles.pulsado]}
                               accessibilityRole="button"
-                              accessibilityLabel="Eliminar comprobante"
+                              accessibilityLabel={t('diario:compartido.eliminarComprobante')}
                             >
                               <View style={styles.fotoQuitarMarca}>
                                 <Ionicons name="close" size={14} color={ink.ink10} />
@@ -509,7 +529,7 @@ export function DiarioVista({
                         onPress={acciones.onAnadirFoto}
                         style={({ pressed }) => [styles.foto, styles.fotoNueva, pressed && styles.pulsado]}
                         accessibilityRole="button"
-                        accessibilityLabel="Añadir foto comprobante con la cámara"
+                        accessibilityLabel={t('diario:vista.comprobantes.anadirA11y')}
                       >
                         <Ionicons name="camera-outline" size={22} color={ink.ink9} />
                       </Pressable>
@@ -517,8 +537,8 @@ export function DiarioVista({
                     {fotos.length > 0 ? (
                       <Text style={styles.nota} maxFontSizeMultiplier={1.6}>
                         {Platform.OS === 'web'
-                          ? 'Toca la x de una foto para eliminarla.'
-                          : 'Mantén pulsada una foto para eliminarla.'}
+                          ? t('diario:vista.comprobantes.notaWeb')
+                          : t('diario:vista.comprobantes.notaMovil')}
                       </Text>
                     ) : null}
                   </Pregunta>
@@ -534,18 +554,24 @@ export function DiarioVista({
           <View style={[styles.pie, { paddingBottom: space.s3 + fondoSeguro }]}>
             <View style={[styles.pieDentro, { maxWidth: ANCHO_ESCRITURA + 2 * gutter, paddingHorizontal: gutter }]}>
               {errorGuardado ? (
-                <ErrorSistema compacto rotulo="No se ha guardado" mensaje={errorGuardado} style={styles.pieAviso} />
+                <ErrorSistema compacto rotulo={t('diario:vista.noGuardado')} mensaje={errorGuardado} style={styles.pieAviso} />
               ) : aviso ? (
                 <Text style={[styles.aviso, styles.pieAviso]} accessibilityLiveRegion="polite" maxFontSizeMultiplier={1.6}>
                   {aviso}
                 </Text>
               ) : sucio ? (
                 <Text style={[styles.aviso, styles.pieAviso]} maxFontSizeMultiplier={1.6}>
-                  Hay cambios sin guardar.
+                  {t('diario:vista.hayCambios')}
                 </Text>
               ) : null}
               <Button
-                title={registrado ? 'Guardar cambios' : enCaliente ? `Registrar el día · hasta +${xp} XP` : 'Registrar el día'}
+                title={
+                  registrado
+                    ? t('comun:guardarCambios')
+                    : enCaliente
+                      ? t('diario:vista.registrarXp', { xp })
+                      : t('diario:vista.registrar')
+                }
                 onPress={acciones.onGuardar}
                 loading={ocupado}
                 size="lg"

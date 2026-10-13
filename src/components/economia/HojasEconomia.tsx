@@ -15,6 +15,8 @@ import { StyleSheet, Text, View } from 'react-native';
 import { Campo, ErrorSistema } from '@/components/arena';
 import { Button, Chip, ChipWrap, Sheet } from '@/components/ui';
 import { ink, space, type as tipo } from '@/design/tokens';
+import { t } from '@/i18n';
+import { decimal } from '@/i18n/formato';
 import { CATEGORIAS, NOMBRE_CATEGORIA, type Categoria, type Transaction } from '@/lib/money';
 import { eurSigno } from './formato';
 
@@ -39,9 +41,9 @@ export function HojaClasificar({ movimiento, error, aplicando = null, onElegir, 
     <Sheet
       visible={movimiento !== null}
       onClose={onCerrar}
-      eyebrow="Clasificar"
-      title="¿Qué fue esto?"
-      footer={<Button title="Cancelar" variant="ghost" onPress={onCerrar} />}
+      eyebrow={t('economia:hojas.clasificar.eyebrow')}
+      title={t('economia:hojas.clasificar.titulo')}
+      footer={<Button title={t('comun:cancelar')} variant="ghost" onPress={onCerrar} />}
     >
       <View style={styles.pila}>
         {m ? (
@@ -65,7 +67,7 @@ export function HojaClasificar({ movimiento, error, aplicando = null, onElegir, 
               onPress={() => {
                 if (!aplicando) onElegir(c);
               }}
-              accessibilityLabel={`Clasificar como ${NOMBRE_CATEGORIA[c] ?? c}`}
+              accessibilityLabel={t('economia:hojas.clasificar.comoA11y', { categoria: NOMBRE_CATEGORIA[c] ?? c })}
             />
           ))}
         </ChipWrap>
@@ -113,40 +115,40 @@ export function HojaEfectivo({
     <Sheet
       visible={visible}
       onClose={onCerrar}
-      eyebrow="En efectivo"
-      title="Lo que el banco no ve"
+      eyebrow={t('economia:hojas.efectivo.eyebrow')}
+      title={t('economia:hojas.efectivo.titulo')}
       footer={
         <>
-          <Button title="Registrar" onPress={onGuardar} loading={guardando} />
-          <Button title="Cancelar" variant="ghost" onPress={onCerrar} />
+          <Button title={t('economia:hojas.efectivo.registrar')} onPress={onGuardar} loading={guardando} />
+          <Button title={t('comun:cancelar')} variant="ghost" onPress={onCerrar} />
         </>
       }
     >
       <View style={styles.pila}>
         <Text style={styles.sub} maxFontSizeMultiplier={1.35}>
-          Negativo si es gasto, positivo si es un cobro en mano.
+          {t('economia:hojas.efectivo.sub')}
         </Text>
         <Campo
-          etiqueta="Importe"
+          etiqueta={t('economia:hojas.efectivo.importe')}
           value={importe}
           onChangeText={onImporte}
-          placeholder="-25,00"
+          placeholder={decimal(-25, 2)}
           keyboardType="numbers-and-punctuation"
-          accessibilityLabel="Importe en euros"
+          accessibilityLabel={t('economia:hojas.efectivo.importeA11y')}
           error={errorImporte}
           autoFocus
         />
         <Campo
-          etiqueta="Concepto"
+          etiqueta={t('economia:hojas.efectivo.concepto')}
           value={concepto}
           onChangeText={onConcepto}
-          placeholder="Qué fue"
-          accessibilityLabel="Concepto"
+          placeholder={t('economia:hojas.efectivo.conceptoPlaceholder')}
+          accessibilityLabel={t('economia:hojas.efectivo.concepto')}
           error={errorConcepto}
         />
         <View style={styles.grupo}>
           <Text style={styles.etiqueta} maxFontSizeMultiplier={1.35}>
-            Categoría
+            {t('economia:hojas.efectivo.categoria')}
           </Text>
           <ChipWrap>
             {CATEGORIAS_ELEGIBLES.map((c) => (
@@ -155,7 +157,7 @@ export function HojaEfectivo({
                 label={NOMBRE_CATEGORIA[c] ?? c}
                 selected={categoria === c}
                 onPress={() => onCategoria(c)}
-                accessibilityLabel={`Categoría ${NOMBRE_CATEGORIA[c] ?? c}`}
+                accessibilityLabel={t('economia:hojas.efectivo.categoriaA11y', { categoria: NOMBRE_CATEGORIA[c] ?? c })}
               />
             ))}
           </ChipWrap>

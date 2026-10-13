@@ -13,6 +13,7 @@ import { CargaArena, Entrada, ErrorSistema, FranjaCifras, TarjetaArena } from '@
 import { Button, EmptyState, Section } from '@/components/ui';
 import { ink, space, stroke } from '@/design/tokens';
 import { useSizeClass } from '@/design/useSizeClass';
+import { t } from '@/i18n';
 import { flashbacks, resumenTendencia, serieDe } from '@/lib/journalmath';
 import type { JournalEntry } from '@/lib/types';
 import { EntryCard } from './EntryCard';
@@ -56,7 +57,7 @@ export function Archivo({ loaded, hoy, entries, recuerdos, photoCounts, loadPhot
   const faltaHoy = !entries.some((e) => e.date === hoy);
 
   if (!loaded) {
-    return <CargaArena etiqueta="Cargando tu archivo" formas={['franja', 'tarjeta', 'rotulo', 'filas']} />;
+    return <CargaArena etiqueta={t('diario:archivo.cargando')} formas={['franja', 'tarjeta', 'rotulo', 'filas']} />;
   }
 
   if (error && entries.length === 0) {
@@ -73,9 +74,9 @@ export function Archivo({ loaded, hoy, entries, recuerdos, photoCounts, loadPhot
         <TarjetaArena variante="contorno" remaches padded={false}>
           <EmptyState
             icon="book-outline"
-            title="Tu archivo empieza hoy"
-            body="Cada día que cierres quedará aquí: cómo estabas, qué lograste, qué aprendiste. Dentro de un año querrás leerlo."
-            action={{ label: 'Escribir hoy', onPress: onWriteToday, variant: 'solid' }}
+            title={t('diario:archivo.vacioTitulo')}
+            body={t('diario:archivo.vacioCuerpo')}
+            action={{ label: t('diario:archivo.escribirHoy'), onPress: onWriteToday, variant: 'solid' }}
           />
         </TarjetaArena>
       </Entrada>
@@ -85,14 +86,14 @@ export function Archivo({ loaded, hoy, entries, recuerdos, photoCounts, loadPhot
   const tendencia = (
     <>
       {recuerdosDeHoy.length > 0 ? <Flashbacks items={recuerdosDeHoy} onOpen={onOpen} /> : null}
-      <Section title="Tendencia" meta={`Últimas ${Math.min(entries.length, 30)}`}>
+      <Section title={t('diario:archivo.tendencia')} meta={t('diario:archivo.ultimas', { n: Math.min(entries.length, 30) })}>
         <MoodTrend resumen={resumen} animo={animo} energia={energia} />
       </Section>
     </>
   );
 
   const dias = (
-    <Section title="Días escritos" meta={`${entries.length}`}>
+    <Section title={t('diario:archivo.diasEscritos')} meta={`${entries.length}`}>
       {entries.slice(0, visibles).map((entry, i) => (
         <EntryCard
           key={entry.id}
@@ -107,7 +108,7 @@ export function Archivo({ loaded, hoy, entries, recuerdos, photoCounts, loadPhot
       ))}
       {visibles < entries.length ? (
         <Button
-          title="Ver más días"
+          title={t('diario:archivo.verMas')}
           variant="secondary"
           size="sm"
           icon="chevron-down"
@@ -129,7 +130,7 @@ export function Archivo({ loaded, hoy, entries, recuerdos, photoCounts, loadPhot
 
       {faltaHoy ? (
         <Entrada indice={2}>
-          <Button title="Escribir hoy" icon="create-outline" size="lg" onPress={onWriteToday} style={styles.escribir} />
+          <Button title={t('diario:archivo.escribirHoy')} icon="create-outline" size="lg" onPress={onWriteToday} style={styles.escribir} />
         </Entrada>
       ) : null}
 

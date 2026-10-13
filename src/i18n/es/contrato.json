@@ -1,1 +1,153 @@
-{}
+{
+  "vista": {
+    "tabla": {
+      "mision": "Misión (trivial a épica)",
+      "xp": "{{xp}} XP",
+      "evidencia": "Evidencia (foto)",
+      "evidenciaValor": "+{{pct}} %",
+      "racha": "Racha",
+      "rachaValor": "+{{pct}} % por semana · techo ×{{techo}}",
+      "gimnasio": "Sesión de gimnasio",
+      "record": "Récord personal",
+      "diario": "Página del diario",
+      "pesarte": "Pesarte",
+      "objetivo": "Objetivo cumplido",
+      "tarea": "Tarea de campaña",
+      "tareaValor": "XP de su dificultad · jefe ×{{mult}}",
+      "campana": "Campaña despejada",
+      "campanaValor": "De {{min}} a {{max}} XP según rango",
+      "extra": "Misión extra",
+      "pb": "{{pb}} PB",
+      "sinHacer": "Misión del día sin hacer",
+      "sinHacerValor": "−{{pct}} % de su XP · tope −{{tope}}/día",
+      "romper": "Romper una norma firmada",
+      "romperValor": "−{{xp}} XP + consecuencia",
+      "piedra": "Piedra de protección",
+      "piedraValor": "Absorbe todo el daño de un día",
+      "filaA11y": "{{concepto}}: {{valor}}"
+    },
+    "norma": {
+      "a11y": "Norma {{n}}: {{texto}}. Si la rompes: {{consecuencia}}. Cuesta {{xp}} XP.",
+      "a11yEditada": "Norma {{n}}: {{texto}}. Si la rompes: {{consecuencia}}. Cuesta {{xp}} XP. Editada hoy.",
+      "pista": "Toca para confesar que la has roto. Mantén pulsado para eliminarla.",
+      "accionConfesar": "Confesar que la has roto",
+      "accionEditar": "Editar la norma",
+      "accionEliminar": "Eliminar la norma",
+      "siLaRompes": "Si la rompes: {{consecuencia}}",
+      "editadaHoy": "Editada hoy. Las roturas anteriores quedan en la versión archivada.",
+      "editarA11y": "Editar la norma {{n}}"
+    },
+    "carta": {
+      "sinCarta": "Sin carta",
+      "sinCartaTexto": "Escríbele a quien serás. El sistema la sella y la custodia hasta el día señalado.",
+      "escribir": "Escribir la carta",
+      "abierta": "Abierta",
+      "abiertaMeta": "Sellada el {{sellada}}. Abierta el {{abierta}}.",
+      "haLlegado": "Ha llegado el día",
+      "espera": "La carta que sellaste el {{sellada}} espera.",
+      "abrir": "Abrir la carta",
+      "firmado": "Firmado por ti",
+      "firmadoMeta": "Firmado el {{firmado}}. Vence el {{vence}}.",
+      "sellada": "Sellada",
+      "selladaTexto": "Sellada el {{sellada}}. Se abrirá el {{apertura}}. Hasta entonces, a trabajar."
+    },
+    "subtituloVacio": "Sin normas firmadas. El sistema solo hace cumplir lo que tú firmas.",
+    "subtitulo_one": "{{count}} norma firmada · {{bonus}} PB en la bolsa",
+    "subtitulo_other": "{{count}} normas firmadas · {{bonus}} PB en la bolsa",
+    "eyebrow": "Lo que tú firmas",
+    "titulo": "Contrato",
+    "nuevaNorma": "Firmar una norma nueva",
+    "cargando": "Leyendo el contrato",
+    "rotulo": "CONTRATO",
+    "vacioTitulo": "Ninguna norma firmada",
+    "vacioTexto": "Aquí van las normas que tú te impones y su consecuencia. El sistema solo las hace cumplir.",
+    "primeraNorma": "Firmar la primera norma",
+    "cargarCuaderno": "Cargar mis normas del cuaderno",
+    "notaNormas": "Toca una norma para confesar que la has roto. Mantén pulsada para eliminarla. El lápiz la edita desde hoy. Cada noche se marcan las cumplidas en Hábitos.",
+    "bonusTitulo": "Puntos bonus",
+    "bonusMeta": "{{gastado}}/{{tope}} canjeados",
+    "enBolsa": "En la bolsa",
+    "canjeables": "Canjeables esta semana",
+    "canjear": "Canjear {{coste}} PB · 1 h de descanso",
+    "notaBonus": "Las misiones extra pagan en PB, no en XP. {{coste}} PB son 1 h de descanso sin culpa, con tope de {{tope}} PB cada 7 días.",
+    "cartaTitulo": "Carta a tu yo del futuro",
+    "gana": "Así se gana",
+    "pierde": "Así se pierde",
+    "notaTabla": "Toda la app puntúa con esta tabla: mismo esfuerzo, misma recompensa. Los PB no dan XP: se canjean por descanso."
+  },
+  "hojas": {
+    "anios_one": "{{count}} año",
+    "anios_other": "{{count}} años",
+    "norma": {
+      "eyebrowEditar": "Editar norma",
+      "eyebrowNueva": "Nueva norma",
+      "tituloEditar": "Ajusta lo que firmaste",
+      "tituloNueva": "¿Qué te prohíbes?",
+      "firmar": "Firmar la norma",
+      "etiqueta": "La norma",
+      "placeholder": "Ej. Nada de redes sociales antes de las 12",
+      "a11y": "Texto de la norma",
+      "consecuenciaEtiqueta": "Consecuencia si la rompes",
+      "consecuenciaPlaceholder": "Ej. Correr 5 km",
+      "consecuenciaA11y": "Consecuencia de romper la norma",
+      "ayudaEditar": "Rige desde hoy. La versión anterior se archiva con sus roturas. Romperla cuesta −{{xp}} XP.",
+      "ayudaNueva": "Romperla cuesta −{{xp}} XP. Cumplir la consecuencia el mismo día lo recupera."
+    },
+    "carta": {
+      "eyebrow": "Para tu yo del futuro",
+      "titulo": "Escríbele a quien serás",
+      "sellar": "Sellar la carta",
+      "etiqueta": "La carta",
+      "placeholder": "No sé cómo estarás, ni en qué situación…",
+      "a11y": "Cuerpo de la carta",
+      "dentroDe": "Se abrirá dentro de",
+      "dentroDeA11y": "Abrir dentro de {{plazo}}",
+      "seAbrira": "Se abrirá el {{fecha}}. Nadie podrá leerla antes, ni tú."
+    }
+  },
+  "hook": {
+    "plantilla": {
+      "p1": {
+        "texto": "Escribir el diario todos los días: lo vivido y el plan del día",
+        "consecuencia": "Correr 8 km"
+      },
+      "p2": {
+        "texto": "Nada de alcohol",
+        "consecuencia": "1 día comiendo solo limpio"
+      },
+      "p3": {
+        "texto": "Nada de cafeína",
+        "consecuencia": "1 día sin pantallas de ocio"
+      },
+      "p4": {
+        "texto": "Comer limpio a diario",
+        "consecuencia": "Correr 4,5 km"
+      },
+      "p5": {
+        "texto": "Si salgo de fiesta sin haberlo ganado",
+        "consecuencia": "1 semana de dieta estricta"
+      },
+      "p6": {
+        "texto": "Ningún plan se interpone a mis objetivos",
+        "consecuencia": "Reorganizar la semana y compensar el tiempo"
+      }
+    },
+    "confesionTitulo": "Confesión al sistema",
+    "confesionMensaje": "¿Has roto la norma \"{{norma}}\"?\n\nPenalización: −{{xp}} XP y la consecuencia que tú mismo firmaste: {{consecuencia}}. Cúmplela hoy y recuperas el XP.",
+    "laHeRoto": "La he roto",
+    "registrado": "REGISTRADO",
+    "registradoMensaje": "El sistema no juzga: registra. La misión \"Consecuencia: {{consecuencia}}\" te espera hoy en Sistema.",
+    "eliminarTitulo": "Eliminar norma",
+    "eliminarMensaje": "\"{{norma}}\" y su historial de incumplimientos.",
+    "insuficientesTitulo": "Puntos insuficientes",
+    "insuficientes": "Necesitas {{coste}} PB para canjear 1 h de descanso.",
+    "topeTitulo": "Tope semanal",
+    "tope": "Máximo {{tope}} PB canjeados cada 7 días. Llevas {{llevas}}.",
+    "canjearTitulo": "Canjear descanso",
+    "canjearMensaje": "{{coste}} PB → 1 hora de descanso ganado. ¿Confirmas?",
+    "canjear": "Canjear",
+    "motivoCanje": "1 h de descanso",
+    "descansoTitulo": "DESCANSO GANADO",
+    "descansoMensaje": "Disfrútalo sin culpa: lo has pagado con esfuerzo."
+  }
+}

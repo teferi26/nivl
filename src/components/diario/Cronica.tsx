@@ -10,6 +10,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { TarjetaArena } from '@/components/arena';
 import { Row } from '@/components/ui';
 import { ink, space, type as tipo } from '@/design/tokens';
+import { t } from '@/i18n';
 import type { SystemEvent } from '@/lib/journal';
 import { MAX_LARGO_VICTORIA } from '@/lib/journalmath';
 
@@ -33,26 +34,29 @@ export function lineaDeCronica(e: SystemEvent): LineaCronica | null {
   });
   switch (e.type) {
     case 'quest_completed':
-      return con(`Misión completada: ${o(p.quest)} (+${Number(p.xp ?? 0)} XP)`, o(p.quest) || null);
+      return con(t('diario:cronica.mision', { mision: o(p.quest), xp: Number(p.xp ?? 0) }), o(p.quest) || null);
     case 'level_up':
-      return con(`SUBIDA DE NIVEL → ${Number(p.level ?? 0)}`, `Subí al nivel ${Number(p.level ?? 0)}`);
+      return con(
+        t('diario:cronica.subida', { nivel: Number(p.level ?? 0) }),
+        t('diario:cronica.subidaVictoria', { nivel: Number(p.level ?? 0) }),
+      );
     case 'penalty':
-      return con(`Penalización aplicada: −${Number(p.xp ?? 0)} XP`, null);
+      return con(t('diario:cronica.penalizacion', { xp: Number(p.xp ?? 0) }), null);
     case 'dungeon_task':
-      return con(`Objetivo de campaña: ${o(p.task)}`, o(p.task) || null);
+      return con(t('diario:cronica.objetivo', { tarea: o(p.task) }), o(p.task) || null);
     case 'dungeon_cleared':
-      return con(`Campaña despejada: ${o(p.dungeon)}`, `Campaña despejada: ${o(p.dungeon)}`);
+      return con(t('diario:cronica.despejada', { campana: o(p.dungeon) }), t('diario:cronica.despejada', { campana: o(p.dungeon) }));
     case 'gym_session':
-      return con(`Sesión de gimnasio registrada (+${Number(p.xp ?? 0)} XP)`, 'Sesión de gimnasio');
+      return con(t('diario:cronica.gimnasio', { xp: Number(p.xp ?? 0) }), t('diario:cronica.gimnasioVictoria'));
     case 'gym_pr':
       return con(
-        `RÉCORD personal: ${o(p.exercise)} · ${Number(p.weight ?? 0)} kg`,
-        `Récord en ${o(p.exercise)}: ${Number(p.weight ?? 0)} kg`,
+        t('diario:cronica.record', { ejercicio: o(p.exercise), peso: Number(p.weight ?? 0) }),
+        t('diario:cronica.recordVictoria', { ejercicio: o(p.exercise), peso: Number(p.weight ?? 0) }),
       );
     case 'stone_used':
-      return con('Una Piedra de Protección se consumió por ti', null);
+      return con(t('diario:cronica.piedraUsada'), null);
     case 'stone_earned':
-      return con('Piedra de Protección forjada', 'Piedra de Protección forjada');
+      return con(t('diario:cronica.piedraForjada'), t('diario:cronica.piedraForjada'));
     default:
       return null;
   }
@@ -72,7 +76,7 @@ export function Cronica({ lineas, reclamadas, cabenMas, onReclamar }: Props) {
     // Una línea y no una tarjeta: que el sistema no viera nada no es un aviso.
     return (
       <Text style={styles.vacio} maxFontSizeMultiplier={1.6}>
-        Sin actividad ese día: el sistema no registró nada.
+        {t('diario:cronica.vacio')}
       </Text>
     );
   }
@@ -98,13 +102,13 @@ export function Cronica({ lineas, reclamadas, cabenMas, onReclamar }: Props) {
               title={l.linea}
               muted={l.victoria === null}
               onPress={pulsable ? () => onReclamar(l.victoria!) : undefined}
-              accessibilityLabel={pulsable ? `${l.linea}. Toca para añadirla a tus victorias` : l.linea}
+              accessibilityLabel={pulsable ? t('diario:cronica.reclamarA11y', { linea: l.linea }) : l.linea}
             />
           );
         })}
       </TarjetaArena>
       <Text style={styles.nota} maxFontSizeMultiplier={1.6}>
-        Toca una línea para reclamarla como victoria.
+        {t('diario:cronica.nota')}
       </Text>
     </>
   );

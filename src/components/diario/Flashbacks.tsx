@@ -10,6 +10,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { TarjetaArena } from '@/components/arena';
 import { Section } from '@/components/ui';
 import { ink, space, type as tipo } from '@/design/tokens';
+import { t } from '@/i18n';
 import { nombreDia } from '@/lib/dates';
 import { extracto, limpiarVictorias, type Flashback } from '@/lib/journalmath';
 import type { JournalEntry } from '@/lib/types';
@@ -23,7 +24,7 @@ interface Props {
 export function Flashbacks({ items, onOpen }: Props) {
   if (items.length === 0) return null;
   return (
-    <Section title="En esta fecha" tone="logro">
+    <Section title={t('diario:flashbacks.titulo')} tone="logro">
       <View style={styles.pila}>
         {items.map(({ id, titulo, entry }) => {
           const victoria = limpiarVictorias(entry.wins)[0];
@@ -34,7 +35,7 @@ export function Flashbacks({ items, onOpen }: Props) {
               variante="contorno"
               rotulo={titulo}
               onPress={() => onOpen(entry.date)}
-              accessibilityLabel={`${titulo}, ${nombreDia(entry.date)}. Toca para abrir ese día`}
+              accessibilityLabel={t('diario:flashbacks.a11y', { titulo, dia: nombreDia(entry.date) })}
             >
               <Text style={styles.fecha} maxFontSizeMultiplier={1.35}>
                 {nombreDia(entry.date)}

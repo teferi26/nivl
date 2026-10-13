@@ -11,6 +11,7 @@ import { Image } from 'expo-image';
 import { useEffect, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { ink, space, stroke, type as tipo } from '@/design/tokens';
+import { t } from '@/i18n';
 import { nombreDia, relativoDe } from '@/lib/dates';
 import { etiquetaEmocion, extracto, formatoDecimal, limpiarEmociones, limpiarVictorias } from '@/lib/journalmath';
 import type { JournalEntry } from '@/lib/types';
@@ -21,11 +22,20 @@ const LARGO_EXTRACTO = 140;
 /** Ánimo, energía y sueño como cifras pequeñas: se comparan de un vistazo entre días. */
 export function NotasDelDia({ entry }: { entry: Pick<JournalEntry, 'mood' | 'energy' | 'sleep_hours'> }) {
   const notas: { rotulo: string; valor: string; unidad?: string; leido: string }[] = [];
-  if (entry.mood != null) notas.push({ rotulo: 'Ánimo', valor: String(entry.mood), leido: `Ánimo ${entry.mood} de 5` });
-  if (entry.energy != null) notas.push({ rotulo: 'Energía', valor: String(entry.energy), leido: `Energía ${entry.energy} de 5` });
+  if (entry.mood != null) {
+    notas.push({ rotulo: t('diario:compartido.animo'), valor: String(entry.mood), leido: t('diario:entrada.animoA11y', { n: entry.mood }) });
+  }
+  if (entry.energy != null) {
+    notas.push({
+      rotulo: t('diario:compartido.energia'),
+      valor: String(entry.energy),
+      leido: t('diario:entrada.energiaA11y', { n: entry.energy }),
+    });
+  }
   if (entry.sleep_hours != null) {
     const h = formatoDecimal(entry.sleep_hours);
-    notas.push({ rotulo: 'Sueño', valor: h, unidad: 'h', leido: `${h} horas de sueño` });
+    // i18n-ok: unidad
+    notas.push({ rotulo: t('diario:compartido.sueno'), valor: h, unidad: 'h', leido: t('diario:entrada.suenoA11y', { horas: h }) });
   }
   if (notas.length === 0) return null;
   return (
@@ -135,11 +145,11 @@ export function EntryCard({ entry, hoy, primera, photoCount, eagerPhotos, loadPh
   const fotosOcultas = photoCount > 0 && !eagerPhotos;
   const rotuloMas = hayMas
     ? abierta
-      ? 'Leer menos'
-      : 'Leer más'
+      ? t('diario:entrada.leerMenos')
+      : t('diario:entrada.leerMas')
     : abierta
-      ? 'Ocultar fotos'
-      : `Ver ${photoCount === 1 ? 'la foto' : `las ${photoCount} fotos`}`;
+      ? t('diario:entrada.ocultarFotos')
+      : t('diario:entrada.verFotos', { count: photoCount });
 
   return (
     <View style={[styles.fila, !primera && styles.conRegla]}>
@@ -156,7 +166,7 @@ export function EntryCard({ entry, hoy, primera, photoCount, eagerPhotos, loadPh
           onPress={() => onOpen(entry.date)}
           style={({ pressed }) => [styles.abrir, pressed && styles.pulsado]}
           accessibilityRole="button"
-          accessibilityLabel={`Abrir y editar el diario del ${nombreDia(entry.date)}`}
+          accessibilityLabel={t('diario:entrada.abrirA11y', { dia: nombreDia(entry.date) })}
         >
           <Ionicons name="create-outline" size={18} color={ink.ink9} />
         </Pressable>
@@ -186,35 +196,39 @@ export function EntryCard({ entry, hoy, primera, photoCount, eagerPhotos, loadPh
 
       {abierta && entry.lesson?.trim() ? (
         <View style={styles.leccion}>
-          <Text style={styles.rotulo}>Aprendí</Text>
+          <Text style={styles.rotulo}>{t('diario:entrada.aprendi')}</Text>
           <Text style={styles.leccionTexto}>{entry.lesson.trim()}</Text>
         </View>
       ) : null}
 
       {abierta && entry.gratitude?.trim() ? (
         <Text style={styles.linea}>
-          <Text style={styles.lineaRotulo}>Agradezco: </Text>
+          <Text style={styles.lineaRotulo}>
+            {t('diario:entrada.agradezco')}{' '}
+          </Text>
           {entry.gratitude.trim()}
         </Text>
       ) : null}
 
       {abierta && entry.plan?.trim() ? (
         <Text style={styles.linea}>
-          <Text style={styles.lineaRotulo}>{antigua ? 'Plan: ' : 'Mañana: '}</Text>
+          <Text style={styles.lineaRotulo}>
+            {antigua ? t('diario:entrada.plan') : t('diario:entrada.manana')}{' '}
+          </Text>
           {entry.plan.trim()}
         </Text>
       ) : null}
 
       {soloNotas ? (
         <Text style={styles.soloNotas}>
-          {hayNotas ? 'Ese día solo dejaste las notas.' : 'Entrada en blanco. Ábrela para completarla.'}
+          {hayNotas ? t('diario:entrada.soloNotas') : t('diario:entrada.enBlanco')}
         </Text>
       ) : null}
 
       {quiereFotos && fotos && fotos.length > 0 ? (
         <View style={styles.fotos}>
           {fotos.map((uri) => (
-            <Image key={uri} source={{ uri }} style={styles.foto} contentFit="cover" accessibilityLabel="Comprobante de ese día" />
+            <Image key={uri} source={{ uri }} style={styles.foto} contentFit="cover" accessibilityLabel={t('diario:entrada.comprobanteA11y')} />
           ))}
         </View>
       ) : null}
@@ -225,7 +239,7 @@ export function EntryCard({ entry, hoy, primera, photoCount, eagerPhotos, loadPh
           style={({ pressed }) => [styles.mas, pressed && styles.pulsado]}
           accessibilityRole="button"
           accessibilityState={{ expanded: abierta }}
-          accessibilityLabel={`${rotuloMas} del ${nombreDia(entry.date)}`}
+          accessibilityLabel={t('diario:entrada.masA11y', { rotulo: rotuloMas, dia: nombreDia(entry.date) })}
         >
           <Text style={styles.masTexto}>{rotuloMas}</Text>
           <Ionicons name={abierta ? 'chevron-up' : 'chevron-down'} size={14} color={ink.ink9} />

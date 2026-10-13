@@ -8,6 +8,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { useState } from 'react';
 import { Keyboard, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { ink, space, stroke, type as tipo } from '@/design/tokens';
+import { t } from '@/i18n';
 import { MAX_LARGO_VICTORIA, VICTORIAS_VISIBLES } from '@/lib/journalmath';
 
 interface Props {
@@ -51,8 +52,8 @@ export function WinsEditor({ value, onChange }: Props) {
             <TextInput
               style={styles.input}
               value={fila}
-              onChangeText={(t) => escribir(i, t)}
-              placeholder={i === 0 ? 'Algo que hoy hiciste bien' : 'Otra victoria'}
+              onChangeText={(texto) => escribir(i, texto)}
+              placeholder={i === 0 ? t('diario:victorias.primera') : t('diario:victorias.otra')}
               placeholderTextColor={ink.ink6}
               selectionColor={ink.ink10}
               cursorColor={ink.ink10}
@@ -68,14 +69,14 @@ export function WinsEditor({ value, onChange }: Props) {
                 if (i === filas.length - 1 && cabeOtra && escrita) anadir();
                 else Keyboard.dismiss();
               }}
-              accessibilityLabel={`Victoria ${i + 1}`}
+              accessibilityLabel={t('diario:victorias.a11y', { n: i + 1 })}
             />
             {filas.length > 1 || escrita ? (
               <Pressable
                 onPress={() => quitar(i)}
                 style={({ pressed }) => [styles.quitar, pressed && styles.pulsado]}
                 accessibilityRole="button"
-                accessibilityLabel={`Quitar la victoria ${i + 1}`}
+                accessibilityLabel={t('diario:victorias.quitarA11y', { n: i + 1 })}
               >
                 <Ionicons name="close" size={18} color={ink.ink6} />
               </Pressable>
@@ -88,13 +89,13 @@ export function WinsEditor({ value, onChange }: Props) {
           onPress={anadir}
           style={({ pressed }) => [styles.anadir, pressed && styles.pulsado]}
           accessibilityRole="button"
-          accessibilityLabel="Añadir victoria"
+          accessibilityLabel={t('diario:victorias.anadir')}
         >
           <Ionicons name="add" size={16} color={ink.ink9} />
-          <Text style={styles.anadirTexto}>Añadir victoria</Text>
+          <Text style={styles.anadirTexto}>{t('diario:victorias.anadir')}</Text>
         </Pressable>
       ) : (
-        <Text style={styles.nota}>Cinco a mano ya es un gran día. Lo que registró el sistema aún se puede reclamar.</Text>
+        <Text style={styles.nota}>{t('diario:victorias.tope')}</Text>
       )}
     </View>
   );

@@ -15,6 +15,7 @@ import { StyleSheet, Text, View, type LayoutChangeEvent } from 'react-native';
 import type { Cifra } from '@/components/arena';
 import { TrendLine } from '@/components/TrendLine';
 import { ink, space, stroke, type as tipo } from '@/design/tokens';
+import { t } from '@/i18n';
 import { MIN_DATOS_MEDIA, formatoDecimal, type ResumenTendencia } from '@/lib/journalmath';
 
 interface Props {
@@ -35,28 +36,28 @@ export function cifrasTendencia(resumen: ResumenTendencia, entradas: number): Ci
   return [
     {
       valor: a.actual === null ? '' : formatoDecimal(a.actual),
-      rotulo: 'Ánimo',
+      rotulo: t('diario:compartido.animo'),
       etiqueta:
         a.actual === null
-          ? `Ánimo de los últimos 7 días: faltan datos, hacen falta ${MIN_DATOS_MEDIA}`
-          : `Ánimo medio de los últimos 7 días: ${formatoDecimal(a.actual)} de 5`,
+          ? t('diario:tendencia.animoSinDatosA11y', { min: MIN_DATOS_MEDIA })
+          : t('diario:tendencia.animoA11y', { media: formatoDecimal(a.actual) }),
     },
     {
       valor: sueno.actual === null ? '' : formatoDecimal(sueno.actual),
-      sufijo: sueno.actual === null ? undefined : 'h',
-      rotulo: 'Sueño',
+      sufijo: sueno.actual === null ? undefined : 'h', // i18n-ok: unidad
+      rotulo: t('diario:compartido.sueno'),
       etiqueta:
         sueno.actual === null
-          ? 'Sueño medio de los últimos 7 días: faltan datos'
-          : `Sueño medio de los últimos 7 días: ${formatoDecimal(sueno.actual)} horas`,
+          ? t('diario:tendencia.suenoSinDatosA11y')
+          : t('diario:tendencia.suenoA11y', { media: formatoDecimal(sueno.actual) }),
     },
     {
       valor: racha,
-      sufijo: 'd',
-      rotulo: 'Racha',
-      etiqueta: `Racha de ${racha} ${racha === 1 ? 'día escrito' : 'días escritos'}`,
+      sufijo: 'd', // i18n-ok: unidad
+      rotulo: t('diario:tendencia.racha'),
+      etiqueta: t('diario:tendencia.rachaA11y', { count: racha }),
     },
-    { valor: entradas, rotulo: 'Días', etiqueta: `${entradas} ${entradas === 1 ? 'día escrito' : 'días escritos'} en el archivo` },
+    { valor: entradas, rotulo: t('diario:tendencia.dias'), etiqueta: t('diario:tendencia.diasA11y', { count: entradas }) },
   ];
 }
 
@@ -64,11 +65,11 @@ export function cifrasTendencia(resumen: ResumenTendencia, entradas: number): Ci
 function lineaComparativa(resumen: ResumenTendencia): string | null {
   const { animo: a, sueno } = resumen;
   if (a.actual === null || sueno.actual === null) {
-    return `Una media necesita ${MIN_DATOS_MEDIA} días con dato en la semana. Con menos sería una anécdota.`;
+    return t('diario:tendencia.sinMedia', { min: MIN_DATOS_MEDIA });
   }
   if (a.delta === null) return null;
-  if (a.delta === 0) return 'El ánimo, igual que los 7 días anteriores.';
-  return `El ánimo ${a.delta > 0 ? 'sube' : 'baja'} ${formatoDecimal(Math.abs(a.delta))} frente a los 7 días anteriores.`;
+  if (a.delta === 0) return t('diario:tendencia.igual');
+  return t(a.delta > 0 ? 'diario:tendencia.sube' : 'diario:tendencia.baja', { delta: formatoDecimal(Math.abs(a.delta)) });
 }
 
 function Curva({ rotulo, valores, ancho }: { rotulo: string; valores: number[]; ancho: number }) {
@@ -104,15 +105,15 @@ export function MoodTrend({ resumen, animo, energia }: Props) {
 
       {hayCurvas && mitad > 0 ? (
         <View style={styles.curvas}>
-          <Curva rotulo="Ánimo" valores={animo} ancho={mitad} />
-          <Curva rotulo="Energía" valores={energia} ancho={mitad} />
+          <Curva rotulo={t('diario:compartido.animo')} valores={animo} ancho={mitad} />
+          <Curva rotulo={t('diario:compartido.energia')} valores={energia} ancho={mitad} />
         </View>
       ) : null}
 
       {emociones.length > 0 ? (
         <View style={styles.emociones}>
           <Text style={styles.rotulo} maxFontSizeMultiplier={1.35}>
-            Lo que más se repite · 14 días
+            {t('diario:tendencia.repite')}
           </Text>
           <View style={styles.emocionesFila}>
             {emociones.map((e) => (
@@ -120,7 +121,7 @@ export function MoodTrend({ resumen, animo, energia }: Props) {
                 key={e.id}
                 style={styles.emocion}
                 accessible
-                accessibilityLabel={`${e.label}, ${e.count} ${e.count === 1 ? 'día' : 'días'}`}
+                accessibilityLabel={t('diario:tendencia.emocionA11y', { emocion: e.label, count: e.count })}
               >
                 <Text style={styles.emocionTexto}>{e.label}</Text>
                 <Text style={styles.emocionCuenta}>{e.count}</Text>

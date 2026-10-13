@@ -23,6 +23,7 @@ import { useConsentimientoIA } from '@/components/ConsentimientoIA';
 import { avisar, confirmar } from '@/components/ui/confirmar';
 import { volver } from '@/components/ui/Screen';
 import { vibrar } from '@/design/haptics';
+import { t } from '@/i18n';
 import { useAuth } from '@/lib/auth';
 import { accessNotice, clasificarMovimientos, CoachAccessError } from '@/lib/coach';
 import { addDays, dateKey } from '@/lib/dates';
@@ -134,7 +135,7 @@ export function useEconomia(): UsoEconomia {
     try {
       const r = await clasificarMovimientos();
       await cargar();
-      avisar(r.clasificados ? 'El sistema ha clasificado' : 'Sin cambios', r.texto);
+      avisar(r.clasificados ? t('economia:hook.clasificadoTitulo') : t('economia:hook.sinCambios'), r.texto);
     } catch (e) {
       if (e instanceof CoachAccessError) {
         // La clasificación automática es IA y pasa por el mismo candado que el
@@ -144,19 +145,18 @@ export function useEconomia(): UsoEconomia {
         // /pro); con cualquier otro motivo es un aviso de un solo botón.
         if (e.reason === 'sin_suscripcion') {
           const verPro = await confirmar({
-            titulo: 'Clasificación automática',
-            mensaje:
-              'Que el sistema clasifique por ti es parte de NIVL Pro. Puedes seguir clasificando a mano: toca un movimiento y el sistema aprende la regla.',
-            confirmar: 'Ver NIVL Pro',
-            cancelar: 'Ahora no',
+            titulo: t('economia:hook.autoTitulo'),
+            mensaje: t('economia:hook.autoMensaje'),
+            confirmar: t('comun:verNivlPro'),
+            cancelar: t('comun:ahoraNo'),
           });
           if (verPro) router.push('/pro');
         } else {
-          avisar('El sistema', accessNotice(e));
+          avisar(t('economia:hook.elSistema'), accessNotice(e));
         }
       } else {
         vibrar('penalizacion');
-        avisar('El sistema no responde', mensajeSistema(e));
+        avisar(t('comun:sistemaNoResponde'), mensajeSistema(e));
       }
     } finally {
       setClasificando(false);
@@ -173,7 +173,7 @@ export function useEconomia(): UsoEconomia {
       setEditando(null);
       await cargar();
       if (n > 1) {
-        setAprendido(`${n} movimientos clasificados. A partir de ahora lo hace solo.`);
+        setAprendido(t('economia:hook.aprendido', { count: n }));
       }
     } catch (e) {
       vibrar('penalizacion');
@@ -188,12 +188,12 @@ export function useEconomia(): UsoEconomia {
     if (!userId || guardando) return;
     const n = Number(importe.replace(',', '.'));
     if (!Number.isFinite(n) || n === 0) {
-      setErrorImporte('Escribe el importe. Negativo si es gasto, positivo si es ingreso.');
+      setErrorImporte(t('economia:hook.errorImporte'));
       return;
     }
     setErrorImporte(null);
     if (!concepto.trim()) {
-      setErrorConcepto('Dentro de un mes no vas a recordar qué fue.');
+      setErrorConcepto(t('economia:hook.errorConcepto'));
       return;
     }
     setErrorConcepto(null);

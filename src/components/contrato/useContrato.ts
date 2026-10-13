@@ -21,6 +21,7 @@ import { useCallback, useRef, useState } from 'react';
 import { avisar, confirmar } from '@/components/ui/confirmar';
 import { volver } from '@/components/ui/Screen';
 import { vibrar } from '@/design/haptics';
+import { t } from '@/i18n';
 import { useAuth } from '@/lib/auth';
 import {
   breakRule,
@@ -43,15 +44,15 @@ import type { ContratoVistaProps } from './ContratoVista';
 import { OPCIONES_APERTURA, type HojaCartaProps, type HojaNormaProps } from './HojasContrato';
 
 // Plantilla basada en el cuaderno "CAMINO AL ÉXITO" del usuario, adaptada
-// a su vida actual (carrera terminada).
-const TEMPLATE_RULES: { text: string; consequence: string }[] = [
-  { text: 'Escribir el diario todos los días: lo vivido y el plan del día', consequence: 'Correr 8 km' },
-  { text: 'Nada de alcohol', consequence: '1 día comiendo solo limpio' },
-  { text: 'Nada de cafeína', consequence: '1 día sin pantallas de ocio' },
-  { text: 'Comer limpio a diario', consequence: 'Correr 4,5 km' },
-  { text: 'Si salgo de fiesta sin haberlo ganado', consequence: '1 semana de dieta estricta' },
-  { text: 'Ningún plan se interpone a mis objetivos', consequence: 'Reorganizar la semana y compensar el tiempo' },
-];
+// a su vida actual (carrera terminada). Los textos, en contrato:hook.plantilla.
+const PLANTILLA = ['p1', 'p2', 'p3', 'p4', 'p5', 'p6'] as const;
+
+function normasDePlantilla(): { text: string; consequence: string }[] {
+  return PLANTILLA.map((p) => ({
+    text: t(`contrato:hook.plantilla.${p}.texto`),
+    consequence: t(`contrato:hook.plantilla.${p}.consecuencia`),
+  }));
+}
 
 export interface UsoContrato {
   vista: ContratoVistaProps;
@@ -118,14 +119,15 @@ export function useContrato(): UsoContrato {
     lock.current = true;
     setBusy(true);
     try {
-      for (let i = 0; i < TEMPLATE_RULES.length; i++) {
-        const t = TEMPLATE_RULES[i]!;
-        await createRule(userId, { text: t.text, consequence: t.consequence, position: i });
+      const normas = normasDePlantilla();
+      for (let i = 0; i < normas.length; i++) {
+        const n = normas[i]!;
+        await createRule(userId, { text: n.text, consequence: n.consequence, position: i });
       }
       await load();
     } catch (e) {
       vibrar('penalizacion');
-      avisar('El sistema no responde', mensajeSistema(e));
+      avisar(t('comun:sistemaNoResponde'), mensajeSistema(e));
     } finally {
       lock.current = false;
       setBusy(false);
@@ -194,9 +196,9 @@ export function useContrato(): UsoContrato {
   const onBreakRule = async (rule: Rule) => {
     if (lock.current) return;
     const ok = await confirmar({
-      titulo: 'Confesión al sistema',
-      mensaje: `¿Has roto la norma "${rule.text}"?\n\nPenalización: −${RULE_BREAK_XP} XP y la consecuencia que tú mismo firmaste: ${rule.consequence}. Cúmplela hoy y recuperas el XP.`,
-      confirmar: 'La he roto',
+      titulo: t('contrato:hook.confesionTitulo'),
+      mensaje: t('contrato:hook.confesionMensaje', { norma: rule.text, xp: RULE_BREAK_XP, consecuencia: rule.consequence }),
+      confirmar: t('contrato:hook.laHeRoto'),
       destructivo: true,
     });
     if (!ok || !profile || lock.current) return;
@@ -205,14 +207,11 @@ export function useContrato(): UsoContrato {
       const res = await breakRule(profile, rule);
       setProfile(res.profile);
       vibrar('penalizacion');
-      avisar(
-        'REGISTRADO',
-        `El sistema no juzga: registra. La misión "Consecuencia: ${rule.consequence}" te espera hoy en Sistema.`,
-      );
+      avisar(t('contrato:hook.registrado'), t('contrato:hook.registradoMensaje', { consecuencia: rule.consequence }));
       await load();
     } catch (e) {
       vibrar('penalizacion');
-      avisar('El sistema no responde', mensajeSistema(e));
+      avisar(t('comun:sistemaNoResponde'), mensajeSistema(e));
     } finally {
       lock.current = false;
     }
@@ -220,9 +219,9 @@ export function useContrato(): UsoContrato {
 
   const onDeleteRule = async (rule: Rule) => {
     const ok = await confirmar({
-      titulo: 'Eliminar norma',
-      mensaje: `"${rule.text}" y su historial de incumplimientos.`,
-      confirmar: 'Eliminar',
+      titulo: t('contrato:hook.eliminarTitulo'),
+      mensaje: t('contrato:hook.eliminarMensaje', { norma: rule.text }),
+      confirmar: t('comun:eliminar'),
       destructivo: true,
     });
     if (!ok) return;
@@ -233,36 +232,36 @@ export function useContrato(): UsoContrato {
       await load();
     } catch (e) {
       vibrar('penalizacion');
-      avisar('El sistema no responde', mensajeSistema(e));
+      avisar(t('comun:sistemaNoResponde'), mensajeSistema(e));
     }
   };
 
   const onRedeem = async () => {
     if (!profile) return;
     if (profile.bonus_points < REDEEM_COST) {
-      avisar('Puntos insuficientes', `Necesitas ${REDEEM_COST} PB para canjear 1 h de descanso.`);
+      avisar(t('contrato:hook.insuficientesTitulo'), t('contrato:hook.insuficientes', { coste: REDEEM_COST }));
       return;
     }
     if (spentWeek + REDEEM_COST > REDEEM_WEEKLY_CAP) {
-      avisar('Tope semanal', `Máximo ${REDEEM_WEEKLY_CAP} PB canjeados cada 7 días. Llevas ${spentWeek}.`);
+      avisar(t('contrato:hook.topeTitulo'), t('contrato:hook.tope', { tope: REDEEM_WEEKLY_CAP, llevas: spentWeek }));
       return;
     }
     const ok = await confirmar({
-      titulo: 'Canjear descanso',
-      mensaje: `${REDEEM_COST} PB → 1 hora de descanso ganado. ¿Confirmas?`,
-      confirmar: 'Canjear',
+      titulo: t('contrato:hook.canjearTitulo'),
+      mensaje: t('contrato:hook.canjearMensaje', { coste: REDEEM_COST }),
+      confirmar: t('contrato:hook.canjear'),
     });
     if (!ok || lock.current) return;
     lock.current = true;
     try {
-      const newTotal = await redeemBonus(REDEEM_COST, '1 h de descanso');
+      const newTotal = await redeemBonus(REDEEM_COST, t('contrato:hook.motivoCanje'));
       setProfile((p) => (p ? { ...p, bonus_points: newTotal } : p));
       setSpentWeek((s) => s + REDEEM_COST);
       vibrar('mision');
-      avisar('DESCANSO GANADO', 'Disfrútalo sin culpa: lo has pagado con esfuerzo.');
+      avisar(t('contrato:hook.descansoTitulo'), t('contrato:hook.descansoMensaje'));
     } catch (e) {
       vibrar('penalizacion');
-      avisar('El sistema no responde', mensajeSistema(e));
+      avisar(t('comun:sistemaNoResponde'), mensajeSistema(e));
     } finally {
       lock.current = false;
     }
@@ -298,7 +297,7 @@ export function useContrato(): UsoContrato {
       vibrar('mision');
     } catch (e) {
       vibrar('penalizacion');
-      avisar('El sistema no responde', mensajeSistema(e));
+      avisar(t('comun:sistemaNoResponde'), mensajeSistema(e));
     } finally {
       lock.current = false;
     }

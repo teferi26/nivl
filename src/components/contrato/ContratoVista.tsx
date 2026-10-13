@@ -32,6 +32,8 @@ import {
 } from '@/components/arena';
 import { Button, Screen, Section } from '@/components/ui';
 import { ink, space, stroke, type as tipo } from '@/design/tokens';
+import { t } from '@/i18n';
+import { decimal } from '@/i18n/formato';
 import { esCompromiso } from '@/lib/compromiso';
 import { fechaConAnio } from '@/lib/dates';
 import {
@@ -94,25 +96,34 @@ function fecha(iso: string): string {
 /** Tabla de transparencia: los valores salen de game.ts. */
 function tablas() {
   const ganancias = [
-    { label: 'Misión (trivial a épica)', value: `${DIFFICULTIES.map((d) => XP_BY_DIFFICULTY[d]).join(' · ')} XP` },
-    { label: 'Evidencia (foto)', value: `+${Math.round(EVIDENCE_BONUS * 100)} %` },
+    { label: t('contrato:vista.tabla.mision'), value: t('contrato:vista.tabla.xp', { xp: DIFFICULTIES.map((d) => XP_BY_DIFFICULTY[d]).join(' · ') }) },
+    { label: t('contrato:vista.tabla.evidencia'), value: t('contrato:vista.tabla.evidenciaValor', { pct: Math.round(EVIDENCE_BONUS * 100) }) },
     {
-      label: 'Racha',
-      value: `+${Math.round((streakMultiplier(7) - 1) * 100)} % por semana · techo ×${streakMultiplier(9999).toFixed(1).replace('.', ',')}`,
+      label: t('contrato:vista.tabla.racha'),
+      value: t('contrato:vista.tabla.rachaValor', {
+        pct: Math.round((streakMultiplier(7) - 1) * 100),
+        techo: decimal(streakMultiplier(9999), 1),
+      }),
     },
-    { label: 'Sesión de gimnasio', value: `${GYM_SESSION_XP} XP` },
-    { label: 'Récord personal', value: `${PR_XP} XP` },
-    { label: 'Página del diario', value: `${JOURNAL_XP} XP` },
-    { label: 'Pesarte', value: `${WEIGH_IN_XP} XP` },
-    { label: 'Objetivo cumplido', value: `${GOAL_ACHIEVED_XP} XP` },
-    { label: 'Tarea de campaña', value: `XP de su dificultad · jefe ×${BOSS_MULTIPLIER}` },
-    { label: 'Campaña despejada', value: `De ${DUNGEON_CLEAR_XP.E} a ${DUNGEON_CLEAR_XP.S} XP según rango` },
-    { label: 'Misión extra', value: `${DIFFICULTIES.map((d) => BONUS_BY_DIFFICULTY[d]).join(' · ')} PB` },
+    { label: t('contrato:vista.tabla.gimnasio'), value: t('contrato:vista.tabla.xp', { xp: GYM_SESSION_XP }) },
+    { label: t('contrato:vista.tabla.record'), value: t('contrato:vista.tabla.xp', { xp: PR_XP }) },
+    { label: t('contrato:vista.tabla.diario'), value: t('contrato:vista.tabla.xp', { xp: JOURNAL_XP }) },
+    { label: t('contrato:vista.tabla.pesarte'), value: t('contrato:vista.tabla.xp', { xp: WEIGH_IN_XP }) },
+    { label: t('contrato:vista.tabla.objetivo'), value: t('contrato:vista.tabla.xp', { xp: GOAL_ACHIEVED_XP }) },
+    { label: t('contrato:vista.tabla.tarea'), value: t('contrato:vista.tabla.tareaValor', { mult: BOSS_MULTIPLIER }) },
+    {
+      label: t('contrato:vista.tabla.campana'),
+      value: t('contrato:vista.tabla.campanaValor', { min: DUNGEON_CLEAR_XP.E, max: DUNGEON_CLEAR_XP.S }),
+    },
+    { label: t('contrato:vista.tabla.extra'), value: t('contrato:vista.tabla.pb', { pb: DIFFICULTIES.map((d) => BONUS_BY_DIFFICULTY[d]).join(' · ') }) },
   ];
   const perdidas = [
-    { label: 'Misión del día sin hacer', value: `−${Math.round(PENALTY_FACTOR * 100)} % de su XP · tope −${DAILY_PENALTY_CAP}/día` },
-    { label: 'Romper una norma firmada', value: `−${RULE_BREAK_XP} XP + consecuencia` },
-    { label: 'Piedra de protección', value: 'Absorbe todo el daño de un día' },
+    {
+      label: t('contrato:vista.tabla.sinHacer'),
+      value: t('contrato:vista.tabla.sinHacerValor', { pct: Math.round(PENALTY_FACTOR * 100), tope: DAILY_PENALTY_CAP }),
+    },
+    { label: t('contrato:vista.tabla.romper'), value: t('contrato:vista.tabla.romperValor', { xp: RULE_BREAK_XP }) },
+    { label: t('contrato:vista.tabla.piedra'), value: t('contrato:vista.tabla.piedraValor') },
   ];
   return { ganancias, perdidas };
 }
@@ -126,7 +137,7 @@ function Tabla({ filas }: { filas: { label: string; value: string }[] }) {
           key={f.label}
           style={[styles.tablaFila, i > 0 && styles.hairline]}
           accessible
-          accessibilityLabel={`${f.label}: ${f.value}`}
+          accessibilityLabel={t('contrato:vista.tabla.filaA11y', { concepto: f.label, valor: f.value })}
         >
           <Text style={styles.tablaConcepto} maxFontSizeMultiplier={1.35}>
             {f.label}
@@ -164,12 +175,17 @@ function FilaNorma({
         onLongPress={() => onEliminar(regla)}
         style={({ pressed }) => [styles.norma, pressed && styles.normaPulsada]}
         accessibilityRole="button"
-        accessibilityLabel={`Norma ${indice + 1}: ${regla.text}. Si la rompes: ${regla.consequence}. Cuesta ${RULE_BREAK_XP} XP.${editada ? ' Editada hoy.' : ''}`}
-        accessibilityHint="Toca para confesar que la has roto. Mantén pulsado para eliminarla."
+        accessibilityLabel={t(editada ? 'contrato:vista.norma.a11yEditada' : 'contrato:vista.norma.a11y', {
+          n: indice + 1,
+          texto: regla.text,
+          consecuencia: regla.consequence,
+          xp: RULE_BREAK_XP,
+        })}
+        accessibilityHint={t('contrato:vista.norma.pista')}
         accessibilityActions={[
-          { name: 'activate', label: 'Confesar que la has roto' },
-          { name: 'editar', label: 'Editar la norma' },
-          { name: 'longpress', label: 'Eliminar la norma' },
+          { name: 'activate', label: t('contrato:vista.norma.accionConfesar') },
+          { name: 'editar', label: t('contrato:vista.norma.accionEditar') },
+          { name: 'longpress', label: t('contrato:vista.norma.accionEliminar') },
         ]}
         onAccessibilityAction={(e) => {
           if (e.nativeEvent.actionName === 'longpress') onEliminar(regla);
@@ -185,11 +201,11 @@ function FilaNorma({
             {regla.text}
           </Text>
           <Text style={styles.normaConsecuencia} maxFontSizeMultiplier={1.35}>
-            Si la rompes: {regla.consequence}
+            {t('contrato:vista.norma.siLaRompes', { consecuencia: regla.consequence })}
           </Text>
           {editada ? (
             <Text style={styles.normaEditada} maxFontSizeMultiplier={1.35}>
-              Editada hoy. Las roturas anteriores quedan en la versión archivada.
+              {t('contrato:vista.norma.editadaHoy')}
             </Text>
           ) : null}
         </View>
@@ -201,7 +217,7 @@ function FilaNorma({
         onPress={() => onEditar(regla)}
         style={({ pressed }) => [styles.editar, pressed && styles.normaPulsada]}
         accessibilityRole="button"
-        accessibilityLabel={`Editar la norma ${indice + 1}`}
+        accessibilityLabel={t('contrato:vista.norma.editarA11y', { n: indice + 1 })}
       >
         <Ionicons name="create-outline" size={18} color={ink.ink8} />
       </Pressable>
@@ -223,19 +239,19 @@ function Carta({
 }) {
   if (!carta) {
     return (
-      <TarjetaArena variante="contorno" rotulo="Sin carta">
+      <TarjetaArena variante="contorno" rotulo={t('contrato:vista.carta.sinCarta')}>
         <Text style={styles.cartaTexto} maxFontSizeMultiplier={1.35}>
-          Escríbele a quien serás. El sistema la sella y la custodia hasta el día señalado.
+          {t('contrato:vista.carta.sinCartaTexto')}
         </Text>
-        <Button title="Escribir la carta" variant="secondary" size="sm" icon="create-outline" onPress={onEscribir} style={styles.cartaBoton} />
+        <Button title={t('contrato:vista.carta.escribir')} variant="secondary" size="sm" icon="create-outline" onPress={onEscribir} style={styles.cartaBoton} />
       </TarjetaArena>
     );
   }
   if (carta.opened_at) {
     return (
-      <TarjetaArena variante="piedra" rotulo="Abierta">
+      <TarjetaArena variante="piedra" rotulo={t('contrato:vista.carta.abierta')}>
         <Text style={styles.cartaMeta} maxFontSizeMultiplier={1.35}>
-          Sellada el {fecha(carta.sealed_at)}. Abierta el {fecha(carta.opened_at)}.
+          {t('contrato:vista.carta.abiertaMeta', { sellada: fecha(carta.sealed_at), abierta: fecha(carta.opened_at) })}
         </Text>
         <Text style={styles.cartaCuerpo}>{carta.body}</Text>
       </TarjetaArena>
@@ -243,30 +259,30 @@ function Carta({
   }
   if (carta.open_at <= hoy) {
     return (
-      <TarjetaArena variante="grano" rotulo="Ha llegado el día">
+      <TarjetaArena variante="grano" rotulo={t('contrato:vista.carta.haLlegado')}>
         <Text style={styles.cartaTexto} maxFontSizeMultiplier={1.35}>
-          La carta que sellaste el {fecha(carta.sealed_at)} espera.
+          {t('contrato:vista.carta.espera', { sellada: fecha(carta.sealed_at) })}
         </Text>
-        <Button title="Abrir la carta" variant="secondary" size="sm" icon="mail-open-outline" onPress={onAbrir} style={styles.cartaBoton} />
+        <Button title={t('contrato:vista.carta.abrir')} variant="secondary" size="sm" icon="mail-open-outline" onPress={onAbrir} style={styles.cartaBoton} />
       </TarjetaArena>
     );
   }
   if (esCompromiso(carta.body)) {
     return (
-      <TarjetaArena variante="piedra" rotulo="Firmado por ti">
+      <TarjetaArena variante="piedra" rotulo={t('contrato:vista.carta.firmado')}>
         <Text style={styles.cartaMeta} maxFontSizeMultiplier={1.35}>
-          Firmado el {fecha(carta.sealed_at)}. Vence el {fecha(carta.open_at)}.
+          {t('contrato:vista.carta.firmadoMeta', { firmado: fecha(carta.sealed_at), vence: fecha(carta.open_at) })}
         </Text>
         <Text style={styles.cartaCuerpo}>{carta.body}</Text>
       </TarjetaArena>
     );
   }
   return (
-    <TarjetaArena variante="contorno" rotulo="Sellada">
+    <TarjetaArena variante="contorno" rotulo={t('contrato:vista.carta.sellada')}>
       <View style={styles.sellada}>
         <Ionicons name="lock-closed-outline" size={20} color={ink.ink6} />
         <Text style={[styles.cartaTexto, styles.flex]} maxFontSizeMultiplier={1.35}>
-          Sellada el {fecha(carta.sealed_at)}. Se abrirá el {fecha(carta.open_at)}. Hasta entonces, a trabajar.
+          {t('contrato:vista.carta.selladaTexto', { sellada: fecha(carta.sealed_at), apertura: fecha(carta.open_at) })}
         </Text>
       </View>
     </TarjetaArena>
@@ -290,18 +306,18 @@ export function ContratoVista({
   const subtitulo = !conPerfil
     ? undefined
     : !hayReglas
-      ? 'Sin normas firmadas. El sistema solo hace cumplir lo que tú firmas.'
-      : `${reglas.length} ${reglas.length === 1 ? 'norma firmada' : 'normas firmadas'} · ${bonus} PB en la bolsa`;
+      ? t('contrato:vista.subtituloVacio')
+      : t('contrato:vista.subtitulo', { count: reglas.length, bonus });
 
   const encabezado = (
     <EncabezadoArena
       onVolver={acciones.onVolver}
-      eyebrow="Lo que tú firmas"
-      titulo="Contrato"
+      eyebrow={t('contrato:vista.eyebrow')}
+      titulo={t('contrato:vista.titulo')}
       subtitulo={cargado ? subtitulo : undefined}
       accion={
         cargado && conPerfil && hayReglas
-          ? { icono: 'add', etiqueta: 'Firmar una norma nueva', onPress: acciones.onNuevaNorma, solida: true }
+          ? { icono: 'add', etiqueta: t('contrato:vista.nuevaNorma'), onPress: acciones.onNuevaNorma, solida: true }
           : undefined
       }
     />
@@ -311,7 +327,7 @@ export function ContratoVista({
     return (
       <Screen>
         {encabezado}
-        <CargaArena etiqueta="Leyendo el contrato" formas={['tarjeta', 'franja', 'filas']} />
+        <CargaArena etiqueta={t('contrato:vista.cargando')} formas={['tarjeta', 'franja', 'filas']} />
       </Screen>
     );
   }
@@ -343,7 +359,7 @@ export function ContratoVista({
           <TarjetaArena variante="piedra" remaches zocalo>
             <Meandro alto={8} />
             <Text style={styles.rotulo} accessibilityRole="header" maxFontSizeMultiplier={1.35}>
-              CONTRATO
+              {t('contrato:vista.rotulo')}
             </Text>
             {hayReglas ? (
               reglas.map((r, i) => (
@@ -360,14 +376,14 @@ export function ContratoVista({
             ) : (
               <View style={styles.vacio}>
                 <Text style={styles.vacioTitulo} maxFontSizeMultiplier={1.35}>
-                  Ninguna norma firmada
+                  {t('contrato:vista.vacioTitulo')}
                 </Text>
                 <Text style={styles.vacioTexto} maxFontSizeMultiplier={1.35}>
-                  Aquí van las normas que tú te impones y su consecuencia. El sistema solo las hace cumplir.
+                  {t('contrato:vista.vacioTexto')}
                 </Text>
-                <Button title="Firmar la primera norma" icon="add" onPress={acciones.onNuevaNorma} disabled={!conPerfil} />
+                <Button title={t('contrato:vista.primeraNorma')} icon="add" onPress={acciones.onNuevaNorma} disabled={!conPerfil} />
                 <Button
-                  title="Cargar mis normas del cuaderno"
+                  title={t('contrato:vista.cargarCuaderno')}
                   variant="ghost"
                   size="sm"
                   onPress={acciones.onCargarPlantilla}
@@ -379,23 +395,26 @@ export function ContratoVista({
           </TarjetaArena>
           {hayReglas ? (
             <Text style={styles.nota} maxFontSizeMultiplier={1.35}>
-              Toca una norma para confesar que la has roto. Mantén pulsada para eliminarla. El lápiz la edita desde
-              hoy. Cada noche se marcan las cumplidas en Hábitos.
+              {t('contrato:vista.notaNormas')}
             </Text>
           ) : null}
         </View>
       </Entrada>
 
       <Entrada indice={2}>
-        <Section title="Puntos bonus" tone="logro" meta={`${gastadoSemana}/${REDEEM_WEEKLY_CAP} canjeados`}>
+        <Section
+          title={t('contrato:vista.bonusTitulo')}
+          tone="logro"
+          meta={t('contrato:vista.bonusMeta', { gastado: gastadoSemana, tope: REDEEM_WEEKLY_CAP })}
+        >
           <FranjaCifras
             cifras={[
-              { valor: bonus, rotulo: 'En la bolsa', sufijo: ' PB' },
-              { valor: canjeables, rotulo: 'Canjeables esta semana', sufijo: ' PB' },
+              { valor: bonus, rotulo: t('contrato:vista.enBolsa'), sufijo: ' PB' }, // i18n-ok: unidad
+              { valor: canjeables, rotulo: t('contrato:vista.canjeables'), sufijo: ' PB' }, // i18n-ok: unidad
             ]}
           />
           <Button
-            title={`Canjear ${REDEEM_COST} PB · 1 h de descanso`}
+            title={t('contrato:vista.canjear', { coste: REDEEM_COST })}
             variant="secondary"
             size="sm"
             icon="cafe-outline"
@@ -404,29 +423,28 @@ export function ContratoVista({
             style={styles.canjear}
           />
           <Text style={styles.nota} maxFontSizeMultiplier={1.35}>
-            Las misiones extra pagan en PB, no en XP. {REDEEM_COST} PB son 1 h de descanso sin culpa, con tope de{' '}
-            {REDEEM_WEEKLY_CAP} PB cada 7 días.
+            {t('contrato:vista.notaBonus', { coste: REDEEM_COST, tope: REDEEM_WEEKLY_CAP })}
           </Text>
         </Section>
       </Entrada>
 
       <Entrada indice={3}>
-        <Section title="Carta a tu yo del futuro">
+        <Section title={t('contrato:vista.cartaTitulo')}>
           <Carta carta={carta} hoy={hoy} onEscribir={acciones.onEscribirCarta} onAbrir={acciones.onAbrirCarta} />
         </Section>
       </Entrada>
 
       <Entrada indice={4}>
-        <Section title="Así se gana">
+        <Section title={t('contrato:vista.gana')}>
           <Tabla filas={ganancias} />
         </Section>
       </Entrada>
 
       <Entrada indice={5}>
-        <Section title="Así se pierde" tone="alerta">
+        <Section title={t('contrato:vista.pierde')} tone="alerta">
           <Tabla filas={perdidas} />
           <Text style={styles.nota} maxFontSizeMultiplier={1.35}>
-            Toda la app puntúa con esta tabla: mismo esfuerzo, misma recompensa. Los PB no dan XP: se canjean por descanso.
+            {t('contrato:vista.notaTabla')}
           </Text>
         </Section>
       </Entrada>

@@ -9,6 +9,7 @@
 import type { ReactNode } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { ink, space, stroke, type as tipo } from '@/design/tokens';
+import { t } from '@/i18n';
 
 interface Props {
   /** "I", "II"... Cinzel no tiene minúsculas: los romanos le sientan bien. */
@@ -41,7 +42,7 @@ export function Pregunta({ numeral, title, hint, done, primera, children }: Prop
           <Text
             style={styles.title}
             accessibilityRole="header"
-            accessibilityLabel={`${numeral}. ${title}${done ? ', respondida' : ''}`}
+            accessibilityLabel={t(done ? 'diario:pregunta.a11yRespondida' : 'diario:pregunta.a11y', { numeral, titulo: title })}
             maxFontSizeMultiplier={1.35}
           >
             {title}

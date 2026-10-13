@@ -30,19 +30,21 @@ import {
 } from '@/components/arena';
 import { Button, EmptyState, Row, Screen, Section, SIN_DATO, Tag } from '@/components/ui';
 import { ink, space, stroke, type as tipo } from '@/design/tokens';
+import { t } from '@/i18n';
 import { NOMBRE_CATEGORIA, type Budget, type MoneyPlan, type Transaction } from '@/lib/money';
 import { tasaAhorro, type ResumenMes, type Suscripcion } from '@/lib/moneymath';
 import { fechaCorta } from '@/components/fecha';
 import { eur, eurSigno, num } from './formato';
 
 
-const MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sept', 'oct', 'nov', 'dic'];
+/** Claves de economia:vista.mesCorto, de enero a diciembre. */
+const MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sept', 'oct', 'nov', 'dic'] as const;
 
 /** 'AAAA-MM' → «sept 2026». */
 function mesLabel(mes: string): string {
   const [a, m] = mes.split('-');
-  const i = Number(m) - 1;
-  return MESES[i] ? `${MESES[i]} ${a}` : mes;
+  const clave = MESES[Number(m) - 1];
+  return clave ? t('economia:vista.mesAnio', { mes: t(`economia:vista.mesCorto.${clave}`), anio: a }) : mes;
 }
 
 /** Lo que useEconomia calcula de los movimientos, el saldo y el plan. */
@@ -123,7 +125,7 @@ function FilaMeta({
       <View
         style={styles.metaCab}
         accessible
-        accessibilityLabel={`${nombre}: ${eur(hecho)} de ${eur(meta)}`}
+        accessibilityLabel={t('economia:vista.metaA11y', { nombre, hecho: eur(hecho), meta: eur(meta) })}
       >
         <Text style={styles.metaNombre} maxFontSizeMultiplier={1.35} numberOfLines={1}>
           {nombre}
@@ -165,7 +167,13 @@ export function EconomiaVista({
   const colchon = plan?.runway_target_months ? Number(plan.runway_target_months) : null;
   const desbordado = vista.ritmo !== null && vista.ritmo > 1.1;
   const ritmoTexto =
-    vista.ritmo === null ? null : vista.ritmo > 1.1 ? 'vas desbordado' : vista.ritmo < 0.9 ? 'vas sobrado' : 'en el guion';
+    vista.ritmo === null
+      ? null
+      : vista.ritmo > 1.1
+        ? t('economia:vista.ritmoDesbordado')
+        : vista.ritmo < 0.9
+          ? t('economia:vista.ritmoSobrado')
+          : t('economia:vista.ritmoGuion');
   const bajoColchon = vista.aire !== null && colchon !== null && vista.aire < colchon;
   const anualSuscripciones = vista.suscripciones.reduce((a, s) => a + s.anual, 0);
 
@@ -175,19 +183,19 @@ export function EconomiaVista({
   const subtitulo = !cargado || falloEntero
     ? undefined
     : !hayMovimientos
-      ? 'El sistema no ve tu dinero todavía.'
-      : `Día ${vista.dia} de ${vista.totalDias}. Al ritmo actual cierras el mes en ${eur(vista.proyeccion)} de gasto.`;
+      ? t('economia:vista.subtituloVacio')
+      : t('economia:vista.subtitulo', { dia: vista.dia, total: vista.totalDias, proyeccion: eur(vista.proyeccion) });
 
   const encabezado = (
     <EncabezadoArena
       onVolver={acciones.onVolver}
-      eyebrow="Dinero"
-      titulo="Economía"
+      eyebrow={t('economia:vista.eyebrow')}
+      titulo={t('economia:vista.titulo')}
       subtitulo={subtitulo}
       meandro
       accion={
         cargado && !falloEntero
-          ? { icono: 'add', etiqueta: 'Registrar movimiento en efectivo', onPress: acciones.onNuevo, solida: true }
+          ? { icono: 'add', etiqueta: t('economia:vista.nuevo'), onPress: acciones.onNuevo, solida: true }
           : undefined
       }
     />
@@ -198,7 +206,7 @@ export function EconomiaVista({
       <Screen>
         {encabezado}
         <CargaArena
-          etiqueta="Leyendo tus cuentas. El sistema suma los últimos seis meses."
+          etiqueta={t('economia:vista.cargando')}
           formas={['franja', 'franja', 'rotulo', 'tarjeta', 'rotulo', 'filas']}
         />
       </Screen>
@@ -218,25 +226,37 @@ export function EconomiaVista({
   // web adjustsFontSizeToFit no encoge el texto).
   const franjas: Cifra[][] = [
     [
-      { valor: num(vista.saldo), sufijo: ' €', rotulo: 'Saldo', etiqueta: `Saldo: ${eur(vista.saldo)}` },
+      { valor: num(vista.saldo), sufijo: ' €', rotulo: t('economia:vista.saldo'), etiqueta: t('economia:vista.saldoA11y', { importe: eur(vista.saldo) }) },
       {
         valor: num(vista.esteMes.gastos),
         sufijo: ' €',
-        rotulo: 'Gastado',
-        etiqueta: `Gastado este mes: ${eur(vista.esteMes.gastos)}${desbordado ? ', vas desbordado' : ''}`,
+        rotulo: t('economia:vista.gastado'),
+        etiqueta: t(desbordado ? 'economia:vista.gastadoDesbordadoA11y' : 'economia:vista.gastadoA11y', {
+          importe: eur(vista.esteMes.gastos),
+        }),
       },
     ],
     [
-      { valor: num(vista.esteMes.ingresos), sufijo: ' €', rotulo: 'Entrado', etiqueta: `Entrado este mes: ${eur(vista.esteMes.ingresos)}` },
+      {
+        valor: num(vista.esteMes.ingresos),
+        sufijo: ' €',
+        rotulo: t('economia:vista.entrado'),
+        etiqueta: t('economia:vista.entradoA11y', { importe: eur(vista.esteMes.ingresos) }),
+      },
       tasa === null
-        ? { valor: SIN_DATO, rotulo: 'Ahorro', etiqueta: 'Ahorro: sin dato' }
-        : { valor: tasa.toFixed(0), sufijo: ' %', rotulo: 'Ahorro' },
+        ? { valor: SIN_DATO, rotulo: t('economia:vista.ahorro'), etiqueta: t('economia:vista.ahorroSinDatoA11y') }
+        : { valor: tasa.toFixed(0), sufijo: ' %', rotulo: t('economia:vista.ahorro') },
     ],
     [
-      { valor: num(vista.proyeccion), sufijo: ' €', rotulo: 'Proyección', etiqueta: `Proyección del mes: ${eur(vista.proyeccion)}` },
+      {
+        valor: num(vista.proyeccion),
+        sufijo: ' €',
+        rotulo: t('economia:vista.proyeccion'),
+        etiqueta: t('economia:vista.proyeccionA11y', { importe: eur(vista.proyeccion) }),
+      },
       vista.ritmo === null
-        ? { valor: SIN_DATO, rotulo: 'Ritmo', etiqueta: 'Ritmo: sin dato' }
-        : { valor: `×${num(vista.ritmo, 2)}`, rotulo: 'Ritmo', etiqueta: `Ritmo: por ${num(vista.ritmo, 2)}` },
+        ? { valor: SIN_DATO, rotulo: t('economia:vista.ritmo'), etiqueta: t('economia:vista.ritmoSinDatoA11y') }
+        : { valor: `×${num(vista.ritmo, 2)}`, rotulo: t('economia:vista.ritmo'), etiqueta: t('economia:vista.ritmoA11y', { ritmo: num(vista.ritmo, 2) }) },
     ],
   ];
 
@@ -260,16 +280,16 @@ export function EconomiaVista({
         <Entrada indice={1}>
           <TarjetaArena
             variante="grano"
-            rotulo="El sistema aprende"
+            rotulo={t('economia:vista.aprendeRotulo')}
             onPress={acciones.onOlvidarAprendido}
-            accessibilityLabel={`El sistema aprende. ${aprendido} Toca para ocultarlo.`}
+            accessibilityLabel={t('economia:vista.aprendeA11y', { texto: aprendido })}
             style={styles.bloque}
           >
             <Text style={styles.texto} maxFontSizeMultiplier={1.35}>
               {aprendido}
             </Text>
             <Text style={styles.ocultar} maxFontSizeMultiplier={1.35}>
-              Toca para ocultar
+              {t('economia:vista.ocultar')}
             </Text>
           </TarjetaArena>
         </Entrada>
@@ -281,9 +301,9 @@ export function EconomiaVista({
             <EmptyState
               compact
               icon="wallet-outline"
-              title="El sistema no ve tu dinero"
-              body="Registra lo que pagas en efectivo con el botón de arriba."
-              action={{ label: 'Registrar movimiento', onPress: acciones.onNuevo }}
+              title={t('economia:vista.vacioTitulo')}
+              body={t('economia:vista.vacioCuerpo')}
+              action={{ label: t('economia:vista.registrarMovimiento'), onPress: acciones.onNuevo }}
             />
           </TarjetaArena>
         </Entrada>
@@ -299,27 +319,30 @@ export function EconomiaVista({
 
           {tope !== null || objetivoIngresos !== null ? (
             <Entrada indice={2}>
-              <Section title="Plan del mes" tone={desbordado ? 'alerta' : 'default'}>
+              <Section title={t('economia:vista.plan')} tone={desbordado ? 'alerta' : 'default'}>
                 <View style={styles.lista}>
                   {tope !== null ? (
                     <FilaMeta
                       primera
-                      nombre="Tope de gasto"
+                      nombre={t('economia:vista.tope')}
                       hecho={vista.esteMes.gastos}
                       meta={tope}
-                      nota={ritmoTexto && vista.ritmo !== null ? `Ritmo ×${num(vista.ritmo, 2)}: ${ritmoTexto}.` : null}
+                      nota={ritmoTexto && vista.ritmo !== null ? t('economia:vista.ritmoNota', { ritmo: num(vista.ritmo, 2), estado: ritmoTexto }) : null}
                     />
                   ) : null}
                   {objetivoIngresos !== null ? (
                     <FilaMeta
                       primera={tope === null}
-                      nombre="Objetivo de ingresos"
+                      nombre={t('economia:vista.objetivoIngresos')}
                       hecho={vista.esteMes.ingresos}
                       meta={objetivoIngresos}
                       nota={
                         vista.esteMes.ingresos >= objetivoIngresos
-                          ? 'Objetivo cumplido.'
-                          : `Faltan ${eur(objetivoIngresos - vista.esteMes.ingresos)} en ${vista.totalDias - vista.dia} días.`
+                          ? t('economia:vista.objetivoCumplido')
+                          : t('economia:vista.faltan', {
+                              importe: eur(objetivoIngresos - vista.esteMes.ingresos),
+                              dias: vista.totalDias - vista.dia,
+                            })
                       }
                     />
                   ) : null}
@@ -329,28 +352,28 @@ export function EconomiaVista({
           ) : null}
 
           <Entrada indice={3}>
-            <Section title="Meses de aire" tone={bajoColchon ? 'alerta' : 'default'}>
+            <Section title={t('economia:vista.aire')} tone={bajoColchon ? 'alerta' : 'default'}>
               {vista.aire === null ? (
                 <Text style={styles.texto} maxFontSizeMultiplier={1.35}>
-                  Sin saldo o sin gasto medio: no hay cuenta atrás que dar.
+                  {t('economia:vista.sinAire')}
                 </Text>
               ) : (
                 <View>
                   <View
                     style={styles.aire}
                     accessible
-                    accessibilityLabel={`${num(vista.aire, 1)} meses de aire con el gasto medio actual`}
+                    accessibilityLabel={t('economia:vista.aireA11y', { meses: num(vista.aire, 1) })}
                   >
                     <Text style={styles.aireCifra} maxFontSizeMultiplier={1.2}>
                       {num(vista.aire, 1)}
-                      <Text style={styles.aireUnidad}> meses</Text>
+                      <Text style={styles.aireUnidad}> {t('economia:vista.aireUnidad')}</Text>
                     </Text>
                     <Text style={styles.rotulo} maxFontSizeMultiplier={1.35}>
-                      Con el gasto medio actual
+                      {t('economia:vista.conGastoMedio')}
                     </Text>
                   </View>
                   <Text style={styles.nota} maxFontSizeMultiplier={1.35}>
-                    {eur(vista.saldo)} de saldo entre {eur(vista.gastoMedio)} de gasto medio al mes.
+                    {t('economia:vista.saldoEntre', { saldo: eur(vista.saldo), gasto: eur(vista.gastoMedio) })}
                   </Text>
                   {colchon !== null ? (
                     <View style={styles.colchon}>
@@ -358,10 +381,10 @@ export function EconomiaVista({
                         ratio={vista.aire / colchon}
                         alto={4}
                         tono={bajoColchon ? 'ink8' : 'blanco'}
-                        etiqueta={`Colchón pactado de ${colchon} meses`}
+                        etiqueta={t('economia:vista.colchonA11y', { meses: colchon })}
                       />
                       <Text style={styles.nota} maxFontSizeMultiplier={1.35}>
-                        {bajoColchon ? 'Por debajo' : 'Por encima'} del colchón pactado de {colchon} meses.
+                        {t(bajoColchon ? 'economia:vista.porDebajo' : 'economia:vista.porEncima', { meses: colchon })}
                       </Text>
                     </View>
                   ) : null}
@@ -372,7 +395,7 @@ export function EconomiaVista({
 
           {vista.sinClasificar.length > 0 ? (
             <Entrada indice={4}>
-              <Section title="Sin clasificar" meta={`${vista.sinClasificar.length}`}>
+              <Section title={t('economia:vista.sinClasificar')} meta={`${vista.sinClasificar.length}`}>
                 <View style={styles.lista}>
                   {vista.sinClasificar.slice(0, 8).map((m, i) => (
                     <Row
@@ -384,12 +407,16 @@ export function EconomiaVista({
                       trailing={<ImporteSigno n={m.amount} />}
                       chevron
                       onPress={() => acciones.onEditar(m)}
-                      accessibilityLabel={`Clasificar ${m.description}, ${m.amount < 0 ? 'gasto' : 'ingreso'} de ${eur(Math.abs(m.amount), 2)}, el ${fechaCorta(m.date)}`}
+                      accessibilityLabel={t(m.amount < 0 ? 'economia:vista.clasificarGastoA11y' : 'economia:vista.clasificarIngresoA11y', {
+                        concepto: m.description,
+                        importe: eur(Math.abs(m.amount), 2),
+                        fecha: fechaCorta(m.date),
+                      })}
                     />
                   ))}
                 </View>
                 <Button
-                  title="Que los clasifique el sistema"
+                  title={t('economia:vista.clasificarTodo')}
                   variant="secondary"
                   icon="sparkles-outline"
                   onPress={acciones.onClasificarTodo}
@@ -397,18 +424,17 @@ export function EconomiaVista({
                   style={styles.boton}
                 />
                 <Text style={styles.nota} maxFontSizeMultiplier={1.35}>
-                  Este dinero no aparece en ningún presupuesto. Toca uno para decirle qué era: el sistema
-                  aprende la regla y no vuelve a preguntártelo.
+                  {t('economia:vista.notaSinClasificar')}
                 </Text>
               </Section>
             </Entrada>
           ) : null}
 
           <Entrada indice={5}>
-            <Section title="En qué se va" meta={vista.categorias.length > 0 ? `${vista.categorias.length}` : undefined}>
+            <Section title={t('economia:vista.enQueSeVa')} meta={vista.categorias.length > 0 ? `${vista.categorias.length}` : undefined}>
               {vista.categorias.length === 0 ? (
                 <TarjetaArena variante="contorno">
-                  <EmptyState compact icon="pie-chart-outline" title="Sin gastos este mes" />
+                  <EmptyState compact icon="pie-chart-outline" title={t('economia:vista.sinGastos')} />
                 </TarjetaArena>
               ) : (
                 <View style={styles.lista}>
@@ -421,13 +447,21 @@ export function EconomiaVista({
                         key={c.categoria}
                         style={[styles.meta, i > 0 && styles.conRegla]}
                         accessible
-                        accessibilityLabel={`${nombre}: ${eur(c.total)}${limite ? ` de un límite de ${eur(Number(limite.monthly_limit))}` : ''}${pasado ? ', por encima del límite' : ''}`}
+                        accessibilityLabel={
+                          limite
+                            ? t(pasado ? 'economia:vista.categoriaPasadaA11y' : 'economia:vista.categoriaLimiteA11y', {
+                                nombre,
+                                importe: eur(c.total),
+                                limite: eur(Number(limite.monthly_limit)),
+                              })
+                            : t('economia:vista.categoriaA11y', { nombre, importe: eur(c.total) })
+                        }
                       >
                         <View style={styles.metaCab}>
                           <Text style={styles.metaNombre} numberOfLines={1} maxFontSizeMultiplier={1.35}>
                             {nombre}
                           </Text>
-                          {pasado ? <Tag tone="alerta">Pasado</Tag> : null}
+                          {pasado ? <Tag tone="alerta">{t('economia:vista.pasado')}</Tag> : null}
                           <Text style={styles.importe} maxFontSizeMultiplier={1.2}>
                             {num(c.total)}
                             <Text style={styles.unidad}> €</Text>
@@ -451,16 +485,16 @@ export function EconomiaVista({
 
           <Entrada indice={6}>
             <Section
-              title="Cargos recurrentes"
-              meta={vista.suscripciones.length > 0 ? `${eur(anualSuscripciones)} al año` : undefined}
+              title={t('economia:vista.recurrentes')}
+              meta={vista.suscripciones.length > 0 ? t('economia:vista.alAnio', { importe: eur(anualSuscripciones) }) : undefined}
             >
               {vista.suscripciones.length === 0 ? (
                 <TarjetaArena variante="contorno">
                   <EmptyState
                     compact
                     icon="repeat-outline"
-                    title="Ninguno detectado"
-                    body="Hacen falta tres meses de histórico para verlos."
+                    title={t('economia:vista.ningunoTitulo')}
+                    body={t('economia:vista.ningunoCuerpo')}
                   />
                 </TarjetaArena>
               ) : (
@@ -472,15 +506,18 @@ export function EconomiaVista({
                         first={i === 0}
                         leading={<Ionicons name="repeat-outline" size={18} color={ink.ink6} />}
                         title={s.cobrador}
-                        detail={`${eur(s.importeMedio, 2)} al mes · ${s.meses} meses · último ${fechaCorta(s.ultimo)}`}
-                        trailing={<Importe texto={num(s.anual)} unidad=" €/año" />}
-                        accessibilityLabel={`${s.cobrador}: ${eur(s.anual)} al año`}
+                        detail={t('economia:vista.recurrenteDetalle', {
+                          importe: eur(s.importeMedio, 2),
+                          meses: s.meses,
+                          fecha: fechaCorta(s.ultimo),
+                        })}
+                        trailing={<Importe texto={num(s.anual)} unidad={` ${t('economia:vista.unidadAnio')}`} />}
+                        accessibilityLabel={t('economia:vista.recurrenteA11y', { cobrador: s.cobrador, importe: eur(s.anual) })}
                       />
                     ))}
                   </View>
                   <Text style={styles.nota} maxFontSizeMultiplier={1.35}>
-                    Son {eur(anualSuscripciones)} al año que se cobran solos. Cancelar lo que no usas es el
-                    único ahorro que no exige disciplina.
+                    {t('economia:vista.notaRecurrentes', { importe: eur(anualSuscripciones) })}
                   </Text>
                 </>
               )}
@@ -489,17 +526,17 @@ export function EconomiaVista({
 
           {vista.cerrados.length > 0 ? (
             <Entrada indice={7}>
-              <Section title="Meses cerrados" meta={`${vista.cerrados.length}`}>
+              <Section title={t('economia:vista.cerrados')} meta={`${vista.cerrados.length}`}>
                 <View style={styles.lista}>
                   {vista.cerrados.slice(-5).reverse().map((r, i) => (
                     <Row
                       key={r.mes}
                       first={i === 0}
                       title={mesLabel(r.mes)}
-                      detail={`Entró ${eur(r.ingresos)} · gastó ${eur(r.gastos)}`}
+                      detail={t('economia:vista.cerradoDetalle', { ingresos: eur(r.ingresos), gastos: eur(r.gastos) })}
                       trailing={
                         r.ingresos > 0 ? (
-                          <Importe texto={(((r.ingresos - r.gastos) / r.ingresos) * 100).toFixed(0)} unidad=" % ahorro" tenue />
+                          <Importe texto={(((r.ingresos - r.gastos) / r.ingresos) * 100).toFixed(0)} unidad={` ${t('economia:vista.unidadAhorro')}`} tenue />
                         ) : undefined
                       }
                     />
