@@ -18,6 +18,7 @@
 import type AsyncStorageTipo from '@react-native-async-storage/async-storage';
 import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
+import { alCambiar, idiomaInterfaz, t } from '@/i18n';
 import {
   clavesDuelo,
   dentroDeRet06,
@@ -117,7 +118,7 @@ async function prepararCanales(): Promise<void> {
   if (Platform.OS !== 'android') return;
   const { AndroidImportance, AndroidNotificationVisibility } = Notifications;
   await Notifications.setNotificationChannelAsync(CANALES.despertar, {
-    name: 'Despertador',
+    name: t('avisos:canales.despertar'),
     importance: AndroidImportance.MAX,
     sound: 'default',
     vibrationPattern: [0, 400, 200, 400],
@@ -125,18 +126,18 @@ async function prepararCanales(): Promise<void> {
     bypassDnd: true,
   });
   await Notifications.setNotificationChannelAsync(CANALES.bloque, {
-    name: 'Bloques del día',
+    name: t('avisos:canales.bloque'),
     importance: AndroidImportance.HIGH,
     sound: 'default',
     vibrationPattern: [0, 250],
   });
   await Notifications.setNotificationChannelAsync(CANALES.cierre, {
-    name: 'Cierre del día',
+    name: t('avisos:canales.cierre'),
     importance: AndroidImportance.HIGH,
     sound: 'default',
   });
   await Notifications.setNotificationChannelAsync(CANALES.sistema, {
-    name: 'El sistema',
+    name: t('avisos:canales.sistema'),
     importance: AndroidImportance.DEFAULT,
   });
 }
@@ -145,12 +146,15 @@ async function prepararCategorias(): Promise<void> {
   // Acciones desde la propia notificación. Si la app está viva se aplican al
   // instante; si no, expo-notifications entrega la respuesta en el siguiente
   // arranque y se aplica entonces (ver manejarRespuestas).
+  // Los nombres de canal y los botones se vuelven a poner en cada
+  // inicializarAvisos (Hoy, al montarse): con la interfaz en otro idioma el
+  // árbol se remonta y quedan en ese idioma.
   await Notifications.setNotificationCategoryAsync(CATEGORIAS.bloque, [
-    { identifier: 'HECHO', buttonTitle: 'Hecho', options: { opensAppToForeground: false } },
-    { identifier: 'POSPONER', buttonTitle: 'Posponer 10 min', options: { opensAppToForeground: false } },
+    { identifier: 'HECHO', buttonTitle: t('avisos:acciones.hecho'), options: { opensAppToForeground: false } },
+    { identifier: 'POSPONER', buttonTitle: t('avisos:acciones.posponer'), options: { opensAppToForeground: false } },
   ]);
   await Notifications.setNotificationCategoryAsync(CATEGORIAS.cierre, [
-    { identifier: 'REPORTAR', buttonTitle: 'Reportar', options: { opensAppToForeground: true } },
+    { identifier: 'REPORTAR', buttonTitle: t('avisos:acciones.reportar'), options: { opensAppToForeground: true } },
   ]);
 }
 
@@ -183,7 +187,7 @@ export async function estadoAvisos(): Promise<EstadoAvisos> {
       permitido: false,
       puedePreguntar: false,
       programados: 0,
-      error: errorDeAvisos(e, 'Fallo leyendo el estado de los avisos.'),
+      error: errorDeAvisos(e, t('avisos:error.estado')),
     };
   }
 }
@@ -198,7 +202,7 @@ export async function inicializarAvisos(): Promise<boolean> {
   } catch (e) {
     // Antes esto se tragaba en silencio: en Expo Go las notificaciones no
     // están disponibles y no había forma de saberlo. Ahora queda registrado.
-    ultimoError = errorDeAvisos(e, 'Los avisos no están disponibles aquí.');
+    ultimoError = errorDeAvisos(e, t('avisos:error.noDisponibles'));
     return false;
   }
 }
@@ -220,7 +224,8 @@ let despertadorHecho: string | null = null;
 export async function programarDespertador(horaMin: number | null): Promise<void> {
   try {
     const ahora = momentoDe(new Date());
-    const firma = `${ahora.fecha}|${horaMin}`;
+    // Con el idioma en la firma: si cambia, el texto se rehace.
+    const firma = `${ahora.fecha}|${horaMin}|${idiomaInterfaz()}`;
     if (despertadorHecho === firma) return;
     despertadorHecho = firma;
     await Notifications.cancelScheduledNotificationAsync(ID_DESPERTAR).catch(() => {});
@@ -235,7 +240,7 @@ export async function programarDespertador(horaMin: number | null): Promise<void
       await Notifications.scheduleNotificationAsync({
         identifier: `${PREFIJO_DESPERTAR}${fecha}`,
         content: {
-          title: 'Arriba, gladiador',
+          title: t('avisos:despertar.titulo'),
           body: voice.morningNotif(),
           sound: 'default',
           interruptionLevel: 'timeSensitive',
@@ -250,7 +255,7 @@ export async function programarDespertador(horaMin: number | null): Promise<void
     }
   } catch (e) {
     despertadorHecho = null;
-    ultimoError = errorDeAvisos(e, 'No se pudo programar el despertador.');
+    ultimoError = errorDeAvisos(e, t('avisos:error.despertador'));
   }
 }
 
@@ -266,7 +271,7 @@ async function programarCierre(fecha: string, horaCierreMin: number): Promise<bo
   await Notifications.scheduleNotificationAsync({
     identifier: idCierre(fecha),
     content: {
-      title: 'El cierre del día se acerca',
+      title: t('avisos:cierre.titulo'),
       body: voice.eveningNotif(),
       sound: 'default',
       categoryIdentifier: CATEGORIAS.cierre,
@@ -323,7 +328,7 @@ export async function reconciliarAvisosDelDia(
           // Cuerpo fijo a propósito (Apple 4.5.4): el detalle del plan lleva
           // cargas, gramos o cifras de salud y no debe verse en la pantalla
           // bloqueada. El detalle se lee dentro de la app, en Hoy.
-          body: 'Es la hora de este bloque. El detalle está en Hoy.',
+          body: t('avisos:bloque.cuerpo'),
           sound: 'default',
           interruptionLevel: 'timeSensitive',
           categoryIdentifier: CATEGORIAS.bloque,
@@ -346,7 +351,7 @@ export async function reconciliarAvisosDelDia(
     if (generation !== healthGeneration) { await cancelarAvisosSalud(); return 0; }
     return puestas;
   } catch (e) {
-    ultimoError = errorDeAvisos(e, 'No se pudieron programar los avisos del día.');
+    ultimoError = errorDeAvisos(e, t('avisos:error.avisosDelDia'));
     return 0;
   }
 }
@@ -377,7 +382,7 @@ export async function avisarEn(
       },
     });
   } catch (e) {
-    ultimoError = errorDeAvisos(e, 'No se pudo programar el aviso.');
+    ultimoError = errorDeAvisos(e, t('avisos:error.aviso'));
   }
 }
 
@@ -577,7 +582,7 @@ async function programarPlanVigente(estado: EstadoPlanAvisos, account: number): 
     await ajustarCierre(fechasSinCierre(puestos, disparados));
     return vigente() ? puestos.length : 0;
   } catch (e) {
-    ultimoError = errorDeAvisos(e, 'No se pudieron programar los avisos del sistema.');
+    ultimoError = errorDeAvisos(e, t('avisos:error.avisosDelSistema'));
     return 0;
   }
 }
@@ -594,11 +599,19 @@ let reloj: ReturnType<typeof setTimeout> | null = null;
 let enCurso = false;
 let otraVez = false;
 
-/** Hoy registra su fuente al montarse; la función devuelta la quita. */
+/**
+ * Hoy registra su fuente al montarse; la función devuelta la quita. Mientras
+ * hay fuente, un cambio de idioma (alCambiar) reprograma el plan de avisos:
+ * el texto sale de los catálogos al programar. Es el mismo debounce de
+ * siempre, así que si quien cambia el idioma también llama a
+ * reprogramarAvisosDelPlan (Perfil) se programa una sola vez.
+ */
 export function registrarFuenteAvisos(f: FuenteAvisos): () => void {
   sourceGeneration++;
   fuente = f;
+  const dejarDeOir = alCambiar(reprogramarAvisosDelPlan);
   return () => {
+    dejarDeOir();
     if (fuente === f) {
       sourceGeneration++;
       fuente = null;
@@ -628,7 +641,7 @@ async function ejecutarReprogramacion(): Promise<void> {
       }
     }
   } catch (e) {
-    ultimoError = errorDeAvisos(e, 'No se pudieron programar los avisos del sistema.');
+    ultimoError = errorDeAvisos(e, t('avisos:error.avisosDelSistema'));
   } finally {
     enCurso = false;
   }

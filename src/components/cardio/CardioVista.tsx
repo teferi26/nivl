@@ -88,7 +88,7 @@ function FilaCardio({ s, primera, onBorrar }: { s: CardioSession; primera: boole
     <Pressable
       onLongPress={onBorrar}
       accessibilityLabel={leido}
-      accessibilityActions={[{ name: 'longpress', label: t('cardio:fila.eliminar') }]}
+      accessibilityActions={[{ name: 'longpress', label: t('comun:eliminar') }]}
       onAccessibilityAction={(e) => {
         if (e.nativeEvent.actionName === 'longpress') onBorrar();
       }}

@@ -35,7 +35,6 @@
     "sinPeso": "{{series}}×{{reps}}"
   },
   "rutina": {
-    "eliminar": "Eliminar",
     "vacioTitulo": "Sin rutina aún",
     "vacioCuerpo": "Crea tus días de entreno, por ejemplo Lunes · Empuje, y añade ejercicios a cada uno.",
     "crearPrimero": "Crear el primer día",
@@ -52,7 +51,6 @@
     "crear": "Crear día",
     "dia": "Día",
     "diaA11y": "Día de la semana",
-    "nombre": "Nombre",
     "nombrePlaceholder": "Ej. Empuje · Pierna · Full body",
     "nombreA11y": "Nombre del día de rutina"
   },

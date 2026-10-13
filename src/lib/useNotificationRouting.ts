@@ -13,6 +13,7 @@
 import * as Notifications from 'expo-notifications';
 import { useRouter } from 'expo-router';
 import { useEffect, useRef } from 'react';
+import { t } from '@/i18n';
 import { setBlockDone } from './dayplan';
 import { avisarEn } from './notifications';
 import { rutaSegura } from './voice';
@@ -38,8 +39,8 @@ async function aplicar(respuesta: Notifications.NotificationResponse, ir: (r: st
     await avisarEn(
       `nivl.posponer.${datos.blockId}`,
       new Date(Date.now() + 10 * 60 * 1000),
-      contenido.title ?? 'Recordatorio',
-      contenido.body ?? 'Sigue pendiente.',
+      contenido.title ?? t('avisos:posponer.titulo'),
+      contenido.body ?? t('avisos:posponer.cuerpo'),
       rutaSegura(datos.ruta),
     );
     return;

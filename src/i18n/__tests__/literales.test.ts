@@ -24,13 +24,16 @@ interface Registro {
   texto: string;
 }
 
-function inventario(raiz = RAIZ): Registro[] {
-  const salida = execFileSync(process.execPath, [SCRIPT, '--json', '--raiz', raiz], {
+function ejecutar<T>(modo: '--json' | '--archivos', raiz = RAIZ): T {
+  const salida = execFileSync(process.execPath, [SCRIPT, modo, '--raiz', raiz], {
     encoding: 'utf8',
     maxBuffer: 64 * 1024 * 1024,
   });
-  return JSON.parse(salida) as Registro[];
+  return JSON.parse(salida) as T;
 }
+
+const inventario = (raiz = RAIZ) => ejecutar<Registro[]>('--json', raiz);
+const archivosRecorridos = () => ejecutar<{ archivo: string; ns: string }[]>('--archivos');
 
 const mostrar = (r: Registro) => `${r.archivo}:${r.linea} ${r.tipo} «${r.texto}»`;
 
@@ -91,9 +94,31 @@ describe('carpetas migradas', () => {
     registros = inventario();
   });
 
+  // Hasta la tanda 7 esto pedía más de 1000 textos sueltos: si daba 0, el
+  // inventario no leía nada y el resto no probaba nada. Desde la tanda 8 lo
+  // normal ES 0 textos, así que se mira otra cosa: que el inventario sigue
+  // recorriendo los archivos de Experiencia (237 al cerrar la 1.0.10; si un
+  // cambio de rutas lo deja ciego, baja de golpe), que la línea base de
+  // 40abdbe está entera (2520 textos) y que cada namespace que tenía textos
+  // allí tiene ya su catálogo. Que el inventario detecta un literal lo prueba
+  // el árbol de prueba de arriba.
   it('el inventario ve el código de Experiencia', () => {
-    // Si esto da 0, el inventario no está leyendo nada y el resto no prueba nada.
-    expect(registros.length).toBeGreaterThan(1000);
+    const archivos = archivosRecorridos();
+    expect(archivos.length).toBeGreaterThan(200);
+    const porNs = new Set(archivos.map((a) => a.ns));
+    for (const ns of ['raiz', 'ui', 'hoy', 'perfil', 'coach', 'gym', 'diario', 'amigos', 'voz', 'avisos']) {
+      expect(porNs).toContain(ns);
+    }
+  });
+
+  it('la línea base está entera y todos sus namespaces tienen catálogo', () => {
+    const base = fs
+      .readFileSync(path.join(RAIZ, 'docs', 'i18n', 'textos-es.base.tsv'), 'utf8')
+      .split(/\r?\n/)
+      .filter((l) => l && !l.startsWith('#'));
+    expect(base.length).toBeGreaterThan(2000);
+    const sinCatalogo = [...new Set(base.map((l) => l.split('\t')[0]!))].filter((ns) => !migrados.includes(ns));
+    expect(sinCatalogo).toEqual([]);
   });
 
   it('0 textos sueltos en las carpetas con catálogo', () => {

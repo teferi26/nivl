@@ -37,8 +37,6 @@
     "soloReglas": "Te quedan reglas del contrato por marcar. Si no, −{{xp}} XP.",
     "salvarRacha_one": "Te falta {{count}} misión para salvar tu racha de {{dias}}.",
     "salvarRacha_other": "Te faltan {{count}} misiones para salvar tu racha de {{dias}}.",
-    "dias_one": "{{count}} día",
-    "dias_other": "{{count}} días",
     "conCoste": "{{frase}} Si no, −{{xp}} XP.",
     "piedraRacha": "Si no llegas, una piedra protegerá tu racha esta noche.",
     "piedraRachaReglas": "Si no llegas, una piedra protegerá tu racha esta noche. Las reglas sin marcar costarían −{{xp}} XP.",

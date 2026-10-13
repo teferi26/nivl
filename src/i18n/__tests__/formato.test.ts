@@ -3,7 +3,7 @@
 import { formatoMiles } from '@/components/arena/cifras';
 import { eur, eurSigno, num } from '@/components/economia/formato';
 import { fechaCorta as fechaCortaComponente } from '@/components/fecha';
-import { capital, decimal, fechaCorta, mayus, miles, moneda, nombreDia } from '@/i18n/formato';
+import { capital, decimal, fechaCorta, mayus, miles, moneda, nombreDia, nombreMes } from '@/i18n/formato';
 
 // Lo que hacían las funciones viejas, copiado tal cual de 40abdbe.
 const numViejo = (n: number, dec = 0) =>
@@ -107,11 +107,34 @@ describe('nombreDia, mayus y capital (es)', () => {
   });
 });
 
+describe('nombreMes (es)', () => {
+  it('los meses largos en minúscula, como los tenía la agenda (agenda:derivar.meses)', () => {
+    expect(Array.from({ length: 12 }, (_, i) => nombreMes(i))).toEqual([
+      'enero',
+      'febrero',
+      'marzo',
+      'abril',
+      'mayo',
+      'junio',
+      'julio',
+      'agosto',
+      'septiembre',
+      'octubre',
+      'noviembre',
+      'diciembre',
+    ]);
+    expect(nombreMes(12)).toBe('enero');
+    expect(nombreMes(-1)).toBe('diciembre');
+    expect(nombreMes(9, 'xx')).toBe('octubre');
+  });
+});
+
 describe('otros idiomas (Intl)', () => {
   it('inglés agrupa con coma y escribe el mes en inglés', () => {
     expect(miles(1840, 'en')).toBe('1,840');
     expect(fechaCorta('2026-09-14', 'en')).toMatch(/Sep/);
     expect(nombreDia(0, 'largo', 'en')).toBe('Monday');
+    expect(nombreMes(9, 'en')).toBe('October');
     expect(moneda(12, 0, 'en')).toMatch(/€/);
   });
 });

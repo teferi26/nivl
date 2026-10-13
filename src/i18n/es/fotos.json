@@ -7,8 +7,6 @@
   },
   "semanasSeguidas_one": "{{count}} semana seguida",
   "semanasSeguidas_other": "{{count}} semanas seguidas",
-  "dias_one": "{{count}} día",
-  "dias_other": "{{count}} días",
   "error": {
     "limite": "Has guardado 12 fotos en las últimas 24 horas. Podrás seguir más tarde.",
     "gate": "Ha cambiado el permiso de las fotos. Vuelve a comprobarlo.",

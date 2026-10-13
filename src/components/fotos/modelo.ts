@@ -104,7 +104,7 @@ export function textoSemanas(n: number): string {
 
 /** «1 día», «92 días». */
 export function textoDias(n: number): string {
-  return t('fotos:dias', { count: n });
+  return t('comun:dia', { count: n });
 }
 
 /** «78,4 kg». */

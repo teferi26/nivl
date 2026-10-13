@@ -23,8 +23,7 @@
     "leido": "{{tipo}} del {{fecha}}, zona {{zona}}. {{cifras}}. Mantén pulsado para eliminar.",
     "leidoExtra": "{{tipo}} del {{fecha}}, zona {{zona}}. {{cifras}}. {{extra}}. Mantén pulsado para eliminar.",
     "leidoXp": "{{tipo}} del {{fecha}}, zona {{zona}}. {{cifras}}. Más {{xp}} XP. Mantén pulsado para eliminar.",
-    "leidoExtraXp": "{{tipo}} del {{fecha}}, zona {{zona}}. {{cifras}}. {{extra}}. Más {{xp}} XP. Mantén pulsado para eliminar.",
-    "eliminar": "Eliminar"
+    "leidoExtraXp": "{{tipo}} del {{fecha}}, zona {{zona}}. {{cifras}}. {{extra}}. Más {{xp}} XP. Mantén pulsado para eliminar."
   },
   "vista": {
     "eyebrow": "Cuerpo",

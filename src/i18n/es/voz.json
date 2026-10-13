@@ -1,1 +1,124 @@
-{}
+{
+  "deMisiones": {
+    "titulo": "«{{titulo}}»",
+    "una": "de la misión {{lista}} (marcada sola)",
+    "varias": "de las misiones {{lista}} (marcadas solas)"
+  },
+  "allDone": [
+    "Todas las misiones completadas. El sistema está satisfecho.",
+    "Día cumplido, gladiador. Mañana, las siguientes.",
+    "Misiones del día completadas. Descansa: lo has ganado.",
+    "El sistema registra un día impecable."
+  ],
+  "levelUp": [
+    "Subes de nivel. El sistema lo registra.",
+    "El sistema reconoce tu progreso.",
+    "Nivel nuevo. Sumado misión a misión.",
+    "Un nivel más. La arena lo ha visto."
+  ],
+  "penaltyApplied": [
+    "El sistema ha restado {{xp}} XP. Tienes una misión de recuperación en Hoy.",
+    "Día sin cerrar: −{{xp}} XP. La recuperación ya está en tu lista.",
+    "−{{xp}} XP registrados. La misión de recuperación está en Hoy."
+  ],
+  "stoneUsed": [
+    "Se ha gastado una Piedra de Protección. La racha sigue.",
+    "El sistema ha usado una Piedra de Protección. La racha se mantiene."
+  ],
+  "stoneEarned": [
+    "Semana impecable: has forjado una Piedra de Protección.",
+    "El sistema te concede una Piedra de Protección. Guárdala para el mal día."
+  ],
+  "frozen": [
+    "Sistema en pausa ({{motivo}}). Sin misiones, sin restas, sin juicio.",
+    "Pausa activa: {{motivo}}. Nada se resta mientras dure."
+  ],
+  "morningNotif": [
+    "El sistema ha asignado tus misiones de hoy. Empieza por la primera.",
+    "Tus misiones de hoy están listas. La primera es la que cuesta.",
+    "Misiones asignadas. Cada una suma XP hacia el siguiente rango."
+  ],
+  "eveningNotif": [
+    "Quedan unas horas para el cierre. Mira qué te falta.",
+    "El cierre se acerca. Revisa tus misiones pendientes.",
+    "Antes de cerrar el día, un vistazo a lo pendiente."
+  ],
+  "dungeonCleared": [
+    "Campaña «{{titulo}}» completada. Todas las etapas cerradas.",
+    "«{{titulo}}» ha caído. El sistema registra tu victoria."
+  ],
+  "pr": [
+    "Nuevo récord en {{ejercicio}}. El sistema lo anota.",
+    "{{ejercicio}}: marca personal superada. Queda como referencia."
+  ],
+  "achievement": [
+    "Logro desbloqueado.",
+    "Logro registrado. Ya está en tu perfil.",
+    "Nueva entrada en tu leyenda."
+  ],
+  "streakHype": {
+    "sinRacha": [
+      "Sin racha por ahora. Cierra el día de hoy y empieza a contar.",
+      "Racha a cero. Un día cerrado la pone en marcha."
+    ],
+    "encendida": [
+      "La racha está encendida. Cierra hoy y suma otro día."
+    ],
+    "encendidaDias_one": "{{count}} día de racha. Hoy toca uno más.",
+    "encendidaDias_other": "{{count}} días de racha. Hoy toca uno más.",
+    "primeros": [
+      "{{dias}} días seguidos. La cadena crece. Mañana, uno más.",
+      "{{dias}} días. El sistema empieza a fiarse de ti. Sigue."
+    ],
+    "semana": [
+      "Una semana entera en pie. Tu multiplicador ya paga: cada misión vale más.",
+      "{{dias}} días seguidos. Mañana, el siguiente."
+    ],
+    "quincena": [
+      "{{dias}} días seguidos. La racha la sostienes tú, día a día.",
+      "{{dias}} días. Cada uno cerrado, ninguno regalado."
+    ],
+    "larga": [
+      "{{dias}} días. El camino a {{rango}} es este: un día más, cada día.",
+      "{{dias}} días de racha. El sistema los ha contado todos."
+    ]
+  },
+  "aviso": {
+    "racha": {
+      "titulo_one": "Racha de {{count}} día",
+      "titulo_other": "Racha de {{count}} días",
+      "cuerpo_one": "Te falta 1 misión para cerrar el día.",
+      "cuerpo_other": "Te faltan {{count}} misiones para cerrar el día."
+    },
+    "recuperacion": {
+      "titulo": "Recuperación",
+      "cuerpoBloqueada": "Completa una misión de hoy y la recuperación se abre.",
+      "tituloAbierta": "Recuperación abierta",
+      "cuerpoXp": "Completa la misión de recuperación y vuelven {{xp}} XP.",
+      "cuerpoLista": "La misión de recuperación está lista en Hoy."
+    },
+    "duelo": {
+      "tituloUno": "Tu duelo",
+      "tituloVarios": "Tus duelos",
+      "cuerpo_one": "Hay novedades en 1 duelo.",
+      "cuerpo_other": "Hay novedades en {{count}} duelos."
+    },
+    "foto": {
+      "titulo": "Fotos de la semana",
+      "cuerpo_one": "Falta 1 de 3 para cerrar la semana.",
+      "cuerpo_other": "Faltan {{count}} de 3 para cerrar la semana."
+    },
+    "rango": {
+      "titulo": "Nuevo rango",
+      "cuerpo": "Ya eres {{rango}}. Entra a verlo.",
+      "tituloGenerico": "La arena te reconoce",
+      "cuerpoGenerico": "Tienes algo nuevo que ver. Entra cuando quieras."
+    },
+    "vuelta": {
+      "titulo7": "La arena sigue aquí",
+      "cuerpo7": "Un paso basta para volver.",
+      "titulo30": "La puerta sigue abierta",
+      "cuerpo30": "Cuando quieras, empiezas por una misión."
+    }
+  }
+}

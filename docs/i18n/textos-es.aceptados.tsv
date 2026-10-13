@@ -384,18 +384,6 @@ agenda	-	misión
 agenda	-	plazo de campaña
 agenda	-	plazos de campaña
 agenda	-	misión
-agenda	+	enero
-agenda	+	febrero
-agenda	+	marzo
-agenda	+	abril
-agenda	+	mayo
-agenda	+	junio
-agenda	+	julio
-agenda	+	agosto
-agenda	+	septiembre
-agenda	+	octubre
-agenda	+	noviembre
-agenda	+	diciembre
 agenda	+	Semana {}
 agenda	+	{} a {}
 agenda	+	{} de {}
@@ -1072,3 +1060,17 @@ share	-	NIVL
 share	+	ANTES
 share	+	ABRIENDO…
 share	+	COMPARTIR
+# lote 8 (voz, avisos, cierre). voice.ts: «${days} ${plural(days, 'día', 'días')} de racha» y el título «Racha de ${n} ${plural(...)}» (que la línea base no veía, por la plantilla con llamadas) pasan a plural con count; las comillas «» de deMisiones pasan al catálogo como «{{titulo}}». notifications.ts: «No se pudieron programar los avisos del sistema.» estaba dos veces y el catálogo la guarda una. useNotificationRouting.ts entra en el inventario (avisos) y sus dos textos de reserva al posponer no estaban en la línea base. Los meses largos de la agenda (tanda 2) salen ahora de nombreMes() de @/i18n/formato y dejan el catálogo: se quitan sus 12 líneas «agenda + mes». Consolidación en comun (Eliminar, Nombre, {{count}} misión/es, {{count}} día/s): un texto que falta en su namespace vale porque está en comun. Mismo texto en pantalla.
+voz	-	{} {} de racha. Hoy toca uno más.
+voz	-	día
+voz	-	días
+voz	-	día
+voz	-	días
+voz	+	«{}»
+voz	+	{} día de racha. Hoy toca uno más.
+voz	+	{} días de racha. Hoy toca uno más.
+voz	+	Racha de {} día
+voz	+	Racha de {} días
+avisos	-	No se pudieron programar los avisos del sistema.
+avisos	+	Recordatorio
+avisos	+	Sigue pendiente.

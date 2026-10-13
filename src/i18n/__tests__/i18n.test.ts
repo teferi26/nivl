@@ -98,6 +98,18 @@ describe('otros idiomas de interfaz (pruebas)', () => {
     expect(s).toContain('2');
     expect(pseudoTexto('Hola {{nombre}} <b>ya</b>')).toMatch(/^⟦Hôlá \{\{nombre\}\} <b>yá<\/b>·+⟧$/);
   });
+
+  it('los bancos de frases (arrays de voz) siguen siendo arrays, también en pseudoidioma', () => {
+    const es = t('voz:levelUp', { returnObjects: true }) as unknown;
+    expect(Array.isArray(es)).toBe(true);
+    expect((es as string[])[0]).toBe('Subes de nivel. El sistema lo registra.');
+    const conVariable = t('voz:penaltyApplied', { returnObjects: true, xp: 30 }) as unknown as string[];
+    expect(conVariable[0]).toBe('El sistema ha restado 30 XP. Tienes una misión de recuperación en Hoy.');
+    __fijarIdiomaParaTest('xx');
+    const xx = t('voz:levelUp', { returnObjects: true }) as unknown;
+    expect(Array.isArray(xx)).toBe(true);
+    expect((xx as string[]).every((l) => l.startsWith('⟦') && l.endsWith('⟧'))).toBe(true);
+  });
 });
 
 describe('dispositivo', () => {

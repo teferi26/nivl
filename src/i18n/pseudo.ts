@@ -37,13 +37,18 @@ export function pseudoTexto(s: string): string {
   return `⟦${cuerpo}${relleno}⟧`;
 }
 
-type Arbol = { [clave: string]: string | Arbol };
+type Arbol = { [clave: string]: string | string[] | Arbol };
 
 /** El catálogo entero en pseudoidioma. */
 export function pseudoArbol<T extends Arbol>(arbol: T): T {
   const out: Arbol = {};
   for (const [clave, valor] of Object.entries(arbol)) {
-    out[clave] = typeof valor === 'string' ? pseudoTexto(valor) : pseudoArbol(valor);
+    out[clave] =
+      typeof valor === 'string'
+        ? pseudoTexto(valor)
+        : Array.isArray(valor)
+          ? valor.map(pseudoTexto)
+          : pseudoArbol(valor);
   }
   return out as T;
 }

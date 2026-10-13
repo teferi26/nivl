@@ -70,7 +70,7 @@ export function HojaDia({ visible, diaSemana, nombre, guardando, error, onDiaSem
           </View>
         </View>
         <Campo
-          etiqueta={t('gym:hojaDia.nombre')}
+          etiqueta={t('comun:nombre')}
           value={nombre}
           onChangeText={onNombre}
           placeholder={t('gym:hojaDia.nombrePlaceholder')}

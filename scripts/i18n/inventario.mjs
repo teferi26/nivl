@@ -4,6 +4,7 @@
 //   node scripts/i18n/inventario.mjs --git 40abdbe   lo mismo en un commit
 //   node scripts/i18n/inventario.mjs --tsv           una línea por texto: ns, sitio, tipo, texto
 //   node scripts/i18n/inventario.mjs --json          lo mismo en JSON (lo usan los tests)
+//   node scripts/i18n/inventario.mjs --archivos      JSON con los archivos que recorre y su namespace
 //   node scripts/i18n/inventario.mjs --raiz <dir>    otro árbol (los tests usan uno de prueba)
 //
 // Tipos de registro:
@@ -14,7 +15,7 @@
 // Un `// i18n-ok` en la línea o en la anterior deja fuera ese texto.
 //
 // Qué carpeta va a qué namespace: `namespaceDe`. Fuera quedan src/lib (salvo
-// voice.ts y notifications.ts), pro.tsx y ProOffer.tsx (de Compras), el kit,
+// voice.ts, notifications.ts y useNotificationRouting.ts), pro.tsx y ProOffer.tsx (de Compras), el kit,
 // los demos, src/i18n y las pruebas. Heurística sacada del prototipo del plan:
 // cuenta de más antes que de menos.
 
@@ -48,7 +49,12 @@ const RUTAS = {
   'src/components/denunciaIA.ts': 'puertas',
 };
 const RUTAS_CARPETA = { 'src/app/auth/': 'acceso', 'src/app/dungeon/': 'campanas', 'src/app/c/': 'creador' };
-const LIB = { 'src/lib/voice.ts': 'voz', 'src/lib/notifications.ts': 'avisos' };
+const LIB = {
+  'src/lib/voice.ts': 'voz',
+  'src/lib/notifications.ts': 'avisos',
+  // Tanda 8: el «Recordatorio» de reserva al posponer un bloque.
+  'src/lib/useNotificationRouting.ts': 'avisos',
+};
 const FUERA = [
   /^src\/app\/pro\.tsx$/,
   /^src\/components\/ProOffer\.tsx$/,
@@ -199,6 +205,15 @@ export function textosDe(rel, fuente, ns = namespaceDe(rel)) {
   return out;
 }
 
+/** Los archivos de Experiencia que recorre el inventario: [{ archivo, ns }]. */
+export function archivosRecorridos({ raiz = RAIZ_REPO, git = null } = {}) {
+  const archivos = git ? archivosGit(raiz, git) : archivosDisco(raiz);
+  return archivos
+    .map(({ rel }) => ({ archivo: rel, ns: namespaceDe(rel) }))
+    .filter((a) => a.ns)
+    .sort((a, b) => a.archivo.localeCompare(b.archivo));
+}
+
 /** Inventario completo: árbol de trabajo (`raiz`) o un commit (`git`). */
 export function inventariar({ raiz = RAIZ_REPO, git = null } = {}) {
   const archivos = git ? archivosGit(raiz, git) : archivosDisco(raiz);
@@ -229,8 +244,11 @@ const esPrincipal = process.argv[1] && path.resolve(process.argv[1]) === fileURL
 if (esPrincipal) {
   const args = process.argv.slice(2);
   const valor = (nombre) => (args.includes(nombre) ? args[args.indexOf(nombre) + 1] : null);
-  const registros = inventariar({ raiz: valor('--raiz') ? path.resolve(valor('--raiz')) : RAIZ_REPO, git: valor('--git') });
-  if (args.includes('--json')) {
+  const opciones = { raiz: valor('--raiz') ? path.resolve(valor('--raiz')) : RAIZ_REPO, git: valor('--git') };
+  const registros = args.includes('--archivos') ? [] : inventariar(opciones);
+  if (args.includes('--archivos')) {
+    process.stdout.write(JSON.stringify(archivosRecorridos(opciones)));
+  } else if (args.includes('--json')) {
     process.stdout.write(JSON.stringify(registros));
   } else if (args.includes('--tsv')) {
     process.stdout.write(registros.map(aTsv).join('\n') + '\n');

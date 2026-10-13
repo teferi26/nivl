@@ -83,6 +83,38 @@ export function fechaCorta(iso: string, idioma: IdiomaInterfaz = idiomaInterfazA
   return `${Number(m[3])} ${MESES_ES[Number(m[2]) - 1] ?? ''}`;
 }
 
+const MESES_LARGOS_ES = [
+  'enero',
+  'febrero',
+  'marzo',
+  'abril',
+  'mayo',
+  'junio',
+  'julio',
+  'agosto',
+  'septiembre',
+  'octubre',
+  'noviembre',
+  'diciembre',
+];
+
+/**
+ * El mes por índice, con enero en 0 (como `Date.getMonth()`), largo y en
+ * minúscula: «octubre». Quien lo quiera con mayúscula usa `capital` o `mayus`.
+ */
+export function nombreMes(indice: number, idioma: IdiomaInterfaz = idiomaInterfazActual()): string {
+  const i = ((Math.trunc(indice) % 12) + 12) % 12;
+  if (!esEspanol(idioma)) {
+    try {
+      const fecha = new Date(Date.UTC(2024, i, 1));
+      return new Intl.DateTimeFormat(idioma, { month: 'long', timeZone: 'UTC' }).format(fecha);
+    } catch {
+      // Sigue con el español.
+    }
+  }
+  return MESES_LARGOS_ES[i]!;
+}
+
 const DIAS_ES = ['lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado', 'domingo'];
 const LETRAS_ES = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
 

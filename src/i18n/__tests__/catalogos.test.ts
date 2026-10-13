@@ -13,14 +13,14 @@ const DIR_I18N = path.join(RAIZ, 'src', 'i18n');
 const SUFIJOS = ['zero', 'one', 'two', 'few', 'many', 'other'];
 const RE_PLURAL = new RegExp(`^(.*)_(${SUFIJOS.join('|')})$`);
 
-type Arbol = { [clave: string]: string | Arbol };
+type Arbol = { [clave: string]: string | string[] | Arbol };
 
 /** { 'a.b': 'texto' } a partir del árbol del JSON. */
 function aplanar(arbol: Arbol, prefijo = '', out: Record<string, string> = {}): Record<string, string> {
   for (const [k, v] of Object.entries(arbol)) {
     const clave = prefijo ? `${prefijo}.${k}` : k;
     if (typeof v === 'string') out[clave] = v;
-    else if (v && typeof v === 'object') aplanar(v, clave, out);
+    else if (v && typeof v === 'object') aplanar(v as Arbol, clave, out);
     else throw new Error(`${clave}: valor que no es texto`);
   }
   return out;
@@ -142,7 +142,9 @@ describe('claves que pide el código', () => {
         const completa = m[2]!;
         const [ns, clave] = completa.includes(':') ? (completa.split(/:(.*)/s) as [string, string]) : ['comun', completa];
         const claves = ES[ns];
-        const existe = !!claves && (clave in claves || `${clave}_other` in claves);
+        // Un banco de frases (array de `voz`, con returnObjects) se aplana como clave.0, clave.1...
+        const existe =
+          !!claves && (clave in claves || `${clave}_other` in claves || `${clave}.0` in claves);
         if (!existe) faltan.push(`${path.relative(RAIZ, archivo).split(path.sep).join('/')}: ${completa}`);
       }
     }

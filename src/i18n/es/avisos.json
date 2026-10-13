@@ -1,1 +1,34 @@
-{}
+{
+  "canales": {
+    "despertar": "Despertador",
+    "bloque": "Bloques del día",
+    "cierre": "Cierre del día",
+    "sistema": "El sistema"
+  },
+  "acciones": {
+    "hecho": "Hecho",
+    "posponer": "Posponer 10 min",
+    "reportar": "Reportar"
+  },
+  "despertar": {
+    "titulo": "Arriba, gladiador"
+  },
+  "bloque": {
+    "cuerpo": "Es la hora de este bloque. El detalle está en Hoy."
+  },
+  "cierre": {
+    "titulo": "El cierre del día se acerca"
+  },
+  "posponer": {
+    "titulo": "Recordatorio",
+    "cuerpo": "Sigue pendiente."
+  },
+  "error": {
+    "estado": "Fallo leyendo el estado de los avisos.",
+    "noDisponibles": "Los avisos no están disponibles aquí.",
+    "despertador": "No se pudo programar el despertador.",
+    "avisosDelDia": "No se pudieron programar los avisos del día.",
+    "aviso": "No se pudo programar el aviso.",
+    "avisosDelSistema": "No se pudieron programar los avisos del sistema."
+  }
+}

@@ -34,7 +34,7 @@ export function lineaEnJuego(j: EnJuego, rachaDias: number): LineaEnJuego | null
   if (j.rachaEnRiesgo && j.faltanParaSalvar > 0) {
     const frase = t('hoy:enJuego.salvarRacha', {
       count: j.faltanParaSalvar,
-      dias: t('hoy:enJuego.dias', { count: rachaDias }),
+      dias: t('comun:dia', { count: rachaDias }),
     });
     return {
       texto: conCoste(frase, j.xpEnJuego),

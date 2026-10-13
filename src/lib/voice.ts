@@ -3,7 +3,10 @@
 // Arena, firme y adulta: sin amenazas, sin urgencia, sin culpa y sin «—».
 //
 // Puro: sin Supabase ni expo-notifications (los tests lo cargan tal cual).
+// Los textos viven en src/i18n/es/voz.json: cada línea del banco es un array
+// del catálogo y pick() elige una al azar (t() con returnObjects), al llamar.
 
+import { t } from '@/i18n';
 import type { DatosAviso, TipoAviso } from './notifyPlan';
 import { RANGOS, type RangoId } from './progression';
 
@@ -33,119 +36,62 @@ export function desgloseXp(partes: ParteXp[]): string {
 
 /** «la misión «A»» o «las misiones «A», «B»», marcadas solas por el acto. */
 export function deMisiones(titulos: string[]): string {
-  const lista = titulos.map((t) => `«${t}»`).join(', ');
-  return titulos.length === 1 ? `de la misión ${lista} (marcada sola)` : `de las misiones ${lista} (marcadas solas)`;
+  const lista = titulos.map((titulo) => t('voz:deMisiones.titulo', { titulo })).join(', ');
+  return t(titulos.length === 1 ? 'voz:deMisiones.una' : 'voz:deMisiones.varias', { lista });
 }
 
+/** Las variantes de una línea del banco (un array del catálogo `voz`). */
+function lineas(clave: LineaVoz, opciones: Record<string, unknown> = {}): string[] {
+  const v: unknown = t(`voz:${clave}`, { ...opciones, returnObjects: true });
+  return Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string') : [];
+}
+
+type LineaVoz =
+  | 'allDone'
+  | 'levelUp'
+  | 'penaltyApplied'
+  | 'stoneUsed'
+  | 'stoneEarned'
+  | 'frozen'
+  | 'morningNotif'
+  | 'eveningNotif'
+  | 'dungeonCleared'
+  | 'pr'
+  | 'achievement'
+  | 'streakHype.sinRacha'
+  | 'streakHype.encendida'
+  | 'streakHype.primeros'
+  | 'streakHype.semana'
+  | 'streakHype.quincena'
+  | 'streakHype.larga';
+
 export const voice = {
-  allDone: () =>
-    pick([
-      'Todas las misiones completadas. El sistema está satisfecho.',
-      'Día cumplido, gladiador. Mañana, las siguientes.',
-      'Misiones del día completadas. Descansa: lo has ganado.',
-      'El sistema registra un día impecable.',
-    ]),
-  levelUp: () =>
-    pick([
-      'Subes de nivel. El sistema lo registra.',
-      'El sistema reconoce tu progreso.',
-      'Nivel nuevo. Sumado misión a misión.',
-      'Un nivel más. La arena lo ha visto.',
-    ]),
-  penaltyApplied: (xp: number) =>
-    pick([
-      `El sistema ha restado ${xp} XP. Tienes una misión de recuperación en Hoy.`,
-      `Día sin cerrar: −${xp} XP. La recuperación ya está en tu lista.`,
-      `−${xp} XP registrados. La misión de recuperación está en Hoy.`,
-    ]),
-  stoneUsed: () =>
-    pick([
-      'Se ha gastado una Piedra de Protección. La racha sigue.',
-      'El sistema ha usado una Piedra de Protección. La racha se mantiene.',
-    ]),
-  stoneEarned: () =>
-    pick([
-      'Semana impecable: has forjado una Piedra de Protección.',
-      'El sistema te concede una Piedra de Protección. Guárdala para el mal día.',
-    ]),
-  frozen: (reason: string) =>
-    pick([
-      `Sistema en pausa (${reason}). Sin misiones, sin restas, sin juicio.`,
-      `Pausa activa: ${reason}. Nada se resta mientras dure.`,
-    ]),
-  morningNotif: () =>
-    pick([
-      'El sistema ha asignado tus misiones de hoy. Empieza por la primera.',
-      'Tus misiones de hoy están listas. La primera es la que cuesta.',
-      'Misiones asignadas. Cada una suma XP hacia el siguiente rango.',
-    ]),
-  eveningNotif: () =>
-    pick([
-      'Quedan unas horas para el cierre. Mira qué te falta.',
-      'El cierre se acerca. Revisa tus misiones pendientes.',
-      'Antes de cerrar el día, un vistazo a lo pendiente.',
-    ]),
-  dungeonCleared: (title: string) =>
-    pick([
-      `Campaña «${title}» completada. Todas las etapas cerradas.`,
-      `«${title}» ha caído. El sistema registra tu victoria.`,
-    ]),
-  pr: (exercise: string) =>
-    pick([
-      `Nuevo récord en ${exercise}. El sistema lo anota.`,
-      `${exercise}: marca personal superada. Queda como referencia.`,
-    ]),
-  achievement: () =>
-    pick([
-      'Logro desbloqueado.',
-      'Logro registrado. Ya está en tu perfil.',
-      'Nueva entrada en tu leyenda.',
-    ]),
+  allDone: () => pick(lineas('allDone')),
+  levelUp: () => pick(lineas('levelUp')),
+  penaltyApplied: (xp: number) => pick(lineas('penaltyApplied', { xp })),
+  stoneUsed: () => pick(lineas('stoneUsed')),
+  stoneEarned: () => pick(lineas('stoneEarned')),
+  frozen: (reason: string) => pick(lineas('frozen', { motivo: reason })),
+  morningNotif: () => pick(lineas('morningNotif')),
+  eveningNotif: () => pick(lineas('eveningNotif')),
+  dungeonCleared: (title: string) => pick(lineas('dungeonCleared', { titulo: title })),
+  pr: (exercise: string) => pick(lineas('pr', { ejercicio: exercise })),
+  achievement: () => pick(lineas('achievement')),
   // Mensaje motivacional de racha para el perfil: lo primero que ve el gladiador.
   streakHype: (days: number) => {
-    if (days <= 0) {
-      return pick([
-        'Sin racha por ahora. Cierra el día de hoy y empieza a contar.',
-        'Racha a cero. Un día cerrado la pone en marcha.',
-      ]);
-    }
+    if (days <= 0) return pick(lineas('streakHype.sinRacha'));
     if (days < 3) {
-      return pick([
-        'La racha está encendida. Cierra hoy y suma otro día.',
-        `${days} ${plural(days, 'día', 'días')} de racha. Hoy toca uno más.`,
-      ]);
+      return pick([...lineas('streakHype.encendida'), t('voz:streakHype.encendidaDias', { count: days })]);
     }
-    if (days < 7) {
-      return pick([
-        `${days} días seguidos. La cadena crece. Mañana, uno más.`,
-        `${days} días. El sistema empieza a fiarse de ti. Sigue.`,
-      ]);
-    }
-    if (days < 14) {
-      return pick([
-        'Una semana entera en pie. Tu multiplicador ya paga: cada misión vale más.',
-        `${days} días seguidos. Mañana, el siguiente.`,
-      ]);
-    }
-    if (days < 30) {
-      return pick([
-        `${days} días seguidos. La racha la sostienes tú, día a día.`,
-        `${days} días. Cada uno cerrado, ninguno regalado.`,
-      ]);
-    }
-    return pick([
-      `${days} días. El camino a ${nombreRango('S')} es este: un día más, cada día.`,
-      `${days} días de racha. El sistema los ha contado todos.`,
-    ]);
+    if (days < 7) return pick(lineas('streakHype.primeros', { dias: days }));
+    if (days < 14) return pick(lineas('streakHype.semana', { dias: days }));
+    if (days < 30) return pick(lineas('streakHype.quincena', { dias: days }));
+    return pick(lineas('streakHype.larga', { dias: days, rango: nombreRango('S') }));
   },
 };
 
 function nombreRango(id: RangoId): string {
   return RANGOS.find((r) => r.id === id)?.nombre ?? id;
-}
-
-function plural(n: number, uno: string, varios: string): string {
-  return n === 1 ? uno : varios;
 }
 
 // ─── Avisos locales del plan (notifyPlan.ts) ────────────────────────────────
@@ -167,48 +113,45 @@ export function textoAviso(d: DatosAviso): TextoAviso {
     case 'racha': {
       const faltan = Math.max(1, Math.trunc(d.faltan));
       return {
-        titulo: `Racha de ${d.racha} ${plural(d.racha, 'día', 'días')}`,
-        cuerpo: plural(
-          faltan,
-          'Te falta 1 misión para cerrar el día.',
-          `Te faltan ${faltan} misiones para cerrar el día.`,
-        ),
+        titulo: t('voz:aviso.racha.titulo', { count: d.racha }),
+        cuerpo: t('voz:aviso.racha.cuerpo', { count: faltan }),
       };
     }
     case 'recuperacion':
       if (!d.desbloqueada) {
-        return { titulo: 'Recuperación', cuerpo: 'Completa una misión de hoy y la recuperación se abre.' };
+        return { titulo: t('voz:aviso.recuperacion.titulo'), cuerpo: t('voz:aviso.recuperacion.cuerpoBloqueada') };
       }
       return {
-        titulo: 'Recuperación abierta',
+        titulo: t('voz:aviso.recuperacion.tituloAbierta'),
         cuerpo: d.xp > 0
-          ? `Completa la misión de recuperación y vuelven ${d.xp} XP.`
-          : 'La misión de recuperación está lista en Hoy.',
+          ? t('voz:aviso.recuperacion.cuerpoXp', { xp: d.xp })
+          : t('voz:aviso.recuperacion.cuerpoLista'),
       };
     case 'duelo': {
       const n = Math.max(1, Math.trunc(d.pendientes));
       return {
-        titulo: plural(n, 'Tu duelo', 'Tus duelos'),
-        cuerpo: plural(n, 'Hay novedades en 1 duelo.', `Hay novedades en ${n} duelos.`),
+        // «Tu duelo» / «Tus duelos» no lleva la cifra: dos frases enteras.
+        titulo: t(n === 1 ? 'voz:aviso.duelo.tituloUno' : 'voz:aviso.duelo.tituloVarios'),
+        cuerpo: t('voz:aviso.duelo.cuerpo', { count: n }),
       };
     }
     case 'foto': {
       const n = Math.min(3, Math.max(1, Math.trunc(d.pendientes)));
       return {
-        titulo: 'Fotos de la semana',
-        cuerpo: plural(n, 'Falta 1 de 3 para cerrar la semana.', `Faltan ${n} de 3 para cerrar la semana.`),
+        titulo: t('voz:aviso.foto.titulo'),
+        cuerpo: t('voz:aviso.foto.cuerpo', { count: n }),
       };
     }
     case 'rango': {
       const id = d.clave?.startsWith('rango:') ? d.clave.slice(6) : null;
       const def = RANGOS.find((r) => r.id === id);
-      if (def) return { titulo: 'Nuevo rango', cuerpo: `Ya eres ${def.nombre}. Entra a verlo.` };
-      return { titulo: 'La arena te reconoce', cuerpo: 'Tienes algo nuevo que ver. Entra cuando quieras.' };
+      if (def) return { titulo: t('voz:aviso.rango.titulo'), cuerpo: t('voz:aviso.rango.cuerpo', { rango: def.nombre }) };
+      return { titulo: t('voz:aviso.rango.tituloGenerico'), cuerpo: t('voz:aviso.rango.cuerpoGenerico') };
     }
     case 'vuelta':
       return d.dias === 7
-        ? { titulo: 'La arena sigue aquí', cuerpo: 'Un paso basta para volver.' }
-        : { titulo: 'La puerta sigue abierta', cuerpo: 'Cuando quieras, empiezas por una misión.' };
+        ? { titulo: t('voz:aviso.vuelta.titulo7'), cuerpo: t('voz:aviso.vuelta.cuerpo7') }
+        : { titulo: t('voz:aviso.vuelta.titulo30'), cuerpo: t('voz:aviso.vuelta.cuerpo30') };
   }
 }
 

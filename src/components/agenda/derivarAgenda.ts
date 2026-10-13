@@ -1,9 +1,8 @@
 // NIVL · Agenda: lo que se deriva de los datos (puro, con tests). Sin red y
 // sin Supabase: lo usan AgendaVista, el Calendario, las hojas y la galería.
 //
-// `dates.ts` solo se consume. Los días y los meses cortos salen de
-// `@/i18n/formato` (nombreDia, fechaCorta); los meses largos, del catálogo
-// (`agenda:derivar.meses`), para no depender de `toLocaleDateString`.
+// `dates.ts` solo se consume. Los días y los meses salen de `@/i18n/formato`
+// (nombreDia, fechaCorta, nombreMes), para no depender de `toLocaleDateString`.
 
 import { questsScheduledOn } from '@/lib/closing';
 import type { PlanConBloques } from '@/lib/dayplan';
@@ -12,7 +11,7 @@ import { horaAMinutos, KIND_ICON } from '@/lib/plan';
 import type { CalendarEvent, DungeonTask, Quest } from '@/lib/types';
 import type { ItemAgenda } from '@/components/LineaDeTiempo';
 import { t } from '@/i18n';
-import { capital, fechaCorta, mayus, nombreDia as nombreDiaSemana } from '@/i18n/formato';
+import { capital, fechaCorta, mayus, nombreDia as nombreDiaSemana, nombreMes } from '@/i18n/formato';
 
 export type ModoAgenda = 'dia' | 'semana' | 'mes';
 
@@ -20,8 +19,6 @@ export type ModoAgenda = 'dia' | 'semana' | 'mes';
 export function letrasDia(): string[] {
   return Array.from({ length: 7 }, (_, i) => nombreDiaSemana(i, 'letra'));
 }
-
-const CLAVES_MES = ['m1', 'm2', 'm3', 'm4', 'm5', 'm6', 'm7', 'm8', 'm9', 'm10', 'm11', 'm12'] as const;
 
 /** Duración que se le supone a un evento con hora (no guarda el final). */
 export const DURACION_EVENTO = 45;
@@ -31,8 +28,8 @@ const diaDe = (key: string) => Number(key.slice(8));
 const anioDe = (key: string) => Number(key.slice(0, 4));
 /** «octubre»: el mes largo de `key`, en minúscula. */
 const mesLargo = (key: string) => {
-  const clave = CLAVES_MES[mesDe(key) - 1];
-  return clave ? t(`agenda:derivar.meses.${clave}`) : '';
+  const mes = mesDe(key);
+  return mes >= 1 && mes <= 12 ? nombreMes(mes - 1) : '';
 };
 /** «miércoles»: el día de la semana de `key`. */
 const diaSemana = (key: string) => nombreDiaSemana(weekdayOfKey(key) - 1);
@@ -204,7 +201,7 @@ export function subtituloDia(c: ContenidoDia, bloques: number, dia: string, hoy:
   if (bloques) partes.push(t('agenda:derivar.bloques', { count: bloques }));
   if (c.eventos.length) partes.push(t('agenda:derivar.eventos', { count: c.eventos.length }));
   if (c.plazos.length) partes.push(t('agenda:derivar.plazos', { count: c.plazos.length }));
-  if (c.misiones.length) partes.push(t('agenda:derivar.misiones', { count: c.misiones.length }));
+  if (c.misiones.length) partes.push(t('comun:mision', { count: c.misiones.length }));
   const cuando = relativoDe(dia, hoy);
   if (partes.length === 0) {
     return dia >= hoy ? t('agenda:derivar.vacioFuturo', { cuando }) : t('agenda:derivar.vacioPasado', { cuando });
@@ -218,7 +215,7 @@ export function etiquetaDia(dia: string, hoy: string, c: ContenidoDia): string {
   if (dia === hoy) partes.push(t('agenda:derivar.hoy'));
   if (c.eventos.length) partes.push(t('agenda:derivar.eventos', { count: c.eventos.length }));
   if (c.plazos.length) partes.push(t('agenda:derivar.plazosCampana', { count: c.plazos.length }));
-  if (c.misiones.length) partes.push(t('agenda:derivar.misiones', { count: c.misiones.length }));
+  if (c.misiones.length) partes.push(t('comun:mision', { count: c.misiones.length }));
   return partes.join(', ');
 }
 

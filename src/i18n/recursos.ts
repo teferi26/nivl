@@ -90,7 +90,7 @@ export type Namespace = keyof RecursosEs;
 
 export const NAMESPACES = Object.keys(RECURSOS_ES) as Namespace[];
 
-type Arbol = { [clave: string]: string | Arbol };
+type Arbol = { [clave: string]: string | string[] | Arbol };
 
 /**
  * i18next no cae de `_many` a `_other`: en es, fr, it y pt «many» existe
@@ -100,7 +100,8 @@ type Arbol = { [clave: string]: string | Arbol };
 export function completarPlurales<T extends Arbol>(arbol: T): T {
   const out: Arbol = {};
   for (const [clave, valor] of Object.entries(arbol)) {
-    out[clave] = typeof valor === 'string' ? valor : completarPlurales(valor);
+    // Los arrays (bancos de frases de `voz`, con returnObjects) se quedan como arrays.
+    out[clave] = typeof valor === 'string' || Array.isArray(valor) ? valor : completarPlurales(valor);
   }
   for (const [clave, valor] of Object.entries(arbol)) {
     if (typeof valor !== 'string' || !clave.endsWith('_other')) continue;

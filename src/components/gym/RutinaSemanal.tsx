@@ -95,7 +95,7 @@ export function FilaEjercicio({
       onLongPress={onLongPress}
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel ?? `${nombre}, ${carga}`}
-      accessibilityActions={onLongPress ? [{ name: 'longpress', label: t('gym:rutina.eliminar') }] : undefined}
+      accessibilityActions={onLongPress ? [{ name: 'longpress', label: t('comun:eliminar') }] : undefined}
       onAccessibilityAction={(e) => {
         if (e.nativeEvent.actionName === 'longpress') onLongPress?.();
       }}
