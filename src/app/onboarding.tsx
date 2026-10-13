@@ -63,6 +63,8 @@ import { anotarOferta, fetchAiStatus, isPro, ofrecerSi, type AiStatus, type Deci
 import { colors, fonts } from '@/lib/theme';
 import { ink, type as tipo } from '@/design/tokens';
 import { TopeAncho } from '@/design/useSizeClass';
+import { t } from '@/i18n';
+import { mayus } from '@/i18n/formato';
 import { mensajeSistema, NAME_MAX_LENGTH } from '@/lib/validation';
 
 // Bienvenida · Nombre · Para qué · El objetivo · Primeros hábitos · La firma · NIVL Pro
@@ -84,7 +86,7 @@ const ANCHO_COLUMNA = 560;
 
 // Nombres por defecto de la fila de perfil: si es uno de estos, no se
 // prerrellena (que escriba el suyo).
-const DEFAULT_NAMES = new Set(['Gladiador', 'Cazador']);
+const DEFAULT_NAMES = new Set(['Gladiador', 'Cazador']); // i18n-ok: valores por defecto de la base de datos, no se pintan
 
 export default function Onboarding() {
   const health = useHealthConsent();
@@ -174,7 +176,7 @@ export default function Onboarding() {
     try {
       await fn();
     } catch (e) {
-      avisar('El sistema no responde', mensajeSistema(e));
+      avisar(t('comun:sistemaNoResponde'), mensajeSistema(e));
     } finally {
       lock.current = false;
       setBusy(false);
@@ -199,7 +201,7 @@ export default function Onboarding() {
         setAvisoCodigo(null);
         return true;
       }
-      setAvisoCodigo(`${motivoReferral(r.reason)} Corrígelo o continúa sin él.`);
+      setAvisoCodigo(t('onboarding:nombre.codigoRechazado', { motivo: motivoReferral(r.reason) }));
       return false;
     } catch {
       await guardarCodigoPendiente(c, fuente);
@@ -406,8 +408,8 @@ export default function Onboarding() {
       setSalidaEspera(false);
       return;
     }
-    const t = setTimeout(() => setSalidaEspera(true), SALIDA_ESPERA_MS);
-    return () => clearTimeout(t);
+    const espera = setTimeout(() => setSalidaEspera(true), SALIDA_ESPERA_MS);
+    return () => clearTimeout(espera);
   }, [step, forma]);
 
   // Paso 6: se decide la oferta UNA vez, nunca con una celebración en
@@ -443,8 +445,8 @@ export default function Onboarding() {
   // con Hecho para permitir corregir o pegar el nombre sin perder el foco.
   useEffect(() => {
     if (step !== 5 || !firmaOk) return;
-    const t = setTimeout(() => scroll.current?.scrollToEnd({ animated: true }), 280);
-    return () => clearTimeout(t);
+    const bajar = setTimeout(() => scroll.current?.scrollToEnd({ animated: true }), 280);
+    return () => clearTimeout(bajar);
   }, [firmaOk, step]);
 
   // Cada paso empieza arriba: el ScrollView es el mismo para todos y, si no,
@@ -483,7 +485,7 @@ export default function Onboarding() {
                 hitSlop={12}
                 style={styles.back}
                 accessibilityRole="button"
-                accessibilityLabel="Volver al paso anterior"
+                accessibilityLabel={t('onboarding:volverA11y')}
               >
                 <Ionicons name="arrow-back" size={20} color={colors.text} />
               </Pressable>
@@ -510,37 +512,37 @@ export default function Onboarding() {
 
           {step === 1 ? (
             <Entrada key="paso-1" indice={0}>
-              <TituloPaso inscripcion="El nombre" titulo="¿Cómo te llamas?" />
+              <TituloPaso inscripcion={t('onboarding:nombre.inscripcion')} titulo={t('onboarding:nombre.titulo')} />
               <TarjetaArena variante="contorno" remaches>
                 <Campo
-                  etiqueta="Tu nombre en el sistema"
+                  etiqueta={t('onboarding:nombre.etiqueta')}
                   value={name}
                   onChangeText={setName}
-                  placeholder="Cómo quieres que te llame"
+                  placeholder={t('onboarding:nombre.placeholder')}
                   maxLength={NAME_MAX_LENGTH}
                   autoCapitalize="words"
                   returnKeyType="done"
                   onSubmitEditing={saveName}
-                  accessibilityLabel="Tu nombre"
+                  accessibilityLabel={t('onboarding:nombre.a11y')}
                 />
               </TarjetaArena>
               <TarjetaArena variante="contorno" remaches>
                 <Campo
-                  etiqueta="¿Quién te trajo? · opcional"
+                  etiqueta={t('onboarding:nombre.codigoEtiqueta')}
                   error={avisoCodigo ?? undefined}
-                  ayuda="Si te lo recomendó alguien, escribe su código. No cambia nada para ti."
+                  ayuda={t('onboarding:nombre.codigoAyuda')}
                   value={codigo}
-                  onChangeText={(t) => {
-                    setCodigo(t);
+                  onChangeText={(texto) => {
+                    setCodigo(texto);
                     setAvisoCodigo(null);
                   }}
-                  placeholder="Código de creador"
+                  placeholder={t('onboarding:nombre.codigoPlaceholder')}
                   maxLength={CODIGO_MAX_LENGTH + 4}
                   autoCapitalize="characters"
                   autoCorrect={false}
                   returnKeyType="done"
                   onSubmitEditing={saveName}
-                  accessibilityLabel="Código del creador que te trajo, opcional"
+                  accessibilityLabel={t('onboarding:nombre.codigoA11y')}
                 />
               </TarjetaArena>
             </Entrada>
@@ -549,9 +551,9 @@ export default function Onboarding() {
           {step === 2 ? (
             <Entrada key="paso-2" indice={0}>
               <TituloPaso
-                inscripcion="El camino"
-                titulo="¿Para qué vas a usar NIVL?"
-                pista="Cambia lo que ves primero y lo que el coach te pide. Todo sigue disponible y lo puedes cambiar en Perfil."
+                inscripcion={t('onboarding:camino.inscripcion')}
+                titulo={t('onboarding:camino.titulo')}
+                pista={t('onboarding:camino.pista')}
               />
               {PROFILE_KINDS.map((k) => {
                 const m = KINDS[k];
@@ -575,7 +577,7 @@ export default function Onboarding() {
               })}
               {meta ? (
                 <TarjetaArena variante="contorno" remaches style={{ marginTop: 6 }}>
-                  <Text style={styles.detailTitle}>QUÉ SE ACTIVA</Text>
+                  <Text style={styles.detailTitle}>{mayus(t('onboarding:camino.queSeActiva'))}</Text>
                   <Text style={styles.detail}>{meta.description}</Text>
                 </TarjetaArena>
               ) : null}
@@ -585,51 +587,51 @@ export default function Onboarding() {
           {step === 3 && meta ? (
             <Entrada key="paso-3" indice={0}>
               <TituloPaso
-                inscripcion="El objetivo"
-                titulo="¿A qué has venido?"
-                pista="Una sola cosa, en una frase. No «mejorar»: lo que quieres haber conseguido. Es lo que vas a firmar."
+                inscripcion={t('onboarding:objetivo.inscripcion')}
+                titulo={t('onboarding:objetivo.titulo')}
+                pista={t('onboarding:objetivo.pista')}
               />
               <TarjetaArena variante="contorno" remaches>
-                <Text style={styles.label}>Tu objetivo</Text>
+                <Text style={styles.label}>{t('onboarding:objetivo.etiqueta')}</Text>
                 <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: healthGoal }}
-                  accessibilityLabel="Mi objetivo incluye salud o entrenamiento"
+                  accessibilityLabel={t('onboarding:objetivo.salud')}
                   onPress={() => { if (!health.accepted && !healthGoal) { health.ask(); return; } setHealthGoal(v => !v); }}
                   style={styles.starterRow}>
                   <View style={[styles.checkbox, healthGoal && styles.checkboxOn]}>{healthGoal ? <Ionicons name="checkmark" size={14} color={colors.bg} /> : null}</View>
-                  <Text style={[styles.detail, { flex: 1 }]}>Mi objetivo incluye salud o entrenamiento</Text>
+                  <Text style={[styles.detail, { flex: 1 }]}>{t('onboarding:objetivo.salud')}</Text>
                 </Pressable>
-                {!healthGoal ? <Text style={styles.stepHint}>Escribe un objetivo general, sin datos de salud. Para incluirlos, activa la opción de arriba.</Text> : null}
+                {!healthGoal ? <Text style={styles.stepHint}>{t('onboarding:objetivo.sinSalud')}</Text> : null}
                 <TextInput
                   style={[styles.input, styles.inputMulti]}
                   value={goal}
                   onChangeText={setGoal}
-                  placeholder={healthGoal ? meta.goalExample : 'Leer doce libros este año'}
+                  placeholder={healthGoal ? meta.goalExample : t('onboarding:objetivo.ejemplo')}
                   placeholderTextColor={ink.ink6}
                   maxLength={GOAL_MAX_LENGTH}
                   multiline
-                  accessibilityLabel="Tu objetivo, en una frase"
+                  accessibilityLabel={t('onboarding:objetivo.a11y')}
                 />
                 <View style={styles.pair}>
                   <View style={styles.pairItem}>
                     <Campo
-                      etiqueta="Cifra · opcional"
+                      etiqueta={t('onboarding:objetivo.cifra')}
                       estiloBloque={styles.labelGap}
                       value={target}
                       onChangeText={setTarget}
-                      placeholder={healthGoal ? '78 kg, 5.000 €…' : '12 libros, 5.000 €…'}
+                      placeholder={healthGoal ? t('onboarding:objetivo.cifraEjemploSalud') : t('onboarding:objetivo.cifraEjemplo')}
                       maxLength={GOAL_DETAIL_MAX_LENGTH}
-                      accessibilityLabel="Cifra del objetivo, opcional"
+                      accessibilityLabel={t('onboarding:objetivo.cifraA11y')}
                     />
                   </View>
                   <View style={styles.pairItem}>
                     <Campo
-                      etiqueta="Fecha · opcional"
+                      etiqueta={t('onboarding:objetivo.fecha')}
                       estiloBloque={styles.labelGap}
                       value={deadline}
                       onChangeText={setDeadline}
-                      placeholder="junio de 2027"
+                      placeholder={t('onboarding:objetivo.fechaEjemplo')}
                       maxLength={GOAL_DETAIL_MAX_LENGTH}
-                      accessibilityLabel="Fecha del objetivo, opcional"
+                      accessibilityLabel={t('onboarding:objetivo.fechaA11y')}
                     />
                   </View>
                 </View>
@@ -640,9 +642,11 @@ export default function Onboarding() {
           {step === 4 && meta ? (
             <Entrada key="paso-4" indice={0}>
               <TituloPaso
-                inscripcion="Las misiones"
-                titulo="Tus primeras misiones"
-                pista={`Propuestas para un ${meta.label.toLowerCase() === 'en general' ? 'gladiador' : meta.label.toLowerCase()}. Quita las que no vayan contigo; podrás crear las tuyas en Hábitos.`}
+                inscripcion={t('onboarding:misiones.inscripcion')}
+                titulo={t('onboarding:misiones.titulo')}
+                pista={t('onboarding:misiones.pista', {
+                  para: kind === 'general' ? t('onboarding:misiones.gladiador') : meta.label.toLowerCase(),
+                })}
               />
               <TarjetaArena variante="contorno" remaches>
                 {meta.starterQuests.map((q, i) => {
@@ -662,8 +666,14 @@ export default function Onboarding() {
                       <View style={{ flex: 1, minWidth: 0 }}>
                         <Text style={[styles.starterTitle, !on && styles.starterOff]}>{q.title}</Text>
                         <Text style={styles.starterMeta}>
-                          {STAT_LABEL[q.stat]} · {DIFFICULTY_LABEL[q.difficulty]} · {q.days_of_week.length === 7 ? 'cada día' : `${q.days_of_week.length} días/semana`}
-                          {q.health_data ? ' · salud (opcional)' : ''}
+                          {t(q.health_data ? 'onboarding:misiones.metaSalud' : 'onboarding:misiones.meta', {
+                            stat: STAT_LABEL[q.stat],
+                            dificultad: DIFFICULTY_LABEL[q.difficulty],
+                            frecuencia:
+                              q.days_of_week.length === 7
+                                ? t('onboarding:misiones.cadaDia')
+                                : t('onboarding:misiones.diasSemana', { n: q.days_of_week.length }),
+                          })}
                         </Text>
                       </View>
                     </Pressable>
@@ -676,9 +686,9 @@ export default function Onboarding() {
           {step === 5 ? (
             <Entrada key="paso-5" indice={0}>
               <TituloPaso
-                inscripcion="La firma"
-                titulo="Fírmalo contigo"
-                pista="Nadie más lo va a leer. Se sella hoy y se abre cuando venza el plazo. Elige cuánto te das."
+                inscripcion={t('onboarding:firma.inscripcion')}
+                titulo={t('onboarding:firma.titulo')}
+                pista={t('onboarding:firma.pista')}
               />
               <View style={styles.horizontes} accessibilityRole="radiogroup">
                 {HORIZONTES.map((h) => (
@@ -688,24 +698,21 @@ export default function Onboarding() {
                       selected={horizonte.years === h.years}
                       onPress={() => elegirHorizonte(h)}
                       disabled={busy || holding || firmaPendiente || sello}
-                      accessibilityLabel={`Horizonte de ${h.label}${h.recomendado ? ', recomendado' : ''}`}
+                      accessibilityLabel={t(h.recomendado ? 'onboarding:firma.horizonteRecomendadoA11y' : 'onboarding:firma.horizonteA11y', { plazo: h.label })}
                       style={styles.horizonteChip}
                     />
-                    <Text style={styles.recomendado}>{h.recomendado ? 'recomendado' : ' '}</Text>
+                    <Text style={styles.recomendado}>{h.recomendado ? t('onboarding:firma.recomendado') : ' '}</Text>
                   </View>
                 ))}
               </View>
               {/* El texto se revela párrafo a párrafo: se lee, no se acepta. */}
               <TablillaContrato parrafos={(firmaPorResolver.current?.body ?? firmaSellada?.body ?? contrato).split(/\n\s*\n/)} abreEl={fechaConAnio(firmaPorResolver.current?.openAt ?? firmaSellada?.openAt ?? abreEl)} rellenar={false} />
-              <Text style={styles.smallPrint}>
-                Hasta entonces lo guarda Contrato, sellado. Tus normas y sus consecuencias las escribes allí cuando
-                entres.
-              </Text>
+              <Text style={styles.smallPrint}>{t('onboarding:firma.letraPequena')}</Text>
               <TarjetaArena variante="contorno" style={styles.firmaCard}>
                 <Campo
                   ref={campoFirma}
                   editable={!busy && !holding && !firmaPendiente && !sello}
-                  etiqueta="Escribe tu nombre para firmar"
+                  etiqueta={t('onboarding:firma.campo')}
                   value={firma}
                   onChangeText={(value) => {
                     if (!lock.current && !holdingRef.current && !firmaPorResolver.current && !sello) setFirma(value);
@@ -716,11 +723,11 @@ export default function Onboarding() {
                   autoCorrect={false}
                   returnKeyType="done"
                   onSubmitEditing={Keyboard.dismiss}
-                  accessibilityLabel="Escribe tu nombre para firmar"
+                  accessibilityLabel={t('onboarding:firma.campo')}
                 />
               </TarjetaArena>
               <HoldToSign
-                label={firmaOk ? 'Mantén pulsado para firmar' : 'Escribe tu nombre'}
+                label={firmaOk ? t('onboarding:firma.mantenPulsado') : t('onboarding:firma.escribeNombre')}
                 onComplete={sign}
                 onRequestInput={() => campoFirma.current?.focus()}
                 onHoldChange={(value) => { holdingRef.current = value; setHolding(value); }}
@@ -733,15 +740,12 @@ export default function Onboarding() {
           {step === 6 ? (
             <Entrada key="paso-6" indice={0}>
               <TituloPaso
-                inscripcion="El coach"
-                titulo="Firmado. Ahora, quién lo dirige."
-                pista={
-                  'Tus hábitos, tu organización y tu progreso son gratis. Los planes de pago añaden el coach de IA y, con Élite, insignia y solicitud de plaza en un ludus.' +
-                  (forma === 'hoja' ? ' Decide ahora o más adelante: el compromiso vale igual.' : '')
-                }
+                inscripcion={t('onboarding:coach.inscripcion')}
+                titulo={t('onboarding:coach.titulo')}
+                pista={forma === 'hoja' ? t('onboarding:coach.pistaHoja') : t('onboarding:coach.pista')}
               />
               {forma === 'esperar' ? (
-                <View style={styles.ofertaEspera} accessibilityRole="progressbar" accessibilityLabel="Preparando tu entrada">
+                <View style={styles.ofertaEspera} accessibilityRole="progressbar" accessibilityLabel={t('onboarding:coach.preparandoA11y')}>
                   <Skeleton height={86} />
                   <Skeleton height={70} />
                   <Skeleton height={70} />
@@ -764,20 +768,20 @@ export default function Onboarding() {
         {step !== 5 ? (
           <View style={styles.footer}>
             {step === 0 ? (
-              <Button title="Entrar en la arena" size="lg" onPress={() => setStep(1)} />
+              <Button title={t('onboarding:entrar')} size="lg" onPress={() => setStep(1)} />
             ) : null}
             {step === 1 ? (
-              <Button title="Continuar" size="lg" onPress={saveName} loading={busy} disabled={!name.trim()} />
+              <Button title={t('onboarding:continuar')} size="lg" onPress={saveName} loading={busy} disabled={!name.trim()} />
             ) : null}
             {step === 2 ? (
-              <Button title="Continuar" size="lg" onPress={saveKind} loading={busy} disabled={!kind} />
+              <Button title={t('onboarding:continuar')} size="lg" onPress={saveKind} loading={busy} disabled={!kind} />
             ) : null}
             {step === 3 ? (
-              <Button title="Continuar" size="lg" onPress={saveGoal} loading={busy} disabled={!limpiarFrase(goal)} />
+              <Button title={t('onboarding:continuar')} size="lg" onPress={saveGoal} loading={busy} disabled={!limpiarFrase(goal)} />
             ) : null}
             {step === 4 ? (
               <Button
-                title={chosen.size > 0 ? `Crear ${chosen.size} ${chosen.size === 1 ? 'misión' : 'misiones'}` : 'Empezar sin misiones'}
+                title={chosen.size > 0 ? t('onboarding:misiones.crear', { count: chosen.size }) : t('onboarding:misiones.sinMisiones')}
                 size="lg"
                 onPress={saveStarters}
                 loading={busy}
@@ -786,18 +790,18 @@ export default function Onboarding() {
             {/* Mientras se decide, el pie queda vacío: ningún botón que cambie de
                 sitio bajo el dedo. Si la espera se alarga, aparece una salida. */}
             {step === 6 && forma === 'esperar' && salidaEspera ? (
-              <Button title="Entrar en la arena" variant="ghost" size="lg" onPress={() => void finish()} loading={busy} />
+              <Button title={t('onboarding:entrar')} variant="ghost" size="lg" onPress={() => void finish()} loading={busy} />
             ) : null}
             {step === 6 && forma === 'hoja' ? (
               <ProOfferActions
                 oferta={oferta}
-                exitLabel="Seguir gratis por ahora"
+                exitLabel={t('onboarding:coach.seguirGratis')}
                 onExit={() => void salir('cerrada')}
                 exitLoading={busy}
               />
             ) : null}
             {step === 6 && (forma === 'linea' || forma === 'saltar') ? (
-              <Button title="Entrar en la arena" size="lg" onPress={() => void finish()} loading={busy} />
+              <Button title={t('onboarding:entrar')} size="lg" onPress={() => void finish()} loading={busy} />
             ) : null}
           </View>
         ) : null}
@@ -810,15 +814,15 @@ export default function Onboarding() {
           style={styles.sello}
           onPress={trasElSello}
           accessibilityRole="button"
-          accessibilityLabel={`Sellado. Vence el ${fechaConAnio(firmaSellada?.openAt ?? abreEl)}. Toca para continuar`}
+          accessibilityLabel={t('onboarding:sello.a11y', { fecha: fechaConAnio(firmaSellada?.openAt ?? abreEl) })}
         >
           <Animated.View style={{ alignItems: 'center', opacity: selloOpacidad, transform: [{ scale: selloEscala }] }}>
             <View style={styles.selloMarco}>
-              <Text style={styles.selloTexto}>SELLADO</Text>
+              <Text style={styles.selloTexto}>{mayus(t('onboarding:sello.titulo'))}</Text>
             </View>
           </Animated.View>
           <Animated.Text style={[styles.selloFecha, { opacity: selloOpacidad }]}>
-            Vence el {fechaConAnio(firmaSellada?.openAt ?? abreEl)}
+            {t('onboarding:sello.vence', { fecha: fechaConAnio(firmaSellada?.openAt ?? abreEl) })}
           </Animated.Text>
         </Pressable>
       ) : null}

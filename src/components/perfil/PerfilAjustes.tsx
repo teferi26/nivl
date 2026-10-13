@@ -14,7 +14,7 @@ import { Version } from '@/components/Version';
 import { Button, Card, Chip, ChipWrap, Row, RowValue, Section, Tag } from '@/components/ui';
 import { Interruptor } from '@/components/ui/Interruptor';
 import { ink, space, type as tipo } from '@/design/tokens';
-import { NOMBRE_IDIOMA, type Idioma, type Preferencia } from '@/i18n';
+import { NOMBRE_IDIOMA, t, type Idioma, type Preferencia } from '@/i18n';
 import {
   DESCARGO_SALUD,
   LINEA_CRISIS,
@@ -98,7 +98,7 @@ export function PerfilAjustes({
 
   return (
     <>
-      <Section title="Para qué uso NIVL">
+      <Section title={t('perfil:ajustes.paraQue')}>
         <ChipWrap>
           {PROFILE_KINDS.map((k) => (
             <Chip
@@ -108,20 +108,20 @@ export function PerfilAjustes({
               selected={profile.profile_kind === k}
               onPress={() => onPerfilDeUso(k)}
               disabled={busy}
-              accessibilityLabel={`Perfil ${KINDS[k].label}`}
+              accessibilityLabel={t('perfil:ajustes.perfilA11y', { perfil: KINDS[k].label })}
             />
           ))}
         </ChipWrap>
         <Text style={styles.nota}>{kind.tagline}</Text>
       </Section>
 
-      <Section title="Válvulas del sistema">
+      <Section title={t('perfil:ajustes.valvulas')}>
         <Card padded={false} style={styles.lista}>
           <Row
             first
             leading={<Ionicons name="shield-half-outline" size={20} color={ink.ink9} />}
-            title="Piedras de protección"
-            detail="Se forja una por semana de racha perfecta. Se consume sola al fallar un día y absorbe todo el daño."
+            title={t('perfil:ajustes.piedras')}
+            detail={t('perfil:ajustes.piedrasDetalle')}
             trailing={
               <RowValue tone="accent" strong>
                 {profile.protection_stones}/{MAX_STONES}
@@ -130,23 +130,25 @@ export function PerfilAjustes({
           />
           <Row
             leading={<Ionicons name="snow-outline" size={20} color={frozen ? ink.ink9 : ink.ink6} />}
-            title={frozen ? `En pausa · ${profile.freeze_reason ?? 'pausa'}` : 'Pausar el sistema'}
+            title={frozen ? t('perfil:ajustes.enPausa', { motivo: profile.freeze_reason ?? t('perfil:ajustes.pausaMotivo') }) : t('perfil:ajustes.pausar')}
             detail={
               frozen
-                ? `${profile.freeze_until ? `Vuelve el ${nombreDia(addDays(profile.freeze_until, 1)).toLocaleLowerCase('es-ES')}. ` : ''}Toca para reanudar antes.`
-                : 'Exámenes, enfermedad, viaje. Sin misiones ni penalizaciones mientras dure.'
+                ? profile.freeze_until
+                  ? t('perfil:ajustes.pausaVuelve', { dia: nombreDia(addDays(profile.freeze_until, 1)).toLocaleLowerCase('es-ES') })
+                  : t('perfil:ajustes.pausaReanudar')
+                : t('perfil:ajustes.pausarDetalle')
             }
-            trailing={frozen ? <Tag tone="accent">Pausa</Tag> : undefined}
+            trailing={frozen ? <Tag tone="accent">{t('perfil:ajustes.pausaTag')}</Tag> : undefined}
             chevron
             onPress={frozen ? onReanudar : onPausar}
-            accessibilityLabel={frozen ? 'Reanudar el sistema' : 'Pausar el sistema'}
+            accessibilityLabel={frozen ? t('perfil:ajustes.reanudar') : t('perfil:ajustes.pausar')}
           />
           <Row
             leading={<Ionicons name="phone-portrait-outline" size={20} color={vibraciones ? ink.ink9 : ink.ink6} />}
-            title="Vibraciones"
-            detail="Al completar, subir de nivel o de rango."
+            title={t('perfil:ajustes.vibraciones')}
+            detail={t('perfil:ajustes.vibracionesDetalle')}
             trailing={
-              <Interruptor value={vibraciones} onValueChange={onVibraciones} accessibilityLabel="Vibraciones" />
+              <Interruptor value={vibraciones} onValueChange={onVibraciones} accessibilityLabel={t('perfil:ajustes.vibraciones')} />
             }
           />
         </Card>
@@ -154,7 +156,7 @@ export function PerfilAjustes({
 
       {/* Sin esto no había forma de saber si los avisos estaban vivos: fallaban
           en silencio y el gladiador se enteraba por no recibirlos. */}
-      <Section title="Avisos">
+      <Section title={t('perfil:ajustes.avisos')}>
         <Card padded={false} variant={sinPermiso ? 'alerta' : 'surface'}>
           {/* El relleno va dentro: en alerta la trama hace de marco de 3 pt. Sin
               permiso, la trama va solo en la tarjeta (no también en el rótulo). */}
@@ -169,14 +171,18 @@ export function PerfilAjustes({
                 />
               }
               title={
-                avisos === null ? 'Comprobando los avisos' : avisos.permitido ? 'Avisos activos' : 'Avisos desactivados'
+                avisos === null
+                  ? t('perfil:ajustes.avisosComprobando')
+                  : avisos.permitido
+                    ? t('perfil:ajustes.avisosActivos')
+                    : t('perfil:ajustes.avisosDesactivados')
               }
               detail={
                 avisos?.permitido
-                  ? 'Despertador, bloques del día y cierre. Una notificación no suena en silencio ni en Modo Concentración: mantén también la alarma del reloj.'
+                  ? t('perfil:ajustes.avisosActivosDetalle')
                   : avisos === null
                     ? undefined
-                    : 'Sin permiso no hay despertador ni avisos de bloque. Toca para activarlos.'
+                    : t('perfil:ajustes.avisosSinPermiso')
               }
               trailing={
                 avisos?.permitido ? (
@@ -190,44 +196,46 @@ export function PerfilAjustes({
               accessibilityLabel={
                 avisos && !avisos.permitido
                   ? avisos.puedePreguntar
-                    ? 'Activar avisos'
-                    : 'Abrir ajustes del sistema para activar los avisos'
+                    ? t('perfil:ajustes.activarAvisos')
+                    : t('perfil:ajustes.abrirAjustesAvisos')
                   : undefined
               }
             />
             {avisos?.error ? (
               <Row
                 leading={<Ionicons name="alert-circle-outline" size={20} color={ink.ink9} />}
-                title="Último error"
+                title={t('perfil:ajustes.ultimoError')}
                 detail={avisos.error}
                 muted
               />
             ) : null}
           </View>
         </Card>
-        {avisos?.permitido ? <Text style={styles.nota}>{avisos.programados} avisos programados.</Text> : null}
+        {avisos?.permitido ? <Text style={styles.nota}>{t('perfil:ajustes.programados', { n: avisos.programados })}</Text> : null}
       </Section>
 
       {/* Stripe solo existe fuera de la app de tienda (paywallEnabled es
           false en iOS y Android, Guideline 3.1.1): allí lo de pago es /pro. */}
       {paywallEnabled() ? (
-        <Section title="El Oráculo">
+        <Section title={t('perfil:ajustes.oraculo')}>
           <Card padded={false} style={styles.lista}>
             <Row
               first
               leading={<Ionicons name="sparkles-outline" size={20} color={ink.ink8} />}
-              title={premium ? 'Premium activo' : 'Hazte Premium'}
+              title={premium ? t('perfil:ajustes.premiumActivo') : t('perfil:ajustes.haztePremium')}
               detail={
                 premium
-                  ? `El Oráculo va incluido${subscription?.current_period_end ? `. Renueva el ${subscription.current_period_end.slice(0, 10)}` : ''}.`
+                  ? subscription?.current_period_end
+                    ? t('perfil:ajustes.oraculoRenueva', { fecha: subscription.current_period_end.slice(0, 10) })
+                    : t('perfil:ajustes.oraculoIncluido')
                   : paymentsConfigured()
-                    ? 'La IA (misiones desde objetivos y análisis semanal) consume API real. Con la suscripción va incluida; sin ella puedes usar tu propia key en el módulo Oráculo.'
-                    : 'Pagos aún no configurados en este servidor. Puedes usar tu propia key en el módulo Oráculo.'
+                    ? t('perfil:ajustes.oraculoPagos')
+                    : t('perfil:ajustes.oraculoSinPagos')
               }
-              trailing={premium ? <Tag>Activo</Tag> : undefined}
+              trailing={premium ? <Tag>{t('perfil:ajustes.activo')}</Tag> : undefined}
               chevron={!premium && paymentsConfigured()}
               onPress={!premium && paymentsConfigured() ? onCheckout : undefined}
-              accessibilityLabel={!premium && paymentsConfigured() ? 'Hazte Premium' : undefined}
+              accessibilityLabel={!premium && paymentsConfigured() ? t('perfil:ajustes.haztePremium') : undefined}
             />
           </Card>
         </Section>
@@ -235,89 +243,87 @@ export function PerfilAjustes({
 
       {/* 1.0.10: solo el coach cambia de idioma; la interfaz sigue en español.
           En 1.1.0 esta sección pasa a ser «Idioma». */}
-      <Section title="Idioma del coach">
+      <Section title={t('perfil:ajustes.idioma')}>
         <Card padded={false} style={styles.lista}>
           <Row
             first
             leading={<Ionicons name="language-outline" size={20} color={ink.ink9} />}
-            title="Te habla en"
-            detail={idiomaAuto ? 'Automático: sigue al idioma del teléfono.' : undefined}
+            title={t('perfil:ajustes.teHablaEn')}
+            detail={idiomaAuto ? t('perfil:ajustes.idiomaAuto') : undefined}
             trailing={<RowValue strong>{nombreIdioma}</RowValue>}
             chevron
             onPress={onIdioma}
-            accessibilityLabel={`Idioma del coach: ${nombreIdioma}${idiomaAuto ? ', automático' : ''}. Cambiar`}
+            accessibilityLabel={t(idiomaAuto ? 'perfil:ajustes.idiomaAutoA11y' : 'perfil:ajustes.idiomaA11y', { idioma: nombreIdioma })}
           />
         </Card>
-        <Text style={styles.nota}>La interfaz sigue en español.</Text>
+        <Text style={styles.nota}>{t('perfil:ajustes.interfazEspanol')}</Text>
       </Section>
 
-      <Section title="Datos y la IA">
+      <Section title={t('perfil:ajustes.datosIA')}>
         <Card padded={false} style={styles.lista}>
           <Row
             first
             leading={<Ionicons name="shield-checkmark-outline" size={20} color={ink.ink9} />}
-            title="Envío de datos al coach"
-            detail={consent ? lineaPerfil(consent) : 'Qué datos van al proveedor de IA y a quién.'}
+            title={t('perfil:ajustes.envioDatos')}
+            detail={consent ? lineaPerfil(consent) : t('perfil:ajustes.envioDatosDetalle')}
             chevron
             onPress={onConsentimiento}
-            accessibilityLabel="Consentimiento para el envío de datos al proveedor de IA"
+            accessibilityLabel={t('perfil:ajustes.envioDatosA11y')}
           />
         </Card>
         <Text style={styles.nota}>{`${DESCARGO_SALUD} ${LINEA_CRISIS}`}</Text>
       </Section>
 
       {salud ?? (sinSalud ? null : <HealthPrivacySection />)}
-      <Section title="Cuenta">
+      <Section title={t('perfil:ajustes.cuenta')}>
         <Card padded={false} style={styles.lista}>
           <View ref={filaExportar} collapsable={false}>
             <Row
               first
               leading={<Ionicons name="download-outline" size={20} color={ink.ink9} />}
-              title="Exportar mis datos"
-              detail="Copia de seguridad con todo tu progreso."
+              title={t('perfil:ajustes.exportar')}
+              detail={t('perfil:ajustes.exportarDetalle')}
               trailing={busy ? <ActivityIndicator size="small" color={ink.ink10} /> : undefined}
               chevron={!busy}
               onPress={exportar}
               disabled={busy}
-              accessibilityLabel="Exportar mis datos"
+              accessibilityLabel={t('perfil:ajustes.exportar')}
               accessibilityState={{ disabled: busy }}
             />
           </View>
           <Row
             leading={<Ionicons name="log-out-outline" size={20} color={ink.ink9} />}
-            title="Cerrar sesión"
-            detail="Tu progreso queda guardado en tu cuenta."
+            title={t('comun:cerrarSesion')}
+            detail={t('perfil:ajustes.cerrarSesionDetalle')}
             chevron
             onPress={onCerrarSesion}
-            accessibilityLabel="Cerrar sesión"
+            accessibilityLabel={t('comun:cerrarSesion')}
           />
           <Row
             leading={<Ionicons name="document-text-outline" size={20} color={ink.ink9} />}
-            title="Términos de uso"
+            title={t('perfil:ajustes.terminos')}
             chevron
             onPress={() => Linking.openURL(LEGAL_URLS.terminos).catch(() => {})}
             accessibilityRole="link"
-            accessibilityLabel="Términos de uso de NIVL"
+            accessibilityLabel={t('perfil:ajustes.terminosA11y')}
           />
           <Row
             leading={<Ionicons name="shield-checkmark-outline" size={20} color={ink.ink9} />}
-            title="Política de privacidad"
+            title={t('perfil:ajustes.privacidad')}
             chevron
             onPress={() => Linking.openURL(LEGAL_URLS.privacidad).catch(() => {})}
             accessibilityRole="link"
-            accessibilityLabel="Política de privacidad de NIVL"
+            accessibilityLabel={t('perfil:ajustes.privacidadA11y')}
           />
         </Card>
         <Button
-          title="Eliminar cuenta"
+          title={t('perfil:ajustes.eliminarCuenta')}
           variant="danger"
           icon="trash-outline"
           onPress={onBorrar}
           style={styles.borrar}
         />
-        <Text style={styles.nota}>
-          Borra para siempre tu perfil y todo tu progreso en NIVL.
-        </Text>
+        <Text style={styles.nota}>{t('perfil:ajustes.eliminarNota')}</Text>
       </Section>
 
       <Version />

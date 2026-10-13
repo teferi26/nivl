@@ -17,6 +17,7 @@ import { TarjetaArena } from '@/components/arena';
 // eslint-disable-next-line no-restricted-imports -- consentguard.test.ts (Seguridad) simula SystemButton por nombre.
 import { SystemButton } from '@/components/SystemButton';
 import { ink, space, type as tipo } from '@/design/tokens';
+import { t } from '@/i18n';
 import { DATOS_IA, DESCARGO_SALUD, LINEA_CRISIS, PROVEEDORES_IA, TEXTO_CONSENTIMIENTO as T } from '@/lib/consentmath';
 import { LEGAL_URLS } from '@/lib/proplans';
 import { HojaPuerta } from './HojaPuerta';
@@ -99,9 +100,9 @@ export function ConsentimientoIAVista({ visible, ocupada, aviso, onAceptar, onCe
         onPress={() => Linking.openURL(LEGAL_URLS.privacidad).catch(() => {})}
         style={[texto.enlaceZona, styles.enlace]}
         accessibilityRole="link"
-        accessibilityLabel="Leer la política de privacidad"
+        accessibilityLabel={t('puertas:leerPolitica')}
       >
-        <Text style={texto.enlace}>Leer la política de privacidad</Text>
+        <Text style={texto.enlace}>{t('puertas:leerPolitica')}</Text>
       </Pressable>
     </HojaPuerta>
   );

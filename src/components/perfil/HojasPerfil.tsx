@@ -22,26 +22,30 @@ import { Platform, StyleSheet, Text, View } from 'react-native';
 import { Campo, ErrorSistema, TarjetaArena } from '@/components/arena';
 import { Button, Card, Check, Chip, ChipWrap, Row, Sheet, useAnunciar } from '@/components/ui';
 import { ink, space, type as tipo } from '@/design/tokens';
-import { esIdioma, IDIOMAS, NOMBRE_IDIOMA, type Preferencia } from '@/i18n';
+import { esIdioma, IDIOMAS, NOMBRE_IDIOMA, t, type Preferencia } from '@/i18n';
+import { mayus } from '@/i18n/formato';
 import { idiomaBase } from '@/i18n/dispositivo';
 import { CODIGO_MAX_LENGTH } from '@/lib/creatormath';
 import { addDays, nombreDia } from '@/lib/dates';
 
-/** La palabra que hay que escribir para poder borrar la cuenta. */
-export const PALABRA_BORRAR = 'ELIMINAR';
+/** La palabra que hay que escribir para poder borrar la cuenta («ELIMINAR»). */
+export function palabraBorrar(): string {
+  return t('perfil:borrar.palabra');
+}
 
 /** ¿Lo escrito es «ELIMINAR»? Sin distinguir mayúsculas ni espacios de los lados. */
 export function palabraCuadra(escrito: string): boolean {
-  return escrito.trim().toLocaleUpperCase('es-ES') === PALABRA_BORRAR;
+  return mayus(escrito.trim()) === mayus(palabraBorrar());
 }
 
 // En iOS no se nombra Google Play (guideline 2.3.10), y al revés.
-const AVISO_SUSCRIPCION =
-  Platform.OS === 'android'
-    ? 'Borrar la cuenta no cancela una suscripción de NIVL Pro: cancélala en Play Store > Pagos y suscripciones > Suscripciones.'
+function avisoSuscripcion(): string {
+  return Platform.OS === 'android'
+    ? t('perfil:borrar.suscripcion.android')
     : Platform.OS === 'ios'
-      ? 'Borrar la cuenta no cancela una suscripción de NIVL Pro: cancélala en Ajustes > tu nombre > Suscripciones.'
-      : 'Borrar la cuenta no cancela una suscripción de NIVL Pro: cancélala en la tienda donde la contrataste.';
+      ? t('perfil:borrar.suscripcion.ios')
+      : t('perfil:borrar.suscripcion.otra');
+}
 
 export interface HojaBorrarProps {
   abierta: boolean;
@@ -63,7 +67,7 @@ export function HojaBorrar({ abierta, cerrar, aviso, esCreador, borrando, confir
 
   const cuadra = palabraCuadra(escrito);
   // Quien no ve el botón tiene que saber que ya se ha encendido.
-  useAnunciar(abierta && cuadra ? 'El botón Eliminar para siempre ya está activo.' : null);
+  useAnunciar(abierta && cuadra ? t('perfil:borrar.activo') : null);
   const cerrarSiSePuede = () => {
     if (!borrando) cerrar();
   };
@@ -72,46 +76,40 @@ export function HojaBorrar({ abierta, cerrar, aviso, esCreador, borrando, confir
     <Sheet
       visible={abierta}
       onClose={cerrarSiSePuede}
-      eyebrow="Eliminar cuenta"
-      title="Borrar para siempre"
+      eyebrow={t('perfil:borrar.eyebrow')}
+      title={t('perfil:borrar.titulo')}
       footer={
         <>
           <Button
-            title="Eliminar para siempre"
+            title={t('perfil:borrar.boton')}
             variant="danger"
             icon="trash-outline"
             onPress={confirmar}
             loading={borrando}
             disabled={!cuadra}
           />
-          <Button title="Cancelar" variant="ghost" onPress={cerrarSiSePuede} disabled={borrando} />
+          <Button title={t('comun:cancelar')} variant="ghost" onPress={cerrarSiSePuede} disabled={borrando} />
         </>
       }
     >
       <View style={styles.pila}>
-        <TarjetaArena variante="trama" rotulo="Lo que se pierde">
+        <TarjetaArena variante="trama" rotulo={t('perfil:borrar.rotulo')}>
           <View style={styles.pilaCorta}>
-            <Text style={styles.cuerpo}>
-              Se borran tu perfil, misiones, campañas, diario, datos de cuerpo y dinero, la conversación con el coach,
-              tus fotos y todo tu progreso. No hay vuelta atrás.
-            </Text>
-            <Text style={styles.nota}>{AVISO_SUSCRIPCION}</Text>
+            <Text style={styles.cuerpo}>{t('perfil:borrar.cuerpo')}</Text>
+            <Text style={styles.nota}>{avisoSuscripcion()}</Text>
           </View>
         </TarjetaArena>
 
         {esCreador ? (
-          <Text style={styles.nota}>
-            Eres creador del programa. Si borras la cuenta, tu código se desactiva; el saldo ya generado se te sigue
-            pagando: escríbenos a soporte para darnos tus datos de pago.
-          </Text>
+          <Text style={styles.nota}>{t('perfil:borrar.creador')}</Text>
         ) : null}
 
         <Campo
-          etiqueta={`Escribe ${PALABRA_BORRAR} para confirmar`}
+          etiqueta={t('perfil:borrar.etiqueta', { palabra: palabraBorrar() })}
           grande="rank"
           value={escrito}
           onChangeText={setEscrito}
-          placeholder={PALABRA_BORRAR}
+          placeholder={palabraBorrar()}
           autoCapitalize="characters"
           autoCorrect={false}
           autoComplete="off"
@@ -119,8 +117,8 @@ export function HojaBorrar({ abierta, cerrar, aviso, esCreador, borrando, confir
           editable={!borrando}
           maxLength={20}
           returnKeyType="done"
-          ayuda={cuadra ? 'Listo. El botón de abajo borra la cuenta.' : 'Hasta que la palabra cuadre, el botón no se activa.'}
-          accessibilityLabel={`Escribe ${PALABRA_BORRAR} para poder borrar la cuenta`}
+          ayuda={cuadra ? t('perfil:borrar.listo') : t('perfil:borrar.noCuadra')}
+          accessibilityLabel={t('perfil:borrar.campoA11y', { palabra: palabraBorrar() })}
         />
 
         {aviso ? <ErrorSistema compacto mensaje={aviso} /> : null}
@@ -147,7 +145,7 @@ export interface HojaPausaProps {
   duraciones: readonly number[];
 }
 
-const textoDias = (d: number) => `${d} día${d > 1 ? 's' : ''}`;
+const textoDias = (d: number) => t('comun:dia', { count: d });
 
 export function HojaPausa({
   abierta,
@@ -170,34 +168,32 @@ export function HojaPausa({
     <Sheet
       visible={abierta}
       onClose={cerrarSiSePuede}
-      eyebrow="Pausar el sistema"
-      title="¿Cuánto tiempo?"
+      eyebrow={t('perfil:pausa.eyebrow')}
+      title={t('perfil:pausa.titulo')}
       footer={
         <>
-          <Button title="Activar pausa" size="lg" icon="snow-outline" onPress={activar} loading={ocupado} />
-          <Button title="Cancelar" variant="ghost" onPress={cerrarSiSePuede} disabled={ocupado} />
+          <Button title={t('perfil:pausa.activar')} size="lg" icon="snow-outline" onPress={activar} loading={ocupado} />
+          <Button title={t('comun:cancelar')} variant="ghost" onPress={cerrarSiSePuede} disabled={ocupado} />
         </>
       }
     >
       <View style={styles.pila}>
-        <Text style={styles.cuerpo}>
-          Sin misiones, sin penalizaciones, sin pérdida de racha. Pausar no es rendirse: es estrategia.
-        </Text>
+        <Text style={styles.cuerpo}>{t('perfil:pausa.cuerpo')}</Text>
 
         <View style={styles.grupo}>
           <Text style={styles.etiqueta} maxFontSizeMultiplier={1.35}>
-            Motivo
+            {t('perfil:pausa.motivo')}
           </Text>
           <ChipWrap>
             {motivos.map((r) => (
-              <Chip key={r} label={r} selected={motivo === r} onPress={() => setMotivo(r)} accessibilityLabel={`Motivo: ${r}`} />
+              <Chip key={r} label={r} selected={motivo === r} onPress={() => setMotivo(r)} accessibilityLabel={t('perfil:pausa.motivoA11y', { motivo: r })} />
             ))}
           </ChipWrap>
         </View>
 
         <View style={styles.grupo}>
           <Text style={styles.etiqueta} maxFontSizeMultiplier={1.35}>
-            Duración, desde hoy
+            {t('perfil:pausa.duracion')}
           </Text>
           <ChipWrap>
             {duraciones.map((d) => (
@@ -206,12 +202,12 @@ export function HojaPausa({
           </ChipWrap>
         </View>
 
-        <View style={styles.grupo} accessible accessibilityLabel={`El sistema se reanuda solo el ${nombreDia(addDays(today, dias))}`}>
+        <View style={styles.grupo} accessible accessibilityLabel={t('perfil:pausa.reanudaA11y', { dia: nombreDia(addDays(today, dias)) })}>
           <Text style={styles.etiqueta} maxFontSizeMultiplier={1.35}>
-            Se reanuda solo el
+            {t('perfil:pausa.reanuda')}
           </Text>
           <Text style={styles.fecha} maxFontSizeMultiplier={1.35}>
-            {nombreDia(addDays(today, dias)).toLocaleUpperCase('es-ES')}
+            {mayus(nombreDia(addDays(today, dias)))}
           </Text>
         </View>
 
@@ -225,7 +221,7 @@ export interface HojaCodigoProps {
   abierta: boolean;
   cerrar: () => void;
   valor: string;
-  cambiar: (t: string) => void;
+  cambiar: (texto: string) => void;
   aviso: string | null;
   ocupado: boolean;
   enviar: () => void;
@@ -238,26 +234,23 @@ export function HojaCodigo({ abierta, cerrar, valor, cambiar, aviso, ocupado, en
     <Sheet
       visible={abierta}
       onClose={cerrar}
-      eyebrow="Código de creador"
-      title="¿Quién te trajo?"
+      eyebrow={t('perfil:codigo.eyebrow')}
+      title={t('perfil:codigo.titulo')}
       footer={
         <>
-          <Button title="Guardar código" size="lg" onPress={enviar} loading={ocupado} disabled={!valor.trim()} />
-          <Button title="Cancelar" variant="ghost" onPress={cerrar} />
+          <Button title={t('perfil:codigo.guardar')} size="lg" onPress={enviar} loading={ocupado} disabled={!valor.trim()} />
+          <Button title={t('comun:cancelar')} variant="ghost" onPress={cerrar} />
         </>
       }
     >
       <View style={styles.pila}>
-        <Text style={styles.cuerpo}>
-          Si te recomendó NIVL alguien del programa de creadores, escribe su código. No cambia nada para ti y solo se
-          puede poner una vez.
-        </Text>
+        <Text style={styles.cuerpo}>{t('perfil:codigo.cuerpo')}</Text>
         <Campo
-          etiqueta="Código"
+          etiqueta={t('perfil:codigo.etiqueta')}
           grande="rank"
           value={valor}
           onChangeText={cambiar}
-          placeholder="CÓDIGO"
+          placeholder={mayus(t('perfil:codigo.etiqueta'))}
           maxLength={CODIGO_MAX_LENGTH + 4}
           autoCapitalize="characters"
           autoCorrect={false}
@@ -267,7 +260,7 @@ export function HojaCodigo({ abierta, cerrar, valor, cambiar, aviso, ocupado, en
           returnKeyType="done"
           onSubmitEditing={enviar}
           error={aviso}
-          accessibilityLabel="Código del creador que te trajo"
+          accessibilityLabel={t('perfil:codigo.a11y')}
         />
       </View>
     </Sheet>
@@ -287,29 +280,26 @@ export interface HojaIdiomaProps {
 /** Qué hace «Automático» con este teléfono. */
 export function detalleAutomatico(dispositivo: string | null): string {
   const base = idiomaBase(dispositivo);
-  if (esIdioma(base)) return `Sigue al teléfono: ahora, ${NOMBRE_IDIOMA[base]}.`;
-  return 'Sigue al teléfono. Si está en un idioma que el coach aún no habla, te escribe en español.';
+  if (esIdioma(base)) return t('perfil:idioma.autoAhora', { idioma: NOMBRE_IDIOMA[base] });
+  return t('perfil:idioma.autoOtro');
 }
 
 export function HojaIdioma({ abierta, cerrar, preferencia, dispositivo, elegir }: HojaIdiomaProps) {
   const elegida: Preferencia = preferencia ?? 'es';
   const opciones: { valor: Preferencia; titulo: string; detalle?: string }[] = [
-    { valor: 'auto', titulo: 'Automático', detalle: detalleAutomatico(dispositivo) },
+    { valor: 'auto', titulo: t('perfil:idioma.auto'), detalle: detalleAutomatico(dispositivo) },
     ...IDIOMAS.map((i) => ({ valor: i as Preferencia, titulo: NOMBRE_IDIOMA[i] })),
   ];
   return (
     <Sheet
       visible={abierta}
       onClose={cerrar}
-      eyebrow="Idioma del coach"
-      title="¿En qué idioma te habla?"
-      footer={<Button title="Cerrar" variant="ghost" onPress={cerrar} />}
+      eyebrow={t('perfil:idioma.eyebrow')}
+      title={t('perfil:idioma.titulo')}
+      footer={<Button title={t('comun:cerrar')} variant="ghost" onPress={cerrar} />}
     >
       <View style={styles.pila}>
-        <Text style={styles.cuerpo}>
-          El coach te escribe en este idioma: la conversación, los avisos que prepara y sus informes. La interfaz sigue
-          en español.
-        </Text>
+        <Text style={styles.cuerpo}>{t('perfil:idioma.cuerpo')}</Text>
         <Card padded={false} style={styles.lista}>
           {opciones.map((o, i) => {
             const marcada = elegida === o.valor;
@@ -321,7 +311,7 @@ export function HojaIdioma({ abierta, cerrar, preferencia, dispositivo, elegir }
                 detail={o.detalle}
                 trailing={<Check checked={marcada} size={22} />}
                 onPress={() => elegir(o.valor)}
-                accessibilityLabel={o.detalle ? `${o.titulo}. ${o.detalle}` : o.titulo}
+                accessibilityLabel={o.detalle ? t('perfil:idioma.opcionA11y', { titulo: o.titulo, detalle: o.detalle }) : o.titulo}
                 accessibilityState={{ selected: marcada }}
               />
             );

@@ -15,6 +15,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { TarjetaArena } from '@/components/arena';
 import { Button, Section, Skeleton } from '@/components/ui';
 import { ink, space, type as tipo } from '@/design/tokens';
+import { t } from '@/i18n';
 
 export interface SaludAjustesVistaProps {
   cargando: boolean;
@@ -31,30 +32,30 @@ export interface SaludAjustesVistaProps {
 }
 
 export function estadoSalud(p: Pick<SaludAjustesVistaProps, 'cargando' | 'errorComprobar' | 'borradoPendiente' | 'aceptado'>): string {
-  if (p.cargando) return 'Comprobando el permiso…';
-  if (p.errorComprobar) return 'No se ha podido comprobar el permiso de salud.';
-  if (p.borradoPendiente) return 'Permiso retirado. Falta terminar el borrado; reinténtalo.';
-  if (p.aceptado) return 'Has permitido guardar y utilizar tus datos de salud. Puedes retirar el permiso y borrarlos.';
-  return 'Sin permiso. NIVL no utiliza los registros de salud. Puedes exportar los datos anteriores o pedir su borrado.';
+  if (p.cargando) return t('puertas:saludAjustes.comprobando');
+  if (p.errorComprobar) return t('puertas:saludAjustes.noComprobado');
+  if (p.borradoPendiente) return t('puertas:saludAjustes.borradoPendiente');
+  if (p.aceptado) return t('puertas:saludAjustes.aceptado');
+  return t('puertas:saludAjustes.sinPermiso');
 }
 
 export function SaludAjustesVista(p: SaludAjustesVistaProps) {
   const fallo = p.error ?? p.errorComprobar;
   const alerta = p.borradoPendiente || !!p.errorComprobar;
   return (
-    <Section title="Salud y bienestar">
+    <Section title={t('puertas:saludAjustes.seccion')}>
       <TarjetaArena variante={alerta ? 'trama' : 'contorno'}>
         <Text style={styles.estado} maxFontSizeMultiplier={1.6}>
           {estadoSalud(p)}
         </Text>
         <View style={styles.botones}>
           {p.errorComprobar ? (
-            <Button title="Volver a comprobar" variant="secondary" onPress={p.onReintentar} disabled={p.ocupada} />
+            <Button title={t('puertas:volverAComprobar')} variant="secondary" onPress={p.onReintentar} disabled={p.ocupada} />
           ) : !p.aceptado && !p.borradoPendiente ? (
-            <Button title="Revisar permiso de salud" variant="secondary" onPress={p.onRevisar} disabled={p.cargando || p.ocupada} />
+            <Button title={t('puertas:saludAjustes.revisar')} variant="secondary" onPress={p.onRevisar} disabled={p.cargando || p.ocupada} />
           ) : null}
           <Button
-            title={p.borradoPendiente ? 'Terminar borrado' : 'Retirar y borrar salud'}
+            title={p.borradoPendiente ? t('puertas:saludAjustes.terminarBorrado') : t('puertas:saludAjustes.retirar')}
             variant="danger"
             onPress={p.onRetirar}
             loading={p.ocupada}
@@ -62,7 +63,7 @@ export function SaludAjustesVista(p: SaludAjustesVistaProps) {
           />
         </View>
         <Text style={styles.nota} maxFontSizeMultiplier={1.6}>
-          La exportación y la eliminación de cuenta siguen disponibles debajo. Las direcciones temporales de fotos ya compartidas pueden seguir siendo válidas hasta que se elimine el archivo o caduquen.
+          {t('puertas:saludAjustes.nota')}
         </Text>
         {fallo ? (
           <Text style={styles.error} accessibilityRole="alert" accessibilityLiveRegion="polite" maxFontSizeMultiplier={1.6}>
@@ -86,7 +87,7 @@ export interface AvisoSaludVistaProps {
 export function AvisoSaludVista(p: AvisoSaludVistaProps) {
   if (p.cargando) {
     return (
-      <View accessibilityRole="progressbar" accessibilityLabel="Comprobando permiso de salud">
+      <View accessibilityRole="progressbar" accessibilityLabel={t('puertas:salud.comprobandoA11y')}>
         <Skeleton height={90} />
       </View>
     );
@@ -95,19 +96,19 @@ export function AvisoSaludVista(p: AvisoSaludVistaProps) {
     return (
       <TarjetaArena variante="trama">
         <Text style={styles.estado} maxFontSizeMultiplier={1.6}>
-          No se ha podido comprobar el permiso de salud. Tus metas generales siguen disponibles.
+          {t('puertas:avisoSalud.error')}
         </Text>
-        <Button title="Volver a comprobar" variant="secondary" size="sm" onPress={p.onReintentar} style={styles.solo} />
+        <Button title={t('puertas:volverAComprobar')} variant="secondary" size="sm" onPress={p.onReintentar} style={styles.solo} />
       </TarjetaArena>
     );
   }
   return (
     <TarjetaArena variante="contorno">
       <Text style={styles.estado} maxFontSizeMultiplier={1.6}>
-        Los registros de salud están desactivados. Las metas generales siguen disponibles.
+        {t('puertas:avisoSalud.desactivado')}
       </Text>
       <Button
-        title="Revisar permiso de salud"
+        title={t('puertas:saludAjustes.revisar')}
         variant="secondary"
         size="sm"
         onPress={p.onRevisar}

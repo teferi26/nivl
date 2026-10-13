@@ -8,17 +8,25 @@
 // servidor). Si la RPC aún no existe, el respaldo es un correo a soporte con
 // el id y el motivo, SIN el contenido.
 
+import { t } from '@/i18n';
+
 export type FuenteIA = 'coach' | 'oraculo';
 export type MotivoIA = 'danino' | 'salud' | 'dinero' | 'incorrecto' | 'ofensivo' | 'otro';
 
-export const MOTIVOS_IA: { value: MotivoIA; label: string }[] = [
-  { value: 'danino', label: 'Puede hacer daño' },
-  { value: 'salud', label: 'Consejo de salud peligroso' },
-  { value: 'dinero', label: 'Consejo de dinero peligroso' },
-  { value: 'incorrecto', label: 'Información falsa' },
-  { value: 'ofensivo', label: 'Ofensivo o inapropiado' },
-  { value: 'otro', label: 'Otro motivo' },
+/** Los motivos, en orden. El texto es `etiquetaMotivo(value)`. */
+export const MOTIVOS_IA: { value: MotivoIA }[] = [
+  { value: 'danino' },
+  { value: 'salud' },
+  { value: 'dinero' },
+  { value: 'incorrecto' },
+  { value: 'ofensivo' },
+  { value: 'otro' },
 ];
+
+/** El nombre de un motivo, en el idioma de la interfaz. */
+export function etiquetaMotivo(motivo: MotivoIA): string {
+  return t(`puertas:denuncia.motivos.${motivo}`);
+}
 
 export const MAX_EXTRACTO = 2000;
 export const CORREO_SOPORTE = 'teferilaforga@gmail.com';
@@ -42,14 +50,14 @@ export function correoDenuncia(
   messageId: string | null,
   contexto?: string,
 ): string {
-  const asunto = encodeURIComponent('Denuncia de respuesta de IA · NIVL');
+  const asunto = encodeURIComponent(t('puertas:denuncia.correo.asunto'));
   const cuerpo = encodeURIComponent(
     [
-      `Origen: ${fuente === 'coach' ? 'coach' : 'Oráculo'}`,
-      `Motivo: ${MOTIVOS_IA.find((m) => m.value === motivo)?.label ?? motivo}`,
-      `Mensaje: ${messageId ?? 'sin identificador'}`,
+      t('puertas:denuncia.correo.origen', { origen: t(`puertas:denuncia.correo.fuente.${fuente}`) }),
+      t('puertas:denuncia.correo.motivo', { motivo: etiquetaMotivo(motivo) }),
+      t('puertas:denuncia.correo.mensaje', { id: messageId ?? t('puertas:denuncia.correo.sinId') }),
       // Sin id de servidor (respuesta recién llegada), el hilo y la hora la localizan.
-      ...(contexto ? [`Contexto: ${contexto}`] : []),
+      ...(contexto ? [t('puertas:denuncia.correo.contexto', { contexto })] : []),
     ].join('\n'),
   );
   return `mailto:${CORREO_SOPORTE}?subject=${asunto}&body=${cuerpo}`;

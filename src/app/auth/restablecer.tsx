@@ -15,6 +15,7 @@ import { useState } from 'react';
 import { RestablecerVista, type FaseRestablecer } from '@/components/acceso/EnlaceCuenta';
 import { useEnlaceCorreo } from '@/components/useEnlaceCorreo';
 import { vibrar } from '@/design/haptics';
+import { t } from '@/i18n';
 import { useAuth } from '@/lib/auth';
 import { cambiarContrasena } from '@/lib/authFlow';
 import { checkPassword, mensajeSistema } from '@/lib/validation';
@@ -39,7 +40,7 @@ export default function Restablecer() {
     estado.fase === 'error'
       ? estado.mensaje
       : estado.fase === 'sin_enlace' || (estado.fase === 'listo' && estado.destino !== 'recuperacion')
-        ? 'Este enlace no es válido o ha caducado. Pide uno nuevo desde «¿Olvidaste tu contraseña?».'
+        ? t('acceso:restablecer.invalido')
         : null;
 
   const guardar = async () => {

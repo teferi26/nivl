@@ -14,7 +14,7 @@ import { vibrar } from '@/design/haptics';
 import { entrar, pedirRecuperacion, registrar } from '@/lib/authFlow';
 import { SITIO_CREADORES } from '@/lib/sitio';
 import { mensajeSistema } from '@/lib/validation';
-import { AVISO_RECUPERACION, AVISO_REGISTRO, evaluarLogin, SIN_TOCAR, type CampoTocable, type ModoLogin, type Tocados } from './formulario';
+import { avisoRecuperacion, avisoRegistro, evaluarLogin, SIN_TOCAR, type CampoTocable, type ModoLogin, type Tocados } from './formulario';
 import type { LoginVistaProps } from './LoginVista';
 
 /**
@@ -85,7 +85,7 @@ export function useLogin(): LoginVistaProps {
         // La puerta de sesión de _layout redirige al detectar la sesión.
       } else if (mode === 'recover') {
         await pedirRecuperacion(email);
-        setNotice(AVISO_RECUPERACION);
+        setNotice(avisoRecuperacion());
       } else {
         const r = await registrar(email, password, name);
         if (r === 'confirmar_email') {
@@ -93,7 +93,7 @@ export function useLogin(): LoginVistaProps {
           setMode('signin');
           setPassword('');
           setConfirm('');
-          setNotice(AVISO_REGISTRO);
+          setNotice(avisoRegistro());
         }
       }
     } catch (e) {

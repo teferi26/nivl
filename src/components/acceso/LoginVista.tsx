@@ -24,9 +24,11 @@ import { Arena, ASangre, Campo, Entrada, Laurel, TarjetaArena } from '@/componen
 import { Button, Check, Screen, useAnunciar } from '@/components/ui';
 import { vibrar } from '@/design/haptics';
 import { ink, space, stroke, type as tipo } from '@/design/tokens';
+import { t } from '@/i18n';
+import { mayus } from '@/i18n/formato';
 import { LEGAL_URLS } from '@/lib/proplans';
 import { NAME_MAX_LENGTH } from '@/lib/validation';
-import { AYUDA_CONTRASENA, evaluarLogin, type CampoTocable, type CamposLogin, type ModoLogin, type Tocados } from './formulario';
+import { ayudaContrasena, evaluarLogin, type CampoTocable, type CamposLogin, type ModoLogin, type Tocados } from './formulario';
 import { CampoContrasena, FuerzaContrasena } from './piezas';
 
 export interface LoginVistaProps {
@@ -54,25 +56,11 @@ export interface LoginVistaProps {
   onAbrir: (url: string) => void;
 }
 
-// Texto acordado con el Chat 3 (seguridad y datos).
-const CASILLA_LEGAL = 'He leído y acepto los Términos de NIVL y he leído su Política de privacidad.';
+// La casilla legal (`acceso:login.casillaLegal`): texto acordado con el Chat 3
+// (seguridad y datos). La intro y el botón salen de `acceso:login.intro.<modo>`
+// y `acceso:login.boton.<modo>`.
 
-const INTRO: Record<ModoLogin, string> = {
-  signin: 'Entra con tu correo y tu contraseña de NIVL.',
-  signup: 'Crea tu cuenta de NIVL. Te enviaremos un enlace para confirmar el correo.',
-  recover: 'Escribe el correo de tu cuenta y te enviaremos un enlace para elegir una contraseña nueva.',
-};
-
-const INTRO_PORTAL = 'Entra con tu cuenta de NIVL para ver tu panel de creador.';
-const OLVIDO_PORTAL =
-  '¿Olvidaste la contraseña? Recupérala desde la app de NIVL («¿Olvidaste la contraseña?» en la pantalla de entrar) y vuelve aquí.';
-
-const BOTON: Record<ModoLogin, string> = { signin: 'Entrar', signup: 'Crear cuenta', recover: 'Enviar enlace' };
-
-const PESTANAS: { modo: ModoLogin; texto: string; etiqueta: string }[] = [
-  { modo: 'signin', texto: 'ENTRAR', etiqueta: 'Entrar con cuenta existente' },
-  { modo: 'signup', texto: 'CREAR CUENTA', etiqueta: 'Crear una cuenta nueva' },
-];
+const PESTANAS: ('signin' | 'signup')[] = ['signin', 'signup'];
 
 /** Alto del graderío de la portada. */
 const ALTO_ARENA = 140;
@@ -96,11 +84,11 @@ export function LoginVista(p: LoginVistaProps) {
     <Screen contentStyle={styles.contenido}>
       <Entrada indice={0}>
         {plegada ? (
-          <Text style={styles.marcaPlegada} accessibilityRole="header" maxFontSizeMultiplier={1}>
+          <Text style={styles.marcaPlegada} accessibilityRole="header" maxFontSizeMultiplier={1}>{/* i18n-ok: la marca */}
             NIVL
           </Text>
         ) : (
-          <Portada lema={portal ? 'PORTAL DE CREADORES' : 'UN 1 % MEJOR CADA DÍA'} />
+          <Portada lema={portal ? mayus(t('acceso:login.portal')) : t('comun:lema')} />
         )}
       </Entrada>
 
@@ -108,27 +96,27 @@ export function LoginVista(p: LoginVistaProps) {
         <View style={styles.form}>
           {portal ? null : recuperar ? (
             <Text style={styles.tituloModo} accessibilityRole="header" maxFontSizeMultiplier={1.35}>
-              RECUPERAR CONTRASEÑA
+              {mayus(t('acceso:login.recuperarTitulo'))}
             </Text>
           ) : (
             <View style={styles.pestanas} accessibilityRole="tablist">
-              {PESTANAS.map((t) => {
-                const activa = modo === t.modo;
+              {PESTANAS.map((pestana) => {
+                const activa = modo === pestana;
                 return (
                   <Pressable
-                    key={t.modo}
+                    key={pestana}
                     onPress={() => {
                       if (activa) return;
                       vibrar('seleccion');
-                      p.onModo(t.modo);
+                      p.onModo(pestana);
                     }}
                     style={[styles.pestana, activa && styles.pestanaActiva]}
                     accessibilityRole="tab"
                     accessibilityState={{ selected: activa }}
-                    accessibilityLabel={t.etiqueta}
+                    accessibilityLabel={t(`acceso:login.pestana.${pestana}.a11y`)}
                   >
                     <Text style={[styles.pestanaTexto, activa && styles.pestanaTextoActiva]} maxFontSizeMultiplier={1.35}>
-                      {t.texto}
+                      {mayus(t(`acceso:login.pestana.${pestana}.texto`))}
                     </Text>
                   </Pressable>
                 );
@@ -137,13 +125,13 @@ export function LoginVista(p: LoginVistaProps) {
           )}
 
           <Text style={styles.intro} maxFontSizeMultiplier={1.6}>
-            {portal ? INTRO_PORTAL : INTRO[modo]}
+            {portal ? t('acceso:login.introPortal') : t(`acceso:login.intro.${modo}`)}
           </Text>
 
           <View style={styles.campos}>
             {alta ? (
               <Campo
-                etiqueta="Nombre"
+                etiqueta={t('comun:nombre')}
                 value={campos.nombre}
                 onChangeText={p.onNombre}
                 onBlur={() => p.onTocar('nombre')}
@@ -152,13 +140,13 @@ export function LoginVista(p: LoginVistaProps) {
                 autoComplete="name"
                 textContentType="name"
                 maxLength={NAME_MAX_LENGTH}
-                placeholder="Cómo quieres que te llame el sistema"
-                accessibilityLabel="Nombre"
+                placeholder={t('acceso:login.nombrePlaceholder')}
+                accessibilityLabel={t('comun:nombre')}
               />
             ) : null}
 
             <Campo
-              etiqueta="Correo"
+              etiqueta={t('acceso:login.correo')}
               value={campos.correo}
               onChangeText={p.onCorreo}
               onBlur={() => p.onTocar('correo')}
@@ -167,14 +155,14 @@ export function LoginVista(p: LoginVistaProps) {
               autoComplete="email"
               textContentType="username"
               keyboardType="email-address"
-              placeholder="tu@correo.com"
-              accessibilityLabel="Correo electrónico"
+              placeholder={t('acceso:login.correoPlaceholder')}
+              accessibilityLabel={t('acceso:login.correoA11y')}
               onSubmitEditing={recuperar ? p.onEnviar : undefined}
             />
 
             {recuperar ? null : (
               <CampoContrasena
-                etiqueta="Contraseña"
+                etiqueta={t('acceso:contrasena.etiqueta')}
                 ver={verContrasena}
                 onVer={p.onVerContrasena}
                 value={campos.contrasena}
@@ -182,8 +170,8 @@ export function LoginVista(p: LoginVistaProps) {
                 onBlur={() => p.onTocar('contrasena')}
                 autoComplete={modo === 'signin' ? 'current-password' : 'new-password'}
                 textContentType={modo === 'signin' ? 'password' : 'newPassword'}
-                placeholder={alta ? 'Una frase que recuerdes' : '••••••••••'}
-                accessibilityLabel="Contraseña"
+                placeholder={alta ? t('acceso:contrasena.placeholder') : '••••••••••'}
+                accessibilityLabel={t('acceso:contrasena.etiqueta')}
                 onSubmitEditing={modo === 'signin' ? p.onEnviar : undefined}
               />
             )}
@@ -192,14 +180,14 @@ export function LoginVista(p: LoginVistaProps) {
               <FuerzaContrasena fuerza={ev.fuerza} faltas={ev.faltas} />
             ) : alta ? (
               <Text style={styles.ayuda} maxFontSizeMultiplier={1.6}>
-                {AYUDA_CONTRASENA}
+                {ayudaContrasena()}
               </Text>
             ) : null}
 
             {alta ? (
               <>
                 <Campo
-                  etiqueta="Repite la contraseña"
+                  etiqueta={t('acceso:contrasena.repite')}
                   value={campos.repite}
                   onChangeText={p.onRepite}
                   onBlur={() => p.onTocar('repite')}
@@ -209,7 +197,7 @@ export function LoginVista(p: LoginVistaProps) {
                   autoComplete="new-password"
                   textContentType="newPassword"
                   placeholder="••••••••••"
-                  accessibilityLabel="Repite la contraseña"
+                  accessibilityLabel={t('acceso:contrasena.repite')}
                 />
 
                 <View>
@@ -221,20 +209,24 @@ export function LoginVista(p: LoginVistaProps) {
                     style={styles.casilla}
                     accessibilityRole="checkbox"
                     accessibilityState={{ checked: campos.aceptado }}
-                    accessibilityLabel={CASILLA_LEGAL}
+                    accessibilityLabel={t('acceso:login.casillaLegal')}
                   >
                     <Check checked={campos.aceptado} size={24} />
                     <Text style={styles.casillaTexto} maxFontSizeMultiplier={1.6}>
-                      {CASILLA_LEGAL}
+                      {t('acceso:login.casillaLegal')}
                     </Text>
                   </Pressable>
                   {/* Los enlaces van fuera de la casilla: dentro, VoiceOver y
                       TalkBack leían la casilla entera y no llegaban a ellos. */}
                   <View style={styles.legalesCasilla}>
-                    <EnlaceLegal texto="Términos de NIVL" etiqueta="Términos de NIVL" onPress={() => p.onAbrir(LEGAL_URLS.terminos)} />
                     <EnlaceLegal
-                      texto="Privacidad de NIVL"
-                      etiqueta="Privacidad de NIVL"
+                      texto={t('acceso:login.terminos')}
+                      etiqueta={t('acceso:login.terminos')}
+                      onPress={() => p.onAbrir(LEGAL_URLS.terminos)}
+                    />
+                    <EnlaceLegal
+                      texto={t('acceso:login.privacidad')}
+                      etiqueta={t('acceso:login.privacidad')}
                       onPress={() => p.onAbrir(LEGAL_URLS.privacidad)}
                     />
                   </View>
@@ -245,7 +237,7 @@ export function LoginVista(p: LoginVistaProps) {
 
           {error ? (
             <View accessibilityRole="alert" accessibilityLiveRegion="assertive" style={styles.mensaje}>
-              <TarjetaArena variante="trama" rotulo="No ha salido" style={styles.compacta}>
+              <TarjetaArena variante="trama" rotulo={t('acceso:noHaSalido')} style={styles.compacta}>
                 <Text style={styles.mensajeTexto} maxFontSizeMultiplier={1.6}>
                   {error}
                 </Text>
@@ -254,7 +246,7 @@ export function LoginVista(p: LoginVistaProps) {
           ) : null}
           {aviso ? (
             <View accessibilityRole="alert" accessibilityLiveRegion="polite" style={styles.mensaje}>
-              <TarjetaArena variante="contorno" rotulo="Revisa tu correo" style={styles.compacta}>
+              <TarjetaArena variante="contorno" rotulo={t('acceso:login.revisaCorreo')} style={styles.compacta}>
                 <Text style={styles.mensajeTexto} maxFontSizeMultiplier={1.6}>
                   {aviso}
                 </Text>
@@ -263,7 +255,7 @@ export function LoginVista(p: LoginVistaProps) {
           ) : null}
 
           <Button
-            title={BOTON[modo]}
+            title={t(`acceso:login.boton.${modo}`)}
             size="lg"
             onPress={p.onEnviar}
             loading={enviando}
@@ -272,17 +264,17 @@ export function LoginVista(p: LoginVistaProps) {
           />
           {faltaCasilla ? (
             <Text style={styles.faltaCasilla} accessibilityLiveRegion="polite" maxFontSizeMultiplier={1.6}>
-              Marca la casilla de Términos para continuar.
+              {t('acceso:login.faltaCasilla')}
             </Text>
           ) : null}
 
           {portal ? (
             <Text style={styles.nota} maxFontSizeMultiplier={1.6}>
-              {OLVIDO_PORTAL}
+              {t('acceso:login.olvidoPortal')}
             </Text>
           ) : modo === 'signin' ? (
             <Button
-              title="¿Olvidaste tu contraseña?"
+              title={t('acceso:login.olvido')}
               variant="ghost"
               onPress={() => p.onModo('recover')}
               disabled={enviando}
@@ -290,7 +282,7 @@ export function LoginVista(p: LoginVistaProps) {
             />
           ) : recuperar ? (
             <Button
-              title="Volver a entrar"
+              title={t('acceso:login.volverAEntrar')}
               variant="ghost"
               onPress={() => p.onModo('signin')}
               disabled={enviando}
@@ -298,7 +290,7 @@ export function LoginVista(p: LoginVistaProps) {
             />
           ) : (
             <Text style={styles.nota} maxFontSizeMultiplier={1.6}>
-              Tus hábitos, misiones y progreso se guardan en tu cuenta de NIVL.
+              {t('acceso:login.notaCuenta')}
             </Text>
           )}
 
@@ -307,14 +299,14 @@ export function LoginVista(p: LoginVistaProps) {
           {alta ? null : (
             <View style={styles.legales}>
               <EnlaceLegal
-                texto="Términos de NIVL"
-                etiqueta="Términos de uso de NIVL"
+                texto={t('acceso:login.terminos')}
+                etiqueta={t('acceso:login.terminosA11y')}
                 onPress={() => p.onAbrir(LEGAL_URLS.terminos)}
               />
               <Text style={styles.separador}>·</Text>
               <EnlaceLegal
-                texto="Privacidad de NIVL"
-                etiqueta="Política de privacidad de NIVL"
+                texto={t('acceso:login.privacidad')}
+                etiqueta={t('acceso:login.privacidadA11y')}
                 onPress={() => p.onAbrir(LEGAL_URLS.privacidad)}
               />
             </View>
@@ -342,7 +334,7 @@ function Portada({ lema }: { lema: string }) {
             <Arena ancho={ancho} alto={ALTO_ARENA} variante="arco" gradas={4} color={ink.ink3} style={styles.arena} />
           ) : null}
           <View style={styles.placa}>
-            <Text style={styles.marca} accessibilityRole="header" accessibilityLabel="NIVL" maxFontSizeMultiplier={1}>
+            <Text style={styles.marca} accessibilityRole="header" accessibilityLabel="NIVL" maxFontSizeMultiplier={1}>{/* i18n-ok: la marca */}
               NIVL
             </Text>
           </View>

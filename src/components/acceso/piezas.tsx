@@ -10,6 +10,8 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { Pressable, StyleSheet, Text, View, type TextInputProps } from 'react-native';
 import { Barra, Campo } from '@/components/arena';
 import { ink, space, type as tipo } from '@/design/tokens';
+import { mayus } from '@/i18n/formato';
+import { t } from '@/i18n';
 
 const OJO = 44;
 
@@ -27,7 +29,7 @@ export function CampoContrasena({ etiqueta, ver, onVer, ...rest }: CampoContrase
         onPress={onVer}
         style={styles.ojo}
         accessibilityRole="button"
-        accessibilityLabel={ver ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+        accessibilityLabel={ver ? t('acceso:contrasena.ocultar') : t('acceso:contrasena.mostrar')}
       >
         <Ionicons name={ver ? 'eye-off-outline' : 'eye-outline'} size={20} color={ink.ink8} />
       </Pressable>
@@ -52,17 +54,17 @@ export function FuerzaContrasena({
               ratio={fuerza.segmentos / 4}
               alto={4}
               segmentos={4}
-              etiqueta={`Fuerza de la contraseña: ${fuerza.etiqueta}`}
+              etiqueta={t('acceso:contrasena.fuerzaA11y', { fuerza: fuerza.etiqueta })}
             />
           </View>
           <Text style={styles.nombre} maxFontSizeMultiplier={1.35}>
-            {fuerza.etiqueta.toUpperCase()}
+            {mayus(fuerza.etiqueta)}
           </Text>
         </View>
       ) : null}
       {faltas.length > 0 ? (
         <Text style={styles.faltas} maxFontSizeMultiplier={1.6}>
-          Le falta: {faltas.join(', ')}.
+          {t('acceso:contrasena.leFalta', { faltas: faltas.join(', ') })}
         </Text>
       ) : null}
     </View>

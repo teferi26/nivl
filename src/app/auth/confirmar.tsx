@@ -9,6 +9,7 @@ import { router } from 'expo-router';
 import { useEffect } from 'react';
 import { ConfirmarVista } from '@/components/acceso/EnlaceCuenta';
 import { useEnlaceCorreo } from '@/components/useEnlaceCorreo';
+import { t } from '@/i18n';
 
 export default function Confirmar() {
   const estado = useEnlaceCorreo();
@@ -18,7 +19,7 @@ export default function Confirmar() {
     router.replace(estado.destino === 'recuperacion' ? '/auth/restablecer' : '/');
   }, [estado]);
 
-  const error = estado.fase === 'error' ? estado.mensaje : estado.fase === 'sin_enlace' ? 'Este enlace no trae nada que confirmar. Abre el último correo que te enviamos o entra con tu contraseña.' : null;
+  const error = estado.fase === 'error' ? estado.mensaje : estado.fase === 'sin_enlace' ? t('acceso:confirmar.sinEnlace') : null;
 
   return <ConfirmarVista error={error} onIrAEntrar={() => router.replace('/login')} />;
 }

@@ -16,8 +16,9 @@ import { StyleSheet, Text, View } from 'react-native';
 import { Campo, CargaArena, EncabezadoArena, Entrada, TarjetaArena } from '@/components/arena';
 import { Button, Screen, useAnunciar } from '@/components/ui';
 import { ink, space, type as tipo } from '@/design/tokens';
+import { t } from '@/i18n';
 import { checkPassword } from '@/lib/validation';
-import { AYUDA_CONTRASENA, FUERZA } from './formulario';
+import { ayudaContrasena, fuerzaDe } from './formulario';
 import { CampoContrasena, FuerzaContrasena } from './piezas';
 
 /** Ancho máximo del contenido: en tableta, un formulario de 720 no se lee. */
@@ -29,7 +30,7 @@ function MarcoCuenta({ titulo, children }: { titulo: string; children: ReactNode
     <Screen contentStyle={styles.contenido}>
       <View style={styles.columna}>
         <Entrada indice={0}>
-          <EncabezadoArena eyebrow="Cuenta" titulo={titulo} />
+          <EncabezadoArena eyebrow={t('acceso:cuenta.eyebrow')} titulo={titulo} />
         </Entrada>
         <Entrada indice={1}>{children}</Entrada>
       </View>
@@ -112,9 +113,9 @@ export function RestablecerVista(p: RestablecerVistaProps) {
     cuerpo = (
       <Resultado
         variante="grano"
-        rotulo="Contraseña cambiada"
-        mensaje="Ya puedes usarla para entrar en NIVL."
-        boton="Continuar"
+        rotulo={t('acceso:restablecer.hechoRotulo')}
+        mensaje={t('acceso:restablecer.hechoMensaje')}
+        boton={t('acceso:restablecer.continuar')}
         onPress={p.onContinuar}
       />
     );
@@ -122,49 +123,49 @@ export function RestablecerVista(p: RestablecerVistaProps) {
     cuerpo = (
       <Resultado
         variante="trama"
-        rotulo="Enlace no válido"
+        rotulo={t('acceso:restablecer.invalidoRotulo')}
         mensaje={p.fallo ?? ''}
-        boton="Ir a entrar"
+        boton={t('acceso:cuenta.irAEntrar')}
         onPress={p.onIrAEntrar}
       />
     );
   } else if (p.fase === 'comprobando') {
-    cuerpo = <Comprobando texto="Comprobando el enlace" />;
+    cuerpo = <Comprobando texto={t('acceso:restablecer.comprobando')} />;
   } else {
     cuerpo = (
       <View style={styles.pila}>
         <Text style={styles.linea} maxFontSizeMultiplier={1.6}>
-          {AYUDA_CONTRASENA}
+          {ayudaContrasena()}
         </Text>
         <CampoContrasena
-          etiqueta="Contraseña nueva"
+          etiqueta={t('acceso:restablecer.nueva')}
           ver={p.ver}
           onVer={p.onVer}
           value={p.nueva}
           onChangeText={p.onNueva}
           autoComplete="new-password"
           textContentType="newPassword"
-          placeholder="Una frase que recuerdes"
-          accessibilityLabel="Contraseña nueva"
+          placeholder={t('acceso:contrasena.placeholder')}
+          accessibilityLabel={t('acceso:restablecer.nueva')}
         />
-        {p.nueva.length > 0 ? <FuerzaContrasena fuerza={FUERZA[pw.strength]} faltas={pw.missing} /> : null}
+        {p.nueva.length > 0 ? <FuerzaContrasena fuerza={fuerzaDe(pw.strength)} faltas={pw.missing} /> : null}
         <Campo
-          etiqueta="Repite la contraseña"
+          etiqueta={t('acceso:contrasena.repite')}
           value={p.repite}
           onChangeText={p.onRepite}
-          error={p.repite.length > 0 && !coinciden ? 'Las contraseñas no coinciden.' : null}
+          error={p.repite.length > 0 && !coinciden ? t('acceso:error.noCoinciden') : null}
           secureTextEntry={!p.ver}
           autoCapitalize="none"
           autoComplete="new-password"
           textContentType="newPassword"
           placeholder="••••••••••"
-          accessibilityLabel="Repite la contraseña"
+          accessibilityLabel={t('acceso:contrasena.repite')}
           onSubmitEditing={p.onGuardar}
         />
 
         {p.error ? (
           <View accessibilityRole="alert" accessibilityLiveRegion="assertive">
-            <TarjetaArena variante="trama" rotulo="No ha salido" style={styles.compacta}>
+            <TarjetaArena variante="trama" rotulo={t('acceso:noHaSalido')} style={styles.compacta}>
               <Text style={styles.mensaje} maxFontSizeMultiplier={1.6}>
                 {p.error}
               </Text>
@@ -173,7 +174,7 @@ export function RestablecerVista(p: RestablecerVistaProps) {
         ) : null}
 
         <Button
-          title="Guardar contraseña"
+          title={t('acceso:restablecer.guardar')}
           size="lg"
           onPress={p.onGuardar}
           loading={p.enviando}
@@ -184,7 +185,7 @@ export function RestablecerVista(p: RestablecerVistaProps) {
     );
   }
 
-  return <MarcoCuenta titulo="Nueva contraseña">{cuerpo}</MarcoCuenta>;
+  return <MarcoCuenta titulo={t('acceso:restablecer.titulo')}>{cuerpo}</MarcoCuenta>;
 }
 
 // ── Confirmar ───────────────────────────────────────────────────────────
@@ -197,17 +198,17 @@ export interface ConfirmarVistaProps {
 
 export function ConfirmarVista({ error, onIrAEntrar }: ConfirmarVistaProps) {
   return (
-    <MarcoCuenta titulo="Confirmar correo">
+    <MarcoCuenta titulo={t('acceso:confirmar.titulo')}>
       {error ? (
         <Resultado
           variante="trama"
-          rotulo="No se ha podido confirmar"
+          rotulo={t('acceso:confirmar.falloRotulo')}
           mensaje={error}
-          boton="Ir a entrar"
+          boton={t('acceso:cuenta.irAEntrar')}
           onPress={onIrAEntrar}
         />
       ) : (
-        <Comprobando texto="Confirmando tu correo" />
+        <Comprobando texto={t('acceso:confirmar.confirmando')} />
       )}
     </MarcoCuenta>
   );

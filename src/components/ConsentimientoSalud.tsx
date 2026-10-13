@@ -8,6 +8,7 @@ import { clearEvidenceSignatures } from '@/lib/data';
 import { cancelarAvisosSalud } from '@/lib/notifications';
 import { supabase } from '@/lib/supabase';
 import { mensajeSistema } from '@/lib/validation';
+import { t } from '@/i18n';
 import { AvisoSaludVista, SaludAjustesVista } from './puertas/SaludPerfilVista';
 import { HojaSaludVista, PuertaSaludVista } from './puertas/SaludVista';
 import { confirmar } from './ui/confirmar';
@@ -72,7 +73,7 @@ export function HealthConsentProvider({ children }: PropsWithChildren) {
 
 export function useHealthConsent() {
   const value = useContext(HealthContext);
-  if (!value) throw new Error('Falta HealthConsentProvider');
+  if (!value) throw new Error('Falta HealthConsentProvider'); // i18n-ok: error de programación, no llega a pantalla
   return value;
 }
 
@@ -156,7 +157,7 @@ export function HealthPrivacySection() {
     onRetirar={async () => {
       // Solo con un "Retirar y borrar" explícito. `confirmar` también pinta en
       // la web; el estado lo decide después `health.refresh()`, no la UI.
-      if (await confirmar({ titulo: 'Retirar permiso y borrar', mensaje: T.erase, confirmar: 'Retirar y borrar', destructivo: true })) {
+      if (await confirmar({ titulo: t('puertas:saludAjustes.confirmarTitulo'), mensaje: T.erase, confirmar: t('puertas:saludAjustes.confirmarBoton'), destructivo: true })) {
         vibrarDestructiva();
         await erase();
       }

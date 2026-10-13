@@ -5,7 +5,7 @@
 import { HojaBorrar, HojaCodigo, HojaIdioma, HojaPausa } from '@/components/perfil/HojasPerfil';
 import { PerfilAjustes } from '@/components/perfil/PerfilAjustes';
 import { PerfilVista } from '@/components/perfil/PerfilVista';
-import { FREEZE_DAYS, FREEZE_REASONS, usePerfil } from '@/components/perfil/usePerfil';
+import { FREEZE_DAYS, motivosPausa, usePerfil } from '@/components/perfil/usePerfil';
 import { Screen } from '@/components/ui';
 
 export default function Perfil() {
@@ -19,7 +19,7 @@ export default function Perfil() {
       {hojas.consentimientoHoja}
 
       <HojaBorrar {...borrar} />
-      <HojaPausa {...pausa} today={today} motivos={FREEZE_REASONS} duraciones={FREEZE_DAYS} />
+      <HojaPausa {...pausa} today={today} motivos={motivosPausa()} duraciones={FREEZE_DAYS} />
       <HojaCodigo {...codigo} />
       <HojaIdioma {...idioma} />
     </Screen>

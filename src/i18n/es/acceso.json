@@ -1,1 +1,97 @@
-{}
+{
+  "noHaSalido": "No ha salido",
+  "ayudaContrasena": "Sin reglas raras: {{n}} caracteres o más. Una frase que recuerdes es perfecta.",
+  "fuerza": {
+    "debil": "Débil",
+    "media": "Media",
+    "fuerte": "Fuerte"
+  },
+  "aviso": {
+    "registro": "Si el correo es nuevo, te hemos enviado un enlace para confirmarlo. Ábrelo en este móvil y después entra con tu contraseña.",
+    "recuperacion": "Si ese correo tiene cuenta, te hemos enviado un enlace. Ábrelo en este móvil para elegir una contraseña nueva."
+  },
+  "error": {
+    "nombre": "Entre 1 y {{max}} caracteres.",
+    "correo": "Formato de correo no válido.",
+    "noCoinciden": "Las contraseñas no coinciden."
+  },
+  "contrasena": {
+    "etiqueta": "Contraseña",
+    "repite": "Repite la contraseña",
+    "placeholder": "Una frase que recuerdes",
+    "ocultar": "Ocultar contraseña",
+    "mostrar": "Mostrar contraseña",
+    "fuerzaA11y": "Fuerza de la contraseña: {{fuerza}}",
+    "leFalta": "Le falta: {{faltas}}."
+  },
+  "login": {
+    "casillaLegal": "He leído y acepto los Términos de NIVL y he leído su Política de privacidad.",
+    "intro": {
+      "signin": "Entra con tu correo y tu contraseña de NIVL.",
+      "signup": "Crea tu cuenta de NIVL. Te enviaremos un enlace para confirmar el correo.",
+      "recover": "Escribe el correo de tu cuenta y te enviaremos un enlace para elegir una contraseña nueva."
+    },
+    "introPortal": "Entra con tu cuenta de NIVL para ver tu panel de creador.",
+    "olvidoPortal": "¿Olvidaste la contraseña? Recupérala desde la app de NIVL («¿Olvidaste la contraseña?» en la pantalla de entrar) y vuelve aquí.",
+    "boton": {
+      "signin": "Entrar",
+      "signup": "Crear cuenta",
+      "recover": "Enviar enlace"
+    },
+    "pestana": {
+      "signin": {
+        "texto": "Entrar",
+        "a11y": "Entrar con cuenta existente"
+      },
+      "signup": {
+        "texto": "Crear cuenta",
+        "a11y": "Crear una cuenta nueva"
+      }
+    },
+    "portal": "Portal de creadores",
+    "recuperarTitulo": "Recuperar contraseña",
+    "nombrePlaceholder": "Cómo quieres que te llame el sistema",
+    "correo": "Correo",
+    "correoPlaceholder": "tu@correo.com",
+    "correoA11y": "Correo electrónico",
+    "terminos": "Términos de NIVL",
+    "terminosA11y": "Términos de uso de NIVL",
+    "privacidad": "Privacidad de NIVL",
+    "privacidadA11y": "Política de privacidad de NIVL",
+    "revisaCorreo": "Revisa tu correo",
+    "faltaCasilla": "Marca la casilla de Términos para continuar.",
+    "olvido": "¿Olvidaste tu contraseña?",
+    "volverAEntrar": "Volver a entrar",
+    "notaCuenta": "Tus hábitos, misiones y progreso se guardan en tu cuenta de NIVL."
+  },
+  "arranque": {
+    "cargando": "Cargando"
+  },
+  "fuera": {
+    "eyebrow": "Ruta",
+    "titulo": "Fuera de la arena",
+    "cuerpo": "El sistema no reconoce este destino. Puede que el enlace sea viejo o esté mal copiado.",
+    "volver": "Volver a la arena"
+  },
+  "cuenta": {
+    "eyebrow": "Cuenta",
+    "irAEntrar": "Ir a entrar"
+  },
+  "restablecer": {
+    "titulo": "Nueva contraseña",
+    "comprobando": "Comprobando el enlace",
+    "nueva": "Contraseña nueva",
+    "guardar": "Guardar contraseña",
+    "hechoRotulo": "Contraseña cambiada",
+    "hechoMensaje": "Ya puedes usarla para entrar en NIVL.",
+    "continuar": "Continuar",
+    "invalidoRotulo": "Enlace no válido",
+    "invalido": "Este enlace no es válido o ha caducado. Pide uno nuevo desde «¿Olvidaste tu contraseña?»."
+  },
+  "confirmar": {
+    "titulo": "Confirmar correo",
+    "falloRotulo": "No se ha podido confirmar",
+    "confirmando": "Confirmando tu correo",
+    "sinEnlace": "Este enlace no trae nada que confirmar. Abre el último correo que te enviamos o entra con tu contraseña."
+  }
+}

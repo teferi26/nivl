@@ -19,6 +19,7 @@ import { Entrada, TarjetaArena } from '@/components/arena';
 // eslint-disable-next-line no-restricted-imports -- health.test.ts (Seguridad) busca el título por ScreenHeader.
 import { Button, Check, Screen, ScreenHeader, Skeleton } from '@/components/ui';
 import { ink, space, stroke, type as tipo } from '@/design/tokens';
+import { t } from '@/i18n';
 import { HEALTH_COPY as T } from '@/lib/healthmath';
 import { LEGAL_URLS } from '@/lib/proplans';
 import { HojaPuerta } from './HojaPuerta';
@@ -39,11 +40,11 @@ export function PuertaSaludVista(p: PuertaSaludVistaProps) {
     <Screen>
       <View style={styles.columna}>
         <Entrada indice={0}>
-          <ScreenHeader inscrito eyebrow="Opcional" title="Tu salud, con permiso" onBack={p.onVolver} />
+          <ScreenHeader inscrito eyebrow={t('puertas:salud.eyebrow')} title={t('puertas:salud.titulo')} onBack={p.onVolver} />
         </Entrada>
         <Entrada indice={1} style={styles.pila}>
           {p.cargando ? (
-            <View accessibilityRole="progressbar" accessibilityLabel="Comprobando permiso de salud">
+            <View accessibilityRole="progressbar" accessibilityLabel={t('puertas:salud.comprobandoA11y')}>
               <Skeleton height={110} />
             </View>
           ) : (
@@ -51,29 +52,29 @@ export function PuertaSaludVista(p: PuertaSaludVistaProps) {
               <TarjetaArena
                 variante={p.borradoPendiente ? 'trama' : 'piedra'}
                 remaches={!p.borradoPendiente}
-                rotulo={p.borradoPendiente ? 'Borrado pendiente' : 'Registro de salud'}
+                rotulo={p.borradoPendiente ? t('puertas:salud.borradoPendiente') : t('puertas:salud.registro')}
               >
                 <Text style={texto.mensaje} maxFontSizeMultiplier={1.6}>
                   {p.borradoPendiente
-                    ? 'Tu permiso está retirado y hay un borrado pendiente. Puedes terminarlo en Perfil.'
-                    : 'Antes de abrir este registro, revisa qué datos de salud guarda NIVL y decide si quieres activarlo.'}
+                    ? t('puertas:salud.borradoCuerpo')
+                    : t('puertas:salud.cuerpo')}
                 </Text>
               </TarjetaArena>
               {p.error ? (
-                <TarjetaArena variante="trama" rotulo="Sin comprobar" style={styles.compacta}>
+                <TarjetaArena variante="trama" rotulo={t('puertas:sinComprobar')} style={styles.compacta}>
                   <Text style={texto.mensaje} accessibilityRole="alert" maxFontSizeMultiplier={1.6}>
                     {p.error}
                   </Text>
                 </TarjetaArena>
               ) : null}
               <Button
-                title={p.error ? 'Volver a comprobar' : 'Revisar permiso'}
+                title={p.error ? t('puertas:volverAComprobar') : t('puertas:salud.revisar')}
                 variant={p.error ? 'secondary' : 'primary'}
                 size="lg"
                 onPress={p.error ? p.onReintentar : p.onRevisar}
                 disabled={p.borradoPendiente}
               />
-              <Button title="Ir a Perfil" variant="ghost" onPress={p.onPerfil} />
+              <Button title={t('puertas:salud.irAPerfil')} variant="ghost" onPress={p.onPerfil} />
             </>
           )}
         </Entrada>
@@ -82,12 +83,12 @@ export function PuertaSaludVista(p: PuertaSaludVistaProps) {
   );
 }
 
-/** Las cuatro partes del permiso, con su rótulo. El texto es el de HEALTH_COPY. */
+/** Las cuatro partes del permiso; el rótulo es `puertas:salud.partes.<id>`. El texto es el de HEALTH_COPY. */
 const PARTES = [
-  { rotulo: 'Para qué', texto: T.purpose },
-  { rotulo: 'Quién y dónde', texto: T.storage },
-  { rotulo: 'Es opcional', texto: T.choice },
-  { rotulo: 'Retirarlo', texto: T.withdrawal },
+  { id: 'paraQue', texto: T.purpose },
+  { id: 'quienDonde', texto: T.storage },
+  { id: 'opcional', texto: T.choice },
+  { id: 'retirarlo', texto: T.withdrawal },
 ] as const;
 
 export interface HojaSaludVistaProps {
@@ -107,7 +108,7 @@ export function HojaSaludVista(p: HojaSaludVistaProps) {
     <HojaPuerta
       visible={p.visible}
       onCerrar={p.onCancelar}
-      eyebrow="Permiso de salud"
+      eyebrow={t('puertas:salud.hojaEyebrow')}
       titulo={T.title}
       pie={
         <>
@@ -118,15 +119,15 @@ export function HojaSaludVista(p: HojaSaludVistaProps) {
               </Text>
             </TarjetaArena>
           ) : null}
-          <Button title="Aceptar y activar salud" size="lg" onPress={p.onAceptar} disabled={!p.marcada} loading={p.ocupada} />
-          <Button title="Ahora no" variant="secondary" size="lg" onPress={p.onCancelar} disabled={p.ocupada} />
+          <Button title={t('puertas:salud.aceptar')} size="lg" onPress={p.onAceptar} disabled={!p.marcada} loading={p.ocupada} />
+          <Button title={t('comun:ahoraNo')} variant="secondary" size="lg" onPress={p.onCancelar} disabled={p.ocupada} />
         </>
       }
     >
       {PARTES.map((parte, i) => (
-        <View key={parte.rotulo} style={[styles.fila, i > 0 && texto.hairline]}>
+        <View key={parte.id} style={[styles.fila, i > 0 && texto.hairline]}>
           <Text style={texto.etiqueta} maxFontSizeMultiplier={1.35}>
-            {parte.rotulo}
+            {t(`puertas:salud.partes.${parte.id}`)}
           </Text>
           <Text style={texto.cuerpo} maxFontSizeMultiplier={1.6}>
             {parte.texto}
@@ -136,10 +137,10 @@ export function HojaSaludVista(p: HojaSaludVistaProps) {
       <Pressable
         style={texto.enlaceZona}
         accessibilityRole="link"
-        accessibilityLabel="Leer la política de privacidad"
-        onPress={() => Linking.openURL(LEGAL_URLS.privacidad).catch(() => p.onErrorEnlace('No se ha podido abrir la política.'))}
+        accessibilityLabel={t('puertas:leerPolitica')}
+        onPress={() => Linking.openURL(LEGAL_URLS.privacidad).catch(() => p.onErrorEnlace(t('puertas:salud.politicaNoAbre')))}
       >
-        <Text style={texto.enlace}>Leer la política de privacidad</Text>
+        <Text style={texto.enlace}>{t('puertas:leerPolitica')}</Text>
       </Pressable>
       <Pressable
         style={[texto.filaMarca, styles.casilla, p.marcada && styles.casillaMarcada]}

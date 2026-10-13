@@ -12,6 +12,7 @@
 import type { ReactNode } from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { ink, space, stroke, type as tipo } from '@/design/tokens';
+import { t } from '@/i18n';
 
 export interface HojaPuertaProps {
   visible: boolean;
@@ -28,7 +29,7 @@ export function HojaPuerta({ visible, onCerrar, eyebrow, titulo, children, pie }
   return (
     <Modal visible={visible} transparent animationType="fade" statusBarTranslucent onRequestClose={onCerrar}>
       <View style={styles.fondo}>
-        <Pressable style={styles.fondoToque} onPress={onCerrar} accessibilityRole="button" accessibilityLabel="Cerrar" />
+        <Pressable style={styles.fondoToque} onPress={onCerrar} accessibilityRole="button" accessibilityLabel={t('comun:cerrar')} />
         <View style={styles.hoja} accessibilityViewIsModal onAccessibilityEscape={onCerrar}>
           <View style={styles.asaZona}>
             <View style={styles.asa} />

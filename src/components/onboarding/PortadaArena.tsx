@@ -9,6 +9,7 @@ import { useState } from 'react';
 import { StyleSheet, Text, View, useWindowDimensions, type LayoutChangeEvent } from 'react-native';
 import { Arena, ASangre, Entrada, Laurel, TarjetaArena } from '@/components/arena';
 import { ink, space, type as tipo } from '@/design/tokens';
+import { t } from '@/i18n';
 import { DESCARGO_SALUD } from '@/lib/consentmath';
 
 /** Alto mínimo del graderío: el de 375 × 667, donde la portada ya se desplaza. */
@@ -35,12 +36,8 @@ const TRACKING_MARCA = 16;
 /** Tracking del lema: una línea a 375 entre los laureles. */
 const TRACKING_LEMA = 3;
 
-/** Las reglas de la arena, en tres párrafos. */
-export const LORE_ARENA: readonly string[] = [
-  'Esto no es una lista de tareas. Es una arena.',
-  'Cada día tienes misiones. Cumplirlas da XP y sube tu nivel; fallarlas lo resta. La racha multiplica. Los proyectos grandes son campañas con un jefe final. Y hay un coach que dicta tu día, te juzga por la noche y recuerda todo lo que aprende de ti.',
-  'Nada de trampas: las evidencias se hacen con la cámara, en el momento. El sistema no opina. Registra.',
-];
+/** Las reglas de la arena, en tres párrafos (`onboarding:portada.lore.<clave>`). */
+const LORE_ARENA = ['arena', 'reglas', 'trampas'] as const;
 
 export interface PortadaArenaProps {
   /** Descargo de salud bajo las reglas. Por defecto, el de consentmath. */
@@ -74,9 +71,9 @@ export function PortadaArena({ descargo = DESCARGO_SALUD }: PortadaArenaProps) {
               <Text
                 style={styles.marca}
                 accessibilityRole="header"
-                accessibilityLabel="NIVL"
+                accessibilityLabel="NIVL" // i18n-ok: la marca
                 maxFontSizeMultiplier={1}
-              >
+              >{/* i18n-ok: la marca */}
                 NIVL
               </Text>
             </View>
@@ -94,17 +91,17 @@ export function PortadaArena({ descargo = DESCARGO_SALUD }: PortadaArenaProps) {
             adjustsFontSizeToFit
             minimumFontScale={0.8}
           >
-            UN 1 % MEJOR CADA DÍA
+            {t('comun:lema')}
           </Text>
           <Laurel alto={24} lado="der" />
         </View>
       </Entrada>
 
       <Entrada indice={2}>
-        <TarjetaArena variante="contorno" remaches rotulo="Las reglas">
-          {LORE_ARENA.map((p, i) => (
+        <TarjetaArena variante="contorno" remaches rotulo={t('onboarding:portada.reglas')}>
+          {LORE_ARENA.map((clave, i) => (
             <Text key={i} style={[styles.lore, i > 0 && styles.loreParrafo]} maxFontSizeMultiplier={1.35}>
-              {p}
+              {t(`onboarding:portada.lore.${clave}`)}
             </Text>
           ))}
         </TarjetaArena>

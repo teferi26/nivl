@@ -82,7 +82,7 @@ export function EdadMinimaProvider({ children }: PropsWithChildren) {
 
 export function useEdadMinima() {
   const contexto = useContext(EdadContext);
-  if (!contexto) throw new Error('Falta EdadMinimaProvider');
+  if (!contexto) throw new Error('Falta EdadMinimaProvider'); // i18n-ok: error de programación, no llega a pantalla
   return contexto;
 }
 

@@ -10,6 +10,7 @@ import { useRef, useState } from 'react';
 import { DenunciaVista } from '@/components/puertas/DenunciaVista';
 import { useAnunciar } from '@/components/ui/useAnunciar';
 import { vibrar } from '@/design/haptics';
+import { t } from '@/i18n';
 import { supabase } from '@/lib/supabase';
 import { mensajeSistema } from '@/lib/validation';
 import { CORREO_SOPORTE, correoDenuncia, extractoDenuncia, faltaLaRpc, type FuenteIA, type MotivoIA } from './denunciaIA';
@@ -62,17 +63,17 @@ export function DenunciarIA({ respuesta, onClose }: Props) {
         // Aún sin la función en el servidor: el correo de respaldo, sin el texto.
         try {
           await Linking.openURL(correoDenuncia(respuesta.fuente, motivo, respuesta.messageId, respuesta.contexto));
-          setAviso('Se ha abierto tu correo con la denuncia. Envíalo para que llegue a revisión.');
+          setAviso(t('puertas:denuncia.correoAbierto'));
         } catch {
           // Sin app de correo: que sepa a dónde escribir.
-          setAviso(`No se ha podido abrir el correo. Escribe a ${CORREO_SOPORTE} con el motivo de la denuncia.`);
+          setAviso(t('puertas:denuncia.correoNoAbre', { correo: CORREO_SOPORTE }));
         }
         setEnviada(true);
       } else if (error) {
         throw error;
       } else {
         setEnviada(true);
-        setAviso('Denuncia registrada. El equipo revisará esta respuesta.');
+        setAviso(t('puertas:denuncia.registrada'));
       }
     } catch (e) {
       vibrar('penalizacion');

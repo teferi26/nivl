@@ -22,6 +22,8 @@ import { Button, Section, Skeleton, SkeletonRows, Tag } from '@/components/ui';
 import { SIN_DATO } from '@/components/ui/sinDato';
 import { ink, space, stroke, type as tipo } from '@/design/tokens';
 import { useSizeClass } from '@/design/useSizeClass';
+import { t } from '@/i18n';
+import { mayus } from '@/i18n/formato';
 import { isValidKey, nombreDia } from '@/lib/dates';
 import { MAX_STONES, STAT_COLUMN, STAT_LABEL, statPoints, STATS, streakMultiplier } from '@/lib/game';
 import { kindMeta } from '@/lib/kinds';
@@ -91,11 +93,11 @@ function multiplicador(dias: number): string {
 export function PerfilVista({ datos, error, desde, nombre, subiendoFoto, acciones, ajustes }: PerfilVistaProps) {
   if (!datos && error) {
     return (
-      <TarjetaArena variante="contorno" rotulo="El sistema no responde" style={styles.bloque}>
+      <TarjetaArena variante="contorno" rotulo={t('comun:sistemaNoResponde')} style={styles.bloque}>
         <Text style={styles.cuerpo} maxFontSizeMultiplier={1.35} accessibilityRole="alert">
           {error}
         </Text>
-        <Button title="Reintentar" icon="refresh" variant="secondary" onPress={acciones.onReintentar} style={styles.reintentar} />
+        <Button title={t('comun:reintentar')} icon="refresh" variant="secondary" onPress={acciones.onReintentar} style={styles.reintentar} />
       </TarjetaArena>
     );
   }
@@ -114,7 +116,7 @@ export function PerfilVista({ datos, error, desde, nombre, subiendoFoto, accione
       returnKeyType="done"
       maxLength={24}
       maxFontSizeMultiplier={1.35}
-      accessibilityLabel="Tu nombre. Toca para cambiarlo."
+      accessibilityLabel={t('perfil:vista.nombreA11y')}
     />
   );
 
@@ -142,40 +144,40 @@ export function PerfilVista({ datos, error, desde, nombre, subiendoFoto, accione
           insignia={elite ? <EliteBadge size={22} style={styles.insignia} /> : null}
         />
         <Text style={styles.aviso} maxFontSizeMultiplier={1.35}>
-          Tu nombre, foto y título se muestran a otras personas tras su revisión. Mientras tanto verán un alias provisional.
+          {t('perfil:vista.avisoRevision')}
         </Text>
       </Entrada>
 
       <Entrada indice={1}>
-        <Section title="Camino de rangos" meta={estado.rango}>
+        <Section title={t('perfil:vista.camino')} meta={estado.rango}>
           <CaminoDeRangos rango={estado.rango} siguiente={estado.siguienteRango} />
         </Section>
       </Entrada>
 
       <Entrada indice={2}>
-        <Section title="Arena">
+        <Section title={t('perfil:vista.arena')}>
           <View style={styles.lista}>
-            <FilaArena icono="share-social-outline" titulo="Compartir mi progreso" onPress={acciones.onCompartir} />
-            <FilaArena icono="people-outline" titulo="Amigos y duelos" meta="Ranking" onPress={() => router.push('/amigos')} />
+            <FilaArena icono="share-social-outline" titulo={t('perfil:vista.compartir')} onPress={acciones.onCompartir} />
+            <FilaArena icono="people-outline" titulo={t('perfil:vista.amigos')} meta={t('perfil:vista.ranking')} onPress={() => router.push('/amigos')} />
             <FilaArena
               icono="shield-half-outline"
-              titulo={elite ? 'NIVL Élite' : 'NIVL Pro'}
-              meta={tieneCoach === null ? undefined : tieneCoach ? 'Activo' : 'Activa el coach'}
+              titulo={elite ? 'NIVL Élite' : 'NIVL Pro'} // i18n-ok: nombres de los planes (la marca)
+              meta={tieneCoach === null ? undefined : tieneCoach ? t('perfil:vista.activo') : t('perfil:vista.activaCoach')}
               onPress={() => router.push('/pro')}
             />
             {datos.codigoCreador ? (
               <FilaArena
                 icono="ticket-outline"
-                titulo="Código de creador"
-                detalle="¿Te trajo alguien? Escribe su código"
+                titulo={t('perfil:vista.codigo')}
+                detalle={t('perfil:vista.codigoDetalle')}
                 onPress={acciones.onCodigo}
               />
             ) : null}
             {datos.esCreador ? (
               <FilaArena
                 icono="megaphone-outline"
-                titulo="Panel de creador"
-                detalle="Tu código, tus ventas y tus pagos"
+                titulo={t('perfil:vista.panelCreador')}
+                detalle={t('perfil:vista.panelCreadorDetalle')}
                 onPress={() => router.push('/creador')}
               />
             ) : null}
@@ -185,12 +187,14 @@ export function PerfilVista({ datos, error, desde, nombre, subiendoFoto, accione
 
       {frozen ? (
         <Entrada indice={3}>
-          <TarjetaArena variante="contorno" rotulo="Sistema en pausa" style={styles.bloque}>
+          <TarjetaArena variante="contorno" rotulo={t('perfil:vista.enPausa')} style={styles.bloque}>
             <Text style={styles.cuerpo} maxFontSizeMultiplier={1.35}>
-              {voice.frozen(profile.freeze_reason ?? 'pausa')}
               {profile.freeze_until && isValidKey(profile.freeze_until)
-                ? ` Hasta el ${nombreDia(profile.freeze_until).toLowerCase()}.`
-                : ''}
+                ? t('perfil:vista.pausaHasta', {
+                    frase: voice.frozen(profile.freeze_reason ?? t('perfil:ajustes.pausaMotivo')),
+                    dia: nombreDia(profile.freeze_until).toLowerCase(),
+                  })
+                : voice.frozen(profile.freeze_reason ?? t('perfil:ajustes.pausaMotivo'))}
             </Text>
           </TarjetaArena>
         </Entrada>
@@ -205,7 +209,7 @@ export function PerfilVista({ datos, error, desde, nombre, subiendoFoto, accione
       </Entrada>
 
       <Entrada indice={6}>
-        <Section title="Registro">
+        <Section title={t('perfil:vista.registro')}>
           <FranjaCifras cifras={cifrasRegistro(stats, profile.streak_days)} />
         </Section>
       </Entrada>
@@ -215,7 +219,7 @@ export function PerfilVista({ datos, error, desde, nombre, subiendoFoto, accione
       </ASangre>
 
       {/* En la galería no hay ajustes (null): sin ellos, tampoco su rótulo. */}
-      {ajustes ? <Section title="Ajustes">{ajustes}</Section> : null}
+      {ajustes ? <Section title={t('perfil:vista.ajustes')}>{ajustes}</Section> : null}
     </View>
   );
 }
@@ -224,11 +228,15 @@ export function PerfilVista({ datos, error, desde, nombre, subiendoFoto, accione
 function cifrasRegistro(stats: { total: number; withEvidence: number }, racha: number): Cifra[] {
   const pct = stats.total > 0 ? Math.round((stats.withEvidence / stats.total) * 100) : null;
   return [
-    { valor: stats.total, rotulo: 'Misiones' },
+    { valor: stats.total, rotulo: t('perfil:vista.misiones') },
     pct == null
-      ? { valor: SIN_DATO, rotulo: 'Con evidencia', etiqueta: 'Con evidencia: sin dato' }
-      : { valor: pct, rotulo: 'Con evidencia', sufijo: '%', etiqueta: `Con evidencia: ${pct} %` },
-    { valor: multiplicador(racha), rotulo: 'Multiplicador', etiqueta: `Multiplicador de XP: ${multiplicador(racha)}` },
+      ? { valor: SIN_DATO, rotulo: t('perfil:vista.evidencia'), etiqueta: t('perfil:vista.evidenciaSinDatoA11y') }
+      : { valor: pct, rotulo: t('perfil:vista.evidencia'), sufijo: '%', etiqueta: t('perfil:vista.evidenciaA11y', { pct }) },
+    {
+      valor: multiplicador(racha),
+      rotulo: t('perfil:vista.multiplicador'),
+      etiqueta: t('perfil:vista.multiplicadorA11y', { valor: multiplicador(racha) }),
+    },
   ];
 }
 
@@ -289,7 +297,7 @@ function Vitrina({ logros, onLogro }: { logros: LogroVitrina[]; onLogro: (code: 
   }
 
   return (
-    <Section title="Logros" meta={`${ganados}/${logros.length}`} tone={ganados > 0 ? 'logro' : 'default'}>
+    <Section title={t('perfil:vista.logros')} meta={`${ganados}/${logros.length}`} tone={ganados > 0 ? 'logro' : 'default'}>
       <View style={styles.vitrina}>
         {filas.map((fila, i) => (
           <View key={i} style={styles.vitrinaFila}>
@@ -300,7 +308,7 @@ function Vitrina({ logros, onLogro }: { logros: LogroVitrina[]; onLogro: (code: 
                   variante={a.unlocked ? 'grano' : 'contorno'}
                   padded={false}
                   onPress={() => onLogro(a.code)}
-                  accessibilityLabel={`${a.name}${a.unlocked ? ', desbloqueado' : ', bloqueado'}${a.title && a.unlocked ? `. Título: ${a.title}${a.equipado ? ', equipado' : ''}` : ''}`}
+                  accessibilityLabel={logroA11y(a)}
                   style={styles.celda}
                 >
                   <View style={styles.logro}>
@@ -317,7 +325,11 @@ function Vitrina({ logros, onLogro }: { logros: LogroVitrina[]; onLogro: (code: 
                       {a.name}
                     </Text>
                     {a.title && a.unlocked ? (
-                      a.equipado ? <Tag tone="logro">EQUIPADO</Tag> : <Tag>TÍTULO</Tag>
+                      a.equipado ? (
+                        <Tag tone="logro">{mayus(t('perfil:vista.equipado'))}</Tag>
+                      ) : (
+                        <Tag>{mayus(t('perfil:vista.titulo'))}</Tag>
+                      )
                     ) : null}
                   </View>
                 </TarjetaArena>
@@ -332,12 +344,19 @@ function Vitrina({ logros, onLogro }: { logros: LogroVitrina[]; onLogro: (code: 
   );
 }
 
+/** «Madrugador, desbloqueado. Título: El Alba, equipado». */
+function logroA11y(a: LogroVitrina): string {
+  const logro = t(a.unlocked ? 'perfil:vista.logroDesbloqueado' : 'perfil:vista.logroBloqueado', { nombre: a.name });
+  if (!a.title || !a.unlocked) return logro;
+  return t(a.equipado ? 'perfil:vista.logroTituloEquipado' : 'perfil:vista.logroTitulo', { logro, titulo: a.title });
+}
+
 // ── Estadísticas ─────────────────────────────────────────────────────
 
 function Estadisticas({ profile }: { profile: Profile }) {
   const maxStatXp = Math.max(100, ...STATS.map((s) => profile[STAT_COLUMN[s]]));
   return (
-    <Section title="Estadísticas">
+    <Section title={t('perfil:vista.estadisticas')}>
       {STATS.map((s, i) => {
         const xp = profile[STAT_COLUMN[s]];
         const puntos = statPoints(xp);
@@ -346,7 +365,7 @@ function Estadisticas({ profile }: { profile: Profile }) {
             key={s}
             style={[styles.stat, i > 0 && styles.statSep]}
             accessible
-            accessibilityLabel={`${STAT_LABEL[s]}: ${puntos} puntos`}
+            accessibilityLabel={t('perfil:vista.statA11y', { stat: STAT_LABEL[s], puntos })}
           >
             <View style={styles.statNombre}>
               <Text style={styles.statAbbr} maxFontSizeMultiplier={1.35}>
@@ -366,7 +385,7 @@ function Estadisticas({ profile }: { profile: Profile }) {
         );
       })}
       <Text style={styles.nota} maxFontSizeMultiplier={1.35}>
-        Un punto por cada 100 XP del área.
+        {t('perfil:vista.statNota')}
       </Text>
     </Section>
   );
@@ -376,7 +395,7 @@ function Estadisticas({ profile }: { profile: Profile }) {
 
 function PerfilCargando() {
   return (
-    <View accessible accessibilityRole="progressbar" accessibilityLabel="Cargando tu ficha de gladiador">
+    <View accessible accessibilityRole="progressbar" accessibilityLabel={t('perfil:vista.cargandoA11y')}>
       <HeroRango
         variante="perfil"
         cargando
@@ -391,10 +410,10 @@ function PerfilCargando() {
         avatar={{ path: null, nombre: '' }}
         nombre={<Skeleton height={24} width={160} />}
       />
-      <Section title="Camino de rangos">
+      <Section title={t('perfil:vista.camino')}>
         <Skeleton height={44} />
       </Section>
-      <Section title="Arena">
+      <Section title={t('perfil:vista.arena')}>
         <SkeletonRows rows={3} />
       </Section>
     </View>

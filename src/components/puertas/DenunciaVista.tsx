@@ -10,7 +10,8 @@ import { StyleSheet, Text, View } from 'react-native';
 import { TarjetaArena } from '@/components/arena';
 import { Button, Chip, ChipWrap, Sheet } from '@/components/ui';
 import { space } from '@/design/tokens';
-import { MOTIVOS_IA, type MotivoIA } from '@/components/denunciaIA';
+import { t } from '@/i18n';
+import { etiquetaMotivo, MOTIVOS_IA, type MotivoIA } from '@/components/denunciaIA';
 import { texto } from './estilos';
 
 export interface DenunciaVistaProps {
@@ -30,13 +31,13 @@ export function DenunciaVista(p: DenunciaVistaProps) {
     <Sheet
       visible={p.visible}
       onClose={p.onCerrar}
-      eyebrow="Denunciar respuesta"
-      title="¿Qué falla en esta respuesta?"
+      eyebrow={t('comun:denunciarRespuesta')}
+      title={t('puertas:denuncia.titulo')}
       footer={
         <>
           {!p.enviada ? (
             <Button
-              title="Enviar denuncia"
+              title={t('puertas:denuncia.enviar')}
               icon="flag-outline"
               size="lg"
               disabled={!p.motivo || p.ocupada}
@@ -45,7 +46,7 @@ export function DenunciaVista(p: DenunciaVistaProps) {
             />
           ) : null}
           <Button
-            title={p.enviada ? 'Cerrar' : 'Cancelar'}
+            title={p.enviada ? t('comun:cerrar') : t('comun:cancelar')}
             variant={p.enviada ? 'secondary' : 'ghost'}
             size={p.enviada ? 'lg' : 'md'}
             disabled={p.ocupada}
@@ -55,20 +56,20 @@ export function DenunciaVista(p: DenunciaVistaProps) {
       }
     >
       <Text style={texto.cuerpo} maxFontSizeMultiplier={1.6}>
-        Se envía el motivo y el texto de esta respuesta para que el equipo la revise. Nada más de tu conversación.
+        {t('puertas:denuncia.cuerpo')}
       </Text>
 
       {!p.enviada ? (
         <View style={styles.motivos}>
           <Text style={texto.etiqueta} maxFontSizeMultiplier={1.35}>
-            Motivo
+            {t('puertas:denuncia.motivo')}
           </Text>
-          <View accessibilityRole="radiogroup" accessibilityLabel="Motivo">
+          <View accessibilityRole="radiogroup" accessibilityLabel={t('puertas:denuncia.motivo')}>
             <ChipWrap>
               {MOTIVOS_IA.map((m) => (
                 <Chip
                   key={m.value}
-                  label={m.label}
+                  label={etiquetaMotivo(m.value)}
                   selected={p.motivo === m.value}
                   disabled={p.ocupada}
                   onPress={() => p.onMotivo(m.value)}
@@ -80,7 +81,7 @@ export function DenunciaVista(p: DenunciaVistaProps) {
       ) : null}
 
       {p.aviso ? (
-        <TarjetaArena variante={p.enviada ? 'contorno' : 'trama'} rotulo={p.enviada ? undefined : 'No ha salido'} style={styles.aviso}>
+        <TarjetaArena variante={p.enviada ? 'contorno' : 'trama'} rotulo={p.enviada ? undefined : t('puertas:denuncia.noHaSalido')} style={styles.aviso}>
           <Text style={texto.mensaje} accessibilityRole="alert" selectable maxFontSizeMultiplier={1.6}>
             {p.aviso}
           </Text>

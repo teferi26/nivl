@@ -10,6 +10,7 @@
 
 import { StyleSheet, Text, View } from 'react-native';
 import { ink, space, stroke, type as tipo } from '@/design/tokens';
+import { t } from '@/i18n';
 import { compararRangos, RANGOS, type EstadoProgreso, type RangoId } from '@/lib/progression';
 
 interface Props {
@@ -25,17 +26,17 @@ type EstadoNodo = 'alcanzado' | 'actual' | 'futuro';
  * que el rango pide además días en la arena.
  */
 export function textoSiguiente(s: NonNullable<EstadoProgreso['siguienteRango']>): string {
-  const niveles = s.faltan > 0 ? `${s.faltan} ${s.faltan === 1 ? 'nivel' : 'niveles'}` : null;
+  const nombre = s.nombre;
+  const niveles = s.faltan > 0 ? t('perfil:camino.niveles', { count: s.faltan }) : null;
   if (s.faltanDias == null) {
-    const pide = `${s.nombre} pide además días activos en la arena.`;
-    return niveles ? `${niveles} para ${s.nombre}. ${pide}` : `Nivel listo. ${pide}`;
+    return niveles ? t('perfil:camino.nivelesYPide', { niveles, nombre }) : t('perfil:camino.nivelListoPide', { nombre });
   }
-  const dias = s.faltanDias > 0 ? `${s.faltanDias} ${s.faltanDias === 1 ? 'día activo' : 'días activos'}` : null;
-  if (niveles && dias) return `${niveles} y ${dias} para ${s.nombre}.`;
-  if (niveles) return `${niveles} para ${s.nombre}.`;
+  const dias = s.faltanDias > 0 ? t('perfil:camino.diasActivos', { count: s.faltanDias }) : null;
+  if (niveles && dias) return t('perfil:camino.ambos', { niveles, dias, nombre });
+  if (niveles) return t('perfil:camino.falta', { cantidad: niveles, nombre });
   // El nivel ya llega: el rango espera a los días en la arena.
-  if (dias) return `${dias} para ${s.nombre}.`;
-  return `Nivel y días listos para ${s.nombre}.`;
+  if (dias) return t('perfil:camino.falta', { cantidad: dias, nombre });
+  return t('perfil:camino.listos', { nombre });
 }
 
 export function CaminoDeRangos({ rango, siguiente }: Props) {
@@ -45,14 +46,12 @@ export function CaminoDeRangos({ rango, siguiente }: Props) {
         {RANGOS.map((r) => {
           const cmp = compararRangos(r.id, rango);
           const estado: EstadoNodo = cmp < 0 ? 'alcanzado' : cmp === 0 ? 'actual' : 'futuro';
-          const etiqueta =
-            estado === 'actual' ? 'actual' : estado === 'alcanzado' ? 'alcanzado' : 'por alcanzar';
           return (
             <View
               key={r.id}
               accessible
               accessibilityRole="text"
-              accessibilityLabel={`Rango ${r.id}, ${r.nombre}, ${etiqueta}`}
+              accessibilityLabel={t(`perfil:camino.a11y.${estado}`, { id: r.id, nombre: r.nombre })}
               style={[
                 styles.casilla,
                 estado === 'alcanzado' && styles.casillaAlcanzada,
@@ -76,7 +75,7 @@ export function CaminoDeRangos({ rango, siguiente }: Props) {
         })}
       </View>
       <Text maxFontSizeMultiplier={1.35} style={styles.texto}>
-        {siguiente ? textoSiguiente(siguiente) : 'Leyenda. No queda rango por encima.'}
+        {siguiente ? textoSiguiente(siguiente) : t('perfil:camino.leyenda')}
       </Text>
     </View>
   );

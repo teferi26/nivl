@@ -8,6 +8,8 @@
 import { StyleSheet, Text, View } from 'react-native';
 import { Entrada, Meandro, TarjetaArena } from '@/components/arena';
 import { ink, space, type as tipo } from '@/design/tokens';
+import { t } from '@/i18n';
+import { mayus } from '@/i18n/formato';
 
 export interface TablillaContratoProps {
   /** El texto del compromiso, ya partido en párrafos. */
@@ -29,7 +31,7 @@ export function TablillaContrato({ parrafos, abreEl, rellenar = true }: Tablilla
       <TarjetaArena variante="piedra" remaches zocalo>
         <Meandro alto={8} />
         <Text style={styles.rotulo} accessibilityRole="header" maxFontSizeMultiplier={1.35}>
-          CONTRATO
+          {mayus(t('onboarding:tablilla.rotulo'))}
         </Text>
         {/* Clave por posición: al cambiar el plazo cambia el texto, pero los
             párrafos ya leídos no vuelven a entrar. */}
@@ -42,7 +44,7 @@ export function TablillaContrato({ parrafos, abreEl, rellenar = true }: Tablilla
         ))}
         <Meandro alto={8} style={styles.meandroPie} />
         <Text style={styles.fecha} maxFontSizeMultiplier={1.35}>
-          SE ABRE EL {abreEl.toUpperCase()}
+          {mayus(t('onboarding:tablilla.seAbre', { fecha: abreEl }))}
         </Text>
       </TarjetaArena>
     </View>

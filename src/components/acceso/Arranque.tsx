@@ -15,6 +15,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { Arena, EncabezadoArena, Entrada, ErrorSistema } from '@/components/arena';
 import { Button, Screen } from '@/components/ui';
 import { ink, space, type as tipo } from '@/design/tokens';
+import { t } from '@/i18n';
 
 const ANCHO_OVALO = 220;
 const ALTO_OVALO = 140;
@@ -36,11 +37,11 @@ export function ArranqueCargando() {
       style={styles.fondo}
       accessible
       accessibilityRole="progressbar"
-      accessibilityLabel="Cargando"
+      accessibilityLabel={t('acceso:arranque.cargando')}
       accessibilityState={{ busy: true }}
     >
       <Planta>
-        <Text style={styles.marca} maxFontSizeMultiplier={1}>
+        <Text style={styles.marca} maxFontSizeMultiplier={1}>{/* i18n-ok: la marca */}
           NIVL
         </Text>
       </Planta>
@@ -64,9 +65,9 @@ export function ArranqueError({ mensaje, onReintentar, onCerrarSesion }: Arranqu
         </Entrada>
         <Entrada indice={1}>
           <View style={styles.acciones}>
-            <Button title="Reintentar" icon="refresh" size="lg" onPress={onReintentar} />
+            <Button title={t('comun:reintentar')} icon="refresh" size="lg" onPress={onReintentar} />
             {/* Salida si la cuenta no carga nunca: sin esto no había forma de cambiar de cuenta. */}
-            <Button title="Cerrar sesión" variant="ghost" onPress={onCerrarSesion} style={styles.salida} />
+            <Button title={t('comun:cerrarSesion')} variant="ghost" onPress={onCerrarSesion} style={styles.salida} />
           </View>
         </Entrada>
       </View>
@@ -79,16 +80,16 @@ export function FueraDeLaArena({ onVolver }: { onVolver: () => void }) {
     <Screen contentStyle={styles.centro}>
       <View style={styles.columna}>
         <Entrada indice={0}>
-          <EncabezadoArena eyebrow="Ruta" titulo="Fuera de la arena" />
+          <EncabezadoArena eyebrow={t('acceso:fuera.eyebrow')} titulo={t('acceso:fuera.titulo')} />
         </Entrada>
         <Entrada indice={1}>
           <Planta />
         </Entrada>
         <Entrada indice={2}>
           <Text style={styles.linea} maxFontSizeMultiplier={1.6}>
-            El sistema no reconoce este destino. Puede que el enlace sea viejo o esté mal copiado.
+            {t('acceso:fuera.cuerpo')}
           </Text>
-          <Button title="Volver a la arena" size="lg" onPress={onVolver} style={styles.principal} />
+          <Button title={t('acceso:fuera.volver')} size="lg" onPress={onVolver} style={styles.principal} />
         </Entrada>
       </View>
     </Screen>

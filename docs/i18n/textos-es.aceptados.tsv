@@ -604,3 +604,471 @@ hoy	-	XP
 puertas	-	Comprobando la confirmación de edad
 puertas	+	Cargando
 raiz	+	Escribe tu nombre para firmar
+# lote 6 (diario, contrato, economía). Frases partidas en varios <Text>/trozos de plantilla que pasan a frase entera con {{var}}; condicionales «día/días», «norma/normas», «la foto/las N fotos», «movimiento(s)», «año/años» que pasan a plural con count; textos repetidos que el catálogo guarda una vez (Ánimo, Energía, Sueño, Sin registrar, Cambios sin guardar, Eliminar comprobante, Escribir hoy, Ahorro, Ritmo, Concepto...); plantillas con ${} que la línea base no veía o partía mal ("\n\n", `${x}` : ''); «REGISTRADO» en mayúsculas que la línea base no contaba; la «h» de horas queda con i18n-ok (unidad); los meses cortos de economía (ene...dic, «sept» como antes) pasan al catálogo con «{{mes}} {{anio}}». Mismo texto en pantalla.
+contrato	-	Norma {}: {}. Si la rompes: {}. Cuesta {} XP.{}
+contrato	-	Editada hoy.
+contrato	-	Si la rompes:
+contrato	-	Sellada el
+contrato	-	. Abierta el
+contrato	-	La carta que sellaste el
+contrato	-	espera.
+contrato	-	Firmado el
+contrato	-	. Vence el
+contrato	-	Sellada el
+contrato	-	. Se abrirá el
+contrato	-	. Hasta entonces, a trabajar.
+contrato	-	norma firmada
+contrato	-	normas firmadas
+contrato	-	Las misiones extra pagan en PB, no en XP.
+contrato	-	PB son 1 h de descanso sin culpa, con tope de
+contrato	-	PB cada 7 días.
+contrato	-	1 año
+contrato	-	3 años
+contrato	-	5 años
+contrato	-	Se abrirá el
+contrato	-	. Nadie podrá leerla antes, ni tú.
+contrato	-	¿Has roto la norma "{}"?\n\nPenalización: −{} XP y la consecuencia que tú mismo firmaste: {}. Cúmplela hoy y recuperas el XP.
+contrato	+	Misión (trivial a épica)
+contrato	+	{} XP
+contrato	+	Evidencia (foto)
+contrato	+	+{} %
+contrato	+	{} PB
+contrato	+	−{} XP + consecuencia
+contrato	+	Norma {}: {}. Si la rompes: {}. Cuesta {} XP.
+contrato	+	Norma {}: {}. Si la rompes: {}. Cuesta {} XP. Editada hoy.
+contrato	+	Si la rompes: {}
+contrato	+	Sellada el {}. Abierta el {}.
+contrato	+	La carta que sellaste el {} espera.
+contrato	+	Firmado el {}. Vence el {}.
+contrato	+	Sellada el {}. Se abrirá el {}. Hasta entonces, a trabajar.
+contrato	+	{} norma firmada · {} PB en la bolsa
+contrato	+	{} normas firmadas · {} PB en la bolsa
+contrato	+	{}/{} canjeados
+contrato	+	Las misiones extra pagan en PB, no en XP. {} PB son 1 h de descanso sin culpa, con tope de {} PB cada 7 días.
+contrato	+	{} año
+contrato	+	{} años
+contrato	+	Se abrirá el {}. Nadie podrá leerla antes, ni tú.
+contrato	+	¿Has roto la norma "{}"? Penalización: −{} XP y la consecuencia que tú mismo firmaste: {}. Cúmplela hoy y recuperas el XP.
+contrato	+	REGISTRADO
+diario	-	Escribir hoy
+diario	-	Piedra de Protección forjada
+diario	-	de
+diario	-	respondidas
+diario	-	Archivo
+diario	-	Lo vivido
+diario	-	Qué aprendí
+diario	-	Qué agradezco
+diario	-	Mañana, lo primero
+diario	-	Eliminar comprobante
+diario	-	{}, {}
+diario	-	sin marcar
+diario	-	Ánimo
+diario	-	Energía
+diario	-	la foto
+diario	-	Ánimo
+diario	-	Sueño
+diario	-	día escrito
+diario	-	días escritos
+diario	-	día escrito
+diario	-	días escritos
+diario	-	El ánimo {} {} frente a los 7 días anteriores.
+diario	-	Ánimo
+diario	-	Energía
+diario	-	{}, {} {}
+diario	-	día
+diario	-	días
+diario	-	{}. {}{}
+diario	-	, respondida
+diario	-	Sin registrar
+diario	-	h
+diario	-	Cambios sin guardar
+diario	-	Eliminar comprobante
+diario	-	{}{}` : ''}
+diario	-	Entrada registrada
+diario	-	Añadir victoria
+diario	+	hasta +{} XP
+diario	+	{} de {} respondidas
+diario	+	Últimas {}
+diario	+	Misión completada: {} (+{} XP)
+diario	+	Penalización aplicada: −{} XP
+diario	+	Objetivo de campaña: {}
+diario	+	Campaña despejada: {}
+diario	+	RÉCORD personal: {} · {} kg
+diario	+	Récord en {}: {} kg
+diario	+	{}, marcada
+diario	+	{}, sin marcar
+diario	+	Ánimo {} de 5
+diario	+	Energía {} de 5
+diario	+	Ver la foto
+diario	+	Ver las {} fotos
+diario	+	Racha de {} día escrito
+diario	+	Racha de {} días escritos
+diario	+	{} día escrito en el archivo
+diario	+	{} días escritos en el archivo
+diario	+	El ánimo sube {} frente a los 7 días anteriores.
+diario	+	El ánimo baja {} frente a los 7 días anteriores.
+diario	+	{}, {} día
+diario	+	{}, {} días
+diario	+	{}. {}
+diario	+	{}. {}, respondida
+diario	+	{} Logro: {}
+economia	-	Gastado este mes: {}{}
+economia	-	, vas desbordado
+economia	-	Ahorro
+economia	-	Ritmo
+economia	-	de saldo entre
+economia	-	de gasto medio al mes.
+economia	-	Por debajo
+economia	-	Por encima
+economia	-	del colchón pactado de
+economia	-	meses.
+economia	-	Clasificar {}, {} de {}, el {}
+economia	-	{}: {}{}` : ''}{}
+economia	-	de un límite de {}
+economia	-	, por encima del límite
+economia	-	Son
+economia	-	al año que se cobran solos. Cancelar lo que no usas es el único ahorro que no exige disciplina.
+economia	-	Concepto
+economia	+	ene
+economia	+	feb
+economia	+	mar
+economia	+	abr
+economia	+	may
+economia	+	jun
+economia	+	jul
+economia	+	ago
+economia	+	sept
+economia	+	oct
+economia	+	nov
+economia	+	dic
+economia	+	{} {}
+economia	+	Saldo: {}
+economia	+	Gastado este mes: {}
+economia	+	Gastado este mes: {}, vas desbordado
+economia	+	Ritmo ×{}: {}.
+economia	+	Faltan {} en {} días.
+economia	+	{} de saldo entre {} de gasto medio al mes.
+economia	+	Por debajo del colchón pactado de {} meses.
+economia	+	Por encima del colchón pactado de {} meses.
+economia	+	Clasificar {}, gasto de {}, el {}
+economia	+	Clasificar {}, ingreso de {}, el {}
+economia	+	{}: {}
+economia	+	{}: {} de un límite de {}
+economia	+	{}: {} de un límite de {}, por encima del límite
+economia	+	{} al año
+economia	+	Son {} al año que se cobran solos. Cancelar lo que no usas es el único ahorro que no exige disciplina.
+economia	+	{} movimiento clasificado. A partir de ahora lo hace solo.
+# lote 3
+# lote 3. Se quedan en el código con i18n-ok: la marca (NIVL, los planes NIVL Pro y NIVL Élite), los nombres por defecto de la base de datos (Gladiador, Cazador) que solo se comparan, y los errores de programación «Falta ...Provider», que no llegan a pantalla.
+acceso	-	NIVL
+acceso	-	NIVL
+acceso	-	NIVL
+acceso	-	NIVL
+onboarding	-	Gladiador
+onboarding	-	Cazador
+onboarding	-	NIVL
+onboarding	-	NIVL
+perfil	-	NIVL Élite
+perfil	-	NIVL Pro
+puertas	-	Falta HealthConsentProvider
+puertas	-	Falta EdadMinimaProvider
+# lote 3. Mayúsculas con mayus() de src/i18n/formato.ts: el catálogo guarda el texto normal (Entrar, Contrato, Sellado, Paso {} de {} con romanos...) y la pantalla sale igual.
+acceso	-	CREAR CUENTA
+acceso	-	PORTAL DE CREADORES
+acceso	-	RECUPERAR CONTRASEÑA
+acceso	+	Entrar
+acceso	+	Crear cuenta
+acceso	+	Portal de creadores
+acceso	+	Recuperar contraseña
+onboarding	-	QUÉ SE ACTIVA
+onboarding	-	SELLADO
+onboarding	-	PASO
+onboarding	-	DE
+onboarding	-	CONTRATO
+onboarding	-	SE ABRE EL
+onboarding	+	Paso {} de {}
+onboarding	+	Contrato
+onboarding	+	Se abre el {}
+onboarding	+	Qué se activa
+onboarding	+	Sellado
+perfil	-	CÓDIGO
+perfil	-	EQUIPADO
+perfil	-	TÍTULO
+perfil	+	Equipado
+perfil	+	Título
+# lote 3. Textos repetidos (botones, etiquetas y su accessibilityLabel, Continuar, Entrar en la arena, Volver a comprobar...) que el catálogo guarda una vez y se reutilizan.
+acceso	-	Contraseña nueva
+acceso	-	Repite la contraseña
+acceso	-	Ir a entrar
+acceso	-	Las contraseñas no coinciden.
+acceso	-	Una frase que recuerdes
+acceso	-	Contraseña
+acceso	-	Repite la contraseña
+acceso	-	Repite la contraseña
+acceso	-	Términos de NIVL
+acceso	-	Privacidad de NIVL
+acceso	-	No ha salido
+acceso	-	Términos de NIVL
+acceso	-	Privacidad de NIVL
+onboarding	-	Mi objetivo incluye salud o entrenamiento
+onboarding	-	Escribe tu nombre para firmar
+onboarding	-	Continuar
+onboarding	-	Continuar
+onboarding	-	Entrar en la arena
+onboarding	-	Entrar en la arena
+perfil	-	Pausar el sistema
+perfil	-	Vibraciones
+perfil	-	Hazte Premium
+perfil	-	Exportar mis datos
+perfil	-	Con evidencia
+perfil	-	Camino de rangos
+perfil	-	Arena
+perfil	-	Eliminar para siempre
+puertas	-	Leer la política de privacidad
+puertas	-	Motivo
+puertas	-	Volver a comprobar
+puertas	-	Volver a comprobar
+puertas	-	Revisar permiso de salud
+puertas	-	Comprobando permiso de salud
+puertas	-	Sin comprobar
+puertas	-	Volver a comprobar
+puertas	-	Leer la política de privacidad
+puertas	-	Leer la política de privacidad
+# lote 3. Frases partidas que pasan a frase entera o a plural (Tengo {} años o más., Crear {} misión/misiones, niveles y días del camino de rangos, a11y de logros, rangos y horizontes, el sello, la pausa, el Oráculo, el idioma), textos de plantillas que la línea base no veía (${} en errores, correo de denuncia, Le falta, Sigue al teléfono, ELIMINAR, pausa) y la pista del paso 6 que se elige entera según haya hoja o no.
+acceso	-	Le falta:
+acceso	+	Entre 1 y {} caracteres.
+acceso	+	Le falta: {}.
+onboarding	-	· salud (opcional)
+onboarding	-	Horizonte de {}{}
+onboarding	-	, recomendado
+onboarding	-	Decide ahora o más adelante: el compromiso vale igual.
+onboarding	-	misión
+onboarding	-	Vence el
+onboarding	+	gladiador
+onboarding	+	{} · {} · {}
+onboarding	+	{} · {} · {} · salud (opcional)
+onboarding	+	{} días/semana
+onboarding	+	Crear {} misión
+onboarding	+	Crear {} misiones
+onboarding	+	Horizonte de {}
+onboarding	+	Horizonte de {}, recomendado
+onboarding	+	recomendado
+onboarding	+	Tus hábitos, tu organización y tu progreso son gratis. Los planes de pago añaden el coach de IA y, con Élite, insignia y solicitud de plaza en un ludus. Decide ahora o más adelante: el compromiso vale igual.
+onboarding	+	Vence el {}
+perfil	-	{} pide además días activos en la arena.
+perfil	-	{} para {}. {}
+perfil	-	día activo
+perfil	-	días activos
+perfil	-	{} para {}.
+perfil	-	por alcanzar
+perfil	-	Rango {}, {}, {}
+perfil	-	{}. ` : ''}Toca para reanudar antes.
+perfil	-	avisos programados.
+perfil	-	El Oráculo va incluido{}` : ''}.
+perfil	-	Hasta el {}.
+perfil	-	{}{}{}{}` : ''}
+perfil	-	, desbloqueado
+perfil	-	, bloqueado
+perfil	-	, equipado
+perfil	+	{} Título: "{}"
+perfil	+	{} nivel
+perfil	+	{} niveles
+perfil	+	{} día activo
+perfil	+	{} días activos
+perfil	+	{} para {}. {} pide además días activos en la arena.
+perfil	+	Nivel listo. {} pide además días activos en la arena.
+perfil	+	Rango {}, {}, actual
+perfil	+	Rango {}, {}, alcanzado
+perfil	+	Rango {}, {}, por alcanzar
+perfil	+	{} Hasta el {}.
+perfil	+	Con evidencia: {} %
+perfil	+	Multiplicador de XP: {}
+perfil	+	{}, desbloqueado
+perfil	+	{}, bloqueado
+perfil	+	{}. Título: {}
+perfil	+	{}. Título: {}, equipado
+perfil	+	pausa
+perfil	+	Vuelve el {}. Toca para reanudar antes.
+perfil	+	Toca para reanudar antes.
+perfil	+	{} avisos programados.
+perfil	+	El Oráculo va incluido.
+perfil	+	El Oráculo va incluido. Renueva el {}.
+perfil	+	Idioma del coach: {}. Cambiar
+perfil	+	Idioma del coach: {}, automático. Cambiar
+perfil	+	ELIMINAR
+perfil	+	Sigue al teléfono: ahora, {}.
+perfil	+	{}. {}
+puertas	-	Tengo
+puertas	-	años o más.
+puertas	+	{} o más
+puertas	+	Tengo {} años o más.
+puertas	+	Origen: {}
+puertas	+	Motivo: {}
+puertas	+	Mensaje: {}
+puertas	+	Contexto: {}
+puertas	+	coach
+# lote 7. Amigos, avances, creador, compartir y celebración: frases partidas o hechas con plantillas que pasan a frase entera (a11y de filas, podio, duelos, ligas, solicitudes, pesaje y metas; la ayuda del ranking con «Mantén pulsado...» dentro; la regla del duelo como {{regla}}), plurales con count (rivales en tu arena, miembros de liga), textos repetidos que el catálogo guarda una vez (Tú, Quitar amigo, Aceptar, Retirar, Peso, Contactar con soporte, Programa de creadores...), textos que la línea base no veía (meses cortos del histórico de creador, Ejercicio (PR), ANTES, ABRIENDO…, COMPARTIR) y lo marcado con i18n-ok (NIVL, d, kg, el código ABCD2345 de ejemplo, el signo −, las columnas de una consulta); «Gladiador» queda en celebracion:nombrePorDefecto y la unidad « ventas» pasa a «ventas» con el espacio en el código. Español idéntico en pantalla.
+amigos	-	No se ha podido actualizar:
+amigos	-	Ranking de
+amigos	-	Ordenar por
+amigos	-	XP ganado con misiones en el periodo. Las de penalización no cuentan: recuperar no es adelantar.
+amigos	-	Misiones cumplidas sobre programadas. Lo de hoy solo suma cuando lo cumples.
+amigos	-	Días seguidos cerrados. Es la única cifra que no depende del periodo.
+amigos	-	Mantén pulsado a alguien para quitarle.
+amigos	-	{} {}
+amigos	-	los últimos 7 días
+amigos	-	los últimos 30 días
+amigos	-	{} {}
+amigos	-	Retirar
+amigos	-	ABCD2345
+amigos	-	Ludus de
+amigos	-	Ordenar el ludus por
+amigos	-	Un ludus es tu escuela de gladiadores: de
+amigos	-	a
+amigos	-	Élite con el mismo objetivo, midiéndose cada semana. Sin chat ni ruido, solo el marcador. Elige el tuyo y el sistema te asigna plaza.
+amigos	-	Siguiente insignia:
+amigos	-	con
+amigos	-	invitados activos
+amigos	-	Contactar con soporte
+amigos	-	Aceptar
+amigos	-	{} {} · aún sin datos esta semana
+amigos	-	Un duelo dura una semana, de lunes a domingo.
+amigos	-	Una liga reúne hasta {} amigos.
+amigos	-	Tú contra
+amigos	-	d
+amigos	-	Es la única métrica y la única duración del duelo: así nadie elige la que le favorece.
+amigos	-	Crear liga
+amigos	-	Nombre de la liga
+amigos	-	Solo entran amigos a los que invites, y cada uno decide si acepta. Hasta
+amigos	-	miembros. La tabla se reinicia cada lunes.
+amigos	-	Salir de la liga
+amigos	-	{}` : 'Sin puesto'}. {}. {}, {} días activos` }.
+amigos	-	Tú
+amigos	-	Aún sin datos esta semana
+amigos	-	Disciplina {}, {} días activos
+amigos	-	Aún sin datos suficientes
+amigos	-	Semana pasada · {}{}
+amigos	-	Tu disciplina {}.
+amigos	-	Duelo con {}, {}.{} Sin datos del rival.
+amigos	-	Quitar amigo
+amigos	-	{}`}. {}{}` : ''}, nivel {}, {}.{}{}
+amigos	-	Sin puesto
+amigos	-	Tú
+amigos	-	Toca para más opciones.
+amigos	-	Mantén pulsado para quitar.
+amigos	-	Podio. {}, {}, {}`) .join('. ')}.
+amigos	-	Tú
+amigos	-	Bloquear usuario
+amigos	-	Quitar amigo
+amigos	-	{} {} en tu arena{} por responder` : ''}.
+amigos	-	· {} por responder
+amigos	+	{} va delante
+amigos	+	Semana pasada · {}
+amigos	+	Semana pasada · {} · {}
+amigos	+	Duelo con {}, {}. Sin datos del rival.
+amigos	+	Duelo con {}, {}. Tu disciplina {}. Sin datos del rival.
+amigos	+	quedan {} días
+amigos	+	Tu puesto: {} de {}
+amigos	+	Podio. {}.
+amigos	+	{}, {}, {}
+amigos	+	Nivel {}
+amigos	+	racha {}
+amigos	+	Puesto {}
+amigos	+	{}, {}
+amigos	+	{}. {}, nivel {}, {}.
+amigos	+	{}. {}, nivel {}, {}. Toca para más opciones.
+amigos	+	{}. {}, nivel {}, {}. Toca para más opciones. Mantén pulsado para quitar.
+amigos	+	{} · tú
+amigos	+	Un ludus es tu escuela de gladiadores: de {} a {} Élite con el mismo objetivo, midiéndose cada semana. Sin chat ni ruido, solo el marcador. Elige el tuyo y el sistema te asigna plaza.
+amigos	+	{} rival en tu arena.
+amigos	+	{} rivales en tu arena.
+amigos	+	{} rival en tu arena · {} por responder.
+amigos	+	{} rivales en tu arena · {} por responder.
+amigos	+	No se ha podido actualizar: {}
+amigos	+	XP ganado con misiones en el periodo. Las de penalización no cuentan: recuperar no es adelantar. Mantén pulsado a alguien para quitarle.
+amigos	+	Misiones cumplidas sobre programadas. Lo de hoy solo suma cuando lo cumples. Mantén pulsado a alguien para quitarle.
+amigos	+	Días seguidos cerrados. Es la única cifra que no depende del periodo. Mantén pulsado a alguien para quitarle.
+amigos	+	Ranking de los últimos 7 días
+amigos	+	Ranking de los últimos 30 días
+amigos	+	Ludus de los últimos 7 días
+amigos	+	Ludus de los últimos 30 días
+amigos	+	Ordenar por {}
+amigos	+	Ordenar el ludus por {}
+amigos	+	Invitados activos: {}
+amigos	+	En prueba: {}
+amigos	+	Siguiente insignia: {} con {} invitados activos
+amigos	+	Un duelo dura una semana, de lunes a domingo. {}
+amigos	+	Un duelo dura una semana, de lunes a domingo. Una liga reúne hasta {} amigos. {}
+amigos	+	Tú contra {}
+amigos	+	{} Es la única métrica y la única duración del duelo: así nadie elige la que le favorece.
+amigos	+	{} miembro · aún sin datos esta semana
+amigos	+	{} miembros · aún sin datos esta semana
+amigos	+	Solo entran amigos a los que invites, y cada uno decide si acepta. Hasta {} miembros. La tabla se reinicia cada lunes. {}
+amigos	+	{}. {}. Aún sin datos esta semana.
+amigos	+	{}. {}. Disciplina {}, {} días activos.
+amigos	+	{} · invitado
+avances	-	Último pesaje: {} kg{}{} kg en {} pesajes)` : '' }.
+avances	-	Peso
+avances	-	Peso ·
+avances	-	pesajes
+avances	-	{}, conseguida{}` : ''}. {} {}
+avances	-	Conseguida el
+avances	-	kg
+avances	-	Nueva meta
+avances	-	Valor inicial
+avances	-	Al alcanzarla, hasta +
+avances	-	XP (con el tope diario de metas).
+avances	-	Reclamar
+avances	+	Último pesaje: {} kg.
+avances	+	Último pesaje: {} kg ({} kg en {} pesajes).
+avances	+	Peso: {} kilos
+avances	+	Peso · {} pesajes
+avances	+	Pesaje · +{} XP
+avances	+	Pesaje registrado. {}
+avances	+	{} activas
+avances	+	{}, conseguida el {}. {} {}
+avances	+	{}, conseguida. {} {}
+avances	+	Conseguida el {}
+avances	+	Progresión · {}
+avances	+	Ejercicio (PR)
+avances	+	Al alcanzarla, hasta +{} XP (con el tope diario de metas).
+avances	+	Meta conseguida. «{}»: +{} XP a AGI.
+celebracion	-	name, avatar_url
+celebracion	-	Gladiador
+celebracion	-	Gladiador
+creador	-	Programa de creadores
+creador	-	Tu panel
+creador	-	Programa de creadores
+creador	-	Por venta anual cobras
+creador	-	; en mensual, tu
+creador	-	% de lo que entra cada mes hasta llegar a lo mismo.
+creador	-	Puesto {}: {}, tú` : r.alias}, {}
+creador	-	{}/{}
+creador	-	Premio:
+creador	-	−{}
+creador	-	Cada comisión espera
+creador	-	días por si hay un reembolso; entonces pasa a disponible y se paga en la siguiente liquidación. Si la tienda devuelve el dinero, la comisión se anula.
+creador	+	ene
+creador	+	feb
+creador	+	mar
+creador	+	abr
+creador	+	may
+creador	+	jun
+creador	+	jul
+creador	+	ago
+creador	+	sept
+creador	+	oct
+creador	+	nov
+creador	+	dic
+creador	+	{} {}
+creador	+	Por venta anual cobras {}; en mensual, tu {} % de lo que entra cada mes hasta llegar a lo mismo.
+creador	+	ventas
+creador	+	Premio: {}
+creador	+	{} · tú
+creador	+	Puesto {}: {}, {}
+creador	+	Puesto {}: {}, tú, {}
+creador	+	Cada comisión espera {} días por si hay un reembolso; entonces pasa a disponible y se paga en la siguiente liquidación. Si la tienda devuelve el dinero, la comisión se anula.
+share	-	NIVL
+share	+	ANTES
+share	+	ABRIENDO…
+share	+	COMPARTIR

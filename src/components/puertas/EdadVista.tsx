@@ -13,6 +13,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { EncabezadoArena, Entrada, TarjetaArena } from '@/components/arena';
 import { Button, Check, Screen, Skeleton } from '@/components/ui';
 import { space } from '@/design/tokens';
+import { t } from '@/i18n';
 import { ANCHO_PUERTA, texto } from './estilos';
 
 export type EstadoEdad = 'cargando' | 'pendiente' | 'guardando' | 'confirmada' | 'error';
@@ -55,41 +56,41 @@ export function EdadVista(p: EdadVistaProps) {
       <View style={styles.columna}>
         {!cargando ? <Entrada indice={0}>
           <EncabezadoArena
-            eyebrow="Antes de entrar"
-            titulo="Tu edad"
-            subtitulo={`NIVL es para personas de ${p.edadMinima} años o más.`}
+            eyebrow={t('puertas:edad.eyebrow')}
+            titulo={t('puertas:edad.titulo')}
+            subtitulo={t('puertas:edad.subtitulo', { n: p.edadMinima })}
             meandro
           />
         </Entrada> : null}
 
         <Entrada indice={1} style={styles.pila}>
           {cargando ? (
-            <View accessibilityRole="progressbar" accessibilityLabel="Cargando">
+            <View accessibilityRole="progressbar" accessibilityLabel={t('puertas:cargando')}>
               <Skeleton height={168} />
             </View>
           ) : pendiente ? (
             <>
-              <TarjetaArena variante="piedra" remaches rotulo="Edad mínima" meta={`${p.edadMinima} o más`}>
+              <TarjetaArena variante="piedra" remaches rotulo={t('puertas:edad.rotulo')} meta={t('puertas:edad.meta', { n: p.edadMinima })}>
                 <Text style={texto.cuerpo} maxFontSizeMultiplier={1.6}>
-                  Confirma que cumples la edad mínima para continuar. No hace falta indicar tu fecha de nacimiento.
+                  {t('puertas:edad.cuerpo')}
                 </Text>
                 <Pressable
                   style={[texto.filaMarca, texto.hairline, styles.marca]}
                   accessibilityRole="checkbox"
-                  accessibilityLabel={`Tengo ${p.edadMinima} años o más`}
+                  accessibilityLabel={t('puertas:edad.casillaA11y', { n: p.edadMinima })}
                   accessibilityState={{ checked: p.marcada, disabled: guardando || p.saliendo }}
                   disabled={guardando || p.saliendo}
                   onPress={p.onMarcar}
                 >
                   <Check checked={p.marcada} size={24} />
                   <Text style={texto.marca} maxFontSizeMultiplier={1.6}>
-                    Tengo {p.edadMinima} años o más.
+                    {t('puertas:edad.casilla', { n: p.edadMinima })}
                   </Text>
                 </Pressable>
               </TarjetaArena>
-              {p.aviso ? <Aviso rotulo="No se ha guardado" mensaje={p.aviso} /> : null}
+              {p.aviso ? <Aviso rotulo={t('puertas:edad.noGuardado')} mensaje={p.aviso} /> : null}
               <Button
-                title="Confirmar y continuar"
+                title={t('puertas:edad.confirmar')}
                 size="lg"
                 onPress={p.onConfirmar}
                 disabled={!p.marcada || p.saliendo}
@@ -99,16 +100,16 @@ export function EdadVista(p: EdadVistaProps) {
           ) : bloqueada ? (
             <>
               <Aviso
-                rotulo="Sin comprobar"
-                mensaje={p.aviso ?? 'No se ha podido comprobar tu confirmación de edad.'}
+                rotulo={t('puertas:sinComprobar')}
+                mensaje={p.aviso ?? t('puertas:edad.noComprobada')}
               />
-              <Button title="Volver a comprobar" variant="secondary" size="lg" onPress={p.onReintentar} disabled={p.saliendo} />
+              <Button title={t('puertas:volverAComprobar')} variant="secondary" size="lg" onPress={p.onReintentar} disabled={p.saliendo} />
             </>
           ) : null}
 
-          {p.avisoSalida ? <Aviso rotulo="Sesión abierta" mensaje={p.avisoSalida} /> : null}
+          {p.avisoSalida ? <Aviso rotulo={t('puertas:edad.sesionAbierta')} mensaje={p.avisoSalida} /> : null}
           {p.autenticado ? (
-            <Button title="Cerrar sesión" variant="ghost" onPress={p.onSalir} loading={p.saliendo} />
+            <Button title={t('comun:cerrarSesion')} variant="ghost" onPress={p.onSalir} loading={p.saliendo} />
           ) : null}
         </Entrada>
       </View>

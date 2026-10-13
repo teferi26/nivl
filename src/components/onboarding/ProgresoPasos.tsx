@@ -7,6 +7,8 @@
 import { StyleSheet, Text, View } from 'react-native';
 import { Barra, romano } from '@/components/arena';
 import { ink, space, type as tipo } from '@/design/tokens';
+import { t } from '@/i18n';
+import { mayus } from '@/i18n/formato';
 
 export interface ProgresoPasosProps {
   /** Paso actual, de 1 a `total`. */
@@ -17,7 +19,7 @@ export interface ProgresoPasosProps {
 export function ProgresoPasos({ paso, total }: ProgresoPasosProps) {
   const n = Math.max(1, Math.floor(total));
   const actual = Math.min(Math.max(1, Math.floor(paso)), n);
-  const etiqueta = `Paso ${actual} de ${n}`;
+  const etiqueta = t('onboarding:progreso.paso', { actual, total: n });
   return (
     <View
       accessible
@@ -27,7 +29,7 @@ export function ProgresoPasos({ paso, total }: ProgresoPasosProps) {
       style={styles.wrap}
     >
       <Text style={styles.texto} maxFontSizeMultiplier={1.35} numberOfLines={1}>
-        PASO {romano(actual)} DE {romano(n)}
+        {mayus(t('onboarding:progreso.paso', { actual: romano(actual), total: romano(n) }))}
       </Text>
       <Barra ratio={actual / n} alto={4} segmentos={n} etiqueta={etiqueta} />
     </View>

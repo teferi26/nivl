@@ -22,7 +22,7 @@ import {
   tituloVigente,
 } from '@/lib/achievements';
 import { useVibraciones, vibrar } from '@/design/haptics';
-import { fijarPreferencia, useIdioma, type Preferencia } from '@/i18n';
+import { fijarPreferencia, t, useIdioma, type Preferencia } from '@/i18n';
 import { asegurarIdiomaPerfil } from '@/i18n/sincronizar';
 import { useAuth } from '@/lib/auth';
 import { cerrarSesion } from '@/lib/authFlow';
@@ -73,7 +73,10 @@ import { voice } from '@/lib/voice';
 import type { PerfilAjustesProps } from './PerfilAjustes';
 import type { LogroVitrina, PerfilVistaProps } from './PerfilVista';
 
-export const FREEZE_REASONS = ['Exámenes', 'Enfermedad', 'Vacaciones'];
+/** Los motivos de pausa que se ofrecen (se guardan tal cual en `freeze_reason`). */
+export function motivosPausa(): string[] {
+  return [t('perfil:pausa.motivos.examenes'), t('perfil:pausa.motivos.enfermedad'), t('perfil:pausa.motivos.vacaciones')];
+}
 export const FREEZE_DAYS = [1, 3, 7, 14];
 
 /** Un código `rango_X` de sync_rank en la forma del contrato de celebraciones. */
@@ -162,7 +165,7 @@ export function usePerfil(): UsePerfil {
   // La insignia Élite (0026): estética, nada más. El dueño no la lleva.
   const [elite, setElite] = useState(false);
   const [freezeOpen, setFreezeOpen] = useState(false);
-  const [freezeReason, setFreezeReason] = useState(FREEZE_REASONS[0]!);
+  const [freezeReason, setFreezeReason] = useState(() => motivosPausa()[0]!);
   const [freezeDays, setFreezeDays] = useState(3);
   // Cerrojo de «Activar pausa» (el doble toque) y su fallo, en línea en la hoja.
   const freezeLock = useRef(false);
@@ -207,12 +210,11 @@ export function usePerfil(): UsePerfil {
       // Con permiso, el dispositivo se registra para el push del coach.
       registrarDispositivo().catch(() => {});
     } else {
-      const titulo = 'Avisos bloqueados';
-      const mensaje =
-        'Actívalos en los ajustes del teléfono, en las notificaciones de NIVL. Sin ellos el sistema no puede despertarte ni avisarte de los bloques.';
+      const titulo = t('perfil:avisosBloqueados.titulo');
+      const mensaje = t('perfil:avisosBloqueados.mensaje');
       if (Platform.OS === 'web') {
         avisar(titulo, mensaje);
-      } else if (await confirmar({ titulo, mensaje, confirmar: 'Abrir ajustes' })) {
+      } else if (await confirmar({ titulo, mensaje, confirmar: t('comun:abrirAjustes') })) {
         Linking.openSettings().catch(() => {});
       }
     }
@@ -228,7 +230,7 @@ export function usePerfil(): UsePerfil {
       await updateProfile(userId, { profile_kind: k });
     } catch (e) {
       setProfile((p) => (p ? { ...p, profile_kind: anterior } : p));
-      avisar('El sistema no responde', mensajeSistema(e));
+      avisar(t('comun:sistemaNoResponde'), mensajeSistema(e));
     }
   };
 
@@ -351,7 +353,7 @@ export function usePerfil(): UsePerfil {
       olvidarFirma('avatars', path);
       setAvatarUri(await signedUrlCached('avatars', path));
     } catch (e) {
-      avisar('El sistema no responde', mensajeSistema(e));
+      avisar(t('comun:sistemaNoResponde'), mensajeSistema(e));
     } finally {
       setUploadingPhoto(false);
     }
@@ -366,7 +368,7 @@ export function usePerfil(): UsePerfil {
       setProfile({ ...profile, name: trimmed });
     } catch (error) {
       setName(profile.name);
-      avisar('No se ha guardado el nombre', mensajeSistema(error));
+      avisar(t('perfil:nombreNoGuardado'), mensajeSistema(error));
     }
   };
 
@@ -397,7 +399,7 @@ export function usePerfil(): UsePerfil {
       const updated = await setFreeze(profile, null, null);
       setProfile(updated);
     } catch (e) {
-      avisar('No se ha reanudado', mensajeSistema(e));
+      avisar(t('perfil:noReanudado'), mensajeSistema(e));
     }
   };
 
@@ -412,9 +414,9 @@ export function usePerfil(): UsePerfil {
     const isEquipped = profile.equipped_title === def.title;
     const ok = await confirmar({
       titulo: def.name,
-      mensaje: `${def.desc}\nTítulo: "${def.title}"`,
-      confirmar: isEquipped ? 'Quitar título' : 'Equipar título',
-      cancelar: 'Cerrar',
+      mensaje: t('perfil:logro.mensaje', { desc: def.desc, titulo: def.title }),
+      confirmar: isEquipped ? t('perfil:logro.quitar') : t('perfil:logro.equipar'),
+      cancelar: t('comun:cerrar'),
     });
     if (!ok) return;
     const next = isEquipped ? null : def.title ?? null;
@@ -422,7 +424,7 @@ export function usePerfil(): UsePerfil {
       await updateProfile(userId, { equipped_title: next });
       setProfile({ ...profile, equipped_title: next });
     } catch (e) {
-      avisar('El sistema no responde', mensajeSistema(e));
+      avisar(t('comun:sistemaNoResponde'), mensajeSistema(e));
     }
   };
 
@@ -449,7 +451,7 @@ export function usePerfil(): UsePerfil {
     try {
       await exportAllData(ancla);
     } catch (e) {
-      avisar('El sistema no responde', mensajeSistema(e));
+      avisar(t('comun:sistemaNoResponde'), mensajeSistema(e));
     } finally {
       setBusy(false);
     }
@@ -506,7 +508,7 @@ export function usePerfil(): UsePerfil {
     try {
       await deleteAccount();
       setBorrarOpen(false);
-      anunciar('Cuenta eliminada.');
+      anunciar(t('perfil:borrar.eliminada'));
       router.replace('/login');
     } catch (e) {
       vibrar('penalizacion');
@@ -521,9 +523,9 @@ export function usePerfil(): UsePerfil {
     // `confirmar` y no Alert.alert: en la web el Alert no se pinta y el
     // borrado se quedaba sin hacer.
     const ok = await confirmar({
-      titulo: '¿Estás totalmente seguro?',
-      mensaje: 'Se borra tu cuenta de NIVL. El sistema no puede deshacerlo.',
-      confirmar: 'Eliminar para siempre',
+      titulo: t('perfil:borrar.seguroTitulo'),
+      mensaje: t('perfil:borrar.seguroMensaje'),
+      confirmar: t('perfil:borrar.boton'),
       destructivo: true,
     });
     if (!ok) return;
@@ -535,10 +537,9 @@ export function usePerfil(): UsePerfil {
   const tocarConsentimiento = async () => {
     if (consentimientoVigente(consent)) {
       const ok = await confirmar({
-        titulo: 'Retirar el consentimiento',
-        mensaje:
-          'Desde ahora no se envía nada al proveedor de IA y el coach deja de funcionar, también los avisos que prepara. Tus datos en NIVL no se borran. Puedes volver a aceptarlo cuando quieras.',
-        confirmar: 'Retirar',
+        titulo: t('perfil:retirarConsentimiento.titulo'),
+        mensaje: t('perfil:retirarConsentimiento.mensaje'),
+        confirmar: t('perfil:retirarConsentimiento.boton'),
         destructivo: true,
       });
       if (!ok) return;
@@ -548,7 +549,7 @@ export function usePerfil(): UsePerfil {
         await retirarConsentimiento();
         setConsent(await fetchConsentimiento({ fresco: true }));
       } catch (e) {
-        avisar('El sistema no responde', mensajeSistema(e));
+        avisar(t('comun:sistemaNoResponde'), mensajeSistema(e));
       }
       return;
     }
@@ -642,7 +643,7 @@ export function usePerfil(): UsePerfil {
         premium: isPremium(subscription),
         subscription,
         onCheckout: () => {
-          if (userId) openCheckout(userId).catch((e) => avisar('Pagos no disponibles', mensajeSistema(e)));
+          if (userId) openCheckout(userId).catch((e) => avisar(t('perfil:pagosNoDisponibles'), mensajeSistema(e)));
         },
         consent,
         onConsentimiento: tocarConsentimiento,
