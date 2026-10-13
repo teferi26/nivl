@@ -4,11 +4,13 @@
 // grande en Cinzel (`type.cifra`) y debajo su rótulo `micro` en mayúsculas.
 // Un número cuenta con Contador (si trae `desde`); un texto («3/5», «A») se
 // pinta tal cual. Cada celda es un elemento del lector: «Racha: 12 d».
+// La unidad («d», « XP») va aparte, pequeña, y nunca se corta con «…»: si no
+// cabe, Contador encoge la cifra (ver Contador.tsx).
 
 import { StyleSheet, Text, View } from 'react-native';
 import { ink, space, stroke, type as tipo } from '@/design/tokens';
 import { CIFRA_VACIA, formatoMiles } from './cifras';
-import { Contador } from './Contador';
+import { CifraConUnidad, Contador } from './Contador';
 
 export interface Cifra {
   valor: number | string;
@@ -60,14 +62,25 @@ export function FranjaCifras({ cifras, centrado, enGrupo = false }: FranjaCifras
                 valor={c.valor}
                 desde={c.desde}
                 sufijo={c.sufijo}
-                style={styles.valor}
+                sufijoStyle={styles.sufijo}
+                style={[styles.valor, centrado && styles.valorCentrado]}
                 maxFontSizeMultiplier={1}
                 adjustsFontSizeToFit
+              />
+            ) : c.sufijo ? (
+              <CifraConUnidad
+                texto={c.valor || CIFRA_VACIA}
+                cifraFinal={c.valor || CIFRA_VACIA}
+                sufijo={c.sufijo}
+                estiloCifra={[styles.valor, centrado && styles.valorCentrado]}
+                estiloSufijo={styles.sufijo}
+                etiqueta={textoCifra(c)}
+                maxFontSizeMultiplier={1}
+                ajustar
               />
             ) : (
               <Text style={styles.valor} maxFontSizeMultiplier={1} adjustsFontSizeToFit numberOfLines={1}>
                 {c.valor || CIFRA_VACIA}
-                {c.sufijo ? <Text style={styles.sufijo}>{c.sufijo}</Text> : null}
               </Text>
             )}
           </View>
@@ -95,7 +108,9 @@ const styles = StyleSheet.create({
     letterSpacing: tipo.cifra.tracking,
     color: ink.ink10,
   },
-  sufijo: { fontFamily: tipo.micro.family, fontSize: 14, letterSpacing: tipo.micro.tracking },
+  valorCentrado: { textAlign: 'center' },
+  // La unidad, pequeña y en tinta terciaria: la cifra manda (igual en las dos ramas).
+  sufijo: { fontFamily: tipo.micro.family, fontSize: 14, letterSpacing: tipo.micro.tracking, color: ink.ink6 },
   rotulo: {
     fontFamily: tipo.micro.family,
     fontSize: tipo.micro.size,

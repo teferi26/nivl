@@ -142,6 +142,8 @@ const styles = StyleSheet.create({
     fontSize: 18,
     lineHeight: 22,
     color: ink.ink9,
+    // Centrada: Contador con unidad ocupa el ancho del hueco y alinea por aquí.
+    textAlign: 'center',
   },
   valorLider: { color: ink.ink10 },
   columna: { marginTop: space.s2 },

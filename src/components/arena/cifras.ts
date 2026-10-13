@@ -63,3 +63,19 @@ export function ratioSeguro(a: number, b: number): number {
 export function rotuloSiguiente(nivel: number, tope: boolean): string {
   return tope ? t('arena:cifras.nivelMaximo') : t('arena:cifras.siguiente', { nivel: nivel + 1 });
 }
+
+/** Lo más que encoge la cifra para caber (32 → 19 en una franja). */
+export const ESCALA_MINIMA = 0.6;
+
+/**
+ * Escala de la cifra para que cifra + unidad quepan en `hueco`: la unidad no
+ * encoge (es legible a su tamaño); la cifra, hasta ESCALA_MINIMA. `partir`
+ * dice si ni así caben y la unidad debe bajar de línea. Pura (con test).
+ */
+export function escalaCifra(hueco: number, anchoCifra: number, anchoSufijo: number): { escala: number; partir: boolean } {
+  if (!(hueco > 0) || !(anchoCifra > 0) || anchoCifra + anchoSufijo <= hueco) return { escala: 1, partir: false };
+  // Dos centésimas hacia abajo: el redondeo de las fuentes no debe dejar el último píxel fuera.
+  const escala = Math.floor(((hueco - anchoSufijo) / anchoCifra) * 50) / 50;
+  if (escala >= ESCALA_MINIMA) return { escala, partir: false };
+  return { escala: ESCALA_MINIMA, partir: true };
+}

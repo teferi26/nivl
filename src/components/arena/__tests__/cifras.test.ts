@@ -1,4 +1,4 @@
-import { formatoMiles, ordinal, ratioSeguro, romano } from '../cifras';
+import { ESCALA_MINIMA, escalaCifra, formatoMiles, ordinal, ratioSeguro, romano } from '../cifras';
 
 describe('formatoMiles', () => {
   it('agrupa con punto desde las cuatro cifras', () => {
@@ -50,5 +50,26 @@ describe('ratioSeguro', () => {
     expect(ratioSeguro(10, 0)).toBe(1);
     expect(ratioSeguro(0, -1)).toBe(1);
     expect(ratioSeguro(Number.NaN, 10)).toBe(0);
+  });
+});
+
+describe('escalaCifra', () => {
+  it('si cabe, o aún no hay medida, no encoge', () => {
+    expect(escalaCifra(120, 66, 22)).toEqual({ escala: 1, partir: false });
+    expect(escalaCifra(88, 66, 22)).toEqual({ escala: 1, partir: false });
+    expect(escalaCifra(0, 66, 22)).toEqual({ escala: 1, partir: false });
+    expect(escalaCifra(70, 0, 22)).toEqual({ escala: 1, partir: false });
+  });
+
+  it('encoge solo la cifra, hacia abajo y a centésimas pares', () => {
+    // «250» (66) + « XP» (22) en 70: la cifra cabe en 48 → 0,727… → 0,72.
+    const { escala, partir } = escalaCifra(70, 66, 22);
+    expect(escala).toBe(0.72);
+    expect(partir).toBe(false);
+    expect(66 * escala + 22).toBeLessThanOrEqual(70);
+  });
+
+  it('por debajo del mínimo, la unidad baja de línea', () => {
+    expect(escalaCifra(40, 66, 22)).toEqual({ escala: ESCALA_MINIMA, partir: true });
   });
 });
