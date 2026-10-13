@@ -42,6 +42,7 @@ import {
 } from '@/components/arena';
 import { Button, EmptyState, Row, Screen, Section, Tag } from '@/components/ui';
 import { ink, space, stroke, type as tipo } from '@/design/tokens';
+import { t } from '@/i18n';
 import {
   estadoReto,
   fechaPago,
@@ -55,7 +56,8 @@ import {
 } from '@/lib/creatormath';
 import type { PanelCreadorVista, PanelCreadorWeb, RetoVista } from '@/lib/creatorprogram';
 
-const MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sept', 'oct', 'nov', 'dic'];
+/** Claves de creador:mes (el mes corto del histórico: «sept», no «sep»). */
+const MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sept', 'oct', 'nov', 'dic'] as const;
 
 /** «Creador novato» → «Novato»: el rol ya va delante en el subtítulo. */
 function rangoSinRol(label: string): string {
@@ -67,7 +69,8 @@ function rangoSinRol(label: string): string {
 function mesLabel(month: string): string {
   const [a, m] = month.split('-');
   const i = Number(m) - 1;
-  return MESES[i] ? `${MESES[i]} ${a}` : month;
+  const mes = MESES[i];
+  return mes ? t('creador:historico.mes', { mes: t(`creador:mes.${mes}`), anio: a }) : month;
 }
 
 export interface CreadorVistaProps {
@@ -124,11 +127,11 @@ export function CreadorVista({
     acciones.onCompartir(nodo ?? undefined);
   };
   const accionSesion: AccionArena | undefined = portal
-    ? { icono: 'log-out-outline', etiqueta: 'Cerrar sesión', onPress: acciones.onCerrarSesion }
+    ? { icono: 'log-out-outline', etiqueta: t('comun:cerrarSesion'), onPress: acciones.onCerrarSesion }
     : undefined;
   const pieSesion = portal ? (
     <Button
-      title="Cerrar sesión"
+      title={t('comun:cerrarSesion')}
       icon="log-out-outline"
       variant="secondary"
       onPress={acciones.onCerrarSesion}
@@ -140,9 +143,9 @@ export function CreadorVista({
   if (!cargado) {
     return (
       <Screen>
-        <EncabezadoArena onVolver={volver} accion={accionSesion} eyebrow="Programa de creadores" titulo="Tu panel" meandro />
+        <EncabezadoArena onVolver={volver} accion={accionSesion} eyebrow={t('creador:vista.eyebrow')} titulo={t('creador:vista.titulo')} meandro />
         <CargaArena
-          etiqueta="Cargando el panel de creador"
+          etiqueta={t('creador:vista.cargando')}
           formas={['rotulo', 'tarjeta', 'rotulo', 'franja', 'rotulo', 'franja', 'filas']}
         />
       </Screen>
@@ -152,7 +155,7 @@ export function CreadorVista({
   if (!vista) {
     return (
       <Screen refreshing={refrescando} onRefresh={acciones.onRefrescar}>
-        <EncabezadoArena onVolver={volver} accion={accionSesion} eyebrow="Programa de creadores" titulo="Tu panel" meandro />
+        <EncabezadoArena onVolver={volver} accion={accionSesion} eyebrow={t('creador:vista.eyebrow')} titulo={t('creador:vista.titulo')} meandro />
         {error ? (
           <ErrorSistema mensaje={error} onReintentar={acciones.onRefrescar} reintentando={refrescando} />
         ) : portal ? (
@@ -161,8 +164,8 @@ export function CreadorVista({
             <EmptyState
               compact
               icon="megaphone-outline"
-              title="Este panel es para creadores del programa"
-              body="Con esta cuenta no hay panel que mostrar."
+              title={t('creador:vista.portalSinPanelTitulo')}
+              body={t('creador:vista.portalSinPanelCuerpo')}
             />
           </TarjetaArena>
         ) : (
@@ -170,9 +173,9 @@ export function CreadorVista({
             <EmptyState
               compact
               icon="megaphone-outline"
-              title="Este panel es de los creadores"
-              body="Tu cuenta no está en el programa de creadores."
-              action={{ label: 'Volver', onPress: acciones.onSalir, variant: 'outline' }}
+              title={t('creador:vista.sinPanelTitulo')}
+              body={t('creador:vista.sinPanelCuerpo')}
+              action={{ label: t('comun:volver'), onPress: acciones.onSalir, variant: 'outline' }}
             />
           </TarjetaArena>
         )}
@@ -190,7 +193,7 @@ export function CreadorVista({
         <EncabezadoArena
           onVolver={volver}
           accion={accionSesion}
-          eyebrow="Programa de creadores"
+          eyebrow={t('creador:vista.eyebrow')}
           titulo={vista.alias || vista.code}
           subtitulo={subtitulo}
           meandro
@@ -201,7 +204,7 @@ export function CreadorVista({
         <Entrada indice={1}>
           <ErrorSistema
             compacto
-            mensaje={`${error} Lo que ves puede no estar al día.`}
+            mensaje={t('creador:vista.errorConDatos', { error })}
             onReintentar={acciones.onRefrescar}
             reintentando={refrescando}
             style={styles.bloque}
@@ -210,12 +213,12 @@ export function CreadorVista({
       ) : null}
 
       <Entrada indice={1}>
-        <Section title="Tu código">
+        <Section title={t('creador:codigo.titulo')}>
           <TarjetaArena variante="piedra" remaches zocalo>
             <Text
               style={styles.codigo}
               selectable
-              accessibilityLabel={`Tu código: ${vista.code}`}
+              accessibilityLabel={t('creador:codigo.a11y', { codigo: vista.code })}
               maxFontSizeMultiplier={1.2}
               numberOfLines={1}
               adjustsFontSizeToFit
@@ -227,10 +230,10 @@ export function CreadorVista({
             </Text>
             <View style={styles.botones}>
               <View ref={botonCompartir} collapsable={false} style={styles.boton}>
-                <Button title="Compartir" icon="share-social-outline" onPress={compartir} />
+                <Button title={t('comun:compartir')} icon="share-social-outline" onPress={compartir} />
               </View>
               <Button
-                title={copiado ? 'Copiado' : 'Copiar código'}
+                title={copiado ? t('creador:codigo.copiado') : t('creador:codigo.copiar')}
                 icon={copiado ? 'checkmark' : 'copy-outline'}
                 variant="secondary"
                 onPress={acciones.onCopiar}
@@ -239,8 +242,7 @@ export function CreadorVista({
             </View>
           </TarjetaArena>
           <Text style={styles.nota} maxFontSizeMultiplier={1.35}>
-            Quien lo escribe en «¿Quién te trajo?» en sus primeros días queda contigo para siempre. El enlace solo
-            abre la app si ya la tiene instalada.
+            {t('creador:codigo.nota')}
           </Text>
         </Section>
       </Entrada>
@@ -250,30 +252,29 @@ export function CreadorVista({
       </Entrada>
 
       <Entrada indice={3}>
-        <Section title="Cuentas y ventas">
+        <Section title={t('creador:cuentas.titulo')}>
           <View style={styles.franjas}>
             <FranjaCifras
               cifras={[
-                { valor: formatoMiles(vista.installs), rotulo: 'Cuentas con tu código' },
-                { valor: formatoMiles(vista.sales), rotulo: 'Ventas' },
+                { valor: formatoMiles(vista.installs), rotulo: t('creador:cuentas.cuentas') },
+                { valor: formatoMiles(vista.sales), rotulo: t('creador:cuentas.ventas') },
               ]}
             />
             <View style={styles.franjaSegunda}>
               <FranjaCifras
                 cifras={[
-                  { valor: formatoMiles(vista.installsMonth), rotulo: 'Cuentas este mes' },
-                  { valor: formatoMiles(vista.salesMonth), rotulo: 'Ventas este mes' },
+                  { valor: formatoMiles(vista.installsMonth), rotulo: t('creador:cuentas.cuentasMes') },
+                  { valor: formatoMiles(vista.salesMonth), rotulo: t('creador:cuentas.ventasMes') },
                 ]}
               />
             </View>
           </View>
           <Text style={styles.nota} maxFontSizeMultiplier={1.35}>
-            Una venta es una cuenta tuya que se suscribe por primera vez.
+            {t('creador:cuentas.queEsVenta')}
           </Text>
           {web ? (
             <Text style={styles.nota} maxFontSizeMultiplier={1.35}>
-              Por venta anual cobras {porVentaAnual(web.pct, web.baseCents)}; en mensual, tu {Math.round(web.pct)} % de lo
-              que entra cada mes hasta llegar a lo mismo.
+              {t('creador:cuentas.comision', { importe: porVentaAnual(web.pct, web.baseCents), pct: Math.round(web.pct) })}
             </Text>
           ) : null}
         </Section>
@@ -287,7 +288,7 @@ export function CreadorVista({
 
       {vista.retos.length > 0 ? (
         <Entrada indice={5}>
-          <Section title="Retos" meta={`${vista.retos.length}`}>
+          <Section title={t('creador:retos.titulo')} meta={`${vista.retos.length}`}>
             <View style={styles.retos}>
               {vista.retos.map((r) => (
                 <RetoCard key={r.id} reto={r} />
@@ -298,12 +299,12 @@ export function CreadorVista({
       ) : null}
 
       <Entrada indice={6}>
-        <Section title="Tabla del mes">
+        <Section title={t('creador:tabla.titulo')}>
           <Text style={styles.posicion} maxFontSizeMultiplier={1.35}>
             {lineaPosicion(vista.position, vista.creators, vista.salesMonth)}
           </Text>
           {web?.prize ? (
-            <TarjetaArena variante="grano" rotulo="PREMIO DEL PRIMERO" style={styles.premioBloque}>
+            <TarjetaArena variante="grano" rotulo={t('creador:tabla.premio')} style={styles.premioBloque}>
               <Text style={styles.premio} maxFontSizeMultiplier={1.35}>
                 {web.prize}
               </Text>
@@ -320,14 +321,18 @@ export function CreadorVista({
                       {r.pos}
                     </Text>
                   }
-                  title={r.isMe ? `${r.alias} · tú` : r.alias}
+                  title={r.isMe ? t('creador:tabla.nombreYo', { alias: r.alias }) : r.alias}
                   muted={!r.isMe && r.sales === 0}
                   trailing={
                     <Text style={[styles.ventas, r.isMe && styles.ventasYo]} maxFontSizeMultiplier={1.35}>
                       {ventasLabel(r.sales)}
                     </Text>
                   }
-                  accessibilityLabel={`Puesto ${r.pos}: ${r.isMe ? `${r.alias}, tú` : r.alias}, ${ventasLabel(r.sales)}`}
+                  accessibilityLabel={t(r.isMe ? 'creador:tabla.a11yYo' : 'creador:tabla.a11y', {
+                    pos: r.pos,
+                    alias: r.alias,
+                    ventas: ventasLabel(r.sales),
+                  })}
                 />
               ))}
             </View>
@@ -337,7 +342,7 @@ export function CreadorVista({
 
       {vista.historico.length > 0 ? (
         <Entrada indice={7}>
-          <Section title="Ventas por mes">
+          <Section title={t('creador:historico.titulo')}>
             <View style={styles.lista}>
               {vista.historico.map((h, i) => (
                 <Row
@@ -377,12 +382,13 @@ function ProgresoRango({ vista }: { vista: PanelCreadorVista }) {
   const p = vista.progreso;
   const meses = vista.monthsActive;
   return (
-    <Section title="Tu rango" meta={vista.rangoLabel}>
+    <Section title={t('creador:rango.titulo')} meta={vista.rangoLabel}>
       <View style={styles.franjas}>
         <FranjaCifras
           cifras={[
-            { valor: formatoMiles(vista.sales90d), rotulo: 'Ventas en 90 días' },
-            { valor: formatoMiles(meses), rotulo: meses === 1 ? 'Mes seguido' : 'Meses seguidos' },
+            { valor: formatoMiles(vista.sales90d), rotulo: t('creador:rango.ventas90') },
+            // El rótulo va sin la cifra (la pinta la franja): dos rótulos, no un plural con count.
+            { valor: formatoMiles(meses), rotulo: meses === 1 ? t('creador:rango.mesSeguido') : t('creador:rango.mesesSeguidos') },
           ]}
         />
       </View>
@@ -391,17 +397,17 @@ function ProgresoRango({ vista }: { vista: PanelCreadorVista }) {
           <Barra
             ratio={p.fraccion}
             alto={6}
-            etiqueta={`Hacia ${rangoLabel(p.siguiente)}: ${vista.sales90d} de ${p.umbral} ventas`}
+            etiqueta={t('creador:rango.haciaA11y', { rango: rangoLabel(p.siguiente), ventas: vista.sales90d, umbral: p.umbral })}
           />
           <Text style={styles.lineaProgreso} maxFontSizeMultiplier={1.35}>
             {p.faltan
-              ? `${rangoLabel(p.siguiente)}: ${p.umbral} ventas en 90 días. Te faltan ${p.faltan}.`
-              : `Cumples lo de ${rangoLabel(p.siguiente)}. El cambio de rango lo aplica el equipo.`}
+              ? t('creador:rango.faltan', { rango: rangoLabel(p.siguiente), umbral: p.umbral, faltan: p.faltan })
+              : t('creador:rango.cumples', { rango: rangoLabel(p.siguiente) })}
           </Text>
         </View>
       ) : (
         <Text style={[styles.lineaProgreso, styles.progreso]} maxFontSizeMultiplier={1.35}>
-          No hay un rango por encima con regla fijada.
+          {t('creador:rango.sinSiguiente')}
         </Text>
       )}
     </Section>
@@ -417,7 +423,7 @@ function RetoCard({ reto }: { reto: RetoVista }) {
         <Text style={styles.retoTitulo} numberOfLines={2} maxFontSizeMultiplier={1.35}>
           {reto.title}
         </Text>
-        {cumplido ? <Tag tone="logro">Cumplido</Tag> : null}
+        {cumplido ? <Tag tone="logro">{t('creador:retos.cumplido')}</Tag> : null}
       </View>
       {reto.description ? (
         <Text style={styles.retoTexto} maxFontSizeMultiplier={1.35}>
@@ -425,15 +431,16 @@ function RetoCard({ reto }: { reto: RetoVista }) {
         </Text>
       ) : null}
       <View style={styles.retoCifra}>
-        <Cifra texto={`${reto.sales}/${reto.goalSales}`} unidad=" ventas" />
+        {/* i18n-ok: dos cifras */}
+        <Cifra texto={`${reto.sales}/${reto.goalSales}`} unidad={` ${t('creador:retos.unidadVentas')}`} />
       </View>
-      <Barra ratio={e.fraccion} alto={4} etiqueta={`Reto ${reto.title}: ${reto.sales} de ${reto.goalSales} ventas`} />
+      <Barra ratio={e.fraccion} alto={4} etiqueta={t('creador:retos.a11y', { titulo: reto.title, ventas: reto.sales, meta: reto.goalSales })} />
       <Text style={styles.retoTexto} maxFontSizeMultiplier={1.35}>
         {e.linea}
       </Text>
       {reto.prize ? (
         <Text style={styles.retoPremio} maxFontSizeMultiplier={1.35}>
-          Premio: {reto.prize}
+          {t('creador:retos.premio', { premio: reto.prize })}
         </Text>
       ) : null}
     </TarjetaArena>
@@ -445,26 +452,26 @@ function RetoCard({ reto }: { reto: RetoVista }) {
 function DineroWeb({ web, holdDays }: { web: PanelCreadorWeb; holdDays: number }) {
   const conClawback = web.clawbackCents > 0;
   return (
-    <Section title="Tu dinero">
+    <Section title={t('creador:dinero.titulo')}>
       {/* Filas y no franja: un importe con céntimos no cabe en un tercio a 375. */}
       <View style={styles.lista}>
-        <Row first title="En retención" trailing={<Cifra texto={importe(web.pendingCents)} unidad=" €" />} />
-        <Row title="Disponible" trailing={<Cifra texto={importe(web.availableCents)} unidad=" €" />} />
-        <Row title="Cobrado" trailing={<Cifra texto={importe(web.paidCents)} unidad=" €" />} />
+        <Row first title={t('creador:dinero.retencion')} trailing={<Cifra texto={importe(web.pendingCents)} unidad=" €" />} />
+        <Row title={t('creador:dinero.disponible')} trailing={<Cifra texto={importe(web.availableCents)} unidad=" €" />} />
+        <Row title={t('creador:dinero.cobrado')} trailing={<Cifra texto={importe(web.paidCents)} unidad=" €" />} />
         {web.monthlyFixedCents > 0 ? (
-          <Row title="Fijo mensual" trailing={<Cifra texto={importe(web.monthlyFixedCents)} unidad=" €" />} />
+          <Row title={t('creador:dinero.fijo')} trailing={<Cifra texto={importe(web.monthlyFixedCents)} unidad=" €" />} />
         ) : null}
         {conClawback ? (
           <Row
-            title="A descontar"
-            detail="Reembolsos de comisiones ya cobradas"
+            title={t('creador:dinero.descontar')}
+            detail={t('creador:dinero.descontarDetalle')}
+            // i18n-ok: el signo y la cifra
             trailing={<Cifra texto={`−${importe(web.clawbackCents)}`} unidad=" €" />}
           />
         ) : null}
       </View>
       <Text style={styles.nota} maxFontSizeMultiplier={1.35}>
-        Cada comisión espera {holdDays} días por si hay un reembolso; entonces pasa a disponible y se paga en la
-        siguiente liquidación. Si la tienda devuelve el dinero, la comisión se anula.
+        {t('creador:dinero.retencionNota', { dias: holdDays })}
       </Text>
     </Section>
   );
@@ -472,7 +479,7 @@ function DineroWeb({ web, holdDays }: { web: PanelCreadorWeb; holdDays: number }
 
 function PagosWeb({ web }: { web: PanelCreadorWeb }) {
   return (
-    <Section title="Pagos recibidos">
+    <Section title={t('creador:pagos.titulo')}>
       {web.payouts.length > 0 ? (
         <View style={styles.lista}>
           {web.payouts.map((p, i) => (
@@ -488,7 +495,12 @@ function PagosWeb({ web }: { web: PanelCreadorWeb }) {
         </View>
       ) : (
         <TarjetaArena variante="contorno">
-          <EmptyState compact icon="cash-outline" title="Aún sin pagos" body="Aquí aparece cada liquidación cuando se haga." />
+          <EmptyState
+            compact
+            icon="cash-outline"
+            title={t('creador:pagos.vacioTitulo')}
+            body={t('creador:pagos.vacioCuerpo')}
+          />
         </TarjetaArena>
       )}
     </Section>

@@ -14,14 +14,12 @@ import { StyleSheet, Text, View } from 'react-native';
 import { Campo } from '@/components/arena';
 import { Button, Chip, ChipWrap, Sheet } from '@/components/ui';
 import { ink, space, type as tipo } from '@/design/tokens';
+import { t } from '@/i18n';
 import { GOAL_ACHIEVED_XP } from '@/lib/game';
 import type { Goal, GoalMetric } from '@/lib/types';
 
-const METRIC_OPTIONS: { key: GoalMetric; label: string }[] = [
-  { key: 'peso_corporal', label: 'Peso corporal' },
-  { key: 'ejercicio', label: 'Ejercicio (PR)' },
-  { key: 'libre', label: 'Libre' },
-];
+/** Las métricas en el orden de los chips; el nombre sale de avances:hojaMeta.metrica. */
+const METRIC_OPTIONS: GoalMetric[] = ['peso_corporal', 'ejercicio', 'libre'];
 
 export interface HojaMetaProps {
   visible: boolean;
@@ -48,38 +46,43 @@ export function HojaMeta(p: HojaMetaProps) {
     <Sheet
       visible={p.visible}
       onClose={p.onCerrar}
-      eyebrow="Nueva meta"
-      title="¿Qué cifra vas a alcanzar?"
+      eyebrow={t('avances:vista.nuevaMeta')}
+      title={t('avances:hojaMeta.titulo')}
       footer={
         <>
-          <Button title="Fijar la meta" onPress={p.onGuardar} loading={p.guardando} disabled={!p.titulo.trim()} />
-          <Button title="Cancelar" variant="ghost" onPress={p.onCerrar} />
+          <Button
+            title={t('avances:hojaMeta.fijar')}
+            onPress={p.onGuardar}
+            loading={p.guardando}
+            disabled={!p.titulo.trim()}
+          />
+          <Button title={t('comun:cancelar')} variant="ghost" onPress={p.onCerrar} />
         </>
       }
     >
       <View style={styles.pila}>
         <Campo
-          etiqueta="Título"
+          etiqueta={t('avances:hojaMeta.campoTitulo')}
           value={p.titulo}
           onChangeText={p.onTitulo}
-          placeholder={p.saludAceptada ? 'Ej. Press banca 100 kg' : 'Ej. Leer doce libros'}
-          accessibilityLabel="Título de la meta"
+          placeholder={p.saludAceptada ? t('avances:hojaMeta.tituloEjemploSalud') : t('avances:hojaMeta.tituloEjemplo')}
+          accessibilityLabel={t('avances:hojaMeta.campoTituloA11y')}
           autoFocus
         />
 
         <View style={styles.grupo}>
           <Text style={styles.etiqueta} maxFontSizeMultiplier={1.35}>
-            Se mide con
+            {t('avances:hojaMeta.seMide')}
           </Text>
-          <View accessibilityRole="radiogroup" accessibilityLabel="Cómo se mide la meta">
+          <View accessibilityRole="radiogroup" accessibilityLabel={t('avances:hojaMeta.seMideA11y')}>
             <ChipWrap>
-              {METRIC_OPTIONS.filter((m) => p.saludAceptada || m.key === 'libre').map((m) => (
+              {METRIC_OPTIONS.filter((m) => p.saludAceptada || m === 'libre').map((m) => (
                 <Chip
-                  key={m.key}
-                  label={m.label}
-                  selected={p.metrica === m.key}
-                  onPress={() => p.onMetrica(m.key)}
-                  accessibilityLabel={`Medir con ${m.label}`}
+                  key={m}
+                  label={t(`avances:hojaMeta.metrica.${m}`)}
+                  selected={p.metrica === m}
+                  onPress={() => p.onMetrica(m)}
+                  accessibilityLabel={t('avances:hojaMeta.medirConA11y', { metrica: t(`avances:hojaMeta.metrica.${m}`) })}
                 />
               ))}
             </ChipWrap>
@@ -88,37 +91,37 @@ export function HojaMeta(p: HojaMetaProps) {
 
         {p.metrica === 'ejercicio' ? (
           <Campo
-            etiqueta="Ejercicio (nombre exacto del gym)"
+            etiqueta={t('avances:hojaMeta.ejercicio')}
             value={p.ejercicio}
             onChangeText={p.onEjercicio}
-            placeholder="Ej. Press banca"
-            accessibilityLabel="Nombre del ejercicio"
+            placeholder={t('avances:hojaMeta.ejercicioEjemplo')}
+            accessibilityLabel={t('avances:hojaMeta.ejercicioA11y')}
           />
         ) : null}
 
         <View style={styles.dos}>
           <Campo
-            etiqueta="Valor inicial"
+            etiqueta={t('avances:hojaMeta.inicial')}
             value={p.inicio}
             onChangeText={p.onInicio}
             keyboardType="decimal-pad"
             placeholder="85"
-            accessibilityLabel="Valor inicial"
+            accessibilityLabel={t('avances:hojaMeta.inicial')}
             estiloBloque={styles.columna}
           />
           <Campo
-            etiqueta="Objetivo"
+            etiqueta={t('avances:hojaMeta.objetivo')}
             value={p.objetivo}
             onChangeText={p.onObjetivo}
             keyboardType="decimal-pad"
             placeholder="78"
-            accessibilityLabel="Valor objetivo"
+            accessibilityLabel={t('avances:hojaMeta.objetivoA11y')}
             estiloBloque={styles.columna}
           />
         </View>
 
         <Text style={styles.ayuda} maxFontSizeMultiplier={1.6}>
-          Al alcanzarla, hasta +{GOAL_ACHIEVED_XP} XP (con el tope diario de metas).
+          {t('avances:hojaMeta.premio', { xp: GOAL_ACHIEVED_XP })}
         </Text>
 
         {p.error ? (
@@ -151,21 +154,21 @@ export function HojaValor({ meta, valor, error, guardando = false, onValor, onGu
     <Sheet
       visible={meta !== null}
       onClose={onCerrar}
-      eyebrow="Progreso manual"
+      eyebrow={t('avances:hojaValor.eyebrow')}
       title={meta?.title}
       footer={
         <>
-          <Button title="Guardar" onPress={onGuardar} loading={guardando} />
-          <Button title="Cancelar" variant="ghost" onPress={onCerrar} disabled={guardando} />
+          <Button title={t('comun:guardar')} onPress={onGuardar} loading={guardando} />
+          <Button title={t('comun:cancelar')} variant="ghost" onPress={onCerrar} disabled={guardando} />
         </>
       }
     >
       <Campo
-        etiqueta={`Valor actual (${meta?.unit ?? ''})`}
+        etiqueta={t('avances:hojaValor.campo', { unidad: meta?.unit ?? '' })}
         value={valor}
         onChangeText={onValor}
         keyboardType="decimal-pad"
-        accessibilityLabel="Valor actual de la meta"
+        accessibilityLabel={t('avances:hojaValor.campoA11y')}
         error={error}
         autoFocus
       />

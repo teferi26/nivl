@@ -27,8 +27,9 @@ import {
 } from '@/components/arena';
 import { TrendLine } from '@/components/TrendLine';
 import { Button, EmptyState, Screen, Section, Toast } from '@/components/ui';
-import { SIN_DATO } from '@/components/ui/sinDato';
+import { leidoSinDato, SIN_DATO } from '@/components/ui/sinDato';
 import { ink, space, stroke, type as tipo } from '@/design/tokens';
+import { t } from '@/i18n';
 import { WEIGH_IN_XP } from '@/lib/game';
 import { numeroES } from '@/lib/pagoActo';
 import type { BodyMetric, Goal } from '@/lib/types';
@@ -116,13 +117,18 @@ function TarjetaMeta({ m, acciones }: { m: MetaVista; acciones: AvancesVistaProp
         </Text>
       </View>
       <View style={styles.metaBarra}>
-        <Barra ratio={progreso} alto={6} etiqueta={`Progreso de ${g.title}`} />
+        <Barra ratio={progreso} alto={6} etiqueta={t('avances:meta.progreso', { titulo: g.title })} />
       </View>
       <View style={styles.metaFila}>
         <Text
           style={styles.metaDetalle}
           maxFontSizeMultiplier={1.35}
-          accessibilityLabel={`Empezó en ${n(g.start_value)}, va por ${actual === null ? 'sin dato' : n(actual)}, objetivo ${n(g.target_value)} ${g.unit}`}
+          accessibilityLabel={t('avances:meta.detalleA11y', {
+            inicio: n(g.start_value),
+            actual: actual === null ? leidoSinDato() : n(actual),
+            objetivo: n(g.target_value),
+            unidad: g.unit,
+          })}
         >
           {n(g.start_value)} → <Text style={styles.metaActual}>{actual === null ? SIN_DATO : n(actual)}</Text> →{' '}
           {n(g.target_value)} {g.unit}
@@ -131,14 +137,14 @@ function TarjetaMeta({ m, acciones }: { m: MetaVista; acciones: AvancesVistaProp
           onPress={() => acciones.onBorrar(g)}
           style={({ pressed }) => [styles.papelera, pressed && styles.pulsado]}
           accessibilityRole="button"
-          accessibilityLabel={`Eliminar meta ${g.title}`}
+          accessibilityLabel={t('avances:meta.eliminarA11y', { titulo: g.title })}
         >
           <Ionicons name="trash-outline" size={18} color={ink.ink6} />
         </Pressable>
       </View>
       {hecha ? (
         <Button
-          title="Reclamar"
+          title={t('avances:meta.reclamar')}
           variant="secondary"
           size="sm"
           icon="ribbon-outline"
@@ -147,7 +153,7 @@ function TarjetaMeta({ m, acciones }: { m: MetaVista; acciones: AvancesVistaProp
         />
       ) : g.metric_type === 'libre' ? (
         <Button
-          title="Actualizar"
+          title={t('avances:meta.actualizar')}
           variant="secondary"
           size="sm"
           onPress={() => acciones.onActualizar(g)}
@@ -171,23 +177,25 @@ export function AvancesVista(p: AvancesVistaProps) {
   const subtitulo = !cargado
     ? undefined
     : !saludAceptada
-      ? 'Tus metas generales, en una sola vista.'
+      ? t('avances:vista.subtituloSinSalud')
       : latestWeight === null
-        ? 'Registra tu primer pesaje: es tu línea de salida.'
-        : `Último pesaje: ${n(latestWeight)} kg${
-            deltaPeso !== null && deltaPeso !== 0
-              ? ` (${deltaPeso > 0 ? '+' : ''}${n(deltaPeso)} kg en ${weights.length} pesajes)`
-              : ''
-          }.`;
+        ? t('avances:vista.subtituloPrimerPesaje')
+        : deltaPeso !== null && deltaPeso !== 0
+          ? t('avances:vista.subtituloDelta', {
+              peso: n(latestWeight),
+              delta: `${deltaPeso > 0 ? '+' : ''}${n(deltaPeso)}`,
+              n: weights.length,
+            })
+          : t('avances:vista.subtituloPeso', { peso: n(latestWeight) });
 
   const encabezado = (
     <Entrada indice={0}>
       <EncabezadoArena
         onVolver={acciones.onVolver}
-        eyebrow="Progreso"
-        titulo="Avances"
+        eyebrow={t('avances:vista.eyebrow')}
+        titulo={t('avances:vista.titulo')}
         subtitulo={subtitulo}
-        accion={{ icono: 'add', etiqueta: 'Nueva meta', onPress: acciones.onNuevaMeta, solida: true }}
+        accion={{ icono: 'add', etiqueta: t('avances:vista.nuevaMeta'), onPress: acciones.onNuevaMeta, solida: true }}
         meandro
       />
     </Entrada>
@@ -202,7 +210,7 @@ export function AvancesVista(p: AvancesVistaProps) {
         {errorCarga ? (
           <ErrorSistema mensaje={errorCarga} onReintentar={acciones.onReintentar} />
         ) : (
-          <CargaArena etiqueta="Cargando tus avances" formas={['franja', 'tarjeta', 'rotulo', 'filas']} />
+          <CargaArena etiqueta={t('avances:vista.cargando')} formas={['franja', 'tarjeta', 'rotulo', 'filas']} />
         )}
       </Screen>
     );
@@ -223,27 +231,33 @@ export function AvancesVista(p: AvancesVistaProps) {
           <FranjaCifras
             cifras={[
               latestWeight === null
-                ? { valor: SIN_DATO, rotulo: 'Peso', etiqueta: 'Peso: sin pesajes todavía' }
-                : { valor: n(latestWeight), sufijo: 'kg', rotulo: 'Peso', etiqueta: `Peso: ${n(latestWeight)} kilos` },
-              { valor: metas.length, rotulo: 'Metas' },
-              { valor: logradas.length, rotulo: 'Logradas' },
+                ? { valor: SIN_DATO, rotulo: t('avances:franja.peso'), etiqueta: t('avances:franja.pesoSinPesajes') }
+                : {
+                    valor: n(latestWeight),
+                    sufijo: 'kg', // i18n-ok: unidad
+                    rotulo: t('avances:franja.peso'),
+                    etiqueta: t('avances:franja.pesoA11y', { peso: n(latestWeight) }),
+                  },
+              { valor: metas.length, rotulo: t('avances:franja.metas') },
+              { valor: logradas.length, rotulo: t('avances:franja.logradas') },
             ]}
           />
 
           <View style={styles.pesaje}>
             <Campo
-              etiqueta="Peso de hoy (kg)"
+              etiqueta={t('avances:pesaje.campo')}
               value={p.peso}
               onChangeText={acciones.onPeso}
               keyboardType="decimal-pad"
+              // i18n-ok: una cifra de ejemplo
               placeholder="78,4"
-              accessibilityLabel="Peso de hoy en kilogramos"
+              accessibilityLabel={t('avances:pesaje.campoA11y')}
               error={p.errorPeso}
               estiloBloque={styles.pesajeCampo}
             />
             <View style={styles.pesajeBoton}>
               <Button
-                title={p.pesadoHoy ? 'Corregir' : `Pesar · hasta +${WEIGH_IN_XP} XP`}
+                title={p.pesadoHoy ? t('avances:pesaje.corregir') : t('avances:pesaje.pesar', { xp: WEIGH_IN_XP })}
                 variant="secondary"
                 onPress={acciones.onPesar}
                 loading={p.pesando}
@@ -254,7 +268,7 @@ export function AvancesVista(p: AvancesVistaProps) {
           {weights.length > 1 ? (
             <View style={styles.curva} onLayout={medirPeso}>
               <Text style={styles.rotulo} maxFontSizeMultiplier={1.35}>
-                Peso · {weights.length} pesajes
+                {t('avances:pesaje.curva', { n: weights.length })}
               </Text>
               {anchoPeso > 0 ? (
                 <TrendLine values={weights.map((w) => w.weight_kg)} width={anchoPeso} height={ALTO_CURVA} />
@@ -267,15 +281,18 @@ export function AvancesVista(p: AvancesVistaProps) {
       ) : null}
 
       <Entrada indice={2}>
-        <Section title="Metas" meta={metas.length > 0 ? `${metas.length} activas` : undefined}>
+        <Section
+          title={t('avances:metas.titulo')}
+          meta={metas.length > 0 ? t('avances:metas.activas', { n: metas.length }) : undefined}
+        >
           {metas.length === 0 ? (
             <TarjetaArena variante="contorno">
               <EmptyState
                 compact
                 icon="flag-outline"
-                title="Sin metas fijadas"
-                body="Una meta es un número con fecha: leer doce libros, terminar cuatro cursos. Ponle cifra a tu objetivo."
-                action={{ label: 'Fijar la primera', onPress: acciones.onNuevaMeta }}
+                title={t('avances:metas.vacioTitulo')}
+                body={t('avances:metas.vacioCuerpo')}
+                action={{ label: t('avances:metas.fijarPrimera'), onPress: acciones.onNuevaMeta }}
               />
             </TarjetaArena>
           ) : (
@@ -290,13 +307,22 @@ export function AvancesVista(p: AvancesVistaProps) {
 
       {logradas.length > 0 ? (
         <Entrada indice={3}>
-          <Section title="Conseguidas" meta={`${logradas.length}`} tone="logro">
+          <Section title={t('avances:conseguidas.titulo')} meta={`${logradas.length}`} tone="logro">
             {logradas.map((g, i) => (
               <View
                 key={g.id}
                 style={[styles.fila, i > 0 && styles.conRegla]}
                 accessible
-                accessibilityLabel={`${g.title}, conseguida${g.achieved_at ? ` el ${fechaCorta(g.achieved_at)}` : ''}. ${n(g.target_value)} ${g.unit}`}
+                accessibilityLabel={
+                  g.achieved_at
+                    ? t('avances:conseguidas.a11yFecha', {
+                        titulo: g.title,
+                        fecha: fechaCorta(g.achieved_at),
+                        valor: n(g.target_value),
+                        unidad: g.unit,
+                      })
+                    : t('avances:conseguidas.a11y', { titulo: g.title, valor: n(g.target_value), unidad: g.unit })
+                }
               >
                 <View style={styles.icono}>
                   <Ionicons name="ribbon-outline" size={18} color={ink.ink8} />
@@ -307,7 +333,7 @@ export function AvancesVista(p: AvancesVistaProps) {
                   </Text>
                   {g.achieved_at ? (
                     <Text style={styles.filaDetalle} maxFontSizeMultiplier={1.35}>
-                      Conseguida el {fechaCorta(g.achieved_at)}
+                      {t('avances:conseguidas.fecha', { fecha: fechaCorta(g.achieved_at) })}
                     </Text>
                   ) : null}
                 </View>
@@ -322,14 +348,14 @@ export function AvancesVista(p: AvancesVistaProps) {
 
       {saludAceptada ? (
         <Entrada indice={4}>
-          <Section title="Récords personales" meta={prs.length > 0 ? `${prs.length}` : undefined}>
+          <Section title={t('avances:records.titulo')} meta={prs.length > 0 ? `${prs.length}` : undefined}>
             {prs.length === 0 ? (
               <TarjetaArena variante="contorno">
                 <EmptyState
                   compact
                   icon="barbell-outline"
-                  title="Sin récords todavía"
-                  body="Aparecen aquí al registrar sesiones de gimnasio con peso."
+                  title={t('avances:records.vacioTitulo')}
+                  body={t('avances:records.vacioCuerpo')}
                 />
               </TarjetaArena>
             ) : (
@@ -341,7 +367,7 @@ export function AvancesVista(p: AvancesVistaProps) {
                     onPress={() => acciones.onSerie(r.exercise)}
                     style={({ pressed }) => [styles.fila, i > 0 && styles.conRegla, pressed && styles.pulsado]}
                     accessibilityRole="button"
-                    accessibilityLabel={`${r.exercise}: ${n(r.weight)} kilos. Ver progresión`}
+                    accessibilityLabel={t('avances:records.a11y', { ejercicio: r.exercise, peso: n(r.weight) })}
                     accessibilityState={{ expanded: abierta }}
                   >
                     {abierta ? <View style={styles.marcaAbierta} /> : null}
@@ -351,11 +377,11 @@ export function AvancesVista(p: AvancesVistaProps) {
                       </Text>
                       {abierta ? (
                         <Text style={styles.filaDetalle} maxFontSizeMultiplier={1.35}>
-                          Progresión abierta
+                          {t('avances:records.abierta')}
                         </Text>
                       ) : null}
                     </View>
-                    <Text style={styles.cifra} maxFontSizeMultiplier={1.35}>
+                    <Text style={styles.cifra} maxFontSizeMultiplier={1.35}>{/* i18n-ok: unidad */}
                       {n(r.weight)} kg
                     </Text>
                     <Ionicons name="chevron-forward" size={18} color={ink.ink6} />
@@ -364,7 +390,7 @@ export function AvancesVista(p: AvancesVistaProps) {
               })
             )}
             {series ? (
-              <TarjetaArena variante="piedra" rotulo={`Progresión · ${series.exercise}`} style={styles.serie}>
+              <TarjetaArena variante="piedra" rotulo={t('avances:records.progresion', { ejercicio: series.exercise })} style={styles.serie}>
                 <View onLayout={medirSerie}>
                   {anchoSerie > 0 ? <TrendLine values={series.values} width={anchoSerie} height={ALTO_CURVA} /> : null}
                 </View>

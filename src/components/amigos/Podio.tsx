@@ -14,6 +14,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { Columna, Contador, Laurel } from '@/components/arena';
 import { Avatar } from '@/components/ui';
 import { ink, space, stroke, type as tipo, type Rank } from '@/design/tokens';
+import { t } from '@/i18n';
 import { etiquetaPosicion, formatoValor, type Metrica } from '@/lib/socialmath';
 import { lineaPuesto, ordenPodio, sufijoDe } from './cifraRanking';
 import type { FilaRanking } from './ListaRanking';
@@ -45,9 +46,17 @@ export function Podio({ filas, metrica, rivales, miRango, rangos, atenuado }: Po
       {tres ? (
         <View
           accessible
-          accessibilityLabel={`Podio. ${[tres[1], tres[0], tres[2]]
-            .map((c) => `${etiquetaPosicion(c.posicion)}, ${c.competidor.isMe ? 'tú' : c.competidor.name}, ${formatoValor(c.valor, metrica)}`)
-            .join('. ')}.`}
+          accessibilityLabel={t('amigos:podio.a11y', {
+            lista: [tres[1], tres[0], tres[2]]
+              .map((c) =>
+                t('amigos:podio.a11yHueco', {
+                  posicion: etiquetaPosicion(c.posicion),
+                  nombre: c.competidor.isMe ? t('amigos:podio.tu') : c.competidor.name,
+                  valor: formatoValor(c.valor, metrica),
+                }),
+              )
+              .join('. '),
+          })}
           style={styles.podio}
         >
           <View style={styles.huecos}>
@@ -67,7 +76,7 @@ export function Podio({ filas, metrica, rivales, miRango, rangos, atenuado }: Po
                     titulo={c.titulo ?? undefined}
                   />
                   <Text style={styles.nombre} numberOfLines={1} maxFontSizeMultiplier={1.35}>
-                    {b.isMe ? 'Tú' : b.name}
+                    {b.isMe ? t('amigos:comun.tu') : b.name}
                   </Text>
                   <Contador
                     valor={c.valor ?? 0}

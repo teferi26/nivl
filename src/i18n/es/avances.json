@@ -1,1 +1,103 @@
-{}
+{
+  "meta": {
+    "progreso": "Progreso de {{titulo}}",
+    "detalleA11y": "Empezó en {{inicio}}, va por {{actual}}, objetivo {{objetivo}} {{unidad}}",
+    "eliminarA11y": "Eliminar meta {{titulo}}",
+    "reclamar": "Reclamar",
+    "actualizar": "Actualizar",
+    "eliminar": "Eliminar meta"
+  },
+  "vista": {
+    "subtituloSinSalud": "Tus metas generales, en una sola vista.",
+    "subtituloPrimerPesaje": "Registra tu primer pesaje: es tu línea de salida.",
+    "subtituloPeso": "Último pesaje: {{peso}} kg.",
+    "subtituloDelta": "Último pesaje: {{peso}} kg ({{delta}} kg en {{n}} pesajes).",
+    "eyebrow": "Progreso",
+    "titulo": "Avances",
+    "nuevaMeta": "Nueva meta",
+    "cargando": "Cargando tus avances"
+  },
+  "franja": {
+    "peso": "Peso",
+    "pesoSinPesajes": "Peso: sin pesajes todavía",
+    "pesoA11y": "Peso: {{peso}} kilos",
+    "metas": "Metas",
+    "logradas": "Logradas"
+  },
+  "pesaje": {
+    "campo": "Peso de hoy (kg)",
+    "campoA11y": "Peso de hoy en kilogramos",
+    "corregir": "Corregir",
+    "pesar": "Pesar · hasta +{{xp}} XP",
+    "curva": "Peso · {{n}} pesajes",
+    "invalido": "Introduce tu peso en kg, p. ej. 78,4",
+    "corregido": "El sistema corrige el pesaje de hoy. Ya estaba cobrado.",
+    "deModulo": "a VIT por el pesaje",
+    "topeDiario": "Anotado. Hoy ya has llegado al tope diario de XP.",
+    "misionPagada": "Anotado. La misión de hoy ya estaba marcada y pagada.",
+    "toast": "Pesaje · +{{xp}} XP",
+    "toastAnuncio": "Pesaje registrado. {{mensaje}}",
+    "registrado": "Pesaje registrado"
+  },
+  "metas": {
+    "titulo": "Metas",
+    "activas": "{{n}} activas",
+    "vacioTitulo": "Sin metas fijadas",
+    "vacioCuerpo": "Una meta es un número con fecha: leer doce libros, terminar cuatro cursos. Ponle cifra a tu objetivo.",
+    "fijarPrimera": "Fijar la primera"
+  },
+  "conseguidas": {
+    "titulo": "Conseguidas",
+    "a11yFecha": "{{titulo}}, conseguida el {{fecha}}. {{valor}} {{unidad}}",
+    "a11y": "{{titulo}}, conseguida. {{valor}} {{unidad}}",
+    "fecha": "Conseguida el {{fecha}}"
+  },
+  "records": {
+    "titulo": "Récords personales",
+    "vacioTitulo": "Sin récords todavía",
+    "vacioCuerpo": "Aparecen aquí al registrar sesiones de gimnasio con peso.",
+    "a11y": "{{ejercicio}}: {{peso}} kilos. Ver progresión",
+    "abierta": "Progresión abierta",
+    "progresion": "Progresión · {{ejercicio}}"
+  },
+  "hojaMeta": {
+    "titulo": "¿Qué cifra vas a alcanzar?",
+    "fijar": "Fijar la meta",
+    "campoTitulo": "Título",
+    "tituloEjemploSalud": "Ej. Press banca 100 kg",
+    "tituloEjemplo": "Ej. Leer doce libros",
+    "campoTituloA11y": "Título de la meta",
+    "seMide": "Se mide con",
+    "seMideA11y": "Cómo se mide la meta",
+    "metrica": {
+      "peso_corporal": "Peso corporal",
+      "ejercicio": "Ejercicio (PR)",
+      "libre": "Libre"
+    },
+    "medirConA11y": "Medir con {{metrica}}",
+    "ejercicio": "Ejercicio (nombre exacto del gym)",
+    "ejercicioEjemplo": "Ej. Press banca",
+    "ejercicioA11y": "Nombre del ejercicio",
+    "inicial": "Valor inicial",
+    "objetivo": "Objetivo",
+    "objetivoA11y": "Valor objetivo",
+    "premio": "Al alcanzarla, hasta +{{xp}} XP (con el tope diario de metas).",
+    "incompleta": "Meta incompleta: título, valor inicial y valor objetivo (distintos).",
+    "faltaEjercicio": "Falta el ejercicio: escribe el nombre EXACTO del ejercicio del gym."
+  },
+  "hojaValor": {
+    "eyebrow": "Progreso manual",
+    "campo": "Valor actual ({{unidad}})",
+    "campoA11y": "Valor actual de la meta",
+    "invalido": "Valor inválido: introduce un número."
+  },
+  "reclamar": {
+    "titulo": "META CONSEGUIDA",
+    "mensaje": "«{{titulo}}»: hasta +{{xp}} XP si hoy no has llegado al tope de metas.",
+    "aunNo": "Aún no",
+    "toast": "Meta conseguida · +{{xp}} XP",
+    "toastAnuncio": "Meta conseguida. «{{titulo}}»: +{{xp}} XP a AGI.",
+    "conseguida": "Meta conseguida",
+    "sinPremio": "«{{titulo}}» queda como lograda. Este premio no suma hoy: ya estaba cobrado o has llegado al tope diario."
+  }
+}

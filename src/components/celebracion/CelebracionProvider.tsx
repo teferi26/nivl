@@ -32,6 +32,7 @@ import { HojaCompartir } from '@/components/share/HojaCompartir';
 import { Ceremony } from '@/components/ui/Ceremony';
 import { Toast } from '@/components/ui/Toast';
 import { vibrar } from '@/design/haptics';
+import { t } from '@/i18n';
 import { useAuth } from '@/lib/auth';
 import { estadoInicial, hayAlgo, lineasDe, reducir, textoToast, VENTANA_MS, type Momento } from '@/lib/celebracionCola';
 import { signedUrlCached } from '@/lib/data';
@@ -50,7 +51,9 @@ const ESPERA_HOJA_MS = 420;
 const ESPERA_CODIGO_MS = 1500;
 /** Tope de la lectura del permiso de fotos (18+ y salud) antes de abrir la hoja. */
 const ESPERA_FOTOS_MS = 2000;
-const AVISO_PERMISO_FOTOS = 'No se ha podido comprobar el permiso. Vuelve a intentarlo.';
+const avisoPermisoFotos = () => t('celebracion:avisoPermisoFotos');
+/** El nombre de la ceremonia mientras no llega el del perfil. */
+const nombrePorDefecto = () => t('celebracion:nombrePorDefecto');
 /** Mínimo entre dos relecturas del perfil (varias llegadas de una acción). */
 const RELEER_YO_MS = 2000;
 
@@ -58,14 +61,14 @@ const espera = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 
 /** La tarjeta de una celebración; la de nivel se completa con el estado vigente. */
 export function tarjetaDe(c: Celebracion, estado: Momento['estado']): Tarjeta | null {
-  const t = tarjetaDeCelebracion(c);
-  if (!t || t.tipo !== 'nivel' || !estado) return t;
+  const base = tarjetaDeCelebracion(c);
+  if (!base || base.tipo !== 'nivel' || !estado) return base;
   return {
-    ...t,
-    rango: t.rango ?? estado.rango,
-    nombreRango: t.nombreRango ?? rangoPorId(estado.rango).nombre,
-    progreso: t.progreso ?? (estado.xpSiguiente > 0 ? Math.min(1, estado.xpEnNivel / estado.xpSiguiente) : 1),
-    rachaDias: t.rachaDias ?? (estado.racha > 0 ? estado.racha : undefined),
+    ...base,
+    rango: base.rango ?? estado.rango,
+    nombreRango: base.nombreRango ?? rangoPorId(estado.rango).nombre,
+    progreso: base.progreso ?? (estado.xpSiguiente > 0 ? Math.min(1, estado.xpEnNivel / estado.xpSiguiente) : 1),
+    rachaDias: base.rachaDias ?? (estado.racha > 0 ? estado.racha : undefined),
   };
 }
 
@@ -86,7 +89,10 @@ export function CelebracionProvider({ children }: { children: ReactNode }) {
     retratoUri: string | null;
     puedeCompartirFotos: boolean;
   } | null>(null);
-  const [yo, setYo] = useState<{ path: string | null; name: string }>({ path: null, name: 'Gladiador' });
+  const [yo, setYo] = useState<{ path: string | null; name: string }>(() => ({
+    path: null,
+    name: nombrePorDefecto(),
+  }));
   const relojes = useRef(new Map<string, ReturnType<typeof setTimeout>>());
   const avisos = useRef(0);
   const userRef = useRef(userId);
@@ -102,17 +108,17 @@ export function CelebracionProvider({ children }: { children: ReactNode }) {
     leidoYo.current = ahora;
     supabase
       .from('profiles')
-      .select('name, avatar_url')
+      .select('name, avatar_url') // i18n-ok: columnas de la consulta
       .eq('id', uid)
       .single()
       .then(({ data }) => {
         const p = data as { name: string | null; avatar_url: string | null } | null;
-        if (p && userRef.current === uid) setYo({ path: p.avatar_url, name: p.name || 'Gladiador' });
+        if (p && userRef.current === uid) setYo({ path: p.avatar_url, name: p.name || nombrePorDefecto() });
       }, () => {});
   }, []);
 
   const limpiarRelojes = useCallback(() => {
-    relojes.current.forEach((t) => clearTimeout(t));
+    relojes.current.forEach((reloj) => clearTimeout(reloj));
     relojes.current.clear();
   }, []);
 
@@ -128,7 +134,7 @@ export function CelebracionProvider({ children }: { children: ReactNode }) {
     limpiarRelojes();
     aperturas.current += 1;
     setHoja(null);
-    setYo({ path: null, name: 'Gladiador' });
+    setYo({ path: null, name: nombrePorDefecto() });
     if (!userId) {
       dispatch({ tipo: 'cargar', vistas: [] });
       return;
@@ -239,7 +245,7 @@ export function CelebracionProvider({ children }: { children: ReactNode }) {
    * ceremonia): se pide en paralelo con la salida del Modal y no espera más
    * que el código de amigo.
    */
-  const abrirHoja = useCallback((t: Tarjeta, retrato: Promise<string | null>) => {
+  const abrirHoja = useCallback((tarjeta: Tarjeta, retrato: Promise<string | null>) => {
     // Nada nuevo sale mientras la hoja está abierta.
     dispatch({ tipo: 'pausar', pausa: true });
     const vis = mostrandoRef.current;
@@ -260,7 +266,7 @@ export function CelebracionProvider({ children }: { children: ReactNode }) {
       : Promise.resolve(null);
     // Permiso de fotos: solo se pregunta si la tarjeta lleva foto; nunca se
     // recuerda. null = no se sabe (error o tope vencido), que no es un «no».
-    const conFotos = !!uid && necesitaPermisoFotos(t);
+    const conFotos = !!uid && necesitaPermisoFotos(tarjeta);
     const fotos: Promise<boolean | null> = conFotos
       ? Promise.race([
           leerPermisoCompartirFotos().catch(() => null),
@@ -286,29 +292,29 @@ export function CelebracionProvider({ children }: { children: ReactNode }) {
       if (puedeFotos === null) {
         // Sin saber el permiso, la hoja solo enseñaría el bloqueo de los 18.
         dispatch({ tipo: 'pausar', pausa: false });
-        avisarTexto(AVISO_PERMISO_FOTOS);
+        avisarTexto(avisoPermisoFotos());
         return;
       }
-      setHoja({ tarjeta: t, codigo: codigoListo, retratoUri, puedeCompartirFotos: puedeFotos });
+      setHoja({ tarjeta, codigo: codigoListo, retratoUri, puedeCompartirFotos: puedeFotos });
       if (!uid || codigoListo) return;
       // El código que llegue tarde entra si lo hace en ESPERA_CODIGO_MS.
       const tarde = await Promise.race([codigo, espera(ESPERA_CODIGO_MS).then(() => null)]);
       if (aperturas.current !== n || userRef.current !== uid || !tarde) return;
-      setHoja((h) => (h && h.tarjeta === t ? { ...h, codigo: tarde } : h));
+      setHoja((h) => (h && h.tarjeta === tarjeta ? { ...h, codigo: tarde } : h));
     })();
   }, [avisarTexto]);
 
   const compartir = useCallback(
-    (t: Tarjeta, opciones?: OpcionesCompartir) => abrirHoja(t, Promise.resolve(opciones?.retratoUri ?? null)),
+    (tarjeta: Tarjeta, opciones?: OpcionesCompartir) => abrirHoja(tarjeta, Promise.resolve(opciones?.retratoUri ?? null)),
     [abrirHoja],
   );
 
   // Desde la ceremonia: el retrato es el avatar que ya se relee (yo), firmado
   // al abrir (la firma dura un minuto: no se guarda de antes).
   const compartirDesdeCeremonia = useCallback(
-    (t: Tarjeta) => {
+    (tarjeta: Tarjeta) => {
       const path = yoRef.current.path;
-      abrirHoja(t, path ? signedUrlCached('avatars', path).catch(() => null) : Promise.resolve(null));
+      abrirHoja(tarjeta, path ? signedUrlCached('avatars', path).catch(() => null) : Promise.resolve(null));
     },
     [abrirHoja],
   );

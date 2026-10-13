@@ -20,6 +20,7 @@ import { Avatar, Tag } from '@/components/ui';
 import { GutterContext } from '@/components/ui/Screen';
 import { SIN_DATO } from '@/components/ui/sinDato';
 import { ink, space, stroke, type as tipo, type Rank } from '@/design/tokens';
+import { t } from '@/i18n';
 import { INSIGNIA_ELITE_LABEL } from '@/lib/elite';
 import { levelFromXp } from '@/lib/game';
 import type { BoardEntry } from '@/lib/social';
@@ -67,15 +68,22 @@ export function ListaRanking({
         const quitar = !b.isMe && onLongPress ? () => onLongPress(b) : undefined;
         const lider = c.posicion === 1 && c.valor !== null;
         const detalle = [
-          `Nivel ${nivel}`,
-          metrica !== 'racha' && b.streakDays > 0 ? `racha ${b.streakDays}` : null,
+          t('amigos:lista.nivel', { nivel }),
+          metrica !== 'racha' && b.streakDays > 0 ? t('amigos:lista.racha', { n: b.streakDays }) : null,
           invertida && c.titulo ? c.titulo : null,
           // En mi fila invertida el laurel (ink10) no se vería sobre ink10:
           // la insignia pasa a texto en el detalle.
-          invertida && c.insignia ? 'Élite' : null,
+          invertida && c.insignia ? t('amigos:lista.elite') : null,
         ]
           .filter(Boolean)
           .join(' · ');
+        const nombre = b.isMe ? t('amigos:comun.tu') : b.name;
+        const datosA11y = {
+          puesto: c.valor === null ? t('amigos:lista.sinPuesto') : t('amigos:lista.puesto', { n: c.posicion }),
+          nombre: c.insignia ? t('amigos:lista.conInsignia', { nombre, insignia: INSIGNIA_ELITE_LABEL }) : nombre,
+          nivel,
+          valor,
+        };
         return (
           // La fila y el botón «más» van hermanos, no uno dentro del otro: en
           // la web un botón dentro de otro es HTML inválido.
@@ -91,7 +99,7 @@ export function ListaRanking({
               onPress={!b.isMe ? () => onSafety(b) : undefined}
               onLongPress={quitar}
               disabled={b.isMe}
-              accessibilityActions={quitar ? [{ name: 'longpress', label: 'Quitar amigo' }] : undefined}
+              accessibilityActions={quitar ? [{ name: 'longpress', label: t('amigos:comun.quitarAmigo') }] : undefined}
               onAccessibilityAction={
                 quitar
                   ? (e) => {
@@ -101,7 +109,13 @@ export function ListaRanking({
               }
               style={({ pressed }) => [styles.toque, pressed && styles.pulsada]}
               accessibilityRole={b.isMe ? undefined : 'button'}
-              accessibilityLabel={`${c.valor === null ? 'Sin puesto' : `Puesto ${c.posicion}`}. ${b.isMe ? 'Tú' : b.name}${c.insignia ? `, ${INSIGNIA_ELITE_LABEL}` : ''}, nivel ${nivel}, ${valor}.${!b.isMe ? ' Toca para más opciones.' : ''}${quitar ? ' Mantén pulsado para quitar.' : ''}`}
+              accessibilityLabel={
+                b.isMe
+                  ? t('amigos:lista.a11yYo', datosA11y)
+                  : quitar
+                    ? t('amigos:lista.a11yQuitar', datosA11y)
+                    : t('amigos:lista.a11y', datosA11y)
+              }
             >
               <Text
                 style={[styles.puesto, lider && styles.puestoLider, invertida && styles.tintaInvertida]}
@@ -125,7 +139,7 @@ export function ListaRanking({
                     numberOfLines={1}
                     maxFontSizeMultiplier={1.35}
                   >
-                    {b.isMe ? `${b.name} · tú` : b.name}
+                    {b.isMe ? t('amigos:lista.nombreYo', { nombre: b.name }) : b.name}
                   </Text>
                   {c.insignia && !invertida ? <EliteBadge size={14} /> : null}
                 </View>
@@ -159,7 +173,7 @@ export function SafetyButton({ name, onPress }: { name: string; onPress: () => v
       onPress={onPress}
       style={({ pressed }) => [styles.safetyButton, pressed && styles.pulsada]}
       accessibilityRole="button"
-      accessibilityLabel={`Más opciones con ${name}`}
+      accessibilityLabel={t('amigos:lista.masOpciones', { nombre: name })}
     >
       <Ionicons name="ellipsis-horizontal" size={20} color={ink.ink6} />
     </Pressable>

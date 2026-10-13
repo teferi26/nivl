@@ -2,6 +2,7 @@
 // sin Supabase, con tests). El servidor decide el resultado; aquí solo se
 // cuenta cuánto queda, quién va delante y en qué orden se pinta un tablero.
 
+import { t } from '@/i18n';
 import type { Duelo, FilaTablero } from '@/lib/competicionData';
 
 const DIA_MS = 86_400_000;
@@ -28,12 +29,20 @@ export type DueloAmpliado = Omit<Duelo, 'rival' | 'su_indice' | 'sus_dias'> & {
 };
 
 /** El nombre que se enseña cuando el servidor no da el del rival. */
-export const RIVAL_OCULTO = 'Rival oculto';
+export function nombreRivalOculto(): string {
+  return t('amigos:duelo.rivalOculto');
+}
+
+/**
+ * @deprecated Alias congelado de `nombreRivalOculto()`: solo lo fija
+ * competicionVista.test.ts. Código nuevo: `nombreRivalOculto()`.
+ */
+export const RIVAL_OCULTO = 'Rival oculto'; // i18n-ok: alias congelado de amigos:duelo.rivalOculto, ver arriba
 
 /** El nombre visible del rival: «Rival oculto» si no llega. */
 export function nombreRival(d: Pick<DueloAmpliado, 'rival'>): string {
   const n = d.rival == null ? '' : String(d.rival).trim();
-  return n === '' ? RIVAL_OCULTO : n;
+  return n === '' ? nombreRivalOculto() : n;
 }
 
 /**
@@ -96,12 +105,12 @@ export function faltanDatos(d: DueloAmpliado): boolean {
 
 /** La línea de un duelo en curso: quién va delante, o que aún no se sabe. */
 export function lineaDuelo(d: DueloAmpliado): string {
-  if (faltanDatos(d)) return 'Aún sin datos suficientes';
+  if (faltanDatos(d)) return t('amigos:duelo.sinDatos');
   const delante = quienVaDelante(d);
-  if (delante === 'yo') return 'Vas delante';
-  if (delante === 'rival') return `${nombreRival(d)} va delante`;
-  if (delante === 'empate') return 'Vais empatados';
-  return 'Aún sin datos suficientes';
+  if (delante === 'yo') return t('amigos:duelo.vasDelante');
+  if (delante === 'rival') return t('amigos:duelo.rivalDelante', { nombre: nombreRival(d) });
+  if (delante === 'empate') return t('amigos:duelo.empatados');
+  return t('amigos:duelo.sinDatos');
 }
 
 /**
@@ -157,12 +166,10 @@ export function repartirDuelos<T extends DueloAmpliado>(lista: readonly T[], hoy
   return out;
 }
 
-export const TEXTO_RESULTADO: Record<NonNullable<Duelo['resultado']>, string> = {
-  gano: 'Ganaste',
-  pierdo: 'Perdiste',
-  empate: 'Empate',
-  sin_datos: 'Sin datos suficientes',
-};
+/** «Ganaste», «Perdiste», «Empate» o «Sin datos suficientes». */
+export function textoResultado(resultado: NonNullable<Duelo['resultado']>): string {
+  return t(`amigos:duelo.resultado.${resultado}`);
+}
 
 /**
  * El detalle de un duelo resuelto. El resultado va una sola vez: a la derecha
@@ -173,10 +180,12 @@ export function detalleResuelto(d: DueloAmpliado, conRevancha: boolean): string 
   const rival = datosRival(d);
   const cifras =
     d.resultado === 'sin_datos' || rival === null || d.mi_indice == null
-      ? '- frente a -'
-      : `${d.mi_indice} frente a ${rival.indice}`;
-  const res = conRevancha && d.resultado ? ` · ${TEXTO_RESULTADO[d.resultado]}` : '';
-  return `Semana pasada · ${cifras}${res}`;
+      ? t('amigos:duelo.cifrasVacias')
+      : t('amigos:duelo.cifras', { mio: d.mi_indice, suyo: rival.indice });
+  if (conRevancha && d.resultado) {
+    return t('amigos:duelo.detalleResultado', { cifras, resultado: textoResultado(d.resultado) });
+  }
+  return t('amigos:duelo.detalle', { cifras });
 }
 
 /**
@@ -185,9 +194,19 @@ export function detalleResuelto(d: DueloAmpliado, conRevancha: boolean): string 
  */
 export function etiquetaDuelo(d: DueloAmpliado, quedan: number): string {
   const rival = datosRival(d);
-  const mia = d.mi_indice == null ? '' : ` Tu disciplina ${d.mi_indice}.`;
-  if (rival === null) return `Duelo con ${nombreRival(d)}, ${textoQuedan(quedan)}.${mia} Sin datos del rival.`;
-  return `Duelo con ${rival.nombre}, ${textoQuedan(quedan)}. Tu disciplina ${d.mi_indice}, la suya ${rival.indice}. ${lineaDuelo(d)}.`;
+  if (rival === null) {
+    const base = { nombre: nombreRival(d), quedan: textoQuedan(quedan) };
+    return d.mi_indice == null
+      ? t('amigos:duelo.a11yOculto', base)
+      : t('amigos:duelo.a11yOcultoMia', { ...base, mia: d.mi_indice });
+  }
+  return t('amigos:duelo.a11y', {
+    nombre: rival.nombre,
+    quedan: textoQuedan(quedan),
+    mia: d.mi_indice,
+    suya: rival.indice,
+    linea: lineaDuelo(d),
+  });
 }
 
 /** El ritmo con dos decimales y coma: 1,25 → «×1,25» (con uno, 1,15 y 1,10 salían iguales). */
@@ -224,8 +243,9 @@ export function ordenarTablero(filas: readonly FilaTablero[]): FilaOrdenada[] {
 
 /** «quedan 3 días» / «último día». */
 export function textoQuedan(dias: number): string {
-  if (dias <= 1) return 'último día';
-  return `quedan ${dias} días`;
+  if (dias <= 1) return t('amigos:duelo.ultimoDia');
+  // Aquí siempre son 2 o más: sin plural (el singular lo dice «último día»).
+  return t('amigos:duelo.quedan', { n: dias });
 }
 
 /** Clave de comparación de un alias: sin espacios de los bordes y cortado a 40, como el tablero. */

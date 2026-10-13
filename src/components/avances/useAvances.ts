@@ -21,6 +21,7 @@ import { useHealthConsent } from '@/components/ConsentimientoSalud';
 import { avisar, confirmar } from '@/components/ui/confirmar';
 import { volver } from '@/components/ui/Screen';
 import { vibrar } from '@/design/haptics';
+import { t } from '@/i18n';
 import { useAuth } from '@/lib/auth';
 import { ensureProfile } from '@/lib/data';
 import { dateKey } from '@/lib/dates';
@@ -117,7 +118,7 @@ export function useAvances(): UseAvances {
     if (!userId || lock.current) return;
     const value = parseFloat(weightInput.replace(',', '.'));
     if (!Number.isFinite(value) || value <= 20 || value >= 400) {
-      setErrorPeso('Introduce tu peso en kg, p. ej. 78,4');
+      setErrorPeso(t('avances:pesaje.invalido'));
       return;
     }
     setErrorPeso(null);
@@ -125,7 +126,7 @@ export function useAvances(): UseAvances {
     setBusy(true);
     try {
       const { isNew } = await upsertWeight(userId, dateKey(), value);
-      let mensaje = 'El sistema corrige el pesaje de hoy. Ya estaba cobrado.';
+      let mensaje = t('avances:pesaje.corregido');
       // Lo que entró de verdad (misión enlazada incluida): solo eso vibra.
       // Corregir el peso de hoy no paga nada y no vibra.
       let entrado = 0;
@@ -143,21 +144,25 @@ export function useAvances(): UseAvances {
         entrado = eco.xp + pagado;
         // Lo que entró de verdad: la misión marcada ahora y el resto del módulo.
         mensaje =
-          anuncioActo({ xpMision: eco.xp, marcadas: eco.marcadas, xpModulo: pagado, deModulo: 'a VIT por el pesaje' }) ||
+          anuncioActo({ xpMision: eco.xp, marcadas: eco.marcadas, xpModulo: pagado, deModulo: t('avances:pesaje.deModulo') }) ||
           (resto > 0
-            ? 'Anotado. Hoy ya has llegado al tope diario de XP.'
-            : 'Anotado. La misión de hoy ya estaba marcada y pagada.');
+            ? t('avances:pesaje.topeDiario')
+            : t('avances:pesaje.misionPagada'));
       }
       if (entrado > 0) vibrar('mision');
       setWeightInput('');
       await load();
       // Si entró XP, lo dice el Toast (al lector, el desglose entero); el
       // Alert queda para explicar por qué no entró nada.
-      if (entrado > 0) setToast({ texto: `Pesaje · +${entrado} XP`, anuncio: `Pesaje registrado. ${mensaje}` });
-      else avisar('Pesaje registrado', mensaje);
+      if (entrado > 0) {
+        setToast({
+          texto: t('avances:pesaje.toast', { xp: entrado }),
+          anuncio: t('avances:pesaje.toastAnuncio', { mensaje }),
+        });
+      } else avisar(t('avances:pesaje.registrado'), mensaje);
     } catch (e) {
       vibrar('penalizacion');
-      avisar('El sistema no responde', mensajeSistema(e));
+      avisar(t('comun:sistemaNoResponde'), mensajeSistema(e));
     } finally {
       lock.current = false;
       setBusy(false);
@@ -170,11 +175,11 @@ export function useAvances(): UseAvances {
     const start = parseFloat(gStart.replace(',', '.'));
     const target = parseFloat(gTarget.replace(',', '.'));
     if (!gTitle.trim() || !Number.isFinite(start) || !Number.isFinite(target) || start === target) {
-      setErrorMeta('Meta incompleta: título, valor inicial y valor objetivo (distintos).');
+      setErrorMeta(t('avances:hojaMeta.incompleta'));
       return;
     }
     if (gMetric === 'ejercicio' && !gExercise.trim()) {
-      setErrorMeta('Falta el ejercicio: escribe el nombre EXACTO del ejercicio del gym.');
+      setErrorMeta(t('avances:hojaMeta.faltaEjercicio'));
       return;
     }
     setErrorMeta(null);
@@ -187,7 +192,7 @@ export function useAvances(): UseAvances {
         exercise_name: gMetric === 'ejercicio' ? gExercise.trim() : null,
         start_value: start,
         target_value: target,
-        unit: 'kg',
+        unit: 'kg', // i18n-ok: unidad guardada en la base
       });
       setGTitle('');
       setGStart('');
@@ -207,10 +212,10 @@ export function useAvances(): UseAvances {
   const achieveGoal = async (goal: Goal) => {
     if (lock.current) return;
     const ok = await confirmar({
-      titulo: 'META CONSEGUIDA',
-      mensaje: `«${goal.title}»: hasta +${GOAL_ACHIEVED_XP} XP si hoy no has llegado al tope de metas.`,
-      confirmar: 'Reclamar',
-      cancelar: 'Aún no',
+      titulo: t('avances:reclamar.titulo'),
+      mensaje: t('avances:reclamar.mensaje', { titulo: goal.title, xp: GOAL_ACHIEVED_XP }),
+      confirmar: t('avances:meta.reclamar'),
+      cancelar: t('avances:reclamar.aunNo'),
     });
     if (!ok || !userId || lock.current) return;
     lock.current = true;
@@ -224,30 +229,35 @@ export function useAvances(): UseAvances {
       if (pagado > 0) vibrar('mision');
       await load();
       if (pagado > 0) {
-        setToast({ texto: `Meta conseguida · +${pagado} XP`, anuncio: `Meta conseguida. «${goal.title}»: +${pagado} XP a AGI.` });
+        setToast({
+          texto: t('avances:reclamar.toast', { xp: pagado }),
+          anuncio: t('avances:reclamar.toastAnuncio', { titulo: goal.title, xp: pagado }),
+        });
       } else {
-        avisar(
-          'Meta conseguida',
-          `«${goal.title}» queda como lograda. Este premio no suma hoy: ya estaba cobrado o has llegado al tope diario.`,
-        );
+        avisar(t('avances:reclamar.conseguida'), t('avances:reclamar.sinPremio', { titulo: goal.title }));
       }
     } catch (e) {
       vibrar('penalizacion');
-      avisar('El sistema no responde', mensajeSistema(e));
+      avisar(t('comun:sistemaNoResponde'), mensajeSistema(e));
     } finally {
       lock.current = false;
     }
   };
 
   const removeGoal = async (goal: Goal) => {
-    const ok = await confirmar({ titulo: 'Eliminar meta', mensaje: goal.title, confirmar: 'Eliminar', destructivo: true });
+    const ok = await confirmar({
+      titulo: t('avances:meta.eliminar'),
+      mensaje: goal.title,
+      confirmar: t('comun:eliminar'),
+      destructivo: true,
+    });
     if (!ok) return;
     vibrar('destructiva');
     try {
       await deleteGoal(goal.id);
       await load();
     } catch (e) {
-      avisar('El sistema no responde', mensajeSistema(e));
+      avisar(t('comun:sistemaNoResponde'), mensajeSistema(e));
     }
   };
 
@@ -259,7 +269,7 @@ export function useAvances(): UseAvances {
     if (!freeGoal || lock.current) return;
     const v = parseFloat(freeValue.replace(',', '.'));
     if (!Number.isFinite(v)) {
-      setErrorValor('Valor inválido: introduce un número.');
+      setErrorValor(t('avances:hojaValor.invalido'));
       return;
     }
     setErrorValor(null);
@@ -285,7 +295,7 @@ export function useAvances(): UseAvances {
       const s = await fetchExerciseSeries(exercise);
       setSeries({ exercise, values: s.map((p) => p.weight) });
     } catch (e) {
-      avisar('El sistema no responde', mensajeSistema(e));
+      avisar(t('comun:sistemaNoResponde'), mensajeSistema(e));
     }
   };
 

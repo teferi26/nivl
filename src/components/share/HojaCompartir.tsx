@@ -29,6 +29,7 @@ import {
 } from '@/lib/sharecard';
 import { Trama } from '@/components/ui/Texture';
 import { ink } from '@/design/tokens';
+import { t } from '@/i18n';
 import { fonts } from '@/lib/theme';
 import { mensajeSistema } from '@/lib/validation';
 import { TarjetaCompartir } from './TarjetaCompartir';
@@ -191,14 +192,14 @@ export function HojaCompartir({
 
       <View style={styles.hoja}>
         <View style={styles.cabecera}>
-          <Text style={styles.titulo}>COMPARTIR</Text>
-          <Pressable onPress={onCerrar} accessibilityRole="button" accessibilityLabel="Cerrar" hitSlop={12} style={styles.cerrar}>
+          <Text style={styles.titulo}>{t('share:hoja.titulo')}</Text>
+          <Pressable onPress={onCerrar} accessibilityRole="button" accessibilityLabel={t('comun:cerrar')} hitSlop={12} style={styles.cerrar}>
             <Text style={styles.cerrarX}>✕</Text>
           </Pressable>
         </View>
 
         <ScrollView contentContainerStyle={styles.contenido}>
-          <View style={styles.previa} accessible accessibilityLabel="Vista previa de la tarjeta">
+          <View style={styles.previa} accessible accessibilityLabel={t('share:hoja.previa')}>
             <TarjetaCompartir
               tarjeta={tarjeta}
               formato={formato}
@@ -212,12 +213,8 @@ export function HojaCompartir({
           </View>
 
           <View style={styles.formatos} accessibilityRole="radiogroup">
-            {(
-              [
-                ['stories', 'HISTORIA 9:16'],
-                ['post', 'PUBLICACIÓN 4:5'],
-              ] as const
-            ).map(([f, rotulo]) => {
+            {(['stories', 'post'] as const).map((f) => {
+              const rotulo = t(`share:hoja.formato.${f}`);
               const activo = formato === f;
               return (
                 <Pressable
@@ -234,22 +231,22 @@ export function HojaCompartir({
           </View>
 
           {aliasDado || pedirAlias ? (
-            <Interruptor rotulo="Mostrar mi alias" valor={opciones.mostrarNombre} onCambio={cambiarAlias} deshabilitado={pidiendoAlias} />
+            <Interruptor rotulo={t('share:hoja.mostrarAlias')} valor={opciones.mostrarNombre} onCambio={cambiarAlias} deshabilitado={pidiendoAlias} />
           ) : null}
           {esProgreso && ctx.puedeCompartirFotos ? (
-            <Interruptor rotulo="Incluir mis fotos de progreso" valor={opciones.mostrarFotos} onCambio={cambiar('mostrarFotos')} />
+            <Interruptor rotulo={t('share:hoja.incluirFotos')} valor={opciones.mostrarFotos} onCambio={cambiar('mostrarFotos')} />
           ) : null}
           {fotoRecuerdo && ctx.puedeCompartirFotos ? (
-            <Interruptor rotulo="Incluir la foto" valor={opciones.mostrarFotos} onCambio={cambiar('mostrarFotos')} />
+            <Interruptor rotulo={t('share:hoja.incluirFoto')} valor={opciones.mostrarFotos} onCambio={cambiar('mostrarFotos')} />
           ) : null}
           {textoRecuerdo ? (
-            <Interruptor rotulo="Incluir el texto del coach" valor={opciones.mostrarTextoCoach} onCambio={cambiar('mostrarTextoCoach')} />
+            <Interruptor rotulo={t('share:hoja.incluirTextoCoach')} valor={opciones.mostrarTextoCoach} onCambio={cambiar('mostrarTextoCoach')} />
           ) : null}
           {esProgreso && hayPeso && opciones.mostrarFotos ? (
-            <Interruptor rotulo="Mostrar el peso" valor={opciones.mostrarPeso} onCambio={cambiar('mostrarPeso')} />
+            <Interruptor rotulo={t('share:hoja.mostrarPeso')} valor={opciones.mostrarPeso} onCambio={cambiar('mostrarPeso')} />
           ) : null}
           {codigoAmigo ? (
-            <Interruptor rotulo="Añadir mi enlace de invitación" valor={opciones.incluirInvitacion} onCambio={cambiar('incluirInvitacion')} />
+            <Interruptor rotulo={t('share:hoja.incluirInvitacion')} valor={opciones.incluirInvitacion} onCambio={cambiar('incluirInvitacion')} />
           ) : null}
         </ScrollView>
 
@@ -259,8 +256,8 @@ export function HojaCompartir({
               la Card alerta del kit. */}
           {motivo ? <Aviso texto={motivo} trama /> : null}
           {aviso ? <Aviso texto={aviso} /> : null}
-          {sinAlias === 'ninguno' ? <Aviso texto="Tu alias no está disponible ahora." /> : null}
-          {sinAlias === 'error' ? <Aviso texto="No se ha podido traer tu alias. Prueba otra vez." /> : null}
+          {sinAlias === 'ninguno' ? <Aviso texto={t('share:hoja.aliasNoDisponible')} /> : null}
+          {sinAlias === 'error' ? <Aviso texto={t('share:hoja.aliasError')} /> : null}
           {error ? <Aviso texto={error} trama alerta /> : null}
           <Pressable
             onPress={compartir}
@@ -269,7 +266,7 @@ export function HojaCompartir({
             accessibilityState={{ disabled: !puede, busy: enviando }}
             style={[styles.boton, !puede && styles.botonApagado]}
           >
-            <Text style={[styles.botonTexto, !puede && styles.botonTextoApagado]}>{enviando ? 'ABRIENDO…' : 'COMPARTIR'}</Text>
+            <Text style={[styles.botonTexto, !puede && styles.botonTextoApagado]}>{enviando ? t('share:hoja.abriendo') : t('share:hoja.compartir')}</Text>
           </Pressable>
         </View>
       </View>

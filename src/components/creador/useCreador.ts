@@ -24,6 +24,7 @@ import {
 } from 'react-native';
 import { avisar } from '@/components/ui/confirmar';
 import { vibrar } from '@/design/haptics';
+import { t } from '@/i18n';
 import { cerrarSoloSesion } from '@/lib/authFlow';
 import { mensajeInvitacionCreador } from '@/lib/creatormath';
 import { vistaPanelCreador, type PanelCreadorVista } from '@/lib/creatorprogram';
@@ -101,7 +102,7 @@ export function useCreador(): CreadorVistaProps {
       setPanel(null);
       setError(null);
     } catch (e) {
-      avisar('El sistema no responde', mensajeSistema(e));
+      avisar(t('comun:sistemaNoResponde'), mensajeSistema(e));
     } finally {
       setCerrando(false);
     }
@@ -114,7 +115,7 @@ export function useCreador(): CreadorVistaProps {
       await Share.share({ message: mensajeInvitacionCreador(vista.code) }, anchor != null ? { anchor } : undefined);
     } catch (e) {
       vibrar('penalizacion');
-      avisar('El sistema no responde', mensajeSistema(e));
+      avisar(t('comun:sistemaNoResponde'), mensajeSistema(e));
     }
   };
 

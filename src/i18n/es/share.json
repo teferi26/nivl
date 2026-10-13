@@ -1,1 +1,27 @@
-{}
+{
+  "tarjeta": {
+    "nivel": "NIVEL",
+    "diasRacha": "DÍAS DE RACHA",
+    "mideteConmigo": "MÍDETE CONMIGO",
+    "antes": "ANTES",
+    "despues": "DESPUÉS"
+  },
+  "hoja": {
+    "titulo": "COMPARTIR",
+    "previa": "Vista previa de la tarjeta",
+    "formato": {
+      "stories": "HISTORIA 9:16",
+      "post": "PUBLICACIÓN 4:5"
+    },
+    "mostrarAlias": "Mostrar mi alias",
+    "incluirFotos": "Incluir mis fotos de progreso",
+    "incluirFoto": "Incluir la foto",
+    "incluirTextoCoach": "Incluir el texto del coach",
+    "mostrarPeso": "Mostrar el peso",
+    "incluirInvitacion": "Añadir mi enlace de invitación",
+    "aliasNoDisponible": "Tu alias no está disponible ahora.",
+    "aliasError": "No se ha podido traer tu alias. Prueba otra vez.",
+    "abriendo": "ABRIENDO…",
+    "compartir": "COMPARTIR"
+  }
+}

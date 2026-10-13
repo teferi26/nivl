@@ -32,6 +32,7 @@ import { Button, Chip, ChipWrap, EmptyState, Row, Screen, Section, Skeleton, Ske
 import { Interruptor } from '@/components/ui/Interruptor';
 import { ink, space, stroke, type as tipo } from '@/design/tokens';
 import { useSizeClass } from '@/design/useSizeClass';
+import { t } from '@/i18n';
 import { LUDUS_MAX, LUDUS_MIN, lineaLudus, NOTA_LUDUS_MAX, OBJETIVOS_LUDUS } from '@/lib/elite';
 import { kindMeta } from '@/lib/kinds';
 import {
@@ -48,10 +49,9 @@ import { ListaRanking, SafetyButton } from './ListaRanking';
 import { Podio } from './Podio';
 import type { DatosAmigos } from './useAmigos';
 
-const VENTANAS: { key: Ventana; label: string }[] = [
-  { key: 'semana', label: 'Semana' },
-  { key: 'mes', label: 'Mes' },
-];
+const VENTANAS: Ventana[] = ['semana', 'mes'];
+/** De qué marcador son los chips de periodo y de métrica (cambia su etiqueta). */
+type Ambito = 'ranking' | 'ludus';
 const METRICAS: Metrica[] = ['xp', 'cumplimiento', 'racha'];
 
 export type AmigosVistaProps = DatosAmigos['vista'] & {
@@ -71,15 +71,15 @@ export function AmigosVista(p: AmigosVistaProps) {
     <Screen refreshing={refrescando} onRefresh={refrescar}>
       <Entrada indice={0}>
         <EncabezadoArena
-          eyebrow="Arena"
-          titulo="Amigos"
+          eyebrow={t('amigos:vista.eyebrow')}
+          titulo={t('amigos:vista.titulo')}
           subtitulo={subtitulo}
           onVolver={onVolver}
           // Compartir vive solo aquí. Mientras se prepara la tarjeta, el
           // botón pasa a un indicador del mismo tamaño.
           accion={
             yo && !preparando
-              ? { icono: 'share-social-outline', etiqueta: 'Compartir mi semana', onPress: abrirTarjeta }
+              ? { icono: 'share-social-outline', etiqueta: t('amigos:vista.compartirSemana'), onPress: abrirTarjeta }
               : undefined
           }
           derecha={
@@ -88,7 +88,7 @@ export function AmigosVista(p: AmigosVistaProps) {
                 style={styles.preparando}
                 accessible
                 accessibilityRole="progressbar"
-                accessibilityLabel="Preparando tu semana para compartir"
+                accessibilityLabel={t('amigos:vista.preparandoSemana')}
               >
                 <ActivityIndicator size="small" color={ink.ink9} />
               </View>
@@ -105,9 +105,9 @@ export function AmigosVista(p: AmigosVistaProps) {
           <EmptyState
             compact
             icon="cloud-offline-outline"
-            title="El sistema no responde"
+            title={t('comun:sistemaNoResponde')}
             body={fallo}
-            action={{ label: 'Reintentar', onPress: refrescar }}
+            action={{ label: t('comun:reintentar'), onPress: refrescar }}
           />
         </TarjetaArena>
       ) : yo ? (
@@ -120,7 +120,7 @@ export function AmigosVista(p: AmigosVistaProps) {
 /** Huecos con la forma de lo que viene: el podio y las filas. */
 function Cargando() {
   return (
-    <View accessibilityLabel="Cargando la arena" accessibilityRole="progressbar">
+    <View accessibilityLabel={t('amigos:vista.cargando')} accessibilityRole="progressbar">
       <View style={styles.podioHueco}>
         {[96, 128, 72].map((alto) => (
           <View key={alto} style={styles.podioHuecoCol}>
@@ -166,10 +166,10 @@ function Contenido(p: AmigosVistaProps & { yo: NonNullable<AmigosVistaProps['yo'
       {fallo ? (
         <TarjetaArena variante="contorno" style={styles.bloque}>
           <Text style={styles.falloLinea} accessibilityRole="alert">
-            No se ha podido actualizar: {fallo}
+            {t('amigos:vista.falloActualizar', { fallo })}
           </Text>
           <Button
-            title="Reintentar"
+            title={t('comun:reintentar')}
             size="sm"
             variant="secondary"
             onPress={refrescar}
@@ -237,7 +237,7 @@ function Contenido(p: AmigosVistaProps & { yo: NonNullable<AmigosVistaProps['yo'
         {invitaciones ? <Invitados {...p} invitaciones={invitaciones} /> : null}
 
         {ocultos.length > 0 ? (
-          <Section title="Fuera del ranking" meta={`${ocultos.length}`}>
+          <Section title={t('amigos:ocultos.titulo')} meta={`${ocultos.length}`}>
             <View style={styles.lista}>
               {ocultos.map((b) => (
                 <Row
@@ -246,14 +246,14 @@ function Contenido(p: AmigosVistaProps & { yo: NonNullable<AmigosVistaProps['yo'
                   leading={<Ionicons name="eye-off-outline" size={18} color={ink.ink6} />}
                   title={b.name}
                   muted
-                  detail="Ha ocultado su marcador. Sigue siendo tu amigo."
+                  detail={t('amigos:ocultos.detalle')}
                   // Toda la fila abre la hoja: el «más» es solo la pista (un
                   // botón dentro de otro es HTML inválido en la web).
                   trailing={<Ionicons name="ellipsis-horizontal" size={20} color={ink.ink6} style={styles.mas} />}
                   onPress={() => p.abrirSeguridad(b)}
                   onLongPress={() => p.quitarAmigo(b)}
-                  accessibilityLongPressLabel="Quitar amigo"
-                  accessibilityLabel={`${b.name}, fuera del ranking. Toca para denunciar o bloquear. Mantén pulsado para quitar.`}
+                  accessibilityLongPressLabel={t('amigos:comun.quitarAmigo')}
+                  accessibilityLabel={t('amigos:ocultos.a11y', { nombre: b.name })}
                   style={styles.filaLista}
                 />
               ))}
@@ -294,7 +294,7 @@ function Ranking(p: AmigosVistaProps) {
   } = p;
   const vacio = useRef<View>(null);
   return (
-    <Section title="Ranking" meta={numAmigos > 0 ? `${visibles.length}` : undefined}>
+    <Section title={t('amigos:ranking.titulo')} meta={numAmigos > 0 ? `${visibles.length}` : undefined}>
       {numAmigos === 0 ? (
         <TarjetaArena variante="contorno" remaches>
           <View style={styles.vacioArena}>
@@ -308,16 +308,16 @@ function Ranking(p: AmigosVistaProps) {
             <EmptyState
               compact
               icon="person-add-outline"
-              title="Tu arena está vacía"
-              body="A solas se afloja. Con un rival mirando, el día que ibas a saltarte se cumple. Pásale tu código a quien te apriete de verdad: basta uno."
-              action={{ label: 'Invitar al primero', onPress: () => invitar(nodoAncla(vacio)), variant: 'solid' }}
+              title={t('amigos:ranking.vacioTitulo')}
+              body={t('amigos:ranking.vacioCuerpo')}
+              action={{ label: t('amigos:ranking.invitarPrimero'), onPress: () => invitar(nodoAncla(vacio)), variant: 'solid' }}
             />
           </View>
         </TarjetaArena>
       ) : (
         <>
-          <Segmento valor={ventana} onElegir={elegirVentana} rotulo="Periodo del ranking" prefijo="Ranking de" />
-          <Metricas valor={metrica} onElegir={elegirMetrica} prefijo="Ordenar por" />
+          <Segmento valor={ventana} onElegir={elegirVentana} ambito="ranking" />
+          <Metricas valor={metrica} onElegir={elegirMetrica} ambito="ranking" />
 
           <Text style={styles.rivalidad} accessibilityLiveRegion="polite">
             {lineaRivalidad(ranking, metrica, ventana)}
@@ -333,12 +333,7 @@ function Ranking(p: AmigosVistaProps) {
             rangos={rangos}
           />
           <Text style={styles.hint}>
-            {metrica === 'xp'
-              ? 'XP ganado con misiones en el periodo. Las de penalización no cuentan: recuperar no es adelantar.'
-              : metrica === 'cumplimiento'
-                ? 'Misiones cumplidas sobre programadas. Lo de hoy solo suma cuando lo cumples.'
-                : 'Días seguidos cerrados. Es la única cifra que no depende del periodo.'}{' '}
-            Mantén pulsado a alguien para quitarle.
+            {t(`amigos:ranking.ayuda.${metrica}`)}
           </Text>
         </>
       )}
@@ -346,34 +341,28 @@ function Ranking(p: AmigosVistaProps) {
   );
 }
 
-function Segmento({
-  valor,
-  onElegir,
-  rotulo,
-  prefijo,
-}: {
-  valor: Ventana;
-  onElegir: (v: Ventana) => void;
-  rotulo: string;
-  prefijo: string;
-}) {
+function Segmento({ valor, onElegir, ambito }: { valor: Ventana; onElegir: (v: Ventana) => void; ambito: Ambito }) {
   return (
-    <View style={styles.segmento} accessibilityRole="radiogroup" accessibilityLabel={rotulo}>
+    <View
+      style={styles.segmento}
+      accessibilityRole="radiogroup"
+      accessibilityLabel={t(`amigos:segmento.${ambito}.rotulo`)}
+    >
       {VENTANAS.map((v) => (
         <Chip
-          key={v.key}
-          label={v.label}
-          selected={valor === v.key}
-          onPress={() => onElegir(v.key)}
+          key={v}
+          label={t(`amigos:ventana.${v}`)}
+          selected={valor === v}
+          onPress={() => onElegir(v)}
           style={styles.segmentoChip}
-          accessibilityLabel={`${prefijo} ${v.key === 'semana' ? 'los últimos 7 días' : 'los últimos 30 días'}`}
+          accessibilityLabel={t(`amigos:segmento.${ambito}.${v}`)}
         />
       ))}
     </View>
   );
 }
 
-function Metricas({ valor, onElegir, prefijo }: { valor: Metrica; onElegir: (m: Metrica) => void; prefijo: string }) {
+function Metricas({ valor, onElegir, ambito }: { valor: Metrica; onElegir: (m: Metrica) => void; ambito: Ambito }) {
   return (
     <ChipWrap style={styles.metricas}>
       {METRICAS.map((m) => (
@@ -384,7 +373,7 @@ function Metricas({ valor, onElegir, prefijo }: { valor: Metrica; onElegir: (m: 
           tone="accent"
           selected={valor === m}
           onPress={() => onElegir(m)}
-          accessibilityLabel={`${prefijo} ${METRICA_LABEL[m]}`}
+          accessibilityLabel={t(`amigos:metricas.${ambito}`, { metrica: METRICA_LABEL[m] })}
         />
       ))}
     </ChipWrap>
@@ -402,7 +391,7 @@ function Solicitudes({
   quitar,
 }: Pick<AmigosVistaProps, 'entrantes' | 'salientes' | 'ocupada' | 'abrirSeguridad' | 'responder' | 'quitar'>) {
   return (
-    <Section title={entrantes.length > 0 ? 'Solicitudes' : 'Solicitudes enviadas'} meta={entrantes.length > 0 ? `${entrantes.length}` : undefined}>
+    <Section title={entrantes.length > 0 ? t('amigos:solicitudes.titulo') : t('amigos:solicitudes.enviadas')} meta={entrantes.length > 0 ? `${entrantes.length}` : undefined}>
       <View style={styles.lista}>
         {entrantes.map((r) => (
           <Row
@@ -410,7 +399,7 @@ function Solicitudes({
             first
             leading={<Ionicons name="person-add-outline" size={18} color={ink.ink10} />}
             title={r.name}
-            detail={`Nivel ${r.level} · quiere medirse contigo`}
+            detail={t('amigos:solicitudes.entrante', { nivel: r.level })}
             style={styles.filaLista}
             // Aceptar a la derecha y rechazar como un aspa: dos chips con
             // texto dejaban al nombre en dos letras a 375 px.
@@ -420,13 +409,13 @@ function Solicitudes({
               ) : (
                 <View style={styles.respuestas}>
                   <SafetyButton name={r.name} onPress={() => abrirSeguridad(r)} />
-                  <Button title="Aceptar" size="sm" variant="secondary" onPress={() => responder(r, true)} />
+                  <Button title={t('amigos:comun.aceptar')} size="sm" variant="secondary" onPress={() => responder(r, true)} />
                   <Pressable
                     onPress={() => responder(r, false)}
                     hitSlop={10}
                     style={({ pressed }) => [styles.rechazar, pressed && styles.pulsado]}
                     accessibilityRole="button"
-                    accessibilityLabel={`Rechazar la solicitud de ${r.name}`}
+                    accessibilityLabel={t('amigos:solicitudes.rechazarA11y', { nombre: r.name })}
                   >
                     <Ionicons name="close" size={18} color={ink.ink8} />
                   </Pressable>
@@ -442,16 +431,23 @@ function Solicitudes({
             leading={<Ionicons name="hourglass-outline" size={18} color={ink.ink6} />}
             title={r.name}
             muted
-            detail={`Nivel ${r.level} · esperando su respuesta`}
+            detail={t('amigos:solicitudes.saliente', { nivel: r.level })}
             style={styles.filaLista}
             trailing={
               <View style={styles.respuestas}>
                 <SafetyButton name={r.name} onPress={() => abrirSeguridad(r)} />
                 <Chip
-                  label="Retirar"
+                  label={t('amigos:solicitudes.retirar')}
                   small
-                  onPress={() => quitar(r.friendshipId, 'Retirar solicitud', `${r.name} dejará de verla.`, 'Retirar')}
-                  accessibilityLabel={`Retirar la solicitud enviada a ${r.name}`}
+                  onPress={() =>
+                    quitar(
+                      r.friendshipId,
+                      t('amigos:solicitudes.retirarTitulo'),
+                      t('amigos:solicitudes.retirarMensaje', { nombre: r.name }),
+                      t('amigos:solicitudes.retirar'),
+                    )
+                  }
+                  accessibilityLabel={t('amigos:solicitudes.retirarA11y', { nombre: r.name })}
                 />
               </View>
             }
@@ -469,24 +465,21 @@ function TuCodigo({ yo, copiado, copiar, invitar }: Pick<AmigosVistaProps, 'copi
 }) {
   const boton = useRef<View>(null);
   return (
-    <TarjetaArena variante="piedra" remaches rotulo="Tu código" style={styles.bloque}>
+    <TarjetaArena variante="piedra" remaches rotulo={t('amigos:codigo.tuCodigo')} style={styles.bloque}>
       <Text
         style={styles.codigo}
         selectable
         numberOfLines={1}
         adjustsFontSizeToFit
         maxFontSizeMultiplier={1.35}
-        accessibilityLabel={`Tu código de amigo: ${yo.friendCode.split('').join(' ')}`}
+        accessibilityLabel={t('amigos:codigo.tuCodigoA11y', { codigo: yo.friendCode.split('').join(' ') })}
       >
         {codigoLegible(yo.friendCode)}
       </Text>
-      <Text style={styles.cuerpo}>
-        Quien lo tenga puede pedirte amistad. Verá tu nivel, tu racha y tu cumplimiento; nunca tu salud, tu dinero ni
-        tu diario.
-      </Text>
+      <Text style={styles.cuerpo}>{t('amigos:codigo.tuCodigoCuerpo')}</Text>
       <View style={styles.botones}>
         <Button
-          title={copiado ? 'Copiado' : 'Copiar'}
+          title={copiado ? t('amigos:codigo.copiado') : t('amigos:codigo.copiar')}
           icon={copiado ? 'checkmark' : 'copy-outline'}
           variant="secondary"
           onPress={copiar}
@@ -494,7 +487,7 @@ function TuCodigo({ yo, copiado, copiar, invitar }: Pick<AmigosVistaProps, 'copi
         />
         {/* Secundario: la inversión de la pantalla es mi fila del ranking. */}
         <View ref={boton} collapsable={false} style={styles.boton}>
-          <Button title="Invitar" icon="paper-plane-outline" variant="secondary" onPress={() => invitar(nodoAncla(boton))} />
+          <Button title={t('amigos:codigo.invitar')} icon="paper-plane-outline" variant="secondary" onPress={() => invitar(nodoAncla(boton))} />
         </View>
       </View>
     </TarjetaArena>
@@ -512,29 +505,30 @@ function AnadirCodigo({
   avisoCodigo,
 }: Pick<AmigosVistaProps, 'codigo' | 'setCodigo' | 'setAvisoCodigo' | 'enviar' | 'enviando' | 'avisoCodigo'>) {
   return (
-    <Section title="Añadir por código">
+    <Section title={t('amigos:codigo.anadir')}>
       <View style={styles.anadirFila}>
         {/* El campo va envuelto: en la web un input no encoge por debajo de
             su ancho propio y empujaba «Enviar» fuera del margen a 375. */}
         <View style={styles.flex}>
           <Campo
-            etiqueta="Código de amigo"
+            etiqueta={t('amigos:codigo.campo')}
             style={styles.codigoCampo}
             value={codigo}
             onChangeText={(v) => {
               setCodigo(normalizarCodigo(v));
               setAvisoCodigo(null);
             }}
+            // i18n-ok: un código de ejemplo, no se lee como texto
             placeholder="ABCD2345"
             autoCapitalize="characters"
             autoCorrect={false}
             maxLength={LARGO_CODIGO}
             returnKeyType="send"
             onSubmitEditing={enviar}
-            accessibilityLabel="Código de amigo, ocho caracteres"
+            accessibilityLabel={t('amigos:codigo.campoA11y')}
           />
         </View>
-        <Button title="Enviar" variant="secondary" onPress={enviar} loading={enviando} disabled={codigo.length === 0} />
+        <Button title={t('amigos:codigo.enviar')} variant="secondary" onPress={enviar} loading={enviando} disabled={codigo.length === 0} />
       </View>
       {avisoCodigo ? <Aviso texto={avisoCodigo.texto} error={avisoCodigo.error} /> : null}
     </Section>
@@ -569,7 +563,7 @@ function Ludus(p: AmigosVistaProps) {
   } = p;
   return (
     <Section
-      title="Tu ludus"
+      title={t('amigos:ludus.titulo')}
       tone="logro"
       meta={miLudus.group ? `${miLudus.group.members}/${miLudus.group.capacity}` : undefined}
     >
@@ -581,11 +575,11 @@ function Ludus(p: AmigosVistaProps) {
             </Text>
             <Text style={styles.ludusLinea}>{lineaLudus(miLudus.group)}</Text>
           </View>
-          <Segmento valor={ventanaLudus} onElegir={elegirVentanaLudus} rotulo="Periodo del ludus" prefijo="Ludus de" />
-          <Metricas valor={metricaLudus} onElegir={elegirMetricaLudus} prefijo="Ordenar el ludus por" />
+          <Segmento valor={ventanaLudus} onElegir={elegirVentanaLudus} ambito="ludus" />
+          <Metricas valor={metricaLudus} onElegir={elegirMetricaLudus} ambito="ludus" />
           <Text style={styles.rivalidad} accessibilityLiveRegion="polite">
             {ludusVisibles.length < 2
-              ? 'Tu ludus aún se está formando. El sistema suma gladiadores de tu mismo objetivo.'
+              ? t('amigos:ludus.formandose')
               : lineaRivalidad(rankingLudus, metricaLudus, ventanaLudus)}
           </Text>
           <ListaRanking
@@ -596,20 +590,21 @@ function Ludus(p: AmigosVistaProps) {
             rangos={rangos}
             invertirMiFila={false}
           />
-          <Text style={styles.hint}>
-            Las mismas cifras que el ranking de amigos: las penalizaciones no cuentan y nadie compra puestos. Sin chat:
-            en el ludus se compite con hechos.
-          </Text>
+          <Text style={styles.hint}>{t('amigos:ludus.ayuda')}</Text>
         </>
       ) : estado === 'pedido' && !cambiarPeticion ? (
         <TarjetaArena variante="contorno">
           <EmptyState
             compact
             icon="hourglass-outline"
-            title="Petición registrada"
-            body={`Objetivo: ${kindMeta(miLudus.requestedGoal ?? 'general').label.toLowerCase()}. Cada ludus se forma a mano, con ${LUDUS_MIN} a ${LUDUS_MAX} gladiadores Élite del mismo objetivo. Aparecerá aquí.`}
+            title={t('amigos:ludus.peticionTitulo')}
+            body={t('amigos:ludus.peticionCuerpo', {
+              objetivo: kindMeta(miLudus.requestedGoal ?? 'general').label.toLowerCase(),
+              min: LUDUS_MIN,
+              max: LUDUS_MAX,
+            })}
             action={{
-              label: 'Cambiar la petición',
+              label: t('amigos:ludus.cambiarPeticion'),
               onPress: () => {
                 setObjetivo(miLudus.requestedGoal);
                 setCambiarPeticion(true);
@@ -619,10 +614,7 @@ function Ludus(p: AmigosVistaProps) {
         </TarjetaArena>
       ) : (
         <TarjetaArena variante="piedra">
-          <Text style={styles.cuerpo}>
-            Un ludus es tu escuela de gladiadores: de {LUDUS_MIN} a {LUDUS_MAX} Élite con el mismo objetivo,
-            midiéndose cada semana. Sin chat ni ruido, solo el marcador. Elige el tuyo y el sistema te asigna plaza.
-          </Text>
+          <Text style={styles.cuerpo}>{t('amigos:ludus.presentacion', { min: LUDUS_MIN, max: LUDUS_MAX })}</Text>
           <ChipWrap style={styles.metricas}>
             {OBJETIVOS_LUDUS.map((k) => (
               <Chip
@@ -634,25 +626,25 @@ function Ludus(p: AmigosVistaProps) {
                   setObjetivo(k);
                   setAvisoLudus(null);
                 }}
-                accessibilityLabel={`Objetivo del ludus: ${kindMeta(k).label}`}
+                accessibilityLabel={t('amigos:ludus.objetivoA11y', { objetivo: kindMeta(k).label })}
               />
             ))}
           </ChipWrap>
           <Campo
-            etiqueta="Nota (opcional)"
+            etiqueta={t('amigos:ludus.nota')}
             estiloBloque={styles.nota}
             value={nota}
             onChangeText={setNota}
-            placeholder="Qué persigues ahora mismo"
+            placeholder={t('amigos:ludus.notaPlaceholder')}
             multiline
             maxLength={NOTA_LUDUS_MAX}
-            accessibilityLabel="Nota para tu ludus, opcional"
+            accessibilityLabel={t('amigos:ludus.notaA11y')}
           />
           <Text style={styles.contador}>
             {nota.length}/{NOTA_LUDUS_MAX}
           </Text>
           <Button
-            title="Pedir plaza"
+            title={t('amigos:ludus.pedirPlaza')}
             icon="shield-outline"
             variant="secondary"
             onPress={pedirLudus}
@@ -676,16 +668,24 @@ function Invitados({
   invitaciones: NonNullable<AmigosVistaProps['invitaciones']>;
 }) {
   return (
-    <Section title="Tus invitados">
+    <Section title={t('amigos:invitados.titulo')}>
       <FranjaCifras
         cifras={[
-          { valor: String(invitaciones.activos), rotulo: 'Activos', etiqueta: `Invitados activos: ${invitaciones.activos}` },
-          { valor: String(invitaciones.pendientes), rotulo: 'En prueba', etiqueta: `En prueba: ${invitaciones.pendientes}` },
+          {
+            valor: String(invitaciones.activos),
+            rotulo: t('amigos:invitados.activos'),
+            etiqueta: t('amigos:invitados.activosA11y', { n: invitaciones.activos }),
+          },
+          {
+            valor: String(invitaciones.pendientes),
+            rotulo: t('amigos:invitados.enPrueba'),
+            etiqueta: t('amigos:invitados.enPruebaA11y', { n: invitaciones.pendientes }),
+          },
         ]}
       />
       {siguienteInsignia ? (
         <Text style={styles.siguienteInsignia}>
-          Siguiente insignia: {siguienteInsignia.nombre} con {siguienteInsignia.umbral} invitados activos
+          {t('amigos:invitados.siguiente', { nombre: siguienteInsignia.nombre, umbral: siguienteInsignia.umbral })}
         </Text>
       ) : null}
       {insigniasGanadas.length > 0 ? (
@@ -697,10 +697,7 @@ function Invitados({
           ))}
         </View>
       ) : null}
-      <Text style={styles.hint}>
-        Cuenta quien entra con tu código y está activo 3 días en sus primeras dos semanas. Es una insignia: no da XP ni
-        días de Pro.
-      </Text>
+      <Text style={styles.hint}>{t('amigos:invitados.ayuda')}</Text>
     </Section>
   );
 }
@@ -714,13 +711,10 @@ function Convivencia({
   desbloquear,
 }: Pick<AmigosVistaProps, 'abrirSoporte' | 'blockedUsers' | 'safetyBusy' | 'desbloquear'>) {
   return (
-    <Section title="Convivencia y seguridad">
-      <Text style={styles.cuerpo}>
-        No se permite acoso, amenazas, suplantación ni contenido ofensivo. Los nombres, títulos y fotos se revisan antes
-        de mostrarse a otros: mientras tanto verán un alias y una imagen neutros. Tu perfil conserva tus datos.
-      </Text>
+    <Section title={t('amigos:convivencia.titulo')}>
+      <Text style={styles.cuerpo}>{t('amigos:convivencia.cuerpo')}</Text>
       <Button
-        title="Contactar con soporte"
+        title={t('amigos:seguridad.soporte')}
         icon="help-circle-outline"
         variant="secondary"
         onPress={abrirSoporte}
@@ -733,10 +727,10 @@ function Convivencia({
               key={person.userId}
               first
               title={person.name}
-              detail="Usuario bloqueado"
+              detail={t('amigos:convivencia.bloqueado')}
               style={styles.filaLista}
               trailing={
-                <Chip label="Desbloquear" small disabled={safetyBusy} onPress={() => desbloquear(person)} />
+                <Chip label={t('amigos:convivencia.desbloquear')} small disabled={safetyBusy} onPress={() => desbloquear(person)} />
               }
             />
           ))}
@@ -750,23 +744,23 @@ function Privacidad({ yo, cambiarVisible }: Pick<AmigosVistaProps, 'cambiarVisib
   yo: NonNullable<AmigosVistaProps['yo']>;
 }) {
   return (
-    <Section title="Privacidad">
+    <Section title={t('amigos:privacidad.titulo')}>
       <View style={styles.lista}>
         <Row
           first
           leading={<Ionicons name={yo.socialVisible ? 'eye-outline' : 'eye-off-outline'} size={18} color={ink.ink8} />}
-          title="Aparecer en los rankings"
+          title={t('amigos:privacidad.aparecer')}
           detail={
             yo.socialVisible
-              ? 'Tus amigos ven tu nivel, tu racha, tu XP del periodo y tu cumplimiento. Nada más.'
-              : 'Estás fuera: tus amigos no ven tus cifras ni tu retrato. Tú sigues viendo las suyas.'
+              ? t('amigos:privacidad.visible')
+              : t('amigos:privacidad.oculto')
           }
           style={styles.filaLista}
           trailing={
             <Interruptor
               value={yo.socialVisible}
               onValueChange={cambiarVisible}
-              accessibilityLabel="Aparecer en los rankings de tus amigos"
+              accessibilityLabel={t('amigos:privacidad.aparecerA11y')}
             />
           }
         />

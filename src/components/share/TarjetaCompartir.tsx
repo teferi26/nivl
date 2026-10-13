@@ -39,6 +39,7 @@ import {
 } from '@/lib/sharecard';
 import { Crown } from '@/components/ui/Crown';
 import { ink } from '@/design/tokens';
+import { t } from '@/i18n';
 import { cosmeticosDe, type RangoId } from '@/lib/progression';
 import { fonts } from '@/lib/theme';
 
@@ -120,7 +121,7 @@ export const TarjetaCompartir = forwardRef<View, TarjetaCompartirProps>(function
         alignItems: 'center',
       }}
     >
-      <Text allowFontScaling={false} style={txt(fonts.brand, 56, ink.ink10, { letterSpacing: px(24), marginTop: px(40) })}>
+      <Text allowFontScaling={false} style={txt(fonts.brand, 56, ink.ink10, { letterSpacing: px(24), marginTop: px(40) })}>{/* i18n-ok: la marca */}
         NIVL
       </Text>
       <Text allowFontScaling={false} style={txt(fonts.heading, 30, ink.ink6, { letterSpacing: px(10), marginTop: px(28) })}>
@@ -144,7 +145,7 @@ export const TarjetaCompartir = forwardRef<View, TarjetaCompartirProps>(function
         {tarjeta.tipo === 'nivel' ? (
           <>
             <Text allowFontScaling={false} style={txt(fonts.body, 36, ink.ink8, { letterSpacing: px(10) })}>
-              NIVEL
+              {t('share:tarjeta.nivel')}
             </Text>
             <Text allowFontScaling={false} style={txt(fonts.brand, 300, ink.ink10, { lineHeight: px(300) })}>
               {String(Math.max(1, Math.floor(tarjeta.nivel)))}
@@ -185,7 +186,7 @@ export const TarjetaCompartir = forwardRef<View, TarjetaCompartirProps>(function
               {String(Math.max(0, Math.floor(tarjeta.dias)))}
             </Text>
             <Text allowFontScaling={false} style={txt(fonts.body, 44, ink.ink10, { letterSpacing: px(12) })}>
-              DÍAS DE RACHA
+              {t('share:tarjeta.diasRacha')}
             </Text>
             <View style={{ width: px(760), flexDirection: 'row', flexWrap: 'wrap', gap: px(14) }}>
               {reticulaRacha(tarjeta).map((hecho, i) => (
@@ -229,7 +230,7 @@ export const TarjetaCompartir = forwardRef<View, TarjetaCompartirProps>(function
             {codigoVisible(opciones, codigoAmigo) ? (
               <View style={{ alignItems: 'center' }}>
                 <Text allowFontScaling={false} style={txt(fonts.heading, 28, ink.ink6, { letterSpacing: px(8) })}>
-                  MÍDETE CONMIGO
+                  {t('share:tarjeta.mideteConmigo')}
                 </Text>
                 <Text allowFontScaling={false} style={txt(fonts.brand, 64, ink.ink10, { letterSpacing: px(10), marginTop: px(12) })}>
                   {codigoVisible(opciones, codigoAmigo)}
@@ -280,7 +281,7 @@ export const TarjetaCompartir = forwardRef<View, TarjetaCompartirProps>(function
                   ) : null}
                 </View>
                 <Text allowFontScaling={false} style={txt(fonts.body, 32, ink.ink10, { letterSpacing: px(6) })}>
-                  {i === 0 ? 'ANTES' : 'DESPUÉS'}
+                  {i === 0 ? t('share:tarjeta.antes') : t('share:tarjeta.despues')}
                 </Text>
                 <Text allowFontScaling={false} style={txt(fonts.body, 30, ink.ink6)}>
                   {x.fechas?.[i] ?? ''}

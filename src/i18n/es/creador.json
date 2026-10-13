@@ -1,1 +1,85 @@
-{}
+{
+  "mes": {
+    "ene": "ene",
+    "feb": "feb",
+    "mar": "mar",
+    "abr": "abr",
+    "may": "may",
+    "jun": "jun",
+    "jul": "jul",
+    "ago": "ago",
+    "sept": "sept",
+    "oct": "oct",
+    "nov": "nov",
+    "dic": "dic"
+  },
+  "historico": {
+    "mes": "{{mes}} {{anio}}",
+    "titulo": "Ventas por mes"
+  },
+  "vista": {
+    "eyebrow": "Programa de creadores",
+    "titulo": "Tu panel",
+    "cargando": "Cargando el panel de creador",
+    "portalSinPanelTitulo": "Este panel es para creadores del programa",
+    "portalSinPanelCuerpo": "Con esta cuenta no hay panel que mostrar.",
+    "sinPanelTitulo": "Este panel es de los creadores",
+    "sinPanelCuerpo": "Tu cuenta no está en el programa de creadores.",
+    "errorConDatos": "{{error}} Lo que ves puede no estar al día."
+  },
+  "codigo": {
+    "titulo": "Tu código",
+    "a11y": "Tu código: {{codigo}}",
+    "copiado": "Copiado",
+    "copiar": "Copiar código",
+    "nota": "Quien lo escribe en «¿Quién te trajo?» en sus primeros días queda contigo para siempre. El enlace solo abre la app si ya la tiene instalada."
+  },
+  "cuentas": {
+    "titulo": "Cuentas y ventas",
+    "cuentas": "Cuentas con tu código",
+    "ventas": "Ventas",
+    "cuentasMes": "Cuentas este mes",
+    "ventasMes": "Ventas este mes",
+    "queEsVenta": "Una venta es una cuenta tuya que se suscribe por primera vez.",
+    "comision": "Por venta anual cobras {{importe}}; en mensual, tu {{pct}} % de lo que entra cada mes hasta llegar a lo mismo."
+  },
+  "retos": {
+    "titulo": "Retos",
+    "cumplido": "Cumplido",
+    "unidadVentas": "ventas",
+    "a11y": "Reto {{titulo}}: {{ventas}} de {{meta}} ventas",
+    "premio": "Premio: {{premio}}"
+  },
+  "tabla": {
+    "titulo": "Tabla del mes",
+    "premio": "PREMIO DEL PRIMERO",
+    "nombreYo": "{{alias}} · tú",
+    "a11y": "Puesto {{pos}}: {{alias}}, {{ventas}}",
+    "a11yYo": "Puesto {{pos}}: {{alias}}, tú, {{ventas}}"
+  },
+  "rango": {
+    "titulo": "Tu rango",
+    "ventas90": "Ventas en 90 días",
+    "mesSeguido": "Mes seguido",
+    "mesesSeguidos": "Meses seguidos",
+    "haciaA11y": "Hacia {{rango}}: {{ventas}} de {{umbral}} ventas",
+    "faltan": "{{rango}}: {{umbral}} ventas en 90 días. Te faltan {{faltan}}.",
+    "cumples": "Cumples lo de {{rango}}. El cambio de rango lo aplica el equipo.",
+    "sinSiguiente": "No hay un rango por encima con regla fijada."
+  },
+  "dinero": {
+    "titulo": "Tu dinero",
+    "retencion": "En retención",
+    "disponible": "Disponible",
+    "cobrado": "Cobrado",
+    "fijo": "Fijo mensual",
+    "descontar": "A descontar",
+    "descontarDetalle": "Reembolsos de comisiones ya cobradas",
+    "retencionNota": "Cada comisión espera {{dias}} días por si hay un reembolso; entonces pasa a disponible y se paga en la siguiente liquidación. Si la tienda devuelve el dinero, la comisión se anula."
+  },
+  "pagos": {
+    "titulo": "Pagos recibidos",
+    "vacioTitulo": "Aún sin pagos",
+    "vacioCuerpo": "Aquí aparece cada liquidación cuando se haga."
+  }
+}

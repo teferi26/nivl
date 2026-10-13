@@ -22,6 +22,7 @@ import { Avatar, Button, Card, Chip, ChipWrap, confirmar, Row, Section, Sheet } 
 import { SIN_DATO } from '@/components/ui/sinDato';
 import { vibrar } from '@/design/haptics';
 import { ink, type as tipo } from '@/design/tokens';
+import { t } from '@/i18n';
 import {
   aceptarLiga,
   crearLiga,
@@ -58,8 +59,8 @@ import {
   nombreRival,
   ordenarTablero,
   repartirDuelos,
-  TEXTO_RESULTADO,
   textoQuedan,
+  textoResultado,
   textoRitmo,
 } from './competicionVista';
 
@@ -89,8 +90,10 @@ interface Props {
 
 type AvisoEstado = { texto: string; error: boolean } | null;
 
-const REGLA =
-  'Se mide la disciplina: qué parte de lo tuyo cumples, ponderado por dificultad. No gana quien más misiones se pone. A igualdad, más días activos.';
+/** La regla del duelo; varias ayudas la llevan dentro como {{regla}}. */
+function regla(): string {
+  return t('amigos:competicion.regla');
+}
 
 export function Competicion({ amigos, recarga, retarA, onRetarA, onDisponible, tablero, onSeguridad }: Props) {
   const [disponible, setDisponible] = useState(true);
@@ -217,9 +220,9 @@ export function Competicion({ amigos, recarga, retarA, onRetarA, onDisponible, t
   const sinAmigos = amigos.length === 0;
 
   return (
-    <Section title="Competición" meta={vista.activos.length > 0 ? `${vista.activos.length}` : undefined}>
+    <Section title={t('amigos:competicion.titulo')} meta={vista.activos.length > 0 ? `${vista.activos.length}` : undefined}>
       {!listo ? (
-        <CargaArena etiqueta="Cargando la competición" formas={['filas']} filas={2} />
+        <CargaArena etiqueta={t('amigos:competicion.cargando')} formas={['filas']} filas={2} />
       ) : (
         <>
           {fallo ? (
@@ -233,15 +236,23 @@ export function Competicion({ amigos, recarga, retarA, onRetarA, onDisponible, t
                   key={d.id}
                   first={i === 0}
                   leading={<Ionicons name="flash-outline" size={18} color={ink.ink9} />}
-                  title={`${nombreRival(d)} te reta`}
-                  detail={`Duelo de disciplina · ${textoQuedan(diasRestantes(d.week_start, hoy))}`}
+                  title={t('amigos:competicion.teReta', { nombre: nombreRival(d) })}
+                  detail={t('amigos:competicion.teRetaDetalle', { quedan: textoQuedan(diasRestantes(d.week_start, hoy)) })}
                   trailing={
                     ocupado === d.id ? (
                       <ActivityIndicator size="small" color={ink.ink9} />
                     ) : (
                       <View style={styles.respuestas}>
-                        <Button title="Aceptar" size="sm" variant="secondary" onPress={() => responder(d, true)} />
-                        <Rechazar etiqueta={`Rechazar el duelo de ${nombreRival(d)}`} onPress={() => responder(d, false)} />
+                        <Button
+                          title={t('amigos:comun.aceptar')}
+                          size="sm"
+                          variant="secondary"
+                          onPress={() => responder(d, true)}
+                        />
+                        <Rechazar
+                          etiqueta={t('amigos:competicion.rechazarDuelo', { nombre: nombreRival(d) })}
+                          onPress={() => responder(d, false)}
+                        />
                         {masOpciones(d)}
                       </View>
                     )
@@ -264,7 +275,7 @@ export function Competicion({ amigos, recarga, retarA, onRetarA, onDisponible, t
                   muted
                   leading={<Ionicons name="hourglass-outline" size={18} color={ink.ink6} />}
                   title={nombreRival(d)}
-                  detail="Reto enviado · falta su respuesta"
+                  detail={t('amigos:competicion.retoEnviado')}
                   trailing={masOpciones(d)}
                 />
               ))}
@@ -275,7 +286,7 @@ export function Competicion({ amigos, recarga, retarA, onRetarA, onDisponible, t
                   muted
                   leading={<Ionicons name="hourglass-outline" size={18} color={ink.ink6} />}
                   title={nombreRival(d)}
-                  detail="Semana cerrada · resolviendo"
+                  detail={t('amigos:competicion.semanaCerrada')}
                   trailing={masOpciones(d)}
                 />
               ))}
@@ -298,9 +309,9 @@ export function Competicion({ amigos, recarga, retarA, onRetarA, onDisponible, t
                     trailing={
                       <View style={styles.respuestas}>
                         {rival ? (
-                          <Button title="Revancha" size="sm" variant="secondary" onPress={() => onRetarA(rival)} />
+                          <Button title={t('amigos:competicion.revancha')} size="sm" variant="secondary" onPress={() => onRetarA(rival)} />
                         ) : (
-                          <Text style={styles.resultado}>{TEXTO_RESULTADO[d.resultado!]}</Text>
+                          <Text style={styles.resultado}>{textoResultado(d.resultado!)}</Text>
                         )}
                         {masOpciones(d)}
                       </View>
@@ -319,14 +330,22 @@ export function Competicion({ amigos, recarga, retarA, onRetarA, onDisponible, t
                   first={i === 0}
                   leading={<Ionicons name="mail-outline" size={18} color={ink.ink9} />}
                   title={inv.nombre}
-                  detail={`${inv.de} te invita a su liga`}
+                  detail={t('amigos:liga.teInvita', { de: inv.de })}
                   trailing={
                     ocupado === inv.league_id ? (
                       <ActivityIndicator size="small" color={ink.ink9} />
                     ) : (
                       <View style={styles.respuestas}>
-                        <Button title="Entrar" size="sm" variant="secondary" onPress={() => responderLiga(inv, true)} />
-                        <Rechazar etiqueta={`Rechazar la liga ${inv.nombre}`} onPress={() => responderLiga(inv, false)} />
+                        <Button
+                          title={t('amigos:liga.entrar')}
+                          size="sm"
+                          variant="secondary"
+                          onPress={() => responderLiga(inv, true)}
+                        />
+                        <Rechazar
+                          etiqueta={t('amigos:liga.rechazar', { nombre: inv.nombre })}
+                          onPress={() => responderLiga(inv, false)}
+                        />
                       </View>
                     )
                   }
@@ -345,12 +364,12 @@ export function Competicion({ amigos, recarga, retarA, onRetarA, onDisponible, t
                   title={l.nombre}
                   detail={
                     l.puesto > 0
-                      ? `${l.puesto}.º de ${l.miembros} esta semana`
-                      : `${l.miembros} ${l.miembros === 1 ? 'miembro' : 'miembros'} · aún sin datos esta semana`
+                      ? t('amigos:liga.puestoSemana', { puesto: l.puesto, total: l.miembros })
+                      : t('amigos:liga.miembrosSinDatos', { count: l.miembros })
                   }
                   chevron
                   onPress={() => setLigaAbierta({ id: l.league_id, nombre: l.nombre })}
-                  accessibilityLabel={`Liga ${l.nombre}. Abrir el tablero`}
+                  accessibilityLabel={t('amigos:liga.abrirA11y', { nombre: l.nombre })}
                 />
               ))}
             </Card>
@@ -360,10 +379,11 @@ export function Competicion({ amigos, recarga, retarA, onRetarA, onDisponible, t
 
           {nada ? (
             <>
-              <Text style={styles.vacio}>Esta semana nadie te mide. Reta a un amigo.</Text>
+              <Text style={styles.vacio}>{t('amigos:competicion.vacio')}</Text>
               <Text style={styles.hint}>
-                Un duelo dura una semana, de lunes a domingo.
-                {LIGAS_VISIBLES ? ` Una liga reúne hasta ${LIGA_MAX} amigos.` : ''} {REGLA}
+                {LIGAS_VISIBLES
+                  ? t('amigos:competicion.vacioAyudaLigas', { max: LIGA_MAX, regla: regla() })
+                  : t('amigos:competicion.vacioAyuda', { regla: regla() })}
               </Text>
             </>
           ) : null}
@@ -371,7 +391,7 @@ export function Competicion({ amigos, recarga, retarA, onRetarA, onDisponible, t
           <View style={styles.botones}>
             <View style={styles.boton}>
               <Button
-                title="Retar"
+                title={t('amigos:competicion.retar')}
                 icon="flash-outline"
                 variant="secondary"
                 disabled={sinAmigos}
@@ -380,11 +400,11 @@ export function Competicion({ amigos, recarga, retarA, onRetarA, onDisponible, t
             </View>
             {LIGAS_VISIBLES ? (
               <View style={styles.boton}>
-                <Button title="Crear liga" icon="trophy-outline" variant="secondary" onPress={() => setCreando(true)} />
+                <Button title={t('amigos:liga.crear')} icon="trophy-outline" variant="secondary" onPress={() => setCreando(true)} />
               </View>
             ) : null}
           </View>
-          {sinAmigos ? <Text style={styles.hint}>Para retar a alguien, primero tiene que ser tu amigo.</Text> : null}
+          {sinAmigos ? <Text style={styles.hint}>{t('amigos:competicion.sinAmigos')}</Text> : null}
         </>
       )}
 
@@ -441,8 +461,8 @@ function MasOpciones({ alias, onPress }: { alias: string; onPress: () => void })
       }}
       style={({ pressed }) => [styles.mas, pressed && styles.pulsado]}
       accessibilityRole="button"
-      accessibilityLabel={`Más opciones del duelo con ${alias}`}
-      accessibilityHint="Enviar denuncia o bloquear usuario"
+      accessibilityLabel={t('amigos:competicion.masOpciones', { nombre: alias })}
+      accessibilityHint={t('amigos:competicion.masOpcionesPista')}
     >
       <Ionicons name="ellipsis-horizontal" size={18} color={ink.ink8} />
     </Pressable>
@@ -462,15 +482,17 @@ function DueloActivo({ d, hoy, opciones }: { d: Duelo; hoy: string; opciones: Re
     <Card style={styles.duelo} accessibilityLabel={etiquetaDuelo(d, quedan)}>
       <View style={styles.dueloCabecera}>
         <Text style={styles.dueloTitulo} numberOfLines={1}>
-          Tú contra {nombre}
+          {t('amigos:competicion.tuContra', { nombre })}
         </Text>
         <Text style={styles.dueloMeta}>{textoQuedan(quedan)}</Text>
         {opciones}
       </View>
-      <BarraDuelo etiqueta="Tú" valor={d.mi_indice} dias={d.mis_dias} mia />
+      <BarraDuelo etiqueta={t('amigos:comun.tu')} valor={d.mi_indice} dias={d.mis_dias} mia />
       {rival ? <BarraDuelo etiqueta={rival.nombre} valor={rival.indice} dias={rival.dias} /> : null}
       <Text style={styles.dueloLinea}>
-        {rival ? `${lineaDuelo(d)} · disciplina de la semana` : 'Sin datos del rival · disciplina de la semana'}
+        {rival
+          ? t('amigos:competicion.lineaSemana', { linea: lineaDuelo(d) })
+          : t('amigos:competicion.sinDatosRival')}
       </Text>
     </Card>
   );
@@ -485,10 +507,12 @@ function BarraDuelo({ etiqueta, valor, dias, mia }: { etiqueta: string; valor: n
         {etiqueta}
       </Text>
       <View style={styles.pista}>
-        <Barra ratio={valor / 100} alto={6} tono={mia ? 'blanco' : 'ink8'} etiqueta={`Disciplina de ${etiqueta}`} />
+        <Barra ratio={valor / 100} alto={6} tono={mia ? 'blanco' : 'ink8'} etiqueta={t('amigos:competicion.disciplinaDe', { nombre: etiqueta })} />
       </View>
       <Text style={styles.barraValor}>{valor}</Text>
-      <Text style={styles.barraDias}>{dias} d</Text>
+      <Text style={styles.barraDias}>{/* i18n-ok: unidad */}
+        {dias} d
+      </Text>
     </View>
   );
 }
@@ -538,7 +562,7 @@ function RetarSheet({
     try {
       await retarADuelo(elegido.userId);
       vibrar('mision');
-      setAviso({ texto: `Reto enviado a ${elegido.name}. Empieza cuando lo acepte.`, error: false });
+      setAviso({ texto: t('amigos:retar.enviado', { nombre: elegido.name }), error: false });
       onHecho();
     } catch (e) {
       vibrar('penalizacion');
@@ -555,19 +579,25 @@ function RetarSheet({
     <Sheet
       visible={visible}
       onClose={onCerrar}
-      eyebrow="Duelo semanal"
-      title={elegido ? `Retar a ${elegido.name}` : 'Retar a un amigo'}
+      eyebrow={t('amigos:retar.eyebrow')}
+      title={elegido ? t('amigos:retar.retarA', { nombre: elegido.name }) : t('amigos:retar.retarAmigo')}
       footer={
         enviado ? (
-          <Button title="Cerrar" variant="secondary" onPress={onCerrar} />
+          <Button title={t('comun:cerrar')} variant="secondary" onPress={onCerrar} />
         ) : (
-          <Button title="Enviar el reto" icon="flash-outline" onPress={retar} loading={enviando} disabled={!elegido} />
+          <Button
+            title={t('amigos:retar.enviar')}
+            icon="flash-outline"
+            onPress={retar}
+            loading={enviando}
+            disabled={!elegido}
+          />
         )
       }
     >
       {!preelegido ? (
         <>
-          <Text style={styles.rotulo}>Rival</Text>
+          <Text style={styles.rotulo}>{t('amigos:retar.rival')}</Text>
           <ChipWrap>
             {amigos.map((a) => (
               <Chip
@@ -580,19 +610,17 @@ function RetarSheet({
                   setElegido(a);
                   setAviso(null);
                 }}
-                accessibilityLabel={`Retar a ${a.name}`}
+                accessibilityLabel={t('amigos:retar.retarA', { nombre: a.name })}
               />
             ))}
           </ChipWrap>
         </>
       ) : null}
       <View style={styles.ficha}>
-        <FichaLinea rotulo="Métrica" valor="Disciplina" />
-        <FichaLinea rotulo="Duración" valor={`Esta semana, hasta el domingo (${textoQuedan(quedan)})`} />
+        <FichaLinea rotulo={t('amigos:retar.metrica')} valor={t('amigos:retar.disciplina')} />
+        <FichaLinea rotulo={t('amigos:retar.duracion')} valor={t('amigos:retar.duracionValor', { quedan: textoQuedan(quedan) })} />
       </View>
-      <Text style={styles.hint}>
-        {REGLA} Es la única métrica y la única duración del duelo: así nadie elige la que le favorece.
-      </Text>
+      <Text style={styles.hint}>{t('amigos:retar.ayuda', { regla: regla() })}</Text>
       {aviso ? <Aviso texto={aviso.texto} error={aviso.error} /> : null}
     </Sheet>
   );
@@ -633,7 +661,7 @@ function CrearLigaSheet({
     if (lock.current) return;
     const limpio = nombreDeLiga(nombre);
     if (!limpio) {
-      setAviso({ texto: 'Ponle un nombre de al menos 2 letras.', error: true });
+      setAviso({ texto: t('amigos:liga.nombreCorto'), error: true });
       return;
     }
     lock.current = true;
@@ -656,27 +684,24 @@ function CrearLigaSheet({
     <Sheet
       visible={visible}
       onClose={onCerrar}
-      eyebrow="Liga privada"
-      title="Crear liga"
-      footer={<Button title="Crear" icon="trophy-outline" onPress={crear} loading={enviando} />}
+      eyebrow={t('amigos:liga.privada')}
+      title={t('amigos:liga.crear')}
+      footer={<Button title={t('amigos:liga.crearBoton')} icon="trophy-outline" onPress={crear} loading={enviando} />}
     >
       <Campo
-        etiqueta="Nombre de la liga"
+        etiqueta={t('amigos:liga.nombre')}
         value={nombre}
         onChangeText={(v) => {
           setNombre(v);
           setAviso(null);
         }}
-        placeholder="Los del gimnasio"
+        placeholder={t('amigos:liga.nombrePlaceholder')}
         maxLength={NOMBRE_LIGA_MAX}
         returnKeyType="done"
         onSubmitEditing={crear}
-        accessibilityLabel="Nombre de la liga"
+        accessibilityLabel={t('amigos:liga.nombre')}
       />
-      <Text style={styles.hint}>
-        Solo entran amigos a los que invites, y cada uno decide si acepta. Hasta {LIGA_MAX} miembros. La tabla se
-        reinicia cada lunes. {REGLA}
-      </Text>
+      <Text style={styles.hint}>{t('amigos:liga.crearAyuda', { max: LIGA_MAX, regla: regla() })}</Text>
       {aviso ? <Aviso texto={aviso.texto} error={aviso.error} /> : null}
     </Sheet>
   );
@@ -741,12 +766,12 @@ function LigaSheet({
       await invitarALiga(id, a.userId);
       vibrar('mision');
       setInvitados((s) => new Set(s).add(a.userId));
-      setAviso({ texto: `Invitación enviada a ${a.name}. Entra cuando la acepte.`, error: false });
+      setAviso({ texto: t('amigos:liga.invitacionEnviada', { nombre: a.name }), error: false });
     } catch (e) {
       vibrar('penalizacion');
       // 42501 al invitar: no eres quien la creó (el servidor no dice quién es).
       const code = (e as { code?: string } | null)?.code;
-      setAviso({ texto: code === '42501' ? 'Solo quien creó la liga puede invitar.' : mensajeSistema(e), error: true });
+      setAviso({ texto: code === '42501' ? t('amigos:liga.soloCreador') : mensajeSistema(e), error: true });
     } finally {
       lock.current = false;
       setInvitando(null);
@@ -756,9 +781,9 @@ function LigaSheet({
   const salir = async () => {
     if (!id || lock.current) return;
     const ok = await confirmar({
-      titulo: 'Salir de la liga',
-      mensaje: 'Dejarás de ver su tabla y ellos la tuya. Si la creaste tú, la liga se disuelve para todos.',
-      confirmar: 'Salir',
+      titulo: t('amigos:liga.salir'),
+      mensaje: t('amigos:liga.salirMensaje'),
+      confirmar: t('amigos:liga.salirConfirmar'),
       destructivo: true,
     });
     if (!ok || lock.current) return;
@@ -781,12 +806,12 @@ function LigaSheet({
     <Sheet
       visible={liga !== null}
       onClose={onCerrar}
-      eyebrow="Liga · esta semana"
+      eyebrow={t('amigos:liga.eyebrow')}
       title={liga?.nombre ?? ''}
-      footer={<Button title="Salir de la liga" variant="danger" onPress={salir} loading={saliendo} />}
+      footer={<Button title={t('amigos:liga.salir')} variant="danger" onPress={salir} loading={saliendo} />}
     >
       {filas === null ? (
-        <CargaArena etiqueta="Cargando el tablero" formas={['filas']} />
+        <CargaArena etiqueta={t('amigos:liga.cargandoTablero')} formas={['filas']} />
       ) : (
         <View>
           {tabla.map((f, i) => (
@@ -800,43 +825,49 @@ function LigaSheet({
                   <Avatar size={32} avatarPath={f.retrato} name={f.alias} rank={null} />
                 </View>
               }
-              title={f.es_yo ? `${f.alias} · tú` : f.alias}
+              title={f.es_yo ? t('amigos:lista.nombreYo', { nombre: f.alias }) : f.alias}
               detail={
                 f.sin_datos
-                  ? 'Aún sin datos esta semana'
-                  : `${f.dias_activos} días activos · ritmo ${textoRitmo(f.velocidad)}`
+                  ? t('amigos:liga.sinDatosSemana')
+                  : t('amigos:liga.filaDetalle', { dias: f.dias_activos, ritmo: textoRitmo(f.velocidad) })
               }
               trailing={<Text style={styles.indice}>{f.sin_datos ? SIN_DATO : f.indice}</Text>}
-              accessibilityLabel={`${f.puesto > 0 ? `Puesto ${f.puesto}` : 'Sin puesto'}. ${f.es_yo ? 'Tú' : f.alias}. ${
-                f.sin_datos ? 'Aún sin datos esta semana' : `Disciplina ${f.indice}, ${f.dias_activos} días activos`
-              }.`}
+              accessibilityLabel={
+                f.sin_datos
+                  ? t('amigos:liga.filaA11ySinDatos', {
+                      puesto: f.puesto > 0 ? t('amigos:lista.puesto', { n: f.puesto }) : t('amigos:lista.sinPuesto'),
+                      nombre: f.es_yo ? t('amigos:comun.tu') : f.alias,
+                    })
+                  : t('amigos:liga.filaA11y', {
+                      puesto: f.puesto > 0 ? t('amigos:lista.puesto', { n: f.puesto }) : t('amigos:lista.sinPuesto'),
+                      nombre: f.es_yo ? t('amigos:comun.tu') : f.alias,
+                      indice: f.indice,
+                      dias: f.dias_activos,
+                    })
+              }
             />
           ))}
-          <Text style={styles.hint}>
-            La cifra es la disciplina de la semana, de 0 a 100. Desempata el ritmo frente a tus cuatro semanas previas.
-          </Text>
+          <Text style={styles.hint}>{t('amigos:liga.tableroAyuda')}</Text>
         </View>
       )}
 
       {filas !== null && invitables.length > 0 ? (
         <>
-          <Text style={[styles.rotulo, styles.separado]}>Invitar</Text>
+          <Text style={[styles.rotulo, styles.separado]}>{t('amigos:liga.invitar')}</Text>
           <ChipWrap>
             {invitables.map((a) => (
               <Chip
                 key={a.userId}
-                label={invitados.has(a.userId) ? `${a.name} · invitado` : a.name}
+                label={invitados.has(a.userId) ? t('amigos:liga.invitado', { nombre: a.name }) : a.name}
                 small
                 icon={invitados.has(a.userId) ? 'checkmark' : 'person-add-outline'}
                 disabled={invitando !== null || invitados.has(a.userId)}
                 onPress={() => invitar(a)}
-                accessibilityLabel={`Invitar a ${a.name} a la liga`}
+                accessibilityLabel={t('amigos:liga.invitarA11y', { nombre: a.name })}
               />
             ))}
           </ChipWrap>
-          <Text style={styles.hint}>
-            Solo quien creó la liga puede invitar. Si no la creaste tú, pídele que invite a quien quieras sumar.
-          </Text>
+          <Text style={styles.hint}>{t('amigos:liga.invitarAyuda')}</Text>
         </>
       ) : null}
       {aviso ? <Aviso texto={aviso.texto} error={aviso.error} /> : null}

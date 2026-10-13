@@ -24,6 +24,7 @@ import { avisar, confirmar } from '@/components/ui/confirmar';
 import { volver } from '@/components/ui/Screen';
 import { vibrar } from '@/design/haptics';
 import type { Rank } from '@/design/tokens';
+import { t } from '@/i18n';
 import { fetchUnlocked, tituloVigente } from '@/lib/achievements';
 import { fetchRangosAmigos } from '@/lib/amigosRango';
 import { useAuth } from '@/lib/auth';
@@ -251,7 +252,7 @@ export function useAmigos() {
     lock.current = true; setSafetyBusy(true); setSafetyMessage(null);
     try {
       await reportSocialUser(safetyUser.userId, reportReason);
-      setSafetyMessage('Denuncia registrada para revisión. También puedes bloquear a esta persona.');
+      setSafetyMessage(t('amigos:seguridad.denunciaRegistrada'));
       setReportReason(null);
     } catch (e) { setSafetyMessage(mensajeSistema(e)); }
     finally { lock.current = false; setSafetyBusy(false); }
@@ -263,9 +264,9 @@ export function useAmigos() {
     if (!safetyUser || lock.current) return;
     const person = safetyUser;
     const ok = await confirmar({
-      titulo: 'Bloquear usuario',
-      mensaje: 'Dejaréis de veros en solicitudes y rankings, también en el ludus. La amistad se eliminará.',
-      confirmar: 'Bloquear',
+      titulo: t('amigos:seguridad.bloquear'),
+      mensaje: t('amigos:seguridad.bloquearMensaje'),
+      confirmar: t('amigos:seguridad.bloquearConfirmar'),
       destructivo: true,
     });
     if (!ok || lock.current) return;
@@ -295,9 +296,9 @@ export function useAmigos() {
   const desbloquear = async (person: BlockedUser) => {
     if (lock.current) return;
     const ok = await confirmar({
-      titulo: 'Desbloquear usuario',
-      mensaje: 'Podrá volver a solicitar amistad. La amistad anterior no se recupera. Si compartís ludus, volverá a aparecer.',
-      confirmar: 'Desbloquear',
+      titulo: t('amigos:seguridad.desbloquear'),
+      mensaje: t('amigos:seguridad.desbloquearMensaje'),
+      confirmar: t('amigos:seguridad.desbloquearConfirmar'),
     });
     if (!ok || lock.current) return;
     lock.current = true; setSafetyBusy(true);
@@ -305,7 +306,7 @@ export function useAmigos() {
       await unblockSocialUser(person.userId);
     } catch (e) {
       // Sigue bloqueado y la lista lo sigue diciendo.
-      avisar('El sistema no responde', mensajeSistema(e));
+      avisar(t('comun:sistemaNoResponde'), mensajeSistema(e));
       lock.current = false; setSafetyBusy(false);
       return;
     }
@@ -320,7 +321,7 @@ export function useAmigos() {
     }
   };
   const abrirSoporte = () => Linking.openURL(SOCIAL_SUPPORT_URL).catch(() =>
-    avisar('No se ha abierto soporte', SOCIAL_SUPPORT_URL));
+    avisar(t('amigos:seguridad.soporteNoAbierto'), SOCIAL_SUPPORT_URL));
 
   const visibles = useMemo(() => board.filter((b) => b.visible), [board]);
   const ocultos = useMemo(() => board.filter((b) => !b.visible && !b.isMe), [board]);
@@ -375,7 +376,7 @@ export function useAmigos() {
     try {
       await Share.share({ message: mensajeInvitacion(yo.friendCode) }, anchor != null ? { anchor } : undefined);
     } catch (e) {
-      avisar('El sistema no responde', mensajeSistema(e));
+      avisar(t('comun:sistemaNoResponde'), mensajeSistema(e));
     }
   };
 
@@ -411,8 +412,8 @@ export function useAmigos() {
       setAvisoCodigo({
         texto:
           r.status === 'accepted'
-            ? `${r.name} ya te había buscado. Ya sois rivales.`
-            : `Solicitud enviada a ${r.name}. Falta su respuesta.`,
+            ? t('amigos:codigo.yaSoisRivales', { nombre: r.name })
+            : t('amigos:codigo.solicitudEnviada', { nombre: r.name }),
         error: false,
       });
       await load(ventana);
@@ -437,7 +438,7 @@ export function useAmigos() {
       if (aceptar) vibrar('mision');
       await load(ventana);
     } catch (e) {
-      avisar('El sistema no responde', mensajeSistema(e));
+      avisar(t('comun:sistemaNoResponde'), mensajeSistema(e));
     } finally {
       lock.current = false;
       setOcupada(null);
@@ -454,7 +455,7 @@ export function useAmigos() {
       // a un borrado hecho.
       await removeFriend(friendshipId);
     } catch (e) {
-      avisar('El sistema no responde', mensajeSistema(e));
+      avisar(t('comun:sistemaNoResponde'), mensajeSistema(e));
       lock.current = false;
       return;
     }
@@ -471,9 +472,9 @@ export function useAmigos() {
     if (!b.friendshipId) return;
     quitar(
       b.friendshipId,
-      'Quitar amigo',
-      `${b.name} saldrá de tu ranking y tú del suyo. Para volver hará falta otra solicitud.`,
-      'Quitar',
+      t('amigos:comun.quitarAmigo'),
+      t('amigos:solicitudes.quitarMensaje', { nombre: b.name }),
+      t('comun:quitar'),
     );
   };
 
@@ -493,7 +494,7 @@ export function useAmigos() {
   const pedirLudus = async () => {
     if (lock.current) return;
     if (!objetivo) {
-      setAvisoLudus({ texto: 'Elige el objetivo de tu ludus.', error: true });
+      setAvisoLudus({ texto: t('amigos:ludus.eligeObjetivo'), error: true });
       return;
     }
     lock.current = true;
@@ -523,7 +524,7 @@ export function useAmigos() {
       await setSocialVisible(userId, visible);
     } catch (e) {
       setYo(antes);
-      avisar('El sistema no responde', mensajeSistema(e));
+      avisar(t('comun:sistemaNoResponde'), mensajeSistema(e));
     }
   };
 
@@ -544,7 +545,7 @@ export function useAmigos() {
       // código solo sale si se enciende «Añadir mi enlace de invitación».
       compartir(tarjetaDeSemana(datos));
     } catch (e) {
-      avisar('El sistema no responde', mensajeSistema(e));
+      avisar(t('comun:sistemaNoResponde'), mensajeSistema(e));
     } finally {
       setPreparando(false);
     }
@@ -563,8 +564,10 @@ export function useAmigos() {
 
   const subtitulo =
     numAmigos === 0
-      ? 'Nadie mejora igual cuando alguien le mira el marcador.'
-      : `${numAmigos} ${numAmigos === 1 ? 'rival' : 'rivales'} en tu arena${entrantes.length > 0 ? ` · ${entrantes.length} por responder` : ''}.`;
+      ? t('amigos:subtitulo.vacio')
+      : entrantes.length > 0
+        ? t('amigos:subtitulo.rivalesResponder', { count: numAmigos, porResponder: entrantes.length })
+        : t('amigos:subtitulo.rivales', { count: numAmigos });
 
   // El título equipado se resuelve aquí (achievements arrastra Supabase): la
   // vista y la lista lo reciben ya escrito.

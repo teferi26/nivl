@@ -13,6 +13,7 @@ import { Competicion } from '@/components/amigos/Competicion';
 import { useAmigos } from '@/components/amigos/useAmigos';
 import { Button, Chip, ChipWrap, Sheet } from '@/components/ui';
 import { ink, space, type as tipo } from '@/design/tokens';
+import { t } from '@/i18n';
 import { REPORT_REASONS } from '@/lib/socialSafety';
 
 export default function Amigos() {
@@ -44,19 +45,19 @@ export default function Amigos() {
       <Sheet
         visible={safetyUser !== null}
         onClose={cerrar}
-        eyebrow="Seguridad"
+        eyebrow={t('amigos:seguridad.eyebrow')}
         title={safetyUser?.name ?? ''}
         footer={
           <>
-            <Button title="Contactar con soporte" variant="ghost" disabled={safetyBusy} onPress={abrirSoporte} />
-            <Button title="Cerrar" variant="ghost" disabled={safetyBusy} onPress={cerrar} />
+            <Button title={t('amigos:seguridad.soporte')} variant="ghost" disabled={safetyBusy} onPress={abrirSoporte} />
+            <Button title={t('comun:cerrar')} variant="ghost" disabled={safetyBusy} onPress={cerrar} />
           </>
         }
       >
         <View style={styles.pila}>
           {puedeRetar ? (
             <Button
-              title="Retar a un duelo"
+              title={t('amigos:seguridad.retar')}
               icon="flash-outline"
               variant="secondary"
               disabled={safetyBusy}
@@ -72,12 +73,9 @@ export default function Amigos() {
 
           <View style={styles.grupo}>
             <Text style={styles.etiqueta} maxFontSizeMultiplier={1.35}>
-              Denunciar
+              {t('amigos:seguridad.denunciar')}
             </Text>
-            <Text style={styles.cuerpo}>
-              Elige qué quieres denunciar. El equipo revisará el perfil y podrá retirar contenido o suspender su acceso
-              social.
-            </Text>
+            <Text style={styles.cuerpo}>{t('amigos:seguridad.denunciarCuerpo')}</Text>
             <ChipWrap>
               {REPORT_REASONS.map((reason) => (
                 <Chip
@@ -99,14 +97,14 @@ export default function Amigos() {
 
           <View style={styles.grupo}>
             <Button
-              title="Enviar denuncia"
+              title={t('amigos:seguridad.enviarDenuncia')}
               icon="flag-outline"
               variant="secondary"
               disabled={!reportReason || safetyBusy}
               loading={safetyBusy}
               onPress={denunciar}
             />
-            <Button title="Bloquear usuario" icon="ban-outline" variant="secondary" disabled={safetyBusy} onPress={bloquear} />
+            <Button title={t('amigos:seguridad.bloquear')} icon="ban-outline" variant="secondary" disabled={safetyBusy} onPress={bloquear} />
           </View>
         </View>
       </Sheet>

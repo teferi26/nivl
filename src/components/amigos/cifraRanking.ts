@@ -5,9 +5,10 @@
 // miles a mano (formatoMiles) y la cifra vacía «-».
 
 import { CIFRA_VACIA, formatoMiles, ordinal } from '@/components/arena/cifras';
+import { t } from '@/i18n';
 import type { Clasificado, Metrica } from '@/lib/socialmath';
 
-const UNIDAD: Record<Metrica, string> = { xp: 'XP', cumplimiento: '%', racha: 'd' };
+const UNIDAD: Record<Metrica, string> = { xp: 'XP', cumplimiento: '%', racha: 'd' }; // i18n-ok: unidades
 
 export function cifraDe(valor: number | null, metrica: Metrica): { cifra: string; unidad: string | null } {
   if (valor === null || !Number.isFinite(valor)) return { cifra: CIFRA_VACIA, unidad: null };
@@ -26,9 +27,9 @@ export function sufijoDe(metrica: Metrica): string {
  */
 export function lineaPuesto(filas: readonly Clasificado[]): string {
   const yo = filas.find((c) => c.competidor.isMe);
-  if (!yo) return 'Estás fuera del ranking';
-  if (yo.valor === null) return 'Tu puesto: sin medir';
-  return `Tu puesto: ${ordinal(yo.posicion)} de ${filas.length}`;
+  if (!yo) return t('amigos:podio.fueraRanking');
+  if (yo.valor === null) return t('amigos:podio.puestoSinMedir');
+  return t('amigos:podio.puesto', { puesto: ordinal(yo.posicion), total: filas.length });
 }
 
 /**
