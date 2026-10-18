@@ -1,4 +1,4 @@
-import { contraste, ink, motion, RANK_THEME, sizeClass, type, VERIFY_WIDTHS } from '../tokens';
+import { contraste, ink, modoAcento, motion, RANK_THEME, sizeClass, type, VERIFY_WIDTHS } from '../tokens';
 
 const SUPERFICIES = [ink.ink0, ink.ink1, ink.ink2] as const;
 
@@ -81,5 +81,34 @@ describe('tipografía', () => {
     expect(type.monumento.size).toBeGreaterThan(type.monumentoSm.size);
     expect(type.monumentoSm.size).toBeGreaterThan(type.cifra.size);
     expect(motion.escalon).toBe(55);
+  });
+});
+
+describe('Modos F1: acentos', () => {
+  it('cada acento llega a AA (4,5:1) sobre #000', () => {
+    for (const [modo, hex] of Object.entries(modoAcento)) {
+      expect({ modo, ratio: contraste(hex, '#000000') >= 4.5 }).toEqual({ modo, ratio: true });
+    }
+  });
+
+  it('cada acento llega a AA sobre las superficies ink1 e ink2', () => {
+    for (const hex of Object.values(modoAcento)) {
+      expect(contraste(hex, ink.ink1)).toBeGreaterThanOrEqual(4.5);
+      expect(contraste(hex, ink.ink2)).toBeGreaterThanOrEqual(4.5);
+    }
+  });
+
+  it('el texto negro sobre el acento también es AA (chip activo)', () => {
+    for (const hex of Object.values(modoAcento)) expect(contraste(ink.ink0, hex)).toBeGreaterThanOrEqual(4.5);
+  });
+
+  it('General es el monocromo de siempre y los colores son los del contrato', () => {
+    expect(modoAcento).toEqual({
+      general: ink.ink10,
+      iron: '#3D7BFF',
+      focus: '#8B6CFF',
+      work: '#19C37D',
+      founder: '#FF9F1C',
+    });
   });
 });

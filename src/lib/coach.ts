@@ -15,6 +15,7 @@ import { dateKey } from './dates';
 import { fetchHealthConsent, requireHealthConsent } from './health';
 import { ErrorVisible } from './validation';
 import { sinGuiones } from './singuiones';
+import { cabecerasModoCoach } from '@/modos/coach';
 
 export type CoachKind =
   | 'chat'
@@ -86,6 +87,9 @@ async function authHeaders(): Promise<Record<string, string>> {
     authorization: `Bearer ${token}`,
     apikey: process.env.EXPO_PUBLIC_SUPABASE_KEY ?? '',
     'content-type': 'application/json',
+    // Modos F1: `x-nivl-modo` solo con `modos_activos` encendido y un modo
+    // que no sea General (modos/coach.ts). Si no, no va nada.
+    ...cabecerasModoCoach(),
   };
 }
 
