@@ -13,7 +13,6 @@
 import { requireOptionalNativeModule } from 'expo';
 import type AsyncStorageTipo from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
-import { leerInstalacionGuardada } from './analitica';
 import { diasEntre } from './analiticamath';
 import { dateKey } from './dates';
 import { flagActivo } from './flagsServidor';
@@ -81,12 +80,14 @@ export async function alMomentoPositivo(
   try {
     const [valoracionActiva, opinionActiva] = await Promise.all([flagActivo(FLAG_VALORACION), flagActivo(FLAG_OPINION)]);
     if (!valoracionActiva && !opinionActiva) return null;
-    const inst = await leerInstalacionGuardada();
-    const diaDeUso = inst ? diasEntre(inst.primerDia, dateKey(new Date(ahora))) : null;
+    const hoy = dateKey(new Date(ahora));
+    const guardado = leerEstado(await almacen().getItem(K_ESTADO));
+    // El primer momento bueno marca el día 0 de esta pieza.
+    const estado = guardado.primerDia ? guardado : { ...guardado, primerDia: hoy };
+    const diaDeUso = diasEntre(estado.primerDia!, hoy);
     const valoracionDisponible = valoracionActiva ? await nativa.disponible() : false;
-    const estado = leerEstado(await almacen().getItem(K_ESTADO));
     const d = decidirPeticion(estado, { diaDeUso, valoracionActiva, opinionActiva, valoracionDisponible, ahora });
-    if (d.peticion) await almacen().setItem(K_ESTADO, JSON.stringify(d.estado));
+    if (d.peticion || !guardado.primerDia) await almacen().setItem(K_ESTADO, JSON.stringify(d.estado));
     return d.peticion;
   } catch {
     return null;

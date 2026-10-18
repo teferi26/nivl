@@ -6,13 +6,14 @@
 // Hoja con dos Campo multilínea y pie fijo: Enviar (la inversión) y Ahora no
 // (ghost). Tras enviar, la misma hoja da las gracias y se cierra.
 
-import { StyleSheet, Text, View } from 'react-native';
+import { Linking, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Campo, ErrorSistema } from '@/components/arena';
 import { Button, Sheet } from '@/components/ui';
 import { useAnunciar } from '@/components/ui/useAnunciar';
 import { ink, space, type as tipo } from '@/design/tokens';
 import { t } from '@/i18n';
 import { MAX_OPINION } from '@/lib/peticionesmath';
+import { LEGAL_URLS } from '@/lib/proplans';
 
 export interface HojaOpinionProps {
   visible: boolean;
@@ -67,6 +68,20 @@ export function HojaOpinion({
           <Text style={styles.texto} maxFontSizeMultiplier={1.35}>
             {t('hoy:opinion.intro')}
           </Text>
+          {/* Información en la recogida (art. 13 RGPD) y consentimiento al enviar (dictamen LSSI 2.5). */}
+          <Text style={styles.aviso} maxFontSizeMultiplier={1.35}>
+            {t('hoy:opinion.aviso')}
+          </Text>
+          <Pressable
+            onPress={() => Linking.openURL(LEGAL_URLS.privacidad).catch(() => {})}
+            accessibilityRole="link"
+            hitSlop={12}
+            style={styles.enlace}
+          >
+            <Text style={styles.enlaceTexto} maxFontSizeMultiplier={1.35}>
+              {t('hoy:opinion.privacidad')}
+            </Text>
+          </Pressable>
           <Campo
             etiqueta={t('hoy:opinion.gusta')}
             value={gusta}
@@ -99,5 +114,20 @@ const styles = StyleSheet.create({
     lineHeight: tipo.body.lineHeight,
     letterSpacing: tipo.body.tracking,
     color: ink.ink8,
+  },
+  aviso: {
+    fontFamily: tipo.bodySm.family,
+    fontSize: tipo.bodySm.size,
+    lineHeight: tipo.bodySm.lineHeight,
+    letterSpacing: tipo.bodySm.tracking,
+    color: ink.ink8,
+  },
+  enlace: { alignSelf: 'flex-start', minHeight: 44, justifyContent: 'center' },
+  enlaceTexto: {
+    fontFamily: tipo.bodySm.family,
+    fontSize: tipo.bodySm.size,
+    lineHeight: tipo.bodySm.lineHeight,
+    color: ink.ink10,
+    textDecorationLine: 'underline',
   },
 });

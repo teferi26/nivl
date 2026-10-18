@@ -21,13 +21,20 @@ export type MomentoPositivo = 'mision' | 'nivel';
 export type Peticion = 'valoracion' | 'opinion';
 
 export interface EstadoPeticiones {
+  /**
+   * Día local del primer momento bueno visto con los flags encendidos: de
+   * aquí sale el «día 2-3». Es propio de esta pieza y NO depende de la
+   * analítica (que solo existe con consentimiento): pedir opinión o
+   * valoración no puede quedar atado a aceptar la medición.
+   */
+  primerDia: string | null;
   /** Última vez que se pidió la valoración nativa (ISO). */
   valoracionPedidaEn: string | null;
   /** Cuándo se enseñó la opinión interna (ISO). Una vez enseñada, no vuelve. */
   opinionVistaEn: string | null;
 }
 
-export const ESTADO_INICIAL: EstadoPeticiones = { valoracionPedidaEn: null, opinionVistaEn: null };
+export const ESTADO_INICIAL: EstadoPeticiones = { primerDia: null, valoracionPedidaEn: null, opinionVistaEn: null };
 
 export interface Contexto {
   /** Días desde el primer arranque (0 = el día de instalar). null = no se sabe. */
@@ -75,6 +82,7 @@ export function leerEstado(crudo: string | null): EstadoPeticiones {
   try {
     const v = JSON.parse(crudo) as Partial<EstadoPeticiones>;
     return {
+      primerDia: typeof v.primerDia === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v.primerDia) ? v.primerDia : null,
       valoracionPedidaEn: typeof v.valoracionPedidaEn === 'string' ? v.valoracionPedidaEn : null,
       opinionVistaEn: typeof v.opinionVistaEn === 'string' ? v.opinionVistaEn : null,
     };

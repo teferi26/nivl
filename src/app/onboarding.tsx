@@ -28,6 +28,8 @@ import {
 } from '@/components/onboarding/pasoOferta';
 import { useCelebracion } from '@/components/celebracion/contexto';
 import { PortadaArena } from '@/components/onboarding/PortadaArena';
+import { AccionesConsentimiento, CuerpoConsentimiento } from '@/components/consentimiento/ConsentimientoAnalitica';
+import { useConsentimientoAnalitica } from '@/components/consentimiento/useConsentimientoAnalitica';
 import { ProgresoPasos } from '@/components/onboarding/ProgresoPasos';
 import { TablillaContrato } from '@/components/onboarding/TablillaContrato';
 import { TituloPaso } from '@/components/onboarding/TituloPaso';
@@ -95,6 +97,17 @@ export default function Onboarding() {
   const { session } = useAuth();
   const userId = session?.user.id;
   const [step, setStep] = useState(0);
+  // Medición de uso (dictamen LSSI 3.1): con el flag encendido y sin decisión,
+  // tras la portada y antes de cualquier otro paso, una pantalla propia con
+  // «Rechazar» y «Aceptar» del mismo peso. Cualquiera de las dos sigue igual.
+  const medicion = useConsentimientoAnalitica();
+  const [preguntandoMedicion, setPreguntandoMedicion] = useState(false);
+  const decidirMedicion = (acepta: boolean) => {
+    if (acepta) medicion.aceptar();
+    else medicion.rechazar();
+    setPreguntandoMedicion(false);
+    setStep(1);
+  };
   const [name, setName] = useState('');
   // "¿Quién te trajo?": opcional, precargado si se entró por nivl://c/CODIGO.
   const [codigo, setCodigo] = useState('');
@@ -519,7 +532,14 @@ export default function Onboarding() {
         >
           <GutterContext.Provider value={GUTTER}>
 
-          {step === 0 ? <PortadaArena key="paso-0" /> : null}
+          {step === 0 && !preguntandoMedicion ? <PortadaArena key="paso-0" /> : null}
+
+          {step === 0 && preguntandoMedicion ? (
+            <Entrada key="paso-medicion" indice={0}>
+              <TituloPaso inscripcion={t('perfil:medicion.eyebrow')} titulo={t('perfil:medicion.titulo')} />
+              <CuerpoConsentimiento />
+            </Entrada>
+          ) : null}
 
           {step === 1 ? (
             <Entrada key="paso-1" indice={0}>
@@ -778,8 +798,19 @@ export default function Onboarding() {
             con el teclado abierto. La firma no tiene pie: su botón es el anillo. */}
         {step !== 5 ? (
           <View style={styles.footer}>
-            {step === 0 ? (
-              <Button title={t('onboarding:entrar')} size="lg" onPress={() => setStep(1)} />
+            {step === 0 && !preguntandoMedicion ? (
+              <Button
+                title={t('onboarding:entrar')}
+                size="lg"
+                onPress={() => (medicion.preguntar ? setPreguntandoMedicion(true) : setStep(1))}
+              />
+            ) : null}
+            {step === 0 && preguntandoMedicion ? (
+              <AccionesConsentimiento
+                onRechazar={() => decidirMedicion(false)}
+                onAceptar={() => decidirMedicion(true)}
+                ocupado={medicion.ocupado}
+              />
             ) : null}
             {step === 1 ? (
               <Button title={t('onboarding:continuar')} size="lg" onPress={saveName} loading={busy} disabled={!name.trim()} />

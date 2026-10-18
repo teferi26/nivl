@@ -15,6 +15,68 @@ Además hay dos piezas más:
 
 Todo va detrás de flags apagados y con migraciones solo aditivas.
 
+## Consentimiento previo (dictamen `LSSI-ANALITICA-NIVL.md`, 18/10/2026)
+
+**La analítica es opt-in.** Base: art. 22.2 LSSI y art. 6.1.a RGPD (consentimiento), no el interés legítimo.
+
+**Dos llaves para enviar:**
+- la decisión «acepta» vigente de la persona;
+- el flag `analitica_activa` de NIVL.
+
+**Sin «acepta» vigente**, ninguna de estas funciones escribe en el móvil ni envía nada: `registrar`, `registrarUnaVez`, `marcarApertura` y `vaciarCola`. Solo se lee la propia decisión (`nivl.analitica.consentimiento.v1`). Al arrancar en ese estado se borran las `CLAVES_ANALITICA`. Hay test con el mock de AsyncStorage: `setItem` no se llama nunca.
+
+**Vigencia y plazos:**
+- La decisión vale 24 meses y solo para la versión del texto (`VERSION_CONSENTIMIENTO = 'a2026_10'`, en `src/lib/consentimientoAnaliticamath.ts`). Si caduca, se vuelve a preguntar.
+- El `install_id` nace al aceptar y caduca a los 13 meses (`Instalacion.creado`). Después nace otro sin relación con el anterior.
+
+**Aceptar:**
+1. Se guarda la decisión.
+2. Nace una instalación nueva.
+3. El primer evento es `consentimiento_analitica {version}`, la prueba del art. 7.1 RGPD.
+4. Siguen `primer_arranque` y `apertura_dia 0`.
+
+**Rechazar, o cerrar la hoja sin decidir:** solo se guarda la decisión. No se envía nada, tampoco un evento de rechazo.
+
+**Revocar (Perfil > Privacidad > Medición de uso):**
+1. Se guarda el rechazo.
+2. Se borran el id, la cola y las marcas del móvil.
+3. Se llama a `olvidar_instalacion(install_id)` (0073), que borra en el servidor (art. 17.1.b).
+
+Sin red, la petición queda pendiente en `nivl.analitica.revocacion.v1` y se reintenta al abrir la app.
+
+**Dónde se pregunta.** En todos los casos, solo con el flag encendido y sin decisión vigente:
+- en el onboarding: una pantalla propia tras la portada y antes del nombre (`onboarding.tsx`);
+- a quien ya tenía la app: una hoja única en Hoy (`PreguntaMedicionUso`), nunca encima de una ceremonia, de la opinión ni de la hoja de completar.
+
+**Botones:**
+- «Rechazar» y «Aceptar» son el mismo `Button` secondary, del mismo tamaño y ancho, con Rechazar primero;
+- nada premarcado;
+- el texto es el del dictamen (3.2), en `perfil:medicion.*`.
+
+**Opinión interna:**
+- la hoja avisa: «Se guarda con tu cuenta, como mucho 24 meses. No pongas datos de salud ni de otras personas. Al enviarla aceptas que la guardemos para mejorar la app.»;
+- enlaza a la política;
+- la base es el consentimiento al enviar.
+
+**La valoración y la opinión no dependen de la medición.** Llevan su propio «día 0», el primer momento bueno, guardado en `nivl.peticiones.v1`.
+
+**0073 (`0073_analitica_consentimiento.sql`):**
+- añade el evento `consentimiento_analitica` a la lista blanca;
+- RPC `olvidar_instalacion` (anon y authenticated; solo borra filas sin cuenta o de la propia);
+- purgas diarias con pg_cron, igual que la 0010: `nivl-purga-funnel` a las 03:17 UTC (12 meses) y `nivl-purga-opiniones` a las 03:27 UTC (`app_feedback`, 24 meses);
+- sin pg_cron (PGlite) no programa nada y avisa;
+- huella en `apply-migrations.mjs`.
+
+**Efecto en el embudo:** `registro` ocurre antes de que se pueda preguntar, porque el onboarding exige sesión, así que no se registra. El embudo medible empieza en el consentimiento.
+
+**Orden de encendido (dictamen 4.12):**
+1. migraciones 0066 a 0073;
+2. OTA con la puerta;
+3. política 1.8 publicada;
+4. etiquetas de privacidad de App Store y Google Play actualizadas: «Usage Data / Product Interaction», vinculado y sin seguimiento, y «Other User Content» por la opinión;
+5. aviso en la app;
+6. `analitica_activa = true`.
+
 ## Qué se ha hecho
 
 ### 1. Embudo anónimo (`0070_funnel_events.sql` y cliente)
@@ -158,7 +220,7 @@ El panel web **no** está hecho. Es la siguiente fase y necesita revisión de se
 
 ## Cómo se prueba
 
-- `npx tsc --noEmit`, `npx eslint src scripts --max-warnings 0` y `CI=true npx jest --ci`: todo en verde, 106 suites y 1693 tests.
+- `npx tsc --noEmit`, `npx eslint src scripts --max-warnings 0` y `CI=true npx jest --ci`: todo en verde, 106 suites y 1701 tests.
   - Tests nuevos `src/lib/__tests__/analitica.test.ts`:
     - lista blanca;
     - la misma lista que la 0070;
@@ -179,7 +241,7 @@ El panel web **no** está hecho. Es la siguiente fase y necesita revisión de se
   ```
   node scripts/analitica/probar-migraciones.mjs C:\temp\nivl-age-sql-check\node_modules\@electric-sql\pglite\dist\index.js
   ```
-  Da 59 comprobaciones en verde una vez integrada la rama de servidor. En esta rama sola falla, porque falta la 0068. Comprueba:
+  Da 65 comprobaciones en verde una vez integrada la rama de servidor. En esta rama sola falla, porque falta la 0068. Comprueba:
   - RLS;
   - la lista blanca;
   - los límites;
@@ -201,12 +263,12 @@ El panel web **no** está hecho. Es la siguiente fase y necesita revisión de se
 - **Conflicto trivial esperado:**
   - en `HUELLAS` de `apply-migrations.mjs` (servidor añade 0066-0069; aquí 0070-0072);
   - en `hoy.json` y `textos-es.aceptados.tsv` con idiomas: los `hoy:opinion.*` necesitan traducción en las otras lenguas.
-- **ePrivacy / LSSI art. 22.2:** el `install_id` se guarda en el dispositivo para medición. La AEPD admite exceptuar del consentimiento la analítica propia, agregada y sin cesión, pero hay que confirmarlo. Por eso `analitica_activa` va apagado hasta que el dueño apruebe el texto de privacidad. Si se prefiere, se añade un interruptor «Medición de uso» en Perfil.
+- **ePrivacy / LSSI art. 22.2:** resuelto con consentimiento previo (ver arriba y el dictamen). Quedan para un letrado las dudas del apartado 6 del dictamen. Pendiente del dictamen 4.10: un mínimo de 5 instalaciones por celda en `admin_donde_se_quedan` y `admin_retencion`.
 - **«Anónimo» es, en rigor, seudónimo:** con sesión, el servidor guarda el user_id. La política tiene que decirlo así (texto abajo).
 - La retención se mide con `apertura_dia`. Quien abre la app solo por una notificación también cuenta, porque sigue siendo una apertura.
 - `primer_arranque` de quien ya usaba 1.0.9: se distingue con `previo: true` y las métricas lo excluyen de las instalaciones nuevas. Su día 0 para la opinión y la valoración es el día en que estrena esta versión.
 - El límite global de 3000 eventos por minuto protege la tabla, no el servicio. Supabase tiene además su propio límite de peticiones.
-- `funnel_events` no tiene cron de purga: queda pendiente programar `purgar_funnel_events()`.
+- Las purgas dependen de pg_cron: comprobar con `select jobname, schedule from cron.job` tras aplicar la 0073.
 
 ## Lo que necesito de otros equipos
 
@@ -249,13 +311,13 @@ En el apartado 2, fila nueva tras «Técnicos»:
 
 En el apartado 3, filas nuevas:
 
-> Medir el uso de la app para saber dónde se atasca la gente y mejorarla (estadísticas propias de NIVL; solo las ve el equipo de NIVL, de forma agregada) · Interés legítimo (art. 6.1.f). Puedes oponerte escribiendo al contacto de privacidad.
+> Medir el uso de la app para saber dónde se atasca la gente y mejorarla (estadísticas propias de NIVL; solo las ve el equipo de NIVL) · **Consentimiento** (art. 6.1.a RGPD y art. 22.2 LSSI), que se pide antes de medir nada, en el onboarding o en una hoja, y se retira en Perfil → Privacidad → Medición de uso. Al retirarlo borramos los datos de uso de tu instalación.
 >
 > Leer tu opinión sobre la app para mejorarla · Consentimiento, al enviarla (art. 6.1.a). Es opcional y no cambia nada de tu cuenta.
 
 En el apartado 7, tras «Los registros técnicos del servicio...»:
 
-> Los datos de uso de la app se conservan como máximo 12 meses. Tu opinión, mientras mantengas la cuenta. Al eliminar la cuenta se borran ambos, incluidos los pasos registrados en ese dispositivo antes de crearla.
+> Los datos de uso de la app se conservan como máximo 12 meses, y el identificador de instalación se renueva cada 13 meses. El consentimiento se vuelve a pedir a los 24 meses. Tu opinión, como mucho 24 meses desde que la envías. Al eliminar la cuenta se borran ambos, incluidos los pasos registrados en ese dispositivo antes de crearla.
 
 En el apartado 4: no hace falta un proveedor nuevo, porque todo se guarda en Supabase.
 

@@ -3,8 +3,14 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import {
   __esperarAnalitica,
+  aceptarAnalitica,
+  alAbrirAnalitica,
   CLAVES_ANALITICA,
+  estadoConsentimiento,
+  K_CONSENTIMIENTO,
   marcarApertura,
+  rechazarAnalitica,
+  revocarAnalitica,
   olvidarAnalitica,
   registrar,
   registrarUnaVez,
@@ -16,6 +22,8 @@ import {
   encolar,
   EVENTOS_EMBUDO,
   esInstallId,
+  instalacionCaducada,
+  sumarMeses,
   leerCola,
   limpiarProps,
   MAX_COLA,
@@ -23,6 +31,7 @@ import {
   PROPS_ADMITIDAS,
   type EventoEnCola,
 } from '../analiticamath';
+import { decisionVigente, nuevaDecision, VERSION_CONSENTIMIENTO } from '../consentimientoAnaliticamath';
 import { __olvidarFlags } from '../flagsServidor';
 import { supabase } from '../supabase';
 
@@ -51,9 +60,15 @@ beforeEach(async () => {
   rpc.mockImplementation(((nombre: string) => {
     if (nombre === 'app_flags') return Promise.resolve({ data: { analitica_activa: flagEncendido }, error: null });
     if (nombre === 'registrar_evento') return respuestaEvento();
+    if (nombre === 'olvidar_instalacion') return respuestaOlvido();
     return Promise.resolve({ data: null, error: { code: 'PGRST202' } });
   }) as never);
+  respuestaOlvido = async () => ({ data: 3, error: null });
+  // Salvo en «sin consentimiento», la persona ya ha aceptado.
+  await AsyncStorage.setItem(K_CONSENTIMIENTO, JSON.stringify(nuevaDecision('acepta', Date.now())));
 });
+
+let respuestaOlvido: () => Promise<{ data: unknown; error: unknown }>;
 
 afterEach(async () => {
   await __esperarAnalitica();
@@ -80,8 +95,8 @@ describe('lista blanca (sin datos personales)', () => {
     expect(limpiarProps('primer_arranque', { previo: true, x: 1 })).toEqual({ previo: true });
   });
 
-  test('la lista del móvil es la misma que la del servidor (0070)', () => {
-    const sql = readFileSync(join(__dirname, '..', '..', '..', 'supabase', 'migrations', '0070_funnel_events.sql'), 'utf8');
+  test('la lista del móvil es la misma que la del servidor (última versión, 0073)', () => {
+    const sql = readFileSync(join(__dirname, '..', '..', '..', 'supabase', 'migrations', '0073_analitica_consentimiento.sql'), 'utf8');
     const servidor: Record<string, string[]> = {};
     for (const m of sql.matchAll(/when '([a-z_]+)' then array\[([^\]]*)\]/g)) {
       servidor[m[1]] = [...m[2].matchAll(/'([a-z_]+)'/g)].map((x) => x[1]).sort();
@@ -225,5 +240,104 @@ describe('aperturas D1/D3/D7', () => {
     expect(await colaGuardada()).toHaveLength(2);
     await marcarApertura('2026-10-21');
     expect((await colaGuardada()).at(-1)).toMatchObject({ evento: 'apertura_dia', props: { dia: 3 } });
+  });
+});
+
+describe('consentimiento previo (dictamen LSSI)', () => {
+  const setItem = () => jest.mocked(AsyncStorage.setItem);
+  const getItem = () => jest.mocked(AsyncStorage.getItem);
+
+  async function sinDecision() {
+    await AsyncStorage.clear();
+    jest.clearAllMocks();
+  }
+
+  test('sin decisión no se escribe NADA en el móvil ni se envía nada', async () => {
+    await sinDecision();
+    registrar('registro', { resultado: 'sesion' });
+    registrarUnaVez('primera_mision_creada', { origen: 'habitos' });
+    await marcarApertura('2026-10-18');
+    await vaciarCola();
+    await alAbrirAnalitica();
+    await __esperarAnalitica();
+    expect(setItem()).not.toHaveBeenCalled();
+    expect(enviados()).toHaveLength(0);
+    // Solo se lee la propia decisión (y las revocaciones pendientes); nunca la cola ni la instalación.
+    const leidas = new Set(getItem().mock.calls.map((c) => c[0]));
+    for (const k of CLAVES_ANALITICA) expect(leidas.has(k)).toBe(false);
+    // Al abrir sin consentimiento se borran los restos de versiones anteriores.
+    expect(AsyncStorage.multiRemove).toHaveBeenCalledWith(CLAVES_ANALITICA);
+  });
+
+  test('al arrancar sin consentimiento se borran los restos de una versión anterior', async () => {
+    await sinDecision();
+    await AsyncStorage.setItem('nivl.analitica.cola.v1', JSON.stringify([{ evento: 'registro', props: {}, ts: 't' }]));
+    await AsyncStorage.setItem('nivl.analitica.instalacion.v1', JSON.stringify({ id: 'abcdef12-3456-4789-abcd-ef1234567890', primerDia: '2026-10-01', ultimoDia: '2026-10-01' }));
+    await alAbrirAnalitica();
+    for (const k of CLAVES_ANALITICA) expect(await AsyncStorage.getItem(k)).toBeNull();
+    expect(enviados()).toHaveLength(0);
+  });
+
+  test('si rechaza, solo se guarda la decisión', async () => {
+    await sinDecision();
+    await rechazarAnalitica();
+    registrar('registro', { resultado: 'sesion' });
+    await marcarApertura('2026-10-18');
+    await vaciarCola();
+    await __esperarAnalitica();
+    expect(setItem().mock.calls.map((c) => c[0])).toEqual([K_CONSENTIMIENTO]);
+    expect(await estadoConsentimiento()).toBe('rechaza');
+    expect(enviados()).toHaveLength(0);
+  });
+
+  test('si acepta: nace la instalación y lo primero es la prueba del consentimiento con su versión', async () => {
+    await sinDecision();
+    await aceptarAnalitica();
+    // aceptarAnalitica lanza el envío sin esperarlo: se espera a que salga.
+    for (let i = 0; i < 50 && enviados().length < 3; i++) await new Promise((r) => setTimeout(r, 0));
+    const ev = enviados();
+    expect(ev.map((c) => c.p_evento)).toEqual(['consentimiento_analitica', 'primer_arranque', 'apertura_dia']);
+    expect(ev[0].p_props).toEqual({ version: VERSION_CONSENTIMIENTO });
+  });
+
+  test('el consentimiento caduca a los 24 meses (y con otra versión del texto)', async () => {
+    const hace = Date.parse('2024-10-01T10:00:00Z');
+    const d = nuevaDecision('acepta', hace);
+    expect(decisionVigente(d, Date.parse('2026-09-30T10:00:00Z'))).toBe('acepta');
+    expect(decisionVigente(d, Date.parse('2026-10-01T10:00:00Z'))).toBeNull();
+    expect(decisionVigente({ ...d, version: 'a2020_01' }, hace)).toBeNull();
+    await AsyncStorage.setItem(K_CONSENTIMIENTO, JSON.stringify(nuevaDecision('acepta', Date.now() - 800 * 86_400_000)));
+    jest.clearAllMocks();
+    registrar('registro', { resultado: 'sesion' });
+    await __esperarAnalitica();
+    expect(setItem()).not.toHaveBeenCalled();
+  });
+
+  test('el install_id caduca a los 13 meses y nace otro', () => {
+    expect(sumarMeses('2025-09-30', 13)).toBe('2026-10-30');
+    expect(sumarMeses('2025-01-31', 1)).toBe('2025-02-28');
+    const vieja = { id: 'abcdef12-3456-4789-abcd-ef1234567890', creado: '2025-09-18', primerDia: '2025-09-18', ultimoDia: '2026-10-17' };
+    expect(instalacionCaducada(vieja, '2026-10-17')).toBe(false);
+    expect(instalacionCaducada(vieja, '2026-10-18')).toBe(true);
+    const r = aperturaDeHoy(vieja, '2026-10-18', () => 'nuevo-id-de-prueba-1234');
+    expect(r.instalacion).toEqual({ id: 'nuevo-id-de-prueba-1234', creado: '2026-10-18', primerDia: '2026-10-18', ultimoDia: '2026-10-18' });
+    expect(r.eventos[0].evento).toBe('primer_arranque');
+  });
+
+  test('revocar: borra en el servidor y en el móvil y guarda el rechazo; sin red lo reintenta al abrir', async () => {
+    await marcarApertura('2026-10-18');
+    await __esperarAnalitica();
+    const id = JSON.parse((await AsyncStorage.getItem('nivl.analitica.instalacion.v1'))!).id;
+    respuestaOlvido = () => Promise.reject(new TypeError('Network request failed'));
+    await revocarAnalitica();
+    for (const k of CLAVES_ANALITICA) expect(await AsyncStorage.getItem(k)).toBeNull();
+    expect(await estadoConsentimiento()).toBe('rechaza');
+    expect(JSON.parse((await AsyncStorage.getItem('nivl.analitica.revocacion.v1'))!)).toEqual([id]);
+    respuestaOlvido = async () => ({ data: 2, error: null });
+    rpc.mockClear();
+    await alAbrirAnalitica();
+    expect(rpc).toHaveBeenCalledWith('olvidar_instalacion', { p_install_id: id });
+    expect(await AsyncStorage.getItem('nivl.analitica.revocacion.v1')).toBeNull();
+    expect(enviados()).toHaveLength(0);
   });
 });

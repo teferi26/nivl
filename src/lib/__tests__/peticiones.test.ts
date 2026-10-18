@@ -45,7 +45,7 @@ describe('decisión (pura)', () => {
   });
 
   test('la valoración, como mucho una vez cada 120 días', () => {
-    const pedida: EstadoPeticiones = { valoracionPedidaEn: new Date(AHORA - 119 * DIA).toISOString(), opinionVistaEn: 'x' };
+    const pedida: EstadoPeticiones = { primerDia: null, valoracionPedidaEn: new Date(AHORA - 119 * DIA).toISOString(), opinionVistaEn: 'x' };
     expect(tocaValoracion(pedida, { ...base, diaDeUso: 200 })).toBe(false);
     const vieja: EstadoPeticiones = { ...pedida, valoracionPedidaEn: new Date(AHORA - DIAS_ENTRE_VALORACIONES * DIA).toISOString() };
     expect(tocaValoracion(vieja, { ...base, diaDeUso: 200 })).toBe(true);
@@ -57,7 +57,7 @@ describe('decisión (pura)', () => {
     const conOpinion = tocaValoracion({ ...ESTADO_INICIAL, opinionVistaEn: new Date(AHORA - DIA).toISOString() }, ctx);
     expect(conOpinion).toBe(sinOpinion);
     // La función ni siquiera recibe lo contestado: solo fechas de cuándo se pidió.
-    expect(Object.keys(ESTADO_INICIAL).sort()).toEqual(['opinionVistaEn', 'valoracionPedidaEn']);
+    expect(Object.keys(ESTADO_INICIAL).sort()).toEqual(['opinionVistaEn', 'primerDia', 'valoracionPedidaEn']);
   });
 
   test('cada cosa con su flag; sin diálogo nativo en la build, solo la opinión', () => {
@@ -91,10 +91,8 @@ describe('efectos', () => {
     flags = { valoracion_activa: true, opinion_activa: true };
     rpc.mockImplementation(((n: string) =>
       Promise.resolve(n === 'app_flags' ? { data: flags, error: null } : { data: null, error: null })) as never);
-    await AsyncStorage.setItem(
-      'nivl.analitica.instalacion.v1',
-      JSON.stringify({ id: 'abcdef12-3456-4789-abcd-ef1234567890', primerDia: '2026-10-18', ultimoDia: '2026-10-20' }),
-    );
+    // El día 0 es el primer momento bueno, propio de esta pieza (no depende de la analítica).
+    await AsyncStorage.setItem('nivl.peticiones.v1', JSON.stringify({ primerDia: '2026-10-18' }));
   });
 
   test('con los flags apagados (o ilegibles) no se pide nada', async () => {
@@ -112,6 +110,14 @@ describe('efectos', () => {
     const guardado = leerEstado(await AsyncStorage.getItem('nivl.peticiones.v1'));
     expect(guardado.valoracionPedidaEn).not.toBeNull();
     expect(guardado.opinionVistaEn).not.toBeNull();
+  });
+
+  test('el primer momento bueno marca el día 0 y no pide nada; no hace falta aceptar la medición', async () => {
+    await AsyncStorage.clear();
+    expect(await alMomentoPositivo('mision', nativa, AHORA)).toBeNull();
+    expect(leerEstado(await AsyncStorage.getItem('nivl.peticiones.v1')).primerDia).toBe('2026-10-20');
+    expect(await AsyncStorage.getItem('nivl.analitica.consentimiento.v1')).toBeNull();
+    expect(await alMomentoPositivo('mision', nativa, AHORA + 2 * DIA)).toBe('valoracion');
   });
 
   test('sin expo-store-review en la build (hoy) la valoración no está disponible', async () => {

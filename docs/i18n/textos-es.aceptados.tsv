@@ -1084,3 +1084,18 @@ hoy	+	Puedes dejar uno en blanco.
 hoy	+	Enviar
 hoy	+	Escribe al menos una de las dos.
 hoy	+	Recibido. Lo que has escrito llega tal cual.
+# Modos F1 (analítica, dictamen LSSI 18/10): consentimiento previo de la medición de uso (paso del onboarding, hoja en Hoy y Perfil > Privacidad > Medición de uso), textos del dictamen 3.2; y aviso de la hoja de opinión (se guarda con la cuenta, sin datos de salud ni de terceros).
+perfil	+	Privacidad
+perfil	+	¿Nos dejas medir cómo usas NIVL?
+perfil	+	Si aceptas, la app guarda en tu móvil un identificador aleatorio y nos envía qué pasos completas: onboarding, primera misión, días que abres la app y si ves o haces una compra. Nunca lo que escribes. Si tienes sesión iniciada, se asocia a tu cuenta. Solo lo ve NIVL, se guarda 12 meses y no se comparte con nadie.
+perfil	+	Si rechazas, no se guarda ni se envía nada y la app funciona igual. Puedes cambiarlo cuando quieras en Perfil → Privacidad.
+perfil	+	Rechazar
+perfil	+	Aceptar
+perfil	+	Más información
+perfil	+	Más información sobre la medición de uso en la política de privacidad
+perfil	+	Privacidad
+perfil	+	Medición de uso
+perfil	+	Activada. Solo los pasos del recorrido, nunca lo que escribes.
+perfil	+	Desactivada. No se guarda ni se envía nada.
+hoy	+	Se guarda con tu cuenta, como mucho 24 meses. No pongas datos de salud ni de otras personas. Al enviarla aceptas que la guardemos para mejorar la app.
+hoy	+	Política de privacidad

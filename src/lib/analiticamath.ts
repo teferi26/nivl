@@ -20,6 +20,7 @@ export const EVENTOS_EMBUDO = [
   'paywall_visto',
   'compra_iniciada',
   'compra_ok',
+  'consentimiento_analitica',
 ] as const;
 
 export type EventoEmbudo = (typeof EVENTOS_EMBUDO)[number];
@@ -53,6 +54,8 @@ export const PROPS_ADMITIDAS: Record<EventoEmbudo, Record<string, Regla>> = {
   paywall_visto: { motivo: { tipo: 'codigo' }, compacto: { tipo: 'booleano' } },
   compra_iniciada: { plan: { tipo: 'codigo' } },
   compra_ok: { plan: { tipo: 'codigo' }, resultado: { tipo: 'uno_de', valores: ['activa', 'pendiente', 'programada'] } },
+  /** Prueba del consentimiento (art. 7.1 RGPD): la versión del texto aceptado. */
+  consentimiento_analitica: { version: { tipo: 'codigo' } },
 };
 
 export const CODIGO_RE = /^[a-z0-9_]{1,32}$/;
@@ -140,6 +143,8 @@ export function nuevoInstallId(azar: () => number = Math.random): string {
 
 export interface Instalacion {
   id: string;
+  /** Día local en que se creó el id. A los 13 meses caduca y se genera otro (dictamen LSSI, 3.6). */
+  creado: string;
   /** Día local (YYYY-MM-DD) del primer arranque. */
   primerDia: string;
   /** Último día local en que se apuntó una apertura. */
@@ -153,7 +158,8 @@ export function leerInstalacion(crudo: string | null): Instalacion | null {
   try {
     const v = JSON.parse(crudo) as Partial<Instalacion>;
     if (!esInstallId(v.id) || !DIA_RE.test(v.primerDia ?? '') || !DIA_RE.test(v.ultimoDia ?? '')) return null;
-    return { id: v.id, primerDia: v.primerDia!, ultimoDia: v.ultimoDia! };
+    const creado = DIA_RE.test(v.creado ?? '') ? v.creado! : v.primerDia!;
+    return { id: v.id, creado, primerDia: v.primerDia!, ultimoDia: v.ultimoDia! };
   } catch {
     return null;
   }
@@ -168,6 +174,23 @@ export function diasEntre(desde: string, hasta: string): number {
   return Math.round((utc(hasta) - utc(desde)) / 86_400_000);
 }
 
+/** La clave YYYY-MM-DD n meses después (el día se recorta al último del mes). */
+export function sumarMeses(dia: string, n: number): string {
+  const [y, m, d] = dia.split('-').map(Number);
+  const total = y * 12 + (m - 1) + n;
+  const ny = Math.floor(total / 12);
+  const nm = (total % 12) + 1;
+  const ultimo = new Date(Date.UTC(ny, nm, 0)).getUTCDate();
+  return `${ny}-${String(nm).padStart(2, '0')}-${String(Math.min(d, ultimo)).padStart(2, '0')}`;
+}
+
+/** Vida del install_id: 13 meses desde su creación (guía de medición de audiencia de la AEPD). */
+export const MESES_VIDA_ID = 13;
+
+export function instalacionCaducada(inst: Instalacion, hoy: string): boolean {
+  return hoy >= sumarMeses(inst.creado, MESES_VIDA_ID);
+}
+
 /**
  * Lo que toca al abrir la app hoy. Primera vez: una instalación nueva, el
  * `primer_arranque` y la apertura del día 0. Un día nuevo: `apertura_dia`
@@ -179,9 +202,10 @@ export function aperturaDeHoy(
   hoy: string,
   nuevoId: () => string = nuevoInstallId,
 ): { instalacion: Instalacion; eventos: { evento: EventoEmbudo; props: PropsEmbudo }[] } {
-  if (!previa) {
+  // Sin instalación, o con el id caducado: otra nueva, sin relación con la anterior.
+  if (!previa || instalacionCaducada(previa, hoy)) {
     return {
-      instalacion: { id: nuevoId(), primerDia: hoy, ultimoDia: hoy },
+      instalacion: { id: nuevoId(), creado: hoy, primerDia: hoy, ultimoDia: hoy },
       eventos: [
         { evento: 'primer_arranque', props: {} },
         { evento: 'apertura_dia', props: { dia: 0 } },
