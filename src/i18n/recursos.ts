@@ -49,6 +49,8 @@ import voz from './es/voz.json';
 import avisos from './es/avisos.json';
 // Modos F1 (motor de IRON): solo la galería de desarrollo /kit/iron por ahora.
 import iron from './es/iron.json';
+// IRON fase 2: catálogo de hombro.
+import ironHombro from './es/iron-hombro.json';
 
 /** Los catálogos en español: la fuente de verdad de todas las claves. */
 export const RECURSOS_ES = {
@@ -86,6 +88,7 @@ export const RECURSOS_ES = {
   voz,
   avisos,
   iron,
+  'iron-hombro': ironHombro,
 };
 
 export type RecursosEs = typeof RECURSOS_ES;

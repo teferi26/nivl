@@ -6,12 +6,21 @@
 
 import type { Ejercicio } from '../tipos';
 import { curlBicepsMancuerna } from './curl-biceps-mancuerna';
+import { EJERCICIOS_HOMBRO } from './hombro';
 import { plancha } from './plancha';
 import { pressBanca } from './press-banca';
 import { remoMancuerna } from './remo-mancuerna';
 import { sentadillaBarra } from './sentadilla-barra';
 
-export const EJERCICIOS: readonly Ejercicio[] = [sentadillaBarra, pressBanca, remoMancuerna, curlBicepsMancuerna, plancha];
+export const EJERCICIOS: readonly Ejercicio[] = [
+  sentadillaBarra,
+  pressBanca,
+  remoMancuerna,
+  curlBicepsMancuerna,
+  plancha,
+  // hombro
+  ...EJERCICIOS_HOMBRO,
+];
 
 export function ejercicioPorId(id: string): Ejercicio | undefined {
   return EJERCICIOS.find((e) => e.id === id);

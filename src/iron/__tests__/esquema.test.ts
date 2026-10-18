@@ -2,7 +2,7 @@
 // las reglas que el tipo `Ejercicio` no puede expresar solo.
 import fs from 'fs';
 import path from 'path';
-import iron from '@/i18n/es/iron.json';
+import { RECURSOS_ES } from '@/i18n/recursos';
 import { dibujar, ranuras } from '../dibujo';
 import { EJERCICIOS, ejercicioPorId } from '../ejercicios';
 import { FORMAS_FRONTAL, FORMAS_LATERAL, GRUPO_DE_MUSCULO, MUSCULOS } from '../musculos';
@@ -11,11 +11,11 @@ import { ARTICULACIONES, type Ejercicio, type Material, type Pose } from '../tip
 const DIR = path.resolve(__dirname, '..', 'ejercicios');
 const MATERIALES: Material[] = ['barra', 'mancuerna', 'banco', 'peso_corporal', 'polea', 'maquina', 'kettlebell', 'banda'];
 
-/** Resuelve «iron:a.b.c» en el catálogo español; undefined si no existe. */
+/** Resuelve «iron:a.b.c» (o «iron-<grupo>:a.b.c») en el catálogo español; undefined si no existe. */
 function texto(clave: string): string | undefined {
   const [ns, ruta] = clave.split(':');
-  if (ns !== 'iron' || !ruta) return undefined;
-  let nodo: unknown = iron;
+  if (!/^iron(-[a-z]+)?$/.test(ns) || !ruta) return undefined;
+  let nodo: unknown = (RECURSOS_ES as Record<string, unknown>)[ns];
   for (const parte of ruta.split('.')) {
     if (!nodo || typeof nodo !== 'object') return undefined;
     nodo = (nodo as Record<string, unknown>)[parte];
@@ -25,11 +25,14 @@ function texto(clave: string): string | undefined {
 
 describe('catálogo', () => {
   it('cada archivo de ejercicios/ está registrado, con id = nombre del archivo', () => {
-    const archivos = fs
-      .readdirSync(DIR)
-      .filter((f) => f.endsWith('.ts') && f !== 'index.ts')
-      .map((f) => f.slice(0, -3))
-      .sort();
+    // Fase 2: cada grupo en su carpeta (ejercicios/<grupo>/), con index.ts y comun.ts aparte.
+    const deCarpeta = (dir: string): string[] =>
+      fs.readdirSync(dir).flatMap((f) => {
+        const ruta = path.join(dir, f);
+        if (fs.statSync(ruta).isDirectory()) return deCarpeta(ruta);
+        return f.endsWith('.ts') && f !== 'index.ts' && f !== 'comun.ts' ? [f.slice(0, -3)] : [];
+      });
+    const archivos = deCarpeta(DIR).sort();
     expect(EJERCICIOS.map((e) => e.id).sort()).toEqual(archivos);
     for (const id of archivos) expect(ejercicioPorId(id)?.id).toBe(id);
   });
@@ -41,7 +44,7 @@ describe('catálogo', () => {
   });
 
   it('el prototipo tiene los 5 ejercicios pedidos', () => {
-    expect(EJERCICIOS.map((e) => e.id)).toEqual([
+    expect(EJERCICIOS.slice(0, 5).map((e) => e.id)).toEqual([
       'sentadilla-barra',
       'press-banca',
       'remo-mancuerna',
@@ -55,7 +58,9 @@ describe.each(EJERCICIOS.map((e) => [e.id, e] as const))('%s', (_id, ej: Ejercic
   it('textos: nombre, cues y errores existen en es/iron.json, sin raya ni guion medio', () => {
     const claves = [ej.nombre, ...ej.cues, ...ej.errores];
     for (const c of claves) {
-      expect(c.startsWith(`iron:ejercicios.${ej.id}.`)).toBe(true);
+      const [ns] = c.split(':');
+      expect(ns).toMatch(/^iron(-[a-z]+)?$/);
+      expect(c.startsWith(`${ns}:ejercicios.${ej.id}.`)).toBe(true);
       const t = texto(c);
       expect(t).toBeTruthy();
       expect(t).not.toMatch(/[—–]/);
