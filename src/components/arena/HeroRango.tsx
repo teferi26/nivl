@@ -24,7 +24,7 @@ import { Skeleton } from '@/components/ui/Skeleton';
 import { Grano } from '@/components/ui/Texture';
 import { ink, RANK_THEME, space, stroke, type as tipo, type Rank } from '@/design/tokens';
 import { useSizeClass, useAnchoUtil } from '@/design/useSizeClass';
-import { t } from '@/i18n';
+import { idiomaInterfaz, t } from '@/i18n';
 import { ASangre } from './ASangre';
 import { Barra } from './Barra';
 import { CIFRA_VACIA, formatoMiles, ratioSeguro, rotuloSiguiente } from './cifras';
@@ -152,7 +152,10 @@ function HeroHoy(p: HeroRangoProps) {
 
       {/* 1 · Fecha, agenda y avatar (fuera del resumen: son botones). */}
       <View style={[styles.cabeza, { paddingHorizontal: gutter }]}>
-        <Text style={styles.eyebrow} maxFontSizeMultiplier={1.35} numberOfLines={1}>
+        {/* QA F1 (menor 13): fuera del español la fecha puede ser más larga
+            («SEXTA-FEIRA, 2 DE OUTUBRO» a 360): salta a dos líneas en vez de
+            cortarse. En español, una línea, como siempre. */}
+        <Text style={styles.eyebrow} maxFontSizeMultiplier={1.35} numberOfLines={idiomaInterfaz() === 'es' ? 1 : 2}>
           {p.eyebrow ?? ''}
         </Text>
         {p.accion ? <BotonArena icono={p.accion.icono} etiqueta={p.accion.etiqueta} onPress={p.accion.onPress} /> : null}
