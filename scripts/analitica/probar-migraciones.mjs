@@ -100,6 +100,21 @@ r = await como('anon', null, `select registrar_evento($1,'primer_arranque','{}':
 ok(r.rows[0].ok === false, 'límite por hora devuelve false');
 await q(`delete from funnel_events where install_id=$1`, [INST2]);
 
+// 0073: prueba del consentimiento y revocación.
+r = await como('anon', null, `select registrar_evento($1,'consentimiento_analitica','{"version":"a2026_10"}'::jsonb) ok`, [INST]);
+ok(r.rows[0].ok === true, 'evento consentimiento_analitica con versión');
+const REV = 'revocada-3456-4789-abcd-ef1234567890';
+await como('anon', null, `select registrar_evento($1,'primer_arranque','{}'::jsonb)`, [REV]);
+await como('authenticated', u2, `select registrar_evento($1,'apertura_dia','{"dia":1}'::jsonb)`, [REV]);
+r = await como('authenticated', u1, `select olvidar_instalacion($1) n`, [REV]);
+ok(r.rows[0].n === 1, 'olvidar_instalacion no borra filas de otra cuenta');
+r = await como('authenticated', u2, `select olvidar_instalacion($1) n`, [REV]);
+ok(r.rows[0].n === 1, 'olvidar_instalacion borra lo propio');
+ok(await falla('anon', null, `select olvidar_instalacion('x')`, [], /install_id/), 'olvidar_instalacion valida el formato');
+ok(await falla('anon', null, `select purgar_funnel_events()`, [], /permission/), 'purgas solo service_role');
+r = await q(`select purgar_app_feedback() n`); ok(r.rows[0].n === 0, 'purga de opiniones (24 meses)');
+await q(`delete from funnel_events where evento='consentimiento_analitica'`);
+
 // Opinión.
 await como('authenticated', u1, `insert into app_feedback(gusta, cambiaria, version) values ('Las misiones','Más avisos','1.0.10')`);
 ok(await falla('authenticated', u1, `insert into app_feedback(user_id, gusta) values ($1,'x')`, [u2]), 'no inserta la de otro');
