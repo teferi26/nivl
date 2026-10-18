@@ -47,6 +47,12 @@ export function msQuieto(ej: Ejercicio): number {
   return ej.poses[Math.floor(ej.poses.length / 2)].ms;
 }
 
+/** Intensidad del músculo principal en un isométrico: de 0,55 a 1, una vez por ciclo. */
+export function latidoEn(ms: number, ciclo: number): number {
+  'worklet';
+  return 0.775 + 0.225 * Math.cos(((ms % ciclo) / ciclo) * Math.PI * 2);
+}
+
 function Suelo({ ej }: { ej: Ejercicio }) {
   const { x, ancho } = ej.encuadre;
   return <Line x1={x} x2={x + ancho} y1={0} y2={0} stroke={COLOR_SUELO} strokeWidth={0.8} />;
@@ -101,7 +107,7 @@ function ManiquiAnimado({ ejercicio: ej, pausado }: { ejercicio: Ejercicio; paus
   const capas = useDerivedValue(() => dibujar(ej, reloj.value % ciclo));
   const isometrico = ej.tipo === 'isometrico';
   // El músculo principal late una vez por ciclo (de 0,55 a 1).
-  const latido = useDerivedValue(() => 0.775 + 0.225 * Math.cos(((reloj.value % ciclo) / ciclo) * Math.PI * 2));
+  const latido = useDerivedValue(() => latidoEn(reloj.value, ciclo));
   const lista = useMemo(() => ranuras(ej.vista), [ej.vista]);
 
   return (
@@ -122,11 +128,23 @@ function ManiquiAnimado({ ejercicio: ej, pausado }: { ejercicio: Ejercicio; paus
 function ManiquiQuieto({ ejercicio: ej, ms }: { ejercicio: Ejercicio; ms: number }) {
   const lista = useMemo(() => ranuras(ej.vista), [ej.vista]);
   const capas = useMemo(() => dibujar(ej, ms), [ej, ms]);
+  const latido = ej.tipo === 'isometrico' ? latidoEn(ms, ej.cicloMs) : 1;
   return (
     <>
-      {lista.map((r, i) =>
-        capas[i] ? <Path key={r.clave} d={capas[i]} {...ESTILO_CAPA[r.estilo]} strokeLinejoin="round" /> : null,
-      )}
+      {lista.map((r, i) => {
+        if (!capas[i]) return null;
+        const base = ESTILO_CAPA[r.estilo];
+        const late = r.estilo === 'principal' || r.estilo === 'principalLejos';
+        return (
+          <Path
+            key={r.clave}
+            d={capas[i]}
+            {...base}
+            fillOpacity={late ? (base.fillOpacity ?? 1) * latido : base.fillOpacity}
+            strokeLinejoin="round"
+          />
+        );
+      })}
     </>
   );
 }
