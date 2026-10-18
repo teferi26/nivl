@@ -10,6 +10,7 @@ import { construirEstudioEconomico } from './finance.ts';
 import type { Db } from './db.ts';
 import { kindLines } from './kinds.ts';
 import { leerRegistros, lineasDelDia } from './comprobacion.ts';
+import { etiquetaModos } from './modos.ts';
 
 // Espejo de levelFromXp/rankForLevel de src/lib/game.ts. La fuente de verdad
 // es game.ts: si allí cambia la curva, hay que tocar aquí. Se replica porque
@@ -67,6 +68,11 @@ function hhmm(minutes: number): string {
 export interface BuiltContext {
   text: string;
   dossier: string;
+  /**
+   * Modos F1: profiles.locale (0066) si lo tiene; null en la 1.0.9 y antes de la migración. El coach lo
+   * usa cuando el turno no trae la cabecera x-nivl-locale (los rituales del cron). Nunca va en `text`.
+   */
+  locale?: string | null;
 }
 
 /**
@@ -408,7 +414,7 @@ export async function buildContext(
           ? ` · ${a.diasSinHacer} días sin hacerse`
           : '';
     push(
-      `- [${q.id}] "${q.title}" · ${q.stat} · ${q.difficulty} · días ${dias} · adherencia ${adh}${abandono} · ${estado}${q.is_bonus ? ' · EXTRA (paga PB)' : ''}${ENLACE[q.link] ? ` · se marca sola al registrar ${ENLACE[q.link]}` : ''}`,
+      `- [${q.id}] "${q.title}" · ${q.stat} · ${q.difficulty} · días ${dias} · adherencia ${adh}${abandono} · ${estado}${q.is_bonus ? ' · EXTRA (paga PB)' : ''}${ENLACE[q.link] ? ` · se marca sola al registrar ${ENLACE[q.link]}` : ''}${etiquetaModos(q.modes)}`,
     );
   }
   // L4: las notas de lectura fijas (un solo gesto, bitácora, diario, contrato)
@@ -701,6 +707,7 @@ export async function buildContext(
   return {
     text: `${lines.join('\n')}\n\n${estudio}\n\n${economia}`,
     dossier: (dossierRes.data as any)?.content ?? '',
+    locale: typeof p.locale === 'string' ? p.locale : null,
   };
 }
 
