@@ -195,30 +195,6 @@
         "codos": "Bajar los codos y convertirlo en un remo."
       }
     },
-    "encogimientos-barra": {
-      "nombre": "Encogimientos con barra",
-      "cues": {
-        "vertical": "Sube los hombros hacia las orejas en vertical.",
-        "brazos": "Brazos estirados: los codos no se doblan.",
-        "pausa": "Aguanta un segundo arriba y baja despacio."
-      },
-      "errores": {
-        "rodar": "Rodar los hombros en círculo.",
-        "codos": "Doblar los codos para subir la barra."
-      }
-    },
-    "encogimientos-mancuerna": {
-      "nombre": "Encogimientos con mancuernas",
-      "cues": {
-        "vertical": "Sube los hombros hacia las orejas en vertical.",
-        "brazos": "Brazos a los lados, estirados.",
-        "pausa": "Aguanta un segundo arriba y baja despacio."
-      },
-      "errores": {
-        "rodar": "Rodar los hombros en círculo.",
-        "cabeza": "Adelantar la cabeza al subir."
-      }
-    },
     "peso-muerto": {
       "nombre": "Peso muerto",
       "cues": {
@@ -231,18 +207,6 @@
         "lumbar": "Redondear la zona lumbar.",
         "lejos": "Separar la barra de las piernas.",
         "cadera": "Subir la cadera antes que la barra."
-      }
-    },
-    "peso-muerto-rumano": {
-      "nombre": "Peso muerto rumano",
-      "cues": {
-        "cadera": "Lleva la cadera atrás con las rodillas sueltas.",
-        "barra": "La barra baja pegada a los muslos.",
-        "hasta": "Baja hasta que la espalda deje de estar neutra, y sube."
-      },
-      "errores": {
-        "lumbar": "Redondear la espalda para bajar más.",
-        "sentadilla": "Doblar las rodillas y convertirlo en una sentadilla."
       }
     },
     "peso-muerto-sumo": {
@@ -267,18 +231,6 @@
       "errores": {
         "lumbar": "Redondear la espalda abajo.",
         "lejos": "Separar las mancuernas del cuerpo."
-      }
-    },
-    "buenos-dias": {
-      "nombre": "Buenos días con barra",
-      "cues": {
-        "carga": "Empieza con poco peso: es un ejercicio de técnica.",
-        "cadera": "Lleva la cadera atrás con las rodillas sueltas.",
-        "espalda": "Espalda neutra; baja solo hasta donde la mantengas."
-      },
-      "errores": {
-        "lumbar": "Redondear la espalda abajo.",
-        "rodillas": "Doblar mucho las rodillas."
       }
     },
     "hiperextension": {
@@ -315,6 +267,30 @@
       "errores": {
         "lumbar": "Arquear la zona lumbar al bajar.",
         "codos": "Doblar y estirar los codos."
+      }
+    },
+    "remo-polea-una-mano": {
+      "nombre": "Remo en polea a una mano",
+      "cues": {
+        "postura": "Un pie adelantado, tronco algo inclinado y la otra mano en la cadera.",
+        "codo": "Lleva el codo atrás pegado al costado, hasta la cintura.",
+        "giro": "El tronco no gira para acompañar el tirón."
+      },
+      "errores": {
+        "giro": "Girar el tronco para mover más peso.",
+        "encoger": "Subir el hombro hacia la oreja al tirar."
+      }
+    },
+    "remo-polea-abierto": {
+      "nombre": "Remo en polea con agarre abierto",
+      "cues": {
+        "agarre": "Barra larga con agarre prono, más ancho que los hombros.",
+        "codos": "Codos abiertos hacia fuera: la barra llega a la parte baja del pecho.",
+        "escapulas": "Junta las escápulas al final y vuelve despacio."
+      },
+      "errores": {
+        "balanceo": "Balancear el tronco para tirar.",
+        "encoger": "Encoger los hombros al final."
       }
     }
   }

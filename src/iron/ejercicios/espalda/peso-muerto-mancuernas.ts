@@ -24,7 +24,7 @@ export const pesoMuertoMancuernas: Ejercicio = {
     principales: ['lumbares', 'gluteo', 'isquiotibiales'],
     secundarios: ['cuadriceps', 'trapecio', 'antebrazo', 'abdomen'],
   },
-  sustitutos: ['peso-muerto', 'peso-muerto-rumano', 'superman'],
+  sustitutos: ['peso-muerto', 'hiperextension', 'superman'],
   vista: 'lateral',
   ancla: ANCLA_DE_PIE,
   poses: [pose(0, ARRIBA), pose(400, ARRIBA), pose(1200, MEDIO), pose(2000, ABAJO), pose(2300, ABAJO), pose(2900, MEDIO)],

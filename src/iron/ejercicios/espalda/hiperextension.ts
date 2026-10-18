@@ -37,7 +37,7 @@ export const hiperextension: Ejercicio = {
     principales: ['lumbares', 'gluteo'],
     secundarios: ['isquiotibiales', 'espalda_alta'],
   },
-  sustitutos: ['superman', 'buenos-dias', 'peso-muerto-rumano'],
+  sustitutos: ['superman', 'peso-muerto-mancuernas', 'peso-muerto'],
   vista: 'lateral',
   ancla: { punto: 'cadera', x: CADERA.x, y: CADERA.y, segmento: 'muslo_c', angulo: MUSLO },
   // cadera 0: en línea con las piernas (arriba); 80: el tronco cuelga (abajo).

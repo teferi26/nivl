@@ -225,7 +225,7 @@ describe('remos', () => {
     expect(Math.abs(ang(abajo.a.antebrazo_c) + 90)).toBeLessThan(5);
   });
 
-  it.each(['remo-barra', 'remo-barra-supino', 'remo-mancuernas', 'remo-polea-sentado', 'remo-maquina', 'remo-invertido'])(
+  it.each(['remo-barra', 'remo-barra-supino', 'remo-mancuernas', 'remo-polea-sentado', 'remo-polea-abierto', 'remo-polea-una-mano', 'remo-maquina', 'remo-invertido'])(
     '%s: arriba el codo pasa la línea de la espalda',
     (id) => {
       const e = ej(id);
@@ -279,21 +279,8 @@ describe('pullovers', () => {
   });
 });
 
-describe('encogimientos', () => {
-  it.each(['encogimientos-barra', 'encogimientos-mancuerna'])('%s: brazos rectos, piernas quietas y los hombros suben', (id) => {
-    const e = ej(id);
-    const m = muestras(e);
-    for (const { ms, s } of m) {
-      expect(angulosEn(e, ms).cerca.codo).toBe(0);
-      expect(s.p.cadera).toEqual(m[0].s.p.cadera);
-    }
-    const ys = m.map(({ s }) => s.p.hombro.y);
-    expect(Math.max(...ys) - Math.min(...ys)).toBeGreaterThan(1.8);
-  });
-});
-
 describe('pesos muertos', () => {
-  it.each(['peso-muerto', 'peso-muerto-sumo', 'peso-muerto-rumano'])('%s: la barra sube y baja sobre el medio del pie (±3)', (id) => {
+  it.each(['peso-muerto', 'peso-muerto-sumo'])('%s: la barra sube y baja sobre el medio del pie (±3)', (id) => {
     const e = ej(id);
     for (const { s } of muestras(e)) expect(Math.abs(s.p.agarre_c.x - medioPie(s))).toBeLessThan(3);
   });
@@ -309,16 +296,6 @@ describe('pesos muertos', () => {
     expect(Math.abs(ang(arriba.a.tronco) - 90)).toBeLessThan(5);
   });
 
-  it('rumano: rodillas sueltas casi quietas y la barra no toca el suelo', () => {
-    const e = ej('peso-muerto-rumano');
-    for (const { ms, s } of muestras(e)) {
-      const r = angulosEn(e, ms).cerca.rodilla;
-      expect(r).toBeGreaterThanOrEqual(10);
-      expect(r).toBeLessThanOrEqual(37);
-      expect(s.p.agarre_c.y).toBeGreaterThan(20);
-    }
-  });
-
   it('con mancuernas: baja hasta media espinilla y sube a estar de pie', () => {
     const e = ej('peso-muerto-mancuernas');
     const ys = muestras(e).map(({ s }) => s.p.agarre_c.y);
@@ -326,13 +303,6 @@ describe('pesos muertos', () => {
     expect(Math.max(...ys)).toBeGreaterThan(44);
   });
 
-  it('buenos días: abajo la barra sobre el pie y las rodillas casi rectas', () => {
-    const e = ej('buenos-dias');
-    for (const { ms } of muestras(e)) expect(angulosEn(e, ms).cerca.rodilla).toBeLessThanOrEqual(20);
-    const abajo = esqueletoEn(e, 2350);
-    const b = centroCarga(abajo, e.carga, e.vista) as Punto;
-    expect(Math.abs(b.x - medioPie(abajo))).toBeLessThan(4);
-  });
 });
 
 describe('zona lumbar', () => {
