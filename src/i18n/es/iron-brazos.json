@@ -291,6 +291,54 @@
         "inclinarse": "Inclinarse hacia un lado o hacia delante.",
         "hombros": "Dejar caer los hombros hacia delante."
       }
+    },
+    "curl-polea": {
+      "nombre": "Curl de bíceps en polea baja",
+      "cues": {
+        "codos": "Codos quietos junto al cuerpo; solo se mueve el antebrazo.",
+        "cerca": "Ponte a un paso de la polea para que el cable tire también abajo.",
+        "bajada": "Baja despacio hasta estirar casi del todo el brazo."
+      },
+      "errores": {
+        "balanceo": "Echar el tronco atrás para subir el peso.",
+        "codosDelante": "Adelantar los codos al final del curl."
+      }
+    },
+    "extension-triceps-polea": {
+      "nombre": "Extensión de tríceps en polea con cuerda",
+      "cues": {
+        "codos": "Codos pegados al costado y quietos todo el recorrido.",
+        "abajo": "Estira del todo abajo y separa un poco los cabos de la cuerda.",
+        "tronco": "Tronco algo inclinado y quieto; no empujes con el cuerpo."
+      },
+      "errores": {
+        "codosSeAbren": "Separar los codos del cuerpo al bajar.",
+        "hombros": "Subir los hombros y empujar con la espalda."
+      }
+    },
+    "curl-inclinado-mancuerna": {
+      "nombre": "Curl inclinado con mancuernas",
+      "cues": {
+        "espalda": "Espalda y cabeza apoyadas en el respaldo todo el rato.",
+        "codos": "Brazos colgando y quietos; solo sube el antebrazo.",
+        "bajada": "Baja despacio hasta estirar el brazo sin soltar la tensión."
+      },
+      "errores": {
+        "hombros": "Adelantar los hombros y los codos al subir.",
+        "corto": "Quedarse a medio recorrido abajo."
+      }
+    },
+    "curl-arana": {
+      "nombre": "Curl araña con mancuernas",
+      "cues": {
+        "pecho": "Pecho apoyado en el respaldo inclinado y pies firmes en el suelo.",
+        "brazos": "Brazos colgando verticales y quietos; solo sube el antebrazo.",
+        "arriba": "Aprieta arriba un segundo y baja despacio hasta estirar."
+      },
+      "errores": {
+        "balanceo": "Despegar el pecho del banco para subir el peso.",
+        "codosAtras": "Llevar los codos hacia atrás al subir."
+      }
     }
   }
 }

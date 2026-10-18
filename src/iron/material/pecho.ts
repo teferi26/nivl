@@ -18,7 +18,7 @@ export function esEscenarioPecho(b: { readonly tipo: string }): b is EscenarioPe
 
 export function escenarioPecho(b: EscenarioPecho): string {
   'worklet';
-  if (b.tipo === 'banco_inclinado') return bancoInclinado(b.x, b.alto, b.angulo, b.respaldo, b.asiento);
+  if (b.tipo === 'banco_inclinado') return bancoInclinado(b.x, b.alto, b.angulo, b.respaldo, b.asiento, b.espejo ? -1 : 1);
   if (b.tipo === 'banco_declinado') return bancoDeclinado(b.x, b.alto, b.angulo, b.respaldo, b.rodillo, b.rodillera);
   if (b.tipo === 'paralelas') return paralelas(b.x, b.ancho, b.alto);
   return pecDeck(b.x, b.alto, b.respaldo, b.travesano, b.pivote);

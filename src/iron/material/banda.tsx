@@ -93,12 +93,16 @@ export function banda(e: Esqueleto, carga: CargaBanda, lado: 'c' | 'l', vista: V
   'worklet';
   const x0 = carga.oculta ? carga.oculta[0] : 0;
   const x1 = carga.oculta ? carga.oculta[1] : 0;
+  // Ronda 2: la banda puede ir en la rodilla o el tobillo (abducción, dominada asistida).
+  const c = carga.en === 'rodilla' ? e.p.rodilla_c : carga.en === 'tobillo' ? e.p.tobillo_c : e.p.agarre_c;
+  const l = carga.en === 'rodilla' ? e.p.rodilla_l : carga.en === 'tobillo' ? e.p.tobillo_l : e.p.agarre_l;
   if (carga.anclaje === 'manos') {
+    // De un lado al otro (de una mano a la otra, o de una rodilla a la otra).
     if (lado === 'l') return '';
-    return curva(e.p.agarre_c, e.p.agarre_l, x0, x1);
+    return curva(c, l, x0, x1);
   }
   if (carga.lados.indexOf(lado === 'c' ? 'cerca' : 'lejos') < 0) return '';
-  const mano = lado === 'c' ? e.p.agarre_c : e.p.agarre_l;
+  const mano = lado === 'c' ? c : l;
   if (carga.anclaje === 'pies') return curva(mano, pisada(e, lado, vista), x0, x1);
   const fijo = { x: carga.anclaje.x, y: carga.anclaje.y };
   // El anclaje tampoco se ve si cae detrás del cuerpo.

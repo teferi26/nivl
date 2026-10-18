@@ -5,6 +5,7 @@
 // general (../index.ts) los añade detrás de los del prototipo.
 
 import type { Ejercicio } from '../../tipos';
+import { crucePoleas } from './cruce-poleas';
 import { aperturasDeclinadoMancuerna } from './aperturas-declinado-mancuerna';
 import { aperturasInclinadoMancuerna } from './aperturas-inclinado-mancuerna';
 import { aperturasMancuerna } from './aperturas-mancuerna';
@@ -51,4 +52,6 @@ export const PECHO: readonly Ejercicio[] = [
   fondosParalelas,
   fondosNegativos,
   pecDeck,
+  // ronda 2 (material de otros equipos, integración)
+  crucePoleas,
 ];

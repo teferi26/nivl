@@ -316,6 +316,30 @@
         "tronco": "Mover el tronco para subir más la pierna.",
         "forzar": "Forzar el rango desde el primer balanceo."
       }
+    },
+    "pallof-press": {
+      "nombre": "Pallof press con banda",
+      "cues": {
+        "tronco": "De lado al anclaje, pies a la anchura de la cadera y tronco firme.",
+        "empuje": "Empuja las manos al frente desde el esternón sin girar.",
+        "pausa": "Aguanta dos segundos con los brazos estirados y vuelve despacio."
+      },
+      "errores": {
+        "girar": "Dejar que la banda gire los hombros o la cadera.",
+        "cerca": "Ponerse tan cerca del anclaje que la banda no tira."
+      }
+    },
+    "elevacion-rodillas-colgado": {
+      "nombre": "Elevación de rodillas colgado",
+      "cues": {
+        "agarre": "Cuélgate con los brazos estirados y los hombros activos.",
+        "pelvis": "Sube las rodillas por encima de la cadera enrollando la pelvis.",
+        "balanceo": "Baja despacio y sin balancearte."
+      },
+      "errores": {
+        "balanceo": "Coger impulso balanceando el cuerpo.",
+        "caer": "Dejar caer las piernas de golpe."
+      }
     }
   }
 }

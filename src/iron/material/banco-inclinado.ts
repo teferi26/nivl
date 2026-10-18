@@ -10,23 +10,24 @@ import { poligono, poste, tablon } from './trazo-pecho';
 
 export const GROSOR_BANCO = 5;
 
-export function bancoInclinado(x: number, alto: number, angulo: number, respaldo: number, asiento: number): string {
+export function bancoInclinado(x: number, alto: number, angulo: number, respaldo: number, asiento: number, lado = 1): string {
   'worklet';
+  // `lado` -1: en espejo (respaldo hacia +x, asiento hacia -x; ronda 2, apoyo de pecho).
   const a = ((180 - angulo) * Math.PI) / 180;
-  const fin = { x: x + Math.cos(a) * respaldo, y: alto + Math.sin(a) * respaldo };
+  const fin = { x: x + lado * Math.cos(a) * respaldo, y: alto + Math.sin(a) * respaldo };
   const g = GROSOR_BANCO;
   // Respaldo: el grueso queda por debajo (a la izquierda del sentido bisagra→fin).
-  let d = tablon({ x, y: alto }, fin, g);
+  let d = lado > 0 ? tablon({ x, y: alto }, fin, g) : tablon(fin, { x, y: alto }, g);
   d += poligono([
     { x, y: alto },
-    { x: x + asiento, y: alto },
-    { x: x + asiento, y: alto - g },
+    { x: x + lado * asiento, y: alto },
+    { x: x + lado * asiento, y: alto - g },
     { x, y: alto - g },
   ]);
-  d += poste(x + asiento - 7, alto - g);
-  d += poste(x - 3, alto - g);
+  d += poste(lado > 0 ? x + asiento - 7 : x - asiento + 4, alto - g);
+  d += poste(lado > 0 ? x - 3 : x, alto - g);
   // Puntal bajo el 70 % del respaldo.
-  const px = x + Math.cos(a) * respaldo * 0.7;
+  const px = x + lado * Math.cos(a) * respaldo * 0.7;
   const py = alto + Math.sin(a) * respaldo * 0.7 - g / Math.cos((angulo * Math.PI) / 180);
   d += poste(px - 1.5, py);
   return d;

@@ -7,6 +7,8 @@
 // barra es del prototipo y vive en src/iron/ejercicios/sentadilla-barra.ts.
 
 import type { Ejercicio } from '../../tipos';
+import { abduccionBanda } from './abduccion-banda';
+import { patadaGluteoPolea } from './patada-gluteo-polea';
 import { abduccionMaquina } from './abduccion-maquina';
 import { abduccionTumbado } from './abduccion-tumbado';
 import { buenosDias } from './buenos-dias';
@@ -61,4 +63,7 @@ export const EJERCICIOS_PIERNA: readonly Ejercicio[] = [
   abduccionTumbado,
   curlNordico,
   elevacionTibial,
+  // ronda 2 (material de otros equipos, integración)
+  patadaGluteoPolea,
+  abduccionBanda,
 ];

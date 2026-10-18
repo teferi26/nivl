@@ -526,7 +526,11 @@ function mancuerna(c: Punto, eje: Punto, deLado: boolean): string {
 function cargaLado(e: Esqueleto, carga: Carga | undefined, lado: 'c' | 'l', vista: Vista, fase = 0): string {
   'worklet';
   if (!carga) return '';
-  if (esCargaEspalda(carga)) return dibujarCargaEspalda(carga, lado, { c: e.p.agarre_c, l: e.p.agarre_l });
+  if (esCargaEspalda(carga)) {
+    // Ronda 2: la polea puede ir al tobillo (patada de glúteo).
+    const tobillo = carga.tipo === 'polea' && carga.en === 'tobillo';
+    return dibujarCargaEspalda(carga, lado, tobillo ? { c: e.p.tobillo_c, l: e.p.tobillo_l } : { c: e.p.agarre_c, l: e.p.agarre_l });
+  }
   // core: la comba (cuerda detrás del cuerpo, mangos en los puños) y la rueda abdominal.
   if (carga.tipo === 'comba') return lado === 'l' ? cuerdaComba(e, fase, carga.vueltas) + manijaComba(e, 'l') : manijaComba(e, 'c');
   if (carga.tipo === 'rueda') return lado === 'c' ? rueda(e.p.agarre_c, carga.radio) : '';
@@ -577,7 +581,7 @@ function cargaLado(e: Esqueleto, carga: Carga | undefined, lado: 'c' | 'l', vist
 export function centroCarga(e: Esqueleto, carga: Carga | undefined, vista: Vista): Punto | null {
   'worklet';
   if (!carga) return null;
-  if (esCargaEspalda(carga)) return e.p.agarre_c;
+  if (esCargaEspalda(carga)) return carga.tipo === 'polea' && carga.en === 'tobillo' ? e.p.tobillo_c : e.p.agarre_c;
   // pierna
   if (esCargaPierna(carga)) return centroCargaPierna(e, carga);
   // core

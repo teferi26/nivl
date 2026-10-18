@@ -65,7 +65,8 @@ describe('el grupo', () => {
   });
 
   it('solo usa material propio (esterilla, comba, rueda) o peso corporal', () => {
-    for (const e of EJERCICIOS_CORE) for (const m of e.material) expect(['esterilla', 'comba', 'rueda', 'peso_corporal']).toContain(m);
+    // Integración: la ronda 2 usa material de otros equipos (banda, barra fija).
+    for (const e of EJERCICIOS_CORE) for (const m of e.material) expect(['esterilla', 'comba', 'rueda', 'peso_corporal', 'banda', 'barra_fija']).toContain(m);
   });
 
   it('la plancha del prototipo no se duplica', () => {
@@ -100,6 +101,9 @@ describe.each(EJERCICIOS_CORE.map((e) => [e.id, e] as const))('%s', (_id, e) => 
   });
 
   it('el brazo de delante nunca pasa por encima de la cabeza (no la tapa)', () => {
+    // Colgado de la barra (ronda 2) los brazos van por encima de la cabeza por definición:
+    // la cara queda delante del brazo (lo mide ronda2.test.ts).
+    if (e.material.includes('barra_fija')) return;
     for (const { s } of m) {
       const c = s.p.cabeza;
       const d = Math.min(distanciaASegmento(c, s.p.hombro, s.p.codo_c), distanciaASegmento(c, s.p.codo_c, s.p.agarre_c));

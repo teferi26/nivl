@@ -5,6 +5,10 @@
 // Orden: los más usados primero.
 
 import type { Ejercicio } from '../../tipos';
+import { curlArana } from './curl-arana';
+import { curlInclinadoMancuerna } from './curl-inclinado-mancuerna';
+import { curlPolea } from './curl-polea';
+import { extensionTricepsPolea } from './extension-triceps-polea';
 import { curlArrastreBarra } from './curl-arrastre-barra';
 import { curlBarra } from './curl-barra';
 import { curlBarraZ } from './curl-barra-z';
@@ -55,4 +59,9 @@ export const BRAZOS: readonly Ejercicio[] = [
   extensionMunecaMancuerna,
   curlMunecaEspaldaBarra,
   paseoGranjero,
+  // ronda 2 (material de otros equipos, integración)
+  curlPolea,
+  curlInclinadoMancuerna,
+  curlArana,
+  extensionTricepsPolea,
 ];

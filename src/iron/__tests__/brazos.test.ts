@@ -67,7 +67,8 @@ describe('catálogo de brazos', () => {
   });
 
   it('solo usa material ya dibujado o propio (barra Z); lo demás es ronda 2', () => {
-    const permitido: Material[] = ['barra', 'barra_z', 'mancuerna', 'banco', 'peso_corporal'];
+    // Integración: la ronda 2 usa material de otros equipos (polea, banco inclinado).
+    const permitido: Material[] = ['barra', 'barra_z', 'mancuerna', 'banco', 'peso_corporal', 'polea', 'banco_inclinado'];
     for (const e of BRAZOS) for (const m of e.material) expect(permitido).toContain(m);
   });
 

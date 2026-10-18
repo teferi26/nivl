@@ -324,6 +324,30 @@
         "rapido": "Hacerlo rápido y sin rango.",
         "talon": "Despegar el talón del suelo."
       }
+    },
+    "patada-gluteo-polea": {
+      "nombre": "Patada de glúteo en polea",
+      "cues": {
+        "tronco": "Agárrate a la torre y deja el tronco algo inclinado y quieto.",
+        "atras": "Lleva la pierna atrás con el glúteo, rodilla casi estirada.",
+        "lumbar": "Para antes de arquear la zona lumbar."
+      },
+      "errores": {
+        "arquear": "Arquear la espalda para subir más la pierna.",
+        "impulso": "Lanzar la pierna con impulso."
+      }
+    },
+    "abduccion-banda": {
+      "nombre": "Abducción de pie con banda",
+      "cues": {
+        "pelvis": "Pelvis recta: no te inclines hacia el lado de apoyo.",
+        "punta": "Abre la pierna recta con la punta del pie mirando al frente.",
+        "vuelta": "Vuelve despacio sin dejar que la banda te junte las rodillas."
+      },
+      "errores": {
+        "inclinar": "Inclinar el tronco para abrir más.",
+        "rotar": "Girar la punta del pie hacia arriba."
+      }
     }
   }
 }

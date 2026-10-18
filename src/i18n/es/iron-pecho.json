@@ -283,6 +283,18 @@
         "choque": "Dejar que las placas choquen al volver.",
         "hombros": "Subir los hombros hacia las orejas."
       }
+    },
+    "cruce-poleas": {
+      "nombre": "Cruce de poleas",
+      "cues": {
+        "codos": "Codos un poco doblados y fijos, como si abrazaras un árbol.",
+        "arco": "Baja las manos en arco hasta juntarlas delante del pecho bajo.",
+        "vuelta": "Vuelve despacio hasta sentir el pecho estirado, sin pasar de los hombros."
+      },
+      "errores": {
+        "press": "Doblar y estirar los codos: se convierte en un press.",
+        "tronco": "Mover el tronco para ayudar al brazo."
+      }
     }
   }
 }

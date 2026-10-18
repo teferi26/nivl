@@ -176,7 +176,8 @@ export type Carga =
   // hombro: banda elástica (src/iron/material/banda.tsx).
   | {
       readonly tipo: 'banda';
-      readonly en: 'agarre';
+      /** Dónde se sujeta la banda en el cuerpo (ronda 2: también la rodilla o el tobillo). */
+      readonly en: 'agarre' | 'rodilla' | 'tobillo';
       /** Qué manos agarran la banda (con 'manos', las dos). */
       readonly lados: readonly Lado[];
       /**
@@ -252,6 +253,8 @@ export type EscenarioPecho =
       readonly angulo: number;
       readonly respaldo: number;
       readonly asiento: number;
+      /** Ronda 2: el banco al revés (respaldo hacia +x), para apoyar el pecho boca abajo (remo, curl araña). */
+      readonly espejo?: boolean;
       readonly capa: 'fondo' | 'medio';
     }
   | {

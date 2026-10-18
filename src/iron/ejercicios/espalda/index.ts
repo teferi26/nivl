@@ -6,6 +6,7 @@
 // Los archivos que empiezan por «_» son ayudas para escribir poses.
 
 import type { Ejercicio } from '../../tipos';
+import { dominadaAsistidaBanda } from './dominada-asistida-banda';
 import { dominada } from './dominada';
 import { dominadaEscapular } from './dominada-escapular';
 import { dominadaNegativa } from './dominada-negativa';
@@ -23,6 +24,7 @@ import { pesoMuertoMancuernas } from './peso-muerto-mancuernas';
 import { pesoMuertoSumo } from './peso-muerto-sumo';
 import { pulloverMancuerna } from './pullover-mancuerna';
 import { pulloverPolea } from './pullover-polea';
+import { remoApoyoPecho } from './remo-apoyo-pecho';
 import { remoBarra } from './remo-barra';
 import { remoBarraSupino } from './remo-barra-supino';
 import { remoInvertido } from './remo-invertido';
@@ -60,4 +62,7 @@ export const ESPALDA: readonly Ejercicio[] = [
   hiperextension,
   superman,
   pulloverMancuerna,
+  // ronda 2 (material de otros equipos, integración)
+  remoApoyoPecho,
+  dominadaAsistidaBanda,
 ];

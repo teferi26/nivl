@@ -7,6 +7,8 @@
 // Orden: los más usados primero dentro de cada bloque.
 
 import type { Ejercicio } from '../../tipos';
+import { elevacionRodillasColgado } from './elevacion-rodillas-colgado';
+import { pallofPress } from './pallof-press';
 import { balanceoPierna } from './balanceo-pierna';
 import { birdDog } from './bird-dog';
 import { bisagraCadera } from './bisagra-cadera';
@@ -62,4 +64,7 @@ export const EJERCICIOS_CORE: readonly Ejercicio[] = [
   flexorCadera,
   movilidadTobillo,
   balanceoPierna,
+  // ronda 2 (material de otros equipos, integración)
+  pallofPress,
+  elevacionRodillasColgado,
 ];

@@ -26,7 +26,8 @@ export interface TorrePolea {
   readonly capa: 'fondo' | 'medio';
 }
 
-export type AgarrePolea = 'asa' | 'cuerda' | 'barra' | 'triangulo';
+/** Ronda 2: 'tobillera' (correa en el tobillo, con `en: 'tobillo'`). */
+export type AgarrePolea = 'asa' | 'cuerda' | 'barra' | 'triangulo' | 'tobillera';
 
 export interface CargaPolea {
   readonly tipo: 'polea';
@@ -37,6 +38,8 @@ export interface CargaPolea {
   readonly lados: readonly Lado[];
   /** Barra: el tramo que sale hacia la cámara (como la barra con discos). */
   readonly eje?: { readonly x: number; readonly y: number };
+  /** Ronda 2: dónde se engancha el cable en el cuerpo (por defecto, la mano). */
+  readonly en?: 'agarre' | 'tobillo';
 }
 
 export const RADIO_RUEDA = 2.6;
@@ -70,7 +73,7 @@ export function enganche(mano: P, polea: P, agarre: AgarrePolea): P {
   const dx = polea.x - mano.x;
   const dy = polea.y - mano.y;
   const l = Math.hypot(dx, dy) || 1;
-  const largo = agarre === 'barra' ? 0 : agarre === 'asa' ? 4 : agarre === 'triangulo' ? 6.5 : 7;
+  const largo = agarre === 'barra' ? 0 : agarre === 'asa' ? 4 : agarre === 'tobillera' ? 3.2 : agarre === 'triangulo' ? 6.5 : 7;
   return { x: mano.x + (dx / l) * largo, y: mano.y + (dy / l) * largo };
 }
 
@@ -89,6 +92,10 @@ function agarreDibujo(mano: P, polea: P, c: CargaPolea): string {
       d += tramo(mano, fin, 1.6) + circulo(fin, 1.2, 10);
     }
     return d;
+  }
+  if (c.agarre === 'tobillera') {
+    // Correa alrededor del tobillo y una argolla de la que sale el cable.
+    return caja(mano, 3.4, 4.6, (Math.atan2(u.y, u.x) * 180) / Math.PI) + circulo(v, 0.9, 8);
   }
   if (c.agarre === 'cuerda') {
     // Los dos cabos van del enganche a la mano y asoman con su nudo.

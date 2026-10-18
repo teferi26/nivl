@@ -316,6 +316,30 @@
         "circulos": "Girar los hombros en círculo.",
         "cabeza": "Adelantar la cabeza al subir."
       }
+    },
+    "remo-apoyo-pecho": {
+      "nombre": "Remo con mancuernas con apoyo de pecho",
+      "cues": {
+        "pecho": "Pecho pegado al respaldo todo el recorrido.",
+        "codos": "Lleva los codos atrás y pegados, hacia la cadera.",
+        "bajada": "Baja hasta estirar los brazos, sin soltar los hombros de golpe."
+      },
+      "errores": {
+        "despegar": "Despegar el pecho del banco para tirar más.",
+        "encoger": "Encoger los hombros hacia las orejas."
+      }
+    },
+    "dominada-asistida-banda": {
+      "nombre": "Dominada asistida con banda",
+      "cues": {
+        "banda": "Ata la banda a la barra y pasa una rodilla por el lazo.",
+        "pecho": "Sube con el pecho hacia la barra hasta pasar la barbilla.",
+        "bajada": "Baja controlando hasta estirar los brazos."
+      },
+      "errores": {
+        "rebote": "Rebotar abajo con la banda para subir.",
+        "medio": "Quedarse a medio recorrido arriba o abajo."
+      }
     }
   }
 }
