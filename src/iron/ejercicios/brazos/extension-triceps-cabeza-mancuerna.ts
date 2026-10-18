@@ -8,7 +8,7 @@
 // queda casi vertical (hombro de 160 a 180°) y quieto (±3°); abajo la
 // mancuerna queda detrás de la cabeza; tronco recto.
 // En la vista lateral el brazo cercano pasa por la parte de atrás de la
-// cabeza: la barbilla un poco hacia delante deja la cara a la vista.
+// cabeza: la cabeza adelantada (barbilla hacia el pecho) deja la cara a la vista.
 
 import type { Ejercicio, Extremidades } from '../../tipos';
 import { ANCLA_DE_PIE, DE_PIE, pose, textos } from './comun';
@@ -30,12 +30,12 @@ export const extensionTricepsCabezaMancuerna: Ejercicio = {
   vista: 'lateral',
   ancla: ANCLA_DE_PIE,
   poses: [
-    pose(0, ARRIBA, { cuello: 26 }),
-    pose(400, ARRIBA, { cuello: 26 }),
-    pose(1300, MEDIO, { cuello: 26 }),
-    pose(2200, ABAJO, { cuello: 26 }),
-    pose(2450, ABAJO, { cuello: 26 }),
-    pose(3100, MEDIO, { cuello: 26 }),
+    pose(0, ARRIBA, { cuello: 34 }),
+    pose(400, ARRIBA, { cuello: 34 }),
+    pose(1300, MEDIO, { cuello: 34 }),
+    pose(2200, ABAJO, { cuello: 34 }),
+    pose(2450, ABAJO, { cuello: 34 }),
+    pose(3100, MEDIO, { cuello: 34 }),
   ],
   cicloMs: 3800,
   esfuerzo: [{ desde: 2450, hasta: 3800 }],
