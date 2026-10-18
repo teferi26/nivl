@@ -59,6 +59,8 @@ export const MUSCULOS: readonly MusculoId[] = [
   'aductores',
   'gemelos',
   'tibial',
+  // pecho
+  'pectoral_superior',
 ];
 
 export const GRUPO_DE_MUSCULO: Readonly<Record<MusculoId, GrupoMuscular>> = {
@@ -81,6 +83,8 @@ export const GRUPO_DE_MUSCULO: Readonly<Record<MusculoId, GrupoMuscular>> = {
   aductores: 'pierna',
   gemelos: 'pierna',
   tibial: 'pierna',
+  // pecho
+  pectoral_superior: 'pecho',
 };
 
 export const GRUPOS: readonly GrupoMuscular[] = ['pecho', 'espalda', 'hombro', 'brazo', 'pierna', 'core'];
@@ -116,6 +120,9 @@ export const FORMAS_LATERAL: Readonly<Record<MusculoId, readonly FormaLateral[]>
   aductores: [{ seg: 'muslo', t0: 0.05, t1: 0.55, cara: 'medio', ancho: 0.5 }],
   gemelos: [{ seg: 'pierna', t0: 0.03, t1: 0.64, cara: 'post', ancho: 0.95, pico: 0.35 }],
   tibial: [{ seg: 'pierna', t0: 0.05, t1: 0.82, cara: 'ant', ancho: 0.62, pico: 0.3 }],
+  // pecho: la porción clavicular, encima de la parte alta del pectoral (va
+  // dentro de su forma: cuando trabaja el pectoral entero, lo tapa).
+  pectoral_superior: [{ seg: 'tronco', t0: 0.8, t1: 0.97, cara: 'ant', ancho: 0.5, pico: 0.55 }],
 };
 
 const SEIS: readonly (readonly [number, number])[] = [
@@ -160,4 +167,6 @@ export const FORMAS_FRONTAL: Readonly<Record<MusculoId, readonly FormaFrontal[]>
     { cara: 'ant', seg: 'pierna', t0: 0.1, t1: 0.5, centro: -0.62, ancho: 0.32 },
   ],
   tibial: [{ cara: 'ant', seg: 'pierna', t0: 0.05, t1: 0.8, centro: 0.26, ancho: 0.5, pico: 0.3 }],
+  // pecho
+  pectoral_superior: [{ cara: 'ant', seg: 'tronco', t0: 0.83, t1: 0.97, centro: 0.45, ancho: 0.44, par: true, pico: 0.45 }],
 };
