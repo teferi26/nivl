@@ -60,7 +60,7 @@ immutable
 set search_path = public, pg_temp
 as $$
   select case p_evento
-    when 'primer_arranque' then array[]::text[]
+    when 'primer_arranque' then array['previo']
     when 'onboarding_paso' then array['paso']
     when 'onboarding_fin' then array['salida']
     when 'registro' then array['resultado']

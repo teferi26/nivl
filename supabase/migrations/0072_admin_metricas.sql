@@ -101,7 +101,10 @@ begin
     'activos_7d', (select count(*) from public.profiles where last_open_on > v_hoy - 7),
     'activos_30d', (select count(*) from public.profiles where last_open_on > v_hoy - 30),
     'onboarding_hecho', (select count(*) from public.profiles where onboarding_done),
-    'instalaciones', (select count(distinct install_id) from public.funnel_events where evento = 'primer_arranque'),
+    'instalaciones', (select count(distinct install_id) from public.funnel_events
+                       where evento = 'primer_arranque' and not coalesce((props ->> 'previo')::boolean, false)),
+    'instalaciones_previas', (select count(distinct install_id) from public.funnel_events
+                               where evento = 'primer_arranque' and coalesce((props ->> 'previo')::boolean, false)),
     'suscripciones_vivas', (select count(*) from public.subscriptions
                              where status in ('active', 'trialing')
                                and (current_period_end is null or current_period_end > now())
@@ -131,14 +134,16 @@ begin
       (select count(*) from public.profiles p
         where (p.created_at at time zone 'Europe/Madrid')::date = d::date),
       (select count(distinct f.install_id) from public.funnel_events f
-        where f.evento = 'primer_arranque' and (f.created_at at time zone 'Europe/Madrid')::date = d::date)
+        where f.evento = 'primer_arranque' and not coalesce((f.props ->> 'previo')::boolean, false)
+          and (f.created_at at time zone 'Europe/Madrid')::date = d::date)
     from generate_series(v_desde, v_hasta, interval '1 day') d
     order by 1;
 end
 $$;
 
 -- ── 3. Embudo por paso ────────────────────────────────────────────────
--- Cohorte: instalaciones cuyo primer arranque cae en la ventana. Para cada
+-- Cohorte: instalaciones NUEVAS (primer_arranque sin `previo`: quien ya usaba
+-- una versión anterior no cuenta) cuyo primer arranque cae en la ventana. Para cada
 -- paso, cuántas de ellas llegaron (alguna vez). Responde «dónde se quedan».
 create or replace function public.admin_embudo(p_desde date default null, p_hasta date default null)
 returns table (orden integer, paso text, instalaciones bigint, porcentaje numeric)
@@ -155,7 +160,7 @@ begin
   return query
     with cohorte as (
       select distinct f.install_id from public.funnel_events f
-      where f.evento = 'primer_arranque'
+      where f.evento = 'primer_arranque' and not coalesce((f.props ->> 'previo')::boolean, false)
         and (f.created_at at time zone 'Europe/Madrid')::date between v_desde and v_hasta
     ),
     ev as (
@@ -213,7 +218,7 @@ begin
   return query
     with cohorte as (
       select distinct f.install_id from public.funnel_events f
-      where f.evento = 'primer_arranque'
+      where f.evento = 'primer_arranque' and not coalesce((f.props ->> 'previo')::boolean, false)
         and (f.created_at at time zone 'Europe/Madrid')::date between v_desde and v_hasta
     ),
     rango as (
@@ -264,7 +269,7 @@ begin
     with primeras as (
       select f.install_id, min((f.created_at at time zone 'Europe/Madrid')::date) dia0
       from public.funnel_events f
-      where f.evento = 'primer_arranque'
+      where f.evento = 'primer_arranque' and not coalesce((f.props ->> 'previo')::boolean, false)
       group by f.install_id
     ),
     aperturas as (

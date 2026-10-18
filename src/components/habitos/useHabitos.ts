@@ -222,7 +222,7 @@ export function useHabitos(): { vista: HabitosVistaProps; hoja: HojaHabito } {
     },
     onSubmit: async (input) => {
       if (editando) await updateQuest(editando.id, input);
-      else if (userId) await createQuest(userId, input);
+      else if (userId) await createQuest(userId, input, 'habitos');
       setFormOpen(false);
       setEditando(null);
       await cargar();

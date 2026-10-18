@@ -18,6 +18,7 @@ import {
   updateProfile,
   uploadEvidence,
 } from './data';
+import { registrarUnaVez } from './analitica';
 import { addDays, dateKey } from './dates';
 import { BONUS_BY_DIFFICULTY, DAILY_PENALTY_CAP, levelFromXp, questXp, RULE_BREAK_XP, STAT_COLUMN } from './game';
 import { supabase } from './supabase';
@@ -468,6 +469,9 @@ export async function completeQuest(
     applyStat: !quest.is_penalty,
     evidenceUrl: evidencePath,
   });
+
+  // Embudo anónimo: la primera misión completada de la instalación.
+  if (awarded) registrarUnaVez('primera_mision_completada', { con_foto: evidencePath !== null });
 
   const before = levelFromXp(profile.xp_total).level;
   const after = levelFromXp(updated.xp_total).level;

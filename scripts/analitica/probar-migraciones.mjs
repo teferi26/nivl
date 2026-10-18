@@ -106,6 +106,11 @@ for (const sql of [`select admin_resumen() x`, `select * from admin_altas_por_di
   `select * from admin_uso_modulos(null,null)`, `select admin_conversiones(null,null) x`, `select * from admin_opiniones(10,null)`]) {
   r = await como('authenticated', u2, sql); console.log(sql, JSON.stringify(r.rows).slice(0, 300));
 }
+await como('anon', null, `select registrar_evento('previo00-3456-4789-abcd-ef1234567890','primer_arranque','{"previo":true}'::jsonb)`);
+r = await como('authenticated', u2, `select admin_resumen() x`);
+ok(r.rows[0].x.instalaciones === 1 && r.rows[0].x.instalaciones_previas === 1, 'quien venía de antes no cuenta como instalación nueva');
+r = await como('authenticated', u2, `select instalaciones from admin_embudo(null,null) where paso='primer_arranque'`);
+ok(Number(r.rows[0].instalaciones) === 1, 'embudo sin previas');
 ok(await falla('authenticated', u2, `select * from admin_embudo('2020-01-01','2026-01-01')`, [], /366/), 'ventana máxima');
 r = await como('authenticated', u2, `select * from admin_opiniones(10,null)`); ok(!('user_id' in r.rows[0]), 'opiniones sin user_id');
 r = await como('authenticated', u1, `select export_my_data() x`);
@@ -117,6 +122,6 @@ await q(`insert into funnel_events(install_id,evento) values ($1,'primer_arranqu
 await q(`delete from auth.users where id=$1`, [u1]);
 r = await q(`select install_id, user_id from funnel_events`);
 ok(r.rows.every((y) => y.install_id !== INST), 'borrado de cuenta se lleva la instalación entera');
-ok(r.rows.length === 1, 'otras instalaciones intactas');
+ok(r.rows.length === 2, 'otras instalaciones intactas');
 r = await q(`select count(*)::int n from app_feedback`); ok(r.rows[0].n === 0, 'opiniones borradas');
 r = await q(`select value from app_config where key='analitica_activa'`); ok(r.rows[0].value === false, 'flag sembrado apagado');

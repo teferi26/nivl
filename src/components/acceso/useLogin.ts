@@ -11,6 +11,7 @@ import { useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { AppState, Keyboard, Platform } from 'react-native';
 import { vibrar } from '@/design/haptics';
+import { registrar as registrarEvento } from '@/lib/analitica';
 import { entrar, pedirRecuperacion, registrar } from '@/lib/authFlow';
 import { SITIO_CREADORES } from '@/lib/sitio';
 import { mensajeSistema } from '@/lib/validation';
@@ -88,6 +89,7 @@ export function useLogin(): LoginVistaProps {
         setNotice(avisoRecuperacion());
       } else {
         const r = await registrar(email, password, name);
+        registrarEvento('registro', { resultado: r });
         if (r === 'confirmar_email') {
           // Se vuelve a Entrar con el correo puesto: lo siguiente es confirmar y entrar.
           setMode('signin');

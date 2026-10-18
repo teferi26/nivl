@@ -180,7 +180,7 @@ export function useInforme(): { vista: InformeVistaProps; hoja: ReactNode } {
         difficulty: q.difficulty,
         days_of_week: q.days_of_week,
         requires_evidence: false,
-      });
+      }, 'informe');
       setApplied((prev) => new Set(prev).add(key));
       await load();
     } catch (e) {

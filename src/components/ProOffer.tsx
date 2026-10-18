@@ -38,6 +38,7 @@ import { useConsentimientoIA } from '@/components/ConsentimientoIA';
 import { ErrorSistema } from '@/components/arena';
 import { Button, Card, Chip, Skeleton, Tag } from '@/components/ui';
 import { ink, type as tipo } from '@/design/tokens';
+import { registrar } from '@/lib/analitica';
 import { insertEvent } from '@/lib/data';
 import {
   COACH_USAGE_NOTICE,
@@ -224,6 +225,7 @@ export function useProOffer({ userId, onPurchased, trialAvailable, onTrialStarte
     if (disponible && !(await permiso())) return;
     return conCerrojo('compra', async () => {
       if (disponible) {
+        registrar('compra_iniciada', { plan: planId });
         const r = await purchase(planId, precio!).catch((e: unknown) => {
           if (e instanceof StorePriceChangedError) {
             setPrecios({});
@@ -234,6 +236,7 @@ export function useProOffer({ userId, onPurchased, trialAvailable, onTrialStarte
         });
         // Cerrar la hoja de pago no es un error: aquí no ha pasado nada.
         if (r === 'cancelada') return;
+        registrar('compra_ok', { plan: planId, resultado: r });
         if (r === 'pendiente') setAviso(AVISO_PENDIENTE);
         if (r === 'programada') setAviso(AVISO_PROGRAMADA);
         vibrar('mision');
@@ -356,6 +359,11 @@ export function ProOfferBody({ oferta, kind, compact, motivo }: BodyProps) {
   const sinNivel = disponible && catalogo === 'listo' && planes.length > 0 && !planes.some((p) => p.tier === tier);
   const beneficios = beneficiosPorMotivo(tier === 'elite' ? [...ELITE_BENEFITS, ...PRO_BENEFITS] : PRO_BENEFITS, motivo, tier);
   const contexto = motivo ? copyUpsell(motivo, tier).contexto : null;
+  // Embudo anónimo: la oferta se ha visto (una vez por montaje).
+  useEffect(() => {
+    registrar('paywall_visto', { motivo: motivo ?? (compact ? 'onboarding' : 'pro'), compacto: !!compact });
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- se apunta al aparecer, no al cambiar de nivel
+  }, []);
   // Con la tienda abierta en /pro, los planes (título, duración y precio) van
   // antes que los beneficios: es lo que Apple pide ver sin buscarlo (2.1).
   const planesArriba = disponible && !compact;

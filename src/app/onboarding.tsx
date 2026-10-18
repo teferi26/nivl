@@ -55,6 +55,7 @@ import {
   olvidarCodigoPendiente,
   type ReferralSource,
 } from '@/lib/creators';
+import { registrar, type SalidaOnboarding } from '@/lib/analitica';
 import { createStarterQuests, deleteQuest, ensureProfile, fetchQuests, insertEvent, updateProfile } from '@/lib/data';
 import { addDays, dateKey, fechaConAnio } from '@/lib/dates';
 import { KINDS, PROFILE_KINDS, type ProfileKind } from '@/lib/kinds';
@@ -296,9 +297,10 @@ export default function Onboarding() {
     seAbreEl: fechaConAnio(abreEl),
   });
 
-  const finish = () =>
+  const finish = (salida: SalidaOnboarding = 'sin_oferta') =>
     withLock(async () => {
       await updateProfile(userId!, { onboarding_done: true });
+      registrar('onboarding_fin', { salida });
       router.replace('/(tabs)');
     });
 
@@ -338,7 +340,10 @@ export default function Onboarding() {
     if (selloTimer.current) clearTimeout(selloTimer.current);
     selloTimer.current = null;
     setSello(false);
-    if (yaEsPro.current) router.replace('/(tabs)');
+    if (yaEsPro.current) {
+      registrar('onboarding_fin', { salida: 'ya_pro' });
+      router.replace('/(tabs)');
+    }
     else setStep(6);
   }, []);
 
@@ -388,7 +393,7 @@ export default function Onboarding() {
   // línea no cuenta contra los topes y no hay nada que cerrar.
   const salir = async (respuesta: RespuestaOferta) => {
     if (decisionOferta?.forma === 'hoja') await anotarOferta('firma', respuesta, 'hoja');
-    await finish();
+    await finish(respuesta === 'vista' ? 'cerrada' : respuesta);
   };
 
   // La prueba de 7 días solo si la cuenta nunca tuvo coach Y la decisión la
@@ -448,6 +453,12 @@ export default function Onboarding() {
     const bajar = setTimeout(() => scroll.current?.scrollToEnd({ animated: true }), 280);
     return () => clearTimeout(bajar);
   }, [firmaOk, step]);
+
+  // Embudo anónimo: qué paso se ve (volver atrás lo repite; el panel cuenta
+  // instalaciones distintas por paso).
+  useEffect(() => {
+    registrar('onboarding_paso', { paso: step });
+  }, [step]);
 
   // Cada paso empieza arriba: el ScrollView es el mismo para todos y, si no,
   // la oferta de Pro heredaba el scroll del final de la firma.

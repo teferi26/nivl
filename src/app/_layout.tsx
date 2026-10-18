@@ -15,6 +15,7 @@ import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { CelebracionProvider } from '@/components/celebracion/CelebracionProvider';
 import { TopeAncho } from '@/design/useSizeClass';
 import { sincronizarIdioma } from '@/i18n/sincronizar';
+import { arrancarAnalitica } from '@/lib/analitica';
 import { AuthProvider, useAuth } from '@/lib/auth';
 import { identificarEnTienda } from '@/lib/pro';
 import { registrarDispositivo } from '@/lib/push';
@@ -201,6 +202,14 @@ export default function RootLayout() {
     meta.content = 'noindex, nofollow'; // i18n-ok: valor técnico de la meta, no se lee
     document.head.appendChild(meta);
     document.title = t('raiz:portal.tituloDocumento');
+  }, []);
+
+  // Embudo anónimo (docs/modos/F1-analitica.md): la apertura de hoy y, al
+  // volver a primer plano, la del día siguiente. No en el portal de creadores.
+  // No envía nada mientras el flag `analitica_activa` esté apagado.
+  useEffect(() => {
+    if (SITIO_CREADORES || Platform.OS === 'web') return;
+    return arrancarAnalitica();
   }, []);
 
   useEffect(() => {
