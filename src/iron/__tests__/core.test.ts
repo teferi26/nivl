@@ -7,7 +7,7 @@ import { EJERCICIOS, ejercicioPorId } from '../ejercicios';
 import { EJERCICIOS_CORE } from '../ejercicios/core';
 import { angulosEn } from '../interpolar';
 import { apiceComba, giroComba } from '../material/comba';
-import type { Ejercicio, Escenario } from '../tipos';
+import type { Banco, Ejercicio } from '../tipos';
 
 const ej = (id: string): Ejercicio => {
   const e = ejercicioPorId(id);
@@ -45,7 +45,7 @@ function distanciaASegmento(p: Punto, a: Punto, b: Punto): number {
 }
 
 /** Grosor de la esterilla del ejercicio (0 si no hay). */
-const esterilla = (e: Ejercicio) => (e.escenario?.find((x) => x.tipo === 'esterilla') as Escenario | undefined)?.alto ?? 0;
+const esterilla = (e: Ejercicio) => (e.escenario?.find((x) => x.tipo === 'esterilla') as Banco | undefined)?.alto ?? 0;
 
 const RADIO_CABEZA = 6.2;
 

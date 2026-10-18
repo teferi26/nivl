@@ -67,6 +67,8 @@ import ironPierna from './es/iron-pierna.json';
 import ironCore from './es/iron-core.json';
 // IRON fase 2: catálogo de hombro.
 import ironHombro from './es/iron-hombro.json';
+// IRON fase 2: un namespace por grupo de ejercicios.
+import ironPecho from './es/iron-pecho.json';
 
 /** Los catálogos en español: la fuente de verdad de todas las claves. */
 export const RECURSOS_ES = {
@@ -117,6 +119,7 @@ export const RECURSOS_ES = {
   'iron-pierna': ironPierna,
   'iron-core': ironCore,
   'iron-hombro': ironHombro,
+  'iron-pecho': ironPecho,
 };
 
 export type RecursosEs = typeof RECURSOS_ES;

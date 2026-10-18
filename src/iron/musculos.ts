@@ -72,6 +72,8 @@ export const MUSCULOS: readonly MusculoId[] = [
   'cuello',
   // hombro
   'manguito_rotador',
+  // pecho
+  'pectoral_superior',
 ];
 
 export const GRUPO_DE_MUSCULO: Readonly<Record<MusculoId, GrupoMuscular>> = {
@@ -107,6 +109,8 @@ export const GRUPO_DE_MUSCULO: Readonly<Record<MusculoId, GrupoMuscular>> = {
   cuello: 'core',
   // hombro
   manguito_rotador: 'hombro',
+  // pecho
+  pectoral_superior: 'pecho',
 };
 
 export const GRUPOS: readonly GrupoMuscular[] = ['pecho', 'espalda', 'hombro', 'brazo', 'pierna', 'core', 'cardio', 'movilidad'];
@@ -163,6 +167,9 @@ export const FORMAS_LATERAL: Readonly<Record<MusculoId, readonly FormaLateral[]>
   cuello: [{ seg: 'cabeza', t0: -0.02, t1: 0.5, cara: 'ant', ancho: 0.8, pico: 0.4 }],
   // hombro: infraespinoso y redondo menor, sobre la escápula (lo que se ve del manguito).
   manguito_rotador: [{ seg: 'tronco', t0: 0.66, t1: 0.92, cara: 'post', ancho: 0.44, pico: 0.55 }],
+  // pecho: la porción clavicular, encima de la parte alta del pectoral (va
+  // dentro de su forma: cuando trabaja el pectoral entero, lo tapa).
+  pectoral_superior: [{ seg: 'tronco', t0: 0.8, t1: 0.97, cara: 'ant', ancho: 0.5, pico: 0.55 }],
 };
 
 const SEIS: readonly (readonly [number, number])[] = [
@@ -235,4 +242,6 @@ export const FORMAS_FRONTAL: Readonly<Record<MusculoId, readonly FormaFrontal[]>
   cuello: [{ cara: 'ant', seg: 'cabeza', t0: 0.0, t1: 0.45, centro: 0.45, ancho: 0.35, par: true }],
   // hombro: por detrás, sobre la escápula, entre el deltoides posterior y el romboides.
   manguito_rotador: [{ cara: 'post', seg: 'tronco', t0: 0.7, t1: 0.92, centro: 0.62, ancho: 0.3, par: true, pico: 0.45 }],
+  // pecho
+  pectoral_superior: [{ cara: 'ant', seg: 'tronco', t0: 0.83, t1: 0.97, centro: 0.45, ancho: 0.44, par: true, pico: 0.45 }],
 };

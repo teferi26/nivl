@@ -10,13 +10,13 @@
 //   cadera, que está quieta en el asiento).
 
 import { dir, planta, type Esqueleto, type Punto } from '../esqueleto';
-import type { Escenario } from '../tipos';
+import type { Banco } from '../tipos';
 import { caja, circulo, rectEje, tramo } from './trazo';
 
 /** Ángulo del respaldo (de la esquina del asiento hacia la cabeza). */
 export const RESPALDO_PRENSA = 152;
 
-export function bancadaPrensa(b: Escenario): string {
+export function bancadaPrensa(b: Banco): string {
   'worklet';
   const c = { x: b.x, y: b.alto };
   const r = dir(RESPALDO_PRENSA);

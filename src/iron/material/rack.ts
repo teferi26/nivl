@@ -4,13 +4,13 @@
 // de arriba, los soportes en J a la altura `alto` (donde se deja la barra) y
 // los brazos de seguridad a `seguro`, por debajo del punto más bajo de la barra.
 
-import type { Escenario } from '../tipos';
+import type { Banco } from '../tipos';
 import { caja } from './trazo';
 
 /** Altura de los postes, en unidades de cuerpo (100 ≈ la altura de pie). */
 export const ALTO_RACK = 122;
 
-export function rack(b: Escenario): string {
+export function rack(b: Banco): string {
   'worklet';
   const g = 2.6;
   const x0 = b.x;

@@ -7,10 +7,10 @@
 //   rodilla, con el arranque de su brazo. Siguen a la rodilla.
 
 import type { Esqueleto, Punto } from '../esqueleto';
-import type { Escenario } from '../tipos';
+import type { Banco } from '../tipos';
 import { caja, tramo } from './trazo';
 
-export function bancadaAbductora(b: Escenario): string {
+export function bancadaAbductora(b: Banco): string {
   'worklet';
   const m = b.ancho / 2;
   let d = '';

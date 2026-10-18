@@ -18,11 +18,12 @@ import { construirEsqueleto, dir, LARGO, type Esqueleto, type Punto } from './es
 import { angulosDePose, angulosEn } from './interpolar';
 import { dibujarCargaEspalda, dibujarEscenarioEspalda, esCargaEspalda, esEscenarioEspalda } from './material/espalda';
 import { banda } from './material/banda';
+import { cargaPecDeck, esEscenarioPecho, escenarioPecho } from './material/pecho';
 import { FORMAS_FRONTAL, FORMAS_LATERAL, MUSCULOS, type BaseSegmento } from './musculos';
 import { tramoBarraZ } from './material/barra-z';
 // pierna: material de la fase 2 (src/iron/material/).
 import { cargaPierna, centroCargaPierna, esCargaPierna, esEscenarioPierna, escenarioPierna } from './material/pierna';
-import type { Ancla, Carga, Ejercicio, Escenario, MusculoId, Pose, SegmentoId, Vista } from './tipos';
+import type { Ancla, Banco, Carga, Ejercicio, Escenario, MusculoId, Pose, SegmentoId, Vista } from './tipos';
 import { cuerdaComba, manijaComba } from './material/comba';
 import { esterilla } from './material/esterilla';
 import { rueda } from './material/rueda';
@@ -531,6 +532,8 @@ function cargaLado(e: Esqueleto, carga: Carga | undefined, lado: 'c' | 'l', vist
   if (carga.tipo === 'rueda') return lado === 'c' ? rueda(e.p.agarre_c, carga.radio) : '';
   // hombro
   if (carga.tipo === 'banda') return banda(e, carga, lado, vista);
+  // pecho
+  if (carga.tipo === 'pec_deck') return cargaPecDeck(e, carga.pivote, lado, vista);
   if (carga.tipo === 'mancuerna') {
     if (carga.lados.indexOf(lado === 'c' ? 'cerca' : 'lejos') < 0) return '';
     const c = lado === 'c' ? e.p.agarre_c : e.p.agarre_l;
@@ -579,6 +582,8 @@ export function centroCarga(e: Esqueleto, carga: Carga | undefined, vista: Vista
   if (esCargaPierna(carga)) return centroCargaPierna(e, carga);
   // core
   if (carga.tipo === 'comba' || carga.tipo === 'rueda') return e.p.agarre_c;
+  // hombro y pecho
+  if (carga.tipo === 'banda' || carga.tipo === 'pec_deck') return e.p.agarre_c;
   if (carga.tipo === 'mancuerna' || carga.en === 'agarre') return e.p.agarre_c;
   return en(marcoDe(e, 'tronco', vista), carga.t, -carga.dorso);
 }
@@ -596,12 +601,17 @@ function escenario(lista: Ejercicio['escenario'], capa: 'fondo' | 'medio'): stri
     }
     // pierna
     if (esEscenarioPierna(b)) {
-      d += escenarioPierna(b as Escenario);
+      d += escenarioPierna(b as Banco);
       continue;
     }
     // core
     if (b.tipo === 'esterilla') {
       d += esterilla(b);
+      continue;
+    }
+    // pecho
+    if (esEscenarioPecho(b)) {
+      d += escenarioPecho(b);
       continue;
     }
     const grosor = 5;

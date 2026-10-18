@@ -4,10 +4,10 @@
 // `alto`, y la ranura del asa. También sirve de escalón (gemelos) y de silla
 // (sentadilla al cajón): en casa vale un banco firme o un escalón.
 
-import type { Escenario } from '../tipos';
+import type { Banco } from '../tipos';
 import { caja } from './trazo';
 
-export function cajon(b: Escenario): string {
+export function cajon(b: Banco): string {
   'worklet';
   const x1 = b.x + b.ancho;
   let d = caja(b.x, 0, x1, b.alto);

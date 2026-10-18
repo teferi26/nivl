@@ -51,7 +51,8 @@
     "soleo": "Sóleo",
     "gluteo_medio": "Glúteo medio (abductores)",
     "psoas": "Psoas (flexor de cadera)",
-    "manguito_rotador": "Manguito rotador"
+    "manguito_rotador": "Manguito rotador",
+    "pectoral_superior": "Pectoral superior"
   },
   "grupo": {
     "pecho": "Pecho",
@@ -73,7 +74,10 @@
     "barra_z": "Barra Z",
     "barra_fija": "Barra fija",
     "rack": "Rack",
-    "cajon": "Cajón"
+    "cajon": "Cajón",
+    "banco_inclinado": "Banco inclinado",
+    "banco_declinado": "Banco declinado",
+    "paralelas": "Paralelas"
   },
   "nivel": {
     "principiante": "Principiante",

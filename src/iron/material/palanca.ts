@@ -12,12 +12,12 @@
 //   apoya delante del tobillo (extensión, `cara` 'ant') o detrás (curl, 'post').
 
 import { dir, type Esqueleto, type Punto } from '../esqueleto';
-import type { Escenario } from '../tipos';
+import type { Banco } from '../tipos';
 import { caja, circulo, tramo } from './trazo';
 
 const G = 5;
 
-export function bancadaExtension(b: Escenario): string {
+export function bancadaExtension(b: Banco): string {
   'worklet';
   const x0 = b.x;
   const x1 = b.x + b.ancho;
@@ -34,7 +34,7 @@ export function bancadaExtension(b: Escenario): string {
   return d;
 }
 
-export function bancadaCurlFemoral(b: Escenario): string {
+export function bancadaCurlFemoral(b: Banco): string {
   'worklet';
   const x0 = b.x;
   const x1 = b.x + b.ancho;

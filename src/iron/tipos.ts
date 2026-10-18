@@ -129,7 +129,11 @@ export type Material =
   // core
   | 'esterilla'
   | 'comba'
-  | 'rueda';
+  | 'rueda'
+  // pecho
+  | 'banco_inclinado'
+  | 'banco_declinado'
+  | 'paralelas';
 
 /**
  * Cómo se ve la barra. De perfil puro la barra es un punto y el disco tapa
@@ -183,7 +187,11 @@ export type Carga =
       readonly anclaje: { readonly x: number; readonly y: number } | 'pies' | 'manos';
       /** Tramo de x (mundo) donde el cuerpo tapa la banda (vista frontal por detrás): ahí no se dibuja. */
       readonly oculta?: readonly [number, number];
-    };
+    }
+  // pecho: las palancas del pec deck (src/iron/material/pec-deck.ts). Cada
+  // brazo lleva su almohadilla en el antebrazo y una palanca horizontal hasta
+  // su eje, que cuelga del travesaño encima del hombro (x = ±pivote).
+  | { readonly tipo: 'pec_deck'; readonly pivote: number };
 
 /**
  * Material de pierna que se mueve con el cuerpo (src/iron/material/):
@@ -212,9 +220,16 @@ export type CargaPierna =
   | { readonly tipo: 'abductora'; readonly ejeY: number };
 
 /** Lo que hay en el mundo y no se mueve. */
-export interface Escenario {
-  /** 'esterilla' (core): una lámina en el suelo de grosor `alto`.
-   * pierna: 'cajon', 'rack' y las bancadas de 'prensa', 'extension', 'curl_femoral' y 'abductora' (src/iron/material/). */
+export type Escenario = Banco | EscenarioPecho;
+
+/**
+ * Un tablero fijo: el banco plano del motor y, en la fase 2, las piezas con
+ * la misma forma (x, ancho, alto).
+ * · 'esterilla' (core): una lámina en el suelo de grosor `alto`.
+ * · pierna: 'cajon', 'rack' y las bancadas de 'prensa', 'extension',
+ *   'curl_femoral' y 'abductora' (src/iron/material/).
+ */
+export interface Banco {
   readonly tipo: 'banco' | 'cajon' | 'rack' | 'prensa' | 'extension' | 'curl_femoral' | 'abductora' | 'esterilla';
   /** Extremo izquierdo, largo y altura del tablero (el suelo es y = 0). */
   readonly x: number;
@@ -225,6 +240,50 @@ export interface Escenario {
   /** pierna, solo el rack: altura de los brazos de seguridad. */
   readonly seguro?: number;
 }
+
+// pecho: banco inclinado y declinado, paralelas y pec deck (src/iron/material/).
+// Todos llevan `x`, `alto` y `capa`, como el banco plano.
+export type EscenarioPecho =
+  | {
+      /** Bisagra en (x, alto): asiento hacia +x y respaldo subiendo hacia -x a `angulo` grados. */
+      readonly tipo: 'banco_inclinado';
+      readonly x: number;
+      readonly alto: number;
+      readonly angulo: number;
+      readonly respaldo: number;
+      readonly asiento: number;
+      readonly capa: 'fondo' | 'medio';
+    }
+  | {
+      /** Extremo alto del tablero en (x, alto), que baja hacia -x a `angulo` grados; rodillo para los pies. */
+      readonly tipo: 'banco_declinado';
+      readonly x: number;
+      readonly alto: number;
+      readonly angulo: number;
+      readonly respaldo: number;
+      readonly rodillo: { readonly x: number; readonly y: number; readonly r: number };
+      /** Almohadilla bajo las rodillas, en la misma columna que el rodillo. */
+      readonly rodillera: { readonly x: number; readonly y: number; readonly r: number };
+      readonly capa: 'fondo' | 'medio';
+    }
+  | {
+      /** Una barra de las paralelas vista de lado: de `x` a `x + ancho`, a la altura `alto`. */
+      readonly tipo: 'paralelas';
+      readonly x: number;
+      readonly ancho: number;
+      readonly alto: number;
+      readonly capa: 'fondo' | 'medio';
+    }
+  | {
+      /** Pec deck visto de frente, centrado en `x`: asiento a la altura `alto`, respaldo y travesaño. */
+      readonly tipo: 'pec_deck';
+      readonly x: number;
+      readonly alto: number;
+      readonly respaldo: number;
+      readonly travesano: number;
+      readonly pivote: number;
+      readonly capa: 'fondo' | 'medio';
+    };
 
 export type MusculoId =
   | 'pectoral'
@@ -258,7 +317,9 @@ export type MusculoId =
   | 'serrato'
   | 'cuello'
   // hombro
-  | 'manguito_rotador';
+  | 'manguito_rotador'
+  // pecho
+  | 'pectoral_superior';
 
 /**
  * 'cardio' y 'movilidad' (core, fase 2) son grupos de entrega sin músculo

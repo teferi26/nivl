@@ -5,7 +5,7 @@
 // abductora).
 
 import type { Esqueleto, Punto } from '../esqueleto';
-import type { CargaPierna, Escenario } from '../tipos';
+import type { Banco, CargaPierna } from '../tipos';
 import { almohadilla, almohadillas, bancadaAbductora } from './abductora';
 import { cajon } from './cajon';
 import { centroKettlebell, kettlebell } from './kettlebell';
@@ -32,7 +32,7 @@ export function esCargaPierna(c: { readonly tipo: string }): c is CargaPierna {
   return c.tipo === 'kettlebell' || c.tipo === 'prensa' || c.tipo === 'palanca_pierna' || c.tipo === 'abductora';
 }
 
-export function escenarioPierna(b: Escenario): string {
+export function escenarioPierna(b: Banco): string {
   'worklet';
   if (b.tipo === 'cajon') return cajon(b);
   if (b.tipo === 'rack') return rack(b);

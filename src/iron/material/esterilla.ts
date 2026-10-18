@@ -4,13 +4,13 @@
 // se apoya encima: en los ejercicios en el suelo el ancla cuenta ese grosor).
 // Bordes redondeados para que se lea como una esterilla y no como un escalón.
 
-import type { Escenario } from '../tipos';
+import type { Banco } from '../tipos';
 import { poligonoMat } from './trazo-core';
 
 /** Grosor de la esterilla en unidades de cuerpo (≈ 1 cm). */
 export const GROSOR_ESTERILLA = 0.8;
 
-export function esterilla(b: Escenario): string {
+export function esterilla(b: Banco): string {
   'worklet';
   const r = Math.min(b.alto / 2, 1.2);
   const x0 = b.x;

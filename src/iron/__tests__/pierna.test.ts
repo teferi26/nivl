@@ -12,7 +12,7 @@ import { almohadilla } from '../material/abductora';
 import { rodilloPalanca } from '../material/palanca';
 import { RESPALDO_PRENSA } from '../material/prensa';
 import { GRUPO_DE_MUSCULO } from '../musculos';
-import type { Ejercicio, Escenario } from '../tipos';
+import type { Banco, Ejercicio } from '../tipos';
 
 const ej = (id: string): Ejercicio => {
   const e = ejercicioPorId(id);
@@ -36,10 +36,10 @@ const medioPie = (s: Esqueleto) => {
   const p = planta(s, 'c');
   return (p.talon.x + p.punta.x) / 2;
 };
-const escenario = (e: Ejercicio, tipo: Escenario['tipo']): Escenario => {
+const escenario = (e: Ejercicio, tipo: Banco['tipo']): Banco => {
   const b = e.escenario?.find((x) => x.tipo === tipo);
   if (!b) throw new Error(`${e.id} sin ${tipo}`);
-  return b as Escenario;
+  return b as Banco;
 };
 
 function piesPlanos(e: Ejercicio, lado: 'c' | 'l' = 'c', suelo = 0) {

@@ -17,6 +17,8 @@ import { sentadillaBarra } from './sentadilla-barra';
 import { BRAZOS } from './brazos';
 import { EJERCICIOS_PIERNA } from './pierna';
 import { EJERCICIOS_CORE } from './core';
+// Fase 2: un catálogo por grupo, cada uno en su carpeta.
+import { PECHO } from './pecho';
 
 export const EJERCICIOS: readonly Ejercicio[] = [
   sentadillaBarra,
@@ -34,6 +36,8 @@ export const EJERCICIOS: readonly Ejercicio[] = [
   ...EJERCICIOS_CORE,
   // hombro
   ...EJERCICIOS_HOMBRO,
+  // pecho
+  ...PECHO,
 ];
 
 export function ejercicioPorId(id: string): Ejercicio | undefined {

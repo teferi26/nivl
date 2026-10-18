@@ -12,6 +12,10 @@ describe('sustituto', () => {
     for (const e of prototipo) expect(sustituto(e.id, { catalogo: prototipo })).toBeNull();
   });
 
+  it('en el catálogo completo, cada ejercicio de pecho tiene sustituto de pecho', () => {
+    for (const e of EJERCICIOS.filter((x) => x.grupo === 'pecho')) expect(sustituto(e.id)?.ejercicio.grupo).toBe('pecho');
+  });
+
   it('propone el del mismo grupo que más principales comparte', () => {
     const fondos = copia('fondos', { material: ['peso_corporal'], musculos: { principales: ['triceps'], secundarios: [] } });
     const aperturas = copia('aperturas', { material: ['mancuerna', 'banco'] });

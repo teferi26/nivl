@@ -29,6 +29,10 @@ const MATERIALES: Material[] = [
   'esterilla',
   'comba',
   'rueda',
+  // pecho
+  'banco_inclinado',
+  'banco_declinado',
+  'paralelas',
 ];
 /** Grupos de entrega sin músculo propio (fase 2, core): no siguen «grupo = el del primer principal». */
 const GRUPOS_SIN_MUSCULO = ['cardio', 'movilidad'];
