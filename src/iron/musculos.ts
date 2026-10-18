@@ -59,6 +59,10 @@ export const MUSCULOS: readonly MusculoId[] = [
   'aductores',
   'gemelos',
   'tibial',
+  // core
+  'transverso',
+  'serrato',
+  'cuello',
 ];
 
 export const GRUPO_DE_MUSCULO: Readonly<Record<MusculoId, GrupoMuscular>> = {
@@ -81,9 +85,13 @@ export const GRUPO_DE_MUSCULO: Readonly<Record<MusculoId, GrupoMuscular>> = {
   aductores: 'pierna',
   gemelos: 'pierna',
   tibial: 'pierna',
+  // core: el cuello no tiene grupo propio; va con el core (estabilidad de cabeza y tronco).
+  transverso: 'core',
+  serrato: 'core',
+  cuello: 'core',
 };
 
-export const GRUPOS: readonly GrupoMuscular[] = ['pecho', 'espalda', 'hombro', 'brazo', 'pierna', 'core'];
+export const GRUPOS: readonly GrupoMuscular[] = ['pecho', 'espalda', 'hombro', 'brazo', 'pierna', 'core', 'cardio', 'movilidad'];
 
 // Todas las piezas juntas cubren la silueta: el maniquí se lee musculado
 // aunque el ejercicio no trabaje ese músculo (va en gris oscuro).
@@ -116,6 +124,10 @@ export const FORMAS_LATERAL: Readonly<Record<MusculoId, readonly FormaLateral[]>
   aductores: [{ seg: 'muslo', t0: 0.05, t1: 0.55, cara: 'medio', ancho: 0.5 }],
   gemelos: [{ seg: 'pierna', t0: 0.03, t1: 0.64, cara: 'post', ancho: 0.95, pico: 0.35 }],
   tibial: [{ seg: 'pierna', t0: 0.05, t1: 0.82, cara: 'ant', ancho: 0.62, pico: 0.3 }],
+  // core: el transverso asoma bajo el oblicuo; el serrato, en las costillas bajo la axila; el cuello, el esternocleidomastoideo.
+  transverso: [{ seg: 'tronco', t0: 0.02, t1: 0.34, cara: 'medio', ancho: 0.5, pico: 0.4 }],
+  serrato: [{ seg: 'tronco', t0: 0.54, t1: 0.8, cara: 'medio', ancho: 0.55, pico: 0.55 }],
+  cuello: [{ seg: 'cabeza', t0: -0.02, t1: 0.5, cara: 'ant', ancho: 0.8, pico: 0.4 }],
 };
 
 const SEIS: readonly (readonly [number, number])[] = [
@@ -160,4 +172,8 @@ export const FORMAS_FRONTAL: Readonly<Record<MusculoId, readonly FormaFrontal[]>
     { cara: 'ant', seg: 'pierna', t0: 0.1, t1: 0.5, centro: -0.62, ancho: 0.32 },
   ],
   tibial: [{ cara: 'ant', seg: 'pierna', t0: 0.05, t1: 0.8, centro: 0.26, ancho: 0.5, pico: 0.3 }],
+  // core
+  transverso: [{ cara: 'ant', seg: 'tronco', t0: 0.0, t1: 0.3, centro: 0.55, ancho: 0.3, par: true, pico: 0.4 }],
+  serrato: [{ cara: 'ant', seg: 'tronco', t0: 0.52, t1: 0.76, centro: 0.86, ancho: 0.2, par: true, pico: 0.6 }],
+  cuello: [{ cara: 'ant', seg: 'cabeza', t0: 0.0, t1: 0.45, centro: 0.45, ancho: 0.35, par: true }],
 };

@@ -24,8 +24,11 @@
 // · `cerca` es el lado que ve la cámara (el derecho de la persona en la vista
 //   lateral); `lejos`, el otro. Si `lejos` no se da, es igual que `cerca`.
 
-/** Las claves de i18n van con su namespace: «iron:ejercicios.<id>.nombre». */
-export type ClaveI18n = `iron:${string}`;
+/**
+ * Las claves de i18n van con su namespace: «iron:ejercicios.<id>.nombre», o
+ * el de su grupo en la fase 2 («iron-core:ejercicios.<id>.nombre»).
+ */
+export type ClaveI18n = `iron:${string}` | `iron-${string}:${string}`;
 
 export type Articulacion = 'cadera' | 'rodilla' | 'tobillo' | 'hombro' | 'codo';
 export const ARTICULACIONES: readonly Articulacion[] = ['cadera', 'rodilla', 'tobillo', 'hombro', 'codo'];
@@ -78,6 +81,11 @@ export interface Pose {
   readonly angulo?: number;
   /** Cuánto se ve de cada segmento que sale del plano (1 = entero). */
   readonly escorzo?: Readonly<Partial<Record<SegmentoId, number>>>;
+  /**
+   * Dónde está el punto del ancla en esta pose, si se mueve (saltos, burpees):
+   * se interpola como los ángulos. Si no se da, el del ancla.
+   */
+  readonly punto?: { readonly x: number; readonly y: number };
 }
 
 /**
@@ -94,7 +102,19 @@ export interface Ancla {
   readonly angulo: number;
 }
 
-export type Material = 'barra' | 'mancuerna' | 'banco' | 'peso_corporal' | 'polea' | 'maquina' | 'kettlebell' | 'banda';
+export type Material =
+  | 'barra'
+  | 'mancuerna'
+  | 'banco'
+  | 'peso_corporal'
+  | 'polea'
+  | 'maquina'
+  | 'kettlebell'
+  | 'banda'
+  // core
+  | 'esterilla'
+  | 'comba'
+  | 'rueda';
 
 /**
  * Cómo se ve la barra. De perfil puro la barra es un punto y el disco tapa
@@ -123,11 +143,16 @@ export type Carga =
       /** `punta`: se ve de frente (agarre en supinación); `lado`: se ve a lo largo (agarre neutro). */
       readonly orientacion: 'punta' | 'lado';
       readonly lados: readonly Lado[];
-    };
+    }
+  // core: la comba gira `vueltas` veces por ciclo (la cuerda va detrás del cuerpo).
+  | { readonly tipo: 'comba'; readonly vueltas: number }
+  // core: la rueda abdominal, en las manos y apoyada en el suelo.
+  | { readonly tipo: 'rueda'; readonly radio: number };
 
 /** Lo que hay en el mundo y no se mueve. */
 export interface Escenario {
-  readonly tipo: 'banco';
+  /** 'esterilla' (core): una lámina en el suelo de grosor `alto`. */
+  readonly tipo: 'banco' | 'esterilla';
   /** Extremo izquierdo, largo y altura del tablero (el suelo es y = 0). */
   readonly x: number;
   readonly ancho: number;
@@ -155,9 +180,17 @@ export type MusculoId =
   | 'isquiotibiales'
   | 'aductores'
   | 'gemelos'
-  | 'tibial';
+  | 'tibial'
+  // core
+  | 'transverso'
+  | 'serrato'
+  | 'cuello';
 
-export type GrupoMuscular = 'pecho' | 'espalda' | 'hombro' | 'brazo' | 'pierna' | 'core';
+/**
+ * 'cardio' y 'movilidad' (core, fase 2) son grupos de entrega sin músculo
+ * propio: sus ejercicios no siguen la regla «grupo = el del primer principal».
+ */
+export type GrupoMuscular = 'pecho' | 'espalda' | 'hombro' | 'brazo' | 'pierna' | 'core' | 'cardio' | 'movilidad';
 
 export type Nivel = 'principiante' | 'intermedio' | 'avanzado';
 

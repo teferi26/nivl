@@ -18,6 +18,9 @@ import { construirEsqueleto, dir, LARGO, type Esqueleto, type Punto } from './es
 import { angulosDePose, angulosEn } from './interpolar';
 import { FORMAS_FRONTAL, FORMAS_LATERAL, MUSCULOS, type BaseSegmento } from './musculos';
 import type { Ancla, Carga, Ejercicio, Escenario, MusculoId, Pose, SegmentoId, Vista } from './tipos';
+import { cuerdaComba, manijaComba } from './material/comba';
+import { esterilla } from './material/esterilla';
+import { rueda } from './material/rueda';
 
 export type EstiloCapa =
   | 'cuerpo'
@@ -514,9 +517,12 @@ function mancuerna(c: Punto, eje: Punto, deLado: boolean): string {
   return d;
 }
 
-function cargaLado(e: Esqueleto, carga: Carga | undefined, lado: 'c' | 'l', vista: Vista): string {
+function cargaLado(e: Esqueleto, carga: Carga | undefined, lado: 'c' | 'l', vista: Vista, fase = 0): string {
   'worklet';
   if (!carga) return '';
+  // core: la comba (cuerda detrás del cuerpo, mangos en los puños) y la rueda abdominal.
+  if (carga.tipo === 'comba') return lado === 'l' ? cuerdaComba(e, fase, carga.vueltas) + manijaComba(e, 'l') : manijaComba(e, 'c');
+  if (carga.tipo === 'rueda') return lado === 'c' ? rueda(e.p.agarre_c, carga.radio) : '';
   if (carga.tipo === 'mancuerna') {
     if (carga.lados.indexOf(lado === 'c' ? 'cerca' : 'lejos') < 0) return '';
     const c = lado === 'c' ? e.p.agarre_c : e.p.agarre_l;
@@ -554,6 +560,7 @@ function cargaLado(e: Esqueleto, carga: Carga | undefined, lado: 'c' | 'l', vist
 export function centroCarga(e: Esqueleto, carga: Carga | undefined, vista: Vista): Punto | null {
   'worklet';
   if (!carga) return null;
+  if (carga.tipo === 'comba' || carga.tipo === 'rueda') return e.p.agarre_c;
   if (carga.tipo === 'mancuerna' || carga.en === 'agarre') return e.p.agarre_c;
   return en(marcoDe(e, 'tronco', vista), carga.t, -carga.dorso);
 }
@@ -565,6 +572,10 @@ function escenario(lista: readonly Escenario[] | undefined, capa: 'fondo' | 'med
   for (let i = 0; i < lista.length; i++) {
     const b = lista[i];
     if (b.capa !== capa) continue;
+    if (b.tipo === 'esterilla') {
+      d += esterilla(b);
+      continue;
+    }
     const grosor = 5;
     d += poligono([
       { x: b.x, y: b.alto },
@@ -599,6 +610,8 @@ export function capasDe(
   carga?: Carga,
   lista?: readonly Escenario[],
   cara: 'ant' | 'post' = 'ant',
+  /** Fracción del ciclo (0 a 1): la usa el material que gira (la comba). */
+  fase = 0,
 ): string[] {
   'worklet';
   const orden = vista === 'lateral' ? ORDEN_LATERAL : ORDEN_FRONTAL;
@@ -608,8 +621,8 @@ export function capasDe(
     const paso = orden[i];
     if (paso === 'ESC_FONDO') out.push(escenario(lista, 'fondo'));
     else if (paso === 'ESC_MEDIO') out.push(escenario(lista, 'medio'));
-    else if (paso === 'CARGA_L') out.push(cargaLado(e, carga, 'l', vista));
-    else if (paso === 'CARGA_C') out.push(cargaLado(e, carga, 'c', vista));
+    else if (paso === 'CARGA_L') out.push(cargaLado(e, carga, 'l', vista, fase));
+    else if (paso === 'CARGA_C') out.push(cargaLado(e, carga, 'c', vista, fase));
     else {
       const base = baseDe(paso);
       if (base === 'pie') {
@@ -650,7 +663,9 @@ export function esqueletoEn(ej: Ejercicio, ms: number): Esqueleto {
 /** Todas las capas de un ejercicio en el instante `ms` del ciclo. */
 export function dibujar(ej: Ejercicio, ms: number): string[] {
   'worklet';
-  return capasDe(esqueletoEn(ej, ms), ej.vista, ej.musculos, ej.carga, ej.escenario);
+  const ciclo = ej.cicloMs;
+  const fase = (((ms % ciclo) + ciclo) % ciclo) / ciclo;
+  return capasDe(esqueletoEn(ej, ms), ej.vista, ej.musculos, ej.carga, ej.escenario, 'ant', fase);
 }
 
 /**
