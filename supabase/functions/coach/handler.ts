@@ -37,6 +37,7 @@ import { healthConsent, healthGuardedResult, healthRevision, healthScopedClient,
 import { adminClient, userClient, type Db } from '../_shared/db.ts';
 import { buildSystem, buildSystemRegistro, DATOS_ABRE, DATOS_CIERRA, neutralizarDatos } from '../_shared/prompt.ts';
 import { elegirModelo, modoDeCabecera, proveedorDe, type Modo, type Routes } from '../_shared/routing.ts';
+import { idiomaDeCabecera, modoDeCabeceraNivl, type ModoCoach } from '../_shared/modos.ts';
 import { executeTool, TOOL_DEFS } from '../_shared/tools.ts';
 import { controlHerramientas, fechaAceptable, fechaDelTurno, fotosSinVision, Gasto, mensajeDeFallo, reloj, validarImagenes } from './guard.ts';
 import { pareceAfirmacion, rutaDelTurno, type Ruta } from '../_shared/intencion.ts';
@@ -424,6 +425,10 @@ interface RunArgs {
   ruta: Ruta;
   /** Reintento tras un rechazo de la ruta estrecha: el mensaje ya está guardado. */
   usuarioYaGuardado?: boolean;
+  /** Modos F1: idioma de la cabecera x-nivl-locale (null = el del perfil o español). */
+  idioma?: string | null;
+  /** Modos F1: modo de la cabecera x-nivl-modo (null = General, el coach de siempre). */
+  modoNivl?: ModoCoach | null;
 }
 
 /** ¿El proveedor rechazó la petición (4xx)? Es lo único que justifica reintentar por la completa. */
@@ -463,9 +468,12 @@ async function runCoach(args: RunArgs): Promise<ResultadoTurno> {
     estrecha ? buildContextMinimo(sb, userId, today) : buildContext(sb, userId, today),
     estrecha ? Promise.resolve({ summary: null, summary_until: null }) : leerResumen(sb, threadId),
   ]);
+  // Modos F1: la cabecera manda; sin ella, el idioma del perfil (rituales del cron). Sin ninguno de los
+  // dos y sin modo, el sistema es el de siempre, byte a byte.
+  const idiomaModo = { idioma: args.idioma ?? ctx.locale ?? null, modo: args.modoNivl ?? null };
   const system = estrecha
-    ? buildSystemRegistro(ctx.text)
-    : buildSystem(ctx.dossier, kind, ctx.text, { ttlFijo: ttlFijoDeEnv(), resumenHilo: hilo.summary });
+    ? buildSystemRegistro(ctx.text, idiomaModo)
+    : buildSystem(ctx.dossier, kind, ctx.text, { ttlFijo: ttlFijoDeEnv(), resumenHilo: hilo.summary, ...idiomaModo });
   const herramientas: readonly unknown[] = estrecha ? TOOL_DEFS_REGISTRO : TOOL_DEFS;
   const maxVueltas = estrecha ? MAX_TOOL_ITERATIONS_REGISTRO : MAX_TOOL_ITERATIONS;
   telemetria.state_chars = ctx.text.length;
@@ -813,8 +821,14 @@ export async function handler(req: Request): Promise<Response> {
       // Lo que recibe un Pro que pide el modo profundo.
       profundo_no_incluido: [402, 'El modo profundo es parte de NIVL Élite.'],
       profundo_agotado: [402, 'Has usado tus turnos profundos de este mes. El modo estándar sigue disponible.'],
+      // 0069: el tope diario de la prueba automática. Viaja como 'presupuesto_agotado' para que la 1.0.9
+      // lo pinte con este texto (accessNotice usa el mensaje del servidor); el motivo real va en 'detalle'.
+      tope_diario: [402, 'Has usado los mensajes de hoy de tu prueba. Mañana vuelven.'],
     };
     const [status, error] = MENSAJES[estado?.reason ?? ''] ?? [402, 'Sin acceso a la IA.'];
+    if (estado?.reason === 'tope_diario') {
+      return json(status, { error, reason: 'presupuesto_agotado', detalle: 'tope_diario' });
+    }
     return json(status, { error, reason: estado?.reason });
   }
 
@@ -1055,6 +1069,12 @@ async function atender(
     const base = {
       sb, admin, userId, kind, threadId: threadId!, userText: prompt, today,
       imagenes: fotos.imagenes, gasto, deadline, modo, emit: emitir, telemetria,
+      // Modos F1: cabeceras opcionales; un valor raro es como no mandarla.
+      // Con cabecera, manda ella (también 'es': no se mira el perfil). Sin cabecera, null y luego el perfil.
+      idioma: (req.headers.get('x-nivl-locale') ?? '').trim()
+        ? idiomaDeCabecera(req.headers.get('x-nivl-locale')) ?? 'es'
+        : null,
+      modoNivl: modoDeCabeceraNivl(req.headers.get('x-nivl-modo')),
     };
     try {
       return await runCoach({ ...base, topeMicro, modelo, compat, ruta });

@@ -9,6 +9,7 @@ import { COACH_KNOWLEDGE } from './knowledge.ts';
 import { AI_SAFETY_RULES } from './ai-safety.ts';
 import type { SystemBlock } from './anthropic.ts';
 import { REGLA_SIN_GUIONES } from './singuiones.ts';
+import { bloqueIdiomaModo, type ModoCoach } from './modos.ts';
 
 export { REGLA_SIN_GUIONES };
 
@@ -143,6 +144,13 @@ export interface OpcionesSistema {
    * delimitadores y neutralizado, nunca como instrucción. Ver resumenhilo.ts.
    */
   resumenHilo?: string | null;
+  /**
+   * Modos F1: idioma (cabecera x-nivl-locale o profiles.locale) y modo (x-nivl-modo). Opcionales: sin
+   * ellos, o con español y General, no se añade ningún bloque y el sistema sale idéntico byte a byte al
+   * de antes (modos_prompt_test.ts). Van en la parte dinámica: la fija no cambia.
+   */
+  idioma?: string | null;
+  modo?: ModoCoach | null;
 }
 
 /** Lo más largo de un resumen del hilo que se reenvía (la columna admite 8.000). */
@@ -179,6 +187,9 @@ export function buildSystem(dossier: string, kind: string, estado = '', opciones
   fijo[fijo.length - 1].cache_control = opciones.ttlFijo === '1h' ? { type: 'ephemeral', ttl: '1h' } : { type: 'ephemeral' };
 
   const dinamico: SystemBlock[] = [];
+  // Modos F1: primero, para que el idioma y el sombrero manden sobre todo lo que sigue.
+  const idiomaModo = bloqueIdiomaModo(opciones.idioma, opciones.modo);
+  if (idiomaModo) dinamico.push({ type: 'text', text: idiomaModo });
   if (dossier.trim()) {
     dinamico.push({
       type: 'text',
@@ -250,12 +261,22 @@ export const SISTEMA_REGISTRO_FIJO: readonly string[] = Object.freeze([SISTEMA_R
  * ignora el punto sin cobrar escritura. Se deja puesto para modelos con un
  * mínimo menor (DeepSeek cachea solo, sin marcas).
  */
-export function buildSystemRegistro(estado: string): SystemBlock[] {
+export function buildSystemRegistro(
+  estado: string,
+  opciones: Pick<OpcionesSistema, 'idioma' | 'modo'> = {},
+): SystemBlock[] {
   const fijo: SystemBlock[] = SISTEMA_REGISTRO_FIJO.map((text) => ({ type: 'text', text }));
   fijo[fijo.length - 1].cache_control = { type: 'ephemeral' };
-  if (!estado.trim()) return fijo;
+  // Modos F1: el idioma y el modo, detrás del fijo. Sin ellos, nada (idéntico a antes).
+  const idiomaModo = bloqueIdiomaModo(opciones.idioma, opciones.modo);
+  const extra: SystemBlock[] = idiomaModo ? [{ type: 'text', text: idiomaModo }] : [];
+  if (!estado.trim()) {
+    if (extra.length) extra[extra.length - 1].cache_control = { type: 'ephemeral' };
+    return [...fijo, ...extra];
+  }
   return [
     ...fijo,
+    ...extra,
     {
       type: 'text',
       text: `${DATOS_ABRE}
