@@ -25,7 +25,7 @@
 //   lateral); `lejos`, el otro. Si `lejos` no se da, es igual que `cerca`.
 
 /** Las claves de i18n van con su namespace: «iron:ejercicios.<id>.nombre». */
-export type ClaveI18n = `iron:${string}`;
+export type ClaveI18n = `iron:${string}` | `iron-${string}:${string}`;
 
 export type Articulacion = 'cadera' | 'rodilla' | 'tobillo' | 'hombro' | 'codo';
 export const ARTICULACIONES: readonly Articulacion[] = ['cadera', 'rodilla', 'tobillo', 'hombro', 'codo'];
@@ -78,6 +78,12 @@ export interface Pose {
   readonly angulo?: number;
   /** Cuánto se ve de cada segmento que sale del plano (1 = entero). */
   readonly escorzo?: Readonly<Partial<Record<SegmentoId, number>>>;
+  /**
+   * Muñeca (los dos lados), en grados: 0 = la mano sigue al antebrazo, + = la
+   * mano gira hacia la cara anterior del antebrazo (como el codo). Opcional:
+   * solo la usan los ejercicios de muñeca (curl de muñeca).
+   */
+  readonly muneca?: number;
 }
 
 /**
@@ -94,7 +100,17 @@ export interface Ancla {
   readonly angulo: number;
 }
 
-export type Material = 'barra' | 'mancuerna' | 'banco' | 'peso_corporal' | 'polea' | 'maquina' | 'kettlebell' | 'banda';
+export type Material =
+  | 'barra'
+  | 'mancuerna'
+  | 'banco'
+  | 'peso_corporal'
+  | 'polea'
+  | 'maquina'
+  | 'kettlebell'
+  | 'banda'
+  // brazos
+  | 'barra_z';
 
 /**
  * Cómo se ve la barra. De perfil puro la barra es un punto y el disco tapa
@@ -105,6 +121,8 @@ export type Material = 'barra' | 'mancuerna' | 'banco' | 'peso_corporal' | 'pole
 export interface VistaBarra {
   readonly eje?: { readonly x: number; readonly y: number };
   readonly disco?: number;
+  /** 'z': barra Z (el tramo que se ve va en zigzag). Por defecto, recta. */
+  readonly forma?: 'recta' | 'z';
 }
 
 /** Dónde va la carga que se dibuja. */
@@ -155,7 +173,10 @@ export type MusculoId =
   | 'isquiotibiales'
   | 'aductores'
   | 'gemelos'
-  | 'tibial';
+  | 'tibial'
+  // brazos
+  | 'braquial'
+  | 'braquiorradial';
 
 export type GrupoMuscular = 'pecho' | 'espalda' | 'hombro' | 'brazo' | 'pierna' | 'core';
 

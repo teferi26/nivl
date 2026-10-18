@@ -98,6 +98,8 @@ export interface AngulosPose {
   /** Ángulo absoluto del segmento del ancla. */
   angulo: number;
   escorzo: Partial<Record<SegmentoId, number>>;
+  /** Muñeca (los dos lados); sin ella, la mano sigue al antebrazo. */
+  muneca?: number;
 }
 
 export interface Esqueleto {
@@ -185,7 +187,9 @@ export function construirEsqueleto(pose: AngulosPose, ancla: Ancla, vista: Vista
   // El agarre: el centro del puño, en la prolongación del antebrazo.
   for (const lado of ['c', 'l'] as const) {
     const m = p[lado === 'c' ? 'muneca_c' : 'muneca_l'] as Punto;
-    const d = dir(a[lado === 'c' ? 'antebrazo_c' : 'antebrazo_l']);
+    // La mano gira en la muñeca como el antebrazo en el codo (vista lateral).
+    const muneca = pose.muneca ?? 0;
+    const d = dir(a[lado === 'c' ? 'antebrazo_c' : 'antebrazo_l'] + (vista === 'frontal' && lado === 'c' ? -muneca : muneca));
     p[lado === 'c' ? 'agarre_c' : 'agarre_l'] = { x: m.x + d.x * LARGO.mano, y: m.y + d.y * LARGO.mano };
   }
   // Traslado al ancla.

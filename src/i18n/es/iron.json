@@ -45,7 +45,9 @@
     "isquiotibiales": "Isquiotibiales",
     "aductores": "Aductores",
     "gemelos": "Gemelos",
-    "tibial": "Tibial anterior"
+    "tibial": "Tibial anterior",
+    "braquial": "Braquial",
+    "braquiorradial": "Braquiorradial"
   },
   "grupo": {
     "pecho": "Pecho",
@@ -63,7 +65,8 @@
     "polea": "Polea",
     "maquina": "Máquina",
     "kettlebell": "Kettlebell",
-    "banda": "Banda elástica"
+    "banda": "Banda elástica",
+    "barra_z": "Barra Z"
   },
   "nivel": {
     "principiante": "Principiante",
