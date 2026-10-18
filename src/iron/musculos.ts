@@ -59,6 +59,8 @@ export const MUSCULOS: readonly MusculoId[] = [
   'aductores',
   'gemelos',
   'tibial',
+  // hombro
+  'manguito_rotador',
 ];
 
 export const GRUPO_DE_MUSCULO: Readonly<Record<MusculoId, GrupoMuscular>> = {
@@ -81,6 +83,8 @@ export const GRUPO_DE_MUSCULO: Readonly<Record<MusculoId, GrupoMuscular>> = {
   aductores: 'pierna',
   gemelos: 'pierna',
   tibial: 'pierna',
+  // hombro
+  manguito_rotador: 'hombro',
 };
 
 export const GRUPOS: readonly GrupoMuscular[] = ['pecho', 'espalda', 'hombro', 'brazo', 'pierna', 'core'];
@@ -116,6 +120,8 @@ export const FORMAS_LATERAL: Readonly<Record<MusculoId, readonly FormaLateral[]>
   aductores: [{ seg: 'muslo', t0: 0.05, t1: 0.55, cara: 'medio', ancho: 0.5 }],
   gemelos: [{ seg: 'pierna', t0: 0.03, t1: 0.64, cara: 'post', ancho: 0.95, pico: 0.35 }],
   tibial: [{ seg: 'pierna', t0: 0.05, t1: 0.82, cara: 'ant', ancho: 0.62, pico: 0.3 }],
+  // hombro: infraespinoso y redondo menor, sobre la escápula (lo que se ve del manguito).
+  manguito_rotador: [{ seg: 'tronco', t0: 0.66, t1: 0.92, cara: 'post', ancho: 0.44, pico: 0.55 }],
 };
 
 const SEIS: readonly (readonly [number, number])[] = [
@@ -160,4 +166,6 @@ export const FORMAS_FRONTAL: Readonly<Record<MusculoId, readonly FormaFrontal[]>
     { cara: 'ant', seg: 'pierna', t0: 0.1, t1: 0.5, centro: -0.62, ancho: 0.32 },
   ],
   tibial: [{ cara: 'ant', seg: 'pierna', t0: 0.05, t1: 0.8, centro: 0.26, ancho: 0.5, pico: 0.3 }],
+  // hombro: por detrás, sobre la escápula, entre el deltoides posterior y el romboides.
+  manguito_rotador: [{ cara: 'post', seg: 'tronco', t0: 0.7, t1: 0.92, centro: 0.62, ancho: 0.3, par: true, pico: 0.45 }],
 };

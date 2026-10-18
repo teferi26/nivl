@@ -16,6 +16,7 @@
 
 import { construirEsqueleto, dir, LARGO, type Esqueleto, type Punto } from './esqueleto';
 import { angulosDePose, angulosEn } from './interpolar';
+import { banda } from './material/banda';
 import { FORMAS_FRONTAL, FORMAS_LATERAL, MUSCULOS, type BaseSegmento } from './musculos';
 import type { Ancla, Carga, Ejercicio, Escenario, MusculoId, Pose, SegmentoId, Vista } from './tipos';
 
@@ -517,6 +518,7 @@ function mancuerna(c: Punto, eje: Punto, deLado: boolean): string {
 function cargaLado(e: Esqueleto, carga: Carga | undefined, lado: 'c' | 'l', vista: Vista): string {
   'worklet';
   if (!carga) return '';
+  if (carga.tipo === 'banda') return banda(e, carga, lado, vista);
   if (carga.tipo === 'mancuerna') {
     if (carga.lados.indexOf(lado === 'c' ? 'cerca' : 'lejos') < 0) return '';
     const c = lado === 'c' ? e.p.agarre_c : e.p.agarre_l;
@@ -650,7 +652,7 @@ export function esqueletoEn(ej: Ejercicio, ms: number): Esqueleto {
 /** Todas las capas de un ejercicio en el instante `ms` del ciclo. */
 export function dibujar(ej: Ejercicio, ms: number): string[] {
   'worklet';
-  return capasDe(esqueletoEn(ej, ms), ej.vista, ej.musculos, ej.carga, ej.escenario);
+  return capasDe(esqueletoEn(ej, ms), ej.vista, ej.musculos, ej.carga, ej.escenario, ej.cara);
 }
 
 /**

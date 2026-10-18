@@ -25,7 +25,7 @@
 //   lateral); `lejos`, el otro. Si `lejos` no se da, es igual que `cerca`.
 
 /** Las claves de i18n van con su namespace: «iron:ejercicios.<id>.nombre». */
-export type ClaveI18n = `iron:${string}`;
+export type ClaveI18n = `iron:${string}` | `iron-${string}:${string}`;
 
 export type Articulacion = 'cadera' | 'rodilla' | 'tobillo' | 'hombro' | 'codo';
 export const ARTICULACIONES: readonly Articulacion[] = ['cadera', 'rodilla', 'tobillo', 'hombro', 'codo'];
@@ -123,6 +123,21 @@ export type Carga =
       /** `punta`: se ve de frente (agarre en supinación); `lado`: se ve a lo largo (agarre neutro). */
       readonly orientacion: 'punta' | 'lado';
       readonly lados: readonly Lado[];
+    }
+  // hombro: banda elástica (src/iron/material/banda.tsx).
+  | {
+      readonly tipo: 'banda';
+      readonly en: 'agarre';
+      /** Qué manos agarran la banda (con 'manos', las dos). */
+      readonly lados: readonly Lado[];
+      /**
+       * Dónde está el otro extremo: un punto fijo del mundo (puerta, poste),
+       * 'pies' (pisada bajo el pie de cada lado) o 'manos' (la banda va de
+       * una mano a la otra: tirón separando, dislocaciones).
+       */
+      readonly anclaje: { readonly x: number; readonly y: number } | 'pies' | 'manos';
+      /** Tramo de x (mundo) donde el cuerpo tapa la banda (vista frontal por detrás): ahí no se dibuja. */
+      readonly oculta?: readonly [number, number];
     };
 
 /** Lo que hay en el mundo y no se mueve. */
@@ -155,7 +170,9 @@ export type MusculoId =
   | 'isquiotibiales'
   | 'aductores'
   | 'gemelos'
-  | 'tibial';
+  | 'tibial'
+  // hombro
+  | 'manguito_rotador';
 
 export type GrupoMuscular = 'pecho' | 'espalda' | 'hombro' | 'brazo' | 'pierna' | 'core';
 
@@ -178,6 +195,8 @@ export interface Ejercicio {
   /** Ids de otros ejercicios que lo sustituyen, del mejor al peor. */
   readonly sustitutos: readonly string[];
   readonly vista: Vista;
+  /** hombro: en la vista frontal, 'post' = la cámara mira la espalda (el mapa de detrás). Por defecto 'ant'. */
+  readonly cara?: 'ant' | 'post';
   readonly ancla: Ancla;
   /** Al menos dos; ordenadas por `ms`; la última vuelve a la primera. */
   readonly poses: readonly Pose[];
