@@ -167,13 +167,21 @@ export function posesPress(c: Tumbado, abajo: Punto, arriba: Punto, cuello: numb
 
 /**
  * Aperturas: los brazos se abren hacia los lados, fuera del plano, así que de
- * perfil la mano solo sube y baja sobre el hombro. `abierto` de 0 (arriba) a 1
- * (abajo, brazos en cruz): se ve cada vez menos del brazo.
+ * perfil la mano baja y el brazo se ve cada vez más corto. `abierto` de 0
+ * (arriba, sobre los hombros) a 1 (abajo, brazos en cruz): la mano acaba al
+ * lado del pecho (`abajo`, a la altura de la línea de los pezones), no junto
+ * a la cabeza. El codo, un poco flexionado y fijo (9°).
  */
-export function poseApertura(c: Tumbado, ms: number, abierto: number, cuello: number): Pose {
-  const visto = r3(Math.max(0.06, Math.cos((abierto * Math.PI) / 2) * 0.97));
-  // Codo un poco flexionado: el brazo se inclina hacia la cadera y el antebrazo vuelve sobre el hombro.
-  const cerca = extremidades({ tronco: c.tronco, ...c.piernas, brazo: 86, antebrazo: 95 });
+export function poseApertura(c: Tumbado, ms: number, abierto: number, abajo: Punto, cuello: number): Pose {
+  const s = hombroDe(c);
+  const k = Math.sin((abierto * Math.PI) / 2);
+  const arriba = { x: s.x, y: s.y + 0.97 * (LARGO.brazo + LARGO.antebrazo) + LARGO.mano };
+  const mano = { x: arriba.x + (abajo.x - arriba.x) * k, y: arriba.y + (abajo.y - arriba.y) * k };
+  const v = menos(mano, s);
+  const angulo = grados(Math.atan2(v.y, v.x));
+  // Brazo y antebrazo casi en línea (codo a 9°): su proyección, más la mano, llega a la mano.
+  const visto = r3(Math.max(0.04, (largo(v) - LARGO.mano) / ((LARGO.brazo + LARGO.antebrazo) * Math.cos((4.5 * Math.PI) / 180))));
+  const cerca = extremidades({ tronco: c.tronco, ...c.piernas, brazo: angulo - 4.5, antebrazo: angulo + 4.5 });
   return { ms, cuello, cerca, escorzo: { brazo_c: visto, brazo_l: visto, antebrazo_c: visto, antebrazo_l: visto } };
 }
 

@@ -239,17 +239,28 @@ describe('press: el apoyo de cada banco', () => {
 describe.each(APERTURAS.map((id) => [id, ej(id)] as const))('aperturas %s', (id, e) => {
   const m = muestras(e);
 
-  it('la mano baja sobre el hombro: el brazo se abre hacia el lado, fuera del plano (±2)', () => {
-    for (const { s } of m) expect(Math.abs(s.p.agarre_c.x - s.p.hombro.x)).toBeLessThan(2);
+  it('la mano baja en arco desde encima del hombro hasta el lado del pecho, sin tocar la cabeza', () => {
+    const fondo = esqueletoEn(e, 2750);
+    const t = sobreTronco(fondo, fondo.p.agarre_c).t;
+    expect(t).toBeGreaterThan(0.72);
+    expect(t).toBeLessThan(0.88);
+    const x0 = Math.min(fondo.p.hombro.x, fondo.p.agarre_c.x) - 2;
+    const x1 = Math.max(fondo.p.hombro.x, fondo.p.agarre_c.x) + 2;
+    for (const { s } of m) {
+      expect(s.p.agarre_c.x).toBeGreaterThan(x0);
+      expect(s.p.agarre_c.x).toBeLessThan(x1);
+      expect(dist(s.p.agarre_c, s.p.cabeza)).toBeGreaterThan(6.2 + 8);
+    }
   });
 
   it('arriba brazos sobre los hombros; abajo, en cruz a la altura del pecho', () => {
     const arriba = esqueletoEn(e, 250);
     const abajo = esqueletoEn(e, 2750);
+    expect(Math.abs(arriba.p.agarre_c.x - arriba.p.hombro.x)).toBeLessThan(2);
     expect(arriba.p.agarre_c.y - arriba.p.hombro.y).toBeGreaterThan(30);
-    const tope = id.includes('suelo') ? 12 : 7;
-    expect(abajo.p.agarre_c.y - abajo.p.hombro.y).toBeLessThan(tope);
-    expect(abajo.p.agarre_c.y - abajo.p.hombro.y).toBeGreaterThan(0);
+    const { fuera } = sobreTronco(abajo, abajo.p.agarre_c);
+    expect(fuera).toBeGreaterThan(0);
+    expect(fuera).toBeLessThan(id.includes('suelo') ? 9 : 4);
   });
 
   it('codos un poco flexionados y fijos: el ángulo del codo no cambia', () => {

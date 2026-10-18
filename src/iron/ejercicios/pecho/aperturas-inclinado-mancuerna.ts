@@ -21,7 +21,7 @@ export const aperturasInclinadoMancuerna: Ejercicio = {
   sustitutos: ['aperturas-mancuerna', 'press-inclinado-mancuerna', 'pec-deck'],
   vista: 'lateral',
   ...aperturas('inclinado'),
-  carga: { tipo: 'mancuerna', en: 'agarre', orientacion: 'lado', lados: ['cerca', 'lejos'] },
+  carga: { tipo: 'mancuerna', en: 'agarre', orientacion: 'punta', lados: ['cerca', 'lejos'] },
   cues: [
     'iron-pecho:ejercicios.aperturas-inclinado-mancuerna.cues.angulo',
     'iron-pecho:ejercicios.aperturas-inclinado-mancuerna.cues.codos',

@@ -21,7 +21,7 @@ export const aperturasSueloMancuerna: Ejercicio = {
   sustitutos: ['aperturas-mancuerna', 'pec-deck', 'press-suelo-mancuerna'],
   vista: 'lateral',
   ...aperturas('suelo'),
-  carga: { tipo: 'mancuerna', en: 'agarre', orientacion: 'lado', lados: ['cerca', 'lejos'] },
+  carga: { tipo: 'mancuerna', en: 'agarre', orientacion: 'punta', lados: ['cerca', 'lejos'] },
   cues: [
     'iron-pecho:ejercicios.aperturas-suelo-mancuerna.cues.suelo',
     'iron-pecho:ejercicios.aperturas-suelo-mancuerna.cues.codos',

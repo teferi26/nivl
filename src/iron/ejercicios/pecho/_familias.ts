@@ -119,7 +119,7 @@ export function tumbada(apoyo: Apoyo): Tumbada {
   const cadera = { x: 0, y: 8.6 };
   const tronco = 180 + (Math.asin((cadera.y - APOYO_ESPALDA) / LARGO.tronco) * 180) / Math.PI;
   const cuerpo: Tumbado = { cadera, tronco, piernas: piernasAlSuelo(cadera, { x: 33, y: 4 }) };
-  return { cuerpo, cuello: cuelloSobre(cuerpo, 0), escenario: [], encuadre: { x: -66, y: -4, ancho: 108, alto: 64 } };
+  return { cuerpo, cuello: cuelloSobre(cuerpo, 0), escenario: [], encuadre: { x: -62, y: -4, ancho: 118, alto: 72 } };
 }
 
 const anclaTumbada = (c: Tumbado): Ejercicio['ancla'] => ({ punto: 'cadera', x: c.cadera.x, y: c.cadera.y, segmento: 'tronco', angulo: c.tronco });
@@ -157,8 +157,12 @@ export function press(apoyo: Apoyo, opciones: { t?: number; sobrePecho?: number 
 export function aperturas(apoyo: Apoyo): Parte {
   const b = tumbada(apoyo);
   const c = b.cuerpo;
-  const fondo = apoyo === 'suelo' ? 0.85 : 0.95;
-  const p = (ms: number, u: number) => poseApertura(c, ms, u, b.cuello);
+  // Abajo, la mancuerna junto al pecho (a la altura de su eje, en el 80 % del
+  // tronco); en el suelo, más alta: el codo ya toca el suelo.
+  const eje = puntoTronco(c, 0.8, 0);
+  const abajo = { x: eje.x, y: eje.y + (apoyo === 'suelo' ? 8 : 3) };
+  const fondo = 1;
+  const p = (ms: number, u: number) => poseApertura(c, ms, u, abajo, b.cuello);
   return {
     ancla: anclaTumbada(c),
     poses: [p(0, 0), p(500, 0), p(1300, fondo * 0.4), p(2000, fondo * 0.75), p(2600, fondo), p(2900, fondo), p(3400, fondo * 0.6), p(4000, 0)],
@@ -200,7 +204,7 @@ function montaje(tipo: Flexion): Montaje {
       apoyo: { apoyo: 'tobillo', en: tobilloEnPuntas(-58, PIE + 8), fijo: PIE + 8 },
       manos: ALTO_BANCO,
       escenario: [],
-      encuadre: { x: -76, y: -4, ancho: 132, alto: 76 },
+      encuadre: { x: -76, y: -4, ancho: 132, alto: 88 },
     };
   }
   if (tipo === 'declinada') {
@@ -209,7 +213,7 @@ function montaje(tipo: Flexion): Montaje {
       apoyo: { apoyo: 'tobillo', en: tobilloEnPuntas(-50, PIE, ALTO_BANCO), fijo: PIE },
       manos: 0,
       escenario: [{ tipo: 'banco', x: -78, ancho: 36, alto: ALTO_BANCO, capa: 'medio' }],
-      encuadre: { x: -84, y: -4, ancho: 130, alto: 66 },
+      encuadre: { x: -84, y: -4, ancho: 142, alto: 66 },
     };
   }
   return {
