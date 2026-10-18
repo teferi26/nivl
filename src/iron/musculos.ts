@@ -59,6 +59,10 @@ export const MUSCULOS: readonly MusculoId[] = [
   'aductores',
   'gemelos',
   'tibial',
+  // pierna
+  'soleo',
+  'gluteo_medio',
+  'psoas',
 ];
 
 export const GRUPO_DE_MUSCULO: Readonly<Record<MusculoId, GrupoMuscular>> = {
@@ -81,6 +85,10 @@ export const GRUPO_DE_MUSCULO: Readonly<Record<MusculoId, GrupoMuscular>> = {
   aductores: 'pierna',
   gemelos: 'pierna',
   tibial: 'pierna',
+  // pierna
+  soleo: 'pierna',
+  gluteo_medio: 'pierna',
+  psoas: 'pierna',
 };
 
 export const GRUPOS: readonly GrupoMuscular[] = ['pecho', 'espalda', 'hombro', 'brazo', 'pierna', 'core'];
@@ -116,6 +124,16 @@ export const FORMAS_LATERAL: Readonly<Record<MusculoId, readonly FormaLateral[]>
   aductores: [{ seg: 'muslo', t0: 0.05, t1: 0.55, cara: 'medio', ancho: 0.5 }],
   gemelos: [{ seg: 'pierna', t0: 0.03, t1: 0.64, cara: 'post', ancho: 0.95, pico: 0.35 }],
   tibial: [{ seg: 'pierna', t0: 0.05, t1: 0.82, cara: 'ant', ancho: 0.62, pico: 0.3 }],
+  // pierna
+  // Sóleo: asoma bajo el gemelo, por detrás de la mitad baja de la pierna.
+  soleo: [{ seg: 'pierna', t0: 0.42, t1: 0.9, cara: 'post', ancho: 0.78, pico: 0.4 }],
+  // Glúteo medio: el lado de la pelvis, encima del glúteo mayor.
+  gluteo_medio: [{ seg: 'tronco', t0: -0.02, t1: 0.27, cara: 'medio', ancho: 0.78, pico: 0.55 }],
+  // Psoas (flexores de cadera): el pliegue de la ingle, del tronco al muslo.
+  psoas: [
+    { seg: 'tronco', t0: -0.04, t1: 0.16, cara: 'ant', ancho: 0.5, pico: 0.6 },
+    { seg: 'muslo', t0: -0.02, t1: 0.2, cara: 'ant', ancho: 0.46, pico: 0.3 },
+  ],
 };
 
 const SEIS: readonly (readonly [number, number])[] = [
@@ -160,4 +178,17 @@ export const FORMAS_FRONTAL: Readonly<Record<MusculoId, readonly FormaFrontal[]>
     { cara: 'ant', seg: 'pierna', t0: 0.1, t1: 0.5, centro: -0.62, ancho: 0.32 },
   ],
   tibial: [{ cara: 'ant', seg: 'pierna', t0: 0.05, t1: 0.8, centro: 0.26, ancho: 0.5, pico: 0.3 }],
+  // pierna
+  soleo: [
+    { cara: 'post', seg: 'pierna', t0: 0.46, t1: 0.86, centro: 0, ancho: 0.72, pico: 0.35 },
+    { cara: 'ant', seg: 'pierna', t0: 0.4, t1: 0.78, centro: 0.82, ancho: 0.24 },
+  ],
+  gluteo_medio: [
+    { cara: 'post', seg: 'tronco', t0: 0.0, t1: 0.26, centro: 0.8, ancho: 0.34, par: true, pico: 0.55 },
+    { cara: 'ant', seg: 'tronco', t0: -0.06, t1: 0.22, centro: 0.84, ancho: 0.3, par: true, pico: 0.55 },
+  ],
+  psoas: [
+    { cara: 'ant', seg: 'tronco', t0: -0.08, t1: 0.08, centro: 0.4, ancho: 0.22, par: true },
+    { cara: 'ant', seg: 'muslo', t0: -0.02, t1: 0.2, centro: -0.3, ancho: 0.4, pico: 0.3 },
+  ],
 };

@@ -17,6 +17,8 @@
 import { construirEsqueleto, dir, LARGO, type Esqueleto, type Punto } from './esqueleto';
 import { angulosDePose, angulosEn } from './interpolar';
 import { FORMAS_FRONTAL, FORMAS_LATERAL, MUSCULOS, type BaseSegmento } from './musculos';
+// pierna: material de la fase 2 (src/iron/material/).
+import { cargaPierna, centroCargaPierna, escenarioPierna } from './material/pierna';
 import type { Ancla, Carga, Ejercicio, Escenario, MusculoId, Pose, SegmentoId, Vista } from './tipos';
 
 export type EstiloCapa =
@@ -526,6 +528,8 @@ function cargaLado(e: Esqueleto, carga: Carga | undefined, lado: 'c' | 'l', vist
     const deLado = vista === 'lateral' ? carga.orientacion === 'lado' : carga.orientacion === 'punta';
     return mancuerna(c, eje, deLado);
   }
+  // pierna
+  if (carga.tipo !== 'barra') return cargaPierna(e, carga, lado);
   if (vista === 'frontal') {
     if (lado === 'l') return '';
     const a = e.p.agarre_c;
@@ -554,6 +558,8 @@ function cargaLado(e: Esqueleto, carga: Carga | undefined, lado: 'c' | 'l', vist
 export function centroCarga(e: Esqueleto, carga: Carga | undefined, vista: Vista): Punto | null {
   'worklet';
   if (!carga) return null;
+  // pierna
+  if (carga.tipo !== 'barra' && carga.tipo !== 'mancuerna') return centroCargaPierna(e, carga);
   if (carga.tipo === 'mancuerna' || carga.en === 'agarre') return e.p.agarre_c;
   return en(marcoDe(e, 'tronco', vista), carga.t, -carga.dorso);
 }
@@ -565,6 +571,11 @@ function escenario(lista: readonly Escenario[] | undefined, capa: 'fondo' | 'med
   for (let i = 0; i < lista.length; i++) {
     const b = lista[i];
     if (b.capa !== capa) continue;
+    // pierna
+    if (b.tipo !== 'banco') {
+      d += escenarioPierna(b);
+      continue;
+    }
     const grosor = 5;
     d += poligono([
       { x: b.x, y: b.alto },

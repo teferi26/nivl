@@ -45,7 +45,10 @@
     "isquiotibiales": "Isquiotibiales",
     "aductores": "Aductores",
     "gemelos": "Gemelos",
-    "tibial": "Tibial anterior"
+    "tibial": "Tibial anterior",
+    "soleo": "Sóleo",
+    "gluteo_medio": "Glúteo medio (abductores)",
+    "psoas": "Psoas (flexor de cadera)"
   },
   "grupo": {
     "pecho": "Pecho",
@@ -63,7 +66,9 @@
     "polea": "Polea",
     "maquina": "Máquina",
     "kettlebell": "Kettlebell",
-    "banda": "Banda elástica"
+    "banda": "Banda elástica",
+    "rack": "Rack",
+    "cajon": "Cajón"
   },
   "nivel": {
     "principiante": "Principiante",
