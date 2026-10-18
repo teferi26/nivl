@@ -85,5 +85,18 @@
     "camaraMensaje": "O sistema precisa da câmara para registar provas.",
     "diaPerfecto": "Dia perfeito",
     "recuperacionAbierta": "A recuperação está aberta. Recupera o que perdeste."
+  },
+  "opinion": {
+    "eyebrow": "O sistema pergunta",
+    "titulo": "Do que gostas? O que mudarias?",
+    "intro": "Duas linhas sinceras. Lê-as quem constrói o NIVL. Não muda nada na tua conta.",
+    "gusta": "Do que gostas",
+    "cambiaria": "O que mudarias",
+    "ayuda": "Podes deixar um em branco.",
+    "enviar": "Enviar",
+    "vacia": "Escreve pelo menos um dos dois.",
+    "gracias": "Recebido. O que escreveste chega tal como está.",
+    "aviso": "Fica guardado com a tua conta, no máximo 24 meses. Não incluas dados de saúde nem de outras pessoas. Ao enviá-la, aceitas que a guardemos para melhorar a app.",
+    "privacidad": "Política de privacidade"
   }
 }

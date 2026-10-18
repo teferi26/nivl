@@ -85,5 +85,18 @@
     "camaraMensaje": "The system needs the camera to log proof.",
     "diaPerfecto": "Perfect day",
     "recuperacionAbierta": "Recovery is open. Win back what you lost."
+  },
+  "opinion": {
+    "eyebrow": "The system asks",
+    "titulo": "What do you like? What would you change?",
+    "intro": "Two honest lines. They're read by the people who build NIVL. Nothing changes in your account.",
+    "gusta": "What you like",
+    "cambiaria": "What you'd change",
+    "ayuda": "You can leave one blank.",
+    "enviar": "Send",
+    "vacia": "Write at least one of the two.",
+    "gracias": "Received. What you wrote arrives as is.",
+    "aviso": "It's stored with your account for up to 24 months. Don't include health data or data about other people. By sending it you agree that we store it to improve the app.",
+    "privacidad": "Privacy policy"
   }
 }

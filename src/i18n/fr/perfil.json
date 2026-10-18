@@ -191,5 +191,19 @@
     "titulo": "Dans quelle langue NIVL te parle-t-il ?",
     "cuerpo": "L'app, le coach et les notifications, dans cette langue. Si tu la changes, l'app se recharge.",
     "grupoA11y": "Langues"
+  },
+  "medicion": {
+    "eyebrow": "Confidentialité",
+    "titulo": "Tu nous laisses mesurer comment tu utilises NIVL ?",
+    "cuerpo": "Si tu acceptes, l'app enregistre sur ton téléphone un identifiant aléatoire et nous envoie les étapes que tu complètes : onboarding, première mission, jours où tu ouvres l'app et si tu vois ou fais un achat. Jamais ce que tu écris. Si tu es connecté, c'est associé à ton compte. Seul NIVL le voit, c'est conservé 12 mois et ce n'est partagé avec personne.",
+    "rechazo": "Si tu refuses, rien n'est enregistré ni envoyé et l'app fonctionne pareil. Tu peux changer d'avis quand tu veux dans Profil → Confidentialité.",
+    "rechazar": "Refuser",
+    "aceptar": "Accepter",
+    "masInfo": "Plus d'informations",
+    "masInfoA11y": "Plus d'informations sur la mesure d'utilisation dans la politique de confidentialité",
+    "seccion": "Confidentialité",
+    "fila": "Mesure d'utilisation",
+    "activada": "Activée. Seulement les étapes du parcours, jamais ce que tu écris.",
+    "desactivada": "Désactivée. Rien n'est enregistré ni envoyé."
   }
 }

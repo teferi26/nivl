@@ -147,13 +147,22 @@ async function guion109(db) {
   return out;
 }
 
+const HAY_ANALITICA = (await readdir(migrations)).some((n) => n.startsWith('0072'));
 const antes = await boot(65);
 const despues = await boot(9999);
 try {
   // ── 1. Mismo comportamiento para un usuario 1.0.9 ──────────────────
   const a = await guion109(antes);
   const d = await guion109(despues);
-  eq(d.export.version, 8, 'export v8');
+  // Integración F1: con la 0072 de analítica la exportación es la v9 (la v8 de
+  // la 0068 más funnel_events, app_feedback y admins). Sin las tablas de
+  // analítica en el repo, la última es la v8 de la 0068.
+  eq(d.export.version, HAY_ANALITICA ? 9 : 8, HAY_ANALITICA ? 'export v9' : 'export v8');
+  if (HAY_ANALITICA) {
+    eq(d.export.funnel_events, [], 'funnel_events vacío');
+    eq(d.export.app_feedback, [], 'app_feedback vacío');
+    eq(d.export.admins, [], 'admins vacío');
+  }
   eq(a.export.version, 7, 'export v7 antes');
   eq(d.export.user_modes, [], 'user_modes vacío');
   eq(d.export.mode_xp, [], 'mode_xp vacío');
@@ -161,6 +170,7 @@ try {
   ok(d.export.quests.every((q) => Array.isArray(q.modes) && q.modes.length === 0), 'quests.modes = {}');
   const dExp = structuredClone(d.export);
   delete dExp.version; delete dExp.user_modes; delete dExp.mode_xp;
+  delete dExp.funnel_events; delete dExp.app_feedback; delete dExp.admins;
   for (const p of dExp.profiles) delete p.locale;
   for (const q of dExp.quests) delete q.modes;
   const aExp = structuredClone(a.export); delete aExp.version;
@@ -235,7 +245,9 @@ try {
   await rejects(db.query('select * from user_modes'), /permission denied/);
   await rejects(db.query('select * from mode_xp'), /permission denied/);
   const flags = await one(db, 'select app_flags()');
-  eq(flags, { idiomas_activos: false, modos_activos: false, prueba_auto_activa: false, prueba_auto_dias: 2, prueba_ia_mensajes_dia: 20, valoracion_activa: false }, 'semillas apagadas');
+  // Con la analítica integrada (0070, 0071) hay dos interruptores más, también apagados.
+  const semillas = { idiomas_activos: false, modos_activos: false, prueba_auto_activa: false, prueba_auto_dias: 2, prueba_ia_mensajes_dia: 20, valoracion_activa: false };
+  eq(flags, HAY_ANALITICA ? { ...semillas, analitica_activa: false, opinion_activa: false } : semillas, 'semillas apagadas');
   await rejects(db.query("update app_config set value='true' where key='modos_activos'"), /permission denied/, 'anon no enciende');
   await rejects(db.query("insert into app_config(key,value,public) values('x','1',true)"), /permission denied/);
   await as(db, A);
@@ -243,7 +255,7 @@ try {
   await admin(db);
   await db.query("insert into app_config(key,value,public) values('secreto','1',false)");
   await asAnon(db);
-  eq(await one(db, 'select count(*)::int from app_config'), 6, 'anon solo lee lo público');
+  eq(await one(db, 'select count(*)::int from app_config'), HAY_ANALITICA ? 8 : 6, 'anon solo lee lo público');
   eq('secreto' in (await one(db, 'select app_flags()')), false);
   await admin(db);
   await rejects(db.query('select app_config_value($1)', ['x']).then(async () => { await asAnon(db); return db.query("select app_config_value('modos_activos')"); }), /permission denied/);

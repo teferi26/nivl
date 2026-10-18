@@ -85,5 +85,18 @@
     "camaraMensaje": "Das System braucht die Kamera, um Beweise zu erfassen.",
     "diaPerfecto": "Perfekter Tag",
     "recuperacionAbierta": "Die Wiedergutmachung ist offen. Hol dir zurück, was du verloren hast."
+  },
+  "opinion": {
+    "eyebrow": "Das System fragt",
+    "titulo": "Was gefällt dir? Was würdest du ändern?",
+    "intro": "Zwei ehrliche Zeilen. Sie werden von den Leuten gelesen, die NIVL bauen. An deinem Konto ändert sich nichts.",
+    "gusta": "Was dir gefällt",
+    "cambiaria": "Was du ändern würdest",
+    "ayuda": "Ein Feld darf leer bleiben.",
+    "enviar": "Senden",
+    "vacia": "Schreib mindestens eins von beiden.",
+    "gracias": "Erhalten. Was du geschrieben hast, kommt genau so an.",
+    "aviso": "Es wird mit deinem Konto gespeichert, höchstens 24 Monate. Gib keine Gesundheitsdaten und keine Daten anderer Personen an. Mit dem Senden bist du einverstanden, dass wir es speichern, um die App zu verbessern.",
+    "privacidad": "Datenschutzerklärung"
   }
 }

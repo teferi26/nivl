@@ -77,8 +77,8 @@ do $$ begin
 exception when insufficient_privilege then insert into r values ('13 authenticated no enciende interruptores', true, '42501');
 end $$;
 create temp table e1 as select public.export_my_data() j;
-insert into r select '14 exportación v8 con user_modes y mode_xp',
-  (j->>'version')::int = 8 and jsonb_array_length(j->'user_modes') = 2 and jsonb_array_length(j->'mode_xp') = 2, j->>'version' from e1;
+insert into r select '14 exportación v8 o posterior (v9 con la 0072) con user_modes y mode_xp',
+  (j->>'version')::int >= 8 and jsonb_array_length(j->'user_modes') = 2 and jsonb_array_length(j->'mode_xp') = 2, j->>'version' from e1;
 
 -- ── Otra cuenta: RLS de dueño ─────────────────────────────────────────
 select set_config('request.jwt.claims', '{"sub":"f1000000-0000-4000-8000-0000000000f2","role":"authenticated"}', true),
