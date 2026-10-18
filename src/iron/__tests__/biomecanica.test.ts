@@ -5,7 +5,7 @@ import { dir, planta, type Esqueleto, type Punto } from '../esqueleto';
 import { centroCarga, esqueletoEn } from '../dibujo';
 import { EJERCICIOS, ejercicioPorId } from '../ejercicios';
 import { angulosEn } from '../interpolar';
-import type { Ejercicio } from '../tipos';
+import type { Ejercicio, Escenario } from '../tipos';
 
 const ej = (id: string): Ejercicio => {
   const e = ejercicioPorId(id);
@@ -178,7 +178,7 @@ describe('press de banca', () => {
   });
 
   it('pies planos en el suelo y la cabeza sobre el banco', () => {
-    const banco = e.escenario?.[0];
+    const banco = e.escenario?.[0] as Escenario | undefined;
     for (const { s } of m) {
       const p = planta(s, 'c');
       expect(Math.abs(p.talon.y)).toBeLessThan(0.3);
@@ -192,7 +192,7 @@ describe('press de banca', () => {
 describe('remo con mancuerna', () => {
   const e = ej('remo-mancuerna');
   const m = muestras(e);
-  const banco = e.escenario?.[0];
+  const banco = e.escenario?.[0] as Escenario | undefined;
 
   it('el antebrazo cuelga vertical (±15°): tira el codo, no la mano', () => {
     for (const { s } of m) expect(Math.abs(ang(s.a.antebrazo_c) + 90)).toBeLessThan(15);

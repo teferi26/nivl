@@ -63,7 +63,8 @@
     "polea": "Polea",
     "maquina": "Máquina",
     "kettlebell": "Kettlebell",
-    "banda": "Banda elástica"
+    "banda": "Banda elástica",
+    "barra_fija": "Barra fija"
   },
   "nivel": {
     "principiante": "Principiante",
