@@ -1,0 +1,296 @@
+{
+  "ejercicios": {
+    "curl-barra": {
+      "nombre": "Curl de bíceps con barra",
+      "cues": {
+        "agarre": "Agarre al ancho de los hombros, palmas hacia delante.",
+        "codos": "Codos quietos junto al cuerpo; solo se mueve el antebrazo.",
+        "bajada": "Baja despacio hasta estirar casi del todo el brazo."
+      },
+      "errores": {
+        "balanceo": "Echar el tronco atrás para subir la barra.",
+        "codosDelante": "Adelantar los codos al final del curl.",
+        "munecas": "Doblar las muñecas hacia atrás con el peso."
+      }
+    },
+    "curl-barra-z": {
+      "nombre": "Curl de bíceps con barra Z",
+      "cues": {
+        "agarre": "Agarra la barra en las ondas: la muñeca queda más cómoda.",
+        "codos": "Codos pegados al cuerpo y quietos.",
+        "bajada": "Baja controlando, sin dejar caer la barra."
+      },
+      "errores": {
+        "balanceo": "Impulsarse con la cadera o el tronco.",
+        "medioRecorrido": "Hacer medio recorrido: ni abajo del todo ni arriba."
+      }
+    },
+    "curl-martillo": {
+      "nombre": "Curl martillo con mancuernas",
+      "cues": {
+        "agarre": "Palmas mirándose todo el recorrido, como un martillo.",
+        "codos": "Codos junto al costado; sube hasta la altura del hombro.",
+        "bajada": "Baja despacio, sin balancear las mancuernas."
+      },
+      "errores": {
+        "balanceo": "Usar el impulso del cuerpo para subir.",
+        "giro": "Girar la muñeca a palma arriba: deja de ser martillo."
+      }
+    },
+    "curl-concentrado": {
+      "nombre": "Curl concentrado con mancuerna",
+      "cues": {
+        "codo": "Apoya el codo en la cara interna del muslo y no lo muevas.",
+        "arriba": "Sube hasta el hombro y aprieta un segundo arriba.",
+        "bajada": "Baja hasta estirar el brazo sin soltar la tensión."
+      },
+      "errores": {
+        "hombro": "Subir el hombro para ayudar al curl.",
+        "tronco": "Levantar el tronco al subir la mancuerna."
+      }
+    },
+    "curl-sentado-mancuerna": {
+      "nombre": "Curl de bíceps sentado con mancuernas",
+      "cues": {
+        "espalda": "Espalda recta y pies planos en el suelo.",
+        "codos": "Codos quietos junto al cuerpo.",
+        "bajada": "Baja despacio, en unos dos segundos."
+      },
+      "errores": {
+        "inclinarse": "Echarse hacia atrás para subir el peso.",
+        "medioRecorrido": "No estirar el brazo abajo."
+      }
+    },
+    "curl-inverso-barra-z": {
+      "nombre": "Curl inverso con barra Z",
+      "cues": {
+        "agarre": "Palmas hacia abajo; usa menos peso que en el curl normal.",
+        "munecas": "Muñecas firmes y en línea con el antebrazo.",
+        "codos": "Codos quietos junto al cuerpo."
+      },
+      "errores": {
+        "balanceo": "Balancear el cuerpo para subir la barra.",
+        "munecasCaidas": "Dejar que las muñecas se doblen hacia abajo."
+      }
+    },
+    "curl-arrastre-barra": {
+      "nombre": "Curl de arrastre con barra",
+      "cues": {
+        "pegada": "La barra sube rozando el cuerpo, de los muslos al pecho.",
+        "codos": "Lleva los codos hacia atrás mientras subes.",
+        "bajada": "Baja por el mismo camino, despacio."
+      },
+      "errores": {
+        "separar": "Separar la barra del cuerpo como en el curl normal.",
+        "hombros": "Encoger los hombros hacia las orejas."
+      }
+    },
+    "press-frances-barra-z": {
+      "nombre": "Press francés con barra Z",
+      "cues": {
+        "brazos": "Brazos casi verticales, un poco hacia la cabeza, y quietos.",
+        "codos": "Codos cerrados, apuntando al techo.",
+        "bajada": "Baja despacio hasta pasar la frente, sin tocar la cabeza."
+      },
+      "errores": {
+        "codosAbiertos": "Abrir los codos hacia fuera.",
+        "brazosMovidos": "Mover los brazos: se convierte en un press."
+      }
+    },
+    "press-frances-mancuerna": {
+      "nombre": "Press francés con mancuernas",
+      "cues": {
+        "brazos": "Brazos quietos, un poco inclinados hacia la cabeza.",
+        "codos": "Codos cerrados, apuntando al techo.",
+        "bajada": "Baja las mancuernas a los lados de la cabeza, despacio."
+      },
+      "errores": {
+        "codosAbiertos": "Abrir los codos hacia fuera.",
+        "brazosMovidos": "Bajar los brazos en vez de doblar los codos."
+      }
+    },
+    "press-frances-suelo-mancuerna": {
+      "nombre": "Press francés en el suelo con mancuernas",
+      "cues": {
+        "apoyo": "Tumbado boca arriba, rodillas dobladas y pies planos.",
+        "brazos": "Brazos quietos; solo se doblan los codos.",
+        "bajada": "Baja despacio hasta los lados de la cabeza."
+      },
+      "errores": {
+        "brazosMovidos": "Mover los brazos para ayudar a subir.",
+        "golpe": "Dejar caer las mancuernas contra el suelo."
+      }
+    },
+    "press-cerrado-barra": {
+      "nombre": "Press de banca con agarre cerrado",
+      "cues": {
+        "agarre": "Manos algo más juntas que los hombros, no pegadas.",
+        "codos": "Codos cerca del cuerpo al bajar.",
+        "trayectoria": "La barra toca la parte baja del pecho y sube sobre los hombros.",
+        "seguridad": "Con peso alto, usa soportes de seguridad o alguien que te ayude."
+      },
+      "errores": {
+        "codosAbiertos": "Abrir los codos como en el press normal.",
+        "rebote": "Rebotar la barra en el pecho.",
+        "munecas": "Doblar las muñecas hacia atrás."
+      }
+    },
+    "press-cerrado-mancuerna": {
+      "nombre": "Press cerrado con mancuernas",
+      "cues": {
+        "juntas": "Mancuernas juntas y palmas mirándose todo el recorrido.",
+        "codos": "Codos pegados al cuerpo.",
+        "bajada": "Baja hasta la parte baja del pecho, despacio."
+      },
+      "errores": {
+        "separar": "Separar las mancuernas al subir.",
+        "rebote": "Rebotar en el pecho."
+      }
+    },
+    "fondos-banco": {
+      "nombre": "Fondos en banco",
+      "cues": {
+        "manos": "Manos en el borde del banco o de una silla firme, dedos delante.",
+        "espalda": "Baja con la espalda cerca del banco.",
+        "profundidad": "Para cuando el brazo quede paralelo al suelo; si molesta el hombro, menos."
+      },
+      "errores": {
+        "hombros": "Bajar demasiado y forzar los hombros.",
+        "lejos": "Separar la cadera del banco."
+      }
+    },
+    "fondos-banco-pies-elevados": {
+      "nombre": "Fondos entre bancos con pies elevados",
+      "cues": {
+        "manos": "Manos en el borde de un banco y talones sobre el otro.",
+        "espalda": "Baja con la espalda cerca del banco.",
+        "profundidad": "Brazo paralelo al suelo como mucho; sin dolor en el hombro."
+      },
+      "errores": {
+        "hombros": "Bajar demasiado y forzar los hombros.",
+        "rebote": "Rebotar abajo para subir."
+      }
+    },
+    "flexiones-diamante": {
+      "nombre": "Flexiones diamante",
+      "cues": {
+        "manos": "Manos juntas bajo el pecho formando un diamante.",
+        "cuerpo": "Cuerpo recto de los talones a la cabeza, abdomen firme.",
+        "codos": "Codos pegados, van hacia atrás al bajar."
+      },
+      "errores": {
+        "cadera": "Dejar caer la cadera o subirla en pico.",
+        "codosAbiertos": "Abrir los codos hacia los lados.",
+        "medioRecorrido": "Bajar solo un poco."
+      }
+    },
+    "flexiones-diamante-rodillas": {
+      "nombre": "Flexiones diamante de rodillas",
+      "cues": {
+        "manos": "Manos juntas bajo el pecho formando un diamante.",
+        "cuerpo": "Recto de las rodillas a la cabeza.",
+        "codos": "Codos pegados, van hacia atrás al bajar."
+      },
+      "errores": {
+        "cadera": "Doblar la cadera en lugar de bajar el pecho.",
+        "codosAbiertos": "Abrir los codos hacia los lados."
+      }
+    },
+    "extension-triceps-cabeza-mancuerna": {
+      "nombre": "Extensión de tríceps sobre la cabeza con mancuerna",
+      "cues": {
+        "codos": "Codos hacia el techo y quietos, cerca de la cabeza.",
+        "tronco": "Abdomen firme: la espalda no se arquea.",
+        "bajada": "Baja la mancuerna detrás de la cabeza, despacio."
+      },
+      "errores": {
+        "codosAbiertos": "Abrir los codos hacia los lados.",
+        "arquear": "Arquear la zona lumbar para subir el peso."
+      }
+    },
+    "extension-triceps-cabeza-barra-z": {
+      "nombre": "Extensión de tríceps sobre la cabeza con barra Z",
+      "cues": {
+        "agarre": "Agarre cerrado en las ondas de la barra.",
+        "codos": "Codos hacia el techo y quietos.",
+        "tronco": "Abdomen firme y glúteos apretados."
+      },
+      "errores": {
+        "codosAbiertos": "Abrir los codos hacia los lados.",
+        "arquear": "Arquear la zona lumbar."
+      }
+    },
+    "patada-triceps": {
+      "nombre": "Patada de tríceps con mancuerna",
+      "cues": {
+        "apoyo": "Rodilla y mano en el banco, espalda recta.",
+        "codo": "Codo pegado al costado, un poco por encima de la espalda.",
+        "arriba": "Estira el codo del todo y aprieta un segundo."
+      },
+      "errores": {
+        "balanceo": "Balancear la mancuerna con el hombro.",
+        "codoCae": "Dejar caer el codo al cansarse."
+      }
+    },
+    "patada-triceps-de-pie": {
+      "nombre": "Patada de tríceps de pie",
+      "cues": {
+        "postura": "Rodillas sueltas, cadera atrás y espalda recta.",
+        "codo": "Codos pegados al costado y quietos.",
+        "arriba": "Estira los codos del todo; vale con dos garrafas."
+      },
+      "errores": {
+        "espalda": "Redondear la espalda al inclinarse.",
+        "balanceo": "Balancear los brazos para subir el peso."
+      }
+    },
+    "curl-muneca-barra": {
+      "nombre": "Curl de muñeca con barra",
+      "cues": {
+        "apoyo": "Antebrazos sobre los muslos, palmas arriba, muñecas fuera.",
+        "recorrido": "Baja la barra hasta los dedos y súbela cerrando la muñeca.",
+        "control": "Movimiento lento; poco peso y muchas repeticiones."
+      },
+      "errores": {
+        "antebrazo": "Levantar los antebrazos de los muslos.",
+        "rebote": "Dejar caer la barra de golpe."
+      }
+    },
+    "extension-muneca-mancuerna": {
+      "nombre": "Extensión de muñeca con mancuernas",
+      "cues": {
+        "apoyo": "Antebrazos sobre los muslos, palmas abajo, muñecas fuera.",
+        "peso": "Usa poco peso: estos músculos son pequeños.",
+        "control": "Sube y baja despacio, sin tirones."
+      },
+      "errores": {
+        "antebrazo": "Levantar el antebrazo para ayudar.",
+        "dedos": "Soltar los dedos y dejar la mancuerna suelta."
+      }
+    },
+    "curl-muneca-espalda-barra": {
+      "nombre": "Curl de muñeca por detrás de la espalda",
+      "cues": {
+        "agarre": "Barra detrás de los glúteos, palmas hacia atrás.",
+        "brazos": "Brazos estirados y quietos; solo se mueven las muñecas.",
+        "control": "Sube y baja despacio, sin balanceo."
+      },
+      "errores": {
+        "codos": "Doblar los codos para subir la barra.",
+        "rebote": "Dejar caer la barra de golpe."
+      }
+    },
+    "paseo-granjero": {
+      "nombre": "Paseo del granjero",
+      "cues": {
+        "postura": "Tronco recto, hombros atrás y abdomen firme.",
+        "agarre": "Aprieta fuerte las mancuernas; suéltalas si el agarre falla.",
+        "pasos": "Pasos cortos y mirada al frente."
+      },
+      "errores": {
+        "inclinarse": "Inclinarse hacia un lado o hacia delante.",
+        "hombros": "Dejar caer los hombros hacia delante."
+      }
+    }
+  }
+}
