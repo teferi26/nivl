@@ -69,7 +69,7 @@ import { anotarOferta, fetchAiStatus, isPro, ofrecerSi, type AiStatus, type Deci
 import { colors, fonts } from '@/lib/theme';
 import { ink, type as tipo } from '@/design/tokens';
 import { TopeAncho } from '@/design/useSizeClass';
-import { esIdioma, fijarPreferencia, idiomaDispositivo, idiomaInterfaz, preferenciaIdioma, resolverIdiomaCoach, t } from '@/i18n';
+import { esIdioma, fijarPreferencia, idiomaDispositivo, idiomaInterfaz, preferenciaIdioma, resolverIdiomaCoach, t, useIdioma } from '@/i18n';
 import { asegurarIdiomaPerfil } from '@/i18n/sincronizar';
 import { flagsActuales, useFlags } from '@/lib/flags';
 import { eleccionValida, modosSugeridos, useModo, type ModoEtiqueta } from '@/modos';
@@ -94,6 +94,16 @@ import { mensajeSistema, NAME_MAX_LENGTH } from '@/lib/validation';
  */
 let idiomaOnboardingContestado = false;
 
+/**
+ * QA F1 (menor 4): ¿ya se eligió idioma? En esta sesión de app, o antes de
+ * que la app se recargara o muriera: la preferencia guardada en el teléfono es
+ * un idioma concreto. Una cuenta nueva arranca en `auto` (decidirPreferenciaInicial)
+ * y solo elegirlo (aquí o en Ajustes) la deja en un idioma.
+ */
+function idiomaYaElegido(preferencia: string | null): boolean {
+  return idiomaOnboardingContestado || esIdioma(preferencia);
+}
+
 /** Pasos de los que se puede volver: del nombre a la firma. Tras firmar, no. */
 const PRIMER_PASO_CON_VUELTA = 1;
 const ULTIMO_PASO_CON_VUELTA = 5;
@@ -115,7 +125,10 @@ export default function Onboarding() {
   const userId = session?.user.id;
   // Con el idioma encendido ya al montar (caché de interruptores), se empieza
   // por él sin pasar un instante por la portada.
-  const [step, setStep] = useState(() => (flagsActuales().idiomas_activos && !idiomaOnboardingContestado ? PASO_IDIOMA : 0));
+  const [step, setStep] = useState(() =>
+    flagsActuales().idiomas_activos && !idiomaYaElegido(preferenciaIdioma()) ? PASO_IDIOMA : 0,
+  );
+  const { preferencia } = useIdioma();
   // Modos F1: los pasos nuevos solo con su interruptor (pasos.ts).
   const flags = useFlags();
   const modosCtx = useModo();
@@ -427,9 +440,13 @@ export default function Onboarding() {
   // Modos F1: con `idiomas_activos`, el idioma es el primer paso. Los
   // interruptores pueden llegar después de montar (caché o red): si aún no se
   // ha pasado de la portada, se empieza por el idioma.
+  // La preferencia guardada puede llegar después de montar (se lee del
+  // teléfono): si ya era un idioma, el paso del idioma no se repite.
   useEffect(() => {
-    if (flags.idiomas_activos && !idiomaOnboardingContestado) setStep((s) => (s === 0 ? PASO_IDIOMA : s));
-  }, [flags.idiomas_activos]);
+    if (!flags.idiomas_activos) return;
+    if (!idiomaYaElegido(preferencia)) setStep((s) => (s === 0 ? PASO_IDIOMA : s));
+    else setStep((s) => (s === PASO_IDIOMA ? 0 : s));
+  }, [flags.idiomas_activos, preferencia]);
 
   useEffect(() => {
     if (!sello) return;
