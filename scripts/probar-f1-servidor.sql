@@ -1,6 +1,6 @@
--- NIVL · Modos F1 (servidor): prueba de 0066–0069 DENTRO DE UNA TRANSACCIÓN QUE SE REVIERTE.
+-- NIVL · Modos F1 (servidor): prueba de 0066 a 0069 DENTRO DE UNA TRANSACCIÓN QUE SE REVIERTE.
 --
--- Uso: con 0066–0069 ya aplicadas en la base que se prueba (local, rama de Supabase o, si el coordinador
+-- Uso: con 0066 a 0069 ya aplicadas en la base que se prueba (local, rama de Supabase o, si el coordinador
 -- lo decide, producción), ejecutar el archivo ENTERO de una vez (rosql.mjs, psql -f o el SQL Editor).
 -- Empieza con BEGIN y acaba con ROLLBACK: no queda escrito nada (ni las cuentas ficticias *.invalid, ni el
 -- interruptor encendido, ni los eventos de tienda). Devuelve una fila por comprobación: (paso, ok, detalle).

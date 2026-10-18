@@ -1,4 +1,4 @@
-// NIVL · Modos F1 (servidor): 0066–0069 contra las migraciones REALES del repo, en PostgreSQL en memoria.
+// NIVL · Modos F1 (servidor): 0066 a 0069 contra las migraciones REALES del repo, en PostgreSQL en memoria.
 // Sin red, sin Supabase, sin credenciales y sin datos reales (cuentas ficticias *.invalid).
 //
 //   node scripts/test-modos-f1.mjs /ruta/a/@electric-sql/pglite/dist/index.js
@@ -6,7 +6,7 @@
 // Qué demuestra:
 //   1. «La 1.0.9 no se rompe»: el MISMO guion de un usuario sin modos ni locale (misiones normal, extra y de
 //      penalización, doble toque, award_xp, exportación, y la matriz de planes de ai_state / user_tier /
-//      ai_begin_turn) da resultados idénticos en una base hasta la 0065 y en otra con 0066–0069 aplicadas.
+//      ai_begin_turn) da resultados idénticos en una base hasta la 0065 y en otra con 0066 a 0069 aplicadas.
 //   2. XP por modo: suma lo pagado a cada modo; nada con modes vacío, extra, penalización o doble toque.
 //   3. RLS de app_config, user_modes, mode_xp y profiles.locale.
 //   4. Prueba automática: apagada no nace; encendida nace, usa Haiku, tiene tope diario y caduca sin gracia;
