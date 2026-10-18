@@ -1098,6 +1098,13 @@ modos	+	Cada misión suma a tu nivel y al de cada uno de sus modos.
 modos	+	Nivel {{nivel}}
 modos	+	{{modo}}: nivel {{nivel}}, {{xp}} XP
 modos	+	Cargando los niveles por modo
+modos	+	Tu nivel
+modos	+	Elegir modos
+modos	+	Activa un modo y cada misión con su etiqueta sumará también a su nivel.
+modos	+	{{modo}}: nivel {{nivel}}
+modos	+	Modos
+modos	+	Tus modos
+modos	+	NIVL siempre está. Lo que marques aparece en el selector de Hoy y en las etiquetas de tus misiones.
 onboarding	+	El idioma
 onboarding	+	¿En qué idioma hablamos?
 onboarding	+	Sale del idioma del teléfono. Puedes cambiarlo después en Perfil.

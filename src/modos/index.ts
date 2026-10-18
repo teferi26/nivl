@@ -3,3 +3,4 @@
 export * from './tipos';
 export { cabecerasModoCoach, fijarModoCoach } from './coach';
 export { ModoProvider, useModo, type ModoContexto } from './ModoProvider';
+export { nivelesDeModos, type NivelModo } from './niveles';

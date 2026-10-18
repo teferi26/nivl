@@ -17,6 +17,8 @@ export interface EleccionModosProps {
   alCambiar: (modos: ModoEtiqueta[]) => void;
   /** Bloqueada mientras se guarda. */
   ocupada?: boolean;
+  /** El onboarding pide al menos uno (por defecto); Perfil deja quitarlos todos. */
+  minimo?: boolean;
 }
 
 function Fila({
@@ -57,7 +59,7 @@ function Fila({
   );
 }
 
-export function EleccionModos({ valor, alCambiar, ocupada }: EleccionModosProps) {
+export function EleccionModos({ valor, alCambiar, ocupada, minimo = true }: EleccionModosProps) {
   return (
     <View>
       <Fila modo="general" marcada fija />
@@ -76,7 +78,7 @@ export function EleccionModos({ valor, alCambiar, ocupada }: EleccionModosProps)
           }
         />
       ))}
-      {!eleccionValida(valor) ? (
+      {minimo && !eleccionValida(valor) ? (
         <Text style={styles.minimo} maxFontSizeMultiplier={1.35}>
           {t('modos:onboarding.minimo')}
         </Text>

@@ -84,13 +84,18 @@ export interface PerfilVistaProps {
   acciones: PerfilAcciones;
   /** PerfilAjustes (null en la galería). */
   ajustes: ReactNode;
+  /**
+   * Modos F1: los niveles por modo (NivelesModo), bajo el camino de rangos.
+   * Solo con `modos_activos` encendido; si no, nada.
+   */
+  nivelesModo?: ReactNode;
 }
 
 function multiplicador(dias: number): string {
   return `×${streakMultiplier(dias).toFixed(1).replace('.', ',')}`;
 }
 
-export function PerfilVista({ datos, error, desde, nombre, subiendoFoto, acciones, ajustes }: PerfilVistaProps) {
+export function PerfilVista({ datos, error, desde, nombre, subiendoFoto, acciones, ajustes, nivelesModo }: PerfilVistaProps) {
   if (!datos && error) {
     return (
       <TarjetaArena variante="contorno" rotulo={t('comun:sistemaNoResponde')} style={styles.bloque}>
@@ -152,6 +157,7 @@ export function PerfilVista({ datos, error, desde, nombre, subiendoFoto, accione
         <Section title={t('perfil:vista.camino')} meta={estado.rango}>
           <CaminoDeRangos rango={estado.rango} siguiente={estado.siguienteRango} />
         </Section>
+        {nivelesModo ?? null}
       </Entrada>
 
       <Entrada indice={2}>

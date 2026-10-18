@@ -32,6 +32,15 @@
     "ayuda": "Cada misión suma a tu nivel y al de cada uno de sus modos.",
     "nivel": "Nivel {{nivel}}",
     "filaA11y": "{{modo}}: nivel {{nivel}}, {{xp}} XP",
-    "cargandoA11y": "Cargando los niveles por modo"
+    "cargandoA11y": "Cargando los niveles por modo",
+    "global": "Tu nivel",
+    "elegir": "Elegir modos",
+    "vacio": "Activa un modo y cada misión con su etiqueta sumará también a su nivel.",
+    "filaGlobalA11y": "{{modo}}: nivel {{nivel}}"
+  },
+  "hoja": {
+    "eyebrow": "Modos",
+    "titulo": "Tus modos",
+    "pista": "NIVL siempre está. Lo que marques aparece en el selector de Hoy y en las etiquetas de tus misiones."
   }
 }
