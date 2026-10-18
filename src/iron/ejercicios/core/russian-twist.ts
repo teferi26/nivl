@@ -49,7 +49,7 @@ export const russianTwist: Ejercicio = {
   ],
   msFicha: 0,
   escenario: [{ tipo: 'esterilla', x: -36, ancho: 92, alto: 0.8, capa: 'fondo' }],
-  encuadre: { x: -40, y: -4, ancho: 100, alto: 60 },
+  encuadre: { x: -40, y: -4, ancho: 104, alto: 60 },
   cues: [
     'iron-core:ejercicios.russian-twist.cues.espalda',
     'iron-core:ejercicios.russian-twist.cues.gira',

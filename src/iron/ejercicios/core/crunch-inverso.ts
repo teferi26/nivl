@@ -40,7 +40,7 @@ export const crunchInverso: Ejercicio = {
   esfuerzo: [{ desde: 300, hasta: 1100 }],
   msFicha: 1250,
   escenario: [{ tipo: 'esterilla', x: -50, ancho: 92, alto: 0.8, capa: 'fondo' }],
-  encuadre: { x: -54, y: -4, ancho: 92, alto: 56 },
+  encuadre: { x: -54, y: -4, ancho: 92, alto: 72 },
   cues: [
     'iron-core:ejercicios.crunch-inverso.cues.brazos',
     'iron-core:ejercicios.crunch-inverso.cues.pelvis',

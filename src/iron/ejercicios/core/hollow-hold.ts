@@ -34,7 +34,7 @@ export const hollowHold: Ejercicio = {
   cicloMs: 4000,
   esfuerzo: [{ desde: 0, hasta: 4000 }],
   escenario: [{ tipo: 'esterilla', x: -56, ancho: 112, alto: 0.8, capa: 'fondo' }],
-  encuadre: { x: -84, y: -4, ancho: 144, alto: 48 },
+  encuadre: { x: -54, y: -4, ancho: 112, alto: 64 },
   cues: [
     'iron-core:ejercicios.hollow-hold.cues.lumbar',
     'iron-core:ejercicios.hollow-hold.cues.altura',

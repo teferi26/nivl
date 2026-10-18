@@ -47,7 +47,7 @@ export const movilidadTobillo: Ejercicio = {
   esfuerzo: [{ desde: 300, hasta: 1300 }],
   msFicha: 1600,
   escenario: [{ tipo: 'esterilla', x: -36, ancho: 84, alto: 0.8, capa: 'fondo' }],
-  encuadre: { x: -40, y: -4, ancho: 92, alto: 80 },
+  encuadre: { x: -40, y: -4, ancho: 92, alto: 86 },
   cues: [
     'iron-core:ejercicios.movilidad-tobillo.cues.talon',
     'iron-core:ejercicios.movilidad-tobillo.cues.rodilla',

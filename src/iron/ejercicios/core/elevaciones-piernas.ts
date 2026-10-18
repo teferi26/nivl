@@ -36,7 +36,7 @@ export const elevacionesPiernas: Ejercicio = {
   esfuerzo: [{ desde: 300, hasta: 1300 }],
   msFicha: 800,
   escenario: [{ tipo: 'esterilla', x: -50, ancho: 108, alto: 0.8, capa: 'fondo' }],
-  encuadre: { x: -54, y: -4, ancho: 112, alto: 64 },
+  encuadre: { x: -54, y: -4, ancho: 116, alto: 76 },
   cues: [
     'iron-core:ejercicios.elevaciones-piernas.cues.espalda',
     'iron-core:ejercicios.elevaciones-piernas.cues.rodillas',

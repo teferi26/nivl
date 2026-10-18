@@ -37,7 +37,7 @@ export const tijerasAbdominales: Ejercicio = {
   ],
   msFicha: 0,
   escenario: [{ tipo: 'esterilla', x: -50, ancho: 108, alto: 0.8, capa: 'fondo' }],
-  encuadre: { x: -54, y: -4, ancho: 112, alto: 48 },
+  encuadre: { x: -54, y: -4, ancho: 112, alto: 60 },
   cues: [
     'iron-core:ejercicios.tijeras-abdominales.cues.espalda',
     'iron-core:ejercicios.tijeras-abdominales.cues.corto',

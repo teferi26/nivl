@@ -107,6 +107,18 @@ describe.each(EJERCICIOS_CORE.map((e) => [e.id, e] as const))('%s', (_id, e) => 
     }
   });
 
+  it('el cuerpo cabe entero en el encuadre (nada cortado en el GIF ni en la ficha)', () => {
+    const { x, y, ancho, alto } = e.encuadre;
+    for (const { s } of m) {
+      for (const [k, p] of Object.entries(s.p)) {
+        const r = k === 'cabeza' ? 7.5 : 4;
+        expect(p.x - r).toBeGreaterThanOrEqual(x);
+        expect(p.x + r).toBeLessThanOrEqual(x + ancho);
+        expect(p.y + r).toBeLessThanOrEqual(y + alto);
+      }
+    }
+  });
+
   it('el ciclo cierra sin salto', () => {
     const a = angulosEn(e, 0);
     const b = angulosEn(e, e.cicloMs - 0.01);
