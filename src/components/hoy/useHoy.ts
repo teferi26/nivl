@@ -65,6 +65,7 @@ import { fetchBoard, type BoardEntry } from '@/lib/social';
 import { DIAS_VENTANA } from '@/lib/socialmath';
 import { mensajeSistema } from '@/lib/validation';
 import type { Completion, Profile, Quest } from '@/lib/types';
+import { useModo } from '@/modos';
 import { derivarHoy } from './derivarHoy';
 import type { DesdeHero, HoyVistaProps } from './HoyVista';
 
@@ -109,6 +110,8 @@ const esperarCierreDeHoja = () => new Promise<void>((ok) => setTimeout(ok, 420))
 export function useHoy() {
   const health = useHealthConsent();
   const { session } = useAuth();
+  // Modos F1: con `modos_activos` apagado, siempre General (la lista entera).
+  const { modo } = useModo();
   const userId = session?.user.id;
 
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -671,8 +674,9 @@ export function useHoy() {
         diaPerfecto,
         avisoRecuperacion,
         reglasSinMarcar,
+        modo,
       }),
-    [hoy, hora, profile, rango, tituloEquipado, todayQuests, completions, dayResult, plan, esPro, board, rotosPrevios, diaPerfecto, avisoRecuperacion, reglasSinMarcar],
+    [hoy, hora, profile, rango, tituloEquipado, todayQuests, completions, dayResult, plan, esPro, board, rotosPrevios, diaPerfecto, avisoRecuperacion, reglasSinMarcar, modo],
   );
 
   const heroVisto = datos.hero;

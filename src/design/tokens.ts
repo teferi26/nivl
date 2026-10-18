@@ -18,6 +18,23 @@ export const ink = {
 
 export type InkToken = keyof typeof ink;
 
+/**
+ * Modos (fase 1, contrato MODOS-F1): la base sigue en blanco y negro y cada
+ * modo añade UN acento. General es el monocromo de siempre (ink10). Solo se
+ * usa con el interruptor `modos_activos` encendido: con él apagado, nada de
+ * esto se pinta. Todos llegan a AA (4,5:1) sobre ink0, y el texto ink0 sobre
+ * el acento también (test en __tests__/tokens.test.ts).
+ */
+export const modoAcento = {
+  general: ink.ink10,
+  iron: '#3D7BFF', // azul eléctrico
+  focus: '#8B6CFF', // violeta
+  work: '#19C37D', // esmeralda
+  founder: '#FF9F1C', // ámbar
+} as const;
+
+export type ModoAcento = keyof typeof modoAcento;
+
 /** Escala de espaciado (pt). Base 4. */
 export const space = { s1: 4, s2: 8, s3: 12, s4: 16, s5: 20, s6: 24, s8: 32, s10: 40, s14: 56, s20: 80 } as const;
 

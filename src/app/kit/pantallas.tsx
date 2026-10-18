@@ -61,6 +61,8 @@ import { DEMO as demoHabitos } from '@/components/habitos/demo';
 import { DEMO as demoHoy } from '@/components/hoy/demo';
 import { DEMO as demoInforme } from '@/components/informe/demo';
 import { DEMO as demoMemoria } from '@/components/memoria/demo';
+import { DEMO as demoModos } from '@/components/modos/demo';
+import { DEMO as demoPrueba } from '@/components/prueba/demo';
 import { DEMO as demoNutricion } from '@/components/nutricion/demo';
 import { DEMO as demoOnboarding } from '@/components/onboarding/demo';
 import { DEMO as demoOraculo } from '@/components/oraculo/demo';
@@ -98,6 +100,8 @@ const DEMOS: Record<IdPantalla, DemoPantalla | null> = {
   memoria: demoMemoria,
   economia: demoEconomia,
   creador: demoCreador,
+  modos: demoModos,
+  prueba: demoPrueba,
 };
 
 type IdPagina = 'arena' | IdPantalla;

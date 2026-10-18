@@ -22,6 +22,7 @@ import type { DayBlock, DayPlan, PlanConBloques } from '@/lib/plan';
 import type { BoardEntry } from '@/lib/social';
 import type { Completion, Profile, Quest } from '@/lib/types';
 import { t } from '@/i18n';
+import { filtrarPorModo, type ModoId } from '@/modos/tipos';
 import { lineaEnJuego, type LineaEnJuego } from './enJuego';
 
 export interface RachaHoy {
@@ -61,6 +62,19 @@ export interface EntradaHoy {
    * ya empezó (reglasSinMarcarHoy). Ausente = 0.
    */
   reglasSinMarcar?: number;
+  /**
+   * Modos F1: el modo a la vista (solo con `modos_activos` encendido). La
+   * lista de misiones enseña las de ese modo; el Hero, la racha y el cierre
+   * siguen siendo del día entero. Ausente o General = Hoy de siempre.
+   */
+  modo?: ModoId;
+}
+
+/** La lista filtrada por un modo (null en General): sus cuentas, para la sección. */
+export interface ModoHoy {
+  id: Exclude<ModoId, 'general'>;
+  hechas: number;
+  total: number;
 }
 
 export interface MisionHoy {
@@ -174,6 +188,8 @@ export interface HoyDatos {
   duelo: DueloHoy | null;
   modulos: { primary: ModuleMeta[]; secondary: ModuleMeta[] };
   esPro: boolean | null;
+  /** Modos F1: la lista va filtrada por este modo. null = General (todo). */
+  modo: ModoHoy | null;
 }
 
 export function saludo(nombre: string, hora: number): string {
@@ -306,8 +322,12 @@ export function derivarHoy(e: EntradaHoy): HoyDatos {
     freezeUntil: profile?.freeze_until ?? null,
   });
 
-  const siguienteId = sorted.find((q) => !q.is_penalty && !q.is_bonus && !completions[q.id])?.id ?? null;
-  const misiones: MisionHoy[] = sorted.map((q) => ({
+  // Modos F1: la lista enseña las del modo a la vista (General: todas, la
+  // misma lista). La siguiente se elige entre las que se ven.
+  const modo = e.modo ?? 'general';
+  const visibles = filtrarPorModo(sorted, modo);
+  const siguienteId = visibles.find((q) => !q.is_penalty && !q.is_bonus && !completions[q.id])?.id ?? null;
+  const misiones: MisionHoy[] = visibles.map((q) => ({
     quest: q,
     hecha: !!completions[q.id],
     xpPagado: completions[q.id]?.xp_awarded,
@@ -421,5 +441,9 @@ export function derivarHoy(e: EntradaHoy): HoyDatos {
     duelo,
     modulos: modulesFor(profile?.profile_kind),
     esPro: e.esPro,
+    modo:
+      modo === 'general'
+        ? null
+        : { id: modo, hechas: visibles.filter((q) => completions[q.id]).length, total: visibles.length },
   };
 }

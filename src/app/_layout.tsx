@@ -21,6 +21,7 @@ import { registrarDispositivo } from '@/lib/push';
 import { destinoPortal, SITIO_CREADORES } from '@/lib/sitio';
 import { colors } from '@/lib/theme';
 import { useNotificationRouting } from '@/lib/useNotificationRouting';
+import { ModoProvider } from '@/modos';
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
@@ -223,11 +224,14 @@ export default function RootLayout() {
           <PortalStack />
         ) : (
           // Por fuera de ColumnaWeb: en web la ceremonia y el toast cubren toda la ventana.
-          <CelebracionProvider>
-            <EdadMinimaProvider>
-              <HealthConsentProvider><ProtectedStack /></HealthConsentProvider>
-            </EdadMinimaProvider>
-          </CelebracionProvider>
+          // ModoProvider: con `modos_activos` apagado no lee nada y todo es General.
+          <ModoProvider>
+            <CelebracionProvider>
+              <EdadMinimaProvider>
+                <HealthConsentProvider><ProtectedStack /></HealthConsentProvider>
+              </EdadMinimaProvider>
+            </CelebracionProvider>
+          </ModoProvider>
         )}
       </AuthProvider>
     </ErrorBoundary>
