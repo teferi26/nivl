@@ -133,7 +133,11 @@ const styles = StyleSheet.create({
   dangerDentro: { position: 'absolute', top: 3, left: 3, right: 3, bottom: 3 },
   // Gana a primary y danger: sin relleno blanco, sin trama, borde ink4.
   apagado: { borderWidth: 1.5, borderColor: ink.ink4 },
+  // Si el rótulo no cabe en una línea (fr, de), salta centrado y sin
+  // salirse del botón (QA F1, menor 6). En una línea no cambia nada.
   label: {
+    flexShrink: 1,
+    textAlign: 'center',
     fontFamily: tipo.label.family,
     fontSize: 14,
     letterSpacing: 2,
