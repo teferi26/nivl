@@ -1,0 +1,285 @@
+{
+  "dificultad": {
+    "trivial": "Trivial",
+    "facil": "Fácil",
+    "media": "Media",
+    "dificil": "Difícil",
+    "epica": "Épica"
+  },
+  "atributo": {
+    "FUE": "Fuerza",
+    "VIT": "Vitalidad",
+    "INT": "Inteligencia",
+    "AGI": "Agilidad",
+    "PER": "Percepción"
+  },
+  "modulos": [
+    [
+      "gym",
+      "Gym"
+    ],
+    [
+      "cardio",
+      "Cardio"
+    ],
+    [
+      "nutricion",
+      "Nutrición"
+    ],
+    [
+      "dieta",
+      "Dieta"
+    ],
+    [
+      "economia",
+      "Economía"
+    ],
+    [
+      "compra",
+      "Compra"
+    ],
+    [
+      "diario",
+      "Diario"
+    ],
+    [
+      "informe",
+      "Informe"
+    ],
+    [
+      "avances",
+      "Avances"
+    ],
+    [
+      "resumen",
+      "Recuerdos"
+    ],
+    [
+      "oraculo",
+      "Oráculo"
+    ],
+    [
+      "contrato",
+      "Contrato"
+    ],
+    [
+      "amigos",
+      "Amigos"
+    ]
+  ],
+  "perfiles": [
+    {
+      "id": "emprendedor",
+      "label": "Emprendedor",
+      "title": "EMPRENDEDOR",
+      "tagline": "Ventas, foco y caja. Cada día una acción que mueva el negocio.",
+      "description": "Economía y contrato delante. Proyectos con jefe final y fecha. El coach te pide números: contactos, cierres, ingresos.",
+      "campaignsLabel": "Proyectos",
+      "campaignsHint": "Un proyecto es una campaña: tareas, un jefe final y una fecha. Al despejarlo hay botín.",
+      "goalExample": "Facturar 5.000 € al mes con mi negocio",
+      "enFrase": "emprendedor",
+      "misiones": [
+        "Prospección: 10 contactos",
+        "Bloque de trabajo profundo 2 h",
+        "Revisar métricas del negocio",
+        "Entrenar",
+        "Leer 20 minutos",
+        "Diario del día"
+      ],
+      "coachHint": "Es emprendedor: su campo de batalla son las ventas, el foco y la caja. Pide cifras de embudo (contactos, reuniones, cierres, ingresos) y ordena acciones que muevan el negocio hoy. El cuerpo se cuida para rendir, no es el centro."
+    },
+    {
+      "id": "trabajador",
+      "label": "Profesional",
+      "title": "PROFESIONAL",
+      "tagline": "Crecer en tu trabajo sin descuidar el cuerpo. Foco en la jornada, orden fuera de ella.",
+      "description": "Informe, avances y diario delante, con el gym y la economía a mano. Objetivos de carrera con hito final y fecha. El coach protege tus bloques de foco y encaja entreno, comida y descanso alrededor de tu jornada.",
+      "campaignsLabel": "Objetivos",
+      "campaignsHint": "Un objetivo profesional es una campaña: pasos como tareas, un hito final y una fecha. Al cumplirlo hay botín.",
+      "goalExample": "Conseguir el ascenso a responsable de equipo",
+      "enFrase": "profesional",
+      "misiones": [
+        "Bloque de foco 90 min sin interrupciones",
+        "Planificar la jornada antes de empezar",
+        "Formación en tu oficio 30 min",
+        "Entrenar",
+        "Dormir 7 horas",
+        "Diario del día"
+      ],
+      "coachHint": "Es un profesional por cuenta ajena: quiere crecer en su trabajo y mantener salud y hábitos en orden. Su jornada es fija y no se negocia: protege uno o dos bloques de foco dentro de ella, pregunta por entregas, aprendizaje y objetivos de carrera (ascenso, cambio, certificación), y encaja entreno, comida y sueño antes o después del trabajo sin cargar los días largos."
+    },
+    {
+      "id": "deportista",
+      "label": "Deportista",
+      "title": "DEPORTISTA",
+      "tagline": "Entreno, comida y descanso. El progreso se mide en kilos, ritmo y constancia.",
+      "description": "Gym, cardio, nutrición y dieta delante. Bloques de temporada con objetivo y fecha. El coach prescribe cargas con tu RPE y ajusta la dieta con tu tendencia de peso.",
+      "campaignsLabel": "Bloques",
+      "campaignsHint": "Un bloque de temporada es una campaña: sesiones, un objetivo final y una fecha. Al cumplirlo hay botín.",
+      "goalExample": "Bajar a 78 kg sin perder fuerza",
+      "enFrase": "deportista",
+      "misiones": [
+        "Entrenar",
+        "Registrar comidas del día",
+        "Dormir 8 horas",
+        "Movilidad 10 minutos",
+        "Pesarse",
+        "Diario del día"
+      ],
+      "coachHint": "Es deportista: el entreno, la comida y el descanso son el centro. Programa sobre el estudio (1RM, RPE, ritmo por zona, tendencia de peso), exige registro de sesiones y comidas, y protege el descanso como parte del plan."
+    },
+    {
+      "id": "estudiante",
+      "label": "Estudiante",
+      "title": "ESTUDIANTE",
+      "tagline": "Horas de estudio reales, exámenes como jefes finales y una cabeza despejada.",
+      "description": "Diario, informe y avances delante. Asignaturas con el examen como jefe final. El coach reparte el estudio por bloques y vigila que descanses.",
+      "campaignsLabel": "Asignaturas",
+      "campaignsHint": "Una asignatura es una campaña: temas como tareas, el examen como jefe y su fecha. Al aprobarla hay botín.",
+      "goalExample": "Aprobar las cuatro asignaturas de junio",
+      "enFrase": "estudiante",
+      "misiones": [
+        "Estudiar 2 h",
+        "Repasar apuntes 20 min",
+        "Sin móvil en clase",
+        "Entrenar",
+        "Leer 20 minutos",
+        "Diario del día"
+      ],
+      "coachHint": "Es estudiante: las horas de estudio reales y los exámenes son el centro. Reparte el estudio en bloques con materia concreta, trata cada examen como el jefe de su campaña con fecha, y vigila el sueño en época de exámenes."
+    },
+    {
+      "id": "general",
+      "label": "En general",
+      "title": "GLADIADOR",
+      "tagline": "Cuerpo, cabeza y hábitos. Un 1 % mejor cada día, en lo que tú decidas.",
+      "description": "Todos los módulos a la vista. Campañas para cualquier reto con fecha. El coach te pregunta qué quieres conquistar y lo convierte en misiones.",
+      "campaignsLabel": "Campañas",
+      "campaignsHint": "Una campaña es un reto con fecha: tareas, un jefe final y botín al despejarla.",
+      "goalExample": "Entrenar cuatro días por semana durante un año",
+      "enFrase": "en general",
+      "misiones": [
+        "Entrenar",
+        "Trabajo o estudio 2 h",
+        "Registrar comidas del día",
+        "Leer 20 minutos",
+        "Diario del día"
+      ],
+      "coachHint": "Perfil general: no hay un dominio dominante. Pregunta qué quiere conquistar esta temporada y reparte el esfuerzo entre cuerpo, cabeza y hábitos sin cargar todo el mismo día."
+    }
+  ],
+  "horizontes": [
+    "1 año",
+    "3 años",
+    "5 años"
+  ],
+  "compromiso": [
+    "COMPROMISO A 1 AÑO\n\nYo, Teferi, firmo este compromiso conmigo el domingo, 18 de octubre de 2026, el día que entré en NIVL.\n\nEstoy aquí para esto: Bajar a 78 kg sin perder fuerza. Cifra: 78 kg. Fecha: junio de 2027.\n\nNo prometo días perfectos. Prometo ser un 1 % mejor cada día: una misión cumplida cuando no apetece, una norma respetada cuando nadie mira, un registro honesto cuando el día ha ido mal.\n\nUn 1 % no se nota en una semana. En 1 año es otra vida.\n\nCuando falle, no negociaré con el sistema. Aceptaré la penalización, cumpliré la consecuencia y volveré al día siguiente.\n\nA quien abra esto el lunes, 17 de octubre de 2029: eres lo que hice con cada uno de estos días. Espero haber estado a tu altura.\n\nFirmado: Teferi",
+    "COMPROMISO A 3 AÑOS\n\nYo, Teferi, firmo este compromiso conmigo el domingo, 18 de octubre de 2026, el día que entré en NIVL.\n\nEstoy aquí para esto: Bajar a 78 kg sin perder fuerza. Cifra: 78 kg. Fecha: junio de 2027.\n\nNo prometo días perfectos. Prometo ser un 1 % mejor cada día: una misión cumplida cuando no apetece, una norma respetada cuando nadie mira, un registro honesto cuando el día ha ido mal.\n\nUn 1 % no se nota en una semana. En 3 años es otra vida.\n\nCuando falle, no negociaré con el sistema. Aceptaré la penalización, cumpliré la consecuencia y volveré al día siguiente.\n\nA quien abra esto el lunes, 17 de octubre de 2029: eres lo que hice con cada uno de estos días. Espero haber estado a tu altura.\n\nFirmado: Teferi",
+    "COMPROMISO A 5 AÑOS\n\nYo, Teferi, firmo este compromiso conmigo el domingo, 18 de octubre de 2026, el día que entré en NIVL.\n\nEstoy aquí para esto: Bajar a 78 kg sin perder fuerza. Cifra: 78 kg. Fecha: junio de 2027.\n\nNo prometo días perfectos. Prometo ser un 1 % mejor cada día: una misión cumplida cuando no apetece, una norma respetada cuando nadie mira, un registro honesto cuando el día ha ido mal.\n\nUn 1 % no se nota en una semana. En 5 años es otra vida.\n\nCuando falle, no negociaré con el sistema. Aceptaré la penalización, cumpliré la consecuencia y volveré al día siguiente.\n\nA quien abra esto el lunes, 17 de octubre de 2029: eres lo que hice con cada uno de estos días. Espero haber estado a tu altura.\n\nFirmado: Teferi"
+  ],
+  "compromisoSinExtras": "COMPROMISO A 1 AÑO\n\nYo, Ana, firmo este compromiso conmigo el a, el día que entré en NIVL.\n\nEstoy aquí para esto: Aprobar.\n\nNo prometo días perfectos. Prometo ser un 1 % mejor cada día: una misión cumplida cuando no apetece, una norma respetada cuando nadie mira, un registro honesto cuando el día ha ido mal.\n\nUn 1 % no se nota en una semana. En 1 año es otra vida.\n\nCuando falle, no negociaré con el sistema. Aceptaré la penalización, cumpliré la consecuencia y volveré al día siguiente.\n\nA quien abra esto el b: eres lo que hice con cada uno de estos días. Espero haber estado a tu altura.\n\nFirmado: Ana",
+  "niveles": [
+    [
+      "pro",
+      "NIVL Pro",
+      "Pro",
+      "El coach en potencia estándar."
+    ],
+    [
+      "elite",
+      "NIVL Élite",
+      "Élite",
+      "El coach a máxima potencia, con modo profundo."
+    ]
+  ],
+  "beneficiosPro": [
+    [
+      "sunny-outline",
+      "Brief cada mañana",
+      "Órdenes y números antes de que empiece el día."
+    ],
+    [
+      "list-outline",
+      "Plan del día, bloque a bloque",
+      "Tu jornada ordenada por horas, con lo que toca en cada una."
+    ],
+    [
+      "barbell-outline",
+      "Entreno prescrito",
+      "Ejercicios, series y cargas según el RPE que registras."
+    ],
+    [
+      "restaurant-outline",
+      "Dieta en gramos",
+      "Ajustada a tu peso real y a su tendencia, no a una tabla."
+    ],
+    [
+      "analytics-outline",
+      "Revisión semanal",
+      "Mide la semana con tus datos y reajusta tu sistema."
+    ],
+    [
+      "library-outline",
+      "Memoria",
+      "Recuerda lo que aprende de ti. Te conoce más cada semana."
+    ],
+    [
+      "chatbubble-ellipses-outline",
+      "Control total por chat",
+      "Díselo y lo hace: misiones, agenda, normas, metas."
+    ]
+  ],
+  "beneficiosElite": [
+    [
+      "flash-outline",
+      "Máxima potencia",
+      "Un modelo de primera línea en cada brief, plan, revisión y conversación."
+    ],
+    [
+      "telescope-outline",
+      "Modo profundo",
+      "Para lo que pide pensarlo a fondo: el coach se toma su tiempo y responde con más detalle."
+    ],
+    [
+      "analytics-outline",
+      "Revisión semanal a fondo",
+      "Tu semana medida por el modelo de primera línea, pensando a fondo."
+    ],
+    [
+      "shield-outline",
+      "Solicita plaza en un ludus (5-8)",
+      "Un grupo de 5 a 8 gladiadores Élite con tu objetivo y marcador propio. La asignación es manual, según disponibilidad."
+    ],
+    [
+      "ribbon-outline",
+      "Insignia de laurel",
+      "El laurel dorado junto a tu nombre. Estatus, no puntos: no cambia ningún ranking."
+    ]
+  ],
+  "upsellFirma": [
+    {
+      "eyebrow": "Juramento sellado",
+      "titulo": "Ahora, quién lo dirige.",
+      "linea": "Tu juramento está sellado. El coach puede dirigir tu día desde mañana.",
+      "enlace": "Ver NIVL Pro",
+      "contexto": "Tu juramento está sellado. NIVL sigue gratis entera; Pro añade el coach que lo dirige.",
+      "beneficio": "Brief cada mañana"
+    },
+    {
+      "eyebrow": "Juramento sellado",
+      "titulo": "El coach a máxima potencia.",
+      "linea": "Tu juramento está sellado. Élite es el coach a máxima potencia.",
+      "enlace": "Ver NIVL Élite",
+      "contexto": "Tu juramento está sellado. NIVL sigue gratis entera; Élite añade el coach a máxima potencia.",
+      "beneficio": "Máxima potencia"
+    }
+  ],
+  "preciosReserva": {
+    "eliteMes": "29,99 €",
+    "eliteAnio": "299,00 €",
+    "proMes": "12,99 €",
+    "introGratis": null,
+    "introCondicional": false
+  }
+}
