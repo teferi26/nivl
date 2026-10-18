@@ -23,7 +23,7 @@
     "inscripcion": "Los modos",
     "titulo": "Elige tus modos",
     "pista": "NIVL lo ve todo y siempre está. Cada modo añade su arena. Puedes cambiarlos cuando quieras.",
-    "siempre": "Siempre activo",
+    "siempre": "Siempre activo.",
     "minimo": "Elige al menos uno.",
     "a11y": "{{modo}}. {{descripcion}}"
   },

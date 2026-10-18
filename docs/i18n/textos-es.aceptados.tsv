@@ -1090,7 +1090,7 @@ modos	+	Contar también en {{modo}}
 modos	+	Los modos
 modos	+	Elige tus modos
 modos	+	NIVL lo ve todo y siempre está. Cada modo añade su arena. Puedes cambiarlos cuando quieras.
-modos	+	Siempre activo
+modos	+	Siempre activo.
 modos	+	Elige al menos uno.
 modos	+	{{modo}}. {{descripcion}}
 modos	+	Niveles por modo
@@ -1098,3 +1098,6 @@ modos	+	Cada misión suma a tu nivel y al de cada uno de sus modos.
 modos	+	Nivel {{nivel}}
 modos	+	{{modo}}: nivel {{nivel}}, {{xp}} XP
 modos	+	Cargando los niveles por modo
+onboarding	+	El idioma
+onboarding	+	¿En qué idioma hablamos?
+onboarding	+	Sale del idioma del teléfono. Puedes cambiarlo después en Perfil.

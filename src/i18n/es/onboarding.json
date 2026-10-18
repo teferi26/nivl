@@ -89,5 +89,10 @@
     "titulo": "Sellado",
     "a11y": "Sellado. Vence el {{fecha}}. Toca para continuar",
     "vence": "Vence el {{fecha}}"
+  },
+  "idioma": {
+    "inscripcion": "El idioma",
+    "titulo": "¿En qué idioma hablamos?",
+    "pista": "Sale del idioma del teléfono. Puedes cambiarlo después en Perfil."
   }
 }

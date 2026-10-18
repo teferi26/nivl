@@ -1,7 +1,7 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { vibrar } from '@/design/haptics';
 import { router } from 'expo-router';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Animated,
   BackHandler,
@@ -28,6 +28,9 @@ import {
 } from '@/components/onboarding/pasoOferta';
 import { useCelebracion } from '@/components/celebracion/contexto';
 import { PortadaArena } from '@/components/onboarding/PortadaArena';
+import { pasoAnterior, PASO_IDIOMA, PASO_MODOS, posicionPaso, secuenciaPasos, siguientePaso } from '@/components/onboarding/pasos';
+import { SelectorIdioma } from '@/components/idioma/SelectorIdioma';
+import { EleccionModos } from '@/components/modos/EleccionModos';
 import { ProgresoPasos } from '@/components/onboarding/ProgresoPasos';
 import { TablillaContrato } from '@/components/onboarding/TablillaContrato';
 import { TituloPaso } from '@/components/onboarding/TituloPaso';
@@ -63,17 +66,23 @@ import { anotarOferta, fetchAiStatus, isPro, ofrecerSi, type AiStatus, type Deci
 import { colors, fonts } from '@/lib/theme';
 import { ink, type as tipo } from '@/design/tokens';
 import { TopeAncho } from '@/design/useSizeClass';
-import { t } from '@/i18n';
+import { esIdioma, fijarPreferencia, idiomaDispositivo, preferenciaIdioma, resolverIdiomaCoach, t } from '@/i18n';
+import { asegurarIdiomaPerfil } from '@/i18n/sincronizar';
+import { useFlags } from '@/lib/flags';
+import { eleccionValida, modosSugeridos, useModo, type ModoEtiqueta } from '@/modos';
 import { mayus } from '@/i18n/formato';
 import { mensajeSistema, NAME_MAX_LENGTH } from '@/lib/validation';
 
 // Bienvenida · Nombre · Para qué · El objetivo · Primeros hábitos · La firma · NIVL Pro
 //
+// Modos F1 (components/onboarding/pasos.ts): con `idiomas_activos`, el idioma
+// va antes de todo; con `modos_activos`, «Elige tus modos» va tras «Para qué».
+// Con los dos apagados, los siete pasos de siempre.
+//
 // El orden no es casual. Primero se dice para qué se está aquí, luego se
 // eligen los hábitos que llevan hasta ahí, y solo entonces se firma: el
 // compromiso ya tiene contenido. Pro va DESPUÉS de la firma, en el momento de
 // más convicción, y con la salida gratuita a la misma altura que la compra.
-const STEPS = 7;
 /** Pasos de los que se puede volver: del nombre a la firma. Tras firmar, no. */
 const PRIMER_PASO_CON_VUELTA = 1;
 const ULTIMO_PASO_CON_VUELTA = 5;
@@ -94,6 +103,20 @@ export default function Onboarding() {
   const { session } = useAuth();
   const userId = session?.user.id;
   const [step, setStep] = useState(0);
+  // Modos F1: los pasos nuevos solo con su interruptor (pasos.ts).
+  const flags = useFlags();
+  const modosCtx = useModo();
+  const secuencia = useMemo(
+    () => secuenciaPasos({ idioma: flags.idiomas_activos, modos: modosCtx.activo }),
+    [flags.idiomas_activos, modosCtx.activo],
+  );
+  const tras = (paso: number) => siguientePaso(secuencia, paso);
+  // Propuesto: lo ya elegido o, si no, el del teléfono (si NIVL lo habla).
+  const [idiomaElegido, setIdiomaElegido] = useState<string>(() =>
+    resolverIdiomaCoach(preferenciaIdioma() ?? 'auto', idiomaDispositivo()),
+  );
+  const idiomaVisto = useRef(false);
+  const [modosElegidos, setModosElegidos] = useState<ModoEtiqueta[]>([]);
   const [name, setName] = useState('');
   // "¿Quién te trajo?": opcional, precargado si se entró por nivl://c/CODIGO.
   const [codigo, setCodigo] = useState('');
@@ -213,7 +236,7 @@ export default function Onboarding() {
     withLock(async () => {
       if (!name.trim()) return;
       await updateProfile(userId!, { name: name.trim() });
-      if (await reclamarCodigo()) setStep(2);
+      if (await reclamarCodigo()) setStep(tras(1));
     });
 
   const saveKind = () =>
@@ -225,9 +248,32 @@ export default function Onboarding() {
       // deshacer lo que ya se había desmarcado.
       if (kindGuardado.current !== kind) {
         setChosen(new Set(KINDS[kind].starterQuests.flatMap((q, i) => health.accepted || !q.health_data ? [i] : [])));
+        // Modos F1: el perfil propone su modo (un toque para cambiarlo).
+        setModosElegidos(modosSugeridos(kind));
         kindGuardado.current = kind;
       }
-      setStep(3);
+      setStep(tras(2));
+    });
+
+  // Modos F1: el idioma (primer paso, con `idiomas_activos`). Se guarda en el
+  // teléfono y en `profiles.locale`, como la hoja de Perfil.
+  const saveIdioma = () =>
+    withLock(async () => {
+      if (esIdioma(idiomaElegido)) {
+        await fijarPreferencia(idiomaElegido);
+        await asegurarIdiomaPerfil(userId!);
+      }
+      idiomaVisto.current = true;
+      setStep(tras(PASO_IDIOMA));
+    });
+
+  // Modos F1: «Elige tus modos» (con `modos_activos`): al menos uno además de
+  // General, que siempre está. Se guarda en `user_modes`.
+  const saveModos = () =>
+    withLock(async () => {
+      if (!eleccionValida(modosElegidos)) return;
+      await modosCtx.guardarActivados(modosElegidos);
+      setStep(tras(PASO_MODOS));
     });
 
   // El objetivo es una frase libre, no una meta medible: no cabe en `goals`
@@ -249,7 +295,7 @@ export default function Onboarding() {
         await insertEvent(userId!, 'onboarding_goal', payload);
         objetivoGuardado.current = huella;
       }
-      setStep(4);
+      setStep(tras(3));
     });
 
   const saveStarters = () =>
@@ -281,7 +327,7 @@ export default function Onboarding() {
       );
       for (const q of nuevas) creadas.current.set(q.title, q.id);
       setFirma('');
-      setStep(5);
+      setStep(tras(4));
     });
 
   const hoy = dateKey();
@@ -342,6 +388,13 @@ export default function Onboarding() {
     else setStep(6);
   }, []);
 
+  // Modos F1: con `idiomas_activos`, el idioma es el primer paso. Los
+  // interruptores pueden llegar después de montar (caché o red): si aún no se
+  // ha pasado de la portada, se empieza por el idioma.
+  useEffect(() => {
+    if (flags.idiomas_activos && !idiomaVisto.current) setStep((s) => (s === 0 ? PASO_IDIOMA : s));
+  }, [flags.idiomas_activos]);
+
   useEffect(() => {
     if (!sello) return;
     selloEscala.setValue(1.5);
@@ -358,7 +411,7 @@ export default function Onboarding() {
   }, [sello, selloEscala, selloOpacidad, trasElSello]);
 
   const puedeVolver = step >= PRIMER_PASO_CON_VUELTA && step <= ULTIMO_PASO_CON_VUELTA && !busy && !sello && !firmaPendiente;
-  const volver = useCallback(() => setStep((s) => Math.max(0, s - 1)), []);
+  const volver = useCallback(() => setStep((s) => pasoAnterior(secuencia, s)), [secuencia]);
 
   // El botón físico respeta el bloqueo de la firma, incluso durante un reintento.
   // Fuera de ese bloqueo sigue el mismo recorrido que la flecha.
@@ -491,7 +544,7 @@ export default function Onboarding() {
               </Pressable>
             ) : null}
           </View>
-          <ProgresoPasos paso={step + 1} total={STEPS} />
+          <ProgresoPasos {...posicionPaso(secuencia, step)} />
         </View>
         ) : null}
 
@@ -507,6 +560,17 @@ export default function Onboarding() {
           showsVerticalScrollIndicator={false}
         >
           <GutterContext.Provider value={GUTTER}>
+
+          {step === PASO_IDIOMA ? (
+            <Entrada key="paso-idioma" indice={0}>
+              <TituloPaso
+                inscripcion={t('onboarding:idioma.inscripcion')}
+                titulo={t('onboarding:idioma.titulo')}
+                pista={t('onboarding:idioma.pista')}
+              />
+              <SelectorIdioma valor={idiomaElegido} alCambiar={setIdiomaElegido} />
+            </Entrada>
+          ) : null}
 
           {step === 0 ? <PortadaArena key="paso-0" /> : null}
 
@@ -581,6 +645,17 @@ export default function Onboarding() {
                   <Text style={styles.detail}>{meta.description}</Text>
                 </TarjetaArena>
               ) : null}
+            </Entrada>
+          ) : null}
+
+          {step === PASO_MODOS ? (
+            <Entrada key="paso-modos" indice={0}>
+              <TituloPaso
+                inscripcion={t('modos:onboarding.inscripcion')}
+                titulo={t('modos:onboarding.titulo')}
+                pista={t('modos:onboarding.pista')}
+              />
+              <EleccionModos valor={modosElegidos} alCambiar={setModosElegidos} ocupada={busy} />
             </Entrada>
           ) : null}
 
@@ -767,14 +842,26 @@ export default function Onboarding() {
             con el teclado abierto. La firma no tiene pie: su botón es el anillo. */}
         {step !== 5 ? (
           <View style={styles.footer}>
+            {step === PASO_IDIOMA ? (
+              <Button title={t('onboarding:continuar')} size="lg" onPress={saveIdioma} loading={busy} />
+            ) : null}
             {step === 0 ? (
-              <Button title={t('onboarding:entrar')} size="lg" onPress={() => setStep(1)} />
+              <Button title={t('onboarding:entrar')} size="lg" onPress={() => setStep(tras(0))} />
             ) : null}
             {step === 1 ? (
               <Button title={t('onboarding:continuar')} size="lg" onPress={saveName} loading={busy} disabled={!name.trim()} />
             ) : null}
             {step === 2 ? (
               <Button title={t('onboarding:continuar')} size="lg" onPress={saveKind} loading={busy} disabled={!kind} />
+            ) : null}
+            {step === PASO_MODOS ? (
+              <Button
+                title={t('onboarding:continuar')}
+                size="lg"
+                onPress={saveModos}
+                loading={busy}
+                disabled={!eleccionValida(modosElegidos)}
+              />
             ) : null}
             {step === 3 ? (
               <Button title={t('onboarding:continuar')} size="lg" onPress={saveGoal} loading={busy} disabled={!limpiarFrase(goal)} />
