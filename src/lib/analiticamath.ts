@@ -225,11 +225,17 @@ export function aperturaDeHoy(
  * ¿Qué hacer con un evento tras intentar mandarlo?
  * - `hecho`: guardado o descartado por el límite del servidor.
  * - `tirar`: el servidor lo rechaza por forma (22023); reintentarlo no lo arregla.
- * - `reintentar`: sin red, sin la migración aún (PGRST202 / 404) o cualquier
- *   otro fallo: se queda en la cola.
+ * - `pausar`: el servidor no tiene la función (PGRST202 / 42883: falta la
+ *   migración). Se queda en la cola, pero no se vuelve a intentar hasta la
+ *   próxima apertura de la app (QA F1, menor 3: antes se reenviaba el primer
+ *   evento en cada paso del onboarding).
+ * - `reintentar`: sin red o cualquier otro fallo: se queda en la cola.
  */
-export function destinoTrasEnvio(error: { code?: string | null } | null | undefined): 'hecho' | 'tirar' | 'reintentar' {
+export function destinoTrasEnvio(
+  error: { code?: string | null } | null | undefined,
+): 'hecho' | 'tirar' | 'pausar' | 'reintentar' {
   if (!error) return 'hecho';
   if (error.code === '22023') return 'tirar';
+  if (error.code === 'PGRST202' || error.code === '42883') return 'pausar';
   return 'reintentar';
 }

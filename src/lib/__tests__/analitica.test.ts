@@ -175,13 +175,24 @@ describe('cola offline', () => {
     expect(await colaGuardada()).toEqual([]);
   });
 
-  test('sin la migración aplicada (PGRST202) se reintenta; un rechazo por forma (22023) se tira', async () => {
+  test('sin la migración aplicada (PGRST202) se guarda sin insistir hasta la próxima apertura; un rechazo por forma (22023) se tira', async () => {
     await marcarApertura('2026-10-18');
-    respuestaEvento = async () => ({ data: null, error: { code: 'PGRST202' } });
+    let llamadas = 0;
+    respuestaEvento = async () => {
+      llamadas++;
+      return { data: null, error: { code: 'PGRST202' } };
+    };
     await vaciarCola();
     expect(await colaGuardada()).toHaveLength(2);
-    respuestaEvento = async () => ({ data: null, error: { code: '22023' } });
+    expect(llamadas).toBe(1);
+    // QA F1 (menor 3): en los siguientes pasos no se reenvía el primero.
     await vaciarCola();
+    await vaciarCola();
+    expect(llamadas).toBe(1);
+    expect(destinoTrasEnvio({ code: '42883' })).toBe('pausar');
+    respuestaEvento = async () => ({ data: null, error: { code: '22023' } });
+    // La próxima apertura vuelve a probar.
+    await alAbrirAnalitica();
     expect(await colaGuardada()).toHaveLength(0);
     expect(destinoTrasEnvio({ code: '42501' })).toBe('reintentar');
     expect(destinoTrasEnvio(null)).toBe('hecho');

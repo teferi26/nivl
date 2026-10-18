@@ -368,6 +368,8 @@ function versionApp(): string | null {
 }
 
 let enviando = false;
+/** El servidor no tiene `registrar_evento` (falta la migración): no se insiste hasta la próxima apertura. */
+let sinFuncion = false;
 
 /**
  * Manda lo que haya en la cola, en orden, hasta que falle la red. Sin el
@@ -378,6 +380,7 @@ export async function vaciarCola(): Promise<void> {
   enviando = true;
   try {
     // Dos llaves: la decisión de la persona y el flag de NIVL.
+    if (sinFuncion) return;
     if (!(await consentido())) return;
     if (!(await flagActivo(FLAG_ANALITICA))) return;
     const inst = await leerInstalacionGuardada();
@@ -400,7 +403,12 @@ export async function vaciarCola(): Promise<void> {
       } catch {
         error = { code: null };
       }
-      if (destinoTrasEnvio(error) === 'reintentar') break;
+      const destino = destinoTrasEnvio(error);
+      if (destino === 'pausar') {
+        sinFuncion = true;
+        break;
+      }
+      if (destino === 'reintentar') break;
       // Revocado mientras se enviaba: no se toca nada más.
       if (!(await consentido())) break;
       await enSerie(async () => {
@@ -424,6 +432,8 @@ export async function vaciarCola(): Promise<void> {
  * Siempre: las revocaciones que no llegaron al servidor.
  */
 export async function alAbrirAnalitica(): Promise<void> {
+  // Una apertura nueva vuelve a probar (la migración puede haber llegado).
+  sinFuncion = false;
   await reintentarRevocaciones();
   if (!(await consentido())) {
     try {
