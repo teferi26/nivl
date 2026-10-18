@@ -14,7 +14,7 @@
 //   · Playwright instalado en algún sitio: PLAYWRIGHT_MODULE=<ruta a node_modules/playwright>;
 //   · ffmpeg en el PATH.
 //
-//   node scripts/iron/grabar.mjs --url http://localhost:8099 --salida <carpeta> [--solo <id>] [--ancho 720]
+//   node scripts/iron/grabar.mjs --url http://localhost:8099 --salida <carpeta> [--solo <id>[,<id>...]] [--ancho 720]
 
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
@@ -29,7 +29,7 @@ const URL_BASE = args.url ?? 'http://localhost:8099';
 const SALIDA = path.resolve(args.salida ?? 'iron-prototipo');
 const ANCHO = Number(args.ancho ?? 720);
 const FPS = 30;
-const IDS = args.solo ? [args.solo] : ['sentadilla-barra', 'press-banca', 'remo-mancuerna', 'curl-biceps-mancuerna', 'plancha'];
+const IDS = args.solo ? args.solo.split(',') : ['sentadilla-barra', 'press-banca', 'remo-mancuerna', 'curl-biceps-mancuerna', 'plancha'];
 
 const require = createRequire(import.meta.url);
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE ?? 'playwright');
