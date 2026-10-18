@@ -1074,3 +1074,27 @@ voz	+	Racha de {} días
 avisos	-	No se pudieron programar los avisos del sistema.
 avisos	+	Recordatorio
 avisos	+	Sigue pendiente.
+# Modos F1 (cliente, rama modos-f1/cliente): textos nuevos detrás del interruptor modos_activos (namespace modos: selector de Hoy, etiquetas del formulario, paso del onboarding y niveles por modo) y, detrás de idiomas_activos, el paso de idioma del onboarding (onboarding:idioma). Con los interruptores apagados no se pinta ninguno.
+modos	+	Modos
+modos	+	Modo {{modo}}
+modos	+	Todo junto, como hasta ahora.
+modos	+	Gimnasio y dieta.
+modos	+	Estudio y exámenes.
+modos	+	Trabajo, foco y energía.
+modos	+	Tu proyecto y sus hitos.
+modos	+	Nada de {{modo}} hoy
+modos	+	Etiqueta una misión con {{modo}} y aparecerá aquí. En NIVL se ve todo.
+modos	+	Modos
+modos	+	Se marca una vez y cuenta en todos sus modos. Sin modo, cuenta solo en NIVL.
+modos	+	Contar también en {{modo}}
+modos	+	Los modos
+modos	+	Elige tus modos
+modos	+	NIVL lo ve todo y siempre está. Cada modo añade su arena. Puedes cambiarlos cuando quieras.
+modos	+	Siempre activo
+modos	+	Elige al menos uno.
+modos	+	{{modo}}. {{descripcion}}
+modos	+	Niveles por modo
+modos	+	Cada misión suma a tu nivel y al de cada uno de sus modos.
+modos	+	Nivel {{nivel}}
+modos	+	{{modo}}: nivel {{nivel}}, {{xp}} XP
+modos	+	Cargando los niveles por modo

@@ -13,6 +13,7 @@
 //   tanda 6: diario, contrato, economia
 //   tanda 7: amigos, avances, creador, compra, share, celebracion
 //   tanda 8: voz (src/lib/voice.ts), avisos (src/lib/notifications.ts)
+//   Modos F1: modos (src/components/modos)
 
 import comun from './es/comun.json';
 import raiz from './es/raiz.json';
@@ -47,6 +48,7 @@ import resumen from './es/resumen.json';
 import share from './es/share.json';
 import voz from './es/voz.json';
 import avisos from './es/avisos.json';
+import modos from './es/modos.json';
 
 /** Los catálogos en español: la fuente de verdad de todas las claves. */
 export const RECURSOS_ES = {
@@ -83,6 +85,8 @@ export const RECURSOS_ES = {
   share,
   voz,
   avisos,
+  // Modos F1 (src/components/modos): fuera de las tandas de 1.0.10.
+  modos,
 };
 
 export type RecursosEs = typeof RECURSOS_ES;

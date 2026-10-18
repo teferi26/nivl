@@ -128,6 +128,11 @@ export interface QuestInput {
   is_bonus?: boolean;
   health_data?: boolean;
   active?: boolean;
+  /**
+   * Modos F1: etiquetas de modo. Solo se envía con `modos_activos` encendido
+   * (QuestForm); sin la clave, el insert y el update son los de siempre.
+   */
+  modes?: string[];
 }
 
 export async function createQuest(userId: string, input: QuestInput): Promise<Quest> {

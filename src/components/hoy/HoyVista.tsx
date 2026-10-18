@@ -31,6 +31,7 @@ import { useAnchoUtil, useNavActual, useSizeClass } from '@/design/useSizeClass'
 import type { DayBlock } from '@/lib/plan';
 import { fonts } from '@/lib/theme';
 import type { Quest } from '@/lib/types';
+import { NOMBRE_MODO } from '@/modos/tipos';
 import type { HoyDatos } from './derivarHoy';
 import { Duelo } from './Duelo';
 import { PanelHoy } from './PanelHoy';
@@ -55,6 +56,11 @@ export interface HoyVistaProps {
   desde?: DesdeHero | null;
   /** Minutos del día que cuentan como «ahora» en el orden del día (galería). */
   ahora?: number;
+  /**
+   * Modos F1: el selector de modo (SelectorModo) sobre el Hero. Solo con
+   * `modos_activos` encendido; sin él, Hoy es exactamente el de siempre.
+   */
+  selectorModo?: ReactNode;
   acciones: {
     onCompletar: (q: Quest) => void;
     onAlternarBloque: (b: DayBlock) => void;
@@ -84,6 +90,7 @@ export function HoyVista({
   desde,
   ahora,
   acciones,
+  selectorModo,
 }: HoyVistaProps) {
   const [verMas, setVerMas] = useState(false);
   // Ancho real de la rejilla de módulos (onLayout), no el de la ventana.
@@ -123,7 +130,17 @@ export function HoyVista({
   const misiones = !cargando && d.total === 0 && error ? null : (
     <Section
       title={t('hoy:vista.misionesDeHoy')}
-      meta={!cargando && d.total > 0 ? `${d.hechas}/${d.total}` : undefined}
+      meta={
+        cargando
+          ? undefined
+          : d.modo
+            ? d.modo.total > 0
+              ? `${d.modo.hechas}/${d.modo.total}`
+              : undefined
+            : d.total > 0
+              ? `${d.hechas}/${d.total}`
+              : undefined
+      }
       tone={cargando ? undefined : d.tonoMisiones}
     >
       {cargando ? (
@@ -144,6 +161,17 @@ export function HoyVista({
             />
           </TarjetaArena>
         )
+      ) : d.modo && d.misiones.length === 0 ? (
+        // Modos F1: hay misiones hoy, pero ninguna de este modo.
+        <TarjetaArena variante="contorno">
+          <EmptyState
+            compact
+            icon="pricetag-outline"
+            title={t('modos:hoy.vacioTitulo', { modo: NOMBRE_MODO[d.modo.id] })}
+            body={t('modos:hoy.vacioCuerpo', { modo: NOMBRE_MODO[d.modo.id] })}
+            action={{ label: t('hoy:vista.irAHabitos'), onPress: () => router.push('/(tabs)/habitos') }}
+          />
+        </TarjetaArena>
       ) : (
         <View>
           {d.misiones.map((m) => (
@@ -206,6 +234,9 @@ export function HoyVista({
       onRefresh={acciones.onRefrescar}
       aside={hayPanel ? <PanelHoy cargando={cargando} esPro={d.esPro} duelo={d.duelo} /> : undefined}
     >
+      {/* 0 · Modos F1: el selector de modo (solo con el interruptor). */}
+      {selectorModo ?? null}
+
       {/* 1 · El Hero (sin perfil tras un fallo, la cabecera grabada). */}
       {cargando || h ? (
         <Entrada indice={0}>

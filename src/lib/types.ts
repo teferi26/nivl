@@ -58,6 +58,9 @@ export interface Quest {
   // Módulo que la demuestra (migración 0019): al registrar el acto real se
   // marca sola. Lo deduce un trigger del título; 'ninguno' es no enlazar.
   link?: ActLink | 'ninguno' | null;
+  // Modos F1 (migración 0068): etiquetas de modo (iron, focus, work,
+  // founder). Vacío = solo General. Ausente con el servidor viejo.
+  modes?: string[] | null;
   created_at: string;
 }
 
