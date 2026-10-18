@@ -127,6 +127,13 @@ export default function Kit() {
         variant="secondary"
         icon="albums-outline"
         onPress={() => router.push('/kit/pantallas')}
+        style={{ marginBottom: space.s3 }}
+      />
+      <Button
+        title="IRON · Ejercicios"
+        variant="secondary"
+        icon="barbell-outline"
+        onPress={() => router.push('/kit/iron')}
         style={{ marginBottom: space.s6 }}
       />
 
