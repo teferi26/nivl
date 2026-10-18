@@ -1,4 +1,4 @@
-// NIVL · IRON · Hombro · Encogimientos de trapecio con mancuernas, de pie.
+// NIVL · IRON · Espalda (trapecio; lo dibujó el equipo de hombro) · Encogimientos de trapecio con mancuernas, de pie.
 //
 // Vista FRONTAL POR DETRÁS (`cara: 'post'`): el trapecio superior se ve
 // entero en la espalda alta y el cuello.
@@ -12,7 +12,7 @@
 // · Pausa arriba y bajada controlada.
 
 import type { Ejercicio, Pose } from '../../tipos';
-import { ANCLA_PIE_FRONTAL, conBrazos, PIERNAS_PIE_FRONTAL } from './comun';
+import { ANCLA_PIE_FRONTAL, conBrazos, PIERNAS_PIE_FRONTAL } from '../hombro/comun';
 
 export function poseEncogimiento(ms: number, arriba: boolean, hombro: number): Pose {
   return {
@@ -25,7 +25,7 @@ export function poseEncogimiento(ms: number, arriba: boolean, hombro: number): P
 
 export const encogimientosMancuerna: Ejercicio = {
   id: 'encogimientos-mancuerna',
-  nombre: 'iron-hombro:ejercicios.encogimientos-mancuerna.nombre',
+  nombre: 'iron-espalda:ejercicios.encogimientos-mancuerna.nombre',
   grupo: 'espalda',
   nivel: 'principiante',
   tipo: 'dinamico',
@@ -50,12 +50,12 @@ export const encogimientosMancuerna: Ejercicio = {
   carga: { tipo: 'mancuerna', en: 'agarre', orientacion: 'lado', lados: ['cerca', 'lejos'] },
   encuadre: { x: -46, y: -4, ancho: 92, alto: 108 },
   cues: [
-    'iron-hombro:ejercicios.encogimientos-mancuerna.cues.vertical',
-    'iron-hombro:ejercicios.encogimientos-mancuerna.cues.pausa',
-    'iron-hombro:ejercicios.encogimientos-mancuerna.cues.brazos',
+    'iron-espalda:ejercicios.encogimientos-mancuerna.cues.vertical',
+    'iron-espalda:ejercicios.encogimientos-mancuerna.cues.pausa',
+    'iron-espalda:ejercicios.encogimientos-mancuerna.cues.brazos',
   ],
   errores: [
-    'iron-hombro:ejercicios.encogimientos-mancuerna.errores.circulos',
-    'iron-hombro:ejercicios.encogimientos-mancuerna.errores.cabeza',
+    'iron-espalda:ejercicios.encogimientos-mancuerna.errores.circulos',
+    'iron-espalda:ejercicios.encogimientos-mancuerna.errores.cabeza',
   ],
 };

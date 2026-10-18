@@ -13,14 +13,12 @@ import { flexionIsometrica } from './flexion-isometrica';
 import { flexiones } from './flexiones';
 import { flexionesAbiertas } from './flexiones-abiertas';
 import { flexionesDeclinadas } from './flexiones-declinadas';
-import { flexionesDiamante } from './flexiones-diamante';
 import { flexionesInclinadas } from './flexiones-inclinadas';
 import { flexionesPliometricas } from './flexiones-pliometricas';
 import { flexionesRodillas } from './flexiones-rodillas';
 import { fondosNegativos } from './fondos-negativos';
 import { fondosParalelas } from './fondos-paralelas';
 import { pecDeck } from './pec-deck';
-import { pressBancaCerrado } from './press-banca-cerrado';
 import { pressBancaMancuerna } from './press-banca-mancuerna';
 import { pressDeclinadoBarra } from './press-declinado-barra';
 import { pressDeclinadoMancuerna } from './press-declinado-mancuerna';
@@ -33,7 +31,6 @@ import { pressSueloMancuerna } from './press-suelo-mancuerna';
 export const PECHO: readonly Ejercicio[] = [
   pressInclinadoBarra,
   pressDeclinadoBarra,
-  pressBancaCerrado,
   pressSueloBarra,
   pressBancaMancuerna,
   pressInclinadoMancuerna,
@@ -48,7 +45,6 @@ export const PECHO: readonly Ejercicio[] = [
   flexionesRodillas,
   flexionesInclinadas,
   flexionesDeclinadas,
-  flexionesDiamante,
   flexionesAbiertas,
   flexionesPliometricas,
   flexionIsometrica,

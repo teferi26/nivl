@@ -38,7 +38,8 @@ const RADIO_CABEZA = 6.2;
 
 describe('catálogo de hombro', () => {
   it('unos 25 ejercicios, todos registrados en el catálogo general', () => {
-    expect(EJERCICIOS_HOMBRO.length).toBeGreaterThanOrEqual(24);
+    // Integración: los encogimientos (trapecio) pasaron a la carpeta de espalda.
+    expect(EJERCICIOS_HOMBRO.length).toBeGreaterThanOrEqual(23);
     for (const e of EJERCICIOS_HOMBRO) expect(ejercicioPorId(e.id)).toBe(e);
   });
 

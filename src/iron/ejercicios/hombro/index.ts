@@ -12,8 +12,6 @@ import { elevacionLateralBanda } from './elevacion-lateral-banda';
 import { elevacionesFrontales } from './elevaciones-frontales';
 import { elevacionesLaterales } from './elevaciones-laterales';
 import { elevacionesLateralesSentado } from './elevaciones-laterales-sentado';
-import { encogimientosBarra } from './encogimientos-barra';
-import { encogimientosMancuerna } from './encogimientos-mancuerna';
 import { facePullBanda } from './face-pull-banda';
 import { flexionPica } from './flexion-pica';
 import { flexionPicaPiesElevados } from './flexion-pica-pies-elevados';
@@ -41,8 +39,6 @@ export const EJERCICIOS_HOMBRO: readonly Ejercicio[] = [
   elevacionesFrontales,
   pajaroMancuerna,
   facePullBanda,
-  encogimientosBarra,
-  encogimientosMancuerna,
   remoMentonBarra,
   pushPress,
   elevacionesLateralesSentado,

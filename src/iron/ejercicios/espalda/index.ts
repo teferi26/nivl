@@ -11,6 +11,8 @@ import { dominadaEscapular } from './dominada-escapular';
 import { dominadaNegativa } from './dominada-negativa';
 import { dominadaNeutra } from './dominada-neutra';
 import { dominadaSupina } from './dominada-supina';
+import { encogimientosBarra } from './encogimientos-barra';
+import { encogimientosMancuerna } from './encogimientos-mancuerna';
 import { facePull } from './face-pull';
 import { hiperextension } from './hiperextension';
 import { jalonNeutro } from './jalon-neutro';
@@ -50,6 +52,8 @@ export const ESPALDA: readonly Ejercicio[] = [
   remoPoleaUnaMano,
   remoMaquina,
   facePull,
+  encogimientosBarra,
+  encogimientosMancuerna,
   pesoMuerto,
   pesoMuertoSumo,
   pesoMuertoMancuernas,

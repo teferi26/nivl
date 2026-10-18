@@ -79,7 +79,8 @@ describe.each(ESPALDA.map((e) => [e.id, e] as const))('%s: material y cámara', 
   const m = muestras(e);
 
   it('el disco de la barra no tapa la cabeza ni el torso', () => {
-    if (e.carga?.tipo !== 'barra') return;
+    // De frente (encogimientos) los discos van a los lados: la regla es de la vista lateral.
+    if (e.carga?.tipo !== 'barra' || e.vista !== 'lateral') return;
     const eje = e.carga.eje ?? { x: 0, y: 0 };
     const r = e.carga.disco ?? 12.6;
     for (const { s } of m) {

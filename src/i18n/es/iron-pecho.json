@@ -27,20 +27,6 @@
         "cabeza": "Levantar la cabeza del banco al empujar."
       }
     },
-    "press-banca-cerrado": {
-      "nombre": "Press de banca con agarre cerrado",
-      "cues": {
-        "seguridad": "Con carga alta, usa topes o alguien que te asista.",
-        "agarre": "Manos a la anchura de los hombros, no más juntas.",
-        "codos": "Codos pegados al cuerpo al bajar.",
-        "trayectoria": "Toca la parte baja del pecho con los antebrazos verticales."
-      },
-      "errores": {
-        "munecas": "Juntar tanto las manos que se doblan las muñecas.",
-        "codos": "Abrir los codos al bajar.",
-        "rebote": "Rebotar la carga en el pecho."
-      }
-    },
     "press-suelo-barra": {
       "nombre": "Press en el suelo con barra",
       "cues": {
@@ -221,19 +207,6 @@
       "errores": {
         "cadera": "Dejar caer la cadera.",
         "cabeza": "Llevar la cabeza al suelo antes que el pecho."
-      }
-    },
-    "flexiones-diamante": {
-      "nombre": "Flexiones diamante",
-      "cues": {
-        "manos": "Índices y pulgares juntos formando un rombo bajo el esternón.",
-        "codos": "Codos pegados al cuerpo, apuntando hacia atrás.",
-        "linea": "Cuerpo en línea de la cabeza a los talones: aprieta abdomen y glúteos."
-      },
-      "errores": {
-        "codos": "Abrir los codos hacia fuera.",
-        "cadera": "Dejar caer la cadera.",
-        "munecas": "Forzar las muñecas: si molestan, separa un poco las manos."
       }
     },
     "flexiones-abiertas": {

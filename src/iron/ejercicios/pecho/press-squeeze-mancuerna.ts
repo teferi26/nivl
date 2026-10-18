@@ -18,7 +18,7 @@ export const pressSqueezeMancuerna: Ejercicio = {
     principales: ['pectoral'],
     secundarios: ['triceps', 'deltoides_anterior'],
   },
-  sustitutos: ['press-banca-mancuerna', 'flexiones-diamante', 'press-banca-cerrado'],
+  sustitutos: ['press-banca-mancuerna', 'press-banca', 'flexiones'],
   vista: 'lateral',
   ...press('plano', { t: 0.68, sobrePecho: 0 }),
   carga: { tipo: 'mancuerna', en: 'agarre', orientacion: 'lado', lados: ['cerca', 'lejos'] },

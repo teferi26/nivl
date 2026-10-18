@@ -72,30 +72,6 @@
         "trapecio": "Encoger los hombros hacia las orejas al subir."
       }
     },
-    "encogimientos-barra": {
-      "nombre": "Encogimientos con barra",
-      "cues": {
-        "vertical": "Sube los hombros en vertical hacia las orejas.",
-        "pausa": "Aguanta un segundo arriba y baja despacio.",
-        "agarre": "Agarre algo más ancho que los muslos, brazos estirados."
-      },
-      "errores": {
-        "circulos": "Girar los hombros en círculo.",
-        "rebote": "Rebotar el peso abajo sin control."
-      }
-    },
-    "encogimientos-mancuerna": {
-      "nombre": "Encogimientos con mancuernas",
-      "cues": {
-        "vertical": "Sube los hombros en vertical hacia las orejas.",
-        "pausa": "Aguanta un segundo arriba y baja despacio.",
-        "brazos": "Brazos estirados: los codos no se doblan."
-      },
-      "errores": {
-        "circulos": "Girar los hombros en círculo.",
-        "cabeza": "Adelantar la cabeza al subir."
-      }
-    },
     "face-pull-banda": {
       "nombre": "Face pull con banda",
       "cues": {

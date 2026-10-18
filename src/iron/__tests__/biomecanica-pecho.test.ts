@@ -54,7 +54,6 @@ const PECHO = EJERCICIOS.filter((e) => e.grupo === 'pecho' && e.id !== 'press-ba
 const PRESS = [
   'press-inclinado-barra',
   'press-declinado-barra',
-  'press-banca-cerrado',
   'press-suelo-barra',
   'press-banca-mancuerna',
   'press-inclinado-mancuerna',
@@ -68,7 +67,6 @@ const FLEXIONES = [
   'flexiones-rodillas',
   'flexiones-inclinadas',
   'flexiones-declinadas',
-  'flexiones-diamante',
   'flexiones-abiertas',
   'flexiones-pliometricas',
   'flexion-isometrica',
@@ -87,7 +85,8 @@ function respaldo(e: Ejercicio): { p: Punto; a: number } | null {
 describe('pecho: catálogo', () => {
   it('unos 25 ejercicios de pecho, con press de banca incluido', () => {
     const ids = EJERCICIOS.filter((e) => e.grupo === 'pecho').map((e) => e.id);
-    expect(ids.length).toBeGreaterThanOrEqual(24);
+    // Integración: flexiones diamante y press cerrado se quedan en brazos (eran duplicados).
+    expect(ids.length).toBeGreaterThanOrEqual(23);
     expect(ids).toContain('press-banca');
   });
 
@@ -110,7 +109,7 @@ describe('pecho: catálogo', () => {
 
   it('hay versión en casa: sin material o solo con mancuernas', () => {
     const casa = PECHO.filter((e) => e.material.every((m) => m === 'peso_corporal' || m === 'mancuerna'));
-    expect(casa.length).toBeGreaterThanOrEqual(8);
+    expect(casa.length).toBeGreaterThanOrEqual(7);
   });
 
   it('el pectoral superior es el principal de los inclinados y de las flexiones declinadas', () => {
@@ -227,7 +226,7 @@ describe('press: el apoyo de cada banco', () => {
   });
 
   it('plano y suelo: pies planos en el suelo', () => {
-    for (const id of ['press-banca-cerrado', 'press-banca-mancuerna', 'press-squeeze-mancuerna', 'press-suelo-barra', 'press-suelo-mancuerna', 'aperturas-mancuerna', 'aperturas-suelo-mancuerna']) {
+    for (const id of ['press-banca-mancuerna', 'press-squeeze-mancuerna', 'press-suelo-barra', 'press-suelo-mancuerna', 'aperturas-mancuerna', 'aperturas-suelo-mancuerna']) {
       for (const { s } of muestras(ej(id))) {
         expect(Math.abs(planta(s, 'c').talon.y)).toBeLessThan(0.3);
         expect(Math.abs(planta(s, 'c').punta.y)).toBeLessThan(0.3);
@@ -333,8 +332,8 @@ describe('flexiones: variantes', () => {
     return s.p.hombro.x - s.p.agarre_c.x;
   };
 
-  it('diamante: manos más atrás (bajo el esternón) que en la normal; abiertas, más adelante', () => {
-    expect(atras('flexiones-diamante')).toBeGreaterThan(atras('flexiones') + 2);
+  // La diamante es de brazos (src/iron/ejercicios/brazos/flexiones-diamante.ts).
+  it('abiertas: manos más adelante que en la normal', () => {
     expect(atras('flexiones-abiertas')).toBeLessThan(atras('flexiones'));
   });
 
