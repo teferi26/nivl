@@ -57,7 +57,7 @@ export const flexionesDiamante: Ejercicio = {
   cicloMs: 3400,
   esfuerzo: [{ desde: 2100, hasta: 3400 }],
   msFicha: 2700,
-  encuadre: { x: -8, y: -4, ancho: 104, alto: 60 },
+  encuadre: { x: -16, y: -4, ancho: 114, alto: 60 },
   cues: T.cues,
   errores: T.errores,
 };

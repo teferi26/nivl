@@ -37,7 +37,7 @@ export const curlMunecaBarra: Ejercicio = {
   msFicha: 1250,
   carga: { tipo: 'barra', en: 'agarre', disco: 6, eje: { x: 9, y: -5 } },
   escenario: [BANCO_SENTADO],
-  encuadre: { x: -36, y: -4, ancho: 84, alto: 76 },
+  encuadre: { x: -36, y: -4, ancho: 84, alto: 80 },
   cues: T.cues,
   errores: T.errores,
 };

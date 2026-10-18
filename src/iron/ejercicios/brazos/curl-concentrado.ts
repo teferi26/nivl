@@ -39,7 +39,7 @@ export const curlConcentrado: Ejercicio = {
   msFicha: 950,
   carga: { tipo: 'mancuerna', en: 'agarre', orientacion: 'punta', lados: ['cerca'] },
   escenario: [BANCO_SENTADO],
-  encuadre: { x: -36, y: -4, ancho: 80, alto: 76 },
+  encuadre: { x: -36, y: -4, ancho: 80, alto: 82 },
   cues: T.cues,
   errores: T.errores,
 };

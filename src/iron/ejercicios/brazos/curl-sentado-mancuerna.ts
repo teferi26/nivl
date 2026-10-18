@@ -29,7 +29,7 @@ export const curlSentadoMancuerna: Ejercicio = {
   msFicha: 1100,
   carga: { tipo: 'mancuerna', en: 'agarre', orientacion: 'punta', lados: ['cerca', 'lejos'] },
   escenario: [BANCO_SENTADO],
-  encuadre: { x: -40, y: -4, ancho: 84, alto: 80 },
+  encuadre: { x: -40, y: -4, ancho: 84, alto: 88 },
   cues: T.cues,
   errores: T.errores,
 };

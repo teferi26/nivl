@@ -35,7 +35,7 @@ export const extensionMunecaMancuerna: Ejercicio = {
   msFicha: 1250,
   carga: { tipo: 'mancuerna', en: 'agarre', orientacion: 'punta', lados: ['cerca', 'lejos'] },
   escenario: [BANCO_SENTADO],
-  encuadre: { x: -36, y: -4, ancho: 84, alto: 76 },
+  encuadre: { x: -36, y: -4, ancho: 84, alto: 80 },
   cues: T.cues,
   errores: T.errores,
 };

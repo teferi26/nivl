@@ -55,7 +55,7 @@ export const flexionesDiamanteRodillas: Ejercicio = {
   cicloMs: 3400,
   esfuerzo: [{ desde: 2100, hasta: 3400 }],
   msFicha: 2700,
-  encuadre: { x: -40, y: -4, ancho: 112, alto: 64 },
+  encuadre: { x: -40, y: -4, ancho: 116, alto: 64 },
   cues: T.cues,
   errores: T.errores,
 };

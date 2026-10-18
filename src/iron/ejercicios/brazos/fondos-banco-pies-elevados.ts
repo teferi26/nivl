@@ -49,7 +49,7 @@ export const fondosBancoPiesElevados: Ejercicio = {
     { tipo: 'banco', x: -60, ancho: 51.5, alto: 24.6, capa: 'fondo' },
     { tipo: 'banco', x: 38, ancho: 40, alto: 24.6, capa: 'fondo' },
   ],
-  encuadre: { x: -44, y: -4, ancho: 112, alto: 84 },
+  encuadre: { x: -44, y: -4, ancho: 128, alto: 90 },
   cues: T.cues,
   errores: T.errores,
 };

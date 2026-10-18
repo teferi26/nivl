@@ -33,7 +33,7 @@ export const pressFrancesSueloMancuerna: Ejercicio = {
   esfuerzo: [{ desde: 2350, hasta: 3700 }],
   msFicha: 3000,
   carga: { tipo: 'mancuerna', en: 'agarre', orientacion: 'lado', lados: ['cerca'] },
-  encuadre: { x: -66, y: -4, ancho: 108, alto: 64 },
+  encuadre: { x: -66, y: -4, ancho: 116, alto: 64 },
   cues: T.cues,
   errores: T.errores,
 };

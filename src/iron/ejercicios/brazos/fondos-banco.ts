@@ -50,7 +50,7 @@ export const fondosBanco: Ejercicio = {
   esfuerzo: [{ desde: 2150, hasta: 3500 }],
   msFicha: 2800,
   escenario: [{ tipo: 'banco', x: -60, ancho: 51.5, alto: 24.6, capa: 'fondo' }],
-  encuadre: { x: -44, y: -4, ancho: 100, alto: 84 },
+  encuadre: { x: -44, y: -4, ancho: 100, alto: 90 },
   cues: T.cues,
   errores: T.errores,
 };

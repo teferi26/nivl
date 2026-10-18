@@ -34,7 +34,7 @@ export const patadaTricepsDePie: Ejercicio = {
   esfuerzo: [{ desde: 400, hasta: 1400 }],
   msFicha: 1600,
   carga: { tipo: 'mancuerna', en: 'agarre', orientacion: 'lado', lados: ['cerca', 'lejos'] },
-  encuadre: { x: -52, y: -4, ancho: 96, alto: 90 },
+  encuadre: { x: -52, y: -4, ancho: 96, alto: 94 },
   cues: T.cues,
   errores: T.errores,
 };
