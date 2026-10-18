@@ -129,7 +129,7 @@ export function useOraculo(): UsoOraculo {
           difficulty: p.difficulty,
           days_of_week: p.days_of_week,
           requires_evidence: false,
-        });
+        }, 'oraculo');
       }
       const n = selected.size;
       setProposals([]);

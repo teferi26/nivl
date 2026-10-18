@@ -1,3 +1,4 @@
+import { registrarUnaVez, type OrigenMision } from './analitica';
 import { requireHealthConsent } from './health';
 import { decode } from 'base64-arraybuffer';
 import { kindMeta, type StarterQuest } from './kinds';
@@ -135,13 +136,15 @@ export interface QuestInput {
   modes?: string[];
 }
 
-export async function createQuest(userId: string, input: QuestInput): Promise<Quest> {
+export async function createQuest(userId: string, input: QuestInput, origen: OrigenMision = 'otro'): Promise<Quest> {
   const { data, error } = await supabase
     .from('quests')
     .insert({ user_id: userId, ...input })
     .select()
     .single();
   if (error) throw error;
+  // Embudo anónimo: solo la primera de la instalación, sin el título.
+  registrarUnaVez('primera_mision_creada', { origen });
   return data as Quest;
 }
 
@@ -313,5 +316,6 @@ export async function createStarterQuests(
     .insert(quests.map((q) => ({ user_id: userId, ...q, health_data: q.health_data === true })))
     .select('id, title');
   if (error) throw error;
+  if ((data ?? []).length > 0) registrarUnaVez('primera_mision_creada', { origen: 'onboarding' });
   return (data ?? []) as { id: string; title: string }[];
 }

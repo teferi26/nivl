@@ -1,3 +1,4 @@
+import { olvidarAnalitica } from './analitica';
 import { limpiarDatosDelDispositivo } from './deviceCleanup';
 import { supabase } from './supabase';
 import { ErrorVisible } from './validation';
@@ -19,5 +20,7 @@ export async function deleteAccount(): Promise<void> {
   // Scheduled local reminders carry mission/plan titles: they must not keep
   // firing for an erased account on this device.
   await limpiarDatosDelDispositivo(false);
+  // La instalación anónima del embudo tampoco sigue: lo siguiente será otra.
+  await olvidarAnalitica();
   await supabase.auth.signOut({ scope: 'local' }).catch(() => undefined);
 }

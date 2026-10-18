@@ -21,6 +21,8 @@ jest.mock('@/lib/pro', () => ({
   startTrial: jest.fn(),
 }));
 jest.mock('@/lib/data', () => ({ insertEvent: jest.fn() }));
+// El embudo anónimo (analitica.ts) arrastra Supabase: aquí no se mide.
+jest.mock('@/lib/analitica', () => ({ registrar: jest.fn() }));
 jest.mock('@/components/ConsentimientoIA', () => ({
   useConsentimientoIA: () => ({ asegurar: () => mockPermiso.asegurar(), hoja: null }),
 }));

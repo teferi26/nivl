@@ -31,6 +31,8 @@ import { PortadaArena } from '@/components/onboarding/PortadaArena';
 import { pasoAnterior, PASO_IDIOMA, PASO_MODOS, posicionPaso, secuenciaPasos, siguientePaso } from '@/components/onboarding/pasos';
 import { SelectorIdioma } from '@/components/idioma/SelectorIdioma';
 import { EleccionModos } from '@/components/modos/EleccionModos';
+import { AccionesConsentimiento, CuerpoConsentimiento } from '@/components/consentimiento/ConsentimientoAnalitica';
+import { useConsentimientoAnalitica } from '@/components/consentimiento/useConsentimientoAnalitica';
 import { ProgresoPasos } from '@/components/onboarding/ProgresoPasos';
 import { TablillaContrato } from '@/components/onboarding/TablillaContrato';
 import { TituloPaso } from '@/components/onboarding/TituloPaso';
@@ -58,6 +60,7 @@ import {
   olvidarCodigoPendiente,
   type ReferralSource,
 } from '@/lib/creators';
+import { registrar, type SalidaOnboarding } from '@/lib/analitica';
 import { createStarterQuests, deleteQuest, ensureProfile, fetchQuests, insertEvent, updateProfile } from '@/lib/data';
 import { addDays, dateKey, fechaConAnio } from '@/lib/dates';
 import { KINDS, PROFILE_KINDS, type ProfileKind } from '@/lib/kinds';
@@ -126,6 +129,17 @@ export default function Onboarding() {
     resolverIdiomaCoach(preferenciaIdioma() ?? 'auto', idiomaDispositivo()),
   );
   const [modosElegidos, setModosElegidos] = useState<ModoEtiqueta[]>([]);
+  // Medición de uso (dictamen LSSI 3.1): con el flag encendido y sin decisión,
+  // tras la portada y antes de cualquier otro paso, una pantalla propia con
+  // «Rechazar» y «Aceptar» del mismo peso. Cualquiera de las dos sigue igual.
+  const medicion = useConsentimientoAnalitica();
+  const [preguntandoMedicion, setPreguntandoMedicion] = useState(false);
+  const decidirMedicion = (acepta: boolean) => {
+    if (acepta) medicion.aceptar();
+    else medicion.rechazar();
+    setPreguntandoMedicion(false);
+    setStep(tras(0));
+  };
   const [name, setName] = useState('');
   // "¿Quién te trajo?": opcional, precargado si se entró por nivl://c/CODIGO.
   const [codigo, setCodigo] = useState('');
@@ -353,9 +367,10 @@ export default function Onboarding() {
     seAbreEl: fechaConAnio(abreEl),
   });
 
-  const finish = () =>
+  const finish = (salida: SalidaOnboarding = 'sin_oferta') =>
     withLock(async () => {
       await updateProfile(userId!, { onboarding_done: true });
+      registrar('onboarding_fin', { salida });
       router.replace('/(tabs)');
     });
 
@@ -395,7 +410,10 @@ export default function Onboarding() {
     if (selloTimer.current) clearTimeout(selloTimer.current);
     selloTimer.current = null;
     setSello(false);
-    if (yaEsPro.current) router.replace('/(tabs)');
+    if (yaEsPro.current) {
+      registrar('onboarding_fin', { salida: 'ya_pro' });
+      router.replace('/(tabs)');
+    }
     else setStep(6);
   }, []);
 
@@ -452,7 +470,7 @@ export default function Onboarding() {
   // línea no cuenta contra los topes y no hay nada que cerrar.
   const salir = async (respuesta: RespuestaOferta) => {
     if (decisionOferta?.forma === 'hoja') await anotarOferta('firma', respuesta, 'hoja');
-    await finish();
+    await finish(respuesta === 'vista' ? 'cerrada' : respuesta);
   };
 
   // La prueba de 7 días solo si la cuenta nunca tuvo coach Y la decisión la
@@ -512,6 +530,14 @@ export default function Onboarding() {
     const bajar = setTimeout(() => scroll.current?.scrollToEnd({ animated: true }), 280);
     return () => clearTimeout(bajar);
   }, [firmaOk, step]);
+
+  // Embudo anónimo: qué paso se ve (volver atrás lo repite; el panel cuenta
+  // instalaciones distintas por paso).
+  useEffect(() => {
+    // Integración F1: solo los siete pasos de siempre (0 a 6, los del panel).
+    // El idioma (-1) y los modos (2,5) no son enteros del embudo y no se miden.
+    if (Number.isInteger(step) && step >= 0) registrar('onboarding_paso', { paso: step });
+  }, [step]);
 
   // Cada paso empieza arriba: el ScrollView es el mismo para todos y, si no,
   // la oferta de Pro heredaba el scroll del final de la firma.
@@ -583,7 +609,14 @@ export default function Onboarding() {
             </Entrada>
           ) : null}
 
-          {step === 0 ? <PortadaArena key="paso-0" /> : null}
+          {step === 0 && !preguntandoMedicion ? <PortadaArena key="paso-0" /> : null}
+
+          {step === 0 && preguntandoMedicion ? (
+            <Entrada key="paso-medicion" indice={0}>
+              <TituloPaso inscripcion={t('perfil:medicion.eyebrow')} titulo={t('perfil:medicion.titulo')} />
+              <CuerpoConsentimiento />
+            </Entrada>
+          ) : null}
 
           {step === 1 ? (
             <Entrada key="paso-1" indice={0}>
@@ -856,8 +889,19 @@ export default function Onboarding() {
             {step === PASO_IDIOMA ? (
               <Button title={t('onboarding:continuar')} size="lg" onPress={saveIdioma} loading={busy} />
             ) : null}
-            {step === 0 ? (
-              <Button title={t('onboarding:entrar')} size="lg" onPress={() => setStep(tras(0))} />
+            {step === 0 && !preguntandoMedicion ? (
+              <Button
+                title={t('onboarding:entrar')}
+                size="lg"
+                onPress={() => (medicion.preguntar ? setPreguntandoMedicion(true) : setStep(tras(0)))}
+              />
+            ) : null}
+            {step === 0 && preguntandoMedicion ? (
+              <AccionesConsentimiento
+                onRechazar={() => decidirMedicion(false)}
+                onAceptar={() => decidirMedicion(true)}
+                ocupado={medicion.ocupado}
+              />
             ) : null}
             {step === 1 ? (
               <Button title={t('onboarding:continuar')} size="lg" onPress={saveName} loading={busy} disabled={!name.trim()} />
