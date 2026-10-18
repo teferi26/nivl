@@ -8,7 +8,12 @@ const copia = (id: string, cambios: Partial<Ejercicio>): Ejercicio => ({ ...base
 
 describe('sustituto', () => {
   it('con los 5 del prototipo no hay dos del mismo grupo: no inventa', () => {
-    for (const e of EJERCICIOS) expect(sustituto(e.id)).toBeNull();
+    const prototipo = EJERCICIOS.slice(0, 5);
+    for (const e of prototipo) expect(sustituto(e.id, { catalogo: prototipo })).toBeNull();
+  });
+
+  it('en el catálogo completo, cada ejercicio de pecho tiene sustituto de pecho', () => {
+    for (const e of EJERCICIOS.filter((x) => x.grupo === 'pecho')) expect(sustituto(e.id)?.ejercicio.grupo).toBe('pecho');
   });
 
   it('propone el del mismo grupo que más principales comparte', () => {

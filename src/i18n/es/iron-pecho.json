@@ -1,0 +1,315 @@
+{
+  "ejercicios": {
+    "press-inclinado-barra": {
+      "nombre": "Press inclinado con barra",
+      "cues": {
+        "seguridad": "Con carga alta, usa topes o alguien que te asista.",
+        "angulo": "Respaldo entre 30 y 45°: más inclinado, trabaja sobre todo el hombro.",
+        "apoyos": "Glúteos en el asiento y escápulas juntas contra el respaldo.",
+        "trayectoria": "Baja a la parte alta del pecho con los antebrazos verticales."
+      },
+      "errores": {
+        "gluteos": "Despegar los glúteos del asiento para empujar más.",
+        "codos": "Abrir los codos a 90° del tronco.",
+        "cuello": "Bajar la barra hacia el cuello."
+      }
+    },
+    "press-declinado-barra": {
+      "nombre": "Press declinado con barra",
+      "cues": {
+        "seguridad": "Pide ayuda para sacar y dejar la barra: la cabeza queda abajo.",
+        "pies": "Engancha bien los pies bajo el rodillo antes de empezar.",
+        "trayectoria": "Baja a la parte baja del pecho y empuja hacia los hombros."
+      },
+      "errores": {
+        "rebote": "Rebotar la carga en el pecho.",
+        "recorrido": "Recortar el recorrido sin llegar al pecho.",
+        "cabeza": "Levantar la cabeza del banco al empujar."
+      }
+    },
+    "press-banca-cerrado": {
+      "nombre": "Press de banca con agarre cerrado",
+      "cues": {
+        "seguridad": "Con carga alta, usa topes o alguien que te asista.",
+        "agarre": "Manos a la anchura de los hombros, no más juntas.",
+        "codos": "Codos pegados al cuerpo al bajar.",
+        "trayectoria": "Toca la parte baja del pecho con los antebrazos verticales."
+      },
+      "errores": {
+        "munecas": "Juntar tanto las manos que se doblan las muñecas.",
+        "codos": "Abrir los codos al bajar.",
+        "rebote": "Rebotar la carga en el pecho."
+      }
+    },
+    "press-suelo-barra": {
+      "nombre": "Press en el suelo con barra",
+      "cues": {
+        "codos": "Baja hasta apoyar los codos en el suelo y para un instante.",
+        "rodillas": "Rodillas dobladas y pies planos en el suelo.",
+        "trayectoria": "Empuja en vertical hasta estirar los brazos sobre los hombros."
+      },
+      "errores": {
+        "rebote": "Rebotar los codos contra el suelo.",
+        "codos": "Abrir los codos a 90° del tronco.",
+        "lumbar": "Arquear la espalda para empujar."
+      }
+    },
+    "press-banca-mancuerna": {
+      "nombre": "Press de banca con mancuernas",
+      "cues": {
+        "escapulas": "Escápulas juntas y pies planos en el suelo.",
+        "bajada": "Baja hasta la altura del pecho con los antebrazos verticales.",
+        "subida": "Sube las mancuernas sobre los hombros sin chocarlas."
+      },
+      "errores": {
+        "codos": "Abrir los codos a 90° del tronco.",
+        "rapido": "Dejar caer las mancuernas en la bajada.",
+        "asimetria": "Subir una mano antes que la otra."
+      }
+    },
+    "press-inclinado-mancuerna": {
+      "nombre": "Press inclinado con mancuernas",
+      "cues": {
+        "angulo": "Respaldo entre 30 y 45°: más inclinado, trabaja sobre todo el hombro.",
+        "bajada": "Baja junto a la parte alta del pecho con los antebrazos verticales.",
+        "subida": "Empuja hacia arriba sin chocar las mancuernas."
+      },
+      "errores": {
+        "gluteos": "Despegar los glúteos del asiento.",
+        "codos": "Abrir los codos a 90° del tronco.",
+        "corto": "Quedarse a medio recorrido abajo."
+      }
+    },
+    "press-declinado-mancuerna": {
+      "nombre": "Press declinado con mancuernas",
+      "cues": {
+        "pies": "Engancha los pies bajo el rodillo antes de coger las mancuernas.",
+        "bajada": "Baja junto a la parte baja del pecho, antebrazos verticales.",
+        "salida": "Al acabar, apoya las mancuernas en los muslos y siéntate despacio."
+      },
+      "errores": {
+        "rapido": "Dejar caer las mancuernas en la bajada.",
+        "codos": "Abrir los codos a 90° del tronco.",
+        "cabeza": "Levantar la cabeza del banco."
+      }
+    },
+    "press-suelo-mancuerna": {
+      "nombre": "Press en el suelo con mancuernas",
+      "cues": {
+        "codos": "Baja hasta que los codos toquen el suelo, sin rebotar.",
+        "rodillas": "Rodillas dobladas y pies planos en el suelo.",
+        "subida": "Empuja las dos mancuernas a la vez sobre los hombros."
+      },
+      "errores": {
+        "rebote": "Rebotar los codos contra el suelo.",
+        "codos": "Abrir los codos a 90° del tronco.",
+        "lumbar": "Arquear la espalda para empujar."
+      }
+    },
+    "press-squeeze-mancuerna": {
+      "nombre": "Press con mancuernas juntas",
+      "cues": {
+        "apretar": "Junta las mancuernas y apriétalas entre sí todo el recorrido.",
+        "agarre": "Palmas enfrentadas y codos cerca del cuerpo.",
+        "bajada": "Baja despacio hasta rozar el pecho."
+      },
+      "errores": {
+        "separar": "Separar las mancuernas al subir.",
+        "rapido": "Bajar sin control.",
+        "gluteos": "Despegar los glúteos del banco."
+      }
+    },
+    "aperturas-mancuerna": {
+      "nombre": "Aperturas con mancuernas",
+      "cues": {
+        "codos": "Codos un poco flexionados y fijos todo el recorrido.",
+        "bajada": "Abre los brazos en arco hasta notar el pecho estirado, no más.",
+        "subida": "Cierra en arco, como si abrazaras un barril."
+      },
+      "errores": {
+        "press": "Doblar los codos y convertirlo en un press.",
+        "profundo": "Bajar los brazos por debajo de la línea de los hombros.",
+        "peso": "Usar tanto peso que se pierde el arco."
+      }
+    },
+    "aperturas-inclinado-mancuerna": {
+      "nombre": "Aperturas inclinadas con mancuernas",
+      "cues": {
+        "angulo": "Respaldo a unos 30°, glúteos en el asiento.",
+        "codos": "Codos un poco flexionados y fijos todo el recorrido.",
+        "bajada": "Abre los brazos en arco hasta notar el pecho estirado, no más.",
+        "subida": "Cierra en arco, como si abrazaras un barril."
+      },
+      "errores": {
+        "press": "Doblar los codos y convertirlo en un press.",
+        "profundo": "Bajar los brazos por debajo de la línea de los hombros.",
+        "peso": "Usar tanto peso que se pierde el arco."
+      }
+    },
+    "aperturas-declinado-mancuerna": {
+      "nombre": "Aperturas declinadas con mancuernas",
+      "cues": {
+        "pies": "Engancha los pies bajo el rodillo antes de coger las mancuernas.",
+        "codos": "Codos un poco flexionados y fijos todo el recorrido.",
+        "bajada": "Abre los brazos en arco hasta notar el pecho estirado, no más.",
+        "subida": "Cierra en arco, como si abrazaras un barril."
+      },
+      "errores": {
+        "press": "Doblar los codos y convertirlo en un press.",
+        "profundo": "Bajar los brazos por debajo de la línea de los hombros.",
+        "peso": "Usar tanto peso que se pierde el arco."
+      }
+    },
+    "aperturas-suelo-mancuerna": {
+      "nombre": "Aperturas en el suelo con mancuernas",
+      "cues": {
+        "suelo": "Baja hasta que los codos rocen el suelo, sin dejarlos caer.",
+        "codos": "Codos un poco flexionados y fijos todo el recorrido.",
+        "rodillas": "Rodillas dobladas y pies planos en el suelo."
+      },
+      "errores": {
+        "press": "Doblar los codos y convertirlo en un press.",
+        "rebote": "Dejar caer los codos contra el suelo.",
+        "peso": "Usar tanto peso que se pierde el arco."
+      }
+    },
+    "flexiones": {
+      "nombre": "Flexiones",
+      "cues": {
+        "linea": "Cuerpo en línea de la cabeza a los talones: aprieta abdomen y glúteos.",
+        "manos": "Manos algo más abiertas que los hombros, a la altura del pecho.",
+        "codos": "Codos a unos 45° del tronco, no en cruz.",
+        "recorrido": "Baja hasta que el pecho quede a un palmo del suelo."
+      },
+      "errores": {
+        "cadera": "Dejar caer la cadera.",
+        "cabeza": "Bajar la cabeza antes que el pecho.",
+        "codos": "Abrir los codos en cruz."
+      }
+    },
+    "flexiones-rodillas": {
+      "nombre": "Flexiones con rodillas apoyadas",
+      "cues": {
+        "rodillas": "Apoya las rodillas en algo blando.",
+        "linea": "Línea recta de las rodillas a la cabeza: la cadera no se dobla.",
+        "recorrido": "Baja el pecho, no solo la cabeza."
+      },
+      "errores": {
+        "cadera": "Doblar la cadera y dejarla arriba.",
+        "corto": "Bajar solo unos centímetros."
+      }
+    },
+    "flexiones-inclinadas": {
+      "nombre": "Flexiones inclinadas",
+      "cues": {
+        "apoyo": "Manos en un banco firme que no se mueva ni resbale.",
+        "linea": "Cuerpo en línea de la cabeza a los talones: aprieta abdomen y glúteos.",
+        "progresion": "Cuanto más bajo el apoyo, más difícil: bájalo poco a poco."
+      },
+      "errores": {
+        "cadera": "Dejar caer la cadera.",
+        "apoyo": "Apoyarse en algo que se mueve o se vuelca."
+      }
+    },
+    "flexiones-declinadas": {
+      "nombre": "Flexiones declinadas",
+      "cues": {
+        "apoyo": "Puntas de los pies en un banco firme que no resbale.",
+        "linea": "Cuerpo en línea de la cabeza a los talones: aprieta abdomen y glúteos.",
+        "cabeza": "Baja el pecho hacia el suelo, no la cabeza."
+      },
+      "errores": {
+        "cadera": "Dejar caer la cadera.",
+        "cabeza": "Llevar la cabeza al suelo antes que el pecho."
+      }
+    },
+    "flexiones-diamante": {
+      "nombre": "Flexiones diamante",
+      "cues": {
+        "manos": "Índices y pulgares juntos formando un rombo bajo el esternón.",
+        "codos": "Codos pegados al cuerpo, apuntando hacia atrás.",
+        "linea": "Cuerpo en línea de la cabeza a los talones: aprieta abdomen y glúteos."
+      },
+      "errores": {
+        "codos": "Abrir los codos hacia fuera.",
+        "cadera": "Dejar caer la cadera.",
+        "munecas": "Forzar las muñecas: si molestan, separa un poco las manos."
+      }
+    },
+    "flexiones-abiertas": {
+      "nombre": "Flexiones con manos abiertas",
+      "cues": {
+        "hombro": "Si notas molestia en el hombro, cierra un poco las manos.",
+        "manos": "Manos un palmo más abiertas que en la flexión normal.",
+        "linea": "Cuerpo en línea de la cabeza a los talones: aprieta abdomen y glúteos."
+      },
+      "errores": {
+        "cruz": "Abrir tanto que los codos quedan en cruz con el tronco.",
+        "cadera": "Dejar caer la cadera."
+      }
+    },
+    "flexiones-pliometricas": {
+      "nombre": "Flexiones pliométricas",
+      "cues": {
+        "base": "Hazlas solo si dominas 15 flexiones limpias seguidas.",
+        "caida": "Aterriza con los codos algo flexionados y baja controlado.",
+        "empuje": "Empuja fuerte para despegar las manos del suelo."
+      },
+      "errores": {
+        "bloqueo": "Aterrizar con los brazos bloqueados.",
+        "cadera": "Romper la línea del cuerpo al despegar.",
+        "fatiga": "Seguir cuando ya no despegas con técnica limpia."
+      }
+    },
+    "flexion-isometrica": {
+      "nombre": "Flexión isométrica",
+      "cues": {
+        "postura": "Baja a medio camino y aguanta con los codos a unos 90°.",
+        "linea": "Cuerpo en línea de la cabeza a los talones: aprieta abdomen y glúteos.",
+        "respira": "Respira con normalidad mientras aguantas."
+      },
+      "errores": {
+        "apnea": "Aguantar la respiración.",
+        "cadera": "Dejar caer la cadera."
+      }
+    },
+    "fondos-paralelas": {
+      "nombre": "Fondos en paralelas",
+      "cues": {
+        "profundidad": "Baja hasta que el brazo quede paralelo al suelo, no más.",
+        "hombros": "Hombros abajo y lejos de las orejas.",
+        "inclinacion": "Inclina el tronco hacia delante para cargar el pecho."
+      },
+      "errores": {
+        "hundirse": "Hundir los hombros hacia las orejas abajo.",
+        "profundo": "Bajar más de lo que tolera el hombro.",
+        "balanceo": "Balancear las piernas para subir."
+      }
+    },
+    "fondos-negativos": {
+      "nombre": "Fondos negativos",
+      "cues": {
+        "profundidad": "Para cuando el brazo quede paralelo al suelo.",
+        "subida": "Sube de un salto o con un escalón hasta los brazos estirados.",
+        "bajada": "Baja en tres o cuatro segundos, con control."
+      },
+      "errores": {
+        "caida": "Dejarse caer en la bajada.",
+        "profundo": "Bajar más de lo que tolera el hombro."
+      }
+    },
+    "pec-deck": {
+      "nombre": "Pec deck",
+      "cues": {
+        "asiento": "Ajusta el asiento: codos a la altura de los hombros.",
+        "cierre": "Junta las almohadillas delante del pecho y aprieta un segundo.",
+        "vuelta": "Abre despacio, sin que el peso te lleve los brazos atrás."
+      },
+      "errores": {
+        "espalda": "Despegar la espalda del respaldo.",
+        "choque": "Dejar que las placas choquen al volver.",
+        "hombros": "Subir los hombros hacia las orejas."
+      }
+    }
+  }
+}
