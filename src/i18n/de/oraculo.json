@@ -1,0 +1,46 @@
+{
+  "clave": {
+    "eyebrow": "API-Schlüssel",
+    "titulo": "Dein eigener Schlüssel",
+    "guardar": "Schlüssel speichern",
+    "cuerpo": "OpenAI oder Anthropic. Er wird nur auf diesem Gerät gespeichert, und du zahlst nur deinen Verbrauch.",
+    "etiqueta": "Schlüssel",
+    "placeholder": "sk-proj-… (OpenAI) oder sk-ant-… (Anthropic)",
+    "a11y": "API-Schlüssel",
+    "guardadaAyuda": "Ein Schlüssel ist gespeichert. Füge einen anderen ein, um ihn zu ersetzen, oder lösche ihn und speichere, um ihn zu entfernen.",
+    "ayuda": "Er wird nur an OpenAI oder Anthropic gesendet, nie an NIVL."
+  },
+  "vista": {
+    "todosLosDias": "jeden Tag",
+    "eyebrow": "Das System schmiedet",
+    "titulo": "Orakel",
+    "subtituloClave": "Nenn ihm dein Ziel, und es macht Missionen daraus. Dein Schlüssel liegt auf diesem Gerät.",
+    "subtitulo": "Nenn ihm dein Ziel, und es macht tägliche Missionen mit Datum und Maß daraus.",
+    "cambiarClave": "API-Schlüssel ändern",
+    "usarClave": "Eigenen API-Schlüssel verwenden",
+    "objetivo": "Dein Ziel",
+    "objetivoPlaceholder": "Im Mai 10 km laufen. Analysis mit guter Note bestehen. 8 Stunden schlafen.",
+    "consultar": "Das Orakel befragen",
+    "delibera": "Das Orakel berät",
+    "deliberaCuerpo": "Ein paar Sekunden. Es misst dein Ziel an deinen Tagen.",
+    "proTitulo": "Das Orakel gehört zu NIVL Pro",
+    "proCuerpo": "Ziele mit KI in Missionen verwandeln gehört zum Coach. Der Rest von NIVL bleibt deins.",
+    "espera": "Das Orakel wartet",
+    "esperaCuerpo": "Ein konkretes Ziel mit Datum und Maß ergibt bessere Missionen. Du wählst, welche du annimmst.",
+    "veredicto": "Urteil des Systems",
+    "propuestas": "Vorgeschlagene Missionen",
+    "hasta": "bis zu",
+    "propuestaA11y": "Vorgeschlagene Mission: {{titulo}}, bis zu {{xp}} XP, angenommen",
+    "propuestaDescartadaA11y": "Vorgeschlagene Mission: {{titulo}}, bis zu {{xp}} XP, verworfen",
+    "nota": "Entferne den Haken bei denen, die du nicht willst. Die angenommenen landen als tägliche Missionen in Gewohnheiten.",
+    "aceptar_one": "{{count}} Mission annehmen",
+    "aceptar_other": "{{count}} Missionen annehmen"
+  },
+  "asignadas": {
+    "titulo": "MISSIONEN ZUGEWIESEN",
+    "mensaje_one": "Das System hat eine neue Mission registriert.",
+    "mensaje_other": "Das System hat {{count}} neue Missionen registriert.",
+    "ver": "Missionen ansehen",
+    "quedarme": "Hierbleiben"
+  }
+}

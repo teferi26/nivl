@@ -1,0 +1,61 @@
+{
+  "comida": {
+    "desayuno": "Frühstück",
+    "comida": "Mittagessen",
+    "merienda": "Zwischenmahlzeit",
+    "cena": "Abendessen",
+    "snack": "Snack"
+  },
+  "vista": {
+    "eyebrow": "Körper",
+    "titulo": "Ernährungsplan",
+    "subMacros": "{{dia}}: {{kcal}} kcal und {{prote}} g Protein geplant.",
+    "subComidas_one": "{{dia}}: {{count}} Mahlzeit geplant.",
+    "subComidas_other": "{{dia}}: {{count}} Mahlzeiten geplant.",
+    "subVacio": "{{dia}} noch nicht geplant.",
+    "irCompra": "Zur Einkaufsliste",
+    "diaHoyA11y": "{{dia}}, heute",
+    "cargando": "Dein Ernährungsplan wird geladen",
+    "cifraKcal": "Kcal",
+    "cifraKcalSinDato": "Kcal: keine Angabe",
+    "cifraProte": "Protein",
+    "cifraProteSinDato": "Protein: keine Angabe",
+    "cifraComidas": "Mahlzeiten",
+    "cifraComidasA11y": "Mahlzeiten: {{n}} von {{total}} geplant",
+    "notaMano": "Von Hand eingetragene Mahlzeiten haben keine Makros; es zählen nur die, die der Coach plant.",
+    "hoyDia": "Heute · {{dia}}",
+    "sinPlanificar": "Nicht geplant. Tippen zum Hinzufügen.",
+    "editarA11y": "{{comida}} am {{dia}} bearbeiten: {{descripcion}}",
+    "planificarA11y": "{{comida}} am {{dia}} planen",
+    "conMacrosA11y": "{{texto}}, {{macros}}",
+    "macrosKcalProteA11y": "{{kcal}} kcal und {{prote}} Gramm Protein",
+    "macrosKcalA11y": "{{kcal}} kcal",
+    "macrosProteA11y": "{{prote}} Gramm Protein",
+    "listaCompra": "Einkaufsliste",
+    "generar": "Liste erstellen",
+    "generarConIngredientes": "Das System sammelt die Zutaten der 7 Tage, entfernt Doppelte und schickt sie auf die Liste.",
+    "generarSinIngredientes": "Schreib die Zutaten deiner Mahlzeiten durch Kommas getrennt auf, und das System erstellt die Liste.",
+    "gProt": "g Prot."
+  },
+  "hoja": {
+    "eyebrow": "{{comida}} · {{dia}}",
+    "tituloAjustar": "Mahlzeit anpassen",
+    "tituloNueva": "Was isst du?",
+    "quitarComida": "Mahlzeit entfernen",
+    "comida": "Mahlzeit",
+    "comidaPlaceholder": "Hähnchen mit Reis und Brokkoli",
+    "comidaA11y": "Beschreibung der Mahlzeit",
+    "ingredientes": "Zutaten",
+    "ingredientesPlaceholder": "Hähnchen, Reis, Brokkoli, Olivenöl",
+    "ingredientesAyuda": "Durch Kommas getrennt: Daraus entsteht die Einkaufsliste.",
+    "ingredientesA11y": "Zutaten, durch Kommas getrennt"
+  },
+  "acciones": {
+    "sinIngredientes": "Keine Zutaten",
+    "sinIngredientesCuerpo": "Füge deinen Mahlzeiten Zutaten hinzu (durch Kommas getrennt), und das System erstellt die Liste.",
+    "listaGenerada": "Liste erstellt",
+    "listaGeneradaCuerpo": "{{n}} Zutaten auf die Einkaufsliste geschickt.",
+    "verLista": "Liste ansehen",
+    "entendido": "Verstanden"
+  }
+}

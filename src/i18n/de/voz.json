@@ -1,0 +1,124 @@
+{
+  "deMisiones": {
+    "titulo": "„{{titulo}}“",
+    "una": "aus der Mission {{lista}} (automatisch abgehakt)",
+    "varias": "aus den Missionen {{lista}} (automatisch abgehakt)"
+  },
+  "allDone": [
+    "Alle Missionen abgeschlossen. Das System ist zufrieden.",
+    "Tag erfüllt, Gladiator. Morgen die nächsten.",
+    "Missionen des Tages abgeschlossen. Ruh dich aus: Du hast es dir verdient.",
+    "Das System verzeichnet einen makellosen Tag."
+  ],
+  "levelUp": [
+    "Du steigst ein Level auf. Das System hält es fest.",
+    "Das System erkennt deinen Fortschritt an.",
+    "Neues Level. Mission für Mission erarbeitet.",
+    "Ein Level mehr. Die Arena hat es gesehen."
+  ],
+  "penaltyApplied": [
+    "Das System hat {{xp}} XP abgezogen. Unter Heute wartet eine Wiedergutmachungsmission.",
+    "Tag nicht abgeschlossen: −{{xp}} XP. Die Wiedergutmachung steht schon auf deiner Liste.",
+    "−{{xp}} XP verbucht. Die Wiedergutmachungsmission steht unter Heute."
+  ],
+  "stoneUsed": [
+    "Ein Schutzstein wurde verbraucht. Die Serie hält.",
+    "Das System hat einen Schutzstein eingesetzt. Die Serie bleibt bestehen."
+  ],
+  "stoneEarned": [
+    "Makellose Woche: Du hast einen Schutzstein geschmiedet.",
+    "Das System gewährt dir einen Schutzstein. Heb ihn dir für einen schlechten Tag auf."
+  ],
+  "frozen": [
+    "System pausiert ({{motivo}}). Keine Missionen, keine Abzüge, kein Urteil.",
+    "Pause aktiv: {{motivo}}. Solange sie dauert, wird nichts abgezogen."
+  ],
+  "morningNotif": [
+    "Das System hat deine Missionen für heute zugewiesen. Fang mit der ersten an.",
+    "Deine Missionen für heute stehen bereit. Die erste ist die schwerste.",
+    "Missionen zugewiesen. Jede bringt XP auf dem Weg zum nächsten Rang."
+  ],
+  "eveningNotif": [
+    "Noch ein paar Stunden bis zum Tagesabschluss. Sieh nach, was dir fehlt.",
+    "Der Tagesabschluss rückt näher. Prüf deine offenen Missionen.",
+    "Bevor der Tag schließt, ein Blick auf das Offene."
+  ],
+  "dungeonCleared": [
+    "Kampagne „{{titulo}}“ abgeschlossen. Alle Etappen erledigt.",
+    "„{{titulo}}“ ist gefallen. Das System verzeichnet deinen Sieg."
+  ],
+  "pr": [
+    "Neuer Rekord bei {{ejercicio}}. Das System notiert ihn.",
+    "{{ejercicio}}: persönlicher Rekord übertroffen. Er bleibt als Referenz."
+  ],
+  "achievement": [
+    "Erfolg freigeschaltet.",
+    "Erfolg verbucht. Er steht jetzt in deinem Profil.",
+    "Neuer Eintrag in deiner Legende."
+  ],
+  "streakHype": {
+    "sinRacha": [
+      "Noch keine Serie. Schließ den heutigen Tag ab und fang an zu zählen.",
+      "Serie auf null. Ein abgeschlossener Tag bringt sie ins Rollen."
+    ],
+    "encendida": [
+      "Die Serie läuft. Schließ heute ab und füge einen Tag hinzu."
+    ],
+    "encendidaDias_one": "{{count}} Tag Serie. Heute kommt einer dazu.",
+    "encendidaDias_other": "{{count}} Tage Serie. Heute kommt einer dazu.",
+    "primeros": [
+      "{{dias}} Tage am Stück. Die Kette wächst. Morgen einer mehr.",
+      "{{dias}} Tage. Das System fängt an, dir zu vertrauen. Weiter."
+    ],
+    "semana": [
+      "Eine ganze Woche auf den Beinen. Dein Multiplikator zahlt sich aus: Jede Mission ist mehr wert.",
+      "{{dias}} Tage am Stück. Morgen der nächste."
+    ],
+    "quincena": [
+      "{{dias}} Tage am Stück. Die Serie trägst du, Tag für Tag.",
+      "{{dias}} Tage. Jeder abgeschlossen, keiner geschenkt."
+    ],
+    "larga": [
+      "{{dias}} Tage. Der Weg zu {{rango}} ist dieser: ein Tag mehr, jeden Tag.",
+      "{{dias}} Tage Serie. Das System hat jeden einzelnen gezählt."
+    ]
+  },
+  "aviso": {
+    "racha": {
+      "titulo_one": "Serie von {{count}} Tag",
+      "titulo_other": "Serie von {{count}} Tagen",
+      "cuerpo_one": "Dir fehlt 1 Mission, um den Tag abzuschließen.",
+      "cuerpo_other": "Dir fehlen {{count}} Missionen, um den Tag abzuschließen."
+    },
+    "recuperacion": {
+      "titulo": "Wiedergutmachung",
+      "cuerpoBloqueada": "Schließ eine Mission von heute ab, dann öffnet sich die Wiedergutmachung.",
+      "tituloAbierta": "Wiedergutmachung offen",
+      "cuerpoXp": "Schließ die Wiedergutmachungsmission ab, und {{xp}} XP kommen zurück.",
+      "cuerpoLista": "Die Wiedergutmachungsmission steht unter Heute bereit."
+    },
+    "duelo": {
+      "tituloUno": "Dein Duell",
+      "tituloVarios": "Deine Duelle",
+      "cuerpo_one": "Neuigkeiten in 1 Duell.",
+      "cuerpo_other": "Neuigkeiten in {{count}} Duellen."
+    },
+    "foto": {
+      "titulo": "Fotos der Woche",
+      "cuerpo_one": "Noch 1 von 3, um die Woche abzuschließen.",
+      "cuerpo_other": "Noch {{count}} von 3, um die Woche abzuschließen."
+    },
+    "rango": {
+      "titulo": "Neuer Rang",
+      "cuerpo": "Du bist jetzt {{rango}}. Schau es dir an.",
+      "tituloGenerico": "Die Arena erkennt dich an",
+      "cuerpoGenerico": "Es gibt etwas Neues zu sehen. Komm, wann du willst."
+    },
+    "vuelta": {
+      "titulo7": "Die Arena ist noch da",
+      "cuerpo7": "Ein Schritt reicht, um zurückzukehren.",
+      "titulo30": "Das Tor steht noch offen",
+      "cuerpo30": "Wann immer du willst, fängst du mit einer Mission an."
+    }
+  }
+}

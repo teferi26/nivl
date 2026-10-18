@@ -1,0 +1,116 @@
+{
+  "fotosProgreso": "Fortschrittsfotos",
+  "pose": {
+    "frente": "Vorne",
+    "lado": "Seite",
+    "espalda": "Rücken"
+  },
+  "semanasSeguidas_one": "{{count}} Woche am Stück",
+  "semanasSeguidas_other": "{{count}} Wochen am Stück",
+  "error": {
+    "limite": "Du hast in den letzten 24 Stunden 12 Fotos gespeichert. Später kannst du weitermachen.",
+    "gate": "Die Foto-Freigabe hat sich geändert. Prüf sie erneut.",
+    "peso": "Das Foto ist zu groß. Schneide es zu oder mach es neu.",
+    "fecha": "Das Datum des Fotos ist ungültig."
+  },
+  "edad": {
+    "pregunta": "Fortschrittsfotos sind ab 18. Bist du 18 oder älter?",
+    "nota": "Das ist deine eigene Angabe. Sagst du Nein, kannst du NIVL trotzdem ganz normal nutzen.",
+    "si": "Ich bin 18 oder älter"
+  },
+  "fila": {
+    "errorDetalle": "Prüfung fehlgeschlagen. Tippen zum Wiederholen.",
+    "errorA11y": "Fortschrittsfotos. Die Freigabe konnte nicht geprüft werden. Tippen zum Wiederholen.",
+    "detalle": "Vorne, Seite und Rücken, einmal pro Woche.",
+    "semanasA11y": "Fortschrittsfotos. {{semanas}}",
+    "titulo18": "Fortschrittsfotos · 18+",
+    "detalle18": "Privat. Nur ab 18.",
+    "a11y18": "Fortschrittsfotos, nur ab 18"
+  },
+  "vista": {
+    "pie": "Deine Fotos sind privat. Sie verlassen NIVL nur, wenn du sie teilst.",
+    "subPoses": "Vorne, Seite und Rücken. Einmal pro Woche.",
+    "subCerrada": "Woche abgeschlossen. Die nächste beginnt am Montag.",
+    "subSemana": "Diese Woche: {{n}} von 3.",
+    "cargandoA11y": "Deine Fotos werden geladen",
+    "errorPermiso": "Die Foto-Freigabe konnte nicht geprüft werden. Prüf deine Verbindung.",
+    "reintentar": "Erneut versuchen",
+    "permisoSalud": "Gesundheitsfreigabe",
+    "permisoSaludTexto": "Fortschrittsfotos sind Gesundheitsdaten. Um sie zu speichern, braucht NIVL deine Gesundheitsfreigabe.",
+    "revisarSalud": "Gesundheitsfreigabe prüfen",
+    "solo18": "Nur 18+",
+    "sinFotos": "Noch keine Fotos",
+    "primeraSemana": "Die erste Woche",
+    "primeraSemanaTexto": "Drei Fotos: von vorne, von der Seite und von hinten. Bei gleichem Licht und zur gleichen Uhrzeit siehst du in ein paar Wochen, was der Spiegel nicht zeigt.",
+    "primeraSemanaNota": "Sie bringen keine XP, und niemand sonst sieht sie.",
+    "cifraSemanas": "Wochen am Stück",
+    "cifraSemanasA11y": "Wochen am Stück: {{n}}",
+    "cifraSemana": "Diese Woche",
+    "cifraFotos": "Fotos",
+    "estaSemana": "Diese Woche",
+    "poseHechaA11y": "{{pose}}: erledigt",
+    "poseFaltaA11y": "{{pose}}: fehlt",
+    "tresHechas": "Alle drei Posen der Woche erledigt.",
+    "falta": "Es fehlt: {{poses}}.",
+    "listaDos": "{{a}} und {{b}}",
+    "listaTres": "{{a}}, {{b}} und {{c}}",
+    "conHito": "{{texto}} Nächster Meilenstein: {{n}} Wochen.",
+    "antesDespues": "Vorher und nachher",
+    "semanaASemana": "Woche für Woche",
+    "eyebrow": "Fortschritt",
+    "titulo": "Fotos",
+    "nueva": "Neues Foto"
+  },
+  "comparar": {
+    "plazo": "{{n}} Tage",
+    "plazoA11y": "Mit vor etwa {{n}} Tagen vergleichen",
+    "faltanDos": "Zum Vergleichen brauchst du zwei Fotos ({{pose}}) an verschiedenen Tagen.",
+    "antes": "Vorher",
+    "despues": "Nachher",
+    "rotuloAntes": "VORHER · {{fecha}}",
+    "rotuloDespues": "NACHHER · {{fecha}}",
+    "entreA11y": "{{dias}} zwischen den beiden Fotos",
+    "entreUno": "TAG DAZWISCHEN",
+    "entreVarios": "TAGE DAZWISCHEN",
+    "mostrarPeso": "Gewicht zeigen"
+  },
+  "linea": {
+    "vaciaA11y": "{{pose}}: diese Woche kein Foto",
+    "fotoA11y": "Foto {{pose}} vom {{fecha}}",
+    "abrePista": "Öffnet das Foto",
+    "semana": "WOCHE {{n}}",
+    "completa": "KOMPLETT",
+    "verMas": "Mehr ansehen"
+  },
+  "hoja": {
+    "soloJpg": "Nur JPG-Fotos",
+    "soloJpgCuerpo": "Dieses Format geht nicht. Mach das Foto mit der Kamera oder wähle ein anderes.",
+    "sinCamara": "Um das Foto hier aufzunehmen, braucht NIVL die Kamera. Du kannst es auch aus der Galerie wählen.",
+    "fechaFutura": "Das Datum darf nicht in der Zukunft liegen.",
+    "hoy": "Heute",
+    "ayer": "Gestern",
+    "eligePose": "Wähle die Pose",
+    "previaA11y": "Vorschau des Fotos",
+    "hacerFoto": "Foto aufnehmen",
+    "galeria": "Aus der Galerie",
+    "consejo": "Gleiches Licht, gleicher Abstand, gleiche Uhrzeit: So werden Veränderungen sichtbar.",
+    "pose": "Pose",
+    "fecha": "Datum",
+    "antesA11y": "Einen Tag früher",
+    "despuesA11y": "Einen Tag später",
+    "nota": "Wird privat gespeichert. Bringt keine XP: Es ist für dich."
+  },
+  "acciones": {
+    "noPreparar": "Vorbereitung fehlgeschlagen",
+    "noPrepararCuerpo": "Die Fotos wurden nicht heruntergeladen. Versuch es mit Verbindung noch einmal.",
+    "noCompartir": "Teilen fehlgeschlagen",
+    "borrarFoto": "Foto löschen",
+    "borrarMensaje": "{{pose}} vom {{fecha}}. Wird für immer aus NIVL gelöscht.",
+    "borrar": "Löschen",
+    "noBorrar": "Löschen fehlgeschlagen",
+    "guardada": "Foto gespeichert · {{pose}}"
+  },
+  "ver": {
+    "soloTu": "Nur du siehst es."
+  }
+}

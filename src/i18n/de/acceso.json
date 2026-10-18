@@ -1,0 +1,97 @@
+{
+  "noHaSalido": "Hat nicht geklappt",
+  "ayudaContrasena": "Keine seltsamen Regeln: {{n}} Zeichen oder mehr. Ein Satz, den du dir merkst, ist perfekt.",
+  "fuerza": {
+    "debil": "Schwach",
+    "media": "Mittel",
+    "fuerte": "Stark"
+  },
+  "aviso": {
+    "registro": "Wenn die E-Mail-Adresse neu ist, haben wir dir einen Bestätigungslink geschickt. Öffne ihn auf diesem Handy und melde dich dann mit deinem Passwort an.",
+    "recuperacion": "Wenn zu dieser E-Mail-Adresse ein Konto existiert, haben wir dir einen Link geschickt. Öffne ihn auf diesem Handy, um ein neues Passwort festzulegen."
+  },
+  "error": {
+    "nombre": "Zwischen 1 und {{max}} Zeichen.",
+    "correo": "Ungültiges E-Mail-Format.",
+    "noCoinciden": "Die Passwörter stimmen nicht überein."
+  },
+  "contrasena": {
+    "etiqueta": "Passwort",
+    "repite": "Passwort wiederholen",
+    "placeholder": "Ein Satz, den du dir merkst",
+    "ocultar": "Passwort verbergen",
+    "mostrar": "Passwort anzeigen",
+    "fuerzaA11y": "Passwortstärke: {{fuerza}}",
+    "leFalta": "Es fehlt: {{faltas}}."
+  },
+  "login": {
+    "casillaLegal": "Ich habe die Nutzungsbedingungen von NIVL gelesen und akzeptiere sie, und ich habe die Datenschutzerklärung gelesen.",
+    "intro": {
+      "signin": "Melde dich mit deiner E-Mail-Adresse und deinem NIVL-Passwort an.",
+      "signup": "Erstelle dein NIVL-Konto. Wir schicken dir einen Link zur Bestätigung deiner E-Mail-Adresse.",
+      "recover": "Gib die E-Mail-Adresse deines Kontos ein, und wir schicken dir einen Link für ein neues Passwort."
+    },
+    "introPortal": "Melde dich mit deinem NIVL-Konto an, um dein Creator-Panel zu sehen.",
+    "olvidoPortal": "Passwort vergessen? Setz es in der NIVL-App zurück („Passwort vergessen?“ auf dem Anmeldebildschirm) und komm dann hierher zurück.",
+    "boton": {
+      "signin": "Anmelden",
+      "signup": "Konto erstellen",
+      "recover": "Link senden"
+    },
+    "pestana": {
+      "signin": {
+        "texto": "Anmelden",
+        "a11y": "Mit bestehendem Konto anmelden"
+      },
+      "signup": {
+        "texto": "Konto erstellen",
+        "a11y": "Ein neues Konto erstellen"
+      }
+    },
+    "portal": "Creator-Portal",
+    "recuperarTitulo": "Passwort zurücksetzen",
+    "nombrePlaceholder": "Wie das System dich nennen soll",
+    "correo": "E-Mail",
+    "correoPlaceholder": "du@email.de",
+    "correoA11y": "E-Mail-Adresse",
+    "terminos": "Nutzungsbedingungen von NIVL",
+    "terminosA11y": "Nutzungsbedingungen von NIVL",
+    "privacidad": "Datenschutz von NIVL",
+    "privacidadA11y": "Datenschutzerklärung von NIVL",
+    "revisaCorreo": "Prüf deine E-Mails",
+    "faltaCasilla": "Setz den Haken bei den Nutzungsbedingungen, um fortzufahren.",
+    "olvido": "Passwort vergessen?",
+    "volverAEntrar": "Zurück zur Anmeldung",
+    "notaCuenta": "Deine Gewohnheiten, Missionen und Fortschritte werden in deinem NIVL-Konto gespeichert."
+  },
+  "arranque": {
+    "cargando": "Wird geladen"
+  },
+  "fuera": {
+    "eyebrow": "Route",
+    "titulo": "Außerhalb der Arena",
+    "cuerpo": "Das System kennt dieses Ziel nicht. Vielleicht ist der Link alt oder falsch kopiert.",
+    "volver": "Zurück in die Arena"
+  },
+  "cuenta": {
+    "eyebrow": "Konto",
+    "irAEntrar": "Zur Anmeldung"
+  },
+  "restablecer": {
+    "titulo": "Neues Passwort",
+    "comprobando": "Link wird geprüft",
+    "nueva": "Neues Passwort",
+    "guardar": "Passwort speichern",
+    "hechoRotulo": "Passwort geändert",
+    "hechoMensaje": "Du kannst es jetzt zur Anmeldung bei NIVL verwenden.",
+    "continuar": "Weiter",
+    "invalidoRotulo": "Ungültiger Link",
+    "invalido": "Dieser Link ist ungültig oder abgelaufen. Fordere über „Passwort vergessen?“ einen neuen an."
+  },
+  "confirmar": {
+    "titulo": "E-Mail bestätigen",
+    "falloRotulo": "Bestätigung fehlgeschlagen",
+    "confirmando": "Deine E-Mail-Adresse wird bestätigt",
+    "sinEnlace": "Dieser Link enthält nichts zu bestätigen. Öffne die letzte E-Mail, die wir dir geschickt haben, oder melde dich mit deinem Passwort an."
+  }
+}

@@ -1,0 +1,128 @@
+{
+  "cita": {
+    "consultado": "Abgefragt: {{lista}}",
+    "consultadoVarias": "Abgefragt: {{primeras}} und {{ultima}}",
+    "fuente": {
+      "consultar_historial": "dein Verlauf",
+      "consultar_dia": "dein Tagesprotokoll"
+    }
+  },
+  "bloqueado": {
+    "tituloOferta": "DER COACH IST NICHT IN DEINEM PLAN.",
+    "titulo": "DER COACH GEHÖRT ZU NIVL PRO.",
+    "cuerpo": "Deine Missionen, deine Serie, deine Kampagnen und alle Module bleiben deine. Was fehlt, ist der, der sie führt.",
+    "hoyEstaria": "Heute wäre er",
+    "unBrief": "Ein Briefing von ihm",
+    "ejemplo": "Beispiel",
+    "ejemploA11y": "Beispiel für ein Briefing des Coachs. {{muestra}}"
+  },
+  "atajos": {
+    "planificaDia": {
+      "etiqueta": "Plan meinen Tag",
+      "mensaje": "Plan den Rest meines heutigen Tages."
+    },
+    "reporte": {
+      "etiqueta": "Bericht",
+      "mensaje": "Ich erstatte Bericht. Frag mich, was du über heute wissen musst."
+    },
+    "dojo": {
+      "etiqueta": "Verkaufs-Dojo",
+      "mensaje": "Trainier mich 15 Minuten im Verkaufen. Fang mit einem echten Einwand an."
+    },
+    "revisame": {
+      "etiqueta": "Prüf mich",
+      "mensaje": "Prüf meine letzten 14 Tage mit brutaler Ehrlichkeit."
+    }
+  },
+  "rapidas": {
+    "planHoy": {
+      "etiqueta": "Plan für heute",
+      "mensaje": "Plan den Rest meines heutigen Tages."
+    },
+    "registrar": {
+      "etiqueta": "Eintragen",
+      "mensaje": "Ich erstatte Bericht. Frag mich, was du über heute wissen musst."
+    },
+    "queEntreno": {
+      "etiqueta": "Was trainiere ich?",
+      "mensaje": "Was trainiere ich heute? Entscheide anhand meines Verlaufs und meiner Form."
+    },
+    "resumenSemana": {
+      "etiqueta": "Wochenrückblick",
+      "mensaje": "Mach mir den Rückblick auf meine Woche: was ich erfüllt habe, was nicht und was ich für die nächste ändere."
+    }
+  },
+  "vista": {
+    "leyendo": "Dein Tag wird gelesen",
+    "partePro": "Teil von NIVL Pro",
+    "listo": "Bereit für deinen Tag",
+    "haLeido_one": "Hat deinen Tag gelesen · {{count}} Abfrage",
+    "haLeido_other": "Hat deinen Tag gelesen · {{count}} Abfragen",
+    "titulo": "COACH",
+    "profundoTag": "TIEF",
+    "verPlan": "Deinen Plan und die Energie des Coachs ansehen",
+    "verMemoria": "Das Gedächtnis des Systems ansehen",
+    "vacioTitulo": "DAS SYSTEM HÖRT DIR ZU.",
+    "vacioCuerpo": "Er bestimmt deinen Tag, entscheidet, was jede Sache wert ist, beurteilt dich abends und merkt sich alles, was er über dich lernt. Sprich mit ihm, wie du mit jemandem sprechen würdest, der dein Leben führt.",
+    "atajosA11y": "Kurzbefehle",
+    "enviaPista": "Wird an den Coach gesendet",
+    "rapidasA11y": "Schnellaktionen",
+    "cargandoA11y": "Coach wird geladen",
+    "falloTitulo": "DAS SYSTEM ANTWORTET NICHT",
+    "falloCuerpo": "Das Gespräch konnte nicht geladen werden. Prüf die Verbindung und versuch es noch einmal.",
+    "fotosListas_one": "{{count}} Foto bereit zum Senden",
+    "fotosListas_other": "{{count}} Fotos bereit zum Senden",
+    "quitarFotosA11y": "Fotos entfernen",
+    "energiaA11y": "{{texto}} Energie des Coachs ansehen",
+    "potenciaA11y": "Leistung des Coachs",
+    "estandar": "Standard",
+    "profundo": "Tief",
+    "profundoA11y": "Tiefer Modus. {{linea}}",
+    "conservada": "Dein Gespräch bleibt erhalten.",
+    "conservadaPro": "Der Coach gehört zu NIVL Pro. Dein Gespräch bleibt erhalten.",
+    "fotosElite": "Fotos an den Coach gibt es mit Élite",
+    "adjuntarA11y": "Ein Foto anhängen",
+    "placeholder": "Sprich mit dem System",
+    "mensajeA11y": "Nachricht an das System",
+    "enviandoA11y": "Wird gesendet: Das System denkt nach",
+    "enviarA11y": "Nachricht senden"
+  },
+  "dictado": {
+    "microfonoListo": "Mikrofon bereit. Gedrückt halten zum Diktieren.",
+    "terminado": "Diktat beendet",
+    "grabando": "Aufnahme läuft",
+    "cancelado": "Diktat abgebrochen",
+    "terminarA11y": "Diktat beenden",
+    "dictarA11y": "Eine Nachricht diktieren",
+    "terminarPista": "Das Diktierte wird ins Textfeld geschrieben",
+    "empezarPista": "Tippen, um die Aufnahme zu starten",
+    "cancelarAccion": "Diktat abbrechen",
+    "mantenerPista": "Gedrückt halten zum Aufnehmen, loslassen zum Einfügen",
+    "guiaLector": "tippe aufs Mikrofon zum Beenden",
+    "guiaCancelar": "loslassen zum Abbrechen",
+    "guia": "loslassen zum Einfügen, nach oben wischen zum Abbrechen",
+    "preparando": "WIRD VORBEREITET",
+    "grabandoReloj": "AUFNAHME {{tiempo}}",
+    "mantenerParaDictar": "Gedrückt halten zum Diktieren"
+  },
+  "privacidad": {
+    "eyebrow": "DATENSCHUTZ",
+    "titulo": "Diktieren über das Netz",
+    "dictarIgualmente": "Trotzdem diktieren",
+    "escribir": "Tippen",
+    "cuerpo": "Was du diktierst, wird ins Textfeld geschrieben und erreicht den Coach genau so, als hättest du es selbst getippt, sobald du es sendest."
+  },
+  "mensaje": {
+    "firma": "DAS SYSTEM",
+    "pararA11y": "Vorlesen stoppen",
+    "escucharA11y": "Antwort anhören",
+    "parar": "Stopp",
+    "escuchar": "Anhören",
+    "pensando": "Das System denkt nach…"
+  },
+  "turno": {
+    "miraFoto": "Sieh dir dieses Foto an.",
+    "energiaAgotada": "Die Energie des Coachs ist für diesen Monat aufgebraucht. Sie lädt sich am 1. wieder auf.",
+    "energiaAgotadaDia": "Die Energie des Coachs ist für diesen Monat aufgebraucht. Sie lädt sich am {{dia}} wieder auf."
+  }
+}

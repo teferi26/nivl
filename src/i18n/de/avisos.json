@@ -1,0 +1,34 @@
+{
+  "canales": {
+    "despertar": "Wecker",
+    "bloque": "Tagesblöcke",
+    "cierre": "Tagesabschluss",
+    "sistema": "Das System"
+  },
+  "acciones": {
+    "hecho": "Erledigt",
+    "posponer": "10 Min. später",
+    "reportar": "Melden"
+  },
+  "despertar": {
+    "titulo": "Aufstehen, Gladiator"
+  },
+  "bloque": {
+    "cuerpo": "Zeit für diesen Block. Details findest du unter Heute."
+  },
+  "cierre": {
+    "titulo": "Der Tagesabschluss rückt näher"
+  },
+  "posponer": {
+    "titulo": "Erinnerung",
+    "cuerpo": "Noch offen."
+  },
+  "error": {
+    "estado": "Fehler beim Lesen des Benachrichtigungsstatus.",
+    "noDisponibles": "Benachrichtigungen sind hier nicht verfügbar.",
+    "despertador": "Der Wecker konnte nicht gestellt werden.",
+    "avisosDelDia": "Die Benachrichtigungen für heute konnten nicht geplant werden.",
+    "aviso": "Die Benachrichtigung konnte nicht geplant werden.",
+    "avisosDelSistema": "Die Systembenachrichtigungen konnten nicht geplant werden."
+  }
+}

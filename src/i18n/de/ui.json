@@ -1,0 +1,39 @@
+{
+  "avatar": {
+    "a11yRango": "{{nombre}}, Rang {{rango}}"
+  },
+  "ceremonia": {
+    "nuevoRango": "NEUER RANG",
+    "nuevoGrado": "NEUER GRAD",
+    "subesNivel": "LEVEL-AUFSTIEG",
+    "anuncioRango": "Neuer Rang: {{rango}}, {{nombre}}. {{lema}}",
+    "anuncioGrado": "Neuer Grad: {{nombre}} {{grado}}",
+    "anuncioNivel": "Du steigst auf Level {{nivel}}",
+    "tituloNivel": "Level {{nivel}}",
+    "faltaNiveles_one": "Noch {{count}} Level",
+    "faltaNiveles_other": "Noch {{count}} Level",
+    "faltaDias_one": "Noch {{count}} aktiver Tag",
+    "faltaDias_other": "Noch {{count}} aktive Tage",
+    "faltanAmbos": "Noch {{niveles}} und {{dias}}",
+    "niveles_one": "{{count}} Level",
+    "niveles_other": "{{count}} Level",
+    "diasActivos_one": "{{count}} aktiver Tag",
+    "diasActivos_other": "{{count}} aktive Tage",
+    "cerrarA11y": "Feier schließen",
+    "siguiente": "Nächster: {{nombre}} auf Level {{nivel}}",
+    "pideDias": "{{nombre}} verlangt außerdem aktive Tage in der Arena",
+    "seguir": "Weiter",
+    "tocaCerrar": "Tippe irgendwo, um zu schließen",
+    "tocaSaltar": "Tippe irgendwo, um zu überspringen"
+  },
+  "confirmar": {
+    "botonesWeb": "Bestätigen: {{ok}}. Abbrechen: {{cancelar}}."
+  },
+  "sidebar": {
+    "lema": "JEDEN TAG\n1 % BESSER",
+    "lemaA11y": "Jeden Tag 1 % besser"
+  },
+  "row": {
+    "masOpciones": "Weitere Optionen"
+  }
+}

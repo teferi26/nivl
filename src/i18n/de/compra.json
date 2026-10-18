@@ -1,0 +1,32 @@
+{
+  "vista": {
+    "eyebrow": "Körper",
+    "titulo": "Einkauf",
+    "subVacia": "Nichts auf der Liste.",
+    "subHecha": "Alles im Wagen. Einkauf erledigt.",
+    "subPendientes_one": "{{count}} Artikel offen.",
+    "subPendientes_other": "{{count}} Artikel offen.",
+    "anadirArticulo": "Artikel hinzufügen",
+    "anadirPlaceholder": "Eier, Haferflocken, Kaffee",
+    "nuevoA11y": "Neuer Artikel",
+    "anadirA11y": "Zur Liste hinzufügen",
+    "cargando": "Liste wird geladen",
+    "cifraPendientes": "Offen",
+    "cifraCarro": "Im Wagen",
+    "cifraLista": "Auf der Liste",
+    "barraA11y": "Im Wagen: {{hechos}} von {{total}}",
+    "pendiente": "Offen",
+    "compraHecha": "Einkauf erledigt",
+    "nadaPendiente": "Nichts offen",
+    "compraHechaCuerpo": "Alles ist im Wagen. Leere die gekauften Artikel, wenn du sie verstaut hast.",
+    "nadaPendienteCuerpo": "Erstelle die Liste aus dem Ernährungsplan oder füge oben Artikel hinzu.",
+    "irDieta": "Zum Ernährungsplan",
+    "pendienteA11y": "{{nombre}}, offen",
+    "pendienteCantidadA11y": "{{nombre}}, {{cantidad}}, offen",
+    "enCarro": "Im Wagen",
+    "vaciando": "Wird geleert",
+    "vaciar": "Gekaufte entfernen",
+    "enCarroA11y": "{{nombre}}, im Wagen",
+    "enCarroCantidadA11y": "{{nombre}}, {{cantidad}}, im Wagen"
+  }
+}

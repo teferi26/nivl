@@ -1,0 +1,27 @@
+{
+  "tarjeta": {
+    "nivel": "LEVEL",
+    "diasRacha": "TAGE SERIE",
+    "mideteConmigo": "MISS DICH MIT MIR",
+    "antes": "VORHER",
+    "despues": "NACHHER"
+  },
+  "hoja": {
+    "titulo": "TEILEN",
+    "previa": "Vorschau der Karte",
+    "formato": {
+      "stories": "STORY 9:16",
+      "post": "BEITRAG 4:5"
+    },
+    "mostrarAlias": "Meinen Alias zeigen",
+    "incluirFotos": "Meine Fortschrittsfotos einfügen",
+    "incluirFoto": "Foto einfügen",
+    "incluirTextoCoach": "Text vom Coach einfügen",
+    "mostrarPeso": "Gewicht zeigen",
+    "incluirInvitacion": "Meinen Einladungslink hinzufügen",
+    "aliasNoDisponible": "Dein Alias ist gerade nicht verfügbar.",
+    "aliasError": "Dein Alias konnte nicht geladen werden. Versuch es noch einmal.",
+    "abriendo": "WIRD GEÖFFNET…",
+    "compartir": "TEILEN"
+  }
+}

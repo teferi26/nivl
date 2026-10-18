@@ -1,0 +1,88 @@
+{
+  "cargando": "Wird geladen",
+  "sinComprobar": "Nicht geprüft",
+  "volverAComprobar": "Erneut prüfen",
+  "leerPolitica": "Datenschutzerklärung lesen",
+  "edad": {
+    "eyebrow": "Bevor du eintrittst",
+    "titulo": "Dein Alter",
+    "subtitulo": "NIVL ist für Personen ab {{n}} Jahren.",
+    "rotulo": "Mindestalter",
+    "meta": "{{n}} oder älter",
+    "cuerpo": "Bestätige, dass du das Mindestalter erreicht hast, um fortzufahren. Dein Geburtsdatum musst du nicht angeben.",
+    "casillaA11y": "Ich bin {{n}} Jahre oder älter",
+    "casilla": "Ich bin {{n}} Jahre oder älter.",
+    "noGuardado": "Nicht gespeichert",
+    "confirmar": "Bestätigen und weiter",
+    "noComprobada": "Deine Altersbestätigung konnte nicht geprüft werden.",
+    "sesionAbierta": "Angemeldet"
+  },
+  "salud": {
+    "eyebrow": "Optional",
+    "titulo": "Deine Gesundheit, mit Erlaubnis",
+    "comprobandoA11y": "Gesundheitsfreigabe wird geprüft",
+    "borradoPendiente": "Löschung ausstehend",
+    "registro": "Gesundheitsprotokoll",
+    "borradoCuerpo": "Deine Freigabe ist widerrufen und eine Löschung steht aus. Du kannst sie unter Profil abschließen.",
+    "cuerpo": "Bevor du dieses Protokoll öffnest, sieh dir an, welche Gesundheitsdaten NIVL speichert, und entscheide, ob du es aktivieren willst.",
+    "revisar": "Freigabe prüfen",
+    "irAPerfil": "Zum Profil",
+    "hojaEyebrow": "Gesundheitsfreigabe",
+    "aceptar": "Akzeptieren und Gesundheit aktivieren",
+    "politicaNoAbre": "Die Datenschutzerklärung konnte nicht geöffnet werden.",
+    "partes": {
+      "paraQue": "Wofür",
+      "quienDonde": "Wer und wo",
+      "opcional": "Es ist optional",
+      "retirarlo": "Widerrufen"
+    }
+  },
+  "saludAjustes": {
+    "seccion": "Gesundheit und Wohlbefinden",
+    "comprobando": "Freigabe wird geprüft…",
+    "noComprobado": "Die Gesundheitsfreigabe konnte nicht geprüft werden.",
+    "borradoPendiente": "Freigabe widerrufen. Die Löschung ist noch nicht abgeschlossen; versuch es erneut.",
+    "aceptado": "Du hast erlaubt, deine Gesundheitsdaten zu speichern und zu nutzen. Du kannst die Freigabe widerrufen und sie löschen.",
+    "sinPermiso": "Keine Freigabe. NIVL nutzt keine Gesundheitsprotokolle. Du kannst frühere Daten exportieren oder ihre Löschung verlangen.",
+    "revisar": "Gesundheitsfreigabe prüfen",
+    "terminarBorrado": "Löschung abschließen",
+    "retirar": "Gesundheit widerrufen und löschen",
+    "nota": "Export und Kontolöschung findest du weiter unten. Temporäre Adressen bereits geteilter Fotos können gültig bleiben, bis die Datei gelöscht wird oder sie ablaufen.",
+    "confirmarTitulo": "Freigabe widerrufen und löschen",
+    "confirmarBoton": "Widerrufen und löschen"
+  },
+  "avisoSalud": {
+    "error": "Die Gesundheitsfreigabe konnte nicht geprüft werden. Deine allgemeinen Ziele bleiben verfügbar.",
+    "desactivado": "Gesundheitsprotokolle sind deaktiviert. Die allgemeinen Ziele bleiben verfügbar."
+  },
+  "denuncia": {
+    "titulo": "Was stimmt mit dieser Antwort nicht?",
+    "enviar": "Meldung senden",
+    "cuerpo": "Gesendet werden der Grund und der Text dieser Antwort, damit das Team sie prüft. Sonst nichts aus deinem Gespräch.",
+    "motivo": "Grund",
+    "noHaSalido": "Hat nicht geklappt",
+    "correoAbierto": "Dein E-Mail-Programm wurde mit der Meldung geöffnet. Sende sie ab, damit sie geprüft wird.",
+    "correoNoAbre": "Das E-Mail-Programm konnte nicht geöffnet werden. Schreib an {{correo}} mit dem Grund der Meldung.",
+    "registrada": "Meldung erfasst. Das Team prüft diese Antwort.",
+    "motivos": {
+      "danino": "Kann Schaden anrichten",
+      "salud": "Gefährlicher Gesundheitsrat",
+      "dinero": "Gefährlicher Geldrat",
+      "incorrecto": "Falsche Information",
+      "ofensivo": "Beleidigend oder unangemessen",
+      "otro": "Anderer Grund"
+    },
+    "correo": {
+      "asunto": "Meldung einer KI-Antwort · NIVL",
+      "origen": "Herkunft: {{origen}}",
+      "motivo": "Grund: {{motivo}}",
+      "mensaje": "Nachricht: {{id}}",
+      "sinId": "ohne Kennung",
+      "contexto": "Kontext: {{contexto}}",
+      "fuente": {
+        "coach": "Coach",
+        "oraculo": "Orakel"
+      }
+    }
+  }
+}

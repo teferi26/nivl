@@ -1,0 +1,205 @@
+{
+  "compartido": {
+    "animo": "Stimmung",
+    "energia": "Energie",
+    "sueno": "Schlaf",
+    "sinRegistrar": "Nicht eingetragen",
+    "cambiosSinGuardar": "Ungespeicherte Änderungen",
+    "eliminarComprobante": "Beleg löschen"
+  },
+  "vista": {
+    "sinPuntuar": "Nicht bewertet",
+    "escalaA11y": "{{nombre}} {{n}} von 5: {{etiqueta}}",
+    "animo": {
+      "n1": "Am Boden",
+      "n2": "Gedrückt",
+      "n3": "Normal",
+      "n4": "Gut",
+      "n5": "Unaufhaltsam"
+    },
+    "energia": {
+      "n1": "Leer",
+      "n2": "Wenig",
+      "n3": "Normal",
+      "n4": "Hoch",
+      "n5": "Voll da"
+    },
+    "registrado": "Eingetragen",
+    "lineaSucio": "Was du geändert hast, ist noch nicht gespeichert.",
+    "lineaRegistrado": "Steht schon in deinem Archiv. Du kannst es jederzeit korrigieren.",
+    "lineaSinRegistrar": "Der Tagesabschluss. Sieben kurze Fragen; Belege werden automatisch gespeichert.",
+    "hastaXp": "bis zu +{{xp}} XP",
+    "barraA11y": "{{hechas}} von {{total}} Fragen beantwortet",
+    "respondidas": "{{hechas}} von {{total}} beantwortet",
+    "eyebrowEscribir": "Geist · {{relativo}}",
+    "titulo": "Tagebuch",
+    "archivo": "Archiv",
+    "eyebrowArchivo": "Geist · Archiv",
+    "subtituloArchivo": "Was du erlebt hast, Tag für Tag.",
+    "escribirDia": "Den Tag schreiben",
+    "diaAnterior": "Vorheriger Tag",
+    "diaSiguiente": "Nächster Tag",
+    "cargandoDia": "Tag wird geladen",
+    "sentir": {
+      "titulo": "Wie ich mich fühlte",
+      "pista": "Zwei Werte und vor allem ein Name."
+    },
+    "sueno": {
+      "titulo": "Wie ich schlief",
+      "pista": "Auf den Schlaf schaut der Coach zuerst."
+    },
+    "victorias": {
+      "titulo": "Was ich geschafft habe",
+      "pista": "Siege des Tages. Einer pro Zeile, so klein er auch ist.",
+      "sistema": "Was das System verzeichnet hat"
+    },
+    "vivido": {
+      "titulo": "Das Erlebte",
+      "etiqueta": "In deinen Worten",
+      "placeholder": "Was passiert ist, so wie du es erzählen würdest."
+    },
+    "leccion": {
+      "titulo": "Was ich gelernt habe",
+      "pista": "Eine Lektion. Was du anders machen würdest.",
+      "etiqueta": "Die Lektion",
+      "placeholder": "Nächstes Mal…"
+    },
+    "gratitud": {
+      "titulo": "Wofür ich dankbar bin",
+      "pista": "Eine Zeile. Optional, wie alles.",
+      "etiqueta": "Wem oder wofür",
+      "placeholder": "Eine Zeile"
+    },
+    "manana": {
+      "titulo": "Morgen, als Erstes",
+      "pista": "Eine einzige Sache, mit Uhrzeit, wenn möglich. Den ganzen Plan schreibt der Coach.",
+      "etiqueta": "Als Erstes",
+      "placeholder": "Um 8:00 …"
+    },
+    "comprobantes": {
+      "titulo": "Belege",
+      "pista": "Fotos aus dem Moment: der Beweis, dass du deine eigenen Regeln einhältst. Sie werden beim Aufnehmen gespeichert.",
+      "fotoA11y": "Tagebuchbeleg; gedrückt halten zum Löschen",
+      "anadirA11y": "Belegfoto mit der Kamera hinzufügen",
+      "notaWeb": "Tippe auf das x eines Fotos, um es zu löschen.",
+      "notaMovil": "Halte ein Foto gedrückt, um es zu löschen."
+    },
+    "noGuardado": "Nicht gespeichert",
+    "hayCambios": "Es gibt ungespeicherte Änderungen.",
+    "registrar": "Tag eintragen",
+    "registrarXp": "Tag eintragen · bis zu +{{xp}} XP"
+  },
+  "archivo": {
+    "cargando": "Dein Archiv wird geladen",
+    "vacioTitulo": "Dein Archiv beginnt heute",
+    "vacioCuerpo": "Jeder Tag, den du abschließt, landet hier: wie es dir ging, was du geschafft, was du gelernt hast. In einem Jahr wirst du es lesen wollen.",
+    "escribirHoy": "Heute schreiben",
+    "tendencia": "Trend",
+    "ultimas": "Letzte {{n}}",
+    "diasEscritos": "Geschriebene Tage",
+    "verMas": "Mehr Tage ansehen"
+  },
+  "cronica": {
+    "mision": "Mission abgeschlossen: {{mision}} (+{{xp}} XP)",
+    "subida": "LEVEL-AUFSTIEG → {{nivel}}",
+    "subidaVictoria": "Auf Level {{nivel}} aufgestiegen",
+    "penalizacion": "Strafe verhängt: −{{xp}} XP",
+    "objetivo": "Kampagnenziel: {{tarea}}",
+    "despejada": "Kampagne bezwungen: {{campana}}",
+    "gimnasio": "Gym-Einheit eingetragen (+{{xp}} XP)",
+    "gimnasioVictoria": "Gym-Einheit",
+    "record": "PERSÖNLICHER REKORD: {{ejercicio}} · {{peso}} kg",
+    "recordVictoria": "Rekord bei {{ejercicio}}: {{peso}} kg",
+    "piedraUsada": "Ein Schutzstein wurde für dich verbraucht",
+    "piedraForjada": "Schutzstein geschmiedet",
+    "vacio": "Keine Aktivität an diesem Tag: Das System hat nichts verzeichnet.",
+    "reclamarA11y": "{{linea}}. Tippen, um sie zu deinen Siegen hinzuzufügen",
+    "nota": "Tippe auf eine Zeile, um sie als Sieg zu beanspruchen."
+  },
+  "emociones": {
+    "empuja": "Was antreibt",
+    "pesa": "Was belastet",
+    "marcadaA11y": "{{emocion}}, markiert",
+    "sinMarcarA11y": "{{emocion}}, nicht markiert",
+    "tope": "Höchstens {{max}}. Entferne eine, um eine andere zu markieren.",
+    "pista": "Gib ihm einen Namen: Eine 3 sagt nichts, „frustriert“ schon."
+  },
+  "entrada": {
+    "animoA11y": "Stimmung {{n}} von 5",
+    "energiaA11y": "Energie {{n}} von 5",
+    "suenoA11y": "{{horas}} Stunden Schlaf",
+    "leerMenos": "Weniger lesen",
+    "leerMas": "Mehr lesen",
+    "ocultarFotos": "Fotos ausblenden",
+    "verFotos_one": "Das Foto ansehen",
+    "verFotos_other": "Die {{count}} Fotos ansehen",
+    "abrirA11y": "Tagebuch vom {{dia}} öffnen und bearbeiten",
+    "aprendi": "Gelernt",
+    "agradezco": "Dankbar für:",
+    "plan": "Plan:",
+    "manana": "Morgen:",
+    "soloNotas": "An diesem Tag hast du nur die Werte hinterlassen.",
+    "enBlanco": "Leerer Eintrag. Öffne ihn, um ihn zu vervollständigen.",
+    "comprobanteA11y": "Beleg von diesem Tag",
+    "masA11y": "{{rotulo}} vom {{dia}}"
+  },
+  "flashbacks": {
+    "titulo": "An diesem Datum",
+    "a11y": "{{titulo}}, {{dia}}. Tippen, um diesen Tag zu öffnen"
+  },
+  "tendencia": {
+    "animoSinDatosA11y": "Stimmung der letzten 7 Tage: zu wenig Daten, nötig sind {{min}}",
+    "animoA11y": "Durchschnittliche Stimmung der letzten 7 Tage: {{media}} von 5",
+    "suenoSinDatosA11y": "Durchschnittlicher Schlaf der letzten 7 Tage: zu wenig Daten",
+    "suenoA11y": "Durchschnittlicher Schlaf der letzten 7 Tage: {{media}} Stunden",
+    "racha": "Serie",
+    "rachaA11y_one": "Serie von {{count}} geschriebenen Tag",
+    "rachaA11y_other": "Serie von {{count}} geschriebenen Tagen",
+    "dias": "Tage",
+    "diasA11y_one": "{{count}} geschriebener Tag im Archiv",
+    "diasA11y_other": "{{count}} geschriebene Tage im Archiv",
+    "sinMedia": "Ein Durchschnitt braucht {{min}} Tage mit Daten pro Woche. Mit weniger wäre es eine Anekdote.",
+    "igual": "Die Stimmung ist gleich wie in den 7 Tagen davor.",
+    "sube": "Die Stimmung steigt um {{delta}} gegenüber den 7 Tagen davor.",
+    "baja": "Die Stimmung sinkt um {{delta}} gegenüber den 7 Tagen davor.",
+    "repite": "Was sich am meisten wiederholt · 14 Tage",
+    "emocionA11y_one": "{{emocion}}, {{count}} Tag",
+    "emocionA11y_other": "{{emocion}}, {{count}} Tage"
+  },
+  "pregunta": {
+    "a11y": "{{numeral}}. {{titulo}}",
+    "a11yRespondida": "{{numeral}}. {{titulo}}, beantwortet"
+  },
+  "sueno": {
+    "a11y": "Letzte Nacht geschlafene Stunden",
+    "menosA11y": "Eine halbe Stunde weniger Schlaf",
+    "masA11y": "Eine halbe Stunde mehr Schlaf",
+    "pistaVacia": "Nicht eingetragen. Tippe auf + oder −.",
+    "anoche": "Letzte Nacht.",
+    "quitarA11y": "Schlafstunden entfernen"
+  },
+  "victorias": {
+    "primera": "Etwas, das du heute gut gemacht hast",
+    "otra": "Noch ein Sieg",
+    "a11y": "Sieg {{n}}",
+    "quitarA11y": "Sieg {{n}} entfernen",
+    "anadir": "Sieg hinzufügen",
+    "tope": "Fünf von Hand sind schon ein großer Tag. Was das System verzeichnet hat, kannst du noch beanspruchen."
+  },
+  "hook": {
+    "cambiarDiaMensaje": "Wenn du den Tag wechselst, geht verloren, was du geschrieben hast.",
+    "descartar": "Verwerfen",
+    "seguirEscribiendo": "Weiterschreiben",
+    "camaraMensaje": "Das System braucht die Kamera für die Tagebuchbelege.",
+    "borrarFoto": "Dieses Foto aus dem Tagebuch löschen?",
+    "vacioConFotos": "Deine Fotos sind schon gespeichert. Um den Tag einzutragen, beantworte mindestens eine Frage.",
+    "vacio": "Noch nichts zum Eintragen. Beantworte mindestens eine Frage; die anderen können warten.",
+    "desglosePer": "auf PER für das Tagebuch",
+    "registradaTitulo": "Eintrag gespeichert",
+    "yaPagada": "Die Tagebuchmission war schon abgehakt und bezahlt.",
+    "registradaConLogro": "{{desglose}}\nErfolg: {{logros}}",
+    "atrasada": "Tag in deinem Archiv vervollständigt. Keine XP: Bezahlt wird nur der Tag selbst.",
+    "cambiosGuardados": "Änderungen gespeichert.",
+    "errorGuardado": "{{error}} Deine Antworten sind noch da."
+  }
+}

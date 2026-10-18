@@ -1,0 +1,103 @@
+{
+  "meta": {
+    "progreso": "Fortschritt bei {{titulo}}",
+    "detalleA11y": "Start bei {{inicio}}, aktuell {{actual}}, Ziel {{objetivo}} {{unidad}}",
+    "eliminarA11y": "Ziel {{titulo}} löschen",
+    "reclamar": "Einfordern",
+    "actualizar": "Aktualisieren",
+    "eliminar": "Ziel löschen"
+  },
+  "vista": {
+    "subtituloSinSalud": "Deine allgemeinen Ziele, auf einen Blick.",
+    "subtituloPrimerPesaje": "Trag dein erstes Wiegen ein: Das ist deine Startlinie.",
+    "subtituloPeso": "Letztes Wiegen: {{peso}} kg.",
+    "subtituloDelta": "Letztes Wiegen: {{peso}} kg ({{delta}} kg in {{n}} Wiegungen).",
+    "eyebrow": "Fortschritt",
+    "titulo": "Fortschritte",
+    "nuevaMeta": "Neues Ziel",
+    "cargando": "Deine Fortschritte werden geladen"
+  },
+  "franja": {
+    "peso": "Gewicht",
+    "pesoSinPesajes": "Gewicht: noch keine Wiegungen",
+    "pesoA11y": "Gewicht: {{peso}} Kilo",
+    "metas": "Ziele",
+    "logradas": "Erreicht"
+  },
+  "pesaje": {
+    "campo": "Gewicht heute (kg)",
+    "campoA11y": "Gewicht heute in Kilogramm",
+    "corregir": "Korrigieren",
+    "pesar": "Wiegen · bis zu +{{xp}} XP",
+    "curva": "Gewicht · {{n}} Wiegungen",
+    "invalido": "Gib dein Gewicht in kg ein, z. B. 78,4",
+    "corregido": "Das System korrigiert das heutige Wiegen. Es war schon bezahlt.",
+    "deModulo": "auf VIT für das Wiegen",
+    "topeDiario": "Notiert. Du hast heute das Tageslimit für XP schon erreicht.",
+    "misionPagada": "Notiert. Die heutige Mission war schon abgehakt und bezahlt.",
+    "toast": "Wiegen · +{{xp}} XP",
+    "toastAnuncio": "Wiegen eingetragen. {{mensaje}}",
+    "registrado": "Wiegen eingetragen"
+  },
+  "metas": {
+    "titulo": "Ziele",
+    "activas": "{{n}} aktiv",
+    "vacioTitulo": "Keine Ziele festgelegt",
+    "vacioCuerpo": "Ein Ziel ist eine Zahl mit Datum: zwölf Bücher lesen, vier Kurse abschließen. Gib deinem Vorhaben eine Zahl.",
+    "fijarPrimera": "Das erste festlegen"
+  },
+  "conseguidas": {
+    "titulo": "Erreicht",
+    "a11yFecha": "{{titulo}}, erreicht am {{fecha}}. {{valor}} {{unidad}}",
+    "a11y": "{{titulo}}, erreicht. {{valor}} {{unidad}}",
+    "fecha": "Erreicht am {{fecha}}"
+  },
+  "records": {
+    "titulo": "Persönliche Rekorde",
+    "vacioTitulo": "Noch keine Rekorde",
+    "vacioCuerpo": "Sie erscheinen hier, sobald du Gym-Einheiten mit Gewicht einträgst.",
+    "a11y": "{{ejercicio}}: {{peso}} Kilo. Verlauf ansehen",
+    "abierta": "Verlauf geöffnet",
+    "progresion": "Verlauf · {{ejercicio}}"
+  },
+  "hojaMeta": {
+    "titulo": "Welche Zahl willst du erreichen?",
+    "fijar": "Ziel festlegen",
+    "campoTitulo": "Titel",
+    "tituloEjemploSalud": "z. B. Bankdrücken 100 kg",
+    "tituloEjemplo": "z. B. Zwölf Bücher lesen",
+    "campoTituloA11y": "Titel des Ziels",
+    "seMide": "Gemessen mit",
+    "seMideA11y": "Wie das Ziel gemessen wird",
+    "metrica": {
+      "peso_corporal": "Körpergewicht",
+      "ejercicio": "Übung (PR)",
+      "libre": "Frei"
+    },
+    "medirConA11y": "Mit {{metrica}} messen",
+    "ejercicio": "Übung (exakter Name im Gym)",
+    "ejercicioEjemplo": "z. B. Bankdrücken",
+    "ejercicioA11y": "Name der Übung",
+    "inicial": "Startwert",
+    "objetivo": "Zielwert",
+    "objetivoA11y": "Zielwert",
+    "premio": "Beim Erreichen bis zu +{{xp}} XP (mit dem Tageslimit für Ziele).",
+    "incompleta": "Ziel unvollständig: Titel, Startwert und Zielwert (verschieden).",
+    "faltaEjercicio": "Die Übung fehlt: Schreib den EXAKTEN Namen der Übung aus dem Gym."
+  },
+  "hojaValor": {
+    "eyebrow": "Manueller Fortschritt",
+    "campo": "Aktueller Wert ({{unidad}})",
+    "campoA11y": "Aktueller Wert des Ziels",
+    "invalido": "Ungültiger Wert: Gib eine Zahl ein."
+  },
+  "reclamar": {
+    "titulo": "ZIEL ERREICHT",
+    "mensaje": "„{{titulo}}“: bis zu +{{xp}} XP, wenn du heute das Limit für Ziele noch nicht erreicht hast.",
+    "aunNo": "Noch nicht",
+    "toast": "Ziel erreicht · +{{xp}} XP",
+    "toastAnuncio": "Ziel erreicht. „{{titulo}}“: +{{xp}} XP auf AGI.",
+    "conseguida": "Ziel erreicht",
+    "sinPremio": "„{{titulo}}“ gilt als erreicht. Diese Belohnung zählt heute nicht: Sie wurde schon kassiert oder du hast das Tageslimit erreicht."
+  }
+}

@@ -105,9 +105,42 @@ import ptResumen from './pt/resumen.json';
 import ptShare from './pt/share.json';
 import ptVoz from './pt/voz.json';
 import ptAvisos from './pt/avisos.json';
+import deComun from './de/comun.json';
+import deRaiz from './de/raiz.json';
+import deUi from './de/ui.json';
+import deArena from './de/arena.json';
+import deAcceso from './de/acceso.json';
+import deAgenda from './de/agenda.json';
+import deAmigos from './de/amigos.json';
+import deAvances from './de/avances.json';
+import deCampanas from './de/campanas.json';
+import deCardio from './de/cardio.json';
+import deCelebracion from './de/celebracion.json';
+import deCoach from './de/coach.json';
+import deCompra from './de/compra.json';
+import deContrato from './de/contrato.json';
+import deCreador from './de/creador.json';
+import deDiario from './de/diario.json';
+import deDieta from './de/dieta.json';
+import deEconomia from './de/economia.json';
+import deFotos from './de/fotos.json';
+import deGym from './de/gym.json';
+import deHabitos from './de/habitos.json';
+import deHoy from './de/hoy.json';
+import deInforme from './de/informe.json';
+import deMemoria from './de/memoria.json';
+import deNutricion from './de/nutricion.json';
+import deOnboarding from './de/onboarding.json';
+import deOraculo from './de/oraculo.json';
+import dePerfil from './de/perfil.json';
+import dePuertas from './de/puertas.json';
+import deResumen from './de/resumen.json';
+import deShare from './de/share.json';
+import deVoz from './de/voz.json';
+import deAvisos from './de/avisos.json';
 
 /** Los idiomas con interfaz traducida (el español no está: es la base). */
-export const IDIOMAS_TRADUCIDOS = ['en', 'fr', 'pt'] as const;
+export const IDIOMAS_TRADUCIDOS = ['en', 'fr', 'pt', 'de'] as const;
 export type IdiomaTraducido = (typeof IDIOMAS_TRADUCIDOS)[number];
 
 type Catalogo = { [K in keyof RecursosEs]: unknown };
@@ -217,5 +250,40 @@ export const RECURSOS_LOCALES: Record<IdiomaTraducido, Catalogo> = {
     share: ptShare,
     voz: ptVoz,
     avisos: ptAvisos,
+  },
+  de: {
+    comun: deComun,
+    raiz: deRaiz,
+    ui: deUi,
+    arena: deArena,
+    acceso: deAcceso,
+    agenda: deAgenda,
+    amigos: deAmigos,
+    avances: deAvances,
+    campanas: deCampanas,
+    cardio: deCardio,
+    celebracion: deCelebracion,
+    coach: deCoach,
+    compra: deCompra,
+    contrato: deContrato,
+    creador: deCreador,
+    diario: deDiario,
+    dieta: deDieta,
+    economia: deEconomia,
+    fotos: deFotos,
+    gym: deGym,
+    habitos: deHabitos,
+    hoy: deHoy,
+    informe: deInforme,
+    memoria: deMemoria,
+    nutricion: deNutricion,
+    onboarding: deOnboarding,
+    oraculo: deOraculo,
+    perfil: dePerfil,
+    puertas: dePuertas,
+    resumen: deResumen,
+    share: deShare,
+    voz: deVoz,
+    avisos: deAvisos,
   },
 };
