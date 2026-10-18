@@ -1,0 +1,136 @@
+{
+  "demo": {
+    "eyebrow": "IRON · Prototipo del motor",
+    "titulo": "Ejercicios",
+    "subtitulo": "Cinco ejercicios dibujados por el motor propio. Solo en desarrollo.",
+    "elegir": "Ejercicio",
+    "sustituir": "Sustituir",
+    "sustitutoElegido": "Sustituto: {{nombre}}",
+    "sustitutoGrupo": "Mismo grupo: {{nombre}}",
+    "sinSustituto": "Aún no hay otro ejercicio de este grupo en el catálogo de prueba.",
+    "musculos": "Músculos trabajados",
+    "principales": "Principales",
+    "secundarios": "Secundarios",
+    "material": "Material",
+    "tecnica": "Técnica",
+    "errores": "Errores comunes",
+    "mapaDelante": "Por delante",
+    "mapaDetras": "Por detrás",
+    "pausar": "Pausar",
+    "seguir": "Seguir",
+    "animacion": "Animación de {{nombre}}",
+    "mapa": "Mapa muscular de {{nombre}}"
+  },
+  "musculo": {
+    "pectoral": "Pectoral",
+    "deltoides_anterior": "Deltoides anterior",
+    "deltoides_lateral": "Deltoides lateral",
+    "deltoides_posterior": "Deltoides posterior",
+    "biceps": "Bíceps",
+    "triceps": "Tríceps",
+    "antebrazo": "Antebrazo",
+    "dorsal": "Dorsal ancho",
+    "trapecio": "Trapecio",
+    "espalda_alta": "Romboides y trapecio medio",
+    "lumbares": "Lumbares",
+    "abdomen": "Recto abdominal",
+    "oblicuos": "Oblicuos",
+    "gluteo": "Glúteo",
+    "cuadriceps": "Cuádriceps",
+    "isquiotibiales": "Isquiotibiales",
+    "aductores": "Aductores",
+    "gemelos": "Gemelos"
+  },
+  "grupo": {
+    "pecho": "Pecho",
+    "espalda": "Espalda",
+    "hombro": "Hombro",
+    "brazo": "Brazo",
+    "pierna": "Pierna",
+    "core": "Core"
+  },
+  "material": {
+    "barra": "Barra",
+    "mancuerna": "Mancuerna",
+    "banco": "Banco",
+    "peso_corporal": "Peso corporal",
+    "polea": "Polea",
+    "maquina": "Máquina",
+    "kettlebell": "Kettlebell",
+    "banda": "Banda elástica"
+  },
+  "nivel": {
+    "principiante": "Principiante",
+    "intermedio": "Intermedio",
+    "avanzado": "Avanzado"
+  },
+  "ejercicios": {
+    "sentadilla-barra": {
+      "nombre": "Sentadilla con barra",
+      "cues": {
+        "pie": "La barra baja y sube sobre el medio del pie.",
+        "rodillas": "Rodillas en la línea de las puntas de los pies.",
+        "profundidad": "Baja hasta que la cadera pase la rodilla, si llegas con la espalda recta.",
+        "espalda": "Pecho arriba y espalda neutra todo el recorrido."
+      },
+      "errores": {
+        "talones": "Levantar los talones.",
+        "lumbar": "Redondear la zona lumbar abajo.",
+        "rodillasDentro": "Dejar que las rodillas se cierren al subir."
+      }
+    },
+    "press-banca": {
+      "nombre": "Press de banca",
+      "cues": {
+        "apoyos": "Pies planos en el suelo; glúteos y espalda alta en el banco.",
+        "escapulas": "Junta y baja las escápulas antes de sacar la barra.",
+        "trayectoria": "Baja a la parte baja del pecho con los antebrazos verticales.",
+        "seguridad": "Con carga alta, usa topes o alguien que te asista."
+      },
+      "errores": {
+        "codos": "Abrir los codos a 90° del tronco.",
+        "rebote": "Rebotar la barra en el pecho.",
+        "gluteos": "Despegar los glúteos del banco."
+      }
+    },
+    "remo-mancuerna": {
+      "nombre": "Remo con mancuerna",
+      "cues": {
+        "apoyo": "Mano y rodilla en el banco; el otro pie firme en el suelo.",
+        "codo": "Lleva el codo hacia la cadera, pegado al cuerpo.",
+        "tronco": "Espalda plana: el tronco no gira al tirar."
+      },
+      "errores": {
+        "giro": "Girar el tronco para subir más peso.",
+        "biceps": "Tirar con el bíceps en lugar del codo.",
+        "cuello": "Levantar la cabeza y arquear el cuello."
+      }
+    },
+    "curl-biceps-mancuerna": {
+      "nombre": "Curl de bíceps con mancuernas",
+      "cues": {
+        "codos": "Codos quietos junto al cuerpo.",
+        "recorrido": "Recorrido completo: abajo casi estirado, arriba cerrado.",
+        "bajada": "Baja despacio, en unos dos segundos."
+      },
+      "errores": {
+        "balanceo": "Balancear el tronco para subir el peso.",
+        "codosDelante": "Adelantar los codos al subir.",
+        "medioRecorrido": "Quedarse a medio recorrido abajo."
+      }
+    },
+    "plancha": {
+      "nombre": "Plancha",
+      "cues": {
+        "codos": "Codos justo debajo de los hombros.",
+        "linea": "Hombros, cadera y tobillos en línea recta.",
+        "abdomen": "Aprieta abdomen y glúteos sin dejar de respirar."
+      },
+      "errores": {
+        "caderaCaida": "Dejar caer la cadera.",
+        "caderaAlta": "Subir la cadera en pico.",
+        "apnea": "Aguantar la respiración."
+      }
+    }
+  }
+}

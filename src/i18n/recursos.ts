@@ -47,6 +47,8 @@ import resumen from './es/resumen.json';
 import share from './es/share.json';
 import voz from './es/voz.json';
 import avisos from './es/avisos.json';
+// Modos F1 (motor de IRON): solo la galería de desarrollo /kit/iron por ahora.
+import iron from './es/iron.json';
 
 /** Los catálogos en español: la fuente de verdad de todas las claves. */
 export const RECURSOS_ES = {
@@ -83,6 +85,7 @@ export const RECURSOS_ES = {
   share,
   voz,
   avisos,
+  iron,
 };
 
 export type RecursosEs = typeof RECURSOS_ES;
