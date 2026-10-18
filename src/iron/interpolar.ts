@@ -85,6 +85,7 @@ export function angulosDePose(ej: Pick<Ejercicio, 'ancla'>, pose: Pose): Angulos
     lejos: pose.lejos ?? pose.cerca,
     angulo: pose.angulo ?? ej.ancla.angulo,
     escorzo: pose.escorzo ?? {},
+    muneca: pose.muneca,
   };
 }
 
@@ -112,7 +113,10 @@ export function angulosEn(ej: Ejercicio, ms: number): AngulosPose {
     for (let j = 0; j < poses.length; j++) if (poses[j].escorzo?.[s] !== undefined) usado = true;
     if (usado) escorzo[s] = canal(poses, ciclo, k, t, (p) => p.escorzo?.[s] ?? 1);
   }
+  let conMuneca = false;
+  for (let j = 0; j < poses.length; j++) if (poses[j].muneca !== undefined) conMuneca = true;
   return {
+    muneca: conMuneca ? canal(poses, ciclo, k, t, (p) => p.muneca ?? 0) : undefined,
     cuello: canal(poses, ciclo, k, t, (p) => p.cuello),
     cerca: cerca as unknown as Extremidades,
     lejos: lejos as unknown as Extremidades,

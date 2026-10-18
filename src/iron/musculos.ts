@@ -59,6 +59,9 @@ export const MUSCULOS: readonly MusculoId[] = [
   'aductores',
   'gemelos',
   'tibial',
+  // brazos
+  'braquial',
+  'braquiorradial',
 ];
 
 export const GRUPO_DE_MUSCULO: Readonly<Record<MusculoId, GrupoMuscular>> = {
@@ -81,6 +84,9 @@ export const GRUPO_DE_MUSCULO: Readonly<Record<MusculoId, GrupoMuscular>> = {
   aductores: 'pierna',
   gemelos: 'pierna',
   tibial: 'pierna',
+  // brazos
+  braquial: 'brazo',
+  braquiorradial: 'brazo',
 };
 
 export const GRUPOS: readonly GrupoMuscular[] = ['pecho', 'espalda', 'hombro', 'brazo', 'pierna', 'core'];
@@ -116,6 +122,11 @@ export const FORMAS_LATERAL: Readonly<Record<MusculoId, readonly FormaLateral[]>
   aductores: [{ seg: 'muslo', t0: 0.05, t1: 0.55, cara: 'medio', ancho: 0.5 }],
   gemelos: [{ seg: 'pierna', t0: 0.03, t1: 0.64, cara: 'post', ancho: 0.95, pico: 0.35 }],
   tibial: [{ seg: 'pierna', t0: 0.05, t1: 0.82, cara: 'ant', ancho: 0.62, pico: 0.3 }],
+  // brazos
+  // Braquial: bajo el bíceps, asoma entre bíceps y tríceps en la mitad distal del brazo.
+  braquial: [{ seg: 'brazo', t0: 0.46, t1: 1.0, cara: 'medio', ancho: 0.62, pico: 0.62 }],
+  // Braquiorradial: el borde del antebrazo del lado del pulgar, grueso junto al codo.
+  braquiorradial: [{ seg: 'antebrazo', t0: -0.08, t1: 0.66, cara: 'ant', ancho: 0.5, pico: 0.24 }],
 };
 
 const SEIS: readonly (readonly [number, number])[] = [
@@ -160,4 +171,13 @@ export const FORMAS_FRONTAL: Readonly<Record<MusculoId, readonly FormaFrontal[]>
     { cara: 'ant', seg: 'pierna', t0: 0.1, t1: 0.5, centro: -0.62, ancho: 0.32 },
   ],
   tibial: [{ cara: 'ant', seg: 'pierna', t0: 0.05, t1: 0.8, centro: 0.26, ancho: 0.5, pico: 0.3 }],
+  // brazos
+  braquial: [
+    { cara: 'ant', seg: 'brazo', t0: 0.5, t1: 0.96, centro: 0.66, ancho: 0.34, pico: 0.6 },
+    { cara: 'post', seg: 'brazo', t0: 0.55, t1: 0.95, centro: 0.7, ancho: 0.26, pico: 0.6 },
+  ],
+  braquiorradial: [
+    { cara: 'ant', seg: 'antebrazo', t0: -0.06, t1: 0.6, centro: 0.62, ancho: 0.38, pico: 0.25 },
+    { cara: 'post', seg: 'antebrazo', t0: -0.04, t1: 0.5, centro: 0.66, ancho: 0.3, pico: 0.25 },
+  ],
 };

@@ -2,20 +2,41 @@
 // las reglas que el tipo `Ejercicio` no puede expresar solo.
 import fs from 'fs';
 import path from 'path';
-import iron from '@/i18n/es/iron.json';
+import { RECURSOS_ES } from '@/i18n/recursos';
 import { dibujar, ranuras } from '../dibujo';
 import { EJERCICIOS, ejercicioPorId } from '../ejercicios';
 import { FORMAS_FRONTAL, FORMAS_LATERAL, GRUPO_DE_MUSCULO, MUSCULOS } from '../musculos';
 import { ARTICULACIONES, type Ejercicio, type Material, type Pose } from '../tipos';
 
 const DIR = path.resolve(__dirname, '..', 'ejercicios');
-const MATERIALES: Material[] = ['barra', 'mancuerna', 'banco', 'peso_corporal', 'polea', 'maquina', 'kettlebell', 'banda'];
+const MATERIALES: Material[] = [
+  'barra',
+  'mancuerna',
+  'banco',
+  'peso_corporal',
+  'polea',
+  'maquina',
+  'kettlebell',
+  'banda',
+  // brazos
+  'barra_z',
+];
 
-/** Resuelve «iron:a.b.c» en el catálogo español; undefined si no existe. */
+/** Archivos de ejercicios: los de la carpeta y los de cada grupo (fase 2), sin índices ni piezas comunes. */
+function archivosDeEjercicios(dir: string): string[] {
+  const out: string[] = [];
+  for (const f of fs.readdirSync(dir, { withFileTypes: true })) {
+    if (f.isDirectory()) out.push(...archivosDeEjercicios(path.join(dir, f.name)));
+    else if (f.name.endsWith('.ts') && f.name !== 'index.ts' && f.name !== 'comun.ts') out.push(f.name.slice(0, -3));
+  }
+  return out;
+}
+
+/** Resuelve «iron:a.b.c» (o «iron-<grupo>:a.b.c») en el catálogo español; undefined si no existe. */
 function texto(clave: string): string | undefined {
   const [ns, ruta] = clave.split(':');
-  if (ns !== 'iron' || !ruta) return undefined;
-  let nodo: unknown = iron;
+  if (!/^iron(-[a-z]+)?$/.test(ns) || !ruta) return undefined;
+  let nodo: unknown = (RECURSOS_ES as Record<string, unknown>)[ns];
   for (const parte of ruta.split('.')) {
     if (!nodo || typeof nodo !== 'object') return undefined;
     nodo = (nodo as Record<string, unknown>)[parte];
@@ -25,11 +46,7 @@ function texto(clave: string): string | undefined {
 
 describe('catálogo', () => {
   it('cada archivo de ejercicios/ está registrado, con id = nombre del archivo', () => {
-    const archivos = fs
-      .readdirSync(DIR)
-      .filter((f) => f.endsWith('.ts') && f !== 'index.ts')
-      .map((f) => f.slice(0, -3))
-      .sort();
+    const archivos = archivosDeEjercicios(DIR).sort();
     expect(EJERCICIOS.map((e) => e.id).sort()).toEqual(archivos);
     for (const id of archivos) expect(ejercicioPorId(id)?.id).toBe(id);
   });
@@ -40,8 +57,8 @@ describe('catálogo', () => {
     for (const id of ids) expect(id).toMatch(/^[a-z0-9]+(-[a-z0-9]+)*$/);
   });
 
-  it('el prototipo tiene los 5 ejercicios pedidos', () => {
-    expect(EJERCICIOS.map((e) => e.id)).toEqual([
+  it('el prototipo tiene los 5 ejercicios pedidos (los primeros del catálogo)', () => {
+    expect(EJERCICIOS.slice(0, 5).map((e) => e.id)).toEqual([
       'sentadilla-barra',
       'press-banca',
       'remo-mancuerna',
@@ -52,10 +69,11 @@ describe('catálogo', () => {
 });
 
 describe.each(EJERCICIOS.map((e) => [e.id, e] as const))('%s', (_id, ej: Ejercicio) => {
-  it('textos: nombre, cues y errores existen en es/iron.json, sin raya ni guion medio', () => {
+  it('textos: nombre, cues y errores existen en es/iron.json (o es/iron-<grupo>.json), sin raya ni guion medio', () => {
     const claves = [ej.nombre, ...ej.cues, ...ej.errores];
+    const ns = ej.nombre.split(':')[0];
     for (const c of claves) {
-      expect(c.startsWith(`iron:ejercicios.${ej.id}.`)).toBe(true);
+      expect(c.startsWith(`${ns}:ejercicios.${ej.id}.`)).toBe(true);
       const t = texto(c);
       expect(t).toBeTruthy();
       expect(t).not.toMatch(/[—–]/);
@@ -81,7 +99,7 @@ describe.each(EJERCICIOS.map((e) => [e.id, e] as const))('%s', (_id, ej: Ejercic
   it('material válido y no vacío', () => {
     expect(ej.material.length).toBeGreaterThan(0);
     for (const m of ej.material) expect(MATERIALES).toContain(m);
-    if (ej.carga?.tipo === 'barra') expect(ej.material).toContain('barra');
+    if (ej.carga?.tipo === 'barra') expect(ej.material).toContain(ej.carga.forma === 'z' ? 'barra_z' : 'barra');
     if (ej.carga?.tipo === 'mancuerna') expect(ej.material).toContain('mancuerna');
     if (ej.escenario?.some((e) => e.tipo === 'banco')) expect(ej.material).toContain('banco');
   });
@@ -167,7 +185,7 @@ describe.each(EJERCICIOS.map((e) => [e.id, e] as const))('%s', (_id, ej: Ejercic
   });
 
   it('isométrico = todas las poses iguales; dinámico = alguna distinta', () => {
-    const firma = (p: Pose) => JSON.stringify({ c: p.cerca, l: p.lejos, n: p.cuello, e: p.escorzo, a: p.angulo });
+    const firma = (p: Pose) => JSON.stringify({ c: p.cerca, l: p.lejos, n: p.cuello, e: p.escorzo, a: p.angulo, m: p.muneca });
     const distintas = new Set(ej.poses.map(firma)).size;
     if (ej.tipo === 'isometrico') expect(distintas).toBe(1);
     else expect(distintas).toBeGreaterThan(1);

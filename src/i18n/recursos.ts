@@ -56,6 +56,9 @@ import iron from './es/iron.json';
 // QA F1 (M4): los textos de src/lib que se ven (game, kinds y la oferta de proplans).
 import juego from './es/juego.json';
 import oferta from './es/oferta.json';
+// IRON fase 2: un catálogo de ejercicios por grupo.
+// brazos
+import ironBrazos from './es/iron-brazos.json';
 
 /** Los catálogos en español: la fuente de verdad de todas las claves. */
 export const RECURSOS_ES = {
@@ -100,6 +103,8 @@ export const RECURSOS_ES = {
   // QA F1: tablas de juego y perfiles de uso (game.ts, kinds.ts) y la oferta (proplans.ts).
   juego,
   oferta,
+  // brazos
+  'iron-brazos': ironBrazos,
 };
 
 export type RecursosEs = typeof RECURSOS_ES;

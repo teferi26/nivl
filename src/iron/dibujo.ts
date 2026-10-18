@@ -17,6 +17,7 @@
 import { construirEsqueleto, dir, LARGO, type Esqueleto, type Punto } from './esqueleto';
 import { angulosDePose, angulosEn } from './interpolar';
 import { FORMAS_FRONTAL, FORMAS_LATERAL, MUSCULOS, type BaseSegmento } from './musculos';
+import { tramoBarraZ } from './material/barra-z';
 import type { Ancla, Carga, Ejercicio, Escenario, MusculoId, Pose, SegmentoId, Vista } from './tipos';
 
 export type EstiloCapa =
@@ -520,7 +521,10 @@ function cargaLado(e: Esqueleto, carga: Carga | undefined, lado: 'c' | 'l', vist
   if (carga.tipo === 'mancuerna') {
     if (carga.lados.indexOf(lado === 'c' ? 'cerca' : 'lejos') < 0) return '';
     const c = lado === 'c' ? e.p.agarre_c : e.p.agarre_l;
-    const ant = dir(e.a[lado === 'c' ? 'antebrazo_c' : 'antebrazo_l']);
+    // El eje de la mano: de la muñeca al puño (sigue al antebrazo salvo que la muñeca gire).
+    const m = lado === 'c' ? e.p.muneca_c : e.p.muneca_l;
+    const lm = Math.hypot(c.x - m.x, c.y - m.y) || 1;
+    const ant = { x: (c.x - m.x) / lm, y: (c.y - m.y) / lm };
     const eje = { x: -ant.y, y: ant.x };
     // En la vista frontal la mancuerna se ve al revés que en la lateral.
     const deLado = vista === 'lateral' ? carga.orientacion === 'lado' : carga.orientacion === 'punta';
@@ -547,7 +551,8 @@ function cargaLado(e: Esqueleto, carga: Carga | undefined, lado: 'c' | 'l', vist
   const ey = carga.eje.y;
   const largo = Math.hypot(ex, ey);
   const u = { x: ex / largo, y: ey / largo };
-  return rect(c.x + ex / 2, c.y + ey / 2, largo + 3, 1.5, u) + disco({ x: c.x + ex, y: c.y + ey }, r);
+  const tramo = carga.forma === 'z' ? tramoBarraZ(c, carga.eje) : rect(c.x + ex / 2, c.y + ey / 2, largo + 3, 1.5, u);
+  return tramo + disco({ x: c.x + ex, y: c.y + ey }, r);
 }
 
 /** Dónde está el centro de la barra (para los tests de trayectoria). */
