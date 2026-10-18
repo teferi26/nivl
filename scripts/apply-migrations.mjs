@@ -67,6 +67,9 @@ async function sql(query) {
 
 // Cada migración se reconoce por un objeto que solo ella crea.
 const HUELLAS = {
+  '0072': `coalesce(obj_description(to_regprocedure('public.es_admin()'), 'pg_proc') like '%nivl:admin-0072%', false) and coalesce(obj_description(to_regprocedure('public.export_my_data()'), 'pg_proc') like '%nivl:export-analitica-0072%', false)`,
+  '0071': `coalesce(obj_description(to_regclass('public.app_feedback'), 'pg_class') like '%nivl:app-feedback-0071%', false)`,
+  '0070': `coalesce(obj_description(to_regprocedure('public.registrar_evento(text,text,jsonb,text,text,timestamptz)'), 'pg_proc') like '%nivl:funnel-0070%', false)`,
   '0065': `coalesce(obj_description(to_regprocedure('public.seal_letter(uuid,text,date,boolean)'), 'pg_proc') like '%nivl:idempotent-letter-seal-0065%', false)`,
   '0064': `coalesce(obj_description(to_regprocedure('public.claim_store_erasure_cleanup(integer)'), 'pg_proc') like '%nivl:final-horizon-delete-0064%', false) and coalesce(obj_description(to_regprocedure('public.export_my_data()'), 'pg_proc') like '%nivl:store-cleanup-export-0064%', false)`,
   '0063': `coalesce(obj_description(to_regprocedure('public.store_account_active(uuid)'), 'pg_proc') like '%nivl:store-late-identities-0063%', false)`,
