@@ -59,6 +59,18 @@ create trigger app_feedback_tope
   before insert on public.app_feedback
   for each row execute function public.app_feedback_tope();
 
+-- Flag (apagado): la hoja de opinión no sale hasta encenderlo. La 0067 crea
+-- app_config; si aún no existe, no se siembra.
+do $$
+begin
+  if to_regclass('public.app_config') is not null then
+    insert into public.app_config (key, value, public)
+    values ('opinion_activa', 'false'::jsonb, true)
+    on conflict (key) do nothing;
+  end if;
+end
+$$;
+
 comment on table public.app_feedback is 'Opinión interna (gusta / cambiaria). nivl:app-feedback-0071';
 
 commit;

@@ -5,6 +5,7 @@
 import { CompletarSheet } from '@/components/CompletarSheet';
 import { HoyVista } from '@/components/hoy/HoyVista';
 import { useHoy } from '@/components/hoy/useHoy';
+import { HojaOpinion } from '@/components/opinion/HojaOpinion';
 
 export default function Hoy() {
   const { vista, hojas } = useHoy();
@@ -12,6 +13,7 @@ export default function Hoy() {
     <>
       <HoyVista {...vista} />
       <CompletarSheet quest={hojas.quest} onElegir={hojas.onElegir} onClose={hojas.onClose} />
+      <HojaOpinion {...hojas.opinion} />
     </>
   );
 }

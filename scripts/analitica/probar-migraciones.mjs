@@ -125,3 +125,4 @@ ok(r.rows.every((y) => y.install_id !== INST), 'borrado de cuenta se lleva la in
 ok(r.rows.length === 2, 'otras instalaciones intactas');
 r = await q(`select count(*)::int n from app_feedback`); ok(r.rows[0].n === 0, 'opiniones borradas');
 r = await q(`select value from app_config where key='analitica_activa'`); ok(r.rows[0].value === false, 'flag sembrado apagado');
+r = await q(`select value from app_config where key='opinion_activa'`); ok(r.rows[0].value === false, 'flag de opinión sembrado apagado');

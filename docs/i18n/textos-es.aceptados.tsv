@@ -1074,3 +1074,13 @@ voz	+	Racha de {} días
 avisos	-	No se pudieron programar los avisos del sistema.
 avisos	+	Recordatorio
 avisos	+	Sigue pendiente.
+# Modos F1 (analítica): la hoja de opinión interna de Hoy («¿Qué te gusta? ¿Qué cambiarías?», src/components/opinion/HojaOpinion.tsx), detrás del flag opinion_activa. Textos nuevos; «Cerrar» y «Ahora no» salen de comun.
+hoy	+	El sistema pregunta
+hoy	+	¿Qué te gusta? ¿Qué cambiarías?
+hoy	+	Dos líneas sinceras. Las lee quien construye NIVL. No cambia nada de tu cuenta.
+hoy	+	Lo que te gusta
+hoy	+	Lo que cambiarías
+hoy	+	Puedes dejar uno en blanco.
+hoy	+	Enviar
+hoy	+	Escribe al menos una de las dos.
+hoy	+	Recibido. Lo que has escrito llega tal cual.

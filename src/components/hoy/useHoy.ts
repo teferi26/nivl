@@ -12,6 +12,7 @@ import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AccessibilityInfo, Linking, Platform } from 'react-native';
 import { useCelebracion } from '@/components/celebracion/contexto';
+import { usePeticiones } from '@/components/opinion/usePeticiones';
 import type { ModoCompletar } from '@/components/CompletarSheet';
 import { prepararDatosSemana, tarjetaDeSemana } from '@/components/ShareCardSemana';
 import { useAlVolver } from '@/components/ui';
@@ -122,6 +123,9 @@ export function useHoy() {
   // `avisarEnCola`: el aviso del sistema que no bloquea (a diferencia del
   // Alert de confirmar, que en iOS se queda encima de una ceremonia).
   const { celebrar, compartir, avisar: avisarEnCola } = useCelebracion();
+  // Valoración de la tienda u opinión interna tras un momento bueno (día 2-3,
+  // detrás de flags; docs/modos/F1-analitica.md). Espera a que acabe la ceremonia.
+  const peticiones = usePeticiones();
   // Logros conocidos (de ellos sale el rango de «antes» de cada acción).
   const logrosRef = useRef<Set<string> | null>(null);
   const [plan, setPlan] = useState<PlanConBloques | null>(null);
@@ -497,6 +501,8 @@ export function useHoy() {
 
       // RET-03: esta misión abre la recuperación. Es el momento que motiva:
       // se dice en pantalla y al lector de pantalla.
+      if (res.awarded) peticiones.alMomentoPositivo(res.leveledUp ? 'nivel' : 'mision');
+
       const abiertaAntes = recuperacionDesbloqueada(todayQuests, new Set(Object.keys(antes)), today);
       if (!quest.is_penalty && !abiertaAntes && todayQuests.some((q) => q.is_penalty && !despues[q.id])) {
         setAvisoRecuperacion(true);
@@ -705,6 +711,6 @@ export function useHoy() {
 
   return {
     vista,
-    hojas: { quest: sheetQuest, onElegir: elegirEnHoja, onClose: cerrarHoja },
+    hojas: { quest: sheetQuest, onElegir: elegirEnHoja, onClose: cerrarHoja, opinion: peticiones.hoja },
   };
 }
