@@ -13,7 +13,7 @@ import { Screen } from '@/components/ui';
 import type { EstadoAvisos } from '@/lib/notifications';
 import { estadoDe, type RangoId } from '@/lib/progression';
 import type { Profile } from '@/lib/types';
-import { HojaBorrar, HojaCodigo, HojaIdioma, HojaPausa } from './HojasPerfil';
+import { HojaBorrar, HojaCodigo, HojaIdioma, HojaIdiomaApp, HojaPausa } from './HojasPerfil';
 import { PerfilAjustes, type PerfilAjustesProps } from './PerfilAjustes';
 import { PerfilVista, type LogroVitrina, type PerfilAcciones, type PerfilDatos } from './PerfilVista';
 
@@ -305,6 +305,20 @@ export const DEMO: DemoPantalla | null = {
             datos={datos}
             ajustes={ajustesDemo(datos, { idioma: { preferencia: 'auto', coach: 'en' } })}
             hoja={<HojaIdioma abierta cerrar={nada} preferencia="auto" dispositivo="en-US" elegir={nada} />}
+          />
+        );
+      },
+    },
+    {
+      id: 'ajustes-idioma-app',
+      titulo: 'Ajustes: idioma de la app (Modos F1, flag idiomas_activos)',
+      render: () => {
+        const datos = datosYo();
+        return (
+          <Pantalla
+            datos={datos}
+            ajustes={ajustesDemo(datos, { idiomasApp: true, idioma: { preferencia: 'en', coach: 'en' } })}
+            hoja={<HojaIdiomaApp activa abierta cerrar={nada} valor="en" elegir={nada} />}
           />
         );
       },

@@ -1,0 +1,52 @@
+{
+  "derivar": {
+    "listo": "Ready to be yours",
+    "faltan_one": "{{count}} day to go",
+    "faltan_other": "{{count}} days to go",
+    "resumen_one": "{{titulo}}. {{count}}-day streak out of {{objetivo}}. {{restantes}}.",
+    "resumen_other": "{{titulo}}. {{count}}-day streak out of {{objetivo}}. {{restantes}}.",
+    "subtitulo": "After {{dias}} days in a row, a habit is yours. Each one keeps its own streak."
+  },
+  "vista": {
+    "todosLosDias": "every day",
+    "ningunDia": "no days",
+    "listaY": "{{lista}} and {{ultimo}}",
+    "semanaA11y": "Due {{dias}}",
+    "barraA11y": "{{titulo}} streak: {{racha}} of {{objetivo}} days",
+    "losaA11y": "{{resumen}} Required {{dias}}. Tap to edit.",
+    "forjado": "Forged",
+    "darloPorAdquirido": "Mark as acquired",
+    "cargandoA11y": "Loading your habits",
+    "eyebrow": "Consistency",
+    "nuevoHabito": "New habit",
+    "enForja": "In the forge",
+    "mejorRacha": "Best streak",
+    "mejorRachaA11y": "Best streak: {{dias}} days",
+    "listos": "Ready",
+    "tuyos": "Yours",
+    "tuyosA11y": "Habits that are yours: {{n}}",
+    "reglasHoy": "Contract rules · today",
+    "siNo": "If not: {{consecuencia}}",
+    "reglasCumplidas": "You kept them all today. The system takes note.",
+    "reglasPendientes": "Anything left unchecked at the close counts as broken: {{xp}} XP per rule and its consequence tomorrow.",
+    "vacioTitulo": "No habits in the forge",
+    "vacioCuerpo": "Reading, running, cold calls, going to bed on time. Whatever you want to come naturally one day.",
+    "anadirPrimero": "Add the first one",
+    "nadaEnForja": "Nothing in the forge right now. What's already yours is below.",
+    "adquiridos": "Acquired",
+    "adquiridoDetalle": "No longer asked of you. Long-press to require it again.",
+    "reactivar": "Reactivate",
+    "adquiridoA11y": "{{titulo}}, acquired. Long-press to require it again.",
+    "adquiridoDiasA11y": "{{titulo}}, acquired after {{dias}} days. Long-press to require it again."
+  },
+  "hook": {
+    "adquiridoTitulo": "HABIT ACQUIRED",
+    "adquiridoMensaje": "{{titulo}} has gone {{dias}} days in a row.\n\nIf you mark it as acquired, it stops asking for the daily check and can no longer break your streak. You can keep checking it whenever you want.\n\nIf you'd rather keep counting, that's fine: it keeps adding up.",
+    "seguirContando": "Keep counting",
+    "esTuyoTitulo": "The system considers it yours",
+    "esTuyoPagado": "{{titulo}} won't be asked of you anymore.\n+{{xp}} XP to {{stat}}.",
+    "esTuyoSinPago": "{{titulo}} won't be asked of you anymore.\nThis reward doesn't count today: it was already paid or you've hit the daily cap.",
+    "volverAExigirlo": "Require it again",
+    "volverAExigirloMensaje": "{{titulo}} is required every day again and counts toward the streak again."
+  }
+}

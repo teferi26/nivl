@@ -1,0 +1,140 @@
+{
+  "portal": {
+    "tituloDocumento": "NIVL · Creators"
+  },
+  "bloque": {
+    "a11y": "{{hora}} {{titulo}}",
+    "a11yAhora": "{{hora}} {{titulo}}, now",
+    "a11yHecho": "{{hora}} {{titulo}}, done"
+  },
+  "completar": {
+    "eyebrow": "COMPLETE MISSION",
+    "conFoto": "Complete with photo",
+    "completar": "Complete",
+    "soloFoto": "With photo",
+    "fotoBonus": "With photo · +25%",
+    "registrarEn": "Log in {{modulo}}",
+    "exigeFoto": "This mission requires proof: it's completed with a photo taken now.",
+    "extraFoto": "With a photo, it goes into your Sunday summary.",
+    "fotoSuma": "With a photo it earns 25% more XP and goes into your Sunday summary.",
+    "tambienRegistrar": "It also checks itself off when you log {{acto}}."
+  },
+  "errorBoundary": {
+    "titulo": "THE SYSTEM HAS FAILED",
+    "texto": "Something broke inside. Your data is safe: it lives on the server, not on this screen."
+  },
+  "heatmap": {
+    "a11y_one": "{{semanas}}-week activity map: {{count}} day with at least one mission completed.",
+    "a11y_other": "{{semanas}}-week activity map: {{count}} days with at least one mission completed.",
+    "menos": "Less",
+    "mas": "More"
+  },
+  "holdToSign": {
+    "noSueltes": "Don't let go",
+    "pista": "Press and hold until the ring closes to sign",
+    "pistaNombre": "Type your name to sign",
+    "sellando": "Sealing"
+  },
+  "lineaDeTiempo": {
+    "ahoraA11y": "Now, {{hora}}"
+  },
+  "ordenDelDia": {
+    "titulo": "Orders of the day",
+    "vacioTitulo": "No orders for today",
+    "vacioCuerpo": "Ask the coach for the plan and you'll have the day written out block by block.",
+    "pedirPlan": "Ask for the plan",
+    "ahora": "NOW"
+  },
+  "questForm": {
+    "mision": {
+      "nuevo": "New mission",
+      "editar": "Edit mission",
+      "tituloNuevo": "What are you going to demand of yourself?",
+      "tituloEditar": "Adjust the mission",
+      "crear": "Create mission",
+      "eliminar": "Delete mission",
+      "campo": "Mission",
+      "campoA11y": "Mission name"
+    },
+    "habito": {
+      "nuevo": "New habit",
+      "editar": "Edit habit",
+      "tituloNuevo": "What do you want to come naturally?",
+      "tituloEditar": "Adjust the habit",
+      "crear": "Create habit",
+      "eliminar": "Delete habit",
+      "campo": "Habit",
+      "campoA11y": "Habit name"
+    },
+    "eliminarMensaje": "\"{{titulo}}\" and its entire completion history. This can't be undone.",
+    "pagoBonus": "{{pb}} PB when completed, redeemable for rest.",
+    "pagoXp": "{{xp}} base XP. With a photo, +25%; your streak multiplies it.",
+    "placeholder": "E.g. Gym · legs",
+    "queEntrena": "What it trains",
+    "dificultad": "Difficulty",
+    "dificultadA11y": "Difficulty {{nivel}}",
+    "dias": "Days",
+    "diaria": "Daily",
+    "diariaA11y": "Every day",
+    "entreSemana": "Weekdays",
+    "entreSemanaA11y": "Monday to Friday",
+    "finde": "Weekend",
+    "findeA11y": "Saturday and Sunday",
+    "eligeDia": "Choose at least one day.",
+    "evidencia": "Proof",
+    "sinFoto": "No photo",
+    "sinFotoA11y": "No proof required",
+    "fotoObligatoria": "Photo required",
+    "fotoObligatoriaA11y": "Require a photo to complete the mission",
+    "fotoObligatoriaAyuda": "It can't be completed without a photo. Pays 25% more.",
+    "fotoOpcionalAyuda": "The photo is optional when completing.",
+    "quePaga": "What it pays",
+    "xpA11y": "Regular mission: pays XP",
+    "puntosBonus": "Bonus points",
+    "puntosBonusA11y": "Extra mission: pays bonus points",
+    "extraAyuda": "Extra mission: gives no XP and doesn't count toward the streak. Its PB are redeemed for rest in the contract.",
+    "normalAyuda": "Daily mission: counts toward the streak and is penalized if left undone."
+  },
+  "questItem": {
+    "recuperacionCerrada": "Return to the arena: complete one of the missions you already had and you can win back what you lost.",
+    "recuperacionAbierta": "The arena is open. Win back what you lost.",
+    "penalizacion": "Penalty: {{titulo}}",
+    "penalizacionRecuperada": "Penalty · recovered",
+    "a11ySiguiente": "Next: {{etiqueta}}",
+    "a11yCompletada": "{{titulo}}, completed",
+    "a11yCerrada": "{{titulo}}, locked, {{cantidad}} {{unidad}} to recover. {{razon}}",
+    "a11yPendiente": "{{titulo}}, pending, {{cantidad}} {{unidad}}",
+    "siguiente": "NEXT",
+    "extra": "Extra"
+  },
+  "shareCardSemana": {
+    "sinFila": "The system can't find your row on the scoreboard."
+  },
+  "trendLine": {
+    "sinDatos": "No data yet.",
+    "a11y": "Trend of {{n}} data points: from {{primero}} to {{ultimo}}{{unidad}}, minimum {{min}}, maximum {{max}}.",
+    "extremos": "Min {{min}} · Max {{max}}{{unidad}}"
+  },
+  "version": {
+    "sinCanal": "no channel",
+    "embebido": "embedded (no OTA)",
+    "desactivadasTitulo": "Updates turned off",
+    "desactivadasTexto": "This copy doesn't have the update system active (it happens in Expo Go and in development). It only changes with a new build.",
+    "alDiaTitulo": "You're up to date",
+    "alDiaTexto": "There's no new update for version {{version}} on the {{canal}} channel.",
+    "listaTitulo": "Update ready",
+    "listaTexto": "The system is going to restart to apply it. If you leave it for later, it applies on the next launch.",
+    "reiniciar": "Restart",
+    "errorTitulo": "Couldn't update",
+    "titulo": "Version {{version}}",
+    "tituloBuild": "Version {{version}} ({{build}})",
+    "pistaOcultar": "Press and hold to hide the details",
+    "pistaVer": "Press and hold to see the details",
+    "ocultarDetalles": "Hide details",
+    "verDetalles": "See details",
+    "canal": "Channel {{canal}}",
+    "paquete": "Package {{paquete}}",
+    "buscarA11y": "Check for a system update",
+    "buscar": "CHECK FOR UPDATE"
+  }
+}

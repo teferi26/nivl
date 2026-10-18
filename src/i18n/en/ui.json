@@ -1,0 +1,39 @@
+{
+  "avatar": {
+    "a11yRango": "{{nombre}}, rank {{rango}}"
+  },
+  "ceremonia": {
+    "nuevoRango": "NEW RANK",
+    "nuevoGrado": "NEW GRADE",
+    "subesNivel": "LEVEL UP",
+    "anuncioRango": "New rank: {{rango}}, {{nombre}}. {{lema}}",
+    "anuncioGrado": "New grade: {{nombre}} {{grado}}",
+    "anuncioNivel": "You reach level {{nivel}}",
+    "tituloNivel": "Level {{nivel}}",
+    "faltaNiveles_one": "{{count}} level to go",
+    "faltaNiveles_other": "{{count}} levels to go",
+    "faltaDias_one": "{{count}} active day to go",
+    "faltaDias_other": "{{count}} active days to go",
+    "faltanAmbos": "{{niveles}} and {{dias}} to go",
+    "niveles_one": "{{count}} level",
+    "niveles_other": "{{count}} levels",
+    "diasActivos_one": "{{count}} active day",
+    "diasActivos_other": "{{count}} active days",
+    "cerrarA11y": "Close the celebration",
+    "siguiente": "Next: {{nombre}} at level {{nivel}}",
+    "pideDias": "{{nombre}} also requires active days in the arena",
+    "seguir": "Continue",
+    "tocaCerrar": "Tap anywhere to close",
+    "tocaSaltar": "Tap anywhere to skip"
+  },
+  "confirmar": {
+    "botonesWeb": "OK: {{ok}}. Cancel: {{cancelar}}."
+  },
+  "sidebar": {
+    "lema": "1% BETTER\nEVERY DAY",
+    "lemaA11y": "1% better every day"
+  },
+  "row": {
+    "masOpciones": "More options"
+  }
+}

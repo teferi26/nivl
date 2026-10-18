@@ -1,0 +1,53 @@
+{
+  "categoria": {
+    "todo": "All",
+    "aprendizaje": "Lessons",
+    "venta": "Sales",
+    "metrica": "Metrics",
+    "log": "Log",
+    "objetivo": "Goals",
+    "proyecto": "Projects",
+    "regla": "Rules",
+    "perfil": "Profile"
+  },
+  "hecho": {
+    "a11y": "{{categoria}}, {{fecha}}: {{contenido}}",
+    "pista": "Tap to read it in full.",
+    "leerEntero": "Read it in full",
+    "borrarAccion": "Delete this memory",
+    "borrarA11y": "Delete the memory: {{contenido}}",
+    "borrando": "Deleting",
+    "borrar": "Delete"
+  },
+  "vista": {
+    "eyebrow": "The system remembers",
+    "titulo": "Memory",
+    "cargando": "Reading the memory",
+    "noResponde": "The memory is not responding.",
+    "vacioSubtitulo": "Nothing noted yet. It writes itself as you talk to the coach.",
+    "subtitulo_one": "{{count}} fact noted · dossier v{{version}}",
+    "subtitulo_other": "{{count}} facts noted · dossier v{{version}}",
+    "hechos": "Facts",
+    "dossier": "Dossier",
+    "dossierA11y": "Dossier: version {{version}}",
+    "esteMes": "This month",
+    "esteMesSinDato": "This month: no data",
+    "esteMesA11y": "This month: {{gasto}} dollars",
+    "quienEres": "Who you are to the system",
+    "contraer": "Collapse",
+    "leerTodo": "Read all",
+    "sinDossierTitulo": "No stable memory yet",
+    "sinDossierCuerpo": "It writes itself when something structural changes: a new goal, a project that dies, a rule you agree to.",
+    "filtro": "{{categoria}} · {{n}}",
+    "filtroA11y": "Filter by {{categoria}}, {{n}}",
+    "vacioTitulo": "Nothing noted yet",
+    "vacioCategoria": "Nothing in this category",
+    "vacioCuerpo": "Every number, sale, lesson or rule you tell the coach stays here with its date.",
+    "otraCategoria": "Try another category."
+  },
+  "borrar": {
+    "titulo": "Delete memory",
+    "mensaje": "“{{contenido}}”\n\nIt's deleted from the coach's memories. If it also appears in the dossier or the conversation, it stays there until they're rewritten."
+  },
+  "avisoTitulo": "Memory"
+}

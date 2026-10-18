@@ -9,6 +9,8 @@
 // de golpe al final y el chat se sentiría muerto.
 
 import { fetch as streamingFetch } from 'expo/fetch';
+import { idiomaCoach } from '@/i18n';
+import { flagActivo } from './flags';
 import type { Slide } from './photos';
 import { supabase } from './supabase';
 import { dateKey } from './dates';
@@ -86,6 +88,7 @@ async function authHeaders(): Promise<Record<string, string>> {
     authorization: `Bearer ${token}`,
     apikey: process.env.EXPO_PUBLIC_SUPABASE_KEY ?? '',
     'content-type': 'application/json',
+    ...cabeceraIdioma(),
   };
 }
 
@@ -185,6 +188,15 @@ export class HiloPerdidoError extends Error {
     super('Hilo no encontrado.');
     this.name = 'HiloPerdidoError';
   }
+}
+
+/**
+ * Modos F1: el idioma en que tiene que responder el coach (`x-nivl-locale`),
+ * solo con el flag `idiomas_activos` encendido. Apagado, no se manda nada y el
+ * prompt del servidor es byte a byte el de hoy (contrato común §Coach).
+ */
+export function cabeceraIdioma(): Record<string, string> {
+  return flagActivo('idiomas_activos') ? { 'x-nivl-locale': idiomaCoach() } : {};
 }
 
 function functionsUrl(): string {

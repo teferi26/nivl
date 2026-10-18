@@ -1,0 +1,32 @@
+{
+  "vista": {
+    "eyebrow": "Body",
+    "titulo": "Groceries",
+    "subVacia": "Nothing on the list.",
+    "subHecha": "Everything's in the cart. Shopping done.",
+    "subPendientes_one": "{{count}} item left.",
+    "subPendientes_other": "{{count}} items left.",
+    "anadirArticulo": "Add item",
+    "anadirPlaceholder": "Eggs, oats, coffee",
+    "nuevoA11y": "New item",
+    "anadirA11y": "Add to list",
+    "cargando": "Loading the list",
+    "cifraPendientes": "Left",
+    "cifraCarro": "In cart",
+    "cifraLista": "On list",
+    "barraA11y": "In cart: {{hechos}} of {{total}}",
+    "pendiente": "Left",
+    "compraHecha": "Shopping done",
+    "nadaPendiente": "Nothing left",
+    "compraHechaCuerpo": "Everything's in the cart. Clear what you bought once it's put away.",
+    "nadaPendienteCuerpo": "Generate the list from your diet or add items above.",
+    "irDieta": "Go to diet",
+    "pendienteA11y": "{{nombre}}, not bought",
+    "pendienteCantidadA11y": "{{nombre}}, {{cantidad}}, not bought",
+    "enCarro": "In cart",
+    "vaciando": "Clearing",
+    "vaciar": "Clear bought items",
+    "enCarroA11y": "{{nombre}}, in cart",
+    "enCarroCantidadA11y": "{{nombre}}, {{cantidad}}, in cart"
+  }
+}

@@ -1,0 +1,93 @@
+{
+  "volverA11y": "Back to the previous step",
+  "entrar": "Enter the arena",
+  "continuar": "Continue",
+  "portada": {
+    "reglas": "The rules",
+    "lore": {
+      "arena": "This isn't a to-do list. It's an arena.",
+      "reglas": "Every day you have missions. Completing them earns XP and raises your level; failing them takes it away. Your streak multiplies. Big projects are campaigns with a final boss. And there's a coach who sets your day, judges you at night and remembers everything it learns about you.",
+      "trampas": "No cheating: proof is taken with the camera, in the moment. The system has no opinions. It logs."
+    }
+  },
+  "progreso": {
+    "paso": "Step {{actual}} of {{total}}"
+  },
+  "tablilla": {
+    "rotulo": "Contract",
+    "seAbre": "Opens on {{fecha}}"
+  },
+  "nombre": {
+    "inscripcion": "The name",
+    "titulo": "What's your name?",
+    "etiqueta": "Your name in the system",
+    "placeholder": "What should it call you",
+    "a11y": "Your name",
+    "codigoEtiqueta": "Who brought you? · optional",
+    "codigoAyuda": "If someone recommended it, enter their code. It changes nothing for you.",
+    "codigoPlaceholder": "Creator code",
+    "codigoA11y": "Code of the creator who brought you, optional",
+    "codigoRechazado": "{{motivo}} Fix it or continue without it."
+  },
+  "camino": {
+    "inscripcion": "The path",
+    "titulo": "What will you use NIVL for?",
+    "pista": "It changes what you see first and what the coach asks of you. Everything stays available and you can change it in Profile.",
+    "queSeActiva": "What turns on"
+  },
+  "objetivo": {
+    "inscripcion": "The goal",
+    "titulo": "What are you here for?",
+    "pista": "One thing, in one sentence. Not “get better”: what you want to have achieved. It's what you're going to sign.",
+    "etiqueta": "Your goal",
+    "salud": "My goal includes health or training",
+    "sinSalud": "Write a general goal, with no health data. To include it, turn on the option above.",
+    "ejemplo": "Read twelve books this year",
+    "a11y": "Your goal, in one sentence",
+    "cifra": "Number · optional",
+    "cifraEjemplo": "12 books, €5,000…",
+    "cifraEjemploSalud": "78 kg, €5,000…",
+    "cifraA11y": "Goal number, optional",
+    "fecha": "Date · optional",
+    "fechaEjemplo": "June 2027",
+    "fechaA11y": "Goal date, optional"
+  },
+  "misiones": {
+    "inscripcion": "The missions",
+    "titulo": "Your first missions",
+    "pista": "Suggested for your profile ({{para}}). Remove the ones that don't fit you; you can create your own in Habits.",
+    "gladiador": "gladiator",
+    "meta": "{{stat}} · {{dificultad}} · {{frecuencia}}",
+    "metaSalud": "{{stat}} · {{dificultad}} · {{frecuencia}} · health (optional)",
+    "cadaDia": "every day",
+    "diasSemana": "{{n}} days/week",
+    "crear_one": "Create {{count}} mission",
+    "crear_other": "Create {{count}} missions",
+    "sinMisiones": "Start without missions"
+  },
+  "firma": {
+    "inscripcion": "The signature",
+    "titulo": "Sign it with yourself",
+    "pista": "Nobody else will read it. It's sealed today and opens when the time is up. Choose how long you give yourself.",
+    "horizonteA11y": "{{plazo}} horizon",
+    "horizonteRecomendadoA11y": "{{plazo}} horizon, recommended",
+    "recomendado": "recommended",
+    "letraPequena": "Until then, Contract keeps it sealed. You'll write your rules and their consequences there once you're in.",
+    "campo": "Type your name to sign",
+    "mantenPulsado": "Press and hold to sign",
+    "escribeNombre": "Type your name"
+  },
+  "coach": {
+    "inscripcion": "The coach",
+    "titulo": "Signed. Now, who runs it.",
+    "pista": "Your habits, your organization and your progress are free. Paid plans add the AI coach and, with Élite, a badge and a request for a place in a ludus.",
+    "pistaHoja": "Your habits, your organization and your progress are free. Paid plans add the AI coach and, with Élite, a badge and a request for a place in a ludus. Decide now or later: the commitment counts the same.",
+    "preparandoA11y": "Preparing your entry",
+    "seguirGratis": "Continue free for now"
+  },
+  "sello": {
+    "titulo": "Sealed",
+    "a11y": "Sealed. Expires on {{fecha}}. Tap to continue",
+    "vence": "Expires on {{fecha}}"
+  }
+}

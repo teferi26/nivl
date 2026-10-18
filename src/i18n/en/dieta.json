@@ -1,0 +1,61 @@
+{
+  "comida": {
+    "desayuno": "Breakfast",
+    "comida": "Lunch",
+    "merienda": "Afternoon snack",
+    "cena": "Dinner",
+    "snack": "Snack"
+  },
+  "vista": {
+    "eyebrow": "Body",
+    "titulo": "Diet",
+    "subMacros": "{{dia}}: {{kcal}} kcal and {{prote}} g of protein planned.",
+    "subComidas_one": "{{dia}}: {{count}} meal planned.",
+    "subComidas_other": "{{dia}}: {{count}} meals planned.",
+    "subVacio": "{{dia}} not planned yet.",
+    "irCompra": "Go to the grocery list",
+    "diaHoyA11y": "{{dia}}, today",
+    "cargando": "Loading your diet",
+    "cifraKcal": "Kcal",
+    "cifraKcalSinDato": "Kcal: no data",
+    "cifraProte": "Protein",
+    "cifraProteSinDato": "Protein: no data",
+    "cifraComidas": "Meals",
+    "cifraComidasA11y": "Meals: {{n}} of {{total}} planned",
+    "notaMano": "Meals typed by hand have no macros; only the ones the coach plans add up.",
+    "hoyDia": "Today · {{dia}}",
+    "sinPlanificar": "Not planned. Tap to add.",
+    "editarA11y": "Edit {{comida}}: {{descripcion}} for {{dia}}",
+    "planificarA11y": "Plan {{comida}} for {{dia}}",
+    "conMacrosA11y": "{{texto}}, {{macros}}",
+    "macrosKcalProteA11y": "{{kcal}} kcal and {{prote}} grams of protein",
+    "macrosKcalA11y": "{{kcal}} kcal",
+    "macrosProteA11y": "{{prote}} grams of protein",
+    "listaCompra": "Grocery list",
+    "generar": "Generate the list",
+    "generarConIngredientes": "The system gathers the ingredients from all 7 days, removes duplicates and sends them to the list.",
+    "generarSinIngredientes": "Write the ingredients for your meals, separated by commas, and the system will build the list.",
+    "gProt": "g prot."
+  },
+  "hoja": {
+    "eyebrow": "{{comida}} · {{dia}}",
+    "tituloAjustar": "Adjust the meal",
+    "tituloNueva": "What are you going to eat?",
+    "quitarComida": "Remove meal",
+    "comida": "Meal",
+    "comidaPlaceholder": "Chicken with rice and broccoli",
+    "comidaA11y": "Meal description",
+    "ingredientes": "Ingredients",
+    "ingredientesPlaceholder": "chicken, rice, broccoli, olive oil",
+    "ingredientesAyuda": "Separated by commas: this is where the grocery list comes from.",
+    "ingredientesA11y": "Ingredients separated by commas"
+  },
+  "acciones": {
+    "sinIngredientes": "No ingredients",
+    "sinIngredientesCuerpo": "Add ingredients to your meals (separated by commas) and the system will generate the list.",
+    "listaGenerada": "List generated",
+    "listaGeneradaCuerpo": "{{n}} ingredients sent to the grocery list.",
+    "verLista": "See list",
+    "entendido": "Got it"
+  }
+}

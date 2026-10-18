@@ -1,0 +1,97 @@
+{
+  "noHaSalido": "It didn't go through",
+  "ayudaContrasena": "No weird rules: {{n}} characters or more. A phrase you'll remember is perfect.",
+  "fuerza": {
+    "debil": "Weak",
+    "media": "Fair",
+    "fuerte": "Strong"
+  },
+  "aviso": {
+    "registro": "If the email is new, we've sent you a link to confirm it. Open it on this phone, then sign in with your password.",
+    "recuperacion": "If that email has an account, we've sent you a link. Open it on this phone to choose a new password."
+  },
+  "error": {
+    "nombre": "Between 1 and {{max}} characters.",
+    "correo": "Invalid email format.",
+    "noCoinciden": "Passwords don't match."
+  },
+  "contrasena": {
+    "etiqueta": "Password",
+    "repite": "Repeat password",
+    "placeholder": "A phrase you'll remember",
+    "ocultar": "Hide password",
+    "mostrar": "Show password",
+    "fuerzaA11y": "Password strength: {{fuerza}}",
+    "leFalta": "Missing: {{faltas}}."
+  },
+  "login": {
+    "casillaLegal": "I have read and accept the NIVL Terms and have read its Privacy Policy.",
+    "intro": {
+      "signin": "Sign in with your NIVL email and password.",
+      "signup": "Create your NIVL account. We'll send you a link to confirm your email.",
+      "recover": "Enter your account email and we'll send you a link to choose a new password."
+    },
+    "introPortal": "Sign in with your NIVL account to see your creator dashboard.",
+    "olvidoPortal": "Forgot your password? Reset it from the NIVL app (“Forgot your password?” on the sign-in screen) and come back here.",
+    "boton": {
+      "signin": "Sign in",
+      "signup": "Create account",
+      "recover": "Send link"
+    },
+    "pestana": {
+      "signin": {
+        "texto": "Sign in",
+        "a11y": "Sign in with an existing account"
+      },
+      "signup": {
+        "texto": "Create account",
+        "a11y": "Create a new account"
+      }
+    },
+    "portal": "Creator portal",
+    "recuperarTitulo": "Reset password",
+    "nombrePlaceholder": "What the system should call you",
+    "correo": "Email",
+    "correoPlaceholder": "you@email.com",
+    "correoA11y": "Email address",
+    "terminos": "NIVL Terms",
+    "terminosA11y": "NIVL Terms of Use",
+    "privacidad": "NIVL Privacy",
+    "privacidadA11y": "NIVL Privacy Policy",
+    "revisaCorreo": "Check your email",
+    "faltaCasilla": "Check the Terms box to continue.",
+    "olvido": "Forgot your password?",
+    "volverAEntrar": "Back to sign in",
+    "notaCuenta": "Your habits, missions and progress are saved to your NIVL account."
+  },
+  "arranque": {
+    "cargando": "Loading"
+  },
+  "fuera": {
+    "eyebrow": "Route",
+    "titulo": "Outside the arena",
+    "cuerpo": "The system doesn't recognize this destination. The link may be old or copied wrong.",
+    "volver": "Back to the arena"
+  },
+  "cuenta": {
+    "eyebrow": "Account",
+    "irAEntrar": "Go to sign in"
+  },
+  "restablecer": {
+    "titulo": "New password",
+    "comprobando": "Checking the link",
+    "nueva": "New password",
+    "guardar": "Save password",
+    "hechoRotulo": "Password changed",
+    "hechoMensaje": "You can now use it to sign in to NIVL.",
+    "continuar": "Continue",
+    "invalidoRotulo": "Invalid link",
+    "invalido": "This link is invalid or has expired. Request a new one from “Forgot your password?”."
+  },
+  "confirmar": {
+    "titulo": "Confirm email",
+    "falloRotulo": "Couldn't confirm",
+    "confirmando": "Confirming your email",
+    "sinEnlace": "This link has nothing to confirm. Open the latest email we sent you or sign in with your password."
+  }
+}

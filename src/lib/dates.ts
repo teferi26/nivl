@@ -1,3 +1,5 @@
+import { fechaLarga } from '@/i18n/formato';
+
 const KEY_RE = /^\d{4}-\d{2}-\d{2}$/;
 
 // Valida una clave de fecha YYYY-MM-DD. Una clave corrupta producía un
@@ -59,7 +61,9 @@ export function weekdayOfKey(key: string): number {
 }
 
 export function formatLongDate(d: Date = new Date()): string {
-  const s = d.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
+  // En español, idéntico a toLocaleDateString('es-ES'); con la interfaz en
+  // otro idioma (Modos F1), Intl en ese idioma.
+  const s = fechaLarga(d);
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
@@ -70,7 +74,7 @@ export function nombreDia(key: string): string {
 
 /** "sábado, 19 de septiembre de 2026": para fechas a años vista, donde el año importa. */
 export function fechaConAnio(key: string): string {
-  return parseKey(key).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  return fechaLarga(parseKey(key), true);
 }
 
 /**

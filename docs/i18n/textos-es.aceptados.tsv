@@ -1074,3 +1074,12 @@ voz	+	Racha de {} días
 avisos	-	No se pudieron programar los avisos del sistema.
 avisos	+	Recordatorio
 avisos	+	Sigue pendiente.
+# Modos F1 (idiomas): la sección «Idioma» de Ajustes y su hoja, solo con el flag idiomas_activos (apagado, no se ven)
+perfil	+	Idioma
+perfil	+	Idioma de la app
+perfil	+	Idioma de la app: {}. Cambiar
+perfil	+	El coach y los avisos te hablan en el mismo idioma.
+perfil	+	Idioma
+perfil	+	¿En qué idioma te habla NIVL?
+perfil	+	La app, el coach y los avisos, en este idioma. Al cambiarlo, la app se recarga.
+perfil	+	Idiomas

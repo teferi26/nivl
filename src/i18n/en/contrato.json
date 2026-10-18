@@ -1,0 +1,153 @@
+{
+  "vista": {
+    "tabla": {
+      "mision": "Mission (trivial to epic)",
+      "xp": "{{xp}} XP",
+      "evidencia": "Proof (photo)",
+      "evidenciaValor": "+{{pct}}%",
+      "racha": "Streak",
+      "rachaValor": "+{{pct}}% per week · cap ×{{techo}}",
+      "gimnasio": "Gym session",
+      "record": "Personal record",
+      "diario": "Journal page",
+      "pesarte": "Weighing in",
+      "objetivo": "Goal reached",
+      "tarea": "Campaign task",
+      "tareaValor": "XP for its difficulty · boss ×{{mult}}",
+      "campana": "Campaign cleared",
+      "campanaValor": "{{min}} to {{max}} XP by rank",
+      "extra": "Extra mission",
+      "pb": "{{pb}} PB",
+      "sinHacer": "Today's mission not done",
+      "sinHacerValor": "−{{pct}}% of its XP · cap −{{tope}}/day",
+      "romper": "Breaking a signed rule",
+      "romperValor": "−{{xp}} XP + consequence",
+      "piedra": "Protection Stone",
+      "piedraValor": "Absorbs all of a day's damage",
+      "filaA11y": "{{concepto}}: {{valor}}"
+    },
+    "norma": {
+      "a11y": "Rule {{n}}: {{texto}}. If you break it: {{consecuencia}}. It costs {{xp}} XP.",
+      "a11yEditada": "Rule {{n}}: {{texto}}. If you break it: {{consecuencia}}. It costs {{xp}} XP. Edited today.",
+      "pista": "Tap to confess you broke it. Long-press to delete it.",
+      "accionConfesar": "Confess you broke it",
+      "accionEditar": "Edit the rule",
+      "accionEliminar": "Delete the rule",
+      "siLaRompes": "If you break it: {{consecuencia}}",
+      "editadaHoy": "Edited today. Earlier breaks stay in the archived version.",
+      "editarA11y": "Edit rule {{n}}"
+    },
+    "carta": {
+      "sinCarta": "No letter",
+      "sinCartaTexto": "Write to who you'll become. The system seals it and keeps it until the appointed day.",
+      "escribir": "Write the letter",
+      "abierta": "Opened",
+      "abiertaMeta": "Sealed on {{sellada}}. Opened on {{abierta}}.",
+      "haLlegado": "The day has come",
+      "espera": "The letter you sealed on {{sellada}} is waiting.",
+      "abrir": "Open the letter",
+      "firmado": "Signed by you",
+      "firmadoMeta": "Signed on {{firmado}}. Expires on {{vence}}.",
+      "sellada": "Sealed",
+      "selladaTexto": "Sealed on {{sellada}}. It will open on {{apertura}}. Until then, get to work."
+    },
+    "subtituloVacio": "No signed rules. The system only enforces what you sign.",
+    "subtitulo_one": "{{count}} signed rule · {{bonus}} PB in the pouch",
+    "subtitulo_other": "{{count}} signed rules · {{bonus}} PB in the pouch",
+    "eyebrow": "What you sign",
+    "titulo": "Contract",
+    "nuevaNorma": "Sign a new rule",
+    "cargando": "Reading the contract",
+    "rotulo": "CONTRACT",
+    "vacioTitulo": "No signed rules",
+    "vacioTexto": "This is where the rules you set yourself go, with their consequences. The system only enforces them.",
+    "primeraNorma": "Sign the first rule",
+    "cargarCuaderno": "Load my notebook rules",
+    "notaNormas": "Tap a rule to confess you broke it. Long-press to delete it. The pencil edits it from today on. Every night the kept ones are checked off in Habits.",
+    "bonusTitulo": "Bonus points",
+    "bonusMeta": "{{gastado}}/{{tope}} redeemed",
+    "enBolsa": "In the pouch",
+    "canjeables": "Redeemable this week",
+    "canjear": "Redeem {{coste}} PB · 1 h of rest",
+    "notaBonus": "Extra missions pay in PB, not XP. {{coste}} PB buys 1 h of guilt-free rest, capped at {{tope}} PB every 7 days.",
+    "cartaTitulo": "Letter to your future self",
+    "gana": "How you earn",
+    "pierde": "How you lose",
+    "notaTabla": "The whole app scores with this table: same effort, same reward. PB don't give XP: they're redeemed for rest."
+  },
+  "hojas": {
+    "anios_one": "{{count}} year",
+    "anios_other": "{{count}} years",
+    "norma": {
+      "eyebrowEditar": "Edit rule",
+      "eyebrowNueva": "New rule",
+      "tituloEditar": "Adjust what you signed",
+      "tituloNueva": "What do you forbid yourself?",
+      "firmar": "Sign the rule",
+      "etiqueta": "The rule",
+      "placeholder": "E.g. No social media before noon",
+      "a11y": "Rule text",
+      "consecuenciaEtiqueta": "Consequence if you break it",
+      "consecuenciaPlaceholder": "E.g. Run 5 km",
+      "consecuenciaA11y": "Consequence of breaking the rule",
+      "ayudaEditar": "Applies from today. The previous version is archived with its breaks. Breaking it costs −{{xp}} XP.",
+      "ayudaNueva": "Breaking it costs −{{xp}} XP. Carrying out the consequence the same day earns it back."
+    },
+    "carta": {
+      "eyebrow": "To your future self",
+      "titulo": "Write to who you'll become",
+      "sellar": "Seal the letter",
+      "etiqueta": "The letter",
+      "placeholder": "I don't know how you'll be, or where you'll be…",
+      "a11y": "Letter body",
+      "dentroDe": "It will open in",
+      "dentroDeA11y": "Open in {{plazo}}",
+      "seAbrira": "It will open on {{fecha}}. Nobody can read it before then, not even you."
+    }
+  },
+  "hook": {
+    "plantilla": {
+      "p1": {
+        "texto": "Write in the journal every day: what I lived and the day's plan",
+        "consecuencia": "Run 8 km"
+      },
+      "p2": {
+        "texto": "No alcohol",
+        "consecuencia": "1 day of eating only clean"
+      },
+      "p3": {
+        "texto": "No caffeine",
+        "consecuencia": "1 day without leisure screens"
+      },
+      "p4": {
+        "texto": "Eat clean every day",
+        "consecuencia": "Run 4.5 km"
+      },
+      "p5": {
+        "texto": "If I go out partying without having earned it",
+        "consecuencia": "1 week of strict diet"
+      },
+      "p6": {
+        "texto": "No plan gets in the way of my goals",
+        "consecuencia": "Reorganize the week and make up the time"
+      }
+    },
+    "confesionTitulo": "Confession to the system",
+    "confesionMensaje": "Did you break the rule \"{{norma}}\"?\n\nPenalty: −{{xp}} XP and the consequence you signed yourself: {{consecuencia}}. Carry it out today and you get the XP back.",
+    "laHeRoto": "I broke it",
+    "registrado": "LOGGED",
+    "registradoMensaje": "The system doesn't judge: it logs. The mission \"Consequence: {{consecuencia}}\" is waiting for you today in System.",
+    "eliminarTitulo": "Delete rule",
+    "eliminarMensaje": "\"{{norma}}\" and its record of breaks.",
+    "insuficientesTitulo": "Not enough points",
+    "insuficientes": "You need {{coste}} PB to redeem 1 h of rest.",
+    "topeTitulo": "Weekly cap",
+    "tope": "Max {{tope}} PB redeemed every 7 days. You're at {{llevas}}.",
+    "canjearTitulo": "Redeem rest",
+    "canjearMensaje": "{{coste}} PB → 1 hour of earned rest. Confirm?",
+    "canjear": "Redeem",
+    "motivoCanje": "1 h of rest",
+    "descansoTitulo": "REST EARNED",
+    "descansoMensaje": "Enjoy it guilt-free: you paid for it with effort."
+  }
+}

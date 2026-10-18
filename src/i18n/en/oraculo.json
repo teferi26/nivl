@@ -1,0 +1,46 @@
+{
+  "clave": {
+    "eyebrow": "API key",
+    "titulo": "Your own key",
+    "guardar": "Save the key",
+    "cuerpo": "OpenAI or Anthropic. It's stored only on this device and you pay only for your usage.",
+    "etiqueta": "Key",
+    "placeholder": "sk-proj-… (OpenAI) or sk-ant-… (Anthropic)",
+    "a11y": "API key",
+    "guardadaAyuda": "There's a key saved. Paste another to replace it, or clear it and save to remove it.",
+    "ayuda": "It's only sent to OpenAI or Anthropic, never to NIVL."
+  },
+  "vista": {
+    "todosLosDias": "every day",
+    "eyebrow": "The system forges",
+    "titulo": "Oracle",
+    "subtituloClave": "Tell it your goal and it turns it into missions. Your key is on this device.",
+    "subtitulo": "Tell it your goal and it turns it into daily missions with a date and a measure.",
+    "cambiarClave": "Change the API key",
+    "usarClave": "Use my own API key",
+    "objetivo": "Your goal",
+    "objetivoPlaceholder": "Run 10 km in May. Pass Calculus with a good grade. Sleep 8 hours.",
+    "consultar": "Consult the Oracle",
+    "delibera": "The Oracle deliberates",
+    "deliberaCuerpo": "A few seconds. It's measuring your goal against your days.",
+    "proTitulo": "The Oracle is part of NIVL Pro",
+    "proCuerpo": "Turning goals into missions with AI comes with the coach. The rest of NIVL is still yours.",
+    "espera": "The Oracle is waiting",
+    "esperaCuerpo": "A concrete goal, with a date and a measure, makes better missions. You choose which ones to accept.",
+    "veredicto": "The system's verdict",
+    "propuestas": "Proposed missions",
+    "hasta": "up to",
+    "propuestaA11y": "Proposed mission: {{titulo}}, up to {{xp}} XP, accepted",
+    "propuestaDescartadaA11y": "Proposed mission: {{titulo}}, up to {{xp}} XP, discarded",
+    "nota": "Uncheck the ones you don't want. The accepted ones go to Habits as daily missions.",
+    "aceptar_one": "Accept {{count}} mission",
+    "aceptar_other": "Accept {{count}} missions"
+  },
+  "asignadas": {
+    "titulo": "MISSIONS ASSIGNED",
+    "mensaje_one": "The system has logged a new mission.",
+    "mensaje_other": "The system has logged {{count}} new missions.",
+    "ver": "See missions",
+    "quedarme": "Stay here"
+  }
+}

@@ -1,0 +1,103 @@
+{
+  "derivar": {
+    "semanaN": "Week {{n}}",
+    "rangoSemana": "{{ini}} to {{fin}}",
+    "mesDeAnio": "{{mes}} {{anio}}",
+    "semanaLeida": "Week {{n}}, from {{mes1}} {{dia1}} to {{mes2}} {{dia2}}",
+    "bloques_one": "{{count}} plan block",
+    "bloques_other": "{{count}} plan blocks",
+    "eventos_one": "{{count}} event",
+    "eventos_other": "{{count}} events",
+    "plazos_one": "{{count}} deadline",
+    "plazos_other": "{{count}} deadlines",
+    "plazosCampana_one": "{{count}} campaign deadline",
+    "plazosCampana_other": "{{count}} campaign deadlines",
+    "vacioFuturo": "{{cuando}}. Nothing scheduled yet.",
+    "vacioPasado": "{{cuando}}. Nothing was logged that day.",
+    "hoy": "today"
+  },
+  "vista": {
+    "modo": {
+      "dia": "Day",
+      "semana": "Week",
+      "mes": "Month"
+    },
+    "vistaPor": {
+      "dia": "Day view",
+      "semana": "Week view",
+      "mes": "Month view"
+    },
+    "anterior": {
+      "dia": "Previous day",
+      "semana": "Previous week",
+      "mes": "Previous month"
+    },
+    "siguiente": {
+      "dia": "Next day",
+      "semana": "Next week",
+      "mes": "Next month"
+    },
+    "hoy": "Today",
+    "volverAHoy": "Back to today",
+    "nuevoEvento": "New event",
+    "cargandoA11y": "Loading your agenda",
+    "nadaProgramado": "Nothing scheduled",
+    "diaEnBlanco": "A blank day",
+    "vacioCuerpoPro": "Ask the coach to plan the day or add an event. Scheduled missions show up here.",
+    "vacioCuerpo": "Add an event. Scheduled missions show up here.",
+    "vacioPasado": "The system has nothing logged for that day.",
+    "anadirEvento": "Add event",
+    "eventos": "Events",
+    "conHora": "Timed",
+    "conHoraA11y": "Timed: {{n}}",
+    "misiones": "Missions",
+    "misionesA11y": "Missions: {{hechas}} of {{total}} done",
+    "todoElDia": "All day",
+    "eventoA11yTodoElDia": "{{titulo}}, all day. Tap to see details.",
+    "eventoA11yHora": "{{titulo}}, at {{hora}}. Tap to see details.",
+    "tocaEvento": "Tap an event to see its details.",
+    "porHoras": "By the hour",
+    "sinHoraPro": "Nothing at a set time. Ask the coach to plan the day, or add a timed event.",
+    "sinHora": "Nothing at a set time. Add a timed event and it shows up here.",
+    "sinHoraPasado": "That day had no hourly plan.",
+    "misionesYPlazos": "Missions and deadlines",
+    "jefeFinalDetalle": "Campaign final boss.",
+    "tareaDetalle": "Campaign task.",
+    "venceHoy": "Due today",
+    "jefe": "Boss",
+    "plazo": "Deadline",
+    "jefeVenceHoyA11y": "{{titulo}}, campaign final boss, due today.",
+    "jefeVenceA11y": "{{titulo}}, campaign final boss, due that day.",
+    "tareaVenceHoyA11y": "{{titulo}}, campaign task, due today.",
+    "tareaVenceA11y": "{{titulo}}, campaign task, due that day.",
+    "misionDetalle": "Mission · {{stat}}",
+    "penalizacion": "Penalty",
+    "seCompletanEnHoy": "Missions are completed from Today."
+  },
+  "calendario": {
+    "diasSemanaA11y": "Days of the week",
+    "diasMesA11y": "Days of the month"
+  },
+  "hojas": {
+    "pregunta": "What do you need to remember?",
+    "placeholderNombre": "Call, appointment, demo, exam",
+    "nombreA11y": "Event name",
+    "dia": "Day",
+    "manana": "Tomorrow",
+    "diaElegidoA11y": "The chosen day, {{dia}}",
+    "fecha": "Date",
+    "placeholderFecha": "YYYY-MM-DD",
+    "hora": "Time",
+    "sinHoraA11y": "No time, all day",
+    "ayudaHora": "With a time, the event sits on the day's timeline. Without one, it counts as all day.",
+    "evento": "Event",
+    "eliminarEvento": "Delete event",
+    "fechaA11y": "Date: {{dia}}",
+    "horaTodoElDiaA11y": "Time: all day",
+    "horaA11y": "Time: {{hora}}",
+    "nota": "Note"
+  },
+  "hook": {
+    "fechaInvalida": "Invalid date. Use the YYYY-MM-DD format, e.g. 2026-06-15."
+  }
+}

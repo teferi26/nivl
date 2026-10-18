@@ -16,6 +16,17 @@ const VACIA = '-';
 
 const esEspanol = (idioma: IdiomaInterfaz) => idioma === 'es' || idioma === 'xx';
 
+/**
+ * La etiqueta BCP 47 que se le pasa a Intl para cada idioma de la interfaz.
+ * El portugués es el europeo (decisión de Modos F1: pt-PT con variantes
+ * neutras); el resto, la variante por defecto de Intl. `xx` formatea como es.
+ */
+export function localeIntl(idioma: IdiomaInterfaz = idiomaInterfazActual()): string {
+  if (esEspanol(idioma)) return 'es-ES';
+  if (idioma === 'pt') return 'pt-PT';
+  return idioma;
+}
+
 function milesEs(n: number): string {
   const r = Math.round(n);
   const signo = r < 0 ? '-' : '';
@@ -34,7 +45,7 @@ export function miles(n: number, idioma: IdiomaInterfaz = idiomaInterfazActual()
   if (!Number.isFinite(n)) return VACIA;
   if (esEspanol(idioma)) return milesEs(n);
   try {
-    return new Intl.NumberFormat(idioma, { maximumFractionDigits: 0, useGrouping: true }).format(Math.round(n));
+    return new Intl.NumberFormat(localeIntl(idioma), { maximumFractionDigits: 0, useGrouping: true }).format(Math.round(n));
   } catch {
     return milesEs(n);
   }
@@ -45,7 +56,7 @@ export function decimal(n: number, dec = 0, idioma: IdiomaInterfaz = idiomaInter
   const opciones = { minimumFractionDigits: dec, maximumFractionDigits: dec };
   if (esEspanol(idioma)) return n.toLocaleString('es-ES', opciones);
   try {
-    return n.toLocaleString(idioma, opciones);
+    return n.toLocaleString(localeIntl(idioma), opciones);
   } catch {
     return n.toLocaleString('es-ES', opciones);
   }
@@ -55,7 +66,7 @@ export function decimal(n: number, dec = 0, idioma: IdiomaInterfaz = idiomaInter
 export function moneda(n: number, dec = 0, idioma: IdiomaInterfaz = idiomaInterfazActual()): string {
   if (esEspanol(idioma)) return `${decimal(n, dec, 'es')} €`;
   try {
-    return new Intl.NumberFormat(idioma, {
+    return new Intl.NumberFormat(localeIntl(idioma), {
       style: 'currency',
       currency: 'EUR',
       minimumFractionDigits: dec,
@@ -75,7 +86,7 @@ export function fechaCorta(iso: string, idioma: IdiomaInterfaz = idiomaInterfazA
   if (!esEspanol(idioma)) {
     try {
       const fecha = new Date(Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3])));
-      return new Intl.DateTimeFormat(idioma, { day: 'numeric', month: 'short', timeZone: 'UTC' }).format(fecha);
+      return new Intl.DateTimeFormat(localeIntl(idioma), { day: 'numeric', month: 'short', timeZone: 'UTC' }).format(fecha);
     } catch {
       // Sigue con el español.
     }
@@ -107,7 +118,7 @@ export function nombreMes(indice: number, idioma: IdiomaInterfaz = idiomaInterfa
   if (!esEspanol(idioma)) {
     try {
       const fecha = new Date(Date.UTC(2024, i, 1));
-      return new Intl.DateTimeFormat(idioma, { month: 'long', timeZone: 'UTC' }).format(fecha);
+      return new Intl.DateTimeFormat(localeIntl(idioma), { month: 'long', timeZone: 'UTC' }).format(fecha);
     } catch {
       // Sigue con el español.
     }
@@ -131,7 +142,7 @@ export function nombreDia(indice: number, forma: FormaDia = 'largo', idioma: Idi
     try {
       // 2024-01-01 fue lunes.
       const fecha = new Date(Date.UTC(2024, 0, 1 + i));
-      const largo = new Intl.DateTimeFormat(idioma, { weekday: 'long', timeZone: 'UTC' }).format(fecha);
+      const largo = new Intl.DateTimeFormat(localeIntl(idioma), { weekday: 'long', timeZone: 'UTC' }).format(fecha);
       return forma === 'letra' ? mayus(largo.slice(0, 1), idioma) : largo;
     } catch {
       // Sigue con el español.
@@ -140,11 +151,27 @@ export function nombreDia(indice: number, forma: FormaDia = 'largo', idioma: Idi
   return forma === 'letra' ? LETRAS_ES[i]! : DIAS_ES[i]!;
 }
 
+/**
+ * La fecha larga de un día: «domingo, 16 de agosto» (con `anio`, «sábado, 19
+ * de septiembre de 2026»). En `es` es exactamente el `toLocaleDateString('es-ES')`
+ * que usaba lib/dates; en el resto, Intl en el idioma de la interfaz.
+ */
+export function fechaLarga(d: Date, anio = false, idioma: IdiomaInterfaz = idiomaInterfazActual()): string {
+  const opciones: Intl.DateTimeFormatOptions = anio
+    ? { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }
+    : { weekday: 'long', day: 'numeric', month: 'long' };
+  try {
+    return d.toLocaleDateString(localeIntl(idioma), opciones);
+  } catch {
+    return d.toLocaleDateString('es-ES', opciones);
+  }
+}
+
 /** Mayúsculas con las reglas del idioma («día» → «DÍA»). */
 export function mayus(s: string, idioma: IdiomaInterfaz = idiomaInterfazActual()): string {
   if (esEspanol(idioma)) return s.toLocaleUpperCase('es-ES');
   try {
-    return s.toLocaleUpperCase(idioma);
+    return s.toLocaleUpperCase(localeIntl(idioma));
   } catch {
     return s.toUpperCase();
   }

@@ -1,0 +1,247 @@
+{
+  "seguridad": {
+    "eyebrow": "Safety",
+    "soporte": "Contact support",
+    "retar": "Challenge to a duel",
+    "denunciar": "Report",
+    "denunciarCuerpo": "Choose what you want to report. The team will review the profile and may remove content or suspend their social access.",
+    "enviarDenuncia": "Send report",
+    "bloquear": "Block user",
+    "denunciaRegistrada": "Report submitted for review. You can also block this person.",
+    "bloquearMensaje": "You'll stop seeing each other in requests and rankings, including the ludus. The friendship will be removed.",
+    "bloquearConfirmar": "Block",
+    "desbloquear": "Unblock user",
+    "desbloquearMensaje": "They'll be able to send you a friend request again. The old friendship isn't restored. If you share a ludus, they'll show up again.",
+    "desbloquearConfirmar": "Unblock",
+    "soporteNoAbierto": "Couldn't open support"
+  },
+  "duelo": {
+    "rivalOculto": "Hidden rival",
+    "sinDatos": "Not enough data yet",
+    "vasDelante": "You're ahead",
+    "rivalDelante": "{{nombre}} is ahead",
+    "empatados": "You're tied",
+    "resultado": {
+      "gano": "You won",
+      "pierdo": "You lost",
+      "empate": "Tie",
+      "sin_datos": "Not enough data"
+    },
+    "cifrasVacias": "- vs -",
+    "cifras": "{{mio}} vs {{suyo}}",
+    "detalle": "Last week · {{cifras}}",
+    "detalleResultado": "Last week · {{cifras}} · {{resultado}}",
+    "a11yOculto": "Duel with {{nombre}}, {{quedan}}. No rival data.",
+    "a11yOcultoMia": "Duel with {{nombre}}, {{quedan}}. Your discipline {{mia}}. No rival data.",
+    "a11y": "Duel with {{nombre}}, {{quedan}}. Your discipline {{mia}}, theirs {{suya}}. {{linea}}.",
+    "ultimoDia": "last day",
+    "quedan": "{{n}} days left"
+  },
+  "podio": {
+    "fueraRanking": "You're out of the ranking",
+    "puestoSinMedir": "Your place: not measured",
+    "puesto": "Your place: {{puesto}} of {{total}}",
+    "a11y": "Podium. {{lista}}.",
+    "a11yHueco": "{{posicion}}, {{nombre}}, {{valor}}",
+    "tu": "you"
+  },
+  "comun": {
+    "tu": "You",
+    "quitarAmigo": "Remove friend",
+    "aceptar": "Accept"
+  },
+  "lista": {
+    "nivel": "Level {{nivel}}",
+    "racha": "streak {{n}}",
+    "elite": "Élite",
+    "sinPuesto": "No place",
+    "puesto": "Place {{n}}",
+    "conInsignia": "{{nombre}}, {{insignia}}",
+    "a11yYo": "{{puesto}}. {{nombre}}, level {{nivel}}, {{valor}}.",
+    "a11y": "{{puesto}}. {{nombre}}, level {{nivel}}, {{valor}}. Tap for more options.",
+    "a11yQuitar": "{{puesto}}. {{nombre}}, level {{nivel}}, {{valor}}. Tap for more options. Long-press to remove.",
+    "nombreYo": "{{nombre}} · you",
+    "masOpciones": "More options with {{nombre}}"
+  },
+  "codigo": {
+    "yaSoisRivales": "{{nombre}} had already looked you up. You're rivals now.",
+    "solicitudEnviada": "Request sent to {{nombre}}. Waiting for their answer.",
+    "tuCodigo": "Your code",
+    "tuCodigoA11y": "Your friend code: {{codigo}}",
+    "tuCodigoCuerpo": "Anyone with it can send you a friend request. They'll see your level, your streak and your completion; never your health, your money or your journal.",
+    "copiado": "Copied",
+    "copiar": "Copy",
+    "invitar": "Invite",
+    "anadir": "Add by code",
+    "campo": "Friend code",
+    "campoA11y": "Friend code, eight characters",
+    "enviar": "Send"
+  },
+  "solicitudes": {
+    "quitarMensaje": "{{nombre}} will leave your ranking and you'll leave theirs. Getting back will take a new request.",
+    "titulo": "Requests",
+    "enviadas": "Sent requests",
+    "entrante": "Level {{nivel}} · wants to take you on",
+    "rechazarA11y": "Decline {{nombre}}'s request",
+    "saliente": "Level {{nivel}} · waiting for their answer",
+    "retirar": "Withdraw",
+    "retirarTitulo": "Withdraw request",
+    "retirarMensaje": "{{nombre}} will no longer see it.",
+    "retirarA11y": "Withdraw the request sent to {{nombre}}"
+  },
+  "ludus": {
+    "eligeObjetivo": "Choose your ludus goal.",
+    "titulo": "Your ludus",
+    "formandose": "Your ludus is still forming. The system is adding gladiators with your same goal.",
+    "ayuda": "The same numbers as the friends ranking: penalties don't count and nobody buys a place. No chat: in the ludus you compete with actions.",
+    "peticionTitulo": "Request registered",
+    "peticionCuerpo": "Goal: {{objetivo}}. Each ludus is formed by hand, with {{min}} to {{max}} Élite gladiators with the same goal. It will show up here.",
+    "cambiarPeticion": "Change the request",
+    "presentacion": "A ludus is your gladiator school: {{min}} to {{max}} Élite members with the same goal, measured every week. No chat, no noise, just the scoreboard. Choose yours and the system assigns you a place.",
+    "objetivoA11y": "Ludus goal: {{objetivo}}",
+    "nota": "Note (optional)",
+    "notaPlaceholder": "What you're chasing right now",
+    "notaA11y": "Note for your ludus, optional",
+    "pedirPlaza": "Request a place"
+  },
+  "subtitulo": {
+    "vacio": "Nobody improves the same way when someone's watching the scoreboard.",
+    "rivales_one": "{{count}} rival in your arena.",
+    "rivales_other": "{{count}} rivals in your arena.",
+    "rivalesResponder_one": "{{count}} rival in your arena · {{porResponder}} to answer.",
+    "rivalesResponder_other": "{{count}} rivals in your arena · {{porResponder}} to answer."
+  },
+  "vista": {
+    "eyebrow": "Arena",
+    "titulo": "Friends",
+    "compartirSemana": "Share my week",
+    "preparandoSemana": "Getting your week ready to share",
+    "cargando": "Loading the arena",
+    "falloActualizar": "Couldn't refresh: {{fallo}}"
+  },
+  "ocultos": {
+    "titulo": "Out of the ranking",
+    "detalle": "They've hidden their scoreboard. Still your friend.",
+    "a11y": "{{nombre}}, out of the ranking. Tap to report or block. Long-press to remove."
+  },
+  "ranking": {
+    "titulo": "Ranking",
+    "vacioTitulo": "Your arena is empty",
+    "vacioCuerpo": "Alone, you ease off. With a rival watching, the day you were going to skip gets done. Give your code to someone who really pushes you: one is enough.",
+    "invitarPrimero": "Invite the first one",
+    "ayuda": {
+      "xp": "XP earned from missions in the period. Penalty missions don't count: catching up isn't getting ahead. Long-press someone to remove them.",
+      "cumplimiento": "Missions completed out of scheduled. Today only counts once you complete it. Long-press someone to remove them.",
+      "racha": "Consecutive closed days. It's the only number that doesn't depend on the period. Long-press someone to remove them."
+    }
+  },
+  "ventana": {
+    "semana": "Week",
+    "mes": "Month"
+  },
+  "segmento": {
+    "ranking": {
+      "rotulo": "Ranking period",
+      "semana": "Ranking for the last 7 days",
+      "mes": "Ranking for the last 30 days"
+    },
+    "ludus": {
+      "rotulo": "Ludus period",
+      "semana": "Ludus for the last 7 days",
+      "mes": "Ludus for the last 30 days"
+    }
+  },
+  "metricas": {
+    "ranking": "Sort by {{metrica}}",
+    "ludus": "Sort the ludus by {{metrica}}"
+  },
+  "invitados": {
+    "titulo": "Your invites",
+    "activos": "Active",
+    "activosA11y": "Active invites: {{n}}",
+    "enPrueba": "On trial",
+    "enPruebaA11y": "On trial: {{n}}",
+    "siguiente": "Next badge: {{nombre}} at {{umbral}} active invites",
+    "ayuda": "Counts anyone who joins with your code and is active 3 days in their first two weeks. It's a badge: it gives no XP or Pro days."
+  },
+  "convivencia": {
+    "titulo": "Community and safety",
+    "cuerpo": "No harassment, threats, impersonation or offensive content. Names, titles and photos are reviewed before others see them: until then they'll see a neutral alias and image. Your profile keeps your details.",
+    "bloqueado": "Blocked user",
+    "desbloquear": "Unblock"
+  },
+  "privacidad": {
+    "titulo": "Privacy",
+    "aparecer": "Appear in rankings",
+    "visible": "Your friends see your level, your streak, your XP for the period and your completion. Nothing else.",
+    "oculto": "You're out: your friends don't see your numbers or your portrait. You still see theirs.",
+    "aparecerA11y": "Appear in your friends' rankings"
+  },
+  "competicion": {
+    "regla": "Discipline is what's measured: how much of your own plan you complete, weighted by difficulty. Piling on missions doesn't win. On a tie, more active days.",
+    "titulo": "Competition",
+    "cargando": "Loading the competition",
+    "teReta": "{{nombre}} challenges you",
+    "teRetaDetalle": "Discipline duel · {{quedan}}",
+    "rechazarDuelo": "Decline the duel from {{nombre}}",
+    "retoEnviado": "Challenge sent · waiting for their answer",
+    "semanaCerrada": "Week closed · settling",
+    "revancha": "Rematch",
+    "vacio": "Nobody's measuring you this week. Challenge a friend.",
+    "vacioAyuda": "A duel lasts one week, Monday to Sunday. {{regla}}",
+    "vacioAyudaLigas": "A duel lasts one week, Monday to Sunday. A league brings together up to {{max}} friends. {{regla}}",
+    "retar": "Challenge",
+    "sinAmigos": "To challenge someone, they have to be your friend first.",
+    "masOpciones": "More options for the duel with {{nombre}}",
+    "masOpcionesPista": "Send a report or block user",
+    "tuContra": "You vs {{nombre}}",
+    "lineaSemana": "{{linea}} · discipline this week",
+    "sinDatosRival": "No rival data · discipline this week",
+    "disciplinaDe": "{{nombre}}'s discipline"
+  },
+  "retar": {
+    "enviado": "Challenge sent to {{nombre}}. It starts when they accept.",
+    "eyebrow": "Weekly duel",
+    "retarA": "Challenge {{nombre}}",
+    "retarAmigo": "Challenge a friend",
+    "enviar": "Send the challenge",
+    "rival": "Rival",
+    "metrica": "Metric",
+    "disciplina": "Discipline",
+    "duracion": "Duration",
+    "duracionValor": "This week, through Sunday ({{quedan}})",
+    "ayuda": "{{regla}} It's the only metric and the only duration for a duel: that way nobody picks the one that suits them."
+  },
+  "liga": {
+    "teInvita": "{{de}} invites you to their league",
+    "entrar": "Join",
+    "rechazar": "Decline the league {{nombre}}",
+    "puestoSemana": "#{{puesto}} of {{total}} this week",
+    "miembrosSinDatos_one": "{{count}} member · no data yet this week",
+    "miembrosSinDatos_other": "{{count}} members · no data yet this week",
+    "abrirA11y": "League {{nombre}}. Open the board",
+    "crear": "Create league",
+    "crearBoton": "Create",
+    "nombreCorto": "Give it a name of at least 2 letters.",
+    "privada": "Private league",
+    "nombre": "League name",
+    "nombrePlaceholder": "The gym crew",
+    "crearAyuda": "Only friends you invite can join, and each one decides whether to accept. Up to {{max}} members. The table resets every Monday. {{regla}}",
+    "invitacionEnviada": "Invite sent to {{nombre}}. They join when they accept.",
+    "soloCreador": "Only the league's creator can invite.",
+    "salir": "Leave the league",
+    "salirMensaje": "You'll stop seeing their table and they'll stop seeing yours. If you created it, the league is disbanded for everyone.",
+    "salirConfirmar": "Leave",
+    "eyebrow": "League · this week",
+    "cargandoTablero": "Loading the board",
+    "sinDatosSemana": "No data yet this week",
+    "filaDetalle": "{{dias}} active days · pace {{ritmo}}",
+    "filaA11ySinDatos": "{{puesto}}. {{nombre}}. No data yet this week.",
+    "filaA11y": "{{puesto}}. {{nombre}}. Discipline {{indice}}, {{dias}} active days.",
+    "tableroAyuda": "The number is this week's discipline, from 0 to 100. Ties are broken by pace against your previous four weeks.",
+    "invitar": "Invite",
+    "invitado": "{{nombre}} · invited",
+    "invitarA11y": "Invite {{nombre}} to the league",
+    "invitarAyuda": "Only the league's creator can invite. If you didn't create it, ask them to invite whoever you want to add."
+  }
+}
