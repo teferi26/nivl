@@ -20,6 +20,8 @@ const MATERIALES: Material[] = [
   'banda',
   // brazos
   'barra_z',
+  // espalda
+  'barra_fija',
 ];
 
 /** Archivos de ejercicios: los de la carpeta y los de cada grupo (fase 2), sin índices ni piezas comunes. */
@@ -27,7 +29,7 @@ function archivosDeEjercicios(dir: string): string[] {
   const out: string[] = [];
   for (const f of fs.readdirSync(dir, { withFileTypes: true })) {
     if (f.isDirectory()) out.push(...archivosDeEjercicios(path.join(dir, f.name)));
-    else if (f.name.endsWith('.ts') && f.name !== 'index.ts' && f.name !== 'comun.ts') out.push(f.name.slice(0, -3));
+    else if (f.name.endsWith('.ts') && f.name !== 'index.ts' && f.name !== 'comun.ts' && !f.name.startsWith('_')) out.push(f.name.slice(0, -3));
   }
   return out;
 }
@@ -102,6 +104,10 @@ describe.each(EJERCICIOS.map((e) => [e.id, e] as const))('%s', (_id, ej: Ejercic
     if (ej.carga?.tipo === 'barra') expect(ej.material).toContain(ej.carga.forma === 'z' ? 'barra_z' : 'barra');
     if (ej.carga?.tipo === 'mancuerna') expect(ej.material).toContain('mancuerna');
     if (ej.escenario?.some((e) => e.tipo === 'banco')) expect(ej.material).toContain('banco');
+    // espalda
+    if (ej.carga?.tipo === 'polea') expect(ej.material).toContain('polea');
+    if (ej.carga?.tipo === 'palanca') expect(ej.material).toContain('maquina');
+    if (ej.escenario?.some((e) => e.tipo === 'barra_dominadas')) expect(ej.material).toContain('barra_fija');
   });
 
   it('sustitutos: existen y no es él mismo', () => {

@@ -66,7 +66,8 @@
     "maquina": "Máquina",
     "kettlebell": "Kettlebell",
     "banda": "Banda elástica",
-    "barra_z": "Barra Z"
+    "barra_z": "Barra Z",
+    "barra_fija": "Barra fija"
   },
   "nivel": {
     "principiante": "Principiante",

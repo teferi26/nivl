@@ -16,6 +16,7 @@
 
 import { construirEsqueleto, dir, LARGO, type Esqueleto, type Punto } from './esqueleto';
 import { angulosDePose, angulosEn } from './interpolar';
+import { dibujarCargaEspalda, dibujarEscenarioEspalda, esCargaEspalda, esEscenarioEspalda } from './material/espalda';
 import { FORMAS_FRONTAL, FORMAS_LATERAL, MUSCULOS, type BaseSegmento } from './musculos';
 import { tramoBarraZ } from './material/barra-z';
 import type { Ancla, Carga, Ejercicio, Escenario, MusculoId, Pose, SegmentoId, Vista } from './tipos';
@@ -518,6 +519,7 @@ function mancuerna(c: Punto, eje: Punto, deLado: boolean): string {
 function cargaLado(e: Esqueleto, carga: Carga | undefined, lado: 'c' | 'l', vista: Vista): string {
   'worklet';
   if (!carga) return '';
+  if (esCargaEspalda(carga)) return dibujarCargaEspalda(carga, lado, { c: e.p.agarre_c, l: e.p.agarre_l });
   if (carga.tipo === 'mancuerna') {
     if (carga.lados.indexOf(lado === 'c' ? 'cerca' : 'lejos') < 0) return '';
     const c = lado === 'c' ? e.p.agarre_c : e.p.agarre_l;
@@ -559,17 +561,21 @@ function cargaLado(e: Esqueleto, carga: Carga | undefined, lado: 'c' | 'l', vist
 export function centroCarga(e: Esqueleto, carga: Carga | undefined, vista: Vista): Punto | null {
   'worklet';
   if (!carga) return null;
-  if (carga.tipo === 'mancuerna' || carga.en === 'agarre') return e.p.agarre_c;
+  if (esCargaEspalda(carga) || carga.tipo === 'mancuerna' || carga.en === 'agarre') return e.p.agarre_c;
   return en(marcoDe(e, 'tronco', vista), carga.t, -carga.dorso);
 }
 
-function escenario(lista: readonly Escenario[] | undefined, capa: 'fondo' | 'medio'): string {
+function escenario(lista: Ejercicio['escenario'], capa: 'fondo' | 'medio'): string {
   'worklet';
   if (!lista) return '';
   let d = '';
   for (let i = 0; i < lista.length; i++) {
     const b = lista[i];
     if (b.capa !== capa) continue;
+    if (esEscenarioEspalda(b)) {
+      d += dibujarEscenarioEspalda(b);
+      continue;
+    }
     const grosor = 5;
     d += poligono([
       { x: b.x, y: b.alto },
@@ -602,7 +608,7 @@ export function capasDe(
   vista: Vista,
   musculos: Musculos,
   carga?: Carga,
-  lista?: readonly Escenario[],
+  lista?: Ejercicio['escenario'],
   cara: 'ant' | 'post' = 'ant',
 ): string[] {
   'worklet';

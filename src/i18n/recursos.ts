@@ -59,6 +59,8 @@ import oferta from './es/oferta.json';
 // IRON fase 2: un catálogo de ejercicios por grupo.
 // brazos
 import ironBrazos from './es/iron-brazos.json';
+// IRON fase 2: un namespace por grupo de ejercicios.
+import ironEspalda from './es/iron-espalda.json';
 
 /** Los catálogos en español: la fuente de verdad de todas las claves. */
 export const RECURSOS_ES = {
@@ -105,6 +107,7 @@ export const RECURSOS_ES = {
   oferta,
   // brazos
   'iron-brazos': ironBrazos,
+  'iron-espalda': ironEspalda,
 };
 
 export type RecursosEs = typeof RECURSOS_ES;

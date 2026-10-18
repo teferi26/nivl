@@ -6,6 +6,7 @@
 
 import type { Ejercicio } from '../tipos';
 import { curlBicepsMancuerna } from './curl-biceps-mancuerna';
+import { ESPALDA } from './espalda';
 import { plancha } from './plancha';
 import { pressBanca } from './press-banca';
 import { remoMancuerna } from './remo-mancuerna';
@@ -19,8 +20,10 @@ export const EJERCICIOS: readonly Ejercicio[] = [
   remoMancuerna,
   curlBicepsMancuerna,
   plancha,
+  // Fase 2, un grupo por línea.
   // brazos
   ...BRAZOS,
+  ...ESPALDA,
 ];
 
 export function ejercicioPorId(id: string): Ejercicio | undefined {

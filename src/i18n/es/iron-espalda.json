@@ -1,0 +1,297 @@
+{
+  "ejercicios": {
+    "dominada": {
+      "nombre": "Dominada",
+      "cues": {
+        "hombros": "Empieza colgado con los hombros activos, lejos de las orejas.",
+        "codos": "Lleva los codos hacia abajo y atrás hasta pasar la barbilla.",
+        "bajada": "Baja controlado hasta estirar los brazos del todo."
+      },
+      "errores": {
+        "balanceo": "Balancear las piernas para subir.",
+        "medio": "Quedarse a medio recorrido abajo.",
+        "cuello": "Estirar el cuello para llegar a la barra."
+      }
+    },
+    "dominada-supina": {
+      "nombre": "Dominada supina",
+      "cues": {
+        "agarre": "Palmas hacia ti, a la anchura de los hombros.",
+        "pecho": "Saca el pecho hacia la barra y sube hasta pasar la barbilla.",
+        "bajada": "Baja despacio hasta estirar los codos."
+      },
+      "errores": {
+        "patada": "Dar patadas para ganar impulso.",
+        "medio": "No estirar los brazos abajo."
+      }
+    },
+    "dominada-neutra": {
+      "nombre": "Dominada con agarre neutro",
+      "cues": {
+        "agarre": "Palmas enfrentadas en las asas paralelas.",
+        "codos": "Codos cerca del cuerpo, hacia las costillas.",
+        "bajada": "Baja controlado hasta colgar con los hombros activos."
+      },
+      "errores": {
+        "hombros": "Dejar los hombros pegados a las orejas abajo.",
+        "balanceo": "Balancear el cuerpo para subir."
+      }
+    },
+    "dominada-negativa": {
+      "nombre": "Dominada negativa",
+      "cues": {
+        "arriba": "Sube con un salto o desde un cajón estable, barbilla sobre la barra.",
+        "lento": "Baja en 3 a 5 segundos, sin dejarte caer.",
+        "abajo": "Abajo estira los brazos, apoya los pies y vuelve a empezar."
+      },
+      "errores": {
+        "caer": "Dejarse caer en la segunda mitad de la bajada.",
+        "hombros": "Soltar los hombros de golpe al final."
+      }
+    },
+    "dominada-escapular": {
+      "nombre": "Dominada escapular",
+      "cues": {
+        "brazos": "Brazos estirados todo el rato: no dobles los codos.",
+        "hombros": "Baja los hombros lejos de las orejas y sube un poco el pecho.",
+        "pausa": "Aguanta un segundo arriba y suelta despacio."
+      },
+      "errores": {
+        "codos": "Doblar los codos y convertirlo en una dominada corta.",
+        "balanceo": "Balancear las piernas."
+      }
+    },
+    "remo-invertido": {
+      "nombre": "Remo invertido",
+      "cues": {
+        "tabla": "Cuerpo recto de los talones a la cabeza, glúteos apretados.",
+        "pecho": "Lleva el pecho a la barra con los codos hacia atrás.",
+        "mesa": "En casa, usa una mesa firme que no pueda volcar."
+      },
+      "errores": {
+        "cadera": "Dejar caer la cadera.",
+        "cuello": "Adelantar la barbilla para llegar a la barra."
+      }
+    },
+    "jalon-pecho": {
+      "nombre": "Jalón al pecho",
+      "cues": {
+        "rodillo": "Ajusta el rodillo para que los muslos queden fijos.",
+        "pecho": "Baja la barra a la parte alta del pecho, con el tronco algo atrás.",
+        "codos": "Tira con los codos hacia abajo, no con las manos."
+      },
+      "errores": {
+        "balanceo": "Echarse atrás para mover más peso.",
+        "nuca": "Bajar la barra por detrás de la nuca.",
+        "subida": "Soltar la barra de golpe en la subida."
+      }
+    },
+    "jalon-supino": {
+      "nombre": "Jalón supino",
+      "cues": {
+        "agarre": "Palmas hacia ti, a la anchura de los hombros.",
+        "codos": "Codos pegados al cuerpo hasta la parte baja del pecho.",
+        "subida": "Sube controlado hasta estirar los brazos."
+      },
+      "errores": {
+        "balanceo": "Balancear el tronco en cada repetición.",
+        "munecas": "Doblar las muñecas en lugar de tirar con la espalda."
+      }
+    },
+    "jalon-neutro": {
+      "nombre": "Jalón con triángulo",
+      "cues": {
+        "codos": "Codos cerca del cuerpo, hacia las costillas.",
+        "pecho": "Pecho arriba: el triángulo llega a la parte baja del pecho.",
+        "subida": "Deja subir los brazos sin perder la postura."
+      },
+      "errores": {
+        "balanceo": "Echarse atrás para ayudarse.",
+        "encoger": "Encoger los hombros al tirar."
+      }
+    },
+    "pullover-polea": {
+      "nombre": "Pullover en polea alta",
+      "cues": {
+        "brazos": "Brazos casi rectos: el codo no se dobla durante el recorrido.",
+        "arco": "Baja la barra en arco hasta los muslos.",
+        "tronco": "Tronco inclinado y quieto, abdomen firme."
+      },
+      "errores": {
+        "codos": "Doblar los codos y convertirlo en un press.",
+        "tronco": "Mover el tronco para bajar la barra."
+      }
+    },
+    "remo-barra": {
+      "nombre": "Remo con barra",
+      "cues": {
+        "bisagra": "Cadera atrás, rodillas sueltas y espalda neutra.",
+        "codos": "Lleva la barra al abdomen tirando con los codos.",
+        "espalda": "El tronco no se mueve: si se levanta, baja el peso."
+      },
+      "errores": {
+        "tronco": "Levantar el tronco para subir la barra.",
+        "lumbar": "Redondear la zona lumbar.",
+        "recorrido": "Hacer medio recorrido arriba."
+      }
+    },
+    "remo-barra-supino": {
+      "nombre": "Remo con barra supino",
+      "cues": {
+        "tronco": "Tronco algo más erguido que en el remo prono.",
+        "codos": "Codos pegados al cuerpo hasta la parte baja del abdomen.",
+        "bajada": "Baja controlado hasta estirar los brazos."
+      },
+      "errores": {
+        "balanceo": "Balancear el tronco para subir la barra.",
+        "munecas": "Doblar las muñecas al tirar."
+      }
+    },
+    "remo-mancuernas": {
+      "nombre": "Remo con mancuernas",
+      "cues": {
+        "bisagra": "Cadera atrás y espalda neutra, rodillas sueltas.",
+        "codos": "Palmas enfrentadas y codos hacia la cadera.",
+        "cuello": "Cuello en línea con la espalda, mirada al suelo delante."
+      },
+      "errores": {
+        "tronco": "Subir el tronco en cada repetición.",
+        "encoger": "Encoger los hombros en lugar de tirar con los codos."
+      }
+    },
+    "remo-polea-sentado": {
+      "nombre": "Remo en polea sentado",
+      "cues": {
+        "pecho": "Pecho arriba y espalda neutra todo el recorrido.",
+        "codos": "Lleva el triángulo al abdomen con los codos pegados.",
+        "vuelta": "Estira los brazos en la vuelta sin redondear la espalda."
+      },
+      "errores": {
+        "balanceo": "Balancear el tronco adelante y atrás.",
+        "lumbar": "Redondear la zona lumbar al estirar."
+      }
+    },
+    "remo-maquina": {
+      "nombre": "Remo en máquina",
+      "cues": {
+        "pecho": "Pecho apoyado en el respaldo durante todo el recorrido.",
+        "codos": "Tira con los codos hacia atrás y junta las escápulas.",
+        "vuelta": "Vuelve despacio hasta estirar los brazos."
+      },
+      "errores": {
+        "despegar": "Despegar el pecho del apoyo para tirar más.",
+        "encoger": "Encoger los hombros hacia las orejas."
+      }
+    },
+    "face-pull": {
+      "nombre": "Face pull",
+      "cues": {
+        "codos": "Codos altos y abiertos, a la altura de los hombros.",
+        "cara": "Tira de la cuerda hacia la cara separando las manos.",
+        "tronco": "Tronco quieto: el movimiento es de los brazos."
+      },
+      "errores": {
+        "peso": "Cargar tanto que el tronco se va atrás.",
+        "codos": "Bajar los codos y convertirlo en un remo."
+      }
+    },
+    "peso-muerto": {
+      "nombre": "Peso muerto",
+      "cues": {
+        "barra": "La barra sobre el medio del pie y pegada a las piernas.",
+        "espalda": "Espalda neutra y pecho arriba antes de tirar.",
+        "empuja": "Empuja el suelo con las piernas y extiende la cadera.",
+        "arriba": "Arriba termina de pie, sin echarte atrás."
+      },
+      "errores": {
+        "lumbar": "Redondear la zona lumbar.",
+        "lejos": "Separar la barra de las piernas.",
+        "cadera": "Subir la cadera antes que la barra."
+      }
+    },
+    "peso-muerto-sumo": {
+      "nombre": "Peso muerto sumo",
+      "cues": {
+        "pies": "Pies muy abiertos, puntas hacia fuera y manos por dentro.",
+        "rodillas": "Abre las rodillas en la línea de las puntas.",
+        "pecho": "Pecho arriba y barra pegada al cuerpo."
+      },
+      "errores": {
+        "rodillas": "Dejar que las rodillas se cierren al subir.",
+        "lumbar": "Redondear la zona lumbar."
+      }
+    },
+    "peso-muerto-mancuernas": {
+      "nombre": "Peso muerto con mancuernas",
+      "cues": {
+        "cadera": "Lleva la cadera atrás con las mancuernas pegadas a las piernas.",
+        "espalda": "Espalda neutra; baja hasta media espinilla.",
+        "arriba": "Sube empujando el suelo y aprieta los glúteos."
+      },
+      "errores": {
+        "lumbar": "Redondear la espalda abajo.",
+        "lejos": "Separar las mancuernas del cuerpo."
+      }
+    },
+    "hiperextension": {
+      "nombre": "Hiperextensiones",
+      "cues": {
+        "almohadilla": "La almohadilla bajo la cadera, para doblarte por la cadera.",
+        "linea": "Sube hasta quedar en línea con las piernas, no más.",
+        "control": "Baja y sube despacio, sin impulso."
+      },
+      "errores": {
+        "pasarse": "Arquear la espalda por encima de la línea.",
+        "impulso": "Subir de golpe con impulso."
+      }
+    },
+    "superman": {
+      "nombre": "Superman",
+      "cues": {
+        "mirada": "Mira al suelo para mantener el cuello largo.",
+        "poco": "Sube pecho, brazos y piernas solo unos centímetros.",
+        "pausa": "Aguanta dos segundos arriba y baja despacio."
+      },
+      "errores": {
+        "cuello": "Levantar la cabeza para mirar al frente.",
+        "impulso": "Subir y bajar de golpe."
+      }
+    },
+    "pullover-mancuerna": {
+      "nombre": "Pullover con mancuerna",
+      "cues": {
+        "agarre": "Sujeta la mancuerna con las dos manos por el disco de arriba.",
+        "codos": "Codos un poco doblados y siempre igual.",
+        "rango": "Baja detrás de la cabeza solo hasta donde no duela el hombro."
+      },
+      "errores": {
+        "lumbar": "Arquear la zona lumbar al bajar.",
+        "codos": "Doblar y estirar los codos."
+      }
+    },
+    "remo-polea-una-mano": {
+      "nombre": "Remo en polea a una mano",
+      "cues": {
+        "postura": "Un pie adelantado, tronco algo inclinado y la otra mano en la cadera.",
+        "codo": "Lleva el codo atrás pegado al costado, hasta la cintura.",
+        "giro": "El tronco no gira para acompañar el tirón."
+      },
+      "errores": {
+        "giro": "Girar el tronco para mover más peso.",
+        "encoger": "Subir el hombro hacia la oreja al tirar."
+      }
+    },
+    "remo-polea-abierto": {
+      "nombre": "Remo en polea con agarre abierto",
+      "cues": {
+        "agarre": "Barra larga con agarre prono, más ancho que los hombros.",
+        "codos": "Codos abiertos hacia fuera: la barra llega a la parte baja del pecho.",
+        "escapulas": "Junta las escápulas al final y vuelve despacio."
+      },
+      "errores": {
+        "balanceo": "Balancear el tronco para tirar.",
+        "encoger": "Encoger los hombros al final."
+      }
+    }
+  }
+}
