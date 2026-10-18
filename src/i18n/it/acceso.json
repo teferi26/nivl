@@ -1,0 +1,97 @@
+{
+  "noHaSalido": "Non è andata",
+  "ayudaContrasena": "Niente regole strane: {{n}} caratteri o più. Una frase che ricordi va benissimo.",
+  "fuerza": {
+    "debil": "Debole",
+    "media": "Media",
+    "fuerte": "Forte"
+  },
+  "aviso": {
+    "registro": "Se l'email è nuova, ti abbiamo inviato un link per confermarla. Aprilo su questo telefono e poi entra con la tua password.",
+    "recuperacion": "Se a quell'email corrisponde un account, ti abbiamo inviato un link. Aprilo su questo telefono per scegliere una nuova password."
+  },
+  "error": {
+    "nombre": "Tra 1 e {{max}} caratteri.",
+    "correo": "Formato email non valido.",
+    "noCoinciden": "Le password non coincidono."
+  },
+  "contrasena": {
+    "etiqueta": "Password",
+    "repite": "Ripeti la password",
+    "placeholder": "Una frase che ricordi",
+    "ocultar": "Nascondi password",
+    "mostrar": "Mostra password",
+    "fuerzaA11y": "Sicurezza della password: {{fuerza}}",
+    "leFalta": "Manca: {{faltas}}."
+  },
+  "login": {
+    "casillaLegal": "Ho letto e accetto i Termini di NIVL e ho letto la sua Informativa sulla privacy.",
+    "intro": {
+      "signin": "Entra con la tua email e la tua password di NIVL.",
+      "signup": "Crea il tuo account NIVL. Ti invieremo un link per confermare l'email.",
+      "recover": "Scrivi l'email del tuo account e ti invieremo un link per scegliere una nuova password."
+    },
+    "introPortal": "Entra con il tuo account NIVL per vedere il tuo pannello creator.",
+    "olvidoPortal": "Hai dimenticato la password? Recuperala dall'app NIVL («Hai dimenticato la password?» nella schermata di accesso) e torna qui.",
+    "boton": {
+      "signin": "Entra",
+      "signup": "Crea account",
+      "recover": "Invia link"
+    },
+    "pestana": {
+      "signin": {
+        "texto": "Entra",
+        "a11y": "Entra con un account esistente"
+      },
+      "signup": {
+        "texto": "Crea account",
+        "a11y": "Crea un nuovo account"
+      }
+    },
+    "portal": "Portale creator",
+    "recuperarTitulo": "Recupera password",
+    "nombrePlaceholder": "Come vuoi che ti chiami il sistema",
+    "correo": "Email",
+    "correoPlaceholder": "tu@email.com",
+    "correoA11y": "Indirizzo email",
+    "terminos": "Termini di NIVL",
+    "terminosA11y": "Termini d'uso di NIVL",
+    "privacidad": "Privacy di NIVL",
+    "privacidadA11y": "Informativa sulla privacy di NIVL",
+    "revisaCorreo": "Controlla la tua email",
+    "faltaCasilla": "Spunta la casella dei Termini per continuare.",
+    "olvido": "Hai dimenticato la password?",
+    "volverAEntrar": "Torna all'accesso",
+    "notaCuenta": "Le tue abitudini, missioni e progressi si salvano nel tuo account NIVL."
+  },
+  "arranque": {
+    "cargando": "Caricamento"
+  },
+  "fuera": {
+    "eyebrow": "Percorso",
+    "titulo": "Fuori dall'arena",
+    "cuerpo": "Il sistema non riconosce questa destinazione. Forse il link è vecchio o copiato male.",
+    "volver": "Torna all'arena"
+  },
+  "cuenta": {
+    "eyebrow": "Account",
+    "irAEntrar": "Vai all'accesso"
+  },
+  "restablecer": {
+    "titulo": "Nuova password",
+    "comprobando": "Verifica del link in corso",
+    "nueva": "Nuova password",
+    "guardar": "Salva password",
+    "hechoRotulo": "Password cambiata",
+    "hechoMensaje": "Ora puoi usarla per entrare in NIVL.",
+    "continuar": "Continua",
+    "invalidoRotulo": "Link non valido",
+    "invalido": "Questo link non è valido o è scaduto. Chiedine uno nuovo da «Hai dimenticato la password?»."
+  },
+  "confirmar": {
+    "titulo": "Conferma email",
+    "falloRotulo": "Impossibile confermare",
+    "confirmando": "Conferma della tua email in corso",
+    "sinEnlace": "Questo link non contiene nulla da confermare. Apri l'ultima email che ti abbiamo inviato o entra con la tua password."
+  }
+}

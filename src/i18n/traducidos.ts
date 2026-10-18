@@ -138,9 +138,42 @@ import deResumen from './de/resumen.json';
 import deShare from './de/share.json';
 import deVoz from './de/voz.json';
 import deAvisos from './de/avisos.json';
+import itComun from './it/comun.json';
+import itRaiz from './it/raiz.json';
+import itUi from './it/ui.json';
+import itArena from './it/arena.json';
+import itAcceso from './it/acceso.json';
+import itAgenda from './it/agenda.json';
+import itAmigos from './it/amigos.json';
+import itAvances from './it/avances.json';
+import itCampanas from './it/campanas.json';
+import itCardio from './it/cardio.json';
+import itCelebracion from './it/celebracion.json';
+import itCoach from './it/coach.json';
+import itCompra from './it/compra.json';
+import itContrato from './it/contrato.json';
+import itCreador from './it/creador.json';
+import itDiario from './it/diario.json';
+import itDieta from './it/dieta.json';
+import itEconomia from './it/economia.json';
+import itFotos from './it/fotos.json';
+import itGym from './it/gym.json';
+import itHabitos from './it/habitos.json';
+import itHoy from './it/hoy.json';
+import itInforme from './it/informe.json';
+import itMemoria from './it/memoria.json';
+import itNutricion from './it/nutricion.json';
+import itOnboarding from './it/onboarding.json';
+import itOraculo from './it/oraculo.json';
+import itPerfil from './it/perfil.json';
+import itPuertas from './it/puertas.json';
+import itResumen from './it/resumen.json';
+import itShare from './it/share.json';
+import itVoz from './it/voz.json';
+import itAvisos from './it/avisos.json';
 
 /** Los idiomas con interfaz traducida (el español no está: es la base). */
-export const IDIOMAS_TRADUCIDOS = ['en', 'fr', 'pt', 'de'] as const;
+export const IDIOMAS_TRADUCIDOS = ['en', 'fr', 'pt', 'de', 'it'] as const;
 export type IdiomaTraducido = (typeof IDIOMAS_TRADUCIDOS)[number];
 
 type Catalogo = { [K in keyof RecursosEs]: unknown };
@@ -285,5 +318,40 @@ export const RECURSOS_LOCALES: Record<IdiomaTraducido, Catalogo> = {
     share: deShare,
     voz: deVoz,
     avisos: deAvisos,
+  },
+  it: {
+    comun: itComun,
+    raiz: itRaiz,
+    ui: itUi,
+    arena: itArena,
+    acceso: itAcceso,
+    agenda: itAgenda,
+    amigos: itAmigos,
+    avances: itAvances,
+    campanas: itCampanas,
+    cardio: itCardio,
+    celebracion: itCelebracion,
+    coach: itCoach,
+    compra: itCompra,
+    contrato: itContrato,
+    creador: itCreador,
+    diario: itDiario,
+    dieta: itDieta,
+    economia: itEconomia,
+    fotos: itFotos,
+    gym: itGym,
+    habitos: itHabitos,
+    hoy: itHoy,
+    informe: itInforme,
+    memoria: itMemoria,
+    nutricion: itNutricion,
+    onboarding: itOnboarding,
+    oraculo: itOraculo,
+    perfil: itPerfil,
+    puertas: itPuertas,
+    resumen: itResumen,
+    share: itShare,
+    voz: itVoz,
+    avisos: itAvisos,
   },
 };

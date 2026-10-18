@@ -1,0 +1,53 @@
+{
+  "eyebrowSlide": {
+    "portada": "NIVL · Ricordi",
+    "dato": "Il dato",
+    "foto": "Prova",
+    "duro": "Il difficile",
+    "cierre": "Chiusura"
+  },
+  "periodo": {
+    "mensual": "Mese del {{fecha}}",
+    "semanal": "Settimana del {{fecha}}"
+  },
+  "fila": {
+    "detalle": "{{diapositivas}} diapositive · {{fotos}} foto",
+    "abrirA11y": "Apri la sequenza: {{periodo}}. {{detalle}}. Vista",
+    "abrirSinVerA11y": "Apri la sequenza: {{periodo}}. {{detalle}}. Da vedere",
+    "visto": "Vista",
+    "sinVer": "Da vedere"
+  },
+  "vista": {
+    "vacioSubtitulo": "Ancora nessuna sequenza salvata.",
+    "sinVer_one": "{{count}} sequenza da vedere su {{total}}.",
+    "sinVer_other": "{{count}} sequenze da vedere su {{total}}.",
+    "guardados_one": "{{count}} sequenza salvata.",
+    "guardados_other": "{{count}} sequenze salvate.",
+    "eyebrow": "Ricordi",
+    "titulo": "La tua settimana in immagini",
+    "estaSemana": "Questa settimana",
+    "explicacion": "Il sistema raccoglie le foto che hai caricato con ogni missione e ti racconta la settimana. Se non ne hai caricata nessuna, non c'è riepilogo: una sequenza vuota non ricorda niente.",
+    "generar": "Genera quella di questa settimana",
+    "montando": "Il sistema sta montando la tua settimana…",
+    "notaMes": "Quella del mese la genera il sistema da solo, il giorno 1.",
+    "pases": "Sequenze",
+    "buscando": "Ricerca dei tuoi ricordi",
+    "vacioTitulo": "Ancora nessun ricordo",
+    "vacioCuerpo": "Carica una foto quando completi una missione e domenica avrai qualcosa da guardare."
+  },
+  "pase": {
+    "enPausa": "In pausa",
+    "tocaSalir": "Tocca per uscire",
+    "tocaSeguir": "Tocca a destra per continuare",
+    "compartirA11y": "Condividi questa diapositiva",
+    "cerrarA11y": "Chiudi il riepilogo",
+    "anterior": "Precedente",
+    "salir": "Esci",
+    "siguiente": "Successiva",
+    "noCompartir": "Impossibile condividere"
+  },
+  "generar": {
+    "sinFotos": "Nessuna foto questa settimana.",
+    "sinPro": "La sequenza della settimana la monta il coach, e il coach fa parte di NIVL Pro. Le tue foto e i tuoi ricordi salvati restano qui."
+  }
+}

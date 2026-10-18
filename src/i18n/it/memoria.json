@@ -1,0 +1,53 @@
+{
+  "categoria": {
+    "todo": "Tutto",
+    "aprendizaje": "Lezioni",
+    "venta": "Vendite",
+    "metrica": "Metriche",
+    "log": "Registro",
+    "objetivo": "Obiettivi",
+    "proyecto": "Progetti",
+    "regla": "Regole",
+    "perfil": "Profilo"
+  },
+  "hecho": {
+    "a11y": "{{categoria}}, {{fecha}}: {{contenido}}",
+    "pista": "Tocca per leggerlo per intero.",
+    "leerEntero": "Leggilo per intero",
+    "borrarAccion": "Elimina questo ricordo",
+    "borrarA11y": "Elimina il ricordo: {{contenido}}",
+    "borrando": "Eliminazione",
+    "borrar": "Elimina"
+  },
+  "vista": {
+    "eyebrow": "Il sistema ricorda",
+    "titulo": "Memoria",
+    "cargando": "Lettura della memoria",
+    "noResponde": "La memoria non risponde.",
+    "vacioSubtitulo": "Ancora niente annotato. Si scrive da sola mentre parli con il coach.",
+    "subtitulo_one": "{{count}} fatto annotato · dossier v{{version}}",
+    "subtitulo_other": "{{count}} fatti annotati · dossier v{{version}}",
+    "hechos": "Fatti",
+    "dossier": "Dossier",
+    "dossierA11y": "Dossier: versione {{version}}",
+    "esteMes": "Questo mese",
+    "esteMesSinDato": "Questo mese: nessun dato",
+    "esteMesA11y": "Questo mese: {{gasto}} dollari",
+    "quienEres": "Chi sei per il sistema",
+    "contraer": "Comprimi",
+    "leerTodo": "Leggi tutto",
+    "sinDossierTitulo": "Ancora nessuna memoria stabile",
+    "sinDossierCuerpo": "Si scrive da sola quando cambia qualcosa di strutturale: un nuovo obiettivo, un progetto che muore, una regola che concordi.",
+    "filtro": "{{categoria}} · {{n}}",
+    "filtroA11y": "Filtra per {{categoria}}, {{n}}",
+    "vacioTitulo": "Ancora niente annotato",
+    "vacioCategoria": "Niente in questa categoria",
+    "vacioCuerpo": "Ogni cifra, vendita, lezione o regola che racconti al coach resta qui con la sua data.",
+    "otraCategoria": "Prova un'altra categoria."
+  },
+  "borrar": {
+    "titulo": "Elimina ricordo",
+    "mensaje": "«{{contenido}}»\n\nSi elimina dai ricordi del coach. Se compare anche nel dossier o nella conversazione, lì resta finché non vengono riscritti."
+  },
+  "avisoTitulo": "Memoria"
+}

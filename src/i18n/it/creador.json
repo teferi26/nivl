@@ -1,0 +1,85 @@
+{
+  "mes": {
+    "ene": "gen",
+    "feb": "feb",
+    "mar": "mar",
+    "abr": "apr",
+    "may": "mag",
+    "jun": "giu",
+    "jul": "lug",
+    "ago": "ago",
+    "sept": "set",
+    "oct": "ott",
+    "nov": "nov",
+    "dic": "dic"
+  },
+  "historico": {
+    "mes": "{{mes}} {{anio}}",
+    "titulo": "Vendite per mese"
+  },
+  "vista": {
+    "eyebrow": "Programma creator",
+    "titulo": "Il tuo pannello",
+    "cargando": "Caricamento del pannello creator",
+    "portalSinPanelTitulo": "Questo pannello è per i creator del programma",
+    "portalSinPanelCuerpo": "Con questo account non c'è nessun pannello da mostrare.",
+    "sinPanelTitulo": "Questo pannello è dei creator",
+    "sinPanelCuerpo": "Il tuo account non fa parte del programma creator.",
+    "errorConDatos": "{{error}} Ciò che vedi potrebbe non essere aggiornato."
+  },
+  "codigo": {
+    "titulo": "Il tuo codice",
+    "a11y": "Il tuo codice: {{codigo}}",
+    "copiado": "Copiato",
+    "copiar": "Copia codice",
+    "nota": "Chi lo scrive in «Chi ti ha portato?» nei primi giorni resta con te per sempre. Il link apre l'app solo se è già installata."
+  },
+  "cuentas": {
+    "titulo": "Account e vendite",
+    "cuentas": "Account con il tuo codice",
+    "ventas": "Vendite",
+    "cuentasMes": "Account questo mese",
+    "ventasMes": "Vendite questo mese",
+    "queEsVenta": "Una vendita è un tuo account che si abbona per la prima volta.",
+    "comision": "Per una vendita annuale incassi {{importe}}; con il mensile, il tuo {{pct}}% di ciò che entra ogni mese fino ad arrivare alla stessa cifra."
+  },
+  "retos": {
+    "titulo": "Sfide",
+    "cumplido": "Completata",
+    "unidadVentas": "vendite",
+    "a11y": "Sfida {{titulo}}: {{ventas}} su {{meta}} vendite",
+    "premio": "Premio: {{premio}}"
+  },
+  "tabla": {
+    "titulo": "Classifica del mese",
+    "premio": "PREMIO AL PRIMO",
+    "nombreYo": "{{alias}} · tu",
+    "a11y": "Posto {{pos}}: {{alias}}, {{ventas}}",
+    "a11yYo": "Posto {{pos}}: {{alias}}, tu, {{ventas}}"
+  },
+  "rango": {
+    "titulo": "Il tuo rango",
+    "ventas90": "Vendite in 90 giorni",
+    "mesSeguido": "Mese di fila",
+    "mesesSeguidos": "Mesi di fila",
+    "haciaA11y": "Verso {{rango}}: {{ventas}} su {{umbral}} vendite",
+    "faltan": "{{rango}}: {{umbral}} vendite in 90 giorni. Te ne mancano {{faltan}}.",
+    "cumples": "Hai i requisiti di {{rango}}. Il cambio di rango lo applica il team.",
+    "sinSiguiente": "Non c'è un rango superiore con una regola fissata."
+  },
+  "dinero": {
+    "titulo": "I tuoi soldi",
+    "retencion": "In trattenuta",
+    "disponible": "Disponibile",
+    "cobrado": "Incassato",
+    "fijo": "Fisso mensile",
+    "descontar": "Da detrarre",
+    "descontarDetalle": "Rimborsi di commissioni già incassate",
+    "retencionNota": "Ogni commissione attende {{dias}} giorni in caso di rimborso; poi diventa disponibile e si paga nella liquidazione successiva. Se lo store restituisce i soldi, la commissione si annulla."
+  },
+  "pagos": {
+    "titulo": "Pagamenti ricevuti",
+    "vacioTitulo": "Ancora nessun pagamento",
+    "vacioCuerpo": "Qui compare ogni liquidazione quando viene fatta."
+  }
+}

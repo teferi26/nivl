@@ -1,0 +1,88 @@
+{
+  "cargando": "Caricamento",
+  "sinComprobar": "Non verificato",
+  "volverAComprobar": "Verifica di nuovo",
+  "leerPolitica": "Leggi l'informativa sulla privacy",
+  "edad": {
+    "eyebrow": "Prima di entrare",
+    "titulo": "La tua età",
+    "subtitulo": "NIVL è per persone dai {{n}} anni in su.",
+    "rotulo": "Età minima",
+    "meta": "{{n}} o più",
+    "cuerpo": "Conferma di avere l'età minima per continuare. Non serve indicare la tua data di nascita.",
+    "casillaA11y": "Ho {{n}} anni o più",
+    "casilla": "Ho {{n}} anni o più.",
+    "noGuardado": "Non salvato",
+    "confirmar": "Conferma e continua",
+    "noComprobada": "Impossibile verificare la tua conferma dell'età.",
+    "sesionAbierta": "Sessione aperta"
+  },
+  "salud": {
+    "eyebrow": "Facoltativo",
+    "titulo": "La tua salute, con permesso",
+    "comprobandoA11y": "Verifica del permesso salute",
+    "borradoPendiente": "Cancellazione in sospeso",
+    "registro": "Registro della salute",
+    "borradoCuerpo": "Il tuo permesso è revocato e c'è una cancellazione in sospeso. Puoi completarla in Profilo.",
+    "cuerpo": "Prima di aprire questo registro, controlla quali dati sanitari salva NIVL e decidi se vuoi attivarlo.",
+    "revisar": "Controlla il permesso",
+    "irAPerfil": "Vai a Profilo",
+    "hojaEyebrow": "Permesso salute",
+    "aceptar": "Accetta e attiva la salute",
+    "politicaNoAbre": "Impossibile aprire l'informativa.",
+    "partes": {
+      "paraQue": "A cosa serve",
+      "quienDonde": "Chi e dove",
+      "opcional": "È facoltativo",
+      "retirarlo": "Revocarlo"
+    }
+  },
+  "saludAjustes": {
+    "seccion": "Salute e benessere",
+    "comprobando": "Verifica del permesso…",
+    "noComprobado": "Impossibile verificare il permesso salute.",
+    "borradoPendiente": "Permesso revocato. Manca da completare la cancellazione; riprova.",
+    "aceptado": "Hai permesso di salvare e usare i tuoi dati sanitari. Puoi revocare il permesso e cancellarli.",
+    "sinPermiso": "Nessun permesso. NIVL non usa i registri della salute. Puoi esportare i dati precedenti o chiederne la cancellazione.",
+    "revisar": "Controlla il permesso salute",
+    "terminarBorrado": "Completa la cancellazione",
+    "retirar": "Revoca e cancella la salute",
+    "nota": "L'esportazione e l'eliminazione dell'account restano disponibili qui sotto. Gli indirizzi temporanei delle foto già condivise possono restare validi finché il file non viene eliminato o scadono.",
+    "confirmarTitulo": "Revoca permesso e cancella",
+    "confirmarBoton": "Revoca e cancella"
+  },
+  "avisoSalud": {
+    "error": "Impossibile verificare il permesso salute. I tuoi obiettivi generali restano disponibili.",
+    "desactivado": "I registri della salute sono disattivati. Gli obiettivi generali restano disponibili."
+  },
+  "denuncia": {
+    "titulo": "Cosa non va in questa risposta?",
+    "enviar": "Invia segnalazione",
+    "cuerpo": "Vengono inviati il motivo e il testo di questa risposta perché il team la esamini. Nient'altro della tua conversazione.",
+    "motivo": "Motivo",
+    "noHaSalido": "Non è andata",
+    "correoAbierto": "Si è aperta la tua email con la segnalazione. Inviala perché arrivi alla revisione.",
+    "correoNoAbre": "Impossibile aprire l'email. Scrivi a {{correo}} con il motivo della segnalazione.",
+    "registrada": "Segnalazione registrata. Il team esaminerà questa risposta.",
+    "motivos": {
+      "danino": "Può fare danni",
+      "salud": "Consiglio di salute pericoloso",
+      "dinero": "Consiglio di soldi pericoloso",
+      "incorrecto": "Informazione falsa",
+      "ofensivo": "Offensivo o inappropriato",
+      "otro": "Altro motivo"
+    },
+    "correo": {
+      "asunto": "Segnalazione di risposta IA · NIVL",
+      "origen": "Origine: {{origen}}",
+      "motivo": "Motivo: {{motivo}}",
+      "mensaje": "Messaggio: {{id}}",
+      "sinId": "senza identificativo",
+      "contexto": "Contesto: {{contexto}}",
+      "fuente": {
+        "coach": "coach",
+        "oraculo": "Oracolo"
+      }
+    }
+  }
+}

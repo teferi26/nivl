@@ -1,0 +1,34 @@
+{
+  "canales": {
+    "despertar": "Sveglia",
+    "bloque": "Blocchi del giorno",
+    "cierre": "Chiusura del giorno",
+    "sistema": "Il sistema"
+  },
+  "acciones": {
+    "hecho": "Fatto",
+    "posponer": "Rimanda 10 min",
+    "reportar": "Segnala"
+  },
+  "despertar": {
+    "titulo": "In piedi, gladiatore"
+  },
+  "bloque": {
+    "cuerpo": "È l'ora di questo blocco. Il dettaglio è in Oggi."
+  },
+  "cierre": {
+    "titulo": "La chiusura del giorno si avvicina"
+  },
+  "posponer": {
+    "titulo": "Promemoria",
+    "cuerpo": "È ancora in sospeso."
+  },
+  "error": {
+    "estado": "Errore nel leggere lo stato degli avvisi.",
+    "noDisponibles": "Gli avvisi non sono disponibili qui.",
+    "despertador": "Impossibile programmare la sveglia.",
+    "avisosDelDia": "Impossibile programmare gli avvisi del giorno.",
+    "aviso": "Impossibile programmare l'avviso.",
+    "avisosDelSistema": "Impossibile programmare gli avvisi del sistema."
+  }
+}

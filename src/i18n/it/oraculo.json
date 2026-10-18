@@ -1,0 +1,46 @@
+{
+  "clave": {
+    "eyebrow": "Chiave API",
+    "titulo": "La tua chiave",
+    "guardar": "Salva la chiave",
+    "cuerpo": "OpenAI o Anthropic. Si salva solo su questo dispositivo e paghi solo il tuo consumo.",
+    "etiqueta": "Chiave",
+    "placeholder": "sk-proj-… (OpenAI) o sk-ant-… (Anthropic)",
+    "a11y": "Chiave API",
+    "guardadaAyuda": "C'è una chiave salvata. Incollane un'altra per sostituirla, oppure cancellala e salva per rimuoverla.",
+    "ayuda": "Viene inviata solo a OpenAI o Anthropic, mai a NIVL."
+  },
+  "vista": {
+    "todosLosDias": "tutti i giorni",
+    "eyebrow": "Il sistema forgia",
+    "titulo": "Oracolo",
+    "subtituloClave": "Digli il tuo obiettivo e lo trasforma in missioni. La tua chiave è su questo dispositivo.",
+    "subtitulo": "Digli il tuo obiettivo e lo trasforma in missioni quotidiane con data e misura.",
+    "cambiarClave": "Cambia la chiave API",
+    "usarClave": "Usa la mia chiave API",
+    "objetivo": "Il tuo obiettivo",
+    "objetivoPlaceholder": "Correre 10 km a maggio. Passare Analisi con un bel voto. Dormire 8 ore.",
+    "consultar": "Consulta l'Oracolo",
+    "delibera": "L'Oracolo delibera",
+    "deliberaCuerpo": "Qualche secondo. Sta misurando il tuo obiettivo con le tue giornate.",
+    "proTitulo": "L'Oracolo fa parte di NIVL Pro",
+    "proCuerpo": "Trasformare obiettivi in missioni con l'IA va con il coach. Il resto di NIVL resta tuo.",
+    "espera": "L'Oracolo attende",
+    "esperaCuerpo": "Un obiettivo concreto, con data e misura, dà missioni migliori. Sei tu a scegliere quali accettare.",
+    "veredicto": "Verdetto del sistema",
+    "propuestas": "Missioni proposte",
+    "hasta": "fino a",
+    "propuestaA11y": "Missione proposta: {{titulo}}, fino a {{xp}} XP, accettata",
+    "propuestaDescartadaA11y": "Missione proposta: {{titulo}}, fino a {{xp}} XP, scartata",
+    "nota": "Deseleziona quelle che non vuoi. Quelle accettate passano in Abitudini come missioni quotidiane.",
+    "aceptar_one": "Accetta {{count}} missione",
+    "aceptar_other": "Accetta {{count}} missioni"
+  },
+  "asignadas": {
+    "titulo": "MISSIONI ASSEGNATE",
+    "mensaje_one": "Il sistema ha registrato una nuova missione.",
+    "mensaje_other": "Il sistema ha registrato {{count}} nuove missioni.",
+    "ver": "Vedi missioni",
+    "quedarme": "Resto qui"
+  }
+}
