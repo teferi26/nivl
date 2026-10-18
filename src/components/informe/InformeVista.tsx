@@ -27,7 +27,7 @@ import { Button, EmptyState, Screen, Section } from '@/components/ui';
 import { SIN_DATO } from '@/components/ui/sinDato';
 import { ink, space, stroke, type as tipo } from '@/design/tokens';
 import { t } from '@/i18n';
-import { DIFFICULTY_LABEL, STAT_LABEL, STATS } from '@/lib/game';
+import { DIFFICULTY_LABEL, STAT_ABBR, STAT_LABEL, STATS } from '@/lib/game';
 import type { WeeklyAdvice } from '@/lib/oracle';
 import type { DatosInforme } from './derivarInforme';
 
@@ -274,7 +274,7 @@ export function InformeVista({
                         icono="add-circle-outline"
                         titulo={q.title}
                         detalle={t('informe:vista.nueva', {
-                          stat: q.stat,
+                          stat: STAT_ABBR[q.stat],
                           dificultad: DIFFICULTY_LABEL[q.difficulty],
                           razon: q.reasoning,
                         })}
@@ -313,7 +313,7 @@ export function InformeVista({
               <View key={s} style={[styles.stat, i > 0 && styles.conRegla]}>
                 <View style={styles.statCabecera}>
                   <Text style={[styles.statAbbr, dominante && styles.statTop]} maxFontSizeMultiplier={1.35}>
-                    {s}
+                    {STAT_ABBR[s]}
                     <Text style={styles.statNombre}> · {STAT_LABEL[s]}</Text>
                   </Text>
                   {dominante ? (

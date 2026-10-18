@@ -28,7 +28,7 @@ function foto() {
         campaignsLabel: m.campaignsLabel,
         campaignsHint: m.campaignsHint,
         goalExample: m.goalExample,
-        enFrase: m.label.toLowerCase(),
+        enFrase: m.enFrase,
         misiones: m.starterQuests.map((q) => q.title),
         coachHint: m.coachHint,
       };

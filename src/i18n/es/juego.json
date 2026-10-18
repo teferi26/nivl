@@ -1,0 +1,110 @@
+{
+  "dificultad": {
+    "trivial": "Trivial",
+    "facil": "Fácil",
+    "media": "Media",
+    "dificil": "Difícil",
+    "epica": "Épica"
+  },
+  "atributo": {
+    "FUE": "Fuerza",
+    "VIT": "Vitalidad",
+    "INT": "Inteligencia",
+    "AGI": "Agilidad",
+    "PER": "Percepción"
+  },
+  "atributoCorto": {
+    "FUE": "FUE",
+    "VIT": "VIT",
+    "INT": "INT",
+    "AGI": "AGI",
+    "PER": "PER"
+  },
+  "modulo": {
+    "gym": "Gym",
+    "cardio": "Cardio",
+    "nutricion": "Nutrición",
+    "dieta": "Dieta",
+    "economia": "Economía",
+    "compra": "Compra",
+    "diario": "Diario",
+    "informe": "Informe",
+    "avances": "Avances",
+    "resumen": "Recuerdos",
+    "oraculo": "Oráculo",
+    "contrato": "Contrato",
+    "amigos": "Amigos"
+  },
+  "perfil": {
+    "emprendedor": {
+      "label": "Emprendedor",
+      "title": "EMPRENDEDOR",
+      "tagline": "Ventas, foco y caja. Cada día una acción que mueva el negocio.",
+      "description": "Economía y contrato delante. Proyectos con jefe final y fecha. El coach te pide números: contactos, cierres, ingresos.",
+      "campaignsLabel": "Proyectos",
+      "campaignsHint": "Un proyecto es una campaña: tareas, un jefe final y una fecha. Al despejarlo hay botín.",
+      "goalExample": "Facturar 5.000 € al mes con mi negocio",
+      "enFrase": "emprendedor"
+    },
+    "trabajador": {
+      "label": "Profesional",
+      "title": "PROFESIONAL",
+      "tagline": "Crecer en tu trabajo sin descuidar el cuerpo. Foco en la jornada, orden fuera de ella.",
+      "description": "Informe, avances y diario delante, con el gym y la economía a mano. Objetivos de carrera con hito final y fecha. El coach protege tus bloques de foco y encaja entreno, comida y descanso alrededor de tu jornada.",
+      "campaignsLabel": "Objetivos",
+      "campaignsHint": "Un objetivo profesional es una campaña: pasos como tareas, un hito final y una fecha. Al cumplirlo hay botín.",
+      "goalExample": "Conseguir el ascenso a responsable de equipo",
+      "enFrase": "profesional"
+    },
+    "deportista": {
+      "label": "Deportista",
+      "title": "DEPORTISTA",
+      "tagline": "Entreno, comida y descanso. El progreso se mide en kilos, ritmo y constancia.",
+      "description": "Gym, cardio, nutrición y dieta delante. Bloques de temporada con objetivo y fecha. El coach prescribe cargas con tu RPE y ajusta la dieta con tu tendencia de peso.",
+      "campaignsLabel": "Bloques",
+      "campaignsHint": "Un bloque de temporada es una campaña: sesiones, un objetivo final y una fecha. Al cumplirlo hay botín.",
+      "goalExample": "Bajar a 78 kg sin perder fuerza",
+      "enFrase": "deportista"
+    },
+    "estudiante": {
+      "label": "Estudiante",
+      "title": "ESTUDIANTE",
+      "tagline": "Horas de estudio reales, exámenes como jefes finales y una cabeza despejada.",
+      "description": "Diario, informe y avances delante. Asignaturas con el examen como jefe final. El coach reparte el estudio por bloques y vigila que descanses.",
+      "campaignsLabel": "Asignaturas",
+      "campaignsHint": "Una asignatura es una campaña: temas como tareas, el examen como jefe y su fecha. Al aprobarla hay botín.",
+      "goalExample": "Aprobar las cuatro asignaturas de junio",
+      "enFrase": "estudiante"
+    },
+    "general": {
+      "label": "En general",
+      "title": "GLADIADOR",
+      "tagline": "Cuerpo, cabeza y hábitos. Un 1 % mejor cada día, en lo que tú decidas.",
+      "description": "Todos los módulos a la vista. Campañas para cualquier reto con fecha. El coach te pregunta qué quieres conquistar y lo convierte en misiones.",
+      "campaignsLabel": "Campañas",
+      "campaignsHint": "Una campaña es un reto con fecha: tareas, un jefe final y botín al despejarla.",
+      "goalExample": "Entrenar cuatro días por semana durante un año",
+      "enFrase": "en general"
+    }
+  },
+  "mision": {
+    "prospeccion": "Prospección: 10 contactos",
+    "trabajoProfundo": "Bloque de trabajo profundo 2 h",
+    "metricas": "Revisar métricas del negocio",
+    "entrenar": "Entrenar",
+    "leer": "Leer 20 minutos",
+    "diario": "Diario del día",
+    "foco": "Bloque de foco 90 min sin interrupciones",
+    "planificar": "Planificar la jornada antes de empezar",
+    "formacion": "Formación en tu oficio 30 min",
+    "dormir7": "Dormir 7 horas",
+    "comidas": "Registrar comidas del día",
+    "dormir8": "Dormir 8 horas",
+    "movilidad": "Movilidad 10 minutos",
+    "pesarse": "Pesarse",
+    "estudiar": "Estudiar 2 h",
+    "repasar": "Repasar apuntes 20 min",
+    "sinMovil": "Sin móvil en clase",
+    "trabajoEstudio": "Trabajo o estudio 2 h"
+  }
+}

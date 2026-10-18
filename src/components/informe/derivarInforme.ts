@@ -6,7 +6,7 @@
 
 import { t } from '@/i18n';
 import { nombreDia } from '@/i18n/formato';
-import { STAT_LABEL, STATS } from '@/lib/game';
+import { STAT_ABBR, STAT_LABEL, STATS } from '@/lib/game';
 import { addDays } from '@/lib/dates';
 import type { Completion, Quest, Stat as StatKey } from '@/lib/types';
 
@@ -74,7 +74,7 @@ export function derivarInforme(completions: Completion[], quests: Quest[], today
           : t('informe:lectura.baja', { delta: Math.abs(delta) }),
       );
     }
-    parts.push(t('informe:lectura.dominante', { stat: topStat, nombre: STAT_LABEL[topStat] }));
+    parts.push(t('informe:lectura.dominante', { stat: STAT_ABBR[topStat], nombre: STAT_LABEL[topStat] }));
     if (bestDay) {
       const [y, m, d] = bestDay.split('-').map(Number);
       const wd = new Date(y!, m! - 1, d!).getDay();

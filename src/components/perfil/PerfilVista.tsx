@@ -25,7 +25,7 @@ import { useSizeClass } from '@/design/useSizeClass';
 import { t } from '@/i18n';
 import { mayus } from '@/i18n/formato';
 import { isValidKey, nombreDia } from '@/lib/dates';
-import { MAX_STONES, STAT_COLUMN, STAT_LABEL, statPoints, STATS, streakMultiplier } from '@/lib/game';
+import { MAX_STONES, STAT_ABBR, STAT_COLUMN, STAT_LABEL, statPoints, STATS, streakMultiplier } from '@/lib/game';
 import { kindMeta } from '@/lib/kinds';
 import type { EstadoProgreso } from '@/lib/progression';
 import type { Profile } from '@/lib/types';
@@ -375,7 +375,7 @@ function Estadisticas({ profile }: { profile: Profile }) {
           >
             <View style={styles.statNombre}>
               <Text style={styles.statAbbr} maxFontSizeMultiplier={1.35}>
-                {s}
+                {STAT_ABBR[s]}
               </Text>
               <Text style={styles.statLabel} maxFontSizeMultiplier={1.35} numberOfLines={1}>
                 {STAT_LABEL[s]}

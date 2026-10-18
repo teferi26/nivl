@@ -1,0 +1,72 @@
+{
+  "potencia": {
+    "pro": "Der Coach mit Standardleistung.",
+    "elite": "Der Coach mit voller Leistung, mit Tiefem Modus."
+  },
+  "beneficio": {
+    "brief": {
+      "titulo": "Briefing jeden Morgen",
+      "detalle": "Anweisungen und Zahlen, bevor der Tag beginnt."
+    },
+    "plan": {
+      "titulo": "Tagesplan, Block für Block",
+      "detalle": "Dein Tag nach Stunden geordnet, mit dem, was in jede gehört."
+    },
+    "entreno": {
+      "titulo": "Vorgegebenes Training",
+      "detalle": "Übungen, Sätze und Lasten nach dem RPE, das du einträgst."
+    },
+    "dieta": {
+      "titulo": "Ernährung auf das Gramm",
+      "detalle": "Abgestimmt auf dein echtes Gewicht und dessen Trend, nicht auf eine Tabelle."
+    },
+    "revision": {
+      "titulo": "Wochenrückblick",
+      "detalle": "Misst die Woche mit deinen Daten und justiert dein System nach."
+    },
+    "memoria": {
+      "titulo": "Gedächtnis",
+      "detalle": "Merkt sich, was er über dich lernt. Kennt dich jede Woche besser."
+    },
+    "chat": {
+      "titulo": "Volle Kontrolle per Chat",
+      "detalle": "Sag es ihm und er macht es: Missionen, Kalender, Regeln, Ziele."
+    },
+    "potencia": {
+      "titulo": "Volle Leistung",
+      "detalle": "Ein Spitzenmodell in jedem Briefing, Plan, Rückblick und Gespräch."
+    },
+    "profundo": {
+      "titulo": "Tiefer Modus",
+      "detalle": "Für das, was gründliches Nachdenken braucht: Der Coach nimmt sich Zeit und antwortet ausführlicher."
+    },
+    "revisionFondo": {
+      "titulo": "Gründlicher Wochenrückblick",
+      "detalle": "Deine Woche, gemessen vom Spitzenmodell, gründlich durchdacht."
+    },
+    "ludus": {
+      "titulo": "Platz in einem Ludus anfragen (5-8)",
+      "detalle": "Eine Gruppe von 5 bis 8 Élite-Gladiatoren mit deinem Ziel und eigener Rangliste. Die Zuteilung erfolgt von Hand, je nach Verfügbarkeit."
+    },
+    "laurel": {
+      "titulo": "Lorbeer-Abzeichen",
+      "detalle": "Der goldene Lorbeer neben deinem Namen. Status, keine Punkte: Er ändert kein Ranking."
+    }
+  },
+  "firma": {
+    "pro": {
+      "eyebrow": "Schwur besiegelt",
+      "titulo": "Jetzt: wer ihn anführt.",
+      "linea": "Dein Schwur ist besiegelt. Der Coach kann ab morgen deinen Tag anführen.",
+      "enlace": "NIVL Pro ansehen",
+      "contexto": "Dein Schwur ist besiegelt. NIVL bleibt komplett kostenlos; Pro fügt den Coach hinzu, der ihn anführt."
+    },
+    "elite": {
+      "eyebrow": "Schwur besiegelt",
+      "titulo": "Der Coach mit voller Leistung.",
+      "linea": "Dein Schwur ist besiegelt. Élite ist der Coach mit voller Leistung.",
+      "enlace": "NIVL Élite ansehen",
+      "contexto": "Dein Schwur ist besiegelt. NIVL bleibt komplett kostenlos; Élite fügt den Coach mit voller Leistung hinzu."
+    }
+  }
+}

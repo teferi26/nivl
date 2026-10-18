@@ -1,0 +1,72 @@
+{
+  "potencia": {
+    "pro": "Il coach a potenza standard.",
+    "elite": "Il coach alla massima potenza, con la modalità profonda."
+  },
+  "beneficio": {
+    "brief": {
+      "titulo": "Brief ogni mattina",
+      "detalle": "Ordini e numeri prima che inizi la giornata."
+    },
+    "plan": {
+      "titulo": "Piano del giorno, blocco per blocco",
+      "detalle": "La tua giornata ordinata per ore, con quello che tocca in ognuna."
+    },
+    "entreno": {
+      "titulo": "Allenamento prescritto",
+      "detalle": "Esercizi, serie e carichi secondo l'RPE che registri."
+    },
+    "dieta": {
+      "titulo": "Dieta in grammi",
+      "detalle": "Regolata sul tuo peso reale e sulla sua tendenza, non su una tabella."
+    },
+    "revision": {
+      "titulo": "Revisione settimanale",
+      "detalle": "Misura la settimana con i tuoi dati e riadatta il tuo sistema."
+    },
+    "memoria": {
+      "titulo": "Memoria",
+      "detalle": "Ricorda ciò che impara di te. Ti conosce meglio ogni settimana."
+    },
+    "chat": {
+      "titulo": "Controllo totale via chat",
+      "detalle": "Diglielo e lo fa: missioni, agenda, regole, obiettivi."
+    },
+    "potencia": {
+      "titulo": "Massima potenza",
+      "detalle": "Un modello di prima linea in ogni brief, piano, revisione e conversazione."
+    },
+    "profundo": {
+      "titulo": "Modalità profonda",
+      "detalle": "Per ciò che richiede di pensarci a fondo: il coach si prende il suo tempo e risponde con più dettaglio."
+    },
+    "revisionFondo": {
+      "titulo": "Revisione settimanale approfondita",
+      "detalle": "La tua settimana misurata dal modello di prima linea, pensando a fondo."
+    },
+    "ludus": {
+      "titulo": "Chiedi un posto in un ludus (5-8)",
+      "detalle": "Un gruppo da 5 a 8 gladiatori Élite con il tuo obiettivo e una classifica propria. L'assegnazione è manuale, secondo disponibilità."
+    },
+    "laurel": {
+      "titulo": "Insegna d'alloro",
+      "detalle": "L'alloro dorato accanto al tuo nome. Status, non punti: non cambia nessuna classifica."
+    }
+  },
+  "firma": {
+    "pro": {
+      "eyebrow": "Giuramento sigillato",
+      "titulo": "Ora, chi lo guida.",
+      "linea": "Il tuo giuramento è sigillato. Il coach può guidare la tua giornata da domani.",
+      "enlace": "Vedi NIVL Pro",
+      "contexto": "Il tuo giuramento è sigillato. NIVL resta del tutto gratuito; Pro aggiunge il coach che lo guida."
+    },
+    "elite": {
+      "eyebrow": "Giuramento sigillato",
+      "titulo": "Il coach alla massima potenza.",
+      "linea": "Il tuo giuramento è sigillato. Élite è il coach alla massima potenza.",
+      "enlace": "Vedi NIVL Élite",
+      "contexto": "Il tuo giuramento è sigillato. NIVL resta del tutto gratuito; Élite aggiunge il coach alla massima potenza."
+    }
+  }
+}

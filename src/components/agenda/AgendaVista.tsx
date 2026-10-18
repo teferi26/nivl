@@ -34,6 +34,7 @@ import { useAnchoUtil, useSizeClass } from '@/design/useSizeClass';
 import { t } from '@/i18n';
 import type { PlanConBloques } from '@/lib/dayplan';
 import { hhmm, horaAMinutos, minutosAhora } from '@/lib/plan';
+import { STAT_ABBR } from '@/lib/game';
 import type { CalendarEvent, DungeonTask, Quest } from '@/lib/types';
 import { RejillaMes, TiraSemana } from './Calendario';
 import {
@@ -440,7 +441,7 @@ function DetalleDia({
                 leading={<Check checked={hecha} size={24} />}
                 title={q.title}
                 done={hecha}
-                detail={t('agenda:vista.misionDetalle', { stat: q.stat })}
+                detail={t('agenda:vista.misionDetalle', { stat: STAT_ABBR[q.stat] ?? q.stat })}
                 trailing={q.is_penalty && !hecha ? <Tag tone="alerta">{t('agenda:vista.penalizacion')}</Tag> : undefined}
               />
             );

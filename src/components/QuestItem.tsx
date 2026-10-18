@@ -17,7 +17,7 @@ import { Entrada, TarjetaArena } from '@/components/arena';
 import { Check, Tag } from '@/components/ui';
 import { ink, space, stroke, type as tipo } from '@/design/tokens';
 import { t } from '@/i18n';
-import { BONUS_BY_DIFFICULTY, questXp, STAT_LABEL } from '@/lib/game';
+import { BONUS_BY_DIFFICULTY, questXp, STAT_ABBR, STAT_LABEL } from '@/lib/game';
 import { fonts } from '@/lib/theme';
 import type { Quest } from '@/lib/types';
 
@@ -76,7 +76,7 @@ export function QuestItem({ quest, completed, xpAwarded, busy, streakDays, onCom
   const meta = (
     <>
       <Text style={[styles.meta, siguiente && styles.metaInvertida]} numberOfLines={1} maxFontSizeMultiplier={1.35}>
-        {quest.is_penalty ? t('raiz:questItem.penalizacionRecuperada') : `${quest.stat} · ${STAT_LABEL[quest.stat]}`}
+        {quest.is_penalty ? t('raiz:questItem.penalizacionRecuperada') : `${STAT_ABBR[quest.stat]} · ${STAT_LABEL[quest.stat]}`}
       </Text>
       {quest.requires_evidence ? (
         <Ionicons name="camera-outline" size={13} color={siguiente ? ink.ink3 : ink.ink6} />

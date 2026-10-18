@@ -313,7 +313,9 @@ export async function createStarterQuests(
     .from('quests')
     // Todas las filas con las mismas claves: supabase-js manda NULL en las que
     // faltan y health_data es NOT NULL (fallo del onboarding, 04/10/2026).
-    .insert(quests.map((q) => ({ user_id: userId, ...q, health_data: q.health_data === true })))
+    // `link` solo viene fuera del español (kinds.ts): en es lo deduce el trigger
+    // del título, como siempre, y la fila que se manda es la de antes.
+    .insert(quests.map(({ link, ...q }) => ({ user_id: userId, ...q, health_data: q.health_data === true, ...(link ? { link } : {}) })))
     .select('id, title');
   if (error) throw error;
   if ((data ?? []).length > 0) registrarUnaVez('primera_mision_creada', { origen: 'onboarding' });

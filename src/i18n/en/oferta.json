@@ -1,0 +1,72 @@
+{
+  "potencia": {
+    "pro": "The coach at standard power.",
+    "elite": "The coach at full power, with deep mode."
+  },
+  "beneficio": {
+    "brief": {
+      "titulo": "Brief every morning",
+      "detalle": "Orders and numbers before the day starts."
+    },
+    "plan": {
+      "titulo": "Day plan, block by block",
+      "detalle": "Your day laid out hour by hour, with what each hour is for."
+    },
+    "entreno": {
+      "titulo": "Prescribed training",
+      "detalle": "Exercises, sets and loads based on the RPE you log."
+    },
+    "dieta": {
+      "titulo": "Diet in grams",
+      "detalle": "Adjusted to your real weight and its trend, not to a table."
+    },
+    "revision": {
+      "titulo": "Weekly review",
+      "detalle": "Measures the week with your data and readjusts your system."
+    },
+    "memoria": {
+      "titulo": "Memory",
+      "detalle": "Remembers what it learns about you. Knows you better every week."
+    },
+    "chat": {
+      "titulo": "Full control by chat",
+      "detalle": "Tell it and it does it: missions, schedule, rules, goals."
+    },
+    "potencia": {
+      "titulo": "Full power",
+      "detalle": "A frontier model in every brief, plan, review and conversation."
+    },
+    "profundo": {
+      "titulo": "Deep mode",
+      "detalle": "For what needs real thought: the coach takes its time and answers in more detail."
+    },
+    "revisionFondo": {
+      "titulo": "In-depth weekly review",
+      "detalle": "Your week measured by the frontier model, thinking it through."
+    },
+    "ludus": {
+      "titulo": "Request a place in a ludus (5-8)",
+      "detalle": "A group of 5 to 8 Élite gladiators with your goal and their own scoreboard. Places are assigned by hand, depending on availability."
+    },
+    "laurel": {
+      "titulo": "Laurel badge",
+      "detalle": "The golden laurel next to your name. Status, not points: it doesn't change any ranking."
+    }
+  },
+  "firma": {
+    "pro": {
+      "eyebrow": "Oath sealed",
+      "titulo": "Now, who leads it.",
+      "linea": "Your oath is sealed. The coach can lead your day from tomorrow.",
+      "enlace": "See NIVL Pro",
+      "contexto": "Your oath is sealed. NIVL stays fully free; Pro adds the coach that leads it."
+    },
+    "elite": {
+      "eyebrow": "Oath sealed",
+      "titulo": "The coach at full power.",
+      "linea": "Your oath is sealed. Élite is the coach at full power.",
+      "enlace": "See NIVL Élite",
+      "contexto": "Your oath is sealed. NIVL stays fully free; Élite adds the coach at full power."
+    }
+  }
+}

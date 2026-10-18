@@ -1,0 +1,110 @@
+{
+  "dificultad": {
+    "trivial": "Banale",
+    "facil": "Facile",
+    "media": "Media",
+    "dificil": "Difficile",
+    "epica": "Epica"
+  },
+  "atributo": {
+    "FUE": "Forza",
+    "VIT": "Vitalità",
+    "INT": "Intelligenza",
+    "AGI": "Agilità",
+    "PER": "Percezione"
+  },
+  "atributoCorto": {
+    "FUE": "FOR",
+    "VIT": "VIT",
+    "INT": "INT",
+    "AGI": "AGI",
+    "PER": "PER"
+  },
+  "modulo": {
+    "gym": "Palestra",
+    "cardio": "Cardio",
+    "nutricion": "Nutrizione",
+    "dieta": "Dieta",
+    "economia": "Economia",
+    "compra": "Spesa",
+    "diario": "Diario",
+    "informe": "Rapporto",
+    "avances": "Progressi",
+    "resumen": "Ricordi",
+    "oraculo": "Oracolo",
+    "contrato": "Contratto",
+    "amigos": "Amici"
+  },
+  "perfil": {
+    "emprendedor": {
+      "label": "Imprenditore",
+      "title": "IMPRENDITORE",
+      "tagline": "Vendite, focus e cassa. Ogni giorno un'azione che faccia avanzare l'attività.",
+      "description": "Economia e contratto in primo piano. Progetti con boss finale e data. Il coach ti chiede numeri: contatti, chiusure, entrate.",
+      "campaignsLabel": "Progetti",
+      "campaignsHint": "Un progetto è una campagna: compiti, un boss finale e una data. Quando lo conquisti, c'è il bottino.",
+      "goalExample": "Fatturare 5.000 € al mese con la mia attività",
+      "enFrase": "imprenditore"
+    },
+    "trabajador": {
+      "label": "Professionista",
+      "title": "PROFESSIONISTA",
+      "tagline": "Crescere nel lavoro senza trascurare il corpo. Focus durante la giornata, ordine fuori.",
+      "description": "Rapporto, progressi e diario in primo piano, con palestra ed economia a portata di mano. Obiettivi di carriera con traguardo finale e data. Il coach protegge i tuoi blocchi di focus e incastra allenamento, pasti e riposo intorno alla tua giornata.",
+      "campaignsLabel": "Obiettivi",
+      "campaignsHint": "Un obiettivo professionale è una campagna: passi come compiti, un traguardo finale e una data. Quando lo raggiungi, c'è il bottino.",
+      "goalExample": "Ottenere la promozione a responsabile del team",
+      "enFrase": "professionista"
+    },
+    "deportista": {
+      "label": "Sportivo",
+      "title": "SPORTIVO",
+      "tagline": "Allenamento, cibo e riposo. Il progresso si misura in chili, ritmo e costanza.",
+      "description": "Palestra, cardio, nutrizione e dieta in primo piano. Blocchi di stagione con obiettivo e data. Il coach prescrive i carichi con il tuo RPE e regola la dieta sulla tua tendenza di peso.",
+      "campaignsLabel": "Blocchi",
+      "campaignsHint": "Un blocco di stagione è una campagna: sessioni, un obiettivo finale e una data. Quando lo raggiungi, c'è il bottino.",
+      "goalExample": "Scendere a 78 kg senza perdere forza",
+      "enFrase": "sportivo"
+    },
+    "estudiante": {
+      "label": "Studente",
+      "title": "STUDENTE",
+      "tagline": "Ore di studio vere, esami come boss finali e la testa sgombra.",
+      "description": "Diario, rapporto e progressi in primo piano. Materie con l'esame come boss finale. Il coach divide lo studio in blocchi e controlla che tu riposi.",
+      "campaignsLabel": "Materie",
+      "campaignsHint": "Una materia è una campagna: argomenti come compiti, l'esame come boss e la sua data. Quando la superi, c'è il bottino.",
+      "goalExample": "Superare i quattro esami di giugno",
+      "enFrase": "studente"
+    },
+    "general": {
+      "label": "In generale",
+      "title": "GLADIATORE",
+      "tagline": "Corpo, testa e abitudini. Ogni giorno l'1% migliore, in ciò che decidi tu.",
+      "description": "Tutti i moduli in vista. Campagne per qualsiasi sfida con una data. Il coach ti chiede cosa vuoi conquistare e lo trasforma in missioni.",
+      "campaignsLabel": "Campagne",
+      "campaignsHint": "Una campagna è una sfida con una data: compiti, un boss finale e il bottino quando la conquisti.",
+      "goalExample": "Allenarmi quattro giorni a settimana per un anno",
+      "enFrase": "in generale"
+    }
+  },
+  "mision": {
+    "prospeccion": "Prospezione: 10 contatti",
+    "trabajoProfundo": "Blocco di lavoro profondo 2 h",
+    "metricas": "Rivedere le metriche dell'attività",
+    "entrenar": "Allenarsi",
+    "leer": "Leggere 20 minuti",
+    "diario": "Diario del giorno",
+    "foco": "Blocco di focus 90 min senza interruzioni",
+    "planificar": "Pianificare la giornata prima di iniziare",
+    "formacion": "Formazione nel tuo mestiere 30 min",
+    "dormir7": "Dormire 7 ore",
+    "comidas": "Registrare i pasti del giorno",
+    "dormir8": "Dormire 8 ore",
+    "movilidad": "Mobilità 10 minuti",
+    "pesarse": "Pesarsi",
+    "estudiar": "Studiare 2 h",
+    "repasar": "Ripassare gli appunti 20 min",
+    "sinMovil": "Niente telefono in classe",
+    "trabajoEstudio": "Lavoro o studio 2 h"
+  }
+}

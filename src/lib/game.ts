@@ -1,3 +1,5 @@
+import { t } from '@/i18n';
+import { registroVivo } from './textosVivos';
 import type { Difficulty, DungeonRank, Quest, Stat, StatXpColumn } from './types';
 
 export const XP_BY_DIFFICULTY: Record<Difficulty, number> = {
@@ -10,23 +12,19 @@ export const XP_BY_DIFFICULTY: Record<Difficulty, number> = {
 
 export const DIFFICULTIES: Difficulty[] = ['trivial', 'facil', 'media', 'dificil', 'epica'];
 
-export const DIFFICULTY_LABEL: Record<Difficulty, string> = {
-  trivial: 'Trivial',
-  facil: 'Fácil',
-  media: 'Media',
-  dificil: 'Difícil',
-  epica: 'Épica',
-};
+/** El nombre de cada dificultad, del catálogo (`juego:dificultad`) al leerlo. */
+export const DIFFICULTY_LABEL: Record<Difficulty, string> = registroVivo(DIFFICULTIES, (d) => t(`juego:dificultad.${d}`));
 
 export const STATS: Stat[] = ['FUE', 'VIT', 'INT', 'AGI', 'PER'];
 
-export const STAT_LABEL: Record<Stat, string> = {
-  FUE: 'Fuerza',
-  VIT: 'Vitalidad',
-  INT: 'Inteligencia',
-  AGI: 'Agilidad',
-  PER: 'Percepción',
-};
+/** El nombre de cada atributo, del catálogo (`juego:atributo`) al leerlo. */
+export const STAT_LABEL: Record<Stat, string> = registroVivo(STATS, (s) => t(`juego:atributo.${s}`));
+
+/**
+ * La abreviatura que se PINTA (en es, el código de siempre: FUE, VIT...). El
+ * código (`Stat`) es el de la base de datos y no cambia con el idioma.
+ */
+export const STAT_ABBR: Record<Stat, string> = registroVivo(STATS, (s) => t(`juego:atributoCorto.${s}`));
 
 export const STAT_COLUMN: Record<Stat, StatXpColumn> = {
   FUE: 'xp_fue',

@@ -1,0 +1,72 @@
+{
+  "potencia": {
+    "pro": "O coach em potência padrão.",
+    "elite": "O coach na potência máxima, com modo profundo."
+  },
+  "beneficio": {
+    "brief": {
+      "titulo": "Briefing todas as manhãs",
+      "detalle": "Ordens e números antes de o dia começar."
+    },
+    "plan": {
+      "titulo": "Plano do dia, bloco a bloco",
+      "detalle": "O teu dia organizado por horas, com o que toca em cada uma."
+    },
+    "entreno": {
+      "titulo": "Treino prescrito",
+      "detalle": "Exercícios, séries e cargas segundo o RPE que registas."
+    },
+    "dieta": {
+      "titulo": "Dieta em gramas",
+      "detalle": "Ajustada ao teu peso real e à sua tendência, não a uma tabela."
+    },
+    "revision": {
+      "titulo": "Revisão semanal",
+      "detalle": "Mede a semana com os teus dados e reajusta o teu sistema."
+    },
+    "memoria": {
+      "titulo": "Memória",
+      "detalle": "Lembra-se do que aprende sobre ti. Conhece-te melhor a cada semana."
+    },
+    "chat": {
+      "titulo": "Controlo total por chat",
+      "detalle": "Diz-lhe e ele faz: missões, agenda, regras, metas."
+    },
+    "potencia": {
+      "titulo": "Potência máxima",
+      "detalle": "Um modelo de primeira linha em cada briefing, plano, revisão e conversa."
+    },
+    "profundo": {
+      "titulo": "Modo profundo",
+      "detalle": "Para o que pede ser pensado a fundo: o coach toma o seu tempo e responde com mais detalhe."
+    },
+    "revisionFondo": {
+      "titulo": "Revisão semanal a fundo",
+      "detalle": "A tua semana medida pelo modelo de primeira linha, a pensar a fundo."
+    },
+    "ludus": {
+      "titulo": "Pede lugar num ludus (5-8)",
+      "detalle": "Um grupo de 5 a 8 gladiadores Élite com o teu objetivo e marcador próprio. A atribuição é manual, conforme a disponibilidade."
+    },
+    "laurel": {
+      "titulo": "Insígnia de louro",
+      "detalle": "O louro dourado junto ao teu nome. Estatuto, não pontos: não muda nenhum ranking."
+    }
+  },
+  "firma": {
+    "pro": {
+      "eyebrow": "Juramento selado",
+      "titulo": "Agora, quem o dirige.",
+      "linea": "O teu juramento está selado. O coach pode dirigir o teu dia a partir de amanhã.",
+      "enlace": "Ver NIVL Pro",
+      "contexto": "O teu juramento está selado. O NIVL continua totalmente gratuito; o Pro acrescenta o coach que o dirige."
+    },
+    "elite": {
+      "eyebrow": "Juramento selado",
+      "titulo": "O coach na potência máxima.",
+      "linea": "O teu juramento está selado. O Élite é o coach na potência máxima.",
+      "enlace": "Ver NIVL Élite",
+      "contexto": "O teu juramento está selado. O NIVL continua totalmente gratuito; o Élite acrescenta o coach na potência máxima."
+    }
+  }
+}

@@ -599,7 +599,7 @@ function Ludus(p: AmigosVistaProps) {
             icon="hourglass-outline"
             title={t('amigos:ludus.peticionTitulo')}
             body={t('amigos:ludus.peticionCuerpo', {
-              objetivo: kindMeta(miLudus.requestedGoal ?? 'general').label.toLowerCase(),
+              objetivo: kindMeta(miLudus.requestedGoal ?? 'general').enFrase,
               min: LUDUS_MIN,
               max: LUDUS_MAX,
             })}

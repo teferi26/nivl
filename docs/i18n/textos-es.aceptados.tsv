@@ -1276,3 +1276,140 @@ perfil	+	Activada. Solo los pasos del recorrido, nunca lo que escribes.
 perfil	+	Desactivada. No se guarda ni se envía nada.
 hoy	+	Se guarda con tu cuenta, como mucho 24 meses. No pongas datos de salud ni de otras personas. Al enviarla aceptas que la guardemos para mejorar la app.
 hoy	+	Política de privacidad
+# QA F1 (M3, M4): textos de src/lib que pasan a catálogos SIN cambiar el español (textosLibEs.test.ts lo fija con la foto de antes): game.ts y kinds.ts → juego; la oferta del paso del coach de proplans.ts → oferta; el texto del compromiso de compromiso.ts → onboarding:compromiso. No son textos nuevos en pantalla: antes vivían en src/lib, que el inventario no recorre.
+juego	+	Trivial
+juego	+	Fácil
+juego	+	Media
+juego	+	Difícil
+juego	+	Épica
+juego	+	Fuerza
+juego	+	Vitalidad
+juego	+	Inteligencia
+juego	+	Agilidad
+juego	+	Percepción
+juego	+	FUE
+juego	+	VIT
+juego	+	INT
+juego	+	AGI
+juego	+	PER
+juego	+	Gym
+juego	+	Cardio
+juego	+	Nutrición
+juego	+	Dieta
+juego	+	Economía
+juego	+	Compra
+juego	+	Diario
+juego	+	Informe
+juego	+	Avances
+juego	+	Recuerdos
+juego	+	Oráculo
+juego	+	Contrato
+juego	+	Amigos
+juego	+	Emprendedor
+juego	+	EMPRENDEDOR
+juego	+	Ventas, foco y caja. Cada día una acción que mueva el negocio.
+juego	+	Economía y contrato delante. Proyectos con jefe final y fecha. El coach te pide números: contactos, cierres, ingresos.
+juego	+	Proyectos
+juego	+	Un proyecto es una campaña: tareas, un jefe final y una fecha. Al despejarlo hay botín.
+juego	+	Facturar 5.000 € al mes con mi negocio
+juego	+	emprendedor
+juego	+	Profesional
+juego	+	PROFESIONAL
+juego	+	Crecer en tu trabajo sin descuidar el cuerpo. Foco en la jornada, orden fuera de ella.
+juego	+	Informe, avances y diario delante, con el gym y la economía a mano. Objetivos de carrera con hito final y fecha. El coach protege tus bloques de foco y encaja entreno, comida y descanso alrededor de tu jornada.
+juego	+	Objetivos
+juego	+	Un objetivo profesional es una campaña: pasos como tareas, un hito final y una fecha. Al cumplirlo hay botín.
+juego	+	Conseguir el ascenso a responsable de equipo
+juego	+	profesional
+juego	+	Deportista
+juego	+	DEPORTISTA
+juego	+	Entreno, comida y descanso. El progreso se mide en kilos, ritmo y constancia.
+juego	+	Gym, cardio, nutrición y dieta delante. Bloques de temporada con objetivo y fecha. El coach prescribe cargas con tu RPE y ajusta la dieta con tu tendencia de peso.
+juego	+	Bloques
+juego	+	Un bloque de temporada es una campaña: sesiones, un objetivo final y una fecha. Al cumplirlo hay botín.
+juego	+	Bajar a 78 kg sin perder fuerza
+juego	+	deportista
+juego	+	Estudiante
+juego	+	ESTUDIANTE
+juego	+	Horas de estudio reales, exámenes como jefes finales y una cabeza despejada.
+juego	+	Diario, informe y avances delante. Asignaturas con el examen como jefe final. El coach reparte el estudio por bloques y vigila que descanses.
+juego	+	Asignaturas
+juego	+	Una asignatura es una campaña: temas como tareas, el examen como jefe y su fecha. Al aprobarla hay botín.
+juego	+	Aprobar las cuatro asignaturas de junio
+juego	+	estudiante
+juego	+	En general
+juego	+	GLADIADOR
+juego	+	Cuerpo, cabeza y hábitos. Un 1 % mejor cada día, en lo que tú decidas.
+juego	+	Todos los módulos a la vista. Campañas para cualquier reto con fecha. El coach te pregunta qué quieres conquistar y lo convierte en misiones.
+juego	+	Campañas
+juego	+	Una campaña es un reto con fecha: tareas, un jefe final y botín al despejarla.
+juego	+	Entrenar cuatro días por semana durante un año
+juego	+	en general
+juego	+	Prospección: 10 contactos
+juego	+	Bloque de trabajo profundo 2 h
+juego	+	Revisar métricas del negocio
+juego	+	Entrenar
+juego	+	Leer 20 minutos
+juego	+	Diario del día
+juego	+	Bloque de foco 90 min sin interrupciones
+juego	+	Planificar la jornada antes de empezar
+juego	+	Formación en tu oficio 30 min
+juego	+	Dormir 7 horas
+juego	+	Registrar comidas del día
+juego	+	Dormir 8 horas
+juego	+	Movilidad 10 minutos
+juego	+	Pesarse
+juego	+	Estudiar 2 h
+juego	+	Repasar apuntes 20 min
+juego	+	Sin móvil en clase
+juego	+	Trabajo o estudio 2 h
+oferta	+	El coach en potencia estándar.
+oferta	+	El coach a máxima potencia, con modo profundo.
+oferta	+	Brief cada mañana
+oferta	+	Órdenes y números antes de que empiece el día.
+oferta	+	Plan del día, bloque a bloque
+oferta	+	Tu jornada ordenada por horas, con lo que toca en cada una.
+oferta	+	Entreno prescrito
+oferta	+	Ejercicios, series y cargas según el RPE que registras.
+oferta	+	Dieta en gramos
+oferta	+	Ajustada a tu peso real y a su tendencia, no a una tabla.
+oferta	+	Revisión semanal
+oferta	+	Mide la semana con tus datos y reajusta tu sistema.
+oferta	+	Memoria
+oferta	+	Recuerda lo que aprende de ti. Te conoce más cada semana.
+oferta	+	Control total por chat
+oferta	+	Díselo y lo hace: misiones, agenda, normas, metas.
+oferta	+	Máxima potencia
+oferta	+	Un modelo de primera línea en cada brief, plan, revisión y conversación.
+oferta	+	Modo profundo
+oferta	+	Para lo que pide pensarlo a fondo: el coach se toma su tiempo y responde con más detalle.
+oferta	+	Revisión semanal a fondo
+oferta	+	Tu semana medida por el modelo de primera línea, pensando a fondo.
+oferta	+	Solicita plaza en un ludus (5-8)
+oferta	+	Un grupo de 5 a 8 gladiadores Élite con tu objetivo y marcador propio. La asignación es manual, según disponibilidad.
+oferta	+	Insignia de laurel
+oferta	+	El laurel dorado junto a tu nombre. Estatus, no puntos: no cambia ningún ranking.
+oferta	+	Juramento sellado
+oferta	+	Ahora, quién lo dirige.
+oferta	+	Tu juramento está sellado. El coach puede dirigir tu día desde mañana.
+oferta	+	Ver NIVL Pro
+oferta	+	Tu juramento está sellado. NIVL sigue gratis entera; Pro añade el coach que lo dirige.
+oferta	+	Juramento sellado
+oferta	+	El coach a máxima potencia.
+oferta	+	Tu juramento está sellado. Élite es el coach a máxima potencia.
+oferta	+	Ver NIVL Élite
+oferta	+	Tu juramento está sellado. NIVL sigue gratis entera; Élite añade el coach a máxima potencia.
+onboarding	+	{{count}} año
+onboarding	+	{{count}} años
+onboarding	+	COMPROMISO A {{plazo}}
+onboarding	+	Yo, {{nombre}}, firmo este compromiso conmigo el {{firmadoEl}}, el día que entré en NIVL.
+onboarding	+	Estoy aquí para esto: {{objetivo}}
+onboarding	+	No prometo días perfectos. Prometo ser un 1 % mejor cada día: una misión cumplida cuando no apetece, una norma respetada cuando nadie mira, un registro honesto cuando el día ha ido mal.
+onboarding	+	Un 1 % no se nota en una semana. En {{plazo}} es otra vida.
+onboarding	+	Cuando falle, no negociaré con el sistema. Aceptaré la penalización, cumpliré la consecuencia y volveré al día siguiente.
+onboarding	+	A quien abra esto el {{seAbreEl}}: eres lo que hice con cada uno de estos días. Espero haber estado a tu altura.
+onboarding	+	Firmado: {{nombre}}
+onboarding	+	Cifra: {{cifra}}
+onboarding	+	Fecha: {{fecha}}
+# QA F1 (menor 10): la unidad de la racha del Hero («12d») pasa al catálogo para poder traducirla (de «T», fr «j», it «g»). En español sigue siendo «d».
+arena	+	d

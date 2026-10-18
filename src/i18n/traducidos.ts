@@ -42,6 +42,8 @@ import enAvisos from './en/avisos.json';
 import enModos from './en/modos.json';
 import enPrueba from './en/prueba.json';
 import enIron from './en/iron.json';
+import enJuego from './en/juego.json';
+import enOferta from './en/oferta.json';
 import frComun from './fr/comun.json';
 import frRaiz from './fr/raiz.json';
 import frUi from './fr/ui.json';
@@ -78,6 +80,8 @@ import frAvisos from './fr/avisos.json';
 import frModos from './fr/modos.json';
 import frPrueba from './fr/prueba.json';
 import frIron from './fr/iron.json';
+import frJuego from './fr/juego.json';
+import frOferta from './fr/oferta.json';
 import ptComun from './pt/comun.json';
 import ptRaiz from './pt/raiz.json';
 import ptUi from './pt/ui.json';
@@ -114,6 +118,8 @@ import ptAvisos from './pt/avisos.json';
 import ptModos from './pt/modos.json';
 import ptPrueba from './pt/prueba.json';
 import ptIron from './pt/iron.json';
+import ptJuego from './pt/juego.json';
+import ptOferta from './pt/oferta.json';
 import deComun from './de/comun.json';
 import deRaiz from './de/raiz.json';
 import deUi from './de/ui.json';
@@ -150,6 +156,8 @@ import deAvisos from './de/avisos.json';
 import deModos from './de/modos.json';
 import dePrueba from './de/prueba.json';
 import deIron from './de/iron.json';
+import deJuego from './de/juego.json';
+import deOferta from './de/oferta.json';
 import itComun from './it/comun.json';
 import itRaiz from './it/raiz.json';
 import itUi from './it/ui.json';
@@ -186,6 +194,8 @@ import itAvisos from './it/avisos.json';
 import itModos from './it/modos.json';
 import itPrueba from './it/prueba.json';
 import itIron from './it/iron.json';
+import itJuego from './it/juego.json';
+import itOferta from './it/oferta.json';
 
 /** Los idiomas con interfaz traducida (el español no está: es la base). */
 export const IDIOMAS_TRADUCIDOS = ['en', 'fr', 'pt', 'de', 'it'] as const;
@@ -231,6 +241,8 @@ export const RECURSOS_LOCALES: Record<IdiomaTraducido, Catalogo> = {
     modos: enModos,
     prueba: enPrueba,
     iron: enIron,
+    juego: enJuego,
+    oferta: enOferta,
   },
   fr: {
     comun: frComun,
@@ -269,6 +281,8 @@ export const RECURSOS_LOCALES: Record<IdiomaTraducido, Catalogo> = {
     modos: frModos,
     prueba: frPrueba,
     iron: frIron,
+    juego: frJuego,
+    oferta: frOferta,
   },
   pt: {
     comun: ptComun,
@@ -307,6 +321,8 @@ export const RECURSOS_LOCALES: Record<IdiomaTraducido, Catalogo> = {
     modos: ptModos,
     prueba: ptPrueba,
     iron: ptIron,
+    juego: ptJuego,
+    oferta: ptOferta,
   },
   de: {
     comun: deComun,
@@ -345,6 +361,8 @@ export const RECURSOS_LOCALES: Record<IdiomaTraducido, Catalogo> = {
     modos: deModos,
     prueba: dePrueba,
     iron: deIron,
+    juego: deJuego,
+    oferta: deOferta,
   },
   it: {
     comun: itComun,
@@ -383,5 +401,7 @@ export const RECURSOS_LOCALES: Record<IdiomaTraducido, Catalogo> = {
     modos: itModos,
     prueba: itPrueba,
     iron: itIron,
+    juego: itJuego,
+    oferta: itOferta,
   },
 };

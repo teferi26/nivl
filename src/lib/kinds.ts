@@ -7,8 +7,16 @@
 // qué hábitos se proponen el primer día y cómo se llaman las campañas.
 //
 // Módulo PURO: sin imports de Supabase, para que los tests arranquen.
+//
+// QA F1 (M4): los textos que se ven (nombres, rótulos, ejemplos, misiones
+// propuestas y módulos) salen del catálogo `juego` al leerlos (textosVivos.ts);
+// en español dicen lo de siempre. `coachHint` no se ve: es para el coach y se
+// queda en español, como su copia en supabase/functions/_shared/kinds.ts.
 
-import type { Difficulty, Stat } from './types';
+import { t } from '@/i18n';
+import { idiomaInterfazActual } from '@/i18n/estado';
+import { conTextos } from './textosVivos';
+import type { ActLink, Difficulty, Stat } from './types';
 
 // Al añadir un perfil: el CHECK de `profiles.profile_kind` va en una migración
 // nueva (0018 → 0022) y el coach tiene su copia en supabase/functions/_shared/kinds.ts.
@@ -58,25 +66,35 @@ export interface ModuleMeta {
   route: ModuleRoute;
 }
 
+function modulo(id: ModuleId, icon: string, route: ModuleRoute): ModuleMeta {
+  return conTextos({ id, icon, route }, { label: () => t(`juego:modulo.${id}`) });
+}
+
 export const MODULES: readonly ModuleMeta[] = [
-  { id: 'gym', label: 'Gym', icon: 'barbell-outline', route: '/gym' },
-  { id: 'cardio', label: 'Cardio', icon: 'walk-outline', route: '/cardio' },
-  { id: 'nutricion', label: 'Nutrición', icon: 'nutrition-outline', route: '/nutricion' },
-  { id: 'dieta', label: 'Dieta', icon: 'restaurant-outline', route: '/dieta' },
-  { id: 'economia', label: 'Economía', icon: 'wallet-outline', route: '/economia' },
-  { id: 'compra', label: 'Compra', icon: 'cart-outline', route: '/compra' },
-  { id: 'diario', label: 'Diario', icon: 'book-outline', route: '/diario' },
-  { id: 'informe', label: 'Informe', icon: 'stats-chart-outline', route: '/informe' },
-  { id: 'avances', label: 'Avances', icon: 'trending-up-outline', route: '/avances' },
-  { id: 'resumen', label: 'Recuerdos', icon: 'images-outline', route: '/resumen' },
-  { id: 'oraculo', label: 'Oráculo', icon: 'sparkles-outline', route: '/oraculo' },
-  { id: 'contrato', label: 'Contrato', icon: 'document-text-outline', route: '/contrato' },
-  { id: 'amigos', label: 'Amigos', icon: 'people-outline', route: '/amigos' },
+  modulo('gym', 'barbell-outline', '/gym'),
+  modulo('cardio', 'walk-outline', '/cardio'),
+  modulo('nutricion', 'nutrition-outline', '/nutricion'),
+  modulo('dieta', 'restaurant-outline', '/dieta'),
+  modulo('economia', 'wallet-outline', '/economia'),
+  modulo('compra', 'cart-outline', '/compra'),
+  modulo('diario', 'book-outline', '/diario'),
+  modulo('informe', 'stats-chart-outline', '/informe'),
+  modulo('avances', 'trending-up-outline', '/avances'),
+  modulo('resumen', 'images-outline', '/resumen'),
+  modulo('oraculo', 'sparkles-outline', '/oraculo'),
+  modulo('contrato', 'document-text-outline', '/contrato'),
+  modulo('amigos', 'people-outline', '/amigos'),
 ];
 
 export interface StarterQuest {
   health_data?: boolean;
   title: string;
+  /**
+   * El acto que la marca sola (0019). En español no hace falta: el trigger
+   * `infer_link` lo deduce del título. Traducido, el título ya no lo dice y el
+   * enlace va explícito (solo fuera del español, para no cambiar nada en es).
+   */
+  link?: ActLink;
   stat: Stat;
   difficulty: Difficulty;
   days_of_week: number[];
@@ -106,126 +124,131 @@ export interface KindMeta {
   starterQuests: readonly StarterQuest[];
   /** Instrucción breve para el coach: cambia el énfasis, no las leyes. */
   coachHint: string;
+  /** El perfil dentro de una frase: «deportista», «en general». */
+  enFrase: string;
 }
 
 const LABORABLES = [1, 2, 3, 4, 5];
 const DIARIO = [1, 2, 3, 4, 5, 6, 7];
 
+/** Las misiones propuestas, por su clave en `juego:mision`. */
+type MisionId =
+  | 'prospeccion'
+  | 'trabajoProfundo'
+  | 'metricas'
+  | 'entrenar'
+  | 'leer'
+  | 'diario'
+  | 'foco'
+  | 'planificar'
+  | 'formacion'
+  | 'dormir7'
+  | 'comidas'
+  | 'dormir8'
+  | 'movilidad'
+  | 'pesarse'
+  | 'estudiar'
+  | 'repasar'
+  | 'sinMovil'
+  | 'trabajoEstudio';
+
+/** Lo que `infer_link` deduce de su título en español (0019). */
+const VINCULO: Partial<Record<MisionId, ActLink>> = { entrenar: 'gym', diario: 'diario', pesarse: 'peso', comidas: 'nutricion' };
+
+function mision(id: MisionId, stat: Stat, difficulty: Difficulty, days_of_week: number[], salud = false): StarterQuest {
+  const q = conTextos(
+    { ...(salud ? { health_data: true } : {}), stat, difficulty, days_of_week, requires_evidence: false },
+    { title: () => t(`juego:mision.${id}`) },
+  ) as StarterQuest;
+  const vinculo = VINCULO[id];
+  if (vinculo) {
+    Object.defineProperty(q, 'link', {
+      enumerable: true,
+      get: () => (idiomaInterfazActual() === 'es' ? undefined : vinculo),
+    });
+  }
+  return q;
+}
+
+type CampoPerfil = 'label' | 'title' | 'tagline' | 'description' | 'campaignsLabel' | 'campaignsHint' | 'goalExample' | 'enFrase';
+const CAMPOS_PERFIL: readonly CampoPerfil[] = ['label', 'title', 'tagline', 'description', 'campaignsLabel', 'campaignsHint', 'goalExample', 'enFrase'];
+
+function perfil(id: ProfileKind, datos: Pick<KindMeta, 'icon' | 'primaryModules' | 'starterQuests' | 'coachHint'>): KindMeta {
+  const textos = {} as Record<CampoPerfil, () => string>;
+  for (const c of CAMPOS_PERFIL) textos[c] = () => t(`juego:perfil.${id}.${c}`);
+  return conTextos({ id, ...datos }, textos);
+}
+
 export const KINDS: Record<ProfileKind, KindMeta> = {
-  emprendedor: {
-    id: 'emprendedor',
-    label: 'Emprendedor',
-    title: 'EMPRENDEDOR',
+  emprendedor: perfil('emprendedor', {
     icon: 'rocket-outline',
-    tagline: 'Ventas, foco y caja. Cada día una acción que mueva el negocio.',
-    description:
-      'Economía y contrato delante. Proyectos con jefe final y fecha. El coach te pide números: contactos, cierres, ingresos.',
-    campaignsLabel: 'Proyectos',
-    campaignsHint: 'Un proyecto es una campaña: tareas, un jefe final y una fecha. Al despejarlo hay botín.',
     primaryModules: ['economia', 'contrato', 'amigos', 'informe', 'avances', 'diario', 'oraculo'],
-    goalExample: 'Facturar 5.000 € al mes con mi negocio',
     starterQuests: [
-      { title: 'Prospección: 10 contactos', stat: 'AGI', difficulty: 'media', days_of_week: LABORABLES, requires_evidence: false },
-      { title: 'Bloque de trabajo profundo 2 h', stat: 'INT', difficulty: 'media', days_of_week: LABORABLES, requires_evidence: false },
-      { title: 'Revisar métricas del negocio', stat: 'PER', difficulty: 'facil', days_of_week: LABORABLES, requires_evidence: false },
-      { title: 'Entrenar', health_data: true, stat: 'FUE', difficulty: 'media', days_of_week: [1, 3, 5], requires_evidence: false },
-      { title: 'Leer 20 minutos', stat: 'INT', difficulty: 'facil', days_of_week: DIARIO, requires_evidence: false },
-      { title: 'Diario del día', health_data: true, stat: 'PER', difficulty: 'facil', days_of_week: DIARIO, requires_evidence: false },
+      mision('prospeccion', 'AGI', 'media', LABORABLES),
+      mision('trabajoProfundo', 'INT', 'media', LABORABLES),
+      mision('metricas', 'PER', 'facil', LABORABLES),
+      mision('entrenar', 'FUE', 'media', [1, 3, 5], true),
+      mision('leer', 'INT', 'facil', DIARIO),
+      mision('diario', 'PER', 'facil', DIARIO, true),
     ],
     coachHint:
       'Es emprendedor: su campo de batalla son las ventas, el foco y la caja. Pide cifras de embudo (contactos, reuniones, cierres, ingresos) y ordena acciones que muevan el negocio hoy. El cuerpo se cuida para rendir, no es el centro.',
-  },
-  trabajador: {
-    id: 'trabajador',
-    label: 'Profesional',
-    title: 'PROFESIONAL',
+  }),
+  trabajador: perfil('trabajador', {
     icon: 'briefcase-outline',
-    tagline: 'Crecer en tu trabajo sin descuidar el cuerpo. Foco en la jornada, orden fuera de ella.',
-    description:
-      'Informe, avances y diario delante, con el gym y la economía a mano. Objetivos de carrera con hito final y fecha. El coach protege tus bloques de foco y encaja entreno, comida y descanso alrededor de tu jornada.',
-    campaignsLabel: 'Objetivos',
-    campaignsHint: 'Un objetivo profesional es una campaña: pasos como tareas, un hito final y una fecha. Al cumplirlo hay botín.',
     primaryModules: ['informe', 'avances', 'amigos', 'diario', 'gym', 'economia', 'contrato'],
-    goalExample: 'Conseguir el ascenso a responsable de equipo',
     starterQuests: [
-      { title: 'Bloque de foco 90 min sin interrupciones', stat: 'INT', difficulty: 'media', days_of_week: LABORABLES, requires_evidence: false },
-      { title: 'Planificar la jornada antes de empezar', stat: 'PER', difficulty: 'facil', days_of_week: LABORABLES, requires_evidence: false },
-      { title: 'Formación en tu oficio 30 min', stat: 'INT', difficulty: 'facil', days_of_week: LABORABLES, requires_evidence: false },
-      { title: 'Entrenar', health_data: true, stat: 'FUE', difficulty: 'media', days_of_week: [1, 3, 5], requires_evidence: false },
-      { title: 'Dormir 7 horas', health_data: true, stat: 'VIT', difficulty: 'facil', days_of_week: DIARIO, requires_evidence: false },
-      { title: 'Diario del día', health_data: true, stat: 'PER', difficulty: 'facil', days_of_week: DIARIO, requires_evidence: false },
+      mision('foco', 'INT', 'media', LABORABLES),
+      mision('planificar', 'PER', 'facil', LABORABLES),
+      mision('formacion', 'INT', 'facil', LABORABLES),
+      mision('entrenar', 'FUE', 'media', [1, 3, 5], true),
+      mision('dormir7', 'VIT', 'facil', DIARIO, true),
+      mision('diario', 'PER', 'facil', DIARIO, true),
     ],
     coachHint:
       'Es un profesional por cuenta ajena: quiere crecer en su trabajo y mantener salud y hábitos en orden. Su jornada es fija y no se negocia: protege uno o dos bloques de foco dentro de ella, pregunta por entregas, aprendizaje y objetivos de carrera (ascenso, cambio, certificación), y encaja entreno, comida y sueño antes o después del trabajo sin cargar los días largos.',
-  },
-  deportista: {
-    id: 'deportista',
-    label: 'Deportista',
-    title: 'DEPORTISTA',
+  }),
+  deportista: perfil('deportista', {
     icon: 'barbell-outline',
-    tagline: 'Entreno, comida y descanso. El progreso se mide en kilos, ritmo y constancia.',
-    description:
-      'Gym, cardio, nutrición y dieta delante. Bloques de temporada con objetivo y fecha. El coach prescribe cargas con tu RPE y ajusta la dieta con tu tendencia de peso.',
-    campaignsLabel: 'Bloques',
-    campaignsHint: 'Un bloque de temporada es una campaña: sesiones, un objetivo final y una fecha. Al cumplirlo hay botín.',
     primaryModules: ['gym', 'cardio', 'amigos', 'nutricion', 'dieta', 'avances', 'compra'],
-    goalExample: 'Bajar a 78 kg sin perder fuerza',
     starterQuests: [
-      { title: 'Entrenar', health_data: true, stat: 'FUE', difficulty: 'media', days_of_week: LABORABLES, requires_evidence: false },
-      { title: 'Registrar comidas del día', health_data: true, stat: 'VIT', difficulty: 'facil', days_of_week: DIARIO, requires_evidence: false },
-      { title: 'Dormir 8 horas', health_data: true, stat: 'VIT', difficulty: 'facil', days_of_week: DIARIO, requires_evidence: false },
-      { title: 'Movilidad 10 minutos', health_data: true, stat: 'AGI', difficulty: 'trivial', days_of_week: DIARIO, requires_evidence: false },
-      { title: 'Pesarse', health_data: true, stat: 'VIT', difficulty: 'trivial', days_of_week: [1, 4], requires_evidence: false },
-      { title: 'Diario del día', health_data: true, stat: 'PER', difficulty: 'facil', days_of_week: DIARIO, requires_evidence: false },
+      mision('entrenar', 'FUE', 'media', LABORABLES, true),
+      mision('comidas', 'VIT', 'facil', DIARIO, true),
+      mision('dormir8', 'VIT', 'facil', DIARIO, true),
+      mision('movilidad', 'AGI', 'trivial', DIARIO, true),
+      mision('pesarse', 'VIT', 'trivial', [1, 4], true),
+      mision('diario', 'PER', 'facil', DIARIO, true),
     ],
     coachHint:
       'Es deportista: el entreno, la comida y el descanso son el centro. Programa sobre el estudio (1RM, RPE, ritmo por zona, tendencia de peso), exige registro de sesiones y comidas, y protege el descanso como parte del plan.',
-  },
-  estudiante: {
-    id: 'estudiante',
-    label: 'Estudiante',
-    title: 'ESTUDIANTE',
+  }),
+  estudiante: perfil('estudiante', {
     icon: 'school-outline',
-    tagline: 'Horas de estudio reales, exámenes como jefes finales y una cabeza despejada.',
-    description:
-      'Diario, informe y avances delante. Asignaturas con el examen como jefe final. El coach reparte el estudio por bloques y vigila que descanses.',
-    campaignsLabel: 'Asignaturas',
-    campaignsHint: 'Una asignatura es una campaña: temas como tareas, el examen como jefe y su fecha. Al aprobarla hay botín.',
     primaryModules: ['diario', 'informe', 'amigos', 'avances', 'oraculo', 'contrato', 'resumen'],
-    goalExample: 'Aprobar las cuatro asignaturas de junio',
     starterQuests: [
-      { title: 'Estudiar 2 h', stat: 'INT', difficulty: 'media', days_of_week: LABORABLES, requires_evidence: false },
-      { title: 'Repasar apuntes 20 min', stat: 'INT', difficulty: 'facil', days_of_week: DIARIO, requires_evidence: false },
-      { title: 'Sin móvil en clase', stat: 'AGI', difficulty: 'facil', days_of_week: LABORABLES, requires_evidence: false },
-      { title: 'Entrenar', health_data: true, stat: 'FUE', difficulty: 'media', days_of_week: [1, 3, 5], requires_evidence: false },
-      { title: 'Leer 20 minutos', stat: 'INT', difficulty: 'facil', days_of_week: DIARIO, requires_evidence: false },
-      { title: 'Diario del día', health_data: true, stat: 'PER', difficulty: 'facil', days_of_week: DIARIO, requires_evidence: false },
+      mision('estudiar', 'INT', 'media', LABORABLES),
+      mision('repasar', 'INT', 'facil', DIARIO),
+      mision('sinMovil', 'AGI', 'facil', LABORABLES),
+      mision('entrenar', 'FUE', 'media', [1, 3, 5], true),
+      mision('leer', 'INT', 'facil', DIARIO),
+      mision('diario', 'PER', 'facil', DIARIO, true),
     ],
     coachHint:
       'Es estudiante: las horas de estudio reales y los exámenes son el centro. Reparte el estudio en bloques con materia concreta, trata cada examen como el jefe de su campaña con fecha, y vigila el sueño en época de exámenes.',
-  },
-  general: {
-    id: 'general',
-    label: 'En general',
-    title: 'GLADIADOR',
+  }),
+  general: perfil('general', {
     icon: 'shield-outline',
-    tagline: 'Cuerpo, cabeza y hábitos. Un 1 % mejor cada día, en lo que tú decidas.',
-    description:
-      'Todos los módulos a la vista. Campañas para cualquier reto con fecha. El coach te pregunta qué quieres conquistar y lo convierte en misiones.',
-    campaignsLabel: 'Campañas',
-    campaignsHint: 'Una campaña es un reto con fecha: tareas, un jefe final y botín al despejarla.',
     primaryModules: ['gym', 'cardio', 'amigos', 'nutricion', 'dieta', 'economia', 'compra', 'diario', 'informe', 'avances', 'resumen', 'oraculo', 'contrato'],
-    goalExample: 'Entrenar cuatro días por semana durante un año',
     starterQuests: [
-      { title: 'Entrenar', health_data: true, stat: 'FUE', difficulty: 'media', days_of_week: LABORABLES, requires_evidence: false },
-      { title: 'Trabajo o estudio 2 h', stat: 'INT', difficulty: 'media', days_of_week: LABORABLES, requires_evidence: false },
-      { title: 'Registrar comidas del día', health_data: true, stat: 'VIT', difficulty: 'facil', days_of_week: DIARIO, requires_evidence: false },
-      { title: 'Leer 20 minutos', stat: 'INT', difficulty: 'facil', days_of_week: DIARIO, requires_evidence: false },
-      { title: 'Diario del día', health_data: true, stat: 'PER', difficulty: 'facil', days_of_week: DIARIO, requires_evidence: false },
+      mision('entrenar', 'FUE', 'media', LABORABLES, true),
+      mision('trabajoEstudio', 'INT', 'media', LABORABLES),
+      mision('comidas', 'VIT', 'facil', DIARIO, true),
+      mision('leer', 'INT', 'facil', DIARIO),
+      mision('diario', 'PER', 'facil', DIARIO, true),
     ],
     coachHint:
       'Perfil general: no hay un dominio dominante. Pregunta qué quiere conquistar esta temporada y reparte el esfuerzo entre cuerpo, cabeza y hábitos sin cargar todo el mismo día.',
-  },
+  }),
 };
 
 /** Devuelve la meta del perfil; con un valor desconocido (fila vieja) cae en general. */

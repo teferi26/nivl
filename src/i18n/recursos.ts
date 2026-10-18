@@ -14,6 +14,7 @@
 //   tanda 7: amigos, avances, creador, compra, share, celebracion
 //   tanda 8: voz (src/lib/voice.ts), avisos (src/lib/notifications.ts)
 //   Modos F1: modos (src/components/modos)
+//   QA F1: juego (src/lib/game.ts y kinds.ts) y oferta (src/lib/proplans.ts)
 
 import comun from './es/comun.json';
 import raiz from './es/raiz.json';
@@ -52,6 +53,9 @@ import modos from './es/modos.json';
 import prueba from './es/prueba.json';
 // Modos F1 (motor de IRON): solo la galería de desarrollo /kit/iron por ahora.
 import iron from './es/iron.json';
+// QA F1 (M4): los textos de src/lib que se ven (game, kinds y la oferta de proplans).
+import juego from './es/juego.json';
+import oferta from './es/oferta.json';
 
 /** Los catálogos en español: la fuente de verdad de todas las claves. */
 export const RECURSOS_ES = {
@@ -93,6 +97,9 @@ export const RECURSOS_ES = {
   // Prueba automática de Élite (0069, src/components/prueba).
   prueba,
   iron,
+  // QA F1: tablas de juego y perfiles de uso (game.ts, kinds.ts) y la oferta (proplans.ts).
+  juego,
+  oferta,
 };
 
 export type RecursosEs = typeof RECURSOS_ES;

@@ -1,0 +1,110 @@
+{
+  "dificultad": {
+    "trivial": "Trivial",
+    "facil": "Leicht",
+    "media": "Mittel",
+    "dificil": "Schwer",
+    "epica": "Episch"
+  },
+  "atributo": {
+    "FUE": "Stärke",
+    "VIT": "Vitalität",
+    "INT": "Intelligenz",
+    "AGI": "Agilität",
+    "PER": "Wahrnehmung"
+  },
+  "atributoCorto": {
+    "FUE": "STÄ",
+    "VIT": "VIT",
+    "INT": "INT",
+    "AGI": "AGI",
+    "PER": "WAH"
+  },
+  "modulo": {
+    "gym": "Gym",
+    "cardio": "Cardio",
+    "nutricion": "Ernährung",
+    "dieta": "Diät",
+    "economia": "Finanzen",
+    "compra": "Einkauf",
+    "diario": "Tagebuch",
+    "informe": "Bericht",
+    "avances": "Fortschritte",
+    "resumen": "Erinnerungen",
+    "oraculo": "Orakel",
+    "contrato": "Vertrag",
+    "amigos": "Freunde"
+  },
+  "perfil": {
+    "emprendedor": {
+      "label": "Gründer",
+      "title": "GRÜNDER",
+      "tagline": "Umsatz, Fokus und Kasse. Jeden Tag eine Aktion, die das Geschäft voranbringt.",
+      "description": "Finanzen und Vertrag vorne. Projekte mit Endgegner und Datum. Der Coach fragt dich nach Zahlen: Kontakte, Abschlüsse, Einnahmen.",
+      "campaignsLabel": "Projekte",
+      "campaignsHint": "Ein Projekt ist eine Kampagne: Aufgaben, ein Endgegner und ein Datum. Wer es bezwingt, bekommt Beute.",
+      "goalExample": "Mit meinem Unternehmen 5.000 € im Monat umsetzen",
+      "enFrase": "Gründer"
+    },
+    "trabajador": {
+      "label": "Berufstätig",
+      "title": "BERUFSTÄTIG",
+      "tagline": "Im Job wachsen, ohne den Körper zu vernachlässigen. Fokus im Arbeitstag, Ordnung danach.",
+      "description": "Bericht, Fortschritte und Tagebuch vorne, Gym und Finanzen griffbereit. Karriereziele mit Meilenstein und Datum. Der Coach schützt deine Fokusblöcke und plant Training, Essen und Erholung um deinen Arbeitstag herum.",
+      "campaignsLabel": "Ziele",
+      "campaignsHint": "Ein Karriereziel ist eine Kampagne: Schritte als Aufgaben, ein letzter Meilenstein und ein Datum. Wer es erreicht, bekommt Beute.",
+      "goalExample": "Die Beförderung zur Teamleitung schaffen",
+      "enFrase": "Berufstätige"
+    },
+    "deportista": {
+      "label": "Sportler",
+      "title": "SPORTLER",
+      "tagline": "Training, Ernährung und Erholung. Fortschritt misst sich in Kilo, Tempo und Beständigkeit.",
+      "description": "Gym, Cardio, Ernährung und Diät vorne. Saisonblöcke mit Ziel und Datum. Der Coach gibt Lasten nach deinem RPE vor und passt die Ernährung an deinen Gewichtstrend an.",
+      "campaignsLabel": "Blöcke",
+      "campaignsHint": "Ein Saisonblock ist eine Kampagne: Einheiten, ein Endziel und ein Datum. Wer es erreicht, bekommt Beute.",
+      "goalExample": "Auf 78 kg runter, ohne Kraft zu verlieren",
+      "enFrase": "Sportler"
+    },
+    "estudiante": {
+      "label": "Studium",
+      "title": "STUDIUM",
+      "tagline": "Echte Lernstunden, Prüfungen als Endgegner und ein klarer Kopf.",
+      "description": "Tagebuch, Bericht und Fortschritte vorne. Fächer mit der Prüfung als Endgegner. Der Coach teilt das Lernen in Blöcke und achtet darauf, dass du dich erholst.",
+      "campaignsLabel": "Fächer",
+      "campaignsHint": "Ein Fach ist eine Kampagne: Themen als Aufgaben, die Prüfung als Endgegner und ihr Datum. Wer besteht, bekommt Beute.",
+      "goalExample": "Alle vier Fächer im Juni bestehen",
+      "enFrase": "Studierende"
+    },
+    "general": {
+      "label": "Allgemein",
+      "title": "GLADIATOR",
+      "tagline": "Körper, Kopf und Gewohnheiten. Jeden Tag 1 % besser, worin du willst.",
+      "description": "Alle Module im Blick. Kampagnen für jede Herausforderung mit Datum. Der Coach fragt, was du erobern willst, und macht Missionen daraus.",
+      "campaignsLabel": "Kampagnen",
+      "campaignsHint": "Eine Kampagne ist eine Herausforderung mit Datum: Aufgaben, ein Endgegner und Beute, wenn du sie bezwingst.",
+      "goalExample": "Ein Jahr lang vier Tage pro Woche trainieren",
+      "enFrase": "allgemein"
+    }
+  },
+  "mision": {
+    "prospeccion": "Akquise: 10 Kontakte",
+    "trabajoProfundo": "2 h Deep-Work-Block",
+    "metricas": "Geschäftskennzahlen prüfen",
+    "entrenar": "Trainieren",
+    "leer": "20 Minuten lesen",
+    "diario": "Tagebuch des Tages",
+    "foco": "90 min Fokusblock ohne Unterbrechungen",
+    "planificar": "Den Arbeitstag vor dem Start planen",
+    "formacion": "30 min Weiterbildung im Beruf",
+    "dormir7": "7 Stunden schlafen",
+    "comidas": "Mahlzeiten des Tages eintragen",
+    "dormir8": "8 Stunden schlafen",
+    "movilidad": "10 Minuten Mobility",
+    "pesarse": "Wiegen",
+    "estudiar": "2 h lernen",
+    "repasar": "Notizen 20 min wiederholen",
+    "sinMovil": "Kein Handy im Unterricht",
+    "trabajoEstudio": "2 h Arbeit oder Lernen"
+  }
+}

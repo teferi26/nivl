@@ -10,11 +10,18 @@
 // Módulo PURO: sin imports de Supabase, para que los tests arranquen. Los
 // efectos (leer el estado de la IA, la prueba, comprar, restaurar) están en
 // `pro.ts`.
+//
+// QA F1 (M4): lo que se ve en el paso del coach del onboarding (la potencia
+// de cada nivel, los beneficios y la línea «Tu juramento está sellado») sale
+// del catálogo `oferta` al leerlo; en español, lo de siempre. Las condiciones
+// de compra, la letra de renovación, los avisos de uso y la prueba de 7 días
+// siguen aquí en español: son texto legal y esperan revisión en cada idioma.
 
 import { t } from '@/i18n';
 import { idiomaInterfazActual, type IdiomaInterfaz } from '@/i18n/estado';
 import { moneda } from '@/i18n/formato';
 import { kindMeta, type ProfileKind } from './kinds';
+import { conTextos } from './textosVivos';
 import type { CopyKey, Momento, TierOferta } from './paywallmoment';
 
 /**
@@ -276,7 +283,9 @@ export const TIERS: readonly TierOffer[] = [
     id: 'pro',
     name: 'NIVL Pro',
     label: 'Pro',
-    power: 'El coach en potencia estándar.',
+    get power() {
+      return t('oferta:potencia.pro');
+    },
     plans: [
       anual('nivl_pro_anual', 'pro', 'pro_anual', 'Anual', PRO_ANUAL_CENTS, PRO_MENSUAL_CENTS),
       mensual('nivl_pro_mensual', 'pro', 'pro_mensual', PRO_MENSUAL_CENTS),
@@ -287,7 +296,9 @@ export const TIERS: readonly TierOffer[] = [
     id: 'elite',
     name: 'NIVL Élite',
     label: 'Élite',
-    power: 'El coach a máxima potencia, con modo profundo.',
+    get power() {
+      return t('oferta:potencia.elite');
+    },
     plans: [
       anual(
         'nivl_elite_fundador',
@@ -322,22 +333,51 @@ export function proPlan(id: ProPlanId): ProPlan {
 }
 
 export interface ProBenefit {
+  /**
+   * Identificador estable: el título en español. Es lo que nombra
+   * `CopyUpsell.beneficio`, así que casa en cualquier idioma.
+   */
+  id?: string;
   /** Nombre de Ionicons. */
   icon: string;
   title: string;
   detail: string;
 }
 
+type ClaveBeneficio =
+  | 'brief'
+  | 'plan'
+  | 'entreno'
+  | 'dieta'
+  | 'revision'
+  | 'memoria'
+  | 'chat'
+  | 'potencia'
+  | 'profundo'
+  | 'revisionFondo'
+  | 'ludus'
+  | 'laurel';
+
+function beneficio(clave: ClaveBeneficio, icon: string, id: string): ProBenefit {
+  return conTextos(
+    { id, icon },
+    {
+      title: () => t(`oferta:beneficio.${clave}.titulo`),
+      detail: () => t(`oferta:beneficio.${clave}.detalle`),
+    },
+  );
+}
+
 // Lo que el coach hace, tal cual. Nada de cifras inventadas ni de promesas de
 // resultado: cada línea es una función que existe en `supabase/functions/coach`.
 export const PRO_BENEFITS: readonly ProBenefit[] = [
-  { icon: 'sunny-outline', title: 'Brief cada mañana', detail: 'Órdenes y números antes de que empiece el día.' },
-  { icon: 'list-outline', title: 'Plan del día, bloque a bloque', detail: 'Tu jornada ordenada por horas, con lo que toca en cada una.' },
-  { icon: 'barbell-outline', title: 'Entreno prescrito', detail: 'Ejercicios, series y cargas según el RPE que registras.' },
-  { icon: 'restaurant-outline', title: 'Dieta en gramos', detail: 'Ajustada a tu peso real y a su tendencia, no a una tabla.' },
-  { icon: 'analytics-outline', title: 'Revisión semanal', detail: 'Mide la semana con tus datos y reajusta tu sistema.' },
-  { icon: 'library-outline', title: 'Memoria', detail: 'Recuerda lo que aprende de ti. Te conoce más cada semana.' },
-  { icon: 'chatbubble-ellipses-outline', title: 'Control total por chat', detail: 'Díselo y lo hace: misiones, agenda, normas, metas.' },
+  beneficio('brief', 'sunny-outline', 'Brief cada mañana'), // i18n-ok: id estable
+  beneficio('plan', 'list-outline', 'Plan del día, bloque a bloque'), // i18n-ok: id estable
+  beneficio('entreno', 'barbell-outline', 'Entreno prescrito'), // i18n-ok: id estable
+  beneficio('dieta', 'restaurant-outline', 'Dieta en gramos'), // i18n-ok: id estable
+  beneficio('revision', 'analytics-outline', 'Revisión semanal'), // i18n-ok: id estable
+  beneficio('memoria', 'library-outline', 'Memoria'), // i18n-ok: id estable
+  beneficio('chat', 'chatbubble-ellipses-outline', 'Control total por chat'), // i18n-ok: id estable
 ];
 
 export const COACH_USAGE_NOTICE =
@@ -380,11 +420,11 @@ export const ELITE_USAGE_NOTICE =
 // máximo esfuerzo (`revision_semanal` va a 'xhigh' en la función coach). Los
 // retos trimestrales y el acceso anticipado, cuando tengan contenido.
 export const ELITE_BENEFITS: readonly ProBenefit[] = [
-  { icon: 'flash-outline', title: 'Máxima potencia', detail: 'Un modelo de primera línea en cada brief, plan, revisión y conversación.' },
-  { icon: 'telescope-outline', title: 'Modo profundo', detail: 'Para lo que pide pensarlo a fondo: el coach se toma su tiempo y responde con más detalle.' },
-  { icon: 'analytics-outline', title: 'Revisión semanal a fondo', detail: 'Tu semana medida por el modelo de primera línea, pensando a fondo.' },
-  { icon: 'shield-outline', title: 'Solicita plaza en un ludus (5-8)', detail: 'Un grupo de 5 a 8 gladiadores Élite con tu objetivo y marcador propio. La asignación es manual, según disponibilidad.' },
-  { icon: 'ribbon-outline', title: 'Insignia de laurel', detail: 'El laurel dorado junto a tu nombre. Estatus, no puntos: no cambia ningún ranking.' },
+  beneficio('potencia', 'flash-outline', 'Máxima potencia'), // i18n-ok: id estable
+  beneficio('profundo', 'telescope-outline', 'Modo profundo'), // i18n-ok: id estable
+  beneficio('revisionFondo', 'analytics-outline', 'Revisión semanal a fondo'), // i18n-ok: id estable
+  beneficio('ludus', 'shield-outline', 'Solicita plaza en un ludus (5-8)'), // i18n-ok: id estable
+  beneficio('laurel', 'ribbon-outline', 'Insignia de laurel'), // i18n-ok: id estable
 ];
 
 const PRO_EMPHASIS: Record<ProfileKind, string> = {
@@ -734,23 +774,23 @@ export interface CopyUpsell {
   beneficio: string | null;
 }
 
+/** La línea tras firmar el juramento (paso del coach del onboarding), del catálogo. */
+function upsellFirma(tier: 'pro' | 'elite', beneficio: string): CopyUpsell {
+  return conTextos(
+    { beneficio },
+    {
+      eyebrow: () => t(`oferta:firma.${tier}.eyebrow`),
+      titulo: () => t(`oferta:firma.${tier}.titulo`),
+      linea: () => t(`oferta:firma.${tier}.linea`),
+      enlace: () => t(`oferta:firma.${tier}.enlace`),
+      contexto: () => t(`oferta:firma.${tier}.contexto`),
+    },
+  );
+}
+
 export const COPY_UPSELL: Record<CopyKey, CopyUpsell> = {
-  'firma.pro': {
-    eyebrow: 'Juramento sellado',
-    titulo: 'Ahora, quién lo dirige.',
-    linea: 'Tu juramento está sellado. El coach puede dirigir tu día desde mañana.',
-    enlace: 'Ver NIVL Pro',
-    contexto: 'Tu juramento está sellado. NIVL sigue gratis entera; Pro añade el coach que lo dirige.',
-    beneficio: 'Brief cada mañana',
-  },
-  'firma.elite': {
-    eyebrow: 'Juramento sellado',
-    titulo: 'El coach a máxima potencia.',
-    linea: 'Tu juramento está sellado. Élite es el coach a máxima potencia.',
-    enlace: 'Ver NIVL Élite',
-    contexto: 'Tu juramento está sellado. NIVL sigue gratis entera; Élite añade el coach a máxima potencia.',
-    beneficio: 'Máxima potencia',
-  },
+  'firma.pro': upsellFirma('pro', 'Brief cada mañana'), // i18n-ok: id estable del beneficio
+  'firma.elite': upsellFirma('elite', 'Máxima potencia'), // i18n-ok: id estable del beneficio
   'primer_dia.pro': {
     eyebrow: 'Primer día',
     titulo: 'Mañana, con el plan escrito.',
@@ -880,7 +920,7 @@ export function beneficiosPorMotivo(
 ): readonly ProBenefit[] {
   if (!motivo) return beneficios;
   const titulo = copyUpsell(motivo, tier).beneficio;
-  const i = titulo ? beneficios.findIndex((b) => b.title === titulo) : -1;
+  const i = titulo ? beneficios.findIndex((b) => (b.id ?? b.title) === titulo) : -1;
   if (i <= 0) return beneficios;
   return [beneficios[i]!, ...beneficios.slice(0, i), ...beneficios.slice(i + 1)];
 }

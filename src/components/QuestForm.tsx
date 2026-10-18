@@ -13,6 +13,7 @@ import {
   BONUS_BY_DIFFICULTY,
   DIFFICULTIES,
   DIFFICULTY_LABEL,
+  STAT_ABBR,
   STAT_LABEL,
   STATS,
   XP_BY_DIFFICULTY,
@@ -200,7 +201,7 @@ export function QuestForm({ visible, onClose, onSubmit, initial, onDelete, susta
       <Text style={styles.label}>{t('raiz:questForm.queEntrena')}</Text>
       <ChipWrap>
         {STATS.map((s) => (
-          <Chip key={s} label={s} selected={stat === s} onPress={() => setStat(s)} accessibilityLabel={STAT_LABEL[s]} />
+          <Chip key={s} label={STAT_ABBR[s]} selected={stat === s} onPress={() => setStat(s)} accessibilityLabel={STAT_LABEL[s]} />
         ))}
       </ChipWrap>
       <Text style={styles.hint}>{STAT_LABEL[stat]}</Text>

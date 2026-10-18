@@ -1,0 +1,72 @@
+{
+  "potencia": {
+    "pro": "Le coach en puissance standard.",
+    "elite": "Le coach à pleine puissance, avec le mode approfondi."
+  },
+  "beneficio": {
+    "brief": {
+      "titulo": "Brief chaque matin",
+      "detalle": "Des ordres et des chiffres avant que la journée commence."
+    },
+    "plan": {
+      "titulo": "Plan du jour, bloc par bloc",
+      "detalle": "Ta journée organisée heure par heure, avec ce que chacune demande."
+    },
+    "entreno": {
+      "titulo": "Entraînement prescrit",
+      "detalle": "Exercices, séries et charges selon le RPE que tu notes."
+    },
+    "dieta": {
+      "titulo": "Régime au gramme près",
+      "detalle": "Ajusté à ton poids réel et à sa tendance, pas à un tableau."
+    },
+    "revision": {
+      "titulo": "Bilan hebdomadaire",
+      "detalle": "Mesure la semaine avec tes données et réajuste ton système."
+    },
+    "memoria": {
+      "titulo": "Mémoire",
+      "detalle": "Retient ce qu'il apprend de toi. Te connaît mieux chaque semaine."
+    },
+    "chat": {
+      "titulo": "Contrôle total par chat",
+      "detalle": "Dis-le-lui et il le fait : missions, agenda, règles, objectifs."
+    },
+    "potencia": {
+      "titulo": "Pleine puissance",
+      "detalle": "Un modèle de premier plan dans chaque brief, plan, bilan et conversation."
+    },
+    "profundo": {
+      "titulo": "Mode approfondi",
+      "detalle": "Pour ce qui demande d'y réfléchir à fond : le coach prend son temps et répond plus en détail."
+    },
+    "revisionFondo": {
+      "titulo": "Bilan hebdomadaire approfondi",
+      "detalle": "Ta semaine mesurée par le modèle de premier plan, en y réfléchissant à fond."
+    },
+    "ludus": {
+      "titulo": "Demande une place dans un ludus (5-8)",
+      "detalle": "Un groupe de 5 à 8 gladiateurs Élite avec ton objectif et son propre tableau. L'attribution est manuelle, selon les disponibilités."
+    },
+    "laurel": {
+      "titulo": "Insigne de laurier",
+      "detalle": "Le laurier doré à côté de ton nom. Du statut, pas des points : il ne change aucun classement."
+    }
+  },
+  "firma": {
+    "pro": {
+      "eyebrow": "Serment scellé",
+      "titulo": "Maintenant, qui le dirige.",
+      "linea": "Ton serment est scellé. Le coach peut diriger ta journée dès demain.",
+      "enlace": "Voir NIVL Pro",
+      "contexto": "Ton serment est scellé. NIVL reste entièrement gratuit ; Pro ajoute le coach qui le dirige."
+    },
+    "elite": {
+      "eyebrow": "Serment scellé",
+      "titulo": "Le coach à pleine puissance.",
+      "linea": "Ton serment est scellé. Élite, c'est le coach à pleine puissance.",
+      "enlace": "Voir NIVL Élite",
+      "contexto": "Ton serment est scellé. NIVL reste entièrement gratuit ; Élite ajoute le coach à pleine puissance."
+    }
+  }
+}

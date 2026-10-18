@@ -1,0 +1,110 @@
+{
+  "dificultad": {
+    "trivial": "Trivial",
+    "facil": "Easy",
+    "media": "Medium",
+    "dificil": "Hard",
+    "epica": "Epic"
+  },
+  "atributo": {
+    "FUE": "Strength",
+    "VIT": "Vitality",
+    "INT": "Intelligence",
+    "AGI": "Agility",
+    "PER": "Perception"
+  },
+  "atributoCorto": {
+    "FUE": "STR",
+    "VIT": "VIT",
+    "INT": "INT",
+    "AGI": "AGI",
+    "PER": "PER"
+  },
+  "modulo": {
+    "gym": "Gym",
+    "cardio": "Cardio",
+    "nutricion": "Nutrition",
+    "dieta": "Diet",
+    "economia": "Finances",
+    "compra": "Groceries",
+    "diario": "Journal",
+    "informe": "Report",
+    "avances": "Progress",
+    "resumen": "Memories",
+    "oraculo": "Oracle",
+    "contrato": "Contract",
+    "amigos": "Friends"
+  },
+  "perfil": {
+    "emprendedor": {
+      "label": "Entrepreneur",
+      "title": "ENTREPRENEUR",
+      "tagline": "Sales, focus and cash. Every day, one action that moves the business.",
+      "description": "Finances and contract up front. Projects with a final boss and a date. The coach asks you for numbers: contacts, closed deals, revenue.",
+      "campaignsLabel": "Projects",
+      "campaignsHint": "A project is a campaign: tasks, a final boss and a date. Clear it and there's loot.",
+      "goalExample": "Bill €5,000 a month with my business",
+      "enFrase": "entrepreneur"
+    },
+    "trabajador": {
+      "label": "Professional",
+      "title": "PROFESSIONAL",
+      "tagline": "Grow in your job without neglecting your body. Focus during the workday, order outside it.",
+      "description": "Report, progress and journal up front, with the gym and finances at hand. Career goals with a final milestone and a date. The coach protects your focus blocks and fits training, meals and rest around your workday.",
+      "campaignsLabel": "Goals",
+      "campaignsHint": "A career goal is a campaign: steps as tasks, a final milestone and a date. Reach it and there's loot.",
+      "goalExample": "Get promoted to team lead",
+      "enFrase": "professional"
+    },
+    "deportista": {
+      "label": "Athlete",
+      "title": "ATHLETE",
+      "tagline": "Training, food and rest. Progress is measured in kilos, pace and consistency.",
+      "description": "Gym, cardio, nutrition and diet up front. Season blocks with a goal and a date. The coach prescribes loads from your RPE and adjusts your diet to your weight trend.",
+      "campaignsLabel": "Blocks",
+      "campaignsHint": "A season block is a campaign: sessions, a final goal and a date. Reach it and there's loot.",
+      "goalExample": "Get down to 78 kg without losing strength",
+      "enFrase": "athlete"
+    },
+    "estudiante": {
+      "label": "Student",
+      "title": "STUDENT",
+      "tagline": "Real study hours, exams as final bosses and a clear head.",
+      "description": "Journal, report and progress up front. Subjects with the exam as the final boss. The coach splits your study into blocks and makes sure you rest.",
+      "campaignsLabel": "Subjects",
+      "campaignsHint": "A subject is a campaign: topics as tasks, the exam as the boss and its date. Pass it and there's loot.",
+      "goalExample": "Pass all four subjects in June",
+      "enFrase": "student"
+    },
+    "general": {
+      "label": "General",
+      "title": "GLADIATOR",
+      "tagline": "Body, mind and habits. 1% better every day, in whatever you decide.",
+      "description": "Every module in view. Campaigns for any challenge with a date. The coach asks what you want to conquer and turns it into missions.",
+      "campaignsLabel": "Campaigns",
+      "campaignsHint": "A campaign is a challenge with a date: tasks, a final boss and loot when you clear it.",
+      "goalExample": "Train four days a week for a year",
+      "enFrase": "general"
+    }
+  },
+  "mision": {
+    "prospeccion": "Prospecting: 10 contacts",
+    "trabajoProfundo": "2 h deep work block",
+    "metricas": "Review business metrics",
+    "entrenar": "Train",
+    "leer": "Read 20 minutes",
+    "diario": "Daily journal",
+    "foco": "90 min focus block, no interruptions",
+    "planificar": "Plan the workday before starting",
+    "formacion": "30 min of training in your field",
+    "dormir7": "Sleep 7 hours",
+    "comidas": "Log today's meals",
+    "dormir8": "Sleep 8 hours",
+    "movilidad": "Mobility 10 minutes",
+    "pesarse": "Weigh in",
+    "estudiar": "Study 2 h",
+    "repasar": "Review notes 20 min",
+    "sinMovil": "No phone in class",
+    "trabajoEstudio": "Work or study 2 h"
+  }
+}

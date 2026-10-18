@@ -25,7 +25,7 @@ import { Button, Check, Row, Screen, Section } from '@/components/ui';
 import { ink, space, type as tipo } from '@/design/tokens';
 import { t } from '@/i18n';
 import { nombreDia } from '@/i18n/formato';
-import { DIFFICULTY_LABEL, XP_BY_DIFFICULTY } from '@/lib/game';
+import { DIFFICULTY_LABEL, STAT_ABBR, XP_BY_DIFFICULTY } from '@/lib/game';
 import type { ProposedQuest } from '@/lib/oracle';
 
 export interface OraculoVistaProps {
@@ -204,7 +204,7 @@ export function OraculoVista({
                       detail={
                         <View>
                           <Text style={styles.meta} maxFontSizeMultiplier={1.35}>
-                            {p.stat} · {DIFFICULTY_LABEL[p.difficulty]} · {dias(p.days_of_week)}
+                            {STAT_ABBR[p.stat]} · {DIFFICULTY_LABEL[p.difficulty]} · {dias(p.days_of_week)}
                           </Text>
                           {p.reasoning ? (
                             <Text style={styles.razon} numberOfLines={3} maxFontSizeMultiplier={1.35}>
