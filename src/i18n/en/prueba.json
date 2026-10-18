@@ -1,0 +1,44 @@
+{
+  "bienvenida": {
+    "eyebrow": "Élite trial",
+    "titulo_one": "You have {{count}} day of NIVL Élite",
+    "titulo_other": "You have {{count}} days of NIVL Élite",
+    "cuerpo": "No card and no automatic charge. When it ends, you choose: keep Élite or stay on the free plan.",
+    "termina": "It ends on {{fecha}} at {{hora}}.",
+    "incluye": "What's included",
+    "gratis": "And everything free",
+    "empezar": "Start"
+  },
+  "incluye": {
+    "coach": "The Élite coach, with a daily message cap during the trial: morning brief, day plan, chat, weekly review, training and diet.",
+    "revision": "Extended weekly review: the week, your body profile and your progress.",
+    "laurel": "The laurel badge next to your name. It's status, not points.",
+    "ludus": "Request a place in a ludus, a private group of 5 to 8 Élite gladiators. Groups form little by little: requesting a place doesn't guarantee one.",
+    "profundo": "Deep mode belongs to paid Élite and isn't part of the trial."
+  },
+  "gratis": {
+    "lista": "Habits, missions, XP, streak, contract, campaigns, agenda, gym, cardio, nutrition, journal, progress, friends and ranking."
+  },
+  "aviso": "You have 1 day of NIVL Élite left. It ends on {{fecha}} at {{hora}}.",
+  "fin": {
+    "eyebrow": "Trial over",
+    "titulo": "Your Élite days are over",
+    "cuerpo": "It ended on {{fecha}} at {{hora}}. Your data is intact. Choose how you continue.",
+    "seguir": "Keep Élite",
+    "seguirA11y": "Keep Élite. Opens the store plans",
+    "precios": "NIVL Élite: {{mes}} a month or {{anio}} a year. Renews automatically until you cancel it in the store.",
+    "intro": "{{periodo}} free, then {{precio}} a month. Cancel anytime.",
+    "introCondicional": "If your store account is eligible: {{periodo}} free, then {{precio}} a month. Cancel anytime.",
+    "pro": "There's also NIVL Pro, the standard coach, for {{precio}} a month.",
+    "quedarme": "Stay on the free plan",
+    "quedarmeNota": "No payments. You keep all the tracking.",
+    "conservas": "With the free plan you keep",
+    "conservasCuerpo": "All the tracking: habits, missions, XP, streak, contract, campaigns, agenda, gym, cardio, nutrition, journal, progress, friends and ranking.",
+    "pierdes": "You lose",
+    "pierdeCoach": "The AI coach: brief, day plan, chat, weekly review, training and diet.",
+    "pierdeRevision": "The extended weekly review.",
+    "pierdeLaurel": "The laurel badge.",
+    "pierdeLudus": "Requesting a place in a ludus.",
+    "datos": "Your missions, your streak, your level and your history stay as they are."
+  }
+}

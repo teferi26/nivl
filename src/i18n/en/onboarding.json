@@ -89,5 +89,10 @@
     "titulo": "Sealed",
     "a11y": "Sealed. Expires on {{fecha}}. Tap to continue",
     "vence": "Expires on {{fecha}}"
+  },
+  "idioma": {
+    "inscripcion": "The language",
+    "titulo": "Which language should we speak?",
+    "pista": "It comes from your phone's language. You can change it later in Profile."
   }
 }

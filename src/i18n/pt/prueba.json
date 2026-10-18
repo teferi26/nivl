@@ -1,0 +1,44 @@
+{
+  "bienvenida": {
+    "eyebrow": "Experiência Élite",
+    "titulo_one": "Tens {{count}} dia de NIVL Élite",
+    "titulo_other": "Tens {{count}} dias de NIVL Élite",
+    "cuerpo": "Sem cartão e sem cobrança automática. No fim, escolhes tu: continuar com Élite ou ficar no plano grátis.",
+    "termina": "Termina a {{fecha}} às {{hora}}.",
+    "incluye": "O que inclui",
+    "gratis": "E tudo o que é grátis",
+    "empezar": "Começar"
+  },
+  "incluye": {
+    "coach": "O coach Élite, com um limite diário de mensagens durante a experiência: brief da manhã, plano do dia, chat, revisão semanal, treino e dieta.",
+    "revision": "Revisão semanal alargada: a semana, a tua ficha física e o teu progresso.",
+    "laurel": "A insígnia de louro junto ao teu nome. É estatuto, não pontos.",
+    "ludus": "Pedir lugar num ludus, um grupo privado de 5 a 8 gladiadores Élite. Os grupos formam-se aos poucos: pedir lugar não o garante.",
+    "profundo": "O modo profundo é do Élite pago e não entra na experiência."
+  },
+  "gratis": {
+    "lista": "Hábitos, missões, XP, sequência, contrato, campanhas, agenda, ginásio, cardio, nutrição, diário, avanços, amigos e ranking."
+  },
+  "aviso": "Resta-te 1 dia de NIVL Élite. Termina a {{fecha}} às {{hora}}.",
+  "fin": {
+    "eyebrow": "Fim da experiência",
+    "titulo": "Os teus dias de Élite terminaram",
+    "cuerpo": "Terminou a {{fecha}} às {{hora}}. Os teus dados estão intactos. Escolhe como continuas.",
+    "seguir": "Continuar com Élite",
+    "seguirA11y": "Continuar com Élite. Abre os planos da loja",
+    "precios": "NIVL Élite: {{mes}} por mês ou {{anio}} por ano. Renova-se sozinho até o cancelares na loja.",
+    "intro": "{{periodo}} grátis e depois {{precio}} por mês. Cancela quando quiseres.",
+    "introCondicional": "Se a tua conta da loja for elegível: {{periodo}} grátis e depois {{precio}} por mês. Cancela quando quiseres.",
+    "pro": "Também há o NIVL Pro, o coach padrão, por {{precio}} por mês.",
+    "quedarme": "Ficar no plano grátis",
+    "quedarmeNota": "Sem pagamentos. Continuas com todo o acompanhamento.",
+    "conservas": "Com o plano grátis manténs",
+    "conservasCuerpo": "Todo o acompanhamento: hábitos, missões, XP, sequência, contrato, campanhas, agenda, ginásio, cardio, nutrição, diário, avanços, amigos e ranking.",
+    "pierdes": "Deixas de ter",
+    "pierdeCoach": "O coach de IA: brief, plano do dia, chat, revisão semanal, treino e dieta.",
+    "pierdeRevision": "A revisão semanal alargada.",
+    "pierdeLaurel": "A insígnia de louro.",
+    "pierdeLudus": "O pedido de lugar num ludus.",
+    "datos": "As tuas missões, a tua sequência, o teu nível e o teu histórico ficam como estão."
+  }
+}

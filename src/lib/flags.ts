@@ -17,52 +17,26 @@
 //
 // Integración F1: es la versión del equipo cliente; de la del equipo idiomas se
 // conserva `flagActivo()`, la lectura síncrona que usa la cabecera del coach.
+// El estado en memoria vive en flagsEstado.ts (sin AsyncStorage), y de ahí lo
+// lee lib/coach.ts.
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useSyncExternalStore } from 'react';
 import { AppState, Platform } from 'react-native';
-import { FLAGS_APAGADOS, faltaLaFuncion, mismosFlags, normalizarFlags, type Flags } from './flagsmath';
+import { FLAGS_APAGADOS, faltaLaFuncion, normalizarFlags, type Flags } from './flagsmath';
+import { escucharFlags, fijarFlags as fijar, flagsActuales } from './flagsEstado';
 import { supabase } from './supabase';
 
 export { FLAGS_APAGADOS, normalizarFlags, type Flags } from './flagsmath';
+export { flagActivo, flagsActuales, type FlagBooleano } from './flagsEstado';
 
 const CLAVE = 'nivl.flags.v1';
 /** Entre dos lecturas al volver a primer plano, como poco. */
 const REFRESCO_MIN_MS = 60_000;
 
-let actuales: Flags = FLAGS_APAGADOS;
 let ultimaLectura = 0;
 let enVuelo: Promise<Flags> | null = null;
 let arrancado = false;
-const oyentes = new Set<() => void>();
-
-function fijar(nuevos: Flags): void {
-  if (mismosFlags(nuevos, actuales)) return;
-  actuales = nuevos;
-  for (const f of [...oyentes]) {
-    try {
-      f();
-    } catch {
-      // Un oyente roto no tumba a los demás.
-    }
-  }
-}
-
-/** Lo que se sabe ahora mismo (apagado hasta la primera lectura). */
-export function flagsActuales(): Flags {
-  return actuales;
-}
-
-/** Las claves booleanas de `Flags` (los interruptores de verdad). */
-export type FlagBooleano = { [K in keyof Flags]: Flags[K] extends boolean ? K : never }[keyof Flags];
-
-/**
- * ¿Está encendido este interruptor? Síncrono, para fuera de React (p. ej. la
- * cabecera `x-nivl-locale` del coach, lib/coach.ts). Apagado mientras no se sepa.
- */
-export function flagActivo(k: FlagBooleano): boolean {
-  return actuales[k] === true;
-}
 
 async function leerCache(): Promise<void> {
   try {
@@ -86,7 +60,7 @@ export function refrescarFlags(): Promise<Flags> {
           fijar(FLAGS_APAGADOS);
           await AsyncStorage.removeItem(CLAVE).catch(() => {});
         }
-        return actuales;
+        return flagsActuales();
       }
       const leidos = normalizarFlags(data);
       ultimaLectura = Date.now();
@@ -94,7 +68,7 @@ export function refrescarFlags(): Promise<Flags> {
       await AsyncStorage.setItem(CLAVE, JSON.stringify(leidos)).catch(() => {});
       return leidos;
     } catch {
-      return actuales;
+      return flagsActuales();
     } finally {
       enVuelo = null;
     }
@@ -116,17 +90,10 @@ function arrancar(): void {
   });
 }
 
-function suscribir(fn: () => void): () => void {
-  oyentes.add(fn);
-  return () => {
-    oyentes.delete(fn);
-  };
-}
-
 /** Los interruptores del servidor. Apagados hasta que se sepa lo contrario. */
 export function useFlags(): Flags {
   useEffect(arrancar, []);
-  return useSyncExternalStore(suscribir, flagsActuales, flagsActuales);
+  return useSyncExternalStore(escucharFlags, flagsActuales, flagsActuales);
 }
 
 /** Solo pruebas y galería: fija los interruptores sin servidor. */

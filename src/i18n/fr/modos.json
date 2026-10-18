@@ -1,0 +1,46 @@
+{
+  "selector": {
+    "a11y": "Modes",
+    "opcionA11y": "Mode {{modo}}"
+  },
+  "descripcion": {
+    "general": "Tout ensemble, comme avant.",
+    "iron": "Salle et alimentation.",
+    "focus": "Études et examens.",
+    "work": "Travail, concentration et énergie.",
+    "founder": "Ton projet et ses étapes clés."
+  },
+  "hoy": {
+    "vacioTitulo": "Rien en {{modo}} aujourd'hui",
+    "vacioCuerpo": "Étiquette une mission avec {{modo}} et elle apparaîtra ici. Dans NIVL, tu vois tout."
+  },
+  "form": {
+    "etiqueta": "Modes",
+    "ayuda": "Tu la coches une fois et elle compte dans tous ses modes. Sans mode, elle ne compte que dans NIVL.",
+    "a11y": "Compter aussi dans {{modo}}"
+  },
+  "onboarding": {
+    "inscripcion": "Les modes",
+    "titulo": "Choisis tes modes",
+    "pista": "NIVL voit tout et est toujours là. Chaque mode ajoute son arène. Tu peux les changer quand tu veux.",
+    "siempre": "Toujours actif.",
+    "minimo": "Choisis-en au moins un.",
+    "a11y": "{{modo}}. {{descripcion}}"
+  },
+  "perfil": {
+    "titulo": "Niveaux par mode",
+    "ayuda": "Chaque mission compte pour ton niveau et pour celui de chacun de ses modes.",
+    "nivel": "Niveau {{nivel}}",
+    "filaA11y": "{{modo}} : niveau {{nivel}}, {{xp}} XP",
+    "cargandoA11y": "Chargement des niveaux par mode",
+    "global": "Ton niveau",
+    "elegir": "Choisir les modes",
+    "vacio": "Active un mode et chaque mission avec son étiquette comptera aussi pour son niveau.",
+    "filaGlobalA11y": "{{modo}} : niveau {{nivel}}"
+  },
+  "hoja": {
+    "eyebrow": "Modes",
+    "titulo": "Tes modes",
+    "pista": "NIVL est toujours là. Ce que tu coches apparaît dans le sélecteur d'Aujourd'hui et dans les étiquettes de tes missions."
+  }
+}

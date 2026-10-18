@@ -39,6 +39,9 @@ import enResumen from './en/resumen.json';
 import enShare from './en/share.json';
 import enVoz from './en/voz.json';
 import enAvisos from './en/avisos.json';
+import enModos from './en/modos.json';
+import enPrueba from './en/prueba.json';
+import enIron from './en/iron.json';
 import frComun from './fr/comun.json';
 import frRaiz from './fr/raiz.json';
 import frUi from './fr/ui.json';
@@ -72,6 +75,9 @@ import frResumen from './fr/resumen.json';
 import frShare from './fr/share.json';
 import frVoz from './fr/voz.json';
 import frAvisos from './fr/avisos.json';
+import frModos from './fr/modos.json';
+import frPrueba from './fr/prueba.json';
+import frIron from './fr/iron.json';
 import ptComun from './pt/comun.json';
 import ptRaiz from './pt/raiz.json';
 import ptUi from './pt/ui.json';
@@ -105,6 +111,9 @@ import ptResumen from './pt/resumen.json';
 import ptShare from './pt/share.json';
 import ptVoz from './pt/voz.json';
 import ptAvisos from './pt/avisos.json';
+import ptModos from './pt/modos.json';
+import ptPrueba from './pt/prueba.json';
+import ptIron from './pt/iron.json';
 import deComun from './de/comun.json';
 import deRaiz from './de/raiz.json';
 import deUi from './de/ui.json';
@@ -138,6 +147,9 @@ import deResumen from './de/resumen.json';
 import deShare from './de/share.json';
 import deVoz from './de/voz.json';
 import deAvisos from './de/avisos.json';
+import deModos from './de/modos.json';
+import dePrueba from './de/prueba.json';
+import deIron from './de/iron.json';
 import itComun from './it/comun.json';
 import itRaiz from './it/raiz.json';
 import itUi from './it/ui.json';
@@ -171,6 +183,9 @@ import itResumen from './it/resumen.json';
 import itShare from './it/share.json';
 import itVoz from './it/voz.json';
 import itAvisos from './it/avisos.json';
+import itModos from './it/modos.json';
+import itPrueba from './it/prueba.json';
+import itIron from './it/iron.json';
 
 /** Los idiomas con interfaz traducida (el español no está: es la base). */
 export const IDIOMAS_TRADUCIDOS = ['en', 'fr', 'pt', 'de', 'it'] as const;
@@ -213,6 +228,9 @@ export const RECURSOS_LOCALES: Record<IdiomaTraducido, Catalogo> = {
     share: enShare,
     voz: enVoz,
     avisos: enAvisos,
+    modos: enModos,
+    prueba: enPrueba,
+    iron: enIron,
   },
   fr: {
     comun: frComun,
@@ -248,6 +266,9 @@ export const RECURSOS_LOCALES: Record<IdiomaTraducido, Catalogo> = {
     share: frShare,
     voz: frVoz,
     avisos: frAvisos,
+    modos: frModos,
+    prueba: frPrueba,
+    iron: frIron,
   },
   pt: {
     comun: ptComun,
@@ -283,6 +304,9 @@ export const RECURSOS_LOCALES: Record<IdiomaTraducido, Catalogo> = {
     share: ptShare,
     voz: ptVoz,
     avisos: ptAvisos,
+    modos: ptModos,
+    prueba: ptPrueba,
+    iron: ptIron,
   },
   de: {
     comun: deComun,
@@ -318,6 +342,9 @@ export const RECURSOS_LOCALES: Record<IdiomaTraducido, Catalogo> = {
     share: deShare,
     voz: deVoz,
     avisos: deAvisos,
+    modos: deModos,
+    prueba: dePrueba,
+    iron: deIron,
   },
   it: {
     comun: itComun,
@@ -353,5 +380,8 @@ export const RECURSOS_LOCALES: Record<IdiomaTraducido, Catalogo> = {
     share: itShare,
     voz: itVoz,
     avisos: itAvisos,
+    modos: itModos,
+    prueba: itPrueba,
+    iron: itIron,
   },
 };

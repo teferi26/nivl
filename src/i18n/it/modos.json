@@ -1,0 +1,46 @@
+{
+  "selector": {
+    "a11y": "Modalità",
+    "opcionA11y": "Modalità {{modo}}"
+  },
+  "descripcion": {
+    "general": "Tutto insieme, come finora.",
+    "iron": "Palestra e dieta.",
+    "focus": "Studio ed esami.",
+    "work": "Lavoro, concentrazione ed energia.",
+    "founder": "Il tuo progetto e le sue tappe."
+  },
+  "hoy": {
+    "vacioTitulo": "Niente di {{modo}} oggi",
+    "vacioCuerpo": "Etichetta una missione con {{modo}} e comparirà qui. In NIVL si vede tutto."
+  },
+  "form": {
+    "etiqueta": "Modalità",
+    "ayuda": "La spunti una volta e conta in tutte le sue modalità. Senza modalità, conta solo in NIVL.",
+    "a11y": "Conta anche in {{modo}}"
+  },
+  "onboarding": {
+    "inscripcion": "Le modalità",
+    "titulo": "Scegli le tue modalità",
+    "pista": "NIVL vede tutto ed è sempre attivo. Ogni modalità aggiunge la sua arena. Puoi cambiarle quando vuoi.",
+    "siempre": "Sempre attivo.",
+    "minimo": "Scegline almeno una.",
+    "a11y": "{{modo}}. {{descripcion}}"
+  },
+  "perfil": {
+    "titulo": "Livelli per modalità",
+    "ayuda": "Ogni missione conta per il tuo livello e per quello di ciascuna delle sue modalità.",
+    "nivel": "Livello {{nivel}}",
+    "filaA11y": "{{modo}}: livello {{nivel}}, {{xp}} XP",
+    "cargandoA11y": "Caricamento dei livelli per modalità",
+    "global": "Il tuo livello",
+    "elegir": "Scegli le modalità",
+    "vacio": "Attiva una modalità e ogni missione con la sua etichetta conterà anche per il suo livello.",
+    "filaGlobalA11y": "{{modo}}: livello {{nivel}}"
+  },
+  "hoja": {
+    "eyebrow": "Modalità",
+    "titulo": "Le tue modalità",
+    "pista": "NIVL è sempre attivo. Ciò che spunti compare nel selettore di Oggi e nelle etichette delle tue missioni."
+  }
+}

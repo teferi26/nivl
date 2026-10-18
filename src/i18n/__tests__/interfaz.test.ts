@@ -13,7 +13,8 @@ import {
 import { aplicarDireccion, esRTL, IDIOMAS_RTL } from '@/i18n/direccion';
 import { fechaLarga, localeIntl, miles, moneda, nombreMes } from '@/i18n/formato';
 import { cabeceraIdioma } from '@/lib/coach';
-import { __fijarFlagsParaPruebas } from '@/lib/flags';
+import { FLAGS_APAGADOS } from '@/lib/flagsmath';
+import { fijarFlags } from '@/lib/flagsEstado';
 
 // jest.mock se sube solo por encima de los import (babel-jest).
 const mockRpc = jest.fn();
@@ -29,7 +30,7 @@ jest.mock('@/lib/supabase', () => ({
 afterEach(() => {
   __olvidarPreferenciaParaTest();
   __fijarIdiomaParaTest('es');
-  __fijarFlagsParaPruebas(null);
+  fijarFlags(FLAGS_APAGADOS);
 });
 
 describe('interfaz detrás del flag idiomas_activos', () => {
@@ -81,7 +82,7 @@ describe('cabecera x-nivl-locale del coach', () => {
   });
 
   it('con el flag, manda el idioma del coach', async () => {
-    __fijarFlagsParaPruebas({ idiomas_activos: true });
+    fijarFlags({ ...FLAGS_APAGADOS, idiomas_activos: true });
     await fijarPreferencia('fr');
     expect(cabeceraIdioma()).toEqual({ 'x-nivl-locale': 'fr' });
   });

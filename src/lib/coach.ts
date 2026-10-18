@@ -10,7 +10,7 @@
 
 import { fetch as streamingFetch } from 'expo/fetch';
 import { idiomaCoach } from '@/i18n';
-import { flagActivo } from './flags';
+import { flagActivo } from './flagsEstado';
 import type { Slide } from './photos';
 import { supabase } from './supabase';
 import { dateKey } from './dates';

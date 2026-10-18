@@ -1,0 +1,46 @@
+{
+  "selector": {
+    "a11y": "Modes",
+    "opcionA11y": "{{modo}} mode"
+  },
+  "descripcion": {
+    "general": "Everything together, as before.",
+    "iron": "Gym and diet.",
+    "focus": "Study and exams.",
+    "work": "Work, focus and energy.",
+    "founder": "Your project and its milestones."
+  },
+  "hoy": {
+    "vacioTitulo": "No {{modo}} today",
+    "vacioCuerpo": "Tag a mission with {{modo}} and it will show up here. NIVL shows everything."
+  },
+  "form": {
+    "etiqueta": "Modes",
+    "ayuda": "You check it once and it counts in all its modes. With no mode, it counts only in NIVL.",
+    "a11y": "Also count in {{modo}}"
+  },
+  "onboarding": {
+    "inscripcion": "The modes",
+    "titulo": "Choose your modes",
+    "pista": "NIVL sees everything and is always there. Each mode adds its own arena. You can change them whenever you want.",
+    "siempre": "Always on.",
+    "minimo": "Choose at least one.",
+    "a11y": "{{modo}}. {{descripcion}}"
+  },
+  "perfil": {
+    "titulo": "Levels by mode",
+    "ayuda": "Every mission adds to your level and to the level of each of its modes.",
+    "nivel": "Level {{nivel}}",
+    "filaA11y": "{{modo}}: level {{nivel}}, {{xp}} XP",
+    "cargandoA11y": "Loading levels by mode",
+    "global": "Your level",
+    "elegir": "Choose modes",
+    "vacio": "Turn on a mode and every mission with its tag will also add to its level.",
+    "filaGlobalA11y": "{{modo}}: level {{nivel}}"
+  },
+  "hoja": {
+    "eyebrow": "Modes",
+    "titulo": "Your modes",
+    "pista": "NIVL is always there. What you check shows up in the Today selector and in your mission tags."
+  }
+}

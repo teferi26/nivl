@@ -89,5 +89,10 @@
     "titulo": "Versiegelt",
     "a11y": "Versiegelt. Läuft am {{fecha}} ab. Tippen zum Fortfahren",
     "vence": "Läuft am {{fecha}} ab"
+  },
+  "idioma": {
+    "inscripcion": "Die Sprache",
+    "titulo": "In welcher Sprache sprechen wir?",
+    "pista": "Sie kommt von der Sprache deines Handys. Du kannst sie später im Profil ändern."
   }
 }

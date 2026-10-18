@@ -1,0 +1,142 @@
+{
+  "demo": {
+    "eyebrow": "IRON · Prototyp der Engine",
+    "titulo": "Übungen",
+    "subtitulo": "Fünf Übungen, gezeichnet von unserer eigenen Engine. Nur in der Entwicklung.",
+    "elegir": "Übung",
+    "sustituir": "Ersetzen",
+    "sustitutoElegido": "Ersatz: {{nombre}}",
+    "sustitutoGrupo": "Gleiche Gruppe: {{nombre}}",
+    "sinSustituto": "Im Testkatalog gibt es noch keine andere Übung aus dieser Gruppe.",
+    "musculos": "Beanspruchte Muskeln",
+    "principales": "Hauptmuskeln",
+    "secundarios": "Hilfsmuskeln",
+    "material": "Ausrüstung",
+    "tecnica": "Technik",
+    "errores": "Häufige Fehler",
+    "mapaDelante": "Vorne",
+    "mapaDetras": "Hinten",
+    "pausar": "Pausieren",
+    "seguir": "Fortsetzen",
+    "animacion": "Animation von {{nombre}}",
+    "mapa": "Muskelkarte von {{nombre}}",
+    "ficha": "IRON · Übungsblatt",
+    "leyenda": "Legende",
+    "leyendaPrincipal": "Arbeitet am meisten",
+    "leyendaSecundario": "Hilft mit",
+    "leyendaResto": "Arbeitet nicht direkt"
+  },
+  "musculo": {
+    "pectoral": "Brustmuskel",
+    "deltoides_anterior": "Vorderer Deltamuskel",
+    "deltoides_lateral": "Seitlicher Deltamuskel",
+    "deltoides_posterior": "Hinterer Deltamuskel",
+    "biceps": "Bizeps",
+    "triceps": "Trizeps",
+    "antebrazo": "Unterarm",
+    "dorsal": "Breiter Rückenmuskel",
+    "trapecio": "Trapezmuskel",
+    "espalda_alta": "Rautenmuskeln und mittlerer Trapez",
+    "lumbares": "Unterer Rücken",
+    "abdomen": "Gerader Bauchmuskel",
+    "oblicuos": "Schräge Bauchmuskeln",
+    "gluteo": "Gesäß",
+    "cuadriceps": "Quadrizeps",
+    "isquiotibiales": "Beinbeuger",
+    "aductores": "Adduktoren",
+    "gemelos": "Waden",
+    "tibial": "Vorderer Schienbeinmuskel"
+  },
+  "grupo": {
+    "pecho": "Brust",
+    "espalda": "Rücken",
+    "hombro": "Schulter",
+    "brazo": "Arm",
+    "pierna": "Bein",
+    "core": "Core"
+  },
+  "material": {
+    "barra": "Langhantel",
+    "mancuerna": "Kurzhantel",
+    "banco": "Bank",
+    "peso_corporal": "Körpergewicht",
+    "polea": "Kabelzug",
+    "maquina": "Maschine",
+    "kettlebell": "Kettlebell",
+    "banda": "Widerstandsband"
+  },
+  "nivel": {
+    "principiante": "Anfänger",
+    "intermedio": "Fortgeschritten",
+    "avanzado": "Profi"
+  },
+  "ejercicios": {
+    "sentadilla-barra": {
+      "nombre": "Kniebeuge mit Langhantel",
+      "cues": {
+        "pie": "Die Stange geht über der Fußmitte runter und rauf.",
+        "rodillas": "Knie in Linie mit den Fußspitzen.",
+        "profundidad": "Geh runter, bis die Hüfte unter das Knie kommt, wenn du den Rücken gerade hältst.",
+        "espalda": "Brust raus und Rücken neutral über die ganze Bewegung."
+      },
+      "errores": {
+        "talones": "Die Fersen anheben.",
+        "lumbar": "Unten den unteren Rücken rund machen.",
+        "rodillasDentro": "Die Knie beim Hochkommen nach innen fallen lassen."
+      }
+    },
+    "press-banca": {
+      "nombre": "Bankdrücken",
+      "cues": {
+        "apoyos": "Füße flach am Boden; Gesäß und oberer Rücken auf der Bank.",
+        "escapulas": "Schulterblätter zusammen und nach unten, bevor du die Stange aushebst.",
+        "trayectoria": "Zur unteren Brust absenken, die Unterarme senkrecht.",
+        "seguridad": "Bei schwerer Last Sicherungen oder einen Spotter nutzen."
+      },
+      "errores": {
+        "codos": "Die Ellbogen auf 90° zum Oberkörper öffnen.",
+        "rebote": "Die Stange von der Brust abfedern lassen.",
+        "gluteos": "Das Gesäß von der Bank heben."
+      }
+    },
+    "remo-mancuerna": {
+      "nombre": "Kurzhantelrudern",
+      "cues": {
+        "apoyo": "Hand und Knie auf der Bank; der andere Fuß fest am Boden.",
+        "codo": "Führe den Ellbogen zur Hüfte, nah am Körper.",
+        "tronco": "Gerader Rücken: Der Oberkörper dreht sich beim Ziehen nicht."
+      },
+      "errores": {
+        "giro": "Den Oberkörper drehen, um mehr Gewicht zu bewegen.",
+        "biceps": "Mit dem Bizeps statt mit dem Ellbogen ziehen.",
+        "cuello": "Den Kopf heben und den Nacken überstrecken."
+      }
+    },
+    "curl-biceps-mancuerna": {
+      "nombre": "Bizepscurl mit Kurzhanteln",
+      "cues": {
+        "codos": "Ellbogen ruhig am Körper.",
+        "recorrido": "Voller Bewegungsumfang: unten fast gestreckt, oben geschlossen.",
+        "bajada": "Langsam absenken, in etwa zwei Sekunden."
+      },
+      "errores": {
+        "balanceo": "Mit dem Oberkörper schwingen, um das Gewicht hochzubringen.",
+        "codosDelante": "Die Ellbogen beim Hochgehen nach vorne schieben.",
+        "medioRecorrido": "Unten auf halbem Weg stehen bleiben."
+      }
+    },
+    "plancha": {
+      "nombre": "Unterarmstütz",
+      "cues": {
+        "codos": "Ellbogen genau unter den Schultern.",
+        "linea": "Schultern, Hüfte und Knöchel in einer geraden Linie.",
+        "abdomen": "Bauch und Gesäß anspannen und weiteratmen."
+      },
+      "errores": {
+        "caderaCaida": "Die Hüfte durchhängen lassen.",
+        "caderaAlta": "Die Hüfte spitz nach oben schieben.",
+        "apnea": "Die Luft anhalten."
+      }
+    }
+  }
+}

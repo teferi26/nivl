@@ -1,0 +1,142 @@
+{
+  "demo": {
+    "eyebrow": "IRON · Protótipo do motor",
+    "titulo": "Exercícios",
+    "subtitulo": "Cinco exercícios desenhados pelo nosso próprio motor. Só em desenvolvimento.",
+    "elegir": "Exercício",
+    "sustituir": "Substituir",
+    "sustitutoElegido": "Substituto: {{nombre}}",
+    "sustitutoGrupo": "Mesmo grupo: {{nombre}}",
+    "sinSustituto": "Ainda não há outro exercício deste grupo no catálogo de teste.",
+    "musculos": "Músculos trabalhados",
+    "principales": "Principais",
+    "secundarios": "Secundários",
+    "material": "Material",
+    "tecnica": "Técnica",
+    "errores": "Erros comuns",
+    "mapaDelante": "De frente",
+    "mapaDetras": "De costas",
+    "pausar": "Pausar",
+    "seguir": "Continuar",
+    "animacion": "Animação de {{nombre}}",
+    "mapa": "Mapa muscular de {{nombre}}",
+    "ficha": "IRON · Ficha do exercício",
+    "leyenda": "Legenda",
+    "leyendaPrincipal": "Trabalha sobretudo",
+    "leyendaSecundario": "Ajuda",
+    "leyendaResto": "Não trabalha diretamente"
+  },
+  "musculo": {
+    "pectoral": "Peitoral",
+    "deltoides_anterior": "Deltoide anterior",
+    "deltoides_lateral": "Deltoide lateral",
+    "deltoides_posterior": "Deltoide posterior",
+    "biceps": "Bíceps",
+    "triceps": "Tríceps",
+    "antebrazo": "Antebraço",
+    "dorsal": "Grande dorsal",
+    "trapecio": "Trapézio",
+    "espalda_alta": "Romboides e trapézio médio",
+    "lumbares": "Lombares",
+    "abdomen": "Reto abdominal",
+    "oblicuos": "Oblíquos",
+    "gluteo": "Glúteo",
+    "cuadriceps": "Quadríceps",
+    "isquiotibiales": "Isquiotibiais",
+    "aductores": "Adutores",
+    "gemelos": "Gémeos",
+    "tibial": "Tibial anterior"
+  },
+  "grupo": {
+    "pecho": "Peito",
+    "espalda": "Costas",
+    "hombro": "Ombro",
+    "brazo": "Braço",
+    "pierna": "Perna",
+    "core": "Core"
+  },
+  "material": {
+    "barra": "Barra",
+    "mancuerna": "Haltere",
+    "banco": "Banco",
+    "peso_corporal": "Peso corporal",
+    "polea": "Polia",
+    "maquina": "Máquina",
+    "kettlebell": "Kettlebell",
+    "banda": "Banda elástica"
+  },
+  "nivel": {
+    "principiante": "Principiante",
+    "intermedio": "Intermédio",
+    "avanzado": "Avançado"
+  },
+  "ejercicios": {
+    "sentadilla-barra": {
+      "nombre": "Agachamento com barra",
+      "cues": {
+        "pie": "A barra desce e sobe sobre o meio do pé.",
+        "rodillas": "Joelhos na linha das pontas dos pés.",
+        "profundidad": "Desce até a anca passar o joelho, se chegares com as costas direitas.",
+        "espalda": "Peito para cima e costas neutras em todo o percurso."
+      },
+      "errores": {
+        "talones": "Levantar os calcanhares.",
+        "lumbar": "Arredondar a zona lombar em baixo.",
+        "rodillasDentro": "Deixar os joelhos fecharem ao subir."
+      }
+    },
+    "press-banca": {
+      "nombre": "Supino",
+      "cues": {
+        "apoyos": "Pés assentes no chão; glúteos e parte alta das costas no banco.",
+        "escapulas": "Junta e baixa as omoplatas antes de tirar a barra.",
+        "trayectoria": "Desce até à parte baixa do peito com os antebraços na vertical.",
+        "seguridad": "Com carga alta, usa batentes ou alguém que te ajude."
+      },
+      "errores": {
+        "codos": "Abrir os cotovelos a 90° do tronco.",
+        "rebote": "Fazer a barra ressaltar no peito.",
+        "gluteos": "Descolar os glúteos do banco."
+      }
+    },
+    "remo-mancuerna": {
+      "nombre": "Remada com haltere",
+      "cues": {
+        "apoyo": "Mão e joelho no banco; o outro pé firme no chão.",
+        "codo": "Leva o cotovelo em direção à anca, junto ao corpo.",
+        "tronco": "Costas planas: o tronco não roda ao puxar."
+      },
+      "errores": {
+        "giro": "Rodar o tronco para levantar mais peso.",
+        "biceps": "Puxar com o bíceps em vez do cotovelo.",
+        "cuello": "Levantar a cabeça e arquear o pescoço."
+      }
+    },
+    "curl-biceps-mancuerna": {
+      "nombre": "Curl de bíceps com halteres",
+      "cues": {
+        "codos": "Cotovelos quietos junto ao corpo.",
+        "recorrido": "Percurso completo: em baixo quase esticado, em cima fechado.",
+        "bajada": "Desce devagar, em uns dois segundos."
+      },
+      "errores": {
+        "balanceo": "Balançar o tronco para subir o peso.",
+        "codosDelante": "Avançar os cotovelos ao subir.",
+        "medioRecorrido": "Ficar a meio do percurso em baixo."
+      }
+    },
+    "plancha": {
+      "nombre": "Prancha",
+      "cues": {
+        "codos": "Cotovelos mesmo debaixo dos ombros.",
+        "linea": "Ombros, anca e tornozelos em linha reta.",
+        "abdomen": "Contrai o abdómen e os glúteos sem deixar de respirar."
+      },
+      "errores": {
+        "caderaCaida": "Deixar cair a anca.",
+        "caderaAlta": "Subir a anca em bico.",
+        "apnea": "Suster a respiração."
+      }
+    }
+  }
+}

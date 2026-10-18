@@ -179,6 +179,9 @@
     "cuerpo": "O coach escreve-te neste idioma: a conversa, os avisos que prepara e os seus relatórios. O idioma da interface não muda.",
     "opcionA11y": "{{titulo}}. {{detalle}}"
   },
+  "planes": {
+    "pruebaAuto": "Experiência gratuita"
+  },
   "idiomaApp": {
     "seccion": "Idioma",
     "fila": "Idioma da app",

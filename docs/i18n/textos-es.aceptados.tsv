@@ -1152,3 +1152,102 @@ perfil	+	Idioma
 perfil	+	¿En qué idioma te habla NIVL?
 perfil	+	La app, el coach y los avisos, en este idioma. Al cambiarlo, la app se recarga.
 perfil	+	Idiomas
+# Modos F1 (motor, rama modos-f1/motor): textos del prototipo del motor de IRON (namespace iron). Solo se ven en la galería de desarrollo /kit/iron; en la app publicada no aparece ninguno.
+iron	+	IRON · Prototipo del motor
+iron	+	Ejercicios
+iron	+	Cinco ejercicios dibujados por el motor propio. Solo en desarrollo.
+iron	+	Ejercicio
+iron	+	Sustituir
+iron	+	Sustituto: {}
+iron	+	Mismo grupo: {}
+iron	+	Aún no hay otro ejercicio de este grupo en el catálogo de prueba.
+iron	+	Músculos trabajados
+iron	+	Principales
+iron	+	Secundarios
+iron	+	Material
+iron	+	Técnica
+iron	+	Errores comunes
+iron	+	Por delante
+iron	+	Por detrás
+iron	+	Pausar
+iron	+	Seguir
+iron	+	Animación de {}
+iron	+	Mapa muscular de {}
+iron	+	IRON · Ficha del ejercicio
+iron	+	Leyenda
+iron	+	Trabaja sobre todo
+iron	+	Ayuda
+iron	+	No trabaja directamente
+iron	+	Pectoral
+iron	+	Deltoides anterior
+iron	+	Deltoides lateral
+iron	+	Deltoides posterior
+iron	+	Bíceps
+iron	+	Tríceps
+iron	+	Antebrazo
+iron	+	Dorsal ancho
+iron	+	Trapecio
+iron	+	Romboides y trapecio medio
+iron	+	Lumbares
+iron	+	Recto abdominal
+iron	+	Oblicuos
+iron	+	Glúteo
+iron	+	Cuádriceps
+iron	+	Isquiotibiales
+iron	+	Aductores
+iron	+	Gemelos
+iron	+	Tibial anterior
+iron	+	Pecho
+iron	+	Espalda
+iron	+	Hombro
+iron	+	Brazo
+iron	+	Pierna
+iron	+	Core
+iron	+	Barra
+iron	+	Mancuerna
+iron	+	Banco
+iron	+	Peso corporal
+iron	+	Polea
+iron	+	Máquina
+iron	+	Kettlebell
+iron	+	Banda elástica
+iron	+	Principiante
+iron	+	Intermedio
+iron	+	Avanzado
+iron	+	Sentadilla con barra
+iron	+	La barra baja y sube sobre el medio del pie.
+iron	+	Rodillas en la línea de las puntas de los pies.
+iron	+	Baja hasta que la cadera pase la rodilla, si llegas con la espalda recta.
+iron	+	Pecho arriba y espalda neutra todo el recorrido.
+iron	+	Levantar los talones.
+iron	+	Redondear la zona lumbar abajo.
+iron	+	Dejar que las rodillas se cierren al subir.
+iron	+	Press de banca
+iron	+	Pies planos en el suelo; glúteos y espalda alta en el banco.
+iron	+	Junta y baja las escápulas antes de sacar la barra.
+iron	+	Baja a la parte baja del pecho con los antebrazos verticales.
+iron	+	Con carga alta, usa topes o alguien que te asista.
+iron	+	Abrir los codos a 90° del tronco.
+iron	+	Rebotar la barra en el pecho.
+iron	+	Despegar los glúteos del banco.
+iron	+	Remo con mancuerna
+iron	+	Mano y rodilla en el banco; el otro pie firme en el suelo.
+iron	+	Lleva el codo hacia la cadera, pegado al cuerpo.
+iron	+	Espalda plana: el tronco no gira al tirar.
+iron	+	Girar el tronco para subir más peso.
+iron	+	Tirar con el bíceps en lugar del codo.
+iron	+	Levantar la cabeza y arquear el cuello.
+iron	+	Curl de bíceps con mancuernas
+iron	+	Codos quietos junto al cuerpo.
+iron	+	Recorrido completo: abajo casi estirado, arriba cerrado.
+iron	+	Baja despacio, en unos dos segundos.
+iron	+	Balancear el tronco para subir el peso.
+iron	+	Adelantar los codos al subir.
+iron	+	Quedarse a medio recorrido abajo.
+iron	+	Plancha
+iron	+	Codos justo debajo de los hombros.
+iron	+	Hombros, cadera y tobillos en línea recta.
+iron	+	Aprieta abdomen y glúteos sin dejar de respirar.
+iron	+	Dejar caer la cadera.
+iron	+	Subir la cadera en pico.
+iron	+	Aguantar la respiración.

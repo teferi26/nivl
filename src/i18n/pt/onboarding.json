@@ -89,5 +89,10 @@
     "titulo": "Selado",
     "a11y": "Selado. Vence a {{fecha}}. Toca para continuar",
     "vence": "Vence a {{fecha}}"
+  },
+  "idioma": {
+    "inscripcion": "O idioma",
+    "titulo": "Em que idioma falamos?",
+    "pista": "Vem do idioma do telemóvel. Podes mudá-lo depois em Perfil."
   }
 }

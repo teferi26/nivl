@@ -89,5 +89,10 @@
     "titulo": "Sigillato",
     "a11y": "Sigillato. Scade il {{fecha}}. Tocca per continuare",
     "vence": "Scade il {{fecha}}"
+  },
+  "idioma": {
+    "inscripcion": "La lingua",
+    "titulo": "In che lingua parliamo?",
+    "pista": "Viene dalla lingua del telefono. Puoi cambiarla più tardi in Profilo."
   }
 }

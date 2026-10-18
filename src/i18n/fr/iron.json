@@ -1,0 +1,142 @@
+{
+  "demo": {
+    "eyebrow": "IRON · Prototype du moteur",
+    "titulo": "Exercices",
+    "subtitulo": "Cinq exercices dessinés par notre propre moteur. Uniquement en développement.",
+    "elegir": "Exercice",
+    "sustituir": "Remplacer",
+    "sustitutoElegido": "Remplacement : {{nombre}}",
+    "sustitutoGrupo": "Même groupe : {{nombre}}",
+    "sinSustituto": "Il n'y a pas encore d'autre exercice de ce groupe dans le catalogue de test.",
+    "musculos": "Muscles sollicités",
+    "principales": "Principaux",
+    "secundarios": "Secondaires",
+    "material": "Matériel",
+    "tecnica": "Technique",
+    "errores": "Erreurs fréquentes",
+    "mapaDelante": "De face",
+    "mapaDetras": "De dos",
+    "pausar": "Pause",
+    "seguir": "Reprendre",
+    "animacion": "Animation de {{nombre}}",
+    "mapa": "Carte musculaire de {{nombre}}",
+    "ficha": "IRON · Fiche de l'exercice",
+    "leyenda": "Légende",
+    "leyendaPrincipal": "Travaille surtout",
+    "leyendaSecundario": "Aide",
+    "leyendaResto": "Ne travaille pas directement"
+  },
+  "musculo": {
+    "pectoral": "Pectoraux",
+    "deltoides_anterior": "Deltoïde antérieur",
+    "deltoides_lateral": "Deltoïde latéral",
+    "deltoides_posterior": "Deltoïde postérieur",
+    "biceps": "Biceps",
+    "triceps": "Triceps",
+    "antebrazo": "Avant-bras",
+    "dorsal": "Grand dorsal",
+    "trapecio": "Trapèze",
+    "espalda_alta": "Rhomboïdes et trapèze moyen",
+    "lumbares": "Lombaires",
+    "abdomen": "Grand droit de l'abdomen",
+    "oblicuos": "Obliques",
+    "gluteo": "Fessiers",
+    "cuadriceps": "Quadriceps",
+    "isquiotibiales": "Ischio-jambiers",
+    "aductores": "Adducteurs",
+    "gemelos": "Mollets",
+    "tibial": "Tibial antérieur"
+  },
+  "grupo": {
+    "pecho": "Pectoraux",
+    "espalda": "Dos",
+    "hombro": "Épaule",
+    "brazo": "Bras",
+    "pierna": "Jambe",
+    "core": "Gainage"
+  },
+  "material": {
+    "barra": "Barre",
+    "mancuerna": "Haltère",
+    "banco": "Banc",
+    "peso_corporal": "Poids du corps",
+    "polea": "Poulie",
+    "maquina": "Machine",
+    "kettlebell": "Kettlebell",
+    "banda": "Bande élastique"
+  },
+  "nivel": {
+    "principiante": "Débutant",
+    "intermedio": "Intermédiaire",
+    "avanzado": "Avancé"
+  },
+  "ejercicios": {
+    "sentadilla-barra": {
+      "nombre": "Squat à la barre",
+      "cues": {
+        "pie": "La barre descend et remonte au-dessus du milieu du pied.",
+        "rodillas": "Genoux dans l'axe des pointes de pied.",
+        "profundidad": "Descends jusqu'à ce que la hanche passe sous le genou, si tu gardes le dos droit.",
+        "espalda": "Poitrine haute et dos neutre sur toute l'amplitude."
+      },
+      "errores": {
+        "talones": "Décoller les talons.",
+        "lumbar": "Arrondir le bas du dos en bas du mouvement.",
+        "rodillasDentro": "Laisser les genoux rentrer en remontant."
+      }
+    },
+    "press-banca": {
+      "nombre": "Développé couché",
+      "cues": {
+        "apoyos": "Pieds à plat au sol ; fessiers et haut du dos sur le banc.",
+        "escapulas": "Serre et abaisse les omoplates avant de décrocher la barre.",
+        "trayectoria": "Descends vers le bas de la poitrine avec les avant-bras verticaux.",
+        "seguridad": "Avec une charge lourde, utilise des sécurités ou un pareur."
+      },
+      "errores": {
+        "codos": "Ouvrir les coudes à 90° du buste.",
+        "rebote": "Faire rebondir la barre sur la poitrine.",
+        "gluteos": "Décoller les fessiers du banc."
+      }
+    },
+    "remo-mancuerna": {
+      "nombre": "Rowing haltère",
+      "cues": {
+        "apoyo": "Main et genou sur le banc ; l'autre pied bien ancré au sol.",
+        "codo": "Amène le coude vers la hanche, près du corps.",
+        "tronco": "Dos plat : le buste ne tourne pas quand tu tires."
+      },
+      "errores": {
+        "giro": "Tourner le buste pour monter plus lourd.",
+        "biceps": "Tirer avec le biceps au lieu du coude.",
+        "cuello": "Lever la tête et cambrer la nuque."
+      }
+    },
+    "curl-biceps-mancuerna": {
+      "nombre": "Curl biceps aux haltères",
+      "cues": {
+        "codos": "Coudes immobiles le long du corps.",
+        "recorrido": "Amplitude complète : presque tendu en bas, fermé en haut.",
+        "bajada": "Descends lentement, en deux secondes environ."
+      },
+      "errores": {
+        "balanceo": "Balancer le buste pour monter la charge.",
+        "codosDelante": "Avancer les coudes en montant.",
+        "medioRecorrido": "S'arrêter à mi-amplitude en bas."
+      }
+    },
+    "plancha": {
+      "nombre": "Planche",
+      "cues": {
+        "codos": "Coudes juste sous les épaules.",
+        "linea": "Épaules, hanches et chevilles alignées.",
+        "abdomen": "Serre les abdos et les fessiers sans arrêter de respirer."
+      },
+      "errores": {
+        "caderaCaida": "Laisser tomber les hanches.",
+        "caderaAlta": "Monter les hanches en pointe.",
+        "apnea": "Retenir sa respiration."
+      }
+    }
+  }
+}

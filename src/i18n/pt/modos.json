@@ -1,0 +1,46 @@
+{
+  "selector": {
+    "a11y": "Modos",
+    "opcionA11y": "Modo {{modo}}"
+  },
+  "descripcion": {
+    "general": "Tudo junto, como até agora.",
+    "iron": "Ginásio e dieta.",
+    "focus": "Estudo e exames.",
+    "work": "Trabalho, foco e energia.",
+    "founder": "O teu projeto e os seus marcos."
+  },
+  "hoy": {
+    "vacioTitulo": "Nada de {{modo}} hoje",
+    "vacioCuerpo": "Etiqueta uma missão com {{modo}} e vai aparecer aqui. No NIVL vê-se tudo."
+  },
+  "form": {
+    "etiqueta": "Modos",
+    "ayuda": "Marca-se uma vez e conta em todos os seus modos. Sem modo, conta só no NIVL.",
+    "a11y": "Contar também em {{modo}}"
+  },
+  "onboarding": {
+    "inscripcion": "Os modos",
+    "titulo": "Escolhe os teus modos",
+    "pista": "O NIVL vê tudo e está sempre lá. Cada modo acrescenta a sua arena. Podes mudá-los quando quiseres.",
+    "siempre": "Sempre ativo.",
+    "minimo": "Escolhe pelo menos um.",
+    "a11y": "{{modo}}. {{descripcion}}"
+  },
+  "perfil": {
+    "titulo": "Níveis por modo",
+    "ayuda": "Cada missão soma ao teu nível e ao de cada um dos seus modos.",
+    "nivel": "Nível {{nivel}}",
+    "filaA11y": "{{modo}}: nível {{nivel}}, {{xp}} XP",
+    "cargandoA11y": "A carregar os níveis por modo",
+    "global": "O teu nível",
+    "elegir": "Escolher modos",
+    "vacio": "Ativa um modo e cada missão com a sua etiqueta vai somar também ao seu nível.",
+    "filaGlobalA11y": "{{modo}}: nível {{nivel}}"
+  },
+  "hoja": {
+    "eyebrow": "Modos",
+    "titulo": "Os teus modos",
+    "pista": "O NIVL está sempre lá. O que marcares aparece no seletor de Hoje e nas etiquetas das tuas missões."
+  }
+}

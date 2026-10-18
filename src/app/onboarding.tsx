@@ -68,7 +68,7 @@ import { ink, type as tipo } from '@/design/tokens';
 import { TopeAncho } from '@/design/useSizeClass';
 import { esIdioma, fijarPreferencia, idiomaDispositivo, preferenciaIdioma, resolverIdiomaCoach, t } from '@/i18n';
 import { asegurarIdiomaPerfil } from '@/i18n/sincronizar';
-import { useFlags } from '@/lib/flags';
+import { flagsActuales, useFlags } from '@/lib/flags';
 import { eleccionValida, modosSugeridos, useModo, type ModoEtiqueta } from '@/modos';
 import { mayus } from '@/i18n/formato';
 import { mensajeSistema, NAME_MAX_LENGTH } from '@/lib/validation';
@@ -83,6 +83,14 @@ import { mensajeSistema, NAME_MAX_LENGTH } from '@/lib/validation';
 // eligen los hábitos que llevan hasta ahí, y solo entonces se firma: el
 // compromiso ya tiene contenido. Pro va DESPUÉS de la firma, en el momento de
 // más convicción, y con la salida gratuita a la misma altura que la compra.
+/**
+ * Integración F1: el paso del idioma ya se contestó en esta sesión de app. Va
+ * fuera del componente a propósito: elegir otro idioma cambia la interfaz y la
+ * raíz remonta el árbol entero (`key={interfaz}` en _layout.tsx), así que un
+ * useRef se perdería y el onboarding volvería a empezar por el idioma.
+ */
+let idiomaOnboardingContestado = false;
+
 /** Pasos de los que se puede volver: del nombre a la firma. Tras firmar, no. */
 const PRIMER_PASO_CON_VUELTA = 1;
 const ULTIMO_PASO_CON_VUELTA = 5;
@@ -102,7 +110,9 @@ export default function Onboarding() {
   const [healthGoal, setHealthGoal] = useState(false);
   const { session } = useAuth();
   const userId = session?.user.id;
-  const [step, setStep] = useState(0);
+  // Con el idioma encendido ya al montar (caché de interruptores), se empieza
+  // por él sin pasar un instante por la portada.
+  const [step, setStep] = useState(() => (flagsActuales().idiomas_activos && !idiomaOnboardingContestado ? PASO_IDIOMA : 0));
   // Modos F1: los pasos nuevos solo con su interruptor (pasos.ts).
   const flags = useFlags();
   const modosCtx = useModo();
@@ -115,7 +125,6 @@ export default function Onboarding() {
   const [idiomaElegido, setIdiomaElegido] = useState<string>(() =>
     resolverIdiomaCoach(preferenciaIdioma() ?? 'auto', idiomaDispositivo()),
   );
-  const idiomaVisto = useRef(false);
   const [modosElegidos, setModosElegidos] = useState<ModoEtiqueta[]>([]);
   const [name, setName] = useState('');
   // "¿Quién te trajo?": opcional, precargado si se entró por nivl://c/CODIGO.
@@ -259,11 +268,13 @@ export default function Onboarding() {
   // teléfono y en `profiles.locale`, como la hoja de Perfil.
   const saveIdioma = () =>
     withLock(async () => {
+      // Antes de fijar la preferencia: si cambia el idioma, el árbol se
+      // remonta y el onboarding nuevo tiene que empezar por la portada.
+      idiomaOnboardingContestado = true;
       if (esIdioma(idiomaElegido)) {
         await fijarPreferencia(idiomaElegido);
         await asegurarIdiomaPerfil(userId!);
       }
-      idiomaVisto.current = true;
       setStep(tras(PASO_IDIOMA));
     });
 
@@ -392,7 +403,7 @@ export default function Onboarding() {
   // interruptores pueden llegar después de montar (caché o red): si aún no se
   // ha pasado de la portada, se empieza por el idioma.
   useEffect(() => {
-    if (flags.idiomas_activos && !idiomaVisto.current) setStep((s) => (s === 0 ? PASO_IDIOMA : s));
+    if (flags.idiomas_activos && !idiomaOnboardingContestado) setStep((s) => (s === 0 ? PASO_IDIOMA : s));
   }, [flags.idiomas_activos]);
 
   useEffect(() => {
@@ -568,7 +579,7 @@ export default function Onboarding() {
                 titulo={t('onboarding:idioma.titulo')}
                 pista={t('onboarding:idioma.pista')}
               />
-              <SelectorIdioma valor={idiomaElegido} alCambiar={setIdiomaElegido} />
+              <SelectorIdioma valor={idiomaElegido} alCambiar={setIdiomaElegido} ocupado={busy} />
             </Entrada>
           ) : null}
 

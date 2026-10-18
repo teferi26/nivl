@@ -1,0 +1,46 @@
+{
+  "selector": {
+    "a11y": "Modi",
+    "opcionA11y": "Modus {{modo}}"
+  },
+  "descripcion": {
+    "general": "Alles zusammen, wie bisher.",
+    "iron": "Gym und Ernährung.",
+    "focus": "Lernen und Prüfungen.",
+    "work": "Arbeit, Fokus und Energie.",
+    "founder": "Dein Projekt und seine Meilensteine."
+  },
+  "hoy": {
+    "vacioTitulo": "Heute nichts in {{modo}}",
+    "vacioCuerpo": "Markiere eine Mission mit {{modo}}, dann erscheint sie hier. In NIVL siehst du alles."
+  },
+  "form": {
+    "etiqueta": "Modi",
+    "ayuda": "Einmal abhaken, und sie zählt in all ihren Modi. Ohne Modus zählt sie nur in NIVL.",
+    "a11y": "Auch in {{modo}} zählen"
+  },
+  "onboarding": {
+    "inscripcion": "Die Modi",
+    "titulo": "Wähle deine Modi",
+    "pista": "NIVL sieht alles und ist immer da. Jeder Modus bringt seine eigene Arena. Du kannst sie jederzeit ändern.",
+    "siempre": "Immer aktiv.",
+    "minimo": "Wähle mindestens einen.",
+    "a11y": "{{modo}}. {{descripcion}}"
+  },
+  "perfil": {
+    "titulo": "Level nach Modus",
+    "ayuda": "Jede Mission zählt für dein Level und für das jedes ihrer Modi.",
+    "nivel": "Level {{nivel}}",
+    "filaA11y": "{{modo}}: Level {{nivel}}, {{xp}} XP",
+    "cargandoA11y": "Level nach Modus werden geladen",
+    "global": "Dein Level",
+    "elegir": "Modi wählen",
+    "vacio": "Aktiviere einen Modus, und jede Mission mit seinem Etikett zählt auch für sein Level.",
+    "filaGlobalA11y": "{{modo}}: Level {{nivel}}"
+  },
+  "hoja": {
+    "eyebrow": "Modi",
+    "titulo": "Deine Modi",
+    "pista": "NIVL ist immer da. Was du markierst, erscheint in der Auswahl von Heute und in den Etiketten deiner Missionen."
+  }
+}

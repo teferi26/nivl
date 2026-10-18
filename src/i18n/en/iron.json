@@ -1,0 +1,142 @@
+{
+  "demo": {
+    "eyebrow": "IRON · Engine prototype",
+    "titulo": "Exercises",
+    "subtitulo": "Five exercises drawn by our own engine. Development only.",
+    "elegir": "Exercise",
+    "sustituir": "Substitute",
+    "sustitutoElegido": "Substitute: {{nombre}}",
+    "sustitutoGrupo": "Same group: {{nombre}}",
+    "sinSustituto": "There's no other exercise from this group in the test catalog yet.",
+    "musculos": "Muscles worked",
+    "principales": "Primary",
+    "secundarios": "Secondary",
+    "material": "Equipment",
+    "tecnica": "Technique",
+    "errores": "Common mistakes",
+    "mapaDelante": "Front",
+    "mapaDetras": "Back",
+    "pausar": "Pause",
+    "seguir": "Resume",
+    "animacion": "Animation of {{nombre}}",
+    "mapa": "Muscle map of {{nombre}}",
+    "ficha": "IRON · Exercise sheet",
+    "leyenda": "Legend",
+    "leyendaPrincipal": "Works the most",
+    "leyendaSecundario": "Assists",
+    "leyendaResto": "Not worked directly"
+  },
+  "musculo": {
+    "pectoral": "Pectorals",
+    "deltoides_anterior": "Front deltoid",
+    "deltoides_lateral": "Side deltoid",
+    "deltoides_posterior": "Rear deltoid",
+    "biceps": "Biceps",
+    "triceps": "Triceps",
+    "antebrazo": "Forearm",
+    "dorsal": "Lats",
+    "trapecio": "Trapezius",
+    "espalda_alta": "Rhomboids and mid traps",
+    "lumbares": "Lower back",
+    "abdomen": "Rectus abdominis",
+    "oblicuos": "Obliques",
+    "gluteo": "Glutes",
+    "cuadriceps": "Quadriceps",
+    "isquiotibiales": "Hamstrings",
+    "aductores": "Adductors",
+    "gemelos": "Calves",
+    "tibial": "Tibialis anterior"
+  },
+  "grupo": {
+    "pecho": "Chest",
+    "espalda": "Back",
+    "hombro": "Shoulder",
+    "brazo": "Arm",
+    "pierna": "Leg",
+    "core": "Core"
+  },
+  "material": {
+    "barra": "Barbell",
+    "mancuerna": "Dumbbell",
+    "banco": "Bench",
+    "peso_corporal": "Bodyweight",
+    "polea": "Cable",
+    "maquina": "Machine",
+    "kettlebell": "Kettlebell",
+    "banda": "Resistance band"
+  },
+  "nivel": {
+    "principiante": "Beginner",
+    "intermedio": "Intermediate",
+    "avanzado": "Advanced"
+  },
+  "ejercicios": {
+    "sentadilla-barra": {
+      "nombre": "Barbell squat",
+      "cues": {
+        "pie": "The bar goes down and up over mid-foot.",
+        "rodillas": "Knees in line with your toes.",
+        "profundidad": "Go down until your hip passes your knee, if you can keep your back straight.",
+        "espalda": "Chest up and neutral back the whole way."
+      },
+      "errores": {
+        "talones": "Lifting your heels.",
+        "lumbar": "Rounding your lower back at the bottom.",
+        "rodillasDentro": "Letting your knees cave in on the way up."
+      }
+    },
+    "press-banca": {
+      "nombre": "Bench press",
+      "cues": {
+        "apoyos": "Feet flat on the floor; glutes and upper back on the bench.",
+        "escapulas": "Pull your shoulder blades together and down before unracking.",
+        "trayectoria": "Lower to your lower chest with vertical forearms.",
+        "seguridad": "With heavy loads, use safety pins or a spotter."
+      },
+      "errores": {
+        "codos": "Flaring your elbows to 90° from your torso.",
+        "rebote": "Bouncing the bar off your chest.",
+        "gluteos": "Lifting your glutes off the bench."
+      }
+    },
+    "remo-mancuerna": {
+      "nombre": "Dumbbell row",
+      "cues": {
+        "apoyo": "Hand and knee on the bench; the other foot firm on the floor.",
+        "codo": "Drive your elbow toward your hip, close to your body.",
+        "tronco": "Flat back: your torso doesn't twist as you pull."
+      },
+      "errores": {
+        "giro": "Twisting your torso to lift more weight.",
+        "biceps": "Pulling with your biceps instead of your elbow.",
+        "cuello": "Lifting your head and arching your neck."
+      }
+    },
+    "curl-biceps-mancuerna": {
+      "nombre": "Dumbbell biceps curl",
+      "cues": {
+        "codos": "Elbows still, close to your body.",
+        "recorrido": "Full range: almost straight at the bottom, closed at the top.",
+        "bajada": "Lower slowly, over about two seconds."
+      },
+      "errores": {
+        "balanceo": "Swinging your torso to lift the weight.",
+        "codosDelante": "Moving your elbows forward on the way up.",
+        "medioRecorrido": "Stopping halfway at the bottom."
+      }
+    },
+    "plancha": {
+      "nombre": "Plank",
+      "cues": {
+        "codos": "Elbows right under your shoulders.",
+        "linea": "Shoulders, hips and ankles in a straight line.",
+        "abdomen": "Brace your abs and glutes and keep breathing."
+      },
+      "errores": {
+        "caderaCaida": "Letting your hips sag.",
+        "caderaAlta": "Piking your hips up.",
+        "apnea": "Holding your breath."
+      }
+    }
+  }
+}

@@ -1,0 +1,142 @@
+{
+  "demo": {
+    "eyebrow": "IRON · Prototipo del motore",
+    "titulo": "Esercizi",
+    "subtitulo": "Cinque esercizi disegnati dal nostro motore. Solo in sviluppo.",
+    "elegir": "Esercizio",
+    "sustituir": "Sostituisci",
+    "sustitutoElegido": "Sostituto: {{nombre}}",
+    "sustitutoGrupo": "Stesso gruppo: {{nombre}}",
+    "sinSustituto": "Nel catalogo di prova non c'è ancora un altro esercizio di questo gruppo.",
+    "musculos": "Muscoli coinvolti",
+    "principales": "Principali",
+    "secundarios": "Secondari",
+    "material": "Attrezzatura",
+    "tecnica": "Tecnica",
+    "errores": "Errori comuni",
+    "mapaDelante": "Davanti",
+    "mapaDetras": "Dietro",
+    "pausar": "Pausa",
+    "seguir": "Riprendi",
+    "animacion": "Animazione di {{nombre}}",
+    "mapa": "Mappa muscolare di {{nombre}}",
+    "ficha": "IRON · Scheda dell'esercizio",
+    "leyenda": "Legenda",
+    "leyendaPrincipal": "Lavora di più",
+    "leyendaSecundario": "Aiuta",
+    "leyendaResto": "Non lavora direttamente"
+  },
+  "musculo": {
+    "pectoral": "Pettorale",
+    "deltoides_anterior": "Deltoide anteriore",
+    "deltoides_lateral": "Deltoide laterale",
+    "deltoides_posterior": "Deltoide posteriore",
+    "biceps": "Bicipite",
+    "triceps": "Tricipite",
+    "antebrazo": "Avambraccio",
+    "dorsal": "Gran dorsale",
+    "trapecio": "Trapezio",
+    "espalda_alta": "Romboidi e trapezio medio",
+    "lumbares": "Lombari",
+    "abdomen": "Retto dell'addome",
+    "oblicuos": "Obliqui",
+    "gluteo": "Glutei",
+    "cuadriceps": "Quadricipite",
+    "isquiotibiales": "Femorali",
+    "aductores": "Adduttori",
+    "gemelos": "Polpacci",
+    "tibial": "Tibiale anteriore"
+  },
+  "grupo": {
+    "pecho": "Petto",
+    "espalda": "Schiena",
+    "hombro": "Spalla",
+    "brazo": "Braccio",
+    "pierna": "Gamba",
+    "core": "Core"
+  },
+  "material": {
+    "barra": "Bilanciere",
+    "mancuerna": "Manubrio",
+    "banco": "Panca",
+    "peso_corporal": "Corpo libero",
+    "polea": "Cavo",
+    "maquina": "Macchina",
+    "kettlebell": "Kettlebell",
+    "banda": "Elastico"
+  },
+  "nivel": {
+    "principiante": "Principiante",
+    "intermedio": "Intermedio",
+    "avanzado": "Avanzato"
+  },
+  "ejercicios": {
+    "sentadilla-barra": {
+      "nombre": "Squat con bilanciere",
+      "cues": {
+        "pie": "Il bilanciere scende e sale sopra il centro del piede.",
+        "rodillas": "Ginocchia in linea con le punte dei piedi.",
+        "profundidad": "Scendi finché l'anca supera il ginocchio, se ci arrivi con la schiena dritta.",
+        "espalda": "Petto in fuori e schiena neutra per tutto il movimento."
+      },
+      "errores": {
+        "talones": "Sollevare i talloni.",
+        "lumbar": "Arrotondare la zona lombare in basso.",
+        "rodillasDentro": "Lasciar chiudere le ginocchia in salita."
+      }
+    },
+    "press-banca": {
+      "nombre": "Panca piana",
+      "cues": {
+        "apoyos": "Piedi ben piantati a terra; glutei e parte alta della schiena sulla panca.",
+        "escapulas": "Avvicina e abbassa le scapole prima di staccare il bilanciere.",
+        "trayectoria": "Scendi verso la parte bassa del petto con gli avambracci verticali.",
+        "seguridad": "Con carichi alti, usa i fermi di sicurezza o qualcuno che ti assista."
+      },
+      "errores": {
+        "codos": "Aprire i gomiti a 90° dal busto.",
+        "rebote": "Far rimbalzare il bilanciere sul petto.",
+        "gluteos": "Staccare i glutei dalla panca."
+      }
+    },
+    "remo-mancuerna": {
+      "nombre": "Rematore con manubrio",
+      "cues": {
+        "apoyo": "Mano e ginocchio sulla panca; l'altro piede saldo a terra.",
+        "codo": "Porta il gomito verso l'anca, vicino al corpo.",
+        "tronco": "Schiena piatta: il busto non ruota mentre tiri."
+      },
+      "errores": {
+        "giro": "Ruotare il busto per sollevare più peso.",
+        "biceps": "Tirare con il bicipite invece che con il gomito.",
+        "cuello": "Alzare la testa e inarcare il collo."
+      }
+    },
+    "curl-biceps-mancuerna": {
+      "nombre": "Curl per bicipiti con manubri",
+      "cues": {
+        "codos": "Gomiti fermi vicino al corpo.",
+        "recorrido": "Movimento completo: in basso quasi disteso, in alto chiuso.",
+        "bajada": "Scendi piano, in circa due secondi."
+      },
+      "errores": {
+        "balanceo": "Oscillare il busto per sollevare il peso.",
+        "codosDelante": "Portare avanti i gomiti in salita.",
+        "medioRecorrido": "Fermarsi a metà movimento in basso."
+      }
+    },
+    "plancha": {
+      "nombre": "Plank",
+      "cues": {
+        "codos": "Gomiti proprio sotto le spalle.",
+        "linea": "Spalle, anche e caviglie in linea retta.",
+        "abdomen": "Contrai addome e glutei senza smettere di respirare."
+      },
+      "errores": {
+        "caderaCaida": "Lasciar cadere le anche.",
+        "caderaAlta": "Alzare le anche a punta.",
+        "apnea": "Trattenere il respiro."
+      }
+    }
+  }
+}

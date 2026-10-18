@@ -1,0 +1,44 @@
+{
+  "bienvenida": {
+    "eyebrow": "Élite-Test",
+    "titulo_one": "Du hast {{count}} Tag NIVL Élite",
+    "titulo_other": "Du hast {{count}} Tage NIVL Élite",
+    "cuerpo": "Ohne Karte und ohne automatische Abbuchung. Am Ende entscheidest du: mit Élite weitermachen oder im kostenlosen Plan bleiben.",
+    "termina": "Er endet am {{fecha}} um {{hora}}.",
+    "incluye": "Was enthalten ist",
+    "gratis": "Und alles Kostenlose",
+    "empezar": "Loslegen"
+  },
+  "incluye": {
+    "coach": "Der Élite-Coach, mit einem täglichen Nachrichtenlimit während des Tests: Morgenbriefing, Tagesplan, Chat, Wochenrückblick, Training und Ernährung.",
+    "revision": "Erweiterter Wochenrückblick: die Woche, dein Körperprofil und dein Fortschritt.",
+    "laurel": "Das Lorbeer-Abzeichen neben deinem Namen. Es ist Status, keine Punkte.",
+    "ludus": "Einen Platz in einem Ludus anfragen, einer privaten Gruppe von 5 bis 8 Élite-Gladiatoren. Die Gruppen bilden sich nach und nach: Eine Anfrage garantiert keinen Platz.",
+    "profundo": "Der Tief-Modus gehört zum bezahlten Élite und ist im Test nicht enthalten."
+  },
+  "gratis": {
+    "lista": "Gewohnheiten, Missionen, XP, Serie, Vertrag, Kampagnen, Agenda, Gym, Cardio, Ernährung, Tagebuch, Fortschritte, Freunde und Rangliste."
+  },
+  "aviso": "Du hast noch 1 Tag NIVL Élite. Er endet am {{fecha}} um {{hora}}.",
+  "fin": {
+    "eyebrow": "Test beendet",
+    "titulo": "Deine Élite-Tage sind vorbei",
+    "cuerpo": "Er endete am {{fecha}} um {{hora}}. Deine Daten sind unverändert. Wähle, wie es weitergeht.",
+    "seguir": "Mit Élite weitermachen",
+    "seguirA11y": "Mit Élite weitermachen. Öffnet die Pläne im Store",
+    "precios": "NIVL Élite: {{mes}} pro Monat oder {{anio}} pro Jahr. Verlängert sich automatisch, bis du es im Store kündigst.",
+    "intro": "{{periodo}} kostenlos, danach {{precio}} pro Monat. Jederzeit kündbar.",
+    "introCondicional": "Wenn dein Store-Konto berechtigt ist: {{periodo}} kostenlos, danach {{precio}} pro Monat. Jederzeit kündbar.",
+    "pro": "Es gibt auch NIVL Pro, den Standard-Coach, für {{precio}} pro Monat.",
+    "quedarme": "Im kostenlosen Plan bleiben",
+    "quedarmeNota": "Keine Zahlungen. Du behältst das gesamte Tracking.",
+    "conservas": "Im kostenlosen Plan behältst du",
+    "conservasCuerpo": "Das gesamte Tracking: Gewohnheiten, Missionen, XP, Serie, Vertrag, Kampagnen, Agenda, Gym, Cardio, Ernährung, Tagebuch, Fortschritte, Freunde und Rangliste.",
+    "pierdes": "Das fällt weg",
+    "pierdeCoach": "Der KI-Coach: Briefing, Tagesplan, Chat, Wochenrückblick, Training und Ernährung.",
+    "pierdeRevision": "Der erweiterte Wochenrückblick.",
+    "pierdeLaurel": "Das Lorbeer-Abzeichen.",
+    "pierdeLudus": "Die Platzanfrage für einen Ludus.",
+    "datos": "Deine Missionen, deine Serie, dein Level und dein Verlauf bleiben, wie sie sind."
+  }
+}

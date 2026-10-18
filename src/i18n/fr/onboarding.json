@@ -89,5 +89,10 @@
     "titulo": "Scellé",
     "a11y": "Scellé. Expire le {{fecha}}. Touche pour continuer",
     "vence": "Expire le {{fecha}}"
+  },
+  "idioma": {
+    "inscripcion": "La langue",
+    "titulo": "Dans quelle langue on se parle ?",
+    "pista": "Elle vient de la langue du téléphone. Tu pourras la changer plus tard dans Profil."
   }
 }

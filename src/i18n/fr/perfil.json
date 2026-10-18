@@ -179,6 +179,9 @@
     "cuerpo": "Le coach t'écrit dans cette langue : la conversation, les notifications qu'il prépare et ses rapports. La langue de l'interface ne change pas.",
     "opcionA11y": "{{titulo}}. {{detalle}}"
   },
+  "planes": {
+    "pruebaAuto": "Essai gratuit"
+  },
   "idiomaApp": {
     "seccion": "Langue",
     "fila": "Langue de l'app",

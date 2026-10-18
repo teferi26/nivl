@@ -1,0 +1,44 @@
+{
+  "bienvenida": {
+    "eyebrow": "Prova Élite",
+    "titulo_one": "Hai {{count}} giorno di NIVL Élite",
+    "titulo_other": "Hai {{count}} giorni di NIVL Élite",
+    "cuerpo": "Senza carta e senza addebito automatico. Alla fine scegli tu: continuare con Élite o restare nel piano gratuito.",
+    "termina": "Termina il {{fecha}} alle {{hora}}.",
+    "incluye": "Cosa include",
+    "gratis": "E tutto ciò che è gratuito",
+    "empezar": "Inizia"
+  },
+  "incluye": {
+    "coach": "Il coach Élite, con un limite giornaliero di messaggi durante la prova: brief del mattino, piano della giornata, chat, revisione settimanale, allenamento e dieta.",
+    "revision": "Revisione settimanale estesa: la settimana, la tua scheda fisica e i tuoi progressi.",
+    "laurel": "La medaglia d'alloro accanto al tuo nome. È status, non punti.",
+    "ludus": "Chiedere un posto in un ludus, un gruppo privato da 5 a 8 gladiatori Élite. I gruppi si formano poco a poco: chiedere un posto non lo garantisce.",
+    "profundo": "La modalità profonda è dell'Élite a pagamento e non è inclusa nella prova."
+  },
+  "gratis": {
+    "lista": "Abitudini, missioni, XP, serie, contratto, campagne, agenda, palestra, cardio, nutrizione, diario, progressi, amici e classifica."
+  },
+  "aviso": "Ti resta 1 giorno di NIVL Élite. Termina il {{fecha}} alle {{hora}}.",
+  "fin": {
+    "eyebrow": "Fine della prova",
+    "titulo": "I tuoi giorni di Élite sono finiti",
+    "cuerpo": "È terminata il {{fecha}} alle {{hora}}. I tuoi dati sono intatti. Scegli come continuare.",
+    "seguir": "Continua con Élite",
+    "seguirA11y": "Continua con Élite. Apre i piani dello store",
+    "precios": "NIVL Élite: {{mes}} al mese o {{anio}} all'anno. Si rinnova da solo finché non lo annulli nello store.",
+    "intro": "{{periodo}} gratis e poi {{precio}} al mese. Annulla quando vuoi.",
+    "introCondicional": "Se il tuo account dello store è idoneo: {{periodo}} gratis e poi {{precio}} al mese. Annulla quando vuoi.",
+    "pro": "C'è anche NIVL Pro, il coach standard, a {{precio}} al mese.",
+    "quedarme": "Resta nel piano gratuito",
+    "quedarmeNota": "Nessun pagamento. Mantieni tutto il monitoraggio.",
+    "conservas": "Con il piano gratuito mantieni",
+    "conservasCuerpo": "Tutto il monitoraggio: abitudini, missioni, XP, serie, contratto, campagne, agenda, palestra, cardio, nutrizione, diario, progressi, amici e classifica.",
+    "pierdes": "Non hai più",
+    "pierdeCoach": "Il coach IA: brief, piano della giornata, chat, revisione settimanale, allenamento e dieta.",
+    "pierdeRevision": "La revisione settimanale estesa.",
+    "pierdeLaurel": "La medaglia d'alloro.",
+    "pierdeLudus": "La richiesta di un posto in un ludus.",
+    "datos": "Le tue missioni, la tua serie, il tuo livello e il tuo storico restano come sono."
+  }
+}
