@@ -10,8 +10,17 @@ import { plancha } from './plancha';
 import { pressBanca } from './press-banca';
 import { remoMancuerna } from './remo-mancuerna';
 import { sentadillaBarra } from './sentadilla-barra';
+// Fase 2: un catálogo por grupo, en su carpeta.
+import { EJERCICIOS_PIERNA } from './pierna';
 
-export const EJERCICIOS: readonly Ejercicio[] = [sentadillaBarra, pressBanca, remoMancuerna, curlBicepsMancuerna, plancha];
+export const EJERCICIOS: readonly Ejercicio[] = [
+  sentadillaBarra,
+  pressBanca,
+  remoMancuerna,
+  curlBicepsMancuerna,
+  plancha,
+  ...EJERCICIOS_PIERNA,
+];
 
 export function ejercicioPorId(id: string): Ejercicio | undefined {
   return EJERCICIOS.find((e) => e.id === id);
