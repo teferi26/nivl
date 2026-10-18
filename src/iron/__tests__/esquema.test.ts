@@ -2,20 +2,20 @@
 // las reglas que el tipo `Ejercicio` no puede expresar solo.
 import fs from 'fs';
 import path from 'path';
-import iron from '@/i18n/es/iron.json';
+import { RECURSOS_ES } from '@/i18n/recursos';
 import { dibujar, ranuras } from '../dibujo';
 import { EJERCICIOS, ejercicioPorId } from '../ejercicios';
 import { FORMAS_FRONTAL, FORMAS_LATERAL, GRUPO_DE_MUSCULO, MUSCULOS } from '../musculos';
 import { ARTICULACIONES, type Ejercicio, type Material, type Pose } from '../tipos';
 
 const DIR = path.resolve(__dirname, '..', 'ejercicios');
-const MATERIALES: Material[] = ['barra', 'mancuerna', 'banco', 'peso_corporal', 'polea', 'maquina', 'kettlebell', 'banda'];
+const MATERIALES: Material[] = ['barra', 'mancuerna', 'banco', 'peso_corporal', 'polea', 'maquina', 'kettlebell', 'banda', 'barra_fija'];
 
-/** Resuelve «iron:a.b.c» en el catálogo español; undefined si no existe. */
+/** Resuelve «iron:a.b.c» (o «iron-<grupo>:a.b.c») en el catálogo español; undefined si no existe. */
 function texto(clave: string): string | undefined {
   const [ns, ruta] = clave.split(':');
-  if (ns !== 'iron' || !ruta) return undefined;
-  let nodo: unknown = iron;
+  if (!/^iron(-[a-z]+)?$/.test(ns) || !ruta) return undefined;
+  let nodo: unknown = (RECURSOS_ES as Record<string, unknown>)[ns];
   for (const parte of ruta.split('.')) {
     if (!nodo || typeof nodo !== 'object') return undefined;
     nodo = (nodo as Record<string, unknown>)[parte];
@@ -24,12 +24,14 @@ function texto(clave: string): string | undefined {
 }
 
 describe('catálogo', () => {
-  it('cada archivo de ejercicios/ está registrado, con id = nombre del archivo', () => {
-    const archivos = fs
-      .readdirSync(DIR)
-      .filter((f) => f.endsWith('.ts') && f !== 'index.ts')
-      .map((f) => f.slice(0, -3))
-      .sort();
+  it('cada archivo de ejercicios/ (y de sus carpetas de grupo) está registrado, con id = nombre del archivo', () => {
+    // Los índices y las ayudas de autor («_pose.ts») no son ejercicios.
+    const deCarpeta = (dir: string): string[] =>
+      fs.readdirSync(dir, { withFileTypes: true }).flatMap((f) => {
+        if (f.isDirectory()) return deCarpeta(path.join(dir, f.name));
+        return f.name.endsWith('.ts') && f.name !== 'index.ts' && !f.name.startsWith('_') ? [f.name.slice(0, -3)] : [];
+      });
+    const archivos = deCarpeta(DIR).sort();
     expect(EJERCICIOS.map((e) => e.id).sort()).toEqual(archivos);
     for (const id of archivos) expect(ejercicioPorId(id)?.id).toBe(id);
   });
@@ -40,8 +42,8 @@ describe('catálogo', () => {
     for (const id of ids) expect(id).toMatch(/^[a-z0-9]+(-[a-z0-9]+)*$/);
   });
 
-  it('el prototipo tiene los 5 ejercicios pedidos', () => {
-    expect(EJERCICIOS.map((e) => e.id)).toEqual([
+  it('el prototipo tiene los 5 ejercicios pedidos, delante del resto', () => {
+    expect(EJERCICIOS.slice(0, 5).map((e) => e.id)).toEqual([
       'sentadilla-barra',
       'press-banca',
       'remo-mancuerna',
@@ -55,7 +57,7 @@ describe.each(EJERCICIOS.map((e) => [e.id, e] as const))('%s', (_id, ej: Ejercic
   it('textos: nombre, cues y errores existen en es/iron.json, sin raya ni guion medio', () => {
     const claves = [ej.nombre, ...ej.cues, ...ej.errores];
     for (const c of claves) {
-      expect(c.startsWith(`iron:ejercicios.${ej.id}.`)).toBe(true);
+      expect(c.replace(/^iron(-[a-z]+)?:/, '').startsWith(`ejercicios.${ej.id}.`)).toBe(true);
       const t = texto(c);
       expect(t).toBeTruthy();
       expect(t).not.toMatch(/[—–]/);
@@ -84,6 +86,10 @@ describe.each(EJERCICIOS.map((e) => [e.id, e] as const))('%s', (_id, ej: Ejercic
     if (ej.carga?.tipo === 'barra') expect(ej.material).toContain('barra');
     if (ej.carga?.tipo === 'mancuerna') expect(ej.material).toContain('mancuerna');
     if (ej.escenario?.some((e) => e.tipo === 'banco')) expect(ej.material).toContain('banco');
+    // espalda
+    if (ej.carga?.tipo === 'polea') expect(ej.material).toContain('polea');
+    if (ej.carga?.tipo === 'palanca') expect(ej.material).toContain('maquina');
+    if (ej.escenario?.some((e) => e.tipo === 'barra_dominadas')) expect(ej.material).toContain('barra_fija');
   });
 
   it('sustitutos: existen y no es él mismo', () => {
