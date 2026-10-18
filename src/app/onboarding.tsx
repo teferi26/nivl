@@ -148,10 +148,20 @@ export default function Onboarding() {
   const medicion = useConsentimientoAnalitica();
   const [preguntandoMedicion, setPreguntandoMedicion] = useState(false);
   const decidirMedicion = (acepta: boolean) => {
-    if (acepta) medicion.aceptar();
-    else medicion.rechazar();
-    setPreguntandoMedicion(false);
-    setStep(tras(0));
+    if (!acepta) {
+      medicion.rechazar();
+      setPreguntandoMedicion(false);
+      setStep(tras(0));
+      return;
+    }
+    // QA F1 (menor 2): la portada (paso 0) se vio antes de poder medirla.
+    // Al aceptar se apunta, y en orden: primero el consentimiento, luego el
+    // paso 0 y después el 1 (el efecto de `step`).
+    medicion.aceptar(() => {
+      registrar('onboarding_paso', { paso: 0 });
+      setPreguntandoMedicion(false);
+      setStep(tras(0));
+    });
   };
   const [name, setName] = useState('');
   // "¿Quién te trajo?": opcional, precargado si se entró por nivl://c/CODIGO.

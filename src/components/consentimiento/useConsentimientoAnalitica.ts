@@ -26,7 +26,8 @@ export interface ConsentimientoAnalitica {
   /** Hay que preguntar: flag encendido y sin decisión vigente. */
   preguntar: boolean;
   ocupado: boolean;
-  aceptar: () => void;
+  /** `despues` corre cuando la aceptación ya está guardada (y su evento, en la cola). */
+  aceptar: (despues?: () => void) => void;
   rechazar: () => void;
   revocar: () => void;
 }
@@ -75,7 +76,12 @@ export function useConsentimientoAnalitica(): ConsentimientoAnalitica {
     activa,
     preguntar: !cargando && activa && decision === null,
     ocupado,
-    aceptar: () => con(() => aceptarAnalitica()),
+    aceptar: (despues) =>
+      con(async () => {
+        await aceptarAnalitica();
+        // Solo una función: como `onPress` llegaría el evento del toque.
+        if (typeof despues === 'function') despues();
+      }),
     rechazar: () => con(() => rechazarAnalitica()),
     revocar: () => con(() => revocarAnalitica()),
   };

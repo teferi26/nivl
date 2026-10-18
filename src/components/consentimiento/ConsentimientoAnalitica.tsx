@@ -85,7 +85,7 @@ export function HojaConsentimientoAnalitica({ visible, ocupado, onAceptar, onRec
 /** Para Hoy: pregunta una vez a quien ya tenía la app, nunca encima de una ceremonia. */
 export function PreguntaMedicionUso({ enPausa }: { enPausa: boolean }) {
   const c = useConsentimientoAnalitica();
-  return <HojaConsentimientoAnalitica visible={c.preguntar && !enPausa} ocupado={c.ocupado} onAceptar={c.aceptar} onRechazar={c.rechazar} />;
+  return <HojaConsentimientoAnalitica visible={c.preguntar && !enPausa} ocupado={c.ocupado} onAceptar={() => c.aceptar()} onRechazar={c.rechazar} />;
 }
 
 /** Perfil > Privacidad > Medición de uso. Encender abre la misma hoja; apagar revoca y borra. */
