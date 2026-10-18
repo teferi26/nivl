@@ -50,7 +50,8 @@ async function exportAs(uid) {
   return (await db.query('select export_my_data() as exported')).rows[0].exported;
 }
 const own = await exportAs(A), other = await exportAs(B);
-assert.equal(own.version,7);
+assert.equal(own.version,8);
+assert.deepEqual(own.user_modes,[]); assert.deepEqual(own.mode_xp,[]);
 assert.equal(own.creador.code,'OWNTEST');
 assert.equal(own.creador.comisiones.length,1);
 assert.equal(own.creador.comisiones[0].amount_cents,2000);
@@ -69,5 +70,5 @@ await db.query("select set_config('request.jwt.claim.sub','',false)");
 await assert.rejects(()=>db.query('select export_my_data()'),/No autenticado/);
 await db.exec('reset role; set role anon');
 await assert.rejects(()=>db.query('select export_my_data()'),/permission denied/);
-console.log('PASS full-schema export v7: all actual migrations except scheduler0010, own/other creator and queue, commission/payout coverage, identity and lease redaction, unauthenticated/anon denies');
+console.log('PASS full-schema export v8: all actual migrations except scheduler0010, own/other creator and queue, commission/payout coverage, identity and lease redaction, unauthenticated/anon denies');
 } finally { await db.close(); }
