@@ -47,7 +47,7 @@ function Fila({ modo, nivel, ratio, xp }: { modo: ModoId; nivel: number; ratio: 
           </View>
         ) : null}
       </View>
-      <Text style={styles.nivel} maxFontSizeMultiplier={1}>
+      <Text style={styles.nivel} maxFontSizeMultiplier={1.35}>
         {mayus(t('modos:perfil.nivel', { nivel }))}
       </Text>
     </View>
