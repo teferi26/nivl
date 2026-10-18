@@ -344,6 +344,19 @@ try {
   eq((await db.query('select status,plan,provider,store_environment from subscriptions where user_id=$1', [S])).rows[0],
     { status: 'active', plan: 'pro_mensual', provider: 'apple', store_environment: 'SANDBOX' }, 'una compra de sandbox sustituye a la prueba');
 
+  // ── 5. El script de prueba en rollback (scripts/probar-f1-servidor.sql) pasa y no deja nada ──
+  const limpia = await boot(9999);
+  try {
+    const sql = await readFile(new URL('scripts/probar-f1-servidor.sql', root), 'utf8');
+    const resultados = await limpia.exec(sql);
+    const filas = resultados.find((x) => x.fields?.some((f) => f.name === 'paso'))?.rows ?? [];
+    eq(filas.length, 27, 'probar-f1-servidor.sql: 27 comprobaciones');
+    for (const f of filas) eq(f.ok, true, `probar-f1-servidor.sql: ${f.paso} (${f.detalle})`);
+    await admin(limpia);
+    eq(await one(limpia, "select count(*)::int from auth.users where email like 'f1-%@example.invalid'"), 0, 'rollback: no queda nada');
+    eq(await one(limpia, "select value from app_config where key='prueba_auto_activa'"), false, 'rollback: interruptor apagado');
+  } finally { await limpia.close(); }
+
   console.log(`PASS modos F1 servidor: ${checks} comprobaciones (1.0.9 idéntica antes/después, XP por modo, RLS, flags, prueba automática y tienda)`);
 } catch (e) {
   console.error('FAIL modos F1 servidor:', e.message, e.where ?? '', e.query ?? '');
