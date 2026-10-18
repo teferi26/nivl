@@ -1,0 +1,353 @@
+{
+  "ejercicios": {
+    "sentadilla-frontal": {
+      "nombre": "Agachamento frontal",
+      "cues": {
+        "codos": "Cotovelos altos: a barra assenta nos ombros, não nos pulsos.",
+        "pie": "A barra desce e sobe sobre o meio do pé.",
+        "tronco": "Peito para cima e tronco direito em todo o percurso.",
+        "seguros": "Põe as barras de segurança do rack abaixo do ponto mais baixo."
+      },
+      "errores": {
+        "codosCaen": "Deixar cair os cotovelos ao subir.",
+        "talones": "Levantar os calcanhares.",
+        "rodillasDentro": "Deixar os joelhos fecharem."
+      }
+    },
+    "sentadilla-goblet": {
+      "nombre": "Agachamento goblet com kettlebell",
+      "cues": {
+        "pecho": "Kettlebell encostada ao peito e peito para cima.",
+        "codos": "Cotovelos para baixo, por dentro dos joelhos.",
+        "talones": "Calcanhares no chão; desce enquanto as costas se mantêm direitas."
+      },
+      "errores": {
+        "separar": "Afastar a kettlebell do peito.",
+        "lumbar": "Arredondar a zona lombar em baixo.",
+        "rodillasDentro": "Deixar os joelhos fecharem ao subir."
+      }
+    },
+    "prensa": {
+      "nombre": "Prensa de pernas",
+      "cues": {
+        "espalda": "Costas e glúteos encostados ao encosto em todo o percurso.",
+        "rodillas": "Joelhos na linha dos pés, sem fecharem.",
+        "profundidad": "Desce até uns 90° sem a anca descolar.",
+        "seguros": "Tira e põe os travões com as pernas quase esticadas."
+      },
+      "errores": {
+        "bloquear": "Bloquear os joelhos de repente em cima.",
+        "despegar": "Descolar a zona lombar ao descer demasiado.",
+        "talones": "Empurrar com as pontas e levantar os calcanhares."
+      }
+    },
+    "sentadilla-bulgara": {
+      "nombre": "Agachamento búlgaro",
+      "cues": {
+        "vertical": "Desce na vertical, com o peso no pé da frente.",
+        "pie": "Pé da frente assente; o joelho segue a ponta do pé.",
+        "atras": "O pé de trás só apoia: não empurres com ele."
+      },
+      "errores": {
+        "cerca": "Pôr o pé da frente demasiado perto do banco.",
+        "rodilla": "Deixar o joelho da frente fugir para dentro.",
+        "empujarAtras": "Empurrar com a perna de trás."
+      }
+    },
+    "zancada-atras-mancuerna": {
+      "nombre": "Afundo atrás com halteres",
+      "cues": {
+        "paso": "Passo atrás longo e controlado, apoiando a ponta do pé.",
+        "peso": "O peso vai para o pé da frente; sobe a empurrar com ele.",
+        "tronco": "Tronco direito e halteres pendurados ao lado do corpo."
+      },
+      "errores": {
+        "corto": "Dar um passo tão curto que o joelho da frente avança muito.",
+        "rodilla": "Bater com o joelho de trás no chão."
+      }
+    },
+    "peso-muerto-rumano": {
+      "nombre": "Peso morto romeno",
+      "cues": {
+        "cadera": "Leva a anca para trás com os joelhos ligeiramente dobrados.",
+        "barra": "A barra desce encostada às pernas, sobre o meio do pé.",
+        "espalda": "Costas neutras: para quando não conseguires descer sem arredondar.",
+        "rango": "Desce até sentires tensão nos isquiotibiais, mais ou menos abaixo do joelho."
+      },
+      "errores": {
+        "redondear": "Arredondar as costas para descer mais.",
+        "sentadilla": "Dobrar muito os joelhos e transformá-lo num agachamento.",
+        "separar": "Afastar a barra das pernas."
+      }
+    },
+    "hip-thrust": {
+      "nombre": "Hip thrust com barra",
+      "cues": {
+        "apoyo": "Apoia no banco a parte baixa das omoplatas.",
+        "arriba": "Em cima, tronco e coxas em linha e glúteos contraídos.",
+        "barbilla": "Queixo recolhido: o olhar vai para os joelhos.",
+        "talones": "Empurra com os calcanhares; canelas na vertical em cima."
+      },
+      "errores": {
+        "lumbar": "Arquear a zona lombar em vez de estender a anca.",
+        "pies": "Pôr os pés tão longe que trabalham sobretudo os isquiotibiais.",
+        "rango": "Ficar a meio caminho em cima."
+      }
+    },
+    "extension-cuadriceps": {
+      "nombre": "Extensão de quadríceps",
+      "cues": {
+        "eje": "Alinha o joelho com o eixo da máquina.",
+        "arriba": "Estica até quase bloquear e aperta um segundo.",
+        "bajada": "Desce devagar, sem deixar cair o peso."
+      },
+      "errores": {
+        "impulso": "Subir com impulso e largar o peso em baixo.",
+        "cadera": "Levantar a anca do assento."
+      }
+    },
+    "curl-femoral-tumbado": {
+      "nombre": "Curl femoral deitado",
+      "cues": {
+        "cadera": "Anca encostada ao banco em todo o percurso.",
+        "eje": "Joelhos mesmo fora do banco, alinhados com o eixo.",
+        "bajada": "Desce devagar até quase esticar."
+      },
+      "errores": {
+        "cadera": "Levantar a anca para subir mais peso.",
+        "rebote": "Ressaltar em baixo."
+      }
+    },
+    "gemelos-de-pie": {
+      "nombre": "Elevação de gémeos de pé",
+      "cues": {
+        "rango": "Desce o calcanhar abaixo do degrau e sobe até à ponta do pé.",
+        "pausa": "Aguenta um segundo em cima e outro em baixo.",
+        "rodillas": "Joelhos esticados sem bloquear; sobe e desce em bloco."
+      },
+      "errores": {
+        "rebote": "Ressaltar em baixo.",
+        "medio": "Fazer só metade do percurso."
+      }
+    },
+    "gemelos-sentado": {
+      "nombre": "Elevação de gémeos sentado",
+      "cues": {
+        "rango": "Desce o calcanhar o mais possível e sobe até à ponta do pé.",
+        "pausa": "Aguenta um segundo em cima.",
+        "peso": "O haltere sobre o joelho, sem o empurrar com as mãos."
+      },
+      "errores": {
+        "rebote": "Ressaltar em baixo.",
+        "manos": "Ajudar empurrando com os braços."
+      }
+    },
+    "step-up-cajon": {
+      "nombre": "Subida à caixa",
+      "cues": {
+        "pie": "Pé inteiro sobre uma caixa firme que não se mexa.",
+        "empuje": "Sobe a empurrar com a perna da caixa, não com a de trás.",
+        "bajada": "Desce devagar até apoiar a ponta do pé atrás."
+      },
+      "errores": {
+        "impulso": "Ganhar impulso com a perna de trás.",
+        "rodilla": "Deixar o joelho de apoio fugir para dentro."
+      }
+    },
+    "swing-kettlebell": {
+      "nombre": "Swing com kettlebell",
+      "cues": {
+        "cadera": "É uma dobradiça: anca para trás e depois para a frente com força.",
+        "brazos": "Braços esticados e soltos: só guiam a kettlebell.",
+        "bloqueo": "Em cima, bem de pé, com glúteos e abdómen contraídos."
+      },
+      "errores": {
+        "sentadilla": "Descer em agachamento em vez de levar a anca para trás.",
+        "brazos": "Subir a kettlebell a puxar com os ombros.",
+        "lumbar": "Arredondar as costas em baixo ou arqueá-las em cima."
+      }
+    },
+    "peso-muerto-rumano-mancuerna": {
+      "nombre": "Peso morto romeno com halteres",
+      "cues": {
+        "cadera": "Leva a anca para trás com os joelhos ligeiramente dobrados.",
+        "pegadas": "Os halteres descem encostados às pernas.",
+        "espalda": "Costas neutras em todo o percurso."
+      },
+      "errores": {
+        "redondear": "Arredondar as costas para descer mais.",
+        "lejos": "Deixar os halteres afastarem-se do corpo."
+      }
+    },
+    "peso-muerto-una-pierna": {
+      "nombre": "Peso morto unilateral",
+      "cues": {
+        "linea": "Tronco e perna de trás em linha, como uma balança.",
+        "cadera": "Anca nivelada: não a abras para o lado.",
+        "apoyo": "Joelho de apoio solto; se perderes o equilíbrio, toca com a ponta do pé."
+      },
+      "errores": {
+        "abrir": "Rodar a anca e abrir a perna de trás.",
+        "redondear": "Arredondar as costas para descer mais."
+      }
+    },
+    "buenos-dias": {
+      "nombre": "Good morning com barra",
+      "cues": {
+        "cadera": "Leva a anca para trás com os joelhos soltos.",
+        "espalda": "Costas neutras: o tronco desce em bloco.",
+        "carga": "Começa com pouco peso e tira-o do rack com barras de segurança."
+      },
+      "errores": {
+        "redondear": "Arredondar as costas para descer mais.",
+        "rodillas": "Dobrar muito os joelhos e transformá-lo num agachamento."
+      }
+    },
+    "abduccion-maquina": {
+      "nombre": "Abdução na máquina",
+      "cues": {
+        "espalda": "Costas no encosto e anca quieta.",
+        "abrir": "Abre os joelhos até onde controlares, sem balanço.",
+        "cerrar": "Fecha devagar, sem deixar o peso bater."
+      },
+      "errores": {
+        "inclinar": "Inclinar-se para a frente para mover mais peso.",
+        "golpe": "Largar o peso de repente ao fechar."
+      }
+    },
+    "sentadilla-peso-corporal": {
+      "nombre": "Agachamento sem peso",
+      "cues": {
+        "talones": "Calcanhares no chão em todo o percurso.",
+        "cadera": "Leva a anca para trás e para baixo, com o peito para cima.",
+        "rodillas": "Joelhos na linha das pontas dos pés."
+      },
+      "errores": {
+        "talones": "Levantar os calcanhares.",
+        "medio": "Ficar a meio do percurso.",
+        "rodillasDentro": "Deixar os joelhos fecharem ao subir."
+      }
+    },
+    "sentadilla-cajon": {
+      "nombre": "Agachamento à caixa",
+      "cues": {
+        "atras": "Senta-te para trás, como se procurasses a cadeira com os glúteos.",
+        "tocar": "Toca na caixa sem te deixares cair nem perder a tensão.",
+        "subir": "Sobe a empurrar o chão, sem balançar."
+      },
+      "errores": {
+        "caer": "Deixar-se cair sobre a caixa.",
+        "balanceo": "Balançar para trás para se levantar.",
+        "rodillas": "Deixar os joelhos fecharem ao subir."
+      }
+    },
+    "zancada-estatica": {
+      "nombre": "Afundo estático",
+      "cues": {
+        "vertical": "Desce na vertical, como um elevador.",
+        "rodilla": "Joelho da frente sobre o tornozelo; o de trás quase roça o chão.",
+        "empuje": "Sobe a empurrar com o pé da frente."
+      },
+      "errores": {
+        "corta": "Pôr os pés demasiado perto.",
+        "inclinar": "Inclinar o tronco para a frente."
+      }
+    },
+    "puente-gluteo": {
+      "nombre": "Ponte de glúteos",
+      "cues": {
+        "talones": "Pés perto dos glúteos; empurra com os calcanhares.",
+        "arriba": "Sobe até ombros, anca e joelhos ficarem em linha.",
+        "lumbar": "Contrai os glúteos em cima sem arquear a zona lombar."
+      },
+      "errores": {
+        "arquear": "Arquear as costas para subir mais.",
+        "rapido": "Subir e descer sem controlo."
+      }
+    },
+    "puente-gluteo-una-pierna": {
+      "nombre": "Ponte de glúteos unilateral",
+      "cues": {
+        "talon": "Empurra com o calcanhar de apoio.",
+        "nivel": "Anca nivelada: não a deixes cair para o lado livre.",
+        "arriba": "Em cima, tronco e coxa de apoio em linha."
+      },
+      "errores": {
+        "girar": "Deixar a anca rodar ou cair.",
+        "lumbar": "Arquear a zona lombar."
+      }
+    },
+    "patada-gluteo": {
+      "nombre": "Coice de glúteo",
+      "cues": {
+        "espalda": "Costas planas e abdómen firme: só se mexe a perna.",
+        "talon": "Empurra a planta do pé em direção ao teto.",
+        "rodilla": "Joelho dobrado a 90° em todo o percurso."
+      },
+      "errores": {
+        "arquear": "Arquear a zona lombar para subir mais.",
+        "girar": "Rodar a anca para o lado da perna."
+      }
+    },
+    "abduccion-tumbado": {
+      "nombre": "Abdução deitado de lado",
+      "cues": {
+        "recta": "Perna de cima direita, um pouco atrás da linha do corpo.",
+        "punta": "A ponta do pé aponta para a frente, não para o teto.",
+        "lento": "Sobe até uns 40° e desce devagar."
+      },
+      "errores": {
+        "girar": "Rodar a anca e subir com a ponta do pé virada para o teto.",
+        "alto": "Subir demasiado e dobrar o tronco."
+      }
+    },
+    "curl-nordico": {
+      "nombre": "Curl nórdico",
+      "cues": {
+        "linea": "Corpo direito dos joelhos à cabeça, sem dobrar a anca.",
+        "lento": "Desce o mais devagar que conseguires.",
+        "manos": "Usa as mãos para travar em baixo e ajudar a voltar."
+      },
+      "errores": {
+        "cadera": "Dobrar a anca para os isquiotibiais trabalharem menos.",
+        "caer": "Deixar-se cair no fim sem travar."
+      }
+    },
+    "elevacion-tibial": {
+      "nombre": "Elevação de tibiais",
+      "cues": {
+        "talon": "Calcanhar apoiado; sobe só a ponta do pé.",
+        "arriba": "Sobe tudo o que conseguires e aguenta um segundo.",
+        "bajada": "Desce devagar."
+      },
+      "errores": {
+        "rapido": "Fazer depressa e sem amplitude.",
+        "talon": "Descolar o calcanhar do chão."
+      }
+    },
+    "patada-gluteo-polea": {
+      "nombre": "Coice de glúteo na polia",
+      "cues": {
+        "tronco": "Agarra-te à torre e deixa o tronco um pouco inclinado e quieto.",
+        "atras": "Leva a perna para trás com o glúteo, joelho quase esticado.",
+        "lumbar": "Para antes de arquear a zona lombar."
+      },
+      "errores": {
+        "arquear": "Arquear as costas para subir mais a perna.",
+        "impulso": "Lançar a perna com impulso."
+      }
+    },
+    "abduccion-banda": {
+      "nombre": "Abdução de pé com banda",
+      "cues": {
+        "pelvis": "Pélvis direita: não te inclines para o lado de apoio.",
+        "punta": "Abre a perna direita com a ponta do pé virada para a frente.",
+        "vuelta": "Volta devagar sem deixar a banda juntar-te os joelhos."
+      },
+      "errores": {
+        "inclinar": "Inclinar o tronco para abrir mais.",
+        "rotar": "Rodar a ponta do pé para cima."
+      }
+    }
+  }
+}

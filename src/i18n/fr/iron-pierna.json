@@ -1,0 +1,353 @@
+{
+  "ejercicios": {
+    "sentadilla-frontal": {
+      "nombre": "Front squat",
+      "cues": {
+        "codos": "Coudes hauts : la barre repose sur les épaules, pas sur les poignets.",
+        "pie": "La barre descend et remonte au-dessus du milieu du pied.",
+        "tronco": "Poitrine haute et buste droit sur toute l'amplitude.",
+        "seguros": "Place les sécurités du rack sous ton point le plus bas."
+      },
+      "errores": {
+        "codosCaen": "Laisser tomber les coudes en remontant.",
+        "talones": "Décoller les talons.",
+        "rodillasDentro": "Laisser les genoux rentrer."
+      }
+    },
+    "sentadilla-goblet": {
+      "nombre": "Goblet squat au kettlebell",
+      "cues": {
+        "pecho": "Kettlebell collé à la poitrine et poitrine haute.",
+        "codos": "Coudes vers le bas, à l'intérieur des genoux.",
+        "talones": "Talons au sol ; descends tant que le dos reste droit."
+      },
+      "errores": {
+        "separar": "Éloigner le kettlebell de la poitrine.",
+        "lumbar": "Arrondir le bas du dos en bas.",
+        "rodillasDentro": "Laisser les genoux rentrer en remontant."
+      }
+    },
+    "prensa": {
+      "nombre": "Presse à cuisses",
+      "cues": {
+        "espalda": "Dos et fessiers collés au dossier sur toute l'amplitude.",
+        "rodillas": "Genoux dans l'axe des pieds, sans rentrer.",
+        "profundidad": "Descends vers 90° sans que le bassin décolle.",
+        "seguros": "Enlève et remets les sécurités jambes presque tendues."
+      },
+      "errores": {
+        "bloquear": "Verrouiller les genoux d'un coup en haut.",
+        "despegar": "Décoller le bas du dos en descendant trop bas.",
+        "talones": "Pousser sur les pointes et décoller les talons."
+      }
+    },
+    "sentadilla-bulgara": {
+      "nombre": "Squat bulgare",
+      "cues": {
+        "vertical": "Descends à la verticale, poids sur le pied avant.",
+        "pie": "Pied avant à plat ; le genou suit la pointe du pied.",
+        "atras": "Le pied arrière sert juste d'appui : ne pousse pas avec."
+      },
+      "errores": {
+        "cerca": "Placer le pied avant trop près du banc.",
+        "rodilla": "Laisser le genou avant rentrer vers l'intérieur.",
+        "empujarAtras": "Pousser avec la jambe arrière."
+      }
+    },
+    "zancada-atras-mancuerna": {
+      "nombre": "Fentes arrière aux haltères",
+      "cues": {
+        "paso": "Grand pas en arrière contrôlé, en posant la pointe.",
+        "peso": "Le poids va sur le pied avant ; remonte en poussant dessus.",
+        "tronco": "Buste droit et haltères le long du corps."
+      },
+      "errores": {
+        "corto": "Faire un pas si court que le genou avant avance trop.",
+        "rodilla": "Taper le sol avec le genou arrière."
+      }
+    },
+    "peso-muerto-rumano": {
+      "nombre": "Soulevé de terre roumain",
+      "cues": {
+        "cadera": "Recule les hanches, genoux à peine fléchis.",
+        "barra": "La barre descend collée aux jambes, au-dessus du milieu du pied.",
+        "espalda": "Dos neutre : arrête-toi dès que tu ne peux plus descendre sans l'arrondir.",
+        "rango": "Descends jusqu'à sentir les ischios, environ sous le genou."
+      },
+      "errores": {
+        "redondear": "Arrondir le dos pour descendre plus bas.",
+        "sentadilla": "Trop plier les genoux et en faire un squat.",
+        "separar": "Éloigner la barre des jambes."
+      }
+    },
+    "hip-thrust": {
+      "nombre": "Hip thrust à la barre",
+      "cues": {
+        "apoyo": "Appuie le bas des omoplates sur le banc.",
+        "arriba": "En haut, buste et cuisses alignés et fessiers serrés.",
+        "barbilla": "Menton rentré : le regard va vers les genoux.",
+        "talones": "Pousse avec les talons ; tibias verticaux en haut."
+      },
+      "errores": {
+        "lumbar": "Cambrer le bas du dos au lieu d'étendre les hanches.",
+        "pies": "Placer les pieds si loin que ce sont surtout les ischios qui travaillent.",
+        "rango": "S'arrêter à mi-chemin en haut."
+      }
+    },
+    "extension-cuadriceps": {
+      "nombre": "Leg extension",
+      "cues": {
+        "eje": "Aligne le genou avec l'axe de la machine.",
+        "arriba": "Tends jusqu'à presque verrouiller et serre une seconde.",
+        "bajada": "Descends lentement, sans laisser tomber la charge."
+      },
+      "errores": {
+        "impulso": "Monter avec de l'élan et lâcher la charge en bas.",
+        "cadera": "Décoller les hanches du siège."
+      }
+    },
+    "curl-femoral-tumbado": {
+      "nombre": "Leg curl allongé",
+      "cues": {
+        "cadera": "Hanches collées au banc sur toute l'amplitude.",
+        "eje": "Genoux juste au bord du banc, alignés avec l'axe.",
+        "bajada": "Descends lentement jusqu'à presque tendre."
+      },
+      "errores": {
+        "cadera": "Décoller les hanches pour monter plus lourd.",
+        "rebote": "Rebondir en bas."
+      }
+    },
+    "gemelos-de-pie": {
+      "nombre": "Mollets debout",
+      "cues": {
+        "rango": "Descends le talon sous la marche et monte sur la pointe.",
+        "pausa": "Tiens une seconde en haut et une en bas.",
+        "rodillas": "Genoux tendus sans verrouiller ; monte et descends d'un bloc."
+      },
+      "errores": {
+        "rebote": "Rebondir en bas.",
+        "medio": "Faire seulement la moitié de l'amplitude."
+      }
+    },
+    "gemelos-sentado": {
+      "nombre": "Mollets assis",
+      "cues": {
+        "rango": "Descends le talon au maximum et monte sur la pointe.",
+        "pausa": "Tiens une seconde en haut.",
+        "peso": "L'haltère sur le genou, sans le pousser avec les mains."
+      },
+      "errores": {
+        "rebote": "Rebondir en bas.",
+        "manos": "S'aider en poussant avec les bras."
+      }
+    },
+    "step-up-cajon": {
+      "nombre": "Step-up sur box",
+      "cues": {
+        "pie": "Pied entier sur une box solide qui ne bouge pas.",
+        "empuje": "Monte en poussant avec la jambe sur la box, pas avec celle de derrière.",
+        "bajada": "Redescends lentement jusqu'à poser la pointe derrière."
+      },
+      "errores": {
+        "impulso": "Prendre de l'élan avec la jambe arrière.",
+        "rodilla": "Laisser le genou d'appui rentrer vers l'intérieur."
+      }
+    },
+    "swing-kettlebell": {
+      "nombre": "Kettlebell swing",
+      "cues": {
+        "cadera": "C'est une charnière : hanches en arrière puis en avant avec force.",
+        "brazos": "Bras tendus et relâchés : ils guident juste le kettlebell.",
+        "bloqueo": "En haut, debout complètement, fessiers et abdos serrés."
+      },
+      "errores": {
+        "sentadilla": "Descendre en squat au lieu de reculer les hanches.",
+        "brazos": "Monter le kettlebell en tirant avec les épaules.",
+        "lumbar": "Arrondir le dos en bas ou le cambrer en haut."
+      }
+    },
+    "peso-muerto-rumano-mancuerna": {
+      "nombre": "Soulevé de terre roumain aux haltères",
+      "cues": {
+        "cadera": "Recule les hanches, genoux à peine fléchis.",
+        "pegadas": "Les haltères descendent collés aux jambes.",
+        "espalda": "Dos neutre sur toute l'amplitude."
+      },
+      "errores": {
+        "redondear": "Arrondir le dos pour descendre plus bas.",
+        "lejos": "Laisser les haltères s'éloigner du corps."
+      }
+    },
+    "peso-muerto-una-pierna": {
+      "nombre": "Soulevé de terre sur une jambe",
+      "cues": {
+        "linea": "Buste et jambe arrière alignés, comme une balançoire.",
+        "cadera": "Bassin à niveau : ne l'ouvre pas sur le côté.",
+        "apoyo": "Genou d'appui souple ; si tu perds l'équilibre, pose la pointe."
+      },
+      "errores": {
+        "abrir": "Tourner le bassin et ouvrir la jambe arrière.",
+        "redondear": "Arrondir le dos pour descendre plus bas."
+      }
+    },
+    "buenos-dias": {
+      "nombre": "Good morning à la barre",
+      "cues": {
+        "cadera": "Recule les hanches, genoux souples.",
+        "espalda": "Dos neutre : le buste descend d'un bloc.",
+        "carga": "Commence léger et sors la barre du rack avec les sécurités."
+      },
+      "errores": {
+        "redondear": "Arrondir le dos pour descendre plus bas.",
+        "rodillas": "Trop plier les genoux et en faire un squat."
+      }
+    },
+    "abduccion-maquina": {
+      "nombre": "Abduction à la machine",
+      "cues": {
+        "espalda": "Dos contre le dossier et bassin immobile.",
+        "abrir": "Écarte les genoux tant que tu contrôles, sans balancer.",
+        "cerrar": "Referme lentement, sans laisser la charge claquer."
+      },
+      "errores": {
+        "inclinar": "Se pencher en avant pour pousser plus lourd.",
+        "golpe": "Lâcher la charge d'un coup en refermant."
+      }
+    },
+    "sentadilla-peso-corporal": {
+      "nombre": "Squat au poids du corps",
+      "cues": {
+        "talones": "Talons au sol sur toute l'amplitude.",
+        "cadera": "Hanches en arrière et vers le bas, poitrine haute.",
+        "rodillas": "Genoux dans l'axe des pointes de pied."
+      },
+      "errores": {
+        "talones": "Décoller les talons.",
+        "medio": "Rester à mi-amplitude.",
+        "rodillasDentro": "Laisser les genoux rentrer en remontant."
+      }
+    },
+    "sentadilla-cajon": {
+      "nombre": "Box squat",
+      "cues": {
+        "atras": "Assieds-toi en arrière, comme si tu cherchais la chaise avec les fessiers.",
+        "tocar": "Touche la box sans te laisser tomber ni relâcher la tension.",
+        "subir": "Remonte en poussant le sol, sans te balancer."
+      },
+      "errores": {
+        "caer": "Se laisser tomber sur la box.",
+        "balanceo": "Se balancer en arrière pour se relever.",
+        "rodillas": "Laisser les genoux rentrer en remontant."
+      }
+    },
+    "zancada-estatica": {
+      "nombre": "Fente statique",
+      "cues": {
+        "vertical": "Descends à la verticale, comme un ascenseur.",
+        "rodilla": "Genou avant au-dessus de la cheville ; l'arrière frôle presque le sol.",
+        "empuje": "Remonte en poussant avec le pied avant."
+      },
+      "errores": {
+        "corta": "Placer les pieds trop près l'un de l'autre.",
+        "inclinar": "Pencher le buste vers l'avant."
+      }
+    },
+    "puente-gluteo": {
+      "nombre": "Pont fessier",
+      "cues": {
+        "talones": "Pieds près des fessiers ; pousse avec les talons.",
+        "arriba": "Monte jusqu'à aligner épaules, hanches et genoux.",
+        "lumbar": "Serre les fessiers en haut sans cambrer le bas du dos."
+      },
+      "errores": {
+        "arquear": "Cambrer le dos pour monter plus haut.",
+        "rapido": "Monter et descendre sans contrôle."
+      }
+    },
+    "puente-gluteo-una-pierna": {
+      "nombre": "Pont fessier sur une jambe",
+      "cues": {
+        "talon": "Pousse avec le talon d'appui.",
+        "nivel": "Bassin à niveau : qu'il ne tombe pas du côté libre.",
+        "arriba": "En haut, buste et cuisse d'appui alignés."
+      },
+      "errores": {
+        "girar": "Laisser le bassin tourner ou tomber.",
+        "lumbar": "Cambrer le bas du dos."
+      }
+    },
+    "patada-gluteo": {
+      "nombre": "Kickback fessier",
+      "cues": {
+        "espalda": "Dos plat et abdos gainés : seule la jambe bouge.",
+        "talon": "Pousse la plante du pied vers le plafond.",
+        "rodilla": "Genou plié à 90° sur toute l'amplitude."
+      },
+      "errores": {
+        "arquear": "Cambrer le bas du dos pour monter plus haut.",
+        "girar": "Tourner le bassin du côté de la jambe."
+      }
+    },
+    "abduccion-tumbado": {
+      "nombre": "Abduction allongé sur le côté",
+      "cues": {
+        "recta": "Jambe du dessus tendue, un peu en arrière de l'axe du corps.",
+        "punta": "La pointe du pied regarde devant, pas le plafond.",
+        "lento": "Monte jusqu'à environ 40° et redescends lentement."
+      },
+      "errores": {
+        "girar": "Tourner le bassin et monter pointe vers le plafond.",
+        "alto": "Monter trop haut et plier le buste."
+      }
+    },
+    "curl-nordico": {
+      "nombre": "Nordic curl",
+      "cues": {
+        "linea": "Corps droit des genoux à la tête, sans plier les hanches.",
+        "lento": "Descends le plus lentement possible.",
+        "manos": "Utilise les mains pour freiner en bas et t'aider à revenir."
+      },
+      "errores": {
+        "cadera": "Plier les hanches pour soulager les ischios.",
+        "caer": "Se laisser tomber à la fin sans freiner."
+      }
+    },
+    "elevacion-tibial": {
+      "nombre": "Relevés tibiaux",
+      "cues": {
+        "talon": "Talon en appui ; monte seulement la pointe du pied.",
+        "arriba": "Monte au maximum et tiens une seconde.",
+        "bajada": "Redescends lentement."
+      },
+      "errores": {
+        "rapido": "Aller vite et sans amplitude.",
+        "talon": "Décoller le talon du sol."
+      }
+    },
+    "patada-gluteo-polea": {
+      "nombre": "Kickback fessier à la poulie",
+      "cues": {
+        "tronco": "Tiens-toi à la machine, buste légèrement penché et immobile.",
+        "atras": "Envoie la jambe en arrière avec le fessier, genou presque tendu.",
+        "lumbar": "Arrête-toi avant de cambrer le bas du dos."
+      },
+      "errores": {
+        "arquear": "Cambrer le dos pour monter la jambe plus haut.",
+        "impulso": "Lancer la jambe avec de l'élan."
+      }
+    },
+    "abduccion-banda": {
+      "nombre": "Abduction debout avec élastique",
+      "cues": {
+        "pelvis": "Bassin droit : ne te penche pas du côté de l'appui.",
+        "punta": "Écarte la jambe tendue, pointe du pied vers l'avant.",
+        "vuelta": "Reviens lentement sans laisser l'élastique rapprocher tes genoux."
+      },
+      "errores": {
+        "inclinar": "Pencher le buste pour écarter plus.",
+        "rotar": "Tourner la pointe du pied vers le haut."
+      }
+    }
+  }
+}

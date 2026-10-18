@@ -44,6 +44,12 @@ import enPrueba from './en/prueba.json';
 import enIron from './en/iron.json';
 import enJuego from './en/juego.json';
 import enOferta from './en/oferta.json';
+import enIronBrazos from './en/iron-brazos.json';
+import enIronEspalda from './en/iron-espalda.json';
+import enIronPierna from './en/iron-pierna.json';
+import enIronCore from './en/iron-core.json';
+import enIronHombro from './en/iron-hombro.json';
+import enIronPecho from './en/iron-pecho.json';
 import frComun from './fr/comun.json';
 import frRaiz from './fr/raiz.json';
 import frUi from './fr/ui.json';
@@ -82,6 +88,12 @@ import frPrueba from './fr/prueba.json';
 import frIron from './fr/iron.json';
 import frJuego from './fr/juego.json';
 import frOferta from './fr/oferta.json';
+import frIronBrazos from './fr/iron-brazos.json';
+import frIronEspalda from './fr/iron-espalda.json';
+import frIronPierna from './fr/iron-pierna.json';
+import frIronCore from './fr/iron-core.json';
+import frIronHombro from './fr/iron-hombro.json';
+import frIronPecho from './fr/iron-pecho.json';
 import ptComun from './pt/comun.json';
 import ptRaiz from './pt/raiz.json';
 import ptUi from './pt/ui.json';
@@ -120,6 +132,12 @@ import ptPrueba from './pt/prueba.json';
 import ptIron from './pt/iron.json';
 import ptJuego from './pt/juego.json';
 import ptOferta from './pt/oferta.json';
+import ptIronBrazos from './pt/iron-brazos.json';
+import ptIronEspalda from './pt/iron-espalda.json';
+import ptIronPierna from './pt/iron-pierna.json';
+import ptIronCore from './pt/iron-core.json';
+import ptIronHombro from './pt/iron-hombro.json';
+import ptIronPecho from './pt/iron-pecho.json';
 import deComun from './de/comun.json';
 import deRaiz from './de/raiz.json';
 import deUi from './de/ui.json';
@@ -158,6 +176,12 @@ import dePrueba from './de/prueba.json';
 import deIron from './de/iron.json';
 import deJuego from './de/juego.json';
 import deOferta from './de/oferta.json';
+import deIronBrazos from './de/iron-brazos.json';
+import deIronEspalda from './de/iron-espalda.json';
+import deIronPierna from './de/iron-pierna.json';
+import deIronCore from './de/iron-core.json';
+import deIronHombro from './de/iron-hombro.json';
+import deIronPecho from './de/iron-pecho.json';
 import itComun from './it/comun.json';
 import itRaiz from './it/raiz.json';
 import itUi from './it/ui.json';
@@ -196,6 +220,12 @@ import itPrueba from './it/prueba.json';
 import itIron from './it/iron.json';
 import itJuego from './it/juego.json';
 import itOferta from './it/oferta.json';
+import itIronBrazos from './it/iron-brazos.json';
+import itIronEspalda from './it/iron-espalda.json';
+import itIronPierna from './it/iron-pierna.json';
+import itIronCore from './it/iron-core.json';
+import itIronHombro from './it/iron-hombro.json';
+import itIronPecho from './it/iron-pecho.json';
 
 /** Los idiomas con interfaz traducida (el español no está: es la base). */
 export const IDIOMAS_TRADUCIDOS = ['en', 'fr', 'pt', 'de', 'it'] as const;
@@ -243,6 +273,12 @@ export const RECURSOS_LOCALES: Record<IdiomaTraducido, Catalogo> = {
     iron: enIron,
     juego: enJuego,
     oferta: enOferta,
+    'iron-brazos': enIronBrazos,
+    'iron-espalda': enIronEspalda,
+    'iron-pierna': enIronPierna,
+    'iron-core': enIronCore,
+    'iron-hombro': enIronHombro,
+    'iron-pecho': enIronPecho,
   },
   fr: {
     comun: frComun,
@@ -283,6 +319,12 @@ export const RECURSOS_LOCALES: Record<IdiomaTraducido, Catalogo> = {
     iron: frIron,
     juego: frJuego,
     oferta: frOferta,
+    'iron-brazos': frIronBrazos,
+    'iron-espalda': frIronEspalda,
+    'iron-pierna': frIronPierna,
+    'iron-core': frIronCore,
+    'iron-hombro': frIronHombro,
+    'iron-pecho': frIronPecho,
   },
   pt: {
     comun: ptComun,
@@ -323,6 +365,12 @@ export const RECURSOS_LOCALES: Record<IdiomaTraducido, Catalogo> = {
     iron: ptIron,
     juego: ptJuego,
     oferta: ptOferta,
+    'iron-brazos': ptIronBrazos,
+    'iron-espalda': ptIronEspalda,
+    'iron-pierna': ptIronPierna,
+    'iron-core': ptIronCore,
+    'iron-hombro': ptIronHombro,
+    'iron-pecho': ptIronPecho,
   },
   de: {
     comun: deComun,
@@ -363,6 +411,12 @@ export const RECURSOS_LOCALES: Record<IdiomaTraducido, Catalogo> = {
     iron: deIron,
     juego: deJuego,
     oferta: deOferta,
+    'iron-brazos': deIronBrazos,
+    'iron-espalda': deIronEspalda,
+    'iron-pierna': deIronPierna,
+    'iron-core': deIronCore,
+    'iron-hombro': deIronHombro,
+    'iron-pecho': deIronPecho,
   },
   it: {
     comun: itComun,
@@ -403,5 +457,11 @@ export const RECURSOS_LOCALES: Record<IdiomaTraducido, Catalogo> = {
     iron: itIron,
     juego: itJuego,
     oferta: itOferta,
+    'iron-brazos': itIronBrazos,
+    'iron-espalda': itIronEspalda,
+    'iron-pierna': itIronPierna,
+    'iron-core': itIronCore,
+    'iron-hombro': itIronHombro,
+    'iron-pecho': itIronPecho,
   },
 };

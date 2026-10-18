@@ -45,7 +45,14 @@
     "isquiotibiales": "Beinbeuger",
     "aductores": "Adduktoren",
     "gemelos": "Waden",
-    "tibial": "Vorderer Schienbeinmuskel"
+    "tibial": "Vorderer Schienbeinmuskel",
+    "braquial": "Oberarmmuskel (Brachialis)",
+    "braquiorradial": "Oberarm-Speichenmuskel (Brachioradialis)",
+    "soleo": "Schollenmuskel",
+    "gluteo_medio": "Mittlerer Gesäßmuskel (Abduktoren)",
+    "psoas": "Psoas (Hüftbeuger)",
+    "manguito_rotador": "Rotatorenmanschette",
+    "pectoral_superior": "Oberer Brustmuskel"
   },
   "grupo": {
     "pecho": "Brust",
@@ -63,7 +70,14 @@
     "polea": "Kabelzug",
     "maquina": "Maschine",
     "kettlebell": "Kettlebell",
-    "banda": "Widerstandsband"
+    "banda": "Widerstandsband",
+    "barra_z": "SZ-Stange",
+    "barra_fija": "Klimmzugstange",
+    "rack": "Rack",
+    "cajon": "Box",
+    "banco_inclinado": "Schrägbank",
+    "banco_declinado": "Negativbank",
+    "paralelas": "Barren"
   },
   "nivel": {
     "principiante": "Anfänger",

@@ -1,0 +1,344 @@
+{
+  "ejercicios": {
+    "curl-barra": {
+      "nombre": "Curl de bíceps com barra",
+      "cues": {
+        "agarre": "Pega à largura dos ombros, palmas para a frente.",
+        "codos": "Cotovelos quietos junto ao corpo; só se mexe o antebraço.",
+        "bajada": "Desce devagar até esticar o braço quase por completo."
+      },
+      "errores": {
+        "balanceo": "Atirar o tronco para trás para subir a barra.",
+        "codosDelante": "Avançar os cotovelos no fim do curl.",
+        "munecas": "Dobrar os pulsos para trás com o peso."
+      }
+    },
+    "curl-barra-z": {
+      "nombre": "Curl de bíceps com barra W",
+      "cues": {
+        "agarre": "Agarra a barra nas curvas: o pulso fica mais confortável.",
+        "codos": "Cotovelos junto ao corpo e quietos.",
+        "bajada": "Desce com controlo, sem deixar cair a barra."
+      },
+      "errores": {
+        "balanceo": "Ganhar impulso com a anca ou o tronco.",
+        "medioRecorrido": "Fazer meio percurso: nem bem em baixo nem em cima."
+      }
+    },
+    "curl-martillo": {
+      "nombre": "Curl martelo com halteres",
+      "cues": {
+        "agarre": "Palmas viradas uma para a outra em todo o percurso, como um martelo.",
+        "codos": "Cotovelos junto ao corpo; sobe até à altura do ombro.",
+        "bajada": "Desce devagar, sem balançar os halteres."
+      },
+      "errores": {
+        "balanceo": "Usar o impulso do corpo para subir.",
+        "giro": "Rodar o pulso para cima: deixa de ser martelo."
+      }
+    },
+    "curl-concentrado": {
+      "nombre": "Curl concentrado com haltere",
+      "cues": {
+        "codo": "Apoia o cotovelo na parte interna da coxa e não o mexas.",
+        "arriba": "Sobe até ao ombro e aperta um segundo em cima.",
+        "bajada": "Desce até esticar o braço sem perder a tensão."
+      },
+      "errores": {
+        "hombro": "Subir o ombro para ajudar o curl.",
+        "tronco": "Levantar o tronco ao subir o haltere."
+      }
+    },
+    "curl-sentado-mancuerna": {
+      "nombre": "Curl de bíceps sentado com halteres",
+      "cues": {
+        "espalda": "Costas direitas e pés assentes no chão.",
+        "codos": "Cotovelos quietos junto ao corpo.",
+        "bajada": "Desce devagar, em uns dois segundos."
+      },
+      "errores": {
+        "inclinarse": "Inclinar-se para trás para subir o peso.",
+        "medioRecorrido": "Não esticar o braço em baixo."
+      }
+    },
+    "curl-inverso-barra-z": {
+      "nombre": "Curl invertido com barra W",
+      "cues": {
+        "agarre": "Palmas para baixo; usa menos peso do que no curl normal.",
+        "munecas": "Pulsos firmes e em linha com o antebraço.",
+        "codos": "Cotovelos quietos junto ao corpo."
+      },
+      "errores": {
+        "balanceo": "Balançar o corpo para subir a barra.",
+        "munecasCaidas": "Deixar os pulsos dobrarem para baixo."
+      }
+    },
+    "curl-arrastre-barra": {
+      "nombre": "Drag curl com barra",
+      "cues": {
+        "pegada": "A barra sobe a roçar o corpo, das coxas ao peito.",
+        "codos": "Leva os cotovelos para trás enquanto sobes.",
+        "bajada": "Desce pelo mesmo caminho, devagar."
+      },
+      "errores": {
+        "separar": "Afastar a barra do corpo como no curl normal.",
+        "hombros": "Encolher os ombros em direção às orelhas."
+      }
+    },
+    "press-frances-barra-z": {
+      "nombre": "Tríceps francês com barra W",
+      "cues": {
+        "brazos": "Braços quase na vertical, um pouco para a cabeça, e quietos.",
+        "codos": "Cotovelos fechados, apontados para o teto.",
+        "bajada": "Desce devagar até passar a testa, sem tocar na cabeça."
+      },
+      "errores": {
+        "codosAbiertos": "Abrir os cotovelos para fora.",
+        "brazosMovidos": "Mexer os braços: passa a ser um press."
+      }
+    },
+    "press-frances-mancuerna": {
+      "nombre": "Tríceps francês com halteres",
+      "cues": {
+        "brazos": "Braços quietos, um pouco inclinados para a cabeça.",
+        "codos": "Cotovelos fechados, apontados para o teto.",
+        "bajada": "Desce os halteres para os lados da cabeça, devagar."
+      },
+      "errores": {
+        "codosAbiertos": "Abrir os cotovelos para fora.",
+        "brazosMovidos": "Baixar os braços em vez de dobrar os cotovelos."
+      }
+    },
+    "press-frances-suelo-mancuerna": {
+      "nombre": "Tríceps francês no chão com halteres",
+      "cues": {
+        "apoyo": "Deitado de costas, joelhos dobrados e pés assentes.",
+        "brazos": "Braços quietos; só dobram os cotovelos.",
+        "bajada": "Desce devagar até aos lados da cabeça."
+      },
+      "errores": {
+        "brazosMovidos": "Mexer os braços para ajudar a subir.",
+        "golpe": "Deixar cair os halteres contra o chão."
+      }
+    },
+    "press-cerrado-barra": {
+      "nombre": "Supino com pega fechada",
+      "cues": {
+        "agarre": "Mãos um pouco mais juntas do que os ombros, sem se tocarem.",
+        "codos": "Cotovelos perto do corpo ao descer.",
+        "trayectoria": "A barra toca a parte baixa do peito e sobe sobre os ombros.",
+        "seguridad": "Com carga alta, usa batentes ou alguém que te ajude."
+      },
+      "errores": {
+        "codosAbiertos": "Abrir os cotovelos como no supino normal.",
+        "rebote": "Fazer a barra ressaltar no peito.",
+        "munecas": "Dobrar os pulsos para trás."
+      }
+    },
+    "press-cerrado-mancuerna": {
+      "nombre": "Supino fechado com halteres",
+      "cues": {
+        "juntas": "Halteres juntos e palmas viradas uma para a outra em todo o percurso.",
+        "codos": "Cotovelos junto ao corpo.",
+        "bajada": "Desce até à parte baixa do peito, devagar."
+      },
+      "errores": {
+        "separar": "Afastar os halteres ao subir.",
+        "rebote": "Ressaltar no peito."
+      }
+    },
+    "fondos-banco": {
+      "nombre": "Fundos no banco",
+      "cues": {
+        "manos": "Mãos na borda do banco ou de uma cadeira firme, dedos à frente.",
+        "espalda": "Desce com as costas perto do banco.",
+        "profundidad": "Para com o braço paralelo ao chão; se o ombro incomodar, menos."
+      },
+      "errores": {
+        "hombros": "Descer demasiado e forçar os ombros.",
+        "lejos": "Afastar a anca do banco."
+      }
+    },
+    "fondos-banco-pies-elevados": {
+      "nombre": "Fundos entre bancos com pés elevados",
+      "cues": {
+        "manos": "Mãos na borda de um banco e calcanhares sobre o outro.",
+        "espalda": "Desce com as costas perto do banco.",
+        "profundidad": "No máximo, braço paralelo ao chão; sem dor no ombro."
+      },
+      "errores": {
+        "hombros": "Descer demasiado e forçar os ombros.",
+        "rebote": "Ressaltar em baixo para subir."
+      }
+    },
+    "flexiones-diamante": {
+      "nombre": "Flexões diamante",
+      "cues": {
+        "manos": "Mãos juntas debaixo do peito, a formar um diamante.",
+        "cuerpo": "Corpo direito dos calcanhares à cabeça, abdómen firme.",
+        "codos": "Cotovelos junto ao corpo, vão para trás ao descer."
+      },
+      "errores": {
+        "cadera": "Deixar cair a anca ou subi-la em bico.",
+        "codosAbiertos": "Abrir os cotovelos para os lados.",
+        "medioRecorrido": "Descer só um pouco."
+      }
+    },
+    "flexiones-diamante-rodillas": {
+      "nombre": "Flexões diamante de joelhos",
+      "cues": {
+        "manos": "Mãos juntas debaixo do peito, a formar um diamante.",
+        "cuerpo": "Direito dos joelhos à cabeça.",
+        "codos": "Cotovelos junto ao corpo, vão para trás ao descer."
+      },
+      "errores": {
+        "cadera": "Dobrar a anca em vez de descer o peito.",
+        "codosAbiertos": "Abrir os cotovelos para os lados."
+      }
+    },
+    "extension-triceps-cabeza-mancuerna": {
+      "nombre": "Extensão de tríceps acima da cabeça com haltere",
+      "cues": {
+        "codos": "Cotovelos para o teto e quietos, perto da cabeça.",
+        "tronco": "Abdómen firme: as costas não arqueiam.",
+        "bajada": "Desce o haltere atrás da cabeça, devagar."
+      },
+      "errores": {
+        "codosAbiertos": "Abrir os cotovelos para os lados.",
+        "arquear": "Arquear a zona lombar para subir o peso."
+      }
+    },
+    "extension-triceps-cabeza-barra-z": {
+      "nombre": "Extensão de tríceps acima da cabeça com barra W",
+      "cues": {
+        "agarre": "Pega fechada nas curvas da barra.",
+        "codos": "Cotovelos para o teto e quietos.",
+        "tronco": "Abdómen firme e glúteos contraídos."
+      },
+      "errores": {
+        "codosAbiertos": "Abrir os cotovelos para os lados.",
+        "arquear": "Arquear a zona lombar."
+      }
+    },
+    "patada-triceps": {
+      "nombre": "Coice de tríceps com haltere",
+      "cues": {
+        "apoyo": "Joelho e mão no banco, costas direitas.",
+        "codo": "Cotovelo junto ao corpo, um pouco acima das costas.",
+        "arriba": "Estica o cotovelo por completo e aperta um segundo."
+      },
+      "errores": {
+        "balanceo": "Balançar o haltere com o ombro.",
+        "codoCae": "Deixar cair o cotovelo ao cansar."
+      }
+    },
+    "patada-triceps-de-pie": {
+      "nombre": "Coice de tríceps de pé",
+      "cues": {
+        "postura": "Joelhos soltos, anca para trás e costas direitas.",
+        "codo": "Cotovelos junto ao corpo e quietos.",
+        "arriba": "Estica os cotovelos por completo; servem dois garrafões."
+      },
+      "errores": {
+        "espalda": "Arredondar as costas ao inclinar.",
+        "balanceo": "Balançar os braços para subir o peso."
+      }
+    },
+    "curl-muneca-barra": {
+      "nombre": "Curl de pulso com barra",
+      "cues": {
+        "apoyo": "Antebraços sobre as coxas, palmas para cima, pulsos de fora.",
+        "recorrido": "Desce a barra até aos dedos e sobe fechando o pulso.",
+        "control": "Movimento lento; pouco peso e muitas repetições."
+      },
+      "errores": {
+        "antebrazo": "Levantar os antebraços das coxas.",
+        "rebote": "Deixar cair a barra de repente."
+      }
+    },
+    "extension-muneca-mancuerna": {
+      "nombre": "Extensão de pulso com halteres",
+      "cues": {
+        "apoyo": "Antebraços sobre as coxas, palmas para baixo, pulsos de fora.",
+        "peso": "Usa pouco peso: estes músculos são pequenos.",
+        "control": "Sobe e desce devagar, sem esticões."
+      },
+      "errores": {
+        "antebrazo": "Levantar o antebraço para ajudar.",
+        "dedos": "Abrir os dedos e deixar o haltere solto."
+      }
+    },
+    "curl-muneca-espalda-barra": {
+      "nombre": "Curl de pulso atrás das costas",
+      "cues": {
+        "agarre": "Barra atrás dos glúteos, palmas para trás.",
+        "brazos": "Braços esticados e quietos; só se mexem os pulsos.",
+        "control": "Sobe e desce devagar, sem balanço."
+      },
+      "errores": {
+        "codos": "Dobrar os cotovelos para subir a barra.",
+        "rebote": "Deixar cair a barra de repente."
+      }
+    },
+    "paseo-granjero": {
+      "nombre": "Passeio do agricultor",
+      "cues": {
+        "postura": "Tronco direito, ombros para trás e abdómen firme.",
+        "agarre": "Aperta bem os halteres; pousa-os se a pega falhar.",
+        "pasos": "Passos curtos e olhar em frente."
+      },
+      "errores": {
+        "inclinarse": "Inclinar-se para um lado ou para a frente.",
+        "hombros": "Deixar cair os ombros para a frente."
+      }
+    },
+    "curl-polea": {
+      "nombre": "Curl de bíceps na polia baixa",
+      "cues": {
+        "codos": "Cotovelos quietos junto ao corpo; só se mexe o antebraço.",
+        "cerca": "Fica a um passo da polia para o cabo puxar também em baixo.",
+        "bajada": "Desce devagar até esticar o braço quase por completo."
+      },
+      "errores": {
+        "balanceo": "Atirar o tronco para trás para subir o peso.",
+        "codosDelante": "Avançar os cotovelos no fim do curl."
+      }
+    },
+    "extension-triceps-polea": {
+      "nombre": "Extensão de tríceps na polia com corda",
+      "cues": {
+        "codos": "Cotovelos junto ao corpo e quietos em todo o percurso.",
+        "abajo": "Estica por completo em baixo e afasta um pouco as pontas da corda.",
+        "tronco": "Tronco um pouco inclinado e quieto; não empurres com o corpo."
+      },
+      "errores": {
+        "codosSeAbren": "Afastar os cotovelos do corpo ao descer.",
+        "hombros": "Subir os ombros e empurrar com as costas."
+      }
+    },
+    "curl-inclinado-mancuerna": {
+      "nombre": "Curl inclinado com halteres",
+      "cues": {
+        "espalda": "Costas e cabeça apoiadas no encosto o tempo todo.",
+        "codos": "Braços pendurados e quietos; só sobe o antebraço.",
+        "bajada": "Desce devagar até esticar o braço sem perder a tensão."
+      },
+      "errores": {
+        "hombros": "Avançar os ombros e os cotovelos ao subir.",
+        "corto": "Ficar a meio do percurso em baixo."
+      }
+    },
+    "curl-arana": {
+      "nombre": "Curl aranha com halteres",
+      "cues": {
+        "pecho": "Peito apoiado no encosto inclinado e pés firmes no chão.",
+        "brazos": "Braços pendurados na vertical e quietos; só sobe o antebraço.",
+        "arriba": "Aperta um segundo em cima e desce devagar até esticar."
+      },
+      "errores": {
+        "balanceo": "Descolar o peito do banco para subir o peso.",
+        "codosAtras": "Levar os cotovelos para trás ao subir."
+      }
+    }
+  }
+}

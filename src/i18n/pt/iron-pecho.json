@@ -1,0 +1,300 @@
+{
+  "ejercicios": {
+    "press-inclinado-barra": {
+      "nombre": "Supino inclinado com barra",
+      "cues": {
+        "seguridad": "Com carga alta, usa batentes ou alguém que te ajude.",
+        "angulo": "Encosto entre 30 e 45°: mais inclinado, trabalha sobretudo o ombro.",
+        "apoyos": "Glúteos no assento e omoplatas juntas contra o encosto.",
+        "trayectoria": "Desce à parte alta do peito com os antebraços na vertical."
+      },
+      "errores": {
+        "gluteos": "Descolar os glúteos do assento para empurrar mais.",
+        "codos": "Abrir os cotovelos a 90° do tronco.",
+        "cuello": "Descer a barra em direção ao pescoço."
+      }
+    },
+    "press-declinado-barra": {
+      "nombre": "Supino declinado com barra",
+      "cues": {
+        "seguridad": "Pede ajuda para tirar e pousar a barra: a cabeça fica em baixo.",
+        "pies": "Prende bem os pés debaixo do rolo antes de começar.",
+        "trayectoria": "Desce à parte baixa do peito e empurra em direção aos ombros."
+      },
+      "errores": {
+        "rebote": "Fazer a carga ressaltar no peito.",
+        "recorrido": "Encurtar o percurso sem chegar ao peito.",
+        "cabeza": "Levantar a cabeça do banco ao empurrar."
+      }
+    },
+    "press-suelo-barra": {
+      "nombre": "Supino no chão com barra",
+      "cues": {
+        "codos": "Desce até apoiar os cotovelos no chão e para um instante.",
+        "rodillas": "Joelhos dobrados e pés assentes no chão.",
+        "trayectoria": "Empurra na vertical até esticar os braços sobre os ombros."
+      },
+      "errores": {
+        "rebote": "Fazer os cotovelos ressaltar no chão.",
+        "codos": "Abrir os cotovelos a 90° do tronco.",
+        "lumbar": "Arquear as costas para empurrar."
+      }
+    },
+    "press-banca-mancuerna": {
+      "nombre": "Supino com halteres",
+      "cues": {
+        "escapulas": "Omoplatas juntas e pés assentes no chão.",
+        "bajada": "Desce até à altura do peito com os antebraços na vertical.",
+        "subida": "Sobe os halteres sobre os ombros sem os bater."
+      },
+      "errores": {
+        "codos": "Abrir os cotovelos a 90° do tronco.",
+        "rapido": "Deixar cair os halteres na descida.",
+        "asimetria": "Subir uma mão antes da outra."
+      }
+    },
+    "press-inclinado-mancuerna": {
+      "nombre": "Supino inclinado com halteres",
+      "cues": {
+        "angulo": "Encosto entre 30 e 45°: mais inclinado, trabalha sobretudo o ombro.",
+        "bajada": "Desce junto à parte alta do peito com os antebraços na vertical.",
+        "subida": "Empurra para cima sem bater os halteres."
+      },
+      "errores": {
+        "gluteos": "Descolar os glúteos do assento.",
+        "codos": "Abrir os cotovelos a 90° do tronco.",
+        "corto": "Ficar a meio do percurso em baixo."
+      }
+    },
+    "press-declinado-mancuerna": {
+      "nombre": "Supino declinado com halteres",
+      "cues": {
+        "pies": "Prende os pés debaixo do rolo antes de pegar nos halteres.",
+        "bajada": "Desce junto à parte baixa do peito, antebraços na vertical.",
+        "salida": "No fim, apoia os halteres nas coxas e senta-te devagar."
+      },
+      "errores": {
+        "rapido": "Deixar cair os halteres na descida.",
+        "codos": "Abrir os cotovelos a 90° do tronco.",
+        "cabeza": "Levantar a cabeça do banco."
+      }
+    },
+    "press-suelo-mancuerna": {
+      "nombre": "Supino no chão com halteres",
+      "cues": {
+        "codos": "Desce até os cotovelos tocarem no chão, sem ressaltar.",
+        "rodillas": "Joelhos dobrados e pés assentes no chão.",
+        "subida": "Empurra os dois halteres ao mesmo tempo sobre os ombros."
+      },
+      "errores": {
+        "rebote": "Fazer os cotovelos ressaltar no chão.",
+        "codos": "Abrir os cotovelos a 90° do tronco.",
+        "lumbar": "Arquear as costas para empurrar."
+      }
+    },
+    "press-squeeze-mancuerna": {
+      "nombre": "Squeeze press com halteres",
+      "cues": {
+        "apretar": "Junta os halteres e aperta-os um contra o outro em todo o percurso.",
+        "agarre": "Palmas viradas uma para a outra e cotovelos perto do corpo.",
+        "bajada": "Desce devagar até roçar o peito."
+      },
+      "errores": {
+        "separar": "Afastar os halteres ao subir.",
+        "rapido": "Descer sem controlo.",
+        "gluteos": "Descolar os glúteos do banco."
+      }
+    },
+    "aperturas-mancuerna": {
+      "nombre": "Aberturas com halteres",
+      "cues": {
+        "codos": "Cotovelos um pouco fletidos e fixos em todo o percurso.",
+        "bajada": "Abre os braços em arco até sentires o peito esticado, não mais.",
+        "subida": "Fecha em arco, como se abraçasses um barril."
+      },
+      "errores": {
+        "press": "Dobrar os cotovelos e transformá-lo num supino.",
+        "profundo": "Descer os braços abaixo da linha dos ombros.",
+        "peso": "Usar tanto peso que se perde o arco."
+      }
+    },
+    "aperturas-inclinado-mancuerna": {
+      "nombre": "Aberturas inclinadas com halteres",
+      "cues": {
+        "angulo": "Encosto a uns 30°, glúteos no assento.",
+        "codos": "Cotovelos um pouco fletidos e fixos em todo o percurso.",
+        "bajada": "Abre os braços em arco até sentires o peito esticado, não mais.",
+        "subida": "Fecha em arco, como se abraçasses um barril."
+      },
+      "errores": {
+        "press": "Dobrar os cotovelos e transformá-lo num supino.",
+        "profundo": "Descer os braços abaixo da linha dos ombros.",
+        "peso": "Usar tanto peso que se perde o arco."
+      }
+    },
+    "aperturas-declinado-mancuerna": {
+      "nombre": "Aberturas declinadas com halteres",
+      "cues": {
+        "pies": "Prende os pés debaixo do rolo antes de pegar nos halteres.",
+        "codos": "Cotovelos um pouco fletidos e fixos em todo o percurso.",
+        "bajada": "Abre os braços em arco até sentires o peito esticado, não mais.",
+        "subida": "Fecha em arco, como se abraçasses um barril."
+      },
+      "errores": {
+        "press": "Dobrar os cotovelos e transformá-lo num supino.",
+        "profundo": "Descer os braços abaixo da linha dos ombros.",
+        "peso": "Usar tanto peso que se perde o arco."
+      }
+    },
+    "aperturas-suelo-mancuerna": {
+      "nombre": "Aberturas no chão com halteres",
+      "cues": {
+        "suelo": "Desce até os cotovelos roçarem o chão, sem os deixar cair.",
+        "codos": "Cotovelos um pouco fletidos e fixos em todo o percurso.",
+        "rodillas": "Joelhos dobrados e pés assentes no chão."
+      },
+      "errores": {
+        "press": "Dobrar os cotovelos e transformá-lo num supino.",
+        "rebote": "Deixar cair os cotovelos contra o chão.",
+        "peso": "Usar tanto peso que se perde o arco."
+      }
+    },
+    "flexiones": {
+      "nombre": "Flexões",
+      "cues": {
+        "linea": "Corpo em linha da cabeça aos calcanhares: contrai abdómen e glúteos.",
+        "manos": "Mãos um pouco mais abertas do que os ombros, à altura do peito.",
+        "codos": "Cotovelos a uns 45° do tronco, não em cruz.",
+        "recorrido": "Desce até o peito ficar a um palmo do chão."
+      },
+      "errores": {
+        "cadera": "Deixar cair a anca.",
+        "cabeza": "Baixar a cabeça antes do peito.",
+        "codos": "Abrir os cotovelos em cruz."
+      }
+    },
+    "flexiones-rodillas": {
+      "nombre": "Flexões com joelhos apoiados",
+      "cues": {
+        "rodillas": "Apoia os joelhos em algo macio.",
+        "linea": "Linha reta dos joelhos à cabeça: a anca não dobra.",
+        "recorrido": "Desce o peito, não só a cabeça."
+      },
+      "errores": {
+        "cadera": "Dobrar a anca e deixá-la em cima.",
+        "corto": "Descer só uns centímetros."
+      }
+    },
+    "flexiones-inclinadas": {
+      "nombre": "Flexões inclinadas",
+      "cues": {
+        "apoyo": "Mãos num banco firme que não se mexa nem escorregue.",
+        "linea": "Corpo em linha da cabeça aos calcanhares: contrai abdómen e glúteos.",
+        "progresion": "Quanto mais baixo o apoio, mais difícil: baixa-o aos poucos."
+      },
+      "errores": {
+        "cadera": "Deixar cair a anca.",
+        "apoyo": "Apoiar-se em algo que se mexe ou vira."
+      }
+    },
+    "flexiones-declinadas": {
+      "nombre": "Flexões declinadas",
+      "cues": {
+        "apoyo": "Pontas dos pés num banco firme que não escorregue.",
+        "linea": "Corpo em linha da cabeça aos calcanhares: contrai abdómen e glúteos.",
+        "cabeza": "Desce o peito em direção ao chão, não a cabeça."
+      },
+      "errores": {
+        "cadera": "Deixar cair a anca.",
+        "cabeza": "Levar a cabeça ao chão antes do peito."
+      }
+    },
+    "flexiones-abiertas": {
+      "nombre": "Flexões com mãos afastadas",
+      "cues": {
+        "hombro": "Se sentires incómodo no ombro, aproxima um pouco as mãos.",
+        "manos": "Mãos um palmo mais afastadas do que na flexão normal.",
+        "linea": "Corpo em linha da cabeça aos calcanhares: contrai abdómen e glúteos."
+      },
+      "errores": {
+        "cruz": "Afastar tanto que os cotovelos ficam em cruz com o tronco.",
+        "cadera": "Deixar cair a anca."
+      }
+    },
+    "flexiones-pliometricas": {
+      "nombre": "Flexões pliométricas",
+      "cues": {
+        "base": "Faz só se dominares 15 flexões limpas seguidas.",
+        "caida": "Aterra com os cotovelos um pouco fletidos e desce com controlo.",
+        "empuje": "Empurra com força para descolar as mãos do chão."
+      },
+      "errores": {
+        "bloqueo": "Aterrar com os braços bloqueados.",
+        "cadera": "Quebrar a linha do corpo ao descolar.",
+        "fatiga": "Continuar quando já não descolas com técnica limpa."
+      }
+    },
+    "flexion-isometrica": {
+      "nombre": "Flexão isométrica",
+      "cues": {
+        "postura": "Desce a meio caminho e aguenta com os cotovelos a uns 90°.",
+        "linea": "Corpo em linha da cabeça aos calcanhares: contrai abdómen e glúteos.",
+        "respira": "Respira normalmente enquanto aguentas."
+      },
+      "errores": {
+        "apnea": "Suster a respiração.",
+        "cadera": "Deixar cair a anca."
+      }
+    },
+    "fondos-paralelas": {
+      "nombre": "Fundos nas paralelas",
+      "cues": {
+        "profundidad": "Desce até o braço ficar paralelo ao chão, não mais.",
+        "hombros": "Ombros para baixo e longe das orelhas.",
+        "inclinacion": "Inclina o tronco para a frente para carregar o peito."
+      },
+      "errores": {
+        "hundirse": "Afundar os ombros em direção às orelhas em baixo.",
+        "profundo": "Descer mais do que o ombro tolera.",
+        "balanceo": "Balançar as pernas para subir."
+      }
+    },
+    "fondos-negativos": {
+      "nombre": "Fundos negativos",
+      "cues": {
+        "profundidad": "Para quando o braço ficar paralelo ao chão.",
+        "subida": "Sobe com um salto ou um degrau até aos braços esticados.",
+        "bajada": "Desce em três ou quatro segundos, com controlo."
+      },
+      "errores": {
+        "caida": "Deixar-se cair na descida.",
+        "profundo": "Descer mais do que o ombro tolera."
+      }
+    },
+    "pec-deck": {
+      "nombre": "Pec deck",
+      "cues": {
+        "asiento": "Ajusta o assento: cotovelos à altura dos ombros.",
+        "cierre": "Junta as almofadas à frente do peito e aperta um segundo.",
+        "vuelta": "Abre devagar, sem deixar o peso levar-te os braços para trás."
+      },
+      "errores": {
+        "espalda": "Descolar as costas do encosto.",
+        "choque": "Deixar as placas baterem ao voltar.",
+        "hombros": "Subir os ombros em direção às orelhas."
+      }
+    },
+    "cruce-poleas": {
+      "nombre": "Crossover na polia",
+      "cues": {
+        "codos": "Cotovelos um pouco dobrados e fixos, como se abraçasses uma árvore.",
+        "arco": "Desce as mãos em arco até as juntares à frente da parte baixa do peito.",
+        "vuelta": "Volta devagar até sentires o peito esticado, sem passar os ombros."
+      },
+      "errores": {
+        "press": "Dobrar e esticar os cotovelos: passa a ser um supino.",
+        "tronco": "Mexer o tronco para ajudar o braço."
+      }
+    }
+  }
+}

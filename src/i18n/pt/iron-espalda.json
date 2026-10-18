@@ -1,0 +1,345 @@
+{
+  "ejercicios": {
+    "dominada": {
+      "nombre": "Elevação na barra",
+      "cues": {
+        "hombros": "Começa pendurado com os ombros ativos, longe das orelhas.",
+        "codos": "Leva os cotovelos para baixo e para trás até o queixo passar a barra.",
+        "bajada": "Desce com controlo até esticar os braços por completo."
+      },
+      "errores": {
+        "balanceo": "Balançar as pernas para subir.",
+        "medio": "Ficar a meio do percurso em baixo.",
+        "cuello": "Esticar o pescoço para chegar à barra."
+      }
+    },
+    "dominada-supina": {
+      "nombre": "Elevação com pega supinada",
+      "cues": {
+        "agarre": "Palmas viradas para ti, à largura dos ombros.",
+        "pecho": "Leva o peito em direção à barra e sobe até o queixo passar.",
+        "bajada": "Desce devagar até esticar os cotovelos."
+      },
+      "errores": {
+        "patada": "Dar pontapés para ganhar impulso.",
+        "medio": "Não esticar os braços em baixo."
+      }
+    },
+    "dominada-neutra": {
+      "nombre": "Elevação com pega neutra",
+      "cues": {
+        "agarre": "Palmas viradas uma para a outra nas pegas paralelas.",
+        "codos": "Cotovelos perto do corpo, em direção às costelas.",
+        "bajada": "Desce com controlo até ficares pendurado com os ombros ativos."
+      },
+      "errores": {
+        "hombros": "Deixar os ombros colados às orelhas em baixo.",
+        "balanceo": "Balançar o corpo para subir."
+      }
+    },
+    "dominada-negativa": {
+      "nombre": "Elevação negativa",
+      "cues": {
+        "arriba": "Sobe com um salto ou de uma caixa estável, queixo acima da barra.",
+        "lento": "Desce em 3 a 5 segundos, sem te deixares cair.",
+        "abajo": "Em baixo estica os braços, apoia os pés e recomeça."
+      },
+      "errores": {
+        "caer": "Deixar-se cair na segunda metade da descida.",
+        "hombros": "Soltar os ombros de repente no fim."
+      }
+    },
+    "dominada-escapular": {
+      "nombre": "Elevação escapular",
+      "cues": {
+        "brazos": "Braços esticados o tempo todo: não dobres os cotovelos.",
+        "hombros": "Baixa os ombros, longe das orelhas, e sobe um pouco o peito.",
+        "pausa": "Aguenta um segundo em cima e solta devagar."
+      },
+      "errores": {
+        "codos": "Dobrar os cotovelos e transformá-la numa elevação curta.",
+        "balanceo": "Balançar as pernas."
+      }
+    },
+    "remo-invertido": {
+      "nombre": "Remada invertida",
+      "cues": {
+        "tabla": "Corpo direito dos calcanhares à cabeça, glúteos contraídos.",
+        "pecho": "Leva o peito à barra com os cotovelos para trás.",
+        "mesa": "Em casa, usa uma mesa firme que não possa virar."
+      },
+      "errores": {
+        "cadera": "Deixar cair a anca.",
+        "cuello": "Avançar o queixo para chegar à barra."
+      }
+    },
+    "jalon-pecho": {
+      "nombre": "Puxada ao peito",
+      "cues": {
+        "rodillo": "Ajusta o rolo para as coxas ficarem fixas.",
+        "pecho": "Desce a barra à parte alta do peito, com o tronco um pouco para trás.",
+        "codos": "Puxa com os cotovelos para baixo, não com as mãos."
+      },
+      "errores": {
+        "balanceo": "Inclinar-se para trás para mover mais peso.",
+        "nuca": "Descer a barra por trás da nuca.",
+        "subida": "Soltar a barra de repente na subida."
+      }
+    },
+    "jalon-supino": {
+      "nombre": "Puxada com pega supinada",
+      "cues": {
+        "agarre": "Palmas viradas para ti, à largura dos ombros.",
+        "codos": "Cotovelos junto ao corpo até à parte baixa do peito.",
+        "subida": "Sobe com controlo até esticar os braços."
+      },
+      "errores": {
+        "balanceo": "Balançar o tronco em cada repetição.",
+        "munecas": "Dobrar os pulsos em vez de puxar com as costas."
+      }
+    },
+    "jalon-neutro": {
+      "nombre": "Puxada com triângulo",
+      "cues": {
+        "codos": "Cotovelos perto do corpo, em direção às costelas.",
+        "pecho": "Peito para cima: o triângulo chega à parte baixa do peito.",
+        "subida": "Deixa os braços subir sem perder a postura."
+      },
+      "errores": {
+        "balanceo": "Inclinar-se para trás para ajudar.",
+        "encoger": "Encolher os ombros ao puxar."
+      }
+    },
+    "pullover-polea": {
+      "nombre": "Pullover na polia alta",
+      "cues": {
+        "brazos": "Braços quase direitos: o cotovelo não dobra durante o percurso.",
+        "arco": "Desce a barra em arco até às coxas.",
+        "tronco": "Tronco inclinado e quieto, abdómen firme."
+      },
+      "errores": {
+        "codos": "Dobrar os cotovelos e transformá-lo num press.",
+        "tronco": "Mexer o tronco para descer a barra."
+      }
+    },
+    "remo-barra": {
+      "nombre": "Remada com barra",
+      "cues": {
+        "bisagra": "Anca para trás, joelhos soltos e costas neutras.",
+        "codos": "Leva a barra ao abdómen puxando com os cotovelos.",
+        "espalda": "O tronco não se mexe: se se levantar, baixa o peso."
+      },
+      "errores": {
+        "tronco": "Levantar o tronco para subir a barra.",
+        "lumbar": "Arredondar a zona lombar.",
+        "recorrido": "Fazer meio percurso em cima."
+      }
+    },
+    "remo-barra-supino": {
+      "nombre": "Remada com barra em pega supinada",
+      "cues": {
+        "tronco": "Tronco um pouco mais direito do que na remada em pronação.",
+        "codos": "Cotovelos junto ao corpo até à parte baixa do abdómen.",
+        "bajada": "Desce com controlo até esticar os braços."
+      },
+      "errores": {
+        "balanceo": "Balançar o tronco para subir a barra.",
+        "munecas": "Dobrar os pulsos ao puxar."
+      }
+    },
+    "remo-mancuernas": {
+      "nombre": "Remada com halteres",
+      "cues": {
+        "bisagra": "Anca para trás e costas neutras, joelhos soltos.",
+        "codos": "Palmas viradas uma para a outra e cotovelos em direção à anca.",
+        "cuello": "Pescoço em linha com as costas, olhar no chão à frente."
+      },
+      "errores": {
+        "tronco": "Subir o tronco em cada repetição.",
+        "encoger": "Encolher os ombros em vez de puxar com os cotovelos."
+      }
+    },
+    "remo-polea-sentado": {
+      "nombre": "Remada sentada na polia",
+      "cues": {
+        "pecho": "Peito para cima e costas neutras em todo o percurso.",
+        "codos": "Leva o triângulo ao abdómen com os cotovelos junto ao corpo.",
+        "vuelta": "Estica os braços na volta sem arredondar as costas."
+      },
+      "errores": {
+        "balanceo": "Balançar o tronco para a frente e para trás.",
+        "lumbar": "Arredondar a zona lombar ao esticar."
+      }
+    },
+    "remo-maquina": {
+      "nombre": "Remada na máquina",
+      "cues": {
+        "pecho": "Peito apoiado no encosto em todo o percurso.",
+        "codos": "Puxa com os cotovelos para trás e junta as omoplatas.",
+        "vuelta": "Volta devagar até esticar os braços."
+      },
+      "errores": {
+        "despegar": "Descolar o peito do apoio para puxar mais.",
+        "encoger": "Encolher os ombros em direção às orelhas."
+      }
+    },
+    "face-pull": {
+      "nombre": "Face pull",
+      "cues": {
+        "codos": "Cotovelos altos e abertos, à altura dos ombros.",
+        "cara": "Puxa a corda em direção à cara, afastando as mãos.",
+        "tronco": "Tronco quieto: o movimento é dos braços."
+      },
+      "errores": {
+        "peso": "Carregar tanto que o tronco vai para trás.",
+        "codos": "Baixar os cotovelos e transformá-lo numa remada."
+      }
+    },
+    "peso-muerto": {
+      "nombre": "Peso morto",
+      "cues": {
+        "barra": "A barra sobre o meio do pé e encostada às pernas.",
+        "espalda": "Costas neutras e peito para cima antes de puxar.",
+        "empuja": "Empurra o chão com as pernas e estende a anca.",
+        "arriba": "Em cima termina de pé, sem te inclinares para trás."
+      },
+      "errores": {
+        "lumbar": "Arredondar a zona lombar.",
+        "lejos": "Afastar a barra das pernas.",
+        "cadera": "Subir a anca antes da barra."
+      }
+    },
+    "peso-muerto-sumo": {
+      "nombre": "Peso morto sumo",
+      "cues": {
+        "pies": "Pés bem afastados, pontas para fora e mãos por dentro.",
+        "rodillas": "Abre os joelhos na linha das pontas dos pés.",
+        "pecho": "Peito para cima e barra encostada ao corpo."
+      },
+      "errores": {
+        "rodillas": "Deixar os joelhos fecharem ao subir.",
+        "lumbar": "Arredondar a zona lombar."
+      }
+    },
+    "peso-muerto-mancuernas": {
+      "nombre": "Peso morto com halteres",
+      "cues": {
+        "cadera": "Leva a anca para trás com os halteres encostados às pernas.",
+        "espalda": "Costas neutras; desce até meio da canela.",
+        "arriba": "Sobe a empurrar o chão e contrai os glúteos."
+      },
+      "errores": {
+        "lumbar": "Arredondar as costas em baixo.",
+        "lejos": "Afastar os halteres do corpo."
+      }
+    },
+    "hiperextension": {
+      "nombre": "Hiperextensões",
+      "cues": {
+        "almohadilla": "A almofada abaixo da anca, para dobrares pela anca.",
+        "linea": "Sobe até ficares em linha com as pernas, não mais.",
+        "control": "Desce e sobe devagar, sem impulso."
+      },
+      "errores": {
+        "pasarse": "Arquear as costas para lá da linha.",
+        "impulso": "Subir de repente com impulso."
+      }
+    },
+    "superman": {
+      "nombre": "Superman",
+      "cues": {
+        "mirada": "Olha para o chão para manter o pescoço comprido.",
+        "poco": "Sobe peito, braços e pernas só uns centímetros.",
+        "pausa": "Aguenta dois segundos em cima e desce devagar."
+      },
+      "errores": {
+        "cuello": "Levantar a cabeça para olhar em frente.",
+        "impulso": "Subir e descer de repente."
+      }
+    },
+    "pullover-mancuerna": {
+      "nombre": "Pullover com haltere",
+      "cues": {
+        "agarre": "Segura o haltere com as duas mãos pelo disco de cima.",
+        "codos": "Cotovelos um pouco dobrados e sempre iguais.",
+        "rango": "Desce atrás da cabeça só até onde o ombro não doer."
+      },
+      "errores": {
+        "lumbar": "Arquear a zona lombar ao descer.",
+        "codos": "Dobrar e esticar os cotovelos."
+      }
+    },
+    "remo-polea-una-mano": {
+      "nombre": "Remada unilateral na polia",
+      "cues": {
+        "postura": "Um pé à frente, tronco um pouco inclinado e a outra mão na anca.",
+        "codo": "Leva o cotovelo para trás junto ao corpo, até à cintura.",
+        "giro": "O tronco não roda para acompanhar o puxão."
+      },
+      "errores": {
+        "giro": "Rodar o tronco para mover mais peso.",
+        "encoger": "Subir o ombro em direção à orelha ao puxar."
+      }
+    },
+    "remo-polea-abierto": {
+      "nombre": "Remada na polia com pega aberta",
+      "cues": {
+        "agarre": "Barra comprida com pega em pronação, mais larga do que os ombros.",
+        "codos": "Cotovelos abertos para fora: a barra chega à parte baixa do peito.",
+        "escapulas": "Junta as omoplatas no fim e volta devagar."
+      },
+      "errores": {
+        "balanceo": "Balançar o tronco para puxar.",
+        "encoger": "Encolher os ombros no fim."
+      }
+    },
+    "encogimientos-barra": {
+      "nombre": "Encolhimentos com barra",
+      "cues": {
+        "vertical": "Sobe os ombros na vertical em direção às orelhas.",
+        "pausa": "Aguenta um segundo em cima e desce devagar.",
+        "agarre": "Pega um pouco mais larga do que as coxas, braços esticados."
+      },
+      "errores": {
+        "circulos": "Rodar os ombros em círculo.",
+        "rebote": "Fazer o peso ressaltar em baixo sem controlo."
+      }
+    },
+    "encogimientos-mancuerna": {
+      "nombre": "Encolhimentos com halteres",
+      "cues": {
+        "vertical": "Sobe os ombros na vertical em direção às orelhas.",
+        "pausa": "Aguenta um segundo em cima e desce devagar.",
+        "brazos": "Braços esticados: os cotovelos não dobram."
+      },
+      "errores": {
+        "circulos": "Rodar os ombros em círculo.",
+        "cabeza": "Avançar a cabeça ao subir."
+      }
+    },
+    "remo-apoyo-pecho": {
+      "nombre": "Remada com halteres com apoio no peito",
+      "cues": {
+        "pecho": "Peito encostado ao encosto em todo o percurso.",
+        "codos": "Leva os cotovelos para trás, junto ao corpo, em direção à anca.",
+        "bajada": "Desce até esticar os braços, sem soltar os ombros de repente."
+      },
+      "errores": {
+        "despegar": "Descolar o peito do banco para puxar mais.",
+        "encoger": "Encolher os ombros em direção às orelhas."
+      }
+    },
+    "dominada-asistida-banda": {
+      "nombre": "Elevação assistida com banda",
+      "cues": {
+        "banda": "Prende a banda à barra e passa um joelho pela laçada.",
+        "pecho": "Sobe com o peito em direção à barra até o queixo passar.",
+        "bajada": "Desce com controlo até esticar os braços."
+      },
+      "errores": {
+        "rebote": "Ressaltar em baixo com a banda para subir.",
+        "medio": "Ficar a meio do percurso em cima ou em baixo."
+      }
+    }
+  }
+}

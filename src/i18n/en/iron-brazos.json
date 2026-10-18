@@ -1,0 +1,344 @@
+{
+  "ejercicios": {
+    "curl-barra": {
+      "nombre": "Barbell curl",
+      "cues": {
+        "agarre": "Shoulder-width grip, palms facing forward.",
+        "codos": "Elbows still at your sides; only your forearms move.",
+        "bajada": "Lower slowly until your arms are almost straight."
+      },
+      "errores": {
+        "balanceo": "Leaning back to lift the bar.",
+        "codosDelante": "Pushing your elbows forward at the top.",
+        "munecas": "Bending your wrists back under the weight."
+      }
+    },
+    "curl-barra-z": {
+      "nombre": "EZ-bar curl",
+      "cues": {
+        "agarre": "Grip the bar on the bends: it's easier on your wrists.",
+        "codos": "Elbows tight to your body and still.",
+        "bajada": "Lower under control, don't let the bar drop."
+      },
+      "errores": {
+        "balanceo": "Using your hips or torso for momentum.",
+        "medioRecorrido": "Doing half reps: not all the way down or up."
+      }
+    },
+    "curl-martillo": {
+      "nombre": "Dumbbell hammer curl",
+      "cues": {
+        "agarre": "Palms facing each other the whole way, like holding a hammer.",
+        "codos": "Elbows at your sides; curl up to shoulder height.",
+        "bajada": "Lower slowly, without swinging the dumbbells."
+      },
+      "errores": {
+        "balanceo": "Using body momentum to lift.",
+        "giro": "Turning your palms up: it's no longer a hammer curl."
+      }
+    },
+    "curl-concentrado": {
+      "nombre": "Dumbbell concentration curl",
+      "cues": {
+        "codo": "Rest your elbow on your inner thigh and keep it still.",
+        "arriba": "Curl to your shoulder and squeeze for a second at the top.",
+        "bajada": "Lower until your arm is straight, keeping tension."
+      },
+      "errores": {
+        "hombro": "Shrugging your shoulder to help the curl.",
+        "tronco": "Lifting your torso as you curl."
+      }
+    },
+    "curl-sentado-mancuerna": {
+      "nombre": "Seated dumbbell curl",
+      "cues": {
+        "espalda": "Back straight and feet flat on the floor.",
+        "codos": "Elbows still at your sides.",
+        "bajada": "Lower slowly, over about two seconds."
+      },
+      "errores": {
+        "inclinarse": "Leaning back to lift the weight.",
+        "medioRecorrido": "Not straightening your arms at the bottom."
+      }
+    },
+    "curl-inverso-barra-z": {
+      "nombre": "EZ-bar reverse curl",
+      "cues": {
+        "agarre": "Palms down; use less weight than a regular curl.",
+        "munecas": "Wrists firm and in line with your forearms.",
+        "codos": "Elbows still at your sides."
+      },
+      "errores": {
+        "balanceo": "Swinging your body to lift the bar.",
+        "munecasCaidas": "Letting your wrists bend down."
+      }
+    },
+    "curl-arrastre-barra": {
+      "nombre": "Barbell drag curl",
+      "cues": {
+        "pegada": "Drag the bar up your body, from thighs to chest.",
+        "codos": "Drive your elbows back as you lift.",
+        "bajada": "Lower along the same path, slowly."
+      },
+      "errores": {
+        "separar": "Letting the bar drift away like a regular curl.",
+        "hombros": "Shrugging your shoulders toward your ears."
+      }
+    },
+    "press-frances-barra-z": {
+      "nombre": "EZ-bar skull crusher",
+      "cues": {
+        "brazos": "Arms nearly vertical, angled slightly back, and still.",
+        "codos": "Elbows tucked, pointing at the ceiling.",
+        "bajada": "Lower slowly past your forehead, without touching your head."
+      },
+      "errores": {
+        "codosAbiertos": "Flaring your elbows out.",
+        "brazosMovidos": "Moving your upper arms: it turns into a press."
+      }
+    },
+    "press-frances-mancuerna": {
+      "nombre": "Dumbbell skull crusher",
+      "cues": {
+        "brazos": "Upper arms still, angled slightly toward your head.",
+        "codos": "Elbows tucked, pointing at the ceiling.",
+        "bajada": "Lower the dumbbells beside your head, slowly."
+      },
+      "errores": {
+        "codosAbiertos": "Flaring your elbows out.",
+        "brazosMovidos": "Dropping your upper arms instead of bending your elbows."
+      }
+    },
+    "press-frances-suelo-mancuerna": {
+      "nombre": "Dumbbell floor skull crusher",
+      "cues": {
+        "apoyo": "Lie on your back, knees bent and feet flat.",
+        "brazos": "Upper arms still; only your elbows bend.",
+        "bajada": "Lower slowly to the sides of your head."
+      },
+      "errores": {
+        "brazosMovidos": "Moving your upper arms to help the lift.",
+        "golpe": "Dropping the dumbbells onto the floor."
+      }
+    },
+    "press-cerrado-barra": {
+      "nombre": "Close-grip bench press",
+      "cues": {
+        "agarre": "Hands slightly narrower than shoulder width, not touching.",
+        "codos": "Elbows close to your body on the way down.",
+        "trayectoria": "Touch your lower chest and press up over your shoulders.",
+        "seguridad": "With heavy loads, use safety pins or a spotter."
+      },
+      "errores": {
+        "codosAbiertos": "Flaring your elbows like a regular bench press.",
+        "rebote": "Bouncing the bar off your chest.",
+        "munecas": "Bending your wrists back."
+      }
+    },
+    "press-cerrado-mancuerna": {
+      "nombre": "Dumbbell close-grip press",
+      "cues": {
+        "juntas": "Dumbbells together, palms facing each other the whole way.",
+        "codos": "Elbows tight to your body.",
+        "bajada": "Lower to your lower chest, slowly."
+      },
+      "errores": {
+        "separar": "Letting the dumbbells drift apart on the way up.",
+        "rebote": "Bouncing off your chest."
+      }
+    },
+    "fondos-banco": {
+      "nombre": "Bench dips",
+      "cues": {
+        "manos": "Hands on the edge of a bench or sturdy chair, fingers forward.",
+        "espalda": "Lower with your back close to the bench.",
+        "profundidad": "Stop with upper arms parallel to the floor, or higher if your shoulder hurts."
+      },
+      "errores": {
+        "hombros": "Going too deep and straining your shoulders.",
+        "lejos": "Letting your hips drift away from the bench."
+      }
+    },
+    "fondos-banco-pies-elevados": {
+      "nombre": "Feet-elevated bench dips",
+      "cues": {
+        "manos": "Hands on the edge of one bench, heels on the other.",
+        "espalda": "Lower with your back close to the bench.",
+        "profundidad": "Upper arms parallel to the floor at most; no shoulder pain."
+      },
+      "errores": {
+        "hombros": "Going too deep and straining your shoulders.",
+        "rebote": "Bouncing at the bottom to come up."
+      }
+    },
+    "flexiones-diamante": {
+      "nombre": "Diamond push-ups",
+      "cues": {
+        "manos": "Hands together under your chest, forming a diamond.",
+        "cuerpo": "Body straight from heels to head, abs braced.",
+        "codos": "Elbows tucked, going back as you lower."
+      },
+      "errores": {
+        "cadera": "Letting your hips sag or pike up.",
+        "codosAbiertos": "Flaring your elbows out to the sides.",
+        "medioRecorrido": "Only going down a little."
+      }
+    },
+    "flexiones-diamante-rodillas": {
+      "nombre": "Kneeling diamond push-ups",
+      "cues": {
+        "manos": "Hands together under your chest, forming a diamond.",
+        "cuerpo": "Straight line from knees to head.",
+        "codos": "Elbows tucked, going back as you lower."
+      },
+      "errores": {
+        "cadera": "Bending at the hips instead of lowering your chest.",
+        "codosAbiertos": "Flaring your elbows out to the sides."
+      }
+    },
+    "extension-triceps-cabeza-mancuerna": {
+      "nombre": "Dumbbell overhead triceps extension",
+      "cues": {
+        "codos": "Elbows pointing up and still, close to your head.",
+        "tronco": "Abs braced: don't arch your back.",
+        "bajada": "Lower the dumbbell behind your head, slowly."
+      },
+      "errores": {
+        "codosAbiertos": "Flaring your elbows out to the sides.",
+        "arquear": "Arching your lower back to lift the weight."
+      }
+    },
+    "extension-triceps-cabeza-barra-z": {
+      "nombre": "EZ-bar overhead triceps extension",
+      "cues": {
+        "agarre": "Close grip on the bends of the bar.",
+        "codos": "Elbows pointing up and still.",
+        "tronco": "Abs braced and glutes squeezed."
+      },
+      "errores": {
+        "codosAbiertos": "Flaring your elbows out to the sides.",
+        "arquear": "Arching your lower back."
+      }
+    },
+    "patada-triceps": {
+      "nombre": "Dumbbell triceps kickback",
+      "cues": {
+        "apoyo": "Knee and hand on the bench, back flat.",
+        "codo": "Elbow tight to your side, slightly above your back.",
+        "arriba": "Fully straighten your elbow and squeeze for a second."
+      },
+      "errores": {
+        "balanceo": "Swinging the dumbbell with your shoulder.",
+        "codoCae": "Letting your elbow drop as you tire."
+      }
+    },
+    "patada-triceps-de-pie": {
+      "nombre": "Standing triceps kickback",
+      "cues": {
+        "postura": "Soft knees, hips back and back flat.",
+        "codo": "Elbows tight to your sides and still.",
+        "arriba": "Fully straighten your elbows; two water jugs work too."
+      },
+      "errores": {
+        "espalda": "Rounding your back as you lean forward.",
+        "balanceo": "Swinging your arms to lift the weight."
+      }
+    },
+    "curl-muneca-barra": {
+      "nombre": "Barbell wrist curl",
+      "cues": {
+        "apoyo": "Forearms on your thighs, palms up, wrists past your knees.",
+        "recorrido": "Let the bar roll to your fingers, then curl your wrists up.",
+        "control": "Move slowly; light weight and high reps."
+      },
+      "errores": {
+        "antebrazo": "Lifting your forearms off your thighs.",
+        "rebote": "Letting the bar drop suddenly."
+      }
+    },
+    "extension-muneca-mancuerna": {
+      "nombre": "Dumbbell wrist extension",
+      "cues": {
+        "apoyo": "Forearms on your thighs, palms down, wrists past your knees.",
+        "peso": "Go light: these are small muscles.",
+        "control": "Lift and lower slowly, no jerking."
+      },
+      "errores": {
+        "antebrazo": "Lifting your forearm to help.",
+        "dedos": "Loosening your fingers and letting the dumbbell hang loose."
+      }
+    },
+    "curl-muneca-espalda-barra": {
+      "nombre": "Behind-the-back wrist curl",
+      "cues": {
+        "agarre": "Bar behind your glutes, palms facing back.",
+        "brazos": "Arms straight and still; only your wrists move.",
+        "control": "Lift and lower slowly, without swinging."
+      },
+      "errores": {
+        "codos": "Bending your elbows to lift the bar.",
+        "rebote": "Letting the bar drop suddenly."
+      }
+    },
+    "paseo-granjero": {
+      "nombre": "Farmer's walk",
+      "cues": {
+        "postura": "Torso upright, shoulders back and abs braced.",
+        "agarre": "Grip the dumbbells hard; set them down if your grip fails.",
+        "pasos": "Short steps, eyes forward."
+      },
+      "errores": {
+        "inclinarse": "Leaning to one side or forward.",
+        "hombros": "Letting your shoulders roll forward."
+      }
+    },
+    "curl-polea": {
+      "nombre": "Low cable curl",
+      "cues": {
+        "codos": "Elbows still at your sides; only your forearms move.",
+        "cerca": "Stand a step from the pulley so the cable pulls at the bottom too.",
+        "bajada": "Lower slowly until your arms are almost straight."
+      },
+      "errores": {
+        "balanceo": "Leaning back to lift the weight.",
+        "codosDelante": "Pushing your elbows forward at the top."
+      }
+    },
+    "extension-triceps-polea": {
+      "nombre": "Rope triceps pushdown",
+      "cues": {
+        "codos": "Elbows tight to your sides and still the whole way.",
+        "abajo": "Fully extend at the bottom and spread the rope ends slightly.",
+        "tronco": "Torso slightly forward and still; don't push with your body."
+      },
+      "errores": {
+        "codosSeAbren": "Letting your elbows drift away from your body.",
+        "hombros": "Raising your shoulders and pushing with your back."
+      }
+    },
+    "curl-inclinado-mancuerna": {
+      "nombre": "Incline dumbbell curl",
+      "cues": {
+        "espalda": "Back and head against the backrest the whole time.",
+        "codos": "Arms hanging and still; only your forearms move.",
+        "bajada": "Lower slowly until your arms are straight, keeping tension."
+      },
+      "errores": {
+        "hombros": "Bringing your shoulders and elbows forward as you curl.",
+        "corto": "Stopping halfway at the bottom."
+      }
+    },
+    "curl-arana": {
+      "nombre": "Dumbbell spider curl",
+      "cues": {
+        "pecho": "Chest on the incline backrest, feet planted on the floor.",
+        "brazos": "Arms hanging straight down and still; only your forearms move.",
+        "arriba": "Squeeze at the top for a second, then lower slowly to full stretch."
+      },
+      "errores": {
+        "balanceo": "Lifting your chest off the bench to raise the weight.",
+        "codosAtras": "Pulling your elbows back as you curl."
+      }
+    }
+  }
+}

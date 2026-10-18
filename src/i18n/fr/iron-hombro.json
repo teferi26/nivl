@@ -1,0 +1,286 @@
+{
+  "ejercicios": {
+    "elevacion-frontal-banda": {
+      "nombre": "Élévation frontale avec élastique",
+      "cues": {
+        "pisada": "Marche sur l'élastique avec les deux pieds et tiens-le fermement.",
+        "altura": "Monte devant toi jusqu'à hauteur d'épaules.",
+        "bajada": "Redescends lentement, sans te laisser tirer par l'élastique."
+      },
+      "errores": {
+        "balanceo": "Balancer le buste pour étirer l'élastique.",
+        "soltar": "Relâcher l'élastique d'un coup à la descente."
+      }
+    },
+    "elevacion-frontal-barra": {
+      "nombre": "Élévation frontale à la barre",
+      "cues": {
+        "altura": "Monte la barre devant toi jusqu'à hauteur d'épaules.",
+        "tronco": "Buste immobile : ne bascule pas en arrière.",
+        "ligera": "Prends une barre légère : le bras tendu démultiplie l'effort."
+      },
+      "errores": {
+        "balanceo": "Balancer le buste pour monter la barre.",
+        "codos": "Plier les coudes pour raccourcir le levier."
+      }
+    },
+    "elevacion-lateral-banda": {
+      "nombre": "Élévation latérale avec élastique",
+      "cues": {
+        "codo": "Coudes presque tendus ; monte le coude, pas la main.",
+        "altura": "Monte jusqu'à hauteur d'épaules, pas plus.",
+        "banda": "Marche sur l'élastique avec les deux pieds et choisis une tension que tu contrôles."
+      },
+      "errores": {
+        "soltar": "Laisser l'élastique tirer les bras à la descente.",
+        "trapecio": "Hausser les épaules vers les oreilles en montant."
+      }
+    },
+    "elevaciones-frontales": {
+      "nombre": "Élévations frontales aux haltères",
+      "cues": {
+        "altura": "Monte devant toi jusqu'à hauteur d'épaules.",
+        "tronco": "Buste immobile : ne bascule pas en arrière.",
+        "bajada": "Redescends lentement, en deux secondes environ."
+      },
+      "errores": {
+        "balanceo": "Balancer le buste pour monter la charge.",
+        "alto": "Monter les mains au-dessus de la tête."
+      }
+    },
+    "elevaciones-laterales": {
+      "nombre": "Élévations latérales aux haltères",
+      "cues": {
+        "codo": "Coudes presque tendus ; monte le coude, pas la main.",
+        "altura": "Monte jusqu'à hauteur d'épaules, pas plus.",
+        "peso": "Charge légère et contrôlée : si tu te balances, baisse la charge."
+      },
+      "errores": {
+        "balanceo": "Balancer le buste pour monter les haltères.",
+        "trapecio": "Hausser les épaules vers les oreilles en montant."
+      }
+    },
+    "elevaciones-laterales-sentado": {
+      "nombre": "Élévations latérales assis",
+      "cues": {
+        "codo": "Coudes presque tendus ; monte le coude, pas la main.",
+        "altura": "Monte jusqu'à hauteur d'épaules, pas plus.",
+        "peso": "Charge légère : assis, aucun élan ne t'aide."
+      },
+      "errores": {
+        "alto": "Monter les mains au-dessus des épaules.",
+        "trapecio": "Hausser les épaules vers les oreilles en montant."
+      }
+    },
+    "face-pull-banda": {
+      "nombre": "Face pull avec élastique",
+      "cues": {
+        "codos": "Tire vers le visage, coudes hauts et ouverts.",
+        "giro": "À la fin, mains près des oreilles et paumes vers l'avant.",
+        "pausa": "Tiens une seconde en arrière et reviens lentement."
+      },
+      "errores": {
+        "codosBajos": "Tirer coudes bas, comme pour un rowing.",
+        "tronco": "Basculer le buste en arrière pour tirer."
+      }
+    },
+    "flexion-pica": {
+      "nombre": "Pompe pike",
+      "cues": {
+        "cadera": "Hanches hautes : le corps forme un V inversé.",
+        "cabeza": "Descends la tête vers le sol, devant les mains.",
+        "codos": "Coudes vers l'arrière, pas ouverts sur les côtés."
+      },
+      "errores": {
+        "cadera": "Baisser les hanches et en faire une pompe classique.",
+        "golpe": "Laisser tomber la tête au sol."
+      }
+    },
+    "flexion-pica-pies-elevados": {
+      "nombre": "Pompe pike pieds surélevés",
+      "cues": {
+        "banco": "Pieds bien posés sur un banc stable et hanches hautes.",
+        "cabeza": "Descends la tête vers le sol, devant les mains.",
+        "progresion": "Maîtrise d'abord la pompe pike au sol."
+      },
+      "errores": {
+        "cadera": "Laisser tomber les hanches pendant la descente.",
+        "golpe": "Laisser tomber la tête au sol."
+      }
+    },
+    "pajaro-mancuerna": {
+      "nombre": "Oiseau aux haltères",
+      "cues": {
+        "bisagra": "Penche le buste depuis les hanches, dos droit et genoux déverrouillés.",
+        "abanico": "Écarte les bras en éventail jusqu'à hauteur du dos.",
+        "ligera": "Charge légère : le deltoïde postérieur est un petit muscle."
+      },
+      "errores": {
+        "tronco": "Redresser le buste pour t'aider à monter.",
+        "trapecio": "Hausser les épaules au lieu d'écarter les bras."
+      }
+    },
+    "press-arnold": {
+      "nombre": "Développé Arnold",
+      "cues": {
+        "inicio": "Commence haltères devant le visage, paumes vers toi.",
+        "giro": "Ouvre les coudes et tourne les paumes vers l'avant en montant.",
+        "abdomen": "Abdos gainés : ce sont les bras qui tournent, pas le buste."
+      },
+      "errores": {
+        "arco": "Cambrer le dos en fin de poussée.",
+        "rapido": "Tourner d'un coup, sans contrôle."
+      }
+    },
+    "press-banda": {
+      "nombre": "Développé épaules avec élastique",
+      "cues": {
+        "pisada": "Marche bien sur l'élastique avec les deux pieds avant de commencer.",
+        "antebrazos": "Avant-bras verticaux sous les mains sur toute l'amplitude.",
+        "abdomen": "Abdos gainés : sans cambrer le dos."
+      },
+      "errores": {
+        "arco": "Cambrer le dos pour étirer l'élastique.",
+        "soltar": "Relâcher l'élastique d'un coup à la descente."
+      }
+    },
+    "press-mancuerna-sentado": {
+      "nombre": "Développé épaules assis aux haltères",
+      "cues": {
+        "antebrazos": "Avant-bras verticaux sous les haltères sur toute l'amplitude.",
+        "abdomen": "Assieds-toi droit, abdos gainés, sans basculer en arrière.",
+        "arriba": "En haut, bras presque tendus et haltères au-dessus des épaules."
+      },
+      "errores": {
+        "arco": "Basculer le buste en arrière et cambrer le dos.",
+        "corto": "Descendre seulement à mi-hauteur."
+      }
+    },
+    "press-militar-barra": {
+      "nombre": "Développé militaire à la barre",
+      "cues": {
+        "abdomen": "Serre abdos et fessiers : le buste ne se cambre pas.",
+        "trayectoria": "La barre monte droit de la clavicule jusqu'au-dessus du milieu du pied.",
+        "cabeza": "Recule la tête au passage de la barre et avance-la dessous au verrouillage.",
+        "bloqueo": "En haut, bras tendus et barre au-dessus des épaules."
+      },
+      "errores": {
+        "arco": "Cambrer le bas du dos pour pousser.",
+        "codos": "Laisser les coudes derrière la barre au départ.",
+        "lejos": "Finir avec la barre devant la tête."
+      }
+    },
+    "press-militar-mancuerna": {
+      "nombre": "Développé militaire aux haltères",
+      "cues": {
+        "antebrazos": "Avant-bras verticaux sous les haltères sur toute l'amplitude.",
+        "abdomen": "Abdos gainés et côtes basses : sans cambrer le dos.",
+        "arriba": "En haut, bras presque tendus et haltères au-dessus des épaules."
+      },
+      "errores": {
+        "arco": "Cambrer le dos pour monter plus lourd.",
+        "corto": "Descendre seulement à mi-hauteur."
+      }
+    },
+    "push-press": {
+      "nombre": "Push press à la barre",
+      "cues": {
+        "impulso": "Fléchis un peu les genoux et pousse fort avec les jambes.",
+        "tronco": "Buste vertical pendant l'impulsion ; les talons ne décollent pas.",
+        "bloqueo": "Finis bras tendus, barre au-dessus du milieu du pied."
+      },
+      "errores": {
+        "sentadilla": "Descendre trop bas pendant l'impulsion, comme en squat.",
+        "talones": "Décoller les talons avant de pousser.",
+        "adelante": "Pencher le buste et envoyer la barre vers l'avant."
+      }
+    },
+    "remo-menton-banda": {
+      "nombre": "Tirage menton avec élastique",
+      "cues": {
+        "agarre": "Marche sur l'élastique et prends-le largeur d'épaules.",
+        "codos": "Ce sont les coudes qui montent, au-dessus des mains.",
+        "altura": "Arrête-toi quand les coudes arrivent à hauteur d'épaules."
+      },
+      "errores": {
+        "estrecho": "Rapprocher les mains au centre.",
+        "alto": "Monter les coudes au-dessus des épaules.",
+        "balanceo": "Balancer le buste pour étirer l'élastique."
+      }
+    },
+    "remo-menton-barra": {
+      "nombre": "Tirage menton à la barre",
+      "cues": {
+        "agarre": "Prise largeur d'épaules, pas serrée.",
+        "codos": "Ce sont les coudes qui montent, au-dessus des mains.",
+        "altura": "Arrête-toi quand les coudes arrivent à hauteur d'épaules."
+      },
+      "errores": {
+        "estrecho": "Prendre la barre mains serrées.",
+        "alto": "Monter les coudes au-dessus des épaules.",
+        "balanceo": "Balancer le buste pour monter la charge."
+      }
+    },
+    "remo-menton-mancuerna": {
+      "nombre": "Tirage menton aux haltères",
+      "cues": {
+        "agarre": "Haltères près du corps, largeur d'épaules.",
+        "codos": "Ce sont les coudes qui montent, au-dessus des mains.",
+        "altura": "Arrête-toi quand les coudes arrivent à hauteur d'épaules."
+      },
+      "errores": {
+        "estrecho": "Rapprocher les haltères au centre.",
+        "alto": "Monter les coudes au-dessus des épaules.",
+        "balanceo": "Balancer le buste pour monter la charge."
+      }
+    },
+    "rotacion-externa-90-banda": {
+      "nombre": "Rotation externe à 90° avec élastique",
+      "cues": {
+        "codos": "Coudes à hauteur d'épaules, un peu en avant, immobiles.",
+        "giro": "Tourne les avant-bras jusqu'à la verticale, sans aller au-delà.",
+        "ligera": "Élastique léger et mouvement lent ; arrête si tu sens une douleur vive."
+      },
+      "errores": {
+        "codos": "Baisser les coudes pendant la rotation.",
+        "arco": "Cambrer le dos pour aller plus loin en arrière."
+      }
+    },
+    "rotacion-externa-banda": {
+      "nombre": "Rotation externe avec élastique",
+      "cues": {
+        "codo": "Coude collé au flanc et plié à 90° pendant toute la rotation.",
+        "lento": "Tourne vers l'extérieur lentement et reviens encore plus lentement.",
+        "ligera": "Élastique léger : c'est un exercice de contrôle, pas de force."
+      },
+      "errores": {
+        "codo": "Décoller le coude du corps pour gagner de l'amplitude.",
+        "tronco": "Tourner le buste au lieu du bras."
+      }
+    },
+    "rotacion-interna-banda": {
+      "nombre": "Rotation interne avec élastique",
+      "cues": {
+        "codo": "Coude collé au flanc et plié à 90° pendant toute la rotation.",
+        "lento": "Amène la main vers le nombril lentement et reviens en contrôle.",
+        "ligera": "Élastique léger : c'est un exercice de contrôle, pas de force."
+      },
+      "errores": {
+        "codo": "Décoller le coude du corps pour gagner de l'amplitude.",
+        "tronco": "Tourner le buste au lieu du bras."
+      }
+    },
+    "tiron-banda": {
+      "nombre": "Band pull-apart",
+      "cues": {
+        "altura": "Bras tendus à hauteur d'épaules sur toute l'amplitude.",
+        "escapulas": "Écarte les bras en serrant les omoplates, sans hausser les épaules.",
+        "vuelta": "Reviens lentement devant toi, sans relâcher la tension."
+      },
+      "errores": {
+        "trapecio": "Hausser les épaules vers les oreilles.",
+        "arco": "Cambrer le dos pour écarter davantage."
+      }
+    }
+  }
+}

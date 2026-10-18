@@ -1,0 +1,345 @@
+{
+  "ejercicios": {
+    "dominada": {
+      "nombre": "Traction",
+      "cues": {
+        "hombros": "Pars suspendu, épaules actives, loin des oreilles.",
+        "codos": "Tire les coudes vers le bas et l'arrière jusqu'à passer le menton.",
+        "bajada": "Descends en contrôle jusqu'à tendre complètement les bras."
+      },
+      "errores": {
+        "balanceo": "Balancer les jambes pour monter.",
+        "medio": "Rester à mi-amplitude en bas.",
+        "cuello": "Tendre le cou pour atteindre la barre."
+      }
+    },
+    "dominada-supina": {
+      "nombre": "Traction supination",
+      "cues": {
+        "agarre": "Paumes vers toi, largeur d'épaules.",
+        "pecho": "Sors la poitrine vers la barre et monte jusqu'à passer le menton.",
+        "bajada": "Descends lentement jusqu'à tendre les coudes."
+      },
+      "errores": {
+        "patada": "Donner des coups de pied pour prendre de l'élan.",
+        "medio": "Ne pas tendre les bras en bas."
+      }
+    },
+    "dominada-neutra": {
+      "nombre": "Traction prise neutre",
+      "cues": {
+        "agarre": "Paumes face à face sur les poignées parallèles.",
+        "codos": "Coudes près du corps, vers les côtes.",
+        "bajada": "Descends en contrôle jusqu'à être suspendu, épaules actives."
+      },
+      "errores": {
+        "hombros": "Laisser les épaules collées aux oreilles en bas.",
+        "balanceo": "Balancer le corps pour monter."
+      }
+    },
+    "dominada-negativa": {
+      "nombre": "Traction négative",
+      "cues": {
+        "arriba": "Monte en sautant ou depuis une box stable, menton au-dessus de la barre.",
+        "lento": "Descends en 3 à 5 secondes, sans te laisser tomber.",
+        "abajo": "En bas, tends les bras, pose les pieds et recommence."
+      },
+      "errores": {
+        "caer": "Se laisser tomber sur la seconde moitié de la descente.",
+        "hombros": "Relâcher les épaules d'un coup à la fin."
+      }
+    },
+    "dominada-escapular": {
+      "nombre": "Traction scapulaire",
+      "cues": {
+        "brazos": "Bras tendus en permanence : ne plie pas les coudes.",
+        "hombros": "Abaisse les épaules loin des oreilles et monte un peu la poitrine.",
+        "pausa": "Tiens une seconde en haut et relâche lentement."
+      },
+      "errores": {
+        "codos": "Plier les coudes et en faire une traction courte.",
+        "balanceo": "Balancer les jambes."
+      }
+    },
+    "remo-invertido": {
+      "nombre": "Rowing inversé",
+      "cues": {
+        "tabla": "Corps droit des talons à la tête, fessiers serrés.",
+        "pecho": "Amène la poitrine à la barre, coudes vers l'arrière.",
+        "mesa": "À la maison, utilise une table solide qui ne peut pas basculer."
+      },
+      "errores": {
+        "cadera": "Laisser tomber les hanches.",
+        "cuello": "Avancer le menton pour atteindre la barre."
+      }
+    },
+    "jalon-pecho": {
+      "nombre": "Tirage vertical poitrine",
+      "cues": {
+        "rodillo": "Règle le boudin pour bloquer les cuisses.",
+        "pecho": "Descends la barre en haut de la poitrine, buste légèrement en arrière.",
+        "codos": "Tire avec les coudes vers le bas, pas avec les mains."
+      },
+      "errores": {
+        "balanceo": "Basculer en arrière pour tirer plus lourd.",
+        "nuca": "Descendre la barre derrière la nuque.",
+        "subida": "Lâcher la barre d'un coup à la remontée."
+      }
+    },
+    "jalon-supino": {
+      "nombre": "Tirage vertical supination",
+      "cues": {
+        "agarre": "Paumes vers toi, largeur d'épaules.",
+        "codos": "Coudes collés au corps jusqu'au bas de la poitrine.",
+        "subida": "Remonte en contrôle jusqu'à tendre les bras."
+      },
+      "errores": {
+        "balanceo": "Balancer le buste à chaque répétition.",
+        "munecas": "Plier les poignets au lieu de tirer avec le dos."
+      }
+    },
+    "jalon-neutro": {
+      "nombre": "Tirage vertical prise triangle",
+      "cues": {
+        "codos": "Coudes près du corps, vers les côtes.",
+        "pecho": "Poitrine haute : le triangle arrive au bas de la poitrine.",
+        "subida": "Laisse remonter les bras sans perdre la posture."
+      },
+      "errores": {
+        "balanceo": "Basculer en arrière pour s'aider.",
+        "encoger": "Hausser les épaules en tirant."
+      }
+    },
+    "pullover-polea": {
+      "nombre": "Pull-over à la poulie haute",
+      "cues": {
+        "brazos": "Bras presque tendus : le coude ne se plie pas pendant le mouvement.",
+        "arco": "Descends la barre en arc de cercle jusqu'aux cuisses.",
+        "tronco": "Buste penché et immobile, abdos gainés."
+      },
+      "errores": {
+        "codos": "Plier les coudes et en faire un développé.",
+        "tronco": "Bouger le buste pour descendre la barre."
+      }
+    },
+    "remo-barra": {
+      "nombre": "Rowing barre",
+      "cues": {
+        "bisagra": "Hanches en arrière, genoux déverrouillés et dos neutre.",
+        "codos": "Amène la barre au ventre en tirant avec les coudes.",
+        "espalda": "Le buste ne bouge pas : s'il se redresse, baisse la charge."
+      },
+      "errores": {
+        "tronco": "Redresser le buste pour monter la barre.",
+        "lumbar": "Arrondir le bas du dos.",
+        "recorrido": "Faire une demi-amplitude en haut."
+      }
+    },
+    "remo-barra-supino": {
+      "nombre": "Rowing barre supination",
+      "cues": {
+        "tronco": "Buste un peu plus redressé qu'en rowing pronation.",
+        "codos": "Coudes collés au corps jusqu'au bas du ventre.",
+        "bajada": "Descends en contrôle jusqu'à tendre les bras."
+      },
+      "errores": {
+        "balanceo": "Balancer le buste pour monter la barre.",
+        "munecas": "Plier les poignets en tirant."
+      }
+    },
+    "remo-mancuernas": {
+      "nombre": "Rowing aux haltères",
+      "cues": {
+        "bisagra": "Hanches en arrière et dos neutre, genoux déverrouillés.",
+        "codos": "Paumes face à face et coudes vers les hanches.",
+        "cuello": "Nuque dans l'alignement du dos, regard au sol devant toi."
+      },
+      "errores": {
+        "tronco": "Redresser le buste à chaque répétition.",
+        "encoger": "Hausser les épaules au lieu de tirer avec les coudes."
+      }
+    },
+    "remo-polea-sentado": {
+      "nombre": "Tirage horizontal assis à la poulie",
+      "cues": {
+        "pecho": "Poitrine haute et dos neutre sur toute l'amplitude.",
+        "codos": "Amène le triangle au ventre, coudes collés.",
+        "vuelta": "Tends les bras au retour sans arrondir le dos."
+      },
+      "errores": {
+        "balanceo": "Balancer le buste d'avant en arrière.",
+        "lumbar": "Arrondir le bas du dos en tendant les bras."
+      }
+    },
+    "remo-maquina": {
+      "nombre": "Rowing à la machine",
+      "cues": {
+        "pecho": "Poitrine contre l'appui sur toute l'amplitude.",
+        "codos": "Tire les coudes vers l'arrière et serre les omoplates.",
+        "vuelta": "Reviens lentement jusqu'à tendre les bras."
+      },
+      "errores": {
+        "despegar": "Décoller la poitrine de l'appui pour tirer plus.",
+        "encoger": "Hausser les épaules vers les oreilles."
+      }
+    },
+    "face-pull": {
+      "nombre": "Face pull",
+      "cues": {
+        "codos": "Coudes hauts et ouverts, à hauteur d'épaules.",
+        "cara": "Tire la corde vers le visage en écartant les mains.",
+        "tronco": "Buste immobile : ce sont les bras qui travaillent."
+      },
+      "errores": {
+        "peso": "Charger au point que le buste part en arrière.",
+        "codos": "Baisser les coudes et en faire un rowing."
+      }
+    },
+    "peso-muerto": {
+      "nombre": "Soulevé de terre",
+      "cues": {
+        "barra": "Barre au-dessus du milieu du pied et collée aux jambes.",
+        "espalda": "Dos neutre et poitrine haute avant de tirer.",
+        "empuja": "Pousse le sol avec les jambes et tends les hanches.",
+        "arriba": "En haut, finis debout, sans basculer en arrière."
+      },
+      "errores": {
+        "lumbar": "Arrondir le bas du dos.",
+        "lejos": "Éloigner la barre des jambes.",
+        "cadera": "Monter les hanches avant la barre."
+      }
+    },
+    "peso-muerto-sumo": {
+      "nombre": "Soulevé de terre sumo",
+      "cues": {
+        "pies": "Pieds très écartés, pointes vers l'extérieur, mains à l'intérieur.",
+        "rodillas": "Ouvre les genoux dans l'axe des pointes.",
+        "pecho": "Poitrine haute et barre collée au corps."
+      },
+      "errores": {
+        "rodillas": "Laisser les genoux rentrer en montant.",
+        "lumbar": "Arrondir le bas du dos."
+      }
+    },
+    "peso-muerto-mancuernas": {
+      "nombre": "Soulevé de terre aux haltères",
+      "cues": {
+        "cadera": "Recule les hanches, haltères collés aux jambes.",
+        "espalda": "Dos neutre ; descends jusqu'à mi-tibia.",
+        "arriba": "Remonte en poussant le sol et serre les fessiers."
+      },
+      "errores": {
+        "lumbar": "Arrondir le dos en bas.",
+        "lejos": "Éloigner les haltères du corps."
+      }
+    },
+    "hiperextension": {
+      "nombre": "Extensions lombaires",
+      "cues": {
+        "almohadilla": "Coussin sous les hanches, pour plier au niveau des hanches.",
+        "linea": "Remonte jusqu'à l'alignement avec les jambes, pas plus.",
+        "control": "Descends et remonte lentement, sans élan."
+      },
+      "errores": {
+        "pasarse": "Cambrer le dos au-delà de l'alignement.",
+        "impulso": "Remonter d'un coup avec de l'élan."
+      }
+    },
+    "superman": {
+      "nombre": "Superman",
+      "cues": {
+        "mirada": "Regarde le sol pour garder la nuque longue.",
+        "poco": "Lève poitrine, bras et jambes de quelques centimètres seulement.",
+        "pausa": "Tiens deux secondes en haut et redescends lentement."
+      },
+      "errores": {
+        "cuello": "Relever la tête pour regarder devant.",
+        "impulso": "Monter et descendre d'un coup."
+      }
+    },
+    "pullover-mancuerna": {
+      "nombre": "Pull-over à l'haltère",
+      "cues": {
+        "agarre": "Tiens l'haltère à deux mains par le disque du haut.",
+        "codos": "Coudes légèrement fléchis, toujours au même angle.",
+        "rango": "Descends derrière la tête seulement tant que l'épaule ne fait pas mal."
+      },
+      "errores": {
+        "lumbar": "Cambrer le bas du dos en descendant.",
+        "codos": "Plier et tendre les coudes."
+      }
+    },
+    "remo-polea-una-mano": {
+      "nombre": "Rowing unilatéral à la poulie",
+      "cues": {
+        "postura": "Un pied devant, buste légèrement penché, l'autre main sur la hanche.",
+        "codo": "Tire le coude en arrière le long du flanc, jusqu'à la taille.",
+        "giro": "Le buste ne tourne pas pour accompagner le tirage."
+      },
+      "errores": {
+        "giro": "Tourner le buste pour tirer plus lourd.",
+        "encoger": "Hausser l'épaule vers l'oreille en tirant."
+      }
+    },
+    "remo-polea-abierto": {
+      "nombre": "Tirage horizontal prise large",
+      "cues": {
+        "agarre": "Barre longue en pronation, plus large que les épaules.",
+        "codos": "Coudes ouverts : la barre arrive au bas de la poitrine.",
+        "escapulas": "Serre les omoplates en fin de mouvement et reviens lentement."
+      },
+      "errores": {
+        "balanceo": "Balancer le buste pour tirer.",
+        "encoger": "Hausser les épaules en fin de mouvement."
+      }
+    },
+    "encogimientos-barra": {
+      "nombre": "Shrugs à la barre",
+      "cues": {
+        "vertical": "Monte les épaules à la verticale vers les oreilles.",
+        "pausa": "Tiens une seconde en haut et redescends lentement.",
+        "agarre": "Prise un peu plus large que les cuisses, bras tendus."
+      },
+      "errores": {
+        "circulos": "Faire des cercles avec les épaules.",
+        "rebote": "Faire rebondir la charge en bas sans contrôle."
+      }
+    },
+    "encogimientos-mancuerna": {
+      "nombre": "Shrugs aux haltères",
+      "cues": {
+        "vertical": "Monte les épaules à la verticale vers les oreilles.",
+        "pausa": "Tiens une seconde en haut et redescends lentement.",
+        "brazos": "Bras tendus : les coudes ne se plient pas."
+      },
+      "errores": {
+        "circulos": "Faire des cercles avec les épaules.",
+        "cabeza": "Avancer la tête en montant."
+      }
+    },
+    "remo-apoyo-pecho": {
+      "nombre": "Rowing haltères poitrine en appui",
+      "cues": {
+        "pecho": "Poitrine collée au dossier sur toute l'amplitude.",
+        "codos": "Tire les coudes en arrière, serrés, vers les hanches.",
+        "bajada": "Descends jusqu'à tendre les bras, sans relâcher les épaules d'un coup."
+      },
+      "errores": {
+        "despegar": "Décoller la poitrine du banc pour tirer plus.",
+        "encoger": "Hausser les épaules vers les oreilles."
+      }
+    },
+    "dominada-asistida-banda": {
+      "nombre": "Traction assistée avec élastique",
+      "cues": {
+        "banda": "Attache l'élastique à la barre et passe un genou dans la boucle.",
+        "pecho": "Monte la poitrine vers la barre jusqu'à passer le menton.",
+        "bajada": "Descends en contrôle jusqu'à tendre les bras."
+      },
+      "errores": {
+        "rebote": "Rebondir en bas grâce à l'élastique pour monter.",
+        "medio": "Rester à mi-amplitude en haut ou en bas."
+      }
+    }
+  }
+}

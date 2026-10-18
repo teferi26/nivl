@@ -1,0 +1,286 @@
+{
+  "ejercicios": {
+    "elevacion-frontal-banda": {
+      "nombre": "Alzate frontali con elastico",
+      "cues": {
+        "pisada": "Blocca l'elastico sotto entrambi i piedi e tienilo saldo.",
+        "altura": "Sali davanti fino all'altezza delle spalle.",
+        "bajada": "Scendi piano, senza farti tirare dall'elastico."
+      },
+      "errores": {
+        "balanceo": "Far oscillare il busto per tendere l'elastico.",
+        "soltar": "Mollare l'elastico di colpo in discesa."
+      }
+    },
+    "elevacion-frontal-barra": {
+      "nombre": "Alzate frontali con bilanciere",
+      "cues": {
+        "altura": "Porta il bilanciere davanti fino all'altezza delle spalle.",
+        "tronco": "Busto fermo: senza buttarti indietro.",
+        "ligera": "Usa un bilanciere leggero: il braccio teso moltiplica lo sforzo."
+      },
+      "errores": {
+        "balanceo": "Far oscillare il busto per sollevare il bilanciere.",
+        "codos": "Piegare i gomiti per accorciare la leva."
+      }
+    },
+    "elevacion-lateral-banda": {
+      "nombre": "Alzate laterali con elastico",
+      "cues": {
+        "codo": "Gomiti quasi distesi; sale il gomito, non la mano.",
+        "altura": "Sali fino all'altezza delle spalle, non oltre.",
+        "banda": "Blocca l'elastico sotto entrambi i piedi e scegli una tensione che controlli."
+      },
+      "errores": {
+        "soltar": "Lasciare che l'elastico tiri le braccia in discesa.",
+        "trapecio": "Alzare le spalle verso le orecchie in salita."
+      }
+    },
+    "elevaciones-frontales": {
+      "nombre": "Alzate frontali con manubri",
+      "cues": {
+        "altura": "Sali davanti fino all'altezza delle spalle.",
+        "tronco": "Busto fermo: senza buttarti indietro.",
+        "bajada": "Scendi piano, in circa due secondi."
+      },
+      "errores": {
+        "balanceo": "Far oscillare il busto per sollevare il peso.",
+        "alto": "Portare le mani sopra la testa."
+      }
+    },
+    "elevaciones-laterales": {
+      "nombre": "Alzate laterali con manubri",
+      "cues": {
+        "codo": "Gomiti quasi distesi; sale il gomito, non la mano.",
+        "altura": "Sali fino all'altezza delle spalle, non oltre.",
+        "peso": "Peso leggero e controllato: se oscilli, cala il peso."
+      },
+      "errores": {
+        "balanceo": "Far oscillare il busto per sollevare i manubri.",
+        "trapecio": "Alzare le spalle verso le orecchie in salita."
+      }
+    },
+    "elevaciones-laterales-sentado": {
+      "nombre": "Alzate laterali da seduto",
+      "cues": {
+        "codo": "Gomiti quasi distesi; sale il gomito, non la mano.",
+        "altura": "Sali fino all'altezza delle spalle, non oltre.",
+        "peso": "Peso leggero: da seduto non c'è slancio che aiuti."
+      },
+      "errores": {
+        "alto": "Portare le mani sopra le spalle.",
+        "trapecio": "Alzare le spalle verso le orecchie in salita."
+      }
+    },
+    "face-pull-banda": {
+      "nombre": "Face pull con elastico",
+      "cues": {
+        "codos": "Tira verso il viso con i gomiti alti e aperti.",
+        "giro": "Alla fine, mani vicino alle orecchie e palmi in avanti.",
+        "pausa": "Tieni un secondo dietro e torna piano."
+      },
+      "errores": {
+        "codosBajos": "Tirare con i gomiti bassi, come in un rematore.",
+        "tronco": "Portare il busto indietro per tirare."
+      }
+    },
+    "flexion-pica": {
+      "nombre": "Pike push up",
+      "cues": {
+        "cadera": "Anca alta: il corpo forma una V rovesciata.",
+        "cabeza": "Abbassa la testa verso terra, davanti alle mani.",
+        "codos": "Gomiti indietro, non aperti di lato."
+      },
+      "errores": {
+        "cadera": "Abbassare l'anca e trasformarlo in un piegamento normale.",
+        "golpe": "Lasciar cadere la testa a terra."
+      }
+    },
+    "flexion-pica-pies-elevados": {
+      "nombre": "Pike push up con piedi rialzati",
+      "cues": {
+        "banco": "Piedi saldi su una panca stabile e anca alta.",
+        "cabeza": "Abbassa la testa verso terra, davanti alle mani.",
+        "progresion": "Prima padroneggia il pike push up a terra."
+      },
+      "errores": {
+        "cadera": "Lasciar cadere l'anca durante la discesa.",
+        "golpe": "Lasciar cadere la testa a terra."
+      }
+    },
+    "pajaro-mancuerna": {
+      "nombre": "Alzate posteriori con manubri",
+      "cues": {
+        "bisagra": "Inclina il busto dall'anca, schiena dritta e ginocchia morbide.",
+        "abanico": "Apri le braccia a ventaglio fino all'altezza della schiena.",
+        "ligera": "Peso leggero: il deltoide posteriore è un muscolo piccolo."
+      },
+      "errores": {
+        "tronco": "Sollevare il busto per aiutarti a salire.",
+        "trapecio": "Alzare le spalle invece di aprire le braccia."
+      }
+    },
+    "press-arnold": {
+      "nombre": "Arnold press",
+      "cues": {
+        "inicio": "Parti con i manubri davanti al viso e i palmi verso di te.",
+        "giro": "Apri i gomiti e ruota i palmi in avanti mentre sali.",
+        "abdomen": "Addome contratto: la rotazione la fanno le braccia, non il busto."
+      },
+      "errores": {
+        "arco": "Inarcare la schiena alla fine della spinta.",
+        "rapido": "Fare la rotazione di colpo, senza controllo."
+      }
+    },
+    "press-banda": {
+      "nombre": "Lento avanti con elastico",
+      "cues": {
+        "pisada": "Blocca bene l'elastico sotto entrambi i piedi prima di iniziare.",
+        "antebrazos": "Avambracci verticali sotto le mani per tutto il movimento.",
+        "abdomen": "Addome contratto: senza inarcare la schiena."
+      },
+      "errores": {
+        "arco": "Inarcare la schiena per tendere l'elastico.",
+        "soltar": "Mollare l'elastico di colpo in discesa."
+      }
+    },
+    "press-mancuerna-sentado": {
+      "nombre": "Distensioni per spalle con manubri da seduto",
+      "cues": {
+        "antebrazos": "Avambracci verticali sotto i manubri per tutto il movimento.",
+        "abdomen": "Siediti eretto con l'addome contratto, senza buttarti indietro.",
+        "arriba": "In alto, braccia quasi distese e manubri sopra le spalle."
+      },
+      "errores": {
+        "arco": "Portare il busto indietro e inarcare la schiena.",
+        "corto": "Scendere solo fino a metà altezza."
+      }
+    },
+    "press-militar-barra": {
+      "nombre": "Military press con bilanciere",
+      "cues": {
+        "abdomen": "Contrai addome e glutei: il busto non si inarca.",
+        "trayectoria": "Il bilanciere sale dritto dalla clavicola fin sopra il centro del piede.",
+        "cabeza": "Sposta la testa al passaggio del bilanciere e rientra sotto in chiusura.",
+        "bloqueo": "In alto, braccia distese e bilanciere sopra le spalle."
+      },
+      "errores": {
+        "arco": "Inarcare la zona lombare per spingere.",
+        "codos": "Lasciare i gomiti dietro il bilanciere all'inizio.",
+        "lejos": "Finire con il bilanciere davanti alla testa."
+      }
+    },
+    "press-militar-mancuerna": {
+      "nombre": "Military press con manubri",
+      "cues": {
+        "antebrazos": "Avambracci verticali sotto i manubri per tutto il movimento.",
+        "abdomen": "Addome contratto e costole basse: senza inarcare la schiena.",
+        "arriba": "In alto, braccia quasi distese e manubri sopra le spalle."
+      },
+      "errores": {
+        "arco": "Inarcare la schiena per sollevare più peso.",
+        "corto": "Scendere solo fino a metà altezza."
+      }
+    },
+    "push-press": {
+      "nombre": "Push press con bilanciere",
+      "cues": {
+        "impulso": "Piega un po' le ginocchia e spingi forte con le gambe.",
+        "tronco": "Busto verticale nella spinta; i talloni non si sollevano.",
+        "bloqueo": "Finisci con le braccia distese e il bilanciere sopra il centro del piede."
+      },
+      "errores": {
+        "sentadilla": "Scendere troppo nella spinta, come in uno squat.",
+        "talones": "Staccare i talloni prima di spingere.",
+        "adelante": "Inclinare il busto e mandare il bilanciere in avanti."
+      }
+    },
+    "remo-menton-banda": {
+      "nombre": "Tirata al mento con elastico",
+      "cues": {
+        "agarre": "Blocca l'elastico sotto i piedi e impugnalo alla larghezza delle spalle.",
+        "codos": "Salgono i gomiti, sopra le mani.",
+        "altura": "Fermati quando i gomiti arrivano all'altezza delle spalle."
+      },
+      "errores": {
+        "estrecho": "Unire le mani al centro.",
+        "alto": "Portare i gomiti sopra le spalle.",
+        "balanceo": "Far oscillare il busto per tendere l'elastico."
+      }
+    },
+    "remo-menton-barra": {
+      "nombre": "Tirata al mento con bilanciere",
+      "cues": {
+        "agarre": "Presa alla larghezza delle spalle, non stretta.",
+        "codos": "Salgono i gomiti, sopra le mani.",
+        "altura": "Fermati quando i gomiti arrivano all'altezza delle spalle."
+      },
+      "errores": {
+        "estrecho": "Impugnare il bilanciere con le mani unite.",
+        "alto": "Portare i gomiti sopra le spalle.",
+        "balanceo": "Far oscillare il busto per sollevare il peso."
+      }
+    },
+    "remo-menton-mancuerna": {
+      "nombre": "Tirata al mento con manubri",
+      "cues": {
+        "agarre": "Manubri vicini al corpo, alla larghezza delle spalle.",
+        "codos": "Salgono i gomiti, sopra le mani.",
+        "altura": "Fermati quando i gomiti arrivano all'altezza delle spalle."
+      },
+      "errores": {
+        "estrecho": "Unire i manubri al centro.",
+        "alto": "Portare i gomiti sopra le spalle.",
+        "balanceo": "Far oscillare il busto per sollevare il peso."
+      }
+    },
+    "rotacion-externa-90-banda": {
+      "nombre": "Extrarotazione a 90° con elastico",
+      "cues": {
+        "codos": "Gomiti all'altezza delle spalle e un po' in avanti, fermi.",
+        "giro": "Ruota gli avambracci fino alla verticale, non oltre.",
+        "ligera": "Elastico leggero e movimento lento; fermati se senti una fitta."
+      },
+      "errores": {
+        "codos": "Abbassare i gomiti durante la rotazione.",
+        "arco": "Inarcare la schiena per arrivare più indietro."
+      }
+    },
+    "rotacion-externa-banda": {
+      "nombre": "Extrarotazione con elastico",
+      "cues": {
+        "codo": "Gomito attaccato al fianco e piegato a 90° per tutta la rotazione.",
+        "lento": "Ruota verso l'esterno piano e torna ancora più piano.",
+        "ligera": "Elastico leggero: è un esercizio di controllo, non di forza."
+      },
+      "errores": {
+        "codo": "Staccare il gomito dal corpo per guadagnare ampiezza.",
+        "tronco": "Ruotare il busto invece del braccio."
+      }
+    },
+    "rotacion-interna-banda": {
+      "nombre": "Intrarotazione con elastico",
+      "cues": {
+        "codo": "Gomito attaccato al fianco e piegato a 90° per tutta la rotazione.",
+        "lento": "Porta la mano verso l'ombelico piano e torna controllando.",
+        "ligera": "Elastico leggero: è un esercizio di controllo, non di forza."
+      },
+      "errores": {
+        "codo": "Staccare il gomito dal corpo per guadagnare ampiezza.",
+        "tronco": "Ruotare il busto invece del braccio."
+      }
+    },
+    "tiron-banda": {
+      "nombre": "Band pull apart",
+      "cues": {
+        "altura": "Braccia distese all'altezza delle spalle per tutto il movimento.",
+        "escapulas": "Apri le braccia avvicinando le scapole, senza alzare le spalle.",
+        "vuelta": "Torna piano in avanti, senza perdere tensione."
+      },
+      "errores": {
+        "trapecio": "Alzare le spalle verso le orecchie.",
+        "arco": "Inarcare la schiena per aprire di più."
+      }
+    }
+  }
+}

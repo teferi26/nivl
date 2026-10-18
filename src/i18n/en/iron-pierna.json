@@ -1,0 +1,353 @@
+{
+  "ejercicios": {
+    "sentadilla-frontal": {
+      "nombre": "Front squat",
+      "cues": {
+        "codos": "Elbows high: the bar rests on your shoulders, not your wrists.",
+        "pie": "The bar goes down and up over mid-foot.",
+        "tronco": "Chest up and torso upright the whole way.",
+        "seguros": "Set the rack safeties below your lowest point."
+      },
+      "errores": {
+        "codosCaen": "Letting your elbows drop on the way up.",
+        "talones": "Lifting your heels.",
+        "rodillasDentro": "Letting your knees cave in."
+      }
+    },
+    "sentadilla-goblet": {
+      "nombre": "Kettlebell goblet squat",
+      "cues": {
+        "pecho": "Kettlebell held close to your chest, chest up.",
+        "codos": "Elbows pointing down, inside your knees.",
+        "talones": "Heels down; squat as deep as you can with a straight back."
+      },
+      "errores": {
+        "separar": "Letting the kettlebell drift away from your chest.",
+        "lumbar": "Rounding your lower back at the bottom.",
+        "rodillasDentro": "Letting your knees cave in on the way up."
+      }
+    },
+    "prensa": {
+      "nombre": "Leg press",
+      "cues": {
+        "espalda": "Back and glutes against the backrest the whole way.",
+        "rodillas": "Knees in line with your feet, not caving in.",
+        "profundidad": "Lower to about 90° without your hips lifting off.",
+        "seguros": "Release and engage the safeties with your legs almost straight."
+      },
+      "errores": {
+        "bloquear": "Snapping your knees into lockout at the top.",
+        "despegar": "Letting your lower back lift off by going too deep.",
+        "talones": "Pushing through your toes and lifting your heels."
+      }
+    },
+    "sentadilla-bulgara": {
+      "nombre": "Bulgarian split squat",
+      "cues": {
+        "vertical": "Lower straight down, weight on your front foot.",
+        "pie": "Front foot flat; your knee tracks over your toes.",
+        "atras": "Your back foot only rests: don't push with it."
+      },
+      "errores": {
+        "cerca": "Placing your front foot too close to the bench.",
+        "rodilla": "Letting your front knee cave in.",
+        "empujarAtras": "Pushing with your back leg."
+      }
+    },
+    "zancada-atras-mancuerna": {
+      "nombre": "Dumbbell reverse lunge",
+      "cues": {
+        "paso": "Take a long, controlled step back onto the ball of your foot.",
+        "peso": "Weight on your front foot; push through it to stand.",
+        "tronco": "Torso upright, dumbbells hanging at your sides."
+      },
+      "errores": {
+        "corto": "Stepping so short that your front knee shoots far forward.",
+        "rodilla": "Slamming your back knee into the floor."
+      }
+    },
+    "peso-muerto-rumano": {
+      "nombre": "Romanian deadlift",
+      "cues": {
+        "cadera": "Push your hips back with knees only slightly bent.",
+        "barra": "The bar slides down your legs, over mid-foot.",
+        "espalda": "Neutral back: stop when you can't go lower without rounding.",
+        "rango": "Lower until you feel your hamstrings, about below the knee."
+      },
+      "errores": {
+        "redondear": "Rounding your back to go lower.",
+        "sentadilla": "Bending your knees a lot and turning it into a squat.",
+        "separar": "Letting the bar drift away from your legs."
+      }
+    },
+    "hip-thrust": {
+      "nombre": "Barbell hip thrust",
+      "cues": {
+        "apoyo": "Rest the bottom of your shoulder blades on the bench.",
+        "arriba": "At the top, torso and thighs in line, glutes squeezed.",
+        "barbilla": "Chin tucked: eyes toward your knees.",
+        "talones": "Drive through your heels; shins vertical at the top."
+      },
+      "errores": {
+        "lumbar": "Arching your lower back instead of extending your hips.",
+        "pies": "Placing your feet so far out that your hamstrings take over.",
+        "rango": "Stopping halfway at the top."
+      }
+    },
+    "extension-cuadriceps": {
+      "nombre": "Leg extension",
+      "cues": {
+        "eje": "Line up your knee with the machine's pivot.",
+        "arriba": "Extend until almost locked and squeeze for a second.",
+        "bajada": "Lower slowly, don't let the weight drop."
+      },
+      "errores": {
+        "impulso": "Swinging the weight up and dropping it at the bottom.",
+        "cadera": "Lifting your hips off the seat."
+      }
+    },
+    "curl-femoral-tumbado": {
+      "nombre": "Lying leg curl",
+      "cues": {
+        "cadera": "Hips pressed into the bench the whole way.",
+        "eje": "Knees just off the bench, lined up with the pivot.",
+        "bajada": "Lower slowly until your legs are almost straight."
+      },
+      "errores": {
+        "cadera": "Lifting your hips to move more weight.",
+        "rebote": "Bouncing at the bottom."
+      }
+    },
+    "gemelos-de-pie": {
+      "nombre": "Standing calf raise",
+      "cues": {
+        "rango": "Drop your heel below the step and rise onto your toes.",
+        "pausa": "Hold for a second at the top and a second at the bottom.",
+        "rodillas": "Knees straight but not locked; move as one unit."
+      },
+      "errores": {
+        "rebote": "Bouncing at the bottom.",
+        "medio": "Doing only half the range."
+      }
+    },
+    "gemelos-sentado": {
+      "nombre": "Seated calf raise",
+      "cues": {
+        "rango": "Lower your heel as far as you can and rise onto your toes.",
+        "pausa": "Hold for a second at the top.",
+        "peso": "Dumbbell on your knee, without pushing it with your hands."
+      },
+      "errores": {
+        "rebote": "Bouncing at the bottom.",
+        "manos": "Helping by pushing with your arms."
+      }
+    },
+    "step-up-cajon": {
+      "nombre": "Box step-up",
+      "cues": {
+        "pie": "Whole foot on a sturdy box that won't move.",
+        "empuje": "Step up by driving through the leg on the box, not the back one.",
+        "bajada": "Lower slowly until your back toes touch down."
+      },
+      "errores": {
+        "impulso": "Pushing off with your back leg.",
+        "rodilla": "Letting your working knee cave in."
+      }
+    },
+    "swing-kettlebell": {
+      "nombre": "Kettlebell swing",
+      "cues": {
+        "cadera": "It's a hinge: hips back, then snap them forward.",
+        "brazos": "Arms straight and relaxed: they only guide the kettlebell.",
+        "bloqueo": "At the top, stand tall with glutes and abs squeezed."
+      },
+      "errores": {
+        "sentadilla": "Squatting down instead of pushing your hips back.",
+        "brazos": "Lifting the kettlebell with your shoulders.",
+        "lumbar": "Rounding your back at the bottom or arching it at the top."
+      }
+    },
+    "peso-muerto-rumano-mancuerna": {
+      "nombre": "Dumbbell Romanian deadlift",
+      "cues": {
+        "cadera": "Push your hips back with knees only slightly bent.",
+        "pegadas": "The dumbbells slide down close to your legs.",
+        "espalda": "Neutral back the whole way."
+      },
+      "errores": {
+        "redondear": "Rounding your back to go lower.",
+        "lejos": "Letting the dumbbells drift away from your body."
+      }
+    },
+    "peso-muerto-una-pierna": {
+      "nombre": "Single-leg Romanian deadlift",
+      "cues": {
+        "linea": "Torso and back leg in line, like a seesaw.",
+        "cadera": "Hips level: don't let them open to the side.",
+        "apoyo": "Soft standing knee; if you lose balance, tap down with your toes."
+      },
+      "errores": {
+        "abrir": "Rotating your hips and opening your back leg.",
+        "redondear": "Rounding your back to go lower."
+      }
+    },
+    "buenos-dias": {
+      "nombre": "Barbell good morning",
+      "cues": {
+        "cadera": "Push your hips back with soft knees.",
+        "espalda": "Neutral back: your torso lowers as one piece.",
+        "carga": "Start light and unrack it with the safeties set."
+      },
+      "errores": {
+        "redondear": "Rounding your back to go lower.",
+        "rodillas": "Bending your knees a lot and turning it into a squat."
+      }
+    },
+    "abduccion-maquina": {
+      "nombre": "Machine hip abduction",
+      "cues": {
+        "espalda": "Back against the backrest, hips still.",
+        "abrir": "Push your knees out as far as you control, no swinging.",
+        "cerrar": "Close slowly, without letting the weight stack slam."
+      },
+      "errores": {
+        "inclinar": "Leaning forward to move more weight.",
+        "golpe": "Letting the weight slam as you close."
+      }
+    },
+    "sentadilla-peso-corporal": {
+      "nombre": "Bodyweight squat",
+      "cues": {
+        "talones": "Heels on the floor the whole way.",
+        "cadera": "Sit your hips back and down, chest up.",
+        "rodillas": "Knees in line with your toes."
+      },
+      "errores": {
+        "talones": "Lifting your heels.",
+        "medio": "Stopping halfway.",
+        "rodillasDentro": "Letting your knees cave in on the way up."
+      }
+    },
+    "sentadilla-cajon": {
+      "nombre": "Box squat",
+      "cues": {
+        "atras": "Sit back, as if reaching for a chair with your glutes.",
+        "tocar": "Touch the box without dropping or losing tension.",
+        "subir": "Stand by pushing the floor away, without rocking."
+      },
+      "errores": {
+        "caer": "Dropping onto the box.",
+        "balanceo": "Rocking back to stand up.",
+        "rodillas": "Letting your knees cave in on the way up."
+      }
+    },
+    "zancada-estatica": {
+      "nombre": "Split squat",
+      "cues": {
+        "vertical": "Lower straight down, like an elevator.",
+        "rodilla": "Front knee over your ankle; back knee almost touches the floor.",
+        "empuje": "Stand by pushing through your front foot."
+      },
+      "errores": {
+        "corta": "Placing your feet too close together.",
+        "inclinar": "Leaning your torso forward."
+      }
+    },
+    "puente-gluteo": {
+      "nombre": "Glute bridge",
+      "cues": {
+        "talones": "Feet close to your glutes; drive through your heels.",
+        "arriba": "Rise until shoulders, hips and knees are in line.",
+        "lumbar": "Squeeze your glutes at the top without arching your lower back."
+      },
+      "errores": {
+        "arquear": "Arching your back to go higher.",
+        "rapido": "Going up and down without control."
+      }
+    },
+    "puente-gluteo-una-pierna": {
+      "nombre": "Single-leg glute bridge",
+      "cues": {
+        "talon": "Drive through your working heel.",
+        "nivel": "Hips level: don't let them drop toward the free side.",
+        "arriba": "At the top, torso and working thigh in line."
+      },
+      "errores": {
+        "girar": "Letting your hips rotate or drop.",
+        "lumbar": "Arching your lower back."
+      }
+    },
+    "patada-gluteo": {
+      "nombre": "Glute kickback",
+      "cues": {
+        "espalda": "Flat back and braced abs: only your leg moves.",
+        "talon": "Push the sole of your foot toward the ceiling.",
+        "rodilla": "Knee bent at 90° the whole way."
+      },
+      "errores": {
+        "arquear": "Arching your lower back to lift higher.",
+        "girar": "Rotating your hips toward the working leg."
+      }
+    },
+    "abduccion-tumbado": {
+      "nombre": "Side-lying leg raise",
+      "cues": {
+        "recta": "Top leg straight, slightly behind your body line.",
+        "punta": "Toes point forward, not at the ceiling.",
+        "lento": "Lift to about 40° and lower slowly."
+      },
+      "errores": {
+        "girar": "Rotating your hips and lifting with toes toward the ceiling.",
+        "alto": "Lifting too high and bending your torso."
+      }
+    },
+    "curl-nordico": {
+      "nombre": "Nordic curl",
+      "cues": {
+        "linea": "Body straight from knees to head, without bending at the hips.",
+        "lento": "Lower as slowly as you can.",
+        "manos": "Use your hands to catch yourself and help you back up."
+      },
+      "errores": {
+        "cadera": "Bending at the hips so your hamstrings work less.",
+        "caer": "Dropping at the end without braking."
+      }
+    },
+    "elevacion-tibial": {
+      "nombre": "Tibialis raise",
+      "cues": {
+        "talon": "Heel down; lift only the front of your foot.",
+        "arriba": "Lift as high as you can and hold for a second.",
+        "bajada": "Lower slowly."
+      },
+      "errores": {
+        "rapido": "Doing it fast and with no range.",
+        "talon": "Lifting your heel off the floor."
+      }
+    },
+    "patada-gluteo-polea": {
+      "nombre": "Cable glute kickback",
+      "cues": {
+        "tronco": "Hold the tower, torso slightly leaning and still.",
+        "atras": "Drive your leg back with your glute, knee almost straight.",
+        "lumbar": "Stop before your lower back arches."
+      },
+      "errores": {
+        "arquear": "Arching your back to lift your leg higher.",
+        "impulso": "Swinging your leg with momentum."
+      }
+    },
+    "abduccion-banda": {
+      "nombre": "Standing band hip abduction",
+      "cues": {
+        "pelvis": "Pelvis level: don't lean toward your standing side.",
+        "punta": "Move your straight leg out with your toes pointing forward.",
+        "vuelta": "Return slowly without letting the band pull your knees together."
+      },
+      "errores": {
+        "inclinar": "Leaning your torso to open further.",
+        "rotar": "Turning your toes up."
+      }
+    }
+  }
+}

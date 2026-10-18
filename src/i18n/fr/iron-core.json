@@ -1,0 +1,345 @@
+{
+  "grupo": {
+    "cardio": "Cardio et poids du corps",
+    "movilidad": "Mobilité"
+  },
+  "musculo": {
+    "transverso": "Transverse de l'abdomen",
+    "serrato": "Dentelé antérieur",
+    "cuello": "Cou"
+  },
+  "material": {
+    "esterilla": "Tapis",
+    "comba": "Corde à sauter",
+    "rueda": "Roue abdominale"
+  },
+  "ejercicios": {
+    "crunch": {
+      "nombre": "Crunch",
+      "cues": {
+        "pies": "Pieds à plat et bas du dos posé sur le tapis.",
+        "subir": "Décolle seulement les épaules, en enroulant le buste vers le bassin.",
+        "cuello": "Regard au plafond, menton un peu rentré ; ne tire pas sur la tête."
+      },
+      "errores": {
+        "cuello": "Tirer sur la nuque avec les mains.",
+        "impulso": "Monter par à-coups avec de l'élan.",
+        "situp": "Monter jusqu'à s'asseoir : les abdos ne travaillent plus."
+      }
+    },
+    "crunch-inverso": {
+      "nombre": "Crunch inversé",
+      "cues": {
+        "brazos": "Bras et épaules immobiles sur le tapis.",
+        "pelvis": "Amène les genoux à la poitrine en enroulant le bassin.",
+        "bajada": "Redescends lentement, sans laisser tomber les jambes."
+      },
+      "errores": {
+        "impulso": "Balancer les jambes pour monter les hanches.",
+        "caida": "Laisser tomber les jambes à la descente."
+      }
+    },
+    "elevaciones-piernas": {
+      "nombre": "Relevés de jambes",
+      "cues": {
+        "espalda": "Bas du dos collé au tapis sur toute l'amplitude.",
+        "rodillas": "Jambes serrées et presque tendues ; plie un peu si le dos tire.",
+        "bajada": "Descends lentement et arrête-toi avant de toucher le sol."
+      },
+      "errores": {
+        "arco": "Cambrer le dos en descendant les jambes.",
+        "impulso": "Monter les jambes avec de l'élan."
+      }
+    },
+    "tijeras-abdominales": {
+      "nombre": "Ciseaux abdominaux",
+      "cues": {
+        "espalda": "Bas du dos collé au tapis.",
+        "corto": "Petits battements alternés, sans toucher le sol.",
+        "respira": "Respire en rythme ; ne bloque pas ta respiration."
+      },
+      "errores": {
+        "arco": "Cambrer le dos en descendant les jambes.",
+        "rodillas": "Trop plier les genoux."
+      }
+    },
+    "hollow-hold": {
+      "nombre": "Hollow hold",
+      "cues": {
+        "lumbar": "Plaque le bas du dos au tapis avant de lever jambes et épaules.",
+        "altura": "Si le dos décolle, monte davantage les jambes.",
+        "respira": "Respire court sans relâcher les abdos."
+      },
+      "errores": {
+        "arco": "Décoller le bas du dos du sol.",
+        "cuello": "Crisper la nuque en regardant les pieds."
+      }
+    },
+    "dead-bug": {
+      "nombre": "Dead bug",
+      "cues": {
+        "lumbar": "Bas du dos posé : ne le laisse pas se cambrer.",
+        "contrarios": "Tends en même temps un bras et la jambe opposée.",
+        "lento": "Lent et contrôlé ; expire en tendant."
+      },
+      "errores": {
+        "arco": "Cambrer le dos en tendant la jambe.",
+        "prisa": "Aller vite et perdre le contrôle."
+      }
+    },
+    "plancha-alta": {
+      "nombre": "Planche haute",
+      "cues": {
+        "manos": "Mains sous les épaules et bras tendus.",
+        "linea": "Tête, hanches et talons alignés.",
+        "empuja": "Pousse le sol et serre abdos et fessiers."
+      },
+      "errores": {
+        "caderaCaida": "Laisser tomber les hanches.",
+        "hombros": "Laisser la poitrine s'affaisser entre les épaules.",
+        "apnea": "Retenir sa respiration."
+      }
+    },
+    "toques-hombro": {
+      "nombre": "Shoulder taps en planche",
+      "cues": {
+        "pies": "Écarte un peu les pieds pour être plus stable.",
+        "cadera": "Les hanches ne bougent pas quand tu lèves la main.",
+        "lento": "Touche l'épaule opposée lentement et reviens."
+      },
+      "errores": {
+        "balanceo": "Balancer les hanches d'un côté à l'autre.",
+        "caderaAlta": "Monter les hanches pour compenser."
+      }
+    },
+    "bird-dog": {
+      "nombre": "Bird dog",
+      "cues": {
+        "apoyos": "Mains sous les épaules et genoux sous les hanches.",
+        "linea": "Tends bras et jambe opposés dans l'alignement du dos.",
+        "lento": "Tiens une seconde en haut et reviens sans te presser."
+      },
+      "errores": {
+        "arco": "Monter la jambe trop haut en cambrant le bas du dos.",
+        "giro": "Tourner le bassin en tendant la jambe."
+      }
+    },
+    "mountain-climbers": {
+      "nombre": "Mountain climbers",
+      "cues": {
+        "manos": "Mains bien ancrées sous les épaules.",
+        "cadera": "Hanches basses, alignées avec les épaules.",
+        "rodilla": "Amène chaque genou vers la poitrine, en alternant avec rythme."
+      },
+      "errores": {
+        "caderaAlta": "Monter les hanches en pointe.",
+        "manos": "Laisser les épaules dépasser devant les mains."
+      }
+    },
+    "rueda-abdominal": {
+      "nombre": "Roue abdominale",
+      "cues": {
+        "lumbar": "Serre abdos et fessiers pour ne pas creuser le dos.",
+        "rango": "Roule seulement tant que tu gardes le dos neutre.",
+        "vuelta": "Reviens en tirant avec les abdos, pas avec les hanches."
+      },
+      "errores": {
+        "hundir": "Creuser le bas du dos en s'allongeant.",
+        "cadera": "Revenir en reculant d'abord les hanches.",
+        "rango": "Aller plus loin que ce que l'on contrôle."
+      }
+    },
+    "plancha-lateral": {
+      "nombre": "Planche latérale",
+      "cues": {
+        "codo": "Coude juste sous l'épaule.",
+        "cadera": "Monte les hanches jusqu'à ce que le corps soit droit.",
+        "respira": "Respire et tiens sans tourner la poitrine vers le sol."
+      },
+      "errores": {
+        "caderaCaida": "Laisser tomber les hanches.",
+        "hombro": "S'affaisser sur l'épaule d'appui."
+      }
+    },
+    "russian-twist": {
+      "nombre": "Russian twist",
+      "cues": {
+        "espalda": "Dos droit, incliné vers l'arrière.",
+        "gira": "Tourne le buste avec les bras, pas seulement les bras.",
+        "pies": "Talons au sol ; décolle-les seulement si tu contrôles la rotation."
+      },
+      "errores": {
+        "brazos": "Bouger seulement les bras sans tourner le buste.",
+        "encorvar": "Voûter le dos."
+      }
+    },
+    "burpees": {
+      "nombre": "Burpees",
+      "cues": {
+        "manos": "Pose les mains devant les pieds, largeur d'épaules.",
+        "plancha": "Arrive en planche abdos gainés, sans creuser les hanches.",
+        "salto": "Relève-toi et saute bras en l'air ; atterris en douceur."
+      },
+      "errores": {
+        "cadera": "Arriver en planche avec les hanches creusées.",
+        "aterrizaje": "Atterrir genoux raides."
+      }
+    },
+    "saltos-tijera": {
+      "nombre": "Jumping jacks",
+      "cues": {
+        "puntas": "Saute et atterris sur l'avant des pieds.",
+        "brazos": "Monte les bras par les côtés jusqu'au-dessus de la tête.",
+        "rodillas": "Genoux souples et dans l'axe des pieds à la réception."
+      },
+      "errores": {
+        "talones": "Retomber sur les talons, avec un choc.",
+        "rodillasDentro": "Laisser les genoux rentrer à la réception."
+      }
+    },
+    "comba": {
+      "nombre": "Corde à sauter",
+      "cues": {
+        "bajo": "Petits sauts, juste assez pour laisser passer la corde.",
+        "munecas": "Coudes près du corps ; fais tourner la corde avec les poignets.",
+        "pisada": "Retombe sur l'avant du pied, genoux souples."
+      },
+      "errores": {
+        "alto": "Sauter trop haut et se fatiguer plus vite.",
+        "brazos": "Faire tourner la corde avec les bras entiers."
+      }
+    },
+    "rodillas-arriba": {
+      "nombre": "Montées de genoux",
+      "cues": {
+        "altura": "Monte chaque genou à hauteur de hanche.",
+        "brazos": "Bouge le bras opposé à la jambe, coudes fléchis.",
+        "pisada": "Appuie-toi sur l'avant du pied, buste droit."
+      },
+      "errores": {
+        "atras": "Basculer le buste en arrière pour monter le genou.",
+        "talones": "Retomber sur les talons."
+      }
+    },
+    "talones-gluteo": {
+      "nombre": "Talons-fesses",
+      "cues": {
+        "talon": "Amène le talon vers le fessier, vite et relâché.",
+        "muslo": "La cuisse reste presque verticale ; le genou n'avance pas.",
+        "pisada": "Appuie-toi sur l'avant du pied."
+      },
+      "errores": {
+        "rodilla": "Avancer le genou au lieu de le plier.",
+        "inclinarse": "Pencher le buste vers l'avant."
+      }
+    },
+    "sentadilla-salto": {
+      "nombre": "Squat sauté",
+      "cues": {
+        "bajar": "Descends comme pour un squat, poitrine haute.",
+        "saltar": "Saute en tendant hanches, genoux et chevilles.",
+        "aterrizar": "Atterris de la pointe au talon et fléchis les genoux."
+      },
+      "errores": {
+        "rodillas": "Laisser les genoux rentrer à la descente ou à la réception.",
+        "rigido": "Atterrir jambes raides."
+      }
+    },
+    "oso": {
+      "nombre": "Marche de l'ours",
+      "cues": {
+        "rodillas": "Genoux à deux doigts du sol, sous les hanches.",
+        "contrarios": "Avance en même temps main et pied opposés, à petits pas.",
+        "espalda": "Dos plat : les hanches ne montent pas et ne se balancent pas."
+      },
+      "errores": {
+        "cadera": "Monter les hanches au-dessus des épaules.",
+        "mismoLado": "Bouger la main et le pied du même côté."
+      }
+    },
+    "perro-boca-abajo": {
+      "nombre": "Chien tête en bas avec pédalage",
+      "cues": {
+        "manos": "Pousse le sol avec les mains bien ouvertes.",
+        "cadera": "Monte les hanches vers le haut et l'arrière, dos long.",
+        "talones": "Alterne : un talon descend, l'autre genou se plie, sans forcer."
+      },
+      "errores": {
+        "espalda": "Arrondir le dos pour tendre les jambes.",
+        "hombros": "Laisser les épaules s'affaisser vers le sol."
+      }
+    },
+    "bisagra-cadera": {
+      "nombre": "Charnière de hanche",
+      "cues": {
+        "cadera": "Recule les hanches, comme pour fermer une porte avec.",
+        "espalda": "Dos droit et nuque alignée sur toute l'amplitude.",
+        "rodillas": "Genoux un peu fléchis ; descends jusqu'à sentir les ischios."
+      },
+      "errores": {
+        "redondear": "Arrondir le dos pour descendre plus bas.",
+        "sentadilla": "Plier les genoux et en faire un squat."
+      }
+    },
+    "flexor-cadera": {
+      "nombre": "Étirement des fléchisseurs de hanche",
+      "cues": {
+        "gluteo": "Serre le fessier de la jambe arrière avant d'avancer.",
+        "tronco": "Buste droit : avance le bassin, sans cambrer le dos.",
+        "respira": "Tiens quelques secondes en respirant et reviens lentement."
+      },
+      "errores": {
+        "lumbar": "Cambrer le bas du dos au lieu d'avancer le bassin.",
+        "rodilla": "Poser le genou sur un sol dur ; utilise le tapis."
+      }
+    },
+    "movilidad-tobillo": {
+      "nombre": "Mobilité de cheville",
+      "cues": {
+        "talon": "Le talon avant ne décolle jamais.",
+        "rodilla": "Avance le genou dans l'axe du pied.",
+        "suave": "Mouvement doux et sans rebonds ; arrête si ça fait mal."
+      },
+      "errores": {
+        "talon": "Décoller le talon pour aller plus loin.",
+        "rodillaDentro": "Laisser le genou rentrer vers l'intérieur."
+      }
+    },
+    "balanceo-pierna": {
+      "nombre": "Balancés de jambe",
+      "cues": {
+        "apoyo": "Appuie-toi contre un mur si l'équilibre est difficile.",
+        "suelta": "Balance la jambe relâchée, sans à-coups.",
+        "rango": "Commence petit et augmente la hauteur peu à peu."
+      },
+      "errores": {
+        "tronco": "Bouger le buste pour monter la jambe plus haut.",
+        "forzar": "Forcer l'amplitude dès le premier balancé."
+      }
+    },
+    "pallof-press": {
+      "nombre": "Pallof press avec élastique",
+      "cues": {
+        "tronco": "De profil par rapport à l'ancrage, pieds largeur de hanches, buste gainé.",
+        "empuje": "Pousse les mains devant toi depuis le sternum sans tourner.",
+        "pausa": "Tiens deux secondes bras tendus et reviens lentement."
+      },
+      "errores": {
+        "girar": "Laisser l'élastique faire tourner les épaules ou les hanches.",
+        "cerca": "Se placer si près de l'ancrage que l'élastique ne tire pas."
+      }
+    },
+    "elevacion-rodillas-colgado": {
+      "nombre": "Relevés de genoux suspendu",
+      "cues": {
+        "agarre": "Suspends-toi bras tendus et épaules actives.",
+        "pelvis": "Monte les genoux au-dessus des hanches en enroulant le bassin.",
+        "balanceo": "Redescends lentement et sans te balancer."
+      },
+      "errores": {
+        "balanceo": "Prendre de l'élan en balançant le corps.",
+        "caer": "Laisser tomber les jambes d'un coup."
+      }
+    }
+  }
+}

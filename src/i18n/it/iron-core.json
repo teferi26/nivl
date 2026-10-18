@@ -1,0 +1,345 @@
+{
+  "grupo": {
+    "cardio": "Cardio e corpo libero",
+    "movilidad": "Mobilità"
+  },
+  "musculo": {
+    "transverso": "Trasverso dell'addome",
+    "serrato": "Dentato anteriore",
+    "cuello": "Collo"
+  },
+  "material": {
+    "esterilla": "Tappetino",
+    "comba": "Corda per saltare",
+    "rueda": "Ruota per addominali"
+  },
+  "ejercicios": {
+    "crunch": {
+      "nombre": "Crunch addominale",
+      "cues": {
+        "pies": "Piedi piatti e zona lombare appoggiata al tappetino.",
+        "subir": "Stacca solo le spalle, arrotolando il busto verso il bacino.",
+        "cuello": "Sguardo al soffitto e mento un po' raccolto; non tirare la testa."
+      },
+      "errores": {
+        "cuello": "Tirare il collo con le mani.",
+        "impulso": "Salire a strappi con lo slancio.",
+        "situp": "Salire fino a sedersi: l'addome smette di lavorare."
+      }
+    },
+    "crunch-inverso": {
+      "nombre": "Crunch inverso",
+      "cues": {
+        "brazos": "Braccia e spalle ferme sul tappetino.",
+        "pelvis": "Porta le ginocchia al petto arrotolando il bacino.",
+        "bajada": "Scendi piano, senza lasciar cadere le gambe."
+      },
+      "errores": {
+        "impulso": "Far oscillare le gambe per alzare l'anca.",
+        "caida": "Lasciar cadere le gambe in discesa."
+      }
+    },
+    "elevaciones-piernas": {
+      "nombre": "Sollevamento gambe",
+      "cues": {
+        "espalda": "Zona lombare attaccata al tappetino per tutto il movimento.",
+        "rodillas": "Gambe unite e quasi tese; piegale un po' se tira la schiena.",
+        "bajada": "Scendi piano e fermati prima di toccare terra."
+      },
+      "errores": {
+        "arco": "Inarcare la schiena quando abbassi le gambe.",
+        "impulso": "Sollevare le gambe con lo slancio."
+      }
+    },
+    "tijeras-abdominales": {
+      "nombre": "Forbici addominali",
+      "cues": {
+        "espalda": "Zona lombare attaccata al tappetino.",
+        "corto": "Battute corte e alternate, senza toccare terra.",
+        "respira": "Respira con ritmo; non trattenere l'aria."
+      },
+      "errores": {
+        "arco": "Inarcare la schiena quando abbassi le gambe.",
+        "rodillas": "Piegare molto le ginocchia."
+      }
+    },
+    "hollow-hold": {
+      "nombre": "Hollow hold",
+      "cues": {
+        "lumbar": "Attacca la zona lombare al tappetino prima di alzare gambe e spalle.",
+        "altura": "Se la schiena si stacca, alza di più le gambe.",
+        "respira": "Respira corto senza mollare l'addome."
+      },
+      "errores": {
+        "arco": "Staccare la zona lombare da terra.",
+        "cuello": "Irrigidire il collo guardando verso i piedi."
+      }
+    },
+    "dead-bug": {
+      "nombre": "Dead bug",
+      "cues": {
+        "lumbar": "Zona lombare appoggiata: non lasciare che si inarchi.",
+        "contrarios": "Distendi insieme un braccio e la gamba opposta.",
+        "lento": "Lento e controllato; espira mentre distendi."
+      },
+      "errores": {
+        "arco": "Inarcare la schiena quando distendi la gamba.",
+        "prisa": "Andare veloce e perdere il controllo."
+      }
+    },
+    "plancha-alta": {
+      "nombre": "Plank alto",
+      "cues": {
+        "manos": "Mani sotto le spalle e braccia distese.",
+        "linea": "Testa, anche e talloni in linea retta.",
+        "empuja": "Spingi il pavimento e contrai addome e glutei."
+      },
+      "errores": {
+        "caderaCaida": "Lasciar cadere le anche.",
+        "hombros": "Far sprofondare il petto tra le spalle.",
+        "apnea": "Trattenere il respiro."
+      }
+    },
+    "toques-hombro": {
+      "nombre": "Tocchi alla spalla in plank",
+      "cues": {
+        "pies": "Allarga un po' i piedi per essere più stabile.",
+        "cadera": "L'anca non si muove quando alzi la mano.",
+        "lento": "Tocca la spalla opposta piano e torna."
+      },
+      "errores": {
+        "balanceo": "Far oscillare l'anca da un lato all'altro.",
+        "caderaAlta": "Alzare l'anca per compensare."
+      }
+    },
+    "bird-dog": {
+      "nombre": "Bird dog",
+      "cues": {
+        "apoyos": "Mani sotto le spalle e ginocchia sotto le anche.",
+        "linea": "Distendi braccio e gamba opposti in linea con la schiena.",
+        "lento": "Tieni un secondo in alto e torna senza fretta."
+      },
+      "errores": {
+        "arco": "Alzare troppo la gamba inarcando la zona lombare.",
+        "giro": "Ruotare l'anca quando distendi la gamba."
+      }
+    },
+    "mountain-climbers": {
+      "nombre": "Mountain climber",
+      "cues": {
+        "manos": "Mani salde sotto le spalle.",
+        "cadera": "Anca bassa, in linea con le spalle.",
+        "rodilla": "Porta ogni ginocchio verso il petto, alternando con ritmo."
+      },
+      "errores": {
+        "caderaAlta": "Alzare l'anca a punta.",
+        "manos": "Lasciare che le spalle superino le mani."
+      }
+    },
+    "rueda-abdominal": {
+      "nombre": "Ruota per addominali",
+      "cues": {
+        "lumbar": "Contrai addome e glutei per non far sprofondare la schiena.",
+        "rango": "Rotola solo fin dove mantieni la schiena neutra.",
+        "vuelta": "Torna tirando con l'addome, non con l'anca."
+      },
+      "errores": {
+        "hundir": "Far sprofondare la zona lombare quando ti allunghi.",
+        "cadera": "Tornare spingendo prima l'anca indietro.",
+        "rango": "Andare oltre ciò che controlli."
+      }
+    },
+    "plancha-lateral": {
+      "nombre": "Plank laterale",
+      "cues": {
+        "codo": "Gomito proprio sotto la spalla.",
+        "cadera": "Alza l'anca finché il corpo è dritto.",
+        "respira": "Respira e tieni senza ruotare il petto verso terra."
+      },
+      "errores": {
+        "caderaCaida": "Lasciar cadere l'anca.",
+        "hombro": "Sprofondare sulla spalla d'appoggio."
+      }
+    },
+    "russian-twist": {
+      "nombre": "Russian twist",
+      "cues": {
+        "espalda": "Schiena dritta, inclinata all'indietro.",
+        "gira": "Ruota il busto insieme alle braccia, non solo le braccia.",
+        "pies": "Talloni a terra; alzali solo se controlli la rotazione."
+      },
+      "errores": {
+        "brazos": "Muovere solo le braccia senza ruotare il busto.",
+        "encorvar": "Curvare la schiena."
+      }
+    },
+    "burpees": {
+      "nombre": "Burpee",
+      "cues": {
+        "manos": "Appoggia le mani davanti ai piedi, alla larghezza delle spalle.",
+        "plancha": "Arriva in plank con l'addome contratto, senza far cadere l'anca.",
+        "salto": "Torna in piedi e salta con le braccia in alto; atterra morbido."
+      },
+      "errores": {
+        "cadera": "Arrivare in plank con l'anca che sprofonda.",
+        "aterrizaje": "Atterrare con le ginocchia rigide."
+      }
+    },
+    "saltos-tijera": {
+      "nombre": "Jumping jack",
+      "cues": {
+        "puntas": "Salta e atterra sull'avampiede.",
+        "brazos": "Alza le braccia di lato fin sopra la testa.",
+        "rodillas": "Ginocchia morbide e in linea con i piedi all'atterraggio."
+      },
+      "errores": {
+        "talones": "Atterrare sui talloni, con un colpo.",
+        "rodillasDentro": "Lasciare che le ginocchia si chiudano all'atterraggio."
+      }
+    },
+    "comba": {
+      "nombre": "Salto con la corda",
+      "cues": {
+        "bajo": "Salti bassi, quanto basta perché passi la corda.",
+        "munecas": "Gomiti vicini al corpo; fai girare la corda con i polsi.",
+        "pisada": "Atterra sull'avampiede, con le ginocchia morbide."
+      },
+      "errores": {
+        "alto": "Saltare troppo in alto e stancarsi prima.",
+        "brazos": "Far girare la corda con tutte le braccia."
+      }
+    },
+    "rodillas-arriba": {
+      "nombre": "Skip alto",
+      "cues": {
+        "altura": "Porta ogni ginocchio all'altezza dell'anca.",
+        "brazos": "Muovi il braccio opposto alla gamba, con i gomiti piegati.",
+        "pisada": "Appoggia l'avampiede e tieni il busto eretto."
+      },
+      "errores": {
+        "atras": "Portare il busto indietro per alzare il ginocchio.",
+        "talones": "Atterrare sui talloni."
+      }
+    },
+    "talones-gluteo": {
+      "nombre": "Calciata dietro",
+      "cues": {
+        "talon": "Porta il tallone verso il gluteo, veloce e sciolto.",
+        "muslo": "La coscia resta quasi verticale; il ginocchio non avanza.",
+        "pisada": "Appoggia l'avampiede."
+      },
+      "errores": {
+        "rodilla": "Portare avanti il ginocchio invece di piegarlo.",
+        "inclinarse": "Inclinare il busto in avanti."
+      }
+    },
+    "sentadilla-salto": {
+      "nombre": "Jump squat",
+      "cues": {
+        "bajar": "Scendi come in uno squat, con il petto in fuori.",
+        "saltar": "Salta estendendo anca, ginocchia e caviglie.",
+        "aterrizar": "Atterra dalle punte ai talloni e piega le ginocchia."
+      },
+      "errores": {
+        "rodillas": "Lasciare che le ginocchia si chiudano in discesa o all'atterraggio.",
+        "rigido": "Atterrare con le gambe rigide."
+      }
+    },
+    "oso": {
+      "nombre": "Bear crawl",
+      "cues": {
+        "rodillas": "Ginocchia a due dita da terra, sotto l'anca.",
+        "contrarios": "Avanza insieme con mano e piede opposti, a passi corti.",
+        "espalda": "Schiena piatta: l'anca non sale e non oscilla."
+      },
+      "errores": {
+        "cadera": "Alzare l'anca sopra le spalle.",
+        "mismoLado": "Muovere mano e piede dello stesso lato."
+      }
+    },
+    "perro-boca-abajo": {
+      "nombre": "Cane a testa in giù con pedalata",
+      "cues": {
+        "manos": "Spingi il pavimento con le mani aperte.",
+        "cadera": "Porta l'anca in alto e indietro, schiena lunga.",
+        "talones": "Alterna: abbassa un tallone e piega l'altro ginocchio, senza forzare."
+      },
+      "errores": {
+        "espalda": "Arrotondare la schiena per distendere le gambe.",
+        "hombros": "Far sprofondare le spalle verso terra."
+      }
+    },
+    "bisagra-cadera": {
+      "nombre": "Hip hinge",
+      "cues": {
+        "cadera": "Porta l'anca indietro, come per chiudere una porta con essa.",
+        "espalda": "Schiena dritta e collo in linea per tutto il movimento.",
+        "rodillas": "Ginocchia leggermente piegate; scendi finché senti i femorali."
+      },
+      "errores": {
+        "redondear": "Arrotondare la schiena per scendere di più.",
+        "sentadilla": "Piegare le ginocchia e trasformarlo in uno squat."
+      }
+    },
+    "flexor-cadera": {
+      "nombre": "Allungamento dei flessori dell'anca",
+      "cues": {
+        "gluteo": "Stringi il gluteo della gamba dietro prima di avanzare.",
+        "tronco": "Busto dritto: avanza con il bacino, senza inarcare la schiena.",
+        "respira": "Tieni qualche secondo respirando e torna piano."
+      },
+      "errores": {
+        "lumbar": "Inarcare la zona lombare invece di avanzare con il bacino.",
+        "rodilla": "Appoggiare il ginocchio sul pavimento duro; usa il tappetino."
+      }
+    },
+    "movilidad-tobillo": {
+      "nombre": "Mobilità della caviglia",
+      "cues": {
+        "talon": "Il tallone davanti non si solleva mai.",
+        "rodilla": "Porta il ginocchio in avanti, in linea con il piede.",
+        "suave": "Movimento morbido e senza molleggi; fermati se fa male."
+      },
+      "errores": {
+        "talon": "Sollevare il tallone per arrivare più lontano.",
+        "rodillaDentro": "Lasciare che il ginocchio vada verso l'interno."
+      }
+    },
+    "balanceo-pierna": {
+      "nombre": "Slanci della gamba",
+      "cues": {
+        "apoyo": "Appoggiati a un muro se fatichi a stare in equilibrio.",
+        "suelta": "Fai oscillare la gamba sciolta, senza strappi.",
+        "rango": "Parti corto e aumenta l'altezza poco a poco."
+      },
+      "errores": {
+        "tronco": "Muovere il busto per alzare di più la gamba.",
+        "forzar": "Forzare l'ampiezza fin dal primo slancio."
+      }
+    },
+    "pallof-press": {
+      "nombre": "Pallof press con elastico",
+      "cues": {
+        "tronco": "Di fianco all'ancoraggio, piedi alla larghezza dell'anca e busto saldo.",
+        "empuje": "Spingi le mani in avanti dallo sterno senza ruotare.",
+        "pausa": "Tieni due secondi a braccia distese e torna piano."
+      },
+      "errores": {
+        "girar": "Lasciare che l'elastico ruoti spalle o anca.",
+        "cerca": "Stare così vicino all'ancoraggio che l'elastico non tira."
+      }
+    },
+    "elevacion-rodillas-colgado": {
+      "nombre": "Sollevamento ginocchia alla sbarra",
+      "cues": {
+        "agarre": "Appenditi con le braccia distese e le spalle attive.",
+        "pelvis": "Porta le ginocchia sopra l'anca arrotolando il bacino.",
+        "balanceo": "Scendi piano e senza oscillare."
+      },
+      "errores": {
+        "balanceo": "Prendere slancio facendo oscillare il corpo.",
+        "caer": "Lasciar cadere le gambe di colpo."
+      }
+    }
+  }
+}

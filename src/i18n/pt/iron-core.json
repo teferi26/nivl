@@ -1,0 +1,345 @@
+{
+  "grupo": {
+    "cardio": "Cardio e peso corporal",
+    "movilidad": "Mobilidade"
+  },
+  "musculo": {
+    "transverso": "Transverso do abdómen",
+    "serrato": "Serrátil anterior",
+    "cuello": "Pescoço"
+  },
+  "material": {
+    "esterilla": "Tapete",
+    "comba": "Corda de saltar",
+    "rueda": "Roda abdominal"
+  },
+  "ejercicios": {
+    "crunch": {
+      "nombre": "Crunch abdominal",
+      "cues": {
+        "pies": "Pés assentes e zona lombar apoiada no tapete.",
+        "subir": "Descola só os ombros, enrolando o tronco em direção à pélvis.",
+        "cuello": "Olhar no teto e queixo um pouco recolhido; não puxes a cabeça."
+      },
+      "errores": {
+        "cuello": "Puxar o pescoço com as mãos.",
+        "impulso": "Subir aos esticões com impulso.",
+        "situp": "Subir até ficar sentado: o abdómen deixa de trabalhar."
+      }
+    },
+    "crunch-inverso": {
+      "nombre": "Crunch invertido",
+      "cues": {
+        "brazos": "Braços e ombros quietos no tapete.",
+        "pelvis": "Leva os joelhos ao peito enrolando a pélvis.",
+        "bajada": "Desce devagar, sem deixar cair as pernas."
+      },
+      "errores": {
+        "impulso": "Balançar as pernas para subir a anca.",
+        "caida": "Deixar cair as pernas ao descer."
+      }
+    },
+    "elevaciones-piernas": {
+      "nombre": "Elevações de pernas",
+      "cues": {
+        "espalda": "Zona lombar colada ao tapete em todo o percurso.",
+        "rodillas": "Pernas juntas e quase esticadas; dobra um pouco se as costas puxarem.",
+        "bajada": "Desce devagar e para antes de tocar no chão."
+      },
+      "errores": {
+        "arco": "Arquear as costas ao descer as pernas.",
+        "impulso": "Subir as pernas com impulso."
+      }
+    },
+    "tijeras-abdominales": {
+      "nombre": "Tesouras abdominais",
+      "cues": {
+        "espalda": "Zona lombar colada ao tapete.",
+        "corto": "Pernadas curtas e alternadas, sem tocar no chão.",
+        "respira": "Respira com ritmo; não sustenhas o ar."
+      },
+      "errores": {
+        "arco": "Arquear as costas ao descer as pernas.",
+        "rodillas": "Dobrar muito os joelhos."
+      }
+    },
+    "hollow-hold": {
+      "nombre": "Hollow hold",
+      "cues": {
+        "lumbar": "Cola a zona lombar ao tapete antes de subir pernas e ombros.",
+        "altura": "Se as costas descolarem, sobe mais as pernas.",
+        "respira": "Respira curto sem soltar o abdómen."
+      },
+      "errores": {
+        "arco": "Descolar a zona lombar do chão.",
+        "cuello": "Tensionar o pescoço a olhar para os pés."
+      }
+    },
+    "dead-bug": {
+      "nombre": "Dead bug",
+      "cues": {
+        "lumbar": "Zona lombar apoiada: não a deixes arquear.",
+        "contrarios": "Estica ao mesmo tempo um braço e a perna contrária.",
+        "lento": "Devagar e com controlo; expira ao esticar."
+      },
+      "errores": {
+        "arco": "Arquear as costas ao esticar a perna.",
+        "prisa": "Ir depressa e perder o controlo."
+      }
+    },
+    "plancha-alta": {
+      "nombre": "Prancha alta",
+      "cues": {
+        "manos": "Mãos debaixo dos ombros e braços esticados.",
+        "linea": "Cabeça, anca e calcanhares em linha reta.",
+        "empuja": "Empurra o chão e contrai abdómen e glúteos."
+      },
+      "errores": {
+        "caderaCaida": "Deixar cair a anca.",
+        "hombros": "Afundar o peito entre os ombros.",
+        "apnea": "Suster a respiração."
+      }
+    },
+    "toques-hombro": {
+      "nombre": "Toques no ombro em prancha",
+      "cues": {
+        "pies": "Afasta um pouco os pés para ficares mais estável.",
+        "cadera": "A anca não se mexe ao levantar a mão.",
+        "lento": "Toca no ombro contrário devagar e volta."
+      },
+      "errores": {
+        "balanceo": "Balançar a anca de um lado para o outro.",
+        "caderaAlta": "Subir a anca para compensar."
+      }
+    },
+    "bird-dog": {
+      "nombre": "Bird dog",
+      "cues": {
+        "apoyos": "Mãos debaixo dos ombros e joelhos debaixo da anca.",
+        "linea": "Estica braço e perna contrários em linha com as costas.",
+        "lento": "Aguenta um segundo em cima e volta sem pressa."
+      },
+      "errores": {
+        "arco": "Subir demasiado a perna, arqueando a zona lombar.",
+        "giro": "Rodar a anca ao esticar a perna."
+      }
+    },
+    "mountain-climbers": {
+      "nombre": "Mountain climbers",
+      "cues": {
+        "manos": "Mãos firmes debaixo dos ombros.",
+        "cadera": "Anca baixa, em linha com os ombros.",
+        "rodilla": "Leva cada joelho em direção ao peito, alternando com ritmo."
+      },
+      "errores": {
+        "caderaAlta": "Subir a anca em bico.",
+        "manos": "Deixar os ombros passarem à frente das mãos."
+      }
+    },
+    "rueda-abdominal": {
+      "nombre": "Roda abdominal",
+      "cues": {
+        "lumbar": "Contrai abdómen e glúteos para não afundar as costas.",
+        "rango": "Rola só até onde mantiveres as costas neutras.",
+        "vuelta": "Volta a puxar com o abdómen, não com a anca."
+      },
+      "errores": {
+        "hundir": "Afundar a zona lombar ao esticar.",
+        "cadera": "Voltar levando a anca para trás primeiro.",
+        "rango": "Ir mais longe do que se controla."
+      }
+    },
+    "plancha-lateral": {
+      "nombre": "Prancha lateral",
+      "cues": {
+        "codo": "Cotovelo mesmo debaixo do ombro.",
+        "cadera": "Sobe a anca até o corpo ficar direito.",
+        "respira": "Respira e aguenta sem rodar o peito para o chão."
+      },
+      "errores": {
+        "caderaCaida": "Deixar cair a anca.",
+        "hombro": "Afundar no ombro de apoio."
+      }
+    },
+    "russian-twist": {
+      "nombre": "Russian twist",
+      "cues": {
+        "espalda": "Costas direitas, inclinadas para trás.",
+        "gira": "Roda o tronco com os braços, não só os braços.",
+        "pies": "Calcanhares no chão; sobe-os só se controlares a rotação."
+      },
+      "errores": {
+        "brazos": "Mexer só os braços sem rodar o tronco.",
+        "encorvar": "Curvar as costas."
+      }
+    },
+    "burpees": {
+      "nombre": "Burpees",
+      "cues": {
+        "manos": "Apoia as mãos à frente dos pés, à largura dos ombros.",
+        "plancha": "Cai em prancha com o abdómen firme, sem afundar a anca.",
+        "salto": "Põe-te de pé e salta com os braços para cima; aterra suave."
+      },
+      "errores": {
+        "cadera": "Cair na prancha com a anca afundada.",
+        "aterrizaje": "Aterrar com os joelhos rígidos."
+      }
+    },
+    "saltos-tijera": {
+      "nombre": "Polichinelos",
+      "cues": {
+        "puntas": "Salta e aterra sobre a parte da frente dos pés.",
+        "brazos": "Sobe os braços pelos lados até acima da cabeça.",
+        "rodillas": "Joelhos soltos e na linha dos pés ao cair."
+      },
+      "errores": {
+        "talones": "Cair nos calcanhares, com impacto.",
+        "rodillasDentro": "Deixar os joelhos fecharem ao aterrar."
+      }
+    },
+    "comba": {
+      "nombre": "Saltar à corda",
+      "cues": {
+        "bajo": "Saltos baixos, só o suficiente para a corda passar.",
+        "munecas": "Cotovelos junto ao corpo; roda a corda com os pulsos.",
+        "pisada": "Cai na parte da frente do pé, com os joelhos soltos."
+      },
+      "errores": {
+        "alto": "Saltar demasiado alto e cansar mais cedo.",
+        "brazos": "Rodar a corda com os braços inteiros."
+      }
+    },
+    "rodillas-arriba": {
+      "nombre": "Joelhos ao alto",
+      "cues": {
+        "altura": "Sobe cada joelho à altura da anca.",
+        "brazos": "Mexe o braço contrário à perna, com os cotovelos dobrados.",
+        "pisada": "Pisa com a parte da frente do pé e o tronco direito."
+      },
+      "errores": {
+        "atras": "Inclinar o tronco para trás para subir o joelho.",
+        "talones": "Cair nos calcanhares."
+      }
+    },
+    "talones-gluteo": {
+      "nombre": "Calcanhares ao glúteo",
+      "cues": {
+        "talon": "Leva o calcanhar ao glúteo, rápido e solto.",
+        "muslo": "A coxa fica quase na vertical; o joelho não avança.",
+        "pisada": "Pisa com a parte da frente do pé."
+      },
+      "errores": {
+        "rodilla": "Avançar o joelho em vez de o dobrar.",
+        "inclinarse": "Inclinar o tronco para a frente."
+      }
+    },
+    "sentadilla-salto": {
+      "nombre": "Agachamento com salto",
+      "cues": {
+        "bajar": "Desce como num agachamento, com o peito para cima.",
+        "saltar": "Salta estendendo anca, joelhos e tornozelos.",
+        "aterrizar": "Aterra da ponta para o calcanhar e dobra os joelhos."
+      },
+      "errores": {
+        "rodillas": "Deixar os joelhos fecharem ao descer ou ao cair.",
+        "rigido": "Aterrar com as pernas rígidas."
+      }
+    },
+    "oso": {
+      "nombre": "Marcha do urso",
+      "cues": {
+        "rodillas": "Joelhos a dois dedos do chão, debaixo da anca.",
+        "contrarios": "Avança ao mesmo tempo mão e pé contrários, com passos curtos.",
+        "espalda": "Costas planas: a anca não sobe nem balança."
+      },
+      "errores": {
+        "cadera": "Subir a anca acima dos ombros.",
+        "mismoLado": "Mexer mão e pé do mesmo lado."
+      }
+    },
+    "perro-boca-abajo": {
+      "nombre": "Cão a olhar para baixo com pedalada",
+      "cues": {
+        "manos": "Empurra o chão com as mãos abertas.",
+        "cadera": "Leva a anca para cima e para trás, costas compridas.",
+        "talones": "Alterna descer um calcanhar e dobrar o outro joelho, sem forçar."
+      },
+      "errores": {
+        "espalda": "Arredondar as costas para esticar as pernas.",
+        "hombros": "Afundar os ombros em direção ao chão."
+      }
+    },
+    "bisagra-cadera": {
+      "nombre": "Dobradiça de anca",
+      "cues": {
+        "cadera": "Leva a anca para trás, como se fechasses uma porta com ela.",
+        "espalda": "Costas direitas e pescoço em linha em todo o percurso.",
+        "rodillas": "Joelhos um pouco dobrados; desce até sentires os isquiotibiais."
+      },
+      "errores": {
+        "redondear": "Arredondar as costas para descer mais.",
+        "sentadilla": "Dobrar os joelhos e transformá-lo num agachamento."
+      }
+    },
+    "flexor-cadera": {
+      "nombre": "Alongamento dos flexores da anca",
+      "cues": {
+        "gluteo": "Contrai o glúteo da perna de trás antes de avançar.",
+        "tronco": "Tronco direito: avança a pélvis, sem arquear as costas.",
+        "respira": "Aguenta uns segundos a respirar e volta devagar."
+      },
+      "errores": {
+        "lumbar": "Arquear a zona lombar em vez de avançar a pélvis.",
+        "rodilla": "Apoiar o joelho no chão duro; usa o tapete."
+      }
+    },
+    "movilidad-tobillo": {
+      "nombre": "Mobilidade do tornozelo",
+      "cues": {
+        "talon": "O calcanhar da frente nunca se levanta.",
+        "rodilla": "Leva o joelho para a frente, na linha do pé.",
+        "suave": "Movimento suave e sem ressaltos; para se doer."
+      },
+      "errores": {
+        "talon": "Levantar o calcanhar para ir mais longe.",
+        "rodillaDentro": "Deixar o joelho fugir para dentro."
+      }
+    },
+    "balanceo-pierna": {
+      "nombre": "Balanço de perna",
+      "cues": {
+        "apoyo": "Apoia-te numa parede se te custar o equilíbrio.",
+        "suelta": "Balança a perna solta, sem esticões.",
+        "rango": "Começa curto e sobe a altura aos poucos."
+      },
+      "errores": {
+        "tronco": "Mexer o tronco para subir mais a perna.",
+        "forzar": "Forçar a amplitude logo no primeiro balanço."
+      }
+    },
+    "pallof-press": {
+      "nombre": "Pallof press com banda",
+      "cues": {
+        "tronco": "De lado para a ancoragem, pés à largura da anca e tronco firme.",
+        "empuje": "Empurra as mãos em frente a partir do esterno, sem rodar.",
+        "pausa": "Aguenta dois segundos com os braços esticados e volta devagar."
+      },
+      "errores": {
+        "girar": "Deixar a banda rodar os ombros ou a anca.",
+        "cerca": "Ficar tão perto da ancoragem que a banda não puxa."
+      }
+    },
+    "elevacion-rodillas-colgado": {
+      "nombre": "Elevação de joelhos pendurado",
+      "cues": {
+        "agarre": "Pendura-te com os braços esticados e os ombros ativos.",
+        "pelvis": "Sobe os joelhos acima da anca enrolando a pélvis.",
+        "balanceo": "Desce devagar e sem balançar."
+      },
+      "errores": {
+        "balanceo": "Ganhar impulso a balançar o corpo.",
+        "caer": "Deixar cair as pernas de repente."
+      }
+    }
+  }
+}

@@ -1,0 +1,344 @@
+{
+  "ejercicios": {
+    "curl-barra": {
+      "nombre": "Curl per bicipiti con bilanciere",
+      "cues": {
+        "agarre": "Presa alla larghezza delle spalle, palmi in avanti.",
+        "codos": "Gomiti fermi vicino al corpo; si muove solo l'avambraccio.",
+        "bajada": "Scendi piano fino a distendere quasi del tutto il braccio."
+      },
+      "errores": {
+        "balanceo": "Portare indietro il busto per sollevare il bilanciere.",
+        "codosDelante": "Portare avanti i gomiti alla fine del curl.",
+        "munecas": "Piegare i polsi all'indietro sotto il peso."
+      }
+    },
+    "curl-barra-z": {
+      "nombre": "Curl per bicipiti con bilanciere EZ",
+      "cues": {
+        "agarre": "Impugna il bilanciere sulle curve: il polso sta più comodo.",
+        "codos": "Gomiti attaccati al corpo e fermi.",
+        "bajada": "Scendi controllando, senza far cadere il bilanciere."
+      },
+      "errores": {
+        "balanceo": "Darsi lo slancio con l'anca o il busto.",
+        "medioRecorrido": "Fare mezzo movimento: né giù del tutto né su."
+      }
+    },
+    "curl-martillo": {
+      "nombre": "Curl a martello con manubri",
+      "cues": {
+        "agarre": "Palmi uno di fronte all'altro per tutto il movimento, come un martello.",
+        "codos": "Gomiti lungo i fianchi; sali fino all'altezza della spalla.",
+        "bajada": "Scendi piano, senza far oscillare i manubri."
+      },
+      "errores": {
+        "balanceo": "Usare lo slancio del corpo per salire.",
+        "giro": "Ruotare il polso a palmo in su: non è più un martello."
+      }
+    },
+    "curl-concentrado": {
+      "nombre": "Curl di concentrazione con manubrio",
+      "cues": {
+        "codo": "Appoggia il gomito all'interno della coscia e non muoverlo.",
+        "arriba": "Sali fino alla spalla e stringi un secondo in alto.",
+        "bajada": "Scendi fino a distendere il braccio senza perdere tensione."
+      },
+      "errores": {
+        "hombro": "Alzare la spalla per aiutare il curl.",
+        "tronco": "Sollevare il busto mentre sale il manubrio."
+      }
+    },
+    "curl-sentado-mancuerna": {
+      "nombre": "Curl per bicipiti seduto con manubri",
+      "cues": {
+        "espalda": "Schiena dritta e piedi piatti a terra.",
+        "codos": "Gomiti fermi vicino al corpo.",
+        "bajada": "Scendi piano, in circa due secondi."
+      },
+      "errores": {
+        "inclinarse": "Inclinarsi all'indietro per sollevare il peso.",
+        "medioRecorrido": "Non distendere il braccio in basso."
+      }
+    },
+    "curl-inverso-barra-z": {
+      "nombre": "Curl inverso con bilanciere EZ",
+      "cues": {
+        "agarre": "Palmi verso il basso; usa meno peso che nel curl normale.",
+        "munecas": "Polsi saldi e in linea con l'avambraccio.",
+        "codos": "Gomiti fermi vicino al corpo."
+      },
+      "errores": {
+        "balanceo": "Far oscillare il corpo per sollevare il bilanciere.",
+        "munecasCaidas": "Lasciare che i polsi si pieghino verso il basso."
+      }
+    },
+    "curl-arrastre-barra": {
+      "nombre": "Drag curl con bilanciere",
+      "cues": {
+        "pegada": "Il bilanciere sale sfiorando il corpo, dalle cosce al petto.",
+        "codos": "Porta i gomiti indietro mentre sali.",
+        "bajada": "Scendi per la stessa strada, piano."
+      },
+      "errores": {
+        "separar": "Staccare il bilanciere dal corpo come nel curl normale.",
+        "hombros": "Alzare le spalle verso le orecchie."
+      }
+    },
+    "press-frances-barra-z": {
+      "nombre": "French press con bilanciere EZ",
+      "cues": {
+        "brazos": "Braccia quasi verticali, un po' verso la testa, e ferme.",
+        "codos": "Gomiti stretti, puntati verso il soffitto.",
+        "bajada": "Scendi piano fino a superare la fronte, senza toccare la testa."
+      },
+      "errores": {
+        "codosAbiertos": "Aprire i gomiti verso l'esterno.",
+        "brazosMovidos": "Muovere le braccia: diventa una distensione."
+      }
+    },
+    "press-frances-mancuerna": {
+      "nombre": "French press con manubri",
+      "cues": {
+        "brazos": "Braccia ferme, leggermente inclinate verso la testa.",
+        "codos": "Gomiti stretti, puntati verso il soffitto.",
+        "bajada": "Scendi piano con i manubri ai lati della testa."
+      },
+      "errores": {
+        "codosAbiertos": "Aprire i gomiti verso l'esterno.",
+        "brazosMovidos": "Abbassare le braccia invece di piegare i gomiti."
+      }
+    },
+    "press-frances-suelo-mancuerna": {
+      "nombre": "French press a terra con manubri",
+      "cues": {
+        "apoyo": "Supino, ginocchia piegate e piedi piatti a terra.",
+        "brazos": "Braccia ferme; si piegano solo i gomiti.",
+        "bajada": "Scendi piano fino ai lati della testa."
+      },
+      "errores": {
+        "brazosMovidos": "Muovere le braccia per aiutarsi a salire.",
+        "golpe": "Lasciar cadere i manubri a terra."
+      }
+    },
+    "press-cerrado-barra": {
+      "nombre": "Panca piana presa stretta",
+      "cues": {
+        "agarre": "Mani un po' più strette delle spalle, non attaccate.",
+        "codos": "Gomiti vicini al corpo in discesa.",
+        "trayectoria": "Il bilanciere tocca la parte bassa del petto e sale sopra le spalle.",
+        "seguridad": "Con carichi alti, usa i fermi di sicurezza o qualcuno che ti assista."
+      },
+      "errores": {
+        "codosAbiertos": "Aprire i gomiti come nella panca normale.",
+        "rebote": "Far rimbalzare il bilanciere sul petto.",
+        "munecas": "Piegare i polsi all'indietro."
+      }
+    },
+    "press-cerrado-mancuerna": {
+      "nombre": "Distensioni presa stretta con manubri",
+      "cues": {
+        "juntas": "Manubri uniti e palmi uno di fronte all'altro per tutto il movimento.",
+        "codos": "Gomiti attaccati al corpo.",
+        "bajada": "Scendi piano fino alla parte bassa del petto."
+      },
+      "errores": {
+        "separar": "Separare i manubri in salita.",
+        "rebote": "Rimbalzare sul petto."
+      }
+    },
+    "fondos-banco": {
+      "nombre": "Dip alla panca",
+      "cues": {
+        "manos": "Mani sul bordo della panca o di una sedia stabile, dita in avanti.",
+        "espalda": "Scendi con la schiena vicina alla panca.",
+        "profundidad": "Fermati con il braccio parallelo a terra; se la spalla dà fastidio, meno."
+      },
+      "errores": {
+        "hombros": "Scendere troppo e forzare le spalle.",
+        "lejos": "Allontanare l'anca dalla panca."
+      }
+    },
+    "fondos-banco-pies-elevados": {
+      "nombre": "Dip tra due panche con piedi rialzati",
+      "cues": {
+        "manos": "Mani sul bordo di una panca e talloni sull'altra.",
+        "espalda": "Scendi con la schiena vicina alla panca.",
+        "profundidad": "Braccio al massimo parallelo a terra; nessun dolore alla spalla."
+      },
+      "errores": {
+        "hombros": "Scendere troppo e forzare le spalle.",
+        "rebote": "Rimbalzare in basso per risalire."
+      }
+    },
+    "flexiones-diamante": {
+      "nombre": "Piegamenti a diamante",
+      "cues": {
+        "manos": "Mani unite sotto il petto a formare un diamante.",
+        "cuerpo": "Corpo dritto dai talloni alla testa, addome contratto.",
+        "codos": "Gomiti stretti, vanno indietro in discesa."
+      },
+      "errores": {
+        "cadera": "Lasciar cadere le anche o alzarle a punta.",
+        "codosAbiertos": "Aprire i gomiti di lato.",
+        "medioRecorrido": "Scendere solo un po'."
+      }
+    },
+    "flexiones-diamante-rodillas": {
+      "nombre": "Piegamenti a diamante sulle ginocchia",
+      "cues": {
+        "manos": "Mani unite sotto il petto a formare un diamante.",
+        "cuerpo": "Dritto dalle ginocchia alla testa.",
+        "codos": "Gomiti stretti, vanno indietro in discesa."
+      },
+      "errores": {
+        "cadera": "Piegare l'anca invece di abbassare il petto.",
+        "codosAbiertos": "Aprire i gomiti di lato."
+      }
+    },
+    "extension-triceps-cabeza-mancuerna": {
+      "nombre": "Estensioni per tricipiti sopra la testa con manubrio",
+      "cues": {
+        "codos": "Gomiti verso il soffitto e fermi, vicini alla testa.",
+        "tronco": "Addome contratto: la schiena non si inarca.",
+        "bajada": "Scendi piano con il manubrio dietro la testa."
+      },
+      "errores": {
+        "codosAbiertos": "Aprire i gomiti di lato.",
+        "arquear": "Inarcare la zona lombare per sollevare il peso."
+      }
+    },
+    "extension-triceps-cabeza-barra-z": {
+      "nombre": "Estensioni per tricipiti sopra la testa con bilanciere EZ",
+      "cues": {
+        "agarre": "Presa stretta sulle curve del bilanciere.",
+        "codos": "Gomiti verso il soffitto e fermi.",
+        "tronco": "Addome contratto e glutei stretti."
+      },
+      "errores": {
+        "codosAbiertos": "Aprire i gomiti di lato.",
+        "arquear": "Inarcare la zona lombare."
+      }
+    },
+    "patada-triceps": {
+      "nombre": "Kickback per tricipiti con manubrio",
+      "cues": {
+        "apoyo": "Ginocchio e mano sulla panca, schiena dritta.",
+        "codo": "Gomito attaccato al fianco, poco sopra la linea della schiena.",
+        "arriba": "Distendi del tutto il gomito e stringi un secondo."
+      },
+      "errores": {
+        "balanceo": "Far oscillare il manubrio con la spalla.",
+        "codoCae": "Lasciar cadere il gomito quando arriva la fatica."
+      }
+    },
+    "patada-triceps-de-pie": {
+      "nombre": "Kickback per tricipiti in piedi",
+      "cues": {
+        "postura": "Ginocchia morbide, anca indietro e schiena dritta.",
+        "codo": "Gomiti attaccati ai fianchi e fermi.",
+        "arriba": "Distendi del tutto i gomiti; vanno bene anche due taniche."
+      },
+      "errores": {
+        "espalda": "Arrotondare la schiena quando ti pieghi.",
+        "balanceo": "Far oscillare le braccia per sollevare il peso."
+      }
+    },
+    "curl-muneca-barra": {
+      "nombre": "Curl per polsi con bilanciere",
+      "cues": {
+        "apoyo": "Avambracci sulle cosce, palmi in su, polsi fuori.",
+        "recorrido": "Fai scendere il bilanciere sulle dita e risali chiudendo il polso.",
+        "control": "Movimento lento; poco peso e molte ripetizioni."
+      },
+      "errores": {
+        "antebrazo": "Sollevare gli avambracci dalle cosce.",
+        "rebote": "Lasciar cadere il bilanciere di colpo."
+      }
+    },
+    "extension-muneca-mancuerna": {
+      "nombre": "Estensioni dei polsi con manubri",
+      "cues": {
+        "apoyo": "Avambracci sulle cosce, palmi in giù, polsi fuori.",
+        "peso": "Usa poco peso: sono muscoli piccoli.",
+        "control": "Sali e scendi piano, senza strappi."
+      },
+      "errores": {
+        "antebrazo": "Sollevare l'avambraccio per aiutarsi.",
+        "dedos": "Allentare le dita e lasciare il manubrio libero."
+      }
+    },
+    "curl-muneca-espalda-barra": {
+      "nombre": "Curl per polsi dietro la schiena",
+      "cues": {
+        "agarre": "Bilanciere dietro i glutei, palmi rivolti indietro.",
+        "brazos": "Braccia distese e ferme; si muovono solo i polsi.",
+        "control": "Sali e scendi piano, senza oscillare."
+      },
+      "errores": {
+        "codos": "Piegare i gomiti per sollevare il bilanciere.",
+        "rebote": "Lasciar cadere il bilanciere di colpo."
+      }
+    },
+    "paseo-granjero": {
+      "nombre": "Farmer walk",
+      "cues": {
+        "postura": "Busto dritto, spalle indietro e addome contratto.",
+        "agarre": "Stringi forte i manubri; posali se la presa cede.",
+        "pasos": "Passi corti e sguardo in avanti."
+      },
+      "errores": {
+        "inclinarse": "Inclinarsi di lato o in avanti.",
+        "hombros": "Lasciar cadere le spalle in avanti."
+      }
+    },
+    "curl-polea": {
+      "nombre": "Curl per bicipiti al cavo basso",
+      "cues": {
+        "codos": "Gomiti fermi vicino al corpo; si muove solo l'avambraccio.",
+        "cerca": "Stai a un passo dal cavo, così tira anche in basso.",
+        "bajada": "Scendi piano fino a distendere quasi del tutto il braccio."
+      },
+      "errores": {
+        "balanceo": "Portare indietro il busto per sollevare il peso.",
+        "codosDelante": "Portare avanti i gomiti alla fine del curl."
+      }
+    },
+    "extension-triceps-polea": {
+      "nombre": "Push down per tricipiti al cavo con corda",
+      "cues": {
+        "codos": "Gomiti attaccati ai fianchi e fermi per tutto il movimento.",
+        "abajo": "Distendi del tutto in basso e apri un po' i capi della corda.",
+        "tronco": "Busto leggermente inclinato e fermo; non spingere col corpo."
+      },
+      "errores": {
+        "codosSeAbren": "Staccare i gomiti dal corpo in discesa.",
+        "hombros": "Alzare le spalle e spingere con la schiena."
+      }
+    },
+    "curl-inclinado-mancuerna": {
+      "nombre": "Curl su panca inclinata con manubri",
+      "cues": {
+        "espalda": "Schiena e testa sempre appoggiate allo schienale.",
+        "codos": "Braccia a penzoloni e ferme; sale solo l'avambraccio.",
+        "bajada": "Scendi piano fino a distendere il braccio senza perdere tensione."
+      },
+      "errores": {
+        "hombros": "Portare avanti spalle e gomiti in salita.",
+        "corto": "Fermarsi a metà movimento in basso."
+      }
+    },
+    "curl-arana": {
+      "nombre": "Spider curl con manubri",
+      "cues": {
+        "pecho": "Petto appoggiato allo schienale inclinato e piedi saldi a terra.",
+        "brazos": "Braccia verticali a penzoloni e ferme; sale solo l'avambraccio.",
+        "arriba": "Stringi un secondo in alto e scendi piano fino a distendere."
+      },
+      "errores": {
+        "balanceo": "Staccare il petto dalla panca per sollevare il peso.",
+        "codosAtras": "Portare i gomiti indietro in salita."
+      }
+    }
+  }
+}

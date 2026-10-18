@@ -1,0 +1,344 @@
+{
+  "ejercicios": {
+    "curl-barra": {
+      "nombre": "Bizepscurl mit Langhantel",
+      "cues": {
+        "agarre": "Schulterbreiter Griff, Handflächen nach vorne.",
+        "codos": "Ellbogen ruhig am Körper; nur der Unterarm bewegt sich.",
+        "bajada": "Langsam absenken, bis der Arm fast gestreckt ist."
+      },
+      "errores": {
+        "balanceo": "Den Oberkörper nach hinten werfen, um die Stange hochzubringen.",
+        "codosDelante": "Die Ellbogen am Ende des Curls nach vorne schieben.",
+        "munecas": "Die Handgelenke unter dem Gewicht nach hinten abknicken."
+      }
+    },
+    "curl-barra-z": {
+      "nombre": "Bizepscurl mit SZ-Stange",
+      "cues": {
+        "agarre": "Greif die Stange an den Biegungen: angenehmer fürs Handgelenk.",
+        "codos": "Ellbogen ruhig und eng am Körper.",
+        "bajada": "Kontrolliert absenken, die Stange nicht fallen lassen."
+      },
+      "errores": {
+        "balanceo": "Schwung mit Hüfte oder Oberkörper holen.",
+        "medioRecorrido": "Nur den halben Weg gehen: weder ganz unten noch ganz oben."
+      }
+    },
+    "curl-martillo": {
+      "nombre": "Hammercurl mit Kurzhanteln",
+      "cues": {
+        "agarre": "Handflächen zeigen die ganze Zeit zueinander, wie bei einem Hammer.",
+        "codos": "Ellbogen seitlich am Körper; hoch bis auf Schulterhöhe.",
+        "bajada": "Langsam absenken, die Hanteln nicht schwingen."
+      },
+      "errores": {
+        "balanceo": "Schwung aus dem Körper nutzen.",
+        "giro": "Das Handgelenk nach oben drehen: dann ist es kein Hammercurl mehr."
+      }
+    },
+    "curl-concentrado": {
+      "nombre": "Konzentrationscurl mit Kurzhantel",
+      "cues": {
+        "codo": "Ellbogen an die Innenseite des Oberschenkels, nicht bewegen.",
+        "arriba": "Bis zur Schulter hoch und oben eine Sekunde anspannen.",
+        "bajada": "Absenken, bis der Arm gestreckt ist, ohne die Spannung zu verlieren."
+      },
+      "errores": {
+        "hombro": "Die Schulter hochziehen, um mitzuhelfen.",
+        "tronco": "Den Oberkörper beim Hochgehen aufrichten."
+      }
+    },
+    "curl-sentado-mancuerna": {
+      "nombre": "Bizepscurl im Sitzen mit Kurzhanteln",
+      "cues": {
+        "espalda": "Rücken gerade, Füße flach am Boden.",
+        "codos": "Ellbogen ruhig am Körper.",
+        "bajada": "Langsam absenken, in etwa zwei Sekunden."
+      },
+      "errores": {
+        "inclinarse": "Sich nach hinten lehnen, um das Gewicht hochzubringen.",
+        "medioRecorrido": "Den Arm unten nicht strecken."
+      }
+    },
+    "curl-inverso-barra-z": {
+      "nombre": "Reverse Curl mit SZ-Stange",
+      "cues": {
+        "agarre": "Handflächen nach unten; weniger Gewicht als beim normalen Curl.",
+        "munecas": "Handgelenke fest und in Linie mit dem Unterarm.",
+        "codos": "Ellbogen ruhig am Körper."
+      },
+      "errores": {
+        "balanceo": "Mit dem Körper schwingen, um die Stange hochzubringen.",
+        "munecasCaidas": "Die Handgelenke nach unten abknicken lassen."
+      }
+    },
+    "curl-arrastre-barra": {
+      "nombre": "Drag Curl mit Langhantel",
+      "cues": {
+        "pegada": "Die Stange gleitet am Körper entlang, von den Oberschenkeln zur Brust.",
+        "codos": "Zieh die Ellbogen beim Hochgehen nach hinten.",
+        "bajada": "Auf demselben Weg langsam absenken."
+      },
+      "errores": {
+        "separar": "Die Stange wie beim normalen Curl vom Körper wegführen.",
+        "hombros": "Die Schultern zu den Ohren hochziehen."
+      }
+    },
+    "press-frances-barra-z": {
+      "nombre": "French Press mit SZ-Stange",
+      "cues": {
+        "brazos": "Oberarme fast senkrecht, leicht zum Kopf geneigt und ruhig.",
+        "codos": "Ellbogen eng, zur Decke gerichtet.",
+        "bajada": "Langsam bis hinter die Stirn absenken, ohne den Kopf zu berühren."
+      },
+      "errores": {
+        "codosAbiertos": "Die Ellbogen nach außen öffnen.",
+        "brazosMovidos": "Die Oberarme bewegen: dann wird es ein Drücken."
+      }
+    },
+    "press-frances-mancuerna": {
+      "nombre": "French Press mit Kurzhanteln",
+      "cues": {
+        "brazos": "Oberarme ruhig, leicht zum Kopf geneigt.",
+        "codos": "Ellbogen eng, zur Decke gerichtet.",
+        "bajada": "Die Hanteln langsam neben den Kopf absenken."
+      },
+      "errores": {
+        "codosAbiertos": "Die Ellbogen nach außen öffnen.",
+        "brazosMovidos": "Die Oberarme senken, statt die Ellbogen zu beugen."
+      }
+    },
+    "press-frances-suelo-mancuerna": {
+      "nombre": "French Press am Boden mit Kurzhanteln",
+      "cues": {
+        "apoyo": "Auf dem Rücken liegen, Knie gebeugt, Füße flach.",
+        "brazos": "Oberarme ruhig; nur die Ellbogen beugen sich.",
+        "bajada": "Langsam neben den Kopf absenken."
+      },
+      "errores": {
+        "brazosMovidos": "Die Oberarme bewegen, um beim Hochdrücken zu helfen.",
+        "golpe": "Die Hanteln auf den Boden fallen lassen."
+      }
+    },
+    "press-cerrado-barra": {
+      "nombre": "Enges Bankdrücken",
+      "cues": {
+        "agarre": "Hände etwas enger als schulterbreit, nicht aneinander.",
+        "codos": "Ellbogen beim Absenken nah am Körper.",
+        "trayectoria": "Die Stange berührt die untere Brust und geht über die Schultern hoch.",
+        "seguridad": "Bei schwerer Last Sicherungen oder einen Spotter nutzen."
+      },
+      "errores": {
+        "codosAbiertos": "Die Ellbogen wie beim normalen Bankdrücken öffnen.",
+        "rebote": "Die Stange von der Brust abfedern lassen.",
+        "munecas": "Die Handgelenke nach hinten abknicken."
+      }
+    },
+    "press-cerrado-mancuerna": {
+      "nombre": "Enges Drücken mit Kurzhanteln",
+      "cues": {
+        "juntas": "Hanteln zusammen, Handflächen zeigen die ganze Zeit zueinander.",
+        "codos": "Ellbogen eng am Körper.",
+        "bajada": "Langsam bis zur unteren Brust absenken."
+      },
+      "errores": {
+        "separar": "Die Hanteln beim Hochdrücken auseinandergehen lassen.",
+        "rebote": "Von der Brust abfedern."
+      }
+    },
+    "fondos-banco": {
+      "nombre": "Dips an der Bank",
+      "cues": {
+        "manos": "Hände an der Kante einer Bank oder eines stabilen Stuhls, Finger nach vorne.",
+        "espalda": "Mit dem Rücken nah an der Bank absenken.",
+        "profundidad": "Stopp, wenn der Oberarm parallel zum Boden ist; bei Schulterschmerz weniger."
+      },
+      "errores": {
+        "hombros": "Zu tief gehen und die Schultern überlasten.",
+        "lejos": "Die Hüfte von der Bank wegschieben."
+      }
+    },
+    "fondos-banco-pies-elevados": {
+      "nombre": "Dips zwischen zwei Bänken mit erhöhten Füßen",
+      "cues": {
+        "manos": "Hände an der Kante einer Bank, Fersen auf der anderen.",
+        "espalda": "Mit dem Rücken nah an der Bank absenken.",
+        "profundidad": "Höchstens bis der Oberarm parallel zum Boden ist; ohne Schulterschmerz."
+      },
+      "errores": {
+        "hombros": "Zu tief gehen und die Schultern überlasten.",
+        "rebote": "Unten abfedern, um hochzukommen."
+      }
+    },
+    "flexiones-diamante": {
+      "nombre": "Diamant-Liegestütze",
+      "cues": {
+        "manos": "Hände unter der Brust zusammen, sie bilden einen Diamanten.",
+        "cuerpo": "Körper gerade von den Fersen bis zum Kopf, Bauch fest.",
+        "codos": "Ellbogen eng, sie gehen beim Absenken nach hinten."
+      },
+      "errores": {
+        "cadera": "Die Hüfte durchhängen lassen oder spitz nach oben schieben.",
+        "codosAbiertos": "Die Ellbogen zur Seite öffnen.",
+        "medioRecorrido": "Nur ein kleines Stück absenken."
+      }
+    },
+    "flexiones-diamante-rodillas": {
+      "nombre": "Diamant-Liegestütze auf den Knien",
+      "cues": {
+        "manos": "Hände unter der Brust zusammen, sie bilden einen Diamanten.",
+        "cuerpo": "Gerade Linie von den Knien bis zum Kopf.",
+        "codos": "Ellbogen eng, sie gehen beim Absenken nach hinten."
+      },
+      "errores": {
+        "cadera": "Die Hüfte beugen, statt die Brust abzusenken.",
+        "codosAbiertos": "Die Ellbogen zur Seite öffnen."
+      }
+    },
+    "extension-triceps-cabeza-mancuerna": {
+      "nombre": "Trizepsdrücken über Kopf mit Kurzhantel",
+      "cues": {
+        "codos": "Ellbogen zur Decke, ruhig und nah am Kopf.",
+        "tronco": "Bauch fest: der Rücken bleibt ohne Hohlkreuz.",
+        "bajada": "Die Hantel langsam hinter den Kopf absenken."
+      },
+      "errores": {
+        "codosAbiertos": "Die Ellbogen zur Seite öffnen.",
+        "arquear": "Ins Hohlkreuz gehen, um das Gewicht hochzubringen."
+      }
+    },
+    "extension-triceps-cabeza-barra-z": {
+      "nombre": "Trizepsdrücken über Kopf mit SZ-Stange",
+      "cues": {
+        "agarre": "Enger Griff an den Biegungen der Stange.",
+        "codos": "Ellbogen zur Decke und ruhig.",
+        "tronco": "Bauch fest und Gesäß angespannt."
+      },
+      "errores": {
+        "codosAbiertos": "Die Ellbogen zur Seite öffnen.",
+        "arquear": "Ins Hohlkreuz gehen."
+      }
+    },
+    "patada-triceps": {
+      "nombre": "Trizeps-Kickback mit Kurzhantel",
+      "cues": {
+        "apoyo": "Knie und Hand auf der Bank, Rücken gerade.",
+        "codo": "Ellbogen am Körper, etwas über Rückenhöhe.",
+        "arriba": "Den Ellbogen ganz strecken und eine Sekunde anspannen."
+      },
+      "errores": {
+        "balanceo": "Die Hantel aus der Schulter schwingen.",
+        "codoCae": "Den Ellbogen bei Ermüdung absinken lassen."
+      }
+    },
+    "patada-triceps-de-pie": {
+      "nombre": "Trizeps-Kickback im Stehen",
+      "cues": {
+        "postura": "Knie locker, Hüfte nach hinten, Rücken gerade.",
+        "codo": "Ellbogen ruhig am Körper.",
+        "arriba": "Die Ellbogen ganz strecken; zwei Wasserkanister gehen auch."
+      },
+      "errores": {
+        "espalda": "Beim Vorbeugen den Rücken rund machen.",
+        "balanceo": "Die Arme schwingen, um das Gewicht hochzubringen."
+      }
+    },
+    "curl-muneca-barra": {
+      "nombre": "Handgelenkcurl mit Langhantel",
+      "cues": {
+        "apoyo": "Unterarme auf den Oberschenkeln, Handflächen oben, Handgelenke frei.",
+        "recorrido": "Die Stange bis in die Finger rollen und mit dem Handgelenk hochziehen.",
+        "control": "Langsame Bewegung; wenig Gewicht, viele Wiederholungen."
+      },
+      "errores": {
+        "antebrazo": "Die Unterarme von den Oberschenkeln heben.",
+        "rebote": "Die Stange ruckartig fallen lassen."
+      }
+    },
+    "extension-muneca-mancuerna": {
+      "nombre": "Reverse Handgelenkcurl mit Kurzhanteln",
+      "cues": {
+        "apoyo": "Unterarme auf den Oberschenkeln, Handflächen unten, Handgelenke frei.",
+        "peso": "Wenig Gewicht: diese Muskeln sind klein.",
+        "control": "Langsam hoch und runter, ohne Ruck."
+      },
+      "errores": {
+        "antebrazo": "Den Unterarm anheben, um mitzuhelfen.",
+        "dedos": "Die Finger öffnen und die Hantel locker lassen."
+      }
+    },
+    "curl-muneca-espalda-barra": {
+      "nombre": "Handgelenkcurl hinter dem Rücken",
+      "cues": {
+        "agarre": "Stange hinter dem Gesäß, Handflächen nach hinten.",
+        "brazos": "Arme gestreckt und ruhig; nur die Handgelenke bewegen sich.",
+        "control": "Langsam hoch und runter, ohne Schwung."
+      },
+      "errores": {
+        "codos": "Die Ellbogen beugen, um die Stange hochzubringen.",
+        "rebote": "Die Stange ruckartig fallen lassen."
+      }
+    },
+    "paseo-granjero": {
+      "nombre": "Farmer's Walk",
+      "cues": {
+        "postura": "Oberkörper aufrecht, Schultern zurück, Bauch fest.",
+        "agarre": "Hanteln fest greifen; abstellen, wenn der Griff nachlässt.",
+        "pasos": "Kurze Schritte, Blick nach vorne."
+      },
+      "errores": {
+        "inclinarse": "Sich zur Seite oder nach vorne neigen.",
+        "hombros": "Die Schultern nach vorne fallen lassen."
+      }
+    },
+    "curl-polea": {
+      "nombre": "Bizepscurl am unteren Kabelzug",
+      "cues": {
+        "codos": "Ellbogen ruhig am Körper; nur der Unterarm bewegt sich.",
+        "cerca": "Stell dich einen Schritt vom Kabelzug weg, damit er auch unten zieht.",
+        "bajada": "Langsam absenken, bis der Arm fast gestreckt ist."
+      },
+      "errores": {
+        "balanceo": "Den Oberkörper nach hinten werfen, um das Gewicht hochzubringen.",
+        "codosDelante": "Die Ellbogen am Ende des Curls nach vorne schieben."
+      }
+    },
+    "extension-triceps-polea": {
+      "nombre": "Trizepsdrücken am Kabelzug mit Seil",
+      "cues": {
+        "codos": "Ellbogen die ganze Zeit ruhig am Körper.",
+        "abajo": "Unten ganz strecken und die Seilenden leicht auseinanderziehen.",
+        "tronco": "Oberkörper leicht vorgeneigt und ruhig; nicht mit dem Körper drücken."
+      },
+      "errores": {
+        "codosSeAbren": "Die Ellbogen beim Drücken vom Körper lösen.",
+        "hombros": "Die Schultern hochziehen und mit dem Rücken drücken."
+      }
+    },
+    "curl-inclinado-mancuerna": {
+      "nombre": "Schrägbank-Curl mit Kurzhanteln",
+      "cues": {
+        "espalda": "Rücken und Kopf die ganze Zeit an der Lehne.",
+        "codos": "Arme hängen ruhig; nur der Unterarm geht hoch.",
+        "bajada": "Absenken, bis der Arm gestreckt ist, ohne die Spannung zu verlieren."
+      },
+      "errores": {
+        "hombros": "Schultern und Ellbogen beim Hochgehen nach vorne schieben.",
+        "corto": "Unten auf halbem Weg stehen bleiben."
+      }
+    },
+    "curl-arana": {
+      "nombre": "Spider Curl mit Kurzhanteln",
+      "cues": {
+        "pecho": "Brust auf der schrägen Lehne, Füße fest am Boden.",
+        "brazos": "Arme hängen senkrecht und ruhig; nur der Unterarm geht hoch.",
+        "arriba": "Oben eine Sekunde anspannen, dann langsam bis zur Streckung absenken."
+      },
+      "errores": {
+        "balanceo": "Die Brust von der Bank lösen, um das Gewicht hochzubringen.",
+        "codosAtras": "Die Ellbogen beim Hochgehen nach hinten ziehen."
+      }
+    }
+  }
+}

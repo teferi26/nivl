@@ -1,0 +1,344 @@
+{
+  "ejercicios": {
+    "curl-barra": {
+      "nombre": "Curl biceps à la barre",
+      "cues": {
+        "agarre": "Prise largeur d'épaules, paumes vers l'avant.",
+        "codos": "Coudes immobiles le long du corps ; seul l'avant-bras bouge.",
+        "bajada": "Descends lentement jusqu'à tendre presque complètement le bras."
+      },
+      "errores": {
+        "balanceo": "Basculer le buste en arrière pour monter la barre.",
+        "codosDelante": "Avancer les coudes en fin de curl.",
+        "munecas": "Casser les poignets vers l'arrière sous la charge."
+      }
+    },
+    "curl-barra-z": {
+      "nombre": "Curl biceps à la barre EZ",
+      "cues": {
+        "agarre": "Prends la barre dans les courbes : le poignet est plus à l'aise.",
+        "codos": "Coudes collés au corps et immobiles.",
+        "bajada": "Descends en contrôlant, sans laisser tomber la barre."
+      },
+      "errores": {
+        "balanceo": "Prendre de l'élan avec la hanche ou le buste.",
+        "medioRecorrido": "Faire une demi-amplitude : ni tout en bas ni tout en haut."
+      }
+    },
+    "curl-martillo": {
+      "nombre": "Curl marteau aux haltères",
+      "cues": {
+        "agarre": "Paumes face à face sur toute l'amplitude, comme un marteau.",
+        "codos": "Coudes le long du corps ; monte jusqu'à hauteur d'épaule.",
+        "bajada": "Descends lentement, sans balancer les haltères."
+      },
+      "errores": {
+        "balanceo": "Utiliser l'élan du corps pour monter.",
+        "giro": "Tourner le poignet paume vers le haut : ce n'est plus un marteau."
+      }
+    },
+    "curl-concentrado": {
+      "nombre": "Curl concentré à l'haltère",
+      "cues": {
+        "codo": "Cale le coude contre l'intérieur de la cuisse et ne le bouge pas.",
+        "arriba": "Monte jusqu'à l'épaule et serre une seconde en haut.",
+        "bajada": "Descends jusqu'à tendre le bras sans relâcher la tension."
+      },
+      "errores": {
+        "hombro": "Hausser l'épaule pour aider le curl.",
+        "tronco": "Redresser le buste en montant l'haltère."
+      }
+    },
+    "curl-sentado-mancuerna": {
+      "nombre": "Curl biceps assis aux haltères",
+      "cues": {
+        "espalda": "Dos droit et pieds à plat au sol.",
+        "codos": "Coudes immobiles le long du corps.",
+        "bajada": "Descends lentement, en deux secondes environ."
+      },
+      "errores": {
+        "inclinarse": "Basculer en arrière pour monter la charge.",
+        "medioRecorrido": "Ne pas tendre le bras en bas."
+      }
+    },
+    "curl-inverso-barra-z": {
+      "nombre": "Curl inversé à la barre EZ",
+      "cues": {
+        "agarre": "Paumes vers le bas ; prends moins lourd qu'en curl classique.",
+        "munecas": "Poignets fermes et alignés avec l'avant-bras.",
+        "codos": "Coudes immobiles le long du corps."
+      },
+      "errores": {
+        "balanceo": "Balancer le corps pour monter la barre.",
+        "munecasCaidas": "Laisser les poignets se casser vers le bas."
+      }
+    },
+    "curl-arrastre-barra": {
+      "nombre": "Drag curl à la barre",
+      "cues": {
+        "pegada": "La barre monte en frôlant le corps, des cuisses à la poitrine.",
+        "codos": "Tire les coudes vers l'arrière pendant la montée.",
+        "bajada": "Redescends par le même chemin, lentement."
+      },
+      "errores": {
+        "separar": "Éloigner la barre du corps comme en curl classique.",
+        "hombros": "Hausser les épaules vers les oreilles."
+      }
+    },
+    "press-frances-barra-z": {
+      "nombre": "Barre au front à la barre EZ",
+      "cues": {
+        "brazos": "Bras presque verticaux, un peu vers la tête, et immobiles.",
+        "codos": "Coudes serrés, pointés vers le plafond.",
+        "bajada": "Descends lentement au-delà du front, sans toucher la tête."
+      },
+      "errores": {
+        "codosAbiertos": "Ouvrir les coudes vers l'extérieur.",
+        "brazosMovidos": "Bouger les bras : ça devient un développé."
+      }
+    },
+    "press-frances-mancuerna": {
+      "nombre": "Extension triceps allongé aux haltères",
+      "cues": {
+        "brazos": "Bras immobiles, légèrement inclinés vers la tête.",
+        "codos": "Coudes serrés, pointés vers le plafond.",
+        "bajada": "Descends les haltères de chaque côté de la tête, lentement."
+      },
+      "errores": {
+        "codosAbiertos": "Ouvrir les coudes vers l'extérieur.",
+        "brazosMovidos": "Baisser les bras au lieu de plier les coudes."
+      }
+    },
+    "press-frances-suelo-mancuerna": {
+      "nombre": "Extension triceps au sol aux haltères",
+      "cues": {
+        "apoyo": "Allongé sur le dos, genoux fléchis et pieds à plat.",
+        "brazos": "Bras immobiles ; seuls les coudes se plient.",
+        "bajada": "Descends lentement de chaque côté de la tête."
+      },
+      "errores": {
+        "brazosMovidos": "Bouger les bras pour aider à remonter.",
+        "golpe": "Laisser tomber les haltères au sol."
+      }
+    },
+    "press-cerrado-barra": {
+      "nombre": "Développé couché prise serrée",
+      "cues": {
+        "agarre": "Mains un peu plus serrées que les épaules, sans se toucher.",
+        "codos": "Coudes près du corps à la descente.",
+        "trayectoria": "La barre touche le bas de la poitrine et remonte au-dessus des épaules.",
+        "seguridad": "Avec une charge lourde, utilise des sécurités ou un pareur."
+      },
+      "errores": {
+        "codosAbiertos": "Ouvrir les coudes comme au développé classique.",
+        "rebote": "Faire rebondir la barre sur la poitrine.",
+        "munecas": "Casser les poignets vers l'arrière."
+      }
+    },
+    "press-cerrado-mancuerna": {
+      "nombre": "Développé serré aux haltères",
+      "cues": {
+        "juntas": "Haltères collés, paumes face à face sur toute l'amplitude.",
+        "codos": "Coudes collés au corps.",
+        "bajada": "Descends jusqu'au bas de la poitrine, lentement."
+      },
+      "errores": {
+        "separar": "Écarter les haltères en montant.",
+        "rebote": "Rebondir sur la poitrine."
+      }
+    },
+    "fondos-banco": {
+      "nombre": "Dips sur banc",
+      "cues": {
+        "manos": "Mains sur le bord d'un banc ou d'une chaise stable, doigts vers l'avant.",
+        "espalda": "Descends en gardant le dos près du banc.",
+        "profundidad": "Arrête-toi bras parallèles au sol ; moins si l'épaule gêne."
+      },
+      "errores": {
+        "hombros": "Descendre trop bas et forcer sur les épaules.",
+        "lejos": "Éloigner les hanches du banc."
+      }
+    },
+    "fondos-banco-pies-elevados": {
+      "nombre": "Dips entre deux bancs pieds surélevés",
+      "cues": {
+        "manos": "Mains sur le bord d'un banc, talons sur l'autre.",
+        "espalda": "Descends en gardant le dos près du banc.",
+        "profundidad": "Bras parallèles au sol au maximum ; aucune douleur à l'épaule."
+      },
+      "errores": {
+        "hombros": "Descendre trop bas et forcer sur les épaules.",
+        "rebote": "Rebondir en bas pour remonter."
+      }
+    },
+    "flexiones-diamante": {
+      "nombre": "Pompes diamant",
+      "cues": {
+        "manos": "Mains jointes sous la poitrine, formant un diamant.",
+        "cuerpo": "Corps droit des talons à la tête, abdos gainés.",
+        "codos": "Coudes serrés, ils partent vers l'arrière à la descente."
+      },
+      "errores": {
+        "cadera": "Laisser tomber les hanches ou les monter en pointe.",
+        "codosAbiertos": "Ouvrir les coudes sur les côtés.",
+        "medioRecorrido": "Descendre seulement un peu."
+      }
+    },
+    "flexiones-diamante-rodillas": {
+      "nombre": "Pompes diamant sur les genoux",
+      "cues": {
+        "manos": "Mains jointes sous la poitrine, formant un diamant.",
+        "cuerpo": "Droit des genoux à la tête.",
+        "codos": "Coudes serrés, ils partent vers l'arrière à la descente."
+      },
+      "errores": {
+        "cadera": "Plier les hanches au lieu de descendre la poitrine.",
+        "codosAbiertos": "Ouvrir les coudes sur les côtés."
+      }
+    },
+    "extension-triceps-cabeza-mancuerna": {
+      "nombre": "Extension triceps au-dessus de la tête à l'haltère",
+      "cues": {
+        "codos": "Coudes vers le plafond, immobiles et près de la tête.",
+        "tronco": "Abdos gainés : le dos ne se cambre pas.",
+        "bajada": "Descends l'haltère derrière la tête, lentement."
+      },
+      "errores": {
+        "codosAbiertos": "Ouvrir les coudes sur les côtés.",
+        "arquear": "Cambrer le bas du dos pour monter la charge."
+      }
+    },
+    "extension-triceps-cabeza-barra-z": {
+      "nombre": "Extension triceps au-dessus de la tête à la barre EZ",
+      "cues": {
+        "agarre": "Prise serrée dans les courbes de la barre.",
+        "codos": "Coudes vers le plafond et immobiles.",
+        "tronco": "Abdos gainés et fessiers serrés."
+      },
+      "errores": {
+        "codosAbiertos": "Ouvrir les coudes sur les côtés.",
+        "arquear": "Cambrer le bas du dos."
+      }
+    },
+    "patada-triceps": {
+      "nombre": "Kickback triceps à l'haltère",
+      "cues": {
+        "apoyo": "Genou et main sur le banc, dos droit.",
+        "codo": "Coude collé au flanc, un peu au-dessus du dos.",
+        "arriba": "Tends complètement le coude et serre une seconde."
+      },
+      "errores": {
+        "balanceo": "Balancer l'haltère avec l'épaule.",
+        "codoCae": "Laisser tomber le coude avec la fatigue."
+      }
+    },
+    "patada-triceps-de-pie": {
+      "nombre": "Kickback triceps debout",
+      "cues": {
+        "postura": "Genoux déverrouillés, hanches en arrière et dos droit.",
+        "codo": "Coudes collés au flanc et immobiles.",
+        "arriba": "Tends complètement les coudes ; deux bidons d'eau suffisent."
+      },
+      "errores": {
+        "espalda": "Arrondir le dos en se penchant.",
+        "balanceo": "Balancer les bras pour monter la charge."
+      }
+    },
+    "curl-muneca-barra": {
+      "nombre": "Curl poignets à la barre",
+      "cues": {
+        "apoyo": "Avant-bras sur les cuisses, paumes vers le haut, poignets dans le vide.",
+        "recorrido": "Laisse descendre la barre dans les doigts et remonte en fermant le poignet.",
+        "control": "Mouvement lent ; peu de charge et beaucoup de répétitions."
+      },
+      "errores": {
+        "antebrazo": "Décoller les avant-bras des cuisses.",
+        "rebote": "Laisser tomber la barre d'un coup."
+      }
+    },
+    "extension-muneca-mancuerna": {
+      "nombre": "Extension des poignets aux haltères",
+      "cues": {
+        "apoyo": "Avant-bras sur les cuisses, paumes vers le bas, poignets dans le vide.",
+        "peso": "Prends léger : ces muscles sont petits.",
+        "control": "Monte et descends lentement, sans à-coups."
+      },
+      "errores": {
+        "antebrazo": "Décoller l'avant-bras pour aider.",
+        "dedos": "Relâcher les doigts et laisser l'haltère libre."
+      }
+    },
+    "curl-muneca-espalda-barra": {
+      "nombre": "Curl poignets barre derrière le dos",
+      "cues": {
+        "agarre": "Barre derrière les fessiers, paumes vers l'arrière.",
+        "brazos": "Bras tendus et immobiles ; seuls les poignets bougent.",
+        "control": "Monte et descends lentement, sans balancer."
+      },
+      "errores": {
+        "codos": "Plier les coudes pour monter la barre.",
+        "rebote": "Laisser tomber la barre d'un coup."
+      }
+    },
+    "paseo-granjero": {
+      "nombre": "Farmer walk",
+      "cues": {
+        "postura": "Buste droit, épaules en arrière et abdos gainés.",
+        "agarre": "Serre fort les haltères ; lâche-les si la prise lâche.",
+        "pasos": "Petits pas et regard droit devant."
+      },
+      "errores": {
+        "inclinarse": "Se pencher sur le côté ou vers l'avant.",
+        "hombros": "Laisser les épaules s'enrouler vers l'avant."
+      }
+    },
+    "curl-polea": {
+      "nombre": "Curl biceps à la poulie basse",
+      "cues": {
+        "codos": "Coudes immobiles le long du corps ; seul l'avant-bras bouge.",
+        "cerca": "Place-toi à un pas de la poulie pour garder la tension en bas.",
+        "bajada": "Descends lentement jusqu'à tendre presque complètement le bras."
+      },
+      "errores": {
+        "balanceo": "Basculer le buste en arrière pour monter la charge.",
+        "codosDelante": "Avancer les coudes en fin de curl."
+      }
+    },
+    "extension-triceps-polea": {
+      "nombre": "Extension triceps à la poulie avec corde",
+      "cues": {
+        "codos": "Coudes collés au flanc et immobiles sur toute l'amplitude.",
+        "abajo": "Tends complètement en bas et écarte un peu les bouts de la corde.",
+        "tronco": "Buste légèrement penché et immobile ; ne pousse pas avec le corps."
+      },
+      "errores": {
+        "codosSeAbren": "Décoller les coudes du corps en descendant.",
+        "hombros": "Hausser les épaules et pousser avec le dos."
+      }
+    },
+    "curl-inclinado-mancuerna": {
+      "nombre": "Curl incliné aux haltères",
+      "cues": {
+        "espalda": "Dos et tête contre le dossier en permanence.",
+        "codos": "Bras pendants et immobiles ; seul l'avant-bras monte.",
+        "bajada": "Descends lentement jusqu'à tendre le bras sans relâcher la tension."
+      },
+      "errores": {
+        "hombros": "Avancer les épaules et les coudes en montant.",
+        "corto": "Rester à mi-amplitude en bas."
+      }
+    },
+    "curl-arana": {
+      "nombre": "Spider curl aux haltères",
+      "cues": {
+        "pecho": "Poitrine contre le dossier incliné et pieds bien ancrés au sol.",
+        "brazos": "Bras pendants à la verticale et immobiles ; seul l'avant-bras monte.",
+        "arriba": "Serre une seconde en haut et descends lentement jusqu'à tendre."
+      },
+      "errores": {
+        "balanceo": "Décoller la poitrine du banc pour monter la charge.",
+        "codosAtras": "Tirer les coudes vers l'arrière en montant."
+      }
+    }
+  }
+}

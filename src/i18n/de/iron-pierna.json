@@ -1,0 +1,353 @@
+{
+  "ejercicios": {
+    "sentadilla-frontal": {
+      "nombre": "Frontkniebeuge",
+      "cues": {
+        "codos": "Ellbogen hoch: die Stange liegt auf den Schultern, nicht auf den Handgelenken.",
+        "pie": "Die Stange geht über der Fußmitte runter und rauf.",
+        "tronco": "Brust raus, Oberkörper aufrecht über die ganze Bewegung.",
+        "seguros": "Stell die Ablagen im Rack unter deinen tiefsten Punkt."
+      },
+      "errores": {
+        "codosCaen": "Die Ellbogen beim Hochkommen absinken lassen.",
+        "talones": "Die Fersen anheben.",
+        "rodillasDentro": "Die Knie nach innen fallen lassen."
+      }
+    },
+    "sentadilla-goblet": {
+      "nombre": "Goblet Squat mit Kettlebell",
+      "cues": {
+        "pecho": "Kettlebell eng an der Brust, Brust raus.",
+        "codos": "Ellbogen nach unten, innerhalb der Knie.",
+        "talones": "Fersen am Boden; so tief, wie der Rücken gerade bleibt."
+      },
+      "errores": {
+        "separar": "Die Kettlebell von der Brust wegnehmen.",
+        "lumbar": "Unten den unteren Rücken rund machen.",
+        "rodillasDentro": "Die Knie beim Hochkommen nach innen fallen lassen."
+      }
+    },
+    "prensa": {
+      "nombre": "Beinpresse",
+      "cues": {
+        "espalda": "Rücken und Gesäß die ganze Zeit an der Lehne.",
+        "rodillas": "Knie in Linie mit den Füßen, nicht nach innen.",
+        "profundidad": "Bis etwa 90° absenken, ohne dass sich die Hüfte löst.",
+        "seguros": "Sicherungen mit fast gestreckten Beinen lösen und einlegen."
+      },
+      "errores": {
+        "bloquear": "Oben die Knie ruckartig durchstrecken.",
+        "despegar": "Zu tief gehen, sodass sich der untere Rücken löst.",
+        "talones": "Mit den Fußspitzen drücken und die Fersen anheben."
+      }
+    },
+    "sentadilla-bulgara": {
+      "nombre": "Bulgarische Kniebeuge",
+      "cues": {
+        "vertical": "Senkrecht absenken, das Gewicht auf dem vorderen Fuß.",
+        "pie": "Vorderer Fuß flach; das Knie folgt der Fußspitze.",
+        "atras": "Der hintere Fuß stützt nur: nicht mit ihm drücken."
+      },
+      "errores": {
+        "cerca": "Den vorderen Fuß zu nah an die Bank stellen.",
+        "rodilla": "Das vordere Knie nach innen fallen lassen.",
+        "empujarAtras": "Mit dem hinteren Bein drücken."
+      }
+    },
+    "zancada-atras-mancuerna": {
+      "nombre": "Ausfallschritt rückwärts mit Kurzhanteln",
+      "cues": {
+        "paso": "Langer, kontrollierter Schritt nach hinten, auf der Fußspitze landen.",
+        "peso": "Gewicht auf den vorderen Fuß; mit ihm nach oben drücken.",
+        "tronco": "Oberkörper aufrecht, Hanteln hängen seitlich."
+      },
+      "errores": {
+        "corto": "So kurz treten, dass das vordere Knie weit nach vorne wandert.",
+        "rodilla": "Mit dem hinteren Knie auf den Boden schlagen."
+      }
+    },
+    "peso-muerto-rumano": {
+      "nombre": "Rumänisches Kreuzheben",
+      "cues": {
+        "cadera": "Hüfte nach hinten, Knie nur leicht gebeugt.",
+        "barra": "Die Stange gleitet an den Beinen runter, über der Fußmitte.",
+        "espalda": "Rücken neutral: stopp, wenn es nur noch mit rundem Rücken tiefer geht.",
+        "rango": "Absenken, bis die Beinbeuger spannen, etwa unter dem Knie."
+      },
+      "errores": {
+        "redondear": "Den Rücken rund machen, um tiefer zu kommen.",
+        "sentadilla": "Die Knie stark beugen und daraus eine Kniebeuge machen.",
+        "separar": "Die Stange von den Beinen entfernen."
+      }
+    },
+    "hip-thrust": {
+      "nombre": "Hip Thrust mit Langhantel",
+      "cues": {
+        "apoyo": "Den unteren Teil der Schulterblätter auf die Bank legen.",
+        "arriba": "Oben Oberkörper und Oberschenkel in Linie, Gesäß angespannt.",
+        "barbilla": "Kinn angezogen: der Blick geht Richtung Knie.",
+        "talones": "Über die Fersen drücken; oben senkrechte Schienbeine."
+      },
+      "errores": {
+        "lumbar": "Ins Hohlkreuz gehen, statt die Hüfte zu strecken.",
+        "pies": "Die Füße so weit weg stellen, dass vor allem die Beinbeuger arbeiten.",
+        "rango": "Oben auf halbem Weg stehen bleiben."
+      }
+    },
+    "extension-cuadriceps": {
+      "nombre": "Beinstrecker",
+      "cues": {
+        "eje": "Das Knie auf die Drehachse der Maschine ausrichten.",
+        "arriba": "Fast ganz strecken und eine Sekunde anspannen.",
+        "bajada": "Langsam absenken, das Gewicht nicht fallen lassen."
+      },
+      "errores": {
+        "impulso": "Mit Schwung hoch und unten das Gewicht fallen lassen.",
+        "cadera": "Die Hüfte vom Sitz heben."
+      }
+    },
+    "curl-femoral-tumbado": {
+      "nombre": "Beinbeuger liegend",
+      "cues": {
+        "cadera": "Hüfte die ganze Zeit auf der Bank.",
+        "eje": "Knie knapp über der Bankkante, auf die Achse ausgerichtet.",
+        "bajada": "Langsam absenken, bis die Beine fast gestreckt sind."
+      },
+      "errores": {
+        "cadera": "Die Hüfte heben, um mehr Gewicht zu bewegen.",
+        "rebote": "Unten abfedern."
+      }
+    },
+    "gemelos-de-pie": {
+      "nombre": "Wadenheben im Stehen",
+      "cues": {
+        "rango": "Ferse unter die Stufe absenken und bis auf die Zehenspitzen hoch.",
+        "pausa": "Oben und unten je eine Sekunde halten.",
+        "rodillas": "Knie gestreckt, nicht durchgedrückt; als Einheit hoch und runter."
+      },
+      "errores": {
+        "rebote": "Unten abfedern.",
+        "medio": "Nur den halben Weg gehen."
+      }
+    },
+    "gemelos-sentado": {
+      "nombre": "Wadenheben im Sitzen",
+      "cues": {
+        "rango": "Ferse so tief wie möglich und bis auf die Zehenspitzen hoch.",
+        "pausa": "Oben eine Sekunde halten.",
+        "peso": "Die Hantel liegt auf dem Knie, nicht mit den Händen drücken."
+      },
+      "errores": {
+        "rebote": "Unten abfedern.",
+        "manos": "Mit den Armen nachdrücken."
+      }
+    },
+    "step-up-cajon": {
+      "nombre": "Step-up auf die Box",
+      "cues": {
+        "pie": "Ganzer Fuß auf einer stabilen Box, die nicht verrutscht.",
+        "empuje": "Mit dem Bein auf der Box hochdrücken, nicht mit dem hinteren.",
+        "bajada": "Langsam absenken, bis die Fußspitze hinten aufsetzt."
+      },
+      "errores": {
+        "impulso": "Mit dem hinteren Bein abstoßen.",
+        "rodilla": "Das Standknie nach innen fallen lassen."
+      }
+    },
+    "swing-kettlebell": {
+      "nombre": "Kettlebell Swing",
+      "cues": {
+        "cadera": "Ein Hüftscharnier: Hüfte nach hinten, dann kraftvoll nach vorne.",
+        "brazos": "Arme gestreckt und locker: sie führen die Kettlebell nur.",
+        "bloqueo": "Oben ganz aufrecht, Gesäß und Bauch angespannt."
+      },
+      "errores": {
+        "sentadilla": "In die Kniebeuge gehen, statt die Hüfte nach hinten zu schieben.",
+        "brazos": "Die Kettlebell mit den Schultern hochziehen.",
+        "lumbar": "Unten den Rücken rund machen oder oben ins Hohlkreuz gehen."
+      }
+    },
+    "peso-muerto-rumano-mancuerna": {
+      "nombre": "Rumänisches Kreuzheben mit Kurzhanteln",
+      "cues": {
+        "cadera": "Hüfte nach hinten, Knie nur leicht gebeugt.",
+        "pegadas": "Die Hanteln gleiten nah an den Beinen nach unten.",
+        "espalda": "Rücken neutral über die ganze Bewegung."
+      },
+      "errores": {
+        "redondear": "Den Rücken rund machen, um tiefer zu kommen.",
+        "lejos": "Die Hanteln vom Körper wegdriften lassen."
+      }
+    },
+    "peso-muerto-una-pierna": {
+      "nombre": "Einbeiniges Kreuzheben",
+      "cues": {
+        "linea": "Oberkörper und hinteres Bein in einer Linie, wie eine Wippe.",
+        "cadera": "Hüfte waagerecht: nicht zur Seite aufdrehen.",
+        "apoyo": "Standknie locker; bei Gleichgewichtsverlust kurz mit der Fußspitze tippen."
+      },
+      "errores": {
+        "abrir": "Die Hüfte aufdrehen und das hintere Bein öffnen.",
+        "redondear": "Den Rücken rund machen, um tiefer zu kommen."
+      }
+    },
+    "buenos-dias": {
+      "nombre": "Good Morning mit Langhantel",
+      "cues": {
+        "cadera": "Hüfte nach hinten, Knie locker.",
+        "espalda": "Rücken neutral: der Oberkörper senkt sich als Einheit.",
+        "carga": "Mit wenig Gewicht starten und aus dem Rack mit Sicherungen nehmen."
+      },
+      "errores": {
+        "redondear": "Den Rücken rund machen, um tiefer zu kommen.",
+        "rodillas": "Die Knie stark beugen und daraus eine Kniebeuge machen."
+      }
+    },
+    "abduccion-maquina": {
+      "nombre": "Abduktoren an der Maschine",
+      "cues": {
+        "espalda": "Rücken an der Lehne, Hüfte ruhig.",
+        "abrir": "Knie so weit öffnen, wie du kontrollierst, ohne Schwung.",
+        "cerrar": "Langsam schließen, das Gewicht nicht aufschlagen lassen."
+      },
+      "errores": {
+        "inclinar": "Sich nach vorne lehnen, um mehr Gewicht zu bewegen.",
+        "golpe": "Beim Schließen das Gewicht ruckartig fallen lassen."
+      }
+    },
+    "sentadilla-peso-corporal": {
+      "nombre": "Kniebeuge ohne Gewicht",
+      "cues": {
+        "talones": "Fersen die ganze Zeit am Boden.",
+        "cadera": "Hüfte nach hinten und unten, Brust raus.",
+        "rodillas": "Knie in Linie mit den Fußspitzen."
+      },
+      "errores": {
+        "talones": "Die Fersen anheben.",
+        "medio": "Auf halbem Weg stehen bleiben.",
+        "rodillasDentro": "Die Knie beim Hochkommen nach innen fallen lassen."
+      }
+    },
+    "sentadilla-cajon": {
+      "nombre": "Box Squat",
+      "cues": {
+        "atras": "Setz dich nach hinten, als würdest du mit dem Gesäß einen Stuhl suchen.",
+        "tocar": "Die Box berühren, ohne dich fallen zu lassen oder die Spannung zu lösen.",
+        "subir": "Den Boden wegdrücken und hochkommen, ohne zu schaukeln."
+      },
+      "errores": {
+        "caer": "Sich auf die Box fallen lassen.",
+        "balanceo": "Nach hinten schaukeln, um aufzustehen.",
+        "rodillas": "Die Knie beim Hochkommen nach innen fallen lassen."
+      }
+    },
+    "zancada-estatica": {
+      "nombre": "Statischer Ausfallschritt",
+      "cues": {
+        "vertical": "Senkrecht absenken, wie ein Aufzug.",
+        "rodilla": "Vorderes Knie über dem Knöchel; das hintere berührt fast den Boden.",
+        "empuje": "Mit dem vorderen Fuß hochdrücken."
+      },
+      "errores": {
+        "corta": "Die Füße zu nah zusammen stellen.",
+        "inclinar": "Den Oberkörper nach vorne kippen."
+      }
+    },
+    "puente-gluteo": {
+      "nombre": "Glute Bridge",
+      "cues": {
+        "talones": "Füße nah am Gesäß; über die Fersen drücken.",
+        "arriba": "Hoch, bis Schultern, Hüfte und Knie eine Linie bilden.",
+        "lumbar": "Oben das Gesäß anspannen, ohne ins Hohlkreuz zu gehen."
+      },
+      "errores": {
+        "arquear": "Ins Hohlkreuz gehen, um höher zu kommen.",
+        "rapido": "Unkontrolliert hoch und runter."
+      }
+    },
+    "puente-gluteo-una-pierna": {
+      "nombre": "Einbeinige Glute Bridge",
+      "cues": {
+        "talon": "Über die Ferse des Standbeins drücken.",
+        "nivel": "Hüfte waagerecht: nicht zur freien Seite absinken lassen.",
+        "arriba": "Oben Oberkörper und Oberschenkel des Standbeins in Linie."
+      },
+      "errores": {
+        "girar": "Die Hüfte verdrehen oder absinken lassen.",
+        "lumbar": "Ins Hohlkreuz gehen."
+      }
+    },
+    "patada-gluteo": {
+      "nombre": "Glute Kickback",
+      "cues": {
+        "espalda": "Rücken flach, Bauch fest: nur das Bein bewegt sich.",
+        "talon": "Die Fußsohle Richtung Decke drücken.",
+        "rodilla": "Knie die ganze Zeit auf 90° gebeugt."
+      },
+      "errores": {
+        "arquear": "Ins Hohlkreuz gehen, um höher zu kommen.",
+        "girar": "Die Hüfte zur Seite des Beins aufdrehen."
+      }
+    },
+    "abduccion-tumbado": {
+      "nombre": "Seitliches Beinheben im Liegen",
+      "cues": {
+        "recta": "Oberes Bein gestreckt, leicht hinter der Körperlinie.",
+        "punta": "Die Fußspitze zeigt nach vorne, nicht zur Decke.",
+        "lento": "Bis etwa 40° anheben und langsam absenken."
+      },
+      "errores": {
+        "girar": "Die Hüfte aufdrehen und mit der Fußspitze zur Decke anheben.",
+        "alto": "Zu hoch anheben und den Oberkörper abknicken."
+      }
+    },
+    "curl-nordico": {
+      "nombre": "Nordic Curl",
+      "cues": {
+        "linea": "Körper gerade von den Knien bis zum Kopf, Hüfte nicht beugen.",
+        "lento": "So langsam wie möglich absenken.",
+        "manos": "Unten mit den Händen abfangen und zurückhelfen."
+      },
+      "errores": {
+        "cadera": "Die Hüfte beugen, damit die Beinbeuger weniger arbeiten.",
+        "caer": "Am Ende ungebremst fallen lassen."
+      }
+    },
+    "elevacion-tibial": {
+      "nombre": "Tibialis-Heben",
+      "cues": {
+        "talon": "Ferse am Boden; nur die Fußspitze anheben.",
+        "arriba": "So weit wie möglich hoch und eine Sekunde halten.",
+        "bajada": "Langsam absenken."
+      },
+      "errores": {
+        "rapido": "Schnell und ohne Bewegungsumfang arbeiten.",
+        "talon": "Die Ferse vom Boden lösen."
+      }
+    },
+    "patada-gluteo-polea": {
+      "nombre": "Glute Kickback am Kabelzug",
+      "cues": {
+        "tronco": "Am Turm festhalten, Oberkörper leicht geneigt und ruhig.",
+        "atras": "Bein mit dem Gesäß nach hinten führen, Knie fast gestreckt.",
+        "lumbar": "Stopp, bevor du ins Hohlkreuz gehst."
+      },
+      "errores": {
+        "arquear": "Ins Hohlkreuz gehen, um das Bein höher zu bringen.",
+        "impulso": "Das Bein mit Schwung nach hinten werfen."
+      }
+    },
+    "abduccion-banda": {
+      "nombre": "Abduktion im Stehen mit Band",
+      "cues": {
+        "pelvis": "Becken gerade: nicht zur Standbeinseite neigen.",
+        "punta": "Gestrecktes Bein abspreizen, Fußspitze zeigt nach vorne.",
+        "vuelta": "Langsam zurück, ohne dass das Band die Knie zusammenzieht."
+      },
+      "errores": {
+        "inclinar": "Den Oberkörper neigen, um weiter abzuspreizen.",
+        "rotar": "Die Fußspitze nach oben drehen."
+      }
+    }
+  }
+}

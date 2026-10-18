@@ -1,0 +1,286 @@
+{
+  "ejercicios": {
+    "elevacion-frontal-banda": {
+      "nombre": "Elevação frontal com banda",
+      "cues": {
+        "pisada": "Pisa a banda com os dois pés e segura-a com firmeza.",
+        "altura": "Sobe pela frente até à altura dos ombros.",
+        "bajada": "Desce devagar, sem deixar a banda puxar-te."
+      },
+      "errores": {
+        "balanceo": "Balançar o tronco para esticar a banda.",
+        "soltar": "Soltar a banda de repente ao descer."
+      }
+    },
+    "elevacion-frontal-barra": {
+      "nombre": "Elevação frontal com barra",
+      "cues": {
+        "altura": "Sobe a barra pela frente até à altura dos ombros.",
+        "tronco": "Tronco quieto: sem te inclinares para trás.",
+        "ligera": "Usa uma barra leve: o braço esticado multiplica o esforço."
+      },
+      "errores": {
+        "balanceo": "Balançar o tronco para subir a barra.",
+        "codos": "Dobrar os cotovelos para encurtar a alavanca."
+      }
+    },
+    "elevacion-lateral-banda": {
+      "nombre": "Elevação lateral com banda",
+      "cues": {
+        "codo": "Cotovelos quase esticados; sobe o cotovelo, não a mão.",
+        "altura": "Sobe até à altura dos ombros, não mais.",
+        "banda": "Pisa a banda com os dois pés e escolhe uma tensão que controles."
+      },
+      "errores": {
+        "soltar": "Deixar a banda puxar os braços ao descer.",
+        "trapecio": "Encolher os ombros em direção às orelhas ao subir."
+      }
+    },
+    "elevaciones-frontales": {
+      "nombre": "Elevações frontais com halteres",
+      "cues": {
+        "altura": "Sobe pela frente até à altura dos ombros.",
+        "tronco": "Tronco quieto: sem te inclinares para trás.",
+        "bajada": "Desce devagar, em uns dois segundos."
+      },
+      "errores": {
+        "balanceo": "Balançar o tronco para subir o peso.",
+        "alto": "Subir as mãos acima da cabeça."
+      }
+    },
+    "elevaciones-laterales": {
+      "nombre": "Elevações laterais com halteres",
+      "cues": {
+        "codo": "Cotovelos quase esticados; sobe o cotovelo, não a mão.",
+        "altura": "Sobe até à altura dos ombros, não mais.",
+        "peso": "Peso leve e controlado: se balanças, baixa o peso."
+      },
+      "errores": {
+        "balanceo": "Balançar o tronco para subir os halteres.",
+        "trapecio": "Encolher os ombros em direção às orelhas ao subir."
+      }
+    },
+    "elevaciones-laterales-sentado": {
+      "nombre": "Elevações laterais sentado",
+      "cues": {
+        "codo": "Cotovelos quase esticados; sobe o cotovelo, não a mão.",
+        "altura": "Sobe até à altura dos ombros, não mais.",
+        "peso": "Peso leve: sentado não há impulso que ajude."
+      },
+      "errores": {
+        "alto": "Subir as mãos acima dos ombros.",
+        "trapecio": "Encolher os ombros em direção às orelhas ao subir."
+      }
+    },
+    "face-pull-banda": {
+      "nombre": "Face pull com banda",
+      "cues": {
+        "codos": "Puxa em direção à cara com os cotovelos altos e abertos.",
+        "giro": "No fim, mãos junto às orelhas e palmas para a frente.",
+        "pausa": "Aguenta um segundo atrás e volta devagar."
+      },
+      "errores": {
+        "codosBajos": "Puxar com os cotovelos baixos, como numa remada.",
+        "tronco": "Inclinar o tronco para trás para puxar."
+      }
+    },
+    "flexion-pica": {
+      "nombre": "Flexão em pique",
+      "cues": {
+        "cadera": "Anca alta: o corpo forma um V invertido.",
+        "cabeza": "Desce a cabeça em direção ao chão, à frente das mãos.",
+        "codos": "Cotovelos para trás, não abertos para os lados."
+      },
+      "errores": {
+        "cadera": "Baixar a anca e transformá-la numa flexão normal.",
+        "golpe": "Deixar cair a cabeça contra o chão."
+      }
+    },
+    "flexion-pica-pies-elevados": {
+      "nombre": "Flexão em pique com pés elevados",
+      "cues": {
+        "banco": "Pés firmes sobre um banco estável e anca alta.",
+        "cabeza": "Desce a cabeça em direção ao chão, à frente das mãos.",
+        "progresion": "Domina primeiro a flexão em pique no chão."
+      },
+      "errores": {
+        "cadera": "Deixar cair a anca durante a descida.",
+        "golpe": "Deixar cair a cabeça contra o chão."
+      }
+    },
+    "pajaro-mancuerna": {
+      "nombre": "Elevação posterior com halteres",
+      "cues": {
+        "bisagra": "Inclina o tronco a partir da anca, costas direitas e joelhos soltos.",
+        "abanico": "Abre os braços em leque até à altura das costas.",
+        "ligera": "Peso leve: o deltoide posterior é um músculo pequeno."
+      },
+      "errores": {
+        "tronco": "Levantar o tronco para ajudar a subir.",
+        "trapecio": "Encolher os ombros em vez de abrir os braços."
+      }
+    },
+    "press-arnold": {
+      "nombre": "Press Arnold",
+      "cues": {
+        "inicio": "Começa com os halteres à frente da cara e as palmas viradas para ti.",
+        "giro": "Abre os cotovelos e roda as palmas para a frente enquanto sobes.",
+        "abdomen": "Abdómen firme: a rotação fazem-na os braços, não o tronco."
+      },
+      "errores": {
+        "arco": "Arquear as costas no fim do empurrão.",
+        "rapido": "Fazer a rotação de repente, sem controlo."
+      }
+    },
+    "press-banda": {
+      "nombre": "Press de ombros com banda",
+      "cues": {
+        "pisada": "Pisa bem a banda com os dois pés antes de começar.",
+        "antebrazos": "Antebraços na vertical debaixo das mãos em todo o percurso.",
+        "abdomen": "Abdómen firme: sem arquear as costas."
+      },
+      "errores": {
+        "arco": "Arquear as costas para esticar a banda.",
+        "soltar": "Soltar a banda de repente ao descer."
+      }
+    },
+    "press-mancuerna-sentado": {
+      "nombre": "Press de ombros sentado com halteres",
+      "cues": {
+        "antebrazos": "Antebraços na vertical debaixo dos halteres em todo o percurso.",
+        "abdomen": "Senta-te direito com o abdómen firme, sem te inclinares para trás.",
+        "arriba": "Em cima, braços quase esticados e halteres sobre os ombros."
+      },
+      "errores": {
+        "arco": "Inclinar o tronco para trás e arquear as costas.",
+        "corto": "Descer só até meia altura."
+      }
+    },
+    "press-militar-barra": {
+      "nombre": "Press militar com barra",
+      "cues": {
+        "abdomen": "Contrai abdómen e glúteos: o tronco não arqueia.",
+        "trayectoria": "A barra sobe a direito da clavícula até cima do meio do pé.",
+        "cabeza": "Afasta a cabeça quando a barra passa e mete-a por baixo ao bloquear.",
+        "bloqueo": "Em cima, braços esticados e barra sobre os ombros."
+      },
+      "errores": {
+        "arco": "Arquear a zona lombar para empurrar.",
+        "codos": "Deixar os cotovelos atrás da barra ao começar.",
+        "lejos": "Acabar com a barra à frente da cabeça."
+      }
+    },
+    "press-militar-mancuerna": {
+      "nombre": "Press militar com halteres",
+      "cues": {
+        "antebrazos": "Antebraços na vertical debaixo dos halteres em todo o percurso.",
+        "abdomen": "Abdómen firme e costelas para baixo: sem arquear as costas.",
+        "arriba": "Em cima, braços quase esticados e halteres sobre os ombros."
+      },
+      "errores": {
+        "arco": "Arquear as costas para subir mais peso.",
+        "corto": "Descer só até meia altura."
+      }
+    },
+    "push-press": {
+      "nombre": "Push press com barra",
+      "cues": {
+        "impulso": "Dobra um pouco os joelhos e empurra com força com as pernas.",
+        "tronco": "Tronco na vertical no impulso; os calcanhares não se levantam.",
+        "bloqueo": "Acaba com os braços esticados e a barra sobre o meio do pé."
+      },
+      "errores": {
+        "sentadilla": "Descer demasiado no impulso, como num agachamento.",
+        "talones": "Descolar os calcanhares antes de empurrar.",
+        "adelante": "Inclinar o tronco e mandar a barra para a frente."
+      }
+    },
+    "remo-menton-banda": {
+      "nombre": "Remada alta com banda",
+      "cues": {
+        "agarre": "Pisa a banda e agarra-a à largura dos ombros.",
+        "codos": "Sobem os cotovelos, acima das mãos.",
+        "altura": "Para quando os cotovelos chegarem à altura dos ombros."
+      },
+      "errores": {
+        "estrecho": "Juntar as mãos ao centro.",
+        "alto": "Subir os cotovelos acima dos ombros.",
+        "balanceo": "Balançar o tronco para esticar a banda."
+      }
+    },
+    "remo-menton-barra": {
+      "nombre": "Remada alta com barra",
+      "cues": {
+        "agarre": "Pega à largura dos ombros, não fechada.",
+        "codos": "Sobem os cotovelos, acima das mãos.",
+        "altura": "Para quando os cotovelos chegarem à altura dos ombros."
+      },
+      "errores": {
+        "estrecho": "Agarrar a barra com as mãos juntas.",
+        "alto": "Subir os cotovelos acima dos ombros.",
+        "balanceo": "Balançar o tronco para subir o peso."
+      }
+    },
+    "remo-menton-mancuerna": {
+      "nombre": "Remada alta com halteres",
+      "cues": {
+        "agarre": "Halteres junto ao corpo, à largura dos ombros.",
+        "codos": "Sobem os cotovelos, acima das mãos.",
+        "altura": "Para quando os cotovelos chegarem à altura dos ombros."
+      },
+      "errores": {
+        "estrecho": "Juntar os halteres ao centro.",
+        "alto": "Subir os cotovelos acima dos ombros.",
+        "balanceo": "Balançar o tronco para subir o peso."
+      }
+    },
+    "rotacion-externa-90-banda": {
+      "nombre": "Rotação externa a 90° com banda",
+      "cues": {
+        "codos": "Cotovelos à altura dos ombros e um pouco à frente, quietos.",
+        "giro": "Roda os antebraços até à vertical, sem passar daí.",
+        "ligera": "Banda suave e movimento lento; para se sentires uma pontada."
+      },
+      "errores": {
+        "codos": "Baixar os cotovelos durante a rotação.",
+        "arco": "Arquear as costas para chegar mais atrás."
+      }
+    },
+    "rotacion-externa-banda": {
+      "nombre": "Rotação externa com banda",
+      "cues": {
+        "codo": "Cotovelo junto ao corpo e dobrado a 90° em toda a rotação.",
+        "lento": "Roda para fora devagar e volta ainda mais devagar.",
+        "ligera": "Banda suave: é um exercício de controlo, não de força."
+      },
+      "errores": {
+        "codo": "Afastar o cotovelo do corpo para ganhar percurso.",
+        "tronco": "Rodar o tronco em vez do braço."
+      }
+    },
+    "rotacion-interna-banda": {
+      "nombre": "Rotação interna com banda",
+      "cues": {
+        "codo": "Cotovelo junto ao corpo e dobrado a 90° em toda a rotação.",
+        "lento": "Leva a mão em direção ao umbigo devagar e volta com controlo.",
+        "ligera": "Banda suave: é um exercício de controlo, não de força."
+      },
+      "errores": {
+        "codo": "Afastar o cotovelo do corpo para ganhar percurso.",
+        "tronco": "Rodar o tronco em vez do braço."
+      }
+    },
+    "tiron-banda": {
+      "nombre": "Band pull-apart",
+      "cues": {
+        "altura": "Braços esticados à altura dos ombros em todo o percurso.",
+        "escapulas": "Abre os braços juntando as omoplatas, sem encolher os ombros.",
+        "vuelta": "Volta devagar até à frente, sem perder a tensão."
+      },
+      "errores": {
+        "trapecio": "Encolher os ombros em direção às orelhas.",
+        "arco": "Arquear as costas para abrir mais."
+      }
+    }
+  }
+}

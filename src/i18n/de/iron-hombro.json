@@ -1,0 +1,286 @@
+{
+  "ejercicios": {
+    "elevacion-frontal-banda": {
+      "nombre": "Frontheben mit Band",
+      "cues": {
+        "pisada": "Mit beiden Füßen auf das Band stellen und es fest halten.",
+        "altura": "Vorne bis auf Schulterhöhe anheben.",
+        "bajada": "Langsam absenken, ohne dass das Band dich zieht."
+      },
+      "errores": {
+        "balanceo": "Mit dem Oberkörper schwingen, um das Band zu dehnen.",
+        "soltar": "Das Band beim Absenken ruckartig nachgeben lassen."
+      }
+    },
+    "elevacion-frontal-barra": {
+      "nombre": "Frontheben mit Langhantel",
+      "cues": {
+        "altura": "Die Stange vorne bis auf Schulterhöhe anheben.",
+        "tronco": "Oberkörper ruhig: nicht nach hinten lehnen.",
+        "ligera": "Eine leichte Stange nehmen: der gestreckte Arm vervielfacht die Last."
+      },
+      "errores": {
+        "balanceo": "Mit dem Oberkörper schwingen, um die Stange hochzubringen.",
+        "codos": "Die Ellbogen beugen, um den Hebel zu verkürzen."
+      }
+    },
+    "elevacion-lateral-banda": {
+      "nombre": "Seitheben mit Band",
+      "cues": {
+        "codo": "Ellbogen fast gestreckt; den Ellbogen heben, nicht die Hand.",
+        "altura": "Bis auf Schulterhöhe, nicht höher.",
+        "banda": "Mit beiden Füßen auf das Band und eine Spannung wählen, die du kontrollierst."
+      },
+      "errores": {
+        "soltar": "Das Band beim Absenken die Arme ziehen lassen.",
+        "trapecio": "Beim Anheben die Schultern zu den Ohren ziehen."
+      }
+    },
+    "elevaciones-frontales": {
+      "nombre": "Frontheben mit Kurzhanteln",
+      "cues": {
+        "altura": "Vorne bis auf Schulterhöhe anheben.",
+        "tronco": "Oberkörper ruhig: nicht nach hinten lehnen.",
+        "bajada": "Langsam absenken, in etwa zwei Sekunden."
+      },
+      "errores": {
+        "balanceo": "Mit dem Oberkörper schwingen, um das Gewicht hochzubringen.",
+        "alto": "Die Hände über den Kopf heben."
+      }
+    },
+    "elevaciones-laterales": {
+      "nombre": "Seitheben mit Kurzhanteln",
+      "cues": {
+        "codo": "Ellbogen fast gestreckt; den Ellbogen heben, nicht die Hand.",
+        "altura": "Bis auf Schulterhöhe, nicht höher.",
+        "peso": "Leichtes Gewicht, kontrolliert: wenn du schwingst, reduziere es."
+      },
+      "errores": {
+        "balanceo": "Mit dem Oberkörper schwingen, um die Hanteln hochzubringen.",
+        "trapecio": "Beim Anheben die Schultern zu den Ohren ziehen."
+      }
+    },
+    "elevaciones-laterales-sentado": {
+      "nombre": "Seitheben im Sitzen",
+      "cues": {
+        "codo": "Ellbogen fast gestreckt; den Ellbogen heben, nicht die Hand.",
+        "altura": "Bis auf Schulterhöhe, nicht höher.",
+        "peso": "Leichtes Gewicht: im Sitzen hilft kein Schwung."
+      },
+      "errores": {
+        "alto": "Die Hände über die Schultern heben.",
+        "trapecio": "Beim Anheben die Schultern zu den Ohren ziehen."
+      }
+    },
+    "face-pull-banda": {
+      "nombre": "Face Pull mit Band",
+      "cues": {
+        "codos": "Zum Gesicht ziehen, Ellbogen hoch und offen.",
+        "giro": "Am Ende Hände neben den Ohren, Handflächen nach vorne.",
+        "pausa": "Hinten eine Sekunde halten und langsam zurück."
+      },
+      "errores": {
+        "codosBajos": "Mit tiefen Ellbogen ziehen, wie beim Rudern.",
+        "tronco": "Den Oberkörper nach hinten werfen, um zu ziehen."
+      }
+    },
+    "flexion-pica": {
+      "nombre": "Pike Push-up",
+      "cues": {
+        "cadera": "Hüfte hoch: der Körper bildet ein umgekehrtes V.",
+        "cabeza": "Den Kopf zum Boden senken, vor die Hände.",
+        "codos": "Ellbogen nach hinten, nicht zur Seite."
+      },
+      "errores": {
+        "cadera": "Die Hüfte senken und daraus einen normalen Liegestütz machen.",
+        "golpe": "Den Kopf auf den Boden fallen lassen."
+      }
+    },
+    "flexion-pica-pies-elevados": {
+      "nombre": "Pike Push-up mit erhöhten Füßen",
+      "cues": {
+        "banco": "Füße fest auf einer stabilen Bank, Hüfte hoch.",
+        "cabeza": "Den Kopf zum Boden senken, vor die Hände.",
+        "progresion": "Beherrsche zuerst den Pike Push-up am Boden."
+      },
+      "errores": {
+        "cadera": "Die Hüfte beim Absenken durchsacken lassen.",
+        "golpe": "Den Kopf auf den Boden fallen lassen."
+      }
+    },
+    "pajaro-mancuerna": {
+      "nombre": "Reverse Flys mit Kurzhanteln",
+      "cues": {
+        "bisagra": "Oberkörper aus der Hüfte vorneigen, Rücken gerade, Knie locker.",
+        "abanico": "Arme fächerförmig bis auf Rückenhöhe öffnen.",
+        "ligera": "Leichtes Gewicht: der hintere Deltamuskel ist klein."
+      },
+      "errores": {
+        "tronco": "Den Oberkörper aufrichten, um beim Anheben zu helfen.",
+        "trapecio": "Die Schultern hochziehen, statt die Arme zu öffnen."
+      }
+    },
+    "press-arnold": {
+      "nombre": "Arnold Press",
+      "cues": {
+        "inicio": "Starte mit den Hanteln vor dem Gesicht, Handflächen zu dir.",
+        "giro": "Beim Hochdrücken die Ellbogen öffnen und die Handflächen nach vorne drehen.",
+        "abdomen": "Bauch fest: die Arme drehen, nicht der Oberkörper."
+      },
+      "errores": {
+        "arco": "Am Ende des Drückens ins Hohlkreuz gehen.",
+        "rapido": "Die Drehung ruckartig und unkontrolliert machen."
+      }
+    },
+    "press-banda": {
+      "nombre": "Schulterdrücken mit Band",
+      "cues": {
+        "pisada": "Vor dem Start mit beiden Füßen fest auf das Band stellen.",
+        "antebrazos": "Unterarme die ganze Zeit senkrecht unter den Händen.",
+        "abdomen": "Bauch fest: kein Hohlkreuz."
+      },
+      "errores": {
+        "arco": "Ins Hohlkreuz gehen, um das Band zu dehnen.",
+        "soltar": "Das Band beim Absenken ruckartig nachgeben lassen."
+      }
+    },
+    "press-mancuerna-sentado": {
+      "nombre": "Schulterdrücken mit Kurzhanteln im Sitzen",
+      "cues": {
+        "antebrazos": "Unterarme die ganze Zeit senkrecht unter den Hanteln.",
+        "abdomen": "Aufrecht sitzen, Bauch fest, nicht nach hinten lehnen.",
+        "arriba": "Oben Arme fast gestreckt, Hanteln über den Schultern."
+      },
+      "errores": {
+        "arco": "Den Oberkörper nach hinten lehnen und ins Hohlkreuz gehen.",
+        "corto": "Nur bis zur halben Höhe absenken."
+      }
+    },
+    "press-militar-barra": {
+      "nombre": "Military Press mit Langhantel",
+      "cues": {
+        "abdomen": "Bauch und Gesäß anspannen: kein Hohlkreuz.",
+        "trayectoria": "Die Stange geht gerade vom Schlüsselbein bis über die Fußmitte.",
+        "cabeza": "Kopf zurücknehmen, wenn die Stange vorbeigeht, und oben darunter schieben.",
+        "bloqueo": "Oben Arme gestreckt, Stange über den Schultern."
+      },
+      "errores": {
+        "arco": "Beim Drücken ins Hohlkreuz gehen.",
+        "codos": "Beim Start die Ellbogen hinter der Stange lassen.",
+        "lejos": "Mit der Stange vor dem Kopf abschließen."
+      }
+    },
+    "press-militar-mancuerna": {
+      "nombre": "Military Press mit Kurzhanteln",
+      "cues": {
+        "antebrazos": "Unterarme die ganze Zeit senkrecht unter den Hanteln.",
+        "abdomen": "Bauch fest, Rippen unten: kein Hohlkreuz.",
+        "arriba": "Oben Arme fast gestreckt, Hanteln über den Schultern."
+      },
+      "errores": {
+        "arco": "Ins Hohlkreuz gehen, um mehr Gewicht zu drücken.",
+        "corto": "Nur bis zur halben Höhe absenken."
+      }
+    },
+    "push-press": {
+      "nombre": "Push Press mit Langhantel",
+      "cues": {
+        "impulso": "Knie leicht beugen und kräftig aus den Beinen drücken.",
+        "tronco": "Oberkörper beim Impuls senkrecht; die Fersen bleiben unten.",
+        "bloqueo": "Mit gestreckten Armen abschließen, Stange über der Fußmitte."
+      },
+      "errores": {
+        "sentadilla": "Beim Impuls zu tief gehen, wie bei einer Kniebeuge.",
+        "talones": "Die Fersen vor dem Drücken anheben.",
+        "adelante": "Den Oberkörper neigen und die Stange nach vorne schicken."
+      }
+    },
+    "remo-menton-banda": {
+      "nombre": "Aufrechtes Rudern mit Band",
+      "cues": {
+        "agarre": "Auf das Band stellen und schulterbreit greifen.",
+        "codos": "Die Ellbogen führen, sie bleiben über den Händen.",
+        "altura": "Stopp, wenn die Ellbogen auf Schulterhöhe sind."
+      },
+      "errores": {
+        "estrecho": "Die Hände in der Mitte zusammennehmen.",
+        "alto": "Die Ellbogen über die Schultern heben.",
+        "balanceo": "Mit dem Oberkörper schwingen, um das Band zu dehnen."
+      }
+    },
+    "remo-menton-barra": {
+      "nombre": "Aufrechtes Rudern mit Langhantel",
+      "cues": {
+        "agarre": "Schulterbreiter Griff, nicht eng.",
+        "codos": "Die Ellbogen führen, sie bleiben über den Händen.",
+        "altura": "Stopp, wenn die Ellbogen auf Schulterhöhe sind."
+      },
+      "errores": {
+        "estrecho": "Die Stange mit eng zusammenliegenden Händen greifen.",
+        "alto": "Die Ellbogen über die Schultern heben.",
+        "balanceo": "Mit dem Oberkörper schwingen, um das Gewicht hochzubringen."
+      }
+    },
+    "remo-menton-mancuerna": {
+      "nombre": "Aufrechtes Rudern mit Kurzhanteln",
+      "cues": {
+        "agarre": "Hanteln nah am Körper, schulterbreit.",
+        "codos": "Die Ellbogen führen, sie bleiben über den Händen.",
+        "altura": "Stopp, wenn die Ellbogen auf Schulterhöhe sind."
+      },
+      "errores": {
+        "estrecho": "Die Hanteln in der Mitte zusammenführen.",
+        "alto": "Die Ellbogen über die Schultern heben.",
+        "balanceo": "Mit dem Oberkörper schwingen, um das Gewicht hochzubringen."
+      }
+    },
+    "rotacion-externa-90-banda": {
+      "nombre": "Außenrotation auf 90° mit Band",
+      "cues": {
+        "codos": "Ellbogen auf Schulterhöhe, leicht vor dem Körper und ruhig.",
+        "giro": "Unterarme bis in die Senkrechte drehen, nicht weiter.",
+        "ligera": "Leichtes Band, langsame Bewegung; bei stechendem Schmerz stoppen."
+      },
+      "errores": {
+        "codos": "Die Ellbogen während der Drehung senken.",
+        "arco": "Ins Hohlkreuz gehen, um weiter nach hinten zu kommen."
+      }
+    },
+    "rotacion-externa-banda": {
+      "nombre": "Außenrotation mit Band",
+      "cues": {
+        "codo": "Ellbogen am Körper, die ganze Drehung auf 90° gebeugt.",
+        "lento": "Langsam nach außen drehen und noch langsamer zurück.",
+        "ligera": "Leichtes Band: eine Übung für Kontrolle, nicht für Kraft."
+      },
+      "errores": {
+        "codo": "Den Ellbogen vom Körper lösen, um mehr Weg zu machen.",
+        "tronco": "Den Oberkörper statt des Arms drehen."
+      }
+    },
+    "rotacion-interna-banda": {
+      "nombre": "Innenrotation mit Band",
+      "cues": {
+        "codo": "Ellbogen am Körper, die ganze Drehung auf 90° gebeugt.",
+        "lento": "Hand langsam zum Bauchnabel führen und kontrolliert zurück.",
+        "ligera": "Leichtes Band: eine Übung für Kontrolle, nicht für Kraft."
+      },
+      "errores": {
+        "codo": "Den Ellbogen vom Körper lösen, um mehr Weg zu machen.",
+        "tronco": "Den Oberkörper statt des Arms drehen."
+      }
+    },
+    "tiron-banda": {
+      "nombre": "Band Pull-apart",
+      "cues": {
+        "altura": "Arme die ganze Zeit gestreckt auf Schulterhöhe.",
+        "escapulas": "Arme öffnen und Schulterblätter zusammenführen, ohne die Schultern hochzuziehen.",
+        "vuelta": "Langsam nach vorne zurück, ohne die Spannung zu lösen."
+      },
+      "errores": {
+        "trapecio": "Die Schultern zu den Ohren hochziehen.",
+        "arco": "Ins Hohlkreuz gehen, um weiter zu öffnen."
+      }
+    }
+  }
+}

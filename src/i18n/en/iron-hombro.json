@@ -1,0 +1,286 @@
+{
+  "ejercicios": {
+    "elevacion-frontal-banda": {
+      "nombre": "Band front raise",
+      "cues": {
+        "pisada": "Stand on the band with both feet and hold it firmly.",
+        "altura": "Raise in front of you to shoulder height.",
+        "bajada": "Lower slowly, don't let the band pull you."
+      },
+      "errores": {
+        "balanceo": "Swinging your torso to stretch the band.",
+        "soltar": "Letting the band snap back on the way down."
+      }
+    },
+    "elevacion-frontal-barra": {
+      "nombre": "Barbell front raise",
+      "cues": {
+        "altura": "Raise the bar in front of you to shoulder height.",
+        "tronco": "Torso still: don't lean back.",
+        "ligera": "Use a light bar: straight arms multiply the effort."
+      },
+      "errores": {
+        "balanceo": "Swinging your torso to lift the bar.",
+        "codos": "Bending your elbows to shorten the lever."
+      }
+    },
+    "elevacion-lateral-banda": {
+      "nombre": "Band lateral raise",
+      "cues": {
+        "codo": "Elbows nearly straight; lead with your elbow, not your hand.",
+        "altura": "Raise to shoulder height, no higher.",
+        "banda": "Stand on the band with both feet and pick a tension you control."
+      },
+      "errores": {
+        "soltar": "Letting the band yank your arms down.",
+        "trapecio": "Shrugging your shoulders toward your ears as you lift."
+      }
+    },
+    "elevaciones-frontales": {
+      "nombre": "Dumbbell front raise",
+      "cues": {
+        "altura": "Raise in front of you to shoulder height.",
+        "tronco": "Torso still: don't lean back.",
+        "bajada": "Lower slowly, over about two seconds."
+      },
+      "errores": {
+        "balanceo": "Swinging your torso to lift the weight.",
+        "alto": "Raising your hands above your head."
+      }
+    },
+    "elevaciones-laterales": {
+      "nombre": "Dumbbell lateral raise",
+      "cues": {
+        "codo": "Elbows nearly straight; lead with your elbow, not your hand.",
+        "altura": "Raise to shoulder height, no higher.",
+        "peso": "Light, controlled weight: if you swing, go lighter."
+      },
+      "errores": {
+        "balanceo": "Swinging your torso to lift the dumbbells.",
+        "trapecio": "Shrugging your shoulders toward your ears as you lift."
+      }
+    },
+    "elevaciones-laterales-sentado": {
+      "nombre": "Seated lateral raise",
+      "cues": {
+        "codo": "Elbows nearly straight; lead with your elbow, not your hand.",
+        "altura": "Raise to shoulder height, no higher.",
+        "peso": "Light weight: seated, there's no momentum to help."
+      },
+      "errores": {
+        "alto": "Raising your hands above your shoulders.",
+        "trapecio": "Shrugging your shoulders toward your ears as you lift."
+      }
+    },
+    "face-pull-banda": {
+      "nombre": "Band face pull",
+      "cues": {
+        "codos": "Pull toward your face with elbows high and wide.",
+        "giro": "At the end, hands beside your ears, palms facing forward.",
+        "pausa": "Hold for a second at the back and return slowly."
+      },
+      "errores": {
+        "codosBajos": "Pulling with low elbows, like a row.",
+        "tronco": "Leaning back to pull."
+      }
+    },
+    "flexion-pica": {
+      "nombre": "Pike push-up",
+      "cues": {
+        "cadera": "Hips high: your body forms an upside-down V.",
+        "cabeza": "Lower your head toward the floor, in front of your hands.",
+        "codos": "Elbows going back, not flared to the sides."
+      },
+      "errores": {
+        "cadera": "Dropping your hips and turning it into a regular push-up.",
+        "golpe": "Letting your head hit the floor."
+      }
+    },
+    "flexion-pica-pies-elevados": {
+      "nombre": "Feet-elevated pike push-up",
+      "cues": {
+        "banco": "Feet planted on a stable bench, hips high.",
+        "cabeza": "Lower your head toward the floor, in front of your hands.",
+        "progresion": "Master the floor pike push-up first."
+      },
+      "errores": {
+        "cadera": "Letting your hips drop on the way down.",
+        "golpe": "Letting your head hit the floor."
+      }
+    },
+    "pajaro-mancuerna": {
+      "nombre": "Dumbbell reverse fly",
+      "cues": {
+        "bisagra": "Hinge at the hips, back straight and knees soft.",
+        "abanico": "Open your arms in a wide arc up to back height.",
+        "ligera": "Light weight: the rear delt is a small muscle."
+      },
+      "errores": {
+        "tronco": "Lifting your torso to help the lift.",
+        "trapecio": "Shrugging instead of opening your arms."
+      }
+    },
+    "press-arnold": {
+      "nombre": "Arnold press",
+      "cues": {
+        "inicio": "Start with the dumbbells in front of your face, palms facing you.",
+        "giro": "Open your elbows and turn your palms forward as you press.",
+        "abdomen": "Abs braced: your arms do the rotation, not your torso."
+      },
+      "errores": {
+        "arco": "Arching your back at the top of the press.",
+        "rapido": "Rotating abruptly, without control."
+      }
+    },
+    "press-banda": {
+      "nombre": "Band shoulder press",
+      "cues": {
+        "pisada": "Stand firmly on the band with both feet before starting.",
+        "antebrazos": "Forearms vertical under your hands the whole way.",
+        "abdomen": "Abs braced: don't arch your back."
+      },
+      "errores": {
+        "arco": "Arching your back to stretch the band.",
+        "soltar": "Letting the band snap back on the way down."
+      }
+    },
+    "press-mancuerna-sentado": {
+      "nombre": "Seated dumbbell shoulder press",
+      "cues": {
+        "antebrazos": "Forearms vertical under the dumbbells the whole way.",
+        "abdomen": "Sit tall with abs braced, without leaning back.",
+        "arriba": "At the top, arms nearly straight, dumbbells over your shoulders."
+      },
+      "errores": {
+        "arco": "Leaning back and arching your back.",
+        "corto": "Lowering only halfway."
+      }
+    },
+    "press-militar-barra": {
+      "nombre": "Barbell overhead press",
+      "cues": {
+        "abdomen": "Squeeze your abs and glutes: your torso doesn't arch.",
+        "trayectoria": "The bar travels straight up from your collarbone to over mid-foot.",
+        "cabeza": "Move your head back as the bar passes, then under it at lockout.",
+        "bloqueo": "At the top, arms straight and bar over your shoulders."
+      },
+      "errores": {
+        "arco": "Arching your lower back to press.",
+        "codos": "Starting with your elbows behind the bar.",
+        "lejos": "Finishing with the bar in front of your head."
+      }
+    },
+    "press-militar-mancuerna": {
+      "nombre": "Standing dumbbell shoulder press",
+      "cues": {
+        "antebrazos": "Forearms vertical under the dumbbells the whole way.",
+        "abdomen": "Abs braced and ribs down: don't arch your back.",
+        "arriba": "At the top, arms nearly straight, dumbbells over your shoulders."
+      },
+      "errores": {
+        "arco": "Arching your back to lift more weight.",
+        "corto": "Lowering only halfway."
+      }
+    },
+    "push-press": {
+      "nombre": "Barbell push press",
+      "cues": {
+        "impulso": "Dip your knees slightly and drive hard with your legs.",
+        "tronco": "Torso vertical during the dip; your heels stay down.",
+        "bloqueo": "Finish with arms straight and the bar over mid-foot."
+      },
+      "errores": {
+        "sentadilla": "Dipping too low, like a squat.",
+        "talones": "Lifting your heels before you drive.",
+        "adelante": "Leaning your torso and sending the bar forward."
+      }
+    },
+    "remo-menton-banda": {
+      "nombre": "Band upright row",
+      "cues": {
+        "agarre": "Stand on the band and grip it shoulder-width apart.",
+        "codos": "Lead with your elbows, above your hands.",
+        "altura": "Stop when your elbows reach shoulder height."
+      },
+      "errores": {
+        "estrecho": "Bringing your hands together in the middle.",
+        "alto": "Raising your elbows above your shoulders.",
+        "balanceo": "Swinging your torso to stretch the band."
+      }
+    },
+    "remo-menton-barra": {
+      "nombre": "Barbell upright row",
+      "cues": {
+        "agarre": "Shoulder-width grip, not narrow.",
+        "codos": "Lead with your elbows, above your hands.",
+        "altura": "Stop when your elbows reach shoulder height."
+      },
+      "errores": {
+        "estrecho": "Gripping the bar with your hands close together.",
+        "alto": "Raising your elbows above your shoulders.",
+        "balanceo": "Swinging your torso to lift the weight."
+      }
+    },
+    "remo-menton-mancuerna": {
+      "nombre": "Dumbbell upright row",
+      "cues": {
+        "agarre": "Dumbbells close to your body, shoulder-width apart.",
+        "codos": "Lead with your elbows, above your hands.",
+        "altura": "Stop when your elbows reach shoulder height."
+      },
+      "errores": {
+        "estrecho": "Bringing the dumbbells together in the middle.",
+        "alto": "Raising your elbows above your shoulders.",
+        "balanceo": "Swinging your torso to lift the weight."
+      }
+    },
+    "rotacion-externa-90-banda": {
+      "nombre": "Band 90° external rotation",
+      "cues": {
+        "codos": "Elbows at shoulder height, slightly forward, and still.",
+        "giro": "Rotate your forearms up to vertical, no further.",
+        "ligera": "Light band and slow movement; stop if you feel a sharp pain."
+      },
+      "errores": {
+        "codos": "Dropping your elbows during the rotation.",
+        "arco": "Arching your back to rotate further."
+      }
+    },
+    "rotacion-externa-banda": {
+      "nombre": "Band external rotation",
+      "cues": {
+        "codo": "Elbow tight to your side, bent at 90° throughout.",
+        "lento": "Rotate out slowly and return even more slowly.",
+        "ligera": "Light band: it's a control exercise, not a strength one."
+      },
+      "errores": {
+        "codo": "Moving your elbow away from your body to gain range.",
+        "tronco": "Rotating your torso instead of your arm."
+      }
+    },
+    "rotacion-interna-banda": {
+      "nombre": "Band internal rotation",
+      "cues": {
+        "codo": "Elbow tight to your side, bent at 90° throughout.",
+        "lento": "Bring your hand toward your belly slowly and return with control.",
+        "ligera": "Light band: it's a control exercise, not a strength one."
+      },
+      "errores": {
+        "codo": "Moving your elbow away from your body to gain range.",
+        "tronco": "Rotating your torso instead of your arm."
+      }
+    },
+    "tiron-banda": {
+      "nombre": "Band pull-apart",
+      "cues": {
+        "altura": "Arms straight at shoulder height the whole way.",
+        "escapulas": "Pull apart by squeezing your shoulder blades, without shrugging.",
+        "vuelta": "Return slowly to the front, keeping tension."
+      },
+      "errores": {
+        "trapecio": "Shrugging your shoulders toward your ears.",
+        "arco": "Arching your back to pull further."
+      }
+    }
+  }
+}

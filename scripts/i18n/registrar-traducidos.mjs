@@ -12,7 +12,10 @@ const NO_IDIOMA = new Set(['es', '__tests__']);
 
 // El orden de los namespaces es el de recursos.ts.
 const recursos = fs.readFileSync(path.join(I18N, 'recursos.ts'), 'utf8');
-const ns = [...recursos.matchAll(/^import (\w+) from '\.\/es\/\1\.json';$/gm)].map((m) => m[1]);
+// El namespace es el nombre del archivo (IRON fase 2: «iron-brazos» se importa como ironBrazos).
+const ns = [...recursos.matchAll(/^import (\w+) from '\.\/es\/([\w-]+)\.json';$/gm)].map((m) => m[2]);
+const ident = (l, n) => l + n.split('-').map((p) => p[0].toUpperCase() + p.slice(1)).join('');
+const clave = (n) => (/^\w+$/.test(n) ? n : `'${n}'`);
 const ORDEN = ['en', 'fr', 'pt', 'de', 'it'];
 const lngs = fs
   .readdirSync(I18N)
@@ -28,7 +31,7 @@ let s = `// NIVL · Idiomas (Modos F1): los catálogos traducidos, src/i18n/<lng
 
 import type { RecursosEs } from './recursos';
 `;
-for (const l of lngs) for (const n of ns) s += `import ${l}${n[0].toUpperCase()}${n.slice(1)} from './${l}/${n}.json';\n`;
+for (const l of lngs) for (const n of ns) s += `import ${ident(l, n)} from './${l}/${n}.json';\n`;
 s += `
 /** Los idiomas con interfaz traducida (el español no está: es la base). */
 export const IDIOMAS_TRADUCIDOS = [${lngs.map((l) => `'${l}'`).join(', ')}] as const;
@@ -40,7 +43,7 @@ export const RECURSOS_LOCALES: Record<IdiomaTraducido, Catalogo> = {
 `;
 for (const l of lngs) {
   s += `  ${l}: {\n`;
-  for (const n of ns) s += `    ${n}: ${l}${n[0].toUpperCase()}${n.slice(1)},\n`;
+  for (const n of ns) s += `    ${clave(n)}: ${ident(l, n)},\n`;
   s += `  },\n`;
 }
 s += `};\n`;

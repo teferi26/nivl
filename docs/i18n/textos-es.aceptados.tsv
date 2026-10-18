@@ -1413,3 +1413,1019 @@ onboarding	+	Cifra: {{cifra}}
 onboarding	+	Fecha: {{fecha}}
 # QA F1 (menor 10): la unidad de la racha del Hero («12d») pasa al catálogo para poder traducirla (de «T», fr «j», it «g»). En español sigue siendo «d».
 arena	+	d
+# IRON fase 2 (integración): los catálogos de ejercicios por grupo (iron-<grupo>), los músculos y materiales nuevos en iron y la ronda 2.
+iron	+	Braquial
+iron	+	Braquiorradial
+iron	+	Sóleo
+iron	+	Glúteo medio (abductores)
+iron	+	Psoas (flexor de cadera)
+iron	+	Manguito rotador
+iron	+	Pectoral superior
+iron	+	Barra Z
+iron	+	Barra fija
+iron	+	Rack
+iron	+	Cajón
+iron	+	Banco inclinado
+iron	+	Banco declinado
+iron	+	Paralelas
+iron-brazos	+	Curl de bíceps con barra
+iron-brazos	+	Agarre al ancho de los hombros, palmas hacia delante.
+iron-brazos	+	Codos quietos junto al cuerpo; solo se mueve el antebrazo.
+iron-brazos	+	Baja despacio hasta estirar casi del todo el brazo.
+iron-brazos	+	Echar el tronco atrás para subir la barra.
+iron-brazos	+	Adelantar los codos al final del curl.
+iron-brazos	+	Doblar las muñecas hacia atrás con el peso.
+iron-brazos	+	Curl de bíceps con barra Z
+iron-brazos	+	Agarra la barra en las ondas: la muñeca queda más cómoda.
+iron-brazos	+	Codos pegados al cuerpo y quietos.
+iron-brazos	+	Baja controlando, sin dejar caer la barra.
+iron-brazos	+	Impulsarse con la cadera o el tronco.
+iron-brazos	+	Hacer medio recorrido: ni abajo del todo ni arriba.
+iron-brazos	+	Curl martillo con mancuernas
+iron-brazos	+	Palmas mirándose todo el recorrido, como un martillo.
+iron-brazos	+	Codos junto al costado; sube hasta la altura del hombro.
+iron-brazos	+	Baja despacio, sin balancear las mancuernas.
+iron-brazos	+	Usar el impulso del cuerpo para subir.
+iron-brazos	+	Girar la muñeca a palma arriba: deja de ser martillo.
+iron-brazos	+	Curl concentrado con mancuerna
+iron-brazos	+	Apoya el codo en la cara interna del muslo y no lo muevas.
+iron-brazos	+	Sube hasta el hombro y aprieta un segundo arriba.
+iron-brazos	+	Baja hasta estirar el brazo sin soltar la tensión.
+iron-brazos	+	Subir el hombro para ayudar al curl.
+iron-brazos	+	Levantar el tronco al subir la mancuerna.
+iron-brazos	+	Curl de bíceps sentado con mancuernas
+iron-brazos	+	Espalda recta y pies planos en el suelo.
+iron-brazos	+	Codos quietos junto al cuerpo.
+iron-brazos	+	Baja despacio, en unos dos segundos.
+iron-brazos	+	Echarse hacia atrás para subir el peso.
+iron-brazos	+	No estirar el brazo abajo.
+iron-brazos	+	Curl inverso con barra Z
+iron-brazos	+	Palmas hacia abajo; usa menos peso que en el curl normal.
+iron-brazos	+	Muñecas firmes y en línea con el antebrazo.
+iron-brazos	+	Codos quietos junto al cuerpo.
+iron-brazos	+	Balancear el cuerpo para subir la barra.
+iron-brazos	+	Dejar que las muñecas se doblen hacia abajo.
+iron-brazos	+	Curl de arrastre con barra
+iron-brazos	+	La barra sube rozando el cuerpo, de los muslos al pecho.
+iron-brazos	+	Lleva los codos hacia atrás mientras subes.
+iron-brazos	+	Baja por el mismo camino, despacio.
+iron-brazos	+	Separar la barra del cuerpo como en el curl normal.
+iron-brazos	+	Encoger los hombros hacia las orejas.
+iron-brazos	+	Press francés con barra Z
+iron-brazos	+	Brazos casi verticales, un poco hacia la cabeza, y quietos.
+iron-brazos	+	Codos cerrados, apuntando al techo.
+iron-brazos	+	Baja despacio hasta pasar la frente, sin tocar la cabeza.
+iron-brazos	+	Abrir los codos hacia fuera.
+iron-brazos	+	Mover los brazos: se convierte en un press.
+iron-brazos	+	Press francés con mancuernas
+iron-brazos	+	Brazos quietos, un poco inclinados hacia la cabeza.
+iron-brazos	+	Codos cerrados, apuntando al techo.
+iron-brazos	+	Baja las mancuernas a los lados de la cabeza, despacio.
+iron-brazos	+	Abrir los codos hacia fuera.
+iron-brazos	+	Bajar los brazos en vez de doblar los codos.
+iron-brazos	+	Press francés en el suelo con mancuernas
+iron-brazos	+	Tumbado boca arriba, rodillas dobladas y pies planos.
+iron-brazos	+	Brazos quietos; solo se doblan los codos.
+iron-brazos	+	Baja despacio hasta los lados de la cabeza.
+iron-brazos	+	Mover los brazos para ayudar a subir.
+iron-brazos	+	Dejar caer las mancuernas contra el suelo.
+iron-brazos	+	Press de banca con agarre cerrado
+iron-brazos	+	Manos algo más juntas que los hombros, no pegadas.
+iron-brazos	+	Codos cerca del cuerpo al bajar.
+iron-brazos	+	La barra toca la parte baja del pecho y sube sobre los hombros.
+iron-brazos	+	Con peso alto, usa soportes de seguridad o alguien que te ayude.
+iron-brazos	+	Abrir los codos como en el press normal.
+iron-brazos	+	Rebotar la barra en el pecho.
+iron-brazos	+	Doblar las muñecas hacia atrás.
+iron-brazos	+	Press cerrado con mancuernas
+iron-brazos	+	Mancuernas juntas y palmas mirándose todo el recorrido.
+iron-brazos	+	Codos pegados al cuerpo.
+iron-brazos	+	Baja hasta la parte baja del pecho, despacio.
+iron-brazos	+	Separar las mancuernas al subir.
+iron-brazos	+	Rebotar en el pecho.
+iron-brazos	+	Fondos en banco
+iron-brazos	+	Manos en el borde del banco o de una silla firme, dedos delante.
+iron-brazos	+	Baja con la espalda cerca del banco.
+iron-brazos	+	Para cuando el brazo quede paralelo al suelo; si molesta el hombro, menos.
+iron-brazos	+	Bajar demasiado y forzar los hombros.
+iron-brazos	+	Separar la cadera del banco.
+iron-brazos	+	Fondos entre bancos con pies elevados
+iron-brazos	+	Manos en el borde de un banco y talones sobre el otro.
+iron-brazos	+	Baja con la espalda cerca del banco.
+iron-brazos	+	Brazo paralelo al suelo como mucho; sin dolor en el hombro.
+iron-brazos	+	Bajar demasiado y forzar los hombros.
+iron-brazos	+	Rebotar abajo para subir.
+iron-brazos	+	Flexiones diamante
+iron-brazos	+	Manos juntas bajo el pecho formando un diamante.
+iron-brazos	+	Cuerpo recto de los talones a la cabeza, abdomen firme.
+iron-brazos	+	Codos pegados, van hacia atrás al bajar.
+iron-brazos	+	Dejar caer la cadera o subirla en pico.
+iron-brazos	+	Abrir los codos hacia los lados.
+iron-brazos	+	Bajar solo un poco.
+iron-brazos	+	Flexiones diamante de rodillas
+iron-brazos	+	Manos juntas bajo el pecho formando un diamante.
+iron-brazos	+	Recto de las rodillas a la cabeza.
+iron-brazos	+	Codos pegados, van hacia atrás al bajar.
+iron-brazos	+	Doblar la cadera en lugar de bajar el pecho.
+iron-brazos	+	Abrir los codos hacia los lados.
+iron-brazos	+	Extensión de tríceps sobre la cabeza con mancuerna
+iron-brazos	+	Codos hacia el techo y quietos, cerca de la cabeza.
+iron-brazos	+	Abdomen firme: la espalda no se arquea.
+iron-brazos	+	Baja la mancuerna detrás de la cabeza, despacio.
+iron-brazos	+	Abrir los codos hacia los lados.
+iron-brazos	+	Arquear la zona lumbar para subir el peso.
+iron-brazos	+	Extensión de tríceps sobre la cabeza con barra Z
+iron-brazos	+	Agarre cerrado en las ondas de la barra.
+iron-brazos	+	Codos hacia el techo y quietos.
+iron-brazos	+	Abdomen firme y glúteos apretados.
+iron-brazos	+	Abrir los codos hacia los lados.
+iron-brazos	+	Arquear la zona lumbar.
+iron-brazos	+	Patada de tríceps con mancuerna
+iron-brazos	+	Rodilla y mano en el banco, espalda recta.
+iron-brazos	+	Codo pegado al costado, un poco por encima de la espalda.
+iron-brazos	+	Estira el codo del todo y aprieta un segundo.
+iron-brazos	+	Balancear la mancuerna con el hombro.
+iron-brazos	+	Dejar caer el codo al cansarse.
+iron-brazos	+	Patada de tríceps de pie
+iron-brazos	+	Rodillas sueltas, cadera atrás y espalda recta.
+iron-brazos	+	Codos pegados al costado y quietos.
+iron-brazos	+	Estira los codos del todo; vale con dos garrafas.
+iron-brazos	+	Redondear la espalda al inclinarse.
+iron-brazos	+	Balancear los brazos para subir el peso.
+iron-brazos	+	Curl de muñeca con barra
+iron-brazos	+	Antebrazos sobre los muslos, palmas arriba, muñecas fuera.
+iron-brazos	+	Baja la barra hasta los dedos y súbela cerrando la muñeca.
+iron-brazos	+	Movimiento lento; poco peso y muchas repeticiones.
+iron-brazos	+	Levantar los antebrazos de los muslos.
+iron-brazos	+	Dejar caer la barra de golpe.
+iron-brazos	+	Extensión de muñeca con mancuernas
+iron-brazos	+	Antebrazos sobre los muslos, palmas abajo, muñecas fuera.
+iron-brazos	+	Usa poco peso: estos músculos son pequeños.
+iron-brazos	+	Sube y baja despacio, sin tirones.
+iron-brazos	+	Levantar el antebrazo para ayudar.
+iron-brazos	+	Soltar los dedos y dejar la mancuerna suelta.
+iron-brazos	+	Curl de muñeca por detrás de la espalda
+iron-brazos	+	Barra detrás de los glúteos, palmas hacia atrás.
+iron-brazos	+	Brazos estirados y quietos; solo se mueven las muñecas.
+iron-brazos	+	Sube y baja despacio, sin balanceo.
+iron-brazos	+	Doblar los codos para subir la barra.
+iron-brazos	+	Dejar caer la barra de golpe.
+iron-brazos	+	Paseo del granjero
+iron-brazos	+	Tronco recto, hombros atrás y abdomen firme.
+iron-brazos	+	Aprieta fuerte las mancuernas; suéltalas si el agarre falla.
+iron-brazos	+	Pasos cortos y mirada al frente.
+iron-brazos	+	Inclinarse hacia un lado o hacia delante.
+iron-brazos	+	Dejar caer los hombros hacia delante.
+iron-brazos	+	Curl de bíceps en polea baja
+iron-brazos	+	Codos quietos junto al cuerpo; solo se mueve el antebrazo.
+iron-brazos	+	Ponte a un paso de la polea para que el cable tire también abajo.
+iron-brazos	+	Baja despacio hasta estirar casi del todo el brazo.
+iron-brazos	+	Echar el tronco atrás para subir el peso.
+iron-brazos	+	Adelantar los codos al final del curl.
+iron-brazos	+	Extensión de tríceps en polea con cuerda
+iron-brazos	+	Codos pegados al costado y quietos todo el recorrido.
+iron-brazos	+	Estira del todo abajo y separa un poco los cabos de la cuerda.
+iron-brazos	+	Tronco algo inclinado y quieto; no empujes con el cuerpo.
+iron-brazos	+	Separar los codos del cuerpo al bajar.
+iron-brazos	+	Subir los hombros y empujar con la espalda.
+iron-brazos	+	Curl inclinado con mancuernas
+iron-brazos	+	Espalda y cabeza apoyadas en el respaldo todo el rato.
+iron-brazos	+	Brazos colgando y quietos; solo sube el antebrazo.
+iron-brazos	+	Baja despacio hasta estirar el brazo sin soltar la tensión.
+iron-brazos	+	Adelantar los hombros y los codos al subir.
+iron-brazos	+	Quedarse a medio recorrido abajo.
+iron-brazos	+	Curl araña con mancuernas
+iron-brazos	+	Pecho apoyado en el respaldo inclinado y pies firmes en el suelo.
+iron-brazos	+	Brazos colgando verticales y quietos; solo sube el antebrazo.
+iron-brazos	+	Aprieta arriba un segundo y baja despacio hasta estirar.
+iron-brazos	+	Despegar el pecho del banco para subir el peso.
+iron-brazos	+	Llevar los codos hacia atrás al subir.
+iron-core	+	Cardio y peso corporal
+iron-core	+	Movilidad
+iron-core	+	Transverso del abdomen
+iron-core	+	Serrato anterior
+iron-core	+	Cuello
+iron-core	+	Esterilla
+iron-core	+	Comba
+iron-core	+	Rueda abdominal
+iron-core	+	Crunch abdominal
+iron-core	+	Pies planos y zona lumbar apoyada en la esterilla.
+iron-core	+	Despega solo los hombros, enrollando el tronco hacia la pelvis.
+iron-core	+	Mirada al techo y barbilla un poco metida; no tires de la cabeza.
+iron-core	+	Tirar del cuello con las manos.
+iron-core	+	Subir a tirones con impulso.
+iron-core	+	Subir hasta sentarse: deja de trabajar el abdomen.
+iron-core	+	Crunch inverso
+iron-core	+	Brazos y hombros quietos en la esterilla.
+iron-core	+	Lleva las rodillas al pecho enrollando la pelvis.
+iron-core	+	Baja despacio, sin dejar caer las piernas.
+iron-core	+	Balancear las piernas para subir la cadera.
+iron-core	+	Dejar caer las piernas al bajar.
+iron-core	+	Elevaciones de piernas
+iron-core	+	Zona lumbar pegada a la esterilla todo el recorrido.
+iron-core	+	Piernas juntas y casi estiradas; dobla un poco si tira la espalda.
+iron-core	+	Baja despacio y para antes de tocar el suelo.
+iron-core	+	Arquear la espalda al bajar las piernas.
+iron-core	+	Subir las piernas con impulso.
+iron-core	+	Tijeras abdominales
+iron-core	+	Zona lumbar pegada a la esterilla.
+iron-core	+	Patadas cortas y alternas, sin tocar el suelo.
+iron-core	+	Respira con ritmo; no aguantes el aire.
+iron-core	+	Arquear la espalda al bajar las piernas.
+iron-core	+	Doblar mucho las rodillas.
+iron-core	+	Hollow hold
+iron-core	+	Pega la zona lumbar a la esterilla antes de subir piernas y hombros.
+iron-core	+	Si la espalda se despega, sube más las piernas.
+iron-core	+	Respira corto sin soltar el abdomen.
+iron-core	+	Despegar la zona lumbar del suelo.
+iron-core	+	Tensar el cuello mirando hacia los pies.
+iron-core	+	Dead bug
+iron-core	+	Zona lumbar apoyada: no dejes que se arquee.
+iron-core	+	Estira a la vez un brazo y la pierna contraria.
+iron-core	+	Lento y con control; exhala al estirar.
+iron-core	+	Arquear la espalda al estirar la pierna.
+iron-core	+	Ir rápido y perder el control.
+iron-core	+	Plancha alta
+iron-core	+	Manos bajo los hombros y brazos estirados.
+iron-core	+	Cabeza, cadera y talones en línea recta.
+iron-core	+	Empuja el suelo y aprieta abdomen y glúteos.
+iron-core	+	Dejar caer la cadera.
+iron-core	+	Hundir el pecho entre los hombros.
+iron-core	+	Aguantar la respiración.
+iron-core	+	Toques de hombro en plancha
+iron-core	+	Separa un poco los pies para estar más estable.
+iron-core	+	La cadera no se mueve al levantar la mano.
+iron-core	+	Toca el hombro contrario despacio y vuelve.
+iron-core	+	Balancear la cadera de lado a lado.
+iron-core	+	Subir la cadera para compensar.
+iron-core	+	Bird dog
+iron-core	+	Manos bajo los hombros y rodillas bajo la cadera.
+iron-core	+	Estira brazo y pierna contrarios en línea con la espalda.
+iron-core	+	Aguanta un segundo arriba y vuelve sin prisa.
+iron-core	+	Subir la pierna de más arqueando la zona lumbar.
+iron-core	+	Girar la cadera al estirar la pierna.
+iron-core	+	Mountain climbers
+iron-core	+	Manos firmes bajo los hombros.
+iron-core	+	Cadera baja, en línea con los hombros.
+iron-core	+	Lleva cada rodilla hacia el pecho, alternando con ritmo.
+iron-core	+	Subir la cadera en pico.
+iron-core	+	Dejar que los hombros se vayan por delante de las manos.
+iron-core	+	Rueda abdominal
+iron-core	+	Aprieta abdomen y glúteos para no hundir la espalda.
+iron-core	+	Rueda solo hasta donde mantengas la espalda neutra.
+iron-core	+	Vuelve tirando con el abdomen, no con la cadera.
+iron-core	+	Hundir la zona lumbar al estirarse.
+iron-core	+	Volver echando la cadera atrás primero.
+iron-core	+	Ir más lejos de lo que se controla.
+iron-core	+	Plancha lateral
+iron-core	+	Codo justo debajo del hombro.
+iron-core	+	Sube la cadera hasta que el cuerpo quede recto.
+iron-core	+	Respira y aguanta sin girar el pecho al suelo.
+iron-core	+	Dejar caer la cadera.
+iron-core	+	Hundirse en el hombro de apoyo.
+iron-core	+	Russian twist
+iron-core	+	Espalda recta, inclinada hacia atrás.
+iron-core	+	Gira el tronco con los brazos, no solo los brazos.
+iron-core	+	Talones en el suelo; súbelos solo si controlas el giro.
+iron-core	+	Mover solo los brazos sin girar el tronco.
+iron-core	+	Encorvar la espalda.
+iron-core	+	Burpees
+iron-core	+	Apoya las manos delante de los pies, a la anchura de los hombros.
+iron-core	+	Cae en plancha con el abdomen firme, sin hundir la cadera.
+iron-core	+	Ponte de pie y salta con los brazos arriba; aterriza suave.
+iron-core	+	Caer en la plancha con la cadera hundida.
+iron-core	+	Aterrizar con las rodillas rígidas.
+iron-core	+	Saltos de tijera
+iron-core	+	Salta y aterriza sobre la parte delantera de los pies.
+iron-core	+	Sube los brazos por los lados hasta encima de la cabeza.
+iron-core	+	Rodillas sueltas y en la línea de los pies al caer.
+iron-core	+	Caer de talones, con golpe.
+iron-core	+	Dejar que las rodillas se cierren al aterrizar.
+iron-core	+	Saltar a la comba
+iron-core	+	Saltos bajos, lo justo para que pase la cuerda.
+iron-core	+	Codos pegados al cuerpo; gira la cuerda con las muñecas.
+iron-core	+	Cae sobre la parte delantera del pie, con las rodillas sueltas.
+iron-core	+	Saltar demasiado alto y cansarse antes.
+iron-core	+	Girar la cuerda con los brazos enteros.
+iron-core	+	Rodillas arriba
+iron-core	+	Sube cada rodilla a la altura de la cadera.
+iron-core	+	Mueve el brazo contrario a la pierna, con los codos doblados.
+iron-core	+	Pisa con la parte delantera del pie y el tronco erguido.
+iron-core	+	Echar el tronco hacia atrás para subir la rodilla.
+iron-core	+	Caer de talones.
+iron-core	+	Talones al glúteo
+iron-core	+	Lleva el talón hacia el glúteo, rápido y suelto.
+iron-core	+	El muslo queda casi vertical; la rodilla no se adelanta.
+iron-core	+	Pisa con la parte delantera del pie.
+iron-core	+	Adelantar la rodilla en vez de doblarla.
+iron-core	+	Inclinar el tronco hacia delante.
+iron-core	+	Sentadilla con salto
+iron-core	+	Baja como en una sentadilla, con el pecho arriba.
+iron-core	+	Salta extendiendo cadera, rodillas y tobillos.
+iron-core	+	Aterriza de puntas a talones y dobla las rodillas.
+iron-core	+	Dejar que las rodillas se cierren al bajar o al caer.
+iron-core	+	Aterrizar con las piernas rígidas.
+iron-core	+	Paso del oso
+iron-core	+	Rodillas a dos dedos del suelo, bajo la cadera.
+iron-core	+	Avanza a la vez mano y pie contrarios, con pasos cortos.
+iron-core	+	Espalda plana: la cadera no sube ni se balancea.
+iron-core	+	Subir la cadera por encima de los hombros.
+iron-core	+	Mover mano y pie del mismo lado.
+iron-core	+	Perro boca abajo con pedaleo
+iron-core	+	Empuja el suelo con las manos abiertas.
+iron-core	+	Lleva la cadera arriba y atrás, espalda larga.
+iron-core	+	Alterna bajar un talón y doblar la otra rodilla, sin forzar.
+iron-core	+	Redondear la espalda para estirar las piernas.
+iron-core	+	Hundir los hombros hacia el suelo.
+iron-core	+	Bisagra de cadera
+iron-core	+	Lleva la cadera atrás, como si cerraras una puerta con ella.
+iron-core	+	Espalda recta y cuello en línea todo el recorrido.
+iron-core	+	Rodillas un poco dobladas; baja hasta notar los isquios.
+iron-core	+	Redondear la espalda para bajar más.
+iron-core	+	Doblar las rodillas y convertirlo en sentadilla.
+iron-core	+	Estiramiento de flexores de cadera
+iron-core	+	Aprieta el glúteo de la pierna de atrás antes de avanzar.
+iron-core	+	Tronco recto: avanza la pelvis, sin arquear la espalda.
+iron-core	+	Aguanta unos segundos respirando y vuelve despacio.
+iron-core	+	Arquear la zona lumbar en lugar de avanzar la pelvis.
+iron-core	+	Apoyar la rodilla en el suelo duro; usa la esterilla.
+iron-core	+	Movilidad de tobillo
+iron-core	+	El talón de delante no se levanta en ningún momento.
+iron-core	+	Lleva la rodilla hacia delante, en la línea del pie.
+iron-core	+	Movimiento suave y sin rebotes; para si duele.
+iron-core	+	Levantar el talón para llegar más lejos.
+iron-core	+	Dejar que la rodilla se vaya hacia dentro.
+iron-core	+	Balanceo de pierna
+iron-core	+	Apóyate en una pared si te cuesta el equilibrio.
+iron-core	+	Balancea la pierna suelta, sin dar tirones.
+iron-core	+	Empieza corto y sube la altura poco a poco.
+iron-core	+	Mover el tronco para subir más la pierna.
+iron-core	+	Forzar el rango desde el primer balanceo.
+iron-core	+	Pallof press con banda
+iron-core	+	De lado al anclaje, pies a la anchura de la cadera y tronco firme.
+iron-core	+	Empuja las manos al frente desde el esternón sin girar.
+iron-core	+	Aguanta dos segundos con los brazos estirados y vuelve despacio.
+iron-core	+	Dejar que la banda gire los hombros o la cadera.
+iron-core	+	Ponerse tan cerca del anclaje que la banda no tira.
+iron-core	+	Elevación de rodillas colgado
+iron-core	+	Cuélgate con los brazos estirados y los hombros activos.
+iron-core	+	Sube las rodillas por encima de la cadera enrollando la pelvis.
+iron-core	+	Baja despacio y sin balancearte.
+iron-core	+	Coger impulso balanceando el cuerpo.
+iron-core	+	Dejar caer las piernas de golpe.
+iron-espalda	+	Dominada
+iron-espalda	+	Empieza colgado con los hombros activos, lejos de las orejas.
+iron-espalda	+	Lleva los codos hacia abajo y atrás hasta pasar la barbilla.
+iron-espalda	+	Baja controlado hasta estirar los brazos del todo.
+iron-espalda	+	Balancear las piernas para subir.
+iron-espalda	+	Quedarse a medio recorrido abajo.
+iron-espalda	+	Estirar el cuello para llegar a la barra.
+iron-espalda	+	Dominada supina
+iron-espalda	+	Palmas hacia ti, a la anchura de los hombros.
+iron-espalda	+	Saca el pecho hacia la barra y sube hasta pasar la barbilla.
+iron-espalda	+	Baja despacio hasta estirar los codos.
+iron-espalda	+	Dar patadas para ganar impulso.
+iron-espalda	+	No estirar los brazos abajo.
+iron-espalda	+	Dominada con agarre neutro
+iron-espalda	+	Palmas enfrentadas en las asas paralelas.
+iron-espalda	+	Codos cerca del cuerpo, hacia las costillas.
+iron-espalda	+	Baja controlado hasta colgar con los hombros activos.
+iron-espalda	+	Dejar los hombros pegados a las orejas abajo.
+iron-espalda	+	Balancear el cuerpo para subir.
+iron-espalda	+	Dominada negativa
+iron-espalda	+	Sube con un salto o desde un cajón estable, barbilla sobre la barra.
+iron-espalda	+	Baja en 3 a 5 segundos, sin dejarte caer.
+iron-espalda	+	Abajo estira los brazos, apoya los pies y vuelve a empezar.
+iron-espalda	+	Dejarse caer en la segunda mitad de la bajada.
+iron-espalda	+	Soltar los hombros de golpe al final.
+iron-espalda	+	Dominada escapular
+iron-espalda	+	Brazos estirados todo el rato: no dobles los codos.
+iron-espalda	+	Baja los hombros lejos de las orejas y sube un poco el pecho.
+iron-espalda	+	Aguanta un segundo arriba y suelta despacio.
+iron-espalda	+	Doblar los codos y convertirlo en una dominada corta.
+iron-espalda	+	Balancear las piernas.
+iron-espalda	+	Remo invertido
+iron-espalda	+	Cuerpo recto de los talones a la cabeza, glúteos apretados.
+iron-espalda	+	Lleva el pecho a la barra con los codos hacia atrás.
+iron-espalda	+	En casa, usa una mesa firme que no pueda volcar.
+iron-espalda	+	Dejar caer la cadera.
+iron-espalda	+	Adelantar la barbilla para llegar a la barra.
+iron-espalda	+	Jalón al pecho
+iron-espalda	+	Ajusta el rodillo para que los muslos queden fijos.
+iron-espalda	+	Baja la barra a la parte alta del pecho, con el tronco algo atrás.
+iron-espalda	+	Tira con los codos hacia abajo, no con las manos.
+iron-espalda	+	Echarse atrás para mover más peso.
+iron-espalda	+	Bajar la barra por detrás de la nuca.
+iron-espalda	+	Soltar la barra de golpe en la subida.
+iron-espalda	+	Jalón supino
+iron-espalda	+	Palmas hacia ti, a la anchura de los hombros.
+iron-espalda	+	Codos pegados al cuerpo hasta la parte baja del pecho.
+iron-espalda	+	Sube controlado hasta estirar los brazos.
+iron-espalda	+	Balancear el tronco en cada repetición.
+iron-espalda	+	Doblar las muñecas en lugar de tirar con la espalda.
+iron-espalda	+	Jalón con triángulo
+iron-espalda	+	Codos cerca del cuerpo, hacia las costillas.
+iron-espalda	+	Pecho arriba: el triángulo llega a la parte baja del pecho.
+iron-espalda	+	Deja subir los brazos sin perder la postura.
+iron-espalda	+	Echarse atrás para ayudarse.
+iron-espalda	+	Encoger los hombros al tirar.
+iron-espalda	+	Pullover en polea alta
+iron-espalda	+	Brazos casi rectos: el codo no se dobla durante el recorrido.
+iron-espalda	+	Baja la barra en arco hasta los muslos.
+iron-espalda	+	Tronco inclinado y quieto, abdomen firme.
+iron-espalda	+	Doblar los codos y convertirlo en un press.
+iron-espalda	+	Mover el tronco para bajar la barra.
+iron-espalda	+	Remo con barra
+iron-espalda	+	Cadera atrás, rodillas sueltas y espalda neutra.
+iron-espalda	+	Lleva la barra al abdomen tirando con los codos.
+iron-espalda	+	El tronco no se mueve: si se levanta, baja el peso.
+iron-espalda	+	Levantar el tronco para subir la barra.
+iron-espalda	+	Redondear la zona lumbar.
+iron-espalda	+	Hacer medio recorrido arriba.
+iron-espalda	+	Remo con barra supino
+iron-espalda	+	Tronco algo más erguido que en el remo prono.
+iron-espalda	+	Codos pegados al cuerpo hasta la parte baja del abdomen.
+iron-espalda	+	Baja controlado hasta estirar los brazos.
+iron-espalda	+	Balancear el tronco para subir la barra.
+iron-espalda	+	Doblar las muñecas al tirar.
+iron-espalda	+	Remo con mancuernas
+iron-espalda	+	Cadera atrás y espalda neutra, rodillas sueltas.
+iron-espalda	+	Palmas enfrentadas y codos hacia la cadera.
+iron-espalda	+	Cuello en línea con la espalda, mirada al suelo delante.
+iron-espalda	+	Subir el tronco en cada repetición.
+iron-espalda	+	Encoger los hombros en lugar de tirar con los codos.
+iron-espalda	+	Remo en polea sentado
+iron-espalda	+	Pecho arriba y espalda neutra todo el recorrido.
+iron-espalda	+	Lleva el triángulo al abdomen con los codos pegados.
+iron-espalda	+	Estira los brazos en la vuelta sin redondear la espalda.
+iron-espalda	+	Balancear el tronco adelante y atrás.
+iron-espalda	+	Redondear la zona lumbar al estirar.
+iron-espalda	+	Remo en máquina
+iron-espalda	+	Pecho apoyado en el respaldo durante todo el recorrido.
+iron-espalda	+	Tira con los codos hacia atrás y junta las escápulas.
+iron-espalda	+	Vuelve despacio hasta estirar los brazos.
+iron-espalda	+	Despegar el pecho del apoyo para tirar más.
+iron-espalda	+	Encoger los hombros hacia las orejas.
+iron-espalda	+	Face pull
+iron-espalda	+	Codos altos y abiertos, a la altura de los hombros.
+iron-espalda	+	Tira de la cuerda hacia la cara separando las manos.
+iron-espalda	+	Tronco quieto: el movimiento es de los brazos.
+iron-espalda	+	Cargar tanto que el tronco se va atrás.
+iron-espalda	+	Bajar los codos y convertirlo en un remo.
+iron-espalda	+	Peso muerto
+iron-espalda	+	La barra sobre el medio del pie y pegada a las piernas.
+iron-espalda	+	Espalda neutra y pecho arriba antes de tirar.
+iron-espalda	+	Empuja el suelo con las piernas y extiende la cadera.
+iron-espalda	+	Arriba termina de pie, sin echarte atrás.
+iron-espalda	+	Redondear la zona lumbar.
+iron-espalda	+	Separar la barra de las piernas.
+iron-espalda	+	Subir la cadera antes que la barra.
+iron-espalda	+	Peso muerto sumo
+iron-espalda	+	Pies muy abiertos, puntas hacia fuera y manos por dentro.
+iron-espalda	+	Abre las rodillas en la línea de las puntas.
+iron-espalda	+	Pecho arriba y barra pegada al cuerpo.
+iron-espalda	+	Dejar que las rodillas se cierren al subir.
+iron-espalda	+	Redondear la zona lumbar.
+iron-espalda	+	Peso muerto con mancuernas
+iron-espalda	+	Lleva la cadera atrás con las mancuernas pegadas a las piernas.
+iron-espalda	+	Espalda neutra; baja hasta media espinilla.
+iron-espalda	+	Sube empujando el suelo y aprieta los glúteos.
+iron-espalda	+	Redondear la espalda abajo.
+iron-espalda	+	Separar las mancuernas del cuerpo.
+iron-espalda	+	Hiperextensiones
+iron-espalda	+	La almohadilla bajo la cadera, para doblarte por la cadera.
+iron-espalda	+	Sube hasta quedar en línea con las piernas, no más.
+iron-espalda	+	Baja y sube despacio, sin impulso.
+iron-espalda	+	Arquear la espalda por encima de la línea.
+iron-espalda	+	Subir de golpe con impulso.
+iron-espalda	+	Superman
+iron-espalda	+	Mira al suelo para mantener el cuello largo.
+iron-espalda	+	Sube pecho, brazos y piernas solo unos centímetros.
+iron-espalda	+	Aguanta dos segundos arriba y baja despacio.
+iron-espalda	+	Levantar la cabeza para mirar al frente.
+iron-espalda	+	Subir y bajar de golpe.
+iron-espalda	+	Pullover con mancuerna
+iron-espalda	+	Sujeta la mancuerna con las dos manos por el disco de arriba.
+iron-espalda	+	Codos un poco doblados y siempre igual.
+iron-espalda	+	Baja detrás de la cabeza solo hasta donde no duela el hombro.
+iron-espalda	+	Arquear la zona lumbar al bajar.
+iron-espalda	+	Doblar y estirar los codos.
+iron-espalda	+	Remo en polea a una mano
+iron-espalda	+	Un pie adelantado, tronco algo inclinado y la otra mano en la cadera.
+iron-espalda	+	Lleva el codo atrás pegado al costado, hasta la cintura.
+iron-espalda	+	El tronco no gira para acompañar el tirón.
+iron-espalda	+	Girar el tronco para mover más peso.
+iron-espalda	+	Subir el hombro hacia la oreja al tirar.
+iron-espalda	+	Remo en polea con agarre abierto
+iron-espalda	+	Barra larga con agarre prono, más ancho que los hombros.
+iron-espalda	+	Codos abiertos hacia fuera: la barra llega a la parte baja del pecho.
+iron-espalda	+	Junta las escápulas al final y vuelve despacio.
+iron-espalda	+	Balancear el tronco para tirar.
+iron-espalda	+	Encoger los hombros al final.
+iron-espalda	+	Encogimientos con barra
+iron-espalda	+	Sube los hombros en vertical hacia las orejas.
+iron-espalda	+	Aguanta un segundo arriba y baja despacio.
+iron-espalda	+	Agarre algo más ancho que los muslos, brazos estirados.
+iron-espalda	+	Girar los hombros en círculo.
+iron-espalda	+	Rebotar el peso abajo sin control.
+iron-espalda	+	Encogimientos con mancuernas
+iron-espalda	+	Sube los hombros en vertical hacia las orejas.
+iron-espalda	+	Aguanta un segundo arriba y baja despacio.
+iron-espalda	+	Brazos estirados: los codos no se doblan.
+iron-espalda	+	Girar los hombros en círculo.
+iron-espalda	+	Adelantar la cabeza al subir.
+iron-espalda	+	Remo con mancuernas con apoyo de pecho
+iron-espalda	+	Pecho pegado al respaldo todo el recorrido.
+iron-espalda	+	Lleva los codos atrás y pegados, hacia la cadera.
+iron-espalda	+	Baja hasta estirar los brazos, sin soltar los hombros de golpe.
+iron-espalda	+	Despegar el pecho del banco para tirar más.
+iron-espalda	+	Encoger los hombros hacia las orejas.
+iron-espalda	+	Dominada asistida con banda
+iron-espalda	+	Ata la banda a la barra y pasa una rodilla por el lazo.
+iron-espalda	+	Sube con el pecho hacia la barra hasta pasar la barbilla.
+iron-espalda	+	Baja controlando hasta estirar los brazos.
+iron-espalda	+	Rebotar abajo con la banda para subir.
+iron-espalda	+	Quedarse a medio recorrido arriba o abajo.
+iron-hombro	+	Elevación frontal con banda
+iron-hombro	+	Pisa la banda con los dos pies y sujétala firme.
+iron-hombro	+	Sube por delante hasta la altura de los hombros.
+iron-hombro	+	Baja despacio, sin dejar que la banda tire de ti.
+iron-hombro	+	Balancear el tronco para estirar la banda.
+iron-hombro	+	Soltar la banda de golpe al bajar.
+iron-hombro	+	Elevación frontal con barra
+iron-hombro	+	Sube la barra por delante hasta la altura de los hombros.
+iron-hombro	+	Tronco quieto: sin echarte atrás.
+iron-hombro	+	Usa una barra ligera: el brazo estirado multiplica el esfuerzo.
+iron-hombro	+	Balancear el tronco para subir la barra.
+iron-hombro	+	Doblar los codos para acortar la palanca.
+iron-hombro	+	Elevación lateral con banda
+iron-hombro	+	Codos casi estirados; sube el codo, no la mano.
+iron-hombro	+	Sube hasta la altura de los hombros, no más.
+iron-hombro	+	Pisa la banda con los dos pies y elige una tensión que controles.
+iron-hombro	+	Dejar que la banda tire de los brazos al bajar.
+iron-hombro	+	Encoger los hombros hacia las orejas al subir.
+iron-hombro	+	Elevaciones frontales con mancuernas
+iron-hombro	+	Sube por delante hasta la altura de los hombros.
+iron-hombro	+	Tronco quieto: sin echarte atrás.
+iron-hombro	+	Baja despacio, en unos dos segundos.
+iron-hombro	+	Balancear el tronco para subir el peso.
+iron-hombro	+	Subir las manos por encima de la cabeza.
+iron-hombro	+	Elevaciones laterales con mancuernas
+iron-hombro	+	Codos casi estirados; sube el codo, no la mano.
+iron-hombro	+	Sube hasta la altura de los hombros, no más.
+iron-hombro	+	Peso ligero y controlado: si te balanceas, baja el peso.
+iron-hombro	+	Balancear el tronco para subir las mancuernas.
+iron-hombro	+	Encoger los hombros hacia las orejas al subir.
+iron-hombro	+	Elevaciones laterales sentado
+iron-hombro	+	Codos casi estirados; sube el codo, no la mano.
+iron-hombro	+	Sube hasta la altura de los hombros, no más.
+iron-hombro	+	Peso ligero: sentado no hay impulso que ayude.
+iron-hombro	+	Subir las manos por encima de los hombros.
+iron-hombro	+	Encoger los hombros hacia las orejas al subir.
+iron-hombro	+	Face pull con banda
+iron-hombro	+	Tira hacia la cara con los codos altos y abiertos.
+iron-hombro	+	Al final, manos junto a las orejas y palmas al frente.
+iron-hombro	+	Aguanta un segundo atrás y vuelve despacio.
+iron-hombro	+	Tirar con los codos bajos, como en un remo.
+iron-hombro	+	Echar el tronco atrás para tirar.
+iron-hombro	+	Flexión en pica
+iron-hombro	+	Cadera alta: el cuerpo forma una V invertida.
+iron-hombro	+	Baja la cabeza hacia el suelo, por delante de las manos.
+iron-hombro	+	Codos hacia atrás, no abiertos a los lados.
+iron-hombro	+	Bajar la cadera y convertirla en una flexión normal.
+iron-hombro	+	Dejar caer la cabeza contra el suelo.
+iron-hombro	+	Flexión en pica con pies elevados
+iron-hombro	+	Pies firmes sobre un banco estable y cadera alta.
+iron-hombro	+	Baja la cabeza hacia el suelo, por delante de las manos.
+iron-hombro	+	Domina antes la flexión en pica en el suelo.
+iron-hombro	+	Dejar caer la cadera durante la bajada.
+iron-hombro	+	Dejar caer la cabeza contra el suelo.
+iron-hombro	+	Pájaro con mancuernas
+iron-hombro	+	Inclina el tronco desde la cadera, espalda recta y rodillas sueltas.
+iron-hombro	+	Abre los brazos en abanico hasta la altura de la espalda.
+iron-hombro	+	Peso ligero: el deltoides posterior es un músculo pequeño.
+iron-hombro	+	Levantar el tronco para ayudarte a subir.
+iron-hombro	+	Encoger los hombros en lugar de abrir los brazos.
+iron-hombro	+	Press Arnold
+iron-hombro	+	Empieza con las mancuernas delante de la cara y las palmas hacia ti.
+iron-hombro	+	Abre los codos y gira las palmas al frente mientras subes.
+iron-hombro	+	Abdomen firme: el giro lo hacen los brazos, no el tronco.
+iron-hombro	+	Arquear la espalda al final del empuje.
+iron-hombro	+	Hacer el giro de golpe, sin control.
+iron-hombro	+	Press de hombro con banda
+iron-hombro	+	Pisa bien la banda con los dos pies antes de empezar.
+iron-hombro	+	Antebrazos verticales bajo las manos todo el recorrido.
+iron-hombro	+	Abdomen firme: sin arquear la espalda.
+iron-hombro	+	Arquear la espalda para estirar la banda.
+iron-hombro	+	Soltar la banda de golpe al bajar.
+iron-hombro	+	Press de hombro con mancuernas sentado
+iron-hombro	+	Antebrazos verticales bajo las mancuernas todo el recorrido.
+iron-hombro	+	Siéntate erguido con el abdomen firme, sin echarte atrás.
+iron-hombro	+	Arriba, brazos casi estirados y mancuernas sobre los hombros.
+iron-hombro	+	Echar el tronco atrás y arquear la espalda.
+iron-hombro	+	Bajar solo hasta media altura.
+iron-hombro	+	Press militar con barra
+iron-hombro	+	Aprieta abdomen y glúteos: el tronco no se arquea.
+iron-hombro	+	La barra sube recta desde la clavícula hasta encima del medio del pie.
+iron-hombro	+	Aparta la cabeza al pasar la barra y métela debajo al bloquear.
+iron-hombro	+	Arriba, brazos estirados y barra sobre los hombros.
+iron-hombro	+	Arquear la zona lumbar para empujar.
+iron-hombro	+	Dejar los codos detrás de la barra al empezar.
+iron-hombro	+	Terminar con la barra por delante de la cabeza.
+iron-hombro	+	Press militar con mancuernas
+iron-hombro	+	Antebrazos verticales bajo las mancuernas todo el recorrido.
+iron-hombro	+	Abdomen firme y costillas abajo: sin arquear la espalda.
+iron-hombro	+	Arriba, brazos casi estirados y mancuernas sobre los hombros.
+iron-hombro	+	Arquear la espalda para subir más peso.
+iron-hombro	+	Bajar solo hasta media altura.
+iron-hombro	+	Push press con barra
+iron-hombro	+	Flexiona un poco las rodillas y empuja fuerte con las piernas.
+iron-hombro	+	Tronco vertical en el impulso; los talones no se levantan.
+iron-hombro	+	Termina con los brazos estirados y la barra sobre el medio del pie.
+iron-hombro	+	Bajar demasiado en el impulso, como en una sentadilla.
+iron-hombro	+	Despegar los talones antes de empujar.
+iron-hombro	+	Inclinar el tronco y mandar la barra hacia delante.
+iron-hombro	+	Remo al mentón con banda
+iron-hombro	+	Pisa la banda y agárrala al ancho de los hombros.
+iron-hombro	+	Suben los codos, por encima de las manos.
+iron-hombro	+	Para cuando los codos lleguen a la altura de los hombros.
+iron-hombro	+	Juntar las manos en el centro.
+iron-hombro	+	Subir los codos por encima de los hombros.
+iron-hombro	+	Balancear el tronco para estirar la banda.
+iron-hombro	+	Remo al mentón con barra
+iron-hombro	+	Agarre al ancho de los hombros, no estrecho.
+iron-hombro	+	Suben los codos, por encima de las manos.
+iron-hombro	+	Para cuando los codos lleguen a la altura de los hombros.
+iron-hombro	+	Agarrar la barra con las manos juntas.
+iron-hombro	+	Subir los codos por encima de los hombros.
+iron-hombro	+	Balancear el tronco para subir el peso.
+iron-hombro	+	Remo al mentón con mancuernas
+iron-hombro	+	Mancuernas pegadas al cuerpo, al ancho de los hombros.
+iron-hombro	+	Suben los codos, por encima de las manos.
+iron-hombro	+	Para cuando los codos lleguen a la altura de los hombros.
+iron-hombro	+	Juntar las mancuernas en el centro.
+iron-hombro	+	Subir los codos por encima de los hombros.
+iron-hombro	+	Balancear el tronco para subir el peso.
+iron-hombro	+	Rotación externa a 90° con banda
+iron-hombro	+	Codos a la altura de los hombros y un poco por delante, quietos.
+iron-hombro	+	Gira los antebrazos hasta verticales, sin pasar de ahí.
+iron-hombro	+	Banda suave y movimiento lento; para si notas un pinchazo.
+iron-hombro	+	Bajar los codos durante el giro.
+iron-hombro	+	Arquear la espalda para llegar más atrás.
+iron-hombro	+	Rotación externa con banda
+iron-hombro	+	Codo pegado al costado y doblado a 90° todo el giro.
+iron-hombro	+	Gira hacia fuera despacio y vuelve aún más despacio.
+iron-hombro	+	Banda suave: es un ejercicio de control, no de fuerza.
+iron-hombro	+	Separar el codo del cuerpo para ganar recorrido.
+iron-hombro	+	Girar el tronco en lugar del brazo.
+iron-hombro	+	Rotación interna con banda
+iron-hombro	+	Codo pegado al costado y doblado a 90° todo el giro.
+iron-hombro	+	Lleva la mano hacia el ombligo despacio y vuelve controlando.
+iron-hombro	+	Banda suave: es un ejercicio de control, no de fuerza.
+iron-hombro	+	Separar el codo del cuerpo para ganar recorrido.
+iron-hombro	+	Girar el tronco en lugar del brazo.
+iron-hombro	+	Tirón separando la banda
+iron-hombro	+	Brazos estirados a la altura de los hombros todo el recorrido.
+iron-hombro	+	Abre los brazos juntando las escápulas, sin encoger los hombros.
+iron-hombro	+	Vuelve despacio hasta delante, sin soltar la tensión.
+iron-hombro	+	Encoger los hombros hacia las orejas.
+iron-hombro	+	Arquear la espalda para abrir más.
+iron-pecho	+	Press inclinado con barra
+iron-pecho	+	Con carga alta, usa topes o alguien que te asista.
+iron-pecho	+	Respaldo entre 30 y 45°: más inclinado, trabaja sobre todo el hombro.
+iron-pecho	+	Glúteos en el asiento y escápulas juntas contra el respaldo.
+iron-pecho	+	Baja a la parte alta del pecho con los antebrazos verticales.
+iron-pecho	+	Despegar los glúteos del asiento para empujar más.
+iron-pecho	+	Abrir los codos a 90° del tronco.
+iron-pecho	+	Bajar la barra hacia el cuello.
+iron-pecho	+	Press declinado con barra
+iron-pecho	+	Pide ayuda para sacar y dejar la barra: la cabeza queda abajo.
+iron-pecho	+	Engancha bien los pies bajo el rodillo antes de empezar.
+iron-pecho	+	Baja a la parte baja del pecho y empuja hacia los hombros.
+iron-pecho	+	Rebotar la carga en el pecho.
+iron-pecho	+	Recortar el recorrido sin llegar al pecho.
+iron-pecho	+	Levantar la cabeza del banco al empujar.
+iron-pecho	+	Press en el suelo con barra
+iron-pecho	+	Baja hasta apoyar los codos en el suelo y para un instante.
+iron-pecho	+	Rodillas dobladas y pies planos en el suelo.
+iron-pecho	+	Empuja en vertical hasta estirar los brazos sobre los hombros.
+iron-pecho	+	Rebotar los codos contra el suelo.
+iron-pecho	+	Abrir los codos a 90° del tronco.
+iron-pecho	+	Arquear la espalda para empujar.
+iron-pecho	+	Press de banca con mancuernas
+iron-pecho	+	Escápulas juntas y pies planos en el suelo.
+iron-pecho	+	Baja hasta la altura del pecho con los antebrazos verticales.
+iron-pecho	+	Sube las mancuernas sobre los hombros sin chocarlas.
+iron-pecho	+	Abrir los codos a 90° del tronco.
+iron-pecho	+	Dejar caer las mancuernas en la bajada.
+iron-pecho	+	Subir una mano antes que la otra.
+iron-pecho	+	Press inclinado con mancuernas
+iron-pecho	+	Respaldo entre 30 y 45°: más inclinado, trabaja sobre todo el hombro.
+iron-pecho	+	Baja junto a la parte alta del pecho con los antebrazos verticales.
+iron-pecho	+	Empuja hacia arriba sin chocar las mancuernas.
+iron-pecho	+	Despegar los glúteos del asiento.
+iron-pecho	+	Abrir los codos a 90° del tronco.
+iron-pecho	+	Quedarse a medio recorrido abajo.
+iron-pecho	+	Press declinado con mancuernas
+iron-pecho	+	Engancha los pies bajo el rodillo antes de coger las mancuernas.
+iron-pecho	+	Baja junto a la parte baja del pecho, antebrazos verticales.
+iron-pecho	+	Al acabar, apoya las mancuernas en los muslos y siéntate despacio.
+iron-pecho	+	Dejar caer las mancuernas en la bajada.
+iron-pecho	+	Abrir los codos a 90° del tronco.
+iron-pecho	+	Levantar la cabeza del banco.
+iron-pecho	+	Press en el suelo con mancuernas
+iron-pecho	+	Baja hasta que los codos toquen el suelo, sin rebotar.
+iron-pecho	+	Rodillas dobladas y pies planos en el suelo.
+iron-pecho	+	Empuja las dos mancuernas a la vez sobre los hombros.
+iron-pecho	+	Rebotar los codos contra el suelo.
+iron-pecho	+	Abrir los codos a 90° del tronco.
+iron-pecho	+	Arquear la espalda para empujar.
+iron-pecho	+	Press con mancuernas juntas
+iron-pecho	+	Junta las mancuernas y apriétalas entre sí todo el recorrido.
+iron-pecho	+	Palmas enfrentadas y codos cerca del cuerpo.
+iron-pecho	+	Baja despacio hasta rozar el pecho.
+iron-pecho	+	Separar las mancuernas al subir.
+iron-pecho	+	Bajar sin control.
+iron-pecho	+	Despegar los glúteos del banco.
+iron-pecho	+	Aperturas con mancuernas
+iron-pecho	+	Codos un poco flexionados y fijos todo el recorrido.
+iron-pecho	+	Abre los brazos en arco hasta notar el pecho estirado, no más.
+iron-pecho	+	Cierra en arco, como si abrazaras un barril.
+iron-pecho	+	Doblar los codos y convertirlo en un press.
+iron-pecho	+	Bajar los brazos por debajo de la línea de los hombros.
+iron-pecho	+	Usar tanto peso que se pierde el arco.
+iron-pecho	+	Aperturas inclinadas con mancuernas
+iron-pecho	+	Respaldo a unos 30°, glúteos en el asiento.
+iron-pecho	+	Codos un poco flexionados y fijos todo el recorrido.
+iron-pecho	+	Abre los brazos en arco hasta notar el pecho estirado, no más.
+iron-pecho	+	Cierra en arco, como si abrazaras un barril.
+iron-pecho	+	Doblar los codos y convertirlo en un press.
+iron-pecho	+	Bajar los brazos por debajo de la línea de los hombros.
+iron-pecho	+	Usar tanto peso que se pierde el arco.
+iron-pecho	+	Aperturas declinadas con mancuernas
+iron-pecho	+	Engancha los pies bajo el rodillo antes de coger las mancuernas.
+iron-pecho	+	Codos un poco flexionados y fijos todo el recorrido.
+iron-pecho	+	Abre los brazos en arco hasta notar el pecho estirado, no más.
+iron-pecho	+	Cierra en arco, como si abrazaras un barril.
+iron-pecho	+	Doblar los codos y convertirlo en un press.
+iron-pecho	+	Bajar los brazos por debajo de la línea de los hombros.
+iron-pecho	+	Usar tanto peso que se pierde el arco.
+iron-pecho	+	Aperturas en el suelo con mancuernas
+iron-pecho	+	Baja hasta que los codos rocen el suelo, sin dejarlos caer.
+iron-pecho	+	Codos un poco flexionados y fijos todo el recorrido.
+iron-pecho	+	Rodillas dobladas y pies planos en el suelo.
+iron-pecho	+	Doblar los codos y convertirlo en un press.
+iron-pecho	+	Dejar caer los codos contra el suelo.
+iron-pecho	+	Usar tanto peso que se pierde el arco.
+iron-pecho	+	Flexiones
+iron-pecho	+	Cuerpo en línea de la cabeza a los talones: aprieta abdomen y glúteos.
+iron-pecho	+	Manos algo más abiertas que los hombros, a la altura del pecho.
+iron-pecho	+	Codos a unos 45° del tronco, no en cruz.
+iron-pecho	+	Baja hasta que el pecho quede a un palmo del suelo.
+iron-pecho	+	Dejar caer la cadera.
+iron-pecho	+	Bajar la cabeza antes que el pecho.
+iron-pecho	+	Abrir los codos en cruz.
+iron-pecho	+	Flexiones con rodillas apoyadas
+iron-pecho	+	Apoya las rodillas en algo blando.
+iron-pecho	+	Línea recta de las rodillas a la cabeza: la cadera no se dobla.
+iron-pecho	+	Baja el pecho, no solo la cabeza.
+iron-pecho	+	Doblar la cadera y dejarla arriba.
+iron-pecho	+	Bajar solo unos centímetros.
+iron-pecho	+	Flexiones inclinadas
+iron-pecho	+	Manos en un banco firme que no se mueva ni resbale.
+iron-pecho	+	Cuerpo en línea de la cabeza a los talones: aprieta abdomen y glúteos.
+iron-pecho	+	Cuanto más bajo el apoyo, más difícil: bájalo poco a poco.
+iron-pecho	+	Dejar caer la cadera.
+iron-pecho	+	Apoyarse en algo que se mueve o se vuelca.
+iron-pecho	+	Flexiones declinadas
+iron-pecho	+	Puntas de los pies en un banco firme que no resbale.
+iron-pecho	+	Cuerpo en línea de la cabeza a los talones: aprieta abdomen y glúteos.
+iron-pecho	+	Baja el pecho hacia el suelo, no la cabeza.
+iron-pecho	+	Dejar caer la cadera.
+iron-pecho	+	Llevar la cabeza al suelo antes que el pecho.
+iron-pecho	+	Flexiones con manos abiertas
+iron-pecho	+	Si notas molestia en el hombro, cierra un poco las manos.
+iron-pecho	+	Manos un palmo más abiertas que en la flexión normal.
+iron-pecho	+	Cuerpo en línea de la cabeza a los talones: aprieta abdomen y glúteos.
+iron-pecho	+	Abrir tanto que los codos quedan en cruz con el tronco.
+iron-pecho	+	Dejar caer la cadera.
+iron-pecho	+	Flexiones pliométricas
+iron-pecho	+	Hazlas solo si dominas 15 flexiones limpias seguidas.
+iron-pecho	+	Aterriza con los codos algo flexionados y baja controlado.
+iron-pecho	+	Empuja fuerte para despegar las manos del suelo.
+iron-pecho	+	Aterrizar con los brazos bloqueados.
+iron-pecho	+	Romper la línea del cuerpo al despegar.
+iron-pecho	+	Seguir cuando ya no despegas con técnica limpia.
+iron-pecho	+	Flexión isométrica
+iron-pecho	+	Baja a medio camino y aguanta con los codos a unos 90°.
+iron-pecho	+	Cuerpo en línea de la cabeza a los talones: aprieta abdomen y glúteos.
+iron-pecho	+	Respira con normalidad mientras aguantas.
+iron-pecho	+	Aguantar la respiración.
+iron-pecho	+	Dejar caer la cadera.
+iron-pecho	+	Fondos en paralelas
+iron-pecho	+	Baja hasta que el brazo quede paralelo al suelo, no más.
+iron-pecho	+	Hombros abajo y lejos de las orejas.
+iron-pecho	+	Inclina el tronco hacia delante para cargar el pecho.
+iron-pecho	+	Hundir los hombros hacia las orejas abajo.
+iron-pecho	+	Bajar más de lo que tolera el hombro.
+iron-pecho	+	Balancear las piernas para subir.
+iron-pecho	+	Fondos negativos
+iron-pecho	+	Para cuando el brazo quede paralelo al suelo.
+iron-pecho	+	Sube de un salto o con un escalón hasta los brazos estirados.
+iron-pecho	+	Baja en tres o cuatro segundos, con control.
+iron-pecho	+	Dejarse caer en la bajada.
+iron-pecho	+	Bajar más de lo que tolera el hombro.
+iron-pecho	+	Pec deck
+iron-pecho	+	Ajusta el asiento: codos a la altura de los hombros.
+iron-pecho	+	Junta las almohadillas delante del pecho y aprieta un segundo.
+iron-pecho	+	Abre despacio, sin que el peso te lleve los brazos atrás.
+iron-pecho	+	Despegar la espalda del respaldo.
+iron-pecho	+	Dejar que las placas choquen al volver.
+iron-pecho	+	Subir los hombros hacia las orejas.
+iron-pecho	+	Cruce de poleas
+iron-pecho	+	Codos un poco doblados y fijos, como si abrazaras un árbol.
+iron-pecho	+	Baja las manos en arco hasta juntarlas delante del pecho bajo.
+iron-pecho	+	Vuelve despacio hasta sentir el pecho estirado, sin pasar de los hombros.
+iron-pecho	+	Doblar y estirar los codos: se convierte en un press.
+iron-pecho	+	Mover el tronco para ayudar al brazo.
+iron-pierna	+	Sentadilla frontal
+iron-pierna	+	Codos altos: la barra descansa en los hombros, no en las muñecas.
+iron-pierna	+	La barra baja y sube sobre el medio del pie.
+iron-pierna	+	Pecho arriba y tronco erguido todo el recorrido.
+iron-pierna	+	Pon los seguros del rack por debajo del punto más bajo.
+iron-pierna	+	Dejar caer los codos al subir.
+iron-pierna	+	Levantar los talones.
+iron-pierna	+	Dejar que las rodillas se cierren.
+iron-pierna	+	Sentadilla goblet con kettlebell
+iron-pierna	+	Kettlebell pegada al pecho y pecho arriba.
+iron-pierna	+	Codos hacia abajo, por dentro de las rodillas.
+iron-pierna	+	Talones en el suelo; baja tanto como la espalda siga recta.
+iron-pierna	+	Separar la kettlebell del pecho.
+iron-pierna	+	Redondear la zona lumbar abajo.
+iron-pierna	+	Dejar que las rodillas se cierren al subir.
+iron-pierna	+	Prensa de piernas
+iron-pierna	+	Espalda y glúteos pegados al respaldo todo el recorrido.
+iron-pierna	+	Rodillas en la línea de los pies, sin cerrarse.
+iron-pierna	+	Baja hasta unos 90° sin que la cadera se despegue.
+iron-pierna	+	Quita y pon los seguros con las piernas casi estiradas.
+iron-pierna	+	Bloquear las rodillas de golpe arriba.
+iron-pierna	+	Despegar la zona lumbar al bajar demasiado.
+iron-pierna	+	Empujar con las puntas y levantar los talones.
+iron-pierna	+	Sentadilla búlgara
+iron-pierna	+	Baja en vertical, con el peso en el pie de delante.
+iron-pierna	+	Pie de delante plano; la rodilla sigue la punta del pie.
+iron-pierna	+	El pie de atrás solo apoya: no empujes con él.
+iron-pierna	+	Poner el pie de delante demasiado cerca del banco.
+iron-pierna	+	Dejar que la rodilla de delante se vaya hacia dentro.
+iron-pierna	+	Empujar con la pierna de atrás.
+iron-pierna	+	Zancada atrás con mancuernas
+iron-pierna	+	Paso atrás largo y controlado, apoyando la punta.
+iron-pierna	+	El peso va al pie de delante; sube empujando con él.
+iron-pierna	+	Tronco erguido y mancuernas colgando a los lados.
+iron-pierna	+	Dar un paso tan corto que la rodilla de delante se adelanta mucho.
+iron-pierna	+	Golpear el suelo con la rodilla de atrás.
+iron-pierna	+	Peso muerto rumano
+iron-pierna	+	Lleva la cadera atrás con las rodillas apenas dobladas.
+iron-pierna	+	La barra baja pegada a las piernas, sobre el medio del pie.
+iron-pierna	+	Espalda neutra: para cuando no puedas bajar sin redondearla.
+iron-pierna	+	Baja hasta notar tensión en los isquios, más o menos bajo la rodilla.
+iron-pierna	+	Redondear la espalda para bajar más.
+iron-pierna	+	Doblar mucho las rodillas y convertirlo en una sentadilla.
+iron-pierna	+	Separar la barra de las piernas.
+iron-pierna	+	Hip thrust con barra
+iron-pierna	+	Apoya en el banco la parte baja de las escápulas.
+iron-pierna	+	Arriba, tronco y muslos en línea y glúteos apretados.
+iron-pierna	+	Barbilla recogida: la mirada va hacia las rodillas.
+iron-pierna	+	Empuja con los talones; espinillas verticales arriba.
+iron-pierna	+	Arquear la zona lumbar en lugar de extender la cadera.
+iron-pierna	+	Poner los pies tan lejos que trabajan sobre todo los isquios.
+iron-pierna	+	Quedarse a medio camino arriba.
+iron-pierna	+	Extensión de cuádriceps
+iron-pierna	+	Alinea la rodilla con el eje de la máquina.
+iron-pierna	+	Estira hasta casi bloquear y aprieta un segundo.
+iron-pierna	+	Baja despacio, sin dejar caer el peso.
+iron-pierna	+	Subir con impulso y soltar el peso abajo.
+iron-pierna	+	Levantar la cadera del asiento.
+iron-pierna	+	Curl femoral tumbado
+iron-pierna	+	Cadera pegada al banco todo el recorrido.
+iron-pierna	+	Rodillas justo fuera del banco, alineadas con el eje.
+iron-pierna	+	Baja despacio hasta casi estirar.
+iron-pierna	+	Levantar la cadera para subir más peso.
+iron-pierna	+	Rebotar abajo.
+iron-pierna	+	Elevación de gemelos de pie
+iron-pierna	+	Baja el talón por debajo del escalón y sube hasta la punta.
+iron-pierna	+	Aguanta un segundo arriba y otro abajo.
+iron-pierna	+	Rodillas estiradas sin bloquear; sube y baja en bloque.
+iron-pierna	+	Rebotar abajo.
+iron-pierna	+	Hacer solo la mitad del recorrido.
+iron-pierna	+	Elevación de gemelos sentado
+iron-pierna	+	Baja el talón todo lo posible y sube hasta la punta.
+iron-pierna	+	Aguanta un segundo arriba.
+iron-pierna	+	La mancuerna sobre la rodilla, sin empujarla con las manos.
+iron-pierna	+	Rebotar abajo.
+iron-pierna	+	Ayudarse empujando con los brazos.
+iron-pierna	+	Subida al cajón
+iron-pierna	+	Pie entero sobre un cajón firme que no se mueva.
+iron-pierna	+	Sube empujando con la pierna del cajón, no con la de atrás.
+iron-pierna	+	Baja despacio hasta apoyar la punta detrás.
+iron-pierna	+	Impulsarse con la pierna de atrás.
+iron-pierna	+	Dejar que la rodilla de apoyo se vaya hacia dentro.
+iron-pierna	+	Swing con kettlebell
+iron-pierna	+	Es una bisagra: la cadera atrás y luego adelante con fuerza.
+iron-pierna	+	Brazos estirados y relajados: solo guían la kettlebell.
+iron-pierna	+	Arriba, de pie del todo, con glúteos y abdomen apretados.
+iron-pierna	+	Bajar en sentadilla en lugar de llevar la cadera atrás.
+iron-pierna	+	Subir la kettlebell tirando con los hombros.
+iron-pierna	+	Redondear la espalda abajo o arquearla arriba.
+iron-pierna	+	Peso muerto rumano con mancuernas
+iron-pierna	+	Lleva la cadera atrás con las rodillas apenas dobladas.
+iron-pierna	+	Las mancuernas bajan pegadas a las piernas.
+iron-pierna	+	Espalda neutra todo el recorrido.
+iron-pierna	+	Redondear la espalda para bajar más.
+iron-pierna	+	Dejar que las mancuernas se separen del cuerpo.
+iron-pierna	+	Peso muerto a una pierna
+iron-pierna	+	Tronco y pierna de atrás en línea, como un balancín.
+iron-pierna	+	Cadera nivelada: no la abras hacia el lado.
+iron-pierna	+	Rodilla de apoyo suave; si pierdes el equilibrio, toca con la punta.
+iron-pierna	+	Girar la cadera y abrir la pierna de atrás.
+iron-pierna	+	Redondear la espalda para bajar más.
+iron-pierna	+	Buenos días con barra
+iron-pierna	+	Lleva la cadera atrás con las rodillas suaves.
+iron-pierna	+	Espalda neutra: el tronco baja en bloque.
+iron-pierna	+	Empieza con poco peso y sácalo del rack con seguros.
+iron-pierna	+	Redondear la espalda para bajar más.
+iron-pierna	+	Doblar mucho las rodillas y convertirlo en una sentadilla.
+iron-pierna	+	Abducción en máquina
+iron-pierna	+	Espalda en el respaldo y cadera quieta.
+iron-pierna	+	Abre las rodillas hasta donde controles, sin balanceo.
+iron-pierna	+	Cierra despacio, sin dejar que el peso choque.
+iron-pierna	+	Echarse hacia delante para mover más peso.
+iron-pierna	+	Soltar el peso de golpe al cerrar.
+iron-pierna	+	Sentadilla sin peso
+iron-pierna	+	Talones en el suelo todo el recorrido.
+iron-pierna	+	Lleva la cadera atrás y abajo, con el pecho arriba.
+iron-pierna	+	Rodillas en la línea de las puntas de los pies.
+iron-pierna	+	Levantar los talones.
+iron-pierna	+	Quedarse a medio recorrido.
+iron-pierna	+	Dejar que las rodillas se cierren al subir.
+iron-pierna	+	Sentadilla al cajón
+iron-pierna	+	Siéntate atrás, como buscando la silla con los glúteos.
+iron-pierna	+	Toca el cajón sin dejarte caer ni soltar la tensión.
+iron-pierna	+	Sube empujando el suelo, sin balancearte.
+iron-pierna	+	Dejarse caer sobre el cajón.
+iron-pierna	+	Balancearse hacia atrás para levantarse.
+iron-pierna	+	Dejar que las rodillas se cierren al subir.
+iron-pierna	+	Zancada estática
+iron-pierna	+	Baja en vertical, como un ascensor.
+iron-pierna	+	Rodilla de delante sobre el tobillo; la de atrás casi roza el suelo.
+iron-pierna	+	Sube empujando con el pie de delante.
+iron-pierna	+	Poner los pies demasiado cerca.
+iron-pierna	+	Echar el tronco hacia delante.
+iron-pierna	+	Puente de glúteo
+iron-pierna	+	Pies cerca de los glúteos; empuja con los talones.
+iron-pierna	+	Sube hasta dejar hombros, cadera y rodillas en línea.
+iron-pierna	+	Aprieta los glúteos arriba sin arquear la zona lumbar.
+iron-pierna	+	Arquear la espalda para subir más.
+iron-pierna	+	Subir y bajar sin control.
+iron-pierna	+	Puente de glúteo a una pierna
+iron-pierna	+	Empuja con el talón de apoyo.
+iron-pierna	+	Cadera nivelada: que no caiga hacia el lado libre.
+iron-pierna	+	Arriba, tronco y muslo de apoyo en línea.
+iron-pierna	+	Dejar que la cadera gire o caiga.
+iron-pierna	+	Arquear la zona lumbar.
+iron-pierna	+	Patada de glúteo
+iron-pierna	+	Espalda plana y abdomen firme: solo se mueve la pierna.
+iron-pierna	+	Empuja la planta hacia el techo.
+iron-pierna	+	Rodilla doblada a 90° todo el recorrido.
+iron-pierna	+	Arquear la zona lumbar para subir más.
+iron-pierna	+	Girar la cadera hacia el lado de la pierna.
+iron-pierna	+	Abducción tumbado de lado
+iron-pierna	+	Pierna de arriba recta, un poco por detrás de la línea del cuerpo.
+iron-pierna	+	La punta del pie mira al frente, no al techo.
+iron-pierna	+	Sube hasta unos 40° y baja despacio.
+iron-pierna	+	Girar la cadera y subir con la punta hacia el techo.
+iron-pierna	+	Subir demasiado y doblar el tronco.
+iron-pierna	+	Curl nórdico
+iron-pierna	+	Cuerpo recto de rodillas a cabeza, sin doblar la cadera.
+iron-pierna	+	Baja lo más despacio que puedas.
+iron-pierna	+	Usa las manos para frenar abajo y ayudarte a volver.
+iron-pierna	+	Doblar la cadera para que trabajen menos los isquios.
+iron-pierna	+	Dejarse caer al final sin frenar.
+iron-pierna	+	Elevación de tibiales
+iron-pierna	+	Talón apoyado; sube solo la punta del pie.
+iron-pierna	+	Sube todo lo que puedas y aguanta un segundo.
+iron-pierna	+	Baja despacio.
+iron-pierna	+	Hacerlo rápido y sin rango.
+iron-pierna	+	Despegar el talón del suelo.
+iron-pierna	+	Patada de glúteo en polea
+iron-pierna	+	Agárrate a la torre y deja el tronco algo inclinado y quieto.
+iron-pierna	+	Lleva la pierna atrás con el glúteo, rodilla casi estirada.
+iron-pierna	+	Para antes de arquear la zona lumbar.
+iron-pierna	+	Arquear la espalda para subir más la pierna.
+iron-pierna	+	Lanzar la pierna con impulso.
+iron-pierna	+	Abducción de pie con banda
+iron-pierna	+	Pelvis recta: no te inclines hacia el lado de apoyo.
+iron-pierna	+	Abre la pierna recta con la punta del pie mirando al frente.
+iron-pierna	+	Vuelve despacio sin dejar que la banda te junte las rodillas.
+iron-pierna	+	Inclinar el tronco para abrir más.
+iron-pierna	+	Girar la punta del pie hacia arriba.

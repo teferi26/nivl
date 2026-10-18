@@ -45,7 +45,14 @@
     "isquiotibiales": "Ischio-jambiers",
     "aductores": "Adducteurs",
     "gemelos": "Mollets",
-    "tibial": "Tibial antérieur"
+    "tibial": "Tibial antérieur",
+    "braquial": "Brachial",
+    "braquiorradial": "Brachio-radial",
+    "soleo": "Soléaire",
+    "gluteo_medio": "Moyen fessier (abducteurs)",
+    "psoas": "Psoas (fléchisseur de hanche)",
+    "manguito_rotador": "Coiffe des rotateurs",
+    "pectoral_superior": "Haut des pectoraux"
   },
   "grupo": {
     "pecho": "Pectoraux",
@@ -63,7 +70,14 @@
     "polea": "Poulie",
     "maquina": "Machine",
     "kettlebell": "Kettlebell",
-    "banda": "Bande élastique"
+    "banda": "Bande élastique",
+    "barra_z": "Barre EZ",
+    "barra_fija": "Barre de traction",
+    "rack": "Rack",
+    "cajon": "Box",
+    "banco_inclinado": "Banc incliné",
+    "banco_declinado": "Banc décliné",
+    "paralelas": "Barres parallèles"
   },
   "nivel": {
     "principiante": "Débutant",

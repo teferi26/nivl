@@ -45,7 +45,14 @@
     "isquiotibiales": "Hamstrings",
     "aductores": "Adductors",
     "gemelos": "Calves",
-    "tibial": "Tibialis anterior"
+    "tibial": "Tibialis anterior",
+    "braquial": "Brachialis",
+    "braquiorradial": "Brachioradialis",
+    "soleo": "Soleus",
+    "gluteo_medio": "Gluteus medius (abductors)",
+    "psoas": "Psoas (hip flexor)",
+    "manguito_rotador": "Rotator cuff",
+    "pectoral_superior": "Upper chest"
   },
   "grupo": {
     "pecho": "Chest",
@@ -63,7 +70,14 @@
     "polea": "Cable",
     "maquina": "Machine",
     "kettlebell": "Kettlebell",
-    "banda": "Resistance band"
+    "banda": "Resistance band",
+    "barra_z": "EZ bar",
+    "barra_fija": "Pull-up bar",
+    "rack": "Rack",
+    "cajon": "Box",
+    "banco_inclinado": "Incline bench",
+    "banco_declinado": "Decline bench",
+    "paralelas": "Parallel bars"
   },
   "nivel": {
     "principiante": "Beginner",

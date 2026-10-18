@@ -1,0 +1,345 @@
+{
+  "grupo": {
+    "cardio": "Cardio und Körpergewicht",
+    "movilidad": "Mobilität"
+  },
+  "musculo": {
+    "transverso": "Querer Bauchmuskel",
+    "serrato": "Vorderer Sägemuskel",
+    "cuello": "Nacken"
+  },
+  "material": {
+    "esterilla": "Matte",
+    "comba": "Springseil",
+    "rueda": "Bauchroller"
+  },
+  "ejercicios": {
+    "crunch": {
+      "nombre": "Crunch",
+      "cues": {
+        "pies": "Füße flach, unterer Rücken auf der Matte.",
+        "subir": "Nur die Schultern abheben und den Oberkörper zum Becken einrollen.",
+        "cuello": "Blick zur Decke, Kinn leicht angezogen; nicht am Kopf ziehen."
+      },
+      "errores": {
+        "cuello": "Mit den Händen am Nacken ziehen.",
+        "impulso": "Ruckartig mit Schwung hochkommen.",
+        "situp": "Bis zum Sitzen hochkommen: dann arbeitet der Bauch nicht mehr."
+      }
+    },
+    "crunch-inverso": {
+      "nombre": "Reverse Crunch",
+      "cues": {
+        "brazos": "Arme und Schultern ruhig auf der Matte.",
+        "pelvis": "Knie zur Brust ziehen und das Becken einrollen.",
+        "bajada": "Langsam absenken, die Beine nicht fallen lassen."
+      },
+      "errores": {
+        "impulso": "Mit den Beinen schwingen, um die Hüfte anzuheben.",
+        "caida": "Die Beine beim Absenken fallen lassen."
+      }
+    },
+    "elevaciones-piernas": {
+      "nombre": "Beinheben",
+      "cues": {
+        "espalda": "Unterer Rücken die ganze Zeit auf der Matte.",
+        "rodillas": "Beine zusammen und fast gestreckt; leicht beugen, wenn der Rücken zieht.",
+        "bajada": "Langsam absenken und vor dem Boden stoppen."
+      },
+      "errores": {
+        "arco": "Beim Absenken der Beine ins Hohlkreuz gehen.",
+        "impulso": "Die Beine mit Schwung hochbringen."
+      }
+    },
+    "tijeras-abdominales": {
+      "nombre": "Scherenschlag",
+      "cues": {
+        "espalda": "Unterer Rücken auf der Matte.",
+        "corto": "Kurze, wechselnde Kicks, ohne den Boden zu berühren.",
+        "respira": "Gleichmäßig atmen; nicht die Luft anhalten."
+      },
+      "errores": {
+        "arco": "Beim Absenken der Beine ins Hohlkreuz gehen.",
+        "rodillas": "Die Knie stark beugen."
+      }
+    },
+    "hollow-hold": {
+      "nombre": "Hollow Hold",
+      "cues": {
+        "lumbar": "Unteren Rücken auf die Matte drücken, bevor Beine und Schultern hochgehen.",
+        "altura": "Löst sich der Rücken, nimm die Beine höher.",
+        "respira": "Kurz atmen, ohne die Bauchspannung zu lösen."
+      },
+      "errores": {
+        "arco": "Den unteren Rücken vom Boden lösen.",
+        "cuello": "Den Nacken anspannen und zu den Füßen schauen."
+      }
+    },
+    "dead-bug": {
+      "nombre": "Dead Bug",
+      "cues": {
+        "lumbar": "Unterer Rücken bleibt am Boden: kein Hohlkreuz.",
+        "contrarios": "Gleichzeitig einen Arm und das gegenüberliegende Bein strecken.",
+        "lento": "Langsam und kontrolliert; beim Strecken ausatmen."
+      },
+      "errores": {
+        "arco": "Beim Strecken des Beins ins Hohlkreuz gehen.",
+        "prisa": "Zu schnell werden und die Kontrolle verlieren."
+      }
+    },
+    "plancha-alta": {
+      "nombre": "Hoher Stütz",
+      "cues": {
+        "manos": "Hände unter den Schultern, Arme gestreckt.",
+        "linea": "Kopf, Hüfte und Fersen in einer geraden Linie.",
+        "empuja": "Den Boden wegdrücken, Bauch und Gesäß anspannen."
+      },
+      "errores": {
+        "caderaCaida": "Die Hüfte durchhängen lassen.",
+        "hombros": "Die Brust zwischen den Schultern absinken lassen.",
+        "apnea": "Die Luft anhalten."
+      }
+    },
+    "toques-hombro": {
+      "nombre": "Schulterantippen im Stütz",
+      "cues": {
+        "pies": "Füße etwas auseinander, für mehr Stabilität.",
+        "cadera": "Die Hüfte bewegt sich nicht, wenn die Hand abhebt.",
+        "lento": "Langsam die gegenüberliegende Schulter antippen und zurück."
+      },
+      "errores": {
+        "balanceo": "Die Hüfte von Seite zu Seite schwingen.",
+        "caderaAlta": "Die Hüfte zum Ausgleich anheben."
+      }
+    },
+    "bird-dog": {
+      "nombre": "Bird Dog",
+      "cues": {
+        "apoyos": "Hände unter den Schultern, Knie unter der Hüfte.",
+        "linea": "Gegenüberliegenden Arm und Bein in Linie mit dem Rücken strecken.",
+        "lento": "Oben eine Sekunde halten und ohne Eile zurück."
+      },
+      "errores": {
+        "arco": "Das Bein zu hoch heben und ins Hohlkreuz gehen.",
+        "giro": "Beim Strecken des Beins die Hüfte aufdrehen."
+      }
+    },
+    "mountain-climbers": {
+      "nombre": "Mountain Climbers",
+      "cues": {
+        "manos": "Hände fest unter den Schultern.",
+        "cadera": "Hüfte tief, in Linie mit den Schultern.",
+        "rodilla": "Abwechselnd jedes Knie im Rhythmus zur Brust ziehen."
+      },
+      "errores": {
+        "caderaAlta": "Die Hüfte spitz nach oben schieben.",
+        "manos": "Die Schultern vor die Hände wandern lassen."
+      }
+    },
+    "rueda-abdominal": {
+      "nombre": "Bauchroller",
+      "cues": {
+        "lumbar": "Bauch und Gesäß anspannen, damit der Rücken nicht durchhängt.",
+        "rango": "Nur so weit rollen, wie der Rücken neutral bleibt.",
+        "vuelta": "Mit dem Bauch zurückziehen, nicht mit der Hüfte."
+      },
+      "errores": {
+        "hundir": "Beim Ausrollen den unteren Rücken durchhängen lassen.",
+        "cadera": "Beim Zurückkommen zuerst die Hüfte nach hinten schieben.",
+        "rango": "Weiter rollen, als du kontrollierst."
+      }
+    },
+    "plancha-lateral": {
+      "nombre": "Seitstütz",
+      "cues": {
+        "codo": "Ellbogen genau unter der Schulter.",
+        "cadera": "Hüfte anheben, bis der Körper gerade ist.",
+        "respira": "Atmen und halten, ohne die Brust zum Boden zu drehen."
+      },
+      "errores": {
+        "caderaCaida": "Die Hüfte absinken lassen.",
+        "hombro": "In die Stützschulter einsinken."
+      }
+    },
+    "russian-twist": {
+      "nombre": "Russian Twist",
+      "cues": {
+        "espalda": "Rücken gerade, nach hinten geneigt.",
+        "gira": "Den Oberkörper mit den Armen drehen, nicht nur die Arme.",
+        "pies": "Fersen am Boden; nur anheben, wenn du die Drehung kontrollierst."
+      },
+      "errores": {
+        "brazos": "Nur die Arme bewegen, ohne den Oberkörper zu drehen.",
+        "encorvar": "Den Rücken krümmen."
+      }
+    },
+    "burpees": {
+      "nombre": "Burpees",
+      "cues": {
+        "manos": "Hände schulterbreit vor den Füßen aufsetzen.",
+        "plancha": "In den Stütz springen, Bauch fest, Hüfte nicht durchhängen lassen.",
+        "salto": "Aufstehen und mit den Armen nach oben springen; weich landen."
+      },
+      "errores": {
+        "cadera": "Mit durchhängender Hüfte im Stütz landen.",
+        "aterrizaje": "Mit steifen Knien landen."
+      }
+    },
+    "saltos-tijera": {
+      "nombre": "Hampelmann",
+      "cues": {
+        "puntas": "Auf dem Vorfuß springen und landen.",
+        "brazos": "Arme seitlich bis über den Kopf führen.",
+        "rodillas": "Knie locker und beim Landen in Linie mit den Füßen."
+      },
+      "errores": {
+        "talones": "Hart auf den Fersen landen.",
+        "rodillasDentro": "Die Knie beim Landen nach innen fallen lassen."
+      }
+    },
+    "comba": {
+      "nombre": "Seilspringen",
+      "cues": {
+        "bajo": "Flache Sprünge, gerade hoch genug für das Seil.",
+        "munecas": "Ellbogen am Körper; das Seil aus den Handgelenken drehen.",
+        "pisada": "Auf dem Vorfuß landen, Knie locker."
+      },
+      "errores": {
+        "alto": "Zu hoch springen und schneller ermüden.",
+        "brazos": "Das Seil mit den ganzen Armen drehen."
+      }
+    },
+    "rodillas-arriba": {
+      "nombre": "Kniehebelauf",
+      "cues": {
+        "altura": "Jedes Knie bis auf Hüfthöhe heben.",
+        "brazos": "Gegenarm zum Bein mitbewegen, Ellbogen gebeugt.",
+        "pisada": "Auf dem Vorfuß auftreten, Oberkörper aufrecht."
+      },
+      "errores": {
+        "atras": "Den Oberkörper nach hinten lehnen, um das Knie zu heben.",
+        "talones": "Auf den Fersen landen."
+      }
+    },
+    "talones-gluteo": {
+      "nombre": "Anfersen",
+      "cues": {
+        "talon": "Ferse schnell und locker zum Gesäß führen.",
+        "muslo": "Oberschenkel fast senkrecht; das Knie wandert nicht nach vorne.",
+        "pisada": "Auf dem Vorfuß auftreten."
+      },
+      "errores": {
+        "rodilla": "Das Knie nach vorne schieben, statt es zu beugen.",
+        "inclinarse": "Den Oberkörper nach vorne neigen."
+      }
+    },
+    "sentadilla-salto": {
+      "nombre": "Sprungkniebeuge",
+      "cues": {
+        "bajar": "Wie bei einer Kniebeuge absenken, Brust raus.",
+        "saltar": "Abspringen und dabei Hüfte, Knie und Sprunggelenke strecken.",
+        "aterrizar": "Von der Fußspitze zur Ferse landen und die Knie beugen."
+      },
+      "errores": {
+        "rodillas": "Die Knie beim Absenken oder Landen nach innen fallen lassen.",
+        "rigido": "Mit steifen Beinen landen."
+      }
+    },
+    "oso": {
+      "nombre": "Bear Crawl",
+      "cues": {
+        "rodillas": "Knie zwei Finger über dem Boden, unter der Hüfte.",
+        "contrarios": "Gegenüberliegende Hand und Fuß gleichzeitig, mit kurzen Schritten.",
+        "espalda": "Rücken flach: die Hüfte geht nicht hoch und schaukelt nicht."
+      },
+      "errores": {
+        "cadera": "Die Hüfte über die Schultern heben.",
+        "mismoLado": "Hand und Fuß derselben Seite bewegen."
+      }
+    },
+    "perro-boca-abajo": {
+      "nombre": "Herabschauender Hund mit Treten",
+      "cues": {
+        "manos": "Mit gespreizten Händen den Boden wegdrücken.",
+        "cadera": "Hüfte nach oben und hinten, Rücken lang.",
+        "talones": "Abwechselnd eine Ferse senken und das andere Knie beugen, ohne zu forcieren."
+      },
+      "errores": {
+        "espalda": "Den Rücken rund machen, um die Beine zu strecken.",
+        "hombros": "Die Schultern zum Boden einsinken lassen."
+      }
+    },
+    "bisagra-cadera": {
+      "nombre": "Hüftscharnier",
+      "cues": {
+        "cadera": "Hüfte nach hinten, als würdest du damit eine Tür schließen.",
+        "espalda": "Rücken gerade, Nacken in Linie über die ganze Bewegung.",
+        "rodillas": "Knie leicht gebeugt; absenken, bis die Beinbeuger spannen."
+      },
+      "errores": {
+        "redondear": "Den Rücken rund machen, um tiefer zu kommen.",
+        "sentadilla": "Die Knie beugen und daraus eine Kniebeuge machen."
+      }
+    },
+    "flexor-cadera": {
+      "nombre": "Hüftbeuger-Dehnung",
+      "cues": {
+        "gluteo": "Gesäß des hinteren Beins anspannen, bevor du nach vorne gehst.",
+        "tronco": "Oberkörper gerade: das Becken nach vorne schieben, ohne Hohlkreuz.",
+        "respira": "Ein paar Sekunden atmend halten und langsam zurück."
+      },
+      "errores": {
+        "lumbar": "Ins Hohlkreuz gehen, statt das Becken nach vorne zu schieben.",
+        "rodilla": "Das Knie auf harten Boden setzen; nimm die Matte."
+      }
+    },
+    "movilidad-tobillo": {
+      "nombre": "Sprunggelenk-Mobilität",
+      "cues": {
+        "talon": "Die vordere Ferse hebt zu keinem Zeitpunkt ab.",
+        "rodilla": "Knie nach vorne schieben, in Linie mit dem Fuß.",
+        "suave": "Sanfte Bewegung ohne Wippen; bei Schmerz stoppen."
+      },
+      "errores": {
+        "talon": "Die Ferse anheben, um weiter zu kommen.",
+        "rodillaDentro": "Das Knie nach innen fallen lassen."
+      }
+    },
+    "balanceo-pierna": {
+      "nombre": "Beinschwingen",
+      "cues": {
+        "apoyo": "An einer Wand abstützen, wenn das Gleichgewicht schwerfällt.",
+        "suelta": "Das Bein locker schwingen, ohne Ruck.",
+        "rango": "Klein anfangen und die Höhe nach und nach steigern."
+      },
+      "errores": {
+        "tronco": "Den Oberkörper bewegen, um das Bein höher zu bringen.",
+        "forzar": "Den Bewegungsumfang schon beim ersten Schwung erzwingen."
+      }
+    },
+    "pallof-press": {
+      "nombre": "Pallof Press mit Band",
+      "cues": {
+        "tronco": "Seitlich zum Ankerpunkt, Füße hüftbreit, Oberkörper fest.",
+        "empuje": "Hände vom Brustbein nach vorne drücken, ohne zu drehen.",
+        "pausa": "Mit gestreckten Armen zwei Sekunden halten und langsam zurück."
+      },
+      "errores": {
+        "girar": "Sich vom Band an Schultern oder Hüfte verdrehen lassen.",
+        "cerca": "So nah am Ankerpunkt stehen, dass das Band nicht zieht."
+      }
+    },
+    "elevacion-rodillas-colgado": {
+      "nombre": "Knieheben im Hang",
+      "cues": {
+        "agarre": "Mit gestreckten Armen und aktiven Schultern hängen.",
+        "pelvis": "Knie über die Hüfte heben und das Becken einrollen.",
+        "balanceo": "Langsam absenken, ohne zu schwingen."
+      },
+      "errores": {
+        "balanceo": "Mit dem Körper Schwung holen.",
+        "caer": "Die Beine ruckartig fallen lassen."
+      }
+    }
+  }
+}

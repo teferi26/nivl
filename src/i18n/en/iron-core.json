@@ -1,0 +1,345 @@
+{
+  "grupo": {
+    "cardio": "Cardio and bodyweight",
+    "movilidad": "Mobility"
+  },
+  "musculo": {
+    "transverso": "Transverse abdominis",
+    "serrato": "Serratus anterior",
+    "cuello": "Neck"
+  },
+  "material": {
+    "esterilla": "Mat",
+    "comba": "Jump rope",
+    "rueda": "Ab wheel"
+  },
+  "ejercicios": {
+    "crunch": {
+      "nombre": "Crunch",
+      "cues": {
+        "pies": "Feet flat and lower back on the mat.",
+        "subir": "Lift only your shoulders, curling your torso toward your pelvis.",
+        "cuello": "Eyes on the ceiling, chin slightly tucked; don't pull your head."
+      },
+      "errores": {
+        "cuello": "Pulling on your neck with your hands.",
+        "impulso": "Jerking up with momentum.",
+        "situp": "Coming all the way up: your abs stop working."
+      }
+    },
+    "crunch-inverso": {
+      "nombre": "Reverse crunch",
+      "cues": {
+        "brazos": "Arms and shoulders still on the mat.",
+        "pelvis": "Bring your knees to your chest by curling your pelvis.",
+        "bajada": "Lower slowly, don't let your legs drop."
+      },
+      "errores": {
+        "impulso": "Swinging your legs to lift your hips.",
+        "caida": "Letting your legs drop on the way down."
+      }
+    },
+    "elevaciones-piernas": {
+      "nombre": "Lying leg raise",
+      "cues": {
+        "espalda": "Lower back pressed into the mat the whole way.",
+        "rodillas": "Legs together and nearly straight; bend slightly if your back pulls.",
+        "bajada": "Lower slowly and stop before touching the floor."
+      },
+      "errores": {
+        "arco": "Arching your back as you lower your legs.",
+        "impulso": "Swinging your legs up."
+      }
+    },
+    "tijeras-abdominales": {
+      "nombre": "Flutter kicks",
+      "cues": {
+        "espalda": "Lower back pressed into the mat.",
+        "corto": "Short, alternating kicks without touching the floor.",
+        "respira": "Breathe steadily; don't hold your breath."
+      },
+      "errores": {
+        "arco": "Arching your back as you lower your legs.",
+        "rodillas": "Bending your knees a lot."
+      }
+    },
+    "hollow-hold": {
+      "nombre": "Hollow hold",
+      "cues": {
+        "lumbar": "Press your lower back into the mat before lifting legs and shoulders.",
+        "altura": "If your back lifts off, raise your legs higher.",
+        "respira": "Take short breaths without relaxing your abs."
+      },
+      "errores": {
+        "arco": "Letting your lower back lift off the floor.",
+        "cuello": "Straining your neck looking at your feet."
+      }
+    },
+    "dead-bug": {
+      "nombre": "Dead bug",
+      "cues": {
+        "lumbar": "Lower back down: don't let it arch.",
+        "contrarios": "Extend one arm and the opposite leg at the same time.",
+        "lento": "Slow and controlled; exhale as you extend."
+      },
+      "errores": {
+        "arco": "Arching your back as you extend your leg.",
+        "prisa": "Rushing and losing control."
+      }
+    },
+    "plancha-alta": {
+      "nombre": "High plank",
+      "cues": {
+        "manos": "Hands under your shoulders, arms straight.",
+        "linea": "Head, hips and heels in a straight line.",
+        "empuja": "Push the floor away and squeeze your abs and glutes."
+      },
+      "errores": {
+        "caderaCaida": "Letting your hips sag.",
+        "hombros": "Sinking your chest between your shoulders.",
+        "apnea": "Holding your breath."
+      }
+    },
+    "toques-hombro": {
+      "nombre": "Plank shoulder taps",
+      "cues": {
+        "pies": "Widen your feet a little for stability.",
+        "cadera": "Your hips don't move as you lift a hand.",
+        "lento": "Tap the opposite shoulder slowly and return."
+      },
+      "errores": {
+        "balanceo": "Rocking your hips side to side.",
+        "caderaAlta": "Raising your hips to compensate."
+      }
+    },
+    "bird-dog": {
+      "nombre": "Bird dog",
+      "cues": {
+        "apoyos": "Hands under your shoulders and knees under your hips.",
+        "linea": "Extend opposite arm and leg in line with your back.",
+        "lento": "Hold for a second at full extension and return without rushing."
+      },
+      "errores": {
+        "arco": "Lifting your leg too high and arching your lower back.",
+        "giro": "Rotating your hips as you extend your leg."
+      }
+    },
+    "mountain-climbers": {
+      "nombre": "Mountain climbers",
+      "cues": {
+        "manos": "Hands planted under your shoulders.",
+        "cadera": "Hips low, in line with your shoulders.",
+        "rodilla": "Drive each knee toward your chest, alternating with rhythm."
+      },
+      "errores": {
+        "caderaAlta": "Piking your hips up.",
+        "manos": "Letting your shoulders drift ahead of your hands."
+      }
+    },
+    "rueda-abdominal": {
+      "nombre": "Ab wheel rollout",
+      "cues": {
+        "lumbar": "Squeeze your abs and glutes so your back doesn't sag.",
+        "rango": "Roll out only as far as you can keep a neutral back.",
+        "vuelta": "Pull back with your abs, not your hips."
+      },
+      "errores": {
+        "hundir": "Letting your lower back sag as you extend.",
+        "cadera": "Returning by pushing your hips back first.",
+        "rango": "Going further than you can control."
+      }
+    },
+    "plancha-lateral": {
+      "nombre": "Side plank",
+      "cues": {
+        "codo": "Elbow directly under your shoulder.",
+        "cadera": "Lift your hips until your body is straight.",
+        "respira": "Breathe and hold without turning your chest to the floor."
+      },
+      "errores": {
+        "caderaCaida": "Letting your hips sag.",
+        "hombro": "Sinking into your supporting shoulder."
+      }
+    },
+    "russian-twist": {
+      "nombre": "Russian twist",
+      "cues": {
+        "espalda": "Back straight, leaning back.",
+        "gira": "Rotate your torso with your arms, not just your arms.",
+        "pies": "Heels on the floor; lift them only if you control the twist."
+      },
+      "errores": {
+        "brazos": "Moving only your arms without rotating your torso.",
+        "encorvar": "Hunching your back."
+      }
+    },
+    "burpees": {
+      "nombre": "Burpees",
+      "cues": {
+        "manos": "Place your hands in front of your feet, shoulder-width apart.",
+        "plancha": "Jump back to a plank with abs braced, hips not sagging.",
+        "salto": "Stand up and jump with arms overhead; land softly."
+      },
+      "errores": {
+        "cadera": "Landing in the plank with your hips sagging.",
+        "aterrizaje": "Landing with stiff knees."
+      }
+    },
+    "saltos-tijera": {
+      "nombre": "Jumping jacks",
+      "cues": {
+        "puntas": "Jump and land on the balls of your feet.",
+        "brazos": "Raise your arms out to the sides and overhead.",
+        "rodillas": "Soft knees, in line with your feet as you land."
+      },
+      "errores": {
+        "talones": "Landing hard on your heels.",
+        "rodillasDentro": "Letting your knees cave in as you land."
+      }
+    },
+    "comba": {
+      "nombre": "Jump rope",
+      "cues": {
+        "bajo": "Low jumps, just enough for the rope to pass.",
+        "munecas": "Elbows close to your body; turn the rope with your wrists.",
+        "pisada": "Land on the balls of your feet, knees soft."
+      },
+      "errores": {
+        "alto": "Jumping too high and tiring early.",
+        "brazos": "Turning the rope with your whole arms."
+      }
+    },
+    "rodillas-arriba": {
+      "nombre": "High knees",
+      "cues": {
+        "altura": "Bring each knee up to hip height.",
+        "brazos": "Swing the arm opposite your leg, elbows bent.",
+        "pisada": "Land on the balls of your feet, torso upright."
+      },
+      "errores": {
+        "atras": "Leaning back to lift your knee.",
+        "talones": "Landing on your heels."
+      }
+    },
+    "talones-gluteo": {
+      "nombre": "Butt kicks",
+      "cues": {
+        "talon": "Kick your heel toward your glutes, quick and loose.",
+        "muslo": "Thigh stays nearly vertical; your knee doesn't drift forward.",
+        "pisada": "Land on the balls of your feet."
+      },
+      "errores": {
+        "rodilla": "Bringing your knee forward instead of bending it.",
+        "inclinarse": "Leaning your torso forward."
+      }
+    },
+    "sentadilla-salto": {
+      "nombre": "Jump squat",
+      "cues": {
+        "bajar": "Lower like a squat, chest up.",
+        "saltar": "Jump by extending your hips, knees and ankles.",
+        "aterrizar": "Land toes to heels and bend your knees."
+      },
+      "errores": {
+        "rodillas": "Letting your knees cave in on the way down or landing.",
+        "rigido": "Landing with stiff legs."
+      }
+    },
+    "oso": {
+      "nombre": "Bear crawl",
+      "cues": {
+        "rodillas": "Knees an inch off the floor, under your hips.",
+        "contrarios": "Move opposite hand and foot together, with short steps.",
+        "espalda": "Flat back: your hips don't rise or sway."
+      },
+      "errores": {
+        "cadera": "Raising your hips above your shoulders.",
+        "mismoLado": "Moving the hand and foot on the same side."
+      }
+    },
+    "perro-boca-abajo": {
+      "nombre": "Downward dog with pedaling",
+      "cues": {
+        "manos": "Push the floor away with your hands spread.",
+        "cadera": "Send your hips up and back, long spine.",
+        "talones": "Alternate lowering one heel and bending the other knee, gently."
+      },
+      "errores": {
+        "espalda": "Rounding your back to straighten your legs.",
+        "hombros": "Sinking your shoulders toward the floor."
+      }
+    },
+    "bisagra-cadera": {
+      "nombre": "Hip hinge",
+      "cues": {
+        "cadera": "Push your hips back, as if closing a door with them.",
+        "espalda": "Back straight and neck in line the whole way.",
+        "rodillas": "Knees slightly bent; lower until you feel your hamstrings."
+      },
+      "errores": {
+        "redondear": "Rounding your back to go lower.",
+        "sentadilla": "Bending your knees and turning it into a squat."
+      }
+    },
+    "flexor-cadera": {
+      "nombre": "Hip flexor stretch",
+      "cues": {
+        "gluteo": "Squeeze the glute of your back leg before shifting forward.",
+        "tronco": "Torso upright: move your pelvis forward without arching your back.",
+        "respira": "Hold for a few seconds breathing, then return slowly."
+      },
+      "errores": {
+        "lumbar": "Arching your lower back instead of moving your pelvis forward.",
+        "rodilla": "Resting your knee on a hard floor; use the mat."
+      }
+    },
+    "movilidad-tobillo": {
+      "nombre": "Ankle mobility",
+      "cues": {
+        "talon": "Your front heel never lifts.",
+        "rodilla": "Drive your knee forward, in line with your foot.",
+        "suave": "Smooth movement with no bouncing; stop if it hurts."
+      },
+      "errores": {
+        "talon": "Lifting your heel to reach further.",
+        "rodillaDentro": "Letting your knee cave in."
+      }
+    },
+    "balanceo-pierna": {
+      "nombre": "Leg swings",
+      "cues": {
+        "apoyo": "Hold a wall if balance is hard.",
+        "suelta": "Swing your leg loosely, without jerking.",
+        "rango": "Start small and increase the height gradually."
+      },
+      "errores": {
+        "tronco": "Moving your torso to swing your leg higher.",
+        "forzar": "Forcing the range from the first swing."
+      }
+    },
+    "pallof-press": {
+      "nombre": "Band Pallof press",
+      "cues": {
+        "tronco": "Side-on to the anchor, feet hip-width, torso braced.",
+        "empuje": "Press your hands straight out from your sternum without rotating.",
+        "pausa": "Hold for two seconds with arms extended and return slowly."
+      },
+      "errores": {
+        "girar": "Letting the band rotate your shoulders or hips.",
+        "cerca": "Standing so close to the anchor that the band has no tension."
+      }
+    },
+    "elevacion-rodillas-colgado": {
+      "nombre": "Hanging knee raise",
+      "cues": {
+        "agarre": "Hang with arms straight and shoulders active.",
+        "pelvis": "Raise your knees above your hips by curling your pelvis.",
+        "balanceo": "Lower slowly without swinging."
+      },
+      "errores": {
+        "balanceo": "Swinging your body for momentum.",
+        "caer": "Letting your legs drop suddenly."
+      }
+    }
+  }
+}

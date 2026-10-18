@@ -1,0 +1,300 @@
+{
+  "ejercicios": {
+    "press-inclinado-barra": {
+      "nombre": "Développé incliné à la barre",
+      "cues": {
+        "seguridad": "Avec une charge lourde, utilise des sécurités ou un pareur.",
+        "angulo": "Dossier entre 30 et 45° : plus incliné, ce sont surtout les épaules.",
+        "apoyos": "Fessiers sur le siège et omoplates serrées contre le dossier.",
+        "trayectoria": "Descends vers le haut de la poitrine, avant-bras verticaux."
+      },
+      "errores": {
+        "gluteos": "Décoller les fessiers du siège pour pousser plus.",
+        "codos": "Ouvrir les coudes à 90° du buste.",
+        "cuello": "Descendre la barre vers le cou."
+      }
+    },
+    "press-declinado-barra": {
+      "nombre": "Développé décliné à la barre",
+      "cues": {
+        "seguridad": "Demande de l'aide pour sortir et reposer la barre : la tête est en bas.",
+        "pies": "Cale bien les pieds sous le boudin avant de commencer.",
+        "trayectoria": "Descends vers le bas de la poitrine et pousse vers les épaules."
+      },
+      "errores": {
+        "rebote": "Faire rebondir la charge sur la poitrine.",
+        "recorrido": "Raccourcir l'amplitude sans toucher la poitrine.",
+        "cabeza": "Décoller la tête du banc en poussant."
+      }
+    },
+    "press-suelo-barra": {
+      "nombre": "Floor press à la barre",
+      "cues": {
+        "codos": "Descends jusqu'à poser les coudes au sol et marque un temps.",
+        "rodillas": "Genoux fléchis et pieds à plat au sol.",
+        "trayectoria": "Pousse à la verticale jusqu'à tendre les bras au-dessus des épaules."
+      },
+      "errores": {
+        "rebote": "Faire rebondir les coudes au sol.",
+        "codos": "Ouvrir les coudes à 90° du buste.",
+        "lumbar": "Cambrer le dos pour pousser."
+      }
+    },
+    "press-banca-mancuerna": {
+      "nombre": "Développé couché aux haltères",
+      "cues": {
+        "escapulas": "Omoplates serrées et pieds à plat au sol.",
+        "bajada": "Descends à hauteur de poitrine, avant-bras verticaux.",
+        "subida": "Monte les haltères au-dessus des épaules sans les entrechoquer."
+      },
+      "errores": {
+        "codos": "Ouvrir les coudes à 90° du buste.",
+        "rapido": "Laisser tomber les haltères à la descente.",
+        "asimetria": "Monter une main avant l'autre."
+      }
+    },
+    "press-inclinado-mancuerna": {
+      "nombre": "Développé incliné aux haltères",
+      "cues": {
+        "angulo": "Dossier entre 30 et 45° : plus incliné, ce sont surtout les épaules.",
+        "bajada": "Descends au niveau du haut de la poitrine, avant-bras verticaux.",
+        "subida": "Pousse vers le haut sans entrechoquer les haltères."
+      },
+      "errores": {
+        "gluteos": "Décoller les fessiers du siège.",
+        "codos": "Ouvrir les coudes à 90° du buste.",
+        "corto": "Rester à mi-amplitude en bas."
+      }
+    },
+    "press-declinado-mancuerna": {
+      "nombre": "Développé décliné aux haltères",
+      "cues": {
+        "pies": "Cale les pieds sous le boudin avant de prendre les haltères.",
+        "bajada": "Descends au niveau du bas de la poitrine, avant-bras verticaux.",
+        "salida": "À la fin, pose les haltères sur les cuisses et redresse-toi lentement."
+      },
+      "errores": {
+        "rapido": "Laisser tomber les haltères à la descente.",
+        "codos": "Ouvrir les coudes à 90° du buste.",
+        "cabeza": "Décoller la tête du banc."
+      }
+    },
+    "press-suelo-mancuerna": {
+      "nombre": "Floor press aux haltères",
+      "cues": {
+        "codos": "Descends jusqu'à ce que les coudes touchent le sol, sans rebondir.",
+        "rodillas": "Genoux fléchis et pieds à plat au sol.",
+        "subida": "Pousse les deux haltères en même temps au-dessus des épaules."
+      },
+      "errores": {
+        "rebote": "Faire rebondir les coudes au sol.",
+        "codos": "Ouvrir les coudes à 90° du buste.",
+        "lumbar": "Cambrer le dos pour pousser."
+      }
+    },
+    "press-squeeze-mancuerna": {
+      "nombre": "Squeeze press aux haltères",
+      "cues": {
+        "apretar": "Colle les haltères et presse-les l'un contre l'autre sur toute l'amplitude.",
+        "agarre": "Paumes face à face et coudes près du corps.",
+        "bajada": "Descends lentement jusqu'à frôler la poitrine."
+      },
+      "errores": {
+        "separar": "Écarter les haltères en montant.",
+        "rapido": "Descendre sans contrôle.",
+        "gluteos": "Décoller les fessiers du banc."
+      }
+    },
+    "aperturas-mancuerna": {
+      "nombre": "Écarté couché aux haltères",
+      "cues": {
+        "codos": "Coudes légèrement fléchis et fixes sur toute l'amplitude.",
+        "bajada": "Ouvre les bras en arc jusqu'à sentir la poitrine s'étirer, pas plus.",
+        "subida": "Referme en arc, comme pour enlacer un tonneau."
+      },
+      "errores": {
+        "press": "Plier les coudes et en faire un développé.",
+        "profundo": "Descendre les bras sous la ligne des épaules.",
+        "peso": "Prendre si lourd que l'arc se perd."
+      }
+    },
+    "aperturas-inclinado-mancuerna": {
+      "nombre": "Écarté incliné aux haltères",
+      "cues": {
+        "angulo": "Dossier à environ 30°, fessiers sur le siège.",
+        "codos": "Coudes légèrement fléchis et fixes sur toute l'amplitude.",
+        "bajada": "Ouvre les bras en arc jusqu'à sentir la poitrine s'étirer, pas plus.",
+        "subida": "Referme en arc, comme pour enlacer un tonneau."
+      },
+      "errores": {
+        "press": "Plier les coudes et en faire un développé.",
+        "profundo": "Descendre les bras sous la ligne des épaules.",
+        "peso": "Prendre si lourd que l'arc se perd."
+      }
+    },
+    "aperturas-declinado-mancuerna": {
+      "nombre": "Écarté décliné aux haltères",
+      "cues": {
+        "pies": "Cale les pieds sous le boudin avant de prendre les haltères.",
+        "codos": "Coudes légèrement fléchis et fixes sur toute l'amplitude.",
+        "bajada": "Ouvre les bras en arc jusqu'à sentir la poitrine s'étirer, pas plus.",
+        "subida": "Referme en arc, comme pour enlacer un tonneau."
+      },
+      "errores": {
+        "press": "Plier les coudes et en faire un développé.",
+        "profundo": "Descendre les bras sous la ligne des épaules.",
+        "peso": "Prendre si lourd que l'arc se perd."
+      }
+    },
+    "aperturas-suelo-mancuerna": {
+      "nombre": "Écarté au sol aux haltères",
+      "cues": {
+        "suelo": "Descends jusqu'à ce que les coudes frôlent le sol, sans les laisser tomber.",
+        "codos": "Coudes légèrement fléchis et fixes sur toute l'amplitude.",
+        "rodillas": "Genoux fléchis et pieds à plat au sol."
+      },
+      "errores": {
+        "press": "Plier les coudes et en faire un développé.",
+        "rebote": "Laisser tomber les coudes au sol.",
+        "peso": "Prendre si lourd que l'arc se perd."
+      }
+    },
+    "flexiones": {
+      "nombre": "Pompes",
+      "cues": {
+        "linea": "Corps aligné de la tête aux talons : serre abdos et fessiers.",
+        "manos": "Mains un peu plus larges que les épaules, à hauteur de poitrine.",
+        "codos": "Coudes à environ 45° du buste, pas en croix.",
+        "recorrido": "Descends jusqu'à avoir la poitrine à une main du sol."
+      },
+      "errores": {
+        "cadera": "Laisser tomber les hanches.",
+        "cabeza": "Baisser la tête avant la poitrine.",
+        "codos": "Ouvrir les coudes en croix."
+      }
+    },
+    "flexiones-rodillas": {
+      "nombre": "Pompes sur les genoux",
+      "cues": {
+        "rodillas": "Pose les genoux sur quelque chose de moelleux.",
+        "linea": "Ligne droite des genoux à la tête : les hanches ne se plient pas.",
+        "recorrido": "Descends la poitrine, pas seulement la tête."
+      },
+      "errores": {
+        "cadera": "Plier les hanches et les laisser en l'air.",
+        "corto": "Descendre de quelques centimètres seulement."
+      }
+    },
+    "flexiones-inclinadas": {
+      "nombre": "Pompes inclinées",
+      "cues": {
+        "apoyo": "Mains sur un banc stable qui ne bouge pas et ne glisse pas.",
+        "linea": "Corps aligné de la tête aux talons : serre abdos et fessiers.",
+        "progresion": "Plus l'appui est bas, plus c'est dur : descends-le peu à peu."
+      },
+      "errores": {
+        "cadera": "Laisser tomber les hanches.",
+        "apoyo": "S'appuyer sur quelque chose qui bouge ou bascule."
+      }
+    },
+    "flexiones-declinadas": {
+      "nombre": "Pompes déclinées",
+      "cues": {
+        "apoyo": "Pointes de pied sur un banc stable qui ne glisse pas.",
+        "linea": "Corps aligné de la tête aux talons : serre abdos et fessiers.",
+        "cabeza": "Descends la poitrine vers le sol, pas la tête."
+      },
+      "errores": {
+        "cadera": "Laisser tomber les hanches.",
+        "cabeza": "Amener la tête au sol avant la poitrine."
+      }
+    },
+    "flexiones-abiertas": {
+      "nombre": "Pompes mains larges",
+      "cues": {
+        "hombro": "Si l'épaule gêne, resserre un peu les mains.",
+        "manos": "Mains écartées d'une main de plus qu'en pompe classique.",
+        "linea": "Corps aligné de la tête aux talons : serre abdos et fessiers."
+      },
+      "errores": {
+        "cruz": "Écarter au point d'avoir les coudes en croix avec le buste.",
+        "cadera": "Laisser tomber les hanches."
+      }
+    },
+    "flexiones-pliometricas": {
+      "nombre": "Pompes pliométriques",
+      "cues": {
+        "base": "Fais-les seulement si tu enchaînes 15 pompes propres.",
+        "caida": "Réceptionne-toi coudes légèrement fléchis et descends en contrôle.",
+        "empuje": "Pousse fort pour décoller les mains du sol."
+      },
+      "errores": {
+        "bloqueo": "Se réceptionner bras verrouillés.",
+        "cadera": "Casser l'alignement du corps au décollage.",
+        "fatiga": "Continuer quand tu ne décolles plus avec une technique propre."
+      }
+    },
+    "flexion-isometrica": {
+      "nombre": "Pompe isométrique",
+      "cues": {
+        "postura": "Descends à mi-chemin et tiens, coudes à environ 90°.",
+        "linea": "Corps aligné de la tête aux talons : serre abdos et fessiers.",
+        "respira": "Respire normalement pendant le maintien."
+      },
+      "errores": {
+        "apnea": "Retenir sa respiration.",
+        "cadera": "Laisser tomber les hanches."
+      }
+    },
+    "fondos-paralelas": {
+      "nombre": "Dips aux barres parallèles",
+      "cues": {
+        "profundidad": "Descends jusqu'à avoir le bras parallèle au sol, pas plus.",
+        "hombros": "Épaules basses et loin des oreilles.",
+        "inclinacion": "Penche le buste vers l'avant pour solliciter les pectoraux."
+      },
+      "errores": {
+        "hundirse": "Laisser les épaules remonter vers les oreilles en bas.",
+        "profundo": "Descendre plus bas que ce que l'épaule tolère.",
+        "balanceo": "Balancer les jambes pour monter."
+      }
+    },
+    "fondos-negativos": {
+      "nombre": "Dips négatifs",
+      "cues": {
+        "profundidad": "Arrête-toi quand le bras est parallèle au sol.",
+        "subida": "Monte en sautant ou avec une marche jusqu'à bras tendus.",
+        "bajada": "Descends en trois ou quatre secondes, en contrôle."
+      },
+      "errores": {
+        "caida": "Se laisser tomber à la descente.",
+        "profundo": "Descendre plus bas que ce que l'épaule tolère."
+      }
+    },
+    "pec-deck": {
+      "nombre": "Pec deck",
+      "cues": {
+        "asiento": "Règle le siège : coudes à hauteur d'épaules.",
+        "cierre": "Rapproche les coussins devant la poitrine et serre une seconde.",
+        "vuelta": "Ouvre lentement, sans que la charge t'emmène les bras en arrière."
+      },
+      "errores": {
+        "espalda": "Décoller le dos du dossier.",
+        "choque": "Laisser les plaques claquer au retour.",
+        "hombros": "Hausser les épaules vers les oreilles."
+      }
+    },
+    "cruce-poleas": {
+      "nombre": "Écarté à la poulie vis-à-vis",
+      "cues": {
+        "codos": "Coudes légèrement fléchis et fixes, comme pour enlacer un arbre.",
+        "arco": "Descends les mains en arc jusqu'à les joindre devant le bas de la poitrine.",
+        "vuelta": "Reviens lentement jusqu'à sentir l'étirement, sans dépasser les épaules."
+      },
+      "errores": {
+        "press": "Plier et tendre les coudes : ça devient un développé.",
+        "tronco": "Bouger le buste pour aider le bras."
+      }
+    }
+  }
+}

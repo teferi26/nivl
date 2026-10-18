@@ -1,0 +1,353 @@
+{
+  "ejercicios": {
+    "sentadilla-frontal": {
+      "nombre": "Front squat",
+      "cues": {
+        "codos": "Gomiti alti: il bilanciere poggia sulle spalle, non sui polsi.",
+        "pie": "Il bilanciere scende e sale sopra il centro del piede.",
+        "tronco": "Petto in fuori e busto eretto per tutto il movimento.",
+        "seguros": "Metti i fermi del rack sotto il punto più basso."
+      },
+      "errores": {
+        "codosCaen": "Lasciar cadere i gomiti in salita.",
+        "talones": "Sollevare i talloni.",
+        "rodillasDentro": "Lasciare che le ginocchia si chiudano."
+      }
+    },
+    "sentadilla-goblet": {
+      "nombre": "Goblet squat con kettlebell",
+      "cues": {
+        "pecho": "Kettlebell attaccata al petto e petto in fuori.",
+        "codos": "Gomiti verso il basso, all'interno delle ginocchia.",
+        "talones": "Talloni a terra; scendi finché la schiena resta dritta."
+      },
+      "errores": {
+        "separar": "Staccare la kettlebell dal petto.",
+        "lumbar": "Arrotondare la zona lombare in basso.",
+        "rodillasDentro": "Lasciare che le ginocchia si chiudano in salita."
+      }
+    },
+    "prensa": {
+      "nombre": "Leg press",
+      "cues": {
+        "espalda": "Schiena e glutei attaccati allo schienale per tutto il movimento.",
+        "rodillas": "Ginocchia in linea con i piedi, senza chiudersi.",
+        "profundidad": "Scendi fino a circa 90° senza che l'anca si stacchi.",
+        "seguros": "Togli e rimetti i fermi con le gambe quasi distese."
+      },
+      "errores": {
+        "bloquear": "Bloccare le ginocchia di colpo in alto.",
+        "despegar": "Staccare la zona lombare scendendo troppo.",
+        "talones": "Spingere con le punte e sollevare i talloni."
+      }
+    },
+    "sentadilla-bulgara": {
+      "nombre": "Squat bulgaro",
+      "cues": {
+        "vertical": "Scendi in verticale, con il peso sul piede davanti.",
+        "pie": "Piede davanti piatto; il ginocchio segue la punta del piede.",
+        "atras": "Il piede dietro fa solo da appoggio: non spingere con quello."
+      },
+      "errores": {
+        "cerca": "Mettere il piede davanti troppo vicino alla panca.",
+        "rodilla": "Lasciare che il ginocchio davanti vada verso l'interno.",
+        "empujarAtras": "Spingere con la gamba dietro."
+      }
+    },
+    "zancada-atras-mancuerna": {
+      "nombre": "Affondo indietro con manubri",
+      "cues": {
+        "paso": "Passo indietro lungo e controllato, appoggiando la punta.",
+        "peso": "Il peso va sul piede davanti; risali spingendo con quello.",
+        "tronco": "Busto eretto e manubri lungo i fianchi."
+      },
+      "errores": {
+        "corto": "Fare un passo così corto che il ginocchio davanti avanza troppo.",
+        "rodilla": "Sbattere il ginocchio dietro a terra."
+      }
+    },
+    "peso-muerto-rumano": {
+      "nombre": "Stacco rumeno",
+      "cues": {
+        "cadera": "Porta l'anca indietro con le ginocchia appena piegate.",
+        "barra": "Il bilanciere scende attaccato alle gambe, sopra il centro del piede.",
+        "espalda": "Schiena neutra: fermati quando non scendi più senza arrotondarla.",
+        "rango": "Scendi finché senti tensione nei femorali, circa sotto il ginocchio."
+      },
+      "errores": {
+        "redondear": "Arrotondare la schiena per scendere di più.",
+        "sentadilla": "Piegare molto le ginocchia e trasformarlo in uno squat.",
+        "separar": "Allontanare il bilanciere dalle gambe."
+      }
+    },
+    "hip-thrust": {
+      "nombre": "Hip thrust con bilanciere",
+      "cues": {
+        "apoyo": "Appoggia sulla panca la parte bassa delle scapole.",
+        "arriba": "In alto, busto e cosce in linea e glutei stretti.",
+        "barbilla": "Mento raccolto: lo sguardo va verso le ginocchia.",
+        "talones": "Spingi con i talloni; tibie verticali in alto."
+      },
+      "errores": {
+        "lumbar": "Inarcare la zona lombare invece di estendere l'anca.",
+        "pies": "Mettere i piedi così lontani che lavorano soprattutto i femorali.",
+        "rango": "Fermarsi a metà strada in alto."
+      }
+    },
+    "extension-cuadriceps": {
+      "nombre": "Leg extension",
+      "cues": {
+        "eje": "Allinea il ginocchio con il perno della macchina.",
+        "arriba": "Distendi fin quasi a bloccare e stringi un secondo.",
+        "bajada": "Scendi piano, senza lasciar cadere il peso."
+      },
+      "errores": {
+        "impulso": "Salire con lo slancio e mollare il peso in basso.",
+        "cadera": "Sollevare l'anca dal sedile."
+      }
+    },
+    "curl-femoral-tumbado": {
+      "nombre": "Leg curl sdraiato",
+      "cues": {
+        "cadera": "Anca attaccata alla panca per tutto il movimento.",
+        "eje": "Ginocchia appena fuori dalla panca, allineate con il perno.",
+        "bajada": "Scendi piano fino a distendere quasi del tutto."
+      },
+      "errores": {
+        "cadera": "Sollevare l'anca per alzare più peso.",
+        "rebote": "Rimbalzare in basso."
+      }
+    },
+    "gemelos-de-pie": {
+      "nombre": "Calf raise in piedi",
+      "cues": {
+        "rango": "Porta il tallone sotto il gradino e sali fin sulla punta.",
+        "pausa": "Tieni un secondo in alto e uno in basso.",
+        "rodillas": "Ginocchia distese senza bloccarle; sali e scendi tutto insieme."
+      },
+      "errores": {
+        "rebote": "Rimbalzare in basso.",
+        "medio": "Fare solo metà del movimento."
+      }
+    },
+    "gemelos-sentado": {
+      "nombre": "Calf raise da seduto",
+      "cues": {
+        "rango": "Abbassa il tallone il più possibile e sali fin sulla punta.",
+        "pausa": "Tieni un secondo in alto.",
+        "peso": "Il manubrio sul ginocchio, senza spingerlo con le mani."
+      },
+      "errores": {
+        "rebote": "Rimbalzare in basso.",
+        "manos": "Aiutarsi spingendo con le braccia."
+      }
+    },
+    "step-up-cajon": {
+      "nombre": "Step up sul box",
+      "cues": {
+        "pie": "Piede intero su un box solido che non si muova.",
+        "empuje": "Sali spingendo con la gamba sul box, non con quella dietro.",
+        "bajada": "Scendi piano fino ad appoggiare la punta dietro."
+      },
+      "errores": {
+        "impulso": "Darsi la spinta con la gamba dietro.",
+        "rodilla": "Lasciare che il ginocchio d'appoggio vada verso l'interno."
+      }
+    },
+    "swing-kettlebell": {
+      "nombre": "Swing con kettlebell",
+      "cues": {
+        "cadera": "È una cerniera: anca indietro e poi avanti con forza.",
+        "brazos": "Braccia distese e rilassate: guidano solo la kettlebell.",
+        "bloqueo": "In alto, completamente in piedi, con glutei e addome stretti."
+      },
+      "errores": {
+        "sentadilla": "Scendere in squat invece di portare l'anca indietro.",
+        "brazos": "Sollevare la kettlebell tirando con le spalle.",
+        "lumbar": "Arrotondare la schiena in basso o inarcarla in alto."
+      }
+    },
+    "peso-muerto-rumano-mancuerna": {
+      "nombre": "Stacco rumeno con manubri",
+      "cues": {
+        "cadera": "Porta l'anca indietro con le ginocchia appena piegate.",
+        "pegadas": "I manubri scendono attaccati alle gambe.",
+        "espalda": "Schiena neutra per tutto il movimento."
+      },
+      "errores": {
+        "redondear": "Arrotondare la schiena per scendere di più.",
+        "lejos": "Lasciare che i manubri si allontanino dal corpo."
+      }
+    },
+    "peso-muerto-una-pierna": {
+      "nombre": "Stacco a una gamba",
+      "cues": {
+        "linea": "Busto e gamba dietro in linea, come un'altalena.",
+        "cadera": "Anca in bolla: non aprirla di lato.",
+        "apoyo": "Ginocchio d'appoggio morbido; se perdi l'equilibrio, tocca con la punta."
+      },
+      "errores": {
+        "abrir": "Ruotare l'anca e aprire la gamba dietro.",
+        "redondear": "Arrotondare la schiena per scendere di più."
+      }
+    },
+    "buenos-dias": {
+      "nombre": "Good morning con bilanciere",
+      "cues": {
+        "cadera": "Porta l'anca indietro con le ginocchia morbide.",
+        "espalda": "Schiena neutra: il busto scende tutto insieme.",
+        "carga": "Inizia con poco peso e prendilo dal rack con i fermi."
+      },
+      "errores": {
+        "redondear": "Arrotondare la schiena per scendere di più.",
+        "rodillas": "Piegare molto le ginocchia e trasformarlo in uno squat."
+      }
+    },
+    "abduccion-maquina": {
+      "nombre": "Abductor machine",
+      "cues": {
+        "espalda": "Schiena sullo schienale e anca ferma.",
+        "abrir": "Apri le ginocchia fin dove controlli, senza oscillare.",
+        "cerrar": "Chiudi piano, senza che il peso sbatta."
+      },
+      "errores": {
+        "inclinar": "Buttarsi in avanti per muovere più peso.",
+        "golpe": "Mollare il peso di colpo in chiusura."
+      }
+    },
+    "sentadilla-peso-corporal": {
+      "nombre": "Squat a corpo libero",
+      "cues": {
+        "talones": "Talloni a terra per tutto il movimento.",
+        "cadera": "Porta l'anca indietro e in basso, con il petto in fuori.",
+        "rodillas": "Ginocchia in linea con le punte dei piedi."
+      },
+      "errores": {
+        "talones": "Sollevare i talloni.",
+        "medio": "Fermarsi a metà movimento.",
+        "rodillasDentro": "Lasciare che le ginocchia si chiudano in salita."
+      }
+    },
+    "sentadilla-cajon": {
+      "nombre": "Box squat",
+      "cues": {
+        "atras": "Siediti indietro, come se cercassi la sedia con i glutei.",
+        "tocar": "Tocca il box senza lasciarti cadere né perdere tensione.",
+        "subir": "Risali spingendo il pavimento, senza dondolare."
+      },
+      "errores": {
+        "caer": "Lasciarsi cadere sul box.",
+        "balanceo": "Dondolare all'indietro per rialzarsi.",
+        "rodillas": "Lasciare che le ginocchia si chiudano in salita."
+      }
+    },
+    "zancada-estatica": {
+      "nombre": "Affondo statico",
+      "cues": {
+        "vertical": "Scendi in verticale, come un ascensore.",
+        "rodilla": "Ginocchio davanti sopra la caviglia; quello dietro sfiora quasi terra.",
+        "empuje": "Risali spingendo con il piede davanti."
+      },
+      "errores": {
+        "corta": "Mettere i piedi troppo vicini.",
+        "inclinar": "Portare il busto in avanti."
+      }
+    },
+    "puente-gluteo": {
+      "nombre": "Ponte per glutei",
+      "cues": {
+        "talones": "Piedi vicini ai glutei; spingi con i talloni.",
+        "arriba": "Sali finché spalle, anca e ginocchia sono in linea.",
+        "lumbar": "Stringi i glutei in alto senza inarcare la zona lombare."
+      },
+      "errores": {
+        "arquear": "Inarcare la schiena per salire di più.",
+        "rapido": "Salire e scendere senza controllo."
+      }
+    },
+    "puente-gluteo-una-pierna": {
+      "nombre": "Ponte per glutei a una gamba",
+      "cues": {
+        "talon": "Spingi con il tallone d'appoggio.",
+        "nivel": "Anca in bolla: non deve cadere dal lato libero.",
+        "arriba": "In alto, busto e coscia d'appoggio in linea."
+      },
+      "errores": {
+        "girar": "Lasciare che l'anca ruoti o cada.",
+        "lumbar": "Inarcare la zona lombare."
+      }
+    },
+    "patada-gluteo": {
+      "nombre": "Slancio per glutei",
+      "cues": {
+        "espalda": "Schiena piatta e addome contratto: si muove solo la gamba.",
+        "talon": "Spingi la pianta del piede verso il soffitto.",
+        "rodilla": "Ginocchio piegato a 90° per tutto il movimento."
+      },
+      "errores": {
+        "arquear": "Inarcare la zona lombare per salire di più.",
+        "girar": "Ruotare l'anca verso il lato della gamba."
+      }
+    },
+    "abduccion-tumbado": {
+      "nombre": "Abduzione sdraiato su un fianco",
+      "cues": {
+        "recta": "Gamba sopra tesa, un po' dietro la linea del corpo.",
+        "punta": "La punta del piede guarda avanti, non al soffitto.",
+        "lento": "Sali fino a circa 40° e scendi piano."
+      },
+      "errores": {
+        "girar": "Ruotare l'anca e salire con la punta verso il soffitto.",
+        "alto": "Salire troppo e piegare il busto."
+      }
+    },
+    "curl-nordico": {
+      "nombre": "Nordic curl",
+      "cues": {
+        "linea": "Corpo dritto dalle ginocchia alla testa, senza piegare l'anca.",
+        "lento": "Scendi il più lentamente possibile.",
+        "manos": "Usa le mani per frenare in basso e aiutarti a tornare."
+      },
+      "errores": {
+        "cadera": "Piegare l'anca così i femorali lavorano meno.",
+        "caer": "Lasciarsi cadere alla fine senza frenare."
+      }
+    },
+    "elevacion-tibial": {
+      "nombre": "Sollevamento tibiale",
+      "cues": {
+        "talon": "Tallone appoggiato; sollevi solo la punta del piede.",
+        "arriba": "Sali il più possibile e tieni un secondo.",
+        "bajada": "Scendi piano."
+      },
+      "errores": {
+        "rapido": "Farlo veloce e senza ampiezza.",
+        "talon": "Staccare il tallone da terra."
+      }
+    },
+    "patada-gluteo-polea": {
+      "nombre": "Slancio per glutei al cavo",
+      "cues": {
+        "tronco": "Tieniti alla colonna e lascia il busto un po' inclinato e fermo.",
+        "atras": "Porta la gamba indietro con il gluteo, ginocchio quasi disteso.",
+        "lumbar": "Fermati prima di inarcare la zona lombare."
+      },
+      "errores": {
+        "arquear": "Inarcare la schiena per alzare di più la gamba.",
+        "impulso": "Lanciare la gamba con lo slancio."
+      }
+    },
+    "abduccion-banda": {
+      "nombre": "Abduzione in piedi con elastico",
+      "cues": {
+        "pelvis": "Bacino dritto: non inclinarti verso il lato d'appoggio.",
+        "punta": "Apri la gamba tesa con la punta del piede in avanti.",
+        "vuelta": "Torna piano senza lasciare che l'elastico ti chiuda le ginocchia."
+      },
+      "errores": {
+        "inclinar": "Inclinare il busto per aprire di più.",
+        "rotar": "Ruotare la punta del piede verso l'alto."
+      }
+    }
+  }
+}

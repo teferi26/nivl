@@ -1,0 +1,300 @@
+{
+  "ejercicios": {
+    "press-inclinado-barra": {
+      "nombre": "Panca inclinata con bilanciere",
+      "cues": {
+        "seguridad": "Con carichi alti, usa i fermi o qualcuno che ti assista.",
+        "angulo": "Schienale tra 30 e 45°: più inclinato, lavora soprattutto la spalla.",
+        "apoyos": "Glutei sul sedile e scapole unite contro lo schienale.",
+        "trayectoria": "Scendi verso la parte alta del petto con gli avambracci verticali."
+      },
+      "errores": {
+        "gluteos": "Staccare i glutei dal sedile per spingere di più.",
+        "codos": "Aprire i gomiti a 90° dal busto.",
+        "cuello": "Portare il bilanciere verso il collo."
+      }
+    },
+    "press-declinado-barra": {
+      "nombre": "Panca declinata con bilanciere",
+      "cues": {
+        "seguridad": "Fatti aiutare a staccare e riporre il bilanciere: la testa resta in basso.",
+        "pies": "Aggancia bene i piedi sotto il rullo prima di iniziare.",
+        "trayectoria": "Scendi verso la parte bassa del petto e spingi verso le spalle."
+      },
+      "errores": {
+        "rebote": "Far rimbalzare il carico sul petto.",
+        "recorrido": "Accorciare il movimento senza arrivare al petto.",
+        "cabeza": "Sollevare la testa dalla panca mentre spingi."
+      }
+    },
+    "press-suelo-barra": {
+      "nombre": "Floor press con bilanciere",
+      "cues": {
+        "codos": "Scendi fino ad appoggiare i gomiti a terra e fermati un istante.",
+        "rodillas": "Ginocchia piegate e piedi piatti a terra.",
+        "trayectoria": "Spingi in verticale fino a distendere le braccia sopra le spalle."
+      },
+      "errores": {
+        "rebote": "Far rimbalzare i gomiti a terra.",
+        "codos": "Aprire i gomiti a 90° dal busto.",
+        "lumbar": "Inarcare la schiena per spingere."
+      }
+    },
+    "press-banca-mancuerna": {
+      "nombre": "Panca piana con manubri",
+      "cues": {
+        "escapulas": "Scapole unite e piedi piatti a terra.",
+        "bajada": "Scendi all'altezza del petto con gli avambracci verticali.",
+        "subida": "Porta i manubri sopra le spalle senza farli sbattere."
+      },
+      "errores": {
+        "codos": "Aprire i gomiti a 90° dal busto.",
+        "rapido": "Lasciar cadere i manubri in discesa.",
+        "asimetria": "Alzare una mano prima dell'altra."
+      }
+    },
+    "press-inclinado-mancuerna": {
+      "nombre": "Panca inclinata con manubri",
+      "cues": {
+        "angulo": "Schienale tra 30 e 45°: più inclinato, lavora soprattutto la spalla.",
+        "bajada": "Scendi vicino alla parte alta del petto con gli avambracci verticali.",
+        "subida": "Spingi verso l'alto senza far sbattere i manubri."
+      },
+      "errores": {
+        "gluteos": "Staccare i glutei dal sedile.",
+        "codos": "Aprire i gomiti a 90° dal busto.",
+        "corto": "Fermarsi a metà movimento in basso."
+      }
+    },
+    "press-declinado-mancuerna": {
+      "nombre": "Panca declinata con manubri",
+      "cues": {
+        "pies": "Aggancia i piedi sotto il rullo prima di prendere i manubri.",
+        "bajada": "Scendi vicino alla parte bassa del petto, avambracci verticali.",
+        "salida": "Alla fine, appoggia i manubri sulle cosce e siediti piano."
+      },
+      "errores": {
+        "rapido": "Lasciar cadere i manubri in discesa.",
+        "codos": "Aprire i gomiti a 90° dal busto.",
+        "cabeza": "Sollevare la testa dalla panca."
+      }
+    },
+    "press-suelo-mancuerna": {
+      "nombre": "Floor press con manubri",
+      "cues": {
+        "codos": "Scendi finché i gomiti toccano terra, senza rimbalzare.",
+        "rodillas": "Ginocchia piegate e piedi piatti a terra.",
+        "subida": "Spingi i due manubri insieme sopra le spalle."
+      },
+      "errores": {
+        "rebote": "Far rimbalzare i gomiti a terra.",
+        "codos": "Aprire i gomiti a 90° dal busto.",
+        "lumbar": "Inarcare la schiena per spingere."
+      }
+    },
+    "press-squeeze-mancuerna": {
+      "nombre": "Squeeze press con manubri",
+      "cues": {
+        "apretar": "Unisci i manubri e premili uno contro l'altro per tutto il movimento.",
+        "agarre": "Palmi uno di fronte all'altro e gomiti vicini al corpo.",
+        "bajada": "Scendi piano fino a sfiorare il petto."
+      },
+      "errores": {
+        "separar": "Separare i manubri in salita.",
+        "rapido": "Scendere senza controllo.",
+        "gluteos": "Staccare i glutei dalla panca."
+      }
+    },
+    "aperturas-mancuerna": {
+      "nombre": "Croci con manubri",
+      "cues": {
+        "codos": "Gomiti leggermente piegati e fissi per tutto il movimento.",
+        "bajada": "Apri le braccia ad arco finché senti il petto allungato, non oltre.",
+        "subida": "Chiudi ad arco, come se abbracciassi un barile."
+      },
+      "errores": {
+        "press": "Piegare i gomiti e trasformarle in una distensione.",
+        "profundo": "Portare le braccia sotto la linea delle spalle.",
+        "peso": "Usare così tanto peso da perdere l'arco."
+      }
+    },
+    "aperturas-inclinado-mancuerna": {
+      "nombre": "Croci su panca inclinata con manubri",
+      "cues": {
+        "angulo": "Schienale a circa 30°, glutei sul sedile.",
+        "codos": "Gomiti leggermente piegati e fissi per tutto il movimento.",
+        "bajada": "Apri le braccia ad arco finché senti il petto allungato, non oltre.",
+        "subida": "Chiudi ad arco, come se abbracciassi un barile."
+      },
+      "errores": {
+        "press": "Piegare i gomiti e trasformarle in una distensione.",
+        "profundo": "Portare le braccia sotto la linea delle spalle.",
+        "peso": "Usare così tanto peso da perdere l'arco."
+      }
+    },
+    "aperturas-declinado-mancuerna": {
+      "nombre": "Croci su panca declinata con manubri",
+      "cues": {
+        "pies": "Aggancia i piedi sotto il rullo prima di prendere i manubri.",
+        "codos": "Gomiti leggermente piegati e fissi per tutto il movimento.",
+        "bajada": "Apri le braccia ad arco finché senti il petto allungato, non oltre.",
+        "subida": "Chiudi ad arco, come se abbracciassi un barile."
+      },
+      "errores": {
+        "press": "Piegare i gomiti e trasformarle in una distensione.",
+        "profundo": "Portare le braccia sotto la linea delle spalle.",
+        "peso": "Usare così tanto peso da perdere l'arco."
+      }
+    },
+    "aperturas-suelo-mancuerna": {
+      "nombre": "Croci a terra con manubri",
+      "cues": {
+        "suelo": "Scendi finché i gomiti sfiorano terra, senza lasciarli cadere.",
+        "codos": "Gomiti leggermente piegati e fissi per tutto il movimento.",
+        "rodillas": "Ginocchia piegate e piedi piatti a terra."
+      },
+      "errores": {
+        "press": "Piegare i gomiti e trasformarle in una distensione.",
+        "rebote": "Lasciar cadere i gomiti a terra.",
+        "peso": "Usare così tanto peso da perdere l'arco."
+      }
+    },
+    "flexiones": {
+      "nombre": "Piegamenti",
+      "cues": {
+        "linea": "Corpo in linea dalla testa ai talloni: contrai addome e glutei.",
+        "manos": "Mani un po' più larghe delle spalle, all'altezza del petto.",
+        "codos": "Gomiti a circa 45° dal busto, non a croce.",
+        "recorrido": "Scendi finché il petto è a un palmo da terra."
+      },
+      "errores": {
+        "cadera": "Lasciar cadere le anche.",
+        "cabeza": "Abbassare la testa prima del petto.",
+        "codos": "Aprire i gomiti a croce."
+      }
+    },
+    "flexiones-rodillas": {
+      "nombre": "Piegamenti sulle ginocchia",
+      "cues": {
+        "rodillas": "Appoggia le ginocchia su qualcosa di morbido.",
+        "linea": "Linea retta dalle ginocchia alla testa: l'anca non si piega.",
+        "recorrido": "Abbassa il petto, non solo la testa."
+      },
+      "errores": {
+        "cadera": "Piegare l'anca e lasciarla in alto.",
+        "corto": "Scendere solo di qualche centimetro."
+      }
+    },
+    "flexiones-inclinadas": {
+      "nombre": "Piegamenti inclinati",
+      "cues": {
+        "apoyo": "Mani su una panca solida che non si muova né scivoli.",
+        "linea": "Corpo in linea dalla testa ai talloni: contrai addome e glutei.",
+        "progresion": "Più basso è l'appoggio, più è difficile: abbassalo poco a poco."
+      },
+      "errores": {
+        "cadera": "Lasciar cadere le anche.",
+        "apoyo": "Appoggiarsi a qualcosa che si muove o si ribalta."
+      }
+    },
+    "flexiones-declinadas": {
+      "nombre": "Piegamenti declinati",
+      "cues": {
+        "apoyo": "Punte dei piedi su una panca solida che non scivoli.",
+        "linea": "Corpo in linea dalla testa ai talloni: contrai addome e glutei.",
+        "cabeza": "Abbassa il petto verso terra, non la testa."
+      },
+      "errores": {
+        "cadera": "Lasciar cadere le anche.",
+        "cabeza": "Portare la testa a terra prima del petto."
+      }
+    },
+    "flexiones-abiertas": {
+      "nombre": "Piegamenti a presa larga",
+      "cues": {
+        "hombro": "Se senti fastidio alla spalla, stringi un po' le mani.",
+        "manos": "Mani un palmo più larghe che nel piegamento normale.",
+        "linea": "Corpo in linea dalla testa ai talloni: contrai addome e glutei."
+      },
+      "errores": {
+        "cruz": "Allargare così tanto che i gomiti formano una croce con il busto.",
+        "cadera": "Lasciar cadere le anche."
+      }
+    },
+    "flexiones-pliometricas": {
+      "nombre": "Piegamenti pliometrici",
+      "cues": {
+        "base": "Falli solo se gestisci 15 piegamenti puliti di fila.",
+        "caida": "Atterra con i gomiti un po' piegati e scendi controllato.",
+        "empuje": "Spingi forte per staccare le mani da terra."
+      },
+      "errores": {
+        "bloqueo": "Atterrare con le braccia bloccate.",
+        "cadera": "Rompere la linea del corpo allo stacco.",
+        "fatiga": "Continuare quando non ti stacchi più con tecnica pulita."
+      }
+    },
+    "flexion-isometrica": {
+      "nombre": "Piegamento isometrico",
+      "cues": {
+        "postura": "Scendi a metà strada e tieni con i gomiti a circa 90°.",
+        "linea": "Corpo in linea dalla testa ai talloni: contrai addome e glutei.",
+        "respira": "Respira normalmente mentre tieni."
+      },
+      "errores": {
+        "apnea": "Trattenere il respiro.",
+        "cadera": "Lasciar cadere le anche."
+      }
+    },
+    "fondos-paralelas": {
+      "nombre": "Dip alle parallele",
+      "cues": {
+        "profundidad": "Scendi finché il braccio è parallelo a terra, non oltre.",
+        "hombros": "Spalle basse e lontane dalle orecchie.",
+        "inclinacion": "Inclina il busto in avanti per caricare il petto."
+      },
+      "errores": {
+        "hundirse": "Far sprofondare le spalle verso le orecchie in basso.",
+        "profundo": "Scendere più di quanto la spalla tolleri.",
+        "balanceo": "Far oscillare le gambe per salire."
+      }
+    },
+    "fondos-negativos": {
+      "nombre": "Dip negativi",
+      "cues": {
+        "profundidad": "Fermati quando il braccio è parallelo a terra.",
+        "subida": "Sali con un salto o da un gradino fino a braccia distese.",
+        "bajada": "Scendi in tre o quattro secondi, con controllo."
+      },
+      "errores": {
+        "caida": "Lasciarsi cadere in discesa.",
+        "profundo": "Scendere più di quanto la spalla tolleri."
+      }
+    },
+    "pec-deck": {
+      "nombre": "Pec deck",
+      "cues": {
+        "asiento": "Regola il sedile: gomiti all'altezza delle spalle.",
+        "cierre": "Unisci i cuscinetti davanti al petto e stringi un secondo.",
+        "vuelta": "Apri piano, senza che il peso ti porti le braccia indietro."
+      },
+      "errores": {
+        "espalda": "Staccare la schiena dallo schienale.",
+        "choque": "Lasciare che le piastre sbattano nel ritorno.",
+        "hombros": "Alzare le spalle verso le orecchie."
+      }
+    },
+    "cruce-poleas": {
+      "nombre": "Croci ai cavi",
+      "cues": {
+        "codos": "Gomiti leggermente piegati e fissi, come se abbracciassi un albero.",
+        "arco": "Porta le mani ad arco fino a unirle davanti alla parte bassa del petto.",
+        "vuelta": "Torna piano finché senti il petto allungato, senza superare le spalle."
+      },
+      "errores": {
+        "press": "Piegare e distendere i gomiti: diventa una distensione.",
+        "tronco": "Muovere il busto per aiutare il braccio."
+      }
+    }
+  }
+}

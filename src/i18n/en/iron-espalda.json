@@ -1,0 +1,345 @@
+{
+  "ejercicios": {
+    "dominada": {
+      "nombre": "Pull-up",
+      "cues": {
+        "hombros": "Start from a hang with active shoulders, away from your ears.",
+        "codos": "Drive your elbows down and back until your chin clears the bar.",
+        "bajada": "Lower under control until your arms are fully straight."
+      },
+      "errores": {
+        "balanceo": "Swinging your legs to get up.",
+        "medio": "Stopping halfway at the bottom.",
+        "cuello": "Craning your neck to reach the bar."
+      }
+    },
+    "dominada-supina": {
+      "nombre": "Chin-up",
+      "cues": {
+        "agarre": "Palms facing you, shoulder-width apart.",
+        "pecho": "Lead with your chest toward the bar until your chin clears it.",
+        "bajada": "Lower slowly until your elbows are straight."
+      },
+      "errores": {
+        "patada": "Kicking for momentum.",
+        "medio": "Not straightening your arms at the bottom."
+      }
+    },
+    "dominada-neutra": {
+      "nombre": "Neutral-grip pull-up",
+      "cues": {
+        "agarre": "Palms facing each other on the parallel handles.",
+        "codos": "Elbows close to your body, toward your ribs.",
+        "bajada": "Lower under control to a hang with active shoulders."
+      },
+      "errores": {
+        "hombros": "Letting your shoulders creep up to your ears at the bottom.",
+        "balanceo": "Swinging your body to get up."
+      }
+    },
+    "dominada-negativa": {
+      "nombre": "Negative pull-up",
+      "cues": {
+        "arriba": "Jump or step up from a stable box, chin over the bar.",
+        "lento": "Lower over 3 to 5 seconds, don't drop.",
+        "abajo": "At the bottom, straighten your arms, set your feet down and restart."
+      },
+      "errores": {
+        "caer": "Dropping during the second half of the descent.",
+        "hombros": "Letting your shoulders go slack at the end."
+      }
+    },
+    "dominada-escapular": {
+      "nombre": "Scapular pull-up",
+      "cues": {
+        "brazos": "Arms straight the whole time: don't bend your elbows.",
+        "hombros": "Pull your shoulders down away from your ears and lift your chest slightly.",
+        "pausa": "Hold for a second at the top and release slowly."
+      },
+      "errores": {
+        "codos": "Bending your elbows and turning it into a short pull-up.",
+        "balanceo": "Swinging your legs."
+      }
+    },
+    "remo-invertido": {
+      "nombre": "Inverted row",
+      "cues": {
+        "tabla": "Body straight from heels to head, glutes squeezed.",
+        "pecho": "Pull your chest to the bar, elbows going back.",
+        "mesa": "At home, use a sturdy table that can't tip over."
+      },
+      "errores": {
+        "cadera": "Letting your hips sag.",
+        "cuello": "Jutting your chin out to reach the bar."
+      }
+    },
+    "jalon-pecho": {
+      "nombre": "Lat pulldown",
+      "cues": {
+        "rodillo": "Set the knee pad so your thighs stay locked in.",
+        "pecho": "Pull the bar to your upper chest, leaning back slightly.",
+        "codos": "Pull with your elbows down, not with your hands."
+      },
+      "errores": {
+        "balanceo": "Leaning back to move more weight.",
+        "nuca": "Pulling the bar behind your neck.",
+        "subida": "Letting the bar fly up on the way back."
+      }
+    },
+    "jalon-supino": {
+      "nombre": "Reverse-grip lat pulldown",
+      "cues": {
+        "agarre": "Palms facing you, shoulder-width apart.",
+        "codos": "Elbows tight to your body, down to your lower chest.",
+        "subida": "Let the bar rise under control until your arms are straight."
+      },
+      "errores": {
+        "balanceo": "Rocking your torso on every rep.",
+        "munecas": "Bending your wrists instead of pulling with your back."
+      }
+    },
+    "jalon-neutro": {
+      "nombre": "Close-grip lat pulldown",
+      "cues": {
+        "codos": "Elbows close to your body, toward your ribs.",
+        "pecho": "Chest up: the handle reaches your lower chest.",
+        "subida": "Let your arms rise without losing your posture."
+      },
+      "errores": {
+        "balanceo": "Leaning back to help yourself.",
+        "encoger": "Shrugging your shoulders as you pull."
+      }
+    },
+    "pullover-polea": {
+      "nombre": "Cable straight-arm pulldown",
+      "cues": {
+        "brazos": "Arms nearly straight: your elbows don't bend during the rep.",
+        "arco": "Bring the bar down in an arc to your thighs.",
+        "tronco": "Torso leaning forward and still, abs braced."
+      },
+      "errores": {
+        "codos": "Bending your elbows and turning it into a press.",
+        "tronco": "Moving your torso to bring the bar down."
+      }
+    },
+    "remo-barra": {
+      "nombre": "Barbell row",
+      "cues": {
+        "bisagra": "Hips back, soft knees and neutral back.",
+        "codos": "Pull the bar to your belly by driving your elbows.",
+        "espalda": "Your torso stays still: if it rises, lower the weight."
+      },
+      "errores": {
+        "tronco": "Lifting your torso to raise the bar.",
+        "lumbar": "Rounding your lower back.",
+        "recorrido": "Doing half reps at the top."
+      }
+    },
+    "remo-barra-supino": {
+      "nombre": "Underhand barbell row",
+      "cues": {
+        "tronco": "Torso a bit more upright than in the overhand row.",
+        "codos": "Elbows tight to your body, up to your lower belly.",
+        "bajada": "Lower under control until your arms are straight."
+      },
+      "errores": {
+        "balanceo": "Rocking your torso to lift the bar.",
+        "munecas": "Bending your wrists as you pull."
+      }
+    },
+    "remo-mancuernas": {
+      "nombre": "Bent-over dumbbell row",
+      "cues": {
+        "bisagra": "Hips back and neutral back, soft knees.",
+        "codos": "Palms facing each other, elbows toward your hips.",
+        "cuello": "Neck in line with your back, eyes on the floor ahead."
+      },
+      "errores": {
+        "tronco": "Raising your torso on every rep.",
+        "encoger": "Shrugging instead of pulling with your elbows."
+      }
+    },
+    "remo-polea-sentado": {
+      "nombre": "Seated cable row",
+      "cues": {
+        "pecho": "Chest up and neutral back the whole way.",
+        "codos": "Pull the handle to your belly with elbows tucked.",
+        "vuelta": "Straighten your arms on the return without rounding your back."
+      },
+      "errores": {
+        "balanceo": "Rocking your torso back and forth.",
+        "lumbar": "Rounding your lower back as you reach forward."
+      }
+    },
+    "remo-maquina": {
+      "nombre": "Machine row",
+      "cues": {
+        "pecho": "Chest against the pad the whole way.",
+        "codos": "Pull your elbows back and squeeze your shoulder blades.",
+        "vuelta": "Return slowly until your arms are straight."
+      },
+      "errores": {
+        "despegar": "Lifting your chest off the pad to pull more.",
+        "encoger": "Shrugging your shoulders toward your ears."
+      }
+    },
+    "face-pull": {
+      "nombre": "Face pull",
+      "cues": {
+        "codos": "Elbows high and wide, at shoulder height.",
+        "cara": "Pull the rope toward your face, spreading your hands apart.",
+        "tronco": "Torso still: the movement comes from your arms."
+      },
+      "errores": {
+        "peso": "Loading so much that your torso leans back.",
+        "codos": "Dropping your elbows and turning it into a row."
+      }
+    },
+    "peso-muerto": {
+      "nombre": "Deadlift",
+      "cues": {
+        "barra": "Bar over mid-foot and close to your legs.",
+        "espalda": "Neutral back and chest up before you pull.",
+        "empuja": "Push the floor away with your legs and extend your hips.",
+        "arriba": "Finish standing tall, without leaning back."
+      },
+      "errores": {
+        "lumbar": "Rounding your lower back.",
+        "lejos": "Letting the bar drift away from your legs.",
+        "cadera": "Raising your hips before the bar moves."
+      }
+    },
+    "peso-muerto-sumo": {
+      "nombre": "Sumo deadlift",
+      "cues": {
+        "pies": "Wide stance, toes out and hands inside your knees.",
+        "rodillas": "Push your knees out in line with your toes.",
+        "pecho": "Chest up and bar close to your body."
+      },
+      "errores": {
+        "rodillas": "Letting your knees cave in on the way up.",
+        "lumbar": "Rounding your lower back."
+      }
+    },
+    "peso-muerto-mancuernas": {
+      "nombre": "Dumbbell deadlift",
+      "cues": {
+        "cadera": "Push your hips back, dumbbells close to your legs.",
+        "espalda": "Neutral back; lower to mid-shin.",
+        "arriba": "Stand up by pushing the floor away and squeeze your glutes."
+      },
+      "errores": {
+        "lumbar": "Rounding your back at the bottom.",
+        "lejos": "Letting the dumbbells drift away from your body."
+      }
+    },
+    "hiperextension": {
+      "nombre": "Back extension",
+      "cues": {
+        "almohadilla": "Pad below your hips so you bend at the hips.",
+        "linea": "Rise until you're in line with your legs, no further.",
+        "control": "Lower and rise slowly, without momentum."
+      },
+      "errores": {
+        "pasarse": "Arching your back past a straight line.",
+        "impulso": "Jerking up with momentum."
+      }
+    },
+    "superman": {
+      "nombre": "Superman",
+      "cues": {
+        "mirada": "Look at the floor to keep your neck long.",
+        "poco": "Lift your chest, arms and legs just a few inches.",
+        "pausa": "Hold for two seconds at the top and lower slowly."
+      },
+      "errores": {
+        "cuello": "Lifting your head to look forward.",
+        "impulso": "Jerking up and down."
+      }
+    },
+    "pullover-mancuerna": {
+      "nombre": "Dumbbell pullover",
+      "cues": {
+        "agarre": "Hold the dumbbell with both hands under the top plate.",
+        "codos": "Elbows slightly bent and fixed.",
+        "rango": "Lower behind your head only as far as your shoulder allows without pain."
+      },
+      "errores": {
+        "lumbar": "Arching your lower back as you lower.",
+        "codos": "Bending and straightening your elbows."
+      }
+    },
+    "remo-polea-una-mano": {
+      "nombre": "Single-arm cable row",
+      "cues": {
+        "postura": "One foot forward, torso slightly leaning, free hand on your hip.",
+        "codo": "Drive your elbow back along your side, to your waist.",
+        "giro": "Your torso doesn't rotate with the pull."
+      },
+      "errores": {
+        "giro": "Twisting your torso to move more weight.",
+        "encoger": "Hiking your shoulder toward your ear as you pull."
+      }
+    },
+    "remo-polea-abierto": {
+      "nombre": "Wide-grip cable row",
+      "cues": {
+        "agarre": "Long bar, overhand grip wider than your shoulders.",
+        "codos": "Elbows flared out: the bar reaches your lower chest.",
+        "escapulas": "Squeeze your shoulder blades at the end and return slowly."
+      },
+      "errores": {
+        "balanceo": "Rocking your torso to pull.",
+        "encoger": "Shrugging your shoulders at the end."
+      }
+    },
+    "encogimientos-barra": {
+      "nombre": "Barbell shrug",
+      "cues": {
+        "vertical": "Lift your shoulders straight up toward your ears.",
+        "pausa": "Hold for a second at the top and lower slowly.",
+        "agarre": "Grip slightly wider than your thighs, arms straight."
+      },
+      "errores": {
+        "circulos": "Rolling your shoulders in circles.",
+        "rebote": "Bouncing the weight at the bottom without control."
+      }
+    },
+    "encogimientos-mancuerna": {
+      "nombre": "Dumbbell shrug",
+      "cues": {
+        "vertical": "Lift your shoulders straight up toward your ears.",
+        "pausa": "Hold for a second at the top and lower slowly.",
+        "brazos": "Arms straight: your elbows don't bend."
+      },
+      "errores": {
+        "circulos": "Rolling your shoulders in circles.",
+        "cabeza": "Pushing your head forward as you lift."
+      }
+    },
+    "remo-apoyo-pecho": {
+      "nombre": "Chest-supported dumbbell row",
+      "cues": {
+        "pecho": "Chest against the backrest the whole way.",
+        "codos": "Drive your elbows back and close, toward your hips.",
+        "bajada": "Lower until your arms are straight, without dropping your shoulders."
+      },
+      "errores": {
+        "despegar": "Lifting your chest off the bench to pull more.",
+        "encoger": "Shrugging your shoulders toward your ears."
+      }
+    },
+    "dominada-asistida-banda": {
+      "nombre": "Band-assisted pull-up",
+      "cues": {
+        "banda": "Loop the band over the bar and put one knee through it.",
+        "pecho": "Lead with your chest toward the bar until your chin clears it.",
+        "bajada": "Lower under control until your arms are straight."
+      },
+      "errores": {
+        "rebote": "Bouncing off the band at the bottom to come up.",
+        "medio": "Stopping halfway at the top or bottom."
+      }
+    }
+  }
+}

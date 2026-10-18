@@ -1,0 +1,345 @@
+{
+  "ejercicios": {
+    "dominada": {
+      "nombre": "Trazione alla sbarra",
+      "cues": {
+        "hombros": "Parti appeso con le spalle attive, lontane dalle orecchie.",
+        "codos": "Porta i gomiti in basso e indietro finché il mento supera la sbarra.",
+        "bajada": "Scendi controllato fino a distendere del tutto le braccia."
+      },
+      "errores": {
+        "balanceo": "Far oscillare le gambe per salire.",
+        "medio": "Fermarsi a metà movimento in basso.",
+        "cuello": "Allungare il collo per arrivare alla sbarra."
+      }
+    },
+    "dominada-supina": {
+      "nombre": "Trazione presa supina",
+      "cues": {
+        "agarre": "Palmi verso di te, alla larghezza delle spalle.",
+        "pecho": "Porta il petto verso la sbarra e sali finché il mento la supera.",
+        "bajada": "Scendi piano fino a distendere i gomiti."
+      },
+      "errores": {
+        "patada": "Scalciare per prendere slancio.",
+        "medio": "Non distendere le braccia in basso."
+      }
+    },
+    "dominada-neutra": {
+      "nombre": "Trazione presa neutra",
+      "cues": {
+        "agarre": "Palmi uno di fronte all'altro sulle maniglie parallele.",
+        "codos": "Gomiti vicini al corpo, verso le costole.",
+        "bajada": "Scendi controllato fino a restare appeso con le spalle attive."
+      },
+      "errores": {
+        "hombros": "Lasciare le spalle attaccate alle orecchie in basso.",
+        "balanceo": "Far oscillare il corpo per salire."
+      }
+    },
+    "dominada-negativa": {
+      "nombre": "Trazione negativa",
+      "cues": {
+        "arriba": "Sali con un salto o da un box stabile, mento sopra la sbarra.",
+        "lento": "Scendi in 3-5 secondi, senza lasciarti cadere.",
+        "abajo": "In basso distendi le braccia, appoggia i piedi e ricomincia."
+      },
+      "errores": {
+        "caer": "Lasciarsi cadere nella seconda metà della discesa.",
+        "hombros": "Mollare le spalle di colpo alla fine."
+      }
+    },
+    "dominada-escapular": {
+      "nombre": "Trazione scapolare",
+      "cues": {
+        "brazos": "Braccia sempre distese: non piegare i gomiti.",
+        "hombros": "Abbassa le spalle lontano dalle orecchie e alza un po' il petto.",
+        "pausa": "Tieni un secondo in alto e rilascia piano."
+      },
+      "errores": {
+        "codos": "Piegare i gomiti e trasformarla in una trazione corta.",
+        "balanceo": "Far oscillare le gambe."
+      }
+    },
+    "remo-invertido": {
+      "nombre": "Rematore inverso",
+      "cues": {
+        "tabla": "Corpo dritto dai talloni alla testa, glutei stretti.",
+        "pecho": "Porta il petto alla sbarra con i gomiti indietro.",
+        "mesa": "A casa, usa un tavolo solido che non possa ribaltarsi."
+      },
+      "errores": {
+        "cadera": "Lasciar cadere le anche.",
+        "cuello": "Allungare il mento per arrivare alla sbarra."
+      }
+    },
+    "jalon-pecho": {
+      "nombre": "Lat machine avanti",
+      "cues": {
+        "rodillo": "Regola il rullo in modo che le cosce restino bloccate.",
+        "pecho": "Porta la barra alla parte alta del petto, busto un po' indietro.",
+        "codos": "Tira con i gomiti verso il basso, non con le mani."
+      },
+      "errores": {
+        "balanceo": "Buttarsi indietro per muovere più peso.",
+        "nuca": "Portare la barra dietro la nuca.",
+        "subida": "Mollare la barra di colpo in risalita."
+      }
+    },
+    "jalon-supino": {
+      "nombre": "Lat machine presa supina",
+      "cues": {
+        "agarre": "Palmi verso di te, alla larghezza delle spalle.",
+        "codos": "Gomiti attaccati al corpo fino alla parte bassa del petto.",
+        "subida": "Risali controllato fino a distendere le braccia."
+      },
+      "errores": {
+        "balanceo": "Far oscillare il busto a ogni ripetizione.",
+        "munecas": "Piegare i polsi invece di tirare con la schiena."
+      }
+    },
+    "jalon-neutro": {
+      "nombre": "Lat machine con triangolo",
+      "cues": {
+        "codos": "Gomiti vicini al corpo, verso le costole.",
+        "pecho": "Petto in fuori: il triangolo arriva alla parte bassa del petto.",
+        "subida": "Lascia salire le braccia senza perdere la postura."
+      },
+      "errores": {
+        "balanceo": "Buttarsi indietro per aiutarsi.",
+        "encoger": "Alzare le spalle mentre tiri."
+      }
+    },
+    "pullover-polea": {
+      "nombre": "Pullover al cavo alto",
+      "cues": {
+        "brazos": "Braccia quasi tese: il gomito non si piega durante il movimento.",
+        "arco": "Porta la barra in arco fino alle cosce.",
+        "tronco": "Busto inclinato e fermo, addome contratto."
+      },
+      "errores": {
+        "codos": "Piegare i gomiti e trasformarlo in una spinta.",
+        "tronco": "Muovere il busto per abbassare la barra."
+      }
+    },
+    "remo-barra": {
+      "nombre": "Rematore con bilanciere",
+      "cues": {
+        "bisagra": "Anca indietro, ginocchia morbide e schiena neutra.",
+        "codos": "Porta il bilanciere all'addome tirando con i gomiti.",
+        "espalda": "Il busto non si muove: se si alza, cala il peso."
+      },
+      "errores": {
+        "tronco": "Sollevare il busto per alzare il bilanciere.",
+        "lumbar": "Arrotondare la zona lombare.",
+        "recorrido": "Fare mezzo movimento in alto."
+      }
+    },
+    "remo-barra-supino": {
+      "nombre": "Rematore con bilanciere presa supina",
+      "cues": {
+        "tronco": "Busto un po' più eretto che nel rematore prono.",
+        "codos": "Gomiti attaccati al corpo fino alla parte bassa dell'addome.",
+        "bajada": "Scendi controllato fino a distendere le braccia."
+      },
+      "errores": {
+        "balanceo": "Far oscillare il busto per sollevare il bilanciere.",
+        "munecas": "Piegare i polsi mentre tiri."
+      }
+    },
+    "remo-mancuernas": {
+      "nombre": "Rematore con manubri",
+      "cues": {
+        "bisagra": "Anca indietro e schiena neutra, ginocchia morbide.",
+        "codos": "Palmi uno di fronte all'altro e gomiti verso l'anca.",
+        "cuello": "Collo in linea con la schiena, sguardo a terra davanti a te."
+      },
+      "errores": {
+        "tronco": "Sollevare il busto a ogni ripetizione.",
+        "encoger": "Alzare le spalle invece di tirare con i gomiti."
+      }
+    },
+    "remo-polea-sentado": {
+      "nombre": "Pulley basso",
+      "cues": {
+        "pecho": "Petto in fuori e schiena neutra per tutto il movimento.",
+        "codos": "Porta il triangolo all'addome con i gomiti stretti.",
+        "vuelta": "Distendi le braccia nel ritorno senza arrotondare la schiena."
+      },
+      "errores": {
+        "balanceo": "Far oscillare il busto avanti e indietro.",
+        "lumbar": "Arrotondare la zona lombare quando distendi."
+      }
+    },
+    "remo-maquina": {
+      "nombre": "Rematore alla macchina",
+      "cues": {
+        "pecho": "Petto appoggiato allo schienale per tutto il movimento.",
+        "codos": "Tira con i gomiti indietro e avvicina le scapole.",
+        "vuelta": "Torna piano fino a distendere le braccia."
+      },
+      "errores": {
+        "despegar": "Staccare il petto dall'appoggio per tirare di più.",
+        "encoger": "Alzare le spalle verso le orecchie."
+      }
+    },
+    "face-pull": {
+      "nombre": "Face pull",
+      "cues": {
+        "codos": "Gomiti alti e aperti, all'altezza delle spalle.",
+        "cara": "Tira la corda verso il viso separando le mani.",
+        "tronco": "Busto fermo: il movimento è delle braccia."
+      },
+      "errores": {
+        "peso": "Caricare così tanto che il busto va indietro.",
+        "codos": "Abbassare i gomiti e trasformarlo in un rematore."
+      }
+    },
+    "peso-muerto": {
+      "nombre": "Stacco da terra",
+      "cues": {
+        "barra": "Il bilanciere sopra il centro del piede e attaccato alle gambe.",
+        "espalda": "Schiena neutra e petto in fuori prima di tirare.",
+        "empuja": "Spingi il pavimento con le gambe ed estendi l'anca.",
+        "arriba": "In alto finisci in piedi, senza buttarti indietro."
+      },
+      "errores": {
+        "lumbar": "Arrotondare la zona lombare.",
+        "lejos": "Allontanare il bilanciere dalle gambe.",
+        "cadera": "Alzare l'anca prima del bilanciere."
+      }
+    },
+    "peso-muerto-sumo": {
+      "nombre": "Stacco sumo",
+      "cues": {
+        "pies": "Piedi molto larghi, punte in fuori e mani all'interno.",
+        "rodillas": "Apri le ginocchia in linea con le punte.",
+        "pecho": "Petto in fuori e bilanciere attaccato al corpo."
+      },
+      "errores": {
+        "rodillas": "Lasciare che le ginocchia si chiudano in salita.",
+        "lumbar": "Arrotondare la zona lombare."
+      }
+    },
+    "peso-muerto-mancuernas": {
+      "nombre": "Stacco con manubri",
+      "cues": {
+        "cadera": "Porta l'anca indietro con i manubri attaccati alle gambe.",
+        "espalda": "Schiena neutra; scendi fino a metà tibia.",
+        "arriba": "Sali spingendo il pavimento e stringi i glutei."
+      },
+      "errores": {
+        "lumbar": "Arrotondare la schiena in basso.",
+        "lejos": "Allontanare i manubri dal corpo."
+      }
+    },
+    "hiperextension": {
+      "nombre": "Hyperextension",
+      "cues": {
+        "almohadilla": "Il cuscinetto sotto l'anca, per piegarti dall'anca.",
+        "linea": "Sali fino a essere in linea con le gambe, non oltre.",
+        "control": "Scendi e sali piano, senza slancio."
+      },
+      "errores": {
+        "pasarse": "Inarcare la schiena oltre la linea.",
+        "impulso": "Salire di colpo con lo slancio."
+      }
+    },
+    "superman": {
+      "nombre": "Superman",
+      "cues": {
+        "mirada": "Guarda a terra per tenere il collo lungo.",
+        "poco": "Solleva petto, braccia e gambe solo di qualche centimetro.",
+        "pausa": "Tieni due secondi in alto e scendi piano."
+      },
+      "errores": {
+        "cuello": "Alzare la testa per guardare avanti.",
+        "impulso": "Salire e scendere di colpo."
+      }
+    },
+    "pullover-mancuerna": {
+      "nombre": "Pullover con manubrio",
+      "cues": {
+        "agarre": "Tieni il manubrio con due mani dal disco superiore.",
+        "codos": "Gomiti leggermente piegati e sempre uguali.",
+        "rango": "Scendi dietro la testa solo finché la spalla non fa male."
+      },
+      "errores": {
+        "lumbar": "Inarcare la zona lombare in discesa.",
+        "codos": "Piegare e distendere i gomiti."
+      }
+    },
+    "remo-polea-una-mano": {
+      "nombre": "Rematore al cavo a un braccio",
+      "cues": {
+        "postura": "Un piede avanti, busto un po' inclinato e l'altra mano sul fianco.",
+        "codo": "Porta il gomito indietro lungo il fianco, fino alla vita.",
+        "giro": "Il busto non ruota per accompagnare la tirata."
+      },
+      "errores": {
+        "giro": "Ruotare il busto per muovere più peso.",
+        "encoger": "Alzare la spalla verso l'orecchio mentre tiri."
+      }
+    },
+    "remo-polea-abierto": {
+      "nombre": "Pulley basso presa larga",
+      "cues": {
+        "agarre": "Barra lunga con presa prona, più larga delle spalle.",
+        "codos": "Gomiti aperti in fuori: la barra arriva alla parte bassa del petto.",
+        "escapulas": "Avvicina le scapole alla fine e torna piano."
+      },
+      "errores": {
+        "balanceo": "Far oscillare il busto per tirare.",
+        "encoger": "Alzare le spalle alla fine."
+      }
+    },
+    "encogimientos-barra": {
+      "nombre": "Scrollate con bilanciere",
+      "cues": {
+        "vertical": "Alza le spalle in verticale verso le orecchie.",
+        "pausa": "Tieni un secondo in alto e scendi piano.",
+        "agarre": "Presa poco più larga delle cosce, braccia distese."
+      },
+      "errores": {
+        "circulos": "Ruotare le spalle in cerchio.",
+        "rebote": "Far rimbalzare il peso in basso senza controllo."
+      }
+    },
+    "encogimientos-mancuerna": {
+      "nombre": "Scrollate con manubri",
+      "cues": {
+        "vertical": "Alza le spalle in verticale verso le orecchie.",
+        "pausa": "Tieni un secondo in alto e scendi piano.",
+        "brazos": "Braccia distese: i gomiti non si piegano."
+      },
+      "errores": {
+        "circulos": "Ruotare le spalle in cerchio.",
+        "cabeza": "Portare avanti la testa in salita."
+      }
+    },
+    "remo-apoyo-pecho": {
+      "nombre": "Rematore con manubri con petto in appoggio",
+      "cues": {
+        "pecho": "Petto attaccato allo schienale per tutto il movimento.",
+        "codos": "Porta i gomiti indietro e stretti, verso l'anca.",
+        "bajada": "Scendi fino a distendere le braccia, senza mollare le spalle di colpo."
+      },
+      "errores": {
+        "despegar": "Staccare il petto dalla panca per tirare di più.",
+        "encoger": "Alzare le spalle verso le orecchie."
+      }
+    },
+    "dominada-asistida-banda": {
+      "nombre": "Trazione assistita con elastico",
+      "cues": {
+        "banda": "Lega l'elastico alla sbarra e infila un ginocchio nell'anello.",
+        "pecho": "Sali con il petto verso la sbarra finché il mento la supera.",
+        "bajada": "Scendi controllando fino a distendere le braccia."
+      },
+      "errores": {
+        "rebote": "Rimbalzare in basso con l'elastico per salire.",
+        "medio": "Fermarsi a metà movimento in alto o in basso."
+      }
+    }
+  }
+}

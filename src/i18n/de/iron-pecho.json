@@ -1,0 +1,300 @@
+{
+  "ejercicios": {
+    "press-inclinado-barra": {
+      "nombre": "Schrägbankdrücken mit Langhantel",
+      "cues": {
+        "seguridad": "Bei schwerer Last Sicherungen oder einen Spotter nutzen.",
+        "angulo": "Lehne zwischen 30 und 45°: steiler trainiert vor allem die Schulter.",
+        "apoyos": "Gesäß auf dem Sitz, Schulterblätter zusammen an der Lehne.",
+        "trayectoria": "Zur oberen Brust absenken, die Unterarme senkrecht."
+      },
+      "errores": {
+        "gluteos": "Das Gesäß vom Sitz heben, um mehr zu drücken.",
+        "codos": "Die Ellbogen auf 90° zum Oberkörper öffnen.",
+        "cuello": "Die Stange Richtung Hals absenken."
+      }
+    },
+    "press-declinado-barra": {
+      "nombre": "Negativbankdrücken mit Langhantel",
+      "cues": {
+        "seguridad": "Hol dir Hilfe beim Ausheben und Ablegen: der Kopf liegt tief.",
+        "pies": "Füße vor dem Start fest unter das Polster haken.",
+        "trayectoria": "Zur unteren Brust absenken und Richtung Schultern drücken."
+      },
+      "errores": {
+        "rebote": "Die Last von der Brust abfedern lassen.",
+        "recorrido": "Den Weg verkürzen und die Brust nicht erreichen.",
+        "cabeza": "Beim Drücken den Kopf von der Bank heben."
+      }
+    },
+    "press-suelo-barra": {
+      "nombre": "Floor Press mit Langhantel",
+      "cues": {
+        "codos": "Absenken, bis die Ellbogen am Boden liegen, kurz pausieren.",
+        "rodillas": "Knie gebeugt, Füße flach am Boden.",
+        "trayectoria": "Senkrecht hochdrücken, bis die Arme über den Schultern gestreckt sind."
+      },
+      "errores": {
+        "rebote": "Die Ellbogen vom Boden abfedern lassen.",
+        "codos": "Die Ellbogen auf 90° zum Oberkörper öffnen.",
+        "lumbar": "Beim Drücken ins Hohlkreuz gehen."
+      }
+    },
+    "press-banca-mancuerna": {
+      "nombre": "Kurzhantel-Bankdrücken",
+      "cues": {
+        "escapulas": "Schulterblätter zusammen, Füße flach am Boden.",
+        "bajada": "Bis auf Brusthöhe absenken, die Unterarme senkrecht.",
+        "subida": "Die Hanteln über die Schultern drücken, ohne sie aneinanderzuschlagen."
+      },
+      "errores": {
+        "codos": "Die Ellbogen auf 90° zum Oberkörper öffnen.",
+        "rapido": "Die Hanteln beim Absenken fallen lassen.",
+        "asimetria": "Eine Hand vor der anderen hochdrücken."
+      }
+    },
+    "press-inclinado-mancuerna": {
+      "nombre": "Kurzhantel-Schrägbankdrücken",
+      "cues": {
+        "angulo": "Lehne zwischen 30 und 45°: steiler trainiert vor allem die Schulter.",
+        "bajada": "Neben die obere Brust absenken, die Unterarme senkrecht.",
+        "subida": "Nach oben drücken, ohne die Hanteln aneinanderzuschlagen."
+      },
+      "errores": {
+        "gluteos": "Das Gesäß vom Sitz heben.",
+        "codos": "Die Ellbogen auf 90° zum Oberkörper öffnen.",
+        "corto": "Unten auf halbem Weg stehen bleiben."
+      }
+    },
+    "press-declinado-mancuerna": {
+      "nombre": "Kurzhantel-Negativbankdrücken",
+      "cues": {
+        "pies": "Füße unter das Polster haken, bevor du die Hanteln nimmst.",
+        "bajada": "Neben die untere Brust absenken, Unterarme senkrecht.",
+        "salida": "Am Ende die Hanteln auf die Oberschenkel legen und langsam aufsetzen."
+      },
+      "errores": {
+        "rapido": "Die Hanteln beim Absenken fallen lassen.",
+        "codos": "Die Ellbogen auf 90° zum Oberkörper öffnen.",
+        "cabeza": "Den Kopf von der Bank heben."
+      }
+    },
+    "press-suelo-mancuerna": {
+      "nombre": "Floor Press mit Kurzhanteln",
+      "cues": {
+        "codos": "Absenken, bis die Ellbogen den Boden berühren, ohne abzufedern.",
+        "rodillas": "Knie gebeugt, Füße flach am Boden.",
+        "subida": "Beide Hanteln gleichzeitig über die Schultern drücken."
+      },
+      "errores": {
+        "rebote": "Die Ellbogen vom Boden abfedern lassen.",
+        "codos": "Die Ellbogen auf 90° zum Oberkörper öffnen.",
+        "lumbar": "Beim Drücken ins Hohlkreuz gehen."
+      }
+    },
+    "press-squeeze-mancuerna": {
+      "nombre": "Squeeze Press mit Kurzhanteln",
+      "cues": {
+        "apretar": "Hanteln zusammenführen und über die ganze Bewegung gegeneinanderdrücken.",
+        "agarre": "Handflächen zueinander, Ellbogen nah am Körper.",
+        "bajada": "Langsam absenken, bis sie die Brust streifen."
+      },
+      "errores": {
+        "separar": "Die Hanteln beim Hochdrücken auseinandergehen lassen.",
+        "rapido": "Unkontrolliert absenken.",
+        "gluteos": "Das Gesäß von der Bank heben."
+      }
+    },
+    "aperturas-mancuerna": {
+      "nombre": "Kurzhantel-Flys",
+      "cues": {
+        "codos": "Ellbogen leicht gebeugt und über die ganze Bewegung fixiert.",
+        "bajada": "Arme im Bogen öffnen, bis die Brust gedehnt ist, nicht weiter.",
+        "subida": "Im Bogen schließen, als würdest du ein Fass umarmen."
+      },
+      "errores": {
+        "press": "Die Ellbogen beugen und daraus ein Drücken machen.",
+        "profundo": "Die Arme unter die Schulterlinie absenken.",
+        "peso": "So viel Gewicht nehmen, dass der Bogen verloren geht."
+      }
+    },
+    "aperturas-inclinado-mancuerna": {
+      "nombre": "Kurzhantel-Flys auf der Schrägbank",
+      "cues": {
+        "angulo": "Lehne auf etwa 30°, Gesäß auf dem Sitz.",
+        "codos": "Ellbogen leicht gebeugt und über die ganze Bewegung fixiert.",
+        "bajada": "Arme im Bogen öffnen, bis die Brust gedehnt ist, nicht weiter.",
+        "subida": "Im Bogen schließen, als würdest du ein Fass umarmen."
+      },
+      "errores": {
+        "press": "Die Ellbogen beugen und daraus ein Drücken machen.",
+        "profundo": "Die Arme unter die Schulterlinie absenken.",
+        "peso": "So viel Gewicht nehmen, dass der Bogen verloren geht."
+      }
+    },
+    "aperturas-declinado-mancuerna": {
+      "nombre": "Kurzhantel-Flys auf der Negativbank",
+      "cues": {
+        "pies": "Füße unter das Polster haken, bevor du die Hanteln nimmst.",
+        "codos": "Ellbogen leicht gebeugt und über die ganze Bewegung fixiert.",
+        "bajada": "Arme im Bogen öffnen, bis die Brust gedehnt ist, nicht weiter.",
+        "subida": "Im Bogen schließen, als würdest du ein Fass umarmen."
+      },
+      "errores": {
+        "press": "Die Ellbogen beugen und daraus ein Drücken machen.",
+        "profundo": "Die Arme unter die Schulterlinie absenken.",
+        "peso": "So viel Gewicht nehmen, dass der Bogen verloren geht."
+      }
+    },
+    "aperturas-suelo-mancuerna": {
+      "nombre": "Kurzhantel-Flys am Boden",
+      "cues": {
+        "suelo": "Absenken, bis die Ellbogen den Boden streifen, nicht fallen lassen.",
+        "codos": "Ellbogen leicht gebeugt und über die ganze Bewegung fixiert.",
+        "rodillas": "Knie gebeugt, Füße flach am Boden."
+      },
+      "errores": {
+        "press": "Die Ellbogen beugen und daraus ein Drücken machen.",
+        "rebote": "Die Ellbogen auf den Boden fallen lassen.",
+        "peso": "So viel Gewicht nehmen, dass der Bogen verloren geht."
+      }
+    },
+    "flexiones": {
+      "nombre": "Liegestütze",
+      "cues": {
+        "linea": "Körper in einer Linie von Kopf bis Fersen: Bauch und Gesäß anspannen.",
+        "manos": "Hände etwas breiter als schulterbreit, auf Brusthöhe.",
+        "codos": "Ellbogen etwa 45° zum Oberkörper, nicht im T.",
+        "recorrido": "Absenken, bis die Brust eine Handbreit über dem Boden ist."
+      },
+      "errores": {
+        "cadera": "Die Hüfte durchhängen lassen.",
+        "cabeza": "Den Kopf vor der Brust absenken.",
+        "codos": "Die Ellbogen im T öffnen."
+      }
+    },
+    "flexiones-rodillas": {
+      "nombre": "Liegestütze auf den Knien",
+      "cues": {
+        "rodillas": "Knie auf etwas Weiches setzen.",
+        "linea": "Gerade Linie von den Knien bis zum Kopf: die Hüfte knickt nicht ab.",
+        "recorrido": "Die Brust absenken, nicht nur den Kopf."
+      },
+      "errores": {
+        "cadera": "Die Hüfte beugen und oben lassen.",
+        "corto": "Nur wenige Zentimeter absenken."
+      }
+    },
+    "flexiones-inclinadas": {
+      "nombre": "Erhöhte Liegestütze",
+      "cues": {
+        "apoyo": "Hände auf einer stabilen Bank, die nicht wackelt oder rutscht.",
+        "linea": "Körper in einer Linie von Kopf bis Fersen: Bauch und Gesäß anspannen.",
+        "progresion": "Je tiefer die Auflage, desto schwerer: nach und nach senken."
+      },
+      "errores": {
+        "cadera": "Die Hüfte durchhängen lassen.",
+        "apoyo": "Sich auf etwas stützen, das wackelt oder kippt."
+      }
+    },
+    "flexiones-declinadas": {
+      "nombre": "Liegestütze mit erhöhten Füßen",
+      "cues": {
+        "apoyo": "Fußspitzen auf einer stabilen Bank, die nicht rutscht.",
+        "linea": "Körper in einer Linie von Kopf bis Fersen: Bauch und Gesäß anspannen.",
+        "cabeza": "Die Brust zum Boden senken, nicht den Kopf."
+      },
+      "errores": {
+        "cadera": "Die Hüfte durchhängen lassen.",
+        "cabeza": "Den Kopf vor der Brust zum Boden bringen."
+      }
+    },
+    "flexiones-abiertas": {
+      "nombre": "Breite Liegestütze",
+      "cues": {
+        "hombro": "Spürst du die Schulter, nimm die Hände etwas enger.",
+        "manos": "Hände eine Handbreit weiter als beim normalen Liegestütz.",
+        "linea": "Körper in einer Linie von Kopf bis Fersen: Bauch und Gesäß anspannen."
+      },
+      "errores": {
+        "cruz": "So breit greifen, dass die Ellbogen im T zum Oberkörper stehen.",
+        "cadera": "Die Hüfte durchhängen lassen."
+      }
+    },
+    "flexiones-pliometricas": {
+      "nombre": "Plyometrische Liegestütze",
+      "cues": {
+        "base": "Nur wenn du 15 saubere Liegestütze am Stück schaffst.",
+        "caida": "Mit leicht gebeugten Ellbogen landen und kontrolliert absenken.",
+        "empuje": "Kräftig drücken, bis die Hände vom Boden abheben."
+      },
+      "errores": {
+        "bloqueo": "Mit durchgestreckten Armen landen.",
+        "cadera": "Beim Abheben die Körperlinie verlieren.",
+        "fatiga": "Weitermachen, wenn du nicht mehr sauber abhebst."
+      }
+    },
+    "flexion-isometrica": {
+      "nombre": "Isometrischer Liegestütz",
+      "cues": {
+        "postura": "Bis zur Hälfte absenken und mit etwa 90° in den Ellbogen halten.",
+        "linea": "Körper in einer Linie von Kopf bis Fersen: Bauch und Gesäß anspannen.",
+        "respira": "Beim Halten normal weiteratmen."
+      },
+      "errores": {
+        "apnea": "Die Luft anhalten.",
+        "cadera": "Die Hüfte durchhängen lassen."
+      }
+    },
+    "fondos-paralelas": {
+      "nombre": "Dips am Barren",
+      "cues": {
+        "profundidad": "Absenken, bis der Oberarm parallel zum Boden ist, nicht tiefer.",
+        "hombros": "Schultern unten und weg von den Ohren.",
+        "inclinacion": "Oberkörper nach vorne neigen, um die Brust zu belasten."
+      },
+      "errores": {
+        "hundirse": "Unten die Schultern zu den Ohren einsinken lassen.",
+        "profundo": "Tiefer gehen, als die Schulter verträgt.",
+        "balanceo": "Mit den Beinen schwingen, um hochzukommen."
+      }
+    },
+    "fondos-negativos": {
+      "nombre": "Negative Dips",
+      "cues": {
+        "profundidad": "Stopp, wenn der Oberarm parallel zum Boden ist.",
+        "subida": "Mit einem Sprung oder über eine Stufe in den Stütz mit gestreckten Armen.",
+        "bajada": "In drei bis vier Sekunden kontrolliert absenken."
+      },
+      "errores": {
+        "caida": "Sich beim Absenken fallen lassen.",
+        "profundo": "Tiefer gehen, als die Schulter verträgt."
+      }
+    },
+    "pec-deck": {
+      "nombre": "Butterfly",
+      "cues": {
+        "asiento": "Sitz einstellen: Ellbogen auf Schulterhöhe.",
+        "cierre": "Polster vor der Brust zusammenführen und eine Sekunde anspannen.",
+        "vuelta": "Langsam öffnen, ohne dass das Gewicht die Arme nach hinten zieht."
+      },
+      "errores": {
+        "espalda": "Den Rücken von der Lehne lösen.",
+        "choque": "Die Gewichtsplatten beim Zurückgehen aufschlagen lassen.",
+        "hombros": "Die Schultern zu den Ohren hochziehen."
+      }
+    },
+    "cruce-poleas": {
+      "nombre": "Kabelzug-Crossover",
+      "cues": {
+        "codos": "Ellbogen leicht gebeugt und fixiert, als würdest du einen Baum umarmen.",
+        "arco": "Hände im Bogen nach unten führen, bis sie sich vor der unteren Brust treffen.",
+        "vuelta": "Langsam zurück, bis die Brust gedehnt ist, nicht hinter die Schultern."
+      },
+      "errores": {
+        "press": "Die Ellbogen beugen und strecken: dann wird es ein Drücken.",
+        "tronco": "Den Oberkörper bewegen, um dem Arm zu helfen."
+      }
+    }
+  }
+}

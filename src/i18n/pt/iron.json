@@ -45,7 +45,14 @@
     "isquiotibiales": "Isquiotibiais",
     "aductores": "Adutores",
     "gemelos": "Gémeos",
-    "tibial": "Tibial anterior"
+    "tibial": "Tibial anterior",
+    "braquial": "Braquial",
+    "braquiorradial": "Braquiorradial",
+    "soleo": "Solhar",
+    "gluteo_medio": "Glúteo médio (abdutores)",
+    "psoas": "Psoas (flexor da anca)",
+    "manguito_rotador": "Coifa dos rotadores",
+    "pectoral_superior": "Peitoral superior"
   },
   "grupo": {
     "pecho": "Peito",
@@ -63,7 +70,14 @@
     "polea": "Polia",
     "maquina": "Máquina",
     "kettlebell": "Kettlebell",
-    "banda": "Banda elástica"
+    "banda": "Banda elástica",
+    "barra_z": "Barra W",
+    "barra_fija": "Barra fixa",
+    "rack": "Rack",
+    "cajon": "Caixa",
+    "banco_inclinado": "Banco inclinado",
+    "banco_declinado": "Banco declinado",
+    "paralelas": "Paralelas"
   },
   "nivel": {
     "principiante": "Principiante",

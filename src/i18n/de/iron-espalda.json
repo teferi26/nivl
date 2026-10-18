@@ -1,0 +1,345 @@
+{
+  "ejercicios": {
+    "dominada": {
+      "nombre": "Klimmzug",
+      "cues": {
+        "hombros": "Starte im Hang mit aktiven Schultern, weg von den Ohren.",
+        "codos": "Zieh die Ellbogen nach unten und hinten, bis das Kinn über der Stange ist.",
+        "bajada": "Kontrolliert absenken, bis die Arme ganz gestreckt sind."
+      },
+      "errores": {
+        "balanceo": "Mit den Beinen schwingen, um hochzukommen.",
+        "medio": "Unten auf halbem Weg stehen bleiben.",
+        "cuello": "Den Hals strecken, um die Stange zu erreichen."
+      }
+    },
+    "dominada-supina": {
+      "nombre": "Klimmzug im Untergriff",
+      "cues": {
+        "agarre": "Handflächen zu dir, schulterbreit.",
+        "pecho": "Brust zur Stange ziehen, bis das Kinn darüber ist.",
+        "bajada": "Langsam absenken, bis die Ellbogen gestreckt sind."
+      },
+      "errores": {
+        "patada": "Mit den Beinen treten, um Schwung zu holen.",
+        "medio": "Die Arme unten nicht strecken."
+      }
+    },
+    "dominada-neutra": {
+      "nombre": "Klimmzug im Neutralgriff",
+      "cues": {
+        "agarre": "Handflächen zueinander an den parallelen Griffen.",
+        "codos": "Ellbogen nah am Körper, Richtung Rippen.",
+        "bajada": "Kontrolliert absenken bis in den Hang mit aktiven Schultern."
+      },
+      "errores": {
+        "hombros": "Unten die Schultern an den Ohren hängen lassen.",
+        "balanceo": "Mit dem Körper schwingen, um hochzukommen."
+      }
+    },
+    "dominada-negativa": {
+      "nombre": "Negativer Klimmzug",
+      "cues": {
+        "arriba": "Mit einem Sprung oder von einer stabilen Box hoch, Kinn über der Stange.",
+        "lento": "In 3 bis 5 Sekunden absenken, nicht fallen lassen.",
+        "abajo": "Unten Arme strecken, Füße aufsetzen und neu beginnen."
+      },
+      "errores": {
+        "caer": "In der zweiten Hälfte des Absenkens fallen lassen.",
+        "hombros": "Am Ende die Schultern ruckartig loslassen."
+      }
+    },
+    "dominada-escapular": {
+      "nombre": "Schulterblatt-Klimmzug",
+      "cues": {
+        "brazos": "Arme die ganze Zeit gestreckt: die Ellbogen nicht beugen.",
+        "hombros": "Schultern weg von den Ohren ziehen und die Brust leicht heben.",
+        "pausa": "Oben eine Sekunde halten und langsam lösen."
+      },
+      "errores": {
+        "codos": "Die Ellbogen beugen und daraus einen kurzen Klimmzug machen.",
+        "balanceo": "Mit den Beinen schwingen."
+      }
+    },
+    "remo-invertido": {
+      "nombre": "Australian Pull-up",
+      "cues": {
+        "tabla": "Körper gerade von den Fersen bis zum Kopf, Gesäß angespannt.",
+        "pecho": "Brust zur Stange ziehen, Ellbogen nach hinten.",
+        "mesa": "Zu Hause einen stabilen Tisch nutzen, der nicht kippen kann."
+      },
+      "errores": {
+        "cadera": "Die Hüfte durchhängen lassen.",
+        "cuello": "Das Kinn vorschieben, um die Stange zu erreichen."
+      }
+    },
+    "jalon-pecho": {
+      "nombre": "Latzug zur Brust",
+      "cues": {
+        "rodillo": "Stell das Polster so ein, dass die Oberschenkel fixiert sind.",
+        "pecho": "Stange zur oberen Brust ziehen, Oberkörper leicht nach hinten.",
+        "codos": "Mit den Ellbogen nach unten ziehen, nicht mit den Händen."
+      },
+      "errores": {
+        "balanceo": "Sich nach hinten werfen, um mehr Gewicht zu bewegen.",
+        "nuca": "Die Stange in den Nacken ziehen.",
+        "subida": "Die Stange beim Hochgehen ruckartig loslassen."
+      }
+    },
+    "jalon-supino": {
+      "nombre": "Latzug im Untergriff",
+      "cues": {
+        "agarre": "Handflächen zu dir, schulterbreit.",
+        "codos": "Ellbogen eng am Körper bis zur unteren Brust.",
+        "subida": "Kontrolliert hochgehen, bis die Arme gestreckt sind."
+      },
+      "errores": {
+        "balanceo": "Bei jeder Wiederholung mit dem Oberkörper schwingen.",
+        "munecas": "Die Handgelenke beugen, statt mit dem Rücken zu ziehen."
+      }
+    },
+    "jalon-neutro": {
+      "nombre": "Latzug mit V-Griff",
+      "cues": {
+        "codos": "Ellbogen nah am Körper, Richtung Rippen.",
+        "pecho": "Brust raus: der Griff kommt bis zur unteren Brust.",
+        "subida": "Arme hochgehen lassen, ohne die Haltung zu verlieren."
+      },
+      "errores": {
+        "balanceo": "Sich nach hinten lehnen, um nachzuhelfen.",
+        "encoger": "Beim Ziehen die Schultern hochziehen."
+      }
+    },
+    "pullover-polea": {
+      "nombre": "Pullover am oberen Kabelzug",
+      "cues": {
+        "brazos": "Arme fast gestreckt: der Ellbogen beugt sich nicht.",
+        "arco": "Die Stange im Bogen bis zu den Oberschenkeln führen.",
+        "tronco": "Oberkörper vorgeneigt und ruhig, Bauch fest."
+      },
+      "errores": {
+        "codos": "Die Ellbogen beugen und daraus ein Drücken machen.",
+        "tronco": "Den Oberkörper bewegen, um die Stange runterzubringen."
+      }
+    },
+    "remo-barra": {
+      "nombre": "Langhantelrudern",
+      "cues": {
+        "bisagra": "Hüfte nach hinten, Knie locker, Rücken neutral.",
+        "codos": "Stange zum Bauch ziehen, mit den Ellbogen.",
+        "espalda": "Der Oberkörper bleibt ruhig: richtet er sich auf, reduziere das Gewicht."
+      },
+      "errores": {
+        "tronco": "Den Oberkörper aufrichten, um die Stange hochzubringen.",
+        "lumbar": "Den unteren Rücken rund machen.",
+        "recorrido": "Oben nur den halben Weg gehen."
+      }
+    },
+    "remo-barra-supino": {
+      "nombre": "Langhantelrudern im Untergriff",
+      "cues": {
+        "tronco": "Oberkörper etwas aufrechter als beim Rudern im Obergriff.",
+        "codos": "Ellbogen eng am Körper bis zum unteren Bauch.",
+        "bajada": "Kontrolliert absenken, bis die Arme gestreckt sind."
+      },
+      "errores": {
+        "balanceo": "Mit dem Oberkörper schwingen, um die Stange hochzubringen.",
+        "munecas": "Beim Ziehen die Handgelenke beugen."
+      }
+    },
+    "remo-mancuernas": {
+      "nombre": "Rudern mit Kurzhanteln",
+      "cues": {
+        "bisagra": "Hüfte nach hinten, Rücken neutral, Knie locker.",
+        "codos": "Handflächen zueinander, Ellbogen Richtung Hüfte.",
+        "cuello": "Nacken in Linie mit dem Rücken, Blick auf den Boden vor dir."
+      },
+      "errores": {
+        "tronco": "Bei jeder Wiederholung den Oberkörper aufrichten.",
+        "encoger": "Die Schultern hochziehen, statt mit den Ellbogen zu ziehen."
+      }
+    },
+    "remo-polea-sentado": {
+      "nombre": "Rudern am Kabelzug im Sitzen",
+      "cues": {
+        "pecho": "Brust raus und Rücken neutral über die ganze Bewegung.",
+        "codos": "V-Griff zum Bauch ziehen, Ellbogen eng.",
+        "vuelta": "Beim Zurückgehen die Arme strecken, ohne den Rücken rund zu machen."
+      },
+      "errores": {
+        "balanceo": "Mit dem Oberkörper vor und zurück schwingen.",
+        "lumbar": "Beim Strecken den unteren Rücken rund machen."
+      }
+    },
+    "remo-maquina": {
+      "nombre": "Rudern an der Maschine",
+      "cues": {
+        "pecho": "Brust die ganze Zeit am Polster.",
+        "codos": "Mit den Ellbogen nach hinten ziehen, Schulterblätter zusammen.",
+        "vuelta": "Langsam zurück, bis die Arme gestreckt sind."
+      },
+      "errores": {
+        "despegar": "Die Brust vom Polster lösen, um mehr zu ziehen.",
+        "encoger": "Die Schultern zu den Ohren hochziehen."
+      }
+    },
+    "face-pull": {
+      "nombre": "Face Pull",
+      "cues": {
+        "codos": "Ellbogen hoch und offen, auf Schulterhöhe.",
+        "cara": "Seil zum Gesicht ziehen und die Hände auseinanderführen.",
+        "tronco": "Oberkörper ruhig: die Arme machen die Bewegung."
+      },
+      "errores": {
+        "peso": "So viel Gewicht, dass der Oberkörper nach hinten kippt.",
+        "codos": "Die Ellbogen senken und daraus ein Rudern machen."
+      }
+    },
+    "peso-muerto": {
+      "nombre": "Kreuzheben",
+      "cues": {
+        "barra": "Stange über der Fußmitte, nah an den Beinen.",
+        "espalda": "Rücken neutral und Brust raus, bevor du ziehst.",
+        "empuja": "Drück den Boden mit den Beinen weg und streck die Hüfte.",
+        "arriba": "Oben aufrecht abschließen, ohne dich nach hinten zu lehnen."
+      },
+      "errores": {
+        "lumbar": "Den unteren Rücken rund machen.",
+        "lejos": "Die Stange von den Beinen entfernen.",
+        "cadera": "Die Hüfte vor der Stange hochschießen lassen."
+      }
+    },
+    "peso-muerto-sumo": {
+      "nombre": "Sumo-Kreuzheben",
+      "cues": {
+        "pies": "Füße sehr breit, Fußspitzen nach außen, Hände innen.",
+        "rodillas": "Knie in Richtung der Fußspitzen öffnen.",
+        "pecho": "Brust raus, Stange nah am Körper."
+      },
+      "errores": {
+        "rodillas": "Die Knie beim Hochkommen nach innen fallen lassen.",
+        "lumbar": "Den unteren Rücken rund machen."
+      }
+    },
+    "peso-muerto-mancuernas": {
+      "nombre": "Kreuzheben mit Kurzhanteln",
+      "cues": {
+        "cadera": "Hüfte nach hinten, die Hanteln nah an den Beinen.",
+        "espalda": "Rücken neutral; bis zur Mitte des Schienbeins absenken.",
+        "arriba": "Den Boden wegdrücken und oben das Gesäß anspannen."
+      },
+      "errores": {
+        "lumbar": "Unten den Rücken rund machen.",
+        "lejos": "Die Hanteln vom Körper entfernen."
+      }
+    },
+    "hiperextension": {
+      "nombre": "Hyperextensions",
+      "cues": {
+        "almohadilla": "Polster unter der Hüfte, damit du dich in der Hüfte beugst.",
+        "linea": "Hoch bis in eine Linie mit den Beinen, nicht weiter.",
+        "control": "Langsam runter und hoch, ohne Schwung."
+      },
+      "errores": {
+        "pasarse": "Über die Linie hinaus ins Hohlkreuz gehen.",
+        "impulso": "Ruckartig mit Schwung hochkommen."
+      }
+    },
+    "superman": {
+      "nombre": "Superman",
+      "cues": {
+        "mirada": "Blick zum Boden, damit der Nacken lang bleibt.",
+        "poco": "Brust, Arme und Beine nur wenige Zentimeter anheben.",
+        "pausa": "Oben zwei Sekunden halten und langsam absenken."
+      },
+      "errores": {
+        "cuello": "Den Kopf heben, um nach vorne zu schauen.",
+        "impulso": "Ruckartig hoch und runter."
+      }
+    },
+    "pullover-mancuerna": {
+      "nombre": "Pullover mit Kurzhantel",
+      "cues": {
+        "agarre": "Hantel mit beiden Händen an der oberen Scheibe halten.",
+        "codos": "Ellbogen leicht gebeugt und immer gleich.",
+        "rango": "Nur so weit hinter den Kopf, wie die Schulter schmerzfrei bleibt."
+      },
+      "errores": {
+        "lumbar": "Beim Absenken ins Hohlkreuz gehen.",
+        "codos": "Die Ellbogen beugen und strecken."
+      }
+    },
+    "remo-polea-una-mano": {
+      "nombre": "Einarmiges Rudern am Kabelzug",
+      "cues": {
+        "postura": "Ein Fuß vorne, Oberkörper leicht geneigt, andere Hand an der Hüfte.",
+        "codo": "Ellbogen eng am Körper nach hinten bis zur Taille ziehen.",
+        "giro": "Der Oberkörper dreht beim Ziehen nicht mit."
+      },
+      "errores": {
+        "giro": "Den Oberkörper drehen, um mehr Gewicht zu bewegen.",
+        "encoger": "Beim Ziehen die Schulter zum Ohr hochziehen."
+      }
+    },
+    "remo-polea-abierto": {
+      "nombre": "Breites Rudern am Kabelzug",
+      "cues": {
+        "agarre": "Lange Stange im Obergriff, breiter als schulterbreit.",
+        "codos": "Ellbogen nach außen: die Stange kommt zur unteren Brust.",
+        "escapulas": "Am Ende die Schulterblätter zusammen, dann langsam zurück."
+      },
+      "errores": {
+        "balanceo": "Mit dem Oberkörper schwingen, um zu ziehen.",
+        "encoger": "Am Ende die Schultern hochziehen."
+      }
+    },
+    "encogimientos-barra": {
+      "nombre": "Shrugs mit Langhantel",
+      "cues": {
+        "vertical": "Schultern senkrecht zu den Ohren hochziehen.",
+        "pausa": "Oben eine Sekunde halten und langsam absenken.",
+        "agarre": "Griff etwas breiter als die Oberschenkel, Arme gestreckt."
+      },
+      "errores": {
+        "circulos": "Die Schultern kreisen lassen.",
+        "rebote": "Das Gewicht unten unkontrolliert abfedern lassen."
+      }
+    },
+    "encogimientos-mancuerna": {
+      "nombre": "Shrugs mit Kurzhanteln",
+      "cues": {
+        "vertical": "Schultern senkrecht zu den Ohren hochziehen.",
+        "pausa": "Oben eine Sekunde halten und langsam absenken.",
+        "brazos": "Arme gestreckt: die Ellbogen beugen sich nicht."
+      },
+      "errores": {
+        "circulos": "Die Schultern kreisen lassen.",
+        "cabeza": "Beim Hochziehen den Kopf vorschieben."
+      }
+    },
+    "remo-apoyo-pecho": {
+      "nombre": "Brustgestütztes Rudern mit Kurzhanteln",
+      "cues": {
+        "pecho": "Brust die ganze Zeit an der Lehne.",
+        "codos": "Ellbogen eng nach hinten ziehen, Richtung Hüfte.",
+        "bajada": "Absenken, bis die Arme gestreckt sind, Schultern nicht fallen lassen."
+      },
+      "errores": {
+        "despegar": "Die Brust von der Bank lösen, um mehr zu ziehen.",
+        "encoger": "Die Schultern zu den Ohren hochziehen."
+      }
+    },
+    "dominada-asistida-banda": {
+      "nombre": "Klimmzug mit Bandunterstützung",
+      "cues": {
+        "banda": "Band an der Stange befestigen und ein Knie in die Schlaufe.",
+        "pecho": "Mit der Brust zur Stange hoch, bis das Kinn darüber ist.",
+        "bajada": "Kontrolliert absenken, bis die Arme gestreckt sind."
+      },
+      "errores": {
+        "rebote": "Unten mit dem Band abfedern, um hochzukommen.",
+        "medio": "Oben oder unten auf halbem Weg stehen bleiben."
+      }
+    }
+  }
+}

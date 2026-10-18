@@ -1,0 +1,300 @@
+{
+  "ejercicios": {
+    "press-inclinado-barra": {
+      "nombre": "Incline barbell bench press",
+      "cues": {
+        "seguridad": "With heavy loads, use safety pins or a spotter.",
+        "angulo": "Backrest at 30 to 45°: steeper shifts the work to your shoulders.",
+        "apoyos": "Glutes on the seat, shoulder blades pinched against the backrest.",
+        "trayectoria": "Lower to your upper chest with vertical forearms."
+      },
+      "errores": {
+        "gluteos": "Lifting your glutes off the seat to press more.",
+        "codos": "Flaring your elbows to 90° from your torso.",
+        "cuello": "Lowering the bar toward your neck."
+      }
+    },
+    "press-declinado-barra": {
+      "nombre": "Decline barbell bench press",
+      "cues": {
+        "seguridad": "Get a spotter to unrack and rack the bar: your head is low.",
+        "pies": "Hook your feet securely under the pads before starting.",
+        "trayectoria": "Lower to your lower chest and press toward your shoulders."
+      },
+      "errores": {
+        "rebote": "Bouncing the weight off your chest.",
+        "recorrido": "Cutting the range short of your chest.",
+        "cabeza": "Lifting your head off the bench as you press."
+      }
+    },
+    "press-suelo-barra": {
+      "nombre": "Barbell floor press",
+      "cues": {
+        "codos": "Lower until your elbows rest on the floor and pause briefly.",
+        "rodillas": "Knees bent and feet flat on the floor.",
+        "trayectoria": "Press straight up until your arms are straight over your shoulders."
+      },
+      "errores": {
+        "rebote": "Bouncing your elbows off the floor.",
+        "codos": "Flaring your elbows to 90° from your torso.",
+        "lumbar": "Arching your back to press."
+      }
+    },
+    "press-banca-mancuerna": {
+      "nombre": "Dumbbell bench press",
+      "cues": {
+        "escapulas": "Shoulder blades pinched and feet flat on the floor.",
+        "bajada": "Lower to chest level with vertical forearms.",
+        "subida": "Press the dumbbells up over your shoulders without clashing them."
+      },
+      "errores": {
+        "codos": "Flaring your elbows to 90° from your torso.",
+        "rapido": "Letting the dumbbells drop on the way down.",
+        "asimetria": "Pressing one hand up before the other."
+      }
+    },
+    "press-inclinado-mancuerna": {
+      "nombre": "Incline dumbbell press",
+      "cues": {
+        "angulo": "Backrest at 30 to 45°: steeper shifts the work to your shoulders.",
+        "bajada": "Lower beside your upper chest with vertical forearms.",
+        "subida": "Press up without clashing the dumbbells."
+      },
+      "errores": {
+        "gluteos": "Lifting your glutes off the seat.",
+        "codos": "Flaring your elbows to 90° from your torso.",
+        "corto": "Stopping halfway at the bottom."
+      }
+    },
+    "press-declinado-mancuerna": {
+      "nombre": "Decline dumbbell press",
+      "cues": {
+        "pies": "Hook your feet under the pads before picking up the dumbbells.",
+        "bajada": "Lower beside your lower chest, forearms vertical.",
+        "salida": "When done, rest the dumbbells on your thighs and sit up slowly."
+      },
+      "errores": {
+        "rapido": "Letting the dumbbells drop on the way down.",
+        "codos": "Flaring your elbows to 90° from your torso.",
+        "cabeza": "Lifting your head off the bench."
+      }
+    },
+    "press-suelo-mancuerna": {
+      "nombre": "Dumbbell floor press",
+      "cues": {
+        "codos": "Lower until your elbows touch the floor, without bouncing.",
+        "rodillas": "Knees bent and feet flat on the floor.",
+        "subida": "Press both dumbbells up together over your shoulders."
+      },
+      "errores": {
+        "rebote": "Bouncing your elbows off the floor.",
+        "codos": "Flaring your elbows to 90° from your torso.",
+        "lumbar": "Arching your back to press."
+      }
+    },
+    "press-squeeze-mancuerna": {
+      "nombre": "Dumbbell squeeze press",
+      "cues": {
+        "apretar": "Press the dumbbells together and squeeze them the whole way.",
+        "agarre": "Palms facing each other, elbows close to your body.",
+        "bajada": "Lower slowly until they brush your chest."
+      },
+      "errores": {
+        "separar": "Letting the dumbbells drift apart on the way up.",
+        "rapido": "Lowering without control.",
+        "gluteos": "Lifting your glutes off the bench."
+      }
+    },
+    "aperturas-mancuerna": {
+      "nombre": "Dumbbell fly",
+      "cues": {
+        "codos": "Elbows slightly bent and fixed the whole way.",
+        "bajada": "Open your arms in an arc until you feel a chest stretch, no further.",
+        "subida": "Close in an arc, as if hugging a barrel."
+      },
+      "errores": {
+        "press": "Bending your elbows and turning it into a press.",
+        "profundo": "Lowering your arms below shoulder level.",
+        "peso": "Using so much weight you lose the arc."
+      }
+    },
+    "aperturas-inclinado-mancuerna": {
+      "nombre": "Incline dumbbell fly",
+      "cues": {
+        "angulo": "Backrest at about 30°, glutes on the seat.",
+        "codos": "Elbows slightly bent and fixed the whole way.",
+        "bajada": "Open your arms in an arc until you feel a chest stretch, no further.",
+        "subida": "Close in an arc, as if hugging a barrel."
+      },
+      "errores": {
+        "press": "Bending your elbows and turning it into a press.",
+        "profundo": "Lowering your arms below shoulder level.",
+        "peso": "Using so much weight you lose the arc."
+      }
+    },
+    "aperturas-declinado-mancuerna": {
+      "nombre": "Decline dumbbell fly",
+      "cues": {
+        "pies": "Hook your feet under the pads before picking up the dumbbells.",
+        "codos": "Elbows slightly bent and fixed the whole way.",
+        "bajada": "Open your arms in an arc until you feel a chest stretch, no further.",
+        "subida": "Close in an arc, as if hugging a barrel."
+      },
+      "errores": {
+        "press": "Bending your elbows and turning it into a press.",
+        "profundo": "Lowering your arms below shoulder level.",
+        "peso": "Using so much weight you lose the arc."
+      }
+    },
+    "aperturas-suelo-mancuerna": {
+      "nombre": "Dumbbell floor fly",
+      "cues": {
+        "suelo": "Lower until your elbows brush the floor, without dropping them.",
+        "codos": "Elbows slightly bent and fixed the whole way.",
+        "rodillas": "Knees bent and feet flat on the floor."
+      },
+      "errores": {
+        "press": "Bending your elbows and turning it into a press.",
+        "rebote": "Letting your elbows drop onto the floor.",
+        "peso": "Using so much weight you lose the arc."
+      }
+    },
+    "flexiones": {
+      "nombre": "Push-ups",
+      "cues": {
+        "linea": "Body in line from head to heels: squeeze your abs and glutes.",
+        "manos": "Hands slightly wider than your shoulders, at chest level.",
+        "codos": "Elbows at about 45° from your torso, not flared out.",
+        "recorrido": "Lower until your chest is a hand's width from the floor."
+      },
+      "errores": {
+        "cadera": "Letting your hips sag.",
+        "cabeza": "Dropping your head before your chest.",
+        "codos": "Flaring your elbows straight out."
+      }
+    },
+    "flexiones-rodillas": {
+      "nombre": "Knee push-ups",
+      "cues": {
+        "rodillas": "Rest your knees on something soft.",
+        "linea": "Straight line from knees to head: your hips don't bend.",
+        "recorrido": "Lower your chest, not just your head."
+      },
+      "errores": {
+        "cadera": "Bending at the hips and leaving them up.",
+        "corto": "Only lowering a few inches."
+      }
+    },
+    "flexiones-inclinadas": {
+      "nombre": "Incline push-ups",
+      "cues": {
+        "apoyo": "Hands on a sturdy bench that won't move or slip.",
+        "linea": "Body in line from head to heels: squeeze your abs and glutes.",
+        "progresion": "The lower the surface, the harder: lower it gradually."
+      },
+      "errores": {
+        "cadera": "Letting your hips sag.",
+        "apoyo": "Using a surface that moves or tips over."
+      }
+    },
+    "flexiones-declinadas": {
+      "nombre": "Decline push-ups",
+      "cues": {
+        "apoyo": "Toes on a sturdy bench that won't slip.",
+        "linea": "Body in line from head to heels: squeeze your abs and glutes.",
+        "cabeza": "Lower your chest toward the floor, not your head."
+      },
+      "errores": {
+        "cadera": "Letting your hips sag.",
+        "cabeza": "Bringing your head to the floor before your chest."
+      }
+    },
+    "flexiones-abiertas": {
+      "nombre": "Wide push-ups",
+      "cues": {
+        "hombro": "If your shoulder feels uncomfortable, bring your hands in a bit.",
+        "manos": "Hands a hand's width wider than a regular push-up.",
+        "linea": "Body in line from head to heels: squeeze your abs and glutes."
+      },
+      "errores": {
+        "cruz": "Going so wide that your elbows flare straight out.",
+        "cadera": "Letting your hips sag."
+      }
+    },
+    "flexiones-pliometricas": {
+      "nombre": "Plyometric push-ups",
+      "cues": {
+        "base": "Only do them if you can do 15 clean push-ups in a row.",
+        "caida": "Land with elbows slightly bent and lower under control.",
+        "empuje": "Push hard so your hands leave the floor."
+      },
+      "errores": {
+        "bloqueo": "Landing with locked arms.",
+        "cadera": "Breaking your body line as you push off.",
+        "fatiga": "Continuing when you can't push off with clean form."
+      }
+    },
+    "flexion-isometrica": {
+      "nombre": "Isometric push-up hold",
+      "cues": {
+        "postura": "Lower halfway and hold with elbows at about 90°.",
+        "linea": "Body in line from head to heels: squeeze your abs and glutes.",
+        "respira": "Breathe normally while you hold."
+      },
+      "errores": {
+        "apnea": "Holding your breath.",
+        "cadera": "Letting your hips sag."
+      }
+    },
+    "fondos-paralelas": {
+      "nombre": "Parallel bar dips",
+      "cues": {
+        "profundidad": "Lower until your upper arms are parallel to the floor, no further.",
+        "hombros": "Shoulders down and away from your ears.",
+        "inclinacion": "Lean your torso forward to load your chest."
+      },
+      "errores": {
+        "hundirse": "Letting your shoulders sink to your ears at the bottom.",
+        "profundo": "Going deeper than your shoulder tolerates.",
+        "balanceo": "Swinging your legs to get up."
+      }
+    },
+    "fondos-negativos": {
+      "nombre": "Negative dips",
+      "cues": {
+        "profundidad": "Stop when your upper arms are parallel to the floor.",
+        "subida": "Jump or step up to the top with arms straight.",
+        "bajada": "Lower over three or four seconds, with control."
+      },
+      "errores": {
+        "caida": "Dropping on the way down.",
+        "profundo": "Going deeper than your shoulder tolerates."
+      }
+    },
+    "pec-deck": {
+      "nombre": "Pec deck",
+      "cues": {
+        "asiento": "Adjust the seat: elbows at shoulder height.",
+        "cierre": "Bring the pads together in front of your chest and squeeze for a second.",
+        "vuelta": "Open slowly, without letting the weight pull your arms back."
+      },
+      "errores": {
+        "espalda": "Lifting your back off the backrest.",
+        "choque": "Letting the plates slam on the return.",
+        "hombros": "Shrugging your shoulders toward your ears."
+      }
+    },
+    "cruce-poleas": {
+      "nombre": "Cable crossover",
+      "cues": {
+        "codos": "Elbows slightly bent and fixed, as if hugging a tree.",
+        "arco": "Bring your hands down in an arc to meet in front of your lower chest.",
+        "vuelta": "Return slowly until you feel a chest stretch, not past your shoulders."
+      },
+      "errores": {
+        "press": "Bending and straightening your elbows: it turns into a press.",
+        "tronco": "Moving your torso to help your arms."
+      }
+    }
+  }
+}
