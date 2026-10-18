@@ -94,5 +94,19 @@
     "inscripcion": "La langue",
     "titulo": "Dans quelle langue on se parle ?",
     "pista": "Elle vient de la langue du téléphone. Tu pourras la changer plus tard dans Profil."
+  },
+  "compromiso": {
+    "plazo_one": "{{count}} an",
+    "plazo_other": "{{count}} ans",
+    "cabecera": "ENGAGEMENT SUR {{plazo}}",
+    "firma": "Moi, {{nombre}}, je signe cet engagement avec moi-même le {{firmadoEl}}, le jour où je suis entré dans NIVL.",
+    "objetivo": "Je suis ici pour ceci : {{objetivo}}",
+    "promesa": "Je ne promets pas des jours parfaits. Je promets d'être 1 % meilleur chaque jour : une mission accomplie quand je n'en ai pas envie, une règle respectée quand personne ne regarde, un relevé honnête quand la journée s'est mal passée.",
+    "unoPorCiento": "1 % ne se voit pas en une semaine. En {{plazo}}, c'est une autre vie.",
+    "fallo": "Quand j'échouerai, je ne négocierai pas avec le système. J'accepterai la pénalité, j'appliquerai la conséquence et je reviendrai le lendemain.",
+    "apertura": "À qui ouvrira ceci le {{seAbreEl}} : tu es ce que j'ai fait de chacun de ces jours. J'espère avoir été à ta hauteur.",
+    "firmado": "Signé : {{nombre}}",
+    "cifra": "Chiffre : {{cifra}}",
+    "fecha": "Date : {{fecha}}"
   }
 }

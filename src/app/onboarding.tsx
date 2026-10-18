@@ -69,7 +69,7 @@ import { anotarOferta, fetchAiStatus, isPro, ofrecerSi, type AiStatus, type Deci
 import { colors, fonts } from '@/lib/theme';
 import { ink, type as tipo } from '@/design/tokens';
 import { TopeAncho } from '@/design/useSizeClass';
-import { esIdioma, fijarPreferencia, idiomaDispositivo, preferenciaIdioma, resolverIdiomaCoach, t } from '@/i18n';
+import { esIdioma, fijarPreferencia, idiomaDispositivo, idiomaInterfaz, preferenciaIdioma, resolverIdiomaCoach, t } from '@/i18n';
 import { asegurarIdiomaPerfil } from '@/i18n/sincronizar';
 import { flagsActuales, useFlags } from '@/lib/flags';
 import { eleccionValida, modosSugeridos, useModo, type ModoEtiqueta } from '@/modos';
@@ -396,7 +396,14 @@ export default function Onboarding() {
         firmaPorResolver.current = intentoFirma;
         setFirmaPendiente(true);
         await sealLetter(userId!, intentoFirma.body, intentoFirma.openAt, intentoFirma.healthData);
-        await insertEvent(userId!, 'commitment_signed', { years: intentoFirma.years, open_at: intentoFirma.openAt }).catch(() => {});
+        // QA F1 (M3): si no se firmó en español, el evento dice en qué idioma
+        // (el texto sellado va en el de la interfaz). En es, el de siempre.
+        const idiomaFirma = idiomaInterfaz();
+        await insertEvent(userId!, 'commitment_signed', {
+          years: intentoFirma.years,
+          open_at: intentoFirma.openAt,
+          ...(idiomaFirma === 'es' ? {} : { idioma: idiomaFirma }),
+        }).catch(() => {});
       }
       if (yaEsPro.current) await updateProfile(userId!, { onboarding_done: true });
       setFirmaSellada(intentoFirma);
@@ -764,7 +771,7 @@ export default function Onboarding() {
                 inscripcion={t('onboarding:misiones.inscripcion')}
                 titulo={t('onboarding:misiones.titulo')}
                 pista={t('onboarding:misiones.pista', {
-                  para: kind === 'general' ? t('onboarding:misiones.gladiador') : meta.label.toLowerCase(),
+                  para: kind === 'general' ? t('onboarding:misiones.gladiador') : meta.enFrase,
                 })}
               />
               <TarjetaArena variante="contorno" remaches>

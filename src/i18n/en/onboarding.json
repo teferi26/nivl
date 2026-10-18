@@ -94,5 +94,19 @@
     "inscripcion": "The language",
     "titulo": "Which language should we speak?",
     "pista": "It comes from your phone's language. You can change it later in Profile."
+  },
+  "compromiso": {
+    "plazo_one": "{{count}} year",
+    "plazo_other": "{{count}} years",
+    "cabecera": "COMMITMENT FOR {{plazo}}",
+    "firma": "I, {{nombre}}, sign this commitment with myself on {{firmadoEl}}, the day I joined NIVL.",
+    "objetivo": "I am here for this: {{objetivo}}",
+    "promesa": "I don't promise perfect days. I promise to be 1% better every day: a mission done when I don't feel like it, a rule kept when nobody is watching, an honest log when the day has gone badly.",
+    "unoPorCiento": "1% doesn't show in a week. In {{plazo}} it's another life.",
+    "fallo": "When I fail, I won't negotiate with the system. I'll accept the penalty, carry out the consequence and come back the next day.",
+    "apertura": "To whoever opens this on {{seAbreEl}}: you are what I did with each of these days. I hope I lived up to you.",
+    "firmado": "Signed: {{nombre}}",
+    "cifra": "Figure: {{cifra}}",
+    "fecha": "Date: {{fecha}}"
   }
 }

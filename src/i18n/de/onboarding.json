@@ -94,5 +94,19 @@
     "inscripcion": "Die Sprache",
     "titulo": "In welcher Sprache sprechen wir?",
     "pista": "Sie kommt von der Sprache deines Handys. Du kannst sie später im Profil ändern."
+  },
+  "compromiso": {
+    "plazo_one": "{{count}} Jahr",
+    "plazo_other": "{{count}} Jahre",
+    "cabecera": "VERPFLICHTUNG FÜR {{plazo}}",
+    "firma": "Ich, {{nombre}}, unterschreibe diese Verpflichtung mir selbst gegenüber am {{firmadoEl}}, dem Tag, an dem ich NIVL beigetreten bin.",
+    "objetivo": "Dafür bin ich hier: {{objetivo}}",
+    "promesa": "Ich verspreche keine perfekten Tage. Ich verspreche, jeden Tag 1 % besser zu sein: eine erfüllte Mission, wenn ich keine Lust habe, eine eingehaltene Regel, wenn niemand hinsieht, ein ehrlicher Eintrag, wenn der Tag schlecht gelaufen ist.",
+    "unoPorCiento": "1 % merkt man in einer Woche nicht. {{plazo}} später ist es ein anderes Leben.",
+    "fallo": "Wenn ich scheitere, verhandle ich nicht mit dem System. Ich nehme die Strafe an, erfülle die Konsequenz und bin am nächsten Tag wieder da.",
+    "apertura": "An die Person, die das am {{seAbreEl}} öffnet: Du bist, was ich aus jedem dieser Tage gemacht habe. Ich hoffe, ich bin dir gerecht geworden.",
+    "firmado": "Unterschrieben: {{nombre}}",
+    "cifra": "Zahl: {{cifra}}",
+    "fecha": "Datum: {{fecha}}"
   }
 }

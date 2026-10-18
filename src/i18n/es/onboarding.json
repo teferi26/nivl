@@ -94,5 +94,19 @@
     "inscripcion": "El idioma",
     "titulo": "¿En qué idioma hablamos?",
     "pista": "Sale del idioma del teléfono. Puedes cambiarlo después en Perfil."
+  },
+  "compromiso": {
+    "plazo_one": "{{count}} año",
+    "plazo_other": "{{count}} años",
+    "cabecera": "COMPROMISO A {{plazo}}",
+    "firma": "Yo, {{nombre}}, firmo este compromiso conmigo el {{firmadoEl}}, el día que entré en NIVL.",
+    "objetivo": "Estoy aquí para esto: {{objetivo}}",
+    "promesa": "No prometo días perfectos. Prometo ser un 1 % mejor cada día: una misión cumplida cuando no apetece, una norma respetada cuando nadie mira, un registro honesto cuando el día ha ido mal.",
+    "unoPorCiento": "Un 1 % no se nota en una semana. En {{plazo}} es otra vida.",
+    "fallo": "Cuando falle, no negociaré con el sistema. Aceptaré la penalización, cumpliré la consecuencia y volveré al día siguiente.",
+    "apertura": "A quien abra esto el {{seAbreEl}}: eres lo que hice con cada uno de estos días. Espero haber estado a tu altura.",
+    "firmado": "Firmado: {{nombre}}",
+    "cifra": "Cifra: {{cifra}}",
+    "fecha": "Fecha: {{fecha}}"
   }
 }

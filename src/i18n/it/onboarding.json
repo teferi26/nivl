@@ -55,7 +55,7 @@
   "misiones": {
     "inscripcion": "Le missioni",
     "titulo": "Le tue prime missioni",
-    "pista": "Proposte per un {{para}}. Togli quelle che non fanno per te; potrai creare le tue in Abitudini.",
+    "pista": "Proposte per il tuo profilo ({{para}}). Togli quelle che non fanno per te; potrai creare le tue in Abitudini.",
     "gladiador": "gladiatore",
     "meta": "{{stat}} · {{dificultad}} · {{frecuencia}}",
     "metaSalud": "{{stat}} · {{dificultad}} · {{frecuencia}} · salute (facoltativa)",
@@ -94,5 +94,19 @@
     "inscripcion": "La lingua",
     "titulo": "In che lingua parliamo?",
     "pista": "Viene dalla lingua del telefono. Puoi cambiarla più tardi in Profilo."
+  },
+  "compromiso": {
+    "plazo_one": "{{count}} anno",
+    "plazo_other": "{{count}} anni",
+    "cabecera": "IMPEGNO A {{plazo}}",
+    "firma": "Io, {{nombre}}, firmo questo impegno con me stesso in data {{firmadoEl}}, il giorno in cui sono entrato in NIVL.",
+    "objetivo": "Sono qui per questo: {{objetivo}}",
+    "promesa": "Non prometto giorni perfetti. Prometto di essere l'1% migliore ogni giorno: una missione compiuta quando non ne ho voglia, una regola rispettata quando nessuno guarda, una registrazione onesta quando la giornata è andata male.",
+    "unoPorCiento": "L'1% non si nota in una settimana. In {{plazo}} è un'altra vita.",
+    "fallo": "Quando fallirò, non negozierò con il sistema. Accetterò la penalità, rispetterò la conseguenza e tornerò il giorno dopo.",
+    "apertura": "A chi aprirà questo in data {{seAbreEl}}: sei ciò che ho fatto di ciascuno di questi giorni. Spero di essere stato alla tua altezza.",
+    "firmado": "Firmato: {{nombre}}",
+    "cifra": "Cifra: {{cifra}}",
+    "fecha": "Data: {{fecha}}"
   }
 }

@@ -9,10 +9,22 @@
 // dentro de tres años tiene que entenderlo sin contexto.
 //
 // Módulo PURO: sin imports de Supabase, para que los tests arranquen.
+//
+// QA F1 (M3): el texto se escribe y se sella en el idioma de la interfaz, con
+// la fecha en ese idioma (catálogo `onboarding:compromiso`). En español es
+// letra por letra el de siempre. Contrato lo reconoce por su cabecera en
+// cualquiera de los idiomas (`esCompromiso`), y el evento `commitment_signed`
+// guarda en qué idioma se firmó cuando no fue en español (onboarding.tsx).
+
+import { t } from '@/i18n';
+import { mayus } from '@/i18n/formato';
+import { RECURSOS_ES } from '@/i18n/recursos';
+import { RECURSOS_LOCALES } from '@/i18n/traducidos';
 
 export interface Horizonte {
   years: 1 | 3 | 5;
-  label: string;
+  /** «3 años», en el idioma de la interfaz (se lee del catálogo al usarlo). */
+  readonly label: string;
   /** Días hasta la apertura. Mismo cálculo que las cartas de Contrato (365 por año). */
   days: number;
   recomendado: boolean;
@@ -20,11 +32,18 @@ export interface Horizonte {
 
 // Tres años es el recomendado: uno se queda corto para cambiar una vida y
 // cinco es una fecha que nadie se cree el primer día.
-export const HORIZONTES: readonly Horizonte[] = [
-  { years: 1, label: '1 año', days: 365, recomendado: false },
-  { years: 3, label: '3 años', days: 365 * 3, recomendado: true },
-  { years: 5, label: '5 años', days: 365 * 5, recomendado: false },
-];
+function horizonte(years: 1 | 3 | 5, recomendado: boolean): Horizonte {
+  return {
+    years,
+    days: 365 * years,
+    recomendado,
+    get label() {
+      return t('onboarding:compromiso.plazo', { count: years });
+    },
+  };
+}
+
+export const HORIZONTES: readonly Horizonte[] = [horizonte(1, false), horizonte(3, true), horizonte(5, false)];
 
 export const HORIZONTE_POR_DEFECTO: Horizonte = HORIZONTES[1]!;
 
@@ -55,7 +74,10 @@ export function lineaObjetivo(input: Pick<CompromisoInput, 'goal' | 'target' | '
   const goal = limpiarFrase(input.goal);
   const target = limpiarFrase(input.target ?? '');
   const deadline = limpiarFrase(input.deadline ?? '');
-  const extras = [target ? `Cifra: ${target}` : '', deadline ? `Fecha: ${deadline}` : ''].filter(Boolean);
+  const extras = [
+    target ? t('onboarding:compromiso.cifra', { cifra: target }) : '',
+    deadline ? t('onboarding:compromiso.fecha', { fecha: deadline }) : '',
+  ].filter(Boolean);
   return extras.length ? `${goal}. ${extras.join('. ')}.` : `${goal}.`;
 }
 
@@ -67,14 +89,14 @@ export function textoCompromiso(input: CompromisoInput): string {
   const name = limpiarFrase(input.name);
   const plazo = input.horizonte.label;
   return [
-    `COMPROMISO A ${plazo.toUpperCase()}`,
-    `Yo, ${name}, firmo este compromiso conmigo el ${input.firmadoEl}, el día que entré en NIVL.`,
-    `Estoy aquí para esto: ${lineaObjetivo(input)}`,
-    'No prometo días perfectos. Prometo ser un 1 % mejor cada día: una misión cumplida cuando no apetece, una norma respetada cuando nadie mira, un registro honesto cuando el día ha ido mal.',
-    `Un 1 % no se nota en una semana. En ${plazo} es otra vida.`,
-    'Cuando falle, no negociaré con el sistema. Aceptaré la penalización, cumpliré la consecuencia y volveré al día siguiente.',
-    `A quien abra esto el ${input.seAbreEl}: eres lo que hice con cada uno de estos días. Espero haber estado a tu altura.`,
-    `Firmado: ${name}`,
+    t('onboarding:compromiso.cabecera', { plazo: mayus(plazo) }),
+    t('onboarding:compromiso.firma', { nombre: name, firmadoEl: input.firmadoEl }),
+    t('onboarding:compromiso.objetivo', { objetivo: lineaObjetivo(input) }),
+    t('onboarding:compromiso.promesa'),
+    t('onboarding:compromiso.unoPorCiento', { plazo }),
+    t('onboarding:compromiso.fallo'),
+    t('onboarding:compromiso.apertura', { seAbreEl: input.seAbreEl }),
+    t('onboarding:compromiso.firmado', { nombre: name }),
   ].join('\n\n');
 }
 
@@ -85,7 +107,21 @@ export function textoCompromiso(input: CompromisoInput): string {
  * día; las cartas al yo del futuro siguen selladas hasta su fecha.
  */
 export function esCompromiso(body: string): boolean {
-  return body.startsWith('COMPROMISO A ');
+  return cabeceras().some((c) => body.startsWith(c));
+}
+
+/**
+ * Lo fijo de la cabecera en cada idioma («COMPROMISO A », «COMMITMENT FOR »):
+ * un compromiso firmado en inglés se sigue reconociendo con la app en
+ * español. El español va primero (y es el de siempre).
+ */
+let cabecerasCache: readonly string[] | null = null;
+function cabeceras(): readonly string[] {
+  cabecerasCache ??= [RECURSOS_ES, ...Object.values(RECURSOS_LOCALES)]
+    .map((r) => String((r as { onboarding?: { compromiso?: { cabecera?: unknown } } }).onboarding?.compromiso?.cabecera ?? ''))
+    .map((c) => c.split('{{')[0] ?? '')
+    .filter((c) => c.trim().length >= 4);
+  return cabecerasCache;
 }
 
 export function firmaValida(tecleado: string, name: string): boolean {
