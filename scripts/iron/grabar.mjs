@@ -1,5 +1,6 @@
 // NIVL · IRON · Graba un MP4, un GIF y un PNG de cada ejercicio del motor.
 //
+// También una ficha PNG por ejercicio (<id>-ficha.png, 1080 de ancho).
 // Cuadro a cuadro y sin depender del reloj: abre /kit/iron?solo=1 en Chrome
 // sin cabeza, fija cada instante con window.__ironCuadro(ms) y hace captura
 // del escenario. Después ffmpeg monta el MP4 (H.264, 30 fps, 3 vueltas) y el
@@ -62,5 +63,15 @@ for (const id of IDS) {
   await escenario.screenshot({ path: path.join(SALIDA, `${id}.png`) });
   fs.rmSync(tmp, { recursive: true, force: true });
   console.log(`${id}: ${cuadros} cuadros (${cicloMs} ms)`);
+}
+// La ficha de cada ejercicio, a pantalla de móvil (432 × 2,5 = 1080 de ancho).
+const movil = await navegador.newPage({ viewport: { width: 432, height: 1500 }, deviceScaleFactor: 2.5 });
+for (const id of IDS) {
+  await movil.goto(`${URL_BASE}/kit/iron?ejercicio=${id}&ficha=1`);
+  const ficha = movil.locator('#iron-ficha');
+  await ficha.waitFor({ timeout: 30000 });
+  await movil.waitForTimeout(800);
+  await ficha.screenshot({ path: path.join(SALIDA, `${id}-ficha.png`) });
+  console.log(`${id}: ficha`);
 }
 await navegador.close();

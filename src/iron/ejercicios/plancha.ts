@@ -8,7 +8,7 @@
 
 import type { Ejercicio, Extremidades, Pose } from '../tipos';
 
-const POSTURA: Extremidades = { cadera: 0, rodilla: 0, tobillo: -25, hombro: 82, codo: 88 };
+const POSTURA: Extremidades = { cadera: 0, rodilla: 0, tobillo: -20, hombro: 82, codo: 88 };
 
 const pose = (ms: number): Pose => ({ ms, cuello: 0, cerca: POSTURA });
 
@@ -25,9 +25,10 @@ export const plancha: Ejercicio = {
   },
   sustitutos: [],
   vista: 'lateral',
-  ancla: { punto: 'codo_c', x: 0, y: 2.8, segmento: 'brazo_c', angulo: -90 },
+  ancla: { punto: 'codo_c', x: 0, y: 3.4, segmento: 'brazo_c', angulo: -90 },
   poses: [pose(0), pose(2000)],
   cicloMs: 4000,
+  esfuerzo: [{ desde: 0, hasta: 4000 }],
   encuadre: { x: -96, y: -6, ancho: 124, alto: 52 },
   cues: [
     'iron:ejercicios.plancha.cues.codos',

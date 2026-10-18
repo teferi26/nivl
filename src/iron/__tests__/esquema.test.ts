@@ -138,6 +138,34 @@ describe.each(EJERCICIOS.map((e) => [e.id, e] as const))('%s', (_id, ej: Ejercic
     }
   });
 
+  it('msFicha, si está, cae dentro del ciclo', () => {
+    if (ej.msFicha !== undefined) {
+      expect(ej.msFicha).toBeGreaterThanOrEqual(0);
+      expect(ej.msFicha).toBeLessThan(ej.cicloMs);
+    }
+  });
+
+  it('fase de esfuerzo: al menos una, dentro del ciclo y en orden', () => {
+    expect(ej.esfuerzo.length).toBeGreaterThan(0);
+    for (const f of ej.esfuerzo) {
+      expect(f.desde).toBeGreaterThanOrEqual(0);
+      expect(f.hasta).toBeLessThanOrEqual(ej.cicloMs);
+      expect(f.hasta).toBeGreaterThan(f.desde);
+    }
+  });
+
+  it('todos los músculos se dibujan siempre (los que no trabaja, en su capa gris)', () => {
+    const r = ranuras(ej.vista);
+    const capas = dibujar(ej, 0);
+    const de = (clave: string) => capas[r.findIndex((x) => x.clave === clave)];
+    // Tronco, muslo y brazo cercanos llevan piezas musculares en alguna de sus tres capas.
+    for (const seg of ['tronco', 'muslo_c', 'brazo_c']) {
+      expect(`${de(`${seg}:m`)}${de(`${seg}:s`)}${de(`${seg}:p`)}`.length).toBeGreaterThan(0);
+    }
+    // El principal siempre se ve en la capa del acento.
+    expect(r.some((x, i) => x.estilo === 'principal' && capas[i].length > 0)).toBe(true);
+  });
+
   it('isométrico = todas las poses iguales; dinámico = alguna distinta', () => {
     const firma = (p: Pose) => JSON.stringify({ c: p.cerca, l: p.lejos, n: p.cuello, e: p.escorzo, a: p.angulo });
     const distintas = new Set(ej.poses.map(firma)).size;

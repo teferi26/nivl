@@ -11,12 +11,12 @@
 
 import type { Ejercicio, Extremidades, Pose } from '../tipos';
 
-const BRAZOS = { hombro: -12, codo: -157 } as const;
+const BRAZOS = { hombro: -9.2, codo: -147 } as const;
 const ESCORZO = { brazo_c: 0.62, brazo_l: 0.62, antebrazo_c: 0.5, antebrazo_l: 0.5 } as const;
 
-const ARRIBA: Extremidades = { tobillo: 5, rodilla: 4, cadera: 9.5, ...BRAZOS, hombro: -13.3, codo: -155.5 };
-const MEDIO: Extremidades = { tobillo: 22, rodilla: 70, cadera: 80.5, ...BRAZOS };
-const ABAJO: Extremidades = { tobillo: 36, rodilla: 135, cadera: 133, ...BRAZOS, codo: -158.3 };
+const ARRIBA: Extremidades = { tobillo: 5, rodilla: 4, cadera: 13.5, ...BRAZOS, hombro: -10.8, codo: -144.3 };
+const MEDIO: Extremidades = { tobillo: 22, rodilla: 70, cadera: 85, ...BRAZOS };
+const ABAJO: Extremidades = { tobillo: 36, rodilla: 135, cadera: 137.5, ...BRAZOS, codo: -147.2 };
 
 const pose = (ms: number, cerca: Extremidades, cuello: number): Pose => ({ ms, cerca, cuello, escorzo: ESCORZO });
 
@@ -43,7 +43,9 @@ export const sentadillaBarra: Ejercicio = {
     pose(3700, MEDIO, -6),
   ],
   cicloMs: 4600,
-  carga: { tipo: 'barra', en: 'tronco', t: 1.03, dorso: 4.5 },
+  esfuerzo: [{ desde: 2900, hasta: 4600 }],
+  // Cámara en 3/4 y discos pequeños: ni la barra ni los discos tapan cabeza ni torso.
+  carga: { tipo: 'barra', en: 'tronco', t: 1, dorso: 6.6, disco: 8.5, eje: { x: -15, y: 6 } },
   encuadre: { x: -48, y: -4, ancho: 96, alto: 112 },
   cues: [
     'iron:ejercicios.sentadilla-barra.cues.pie',

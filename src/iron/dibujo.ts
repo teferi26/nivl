@@ -6,7 +6,8 @@
 // El orden de las ranuras es el orden de pintado (lo de atrás primero): en la
 // vista lateral, el brazo y la pierna del lado lejano, el banco, el tronco y
 // la cabeza, la pierna y el brazo cercanos y la carga. Cada segmento tiene
-// tres ranuras: su silueta, sus músculos principales y los secundarios.
+// cuatro ranuras: su silueta, los músculos que no trabaja (gris oscuro, para
+// que se lea la musculatura siempre), los secundarios y los principales.
 //
 // Coordenadas: el mundo va con y hacia arriba; al emitir se invierte (SVG va
 // hacia abajo). El encuadre del ejercicio da el viewBox (ver `viewBox`).
@@ -15,12 +16,14 @@
 
 import { construirEsqueleto, dir, LARGO, type Esqueleto, type Punto } from './esqueleto';
 import { angulosDePose, angulosEn } from './interpolar';
-import { FORMAS_FRONTAL, FORMAS_LATERAL, type BaseSegmento } from './musculos';
+import { FORMAS_FRONTAL, FORMAS_LATERAL, MUSCULOS, type BaseSegmento } from './musculos';
 import type { Ancla, Carga, Ejercicio, Escenario, MusculoId, Pose, SegmentoId, Vista } from './tipos';
 
 export type EstiloCapa =
   | 'cuerpo'
   | 'cuerpoLejos'
+  | 'musculo'
+  | 'musculoLejos'
   | 'principal'
   | 'secundario'
   | 'principalLejos'
@@ -102,8 +105,9 @@ export function ranuras(vista: Vista): Ranura[] {
     }
     const lejos = vista === 'lateral' && ladoDe(paso) === 'l';
     out.push({ clave: paso, estilo: lejos ? 'cuerpoLejos' : 'cuerpo' });
-    out.push({ clave: `${paso}:p`, estilo: lejos ? 'principalLejos' : 'principal' });
+    out.push({ clave: `${paso}:m`, estilo: lejos ? 'musculoLejos' : 'musculo' });
     out.push({ clave: `${paso}:s`, estilo: lejos ? 'secundarioLejos' : 'secundario' });
+    out.push({ clave: `${paso}:p`, estilo: lejos ? 'principalLejos' : 'principal' });
   }
   return out;
 }
@@ -115,76 +119,88 @@ export function ranuras(vista: Vista): Ranura[] {
 
 type Perfil = readonly (readonly [number, number, number])[];
 
+// Figura atlética: hombros anchos, cintura estrecha y volumen en pecho,
+// dorsal, glúteo, cuádriceps, isquios, gemelo, deltoides, bíceps y tríceps.
 const PERFIL_LATERAL: Readonly<Record<BaseSegmento, Perfil>> = {
   tronco: [
-    [0, 6.2, 7.6],
-    [0.18, 5.6, 6.6],
-    [0.45, 5.4, 5.2],
-    [0.7, 7.2, 5.8],
-    [0.86, 7, 6],
-    [1, 5.6, 5.6],
+    [0, 6.6, 8.6],
+    [0.12, 6.2, 8.2],
+    [0.3, 5.3, 6.2],
+    [0.45, 5.6, 6.1],
+    [0.62, 7.6, 7.1],
+    [0.78, 8.7, 7.5],
+    [0.9, 7.7, 7.1],
+    [1, 5.8, 6.3],
   ],
   cabeza: [
-    [0, 2.9, 2.9],
-    [0.55, 2.6, 2.6],
+    [0, 3.2, 3.2],
+    [0.55, 2.9, 2.9],
   ],
   muslo: [
-    [0, 6.4, 6.6],
-    [0.3, 6, 5.6],
-    [0.8, 4.6, 4.2],
-    [1, 3.8, 3.6],
+    [0, 7.2, 7.1],
+    [0.25, 7.5, 6.7],
+    [0.5, 6.9, 6.1],
+    [0.8, 5.3, 4.8],
+    [1, 4, 3.8],
   ],
   pierna: [
-    [0, 3.8, 3.6],
-    [0.25, 3.1, 4.7],
-    [0.6, 2.8, 3.3],
+    [0, 4, 3.8],
+    [0.22, 3.6, 5.8],
+    [0.42, 3.3, 5.1],
+    [0.72, 2.6, 3],
     [1, 2.2, 2.3],
   ],
   brazo: [
-    [0, 4.3, 4.1],
-    [0.4, 3.5, 3.7],
-    [1, 2.7, 2.8],
+    [0, 5.5, 5.1],
+    [0.18, 5.1, 4.9],
+    [0.48, 4.7, 4.9],
+    [0.72, 4.5, 4],
+    [1, 3, 3],
   ],
   antebrazo: [
-    [0, 2.8, 2.8],
-    [0.3, 3.1, 3],
-    [1, 2, 2],
+    [0, 3.4, 3.3],
+    [0.25, 3.9, 3.7],
+    [0.6, 2.9, 2.8],
+    [1, 2.1, 2.1],
   ],
 };
 
 const PERFIL_FRONTAL: Readonly<Record<BaseSegmento, Perfil>> = {
   tronco: [
-    [0, 9.2, 9.2],
-    [0.2, 8.4, 8.4],
-    [0.48, 7.8, 7.8],
-    [0.8, 10.2, 10.2],
-    [0.94, 8.6, 8.6],
+    [0, 9.8, 9.8],
+    [0.15, 9.2, 9.2],
+    [0.35, 7.6, 7.6],
+    [0.5, 8.2, 8.2],
+    [0.72, 10.8, 10.8],
+    [0.86, 11.4, 11.4],
+    [0.95, 9, 9],
     [1, 6, 6],
   ],
   cabeza: [
-    [0, 3.4, 3.4],
-    [0.55, 3, 3],
+    [0, 3.6, 3.6],
+    [0.55, 3.2, 3.2],
   ],
   muslo: [
-    [0, 5.6, 5.6],
-    [0.3, 5.3, 5.3],
-    [0.85, 3.9, 3.9],
-    [1, 3.5, 3.5],
+    [0, 6.8, 6.8],
+    [0.3, 6.6, 6.6],
+    [0.85, 4.4, 4.4],
+    [1, 3.8, 3.8],
   ],
   pierna: [
-    [0, 3.4, 3.4],
-    [0.28, 3.6, 3.6],
-    [1, 2.1, 2.1],
+    [0, 3.8, 3.8],
+    [0.3, 4.5, 4.5],
+    [1, 2.2, 2.2],
   ],
   brazo: [
-    [0, 4.2, 4.2],
-    [0.35, 3.4, 3.4],
-    [1, 2.7, 2.7],
+    [0, 5.7, 5.7],
+    [0.2, 5, 5],
+    [0.55, 4.5, 4.5],
+    [1, 3, 3],
   ],
   antebrazo: [
-    [0, 2.8, 2.8],
-    [0.3, 3, 3],
-    [1, 2, 2],
+    [0, 3.4, 3.4],
+    [0.3, 3.9, 3.9],
+    [1, 2.1, 2.1],
   ],
 };
 
@@ -198,7 +214,8 @@ function radios(perfil: Perfil, t: number): [number, number] {
     const b = perfil[i];
     if (t <= b[0]) {
       const a = perfil[i - 1];
-      const u = (t - a[0]) / (b[0] - a[0]);
+      // Transición suave entre puntos del perfil: el contorno queda redondeado.
+      const u = 0.5 - 0.5 * Math.cos((Math.PI * (t - a[0])) / (b[0] - a[0]));
       return [a[1] + (b[1] - a[1]) * u, a[2] + (b[2] - a[2]) * u];
     }
   }
@@ -304,7 +321,7 @@ function en(m: Marco, t: number, off: number): Punto {
 /** Silueta de un segmento: borde delantero, remate, borde trasero y remate. */
 function silueta(m: Marco, perfil: Perfil, t1 = 1): string {
   'worklet';
-  const N = 8;
+  const N = 14;
   const pts: Punto[] = [];
   for (let i = 0; i <= N; i++) {
     const t = (i / N) * t1;
@@ -339,15 +356,24 @@ function silueta(m: Marco, perfil: Perfil, t1 = 1): string {
 }
 
 /** Vientre muscular: una lente entre t0 y t1, centrada en `centro(t)` con media anchura `media(t)`. */
-function vientre(m: Marco, t0: number, t1: number, centro: (t: number) => number, media: (t: number) => number): string {
+function vientre(
+  m: Marco,
+  t0: number,
+  t1: number,
+  centro: (t: number) => number,
+  media: (t: number) => number,
+  pico = 0.5,
+): string {
   'worklet';
-  const N = 9;
+  const N = 12;
   const ida: Punto[] = [];
   const vuelta: Punto[] = [];
   for (let i = 0; i <= N; i++) {
     const u = i / N;
     const t = t0 + (t1 - t0) * u;
-    const ahusado = Math.pow(Math.sin(Math.PI * u), 0.6);
+    // Más grueso en `pico` y afinado hacia los tendones.
+    const v = u < pico ? (u / pico) * 0.5 : 0.5 + ((u - pico) / (1 - pico)) * 0.5;
+    const ahusado = Math.pow(Math.sin(Math.PI * v), 0.55);
     const c = centro(t);
     const h = media(t) * ahusado;
     ida.push(en(m, t, c + h));
@@ -367,9 +393,9 @@ function musculosLateral(m: Marco, base: BaseSegmento, perfil: Perfil, lista: re
       if (f.seg !== base) continue;
       const ancho = f.ancho;
       if (f.cara === 'ant') {
-        d += vientre(m, f.t0, f.t1, (t) => radios(perfil, t)[0] * (0.94 - ancho / 2), (t) => (radios(perfil, t)[0] * ancho) / 2);
+        d += vientre(m, f.t0, f.t1, (t) => radios(perfil, t)[0] * (0.96 - ancho / 2), (t) => (radios(perfil, t)[0] * ancho) / 2, f.pico);
       } else if (f.cara === 'post') {
-        d += vientre(m, f.t0, f.t1, (t) => -radios(perfil, t)[1] * (0.94 - ancho / 2), (t) => (radios(perfil, t)[1] * ancho) / 2);
+        d += vientre(m, f.t0, f.t1, (t) => -radios(perfil, t)[1] * (0.96 - ancho / 2), (t) => (radios(perfil, t)[1] * ancho) / 2, f.pico);
       } else {
         d += vientre(
           m,
@@ -377,6 +403,7 @@ function musculosLateral(m: Marco, base: BaseSegmento, perfil: Perfil, lista: re
           f.t1,
           (t) => (radios(perfil, t)[0] - radios(perfil, t)[1]) / 2,
           (t) => Math.min(radios(perfil, t)[0], radios(perfil, t)[1]) * ancho * 0.9,
+          f.pico,
         );
       }
     }
@@ -400,8 +427,8 @@ function musculosFrontal(
       if (f.seg !== base || f.cara !== cara) continue;
       const centro = f.centro;
       const ancho = f.ancho;
-      d += vientre(m, f.t0, f.t1, (t) => radios(perfil, t)[0] * centro, (t) => (radios(perfil, t)[0] * ancho) / 2);
-      if (f.par) d += vientre(m, f.t0, f.t1, (t) => -radios(perfil, t)[0] * centro, (t) => (radios(perfil, t)[0] * ancho) / 2);
+      d += vientre(m, f.t0, f.t1, (t) => radios(perfil, t)[0] * centro, (t) => (radios(perfil, t)[0] * ancho) / 2, f.pico);
+      if (f.par) d += vientre(m, f.t0, f.t1, (t) => -radios(perfil, t)[0] * centro, (t) => (radios(perfil, t)[0] * ancho) / 2, f.pico);
     }
   }
   return d;
@@ -451,10 +478,10 @@ function cabeza(e: Esqueleto, m: Marco, vista: Vista): string {
 
 const RADIO_DISCO = 12.6;
 
-function disco(c: Punto): string {
+function disco(c: Punto, r: number): string {
   'worklet';
   // Anillo (se pinta con fillRule evenodd) y el buje.
-  return circulo(c, RADIO_DISCO, 32) + circulo(c, RADIO_DISCO - 1.1, 32) + circulo(c, 2.2, 12);
+  return circulo(c, r, 32) + circulo(c, r - 1.1, 32) + circulo(c, 2.2, 12);
 }
 
 function rect(cx: number, cy: number, ancho: number, alto: number, d: Punto): string {
@@ -499,8 +526,8 @@ function cargaLado(e: Esqueleto, carga: Carga | undefined, lado: 'c' | 'l', vist
     const deLado = vista === 'lateral' ? carga.orientacion === 'lado' : carga.orientacion === 'punta';
     return mancuerna(c, eje, deLado);
   }
-  if (lado === 'l') return '';
   if (vista === 'frontal') {
+    if (lado === 'l') return '';
     const a = e.p.agarre_c;
     const b = e.p.agarre_l;
     const cx = (a.x + b.x) / 2;
@@ -510,9 +537,17 @@ function cargaLado(e: Esqueleto, carga: Carga | undefined, lado: 'c' | 'l', vist
     for (const s of [-1, 1]) d += rect(cx + s * (Math.abs(b.x - a.x) / 2 + 28), cy, 3.6, RADIO_DISCO * 2, h);
     return d;
   }
-  if (carga.en === 'agarre') return disco(e.p.agarre_c);
-  const m = marcoDe(e, 'tronco', vista);
-  return disco(en(m, carga.t, -carga.dorso));
+  const c = carga.en === 'agarre' ? e.p.agarre_c : en(marcoDe(e, 'tronco', vista), carga.t, -carga.dorso);
+  const r = carga.disco ?? RADIO_DISCO;
+  if (!carga.eje) return lado === 'c' ? disco(c, r) : '';
+  // Cámara en 3/4: el tramo de barra que sale hacia la cámara y su disco,
+  // apartados de la cabeza y el torso. El lado lejano queda tapado por el cuerpo.
+  if (lado === 'l') return '';
+  const ex = carga.eje.x;
+  const ey = carga.eje.y;
+  const largo = Math.hypot(ex, ey);
+  const u = { x: ex / largo, y: ey / largo };
+  return rect(c.x + ex / 2, c.y + ey / 2, largo + 3, 1.5, u) + disco({ x: c.x + ex, y: c.y + ey }, r);
 }
 
 /** Dónde está el centro de la barra (para los tests de trayectoria). */
@@ -578,11 +613,18 @@ export function capasDe(
     else {
       const base = baseDe(paso);
       if (base === 'pie') {
-        out.push(pie(e, paso === 'pie_c' ? 'c' : 'l', vista), '', '');
+        out.push(pie(e, paso === 'pie_c' ? 'c' : 'l', vista), '', '', '');
         continue;
       }
       const m = marcoDe(e, paso, vista);
       const perfil = perfiles[base];
+      const inactivos: MusculoId[] = [];
+      for (let k = 0; k < MUSCULOS.length; k++) {
+        const mu = MUSCULOS[k];
+        if (musculos.principales.indexOf(mu) < 0 && musculos.secundarios.indexOf(mu) < 0) inactivos.push(mu);
+      }
+      const resto =
+        vista === 'lateral' ? musculosLateral(m, base, perfil, inactivos) : musculosFrontal(m, base, perfil, inactivos, cara);
       // La cabeza va sin cuello dibujado: el remate del tronco llega a su base.
       let cuerpo = base === 'cabeza' ? cabeza(e, m, vista) : silueta(m, perfil);
       if (base === 'antebrazo') cuerpo += circulo(paso === 'antebrazo_c' ? e.p.agarre_c : e.p.agarre_l, RADIO_MANO, 12);
@@ -594,7 +636,7 @@ export function capasDe(
         vista === 'lateral'
           ? musculosLateral(m, base, perfil, musculos.secundarios)
           : musculosFrontal(m, base, perfil, musculos.secundarios, cara);
-      out.push(cuerpo, prin, sec);
+      out.push(cuerpo, resto, sec, prin);
     }
   }
   return out;
@@ -609,6 +651,21 @@ export function esqueletoEn(ej: Ejercicio, ms: number): Esqueleto {
 export function dibujar(ej: Ejercicio, ms: number): string[] {
   'worklet';
   return capasDe(esqueletoEn(ej, ms), ej.vista, ej.musculos, ej.carga, ej.escenario);
+}
+
+/**
+ * Cuánto brilla el músculo principal en el instante `ms` (0 a 1): sube y
+ * baja dentro de cada fase de esfuerzo. En un isométrico late todo el ciclo.
+ */
+export function esfuerzoEn(ej: Pick<Ejercicio, 'esfuerzo' | 'cicloMs' | 'tipo'>, ms: number): number {
+  'worklet';
+  const t = ((ms % ej.cicloMs) + ej.cicloMs) % ej.cicloMs;
+  if (ej.tipo === 'isometrico') return 0.5 - 0.5 * Math.cos((t / ej.cicloMs) * Math.PI * 2);
+  for (let i = 0; i < ej.esfuerzo.length; i++) {
+    const f = ej.esfuerzo[i];
+    if (t >= f.desde && t <= f.hasta) return Math.pow(Math.sin(((t - f.desde) / (f.hasta - f.desde)) * Math.PI), 0.6);
+  }
+  return 0;
 }
 
 /** viewBox del SVG a partir del encuadre (el mundo va con y hacia arriba). */

@@ -31,6 +31,7 @@ export const curlBicepsMancuerna: Ejercicio = {
   ancla: { punto: 'tobillo_c', x: 0, y: 4, segmento: 'pie_c', angulo: 0 },
   poses: [pose(0, ABAJO), pose(400, ABAJO), pose(1600, ARRIBA), pose(1900, ARRIBA)],
   cicloMs: 3900,
+  esfuerzo: [{ desde: 400, hasta: 1600 }],
   carga: { tipo: 'mancuerna', en: 'agarre', orientacion: 'punta', lados: ['cerca', 'lejos'] },
   encuadre: { x: -42, y: -4, ancho: 84, alto: 112 },
   cues: [

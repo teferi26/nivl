@@ -37,7 +37,7 @@ export const LARGO = {
 } as const;
 
 /** Media anchura de hombros y caderas en la vista frontal. */
-export const MEDIA_ANCHURA = { hombro: 11, cadera: 8.5 } as const;
+export const MEDIA_ANCHURA = { hombro: 12.5, cadera: 8.5 } as const;
 
 type Base = 'tronco' | 'cabeza' | 'muslo' | 'pierna' | 'pie' | 'brazo' | 'antebrazo';
 

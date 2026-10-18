@@ -19,7 +19,12 @@
     "pausar": "Pausar",
     "seguir": "Seguir",
     "animacion": "Animación de {{nombre}}",
-    "mapa": "Mapa muscular de {{nombre}}"
+    "mapa": "Mapa muscular de {{nombre}}",
+    "ficha": "IRON · Ficha del ejercicio",
+    "leyenda": "Leyenda",
+    "leyendaPrincipal": "Trabaja sobre todo",
+    "leyendaSecundario": "Ayuda",
+    "leyendaResto": "No trabaja directamente"
   },
   "musculo": {
     "pectoral": "Pectoral",
@@ -39,7 +44,8 @@
     "cuadriceps": "Cuádriceps",
     "isquiotibiales": "Isquiotibiales",
     "aductores": "Aductores",
-    "gemelos": "Gemelos"
+    "gemelos": "Gemelos",
+    "tibial": "Tibial anterior"
   },
   "grupo": {
     "pecho": "Pecho",

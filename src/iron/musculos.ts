@@ -21,6 +21,8 @@ export interface FormaLateral {
   cara: 'ant' | 'post' | 'medio';
   /** Fracción del grosor del segmento que ocupa (0 a 1). */
   ancho: number;
+  /** Dónde está el vientre más grueso, de 0 (t0) a 1 (t1). Por defecto, en el medio. */
+  pico?: number;
 }
 
 export interface FormaFrontal {
@@ -34,6 +36,7 @@ export interface FormaFrontal {
   ancho: number;
   /** Solo en el tronco y la cabeza: dibujarlo también al otro lado. */
   par?: boolean;
+  pico?: number;
 }
 
 export const MUSCULOS: readonly MusculoId[] = [
@@ -55,6 +58,7 @@ export const MUSCULOS: readonly MusculoId[] = [
   'isquiotibiales',
   'aductores',
   'gemelos',
+  'tibial',
 ];
 
 export const GRUPO_DE_MUSCULO: Readonly<Record<MusculoId, GrupoMuscular>> = {
@@ -76,67 +80,84 @@ export const GRUPO_DE_MUSCULO: Readonly<Record<MusculoId, GrupoMuscular>> = {
   isquiotibiales: 'pierna',
   aductores: 'pierna',
   gemelos: 'pierna',
+  tibial: 'pierna',
 };
 
 export const GRUPOS: readonly GrupoMuscular[] = ['pecho', 'espalda', 'hombro', 'brazo', 'pierna', 'core'];
 
+// Todas las piezas juntas cubren la silueta: el maniquí se lee musculado
+// aunque el ejercicio no trabaje ese músculo (va en gris oscuro).
 export const FORMAS_LATERAL: Readonly<Record<MusculoId, readonly FormaLateral[]>> = {
-  pectoral: [{ seg: 'tronco', t0: 0.6, t1: 0.94, cara: 'ant', ancho: 0.75 }],
-  deltoides_anterior: [{ seg: 'brazo', t0: -0.08, t1: 0.38, cara: 'ant', ancho: 0.6 }],
-  deltoides_lateral: [{ seg: 'brazo', t0: -0.1, t1: 0.36, cara: 'medio', ancho: 0.5 }],
-  deltoides_posterior: [{ seg: 'brazo', t0: -0.08, t1: 0.38, cara: 'post', ancho: 0.6 }],
-  biceps: [{ seg: 'brazo', t0: 0.3, t1: 0.92, cara: 'ant', ancho: 0.62 }],
-  triceps: [{ seg: 'brazo', t0: 0.12, t1: 0.9, cara: 'post', ancho: 0.66 }],
-  antebrazo: [{ seg: 'antebrazo', t0: 0.02, t1: 0.72, cara: 'medio', ancho: 0.72 }],
-  dorsal: [{ seg: 'tronco', t0: 0.34, t1: 0.82, cara: 'post', ancho: 0.72 }],
+  pectoral: [{ seg: 'tronco', t0: 0.6, t1: 0.97, cara: 'ant', ancho: 0.86, pico: 0.5 }],
+  deltoides_anterior: [{ seg: 'brazo', t0: -0.12, t1: 0.42, cara: 'ant', ancho: 0.92, pico: 0.3 }],
+  deltoides_lateral: [{ seg: 'brazo', t0: -0.15, t1: 0.4, cara: 'medio', ancho: 0.8, pico: 0.3 }],
+  deltoides_posterior: [{ seg: 'brazo', t0: -0.12, t1: 0.42, cara: 'post', ancho: 0.92, pico: 0.3 }],
+  biceps: [{ seg: 'brazo', t0: 0.34, t1: 0.97, cara: 'ant', ancho: 0.9, pico: 0.55 }],
+  triceps: [{ seg: 'brazo', t0: 0.14, t1: 0.95, cara: 'post', ancho: 0.9, pico: 0.38 }],
+  antebrazo: [
+    { seg: 'antebrazo', t0: 0.0, t1: 0.82, cara: 'ant', ancho: 0.86, pico: 0.28 },
+    { seg: 'antebrazo', t0: 0.0, t1: 0.82, cara: 'post', ancho: 0.86, pico: 0.28 },
+  ],
+  dorsal: [{ seg: 'tronco', t0: 0.28, t1: 0.82, cara: 'post', ancho: 0.9, pico: 0.68 }],
   trapecio: [
-    { seg: 'tronco', t0: 0.84, t1: 1.02, cara: 'post', ancho: 0.8 },
-    { seg: 'cabeza', t0: 0, t1: 0.35, cara: 'post', ancho: 0.9 },
+    { seg: 'tronco', t0: 0.8, t1: 1.08, cara: 'post', ancho: 0.86, pico: 0.6 },
+    { seg: 'cabeza', t0: 0, t1: 0.42, cara: 'post', ancho: 1, pico: 0.3 },
   ],
-  espalda_alta: [{ seg: 'tronco', t0: 0.6, t1: 0.88, cara: 'post', ancho: 0.55 }],
-  lumbares: [{ seg: 'tronco', t0: 0.08, t1: 0.44, cara: 'post', ancho: 0.5 }],
-  abdomen: [{ seg: 'tronco', t0: 0.08, t1: 0.6, cara: 'ant', ancho: 0.5 }],
-  oblicuos: [{ seg: 'tronco', t0: 0.12, t1: 0.56, cara: 'medio', ancho: 0.42 }],
+  espalda_alta: [{ seg: 'tronco', t0: 0.58, t1: 0.88, cara: 'post', ancho: 0.58 }],
+  lumbares: [{ seg: 'tronco', t0: 0.04, t1: 0.42, cara: 'post', ancho: 0.55 }],
+  abdomen: [{ seg: 'tronco', t0: 0.04, t1: 0.62, cara: 'ant', ancho: 0.72 }],
+  oblicuos: [{ seg: 'tronco', t0: 0.1, t1: 0.6, cara: 'medio', ancho: 0.55 }],
   gluteo: [
-    { seg: 'tronco', t0: -0.04, t1: 0.2, cara: 'post', ancho: 0.8 },
-    { seg: 'muslo', t0: -0.05, t1: 0.24, cara: 'post', ancho: 0.8 },
+    { seg: 'tronco', t0: -0.12, t1: 0.24, cara: 'post', ancho: 0.95, pico: 0.42 },
+    { seg: 'muslo', t0: -0.06, t1: 0.28, cara: 'post', ancho: 0.95, pico: 0.3 },
   ],
-  cuadriceps: [{ seg: 'muslo', t0: 0.06, t1: 0.92, cara: 'ant', ancho: 0.72 }],
-  isquiotibiales: [{ seg: 'muslo', t0: 0.24, t1: 0.92, cara: 'post', ancho: 0.62 }],
-  aductores: [{ seg: 'muslo', t0: 0.04, t1: 0.5, cara: 'medio', ancho: 0.5 }],
-  gemelos: [{ seg: 'pierna', t0: 0.06, t1: 0.56, cara: 'post', ancho: 0.78 }],
+  cuadriceps: [{ seg: 'muslo', t0: 0.03, t1: 0.97, cara: 'ant', ancho: 0.92, pico: 0.55 }],
+  isquiotibiales: [{ seg: 'muslo', t0: 0.24, t1: 0.96, cara: 'post', ancho: 0.86, pico: 0.42 }],
+  aductores: [{ seg: 'muslo', t0: 0.05, t1: 0.55, cara: 'medio', ancho: 0.5 }],
+  gemelos: [{ seg: 'pierna', t0: 0.03, t1: 0.64, cara: 'post', ancho: 0.95, pico: 0.35 }],
+  tibial: [{ seg: 'pierna', t0: 0.05, t1: 0.82, cara: 'ant', ancho: 0.62, pico: 0.3 }],
 };
 
+const SEIS: readonly (readonly [number, number])[] = [
+  [0.08, 0.25],
+  [0.26, 0.43],
+  [0.44, 0.61],
+];
+
 export const FORMAS_FRONTAL: Readonly<Record<MusculoId, readonly FormaFrontal[]>> = {
-  pectoral: [{ cara: 'ant', seg: 'tronco', t0: 0.64, t1: 0.93, centro: 0.46, ancho: 0.44, par: true }],
-  deltoides_anterior: [{ cara: 'ant', seg: 'brazo', t0: -0.08, t1: 0.32, centro: 0, ancho: 0.85 }],
+  pectoral: [{ cara: 'ant', seg: 'tronco', t0: 0.64, t1: 0.97, centro: 0.47, ancho: 0.54, par: true, pico: 0.55 }],
+  deltoides_anterior: [{ cara: 'ant', seg: 'brazo', t0: -0.1, t1: 0.38, centro: -0.08, ancho: 0.92, pico: 0.3 }],
   deltoides_lateral: [
-    { cara: 'ant', seg: 'brazo', t0: -0.06, t1: 0.3, centro: 0.72, ancho: 0.32 },
-    { cara: 'post', seg: 'brazo', t0: -0.06, t1: 0.3, centro: 0.72, ancho: 0.32 },
+    { cara: 'ant', seg: 'brazo', t0: -0.1, t1: 0.36, centro: 0.72, ancho: 0.46, pico: 0.3 },
+    { cara: 'post', seg: 'brazo', t0: -0.1, t1: 0.36, centro: 0.72, ancho: 0.46, pico: 0.3 },
   ],
-  deltoides_posterior: [{ cara: 'post', seg: 'brazo', t0: -0.08, t1: 0.32, centro: 0, ancho: 0.85 }],
-  biceps: [{ cara: 'ant', seg: 'brazo', t0: 0.32, t1: 0.9, centro: 0, ancho: 0.62 }],
-  triceps: [{ cara: 'post', seg: 'brazo', t0: 0.25, t1: 0.9, centro: 0, ancho: 0.64 }],
+  deltoides_posterior: [{ cara: 'post', seg: 'brazo', t0: -0.1, t1: 0.38, centro: -0.08, ancho: 0.92, pico: 0.3 }],
+  biceps: [{ cara: 'ant', seg: 'brazo', t0: 0.34, t1: 0.95, centro: 0, ancho: 0.82, pico: 0.55 }],
+  triceps: [{ cara: 'post', seg: 'brazo', t0: 0.18, t1: 0.94, centro: 0, ancho: 0.82, pico: 0.4 }],
   antebrazo: [
-    { cara: 'ant', seg: 'antebrazo', t0: 0.02, t1: 0.7, centro: 0, ancho: 0.7 },
-    { cara: 'post', seg: 'antebrazo', t0: 0.02, t1: 0.7, centro: 0, ancho: 0.7 },
+    { cara: 'ant', seg: 'antebrazo', t0: 0.0, t1: 0.82, centro: 0, ancho: 0.9, pico: 0.28 },
+    { cara: 'post', seg: 'antebrazo', t0: 0.0, t1: 0.82, centro: 0, ancho: 0.9, pico: 0.28 },
   ],
-  dorsal: [{ cara: 'post', seg: 'tronco', t0: 0.34, t1: 0.8, centro: 0.6, ancho: 0.36, par: true }],
+  dorsal: [{ cara: 'post', seg: 'tronco', t0: 0.3, t1: 0.82, centro: 0.6, ancho: 0.44, par: true, pico: 0.7 }],
   trapecio: [
-    { cara: 'post', seg: 'tronco', t0: 0.68, t1: 1.03, centro: 0, ancho: 0.5 },
-    { cara: 'post', seg: 'cabeza', t0: 0, t1: 0.35, centro: 0, ancho: 0.9 },
-    { cara: 'ant', seg: 'tronco', t0: 0.93, t1: 1.04, centro: 0.55, ancho: 0.3, par: true },
+    { cara: 'post', seg: 'tronco', t0: 0.64, t1: 1.06, centro: 0, ancho: 0.56, pico: 0.6 },
+    { cara: 'post', seg: 'cabeza', t0: 0, t1: 0.38, centro: 0, ancho: 0.95 },
+    { cara: 'ant', seg: 'tronco', t0: 0.93, t1: 1.08, centro: 0.52, ancho: 0.34, par: true },
   ],
-  espalda_alta: [{ cara: 'post', seg: 'tronco', t0: 0.6, t1: 0.86, centro: 0.34, ancho: 0.24, par: true }],
-  lumbares: [{ cara: 'post', seg: 'tronco', t0: 0.06, t1: 0.42, centro: 0.17, ancho: 0.16, par: true }],
-  abdomen: [{ cara: 'ant', seg: 'tronco', t0: 0.1, t1: 0.62, centro: 0, ancho: 0.3 }],
-  oblicuos: [{ cara: 'ant', seg: 'tronco', t0: 0.12, t1: 0.56, centro: 0.7, ancho: 0.2, par: true }],
-  gluteo: [{ cara: 'post', seg: 'tronco', t0: -0.22, t1: 0.16, centro: 0.48, ancho: 0.48, par: true }],
-  cuadriceps: [{ cara: 'ant', seg: 'muslo', t0: 0.1, t1: 0.9, centro: 0.12, ancho: 0.72 }],
-  isquiotibiales: [{ cara: 'post', seg: 'muslo', t0: 0.26, t1: 0.9, centro: 0, ancho: 0.66 }],
+  espalda_alta: [{ cara: 'post', seg: 'tronco', t0: 0.58, t1: 0.86, centro: 0.3, ancho: 0.26, par: true }],
+  lumbares: [{ cara: 'post', seg: 'tronco', t0: 0.04, t1: 0.42, centro: 0.17, ancho: 0.2, par: true }],
+  abdomen: SEIS.map(([t0, t1]) => ({ cara: 'ant' as const, seg: 'tronco' as const, t0, t1, centro: 0.19, ancho: 0.34, par: true })),
+  oblicuos: [{ cara: 'ant', seg: 'tronco', t0: 0.1, t1: 0.6, centro: 0.7, ancho: 0.3, par: true }],
+  gluteo: [{ cara: 'post', seg: 'tronco', t0: -0.24, t1: 0.2, centro: 0.48, ancho: 0.54, par: true, pico: 0.45 }],
+  cuadriceps: [{ cara: 'ant', seg: 'muslo', t0: 0.05, t1: 0.95, centro: 0.14, ancho: 0.8, pico: 0.55 }],
+  isquiotibiales: [{ cara: 'post', seg: 'muslo', t0: 0.24, t1: 0.95, centro: 0, ancho: 0.76, pico: 0.45 }],
   aductores: [
-    { cara: 'ant', seg: 'muslo', t0: 0.05, t1: 0.46, centro: -0.58, ancho: 0.38 },
-    { cara: 'post', seg: 'muslo', t0: 0.05, t1: 0.34, centro: -0.6, ancho: 0.3 },
+    { cara: 'ant', seg: 'muslo', t0: 0.03, t1: 0.5, centro: -0.6, ancho: 0.42 },
+    { cara: 'post', seg: 'muslo', t0: 0.04, t1: 0.36, centro: -0.62, ancho: 0.34 },
   ],
-  gemelos: [{ cara: 'post', seg: 'pierna', t0: 0.05, t1: 0.52, centro: 0, ancho: 0.76 }],
+  gemelos: [
+    { cara: 'post', seg: 'pierna', t0: 0.04, t1: 0.58, centro: 0, ancho: 0.88, pico: 0.38 },
+    { cara: 'ant', seg: 'pierna', t0: 0.1, t1: 0.5, centro: -0.62, ancho: 0.32 },
+  ],
+  tibial: [{ cara: 'ant', seg: 'pierna', t0: 0.05, t1: 0.8, centro: 0.26, ancho: 0.5, pico: 0.3 }],
 };

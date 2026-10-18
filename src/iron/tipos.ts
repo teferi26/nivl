@@ -96,16 +96,27 @@ export interface Ancla {
 
 export type Material = 'barra' | 'mancuerna' | 'banco' | 'peso_corporal' | 'polea' | 'maquina' | 'kettlebell' | 'banda';
 
+/**
+ * Cómo se ve la barra. De perfil puro la barra es un punto y el disco tapa
+ * cabeza y torso; con `eje` la cámara está en 3/4: la barra se dibuja como un
+ * tramo que sale del centro, con el disco cercano en `centro + eje` y el
+ * lejano en `centro - eje` (detrás del cuerpo). `disco`: radio del disco.
+ */
+export interface VistaBarra {
+  readonly eje?: { readonly x: number; readonly y: number };
+  readonly disco?: number;
+}
+
 /** Dónde va la carga que se dibuja. */
 export type Carga =
-  | { readonly tipo: 'barra'; readonly en: 'agarre' }
-  | {
+  | ({ readonly tipo: 'barra'; readonly en: 'agarre' } & VistaBarra)
+  | ({
       readonly tipo: 'barra';
       /** Sobre el tronco: `t` de 0 (cadera) a 1 (hombro); `dorso` > 0 la lleva a la espalda. */
       readonly en: 'tronco';
       readonly t: number;
       readonly dorso: number;
-    }
+    } & VistaBarra)
   | {
       readonly tipo: 'mancuerna';
       readonly en: 'agarre';
@@ -143,7 +154,8 @@ export type MusculoId =
   | 'cuadriceps'
   | 'isquiotibiales'
   | 'aductores'
-  | 'gemelos';
+  | 'gemelos'
+  | 'tibial';
 
 export type GrupoMuscular = 'pecho' | 'espalda' | 'hombro' | 'brazo' | 'pierna' | 'core';
 
@@ -171,6 +183,16 @@ export interface Ejercicio {
   readonly poses: readonly Pose[];
   /** Duración del ciclo completo (de la primera pose a sí misma), en ms. */
   readonly cicloMs: number;
+  /**
+   * Fase de esfuerzo (la concéntrica: subir, empujar, tirar), en ms del
+   * ciclo: el músculo principal brilla. En un isométrico, todo el ciclo.
+   */
+  readonly esfuerzo: readonly { readonly desde: number; readonly hasta: number }[];
+  /**
+   * Instante que se enseña quieto (ficha, PNG y «reducir movimiento»). Si no
+   * se da, la pose clave central. Elige uno en el que se vea el principal.
+   */
+  readonly msFicha?: number;
   readonly carga?: Carga;
   readonly escenario?: readonly Escenario[];
   /** Ventana del dibujo en unidades de mundo. */

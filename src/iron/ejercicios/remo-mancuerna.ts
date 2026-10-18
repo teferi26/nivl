@@ -35,6 +35,9 @@ export const remoMancuerna: Ejercicio = {
   ancla: { punto: 'cadera', x: 0, y: 51.8, segmento: 'tronco', angulo: 20 },
   poses: [pose(0, ABAJO), pose(600, ABAJO), pose(1100, MEDIO), pose(1600, ARRIBA), pose(2000, ARRIBA), pose(2900, MEDIO)],
   cicloMs: 3700,
+  esfuerzo: [{ desde: 600, hasta: 1600 }],
+  // Arriba el brazo tapa el dorsal: la ficha enseña el brazo colgando.
+  msFicha: 300,
   carga: { tipo: 'mancuerna', en: 'agarre', orientacion: 'lado', lados: ['cerca'] },
   escenario: [{ tipo: 'banco', x: -27, ancho: 69, alto: 23.6, capa: 'fondo' }],
   encuadre: { x: -46, y: -4, ancho: 104, alto: 84 },

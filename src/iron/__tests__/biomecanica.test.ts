@@ -58,6 +58,43 @@ describe('todos', () => {
   });
 });
 
+/** Centro del disco que se ve (cámara en 3/4: centro de la barra + eje). */
+function disco(e: Ejercicio, s: Esqueleto): { c: Punto; r: number } | null {
+  if (e.carga?.tipo !== 'barra') return null;
+  const b = centroCarga(s, e.carga, e.vista) as Punto;
+  const eje = e.carga.eje ?? { x: 0, y: 0 };
+  return { c: { x: b.x + eje.x, y: b.y + eje.y }, r: e.carga.disco ?? 12.6 };
+}
+
+describe('cámara y material', () => {
+  it.each(['sentadilla-barra', 'press-banca'])('%s: el disco no tapa la cabeza', (id) => {
+    const e = ej(id);
+    for (const { s } of muestras(e)) {
+      const d = disco(e, s);
+      if (!d) throw new Error('sin disco');
+      expect(Math.hypot(d.c.x - s.p.cabeza.x, d.c.y - s.p.cabeza.y)).toBeGreaterThan(d.r + 6.2 - 1);
+    }
+  });
+
+  it('press de banca: el disco queda por encima del pecho', () => {
+    const e = ej('press-banca');
+    for (const { s } of muestras(e)) {
+      const d = disco(e, s);
+      if (!d) throw new Error('sin disco');
+      expect(d.c.y - d.r).toBeGreaterThan(s.p.cadera.y + 8.7 - 1);
+    }
+  });
+
+  it('sentadilla: el disco queda detrás de la espalda, no delante del torso', () => {
+    const e = ej('sentadilla-barra');
+    for (const { s } of muestras(e)) {
+      const d = disco(e, s);
+      if (!d) throw new Error('sin disco');
+      expect(d.c.x).toBeLessThan(s.p.hombro.x);
+    }
+  });
+});
+
 describe('sentadilla con barra', () => {
   const e = ej('sentadilla-barra');
   const m = muestras(e);
@@ -146,7 +183,8 @@ describe('press de banca', () => {
       const p = planta(s, 'c');
       expect(Math.abs(p.talon.y)).toBeLessThan(0.3);
       expect(Math.abs(p.punta.y)).toBeLessThan(0.3);
-      expect(s.p.cabeza.y - 6.2).toBeGreaterThanOrEqual((banco?.alto ?? 0) - 0.5);
+      // La cabeza apoyada en el banco: ni flota ni lo atraviesa.
+      expect(Math.abs(s.p.cabeza.y - 6.2 - (banco?.alto ?? 0))).toBeLessThan(0.8);
     }
   });
 });

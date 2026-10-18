@@ -9,7 +9,7 @@ Rama `modos-f1/motor`. Prototipo para que Teferi lo vea y lo apruebe: 5 ejercici
 | Esquema de datos estricto | `src/iron/tipos.ts` |
 | Esqueleto 2D (cinemática directa desde un ancla) | `src/iron/esqueleto.ts` |
 | Interpolación entre poses clave | `src/iron/interpolar.ts` |
-| Mapa muscular propio (18 músculos, 6 grupos) | `src/iron/musculos.ts` |
+| Mapa muscular propio (19 músculos, 6 grupos) | `src/iron/musculos.ts` |
 | Del esqueleto al SVG (capas fijas) | `src/iron/dibujo.ts` |
 | Los 5 ejercicios (un archivo cada uno) | `src/iron/ejercicios/<id>.ts` + `index.ts` |
 | «Sustituir» | `src/iron/sustituir.ts` |
@@ -20,12 +20,23 @@ Rama `modos-f1/motor`. Prototipo para que Teferi lo vea y lo apruebe: 5 ejercici
 | Grabador de vídeos | `scripts/iron/grabar.mjs` |
 | Tests | `src/iron/__tests__/` (esquema, biomecánica, sustituir, autor) |
 
-Vídeos para el dueño (MP4 de 3 vueltas, GIF de 1 vuelta y PNG de la pose más exigente): `coordinacion-winter-arc/iron-prototipo/`.
+Vídeos para el dueño (MP4 de 3 vueltas, GIF de 1 vuelta, PNG de la pose clave y una ficha PNG por ejercicio): `coordinacion-winter-arc/iron-prototipo/` (la primera versión, en `v1/`).
+
+### v2: estilo tras la revisión del dueño (18/10)
+
+> «tiene que marcarse los músculos como si el muñeco estuviese fuerte y fuese más fácil marcar los músculos que se utilizan en cada ejercicio»
+
+- **Figura atlética:** perfiles de grosor nuevos (hombros anchos, cintura estrecha, volumen en pecho, dorsal, glúteo, cuádriceps, isquios, gemelo, deltoides, bíceps y tríceps) con transición suave entre puntos.
+- **Todos los músculos dibujados siempre**, como piezas con su forma (vientre con el punto más grueso en su sitio y afinado hacia el tendón) y contorno fino, estilo lámina de anatomía. 19 músculos (se añade el tibial anterior); por delante, el abdomen va en seis piezas.
+- **Lo que trabaja, de un vistazo:** principal en azul IRON lleno con brillo (trazo claro más grueso) en la fase de esfuerzo (`esfuerzo` en los datos: la concéntrica; en la plancha late todo el ciclo), secundarios en azul tenue y el resto en gris oscuro. Cada segmento tiene ahora 4 capas: silueta, resto, secundarios y principal.
+- **Cámara y material:** la barra admite `eje` (cámara en 3/4: la barra se ve como un tramo y el disco cercano queda apartado) y `disco` (radio). Sentadilla con discos pequeños detrás de la espalda; press de banca con el disco por encima del pecho y la cabeza apoyada en el banco. Tests nuevos: el disco no tapa la cabeza, en el banco queda por encima del pecho, en la sentadilla detrás de la espalda, y la cabeza toca el banco.
+- **`msFicha`:** el instante que se enseña quieto (ficha, PNG, «reducir movimiento») cuando en la pose central el brazo tapa el principal (press de banca arriba, remo con el brazo colgando).
+- **Ficha** (`/kit/iron?ejercicio=<id>&ficha=1`, `src/components/iron/FichaIron.tsx`): maniquí con el principal encendido, leyenda con los músculos nombrados, mapa por delante y por detrás y técnica.
 
 ## Arquitectura
 
 ```
-ejercicios/<id>.ts ──► interpolar.angulosEn(ej, ms) ──► esqueleto.construirEsqueleto(...) ──► dibujo.capasDe(...) ──► <Path d> × 40
+ejercicios/<id>.ts ──► interpolar.angulosEn(ej, ms) ──► esqueleto.construirEsqueleto(...) ──► dibujo.capasDe(...) ──► <Path d> × 52
    (datos)               (ángulos del instante)          (posición de cada articulación)        (silueta + músculos + carga)
 ```
 
@@ -34,9 +45,9 @@ ejercicios/<id>.ts ──► interpolar.angulosEn(ej, ms) ──► esqueleto.co
 3. **Ángulos.** Seis por lado (`cadera`, `rodilla`, `tobillo`, `hombro`, `codo`) más `cuello`, en grados y con signo anatómico (positivo = flexión). Lado `cerca` (el que ve la cámara) y `lejos` (si no se da, igual). Medidas antropométricas clásicas (Drillis y Contini, Winter) en unidades de cuerpo: 100 ≈ altura de pie.
 4. **Escorzo.** El motor es 2D. Cuando un segmento sale del plano (codos abiertos en el banco, agarre ancho en la sentadilla), la pose dice cuánto se ve de él (0 a 1) y el ángulo es el del dibujo. Los límites anatómicos solo se comprueban en los segmentos que están en el plano.
 5. **Interpolación.** Cada ángulo va por su cuenta con una cúbica monótona de Hermite (tangentes de Fritsch y Carlson) en bucle: pasa por las poses intermedias sin frenar, frena suave donde el movimiento cambia de sentido, nunca se pasa de una pose y dos poses iguales seguidas son una pausa.
-6. **Dibujo.** Una lista FIJA de 40 ranuras en orden de pintado (lado lejano, banco, tronco, cabeza, lado cercano, carga); cada segmento tiene silueta, músculos principales y secundarios. Silueta con perfil de grosor delante/detrás (pecho, glúteo, gemelo); cada músculo es un vientre en forma de huso pegado a la cara anterior, posterior o al medio de su segmento: se mueve con el hueso. Vista lateral y frontal (la frontal la usa el mapa de cuerpo entero; el motor ya la admite para ejercicios).
-7. **Animación.** `Maniqui` monta los 40 `<Path>` una vez; un reloj de Reanimated avanza en línea recta y un `useDerivedValue` calcula `dibujar(ej, reloj % ciclo)` en el hilo de la interfaz (todo el motor lleva `'worklet'`). Solo cambia el `d` de cada capa. Con «reducir movimiento», quieto en la pose central. En los isométricos el cuerpo no se mueve y late el músculo principal.
-8. **Color.** Base monocroma del brand book (cuerpo `ink8`, lado lejano `ink4`, banco `ink2`, carga `ink9`); el único color es el acento de IRON `#3D7BFF`: principal al 100 %, secundarios al 45 % (más bajos en el lado lejano).
+6. **Dibujo.** Una lista FIJA de 52 ranuras en orden de pintado (lado lejano, banco, tronco, cabeza, lado cercano, carga); cada segmento tiene silueta, músculos que no trabaja, secundarios y principales. Silueta con perfil de grosor delante/detrás (pecho, glúteo, gemelo); cada músculo es un vientre en forma de huso pegado a la cara anterior, posterior o al medio de su segmento: se mueve con el hueso. Vista lateral y frontal (la frontal la usa el mapa de cuerpo entero; el motor ya la admite para ejercicios).
+7. **Animación.** `Maniqui` monta los 52 `<Path>` una vez; un reloj de Reanimated avanza en línea recta y un `useDerivedValue` calcula `dibujar(ej, reloj % ciclo)` en el hilo de la interfaz (todo el motor lleva `'worklet'`). Solo cambia el `d` de cada capa. Con «reducir movimiento», quieto en la pose central. En los isométricos el cuerpo no se mueve y late el músculo principal.
+8. **Color.** Base monocroma del brand book (silueta `ink3`, músculos que no trabaja `ink4` con contorno `ink6`, lado lejano más oscuro, banco `ink1`, carga `ink9`); el único color es el acento de IRON `#3D7BFF`: principal lleno con brillo `#A9C4FF` en el esfuerzo, secundarios al 42 % (más bajos en el lado lejano).
 
 Regla del plugin de worklets: captura lo que usa una función al definirla, así que en `dibujo.ts` cada función va después de las que llama (si no, «x is not a function» en Jest y en el móvil).
 
@@ -123,7 +134,7 @@ Para un catálogo base de **unos 150 ejercicios** (≈ 60 variantes, 70 nuevos, 
 ## Riesgos
 
 - **Proyección 2D.** Los movimientos con mucha rotación fuera del plano (aperturas, elevaciones laterales, giros) se ven peor de perfil; para ellos, vista frontal. Un motor 3D (esqueleto con dos ángulos por articulación y proyección ortográfica) es la evolución natural si hiciera falta; el formato de datos cambiaría poco.
-- **Rendimiento.** 40 capas animadas por maniquí. Fluido en la web; falta medirlo en un Android de gama baja. Si hiciera falta, se agrupan las capas de un mismo color en una sola.
+- **Rendimiento.** 52 capas animadas por maniquí. Fluido en la web; falta medirlo en un Android de gama baja. Si hiciera falta, se agrupan las capas de un mismo color en una sola.
 - **Biomecánica.** Revisada con reglas medibles y a ojo; falta la revisión de alguien que entrene.
 
 ## Lo que necesito de otros equipos

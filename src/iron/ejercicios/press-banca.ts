@@ -12,7 +12,7 @@
 
 import type { Ejercicio, Extremidades, Pose, SegmentoId } from '../tipos';
 
-const PIERNAS = { cadera: -12, rodilla: 92.1, tobillo: 12.1 } as const;
+const PIERNAS = { cadera: -15, rodilla: 85.5, tobillo: 7 } as const;
 
 interface Paso {
   hombro: number;
@@ -21,11 +21,11 @@ interface Paso {
   antebrazo: number;
 }
 // De arriba (bloqueo) a abajo (pecho).
-const ARRIBA: Paso = { hombro: 88.7, codo: 1, brazo: 0.94, antebrazo: 0.95 };
-const P3: Paso = { hombro: 77.3, codo: 10.7, brazo: 0.52, antebrazo: 0.96 };
-const P2: Paso = { hombro: 18.6, codo: 69.4, brazo: 0.25, antebrazo: 0.98 };
-const P1: Paso = { hombro: -38.4, codo: 126.4, brazo: 0.46, antebrazo: 0.99 };
-const ABAJO: Paso = { hombro: -52.5, codo: 140.5, brazo: 0.71, antebrazo: 1 };
+const ARRIBA: Paso = { hombro: 87.2, codo: 1, brazo: 0.95, antebrazo: 0.95 };
+const P3: Paso = { hombro: 75.3, codo: 11.2, brazo: 0.54, antebrazo: 0.96 };
+const P2: Paso = { hombro: 25.4, codo: 61.1, brazo: 0.25, antebrazo: 0.98 };
+const P1: Paso = { hombro: -36.5, codo: 123, brazo: 0.4, antebrazo: 0.99 };
+const ABAJO: Paso = { hombro: -49.8, codo: 136.3, brazo: 0.66, antebrazo: 1 };
 
 function pose(ms: number, p: Paso): Pose {
   const cerca: Extremidades = { ...PIERNAS, hombro: p.hombro, codo: p.codo };
@@ -51,7 +51,8 @@ export const pressBanca: Ejercicio = {
   },
   sustitutos: [],
   vista: 'lateral',
-  ancla: { punto: 'cadera', x: 0, y: 32.2, segmento: 'tronco', angulo: 182 },
+  // Hombros un poco más bajos que la cadera: espalda alta y cabeza apoyadas en el banco.
+  ancla: { punto: 'cadera', x: 0, y: 33.2, segmento: 'tronco', angulo: 183.5 },
   poses: [
     pose(0, ARRIBA),
     pose(500, ARRIBA),
@@ -66,9 +67,13 @@ export const pressBanca: Ejercicio = {
     pose(4150, ARRIBA),
   ],
   cicloMs: 4500,
-  carga: { tipo: 'barra', en: 'agarre' },
+  esfuerzo: [{ desde: 2900, hasta: 4150 }],
+  // Abajo el brazo tapa el pecho: la ficha enseña la barra arriba.
+  msFicha: 250,
+  // Cámara en 3/4: el disco cercano queda por encima de la barra, sin tapar el pecho.
+  carga: { tipo: 'barra', en: 'agarre', disco: 9, eje: { x: -3, y: 10 } },
   escenario: [{ tipo: 'banco', x: -54, ancho: 68, alto: 24.6, capa: 'medio' }],
-  encuadre: { x: -66, y: -4, ancho: 104, alto: 88 },
+  encuadre: { x: -66, y: -4, ancho: 104, alto: 96 },
   cues: [
     'iron:ejercicios.press-banca.cues.apoyos',
     'iron:ejercicios.press-banca.cues.escapulas',
