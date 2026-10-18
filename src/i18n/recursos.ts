@@ -49,6 +49,7 @@ import share from './es/share.json';
 import voz from './es/voz.json';
 import avisos from './es/avisos.json';
 import modos from './es/modos.json';
+import prueba from './es/prueba.json';
 
 /** Los catálogos en español: la fuente de verdad de todas las claves. */
 export const RECURSOS_ES = {
@@ -87,6 +88,8 @@ export const RECURSOS_ES = {
   avisos,
   // Modos F1 (src/components/modos): fuera de las tandas de 1.0.10.
   modos,
+  // Prueba automática de Élite (0069, src/components/prueba).
+  prueba,
 };
 
 export type RecursosEs = typeof RECURSOS_ES;

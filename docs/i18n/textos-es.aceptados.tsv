@@ -1074,7 +1074,7 @@ voz	+	Racha de {} días
 avisos	-	No se pudieron programar los avisos del sistema.
 avisos	+	Recordatorio
 avisos	+	Sigue pendiente.
-# Modos F1 (cliente, rama modos-f1/cliente): textos nuevos detrás del interruptor modos_activos (namespace modos: selector de Hoy, etiquetas del formulario, paso del onboarding y niveles por modo) y, detrás de idiomas_activos, el paso de idioma del onboarding (onboarding:idioma); y el nombre del plan prueba_auto de la 0069 (perfil:planes). Con los interruptores apagados no se pinta ninguno.
+# Modos F1 (cliente, rama modos-f1/cliente): textos nuevos detrás del interruptor modos_activos (namespace modos: selector de Hoy, etiquetas del formulario, paso del onboarding y niveles por modo) y, detrás de idiomas_activos, el paso de idioma del onboarding (onboarding:idioma); y el nombre del plan prueba_auto de la 0069 (perfil:planes); y la prueba automática de Élite detrás de prueba_auto_activa (namespace prueba: bienvenida, aviso de 24 h y fin). Con los interruptores apagados no se pinta ninguno.
 modos	+	Modos
 modos	+	Modo {{modo}}
 modos	+	Todo junto, como hasta ahora.
@@ -1109,3 +1109,37 @@ onboarding	+	El idioma
 onboarding	+	¿En qué idioma hablamos?
 onboarding	+	Sale del idioma del teléfono. Puedes cambiarlo después en Perfil.
 perfil	+	Prueba gratuita
+prueba	+	Prueba de Élite
+prueba	+	Tienes {{count}} día de NIVL Élite
+prueba	+	Tienes {{count}} días de NIVL Élite
+prueba	+	Sin tarjeta y sin cobro automático. Al terminar, eliges tú: seguir con Élite o quedarte en el plan gratis.
+prueba	+	Termina el {{fecha}} a las {{hora}}.
+prueba	+	Lo que incluye
+prueba	+	Y todo lo gratis
+prueba	+	Empezar
+prueba	+	El coach de Élite, con un tope diario de mensajes durante la prueba: brief de la mañana, plan del día, chat, revisión semanal, entreno y dieta.
+prueba	+	Revisión semanal ampliada: la semana, tu ficha física y tu progreso.
+prueba	+	La insignia de laurel junto a tu nombre. Es estatus, no puntos.
+prueba	+	Solicitar plaza en un ludus, un grupo privado de 5 a 8 gladiadores Élite. Los grupos se forman poco a poco: pedir plaza no la garantiza.
+prueba	+	El modo profundo es del Élite de pago y no entra en la prueba.
+prueba	+	Hábitos, misiones, XP, racha, contrato, campañas, agenda, gimnasio, cardio, nutrición, diario, avances, amigos y ranking.
+prueba	+	Te queda 1 día de NIVL Élite. Termina el {{fecha}} a las {{hora}}.
+prueba	+	Fin de la prueba
+prueba	+	Tus días de Élite han terminado
+prueba	+	Terminó el {{fecha}} a las {{hora}}. Tus datos están intactos. Elige cómo sigues.
+prueba	+	Seguir con Élite
+prueba	+	Seguir con Élite. Abre los planes de la tienda
+prueba	+	NIVL Élite: {{mes}} al mes o {{anio}} al año. Se renueva solo hasta que lo canceles en la tienda.
+prueba	+	{{periodo}} gratis y después {{precio}} al mes. Cancela cuando quieras.
+prueba	+	Si tu cuenta de la tienda es elegible: {{periodo}} gratis y después {{precio}} al mes. Cancela cuando quieras.
+prueba	+	También está NIVL Pro, el coach estándar, por {{precio}} al mes.
+prueba	+	Quedarme en el plan gratis
+prueba	+	Sin pagos. Sigues con todo el seguimiento.
+prueba	+	Con el plan gratis conservas
+prueba	+	Todo el seguimiento: hábitos, misiones, XP, racha, contrato, campañas, agenda, gimnasio, cardio, nutrición, diario, avances, amigos y ranking.
+prueba	+	Dejas de tener
+prueba	+	El coach de IA: brief, plan del día, chat, revisión semanal, entreno y dieta.
+prueba	+	La revisión semanal ampliada.
+prueba	+	La insignia de laurel.
+prueba	+	La solicitud de plaza en un ludus.
+prueba	+	Tus misiones, tu racha, tu nivel y tu historial se quedan como están.

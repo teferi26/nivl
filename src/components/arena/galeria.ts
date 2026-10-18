@@ -34,7 +34,9 @@ export type IdPantalla =
   | 'economia'
   | 'creador'
   // Modos F1 (solo con modos_activos encendido en la app).
-  | 'modos';
+  | 'modos'
+  // Prueba automática de Élite (0069, solo con prueba_auto_activa).
+  | 'prueba';
 
 export interface EstadoDemo {
   /** Va en la URL: /kit/pantallas?pantalla=hoy&estado=<id>. */
@@ -85,4 +87,5 @@ export const PANTALLAS_DEMO: { id: IdPantalla; titulo: string }[] = [
   { id: 'economia', titulo: 'Economía' },
   { id: 'creador', titulo: 'Creador' },
   { id: 'modos', titulo: 'Modos' },
+  { id: 'prueba', titulo: 'Prueba Élite' },
 ];

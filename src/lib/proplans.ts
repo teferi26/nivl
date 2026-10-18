@@ -560,6 +560,18 @@ export function textoIntro(intro: IntroTienda | null | undefined, condicional = 
   return condicional ? `${base} Solo si tu cuenta de la tienda es elegible.` : base;
 }
 
+/**
+ * Prueba de 2 días (0069): el periodo gratis de una oferta introductoria de
+ * la tienda («5 días»), solo si es gratis. Con precio, null (la frase entera
+ * la da `textoIntro`).
+ */
+export function periodoIntroGratis(intro: IntroTienda | null | undefined): string | null {
+  if (!intro || intro.price > 0 || !UNIDADES[intro.periodUnit] || !(intro.periodNumberOfUnits > 0)) return null;
+  const n = intro.periodNumberOfUnits * Math.max(1, Math.round(intro.cycles || 1));
+  const [uno, varios] = UNIDADES[intro.periodUnit]!;
+  return `${n} ${n === 1 ? uno : varios}`;
+}
+
 // ── La tienda abierta (fase 4) ──────────────────────────────────────
 
 /**

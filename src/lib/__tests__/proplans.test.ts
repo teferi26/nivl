@@ -352,3 +352,13 @@ describe('Modos F1: plan prueba_auto (0069)', () => {
     expect(planDePago('prueba_auto')).toBe(false);
   });
 });
+
+describe('Prueba de Élite: periodo gratis de la oferta de la tienda', () => {
+  it('«5 días» solo si es gratis', () => {
+    const { periodoIntroGratis } = jest.requireActual('../proplans') as typeof import('../proplans');
+    expect(periodoIntroGratis({ price: 0, priceString: '0,00 €', cycles: 1, periodUnit: 'DAY', periodNumberOfUnits: 5 })).toBe('5 días');
+    expect(periodoIntroGratis({ price: 0, priceString: '0', cycles: 1, periodUnit: 'WEEK', periodNumberOfUnits: 1 })).toBe('1 semana');
+    expect(periodoIntroGratis({ price: 0.99, priceString: '0,99 €', cycles: 1, periodUnit: 'DAY', periodNumberOfUnits: 5 })).toBeNull();
+    expect(periodoIntroGratis(null)).toBeNull();
+  });
+});

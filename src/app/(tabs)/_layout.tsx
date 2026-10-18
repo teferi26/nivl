@@ -1,5 +1,6 @@
 import { Tabs } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { PruebaAuto } from '@/components/prueba/PruebaAuto';
 import { NavRail } from '@/components/ui/NavRail';
 import { nombreDestino } from '@/components/ui/navItems';
 import { NavSidebar } from '@/components/ui/NavSidebar';
@@ -44,6 +45,8 @@ export default function TabsLayout() {
         <Tabs.Screen name="mazmorras" options={{ title: nombreDestino('campanas') }} />
         <Tabs.Screen name="perfil" options={{ title: nombreDestino('perfil') }} />
       </Tabs>
+      {/* Prueba automática de Élite (0069): nada con prueba_auto_activa apagado. */}
+      <PruebaAuto />
     </TopeAncho.Provider>
   );
 }

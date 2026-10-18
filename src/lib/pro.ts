@@ -36,6 +36,7 @@ import {
   puedeMejorarEnTienda,
   modoReemplazoGoogle,
   planExacto,
+  periodoIntroGratis,
   precioVisible,
   productoBase,
   proPlan,
@@ -343,6 +344,53 @@ export async function introsDeTienda(): Promise<Partial<Record<ProPlanId, string
     if (Platform.OS === 'ios' && (st === 1 || st === 3)) continue;
     const t = textoIntro(p.product.introPrice, Platform.OS === 'ios' && st !== 2);
     if (t) out[id] = t;
+  }
+  return out;
+}
+
+/** Lo que la pantalla de fin de la prueba automática enseña junto a «Seguir con Élite». */
+export interface OfertaFinPrueba {
+  /** Precios de la tienda (los que se cobran); null si la tienda no los da. */
+  eliteMes: string | null;
+  eliteAnio: string | null;
+  proMes: string | null;
+  /** «5 días» si el Élite mensual tiene periodo gratis y la cuenta es (o puede ser) elegible. */
+  introGratis: string | null;
+  /** En iOS la elegibilidad no se pudo confirmar: se dice como condicional. */
+  introCondicional: boolean;
+}
+
+/**
+ * Los precios del Élite (y el Pro mensual) y la oferta introductoria del
+ * Élite mensual, si la tienda la declara (fase B: 5 días a 0 €, configurada
+ * en App Store Connect y Play Console). Sin tienda (Expo Go, web), todo null:
+ * la pantalla enseña los precios de la tabla.
+ */
+export async function ofertaFinPrueba(): Promise<OfertaFinPrueba> {
+  const out: OfertaFinPrueba = { eliteMes: null, eliteAnio: null, proMes: null, introGratis: null, introCondicional: false };
+  if (!purchasesAvailable()) return out;
+  await asegurarUsuario();
+  const paquetes = await todosLosPaquetes();
+  const de = (id: ProPlanId) => paquetes.find((p) => productoBase(p.product.identifier) === id);
+  out.eliteMes = precioVisible(de('nivl_elite_mensual')?.product.priceString);
+  out.eliteAnio = precioVisible(de('nivl_elite_anual')?.product.priceString);
+  out.proMes = precioVisible(de('nivl_pro_mensual')?.product.priceString);
+  const mes = de('nivl_elite_mensual');
+  const periodo = periodoIntroGratis(mes?.product.introPrice);
+  if (mes && periodo) {
+    let st: number | undefined;
+    if (Platform.OS === 'ios') {
+      try {
+        st = (await Purchases.checkTrialOrIntroductoryPriceEligibility([mes.product.identifier]))[mes.product.identifier]?.status;
+      } catch {
+        st = undefined;
+      }
+    }
+    // 1 = INELIGIBLE, 3 = NO_INTRO_OFFER_EXISTS: no se promete.
+    if (!(Platform.OS === 'ios' && (st === 1 || st === 3))) {
+      out.introGratis = periodo;
+      out.introCondicional = Platform.OS === 'ios' && st !== 2;
+    }
   }
   return out;
 }
