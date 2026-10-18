@@ -117,7 +117,10 @@ export type Material =
   // brazos
   | 'barra_z'
   // espalda: la barra de dominadas (y la barra baja del remo invertido)
-  | 'barra_fija';
+  | 'barra_fija'
+  // pierna
+  | 'rack'
+  | 'cajon';
 
 /**
  * Cómo se ve la barra. De perfil puro la barra es un punto y el disco tapa
@@ -150,17 +153,48 @@ export type Carga =
       readonly lados: readonly Lado[];
     }
   // espalda: polea (cable y agarre) y palanca de máquina, en src/iron/material/
-  | CargaEspalda;
+  | CargaEspalda
+  // pierna (src/iron/material/)
+  | CargaPierna;
+
+/**
+ * Material de pierna que se mueve con el cuerpo (src/iron/material/):
+ * · kettlebell en el agarre: `cuelga` 'abajo' (goblet: la campana bajo las
+ *   manos) o 'antebrazo' (swing: en la prolongación del antebrazo);
+ * · prensa: el carro y la plataforma siguen la planta del pie cercano por el
+ *   raíl (`angulo`: inclinación del raíl);
+ * · palanca de máquina (extensión y curl femoral): gira en `eje` (el de la
+ *   rodilla, fijo en el mundo) y el rodillo va en la pierna, `cara` delante
+ *   (extensión) o detrás (curl);
+ * · abductora: las almohadillas por fuera de las rodillas (vista frontal).
+ */
+export type CargaPierna =
+  | {
+      readonly tipo: 'kettlebell';
+      readonly en: 'agarre';
+      readonly cuelga: 'abajo' | 'antebrazo';
+    }
+  | { readonly tipo: 'prensa'; readonly angulo: number }
+  | {
+      readonly tipo: 'palanca_pierna';
+      readonly eje: { readonly x: number; readonly y: number };
+      readonly cara: 'ant' | 'post';
+    }
+  /** Máquina de abductores (vista frontal): una almohadilla por fuera de cada rodilla; `ejeY`: altura de los ejes. */
+  | { readonly tipo: 'abductora'; readonly ejeY: number };
 
 /** Lo que hay en el mundo y no se mueve. */
 export interface Escenario {
-  readonly tipo: 'banco';
+  /** pierna: 'cajon', 'rack' y las bancadas de 'prensa', 'extension', 'curl_femoral' y 'abductora' (src/iron/material/). */
+  readonly tipo: 'banco' | 'cajon' | 'rack' | 'prensa' | 'extension' | 'curl_femoral' | 'abductora';
   /** Extremo izquierdo, largo y altura del tablero (el suelo es y = 0). */
   readonly x: number;
   readonly ancho: number;
   readonly alto: number;
   /** 'fondo': detrás de todo (lo que se apoya encima se ve). 'medio': entre el lado lejano y el cercano. */
   readonly capa: 'fondo' | 'medio';
+  /** pierna, solo el rack: altura de los brazos de seguridad. */
+  readonly seguro?: number;
 }
 
 export type MusculoId =
@@ -185,7 +219,11 @@ export type MusculoId =
   | 'tibial'
   // brazos
   | 'braquial'
-  | 'braquiorradial';
+  | 'braquiorradial'
+  // pierna
+  | 'soleo'
+  | 'gluteo_medio'
+  | 'psoas';
 
 export type GrupoMuscular = 'pecho' | 'espalda' | 'hombro' | 'brazo' | 'pierna' | 'core';
 

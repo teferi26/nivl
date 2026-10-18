@@ -13,6 +13,7 @@ import { remoMancuerna } from './remo-mancuerna';
 import { sentadillaBarra } from './sentadilla-barra';
 // Fase 2: un catálogo por grupo.
 import { BRAZOS } from './brazos';
+import { EJERCICIOS_PIERNA } from './pierna';
 
 export const EJERCICIOS: readonly Ejercicio[] = [
   sentadillaBarra,
@@ -24,6 +25,8 @@ export const EJERCICIOS: readonly Ejercicio[] = [
   // brazos
   ...BRAZOS,
   ...ESPALDA,
+  // pierna
+  ...EJERCICIOS_PIERNA,
 ];
 
 export function ejercicioPorId(id: string): Ejercicio | undefined {

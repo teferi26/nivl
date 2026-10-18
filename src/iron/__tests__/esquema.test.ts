@@ -22,6 +22,9 @@ const MATERIALES: Material[] = [
   'barra_z',
   // espalda
   'barra_fija',
+  // pierna
+  'rack',
+  'cajon',
 ];
 
 /** Archivos de ejercicios: los de la carpeta y los de cada grupo (fase 2), sin índices ni piezas comunes. */
@@ -37,7 +40,7 @@ function archivosDeEjercicios(dir: string): string[] {
 /** Resuelve «iron:a.b.c» (o «iron-<grupo>:a.b.c») en el catálogo español; undefined si no existe. */
 function texto(clave: string): string | undefined {
   const [ns, ruta] = clave.split(':');
-  if (!/^iron(-[a-z]+)?$/.test(ns) || !ruta) return undefined;
+  if (!/^iron(-[a-z]+)?$/.test(ns ?? '') || !ruta) return undefined;
   let nodo: unknown = (RECURSOS_ES as Record<string, unknown>)[ns];
   for (const parte of ruta.split('.')) {
     if (!nodo || typeof nodo !== 'object') return undefined;

@@ -1,0 +1,329 @@
+{
+  "ejercicios": {
+    "sentadilla-frontal": {
+      "nombre": "Sentadilla frontal",
+      "cues": {
+        "codos": "Codos altos: la barra descansa en los hombros, no en las muñecas.",
+        "pie": "La barra baja y sube sobre el medio del pie.",
+        "tronco": "Pecho arriba y tronco erguido todo el recorrido.",
+        "seguros": "Pon los seguros del rack por debajo del punto más bajo."
+      },
+      "errores": {
+        "codosCaen": "Dejar caer los codos al subir.",
+        "talones": "Levantar los talones.",
+        "rodillasDentro": "Dejar que las rodillas se cierren."
+      }
+    },
+    "sentadilla-goblet": {
+      "nombre": "Sentadilla goblet con kettlebell",
+      "cues": {
+        "pecho": "Kettlebell pegada al pecho y pecho arriba.",
+        "codos": "Codos hacia abajo, por dentro de las rodillas.",
+        "talones": "Talones en el suelo; baja tanto como la espalda siga recta."
+      },
+      "errores": {
+        "separar": "Separar la kettlebell del pecho.",
+        "lumbar": "Redondear la zona lumbar abajo.",
+        "rodillasDentro": "Dejar que las rodillas se cierren al subir."
+      }
+    },
+    "prensa": {
+      "nombre": "Prensa de piernas",
+      "cues": {
+        "espalda": "Espalda y glúteos pegados al respaldo todo el recorrido.",
+        "rodillas": "Rodillas en la línea de los pies, sin cerrarse.",
+        "profundidad": "Baja hasta unos 90° sin que la cadera se despegue.",
+        "seguros": "Quita y pon los seguros con las piernas casi estiradas."
+      },
+      "errores": {
+        "bloquear": "Bloquear las rodillas de golpe arriba.",
+        "despegar": "Despegar la zona lumbar al bajar demasiado.",
+        "talones": "Empujar con las puntas y levantar los talones."
+      }
+    },
+    "sentadilla-bulgara": {
+      "nombre": "Sentadilla búlgara",
+      "cues": {
+        "vertical": "Baja en vertical, con el peso en el pie de delante.",
+        "pie": "Pie de delante plano; la rodilla sigue la punta del pie.",
+        "atras": "El pie de atrás solo apoya: no empujes con él."
+      },
+      "errores": {
+        "cerca": "Poner el pie de delante demasiado cerca del banco.",
+        "rodilla": "Dejar que la rodilla de delante se vaya hacia dentro.",
+        "empujarAtras": "Empujar con la pierna de atrás."
+      }
+    },
+    "zancada-atras-mancuerna": {
+      "nombre": "Zancada atrás con mancuernas",
+      "cues": {
+        "paso": "Paso atrás largo y controlado, apoyando la punta.",
+        "peso": "El peso va al pie de delante; sube empujando con él.",
+        "tronco": "Tronco erguido y mancuernas colgando a los lados."
+      },
+      "errores": {
+        "corto": "Dar un paso tan corto que la rodilla de delante se adelanta mucho.",
+        "rodilla": "Golpear el suelo con la rodilla de atrás."
+      }
+    },
+    "peso-muerto-rumano": {
+      "nombre": "Peso muerto rumano",
+      "cues": {
+        "cadera": "Lleva la cadera atrás con las rodillas apenas dobladas.",
+        "barra": "La barra baja pegada a las piernas, sobre el medio del pie.",
+        "espalda": "Espalda neutra: para cuando no puedas bajar sin redondearla.",
+        "rango": "Baja hasta notar tensión en los isquios, más o menos bajo la rodilla."
+      },
+      "errores": {
+        "redondear": "Redondear la espalda para bajar más.",
+        "sentadilla": "Doblar mucho las rodillas y convertirlo en una sentadilla.",
+        "separar": "Separar la barra de las piernas."
+      }
+    },
+    "hip-thrust": {
+      "nombre": "Hip thrust con barra",
+      "cues": {
+        "apoyo": "Apoya en el banco la parte baja de las escápulas.",
+        "arriba": "Arriba, tronco y muslos en línea y glúteos apretados.",
+        "barbilla": "Barbilla recogida: la mirada va hacia las rodillas.",
+        "talones": "Empuja con los talones; espinillas verticales arriba."
+      },
+      "errores": {
+        "lumbar": "Arquear la zona lumbar en lugar de extender la cadera.",
+        "pies": "Poner los pies tan lejos que trabajan sobre todo los isquios.",
+        "rango": "Quedarse a medio camino arriba."
+      }
+    },
+    "extension-cuadriceps": {
+      "nombre": "Extensión de cuádriceps",
+      "cues": {
+        "eje": "Alinea la rodilla con el eje de la máquina.",
+        "arriba": "Estira hasta casi bloquear y aprieta un segundo.",
+        "bajada": "Baja despacio, sin dejar caer el peso."
+      },
+      "errores": {
+        "impulso": "Subir con impulso y soltar el peso abajo.",
+        "cadera": "Levantar la cadera del asiento."
+      }
+    },
+    "curl-femoral-tumbado": {
+      "nombre": "Curl femoral tumbado",
+      "cues": {
+        "cadera": "Cadera pegada al banco todo el recorrido.",
+        "eje": "Rodillas justo fuera del banco, alineadas con el eje.",
+        "bajada": "Baja despacio hasta casi estirar."
+      },
+      "errores": {
+        "cadera": "Levantar la cadera para subir más peso.",
+        "rebote": "Rebotar abajo."
+      }
+    },
+    "gemelos-de-pie": {
+      "nombre": "Elevación de gemelos de pie",
+      "cues": {
+        "rango": "Baja el talón por debajo del escalón y sube hasta la punta.",
+        "pausa": "Aguanta un segundo arriba y otro abajo.",
+        "rodillas": "Rodillas estiradas sin bloquear; sube y baja en bloque."
+      },
+      "errores": {
+        "rebote": "Rebotar abajo.",
+        "medio": "Hacer solo la mitad del recorrido."
+      }
+    },
+    "gemelos-sentado": {
+      "nombre": "Elevación de gemelos sentado",
+      "cues": {
+        "rango": "Baja el talón todo lo posible y sube hasta la punta.",
+        "pausa": "Aguanta un segundo arriba.",
+        "peso": "La mancuerna sobre la rodilla, sin empujarla con las manos."
+      },
+      "errores": {
+        "rebote": "Rebotar abajo.",
+        "manos": "Ayudarse empujando con los brazos."
+      }
+    },
+    "step-up-cajon": {
+      "nombre": "Subida al cajón",
+      "cues": {
+        "pie": "Pie entero sobre un cajón firme que no se mueva.",
+        "empuje": "Sube empujando con la pierna del cajón, no con la de atrás.",
+        "bajada": "Baja despacio hasta apoyar la punta detrás."
+      },
+      "errores": {
+        "impulso": "Impulsarse con la pierna de atrás.",
+        "rodilla": "Dejar que la rodilla de apoyo se vaya hacia dentro."
+      }
+    },
+    "swing-kettlebell": {
+      "nombre": "Swing con kettlebell",
+      "cues": {
+        "cadera": "Es una bisagra: la cadera atrás y luego adelante con fuerza.",
+        "brazos": "Brazos estirados y relajados: solo guían la kettlebell.",
+        "bloqueo": "Arriba, de pie del todo, con glúteos y abdomen apretados."
+      },
+      "errores": {
+        "sentadilla": "Bajar en sentadilla en lugar de llevar la cadera atrás.",
+        "brazos": "Subir la kettlebell tirando con los hombros.",
+        "lumbar": "Redondear la espalda abajo o arquearla arriba."
+      }
+    },
+    "peso-muerto-rumano-mancuerna": {
+      "nombre": "Peso muerto rumano con mancuernas",
+      "cues": {
+        "cadera": "Lleva la cadera atrás con las rodillas apenas dobladas.",
+        "pegadas": "Las mancuernas bajan pegadas a las piernas.",
+        "espalda": "Espalda neutra todo el recorrido."
+      },
+      "errores": {
+        "redondear": "Redondear la espalda para bajar más.",
+        "lejos": "Dejar que las mancuernas se separen del cuerpo."
+      }
+    },
+    "peso-muerto-una-pierna": {
+      "nombre": "Peso muerto a una pierna",
+      "cues": {
+        "linea": "Tronco y pierna de atrás en línea, como un balancín.",
+        "cadera": "Cadera nivelada: no la abras hacia el lado.",
+        "apoyo": "Rodilla de apoyo suave; si pierdes el equilibrio, toca con la punta."
+      },
+      "errores": {
+        "abrir": "Girar la cadera y abrir la pierna de atrás.",
+        "redondear": "Redondear la espalda para bajar más."
+      }
+    },
+    "buenos-dias": {
+      "nombre": "Buenos días con barra",
+      "cues": {
+        "cadera": "Lleva la cadera atrás con las rodillas suaves.",
+        "espalda": "Espalda neutra: el tronco baja en bloque.",
+        "carga": "Empieza con poco peso y sácalo del rack con seguros."
+      },
+      "errores": {
+        "redondear": "Redondear la espalda para bajar más.",
+        "rodillas": "Doblar mucho las rodillas y convertirlo en una sentadilla."
+      }
+    },
+    "abduccion-maquina": {
+      "nombre": "Abducción en máquina",
+      "cues": {
+        "espalda": "Espalda en el respaldo y cadera quieta.",
+        "abrir": "Abre las rodillas hasta donde controles, sin balanceo.",
+        "cerrar": "Cierra despacio, sin dejar que el peso choque."
+      },
+      "errores": {
+        "inclinar": "Echarse hacia delante para mover más peso.",
+        "golpe": "Soltar el peso de golpe al cerrar."
+      }
+    },
+    "sentadilla-peso-corporal": {
+      "nombre": "Sentadilla sin peso",
+      "cues": {
+        "talones": "Talones en el suelo todo el recorrido.",
+        "cadera": "Lleva la cadera atrás y abajo, con el pecho arriba.",
+        "rodillas": "Rodillas en la línea de las puntas de los pies."
+      },
+      "errores": {
+        "talones": "Levantar los talones.",
+        "medio": "Quedarse a medio recorrido.",
+        "rodillasDentro": "Dejar que las rodillas se cierren al subir."
+      }
+    },
+    "sentadilla-cajon": {
+      "nombre": "Sentadilla al cajón",
+      "cues": {
+        "atras": "Siéntate atrás, como buscando la silla con los glúteos.",
+        "tocar": "Toca el cajón sin dejarte caer ni soltar la tensión.",
+        "subir": "Sube empujando el suelo, sin balancearte."
+      },
+      "errores": {
+        "caer": "Dejarse caer sobre el cajón.",
+        "balanceo": "Balancearse hacia atrás para levantarse.",
+        "rodillas": "Dejar que las rodillas se cierren al subir."
+      }
+    },
+    "zancada-estatica": {
+      "nombre": "Zancada estática",
+      "cues": {
+        "vertical": "Baja en vertical, como un ascensor.",
+        "rodilla": "Rodilla de delante sobre el tobillo; la de atrás casi roza el suelo.",
+        "empuje": "Sube empujando con el pie de delante."
+      },
+      "errores": {
+        "corta": "Poner los pies demasiado cerca.",
+        "inclinar": "Echar el tronco hacia delante."
+      }
+    },
+    "puente-gluteo": {
+      "nombre": "Puente de glúteo",
+      "cues": {
+        "talones": "Pies cerca de los glúteos; empuja con los talones.",
+        "arriba": "Sube hasta dejar hombros, cadera y rodillas en línea.",
+        "lumbar": "Aprieta los glúteos arriba sin arquear la zona lumbar."
+      },
+      "errores": {
+        "arquear": "Arquear la espalda para subir más.",
+        "rapido": "Subir y bajar sin control."
+      }
+    },
+    "puente-gluteo-una-pierna": {
+      "nombre": "Puente de glúteo a una pierna",
+      "cues": {
+        "talon": "Empuja con el talón de apoyo.",
+        "nivel": "Cadera nivelada: que no caiga hacia el lado libre.",
+        "arriba": "Arriba, tronco y muslo de apoyo en línea."
+      },
+      "errores": {
+        "girar": "Dejar que la cadera gire o caiga.",
+        "lumbar": "Arquear la zona lumbar."
+      }
+    },
+    "patada-gluteo": {
+      "nombre": "Patada de glúteo",
+      "cues": {
+        "espalda": "Espalda plana y abdomen firme: solo se mueve la pierna.",
+        "talon": "Empuja la planta hacia el techo.",
+        "rodilla": "Rodilla doblada a 90° todo el recorrido."
+      },
+      "errores": {
+        "arquear": "Arquear la zona lumbar para subir más.",
+        "girar": "Girar la cadera hacia el lado de la pierna."
+      }
+    },
+    "abduccion-tumbado": {
+      "nombre": "Abducción tumbado de lado",
+      "cues": {
+        "recta": "Pierna de arriba recta, un poco por detrás de la línea del cuerpo.",
+        "punta": "La punta del pie mira al frente, no al techo.",
+        "lento": "Sube hasta unos 40° y baja despacio."
+      },
+      "errores": {
+        "girar": "Girar la cadera y subir con la punta hacia el techo.",
+        "alto": "Subir demasiado y doblar el tronco."
+      }
+    },
+    "curl-nordico": {
+      "nombre": "Curl nórdico",
+      "cues": {
+        "linea": "Cuerpo recto de rodillas a cabeza, sin doblar la cadera.",
+        "lento": "Baja lo más despacio que puedas.",
+        "manos": "Usa las manos para frenar abajo y ayudarte a volver."
+      },
+      "errores": {
+        "cadera": "Doblar la cadera para que trabajen menos los isquios.",
+        "caer": "Dejarse caer al final sin frenar."
+      }
+    },
+    "elevacion-tibial": {
+      "nombre": "Elevación de tibiales",
+      "cues": {
+        "talon": "Talón apoyado; sube solo la punta del pie.",
+        "arriba": "Sube todo lo que puedas y aguanta un segundo.",
+        "bajada": "Baja despacio."
+      },
+      "errores": {
+        "rapido": "Hacerlo rápido y sin rango.",
+        "talon": "Despegar el talón del suelo."
+      }
+    }
+  }
+}

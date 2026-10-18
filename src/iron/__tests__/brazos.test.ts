@@ -11,7 +11,7 @@ import { EJERCICIOS, ejercicioPorId } from '../ejercicios';
 import { BRAZOS } from '../ejercicios/brazos';
 import { tramoBarraZ } from '../material/barra-z';
 import { GRUPO_DE_MUSCULO, MUSCULOS } from '../musculos';
-import type { Ejercicio, Material } from '../tipos';
+import type { Ejercicio, Escenario, Material } from '../tipos';
 
 const RADIO_CABEZA = 6.2;
 const DIR = path.resolve(__dirname, '..', 'ejercicios', 'brazos');
@@ -275,7 +275,7 @@ describe.each([
 ] as const)('%s', (id, alturaTalon) => {
   const e = ej(id);
   const m = muestras(e);
-  const banco = (e.escenario ?? [])[0];
+  const banco = (e.escenario ?? [])[0] as Escenario;
   it('la mano no se mueve del borde del banco', () => {
     for (const { s } of m) {
       expect(s.p.agarre_c.x).toBeGreaterThan(banco.x);

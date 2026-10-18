@@ -47,7 +47,10 @@
     "gemelos": "Gemelos",
     "tibial": "Tibial anterior",
     "braquial": "Braquial",
-    "braquiorradial": "Braquiorradial"
+    "braquiorradial": "Braquiorradial",
+    "soleo": "Sóleo",
+    "gluteo_medio": "Glúteo medio (abductores)",
+    "psoas": "Psoas (flexor de cadera)"
   },
   "grupo": {
     "pecho": "Pecho",
@@ -67,7 +70,9 @@
     "kettlebell": "Kettlebell",
     "banda": "Banda elástica",
     "barra_z": "Barra Z",
-    "barra_fija": "Barra fija"
+    "barra_fija": "Barra fija",
+    "rack": "Rack",
+    "cajon": "Cajón"
   },
   "nivel": {
     "principiante": "Principiante",
