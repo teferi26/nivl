@@ -23,7 +23,7 @@ import { FORMAS_FRONTAL, FORMAS_LATERAL, MUSCULOS, type BaseSegmento } from './m
 import { tramoBarraZ } from './material/barra-z';
 // pierna: material de la fase 2 (src/iron/material/).
 import { cargaPierna, centroCargaPierna, esCargaPierna, esEscenarioPierna, escenarioPierna } from './material/pierna';
-import type { Ancla, Banco, Carga, Ejercicio, Escenario, MusculoId, Pose, SegmentoId, Vista } from './tipos';
+import type { Ancla, Banco, Carga, Ejercicio, MusculoId, Pose, SegmentoId, Vista } from './tipos';
 import { cuerdaComba, manijaComba } from './material/comba';
 import { esterilla } from './material/esterilla';
 import { rueda } from './material/rueda';

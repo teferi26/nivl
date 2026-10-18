@@ -1,7 +1,13 @@
 // NIVL · IRON · El esquema de los ejercicios: cada archivo de datos cumple
 // las reglas que el tipo `Ejercicio` no puede expresar solo.
+//
+// Una sola versión para todo el catálogo (integración de la fase 2): recorre
+// los 5 del prototipo (ejercicios/*.ts) y cada carpeta de grupo
+// (ejercicios/<grupo>/*.ts, sin index.ts, comun.ts ni las ayudas «_*.ts»), y
+// resuelve los textos en `iron` y en cada `iron-<grupo>`.
 import fs from 'fs';
 import path from 'path';
+import { RECURSOS_ES } from '@/i18n/recursos';
 import { dibujar, ranuras } from '../dibujo';
 import { EJERCICIOS, ejercicioPorId } from '../ejercicios';
 import { FORMAS_FRONTAL, FORMAS_LATERAL, GRUPO_DE_MUSCULO, MUSCULOS } from '../musculos';
@@ -45,15 +51,23 @@ const CATALOGOS: Record<string, unknown> = Object.fromEntries(
     .map((f) => [f.slice(0, -5), JSON.parse(fs.readFileSync(path.join(DIR_ES, f), 'utf8'))]),
 );
 
-/** Archivos de ejercicios: los de la carpeta y los de cada grupo (fase 2), sin índices ni piezas comunes. */
-function archivosDeEjercicios(dir: string): string[] {
-  const out: string[] = [];
-  for (const f of fs.readdirSync(dir, { withFileTypes: true })) {
-    if (f.isDirectory()) out.push(...archivosDeEjercicios(path.join(dir, f.name)));
-    else if (f.name.endsWith('.ts') && f.name !== 'index.ts' && f.name !== 'comun.ts' && !f.name.startsWith('_')) out.push(f.name.slice(0, -3));
-  }
-  return out;
-}
+/** ¿Es un archivo de ejercicio? (no los índices, las piezas comunes ni las ayudas de autor). */
+const esEjercicio = (f: string) => f.endsWith('.ts') && f !== 'index.ts' && f !== 'comun.ts' && !f.startsWith('_');
+
+/** Las carpetas de grupo de la fase 2 (ejercicios/<grupo>/). */
+const CARPETAS = fs
+  .readdirSync(DIR, { withFileTypes: true })
+  .filter((f) => f.isDirectory())
+  .map((f) => f.name)
+  .sort();
+
+/** Los archivos de ejercicios por carpeta ('' = los del prototipo). */
+const ARCHIVOS: Record<string, string[]> = {
+  '': fs.readdirSync(DIR).filter(esEjercicio).map((f) => f.slice(0, -3)),
+  ...Object.fromEntries(CARPETAS.map((c) => [c, fs.readdirSync(path.join(DIR, c)).filter(esEjercicio).map((f) => f.slice(0, -3))])),
+};
+/** La carpeta de cada id (vacía para los del prototipo). */
+const CARPETA_DE: Record<string, string> = Object.fromEntries(Object.entries(ARCHIVOS).flatMap(([c, ids]) => ids.map((id) => [id, c])));
 
 /** Resuelve «iron:a.b.c» o «iron-<grupo>:a.b.c» en el catálogo español; undefined si no existe. */
 function texto(clave: string): string | undefined {
@@ -77,10 +91,28 @@ function nombre(seccion: string, id: string): string | undefined {
 }
 
 describe('catálogo', () => {
-  it('cada archivo de ejercicios/ está registrado, con id = nombre del archivo', () => {
-    const archivos = archivosDeEjercicios(DIR).sort();
+  it('cada archivo de ejercicios/ (y de cada carpeta de grupo) está registrado, con id = nombre del archivo', () => {
+    const archivos = Object.values(ARCHIVOS).flat().sort();
     expect(EJERCICIOS.map((e) => e.id).sort()).toEqual(archivos);
     for (const id of archivos) expect(ejercicioPorId(id)?.id).toBe(id);
+  });
+
+  it('las carpetas de grupo son las seis de la fase 2', () => {
+    expect(CARPETAS).toEqual(['brazos', 'core', 'espalda', 'hombro', 'pecho', 'pierna']);
+  });
+
+  it('cada iron-<grupo>.json tiene su carpeta y está registrado en recursos.ts', () => {
+    const ns = Object.keys(CATALOGOS).filter((n) => n !== 'iron');
+    expect(ns.sort()).toEqual(CARPETAS.map((c) => `iron-${c}`));
+    for (const n of ['iron', ...ns]) expect((RECURSOS_ES as Record<string, unknown>)[n]).toEqual(CATALOGOS[n]);
+  });
+
+  it('ningún catálogo guarda textos de un ejercicio que no está en su carpeta', () => {
+    for (const n of Object.keys(CATALOGOS)) {
+      const carpeta = n === 'iron' ? '' : n.slice('iron-'.length);
+      const ids = Object.keys((CATALOGOS[n] as { ejercicios?: object }).ejercicios ?? {});
+      for (const id of ids) expect(`${n}:${id} → ${CARPETA_DE[id] ?? 'sin archivo'}`).toBe(`${n}:${id} → ${carpeta}`);
+    }
   });
 
   it('ids únicos y en minúsculas con guiones', () => {
@@ -103,7 +135,9 @@ describe('catálogo', () => {
 describe.each(EJERCICIOS.map((e) => [e.id, e] as const))('%s', (_id, ej: Ejercicio) => {
   it('textos: nombre, cues y errores existen en es/iron*.json, sin raya ni guion medio', () => {
     const claves = [ej.nombre, ...ej.cues, ...ej.errores];
-    const prefijo = new RegExp(`^iron(-[a-z]+)?:ejercicios\\.${ej.id}\\.`);
+    // Los del prototipo, en `iron`; los de cada carpeta, en el namespace de su carpeta.
+    const ns = CARPETA_DE[ej.id] ? `iron-${CARPETA_DE[ej.id]}` : 'iron';
+    const prefijo = new RegExp(`^${ns}:ejercicios\\.${ej.id}\\.`);
     for (const c of claves) {
       expect(c).toMatch(prefijo);
       const t = texto(c);
@@ -134,14 +168,37 @@ describe.each(EJERCICIOS.map((e) => [e.id, e] as const))('%s', (_id, ej: Ejercic
     if (ej.carga?.tipo === 'barra') expect(ej.material).toContain(ej.carga.forma === 'z' ? 'barra_z' : 'barra');
     if (ej.carga?.tipo === 'mancuerna') expect(ej.material).toContain('mancuerna');
     if (ej.escenario?.some((e) => e.tipo === 'banco')) expect(ej.material).toContain('banco');
-    // espalda
-    if (ej.carga?.tipo === 'polea') expect(ej.material).toContain('polea');
-    if (ej.carga?.tipo === 'palanca') expect(ej.material).toContain('maquina');
-    if (ej.escenario?.some((e) => e.tipo === 'barra_dominadas')) expect(ej.material).toContain('barra_fija');
-    // core
-    if (ej.carga?.tipo === 'comba') expect(ej.material).toContain('comba');
-    if (ej.carga?.tipo === 'rueda') expect(ej.material).toContain('rueda');
-    if (ej.escenario?.some((e) => e.tipo === 'esterilla')) expect(ej.material).toContain('esterilla');
+    // Lo que se dibuja está en la lista de material (carga y escenario de cada grupo).
+    const deCarga: Record<string, Material> = {
+      polea: 'polea',
+      palanca: 'maquina',
+      palanca_pierna: 'maquina',
+      prensa: 'maquina',
+      abductora: 'maquina',
+      pec_deck: 'maquina',
+      kettlebell: 'kettlebell',
+      banda: 'banda',
+      comba: 'comba',
+      rueda: 'rueda',
+    };
+    const deEscenario: Record<string, Material> = {
+      polea: 'polea',
+      barra_dominadas: 'barra_fija',
+      hiperextension: 'maquina',
+      rack: 'rack',
+      cajon: 'cajon',
+      prensa: 'maquina',
+      extension: 'maquina',
+      curl_femoral: 'maquina',
+      abductora: 'maquina',
+      esterilla: 'esterilla',
+      banco_inclinado: 'banco_inclinado',
+      banco_declinado: 'banco_declinado',
+      paralelas: 'paralelas',
+      pec_deck: 'maquina',
+    };
+    if (ej.carga && deCarga[ej.carga.tipo]) expect(ej.material).toContain(deCarga[ej.carga.tipo]);
+    for (const e of ej.escenario ?? []) if (deEscenario[e.tipo]) expect(ej.material).toContain(deEscenario[e.tipo]);
   });
 
   it('sustitutos: existen y no es él mismo', () => {

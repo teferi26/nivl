@@ -1,4 +1,6 @@
 // NIVL · IRON · El botón «Sustituir»: mismo grupo o nada, y respeta el material.
+// Una sola versión para todo el catálogo (fase 2 integrada): los 5 del
+// prototipo aparte y, en el catálogo completo, cada grupo.
 import { EJERCICIOS } from '../ejercicios';
 import { cabeConMaterial, sustituto } from '../sustituir';
 import type { Ejercicio } from '../tipos';
@@ -12,8 +14,30 @@ describe('sustituto', () => {
     for (const e of prototipo) expect(sustituto(e.id, { catalogo: prototipo })).toBeNull();
   });
 
-  it('en el catálogo completo, cada ejercicio de pecho tiene sustituto de pecho', () => {
-    for (const e of EJERCICIOS.filter((x) => x.grupo === 'pecho')) expect(sustituto(e.id)?.ejercicio.grupo).toBe('pecho');
+  // core, cardio y movilidad son una familia (se cruzan a mano: burpees ↔ mountain climbers).
+  const familia = (g: string) => (g === 'cardio' || g === 'movilidad' ? 'core' : g);
+
+  it('en el catálogo completo, cada ejercicio tiene sustituto y es de su grupo', () => {
+    for (const e of EJERCICIOS) {
+      const s = sustituto(e.id);
+      expect(s).not.toBeNull();
+      expect(`${e.id} → ${familia(s?.ejercicio.grupo ?? '')}`).toBe(`${e.id} → ${familia(e.grupo)}`);
+    }
+  });
+
+  it('los sustitutos escritos a mano son del mismo grupo (o de su familia)', () => {
+    for (const e of EJERCICIOS)
+      for (const id of e.sustitutos) {
+        const otro = EJERCICIOS.find((x) => x.id === id);
+        expect(`${e.id} → ${id} (${familia(otro?.grupo ?? '?')})`).toBe(`${e.id} → ${id} (${familia(e.grupo)})`);
+      }
+  });
+
+  it('cada carpeta de grupo tiene en casa algo que proponer: sin material, el sustituto sigue en su grupo', () => {
+    for (const e of EJERCICIOS) {
+      const s = sustituto(e.id, { material: [] });
+      if (s) expect(familia(s.ejercicio.grupo)).toBe(familia(e.grupo));
+    }
   });
 
   it('propone el del mismo grupo que más principales comparte', () => {
