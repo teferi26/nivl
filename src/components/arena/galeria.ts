@@ -32,7 +32,9 @@ export type IdPantalla =
   | 'contrato'
   | 'memoria'
   | 'economia'
-  | 'creador';
+  | 'creador'
+  // Modos F1 (solo con modos_activos encendido en la app).
+  | 'modos';
 
 export interface EstadoDemo {
   /** Va en la URL: /kit/pantallas?pantalla=hoy&estado=<id>. */
@@ -82,4 +84,5 @@ export const PANTALLAS_DEMO: { id: IdPantalla; titulo: string }[] = [
   { id: 'memoria', titulo: 'Memoria' },
   { id: 'economia', titulo: 'Economía' },
   { id: 'creador', titulo: 'Creador' },
+  { id: 'modos', titulo: 'Modos' },
 ];

@@ -10,6 +10,7 @@ import { Barra, CargaArena, ratioSeguro } from '@/components/arena';
 import { Section } from '@/components/ui';
 import { ink, modoAcento, space, stroke, type as tipo } from '@/design/tokens';
 import { t } from '@/i18n';
+import { mayus } from '@/i18n/formato';
 import type { NivelModo } from '@/modos/niveles';
 import { NOMBRE_MODO, type ModoId } from '@/modos/tipos';
 
@@ -38,7 +39,7 @@ function Fila({ modo, nivel, ratio, xp }: { modo: ModoId; nivel: number; ratio: 
       <View style={[styles.marca, { backgroundColor: modoAcento[modo] }]} />
       <View style={styles.centro}>
         <Text style={[styles.nombre, modo !== 'general' && { color: modoAcento[modo] }]} maxFontSizeMultiplier={1.35} numberOfLines={1}>
-          {nombre}
+          {mayus(nombre)}
         </Text>
         {ratio !== null ? (
           <View style={styles.barra}>
@@ -47,7 +48,7 @@ function Fila({ modo, nivel, ratio, xp }: { modo: ModoId; nivel: number; ratio: 
         ) : null}
       </View>
       <Text style={styles.nivel} maxFontSizeMultiplier={1}>
-        {t('modos:perfil.nivel', { nivel })}
+        {mayus(t('modos:perfil.nivel', { nivel }))}
       </Text>
     </View>
   );
