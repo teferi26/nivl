@@ -135,7 +135,7 @@ function HeroHoy(p: HeroRangoProps) {
     {
       valor: p.cargando ? '' : p.racha,
       rotulo: p.rachaCerrada ? t('arena:heroRango.rachaHoy') : t('arena:heroRango.racha'),
-      sufijo: p.cargando ? undefined : 'd',
+      sufijo: p.cargando ? undefined : t('arena:heroRango.unidadDia'),
       desde: d?.racha ?? null,
       etiqueta: p.cargando ? t('arena:heroRango.rachaCargando') : t('arena:heroRango.rachaA11y', { dias: dias(p.racha) }),
     },
@@ -307,7 +307,7 @@ function HeroPerfil(p: HeroRangoProps) {
         {
           valor: p.racha,
           rotulo: t('arena:heroRango.racha'),
-          sufijo: 'd',
+          sufijo: t('arena:heroRango.unidadDia'),
           desde: d?.racha ?? null,
           etiqueta: t('arena:heroRango.rachaA11y', { dias: dias(p.racha) }),
         },

@@ -27,6 +27,7 @@
     "rotuloNivel": "NÍVEL",
     "inscripcionRango": "PATENTE {{rango}}",
     "experienciaA11y": "Experiência do nível {{nivel}}",
-    "cambiarFoto": "Mudar foto de perfil"
+    "cambiarFoto": "Mudar foto de perfil",
+    "unidadDia": "d"
   }
 }

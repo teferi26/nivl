@@ -27,6 +27,7 @@
     "rotuloNivel": "NIVEAU",
     "inscripcionRango": "RANG {{rango}}",
     "experienciaA11y": "Expérience du niveau {{nivel}}",
-    "cambiarFoto": "Changer la photo de profil"
+    "cambiarFoto": "Changer la photo de profil",
+    "unidadDia": "j"
   }
 }
