@@ -15,6 +15,7 @@ import { useFlags } from '@/lib/flags';
 import { ofertaFinPrueba, type OfertaFinPrueba } from '@/lib/pro';
 import { guardarMarcasPrueba, leerMarcasPrueba, leerSuscripcionPrueba } from '@/lib/pruebaAuto';
 import {
+  diasRestantes,
   estadoPrueba,
   fechaHoraLocal,
   MARCAS_VACIAS,
@@ -105,7 +106,8 @@ export function usePruebaAuto() {
 
   return {
     pantalla: visible,
-    dias,
+    // QA F1: los días que quedan de verdad (si la bienvenida se ve tarde, menos).
+    dias: estado.tipo === 'activa' ? diasRestantes(estado.fin, ahora, dias) : dias,
     fecha: fin?.fecha ?? '',
     hora: fin?.hora ?? '',
     precios: preciosFin(oferta),

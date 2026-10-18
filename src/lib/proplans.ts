@@ -12,6 +12,8 @@
 // `pro.ts`.
 
 import { t } from '@/i18n';
+import { idiomaInterfazActual, type IdiomaInterfaz } from '@/i18n/estado';
+import { moneda } from '@/i18n/formato';
 import { kindMeta, type ProfileKind } from './kinds';
 import type { CopyKey, Momento, TierOferta } from './paywallmoment';
 
@@ -203,6 +205,17 @@ export const PLAZAS_FUNDADOR = 100;
 /** "8,33 €": coma decimal y el símbolo detrás, como se escribe en España. */
 export function euros(cents: number): string {
   return `${(Math.round(cents) / 100).toFixed(2).replace('.', ',')} €`;
+}
+
+/**
+ * Un importe de la tabla en el idioma de la interfaz, siempre en euros: en
+ * `es`, `euros()` tal cual («29,99 €»); en el resto, Intl («€29.99»,
+ * «29,99 €», «29,99 €»). Solo para los precios de reserva sin tienda: con
+ * tienda, el precio llega ya localizado.
+ */
+export function eurosLocal(cents: number, idioma: IdiomaInterfaz = idiomaInterfazActual()): string {
+  if (idioma === 'es' || idioma === 'xx') return euros(cents);
+  return moneda(Math.round(cents) / 100, 2, idioma);
 }
 
 function ahorro(anualCents: number, mensualCents: number): number {

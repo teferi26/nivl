@@ -5,6 +5,7 @@
 import {
   DIA_MS,
   estadoPrueba,
+  diasRestantes,
   fechaHoraLocal,
   HORA_MS,
   marcasDe,
@@ -100,6 +101,40 @@ describe('detalles', () => {
     expect(hora).toBe('09:05');
     expect(fecha).toContain('20');
     expect(fecha).toContain('octubre');
+  });
+
+  it('fecha en el idioma de la interfaz (QA F1, M1)', () => {
+    const d = new Date(2026, 9, 20, 21, 30);
+    const en = fechaHoraLocal(d.toISOString(), 'en');
+    expect(en.fecha).toContain('October');
+    expect(en.fecha).toContain('Tuesday');
+    expect(en.hora).toBe('21:30');
+    expect(fechaHoraLocal(d.toISOString(), 'de').fecha).toContain('Oktober');
+    expect(fechaHoraLocal(d.toISOString(), 'es').fecha).toBe('martes, 20 de octubre');
+  });
+
+  it('días que quedan: del fin de la prueba, hacia arriba y con tope (QA F1)', () => {
+    const ahora = Date.UTC(2026, 9, 18, 12);
+    const en = (h: number) => new Date(ahora + h * HORA_MS).toISOString();
+    expect(diasRestantes(en(48), ahora, 2)).toBe(2);
+    expect(diasRestantes(en(40), ahora, 2)).toBe(2);
+    expect(diasRestantes(en(20), ahora, 2)).toBe(1);
+    expect(diasRestantes(en(0.5), ahora, 2)).toBe(1);
+    expect(diasRestantes(en(-1), ahora, 2)).toBe(0);
+    expect(diasRestantes(en(100), ahora, 2)).toBe(2);
+    expect(diasRestantes(en(100), ahora, 0)).toBe(5);
+    expect(diasRestantes('basura', ahora, 2)).toBe(0);
+  });
+
+  it('precios de reserva en el idioma de la interfaz, siempre en euros (QA F1, M2)', () => {
+    const en = preciosFin(null, 'en');
+    expect(en.eliteMes).toMatch(/€/);
+    expect(en.eliteMes).toContain('29.99');
+    expect(en.eliteAnio).toContain('299.00');
+    expect(preciosFin(null, 'de').proMes).toMatch(/12,99\s€/);
+    expect(preciosFin(null, 'es')).toEqual(preciosFin(null));
+    // Con tienda, el precio llega ya localizado y no se toca.
+    expect(preciosFin({ eliteMes: '$29.99', eliteAnio: null, proMes: null, introGratis: null, introCondicional: false }, 'en').eliteMes).toBe('$29.99');
   });
 
   it('precios: los de la tienda o los de la tabla; la oferta solo con precio de tienda', () => {

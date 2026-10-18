@@ -13,7 +13,9 @@
 // Los efectos (lectura de `subscriptions`, marcas en el teléfono) están en
 // pruebaAuto.ts.
 
-import { PRO_PLANS } from './proplans';
+import type { IdiomaInterfaz } from '@/i18n/estado';
+import { fechaLarga } from '@/i18n/formato';
+import { eurosLocal, PRO_PLANS } from './proplans';
 
 export const HORA_MS = 3_600_000;
 export const DIA_MS = 24 * HORA_MS;
@@ -84,12 +86,27 @@ export function pantallaPrueba(entrada: {
   return null;
 }
 
-/** «sábado, 20 de octubre» y «21:30», en la zona horaria del teléfono. */
-export function fechaHoraLocal(iso: string): { fecha: string; hora: string } {
+/**
+ * «sábado, 20 de octubre» y «21:30», en la zona horaria del teléfono. La
+ * fecha va en el idioma de la interfaz (QA F1, M1); en `es`, la de siempre.
+ */
+export function fechaHoraLocal(iso: string, idioma?: IdiomaInterfaz): { fecha: string; hora: string } {
   const d = new Date(iso);
-  const fecha = d.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
+  const fecha = fechaLarga(d, false, idioma);
   const hora = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
   return { fecha, hora };
+}
+
+/**
+ * Los días que quedan de verdad (QA F1, menor 1): salen del fin de la
+ * prueba (`current_period_end`), no del interruptor. Se redondea hacia
+ * arriba (40 h son 2 días; 20 h, 1) y nunca pasa de lo que dura la prueba.
+ */
+export function diasRestantes(fin: string, ahora: number, maximo: number): number {
+  const queda = Date.parse(fin) - ahora;
+  if (!Number.isFinite(queda) || queda <= 0) return 0;
+  const dias = Math.max(1, Math.ceil(queda / DIA_MS));
+  return maximo >= 1 ? Math.min(maximo, dias) : dias;
 }
 
 /**
@@ -126,16 +143,17 @@ export interface OfertaTiendaFin {
  * Los precios que se enseñan junto a «Seguir con Élite»: los de la tienda
  * (los que se cobran) y, si no los da (sin tienda o sin red), los de la
  * tabla de PRECIOS.md. La oferta introductoria solo se dice si la declara
- * la tienda con su precio: con el de la tabla no se promete.
+ * la tienda con su precio: con el de la tabla no se promete. Los de la tabla
+ * van en euros con el formato del idioma de la interfaz (QA F1, M2).
  */
-export function preciosFin(oferta: OfertaTiendaFin | null | undefined): {
+export function preciosFin(oferta: OfertaTiendaFin | null | undefined, idioma?: IdiomaInterfaz): {
   eliteMes: string;
   eliteAnio: string;
   proMes: string;
   introGratis: string | null;
   introCondicional: boolean;
 } {
-  const tabla = (id: string) => PRO_PLANS.find((p) => p.id === id)!.price;
+  const tabla = (id: string) => eurosLocal(PRO_PLANS.find((p) => p.id === id)!.priceCents, idioma);
   return {
     eliteMes: oferta?.eliteMes ?? tabla('nivl_elite_mensual'),
     eliteAnio: oferta?.eliteAnio ?? tabla('nivl_elite_anual'),
