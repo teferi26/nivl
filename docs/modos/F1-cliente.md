@@ -146,3 +146,38 @@ La galería en web, para capturas: `/kit/pantallas?pantalla=modos&estado=<id>&an
   - las traducciones del namespace `modos`, de `onboarding:idioma` y de `perfil:planes`;
   - `x-nivl-locale` en `authHeaders`, junto a la cabecera de modo.
 - **Analítica:** si se quieren eventos del embudo (paso de modos visto o completado, cambio de modo), los puntos de enganche son `saveModos` y `saveIdioma` en `onboarding.tsx` y `cambiar` en `ModoProvider`. Aquí no se ha añadido ninguno.
+
+## Encargo 2: la prueba automática de Élite (`prueba_auto`, 0069)
+
+Todo va detrás de `prueba_auto_activa` (`useFlags`). Con el interruptor apagado no se lee nada ni se pinta nada.
+
+**Qué se ha hecho**
+- **Lógica (`src/lib/pruebaAutomath.ts`, puro, con test).** Decide la pantalla a partir de la fila de `subscriptions` (`plan = 'prueba_auto'`, `current_period_end`) y de las marcas del teléfono:
+  - con la prueba activa, la bienvenida sale una vez por prueba;
+  - con 24 h o menos, el aviso sale una vez (si la bienvenida ya llega con menos de un día, no hay aviso aparte);
+  - con la prueba vencida sale la pantalla de fin. Tras «Quedarme en el plan gratis» no vuelve antes de 7 días;
+  - una compra cambia `plan` y todo desaparece.
+- **Por qué se lee `subscriptions`.** `ai_status()` no basta: con la prueba vencida devuelve `plan: null`. La lectura está en `src/lib/pruebaAuto.ts` y la RLS deja leer la fila a su dueño, como hace ya `fetchSubscription`.
+- **Bienvenida** (`components/prueba/PruebaVistas.tsx`, hoja):
+  - «Tienes N días de NIVL Élite» (N sale de `prueba_auto_dias`);
+  - la fecha y hora de fin en la zona del teléfono;
+  - lo que incluye: el coach de Élite **con un tope diario de mensajes durante la prueba**, la revisión semanal ampliada, el laurel y la solicitud de plaza en un ludus (que no garantiza la plaza, como dice la ficha);
+  - todo lo gratis.
+- **Fin** (pantalla completa):
+  - dos salidas del mismo peso: las dos `secondary`, mismo tamaño, ninguna invertida y nada preseleccionado;
+  - junto a «Seguir con Élite», el precio, el periodo y la renovación (Apple 3.1.2 y Google Play), y el Pro mensual;
+  - si la tienda declara un periodo gratis en el Élite mensual (la fase B), se añade «5 días gratis y después X € al mes. Cancela cuando quieras». En iOS se dice como condicional si no se confirma la elegibilidad, y no se dice nada si la cuenta es inelegible;
+  - sin tienda, salen los precios de la tabla (PRECIOS.md) y nunca la oferta;
+  - debajo, qué conserva el plan gratis, qué deja de tener y la línea «tus datos se quedan como están».
+- **«Seguir con Élite»** abre `/pro?tier=elite`: las ofertas de RevenueCat (Élite mensual y anual, y Pro) con su letra legal. La pantalla de fin se aparta solo durante esta sesión, sin contar como «no». Después de comprar, desaparece en la siguiente lectura (al cambiar de pantalla, como mucho cada 15 s).
+- **Aviso de 24 h.** Va por la cola de avisos de la app (`useCelebracion().avisar`). No es una notificación push.
+- **Galería:** `/kit/pantallas?pantalla=prueba`, con la bienvenida, el aviso, el fin con los precios de la tabla y el fin con los 5 días gratis de la tienda. Revisado a 360 y 375.
+
+**Desviaciones del encargo, a propósito**
+- **El modo profundo NO se anuncia como incluido.** La 0069 no lo da en la prueba: deep = 0, porque Haiku no admite `xhigh`. La bienvenida dice «El modo profundo es del Élite de pago y no entra en la prueba».
+- **«Máxima potencia» no aparece.** Se usa la fórmula pedida: «el coach de Élite, con un tope diario de mensajes durante la prueba».
+
+**Riesgos**
+- **La revisión semanal ampliada** sale en la ficha de la tienda como función de Élite, pero no he encontrado en `supabase/functions` nada que la separe por nivel. Se promete lo mismo que ya promete la ficha.
+- **A 360 de ancho, «Quedarme en el plan gratis» ocupa dos líneas** y «Seguir con Élite» una. El peso (variante y tamaño) es el mismo.
+- **Las marcas viven en el teléfono.** En otro teléfono se repiten la bienvenida y el aviso, una vez.
