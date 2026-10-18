@@ -65,6 +65,8 @@ import ironEspalda from './es/iron-espalda.json';
 import ironPierna from './es/iron-pierna.json';
 // IRON fase 2, grupo core y cardio.
 import ironCore from './es/iron-core.json';
+// IRON fase 2: catálogo de hombro.
+import ironHombro from './es/iron-hombro.json';
 
 /** Los catálogos en español: la fuente de verdad de todas las claves. */
 export const RECURSOS_ES = {
@@ -114,6 +116,7 @@ export const RECURSOS_ES = {
   'iron-espalda': ironEspalda,
   'iron-pierna': ironPierna,
   'iron-core': ironCore,
+  'iron-hombro': ironHombro,
 };
 
 export type RecursosEs = typeof RECURSOS_ES;

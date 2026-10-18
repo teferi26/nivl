@@ -50,7 +50,8 @@
     "braquiorradial": "Braquiorradial",
     "soleo": "Sóleo",
     "gluteo_medio": "Glúteo medio (abductores)",
-    "psoas": "Psoas (flexor de cadera)"
+    "psoas": "Psoas (flexor de cadera)",
+    "manguito_rotador": "Manguito rotador"
   },
   "grupo": {
     "pecho": "Pecho",

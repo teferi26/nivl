@@ -1,0 +1,310 @@
+{
+  "ejercicios": {
+    "elevacion-frontal-banda": {
+      "nombre": "Elevación frontal con banda",
+      "cues": {
+        "pisada": "Pisa la banda con los dos pies y sujétala firme.",
+        "altura": "Sube por delante hasta la altura de los hombros.",
+        "bajada": "Baja despacio, sin dejar que la banda tire de ti."
+      },
+      "errores": {
+        "balanceo": "Balancear el tronco para estirar la banda.",
+        "soltar": "Soltar la banda de golpe al bajar."
+      }
+    },
+    "elevacion-frontal-barra": {
+      "nombre": "Elevación frontal con barra",
+      "cues": {
+        "altura": "Sube la barra por delante hasta la altura de los hombros.",
+        "tronco": "Tronco quieto: sin echarte atrás.",
+        "ligera": "Usa una barra ligera: el brazo estirado multiplica el esfuerzo."
+      },
+      "errores": {
+        "balanceo": "Balancear el tronco para subir la barra.",
+        "codos": "Doblar los codos para acortar la palanca."
+      }
+    },
+    "elevacion-lateral-banda": {
+      "nombre": "Elevación lateral con banda",
+      "cues": {
+        "codo": "Codos casi estirados; sube el codo, no la mano.",
+        "altura": "Sube hasta la altura de los hombros, no más.",
+        "banda": "Pisa la banda con los dos pies y elige una tensión que controles."
+      },
+      "errores": {
+        "soltar": "Dejar que la banda tire de los brazos al bajar.",
+        "trapecio": "Encoger los hombros hacia las orejas al subir."
+      }
+    },
+    "elevaciones-frontales": {
+      "nombre": "Elevaciones frontales con mancuernas",
+      "cues": {
+        "altura": "Sube por delante hasta la altura de los hombros.",
+        "tronco": "Tronco quieto: sin echarte atrás.",
+        "bajada": "Baja despacio, en unos dos segundos."
+      },
+      "errores": {
+        "balanceo": "Balancear el tronco para subir el peso.",
+        "alto": "Subir las manos por encima de la cabeza."
+      }
+    },
+    "elevaciones-laterales": {
+      "nombre": "Elevaciones laterales con mancuernas",
+      "cues": {
+        "codo": "Codos casi estirados; sube el codo, no la mano.",
+        "altura": "Sube hasta la altura de los hombros, no más.",
+        "peso": "Peso ligero y controlado: si te balanceas, baja el peso."
+      },
+      "errores": {
+        "balanceo": "Balancear el tronco para subir las mancuernas.",
+        "trapecio": "Encoger los hombros hacia las orejas al subir."
+      }
+    },
+    "elevaciones-laterales-sentado": {
+      "nombre": "Elevaciones laterales sentado",
+      "cues": {
+        "codo": "Codos casi estirados; sube el codo, no la mano.",
+        "altura": "Sube hasta la altura de los hombros, no más.",
+        "peso": "Peso ligero: sentado no hay impulso que ayude."
+      },
+      "errores": {
+        "alto": "Subir las manos por encima de los hombros.",
+        "trapecio": "Encoger los hombros hacia las orejas al subir."
+      }
+    },
+    "encogimientos-barra": {
+      "nombre": "Encogimientos con barra",
+      "cues": {
+        "vertical": "Sube los hombros en vertical hacia las orejas.",
+        "pausa": "Aguanta un segundo arriba y baja despacio.",
+        "agarre": "Agarre algo más ancho que los muslos, brazos estirados."
+      },
+      "errores": {
+        "circulos": "Girar los hombros en círculo.",
+        "rebote": "Rebotar el peso abajo sin control."
+      }
+    },
+    "encogimientos-mancuerna": {
+      "nombre": "Encogimientos con mancuernas",
+      "cues": {
+        "vertical": "Sube los hombros en vertical hacia las orejas.",
+        "pausa": "Aguanta un segundo arriba y baja despacio.",
+        "brazos": "Brazos estirados: los codos no se doblan."
+      },
+      "errores": {
+        "circulos": "Girar los hombros en círculo.",
+        "cabeza": "Adelantar la cabeza al subir."
+      }
+    },
+    "face-pull-banda": {
+      "nombre": "Face pull con banda",
+      "cues": {
+        "codos": "Tira hacia la cara con los codos altos y abiertos.",
+        "giro": "Al final, manos junto a las orejas y palmas al frente.",
+        "pausa": "Aguanta un segundo atrás y vuelve despacio."
+      },
+      "errores": {
+        "codosBajos": "Tirar con los codos bajos, como en un remo.",
+        "tronco": "Echar el tronco atrás para tirar."
+      }
+    },
+    "flexion-pica": {
+      "nombre": "Flexión en pica",
+      "cues": {
+        "cadera": "Cadera alta: el cuerpo forma una V invertida.",
+        "cabeza": "Baja la cabeza hacia el suelo, por delante de las manos.",
+        "codos": "Codos hacia atrás, no abiertos a los lados."
+      },
+      "errores": {
+        "cadera": "Bajar la cadera y convertirla en una flexión normal.",
+        "golpe": "Dejar caer la cabeza contra el suelo."
+      }
+    },
+    "flexion-pica-pies-elevados": {
+      "nombre": "Flexión en pica con pies elevados",
+      "cues": {
+        "banco": "Pies firmes sobre un banco estable y cadera alta.",
+        "cabeza": "Baja la cabeza hacia el suelo, por delante de las manos.",
+        "progresion": "Domina antes la flexión en pica en el suelo."
+      },
+      "errores": {
+        "cadera": "Dejar caer la cadera durante la bajada.",
+        "golpe": "Dejar caer la cabeza contra el suelo."
+      }
+    },
+    "pajaro-mancuerna": {
+      "nombre": "Pájaro con mancuernas",
+      "cues": {
+        "bisagra": "Inclina el tronco desde la cadera, espalda recta y rodillas sueltas.",
+        "abanico": "Abre los brazos en abanico hasta la altura de la espalda.",
+        "ligera": "Peso ligero: el deltoides posterior es un músculo pequeño."
+      },
+      "errores": {
+        "tronco": "Levantar el tronco para ayudarte a subir.",
+        "trapecio": "Encoger los hombros en lugar de abrir los brazos."
+      }
+    },
+    "press-arnold": {
+      "nombre": "Press Arnold",
+      "cues": {
+        "inicio": "Empieza con las mancuernas delante de la cara y las palmas hacia ti.",
+        "giro": "Abre los codos y gira las palmas al frente mientras subes.",
+        "abdomen": "Abdomen firme: el giro lo hacen los brazos, no el tronco."
+      },
+      "errores": {
+        "arco": "Arquear la espalda al final del empuje.",
+        "rapido": "Hacer el giro de golpe, sin control."
+      }
+    },
+    "press-banda": {
+      "nombre": "Press de hombro con banda",
+      "cues": {
+        "pisada": "Pisa bien la banda con los dos pies antes de empezar.",
+        "antebrazos": "Antebrazos verticales bajo las manos todo el recorrido.",
+        "abdomen": "Abdomen firme: sin arquear la espalda."
+      },
+      "errores": {
+        "arco": "Arquear la espalda para estirar la banda.",
+        "soltar": "Soltar la banda de golpe al bajar."
+      }
+    },
+    "press-mancuerna-sentado": {
+      "nombre": "Press de hombro con mancuernas sentado",
+      "cues": {
+        "antebrazos": "Antebrazos verticales bajo las mancuernas todo el recorrido.",
+        "abdomen": "Siéntate erguido con el abdomen firme, sin echarte atrás.",
+        "arriba": "Arriba, brazos casi estirados y mancuernas sobre los hombros."
+      },
+      "errores": {
+        "arco": "Echar el tronco atrás y arquear la espalda.",
+        "corto": "Bajar solo hasta media altura."
+      }
+    },
+    "press-militar-barra": {
+      "nombre": "Press militar con barra",
+      "cues": {
+        "abdomen": "Aprieta abdomen y glúteos: el tronco no se arquea.",
+        "trayectoria": "La barra sube recta desde la clavícula hasta encima del medio del pie.",
+        "cabeza": "Aparta la cabeza al pasar la barra y métela debajo al bloquear.",
+        "bloqueo": "Arriba, brazos estirados y barra sobre los hombros."
+      },
+      "errores": {
+        "arco": "Arquear la zona lumbar para empujar.",
+        "codos": "Dejar los codos detrás de la barra al empezar.",
+        "lejos": "Terminar con la barra por delante de la cabeza."
+      }
+    },
+    "press-militar-mancuerna": {
+      "nombre": "Press militar con mancuernas",
+      "cues": {
+        "antebrazos": "Antebrazos verticales bajo las mancuernas todo el recorrido.",
+        "abdomen": "Abdomen firme y costillas abajo: sin arquear la espalda.",
+        "arriba": "Arriba, brazos casi estirados y mancuernas sobre los hombros."
+      },
+      "errores": {
+        "arco": "Arquear la espalda para subir más peso.",
+        "corto": "Bajar solo hasta media altura."
+      }
+    },
+    "push-press": {
+      "nombre": "Push press con barra",
+      "cues": {
+        "impulso": "Flexiona un poco las rodillas y empuja fuerte con las piernas.",
+        "tronco": "Tronco vertical en el impulso; los talones no se levantan.",
+        "bloqueo": "Termina con los brazos estirados y la barra sobre el medio del pie."
+      },
+      "errores": {
+        "sentadilla": "Bajar demasiado en el impulso, como en una sentadilla.",
+        "talones": "Despegar los talones antes de empujar.",
+        "adelante": "Inclinar el tronco y mandar la barra hacia delante."
+      }
+    },
+    "remo-menton-banda": {
+      "nombre": "Remo al mentón con banda",
+      "cues": {
+        "agarre": "Pisa la banda y agárrala al ancho de los hombros.",
+        "codos": "Suben los codos, por encima de las manos.",
+        "altura": "Para cuando los codos lleguen a la altura de los hombros."
+      },
+      "errores": {
+        "estrecho": "Juntar las manos en el centro.",
+        "alto": "Subir los codos por encima de los hombros.",
+        "balanceo": "Balancear el tronco para estirar la banda."
+      }
+    },
+    "remo-menton-barra": {
+      "nombre": "Remo al mentón con barra",
+      "cues": {
+        "agarre": "Agarre al ancho de los hombros, no estrecho.",
+        "codos": "Suben los codos, por encima de las manos.",
+        "altura": "Para cuando los codos lleguen a la altura de los hombros."
+      },
+      "errores": {
+        "estrecho": "Agarrar la barra con las manos juntas.",
+        "alto": "Subir los codos por encima de los hombros.",
+        "balanceo": "Balancear el tronco para subir el peso."
+      }
+    },
+    "remo-menton-mancuerna": {
+      "nombre": "Remo al mentón con mancuernas",
+      "cues": {
+        "agarre": "Mancuernas pegadas al cuerpo, al ancho de los hombros.",
+        "codos": "Suben los codos, por encima de las manos.",
+        "altura": "Para cuando los codos lleguen a la altura de los hombros."
+      },
+      "errores": {
+        "estrecho": "Juntar las mancuernas en el centro.",
+        "alto": "Subir los codos por encima de los hombros.",
+        "balanceo": "Balancear el tronco para subir el peso."
+      }
+    },
+    "rotacion-externa-90-banda": {
+      "nombre": "Rotación externa a 90° con banda",
+      "cues": {
+        "codos": "Codos a la altura de los hombros y un poco por delante, quietos.",
+        "giro": "Gira los antebrazos hasta verticales, sin pasar de ahí.",
+        "ligera": "Banda suave y movimiento lento; para si notas un pinchazo."
+      },
+      "errores": {
+        "codos": "Bajar los codos durante el giro.",
+        "arco": "Arquear la espalda para llegar más atrás."
+      }
+    },
+    "rotacion-externa-banda": {
+      "nombre": "Rotación externa con banda",
+      "cues": {
+        "codo": "Codo pegado al costado y doblado a 90° todo el giro.",
+        "lento": "Gira hacia fuera despacio y vuelve aún más despacio.",
+        "ligera": "Banda suave: es un ejercicio de control, no de fuerza."
+      },
+      "errores": {
+        "codo": "Separar el codo del cuerpo para ganar recorrido.",
+        "tronco": "Girar el tronco en lugar del brazo."
+      }
+    },
+    "rotacion-interna-banda": {
+      "nombre": "Rotación interna con banda",
+      "cues": {
+        "codo": "Codo pegado al costado y doblado a 90° todo el giro.",
+        "lento": "Lleva la mano hacia el ombligo despacio y vuelve controlando.",
+        "ligera": "Banda suave: es un ejercicio de control, no de fuerza."
+      },
+      "errores": {
+        "codo": "Separar el codo del cuerpo para ganar recorrido.",
+        "tronco": "Girar el tronco en lugar del brazo."
+      }
+    },
+    "tiron-banda": {
+      "nombre": "Tirón separando la banda",
+      "cues": {
+        "altura": "Brazos estirados a la altura de los hombros todo el recorrido.",
+        "escapulas": "Abre los brazos juntando las escápulas, sin encoger los hombros.",
+        "vuelta": "Vuelve despacio hasta delante, sin soltar la tensión."
+      },
+      "errores": {
+        "trapecio": "Encoger los hombros hacia las orejas.",
+        "arco": "Arquear la espalda para abrir más."
+      }
+    }
+  }
+}

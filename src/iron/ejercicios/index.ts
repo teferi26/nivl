@@ -8,6 +8,7 @@
 import type { Ejercicio } from '../tipos';
 import { curlBicepsMancuerna } from './curl-biceps-mancuerna';
 import { ESPALDA } from './espalda';
+import { EJERCICIOS_HOMBRO } from './hombro';
 import { plancha } from './plancha';
 import { pressBanca } from './press-banca';
 import { remoMancuerna } from './remo-mancuerna';
@@ -31,6 +32,8 @@ export const EJERCICIOS: readonly Ejercicio[] = [
   ...EJERCICIOS_PIERNA,
   // core
   ...EJERCICIOS_CORE,
+  // hombro
+  ...EJERCICIOS_HOMBRO,
 ];
 
 export function ejercicioPorId(id: string): Ejercicio | undefined {

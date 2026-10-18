@@ -21,12 +21,15 @@ import { EJERCICIOS, ejercicioPorId } from '@/iron/ejercicios';
 export default function KitIron() {
   const p = useLocalSearchParams<{ ejercicio?: string; t?: string; solo?: string; ancho?: string; ficha?: string }>();
   const { width } = useWindowDimensions();
-  const [id, setId] = useState(p.ejercicio && ejercicioPorId(p.ejercicio) ? p.ejercicio : EJERCICIOS[0].id);
+  // En la web exportada los parámetros llegan después del primer render: el
+  // ejercicio de la URL manda hasta que se elige otro en la galería.
+  const [elegido, setId] = useState<string | undefined>(undefined);
+  const id = elegido ?? (p.ejercicio && ejercicioPorId(p.ejercicio) ? p.ejercicio : EJERCICIOS[0].id);
   const [cuadro, setCuadro] = useState<number | undefined>(undefined);
   const ejercicio = ejercicioPorId(id) ?? EJERCICIOS[0];
   // Grabación (solo web y desarrollo): el grabador lee el ciclo y fija el instante cuadro a cuadro.
   useEffect(() => {
-    if (!__DEV__ || Platform.OS !== 'web' || p.solo !== '1') return;
+    if (!__DEV__ || Platform.OS !== 'web' || p.solo !== '1' || !p.ejercicio) return;
     const g = globalThis as { __ironCuadro?: (ms: number) => void; __ironCiclo?: number; __ironQuieto?: number };
     g.__ironCuadro = setCuadro;
     g.__ironCiclo = ejercicio.cicloMs;
@@ -34,7 +37,7 @@ export default function KitIron() {
     return () => {
       delete g.__ironCuadro;
     };
-  }, [p.solo, ejercicio]);
+  }, [p.solo, p.ejercicio, ejercicio]);
   if (!__DEV__) return <Redirect href="/" />;
   const ms = cuadro ?? (p.t !== undefined && Number.isFinite(Number(p.t)) ? Number(p.t) : undefined);
 

@@ -168,7 +168,22 @@ export type Carga =
   // core: la comba gira `vueltas` veces por ciclo (la cuerda va detrás del cuerpo).
   | { readonly tipo: 'comba'; readonly vueltas: number }
   // core: la rueda abdominal, en las manos y apoyada en el suelo.
-  | { readonly tipo: 'rueda'; readonly radio: number };
+  | { readonly tipo: 'rueda'; readonly radio: number }
+  // hombro: banda elástica (src/iron/material/banda.tsx).
+  | {
+      readonly tipo: 'banda';
+      readonly en: 'agarre';
+      /** Qué manos agarran la banda (con 'manos', las dos). */
+      readonly lados: readonly Lado[];
+      /**
+       * Dónde está el otro extremo: un punto fijo del mundo (puerta, poste),
+       * 'pies' (pisada bajo el pie de cada lado) o 'manos' (la banda va de
+       * una mano a la otra: tirón separando, dislocaciones).
+       */
+      readonly anclaje: { readonly x: number; readonly y: number } | 'pies' | 'manos';
+      /** Tramo de x (mundo) donde el cuerpo tapa la banda (vista frontal por detrás): ahí no se dibuja. */
+      readonly oculta?: readonly [number, number];
+    };
 
 /**
  * Material de pierna que se mueve con el cuerpo (src/iron/material/):
@@ -241,7 +256,9 @@ export type MusculoId =
   // core
   | 'transverso'
   | 'serrato'
-  | 'cuello';
+  | 'cuello'
+  // hombro
+  | 'manguito_rotador';
 
 /**
  * 'cardio' y 'movilidad' (core, fase 2) son grupos de entrega sin músculo
@@ -268,6 +285,8 @@ export interface Ejercicio {
   /** Ids de otros ejercicios que lo sustituyen, del mejor al peor. */
   readonly sustitutos: readonly string[];
   readonly vista: Vista;
+  /** hombro: en la vista frontal, 'post' = la cámara mira la espalda (el mapa de detrás). Por defecto 'ant'. */
+  readonly cara?: 'ant' | 'post';
   readonly ancla: Ancla;
   /** Al menos dos; ordenadas por `ms`; la última vuelve a la primera. */
   readonly poses: readonly Pose[];

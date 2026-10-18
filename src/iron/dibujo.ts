@@ -17,6 +17,7 @@
 import { construirEsqueleto, dir, LARGO, type Esqueleto, type Punto } from './esqueleto';
 import { angulosDePose, angulosEn } from './interpolar';
 import { dibujarCargaEspalda, dibujarEscenarioEspalda, esCargaEspalda, esEscenarioEspalda } from './material/espalda';
+import { banda } from './material/banda';
 import { FORMAS_FRONTAL, FORMAS_LATERAL, MUSCULOS, type BaseSegmento } from './musculos';
 import { tramoBarraZ } from './material/barra-z';
 // pierna: material de la fase 2 (src/iron/material/).
@@ -528,6 +529,8 @@ function cargaLado(e: Esqueleto, carga: Carga | undefined, lado: 'c' | 'l', vist
   // core: la comba (cuerda detrás del cuerpo, mangos en los puños) y la rueda abdominal.
   if (carga.tipo === 'comba') return lado === 'l' ? cuerdaComba(e, fase, carga.vueltas) + manijaComba(e, 'l') : manijaComba(e, 'c');
   if (carga.tipo === 'rueda') return lado === 'c' ? rueda(e.p.agarre_c, carga.radio) : '';
+  // hombro
+  if (carga.tipo === 'banda') return banda(e, carga, lado, vista);
   if (carga.tipo === 'mancuerna') {
     if (carga.lados.indexOf(lado === 'c' ? 'cerca' : 'lejos') < 0) return '';
     const c = lado === 'c' ? e.p.agarre_c : e.p.agarre_l;
@@ -690,7 +693,7 @@ export function dibujar(ej: Ejercicio, ms: number): string[] {
   'worklet';
   const ciclo = ej.cicloMs;
   const fase = (((ms % ciclo) + ciclo) % ciclo) / ciclo;
-  return capasDe(esqueletoEn(ej, ms), ej.vista, ej.musculos, ej.carga, ej.escenario, 'ant', fase);
+  return capasDe(esqueletoEn(ej, ms), ej.vista, ej.musculos, ej.carga, ej.escenario, ej.cara ?? 'ant', fase);
 }
 
 /**
