@@ -1,0 +1,103 @@
+{
+  "derivar": {
+    "semanaN": "Semana {{n}}",
+    "rangoSemana": "{{ini}} a {{fin}}",
+    "mesDeAnio": "{{mes}} de {{anio}}",
+    "semanaLeida": "Semana {{n}}, de {{dia1}} de {{mes1}} a {{dia2}} de {{mes2}}",
+    "bloques_one": "{{count}} bloco do plano",
+    "bloques_other": "{{count}} blocos do plano",
+    "eventos_one": "{{count}} evento",
+    "eventos_other": "{{count}} eventos",
+    "plazos_one": "{{count}} prazo",
+    "plazos_other": "{{count}} prazos",
+    "plazosCampana_one": "{{count}} prazo de campanha",
+    "plazosCampana_other": "{{count}} prazos de campanha",
+    "vacioFuturo": "{{cuando}}. Ainda nada agendado.",
+    "vacioPasado": "{{cuando}}. Nesse dia não ficou nada registado.",
+    "hoy": "hoje"
+  },
+  "vista": {
+    "modo": {
+      "dia": "Dia",
+      "semana": "Semana",
+      "mes": "Mês"
+    },
+    "vistaPor": {
+      "dia": "Vista por dia",
+      "semana": "Vista por semana",
+      "mes": "Vista por mês"
+    },
+    "anterior": {
+      "dia": "Dia anterior",
+      "semana": "Semana anterior",
+      "mes": "Mês anterior"
+    },
+    "siguiente": {
+      "dia": "Dia seguinte",
+      "semana": "Semana seguinte",
+      "mes": "Mês seguinte"
+    },
+    "hoy": "Hoje",
+    "volverAHoy": "Voltar a hoje",
+    "nuevoEvento": "Novo evento",
+    "cargandoA11y": "A carregar a tua agenda",
+    "nadaProgramado": "Nada agendado",
+    "diaEnBlanco": "Um dia em branco",
+    "vacioCuerpoPro": "Pede ao coach que planeie o dia ou adiciona um evento. As missões agendadas aparecem aqui.",
+    "vacioCuerpo": "Adiciona um evento. As missões agendadas aparecem aqui.",
+    "vacioPasado": "O sistema não tem nada registado para esse dia.",
+    "anadirEvento": "Adicionar evento",
+    "eventos": "Eventos",
+    "conHora": "Com hora",
+    "conHoraA11y": "Com hora: {{n}}",
+    "misiones": "Missões",
+    "misionesA11y": "Missões: {{hechas}} de {{total}} feitas",
+    "todoElDia": "Todo o dia",
+    "eventoA11yTodoElDia": "{{titulo}}, todo o dia. Toca para ver o detalhe.",
+    "eventoA11yHora": "{{titulo}}, às {{hora}}. Toca para ver o detalhe.",
+    "tocaEvento": "Toca num evento para ver o detalhe.",
+    "porHoras": "Por horas",
+    "sinHoraPro": "Nada a uma hora concreta. Pede ao coach que planeie o dia, ou adiciona um evento com hora.",
+    "sinHora": "Nada a uma hora concreta. Adiciona um evento com hora e ele aparece aqui.",
+    "sinHoraPasado": "Esse dia não teve plano por horas.",
+    "misionesYPlazos": "Missões e prazos",
+    "jefeFinalDetalle": "Chefe final de campanha.",
+    "tareaDetalle": "Tarefa de campanha.",
+    "venceHoy": "Vence hoje",
+    "jefe": "Chefe",
+    "plazo": "Prazo",
+    "jefeVenceHoyA11y": "{{titulo}}, chefe final de campanha, vence hoje.",
+    "jefeVenceA11y": "{{titulo}}, chefe final de campanha, vence nesse dia.",
+    "tareaVenceHoyA11y": "{{titulo}}, tarefa de campanha, vence hoje.",
+    "tareaVenceA11y": "{{titulo}}, tarefa de campanha, vence nesse dia.",
+    "misionDetalle": "Missão · {{stat}}",
+    "penalizacion": "Penalização",
+    "seCompletanEnHoy": "As missões completam-se em Hoje."
+  },
+  "calendario": {
+    "diasSemanaA11y": "Dias da semana",
+    "diasMesA11y": "Dias do mês"
+  },
+  "hojas": {
+    "pregunta": "O que é preciso lembrar?",
+    "placeholderNombre": "Chamada, consulta, demo, exame",
+    "nombreA11y": "Nome do evento",
+    "dia": "Dia",
+    "manana": "Amanhã",
+    "diaElegidoA11y": "O dia escolhido, {{dia}}",
+    "fecha": "Data",
+    "placeholderFecha": "AAAA-MM-DD",
+    "hora": "Hora",
+    "sinHoraA11y": "Sem hora, todo o dia",
+    "ayudaHora": "Com hora, o evento aparece no eixo do dia. Sem hora, conta como de todo o dia.",
+    "evento": "Evento",
+    "eliminarEvento": "Eliminar evento",
+    "fechaA11y": "Data: {{dia}}",
+    "horaTodoElDiaA11y": "Hora: todo o dia",
+    "horaA11y": "Hora: {{hora}}",
+    "nota": "Nota"
+  },
+  "hook": {
+    "fechaInvalida": "Data inválida. Usa o formato AAAA-MM-DD, p. ex. 2026-06-15."
+  }
+}

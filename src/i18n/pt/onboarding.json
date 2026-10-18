@@ -1,0 +1,93 @@
+{
+  "volverA11y": "Voltar ao passo anterior",
+  "entrar": "Entrar na arena",
+  "continuar": "Continuar",
+  "portada": {
+    "reglas": "As regras",
+    "lore": {
+      "arena": "Isto não é uma lista de tarefas. É uma arena.",
+      "reglas": "Todos os dias tens missões. Cumpri-las dá XP e sobe o teu nível; falhá-las tira. A sequência multiplica. Os projetos grandes são campanhas com um chefe final. E há um coach que dita o teu dia, te julga à noite e se lembra de tudo o que aprende contigo.",
+      "trampas": "Nada de batota: as provas são feitas com a câmara, no momento. O sistema não opina. Regista."
+    }
+  },
+  "progreso": {
+    "paso": "Passo {{actual}} de {{total}}"
+  },
+  "tablilla": {
+    "rotulo": "Contrato",
+    "seAbre": "Abre a {{fecha}}"
+  },
+  "nombre": {
+    "inscripcion": "O nome",
+    "titulo": "Como te chamas?",
+    "etiqueta": "O teu nome no sistema",
+    "placeholder": "Como queres que te chame",
+    "a11y": "O teu nome",
+    "codigoEtiqueta": "Quem te trouxe? · opcional",
+    "codigoAyuda": "Se alguém te recomendou, escreve o código dessa pessoa. Não muda nada para ti.",
+    "codigoPlaceholder": "Código de criador",
+    "codigoA11y": "Código do criador que te trouxe, opcional",
+    "codigoRechazado": "{{motivo}} Corrige-o ou continua sem ele."
+  },
+  "camino": {
+    "inscripcion": "O caminho",
+    "titulo": "Para que vais usar o NIVL?",
+    "pista": "Muda o que vês primeiro e o que o coach te pede. Tudo continua disponível e podes mudá-lo em Perfil.",
+    "queSeActiva": "O que se ativa"
+  },
+  "objetivo": {
+    "inscripcion": "O objetivo",
+    "titulo": "A que vieste?",
+    "pista": "Uma só coisa, numa frase. Não «melhorar»: o que queres ter conseguido. É isso que vais assinar.",
+    "etiqueta": "O teu objetivo",
+    "salud": "O meu objetivo inclui saúde ou treino",
+    "sinSalud": "Escreve um objetivo geral, sem dados de saúde. Para os incluir, ativa a opção acima.",
+    "ejemplo": "Ler doze livros este ano",
+    "a11y": "O teu objetivo, numa frase",
+    "cifra": "Número · opcional",
+    "cifraEjemplo": "12 livros, 5000 €…",
+    "cifraEjemploSalud": "78 kg, 5000 €…",
+    "cifraA11y": "Número do objetivo, opcional",
+    "fecha": "Data · opcional",
+    "fechaEjemplo": "junho de 2027",
+    "fechaA11y": "Data do objetivo, opcional"
+  },
+  "misiones": {
+    "inscripcion": "As missões",
+    "titulo": "As tuas primeiras missões",
+    "pista": "Propostas para um {{para}}. Tira as que não forem contigo; podes criar as tuas em Hábitos.",
+    "gladiador": "gladiador",
+    "meta": "{{stat}} · {{dificultad}} · {{frecuencia}}",
+    "metaSalud": "{{stat}} · {{dificultad}} · {{frecuencia}} · saúde (opcional)",
+    "cadaDia": "todos os dias",
+    "diasSemana": "{{n}} dias/semana",
+    "crear_one": "Criar {{count}} missão",
+    "crear_other": "Criar {{count}} missões",
+    "sinMisiones": "Começar sem missões"
+  },
+  "firma": {
+    "inscripcion": "A assinatura",
+    "titulo": "Assina-o contigo",
+    "pista": "Mais ninguém o vai ler. É selado hoje e abre quando terminar o prazo. Escolhe quanto tempo te dás.",
+    "horizonteA11y": "Horizonte de {{plazo}}",
+    "horizonteRecomendadoA11y": "Horizonte de {{plazo}}, recomendado",
+    "recomendado": "recomendado",
+    "letraPequena": "Até lá fica guardado em Contrato, selado. As tuas regras e as suas consequências escreves lá quando entrares.",
+    "campo": "Escreve o teu nome para assinar",
+    "mantenPulsado": "Mantém premido para assinar",
+    "escribeNombre": "Escreve o teu nome"
+  },
+  "coach": {
+    "inscripcion": "O coach",
+    "titulo": "Assinado. Agora, quem o dirige.",
+    "pista": "Os teus hábitos, a tua organização e o teu progresso são grátis. Os planos pagos acrescentam o coach de IA e, com Élite, insígnia e pedido de lugar num ludus.",
+    "pistaHoja": "Os teus hábitos, a tua organização e o teu progresso são grátis. Os planos pagos acrescentam o coach de IA e, com Élite, insígnia e pedido de lugar num ludus. Decide agora ou mais tarde: o compromisso vale o mesmo.",
+    "preparandoA11y": "A preparar a tua entrada",
+    "seguirGratis": "Continuar grátis por agora"
+  },
+  "sello": {
+    "titulo": "Selado",
+    "a11y": "Selado. Vence a {{fecha}}. Toca para continuar",
+    "vence": "Vence a {{fecha}}"
+  }
+}

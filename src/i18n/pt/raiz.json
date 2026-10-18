@@ -1,0 +1,140 @@
+{
+  "portal": {
+    "tituloDocumento": "NIVL · Criadores"
+  },
+  "bloque": {
+    "a11y": "{{hora}} {{titulo}}",
+    "a11yAhora": "{{hora}} {{titulo}}, agora",
+    "a11yHecho": "{{hora}} {{titulo}}, feito"
+  },
+  "completar": {
+    "eyebrow": "COMPLETAR MISSÃO",
+    "conFoto": "Completar com foto",
+    "completar": "Completar",
+    "soloFoto": "Com foto",
+    "fotoBonus": "Com foto · +25%",
+    "registrarEn": "Registar em {{modulo}}",
+    "exigeFoto": "Esta missão exige prova: completa-se com uma foto tirada agora.",
+    "extraFoto": "Com foto, entra no teu resumo de domingo.",
+    "fotoSuma": "Com foto soma mais 25% de XP e entra no teu resumo de domingo.",
+    "tambienRegistrar": "Também fica marcada sozinha ao registar {{acto}}."
+  },
+  "errorBoundary": {
+    "titulo": "O SISTEMA FALHOU",
+    "texto": "Algo se partiu por dentro. Os teus dados estão a salvo: vivem no servidor, não nesta página."
+  },
+  "heatmap": {
+    "a11y_one": "Mapa de atividade de {{semanas}} semanas: {{count}} dia com alguma missão completada.",
+    "a11y_other": "Mapa de atividade de {{semanas}} semanas: {{count}} dias com alguma missão completada.",
+    "menos": "Menos",
+    "mas": "Mais"
+  },
+  "holdToSign": {
+    "noSueltes": "Não soltes",
+    "pista": "Mantém premido até o anel fechar para assinar",
+    "pistaNombre": "Escreve o teu nome para assinar",
+    "sellando": "A selar"
+  },
+  "lineaDeTiempo": {
+    "ahoraA11y": "Agora, {{hora}}"
+  },
+  "ordenDelDia": {
+    "titulo": "Ordem do dia",
+    "vacioTitulo": "Sem ordens para hoje",
+    "vacioCuerpo": "Pede o plano ao coach e terás o dia escrito bloco a bloco.",
+    "pedirPlan": "Pedir o plano",
+    "ahora": "AGORA"
+  },
+  "questForm": {
+    "mision": {
+      "nuevo": "Nova missão",
+      "editar": "Editar missão",
+      "tituloNuevo": "O que vais exigir de ti?",
+      "tituloEditar": "Ajusta a missão",
+      "crear": "Criar missão",
+      "eliminar": "Eliminar missão",
+      "campo": "Missão",
+      "campoA11y": "Nome da missão"
+    },
+    "habito": {
+      "nuevo": "Novo hábito",
+      "editar": "Editar hábito",
+      "tituloNuevo": "O que queres que te saia naturalmente?",
+      "tituloEditar": "Ajusta o hábito",
+      "crear": "Criar hábito",
+      "eliminar": "Eliminar hábito",
+      "campo": "Hábito",
+      "campoA11y": "Nome do hábito"
+    },
+    "eliminarMensaje": "\"{{titulo}}\" e todo o seu histórico de conclusões. Esta ação não pode ser desfeita.",
+    "pagoBonus": "{{pb}} PB ao completá-la, trocáveis por descanso.",
+    "pagoXp": "{{xp}} XP base. Com foto, +25%; a sequência multiplica-o.",
+    "placeholder": "Ex. Ginásio · perna",
+    "queEntrena": "O que treina",
+    "dificultad": "Dificuldade",
+    "dificultadA11y": "Dificuldade {{nivel}}",
+    "dias": "Dias",
+    "diaria": "Diária",
+    "diariaA11y": "Todos os dias",
+    "entreSemana": "Dias úteis",
+    "entreSemanaA11y": "De segunda a sexta",
+    "finde": "Fim de semana",
+    "findeA11y": "Sábado e domingo",
+    "eligeDia": "Escolhe pelo menos um dia.",
+    "evidencia": "Prova",
+    "sinFoto": "Sem foto",
+    "sinFotoA11y": "Sem prova obrigatória",
+    "fotoObligatoria": "Foto obrigatória",
+    "fotoObligatoriaA11y": "Exigir foto ao completar a missão",
+    "fotoObligatoriaAyuda": "Não pode ser completada sem foto. Paga mais 25%.",
+    "fotoOpcionalAyuda": "A foto é opcional ao completar.",
+    "quePaga": "O que paga",
+    "xpA11y": "Missão normal: paga XP",
+    "puntosBonus": "Pontos extra",
+    "puntosBonusA11y": "Missão extra: paga pontos extra",
+    "extraAyuda": "Missão extra: não dá XP nem conta para a sequência. Os seus PB trocam-se por descanso no contrato.",
+    "normalAyuda": "Missão do dia: conta para a sequência e é penalizada se ficar por fazer."
+  },
+  "questItem": {
+    "recuperacionCerrada": "Volta à arena: completa uma das missões que já tinhas e poderás recuperar o que perdeste.",
+    "recuperacionAbierta": "A arena está aberta. Recupera o que perdeste.",
+    "penalizacion": "Penalização: {{titulo}}",
+    "penalizacionRecuperada": "Penalização · recuperada",
+    "a11ySiguiente": "Seguinte: {{etiqueta}}",
+    "a11yCompletada": "{{titulo}}, completada",
+    "a11yCerrada": "{{titulo}}, fechada, {{cantidad}} {{unidad}} por recuperar. {{razon}}",
+    "a11yPendiente": "{{titulo}}, pendente, {{cantidad}} {{unidad}}",
+    "siguiente": "SEGUINTE",
+    "extra": "Extra"
+  },
+  "shareCardSemana": {
+    "sinFila": "O sistema não encontra a tua linha no marcador."
+  },
+  "trendLine": {
+    "sinDatos": "Ainda sem dados.",
+    "a11y": "Tendência de {{n}} dados: de {{primero}} a {{ultimo}}{{unidad}}, mínimo {{min}}, máximo {{max}}.",
+    "extremos": "Mín {{min}} · Máx {{max}}{{unidad}}"
+  },
+  "version": {
+    "sinCanal": "sem canal",
+    "embebido": "embedded (sem OTA)",
+    "desactivadasTitulo": "Atualizações desativadas",
+    "desactivadasTexto": "Esta cópia não tem o sistema de atualizações ativo (acontece no Expo Go e em desenvolvimento). Só muda com uma build nova.",
+    "alDiaTitulo": "Já estás atualizado",
+    "alDiaTexto": "Não há nenhuma atualização nova para a versão {{version}} no canal {{canal}}.",
+    "listaTitulo": "Atualização pronta",
+    "listaTexto": "O sistema vai reiniciar para a aplicar. Se a deixares para mais tarde, é aplicada no próximo arranque.",
+    "reiniciar": "Reiniciar",
+    "errorTitulo": "Não foi possível atualizar",
+    "titulo": "Versão {{version}}",
+    "tituloBuild": "Versão {{version}} ({{build}})",
+    "pistaOcultar": "Mantém premido para ocultar os detalhes",
+    "pistaVer": "Mantém premido para ver os detalhes",
+    "ocultarDetalles": "Ocultar detalhes",
+    "verDetalles": "Ver detalhes",
+    "canal": "Canal {{canal}}",
+    "paquete": "Pacote {{paquete}}",
+    "buscarA11y": "Procurar atualização do sistema",
+    "buscar": "PROCURAR ATUALIZAÇÃO"
+  }
+}

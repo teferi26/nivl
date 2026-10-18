@@ -1,0 +1,85 @@
+{
+  "mes": {
+    "ene": "jan",
+    "feb": "fev",
+    "mar": "mar",
+    "abr": "abr",
+    "may": "mai",
+    "jun": "jun",
+    "jul": "jul",
+    "ago": "ago",
+    "sept": "set",
+    "oct": "out",
+    "nov": "nov",
+    "dic": "dez"
+  },
+  "historico": {
+    "mes": "{{mes}} {{anio}}",
+    "titulo": "Vendas por mês"
+  },
+  "vista": {
+    "eyebrow": "Programa de criadores",
+    "titulo": "O teu painel",
+    "cargando": "A carregar o painel de criador",
+    "portalSinPanelTitulo": "Este painel é para criadores do programa",
+    "portalSinPanelCuerpo": "Com esta conta não há painel para mostrar.",
+    "sinPanelTitulo": "Este painel é dos criadores",
+    "sinPanelCuerpo": "A tua conta não está no programa de criadores.",
+    "errorConDatos": "{{error}} O que vês pode não estar atualizado."
+  },
+  "codigo": {
+    "titulo": "O teu código",
+    "a11y": "O teu código: {{codigo}}",
+    "copiado": "Copiado",
+    "copiar": "Copiar código",
+    "nota": "Quem o escreve em «Quem te trouxe?» nos primeiros dias fica contigo para sempre. A ligação só abre a app se já estiver instalada."
+  },
+  "cuentas": {
+    "titulo": "Contas e vendas",
+    "cuentas": "Contas com o teu código",
+    "ventas": "Vendas",
+    "cuentasMes": "Contas este mês",
+    "ventasMes": "Vendas este mês",
+    "queEsVenta": "Uma venda é uma conta tua que subscreve pela primeira vez.",
+    "comision": "Por cada venda anual recebes {{importe}}; no mensal, a tua parte de {{pct}}% do que entra todos os meses até chegar ao mesmo valor."
+  },
+  "retos": {
+    "titulo": "Desafios",
+    "cumplido": "Cumprido",
+    "unidadVentas": "vendas",
+    "a11y": "Desafio {{titulo}}: {{ventas}} de {{meta}} vendas",
+    "premio": "Prémio: {{premio}}"
+  },
+  "tabla": {
+    "titulo": "Tabela do mês",
+    "premio": "PRÉMIO DO PRIMEIRO",
+    "nombreYo": "{{alias}} · tu",
+    "a11y": "Posição {{pos}}: {{alias}}, {{ventas}}",
+    "a11yYo": "Posição {{pos}}: {{alias}}, tu, {{ventas}}"
+  },
+  "rango": {
+    "titulo": "A tua patente",
+    "ventas90": "Vendas em 90 dias",
+    "mesSeguido": "Mês seguido",
+    "mesesSeguidos": "Meses seguidos",
+    "haciaA11y": "Rumo a {{rango}}: {{ventas}} de {{umbral}} vendas",
+    "faltan": "{{rango}}: {{umbral}} vendas em 90 dias. Faltam-te {{faltan}}.",
+    "cumples": "Cumpres o requisito de {{rango}}. A mudança de patente é aplicada pela equipa.",
+    "sinSiguiente": "Não há uma patente acima com regra definida."
+  },
+  "dinero": {
+    "titulo": "O teu dinheiro",
+    "retencion": "Retido",
+    "disponible": "Disponível",
+    "cobrado": "Recebido",
+    "fijo": "Fixo mensal",
+    "descontar": "A descontar",
+    "descontarDetalle": "Reembolsos de comissões já recebidas",
+    "retencionNota": "Cada comissão espera {{dias}} dias para o caso de haver um reembolso; depois passa a disponível e é paga na liquidação seguinte. Se a loja devolver o dinheiro, a comissão é anulada."
+  },
+  "pagos": {
+    "titulo": "Pagamentos recebidos",
+    "vacioTitulo": "Ainda sem pagamentos",
+    "vacioCuerpo": "Cada liquidação aparece aqui quando for feita."
+  }
+}

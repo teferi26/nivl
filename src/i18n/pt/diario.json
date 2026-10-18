@@ -1,0 +1,205 @@
+{
+  "compartido": {
+    "animo": "Ânimo",
+    "energia": "Energia",
+    "sueno": "Sono",
+    "sinRegistrar": "Sem registo",
+    "cambiosSinGuardar": "Alterações por guardar",
+    "eliminarComprobante": "Eliminar prova"
+  },
+  "vista": {
+    "sinPuntuar": "Sem nota",
+    "escalaA11y": "{{nombre}} {{n}} de 5: {{etiqueta}}",
+    "animo": {
+      "n1": "Em baixo",
+      "n2": "Fraco",
+      "n3": "Normal",
+      "n4": "Bem",
+      "n5": "Imparável"
+    },
+    "energia": {
+      "n1": "Vazio",
+      "n2": "Pouca",
+      "n3": "Normal",
+      "n4": "Alta",
+      "n5": "No máximo"
+    },
+    "registrado": "Registado",
+    "lineaSucio": "O que alteraste ainda não está guardado.",
+    "lineaRegistrado": "Já está no teu arquivo. Podes corrigi-lo quando quiseres.",
+    "lineaSinRegistrar": "O fecho do dia. Sete perguntas curtas; as provas guardam-se sozinhas.",
+    "hastaXp": "até +{{xp}} XP",
+    "barraA11y": "{{hechas}} de {{total}} perguntas respondidas",
+    "respondidas": "{{hechas}} de {{total}} respondidas",
+    "eyebrowEscribir": "Mente · {{relativo}}",
+    "titulo": "Diário",
+    "archivo": "Arquivo",
+    "eyebrowArchivo": "Mente · Arquivo",
+    "subtituloArchivo": "O que viveste, dia a dia.",
+    "escribirDia": "Escrever o dia",
+    "diaAnterior": "Dia anterior",
+    "diaSiguiente": "Dia seguinte",
+    "cargandoDia": "A carregar o dia",
+    "sentir": {
+      "titulo": "Como me senti",
+      "pista": "Duas notas e, sobretudo, um nome."
+    },
+    "sueno": {
+      "titulo": "Como dormi",
+      "pista": "O sono é a primeira coisa que o coach vê."
+    },
+    "victorias": {
+      "titulo": "O que conquistei",
+      "pista": "Vitórias do dia. Uma por linha, por mais pequena que seja.",
+      "sistema": "O que o sistema registou"
+    },
+    "vivido": {
+      "titulo": "O vivido",
+      "etiqueta": "Nas tuas palavras",
+      "placeholder": "O que aconteceu, tal como o contarias."
+    },
+    "leccion": {
+      "titulo": "O que aprendi",
+      "pista": "Uma lição. O que farias de outra forma.",
+      "etiqueta": "A lição",
+      "placeholder": "Da próxima vez…"
+    },
+    "gratitud": {
+      "titulo": "O que agradeço",
+      "pista": "Uma linha. Opcional, como tudo.",
+      "etiqueta": "A quem ou a quê",
+      "placeholder": "Uma linha"
+    },
+    "manana": {
+      "titulo": "Amanhã, primeiro",
+      "pista": "Uma só coisa, com hora se puderes. O plano completo é o coach que o escreve.",
+      "etiqueta": "Primeiro",
+      "placeholder": "Às 8:00, …"
+    },
+    "comprobantes": {
+      "titulo": "Provas",
+      "pista": "Fotos tiradas no momento: a prova de que cumpres as tuas próprias regras. Ficam guardadas ao tirá-las.",
+      "fotoA11y": "Prova do diário; mantém premido para eliminar",
+      "anadirA11y": "Adicionar foto de prova com a câmara",
+      "notaWeb": "Toca no x de uma foto para a eliminar.",
+      "notaMovil": "Mantém premida uma foto para a eliminar."
+    },
+    "noGuardado": "Não foi guardado",
+    "hayCambios": "Há alterações por guardar.",
+    "registrar": "Registar o dia",
+    "registrarXp": "Registar o dia · até +{{xp}} XP"
+  },
+  "archivo": {
+    "cargando": "A carregar o teu arquivo",
+    "vacioTitulo": "O teu arquivo começa hoje",
+    "vacioCuerpo": "Cada dia que fechares fica aqui: como estavas, o que conquistaste, o que aprendeste. Daqui a um ano vais querer lê-lo.",
+    "escribirHoy": "Escrever hoje",
+    "tendencia": "Tendência",
+    "ultimas": "Últimas {{n}}",
+    "diasEscritos": "Dias escritos",
+    "verMas": "Ver mais dias"
+  },
+  "cronica": {
+    "mision": "Missão completada: {{mision}} (+{{xp}} XP)",
+    "subida": "SUBIDA DE NÍVEL → {{nivel}}",
+    "subidaVictoria": "Subi ao nível {{nivel}}",
+    "penalizacion": "Penalização aplicada: −{{xp}} XP",
+    "objetivo": "Objetivo de campanha: {{tarea}}",
+    "despejada": "Campanha concluída: {{campana}}",
+    "gimnasio": "Sessão de ginásio registada (+{{xp}} XP)",
+    "gimnasioVictoria": "Sessão de ginásio",
+    "record": "RECORDE pessoal: {{ejercicio}} · {{peso}} kg",
+    "recordVictoria": "Recorde em {{ejercicio}}: {{peso}} kg",
+    "piedraUsada": "Uma Pedra de Proteção foi gasta por ti",
+    "piedraForjada": "Pedra de Proteção forjada",
+    "vacio": "Sem atividade nesse dia: o sistema não registou nada.",
+    "reclamarA11y": "{{linea}}. Toca para a juntar às tuas vitórias",
+    "nota": "Toca numa linha para a reclamar como vitória."
+  },
+  "emociones": {
+    "empuja": "O que impulsiona",
+    "pesa": "O que pesa",
+    "marcadaA11y": "{{emocion}}, marcada",
+    "sinMarcarA11y": "{{emocion}}, por marcar",
+    "tope": "Limite de {{max}}. Tira uma para marcar outra.",
+    "pista": "Dá-lhe um nome: um 3 não diz nada, «frustrado» diz."
+  },
+  "entrada": {
+    "animoA11y": "Ânimo {{n}} de 5",
+    "energiaA11y": "Energia {{n}} de 5",
+    "suenoA11y": "{{horas}} horas de sono",
+    "leerMenos": "Ler menos",
+    "leerMas": "Ler mais",
+    "ocultarFotos": "Ocultar fotos",
+    "verFotos_one": "Ver a foto",
+    "verFotos_other": "Ver as {{count}} fotos",
+    "abrirA11y": "Abrir e editar o diário de {{dia}}",
+    "aprendi": "Aprendi",
+    "agradezco": "Agradeço:",
+    "plan": "Plano:",
+    "manana": "Amanhã:",
+    "soloNotas": "Nesse dia só deixaste as notas.",
+    "enBlanco": "Entrada em branco. Abre-a para a completar.",
+    "comprobanteA11y": "Prova desse dia",
+    "masA11y": "{{rotulo}} de {{dia}}"
+  },
+  "flashbacks": {
+    "titulo": "Nesta data",
+    "a11y": "{{titulo}}, {{dia}}. Toca para abrir esse dia"
+  },
+  "tendencia": {
+    "animoSinDatosA11y": "Ânimo dos últimos 7 dias: faltam dados, são precisos {{min}}",
+    "animoA11y": "Ânimo médio dos últimos 7 dias: {{media}} de 5",
+    "suenoSinDatosA11y": "Sono médio dos últimos 7 dias: faltam dados",
+    "suenoA11y": "Sono médio dos últimos 7 dias: {{media}} horas",
+    "racha": "Sequência",
+    "rachaA11y_one": "Sequência de {{count}} dia escrito",
+    "rachaA11y_other": "Sequência de {{count}} dias escritos",
+    "dias": "Dias",
+    "diasA11y_one": "{{count}} dia escrito no arquivo",
+    "diasA11y_other": "{{count}} dias escritos no arquivo",
+    "sinMedia": "Uma média precisa de {{min}} dias com dados na semana. Com menos seria uma anedota.",
+    "igual": "O ânimo, igual aos 7 dias anteriores.",
+    "sube": "O ânimo sobe {{delta}} face aos 7 dias anteriores.",
+    "baja": "O ânimo desce {{delta}} face aos 7 dias anteriores.",
+    "repite": "O que mais se repete · 14 dias",
+    "emocionA11y_one": "{{emocion}}, {{count}} dia",
+    "emocionA11y_other": "{{emocion}}, {{count}} dias"
+  },
+  "pregunta": {
+    "a11y": "{{numeral}}. {{titulo}}",
+    "a11yRespondida": "{{numeral}}. {{titulo}}, respondida"
+  },
+  "sueno": {
+    "a11y": "Horas dormidas ontem à noite",
+    "menosA11y": "Menos meia hora de sono",
+    "masA11y": "Mais meia hora de sono",
+    "pistaVacia": "Sem registo. Toca em + ou −.",
+    "anoche": "Ontem à noite.",
+    "quitarA11y": "Remover as horas de sono"
+  },
+  "victorias": {
+    "primera": "Algo que fizeste bem hoje",
+    "otra": "Outra vitória",
+    "a11y": "Vitória {{n}}",
+    "quitarA11y": "Remover a vitória {{n}}",
+    "anadir": "Adicionar vitória",
+    "tope": "Cinco à mão já é um grande dia. O que o sistema registou ainda pode ser reclamado."
+  },
+  "hook": {
+    "cambiarDiaMensaje": "Se mudares de dia, perdes o que escreveste.",
+    "descartar": "Descartar",
+    "seguirEscribiendo": "Continuar a escrever",
+    "camaraMensaje": "O sistema precisa da câmara para as provas do diário.",
+    "borrarFoto": "Apagar esta foto do diário?",
+    "vacioConFotos": "As tuas fotos já estão guardadas. Para registar o dia, responde a pelo menos uma pergunta.",
+    "vacio": "Ainda não há nada para registar. Responde a pelo menos uma pergunta; as outras podem esperar.",
+    "desglosePer": "a PER pelo diário",
+    "registradaTitulo": "Entrada registada",
+    "yaPagada": "A missão do diário já estava marcada e paga.",
+    "registradaConLogro": "{{desglose}}\nConquista: {{logros}}",
+    "atrasada": "Dia completado no teu arquivo. Sem XP: só o dia vivido no momento é pago.",
+    "cambiosGuardados": "Alterações guardadas.",
+    "errorGuardado": "{{error}} As tuas respostas continuam aqui."
+  }
+}

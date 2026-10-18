@@ -1,0 +1,103 @@
+{
+  "meta": {
+    "progreso": "Progresso de {{titulo}}",
+    "detalleA11y": "Começou em {{inicio}}, vai em {{actual}}, objetivo {{objetivo}} {{unidad}}",
+    "eliminarA11y": "Eliminar meta {{titulo}}",
+    "reclamar": "Reclamar",
+    "actualizar": "Atualizar",
+    "eliminar": "Eliminar meta"
+  },
+  "vista": {
+    "subtituloSinSalud": "As tuas metas gerais, numa só vista.",
+    "subtituloPrimerPesaje": "Regista a tua primeira pesagem: é a tua linha de partida.",
+    "subtituloPeso": "Última pesagem: {{peso}} kg.",
+    "subtituloDelta": "Última pesagem: {{peso}} kg ({{delta}} kg em {{n}} pesagens).",
+    "eyebrow": "Progresso",
+    "titulo": "Avanços",
+    "nuevaMeta": "Nova meta",
+    "cargando": "A carregar os teus avanços"
+  },
+  "franja": {
+    "peso": "Peso",
+    "pesoSinPesajes": "Peso: ainda sem pesagens",
+    "pesoA11y": "Peso: {{peso}} quilos",
+    "metas": "Metas",
+    "logradas": "Alcançadas"
+  },
+  "pesaje": {
+    "campo": "Peso de hoje (kg)",
+    "campoA11y": "Peso de hoje em quilogramas",
+    "corregir": "Corrigir",
+    "pesar": "Pesar · até +{{xp}} XP",
+    "curva": "Peso · {{n}} pesagens",
+    "invalido": "Introduz o teu peso em kg, p. ex. 78,4",
+    "corregido": "O sistema corrige a pesagem de hoje. Já estava paga.",
+    "deModulo": "a VIT pela pesagem",
+    "topeDiario": "Anotado. Hoje já atingiste o limite diário de XP.",
+    "misionPagada": "Anotado. A missão de hoje já estava marcada e paga.",
+    "toast": "Pesagem · +{{xp}} XP",
+    "toastAnuncio": "Pesagem registada. {{mensaje}}",
+    "registrado": "Pesagem registada"
+  },
+  "metas": {
+    "titulo": "Metas",
+    "activas": "{{n}} ativas",
+    "vacioTitulo": "Sem metas definidas",
+    "vacioCuerpo": "Uma meta é um número com data: ler doze livros, terminar quatro cursos. Põe um número no teu objetivo.",
+    "fijarPrimera": "Definir a primeira"
+  },
+  "conseguidas": {
+    "titulo": "Alcançadas",
+    "a11yFecha": "{{titulo}}, alcançada a {{fecha}}. {{valor}} {{unidad}}",
+    "a11y": "{{titulo}}, alcançada. {{valor}} {{unidad}}",
+    "fecha": "Alcançada a {{fecha}}"
+  },
+  "records": {
+    "titulo": "Recordes pessoais",
+    "vacioTitulo": "Ainda sem recordes",
+    "vacioCuerpo": "Aparecem aqui quando registas sessões de ginásio com peso.",
+    "a11y": "{{ejercicio}}: {{peso}} quilos. Ver progressão",
+    "abierta": "Progressão aberta",
+    "progresion": "Progressão · {{ejercicio}}"
+  },
+  "hojaMeta": {
+    "titulo": "Que número vais alcançar?",
+    "fijar": "Definir a meta",
+    "campoTitulo": "Título",
+    "tituloEjemploSalud": "Ex. Supino 100 kg",
+    "tituloEjemplo": "Ex. Ler doze livros",
+    "campoTituloA11y": "Título da meta",
+    "seMide": "Mede-se com",
+    "seMideA11y": "Como se mede a meta",
+    "metrica": {
+      "peso_corporal": "Peso corporal",
+      "ejercicio": "Exercício (PR)",
+      "libre": "Livre"
+    },
+    "medirConA11y": "Medir com {{metrica}}",
+    "ejercicio": "Exercício (nome exato do ginásio)",
+    "ejercicioEjemplo": "Ex. Supino",
+    "ejercicioA11y": "Nome do exercício",
+    "inicial": "Valor inicial",
+    "objetivo": "Objetivo",
+    "objetivoA11y": "Valor objetivo",
+    "premio": "Ao alcançá-la, até +{{xp}} XP (com o limite diário de metas).",
+    "incompleta": "Meta incompleta: título, valor inicial e valor objetivo (diferentes).",
+    "faltaEjercicio": "Falta o exercício: escreve o nome EXATO do exercício do ginásio."
+  },
+  "hojaValor": {
+    "eyebrow": "Progresso manual",
+    "campo": "Valor atual ({{unidad}})",
+    "campoA11y": "Valor atual da meta",
+    "invalido": "Valor inválido: introduz um número."
+  },
+  "reclamar": {
+    "titulo": "META ALCANÇADA",
+    "mensaje": "«{{titulo}}»: até +{{xp}} XP se hoje não atingiste o limite de metas.",
+    "aunNo": "Ainda não",
+    "toast": "Meta alcançada · +{{xp}} XP",
+    "toastAnuncio": "Meta alcançada. «{{titulo}}»: +{{xp}} XP para AGI.",
+    "conseguida": "Meta alcançada",
+    "sinPremio": "«{{titulo}}» fica como alcançada. Este prémio não soma hoje: já estava pago ou atingiste o limite diário."
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "categoria": {
+    "todo": "Tudo",
+    "aprendizaje": "Aprendizagens",
+    "venta": "Vendas",
+    "metrica": "Métricas",
+    "log": "Registo",
+    "objetivo": "Objetivos",
+    "proyecto": "Projetos",
+    "regla": "Regras",
+    "perfil": "Perfil"
+  },
+  "hecho": {
+    "a11y": "{{categoria}}, {{fecha}}: {{contenido}}",
+    "pista": "Toca para o ler na íntegra.",
+    "leerEntero": "Ler na íntegra",
+    "borrarAccion": "Apagar esta memória",
+    "borrarA11y": "Apagar a memória: {{contenido}}",
+    "borrando": "A apagar",
+    "borrar": "Apagar"
+  },
+  "vista": {
+    "eyebrow": "O sistema lembra-se",
+    "titulo": "Memória",
+    "cargando": "A ler a memória",
+    "noResponde": "A memória não responde.",
+    "vacioSubtitulo": "Ainda não há nada anotado. Escreve-se sozinha enquanto falas com o coach.",
+    "subtitulo_one": "{{count}} facto anotado · dossiê v{{version}}",
+    "subtitulo_other": "{{count}} factos anotados · dossiê v{{version}}",
+    "hechos": "Factos",
+    "dossier": "Dossiê",
+    "dossierA11y": "Dossiê: versão {{version}}",
+    "esteMes": "Este mês",
+    "esteMesSinDato": "Este mês: sem dados",
+    "esteMesA11y": "Este mês: {{gasto}} dólares",
+    "quienEres": "Quem és para o sistema",
+    "contraer": "Recolher",
+    "leerTodo": "Ler tudo",
+    "sinDossierTitulo": "Ainda sem memória estável",
+    "sinDossierCuerpo": "Escreve-se sozinha quando algo estrutural muda: um objetivo novo, um projeto que morre, uma regra que combinas.",
+    "filtro": "{{categoria}} · {{n}}",
+    "filtroA11y": "Filtrar por {{categoria}}, {{n}}",
+    "vacioTitulo": "Ainda nada anotado",
+    "vacioCategoria": "Nada nesta categoria",
+    "vacioCuerpo": "Cada número, venda, aprendizagem ou regra que contares ao coach fica aqui com a sua data.",
+    "otraCategoria": "Experimenta outra categoria."
+  },
+  "borrar": {
+    "titulo": "Apagar memória",
+    "mensaje": "«{{contenido}}»\n\nÉ apagada das memórias do coach. Se também aparecer no dossiê ou na conversa, continua lá até serem reescritos."
+  },
+  "avisoTitulo": "Memória"
+}

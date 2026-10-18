@@ -1,0 +1,153 @@
+{
+  "vista": {
+    "tabla": {
+      "mision": "Missão (trivial a épica)",
+      "xp": "{{xp}} XP",
+      "evidencia": "Prova (foto)",
+      "evidenciaValor": "+{{pct}}%",
+      "racha": "Sequência",
+      "rachaValor": "+{{pct}}% por semana · teto ×{{techo}}",
+      "gimnasio": "Sessão de ginásio",
+      "record": "Recorde pessoal",
+      "diario": "Página do diário",
+      "pesarte": "Pesar-te",
+      "objetivo": "Objetivo cumprido",
+      "tarea": "Tarefa de campanha",
+      "tareaValor": "XP da sua dificuldade · chefe ×{{mult}}",
+      "campana": "Campanha concluída",
+      "campanaValor": "De {{min}} a {{max}} XP conforme a patente",
+      "extra": "Missão extra",
+      "pb": "{{pb}} PB",
+      "sinHacer": "Missão do dia por fazer",
+      "sinHacerValor": "−{{pct}}% do seu XP · limite −{{tope}}/dia",
+      "romper": "Quebrar uma regra assinada",
+      "romperValor": "−{{xp}} XP + consequência",
+      "piedra": "Pedra de Proteção",
+      "piedraValor": "Absorve todo o dano de um dia",
+      "filaA11y": "{{concepto}}: {{valor}}"
+    },
+    "norma": {
+      "a11y": "Regra {{n}}: {{texto}}. Se a quebrares: {{consecuencia}}. Custa {{xp}} XP.",
+      "a11yEditada": "Regra {{n}}: {{texto}}. Se a quebrares: {{consecuencia}}. Custa {{xp}} XP. Editada hoje.",
+      "pista": "Toca para confessar que a quebraste. Mantém premido para a eliminar.",
+      "accionConfesar": "Confessar que a quebraste",
+      "accionEditar": "Editar a regra",
+      "accionEliminar": "Eliminar a regra",
+      "siLaRompes": "Se a quebrares: {{consecuencia}}",
+      "editadaHoy": "Editada hoje. As quebras anteriores ficam na versão arquivada.",
+      "editarA11y": "Editar a regra {{n}}"
+    },
+    "carta": {
+      "sinCarta": "Sem carta",
+      "sinCartaTexto": "Escreve a quem vais ser. O sistema sela-a e guarda-a até ao dia marcado.",
+      "escribir": "Escrever a carta",
+      "abierta": "Aberta",
+      "abiertaMeta": "Selada a {{sellada}}. Aberta a {{abierta}}.",
+      "haLlegado": "Chegou o dia",
+      "espera": "A carta que selaste a {{sellada}} espera.",
+      "abrir": "Abrir a carta",
+      "firmado": "Assinado por ti",
+      "firmadoMeta": "Assinado a {{firmado}}. Vence a {{vence}}.",
+      "sellada": "Selada",
+      "selladaTexto": "Selada a {{sellada}}. Abre a {{apertura}}. Até lá, ao trabalho."
+    },
+    "subtituloVacio": "Sem regras assinadas. O sistema só faz cumprir o que tu assinas.",
+    "subtitulo_one": "{{count}} regra assinada · {{bonus}} PB na bolsa",
+    "subtitulo_other": "{{count}} regras assinadas · {{bonus}} PB na bolsa",
+    "eyebrow": "O que tu assinas",
+    "titulo": "Contrato",
+    "nuevaNorma": "Assinar uma regra nova",
+    "cargando": "A ler o contrato",
+    "rotulo": "CONTRATO",
+    "vacioTitulo": "Nenhuma regra assinada",
+    "vacioTexto": "Aqui ficam as regras que tu te impões e a sua consequência. O sistema só as faz cumprir.",
+    "primeraNorma": "Assinar a primeira regra",
+    "cargarCuaderno": "Carregar as minhas regras do caderno",
+    "notaNormas": "Toca numa regra para confessar que a quebraste. Mantém premido para a eliminar. O lápis edita-a a partir de hoje. Todas as noites, as cumpridas ficam marcadas em Hábitos.",
+    "bonusTitulo": "Pontos extra",
+    "bonusMeta": "{{gastado}}/{{tope}} trocados",
+    "enBolsa": "Na bolsa",
+    "canjeables": "Trocáveis esta semana",
+    "canjear": "Trocar {{coste}} PB · 1 h de descanso",
+    "notaBonus": "As missões extra pagam em PB, não em XP. {{coste}} PB valem 1 h de descanso sem culpa, com limite de {{tope}} PB a cada 7 dias.",
+    "cartaTitulo": "Carta ao teu eu do futuro",
+    "gana": "Assim se ganha",
+    "pierde": "Assim se perde",
+    "notaTabla": "Toda a app pontua com esta tabela: o mesmo esforço, a mesma recompensa. Os PB não dão XP: trocam-se por descanso."
+  },
+  "hojas": {
+    "anios_one": "{{count}} ano",
+    "anios_other": "{{count}} anos",
+    "norma": {
+      "eyebrowEditar": "Editar regra",
+      "eyebrowNueva": "Nova regra",
+      "tituloEditar": "Ajusta o que assinaste",
+      "tituloNueva": "O que te proíbes?",
+      "firmar": "Assinar a regra",
+      "etiqueta": "A regra",
+      "placeholder": "Ex. Nada de redes sociais antes do meio-dia",
+      "a11y": "Texto da regra",
+      "consecuenciaEtiqueta": "Consequência se a quebrares",
+      "consecuenciaPlaceholder": "Ex. Correr 5 km",
+      "consecuenciaA11y": "Consequência de quebrar a regra",
+      "ayudaEditar": "Vale a partir de hoje. A versão anterior é arquivada com as suas quebras. Quebrá-la custa −{{xp}} XP.",
+      "ayudaNueva": "Quebrá-la custa −{{xp}} XP. Cumprir a consequência no mesmo dia recupera-o."
+    },
+    "carta": {
+      "eyebrow": "Para o teu eu do futuro",
+      "titulo": "Escreve a quem vais ser",
+      "sellar": "Selar a carta",
+      "etiqueta": "A carta",
+      "placeholder": "Não sei como estarás, nem em que situação…",
+      "a11y": "Corpo da carta",
+      "dentroDe": "Abre daqui a",
+      "dentroDeA11y": "Abrir daqui a {{plazo}}",
+      "seAbrira": "Abre a {{fecha}}. Ninguém a pode ler antes, nem tu."
+    }
+  },
+  "hook": {
+    "plantilla": {
+      "p1": {
+        "texto": "Escrever o diário todos os dias: o que vivi e o plano do dia",
+        "consecuencia": "Correr 8 km"
+      },
+      "p2": {
+        "texto": "Nada de álcool",
+        "consecuencia": "1 dia a comer só comida limpa"
+      },
+      "p3": {
+        "texto": "Nada de cafeína",
+        "consecuencia": "1 dia sem entretenimento digital"
+      },
+      "p4": {
+        "texto": "Comer limpo todos os dias",
+        "consecuencia": "Correr 4,5 km"
+      },
+      "p5": {
+        "texto": "Se sair à noite sem o ter merecido",
+        "consecuencia": "1 semana de dieta rigorosa"
+      },
+      "p6": {
+        "texto": "Nenhum plano se sobrepõe aos meus objetivos",
+        "consecuencia": "Reorganizar a semana e compensar o tempo"
+      }
+    },
+    "confesionTitulo": "Confissão ao sistema",
+    "confesionMensaje": "Quebraste a regra \"{{norma}}\"?\n\nPenalização: −{{xp}} XP e a consequência que tu próprio assinaste: {{consecuencia}}. Cumpre-a hoje e recuperas o XP.",
+    "laHeRoto": "Quebrei-a",
+    "registrado": "REGISTADO",
+    "registradoMensaje": "O sistema não julga: regista. A missão \"Consequência: {{consecuencia}}\" espera-te hoje em Sistema.",
+    "eliminarTitulo": "Eliminar regra",
+    "eliminarMensaje": "\"{{norma}}\" e o seu histórico de incumprimentos.",
+    "insuficientesTitulo": "Pontos insuficientes",
+    "insuficientes": "Precisas de {{coste}} PB para trocar por 1 h de descanso.",
+    "topeTitulo": "Limite semanal",
+    "tope": "Máximo de {{tope}} PB trocados a cada 7 dias. Já levas {{llevas}}.",
+    "canjearTitulo": "Trocar por descanso",
+    "canjearMensaje": "{{coste}} PB → 1 hora de descanso merecido. Confirmas?",
+    "canjear": "Trocar",
+    "motivoCanje": "1 h de descanso",
+    "descansoTitulo": "DESCANSO MERECIDO",
+    "descansoMensaje": "Aproveita sem culpa: pagaste-o com esforço."
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "tarjeta": {
+    "nivel": "NÍVEL",
+    "diasRacha": "DIAS DE SEQUÊNCIA",
+    "mideteConmigo": "MEDE-TE COMIGO",
+    "antes": "ANTES",
+    "despues": "DEPOIS"
+  },
+  "hoja": {
+    "titulo": "PARTILHAR",
+    "previa": "Pré-visualização do cartão",
+    "formato": {
+      "stories": "HISTÓRIA 9:16",
+      "post": "PUBLICAÇÃO 4:5"
+    },
+    "mostrarAlias": "Mostrar o meu pseudónimo",
+    "incluirFotos": "Incluir as minhas fotos de progresso",
+    "incluirFoto": "Incluir a foto",
+    "incluirTextoCoach": "Incluir o texto do coach",
+    "mostrarPeso": "Mostrar o peso",
+    "incluirInvitacion": "Adicionar a minha ligação de convite",
+    "aliasNoDisponible": "O teu pseudónimo não está disponível agora.",
+    "aliasError": "Não foi possível obter o teu pseudónimo. Tenta outra vez.",
+    "abriendo": "A ABRIR…",
+    "compartir": "PARTILHAR"
+  }
+}
