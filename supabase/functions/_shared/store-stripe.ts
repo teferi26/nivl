@@ -63,6 +63,7 @@ export function stripeMayTakeOver(row: SubscriptionRow | null, now: number, subs
     return !entitled(row, now) || !row.stripe_subscription_id || row.stripe_subscription_id === subscriptionId;
   }
   if (row.provider === 'manual' && row.plan === 'cortesia') return true; // the 7-day trial
+  if (row.provider === 'prueba' || row.plan === 'prueba_auto') return true; // 0069: the automatic trial never blocks a purchase
   return !entitled(row, now); // a live store purchase or manual grant is never overwritten
 }
 
