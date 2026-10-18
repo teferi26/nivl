@@ -11,7 +11,7 @@ import type { Ejercicio, MusculoId } from '@/iron/tipos';
 import { ACENTO_IRON, BRILLO_IRON, ESTILO_CAPA } from './estilo';
 import { Maniqui, msQuieto } from './Maniqui';
 import { MapaMuscular } from './MapaMuscular';
-import { textoIron } from './texto';
+import { nombreIron, textoIron } from './texto';
 
 function Muestra({ tipo }: { tipo: 'principal' | 'secundario' | 'resto' }) {
   const estilo =
@@ -34,7 +34,7 @@ function Grupo({ titulo, lista, tipo }: { titulo: string; lista: readonly Muscul
         </Text>
       </View>
       <Text style={tipo === 'principal' ? styles.nombresFuertes : styles.nombres} maxFontSizeMultiplier={1.35}>
-        {lista.map((m) => t(`iron:musculo.${m}`)).join(' · ')}
+        {lista.map((m) => nombreIron('musculo', m)).join(' · ')}
       </Text>
     </View>
   );
@@ -52,7 +52,7 @@ export function FichaIron({ ejercicio: ej, ancho }: { ejercicio: Ejercicio; anch
         {nombre.toUpperCase()}
       </Text>
       <Text style={styles.meta} maxFontSizeMultiplier={1.35}>
-        {[t(`iron:grupo.${ej.grupo}`), t(`iron:nivel.${ej.nivel}`), ...ej.material.map((m) => t(`iron:material.${m}`))].join(' · ')}
+        {[nombreIron('grupo', ej.grupo), t(`iron:nivel.${ej.nivel}`), ...ej.material.map((m) => nombreIron('material', m))].join(' · ')}
       </Text>
 
       <View style={styles.escena}>

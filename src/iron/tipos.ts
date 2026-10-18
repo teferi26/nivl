@@ -89,6 +89,11 @@ export interface Pose {
    * solo la usan los ejercicios de muñeca (curl de muñeca).
    */
   readonly muneca?: number;
+  /**
+   * Dónde está el punto del ancla en esta pose, si se mueve (saltos, burpees):
+   * se interpola como los ángulos. Si no se da, el del ancla.
+   */
+  readonly punto?: { readonly x: number; readonly y: number };
 }
 
 /**
@@ -120,7 +125,11 @@ export type Material =
   | 'barra_fija'
   // pierna
   | 'rack'
-  | 'cajon';
+  | 'cajon'
+  // core
+  | 'esterilla'
+  | 'comba'
+  | 'rueda';
 
 /**
  * Cómo se ve la barra. De perfil puro la barra es un punto y el disco tapa
@@ -155,7 +164,11 @@ export type Carga =
   // espalda: polea (cable y agarre) y palanca de máquina, en src/iron/material/
   | CargaEspalda
   // pierna (src/iron/material/)
-  | CargaPierna;
+  | CargaPierna
+  // core: la comba gira `vueltas` veces por ciclo (la cuerda va detrás del cuerpo).
+  | { readonly tipo: 'comba'; readonly vueltas: number }
+  // core: la rueda abdominal, en las manos y apoyada en el suelo.
+  | { readonly tipo: 'rueda'; readonly radio: number };
 
 /**
  * Material de pierna que se mueve con el cuerpo (src/iron/material/):
@@ -185,8 +198,9 @@ export type CargaPierna =
 
 /** Lo que hay en el mundo y no se mueve. */
 export interface Escenario {
-  /** pierna: 'cajon', 'rack' y las bancadas de 'prensa', 'extension', 'curl_femoral' y 'abductora' (src/iron/material/). */
-  readonly tipo: 'banco' | 'cajon' | 'rack' | 'prensa' | 'extension' | 'curl_femoral' | 'abductora';
+  /** 'esterilla' (core): una lámina en el suelo de grosor `alto`.
+   * pierna: 'cajon', 'rack' y las bancadas de 'prensa', 'extension', 'curl_femoral' y 'abductora' (src/iron/material/). */
+  readonly tipo: 'banco' | 'cajon' | 'rack' | 'prensa' | 'extension' | 'curl_femoral' | 'abductora' | 'esterilla';
   /** Extremo izquierdo, largo y altura del tablero (el suelo es y = 0). */
   readonly x: number;
   readonly ancho: number;
@@ -223,9 +237,17 @@ export type MusculoId =
   // pierna
   | 'soleo'
   | 'gluteo_medio'
-  | 'psoas';
+  | 'psoas'
+  // core
+  | 'transverso'
+  | 'serrato'
+  | 'cuello';
 
-export type GrupoMuscular = 'pecho' | 'espalda' | 'hombro' | 'brazo' | 'pierna' | 'core';
+/**
+ * 'cardio' y 'movilidad' (core, fase 2) son grupos de entrega sin músculo
+ * propio: sus ejercicios no siguen la regla «grupo = el del primer principal».
+ */
+export type GrupoMuscular = 'pecho' | 'espalda' | 'hombro' | 'brazo' | 'pierna' | 'core' | 'cardio' | 'movilidad';
 
 export type Nivel = 'principiante' | 'intermedio' | 'avanzado';
 

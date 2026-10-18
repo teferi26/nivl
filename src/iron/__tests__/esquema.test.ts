@@ -2,13 +2,13 @@
 // las reglas que el tipo `Ejercicio` no puede expresar solo.
 import fs from 'fs';
 import path from 'path';
-import { RECURSOS_ES } from '@/i18n/recursos';
 import { dibujar, ranuras } from '../dibujo';
 import { EJERCICIOS, ejercicioPorId } from '../ejercicios';
 import { FORMAS_FRONTAL, FORMAS_LATERAL, GRUPO_DE_MUSCULO, MUSCULOS } from '../musculos';
 import { ARTICULACIONES, type Ejercicio, type Material, type Pose } from '../tipos';
 
 const DIR = path.resolve(__dirname, '..', 'ejercicios');
+const DIR_ES = path.resolve(__dirname, '..', '..', 'i18n', 'es');
 const MATERIALES: Material[] = [
   'barra',
   'mancuerna',
@@ -25,7 +25,21 @@ const MATERIALES: Material[] = [
   // pierna
   'rack',
   'cajon',
+  // core
+  'esterilla',
+  'comba',
+  'rueda',
 ];
+/** Grupos de entrega sin músculo propio (fase 2, core): no siguen «grupo = el del primer principal». */
+const GRUPOS_SIN_MUSCULO = ['cardio', 'movilidad'];
+
+/** Los catálogos de IRON: `iron` (el motor) e `iron-<grupo>` (fase 2). */
+const CATALOGOS: Record<string, unknown> = Object.fromEntries(
+  fs
+    .readdirSync(DIR_ES)
+    .filter((f) => /^iron(-[a-z]+)?\.json$/.test(f))
+    .map((f) => [f.slice(0, -5), JSON.parse(fs.readFileSync(path.join(DIR_ES, f), 'utf8'))]),
+);
 
 /** Archivos de ejercicios: los de la carpeta y los de cada grupo (fase 2), sin índices ni piezas comunes. */
 function archivosDeEjercicios(dir: string): string[] {
@@ -37,16 +51,25 @@ function archivosDeEjercicios(dir: string): string[] {
   return out;
 }
 
-/** Resuelve «iron:a.b.c» (o «iron-<grupo>:a.b.c») en el catálogo español; undefined si no existe. */
+/** Resuelve «iron:a.b.c» o «iron-<grupo>:a.b.c» en el catálogo español; undefined si no existe. */
 function texto(clave: string): string | undefined {
   const [ns, ruta] = clave.split(':');
-  if (!/^iron(-[a-z]+)?$/.test(ns ?? '') || !ruta) return undefined;
-  let nodo: unknown = (RECURSOS_ES as Record<string, unknown>)[ns];
+  if (!ns || !/^iron(-[a-z]+)?$/.test(ns) || !ruta) return undefined;
+  let nodo: unknown = CATALOGOS[ns];
   for (const parte of ruta.split('.')) {
     if (!nodo || typeof nodo !== 'object') return undefined;
     nodo = (nodo as Record<string, unknown>)[parte];
   }
   return typeof nodo === 'string' ? nodo : undefined;
+}
+
+/** Nombre de un músculo, grupo o material: en `iron` o en el `iron-<grupo>` que lo añadió. */
+function nombre(seccion: string, id: string): string | undefined {
+  for (const ns of Object.keys(CATALOGOS)) {
+    const t = texto(`${ns}:${seccion}.${id}`);
+    if (t) return t;
+  }
+  return undefined;
 }
 
 describe('catálogo', () => {
@@ -74,11 +97,11 @@ describe('catálogo', () => {
 });
 
 describe.each(EJERCICIOS.map((e) => [e.id, e] as const))('%s', (_id, ej: Ejercicio) => {
-  it('textos: nombre, cues y errores existen en es/iron.json (o es/iron-<grupo>.json), sin raya ni guion medio', () => {
+  it('textos: nombre, cues y errores existen en es/iron*.json, sin raya ni guion medio', () => {
     const claves = [ej.nombre, ...ej.cues, ...ej.errores];
-    const ns = ej.nombre.split(':')[0];
+    const prefijo = new RegExp(`^iron(-[a-z]+)?:ejercicios\\.${ej.id}\\.`);
     for (const c of claves) {
-      expect(c.startsWith(`${ns}:ejercicios.${ej.id}.`)).toBe(true);
+      expect(c).toMatch(prefijo);
       const t = texto(c);
       expect(t).toBeTruthy();
       expect(t).not.toMatch(/[—–]/);
@@ -98,7 +121,7 @@ describe.each(EJERCICIOS.map((e) => [e.id, e] as const))('%s', (_id, ej: Ejercic
     for (const m of [...principales, ...secundarios]) expect(MUSCULOS).toContain(m);
     expect(principales.filter((m) => secundarios.includes(m))).toEqual([]);
     expect(new Set([...principales, ...secundarios]).size).toBe(principales.length + secundarios.length);
-    expect(GRUPO_DE_MUSCULO[principales[0]]).toBe(ej.grupo);
+    if (!GRUPOS_SIN_MUSCULO.includes(ej.grupo)) expect(GRUPO_DE_MUSCULO[principales[0]]).toBe(ej.grupo);
   });
 
   it('material válido y no vacío', () => {
@@ -111,6 +134,10 @@ describe.each(EJERCICIOS.map((e) => [e.id, e] as const))('%s', (_id, ej: Ejercic
     if (ej.carga?.tipo === 'polea') expect(ej.material).toContain('polea');
     if (ej.carga?.tipo === 'palanca') expect(ej.material).toContain('maquina');
     if (ej.escenario?.some((e) => e.tipo === 'barra_dominadas')) expect(ej.material).toContain('barra_fija');
+    // core
+    if (ej.carga?.tipo === 'comba') expect(ej.material).toContain('comba');
+    if (ej.carga?.tipo === 'rueda') expect(ej.material).toContain('rueda');
+    if (ej.escenario?.some((e) => e.tipo === 'esterilla')) expect(ej.material).toContain('esterilla');
   });
 
   it('sustitutos: existen y no es él mismo', () => {
@@ -220,10 +247,11 @@ describe('mapa muscular', () => {
 
   it('cada músculo y cada grupo tiene nombre en el catálogo', () => {
     for (const m of MUSCULOS) {
-      expect(texto(`iron:musculo.${m}`)).toBeTruthy();
-      expect(texto(`iron:grupo.${GRUPO_DE_MUSCULO[m]}`)).toBeTruthy();
+      expect(nombre('musculo', m)).toBeTruthy();
+      expect(nombre('grupo', GRUPO_DE_MUSCULO[m])).toBeTruthy();
     }
-    for (const m of MATERIALES) expect(texto(`iron:material.${m}`)).toBeTruthy();
+    for (const m of MATERIALES) expect(nombre('material', m)).toBeTruthy();
+    for (const g of GRUPOS_SIN_MUSCULO) expect(nombre('grupo', g)).toBeTruthy();
   });
 });
 

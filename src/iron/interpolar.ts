@@ -86,6 +86,7 @@ export function angulosDePose(ej: Pick<Ejercicio, 'ancla'>, pose: Pose): Angulos
     angulo: pose.angulo ?? ej.ancla.angulo,
     escorzo: pose.escorzo ?? {},
     muneca: pose.muneca,
+    punto: pose.punto,
   };
 }
 
@@ -98,6 +99,9 @@ export function angulosEn(ej: Ejercicio, ms: number): AngulosPose {
   let k = poses.length - 1;
   for (let i = 0; i < poses.length; i++) if (poses[i].ms <= t) k = i;
   const anclaAng = ej.ancla.angulo;
+  // El ancla solo se mueve si alguna pose lo dice (saltos, burpees).
+  let movil = false;
+  for (let i = 0; i < poses.length; i++) if (poses[i].punto !== undefined) movil = true;
 
   const cerca: Record<string, number> = {};
   const lejos: Record<string, number> = {};
@@ -122,5 +126,8 @@ export function angulosEn(ej: Ejercicio, ms: number): AngulosPose {
     lejos: lejos as unknown as Extremidades,
     angulo: canal(poses, ciclo, k, t, (p) => p.angulo ?? anclaAng),
     escorzo,
+    punto: movil
+      ? { x: canal(poses, ciclo, k, t, (p) => (p.punto ?? ej.ancla).x), y: canal(poses, ciclo, k, t, (p) => (p.punto ?? ej.ancla).y) }
+      : undefined,
   };
 }

@@ -1,0 +1,321 @@
+{
+  "grupo": {
+    "cardio": "Cardio y peso corporal",
+    "movilidad": "Movilidad"
+  },
+  "musculo": {
+    "transverso": "Transverso del abdomen",
+    "serrato": "Serrato anterior",
+    "cuello": "Cuello"
+  },
+  "material": {
+    "esterilla": "Esterilla",
+    "comba": "Comba",
+    "rueda": "Rueda abdominal"
+  },
+  "ejercicios": {
+    "crunch": {
+      "nombre": "Crunch abdominal",
+      "cues": {
+        "pies": "Pies planos y zona lumbar apoyada en la esterilla.",
+        "subir": "Despega solo los hombros, enrollando el tronco hacia la pelvis.",
+        "cuello": "Mirada al techo y barbilla un poco metida; no tires de la cabeza."
+      },
+      "errores": {
+        "cuello": "Tirar del cuello con las manos.",
+        "impulso": "Subir a tirones con impulso.",
+        "situp": "Subir hasta sentarse: deja de trabajar el abdomen."
+      }
+    },
+    "crunch-inverso": {
+      "nombre": "Crunch inverso",
+      "cues": {
+        "brazos": "Brazos y hombros quietos en la esterilla.",
+        "pelvis": "Lleva las rodillas al pecho enrollando la pelvis.",
+        "bajada": "Baja despacio, sin dejar caer las piernas."
+      },
+      "errores": {
+        "impulso": "Balancear las piernas para subir la cadera.",
+        "caida": "Dejar caer las piernas al bajar."
+      }
+    },
+    "elevaciones-piernas": {
+      "nombre": "Elevaciones de piernas",
+      "cues": {
+        "espalda": "Zona lumbar pegada a la esterilla todo el recorrido.",
+        "rodillas": "Piernas juntas y casi estiradas; dobla un poco si tira la espalda.",
+        "bajada": "Baja despacio y para antes de tocar el suelo."
+      },
+      "errores": {
+        "arco": "Arquear la espalda al bajar las piernas.",
+        "impulso": "Subir las piernas con impulso."
+      }
+    },
+    "tijeras-abdominales": {
+      "nombre": "Tijeras abdominales",
+      "cues": {
+        "espalda": "Zona lumbar pegada a la esterilla.",
+        "corto": "Patadas cortas y alternas, sin tocar el suelo.",
+        "respira": "Respira con ritmo; no aguantes el aire."
+      },
+      "errores": {
+        "arco": "Arquear la espalda al bajar las piernas.",
+        "rodillas": "Doblar mucho las rodillas."
+      }
+    },
+    "hollow-hold": {
+      "nombre": "Hollow hold",
+      "cues": {
+        "lumbar": "Pega la zona lumbar a la esterilla antes de subir piernas y hombros.",
+        "altura": "Si la espalda se despega, sube más las piernas.",
+        "respira": "Respira corto sin soltar el abdomen."
+      },
+      "errores": {
+        "arco": "Despegar la zona lumbar del suelo.",
+        "cuello": "Tensar el cuello mirando hacia los pies."
+      }
+    },
+    "dead-bug": {
+      "nombre": "Dead bug",
+      "cues": {
+        "lumbar": "Zona lumbar apoyada: no dejes que se arquee.",
+        "contrarios": "Estira a la vez un brazo y la pierna contraria.",
+        "lento": "Lento y con control; exhala al estirar."
+      },
+      "errores": {
+        "arco": "Arquear la espalda al estirar la pierna.",
+        "prisa": "Ir rápido y perder el control."
+      }
+    },
+    "plancha-alta": {
+      "nombre": "Plancha alta",
+      "cues": {
+        "manos": "Manos bajo los hombros y brazos estirados.",
+        "linea": "Cabeza, cadera y talones en línea recta.",
+        "empuja": "Empuja el suelo y aprieta abdomen y glúteos."
+      },
+      "errores": {
+        "caderaCaida": "Dejar caer la cadera.",
+        "hombros": "Hundir el pecho entre los hombros.",
+        "apnea": "Aguantar la respiración."
+      }
+    },
+    "toques-hombro": {
+      "nombre": "Toques de hombro en plancha",
+      "cues": {
+        "pies": "Separa un poco los pies para estar más estable.",
+        "cadera": "La cadera no se mueve al levantar la mano.",
+        "lento": "Toca el hombro contrario despacio y vuelve."
+      },
+      "errores": {
+        "balanceo": "Balancear la cadera de lado a lado.",
+        "caderaAlta": "Subir la cadera para compensar."
+      }
+    },
+    "bird-dog": {
+      "nombre": "Bird dog",
+      "cues": {
+        "apoyos": "Manos bajo los hombros y rodillas bajo la cadera.",
+        "linea": "Estira brazo y pierna contrarios en línea con la espalda.",
+        "lento": "Aguanta un segundo arriba y vuelve sin prisa."
+      },
+      "errores": {
+        "arco": "Subir la pierna de más arqueando la zona lumbar.",
+        "giro": "Girar la cadera al estirar la pierna."
+      }
+    },
+    "mountain-climbers": {
+      "nombre": "Mountain climbers",
+      "cues": {
+        "manos": "Manos firmes bajo los hombros.",
+        "cadera": "Cadera baja, en línea con los hombros.",
+        "rodilla": "Lleva cada rodilla hacia el pecho, alternando con ritmo."
+      },
+      "errores": {
+        "caderaAlta": "Subir la cadera en pico.",
+        "manos": "Dejar que los hombros se vayan por delante de las manos."
+      }
+    },
+    "rueda-abdominal": {
+      "nombre": "Rueda abdominal",
+      "cues": {
+        "lumbar": "Aprieta abdomen y glúteos para no hundir la espalda.",
+        "rango": "Rueda solo hasta donde mantengas la espalda neutra.",
+        "vuelta": "Vuelve tirando con el abdomen, no con la cadera."
+      },
+      "errores": {
+        "hundir": "Hundir la zona lumbar al estirarse.",
+        "cadera": "Volver echando la cadera atrás primero.",
+        "rango": "Ir más lejos de lo que se controla."
+      }
+    },
+    "plancha-lateral": {
+      "nombre": "Plancha lateral",
+      "cues": {
+        "codo": "Codo justo debajo del hombro.",
+        "cadera": "Sube la cadera hasta que el cuerpo quede recto.",
+        "respira": "Respira y aguanta sin girar el pecho al suelo."
+      },
+      "errores": {
+        "caderaCaida": "Dejar caer la cadera.",
+        "hombro": "Hundirse en el hombro de apoyo."
+      }
+    },
+    "russian-twist": {
+      "nombre": "Russian twist",
+      "cues": {
+        "espalda": "Espalda recta, inclinada hacia atrás.",
+        "gira": "Gira el tronco con los brazos, no solo los brazos.",
+        "pies": "Talones en el suelo; súbelos solo si controlas el giro."
+      },
+      "errores": {
+        "brazos": "Mover solo los brazos sin girar el tronco.",
+        "encorvar": "Encorvar la espalda."
+      }
+    },
+    "burpees": {
+      "nombre": "Burpees",
+      "cues": {
+        "manos": "Apoya las manos delante de los pies, a la anchura de los hombros.",
+        "plancha": "Cae en plancha con el abdomen firme, sin hundir la cadera.",
+        "salto": "Ponte de pie y salta con los brazos arriba; aterriza suave."
+      },
+      "errores": {
+        "cadera": "Caer en la plancha con la cadera hundida.",
+        "aterrizaje": "Aterrizar con las rodillas rígidas."
+      }
+    },
+    "saltos-tijera": {
+      "nombre": "Saltos de tijera",
+      "cues": {
+        "puntas": "Salta y aterriza sobre la parte delantera de los pies.",
+        "brazos": "Sube los brazos por los lados hasta encima de la cabeza.",
+        "rodillas": "Rodillas sueltas y en la línea de los pies al caer."
+      },
+      "errores": {
+        "talones": "Caer de talones, con golpe.",
+        "rodillasDentro": "Dejar que las rodillas se cierren al aterrizar."
+      }
+    },
+    "comba": {
+      "nombre": "Saltar a la comba",
+      "cues": {
+        "bajo": "Saltos bajos, lo justo para que pase la cuerda.",
+        "munecas": "Codos pegados al cuerpo; gira la cuerda con las muñecas.",
+        "pisada": "Cae sobre la parte delantera del pie, con las rodillas sueltas."
+      },
+      "errores": {
+        "alto": "Saltar demasiado alto y cansarse antes.",
+        "brazos": "Girar la cuerda con los brazos enteros."
+      }
+    },
+    "rodillas-arriba": {
+      "nombre": "Rodillas arriba",
+      "cues": {
+        "altura": "Sube cada rodilla a la altura de la cadera.",
+        "brazos": "Mueve el brazo contrario a la pierna, con los codos doblados.",
+        "pisada": "Pisa con la parte delantera del pie y el tronco erguido."
+      },
+      "errores": {
+        "atras": "Echar el tronco hacia atrás para subir la rodilla.",
+        "talones": "Caer de talones."
+      }
+    },
+    "talones-gluteo": {
+      "nombre": "Talones al glúteo",
+      "cues": {
+        "talon": "Lleva el talón hacia el glúteo, rápido y suelto.",
+        "muslo": "El muslo queda casi vertical; la rodilla no se adelanta.",
+        "pisada": "Pisa con la parte delantera del pie."
+      },
+      "errores": {
+        "rodilla": "Adelantar la rodilla en vez de doblarla.",
+        "inclinarse": "Inclinar el tronco hacia delante."
+      }
+    },
+    "sentadilla-salto": {
+      "nombre": "Sentadilla con salto",
+      "cues": {
+        "bajar": "Baja como en una sentadilla, con el pecho arriba.",
+        "saltar": "Salta extendiendo cadera, rodillas y tobillos.",
+        "aterrizar": "Aterriza de puntas a talones y dobla las rodillas."
+      },
+      "errores": {
+        "rodillas": "Dejar que las rodillas se cierren al bajar o al caer.",
+        "rigido": "Aterrizar con las piernas rígidas."
+      }
+    },
+    "oso": {
+      "nombre": "Paso del oso",
+      "cues": {
+        "rodillas": "Rodillas a dos dedos del suelo, bajo la cadera.",
+        "contrarios": "Avanza a la vez mano y pie contrarios, con pasos cortos.",
+        "espalda": "Espalda plana: la cadera no sube ni se balancea."
+      },
+      "errores": {
+        "cadera": "Subir la cadera por encima de los hombros.",
+        "mismoLado": "Mover mano y pie del mismo lado."
+      }
+    },
+    "perro-boca-abajo": {
+      "nombre": "Perro boca abajo con pedaleo",
+      "cues": {
+        "manos": "Empuja el suelo con las manos abiertas.",
+        "cadera": "Lleva la cadera arriba y atrás, espalda larga.",
+        "talones": "Alterna bajar un talón y doblar la otra rodilla, sin forzar."
+      },
+      "errores": {
+        "espalda": "Redondear la espalda para estirar las piernas.",
+        "hombros": "Hundir los hombros hacia el suelo."
+      }
+    },
+    "bisagra-cadera": {
+      "nombre": "Bisagra de cadera",
+      "cues": {
+        "cadera": "Lleva la cadera atrás, como si cerraras una puerta con ella.",
+        "espalda": "Espalda recta y cuello en línea todo el recorrido.",
+        "rodillas": "Rodillas un poco dobladas; baja hasta notar los isquios."
+      },
+      "errores": {
+        "redondear": "Redondear la espalda para bajar más.",
+        "sentadilla": "Doblar las rodillas y convertirlo en sentadilla."
+      }
+    },
+    "flexor-cadera": {
+      "nombre": "Estiramiento de flexores de cadera",
+      "cues": {
+        "gluteo": "Aprieta el glúteo de la pierna de atrás antes de avanzar.",
+        "tronco": "Tronco recto: avanza la pelvis, sin arquear la espalda.",
+        "respira": "Aguanta unos segundos respirando y vuelve despacio."
+      },
+      "errores": {
+        "lumbar": "Arquear la zona lumbar en lugar de avanzar la pelvis.",
+        "rodilla": "Apoyar la rodilla en el suelo duro; usa la esterilla."
+      }
+    },
+    "movilidad-tobillo": {
+      "nombre": "Movilidad de tobillo",
+      "cues": {
+        "talon": "El talón de delante no se levanta en ningún momento.",
+        "rodilla": "Lleva la rodilla hacia delante, en la línea del pie.",
+        "suave": "Movimiento suave y sin rebotes; para si duele."
+      },
+      "errores": {
+        "talon": "Levantar el talón para llegar más lejos.",
+        "rodillaDentro": "Dejar que la rodilla se vaya hacia dentro."
+      }
+    },
+    "balanceo-pierna": {
+      "nombre": "Balanceo de pierna",
+      "cues": {
+        "apoyo": "Apóyate en una pared si te cuesta el equilibrio.",
+        "suelta": "Balancea la pierna suelta, sin dar tirones.",
+        "rango": "Empieza corto y sube la altura poco a poco."
+      },
+      "errores": {
+        "tronco": "Mover el tronco para subir más la pierna.",
+        "forzar": "Forzar el rango desde el primer balanceo."
+      }
+    }
+  }
+}

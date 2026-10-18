@@ -17,7 +17,7 @@ import type { ClaveI18n, Ejercicio, MusculoId } from '@/iron/tipos';
 import { ACENTO_IRON } from './estilo';
 import { Maniqui } from './Maniqui';
 import { MapaMuscular } from './MapaMuscular';
-import { textoIron } from './texto';
+import { nombreIron, textoIron } from './texto';
 
 export interface DemoIronProps {
   ejercicio: Ejercicio;
@@ -42,7 +42,7 @@ function ListaMusculos({ titulo, lista, principal }: { titulo: string; lista: re
         <View key={m} style={styles.filaMusculo}>
           <Punto principal={principal} />
           <Text style={styles.texto} maxFontSizeMultiplier={1.35}>
-            {t(`iron:musculo.${m}`)}
+            {nombreIron('musculo', m)}
           </Text>
         </View>
       ))}
@@ -103,7 +103,7 @@ export function DemoIron({ ejercicio: ej, alElegir, onVolver, ms }: DemoIronProp
         ))}
       </ChipWrap>
 
-      <TarjetaArena variante="contorno" rotulo={t(`iron:grupo.${ej.grupo}`)} meta={t(`iron:nivel.${ej.nivel}`)}>
+      <TarjetaArena variante="contorno" rotulo={nombreIron('grupo', ej.grupo)} meta={t(`iron:nivel.${ej.nivel}`)}>
         <Text style={styles.titulo} maxFontSizeMultiplier={1.35}>
           {nombre}
         </Text>
@@ -142,7 +142,7 @@ export function DemoIron({ ejercicio: ej, alElegir, onVolver, ms }: DemoIronProp
             {t('iron:demo.material')}
           </Text>
           <Text style={styles.texto} maxFontSizeMultiplier={1.35}>
-            {ej.material.map((m) => t(`iron:material.${m}`)).join(' · ')}
+            {ej.material.map((m) => nombreIron('material', m)).join(' · ')}
           </Text>
         </View>
       </TarjetaArena>

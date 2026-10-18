@@ -100,6 +100,8 @@ export interface AngulosPose {
   escorzo: Partial<Record<SegmentoId, number>>;
   /** Muñeca (los dos lados); sin ella, la mano sigue al antebrazo. */
   muneca?: number;
+  /** Dónde cae el punto del ancla en este instante (saltos); si no, el del ancla. */
+  punto?: Punto;
 }
 
 export interface Esqueleto {
@@ -194,8 +196,9 @@ export function construirEsqueleto(pose: AngulosPose, ancla: Ancla, vista: Vista
   }
   // Traslado al ancla.
   const fijo = p[ancla.punto] as Punto;
-  const dx = ancla.x - fijo.x;
-  const dy = ancla.y - fijo.y;
+  const destino = pose.punto ?? ancla;
+  const dx = destino.x - fijo.x;
+  const dy = destino.y - fijo.y;
   const claves = Object.keys(p) as PuntoId[];
   for (let i = 0; i < claves.length; i++) {
     const q = p[claves[i]] as Punto;
