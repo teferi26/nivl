@@ -1,0 +1,53 @@
+{
+  "eyebrowSlide": {
+    "portada": "NIVL · Souvenirs",
+    "dato": "Le chiffre",
+    "foto": "Preuve",
+    "duro": "Le plus dur",
+    "cierre": "Clôture"
+  },
+  "periodo": {
+    "mensual": "Mois du {{fecha}}",
+    "semanal": "Semaine du {{fecha}}"
+  },
+  "fila": {
+    "detalle": "{{diapositivas}} diapositives · {{fotos}} photos",
+    "abrirA11y": "Ouvrir le récap : {{periodo}}. {{detalle}}. Vu",
+    "abrirSinVerA11y": "Ouvrir le récap : {{periodo}}. {{detalle}}. Non vu",
+    "visto": "Vu",
+    "sinVer": "Non vu"
+  },
+  "vista": {
+    "vacioSubtitulo": "Aucun récap enregistré pour l'instant.",
+    "sinVer_one": "{{count}} récap non vu sur {{total}}.",
+    "sinVer_other": "{{count}} récaps non vus sur {{total}}.",
+    "guardados_one": "{{count}} récap enregistré.",
+    "guardados_other": "{{count}} récaps enregistrés.",
+    "eyebrow": "Souvenirs",
+    "titulo": "Ta semaine en images",
+    "estaSemana": "Cette semaine",
+    "explicacion": "Le système rassemble les photos que tu as ajoutées à chaque mission et te raconte ta semaine. Si tu n'en as ajouté aucune, pas de résumé : un récap vide ne rappelle rien.",
+    "generar": "Générer celui de cette semaine",
+    "montando": "Le système monte ta semaine…",
+    "notaMes": "Celui du mois, le système le génère tout seul le 1er.",
+    "pases": "Récaps",
+    "buscando": "Recherche de tes souvenirs",
+    "vacioTitulo": "Pas encore de souvenirs",
+    "vacioCuerpo": "Ajoute une photo en validant une mission et dimanche, tu auras quelque chose à regarder."
+  },
+  "pase": {
+    "enPausa": "En pause",
+    "tocaSalir": "Touche pour quitter",
+    "tocaSeguir": "Touche à droite pour continuer",
+    "compartirA11y": "Partager cette diapositive",
+    "cerrarA11y": "Fermer le résumé",
+    "anterior": "Précédente",
+    "salir": "Quitter",
+    "siguiente": "Suivante",
+    "noCompartir": "Partage impossible"
+  },
+  "generar": {
+    "sinFotos": "Pas de photos cette semaine.",
+    "sinPro": "Le récap de la semaine est monté par le coach, et le coach fait partie de NIVL Pro. Tes photos et tes souvenirs enregistrés restent ici."
+  }
+}

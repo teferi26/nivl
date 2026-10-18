@@ -1,0 +1,53 @@
+{
+  "eyebrowSlide": {
+    "portada": "NIVL · Erinnerungen",
+    "dato": "Die Zahl",
+    "foto": "Beweis",
+    "duro": "Das Harte",
+    "cierre": "Abschluss"
+  },
+  "periodo": {
+    "mensual": "Monat ab {{fecha}}",
+    "semanal": "Woche ab {{fecha}}"
+  },
+  "fila": {
+    "detalle": "{{diapositivas}} Folien · {{fotos}} Fotos",
+    "abrirA11y": "Rückblick öffnen: {{periodo}}. {{detalle}}. Gesehen",
+    "abrirSinVerA11y": "Rückblick öffnen: {{periodo}}. {{detalle}}. Ungesehen",
+    "visto": "Gesehen",
+    "sinVer": "Ungesehen"
+  },
+  "vista": {
+    "vacioSubtitulo": "Noch keine gespeicherten Rückblicke.",
+    "sinVer_one": "{{count}} von {{total}} Rückblicken ungesehen.",
+    "sinVer_other": "{{count}} von {{total}} Rückblicken ungesehen.",
+    "guardados_one": "{{count}} Rückblick gespeichert.",
+    "guardados_other": "{{count}} Rückblicke gespeichert.",
+    "eyebrow": "Erinnerungen",
+    "titulo": "Deine Woche in Bildern",
+    "estaSemana": "Diese Woche",
+    "explicacion": "Das System sammelt die Fotos, die du zu jeder Mission hochgeladen hast, und erzählt dir deine Woche. Ohne Fotos kein Rückblick: Ein leerer Rückblick erinnert an nichts.",
+    "generar": "Rückblick dieser Woche erstellen",
+    "montando": "Das System stellt deine Woche zusammen…",
+    "notaMes": "Den Monatsrückblick erstellt das System selbst, jeweils am 1.",
+    "pases": "Rückblicke",
+    "buscando": "Deine Erinnerungen werden gesucht",
+    "vacioTitulo": "Noch keine Erinnerungen",
+    "vacioCuerpo": "Lade beim Abschließen einer Mission ein Foto hoch, und am Sonntag hast du etwas zum Anschauen."
+  },
+  "pase": {
+    "enPausa": "Pausiert",
+    "tocaSalir": "Tippen zum Beenden",
+    "tocaSeguir": "Rechts tippen für weiter",
+    "compartirA11y": "Diese Folie teilen",
+    "cerrarA11y": "Rückblick schließen",
+    "anterior": "Zurück",
+    "salir": "Beenden",
+    "siguiente": "Weiter",
+    "noCompartir": "Teilen fehlgeschlagen"
+  },
+  "generar": {
+    "sinFotos": "Diese Woche keine Fotos.",
+    "sinPro": "Den Wochenrückblick stellt der Coach zusammen, und der Coach gehört zu NIVL Pro. Deine Fotos und gespeicherten Erinnerungen bleiben hier."
+  }
+}

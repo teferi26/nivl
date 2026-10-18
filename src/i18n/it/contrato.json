@@ -1,0 +1,153 @@
+{
+  "vista": {
+    "tabla": {
+      "mision": "Missione (da banale a epica)",
+      "xp": "{{xp}} XP",
+      "evidencia": "Prova (foto)",
+      "evidenciaValor": "+{{pct}}%",
+      "racha": "Serie",
+      "rachaValor": "+{{pct}}% a settimana · tetto ×{{techo}}",
+      "gimnasio": "Sessione in palestra",
+      "record": "Record personale",
+      "diario": "Pagina del diario",
+      "pesarte": "Pesarti",
+      "objetivo": "Obiettivo raggiunto",
+      "tarea": "Compito di campagna",
+      "tareaValor": "XP della sua difficoltà · boss ×{{mult}}",
+      "campana": "Campagna conquistata",
+      "campanaValor": "Da {{min}} a {{max}} XP secondo il rango",
+      "extra": "Missione extra",
+      "pb": "{{pb}} PB",
+      "sinHacer": "Missione del giorno non fatta",
+      "sinHacerValor": "−{{pct}}% dei suoi XP · tetto −{{tope}}/giorno",
+      "romper": "Infrangere una regola firmata",
+      "romperValor": "−{{xp}} XP + conseguenza",
+      "piedra": "Pietra di protezione",
+      "piedraValor": "Assorbe tutto il danno di un giorno",
+      "filaA11y": "{{concepto}}: {{valor}}"
+    },
+    "norma": {
+      "a11y": "Regola {{n}}: {{texto}}. Se la infrangi: {{consecuencia}}. Costa {{xp}} XP.",
+      "a11yEditada": "Regola {{n}}: {{texto}}. Se la infrangi: {{consecuencia}}. Costa {{xp}} XP. Modificata oggi.",
+      "pista": "Tocca per confessare che l'hai infranta. Tieni premuto per eliminarla.",
+      "accionConfesar": "Confessa che l'hai infranta",
+      "accionEditar": "Modifica la regola",
+      "accionEliminar": "Elimina la regola",
+      "siLaRompes": "Se la infrangi: {{consecuencia}}",
+      "editadaHoy": "Modificata oggi. Le infrazioni precedenti restano nella versione archiviata.",
+      "editarA11y": "Modifica la regola {{n}}"
+    },
+    "carta": {
+      "sinCarta": "Nessuna lettera",
+      "sinCartaTexto": "Scrivi a chi sarai. Il sistema la sigilla e la custodisce fino al giorno stabilito.",
+      "escribir": "Scrivi la lettera",
+      "abierta": "Aperta",
+      "abiertaMeta": "Sigillata il {{sellada}}. Aperta il {{abierta}}.",
+      "haLlegado": "È arrivato il giorno",
+      "espera": "La lettera che hai sigillato il {{sellada}} ti aspetta.",
+      "abrir": "Apri la lettera",
+      "firmado": "Firmato da te",
+      "firmadoMeta": "Firmato il {{firmado}}. Scade il {{vence}}.",
+      "sellada": "Sigillata",
+      "selladaTexto": "Sigillata il {{sellada}}. Si aprirà il {{apertura}}. Fino ad allora, al lavoro."
+    },
+    "subtituloVacio": "Nessuna regola firmata. Il sistema fa rispettare solo ciò che firmi tu.",
+    "subtitulo_one": "{{count}} regola firmata · {{bonus}} PB nella borsa",
+    "subtitulo_other": "{{count}} regole firmate · {{bonus}} PB nella borsa",
+    "eyebrow": "Ciò che firmi tu",
+    "titulo": "Contratto",
+    "nuevaNorma": "Firma una nuova regola",
+    "cargando": "Lettura del contratto",
+    "rotulo": "CONTRATTO",
+    "vacioTitulo": "Nessuna regola firmata",
+    "vacioTexto": "Qui vanno le regole che ti imponi e la loro conseguenza. Il sistema si limita a farle rispettare.",
+    "primeraNorma": "Firma la prima regola",
+    "cargarCuaderno": "Carica le mie regole dal quaderno",
+    "notaNormas": "Tocca una regola per confessare che l'hai infranta. Tienila premuta per eliminarla. La matita la modifica da oggi. Ogni sera quelle rispettate si segnano in Abitudini.",
+    "bonusTitulo": "Punti bonus",
+    "bonusMeta": "{{gastado}}/{{tope}} riscattati",
+    "enBolsa": "Nella borsa",
+    "canjeables": "Riscattabili questa settimana",
+    "canjear": "Riscatta {{coste}} PB · 1 h di riposo",
+    "notaBonus": "Le missioni extra pagano in PB, non in XP. {{coste}} PB valgono 1 h di riposo senza sensi di colpa, con un tetto di {{tope}} PB ogni 7 giorni.",
+    "cartaTitulo": "Lettera al te del futuro",
+    "gana": "Così si guadagna",
+    "pierde": "Così si perde",
+    "notaTabla": "Tutta l'app assegna punti con questa tabella: stesso sforzo, stessa ricompensa. I PB non danno XP: si riscattano in riposo."
+  },
+  "hojas": {
+    "anios_one": "{{count}} anno",
+    "anios_other": "{{count}} anni",
+    "norma": {
+      "eyebrowEditar": "Modifica regola",
+      "eyebrowNueva": "Nuova regola",
+      "tituloEditar": "Correggi ciò che hai firmato",
+      "tituloNueva": "Cosa ti vieti?",
+      "firmar": "Firma la regola",
+      "etiqueta": "La regola",
+      "placeholder": "Es. Niente social prima delle 12",
+      "a11y": "Testo della regola",
+      "consecuenciaEtiqueta": "Conseguenza se la infrangi",
+      "consecuenciaPlaceholder": "Es. Correre 5 km",
+      "consecuenciaA11y": "Conseguenza dell'infrazione",
+      "ayudaEditar": "Vale da oggi. La versione precedente si archivia con le sue infrazioni. Infrangerla costa −{{xp}} XP.",
+      "ayudaNueva": "Infrangerla costa −{{xp}} XP. Rispettare la conseguenza lo stesso giorno li recupera."
+    },
+    "carta": {
+      "eyebrow": "Per il te del futuro",
+      "titulo": "Scrivi a chi sarai",
+      "sellar": "Sigilla la lettera",
+      "etiqueta": "La lettera",
+      "placeholder": "Non so come starai, né in che situazione…",
+      "a11y": "Corpo della lettera",
+      "dentroDe": "Si aprirà tra",
+      "dentroDeA11y": "Apri tra {{plazo}}",
+      "seAbrira": "Si aprirà il {{fecha}}. Nessuno potrà leggerla prima, nemmeno tu."
+    }
+  },
+  "hook": {
+    "plantilla": {
+      "p1": {
+        "texto": "Scrivere il diario ogni giorno: ciò che ho vissuto e il piano della giornata",
+        "consecuencia": "Correre 8 km"
+      },
+      "p2": {
+        "texto": "Niente alcol",
+        "consecuencia": "1 giorno mangiando solo pulito"
+      },
+      "p3": {
+        "texto": "Niente caffeina",
+        "consecuencia": "1 giorno senza schermi di svago"
+      },
+      "p4": {
+        "texto": "Mangiare pulito ogni giorno",
+        "consecuencia": "Correre 4,5 km"
+      },
+      "p5": {
+        "texto": "Se esco a fare festa senza essermelo guadagnato",
+        "consecuencia": "1 settimana di dieta rigida"
+      },
+      "p6": {
+        "texto": "Nessun impegno si mette davanti ai miei obiettivi",
+        "consecuencia": "Riorganizzare la settimana e recuperare il tempo"
+      }
+    },
+    "confesionTitulo": "Confessione al sistema",
+    "confesionMensaje": "Hai infranto la regola «{{norma}}»?\n\nPenalità: −{{xp}} XP e la conseguenza che hai firmato tu stesso: {{consecuencia}}. Rispettala oggi e recuperi gli XP.",
+    "laHeRoto": "L'ho infranta",
+    "registrado": "REGISTRATO",
+    "registradoMensaje": "Il sistema non giudica: registra. La missione «Conseguenza: {{consecuencia}}» ti aspetta oggi in Sistema.",
+    "eliminarTitulo": "Elimina regola",
+    "eliminarMensaje": "«{{norma}}» e il suo storico di infrazioni.",
+    "insuficientesTitulo": "Punti insufficienti",
+    "insuficientes": "Ti servono {{coste}} PB per riscattare 1 h di riposo.",
+    "topeTitulo": "Tetto settimanale",
+    "tope": "Massimo {{tope}} PB riscattati ogni 7 giorni. Ne hai già {{llevas}}.",
+    "canjearTitulo": "Riscatta riposo",
+    "canjearMensaje": "{{coste}} PB → 1 ora di riposo guadagnato. Confermi?",
+    "canjear": "Riscatta",
+    "motivoCanje": "1 h di riposo",
+    "descansoTitulo": "RIPOSO GUADAGNATO",
+    "descansoMensaje": "Goditelo senza sensi di colpa: l'hai pagato con lo sforzo."
+  }
+}

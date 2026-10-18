@@ -1,0 +1,93 @@
+{
+  "volverA11y": "Torna al passo precedente",
+  "entrar": "Entra nell'arena",
+  "continuar": "Continua",
+  "portada": {
+    "reglas": "Le regole",
+    "lore": {
+      "arena": "Questa non è una lista di cose da fare. È un'arena.",
+      "reglas": "Ogni giorno hai delle missioni. Completarle dà XP e alza il tuo livello; fallirle lo toglie. La serie moltiplica. I grandi progetti sono campagne con un boss finale. E c'è un coach che detta la tua giornata, ti giudica la sera e ricorda tutto ciò che impara da te.",
+      "trampas": "Niente trucchi: le prove si fanno con la fotocamera, sul momento. Il sistema non ha opinioni. Registra."
+    }
+  },
+  "progreso": {
+    "paso": "Passo {{actual}} di {{total}}"
+  },
+  "tablilla": {
+    "rotulo": "Contratto",
+    "seAbre": "Si apre il {{fecha}}"
+  },
+  "nombre": {
+    "inscripcion": "Il nome",
+    "titulo": "Come ti chiami?",
+    "etiqueta": "Il tuo nome nel sistema",
+    "placeholder": "Come vuoi che ti chiami",
+    "a11y": "Il tuo nome",
+    "codigoEtiqueta": "Chi ti ha portato? · facoltativo",
+    "codigoAyuda": "Se te l'ha consigliato qualcuno, scrivi il suo codice. Per te non cambia niente.",
+    "codigoPlaceholder": "Codice creator",
+    "codigoA11y": "Codice del creator che ti ha portato, facoltativo",
+    "codigoRechazado": "{{motivo}} Correggilo o continua senza."
+  },
+  "camino": {
+    "inscripcion": "Il cammino",
+    "titulo": "Per cosa userai NIVL?",
+    "pista": "Cambia ciò che vedi per primo e ciò che il coach ti chiede. Tutto resta disponibile e puoi cambiarlo in Profilo.",
+    "queSeActiva": "Cosa si attiva"
+  },
+  "objetivo": {
+    "inscripcion": "L'obiettivo",
+    "titulo": "Per cosa sei venuto?",
+    "pista": "Una sola cosa, in una frase. Non «migliorare»: ciò che vuoi aver ottenuto. È ciò che firmerai.",
+    "etiqueta": "Il tuo obiettivo",
+    "salud": "Il mio obiettivo include salute o allenamento",
+    "sinSalud": "Scrivi un obiettivo generale, senza dati sanitari. Per includerli, attiva l'opzione qui sopra.",
+    "ejemplo": "Leggere dodici libri quest'anno",
+    "a11y": "Il tuo obiettivo, in una frase",
+    "cifra": "Cifra · facoltativa",
+    "cifraEjemplo": "12 libri, 5.000 €…",
+    "cifraEjemploSalud": "78 kg, 5.000 €…",
+    "cifraA11y": "Cifra dell'obiettivo, facoltativa",
+    "fecha": "Data · facoltativa",
+    "fechaEjemplo": "giugno 2027",
+    "fechaA11y": "Data dell'obiettivo, facoltativa"
+  },
+  "misiones": {
+    "inscripcion": "Le missioni",
+    "titulo": "Le tue prime missioni",
+    "pista": "Proposte per un {{para}}. Togli quelle che non fanno per te; potrai creare le tue in Abitudini.",
+    "gladiador": "gladiatore",
+    "meta": "{{stat}} · {{dificultad}} · {{frecuencia}}",
+    "metaSalud": "{{stat}} · {{dificultad}} · {{frecuencia}} · salute (facoltativa)",
+    "cadaDia": "ogni giorno",
+    "diasSemana": "{{n}} giorni/settimana",
+    "crear_one": "Crea {{count}} missione",
+    "crear_other": "Crea {{count}} missioni",
+    "sinMisiones": "Inizia senza missioni"
+  },
+  "firma": {
+    "inscripcion": "La firma",
+    "titulo": "Firmalo con te stesso",
+    "pista": "Nessun altro lo leggerà. Si sigilla oggi e si apre alla scadenza. Scegli quanto tempo ti dai.",
+    "horizonteA11y": "Orizzonte di {{plazo}}",
+    "horizonteRecomendadoA11y": "Orizzonte di {{plazo}}, consigliato",
+    "recomendado": "consigliato",
+    "letraPequena": "Fino ad allora lo custodisce Contratto, sigillato. Le tue regole e le loro conseguenze le scrivi lì quando entri.",
+    "campo": "Scrivi il tuo nome per firmare",
+    "mantenPulsado": "Tieni premuto per firmare",
+    "escribeNombre": "Scrivi il tuo nome"
+  },
+  "coach": {
+    "inscripcion": "Il coach",
+    "titulo": "Firmato. Ora, chi lo dirige.",
+    "pista": "Le tue abitudini, la tua organizzazione e i tuoi progressi sono gratis. I piani a pagamento aggiungono il coach IA e, con Élite, medaglia e richiesta di un posto in un ludus.",
+    "pistaHoja": "Le tue abitudini, la tua organizzazione e i tuoi progressi sono gratis. I piani a pagamento aggiungono il coach IA e, con Élite, medaglia e richiesta di un posto in un ludus. Decidi ora o più avanti: l'impegno vale lo stesso.",
+    "preparandoA11y": "Preparazione del tuo ingresso",
+    "seguirGratis": "Continua gratis per ora"
+  },
+  "sello": {
+    "titulo": "Sigillato",
+    "a11y": "Sigillato. Scade il {{fecha}}. Tocca per continuare",
+    "vence": "Scade il {{fecha}}"
+  }
+}

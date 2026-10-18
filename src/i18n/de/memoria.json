@@ -1,0 +1,53 @@
+{
+  "categoria": {
+    "todo": "Alles",
+    "aprendizaje": "Erkenntnisse",
+    "venta": "Verkäufe",
+    "metrica": "Kennzahlen",
+    "log": "Protokoll",
+    "objetivo": "Ziele",
+    "proyecto": "Projekte",
+    "regla": "Regeln",
+    "perfil": "Profil"
+  },
+  "hecho": {
+    "a11y": "{{categoria}}, {{fecha}}: {{contenido}}",
+    "pista": "Tippen, um alles zu lesen.",
+    "leerEntero": "Ganz lesen",
+    "borrarAccion": "Diese Erinnerung löschen",
+    "borrarA11y": "Erinnerung löschen: {{contenido}}",
+    "borrando": "Wird gelöscht",
+    "borrar": "Löschen"
+  },
+  "vista": {
+    "eyebrow": "Das System erinnert sich",
+    "titulo": "Gedächtnis",
+    "cargando": "Gedächtnis wird gelesen",
+    "noResponde": "Das Gedächtnis antwortet nicht.",
+    "vacioSubtitulo": "Noch nichts notiert. Es schreibt sich von selbst, während du mit dem Coach sprichst.",
+    "subtitulo_one": "{{count}} Fakt notiert · Dossier v{{version}}",
+    "subtitulo_other": "{{count}} Fakten notiert · Dossier v{{version}}",
+    "hechos": "Fakten",
+    "dossier": "Dossier",
+    "dossierA11y": "Dossier: Version {{version}}",
+    "esteMes": "Diesen Monat",
+    "esteMesSinDato": "Diesen Monat: keine Angabe",
+    "esteMesA11y": "Diesen Monat: {{gasto}} Dollar",
+    "quienEres": "Wer du für das System bist",
+    "contraer": "Einklappen",
+    "leerTodo": "Alles lesen",
+    "sinDossierTitulo": "Noch kein festes Gedächtnis",
+    "sinDossierCuerpo": "Es schreibt sich von selbst, wenn sich etwas Grundlegendes ändert: ein neues Ziel, ein Projekt, das stirbt, eine Regel, die du vereinbarst.",
+    "filtro": "{{categoria}} · {{n}}",
+    "filtroA11y": "Nach {{categoria}} filtern, {{n}}",
+    "vacioTitulo": "Noch nichts notiert",
+    "vacioCategoria": "Nichts in dieser Kategorie",
+    "vacioCuerpo": "Jede Zahl, jeder Verkauf, jede Erkenntnis oder Regel, die du dem Coach erzählst, landet hier mit Datum.",
+    "otraCategoria": "Versuch eine andere Kategorie."
+  },
+  "borrar": {
+    "titulo": "Erinnerung löschen",
+    "mensaje": "„{{contenido}}“\n\nWird aus den Erinnerungen des Coachs gelöscht. Steht es auch im Dossier oder im Gespräch, bleibt es dort, bis diese neu geschrieben werden."
+  },
+  "avisoTitulo": "Gedächtnis"
+}

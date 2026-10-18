@@ -1,6 +1,6 @@
 // Idiomas antes que nada: el init de i18next es síncrono y `t()` tiene que
 // valer desde el primer módulo que lo use (docs/i18n/PLAN-1010.md).
-import { t, useIdiomaInterfaz } from '@/i18n';
+import { activarIdiomasInterfaz, t, useIdiomaInterfaz } from '@/i18n';
 import { Cinzel_600SemiBold, Cinzel_700Bold } from '@expo-google-fonts/cinzel';
 import { Outfit_500Medium, Outfit_600SemiBold, Outfit_700Bold } from '@expo-google-fonts/outfit';
 import { useFonts } from 'expo-font';
@@ -16,6 +16,7 @@ import { CelebracionProvider } from '@/components/celebracion/CelebracionProvide
 import { TopeAncho } from '@/design/useSizeClass';
 import { sincronizarIdioma } from '@/i18n/sincronizar';
 import { AuthProvider, useAuth } from '@/lib/auth';
+import { useFlags } from '@/lib/flags';
 import { identificarEnTienda } from '@/lib/pro';
 import { registrarDispositivo } from '@/lib/push';
 import { destinoPortal, SITIO_CREADORES } from '@/lib/sitio';
@@ -185,6 +186,14 @@ export default function RootLayout() {
   // árbol entero (`key` de abajo): sin react-i18next y con el React Compiler,
   // es lo que garantiza que ningún texto se quede en el idioma anterior.
   const interfaz = useIdiomaInterfaz();
+
+  // Modos F1: con el flag `idiomas_activos` encendido, la interfaz sigue a la
+  // preferencia de idioma (la misma que el coach). Apagado (por defecto, y si
+  // el servidor no responde), español como en 1.0.10.
+  const { idiomas_activos: idiomasActivos } = useFlags();
+  useEffect(() => {
+    activarIdiomasInterfaz(idiomasActivos);
+  }, [idiomasActivos]);
 
   // El HTML de `web.output: single` sale sin idioma: lectores de pantalla y
   // traductores lo leían como inglés. El pseudoidioma (xx) se anuncia como es.

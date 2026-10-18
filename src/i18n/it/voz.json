@@ -1,0 +1,124 @@
+{
+  "deMisiones": {
+    "titulo": "«{{titulo}}»",
+    "una": "dalla missione {{lista}} (segnata da sola)",
+    "varias": "dalle missioni {{lista}} (segnate da sole)"
+  },
+  "allDone": [
+    "Tutte le missioni completate. Il sistema è soddisfatto.",
+    "Giorno compiuto, gladiatore. Domani, le prossime.",
+    "Missioni del giorno completate. Riposa: te lo sei guadagnato.",
+    "Il sistema registra un giorno impeccabile."
+  ],
+  "levelUp": [
+    "Sali di livello. Il sistema lo registra.",
+    "Il sistema riconosce i tuoi progressi.",
+    "Nuovo livello. Costruito missione dopo missione.",
+    "Un livello in più. L'arena l'ha visto."
+  ],
+  "penaltyApplied": [
+    "Il sistema ha tolto {{xp}} XP. Hai una missione di recupero in Oggi.",
+    "Giorno non chiuso: −{{xp}} XP. Il recupero è già nella tua lista.",
+    "−{{xp}} XP registrati. La missione di recupero è in Oggi."
+  ],
+  "stoneUsed": [
+    "È stata spesa una Pietra di protezione. La serie continua.",
+    "Il sistema ha usato una Pietra di protezione. La serie resta in piedi."
+  ],
+  "stoneEarned": [
+    "Settimana impeccabile: hai forgiato una Pietra di protezione.",
+    "Il sistema ti concede una Pietra di protezione. Tienila per la giornata storta."
+  ],
+  "frozen": [
+    "Sistema in pausa ({{motivo}}). Niente missioni, niente sottrazioni, niente giudizio.",
+    "Pausa attiva: {{motivo}}. Non si toglie niente finché dura."
+  ],
+  "morningNotif": [
+    "Il sistema ha assegnato le tue missioni di oggi. Inizia dalla prima.",
+    "Le tue missioni di oggi sono pronte. La prima è quella che costa.",
+    "Missioni assegnate. Ognuna somma XP verso il prossimo rango."
+  ],
+  "eveningNotif": [
+    "Mancano poche ore alla chiusura. Guarda cosa ti manca.",
+    "La chiusura si avvicina. Controlla le missioni in sospeso.",
+    "Prima di chiudere il giorno, uno sguardo a ciò che resta."
+  ],
+  "dungeonCleared": [
+    "Campagna «{{titulo}}» completata. Tutte le tappe chiuse.",
+    "«{{titulo}}» è caduta. Il sistema registra la tua vittoria."
+  ],
+  "pr": [
+    "Nuovo record in {{ejercicio}}. Il sistema lo annota.",
+    "{{ejercicio}}: record personale superato. Resta come riferimento."
+  ],
+  "achievement": [
+    "Traguardo sbloccato.",
+    "Traguardo registrato. È già nel tuo profilo.",
+    "Una nuova pagina nella tua leggenda."
+  ],
+  "streakHype": {
+    "sinRacha": [
+      "Nessuna serie per ora. Chiudi il giorno di oggi e inizia a contare.",
+      "Serie a zero. Un giorno chiuso la mette in moto."
+    ],
+    "encendida": [
+      "La serie è accesa. Chiudi oggi e aggiungi un altro giorno."
+    ],
+    "encendidaDias_one": "{{count}} giorno di serie. Oggi tocca il prossimo.",
+    "encendidaDias_other": "{{count}} giorni di serie. Oggi tocca il prossimo.",
+    "primeros": [
+      "{{dias}} giorni di fila. La catena cresce. Domani, un altro.",
+      "{{dias}} giorni. Il sistema inizia a fidarsi di te. Continua."
+    ],
+    "semana": [
+      "Una settimana intera in piedi. Il tuo moltiplicatore già paga: ogni missione vale di più.",
+      "{{dias}} giorni di fila. Domani, il prossimo."
+    ],
+    "quincena": [
+      "{{dias}} giorni di fila. La serie la reggi tu, giorno dopo giorno.",
+      "{{dias}} giorni. Ognuno chiuso, nessuno regalato."
+    ],
+    "larga": [
+      "{{dias}} giorni. La strada verso {{rango}} è questa: un giorno in più, ogni giorno.",
+      "{{dias}} giorni di serie. Il sistema li ha contati tutti."
+    ]
+  },
+  "aviso": {
+    "racha": {
+      "titulo_one": "Serie di {{count}} giorno",
+      "titulo_other": "Serie di {{count}} giorni",
+      "cuerpo_one": "Ti manca 1 missione per chiudere il giorno.",
+      "cuerpo_other": "Ti mancano {{count}} missioni per chiudere il giorno."
+    },
+    "recuperacion": {
+      "titulo": "Recupero",
+      "cuerpoBloqueada": "Completa una missione di oggi e il recupero si apre.",
+      "tituloAbierta": "Recupero aperto",
+      "cuerpoXp": "Completa la missione di recupero e tornano {{xp}} XP.",
+      "cuerpoLista": "La missione di recupero è pronta in Oggi."
+    },
+    "duelo": {
+      "tituloUno": "Il tuo duello",
+      "tituloVarios": "I tuoi duelli",
+      "cuerpo_one": "Ci sono novità in 1 duello.",
+      "cuerpo_other": "Ci sono novità in {{count}} duelli."
+    },
+    "foto": {
+      "titulo": "Foto della settimana",
+      "cuerpo_one": "Ne manca 1 su 3 per chiudere la settimana.",
+      "cuerpo_other": "Ne mancano {{count}} su 3 per chiudere la settimana."
+    },
+    "rango": {
+      "titulo": "Nuovo rango",
+      "cuerpo": "Ora sei {{rango}}. Entra a vederlo.",
+      "tituloGenerico": "L'arena ti riconosce",
+      "cuerpoGenerico": "Hai qualcosa di nuovo da vedere. Entra quando vuoi."
+    },
+    "vuelta": {
+      "titulo7": "L'arena è ancora qui",
+      "cuerpo7": "Basta un passo per tornare.",
+      "titulo30": "La porta è ancora aperta",
+      "cuerpo30": "Quando vuoi, inizi da una missione."
+    }
+  }
+}

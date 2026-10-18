@@ -1,0 +1,247 @@
+{
+  "seguridad": {
+    "eyebrow": "Segurança",
+    "soporte": "Contactar o suporte",
+    "retar": "Desafiar para um duelo",
+    "denunciar": "Denunciar",
+    "denunciarCuerpo": "Escolhe o que queres denunciar. A equipa vai rever o perfil e pode retirar conteúdo ou suspender o acesso social.",
+    "enviarDenuncia": "Enviar denúncia",
+    "bloquear": "Bloquear utilizador",
+    "denunciaRegistrada": "Denúncia registada para revisão. Também podes bloquear esta pessoa.",
+    "bloquearMensaje": "Deixam de se ver em pedidos e rankings, também no ludus. A amizade será eliminada.",
+    "bloquearConfirmar": "Bloquear",
+    "desbloquear": "Desbloquear utilizador",
+    "desbloquearMensaje": "Poderá voltar a pedir amizade. A amizade anterior não se recupera. Se partilharem um ludus, volta a aparecer.",
+    "desbloquearConfirmar": "Desbloquear",
+    "soporteNoAbierto": "Não foi possível abrir o suporte"
+  },
+  "duelo": {
+    "rivalOculto": "Rival oculto",
+    "sinDatos": "Ainda sem dados suficientes",
+    "vasDelante": "Vais à frente",
+    "rivalDelante": "{{nombre}} vai à frente",
+    "empatados": "Estão empatados",
+    "resultado": {
+      "gano": "Ganhaste",
+      "pierdo": "Perdeste",
+      "empate": "Empate",
+      "sin_datos": "Sem dados suficientes"
+    },
+    "cifrasVacias": "- contra -",
+    "cifras": "{{mio}} contra {{suyo}}",
+    "detalle": "Semana passada · {{cifras}}",
+    "detalleResultado": "Semana passada · {{cifras}} · {{resultado}}",
+    "a11yOculto": "Duelo com {{nombre}}, {{quedan}}. Sem dados do rival.",
+    "a11yOcultoMia": "Duelo com {{nombre}}, {{quedan}}. A tua disciplina {{mia}}. Sem dados do rival.",
+    "a11y": "Duelo com {{nombre}}, {{quedan}}. A tua disciplina {{mia}}, a do rival {{suya}}. {{linea}}.",
+    "ultimoDia": "último dia",
+    "quedan": "faltam {{n}} dias"
+  },
+  "podio": {
+    "fueraRanking": "Estás fora do ranking",
+    "puestoSinMedir": "A tua posição: sem medição",
+    "puesto": "A tua posição: {{puesto}} de {{total}}",
+    "a11y": "Pódio. {{lista}}.",
+    "a11yHueco": "{{posicion}}, {{nombre}}, {{valor}}",
+    "tu": "tu"
+  },
+  "comun": {
+    "tu": "Tu",
+    "quitarAmigo": "Remover amigo",
+    "aceptar": "Aceitar"
+  },
+  "lista": {
+    "nivel": "Nível {{nivel}}",
+    "racha": "sequência {{n}}",
+    "elite": "Élite",
+    "sinPuesto": "Sem posição",
+    "puesto": "Posição {{n}}",
+    "conInsignia": "{{nombre}}, {{insignia}}",
+    "a11yYo": "{{puesto}}. {{nombre}}, nível {{nivel}}, {{valor}}.",
+    "a11y": "{{puesto}}. {{nombre}}, nível {{nivel}}, {{valor}}. Toca para mais opções.",
+    "a11yQuitar": "{{puesto}}. {{nombre}}, nível {{nivel}}, {{valor}}. Toca para mais opções. Mantém premido para remover.",
+    "nombreYo": "{{nombre}} · tu",
+    "masOpciones": "Mais opções com {{nombre}}"
+  },
+  "codigo": {
+    "yaSoisRivales": "{{nombre}} já te tinha procurado. Agora são rivais.",
+    "solicitudEnviada": "Pedido enviado a {{nombre}}. Falta a resposta.",
+    "tuCodigo": "O teu código",
+    "tuCodigoA11y": "O teu código de amigo: {{codigo}}",
+    "tuCodigoCuerpo": "Quem o tiver pode pedir-te amizade. Vê o teu nível, a tua sequência e o teu cumprimento; nunca a tua saúde, o teu dinheiro nem o teu diário.",
+    "copiado": "Copiado",
+    "copiar": "Copiar",
+    "invitar": "Convidar",
+    "anadir": "Adicionar por código",
+    "campo": "Código de amigo",
+    "campoA11y": "Código de amigo, oito caracteres",
+    "enviar": "Enviar"
+  },
+  "solicitudes": {
+    "quitarMensaje": "{{nombre}} sai do teu ranking e tu do dele. Para voltar será preciso outro pedido.",
+    "titulo": "Pedidos",
+    "enviadas": "Pedidos enviados",
+    "entrante": "Nível {{nivel}} · quer medir-se contigo",
+    "rechazarA11y": "Recusar o pedido de {{nombre}}",
+    "saliente": "Nível {{nivel}} · à espera de resposta",
+    "retirar": "Retirar",
+    "retirarTitulo": "Retirar pedido",
+    "retirarMensaje": "{{nombre}} deixa de o ver.",
+    "retirarA11y": "Retirar o pedido enviado a {{nombre}}"
+  },
+  "ludus": {
+    "eligeObjetivo": "Escolhe o objetivo do teu ludus.",
+    "titulo": "O teu ludus",
+    "formandose": "O teu ludus ainda está em formação. O sistema junta gladiadores com o mesmo objetivo.",
+    "ayuda": "Os mesmos números do ranking de amigos: as penalizações não contam e ninguém compra posições. Sem chat: no ludus compete-se com factos.",
+    "peticionTitulo": "Pedido registado",
+    "peticionCuerpo": "Objetivo: {{objetivo}}. Cada ludus forma-se à mão, com {{min}} a {{max}} gladiadores Élite do mesmo objetivo. Vai aparecer aqui.",
+    "cambiarPeticion": "Alterar o pedido",
+    "presentacion": "Um ludus é a tua escola de gladiadores: de {{min}} a {{max}} Élite com o mesmo objetivo, a medirem-se todas as semanas. Sem chat nem ruído, só o marcador. Escolhe o teu e o sistema atribui-te um lugar.",
+    "objetivoA11y": "Objetivo do ludus: {{objetivo}}",
+    "nota": "Nota (opcional)",
+    "notaPlaceholder": "O que persegues neste momento",
+    "notaA11y": "Nota para o teu ludus, opcional",
+    "pedirPlaza": "Pedir lugar"
+  },
+  "subtitulo": {
+    "vacio": "Ninguém melhora da mesma forma quando alguém lhe olha para o marcador.",
+    "rivales_one": "{{count}} rival na tua arena.",
+    "rivales_other": "{{count}} rivais na tua arena.",
+    "rivalesResponder_one": "{{count}} rival na tua arena · {{porResponder}} por responder.",
+    "rivalesResponder_other": "{{count}} rivais na tua arena · {{porResponder}} por responder."
+  },
+  "vista": {
+    "eyebrow": "Arena",
+    "titulo": "Amigos",
+    "compartirSemana": "Partilhar a minha semana",
+    "preparandoSemana": "A preparar a tua semana para partilhar",
+    "cargando": "A carregar a arena",
+    "falloActualizar": "Não foi possível atualizar: {{fallo}}"
+  },
+  "ocultos": {
+    "titulo": "Fora do ranking",
+    "detalle": "Ocultou o marcador. Continua a ser teu amigo.",
+    "a11y": "{{nombre}}, fora do ranking. Toca para denunciar ou bloquear. Mantém premido para remover."
+  },
+  "ranking": {
+    "titulo": "Ranking",
+    "vacioTitulo": "A tua arena está vazia",
+    "vacioCuerpo": "Sozinho, afrouxa-se. Com um rival a olhar, o dia que ias saltar cumpre-se. Passa o teu código a quem te aperte a sério: basta um.",
+    "invitarPrimero": "Convidar o primeiro",
+    "ayuda": {
+      "xp": "XP ganho com missões no período. As de penalização não contam: recuperar não é avançar. Mantém alguém premido para o remover.",
+      "cumplimiento": "Missões cumpridas sobre agendadas. O de hoje só soma quando o cumpres. Mantém alguém premido para o remover.",
+      "racha": "Dias seguidos fechados. É o único número que não depende do período. Mantém alguém premido para o remover."
+    }
+  },
+  "ventana": {
+    "semana": "Semana",
+    "mes": "Mês"
+  },
+  "segmento": {
+    "ranking": {
+      "rotulo": "Período do ranking",
+      "semana": "Ranking dos últimos 7 dias",
+      "mes": "Ranking dos últimos 30 dias"
+    },
+    "ludus": {
+      "rotulo": "Período do ludus",
+      "semana": "Ludus dos últimos 7 dias",
+      "mes": "Ludus dos últimos 30 dias"
+    }
+  },
+  "metricas": {
+    "ranking": "Ordenar por {{metrica}}",
+    "ludus": "Ordenar o ludus por {{metrica}}"
+  },
+  "invitados": {
+    "titulo": "Os teus convidados",
+    "activos": "Ativos",
+    "activosA11y": "Convidados ativos: {{n}}",
+    "enPrueba": "Em teste",
+    "enPruebaA11y": "Em teste: {{n}}",
+    "siguiente": "Próxima insígnia: {{nombre}} com {{umbral}} convidados ativos",
+    "ayuda": "Conta quem entra com o teu código e está ativo 3 dias nas primeiras duas semanas. É uma insígnia: não dá XP nem dias de Pro."
+  },
+  "convivencia": {
+    "titulo": "Convivência e segurança",
+    "cuerpo": "Não se permite assédio, ameaças, usurpação de identidade nem conteúdo ofensivo. Os nomes, títulos e fotos são revistos antes de serem mostrados a outros: entretanto, verão um pseudónimo e uma imagem neutros. O teu perfil mantém os teus dados.",
+    "bloqueado": "Utilizador bloqueado",
+    "desbloquear": "Desbloquear"
+  },
+  "privacidad": {
+    "titulo": "Privacidade",
+    "aparecer": "Aparecer nos rankings",
+    "visible": "Os teus amigos veem o teu nível, a tua sequência, o teu XP do período e o teu cumprimento. Mais nada.",
+    "oculto": "Estás fora: os teus amigos não veem os teus números nem o teu retrato. Tu continuas a ver os deles.",
+    "aparecerA11y": "Aparecer nos rankings dos teus amigos"
+  },
+  "competicion": {
+    "regla": "Mede-se a disciplina: que parte do que é teu cumpres, ponderada pela dificuldade. Não ganha quem marca mais missões. Em caso de empate, mais dias ativos.",
+    "titulo": "Competição",
+    "cargando": "A carregar a competição",
+    "teReta": "{{nombre}} desafia-te",
+    "teRetaDetalle": "Duelo de disciplina · {{quedan}}",
+    "rechazarDuelo": "Recusar o duelo de {{nombre}}",
+    "retoEnviado": "Desafio enviado · falta a resposta",
+    "semanaCerrada": "Semana fechada · a resolver",
+    "revancha": "Desforra",
+    "vacio": "Esta semana ninguém se mede contigo. Desafia um amigo.",
+    "vacioAyuda": "Um duelo dura uma semana, de segunda a domingo. {{regla}}",
+    "vacioAyudaLigas": "Um duelo dura uma semana, de segunda a domingo. Uma liga junta até {{max}} amigos. {{regla}}",
+    "retar": "Desafiar",
+    "sinAmigos": "Para desafiar alguém, primeiro tem de ser teu amigo.",
+    "masOpciones": "Mais opções do duelo com {{nombre}}",
+    "masOpcionesPista": "Enviar denúncia ou bloquear utilizador",
+    "tuContra": "Tu contra {{nombre}}",
+    "lineaSemana": "{{linea}} · disciplina da semana",
+    "sinDatosRival": "Sem dados do rival · disciplina da semana",
+    "disciplinaDe": "Disciplina de {{nombre}}"
+  },
+  "retar": {
+    "enviado": "Desafio enviado a {{nombre}}. Começa quando o aceitar.",
+    "eyebrow": "Duelo semanal",
+    "retarA": "Desafiar {{nombre}}",
+    "retarAmigo": "Desafiar um amigo",
+    "enviar": "Enviar o desafio",
+    "rival": "Rival",
+    "metrica": "Métrica",
+    "disciplina": "Disciplina",
+    "duracion": "Duração",
+    "duracionValor": "Esta semana, até domingo ({{quedan}})",
+    "ayuda": "{{regla}} É a única métrica e a única duração do duelo: assim ninguém escolhe a que o favorece."
+  },
+  "liga": {
+    "teInvita": "{{de}} convida-te para a liga",
+    "entrar": "Entrar",
+    "rechazar": "Recusar a liga {{nombre}}",
+    "puestoSemana": "{{puesto}}.º de {{total}} esta semana",
+    "miembrosSinDatos_one": "{{count}} membro · ainda sem dados esta semana",
+    "miembrosSinDatos_other": "{{count}} membros · ainda sem dados esta semana",
+    "abrirA11y": "Liga {{nombre}}. Abrir a tabela",
+    "crear": "Criar liga",
+    "crearBoton": "Criar",
+    "nombreCorto": "Dá-lhe um nome com pelo menos 2 letras.",
+    "privada": "Liga privada",
+    "nombre": "Nome da liga",
+    "nombrePlaceholder": "Os do ginásio",
+    "crearAyuda": "Só entram amigos que convides, e cada um decide se aceita. Até {{max}} membros. A tabela reinicia todas as segundas-feiras. {{regla}}",
+    "invitacionEnviada": "Convite enviado a {{nombre}}. Entra quando o aceitar.",
+    "soloCreador": "Só quem criou a liga pode convidar.",
+    "salir": "Sair da liga",
+    "salirMensaje": "Deixas de ver a tabela deles e eles a tua. Se foste tu a criá-la, a liga dissolve-se para todos.",
+    "salirConfirmar": "Sair",
+    "eyebrow": "Liga · esta semana",
+    "cargandoTablero": "A carregar a tabela",
+    "sinDatosSemana": "Ainda sem dados esta semana",
+    "filaDetalle": "{{dias}} dias ativos · ritmo {{ritmo}}",
+    "filaA11ySinDatos": "{{puesto}}. {{nombre}}. Ainda sem dados esta semana.",
+    "filaA11y": "{{puesto}}. {{nombre}}. Disciplina {{indice}}, {{dias}} dias ativos.",
+    "tableroAyuda": "O número é a disciplina da semana, de 0 a 100. O desempate é o ritmo face às tuas quatro semanas anteriores.",
+    "invitar": "Convidar",
+    "invitado": "{{nombre}} · convidado",
+    "invitarA11y": "Convidar {{nombre}} para a liga",
+    "invitarAyuda": "Só quem criou a liga pode convidar. Se não foste tu, pede-lhe que convide quem quiseres juntar."
+  }
+}

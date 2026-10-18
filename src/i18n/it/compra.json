@@ -1,0 +1,32 @@
+{
+  "vista": {
+    "eyebrow": "Corpo",
+    "titulo": "Spesa",
+    "subVacia": "Niente in lista.",
+    "subHecha": "Tutto nel carrello. Spesa fatta.",
+    "subPendientes_one": "{{count}} articolo da prendere.",
+    "subPendientes_other": "{{count}} articoli da prendere.",
+    "anadirArticulo": "Aggiungi articolo",
+    "anadirPlaceholder": "Uova, avena, caffè",
+    "nuevoA11y": "Nuovo articolo",
+    "anadirA11y": "Aggiungi alla lista",
+    "cargando": "Caricamento della lista",
+    "cifraPendientes": "Da prendere",
+    "cifraCarro": "Nel carrello",
+    "cifraLista": "In lista",
+    "barraA11y": "Nel carrello: {{hechos}} su {{total}}",
+    "pendiente": "Da prendere",
+    "compraHecha": "Spesa fatta",
+    "nadaPendiente": "Niente da prendere",
+    "compraHechaCuerpo": "È tutto nel carrello. Svuota gli articoli comprati quando li hai messi via.",
+    "nadaPendienteCuerpo": "Genera la lista dalla dieta o aggiungi articoli qui sopra.",
+    "irDieta": "Vai alla dieta",
+    "pendienteA11y": "{{nombre}}, da prendere",
+    "pendienteCantidadA11y": "{{nombre}}, {{cantidad}}, da prendere",
+    "enCarro": "Nel carrello",
+    "vaciando": "Svuotamento",
+    "vaciar": "Svuota comprati",
+    "enCarroA11y": "{{nombre}}, nel carrello",
+    "enCarroCantidadA11y": "{{nombre}}, {{cantidad}}, nel carrello"
+  }
+}

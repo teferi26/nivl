@@ -1,0 +1,116 @@
+{
+  "fotosProgreso": "Progress photos",
+  "pose": {
+    "frente": "Front",
+    "lado": "Side",
+    "espalda": "Back"
+  },
+  "semanasSeguidas_one": "{{count}} week in a row",
+  "semanasSeguidas_other": "{{count}} weeks in a row",
+  "error": {
+    "limite": "You've saved 12 photos in the last 24 hours. You can continue later.",
+    "gate": "The photo permission has changed. Check it again.",
+    "peso": "The photo is too large. Crop it or take it again.",
+    "fecha": "The photo date isn't valid."
+  },
+  "edad": {
+    "pregunta": "Progress photos are for people 18 and over. Are you?",
+    "nota": "It's your own declaration. You can keep using NIVL the same if you say no.",
+    "si": "I'm 18 or over"
+  },
+  "fila": {
+    "errorDetalle": "Couldn't check. Tap to retry.",
+    "errorA11y": "Progress photos. Couldn't check the permission. Tap to retry.",
+    "detalle": "Front, side and back, once a week.",
+    "semanasA11y": "Progress photos. {{semanas}}",
+    "titulo18": "Progress photos · 18+",
+    "detalle18": "Private. For 18 and over only.",
+    "a11y18": "Progress photos, for 18 and over only"
+  },
+  "vista": {
+    "pie": "Your photos are private. They only leave NIVL if you share them.",
+    "subPoses": "Front, side and back. Once a week.",
+    "subCerrada": "Week closed. The next one starts Monday.",
+    "subSemana": "This week: {{n}} of 3.",
+    "cargandoA11y": "Loading your photos",
+    "errorPermiso": "Couldn't check the photo permission. Check your connection.",
+    "reintentar": "Try again",
+    "permisoSalud": "Health permission",
+    "permisoSaludTexto": "Progress photos are health data. To save them, NIVL needs your health permission.",
+    "revisarSalud": "Review health permission",
+    "solo18": "18+ only",
+    "sinFotos": "No photos yet",
+    "primeraSemana": "The first week",
+    "primeraSemanaTexto": "Three photos: front, side and back. Same light, same time of day, and in a few weeks you'll see what the mirror doesn't show.",
+    "primeraSemanaNota": "They give no XP and nobody else sees them.",
+    "cifraSemanas": "Weeks in a row",
+    "cifraSemanasA11y": "Weeks in a row: {{n}}",
+    "cifraSemana": "This week",
+    "cifraFotos": "Photos",
+    "estaSemana": "This week",
+    "poseHechaA11y": "{{pose}}: done",
+    "poseFaltaA11y": "{{pose}}: missing",
+    "tresHechas": "All three poses for the week, done.",
+    "falta": "Missing: {{poses}}.",
+    "listaDos": "{{a}} and {{b}}",
+    "listaTres": "{{a}}, {{b}} and {{c}}",
+    "conHito": "{{texto}} Next milestone: {{n}} weeks.",
+    "antesDespues": "Before and after",
+    "semanaASemana": "Week by week",
+    "eyebrow": "Progress",
+    "titulo": "Photos",
+    "nueva": "New photo"
+  },
+  "comparar": {
+    "plazo": "{{n}} days",
+    "plazoA11y": "Compare with about {{n}} days ago",
+    "faltanDos": "You need two {{pose}} photos on different days to compare.",
+    "antes": "Before",
+    "despues": "After",
+    "rotuloAntes": "BEFORE · {{fecha}}",
+    "rotuloDespues": "AFTER · {{fecha}}",
+    "entreA11y": "{{dias}} between the two photos",
+    "entreUno": "DAY BETWEEN THEM",
+    "entreVarios": "DAYS BETWEEN THEM",
+    "mostrarPeso": "Show weight"
+  },
+  "linea": {
+    "vaciaA11y": "{{pose}}: no photo this week",
+    "fotoA11y": "{{pose}} photo from {{fecha}}",
+    "abrePista": "Opens the photo",
+    "semana": "WEEK {{n}}",
+    "completa": "COMPLETE",
+    "verMas": "See more"
+  },
+  "hoja": {
+    "soloJpg": "JPG photos only",
+    "soloJpgCuerpo": "That format won't work. Take it with the camera or pick another one.",
+    "sinCamara": "To take the photo from here, NIVL needs the camera. You can also pick it from the gallery.",
+    "fechaFutura": "The date can't be in the future.",
+    "hoy": "Today",
+    "ayer": "Yesterday",
+    "eligePose": "Choose the pose",
+    "previaA11y": "Photo preview",
+    "hacerFoto": "Take the photo",
+    "galeria": "From gallery",
+    "consejo": "Same light, same distance, same time of day: that's how changes show.",
+    "pose": "Pose",
+    "fecha": "Date",
+    "antesA11y": "One day earlier",
+    "despuesA11y": "One day later",
+    "nota": "Saved privately. It gives no XP: it's for you."
+  },
+  "acciones": {
+    "noPreparar": "Couldn't prepare it",
+    "noPrepararCuerpo": "The photos didn't download. Try again with a connection.",
+    "noCompartir": "Couldn't share",
+    "borrarFoto": "Delete photo",
+    "borrarMensaje": "{{pose}} from {{fecha}}. It's deleted from NIVL for good.",
+    "borrar": "Delete",
+    "noBorrar": "Couldn't delete",
+    "guardada": "Photo saved · {{pose}}"
+  },
+  "ver": {
+    "soloTu": "Only you can see it."
+  }
+}

@@ -1,0 +1,61 @@
+{
+  "comida": {
+    "desayuno": "Petit-déjeuner",
+    "comida": "Déjeuner",
+    "merienda": "Goûter",
+    "cena": "Dîner",
+    "snack": "En-cas"
+  },
+  "vista": {
+    "eyebrow": "Corps",
+    "titulo": "Régime",
+    "subMacros": "{{dia}} : {{kcal}} kcal et {{prote}} g de protéines prévus.",
+    "subComidas_one": "{{dia}} : {{count}} repas prévu.",
+    "subComidas_other": "{{dia}} : {{count}} repas prévus.",
+    "subVacio": "{{dia}} pas encore planifié.",
+    "irCompra": "Aller à la liste de courses",
+    "diaHoyA11y": "{{dia}}, aujourd'hui",
+    "cargando": "Chargement de ton régime",
+    "cifraKcal": "Kcal",
+    "cifraKcalSinDato": "Kcal : aucune donnée",
+    "cifraProte": "Protéines",
+    "cifraProteSinDato": "Protéines : aucune donnée",
+    "cifraComidas": "Repas",
+    "cifraComidasA11y": "Repas : {{n}} sur {{total}} planifiés",
+    "notaMano": "Les repas écrits à la main n'ont pas de macros ; seuls comptent ceux que planifie le coach.",
+    "hoyDia": "Aujourd'hui · {{dia}}",
+    "sinPlanificar": "Non planifié. Touche pour ajouter.",
+    "editarA11y": "Modifier {{comida}} : {{descripcion}} du {{dia}}",
+    "planificarA11y": "Planifier {{comida}} du {{dia}}",
+    "conMacrosA11y": "{{texto}}, {{macros}}",
+    "macrosKcalProteA11y": "{{kcal}} kcal et {{prote}} grammes de protéines",
+    "macrosKcalA11y": "{{kcal}} kcal",
+    "macrosProteA11y": "{{prote}} grammes de protéines",
+    "listaCompra": "Liste de courses",
+    "generar": "Générer la liste",
+    "generarConIngredientes": "Le système rassemble les ingrédients des 7 jours, supprime les doublons et les envoie dans la liste.",
+    "generarSinIngredientes": "Écris les ingrédients de tes repas, séparés par des virgules, et le système fera la liste.",
+    "gProt": "g prot."
+  },
+  "hoja": {
+    "eyebrow": "{{comida}} · {{dia}}",
+    "tituloAjustar": "Ajuste le repas",
+    "tituloNueva": "Qu'est-ce que tu vas manger ?",
+    "quitarComida": "Retirer le repas",
+    "comida": "Repas",
+    "comidaPlaceholder": "Poulet, riz et brocoli",
+    "comidaA11y": "Description du repas",
+    "ingredientes": "Ingrédients",
+    "ingredientesPlaceholder": "poulet, riz, brocoli, huile d'olive",
+    "ingredientesAyuda": "Séparés par des virgules : c'est d'ici que sort la liste de courses.",
+    "ingredientesA11y": "Ingrédients séparés par des virgules"
+  },
+  "acciones": {
+    "sinIngredientes": "Pas d'ingrédients",
+    "sinIngredientesCuerpo": "Ajoute des ingrédients à tes repas (séparés par des virgules) et le système générera la liste.",
+    "listaGenerada": "Liste générée",
+    "listaGeneradaCuerpo": "{{n}} ingrédients envoyés dans la liste de courses.",
+    "verLista": "Voir la liste",
+    "entendido": "Compris"
+  }
+}

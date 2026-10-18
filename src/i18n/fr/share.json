@@ -1,0 +1,27 @@
+{
+  "tarjeta": {
+    "nivel": "NIVEAU",
+    "diasRacha": "JOURS DE SÉRIE",
+    "mideteConmigo": "MESURE-TOI À MOI",
+    "antes": "AVANT",
+    "despues": "APRÈS"
+  },
+  "hoja": {
+    "titulo": "PARTAGER",
+    "previa": "Aperçu de la carte",
+    "formato": {
+      "stories": "STORY 9:16",
+      "post": "PUBLICATION 4:5"
+    },
+    "mostrarAlias": "Afficher mon pseudo",
+    "incluirFotos": "Inclure mes photos de progression",
+    "incluirFoto": "Inclure la photo",
+    "incluirTextoCoach": "Inclure le texte du coach",
+    "mostrarPeso": "Afficher le poids",
+    "incluirInvitacion": "Ajouter mon lien d'invitation",
+    "aliasNoDisponible": "Ton pseudo n'est pas disponible pour l'instant.",
+    "aliasError": "Impossible de récupérer ton pseudo. Réessaie.",
+    "abriendo": "OUVERTURE…",
+    "compartir": "PARTAGER"
+  }
+}

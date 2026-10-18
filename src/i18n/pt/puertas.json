@@ -1,0 +1,88 @@
+{
+  "cargando": "A carregar",
+  "sinComprobar": "Por verificar",
+  "volverAComprobar": "Verificar de novo",
+  "leerPolitica": "Ler a Política de Privacidade",
+  "edad": {
+    "eyebrow": "Antes de entrar",
+    "titulo": "A tua idade",
+    "subtitulo": "O NIVL é para pessoas com {{n}} anos ou mais.",
+    "rotulo": "Idade mínima",
+    "meta": "{{n}} ou mais",
+    "cuerpo": "Confirma que tens a idade mínima para continuar. Não é preciso indicar a tua data de nascimento.",
+    "casillaA11y": "Tenho {{n}} anos ou mais",
+    "casilla": "Tenho {{n}} anos ou mais.",
+    "noGuardado": "Não foi guardado",
+    "confirmar": "Confirmar e continuar",
+    "noComprobada": "Não foi possível verificar a tua confirmação de idade.",
+    "sesionAbierta": "Sessão iniciada"
+  },
+  "salud": {
+    "eyebrow": "Opcional",
+    "titulo": "A tua saúde, com permissão",
+    "comprobandoA11y": "A verificar a permissão de saúde",
+    "borradoPendiente": "Eliminação pendente",
+    "registro": "Registo de saúde",
+    "borradoCuerpo": "A tua permissão foi retirada e há uma eliminação pendente. Podes terminá-la em Perfil.",
+    "cuerpo": "Antes de abrir este registo, vê que dados de saúde o NIVL guarda e decide se o queres ativar.",
+    "revisar": "Rever permissão",
+    "irAPerfil": "Ir para Perfil",
+    "hojaEyebrow": "Permissão de saúde",
+    "aceptar": "Aceitar e ativar saúde",
+    "politicaNoAbre": "Não foi possível abrir a política.",
+    "partes": {
+      "paraQue": "Para quê",
+      "quienDonde": "Quem e onde",
+      "opcional": "É opcional",
+      "retirarlo": "Retirá-la"
+    }
+  },
+  "saludAjustes": {
+    "seccion": "Saúde e bem-estar",
+    "comprobando": "A verificar a permissão…",
+    "noComprobado": "Não foi possível verificar a permissão de saúde.",
+    "borradoPendiente": "Permissão retirada. Falta terminar a eliminação; tenta de novo.",
+    "aceptado": "Permitiste guardar e utilizar os teus dados de saúde. Podes retirar a permissão e apagá-los.",
+    "sinPermiso": "Sem permissão. O NIVL não utiliza os registos de saúde. Podes exportar os dados anteriores ou pedir que sejam apagados.",
+    "revisar": "Rever permissão de saúde",
+    "terminarBorrado": "Terminar eliminação",
+    "retirar": "Retirar e apagar saúde",
+    "nota": "A exportação e a eliminação da conta continuam disponíveis abaixo. Os endereços temporários de fotos já partilhadas podem continuar válidos até o ficheiro ser eliminado ou expirarem.",
+    "confirmarTitulo": "Retirar permissão e apagar",
+    "confirmarBoton": "Retirar e apagar"
+  },
+  "avisoSalud": {
+    "error": "Não foi possível verificar a permissão de saúde. As tuas metas gerais continuam disponíveis.",
+    "desactivado": "Os registos de saúde estão desativados. As metas gerais continuam disponíveis."
+  },
+  "denuncia": {
+    "titulo": "O que está mal nesta resposta?",
+    "enviar": "Enviar denúncia",
+    "cuerpo": "São enviados o motivo e o texto desta resposta para a equipa a rever. Nada mais da tua conversa.",
+    "motivo": "Motivo",
+    "noHaSalido": "Não correu bem",
+    "correoAbierto": "O teu e-mail abriu com a denúncia. Envia-o para chegar à revisão.",
+    "correoNoAbre": "Não foi possível abrir o e-mail. Escreve para {{correo}} com o motivo da denúncia.",
+    "registrada": "Denúncia registada. A equipa vai rever esta resposta.",
+    "motivos": {
+      "danino": "Pode causar dano",
+      "salud": "Conselho de saúde perigoso",
+      "dinero": "Conselho financeiro perigoso",
+      "incorrecto": "Informação falsa",
+      "ofensivo": "Ofensivo ou inadequado",
+      "otro": "Outro motivo"
+    },
+    "correo": {
+      "asunto": "Denúncia de resposta de IA · NIVL",
+      "origen": "Origem: {{origen}}",
+      "motivo": "Motivo: {{motivo}}",
+      "mensaje": "Mensagem: {{id}}",
+      "sinId": "sem identificador",
+      "contexto": "Contexto: {{contexto}}",
+      "fuente": {
+        "coach": "coach",
+        "oraculo": "Oráculo"
+      }
+    }
+  }
+}

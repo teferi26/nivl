@@ -1,0 +1,85 @@
+{
+  "mes": {
+    "ene": "Jan",
+    "feb": "Feb",
+    "mar": "Mar",
+    "abr": "Apr",
+    "may": "May",
+    "jun": "Jun",
+    "jul": "Jul",
+    "ago": "Aug",
+    "sept": "Sep",
+    "oct": "Oct",
+    "nov": "Nov",
+    "dic": "Dec"
+  },
+  "historico": {
+    "mes": "{{mes}} {{anio}}",
+    "titulo": "Sales by month"
+  },
+  "vista": {
+    "eyebrow": "Creator program",
+    "titulo": "Your dashboard",
+    "cargando": "Loading the creator dashboard",
+    "portalSinPanelTitulo": "This dashboard is for program creators",
+    "portalSinPanelCuerpo": "There's no dashboard to show for this account.",
+    "sinPanelTitulo": "This dashboard is for creators",
+    "sinPanelCuerpo": "Your account isn't in the creator program.",
+    "errorConDatos": "{{error}} What you see may be out of date."
+  },
+  "codigo": {
+    "titulo": "Your code",
+    "a11y": "Your code: {{codigo}}",
+    "copiado": "Copied",
+    "copiar": "Copy code",
+    "nota": "Anyone who enters it in “Who brought you?” in their first days stays with you for good. The link only opens the app if they already have it installed."
+  },
+  "cuentas": {
+    "titulo": "Accounts and sales",
+    "cuentas": "Accounts with your code",
+    "ventas": "Sales",
+    "cuentasMes": "Accounts this month",
+    "ventasMes": "Sales this month",
+    "queEsVenta": "A sale is one of your accounts subscribing for the first time.",
+    "comision": "For an annual sale you earn {{importe}}; on monthly, your {{pct}}% of what comes in each month until it reaches the same."
+  },
+  "retos": {
+    "titulo": "Challenges",
+    "cumplido": "Done",
+    "unidadVentas": "sales",
+    "a11y": "Challenge {{titulo}}: {{ventas}} of {{meta}} sales",
+    "premio": "Prize: {{premio}}"
+  },
+  "tabla": {
+    "titulo": "This month's table",
+    "premio": "FIRST PLACE PRIZE",
+    "nombreYo": "{{alias}} · you",
+    "a11y": "Place {{pos}}: {{alias}}, {{ventas}}",
+    "a11yYo": "Place {{pos}}: {{alias}}, you, {{ventas}}"
+  },
+  "rango": {
+    "titulo": "Your rank",
+    "ventas90": "Sales in 90 days",
+    "mesSeguido": "Month in a row",
+    "mesesSeguidos": "Months in a row",
+    "haciaA11y": "Toward {{rango}}: {{ventas}} of {{umbral}} sales",
+    "faltan": "{{rango}}: {{umbral}} sales in 90 days. You need {{faltan}} more.",
+    "cumples": "You meet the {{rango}} requirements. The team applies the rank change.",
+    "sinSiguiente": "There's no higher rank with a set rule."
+  },
+  "dinero": {
+    "titulo": "Your money",
+    "retencion": "On hold",
+    "disponible": "Available",
+    "cobrado": "Paid out",
+    "fijo": "Monthly fixed",
+    "descontar": "To deduct",
+    "descontarDetalle": "Refunds on commissions already paid",
+    "retencionNota": "Each commission waits {{dias}} days in case of a refund; then it becomes available and is paid in the next payout. If the store refunds the money, the commission is canceled."
+  },
+  "pagos": {
+    "titulo": "Payments received",
+    "vacioTitulo": "No payments yet",
+    "vacioCuerpo": "Each payout shows up here once it's made."
+  }
+}

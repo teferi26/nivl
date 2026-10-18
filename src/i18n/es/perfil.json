@@ -181,5 +181,15 @@
   },
   "planes": {
     "pruebaAuto": "Prueba gratuita"
+  },
+  "idiomaApp": {
+    "seccion": "Idioma",
+    "fila": "Idioma de la app",
+    "filaA11y": "Idioma de la app: {{idioma}}. Cambiar",
+    "nota": "El coach y los avisos te hablan en el mismo idioma.",
+    "eyebrow": "Idioma",
+    "titulo": "¿En qué idioma te habla NIVL?",
+    "cuerpo": "La app, el coach y los avisos, en este idioma. Al cambiarlo, la app se recarga.",
+    "grupoA11y": "Idiomas"
   }
 }

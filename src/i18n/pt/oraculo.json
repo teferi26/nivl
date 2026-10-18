@@ -1,0 +1,46 @@
+{
+  "clave": {
+    "eyebrow": "Chave de API",
+    "titulo": "A tua própria chave",
+    "guardar": "Guardar a chave",
+    "cuerpo": "OpenAI ou Anthropic. Fica guardada só neste dispositivo e pagas só o teu consumo.",
+    "etiqueta": "Chave",
+    "placeholder": "sk-proj-… (OpenAI) ou sk-ant-… (Anthropic)",
+    "a11y": "Chave de API",
+    "guardadaAyuda": "Há uma chave guardada. Cola outra para a substituir, ou apaga-a e guarda para a remover.",
+    "ayuda": "Só é enviada para a OpenAI ou a Anthropic, nunca para o NIVL."
+  },
+  "vista": {
+    "todosLosDias": "todos os dias",
+    "eyebrow": "O sistema forja",
+    "titulo": "Oráculo",
+    "subtituloClave": "Diz-lhe o teu objetivo e ele transforma-o em missões. A tua chave está neste dispositivo.",
+    "subtitulo": "Diz-lhe o teu objetivo e ele transforma-o em missões diárias com data e medida.",
+    "cambiarClave": "Mudar a chave de API",
+    "usarClave": "Usar a minha própria chave de API",
+    "objetivo": "O teu objetivo",
+    "objetivoPlaceholder": "Correr 10 km em maio. Passar a Cálculo com boa nota. Dormir 8 horas.",
+    "consultar": "Consultar o Oráculo",
+    "delibera": "O Oráculo delibera",
+    "deliberaCuerpo": "Uns segundos. Está a medir o teu objetivo contra os teus dias.",
+    "proTitulo": "O Oráculo faz parte do NIVL Pro",
+    "proCuerpo": "Transformar objetivos em missões com IA vem com o coach. O resto do NIVL continua a ser teu.",
+    "espera": "O Oráculo espera",
+    "esperaCuerpo": "Um objetivo concreto, com data e medida, dá melhores missões. Tu escolhes quais aceitar.",
+    "veredicto": "Veredicto do sistema",
+    "propuestas": "Missões propostas",
+    "hasta": "até",
+    "propuestaA11y": "Missão proposta: {{titulo}}, até {{xp}} XP, aceite",
+    "propuestaDescartadaA11y": "Missão proposta: {{titulo}}, até {{xp}} XP, descartada",
+    "nota": "Desmarca as que não quiseres. As aceites passam para Hábitos como missões diárias.",
+    "aceptar_one": "Aceitar {{count}} missão",
+    "aceptar_other": "Aceitar {{count}} missões"
+  },
+  "asignadas": {
+    "titulo": "MISSÕES ATRIBUÍDAS",
+    "mensaje_one": "O sistema registou uma missão nova.",
+    "mensaje_other": "O sistema registou {{count}} missões novas.",
+    "ver": "Ver missões",
+    "quedarme": "Ficar aqui"
+  }
+}

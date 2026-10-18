@@ -1,0 +1,78 @@
+{
+  "tipo": {
+    "correr": "Laufen",
+    "nadar": "Schwimmen",
+    "bici": "Rad",
+    "caminar": "Gehen",
+    "remo": "Rudern",
+    "otro": "Andere"
+  },
+  "zona": {
+    "Z1": "Z1",
+    "Z2": "Z2",
+    "Z3": "Z3",
+    "Z4": "Z4",
+    "Z5": "Z5",
+    "intervalos": "Intervalle",
+    "libre": "Frei"
+  },
+  "sesionDel": "{{tipo}} am {{fecha}}",
+  "fila": {
+    "rpe": "RPE {{rpe}}",
+    "pulso": "{{ppm}} bpm",
+    "leido": "{{tipo}} am {{fecha}}, Zone {{zona}}. {{cifras}}. Gedrückt halten zum Löschen.",
+    "leidoExtra": "{{tipo}} am {{fecha}}, Zone {{zona}}. {{cifras}}. {{extra}}. Gedrückt halten zum Löschen.",
+    "leidoXp": "{{tipo}} am {{fecha}}, Zone {{zona}}. {{cifras}}. Plus {{xp}} XP. Gedrückt halten zum Löschen.",
+    "leidoExtraXp": "{{tipo}} am {{fecha}}, Zone {{zona}}. {{cifras}}. {{extra}}. Plus {{xp}} XP. Gedrückt halten zum Löschen."
+  },
+  "vista": {
+    "eyebrow": "Körper",
+    "titulo": "Cardio",
+    "subVacio": "Noch nichts eingetragen. Jede Einheit justiert die nächste.",
+    "sub_one": "{{km}} km und {{count}} Einheit in 28 Tagen.",
+    "sub_other": "{{km}} km und {{count}} Einheiten in 28 Tagen.",
+    "registrar": "Einheit eintragen",
+    "cargando": "Cardio wird geladen",
+    "sesionRegistrada": "Einheit eingetragen",
+    "cerrarAvisoA11y": "Hinweis schließen",
+    "cifraKm": "Km · 28 Tage",
+    "cifraKmA11y": "{{km}} Kilometer in 28 Tagen",
+    "cifraSesiones": "Einheiten",
+    "cifraMin": "Min in Bewegung",
+    "regla": "+10 % PRO WOCHE",
+    "reglaPie": "HÖCHSTENS",
+    "reglaNota": "Das Wochenvolumen sollte um höchstens 10 % steigen. Das System überwacht das und passt deine Befehle mit diesen Daten an.",
+    "sesiones": "Einheiten",
+    "vacioTitulo": "Nichts eingetragen",
+    "vacioCuerpo": "Jeder Lauf und jede Bahn, die du hier einträgst, nutzt das System, um dein Tempo zu berechnen und das Nächste anzupassen.",
+    "registrarPrimera": "Die erste eintragen"
+  },
+  "hoja": {
+    "eyebrow": "Neue Einheit",
+    "titulo": "Was hast du heute bewegt?",
+    "tipo": "Art",
+    "tipoA11y": "Art der Einheit",
+    "zona": "Zone",
+    "zonaA11y": "Belastungszone",
+    "zonaChipA11y": "Zone {{zona}}",
+    "zonaAyuda": "Z2 ist der Motor: ein Tempo, bei dem du in ganzen Sätzen sprechen kannst. Es macht 80 % des Volumens aus und baut die Basis auf.",
+    "duracion": "Dauer (Min)",
+    "duracionA11y": "Dauer in Minuten",
+    "distancia": "Distanz (km)",
+    "distanciaA11y": "Distanz in Kilometern",
+    "esfuerzo": "Belastung (RPE 1-10)",
+    "esfuerzoA11y": "Gefühlte Belastung von 1 bis 10",
+    "pulso": "Ø Puls",
+    "pulsoA11y": "Durchschnittlicher Puls",
+    "notas": "Notizen",
+    "notasPlaceholder": "Wie es lief, Beschwerden, Untergrund",
+    "notasA11y": "Notizen zur Einheit"
+  },
+  "acciones": {
+    "faltaDuracion": "Die Dauer fehlt. Ohne Minuten gibt es keine Einheit zum Eintragen.",
+    "kmNumeros": "Gib die Kilometer als Zahl ein, zum Beispiel {{ejemplo}}.",
+    "rpeRango": "Die Belastung geht von 1 bis 10.",
+    "registradaA11y": "Einheit eingetragen. {{texto}}",
+    "eliminarSesion": "Einheit löschen"
+  }
+}

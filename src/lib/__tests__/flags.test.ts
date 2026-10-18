@@ -70,6 +70,18 @@ describe('refrescarFlags', () => {
     expect(cargar().flagsActuales()).toEqual(FLAGS_APAGADOS);
   });
 
+  it('flagActivo (lectura síncrona del coach): apagado hasta que el servidor diga true', async () => {
+    const f = cargar();
+    expect(f.flagActivo('idiomas_activos')).toBe(false);
+    mockRpc.mockResolvedValue({ data: { idiomas_activos: true }, error: null });
+    await f.refrescarFlags();
+    expect(f.flagActivo('idiomas_activos')).toBe(true);
+    expect(f.flagActivo('modos_activos')).toBe(false);
+    mockRpc.mockResolvedValue({ data: null, error: { code: '42883', message: 'no existe' } });
+    await f.refrescarFlags();
+    expect(f.flagActivo('idiomas_activos')).toBe(false);
+  });
+
   it('lee el servidor y lo guarda en el teléfono', async () => {
     mockRpc.mockResolvedValue({ data: { modos_activos: true }, error: null });
     const f = cargar();

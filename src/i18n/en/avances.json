@@ -1,0 +1,103 @@
+{
+  "meta": {
+    "progreso": "Progress on {{titulo}}",
+    "detalleA11y": "Started at {{inicio}}, now at {{actual}}, target {{objetivo}} {{unidad}}",
+    "eliminarA11y": "Delete goal {{titulo}}",
+    "reclamar": "Claim",
+    "actualizar": "Update",
+    "eliminar": "Delete goal"
+  },
+  "vista": {
+    "subtituloSinSalud": "Your general goals, in one view.",
+    "subtituloPrimerPesaje": "Log your first weigh-in: it's your starting line.",
+    "subtituloPeso": "Last weigh-in: {{peso}} kg.",
+    "subtituloDelta": "Last weigh-in: {{peso}} kg ({{delta}} kg over {{n}} weigh-ins).",
+    "eyebrow": "Progress",
+    "titulo": "Progress",
+    "nuevaMeta": "New goal",
+    "cargando": "Loading your progress"
+  },
+  "franja": {
+    "peso": "Weight",
+    "pesoSinPesajes": "Weight: no weigh-ins yet",
+    "pesoA11y": "Weight: {{peso}} kilos",
+    "metas": "Goals",
+    "logradas": "Reached"
+  },
+  "pesaje": {
+    "campo": "Today's weight (kg)",
+    "campoA11y": "Today's weight in kilograms",
+    "corregir": "Correct",
+    "pesar": "Weigh in · up to +{{xp}} XP",
+    "curva": "Weight · {{n}} weigh-ins",
+    "invalido": "Enter your weight in kg, e.g. 78.4",
+    "corregido": "The system corrects today's weigh-in. It was already paid.",
+    "deModulo": "to VIT for the weigh-in",
+    "topeDiario": "Logged. You've already hit today's XP cap.",
+    "misionPagada": "Logged. Today's mission was already checked and paid.",
+    "toast": "Weigh-in · +{{xp}} XP",
+    "toastAnuncio": "Weigh-in logged. {{mensaje}}",
+    "registrado": "Weigh-in logged"
+  },
+  "metas": {
+    "titulo": "Goals",
+    "activas": "{{n}} active",
+    "vacioTitulo": "No goals set",
+    "vacioCuerpo": "A goal is a number with a date: read twelve books, finish four courses. Put a number on your objective.",
+    "fijarPrimera": "Set the first one"
+  },
+  "conseguidas": {
+    "titulo": "Reached",
+    "a11yFecha": "{{titulo}}, reached on {{fecha}}. {{valor}} {{unidad}}",
+    "a11y": "{{titulo}}, reached. {{valor}} {{unidad}}",
+    "fecha": "Reached on {{fecha}}"
+  },
+  "records": {
+    "titulo": "Personal records",
+    "vacioTitulo": "No records yet",
+    "vacioCuerpo": "They show up here when you log gym sessions with weight.",
+    "a11y": "{{ejercicio}}: {{peso}} kilos. See progression",
+    "abierta": "Progression open",
+    "progresion": "Progression · {{ejercicio}}"
+  },
+  "hojaMeta": {
+    "titulo": "What number are you going to hit?",
+    "fijar": "Set the goal",
+    "campoTitulo": "Title",
+    "tituloEjemploSalud": "E.g. Bench press 100 kg",
+    "tituloEjemplo": "E.g. Read twelve books",
+    "campoTituloA11y": "Goal title",
+    "seMide": "Measured by",
+    "seMideA11y": "How the goal is measured",
+    "metrica": {
+      "peso_corporal": "Body weight",
+      "ejercicio": "Exercise (PR)",
+      "libre": "Custom"
+    },
+    "medirConA11y": "Measure by {{metrica}}",
+    "ejercicio": "Exercise (exact name from the gym log)",
+    "ejercicioEjemplo": "E.g. Bench press",
+    "ejercicioA11y": "Exercise name",
+    "inicial": "Starting value",
+    "objetivo": "Target",
+    "objetivoA11y": "Target value",
+    "premio": "When you reach it, up to +{{xp}} XP (within the daily goal cap).",
+    "incompleta": "Incomplete goal: title, starting value and target value (different).",
+    "faltaEjercicio": "Missing exercise: write the EXACT name of the exercise from the gym log."
+  },
+  "hojaValor": {
+    "eyebrow": "Manual progress",
+    "campo": "Current value ({{unidad}})",
+    "campoA11y": "Current goal value",
+    "invalido": "Invalid value: enter a number."
+  },
+  "reclamar": {
+    "titulo": "GOAL REACHED",
+    "mensaje": "“{{titulo}}”: up to +{{xp}} XP if you haven't hit today's goal cap.",
+    "aunNo": "Not yet",
+    "toast": "Goal reached · +{{xp}} XP",
+    "toastAnuncio": "Goal reached. “{{titulo}}”: +{{xp}} XP to AGI.",
+    "conseguida": "Goal reached",
+    "sinPremio": "“{{titulo}}” is marked as reached. This reward doesn't count today: it was already paid or you've hit the daily cap."
+  }
+}

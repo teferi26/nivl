@@ -1,0 +1,52 @@
+{
+  "derivar": {
+    "listo": "Prêt à devenir tien",
+    "faltan_one": "Encore {{count}} jour",
+    "faltan_other": "Encore {{count}} jours",
+    "resumen_one": "{{titulo}}. Série de {{count}} jour sur {{objetivo}}. {{restantes}}.",
+    "resumen_other": "{{titulo}}. Série de {{count}} jours sur {{objetivo}}. {{restantes}}.",
+    "subtitulo": "Après {{dias}} jours d'affilée, une habitude est à toi. Chacune compte sa propre série."
+  },
+  "vista": {
+    "todosLosDias": "tous les jours",
+    "ningunDia": "aucun jour",
+    "listaY": "{{lista}} et {{ultimo}}",
+    "semanaA11y": "Prévu : {{dias}}",
+    "barraA11y": "Série de {{titulo}} : {{racha}} jours sur {{objetivo}}",
+    "losaA11y": "{{resumen}} Demandé : {{dias}}. Touche pour modifier.",
+    "forjado": "Forgée",
+    "darloPorAdquirido": "La considérer acquise",
+    "cargandoA11y": "Chargement de tes habitudes",
+    "eyebrow": "Constance",
+    "nuevoHabito": "Nouvelle habitude",
+    "enForja": "En forge",
+    "mejorRacha": "Meilleure série",
+    "mejorRachaA11y": "Meilleure série : {{dias}} jours",
+    "listos": "Prêtes",
+    "tuyos": "À toi",
+    "tuyosA11y": "Habitudes acquises : {{n}}",
+    "reglasHoy": "Règles du contrat · aujourd'hui",
+    "siNo": "Sinon : {{consecuencia}}",
+    "reglasCumplidas": "Tu les as toutes tenues aujourd'hui. Le système en prend note.",
+    "reglasPendientes": "Ce qui reste non coché à la clôture compte comme enfreint : {{xp}} XP par règle et sa conséquence demain.",
+    "vacioTitulo": "Aucune habitude en forge",
+    "vacioCuerpo": "La lecture, la course, la prospection téléphonique, se coucher à l'heure. Ce que tu veux qu'un jour tu fasses sans y penser.",
+    "anadirPrimero": "Ajouter la première",
+    "nadaEnForja": "Rien en forge pour l'instant. Ce qui est déjà à toi reste plus bas.",
+    "adquiridos": "Acquises",
+    "adquiridoDetalle": "On ne te la demande plus. Appuie longuement pour l'exiger à nouveau.",
+    "reactivar": "Réactiver",
+    "adquiridoA11y": "{{titulo}}, acquise. Appuie longuement pour l'exiger à nouveau.",
+    "adquiridoDiasA11y": "{{titulo}}, acquise en {{dias}} jours. Appuie longuement pour l'exiger à nouveau."
+  },
+  "hook": {
+    "adquiridoTitulo": "HABITUDE ACQUISE",
+    "adquiridoMensaje": "{{titulo}} tient depuis {{dias}} jours d'affilée.\n\nSi tu la considères acquise, elle ne te demande plus de validation quotidienne et ne peut plus briser ta série. Tu peux continuer à la cocher quand tu veux.\n\nSi tu préfères continuer à compter, aucun problème : elle continue de s'additionner.",
+    "seguirContando": "Continuer à compter",
+    "esTuyoTitulo": "Le système la considère tienne",
+    "esTuyoPagado": "{{titulo}} ne te sera plus demandée.\n+{{xp}} XP en {{stat}}.",
+    "esTuyoSinPago": "{{titulo}} ne te sera plus demandée.\nCette récompense ne compte pas aujourd'hui : elle était déjà payée ou tu as atteint le plafond quotidien.",
+    "volverAExigirlo": "L'exiger à nouveau",
+    "volverAExigirloMensaje": "{{titulo}} est de nouveau demandée chaque jour et compte de nouveau pour la série."
+  }
+}

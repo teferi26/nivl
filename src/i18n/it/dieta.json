@@ -1,0 +1,61 @@
+{
+  "comida": {
+    "desayuno": "Colazione",
+    "comida": "Pranzo",
+    "merienda": "Merenda",
+    "cena": "Cena",
+    "snack": "Snack"
+  },
+  "vista": {
+    "eyebrow": "Corpo",
+    "titulo": "Dieta",
+    "subMacros": "{{dia}}: {{kcal}} kcal e {{prote}} g di proteine pianificati.",
+    "subComidas_one": "{{dia}}: {{count}} pasto pianificato.",
+    "subComidas_other": "{{dia}}: {{count}} pasti pianificati.",
+    "subVacio": "{{dia}} ancora da pianificare.",
+    "irCompra": "Vai alla lista della spesa",
+    "diaHoyA11y": "{{dia}}, oggi",
+    "cargando": "Caricamento della tua dieta",
+    "cifraKcal": "Kcal",
+    "cifraKcalSinDato": "Kcal: nessun dato",
+    "cifraProte": "Proteine",
+    "cifraProteSinDato": "Proteine: nessun dato",
+    "cifraComidas": "Pasti",
+    "cifraComidasA11y": "Pasti: {{n}} su {{total}} pianificati",
+    "notaMano": "I pasti scritti a mano non hanno macro; contano solo quelli pianificati dal coach.",
+    "hoyDia": "Oggi · {{dia}}",
+    "sinPlanificar": "Da pianificare. Tocca per aggiungere.",
+    "editarA11y": "Modifica {{comida}}: {{descripcion}} del {{dia}}",
+    "planificarA11y": "Pianifica {{comida}} del {{dia}}",
+    "conMacrosA11y": "{{texto}}, {{macros}}",
+    "macrosKcalProteA11y": "{{kcal}} kcal e {{prote}} grammi di proteine",
+    "macrosKcalA11y": "{{kcal}} kcal",
+    "macrosProteA11y": "{{prote}} grammi di proteine",
+    "listaCompra": "Lista della spesa",
+    "generar": "Genera la lista",
+    "generarConIngredientes": "Il sistema raccoglie gli ingredienti dei 7 giorni, elimina i doppioni e li manda alla lista.",
+    "generarSinIngredientes": "Scrivi gli ingredienti dei tuoi pasti, separati da virgole, e il sistema farà la lista.",
+    "gProt": "g prot."
+  },
+  "hoja": {
+    "eyebrow": "{{comida}} · {{dia}}",
+    "tituloAjustar": "Modifica il pasto",
+    "tituloNueva": "Cosa mangerai?",
+    "quitarComida": "Togli pasto",
+    "comida": "Pasto",
+    "comidaPlaceholder": "Pollo con riso e broccoli",
+    "comidaA11y": "Descrizione del pasto",
+    "ingredientes": "Ingredienti",
+    "ingredientesPlaceholder": "pollo, riso, broccoli, olio d'oliva",
+    "ingredientesAyuda": "Separati da virgole: da qui nasce la lista della spesa.",
+    "ingredientesA11y": "Ingredienti separati da virgole"
+  },
+  "acciones": {
+    "sinIngredientes": "Nessun ingrediente",
+    "sinIngredientesCuerpo": "Aggiungi ingredienti ai tuoi pasti (separati da virgole) e il sistema genererà la lista.",
+    "listaGenerada": "Lista generata",
+    "listaGeneradaCuerpo": "{{n}} ingredienti inviati alla lista della spesa.",
+    "verLista": "Vedi lista",
+    "entendido": "Capito"
+  }
+}

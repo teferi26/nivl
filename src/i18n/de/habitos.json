@@ -1,0 +1,52 @@
+{
+  "derivar": {
+    "listo": "Bereit, dir zu gehören",
+    "faltan_one": "Noch {{count}} Tag",
+    "faltan_other": "Noch {{count}} Tage",
+    "resumen_one": "{{titulo}}. Serie von {{count}} von {{objetivo}} Tagen. {{restantes}}.",
+    "resumen_other": "{{titulo}}. Serie von {{count}} von {{objetivo}} Tagen. {{restantes}}.",
+    "subtitulo": "Nach {{dias}} Tagen am Stück gehört dir eine Gewohnheit. Jede zählt ihre eigene Serie."
+  },
+  "vista": {
+    "todosLosDias": "jeden Tag",
+    "ningunDia": "an keinem Tag",
+    "listaY": "{{lista}} und {{ultimo}}",
+    "semanaA11y": "Fällig: {{dias}}",
+    "barraA11y": "Serie von {{titulo}}: {{racha}} von {{objetivo}} Tagen",
+    "losaA11y": "{{resumen}} Verlangt: {{dias}}. Tippen zum Bearbeiten.",
+    "forjado": "Geschmiedet",
+    "darloPorAdquirido": "Als verinnerlicht markieren",
+    "cargandoA11y": "Deine Gewohnheiten werden geladen",
+    "eyebrow": "Beständigkeit",
+    "nuevoHabito": "Neue Gewohnheit",
+    "enForja": "In der Schmiede",
+    "mejorRacha": "Beste Serie",
+    "mejorRachaA11y": "Beste Serie: {{dias}} Tage",
+    "listos": "Bereit",
+    "tuyos": "Deine",
+    "tuyosA11y": "Deine Gewohnheiten: {{n}}",
+    "reglasHoy": "Regeln des Vertrags · heute",
+    "siNo": "Sonst: {{consecuencia}}",
+    "reglasCumplidas": "Heute hast du alle eingehalten. Das System nimmt es zur Kenntnis.",
+    "reglasPendientes": "Was beim Tagesabschluss nicht abgehakt ist, gilt als gebrochen: {{xp}} XP pro Regel und morgen die Konsequenz.",
+    "vacioTitulo": "Keine Gewohnheit in der Schmiede",
+    "vacioCuerpo": "Lesen, laufen, Kaltakquise, pünktlich schlafen. Was dir eines Tages von selbst gelingen soll.",
+    "anadirPrimero": "Die erste hinzufügen",
+    "nadaEnForja": "Gerade nichts in der Schmiede. Was dir schon gehört, steht weiter unten.",
+    "adquiridos": "Verinnerlicht",
+    "adquiridoDetalle": "Wird nicht mehr verlangt. Gedrückt halten, um es wieder zu fordern.",
+    "reactivar": "Reaktivieren",
+    "adquiridoA11y": "{{titulo}}, verinnerlicht. Gedrückt halten, um es wieder zu fordern.",
+    "adquiridoDiasA11y": "{{titulo}}, verinnerlicht nach {{dias}} Tagen. Gedrückt halten, um es wieder zu fordern."
+  },
+  "hook": {
+    "adquiridoTitulo": "GEWOHNHEIT VERINNERLICHT",
+    "adquiridoMensaje": "{{titulo}} läuft seit {{dias}} Tagen am Stück.\n\nWenn du es als verinnerlicht markierst, wird der tägliche Tipp nicht mehr verlangt und deine Serie kann daran nicht mehr reißen. Du kannst es trotzdem jederzeit abhaken.\n\nWillst du lieber weiterzählen, kein Problem: Es zählt weiter.",
+    "seguirContando": "Weiterzählen",
+    "esTuyoTitulo": "Das System erklärt es zu deinem",
+    "esTuyoPagado": "{{titulo}} wird nicht mehr von dir verlangt.\n+{{xp}} XP auf {{stat}}.",
+    "esTuyoSinPago": "{{titulo}} wird nicht mehr von dir verlangt.\nDiese Belohnung zählt heute nicht: Sie wurde schon kassiert oder du hast das Tageslimit erreicht.",
+    "volverAExigirlo": "Wieder fordern",
+    "volverAExigirloMensaje": "{{titulo}} wird wieder jeden Tag verlangt und zählt wieder für die Serie."
+  }
+}

@@ -1,0 +1,124 @@
+{
+  "deMisiones": {
+    "titulo": "« {{titulo}} »",
+    "una": "de la mission {{lista}} (cochée automatiquement)",
+    "varias": "des missions {{lista}} (cochées automatiquement)"
+  },
+  "allDone": [
+    "Toutes les missions accomplies. Le système est satisfait.",
+    "Journée tenue, gladiateur. Demain, les suivantes.",
+    "Missions du jour accomplies. Repose-toi : tu l'as mérité.",
+    "Le système enregistre une journée impeccable."
+  ],
+  "levelUp": [
+    "Tu montes de niveau. Le système l'enregistre.",
+    "Le système reconnaît ta progression.",
+    "Nouveau niveau. Gagné mission après mission.",
+    "Un niveau de plus. L'arène l'a vu."
+  ],
+  "penaltyApplied": [
+    "Le système a retiré {{xp}} XP. Tu as une mission de rattrapage dans Aujourd'hui.",
+    "Journée non clôturée : −{{xp}} XP. Le rattrapage est déjà dans ta liste.",
+    "−{{xp}} XP enregistrés. La mission de rattrapage est dans Aujourd'hui."
+  ],
+  "stoneUsed": [
+    "Une Pierre de protection a été dépensée. La série continue.",
+    "Le système a utilisé une Pierre de protection. La série tient."
+  ],
+  "stoneEarned": [
+    "Semaine impeccable : tu as forgé une Pierre de protection.",
+    "Le système t'accorde une Pierre de protection. Garde-la pour le mauvais jour."
+  ],
+  "frozen": [
+    "Système en pause ({{motivo}}). Ni missions, ni retraits, ni jugement.",
+    "Pause active : {{motivo}}. Rien n'est retiré tant qu'elle dure."
+  ],
+  "morningNotif": [
+    "Le système a attribué tes missions du jour. Commence par la première.",
+    "Tes missions du jour sont prêtes. La première est celle qui coûte.",
+    "Missions attribuées. Chacune rapporte de l'XP vers le rang suivant."
+  ],
+  "eveningNotif": [
+    "Plus que quelques heures avant la clôture. Regarde ce qu'il te manque.",
+    "La clôture approche. Vérifie tes missions en attente.",
+    "Avant de clôturer la journée, un coup d'œil à ce qui reste."
+  ],
+  "dungeonCleared": [
+    "Campagne « {{titulo}} » remportée. Toutes les étapes sont closes.",
+    "« {{titulo}} » est tombée. Le système enregistre ta victoire."
+  ],
+  "pr": [
+    "Nouveau record en {{ejercicio}}. Le système le note.",
+    "{{ejercicio}} : record personnel battu. Il devient la référence."
+  ],
+  "achievement": [
+    "Succès débloqué.",
+    "Succès enregistré. Il est dans ton profil.",
+    "Une nouvelle page de ta légende."
+  ],
+  "streakHype": {
+    "sinRacha": [
+      "Pas de série pour l'instant. Clôture la journée et commence à compter.",
+      "Série à zéro. Une journée clôturée la lance."
+    ],
+    "encendida": [
+      "La série est lancée. Clôture aujourd'hui et ajoute un jour."
+    ],
+    "encendidaDias_one": "{{count}} jour de série. Aujourd'hui, un de plus.",
+    "encendidaDias_other": "{{count}} jours de série. Aujourd'hui, un de plus.",
+    "primeros": [
+      "{{dias}} jours d'affilée. La chaîne grandit. Demain, un de plus.",
+      "{{dias}} jours. Le système commence à te faire confiance. Continue."
+    ],
+    "semana": [
+      "Une semaine entière debout. Ton multiplicateur paie déjà : chaque mission vaut plus.",
+      "{{dias}} jours d'affilée. Demain, le suivant."
+    ],
+    "quincena": [
+      "{{dias}} jours d'affilée. La série, c'est toi qui la tiens, jour après jour.",
+      "{{dias}} jours. Chacun clôturé, aucun offert."
+    ],
+    "larga": [
+      "{{dias}} jours. Le chemin vers {{rango}}, c'est ça : un jour de plus, chaque jour.",
+      "{{dias}} jours de série. Le système les a tous comptés."
+    ]
+  },
+  "aviso": {
+    "racha": {
+      "titulo_one": "Série de {{count}} jour",
+      "titulo_other": "Série de {{count}} jours",
+      "cuerpo_one": "Il te manque 1 mission pour clôturer la journée.",
+      "cuerpo_other": "Il te manque {{count}} missions pour clôturer la journée."
+    },
+    "recuperacion": {
+      "titulo": "Rattrapage",
+      "cuerpoBloqueada": "Accomplis une mission du jour et le rattrapage s'ouvre.",
+      "tituloAbierta": "Rattrapage ouvert",
+      "cuerpoXp": "Accomplis la mission de rattrapage et {{xp}} XP reviennent.",
+      "cuerpoLista": "La mission de rattrapage est prête dans Aujourd'hui."
+    },
+    "duelo": {
+      "tituloUno": "Ton duel",
+      "tituloVarios": "Tes duels",
+      "cuerpo_one": "Du nouveau dans 1 duel.",
+      "cuerpo_other": "Du nouveau dans {{count}} duels."
+    },
+    "foto": {
+      "titulo": "Photos de la semaine",
+      "cuerpo_one": "Il en manque 1 sur 3 pour boucler la semaine.",
+      "cuerpo_other": "Il en manque {{count}} sur 3 pour boucler la semaine."
+    },
+    "rango": {
+      "titulo": "Nouveau rang",
+      "cuerpo": "Tu es désormais {{rango}}. Entre pour le voir.",
+      "tituloGenerico": "L'arène te reconnaît",
+      "cuerpoGenerico": "Tu as du nouveau à voir. Entre quand tu veux."
+    },
+    "vuelta": {
+      "titulo7": "L'arène est toujours là",
+      "cuerpo7": "Un pas suffit pour revenir.",
+      "titulo30": "La porte est toujours ouverte",
+      "cuerpo30": "Quand tu veux, tu commences par une mission."
+    }
+  }
+}

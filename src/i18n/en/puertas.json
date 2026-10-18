@@ -1,0 +1,88 @@
+{
+  "cargando": "Loading",
+  "sinComprobar": "Not checked",
+  "volverAComprobar": "Check again",
+  "leerPolitica": "Read the privacy policy",
+  "edad": {
+    "eyebrow": "Before you enter",
+    "titulo": "Your age",
+    "subtitulo": "NIVL is for people {{n}} and older.",
+    "rotulo": "Minimum age",
+    "meta": "{{n}} or older",
+    "cuerpo": "Confirm that you meet the minimum age to continue. You don't need to give your date of birth.",
+    "casillaA11y": "I'm {{n}} or older",
+    "casilla": "I'm {{n}} or older.",
+    "noGuardado": "Not saved",
+    "confirmar": "Confirm and continue",
+    "noComprobada": "Couldn't check your age confirmation.",
+    "sesionAbierta": "Signed in"
+  },
+  "salud": {
+    "eyebrow": "Optional",
+    "titulo": "Your health, with permission",
+    "comprobandoA11y": "Checking health permission",
+    "borradoPendiente": "Deletion pending",
+    "registro": "Health log",
+    "borradoCuerpo": "Your permission is withdrawn and there's a deletion pending. You can finish it in Profile.",
+    "cuerpo": "Before opening this log, review what health data NIVL stores and decide whether you want to turn it on.",
+    "revisar": "Review permission",
+    "irAPerfil": "Go to Profile",
+    "hojaEyebrow": "Health permission",
+    "aceptar": "Accept and turn on health",
+    "politicaNoAbre": "Couldn't open the policy.",
+    "partes": {
+      "paraQue": "What for",
+      "quienDonde": "Who and where",
+      "opcional": "It's optional",
+      "retirarlo": "Withdrawing it"
+    }
+  },
+  "saludAjustes": {
+    "seccion": "Health and wellbeing",
+    "comprobando": "Checking the permission…",
+    "noComprobado": "Couldn't check the health permission.",
+    "borradoPendiente": "Permission withdrawn. The deletion isn't finished; try again.",
+    "aceptado": "You've allowed your health data to be stored and used. You can withdraw the permission and delete it.",
+    "sinPermiso": "No permission. NIVL doesn't use health logs. You can export earlier data or request its deletion.",
+    "revisar": "Review health permission",
+    "terminarBorrado": "Finish deletion",
+    "retirar": "Withdraw and delete health",
+    "nota": "Export and account deletion are still available below. Temporary links to photos already shared may stay valid until the file is deleted or they expire.",
+    "confirmarTitulo": "Withdraw permission and delete",
+    "confirmarBoton": "Withdraw and delete"
+  },
+  "avisoSalud": {
+    "error": "Couldn't check the health permission. Your general goals are still available.",
+    "desactivado": "Health logs are turned off. General goals are still available."
+  },
+  "denuncia": {
+    "titulo": "What's wrong with this response?",
+    "enviar": "Send report",
+    "cuerpo": "The reason and the text of this response are sent for the team to review. Nothing else from your conversation.",
+    "motivo": "Reason",
+    "noHaSalido": "It didn't go through",
+    "correoAbierto": "Your email app opened with the report. Send it so it reaches review.",
+    "correoNoAbre": "Couldn't open email. Write to {{correo}} with the reason for the report.",
+    "registrada": "Report submitted. The team will review this response.",
+    "motivos": {
+      "danino": "Could cause harm",
+      "salud": "Dangerous health advice",
+      "dinero": "Dangerous money advice",
+      "incorrecto": "False information",
+      "ofensivo": "Offensive or inappropriate",
+      "otro": "Other reason"
+    },
+    "correo": {
+      "asunto": "AI response report · NIVL",
+      "origen": "Source: {{origen}}",
+      "motivo": "Reason: {{motivo}}",
+      "mensaje": "Message: {{id}}",
+      "sinId": "no ID",
+      "contexto": "Context: {{contexto}}",
+      "fuente": {
+        "coach": "coach",
+        "oraculo": "Oracle"
+      }
+    }
+  }
+}

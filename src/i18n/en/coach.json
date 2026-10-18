@@ -1,0 +1,128 @@
+{
+  "cita": {
+    "consultado": "Checked: {{lista}}",
+    "consultadoVarias": "Checked: {{primeras}} and {{ultima}}",
+    "fuente": {
+      "consultar_historial": "your history",
+      "consultar_dia": "your day's log"
+    }
+  },
+  "bloqueado": {
+    "tituloOferta": "THE COACH ISN'T IN YOUR PLAN.",
+    "titulo": "THE COACH IS PART OF NIVL PRO.",
+    "cuerpo": "Your missions, your streak, your campaigns and every module are still yours. What's missing is someone running it all.",
+    "hoyEstaria": "Today it would be",
+    "unBrief": "One of its briefs",
+    "ejemplo": "Example",
+    "ejemploA11y": "Example coach brief. {{muestra}}"
+  },
+  "atajos": {
+    "planificaDia": {
+      "etiqueta": "Plan my day",
+      "mensaje": "Plan the rest of my day today."
+    },
+    "reporte": {
+      "etiqueta": "Report",
+      "mensaje": "I'm going to report. Ask me whatever you need to know about today."
+    },
+    "dojo": {
+      "etiqueta": "Sales dojo",
+      "mensaje": "Train me on sales for 15 minutes. Start with a real objection."
+    },
+    "revisame": {
+      "etiqueta": "Review me",
+      "mensaje": "Review my last 14 days with brutal honesty."
+    }
+  },
+  "rapidas": {
+    "planHoy": {
+      "etiqueta": "Today's plan",
+      "mensaje": "Plan the rest of my day today."
+    },
+    "registrar": {
+      "etiqueta": "Log",
+      "mensaje": "I'm going to report. Ask me whatever you need to know about today."
+    },
+    "queEntreno": {
+      "etiqueta": "What do I train?",
+      "mensaje": "What should I train today? Decide based on my history and how I've been doing."
+    },
+    "resumenSemana": {
+      "etiqueta": "Week summary",
+      "mensaje": "Give me a summary of my week: what I got done, what I didn't, and what I change for next week."
+    }
+  },
+  "vista": {
+    "leyendo": "Reading your day",
+    "partePro": "Part of NIVL Pro",
+    "listo": "Ready for your day",
+    "haLeido_one": "Has read your day · {{count}} lookup",
+    "haLeido_other": "Has read your day · {{count}} lookups",
+    "titulo": "COACH",
+    "profundoTag": "DEEP",
+    "verPlan": "See your plan and the coach's energy",
+    "verMemoria": "See the system's memory",
+    "vacioTitulo": "THE SYSTEM IS LISTENING.",
+    "vacioCuerpo": "It runs your day, decides what each thing scores, judges you at night and remembers everything it learns about you. Talk to it the way you'd talk to whoever runs your life.",
+    "atajosA11y": "Shortcuts",
+    "enviaPista": "Sends it to the coach",
+    "rapidasA11y": "Quick actions",
+    "cargandoA11y": "Loading the coach",
+    "falloTitulo": "THE SYSTEM IS NOT RESPONDING",
+    "falloCuerpo": "Couldn't load the conversation. Check your connection and try again.",
+    "fotosListas_one": "{{count}} photo ready to send",
+    "fotosListas_other": "{{count}} photos ready to send",
+    "quitarFotosA11y": "Remove the photos",
+    "energiaA11y": "{{texto}} See the coach's energy",
+    "potenciaA11y": "Coach power",
+    "estandar": "Standard",
+    "profundo": "Deep",
+    "profundoA11y": "Deep mode. {{linea}}",
+    "conservada": "Your conversation is kept.",
+    "conservadaPro": "The coach is part of NIVL Pro. Your conversation is kept.",
+    "fotosElite": "Photos to the coach are an Élite feature",
+    "adjuntarA11y": "Attach a photo",
+    "placeholder": "Talk to the system",
+    "mensajeA11y": "Message to the system",
+    "enviandoA11y": "Sending: the system is thinking",
+    "enviarA11y": "Send message"
+  },
+  "dictado": {
+    "microfonoListo": "Microphone ready. Press and hold to dictate.",
+    "terminado": "Dictation finished",
+    "grabando": "Recording",
+    "cancelado": "Dictation canceled",
+    "terminarA11y": "Finish dictation",
+    "dictarA11y": "Dictate a message",
+    "terminarPista": "What you dictate is written into the text box",
+    "empezarPista": "Tap to start recording",
+    "cancelarAccion": "Cancel dictation",
+    "mantenerPista": "Press and hold to record, release to write it",
+    "guiaLector": "tap the microphone to finish",
+    "guiaCancelar": "release to cancel",
+    "guia": "release to write it, slide up to cancel",
+    "preparando": "GETTING READY",
+    "grabandoReloj": "RECORDING {{tiempo}}",
+    "mantenerParaDictar": "Press and hold to dictate"
+  },
+  "privacidad": {
+    "eyebrow": "PRIVACY",
+    "titulo": "Dictate over the network",
+    "dictarIgualmente": "Dictate anyway",
+    "escribir": "Type",
+    "cuerpo": "What you dictate is written into the box and reaches the coach just as if you'd typed it, when you send it."
+  },
+  "mensaje": {
+    "firma": "THE SYSTEM",
+    "pararA11y": "Stop reading aloud",
+    "escucharA11y": "Listen to the reply",
+    "parar": "Stop",
+    "escuchar": "Listen",
+    "pensando": "The system is thinking…"
+  },
+  "turno": {
+    "miraFoto": "Look at this photo.",
+    "energiaAgotada": "The coach's energy for this month has run out. It recharges on the 1st.",
+    "energiaAgotadaDia": "The coach's energy for this month has run out. It recharges on {{dia}}."
+  }
+}

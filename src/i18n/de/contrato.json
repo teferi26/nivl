@@ -1,0 +1,153 @@
+{
+  "vista": {
+    "tabla": {
+      "mision": "Mission (trivial bis episch)",
+      "xp": "{{xp}} XP",
+      "evidencia": "Beweis (Foto)",
+      "evidenciaValor": "+{{pct}} %",
+      "racha": "Serie",
+      "rachaValor": "+{{pct}} % pro Woche · Obergrenze ×{{techo}}",
+      "gimnasio": "Gym-Einheit",
+      "record": "Persönlicher Rekord",
+      "diario": "Tagebuchseite",
+      "pesarte": "Wiegen",
+      "objetivo": "Ziel erreicht",
+      "tarea": "Kampagnenaufgabe",
+      "tareaValor": "XP nach Schwierigkeit · Endgegner ×{{mult}}",
+      "campana": "Kampagne bezwungen",
+      "campanaValor": "{{min}} bis {{max}} XP je nach Rang",
+      "extra": "Extramission",
+      "pb": "{{pb}} PB",
+      "sinHacer": "Offene Mission des Tages",
+      "sinHacerValor": "−{{pct}} % ihrer XP · max. −{{tope}}/Tag",
+      "romper": "Eine unterschriebene Regel brechen",
+      "romperValor": "−{{xp}} XP + Konsequenz",
+      "piedra": "Schutzstein",
+      "piedraValor": "Fängt den ganzen Schaden eines Tages ab",
+      "filaA11y": "{{concepto}}: {{valor}}"
+    },
+    "norma": {
+      "a11y": "Regel {{n}}: {{texto}}. Wenn du sie brichst: {{consecuencia}}. Kostet {{xp}} XP.",
+      "a11yEditada": "Regel {{n}}: {{texto}}. Wenn du sie brichst: {{consecuencia}}. Kostet {{xp}} XP. Heute bearbeitet.",
+      "pista": "Tippen, um zu gestehen, dass du sie gebrochen hast. Gedrückt halten zum Löschen.",
+      "accionConfesar": "Gestehen, dass du sie gebrochen hast",
+      "accionEditar": "Regel bearbeiten",
+      "accionEliminar": "Regel löschen",
+      "siLaRompes": "Wenn du sie brichst: {{consecuencia}}",
+      "editadaHoy": "Heute bearbeitet. Frühere Brüche bleiben in der archivierten Version.",
+      "editarA11y": "Regel {{n}} bearbeiten"
+    },
+    "carta": {
+      "sinCarta": "Kein Brief",
+      "sinCartaTexto": "Schreib dem Menschen, der du sein wirst. Das System versiegelt den Brief und verwahrt ihn bis zum festgesetzten Tag.",
+      "escribir": "Brief schreiben",
+      "abierta": "Geöffnet",
+      "abiertaMeta": "Versiegelt am {{sellada}}. Geöffnet am {{abierta}}.",
+      "haLlegado": "Der Tag ist gekommen",
+      "espera": "Der Brief, den du am {{sellada}} versiegelt hast, wartet.",
+      "abrir": "Brief öffnen",
+      "firmado": "Von dir unterschrieben",
+      "firmadoMeta": "Unterschrieben am {{firmado}}. Läuft am {{vence}} ab.",
+      "sellada": "Versiegelt",
+      "selladaTexto": "Versiegelt am {{sellada}}. Wird am {{apertura}} geöffnet. Bis dahin: an die Arbeit."
+    },
+    "subtituloVacio": "Keine Regeln unterschrieben. Das System setzt nur durch, was du unterschreibst.",
+    "subtitulo_one": "{{count}} Regel unterschrieben · {{bonus}} PB im Beutel",
+    "subtitulo_other": "{{count}} Regeln unterschrieben · {{bonus}} PB im Beutel",
+    "eyebrow": "Was du unterschreibst",
+    "titulo": "Vertrag",
+    "nuevaNorma": "Neue Regel unterschreiben",
+    "cargando": "Vertrag wird gelesen",
+    "rotulo": "VERTRAG",
+    "vacioTitulo": "Keine Regel unterschrieben",
+    "vacioTexto": "Hier stehen die Regeln, die du dir selbst auferlegst, und ihre Konsequenz. Das System setzt sie nur durch.",
+    "primeraNorma": "Die erste Regel unterschreiben",
+    "cargarCuaderno": "Meine Regeln aus dem Heft laden",
+    "notaNormas": "Tippe auf eine Regel, um zu gestehen, dass du sie gebrochen hast. Gedrückt halten zum Löschen. Mit dem Stift bearbeitest du sie ab heute. Jede Nacht werden die eingehaltenen unter Gewohnheiten abgehakt.",
+    "bonusTitulo": "Bonuspunkte",
+    "bonusMeta": "{{gastado}}/{{tope}} eingelöst",
+    "enBolsa": "Im Beutel",
+    "canjeables": "Diese Woche einlösbar",
+    "canjear": "{{coste}} PB einlösen · 1 h Erholung",
+    "notaBonus": "Extramissionen zahlen in PB, nicht in XP. {{coste}} PB sind 1 h Erholung ohne schlechtes Gewissen, höchstens {{tope}} PB alle 7 Tage.",
+    "cartaTitulo": "Brief an dein zukünftiges Ich",
+    "gana": "So gewinnst du",
+    "pierde": "So verlierst du",
+    "notaTabla": "Die ganze App bewertet nach dieser Tabelle: gleicher Einsatz, gleiche Belohnung. PB bringen keine XP: Sie werden gegen Erholung eingelöst."
+  },
+  "hojas": {
+    "anios_one": "{{count}} Jahr",
+    "anios_other": "{{count}} Jahre",
+    "norma": {
+      "eyebrowEditar": "Regel bearbeiten",
+      "eyebrowNueva": "Neue Regel",
+      "tituloEditar": "Pass an, was du unterschrieben hast",
+      "tituloNueva": "Was verbietest du dir?",
+      "firmar": "Regel unterschreiben",
+      "etiqueta": "Die Regel",
+      "placeholder": "z. B. Keine sozialen Medien vor 12 Uhr",
+      "a11y": "Text der Regel",
+      "consecuenciaEtiqueta": "Konsequenz, wenn du sie brichst",
+      "consecuenciaPlaceholder": "z. B. 5 km laufen",
+      "consecuenciaA11y": "Konsequenz bei Regelbruch",
+      "ayudaEditar": "Gilt ab heute. Die vorherige Version wird mit ihren Brüchen archiviert. Ein Bruch kostet −{{xp}} XP.",
+      "ayudaNueva": "Ein Bruch kostet −{{xp}} XP. Erfüllst du die Konsequenz am selben Tag, holst du sie zurück."
+    },
+    "carta": {
+      "eyebrow": "An dein zukünftiges Ich",
+      "titulo": "Schreib dem Menschen, der du sein wirst",
+      "sellar": "Brief versiegeln",
+      "etiqueta": "Der Brief",
+      "placeholder": "Ich weiß nicht, wie es dir geht, noch in welcher Lage du bist…",
+      "a11y": "Text des Briefs",
+      "dentroDe": "Wird geöffnet in",
+      "dentroDeA11y": "Öffnen in {{plazo}}",
+      "seAbrira": "Wird am {{fecha}} geöffnet. Niemand kann ihn vorher lesen, auch du nicht."
+    }
+  },
+  "hook": {
+    "plantilla": {
+      "p1": {
+        "texto": "Jeden Tag Tagebuch schreiben: das Erlebte und den Tagesplan",
+        "consecuencia": "8 km laufen"
+      },
+      "p2": {
+        "texto": "Kein Alkohol",
+        "consecuencia": "1 Tag nur sauber essen"
+      },
+      "p3": {
+        "texto": "Kein Koffein",
+        "consecuencia": "1 Tag ohne Freizeit-Bildschirme"
+      },
+      "p4": {
+        "texto": "Jeden Tag sauber essen",
+        "consecuencia": "4,5 km laufen"
+      },
+      "p5": {
+        "texto": "Wenn ich feiern gehe, ohne es mir verdient zu haben",
+        "consecuencia": "1 Woche strenge Diät"
+      },
+      "p6": {
+        "texto": "Kein Plan stellt sich meinen Zielen in den Weg",
+        "consecuencia": "Die Woche umplanen und die Zeit ausgleichen"
+      }
+    },
+    "confesionTitulo": "Geständnis an das System",
+    "confesionMensaje": "Hast du die Regel „{{norma}}“ gebrochen?\n\nStrafe: −{{xp}} XP und die Konsequenz, die du selbst unterschrieben hast: {{consecuencia}}. Erfüll sie heute, und du bekommst die XP zurück.",
+    "laHeRoto": "Ich habe sie gebrochen",
+    "registrado": "VERBUCHT",
+    "registradoMensaje": "Das System urteilt nicht: Es zeichnet auf. Die Mission „Konsequenz: {{consecuencia}}“ wartet heute unter System auf dich.",
+    "eliminarTitulo": "Regel löschen",
+    "eliminarMensaje": "„{{norma}}“ und der Verlauf der Brüche.",
+    "insuficientesTitulo": "Nicht genug Punkte",
+    "insuficientes": "Du brauchst {{coste}} PB, um 1 h Erholung einzulösen.",
+    "topeTitulo": "Wochenlimit",
+    "tope": "Höchstens {{tope}} PB alle 7 Tage einlösbar. Du hast {{llevas}}.",
+    "canjearTitulo": "Erholung einlösen",
+    "canjearMensaje": "{{coste}} PB → 1 Stunde verdiente Erholung. Bestätigen?",
+    "canjear": "Einlösen",
+    "motivoCanje": "1 h Erholung",
+    "descansoTitulo": "ERHOLUNG VERDIENT",
+    "descansoMensaje": "Genieß sie ohne schlechtes Gewissen: Du hast mit Einsatz dafür bezahlt."
+  }
+}

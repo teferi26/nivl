@@ -1,0 +1,205 @@
+{
+  "compartido": {
+    "animo": "Mood",
+    "energia": "Energy",
+    "sueno": "Sleep",
+    "sinRegistrar": "Not logged",
+    "cambiosSinGuardar": "Unsaved changes",
+    "eliminarComprobante": "Delete proof"
+  },
+  "vista": {
+    "sinPuntuar": "Not rated",
+    "escalaA11y": "{{nombre}} {{n}} of 5: {{etiqueta}}",
+    "animo": {
+      "n1": "Crushed",
+      "n2": "Low",
+      "n3": "Okay",
+      "n4": "Good",
+      "n5": "Unstoppable"
+    },
+    "energia": {
+      "n1": "Empty",
+      "n2": "Low",
+      "n3": "Normal",
+      "n4": "High",
+      "n5": "Maxed out"
+    },
+    "registrado": "Logged",
+    "lineaSucio": "What you've changed isn't saved yet.",
+    "lineaRegistrado": "It's in your archive. You can correct it whenever you want.",
+    "lineaSinRegistrar": "The close of the day. Seven short questions; proof photos save themselves.",
+    "hastaXp": "up to +{{xp}} XP",
+    "barraA11y": "{{hechas}} of {{total}} questions answered",
+    "respondidas": "{{hechas}} of {{total}} answered",
+    "eyebrowEscribir": "Mind · {{relativo}}",
+    "titulo": "Journal",
+    "archivo": "Archive",
+    "eyebrowArchivo": "Mind · Archive",
+    "subtituloArchivo": "What you've lived, day by day.",
+    "escribirDia": "Write the day",
+    "diaAnterior": "Previous day",
+    "diaSiguiente": "Next day",
+    "cargandoDia": "Loading the day",
+    "sentir": {
+      "titulo": "How I felt",
+      "pista": "Two ratings and, above all, a name."
+    },
+    "sueno": {
+      "titulo": "How I slept",
+      "pista": "Sleep is the first thing the coach looks at."
+    },
+    "victorias": {
+      "titulo": "What I achieved",
+      "pista": "The day's wins. One per line, however small.",
+      "sistema": "What the system logged"
+    },
+    "vivido": {
+      "titulo": "What I lived",
+      "etiqueta": "In your words",
+      "placeholder": "What happened, the way you'd tell it."
+    },
+    "leccion": {
+      "titulo": "What I learned",
+      "pista": "One lesson. What you'd do differently.",
+      "etiqueta": "The lesson",
+      "placeholder": "Next time…"
+    },
+    "gratitud": {
+      "titulo": "What I'm grateful for",
+      "pista": "One line. Optional, like everything.",
+      "etiqueta": "To whom or for what",
+      "placeholder": "One line"
+    },
+    "manana": {
+      "titulo": "Tomorrow, first thing",
+      "pista": "Just one thing, with a time if you can. The coach writes the full plan.",
+      "etiqueta": "First thing",
+      "placeholder": "At 8:00, …"
+    },
+    "comprobantes": {
+      "titulo": "Proof",
+      "pista": "Photos taken in the moment: proof that you keep your own rules. They're saved as you take them.",
+      "fotoA11y": "Journal proof; long-press to delete",
+      "anadirA11y": "Add a proof photo with the camera",
+      "notaWeb": "Tap the x on a photo to delete it.",
+      "notaMovil": "Long-press a photo to delete it."
+    },
+    "noGuardado": "Not saved",
+    "hayCambios": "There are unsaved changes.",
+    "registrar": "Log the day",
+    "registrarXp": "Log the day · up to +{{xp}} XP"
+  },
+  "archivo": {
+    "cargando": "Loading your archive",
+    "vacioTitulo": "Your archive starts today",
+    "vacioCuerpo": "Every day you close will stay here: how you were, what you achieved, what you learned. A year from now you'll want to read it.",
+    "escribirHoy": "Write today",
+    "tendencia": "Trend",
+    "ultimas": "Last {{n}}",
+    "diasEscritos": "Days written",
+    "verMas": "See more days"
+  },
+  "cronica": {
+    "mision": "Mission completed: {{mision}} (+{{xp}} XP)",
+    "subida": "LEVEL UP → {{nivel}}",
+    "subidaVictoria": "Reached level {{nivel}}",
+    "penalizacion": "Penalty applied: −{{xp}} XP",
+    "objetivo": "Campaign objective: {{tarea}}",
+    "despejada": "Campaign cleared: {{campana}}",
+    "gimnasio": "Gym session logged (+{{xp}} XP)",
+    "gimnasioVictoria": "Gym session",
+    "record": "Personal RECORD: {{ejercicio}} · {{peso}} kg",
+    "recordVictoria": "Record on {{ejercicio}}: {{peso}} kg",
+    "piedraUsada": "A Protection Stone was spent for you",
+    "piedraForjada": "Protection Stone forged",
+    "vacio": "No activity that day: the system logged nothing.",
+    "reclamarA11y": "{{linea}}. Tap to add it to your wins",
+    "nota": "Tap a line to claim it as a win."
+  },
+  "emociones": {
+    "empuja": "What drives you",
+    "pesa": "What weighs on you",
+    "marcadaA11y": "{{emocion}}, selected",
+    "sinMarcarA11y": "{{emocion}}, not selected",
+    "tope": "Max of {{max}}. Remove one to pick another.",
+    "pista": "Name it: a 3 says nothing, “frustrated” does."
+  },
+  "entrada": {
+    "animoA11y": "Mood {{n}} of 5",
+    "energiaA11y": "Energy {{n}} of 5",
+    "suenoA11y": "{{horas}} hours of sleep",
+    "leerMenos": "Read less",
+    "leerMas": "Read more",
+    "ocultarFotos": "Hide photos",
+    "verFotos_one": "See the photo",
+    "verFotos_other": "See the {{count}} photos",
+    "abrirA11y": "Open and edit the journal for {{dia}}",
+    "aprendi": "I learned",
+    "agradezco": "Grateful for:",
+    "plan": "Plan:",
+    "manana": "Tomorrow:",
+    "soloNotas": "That day you only left the ratings.",
+    "enBlanco": "Blank entry. Open it to complete it.",
+    "comprobanteA11y": "Proof from that day",
+    "masA11y": "{{rotulo}} for {{dia}}"
+  },
+  "flashbacks": {
+    "titulo": "On this date",
+    "a11y": "{{titulo}}, {{dia}}. Tap to open that day"
+  },
+  "tendencia": {
+    "animoSinDatosA11y": "Mood over the last 7 days: not enough data, {{min}} needed",
+    "animoA11y": "Average mood over the last 7 days: {{media}} of 5",
+    "suenoSinDatosA11y": "Average sleep over the last 7 days: not enough data",
+    "suenoA11y": "Average sleep over the last 7 days: {{media}} hours",
+    "racha": "Streak",
+    "rachaA11y_one": "Streak of {{count}} day written",
+    "rachaA11y_other": "Streak of {{count}} days written",
+    "dias": "Days",
+    "diasA11y_one": "{{count}} day written in the archive",
+    "diasA11y_other": "{{count}} days written in the archive",
+    "sinMedia": "An average needs {{min}} days with data in the week. With fewer it would be an anecdote.",
+    "igual": "Mood is the same as the previous 7 days.",
+    "sube": "Mood is up {{delta}} compared with the previous 7 days.",
+    "baja": "Mood is down {{delta}} compared with the previous 7 days.",
+    "repite": "What repeats most · 14 days",
+    "emocionA11y_one": "{{emocion}}, {{count}} day",
+    "emocionA11y_other": "{{emocion}}, {{count}} days"
+  },
+  "pregunta": {
+    "a11y": "{{numeral}}. {{titulo}}",
+    "a11yRespondida": "{{numeral}}. {{titulo}}, answered"
+  },
+  "sueno": {
+    "a11y": "Hours slept last night",
+    "menosA11y": "Half an hour less sleep",
+    "masA11y": "Half an hour more sleep",
+    "pistaVacia": "Not logged. Tap + or −.",
+    "anoche": "Last night.",
+    "quitarA11y": "Remove hours of sleep"
+  },
+  "victorias": {
+    "primera": "Something you did well today",
+    "otra": "Another win",
+    "a11y": "Win {{n}}",
+    "quitarA11y": "Remove win {{n}}",
+    "anadir": "Add win",
+    "tope": "Five by hand is already a great day. What the system logged can still be claimed."
+  },
+  "hook": {
+    "cambiarDiaMensaje": "If you switch days, what you've written is lost.",
+    "descartar": "Discard",
+    "seguirEscribiendo": "Keep writing",
+    "camaraMensaje": "The system needs the camera for journal proof photos.",
+    "borrarFoto": "Delete this photo from the journal?",
+    "vacioConFotos": "Your photos are already saved. To log the day, answer at least one question.",
+    "vacio": "Nothing to log yet. Answer at least one question; the rest can wait.",
+    "desglosePer": "to PER for the journal",
+    "registradaTitulo": "Entry logged",
+    "yaPagada": "The journal mission was already checked and paid.",
+    "registradaConLogro": "{{desglose}}\nAchievement: {{logros}}",
+    "atrasada": "Day completed in your archive. No XP: only the same-day entry pays.",
+    "cambiosGuardados": "Changes saved.",
+    "errorGuardado": "{{error}} Your answers are still here."
+  }
+}

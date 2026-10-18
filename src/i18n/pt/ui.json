@@ -1,0 +1,39 @@
+{
+  "avatar": {
+    "a11yRango": "{{nombre}}, patente {{rango}}"
+  },
+  "ceremonia": {
+    "nuevoRango": "NOVA PATENTE",
+    "nuevoGrado": "NOVO GRAU",
+    "subesNivel": "SOBES DE NÍVEL",
+    "anuncioRango": "Nova patente: {{rango}}, {{nombre}}. {{lema}}",
+    "anuncioGrado": "Novo grau: {{nombre}} {{grado}}",
+    "anuncioNivel": "Sobes ao nível {{nivel}}",
+    "tituloNivel": "Nível {{nivel}}",
+    "faltaNiveles_one": "Falta {{count}} nível",
+    "faltaNiveles_other": "Faltam {{count}} níveis",
+    "faltaDias_one": "Falta {{count}} dia ativo",
+    "faltaDias_other": "Faltam {{count}} dias ativos",
+    "faltanAmbos": "Faltam {{niveles}} e {{dias}}",
+    "niveles_one": "{{count}} nível",
+    "niveles_other": "{{count}} níveis",
+    "diasActivos_one": "{{count}} dia ativo",
+    "diasActivos_other": "{{count}} dias ativos",
+    "cerrarA11y": "Fechar a celebração",
+    "siguiente": "Seguinte: {{nombre}} no nível {{nivel}}",
+    "pideDias": "{{nombre}} pede também dias ativos na arena",
+    "seguir": "Continuar",
+    "tocaCerrar": "Toca em qualquer lado para fechar",
+    "tocaSaltar": "Toca em qualquer lado para saltar"
+  },
+  "confirmar": {
+    "botonesWeb": "Aceitar: {{ok}}. Cancelar: {{cancelar}}."
+  },
+  "sidebar": {
+    "lema": "1% MELHOR\nTODOS OS DIAS",
+    "lemaA11y": "1% melhor todos os dias"
+  },
+  "row": {
+    "masOpciones": "Mais opções"
+  }
+}

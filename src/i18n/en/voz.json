@@ -1,0 +1,124 @@
+{
+  "deMisiones": {
+    "titulo": "“{{titulo}}”",
+    "una": "from the mission {{lista}} (checked automatically)",
+    "varias": "from the missions {{lista}} (checked automatically)"
+  },
+  "allDone": [
+    "All missions completed. The system is satisfied.",
+    "Day done, gladiator. Tomorrow, the next ones.",
+    "Today's missions completed. Rest: you've earned it.",
+    "The system logs a flawless day."
+  ],
+  "levelUp": [
+    "You level up. The system logs it.",
+    "The system recognizes your progress.",
+    "New level. Built mission by mission.",
+    "One more level. The arena saw it."
+  ],
+  "penaltyApplied": [
+    "The system has taken {{xp}} XP. You have a recovery mission in Today.",
+    "Day left open: −{{xp}} XP. The recovery is already on your list.",
+    "−{{xp}} XP logged. The recovery mission is in Today."
+  ],
+  "stoneUsed": [
+    "A Protection Stone was spent. The streak lives on.",
+    "The system used a Protection Stone. The streak holds."
+  ],
+  "stoneEarned": [
+    "Flawless week: you've forged a Protection Stone.",
+    "The system grants you a Protection Stone. Save it for the bad day."
+  ],
+  "frozen": [
+    "System paused ({{motivo}}). No missions, no losses, no judgment.",
+    "Pause active: {{motivo}}. Nothing is taken while it lasts."
+  ],
+  "morningNotif": [
+    "The system has assigned today's missions. Start with the first one.",
+    "Today's missions are ready. The first one is the hard one.",
+    "Missions assigned. Each one adds XP toward the next rank."
+  ],
+  "eveningNotif": [
+    "A few hours left until the close. See what's missing.",
+    "The close is coming. Check your pending missions.",
+    "Before closing the day, a look at what's pending."
+  ],
+  "dungeonCleared": [
+    "Campaign “{{titulo}}” complete. Every stage closed.",
+    "“{{titulo}}” has fallen. The system logs your victory."
+  ],
+  "pr": [
+    "New record on {{ejercicio}}. The system notes it.",
+    "{{ejercicio}}: personal record beaten. It stands as the new mark."
+  ],
+  "achievement": [
+    "Achievement unlocked.",
+    "Achievement logged. It's on your profile now.",
+    "A new entry in your legend."
+  ],
+  "streakHype": {
+    "sinRacha": [
+      "No streak for now. Close today and start counting.",
+      "Streak at zero. One closed day gets it going."
+    ],
+    "encendida": [
+      "The streak is lit. Close today and add another day."
+    ],
+    "encendidaDias_one": "{{count}}-day streak. One more today.",
+    "encendidaDias_other": "{{count}}-day streak. One more today.",
+    "primeros": [
+      "{{dias}} days in a row. The chain grows. Tomorrow, one more.",
+      "{{dias}} days. The system is starting to trust you. Keep going."
+    ],
+    "semana": [
+      "A whole week standing. Your multiplier is paying now: every mission is worth more.",
+      "{{dias}} days in a row. Tomorrow, the next one."
+    ],
+    "quincena": [
+      "{{dias}} days in a row. You're the one holding the streak, day by day.",
+      "{{dias}} days. Every one closed, none handed to you."
+    ],
+    "larga": [
+      "{{dias}} days. This is the road to {{rango}}: one more day, every day.",
+      "{{dias}}-day streak. The system has counted every one."
+    ]
+  },
+  "aviso": {
+    "racha": {
+      "titulo_one": "{{count}}-day streak",
+      "titulo_other": "{{count}}-day streak",
+      "cuerpo_one": "1 mission left to close the day.",
+      "cuerpo_other": "{{count}} missions left to close the day."
+    },
+    "recuperacion": {
+      "titulo": "Recovery",
+      "cuerpoBloqueada": "Complete one of today's missions and recovery opens.",
+      "tituloAbierta": "Recovery open",
+      "cuerpoXp": "Complete the recovery mission and {{xp}} XP comes back.",
+      "cuerpoLista": "The recovery mission is ready in Today."
+    },
+    "duelo": {
+      "tituloUno": "Your duel",
+      "tituloVarios": "Your duels",
+      "cuerpo_one": "There's news in 1 duel.",
+      "cuerpo_other": "There's news in {{count}} duels."
+    },
+    "foto": {
+      "titulo": "This week's photos",
+      "cuerpo_one": "1 of 3 left to close the week.",
+      "cuerpo_other": "{{count}} of 3 left to close the week."
+    },
+    "rango": {
+      "titulo": "New rank",
+      "cuerpo": "You're {{rango}} now. Come and see.",
+      "tituloGenerico": "The arena recognizes you",
+      "cuerpoGenerico": "You have something new to see. Come in whenever you want."
+    },
+    "vuelta": {
+      "titulo7": "The arena is still here",
+      "cuerpo7": "One step is enough to come back.",
+      "titulo30": "The door is still open",
+      "cuerpo30": "Whenever you're ready, start with one mission."
+    }
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "tarjeta": {
+    "nivel": "LEVEL",
+    "diasRacha": "DAY STREAK",
+    "mideteConmigo": "TAKE ME ON",
+    "antes": "BEFORE",
+    "despues": "AFTER"
+  },
+  "hoja": {
+    "titulo": "SHARE",
+    "previa": "Card preview",
+    "formato": {
+      "stories": "STORY 9:16",
+      "post": "POST 4:5"
+    },
+    "mostrarAlias": "Show my handle",
+    "incluirFotos": "Include my progress photos",
+    "incluirFoto": "Include the photo",
+    "incluirTextoCoach": "Include the coach's text",
+    "mostrarPeso": "Show weight",
+    "incluirInvitacion": "Add my invite link",
+    "aliasNoDisponible": "Your handle isn't available right now.",
+    "aliasError": "Couldn't load your handle. Try again.",
+    "abriendo": "OPENING…",
+    "compartir": "SHARE"
+  }
+}

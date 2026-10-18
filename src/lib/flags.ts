@@ -14,6 +14,9 @@
 // todo y se olvida la caché (flagsmath.faltaLaFuncion).
 //
 // La forma y la normalización (puras, con test) viven en flagsmath.ts.
+//
+// Integración F1: es la versión del equipo cliente; de la del equipo idiomas se
+// conserva `flagActivo()`, la lectura síncrona que usa la cabecera del coach.
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useSyncExternalStore } from 'react';
@@ -48,6 +51,17 @@ function fijar(nuevos: Flags): void {
 /** Lo que se sabe ahora mismo (apagado hasta la primera lectura). */
 export function flagsActuales(): Flags {
   return actuales;
+}
+
+/** Las claves booleanas de `Flags` (los interruptores de verdad). */
+export type FlagBooleano = { [K in keyof Flags]: Flags[K] extends boolean ? K : never }[keyof Flags];
+
+/**
+ * ¿Está encendido este interruptor? Síncrono, para fuera de React (p. ej. la
+ * cabecera `x-nivl-locale` del coach, lib/coach.ts). Apagado mientras no se sepa.
+ */
+export function flagActivo(k: FlagBooleano): boolean {
+  return actuales[k] === true;
 }
 
 async function leerCache(): Promise<void> {

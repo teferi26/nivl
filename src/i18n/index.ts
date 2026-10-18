@@ -2,8 +2,10 @@
 //
 // · `t('ns:clave', { var })`: el texto del catálogo. Nunca a nivel de módulo
 //   (literales.test.ts lo vigila): el idioma puede cambiar después de cargar.
-// · `idiomaInterfaz()`: en 1.0.10 siempre `es` (la interfaz no cambia hasta
-//   1.1.0); `xx` solo en desarrollo, con `?idioma=xx` en la web.
+// · `idiomaInterfaz()`: `es` mientras el flag `idiomas_activos` esté apagado
+//   (como en 1.0.10); con el flag encendido (`activarIdiomasInterfaz(true)`,
+//   Modos F1) sigue a la preferencia, igual que el coach. `xx` solo en
+//   desarrollo, con `?idioma=xx` en la web.
 // · `idiomaCoach()`: el idioma en que habla el coach. Sale de la preferencia
 //   (`fijarPreferencia`): un idioma fijo o `auto`, que sigue al teléfono.
 //   Mientras la preferencia no se conoce, `es`. Es lo que envía la cabecera
@@ -19,6 +21,7 @@
 import { createInstance } from 'i18next';
 import { useSyncExternalStore } from 'react';
 import { Platform } from 'react-native';
+import { aplicarDireccion } from './direccion';
 import { escucharDispositivo, idiomaBase, idiomaDispositivo } from './dispositivo';
 import {
   __fijarInterfaz,
@@ -31,6 +34,7 @@ import {
 import { miles } from './formato';
 import { guardarPreferencia, leerPreferencia } from './preferencia';
 import { pseudoRecursos } from './pseudo';
+import { RECURSOS_LOCALES } from './traducidos';
 import { completarIdioma, NAMESPACES, RECURSOS_ES } from './recursos';
 
 export { esIdioma, esPreferencia, IDIOMAS, NOMBRE_IDIOMA } from './estado';
@@ -54,10 +58,20 @@ const instancia = createInstance();
 const arranque = idiomaDeArranque();
 __fijarInterfaz(arranque);
 
+type ArbolCatalogo = Parameters<typeof completarIdioma>[0];
+
+/** Español, los idiomas traducidos (src/i18n/<lng>/) y, en desarrollo, el pseudoidioma. */
+function recursosIniciales(): Record<string, ArbolCatalogo> {
+  const out: Record<string, ArbolCatalogo> = { es: completarIdioma(RECURSOS_ES) };
+  for (const [lng, catalogo] of Object.entries(RECURSOS_LOCALES)) {
+    out[lng] = completarIdioma(catalogo as unknown as ArbolCatalogo);
+  }
+  if (__DEV__) out.xx = completarIdioma(pseudoRecursos(RECURSOS_ES));
+  return out;
+}
+
 instancia.init({
-  resources: __DEV__
-    ? { es: completarIdioma(RECURSOS_ES), xx: completarIdioma(pseudoRecursos(RECURSOS_ES)) }
-    : { es: completarIdioma(RECURSOS_ES) },
+  resources: recursosIniciales(),
   lng: arranque,
   fallbackLng: 'es',
   ns: NAMESPACES,
@@ -107,7 +121,10 @@ export function alCambiar(fn: () => void): () => void {
   oyentes.add(fn);
   if (!dejarDeEscuchar) {
     dejarDeEscuchar = escucharDispositivo(() => {
-      if (preferencia === 'auto') avisarCambio();
+      if (preferencia === 'auto') {
+        sincronizarInterfaz();
+        avisarCambio();
+      }
     });
   }
   return () => {
@@ -115,9 +132,49 @@ export function alCambiar(fn: () => void): () => void {
   };
 }
 
-/** El idioma de la interfaz. En 1.0.10, `es`. */
+/** El idioma de la interfaz: `es` con el flag apagado; con él, el de la preferencia. */
 export function idiomaInterfaz(): IdiomaInterfaz {
   return idiomaInterfazActual();
+}
+
+// ── Interfaz en otros idiomas (Modos F1, flag `idiomas_activos`) ─────────
+
+let interfazLibre = false;
+
+/** Cambia el idioma de i18next, el de `formato` y la dirección de escritura. */
+function cambiarInterfaz(idioma: IdiomaInterfaz): boolean {
+  if (idiomaInterfazActual() === idioma) return false;
+  void instancia.changeLanguage(idioma);
+  __fijarInterfaz(idioma);
+  // Sin idiomas RTL en IDIOMAS, esto no cambia nada (direccion.ts).
+  if (idioma !== 'xx') aplicarDireccion(idioma);
+  return true;
+}
+
+/**
+ * Con la interfaz libre, la deja en el idioma efectivo de la preferencia (el
+ * mismo que el coach). Con el flag apagado no toca nada: la 1.0.10 tal cual.
+ * El pseudoidioma de desarrollo (`?idioma=xx`) manda sobre todo.
+ */
+function sincronizarInterfaz(): boolean {
+  if (!interfazLibre || arranque === 'xx') return false;
+  return cambiarInterfaz(idiomaCoach());
+}
+
+/**
+ * Enciende o apaga la interfaz en otros idiomas (la raíz lo llama con el flag
+ * `idiomas_activos`). Al apagarlo vuelve a `es`. Avisa si cambia el idioma.
+ */
+export function activarIdiomasInterfaz(activo: boolean): void {
+  if (interfazLibre === activo) return;
+  interfazLibre = activo;
+  const cambia = activo ? sincronizarInterfaz() : arranque !== 'xx' && cambiarInterfaz('es');
+  if (cambia) avisarCambio();
+}
+
+/** ¿Está encendida la interfaz en otros idiomas? */
+export function idiomasInterfazActivos(): boolean {
+  return interfazLibre;
 }
 
 /** La preferencia de este teléfono, o null si aún no se conoce. */
@@ -148,6 +205,7 @@ export function idiomaCoach(): Idioma {
 export async function fijarPreferencia(p: Preferencia): Promise<void> {
   if (preferencia !== p) {
     preferencia = p;
+    sincronizarInterfaz();
     avisarCambio();
   }
   await guardarPreferencia(p);
@@ -161,6 +219,7 @@ export async function cargarPreferencia(): Promise<Preferencia | null> {
   const guardada = await leerPreferencia();
   if (preferencia === null && guardada !== null) {
     preferencia = guardada;
+    sincronizarInterfaz();
     avisarCambio();
   }
   return preferencia;
@@ -249,8 +308,9 @@ export function __fijarIdiomaParaTest(idioma: IdiomaInterfaz): void {
   avisarCambio();
 }
 
-/** Olvida la preferencia (vuelve a «no se conoce»). */
+/** Olvida la preferencia (vuelve a «no se conoce») y apaga la interfaz libre. */
 export function __olvidarPreferenciaParaTest(): void {
   preferencia = null;
+  interfazLibre = false;
   avisarCambio();
 }

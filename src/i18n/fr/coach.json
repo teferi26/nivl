@@ -1,0 +1,128 @@
+{
+  "cita": {
+    "consultado": "Consulté : {{lista}}",
+    "consultadoVarias": "Consulté : {{primeras}} et {{ultima}}",
+    "fuente": {
+      "consultar_historial": "ton historique",
+      "consultar_dia": "ton journal du jour"
+    }
+  },
+  "bloqueado": {
+    "tituloOferta": "LE COACH N'EST PAS DANS TON PLAN.",
+    "titulo": "LE COACH FAIT PARTIE DE NIVL PRO.",
+    "cuerpo": "Tes missions, ta série, tes campagnes et tous les modules restent à toi. Ce qui manque, c'est celui qui dirige.",
+    "hoyEstaria": "Aujourd'hui, il serait",
+    "unBrief": "Un de ses briefs",
+    "ejemplo": "Exemple",
+    "ejemploA11y": "Exemple de brief du coach. {{muestra}}"
+  },
+  "atajos": {
+    "planificaDia": {
+      "etiqueta": "Planifie ma journée",
+      "mensaje": "Planifie le reste de ma journée."
+    },
+    "reporte": {
+      "etiqueta": "Rapport",
+      "mensaje": "Je vais faire mon rapport. Demande-moi ce que tu as besoin de savoir sur aujourd'hui."
+    },
+    "dojo": {
+      "etiqueta": "Dojo de vente",
+      "mensaje": "Entraîne-moi 15 minutes à la vente. Commence par une vraie objection."
+    },
+    "revisame": {
+      "etiqueta": "Passe-moi en revue",
+      "mensaje": "Fais le bilan de mes 14 derniers jours avec une honnêteté brutale."
+    }
+  },
+  "rapidas": {
+    "planHoy": {
+      "etiqueta": "Plan du jour",
+      "mensaje": "Planifie le reste de ma journée."
+    },
+    "registrar": {
+      "etiqueta": "Enregistrer",
+      "mensaje": "Je vais faire mon rapport. Demande-moi ce que tu as besoin de savoir sur aujourd'hui."
+    },
+    "queEntreno": {
+      "etiqueta": "Quel entraînement ?",
+      "mensaje": "Qu'est-ce que je travaille aujourd'hui ? Décide avec mon historique et ma forme du moment."
+    },
+    "resumenSemana": {
+      "etiqueta": "Bilan de la semaine",
+      "mensaje": "Fais-moi le bilan de ma semaine : ce que j'ai tenu, ce que je n'ai pas tenu et ce que je change pour la prochaine."
+    }
+  },
+  "vista": {
+    "leyendo": "Lecture de ta journée",
+    "partePro": "Inclus dans NIVL Pro",
+    "listo": "Prêt pour ta journée",
+    "haLeido_one": "A lu ta journée · {{count}} consultation",
+    "haLeido_other": "A lu ta journée · {{count}} consultations",
+    "titulo": "COACH",
+    "profundoTag": "APPROFONDI",
+    "verPlan": "Voir ton plan et l'énergie du coach",
+    "verMemoria": "Voir la mémoire du système",
+    "vacioTitulo": "LE SYSTÈME T'ÉCOUTE.",
+    "vacioCuerpo": "Il commande ta journée, décide de ce que vaut chaque chose, te juge le soir et retient tout ce qu'il apprend de toi. Parle-lui comme à celui qui mène ta vie.",
+    "atajosA11y": "Raccourcis",
+    "enviaPista": "L'envoie au coach",
+    "rapidasA11y": "Actions rapides",
+    "cargandoA11y": "Chargement du coach",
+    "falloTitulo": "LE SYSTÈME NE RÉPOND PAS",
+    "falloCuerpo": "Impossible de charger la conversation. Vérifie ta connexion et réessaie.",
+    "fotosListas_one": "{{count}} photo prête à envoyer",
+    "fotosListas_other": "{{count}} photos prêtes à envoyer",
+    "quitarFotosA11y": "Retirer les photos",
+    "energiaA11y": "{{texto}} Voir l'énergie du coach",
+    "potenciaA11y": "Puissance du coach",
+    "estandar": "Standard",
+    "profundo": "Approfondi",
+    "profundoA11y": "Mode approfondi. {{linea}}",
+    "conservada": "Ta conversation est conservée.",
+    "conservadaPro": "Le coach fait partie de NIVL Pro. Ta conversation est conservée.",
+    "fotosElite": "Les photos au coach sont réservées à Élite",
+    "adjuntarA11y": "Joindre une photo",
+    "placeholder": "Parle au système",
+    "mensajeA11y": "Message pour le système",
+    "enviandoA11y": "Envoi : le système réfléchit",
+    "enviarA11y": "Envoyer le message"
+  },
+  "dictado": {
+    "microfonoListo": "Micro prêt. Appuie longuement pour dicter.",
+    "terminado": "Dictée terminée",
+    "grabando": "Enregistrement",
+    "cancelado": "Dictée annulée",
+    "terminarA11y": "Terminer la dictée",
+    "dictarA11y": "Dicter un message",
+    "terminarPista": "Le texte dicté s'écrit dans le champ de saisie",
+    "empezarPista": "Touche pour commencer l'enregistrement",
+    "cancelarAccion": "Annuler la dictée",
+    "mantenerPista": "Appuie longuement pour enregistrer et relâche pour l'écrire",
+    "guiaLector": "touche le micro pour terminer",
+    "guiaCancelar": "relâche pour annuler",
+    "guia": "relâche pour l'écrire, glisse vers le haut pour annuler",
+    "preparando": "PRÉPARATION",
+    "grabandoReloj": "ENREGISTREMENT {{tiempo}}",
+    "mantenerParaDictar": "Appuie longuement pour dicter"
+  },
+  "privacidad": {
+    "eyebrow": "CONFIDENTIALITÉ",
+    "titulo": "Dicter via le réseau",
+    "dictarIgualmente": "Dicter quand même",
+    "escribir": "Écrire",
+    "cuerpo": "Ce que tu dictes s'écrit dans le champ et arrive au coach comme si tu l'avais tapé toi-même, quand tu l'envoies."
+  },
+  "mensaje": {
+    "firma": "LE SYSTÈME",
+    "pararA11y": "Arrêter la lecture",
+    "escucharA11y": "Écouter la réponse",
+    "parar": "Arrêter",
+    "escuchar": "Écouter",
+    "pensando": "Le système réfléchit…"
+  },
+  "turno": {
+    "miraFoto": "Regarde cette photo.",
+    "energiaAgotada": "L'énergie du coach pour ce mois est épuisée. Elle se recharge le 1er.",
+    "energiaAgotadaDia": "L'énergie du coach pour ce mois est épuisée. Elle se recharge le {{dia}}."
+  }
+}

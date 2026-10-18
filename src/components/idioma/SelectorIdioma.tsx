@@ -1,63 +1,76 @@
-// NIVL · Selector de idioma. STUB del equipo cliente (Modos F1): la pieza de
-// verdad es del equipo idiomas y respeta esta misma firma (contrato
-// MODOS-F1: `{ valor: string; alCambiar: (lng: string) => void }`). Al
-// integrar, gana la suya.
+// NIVL · Idiomas (Modos F1): el selector de idioma de la app.
 //
-// Una lista de opciones con el nombre de cada idioma en su propia lengua
-// (NOMBRE_IDIOMA, que no se traduce). Elegido = marco de 2 en ink10, sin
-// invertir: la inversión del paso es «Continuar».
+// Una lista de los idiomas que NIVL habla, cada uno con su nombre en su propia
+// lengua (English, Français...: NOMBRE_IDIOMA no se traduce, así lo encuentra
+// quien no entiende el idioma en que está la app). Un toque elige; lo elegido
+// lleva el Check blanco (la marca de «hecho» del kit; no gasta la inversión).
+//
+// Puro: recibe `valor` y avisa con `alCambiar`. Quien lo usa guarda la
+// preferencia y escribe `profiles.locale` (usePerfil.elegirIdioma). Accesible
+// como grupo de radio: el lector dice el nombre y si está marcado.
 
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { vibrar } from '@/design/haptics';
+import { Card, Check } from '@/components/ui';
 import { ink, space, stroke, type as tipo } from '@/design/tokens';
-import { IDIOMAS, NOMBRE_IDIOMA } from '@/i18n';
+import { IDIOMAS, NOMBRE_IDIOMA, t } from '@/i18n';
 
 export interface SelectorIdiomaProps {
+  /** El idioma elegido (código: es, en, fr, de, pt, it). Otro valor no marca ninguno. */
   valor: string;
   alCambiar: (lng: string) => void;
+  /** Mientras se guarda: las filas no responden. */
+  ocupado?: boolean;
 }
 
-export function SelectorIdioma({ valor, alCambiar }: SelectorIdiomaProps) {
+export function SelectorIdioma({ valor, alCambiar, ocupado }: SelectorIdiomaProps) {
   return (
-    <View accessibilityRole="radiogroup" style={styles.lista}>
-      {IDIOMAS.map((lng) => {
-        const on = lng === valor;
-        return (
-          <Pressable
-            key={lng}
-            onPress={() => {
-              if (on) return;
-              vibrar('seleccion');
-              alCambiar(lng);
-            }}
-            accessibilityRole="radio"
-            accessibilityState={{ selected: on }}
-            accessibilityLabel={NOMBRE_IDIOMA[lng]}
-            style={({ pressed }) => [styles.opcion, on && styles.opcionOn, pressed && !on && styles.pulsada]}
-          >
-            <Text style={[styles.texto, on && styles.textoOn]} maxFontSizeMultiplier={1.35}>
-              {NOMBRE_IDIOMA[lng]}
-            </Text>
-          </Pressable>
-        );
-      })}
-    </View>
+    <Card padded={false} style={styles.lista}>
+      <View accessibilityRole="radiogroup" accessibilityLabel={t('perfil:idiomaApp.grupoA11y')}>
+        {IDIOMAS.map((lng, i) => {
+          const marcado = valor === lng;
+          return (
+            <Pressable
+              key={lng}
+              onPress={() => {
+                if (!marcado) alCambiar(lng);
+              }}
+              disabled={ocupado}
+              accessibilityRole="radio"
+              accessibilityLabel={NOMBRE_IDIOMA[lng]}
+              accessibilityLanguage={lng}
+              accessibilityState={{ checked: marcado, disabled: !!ocupado }}
+              style={({ pressed }) => [styles.fila, i > 0 && styles.separada, pressed && styles.pulsada]}
+              testID={`idioma-${lng}`}
+            >
+              <Text style={[styles.nombre, marcado && styles.nombreMarcado]} maxFontSizeMultiplier={1.35} numberOfLines={1}>
+                {NOMBRE_IDIOMA[lng]}
+              </Text>
+              <Check checked={marcado} size={22} />
+            </Pressable>
+          );
+        })}
+      </View>
+    </Card>
   );
 }
 
 const styles = StyleSheet.create({
-  lista: { gap: space.s2 },
-  opcion: {
-    minHeight: 48,
-    justifyContent: 'center',
-    paddingHorizontal: space.s4,
-    borderWidth: stroke.hairline,
-    borderColor: ink.ink4,
-    backgroundColor: ink.ink1,
+  lista: { paddingHorizontal: space.s4, paddingVertical: 2 },
+  fila: {
+    minHeight: 52,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.s3,
+    paddingVertical: space.s3,
   },
-  // El padding baja lo que sube el borde para que la fila no crezca al elegirla.
-  opcionOn: { borderWidth: stroke.rule, borderColor: ink.ink10, paddingHorizontal: space.s4 - 1 },
-  pulsada: { opacity: 0.7 },
-  texto: { fontFamily: tipo.body.family, fontSize: tipo.body.size, lineHeight: tipo.body.lineHeight, color: ink.ink8 },
-  textoOn: { color: ink.ink10 },
+  separada: { borderTopWidth: stroke.hairline, borderTopColor: ink.ink3 },
+  pulsada: { opacity: 0.6 },
+  nombre: {
+    flex: 1,
+    fontFamily: tipo.body.family,
+    fontSize: tipo.body.size,
+    lineHeight: tipo.body.lineHeight,
+    color: ink.ink8,
+  },
+  nombreMarcado: { fontFamily: tipo.headline.family, color: ink.ink9 },
 });

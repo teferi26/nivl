@@ -1,0 +1,32 @@
+{
+  "vista": {
+    "eyebrow": "Corpo",
+    "titulo": "Compras",
+    "subVacia": "Nada na lista.",
+    "subHecha": "Tudo no carrinho. Compras feitas.",
+    "subPendientes_one": "{{count}} artigo pendente.",
+    "subPendientes_other": "{{count}} artigos pendentes.",
+    "anadirArticulo": "Adicionar artigo",
+    "anadirPlaceholder": "Ovos, aveia, café",
+    "nuevoA11y": "Novo artigo",
+    "anadirA11y": "Adicionar à lista",
+    "cargando": "A carregar a lista",
+    "cifraPendientes": "Pendentes",
+    "cifraCarro": "No carrinho",
+    "cifraLista": "Na lista",
+    "barraA11y": "No carrinho: {{hechos}} de {{total}}",
+    "pendiente": "Pendente",
+    "compraHecha": "Compras feitas",
+    "nadaPendiente": "Nada pendente",
+    "compraHechaCuerpo": "Está tudo no carrinho. Limpa o que compraste quando o arrumares.",
+    "nadaPendienteCuerpo": "Gera a lista a partir da dieta ou adiciona artigos acima.",
+    "irDieta": "Ir para a dieta",
+    "pendienteA11y": "{{nombre}}, pendente",
+    "pendienteCantidadA11y": "{{nombre}}, {{cantidad}}, pendente",
+    "enCarro": "No carrinho",
+    "vaciando": "A limpar",
+    "vaciar": "Limpar comprados",
+    "enCarroA11y": "{{nombre}}, no carrinho",
+    "enCarroCantidadA11y": "{{nombre}}, {{cantidad}}, no carrinho"
+  }
+}

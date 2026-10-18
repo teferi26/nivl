@@ -1,0 +1,53 @@
+{
+  "eyebrowSlide": {
+    "portada": "NIVL · Memories",
+    "dato": "The number",
+    "foto": "Proof",
+    "duro": "The hard part",
+    "cierre": "Close"
+  },
+  "periodo": {
+    "mensual": "Month of {{fecha}}",
+    "semanal": "Week of {{fecha}}"
+  },
+  "fila": {
+    "detalle": "{{diapositivas}} slides · {{fotos}} photos",
+    "abrirA11y": "Open the reel: {{periodo}}. {{detalle}}. Seen",
+    "abrirSinVerA11y": "Open the reel: {{periodo}}. {{detalle}}. Not seen",
+    "visto": "Seen",
+    "sinVer": "Not seen"
+  },
+  "vista": {
+    "vacioSubtitulo": "No reels saved yet.",
+    "sinVer_one": "{{count}} reel not seen out of {{total}}.",
+    "sinVer_other": "{{count}} reels not seen out of {{total}}.",
+    "guardados_one": "{{count}} reel saved.",
+    "guardados_other": "{{count}} reels saved.",
+    "eyebrow": "Memories",
+    "titulo": "Your week in pictures",
+    "estaSemana": "This week",
+    "explicacion": "The system gathers the photos you've uploaded with each mission and tells the story of your week. If you haven't uploaded any, there's no summary: an empty reel remembers nothing.",
+    "generar": "Generate this week's",
+    "montando": "The system is putting your week together…",
+    "notaMes": "The system generates the monthly one on its own, on the 1st.",
+    "pases": "Reels",
+    "buscando": "Looking for your memories",
+    "vacioTitulo": "No memories yet",
+    "vacioCuerpo": "Upload a photo when you complete a mission and on Sunday you'll have something to look at."
+  },
+  "pase": {
+    "enPausa": "Paused",
+    "tocaSalir": "Tap to exit",
+    "tocaSeguir": "Tap on the right to continue",
+    "compartirA11y": "Share this slide",
+    "cerrarA11y": "Close the summary",
+    "anterior": "Previous",
+    "salir": "Exit",
+    "siguiente": "Next",
+    "noCompartir": "Couldn't share"
+  },
+  "generar": {
+    "sinFotos": "No photos this week.",
+    "sinPro": "The coach puts the weekly reel together, and the coach is part of NIVL Pro. Your photos and saved memories are still here."
+  }
+}

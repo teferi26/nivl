@@ -1,0 +1,140 @@
+{
+  "portal": {
+    "tituloDocumento": "NIVL · Creator"
+  },
+  "bloque": {
+    "a11y": "{{hora}} {{titulo}}",
+    "a11yAhora": "{{hora}} {{titulo}}, jetzt",
+    "a11yHecho": "{{hora}} {{titulo}}, erledigt"
+  },
+  "completar": {
+    "eyebrow": "MISSION ABSCHLIESSEN",
+    "conFoto": "Mit Foto abschließen",
+    "completar": "Abschließen",
+    "soloFoto": "Mit Foto",
+    "fotoBonus": "Mit Foto · +25 %",
+    "registrarEn": "In {{modulo}} eintragen",
+    "exigeFoto": "Diese Mission verlangt einen Beweis: Sie wird mit einem Foto abgeschlossen, das du jetzt machst.",
+    "extraFoto": "Mit Foto kommt sie am Sonntag in deinen Rückblick.",
+    "fotoSuma": "Mit Foto gibt es 25 % mehr XP, und am Sonntag kommt sie in deinen Rückblick.",
+    "tambienRegistrar": "Wird auch automatisch abgehakt, wenn du {{acto}} einträgst."
+  },
+  "errorBoundary": {
+    "titulo": "DAS SYSTEM IST AUSGEFALLEN",
+    "texto": "Innen ist etwas kaputtgegangen. Deine Daten sind sicher: Sie liegen auf dem Server, nicht auf diesem Bildschirm."
+  },
+  "heatmap": {
+    "a11y_one": "Aktivitätskarte über {{semanas}} Wochen: {{count}} Tag mit mindestens einer abgeschlossenen Mission.",
+    "a11y_other": "Aktivitätskarte über {{semanas}} Wochen: {{count}} Tage mit mindestens einer abgeschlossenen Mission.",
+    "menos": "Weniger",
+    "mas": "Mehr"
+  },
+  "holdToSign": {
+    "noSueltes": "Nicht loslassen",
+    "pista": "Gedrückt halten, bis sich der Ring schließt, um zu unterschreiben",
+    "pistaNombre": "Schreib deinen Namen, um zu unterschreiben",
+    "sellando": "Wird versiegelt"
+  },
+  "lineaDeTiempo": {
+    "ahoraA11y": "Jetzt, {{hora}}"
+  },
+  "ordenDelDia": {
+    "titulo": "Tagesbefehl",
+    "vacioTitulo": "Keine Befehle für heute",
+    "vacioCuerpo": "Bitte den Coach um den Plan, und dein Tag steht Block für Block.",
+    "pedirPlan": "Plan anfordern",
+    "ahora": "JETZT"
+  },
+  "questForm": {
+    "mision": {
+      "nuevo": "Neue Mission",
+      "editar": "Mission bearbeiten",
+      "tituloNuevo": "Was forderst du von dir?",
+      "tituloEditar": "Mission anpassen",
+      "crear": "Mission erstellen",
+      "eliminar": "Mission löschen",
+      "campo": "Mission",
+      "campoA11y": "Name der Mission"
+    },
+    "habito": {
+      "nuevo": "Neue Gewohnheit",
+      "editar": "Gewohnheit bearbeiten",
+      "tituloNuevo": "Was soll dir von selbst gelingen?",
+      "tituloEditar": "Gewohnheit anpassen",
+      "crear": "Gewohnheit erstellen",
+      "eliminar": "Gewohnheit löschen",
+      "campo": "Gewohnheit",
+      "campoA11y": "Name der Gewohnheit"
+    },
+    "eliminarMensaje": "„{{titulo}}“ und der gesamte Verlauf. Das lässt sich nicht rückgängig machen.",
+    "pagoBonus": "{{pb}} PB beim Abschließen, einlösbar gegen Erholung.",
+    "pagoXp": "{{xp}} XP Basis. Mit Foto +25 %; die Serie multipliziert.",
+    "placeholder": "z. B. Gym · Beine",
+    "queEntrena": "Was sie trainiert",
+    "dificultad": "Schwierigkeit",
+    "dificultadA11y": "Schwierigkeit {{nivel}}",
+    "dias": "Tage",
+    "diaria": "Täglich",
+    "diariaA11y": "Jeden Tag",
+    "entreSemana": "Werktags",
+    "entreSemanaA11y": "Montag bis Freitag",
+    "finde": "Wochenende",
+    "findeA11y": "Samstag und Sonntag",
+    "eligeDia": "Wähle mindestens einen Tag.",
+    "evidencia": "Beweis",
+    "sinFoto": "Ohne Foto",
+    "sinFotoA11y": "Kein Pflichtbeweis",
+    "fotoObligatoria": "Foto Pflicht",
+    "fotoObligatoriaA11y": "Beim Abschließen der Mission ein Foto verlangen",
+    "fotoObligatoriaAyuda": "Ohne Foto nicht abschließbar. Zahlt 25 % mehr.",
+    "fotoOpcionalAyuda": "Das Foto ist beim Abschließen optional.",
+    "quePaga": "Was sie zahlt",
+    "xpA11y": "Normale Mission: zahlt XP",
+    "puntosBonus": "Bonuspunkte",
+    "puntosBonusA11y": "Extramission: zahlt Bonuspunkte",
+    "extraAyuda": "Extramission: bringt keine XP und zählt nicht für die Serie. Ihre PB löst du im Vertrag gegen Erholung ein.",
+    "normalAyuda": "Mission des Tages: zählt für die Serie und wird bestraft, wenn sie offen bleibt."
+  },
+  "questItem": {
+    "recuperacionCerrada": "Kehr in die Arena zurück: Schließ eine der Missionen ab, die du schon hattest, dann kannst du das Verlorene zurückholen.",
+    "recuperacionAbierta": "Die Arena ist offen. Hol dir zurück, was du verloren hast.",
+    "penalizacion": "Strafe: {{titulo}}",
+    "penalizacionRecuperada": "Strafe · zurückgeholt",
+    "a11ySiguiente": "Nächste: {{etiqueta}}",
+    "a11yCompletada": "{{titulo}}, abgeschlossen",
+    "a11yCerrada": "{{titulo}}, gesperrt, {{cantidad}} {{unidad}} zurückzuholen. {{razon}}",
+    "a11yPendiente": "{{titulo}}, offen, {{cantidad}} {{unidad}}",
+    "siguiente": "NÄCHSTE",
+    "extra": "Extra"
+  },
+  "shareCardSemana": {
+    "sinFila": "Das System findet deine Zeile in der Rangliste nicht."
+  },
+  "trendLine": {
+    "sinDatos": "Noch keine Daten.",
+    "a11y": "Trend aus {{n}} Werten: von {{primero}} bis {{ultimo}}{{unidad}}, Minimum {{min}}, Maximum {{max}}.",
+    "extremos": "Min {{min}} · Max {{max}}{{unidad}}"
+  },
+  "version": {
+    "sinCanal": "kein Kanal",
+    "embebido": "embedded (ohne OTA)",
+    "desactivadasTitulo": "Updates deaktiviert",
+    "desactivadasTexto": "Diese Kopie hat kein aktives Update-System (das passiert in Expo Go und in der Entwicklung). Sie ändert sich nur mit einem neuen Build.",
+    "alDiaTitulo": "Du bist auf dem neuesten Stand",
+    "alDiaTexto": "Für Version {{version}} gibt es im Kanal {{canal}} kein neues Update.",
+    "listaTitulo": "Update bereit",
+    "listaTexto": "Das System startet neu, um es anzuwenden. Wenn du es verschiebst, wird es beim nächsten Start angewendet.",
+    "reiniciar": "Neu starten",
+    "errorTitulo": "Update fehlgeschlagen",
+    "titulo": "Version {{version}}",
+    "tituloBuild": "Version {{version}} ({{build}})",
+    "pistaOcultar": "Gedrückt halten, um die Details auszublenden",
+    "pistaVer": "Gedrückt halten, um die Details anzuzeigen",
+    "ocultarDetalles": "Details ausblenden",
+    "verDetalles": "Details anzeigen",
+    "canal": "Kanal {{canal}}",
+    "paquete": "Paket {{paquete}}",
+    "buscarA11y": "Nach System-Update suchen",
+    "buscar": "NACH UPDATE SUCHEN"
+  }
+}

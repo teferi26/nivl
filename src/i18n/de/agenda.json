@@ -1,0 +1,103 @@
+{
+  "derivar": {
+    "semanaN": "Woche {{n}}",
+    "rangoSemana": "{{ini}} bis {{fin}}",
+    "mesDeAnio": "{{mes}} {{anio}}",
+    "semanaLeida": "Woche {{n}}, vom {{dia1}}. {{mes1}} bis {{dia2}}. {{mes2}}",
+    "bloques_one": "{{count}} Block des Plans",
+    "bloques_other": "{{count}} Blöcke des Plans",
+    "eventos_one": "{{count}} Termin",
+    "eventos_other": "{{count}} Termine",
+    "plazos_one": "{{count}} Frist",
+    "plazos_other": "{{count}} Fristen",
+    "plazosCampana_one": "{{count}} Kampagnenfrist",
+    "plazosCampana_other": "{{count}} Kampagnenfristen",
+    "vacioFuturo": "{{cuando}}. Noch nichts geplant.",
+    "vacioPasado": "{{cuando}}. An diesem Tag wurde nichts eingetragen.",
+    "hoy": "heute"
+  },
+  "vista": {
+    "modo": {
+      "dia": "Tag",
+      "semana": "Woche",
+      "mes": "Monat"
+    },
+    "vistaPor": {
+      "dia": "Tagesansicht",
+      "semana": "Wochenansicht",
+      "mes": "Monatsansicht"
+    },
+    "anterior": {
+      "dia": "Vorheriger Tag",
+      "semana": "Vorherige Woche",
+      "mes": "Vorheriger Monat"
+    },
+    "siguiente": {
+      "dia": "Nächster Tag",
+      "semana": "Nächste Woche",
+      "mes": "Nächster Monat"
+    },
+    "hoy": "Heute",
+    "volverAHoy": "Zurück zu heute",
+    "nuevoEvento": "Neuer Termin",
+    "cargandoA11y": "Deine Agenda wird geladen",
+    "nadaProgramado": "Nichts geplant",
+    "diaEnBlanco": "Ein leerer Tag",
+    "vacioCuerpoPro": "Bitte den Coach, den Tag zu planen, oder füge einen Termin hinzu. Geplante Missionen erscheinen hier.",
+    "vacioCuerpo": "Füge einen Termin hinzu. Geplante Missionen erscheinen hier.",
+    "vacioPasado": "Das System hat für diesen Tag nichts verzeichnet.",
+    "anadirEvento": "Termin hinzufügen",
+    "eventos": "Termine",
+    "conHora": "Mit Uhrzeit",
+    "conHoraA11y": "Mit Uhrzeit: {{n}}",
+    "misiones": "Missionen",
+    "misionesA11y": "Missionen: {{hechas}} von {{total}} erledigt",
+    "todoElDia": "Ganztägig",
+    "eventoA11yTodoElDia": "{{titulo}}, ganztägig. Tippen für Details.",
+    "eventoA11yHora": "{{titulo}}, um {{hora}}. Tippen für Details.",
+    "tocaEvento": "Tippe auf einen Termin für Details.",
+    "porHoras": "Nach Stunden",
+    "sinHoraPro": "Nichts zu einer bestimmten Uhrzeit. Bitte den Coach, den Tag zu planen, oder füge einen Termin mit Uhrzeit hinzu.",
+    "sinHora": "Nichts zu einer bestimmten Uhrzeit. Füge einen Termin mit Uhrzeit hinzu, dann erscheint er hier.",
+    "sinHoraPasado": "Dieser Tag hatte keinen Stundenplan.",
+    "misionesYPlazos": "Missionen und Fristen",
+    "jefeFinalDetalle": "Endgegner der Kampagne.",
+    "tareaDetalle": "Aufgabe der Kampagne.",
+    "venceHoy": "Heute fällig",
+    "jefe": "Endgegner",
+    "plazo": "Frist",
+    "jefeVenceHoyA11y": "{{titulo}}, Endgegner der Kampagne, heute fällig.",
+    "jefeVenceA11y": "{{titulo}}, Endgegner der Kampagne, an diesem Tag fällig.",
+    "tareaVenceHoyA11y": "{{titulo}}, Aufgabe der Kampagne, heute fällig.",
+    "tareaVenceA11y": "{{titulo}}, Aufgabe der Kampagne, an diesem Tag fällig.",
+    "misionDetalle": "Mission · {{stat}}",
+    "penalizacion": "Strafe",
+    "seCompletanEnHoy": "Missionen schließt du unter Heute ab."
+  },
+  "calendario": {
+    "diasSemanaA11y": "Wochentage",
+    "diasMesA11y": "Tage des Monats"
+  },
+  "hojas": {
+    "pregunta": "Woran musst du denken?",
+    "placeholderNombre": "Anruf, Termin, Demo, Prüfung",
+    "nombreA11y": "Name des Termins",
+    "dia": "Tag",
+    "manana": "Morgen",
+    "diaElegidoA11y": "Der gewählte Tag, {{dia}}",
+    "fecha": "Datum",
+    "placeholderFecha": "JJJJ-MM-TT",
+    "hora": "Uhrzeit",
+    "sinHoraA11y": "Ohne Uhrzeit, ganztägig",
+    "ayudaHora": "Mit Uhrzeit erscheint der Termin auf der Tagesachse. Ohne Uhrzeit gilt er als ganztägig.",
+    "evento": "Termin",
+    "eliminarEvento": "Termin löschen",
+    "fechaA11y": "Datum: {{dia}}",
+    "horaTodoElDiaA11y": "Uhrzeit: ganztägig",
+    "horaA11y": "Uhrzeit: {{hora}}",
+    "nota": "Notiz"
+  },
+  "hook": {
+    "fechaInvalida": "Ungültiges Datum. Verwende das Format JJJJ-MM-TT, z. B. 2026-06-15."
+  }
+}

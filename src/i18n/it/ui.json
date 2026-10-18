@@ -1,0 +1,39 @@
+{
+  "avatar": {
+    "a11yRango": "{{nombre}}, rango {{rango}}"
+  },
+  "ceremonia": {
+    "nuevoRango": "NUOVO RANGO",
+    "nuevoGrado": "NUOVO GRADO",
+    "subesNivel": "SALI DI LIVELLO",
+    "anuncioRango": "Nuovo rango: {{rango}}, {{nombre}}. {{lema}}",
+    "anuncioGrado": "Nuovo grado: {{nombre}} {{grado}}",
+    "anuncioNivel": "Sali al livello {{nivel}}",
+    "tituloNivel": "Livello {{nivel}}",
+    "faltaNiveles_one": "Manca {{count}} livello",
+    "faltaNiveles_other": "Mancano {{count}} livelli",
+    "faltaDias_one": "Manca {{count}} giorno attivo",
+    "faltaDias_other": "Mancano {{count}} giorni attivi",
+    "faltanAmbos": "Mancano {{niveles}} e {{dias}}",
+    "niveles_one": "{{count}} livello",
+    "niveles_other": "{{count}} livelli",
+    "diasActivos_one": "{{count}} giorno attivo",
+    "diasActivos_other": "{{count}} giorni attivi",
+    "cerrarA11y": "Chiudi la celebrazione",
+    "siguiente": "Prossimo: {{nombre}} al livello {{nivel}}",
+    "pideDias": "{{nombre}} richiede anche giorni attivi nell'arena",
+    "seguir": "Continua",
+    "tocaCerrar": "Tocca ovunque per chiudere",
+    "tocaSaltar": "Tocca ovunque per saltare"
+  },
+  "confirmar": {
+    "botonesWeb": "Accetta: {{ok}}. Annulla: {{cancelar}}."
+  },
+  "sidebar": {
+    "lema": "OGNI GIORNO\nL'1% MIGLIORE",
+    "lemaA11y": "Ogni giorno l'1% migliore"
+  },
+  "row": {
+    "masOpciones": "Altre opzioni"
+  }
+}

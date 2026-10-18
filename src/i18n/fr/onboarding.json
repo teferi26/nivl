@@ -1,0 +1,93 @@
+{
+  "volverA11y": "Revenir à l'étape précédente",
+  "entrar": "Entrer dans l'arène",
+  "continuar": "Continuer",
+  "portada": {
+    "reglas": "Les règles",
+    "lore": {
+      "arena": "Ce n'est pas une liste de tâches. C'est une arène.",
+      "reglas": "Chaque jour, tu as des missions. Les accomplir rapporte de l'XP et fait monter ton niveau ; les rater en retire. La série multiplie. Les grands projets sont des campagnes avec un boss final. Et un coach dicte ta journée, te juge le soir et retient tout ce qu'il apprend de toi.",
+      "trampas": "Pas de triche : les preuves se prennent avec l'appareil photo, sur le moment. Le système ne donne pas d'avis. Il enregistre."
+    }
+  },
+  "progreso": {
+    "paso": "Étape {{actual}} sur {{total}}"
+  },
+  "tablilla": {
+    "rotulo": "Contrat",
+    "seAbre": "S'ouvre le {{fecha}}"
+  },
+  "nombre": {
+    "inscripcion": "Le nom",
+    "titulo": "Comment t'appelles-tu ?",
+    "etiqueta": "Ton nom dans le système",
+    "placeholder": "Comment tu veux que je t'appelle",
+    "a11y": "Ton nom",
+    "codigoEtiqueta": "Qui t'a amené ? · facultatif",
+    "codigoAyuda": "Si quelqu'un te l'a recommandé, saisis son code. Ça ne change rien pour toi.",
+    "codigoPlaceholder": "Code créateur",
+    "codigoA11y": "Code du créateur qui t'a amené, facultatif",
+    "codigoRechazado": "{{motivo}} Corrige-le ou continue sans."
+  },
+  "camino": {
+    "inscripcion": "La voie",
+    "titulo": "Pour quoi vas-tu utiliser NIVL ?",
+    "pista": "Ça change ce que tu vois en premier et ce que le coach te demande. Tout reste disponible et tu peux le changer dans Profil.",
+    "queSeActiva": "Ce qui s'active"
+  },
+  "objetivo": {
+    "inscripcion": "L'objectif",
+    "titulo": "Pourquoi es-tu là ?",
+    "pista": "Une seule chose, en une phrase. Pas « m'améliorer » : ce que tu veux avoir accompli. C'est ce que tu vas signer.",
+    "etiqueta": "Ton objectif",
+    "salud": "Mon objectif inclut la santé ou l'entraînement",
+    "sinSalud": "Écris un objectif général, sans données de santé. Pour les inclure, active l'option ci-dessus.",
+    "ejemplo": "Lire douze livres cette année",
+    "a11y": "Ton objectif, en une phrase",
+    "cifra": "Chiffre · facultatif",
+    "cifraEjemplo": "12 livres, 5 000 €…",
+    "cifraEjemploSalud": "78 kg, 5 000 €…",
+    "cifraA11y": "Chiffre de l'objectif, facultatif",
+    "fecha": "Date · facultative",
+    "fechaEjemplo": "juin 2027",
+    "fechaA11y": "Date de l'objectif, facultative"
+  },
+  "misiones": {
+    "inscripcion": "Les missions",
+    "titulo": "Tes premières missions",
+    "pista": "Proposées pour un {{para}}. Retire celles qui ne te correspondent pas ; tu pourras créer les tiennes dans Habitudes.",
+    "gladiador": "gladiateur",
+    "meta": "{{stat}} · {{dificultad}} · {{frecuencia}}",
+    "metaSalud": "{{stat}} · {{dificultad}} · {{frecuencia}} · santé (facultatif)",
+    "cadaDia": "chaque jour",
+    "diasSemana": "{{n}} jours/semaine",
+    "crear_one": "Créer {{count}} mission",
+    "crear_other": "Créer {{count}} missions",
+    "sinMisiones": "Commencer sans missions"
+  },
+  "firma": {
+    "inscripcion": "La signature",
+    "titulo": "Signe-le avec toi-même",
+    "pista": "Personne d'autre ne le lira. Il est scellé aujourd'hui et s'ouvre à l'échéance. Choisis combien de temps tu te donnes.",
+    "horizonteA11y": "Horizon de {{plazo}}",
+    "horizonteRecomendadoA11y": "Horizon de {{plazo}}, recommandé",
+    "recomendado": "recommandé",
+    "letraPequena": "D'ici là, Contrat le garde scellé. Tes règles et leurs conséquences, tu les écriras là-bas une fois entré.",
+    "campo": "Écris ton nom pour signer",
+    "mantenPulsado": "Appuie longuement pour signer",
+    "escribeNombre": "Écris ton nom"
+  },
+  "coach": {
+    "inscripcion": "Le coach",
+    "titulo": "Signé. Maintenant, qui le dirige.",
+    "pista": "Tes habitudes, ton organisation et ta progression sont gratuites. Les formules payantes ajoutent le coach IA et, avec Élite, un insigne et une demande de place dans un ludus.",
+    "pistaHoja": "Tes habitudes, ton organisation et ta progression sont gratuites. Les formules payantes ajoutent le coach IA et, avec Élite, un insigne et une demande de place dans un ludus. Décide maintenant ou plus tard : l'engagement vaut autant.",
+    "preparandoA11y": "Préparation de ton entrée",
+    "seguirGratis": "Continuer gratuitement pour l'instant"
+  },
+  "sello": {
+    "titulo": "Scellé",
+    "a11y": "Scellé. Expire le {{fecha}}. Touche pour continuer",
+    "vence": "Expire le {{fecha}}"
+  }
+}

@@ -1,0 +1,61 @@
+{
+  "comida": {
+    "desayuno": "Pequeno-almoço",
+    "comida": "Almoço",
+    "merienda": "Lanche",
+    "cena": "Jantar",
+    "snack": "Snack"
+  },
+  "vista": {
+    "eyebrow": "Corpo",
+    "titulo": "Dieta",
+    "subMacros": "{{dia}}: {{kcal}} kcal e {{prote}} g de proteína planeados.",
+    "subComidas_one": "{{dia}}: {{count}} refeição planeada.",
+    "subComidas_other": "{{dia}}: {{count}} refeições planeadas.",
+    "subVacio": "{{dia}} ainda por planear.",
+    "irCompra": "Ir para a lista de compras",
+    "diaHoyA11y": "{{dia}}, hoje",
+    "cargando": "A carregar a tua dieta",
+    "cifraKcal": "Kcal",
+    "cifraKcalSinDato": "Kcal: sem dados",
+    "cifraProte": "Proteína",
+    "cifraProteSinDato": "Proteína: sem dados",
+    "cifraComidas": "Refeições",
+    "cifraComidasA11y": "Refeições: {{n}} de {{total}} planeadas",
+    "notaMano": "As refeições escritas à mão não levam macros; só somam as que o coach planeia.",
+    "hoyDia": "Hoje · {{dia}}",
+    "sinPlanificar": "Por planear. Toca para adicionar.",
+    "editarA11y": "Editar {{comida}}: {{descripcion}} de {{dia}}",
+    "planificarA11y": "Planear {{comida}} de {{dia}}",
+    "conMacrosA11y": "{{texto}}, {{macros}}",
+    "macrosKcalProteA11y": "{{kcal}} kcal e {{prote}} gramas de proteína",
+    "macrosKcalA11y": "{{kcal}} kcal",
+    "macrosProteA11y": "{{prote}} gramas de proteína",
+    "listaCompra": "Lista de compras",
+    "generar": "Gerar a lista",
+    "generarConIngredientes": "O sistema junta os ingredientes dos 7 dias, elimina duplicados e envia-os para a lista.",
+    "generarSinIngredientes": "Escreve os ingredientes das tuas refeições, separados por vírgulas, e o sistema faz a lista.",
+    "gProt": "g prot."
+  },
+  "hoja": {
+    "eyebrow": "{{comida}} · {{dia}}",
+    "tituloAjustar": "Ajusta a refeição",
+    "tituloNueva": "O que vais comer?",
+    "quitarComida": "Remover refeição",
+    "comida": "Refeição",
+    "comidaPlaceholder": "Frango com arroz e brócolos",
+    "comidaA11y": "Descrição da refeição",
+    "ingredientes": "Ingredientes",
+    "ingredientesPlaceholder": "frango, arroz, brócolos, azeite",
+    "ingredientesAyuda": "Separados por vírgulas: é daqui que sai a lista de compras.",
+    "ingredientesA11y": "Ingredientes separados por vírgulas"
+  },
+  "acciones": {
+    "sinIngredientes": "Sem ingredientes",
+    "sinIngredientesCuerpo": "Adiciona ingredientes às tuas refeições (separados por vírgulas) e o sistema gera a lista.",
+    "listaGenerada": "Lista gerada",
+    "listaGeneradaCuerpo": "{{n}} ingredientes enviados para a lista de compras.",
+    "verLista": "Ver lista",
+    "entendido": "Entendido"
+  }
+}

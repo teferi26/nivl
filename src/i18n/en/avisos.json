@@ -1,0 +1,34 @@
+{
+  "canales": {
+    "despertar": "Wake-up alarm",
+    "bloque": "Day blocks",
+    "cierre": "Day close",
+    "sistema": "The system"
+  },
+  "acciones": {
+    "hecho": "Done",
+    "posponer": "Snooze 10 min",
+    "reportar": "Report"
+  },
+  "despertar": {
+    "titulo": "Up, gladiator"
+  },
+  "bloque": {
+    "cuerpo": "It's time for this block. Details are in Today."
+  },
+  "cierre": {
+    "titulo": "The day close is coming"
+  },
+  "posponer": {
+    "titulo": "Reminder",
+    "cuerpo": "Still pending."
+  },
+  "error": {
+    "estado": "Failed to read the notification status.",
+    "noDisponibles": "Notifications aren't available here.",
+    "despertador": "Couldn't schedule the wake-up alarm.",
+    "avisosDelDia": "Couldn't schedule today's notifications.",
+    "aviso": "Couldn't schedule the notification.",
+    "avisosDelSistema": "Couldn't schedule the system notifications."
+  }
+}

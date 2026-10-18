@@ -1,0 +1,78 @@
+{
+  "tipo": {
+    "correr": "Course",
+    "nadar": "Natation",
+    "bici": "Vélo",
+    "caminar": "Marche",
+    "remo": "Aviron",
+    "otro": "Autre"
+  },
+  "zona": {
+    "Z1": "Z1",
+    "Z2": "Z2",
+    "Z3": "Z3",
+    "Z4": "Z4",
+    "Z5": "Z5",
+    "intervalos": "Fractionné",
+    "libre": "Libre"
+  },
+  "sesionDel": "{{tipo}} du {{fecha}}",
+  "fila": {
+    "rpe": "RPE {{rpe}}",
+    "pulso": "{{ppm}} bpm",
+    "leido": "{{tipo}} du {{fecha}}, zone {{zona}}. {{cifras}}. Appuie longuement pour supprimer.",
+    "leidoExtra": "{{tipo}} du {{fecha}}, zone {{zona}}. {{cifras}}. {{extra}}. Appuie longuement pour supprimer.",
+    "leidoXp": "{{tipo}} du {{fecha}}, zone {{zona}}. {{cifras}}. Plus {{xp}} XP. Appuie longuement pour supprimer.",
+    "leidoExtraXp": "{{tipo}} du {{fecha}}, zone {{zona}}. {{cifras}}. {{extra}}. Plus {{xp}} XP. Appuie longuement pour supprimer."
+  },
+  "vista": {
+    "eyebrow": "Corps",
+    "titulo": "Cardio",
+    "subVacio": "Rien d'enregistré pour l'instant. Chaque séance ajuste la suivante.",
+    "sub_one": "{{km}} km et {{count}} séance en 28 jours.",
+    "sub_other": "{{km}} km et {{count}} séances en 28 jours.",
+    "registrar": "Enregistrer une séance",
+    "cargando": "Chargement du cardio",
+    "sesionRegistrada": "Séance enregistrée",
+    "cerrarAvisoA11y": "Fermer l'avis",
+    "cifraKm": "Km · 28 jours",
+    "cifraKmA11y": "{{km}} kilomètres en 28 jours",
+    "cifraSesiones": "Séances",
+    "cifraMin": "Min en mouvement",
+    "regla": "+10 % PAR SEMAINE",
+    "reglaPie": "AU MAXIMUM",
+    "reglaNota": "Le volume hebdomadaire ne doit pas augmenter de plus de 10 %. Le système y veille et ajuste tes ordres avec ces données.",
+    "sesiones": "Séances",
+    "vacioTitulo": "Rien d'enregistré",
+    "vacioCuerpo": "Chaque sortie et chaque longueur notées ici servent au système pour calculer ton allure et ajuster la suite.",
+    "registrarPrimera": "Enregistrer la première"
+  },
+  "hoja": {
+    "eyebrow": "Nouvelle séance",
+    "titulo": "Qu'est-ce que tu as bougé aujourd'hui ?",
+    "tipo": "Type",
+    "tipoA11y": "Type de séance",
+    "zona": "Zone",
+    "zonaA11y": "Zone d'effort",
+    "zonaChipA11y": "Zone {{zona}}",
+    "zonaAyuda": "La Z2 est le moteur : l'allure à laquelle tu peux parler en phrases complètes. C'est 80 % du volume, celui qui construit la base.",
+    "duracion": "Durée (min)",
+    "duracionA11y": "Durée en minutes",
+    "distancia": "Distance (km)",
+    "distanciaA11y": "Distance en kilomètres",
+    "esfuerzo": "Effort (RPE 1-10)",
+    "esfuerzoA11y": "Effort perçu de 1 à 10",
+    "pulso": "Fréquence cardiaque moyenne",
+    "pulsoA11y": "Battements par minute moyens",
+    "notas": "Notes",
+    "notasPlaceholder": "Comment ça s'est passé, gênes, terrain",
+    "notasA11y": "Notes de la séance"
+  },
+  "acciones": {
+    "faltaDuracion": "Il manque la durée. Sans minutes, pas de séance à enregistrer.",
+    "kmNumeros": "Écris les kilomètres en chiffres, par exemple {{ejemplo}}.",
+    "rpeRango": "L'effort va de 1 à 10.",
+    "registradaA11y": "Séance enregistrée. {{texto}}",
+    "eliminarSesion": "Supprimer la séance"
+  }
+}

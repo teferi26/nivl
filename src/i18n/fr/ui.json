@@ -1,0 +1,39 @@
+{
+  "avatar": {
+    "a11yRango": "{{nombre}}, rang {{rango}}"
+  },
+  "ceremonia": {
+    "nuevoRango": "NOUVEAU RANG",
+    "nuevoGrado": "NOUVEAU GRADE",
+    "subesNivel": "NIVEAU SUPÉRIEUR",
+    "anuncioRango": "Nouveau rang : {{rango}}, {{nombre}}. {{lema}}",
+    "anuncioGrado": "Nouveau grade : {{nombre}} {{grado}}",
+    "anuncioNivel": "Tu passes au niveau {{nivel}}",
+    "tituloNivel": "Niveau {{nivel}}",
+    "faltaNiveles_one": "Encore {{count}} niveau",
+    "faltaNiveles_other": "Encore {{count}} niveaux",
+    "faltaDias_one": "Encore {{count}} jour actif",
+    "faltaDias_other": "Encore {{count}} jours actifs",
+    "faltanAmbos": "Encore {{niveles}} et {{dias}}",
+    "niveles_one": "{{count}} niveau",
+    "niveles_other": "{{count}} niveaux",
+    "diasActivos_one": "{{count}} jour actif",
+    "diasActivos_other": "{{count}} jours actifs",
+    "cerrarA11y": "Fermer la célébration",
+    "siguiente": "Suivant : {{nombre}} au niveau {{nivel}}",
+    "pideDias": "{{nombre}} demande aussi des jours actifs dans l'arène",
+    "seguir": "Continuer",
+    "tocaCerrar": "Touche n'importe où pour fermer",
+    "tocaSaltar": "Touche n'importe où pour passer"
+  },
+  "confirmar": {
+    "botonesWeb": "Valider : {{ok}}. Annuler : {{cancelar}}."
+  },
+  "sidebar": {
+    "lema": "1 % MEILLEUR\nCHAQUE JOUR",
+    "lemaA11y": "1 % meilleur chaque jour"
+  },
+  "row": {
+    "masOpciones": "Plus d'options"
+  }
+}

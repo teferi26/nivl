@@ -48,7 +48,9 @@ export interface PerfilAjustesProps {
   onConsentimiento: () => void;
   /** El idioma del coach: lo elegido (null: aún no se sabe) y lo que habla ahora. */
   idioma: { preferencia: Preferencia | null; coach: Idioma };
-  /** Abre la hoja del idioma (HojaIdioma). */
+  /** Modos F1, flag `idiomas_activos`: la sección es «Idioma» (app y coach). */
+  idiomasApp?: boolean;
+  /** Abre la hoja del idioma (HojaIdioma, o HojaIdiomaApp con el flag). */
   onIdioma: () => void;
   /** Recibe el rectángulo de la fila (ventana) para anclar la hoja en iPad. */
   onExportar: (ancla?: Ancla | null) => void;
@@ -77,6 +79,7 @@ export function PerfilAjustes({
   consent,
   onConsentimiento,
   idioma,
+  idiomasApp,
   onIdioma,
   onExportar,
   onCerrarSesion,
@@ -241,23 +244,41 @@ export function PerfilAjustes({
         </Section>
       ) : null}
 
-      {/* 1.0.10: solo el coach cambia de idioma; la interfaz sigue en español.
-          En 1.1.0 esta sección pasa a ser «Idioma». */}
-      <Section title={t('perfil:ajustes.idioma')}>
-        <Card padded={false} style={styles.lista}>
-          <Row
-            first
-            leading={<Ionicons name="language-outline" size={20} color={ink.ink9} />}
-            title={t('perfil:ajustes.teHablaEn')}
-            detail={idiomaAuto ? t('perfil:ajustes.idiomaAuto') : undefined}
-            trailing={<RowValue strong>{nombreIdioma}</RowValue>}
-            chevron
-            onPress={onIdioma}
-            accessibilityLabel={t(idiomaAuto ? 'perfil:ajustes.idiomaAutoA11y' : 'perfil:ajustes.idiomaA11y', { idioma: nombreIdioma })}
-          />
-        </Card>
-        <Text style={styles.nota}>{t('perfil:ajustes.interfazEspanol')}</Text>
-      </Section>
+      {/* Con el flag `idiomas_activos` (Modos F1), la sección es «Idioma»: la
+          app y el coach hablan el mismo idioma. Sin él, la de 1.0.10: solo el
+          coach cambia de idioma y la interfaz sigue en español. */}
+      {idiomasApp ? (
+        <Section title={t('perfil:idiomaApp.seccion')}>
+          <Card padded={false} style={styles.lista}>
+            <Row
+              first
+              leading={<Ionicons name="language-outline" size={20} color={ink.ink9} />}
+              title={t('perfil:idiomaApp.fila')}
+              trailing={<RowValue strong>{nombreIdioma}</RowValue>}
+              chevron
+              onPress={onIdioma}
+              accessibilityLabel={t('perfil:idiomaApp.filaA11y', { idioma: nombreIdioma })}
+            />
+          </Card>
+          <Text style={styles.nota}>{t('perfil:idiomaApp.nota')}</Text>
+        </Section>
+      ) : (
+        <Section title={t('perfil:ajustes.idioma')}>
+          <Card padded={false} style={styles.lista}>
+            <Row
+              first
+              leading={<Ionicons name="language-outline" size={20} color={ink.ink9} />}
+              title={t('perfil:ajustes.teHablaEn')}
+              detail={idiomaAuto ? t('perfil:ajustes.idiomaAuto') : undefined}
+              trailing={<RowValue strong>{nombreIdioma}</RowValue>}
+              chevron
+              onPress={onIdioma}
+              accessibilityLabel={t(idiomaAuto ? 'perfil:ajustes.idiomaAutoA11y' : 'perfil:ajustes.idiomaA11y', { idioma: nombreIdioma })}
+            />
+          </Card>
+          <Text style={styles.nota}>{t('perfil:ajustes.interfazEspanol')}</Text>
+        </Section>
+      )}
 
       <Section title={t('perfil:ajustes.datosIA')}>
         <Card padded={false} style={styles.lista}>

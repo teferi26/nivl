@@ -84,10 +84,12 @@ describe('plurales', () => {
 });
 
 describe('otros idiomas de interfaz (pruebas)', () => {
-  it('un idioma sin catálogo cae en español', () => {
+  it('un idioma con catálogo (Modos F1) habla su idioma; lo que le falte cae en español', () => {
     __fijarIdiomaParaTest('en');
     expect(idiomaInterfaz()).toBe('en');
-    expect(t('comun:guardar')).toBe('Guardar');
+    expect(t('comun:guardar')).not.toBe('Guardar');
+    const tLibre = t as unknown as (clave: string, opciones: Record<string, unknown>) => string;
+    expect(tLibre('comun:noExiste', { defaultValue: 'Di {{x}}', x: 'y' })).toBe('Di y');
   });
 
   it('el pseudoidioma rodea cada texto con ⟦ ⟧ y respeta las variables', () => {

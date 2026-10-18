@@ -1,0 +1,97 @@
+{
+  "noHaSalido": "Não correu bem",
+  "ayudaContrasena": "Sem regras estranhas: {{n}} caracteres ou mais. Uma frase de que te lembres é perfeita.",
+  "fuerza": {
+    "debil": "Fraca",
+    "media": "Média",
+    "fuerte": "Forte"
+  },
+  "aviso": {
+    "registro": "Se o e-mail for novo, enviámos-te uma ligação para o confirmar. Abre-a neste telefone e depois entra com a tua palavra-passe.",
+    "recuperacion": "Se esse e-mail tiver conta, enviámos-te uma ligação. Abre-a neste telefone para escolher uma palavra-passe nova."
+  },
+  "error": {
+    "nombre": "Entre 1 e {{max}} caracteres.",
+    "correo": "Formato de e-mail inválido.",
+    "noCoinciden": "As palavras-passe não coincidem."
+  },
+  "contrasena": {
+    "etiqueta": "Palavra-passe",
+    "repite": "Repete a palavra-passe",
+    "placeholder": "Uma frase de que te lembres",
+    "ocultar": "Ocultar palavra-passe",
+    "mostrar": "Mostrar palavra-passe",
+    "fuerzaA11y": "Força da palavra-passe: {{fuerza}}",
+    "leFalta": "Falta: {{faltas}}."
+  },
+  "login": {
+    "casillaLegal": "Li e aceito os Termos do NIVL e li a sua Política de Privacidade.",
+    "intro": {
+      "signin": "Entra com o teu e-mail e a tua palavra-passe do NIVL.",
+      "signup": "Cria a tua conta NIVL. Enviamos-te uma ligação para confirmar o e-mail.",
+      "recover": "Escreve o e-mail da tua conta e enviamos-te uma ligação para escolher uma palavra-passe nova."
+    },
+    "introPortal": "Entra com a tua conta NIVL para ver o teu painel de criador.",
+    "olvidoPortal": "Esqueceste a palavra-passe? Recupera-a na app NIVL («Esqueceste a palavra-passe?» na página de entrada) e volta aqui.",
+    "boton": {
+      "signin": "Entrar",
+      "signup": "Criar conta",
+      "recover": "Enviar ligação"
+    },
+    "pestana": {
+      "signin": {
+        "texto": "Entrar",
+        "a11y": "Entrar com uma conta existente"
+      },
+      "signup": {
+        "texto": "Criar conta",
+        "a11y": "Criar uma conta nova"
+      }
+    },
+    "portal": "Portal de criadores",
+    "recuperarTitulo": "Recuperar palavra-passe",
+    "nombrePlaceholder": "Como queres que o sistema te chame",
+    "correo": "E-mail",
+    "correoPlaceholder": "tu@email.com",
+    "correoA11y": "Endereço de e-mail",
+    "terminos": "Termos do NIVL",
+    "terminosA11y": "Termos de utilização do NIVL",
+    "privacidad": "Privacidade do NIVL",
+    "privacidadA11y": "Política de Privacidade do NIVL",
+    "revisaCorreo": "Verifica o teu e-mail",
+    "faltaCasilla": "Marca a caixa dos Termos para continuar.",
+    "olvido": "Esqueceste a palavra-passe?",
+    "volverAEntrar": "Voltar a entrar",
+    "notaCuenta": "Os teus hábitos, missões e progresso ficam guardados na tua conta NIVL."
+  },
+  "arranque": {
+    "cargando": "A carregar"
+  },
+  "fuera": {
+    "eyebrow": "Rota",
+    "titulo": "Fora da arena",
+    "cuerpo": "O sistema não reconhece este destino. A ligação pode ser antiga ou estar mal copiada.",
+    "volver": "Voltar à arena"
+  },
+  "cuenta": {
+    "eyebrow": "Conta",
+    "irAEntrar": "Ir para a entrada"
+  },
+  "restablecer": {
+    "titulo": "Nova palavra-passe",
+    "comprobando": "A verificar a ligação",
+    "nueva": "Palavra-passe nova",
+    "guardar": "Guardar palavra-passe",
+    "hechoRotulo": "Palavra-passe alterada",
+    "hechoMensaje": "Já a podes usar para entrar no NIVL.",
+    "continuar": "Continuar",
+    "invalidoRotulo": "Ligação inválida",
+    "invalido": "Esta ligação é inválida ou expirou. Pede uma nova em «Esqueceste a palavra-passe?»."
+  },
+  "confirmar": {
+    "titulo": "Confirmar e-mail",
+    "falloRotulo": "Não foi possível confirmar",
+    "confirmando": "A confirmar o teu e-mail",
+    "sinEnlace": "Esta ligação não traz nada para confirmar. Abre o último e-mail que te enviámos ou entra com a tua palavra-passe."
+  }
+}

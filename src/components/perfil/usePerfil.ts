@@ -22,8 +22,9 @@ import {
   tituloVigente,
 } from '@/lib/achievements';
 import { useVibraciones, vibrar } from '@/design/haptics';
-import { fijarPreferencia, t, useIdioma, type Preferencia } from '@/i18n';
+import { esPreferencia, fijarPreferencia, t, useIdioma, type Preferencia } from '@/i18n';
 import { asegurarIdiomaPerfil } from '@/i18n/sincronizar';
+import { useFlags } from '@/lib/flags';
 import { useAuth } from '@/lib/auth';
 import { cerrarSesion } from '@/lib/authFlow';
 import {
@@ -136,6 +137,18 @@ export interface PerfilHojas {
     dispositivo: string | null;
     elegir: (p: Preferencia) => void;
   };
+  /**
+   * Modos F1, con el flag `idiomas_activos`: la hoja «Idioma» de la app
+   * (SelectorIdioma) en lugar de la del idioma del coach. `activa` false: no se pinta.
+   */
+  idiomaApp: {
+    activa: boolean;
+    abierta: boolean;
+    cerrar: () => void;
+    /** El idioma efectivo (el de la interfaz y el coach). */
+    valor: string;
+    elegir: (lng: string) => void;
+  };
 }
 
 export interface UsePerfil {
@@ -199,6 +212,8 @@ export function usePerfil(): UsePerfil {
   // El idioma del coach (1.0.10): la preferencia vive en src/i18n.
   const idioma = useIdioma();
   const [idiomaOpen, setIdiomaOpen] = useState(false);
+  // Modos F1: con el flag, la sección pasa a ser «Idioma» (app + coach).
+  const { idiomas_activos: idiomasApp } = useFlags();
 
   const refrescarAvisos = useCallback(() => {
     estadoAvisos().then(setAvisos).catch(() => setAvisos(null));
@@ -648,6 +663,7 @@ export function usePerfil(): UsePerfil {
         consent,
         onConsentimiento: tocarConsentimiento,
         idioma: { preferencia: idioma.preferencia, coach: idioma.coach },
+        idiomasApp,
         onIdioma: () => setIdiomaOpen(true),
         onExportar: onExport,
         onCerrarSesion: signOut,
@@ -699,6 +715,17 @@ export function usePerfil(): UsePerfil {
       dispositivo: idioma.dispositivo,
       elegir: (p) => {
         void elegirIdioma(p);
+      },
+    },
+    idiomaApp: {
+      activa: idiomasApp,
+      abierta: idiomasApp && idiomaOpen,
+      cerrar: () => setIdiomaOpen(false),
+      valor: idioma.coach,
+      // Guarda la preferencia, escribe profiles.locale (tolerante sin la
+      // columna 0066) y la interfaz cambia sola (src/i18n, con el flag).
+      elegir: (lng) => {
+        if (esPreferencia(lng)) void elegirIdioma(lng);
       },
     },
   };

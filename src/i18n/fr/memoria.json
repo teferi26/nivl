@@ -1,0 +1,53 @@
+{
+  "categoria": {
+    "todo": "Tout",
+    "aprendizaje": "Leçons",
+    "venta": "Ventes",
+    "metrica": "Mesures",
+    "log": "Registre",
+    "objetivo": "Objectifs",
+    "proyecto": "Projets",
+    "regla": "Règles",
+    "perfil": "Profil"
+  },
+  "hecho": {
+    "a11y": "{{categoria}}, {{fecha}} : {{contenido}}",
+    "pista": "Touche pour le lire en entier.",
+    "leerEntero": "Lire en entier",
+    "borrarAccion": "Effacer ce souvenir",
+    "borrarA11y": "Effacer le souvenir : {{contenido}}",
+    "borrando": "Effacement",
+    "borrar": "Effacer"
+  },
+  "vista": {
+    "eyebrow": "Le système se souvient",
+    "titulo": "Mémoire",
+    "cargando": "Lecture de la mémoire",
+    "noResponde": "La mémoire ne répond pas.",
+    "vacioSubtitulo": "Rien n'est encore noté. Elle s'écrit toute seule pendant que tu parles au coach.",
+    "subtitulo_one": "{{count}} fait noté · dossier v{{version}}",
+    "subtitulo_other": "{{count}} faits notés · dossier v{{version}}",
+    "hechos": "Faits",
+    "dossier": "Dossier",
+    "dossierA11y": "Dossier : version {{version}}",
+    "esteMes": "Ce mois-ci",
+    "esteMesSinDato": "Ce mois-ci : aucune donnée",
+    "esteMesA11y": "Ce mois-ci : {{gasto}} dollars",
+    "quienEres": "Qui tu es pour le système",
+    "contraer": "Réduire",
+    "leerTodo": "Tout lire",
+    "sinDossierTitulo": "Pas encore de mémoire stable",
+    "sinDossierCuerpo": "Elle s'écrit toute seule quand quelque chose de structurel change : un nouvel objectif, un projet qui meurt, une règle que tu conviens.",
+    "filtro": "{{categoria}} · {{n}}",
+    "filtroA11y": "Filtrer par {{categoria}}, {{n}}",
+    "vacioTitulo": "Rien de noté pour l'instant",
+    "vacioCategoria": "Rien dans cette catégorie",
+    "vacioCuerpo": "Chaque chiffre, vente, leçon ou règle que tu confies au coach reste ici avec sa date.",
+    "otraCategoria": "Essaie une autre catégorie."
+  },
+  "borrar": {
+    "titulo": "Effacer le souvenir",
+    "mensaje": "« {{contenido}} »\n\nIl est effacé des souvenirs du coach. S'il apparaît aussi dans le dossier ou dans la conversation, il y reste jusqu'à leur réécriture."
+  },
+  "avisoTitulo": "Mémoire"
+}

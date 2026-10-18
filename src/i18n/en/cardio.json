@@ -1,0 +1,78 @@
+{
+  "tipo": {
+    "correr": "Run",
+    "nadar": "Swim",
+    "bici": "Bike",
+    "caminar": "Walk",
+    "remo": "Row",
+    "otro": "Other"
+  },
+  "zona": {
+    "Z1": "Z1",
+    "Z2": "Z2",
+    "Z3": "Z3",
+    "Z4": "Z4",
+    "Z5": "Z5",
+    "intervalos": "Intervals",
+    "libre": "Free"
+  },
+  "sesionDel": "{{tipo}} on {{fecha}}",
+  "fila": {
+    "rpe": "RPE {{rpe}}",
+    "pulso": "{{ppm}} bpm",
+    "leido": "{{tipo}} on {{fecha}}, zone {{zona}}. {{cifras}}. Long-press to delete.",
+    "leidoExtra": "{{tipo}} on {{fecha}}, zone {{zona}}. {{cifras}}. {{extra}}. Long-press to delete.",
+    "leidoXp": "{{tipo}} on {{fecha}}, zone {{zona}}. {{cifras}}. Plus {{xp}} XP. Long-press to delete.",
+    "leidoExtraXp": "{{tipo}} on {{fecha}}, zone {{zona}}. {{cifras}}. {{extra}}. Plus {{xp}} XP. Long-press to delete."
+  },
+  "vista": {
+    "eyebrow": "Body",
+    "titulo": "Cardio",
+    "subVacio": "Nothing logged yet. Each session shapes the next one.",
+    "sub_one": "{{km}} km and {{count}} session in 28 days.",
+    "sub_other": "{{km}} km and {{count}} sessions in 28 days.",
+    "registrar": "Log session",
+    "cargando": "Loading cardio",
+    "sesionRegistrada": "Session logged",
+    "cerrarAvisoA11y": "Dismiss the notice",
+    "cifraKm": "Km · 28 days",
+    "cifraKmA11y": "{{km}} kilometers in 28 days",
+    "cifraSesiones": "Sessions",
+    "cifraMin": "Min moving",
+    "regla": "+10% PER WEEK",
+    "reglaPie": "AT MOST",
+    "reglaNota": "Weekly volume shouldn't rise more than 10%. The system watches it and adjusts your orders with this data.",
+    "sesiones": "Sessions",
+    "vacioTitulo": "Nothing logged",
+    "vacioCuerpo": "Every run and every lap you log here is what the system uses to work out your pace and adjust what comes next.",
+    "registrarPrimera": "Log the first one"
+  },
+  "hoja": {
+    "eyebrow": "New session",
+    "titulo": "What did you move today?",
+    "tipo": "Type",
+    "tipoA11y": "Session type",
+    "zona": "Zone",
+    "zonaA11y": "Effort zone",
+    "zonaChipA11y": "Zone {{zona}}",
+    "zonaAyuda": "Z2 is the engine: a pace where you can talk in full sentences. It's 80% of the volume and what builds the base.",
+    "duracion": "Duration (min)",
+    "duracionA11y": "Duration in minutes",
+    "distancia": "Distance (km)",
+    "distanciaA11y": "Distance in kilometers",
+    "esfuerzo": "Effort (RPE 1-10)",
+    "esfuerzoA11y": "Perceived effort from 1 to 10",
+    "pulso": "Avg heart rate",
+    "pulsoA11y": "Average heart rate",
+    "notas": "Notes",
+    "notasPlaceholder": "How it went, aches, terrain",
+    "notasA11y": "Session notes"
+  },
+  "acciones": {
+    "faltaDuracion": "Duration is missing. No minutes, no session to log.",
+    "kmNumeros": "Write the kilometers as numbers, for example {{ejemplo}}.",
+    "rpeRango": "Effort goes from 1 to 10.",
+    "registradaA11y": "Session logged. {{texto}}",
+    "eliminarSesion": "Delete session"
+  }
+}

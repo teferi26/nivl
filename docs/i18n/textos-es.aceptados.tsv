@@ -1143,3 +1143,12 @@ prueba	+	La revisión semanal ampliada.
 prueba	+	La insignia de laurel.
 prueba	+	La solicitud de plaza en un ludus.
 prueba	+	Tus misiones, tu racha, tu nivel y tu historial se quedan como están.
+# Modos F1 (idiomas): la sección «Idioma» de Ajustes y su hoja, solo con el flag idiomas_activos (apagado, no se ven)
+perfil	+	Idioma
+perfil	+	Idioma de la app
+perfil	+	Idioma de la app: {}. Cambiar
+perfil	+	El coach y los avisos te hablan en el mismo idioma.
+perfil	+	Idioma
+perfil	+	¿En qué idioma te habla NIVL?
+perfil	+	La app, el coach y los avisos, en este idioma. Al cambiarlo, la app se recarga.
+perfil	+	Idiomas

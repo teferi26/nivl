@@ -1,0 +1,34 @@
+{
+  "canales": {
+    "despertar": "Despertador",
+    "bloque": "Blocos do dia",
+    "cierre": "Fecho do dia",
+    "sistema": "O sistema"
+  },
+  "acciones": {
+    "hecho": "Feito",
+    "posponer": "Adiar 10 min",
+    "reportar": "Reportar"
+  },
+  "despertar": {
+    "titulo": "De pé, gladiador"
+  },
+  "bloque": {
+    "cuerpo": "Chegou a hora deste bloco. O detalhe está em Hoje."
+  },
+  "cierre": {
+    "titulo": "O fecho do dia aproxima-se"
+  },
+  "posponer": {
+    "titulo": "Lembrete",
+    "cuerpo": "Continua pendente."
+  },
+  "error": {
+    "estado": "Falha ao ler o estado dos avisos.",
+    "noDisponibles": "Os avisos não estão disponíveis aqui.",
+    "despertador": "Não foi possível agendar o despertador.",
+    "avisosDelDia": "Não foi possível agendar os avisos do dia.",
+    "aviso": "Não foi possível agendar o aviso.",
+    "avisosDelSistema": "Não foi possível agendar os avisos do sistema."
+  }
+}

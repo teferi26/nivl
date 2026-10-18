@@ -1,0 +1,93 @@
+{
+  "volverA11y": "Zurück zum vorherigen Schritt",
+  "entrar": "Die Arena betreten",
+  "continuar": "Weiter",
+  "portada": {
+    "reglas": "Die Regeln",
+    "lore": {
+      "arena": "Das ist keine To-do-Liste. Das ist eine Arena.",
+      "reglas": "Jeden Tag hast du Missionen. Erfüllst du sie, gibt es XP und dein Level steigt; versagst du, wird abgezogen. Die Serie multipliziert. Große Projekte sind Kampagnen mit einem Endgegner. Und es gibt einen Coach, der deinen Tag diktiert, dich abends beurteilt und sich alles merkt, was er über dich lernt.",
+      "trampas": "Kein Schummeln: Beweise entstehen mit der Kamera, im Moment. Das System hat keine Meinung. Es zeichnet auf."
+    }
+  },
+  "progreso": {
+    "paso": "Schritt {{actual}} von {{total}}"
+  },
+  "tablilla": {
+    "rotulo": "Vertrag",
+    "seAbre": "Wird am {{fecha}} geöffnet"
+  },
+  "nombre": {
+    "inscripcion": "Der Name",
+    "titulo": "Wie heißt du?",
+    "etiqueta": "Dein Name im System",
+    "placeholder": "Wie du genannt werden willst",
+    "a11y": "Dein Name",
+    "codigoEtiqueta": "Wer hat dich gebracht? · optional",
+    "codigoAyuda": "Hat dir jemand die App empfohlen, gib den Code ein. Für dich ändert sich nichts.",
+    "codigoPlaceholder": "Creator-Code",
+    "codigoA11y": "Code des Creators, der dich gebracht hat, optional",
+    "codigoRechazado": "{{motivo}} Korrigiere ihn oder mach ohne weiter."
+  },
+  "camino": {
+    "inscripcion": "Der Weg",
+    "titulo": "Wofür wirst du NIVL nutzen?",
+    "pista": "Ändert, was du zuerst siehst und was der Coach von dir verlangt. Alles bleibt verfügbar, und du kannst es unter Profil ändern.",
+    "queSeActiva": "Was aktiviert wird"
+  },
+  "objetivo": {
+    "inscripcion": "Das Ziel",
+    "titulo": "Wofür bist du hier?",
+    "pista": "Eine einzige Sache, in einem Satz. Nicht „besser werden“: was du erreicht haben willst. Das ist es, was du unterschreibst.",
+    "etiqueta": "Dein Ziel",
+    "salud": "Mein Ziel umfasst Gesundheit oder Training",
+    "sinSalud": "Schreib ein allgemeines Ziel, ohne Gesundheitsdaten. Um sie einzubeziehen, aktiviere die Option oben.",
+    "ejemplo": "Dieses Jahr zwölf Bücher lesen",
+    "a11y": "Dein Ziel, in einem Satz",
+    "cifra": "Zahl · optional",
+    "cifraEjemplo": "12 Bücher, 5.000 €…",
+    "cifraEjemploSalud": "78 kg, 5.000 €…",
+    "cifraA11y": "Zahl des Ziels, optional",
+    "fecha": "Datum · optional",
+    "fechaEjemplo": "Juni 2027",
+    "fechaA11y": "Datum des Ziels, optional"
+  },
+  "misiones": {
+    "inscripcion": "Die Missionen",
+    "titulo": "Deine ersten Missionen",
+    "pista": "Vorschläge für: {{para}}. Entferne, was nicht zu dir passt; eigene kannst du unter Gewohnheiten erstellen.",
+    "gladiador": "Gladiator",
+    "meta": "{{stat}} · {{dificultad}} · {{frecuencia}}",
+    "metaSalud": "{{stat}} · {{dificultad}} · {{frecuencia}} · Gesundheit (optional)",
+    "cadaDia": "jeden Tag",
+    "diasSemana": "{{n}} Tage/Woche",
+    "crear_one": "{{count}} Mission erstellen",
+    "crear_other": "{{count}} Missionen erstellen",
+    "sinMisiones": "Ohne Missionen starten"
+  },
+  "firma": {
+    "inscripcion": "Die Unterschrift",
+    "titulo": "Unterschreib es mit dir selbst",
+    "pista": "Niemand sonst wird es lesen. Es wird heute versiegelt und geöffnet, wenn die Frist abläuft. Wähle, wie viel Zeit du dir gibst.",
+    "horizonteA11y": "Zeitraum: {{plazo}}",
+    "horizonteRecomendadoA11y": "Zeitraum: {{plazo}}, empfohlen",
+    "recomendado": "empfohlen",
+    "letraPequena": "Bis dahin verwahrt es der Vertrag, versiegelt. Deine Regeln und ihre Konsequenzen schreibst du dort, sobald du eintrittst.",
+    "campo": "Schreib deinen Namen, um zu unterschreiben",
+    "mantenPulsado": "Gedrückt halten zum Unterschreiben",
+    "escribeNombre": "Schreib deinen Namen"
+  },
+  "coach": {
+    "inscripcion": "Der Coach",
+    "titulo": "Unterschrieben. Jetzt: wer führt.",
+    "pista": "Deine Gewohnheiten, deine Organisation und dein Fortschritt sind kostenlos. Die bezahlten Pläne bringen den KI-Coach und, mit Élite, ein Abzeichen und die Bewerbung um einen Platz in einem Ludus.",
+    "pistaHoja": "Deine Gewohnheiten, deine Organisation und dein Fortschritt sind kostenlos. Die bezahlten Pläne bringen den KI-Coach und, mit Élite, ein Abzeichen und die Bewerbung um einen Platz in einem Ludus. Entscheide jetzt oder später: Die Verpflichtung gilt genauso.",
+    "preparandoA11y": "Dein Eintritt wird vorbereitet",
+    "seguirGratis": "Vorerst kostenlos weiter"
+  },
+  "sello": {
+    "titulo": "Versiegelt",
+    "a11y": "Versiegelt. Läuft am {{fecha}} ab. Tippen zum Fortfahren",
+    "vence": "Läuft am {{fecha}} ab"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "tarjeta": {
+    "nivel": "LIVELLO",
+    "diasRacha": "GIORNI DI SERIE",
+    "mideteConmigo": "SFIDAMI",
+    "antes": "PRIMA",
+    "despues": "DOPO"
+  },
+  "hoja": {
+    "titulo": "CONDIVIDI",
+    "previa": "Anteprima della card",
+    "formato": {
+      "stories": "STORIA 9:16",
+      "post": "POST 4:5"
+    },
+    "mostrarAlias": "Mostra il mio alias",
+    "incluirFotos": "Includi le mie foto dei progressi",
+    "incluirFoto": "Includi la foto",
+    "incluirTextoCoach": "Includi il testo del coach",
+    "mostrarPeso": "Mostra il peso",
+    "incluirInvitacion": "Aggiungi il mio link di invito",
+    "aliasNoDisponible": "Il tuo alias ora non è disponibile.",
+    "aliasError": "Impossibile recuperare il tuo alias. Riprova.",
+    "abriendo": "APERTURA…",
+    "compartir": "CONDIVIDI"
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "eyebrowSlide": {
+    "portada": "NIVL · Memórias",
+    "dato": "O número",
+    "foto": "Prova",
+    "duro": "O mais duro",
+    "cierre": "Fecho"
+  },
+  "periodo": {
+    "mensual": "Mês de {{fecha}}",
+    "semanal": "Semana de {{fecha}}"
+  },
+  "fila": {
+    "detalle": "{{diapositivas}} diapositivos · {{fotos}} fotos",
+    "abrirA11y": "Abrir a sequência: {{periodo}}. {{detalle}}. Vista",
+    "abrirSinVerA11y": "Abrir a sequência: {{periodo}}. {{detalle}}. Por ver",
+    "visto": "Vista",
+    "sinVer": "Por ver"
+  },
+  "vista": {
+    "vacioSubtitulo": "Ainda não há sequências guardadas.",
+    "sinVer_one": "{{count}} sequência por ver de {{total}}.",
+    "sinVer_other": "{{count}} sequências por ver de {{total}}.",
+    "guardados_one": "{{count}} sequência guardada.",
+    "guardados_other": "{{count}} sequências guardadas.",
+    "eyebrow": "Memórias",
+    "titulo": "A tua semana em imagens",
+    "estaSemana": "Esta semana",
+    "explicacion": "O sistema junta as fotos que foste enviando com cada missão e conta-te a semana. Se não enviaste nenhuma, não há resumo: uma sequência vazia não recorda nada.",
+    "generar": "Gerar a desta semana",
+    "montando": "O sistema está a montar a tua semana…",
+    "notaMes": "A do mês é gerada pelo sistema sozinho, no dia 1.",
+    "pases": "Sequências",
+    "buscando": "A procurar as tuas memórias",
+    "vacioTitulo": "Ainda não há memórias",
+    "vacioCuerpo": "Envia uma foto ao completar uma missão e no domingo terás algo para ver."
+  },
+  "pase": {
+    "enPausa": "Em pausa",
+    "tocaSalir": "Toca para sair",
+    "tocaSeguir": "Toca à direita para continuar",
+    "compartirA11y": "Partilhar este diapositivo",
+    "cerrarA11y": "Fechar o resumo",
+    "anterior": "Anterior",
+    "salir": "Sair",
+    "siguiente": "Seguinte",
+    "noCompartir": "Não foi possível partilhar"
+  },
+  "generar": {
+    "sinFotos": "Sem fotos esta semana.",
+    "sinPro": "A sequência da semana é montada pelo coach, e o coach faz parte do NIVL Pro. As tuas fotos e as memórias guardadas continuam aqui."
+  }
+}

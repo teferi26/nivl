@@ -1,0 +1,85 @@
+{
+  "mes": {
+    "ene": "Jan.",
+    "feb": "Feb.",
+    "mar": "März",
+    "abr": "Apr.",
+    "may": "Mai",
+    "jun": "Juni",
+    "jul": "Juli",
+    "ago": "Aug.",
+    "sept": "Sept.",
+    "oct": "Okt.",
+    "nov": "Nov.",
+    "dic": "Dez."
+  },
+  "historico": {
+    "mes": "{{mes}} {{anio}}",
+    "titulo": "Verkäufe pro Monat"
+  },
+  "vista": {
+    "eyebrow": "Creator-Programm",
+    "titulo": "Dein Panel",
+    "cargando": "Creator-Panel wird geladen",
+    "portalSinPanelTitulo": "Dieses Panel ist für Creator des Programms",
+    "portalSinPanelCuerpo": "Für dieses Konto gibt es kein Panel.",
+    "sinPanelTitulo": "Dieses Panel gehört den Creatorn",
+    "sinPanelCuerpo": "Dein Konto ist nicht im Creator-Programm.",
+    "errorConDatos": "{{error}} Was du siehst, ist eventuell nicht aktuell."
+  },
+  "codigo": {
+    "titulo": "Dein Code",
+    "a11y": "Dein Code: {{codigo}}",
+    "copiado": "Kopiert",
+    "copiar": "Code kopieren",
+    "nota": "Wer ihn in den ersten Tagen unter „Wer hat dich gebracht?“ eingibt, bleibt für immer bei dir. Der Link öffnet die App nur, wenn sie schon installiert ist."
+  },
+  "cuentas": {
+    "titulo": "Konten und Verkäufe",
+    "cuentas": "Konten mit deinem Code",
+    "ventas": "Verkäufe",
+    "cuentasMes": "Konten diesen Monat",
+    "ventasMes": "Verkäufe diesen Monat",
+    "queEsVenta": "Ein Verkauf ist ein Konto von dir, das zum ersten Mal ein Abo abschließt.",
+    "comision": "Pro Jahresabo bekommst du {{importe}}; beim Monatsabo deine {{pct}} % der monatlichen Einnahmen, bis derselbe Betrag erreicht ist."
+  },
+  "retos": {
+    "titulo": "Challenges",
+    "cumplido": "Geschafft",
+    "unidadVentas": "Verkäufe",
+    "a11y": "Challenge {{titulo}}: {{ventas}} von {{meta}} Verkäufen",
+    "premio": "Prämie: {{premio}}"
+  },
+  "tabla": {
+    "titulo": "Monatstabelle",
+    "premio": "PRÄMIE FÜR PLATZ 1",
+    "nombreYo": "{{alias}} · du",
+    "a11y": "Platz {{pos}}: {{alias}}, {{ventas}}",
+    "a11yYo": "Platz {{pos}}: {{alias}}, du, {{ventas}}"
+  },
+  "rango": {
+    "titulo": "Dein Rang",
+    "ventas90": "Verkäufe in 90 Tagen",
+    "mesSeguido": "Monat in Folge",
+    "mesesSeguidos": "Monate in Folge",
+    "haciaA11y": "Richtung {{rango}}: {{ventas}} von {{umbral}} Verkäufen",
+    "faltan": "{{rango}}: {{umbral}} Verkäufe in 90 Tagen. Dir fehlen {{faltan}}.",
+    "cumples": "Du erfüllst die Bedingungen für {{rango}}. Den Rangwechsel nimmt das Team vor.",
+    "sinSiguiente": "Über diesem Rang gibt es keinen mit festgelegter Regel."
+  },
+  "dinero": {
+    "titulo": "Dein Geld",
+    "retencion": "Zurückgehalten",
+    "disponible": "Verfügbar",
+    "cobrado": "Ausgezahlt",
+    "fijo": "Monatlicher Fixbetrag",
+    "descontar": "Abzuziehen",
+    "descontarDetalle": "Erstattungen bereits ausgezahlter Provisionen",
+    "retencionNota": "Jede Provision wartet {{dias}} Tage auf eine mögliche Erstattung; danach wird sie verfügbar und mit der nächsten Abrechnung ausgezahlt. Erstattet der Store das Geld, verfällt die Provision."
+  },
+  "pagos": {
+    "titulo": "Erhaltene Zahlungen",
+    "vacioTitulo": "Noch keine Zahlungen",
+    "vacioCuerpo": "Hier erscheint jede Abrechnung, sobald sie erfolgt."
+  }
+}

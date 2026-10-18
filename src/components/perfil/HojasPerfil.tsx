@@ -13,6 +13,8 @@
 //   · HojaIdioma → el idioma del coach (1.0.10): Automático + es, en, fr, de,
 //     pt, it. Elegir es un toque y cierra la hoja (Check en lo elegido);
 //     pie: ghost «Cerrar». La interfaz sigue en español.
+//   · HojaIdiomaApp → Modos F1, con el flag `idiomas_activos`: el idioma de la
+//     app y del coach a la vez (SelectorIdioma). Elegir cierra la hoja.
 //
 // Los fallos van en línea (ErrorSistema compacto): nada de avisos encima de
 // una hoja abierta.
@@ -25,6 +27,7 @@ import { ink, space, type as tipo } from '@/design/tokens';
 import { esIdioma, IDIOMAS, NOMBRE_IDIOMA, t, type Preferencia } from '@/i18n';
 import { mayus } from '@/i18n/formato';
 import { idiomaBase } from '@/i18n/dispositivo';
+import { SelectorIdioma } from '@/components/idioma/SelectorIdioma';
 import { CODIGO_MAX_LENGTH } from '@/lib/creatormath';
 import { addDays, nombreDia } from '@/lib/dates';
 
@@ -317,6 +320,32 @@ export function HojaIdioma({ abierta, cerrar, preferencia, dispositivo, elegir }
             );
           })}
         </Card>
+      </View>
+    </Sheet>
+  );
+}
+
+export interface HojaIdiomaAppProps {
+  activa: boolean;
+  abierta: boolean;
+  cerrar: () => void;
+  valor: string;
+  elegir: (lng: string) => void;
+}
+
+export function HojaIdiomaApp({ activa, abierta, cerrar, valor, elegir }: HojaIdiomaAppProps) {
+  if (!activa) return null;
+  return (
+    <Sheet
+      visible={abierta}
+      onClose={cerrar}
+      eyebrow={t('perfil:idiomaApp.eyebrow')}
+      title={t('perfil:idiomaApp.titulo')}
+      footer={<Button title={t('comun:cerrar')} variant="ghost" onPress={cerrar} />}
+    >
+      <View style={styles.pila}>
+        <Text style={styles.cuerpo}>{t('perfil:idiomaApp.cuerpo')}</Text>
+        <SelectorIdioma valor={valor} alCambiar={elegir} />
       </View>
     </Sheet>
   );
