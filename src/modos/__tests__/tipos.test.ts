@@ -14,6 +14,7 @@ import {
   modoValido,
   MODOS,
   NOMBRE_MODO,
+  opcionesEtiquetas,
   xpPorModo,
 } from '../tipos';
 
@@ -154,5 +155,13 @@ describe('cabecera del coach', () => {
 
   it('un modo encendido va en x-nivl-modo', () => {
     expect(cabeceraModo('focus', true)).toEqual({ 'x-nivl-modo': 'focus' });
+  });
+});
+
+describe('formulario de misión', () => {
+  it('ofrece los activados (o los cuatro) y marca el modo a la vista', () => {
+    expect(opcionesEtiquetas(['iron'], 'iron')).toEqual({ opciones: ['iron'], porDefecto: ['iron'] });
+    expect(opcionesEtiquetas([], 'general')).toEqual({ opciones: ['iron', 'focus', 'work', 'founder'], porDefecto: [] });
+    expect(opcionesEtiquetas(['work', 'founder'], 'general').porDefecto).toEqual([]);
   });
 });

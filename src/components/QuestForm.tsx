@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Campo } from '@/components/arena';
+import { EtiquetasModo } from '@/components/modos/EtiquetasModo';
 import { Button, Chip, ChipWrap, Sheet } from '@/components/ui';
 import { avisar, confirmar } from '@/components/ui/confirmar';
 import { vibrar } from '@/design/haptics';
@@ -18,6 +19,7 @@ import {
 } from '@/lib/game';
 import { mensajeSistema } from '@/lib/validation';
 import type { Difficulty, Quest, Stat } from '@/lib/types';
+import { MODOS_ETIQUETA, modosDeMision, type ModoEtiqueta } from '@/modos/tipos';
 
 /** Lunes a domingo: índices 0..6 de `nombreDia` (el día de la misión es índice + 1). */
 const SEMANA = [0, 1, 2, 3, 4, 5, 6];
@@ -44,6 +46,12 @@ interface Props {
   eyebrow?: string;
   /** Título propio; si no, sale de `sustantivo`. */
   title?: string;
+  /**
+   * Modos F1: las etiquetas de modo que se ofrecen y las que lleva una misión
+   * nueva. Solo con `modos_activos` encendido; sin esto, la hoja y lo que
+   * envía son los de siempre (sin la clave `modes`).
+   */
+  modos?: { opciones: readonly ModoEtiqueta[]; porDefecto: readonly ModoEtiqueta[] } | null;
 }
 
 /** Los textos que cambian con el sustantivo (raiz:questForm.mision.* y .habito.*), al pintar. */
@@ -66,7 +74,7 @@ function textosDe(sustantivo: Props['sustantivo']) {
  * la hoja de campañas para que crear una misión y abrir una campaña se sientan
  * el mismo gesto. El teclado lo gestiona la hoja; las acciones van en su pie.
  */
-export function QuestForm({ visible, onClose, onSubmit, initial, onDelete, sustantivo, eyebrow, title: tituloHoja }: Props) {
+export function QuestForm({ visible, onClose, onSubmit, initial, onDelete, sustantivo, eyebrow, title: tituloHoja, modos }: Props) {
   const tx = textosDe(sustantivo);
   const [title, setTitle] = useState('');
   const [stat, setStat] = useState<Stat>('FUE');
@@ -74,6 +82,7 @@ export function QuestForm({ visible, onClose, onSubmit, initial, onDelete, susta
   const [days, setDays] = useState<number[]>([1, 2, 3, 4, 5, 6, 7]);
   const [requiresEvidence, setRequiresEvidence] = useState(false);
   const [isBonus, setIsBonus] = useState(false);
+  const [etiquetas, setEtiquetas] = useState<ModoEtiqueta[]>([]);
   const [saving, setSaving] = useState(false);
   // Cerrojo síncrono: `saving` no se ve hasta el siguiente render, así que dos
   // toques seguidos en «Crear» entraban los dos y creaban dos misiones.
@@ -90,6 +99,7 @@ export function QuestForm({ visible, onClose, onSubmit, initial, onDelete, susta
       setDays(initial.days_of_week);
       setRequiresEvidence(initial.requires_evidence);
       setIsBonus(initial.is_bonus);
+      setEtiquetas(modosDeMision(initial));
     } else {
       setTitle('');
       setStat('FUE');
@@ -97,7 +107,10 @@ export function QuestForm({ visible, onClose, onSubmit, initial, onDelete, susta
       setDays([1, 2, 3, 4, 5, 6, 7]);
       setRequiresEvidence(false);
       setIsBonus(false);
+      setEtiquetas(modos ? [...modos.porDefecto] : []);
     }
+    // `modos` se lee al abrir: cambiar de modo con la hoja abierta no pisa lo elegido.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visible, initial]);
 
   const toggleDay = (d: number) => {
@@ -116,6 +129,8 @@ export function QuestForm({ visible, onClose, onSubmit, initial, onDelete, susta
         days_of_week: days,
         requires_evidence: requiresEvidence,
         is_bonus: isBonus,
+        // Modos F1: la clave solo va con el interruptor encendido.
+        ...(modos ? { modes: etiquetas } : {}),
       });
       onClose();
     } catch (e) {
@@ -203,6 +218,19 @@ export function QuestForm({ visible, onClose, onSubmit, initial, onDelete, susta
         ))}
       </ChipWrap>
       <Text style={styles.hint}>{pago}</Text>
+
+      {modos && modos.opciones.length > 0 ? (
+        <>
+          <Text style={styles.label}>{t('modos:form.etiqueta')}</Text>
+          <EtiquetasModo
+            valor={etiquetas}
+            // Las que ya lleva la misión se ofrecen aunque el modo esté desactivado.
+            opciones={MODOS_ETIQUETA.filter((m) => modos.opciones.includes(m) || etiquetas.includes(m))}
+            alCambiar={setEtiquetas}
+          />
+          <Text style={styles.hint}>{t('modos:form.ayuda')}</Text>
+        </>
+      ) : null}
 
       <Text style={styles.label}>{t('raiz:questForm.dias')}</Text>
       <View style={styles.days}>

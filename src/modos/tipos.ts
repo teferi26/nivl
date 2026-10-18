@@ -146,3 +146,17 @@ export function cabeceraModo(modo: ModoId | null | undefined, activo: boolean): 
   if (!activo || !modo || modo === 'general' || !esModoEtiqueta(modo)) return {};
   return { 'x-nivl-modo': modo };
 }
+
+/**
+ * Lo que ofrece el formulario de misión: los modos activados (si no hay
+ * ninguno, los cuatro) y, en una misión nueva, el modo a la vista ya marcado.
+ */
+export function opcionesEtiquetas(
+  activados: readonly ModoEtiqueta[],
+  modo: ModoId,
+): { opciones: ModoEtiqueta[]; porDefecto: ModoEtiqueta[] } {
+  return {
+    opciones: activados.length > 0 ? [...activados] : [...MODOS_ETIQUETA],
+    porDefecto: esModoEtiqueta(modo) ? [modo] : [],
+  };
+}
