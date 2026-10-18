@@ -178,5 +178,8 @@
     "titulo": "¿En qué idioma te habla?",
     "cuerpo": "El coach te escribe en este idioma: la conversación, los avisos que prepara y sus informes. La interfaz sigue en español.",
     "opcionA11y": "{{titulo}}. {{detalle}}"
+  },
+  "planes": {
+    "pruebaAuto": "Prueba gratuita"
   }
 }

@@ -345,3 +345,10 @@ describe('Apple 2.3.10: la letra no nombra la tienda de la otra plataforma', () 
     expect(P.textoGestionTienda('ios')).not.toMatch(/Google/);
   });
 });
+
+describe('Modos F1: plan prueba_auto (0069)', () => {
+  it('tiene nombre propio y no es de pago', () => {
+    expect(planLabel('prueba_auto')).toBe('Prueba gratuita');
+    expect(planDePago('prueba_auto')).toBe(false);
+  });
+});

@@ -11,6 +11,7 @@
 // efectos (leer el estado de la IA, la prueba, comprar, restaurar) están en
 // `pro.ts`.
 
+import { t } from '@/i18n';
 import { kindMeta, type ProfileKind } from './kinds';
 import type { CopyKey, Momento, TierOferta } from './paywallmoment';
 
@@ -28,7 +29,10 @@ export type PlanKey =
   | 'elite_anual'
   | 'elite_fundador'
   | 'cortesia'
-  | 'owner';
+  | 'owner'
+  // Modos F1 (0069): la prueba automática al registrarse (2 días, apagada
+  // por defecto con `prueba_auto_activa`). No se cobra.
+  | 'prueba_auto';
 
 /** El nivel de la cuenta según el servidor (`ai_plans.tier`, 0024). */
 export type Tier = 'free' | 'pro' | 'elite' | 'owner';
@@ -137,6 +141,8 @@ const PLAN_LABEL: Record<PlanKey, string> = {
   cortesia: 'Cortesía',
   // No "Fundador": chocaría con el Élite fundador.
   owner: 'Dueño',
+  // Reserva: el texto sale del catálogo (perfil:planes.pruebaAuto) en planLabel.
+  prueba_auto: 'Prueba gratuita', // i18n-ok: reserva de perfil:planes.pruebaAuto
 };
 
 /**
@@ -145,12 +151,13 @@ const PLAN_LABEL: Record<PlanKey, string> = {
  */
 export function planLabel(plan: string | null | undefined): string {
   if (!plan) return 'Gratis';
+  if (plan === 'prueba_auto') return t('perfil:planes.pruebaAuto');
   return (PLAN_LABEL as Record<string, string>)[plan] ?? 'NIVL Pro';
 }
 
-/** Un plan que se cobra (y se gestiona en la tienda): ni cortesía ni dueño. */
+/** Un plan que se cobra (y se gestiona en la tienda): ni cortesía, ni dueño, ni la prueba automática. */
 export function planDePago(plan: string | null | undefined): boolean {
-  return !!plan && plan !== 'cortesia' && plan !== 'owner' && plan in PLAN_LABEL;
+  return !!plan && plan !== 'cortesia' && plan !== 'owner' && plan !== 'prueba_auto' && plan in PLAN_LABEL;
 }
 
 // Los identificadores son los de los productos de tienda (App Store Connect y

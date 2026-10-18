@@ -1074,7 +1074,7 @@ voz	+	Racha de {} días
 avisos	-	No se pudieron programar los avisos del sistema.
 avisos	+	Recordatorio
 avisos	+	Sigue pendiente.
-# Modos F1 (cliente, rama modos-f1/cliente): textos nuevos detrás del interruptor modos_activos (namespace modos: selector de Hoy, etiquetas del formulario, paso del onboarding y niveles por modo) y, detrás de idiomas_activos, el paso de idioma del onboarding (onboarding:idioma). Con los interruptores apagados no se pinta ninguno.
+# Modos F1 (cliente, rama modos-f1/cliente): textos nuevos detrás del interruptor modos_activos (namespace modos: selector de Hoy, etiquetas del formulario, paso del onboarding y niveles por modo) y, detrás de idiomas_activos, el paso de idioma del onboarding (onboarding:idioma); y el nombre del plan prueba_auto de la 0069 (perfil:planes). Con los interruptores apagados no se pinta ninguno.
 modos	+	Modos
 modos	+	Modo {{modo}}
 modos	+	Todo junto, como hasta ahora.
@@ -1108,3 +1108,4 @@ modos	+	NIVL siempre está. Lo que marques aparece en el selector de Hoy y en la
 onboarding	+	El idioma
 onboarding	+	¿En qué idioma hablamos?
 onboarding	+	Sale del idioma del teléfono. Puedes cambiarlo después en Perfil.
+perfil	+	Prueba gratuita
