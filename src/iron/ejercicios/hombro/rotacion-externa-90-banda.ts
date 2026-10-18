@@ -1,7 +1,7 @@
 // NIVL · IRON · Hombro · Rotación externa a 90° con banda («90/90»), vista lateral.
 //
 // Brazos abiertos a la altura de los hombros y algo por delante (plano de la
-// escápula): de perfil apuntan a la cámara y se ven cortos (escorzo 0,65).
+// escápula): de perfil apuntan a la cámara y se ven cortos (escorzo 0,75).
 // Los antebrazos giran de horizontales hacia delante a verticales, contra
 // la banda anclada delante a la altura del pecho.
 // Biomecánica (src/iron/__tests__/hombro.test.ts):
@@ -11,7 +11,7 @@
 import type { Ejercicio, Extremidades, Pose } from '../../tipos';
 import { ANCLA_PIE_LATERAL, conBrazos, PIERNAS_PIE_LATERAL } from './comun';
 
-const BRAZO = 0.65;
+const BRAZO = 0.75;
 const ABAJO: Extremidades = conBrazos(PIERNAS_PIE_LATERAL, 90, 2);
 const MEDIO: Extremidades = conBrazos(PIERNAS_PIE_LATERAL, 90, 45);
 const ARRIBA: Extremidades = conBrazos(PIERNAS_PIE_LATERAL, 90, 88);
