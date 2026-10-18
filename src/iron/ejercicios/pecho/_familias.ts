@@ -285,7 +285,7 @@ export function flexion(tipo: Flexion): Parte {
       ],
       cicloMs: 2800,
       esfuerzo: [{ desde: 1250, hasta: 1780 }],
-      msFicha: 1200,
+      msFicha: 1430,
     };
   }
   return {
