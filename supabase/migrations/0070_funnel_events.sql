@@ -213,8 +213,9 @@ create trigger funnel_events_borrado_cuenta
   execute function public.funnel_borrar_instalacion();
 
 -- ── Caducidad ─────────────────────────────────────────────────────────
--- 13 meses bastan para comparar un mes con el del año anterior. No hay cron:
--- lo ejecuta service_role (o el panel) cuando toque.
+-- 12 meses, el mismo tope que la política de privacidad (1.7, apartado 7)
+-- da a los registros técnicos. No hay cron: lo ejecuta service_role cuando
+-- toque (o un cron que añada quien despliegue).
 create or replace function public.purgar_funnel_events()
 returns integer
 language sql
@@ -222,7 +223,7 @@ security definer
 set search_path = public, pg_temp
 as $$
   with borradas as (
-    delete from public.funnel_events where created_at < now() - interval '13 months' returning 1
+    delete from public.funnel_events where created_at < now() - interval '12 months' returning 1
   )
   select count(*)::integer from borradas
 $$;
