@@ -1,0 +1,88 @@
+{
+  "cargando": "Chargement",
+  "sinComprobar": "Non vérifié",
+  "volverAComprobar": "Vérifier à nouveau",
+  "leerPolitica": "Lire la politique de confidentialité",
+  "edad": {
+    "eyebrow": "Avant d'entrer",
+    "titulo": "Ton âge",
+    "subtitulo": "NIVL est destiné aux personnes de {{n}} ans ou plus.",
+    "rotulo": "Âge minimum",
+    "meta": "{{n}} ou plus",
+    "cuerpo": "Confirme que tu as l'âge minimum pour continuer. Pas besoin d'indiquer ta date de naissance.",
+    "casillaA11y": "J'ai {{n}} ans ou plus",
+    "casilla": "J'ai {{n}} ans ou plus.",
+    "noGuardado": "Non enregistré",
+    "confirmar": "Confirmer et continuer",
+    "noComprobada": "Impossible de vérifier ta confirmation d'âge.",
+    "sesionAbierta": "Session ouverte"
+  },
+  "salud": {
+    "eyebrow": "Facultatif",
+    "titulo": "Ta santé, avec autorisation",
+    "comprobandoA11y": "Vérification de l'autorisation santé",
+    "borradoPendiente": "Effacement en attente",
+    "registro": "Registre de santé",
+    "borradoCuerpo": "Ton autorisation est retirée et un effacement est en attente. Tu peux le terminer dans Profil.",
+    "cuerpo": "Avant d'ouvrir ce registre, vérifie quelles données de santé NIVL enregistre et décide si tu veux l'activer.",
+    "revisar": "Vérifier l'autorisation",
+    "irAPerfil": "Aller à Profil",
+    "hojaEyebrow": "Autorisation santé",
+    "aceptar": "Accepter et activer la santé",
+    "politicaNoAbre": "Impossible d'ouvrir la politique.",
+    "partes": {
+      "paraQue": "Pourquoi",
+      "quienDonde": "Qui et où",
+      "opcional": "C'est facultatif",
+      "retirarlo": "La retirer"
+    }
+  },
+  "saludAjustes": {
+    "seccion": "Santé et bien-être",
+    "comprobando": "Vérification de l'autorisation…",
+    "noComprobado": "Impossible de vérifier l'autorisation santé.",
+    "borradoPendiente": "Autorisation retirée. L'effacement n'est pas terminé ; réessaie.",
+    "aceptado": "Tu as autorisé l'enregistrement et l'utilisation de tes données de santé. Tu peux retirer l'autorisation et les effacer.",
+    "sinPermiso": "Pas d'autorisation. NIVL n'utilise pas les registres de santé. Tu peux exporter les données précédentes ou demander leur effacement.",
+    "revisar": "Vérifier l'autorisation santé",
+    "terminarBorrado": "Terminer l'effacement",
+    "retirar": "Retirer et effacer la santé",
+    "nota": "L'export et la suppression du compte restent disponibles plus bas. Les adresses temporaires de photos déjà partagées peuvent rester valides jusqu'à la suppression du fichier ou leur expiration.",
+    "confirmarTitulo": "Retirer l'autorisation et effacer",
+    "confirmarBoton": "Retirer et effacer"
+  },
+  "avisoSalud": {
+    "error": "Impossible de vérifier l'autorisation santé. Tes objectifs généraux restent disponibles.",
+    "desactivado": "Les registres de santé sont désactivés. Les objectifs généraux restent disponibles."
+  },
+  "denuncia": {
+    "titulo": "Qu'est-ce qui ne va pas dans cette réponse ?",
+    "enviar": "Envoyer le signalement",
+    "cuerpo": "Le motif et le texte de cette réponse sont envoyés pour que l'équipe l'examine. Rien d'autre de ta conversation.",
+    "motivo": "Motif",
+    "noHaSalido": "Ça n'a pas marché",
+    "correoAbierto": "Ta messagerie s'est ouverte avec le signalement. Envoie-le pour qu'il soit examiné.",
+    "correoNoAbre": "Impossible d'ouvrir la messagerie. Écris à {{correo}} avec le motif du signalement.",
+    "registrada": "Signalement enregistré. L'équipe examinera cette réponse.",
+    "motivos": {
+      "danino": "Peut causer du tort",
+      "salud": "Conseil de santé dangereux",
+      "dinero": "Conseil financier dangereux",
+      "incorrecto": "Information fausse",
+      "ofensivo": "Offensant ou inapproprié",
+      "otro": "Autre motif"
+    },
+    "correo": {
+      "asunto": "Signalement d'une réponse d'IA · NIVL",
+      "origen": "Origine : {{origen}}",
+      "motivo": "Motif : {{motivo}}",
+      "mensaje": "Message : {{id}}",
+      "sinId": "sans identifiant",
+      "contexto": "Contexte : {{contexto}}",
+      "fuente": {
+        "coach": "coach",
+        "oraculo": "Oracle"
+      }
+    }
+  }
+}

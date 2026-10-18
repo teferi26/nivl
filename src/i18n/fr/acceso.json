@@ -1,0 +1,97 @@
+{
+  "noHaSalido": "Ça n'a pas marché",
+  "ayudaContrasena": "Pas de règles bizarres : {{n}} caractères ou plus. Une phrase dont tu te souviens, c'est parfait.",
+  "fuerza": {
+    "debil": "Faible",
+    "media": "Moyenne",
+    "fuerte": "Forte"
+  },
+  "aviso": {
+    "registro": "Si l'adresse est nouvelle, on t'a envoyé un lien pour la confirmer. Ouvre-le sur ce téléphone, puis connecte-toi avec ton mot de passe.",
+    "recuperacion": "Si cette adresse a un compte, on t'a envoyé un lien. Ouvre-le sur ce téléphone pour choisir un nouveau mot de passe."
+  },
+  "error": {
+    "nombre": "Entre 1 et {{max}} caractères.",
+    "correo": "Format d'adresse e-mail non valide.",
+    "noCoinciden": "Les mots de passe ne correspondent pas."
+  },
+  "contrasena": {
+    "etiqueta": "Mot de passe",
+    "repite": "Répète le mot de passe",
+    "placeholder": "Une phrase dont tu te souviens",
+    "ocultar": "Masquer le mot de passe",
+    "mostrar": "Afficher le mot de passe",
+    "fuerzaA11y": "Force du mot de passe : {{fuerza}}",
+    "leFalta": "Il manque : {{faltas}}."
+  },
+  "login": {
+    "casillaLegal": "J'ai lu et j'accepte les Conditions de NIVL, et j'ai lu sa Politique de confidentialité.",
+    "intro": {
+      "signin": "Connecte-toi avec ton e-mail et ton mot de passe NIVL.",
+      "signup": "Crée ton compte NIVL. On t'enverra un lien pour confirmer ton e-mail.",
+      "recover": "Saisis l'e-mail de ton compte et on t'enverra un lien pour choisir un nouveau mot de passe."
+    },
+    "introPortal": "Connecte-toi avec ton compte NIVL pour voir ton tableau de bord de créateur.",
+    "olvidoPortal": "Mot de passe oublié ? Récupère-le depuis l'app NIVL (« Mot de passe oublié ? » sur l'écran de connexion) puis reviens ici.",
+    "boton": {
+      "signin": "Se connecter",
+      "signup": "Créer un compte",
+      "recover": "Envoyer le lien"
+    },
+    "pestana": {
+      "signin": {
+        "texto": "Se connecter",
+        "a11y": "Se connecter avec un compte existant"
+      },
+      "signup": {
+        "texto": "Créer un compte",
+        "a11y": "Créer un nouveau compte"
+      }
+    },
+    "portal": "Portail des créateurs",
+    "recuperarTitulo": "Récupérer le mot de passe",
+    "nombrePlaceholder": "Comment le système doit t'appeler",
+    "correo": "E-mail",
+    "correoPlaceholder": "toi@email.com",
+    "correoA11y": "Adresse e-mail",
+    "terminos": "Conditions de NIVL",
+    "terminosA11y": "Conditions d'utilisation de NIVL",
+    "privacidad": "Confidentialité de NIVL",
+    "privacidadA11y": "Politique de confidentialité de NIVL",
+    "revisaCorreo": "Vérifie tes e-mails",
+    "faltaCasilla": "Coche la case des Conditions pour continuer.",
+    "olvido": "Mot de passe oublié ?",
+    "volverAEntrar": "Revenir à la connexion",
+    "notaCuenta": "Tes habitudes, tes missions et ta progression sont enregistrées dans ton compte NIVL."
+  },
+  "arranque": {
+    "cargando": "Chargement"
+  },
+  "fuera": {
+    "eyebrow": "Route",
+    "titulo": "Hors de l'arène",
+    "cuerpo": "Le système ne reconnaît pas cette destination. Le lien est peut-être ancien ou mal copié.",
+    "volver": "Retour à l'arène"
+  },
+  "cuenta": {
+    "eyebrow": "Compte",
+    "irAEntrar": "Aller à la connexion"
+  },
+  "restablecer": {
+    "titulo": "Nouveau mot de passe",
+    "comprobando": "Vérification du lien",
+    "nueva": "Nouveau mot de passe",
+    "guardar": "Enregistrer le mot de passe",
+    "hechoRotulo": "Mot de passe modifié",
+    "hechoMensaje": "Tu peux maintenant l'utiliser pour te connecter à NIVL.",
+    "continuar": "Continuer",
+    "invalidoRotulo": "Lien non valide",
+    "invalido": "Ce lien n'est pas valide ou a expiré. Demandes-en un nouveau depuis « Mot de passe oublié ? »."
+  },
+  "confirmar": {
+    "titulo": "Confirmer l'e-mail",
+    "falloRotulo": "Confirmation impossible",
+    "confirmando": "Confirmation de ton e-mail",
+    "sinEnlace": "Ce lien n'a rien à confirmer. Ouvre le dernier e-mail qu'on t'a envoyé ou connecte-toi avec ton mot de passe."
+  }
+}

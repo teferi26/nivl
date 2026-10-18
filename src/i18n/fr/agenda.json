@@ -1,0 +1,103 @@
+{
+  "derivar": {
+    "semanaN": "Semaine {{n}}",
+    "rangoSemana": "{{ini}} au {{fin}}",
+    "mesDeAnio": "{{mes}} {{anio}}",
+    "semanaLeida": "Semaine {{n}}, du {{dia1}} {{mes1}} au {{dia2}} {{mes2}}",
+    "bloques_one": "{{count}} bloc du plan",
+    "bloques_other": "{{count}} blocs du plan",
+    "eventos_one": "{{count}} événement",
+    "eventos_other": "{{count}} événements",
+    "plazos_one": "{{count}} échéance",
+    "plazos_other": "{{count}} échéances",
+    "plazosCampana_one": "{{count}} échéance de campagne",
+    "plazosCampana_other": "{{count}} échéances de campagne",
+    "vacioFuturo": "{{cuando}}. Rien de prévu pour l'instant.",
+    "vacioPasado": "{{cuando}}. Rien n'a été enregistré ce jour-là.",
+    "hoy": "aujourd'hui"
+  },
+  "vista": {
+    "modo": {
+      "dia": "Jour",
+      "semana": "Semaine",
+      "mes": "Mois"
+    },
+    "vistaPor": {
+      "dia": "Vue par jour",
+      "semana": "Vue par semaine",
+      "mes": "Vue par mois"
+    },
+    "anterior": {
+      "dia": "Jour précédent",
+      "semana": "Semaine précédente",
+      "mes": "Mois précédent"
+    },
+    "siguiente": {
+      "dia": "Jour suivant",
+      "semana": "Semaine suivante",
+      "mes": "Mois suivant"
+    },
+    "hoy": "Aujourd'hui",
+    "volverAHoy": "Revenir à aujourd'hui",
+    "nuevoEvento": "Nouvel événement",
+    "cargandoA11y": "Chargement de ton agenda",
+    "nadaProgramado": "Rien de prévu",
+    "diaEnBlanco": "Une journée vierge",
+    "vacioCuerpoPro": "Demande au coach de planifier ta journée ou ajoute un événement. Les missions programmées apparaissent ici.",
+    "vacioCuerpo": "Ajoute un événement. Les missions programmées apparaissent ici.",
+    "vacioPasado": "Le système n'a rien d'enregistré pour ce jour-là.",
+    "anadirEvento": "Ajouter un événement",
+    "eventos": "Événements",
+    "conHora": "Avec horaire",
+    "conHoraA11y": "Avec horaire : {{n}}",
+    "misiones": "Missions",
+    "misionesA11y": "Missions : {{hechas}} sur {{total}} accomplies",
+    "todoElDia": "Toute la journée",
+    "eventoA11yTodoElDia": "{{titulo}}, toute la journée. Touche pour voir le détail.",
+    "eventoA11yHora": "{{titulo}}, à {{hora}}. Touche pour voir le détail.",
+    "tocaEvento": "Touche un événement pour voir son détail.",
+    "porHoras": "Par heure",
+    "sinHoraPro": "Rien à une heure précise. Demande au coach de planifier ta journée, ou ajoute un événement avec un horaire.",
+    "sinHora": "Rien à une heure précise. Ajoute un événement avec un horaire et il s'affiche ici.",
+    "sinHoraPasado": "Ce jour-là n'avait pas de plan horaire.",
+    "misionesYPlazos": "Missions et échéances",
+    "jefeFinalDetalle": "Boss final de campagne.",
+    "tareaDetalle": "Étape de campagne.",
+    "venceHoy": "Échéance aujourd'hui",
+    "jefe": "Boss",
+    "plazo": "Échéance",
+    "jefeVenceHoyA11y": "{{titulo}}, boss final de campagne, échéance aujourd'hui.",
+    "jefeVenceA11y": "{{titulo}}, boss final de campagne, échéance ce jour-là.",
+    "tareaVenceHoyA11y": "{{titulo}}, étape de campagne, échéance aujourd'hui.",
+    "tareaVenceA11y": "{{titulo}}, étape de campagne, échéance ce jour-là.",
+    "misionDetalle": "Mission · {{stat}}",
+    "penalizacion": "Pénalité",
+    "seCompletanEnHoy": "Les missions se valident depuis Aujourd'hui."
+  },
+  "calendario": {
+    "diasSemanaA11y": "Jours de la semaine",
+    "diasMesA11y": "Jours du mois"
+  },
+  "hojas": {
+    "pregunta": "De quoi faut-il se souvenir ?",
+    "placeholderNombre": "Appel, rendez-vous, démo, examen",
+    "nombreA11y": "Nom de l'événement",
+    "dia": "Jour",
+    "manana": "Demain",
+    "diaElegidoA11y": "Le jour choisi, {{dia}}",
+    "fecha": "Date",
+    "placeholderFecha": "AAAA-MM-JJ",
+    "hora": "Heure",
+    "sinHoraA11y": "Sans horaire, toute la journée",
+    "ayudaHora": "Avec un horaire, l'événement s'affiche sur l'axe de la journée. Sans horaire, il compte pour toute la journée.",
+    "evento": "Événement",
+    "eliminarEvento": "Supprimer l'événement",
+    "fechaA11y": "Date : {{dia}}",
+    "horaTodoElDiaA11y": "Heure : toute la journée",
+    "horaA11y": "Heure : {{hora}}",
+    "nota": "Note"
+  },
+  "hook": {
+    "fechaInvalida": "Date non valide. Utilise le format AAAA-MM-JJ, par ex. 2026-06-15."
+  }
+}

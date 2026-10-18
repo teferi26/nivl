@@ -1,0 +1,34 @@
+{
+  "canales": {
+    "despertar": "Réveil",
+    "bloque": "Blocs de la journée",
+    "cierre": "Clôture de la journée",
+    "sistema": "Le système"
+  },
+  "acciones": {
+    "hecho": "Fait",
+    "posponer": "Reporter de 10 min",
+    "reportar": "Signaler"
+  },
+  "despertar": {
+    "titulo": "Debout, gladiateur"
+  },
+  "bloque": {
+    "cuerpo": "C'est l'heure de ce bloc. Le détail est dans Aujourd'hui."
+  },
+  "cierre": {
+    "titulo": "La clôture de la journée approche"
+  },
+  "posponer": {
+    "titulo": "Rappel",
+    "cuerpo": "Toujours en attente."
+  },
+  "error": {
+    "estado": "Échec de lecture de l'état des notifications.",
+    "noDisponibles": "Les notifications ne sont pas disponibles ici.",
+    "despertador": "Impossible de programmer le réveil.",
+    "avisosDelDia": "Impossible de programmer les notifications de la journée.",
+    "aviso": "Impossible de programmer la notification.",
+    "avisosDelSistema": "Impossible de programmer les notifications du système."
+  }
+}

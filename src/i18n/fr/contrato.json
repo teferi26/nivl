@@ -1,0 +1,153 @@
+{
+  "vista": {
+    "tabla": {
+      "mision": "Mission (triviale à épique)",
+      "xp": "{{xp}} XP",
+      "evidencia": "Preuve (photo)",
+      "evidenciaValor": "+{{pct}} %",
+      "racha": "Série",
+      "rachaValor": "+{{pct}} % par semaine · plafond ×{{techo}}",
+      "gimnasio": "Séance de muscu",
+      "record": "Record personnel",
+      "diario": "Page du journal",
+      "pesarte": "Te peser",
+      "objetivo": "Objectif atteint",
+      "tarea": "Étape de campagne",
+      "tareaValor": "XP selon sa difficulté · boss ×{{mult}}",
+      "campana": "Campagne remportée",
+      "campanaValor": "De {{min}} à {{max}} XP selon le rang",
+      "extra": "Mission bonus",
+      "pb": "{{pb}} PB",
+      "sinHacer": "Mission du jour non faite",
+      "sinHacerValor": "−{{pct}} % de son XP · plafond −{{tope}}/jour",
+      "romper": "Enfreindre une règle signée",
+      "romperValor": "−{{xp}} XP + conséquence",
+      "piedra": "Pierre de protection",
+      "piedraValor": "Absorbe tous les dégâts d'une journée",
+      "filaA11y": "{{concepto}} : {{valor}}"
+    },
+    "norma": {
+      "a11y": "Règle {{n}} : {{texto}}. Si tu l'enfreins : {{consecuencia}}. Coût : {{xp}} XP.",
+      "a11yEditada": "Règle {{n}} : {{texto}}. Si tu l'enfreins : {{consecuencia}}. Coût : {{xp}} XP. Modifiée aujourd'hui.",
+      "pista": "Touche pour avouer que tu l'as enfreinte. Appuie longuement pour la supprimer.",
+      "accionConfesar": "Avouer que tu l'as enfreinte",
+      "accionEditar": "Modifier la règle",
+      "accionEliminar": "Supprimer la règle",
+      "siLaRompes": "Si tu l'enfreins : {{consecuencia}}",
+      "editadaHoy": "Modifiée aujourd'hui. Les infractions précédentes restent dans la version archivée.",
+      "editarA11y": "Modifier la règle {{n}}"
+    },
+    "carta": {
+      "sinCarta": "Pas de lettre",
+      "sinCartaTexto": "Écris à celui que tu seras. Le système la scelle et la garde jusqu'au jour fixé.",
+      "escribir": "Écrire la lettre",
+      "abierta": "Ouverte",
+      "abiertaMeta": "Scellée le {{sellada}}. Ouverte le {{abierta}}.",
+      "haLlegado": "Le jour est venu",
+      "espera": "La lettre que tu as scellée le {{sellada}} t'attend.",
+      "abrir": "Ouvrir la lettre",
+      "firmado": "Signé par toi",
+      "firmadoMeta": "Signé le {{firmado}}. Expire le {{vence}}.",
+      "sellada": "Scellée",
+      "selladaTexto": "Scellée le {{sellada}}. Elle s'ouvrira le {{apertura}}. D'ici là, au travail."
+    },
+    "subtituloVacio": "Aucune règle signée. Le système ne fait respecter que ce que tu signes.",
+    "subtitulo_one": "{{count}} règle signée · {{bonus}} PB en réserve",
+    "subtitulo_other": "{{count}} règles signées · {{bonus}} PB en réserve",
+    "eyebrow": "Ce que tu signes",
+    "titulo": "Contrat",
+    "nuevaNorma": "Signer une nouvelle règle",
+    "cargando": "Lecture du contrat",
+    "rotulo": "CONTRAT",
+    "vacioTitulo": "Aucune règle signée",
+    "vacioTexto": "Ici vont les règles que tu t'imposes et leur conséquence. Le système se contente de les faire respecter.",
+    "primeraNorma": "Signer la première règle",
+    "cargarCuaderno": "Charger mes règles du carnet",
+    "notaNormas": "Touche une règle pour avouer que tu l'as enfreinte. Appuie longuement pour la supprimer. Le crayon la modifie à partir d'aujourd'hui. Chaque soir, les règles tenues sont cochées dans Habitudes.",
+    "bonusTitulo": "Points bonus",
+    "bonusMeta": "{{gastado}}/{{tope}} échangés",
+    "enBolsa": "En réserve",
+    "canjeables": "Échangeables cette semaine",
+    "canjear": "Échanger {{coste}} PB · 1 h de repos",
+    "notaBonus": "Les missions bonus paient en PB, pas en XP. {{coste}} PB valent 1 h de repos sans culpabilité, avec un plafond de {{tope}} PB tous les 7 jours.",
+    "cartaTitulo": "Lettre à ton futur toi",
+    "gana": "Comment on gagne",
+    "pierde": "Comment on perd",
+    "notaTabla": "Toute l'app compte les points avec ce barème : même effort, même récompense. Les PB ne donnent pas d'XP : ils s'échangent contre du repos."
+  },
+  "hojas": {
+    "anios_one": "{{count}} an",
+    "anios_other": "{{count}} ans",
+    "norma": {
+      "eyebrowEditar": "Modifier la règle",
+      "eyebrowNueva": "Nouvelle règle",
+      "tituloEditar": "Ajuste ce que tu as signé",
+      "tituloNueva": "Que t'interdis-tu ?",
+      "firmar": "Signer la règle",
+      "etiqueta": "La règle",
+      "placeholder": "Ex. Pas de réseaux sociaux avant midi",
+      "a11y": "Texte de la règle",
+      "consecuenciaEtiqueta": "Conséquence si tu l'enfreins",
+      "consecuenciaPlaceholder": "Ex. Courir 5 km",
+      "consecuenciaA11y": "Conséquence en cas d'infraction",
+      "ayudaEditar": "S'applique dès aujourd'hui. La version précédente est archivée avec ses infractions. L'enfreindre coûte −{{xp}} XP.",
+      "ayudaNueva": "L'enfreindre coûte −{{xp}} XP. Accomplir la conséquence le jour même te le rend."
+    },
+    "carta": {
+      "eyebrow": "Pour ton futur toi",
+      "titulo": "Écris à celui que tu seras",
+      "sellar": "Sceller la lettre",
+      "etiqueta": "La lettre",
+      "placeholder": "Je ne sais pas comment tu iras, ni dans quelle situation tu seras…",
+      "a11y": "Corps de la lettre",
+      "dentroDe": "Elle s'ouvrira dans",
+      "dentroDeA11y": "Ouvrir dans {{plazo}}",
+      "seAbrira": "Elle s'ouvrira le {{fecha}}. Personne ne pourra la lire avant, pas même toi."
+    }
+  },
+  "hook": {
+    "plantilla": {
+      "p1": {
+        "texto": "Écrire le journal chaque jour : ce que j'ai vécu et le plan de la journée",
+        "consecuencia": "Courir 8 km"
+      },
+      "p2": {
+        "texto": "Pas d'alcool",
+        "consecuencia": "1 jour à ne manger que sain"
+      },
+      "p3": {
+        "texto": "Pas de caféine",
+        "consecuencia": "1 jour sans écrans de loisir"
+      },
+      "p4": {
+        "texto": "Manger sain tous les jours",
+        "consecuencia": "Courir 4,5 km"
+      },
+      "p5": {
+        "texto": "Si je sors faire la fête sans l'avoir mérité",
+        "consecuencia": "1 semaine de régime strict"
+      },
+      "p6": {
+        "texto": "Aucun plan ne passe avant mes objectifs",
+        "consecuencia": "Réorganiser la semaine et rattraper le temps"
+      }
+    },
+    "confesionTitulo": "Aveu au système",
+    "confesionMensaje": "As-tu enfreint la règle « {{norma}} » ?\n\nPénalité : −{{xp}} XP et la conséquence que tu as toi-même signée : {{consecuencia}}. Accomplis-la aujourd'hui et tu récupères l'XP.",
+    "laHeRoto": "Je l'ai enfreinte",
+    "registrado": "ENREGISTRÉ",
+    "registradoMensaje": "Le système ne juge pas : il enregistre. La mission « Conséquence : {{consecuencia}} » t'attend aujourd'hui dans Système.",
+    "eliminarTitulo": "Supprimer la règle",
+    "eliminarMensaje": "« {{norma}} » et son historique d'infractions.",
+    "insuficientesTitulo": "Points insuffisants",
+    "insuficientes": "Il te faut {{coste}} PB pour échanger 1 h de repos.",
+    "topeTitulo": "Plafond hebdomadaire",
+    "tope": "Maximum {{tope}} PB échangés tous les 7 jours. Tu en es à {{llevas}}.",
+    "canjearTitulo": "Échanger du repos",
+    "canjearMensaje": "{{coste}} PB → 1 heure de repos mérité. Tu confirmes ?",
+    "canjear": "Échanger",
+    "motivoCanje": "1 h de repos",
+    "descansoTitulo": "REPOS MÉRITÉ",
+    "descansoMensaje": "Profites-en sans culpabilité : tu l'as payé à l'effort."
+  }
+}

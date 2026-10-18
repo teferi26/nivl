@@ -1,0 +1,140 @@
+{
+  "portal": {
+    "tituloDocumento": "NIVL · Créateurs"
+  },
+  "bloque": {
+    "a11y": "{{hora}} {{titulo}}",
+    "a11yAhora": "{{hora}} {{titulo}}, maintenant",
+    "a11yHecho": "{{hora}} {{titulo}}, fait"
+  },
+  "completar": {
+    "eyebrow": "VALIDER LA MISSION",
+    "conFoto": "Valider avec photo",
+    "completar": "Valider",
+    "soloFoto": "Avec photo",
+    "fotoBonus": "Avec photo · +25 %",
+    "registrarEn": "Enregistrer dans {{modulo}}",
+    "exigeFoto": "Cette mission exige une preuve : elle se valide avec une photo prise maintenant.",
+    "extraFoto": "Avec photo, elle entre dimanche dans ton résumé.",
+    "fotoSuma": "Avec photo, elle rapporte 25 % d'XP en plus et entre dimanche dans ton résumé.",
+    "tambienRegistrar": "Elle se coche aussi toute seule quand tu enregistres {{acto}}."
+  },
+  "errorBoundary": {
+    "titulo": "LE SYSTÈME A PLANTÉ",
+    "texto": "Quelque chose s'est cassé à l'intérieur. Tes données sont en sécurité : elles vivent sur le serveur, pas sur cet écran."
+  },
+  "heatmap": {
+    "a11y_one": "Carte d'activité sur {{semanas}} semaines : {{count}} jour avec au moins une mission accomplie.",
+    "a11y_other": "Carte d'activité sur {{semanas}} semaines : {{count}} jours avec au moins une mission accomplie.",
+    "menos": "Moins",
+    "mas": "Plus"
+  },
+  "holdToSign": {
+    "noSueltes": "Ne lâche pas",
+    "pista": "Appuie jusqu'à ce que l'anneau se referme pour signer",
+    "pistaNombre": "Écris ton nom pour signer",
+    "sellando": "Scellement"
+  },
+  "lineaDeTiempo": {
+    "ahoraA11y": "Maintenant, {{hora}}"
+  },
+  "ordenDelDia": {
+    "titulo": "Ordre du jour",
+    "vacioTitulo": "Aucun ordre pour aujourd'hui",
+    "vacioCuerpo": "Demande le plan au coach et ta journée sera écrite bloc par bloc.",
+    "pedirPlan": "Demander le plan",
+    "ahora": "MAINTENANT"
+  },
+  "questForm": {
+    "mision": {
+      "nuevo": "Nouvelle mission",
+      "editar": "Modifier la mission",
+      "tituloNuevo": "Qu'est-ce que tu vas exiger de toi ?",
+      "tituloEditar": "Ajuste la mission",
+      "crear": "Créer la mission",
+      "eliminar": "Supprimer la mission",
+      "campo": "Mission",
+      "campoA11y": "Nom de la mission"
+    },
+    "habito": {
+      "nuevo": "Nouvelle habitude",
+      "editar": "Modifier l'habitude",
+      "tituloNuevo": "Qu'est-ce que tu veux faire sans y penser ?",
+      "tituloEditar": "Ajuste l'habitude",
+      "crear": "Créer l'habitude",
+      "eliminar": "Supprimer l'habitude",
+      "campo": "Habitude",
+      "campoA11y": "Nom de l'habitude"
+    },
+    "eliminarMensaje": "« {{titulo}} » et tout son historique de validations. Cette action est irréversible.",
+    "pagoBonus": "{{pb}} PB une fois accomplie, échangeables contre du repos.",
+    "pagoXp": "{{xp}} XP de base. Avec photo, +25 % ; la série le multiplie.",
+    "placeholder": "Ex. Muscu · jambes",
+    "queEntrena": "Ce qu'elle entraîne",
+    "dificultad": "Difficulté",
+    "dificultadA11y": "Difficulté {{nivel}}",
+    "dias": "Jours",
+    "diaria": "Quotidienne",
+    "diariaA11y": "Tous les jours",
+    "entreSemana": "En semaine",
+    "entreSemanaA11y": "Du lundi au vendredi",
+    "finde": "Week-end",
+    "findeA11y": "Samedi et dimanche",
+    "eligeDia": "Choisis au moins un jour.",
+    "evidencia": "Preuve",
+    "sinFoto": "Sans photo",
+    "sinFotoA11y": "Pas de preuve obligatoire",
+    "fotoObligatoria": "Photo obligatoire",
+    "fotoObligatoriaA11y": "Exiger une photo pour valider la mission",
+    "fotoObligatoriaAyuda": "Impossible de la valider sans photo. Elle paie 25 % de plus.",
+    "fotoOpcionalAyuda": "La photo est facultative pour valider.",
+    "quePaga": "Ce qu'elle paie",
+    "xpA11y": "Mission normale : paie en XP",
+    "puntosBonus": "Points bonus",
+    "puntosBonusA11y": "Mission bonus : paie en points bonus",
+    "extraAyuda": "Mission bonus : elle ne donne pas d'XP et ne compte pas pour la série. Ses PB s'échangent contre du repos dans le contrat.",
+    "normalAyuda": "Mission du jour : elle compte pour la série et elle est pénalisée si elle n'est pas faite."
+  },
+  "questItem": {
+    "recuperacionCerrada": "Reviens dans l'arène : accomplis une des missions que tu avais déjà et tu pourras récupérer ce que tu as perdu.",
+    "recuperacionAbierta": "L'arène est ouverte. Récupère ce que tu as perdu.",
+    "penalizacion": "Pénalité : {{titulo}}",
+    "penalizacionRecuperada": "Pénalité · récupérée",
+    "a11ySiguiente": "Suivante : {{etiqueta}}",
+    "a11yCompletada": "{{titulo}}, accomplie",
+    "a11yCerrada": "{{titulo}}, fermée, {{cantidad}} {{unidad}} à récupérer. {{razon}}",
+    "a11yPendiente": "{{titulo}}, en attente, {{cantidad}} {{unidad}}",
+    "siguiente": "SUIVANTE",
+    "extra": "Bonus"
+  },
+  "shareCardSemana": {
+    "sinFila": "Le système ne trouve pas ta ligne dans le tableau des scores."
+  },
+  "trendLine": {
+    "sinDatos": "Pas encore de données.",
+    "a11y": "Tendance sur {{n}} données : de {{primero}} à {{ultimo}}{{unidad}}, minimum {{min}}, maximum {{max}}.",
+    "extremos": "Min {{min}} · Max {{max}}{{unidad}}"
+  },
+  "version": {
+    "sinCanal": "sans canal",
+    "embebido": "embedded (sans OTA)",
+    "desactivadasTitulo": "Mises à jour désactivées",
+    "desactivadasTexto": "Cette copie n'a pas le système de mises à jour actif (c'est le cas dans Expo Go et en développement). Elle ne change qu'avec un nouveau build.",
+    "alDiaTitulo": "Tu es à jour",
+    "alDiaTexto": "Aucune nouvelle mise à jour pour la version {{version}} sur le canal {{canal}}.",
+    "listaTitulo": "Mise à jour prête",
+    "listaTexto": "Le système va redémarrer pour l'appliquer. Si tu remets à plus tard, elle s'applique au prochain démarrage.",
+    "reiniciar": "Redémarrer",
+    "errorTitulo": "Mise à jour impossible",
+    "titulo": "Version {{version}}",
+    "tituloBuild": "Version {{version}} ({{build}})",
+    "pistaOcultar": "Appuie longuement pour masquer les détails",
+    "pistaVer": "Appuie longuement pour voir les détails",
+    "ocultarDetalles": "Masquer les détails",
+    "verDetalles": "Voir les détails",
+    "canal": "Canal {{canal}}",
+    "paquete": "Paquet {{paquete}}",
+    "buscarA11y": "Rechercher une mise à jour du système",
+    "buscar": "RECHERCHER UNE MISE À JOUR"
+  }
+}

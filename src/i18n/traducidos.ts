@@ -39,9 +39,42 @@ import enResumen from './en/resumen.json';
 import enShare from './en/share.json';
 import enVoz from './en/voz.json';
 import enAvisos from './en/avisos.json';
+import frComun from './fr/comun.json';
+import frRaiz from './fr/raiz.json';
+import frUi from './fr/ui.json';
+import frArena from './fr/arena.json';
+import frAcceso from './fr/acceso.json';
+import frAgenda from './fr/agenda.json';
+import frAmigos from './fr/amigos.json';
+import frAvances from './fr/avances.json';
+import frCampanas from './fr/campanas.json';
+import frCardio from './fr/cardio.json';
+import frCelebracion from './fr/celebracion.json';
+import frCoach from './fr/coach.json';
+import frCompra from './fr/compra.json';
+import frContrato from './fr/contrato.json';
+import frCreador from './fr/creador.json';
+import frDiario from './fr/diario.json';
+import frDieta from './fr/dieta.json';
+import frEconomia from './fr/economia.json';
+import frFotos from './fr/fotos.json';
+import frGym from './fr/gym.json';
+import frHabitos from './fr/habitos.json';
+import frHoy from './fr/hoy.json';
+import frInforme from './fr/informe.json';
+import frMemoria from './fr/memoria.json';
+import frNutricion from './fr/nutricion.json';
+import frOnboarding from './fr/onboarding.json';
+import frOraculo from './fr/oraculo.json';
+import frPerfil from './fr/perfil.json';
+import frPuertas from './fr/puertas.json';
+import frResumen from './fr/resumen.json';
+import frShare from './fr/share.json';
+import frVoz from './fr/voz.json';
+import frAvisos from './fr/avisos.json';
 
 /** Los idiomas con interfaz traducida (el español no está: es la base). */
-export const IDIOMAS_TRADUCIDOS = ['en'] as const;
+export const IDIOMAS_TRADUCIDOS = ['en', 'fr'] as const;
 export type IdiomaTraducido = (typeof IDIOMAS_TRADUCIDOS)[number];
 
 type Catalogo = { [K in keyof RecursosEs]: unknown };
@@ -81,5 +114,40 @@ export const RECURSOS_LOCALES: Record<IdiomaTraducido, Catalogo> = {
     share: enShare,
     voz: enVoz,
     avisos: enAvisos,
+  },
+  fr: {
+    comun: frComun,
+    raiz: frRaiz,
+    ui: frUi,
+    arena: frArena,
+    acceso: frAcceso,
+    agenda: frAgenda,
+    amigos: frAmigos,
+    avances: frAvances,
+    campanas: frCampanas,
+    cardio: frCardio,
+    celebracion: frCelebracion,
+    coach: frCoach,
+    compra: frCompra,
+    contrato: frContrato,
+    creador: frCreador,
+    diario: frDiario,
+    dieta: frDieta,
+    economia: frEconomia,
+    fotos: frFotos,
+    gym: frGym,
+    habitos: frHabitos,
+    hoy: frHoy,
+    informe: frInforme,
+    memoria: frMemoria,
+    nutricion: frNutricion,
+    onboarding: frOnboarding,
+    oraculo: frOraculo,
+    perfil: frPerfil,
+    puertas: frPuertas,
+    resumen: frResumen,
+    share: frShare,
+    voz: frVoz,
+    avisos: frAvisos,
   },
 };

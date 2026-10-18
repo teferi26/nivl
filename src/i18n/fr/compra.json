@@ -1,0 +1,32 @@
+{
+  "vista": {
+    "eyebrow": "Corps",
+    "titulo": "Courses",
+    "subVacia": "La liste est vide.",
+    "subHecha": "Tout est dans le panier. Courses faites.",
+    "subPendientes_one": "{{count}} article restant.",
+    "subPendientes_other": "{{count}} articles restants.",
+    "anadirArticulo": "Ajouter un article",
+    "anadirPlaceholder": "Œufs, flocons d'avoine, café",
+    "nuevoA11y": "Nouvel article",
+    "anadirA11y": "Ajouter à la liste",
+    "cargando": "Chargement de la liste",
+    "cifraPendientes": "Restants",
+    "cifraCarro": "Dans le panier",
+    "cifraLista": "Sur la liste",
+    "barraA11y": "Dans le panier : {{hechos}} sur {{total}}",
+    "pendiente": "Restant",
+    "compraHecha": "Courses faites",
+    "nadaPendiente": "Rien en attente",
+    "compraHechaCuerpo": "Tout est dans le panier. Vide les achats une fois rangés.",
+    "nadaPendienteCuerpo": "Génère la liste depuis le régime ou ajoute des articles plus haut.",
+    "irDieta": "Aller au régime",
+    "pendienteA11y": "{{nombre}}, restant",
+    "pendienteCantidadA11y": "{{nombre}}, {{cantidad}}, restant",
+    "enCarro": "Dans le panier",
+    "vaciando": "Vidage en cours",
+    "vaciar": "Vider les achats",
+    "enCarroA11y": "{{nombre}}, dans le panier",
+    "enCarroCantidadA11y": "{{nombre}}, {{cantidad}}, dans le panier"
+  }
+}

@@ -1,0 +1,103 @@
+{
+  "meta": {
+    "progreso": "Progression de {{titulo}}",
+    "detalleA11y": "Départ à {{inicio}}, en est à {{actual}}, objectif {{objetivo}} {{unidad}}",
+    "eliminarA11y": "Supprimer l'objectif {{titulo}}",
+    "reclamar": "Réclamer",
+    "actualizar": "Mettre à jour",
+    "eliminar": "Supprimer l'objectif"
+  },
+  "vista": {
+    "subtituloSinSalud": "Tes objectifs généraux, en une seule vue.",
+    "subtituloPrimerPesaje": "Enregistre ta première pesée : c'est ta ligne de départ.",
+    "subtituloPeso": "Dernière pesée : {{peso}} kg.",
+    "subtituloDelta": "Dernière pesée : {{peso}} kg ({{delta}} kg en {{n}} pesées).",
+    "eyebrow": "Progression",
+    "titulo": "Avancées",
+    "nuevaMeta": "Nouvel objectif",
+    "cargando": "Chargement de tes avancées"
+  },
+  "franja": {
+    "peso": "Poids",
+    "pesoSinPesajes": "Poids : aucune pesée pour l'instant",
+    "pesoA11y": "Poids : {{peso}} kilos",
+    "metas": "Objectifs",
+    "logradas": "Atteints"
+  },
+  "pesaje": {
+    "campo": "Poids du jour (kg)",
+    "campoA11y": "Poids du jour en kilogrammes",
+    "corregir": "Corriger",
+    "pesar": "Se peser · jusqu'à +{{xp}} XP",
+    "curva": "Poids · {{n}} pesées",
+    "invalido": "Saisis ton poids en kg, par ex. 78,4",
+    "corregido": "Le système corrige la pesée du jour. Elle était déjà payée.",
+    "deModulo": "en VIT pour la pesée",
+    "topeDiario": "Noté. Tu as déjà atteint le plafond quotidien d'XP.",
+    "misionPagada": "Noté. La mission du jour était déjà validée et payée.",
+    "toast": "Pesée · +{{xp}} XP",
+    "toastAnuncio": "Pesée enregistrée. {{mensaje}}",
+    "registrado": "Pesée enregistrée"
+  },
+  "metas": {
+    "titulo": "Objectifs",
+    "activas": "{{n}} actifs",
+    "vacioTitulo": "Aucun objectif fixé",
+    "vacioCuerpo": "Un objectif, c'est un chiffre avec une date : lire douze livres, terminer quatre cours. Mets un chiffre sur ton but.",
+    "fijarPrimera": "Fixer le premier"
+  },
+  "conseguidas": {
+    "titulo": "Atteints",
+    "a11yFecha": "{{titulo}}, atteint le {{fecha}}. {{valor}} {{unidad}}",
+    "a11y": "{{titulo}}, atteint. {{valor}} {{unidad}}",
+    "fecha": "Atteint le {{fecha}}"
+  },
+  "records": {
+    "titulo": "Records personnels",
+    "vacioTitulo": "Aucun record pour l'instant",
+    "vacioCuerpo": "Ils apparaissent ici quand tu enregistres des séances de muscu avec charge.",
+    "a11y": "{{ejercicio}} : {{peso}} kilos. Voir la progression",
+    "abierta": "Progression ouverte",
+    "progresion": "Progression · {{ejercicio}}"
+  },
+  "hojaMeta": {
+    "titulo": "Quel chiffre vas-tu atteindre ?",
+    "fijar": "Fixer l'objectif",
+    "campoTitulo": "Titre",
+    "tituloEjemploSalud": "Ex. Développé couché 100 kg",
+    "tituloEjemplo": "Ex. Lire douze livres",
+    "campoTituloA11y": "Titre de l'objectif",
+    "seMide": "Se mesure avec",
+    "seMideA11y": "Comment l'objectif se mesure",
+    "metrica": {
+      "peso_corporal": "Poids corporel",
+      "ejercicio": "Exercice (PR)",
+      "libre": "Libre"
+    },
+    "medirConA11y": "Mesurer avec {{metrica}}",
+    "ejercicio": "Exercice (nom exact dans la muscu)",
+    "ejercicioEjemplo": "Ex. Développé couché",
+    "ejercicioA11y": "Nom de l'exercice",
+    "inicial": "Valeur de départ",
+    "objetivo": "Objectif",
+    "objetivoA11y": "Valeur cible",
+    "premio": "Une fois atteint, jusqu'à +{{xp}} XP (dans la limite du plafond quotidien des objectifs).",
+    "incompleta": "Objectif incomplet : titre, valeur de départ et valeur cible (différentes).",
+    "faltaEjercicio": "Il manque l'exercice : écris le nom EXACT de l'exercice de muscu."
+  },
+  "hojaValor": {
+    "eyebrow": "Progression manuelle",
+    "campo": "Valeur actuelle ({{unidad}})",
+    "campoA11y": "Valeur actuelle de l'objectif",
+    "invalido": "Valeur non valide : saisis un nombre."
+  },
+  "reclamar": {
+    "titulo": "OBJECTIF ATTEINT",
+    "mensaje": "« {{titulo}} » : jusqu'à +{{xp}} XP si tu n'as pas encore atteint le plafond des objectifs aujourd'hui.",
+    "aunNo": "Pas encore",
+    "toast": "Objectif atteint · +{{xp}} XP",
+    "toastAnuncio": "Objectif atteint. « {{titulo}} » : +{{xp}} XP en AGI.",
+    "conseguida": "Objectif atteint",
+    "sinPremio": "« {{titulo}} » est marqué comme atteint. Cette récompense ne compte pas aujourd'hui : elle était déjà payée ou tu as atteint le plafond quotidien."
+  }
+}
