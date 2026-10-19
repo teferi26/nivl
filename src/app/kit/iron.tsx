@@ -17,6 +17,7 @@ import { DemoIron, EscenarioIron } from '@/components/iron/DemoIron';
 import { FichaIron } from '@/components/iron/FichaIron';
 import { msQuieto } from '@/components/iron/Maniqui';
 import { EJERCICIOS, ejercicioPorId } from '@/iron/ejercicios';
+import { BUILD_INTERNA } from '@/lib/buildInterna';
 
 export default function KitIron() {
   const p = useLocalSearchParams<{ ejercicio?: string; t?: string; solo?: string; ancho?: string; ficha?: string }>();
@@ -38,7 +39,7 @@ export default function KitIron() {
       delete g.__ironCuadro;
     };
   }, [p.solo, p.ejercicio, ejercicio]);
-  if (!__DEV__) return <Redirect href="/" />;
+  if (!__DEV__ && !BUILD_INTERNA) return <Redirect href="/" />;
   const ms = cuadro ?? (p.t !== undefined && Number.isFinite(Number(p.t)) ? Number(p.t) : undefined);
 
   if (p.ficha === '1') {
@@ -52,7 +53,7 @@ export default function KitIron() {
 
   return (
     <Screen>
-      <DemoIron ejercicio={ejercicio} alElegir={setId} ms={ms} onVolver={() => (router.canGoBack() ? router.back() : router.replace('/kit'))} />
+      <DemoIron ejercicio={ejercicio} alElegir={setId} ms={ms} onVolver={() => (router.canGoBack() ? router.back() : router.replace(BUILD_INTERNA ? '/perfil' : '/kit'))} />
     </Screen>
   );
 }
