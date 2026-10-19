@@ -44,10 +44,12 @@ describe('el compromiso del onboarding', () => {
     expect(t).not.toMatch(/[*_#]/);
   });
 
-  test('la firma ignora mayúsculas, acentos y espacios, pero no otro nombre', () => {
+  test('la firma vale con cualquier nombre (rechazo de Apple 2.1, 19/10), nunca vacía', () => {
     expect(firmaValida('  josé  luis ', 'José Luis')).toBe(true);
-    expect(firmaValida('JOSE LUIS', 'José Luis')).toBe(true);
-    expect(firmaValida('Jose', 'José Luis')).toBe(false);
-    expect(firmaValida('', '')).toBe(false);
+    expect(firmaValida('Gabriela', 'NIVL Apple Review')).toBe(true);
+    expect(firmaValida('Jose', 'José Luis')).toBe(true);
+    expect(firmaValida('', 'José Luis')).toBe(false);
+    expect(firmaValida('   ', 'José Luis')).toBe(false);
+    expect(firmaValida('.-', 'José Luis')).toBe(false);
   });
 });

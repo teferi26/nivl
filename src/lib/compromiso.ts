@@ -88,14 +88,14 @@ export function esCompromiso(body: string): boolean {
   return body.startsWith('COMPROMISO A ');
 }
 
-export function firmaValida(tecleado: string, name: string): boolean {
-  const norm = (s: string) =>
-    s
-      .normalize('NFD')
-      .replace(/[̀-ͯ]/g, '')
-      .replace(/\s+/g, ' ')
-      .trim()
-      .toLowerCase();
-  const n = norm(name);
-  return n.length > 0 && norm(tecleado) === n;
+/**
+ * ¿Vale la firma? Cualquier nombre con al menos una letra o cifra. Antes tenía
+ * que coincidir con el del perfil, y quien escribía otro nombre (el revisor de
+ * Apple el 19/10: perfil «NIVL Apple Review», firma «Gabriela») se quedaba
+ * sin poder entrar y sin saber por qué (rechazo 2.1). `_name` se conserva para
+ * no tocar las llamadas.
+ */
+export function firmaValida(tecleado: string, _name?: string): boolean {
+  // Sin \p{L}: letras latinas (con o sin tilde), cifras o cualquier otro alfabeto.
+  return /[a-z0-9À-ɏͰ-￿]/i.test(tecleado.normalize('NFC'));
 }
