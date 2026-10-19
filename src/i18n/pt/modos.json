@@ -42,5 +42,9 @@
     "eyebrow": "Modos",
     "titulo": "Os teus modos",
     "pista": "O NIVL está sempre lá. O que marcares aparece no seletor de Hoje e nas etiquetas das tuas missões."
+  },
+  "novedad": {
+    "titulo": "Novidade: escolhe os teus modos",
+    "pista": "IRON, FOCUS, WORK e FOUNDER são arenas dentro do NIVL, cada uma com a sua cor e o seu nível. Marca as tuas e o Hoje deixa-te passar de uma para outra. O NIVL continua a ver tudo e podes mudá-los no Perfil."
   }
 }

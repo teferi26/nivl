@@ -42,5 +42,9 @@
     "eyebrow": "Modes",
     "titulo": "Your modes",
     "pista": "NIVL is always there. What you check shows up in the Today selector and in your mission tags."
+  },
+  "novedad": {
+    "titulo": "New: choose your modes",
+    "pista": "IRON, FOCUS, WORK and FOUNDER are arenas inside NIVL, each with its own color and level. Check yours and Today will let you switch between them. NIVL still sees everything, and you can change them in Profile."
   }
 }

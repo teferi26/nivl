@@ -42,5 +42,9 @@
     "eyebrow": "Modalità",
     "titulo": "Le tue modalità",
     "pista": "NIVL è sempre attivo. Ciò che spunti compare nel selettore di Oggi e nelle etichette delle tue missioni."
+  },
+  "novedad": {
+    "titulo": "Novità: scegli le tue modalità",
+    "pista": "IRON, FOCUS, WORK e FOUNDER sono arene dentro NIVL, ognuna con il suo colore e il suo livello. Seleziona le tue e Oggi ti lascerà passare dall'una all'altra. NIVL continua a vedere tutto e puoi cambiarle nel Profilo."
   }
 }
