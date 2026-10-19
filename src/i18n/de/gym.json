@@ -102,5 +102,20 @@
     "fotoPie": "Training {{dia}}",
     "fotoPieNotas": "Training {{dia}}: {{notas}}",
     "libre": "frei"
+  },
+  "iron": {
+    "verTecnica": "Technik ansehen",
+    "verTecnicaA11y": "Technik von {{nombre}} ansehen",
+    "abrirCatalogo": "Aus dem Katalog wählen",
+    "cerrarCatalogo": "Katalog schließen",
+    "buscar": "Im Katalog suchen",
+    "buscarPlaceholder": "Z. B. Bankdrücken, Kniebeuge, Rudern",
+    "buscarA11y": "Eine Übung im Katalog suchen",
+    "grupoA11y": "Muskelgruppe",
+    "todos": "Alle",
+    "elegirA11y": "{{nombre}} wählen. Ausrüstung: {{material}}",
+    "sinResultados": "Nichts im Katalog unter diesem Namen. Du kannst ihn selbst eingeben.",
+    "afinar_one": "{{count}} weitere Übung. Grenze die Suche ein oder wähle eine Gruppe.",
+    "afinar_other": "{{count}} weitere Übungen. Grenze die Suche ein oder wähle eine Gruppe."
   }
 }

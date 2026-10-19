@@ -102,5 +102,20 @@
     "fotoPie": "Allenamento {{dia}}",
     "fotoPieNotas": "Allenamento {{dia}}: {{notas}}",
     "libre": "libero"
+  },
+  "iron": {
+    "verTecnica": "Vedi la tecnica",
+    "verTecnicaA11y": "Vedi la tecnica di {{nombre}}",
+    "abrirCatalogo": "Scegli dal catalogo",
+    "cerrarCatalogo": "Chiudi il catalogo",
+    "buscar": "Cerca nel catalogo",
+    "buscarPlaceholder": "Es. panca, squat, rematore",
+    "buscarA11y": "Cerca un esercizio nel catalogo",
+    "grupoA11y": "Gruppo muscolare",
+    "todos": "Tutti",
+    "elegirA11y": "Scegli {{nombre}}. Attrezzatura: {{material}}",
+    "sinResultados": "Niente nel catalogo con questo nome. Puoi scriverlo a mano.",
+    "afinar_one": "Ancora {{count}} esercizio. Restringi la ricerca o scegli un gruppo.",
+    "afinar_other": "Ancora {{count}} esercizi. Restringi la ricerca o scegli un gruppo."
   }
 }

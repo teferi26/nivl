@@ -102,5 +102,20 @@
     "fotoPie": "Workout {{dia}}",
     "fotoPieNotas": "Workout {{dia}}: {{notas}}",
     "libre": "free"
+  },
+  "iron": {
+    "verTecnica": "See technique",
+    "verTecnicaA11y": "See the technique for {{nombre}}",
+    "abrirCatalogo": "Pick from the catalogue",
+    "cerrarCatalogo": "Close the catalogue",
+    "buscar": "Search the catalogue",
+    "buscarPlaceholder": "E.g. press, squat, row",
+    "buscarA11y": "Search for an exercise in the catalogue",
+    "grupoA11y": "Muscle group",
+    "todos": "All",
+    "elegirA11y": "Pick {{nombre}}. Equipment: {{material}}",
+    "sinResultados": "Nothing in the catalogue by that name. You can type it yourself.",
+    "afinar_one": "{{count}} more exercise. Narrow the search or pick a group.",
+    "afinar_other": "{{count}} more exercises. Narrow the search or pick a group."
   }
 }

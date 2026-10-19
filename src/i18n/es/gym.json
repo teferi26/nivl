@@ -102,5 +102,20 @@
     "fotoPie": "Entreno {{dia}}",
     "fotoPieNotas": "Entreno {{dia}}: {{notas}}",
     "libre": "libre"
+  },
+  "iron": {
+    "verTecnica": "Ver técnica",
+    "verTecnicaA11y": "Ver la técnica de {{nombre}}",
+    "abrirCatalogo": "Elegir del catálogo",
+    "cerrarCatalogo": "Cerrar el catálogo",
+    "buscar": "Buscar en el catálogo",
+    "buscarPlaceholder": "Ej. press, sentadilla, remo",
+    "buscarA11y": "Buscar un ejercicio en el catálogo",
+    "grupoA11y": "Grupo muscular",
+    "todos": "Todos",
+    "elegirA11y": "Elegir {{nombre}}. Material: {{material}}",
+    "sinResultados": "Nada en el catálogo con ese nombre. Puedes escribirlo a mano.",
+    "afinar_one": "{{count}} ejercicio más. Afina la búsqueda o elige un grupo.",
+    "afinar_other": "{{count}} ejercicios más. Afina la búsqueda o elige un grupo."
   }
 }

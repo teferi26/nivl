@@ -40,10 +40,12 @@ import {
   insertLifts,
   updateGymExercise,
 } from '@/lib/body';
+import { ejercicioIronDe } from '@/iron/catalogo';
 import { fetchPrescription, type Prescription } from '@/lib/bodywork';
 import { ensureProfile, fetchCompletionsForDate, fetchQuests, insertEvent } from '@/lib/data';
 import { dateKey, isoWeekday } from '@/lib/dates';
 import { awardXp } from '@/lib/engine';
+import { useFlags } from '@/lib/flags';
 import { GYM_SESSION_XP, levelFromXp, PR_XP } from '@/lib/game';
 import { propagarActo, restoDelModulo } from '@/lib/links';
 import { subirFotoMision } from '@/lib/photos';
@@ -73,6 +75,7 @@ export interface UseGym {
 export function useGym(): UseGym {
   const { session } = useAuth();
   const userId = session?.user.id;
+  const { modos_activos: modosActivos } = useFlags();
 
   const [days, setDays] = useState<GymDay[]>([]);
   const [exercises, setExercises] = useState<GymExercise[]>([]);
@@ -464,6 +467,15 @@ export function useGym(): UseGym {
     setExFormDay(null);
   };
 
+  // IRON en Gimnasio (Modos F1): solo con `modos_activos`. Apagado, la
+  // pantalla es la de siempre: sin «Ver técnica» ni catálogo en la hoja.
+  const tecnicaDe = modosActivos
+    ? (nombre: string) => {
+        const ej = ejercicioIronDe(nombre);
+        return ej ? () => router.push({ pathname: '/iron/[id]', params: { id: ej.id } }) : undefined;
+      }
+    : undefined;
+
   return {
     vista: {
       cargado,
@@ -479,6 +491,7 @@ export function useGym(): UseGym {
       notas,
       fotoLista: fotoB64 !== null,
       ocupado: busy,
+      tecnicaDe,
       acciones: {
         onVolver: () => volver(router),
         onReintentar: () => {
@@ -525,6 +538,7 @@ export function useGym(): UseGym {
       onKg: setExWeight,
       onGuardar: guardarEjercicio,
       onCerrar: cerrarFormEjercicio,
+      catalogo: modosActivos,
     },
   };
 }

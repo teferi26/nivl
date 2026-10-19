@@ -35,6 +35,27 @@ export function cargaTexto(sets: number, reps: number | string, kg: number | nul
 }
 
 /**
+ * «Ver técnica» (IRON, con `modos_activos`): contorno ink4 de 1, glifo y
+ * rótulo micro en ink10, 44 de alto. No gasta la inversión.
+ */
+export function BotonTecnica({ nombre, onPress }: { nombre: string; onPress: () => void }) {
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={t('gym:iron.verTecnicaA11y', { nombre })}
+      hitSlop={4}
+      style={({ pressed }) => [styles.tecnica, pressed && styles.pulsado]}
+    >
+      <Ionicons name="body-outline" size={14} color={ink.ink10} />
+      <Text style={styles.tecnicaTexto} maxFontSizeMultiplier={1.35}>
+        {t('gym:iron.verTecnica')}
+      </Text>
+    </Pressable>
+  );
+}
+
+/**
  * Un ejercicio en una lista con hairline: ordinal opcional en Cinzel ink6,
  * nombre Outfit 600 16 y la carga en Cinzel 600 14 ink8. Sin Entrada ni
  * Contador (es una fila).
@@ -47,6 +68,7 @@ export function FilaEjercicio({
   detalle,
   onPress,
   onLongPress,
+  onTecnica,
   accessibilityLabel,
 }: {
   primera?: boolean;
@@ -56,6 +78,8 @@ export function FilaEjercicio({
   detalle?: string | null;
   onPress?: () => void;
   onLongPress?: () => void;
+  /** Con IRON: el ejercicio casa con el catálogo y se puede ver su técnica. */
+  onTecnica?: () => void;
   accessibilityLabel?: string;
 }) {
   const contenido = (
@@ -82,6 +106,39 @@ export function FilaEjercicio({
     </>
   );
   const estilo = [styles.fila, !primera && styles.conRegla];
+  if (onTecnica) {
+    // La fila y «Ver técnica» van separadas: un botón dentro de otro no se
+    // alcanza con el lector de pantalla.
+    const tecnica = <BotonTecnica nombre={nombre} onPress={onTecnica} />;
+    if (!onPress) {
+      return (
+        <View style={estilo}>
+          <View style={styles.interior} accessible accessibilityLabel={accessibilityLabel ?? `${nombre}, ${carga}`}>
+            {contenido}
+          </View>
+          {tecnica}
+        </View>
+      );
+    }
+    return (
+      <View style={estilo}>
+        <Pressable
+          onPress={onPress}
+          onLongPress={onLongPress}
+          accessibilityRole="button"
+          accessibilityLabel={accessibilityLabel ?? `${nombre}, ${carga}`}
+          accessibilityActions={onLongPress ? [{ name: 'longpress', label: t('comun:eliminar') }] : undefined}
+          onAccessibilityAction={(e) => {
+            if (e.nativeEvent.actionName === 'longpress') onLongPress?.();
+          }}
+          style={({ pressed }) => [styles.interior, pressed && styles.pulsado]}
+        >
+          {contenido}
+        </Pressable>
+        {tecnica}
+      </View>
+    );
+  }
   if (!onPress) {
     return (
       <View style={estilo} accessible accessibilityLabel={accessibilityLabel ?? `${nombre}, ${carga}`}>
@@ -116,6 +173,8 @@ export interface RutinaSemanalProps {
   onEditarEjercicio: (dia: GymDay, ejercicio: GymExercise) => void;
   onBorrarDia: (dia: GymDay) => void;
   onBorrarEjercicio: (ejercicio: GymExercise) => void;
+  /** IRON (con `modos_activos`): abre la técnica si el nombre casa con el catálogo. */
+  tecnicaDe?: (nombre: string) => (() => void) | undefined;
 }
 
 export function RutinaSemanal({
@@ -127,6 +186,7 @@ export function RutinaSemanal({
   onEditarEjercicio,
   onBorrarDia,
   onBorrarEjercicio,
+  tecnicaDe,
 }: RutinaSemanalProps) {
   if (dias.length === 0) {
     return (
@@ -179,6 +239,7 @@ export function RutinaSemanal({
                     detalle={e.weight !== null ? null : t('gym:rutina.sinPeso')}
                     onPress={() => onEditarEjercicio(d, e)}
                     onLongPress={() => onBorrarEjercicio(e)}
+                    onTecnica={tecnicaDe?.(e.name)}
                     accessibilityLabel={t('gym:rutina.editarA11y', { nombre: e.name, carga: cargaTexto(e.sets, e.reps, e.weight) })}
                   />
                 ))}
@@ -227,6 +288,24 @@ const styles = StyleSheet.create({
   fila: { flexDirection: 'row', alignItems: 'center', gap: space.s3, minHeight: 56, paddingVertical: space.s3 },
   conRegla: { borderTopWidth: stroke.hairline, borderTopColor: ink.ink3 },
   pulsado: { backgroundColor: ink.ink2 },
+  interior: { flex: 1, minWidth: 0, flexDirection: 'row', alignItems: 'center', gap: space.s3, alignSelf: 'stretch' },
+  tecnica: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.s1,
+    minHeight: 44,
+    paddingHorizontal: space.s3,
+    borderWidth: stroke.hairline,
+    borderColor: ink.ink4,
+  },
+  tecnicaTexto: {
+    fontFamily: tipo.micro.family,
+    fontSize: tipo.micro.size,
+    lineHeight: tipo.micro.lineHeight,
+    letterSpacing: tipo.micro.tracking,
+    textTransform: 'uppercase',
+    color: ink.ink10,
+  },
   ordinal: { width: 24, fontFamily: 'Cinzel_600SemiBold', fontSize: 14, color: ink.ink6, textAlign: 'center' },
   filaTexto: { flex: 1, minWidth: 0, gap: 2 },
   nombre: { fontFamily: 'Outfit_600SemiBold', fontSize: 16, lineHeight: 22, color: ink.ink9 },

@@ -152,5 +152,9 @@
         "apnea": "Trattenere il respiro."
       }
     }
+  },
+  "tecnica": {
+    "eyebrow": "IRON · Tecnica",
+    "demostracion": "Dimostrazione"
   }
 }

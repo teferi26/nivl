@@ -57,6 +57,11 @@ export interface GymVistaProps {
   fotoLista: boolean;
   /** Guardando la sesión: el botón espera. */
   ocupado: boolean;
+  /**
+   * IRON (solo con `modos_activos`): para un nombre que casa con el catálogo,
+   * lo que abre su técnica. Sin él, Gimnasio es el de siempre.
+   */
+  tecnicaDe?: (nombre: string) => (() => void) | undefined;
   acciones: {
     onVolver: () => void;
     onReintentar: () => void;
@@ -96,6 +101,7 @@ export function GymVista({
   notas,
   fotoLista,
   ocupado,
+  tecnicaDe,
   acciones,
 }: GymVistaProps) {
   const { sizeClass, gutter } = useSizeClass();
@@ -169,6 +175,7 @@ export function GymVista({
             primera={i === 0}
             ordinal={i + 1}
             nombre={p.exercise_name}
+            onTecnica={tecnicaDe?.(p.exercise_name)}
             carga={cargaTexto(p.sets, p.reps, p.weight ? p.weight : null)}
             detalle={[p.rpe_target ? t('gym:vista.rpe', { rpe: p.rpe_target }) : null, p.notes].filter(Boolean).join(' · ') || null}
           />
@@ -231,6 +238,7 @@ export function GymVista({
                 ordinal={i + 1}
                 nombre={e.name}
                 carga={cargaTexto(e.sets, e.reps, e.weight)}
+                onTecnica={tecnicaDe?.(e.name)}
               />
             ))
           )}
@@ -250,6 +258,7 @@ export function GymVista({
           onQuitarSerie={acciones.onQuitarSerie}
           onNotas={acciones.onNotas}
           onFoto={acciones.onFoto}
+          tecnicaDe={tecnicaDe}
         />
         <Button title={t('gym:vista.terminar')} size="lg" icon="checkmark" onPress={acciones.onTerminar} loading={ocupado} />
       </View>
@@ -273,6 +282,7 @@ export function GymVista({
         onEditarEjercicio={acciones.onEditarEjercicio}
         onBorrarDia={acciones.onBorrarDia}
         onBorrarEjercicio={acciones.onBorrarEjercicio}
+        tecnicaDe={tecnicaDe}
       />
     </Section>
   );

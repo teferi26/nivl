@@ -40,24 +40,32 @@ function Grupo({ titulo, lista, tipo }: { titulo: string; lista: readonly Muscul
   );
 }
 
-export function FichaIron({ ejercicio: ej, ancho }: { ejercicio: Ejercicio; ancho: number }) {
+/**
+ * `incrustada`: dentro de otra pantalla (la técnica de /iron/[id]), sin la
+ * cabecera, sin el maniquí quieto (ya está la animación encima) y sin relleno.
+ */
+export function FichaIron({ ejercicio: ej, ancho, incrustada = false }: { ejercicio: Ejercicio; ancho: number; incrustada?: boolean }) {
   const nombre = textoIron(ej.nombre);
-  const util = ancho - 2 * space.s5;
+  const util = incrustada ? ancho : ancho - 2 * space.s5;
   return (
-    <View style={[styles.ficha, { width: ancho }]} nativeID="iron-ficha">
-      <Text style={styles.eyebrow} maxFontSizeMultiplier={1.35}>
-        {t('iron:demo.ficha')}
-      </Text>
-      <Text style={styles.titulo} maxFontSizeMultiplier={1}>
-        {nombre.toUpperCase()}
-      </Text>
-      <Text style={styles.meta} maxFontSizeMultiplier={1.35}>
-        {[nombreIron('grupo', ej.grupo), t(`iron:nivel.${ej.nivel}`), ...ej.material.map((m) => nombreIron('material', m))].join(' · ')}
-      </Text>
+    <View style={[incrustada ? styles.incrustada : styles.ficha, { width: ancho }]} nativeID={incrustada ? undefined : 'iron-ficha'}>
+      {incrustada ? null : (
+        <>
+          <Text style={styles.eyebrow} maxFontSizeMultiplier={1.35}>
+            {t('iron:demo.ficha')}
+          </Text>
+          <Text style={styles.titulo} maxFontSizeMultiplier={1}>
+            {nombre.toUpperCase()}
+          </Text>
+          <Text style={styles.meta} maxFontSizeMultiplier={1.35}>
+            {[nombreIron('grupo', ej.grupo), t(`iron:nivel.${ej.nivel}`), ...ej.material.map((m) => nombreIron('material', m))].join(' · ')}
+          </Text>
 
-      <View style={styles.escena}>
-        <Maniqui ejercicio={ej} ancho={util} ms={msQuieto(ej)} esfuerzo={1} accessibilityLabel={t('iron:demo.animacion', { nombre })} />
-      </View>
+          <View style={styles.escena}>
+            <Maniqui ejercicio={ej} ancho={util} ms={msQuieto(ej)} esfuerzo={1} accessibilityLabel={t('iron:demo.animacion', { nombre })} />
+          </View>
+        </>
+      )}
 
       <Grupo titulo={t('iron:demo.leyendaPrincipal')} lista={ej.musculos.principales} tipo="principal" />
       <Grupo titulo={t('iron:demo.leyendaSecundario')} lista={ej.musculos.secundarios} tipo="secundario" />
@@ -86,6 +94,7 @@ export function FichaIron({ ejercicio: ej, ancho }: { ejercicio: Ejercicio; anch
 
 const styles = StyleSheet.create({
   ficha: { backgroundColor: ink.ink0, paddingHorizontal: space.s5, paddingVertical: space.s6, gap: space.s2 },
+  incrustada: { gap: space.s2 },
   eyebrow: {
     fontFamily: type.label.family,
     fontSize: type.label.size,

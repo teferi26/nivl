@@ -152,6 +152,12 @@ export const DEMO: DemoPantalla | null = {
       render: () => <GymVista {...base({ prescrito: PRESCRITO })} />,
     },
     {
+      // Con `modos_activos`: «Ver técnica» en los ejercicios que casan con IRON (aquí, todos).
+      id: 'iron',
+      titulo: 'Con IRON (Ver técnica)',
+      render: () => <GymVista {...base({ prescrito: PRESCRITO, tecnicaDe: () => nada })} />,
+    },
+    {
       id: 'cargando',
       titulo: 'Cargando',
       render: () => <GymVista {...base({ cargado: false })} />,

@@ -9,12 +9,14 @@
 // Los fallos del servidor van en línea (ErrorSistema compacto): nada de avisos
 // encima de una hoja abierta ni mientras se cierra.
 
+import { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Campo, ErrorSistema } from '@/components/arena';
 import { Button, Chip, ChipWrap, Sheet } from '@/components/ui';
 import { ink, space, type as tipo } from '@/design/tokens';
 import { t } from '@/i18n';
 import type { GymDay, GymExercise } from '@/lib/types';
+import { CatalogoIron } from './CatalogoIron';
 import { nombreDiaIso } from './RutinaSemanal';
 
 /** Los siete días ISO (1 lunes … 7 domingo). */
@@ -104,6 +106,8 @@ export interface HojaEjercicioProps {
   onKg: (v: string) => void;
   onGuardar: () => void;
   onCerrar: () => void;
+  /** IRON (solo con `modos_activos`): «Elegir del catálogo» bajo el nombre. */
+  catalogo?: boolean;
 }
 
 export function HojaEjercicio({
@@ -122,7 +126,15 @@ export function HojaEjercicio({
   onKg,
   onGuardar,
   onCerrar,
+  catalogo = false,
 }: HojaEjercicioProps) {
+  // El catálogo se pliega al cerrar la hoja: la próxima vez empieza cerrado.
+  const [abierto, setAbierto] = useState(false);
+  const [visibleAntes, setVisibleAntes] = useState(visible);
+  if (visible !== visibleAntes) {
+    setVisibleAntes(visible);
+    if (!visible) setAbierto(false);
+  }
   return (
     <Sheet
       visible={visible}
@@ -153,6 +165,27 @@ export function HojaEjercicio({
           placeholder={t('gym:hojaEjercicio.ejercicioPlaceholder')}
           accessibilityLabel={t('gym:hojaEjercicio.ejercicioA11y')}
         />
+        {catalogo ? (
+          <View style={styles.grupo}>
+            <Button
+              title={abierto ? t('gym:iron.cerrarCatalogo') : t('gym:iron.abrirCatalogo')}
+              variant="secondary"
+              size="sm"
+              icon={abierto ? 'chevron-up' : 'list-outline'}
+              onPress={() => setAbierto((a) => !a)}
+              style={styles.botonCatalogo}
+            />
+            {abierto ? (
+              <CatalogoIron
+                actual={nombre}
+                onElegir={(n) => {
+                  onNombre(n);
+                  setAbierto(false);
+                }}
+              />
+            ) : null}
+          </View>
+        ) : null}
         <View style={styles.tres}>
           <Campo
             etiqueta={t('gym:hojaEjercicio.series')}
@@ -201,6 +234,7 @@ const styles = StyleSheet.create({
     color: ink.ink6,
   },
   tres: { flexDirection: 'row', gap: space.s3 },
+  botonCatalogo: { alignSelf: 'flex-start' },
   columna: { flex: 1, minWidth: 0 },
   ayuda: {
     fontFamily: tipo.bodySm.family,

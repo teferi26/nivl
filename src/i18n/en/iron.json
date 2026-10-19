@@ -152,5 +152,9 @@
         "apnea": "Holding your breath."
       }
     }
+  },
+  "tecnica": {
+    "eyebrow": "IRON · Technique",
+    "demostracion": "Demonstration"
   }
 }

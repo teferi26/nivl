@@ -152,5 +152,9 @@
         "apnea": "Die Luft anhalten."
       }
     }
+  },
+  "tecnica": {
+    "eyebrow": "IRON · Technik",
+    "demostracion": "Vorführung"
   }
 }

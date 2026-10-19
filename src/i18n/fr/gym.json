@@ -102,5 +102,20 @@
     "fotoPie": "Entraînement {{dia}}",
     "fotoPieNotas": "Entraînement {{dia}} : {{notas}}",
     "libre": "libre"
+  },
+  "iron": {
+    "verTecnica": "Voir la technique",
+    "verTecnicaA11y": "Voir la technique de {{nombre}}",
+    "abrirCatalogo": "Choisir dans le catalogue",
+    "cerrarCatalogo": "Fermer le catalogue",
+    "buscar": "Chercher dans le catalogue",
+    "buscarPlaceholder": "Ex. développé, squat, rowing",
+    "buscarA11y": "Chercher un exercice dans le catalogue",
+    "grupoA11y": "Groupe musculaire",
+    "todos": "Tous",
+    "elegirA11y": "Choisir {{nombre}}. Matériel : {{material}}",
+    "sinResultados": "Rien dans le catalogue sous ce nom. Tu peux l'écrire toi-même.",
+    "afinar_one": "{{count}} exercice de plus. Affine la recherche ou choisis un groupe.",
+    "afinar_other": "{{count}} exercices de plus. Affine la recherche ou choisis un groupe."
   }
 }

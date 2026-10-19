@@ -16,6 +16,7 @@ import { Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-na
 import { Campo, TarjetaArena } from '@/components/arena';
 import { ink, space, stroke, type as tipo } from '@/design/tokens';
 import { t } from '@/i18n';
+import { BotonTecnica } from './RutinaSemanal';
 
 export interface SerieInput {
   weight: string;
@@ -47,6 +48,8 @@ export interface SesionEnCursoProps {
   onQuitarSerie: (iEj: number, iSerie: number) => void;
   onNotas: (v: string) => void;
   onFoto: () => void;
+  /** IRON (con `modos_activos`): abre la técnica si el nombre casa con el catálogo. */
+  tecnicaDe?: (nombre: string) => (() => void) | undefined;
 }
 
 const BOTON = 44;
@@ -89,6 +92,12 @@ function CeldaSerie({
   );
 }
 
+/** «Ver técnica» en la cabecera, solo si el ejercicio casa con el catálogo. */
+function TecnicaDe({ nombre, tecnicaDe }: { nombre: string; tecnicaDe?: (nombre: string) => (() => void) | undefined }) {
+  const abrir = tecnicaDe?.(nombre);
+  return abrir ? <BotonTecnica nombre={nombre} onPress={abrir} /> : null;
+}
+
 export function SesionEnCurso({
   series,
   notas,
@@ -98,6 +107,7 @@ export function SesionEnCurso({
   onQuitarSerie,
   onNotas,
   onFoto,
+  tecnicaDe,
 }: SesionEnCursoProps) {
   return (
     <View style={styles.pila}>
@@ -111,6 +121,7 @@ export function SesionEnCurso({
             <Text style={styles.nombre} numberOfLines={2} maxFontSizeMultiplier={1.35}>
               {l.exercise}
             </Text>
+            <TecnicaDe nombre={l.exercise} tecnicaDe={tecnicaDe} />
             <Pressable
               onPress={() => onAnadirSerie(i)}
               accessibilityRole="button"
