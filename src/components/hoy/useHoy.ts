@@ -716,5 +716,7 @@ export function useHoy() {
   return {
     vista,
     hojas: { quest: sheetQuest, onElegir: elegirEnHoja, onClose: cerrarHoja, opinion: peticiones.hoja },
+    // Para «Novedad: elige tus modos»: sin perfil leído, aún no se sabe.
+    perfil: { onboardingHecho: profile?.onboarding_done === true, kind: profile?.profile_kind ?? null },
   };
 }

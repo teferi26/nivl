@@ -42,5 +42,9 @@
     "eyebrow": "Modi",
     "titulo": "Deine Modi",
     "pista": "NIVL ist immer da. Was du markierst, erscheint in der Auswahl von Heute und in den Etiketten deiner Missionen."
+  },
+  "novedad": {
+    "titulo": "Neu: Wähle deine Modi",
+    "pista": "IRON, FOCUS, WORK und FOUNDER sind Arenen in NIVL, jede mit eigener Farbe und eigenem Level. Markiere deine, und unter Heute kannst du zwischen ihnen wechseln. NIVL sieht weiterhin alles, und du kannst sie im Profil ändern."
   }
 }
