@@ -137,6 +137,26 @@ test('releasing a short gesture on the label cancels the signature without seali
 });
 
 
+test('a tap with a valid name signs once, like the accessible activation (Apple 2.1, 19/10)', async () => {
+  let resolver: () => void = () => {};
+  complete.mockImplementation(() => new Promise<void>((r) => { resolver = r; }));
+  await mount({ disabled: false, label: 'Mantén pulsado para firmar' });
+  await act(async () => button().onPress());
+  await act(async () => button().onPress());
+  expect(complete).toHaveBeenCalledTimes(1);
+  await act(async () => resolver());
+});
+
+test('the release after a completed hold does not sign a second time', async () => {
+  complete.mockImplementation(() => new Promise<void>(() => {}));
+  await mount({ disabled: false });
+  await start();
+  await finishAnimation();
+  await act(async () => button().onPressOut());
+  await act(async () => button().onPress());
+  expect(complete).toHaveBeenCalledTimes(1);
+});
+
 test('a resolved signature callback permits another hold without relying on a loading render', async () => {
   complete.mockImplementation(() => Promise.resolve());
   await mount({ disabled: false });
