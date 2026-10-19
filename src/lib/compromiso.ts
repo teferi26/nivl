@@ -133,5 +133,5 @@ function cabeceras(): readonly string[] {
  */
 export function firmaValida(tecleado: string, _name?: string): boolean {
   // Sin \p{L}: letras latinas (con o sin tilde), cifras o cualquier otro alfabeto.
-  return /[a-z0-9À-ɏͰ-￿]/i.test(tecleado.normalize('NFC'));
+  return /[a-z0-9À-ɏͰ-￯]/i.test(tecleado.normalize('NFC'));
 }
