@@ -53,6 +53,18 @@
       "android": {
         "buildType": "app-bundle"
       }
+    },
+    "interno": {
+      "extends": "base",
+      "autoIncrement": true,
+      "channel": "interno",
+      "environment": "production",
+      "env": {
+        "EXPO_PUBLIC_NIVL_BUILD_INTERNA": "1"
+      },
+      "ios": {
+        "resourceClass": "m-medium"
+      }
     }
   },
   "submit": {

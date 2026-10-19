@@ -8,7 +8,9 @@ import { PerfilAjustes } from '@/components/perfil/PerfilAjustes';
 import { PerfilVista } from '@/components/perfil/PerfilVista';
 import { FREEZE_DAYS, motivosPausa, usePerfil } from '@/components/perfil/usePerfil';
 import { NivelesModo } from '@/components/modos/NivelesModo';
-import { Screen } from '@/components/ui';
+import { router } from 'expo-router';
+import { Button, Screen } from '@/components/ui';
+import { BUILD_INTERNA } from '@/lib/buildInterna';
 
 export default function Perfil() {
   const { vista, ajustes, hojas } = usePerfil();
@@ -21,6 +23,9 @@ export default function Perfil() {
         ajustes={ajustes ? <PerfilAjustes {...ajustes} /> : null}
         nivelesModo={<NivelesModo nivelGlobal={vista.datos?.estado.nivel ?? null} />}
       />
+
+      {/* Build interna de TestFlight: la galería de IRON, que aún no está conectada a Gimnasio. */}
+      {BUILD_INTERNA ? <Button title="IRON · vista previa interna" variant="ghost" onPress={() => router.push('/kit/iron')} /> : null}
 
       {hojas.consentimientoHoja}
 

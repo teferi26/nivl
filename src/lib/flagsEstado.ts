@@ -7,13 +7,21 @@
 // flags.ts, que es quien llama a `fijarFlags`.
 
 import { useSyncExternalStore } from 'react';
+import { BUILD_INTERNA } from './buildInterna';
 import { FLAGS_APAGADOS, mismosFlags, type Flags } from './flagsmath';
 
-let actuales: Flags = FLAGS_APAGADOS;
+/** Build interna de TestFlight: los interruptores booleanos, siempre encendidos. */
+function conInterna(f: Flags): Flags {
+  if (!BUILD_INTERNA) return f;
+  return { ...f, modos_activos: true, idiomas_activos: true, prueba_auto_activa: true, valoracion_activa: true };
+}
+
+let actuales: Flags = conInterna(FLAGS_APAGADOS);
 const oyentes = new Set<() => void>();
 
 /** Cambia lo que se sabe y avisa a quien escuche (si cambia algo). */
-export function fijarFlags(nuevos: Flags): void {
+export function fijarFlags(leidos: Flags): void {
+  const nuevos = conInterna(leidos);
   if (mismosFlags(nuevos, actuales)) return;
   actuales = nuevos;
   for (const f of [...oyentes]) {
