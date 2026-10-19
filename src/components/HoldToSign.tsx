@@ -150,8 +150,18 @@ export function HoldToSign({ label, holdingLabel = t('raiz:holdToSign.noSueltes'
     cancelar();
   };
 
+  // Un toque (soltar antes de que se cierre el anillo) con el nombre bien
+  // escrito también firma, como la acción de accesibilidad. Rechazo de Apple
+  // del 19/10 (norma 2.1, iPad): «no action was taken after entering the name».
+  // Mantener pulsado sigue siendo el gesto principal; el toque no deja a nadie
+  // atascado si no sabe que hay que mantener o si el iPad corta el gesto.
   const pedirEntrada = () => {
-    if (!latest.current.loading && latest.current.disabled) latest.current.onRequestInput?.();
+    const current = latest.current;
+    if (current.loading || hecho.current || pendingCompletion.current) return;
+    if (current.disabled) { current.onRequestInput?.(); return; }
+    cancelar();
+    progress.setValue(1);
+    completar(generation.current);
   };
   const bloqueado = !!loading || (!!disabled && !onRequestInput);
 
