@@ -14,7 +14,15 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 import { useAuth } from '@/lib/auth';
 import { useFlags } from '@/lib/flags';
 import { fijarModoCoach } from './coach';
-import { guardarActivados as escribirActivados, guardarModoActivo, leerActivados, leerModoActivo } from './datos';
+import {
+  guardarActivados as escribirActivados,
+  guardarModoActivo,
+  guardarModoAnterior,
+  leerActivados,
+  leerModoActivo,
+  leerModoAnterior,
+} from './datos';
+import { anteriorTrasCambio, anteriorValido } from './rueda';
 import { modosDisponibles, modoValido, type ModoEtiqueta, type ModoId } from './tipos';
 
 export interface ModoContexto {
@@ -22,6 +30,8 @@ export interface ModoContexto {
   activo: boolean;
   /** El modo a la vista. Con el interruptor apagado, siempre General. */
   modo: ModoId;
+  /** El último modo distinto del actual (el toque corto del emblema vuelve a él). Null si no hay. */
+  anterior: ModoId | null;
   /** Los modos activados de la cuenta (sin General). */
   activados: ModoEtiqueta[];
   /** Lo que ofrece el selector: General y los activados. */
@@ -39,6 +49,7 @@ export interface ModoContexto {
 const APAGADO: ModoContexto = {
   activo: false,
   modo: 'general',
+  anterior: null,
   activados: [],
   disponibles: ['general'],
   cargado: true,
@@ -56,6 +67,7 @@ export function ModoProvider({ children }: { children: ReactNode }) {
   const userId = session?.user.id ?? null;
   const [activados, setActivados] = useState<ModoEtiqueta[]>([]);
   const [modo, setModo] = useState<ModoId>('general');
+  const [anterior, setAnterior] = useState<ModoId | null>(null);
   const [cargado, setCargado] = useState(false);
   const [leidos, setLeidos] = useState(false);
 
@@ -63,19 +75,27 @@ export function ModoProvider({ children }: { children: ReactNode }) {
     if (!activo || !userId) {
       setActivados([]);
       setModo('general');
+      setAnterior(null);
       setLeidos(false);
       setCargado(true);
       return;
     }
     try {
-      const [lista, guardado] = await Promise.all([leerActivados(userId), leerModoActivo(userId)]);
+      const [lista, guardado, previo] = await Promise.all([
+        leerActivados(userId),
+        leerModoActivo(userId),
+        leerModoAnterior(userId),
+      ]);
+      const actual = modoValido(guardado, lista);
       setActivados(lista);
-      setModo(modoValido(guardado, lista));
+      setModo(actual);
+      setAnterior(anteriorValido(previo, actual, lista));
       setLeidos(true);
     } catch {
       // Sin tabla o sin red: General, como hoy.
       setActivados([]);
       setModo('general');
+      setAnterior(null);
       setLeidos(false);
     } finally {
       setCargado(true);
@@ -100,10 +120,15 @@ export function ModoProvider({ children }: { children: ReactNode }) {
     (m: ModoId) => {
       if (!activo) return;
       const valido = m === 'general' ? 'general' : modoValido(m, activados);
+      const previo = anteriorTrasCambio(modo, valido, anterior);
       setModo(valido);
-      if (userId) void guardarModoActivo(userId, valido);
+      setAnterior(previo);
+      if (userId) {
+        void guardarModoActivo(userId, valido);
+        if (previo) void guardarModoAnterior(userId, previo);
+      }
     },
-    [activo, activados, userId],
+    [activo, activados, userId, modo, anterior],
   );
 
   const guardarActivados = useCallback(
@@ -114,6 +139,7 @@ export function ModoProvider({ children }: { children: ReactNode }) {
       setActivados(lista);
       setLeidos(true);
       setModo((m) => (m === 'general' ? m : modoValido(m, lista)));
+      setAnterior((a) => (a === null || a === 'general' || lista.includes(a) ? a : null));
     },
     [activo, userId],
   );
@@ -124,6 +150,7 @@ export function ModoProvider({ children }: { children: ReactNode }) {
         ? {
             activo: true,
             modo: modoVisible,
+            anterior: anterior !== modoVisible ? anterior : null,
             activados,
             disponibles: modosDisponibles(activados),
             cargado,
@@ -133,7 +160,7 @@ export function ModoProvider({ children }: { children: ReactNode }) {
             recargar,
           }
         : APAGADO,
-    [activo, modoVisible, activados, cargado, leidos, cambiar, guardarActivados, recargar],
+    [activo, modoVisible, anterior, activados, cargado, leidos, cambiar, guardarActivados, recargar],
   );
 
   return <Contexto.Provider value={valor}>{children}</Contexto.Provider>;

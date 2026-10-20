@@ -46,5 +46,18 @@
   "novedad": {
     "titulo": "Neu: Wähle deine Modi",
     "pista": "IRON, FOCUS, WORK und FOUNDER sind Arenen in NIVL, jede mit eigener Farbe und eigenem Level. Markiere deine, und unter Heute kannst du zwischen ihnen wechseln. NIVL sieht weiterhin alles, und du kannst sie im Profil ändern."
+  },
+  "rueda": {
+    "a11y": "Modusrad",
+    "eyebrow": "Modus wählen",
+    "cancelar": "In der Mitte loslassen zum Abbrechen",
+    "sinActivar": "Nicht aktiviert",
+    "emblema": "Modus {{modo}}",
+    "pista": "Gedrückt halten, um das Modusrad zu öffnen. Ein Tippen führt zum vorherigen Modus zurück.",
+    "abrir": "Modusrad öffnen",
+    "volver": "Zurück zum vorherigen Modus",
+    "cambiarA": "Zu {{modo}} wechseln",
+    "activo": "Modus {{modo}} aktiv",
+    "cerrar": "Rad schließen"
   }
 }

@@ -11,6 +11,12 @@ const EVENTOS: EventoVibracion[] = [
   'penalizacion',
   'destructiva',
   'recuperacion',
+  'ruedaAbre',
+  'modoGeneral',
+  'modoIron',
+  'modoFocus',
+  'modoWork',
+  'modoFounder',
 ];
 
 describe('mapa de vibraciones (SISTEMA §9)', () => {
@@ -37,7 +43,7 @@ describe('mapa de vibraciones (SISTEMA §9)', () => {
   });
 
   it('coincide con la tabla de §9', () => {
-    const esperado: Record<EventoVibracion, Paso[]> = {
+    const esperado: Partial<Record<EventoVibracion, Paso[]>> = {
       seleccion: [{ tipo: 'seleccion', tras: 0 }],
       mision: [{ tipo: 'success', tras: 0 }],
       misionExtra: [
@@ -62,6 +68,13 @@ describe('mapa de vibraciones (SISTEMA §9)', () => {
       destructiva: [{ tipo: 'rigid', tras: 0 }],
       recuperacion: [{ tipo: 'success', tras: 0 }],
     };
-    expect(VIBRACIONES).toEqual(esperado);
+    for (const [e, pasos] of Object.entries(esperado)) expect(VIBRACIONES[e as EventoVibracion]).toEqual(pasos);
+  });
+
+  it('cada modo de la rueda encaja con un golpe fuerte al final de la recarga (600 ms)', () => {
+    for (const e of ['modoGeneral', 'modoIron', 'modoFocus', 'modoWork', 'modoFounder'] as const) {
+      const ultimo = VIBRACIONES[e][VIBRACIONES[e].length - 1];
+      expect(ultimo).toEqual({ tipo: 'heavy', tras: 600 });
+    }
   });
 });

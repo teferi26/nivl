@@ -14,7 +14,15 @@ export type EventoVibracion =
   | 'rachaHito'
   | 'penalizacion'
   | 'destructiva'
-  | 'recuperacion';
+  | 'recuperacion'
+  // La rueda de modos (P01 + firmas de la P10): se abre, y cada modo encaja con
+  // su firma durante la recarga (600 ms) y un golpe fuerte al final.
+  | 'ruedaAbre'
+  | 'modoGeneral'
+  | 'modoIron'
+  | 'modoFocus'
+  | 'modoWork'
+  | 'modoFounder';
 
 export interface Paso {
   /** seleccion = selectionAsync; success/warning = notificationAsync; el resto, impactAsync. */
@@ -58,4 +66,39 @@ export const VIBRACIONES: Record<EventoVibracion, readonly Paso[]> = {
   destructiva: [{ tipo: 'rigid', tras: 0 }],
   // Recuperación abierta (RET-03).
   recuperacion: [{ tipo: 'success', tras: 0 }],
+  // La rueda se abre (tiempo bala): golpe medio.
+  ruedaAbre: [{ tipo: 'medium', tras: 0 }],
+  // NIVL: tres pulsos que suben y el cerrojo.
+  modoGeneral: [
+    { tipo: 'light', tras: 0 },
+    { tipo: 'medium', tras: 150 },
+    { tipo: 'heavy', tras: 300 },
+    { tipo: 'heavy', tras: 600 },
+  ],
+  // IRON: un golpe seco con el clank del disco y el cerrojo.
+  modoIron: [
+    { tipo: 'heavy', tras: 130 },
+    { tipo: 'heavy', tras: 600 },
+  ],
+  // FOCUS: dos pulsos suaves (la campana) y el cerrojo.
+  modoFocus: [
+    { tipo: 'light', tras: 0 },
+    { tipo: 'light', tras: 160 },
+    { tipo: 'heavy', tras: 600 },
+  ],
+  // WORK: el tic seco del interruptor (dos clics) y el cerrojo.
+  modoWork: [
+    { tipo: 'rigid', tras: 0 },
+    { tipo: 'rigid', tras: 60 },
+    { tipo: 'heavy', tras: 600 },
+  ],
+  // FOUNDER: la ignición, una vibración que crece, y el cerrojo.
+  modoFounder: [
+    { tipo: 'light', tras: 0 },
+    { tipo: 'light', tras: 100 },
+    { tipo: 'medium', tras: 200 },
+    { tipo: 'medium', tras: 300 },
+    { tipo: 'heavy', tras: 420 },
+    { tipo: 'heavy', tras: 600 },
+  ],
 };

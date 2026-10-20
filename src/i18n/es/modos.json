@@ -46,5 +46,18 @@
   "novedad": {
     "titulo": "Novedad: elige tus modos",
     "pista": "IRON, FOCUS, WORK y FOUNDER son arenas dentro de NIVL, cada una con su color y su nivel. Marca las tuyas y Hoy te dejará pasar de una a otra. NIVL lo sigue viendo todo y puedes cambiarlos en Perfil."
+  },
+  "rueda": {
+    "a11y": "Rueda de modos",
+    "eyebrow": "Elige modo",
+    "cancelar": "Suelta en el centro para cancelar",
+    "sinActivar": "Sin activar",
+    "emblema": "Modo {{modo}}",
+    "pista": "Mantén pulsado para abrir la rueda de modos. Un toque vuelve al modo anterior.",
+    "abrir": "Abrir la rueda de modos",
+    "volver": "Volver al modo anterior",
+    "cambiarA": "Cambiar a {{modo}}",
+    "activo": "Modo {{modo}} activo",
+    "cerrar": "Cerrar la rueda"
   }
 }

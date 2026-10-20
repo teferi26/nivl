@@ -46,5 +46,18 @@
   "novedad": {
     "titulo": "New: choose your modes",
     "pista": "IRON, FOCUS, WORK and FOUNDER are arenas inside NIVL, each with its own color and level. Check yours and Today will let you switch between them. NIVL still sees everything, and you can change them in Profile."
+  },
+  "rueda": {
+    "a11y": "Mode wheel",
+    "eyebrow": "Choose mode",
+    "cancelar": "Release in the centre to cancel",
+    "sinActivar": "Not enabled",
+    "emblema": "{{modo}} mode",
+    "pista": "Press and hold to open the mode wheel. A tap goes back to the previous mode.",
+    "abrir": "Open the mode wheel",
+    "volver": "Back to the previous mode",
+    "cambiarA": "Switch to {{modo}}",
+    "activo": "{{modo}} mode on",
+    "cerrar": "Close the wheel"
   }
 }

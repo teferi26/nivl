@@ -46,5 +46,18 @@
   "novedad": {
     "titulo": "Novità: scegli le tue modalità",
     "pista": "IRON, FOCUS, WORK e FOUNDER sono arene dentro NIVL, ognuna con il suo colore e il suo livello. Seleziona le tue e Oggi ti lascerà passare dall'una all'altra. NIVL continua a vedere tutto e puoi cambiarle nel Profilo."
+  },
+  "rueda": {
+    "a11y": "Ruota delle modalità",
+    "eyebrow": "Scegli la modalità",
+    "cancelar": "Rilascia al centro per annullare",
+    "sinActivar": "Non attiva",
+    "emblema": "Modalità {{modo}}",
+    "pista": "Tieni premuto per aprire la ruota delle modalità. Un tocco torna alla modalità precedente.",
+    "abrir": "Apri la ruota delle modalità",
+    "volver": "Torna alla modalità precedente",
+    "cambiarA": "Passa a {{modo}}",
+    "activo": "Modalità {{modo}} attiva",
+    "cerrar": "Chiudi la ruota"
   }
 }
