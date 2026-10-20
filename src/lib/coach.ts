@@ -18,6 +18,8 @@ import { fetchHealthConsent, requireHealthConsent } from './health';
 import { ErrorVisible } from './validation';
 import { sinGuiones } from './singuiones';
 import { cabecerasModoCoach } from '@/modos/coach';
+import { cabeceraMarca, type Marca } from '@/modos/maestria';
+import { esModoEtiqueta, type ModoEtiqueta } from '@/modos/tipos';
 
 export type CoachKind =
   | 'chat'
@@ -81,6 +83,31 @@ export type CoachEvent =
   | { type: 'done'; threadId: string; text: string; costMicroUsd: number }
   | { type: 'error'; message: string };
 
+// ── Maestría (P07): «el coach se vuelve más exigente» ─────────────────
+// PREPARADO Y APAGADO. useMaestria(modo) deja aquí la marca (MK I a V) de cada
+// modo; con ENVIAR_MARCA_COACH en true, el turno llevaría `x-nivl-mk` con la
+// marca del modo activo (el de `x-nivl-modo`). Sin modo activo no va nada.
+// Se queda en false hasta que el servidor la lea: `_shared/modos.ts` (función
+// `marcaDeCabecera` y una línea de exigencia por marca en `bloqueIdiomaModo`)
+// y `coach/handler.ts` (leer `req.headers.get('x-nivl-mk')` junto a
+// `x-nivl-modo`). Mandarla antes no rompe nada (el servidor la ignora), pero
+// no aporta y cambia lo que se envía en cada turno.
+const ENVIAR_MARCA_COACH = false;
+const marcasCoach: Partial<Record<ModoEtiqueta, Marca>> = {};
+
+/** Solo useMaestria (y las pruebas): la marca leída de un modo. */
+export function fijarMarcaCoach(modo: ModoEtiqueta, marca: Marca | null): void {
+  if (marca === null) delete marcasCoach[modo];
+  else marcasCoach[modo] = marca;
+}
+
+/** `x-nivl-mk` del modo activo, o nada (siempre nada mientras esté apagado). */
+export function cabecerasMarcaCoach(modoCabeceras: Record<string, string> = cabecerasModoCoach()): Record<string, string> {
+  if (!ENVIAR_MARCA_COACH) return {};
+  const modo = modoCabeceras['x-nivl-modo'];
+  return esModoEtiqueta(modo) ? cabeceraMarca(marcasCoach[modo]) : {};
+}
+
 async function authHeaders(): Promise<Record<string, string>> {
   const { data } = await supabase.auth.getSession();
   const token = data.session?.access_token;
@@ -92,6 +119,7 @@ async function authHeaders(): Promise<Record<string, string>> {
     // Modos F1: `x-nivl-modo` solo con `modos_activos` encendido y un modo
     // que no sea General (modos/coach.ts). Si no, no va nada.
     ...cabecerasModoCoach(),
+    ...cabecerasMarcaCoach(),
     ...cabeceraIdioma(),
   };
 }

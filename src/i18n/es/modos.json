@@ -38,6 +38,17 @@
     "vacio": "Activa un modo y cada misión con su etiqueta sumará también a su nivel.",
     "filaGlobalA11y": "{{modo}}: nivel {{nivel}}"
   },
+  "maestria": {
+    "marca": "MK {{n}}",
+    "marcaA11y": "{{modo}}, marca {{n}} de 5",
+    "progresoA11y": "{{modo}}: marca {{n}} de 5, faltan {{xp}} XP para la siguiente",
+    "maximaA11y": "{{modo}}: marca 5 de 5, la máxima",
+    "subida": {
+      "cuerpo": "{{modo}} sube de marca. El marco lo cuenta.",
+      "a11y": "{{modo}} sube a la marca {{n}} de 5.",
+      "saltarA11y": "Seguir"
+    }
+  },
   "hoja": {
     "eyebrow": "Modos",
     "titulo": "Tus modos",

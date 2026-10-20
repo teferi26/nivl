@@ -38,6 +38,17 @@
     "vacio": "Attiva una modalità e ogni missione con la sua etichetta conterà anche per il suo livello.",
     "filaGlobalA11y": "{{modo}}: livello {{nivel}}"
   },
+  "maestria": {
+    "marca": "MK {{n}}",
+    "marcaA11y": "{{modo}}, marchio {{n}} di 5",
+    "progresoA11y": "{{modo}}: marchio {{n}} di 5, mancano {{xp}} XP al prossimo",
+    "maximaA11y": "{{modo}}: marchio 5 di 5, il massimo",
+    "subida": {
+      "cuerpo": "{{modo}} sale di marchio. La cornice lo racconta.",
+      "a11y": "{{modo}} sale al marchio {{n}} di 5.",
+      "saltarA11y": "Continua"
+    }
+  },
   "hoja": {
     "eyebrow": "Modalità",
     "titulo": "Le tue modalità",

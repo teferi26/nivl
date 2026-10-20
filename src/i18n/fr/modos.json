@@ -38,6 +38,17 @@
     "vacio": "Active un mode et chaque mission avec son étiquette comptera aussi pour son niveau.",
     "filaGlobalA11y": "{{modo}} : niveau {{nivel}}"
   },
+  "maestria": {
+    "marca": "MK {{n}}",
+    "marcaA11y": "{{modo}}, marque {{n}} sur 5",
+    "progresoA11y": "{{modo}} : marque {{n}} sur 5, encore {{xp}} XP pour la suivante",
+    "maximaA11y": "{{modo}} : marque 5 sur 5, la plus haute",
+    "subida": {
+      "cuerpo": "{{modo}} monte d'une marque. Le cadre le montre.",
+      "a11y": "{{modo}} monte à la marque {{n}} sur 5.",
+      "saltarA11y": "Continuer"
+    }
+  },
   "hoja": {
     "eyebrow": "Modes",
     "titulo": "Tes modes",

@@ -38,6 +38,17 @@
     "vacio": "Aktiviere einen Modus, und jede Mission mit seinem Etikett zählt auch für sein Level.",
     "filaGlobalA11y": "{{modo}}: Level {{nivel}}"
   },
+  "maestria": {
+    "marca": "MK {{n}}",
+    "marcaA11y": "{{modo}}, Stufe {{n}} von 5",
+    "progresoA11y": "{{modo}}: Stufe {{n}} von 5, noch {{xp}} XP bis zur nächsten",
+    "maximaA11y": "{{modo}}: Stufe 5 von 5, die höchste",
+    "subida": {
+      "cuerpo": "{{modo}} steigt eine Stufe auf. Der Rahmen zeigt es.",
+      "a11y": "{{modo}} steigt auf Stufe {{n}} von 5.",
+      "saltarA11y": "Weiter"
+    }
+  },
   "hoja": {
     "eyebrow": "Modi",
     "titulo": "Deine Modi",
