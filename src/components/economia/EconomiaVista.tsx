@@ -81,7 +81,8 @@ export interface EconomiaVistaProps {
   /** «N movimientos clasificados…» tras clasificar a mano (null: nada). */
   aprendido: string | null;
   acciones: {
-    onVolver: () => void;
+    /** Sin él, sin flecha de volver (pestaña de un mundo de Modos). */
+    onVolver?: () => void;
     onRefrescar: () => void;
     onReintentar: () => void;
     onNuevo: () => void;

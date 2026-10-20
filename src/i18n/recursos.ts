@@ -50,6 +50,8 @@ import share from './es/share.json';
 import voz from './es/voz.json';
 import avisos from './es/avisos.json';
 import modos from './es/modos.json';
+// Modos: cada modo es un mundo (src/app/(iron), (focus), (work), (founder)).
+import mundos from './es/mundos.json';
 import prueba from './es/prueba.json';
 // Modos F1 (motor de IRON): solo la galería de desarrollo /kit/iron por ahora.
 import iron from './es/iron.json';
@@ -107,6 +109,7 @@ export const RECURSOS_ES = {
   avisos,
   // Modos F1 (src/components/modos): fuera de las tandas de 1.0.10.
   modos,
+  mundos,
   // Prueba automática de Élite (0069, src/components/prueba).
   prueba,
   iron,

@@ -22,6 +22,10 @@ import { navItemDe, pulsarDestino } from './navItems';
 interface NavSidebarProps extends BottomTabBarProps {
   /** Hueco del pie: si no se pasa nada, el lema entre laureles. */
   rango?: ReactNode;
+  /** La marca de arriba. Por defecto NIVL; en cada mundo, el nombre de su modo. */
+  marca?: string;
+  /** El color de lo activo (ink10 en NIVL; el de su modo en cada mundo). */
+  acento?: string;
 }
 
 // El lema en dos líneas fijas: en una no cabe en 240 ni a 11 (≈194 de 188
@@ -30,7 +34,7 @@ interface NavSidebarProps extends BottomTabBarProps {
 // (`ui:sidebar.lema`): cada idioma lo pone donde no deje una palabra huérfana.
 const LAUREL_LEMA = 16;
 
-export function NavSidebar({ state, descriptors, navigation, rango }: NavSidebarProps) {
+export function NavSidebar({ state, descriptors, navigation, rango, marca, acento = ink.ink10 }: NavSidebarProps) {
   const insets = useSafeAreaInsets();
   return (
     <View
@@ -44,8 +48,8 @@ export function NavSidebar({ state, descriptors, navigation, rango }: NavSidebar
         },
       ]}
     >
-      <Text style={styles.marca} accessibilityRole="header" maxFontSizeMultiplier={1}>{/* i18n-ok: la marca */}
-        NIVL
+      <Text style={[styles.marca, marca ? { color: acento } : null]} accessibilityRole="header" maxFontSizeMultiplier={1}>{/* i18n-ok: la marca */}
+        {marca ?? 'NIVL' /* i18n-ok: la marca */}
       </Text>
       <ScrollView
         style={styles.flex}
@@ -67,9 +71,9 @@ export function NavSidebar({ state, descriptors, navigation, rango }: NavSidebar
               accessibilityState={{ selected: focused }}
               accessibilityLabel={meta.label}
             >
-              {focused ? <View style={styles.indicador} /> : null}
-              <Ionicons name={focused ? meta.on : meta.off} size={20} color={focused ? ink.ink10 : ink.ink8} />
-              <Text style={[styles.rotulo, focused && styles.rotuloOn]} numberOfLines={1} maxFontSizeMultiplier={1.35}>
+              {focused ? <View style={[styles.indicador, { backgroundColor: acento }]} /> : null}
+              <Ionicons name={focused ? meta.on : meta.off} size={20} color={focused ? acento : ink.ink8} />
+              <Text style={[styles.rotulo, focused && styles.rotuloOn, focused && { color: acento }]} numberOfLines={1} maxFontSizeMultiplier={1.35}>
                 {meta.label}
               </Text>
             </Pressable>

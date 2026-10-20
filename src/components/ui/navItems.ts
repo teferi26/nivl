@@ -53,6 +53,29 @@ export const NAV_ITEMS: Record<string, NavDestino> = {
   perfil: { off: 'person-outline', on: 'person', destino: 'perfil' },
 };
 
+/**
+ * Los iconos de las barras de cada mundo (Modos: `src/modos/rutasModo.ts`).
+ * El rótulo llega siempre por el `title` del layout del mundo.
+ */
+export const NAV_MUNDO: Record<string, { off: Icon; on: Icon }> = {
+  'iron-hoy': { off: 'today-outline', on: 'today' },
+  'iron-rutinas': { off: 'list-outline', on: 'list' },
+  'iron-pesos': { off: 'trending-up-outline', on: 'trending-up' },
+  'iron-coach': { off: 'chatbubble-ellipses-outline', on: 'chatbubble-ellipses' },
+  'focus-hoy': { off: 'today-outline', on: 'today' },
+  'focus-agenda': { off: 'calendar-outline', on: 'calendar' },
+  'focus-diario': { off: 'book-outline', on: 'book' },
+  'focus-coach': { off: 'chatbubble-ellipses-outline', on: 'chatbubble-ellipses' },
+  'work-hoy': { off: 'today-outline', on: 'today' },
+  'work-agenda': { off: 'calendar-outline', on: 'calendar' },
+  'work-diario': { off: 'book-outline', on: 'book' },
+  'work-coach': { off: 'chatbubble-ellipses-outline', on: 'chatbubble-ellipses' },
+  'founder-hoy': { off: 'today-outline', on: 'today' },
+  'founder-agenda': { off: 'calendar-outline', on: 'calendar' },
+  'founder-economia': { off: 'wallet-outline', on: 'wallet' },
+  'founder-coach': { off: 'chatbubble-ellipses-outline', on: 'chatbubble-ellipses' },
+};
+
 type Route = BottomTabBarProps['state']['routes'][number];
 
 /** Los destinos que pinta una navegación: en la barra inferior, sin los que no son de `compact`. */
@@ -84,7 +107,9 @@ export function navItemDe(route: Route, descriptors: BottomTabBarProps['descript
   const d = NAV_ITEMS[route.name];
   const title = descriptors[route.key]?.options.title;
   const label = typeof title === 'string' ? title : d ? nombreDestino(d.destino) : route.name;
-  return d ? { off: d.off, on: d.on, label, compact: d.compact, padre: d.padre } : { off: 'ellipse-outline', on: 'ellipse', label };
+  if (d) return { off: d.off, on: d.on, label, compact: d.compact, padre: d.padre };
+  const m = NAV_MUNDO[route.name];
+  return m ? { off: m.off, on: m.on, label } : { off: 'ellipse-outline', on: 'ellipse', label };
 }
 
 /**

@@ -6,9 +6,15 @@ import { cerrarSesion } from '@/lib/authFlow';
 import { reintentarCodigoPendiente } from '@/lib/creators';
 import { ensureProfile } from '@/lib/data';
 import { mensajeSistema } from '@/lib/validation';
+import { useModo } from '@/modos/ModoProvider';
+import { rutaDeArranque } from '@/modos/rutasModo';
 
 export default function Index() {
   const { session, loading } = useAuth();
+  // Modos: con un modo activo distinto de NIVL se entra en su mundo. Con
+  // `modos_activos` apagado (o sin leer aún), NIVL como siempre; si el modo se
+  // lee después, `(tabs)/_layout.tsx` lleva a su mundo.
+  const modos = useModo();
   const [onboarded, setOnboarded] = useState<boolean | null>(null);
   const [error, setError] = useState<string | null>(null);
   // Cada "Reintentar" sube el contador y vuelve a lanzar la lectura.
@@ -57,5 +63,7 @@ export default function Index() {
   }
 
   if (!session) return <Redirect href="/login" />;
-  return <Redirect href={onboarded ? '/(tabs)' : '/onboarding'} />;
+  return (
+    <Redirect href={onboarded ? rutaDeArranque({ activo: modos.activo, cargado: modos.cargado, modo: modos.modo }) : '/onboarding'} />
+  );
 }

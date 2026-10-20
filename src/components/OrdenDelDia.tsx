@@ -19,6 +19,8 @@ import {
   type DayPlan,
 } from '@/lib/plan';
 import { fonts } from '@/lib/theme';
+import { useModo } from '@/modos/ModoProvider';
+import { rutaCoachDe } from '@/modos/rutasModo';
 
 interface Props {
   plan: DayPlan | null;
@@ -39,6 +41,8 @@ interface Props {
 // una regla de 2 en blanco a la izquierda (contorno, no inversión: la de Hoy es
 // la misión siguiente). A la derecha, el aro que lo da por hecho.
 export const OrdenDelDia = memo(function OrdenDelDia({ plan, bloques, onToggle, pro = true, ahora: ahoraFijo }: Props) {
+  // Modos: en un mundo, «Pedir el plan» lleva a SU coach (no saca del mundo).
+  const { modo } = useModo();
   if (!plan || !bloques.length) {
     if (!pro) return null;
     return (
@@ -49,7 +53,7 @@ export const OrdenDelDia = memo(function OrdenDelDia({ plan, bloques, onToggle, 
             icon="list-outline"
             title={t('raiz:ordenDelDia.vacioTitulo')}
             body={t('raiz:ordenDelDia.vacioCuerpo')}
-            action={{ label: t('raiz:ordenDelDia.pedirPlan'), onPress: () => router.push('/(tabs)/coach') }}
+            action={{ label: t('raiz:ordenDelDia.pedirPlan'), onPress: () => router.push(rutaCoachDe(modo)) }}
           />
         </TarjetaArena>
       </Section>

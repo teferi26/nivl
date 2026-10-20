@@ -14,7 +14,8 @@ import { ANCHO_RAIL } from '@/design/responsive';
 import { ink, space, stroke, type as tipo } from '@/design/tokens';
 import { navItemDe, pulsarDestino } from './navItems';
 
-export function NavRail({ state, descriptors, navigation }: BottomTabBarProps) {
+/** `acento`: el color de lo activo (ink10 en NIVL; el de su modo en cada mundo). */
+export function NavRail({ state, descriptors, navigation, acento = ink.ink10 }: BottomTabBarProps & { acento?: string }) {
   const insets = useSafeAreaInsets();
   return (
     <View style={[styles.rail, { width: ANCHO_RAIL + insets.left, paddingLeft: insets.left }]}>
@@ -38,9 +39,9 @@ export function NavRail({ state, descriptors, navigation }: BottomTabBarProps) {
               accessibilityState={{ selected: focused }}
               accessibilityLabel={meta.label}
             >
-              {focused ? <View style={styles.indicador} /> : null}
-              <Ionicons name={focused ? meta.on : meta.off} size={24} color={focused ? ink.ink10 : ink.ink6} />
-              <Text style={[styles.rotulo, focused && styles.rotuloOn]} numberOfLines={1} maxFontSizeMultiplier={1.2}>
+              {focused ? <View style={[styles.indicador, { backgroundColor: acento }]} /> : null}
+              <Ionicons name={focused ? meta.on : meta.off} size={24} color={focused ? acento : ink.ink6} />
+              <Text style={[styles.rotulo, focused && styles.rotuloOn, focused && { color: acento }]} numberOfLines={1} maxFontSizeMultiplier={1.2}>
                 {meta.label}
               </Text>
             </Pressable>

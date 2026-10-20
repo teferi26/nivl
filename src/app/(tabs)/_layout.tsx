@@ -1,4 +1,4 @@
-import { Tabs } from 'expo-router';
+import { Redirect, Tabs } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { PruebaAuto } from '@/components/prueba/PruebaAuto';
 import { NavRail } from '@/components/ui/NavRail';
@@ -7,6 +7,8 @@ import { NavSidebar } from '@/components/ui/NavSidebar';
 import { TabBar } from '@/components/ui/TabBar';
 import { huecoContenido, marcoDe } from '@/design/responsive';
 import { TopeAncho, useAnchoUtil } from '@/design/useSizeClass';
+import { useModo } from '@/modos/ModoProvider';
+import { destinoMundo } from '@/modos/rutasModo';
 
 // Navegación según la clase de tamaño (SISTEMA.md §3): barra inferior en
 // compact, raíl de 72 en medium y barra lateral de 240 en expanded. Cambia en
@@ -17,11 +19,18 @@ import { TopeAncho, useAnchoUtil } from '@/design/useSizeClass';
 // miden con el hueco que les queda (ventana − raíl o barra lateral − inset
 // izquierdo): se publica en `TopeAncho`. Sin esto, a 1024 `Screen` creía tener
 // 1024, pintaba el panel de 320 y el contenido se quedaba en 368.
+//
+// Modos (cada modo es un mundo, src/modos/rutasModo.ts): esto es NIVL, el modo
+// general. Con `modos_activos` encendido y otro modo activo (al arrancar o al
+// leer el modo guardado), se va al inicio de su mundo. Apagado, nada cambia.
 export default function TabsLayout() {
   const ventana = useAnchoUtil();
   const { sizeClass } = marcoDe(ventana);
   const { left } = useSafeAreaInsets();
   const hueco = huecoContenido(ventana, left).ancho;
+  const modos = useModo();
+  const mundo = destinoMundo({ activo: modos.activo, cargado: modos.cargado, modo: modos.modo }, 'general');
+  if (mundo && mundo !== 'esperar') return <Redirect href={mundo} />;
   return (
     <TopeAncho.Provider value={hueco}>
       <Tabs

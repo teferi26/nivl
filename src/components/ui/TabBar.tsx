@@ -18,7 +18,11 @@ import { ink, stroke } from '@/design/tokens';
 import { fonts } from '@/lib/theme';
 import { destinoActivo, destinosDe, navItemDe, pulsarDestino } from './navItems';
 
-export function TabBar({ state, descriptors, navigation }: BottomTabBarProps) {
+/**
+ * `acento`: el color de lo activo. Por defecto ink10 (NIVL); en los mundos de
+ * cada modo, su acento de `modoAcento` (solo con `modos_activos`).
+ */
+export function TabBar({ state, descriptors, navigation, acento = ink.ink10 }: BottomTabBarProps & { acento?: string }) {
   const insets = useSafeAreaInsets();
   const activo = destinoActivo(state.routes, state.index, 'tabs');
   const enfocada = state.routes[state.index]?.name;
@@ -45,11 +49,11 @@ export function TabBar({ state, descriptors, navigation }: BottomTabBarProps) {
             accessibilityState={{ selected: route.name === enfocada }}
             accessibilityLabel={label}
           >
-            <View style={[styles.indicator, focused && styles.indicatorOn]} />
-            <Ionicons name={focused ? meta.on : meta.off} size={21} color={focused ? ink.ink10 : ink.ink6} />
+            <View style={[styles.indicator, focused && { backgroundColor: acento }]} />
+            <Ionicons name={focused ? meta.on : meta.off} size={21} color={focused ? acento : ink.ink6} />
             {/* La barra no crece con el texto: con tamaño dinámico alto, cinco
                 rótulos no caben en 375. El nombre completo va en el label. */}
-            <Text style={[styles.label, focused && styles.labelOn]} numberOfLines={1} maxFontSizeMultiplier={1.2}>
+            <Text style={[styles.label, focused && styles.labelOn, focused && { color: acento }]} numberOfLines={1} maxFontSizeMultiplier={1.2}>
               {label}
             </Text>
           </Pressable>
@@ -74,7 +78,6 @@ const styles = StyleSheet.create({
     height: stroke.rule,
     backgroundColor: 'transparent',
   },
-  indicatorOn: { backgroundColor: ink.ink10 },
   label: { fontFamily: fonts.semibold, fontSize: 11, color: ink.ink6, letterSpacing: 0 },
   labelOn: { color: ink.ink10 },
 });

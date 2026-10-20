@@ -124,7 +124,8 @@ export interface DiarioVistaProps {
   /** El hook vuelve arriba al cambiar de día o de segmento. */
   scrollRef?: RefObject<ScrollView | null>;
   acciones: {
-    onVolver: () => void;
+    /** Sin él, sin flecha de volver (pestaña de un mundo de Modos). */
+    onVolver?: () => void;
     onSegmento: (s: Segmento) => void;
     onIrADia: (date: string, alEscribir?: boolean) => void;
     onMood: (n: number | null) => void;

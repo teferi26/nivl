@@ -34,9 +34,13 @@ import { mensajeSistema } from '@/lib/validation';
 import { anuncioActo, xpPagado } from '@/lib/pagoActo';
 import { NUTRITION_DAY_XP } from '@/lib/game';
 import { supabase } from '@/lib/supabase';
+import { useModo } from '@/modos/ModoProvider';
+import { rutaCoachDe } from '@/modos/rutasModo';
 import type { NutricionVistaProps } from './NutricionVista';
 
 export function useNutricion(): NutricionVistaProps {
+  // Modos: desde el mundo IRON, «Coach» lleva al coach de IRON.
+  const { modo } = useModo();
   const { session } = useAuth();
   const userId = session?.user.id;
   // «Hoy» es el día en la zona del perfil, la misma con la que el coach
@@ -175,7 +179,7 @@ export function useNutricion(): NutricionVistaProps {
       },
       onNotas: setNotas,
       onGuardar: guardar,
-      onCoach: () => router.push('/(tabs)/coach'),
+      onCoach: () => router.push(rutaCoachDe(modo)),
       onReintentar: () => {
         cargar();
       },

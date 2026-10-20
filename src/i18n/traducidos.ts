@@ -40,6 +40,7 @@ import enShare from './en/share.json';
 import enVoz from './en/voz.json';
 import enAvisos from './en/avisos.json';
 import enModos from './en/modos.json';
+import enMundos from './en/mundos.json';
 import enPrueba from './en/prueba.json';
 import enIron from './en/iron.json';
 import enJuego from './en/juego.json';
@@ -84,6 +85,7 @@ import frShare from './fr/share.json';
 import frVoz from './fr/voz.json';
 import frAvisos from './fr/avisos.json';
 import frModos from './fr/modos.json';
+import frMundos from './fr/mundos.json';
 import frPrueba from './fr/prueba.json';
 import frIron from './fr/iron.json';
 import frJuego from './fr/juego.json';
@@ -128,6 +130,7 @@ import ptShare from './pt/share.json';
 import ptVoz from './pt/voz.json';
 import ptAvisos from './pt/avisos.json';
 import ptModos from './pt/modos.json';
+import ptMundos from './pt/mundos.json';
 import ptPrueba from './pt/prueba.json';
 import ptIron from './pt/iron.json';
 import ptJuego from './pt/juego.json';
@@ -172,6 +175,7 @@ import deShare from './de/share.json';
 import deVoz from './de/voz.json';
 import deAvisos from './de/avisos.json';
 import deModos from './de/modos.json';
+import deMundos from './de/mundos.json';
 import dePrueba from './de/prueba.json';
 import deIron from './de/iron.json';
 import deJuego from './de/juego.json';
@@ -216,6 +220,7 @@ import itShare from './it/share.json';
 import itVoz from './it/voz.json';
 import itAvisos from './it/avisos.json';
 import itModos from './it/modos.json';
+import itMundos from './it/mundos.json';
 import itPrueba from './it/prueba.json';
 import itIron from './it/iron.json';
 import itJuego from './it/juego.json';
@@ -269,6 +274,7 @@ export const RECURSOS_LOCALES: Record<IdiomaTraducido, Catalogo> = {
     voz: enVoz,
     avisos: enAvisos,
     modos: enModos,
+    mundos: enMundos,
     prueba: enPrueba,
     iron: enIron,
     juego: enJuego,
@@ -315,6 +321,7 @@ export const RECURSOS_LOCALES: Record<IdiomaTraducido, Catalogo> = {
     voz: frVoz,
     avisos: frAvisos,
     modos: frModos,
+    mundos: frMundos,
     prueba: frPrueba,
     iron: frIron,
     juego: frJuego,
@@ -361,6 +368,7 @@ export const RECURSOS_LOCALES: Record<IdiomaTraducido, Catalogo> = {
     voz: ptVoz,
     avisos: ptAvisos,
     modos: ptModos,
+    mundos: ptMundos,
     prueba: ptPrueba,
     iron: ptIron,
     juego: ptJuego,
@@ -407,6 +415,7 @@ export const RECURSOS_LOCALES: Record<IdiomaTraducido, Catalogo> = {
     voz: deVoz,
     avisos: deAvisos,
     modos: deModos,
+    mundos: deMundos,
     prueba: dePrueba,
     iron: deIron,
     juego: deJuego,
@@ -453,6 +462,7 @@ export const RECURSOS_LOCALES: Record<IdiomaTraducido, Catalogo> = {
     voz: itVoz,
     avisos: itAvisos,
     modos: itModos,
+    mundos: itMundos,
     prueba: itPrueba,
     iron: itIron,
     juego: itJuego,

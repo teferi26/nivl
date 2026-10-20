@@ -2,7 +2,8 @@
 // efectos y los cerrojos viven en useHoy; lo que se pinta, en HoyVista (pura,
 // también en la galería /kit/pantallas); la hoja de completar va aparte.
 // Modos F1: el selector de modo solo con `modos_activos` encendido y algún
-// modo activado además de General.
+// modo activado además de General. Cada modo es un mundo: elegir uno lleva a
+// su inicio (rutasModo.ts → irAlMundo), no filtra Hoy.
 
 import { CompletarSheet } from '@/components/CompletarSheet';
 import { useCelebracion } from '@/components/celebracion/contexto';
@@ -13,6 +14,7 @@ import { NovedadModos } from '@/components/modos/NovedadModos';
 import { SelectorModo } from '@/components/modos/SelectorModo';
 import { HojaOpinion } from '@/components/opinion/HojaOpinion';
 import { useModo } from '@/modos';
+import { irAlMundo } from '@/modos/rutasModo';
 
 export default function Hoy() {
   const { vista, hojas, perfil } = useHoy();
@@ -20,7 +22,7 @@ export default function Hoy() {
   const modos = useModo();
   const selector =
     modos.activo && modos.disponibles.length > 1 ? (
-      <SelectorModo modo={modos.modo} disponibles={modos.disponibles} alCambiar={modos.cambiar} />
+      <SelectorModo modo={modos.modo} disponibles={modos.disponibles} alCambiar={(m) => irAlMundo(m, modos.cambiar)} />
     ) : undefined;
   return (
     <>

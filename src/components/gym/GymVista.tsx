@@ -63,7 +63,8 @@ export interface GymVistaProps {
    */
   tecnicaDe?: (nombre: string) => (() => void) | undefined;
   acciones: {
-    onVolver: () => void;
+    /** Sin él, sin flecha de volver (Rutinas, pestaña del mundo IRON). */
+    onVolver?: () => void;
     onReintentar: () => void;
     onNuevoDia: () => void;
     onEntrenar: () => void;
