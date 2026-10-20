@@ -7,8 +7,10 @@
 // - Respeta el modo silencio de iOS: `playsInSilentMode: false` (categoría
 //   ambient) y se mezcla con la música del usuario sin pararla.
 // - No lanza nunca: un sonido que falla no rompe el cambio de modo.
+// - expo-audio se carga al primer sonido, no al importar: es nativo y un
+//   binario sin él (1.0.10) no debe caerse por importar Hoy. Sin módulo, silencio.
 
-import { createAudioPlayer, setAudioModeAsync, type AudioPlayer } from 'expo-audio';
+import type { AudioPlayer } from 'expo-audio';
 import type { ModoId } from '@/modos/tipos';
 
 const FUENTES: Record<ModoId, number> = {
@@ -24,10 +26,26 @@ const VOLUMEN = 0.6;
 
 const reproductores: Partial<Record<ModoId, AudioPlayer>> = {};
 let modoListo: Promise<void> | null = null;
+let audio: typeof import('expo-audio') | null | undefined;
+
+function moduloAudio(): typeof import('expo-audio') | null {
+  if (audio === undefined) {
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      audio = require('expo-audio') as typeof import('expo-audio');
+    } catch {
+      audio = null;
+    }
+  }
+  return audio;
+}
 
 function prepararSesion(): Promise<void> {
   if (!modoListo) {
-    modoListo = setAudioModeAsync({ playsInSilentMode: false, interruptionMode: 'mixWithOthers' }).catch(() => {});
+    const a = moduloAudio();
+    modoListo = a
+      ? a.setAudioModeAsync({ playsInSilentMode: false, interruptionMode: 'mixWithOthers' }).catch(() => {})
+      : Promise.resolve();
   }
   return modoListo;
 }
@@ -36,7 +54,9 @@ function reproductor(m: ModoId): AudioPlayer | null {
   try {
     let p = reproductores[m];
     if (!p) {
-      p = createAudioPlayer(FUENTES[m]);
+      const a = moduloAudio();
+      if (!a) return null;
+      p = a.createAudioPlayer(FUENTES[m]);
       p.volume = VOLUMEN;
       reproductores[m] = p;
     }

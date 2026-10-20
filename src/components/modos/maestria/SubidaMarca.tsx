@@ -17,8 +17,9 @@
 // sea true, espera; arranca cuando la cola queda libre. El texto se anuncia al
 // lector (useAnunciar) y la vibración pasa por `vibrar`, como el resto.
 //
-// Sonido: la app aún no lleva librería de audio (expo-audio pide binario).
-// `onSonido` es el enganche para la firma de sonido de la P10 cuando exista.
+// Sonido: `onSonido` es el enganche de la firma de sonido de la P10. El
+// layout de cada mundo (LayoutMundo) le pasa la del modo, la misma de la rueda
+// (rueda/sonido.ts, expo-audio: pide binario nuevo).
 
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Animated, Easing, Pressable, StyleSheet, Text, View } from 'react-native';

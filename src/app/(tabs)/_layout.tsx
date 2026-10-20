@@ -1,4 +1,5 @@
 import { Redirect, Tabs } from 'expo-router';
+import { useEffect } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { PruebaAuto } from '@/components/prueba/PruebaAuto';
 import { NavRail } from '@/components/ui/NavRail';
@@ -8,7 +9,7 @@ import { TabBar } from '@/components/ui/TabBar';
 import { huecoContenido, marcoDe } from '@/design/responsive';
 import { TopeAncho, useAnchoUtil } from '@/design/useSizeClass';
 import { useModo } from '@/modos/ModoProvider';
-import { destinoMundo } from '@/modos/rutasModo';
+import { destinoMundo, llegadaAlMundo, transitoMundo } from '@/modos/rutasModo';
 
 // Navegación según la clase de tamaño (SISTEMA.md §3): barra inferior en
 // compact, raíl de 72 en medium y barra lateral de 240 en expanded. Cambia en
@@ -29,7 +30,12 @@ export default function TabsLayout() {
   const { left } = useSafeAreaInsets();
   const hueco = huecoContenido(ventana, left).ancho;
   const modos = useModo();
-  const mundo = destinoMundo({ activo: modos.activo, cargado: modos.cargado, modo: modos.modo }, 'general');
+  // Mientras el emblema cambia de mundo (irAlMundo) no se redirige por cuenta propia.
+  const mundo = destinoMundo({ activo: modos.activo, cargado: modos.cargado, modo: modos.modo, transito: transitoMundo() }, 'general');
+  const llegado = mundo === null && modos.activo && modos.modo === 'general';
+  useEffect(() => {
+    if (llegado) llegadaAlMundo('general');
+  }, [llegado]);
   if (mundo && mundo !== 'esperar') return <Redirect href={mundo} />;
   return (
     <TopeAncho.Provider value={hueco}>

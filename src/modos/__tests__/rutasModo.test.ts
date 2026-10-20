@@ -1,4 +1,4 @@
-import { destinoMundo, irAlMundo, MUNDOS, mundoDeRuta, mundoDeSegmento, rutaCoachDe, rutaDeArranque, rutaInicioDe } from '@/modos/rutasModo';
+import { destinoMundo, irAlMundo, llegadaAlMundo, MS_TRANSITO, MUNDOS, mundoDeRuta, mundoDeSegmento, rutaCoachDe, rutaDeArranque, rutaInicioDe, transitoMundo } from '@/modos/rutasModo';
 import { MODOS } from '@/modos/tipos';
 const mockReplace = jest.fn();
 jest.mock('expo-router', () => ({ router: { replace: (...a: unknown[]) => mockReplace(...a) } }));
@@ -107,5 +107,31 @@ describe('irAlMundo', () => {
     expect(mockReplace).toHaveBeenLastCalledWith('/iron-hoy');
     irAlMundo('general', cambiar);
     expect(mockReplace).toHaveBeenLastCalledWith('/(tabs)');
+  });
+});
+
+describe('tránsito de irAlMundo (sin doble redirección ni rebote)', () => {
+  it('deja el tránsito marcado hasta la llegada o la caducidad', () => {
+    irAlMundo('focus', () => {}, 1000);
+    expect(transitoMundo(1000)).toBe('focus');
+    llegadaAlMundo('iron');
+    expect(transitoMundo(1000)).toBe('focus');
+    llegadaAlMundo('focus');
+    expect(transitoMundo(1000)).toBeNull();
+    irAlMundo('work', () => {}, 1000);
+    expect(transitoMundo(1000 + MS_TRANSITO + 1)).toBeNull();
+  });
+  it('el layout que se deja no redirige al mismo destino que ya va en camino', () => {
+    const e = { activo: true, cargado: true, modo: 'iron' as const, transito: 'iron' as const };
+    expect(destinoMundo(e, 'general')).toBeNull();
+    expect(destinoMundo({ ...e, modo: 'iron', transito: 'iron' }, 'focus')).toBeNull();
+  });
+  it('el layout de destino no rebota si aún ve el modo anterior', () => {
+    expect(destinoMundo({ activo: true, cargado: true, modo: 'general', transito: 'iron' }, 'iron')).toBe('esperar');
+    expect(destinoMundo({ activo: true, cargado: true, modo: 'iron', transito: 'general' }, 'general')).toBeNull();
+    expect(destinoMundo({ activo: true, cargado: true, modo: 'iron', transito: 'iron' }, 'iron')).toBeNull();
+  });
+  it('con el interruptor apagado el tránsito no cuenta', () => {
+    expect(destinoMundo({ activo: false, cargado: true, modo: 'general', transito: 'iron' }, 'iron')).toBe('/(tabs)');
   });
 });

@@ -10,8 +10,8 @@
 //
 // Regla única: EL MODO ACTIVO DECIDE EL MUNDO. Cada layout de grupo mira el
 // modo (ModoProvider) y, si no es el suyo, redirige al inicio del que toca
-// (`destinoMundo`). Así cambiar de modo es solo `cambiar(modo)`: el layout
-// hace el resto. `irAlMundo` además navega en el acto, sin esperar al render.
+// (`destinoMundo`). El emblema cambia de mundo con `irAlMundo`: modo y
+// navegación en un solo paso, y los layouts no redirigen mientras tanto.
 // Con `modos_activos` apagado el modo es siempre General: los mundos no
 // existen (sus layouts redirigen a `(tabs)`) y la app es la de siempre.
 //
@@ -133,6 +133,13 @@ export interface EstadoModos {
   /** Ya se sabe el modo de la cuenta (ModoProvider). */
   cargado: boolean;
   modo: ModoId;
+  /**
+   * El mundo al que se está yendo con `irAlMundo` (su `router.replace` ya va
+   * en camino), o null. Mientras dura, ningún layout redirige por su cuenta:
+   * ni el que se deja (sería una segunda navegación al mismo sitio) ni el que
+   * llega (si aún viera el modo anterior, rebotaría al mundo de antes).
+   */
+  transito?: ModoId | null;
 }
 
 /**
@@ -145,6 +152,15 @@ export interface EstadoModos {
  * mundo, se va (es lo que pasa al arrancar con IRON activo).
  */
 export function destinoMundo(estado: EstadoModos, aqui: ModoId): RutaInicio | 'esperar' | null {
+  const destino = destinoSinTransito(estado, aqui);
+  const hacia = estado.activo ? (estado.transito ?? null) : null;
+  if (hacia === null || destino === null || destino === 'esperar') return destino;
+  if (aqui === hacia) return aqui === 'general' ? null : 'esperar';
+  if (destino === rutaInicioDe(hacia)) return null;
+  return destino;
+}
+
+function destinoSinTransito(estado: EstadoModos, aqui: ModoId): RutaInicio | 'esperar' | null {
   const modo: ModoId = estado.activo ? estado.modo : 'general';
   if (aqui === 'general') {
     if (!estado.activo || !estado.cargado) return null;
@@ -165,14 +181,33 @@ export function rutaDeArranque(estado: EstadoModos): RutaInicio {
   return rutaInicioDe(estado.modo);
 }
 
+/** Lo que puede durar un tránsito como mucho: si algo falla, los layouts vuelven a mandar. */
+export const MS_TRANSITO = 1500;
+
+let transito: { modo: ModoId; hasta: number } | null = null;
+
+/** El mundo al que va `irAlMundo` ahora mismo (null si no hay tránsito o ya caducó). */
+export function transitoMundo(ahora: number = Date.now()): ModoId | null {
+  if (transito && ahora > transito.hasta) transito = null;
+  return transito?.modo ?? null;
+}
+
+/** El layout del mundo de destino ya se pinta con su modo: se acaba el tránsito. */
+export function llegadaAlMundo(modo: ModoId): void {
+  if (transito?.modo === modo) transito = null;
+}
+
 /**
- * Entrar en el mundo de un modo: deja el modo activo (lo guarda ModoProvider
- * y lo recibe el coach en `x-nivl-modo`) y reemplaza la pantalla por su
- * inicio, sin dejar el mundo anterior en la pila. `cambiar` es el de
- * `useModo()`: con el interruptor apagado no hace nada y el layout del mundo
- * devuelve a NIVL. Lo usarán la rueda y el selector de modo de Hoy.
+ * Entrar en el mundo de un modo, en UN solo paso: deja el modo activo (lo
+ * guarda ModoProvider y lo recibe el coach en `x-nivl-modo`) y reemplaza la
+ * pantalla por su inicio, sin dejar el mundo anterior en la pila. Mientras el
+ * reemplazo va en camino, `transitoMundo()` lo dice y `destinoMundo` no deja
+ * que los layouts redirijan por su cuenta (sin doble redirección ni rebote).
+ * `cambiar` es el de `useModo()`: con el interruptor apagado no hace nada y
+ * el layout del mundo devuelve a NIVL. Lo usa el emblema (EmblemaMundo).
  */
-export function irAlMundo(modo: ModoId, cambiar: (m: ModoId) => void): void {
+export function irAlMundo(modo: ModoId, cambiar: (m: ModoId) => void, ahora: number = Date.now()): void {
+  transito = { modo, hasta: ahora + MS_TRANSITO };
   cambiar(modo);
   router.replace(rutaInicioDe(modo));
 }

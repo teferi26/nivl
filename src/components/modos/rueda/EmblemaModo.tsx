@@ -12,12 +12,12 @@
 // `EmblemaModo` lee `useModo()` y no pinta nada con el interruptor
 // `modos_activos` apagado. `EmblemaModoVista` es la pieza pura (galería /kit).
 //
-// Gesture Handler: la app no tiene GestureHandlerRootView en la raíz, así que
-// el emblema y la rueda llevan el suyo.
+// Gesture Handler: el GestureHandlerRootView está en la raíz (src/app/_layout.tsx).
+// La rueda lleva además el suyo porque va en un Modal (en Android, otra raíz).
 
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { StyleSheet, View, type AccessibilityActionEvent } from 'react-native';
-import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, { useAnimatedProps, useSharedValue, withTiming } from 'react-native-reanimated';
 import Svg, { Circle } from 'react-native-svg';
 import { scheduleOnRN } from 'react-native-worklets';
@@ -43,7 +43,10 @@ const RADIO_MUERTO = 22;
 export interface EmblemaModoProps {
   /** Lado del emblema en pt (mínimo 44). Por defecto 56. */
   tamano?: number;
-  /** Tras cambiar de modo (al encajar): aquí engancha el integrador la navegación al mundo del modo. */
+  /**
+   * Al encajar un modo. Si se pasa, es QUIEN cambia el modo (EmblemaMundo pasa
+   * `irAlMundo`: cambio y navegación en un solo paso); sin él, solo `cambiar`.
+   */
   alCambiarModo?: (m: ModoId) => void;
 }
 
@@ -52,8 +55,8 @@ export function EmblemaModo({ tamano, alCambiarModo }: EmblemaModoProps) {
   const { activo, modo, anterior, disponibles, cambiar } = useModo();
   const alCambiar = useCallback(
     (m: ModoId) => {
-      cambiar(m);
-      alCambiarModo?.(m);
+      if (alCambiarModo) alCambiarModo(m);
+      else cambiar(m);
     },
     [cambiar, alCambiarModo],
   );
@@ -203,41 +206,39 @@ export function EmblemaModoVista({ tamano: pedido = 56, modo, anterior, disponib
 
   return (
     <>
-      <GestureHandlerRootView style={{ width: tamano, height: tamano }}>
-        <GestureDetector gesture={gesto}>
-          <View
-            style={{ width: tamano, height: tamano }}
-            accessible
-            accessibilityRole="button"
-            accessibilityLabel={t('modos:rueda.emblema', { modo: NOMBRE_MODO[modo] })}
-            accessibilityHint={t('modos:rueda.pista')}
-            accessibilityActions={acciones}
-            onAccessibilityAction={alAccion}
-          >
-            <Svg width={tamano} height={tamano}>
-              {MODOS_ETIQUETA.map((m) => {
-                const p = puntoEn(c, c, rPuntos, ANGULO_MODO[m]);
-                return <Circle key={m} cx={p.x} cy={p.y} r={2.5} fill={disponibles.includes(m) ? modoAcento[m] : ink.ink4} />;
-              })}
-              <AnimatedCircle
-                cx={c}
-                cy={c}
-                r={rCarga}
-                fill="none"
-                stroke={acento}
-                strokeWidth={stroke.rule}
-                strokeDasharray={`${circunferencia} ${circunferencia}`}
-                transform={`rotate(-90 ${c} ${c})`}
-                animatedProps={propsCarga}
-              />
-              <Circle cx={c} cy={c} r={rDisco} fill={ink.ink1} stroke={acento} strokeWidth={stroke.rule} />
-            </Svg>
-            <View style={styles.glifo} pointerEvents="none">
-              <GlifoModo modo={modo} tamano={Math.round(rDisco * 1.1)} color={acento} />
-            </View>
+      <GestureDetector gesture={gesto}>
+        <View
+          style={{ width: tamano, height: tamano }}
+          accessible
+          accessibilityRole="button"
+          accessibilityLabel={t('modos:rueda.emblema', { modo: NOMBRE_MODO[modo] })}
+          accessibilityHint={t('modos:rueda.pista')}
+          accessibilityActions={acciones}
+          onAccessibilityAction={alAccion}
+        >
+          <Svg width={tamano} height={tamano}>
+            {MODOS_ETIQUETA.map((m) => {
+              const p = puntoEn(c, c, rPuntos, ANGULO_MODO[m]);
+              return <Circle key={m} cx={p.x} cy={p.y} r={2.5} fill={disponibles.includes(m) ? modoAcento[m] : ink.ink4} />;
+            })}
+            <AnimatedCircle
+              cx={c}
+              cy={c}
+              r={rCarga}
+              fill="none"
+              stroke={acento}
+              strokeWidth={stroke.rule}
+              strokeDasharray={`${circunferencia} ${circunferencia}`}
+              transform={`rotate(-90 ${c} ${c})`}
+              animatedProps={propsCarga}
+            />
+            <Circle cx={c} cy={c} r={rDisco} fill={ink.ink1} stroke={acento} strokeWidth={stroke.rule} />
+          </Svg>
+          <View style={styles.glifo} pointerEvents="none">
+            <GlifoModo modo={modo} tamano={Math.round(rDisco * 1.1)} color={acento} />
           </View>
-        </GestureDetector>
-      </GestureHandlerRootView>
+        </View>
+      </GestureDetector>
       {abierta ? (
         <RuedaModos
           origen={origen}

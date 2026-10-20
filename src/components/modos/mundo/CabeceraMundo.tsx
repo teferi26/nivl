@@ -5,17 +5,16 @@
 //             subtítulo          ▬▬▬▬▬▬▬▬▬▬
 //                                2.160 / 3.000 XP
 //
-// · `emblema`: la ranura del EmblemaModo de la rueda (lo pone el integrador).
-//   Sin él, un cuadrado del acento: la misma marca que en Perfil.
+// · `emblema`: la ranura del emblema del modo (EmblemaMundo: la rueda dentro
+//   del marco de su marca MK). Es también la salida del mundo: el toque corto
+//   vuelve al modo anterior y la rueda lleva a NIVL o a otro modo. Sin él, un
+//   cuadrado del acento: la misma marca que en Perfil.
 // · El nivel es el del modo (`mode_xp`, misma curva que el global): suma
 //   también al nivel global, que vive en NIVL.
-// · `onBase`: volver a NIVL (el modo general). Hasta que llegue la rueda es la
-//   salida del mundo; con la rueda puede quitarse.
 // El acento del modo es lo único de color (tokens.ts → modoAcento).
 
-import Ionicons from '@expo/vector-icons/Ionicons';
 import type { ReactNode } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { formatoMiles, ratioSeguro } from '@/components/arena';
 import { Skeleton } from '@/components/ui';
 import { ink, modoAcento, space, stroke, type as tipo } from '@/design/tokens';
@@ -27,15 +26,13 @@ export interface CabeceraMundoProps {
   modo: ModoEtiqueta;
   /** El nivel del modo; null mientras se lee (huecos). */
   nivel: NivelModo | null;
-  /** La ranura del emblema del modo (EmblemaModo de la rueda). */
+  /** La ranura del emblema del modo (EmblemaMundo). */
   emblema?: ReactNode;
-  /** Volver a NIVL. Sin él no se pinta el botón. */
-  onBase?: () => void;
 }
 
 const LADO_EMBLEMA = 44;
 
-export function CabeceraMundo({ modo, nivel, emblema, onBase }: CabeceraMundoProps) {
+export function CabeceraMundo({ modo, nivel, emblema }: CabeceraMundoProps) {
   const acento = modoAcento[modo];
   const nombre = NOMBRE_MODO[modo];
   const maximo = nivel !== null && nivel.xpSiguiente <= 0;
@@ -44,9 +41,11 @@ export function CabeceraMundo({ modo, nivel, emblema, onBase }: CabeceraMundoPro
   return (
     <View style={styles.wrap}>
       <View style={styles.fila}>
-        <View style={[styles.emblema, !emblema && { borderColor: acento }]}>
-          {emblema ?? <View style={[styles.marca, { backgroundColor: acento }]} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" />}
-        </View>
+        {emblema ?? (
+          <View style={[styles.emblema, { borderColor: acento }]}>
+            <View style={[styles.marca, { backgroundColor: acento }]} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" />
+          </View>
+        )}
         <View style={styles.textos}>
           <Text style={[styles.nombre, { color: acento }]} accessibilityRole="header" maxFontSizeMultiplier={1.35} numberOfLines={1}>
             {nombre}
@@ -55,20 +54,6 @@ export function CabeceraMundo({ modo, nivel, emblema, onBase }: CabeceraMundoPro
             {t(`mundos:subtitulo.${modo}`)}
           </Text>
         </View>
-        {onBase ? (
-          <Pressable
-            onPress={onBase}
-            style={({ pressed }) => [styles.base, pressed && styles.pulsado]}
-            accessibilityRole="button"
-            accessibilityLabel={t('mundos:cabecera.base')}
-            hitSlop={4}
-          >
-            <Ionicons name="shield-outline" size={16} color={ink.ink9} />
-            <Text style={styles.baseTexto} maxFontSizeMultiplier={1.2}>
-              {t('mundos:cabecera.baseCorto')}
-            </Text>
-          </Pressable>
-        ) : null}
       </View>
 
       {nivel === null ? (
@@ -109,7 +94,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: stroke.hairline,
-    borderColor: 'transparent',
   },
   marca: { width: 14, height: 14 },
   textos: { flex: 1, minWidth: 0 },
@@ -124,24 +108,6 @@ const styles = StyleSheet.create({
     fontSize: tipo.bodySm.size,
     lineHeight: tipo.bodySm.lineHeight,
     color: ink.ink8,
-  },
-  base: {
-    minHeight: 44,
-    minWidth: 44,
-    paddingHorizontal: space.s3,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: space.s1,
-    borderWidth: stroke.hairline,
-    borderColor: ink.ink4,
-  },
-  pulsado: { backgroundColor: ink.ink2 },
-  baseTexto: {
-    fontFamily: tipo.micro.family,
-    fontSize: tipo.micro.size,
-    lineHeight: tipo.micro.lineHeight,
-    letterSpacing: tipo.micro.tracking,
-    color: ink.ink9,
   },
   nivel: { flexDirection: 'row', alignItems: 'center', gap: space.s3 },
   nv: {

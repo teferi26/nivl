@@ -13,6 +13,11 @@
 // pinta <SubidaMarca marca={subida} … onFin={cerrarSubida} />.
 //
 // Con `modos_activos` apagado (o sin sesión) no lee nada: MK I a cero.
+//
+// Varias pantallas leen la marca (el marco del emblema de cada cabecera), pero
+// la subida la vigila UNA sola instancia (el layout del mundo, con
+// <SubidaMarca>): las demás pasan `{ subidas: false }` y no tocan la marca
+// vista. `relectura` vuelve a leer al cambiar (p. ej. la pestaña del mundo).
 
 import { useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
@@ -38,7 +43,14 @@ export interface Maestria {
   cerrarSubida: () => void;
 }
 
-export function useMaestria(modo: ModoEtiqueta): Maestria {
+export interface OpcionesMaestria {
+  /** Vigila y celebra la subida de marca (por defecto true). Solo una instancia por mundo. */
+  subidas?: boolean;
+  /** Cambiarla vuelve a leer la XP (además de al enfocar). */
+  relectura?: string;
+}
+
+export function useMaestria(modo: ModoEtiqueta, { subidas = true, relectura }: OpcionesMaestria = {}): Maestria {
   const { session } = useAuth();
   const userId = session?.user.id ?? null;
   const { activo } = useModo();
@@ -59,6 +71,7 @@ export function useMaestria(modo: ModoEtiqueta): Maestria {
           setXp(leida);
           setError(null);
           fijarMarcaCoach(modo, marca);
+          if (!subidas) return;
           const vista = await leerMarcaVista(userId, modo);
           if (!vivo) return;
           const nueva = subidaDeMarca(vista, marca);
@@ -73,7 +86,9 @@ export function useMaestria(modo: ModoEtiqueta): Maestria {
       return () => {
         vivo = false;
       };
-    }, [activo, userId, modo]),
+      // `relectura` no se usa dentro: solo vuelve a disparar la lectura.
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [activo, userId, modo, subidas, relectura]),
   );
 
   const cerrarSubida = useCallback(() => setSubida(null), []);

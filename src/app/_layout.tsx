@@ -9,6 +9,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, type ReactNode } from 'react';
 import { Platform, StyleSheet, View } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { EdadMinimaGuard, EdadMinimaProvider, useEdadMinima } from '@/components/EdadMinima';
 import { HealthConsentGuard, HealthConsentProvider } from '@/components/ConsentimientoSalud';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
@@ -234,24 +235,32 @@ export default function RootLayout() {
     return <View style={{ flex: 1, backgroundColor: colors.bg }} />;
   }
 
+  // GestureHandlerRootView en la raíz: el gesto del emblema de modos (rueda
+  // P01) lo necesita. Es una vista flex: 1 sin nada más; no cambia lo que se pinta.
   return (
-    <ErrorBoundary key={interfaz}>
-      <AuthProvider>
-        <StatusBar style="light" />
-        {SITIO_CREADORES ? (
-          <PortalStack />
-        ) : (
-          // Por fuera de ColumnaWeb: en web la ceremonia y el toast cubren toda la ventana.
-          // ModoProvider: con `modos_activos` apagado no lee nada y todo es General.
-          <ModoProvider>
-            <CelebracionProvider>
-              <EdadMinimaProvider>
-                <HealthConsentProvider><ProtectedStack /></HealthConsentProvider>
-              </EdadMinimaProvider>
-            </CelebracionProvider>
-          </ModoProvider>
-        )}
-      </AuthProvider>
-    </ErrorBoundary>
+    <GestureHandlerRootView style={rootStyles.raiz}>
+      <ErrorBoundary key={interfaz}>
+        <AuthProvider>
+          <StatusBar style="light" />
+          {SITIO_CREADORES ? (
+            <PortalStack />
+          ) : (
+            // Por fuera de ColumnaWeb: en web la ceremonia y el toast cubren toda la ventana.
+            // ModoProvider: con `modos_activos` apagado no lee nada y todo es General.
+            <ModoProvider>
+              <CelebracionProvider>
+                <EdadMinimaProvider>
+                  <HealthConsentProvider><ProtectedStack /></HealthConsentProvider>
+                </EdadMinimaProvider>
+              </CelebracionProvider>
+            </ModoProvider>
+          )}
+        </AuthProvider>
+      </ErrorBoundary>
+    </GestureHandlerRootView>
   );
 }
+
+const rootStyles = StyleSheet.create({
+  raiz: { flex: 1, backgroundColor: colors.bg },
+});

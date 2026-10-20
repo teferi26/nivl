@@ -4,6 +4,7 @@
 // useGym: la tabla de series, terminar y pagar). Datos de salud: guarda `gym`.
 import { HealthConsentGuard } from '@/components/ConsentimientoSalud';
 import { GymVista } from '@/components/gym/GymVista';
+import { EmblemaMundo } from '@/components/modos/EmblemaMundo';
 import { CabeceraMundo } from '@/components/modos/mundo/CabeceraMundo';
 import { IronHoyVista } from '@/components/modos/mundo/IronHoyVista';
 import { useIronHoy } from '@/components/modos/mundo/useIronHoy';
@@ -22,7 +23,7 @@ function Contenido() {
   if (v.entrenando) return <GymVista {...v} acciones={{ ...v.acciones, onVolver: undefined }} />;
   return (
     <IronHoyVista
-      cabecera={<CabeceraMundo modo="iron" nivel={mundo.nivel} onBase={mundo.onBase} />}
+      cabecera={<CabeceraMundo modo="iron" nivel={mundo.nivel} emblema={<EmblemaMundo modo="iron" />} />}
       fecha={fecha}
       cierre={cierre}
       entreno={{

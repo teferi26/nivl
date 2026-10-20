@@ -19,6 +19,7 @@ import { HojaClasificar, HojaEfectivo } from '@/components/economia/HojasEconomi
 import { useEconomia } from '@/components/economia/useEconomia';
 import { useHoy } from '@/components/hoy/useHoy';
 import { rutaCoachDe } from '@/modos/rutasModo';
+import { EmblemaMundo } from '@/components/modos/EmblemaMundo';
 import { CabeceraMundo } from './CabeceraMundo';
 import { MundoHoyVista, type ModoMundoSobrio } from './MundoHoyVista';
 import { useMundo } from './useMundo';
@@ -30,7 +31,7 @@ export function PantallaMundoHoy({ modo }: { modo: ModoMundoSobrio }) {
     <>
       <MundoHoyVista
         modo={modo}
-        cabecera={<CabeceraMundo modo={modo} nivel={mundo.nivel} onBase={mundo.onBase} />}
+        cabecera={<CabeceraMundo modo={modo} nivel={mundo.nivel} emblema={<EmblemaMundo modo={modo} />} />}
         hoy={vista}
         onCoach={() => router.navigate(rutaCoachDe(modo))}
       />

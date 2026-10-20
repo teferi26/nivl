@@ -57,7 +57,7 @@ export interface HoyVistaProps {
   /** Minutos del día que cuentan como «ahora» en el orden del día (galería). */
   ahora?: number;
   /**
-   * Modos F1: el selector de modo (SelectorModo) sobre el Hero. Solo con
+   * Modos: el emblema del modo (EmblemaNivl; en la galería, SelectorModo) sobre el Hero. Solo con
    * `modos_activos` encendido; sin él, Hoy es exactamente el de siempre.
    */
   selectorModo?: ReactNode;
@@ -234,7 +234,7 @@ export function HoyVista({
       onRefresh={acciones.onRefrescar}
       aside={hayPanel ? <PanelHoy cargando={cargando} esPro={d.esPro} duelo={d.duelo} /> : undefined}
     >
-      {/* 0 · Modos F1: el selector de modo (solo con el interruptor). */}
+      {/* 0 · Modos: el emblema del modo (solo con el interruptor). */}
       {selectorModo ?? null}
 
       {/* 1 · El Hero (sin perfil tras un fallo, la cabecera grabada). */}

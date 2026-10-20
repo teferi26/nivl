@@ -3,7 +3,7 @@
 //
 // Cuándo sale lo decide `tocaNovedadModos` (modos/novedad.ts, pura y con
 // test). «Guardar» deja la elección en `user_modes` con el contexto de modos
-// (como el paso del onboarding) y el selector de Hoy aparece en ese momento;
+// (como el paso del onboarding) y el emblema de Hoy aparece en ese momento;
 // «Ahora no» (o cerrar la hoja) solo la da por vista. En los dos casos la
 // marca queda en el teléfono, por cuenta, y no vuelve.
 //

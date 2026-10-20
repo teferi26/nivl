@@ -11,6 +11,12 @@ import { crearServidor, mision, type Servidor } from './qa/servidor';
 // del test en cada llamada.
 
 let mockSrv: Servidor;
+
+// En la ejecución completa (138 suites en paralelo) `jest.isolateModules` +
+// `require('../engine')` puede pasar de los 5 s por defecto; un test cortado a
+// medias dejaba el servidor falso a medio cerrar y arrastraba al siguiente.
+// Solo se sube el tiempo: lo que se comprueba no cambia.
+jest.setTimeout(30_000);
 jest.mock('../data', () => new Proxy({}, { get: (_t, k: string) => (...a: unknown[]) => mockSrv.data[k]!(...a) }));
 jest.mock('../contract', () => new Proxy({}, { get: (_t, k: string) => (...a: unknown[]) => mockSrv.contract[k]!(...a) }));
 jest.mock('../dayplan', () => new Proxy({}, { get: (_t, k: string) => (...a: unknown[]) => mockSrv.dayplan[k]!(...a) }));
