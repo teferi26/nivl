@@ -15,6 +15,7 @@ import { FranjaGrabacion, type Dictado } from '@/components/coach/Dictado';
 import { HojaPrivacidadDictado } from '@/components/coach/HojaPrivacidadDictado';
 import { MensajeCoach } from '@/components/coach/MensajeCoach';
 import { Heatmap } from '@/components/Heatmap';
+import { DemoRueda } from '@/components/modos/rueda/demo';
 import { ProUpsellLine } from '@/components/ProOffer';
 import { Avatar, Button, Card, Crown, Section, Screen, Sheet, SuperficieContext, Tag, Toast } from '@/components/ui';
 import { alturaCorona } from '@/components/ui/Avatar';
@@ -136,6 +137,10 @@ export default function Kit() {
         onPress={() => router.push('/kit/iron')}
         style={{ marginBottom: space.s6 }}
       />
+
+      <Section title="Rueda de modos">
+        <DemoRueda />
+      </Section>
 
       <Section title="Botones">
         <View style={{ gap: 10 }}>

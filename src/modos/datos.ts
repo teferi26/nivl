@@ -19,6 +19,7 @@ import {
 } from './tipos';
 
 const claveActivo = (userId: string) => `nivl.modo.activo.${userId}`;
+const claveAnterior = (userId: string) => `nivl.modo.anterior.${userId}`;
 const claveNovedad = (userId: string) => `nivl.modos.novedad.${userId}`;
 
 /** Los modos activados de la cuenta (sin General, que siempre está). */
@@ -58,6 +59,24 @@ export async function guardarModoActivo(userId: string, modo: ModoId): Promise<v
     await AsyncStorage.setItem(claveActivo(userId), modo);
   } catch {
     // Sin almacenamiento, el modo vive hasta cerrar la app.
+  }
+}
+
+/** El último modo distinto del activo (el toque corto del emblema vuelve a él). */
+export async function leerModoAnterior(userId: string): Promise<ModoId | null> {
+  try {
+    const v = await AsyncStorage.getItem(claveAnterior(userId));
+    return esModo(v) ? v : null;
+  } catch {
+    return null;
+  }
+}
+
+export async function guardarModoAnterior(userId: string, modo: ModoId): Promise<void> {
+  try {
+    await AsyncStorage.setItem(claveAnterior(userId), modo);
+  } catch {
+    // Sin almacenamiento, el anterior vive hasta cerrar la app.
   }
 }
 
