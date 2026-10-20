@@ -9,12 +9,13 @@ import { useCelebracion } from '@/components/celebracion/contexto';
 import { PreguntaMedicionUso } from '@/components/consentimiento/ConsentimientoAnalitica';
 import { HoyVista } from '@/components/hoy/HoyVista';
 import { useHoy } from '@/components/hoy/useHoy';
+import { NovedadModos } from '@/components/modos/NovedadModos';
 import { SelectorModo } from '@/components/modos/SelectorModo';
 import { HojaOpinion } from '@/components/opinion/HojaOpinion';
 import { useModo } from '@/modos';
 
 export default function Hoy() {
-  const { vista, hojas } = useHoy();
+  const { vista, hojas, perfil } = useHoy();
   const { celebrando } = useCelebracion();
   const modos = useModo();
   const selector =
@@ -28,6 +29,12 @@ export default function Hoy() {
       <HojaOpinion {...hojas.opinion} />
       {/* Medición de uso: una vez, a quien ya tenía la app (dictamen LSSI 3.1). */}
       <PreguntaMedicionUso enPausa={celebrando || hojas.opinion.visible || !!hojas.quest} />
+      {/* Modos: «Novedad: elige tus modos», una vez, a quien ya tenía la app y no tiene ninguno. */}
+      <NovedadModos
+        onboardingHecho={perfil.onboardingHecho}
+        kind={perfil.kind}
+        enPausa={celebrando || hojas.opinion.visible || !!hojas.quest}
+      />
     </>
   );
 }

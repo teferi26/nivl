@@ -19,6 +19,7 @@ import {
 } from './tipos';
 
 const claveActivo = (userId: string) => `nivl.modo.activo.${userId}`;
+const claveNovedad = (userId: string) => `nivl.modos.novedad.${userId}`;
 
 /** Los modos activados de la cuenta (sin General, que siempre está). */
 export async function leerActivados(userId: string): Promise<ModoEtiqueta[]> {
@@ -57,5 +58,22 @@ export async function guardarModoActivo(userId: string, modo: ModoId): Promise<v
     await AsyncStorage.setItem(claveActivo(userId), modo);
   } catch {
     // Sin almacenamiento, el modo vive hasta cerrar la app.
+  }
+}
+
+/** «Novedad: elige tus modos»: ¿ya se cerró en este teléfono? Sin almacenamiento, sí (no insistir). */
+export async function leerNovedadVista(userId: string): Promise<boolean> {
+  try {
+    return (await AsyncStorage.getItem(claveNovedad(userId))) !== null;
+  } catch {
+    return true;
+  }
+}
+
+export async function marcarNovedadVista(userId: string): Promise<void> {
+  try {
+    await AsyncStorage.setItem(claveNovedad(userId), '1');
+  } catch {
+    // Sin almacenamiento: no vuelve en esta sesión (lo guarda el estado).
   }
 }

@@ -28,6 +28,8 @@ export interface ModoContexto {
   disponibles: ModoId[];
   /** Ya se han leído los modos de la cuenta (o no hacía falta). */
   cargado: boolean;
+  /** La última lectura de `user_modes` salió bien (sin red o sin tabla, false). */
+  leidos: boolean;
   cambiar: (modo: ModoId) => void;
   /** Guarda la elección en `user_modes` (onboarding) y la deja a la vista. */
   guardarActivados: (elegidos: readonly ModoEtiqueta[]) => Promise<void>;
@@ -40,6 +42,7 @@ const APAGADO: ModoContexto = {
   activados: [],
   disponibles: ['general'],
   cargado: true,
+  leidos: false,
   cambiar: () => {},
   guardarActivados: async () => {},
   recargar: async () => {},
@@ -54,11 +57,13 @@ export function ModoProvider({ children }: { children: ReactNode }) {
   const [activados, setActivados] = useState<ModoEtiqueta[]>([]);
   const [modo, setModo] = useState<ModoId>('general');
   const [cargado, setCargado] = useState(false);
+  const [leidos, setLeidos] = useState(false);
 
   const recargar = useCallback(async () => {
     if (!activo || !userId) {
       setActivados([]);
       setModo('general');
+      setLeidos(false);
       setCargado(true);
       return;
     }
@@ -66,10 +71,12 @@ export function ModoProvider({ children }: { children: ReactNode }) {
       const [lista, guardado] = await Promise.all([leerActivados(userId), leerModoActivo(userId)]);
       setActivados(lista);
       setModo(modoValido(guardado, lista));
+      setLeidos(true);
     } catch {
       // Sin tabla o sin red: General, como hoy.
       setActivados([]);
       setModo('general');
+      setLeidos(false);
     } finally {
       setCargado(true);
     }
@@ -77,6 +84,7 @@ export function ModoProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     setCargado(false);
+    setLeidos(false);
     void recargar();
   }, [recargar]);
 
@@ -104,6 +112,7 @@ export function ModoProvider({ children }: { children: ReactNode }) {
       await escribirActivados(userId, elegidos);
       const lista = [...elegidos];
       setActivados(lista);
+      setLeidos(true);
       setModo((m) => (m === 'general' ? m : modoValido(m, lista)));
     },
     [activo, userId],
@@ -118,12 +127,13 @@ export function ModoProvider({ children }: { children: ReactNode }) {
             activados,
             disponibles: modosDisponibles(activados),
             cargado,
+            leidos,
             cambiar,
             guardarActivados,
             recargar,
           }
         : APAGADO,
-    [activo, modoVisible, activados, cargado, cambiar, guardarActivados, recargar],
+    [activo, modoVisible, activados, cargado, leidos, cambiar, guardarActivados, recargar],
   );
 
   return <Contexto.Provider value={valor}>{children}</Contexto.Provider>;
