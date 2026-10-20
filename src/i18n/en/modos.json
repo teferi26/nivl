@@ -38,6 +38,17 @@
     "vacio": "Turn on a mode and every mission with its tag will also add to its level.",
     "filaGlobalA11y": "{{modo}}: level {{nivel}}"
   },
+  "maestria": {
+    "marca": "MK {{n}}",
+    "marcaA11y": "{{modo}}, mark {{n}} of 5",
+    "progresoA11y": "{{modo}}: mark {{n}} of 5, {{xp}} XP to the next",
+    "maximaA11y": "{{modo}}: mark 5 of 5, the highest",
+    "subida": {
+      "cuerpo": "{{modo}} moves up a mark. The frame shows it.",
+      "a11y": "{{modo}} moves up to mark {{n}} of 5.",
+      "saltarA11y": "Continue"
+    }
+  },
   "hoja": {
     "eyebrow": "Modes",
     "titulo": "Your modes",
