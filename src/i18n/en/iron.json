@@ -156,5 +156,24 @@
   "tecnica": {
     "eyebrow": "IRON · Technique",
     "demostracion": "Demonstration"
+  },
+  "historial": {
+    "rotulo": "Your history",
+    "cargando": "Loading your history",
+    "vacio": "You haven't logged this exercise in Gym yet. Once you do, your sessions, your best mark and the load for next time will show up here.",
+    "proxima": "Next time: {{series}} × {{reps}} at {{kg}} kg",
+    "motivo": {
+      "subir": "You hit {{tope}} reps on every set: time to add load.",
+      "mantener": "You're not at {{tope}} on every set yet: same load, one more rep.",
+      "retomar": "It's been over four weeks since you did it: start again with the same load."
+    },
+    "orientativo": "A guide, no AI: double progression on what you logged. If something hurts or your form breaks down, don't add load.",
+    "mejor": "Estimated 1RM",
+    "mejorDetalle": "Your best mark: {{kg}} kg × {{reps}} on {{fecha}} (Epley).",
+    "sesiones": "Sessions",
+    "ultimas": "Latest sessions",
+    "sesionA11y": "{{fecha}}: {{series}}",
+    "bloque": "{{series}} × {{reps}} × {{kg}} kg",
+    "bloqueSinPeso": "{{series}} × {{reps}}"
   }
 }

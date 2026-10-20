@@ -40,6 +40,30 @@ describe('casarEjercicio', () => {
   });
 });
 
+describe('casarEjercicio con alias', () => {
+  const CON_ALIAS = [
+    // Este alias choca con el nombre oficial de otro ejercicio (y va antes): no se lo quita.
+    { id: 'press-inclinado', nombres: ['Press inclinado con barra'], alias: ['Press de banca', 'Press banca inclinado'] },
+    { id: 'press-banca', nombres: ['Press de banca'], alias: ['Press banca', 'Bench'] },
+    { id: 'dominada', nombres: ['Dominada'], alias: ['Dominadas', 'Pull ups'] },
+  ];
+  const indice = indiceCasado(CON_ALIAS);
+
+  it('casa por alias, normalizado igual que el nombre', () => {
+    expect(casarEjercicio('press banca', indice)).toBe('press-banca');
+    expect(casarEjercicio('PULL-UPS', indice)).toBe('dominada');
+    expect(casarEjercicio('Press banca inclinado', indice)).toBe('press-inclinado');
+  });
+
+  it('un alias nunca pisa el nombre oficial de otro ejercicio', () => {
+    expect(casarEjercicio('Press de banca', indice)).toBe('press-banca');
+  });
+
+  it('la búsqueda del selector también mira los alias', () => {
+    expect(buscarEjercicios('pull', CON_ALIAS).map((e) => e.id)).toEqual(['dominada']);
+  });
+});
+
 describe('buscarEjercicios', () => {
   it('todas las palabras, en cualquier nombre y sin tildes', () => {
     expect(buscarEjercicios('banca', ENTRADAS).map((e) => e.id)).toEqual(['press-banca', 'otro']);

@@ -156,5 +156,24 @@
   "tecnica": {
     "eyebrow": "IRON · Technique",
     "demostracion": "Démonstration"
+  },
+  "historial": {
+    "rotulo": "Ton historique",
+    "cargando": "Chargement de ton historique",
+    "vacio": "Tu n'as pas encore enregistré cet exercice dans Muscu. Dès que tu le feras, tu verras ici tes séances, ton meilleur record et la charge de la prochaine.",
+    "proxima": "La prochaine : {{series}} × {{reps}} à {{kg}} kg",
+    "motivo": {
+      "subir": "Tu as atteint {{tope}} répétitions sur toutes les séries : augmente la charge.",
+      "mantener": "Tu n'atteins pas encore {{tope}} sur toutes les séries : même charge, une répétition de plus.",
+      "retomar": "Plus de quatre semaines sans le faire : reprends avec la même charge."
+    },
+    "orientativo": "Indicatif et sans IA : double progression sur ce que tu as enregistré. Si quelque chose fait mal ou si la technique se dégrade, n'augmente pas.",
+    "mejor": "1RM estimé",
+    "mejorDetalle": "Ton meilleur record : {{kg}} kg × {{reps}} le {{fecha}} (Epley).",
+    "sesiones": "Séances",
+    "ultimas": "Dernières séances",
+    "sesionA11y": "{{fecha}} : {{series}}",
+    "bloque": "{{series}} × {{reps}} × {{kg}} kg",
+    "bloqueSinPeso": "{{series}} × {{reps}}"
   }
 }

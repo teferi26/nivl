@@ -156,5 +156,24 @@
   "tecnica": {
     "eyebrow": "IRON · Técnica",
     "demostracion": "Demonstração"
+  },
+  "historial": {
+    "rotulo": "O teu histórico",
+    "cargando": "A carregar o teu histórico",
+    "vacio": "Ainda não registaste este exercício no Ginásio. Quando o fizeres, verás aqui as tuas sessões, a tua melhor marca e a carga da próxima.",
+    "proxima": "A próxima: {{series}} × {{reps}} com {{kg}} kg",
+    "motivo": {
+      "subir": "Chegaste a {{tope}} repetições em todas as séries: é altura de subir a carga.",
+      "mantener": "Ainda não chegas a {{tope}} em todas as séries: mesma carga, mais uma repetição.",
+      "retomar": "Há mais de quatro semanas que não o fazes: retoma com a mesma carga."
+    },
+    "orientativo": "Orientativo e sem IA: dupla progressão sobre o que registaste. Se algo doer ou a técnica falhar, não subas.",
+    "mejor": "1RM estimado",
+    "mejorDetalle": "A tua melhor marca: {{kg}} kg × {{reps}} a {{fecha}} (Epley).",
+    "sesiones": "Sessões",
+    "ultimas": "Últimas sessões",
+    "sesionA11y": "{{fecha}}: {{series}}",
+    "bloque": "{{series}} × {{reps}} × {{kg}} kg",
+    "bloqueSinPeso": "{{series}} × {{reps}}"
   }
 }

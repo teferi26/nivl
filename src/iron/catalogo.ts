@@ -1,9 +1,11 @@
-// NIVL · IRON · El catálogo con sus nombres en el idioma de la interfaz y en
-// español, para casar el texto libre de Gimnasio y para el selector.
+// NIVL · IRON · El catálogo con sus nombres en el idioma de la interfaz, en
+// español y en inglés, más sus alias (alias.ts), para casar el texto libre
+// de Gimnasio y para el selector.
 // Sin Supabase (lo usan Gimnasio y /iron/[id]); lo puro está en casar.ts.
 
 import { idiomaInterfaz } from '@/i18n';
 import { textoIron } from '@/components/iron/texto';
+import { ALIAS_IRON } from './alias';
 import { buscarEjercicios, casarEjercicio, indiceCasado, type EntradaCasado } from './casar';
 import { EJERCICIOS, ejercicioPorId } from './ejercicios';
 import type { Ejercicio, GrupoMuscular } from './tipos';
@@ -27,10 +29,14 @@ function construir() {
   const entradas = EJERCICIOS.map((e) => {
     const nombre = textoIron(e.nombre);
     const es = textoIron(e.nombre, { lng: 'es' });
+    // El inglés es la jerga de cualquier gimnasio: «Bench press» casa
+    // aunque la interfaz esté en español.
+    const en = textoIron(e.nombre, { lng: 'en' });
     return {
       id: e.id,
       nombre,
-      nombres: nombre === es ? [nombre] : [nombre, es],
+      nombres: [...new Set([nombre, es, en])],
+      alias: ALIAS_IRON[e.id] ?? [],
       grupo: e.grupo,
       ejercicio: e,
     };
@@ -49,7 +55,7 @@ export function buscarIron(consulta: string): EntradaIron[] {
   return buscarEjercicios(consulta, construir().entradas);
 }
 
-/** El ejercicio del catálogo con ese nombre exacto (normalizado), o undefined. */
+/** El ejercicio del catálogo con ese nombre exacto o alias (normalizado), o undefined. */
 export function ejercicioIronDe(nombre: string): Ejercicio | undefined {
   const id = casarEjercicio(nombre, construir().indice);
   return id ? ejercicioPorId(id) : undefined;

@@ -156,5 +156,24 @@
   "tecnica": {
     "eyebrow": "IRON · Tecnica",
     "demostracion": "Dimostrazione"
+  },
+  "historial": {
+    "rotulo": "La tua cronologia",
+    "cargando": "Caricamento della tua cronologia",
+    "vacio": "Non hai ancora registrato questo esercizio in Palestra. Quando lo farai, qui vedrai le tue sessioni, il tuo record e il carico della prossima.",
+    "proxima": "La prossima: {{series}} × {{reps}} con {{kg}} kg",
+    "motivo": {
+      "subir": "Hai fatto {{tope}} ripetizioni in tutte le serie: è ora di aumentare il carico.",
+      "mantener": "Non arrivi ancora a {{tope}} in tutte le serie: stesso carico, una ripetizione in più.",
+      "retomar": "Sono passate più di quattro settimane: riprendi con lo stesso carico."
+    },
+    "orientativo": "Indicativo e senza IA: doppia progressione su quello che hai registrato. Se qualcosa fa male o la tecnica cede, non aumentare.",
+    "mejor": "1RM stimato",
+    "mejorDetalle": "Il tuo record: {{kg}} kg × {{reps}} il {{fecha}} (Epley).",
+    "sesiones": "Sessioni",
+    "ultimas": "Ultime sessioni",
+    "sesionA11y": "{{fecha}}: {{series}}",
+    "bloque": "{{series}} × {{reps}} × {{kg}} kg",
+    "bloqueSinPeso": "{{series}} × {{reps}}"
   }
 }

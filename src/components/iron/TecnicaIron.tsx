@@ -3,8 +3,9 @@
 //
 // De arriba abajo: el encabezado grabado (nombre, grupo · nivel · material),
 // la demostración animada en bucle con «Pausar» (quieta con «reducir
-// movimiento», lo hace el Maniquí), la ficha de músculos con el mapa y las
-// consignas, y los errores comunes. Sin inversión: aquí no hay acción
+// movimiento», lo hace el Maniquí), tu historial con la carga de la próxima
+// (HistorialIron, si llega `historial`), la ficha de músculos con el mapa y
+// las consignas, y los errores comunes. Sin inversión: aquí no hay acción
 // principal, se mira.
 
 import { useState } from 'react';
@@ -17,13 +18,22 @@ import { useAnchoUtil } from '@/design/useSizeClass';
 import { t } from '@/i18n';
 import type { Ejercicio } from '@/iron/tipos';
 import { FichaIron } from './FichaIron';
+import { HistorialIron } from './HistorialIron';
 import { Maniqui } from './Maniqui';
 import { nombreIron, textoIron } from './texto';
+import type { EstadoHistorialIron } from './useHistorialIron';
 
 /** La demostración no pasa de aquí de ancho (iPad). */
 const ANCHO_MAX = 560;
 
-export function TecnicaIron({ ejercicio: ej, onVolver }: { ejercicio: Ejercicio; onVolver: () => void }) {
+export interface TecnicaIronProps {
+  ejercicio: Ejercicio;
+  onVolver: () => void;
+  /** Lo registrado en Gimnasio. Sin él (galería), no se pinta. */
+  historial?: EstadoHistorialIron;
+}
+
+export function TecnicaIron({ ejercicio: ej, onVolver, historial }: TecnicaIronProps) {
   const [pausado, setPausado] = useState(false);
   const ancho = Math.min(useAnchoUtil(), ANCHO_MAX);
   const nombre = textoIron(ej.nombre);
@@ -51,14 +61,20 @@ export function TecnicaIron({ ejercicio: ej, onVolver }: { ejercicio: Ejercicio;
         </TarjetaArena>
       </Entrada>
 
-      <Entrada indice={2}>
+      {historial ? (
+        <Entrada indice={2}>
+          <HistorialIron estado={historial} />
+        </Entrada>
+      ) : null}
+
+      <Entrada indice={3}>
         <TarjetaArena rotulo={t('iron:demo.musculos')}>
           <FichaIron ejercicio={ej} ancho={ancho - 2 * space.s4} incrustada />
         </TarjetaArena>
       </Entrada>
 
       {ej.errores.length > 0 ? (
-        <Entrada indice={3}>
+        <Entrada indice={4}>
           <TarjetaArena rotulo={t('iron:demo.errores')}>
             {ej.errores.map((c) => (
               <Text key={c} style={styles.texto} maxFontSizeMultiplier={1.35}>

@@ -156,5 +156,24 @@
   "tecnica": {
     "eyebrow": "IRON · Technik",
     "demostracion": "Vorführung"
+  },
+  "historial": {
+    "rotulo": "Dein Verlauf",
+    "cargando": "Dein Verlauf wird geladen",
+    "vacio": "Du hast diese Übung im Gym noch nicht eingetragen. Sobald du es tust, siehst du hier deine Einheiten, deine Bestleistung und die Last für das nächste Mal.",
+    "proxima": "Nächstes Mal: {{series}} × {{reps}} mit {{kg}} kg",
+    "motivo": {
+      "subir": "Du hast in allen Sätzen {{tope}} Wiederholungen geschafft: Zeit, die Last zu erhöhen.",
+      "mantener": "Noch nicht {{tope}} in allen Sätzen: gleiche Last, eine Wiederholung mehr.",
+      "retomar": "Mehr als vier Wochen Pause: steig mit der gleichen Last wieder ein."
+    },
+    "orientativo": "Nur zur Orientierung, ohne KI: doppelte Progression auf Basis deiner Einträge. Wenn etwas schmerzt oder die Technik leidet, nicht erhöhen.",
+    "mejor": "Geschätztes 1RM",
+    "mejorDetalle": "Deine Bestleistung: {{kg}} kg × {{reps}} am {{fecha}} (Epley).",
+    "sesiones": "Einheiten",
+    "ultimas": "Letzte Einheiten",
+    "sesionA11y": "{{fecha}}: {{series}}",
+    "bloque": "{{series}} × {{reps}} × {{kg}} kg",
+    "bloqueSinPeso": "{{series}} × {{reps}}"
   }
 }
