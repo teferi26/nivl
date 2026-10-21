@@ -200,9 +200,7 @@
     "sinCarga": "Aujourd'hui, {{nombre}} : {{series}} × {{reps}}. Chaque répétition, complète.",
     "hecho": "Séance faite. Maintenant protéines et sommeil : c'est comme ça que ça rentre.",
     "descanso": "Jour de repos. Marche, mange bien et dors : demain on charge.",
-    "sinRutina": "Dis-moi tes jours et ton matériel, et je te monte le programme.",
-    "marcoA11y": "Coach IRON, en ligne",
-    "marcoSub": "Tes séries, tes charges et tes repas"
+    "sinRutina": "Dis-moi tes jours et ton matériel, et je te monte le programme."
   },
   "tecnica": {
     "titulo": "TECHNIQUE",
@@ -245,6 +243,7 @@
     "fotoLista": "Photo prête",
     "fotoA11y": "Ajouter une photo de la séance",
     "fotoListaA11y": "Photo de la séance prête. Touche pour la changer.",
-    "terminar": "Terminer la séance"
+    "terminar": "Terminer la séance",
+    "terminarCorto": "TERMINER"
   }
 }

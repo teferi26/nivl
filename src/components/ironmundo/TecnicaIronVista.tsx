@@ -156,7 +156,15 @@ export function TecnicaIronVista({ ejercicio: ej, onVolver, historial, ms }: Tec
       <TarjetaIron heroe style={styles.heroe}>
         <RotuloIron texto={t('ironmundo:catalogo.tecnica')} em={t('ironmundo:catalogo.fases', { count: 3 })} />
         <View style={styles.escena}>
-          <FiguraTecnica ejercicio={ej} alto={Math.min(px(200), 300)} ancho={ancho} ms={ms} pausado={pausado} accessibilityLabel={t('iron:demo.animacion', { nombre })} />
+          <FiguraTecnica
+            ejercicio={ej}
+            alto={Math.min(px(200), 300)}
+            ancho={Math.round(ancho * 0.58)}
+            ms={ms}
+            pausado={pausado}
+            accessibilityLabel={t('iron:demo.animacion', { nombre })}
+          />
+          <MapaMini musculos={ej.musculos} alto={px(150)} etiqueta={t('ironmundo:catalogo.mapaA11y', { nombre })} />
         </View>
         <Text style={[estilosIron.titulo, styles.nombre]} maxFontSizeMultiplier={1.35}>
           {nombre}
@@ -189,9 +197,6 @@ export function TecnicaIronVista({ ejercicio: ej, onVolver, historial, ms }: Tec
 
       <TarjetaIron>
         <RotuloIron texto={t('ironmundo:tecnica.musculos')} />
-        <View style={styles.mapa}>
-          <MapaMini musculos={ej.musculos} alto={px(170)} etiqueta={t('ironmundo:catalogo.mapaA11y', { nombre })} />
-        </View>
         <Text style={estilosIron.cuerpo} maxFontSizeMultiplier={1.6}>
           <Text style={styles.fuerte}>{`${t('ironmundo:tecnica.principales')} `}</Text>
           {ej.musculos.principales.map((m) => nombreIron('musculo', m)).join(', ')}
@@ -244,7 +249,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   heroe: { padding: px(12) },
-  escena: { alignItems: 'center', marginTop: px(6), marginBottom: px(4) },
+  escena: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: px(6), marginBottom: px(4) },
   nombre: { fontSize: fs(18) },
   pasos: { marginTop: px(8), gap: px(6) },
   paso: { flexDirection: 'row', alignItems: 'center', gap: px(7) },

@@ -200,9 +200,7 @@
     "sinCarga": "Hoy toca {{nombre}}: {{series}} × {{reps}}. Cada repetición, completa.",
     "hecho": "Sesión hecha. Ahora proteína y a dormir: así se fija lo de hoy.",
     "descanso": "Hoy descansas. Camina, come bien y duerme: mañana se carga.",
-    "sinRutina": "Dime tus días y tu material, y te monto la rutina.",
-    "marcoA11y": "Coach IRON, en línea",
-    "marcoSub": "Tus series, tus pesos y tu comida"
+    "sinRutina": "Dime tus días y tu material, y te monto la rutina."
   },
   "tecnica": {
     "titulo": "TÉCNICA",
@@ -245,6 +243,7 @@
     "fotoLista": "Foto lista",
     "fotoA11y": "Añadir una foto de la sesión",
     "fotoListaA11y": "Foto de la sesión lista. Toca para cambiarla.",
-    "terminar": "Terminar entreno"
+    "terminar": "Terminar entreno",
+    "terminarCorto": "TERMINAR"
   }
 }

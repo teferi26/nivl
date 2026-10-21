@@ -10,10 +10,13 @@
 // encima de una hoja abierta ni mientras se cierra.
 
 import { useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Campo, ErrorSistema } from '@/components/arena';
 import { Button, Chip, ChipWrap, Sheet } from '@/components/ui';
+import { vibrar } from '@/design/haptics';
+import { usePiel, type Piel } from '@/design/piel';
 import { ink, space, type as tipo } from '@/design/tokens';
+import { nombreDia as letraDia } from '@/i18n/formato';
 import { t } from '@/i18n';
 import type { GymDay, GymExercise } from '@/lib/types';
 import { CatalogoIron } from './CatalogoIron';
@@ -21,6 +24,42 @@ import { nombreDiaIso } from './RutinaSemanal';
 
 /** Los siete días ISO (1 lunes … 7 domingo). */
 const DIAS_ISO = [1, 2, 3, 4, 5, 6, 7];
+
+/**
+ * Con la piel de un mundo (IRON): los siete días en una línea, en círculos
+ * L M X J V S D (el mismo dibujo que «Tu semana» de Entreno).
+ */
+function DiasEnCirculos({ piel, dia, onDia }: { piel: Piel; dia: number; onDia: (d: number) => void }) {
+  return (
+    <View style={styles.circulos}>
+      {DIAS_ISO.map((d) => {
+        const elegido = d === dia;
+        return (
+          <Pressable
+            key={d}
+            onPress={() => {
+              if (!elegido) vibrar('seleccion');
+              onDia(d);
+            }}
+            hitSlop={4}
+            accessibilityRole="radio"
+            accessibilityState={{ selected: elegido }}
+            accessibilityLabel={nombreDiaIso(d)}
+            style={[
+              styles.circulo,
+              { borderColor: piel.borde, backgroundColor: piel.tarjeta },
+              elegido && { borderColor: piel.acento, backgroundColor: piel.acento },
+            ]}
+          >
+            <Text style={[styles.circuloLetra, elegido && { color: piel.sobreAcento }]} maxFontSizeMultiplier={1}>
+              {letraDia(d - 1, 'letra')}
+            </Text>
+          </Pressable>
+        );
+      })}
+    </View>
+  );
+}
 
 export interface HojaDiaProps {
   visible: boolean;
@@ -36,6 +75,7 @@ export interface HojaDiaProps {
 }
 
 export function HojaDia({ visible, diaSemana, nombre, guardando, error, onDiaSemana, onNombre, onGuardar, onCerrar }: HojaDiaProps) {
+  const piel = usePiel();
   return (
     <Sheet
       visible={visible}
@@ -55,6 +95,9 @@ export function HojaDia({ visible, diaSemana, nombre, guardando, error, onDiaSem
             {t('gym:hojaDia.dia')}
           </Text>
           <View accessibilityRole="radiogroup" accessibilityLabel={t('gym:hojaDia.diaA11y')}>
+            {piel ? (
+              <DiasEnCirculos piel={piel} dia={diaSemana} onDia={onDiaSemana} />
+            ) : (
             <ChipWrap>
               {DIAS_ISO.map((d) => {
                 const nombreDia = nombreDiaIso(d);
@@ -69,6 +112,7 @@ export function HojaDia({ visible, diaSemana, nombre, guardando, error, onDiaSem
                 );
               })}
             </ChipWrap>
+            )}
           </View>
         </View>
         <Campo
@@ -128,6 +172,9 @@ export function HojaEjercicio({
   onCerrar,
   catalogo = false,
 }: HojaEjercicioProps) {
+  // Con la piel de un mundo, el día con su nombre corto («Pierna A · Fuerza» → «Pierna A»): el rótulo cabe en una línea.
+  const piel = usePiel();
+  const nombreDiaHoja = dia ? (piel ? dia.name.split(' · ')[0]!.trim() || dia.name : dia.name) : '';
   // El catálogo se pliega al cerrar la hoja: la próxima vez empieza cerrado.
   const [abierto, setAbierto] = useState(false);
   const [visibleAntes, setVisibleAntes] = useState(visible);
@@ -141,7 +188,7 @@ export function HojaEjercicio({
       onClose={onCerrar}
       eyebrow={
         dia
-          ? t(editando ? 'gym:hojaEjercicio.eyebrowEditarDia' : 'gym:hojaEjercicio.eyebrowNuevoDia', { dia: dia.name })
+          ? t(editando ? 'gym:hojaEjercicio.eyebrowEditarDia' : 'gym:hojaEjercicio.eyebrowNuevoDia', { dia: nombreDiaHoja })
           : t(editando ? 'gym:hojaEjercicio.eyebrowEditar' : 'gym:hojaEjercicio.eyebrowNuevo')
       }
       title={editando ? editando.name : t('gym:hojaEjercicio.tituloNuevo')}
@@ -223,6 +270,9 @@ export function HojaEjercicio({
 }
 
 const styles = StyleSheet.create({
+  circulos: { flexDirection: 'row', justifyContent: 'space-between' },
+  circulo: { width: 38, height: 38, borderRadius: 19, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
+  circuloLetra: { fontFamily: tipo.label.family, fontSize: 13, color: ink.ink9 },
   pila: { gap: space.s5 },
   grupo: { gap: space.s2 },
   etiqueta: {

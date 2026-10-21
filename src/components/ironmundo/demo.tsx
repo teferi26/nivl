@@ -573,7 +573,7 @@ export const DEMO: DemoPantalla = {
       titulo: 'Sin consentimiento de salud',
       render: () => (
         <ConBarra activa={0}>
-          <PuertaSaludIron cargando={false} error={null} borradoPendiente={false} onVolver={nada} onRevisar={nada} onReintentar={nada} onPerfil={nada} />
+          <PuertaSaludIron cabecera={cabecera} cargando={false} error={null} borradoPendiente={false} onVolver={nada} onRevisar={nada} onReintentar={nada} onPerfil={nada} />
         </ConBarra>
       ),
     },

@@ -440,7 +440,7 @@ const styles = StyleSheet.create({
   transparente: { backgroundColor: 'transparent' },
   // Abajo, aire para que lo último (el coach) quepa entero sobre la barra.
   cuerpo: { paddingHorizontal: M.margen, paddingTop: px(2), paddingBottom: px(24), gap: M.hueco },
-  centrado: { flexGrow: 1, justifyContent: 'center' },
+  centrado: { flexGrow: 1 },
   tarjeta: {
     backgroundColor: C.tarjeta,
     borderWidth: 1,
