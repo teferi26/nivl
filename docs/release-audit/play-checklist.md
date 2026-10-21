@@ -86,7 +86,7 @@ Se basa **solo en lo que hace el cliente**. La retención, los proveedores y las
 | Información financiera → Otra información financiera | Sí | `src/lib/money.ts:92,102,178` (`transactions`, `money_accounts`), presupuestos | Sí | Funcionalidad | No se recogen números de tarjeta |
 | Información financiera → Historial de compras | Sí | `src/lib/pro.ts:126,132` (RevenueCat `appUserID` = uuid de Supabase), tabla `subscriptions` | No (si compra) | Funcionalidad, gestión de cuenta | RevenueCat actúa como proveedor de servicios |
 | Fotos y vídeos → Fotos | Sí | `src/lib/data.ts:196-226` (`avatars`), `src/lib/photos.ts:40,53` (`evidence`), `src/lib/contract.ts:211` | Sí | Funcionalidad, coach IA (si el usuario las envía) | Las imágenes enviadas al coach van al proveedor de IA (`app.json` `photosPermission`) |
-| Mensajes → Otros mensajes en la app | Sí | `src/lib/coach.ts:279-348` (`coach_messages`) | Sí (función Pro) | Funcionalidad (coach IA) | **Pendiente Chat 3**: proveedor (Anthropic / DeepSeek / compatible con OpenAI, `supabase/functions/coach/index.ts:28-30`) y región. La privacidad web menciona tratamiento en China con DeepSeek |
+| Mensajes → Otros mensajes en la app | Sí | `src/lib/coach.ts:279-348` (`coach_messages`) | Sí (función Pro) | Funcionalidad (coach IA) | Proveedor: Anthropic (desde el 12/10/2026 ya no se usa DeepSeek) |
 | Contenido generado por el usuario / otros | Sí | `src/lib/journal.ts:25-77` (diario), misiones, contrato, calendario (`dungeons.ts:103`) | Sí | Funcionalidad | — |
 | Actividad en la app → Interacciones | Sí | misiones, logros, XP (`quests`, `achievements`) | No | Funcionalidad | No hay analítica de terceros: no aparece Sentry/Firebase Analytics/PostHog en `src/` (búsqueda del 02/10/2026) |
 | Identificadores del dispositivo u otros | Sí | `src/lib/push.ts:37-44` (`push_tokens` con token Expo) | Sí (depende del permiso) | Funcionalidad (push) | — |
@@ -95,7 +95,7 @@ Se basa **solo en lo que hace el cliente**. La retención, los proveedores y las
 
 - Cifrado en tránsito: **Sí** (HTTPS a Supabase, RevenueCat e IA). PASS.
 - El usuario puede pedir el borrado: **Sí** (§5.2).
-- «Compartir con terceros»: los proveedores que tratan datos por cuenta de NIVL (Supabase, RevenueCat, proveedor de IA) suelen quedar fuera de «compartir» según Google, pero hay que **decidirlo con el Chat 3 y la revisión legal**, sobre todo en lo relativo a DeepSeek y Franky. Estado: **NO PROBADO / pendiente del Chat 3**.
+- «Compartir con terceros»: los proveedores que tratan datos por cuenta de NIVL (Supabase, RevenueCat, proveedor de IA) suelen quedar fuera de «compartir» según Google, pero hay que **decidirlo con el Chat 3 y la revisión legal**. Actualizado el 21/10/2026: los proveedores son Supabase, RevenueCat, Anthropic, Resend, Expo y Google, todos encargados; DeepSeek y Franky ya no reciben datos.
 - Coherencia: este borrador debe cuadrar con la etiqueta de privacidad de Apple ya publicada (`privado/appstore-privacidad.md`) y con `/privacidad`. · Chat 3
 
 ### 5.2 Borrado de cuenta

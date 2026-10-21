@@ -1,5 +1,7 @@
 # Declaraciones finales: App Privacy (Apple) y Data Safety (Google Play)
 
+> **Actualización del 21/10/2026:** DeepSeek no recibe datos desde el 12/10. El coach de Pro y la prueba van con Anthropic (Claude Haiku). En Data Safety, los proveedores son Supabase, RevenueCat, Anthropic, Resend, Expo y Google. Para la 1.0.11, ver `coordinacion-winter-arc/FICHA-1011.md` §5.
+
 **Para el coordinador.** La declaración la aplica el coordinador con el usuario en App Store Connect y en Play Console. Chat 1 no la ha cambiado. Se basa en la build **1.0.7 (21)**, SHA `c87df0d`: Supabase Auth propio, sin Franky, y paywall final. Si cambia el código o se añade algún SDK, proveedor o evento de medición, este documento se reabre.
 
 ## Fuentes de los hechos (02/10/2026)
@@ -57,7 +59,7 @@ Respuestas generales:
 - ¿Están cifrados en tránsito? **Sí** (HTTPS/TLS con Supabase, RevenueCat y los proveedores de IA).
 - ¿Se puede pedir el borrado? **Sí**: en la app (Perfil > Cuenta > «Eliminar cuenta») y en la URL web https://nivl-web.vercel.app/borrar-cuenta (200, verificada el 02/10).
 - ¿Usa el ID de publicidad? **No** (PROPUESTA en app.json: bloquear `com.google.android.gms.permission.AD_ID`).
-- **Compartir:** los proveedores que tratan datos por cuenta de NIVL (Supabase, RevenueCat, DeepSeek, Anthropic y Expo push) son **encargados del tratamiento**, y según la definición de Google eso no es «compartir». Se declara **no compartido**, con la condición de que el usuario confirme que existen los contratos de encargado con DeepSeek y Anthropic (sus condiciones de API). Si no es así, se declaran como compartidos para la funcionalidad de la app.
+- **Compartir:** los proveedores que tratan datos por cuenta de NIVL (Supabase, RevenueCat, Anthropic, Resend, Expo push y Google) son **encargados del tratamiento**, y según la definición de Google eso no es «compartir». Se declara **no compartido**, con la condición de que el usuario confirme que existen el contrato de encargado con Anthropic (sus condiciones de API). Si no es así, se declaran como compartidos para la funcionalidad de la app.
 
 | Categoría de Data Safety | Tipo | Recogido | Obligatorio u opcional | Finalidades |
 |---|---|---|---|---|
@@ -80,5 +82,5 @@ Respuestas generales:
 
 - [ ] El coordinador compara con lo publicado y aplica el apartado 1 en ASC (Privacidad de la app), con captura de evidencia en `privado/`.
 - [ ] Se despliegan desde `c87df0d` el borrado del cliente de RevenueCat y la seudonimización de `store_events`. La declaración de Apple no cambia por esto, pero la política y la respuesta lo describen.
-- [ ] El usuario confirma la condición de encargados de DeepSeek y Anthropic, para el «compartir» de Data Safety.
+- [ ] El usuario confirma la condición de encargado de Anthropic, para el «compartir» de Data Safety.
 - [ ] Data Safety: se aplica cuando exista la app en Play Console y estén la URL web de borrado y la decisión sobre FCM.
