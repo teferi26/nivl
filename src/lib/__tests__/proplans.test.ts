@@ -362,3 +362,14 @@ describe('Prueba de Élite: periodo gratis de la oferta de la tienda', () => {
     expect(periodoIntroGratis(null)).toBeNull();
   });
 });
+
+describe('una sola prueba (1.0.11)', () => {
+  it('con la prueba automática de Élite encendida, la de 7 días no se ofrece', () => {
+    expect(P.pruebaSieteDiasVisible(true, true)).toBe(false);
+  });
+  it('con ella apagada, todo como siempre', () => {
+    expect(P.pruebaSieteDiasVisible(true, false)).toBe(true);
+    expect(P.pruebaSieteDiasVisible(false, false)).toBe(false);
+    expect(P.pruebaSieteDiasVisible(undefined, false)).toBe(false);
+  });
+});

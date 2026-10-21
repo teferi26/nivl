@@ -403,6 +403,15 @@ export function textoPrueba(tier: OfferTier): string {
   return 'Siete días con el coach estándar y energía limitada, gratis y una sola vez por cuenta. No se renueva sola: al acabar no se cobra nada y tus hábitos y tu progreso siguen disponibles gratis.';
 }
 
+/**
+ * UNA SOLA PRUEBA (1.0.11): con la prueba automática de Élite encendida
+ * (`prueba_auto_activa`, clave `prueba_auto_1011`), la de 7 días del coach
+ * (`start_trial`) no se ofrece en ninguna parte. Apagada, todo como siempre.
+ */
+export function pruebaSieteDiasVisible(trialAvailable: boolean | null | undefined, pruebaAutoActiva: boolean): boolean {
+  return !!trialAvailable && !pruebaAutoActiva;
+}
+
 /** La línea de la cabecera de /pro cuando la cuenta puede empezar la prueba. */
 export const LINEA_PRUEBA = 'Prueba el coach 7 días: gratis y sin renovación.';
 

@@ -40,6 +40,8 @@ import { Button, Card, Chip, Skeleton, Tag } from '@/components/ui';
 import { ink, type as tipo } from '@/design/tokens';
 import { registrar } from '@/lib/analitica';
 import { insertEvent } from '@/lib/data';
+import { useFlagsLeidos } from '@/lib/flagsEstado';
+import { pruebaSieteDiasVisible } from '@/lib/proplans';
 import {
   COACH_USAGE_NOTICE,
   DEFAULT_TIER,
@@ -178,7 +180,9 @@ export function useProOffer({ userId, onPurchased, trialAvailable, onTrialStarte
   const puedeComprar = disponible && catalogo === 'listo' && seleccionado !== null;
   /** Productos que la tienda no ha devuelto (sin contar el fundador agotado). */
   const faltan = disponible && catalogo === 'listo' ? TIERS.flatMap((t) => planesALaVenta(t.id, plazas)).length - planes.length : 0;
-  const prueba = !!trialAvailable && !pruebaUsada;
+  // Una sola prueba: con la automática de Élite encendida, la de 7 días no se ofrece.
+  const { prueba_auto_activa: pruebaAutoActiva } = useFlagsLeidos();
+  const prueba = pruebaSieteDiasVisible(trialAvailable, pruebaAutoActiva) && !pruebaUsada;
 
   const reintentarPrecios = () => {
     if (lock.current) return;

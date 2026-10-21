@@ -6,6 +6,7 @@
 // las pruebas de coach. La lectura, la caché del teléfono y el refresco son de
 // flags.ts, que es quien llama a `fijarFlags`.
 
+import { useSyncExternalStore } from 'react';
 import { FLAGS_APAGADOS, mismosFlags, type Flags } from './flagsmath';
 
 let actuales: Flags = FLAGS_APAGADOS;
@@ -38,6 +39,15 @@ export type FlagBooleano = { [K in keyof Flags]: Flags[K] extends boolean ? K : 
  */
 export function flagActivo(k: FlagBooleano): boolean {
   return actuales[k] === true;
+}
+
+/**
+ * Lo que se sabe de los interruptores, como hook y SIN arrancar la lectura
+ * (eso lo hace `useFlags()` de flags.ts en el layout raíz). Para piezas que no
+ * deben arrastrar AsyncStorage ni Supabase a sus pruebas (ProOffer).
+ */
+export function useFlagsLeidos(): Flags {
+  return useSyncExternalStore(escucharFlags, flagsActuales, flagsActuales);
 }
 
 export function escucharFlags(fn: () => void): () => void {

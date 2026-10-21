@@ -50,6 +50,8 @@ import {
 } from '@/lib/pro';
 import { fetchSubscription } from '@/lib/subscription';
 import { ink, space, type as tipo } from '@/design/tokens';
+import { useFlagsLeidos } from '@/lib/flagsEstado';
+import { pruebaSieteDiasVisible } from '@/lib/proplans';
 import { mensajeSistema } from '@/lib/validation';
 
 /** "jueves, 1 de octubre" a partir de una clave o de un ISO completo. */
@@ -64,6 +66,7 @@ export default function Pro() {
   const motivo = esMomento(params.motivo) ? params.motivo : null;
   const tierParam: OfferTier | undefined = params.tier === 'elite' || params.tier === 'pro' ? params.tier : undefined;
   const { session } = useAuth();
+  const { prueba_auto_activa: pruebaAutoActiva } = useFlagsLeidos();
   const userId = session?.user.id;
   const [status, setStatus] = useState<AiStatus | null>(null);
   const [kind, setKind] = useState<unknown>('general');
@@ -243,7 +246,7 @@ export default function Pro() {
                   title="Plan"
                   trailing={
                     // RowValue por defecto pinta en ink6 y en Cinzel: el plan es el dato fuerte, en ink9.
-                    <Text style={styles.planValor}>{prueba ? 'Prueba de 7 días' : planLabel(status?.plan ?? null)}</Text>
+                    <Text style={styles.planValor}>{prueba ? (status?.plan === 'prueba_auto' ? 'Prueba de Élite' : 'Prueba de 7 días') : planLabel(status?.plan ?? null)}</Text>
                   }
                 />
                 {renueva ? (
@@ -344,7 +347,7 @@ export default function Pro() {
   // Con motivo, la cabecera es la del momento; sin él, la de siempre. La prueba
   // se anuncia arriba solo si la cuenta puede empezarla.
   const cabecera = motivo ? copyUpsell(motivo, tierParam ?? 'pro') : null;
-  const conPrueba = status?.trialAvailable ? ` ${LINEA_PRUEBA}` : '';
+  const conPrueba = pruebaSieteDiasVisible(status?.trialAvailable, pruebaAutoActiva) ? ` ${LINEA_PRUEBA}` : '';
   return (
     <Screen refreshing={refreshing} onRefresh={refrescar}>
       <>
