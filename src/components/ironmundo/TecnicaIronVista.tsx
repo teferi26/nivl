@@ -12,7 +12,6 @@ import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { DescargoSalud } from '@/components/DescargoSalud';
 import { kgTexto, proximaTexto, seriesTexto } from '@/components/iron/HistorialIron';
-import { Maniqui } from '@/components/iron/Maniqui';
 import { nombreIron, textoIron } from '@/components/iron/texto';
 import type { EstadoHistorialIron } from '@/components/iron/useHistorialIron';
 import { useAnchoUtil } from '@/design/useSizeClass';
@@ -21,9 +20,11 @@ import { fechaCorta } from '@/i18n/formato';
 import { bloques } from '@/iron/historial';
 import type { Ejercicio } from '@/iron/tipos';
 import { metaEjercicio } from './CatalogoIronVista';
+import { FiguraTecnica } from './FiguraTecnica';
 import { GlifoIron } from './Glifos';
 import { MapaMini } from './MapaMini';
-import { BotonIron, estilosIron, FilaIron, HuecoIron, LineaAncha, PantallaIron, RotuloIron, TarjetaIron } from './piezas';
+import { TarjetaHueco } from './Esqueletos';
+import { BotonIron, estilosIron, FilaIron, LineaAncha, PantallaIron, RotuloIron, TarjetaIron } from './piezas';
 import { A, C, F, fs, M, mezcla, px } from './tema';
 
 /** La demostración no pasa de aquí de ancho (iPad). */
@@ -42,7 +43,7 @@ function Historial({ estado }: { estado: EstadoHistorialIron }) {
   if (estado.estado === 'cargando') {
     return (
       <View accessibilityRole="progressbar" accessibilityLabel={t('iron:historial.cargando')}>
-        <HuecoIron alto={px(180)} />
+        <TarjetaHueco lineas={5} />
       </View>
     );
   }
@@ -153,9 +154,9 @@ export function TecnicaIronVista({ ejercicio: ej, onVolver, historial, ms }: Tec
       </View>
 
       <TarjetaIron heroe style={styles.heroe}>
-        <RotuloIron texto={t('ironmundo:catalogo.tecnica')} em={t('ironmundo:catalogo.fases', { count: ej.poses.length })} />
+        <RotuloIron texto={t('ironmundo:catalogo.tecnica')} em={t('ironmundo:catalogo.fases', { count: 3 })} />
         <View style={styles.escena}>
-          <Maniqui ejercicio={ej} ancho={Math.round(ancho * 0.78)} ms={ms} pausado={pausado} accessibilityLabel={t('iron:demo.animacion', { nombre })} />
+          <FiguraTecnica ejercicio={ej} alto={Math.min(px(200), 300)} ancho={ancho} ms={ms} pausado={pausado} accessibilityLabel={t('iron:demo.animacion', { nombre })} />
         </View>
         <Text style={[estilosIron.titulo, styles.nombre]} maxFontSizeMultiplier={1.35}>
           {nombre}
@@ -163,6 +164,13 @@ export function TecnicaIronVista({ ejercicio: ej, onVolver, historial, ms }: Tec
         <Text style={estilosIron.meta} maxFontSizeMultiplier={1.35}>
           {metaEjercicio(ej)}
         </Text>
+        <BotonIron fantasma fino titulo={pausado ? t('iron:demo.seguir') : t('iron:demo.pausar')} onPress={() => setPausado((p) => !p)} />
+      </TarjetaIron>
+
+      {historial ? <Historial estado={historial} /> : null}
+
+      <TarjetaIron>
+        <RotuloIron texto={t('ironmundo:tecnica.comoSeHace')} />
         <View style={styles.pasos}>
           {ej.cues.map((c, i) => (
             <View key={c} style={styles.paso}>
@@ -177,10 +185,7 @@ export function TecnicaIronVista({ ejercicio: ej, onVolver, historial, ms }: Tec
             </View>
           ))}
         </View>
-        <BotonIron fantasma fino titulo={pausado ? t('iron:demo.seguir') : t('iron:demo.pausar')} onPress={() => setPausado((p) => !p)} />
       </TarjetaIron>
-
-      {historial ? <Historial estado={historial} /> : null}
 
       <TarjetaIron>
         <RotuloIron texto={t('ironmundo:tecnica.musculos')} />

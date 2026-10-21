@@ -17,6 +17,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { forwardRef, useState } from 'react';
 import { Platform, StyleSheet, Text, TextInput, View, type StyleProp, type TextInputProps, type ViewStyle } from 'react-native';
 import { useAnunciar } from '@/components/ui/useAnunciar';
+import { usePiel } from '@/design/piel';
 import { ink, space, stroke, type as tipo } from '@/design/tokens';
 
 export type CampoProps = {
@@ -40,6 +41,8 @@ export const Campo = forwardRef<TextInput, CampoProps>(function Campo(
   ref,
 ) {
   const [foco, setFoco] = useState(false);
+  // La piel de un mundo (IRON): radio, superficie y el foco en el acento.
+  const piel = usePiel();
   // En iOS la región viva no habla: el error se anuncia a mano.
   useAnunciar(error);
   const rank = grande === 'rank';
@@ -82,6 +85,11 @@ export const Campo = forwardRef<TextInput, CampoProps>(function Campo(
             paddingVertical: PAD_V - ajuste,
           },
           foco ? styles.foco : conError ? styles.conError : null,
+          piel && [
+            { borderRadius: piel.radio, backgroundColor: piel.campo, borderColor: piel.borde },
+            foco && { borderColor: piel.acento },
+            conError && !foco && styles.conError,
+          ],
           !editable && styles.apagado,
           style,
         ]}

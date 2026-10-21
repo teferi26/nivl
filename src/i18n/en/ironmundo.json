@@ -7,7 +7,7 @@
   "sinDato": "-",
   "xp": "+{{xp}} XP",
   "hastaXp": "up to +{{xp}} XP",
-  "pct": "{{pct}} %",
+  "pct": "{{pct}}%",
   "verTodo": "See all",
   "reintentar": "Retry",
   "cerrar": "Close",
@@ -68,7 +68,7 @@
     "nuevaA11y": "Create a new day in the routine",
     "nuevoDia": "+ New day",
     "nuevoDiaA11y": "Add a day to the routine",
-    "ejercicio": "Exercise",
+    "ejercicio": "+ Exercise",
     "ejercicioA11y": "{{nombre}}: {{series}} sets of {{reps}}, {{kg}}. Tap to edit.",
     "borrarEjercicio": "Delete the exercise",
     "borrarDiaA11y": "Delete the day {{dia}}",
@@ -94,7 +94,13 @@
     "resultados_one": "{{count}} result",
     "resultados_other": "{{count}} results",
     "sinResultados": "Nothing by that name. Try the muscle or the equipment.",
-    "filaA11y": "{{nombre}}, {{meta}}. Tap to see its technique."
+    "filaA11y": "{{nombre}}, {{meta}}. Tap to see its technique.",
+    "fase": {
+      "sube": "Up",
+      "baja": "Down",
+      "fondo": "Bottom"
+    },
+    "faseA11y": "Phase: {{fase}}"
   },
   "dieta": {
     "rotulo": "Today's diet",
@@ -104,12 +110,10 @@
     "abrir": "Open it to see your calories and macros.",
     "proteina": "Protein",
     "agua": "Water",
-    "parte": "Log",
     "g": "{{g}} g",
     "deG": "{{g}} / {{total}} g",
-    "deL": "{{l}} / {{total}} l",
+    "deL": "{{l}} / {{total}} L",
     "deKcal": "of {{total}}",
-    "deParte": "{{n}} / 2",
     "objetivo": "Coach's target: {{kcal}} kcal and {{proteina}} g of protein.",
     "sinObjetivo": "No calorie target yet. The coach works it out from your profile.",
     "pedirObjetivo": "Ask the coach for a target",
@@ -154,7 +158,7 @@
     "placeholder": "78.4",
     "campoA11y": "Your weight today in kilos",
     "pesar": "Weigh in +{{xp}} XP",
-    "corregir": "Correct",
+    "corregir": "Correct weight",
     "privado": "Health data: only you and the coach see it. Delete it whenever you want in Profile."
   },
   "cardio": {
@@ -169,8 +173,8 @@
     "haceSemanas_one": "-{{count}} wk",
     "haceSemanas_other": "-{{count}} wk",
     "semanasA11y": "Minutes per week, from the oldest to this one: {{minutos}}",
-    "estimacion": "Calories estimated with your last weight ({{kg}} kg). A guide, not a measurement.",
-    "estimacionReferencia": "Calories estimated with a 70 kg reference: weigh in under Diet to refine them.",
+    "estimacion": "Kcal estimated with your weight ({{kg}} kg).",
+    "estimacionReferencia": "Kcal estimated with a 70 kg reference.",
     "registrar": "Log cardio",
     "anuncio": "Session logged",
     "lista": "Sessions",
@@ -183,7 +187,8 @@
     "borrar": "Delete the session",
     "cargandoA11y": "Loading cardio",
     "velocidad": "{{kmh}} km/h",
-    "ritmo100": "{{ritmo}} /100 m"
+    "ritmo100": "{{ritmo}} /100 m",
+    "minPorSemana": "Minutes per week"
   },
   "coach": {
     "rotulo": "Coach IRON",
@@ -195,7 +200,9 @@
     "sinCarga": "Today it is {{nombre}}: {{series}} × {{reps}}. Every rep, full range.",
     "hecho": "Session done. Now protein and sleep: that is how today sticks.",
     "descanso": "Rest day. Walk, eat well and sleep: tomorrow you load.",
-    "sinRutina": "Tell me your days and your equipment, and I will build your routine."
+    "sinRutina": "Tell me your days and your equipment, and I will build your routine.",
+    "marcoA11y": "Coach IRON, online",
+    "marcoSub": "Your sets, your lifts and your food"
   },
   "tecnica": {
     "titulo": "TECHNIQUE",
@@ -203,7 +210,8 @@
     "musculos": "Muscles worked",
     "principales": "Main:",
     "secundarios": "Secondary:",
-    "errores": "Common mistakes"
+    "errores": "Common mistakes",
+    "comoSeHace": "How to do it"
   },
   "salud": {
     "rotulo": "Health data",
@@ -214,5 +222,29 @@
     "dieta": "Your diet, your macros and your water",
     "nota": "Without your permission, IRON does not store or show any of this."
   },
-  "par": "{{a}}: {{b}}"
+  "par": "{{a}}: {{b}}",
+  "sesion": {
+    "enCurso": "In progress · {{reloj}}",
+    "libre": "Free workout",
+    "meta_one": "{{count}} exercise · {{hechas}} of {{total}} sets",
+    "meta_other": "{{count}} exercises · {{hechas}} of {{total}} sets",
+    "tecnica": "Technique",
+    "tecnicaA11y": "See the technique for {{ejercicio}}",
+    "serie": "+ SET",
+    "anadirSerieA11y": "Add a set to {{ejercicio}}",
+    "reps": "Reps",
+    "rpe": "RPE",
+    "pesoA11y": "Kilos for set {{n}} of {{ejercicio}}",
+    "repsA11y": "Reps for set {{n}} of {{ejercicio}}",
+    "rpeA11y": "Effort (RPE) for set {{n}} of {{ejercicio}}",
+    "quitarA11y": "Remove set {{n}} of {{ejercicio}}",
+    "comoFue": "How it went",
+    "notas": "How it felt, any niggles, anything to note",
+    "notasA11y": "Workout notes",
+    "foto": "+ Session photo",
+    "fotoLista": "Photo ready",
+    "fotoA11y": "Add a photo of the session",
+    "fotoListaA11y": "Session photo ready. Tap to change it.",
+    "terminar": "Finish workout"
+  }
 }

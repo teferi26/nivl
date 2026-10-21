@@ -3,6 +3,7 @@
 // DietaIronVista), con la hoja de la comida de Dieta y el aviso de lo pagado.
 // Datos de salud: guarda `nutricion` (sin consentimiento, la puerta que lo pide).
 import { HojaComida } from '@/components/dieta/HojaComida';
+import { PielIron } from '@/components/ironmundo/piel';
 import { GuardaSaludIron } from '@/components/ironmundo/SaludIron';
 import { DietaIronVista } from '@/components/ironmundo/DietaIronVista';
 import { useDietaIron } from '@/components/ironmundo/useDietaIron';
@@ -12,9 +13,11 @@ import { Toast } from '@/components/ui';
 
 export default function IronDieta() {
   return (
-    <GuardaSaludIron routeName="nutricion">
-      <Contenido />
-    </GuardaSaludIron>
+    <PielIron>
+      <GuardaSaludIron routeName="nutricion">
+        <Contenido />
+      </GuardaSaludIron>
+    </PielIron>
   );
 }
 

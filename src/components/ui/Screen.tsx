@@ -21,6 +21,7 @@ import {
   type ViewStyle,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { usePiel } from '@/design/piel';
 import { ink, space, stroke, type as tipo } from '@/design/tokens';
 import { ANCHO_ASIDE, cabeAside, marcoDe } from '@/design/responsive';
 import { useAnchoUtil } from '@/design/useSizeClass';
@@ -88,6 +89,8 @@ export function Screen({ plain, wide, refreshing, onRefresh, style, contentStyle
   // El ancho útil es el hueco real (dentro de las pestañas, la ventana menos el
   // raíl o la barra lateral: lo publica (tabs)/_layout.tsx en TopeAncho).
   const ancho = useAnchoUtil();
+  // La piel de un mundo: su fondo va detrás y, si pone su cabecera arriba, sin margen seguro superior.
+  const piel = usePiel();
   const marco = marcoDe(ancho);
   const conAside = aside != null && cabeAside(ancho);
   // Si había panel pero no cabe, el contenido usa el margen medio de 32.
@@ -121,7 +124,10 @@ export function Screen({ plain, wide, refreshing, onRefresh, style, contentStyle
   return (
     // Arriba y a los lados: en horizontal la isla o el notch quedan a un lado.
     // Junto al raíl o la barra lateral el inset izquierdo ya es 0.
-    <SafeAreaView style={[styles.screen, style]} edges={['top', 'left', 'right']}>
+    <SafeAreaView
+      style={[styles.screen, piel?.pantallaTransparente && styles.transparente, style]}
+      edges={piel?.cubreArriba ? ['left', 'right'] : ['top', 'left', 'right']}
+    >
       {conAside ? (
         <View style={styles.fila}>
           <View style={styles.flex}>{cuerpo}</View>
@@ -228,6 +234,7 @@ export function Eyebrow({ children, tone = 'dim', style }: { children: ReactNode
 }
 
 const styles = StyleSheet.create({
+  transparente: { backgroundColor: 'transparent' },
   screen: { flex: 1, backgroundColor: colors.bg },
   flex: { flex: 1 },
   fila: { flex: 1, flexDirection: 'row' },

@@ -22,6 +22,7 @@ import { MEAL_SLOTS } from '@/lib/body';
 import type { NutritionLog, NutritionTarget } from '@/lib/bodywork';
 import type { MealSlot, MealSlotName } from '@/lib/types';
 import { resumenPeso, vasosDe, VASOS_OBJETIVO, type Pesaje } from './calculos';
+import { TarjetaHueco } from './Esqueletos';
 import { GlifoIron } from './Glifos';
 import {
   AnilloIron,
@@ -30,7 +31,6 @@ import {
   ChipIron,
   estilosIron,
   FilaIron,
-  HuecoIron,
   LineaAncha,
   PantallaIron,
   RotuloIron,
@@ -117,7 +117,7 @@ function Heroe({ fecha, parte, agua }: { fecha: string; parte: ParteIronProps; a
   if (!parte.cargado) {
     return (
       <View accessibilityRole="progressbar" accessibilityLabel={t('ironmundo:dieta.cargandoA11y')}>
-        <HuecoIron alto={px(170)} />
+        <TarjetaHueco heroe lineas={4} alto={px(170)} />
       </View>
     );
   }
@@ -135,11 +135,6 @@ function Heroe({ fecha, parte, agua }: { fecha: string; parte: ParteIronProps; a
       nombre: t('ironmundo:dieta.agua'),
       valor: t('ironmundo:dieta.deL', { l: litros(agua.ml), total: litros(agua.objetivoMl) }),
       r: agua.objetivoMl ? agua.ml / agua.objetivoMl : 0,
-    },
-    {
-      nombre: t('ironmundo:dieta.parte'),
-      valor: t('ironmundo:dieta.deParte', { n: (parte.kcal ? 1 : 0) + (parte.prote ? 1 : 0) }),
-      r: ((parte.kcal ? 1 : 0) + (parte.prote ? 1 : 0)) / 2,
     },
   ];
   return (
@@ -185,6 +180,7 @@ function Marca({ hecho, texto, onPress }: { hecho: boolean; texto: string; onPre
   return (
     <Pressable
       onPress={onPress}
+      hitSlop={8}
       accessibilityRole="checkbox"
       accessibilityState={{ checked: hecho }}
       accessibilityLabel={texto}
@@ -295,7 +291,7 @@ function Comidas({ c }: { c: ComidasIronProps }) {
     <View>
       <RotuloIron seccion texto={t('ironmundo:comidas.rotulo')} em={t('ironmundo:comidas.compra')} onEm={c.acciones.onCompra} />
       {!c.cargado ? (
-        <HuecoIron alto={px(150)} />
+        <TarjetaHueco lineas={4} />
       ) : c.errorCarga ? (
         <TarjetaIron>
           <Text style={estilosIron.cuerpo} maxFontSizeMultiplier={1.6}>
@@ -351,7 +347,7 @@ function Peso({ p }: { p: PesoIronProps }) {
     <View>
       <RotuloIron seccion texto={t('ironmundo:peso.rotulo')} em={r.fecha ? t('ironmundo:peso.ultimo', { fecha: r.fecha.slice(8, 10) + '/' + r.fecha.slice(5, 7) }) : undefined} />
       {!p.cargado ? (
-        <HuecoIron alto={px(190)} />
+        <TarjetaHueco lineas={5} />
       ) : (
         <TarjetaIron>
           <View style={styles.pesoCabeza}>
@@ -393,7 +389,7 @@ function Peso({ p }: { p: PesoIronProps }) {
               titulo={p.pesadoHoy ? t('ironmundo:peso.corregir') : t('ironmundo:peso.pesar', { xp: p.xpPesaje })}
               onPress={p.onPesar}
               ocupado={p.pesando}
-              style={styles.botonPesar}
+              fantasma={p.pesadoHoy}
             />
           </View>
           {p.error ? (
@@ -434,8 +430,8 @@ const styles = StyleSheet.create({
   macroValor: { fontFamily: F.b, fontSize: fs(9.5), color: C.blanco },
   macroBarra: { marginTop: px(3) },
   objetivo: { marginTop: px(4) },
-  marcas: { marginTop: px(6), gap: px(2) },
-  marca: { flexDirection: 'row', alignItems: 'center', gap: px(10), minHeight: 44 },
+  marcas: { marginTop: px(8), gap: px(12) },
+  marca: { flexDirection: 'row', alignItems: 'center', gap: px(10), minHeight: px(22) },
   caja: {
     width: px(20),
     height: px(20),
@@ -448,7 +444,7 @@ const styles = StyleSheet.create({
   cajaHecha: { backgroundColor: A, borderColor: A },
   notas: {
     marginTop: px(6),
-    minHeight: px(56),
+    minHeight: 44,
     borderRadius: px(10),
     borderWidth: 1,
     borderColor: C.borde,
@@ -484,21 +480,18 @@ const styles = StyleSheet.create({
   pesoDelta: { fontSize: fs(10) },
   pesoGrafica: { marginTop: px(8), marginBottom: px(2) },
   pesoVacio: { marginTop: px(6) },
-  pesar: { flexDirection: 'row', alignItems: 'center', gap: px(8), marginTop: px(8) },
+  pesar: { marginTop: px(10) },
   campoPeso: {
-    minWidth: 0,
-    flex: 1,
-    height: px(32),
-    marginTop: px(7),
+    height: px(44),
     borderRadius: px(11),
     borderWidth: 1,
     borderColor: C.borde,
     backgroundColor: C.fondo,
     color: C.blanco,
-    fontFamily: F.b,
-    fontSize: fs(13),
+    fontFamily: F.xb,
+    fontSize: fs(20),
+    textAlign: 'center',
     paddingHorizontal: px(10),
   },
-  botonPesar: { flexShrink: 0, paddingHorizontal: px(16) },
   privado: { marginTop: px(8), color: C.tenue },
 });

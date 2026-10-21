@@ -19,6 +19,7 @@ import { kgTexto } from '@/components/iron/HistorialIron';
 import { miles } from '@/i18n/formato';
 import { t } from '@/i18n';
 import { entrenoDeHoy, type DiaRutina, type EjercicioRutina, type Prescrito } from './calculos';
+import { BarrasHueco, HeroeHueco, PesosHueco, RutinasHueco } from './Esqueletos';
 import { FiguraSentadilla, GlifoIron } from './Glifos';
 import {
   AnilloIron,
@@ -29,7 +30,6 @@ import {
   CuadroIron,
   estilosIron,
   FilaIron,
-  HuecoIron,
   LineaAncha,
   PantallaIron,
   RotuloIron,
@@ -93,6 +93,11 @@ export interface InicioIronVistaProps {
 const FILAS_HEROE = 3;
 const PESOS_EN_INICIO = 3;
 
+/** «Pierna A · Fuerza» → «Pierna A»: en la píldora, el nombre corto (la lámina). */
+export function nombreCorto(nombre: string): string {
+  return nombre.split(' · ')[0]!.trim() || nombre;
+}
+
 /** «4 × 5». */
 export function seriesReps(series: number, reps: string | number): string {
   return t('ironmundo:entreno.seriesReps', { series, reps });
@@ -115,9 +120,7 @@ function Entreno({ e, fecha, onRutinas }: { e: EntradaEntrenoHoy; fecha: string 
         <BotonIron fantasma fino titulo={t('ironmundo:reintentar')} onPress={e.onReintentar} />
       </TarjetaIron>
     ) : (
-      <View accessibilityRole="progressbar" accessibilityLabel={t('ironmundo:entreno.cargandoA11y')}>
-        <HuecoIron alto={px(212)} />
-      </View>
+      <HeroeHueco />
     );
   }
 
@@ -260,11 +263,7 @@ function TarjetaPeso({ p }: { p: PesoIron }) {
 function Pesos({ estado, onPesos }: { estado: EstadoPesosIron; onPesos: () => void }) {
   if (estado.estado === 'cargando') {
     return (
-      <View style={styles.pesos} accessibilityRole="progressbar" accessibilityLabel={t('ironmundo:pesos.cargandoA11y')}>
-        {[0, 1, 2].map((i) => (
-          <HuecoIron key={i} alto={px(96)} style={styles.peso} />
-        ))}
-      </View>
+      <PesosHueco />
     );
   }
   if (estado.estado === 'error') {
@@ -296,7 +295,7 @@ function Pesos({ estado, onPesos }: { estado: EstadoPesosIron; onPesos: () => vo
 }
 
 function Rutinas({ e, onRutinas }: { e: EntradaEntrenoHoy; onRutinas: () => void }) {
-  if (!e.cargado) return null;
+  if (!e.cargado) return <RutinasHueco />;
   return (
     <View>
       <RotuloIron seccion texto={t('ironmundo:rutinas.rotulo')} em={e.dias.length > 0 ? String(e.dias.length) : undefined} />
@@ -306,7 +305,7 @@ function Rutinas({ e, onRutinas }: { e: EntradaEntrenoHoy; onRutinas: () => void
           .map((d) => (
             <ChipIron
               key={d.id}
-              texto={d.name}
+              texto={nombreCorto(d.name)}
               activo={d.day_of_week === e.hoyDia}
               onPress={onRutinas}
               accessibilityLabel={d.day_of_week === e.hoyDia ? t('ironmundo:rutinas.hoyA11y', { dia: d.name }) : d.name}
@@ -369,7 +368,7 @@ function Dieta({ dieta, onDieta }: { dieta: EstadoDietaHoy; onDieta: () => void 
         />
         <View style={styles.flex}>
           {dieta.estado === 'cargando' ? (
-            <HuecoIron alto={px(40)} />
+            <BarrasHueco />
           ) : dieta.estado === 'error' ? (
             <Text style={estilosIron.detalle} maxFontSizeMultiplier={1.35}>
               {t('ironmundo:dieta.abrir')}
@@ -440,7 +439,7 @@ const styles = StyleSheet.create({
   hechoMarca: { width: px(28), height: px(28), borderRadius: px(14), backgroundColor: A, alignItems: 'center', justifyContent: 'center' },
   pesos: { flexDirection: 'row', gap: px(7) },
   peso: { flex: 1, minWidth: 0, borderRadius: px(13), paddingVertical: px(8), paddingHorizontal: px(9) },
-  pesoNombre: { fontFamily: F.sb, fontSize: fs(9), color: C.meta },
+  pesoNombre: { fontFamily: F.sb, fontSize: fs(9), lineHeight: Math.round(fs(9) * 1.3), color: C.meta },
   pesoDelta: { marginTop: px(1), minHeight: px(13), justifyContent: 'center' },
   deltaMudo: { color: C.mudo },
   pesoLinea: { marginTop: px(4) },

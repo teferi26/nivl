@@ -16,11 +16,11 @@
 //   [pesa] Zancada búlgara · Cuádriceps · mancuernas      +
 
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
-import { Maniqui } from '@/components/iron/Maniqui';
 import { nombreIron, textoIron } from '@/components/iron/texto';
 import { t } from '@/i18n';
 import type { EntradaIron } from '@/iron/catalogo';
 import type { Ejercicio, GrupoMuscular } from '@/iron/tipos';
+import { FiguraTecnica } from './FiguraTecnica';
 import { GlifoIron } from './Glifos';
 import { MapaMini } from './MapaMini';
 import { BotonIron, ChipIron, CuadroIron, estilosIron, FilaIron, PantallaIron, RotuloIron, TarjetaIron } from './piezas';
@@ -115,9 +115,9 @@ export function CatalogoIronVista(p: CatalogoIronVistaProps) {
       </ScrollView>
 
       <TarjetaIron heroe style={styles.heroe}>
-        <RotuloIron texto={t('ironmundo:catalogo.tecnica')} em={t('ironmundo:catalogo.fases', { count: ej.poses.length })} />
+        <RotuloIron texto={t('ironmundo:catalogo.tecnica')} em={t('ironmundo:catalogo.fases', { count: 3 })} />
         <View style={styles.escena}>
-          <Maniqui ejercicio={ej} ancho={px(160)} ms={p.ms} accessibilityLabel={t('iron:demo.animacion', { nombre })} />
+          <FiguraTecnica ejercicio={ej} alto={px(150)} ancho={px(178)} ms={p.ms} accessibilityLabel={t('iron:demo.animacion', { nombre })} />
           <MapaMini musculos={ej.musculos} alto={px(104)} etiqueta={t('ironmundo:catalogo.mapaA11y', { nombre })} />
         </View>
         <Text style={[estilosIron.titulo, styles.nombre]} maxFontSizeMultiplier={1.35}>
@@ -244,7 +244,7 @@ const styles = StyleSheet.create({
   },
   chips: { gap: px(6), paddingVertical: px(2) },
   heroe: { padding: px(12) },
-  escena: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: px(4) },
+  escena: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: px(4), marginBottom: px(6) },
   nombre: { fontSize: fs(18) },
   pasos: { marginTop: px(8), gap: px(5) },
   paso: { flexDirection: 'row', alignItems: 'center', gap: px(7) },

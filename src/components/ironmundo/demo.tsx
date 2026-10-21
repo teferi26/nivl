@@ -3,29 +3,38 @@
 // sentadilla 100 kg, press banca 72,5 récord, peso muerto 130). Sin sesión ni
 // Supabase; las acciones no hacen nada.
 //
-// La barra inferior de aquí es una MUESTRA de la lámina (4 pestañas y el
-// emblema en el centro) para comparar la pantalla entera: la de la app es la
-// de LayoutMundo (src/components/modos/mundo), que lleva otro encargo.
+// Cada estado va montado como en la app: la cabecera del mundo (CabeceraMundo)
+// arriba, la barra de pestañas de verdad (TabBar con el acento de IRON) abajo
+// y la piel de IRON (PielIron) para las hojas.
 
+import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { useState, type ReactElement } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
-import Svg, { Circle } from 'react-native-svg';
+import { StyleSheet, View } from 'react-native';
 import type { DemoPantalla } from '@/components/arena/galeria';
+import { DEMO as DEMO_COACH } from '@/components/coach/demo';
+import { HojaCardio } from '@/components/cardio/HojaCardio';
+import { HojaComida } from '@/components/dieta/HojaComida';
+import { HojaDia, HojaEjercicio } from '@/components/gym/HojasGym';
 import { CabeceraMundo } from '@/components/modos/mundo/CabeceraMundo';
+import { TabBar } from '@/components/ui/TabBar';
 import { modoAcento } from '@/design/tokens';
 import { t } from '@/i18n';
 import { ejercicioPorId, EJERCICIOS } from '@/iron/ejercicios';
 import { entradasIron } from '@/iron/catalogo';
 import type { CardioSession, NutritionLog, NutritionTarget, Prescription } from '@/lib/bodywork';
+import type { LiftInput } from '@/components/gym/SesionEnCurso';
 import type { GymDay, GymExercise, MealSlot } from '@/lib/types';
 import { nivelesDeModos } from '@/modos/niveles';
 import { CatalogoIronVista } from './CatalogoIronVista';
 import { DietaIronVista, type DietaIronVistaProps } from './DietaIronVista';
 import { EntrenoIronVista, type EntrenoIronVistaProps, type VistaEntreno } from './EntrenoIronVista';
-import { GlifoIron, type Glifo } from './Glifos';
+import { CoachIronMarco } from './CoachIronMarco';
+import { CENTRO_BARRA_DEMO, EMBLEMA_DEMO } from './demoMontaje';
+import { EntrenandoIronVista } from './EntrenandoIronVista';
 import { InicioIronVista, type InicioIronVistaProps } from './InicioIronVista';
+import { PielIron } from './piel';
 import { PuertaSaludIron } from './SaludIron';
-import { A, C, F, fs, px } from './tema';
+import { C } from './tema';
 import { TecnicaIronVista } from './TecnicaIronVista';
 import { fechaIron, palabraCoach } from './textos';
 import type { PesoIron } from './usePesos';
@@ -36,7 +45,7 @@ const HOY = '2026-10-20';
 const MARTES = 2;
 
 const NIVEL = nivelesDeModos(['iron'], { iron: 17260, focus: 0, work: 0, founder: 0 })[0] ?? null;
-const cabecera = <CabeceraMundo modo="iron" nivel={NIVEL} />;
+const cabecera = <CabeceraMundo modo="iron" nivel={NIVEL} emblema={EMBLEMA_DEMO} />;
 
 const DIAS: GymDay[] = [
   { id: 'd2', user_id: U, day_of_week: MARTES, name: 'Pierna A · Fuerza' },
@@ -67,6 +76,27 @@ const EJERCICIOS_DEMO: GymExercise[] = [
   ej('e10', 'd4', 'Remo con barra', 4, 8, 70, 1),
   ej('e11', 'd6', 'Peso muerto', 3, 5, 130, 0),
   ej('e12', 'd6', 'Hip thrust', 3, 10, 100, 1),
+];
+
+const EN_CURSO: LiftInput[] = [
+  {
+    exercise: 'Sentadilla trasera',
+    series: [
+      { weight: '100', reps: '5', rpe: '7' },
+      { weight: '102,5', reps: '5', rpe: '8' },
+      { weight: '102,5', reps: '5', rpe: '8' },
+      { weight: '102,5', reps: '', rpe: '' },
+    ],
+  },
+  {
+    exercise: 'Peso muerto rumano',
+    series: [
+      { weight: '80', reps: '8', rpe: '7' },
+      { weight: '80', reps: '', rpe: '' },
+      { weight: '80', reps: '', rpe: '' },
+    ],
+  },
+  { exercise: 'Prensa inclinada', series: [{ weight: '160', reps: '', rpe: '' }, { weight: '160', reps: '', rpe: '' }, { weight: '160', reps: '', rpe: '' }] },
 ];
 
 const tecnica = (id: string) => (ejercicioPorId(id) ? nada : undefined);
@@ -237,66 +267,31 @@ function dieta(cambios: Partial<DietaIronVistaProps> = {}): DietaIronVistaProps 
   };
 }
 
-// ── La barra de la lámina (muestra) ─────────────────────────────────
+// ── El marco de la app: la barra de pestañas de verdad ─────────────
 
-const PUNTOS: readonly { color: string; angulo: number; mio?: boolean }[] = [
-  { color: modoAcento.iron, angulo: -90, mio: true },
-  { color: modoAcento.focus, angulo: 0 },
-  { color: modoAcento.work, angulo: 90 },
-  { color: modoAcento.founder, angulo: 180 },
-];
+const RUTAS = ['iron-hoy', 'iron-rutinas', 'iron-dieta', 'iron-coach'] as const;
+const PESTANAS = ['hoy', 'entreno', 'dieta', 'coach'] as const;
 
-function BarraIronMuestra({ activa }: { activa: number }) {
-  const pestanas: { glifo: Glifo; texto: string }[] = [
-    { glifo: 'casa', texto: t('mundos:pestana.hoy') },
-    { glifo: 'pesa', texto: t('mundos:pestana.entreno') },
-    { glifo: 'plato', texto: t('mundos:pestana.dieta') },
-    { glifo: 'chat', texto: t('mundos:pestana.coach') },
-  ];
-  const item = (i: number) => {
-    const p = pestanas[i]!;
-    const on = i === activa;
-    return (
-      <View key={p.texto} style={estilos.item}>
-        <GlifoIron nombre={p.glifo} lado={px(19)} color={on ? A : C.apagado} />
-        <Text style={[estilos.itemTexto, on && estilos.itemOn]}>{p.texto}</Text>
-      </View>
-    );
-  };
-  const lado = px(56);
-  return (
-    <View style={estilos.barra}>
-      {item(0)}
-      {item(1)}
-      <View style={estilos.huecoEmblema}>
-        <View style={[estilos.emblema, { width: lado, height: lado, borderRadius: lado / 2 }]}>
-          <GlifoIron nombre="pesa" lado={px(24)} color={A} grosor={1.9} />
-          <Svg width={lado + 18} height={lado + 18} style={estilos.puntos} viewBox="-37 -37 74 74">
-            {PUNTOS.map((d) => (
-              <Circle
-                key={d.angulo}
-                cx={34 * Math.cos((d.angulo * Math.PI) / 180)}
-                cy={34 * Math.sin((d.angulo * Math.PI) / 180)}
-                r={d.mio ? 3 : 2}
-                fill={d.color}
-                opacity={d.mio ? 1 : 0.55}
-              />
-            ))}
-          </Svg>
-        </View>
-      </View>
-      {item(2)}
-      {item(3)}
-    </View>
-  );
+/** La TabBar de la app (la de LayoutMundo en compact) con una navegación de mentira. */
+function BarraReal({ activa }: { activa: number }) {
+  const props = {
+    state: { index: activa, routes: RUTAS.map((n) => ({ key: n, name: n })) },
+    descriptors: Object.fromEntries(RUTAS.map((n, i) => [n, { options: { title: t(`mundos:pestana.${PESTANAS[i]}`) } }])),
+    navigation: { emit: () => ({ defaultPrevented: true }), navigate: nada },
+  } as unknown as BottomTabBarProps;
+  // `centro` (el disco que abre la rueda) solo si la barra lo admite.
+  const extra = (CENTRO_BARRA_DEMO ? { centro: CENTRO_BARRA_DEMO } : {}) as object;
+  return <TabBar {...props} acento={modoAcento.iron} {...extra} />;
 }
 
 function ConBarra({ activa, children }: { activa: number; children: ReactElement }) {
   return (
-    <View style={estilos.lleno}>
-      <View style={estilos.lleno}>{children}</View>
-      <BarraIronMuestra activa={activa} />
-    </View>
+    <PielIron>
+      <View style={estilos.lleno}>
+        <View style={estilos.lleno}>{children}</View>
+        <BarraReal activa={activa} />
+      </View>
+    </PielIron>
   );
 }
 
@@ -417,8 +412,8 @@ export const DEMO: DemoPantalla = {
         </ConBarra>
       ),
     },
-    { id: 'catalogo', titulo: 'Catálogo (lámina)', render: () => <ConBarra activa={1}><CatalogoDemo ms={MS_FONDO} /></ConBarra> },
-    { id: 'catalogo-busqueda', titulo: 'Catálogo · búsqueda', render: () => <ConBarra activa={1}><CatalogoDemo consulta="press" ms={MS_FONDO} /></ConBarra> },
+    { id: 'catalogo', titulo: 'Catálogo (lámina)', render: () => <PielIron><CatalogoDemo ms={MS_FONDO} /></PielIron> },
+    { id: 'catalogo-busqueda', titulo: 'Catálogo · búsqueda', render: () => <PielIron><CatalogoDemo consulta="press" ms={MS_FONDO} /></PielIron> },
     {
       id: 'tecnica',
       titulo: 'Técnica con historial',
@@ -445,6 +440,135 @@ export const DEMO: DemoPantalla = {
       ),
     },
     {
+      id: 'entrenando',
+      titulo: 'Entreno en marcha',
+      render: () => (
+        <ConBarra activa={0}>
+          <EntrenandoIronVista
+            cabecera={cabecera}
+            dia="Pierna A · Fuerza"
+            desde={0}
+            ahora={(34 * 60 + 12) * 1000}
+            xpSesion={50}
+            series={EN_CURSO}
+            notas=""
+            fotoLista={false}
+            ocupado={false}
+            tecnicaDe={() => nada}
+            acciones={{ onCambiarSerie: nada, onAnadirSerie: nada, onQuitarSerie: nada, onNotas: nada, onFoto: nada, onTerminar: nada }}
+          />
+        </ConBarra>
+      ),
+    },
+    {
+      id: 'hoja-dia',
+      titulo: 'Hoja · nuevo día',
+      render: () => (
+        <ConBarra activa={1}>
+          <>
+            <EntrenoIronVista {...entrenoVista('rutinas')} />
+            <HojaDia visible diaSemana={6} nombre="Pierna B" guardando={false} error={null} onDiaSemana={nada} onNombre={nada} onGuardar={nada} onCerrar={nada} />
+          </>
+        </ConBarra>
+      ),
+    },
+    {
+      id: 'hoja-ejercicio',
+      titulo: 'Hoja · ejercicio',
+      render: () => (
+        <ConBarra activa={1}>
+          <>
+            <EntrenoIronVista {...entrenoVista('rutinas')} />
+            <HojaEjercicio
+              visible
+              dia={DIAS[0]!}
+              editando={EJERCICIOS_DEMO[0]!}
+              nombre="Sentadilla trasera"
+              series="4"
+              reps="5"
+              kg="102,5"
+              guardando={false}
+              error={null}
+              onNombre={nada}
+              onSeries={nada}
+              onReps={nada}
+              onKg={nada}
+              onGuardar={nada}
+              onCerrar={nada}
+            />
+          </>
+        </ConBarra>
+      ),
+    },
+    {
+      id: 'hoja-cardio',
+      titulo: 'Hoja · cardio',
+      render: () => (
+        <ConBarra activa={1}>
+          <>
+            <EntrenoIronVista {...entrenoVista('cardio')} />
+            <HojaCardio
+              visible
+              kind="correr"
+              zone="Z2"
+              duracion="32"
+              distancia="6,2"
+              rpe="6"
+              pulso=""
+              notas=""
+              guardando={false}
+              errores={{ duracion: null, distancia: null, rpe: null, servidor: null }}
+              onKind={nada}
+              onZone={nada}
+              onDuracion={nada}
+              onDistancia={nada}
+              onRpe={nada}
+              onPulso={nada}
+              onNotas={nada}
+              onGuardar={nada}
+              onCerrar={nada}
+            />
+          </>
+        </ConBarra>
+      ),
+    },
+    {
+      id: 'hoja-comida',
+      titulo: 'Hoja · comida',
+      render: () => (
+        <ConBarra activa={2}>
+          <>
+            <DietaIronVista {...dieta()} />
+            <HojaComida
+              visible
+              slot="cena"
+              existe={false}
+              dia={MARTES}
+              descripcion="Salmón al horno con patata y ensalada"
+              ingredientes="Salmón, patata, lechuga, tomate, aceite de oliva"
+              guardando={false}
+              quitando={false}
+              error={null}
+              onDescripcion={nada}
+              onIngredientes={nada}
+              onGuardar={nada}
+              onQuitar={nada}
+              onCerrar={nada}
+            />
+          </>
+        </ConBarra>
+      ),
+    },
+    {
+      id: 'coach',
+      titulo: 'Coach IRON (marco)',
+      render: () => (
+        <ConBarra activa={3}>
+          <CoachIronMarco>{DEMO_COACH?.estados.find((e) => e.id === 'conversacion')?.render() ?? <View />}</CoachIronMarco>
+        </ConBarra>
+      ),
+    },
+    {
       id: 'salud',
       titulo: 'Sin consentimiento de salud',
       render: () => (
@@ -458,32 +582,4 @@ export const DEMO: DemoPantalla = {
 
 const estilos = StyleSheet.create({
   lleno: { flex: 1, backgroundColor: C.fondo },
-  barra: {
-    height: px(70),
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-around',
-    paddingHorizontal: px(6),
-    paddingBottom: px(10),
-    borderTopWidth: 1,
-    borderTopColor: C.barra,
-    backgroundColor: C.fondo,
-  },
-  item: { width: px(52), alignItems: 'center', gap: px(3) },
-  itemTexto: { fontFamily: F.sb, fontSize: fs(8.5), color: C.apagado },
-  itemOn: { color: C.blanco },
-  huecoEmblema: { width: px(56), alignItems: 'center' },
-  emblema: {
-    marginTop: -px(26),
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: C.fondo,
-    borderWidth: 2,
-    borderColor: A,
-    shadowColor: A,
-    shadowOpacity: 0.6,
-    shadowRadius: 11,
-    shadowOffset: { width: 0, height: 0 },
-  },
-  puntos: { position: 'absolute' },
 });

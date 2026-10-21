@@ -7,7 +7,7 @@
   "sinDato": "-",
   "xp": "+{{xp}} XP",
   "hastaXp": "até +{{xp}} XP",
-  "pct": "{{pct}} %",
+  "pct": "{{pct}}%",
   "verTodo": "Ver tudo",
   "reintentar": "Tentar de novo",
   "cerrar": "Fechar",
@@ -68,7 +68,7 @@
     "nuevaA11y": "Criar um dia novo na rotina",
     "nuevoDia": "+ Novo dia",
     "nuevoDiaA11y": "Adicionar um dia à rotina",
-    "ejercicio": "Exercício",
+    "ejercicio": "+ Exercício",
     "ejercicioA11y": "{{nombre}}: {{series}} séries de {{reps}}, {{kg}}. Toca para editar.",
     "borrarEjercicio": "Apagar o exercício",
     "borrarDiaA11y": "Apagar o dia {{dia}}",
@@ -94,7 +94,13 @@
     "resultados_one": "{{count}} resultado",
     "resultados_other": "{{count}} resultados",
     "sinResultados": "Nada com esse nome. Experimenta com o músculo ou o material.",
-    "filaA11y": "{{nombre}}, {{meta}}. Toca para ver a técnica."
+    "filaA11y": "{{nombre}}, {{meta}}. Toca para ver a técnica.",
+    "fase": {
+      "sube": "Sobe",
+      "baja": "Desce",
+      "fondo": "Fundo"
+    },
+    "faseA11y": "Fase: {{fase}}"
   },
   "dieta": {
     "rotulo": "Dieta de hoje",
@@ -104,12 +110,10 @@
     "abrir": "Abre-a para ver as tuas calorias e macros.",
     "proteina": "Proteína",
     "agua": "Água",
-    "parte": "Registo",
     "g": "{{g}} g",
     "deG": "{{g}} / {{total}} g",
-    "deL": "{{l}} / {{total}} l",
+    "deL": "{{l}} / {{total}} L",
     "deKcal": "de {{total}}",
-    "deParte": "{{n}} / 2",
     "objetivo": "Objetivo do coach: {{kcal}} kcal e {{proteina}} g de proteína.",
     "sinObjetivo": "Ainda não tens objetivo de calorias. O coach calcula-o com a tua ficha.",
     "pedirObjetivo": "Pedir objetivo ao coach",
@@ -154,7 +158,7 @@
     "placeholder": "78,4",
     "campoA11y": "O teu peso de hoje em quilos",
     "pesar": "Pesar +{{xp}} XP",
-    "corregir": "Corrigir",
+    "corregir": "Corrigir peso",
     "privado": "Dado de saúde: só tu e o coach o veem. Apaga-o quando quiseres em Perfil."
   },
   "cardio": {
@@ -169,8 +173,8 @@
     "haceSemanas_one": "-{{count}} sem",
     "haceSemanas_other": "-{{count}} sem",
     "semanasA11y": "Minutos por semana, da mais antiga a esta: {{minutos}}",
-    "estimacion": "Calorias estimadas com o teu último peso ({{kg}} kg). Orientam, não são um dado.",
-    "estimacionReferencia": "Calorias estimadas com 70 kg de referência: pesa-te em Dieta para as afinar.",
+    "estimacion": "Kcal estimadas com o teu peso ({{kg}} kg).",
+    "estimacionReferencia": "Kcal estimadas com 70 kg de referência.",
     "registrar": "Registar cardio",
     "anuncio": "Sessão registada",
     "lista": "Sessões",
@@ -183,7 +187,8 @@
     "borrar": "Apagar a sessão",
     "cargandoA11y": "A carregar o cardio",
     "velocidad": "{{kmh}} km/h",
-    "ritmo100": "{{ritmo}} /100 m"
+    "ritmo100": "{{ritmo}} /100 m",
+    "minPorSemana": "Minutos por semana"
   },
   "coach": {
     "rotulo": "Coach IRON",
@@ -195,7 +200,9 @@
     "sinCarga": "Hoje toca {{nombre}}: {{series}} × {{reps}}. Cada repetição, completa.",
     "hecho": "Sessão feita. Agora proteína e dormir: é assim que o dia de hoje fica.",
     "descanso": "Hoje descansas. Caminha, come bem e dorme: amanhã carrega-se.",
-    "sinRutina": "Diz-me os teus dias e o teu material, e eu monto-te a rotina."
+    "sinRutina": "Diz-me os teus dias e o teu material, e eu monto-te a rotina.",
+    "marcoA11y": "Coach IRON, online",
+    "marcoSub": "As tuas séries, cargas e comida"
   },
   "tecnica": {
     "titulo": "TÉCNICA",
@@ -203,7 +210,8 @@
     "musculos": "Músculos que trabalha",
     "principales": "Principais:",
     "secundarios": "Secundários:",
-    "errores": "Erros comuns"
+    "errores": "Erros comuns",
+    "comoSeHace": "Como se faz"
   },
   "salud": {
     "rotulo": "Dados de saúde",
@@ -214,5 +222,29 @@
     "dieta": "A tua dieta, os teus macros e a tua água",
     "nota": "Sem a tua autorização, o IRON não guarda nem mostra nada disto."
   },
-  "par": "{{a}}: {{b}}"
+  "par": "{{a}}: {{b}}",
+  "sesion": {
+    "enCurso": "Em curso · {{reloj}}",
+    "libre": "Treino livre",
+    "meta_one": "{{count}} exercício · {{hechas}} de {{total}} séries",
+    "meta_other": "{{count}} exercícios · {{hechas}} de {{total}} séries",
+    "tecnica": "Técnica",
+    "tecnicaA11y": "Ver a técnica de {{ejercicio}}",
+    "serie": "+ SÉRIE",
+    "anadirSerieA11y": "Adicionar uma série a {{ejercicio}}",
+    "reps": "Reps",
+    "rpe": "RPE",
+    "pesoA11y": "Quilos da série {{n}} de {{ejercicio}}",
+    "repsA11y": "Repetições da série {{n}} de {{ejercicio}}",
+    "rpeA11y": "Esforço (RPE) da série {{n}} de {{ejercicio}}",
+    "quitarA11y": "Tirar a série {{n}} de {{ejercicio}}",
+    "comoFue": "Como correu",
+    "notas": "Sensações, incómodos, o que quiseres apontar",
+    "notasA11y": "Notas do treino",
+    "foto": "+ Foto da sessão",
+    "fotoLista": "Foto pronta",
+    "fotoA11y": "Adicionar uma foto da sessão",
+    "fotoListaA11y": "Foto da sessão pronta. Toca para a mudar.",
+    "terminar": "Terminar treino"
+  }
 }

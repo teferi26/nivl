@@ -17,7 +17,8 @@ import type { PuertaSaludVistaProps } from '@/components/puertas/SaludVista';
 import { t } from '@/i18n';
 import { HEALTH_ROUTES } from '@/lib/healthmath';
 import { GlifoIron, type Glifo } from './Glifos';
-import { BotonIron, CuadroIron, estilosIron, FilaIron, HuecoIron, PantallaIron, RotuloIron, TarjetaIron } from './piezas';
+import { TarjetaHueco } from './Esqueletos';
+import { BotonIron, CuadroIron, estilosIron, FilaIron, PantallaIron, RotuloIron, TarjetaIron } from './piezas';
 import { C, F, fs, px } from './tema';
 
 const DATOS: readonly { glifo: Glifo; clave: 'pesos' | 'cardio' | 'peso' | 'dieta' }[] = [
@@ -29,18 +30,18 @@ const DATOS: readonly { glifo: Glifo; clave: 'pesos' | 'cardio' | 'peso' | 'diet
 
 export function PuertaSaludIron(p: PuertaSaludVistaProps) {
   return (
-    <PantallaIron>
+    <PantallaIron centrado>
       <View style={styles.cabecera}>
         <Text style={styles.marca} maxFontSizeMultiplier={1.2}>
           {'IRON' /* i18n-ok: nombre del modo */}
         </Text>
         <Text style={styles.sub} maxFontSizeMultiplier={1.35}>
-          {t('puertas:salud.eyebrow')}
+          {t('mundos:subtitulo.iron')}
         </Text>
       </View>
       {p.cargando ? (
         <View accessibilityRole="progressbar" accessibilityLabel={t('puertas:salud.comprobandoA11y')}>
-          <HuecoIron alto={px(240)} />
+          <TarjetaHueco heroe lineas={6} />
         </View>
       ) : (
         <>

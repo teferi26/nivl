@@ -68,7 +68,7 @@
     "nuevaA11y": "Einen neuen Tag im Plan anlegen",
     "nuevoDia": "+ Neuer Tag",
     "nuevoDiaA11y": "Einen Tag zum Plan hinzufügen",
-    "ejercicio": "Übung",
+    "ejercicio": "+ Übung",
     "ejercicioA11y": "{{nombre}}: {{series}} Sätze à {{reps}}, {{kg}}. Tippen zum Bearbeiten.",
     "borrarEjercicio": "Übung löschen",
     "borrarDiaA11y": "Tag {{dia}} löschen",
@@ -94,7 +94,13 @@
     "resultados_one": "{{count}} Treffer",
     "resultados_other": "{{count}} Treffer",
     "sinResultados": "Nichts unter diesem Namen. Versuch es mit dem Muskel oder dem Gerät.",
-    "filaA11y": "{{nombre}}, {{meta}}. Tippen, um die Technik zu sehen."
+    "filaA11y": "{{nombre}}, {{meta}}. Tippen, um die Technik zu sehen.",
+    "fase": {
+      "sube": "Hoch",
+      "baja": "Runter",
+      "fondo": "Tiefpunkt"
+    },
+    "faseA11y": "Phase: {{fase}}"
   },
   "dieta": {
     "rotulo": "Ernährung heute",
@@ -104,12 +110,10 @@
     "abrir": "Öffne sie, um Kalorien und Makros zu sehen.",
     "proteina": "Eiweiß",
     "agua": "Wasser",
-    "parte": "Eintrag",
     "g": "{{g}} g",
     "deG": "{{g}} / {{total}} g",
-    "deL": "{{l}} / {{total}} l",
+    "deL": "{{l}} / {{total}} L",
     "deKcal": "von {{total}}",
-    "deParte": "{{n}} / 2",
     "objetivo": "Ziel vom Coach: {{kcal}} kcal und {{proteina}} g Eiweiß.",
     "sinObjetivo": "Noch kein Kalorienziel. Der Coach berechnet es aus deinem Profil.",
     "pedirObjetivo": "Ziel beim Coach anfragen",
@@ -154,7 +158,7 @@
     "placeholder": "78,4",
     "campoA11y": "Dein Gewicht heute in Kilo",
     "pesar": "Wiegen +{{xp}} XP",
-    "corregir": "Korrigieren",
+    "corregir": "Gewicht korrigieren",
     "privado": "Gesundheitsdaten: Nur du und der Coach sehen sie. Lösch sie jederzeit unter Profil."
   },
   "cardio": {
@@ -169,8 +173,8 @@
     "haceSemanas_one": "-{{count}} Wo",
     "haceSemanas_other": "-{{count}} Wo",
     "semanasA11y": "Minuten pro Woche, von der ältesten bis zu dieser: {{minutos}}",
-    "estimacion": "Kalorien geschätzt mit deinem letzten Gewicht ({{kg}} kg). Sie geben Orientierung, kein Messwert.",
-    "estimacionReferencia": "Kalorien geschätzt mit 70 kg als Referenz: wieg dich unter Ernährung, um sie zu verfeinern.",
+    "estimacion": "Kcal geschätzt mit deinem Gewicht ({{kg}} kg).",
+    "estimacionReferencia": "Kcal geschätzt mit 70 kg als Referenz.",
     "registrar": "Cardio eintragen",
     "anuncio": "Einheit gespeichert",
     "lista": "Einheiten",
@@ -183,7 +187,8 @@
     "borrar": "Einheit löschen",
     "cargandoA11y": "Cardio wird geladen",
     "velocidad": "{{kmh}} km/h",
-    "ritmo100": "{{ritmo}} /100 m"
+    "ritmo100": "{{ritmo}} /100 m",
+    "minPorSemana": "Minuten pro Woche"
   },
   "coach": {
     "rotulo": "Coach IRON",
@@ -195,7 +200,9 @@
     "sinCarga": "Heute steht {{nombre}} an: {{series}} × {{reps}}. Jede Wiederholung vollständig.",
     "hecho": "Einheit erledigt. Jetzt Eiweiß und Schlaf: so bleibt das Heute hängen.",
     "descanso": "Heute ist Ruhetag. Geh spazieren, iss gut und schlaf: morgen wird geladen.",
-    "sinRutina": "Sag mir deine Tage und dein Material, und ich baue dir den Plan."
+    "sinRutina": "Sag mir deine Tage und dein Material, und ich baue dir den Plan.",
+    "marcoA11y": "Coach IRON, online",
+    "marcoSub": "Deine Sätze, Gewichte und dein Essen"
   },
   "tecnica": {
     "titulo": "TECHNIK",
@@ -203,7 +210,8 @@
     "musculos": "Trainierte Muskeln",
     "principales": "Hauptmuskeln:",
     "secundarios": "Nebenmuskeln:",
-    "errores": "Häufige Fehler"
+    "errores": "Häufige Fehler",
+    "comoSeHace": "So geht's"
   },
   "salud": {
     "rotulo": "Gesundheitsdaten",
@@ -214,5 +222,29 @@
     "dieta": "Deine Ernährung, deine Makros und dein Wasser",
     "nota": "Ohne deine Erlaubnis speichert und zeigt IRON nichts davon."
   },
-  "par": "{{a}}: {{b}}"
+  "par": "{{a}}: {{b}}",
+  "sesion": {
+    "enCurso": "Läuft · {{reloj}}",
+    "libre": "Freies Training",
+    "meta_one": "{{count}} Übung · {{hechas}} von {{total}} Sätzen",
+    "meta_other": "{{count}} Übungen · {{hechas}} von {{total}} Sätzen",
+    "tecnica": "Technik",
+    "tecnicaA11y": "Technik für {{ejercicio}} ansehen",
+    "serie": "+ SATZ",
+    "anadirSerieA11y": "Einen Satz zu {{ejercicio}} hinzufügen",
+    "reps": "Wdh.",
+    "rpe": "RPE",
+    "pesoA11y": "Kilo für Satz {{n}} von {{ejercicio}}",
+    "repsA11y": "Wiederholungen für Satz {{n}} von {{ejercicio}}",
+    "rpeA11y": "Anstrengung (RPE) für Satz {{n}} von {{ejercicio}}",
+    "quitarA11y": "Satz {{n}} von {{ejercicio}} entfernen",
+    "comoFue": "Wie es lief",
+    "notas": "Gefühl, Beschwerden, was du notieren willst",
+    "notasA11y": "Trainingsnotizen",
+    "foto": "+ Foto der Einheit",
+    "fotoLista": "Foto bereit",
+    "fotoA11y": "Ein Foto der Einheit hinzufügen",
+    "fotoListaA11y": "Foto der Einheit bereit. Tippen zum Ändern.",
+    "terminar": "Training beenden"
+  }
 }

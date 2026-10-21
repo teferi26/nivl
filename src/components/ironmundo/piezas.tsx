@@ -29,6 +29,8 @@ export interface PantallaIronProps {
   plain?: boolean;
   refreshing?: boolean;
   onRefresh?: () => void;
+  /** El contenido centrado en vertical (pantallas cortas: la puerta de salud). */
+  centrado?: boolean;
 }
 
 /** El fondo de IRON: negro y, arriba a la derecha, el brillo del acento. */
@@ -48,14 +50,14 @@ export function FondoIron() {
   );
 }
 
-export function PantallaIron({ children, overlay, plain, refreshing, onRefresh }: PantallaIronProps) {
+export function PantallaIron({ children, overlay, plain, refreshing, onRefresh, centrado }: PantallaIronProps) {
   return (
     <View style={styles.pantalla}>
       <FondoIron />
       <Screen
         plain={plain}
         style={styles.transparente}
-        contentStyle={plain ? undefined : styles.cuerpo}
+        contentStyle={plain ? undefined : [styles.cuerpo, centrado && styles.centrado]}
         overlay={overlay}
         refreshing={refreshing}
         onRefresh={onRefresh}
@@ -249,7 +251,7 @@ export function Linea({ puntos, ancho, alto, grosor = 1.6 }: { puntos: readonly 
   const [ux, uy] = xy[xy.length - 1]!;
   return (
     <Svg width={ancho} height={alto} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
-      <Polyline points={`${r},${alto} ${p} ${ux},${alto}`} fill={A} fillOpacity={0.12} stroke="none" />
+      <Polyline points={`${r},${alto} ${p} ${ancho},${uy} ${ancho},${alto}`} fill={A} fillOpacity={0.12} stroke="none" />
       <Polyline points={p} fill="none" stroke={A} strokeWidth={grosor} strokeLinejoin="round" strokeLinecap="round" />
       <Circle cx={ux} cy={uy} r={2.4} fill={C.blanco} stroke={A} strokeWidth={1.4} />
     </Svg>
@@ -412,10 +414,10 @@ export const estilosIron = StyleSheet.create({
   meta: { fontFamily: F.r, fontSize: fs(10), lineHeight: fs(10) * 1.35, color: C.meta, marginTop: px(2) },
   cuerpo: { fontFamily: F.r, fontSize: fs(10.5), lineHeight: fs(10.5) * 1.4, color: C.claro },
   detalle: { fontFamily: F.r, fontSize: fs(9.5), lineHeight: fs(9.5) * 1.3, color: C.suave },
-  filaNombre: { fontFamily: F.m, fontSize: fs(11), color: C.texto, flexShrink: 1 },
-  filaSerie: { fontFamily: F.r, fontSize: fs(10), color: C.mudo },
-  filaKg: { fontFamily: F.b, fontSize: fs(11), color: C.blanco },
-  kg: { fontFamily: F.xb, fontSize: fs(17), color: C.blanco },
+  filaNombre: { fontFamily: F.m, fontSize: fs(11), lineHeight: Math.round(fs(11) * 1.32), color: C.texto, flexShrink: 1 },
+  filaSerie: { fontFamily: F.r, fontSize: fs(10), lineHeight: Math.round(fs(11) * 1.32), color: C.mudo },
+  filaKg: { fontFamily: F.b, fontSize: fs(11), lineHeight: Math.round(fs(11) * 1.32), color: C.blanco },
+  kg: { fontFamily: F.xb, fontSize: fs(17), lineHeight: Math.round(fs(17) * 1.3), color: C.blanco },
   kgUnidad: { fontFamily: F.sb, fontSize: fs(9), color: C.mudo },
   delta: { fontFamily: F.b, fontSize: fs(8.5), color: A },
   etiqueta: {
@@ -436,7 +438,9 @@ export const estilosIron = StyleSheet.create({
 const styles = StyleSheet.create({
   pantalla: { flex: 1, backgroundColor: C.fondo },
   transparente: { backgroundColor: 'transparent' },
-  cuerpo: { paddingHorizontal: M.margen, paddingTop: px(2), gap: M.hueco },
+  // Abajo, aire para que lo último (el coach) quepa entero sobre la barra.
+  cuerpo: { paddingHorizontal: M.margen, paddingTop: px(2), paddingBottom: px(24), gap: M.hueco },
+  centrado: { flexGrow: 1, justifyContent: 'center' },
   tarjeta: {
     backgroundColor: C.tarjeta,
     borderWidth: 1,
@@ -454,6 +458,7 @@ const styles = StyleSheet.create({
   rotuloTexto: {
     fontFamily: F.b,
     fontSize: fs(8.5),
+    lineHeight: Math.round(fs(8.5) * 1.3),
     letterSpacing: fs(8.5) * 0.16,
     color: C.mudo,
     textTransform: 'uppercase',
@@ -462,6 +467,7 @@ const styles = StyleSheet.create({
   rotuloEm: {
     fontFamily: F.b,
     fontSize: fs(8.5),
+    lineHeight: Math.round(fs(8.5) * 1.3),
     letterSpacing: fs(8.5) * 0.1,
     color: A,
     textTransform: 'uppercase',

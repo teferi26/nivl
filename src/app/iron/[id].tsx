@@ -6,6 +6,7 @@
 
 import { Redirect, router, useLocalSearchParams } from 'expo-router';
 import { useHistorialIron } from '@/components/iron/useHistorialIron';
+import { PielIron } from '@/components/ironmundo/piel';
 import { TecnicaIronVista } from '@/components/ironmundo/TecnicaIronVista';
 import { volver } from '@/components/ui/Screen';
 import { ejercicioPorId } from '@/iron/ejercicios';
@@ -15,5 +16,9 @@ export default function TecnicaRuta() {
   const ejercicio = id ? ejercicioPorId(id) : undefined;
   const historial = useHistorialIron(ejercicio);
   if (!ejercicio) return <Redirect href="/gym" />;
-  return <TecnicaIronVista ejercicio={ejercicio} onVolver={() => volver(router)} historial={historial} />;
+  return (
+    <PielIron>
+      <TecnicaIronVista ejercicio={ejercicio} onVolver={() => volver(router)} historial={historial} />
+    </PielIron>
+  );
 }

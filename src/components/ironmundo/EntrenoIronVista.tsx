@@ -21,6 +21,7 @@ import { paceOf } from '@/lib/bodymath';
 import type { CardioSession, Prescription } from '@/lib/bodywork';
 import type { GymDay, GymExercise } from '@/lib/types';
 import { ejerciciosDe, entrenoDeHoy, kcalSesion, minutosEntreno, resumenCardio } from './calculos';
+import { TarjetaHueco } from './Esqueletos';
 import { GlifoIron } from './Glifos';
 import { kgFila, seriesReps, subidaCorta } from './InicioIronVista';
 import {
@@ -29,14 +30,16 @@ import {
   CuadroIron,
   estilosIron,
   FilaIron,
-  HuecoIron,
   LineaAncha,
   PantallaIron,
   RotuloIron,
   TarjetaIron,
 } from './piezas';
-import { A, acentoA, C, F, fs, mezcla, px } from './tema';
+import { A, acentoA, C, F, fs, px } from './tema';
 import type { EstadoPesosIron, PesoIron } from './usePesos';
+
+/** Alto de la barra más alta de minutos por semana. */
+const ALTO_BARRAS = px(64);
 
 export type VistaEntreno = 'rutinas' | 'pesos' | 'cardio';
 export const VISTAS_ENTRENO: readonly VistaEntreno[] = ['rutinas', 'pesos', 'cardio'];
@@ -112,7 +115,7 @@ function Semana({ dias, hoyDia }: { dias: GymDay[]; hoyDia: number }) {
         return (
           <View key={d} style={styles.semanaDia}>
             <View style={[styles.semanaBola, toca && styles.semanaToca, hoy && styles.semanaHoy]}>
-              <Text style={[styles.semanaLetra, toca && styles.semanaLetraToca]} maxFontSizeMultiplier={1}>
+              <Text style={[styles.semanaLetra, toca && styles.semanaLetraToca, hoy && styles.semanaLetraHoy]} maxFontSizeMultiplier={1}>
                 {nombreDia(d - 1, 'letra')}
               </Text>
             </View>
@@ -186,7 +189,7 @@ function TarjetaDia({ dia, r, esHoy }: { dia: GymDay; r: RutinasIronProps; esHoy
         </View>
       ) : null}
       <View style={styles.botones}>
-        <BotonIron fantasma fino icono="mas" titulo={t('ironmundo:rutinas.ejercicio')} onPress={() => r.acciones.onNuevoEjercicio(dia)} style={styles.flex} />
+        <BotonIron fantasma fino titulo={t('ironmundo:rutinas.ejercicio')} onPress={() => r.acciones.onNuevoEjercicio(dia)} style={styles.flex} />
         <BotonIron fantasma fino titulo={t('ironmundo:catalogo.boton')} onPress={() => r.acciones.onCatalogo(dia)} style={styles.flex} />
       </View>
       {esHoy && !hecho && lista.length > 0 ? <BotonIron icono="pesa" titulo={t('ironmundo:entreno.empezar')} onPress={r.acciones.onEmpezar} /> : null}
@@ -241,9 +244,9 @@ function Rutinas({ r }: { r: RutinasIronProps }) {
       </TarjetaIron>
     ) : (
       <View style={styles.pila} accessibilityRole="progressbar" accessibilityLabel={t('ironmundo:entreno.cargandoA11y')}>
-        <HuecoIron alto={px(60)} />
-        <HuecoIron alto={px(200)} />
-        <HuecoIron alto={px(160)} />
+        <TarjetaHueco lineas={1} />
+        <TarjetaHueco heroe lineas={6} />
+        <TarjetaHueco lineas={4} />
       </View>
     );
   }
@@ -285,8 +288,7 @@ function Rutinas({ r }: { r: RutinasIronProps }) {
 // ── Pesos ────────────────────────────────────────────────────────────
 
 function TarjetaPesoGrande({ p }: { p: PesoIron }) {
-  const min = p.serie.length > 0 ? Math.min(...p.serie) : null;
-  const max = p.serie.length > 0 ? Math.max(...p.serie) : null;
+  const max = p.serie.length > 1 ? Math.max(...p.serie) : null;
   return (
     <TarjetaIron
       heroe={p.record}
@@ -300,8 +302,8 @@ function TarjetaPesoGrande({ p }: { p: PesoIron }) {
         .filter(Boolean)
         .join('. ')}
     >
-      <View style={styles.pesoCabeza}>
-        <View style={styles.flex}>
+      <View style={styles.pesoFila}>
+        <View style={styles.pesoIzq}>
           <Text style={styles.pesoNombre} numberOfLines={1} maxFontSizeMultiplier={1.35}>
             {p.nombre}
           </Text>
@@ -309,36 +311,28 @@ function TarjetaPesoGrande({ p }: { p: PesoIron }) {
             {kgTexto(p.kg)}
             <Text style={styles.pesoUnidad}>{` ${t('ironmundo:unidadKg')}`}</Text>
           </Text>
+          <View style={styles.pesoDelta}>
+            {p.record ? (
+              <Text style={estilosIron.etiqueta} maxFontSizeMultiplier={1.2}>
+                {t('ironmundo:pesos.record').toUpperCase()}
+              </Text>
+            ) : p.subida !== null ? (
+              <Text style={estilosIron.delta} maxFontSizeMultiplier={1.2}>
+                {subidaCorta(p.subida)}
+              </Text>
+            ) : null}
+          </View>
         </View>
-        <View style={styles.pesoDerecha}>
-          {p.record ? (
-            <Text style={estilosIron.etiqueta} maxFontSizeMultiplier={1.2}>
-              {t('ironmundo:pesos.record').toUpperCase()}
+        <View style={styles.pesoGrafica}>
+          {max !== null ? (
+            <Text style={styles.pesoEje} maxFontSizeMultiplier={1}>
+              {t('ironmundo:kg', { kg: kgTexto(max) })}
             </Text>
           ) : null}
-          {p.subida !== null ? (
-            <Text style={estilosIron.delta} maxFontSizeMultiplier={1.2}>
-              {subidaCorta(p.subida)}
-            </Text>
-          ) : null}
-        </View>
-      </View>
-      <View style={styles.pesoGrafica}>
-        <View style={styles.flex}>
           <LineaAncha puntos={p.serie} alto={px(56)} grosor={2} />
         </View>
-        {min !== null && max !== null && max !== min ? (
-          <View style={styles.pesoEjes} pointerEvents="none">
-            <Text style={styles.pesoEje} maxFontSizeMultiplier={1}>
-              {kgTexto(max)}
-            </Text>
-            <Text style={styles.pesoEje} maxFontSizeMultiplier={1}>
-              {kgTexto(min)}
-            </Text>
-          </View>
-        ) : null}
       </View>
-      <Text style={estilosIron.meta} maxFontSizeMultiplier={1.35}>
+      <Text style={[estilosIron.meta, styles.pesoMeta]} numberOfLines={1} maxFontSizeMultiplier={1.35}>
         {[
           p.e1rm !== null ? t('ironmundo:pesos.e1rm', { kg: kgTexto(p.e1rm) }) : null,
           t('ironmundo:pesos.sesiones', { count: p.sesiones }),
@@ -355,8 +349,9 @@ function Pesos({ estado }: { estado: EstadoPesosIron }) {
   if (estado.estado === 'cargando') {
     return (
       <View style={styles.pila} accessibilityRole="progressbar" accessibilityLabel={t('ironmundo:pesos.cargandoA11y')}>
-        <HuecoIron alto={px(140)} />
-        <HuecoIron alto={px(140)} />
+        <TarjetaHueco lineas={4} />
+        <TarjetaHueco lineas={4} />
+        <TarjetaHueco lineas={4} />
       </View>
     );
   }
@@ -409,24 +404,31 @@ function Cifra({ valor, rotulo }: { valor: string; rotulo: string }) {
 function Semanas({ minutos }: { minutos: number[] }) {
   const tope = Math.max(...minutos, 1);
   return (
-    <View
-      style={styles.barras}
-      accessible
-      accessibilityLabel={t('ironmundo:cardio.semanasA11y', { minutos: minutos.map((m) => cifraCorta(m, 0)).join(', ') })}
-    >
-      {minutos.map((m, i) => (
-        <View key={i} style={styles.barraCol}>
-          <Text style={styles.barraValor} maxFontSizeMultiplier={1}>
-            {m > 0 ? cifraCorta(m, 0) : ''}
-          </Text>
-          <View style={styles.barraPista}>
-            <View style={[styles.barraRelleno, { height: `${Math.max(m > 0 ? 6 : 0, Math.round((m / tope) * 100))}%` }, i === 3 && styles.barraActual]} />
+    <View>
+      <RotuloIron texto={t('ironmundo:cardio.minPorSemana')} style={styles.barrasRotulo} />
+      <View
+        style={styles.barras}
+        accessible
+        accessibilityLabel={t('ironmundo:cardio.semanasA11y', { minutos: minutos.map((m) => cifraCorta(m, 0)).join(', ') })}
+      >
+        {minutos.map((m, i) => (
+          <View key={i} style={styles.barraCol}>
+            <Text style={[styles.barraValor, m === 0 && styles.barraValorCero]} maxFontSizeMultiplier={1}>
+              {cifraCorta(m, 0)}
+            </Text>
+            <View
+              style={[
+                styles.barraRelleno,
+                m > 0 ? { height: Math.max(6, Math.round((m / tope) * ALTO_BARRAS)) } : styles.barraCero,
+                i === 3 && m > 0 && styles.barraActual,
+              ]}
+            />
+            <Text style={[styles.barraRotulo, i === 3 && styles.barraRotuloActual]} maxFontSizeMultiplier={1}>
+              {i === 3 ? t('ironmundo:cardio.estaSemana') : t('ironmundo:cardio.haceSemanas', { count: 3 - i })}
+            </Text>
           </View>
-          <Text style={[styles.barraRotulo, i === 3 && styles.barraRotuloActual]} maxFontSizeMultiplier={1}>
-            {i === 3 ? t('ironmundo:cardio.estaSemana') : t('ironmundo:cardio.haceSemanas', { count: 3 - i })}
-          </Text>
-        </View>
-      ))}
+        ))}
+      </View>
     </View>
   );
 }
@@ -465,8 +467,8 @@ function FilaCardio({ s, primera, pesoKg, onBorrar }: { s: CardioSession; primer
         if (e.nativeEvent.actionName === 'longpress') onBorrar();
       }}
     >
-      <CuadroIron lado={px(30)} radio={px(8)}>
-        <Ionicons name={ICONO[s.kind]} size={px(15)} color={A} />
+      <CuadroIron lado={px(32)} radio={px(9)}>
+        <Ionicons name={ICONO[s.kind]} size={20} color={A} />
       </CuadroIron>
       <View style={styles.flex}>
         <View style={styles.cardioTitulo}>
@@ -506,8 +508,8 @@ function Cardio({ c }: { c: CardioIronProps }) {
       </TarjetaIron>
     ) : (
       <View style={styles.pila} accessibilityRole="progressbar" accessibilityLabel={t('ironmundo:cardio.cargandoA11y')}>
-        <HuecoIron alto={px(230)} />
-        <HuecoIron alto={px(120)} />
+        <TarjetaHueco heroe lineas={5} alto={px(250)} />
+        <TarjetaHueco lineas={4} />
       </View>
     );
   }
@@ -594,33 +596,37 @@ const styles = StyleSheet.create({
     height: px(30),
     borderRadius: px(15),
     borderWidth: 1,
-    borderColor: C.borde,
+    borderColor: C.filete,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  semanaToca: { backgroundColor: mezcla(0.16, C.tarjeta), borderColor: acentoA(0.6) },
-  semanaHoy: { borderColor: A, borderWidth: 2 },
+  semanaToca: { backgroundColor: acentoA(0.15), borderColor: A },
+  semanaHoy: { backgroundColor: A, borderColor: A },
+  semanaLetraHoy: { color: C.fondo },
   semanaLetra: { fontFamily: F.b, fontSize: fs(10), color: C.apagado },
   semanaLetraToca: { color: C.blanco },
   semanaPunto: { width: 4, height: 4, borderRadius: 2, backgroundColor: 'transparent' },
   semanaPuntoHoy: { backgroundColor: A },
-  pesoCabeza: { flexDirection: 'row', alignItems: 'flex-start', gap: px(8) },
+  pesoFila: { flexDirection: 'row', alignItems: 'flex-end', gap: px(12) },
+  pesoIzq: { width: '38%' },
+  pesoGrafica: { flex: 1, minWidth: 0 },
+  pesoEje: { fontFamily: F.sb, fontSize: fs(8), color: C.apagado, textAlign: 'right', marginBottom: px(2) },
+  pesoKg: { fontFamily: F.xb, fontSize: fs(24), lineHeight: Math.round(fs(24) * 1.2), color: C.blanco, marginTop: px(2) },
+  pesoDelta: { minHeight: px(14), justifyContent: 'center', marginTop: px(1) },
+  pesoMeta: { marginTop: px(6) },
   pesoNombre: { fontFamily: F.sb, fontSize: fs(11), color: C.meta },
-  pesoKg: { fontFamily: F.xb, fontSize: fs(26), color: C.blanco, marginTop: px(2) },
   pesoUnidad: { fontFamily: F.sb, fontSize: fs(11), color: C.mudo },
-  pesoDerecha: { alignItems: 'flex-end', gap: px(4), paddingTop: px(2) },
-  pesoGrafica: { flexDirection: 'row', gap: px(8), marginTop: px(8), marginBottom: px(4) },
-  pesoEjes: { height: px(56), justifyContent: 'space-between', alignItems: 'flex-end', minWidth: px(26) },
-  pesoEje: { fontFamily: F.sb, fontSize: fs(8), color: C.apagado },
   cifras: { flexDirection: 'row', gap: px(7), marginTop: px(8) },
   cifra: { flex: 1, minWidth: 0, backgroundColor: C.tarjeta, borderRadius: px(12), borderWidth: 1, borderColor: C.filete, padding: px(8) },
   cifraValor: { fontFamily: F.xb, fontSize: fs(19), color: C.blanco },
   cifraRotulo: { fontFamily: F.b, fontSize: fs(8), letterSpacing: fs(8) * 0.14, color: C.mudo, textTransform: 'uppercase', marginTop: px(1) },
-  barras: { flexDirection: 'row', gap: px(8), height: px(96), marginTop: px(10), marginBottom: px(6) },
-  barraCol: { flex: 1, alignItems: 'center', gap: px(3) },
-  barraValor: { fontFamily: F.b, fontSize: fs(8.5), color: C.meta, minHeight: fs(8.5) * 1.3 },
-  barraPista: { flex: 1, width: '70%', backgroundColor: C.pista, borderRadius: px(6), justifyContent: 'flex-end', overflow: 'hidden' },
-  barraRelleno: { width: '100%', backgroundColor: acentoA(0.55), borderRadius: px(6) },
+  barrasRotulo: { marginTop: px(10) },
+  barras: { flexDirection: 'row', alignItems: 'flex-end', gap: px(10), marginTop: px(6), marginBottom: px(8) },
+  barraCol: { flex: 1, alignItems: 'center', justifyContent: 'flex-end', gap: px(3) },
+  barraValor: { fontFamily: F.b, fontSize: fs(9), color: C.meta },
+  barraValorCero: { color: C.apagado },
+  barraRelleno: { width: '64%', backgroundColor: acentoA(0.55), borderRadius: px(6) },
+  barraCero: { height: 4, backgroundColor: C.filete },
   barraActual: { backgroundColor: A },
   barraRotulo: { fontFamily: F.sb, fontSize: fs(8), color: C.apagado },
   barraRotuloActual: { color: C.blanco },

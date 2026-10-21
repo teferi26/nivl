@@ -4,6 +4,7 @@
 // rutina. Sin `modos_activos`, a Gimnasio.
 import { Redirect, useLocalSearchParams } from 'expo-router';
 import { CatalogoIronVista } from '@/components/ironmundo/CatalogoIronVista';
+import { PielIron } from '@/components/ironmundo/piel';
 import { useCatalogoIron } from '@/components/ironmundo/useCatalogoIron';
 import { useFlags } from '@/lib/flags';
 
@@ -16,5 +17,9 @@ export default function CatalogoRuta() {
 function Catalogo() {
   const { dia } = useLocalSearchParams<{ dia?: string }>();
   const props = useCatalogoIron(typeof dia === 'string' && dia ? dia : null);
-  return <CatalogoIronVista {...props} />;
+  return (
+    <PielIron>
+      <CatalogoIronVista {...props} />
+    </PielIron>
+  );
 }
