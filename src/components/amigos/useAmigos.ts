@@ -73,7 +73,7 @@ function conTitulo(filas: readonly (Clasificado<BoardEntry> & { insignia: boolea
   return filas.map((f) => ({ ...f, titulo: tituloVigente(f.competidor.equippedTitle) }));
 }
 
-export function useAmigos() {
+export function useAmigos(opciones: { metricaInicial?: Metrica; enPestana?: boolean } = {}) {
   const { session } = useAuth();
   const userId = session?.user.id;
 
@@ -88,7 +88,8 @@ export function useAmigos() {
   const [board, setBoard] = useState<BoardEntry[]>([]);
   const [requests, setRequests] = useState<FriendRequest[]>([]);
   const [ventana, setVentana] = useState<Ventana>('semana');
-  const [metrica, setMetrica] = useState<Metrica>('xp');
+  // En la Arena de General el ranking abre por constancia (cumplimiento).
+  const [metrica, setMetrica] = useState<Metrica>(opciones.metricaInicial ?? 'xp');
   const [cargando, setCargando] = useState(true);
   const [fallo, setFallo] = useState<string | null>(null);
   const [refrescando, setRefrescando] = useState(false);
@@ -578,7 +579,8 @@ export function useAmigos() {
     vista: {
       refrescando,
       refrescar,
-      onVolver: () => volver(router),
+      // En una pestaña (la Arena de General) no hay flecha de volver.
+      onVolver: opciones.enPestana ? undefined : () => volver(router),
       abrirTarjeta,
       preparando,
       yo,

@@ -42,6 +42,21 @@ export function EmblemaMundo({ modo }: { modo: ModoEtiqueta }) {
   );
 }
 
+/**
+ * La placa de NIVL en la cabecera de General (CabeceraGeneral), como la de
+ * cada mundo. Solo con algún modo activado además de General.
+ */
+export function EmblemaGeneral() {
+  const { activo, disponibles } = useModo();
+  const ir = useIrAlMundo();
+  if (!activo || disponibles.length < 2) return null;
+  return (
+    <View style={styles.caja}>
+      <EmblemaModo tamano={LADO_RANURA} forma="placa" alCambiarModo={ir} />
+    </View>
+  );
+}
+
 /** ¿Va el emblema? Con `modos_activos` y algún modo activado además de General. */
 export function useHayEmblema(): boolean {
   const { activo, disponibles } = useModo();

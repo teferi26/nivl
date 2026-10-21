@@ -62,6 +62,7 @@ import {
 import { mesDe } from '@/lib/moneymath';
 import { mensajeSistema } from '@/lib/validation';
 import { rutaCoachDe } from '@/modos/rutasModo';
+import { enPrestado } from '@/components/modos/mundo/prestadoRutas';
 import { derivarWork } from './calculoWork';
 import {
   baseDe,
@@ -626,7 +627,7 @@ export function useWorkEconomia(modo: 'work' | 'founder' = 'work'): UsoWorkEcono
           setCatError(null);
           setCatAbierta(true);
         },
-        onCoach: () => router.navigate(rutaCoachDe(modo)),
+        onCoach: () => router.navigate(rutaCoachDe(enPrestado() ? 'general' : modo)),
         onOlvidarAviso: () => setAviso(null),
       },
     },

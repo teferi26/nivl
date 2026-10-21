@@ -6,6 +6,8 @@ import { StyleSheet, Text, View } from 'react-native';
 import { Campo } from '@/components/arena';
 import { CampanaVista } from '@/components/campanas/CampanaVista';
 import { useCampana } from '@/components/campanas/useCampana';
+import { FondoGeneral } from '@/components/general/piezas';
+import { PielGeneral } from '@/components/general/piel';
 import { Button, Chip, ChipWrap, Sheet } from '@/components/ui';
 import { ink, space, type as tipo } from '@/design/tokens';
 import { t } from '@/i18n';
@@ -15,7 +17,9 @@ export default function DungeonDetail() {
   const { vista, hojas } = useCampana();
   const h = hojas.tarea;
   return (
-    <>
+    // La piel y el fondo de NIVL (General): el detalle de siempre en oro.
+    <FondoGeneral>
+      <PielGeneral>
       <CampanaVista {...vista} />
       <Sheet
         visible={h.visible}
@@ -87,7 +91,8 @@ export default function DungeonDetail() {
           </View>
         </View>
       </Sheet>
-    </>
+      </PielGeneral>
+    </FondoGeneral>
   );
 }
 

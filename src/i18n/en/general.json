@@ -1,0 +1,128 @@
+{
+  "cabecera": {
+    "subtitulo": "Base · global level",
+    "perfilA11y": "Open your profile and settings"
+  },
+  "heroe": {
+    "eyebrow": "GLOBAL LEVEL",
+    "rango": "RANK {{rango}}",
+    "xp": "{{xp}} / {{total}} XP",
+    "xpMax": "Max level",
+    "racha": "streak",
+    "piedras": "stones",
+    "hoy": "today",
+    "a11y": "Global level {{nivel}}, {{titulo}}. {{xp}}. {{racha}} day streak, {{piedras}} stones. Opens your progression."
+  },
+  "hoy": {
+    "siguiente": "Next action",
+    "xp": "+{{xp}} XP",
+    "completar": "Complete",
+    "deTotal": "{{hechas}} of {{total}}",
+    "gestionar": "Manage habits",
+    "errorRotulo": "The system is not responding",
+    "campanaActiva": "Active campaign",
+    "campanaA11y": "Active campaign: {{titulo}}, {{hechas}} of {{total}} tasks. Open.",
+    "sinCampana": "No campaign open. Open one and win its loot.",
+    "abrir": "OPEN"
+  },
+  "arsenal": {
+    "rotulo": "Your arsenal",
+    "em": "Tap to equip",
+    "nivel": "LV {{nivel}}",
+    "xp": "{{xp}} XP",
+    "equiparA11y": "Equip {{modo}}, level {{nivel}}. Switches mode with one tap."
+  },
+  "todo": {
+    "rotulo": "Everything from here",
+    "em": "No mode switch",
+    "gym": "Gym",
+    "dieta": "Diet",
+    "cardio": "Cardio",
+    "foco": "Focus",
+    "examenes": "Exams",
+    "economia": "Money",
+    "agenda": "Agenda",
+    "diario": "Journal",
+    "habitos": "Habits"
+  },
+  "coach": {
+    "rotulo": "NIVL coach",
+    "enLinea": "● Online",
+    "porDefecto": "Tell me what you want to achieve and I will plan your day.",
+    "preguntar": "Ask the coach",
+    "a11y": "Open the coach"
+  },
+  "avance": {
+    "eyebrow": "NIVL · YOUR PROGRESS",
+    "titulo": "PROGRESS",
+    "metricas": "Metrics",
+    "progresion": "Progression",
+    "cargandoA11y": "Loading your progress",
+    "xpSemana": "Week XP",
+    "cumplimiento": "Completion",
+    "racha": "Streak",
+    "sieteDias": "7 days",
+    "mejor": "Best {{n}}",
+    "xpPorSemana": "XP per week",
+    "ochoSemanas": "8 weeks",
+    "estaSemana": "Now",
+    "xpPorSemanaA11y": "XP per week. {{lista}}",
+    "cumplimiento28": "Completion · 28 days",
+    "rejillaA11y": "{{dias}} active days out of 28, {{pct}} percent completion",
+    "diasActivos": "{{n}} active days out of 28",
+    "nada": "none",
+    "todo": "all",
+    "rachaHistorica": "Streak",
+    "dias_one": "{{count}} day",
+    "dias_other": "{{count}} days",
+    "hito": "Next milestone: {{n}} days ({{faltan}} to go)",
+    "hitoMax": "You have passed every streak milestone",
+    "estadisticas": "Stats",
+    "estaSemanaEm": "Total · this week",
+    "statA11y": "{{stat}}: {{total}} XP in total, {{semana}} this week",
+    "informe": "Weekly report",
+    "informeCompleto": "Report",
+    "cuerpo": "Body and goals"
+  },
+  "progresion": {
+    "nivelGlobal": "Global level",
+    "nivel": "LEVEL {{nivel}}",
+    "faltaXp": "{{xp}} XP to level {{nivel}}",
+    "camino": "Rank path",
+    "diasActivos": "{{n}} active days",
+    "requisito": "Level {{nivel}} · {{dias}} active days",
+    "actual": "YOU · {{grado}}",
+    "estado": {
+      "ganado": "earned",
+      "actual": "your rank",
+      "futuro": "ahead"
+    },
+    "rangoA11y": "Rank {{rango}}, {{nombre}}: level {{nivel}} and {{dias}} active days. {{estado}}.",
+    "logros": "Achievements and rewards",
+    "deTotal": "{{n}} of {{total}}",
+    "ganado": "earned",
+    "logroA11y": "{{nombre}}. {{desc}}. {{estado}}.",
+    "pendiente": "not yet",
+    "titulo": "Title: {{titulo}}",
+    "botin": "Campaign loot",
+    "botinXp": "{{xp}} XP",
+    "botinVacio_one": "You have not cleared a campaign yet. You have {{count}} open.",
+    "botinVacio_other": "You have not cleared a campaign yet. You have {{count}} open.",
+    "irCampanas": "Go to campaigns"
+  },
+  "campanas": {
+    "eyebrow": "NIVL · WHAT YOU CONQUER",
+    "titulo": "Campaigns",
+    "enCurso": "In progress",
+    "vacioTitulo": "No campaign open",
+    "vacioCuerpo": "A campaign is a big goal with its tasks and an XP loot when you clear it.",
+    "meta": "{{stat}} · rank {{rango}}",
+    "sinTareas": "no tasks",
+    "botinXp": "{{xp}} XP loot",
+    "abrir": "Open",
+    "a11y": "{{titulo}}, rank {{rango}}: {{hechas}} of {{total}} tasks, {{xp}} XP loot. Open."
+  },
+  "prestado": {
+    "volverA11y": "Back to NIVL"
+  }
+}

@@ -1,0 +1,128 @@
+{
+  "cabecera": {
+    "subtitulo": "Base · livello globale",
+    "perfilA11y": "Apri il tuo profilo e le impostazioni"
+  },
+  "heroe": {
+    "eyebrow": "LIVELLO GLOBALE",
+    "rango": "RANGO {{rango}}",
+    "xp": "{{xp}} / {{total}} XP",
+    "xpMax": "Livello massimo",
+    "racha": "serie",
+    "piedras": "pietre",
+    "hoy": "oggi",
+    "a11y": "Livello globale {{nivel}}, {{titulo}}. {{xp}}. Serie di {{racha}} giorni, {{piedras}} pietre. Apre la tua progressione."
+  },
+  "hoy": {
+    "siguiente": "Prossima azione",
+    "xp": "+{{xp}} XP",
+    "completar": "Completa",
+    "deTotal": "{{hechas}} di {{total}}",
+    "gestionar": "Gestisci abitudini",
+    "errorRotulo": "Il sistema non risponde",
+    "campanaActiva": "Campagna attiva",
+    "campanaA11y": "Campagna attiva: {{titulo}}, {{hechas}} di {{total}} compiti. Apri.",
+    "sinCampana": "Nessuna campagna aperta. Aprine una e vinci il bottino.",
+    "abrir": "APRI"
+  },
+  "arsenal": {
+    "rotulo": "Il tuo arsenale",
+    "em": "Tocca per equipaggiare",
+    "nivel": "LV {{nivel}}",
+    "xp": "{{xp}} XP",
+    "equiparA11y": "Equipaggia {{modo}}, livello {{nivel}}. Cambia modalità con un tocco."
+  },
+  "todo": {
+    "rotulo": "Tutto da qui",
+    "em": "Senza cambiare modalità",
+    "gym": "Palestra",
+    "dieta": "Dieta",
+    "cardio": "Cardio",
+    "foco": "Focus",
+    "examenes": "Esami",
+    "economia": "Finanze",
+    "agenda": "Agenda",
+    "diario": "Diario",
+    "habitos": "Abitudini"
+  },
+  "coach": {
+    "rotulo": "Coach NIVL",
+    "enLinea": "● Online",
+    "porDefecto": "Dimmi cosa vuoi ottenere e organizzo la tua giornata.",
+    "preguntar": "Chiedi al coach",
+    "a11y": "Apri il coach"
+  },
+  "avance": {
+    "eyebrow": "NIVL · I TUOI PROGRESSI",
+    "titulo": "PROGRESSI",
+    "metricas": "Metriche",
+    "progresion": "Progressione",
+    "cargandoA11y": "Caricamento dei tuoi progressi",
+    "xpSemana": "XP settimana",
+    "cumplimiento": "Completamento",
+    "racha": "Serie",
+    "sieteDias": "7 giorni",
+    "mejor": "Record {{n}}",
+    "xpPorSemana": "XP per settimana",
+    "ochoSemanas": "8 settimane",
+    "estaSemana": "Oggi",
+    "xpPorSemanaA11y": "XP per settimana. {{lista}}",
+    "cumplimiento28": "Completamento · 28 giorni",
+    "rejillaA11y": "{{dias}} giorni attivi su 28, completamento del {{pct}} per cento",
+    "diasActivos": "{{n}} giorni attivi su 28",
+    "nada": "niente",
+    "todo": "tutto",
+    "rachaHistorica": "Serie",
+    "dias_one": "{{count}} giorno",
+    "dias_other": "{{count}} giorni",
+    "hito": "Prossimo traguardo: {{n}} giorni (mancano {{faltan}})",
+    "hitoMax": "Hai superato tutti i traguardi di serie",
+    "estadisticas": "Statistiche",
+    "estaSemanaEm": "Totale · questa settimana",
+    "statA11y": "{{stat}}: {{total}} XP in totale, {{semana}} questa settimana",
+    "informe": "Rapporto settimanale",
+    "informeCompleto": "Rapporto",
+    "cuerpo": "Corpo e obiettivi"
+  },
+  "progresion": {
+    "nivelGlobal": "Livello globale",
+    "nivel": "LIVELLO {{nivel}}",
+    "faltaXp": "{{xp}} XP per il livello {{nivel}}",
+    "camino": "Cammino dei ranghi",
+    "diasActivos": "{{n}} giorni attivi",
+    "requisito": "Livello {{nivel}} · {{dias}} giorni attivi",
+    "actual": "TU · {{grado}}",
+    "estado": {
+      "ganado": "ottenuto",
+      "actual": "il tuo rango",
+      "futuro": "da raggiungere"
+    },
+    "rangoA11y": "Rango {{rango}}, {{nombre}}: livello {{nivel}} e {{dias}} giorni attivi. {{estado}}.",
+    "logros": "Traguardi e premi",
+    "deTotal": "{{n}} di {{total}}",
+    "ganado": "ottenuto",
+    "logroA11y": "{{nombre}}. {{desc}}. {{estado}}.",
+    "pendiente": "da ottenere",
+    "titulo": "Titolo: {{titulo}}",
+    "botin": "Bottino delle campagne",
+    "botinXp": "{{xp}} XP",
+    "botinVacio_one": "Non hai ancora completato nessuna campagna. Ne hai {{count}} aperta.",
+    "botinVacio_other": "Non hai ancora completato nessuna campagna. Ne hai {{count}} aperte.",
+    "irCampanas": "Vai alle campagne"
+  },
+  "campanas": {
+    "eyebrow": "NIVL · CIÒ CHE CONQUISTI",
+    "titulo": "Campagne",
+    "enCurso": "In corso",
+    "vacioTitulo": "Nessuna campagna aperta",
+    "vacioCuerpo": "Una campagna è un grande obiettivo con i suoi compiti e un bottino di XP quando la completi.",
+    "meta": "{{stat}} · rango {{rango}}",
+    "sinTareas": "nessun compito",
+    "botinXp": "{{xp}} XP di bottino",
+    "abrir": "Apri",
+    "a11y": "{{titulo}}, rango {{rango}}: {{hechas}} di {{total}} compiti, {{xp}} XP di bottino. Apri."
+  },
+  "prestado": {
+    "volverA11y": "Torna a NIVL"
+  }
+}

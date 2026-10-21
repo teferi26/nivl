@@ -168,6 +168,10 @@ export function RuedaModos(props: RuedaModosProps) {
   const recarga = useSharedValue(0);
   const x0 = useSharedValue(0);
   const y0 = useSharedValue(0);
+  // ¿Llegó a activarse el arrastre? Un toque quieto y corto puede acabar sin
+  // activar el Pan (en algunas plataformas no hay ni un evento de movimiento):
+  // entonces onEnd no llega y el toque se elige en onFinalize.
+  const panActivo = useSharedValue(0);
 
   // Abrir: tiempo bala.
   useEffect(() => {
@@ -237,11 +241,15 @@ export function RuedaModos(props: RuedaModosProps) {
         .minDistance(0)
         .enabled(origen === 'toque' && !elegido && !cerrando)
         .onBegin((e) => {
+          panActivo.value = 0;
           x0.value = e.x;
           y0.value = e.y;
           dedoX.value = e.absoluteX;
           dedoY.value = e.absoluteY;
           resaltado.value = sectorEn(e.x - cx, e.y - cy, esc, mascara);
+        })
+        .onStart(() => {
+          panActivo.value = 1;
         })
         .onUpdate((e) => {
           dedoX.value = e.absoluteX;
@@ -267,8 +275,14 @@ export function RuedaModos(props: RuedaModosProps) {
           } else {
             scheduleOnRN(alElegir, resaltado.value);
           }
+        })
+        .onFinalize(() => {
+          // Tocar un modo con la rueda abierta, sin arrastrar: si el Pan no
+          // llegó a activarse, el toque elige aquí (TAREA 2, General v2).
+          if (panActivo.value === 0) scheduleOnRN(alElegir, sectorEn(x0.value - cx, y0.value - cy, esc, mascara));
+          panActivo.value = 0;
         }),
-    [origen, elegido, cerrando, cx, cy, esc, mascara, x0, y0, dedoX, dedoY, baja, resaltado, alElegir, alPedirCierre],
+    [origen, elegido, cerrando, cx, cy, esc, mascara, x0, y0, panActivo, dedoX, dedoY, baja, resaltado, alElegir, alPedirCierre],
   );
 
   const estiloVelo = useAnimatedStyle(() => ({ opacity: velo.value }));

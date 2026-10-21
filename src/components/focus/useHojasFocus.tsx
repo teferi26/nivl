@@ -6,6 +6,7 @@
 // relectura. Nada de aquí paga XP.
 
 import { router } from 'expo-router';
+import { rutaFocus } from '@/components/modos/mundo/prestadoRutas';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { confirmar } from '@/components/ui';
 import { vibrar } from '@/design/haptics';
@@ -130,9 +131,9 @@ export function useHojasFocus({ datos: fd, hoy, pomodoro, misiones, onEstudiar }
       if (m.accion === 'repasos' || m.accion === 'flashcards') {
         setTimeout(() => abrir({ tipo: 'repaso', items: itemsRepaso() }), ESPERA_CIERRE);
       } else if (m.accion === 'examenes') {
-        router.navigate('/focus-examenes');
+        router.navigate(rutaFocus('examenes'));
       } else {
-        router.navigate('/focus-hoy');
+        router.navigate(rutaFocus('hoy'));
       }
     },
     [abrir, cerrar, itemsRepaso],

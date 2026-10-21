@@ -4,22 +4,22 @@ import { destinoActivo, destinosDe, NAV_ITEMS } from '@/components/ui/navItems';
 // sube por encima del import).
 jest.mock('@/design/haptics', () => ({ vibrar: jest.fn() }));
 
-// El orden de (tabs)/_layout.tsx: la Agenda justo detrás de Hoy.
-const RUTAS = ['index', 'agenda', 'coach', 'habitos', 'mazmorras', 'perfil'].map((name) => ({
+// El orden de (tabs)/_layout.tsx (General v2, docs/modos/GENERAL.md): las
+// cuatro de la barra inferior primero y detrás las que se abren desde Hoy.
+const RUTAS = ['index', 'avance', 'mazmorras', 'arena', 'coach', 'habitos', 'agenda', 'perfil'].map((name) => ({
   name,
   key: `${name}-k`,
 }));
 
 describe('destinosDe', () => {
-  it('la barra inferior (compact) pinta 5 destinos, sin la Agenda', () => {
+  it('la barra inferior (compact) pinta 4 destinos, como los mundos: Hoy, Avance, Campañas y Arena', () => {
     const tabs = destinosDe(RUTAS, 'tabs').map((r) => r.name);
-    expect(tabs).toHaveLength(5);
-    expect(tabs).toEqual(['index', 'coach', 'habitos', 'mazmorras', 'perfil']);
+    expect(tabs).toEqual(['index', 'avance', 'mazmorras', 'arena']);
   });
 
-  it('el raíl y la barra lateral siguen pintando los 6', () => {
-    expect(destinosDe(RUTAS, 'rail')).toHaveLength(6);
-    expect(destinosDe(RUTAS, 'sidebar')).toHaveLength(6);
+  it('el raíl y la barra lateral pintan los 8', () => {
+    expect(destinosDe(RUTAS, 'rail')).toHaveLength(8);
+    expect(destinosDe(RUTAS, 'sidebar')).toHaveLength(8);
     expect(destinosDe(RUTAS, 'rail').map((r) => r.name)).toContain('agenda');
   });
 
@@ -29,21 +29,24 @@ describe('destinosDe', () => {
 });
 
 describe('destinoActivo', () => {
-  it('en la Agenda, la barra inferior marca Hoy', () => {
-    expect(NAV_ITEMS.agenda?.padre).toBe('index');
-    expect(destinoActivo(RUTAS, 1, 'tabs')).toBe('index');
-    expect(destinoActivo(RUTAS, 1)).toBe('index');
+  it('en lo que se abre desde Hoy (coach, hábitos, agenda, perfil), la barra inferior marca Hoy', () => {
+    for (const r of ['coach', 'habitos', 'agenda', 'perfil']) {
+      expect(NAV_ITEMS[r]?.padre).toBe('index');
+      const i = RUTAS.findIndex((x) => x.name === r);
+      expect(destinoActivo(RUTAS, i, 'tabs')).toBe('index');
+    }
   });
 
-  it('en el raíl y la barra lateral la Agenda se marca a sí misma', () => {
-    expect(destinoActivo(RUTAS, 1, 'rail')).toBe('agenda');
-    expect(destinoActivo(RUTAS, 1, 'sidebar')).toBe('agenda');
+  it('en el raíl y la barra lateral se marcan a sí mismos', () => {
+    expect(destinoActivo(RUTAS, 6, 'rail')).toBe('agenda');
+    expect(destinoActivo(RUTAS, 4, 'sidebar')).toBe('coach');
   });
 
-  it('el resto de destinos se marcan a sí mismos', () => {
+  it('las cuatro pestañas se marcan a sí mismas', () => {
     expect(destinoActivo(RUTAS, 0, 'tabs')).toBe('index');
-    expect(destinoActivo(RUTAS, 2, 'tabs')).toBe('coach');
-    expect(destinoActivo(RUTAS, 5, 'tabs')).toBe('perfil');
+    expect(destinoActivo(RUTAS, 1, 'tabs')).toBe('avance');
+    expect(destinoActivo(RUTAS, 2, 'tabs')).toBe('mazmorras');
+    expect(destinoActivo(RUTAS, 3, 'tabs')).toBe('arena');
   });
 
   it('un índice fuera de rango no marca nada', () => {

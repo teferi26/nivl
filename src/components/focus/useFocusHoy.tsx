@@ -12,6 +12,7 @@
 //     3. se marca hecho el primer bloque de estudio del plan del día.
 
 import { router } from 'expo-router';
+import { rutaFocus } from '@/components/modos/mundo/prestadoRutas';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useCelebracion } from '@/components/celebracion/contexto';
 import { CompletarSheet } from '@/components/CompletarSheet';
@@ -192,9 +193,9 @@ export function useFocusHoy() {
     onAjustes: hojas.abrir.ajustes,
     onElegirMision: hojas.abrir.mision,
     onNoMolestar: hojas.abrir.noMolestar,
-    onExamenes: () => router.navigate('/focus-examenes'),
+    onExamenes: () => router.navigate(rutaFocus('examenes')),
     onExamen: hojas.abrir.detalle,
-    onTemario: () => router.navigate('/focus-temario'),
+    onTemario: () => router.navigate(rutaFocus('temario')),
     onAlternarTema: (id) => {
       const tema = fd.datos.temas.find((x) => x.id === id);
       if (tema) hojas.abrir.alternarTema(tema);
@@ -211,7 +212,7 @@ export function useFocusHoy() {
       const m = nivl.datos.misiones.find((x) => x.quest.id === id);
       if (m) nivl.acciones.onCompletar(m.quest);
     },
-    onCoach: () => router.navigate('/focus-coach'),
+    onCoach: () => router.navigate(rutaFocus('coach')),
     onAnadirAsignatura: hojas.abrir.asignatura,
     onAnadirExamen: () => hojas.abrir.examen(),
     onReintentar: () => void fd.recargar(),

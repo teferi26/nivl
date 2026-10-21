@@ -17,6 +17,8 @@ import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
 import { ink, space, type as tipo } from '@/design/tokens';
+import { usePrestado } from '@/components/modos/mundo/Prestado';
+import { t } from '@/i18n';
 import { F, R } from './estilo';
 
 type Icono = keyof typeof Ionicons.glyphMap;
@@ -346,11 +348,28 @@ export function VacioFocus({
 
 /** El título de una pestaña de FOCUS: «FOCUS» en el acento y el nombre en Cinzel. */
 export function TituloFocus({ titulo, subtitulo }: { titulo: string; subtitulo?: string }) {
+  // Prestada a General (Prestado.tsx): «volver» delante del nombre del modo.
+  const prestado = usePrestado();
   return (
     <View style={styles.titulo}>
-      <Text style={styles.tituloEyebrow} maxFontSizeMultiplier={1.35}>
-        {NOMBRE_FOCUS}
-      </Text>
+      {prestado ? (
+        <Pressable
+          onPress={prestado.volver}
+          hitSlop={10}
+          accessibilityRole="button"
+          accessibilityLabel={t('general:prestado.volverA11y')}
+          style={styles.tituloVolver}
+        >
+          <Ionicons name="chevron-back" size={16} color={F.acento} />
+          <Text style={styles.tituloEyebrow} maxFontSizeMultiplier={1.35}>
+            {NOMBRE_FOCUS}
+          </Text>
+        </Pressable>
+      ) : (
+        <Text style={styles.tituloEyebrow} maxFontSizeMultiplier={1.35}>
+          {NOMBRE_FOCUS}
+        </Text>
+      )}
       <Text style={styles.tituloTexto} accessibilityRole="header" maxFontSizeMultiplier={1.25} numberOfLines={1} adjustsFontSizeToFit>
         {titulo}
       </Text>
@@ -376,6 +395,7 @@ export const textoFocus = StyleSheet.create({
 
 const styles = StyleSheet.create({
   titulo: { paddingTop: space.s2, paddingBottom: space.s4, gap: 2 },
+  tituloVolver: { flexDirection: 'row', alignItems: 'center', gap: 4, alignSelf: 'flex-start' },
   tituloEyebrow: { fontFamily: tipo.label.family, fontSize: 12, lineHeight: 16, letterSpacing: 3, color: F.acento },
   tituloTexto: { fontFamily: tipo.rank.family, fontSize: 32, lineHeight: 38, letterSpacing: 3, color: ink.ink10, textTransform: 'uppercase' },
   tituloSub: { fontFamily: tipo.bodySm.family, fontSize: 14, lineHeight: 20, color: F.meta },

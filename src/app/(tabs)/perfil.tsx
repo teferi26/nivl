@@ -7,6 +7,7 @@ import { HojaBorrar, HojaCodigo, HojaIdioma, HojaIdiomaApp, HojaPausa } from '@/
 import { PerfilAjustes } from '@/components/perfil/PerfilAjustes';
 import { PerfilVista } from '@/components/perfil/PerfilVista';
 import { FREEZE_DAYS, motivosPausa, usePerfil } from '@/components/perfil/usePerfil';
+import { ArsenalConectado } from '@/components/general/Arsenal';
 import { NivelesModo } from '@/components/modos/NivelesModo';
 import { Screen } from '@/components/ui';
 
@@ -19,7 +20,13 @@ export default function Perfil() {
       <PerfilVista
         {...vista}
         ajustes={ajustes ? <PerfilAjustes {...ajustes} /> : null}
-        nivelesModo={<NivelesModo nivelGlobal={vista.datos?.estado.nivel ?? null} />}
+        nivelesModo={
+          <>
+            {/* Cambiar de modo con UN toque, sin rueda (docs/modos/GENERAL.md). */}
+            <ArsenalConectado />
+            <NivelesModo nivelGlobal={vista.datos?.estado.nivel ?? null} />
+          </>
+        }
       />
 
       {hojas.consentimientoHoja}

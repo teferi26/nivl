@@ -23,6 +23,8 @@
   "lema": "UN 1 % MEJOR CADA DÍA",
   "destino": {
     "hoy": "Hoy",
+    "avance": "Avance",
+    "arena": "Arena",
     "agenda": "Agenda",
     "coach": "Coach",
     "habitos": "Hábitos",

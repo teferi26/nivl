@@ -1,10 +1,11 @@
-// La pestaña de campañas (la ruta conserva su nombre interno). Los datos y
-// los efectos viven en useCampanas; lo que se ve, en CampanasVista (pura,
-// también en /kit/pantallas). Aquí queda la hoja de abrir una campaña (con
-// Campo y rótulos de la arena, FASE3 Lote B2).
+// La pestaña de campañas de General (la ruta conserva su nombre interno). Los
+// datos y los efectos viven en useCampanas; lo que se ve, en
+// CampanasGeneralVista (la piel de NIVL, lámina 4; también en /kit/general).
+// Aquí queda la hoja de abrir una campaña, con la piel de NIVL (oro).
 import { StyleSheet, Text, View } from 'react-native';
 import { Campo } from '@/components/arena';
-import { CampanasVista } from '@/components/campanas/CampanasVista';
+import { CampanasGeneralVista } from '@/components/general/CampanasGeneralVista';
+import { PielGeneral } from '@/components/general/piel';
 import { useCampanas } from '@/components/campanas/useCampanas';
 import { Button, Chip, ChipWrap, Sheet } from '@/components/ui';
 import { ink, space, type as tipo } from '@/design/tokens';
@@ -15,8 +16,8 @@ export default function Campañas() {
   const { vista, hojas } = useCampanas();
   const h = hojas.nueva;
   return (
-    <>
-      <CampanasVista {...vista} />
+    <PielGeneral>
+      <CampanasGeneralVista {...vista} />
       <Sheet
         visible={h.visible}
         onClose={h.onClose}
@@ -79,7 +80,7 @@ export default function Campañas() {
           </View>
         </View>
       </Sheet>
-    </>
+    </PielGeneral>
   );
 }
 

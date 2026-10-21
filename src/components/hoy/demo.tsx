@@ -243,3 +243,6 @@ export const DEMO: DemoPantalla | null = {
     },
   ],
 };
+
+/** Para la galería de General (/kit/general): las mismas entradas de Hoy. */
+export { base as baseHoyDemo, hecha as hechaDemo, todas as todasDemo, CIERRE_PENA as CIERRE_PENA_DEMO };

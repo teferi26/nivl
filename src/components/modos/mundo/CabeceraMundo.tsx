@@ -12,8 +12,9 @@
 // Tipos y medidas de la lámina (pantalla de 342 llevada a 390): nombre en
 // Cinzel Black blanco, subtítulo gris, «NV» y barra en el acento con su halo.
 
+import Ionicons from '@expo/vector-icons/Ionicons';
 import type { ReactNode } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { formatoMiles, ratioSeguro } from '@/components/arena';
 import { Skeleton } from '@/components/ui';
 import { conAlfa, halo, mezcla } from '@/components/modos/rueda/color';
@@ -22,6 +23,7 @@ import { acentoRueda, ink, space } from '@/design/tokens';
 import { t } from '@/i18n';
 import type { NivelModo } from '@/modos/niveles';
 import { NOMBRE_MODO, type ModoEtiqueta } from '@/modos/tipos';
+import { usePrestado } from './Prestado';
 
 export interface CabeceraMundoProps {
   modo: ModoEtiqueta;
@@ -44,12 +46,24 @@ export function CabeceraMundo({ modo, nivel, emblema }: CabeceraMundoProps) {
   const maximo = nivel !== null && nivel.xpSiguiente <= 0;
   const ratio = nivel === null ? 0 : maximo ? 1 : ratioSeguro(nivel.xpEnNivel, nivel.xpSiguiente);
   const sub = t(`mundos:subtitulo.${modo}`);
+  // Prestada a General (Prestado.tsx): en la ranura del emblema, volver a NIVL.
+  const prestado = usePrestado();
 
   return (
     <View style={styles.wrap}>
       <View style={styles.izquierda}>
         <View style={styles.ranura}>
-          {emblema ?? (
+          {prestado ? (
+            <Pressable
+              onPress={prestado.volver}
+              hitSlop={6}
+              accessibilityRole="button"
+              accessibilityLabel={t('general:prestado.volverA11y')}
+              style={({ pressed }) => [styles.placa, { borderColor: acento, backgroundColor: mezcla(acento, 0.14) }, pressed && styles.pulsado]}
+            >
+              <Ionicons name="chevron-back" size={22} color={acento} />
+            </Pressable>
+          ) : emblema ?? (
             <View
               style={[styles.placa, { borderColor: acento, backgroundColor: mezcla(acento, 0.14), boxShadow: halo(acento, 16, 0.45) }]}
               accessibilityElementsHidden
@@ -114,6 +128,7 @@ const styles = StyleSheet.create({
   ranura: { width: LADO_RANURA, height: LADO_RANURA, alignItems: 'center', justifyContent: 'center' },
   placa: { width: LADO_RANURA, height: LADO_RANURA, borderRadius: 12, borderWidth: 1.5, alignItems: 'center', justifyContent: 'center' },
   textos: { flex: 1, minWidth: 0 },
+  pulsado: { opacity: 0.7 },
   nombre: { fontFamily: 'Cinzel_900Black', fontSize: 24, lineHeight: 27, letterSpacing: 1.9, color: ink.ink10 },
   subtitulo: { fontFamily: 'Outfit_500Medium', fontSize: 12, lineHeight: 15, letterSpacing: 0.7, color: GRIS, marginTop: 2 },
   nivel: { width: 96, alignItems: 'flex-end' },

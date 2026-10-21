@@ -16,7 +16,7 @@ import { t } from '@/i18n';
 type Icon = keyof typeof Ionicons.glyphMap;
 
 /** Los destinos con nombre en `comun:destino.*` (también los títulos de (tabs)/_layout). */
-export type Destino = 'hoy' | 'agenda' | 'coach' | 'habitos' | 'campanas' | 'perfil';
+export type Destino = 'hoy' | 'avance' | 'arena' | 'agenda' | 'coach' | 'habitos' | 'campanas' | 'perfil';
 
 /** El nombre visible de un destino, en el idioma actual (al pintar, nunca al cargar). */
 export function nombreDestino(destino: Destino): string {
@@ -44,13 +44,19 @@ export interface NavItem {
   padre?: string;
 }
 
+// General v2 (docs/modos/GENERAL.md): en compact, cuatro pestañas y el emblema
+// en medio, como los mundos: Hoy · Avance · [emblema] · Campañas · Arena. El
+// coach, los hábitos, la agenda y el perfil se abren desde Hoy (y Hoy sigue
+// encendida mientras tanto); en el raíl y la barra lateral van todos.
 export const NAV_ITEMS: Record<string, NavDestino> = {
   index: { off: 'today-outline', on: 'today', destino: 'hoy' },
-  coach: { off: 'chatbubble-ellipses-outline', on: 'chatbubble-ellipses', destino: 'coach' },
-  habitos: { off: 'repeat-outline', on: 'repeat', destino: 'habitos' },
+  avance: { off: 'stats-chart-outline', on: 'stats-chart', destino: 'avance' },
   mazmorras: { off: 'flag-outline', on: 'flag', destino: 'campanas' },
+  arena: { off: 'trophy-outline', on: 'trophy', destino: 'arena' },
+  coach: { off: 'chatbubble-ellipses-outline', on: 'chatbubble-ellipses', destino: 'coach', compact: false, padre: 'index' },
+  habitos: { off: 'repeat-outline', on: 'repeat', destino: 'habitos', compact: false, padre: 'index' },
   agenda: { off: 'calendar-outline', on: 'calendar', destino: 'agenda', compact: false, padre: 'index' },
-  perfil: { off: 'person-outline', on: 'person', destino: 'perfil' },
+  perfil: { off: 'person-outline', on: 'person', destino: 'perfil', compact: false, padre: 'index' },
 };
 
 /**

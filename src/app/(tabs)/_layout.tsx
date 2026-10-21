@@ -8,6 +8,7 @@ import { nombreDestino } from '@/components/ui/navItems';
 import { NavSidebar } from '@/components/ui/NavSidebar';
 import { TabBar } from '@/components/ui/TabBar';
 import { huecoContenido, marcoDe } from '@/design/responsive';
+import { acentoRueda } from '@/design/tokens';
 import { TopeAncho, useAnchoUtil } from '@/design/useSizeClass';
 import { useModo } from '@/modos/ModoProvider';
 import { destinoMundo, llegadaAlMundo, transitoMundo } from '@/modos/rutasModo';
@@ -15,7 +16,7 @@ import { destinoMundo, llegadaAlMundo, transitoMundo } from '@/modos/rutasModo';
 // Navegación según la clase de tamaño (SISTEMA.md §3): barra inferior en
 // compact, raíl de 72 en medium y barra lateral de 240 en expanded. Cambia en
 // caliente al rotar o redimensionar la ventana. Iconos y rótulos: navItems.ts.
-// La barra inferior pinta 5 destinos; el raíl y la barra lateral, los 6.
+// La barra inferior pinta 4 destinos y el emblema; el raíl y la barra lateral, los 8.
 //
 // La navegación se decide con el ancho de la ventana, pero las pantallas se
 // miden con el hueco que les queda (ventana − raíl o barra lateral − inset
@@ -44,22 +45,25 @@ export default function TabsLayout() {
       <Tabs
         tabBar={(props) =>
           sizeClass === 'compact' ? (
-            <TabBar {...props} centro={hayEmblema ? <EmblemaBarra /> : undefined} />
+            <TabBar {...props} acento={acentoRueda.general} centro={hayEmblema ? <EmblemaBarra /> : undefined} />
           ) : sizeClass === 'medium' ? (
-            <NavRail {...props} />
+            <NavRail {...props} acento={acentoRueda.general} />
           ) : (
-            <NavSidebar {...props} />
+            <NavSidebar {...props} acento={acentoRueda.general} />
           )
         }
         screenOptions={{ headerShown: false, tabBarPosition: sizeClass === 'compact' ? 'bottom' : 'left' }}
       >
+        {/* General v2 (docs/modos/GENERAL.md): las cuatro de la barra inferior
+            primero (Hoy · Avance · [emblema] · Campañas · Arena); detrás, las
+            que se abren desde Hoy en compact (navItems.ts, `compact: false`). */}
         <Tabs.Screen name="index" options={{ title: nombreDestino('hoy') }} />
-        {/* Justo detrás de Hoy: en compact no tiene pestaña (navItems.ts) y es
-            su destino secundario; en el raíl y la barra lateral va segunda. */}
-        <Tabs.Screen name="agenda" options={{ title: nombreDestino('agenda') }} />
+        <Tabs.Screen name="avance" options={{ title: nombreDestino('avance') }} />
+        <Tabs.Screen name="mazmorras" options={{ title: nombreDestino('campanas') }} />
+        <Tabs.Screen name="arena" options={{ title: nombreDestino('arena') }} />
         <Tabs.Screen name="coach" options={{ title: nombreDestino('coach') }} />
         <Tabs.Screen name="habitos" options={{ title: nombreDestino('habitos') }} />
-        <Tabs.Screen name="mazmorras" options={{ title: nombreDestino('campanas') }} />
+        <Tabs.Screen name="agenda" options={{ title: nombreDestino('agenda') }} />
         <Tabs.Screen name="perfil" options={{ title: nombreDestino('perfil') }} />
       </Tabs>
       {/* Prueba automática de Élite (0069): nada con prueba_auto_activa apagado. */}

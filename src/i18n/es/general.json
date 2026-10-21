@@ -1,0 +1,128 @@
+{
+  "cabecera": {
+    "subtitulo": "Base · nivel global",
+    "perfilA11y": "Abrir tu perfil y los ajustes"
+  },
+  "heroe": {
+    "eyebrow": "NIVEL GLOBAL",
+    "rango": "RANGO {{rango}}",
+    "xp": "{{xp}} / {{total}} XP",
+    "xpMax": "Nivel máximo",
+    "racha": "racha",
+    "piedras": "piedras",
+    "hoy": "hoy",
+    "a11y": "Nivel global {{nivel}}, {{titulo}}. {{xp}}. Racha de {{racha}} días, {{piedras}} piedras. Abre tu progresión."
+  },
+  "hoy": {
+    "siguiente": "Siguiente acción",
+    "xp": "+{{xp}} XP",
+    "completar": "Completar",
+    "deTotal": "{{hechas}} de {{total}}",
+    "gestionar": "Gestionar hábitos",
+    "errorRotulo": "El sistema no responde",
+    "campanaActiva": "Campaña activa",
+    "campanaA11y": "Campaña activa: {{titulo}}, {{hechas}} de {{total}} tareas. Abrir.",
+    "sinCampana": "Ninguna campaña abierta. Abre una y gana su botín.",
+    "abrir": "ABRIR"
+  },
+  "arsenal": {
+    "rotulo": "Tu arsenal",
+    "em": "Toca para equipar",
+    "nivel": "NV {{nivel}}",
+    "xp": "{{xp}} XP",
+    "equiparA11y": "Equipar {{modo}}, nivel {{nivel}}. Cambia de modo con un toque."
+  },
+  "todo": {
+    "rotulo": "Todo desde aquí",
+    "em": "Sin cambiar de modo",
+    "gym": "Gimnasio",
+    "dieta": "Dieta",
+    "cardio": "Cardio",
+    "foco": "Foco",
+    "examenes": "Exámenes",
+    "economia": "Economía",
+    "agenda": "Agenda",
+    "diario": "Diario",
+    "habitos": "Hábitos"
+  },
+  "coach": {
+    "rotulo": "Coach NIVL",
+    "enLinea": "● En línea",
+    "porDefecto": "Dime qué quieres conseguir y ordeno tu día.",
+    "preguntar": "Pregunta al coach",
+    "a11y": "Abrir el coach"
+  },
+  "avance": {
+    "eyebrow": "NIVL · TU AVANCE",
+    "titulo": "AVANCE",
+    "metricas": "Métricas",
+    "progresion": "Progresión",
+    "cargandoA11y": "Cargando tu avance",
+    "xpSemana": "XP semana",
+    "cumplimiento": "Cumplimiento",
+    "racha": "Racha",
+    "sieteDias": "7 días",
+    "mejor": "Mejor {{n}}",
+    "xpPorSemana": "XP por semana",
+    "ochoSemanas": "8 semanas",
+    "estaSemana": "Hoy",
+    "xpPorSemanaA11y": "XP por semana. {{lista}}",
+    "cumplimiento28": "Cumplimiento · 28 días",
+    "rejillaA11y": "{{dias}} días activos de 28, cumplimiento del {{pct}} por ciento",
+    "diasActivos": "{{n}} días activos de 28",
+    "nada": "nada",
+    "todo": "todo",
+    "rachaHistorica": "Racha",
+    "dias_one": "{{count}} día",
+    "dias_other": "{{count}} días",
+    "hito": "Siguiente hito: {{n}} días (faltan {{faltan}})",
+    "hitoMax": "Has pasado todos los hitos de racha",
+    "estadisticas": "Estadísticas",
+    "estaSemanaEm": "Total · esta semana",
+    "statA11y": "{{stat}}: {{total}} XP en total, {{semana}} esta semana",
+    "informe": "Informe semanal",
+    "informeCompleto": "Informe",
+    "cuerpo": "Cuerpo y metas"
+  },
+  "progresion": {
+    "nivelGlobal": "Nivel global",
+    "nivel": "NIVEL {{nivel}}",
+    "faltaXp": "{{xp}} XP para el nivel {{nivel}}",
+    "camino": "Camino de rangos",
+    "diasActivos": "{{n}} días activos",
+    "requisito": "Nivel {{nivel}} · {{dias}} días activos",
+    "actual": "TÚ · {{grado}}",
+    "estado": {
+      "ganado": "ganado",
+      "actual": "tu rango",
+      "futuro": "por llegar"
+    },
+    "rangoA11y": "Rango {{rango}}, {{nombre}}: nivel {{nivel}} y {{dias}} días activos. {{estado}}.",
+    "logros": "Logros y premios",
+    "deTotal": "{{n}} de {{total}}",
+    "ganado": "conseguido",
+    "logroA11y": "{{nombre}}. {{desc}}. {{estado}}.",
+    "pendiente": "por conseguir",
+    "titulo": "Título: {{titulo}}",
+    "botin": "Botín de campañas",
+    "botinXp": "{{xp}} XP",
+    "botinVacio_one": "Aún no has despejado ninguna campaña. Tienes {{count}} abierta.",
+    "botinVacio_other": "Aún no has despejado ninguna campaña. Tienes {{count}} abiertas.",
+    "irCampanas": "Ir a campañas"
+  },
+  "campanas": {
+    "eyebrow": "NIVL · LO QUE CONQUISTAS",
+    "titulo": "Campañas",
+    "enCurso": "En curso",
+    "vacioTitulo": "Ninguna campaña abierta",
+    "vacioCuerpo": "Una campaña es un objetivo grande con sus tareas y su botín de XP al despejarla.",
+    "meta": "{{stat}} · rango {{rango}}",
+    "sinTareas": "sin tareas",
+    "botinXp": "{{xp}} XP de botín",
+    "abrir": "Abrir",
+    "a11y": "{{titulo}}, rango {{rango}}: {{hechas}} de {{total}} tareas, {{xp}} XP de botín. Abrir."
+  },
+  "prestado": {
+    "volverA11y": "Volver a NIVL"
+  }
+}

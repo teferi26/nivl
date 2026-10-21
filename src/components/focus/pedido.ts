@@ -2,6 +2,7 @@
 // Deja el encargo aquí y va a Hoy; Hoy lo recoge y apunta el bloque a ese tema.
 
 import { router } from 'expo-router';
+import { rutaFocus } from '@/components/modos/mundo/prestadoRutas';
 
 export interface Pedido {
   asignaturaId: string;
@@ -14,7 +15,7 @@ const oyentes = new Set<(p: Pedido) => void>();
 export function pedirEstudio(p: Pedido): void {
   pendiente = p;
   for (const o of oyentes) o(p);
-  router.navigate('/focus-hoy');
+  router.navigate(rutaFocus('hoy'));
 }
 
 /** Hoy se suscribe; si había un encargo esperando, lo recibe al momento. */

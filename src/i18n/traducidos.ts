@@ -53,6 +53,7 @@ import enIronCore from './en/iron-core.json';
 import enIronHombro from './en/iron-hombro.json';
 import enIronPecho from './en/iron-pecho.json';
 import enFocus from './en/focus.json';
+import enGeneral from './en/general.json';
 import frComun from './fr/comun.json';
 import frRaiz from './fr/raiz.json';
 import frUi from './fr/ui.json';
@@ -100,6 +101,7 @@ import frIronCore from './fr/iron-core.json';
 import frIronHombro from './fr/iron-hombro.json';
 import frIronPecho from './fr/iron-pecho.json';
 import frFocus from './fr/focus.json';
+import frGeneral from './fr/general.json';
 import ptComun from './pt/comun.json';
 import ptRaiz from './pt/raiz.json';
 import ptUi from './pt/ui.json';
@@ -147,6 +149,7 @@ import ptIronCore from './pt/iron-core.json';
 import ptIronHombro from './pt/iron-hombro.json';
 import ptIronPecho from './pt/iron-pecho.json';
 import ptFocus from './pt/focus.json';
+import ptGeneral from './pt/general.json';
 import deComun from './de/comun.json';
 import deRaiz from './de/raiz.json';
 import deUi from './de/ui.json';
@@ -194,6 +197,7 @@ import deIronCore from './de/iron-core.json';
 import deIronHombro from './de/iron-hombro.json';
 import deIronPecho from './de/iron-pecho.json';
 import deFocus from './de/focus.json';
+import deGeneral from './de/general.json';
 import itComun from './it/comun.json';
 import itRaiz from './it/raiz.json';
 import itUi from './it/ui.json';
@@ -241,6 +245,7 @@ import itIronCore from './it/iron-core.json';
 import itIronHombro from './it/iron-hombro.json';
 import itIronPecho from './it/iron-pecho.json';
 import itFocus from './it/focus.json';
+import itGeneral from './it/general.json';
 
 /** Los idiomas con interfaz traducida (el español no está: es la base). */
 export const IDIOMAS_TRADUCIDOS = ['en', 'fr', 'pt', 'de', 'it'] as const;
@@ -297,6 +302,7 @@ export const RECURSOS_LOCALES: Record<IdiomaTraducido, Catalogo> = {
     'iron-hombro': enIronHombro,
     'iron-pecho': enIronPecho,
     focus: enFocus,
+    general: enGeneral,
   },
   fr: {
     comun: frComun,
@@ -346,6 +352,7 @@ export const RECURSOS_LOCALES: Record<IdiomaTraducido, Catalogo> = {
     'iron-hombro': frIronHombro,
     'iron-pecho': frIronPecho,
     focus: frFocus,
+    general: frGeneral,
   },
   pt: {
     comun: ptComun,
@@ -395,6 +402,7 @@ export const RECURSOS_LOCALES: Record<IdiomaTraducido, Catalogo> = {
     'iron-hombro': ptIronHombro,
     'iron-pecho': ptIronPecho,
     focus: ptFocus,
+    general: ptGeneral,
   },
   de: {
     comun: deComun,
@@ -444,6 +452,7 @@ export const RECURSOS_LOCALES: Record<IdiomaTraducido, Catalogo> = {
     'iron-hombro': deIronHombro,
     'iron-pecho': deIronPecho,
     focus: deFocus,
+    general: deGeneral,
   },
   it: {
     comun: itComun,
@@ -493,5 +502,6 @@ export const RECURSOS_LOCALES: Record<IdiomaTraducido, Catalogo> = {
     'iron-hombro': itIronHombro,
     'iron-pecho': itIronPecho,
     focus: itFocus,
+    general: itGeneral,
   },
 };

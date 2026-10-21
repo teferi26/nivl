@@ -154,3 +154,6 @@ export const DEMO: DemoPantalla | null = {
     },
   ],
 };
+
+/** Para la galería de General (/kit/general): la misma lista. */
+export { lista as listaCampanasDemo };
