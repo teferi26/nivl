@@ -32,6 +32,7 @@ import { ProUpsellLine } from '@/components/ProOffer';
 import { UsoIa } from '@/components/UsoIa';
 import { Button, Card, Chip, Screen, Skeleton, Tag } from '@/components/ui';
 import { useTecladoAbierto } from '@/components/ui/useTecladoAbierto';
+import { usePiel, type Piel } from '@/design/piel';
 import { ink, space, stroke, type } from '@/design/tokens';
 import { useAnchoUtil, useNavActual } from '@/design/useSizeClass';
 import { t } from '@/i18n';
@@ -222,6 +223,7 @@ function ArenaGalea() {
 }
 
 function Vacio({ onAtajo }: { onAtajo: (mensaje: string) => void }) {
+  const piel = usePiel();
   return (
     <View style={styles.vacio}>
       <Entrada indice={0}>
@@ -245,7 +247,7 @@ function Vacio({ onAtajo }: { onAtajo: (mensaje: string) => void }) {
                 key={a.clave}
                 onPress={() => onAtajo(t(`coach:atajos.${a.clave}.mensaje`))}
                 hitSlop={ZONA_PILDORA}
-                style={({ pressed }) => [styles.pildora, pressed && styles.pulsado]}
+                style={({ pressed }) => [styles.pildora, pildoraPiel(piel), pressed && styles.pulsado]}
                 accessibilityRole="button"
                 accessibilityLabel={etiqueta}
                 accessibilityHint={t('coach:vista.enviaPista')}
@@ -277,6 +279,7 @@ function Rapidas({
   /** Sin el selector de potencia encima, la fila pone el filete. */
   conLinea: boolean;
 }) {
+  const piel = usePiel();
   return (
     <ScrollView
       horizontal
@@ -294,7 +297,7 @@ function Rapidas({
             onPress={() => onAtajo(t(`coach:rapidas.${a.clave}.mensaje`))}
             disabled={desactivadas}
             hitSlop={ZONA_PILDORA}
-            style={({ pressed }) => [styles.pildora, desactivadas && styles.pildoraOff, pressed && styles.pulsado]}
+            style={({ pressed }) => [styles.pildora, pildoraPiel(piel), desactivadas && styles.pildoraOff, pressed && styles.pulsado]}
             accessibilityRole="button"
             accessibilityLabel={etiqueta}
             accessibilityHint={t('coach:vista.enviaPista')}
@@ -316,19 +319,36 @@ const ZONA_PILDORA = { top: 3, bottom: 3, left: 0, right: 0 };
 
 /** «HOY», «AYER»: inscripción grabada entre dos reglas. */
 function Separador({ texto }: { texto: string }) {
+  // Con la piel de un mundo: letras espaciadas de 11 sin Cinzel y filete fino.
+  const piel = usePiel();
+  const linea = [styles.separadorLinea, piel && { height: stroke.hairline, backgroundColor: piel.borde }];
   return (
     <View style={styles.separador} accessibilityRole="header">
-      <View style={styles.separadorLinea} />
-      <Text style={styles.separadorTexto} maxFontSizeMultiplier={1.35}>
+      <View style={linea} />
+      <Text
+        style={[
+          styles.separadorTexto,
+          piel?.coach && { fontFamily: piel.coach.fuenteRotulo, fontSize: 11, lineHeight: 14, letterSpacing: 2.2, color: piel.coach.textoTenue },
+        ]}
+        maxFontSizeMultiplier={1.35}
+      >
         {texto}
       </Text>
-      <View style={styles.separadorLinea} />
+      <View style={linea} />
     </View>
   );
 }
 
 export function CoachVista(p: CoachVistaProps) {
   const { compositor: c } = p;
+  // La piel de un mundo (IRON): su cabecera, burbujas y compositor. Sin ella, igual que siempre.
+  const piel = usePiel();
+  const pc = piel?.coach;
+  const cabecera = pc ? (
+    pc.cabecera({ linea: lineaCabecera(p), sinPro: p.sinPro, profundo: p.profundo, cargando: p.cargando, onPro: p.onPro, onMemoria: p.onMemoria })
+  ) : (
+    <Cabecera p={p} />
+  );
   // Con la barra de pestañas abajo, ella ya cubre el indicador de inicio. Con
   // el raíl o la barra lateral (iPad) no hay nada debajo: el pie suma el margen
   // seguro, salvo con el teclado fuera, que ya lo tapa.
@@ -342,7 +362,7 @@ export function CoachVista(p: CoachVistaProps) {
     // no decía ni en qué pantalla se estaba.
     return (
       <Screen plain>
-        <Cabecera p={p} />
+        {cabecera}
         <View style={styles.cargandoCuerpo} accessibilityRole="progressbar" accessibilityLabel={t('coach:vista.cargandoA11y')}>
           <Skeleton height={14} width="64%" />
           <Skeleton height={14} width="88%" style={styles.cargandoLinea} />
@@ -366,7 +386,7 @@ export function CoachVista(p: CoachVistaProps) {
 
   return (
     <Screen plain>
-      <Cabecera p={p} />
+      {cabecera}
 
       <KeyboardAvoidingView
         style={styles.flex}
@@ -420,8 +440,17 @@ export function CoachVista(p: CoachVistaProps) {
                 {separa && dia ? <Separador texto={dia} /> : null}
                 {b.role === 'user' ? (
                   <View style={styles.filaUsuario}>
-                    <View style={styles.burbujaUsuario}>
-                      <Text style={styles.textoUsuario}>{b.text}</Text>
+                    <View
+                      style={[
+                        styles.burbujaUsuario,
+                        pc && {
+                          backgroundColor: pc.burbujaUsuario,
+                          borderRadius: pc.radioBurbuja,
+                          borderBottomRightRadius: 4,
+                        },
+                      ]}
+                    >
+                      <Text style={[styles.textoUsuario, pc && styles.textoUsuarioPiel]}>{b.text}</Text>
                     </View>
                   </View>
                 ) : (
@@ -560,7 +589,8 @@ export function CoachVista(p: CoachVistaProps) {
               style={[
                 styles.barra,
                 (!!p.potencia || conRapidas || c.grabando || !!c.avisoDictado) && styles.barraSinLinea,
-                { paddingBottom: styles.barra.paddingBottom + fondoSeguro },
+                piel && { backgroundColor: 'transparent', borderTopColor: piel.borde },
+                { paddingBottom: styles.barra.paddingBottom + fondoSeguro + (pc?.margenInferior ?? 0) },
               ]}
             >
               {c.conFotos ? (
@@ -575,11 +605,12 @@ export function CoachVista(p: CoachVistaProps) {
                 </Pressable>
               ) : null}
               <TextInput
-                style={styles.input}
+                style={[styles.input, piel && { borderRadius: 14, backgroundColor: piel.campo, borderColor: piel.borde }]}
                 value={c.texto}
                 onChangeText={c.onCambiarTexto}
                 placeholder={t('coach:vista.placeholder')}
                 placeholderTextColor={ink.ink6}
+                selectionColor={piel?.acento}
                 multiline
                 onKeyPress={c.onTeclear}
                 accessibilityLabel={t('coach:vista.mensajeA11y')}
@@ -592,13 +623,19 @@ export function CoachVista(p: CoachVistaProps) {
                 <Pressable
                   onPress={c.onEnviar}
                   disabled={!c.puedeEnviar}
-                  style={({ pressed }) => [styles.enviar, !c.puedeEnviar && styles.enviarOff, pressed && styles.pulsado]}
+                  style={({ pressed }) => [
+                    styles.enviar,
+                    // Con piel: el cuadrado redondeado del acento de la lámina.
+                    piel && { borderRadius: 12, backgroundColor: piel.acento },
+                    !c.puedeEnviar && styles.enviarOff,
+                    pressed && styles.pulsado,
+                  ]}
                   accessibilityRole="button"
                   accessibilityLabel={c.ocupado ? t('coach:vista.enviandoA11y') : t('coach:vista.enviarA11y')}
                   accessibilityState={{ disabled: !c.puedeEnviar, busy: c.ocupado }}
                 >
                   {/* Con el turno en marcha, apagado y con los puntos: no se manda otro. */}
-                  <Ionicons name={c.ocupado ? 'ellipsis-horizontal' : 'arrow-up'} size={22} color={ink.ink0} />
+                  <Ionicons name={c.ocupado ? 'ellipsis-horizontal' : piel ? 'arrow-forward' : 'arrow-up'} size={22} color={piel ? piel.sobreAcento : ink.ink0} />
                 </Pressable>
               )}
             </View>
@@ -616,8 +653,14 @@ const conversacion = { fontFamily: type.body.family, fontSize: 15, lineHeight: 2
 /** Lado de los círculos del compositor (micrófono y enviar). */
 const CIRCULO = 48;
 
+/** Las píldoras (atajos y rápidas) con la piel de un mundo. */
+function pildoraPiel(piel: Piel | null) {
+  return piel ? { borderRadius: piel.radioChip, borderColor: piel.borde, backgroundColor: piel.tarjeta } : null;
+}
+
 const styles = StyleSheet.create({
   flex: { flex: 1 },
+  textoUsuarioPiel: { color: ink.ink10 },
   pulsado: { opacity: 0.7 },
   header: {
     flexDirection: 'row',

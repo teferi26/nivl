@@ -200,9 +200,7 @@
     "sinCarga": "Oggi tocca {{nombre}}: {{series}} × {{reps}}. Ogni ripetizione, completa.",
     "hecho": "Sessione fatta. Ora proteine e dormire: così oggi resta.",
     "descanso": "Oggi riposi. Cammina, mangia bene e dormi: domani si carica.",
-    "sinRutina": "Dimmi i tuoi giorni e la tua attrezzatura, e ti preparo la routine.",
-    "marcoA11y": "Coach IRON, online",
-    "marcoSub": "Le tue serie, i tuoi carichi e il tuo cibo"
+    "sinRutina": "Dimmi i tuoi giorni e la tua attrezzatura, e ti preparo la routine."
   },
   "tecnica": {
     "titulo": "TECNICA",
@@ -245,6 +243,7 @@
     "fotoLista": "Foto pronta",
     "fotoA11y": "Aggiungi una foto della sessione",
     "fotoListaA11y": "Foto della sessione pronta. Tocca per cambiarla.",
-    "terminar": "Termina allenamento"
+    "terminar": "Termina allenamento",
+    "terminarCorto": "TERMINA"
   }
 }

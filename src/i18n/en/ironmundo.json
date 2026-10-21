@@ -200,9 +200,7 @@
     "sinCarga": "Today it is {{nombre}}: {{series}} × {{reps}}. Every rep, full range.",
     "hecho": "Session done. Now protein and sleep: that is how today sticks.",
     "descanso": "Rest day. Walk, eat well and sleep: tomorrow you load.",
-    "sinRutina": "Tell me your days and your equipment, and I will build your routine.",
-    "marcoA11y": "Coach IRON, online",
-    "marcoSub": "Your sets, your lifts and your food"
+    "sinRutina": "Tell me your days and your equipment, and I will build your routine."
   },
   "tecnica": {
     "titulo": "TECHNIQUE",
@@ -245,6 +243,7 @@
     "fotoLista": "Photo ready",
     "fotoA11y": "Add a photo of the session",
     "fotoListaA11y": "Session photo ready. Tap to change it.",
-    "terminar": "Finish workout"
+    "terminar": "Finish workout",
+    "terminarCorto": "FINISH"
   }
 }

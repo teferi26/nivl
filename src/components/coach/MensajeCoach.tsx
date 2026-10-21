@@ -20,6 +20,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useMovimientoReducido } from '@/components/ui/motion';
 import { TextoSistema } from '@/components/TextoSistema';
+import { usePiel } from '@/design/piel';
 import { ink, space, stroke, type } from '@/design/tokens';
 import { t } from '@/i18n';
 import { CoachMark } from './CoachMark';
@@ -52,6 +53,37 @@ export function MensajeCoach({ texto, acciones, pensando, cita, voz, onDenunciar
   const conTexto = !!texto;
   const hablando = voz?.estado === 'hablando';
   const filaPie = conTexto && (voz || onDenunciar);
+  // La piel de un mundo (IRON): el avatar a la izquierda y la burbuja
+  // redondeada (la tarjeta del coach de la lámina), sin la firma grabada.
+  const pc = usePiel()?.coach;
+  if (pc) {
+    return (
+      <View style={[styles.fila, !firma && styles.filaSeguida, styles.filaPiel]}>
+        <View style={{ width: pc.ladoAvatar }} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+          {firma ? pc.avatar : null}
+        </View>
+        <View style={styles.flex}>
+          <View style={[styles.losa, styles.losaPiel, { backgroundColor: pc.burbuja, borderRadius: pc.radioBurbuja }]}>
+            {pensando && !texto ? <Pensando /> : null}
+            {texto ? <TextoSistema texto={texto} /> : null}
+            {cita ? <Text style={styles.cita}>{cita}</Text> : null}
+            {acciones.length > 0 ? (
+              <View style={styles.acciones}>
+                {acciones.map((a, i) => (
+                  <View key={i} style={styles.accion}>
+                    <Ionicons name={a.ok ? 'checkmark-circle' : 'alert-circle'} size={14} color={a.ok ? ink.ink8 : ink.ink10} />
+                    <Text style={styles.accionTexto}>{a.texto}</Text>
+                  </View>
+                ))}
+              </View>
+            ) : null}
+            {filaPie ? <PieMensaje voz={voz} onDenunciar={onDenunciar} /> : null}
+          </View>
+          {avisos}
+        </View>
+      </View>
+    );
+  }
   return (
     <View style={[styles.fila, !firma && styles.filaSeguida]}>
       {firma ? (
@@ -111,6 +143,40 @@ export function MensajeCoach({ texto, acciones, pensando, cita, voz, onDenunciar
   );
 }
 
+/** «Escuchar» / «Parar» y «Denunciar respuesta» (la misma fila; la usa la piel de un mundo). */
+function PieMensaje({ voz, onDenunciar }: { voz?: VozMensaje; onDenunciar?: () => void }) {
+  const hablando = voz?.estado === 'hablando';
+  return (
+    <View style={styles.pie}>
+      {voz ? (
+        <Pressable
+          onPress={hablando ? voz.onParar : voz.onEscuchar}
+          hitSlop={ZONA_ENLACE}
+          style={({ pressed }) => [styles.enlace, pressed && styles.pulsado]}
+          accessibilityRole="button"
+          accessibilityLabel={hablando ? t('coach:mensaje.pararA11y') : t('coach:mensaje.escucharA11y')}
+          accessibilityState={{ busy: hablando }}
+        >
+          <Ionicons name={hablando ? 'stop-outline' : 'volume-medium-outline'} size={13} color={ink.ink6} />
+          <Text style={styles.enlaceTexto}>{hablando ? t('coach:mensaje.parar') : t('coach:mensaje.escuchar')}</Text>
+        </Pressable>
+      ) : null}
+      {onDenunciar ? (
+        <Pressable
+          onPress={onDenunciar}
+          hitSlop={ZONA_ENLACE}
+          style={({ pressed }) => [styles.enlace, pressed && styles.pulsado]}
+          accessibilityRole="button"
+          accessibilityLabel={t('comun:denunciarRespuesta')}
+        >
+          <Ionicons name="flag-outline" size={12} color={ink.ink6} />
+          <Text style={styles.enlaceTexto}>{t('comun:denunciarRespuesta')}</Text>
+        </Pressable>
+      ) : null}
+    </View>
+  );
+}
+
 /**
  * Lo que se ve desde que sale el mensaje hasta el primer texto del coach.
  * Tres puntos que laten en sucesión; con «reducir movimiento», quietos. Se
@@ -164,6 +230,9 @@ function Punto({ indice }: { indice: number }) {
 
 const styles = StyleSheet.create({
   fila: { marginBottom: space.s5 },
+  flex: { flex: 1, minWidth: 0 },
+  filaPiel: { flexDirection: 'row', alignItems: 'flex-start', gap: space.s2 },
+  losaPiel: { borderWidth: 0, borderLeftWidth: 0, borderTopLeftRadius: 4, paddingLeft: space.s3 + 2 },
   // Dentro de un bloque seguido, las losas van más juntas.
   filaSeguida: { marginTop: -space.s2 },
   firma: { flexDirection: 'row', alignItems: 'center', gap: space.s2, marginBottom: space.s2 },

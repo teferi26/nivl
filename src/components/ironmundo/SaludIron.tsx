@@ -10,16 +10,19 @@
 //   pinta HealthConsentProvider).
 
 import { router } from 'expo-router';
-import type { PropsWithChildren } from 'react';
+import type { PropsWithChildren, ReactNode } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { useHealthConsent } from '@/components/ConsentimientoSalud';
+import { EmblemaMundo } from '@/components/modos/EmblemaMundo';
+import { CabeceraMundo } from '@/components/modos/mundo/CabeceraMundo';
+import { useMundo } from '@/components/modos/mundo/useMundo';
 import type { PuertaSaludVistaProps } from '@/components/puertas/SaludVista';
 import { t } from '@/i18n';
 import { HEALTH_ROUTES } from '@/lib/healthmath';
 import { GlifoIron, type Glifo } from './Glifos';
 import { TarjetaHueco } from './Esqueletos';
 import { BotonIron, CuadroIron, estilosIron, FilaIron, PantallaIron, RotuloIron, TarjetaIron } from './piezas';
-import { C, F, fs, px } from './tema';
+import { C, M, px } from './tema';
 
 const DATOS: readonly { glifo: Glifo; clave: 'pesos' | 'cardio' | 'peso' | 'dieta' }[] = [
   { glifo: 'pesa', clave: 'pesos' },
@@ -28,17 +31,11 @@ const DATOS: readonly { glifo: Glifo; clave: 'pesos' | 'cardio' | 'peso' | 'diet
   { glifo: 'plato', clave: 'dieta' },
 ];
 
-export function PuertaSaludIron(p: PuertaSaludVistaProps) {
+export function PuertaSaludIron(p: PuertaSaludVistaProps & { cabecera: ReactNode }) {
   return (
     <PantallaIron centrado>
-      <View style={styles.cabecera}>
-        <Text style={styles.marca} maxFontSizeMultiplier={1.2}>
-          {'IRON' /* i18n-ok: nombre del modo */}
-        </Text>
-        <Text style={styles.sub} maxFontSizeMultiplier={1.35}>
-          {t('mundos:subtitulo.iron')}
-        </Text>
-      </View>
+      {p.cabecera}
+      <View style={styles.centro}>
       {p.cargando ? (
         <View accessibilityRole="progressbar" accessibilityLabel={t('puertas:salud.comprobandoA11y')}>
           <TarjetaHueco heroe lineas={6} />
@@ -83,6 +80,7 @@ export function PuertaSaludIron(p: PuertaSaludVistaProps) {
           </Text>
         </>
       )}
+      </View>
     </PantallaIron>
   );
 }
@@ -90,6 +88,7 @@ export function PuertaSaludIron(p: PuertaSaludVistaProps) {
 /** HealthConsentGuard con la puerta de IRON. */
 export function GuardaSaludIron({ children, routeName }: PropsWithChildren<{ routeName: string }>) {
   const health = useHealthConsent();
+  const mundo = useMundo('iron');
   if (!HEALTH_ROUTES.has(routeName) || health.accepted) {
     return (
       <View key={health.epoch} style={styles.flex}>
@@ -99,6 +98,7 @@ export function GuardaSaludIron({ children, routeName }: PropsWithChildren<{ rou
   }
   return (
     <PuertaSaludIron
+      cabecera={<CabeceraMundo modo="iron" nivel={mundo.nivel} emblema={<EmblemaMundo modo="iron" />} />}
       cargando={health.loading}
       error={health.error}
       borradoPendiente={health.erasurePending}
@@ -113,9 +113,7 @@ export function GuardaSaludIron({ children, routeName }: PropsWithChildren<{ rou
 const styles = StyleSheet.create({
   flex: { flex: 1, minWidth: 0 },
   arriba: { marginTop: px(6) },
-  cabecera: { paddingTop: px(8), paddingBottom: px(6) },
-  marca: { fontFamily: F.cinzel, fontSize: fs(19), letterSpacing: fs(19) * 0.08, color: C.blanco },
-  sub: { fontFamily: F.m, fontSize: fs(9.5), letterSpacing: fs(9.5) * 0.06, color: C.mudo, marginTop: px(2) },
+  centro: { flex: 1, justifyContent: 'center', gap: M.hueco, paddingBottom: px(24) },
   lista: { marginTop: px(8), marginBottom: px(2) },
   fila: { paddingVertical: px(6), justifyContent: 'flex-start' },
   nota: { textAlign: 'center', marginTop: px(4) },

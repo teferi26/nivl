@@ -11,6 +11,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { AccessibilityInfo, AppState, Pressable, StyleSheet, Text, View, type GestureResponderEvent } from 'react-native';
 import { vibrar } from '@/design/haptics';
+import { usePiel } from '@/design/piel';
 import { ink, space, type } from '@/design/tokens';
 import { t } from '@/i18n';
 import { cancelarDictado, detenerDictado, dictar, type ErrorDictado } from '@/lib/coachvoz';
@@ -229,6 +230,10 @@ function useLectorPantalla(): boolean {
  * enciende en blanco: enviar no está en pantalla, la inversión sigue siendo una.
  */
 export function BotonDictar({ dictado, disabled }: { dictado: Dictado; disabled?: boolean }) {
+  // La piel de un mundo (IRON): micro fantasma en cuadrado redondeado, encendido en el acento.
+  const piel = usePiel();
+  const pielBoton = piel ? { borderRadius: 12, borderWidth: 1.5, borderColor: piel.acentoBorde, backgroundColor: 'transparent' } : null;
+  const pielOn = piel ? { backgroundColor: piel.acento, borderColor: piel.acento } : null;
   const lector = useLectorPantalla();
   const y0 = useRef(0);
   const enMarcha = dictado.grabando || dictado.preparando;
@@ -245,7 +250,7 @@ export function BotonDictar({ dictado, disabled }: { dictado: Dictado; disabled?
       <Pressable
         onPress={dictado.alternar}
         disabled={disabled}
-        style={({ pressed }) => [styles.boton, enMarcha && styles.botonOn, pressed && styles.pulsado]}
+        style={({ pressed }) => [styles.boton, pielBoton, enMarcha && styles.botonOn, enMarcha && pielOn, pressed && styles.pulsado]}
         accessibilityRole="button"
         accessibilityLabel={dictado.grabando ? t('coach:dictado.terminarA11y') : t('coach:dictado.dictarA11y')}
         accessibilityHint={dictado.grabando ? t('coach:dictado.terminarPista') : t('coach:dictado.empezarPista')}
@@ -256,7 +261,7 @@ export function BotonDictar({ dictado, disabled }: { dictado: Dictado; disabled?
           if (e.nativeEvent.actionName === 'escape') descartar();
         }}
       >
-        <Ionicons name={dictado.grabando ? 'stop' : 'mic-outline'} size={20} color={enMarcha ? ink.ink0 : ink.ink10} />
+        <Ionicons name={dictado.grabando ? 'stop' : 'mic-outline'} size={20} color={enMarcha ? ink.ink0 : piel ? piel.acento : ink.ink10} />
       </Pressable>
     );
   }
@@ -264,7 +269,7 @@ export function BotonDictar({ dictado, disabled }: { dictado: Dictado; disabled?
   const dy = (e: GestureResponderEvent) => e.nativeEvent.pageY - y0.current;
   return (
     <View
-      style={[styles.boton, enMarcha && styles.botonOn, disabled && styles.apagado]}
+      style={[styles.boton, pielBoton, enMarcha && styles.botonOn, enMarcha && pielOn, disabled && styles.apagado]}
       onStartShouldSetResponder={() => !disabled}
       onResponderTerminationRequest={() => false}
       onResponderGrant={(e) => {
@@ -281,7 +286,7 @@ export function BotonDictar({ dictado, disabled }: { dictado: Dictado; disabled?
       accessibilityHint={t('coach:dictado.mantenerPista')}
       accessibilityState={{ disabled: !!disabled, busy: dictado.grabando }}
     >
-      <Ionicons name="mic-outline" size={20} color={enMarcha ? ink.ink0 : ink.ink10} />
+      <Ionicons name="mic-outline" size={20} color={enMarcha ? ink.ink0 : piel ? piel.acento : ink.ink10} />
     </View>
   );
 }

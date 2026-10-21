@@ -143,7 +143,11 @@ export function Sheet({ visible, onClose, onDismiss, eyebrow, title, children, f
       <View style={styles.cabecera}>
         <View style={styles.cabeceraTexto}>
           {eyebrow ? (
-            <Text maxFontSizeMultiplier={1.35} style={[styles.eyebrow, piel && { color: piel.acento, letterSpacing: 2.6 }]}>
+            <Text
+              maxFontSizeMultiplier={1.35}
+              numberOfLines={piel ? 1 : undefined}
+              style={[styles.eyebrow, piel && { color: piel.acento, letterSpacing: 2.6 }]}
+            >
               {eyebrow}
             </Text>
           ) : null}
@@ -190,11 +194,11 @@ export function Sheet({ visible, onClose, onDismiss, eyebrow, title, children, f
       onRequestClose={() => cerrarRef.current()}
     >
       <KeyboardAvoidingView
-        style={[styles.fondo, tablet ? styles.fondoCentrado : styles.fondoAbajo]}
+        style={[styles.fondo, tablet ? styles.fondoCentrado : styles.fondoAbajo, piel && Platform.OS === 'web' && ({ outlineStyle: 'none' } as object)]}
         behavior={Platform.OS === 'ios' ? 'padding' : Platform.OS === 'android' ? 'height' : undefined}
       >
         <Pressable
-          style={StyleSheet.absoluteFill}
+          style={[StyleSheet.absoluteFill, piel && Platform.OS === 'web' && ({ outlineStyle: 'none' } as object)]}
           onPress={tocarFondo}
           accessibilityRole="button"
           accessibilityLabel={t('comun:cerrar')}
@@ -216,6 +220,8 @@ export function Sheet({ visible, onClose, onDismiss, eyebrow, title, children, f
               borderBottomRightRadius: tablet ? piel.radioHoja : 0,
               overflow: 'hidden',
             },
+            // En la web el modal enfoca la hoja: sin el filete de foco del navegador.
+            piel && Platform.OS === 'web' && ({ outlineStyle: 'none' } as object),
             { transform },
           ]}
         >

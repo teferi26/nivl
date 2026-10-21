@@ -52,6 +52,15 @@ export interface EntrenandoIronVistaProps {
 /** Una serie está hecha cuando lleva repeticiones. */
 export const serieHecha = (s: SerieInput) => Number(String(s.reps).replace(',', '.')) > 0;
 
+/** La serie que toca: la primera sin hacer, en el orden del entreno (null si está todo). */
+export function serieActual(series: readonly LiftInput[]): { ej: number; serie: number } | null {
+  for (let i = 0; i < series.length; i++) {
+    const j = series[i]!.series.findIndex((s) => !serieHecha(s));
+    if (j >= 0) return { ej: i, serie: j };
+  }
+  return null;
+}
+
 /** «00:34:12». */
 export function reloj(ms: number): string {
   const s = Math.max(0, Math.floor(ms / 1000));
@@ -105,6 +114,7 @@ export function EntrenandoIronVista(p: EntrenandoIronVistaProps) {
   const transcurrido = useReloj(p.desde, p.ahora);
   const total = p.series.reduce((n, l) => n + l.series.length, 0);
   const hechas = p.series.reduce((n, l) => n + l.series.filter(serieHecha).length, 0);
+  const actual = serieActual(p.series);
   const { acciones: a } = p;
   return (
     <PantallaIron>
@@ -118,7 +128,21 @@ export function EntrenandoIronVista(p: EntrenandoIronVistaProps) {
         <Text style={estilosIron.meta} maxFontSizeMultiplier={1.35}>
           {t('ironmundo:sesion.meta', { count: p.series.length, hechas, total })}
         </Text>
-        <BarraIron ratio={total ? hechas / total : 0} alto={5} style={styles.progreso} />
+        <View style={styles.progresoFila}>
+          <BarraIron ratio={total ? hechas / total : 0} alto={5} style={styles.progreso} />
+          <Pressable
+            onPress={a.onTerminar}
+            disabled={p.ocupado}
+            hitSlop={8}
+            accessibilityRole="button"
+            accessibilityLabel={t('ironmundo:sesion.terminar')}
+            style={({ pressed }) => [styles.terminarCorto, pressed && styles.pulsado]}
+          >
+            <Text style={styles.terminarCortoTexto} maxFontSizeMultiplier={1.2}>
+              {t('ironmundo:sesion.terminarCorto')}
+            </Text>
+          </Pressable>
+        </View>
       </TarjetaIron>
 
       {p.series.map((l, i) => {
@@ -159,15 +183,16 @@ export function EntrenandoIronVista(p: EntrenandoIronVistaProps) {
 
             {l.series.map((s, si) => {
               const hecha = serieHecha(s);
+              const esActual = actual !== null && actual.ej === i && actual.serie === si;
               const unica = l.series.length === 1;
               return (
-                <View key={si} style={[styles.fila, styles.filaSerie]}>
+                <View key={si} style={[styles.fila, styles.filaSerie, esActual && styles.filaActual]}>
                   <View style={styles.colNum}>
-                    <View style={[styles.casilla, hecha && styles.casillaHecha]} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+                    <View style={[styles.casilla, (hecha || esActual) && styles.casillaHecha]} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
                       {hecha ? (
                         <GlifoIron nombre="check" lado={px(13)} color={C.fondo} grosor={2.8} />
                       ) : (
-                        <Text style={styles.casillaNumero} maxFontSizeMultiplier={1}>
+                        <Text style={[styles.casillaNumero, esActual && styles.casillaNumeroActual]} maxFontSizeMultiplier={1}>
                           {si + 1}
                         </Text>
                       )}
@@ -200,6 +225,10 @@ export function EntrenandoIronVista(p: EntrenandoIronVistaProps) {
                       accessibilityLabel={t('ironmundo:sesion.rpeA11y', { n: si + 1, ejercicio: l.exercise })}
                     />
                   </View>
+                  {/* Quitar, discreto y solo en las pendientes: lo hecho no se borra de un roce. */}
+                  {hecha ? (
+                    <View style={styles.colQuitar} />
+                  ) : (
                   <Pressable
                     onPress={() => a.onQuitarSerie(i, si)}
                     disabled={unica}
@@ -209,8 +238,9 @@ export function EntrenandoIronVista(p: EntrenandoIronVistaProps) {
                     accessibilityState={{ disabled: unica }}
                     style={({ pressed }) => [styles.colQuitar, pressed && styles.pulsado]}
                   >
-                    <Ionicons name="close" size={px(16)} color={unica ? C.suelo : C.mudo} />
+                    <Ionicons name="close" size={14} color={unica ? C.filete : C.apagado} />
                   </Pressable>
+                  )}
                 </View>
               );
             })}
@@ -248,7 +278,12 @@ export function EntrenandoIronVista(p: EntrenandoIronVistaProps) {
 const styles = StyleSheet.create({
   flex: { flex: 1, minWidth: 0 },
   pulsado: { opacity: 0.6 },
-  progreso: { marginTop: px(10), marginBottom: px(2) },
+  progresoFila: { flexDirection: 'row', alignItems: 'center', gap: px(12), marginTop: px(10), marginBottom: px(2) },
+  progreso: { flex: 1 },
+  terminarCorto: { borderRadius: px(8), backgroundColor: A, paddingHorizontal: px(10), paddingVertical: px(5) },
+  terminarCortoTexto: { fontFamily: F.xb, fontSize: fs(8.5), letterSpacing: fs(8.5) * 0.14, color: C.fondo },
+  filaActual: { borderWidth: 1.5, borderColor: A, borderRadius: px(10), backgroundColor: acentoA(0.08), marginHorizontal: -px(5), paddingHorizontal: px(4) },
+  casillaNumeroActual: { color: C.fondo },
   cabeza: { flexDirection: 'row', alignItems: 'center', gap: px(10), marginBottom: px(6) },
   nombre: { fontFamily: F.b, fontSize: fs(13), color: C.blanco },
   enlace: { fontFamily: F.b, fontSize: fs(8.5), letterSpacing: fs(8.5) * 0.12, color: A, textTransform: 'uppercase' },
