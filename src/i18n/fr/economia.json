@@ -112,5 +112,237 @@
     "aprendido_other": "{{count}} mouvements classés. Désormais, il le fait tout seul.",
     "errorImporte": "Écris le montant. Négatif si c'est une dépense, positif si c'est un revenu.",
     "errorConcepto": "Dans un mois, tu ne te souviendras plus de ce que c'était."
+  },
+  "work": {
+    "cargandoA11y": "Lecture de tes comptes",
+    "avisoA11y": "{{texto}} Touche pour masquer.",
+    "ahorro": "Épargne",
+    "transferencia": "Virement",
+    "sinClasificar": "Non classé",
+    "grupo": {
+      "comida": "Alimentation",
+      "transporte": "Transport",
+      "ocio": "Loisirs",
+      "casa": "Logement",
+      "suscripciones": "Abonnements",
+      "salud": "Santé",
+      "educacion": "Études",
+      "otros": "Autres"
+    },
+    "ingreso": {
+      "nomina": "Salaire",
+      "negocio": "Activité",
+      "otro": "Autre revenu"
+    },
+    "tipoCuenta": {
+      "efectivo": "Espèces",
+      "banco": "Banque",
+      "revolut": "Carte",
+      "otro": "Autre"
+    },
+    "preparando": {
+      "titulo": "Tes finances se préparent",
+      "cuerpo": "Le suivi des comptes de WORK arrive dans quelques jours. Ce que tu as déjà reste en sécurité."
+    },
+    "primera": {
+      "meta": "Commence ici",
+      "titulo": "D'abord, tes comptes",
+      "cuerpo": "Espèces, ta banque, ta carte. Note combien il y a aujourd'hui sur chacun et le système tient les comptes à partir de là.",
+      "crear": "Créer le premier compte"
+    },
+    "general": {
+      "rotulo": "Vue d'ensemble",
+      "cuentas_one": "{{count}} compte",
+      "cuentas_other": "{{count}} comptes",
+      "nuevaCuentaA11y": "Ajouter un compte",
+      "totalA11y": "Total sur tes comptes : {{importe}}",
+      "mes": "Ce mois, {{entra}} entrent et {{sale}} sortent",
+      "cuentaA11y": "{{nombre}} : {{importe}}. Touche pour le modifier.",
+      "gasto": "Ajouter une dépense",
+      "ingreso": "Revenu",
+      "transferir": "Virer"
+    },
+    "fijos": {
+      "rotulo": "Fixes du mois",
+      "meta": "{{hechos}} sur {{total}}",
+      "vacio": "Ton salaire et tes frais fixes s'ajoutent seuls chaque mois, le bon jour.",
+      "hechoA11y": "{{nombre}}, {{importe}}, jour {{dia}} : déjà noté. Touche pour l'arrêter.",
+      "pendienteA11y": "{{nombre}}, {{importe}}, jour {{dia}} : en attente. Touche pour l'arrêter.",
+      "nuevoIngreso": "Revenu mensuel",
+      "nuevoGasto": "Frais fixe"
+    },
+    "categorias": {
+      "rotulo": "Où ça part",
+      "vacio": "Pas encore de dépenses ce mois.",
+      "a11y": "{{nombre}} : {{importe}}, {{pct}} % des dépenses",
+      "gestionar": "Catégories"
+    },
+    "movimientos": {
+      "rotulo": "Opérations",
+      "meta": "Dernières",
+      "vacio": "Rien de noté pour l'instant. Une dépense, c'est deux touches.",
+      "a11y": "{{concepto}}, {{importe}}, {{fecha}}, {{cuenta}}. Touche pour la supprimer."
+    },
+    "brief": {
+      "rotulo": "Bilan de {{mes}}",
+      "metaIa": "Système",
+      "sinDatos": "Quand {{mes}} se clôturera avec des opérations, tu verras ici où est parti l'argent et quoi changer.",
+      "entraSale": "{{entra}} sont entrés et {{sale}} sont sortis.",
+      "top": "Ce qui pèse le plus : {{lista}}.",
+      "sube": "Tu as dépensé {{pct}} % de plus qu'en {{mes}}.",
+      "baja": "Tu as dépensé {{pct}} % de moins qu'en {{mes}}.",
+      "alertaGastaMas": "Il est sorti {{importe}} de plus que ce qui est entré.",
+      "alertaSube": "{{nombre}} augmente de {{pct}} %.",
+      "alertaFijos": "Les fixes prennent {{pct}} % de ce qui entre.",
+      "alertaNegativo": "{{cuenta}} est à découvert.",
+      "alertaSinClasificar_one": "{{count}} dépense n'est pas classée.",
+      "alertaSinClasificar_other": "{{count}} dépenses ne sont pas classées.",
+      "aviso": "Ceci n'est pas un conseil financier.",
+      "escribir": "Laisser le système l'écrire",
+      "sinPro": "Le bilan rédigé et les conseils font partie de NIVL Pro. Les chiffres restent à toi."
+    },
+    "importar": {
+      "rotulo": "Importer un relevé",
+      "meta": "CSV ou PDF",
+      "cuerpo": "Télécharge le relevé depuis l'app de ta banque et importe-le ici. Tu le vérifies avant d'enregistrer et rien n'est dupliqué.",
+      "nunca": "Nous ne te demanderons jamais ton identifiant ni ton mot de passe bancaire.",
+      "elegir": "Choisir un fichier"
+    },
+    "coach": {
+      "rotulo": "Coach WORK",
+      "enLinea": "En ligne",
+      "cuerpo": "Demande-moi où part ton argent ou comment organiser le mois.",
+      "pregunta": "Demande au coach WORK",
+      "preguntaA11y": "Ouvrir le coach de WORK"
+    },
+    "avisos": {
+      "fijos_one": "{{count}} fixe noté à ce jour.",
+      "fijos_other": "{{count}} fixes notés à ce jour.",
+      "gasto": "Dépense de {{importe}} notée.",
+      "ingreso": "Revenu de {{importe}} noté.",
+      "transferencia": "{{importe}} déplacés entre tes comptes.",
+      "importados_one": "{{count}} opération importée.",
+      "importados_other": "{{count}} opérations importées."
+    },
+    "errores": {
+      "importe": "Saisis un montant supérieur à zéro.",
+      "saldo": "Saisis le solde du jour, même s'il est à zéro.",
+      "nombre": "Donne-lui un nom.",
+      "dia": "Un jour de 1 à 31.",
+      "mismaCuenta": "Choisis deux comptes différents.",
+      "sinColumnas": "Je ne reconnais pas les colonnes de ce fichier. Il faut date, libellé et montant.",
+      "vacio": "Je n'ai trouvé aucune opération dans le fichier.",
+      "pdfPro": "Lire un PDF fait partie de NIVL Pro. Le CSV de ta banque est lu gratuitement."
+    },
+    "confirmar": {
+      "archivarTitulo": "Archiver {{nombre}} ?",
+      "archivarMensaje": "Il n'est plus affiché ni compté dans le total. Ses opérations restent.",
+      "bajaTitulo": "Arrêter {{nombre}} ?",
+      "bajaMensaje": "Il ne sera plus noté chaque mois. Ce qui est déjà noté reste.",
+      "baja": "Arrêter",
+      "borrarTitulo": "Supprimer cette opération ?",
+      "borrarMensaje": "{{concepto}}, {{importe}}. Le solde est recalculé.",
+      "borrarTransferencia": "C'est un virement de {{importe}} : ses deux côtés sont supprimés.",
+      "borrar": "Supprimer"
+    },
+    "hojas": {
+      "cuenta": "Compte",
+      "categoria": "Catégorie",
+      "cuentaA11y": "{{nombre}}, {{importe}}",
+      "mov": {
+        "eyebrow": "Deux touches",
+        "tituloGasto": "Nouvelle dépense",
+        "tituloIngreso": "Nouveau revenu",
+        "gasto": "Dépense",
+        "ingreso": "Revenu",
+        "importe": "Montant",
+        "importeA11y": "Montant en euros",
+        "toca": "Touche la catégorie pour enregistrer",
+        "guardarComoA11y": "Enregistrer comme {{categoria}}",
+        "concepto": "Libellé",
+        "conceptoPlaceholder": "Facultatif",
+        "conceptoAyuda": "Laissé vide, il est enregistré avec le nom de la catégorie."
+      },
+      "trf": {
+        "eyebrow": "Entre tes comptes",
+        "titulo": "Virer",
+        "sub": "Ce n'est ni une dépense ni un revenu : l'argent change seulement de place.",
+        "desde": "De",
+        "a": "Vers",
+        "conceptoPlaceholder": "Vers l'épargne",
+        "guardar": "Virer"
+      },
+      "cuentaHoja": {
+        "eyebrow": "Compte",
+        "titulo": "Nouveau compte",
+        "tituloEditar": "Modifier le compte",
+        "nombre": "Nom",
+        "nombrePlaceholder": "Ibercaja, Revolut, portefeuille",
+        "tipo": "Type",
+        "saldo": "Solde du jour",
+        "saldoAyuda": "Ce qu'il y a maintenant. À partir de là, le système additionne et soustrait seul.",
+        "crear": "Créer le compte",
+        "archivar": "Archiver le compte"
+      },
+      "fijo": {
+        "eyebrow": "Chaque mois",
+        "tituloIngreso": "Revenu mensuel",
+        "tituloGasto": "Frais fixe",
+        "subIngreso": "Ton salaire ou ce que tu touches chaque mois. Il s'ajoute seul le jour choisi.",
+        "subGasto": "Loyer, abonnements, cotisations. Il se retire seul le jour du prélèvement.",
+        "nombre": "Nom",
+        "nombreIngreso": "Salaire",
+        "nombreGasto": "Loyer",
+        "dia": "Jour",
+        "esteMes": "Compter dès ce mois"
+      },
+      "cat": {
+        "eyebrow": "Catégories",
+        "titulo": "Tes catégories",
+        "deSerie": "Par défaut",
+        "tuyas": "Les tiennes",
+        "nueva": "Nouvelle catégorie",
+        "nuevaPlaceholder": "Animal, cadeaux, voyages",
+        "cuentaComo": "Dans les bilans, elle compte dans {{grupo}}. Touche une autre au-dessus pour changer.",
+        "crear": "Créer la catégorie"
+      },
+      "imp": {
+        "eyebrow": "Importer",
+        "titulo": "Relevé bancaire",
+        "deQue": "De quel compte est-il ?",
+        "paso1": "Dans l'app de ta banque, cherche Relevés ou Opérations et télécharge les mois voulus, en CSV ou PDF.",
+        "paso2": "Choisis le fichier ici. Le CSV est lu sur ton téléphone ; le PDF est lu par l'IA de NIVL puis supprimé aussitôt.",
+        "paso3": "Vérifie la liste, retire ce que tu ne veux pas et enregistre. Les doublons n'entrent pas.",
+        "privacidad": "NIVL ne se connecte pas à ta banque et ne te demandera jamais ton identifiant ni ton mot de passe.",
+        "sinSelector": "Cette version de l'app ne peut pas encore ouvrir de fichiers. Ça arrive avec la prochaine mise à jour.",
+        "elegir": "Choisir un fichier"
+      },
+      "elegir": {
+        "eyebrow": "Changer de catégorie"
+      }
+    },
+    "revision": {
+      "eyebrow": "Avant d'enregistrer",
+      "titulo": "Vérification",
+      "sub": "{{archivo}} · {{cuenta}}",
+      "resumen": "Ce que j'ai lu",
+      "marcadas_one": "{{count}} cochée",
+      "marcadas_other": "{{count}} cochées",
+      "nuevos": "Nouvelles",
+      "repetidos": "Déjà là",
+      "parecidos": "Similaires",
+      "neto": "La sélection fait {{importe}}.",
+      "descartadas_one": "{{count}} ligne n'a pas pu être lue.",
+      "descartadas_other": "{{count}} lignes n'ont pas pu être lues.",
+      "movimientos": "Opérations",
+      "todos": "Tout cocher",
+      "ninguno": "Aucune",
+      "yaEsta": "Déjà là",
+      "parecido": "Déjà notée ?",
+      "filaA11y": "{{concepto}}, {{importe}}, {{fecha}}",
+      "cambiarA11y": "Catégorie {{categoria}}. Touche pour la changer.",
+      "guardar_one": "Enregistrer {{count}}",
+      "guardar_other": "Enregistrer {{count}}"
+    }
   }
 }

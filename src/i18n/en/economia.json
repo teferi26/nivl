@@ -112,5 +112,237 @@
     "aprendido_other": "{{count}} transactions categorized. From now on it does it on its own.",
     "errorImporte": "Enter the amount. Negative if it's an expense, positive if it's income.",
     "errorConcepto": "A month from now you won't remember what it was."
+  },
+  "work": {
+    "cargandoA11y": "Reading your accounts",
+    "avisoA11y": "{{texto}} Tap to hide it.",
+    "ahorro": "Savings",
+    "transferencia": "Transfer",
+    "sinClasificar": "Uncategorised",
+    "grupo": {
+      "comida": "Food",
+      "transporte": "Transport",
+      "ocio": "Leisure",
+      "casa": "Home",
+      "suscripciones": "Subscriptions",
+      "salud": "Health",
+      "educacion": "Education",
+      "otros": "Other"
+    },
+    "ingreso": {
+      "nomina": "Salary",
+      "negocio": "Business",
+      "otro": "Other income"
+    },
+    "tipoCuenta": {
+      "efectivo": "Cash",
+      "banco": "Bank",
+      "revolut": "Card",
+      "otro": "Other"
+    },
+    "preparando": {
+      "titulo": "Your money is being set up",
+      "cuerpo": "WORK account tracking arrives in a few days. What you already have stays safe."
+    },
+    "primera": {
+      "meta": "Start here",
+      "titulo": "First, your accounts",
+      "cuerpo": "Cash, your bank, your card. Note how much is in each one today and the system keeps count from there.",
+      "crear": "Create the first account"
+    },
+    "general": {
+      "rotulo": "Overview",
+      "cuentas_one": "{{count}} account",
+      "cuentas_other": "{{count}} accounts",
+      "nuevaCuentaA11y": "Add an account",
+      "totalA11y": "Total in your accounts: {{importe}}",
+      "mes": "This month {{entra}} in and {{sale}} out",
+      "cuentaA11y": "{{nombre}}: {{importe}}. Tap to edit it.",
+      "gasto": "Add expense",
+      "ingreso": "Income",
+      "transferir": "Transfer"
+    },
+    "fijos": {
+      "rotulo": "Fixed this month",
+      "meta": "{{hechos}} of {{total}}",
+      "vacio": "Your salary and fixed costs are added on their own every month, on the right day.",
+      "hechoA11y": "{{nombre}}, {{importe}}, day {{dia}}: already added. Tap to cancel it.",
+      "pendienteA11y": "{{nombre}}, {{importe}}, day {{dia}}: pending. Tap to cancel it.",
+      "nuevoIngreso": "Monthly income",
+      "nuevoGasto": "Fixed cost"
+    },
+    "categorias": {
+      "rotulo": "Where it goes",
+      "vacio": "No spending this month yet.",
+      "a11y": "{{nombre}}: {{importe}}, {{pct}} % of spending",
+      "gestionar": "Categories"
+    },
+    "movimientos": {
+      "rotulo": "Transactions",
+      "meta": "Latest",
+      "vacio": "Nothing recorded yet. An expense takes two taps.",
+      "a11y": "{{concepto}}, {{importe}}, {{fecha}}, {{cuenta}}. Tap to delete it."
+    },
+    "brief": {
+      "rotulo": "{{mes}} brief",
+      "metaIa": "System",
+      "sinDatos": "When {{mes}} closes with transactions, you will see here where the money went and what to change.",
+      "entraSale": "{{entra}} came in and {{sale}} went out.",
+      "top": "What weighs most: {{lista}}.",
+      "sube": "You spent {{pct}} % more than in {{mes}}.",
+      "baja": "You spent {{pct}} % less than in {{mes}}.",
+      "alertaGastaMas": "{{importe}} more went out than came in.",
+      "alertaSube": "{{nombre}} is up {{pct}} %.",
+      "alertaFijos": "Fixed costs take {{pct}} % of what comes in.",
+      "alertaNegativo": "{{cuenta}} is overdrawn.",
+      "alertaSinClasificar_one": "There is {{count}} uncategorised expense.",
+      "alertaSinClasificar_other": "There are {{count}} uncategorised expenses.",
+      "aviso": "This is not financial advice.",
+      "escribir": "Let the system write it",
+      "sinPro": "The written brief and the tips are part of NIVL Pro. The figures are yours anyway."
+    },
+    "importar": {
+      "rotulo": "Import statement",
+      "meta": "CSV or PDF",
+      "cuerpo": "Download the statement from your bank app and upload it here. You review it before saving and nothing is duplicated.",
+      "nunca": "We will never ask for your bank username or password.",
+      "elegir": "Choose file"
+    },
+    "coach": {
+      "rotulo": "WORK coach",
+      "enLinea": "Online",
+      "cuerpo": "Ask me where your money goes or how to organise the month.",
+      "pregunta": "Ask the WORK coach",
+      "preguntaA11y": "Open the WORK coach"
+    },
+    "avisos": {
+      "fijos_one": "{{count}} fixed item added up to today.",
+      "fijos_other": "{{count}} fixed items added up to today.",
+      "gasto": "Expense of {{importe}} added.",
+      "ingreso": "Income of {{importe}} added.",
+      "transferencia": "{{importe}} moved between your accounts.",
+      "importados_one": "{{count}} transaction imported.",
+      "importados_other": "{{count}} transactions imported."
+    },
+    "errores": {
+      "importe": "Enter an amount above zero.",
+      "saldo": "Enter today's balance, even if it is zero.",
+      "nombre": "Give it a name.",
+      "dia": "A day from 1 to 31.",
+      "mismaCuenta": "Choose two different accounts.",
+      "sinColumnas": "I don't recognise this file's columns. It needs date, description and amount.",
+      "vacio": "I found no transactions in the file.",
+      "pdfPro": "Reading a PDF is part of NIVL Pro. Your bank's CSV is read for free."
+    },
+    "confirmar": {
+      "archivarTitulo": "Archive {{nombre}}?",
+      "archivarMensaje": "It stops showing and counting towards the total. Its transactions stay.",
+      "bajaTitulo": "Cancel {{nombre}}?",
+      "bajaMensaje": "It stops being added every month. What is already recorded stays.",
+      "baja": "Cancel it",
+      "borrarTitulo": "Delete this transaction?",
+      "borrarMensaje": "{{concepto}}, {{importe}}. The balance is recalculated.",
+      "borrarTransferencia": "It is a transfer of {{importe}}: both sides are deleted.",
+      "borrar": "Delete"
+    },
+    "hojas": {
+      "cuenta": "Account",
+      "categoria": "Category",
+      "cuentaA11y": "{{nombre}}, {{importe}}",
+      "mov": {
+        "eyebrow": "Two taps",
+        "tituloGasto": "New expense",
+        "tituloIngreso": "New income",
+        "gasto": "Expense",
+        "ingreso": "Income",
+        "importe": "Amount",
+        "importeA11y": "Amount in euros",
+        "toca": "Tap the category to save",
+        "guardarComoA11y": "Save as {{categoria}}",
+        "concepto": "Description",
+        "conceptoPlaceholder": "Optional",
+        "conceptoAyuda": "If you leave it empty, it is saved with the category name."
+      },
+      "trf": {
+        "eyebrow": "Between your accounts",
+        "titulo": "Transfer",
+        "sub": "It counts as neither expense nor income: the money just changes place.",
+        "desde": "From",
+        "a": "To",
+        "conceptoPlaceholder": "To the savings pot",
+        "guardar": "Transfer"
+      },
+      "cuentaHoja": {
+        "eyebrow": "Account",
+        "titulo": "New account",
+        "tituloEditar": "Edit account",
+        "nombre": "Name",
+        "nombrePlaceholder": "Ibercaja, Revolut, wallet",
+        "tipo": "Type",
+        "saldo": "Balance today",
+        "saldoAyuda": "What is there now. From here, the system adds and subtracts on its own.",
+        "crear": "Create account",
+        "archivar": "Archive account"
+      },
+      "fijo": {
+        "eyebrow": "Every month",
+        "tituloIngreso": "Monthly income",
+        "tituloGasto": "Fixed cost",
+        "subIngreso": "Your salary or what you earn each month. It is added on its own on the day you choose.",
+        "subGasto": "Rent, subscriptions, fees. It is subtracted on its own on the charge day.",
+        "nombre": "Name",
+        "nombreIngreso": "Salary",
+        "nombreGasto": "Rent",
+        "dia": "Day",
+        "esteMes": "Count it this month"
+      },
+      "cat": {
+        "eyebrow": "Categories",
+        "titulo": "Your categories",
+        "deSerie": "Built in",
+        "tuyas": "Yours",
+        "nueva": "New category",
+        "nuevaPlaceholder": "Pet, gifts, travel",
+        "cuentaComo": "In reports it counts under {{grupo}}. Tap another one above to change it.",
+        "crear": "Create category"
+      },
+      "imp": {
+        "eyebrow": "Import",
+        "titulo": "Bank statement",
+        "deQue": "Which account is it from?",
+        "paso1": "In your bank app, look for Statements or Transactions and download the months you want, as CSV or PDF.",
+        "paso2": "Choose the file here. The CSV is read on your phone; the PDF is read by NIVL's AI and deleted right away.",
+        "paso3": "Review the list, remove what you don't want and save. Duplicates don't get in.",
+        "privacidad": "NIVL does not connect to your bank and will never ask for your username or password.",
+        "sinSelector": "This version of the app cannot open files yet. It arrives with the next update.",
+        "elegir": "Choose file"
+      },
+      "elegir": {
+        "eyebrow": "Change category"
+      }
+    },
+    "revision": {
+      "eyebrow": "Before saving",
+      "titulo": "Review",
+      "sub": "{{archivo}} · {{cuenta}}",
+      "resumen": "What I read",
+      "marcadas_one": "{{count}} selected",
+      "marcadas_other": "{{count}} selected",
+      "nuevos": "New",
+      "repetidos": "Already in",
+      "parecidos": "Similar",
+      "neto": "The selection adds up to {{importe}}.",
+      "descartadas_one": "{{count}} line could not be read.",
+      "descartadas_other": "{{count}} lines could not be read.",
+      "movimientos": "Transactions",
+      "todos": "Select all",
+      "ninguno": "None",
+      "yaEsta": "Already in",
+      "parecido": "Already added?",
+      "filaA11y": "{{concepto}}, {{importe}}, {{fecha}}",
+      "cambiarA11y": "Category {{categoria}}. Tap to change it.",
+      "guardar_one": "Save {{count}}",
+      "guardar_other": "Save {{count}}"
+    }
   }
 }

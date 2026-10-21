@@ -5,7 +5,7 @@
 //   (tabs)     NIVL     Hoy · Agenda · Coach · Hábitos · Campañas · Perfil
 //   (iron)     IRON     Hoy · Rutinas · Pesos · Coach
 //   (focus)    FOCUS    Hoy · Agenda · Diario · Coach
-//   (work)     WORK     Hoy · Agenda · Diario · Coach
+//   (work)     WORK     Hoy · Economía · Agenda · Coach (economía: src/components/economia/work)
 //   (founder)  FOUNDER  Hoy · Agenda · Economía · Coach
 //
 // Regla única: EL MODO ACTIVO DECIDE EL MUNDO. Cada layout de grupo mira el
@@ -61,8 +61,8 @@ export const MUNDOS: Readonly<Record<ModoId, Mundo>> = {
     grupo: '(work)',
     pestanas: [
       { ruta: 'work-hoy', pestana: 'hoy' },
+      { ruta: 'work-economia', pestana: 'economia' },
       { ruta: 'work-agenda', pestana: 'agenda' },
-      { ruta: 'work-diario', pestana: 'diario' },
       { ruta: 'work-coach', pestana: 'coach' },
     ],
   },

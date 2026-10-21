@@ -112,5 +112,237 @@
     "aprendido_other": "{{count}} movimentos classificados. A partir de agora fá-lo sozinho.",
     "errorImporte": "Escreve o montante. Negativo se for gasto, positivo se for receita.",
     "errorConcepto": "Daqui a um mês não te vais lembrar do que foi."
+  },
+  "work": {
+    "cargandoA11y": "A ler as tuas contas",
+    "avisoA11y": "{{texto}} Toca para ocultar.",
+    "ahorro": "Poupança",
+    "transferencia": "Transferência",
+    "sinClasificar": "Sem categoria",
+    "grupo": {
+      "comida": "Comida",
+      "transporte": "Transportes",
+      "ocio": "Lazer",
+      "casa": "Casa",
+      "suscripciones": "Subscrições",
+      "salud": "Saúde",
+      "educacion": "Educação",
+      "otros": "Outros"
+    },
+    "ingreso": {
+      "nomina": "Salário",
+      "negocio": "Negócio",
+      "otro": "Outra receita"
+    },
+    "tipoCuenta": {
+      "efectivo": "Dinheiro",
+      "banco": "Banco",
+      "revolut": "Cartão",
+      "otro": "Outra"
+    },
+    "preparando": {
+      "titulo": "As tuas finanças estão a ser preparadas",
+      "cuerpo": "O controlo de contas do WORK chega dentro de dias. O que já tens continua seguro."
+    },
+    "primera": {
+      "meta": "Começa aqui",
+      "titulo": "Primeiro, as tuas contas",
+      "cuerpo": "Dinheiro, o teu banco, o teu cartão. Anota quanto há hoje em cada uma e o sistema faz as contas a partir daí.",
+      "crear": "Criar a primeira conta"
+    },
+    "general": {
+      "rotulo": "Visão geral",
+      "cuentas_one": "{{count}} conta",
+      "cuentas_other": "{{count}} contas",
+      "nuevaCuentaA11y": "Adicionar uma conta",
+      "totalA11y": "Total nas tuas contas: {{importe}}",
+      "mes": "Este mês entram {{entra}} e saem {{sale}}",
+      "cuentaA11y": "{{nombre}}: {{importe}}. Toca para a editar.",
+      "gasto": "Adicionar despesa",
+      "ingreso": "Receita",
+      "transferir": "Transferir"
+    },
+    "fijos": {
+      "rotulo": "Fixos do mês",
+      "meta": "{{hechos}} de {{total}}",
+      "vacio": "O teu salário e as despesas fixas são anotados sozinhos todos os meses, no dia certo.",
+      "hechoA11y": "{{nombre}}, {{importe}}, dia {{dia}}: já anotado. Toca para o cancelar.",
+      "pendienteA11y": "{{nombre}}, {{importe}}, dia {{dia}}: pendente. Toca para o cancelar.",
+      "nuevoIngreso": "Receita mensal",
+      "nuevoGasto": "Despesa fixa"
+    },
+    "categorias": {
+      "rotulo": "Para onde vai",
+      "vacio": "Ainda não há despesas este mês.",
+      "a11y": "{{nombre}}: {{importe}}, {{pct}} % da despesa",
+      "gestionar": "Categorias"
+    },
+    "movimientos": {
+      "rotulo": "Movimentos",
+      "meta": "Últimos",
+      "vacio": "Nada anotado ainda. Uma despesa são dois toques.",
+      "a11y": "{{concepto}}, {{importe}}, {{fecha}}, {{cuenta}}. Toca para o apagar."
+    },
+    "brief": {
+      "rotulo": "Resumo de {{mes}}",
+      "metaIa": "Sistema",
+      "sinDatos": "Quando {{mes}} fechar com movimentos, verás aqui para onde foi o dinheiro e o que mudar.",
+      "entraSale": "Entraram {{entra}} e saíram {{sale}}.",
+      "top": "O que mais pesa: {{lista}}.",
+      "sube": "Gastaste mais {{pct}} % do que em {{mes}}.",
+      "baja": "Gastaste menos {{pct}} % do que em {{mes}}.",
+      "alertaGastaMas": "Saíram mais {{importe}} do que entraram.",
+      "alertaSube": "{{nombre}} sobe {{pct}} %.",
+      "alertaFijos": "Os fixos levam {{pct}} % do que entra.",
+      "alertaNegativo": "{{cuenta}} está a descoberto.",
+      "alertaSinClasificar_one": "Há {{count}} despesa sem categoria.",
+      "alertaSinClasificar_other": "Há {{count}} despesas sem categoria.",
+      "aviso": "Isto não é aconselhamento financeiro.",
+      "escribir": "Deixar o sistema escrever",
+      "sinPro": "O resumo escrito e os conselhos fazem parte do NIVL Pro. Os números continuam a ser teus."
+    },
+    "importar": {
+      "rotulo": "Importar extrato",
+      "meta": "CSV ou PDF",
+      "cuerpo": "Descarrega o extrato na app do teu banco e carrega-o aqui. Revês antes de guardar e nada se duplica.",
+      "nunca": "Nunca te vamos pedir o utilizador nem a palavra-passe do banco.",
+      "elegir": "Escolher ficheiro"
+    },
+    "coach": {
+      "rotulo": "Coach WORK",
+      "enLinea": "Online",
+      "cuerpo": "Pergunta-me para onde vai o teu dinheiro ou como organizar o mês.",
+      "pregunta": "Pergunta ao coach WORK",
+      "preguntaA11y": "Abrir o coach do WORK"
+    },
+    "avisos": {
+      "fijos_one": "{{count}} fixo anotado até hoje.",
+      "fijos_other": "{{count}} fixos anotados até hoje.",
+      "gasto": "Despesa de {{importe}} anotada.",
+      "ingreso": "Receita de {{importe}} anotada.",
+      "transferencia": "{{importe}} movidos entre as tuas contas.",
+      "importados_one": "{{count}} movimento importado.",
+      "importados_other": "{{count}} movimentos importados."
+    },
+    "errores": {
+      "importe": "Escreve um valor maior que zero.",
+      "saldo": "Escreve o saldo de hoje, mesmo que seja zero.",
+      "nombre": "Dá-lhe um nome.",
+      "dia": "Um dia de 1 a 31.",
+      "mismaCuenta": "Escolhe duas contas diferentes.",
+      "sinColumnas": "Não reconheço as colunas deste ficheiro. É preciso data, descrição e valor.",
+      "vacio": "Não encontrei movimentos no ficheiro.",
+      "pdfPro": "Ler um PDF faz parte do NIVL Pro. O CSV do teu banco é lido grátis."
+    },
+    "confirmar": {
+      "archivarTitulo": "Arquivar {{nombre}}?",
+      "archivarMensaje": "Deixa de aparecer e de contar no total. Os movimentos ficam.",
+      "bajaTitulo": "Cancelar {{nombre}}?",
+      "bajaMensaje": "Deixa de ser anotado todos os meses. O que já está anotado fica.",
+      "baja": "Cancelar",
+      "borrarTitulo": "Apagar este movimento?",
+      "borrarMensaje": "{{concepto}}, {{importe}}. O saldo é recalculado.",
+      "borrarTransferencia": "É uma transferência de {{importe}}: apagam-se os dois lados.",
+      "borrar": "Apagar"
+    },
+    "hojas": {
+      "cuenta": "Conta",
+      "categoria": "Categoria",
+      "cuentaA11y": "{{nombre}}, {{importe}}",
+      "mov": {
+        "eyebrow": "Dois toques",
+        "tituloGasto": "Nova despesa",
+        "tituloIngreso": "Nova receita",
+        "gasto": "Despesa",
+        "ingreso": "Receita",
+        "importe": "Valor",
+        "importeA11y": "Valor em euros",
+        "toca": "Toca na categoria para guardar",
+        "guardarComoA11y": "Guardar como {{categoria}}",
+        "concepto": "Descrição",
+        "conceptoPlaceholder": "Opcional",
+        "conceptoAyuda": "Se ficar vazia, guarda-se com o nome da categoria."
+      },
+      "trf": {
+        "eyebrow": "Entre as tuas contas",
+        "titulo": "Transferir",
+        "sub": "Não conta como despesa nem como receita: o dinheiro só muda de sítio.",
+        "desde": "De",
+        "a": "Para",
+        "conceptoPlaceholder": "Para a poupança",
+        "guardar": "Transferir"
+      },
+      "cuentaHoja": {
+        "eyebrow": "Conta",
+        "titulo": "Nova conta",
+        "tituloEditar": "Editar conta",
+        "nombre": "Nome",
+        "nombrePlaceholder": "Ibercaja, Revolut, carteira",
+        "tipo": "Tipo",
+        "saldo": "Saldo de hoje",
+        "saldoAyuda": "O que há agora. A partir daqui, o sistema soma e subtrai sozinho.",
+        "crear": "Criar conta",
+        "archivar": "Arquivar conta"
+      },
+      "fijo": {
+        "eyebrow": "Todos os meses",
+        "tituloIngreso": "Receita mensal",
+        "tituloGasto": "Despesa fixa",
+        "subIngreso": "O teu salário ou o que recebes todos os meses. Soma-se sozinho no dia que escolheres.",
+        "subGasto": "Renda, subscrições, quotas. Subtrai-se sozinha no dia da cobrança.",
+        "nombre": "Nome",
+        "nombreIngreso": "Salário",
+        "nombreGasto": "Renda",
+        "dia": "Dia",
+        "esteMes": "Contar já este mês"
+      },
+      "cat": {
+        "eyebrow": "Categorias",
+        "titulo": "As tuas categorias",
+        "deSerie": "Predefinidas",
+        "tuyas": "As tuas",
+        "nueva": "Nova categoria",
+        "nuevaPlaceholder": "Animal, presentes, viagens",
+        "cuentaComo": "Nos resumos conta dentro de {{grupo}}. Toca noutra acima para mudar.",
+        "crear": "Criar categoria"
+      },
+      "imp": {
+        "eyebrow": "Importar",
+        "titulo": "Extrato bancário",
+        "deQue": "De que conta é?",
+        "paso1": "Na app do teu banco, procura Extratos ou Movimentos e descarrega os meses que quiseres, em CSV ou PDF.",
+        "paso2": "Escolhe o ficheiro aqui. O CSV é lido no telemóvel; o PDF é lido pela IA do NIVL e apagado logo a seguir.",
+        "paso3": "Revê a lista, tira o que não quiseres e guarda. Os repetidos não entram.",
+        "privacidad": "O NIVL não se liga ao teu banco e nunca te vai pedir utilizador nem palavra-passe.",
+        "sinSelector": "Esta versão da app ainda não consegue abrir ficheiros. Chega com a próxima atualização.",
+        "elegir": "Escolher ficheiro"
+      },
+      "elegir": {
+        "eyebrow": "Mudar categoria"
+      }
+    },
+    "revision": {
+      "eyebrow": "Antes de guardar",
+      "titulo": "Revisão",
+      "sub": "{{archivo}} · {{cuenta}}",
+      "resumen": "O que li",
+      "marcadas_one": "{{count}} marcado",
+      "marcadas_other": "{{count}} marcados",
+      "nuevos": "Novos",
+      "repetidos": "Já estavam",
+      "parecidos": "Parecidos",
+      "neto": "A seleção soma {{importe}}.",
+      "descartadas_one": "{{count}} linha não pôde ser lida.",
+      "descartadas_other": "{{count}} linhas não puderam ser lidas.",
+      "movimientos": "Movimentos",
+      "todos": "Marcar todos",
+      "ninguno": "Nenhum",
+      "yaEsta": "Já está",
+      "parecido": "Já anotado?",
+      "filaA11y": "{{concepto}}, {{importe}}, {{fecha}}",
+      "cambiarA11y": "Categoria {{categoria}}. Toca para a mudar.",
+      "guardar_one": "Guardar {{count}}",
+      "guardar_other": "Guardar {{count}}"
+    }
   }
 }
