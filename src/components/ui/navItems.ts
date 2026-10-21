@@ -59,8 +59,8 @@ export const NAV_ITEMS: Record<string, NavDestino> = {
  */
 export const NAV_MUNDO: Record<string, { off: Icon; on: Icon }> = {
   'iron-hoy': { off: 'today-outline', on: 'today' },
-  'iron-rutinas': { off: 'list-outline', on: 'list' },
-  'iron-pesos': { off: 'trending-up-outline', on: 'trending-up' },
+  'iron-rutinas': { off: 'barbell-outline', on: 'barbell' },
+  'iron-dieta': { off: 'restaurant-outline', on: 'restaurant' },
   'iron-coach': { off: 'chatbubble-ellipses-outline', on: 'chatbubble-ellipses' },
   'focus-hoy': { off: 'today-outline', on: 'today' },
   'focus-agenda': { off: 'calendar-outline', on: 'calendar' },

@@ -40,6 +40,10 @@ export interface NutritionLog {
   kcal_est: number | null;
   protein_est: number | null;
   notes: string | null;
+  /** Agua del día en ml (0075). Sin la migración aplicada no llega. */
+  water_ml?: number;
+  /** Hoy hay comida libre (0075). Sin la migración aplicada no llega. */
+  free_meal?: boolean;
 }
 
 export interface Prescription {
@@ -202,6 +206,25 @@ export async function saveNutritionLog(
   const { data, error } = await supabase
     .from('nutrition_logs')
     .upsert({ user_id: userId, ...log }, { onConflict: 'user_id,date' })
+    .select()
+    .single();
+  if (error) throw error;
+  return data as NutritionLog;
+}
+
+/**
+ * El agua y la comida libre del día (IRON · Dieta, 0075). Escribe SOLO esas
+ * columnas: si la fila del día ya existe, el parte (kcal, proteína, notas) no
+ * se toca; si no existe, nace con el parte sin marcar. No paga XP.
+ */
+export async function saveAguaLibre(
+  userId: string,
+  date: string,
+  cambio: { water_ml?: number; free_meal?: boolean },
+): Promise<NutritionLog> {
+  const { data, error } = await supabase
+    .from('nutrition_logs')
+    .upsert({ user_id: userId, date, ...cambio }, { onConflict: 'user_id,date' })
     .select()
     .single();
   if (error) throw error;

@@ -29,7 +29,15 @@ export interface PesoEjercicio {
   /** Kilos ganados (o perdidos) en la ventana; null sin dos sesiones en ella. */
   readonly subida: number | null;
   readonly sesiones: number;
+  /**
+   * La carga más alta de cada una de las últimas sesiones, de la más antigua a
+   * la más reciente (hasta `PUNTOS_SERIE`): la línea de la gráfica de pesos.
+   */
+  readonly serie: readonly number[];
 }
+
+/** Sesiones que entran en la gráfica de un ejercicio (la lámina pinta 8 puntos). */
+export const PUNTOS_SERIE = 8;
 
 /** Semanas de la ventana de la subida (la lámina 2 de la P01: «en 6 semanas»). */
 export const SEMANAS_SUBIDA = 6;
@@ -99,6 +107,7 @@ export function resumenPesos(
       record: sesiones.length >= 2 && mejor !== null && mejor.fecha === ultima.fecha,
       subida,
       sesiones: sesiones.length,
+      serie: sesiones.slice(0, PUNTOS_SERIE).map(tope).reverse(),
     });
   }
   // Lo más reciente primero; a igual fecha, lo que más se ha entrenado.
