@@ -11,6 +11,7 @@
 import { LIGAS_ACTIVAS } from './funciones.ts';
 import type { Db } from './db.ts';
 import { leerDiaYAnterior } from './comprobacion.ts';
+import { etiquetaModos, MODOS_COACH, modosDeEntrada } from './modos.ts';
 
 const STATS = ['FUE', 'VIT', 'INT', 'AGI', 'PER'];
 
@@ -129,6 +130,12 @@ export const TOOL_DEFS = [
       },
       requiere_evidencia: bool('Si true, completarla pide foto. La evidencia da +25% de XP aunque no sea obligatoria.'),
       es_extra: bool('Si true es misión extra: paga Puntos Bonus canjeables por descanso en vez de XP. Úsalo para lo opcional que no debe inflar el nivel.'),
+      modos: {
+        type: 'array',
+        items: { type: 'string', enum: [...MODOS_COACH] },
+        description:
+          'Modos en los que cuenta: iron (gimnasio y dieta), focus (estudio), work (trabajo), founder (emprendimiento). Etiquétala con el modo al que pertenece aunque el gladiador esté ahora en otro: «repasa el tema 4» es focus aunque habléis desde IRON, y la app le ofrece ir allí. Lista vacía si no es de ningún modo (solo General).',
+      },
     },
   ),
 
@@ -801,6 +808,7 @@ export async function executeTool(
 
   switch (name) {
     case 'crear_mision': {
+      const modos = modosDeEntrada(input.modos);
       const { data, error } = await sb
         .from('quests')
         .insert({
@@ -811,11 +819,13 @@ export async function executeTool(
           days_of_week: input.dias_semana?.length ? input.dias_semana : [1, 2, 3, 4, 5, 6, 7],
           requires_evidence: !!input.requiere_evidencia,
           is_bonus: !!input.es_extra,
+          // Sin modos no se manda la clave: el insert es el de siempre (y vale sin la 0068).
+          ...(modos.length ? { modes: modos } : {}),
         })
         .select('id')
         .single();
       if (error) throw error;
-      return ok(`Misión creada (id ${data.id}): "${input.titulo}" · ${input.stat} · ${input.dificultad}`);
+      return ok(`Misión creada (id ${data.id}): "${input.titulo}" · ${input.stat} · ${input.dificultad}${etiquetaModos(modos)}`);
     }
 
     case 'editar_mision': {

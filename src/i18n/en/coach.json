@@ -124,5 +124,11 @@
     "miraFoto": "Look at this photo.",
     "energiaAgotada": "The coach's energy for this month has run out. It recharges on the 1st.",
     "energiaAgotadaDia": "The coach's energy for this month has run out. It recharges on {{dia}}."
+  },
+  "modo": {
+    "mision_one": "{{modo}} mission: {{titulos}}",
+    "mision_other": "{{count}} {{modo}} missions: {{titulos}}",
+    "titulo": "“{{titulo}}”",
+    "ir": "Go to {{modo}}"
   }
 }

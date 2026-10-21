@@ -124,5 +124,11 @@
     "miraFoto": "Guarda questa foto.",
     "energiaAgotada": "L'energia del coach di questo mese è esaurita. Si ricarica il giorno 1.",
     "energiaAgotadaDia": "L'energia del coach di questo mese è esaurita. Si ricarica il {{dia}}."
+  },
+  "modo": {
+    "mision_one": "Missione di {{modo}}: {{titulos}}",
+    "mision_other": "{{count}} missioni di {{modo}}: {{titulos}}",
+    "titulo": "«{{titulo}}»",
+    "ir": "Vai a {{modo}}"
   }
 }

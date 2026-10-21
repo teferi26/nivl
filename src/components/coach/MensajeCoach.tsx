@@ -7,7 +7,7 @@
 // «Escuchar» / «Parar» y «Denunciar respuesta». Sin animación por mensaje.
 
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { useEffect } from 'react';
+import { useEffect, type ReactNode } from 'react';
 import { AccessibilityInfo, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, {
   cancelAnimation,
@@ -41,12 +41,14 @@ interface Props {
   onDenunciar?: () => void;
   /** El primero de un bloque seguido del coach: lleva la firma encima. */
   firma?: boolean;
+  /** Bajo la losa: los avisos «Ir a {modo}» de este turno (AvisosModo). */
+  avisos?: ReactNode;
 }
 
 // Los enlaces del pie miden 28 de alto: con esto llegan a 44 de zona táctil.
 const ZONA_ENLACE = { top: 10, bottom: 10, left: 8, right: 8 };
 
-export function MensajeCoach({ texto, acciones, pensando, cita, voz, onDenunciar, firma }: Props) {
+export function MensajeCoach({ texto, acciones, pensando, cita, voz, onDenunciar, firma, avisos }: Props) {
   const conTexto = !!texto;
   const hablando = voz?.estado === 'hablando';
   const filaPie = conTexto && (voz || onDenunciar);
@@ -104,6 +106,7 @@ export function MensajeCoach({ texto, acciones, pensando, cita, voz, onDenunciar
           </View>
         ) : null}
       </View>
+      {avisos}
     </View>
   );
 }
