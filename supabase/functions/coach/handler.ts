@@ -22,6 +22,7 @@ import {
   LlamadaFallida,
   proveedorCompatible,
   RefusalError,
+  TopeIaError,
   type ApiMessage,
   type ContentBlock,
   type Effort,
@@ -35,8 +36,21 @@ import { buildContext, buildContextMinimo } from '../_shared/context.ts';
 import { consentimientoIa, MENSAJE_SIN_CONSENTIMIENTO, SIN_CONSENTIMIENTO } from '../_shared/consent.ts';
 import { healthConsent, healthGuardedResult, healthRevision, healthScopedClient, HEALTH_REQUIRED, requireHealth } from '../_shared/health.ts';
 import { adminClient, userClient, type Db } from '../_shared/db.ts';
-import { buildSystem, buildSystemRegistro, DATOS_ABRE, DATOS_CIERRA, neutralizarDatos } from '../_shared/prompt.ts';
-import { elegirModelo, modoDeCabecera, proveedorDe, type Modo, type Routes } from '../_shared/routing.ts';
+import {
+  bloqueEstadoRapido,
+  buildSystem,
+  buildSystemRegistro,
+  DATOS_ABRE,
+  DATOS_CIERRA,
+  neutralizarDatos,
+  partirEstado,
+  REGLA_DATOS,
+  REGLA_SIN_GUIONES,
+} from '../_shared/prompt.ts';
+import { AI_SAFETY_RULES } from '../_shared/ai-safety.ts';
+import { CarteraIa, codigoError, mensajeTope, puertaCartera, type FuncionIa } from '../_shared/cartera.ts';
+import { esTareaEstudio, generarEstudio, MAX_TEXTO_ESTUDIO, TAREAS_DE_SALUD } from '../_shared/estudio.ts';
+import { AVISO_MODELO_BLOQUEADO, elegirModelo, modoDeCabecera, soloAnthropic, type Modo, type Routes } from '../_shared/routing.ts';
 import { idiomaDeCabecera, misionConModos, modoDeCabeceraNivl, type ModoCoach } from '../_shared/modos.ts';
 import { executeTool, TOOL_DEFS } from '../_shared/tools.ts';
 import { controlHerramientas, fechaAceptable, fechaDelTurno, fotosSinVision, Gasto, mensajeDeFallo, reloj, validarImagenes } from './guard.ts';
@@ -108,6 +122,10 @@ const HISTORY_LIMIT_REGISTRO = 4;
 
 const KINDS = ['chat', 'brief', 'plan', 'revision_semanal', 'cierre_mensual', 'escalada'] as const;
 type Kind = (typeof KINDS)[number];
+/** Rituales del cron que trabajan sin el historial del chat ni su resumen (IA barata, 21/10/2026). */
+const RITUALES_SIN_HILO: readonly Kind[] = ['brief', 'revision_semanal', 'cierre_mensual', 'escalada'];
+/** El kind de los atajos de estudio (flashcards, resúmenes…): Haiku y fuera del contexto del coach. */
+const KIND_ESTUDIO = 'estudio';
 
 // 'clasificar' va aparte de KINDS a propósito: no es un ritual del coach ni
 // pasa por su contexto. Es una tarea mecánica que se atiende con Haiku y con
@@ -157,12 +175,11 @@ function resolverModelo(
   kind: Kind,
   modo: Modo,
 ): { model: string; compat: { baseUrl: string; apiKey: string } | null } {
-  const model = elegirModelo(routes, kind, modo, () => modeloDeEnv(kind));
-  if (proveedorDe(model) === 'anthropic') return { model, compat: null };
-  const compat = proveedorCompatible();
-  if (compat) return { model, compat };
-  console.warn(`Modelo ${model} sin COACH_BASE_URL/COACH_API_KEY: se atiende con ${COACH_MODEL}.`);
-  return { model: COACH_MODEL, compat: null };
+  // Privacidad (21/10/2026): solo Anthropic. Otro proveedor en routes o en los secrets no se llama
+  // nunca (ni COACH_BASE_URL): se atiende con el modelo barato de Anthropic y queda el código en el log.
+  const { model, bloqueado } = soloAnthropic(elegirModelo(routes, kind, modo, () => modeloDeEnv(kind)), CHEAP_MODEL);
+  if (bloqueado) console.warn(AVISO_MODELO_BLOQUEADO);
+  return { model, compat: null };
 }
 
 /**
@@ -171,12 +188,12 @@ function resolverModelo(
  * ni a `profundo`: un parte es leer y transformar, no decidir (AGENTS.md).
  */
 function resolverModeloRegistro(routes: Routes): { model: string; compat: { baseUrl: string; apiKey: string } | null } {
-  const model = elegirModelo({ registro: routes.registro }, 'registro', 'estandar', () => CHEAP_MODEL);
-  if (proveedorDe(model) === 'anthropic') return { model, compat: null };
-  const compat = proveedorCompatible();
-  if (compat) return { model, compat };
-  console.warn(`Modelo ${model} sin COACH_BASE_URL/COACH_API_KEY: el registro se atiende con ${CHEAP_MODEL}.`);
-  return { model: CHEAP_MODEL, compat: null };
+  const { model, bloqueado } = soloAnthropic(
+    elegirModelo({ registro: routes.registro }, 'registro', 'estandar', () => CHEAP_MODEL),
+    CHEAP_MODEL,
+  );
+  if (bloqueado) console.warn(AVISO_MODELO_BLOQUEADO);
+  return { model, compat: null };
 }
 
 /**
@@ -429,6 +446,8 @@ interface RunArgs {
   idioma?: string | null;
   /** Modos F1: modo de la cabecera x-nivl-modo (null = General, el coach de siempre). */
   modoNivl?: ModoCoach | null;
+  /** La cartera del turno (0078): cada llamada reserva antes su cota y liquida después. */
+  cartera: CarteraIa;
 }
 
 /** ¿El proveedor rechazó la petición (4xx)? Es lo único que justifica reintentar por la completa. */
@@ -462,18 +481,23 @@ async function runCoach(args: RunArgs): Promise<ResultadoTurno> {
   // consentimiento, la persistencia del hilo y la comprobación del servidor
   // son los mismos que en la ruta completa.
   const estrecha = ruta === 'registro';
+  // IA barata (21/10/2026): los rituales del cron (brief, revisión, cierre, escalada) no arrastran el
+  // historial del chat ni su resumen: trabajan sobre el estado y el dossier. Menos contexto en cada uno.
+  const sinHilo = estrecha || RITUALES_SIN_HILO.includes(kind);
   // L4: en la ruta completa, el resumen del hilo sustituye a los mensajes
   // anteriores a summary_until (viaja como DATO en el sistema; ver prompt.ts).
   const [ctx, hilo] = await Promise.all([
     estrecha ? buildContextMinimo(sb, userId, today) : buildContext(sb, userId, today),
-    estrecha ? Promise.resolve({ summary: null, summary_until: null }) : leerResumen(sb, threadId),
+    sinHilo ? Promise.resolve({ summary: null, summary_until: null }) : leerResumen(sb, threadId),
   ]);
+  // El estado lento va al sistema (cacheado); el rápido, al mensaje de este turno (ver partirEstado).
+  const estadoPartido = estrecha ? { lento: '', rapido: '' } : partirEstado(ctx.text);
   // Modos F1: la cabecera manda; sin ella, el idioma del perfil (rituales del cron). Sin ninguno de los
   // dos y sin modo, el sistema es el de siempre, byte a byte.
   const idiomaModo = { idioma: args.idioma ?? ctx.locale ?? null, modo: args.modoNivl ?? null };
   const system = estrecha
     ? buildSystemRegistro(ctx.text, idiomaModo)
-    : buildSystem(ctx.dossier, kind, ctx.text, { ttlFijo: ttlFijoDeEnv(), resumenHilo: hilo.summary, ...idiomaModo });
+    : buildSystem(ctx.dossier, kind, estadoPartido.lento, { ttlFijo: ttlFijoDeEnv(), resumenHilo: hilo.summary, ...idiomaModo });
   const herramientas: readonly unknown[] = estrecha ? TOOL_DEFS_REGISTRO : TOOL_DEFS;
   const maxVueltas = estrecha ? MAX_TOOL_ITERATIONS_REGISTRO : MAX_TOOL_ITERATIONS;
   telemetria.state_chars = ctx.text.length;
@@ -491,7 +515,7 @@ async function runCoach(args: RunArgs): Promise<ResultadoTurno> {
     .eq('thread_id', threadId);
   // Lo ya resumido no se reenvía: el resumen ocupa su lugar.
   if (hilo.summary_until) consulta = consulta.gt('created_at', hilo.summary_until);
-  const { data: rows } = await consulta
+  const { data: rows } = sinHilo && !estrecha ? { data: [] } : await consulta
     .order('created_at', { ascending: false })
     // En la estrecha se piden algunas filas de más: las de herramientas no
     // tienen texto y se descartan. En la completa se lee hasta el tope sin
@@ -507,7 +531,7 @@ async function runCoach(args: RunArgs): Promise<ResultadoTurno> {
   // L4/L8: ¿toca compactar? Se decide con lo que YA se ha leído (sin otra
   // consulta): lo sin resumir más las filas que añade este turno. Solo en la
   // ruta completa (resumirHilo vuelve a contar y no gasta si no llega).
-  const pideResumen = !estrecha && sinResumir.length + FILAS_POR_TURNO >= MIN_NUEVOS;
+  const pideResumen = !sinHilo && sinResumir.length + FILAS_POR_TURNO >= MIN_NUEVOS;
   // L8: con resumen al día, la ventana corta (en régimen normal todo lo sin
   // resumir cabe en ella). Sin resumen o con el resumen atrasado, el tope de
   // antes: lo que no está resumido no se tira mientras quepa en él.
@@ -530,6 +554,8 @@ async function runCoach(args: RunArgs): Promise<ResultadoTurno> {
   // Las fotos van DELANTE del texto: el modelo lee mejor una imagen cuando la
   // pregunta viene después de verla, no antes.
   const bloquesUsuario: ContentBlock[] = [
+    // El estado rápido, delante: es un DATO de este turno y no se guarda en el hilo.
+    ...(estadoPartido.rapido ? [{ type: 'text', text: bloqueEstadoRapido(estadoPartido.rapido) }] : []),
     ...(imagenes ?? []).map((img) => ({
       type: 'image',
       source: { type: 'base64', media_type: img.media_type, data: img.data },
@@ -558,6 +584,10 @@ async function runCoach(args: RunArgs): Promise<ResultadoTurno> {
   }
 
   const messages: ApiMessage[] = [...previos, { role: 'user', content: bloquesUsuario }];
+  // Cuarto punto de caché, MÓVIL: al final de lo último que se manda. En la primera llamada cubre el
+  // estado rápido y el mensaje; en cada vuelta del bucle se corre al último tool_result, así cada vuelta
+  // lee lo anterior y solo escribe lo nuevo. (fijo ◆ estable ◆ historial ◆ turno ◆ = los 4 que admite.)
+  const paraEnviar = (): ApiMessage[] => [...messages.slice(0, previos.length), ...markCacheable(messages.slice(previos.length))];
 
   // Solo se persiste lo que dijo él, sin el volcado de estado. Y de las fotos
   // solo la marca, nunca los bytes: guardar base64 en el historial lo haría
@@ -620,7 +650,8 @@ ${userText}` : userText,
                 apiKey: compat.apiKey,
                 model: elegido,
                 system,
-                messages,
+                messages: paraEnviar(),
+                cartera: args.cartera,
                 // Sin tiempo: las MISMAS herramientas con tool_choice 'none'.
                 // Quitarlas cambiaba el prefijo (toda la caché a reescribir) y,
                 // con tool_use en el historial, la API respondía 400.
@@ -633,7 +664,8 @@ ${userText}` : userText,
             : callClaude({
                 model: elegido,
                 system,
-                messages,
+                messages: paraEnviar(),
+                cartera: args.cartera,
                 tools: [...herramientas],
                 ...(sinTiempo ? { toolChoice: { type: 'none' as const } } : {}),
                 maxTokens: tokensDeSalida,
@@ -655,7 +687,17 @@ ${userText}` : userText,
       return turn;
     };
 
-    let turn = await pedirTurno(techo, esfuerzo);
+    let turn: Turn | null;
+    try {
+      turn = await pedirTurno(techo, esfuerzo);
+    } catch (e) {
+      // La cartera ya no deja otra llamada (tope del mes o del día). En la primera vuelta es el error
+      // del turno; después, se contesta con lo que haya y se dice por qué se para.
+      if (!(e instanceof TopeIaError) || i === 0) throw e;
+      finalText ||= 'El sistema ha parado aquí: has llegado al tope de IA.';
+      emit('text', { delta: '\n\nEl sistema ha parado aquí: has llegado al tope de IA.' });
+      break;
+    }
     if (!turn) {
       finalText = 'El coach se ha detenido porque no puede confirmar tu consentimiento. Revísalo en Perfil antes de continuar.';
       emit('text', { delta: finalText });
@@ -677,7 +719,15 @@ ${userText}` : userText,
     const util = (t: NonNullable<typeof turn>) =>
       t.content.some((b) => b.type === 'text' || b.type === 'tool_use');
     if (!util(turn)) {
-      const retry = await pedirTurno(techo * 2, 'low');
+      let retry: Turn | null;
+      try {
+        retry = await pedirTurno(techo * 2, 'low');
+      } catch (e) {
+        if (!(e instanceof TopeIaError)) throw e;
+        finalText ||= 'El sistema ha parado aquí: has llegado al tope de IA.';
+        emit('text', { delta: finalText });
+        break;
+      }
       if (!retry) {
         finalText = 'El coach se ha detenido porque no puede confirmar tu consentimiento. Revísalo en Perfil antes de continuar.';
         emit('text', { delta: finalText });
@@ -777,6 +827,75 @@ ${userText}` : userText,
     .eq('id', threadId);
 
   return { text: finalText, usage: gasto.usage, model: gasto.model || model, pideResumen };
+}
+
+// ── Brief ligero (IA barata, 21/10/2026) ───────────────────────────────
+//
+// El brief era el gasto fijo más grande (0,16 $ al día con Sonnet, siempre en frío). Cuando el plan del
+// día YA está escrito (lo hizo el gladiador, el coach a demanda o un brief anterior) no queda nada que
+// decidir: el brief solo lo recuerda y da la primera orden. Eso es leer y transformar → Haiku, con el
+// estado mínimo, sin herramientas, sin historial y con un techo corto (~0,005 $). Sin plan, el brief de
+// siempre (Sonnet con herramientas, ya sin el historial del chat).
+
+export const SISTEMA_BRIEF_LIGERO = `Eres "el sistema" de NIVL: el coach de un gladiador, dentro de su móvil. Es el ritual de la mañana y el plan de hoy YA está escrito.
+Escribe el brief en la voz del sistema: español, segunda persona, frases cortas, sobrio, sin emojis ni exclamaciones. Primero la orden del día con números del plan; después las misiones y reglas que tocan hoy. Máximo 120 palabras. No inventes bloques ni cifras que no estén en los datos y no cambies el plan.
+${REGLA_SIN_GUIONES}`;
+
+/** El plan de hoy en líneas («07:00-08:00 Gimnasio»), o null si no hay plan con bloques. */
+async function planDeHoy(sb: Db, userId: string, today: string): Promise<string[] | null> {
+  try {
+    const { data: plan } = await sb.from('day_plans').select('id').eq('user_id', userId).eq('date', today).maybeSingle();
+    const id = (plan as { id?: unknown } | null)?.id;
+    if (typeof id !== 'string' || !id) return null;
+    const { data: bloques } = await sb.from('day_blocks').select('start_min, end_min, title, done').eq('plan_id', id).order('position');
+    const filas = ((bloques ?? []) as { start_min: number; end_min: number; title: string; done?: boolean }[])
+      .filter((b) => Number.isFinite(Number(b.start_min)) && typeof b.title === 'string');
+    if (!filas.length) return null;
+    const hhmm = (m: number) => `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`;
+    return filas.map((b) => `${hhmm(Number(b.start_min))}-${hhmm(Number(b.end_min))} ${b.title.slice(0, 120)}${b.done ? ' (HECHO)' : ''}`);
+  } catch {
+    return null;
+  }
+}
+
+async function runBriefLigero(args: RunArgs): Promise<ResultadoTurno> {
+  const { sb, admin, userId, threadId, userText, today, gasto, deadline, telemetria, emit, cartera } = args;
+  telemetria.route = 'brief_ligero';
+  telemetria.tools_offered = 0;
+  const [ctx, plan] = await Promise.all([buildContextMinimo(sb, userId, today), planDeHoy(sb, userId, today)]);
+  const datos = `${ctx.text}\n\n## Plan de hoy (ya escrito)\n${(plan ?? []).map((l) => `- ${l}`).join('\n')}`;
+  telemetria.state_chars = datos.length;
+  await sb.from('coach_messages').insert({ thread_id: threadId, user_id: userId, role: 'user', content: [{ type: 'text', text: userText }] });
+
+  if ((await consentimientoIa(admin, userId)) !== true || (await healthConsent(sb, userId)) !== true) {
+    const aviso = 'El coach se ha detenido porque no puede confirmar tu consentimiento. Revísalo en Perfil antes de continuar.';
+    emit('text', { delta: aviso });
+    return { text: aviso, usage: gasto.usage, model: CHEAP_MODEL };
+  }
+  const restante = deadline - Date.now();
+  if (restante < 5_000) throw new Error('plazo del turno agotado');
+  telemetria.iterations = 1;
+  let turn: Turn;
+  try {
+    turn = await callClaude({
+      model: CHEAP_MODEL,
+      system: [{ type: 'text', text: `${SISTEMA_BRIEF_LIGERO}\n\n${AI_SAFETY_RULES}\n\n${REGLA_DATOS}`, cache_control: { type: 'ephemeral' } }],
+      messages: [{ role: 'user', content: [{ type: 'text', text: `${DATOS_ABRE}\n${neutralizarDatos(datos)}\n${DATOS_CIERRA}\n\nEscribe el brief de hoy (${today}).` }] }],
+      maxTokens: 1200,
+      signal: AbortSignal.timeout(restante),
+      cartera,
+    });
+    gasto.sumar(turn.usage, turn.model);
+  } catch (e) {
+    if (e instanceof LlamadaFallida) gasto.sumar(e.usage, e.model);
+    throw e;
+  }
+  const texto = turn.content.filter((b) => b.type === 'text').map((b) => b.text ?? '').join('').trim();
+  if (texto) emit('text', { delta: texto });
+  await requireHealth(sb, userId);
+  await sb.from('coach_messages').insert({ thread_id: threadId, user_id: userId, role: 'assistant', content: turn.content });
+  await sb.from('coach_threads').update({ last_message_at: new Date().toISOString() }).eq('id', threadId);
+  return { text: texto, usage: gasto.usage, model: turn.model };
 }
 
 export async function handler(req: Request): Promise<Response> {
@@ -889,6 +1008,9 @@ async function atender(
     stream?: boolean;
     periodo?: string;
     imagenes?: { media_type: string; data: string }[];
+    /** kind 'estudio': qué transformar y el texto. */
+    tarea?: string;
+    texto?: string;
   };
   try {
     body = await req.json();
@@ -903,9 +1025,19 @@ async function atender(
   // enviar 50.000 fichas de dossier y estudios para decidir si un cargo de
   // Mercadona es supermercado es tirar el dinero, y es justo lo que hay que
   // evitar en las tareas que no piden criterio.
+  // La puerta de la cartera (0078) para los atajos: tope de la función, ritmo del día y del mes.
+  const cerrada = async (funcion: FuncionIa): Promise<Response | null> => {
+    const p = await puertaCartera(admin, userId, funcion, 'estandar');
+    if (p.ok) return null;
+    const m = mensajeTope(p.motivo ?? 'cerrado', p.renueva);
+    return json(m.status, { error: m.error, reason: m.reason });
+  };
+
   if (body.kind === KIND_MECANICO) {
+    const no = await cerrada('clasificar');
+    if (no) return no;
     try {
-      const r = await clasificarPendientes(sbTemprano, admin, userId);
+      const r = await clasificarPendientes(sbTemprano, admin, userId, new CarteraIa(admin, userId, 'clasificar'));
       const { error: ledgerErr } = await insertarRun(admin, {
         user_id: userId,
         kind: KIND_MECANICO,
@@ -926,8 +1058,57 @@ async function atender(
           ...(e.status === 403 ? { reason: SIN_CONSENTIMIENTO } : {}),
         });
       }
-      console.error('clasificar error:', e);
+      if (e instanceof TopeIaError) {
+        const m = mensajeTope(e.motivo);
+        return json(m.status, { error: m.error, reason: m.reason });
+      }
+      // Solo el código: el objeto puede llevar conceptos bancarios o el cuerpo del proveedor.
+      console.error('clasificar error:', codigoError(e));
       return json(500, { error: 'No se pudieron clasificar los movimientos.' });
+    }
+  }
+
+  // Atajos de estudio (IA barata): Haiku, sin buildContext, sin herramientas. Los de cuerpo y comida
+  // (dieta, entreno) pasan además por el permiso de salud, más abajo.
+  if (body.kind === KIND_ESTUDIO) {
+    if (!esTareaEstudio(body.tarea)) return json(400, { error: 'Tarea de estudio no válida.' });
+    const texto = String(body.texto ?? '').slice(0, MAX_TEXTO_ESTUDIO).trim();
+    if (!texto) return json(400, { error: 'Falta el texto.' });
+    let ficha = '';
+    if (TAREAS_DE_SALUD.includes(body.tarea)) {
+      const salud = await healthConsent(sbTemprano, userId);
+      if (salud === null) return json(503, { error: 'No se ha podido comprobar el permiso de salud.' });
+      if (!salud) return json(403, { error: 'Revisa y activa el permiso de salud en Perfil antes de usar esto.', reason: HEALTH_REQUIRED });
+      const { data: f } = await sbTemprano.from('body_profile')
+        .select('height_cm, birth_year, sex, activity, experience, injuries, food_notes, equipment, goal')
+        .eq('user_id', userId).maybeSingle();
+      if (f) ficha = JSON.stringify(f);
+    }
+    const no = await cerrada('estudio');
+    if (no) return no;
+    const cartera = new CarteraIa(admin, userId, 'estudio');
+    try {
+      const r = await generarEstudio(body.tarea, texto, cartera, ficha);
+      await insertarRun(admin, {
+        user_id: userId,
+        kind: KIND_ESTUDIO,
+        mode: 'estandar',
+        model: r.turn.model,
+        in_tokens: r.turn.usage.input_tokens ?? 0,
+        cache_read_tokens: r.turn.usage.cache_read_input_tokens ?? 0,
+        cache_write_tokens: r.turn.usage.cache_creation_input_tokens ?? 0,
+        out_tokens: r.turn.usage.output_tokens ?? 0,
+        cost_micro_usd: costMicroUsd(r.turn.model, r.turn.usage),
+      }, { route: 'mecanica', intent: body.tarea, tools_offered: 0, tool_calls: 0, iterations: 1 });
+      if (r.resultado === null) return json(502, { error: 'El sistema no ha podido ordenar ese texto. Vuelve a intentarlo.' });
+      return json(200, { tarea: body.tarea, resultado: r.resultado });
+    } catch (e) {
+      if (e instanceof TopeIaError) {
+        const m = mensajeTope(e.motivo);
+        return json(m.status, { error: m.error, reason: m.reason });
+      }
+      console.error('estudio error:', codigoError(e));
+      return json(502, { error: 'El sistema no ha podido ordenar ese texto. Vuelve a intentarlo.' });
     }
   }
 
@@ -942,13 +1123,15 @@ async function atender(
   // El resumen tampoco pasa por el contexto del coach: se construye con datos
   // del periodo ya calculados y no necesita el dossier ni los estudios.
   if (body.kind === KIND_RESUMEN) {
+    const no = await cerrada('resumen');
+    if (no) return no;
     const periodo = body.periodo === 'mensual' ? 'mensual' : 'semanal';
     const hoy = fechaDelTurno(body.date);
     try {
       // El consentimiento de IA lo comprueba el cliente de servicio: la RPC
       // ai_consent_ok solo la puede ejecutar service_role (0028), y con el
       // cliente del usuario la comprobación fallaba siempre (resumen roto).
-      const r = await construirResumen(sbTemprano, userId, periodo, hoy, admin);
+      const r = await construirResumen(sbTemprano, userId, periodo, hoy, admin, new CarteraIa(admin, userId, 'resumen'));
       if (!r.slides.length) return json(200, { slides: [], fotos: 0, motivo: r.motivo });
 
       const { desde, hasta } = periodo === 'semanal' ? periodoSemanal(hoy) : periodoMensual(hoy);
@@ -983,7 +1166,11 @@ async function atender(
 
       return json(200, { id: (guardado as { id: string }).id, slides: r.slides, fotos: r.fotos });
     } catch (e) {
-      console.error('resumen error:', e);
+      if (e instanceof TopeIaError) {
+        const m = mensajeTope(e.motivo);
+        return json(m.status, { error: m.error, reason: m.reason });
+      }
+      console.error('resumen error:', codigoError(e));
       return json(500, { error: 'No se pudo construir el resumen.' });
     }
   }
@@ -1056,6 +1243,18 @@ async function atender(
   // Las fotos nunca salen a un proveedor sin visión acordada (solo Claude).
   const sinVision = fotosSinVision(fotos.imagenes.length, compat);
   if (sinVision) return json(400, { error: sinVision });
+  // La función de la cartera (0078) y su puerta, ANTES de abrir el stream: un 402 limpio y no un error
+  // a mitad de respuesta. Brief con el plan ya escrito: la versión ligera (Haiku, sin herramientas).
+  const funcion: FuncionIa = modo === 'profundo' ? 'profundo' : ruta === 'registro' ? 'registro' : kind === 'chat' ? 'chat' : 'ritual';
+  {
+    const p = await puertaCartera(admin, userId, funcion, modo === 'profundo' ? 'profundo' : 'estandar');
+    if (!p.ok) {
+      const m = mensajeTope(p.motivo ?? 'cerrado', p.renueva ?? estado.renews);
+      return json(m.status, { error: m.error, reason: m.reason });
+    }
+  }
+  const cartera = new CarteraIa(admin, userId, funcion, modo === 'profundo' ? 'profundo' : 'estandar');
+  const briefLigero = kind === 'brief' && modo !== 'profundo' && (await planDeHoy(sb, userId, today)) !== null;
   const topeMicro = Math.min(
     ruta === 'registro' ? MAX_COST_REGISTRO_MICRO_USD : modo === 'profundo' ? MAX_COST_PROFUNDO_MICRO_USD : MAX_COST_MICRO_USD,
     restanteMicro,
@@ -1080,7 +1279,8 @@ async function atender(
       modoNivl: modoDeCabeceraNivl(req.headers.get('x-nivl-modo')),
     };
     try {
-      return await runCoach({ ...base, topeMicro, modelo, compat, ruta });
+      if (briefLigero) return await runBriefLigero({ ...base, topeMicro, modelo: CHEAP_MODEL, compat: null, ruta, cartera });
+      return await runCoach({ ...base, topeMicro, modelo, compat, ruta, cartera });
     } catch (e) {
       if (ruta !== 'registro' || !rechazoDelProveedor(e)) throw e;
       console.warn('ruta de registro rechazada por el proveedor: se reintenta por la completa');
@@ -1093,6 +1293,8 @@ async function atender(
         compat: completa.compat,
         ruta: 'completa',
         usuarioYaGuardado: true,
+        // La completa es un turno de chat: su propia cartera (otra cota por llamada que la del parte).
+        cartera: new CarteraIa(admin, userId, 'chat'),
       });
     }
   };
@@ -1132,11 +1334,13 @@ async function atender(
     if (!result.pideResumen) return;
     enSegundoPlano(resumirHilo({
       sb, admin, userId, threadId: threadId!, presupuestoMicro: restanteMicro - gasto.micro(), modo,
+      cartera: new CarteraIa(admin, userId, 'resumen_hilo'),
     }));
   };
 
   const describe = (e: unknown): string => {
     if (e instanceof RefusalError) return 'El sistema no puede responder a eso.';
+    if (e instanceof TopeIaError) return mensajeTope(e.motivo, estado.renews).error;
     if (e instanceof Error && e.message === HEALTH_REQUIRED) return 'El permiso de salud ya no está activo. Revisa Perfil antes de continuar.';
     // El detalle (saldo de la cuenta del dueño, cuerpo del proveedor, código)
     // va al log del servidor, que es donde se arregla; al usuario, un mensaje
@@ -1159,6 +1363,10 @@ async function atender(
     } catch (e) {
       const message = describe(e);
       await finish(null, message);
+      if (e instanceof TopeIaError) {
+        const m = mensajeTope(e.motivo, estado.renews);
+        return json(m.status, { error: m.error, reason: m.reason });
+      }
       return json(502, { error: message });
     }
   }

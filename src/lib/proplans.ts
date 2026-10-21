@@ -74,6 +74,70 @@ export interface AiStatus {
    * migración): quien pinta decide por el nivel. Pro (DeepSeek) y la prueba no.
    */
   vision: boolean | null;
+  /**
+   * La cartera de IA del mes (0078, `ai_status.ia`): tope duro del servidor con recargas y el reparto del
+   * día. Sin la migración, undefined: quien pinta usa `energiaRestante`.
+   */
+  ia?: CarteraIa | null;
+}
+
+/** Lo que da `ai_status.ia` (0078). Importes en micro-USD; la app solo enseña porcentajes. */
+export interface CarteraIa {
+  tope: number;
+  usado: number;
+  /** Lo que aporta la recarga comprada a este mes. */
+  recarga: number;
+  limiteHoy: number;
+  usadoHoy: number;
+  renueva?: string;
+  /** Lo que diría la puerta ahora para un turno estándar: null = abierta. */
+  motivo: string | null;
+}
+
+/** `ai_status.ia` (0078) con tipos; null si el servidor aún no lo manda o no hay derecho. */
+export function carteraDe(v: unknown): CarteraIa | null {
+  if (!v || typeof v !== 'object') return null;
+  const o = v as Record<string, unknown>;
+  if (o.entitled !== true) return null;
+  const n = (x: unknown) => (Number.isFinite(Number(x)) ? Number(x) : 0);
+  return {
+    tope: n(o.tope),
+    usado: n(o.usado),
+    recarga: n(o.recarga),
+    limiteHoy: n(o.limite_hoy),
+    usadoHoy: n(o.usado_hoy),
+    renueva: typeof o.renueva === 'string' ? o.renueva : undefined,
+    motivo: typeof o.motivo === 'string' ? o.motivo : null,
+  };
+}
+
+/** El producto consumible de recarga (lo crea Teferi en App Store Connect, Google Play y RevenueCat). */
+export const RECARGA_IA_ID = 'nivl_ia_recarga_1';
+
+export type NivelUsoIa = 'normal' | 'aviso80' | 'aviso95' | 'hoy' | 'agotada';
+
+/**
+ * Cuánta IA queda (0 a 1) y qué decir. Puro. Umbrales: 80 % y 95 % usados; «agotada» si la puerta dice
+ * tope del mes o se ha usado todo; «hoy» si solo se ha llegado al reparto del día.
+ */
+export function usoIa(status: AiStatus | null | undefined): { queda: number; nivel: NivelUsoIa } | null {
+  const c = status?.entitled ? status.ia : null;
+  if (!c || !(c.tope > 0)) return null;
+  const usado = Math.min(1, Math.max(0, c.usado / c.tope));
+  const queda = 1 - usado;
+  if (c.motivo === 'tope_mes' || usado >= 0.999) return { queda, nivel: 'agotada' };
+  if (c.motivo === 'ritmo_diario') return { queda, nivel: 'hoy' };
+  if (usado >= 0.95) return { queda, nivel: 'aviso95' };
+  if (usado >= 0.8) return { queda, nivel: 'aviso80' };
+  return { queda, nivel: 'normal' };
+}
+
+/** Porcentaje entero que se enseña («73 % disponible»): nunca 0 mientras quede algo, nunca 100 si se usó algo. */
+export function porcentajeIa(queda: number): number {
+  const p = Math.round(Math.min(1, Math.max(0, queda)) * 100);
+  if (queda > 0 && p === 0) return 1;
+  if (queda < 1 && p === 100) return 99;
+  return p;
 }
 
 /** Una cuenta sin nada: lo que se pinta cuando el servidor dice que no hay IA. */

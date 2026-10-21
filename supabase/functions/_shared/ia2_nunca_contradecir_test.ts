@@ -115,7 +115,8 @@ Deno.test('L1 fecha: con date del móvil, el estado vive en ese día', async () 
   try {
     const r = await handler(peticion({ kind: 'chat', message: 'hola', stream: false, date: HOY }));
     await r.text();
-    ok(textoDe((fake.proveedor[0].body as { system: unknown }).system).includes(`· ${HOY}`));
+    // IA barata: la cabecera fechada del estado va en el estado RÁPIDO, dentro del mensaje del turno.
+    ok(textoDe(fake.proveedor[0].body).includes(`· ${HOY}`));
   } finally {
     fake.restaurar();
     soltar();
@@ -128,7 +129,7 @@ Deno.test('L1 fecha: sin date (app 1.0.7), manda la zona del perfil y no UTC', a
   try {
     const r = await handler(peticion({ kind: 'chat', message: 'hola', stream: false }));
     await r.text();
-    const sistema = textoDe((fake.proveedor[0].body as { system: unknown }).system);
+    const sistema = textoDe(fake.proveedor[0].body); // sistema + mensajes: la cabecera va en el turno
     ok(sistema.includes(`ESTADO DEL GLADIADOR · ${HOY}`), 'el día local de Madrid');
     ok(!sistema.includes(`ESTADO DEL GLADIADOR · ${AYER}`), 'no el día UTC');
   } finally {

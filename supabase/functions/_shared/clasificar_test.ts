@@ -1,4 +1,5 @@
 import { deepEqual, equal, rejects } from 'node:assert/strict';
+import { CARTERA_DE_PRUEBA } from './sec_coach_fake_test.ts';
 import { clasificarPendientes, ClasificacionConsentimientoError } from './clasificar.ts';
 import { consentimientoIa } from './consent.ts';
 import type { Db } from './db.ts';
@@ -44,7 +45,7 @@ async function withProviderStub(trace: string[], run: () => Promise<void>) {
 Deno.test('clasificación: solo un consentimiento positivo permite enviar tras leer movimientos', async () => {
   const f = fixture(() => ({ data: true, error: null }));
   await withProviderStub(f.trace, async () => {
-    const result = await clasificarPendientes(f.sb, f.admin, USER_ID);
+    const result = await clasificarPendientes(f.sb, f.admin, USER_ID, CARTERA_DE_PRUEBA);
     equal(result.clasificados, 1);
     deepEqual(f.trace, ['read', 'consent', 'provider', 'write']);
   });
@@ -58,7 +59,7 @@ for (const scenario of [
   Deno.test(`clasificación: ${scenario.name} impide enviar y escribir`, async () => {
     const f = fixture(() => scenario.answer);
     await withProviderStub(f.trace, async () => {
-      await rejects(() => clasificarPendientes(f.sb, f.admin, USER_ID), (error: unknown) =>
+      await rejects(() => clasificarPendientes(f.sb, f.admin, USER_ID, CARTERA_DE_PRUEBA), (error: unknown) =>
         error instanceof ClasificacionConsentimientoError && error.status === scenario.status);
       deepEqual(f.trace, ['read', 'consent']);
     });
@@ -70,7 +71,7 @@ Deno.test('clasificación: una retirada durante la lectura invalida el permiso i
   const f = fixture(() => ({ data: granted, error: null }), () => { granted = false; });
   equal(await consentimientoIa(f.admin, USER_ID), true);
   await withProviderStub(f.trace, async () => {
-    await rejects(() => clasificarPendientes(f.sb, f.admin, USER_ID), ClasificacionConsentimientoError);
+    await rejects(() => clasificarPendientes(f.sb, f.admin, USER_ID, CARTERA_DE_PRUEBA), ClasificacionConsentimientoError);
     deepEqual(f.trace, ['consent', 'read', 'consent']);
   });
 });
@@ -78,7 +79,7 @@ Deno.test('clasificación: una retirada durante la lectura invalida el permiso i
 Deno.test('clasificación: una excepción de red tampoco autoriza la llamada', async () => {
   const f = fixture(() => { throw new Error('stub network failure'); });
   await withProviderStub(f.trace, async () => {
-    await rejects(() => clasificarPendientes(f.sb, f.admin, USER_ID), /stub network failure/);
+    await rejects(() => clasificarPendientes(f.sb, f.admin, USER_ID, CARTERA_DE_PRUEBA), /stub network failure/);
     deepEqual(f.trace, ['read', 'consent']);
   });
 });

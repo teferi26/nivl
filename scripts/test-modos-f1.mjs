@@ -156,7 +156,8 @@ const CLAVES_1011 = { modos_1011: false, idiomas_1011: false, prueba_auto_1011: 
 // Integración v3: la 0075 (WORK) deja la v10 y la 0076 (FOCUS) la v11, que exporta todo.
 const V_EXPORT = ARCHIVOS.some((n) => n.startsWith('0076')) ? 11 : ARCHIVOS.some((n) => n.startsWith('0075')) ? 10 : HAY_ANALITICA ? 9 : 8;
 const CLAVES_NUEVAS = ['money_categories', 'money_recurring', 'money_briefs', 'focus_subjects', 'focus_exams', 'focus_topics',
-  'focus_sessions', 'focus_classes', 'focus_grades', 'focus_decks', 'focus_cards'];
+  'focus_sessions', 'focus_classes', 'focus_grades', 'focus_decks', 'focus_cards',
+  'ai_cargos', 'ai_recargas', 'ai_cartera']; // 0079 (cartera de IA)
 const antes = await boot(65);
 const despues = await boot(9999);
 try {
@@ -194,8 +195,19 @@ try {
   eq(d.flags, a.flags, 'economía idéntica');
   eq(d.subs, 0, 'con el interruptor apagado no nace prueba');
   eq(a.subs, 0);
+  // 0078 (tope de IA) añade claves (recarga, periodo_desde, ia) y sube el Élite a 8 $ a propósito: se quitan
+  // esas claves y, en Élite, las cifras de presupuesto; lo demás tiene que seguir idéntico.
+  const sin0078 = (fila, elite) => {
+    const c = structuredClone(fila);
+    for (const parte of [c.state, c.est, c.prof, c.status]) {
+      if (!parte || typeof parte !== 'object') continue;
+      delete parte.recarga; delete parte.periodo_desde; delete parte.ia;
+      if (elite) for (const x of ['budget', 'remaining', 'deep_budget', 'deep_remaining', 'deep_turns', 'turn_budget']) delete parte[x];
+    }
+    return c;
+  };
   for (const k of Object.keys(a.matriz)) {
-    eq(normal(d.matriz[k]), normal(a.matriz[k]), `ai_state/user_tier/ai_begin_turn/ai_status idénticos: ${k}`);
+    eq(normal(sin0078(d.matriz[k], k === 'elite')), normal(sin0078(a.matriz[k], k === 'elite')), `ai_state/user_tier/ai_begin_turn/ai_status idénticos: ${k}`);
   }
   eq(d.matriz['cortesia 7 dias viva'].state.trial, true);
   eq(d.matriz['pro en gracia'].tier, 'pro');

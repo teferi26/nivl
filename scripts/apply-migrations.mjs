@@ -68,6 +68,8 @@ async function sql(query) {
 // Cada migración se reconoce por un objeto que solo ella crea.
 const HUELLAS = {
   '0086': `coalesce(obj_description(to_regprocedure('public._prueba_auto_al_nacer()'), 'pg_proc') like '%nivl:interruptores-1011-0086%', false)`,
+  '0079': `coalesce(obj_description(to_regprocedure('public.export_my_data()'), 'pg_proc') like '%nivl:export-ia-0079%', false)`,
+  '0078': `coalesce(obj_description(to_regprocedure('public.ai_reservar(uuid,text,text,bigint,uuid,text)'), 'pg_proc') like '%nivl:ia-tope-0078%', false)`,
   '0077': `coalesce(col_description('public.nutrition_logs'::regclass, (select attnum from pg_attribute where attrelid = 'public.nutrition_logs'::regclass and attname = 'water_ml')::int) like '%nivl:agua-0077%', false)`,
   '0076': `coalesce(obj_description(to_regclass('public.focus_subjects'), 'pg_class') like '%nivl:focus-0076%', false) and coalesce(obj_description(to_regprocedure('public.export_my_data()'), 'pg_proc') like '%nivl:export-focus-0076%', false)`,
   '0075': `coalesce(obj_description(to_regclass('public.money_recurring'), 'pg_class') like '%nivl:work-economia-0075%', false) and coalesce(obj_description(to_regprocedure('public.export_my_data()'), 'pg_proc') like '%nivl:export-work-0075%', false)`,

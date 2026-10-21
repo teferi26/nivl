@@ -8,6 +8,7 @@
 //   · La contabilidad: escrituras de caché de 1 h a 2× y el `usage` de
 //     `message_delta` tratado como acumulado (antes se sumaba al de inicio).
 
+import { CARTERA_DE_PRUEBA } from './sec_coach_fake_test.ts';
 import { deepEqual, equal, ok } from 'node:assert/strict';
 import { instalar, peticion, sse, turnoHerramienta, turnoTexto, type Llamada } from './sec_coach_fake_test.ts';
 import { callClaude, costMicroUsd, usoDeStream } from './anthropic.ts';
@@ -168,7 +169,7 @@ Deno.test('coste: el usage de message_delta es ACUMULADO y no se suma al de mess
       ]),
   });
   try {
-    const t = await callClaude({ system: [{ type: 'text', text: 's' }], messages: [{ role: 'user', content: 'x' }] });
+    const t = await callClaude({ system: [{ type: 'text', text: 's' }], messages: [{ role: 'user', content: 'x' }], cartera: CARTERA_DE_PRUEBA });
     equal(t.usage.input_tokens, 2_000);
     equal(t.usage.cache_read_input_tokens, 15_000);
     equal(t.usage.cache_creation_input_tokens, 30_000);
@@ -182,8 +183,8 @@ Deno.test('coste: el usage de message_delta es ACUMULADO y no se suma al de mess
 Deno.test('coste: con tool_choice y herramientas la petición a Anthropic los envía juntos; sin herramientas, ninguno', async () => {
   const fake = instalar();
   try {
-    await callClaude({ system: [{ type: 'text', text: 's' }], messages: [{ role: 'user', content: 'x' }], tools: TOOL_DEFS, toolChoice: { type: 'none' } });
-    await callClaude({ system: [{ type: 'text', text: 's' }], messages: [{ role: 'user', content: 'x' }], toolChoice: { type: 'none' } });
+    await callClaude({ system: [{ type: 'text', text: 's' }], messages: [{ role: 'user', content: 'x' }], cartera: CARTERA_DE_PRUEBA, tools: TOOL_DEFS, toolChoice: { type: 'none' } });
+    await callClaude({ system: [{ type: 'text', text: 's' }], messages: [{ role: 'user', content: 'x' }], cartera: CARTERA_DE_PRUEBA, toolChoice: { type: 'none' } });
     const [con, sin] = fake.proveedor.map((c) => c.body as Record<string, unknown>);
     deepEqual(con.tool_choice, { type: 'none' });
     equal((con.tools as unknown[]).length, TOOL_DEFS.length);

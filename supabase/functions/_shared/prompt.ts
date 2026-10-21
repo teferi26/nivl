@@ -153,6 +153,59 @@ export interface OpcionesSistema {
   modo?: ModoCoach | null;
 }
 
+// ── Estado lento y estado rápido (caché, IA barata 21/10/2026) ──────────────
+//
+// Medido (COSTE_IA_ELITE.md): el 80 % del coste de un mensaje era REESCRIBIR la caché, 26-49 k fichas por
+// turno, porque el estado entero (que cambia con cada misión marcada o cada parte) iba en el sistema,
+// delante del historial: cualquier cambio invalidaba todo lo que venía detrás. Ahora el estado se parte:
+//   · LENTO (memoria, estudios, diario, agenda, ficha, bitácora): cambia como mucho unas veces al día. Va
+//     en el sistema, cacheado, y lo leen todos los turnos seguidos.
+//   · RÁPIDO (cabecera con XP y racha, misiones de hoy, lo registrado hoy, plan de hoy, contrato de hoy,
+//     registro reciente, entreno de hoy): cambia a cada rato. Va en el MENSAJE de este turno, detrás del
+//     historial, y no se guarda en el hilo. Lo que se reescribe por turno es él más el último intercambio.
+
+/** Secciones del estado que cambian dentro del día (van en el turno, no en el sistema). */
+export const SECCIONES_RAPIDAS: readonly string[] = Object.freeze([
+  '## Misiones activas',
+  '## Registrado hoy',
+  '## Misiones de penalización',
+  '## Plan de hoy',
+  '## Contrato',
+  '## Registro reciente',
+  '## Entreno prescrito para hoy',
+]);
+
+/**
+ * Parte el estado de buildContext en lento y rápido, por secciones. Puro y determinista: el mismo estado
+ * da los mismos bytes. La cabecera inicial (# ESTADO…, con XP y racha) es rápida; un título de primer
+ * nivel posterior (# ESTUDIO…) y toda sección que no esté en SECCIONES_RAPIDAS, lenta.
+ */
+export function partirEstado(texto: string): { lento: string; rapido: string } {
+  const lento: string[] = [];
+  const rapido: string[] = [];
+  let destino: string[] = rapido;
+  let primera = true;
+  for (const linea of texto.split('\n')) {
+    if (linea.startsWith('## ')) {
+      destino = SECCIONES_RAPIDAS.some((s) => linea.startsWith(s)) ? rapido : lento;
+    } else if (linea.startsWith('# ')) {
+      destino = primera ? rapido : lento;
+    }
+    if (linea.trim()) primera = false;
+    destino.push(linea);
+  }
+  const limpiar = (l: string[]) => l.join('\n').replace(/\n{3,}/g, '\n\n').trim();
+  return { lento: limpiar(lento), rapido: limpiar(rapido) };
+}
+
+/** El bloque del estado rápido que va al principio del mensaje del turno (un DATO). */
+export function bloqueEstadoRapido(rapido: string): string {
+  return `${DATOS_ABRE}
+# AHORA MISMO (estado de hoy, leído al empezar este turno)
+${neutralizarDatos(rapido)}
+${DATOS_CIERRA}`;
+}
+
 /** Lo más largo de un resumen del hilo que se reenvía (la columna admite 8.000). */
 export const TOPE_RESUMEN_EN_SISTEMA = 2000;
 
@@ -169,7 +222,8 @@ ${DATOS_CIERRA}`;
  * El bloque de sistema en dos escalones de caché.
  *
  *   [herramientas] → FIJO (voz + conocimiento + seguridad + datos) ◆ →
- *   dinámico (dossier + encargo del ritual + estado del día) ◆ → historial ◆
+ *   estable (idioma/modo + dossier + estado LENTO + resumen + encargo) ◆ → historial ◆ →
+ *   turno (estado RÁPIDO + mensaje) ◆   (el último punto lo pone el coach: ver handler.ts)
  *
  * Antes había un solo punto al final del estado: cuando cambiaba el estado
  * (una misión hecha, un movimiento nuevo) o caducaban los 5 min, se
@@ -200,17 +254,16 @@ ${neutralizarDatos(dossier)}
 ${DATOS_CIERRA}`,
     });
   }
-  // El encargo del ritual depende del kind: va detrás del punto fijo para que
-  // el chat y los rituales compartan la misma caché fija.
-  const extra = KIND_PROMPTS[kind];
-  if (extra) dinamico.push({ type: 'text', text: extra });
+  // Desde la IA barata (21/10/2026) aquí va solo el estado LENTO (ver partirEstado): lo rápido viaja en el
+  // mensaje del turno, detrás del historial, y ya no invalida esta caché a cada misión marcada.
   if (estado.trim()) dinamico.push({ type: 'text', text: `${DATOS_ABRE}
 ${neutralizarDatos(estado)}
 ${DATOS_CIERRA}` });
-  // El resumen del hilo, al final: es lo que precede al historial que sigue.
-  // Cambia como mucho una vez cada varios mensajes (resumenhilo.ts), así que no
-  // rompe la caché del segundo punto más que el propio estado.
+  // El resumen del hilo cambia como mucho una vez cada varios mensajes (resumenhilo.ts).
   if (opciones.resumenHilo?.trim()) dinamico.push({ type: 'text', text: bloqueResumenHilo(opciones.resumenHilo) });
+  // El encargo del ritual, al final: el chat (sin encargo) y los rituales comparten todo lo de arriba.
+  const extra = KIND_PROMPTS[kind];
+  if (extra) dinamico.push({ type: 'text', text: extra });
 
   // Segundo punto: dossier + ritual + estado. Siempre de 5 min (va detrás del
   // fijo, y un 1 h detrás de un 5 min lo rechaza la API).

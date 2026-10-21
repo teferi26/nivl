@@ -130,5 +130,19 @@
     "mision_other": "{{count}} missões de {{modo}}: {{titulos}}",
     "titulo": "«{{titulo}}»",
     "ir": "Ir para {{modo}}"
+  },
+  "uso": {
+    "etiqueta": "IA deste mês",
+    "restante": "{{pct}} % disponível",
+    "a11y": "IA deste mês: restam {{pct}} %",
+    "aviso80": "Usaste 80 % da tua IA deste mês. O sistema gere o que resta.",
+    "aviso95": "Restam-te 5 % de IA este mês. Guarda-a para o que importa.",
+    "agotada": "A tua IA deste mês esgotou-se. Volta no dia {{dia}}, ou recarrega-a agora.",
+    "agotadaSinDia": "A tua IA deste mês esgotou-se. Podes recarregá-la agora.",
+    "hoy": "Hoje já usaste a tua parte de IA. Volta amanhã.",
+    "recargar": "Recarregar IA · {{precio}}",
+    "recargarSinPrecio": "Recarregar IA",
+    "recargaHecha": "Recarga aplicada. O sistema volta a responder.",
+    "recargaPendiente": "A loja cobrou a recarga. Aplica-se em poucos segundos."
   }
 }

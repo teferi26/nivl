@@ -130,5 +130,19 @@
     "mision_other": "{{count}} {{modo}}-Missionen: {{titulos}}",
     "titulo": "„{{titulo}}“",
     "ir": "Zu {{modo}}"
+  },
+  "uso": {
+    "etiqueta": "KI diesen Monat",
+    "restante": "{{pct}} % verfügbar",
+    "a11y": "KI diesen Monat: {{pct}} % übrig",
+    "aviso80": "Du hast 80 % deiner KI für diesen Monat verbraucht. Das System teilt den Rest ein.",
+    "aviso95": "Dir bleiben 5 % KI für diesen Monat. Heb sie für das Wichtige auf.",
+    "agotada": "Deine KI für diesen Monat ist aufgebraucht. Sie kommt am {{dia}} zurück, oder lade sie jetzt auf.",
+    "agotadaSinDia": "Deine KI für diesen Monat ist aufgebraucht. Du kannst sie jetzt aufladen.",
+    "hoy": "Du hast deinen KI-Anteil für heute verbraucht. Morgen geht es weiter.",
+    "recargar": "KI aufladen · {{precio}}",
+    "recargarSinPrecio": "KI aufladen",
+    "recargaHecha": "Aufladung angewendet. Das System antwortet wieder.",
+    "recargaPendiente": "Der Store hat die Aufladung abgebucht. Sie wird in wenigen Sekunden angewendet."
   }
 }

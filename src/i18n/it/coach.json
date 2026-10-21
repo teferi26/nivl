@@ -130,5 +130,19 @@
     "mision_other": "{{count}} missioni di {{modo}}: {{titulos}}",
     "titulo": "«{{titulo}}»",
     "ir": "Vai a {{modo}}"
+  },
+  "uso": {
+    "etiqueta": "IA di questo mese",
+    "restante": "{{pct}} % disponibile",
+    "a11y": "IA di questo mese: resta il {{pct}} %",
+    "aviso80": "Hai usato l'80 % della tua IA di questo mese. Il sistema gestisce ciò che resta.",
+    "aviso95": "Ti resta il 5 % di IA questo mese. Tienila per ciò che conta.",
+    "agotada": "La tua IA di questo mese è esaurita. Torna il {{dia}}, oppure ricaricala ora.",
+    "agotadaSinDia": "La tua IA di questo mese è esaurita. Puoi ricaricarla ora.",
+    "hoy": "Oggi hai già usato la tua parte di IA. Torna domani.",
+    "recargar": "Ricarica IA · {{precio}}",
+    "recargarSinPrecio": "Ricarica IA",
+    "recargaHecha": "Ricarica applicata. Il sistema risponde di nuovo.",
+    "recargaPendiente": "Lo store ha addebitato la ricarica. Si applica tra pochi secondi."
   }
 }

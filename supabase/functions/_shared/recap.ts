@@ -13,7 +13,7 @@
 //     modelo redacta. Un resumen con datos falsos es peor que ninguno, porque
 //     mina la confianza en todo lo demás que dice el sistema.
 
-import { callClaude, COACH_MODEL, type Usage } from './anthropic.ts';
+import { callClaude, CHEAP_MODEL, type Cartera, type Usage } from './anthropic.ts';
 import type { Db } from './db.ts';
 
 export interface Slide {
@@ -85,7 +85,9 @@ export async function construirResumen(
    * de servicio: `ai_consent_ok` solo la ejecuta service_role (0028) y con el
    * del usuario la comprobación devolvía siempre error → resumen imposible.
    */
-  consentDb: Db = sb,
+  consentDb: Db,
+  /** La cartera del usuario (0078): la llamada reserva antes su coste máximo. */
+  cartera: Cartera,
 ): Promise<Resultado> {
   await requireHealth(sb, userId);
   if (await consentimientoIa(consentDb, userId) !== true) throw new Error(SIN_CONSENTIMIENTO);
@@ -112,7 +114,7 @@ export async function construirResumen(
       slides: [],
       fotos: 0,
       usage: {},
-      model: COACH_MODEL,
+      model: CHEAP_MODEL,
       motivo:
         kind === 'semanal'
           ? 'No has subido ninguna foto esta semana. El resumen se construye con ellas: sin fotos no hay nada que recordar.'
@@ -166,11 +168,14 @@ export async function construirResumen(
 
   await requireHealth(sb, userId);
   if (await consentimientoIa(consentDb, userId) !== true) throw new Error(SIN_CONSENTIMIENTO);
+  // Leer y transformar (AGENTS.md): el modelo barato. Antes iba con el del coach (Sonnet).
   const turn = await callClaude({
+    model: CHEAP_MODEL,
     system: [{ type: 'text', text: SISTEMA }],
     messages: [{ role: 'user', content: [{ type: 'text', text: datos }] }],
     maxTokens: 3000,
     effort: 'medium',
+    cartera,
   });
 
   const texto = turn.content.filter((b) => b.type === 'text').map((b) => b.text ?? '').join('');

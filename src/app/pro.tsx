@@ -18,6 +18,7 @@ import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Platform, StyleSheet, Text, View } from 'react-native';
 import { ProOffer } from '@/components/ProOffer';
+import { UsoIa } from '@/components/UsoIa';
 import { Barra, CargaArena, EncabezadoArena, Entrada, ErrorSistema, TarjetaArena } from '@/components/arena';
 import { Button, Row, Screen, Section } from '@/components/ui';
 import { vibrar } from '@/design/haptics';
@@ -30,6 +31,8 @@ import {
   energiaAgotada,
   esMomento,
   energiaRestante,
+  porcentajeIa,
+  usoIa,
   fetchAiStatus,
   gestionarSuscripcion,
   isElite,
@@ -183,9 +186,11 @@ export default function Pro() {
   }
 
   if (isPro(status)) {
-    const queda = energiaRestante(status);
-    const pct = Math.round(queda * 100);
-    const agotada = energiaAgotada(status);
+    // Con la cartera del servidor (0078): el tope duro del mes, recargas incluidas. Sin ella, la energía de antes.
+    const uso = usoIa(status);
+    const queda = uso ? uso.queda : energiaRestante(status);
+    const pct = uso ? porcentajeIa(uso.queda) : Math.round(queda * 100);
+    const agotada = uso ? uso.nivel === 'agotada' : energiaAgotada(status);
     const recarga = fechaLegible(status?.renews);
     const renueva = fechaLegible(periodEnd);
     const prueba = !!status?.trial;
@@ -235,6 +240,7 @@ export default function Pro() {
                   ? `Agotada por este mes. ${recarga ? `Se recarga el ${recarga}.` : 'Se recarga el día 1.'} Tus misiones, tu racha y todos los módulos siguen funcionando.`
                   : `Queda el ${pct} % de lo que el coach puede pensar por ti este mes.${recarga ? ` Se recarga entera el ${recarga}.` : ''}`}
               </Text>
+              <UsoIa status={status} onRecargada={() => void refrescar()} sinBarra />
             </Section>
           </Entrada>
 

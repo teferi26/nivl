@@ -43,6 +43,7 @@ import {
 import { cargarBriefEconomico, type BriefNumeros } from '../_shared/finance.ts';
 import { REGLA_SIN_GUIONES, sinGuiones } from '../_shared/singuiones.ts';
 import { insertarRun } from '../_shared/telemetria.ts';
+import { CarteraIa, mensajeTope, TopeIaError } from '../_shared/cartera.ts';
 
 /** PDF: 4 MB en base64 (unos 3 MB de archivo). */
 export const MAX_PDF_B64 = 4_000_000;
@@ -381,11 +382,16 @@ async function extracto(body: Json, sb: Db, userId: string, deps: Deps): Promise
     if (fichas > MAX_FICHAS_PDF || costeMaximo(CHEAP_MODEL, fichas, MAX_TOKENS_PDF) > MAX_COSTE_PDF_MICRO_USD) {
       return json(413, { error: 'El PDF es demasiado largo. Exporta menos meses o usa el CSV.' });
     }
-    const turno = await deps.llamarModelo({ model: CHEAP_MODEL, system, messages, maxTokens: MAX_TOKENS_PDF, effort: 'low' });
+    // La cartera (0078): reserva la cota antes de llamar (función 'pdf', 10 al día).
+    const turno = await deps.llamarModelo({ model: CHEAP_MODEL, system, messages, maxTokens: MAX_TOKENS_PDF, effort: 'low', cartera: new CarteraIa(deps.admin, userId, 'pdf') });
     await apuntarGasto(deps.admin, userId, 'import', turno.model || CHEAP_MODEL, turno.usage);
     const salida = turno.content.filter((b) => b.type === 'text').map((b) => b.text ?? '').join('');
     lectura = leerLineasIa(salida);
   } catch (e) {
+    if (e instanceof TopeIaError) {
+      const m = mensajeTope(e.motivo);
+      return json(m.status, { error: m.error, reason: m.reason });
+    }
     console.error('economia: pdf', e instanceof Error ? e.name : 'error');
     return json(502, { error: 'No se ha podido leer el PDF. Prueba con el CSV de tu banco.' });
   } finally {
@@ -423,10 +429,16 @@ async function brief(body: Json, sb: Db, userId: string, deps: Deps, hoy: string
       messages: [{ role: 'user', content: [{ type: 'text', text: datosParaBrief(numeros, nombres) }] }],
       maxTokens: MAX_TOKENS_BRIEF,
       effort: 'low',
+      // La cartera (0078): leer y transformar con Haiku, como los atajos de estudio.
+      cartera: new CarteraIa(deps.admin, userId, 'estudio'),
     });
     await apuntarGasto(deps.admin, userId, 'economia_brief', turno.model || CHEAP_MODEL, turno.usage);
     texto = cerrarBrief(turno.content.filter((b) => b.type === 'text').map((b) => b.text ?? '').join(''));
   } catch (e) {
+    if (e instanceof TopeIaError) {
+      const m = mensajeTope(e.motivo);
+      return json(m.status, { error: m.error, reason: m.reason });
+    }
     console.error('economia: brief', e instanceof Error ? e.name : 'error');
     return json(502, { error: 'El sistema no ha podido escribir el brief. Vuelve a intentarlo.' });
   } finally {

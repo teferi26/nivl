@@ -201,9 +201,14 @@ export function estimarFichas(caracteres: number): number {
 export const PLAZO_LLAMADA_MS = 120_000;
 
 export class RefusalError extends Error {
-  constructor(public category: string | null) {
+  /** Lo cobrado por la llamada rechazada (un rechazo también se paga): lo liquida la cartera. */
+  usage?: Usage;
+  model?: string;
+  constructor(public category: string | null, usage?: Usage, model?: string) {
     super('El sistema no puede responder a eso.');
     this.name = 'RefusalError';
+    this.usage = usage;
+    this.model = model;
   }
 }
 
@@ -227,6 +232,11 @@ export interface CallOptions {
   onThinking?: () => void;
   /** Corta la llamada (plazo del turno). Sin él, PLAZO_LLAMADA_MS. */
   signal?: AbortSignal;
+  /**
+   * OBLIGATORIA (0078): toda llamada reserva antes su coste máximo en la cartera del usuario y lo liquida
+   * al terminar. Sin cartera no compila: así ninguna función nueva puede gastar fuera del tope.
+   */
+  cartera: Cartera;
 }
 
 const BETAS = [
@@ -429,7 +439,7 @@ async function callClaudeCrudo(opts: CallOptions): Promise<Turn> {
 
   // Comprobar el rechazo ANTES de leer el contenido: en un rechazo los
   // bloques vienen vacíos o a medias y leerlos daría una respuesta falsa.
-  if (stopReason === 'refusal') throw new RefusalError(stopCategory);
+  if (stopReason === 'refusal') throw new RefusalError(stopCategory, usage, servedModel);
 
   return { content: blocks.filter(Boolean), stopReason, usage, model: servedModel };
 }
@@ -454,7 +464,11 @@ export function sanearTurno(turn: Turn): Turn {
   };
 }
 
-/** callClaudeCrudo con el saneado de guiones en el stream y en el resultado. */
+/**
+ * callClaudeCrudo con el saneado de guiones en el stream y en el resultado, y con la RESERVA de la
+ * cartera (0078): antes de llamar se reserva la cota del coste (costeMaximoClaude) y al terminar se
+ * liquida el coste real. Si la cartera no deja, se lanza TopeIaError y no sale ni un byte al proveedor.
+ */
 export async function callClaude(opts: CallOptions): Promise<Turn> {
   const filtro = new FiltroGuiones();
   const onText = opts.onText
@@ -463,8 +477,111 @@ export async function callClaude(opts: CallOptions): Promise<Turn> {
       if (s) opts.onText!(s);
     }
     : undefined;
-  const turn = await callClaudeCrudo(sanearPeticion({ ...opts, onText }));
+  const peticion = sanearPeticion({ ...opts, onText });
+  const maximo = costeMaximoClaude(peticion.model ?? COACH_MODEL, peticion);
+  const turn = await conReserva(opts.cartera, maximo, () => callClaudeCrudo(peticion));
   const resto = filtro.fin();
   if (resto && opts.onText) opts.onText(resto);
   return sanearTurno(turn);
+}
+
+// ── La cota del coste de una llamada (0078) ──────────────────────────────
+//
+// La reserva tiene que ser una COTA SUPERIOR del coste real, o el tope dejaría de ser duro:
+//   · Entrada: los bytes UTF-8 de la petición serializada (system + mensajes + herramientas). Una ficha
+//     de Claude cubre al menos un byte, y el JSON añade comillas, claves y escapes que no son fichas, así
+//     que bytes >= fichas. Se suma un margen fijo por el prompt de herramientas que añade la API. Las
+//     imágenes no se miden por su base64 sino con su tope de fichas (FICHAS_POR_IMAGEN).
+//   · Toda la entrada al precio de ESCRITURA de caché (1,25×; 2× si algún punto es de 1 h): lo más caro
+//     que puede costar una ficha de entrada.
+//   · Salida: max_tokens (el pensamiento cuenta dentro) a la tarifa de salida.
+// La cota sale varias veces por encima del coste real de un mensaje; lo que sobra se libera al liquidar
+// (docs/IA_TOPE.md).
+
+/** Tope de fichas de una imagen: Claude reescala a ~1,15 MP (≈1.600 fichas); con alta resolución, ~4.800. */
+export const FICHAS_POR_IMAGEN = 6000;
+/** El prompt de sistema de herramientas que añade la API (unos cientos de fichas) y los marcadores de rol. */
+export const MARGEN_FICHAS = 1024;
+
+/** Fichas máximas de una carga: bytes del JSON sin los base64 de las imágenes, más su tope por imagen. */
+export function fichasMaximas(carga: unknown): number {
+  let imagenes = 0;
+  const json = JSON.stringify(carga, (_k, v) => {
+    if (v && typeof v === 'object' && !Array.isArray(v)) {
+      const o = v as Record<string, unknown>;
+      // Bloque de imagen de Anthropic, o image_url de la API compatible.
+      if (o.type === 'image' && o.source && typeof o.source === 'object') {
+        imagenes++;
+        return { type: 'image' };
+      }
+      if (o.type === 'image_url') {
+        imagenes++;
+        return { type: 'image_url' };
+      }
+    }
+    return v;
+  }) ?? '';
+  return new TextEncoder().encode(json).length + imagenes * FICHAS_POR_IMAGEN + MARGEN_FICHAS;
+}
+
+/** Cota en microdólares: entrada al precio de escritura de caché más la salida máxima. */
+export function costeMaximo(model: string, fichasEntrada: number, maxSalida: number, factorEscritura = 1.25): number {
+  const p = tarifa(model);
+  return Math.ceil(fichasEntrada * p.in * factorEscritura + Math.max(0, maxSalida) * p.out);
+}
+
+/** La cota de una petición a Claude tal y como se va a mandar. */
+export function costeMaximoClaude(
+  model: string,
+  opts: Pick<CallOptions, 'system' | 'messages' | 'tools' | 'maxTokens'>,
+): number {
+  const unaHora = opts.system.some((b) => b.cache_control?.ttl === '1h');
+  const fichas = fichasMaximas({ system: opts.system, messages: opts.messages, tools: opts.tools ?? [] });
+  return costeMaximo(model, fichas, opts.maxTokens ?? 16000, unaHora ? 2 : 1.25);
+}
+
+/** La cartera de IA de un usuario (la real está en _shared/cartera.ts; los tests usan otras). */
+export interface Cartera {
+  /** Reserva `micro` o lanza TopeIaError. Devuelve el id de la reserva. */
+  reservar(micro: number): Promise<string>;
+  /** Liquida con el coste real (0 = libera). Nunca lanza. */
+  liquidar(id: string, realMicro: number): Promise<void>;
+}
+
+/** La cartera no deja: tope del mes, ritmo del día, tope de la función, sin plan o sin servidor. */
+export class TopeIaError extends Error {
+  constructor(public motivo: string) {
+    super(`tope de IA: ${motivo}`);
+    this.name = 'TopeIaError';
+  }
+}
+
+/** ¿El proveedor respondió con un error HTTP? Entonces no ha cobrado: se libera la reserva. */
+export function errorSinCobro(e: unknown): boolean {
+  const texto = e instanceof Error ? e.message : String(e);
+  return /^(?:anthropic|proveedor) \d{3}\b/.test(texto);
+}
+
+/**
+ * Reserva `maximo`, llama y liquida:
+ *   · bien → el coste real de su uso;
+ *   · cortada a medias (LlamadaFallida) o rechazada con uso → lo cobrado, nunca por encima de la cota;
+ *   · error HTTP del proveedor → 0 (no cobra);
+ *   · cualquier otra cosa (red, plazo antes de respuesta) → la reserva entera: no se sabe si cobró.
+ */
+export async function conReserva(cartera: Cartera, maximo: number, llamar: () => Promise<Turn>): Promise<Turn> {
+  const id = await cartera.reservar(maximo);
+  let real = maximo;
+  try {
+    const t = await llamar();
+    real = costMicroUsd(t.model, t.usage);
+    return t;
+  } catch (e) {
+    if (e instanceof LlamadaFallida) real = Math.min(maximo, costMicroUsd(e.model, e.usage));
+    else if (e instanceof RefusalError && e.usage) real = Math.min(maximo, costMicroUsd(e.model ?? '', e.usage));
+    else if (errorSinCobro(e)) real = 0;
+    throw e;
+  } finally {
+    await cartera.liquidar(id, real);
+  }
 }
