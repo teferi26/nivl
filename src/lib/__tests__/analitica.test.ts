@@ -58,7 +58,7 @@ beforeEach(async () => {
   respuestaEvento = async () => ({ data: true, error: null });
   getSession.mockResolvedValue({ data: { session: null }, error: null } as never);
   rpc.mockImplementation(((nombre: string) => {
-    if (nombre === 'app_flags') return Promise.resolve({ data: { analitica_activa: flagEncendido }, error: null });
+    if (nombre === 'app_flags') return Promise.resolve({ data: { analitica_1011: flagEncendido }, error: null });
     if (nombre === 'registrar_evento') return respuestaEvento();
     if (nombre === 'olvidar_instalacion') return respuestaOlvido();
     return Promise.resolve({ data: null, error: { code: 'PGRST202' } });

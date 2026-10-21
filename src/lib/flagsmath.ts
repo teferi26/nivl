@@ -8,6 +8,14 @@
 //
 // Los efectos (RPC, caché en memoria y en el teléfono, refresco al volver a
 // primer plano) están en flags.ts.
+//
+// INTERRUPTORES POR VERSIÓN (1.0.11): la 1.0.10 publicada lee las claves
+// viejas (`modos_activos`, `idiomas_activos`, `prueba_auto_activa`,
+// `valoracion_activa`, `analitica_activa`, `opinion_activa`), que se quedan
+// APAGADAS para siempre: encenderlas le enseñaría la interfaz vieja de Modos
+// F1. Desde la 1.0.11 la app lee las claves `*_1011` (migración 0085). Los
+// nombres de `Flags` siguen siendo los de siempre para no tocar cada pantalla;
+// `CLAVE_SERVIDOR` dice de qué clave del servidor sale cada uno.
 
 export interface Flags {
   /** Modos (IRON, FOCUS, WORK, FOUNDER): selector en Hoy, etiquetas, onboarding y niveles por modo. */
@@ -36,17 +44,36 @@ const BOOLEANOS = ['modos_activos', 'idiomas_activos', 'prueba_auto_activa', 'va
 const NUMEROS = ['prueba_auto_dias', 'prueba_ia_mensajes_dia'] as const;
 
 /**
- * De lo que devuelve `app_flags()` (un objeto jsonb) a `Flags`. Cualquier cosa
- * que no sea un objeto da todo apagado; cada clave que no tenga su tipo
- * exacto se queda con el valor apagado.
+ * La clave de `app_flags()` de la que sale cada interruptor en esta versión.
+ * Los números (días y mensajes de la prueba) no cambian de interfaz entre
+ * versiones y siguen siendo los mismos.
+ */
+export const CLAVE_SERVIDOR: Readonly<Record<keyof Flags, string>> = Object.freeze({
+  modos_activos: 'modos_1011',
+  idiomas_activos: 'idiomas_1011',
+  prueba_auto_activa: 'prueba_auto_1011',
+  valoracion_activa: 'valoracion_1011',
+  prueba_auto_dias: 'prueba_auto_dias',
+  prueba_ia_mensajes_dia: 'prueba_ia_mensajes_dia',
+});
+
+// Los que se leen fuera de React (flagsServidor.ts) tienen su clave junto a
+// quien los usa: `analitica_1011` (analitica.ts), `valoracion_1011` y
+// `opinion_1011` (peticiones.ts).
+
+/**
+ * De lo que devuelve `app_flags()` (un objeto jsonb, con las claves del
+ * servidor de `CLAVE_SERVIDOR`) a `Flags`. Cualquier cosa que no sea un objeto
+ * da todo apagado; cada clave que no tenga su tipo exacto se queda con el
+ * valor apagado. Las claves viejas (`modos_activos`…) no encienden nada.
  */
 export function normalizarFlags(raw: unknown): Flags {
   const out: Flags = { ...FLAGS_APAGADOS };
   if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return out;
   const r = raw as Record<string, unknown>;
-  for (const k of BOOLEANOS) out[k] = r[k] === true;
+  for (const k of BOOLEANOS) out[k] = r[CLAVE_SERVIDOR[k]] === true;
   for (const k of NUMEROS) {
-    const v = r[k];
+    const v = r[CLAVE_SERVIDOR[k]];
     if (typeof v === 'number' && Number.isFinite(v) && v >= 0) out[k] = v;
   }
   return out;

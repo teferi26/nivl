@@ -160,6 +160,6 @@ r = await q(`select count(*)::int n from app_feedback`); ok(r.rows[0].n === 0, '
 
 // Flags apagados y públicos.
 r = await como('anon', null, `select app_flags() f`);
-for (const k of ['analitica_activa', 'opinion_activa', 'valoracion_activa']) ok(r.rows[0].f[k] === false, `flag ${k} apagado y legible`);
+for (const k of ['analitica_activa', 'opinion_activa', 'valoracion_activa', 'analitica_1011', 'opinion_1011', 'valoracion_1011']) ok(r.rows[0].f[k] === false, `flag ${k} apagado y legible`);
 
 console.log(`PASS modos F1 analítica: ${checks} comprobaciones`);

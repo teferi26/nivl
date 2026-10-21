@@ -19,8 +19,10 @@ import { flagActivo } from './flagsServidor';
 import { decidirPeticion, leerEstado, limpiarOpinion, type MomentoPositivo, type Peticion } from './peticionesmath';
 import { supabase } from './supabase';
 
-export const FLAG_VALORACION = 'valoracion_activa';
-export const FLAG_OPINION = 'opinion_activa';
+// 1.0.11: las claves de esta versión (la 1.0.10 lee `valoracion_activa` y
+// `opinion_activa`, apagadas para siempre).
+export const FLAG_VALORACION = 'valoracion_1011';
+export const FLAG_OPINION = 'opinion_1011';
 const K_ESTADO = 'nivl.peticiones.v1';
 
 /** La interfaz del diálogo nativo. Hoy la cumple el módulo de expo-store-review si está enlazado. */

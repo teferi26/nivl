@@ -31,9 +31,22 @@ describe('normalizarFlags', () => {
   });
 
   it('un interruptor solo se enciende con true de verdad', () => {
-    expect(normalizarFlags({ modos_activos: 'true', idiomas_activos: 1 })).toEqual(FLAGS_APAGADOS);
-    expect(normalizarFlags({ modos_activos: true }).modos_activos).toBe(true);
-    expect(normalizarFlags({ modos_activos: true }).idiomas_activos).toBe(false);
+    expect(normalizarFlags({ modos_1011: 'true', idiomas_1011: 1 })).toEqual(FLAGS_APAGADOS);
+    expect(normalizarFlags({ modos_1011: true }).modos_activos).toBe(true);
+    expect(normalizarFlags({ modos_1011: true }).idiomas_activos).toBe(false);
+  });
+
+  it('1.0.11: las claves viejas de la 1.0.10 no encienden nada; las *_1011 sí', () => {
+    const viejas = { modos_activos: true, idiomas_activos: true, prueba_auto_activa: true, valoracion_activa: true };
+    expect(normalizarFlags(viejas)).toEqual(FLAGS_APAGADOS);
+    const nuevas = { modos_1011: true, idiomas_1011: true, prueba_auto_1011: true, valoracion_1011: true };
+    expect(normalizarFlags(nuevas)).toEqual({
+      ...FLAGS_APAGADOS,
+      modos_activos: true,
+      idiomas_activos: true,
+      prueba_auto_activa: true,
+      valoracion_activa: true,
+    });
   });
 
   it('los números raros se quedan en su valor por defecto', () => {
@@ -73,7 +86,7 @@ describe('refrescarFlags', () => {
   it('flagActivo (lectura síncrona del coach): apagado hasta que el servidor diga true', async () => {
     const f = cargar();
     expect(f.flagActivo('idiomas_activos')).toBe(false);
-    mockRpc.mockResolvedValue({ data: { idiomas_activos: true }, error: null });
+    mockRpc.mockResolvedValue({ data: { idiomas_1011: true }, error: null });
     await f.refrescarFlags();
     expect(f.flagActivo('idiomas_activos')).toBe(true);
     expect(f.flagActivo('modos_activos')).toBe(false);
@@ -83,27 +96,27 @@ describe('refrescarFlags', () => {
   });
 
   it('lee el servidor y lo guarda en el teléfono', async () => {
-    mockRpc.mockResolvedValue({ data: { modos_activos: true }, error: null });
+    mockRpc.mockResolvedValue({ data: { modos_1011: true }, error: null });
     const f = cargar();
     const leidos = await f.refrescarFlags();
     expect(mockRpc).toHaveBeenCalledWith('app_flags');
     expect(leidos.modos_activos).toBe(true);
     expect(f.flagsActuales().modos_activos).toBe(true);
-    expect(JSON.parse(mockAlmacen.get('nivl.flags.v1')!).modos_activos).toBe(true);
+    expect(JSON.parse(mockAlmacen.get('nivl.flags.1011')!).modos_1011).toBe(true);
   });
 
   it('si la función no existe: apagado y sin caché', async () => {
-    mockAlmacen.set('nivl.flags.v1', JSON.stringify({ modos_activos: true }));
+    mockAlmacen.set('nivl.flags.1011', JSON.stringify({ modos_1011: true }));
     mockRpc.mockResolvedValue({ data: null, error: { code: 'PGRST202', message: 'no existe' } });
     const f = cargar();
     f.__fijarFlagsParaPruebas({ modos_activos: true });
     await f.refrescarFlags();
     expect(f.flagsActuales()).toEqual(FLAGS_APAGADOS);
-    expect(mockAlmacen.has('nivl.flags.v1')).toBe(false);
+    expect(mockAlmacen.has('nivl.flags.1011')).toBe(false);
   });
 
   it('sin red: se queda con lo último leído (y nunca lanza)', async () => {
-    mockRpc.mockResolvedValueOnce({ data: { modos_activos: true }, error: null });
+    mockRpc.mockResolvedValueOnce({ data: { modos_1011: true }, error: null });
     const f = cargar();
     await f.refrescarFlags();
     mockRpc.mockRejectedValueOnce(new Error('Network request failed'));

@@ -30,7 +30,10 @@ import { supabase } from './supabase';
 export { FLAGS_APAGADOS, normalizarFlags, type Flags } from './flagsmath';
 export { flagActivo, flagsActuales, type FlagBooleano } from './flagsEstado';
 
-const CLAVE = 'nivl.flags.v1';
+// 1.0.11: se guarda lo que dijo el servidor TAL CUAL (claves `*_1011`) y se
+// normaliza al leer. Clave nueva: lo que guardó la 1.0.10 (ya normalizado,
+// con los nombres viejos) no se lee.
+const CLAVE = 'nivl.flags.1011';
 /** Entre dos lecturas al volver a primer plano, como poco. */
 const REFRESCO_MIN_MS = 60_000;
 
@@ -65,7 +68,7 @@ export function refrescarFlags(): Promise<Flags> {
       const leidos = normalizarFlags(data);
       ultimaLectura = Date.now();
       fijar(leidos);
-      await AsyncStorage.setItem(CLAVE, JSON.stringify(leidos)).catch(() => {});
+      await AsyncStorage.setItem(CLAVE, JSON.stringify(data ?? {})).catch(() => {});
       return leidos;
     } catch {
       return flagsActuales();

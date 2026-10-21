@@ -74,7 +74,8 @@ export const K_CONSENTIMIENTO = 'nivl.analitica.consentimiento.v1';
 /** install_id cuya revocación no llegó al servidor (sin red): se reintenta al arrancar. */
 const K_REVOCACION = 'nivl.analitica.revocacion.v1';
 
-export const FLAG_ANALITICA = 'analitica_activa';
+// 1.0.11: la clave de esta versión (la 1.0.10 lee `analitica_activa`, apagada para siempre).
+export const FLAG_ANALITICA = 'analitica_1011';
 /** Cuánto se espera tras registrar antes de mandar (agrupa ráfagas). */
 const ESPERA_ENVIO_MS = 1500;
 /** Eventos por vaciado: el resto, en el siguiente. */

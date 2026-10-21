@@ -7,6 +7,7 @@
 -- Todo ok = true. Si una sentencia falla, la transacción aborta y el ROLLBACK final la deshace igual.
 -- También lo ejecuta scripts/test-modos-f1.mjs contra PGlite con todas las migraciones reales.
 --
+-- 1.0.11 (0085): la prueba automática se enciende con `prueba_auto_1011`; hace falta la 0085 aplicada.
 -- Comprueba: RLS de app_config, user_modes, mode_xp y profiles.locale; que un usuario sin modos se comporta
 -- igual (XP, completions, sin XP por modo, sin prueba, ai_state sin claves nuevas); el XP por modo; y que la
 -- prueba automática nace solo encendida, no pisa una suscripción activa, tiene tope diario y cede a una compra.
@@ -26,7 +27,8 @@ insert into public.recovery_credits(user_id, xp) values ('f1000000-0000-4000-800
 insert into r select '01 interruptor apagado: sin prueba al nacer', count(*) = 0, count(*)::text
   from public.subscriptions where user_id in ('f1000000-0000-4000-8000-0000000000e1','f1000000-0000-4000-8000-0000000000f2','f1000000-0000-4000-8000-0000000000c3');
 insert into r select '02 las seis claves del contrato son públicas',
-  public.app_flags() ?& array['modos_activos','idiomas_activos','prueba_auto_activa','prueba_auto_dias','prueba_ia_mensajes_dia','valoracion_activa'],
+  public.app_flags() ?& array['modos_activos','idiomas_activos','prueba_auto_activa','prueba_auto_dias','prueba_ia_mensajes_dia','valoracion_activa',
+                         'modos_1011','idiomas_1011','prueba_auto_1011','valoracion_1011'],
   public.app_flags()::text;
 
 -- ── Usuario sin modos (1.0.9) ─────────────────────────────────────────
@@ -108,7 +110,7 @@ do $$ begin
 exception when insufficient_privilege then insert into r values ('19 anon no lee user_modes', true, '42501');
 end $$;
 do $$ begin
-  update public.app_config set value = 'true' where key = 'prueba_auto_activa';
+  update public.app_config set value = 'true' where key = 'prueba_auto_1011';
   insert into r values ('20 anon no enciende interruptores', not found, case when found then 'cambiado' else '0 filas' end);
 exception when insufficient_privilege then insert into r values ('20 anon no enciende interruptores', true, '42501');
 end $$;
@@ -121,7 +123,7 @@ insert into r select '21 sin suscripción: ai_state como siempre (sin tope)',
 -- C ya pagó: su compra está antes de que se encienda el interruptor.
 insert into public.subscriptions(user_id, status, plan, provider, current_period_end, store_product_id)
   values ('f1000000-0000-4000-8000-0000000000c3', 'active', 'pro_anual', 'apple', now() + interval '300 days', 'nivl_pro_anual');
-update public.app_config set value = 'true' where key = 'prueba_auto_activa';
+update public.app_config set value = 'true' where key = 'prueba_auto_1011';
 insert into auth.users(id, email) values ('f1000000-0000-4000-8000-0000000000d4', 'f1-t@example.invalid');
 insert into r select '22 encendido: nace la prueba de 2 días',
   status = 'trialing' and plan = 'prueba_auto' and provider = 'prueba'

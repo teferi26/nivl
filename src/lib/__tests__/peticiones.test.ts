@@ -88,7 +88,7 @@ describe('efectos', () => {
     await AsyncStorage.clear();
     __olvidarFlags();
     __reiniciarPeticiones();
-    flags = { valoracion_activa: true, opinion_activa: true };
+    flags = { valoracion_1011: true, opinion_1011: true };
     rpc.mockImplementation(((n: string) =>
       Promise.resolve(n === 'app_flags' ? { data: flags, error: null } : { data: null, error: null })) as never);
     // El día 0 es el primer momento bueno, propio de esta pieza (no depende de la analítica).
@@ -121,7 +121,7 @@ describe('efectos', () => {
   });
 
   test('sin expo-store-review en la build (hoy) la valoración no está disponible', async () => {
-    flags = { valoracion_activa: true };
+    flags = { valoracion_1011: true };
     expect(await alMomentoPositivo('mision', undefined, AHORA)).toBeNull();
   });
 

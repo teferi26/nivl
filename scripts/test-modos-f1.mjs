@@ -149,6 +149,10 @@ async function guion109(db) {
 
 const ARCHIVOS = await readdir(migrations);
 const HAY_ANALITICA = ARCHIVOS.some((n) => n.startsWith('0072'));
+// 1.0.11 (0085): interruptores por versión. La prueba nace con `prueba_auto_1011`; la clave vieja ya no enciende nada.
+const HAY_1011 = ARCHIVOS.some((n) => n.startsWith('0085'));
+const CLAVE_PRUEBA = HAY_1011 ? 'prueba_auto_1011' : 'prueba_auto_activa';
+const CLAVES_1011 = { modos_1011: false, idiomas_1011: false, prueba_auto_1011: false, valoracion_1011: false, analitica_1011: false, opinion_1011: false };
 // Integración v3: la 0075 (WORK) deja la v10 y la 0076 (FOCUS) la v11, que exporta todo.
 const V_EXPORT = ARCHIVOS.some((n) => n.startsWith('0076')) ? 11 : ARCHIVOS.some((n) => n.startsWith('0075')) ? 10 : HAY_ANALITICA ? 9 : 8;
 const CLAVES_NUEVAS = ['money_categories', 'money_recurring', 'money_briefs', 'focus_subjects', 'focus_exams', 'focus_topics',
@@ -253,7 +257,8 @@ try {
   const flags = await one(db, 'select app_flags()');
   // Con la analítica integrada (0070, 0071) hay dos interruptores más, también apagados.
   const semillas = { idiomas_activos: false, modos_activos: false, prueba_auto_activa: false, prueba_auto_dias: 2, prueba_ia_mensajes_dia: 20, valoracion_activa: false };
-  eq(flags, HAY_ANALITICA ? { ...semillas, analitica_activa: false, opinion_activa: false } : semillas, 'semillas apagadas');
+  const conAnalitica = HAY_ANALITICA ? { ...semillas, analitica_activa: false, opinion_activa: false } : semillas;
+  eq(flags, HAY_1011 ? { ...conAnalitica, ...CLAVES_1011 } : conAnalitica, 'semillas apagadas');
   await rejects(db.query("update app_config set value='true' where key='modos_activos'"), /permission denied/, 'anon no enciende');
   await rejects(db.query("insert into app_config(key,value,public) values('x','1',true)"), /permission denied/);
   await as(db, A);
@@ -261,7 +266,7 @@ try {
   await admin(db);
   await db.query("insert into app_config(key,value,public) values('secreto','1',false)");
   await asAnon(db);
-  eq(await one(db, 'select count(*)::int from app_config'), HAY_ANALITICA ? 8 : 6, 'anon solo lee lo público');
+  eq(await one(db, 'select count(*)::int from app_config'), (HAY_ANALITICA ? 8 : 6) + (HAY_1011 ? 6 : 0), 'anon solo lee lo público');
   eq('secreto' in (await one(db, 'select app_flags()')), false);
   await admin(db);
   await rejects(db.query('select app_config_value($1)', ['x']).then(async () => { await asAnon(db); return db.query("select app_config_value('modos_activos')"); }), /permission denied/);
@@ -281,10 +286,17 @@ try {
   // ── 4. Prueba automática ───────────────────────────────────────────
   const P = '44444444-4444-4444-8444-444444444444', P2 = '55555555-5555-4555-8555-555555555555';
   const C = '66666666-6666-4666-8666-666666666666', S = '77777777-7777-4777-8777-777777777777';
-  await db.query("update app_config set value='\"true\"' where key='prueba_auto_activa'");
+  if (HAY_1011) {
+    // La 1.0.10 no puede encender la prueba: su clave vieja ya no hace nada.
+    await db.query(`update app_config set value='true' where key='prueba_auto_activa'`);
+    await db.query("insert into auth.users(id,email) values($1,'vieja@example.invalid')", ['abababab-abab-4bab-8bab-abababababab']);
+    eq(await one(db, 'select count(*)::int from subscriptions where user_id=$1', ['abababab-abab-4bab-8bab-abababababab']), 0, 'prueba_auto_activa ya no enciende');
+    await db.query(`update app_config set value='false' where key='prueba_auto_activa'`);
+  }
+  await db.query(`update app_config set value='"true"' where key='${CLAVE_PRUEBA}'`);
   await db.query("insert into auth.users(id,email) values($1,'p0@example.invalid')", [P2]);
   eq(await one(db, 'select count(*)::int from subscriptions where user_id=$1', [P2]), 0, 'solo el booleano true enciende');
-  await db.query("update app_config set value='true' where key='prueba_auto_activa'");
+  await db.query(`update app_config set value='true' where key='${CLAVE_PRUEBA}'`);
   await db.query("insert into auth.users(id,email) values($1,'p@example.invalid')", [P]);
   const fila = (await db.query("select status,plan,provider,round(extract(epoch from current_period_end-now())/3600)::int as horas from subscriptions where user_id=$1", [P])).rows[0];
   eq(fila, { status: 'trialing', plan: 'prueba_auto', provider: 'prueba', horas: 48 }, 'nace la prueba de 2 días');
@@ -325,10 +337,10 @@ try {
   await admin(db);
 
   // Nunca pisa una fila existente (compra, cortesía, owner): el perfil se recrea con la fila ya puesta.
-  await db.query("update app_config set value='false' where key='prueba_auto_activa'");
+  await db.query(`update app_config set value='false' where key='${CLAVE_PRUEBA}'`);
   await db.query("insert into auth.users(id,email) values($1,'c@example.invalid')", [C]);
   await db.query("insert into subscriptions(user_id,status,plan,provider,current_period_end,store_product_id) values($1,'active','pro_anual','apple',now()+interval '300 days','nivl_pro_anual')", [C]);
-  await db.query("update app_config set value='true' where key='prueba_auto_activa'");
+  await db.query(`update app_config set value='true' where key='${CLAVE_PRUEBA}'`);
   await db.query("alter table profiles disable trigger user"); await db.query('delete from profiles where id=$1', [C]); await db.query("alter table profiles enable trigger user");
   await db.query('insert into profiles(id) values($1)', [C]);
   eq((await db.query('select status,plan,provider from subscriptions where user_id=$1', [C])).rows[0], { status: 'active', plan: 'pro_anual', provider: 'apple' }, 'la prueba no pisa una compra');
