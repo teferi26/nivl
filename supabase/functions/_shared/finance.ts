@@ -329,6 +329,10 @@ export async function construirEstudioEconomico(
   }
 
   // ── Suscripciones ───────────────────────────────────────────────
+  // PRIVACIDAD (auditoría WORK 1011): al coach solo le llegan agregados y
+  // categorías. Ni el nombre del cobrador ni el concepto: son datos de
+  // terceros (comercios, personas que te hacen un Bizum) que no necesita
+  // para medir. Cada cargo recurrente va con su categoría y su importe.
   const subs = detectarSuscripciones(movs);
   push();
   push('## Cargos recurrentes detectados');
@@ -336,50 +340,34 @@ export async function construirEstudioEconomico(
     let anualTotal = 0;
     for (const s of subs.slice(0, 12)) {
       anualTotal += s.anual;
-      push(
-        `- ${s.cobrador}: ${eur2(s.importeMedio)}/mes · ${eur(s.anual)}/año · ${s.meses} meses · último ${s.ultimo}`,
-      );
+      const cat = movs.find((m) => m.amount < 0 && normalizarCobrador(m) === s.cobrador)?.category ?? 'otros';
+      push(`- ${cat}: ${eur2(s.importeMedio)}/mes · ${eur(s.anual)}/año · ${s.meses} meses · último ${s.ultimo}`);
     }
-    push(`- Total detectado: ${eur(anualTotal)} al año en cargos que se repiten solos.`);
+    push(`- Total detectado: ${eur(anualTotal)} al año en ${subs.length} cargo(s) que se repiten solos.`);
     push(
-      'Lectura: esto no son compras, son decisiones que ya no se revisan. Pregúntale por las que no reconozca ' +
-        'o no use, una por una, y cancela. Es el ahorro más barato que existe: no exige disciplina, solo una tarde.',
+      'Lectura: esto no son compras, son decisiones que ya no se revisan. Pídele que repase en WORK los que no ' +
+        'reconozca o no use, uno por uno, y que cancele. Es el ahorro más barato que existe: no exige disciplina, solo una tarde.',
     );
   } else {
     push('- Ninguno con datos suficientes (hacen falta 3 meses de histórico).');
   }
 
-  // ── Top cobradores del mes ──────────────────────────────────────
-  const porCobrador = new Map<string, number>();
-  for (const m of movsMes) {
-    if (m.is_internal || m.amount >= 0) continue;
-    const k = normalizarCobrador(m);
-    porCobrador.set(k, (porCobrador.get(k) ?? 0) + -m.amount);
-  }
-  const top = [...porCobrador.entries()].sort((a, b) => b[1] - a[1]).slice(0, 6);
-  if (top.length) {
-    push();
-    push('## A quién le paga este mes');
-    for (const [nombre, total] of top) push(`- ${nombre}: ${eur(total)}`);
-  }
+  // (Antes: «A quién le paga este mes» con los nombres de los cobradores.
+  // Fuera desde la auditoría WORK 1011: el coach no recibe beneficiarios.)
 
   // ── Higiene del dato ────────────────────────────────────────────
+  // Solo cuántos y cuánto: los conceptos los escribe un tercero y no viajan.
   const sinClasificar = movs.filter((m) => m.category === 'sin_clasificar' && m.amount < 0);
   if (sinClasificar.length) {
     const importe = sinClasificar.reduce((a, m) => a + -m.amount, 0);
+    const mayor = Math.max(...sinClasificar.map((m) => -m.amount));
     push();
     push('## Sin clasificar');
     push(
-      `- ${sinClasificar.length} movimientos por ${eur(importe)} sin categoría. Ese dinero no aparece en ningún ` +
-        'presupuesto. Pregúntale qué son los mayores y escribe reglas con regla_categoria para que se ' +
-        'clasifiquen solos a partir de ahora.',
+      `- ${sinClasificar.length} movimientos por ${eur(importe)} sin categoría (el mayor, ${eur2(mayor)}). Ese dinero ` +
+        'no aparece en ningún presupuesto. Pídele que los clasifique en WORK (tocando el movimiento): el sistema ' +
+        'aprende la regla y los siguientes se clasifican solos.',
     );
-    for (const m of sinClasificar.sort((a, b) => a.amount - b.amount).slice(0, 5)) {
-      // El concepto lo escribe un tercero (quien te hace la transferencia, el
-      // comercio): sin saltos de línea ni marcas, y corto, para que no pueda
-      // fingir una sección del estado ni colar órdenes largas al coach.
-      push(`  · ${m.date} ${eur2(-m.amount)} — ${String(m.description).replace(/[\r\n\t<>#`]+/g, ' ').slice(0, 80)}`);
-    }
   }
 
   const divisas = new Set(movs.map((m) => m.currency));

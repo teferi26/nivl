@@ -1606,7 +1606,9 @@ export async function executeTool(
         diario: { t: 'journal_entries', cols: 'date, mood, energy, sleep_hours, emotions, wins, text, lesson, gratitude, plan', dateCol: 'date' },
         reglas_rotas: { t: 'rule_breaks', cols: 'date, rule_id', dateCol: 'date' },
         hechos: { t: 'coach_facts', cols: 'id, date, category, content', dateCol: 'date' },
-        movimientos: { t: 'transactions', cols: 'date, amount, currency, description, counterparty, category, is_internal', dateCol: 'date' },
+        // Sin concepto ni cobrador (auditoría WORK 1011): el coach mide con
+        // fecha, importe y categoría; los nombres de terceros no le llegan.
+        movimientos: { t: 'transactions', cols: 'date, amount, currency, category, is_internal', dateCol: 'date' },
       };
       // gym_lifts NO tiene fecha propia: la fecha vive en su sesión. Filtrarlo
       // por created_at reventaba con un error de Postgres que además llegaba al
