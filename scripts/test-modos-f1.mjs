@@ -149,8 +149,8 @@ async function guion109(db) {
 
 const ARCHIVOS = await readdir(migrations);
 const HAY_ANALITICA = ARCHIVOS.some((n) => n.startsWith('0072'));
-// 1.0.11 (0085): interruptores por versión. La prueba nace con `prueba_auto_1011`; la clave vieja ya no enciende nada.
-const HAY_1011 = ARCHIVOS.some((n) => n.startsWith('0085'));
+// 1.0.11 (0086): interruptores por versión. La prueba nace con `prueba_auto_1011`; la clave vieja ya no enciende nada.
+const HAY_1011 = ARCHIVOS.some((n) => n.startsWith('0086'));
 const CLAVE_PRUEBA = HAY_1011 ? 'prueba_auto_1011' : 'prueba_auto_activa';
 const CLAVES_1011 = { modos_1011: false, idiomas_1011: false, prueba_auto_1011: false, valoracion_1011: false, analitica_1011: false, opinion_1011: false };
 // Integración v3: la 0075 (WORK) deja la v10 y la 0076 (FOCUS) la v11, que exporta todo.

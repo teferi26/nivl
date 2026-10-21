@@ -7,7 +7,7 @@
 -- Todo ok = true. Si una sentencia falla, la transacción aborta y el ROLLBACK final la deshace igual.
 -- También lo ejecuta scripts/test-modos-f1.mjs contra PGlite con todas las migraciones reales.
 --
--- 1.0.11 (0085): la prueba automática se enciende con `prueba_auto_1011`; hace falta la 0085 aplicada.
+-- 1.0.11 (0086): la prueba automática se enciende con `prueba_auto_1011`; hace falta la 0086 aplicada.
 -- Comprueba: RLS de app_config, user_modes, mode_xp y profiles.locale; que un usuario sin modos se comporta
 -- igual (XP, completions, sin XP por modo, sin prueba, ai_state sin claves nuevas); el XP por modo; y que la
 -- prueba automática nace solo encendida, no pisa una suscripción activa, tiene tope diario y cede a una compra.

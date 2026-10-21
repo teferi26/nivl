@@ -13,7 +13,7 @@
 // viejas (`modos_activos`, `idiomas_activos`, `prueba_auto_activa`,
 // `valoracion_activa`, `analitica_activa`, `opinion_activa`), que se quedan
 // APAGADAS para siempre: encenderlas le enseñaría la interfaz vieja de Modos
-// F1. Desde la 1.0.11 la app lee las claves `*_1011` (migración 0085). Los
+// F1. Desde la 1.0.11 la app lee las claves `*_1011` (migración 0086). Los
 // nombres de `Flags` siguen siendo los de siempre para no tocar cada pantalla;
 // `CLAVE_SERVIDOR` dice de qué clave del servidor sale cada uno.
 

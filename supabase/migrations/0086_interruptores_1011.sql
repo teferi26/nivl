@@ -1,5 +1,5 @@
--- NIVL · 0085 · Interruptores por versión (1.0.11).
--- Huella: coalesce(obj_description(to_regprocedure('public._prueba_auto_al_nacer()'),'pg_proc') like '%nivl:interruptores-1011-0085%', false)
+-- NIVL · 0086 · Interruptores por versión (1.0.11).
+-- Huella: coalesce(obj_description(to_regprocedure('public._prueba_auto_al_nacer()'),'pg_proc') like '%nivl:interruptores-1011-0086%', false)
 --
 -- Por qué: la 1.0.10 publicada lee `modos_activos`, `idiomas_activos`,
 -- `prueba_auto_activa`, `valoracion_activa` (0067), `analitica_activa` (0070)
@@ -17,7 +17,7 @@
 --      `prueba_auto_activa`: _prueba_auto_al_nacer y prueba_auto_resumen se
 --      redefinen leyendo la clave nueva (el resto, idéntico a la 0069).
 --
--- Número: 0085 para no chocar con las 0078+ de la rama nivl-1011/ia-barata.
+-- Número: 0086 (la 0085 es el contador del regalo, rama web/regalo-contador; las 0078+ son de nivl-1011/ia-barata).
 --
 -- Encender (solo service_role), cuando la 1.0.11 esté publicada:
 --   update app_config set value = 'true' where key = 'modos_1011';
@@ -62,7 +62,7 @@ begin
 end $$;
 revoke all on function public._prueba_auto_al_nacer() from public, anon, authenticated;
 comment on function public._prueba_auto_al_nacer() is
-  'Prueba automática de Élite al nacer el perfil, con app_config.prueba_auto_1011. nivl:interruptores-1011-0085';
+  'Prueba automática de Élite al nacer el perfil, con app_config.prueba_auto_1011. nivl:interruptores-1011-0086';
 
 -- ── El gasto de la prueba (solo servidor), con la clave nueva ─────────
 create or replace function public.prueba_auto_resumen() returns jsonb
