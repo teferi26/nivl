@@ -32,7 +32,7 @@ export interface CabeceraMundoProps {
 }
 
 /** Lado de la placa del emblema (lámina 2: su centro casa con el del bloque de texto). */
-export const LADO_RANURA = 52;
+export const LADO_RANURA = 44;
 
 const GRIS = '#8B8B92';
 const GRIS_XP = '#6D6D74';
@@ -55,7 +55,7 @@ export function CabeceraMundo({ modo, nivel, emblema }: CabeceraMundoProps) {
               accessibilityElementsHidden
               importantForAccessibility="no-hide-descendants"
             >
-              <GlifoModo modo={modo} tamano={29} color={acento} />
+              <GlifoModo modo={modo} tamano={22} color={acento} />
             </View>
           )}
         </View>
@@ -112,7 +112,7 @@ const styles = StyleSheet.create({
   },
   izquierda: { flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1, minWidth: 0 },
   ranura: { width: LADO_RANURA, height: LADO_RANURA, alignItems: 'center', justifyContent: 'center' },
-  placa: { width: LADO_RANURA, height: LADO_RANURA, borderRadius: 15, borderWidth: 1.5, alignItems: 'center', justifyContent: 'center' },
+  placa: { width: LADO_RANURA, height: LADO_RANURA, borderRadius: 12, borderWidth: 1.5, alignItems: 'center', justifyContent: 'center' },
   textos: { flex: 1, minWidth: 0 },
   nombre: { fontFamily: 'Cinzel_900Black', fontSize: 24, lineHeight: 27, letterSpacing: 1.9, color: ink.ink10 },
   subtitulo: { fontFamily: 'Outfit_500Medium', fontSize: 12, lineHeight: 15, letterSpacing: 0.7, color: GRIS, marginTop: 2 },

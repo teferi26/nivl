@@ -336,7 +336,7 @@ export function RuedaModos(props: RuedaModosProps) {
 export function VeloRueda({ resaltado }: { resaltado: SharedValue<number> }) {
   const tintes = ORDEN_RUEDA.map((m) => conAlfa(acentoRueda[m], 0.1));
   // Con desenfoque (expo-blur o web) la app se intuye debajo; sin él, el velo tapa más.
-  const negro = hayDesenfoque() ? 0.4 : 0.62;
+  const negro = hayDesenfoque() ? 0.55 : 0.7;
   const estiloTinte = useAnimatedStyle(() => {
     const i = resaltado.value;
     return { backgroundColor: i >= 0 && i < tintes.length ? tintes[i] : 'rgba(0,0,0,0)' };
@@ -387,9 +387,8 @@ export function GuiaDedo({ ancho, alto, emblema, modo, disponibles, dedoX, dedoY
   }));
   return (
     <View style={StyleSheet.absoluteFill} pointerEvents="none" accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
-      {capa === 'fondo' && emblema ? (
-        <>
-          <Svg width={ancho} height={alto} style={StyleSheet.absoluteFill}>
+      {capa === 'dedo' && emblema ? (
+        <Svg width={ancho} height={alto} style={StyleSheet.absoluteFill}>
             <AnimatedLine
               x1={emblema.x}
               y1={emblema.y}
@@ -399,11 +398,12 @@ export function GuiaDedo({ ancho, alto, emblema, modo, disponibles, dedoX, dedoY
               strokeLinecap="round"
               animatedProps={propsEstela}
             />
-          </Svg>
-          <View style={{ position: 'absolute', left: emblema.x - emblema.tamano / 2, top: emblema.y - emblema.tamano / 2 }}>
-            <DibujoEmblema forma={emblema.forma} tamano={emblema.tamano} modo={modo} disponibles={disponibles} />
-          </View>
-        </>
+        </Svg>
+      ) : null}
+      {capa === 'fondo' && emblema ? (
+        <View style={{ position: 'absolute', left: emblema.x - emblema.tamano / 2, top: emblema.y - emblema.tamano / 2 }}>
+          <DibujoEmblema forma={emblema.forma} tamano={emblema.tamano} modo={modo} disponibles={disponibles} />
+        </View>
       ) : null}
       {capa === 'dedo' ? <AnimatedView style={[styles.huella, estiloHuella]} /> : null}
     </View>
@@ -715,7 +715,7 @@ export function RecargaModo({ modo, ancho: w, alto: h, progreso, reducido }: Rec
         </Svg>
       </Animated.View>
 
-      <View style={[styles.recargaCentro, { top: (base ? 0.31 : 0.337) * h, width: w }]}>
+      <View style={[styles.recargaCentro, { top: (base ? 0.31 * h + 15 : 0.337 * h), width: w }]}>
         {base ? (
           <View style={{ width: lado, height: lado, alignItems: 'center', justifyContent: 'center' }}>
             <GlifoModo modo="general" tamano={Math.round(130 * k)} color={ink.ink10} trazo={1.25} relleno={ink.ink0} colorN={col} trazoN={2} />
@@ -747,7 +747,6 @@ export function RecargaModo({ modo, ancho: w, alto: h, progreso, reducido }: Rec
               Platform.OS === 'web' ? ({ textShadow: `0px 0px 18px ${conAlfa(col, 0.75)}` } as object) : null,
             ]}
             maxFontSizeMultiplier={1}
-            numberOfLines={1}
           >
             {NOMBRE_MODO[modo]}
           </Text>
@@ -825,7 +824,10 @@ const styles = StyleSheet.create({
     color: ink.ink10,
     letterSpacing: 3,
     textAlign: 'center',
-    textShadowOffset: { width: 0, height: 0.5 },
+    // El halo va solo en el texto: sin fondo, sin recorte (sin numberOfLines,
+    // que en web pone overflow hidden) y con aire para que no se corte.
+    paddingHorizontal: 24,
+    textShadowOffset: { width: 0, height: 0 },
     textShadowRadius: 18,
   },
   recargaSub: { fontFamily: OUTFIT_BLACK, marginTop: 4, textAlign: 'center', color: 'rgba(233,230,223,0.75)', letterSpacing: 4.2 },

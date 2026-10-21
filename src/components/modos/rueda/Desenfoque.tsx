@@ -4,7 +4,7 @@
 //   · iOS y Android: BlurView de expo-blur (tinte oscuro). El gris lo pone la
 //     capa de color encima; en Android el desenfoque es el experimental de
 //     expo-blur (dimezisBlurView).
-//   · Web: `backdrop-filter: blur(5px) grayscale(1) brightness(.8)`.
+//   · Web: `backdrop-filter: blur(5px) grayscale(1) brightness(.38)`.
 //   · Un binario sin expo-blur (1.0.11 y anteriores, que reciben OTA): sin
 //     desenfoque, solo el velo. Se mira el módulo nativo ANTES de importar el
 //     componente: `requireNativeViewManager` de un módulo que no está rompe.
@@ -43,7 +43,7 @@ export function Desenfoque() {
     return (
       <View
         pointerEvents="none"
-        style={[StyleSheet.absoluteFill, { backdropFilter: 'blur(5px) grayscale(1) brightness(0.8)' } as object]}
+        style={[StyleSheet.absoluteFill, { backdropFilter: 'blur(5px) grayscale(1) brightness(0.38)' } as object]}
       />
     );
   }

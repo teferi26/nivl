@@ -4,7 +4,7 @@
 //
 //   · 'disco' (lámina 1, cuadro 01, y la barra de la lámina 4): círculo negro
 //     con el aro del acento de 2 pt, halo de 16 pt al 45 % y un anillo negro de
-//     4 pt; los cuatro puntos de los modos (8 pt, con su brillo) centrados
+//     4 pt; los cuatro puntos de los modos (5 pt, al 85 %, brillo corto) centrados
 //     sobre el filo exterior, cada uno donde vive su modo en la rueda.
 //   · 'placa' (cabecera del mundo, lámina 2): la placa redondeada con el
 //     acento al 14 % de fondo, filo del acento y halo.
@@ -28,7 +28,7 @@ export type FormaEmblema = 'disco' | 'placa';
 const AIRE_CARGA = 5;
 const TRAZO_CARGA = 4;
 /** Diámetro de los puntos de los modos. */
-const PUNTO = 8;
+const PUNTO = 5;
 
 export interface DibujoEmblemaProps {
   forma: FormaEmblema;
@@ -83,7 +83,8 @@ export function DibujoEmblema({ forma, tamano, modo, disponibles, carga }: Dibuj
                     left: p.x - PUNTO / 2,
                     top: p.y - PUNTO / 2,
                     backgroundColor: color,
-                    boxShadow: encendido ? `0px 0px 4px ${conAlfa(color, 0.9)}` : undefined,
+                    opacity: 0.85,
+                    boxShadow: encendido ? `0px 0px 3px ${conAlfa(color, 0.8)}` : undefined,
                   },
                 ]}
               />
@@ -97,14 +98,14 @@ export function DibujoEmblema({ forma, tamano, modo, disponibles, carga }: Dibuj
             {
               width: tamano,
               height: tamano,
-              borderRadius: Math.round(tamano * 0.29),
+              borderRadius: Math.round(tamano * 0.27),
               borderColor: acento,
               backgroundColor: mezcla(acento, 0.14),
               boxShadow: halo(acento, 16, 0.45),
             },
           ]}
         >
-          <GlifoModo modo={modo} tamano={Math.round(tamano * 0.56)} color={acento} />
+          <GlifoModo modo={modo} tamano={Math.round(tamano * 0.5)} color={acento} />
         </View>
       )}
       <View style={[styles.carga, { left: -fuera, top: -fuera, width: lienzo, height: lienzo }]}>
