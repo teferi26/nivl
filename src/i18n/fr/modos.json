@@ -61,14 +61,26 @@
   "rueda": {
     "a11y": "Roue des modes",
     "eyebrow": "Choisis un mode",
-    "cancelar": "Relâche au centre pour annuler",
+    "cancelar": "Touche à l’extérieur ou glisse vers le bas pour fermer",
+    "soltar": "Relâche sur un mode. Hors de la roue, tu annules",
     "sinActivar": "Non activé",
     "emblema": "Mode {{modo}}",
-    "pista": "Maintiens appuyé pour ouvrir la roue des modes. Un appui revient au mode précédent.",
+    "pista": "Touche pour ouvrir la roue des modes et choisis. Maintiens et glisse pour y aller directement.",
     "abrir": "Ouvrir la roue des modes",
-    "volver": "Revenir au mode précédent",
     "cambiarA": "Passer à {{modo}}",
     "activo": "Mode {{modo}} actif",
-    "cerrar": "Fermer la roue"
+    "cerrar": "Fermer la roue",
+    "base": "BASE",
+    "actual": "ACTUEL",
+    "anterior": "PRÉCÉDENT",
+    "equipado": "ÉQUIPÉ",
+    "recargaBase": "RETOUR À LA BASE",
+    "subtitulo": {
+      "general": "Base · niveau global",
+      "iron": "Salle + nutrition",
+      "focus": "Études",
+      "work": "Travail",
+      "founder": "Entreprendre"
+    }
   }
 }

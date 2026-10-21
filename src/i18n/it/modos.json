@@ -61,14 +61,26 @@
   "rueda": {
     "a11y": "Ruota delle modalità",
     "eyebrow": "Scegli la modalità",
-    "cancelar": "Rilascia al centro per annullare",
+    "cancelar": "Tocca fuori o scorri in basso per chiudere",
+    "soltar": "Rilascia su una modalità. Fuori dalla ruota annulli",
     "sinActivar": "Non attiva",
     "emblema": "Modalità {{modo}}",
-    "pista": "Tieni premuto per aprire la ruota delle modalità. Un tocco torna alla modalità precedente.",
+    "pista": "Tocca per aprire la ruota delle modalità e scegline una. Tieni premuto e trascina per andare diretto.",
     "abrir": "Apri la ruota delle modalità",
-    "volver": "Torna alla modalità precedente",
     "cambiarA": "Passa a {{modo}}",
     "activo": "Modalità {{modo}} attiva",
-    "cerrar": "Chiudi la ruota"
+    "cerrar": "Chiudi la ruota",
+    "base": "BASE",
+    "actual": "ATTUALE",
+    "anterior": "PRECEDENTE",
+    "equipado": "EQUIPAGGIATO",
+    "recargaBase": "DI NUOVO ALLA BASE",
+    "subtitulo": {
+      "general": "Base · livello globale",
+      "iron": "Palestra + dieta",
+      "focus": "Studio",
+      "work": "Lavoro",
+      "founder": "Impresa"
+    }
   }
 }

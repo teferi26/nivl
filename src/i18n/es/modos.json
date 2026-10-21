@@ -61,14 +61,26 @@
   "rueda": {
     "a11y": "Rueda de modos",
     "eyebrow": "Elige modo",
-    "cancelar": "Suelta en el centro para cancelar",
+    "cancelar": "Toca fuera o desliza hacia abajo para cerrar",
+    "soltar": "Suelta sobre un modo. Fuera de la rueda, cancela",
     "sinActivar": "Sin activar",
     "emblema": "Modo {{modo}}",
-    "pista": "Mantén pulsado para abrir la rueda de modos. Un toque vuelve al modo anterior.",
+    "pista": "Toca para abrir la rueda de modos y elige uno. Mantén pulsado y arrastra para ir directo.",
     "abrir": "Abrir la rueda de modos",
-    "volver": "Volver al modo anterior",
     "cambiarA": "Cambiar a {{modo}}",
     "activo": "Modo {{modo}} activo",
-    "cerrar": "Cerrar la rueda"
+    "cerrar": "Cerrar la rueda",
+    "base": "BASE",
+    "actual": "ACTUAL",
+    "anterior": "ANTERIOR",
+    "equipado": "EQUIPADO",
+    "recargaBase": "DE VUELTA A LA BASE",
+    "subtitulo": {
+      "general": "Base · nivel global",
+      "iron": "Gym + dieta",
+      "focus": "Estudio",
+      "work": "Trabajo",
+      "founder": "Emprendimiento"
+    }
   }
 }

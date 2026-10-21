@@ -61,14 +61,26 @@
   "rueda": {
     "a11y": "Mode wheel",
     "eyebrow": "Choose mode",
-    "cancelar": "Release in the centre to cancel",
+    "cancelar": "Tap outside or swipe down to close",
+    "soltar": "Release on a mode. Outside the wheel cancels",
     "sinActivar": "Not enabled",
     "emblema": "{{modo}} mode",
-    "pista": "Press and hold to open the mode wheel. A tap goes back to the previous mode.",
+    "pista": "Tap to open the mode wheel and pick one. Press, hold and drag to go straight there.",
     "abrir": "Open the mode wheel",
-    "volver": "Back to the previous mode",
     "cambiarA": "Switch to {{modo}}",
     "activo": "{{modo}} mode on",
-    "cerrar": "Close the wheel"
+    "cerrar": "Close the wheel",
+    "base": "BASE",
+    "actual": "CURRENT",
+    "anterior": "PREVIOUS",
+    "equipado": "EQUIPPED",
+    "recargaBase": "BACK TO BASE",
+    "subtitulo": {
+      "general": "Base · global level",
+      "iron": "Gym + diet",
+      "focus": "Study",
+      "work": "Work",
+      "founder": "Startup"
+    }
   }
 }

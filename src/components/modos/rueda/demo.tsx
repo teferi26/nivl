@@ -37,10 +37,10 @@ export function DemoRueda() {
       </View>
       <View style={styles.escena}>
         <EmblemaModoVista modo={modo} anterior={anterior} disponibles={disponibles} alCambiar={cambiar} />
-        <EmblemaModoVista tamano={44} modo={modo} anterior={anterior} disponibles={disponibles} alCambiar={cambiar} />
+        <EmblemaModoVista tamano={44} forma="placa" modo={modo} anterior={anterior} disponibles={disponibles} alCambiar={cambiar} />
       </View>
       <Text style={styles.nota}>
-        {`Modo ${NOMBRE_MODO[modo]} · anterior ${anterior ? NOMBRE_MODO[anterior] : '-'}. Mantén 300 ms y arrastra; un toque vuelve al anterior.`}
+        {`Modo ${NOMBRE_MODO[modo]} · anterior ${anterior ? NOMBRE_MODO[anterior] : '-'}. Toca para abrir la rueda y elige; mantén 300 ms y arrastra como atajo.`}
       </Text>
     </View>
   );

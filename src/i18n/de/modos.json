@@ -61,14 +61,26 @@
   "rueda": {
     "a11y": "Modusrad",
     "eyebrow": "Modus wählen",
-    "cancelar": "In der Mitte loslassen zum Abbrechen",
+    "cancelar": "Außerhalb tippen oder nach unten wischen zum Schließen",
+    "soltar": "Über einem Modus loslassen. Außerhalb des Rads abbrechen",
     "sinActivar": "Nicht aktiviert",
     "emblema": "Modus {{modo}}",
-    "pista": "Gedrückt halten, um das Modusrad zu öffnen. Ein Tippen führt zum vorherigen Modus zurück.",
+    "pista": "Tippen, um das Modusrad zu öffnen und einen Modus zu wählen. Gedrückt halten und ziehen für den direkten Weg.",
     "abrir": "Modusrad öffnen",
-    "volver": "Zurück zum vorherigen Modus",
     "cambiarA": "Zu {{modo}} wechseln",
     "activo": "Modus {{modo}} aktiv",
-    "cerrar": "Rad schließen"
+    "cerrar": "Rad schließen",
+    "base": "BASIS",
+    "actual": "AKTUELL",
+    "anterior": "VORHER",
+    "equipado": "AUSGERÜSTET",
+    "recargaBase": "ZURÜCK ZUR BASIS",
+    "subtitulo": {
+      "general": "Basis · Gesamtlevel",
+      "iron": "Gym + Ernährung",
+      "focus": "Lernen",
+      "work": "Arbeit",
+      "founder": "Gründen"
+    }
   }
 }

@@ -35,6 +35,13 @@ export const modoAcento = {
 
 export type ModoAcento = keyof typeof modoAcento;
 
+/**
+ * La rueda de modos (P01): igual que `modoAcento`, pero NIVL, la base, va en
+ * oro (#D4A843, lámina 4 «recarga dorada»). Solo en la rueda, el emblema y su
+ * recarga; el resto de NIVL sigue en blanco y negro.
+ */
+export const acentoRueda = { ...modoAcento, general: '#D4A843' } as const;
+
 /** Escala de espaciado (pt). Base 4. */
 export const space = { s1: 4, s2: 8, s3: 12, s4: 16, s5: 20, s6: 24, s8: 32, s10: 40, s14: 56, s20: 80 } as const;
 

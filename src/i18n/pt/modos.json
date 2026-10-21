@@ -61,14 +61,26 @@
   "rueda": {
     "a11y": "Roda de modos",
     "eyebrow": "Escolhe o modo",
-    "cancelar": "Solta no centro para cancelar",
+    "cancelar": "Toca fora ou desliza para baixo para fechar",
+    "soltar": "Solta sobre um modo. Fora da roda, cancela",
     "sinActivar": "Não ativado",
     "emblema": "Modo {{modo}}",
-    "pista": "Mantém premido para abrir a roda de modos. Um toque volta ao modo anterior.",
+    "pista": "Toca para abrir a roda de modos e escolhe um. Mantém premido e arrasta para ir direto.",
     "abrir": "Abrir a roda de modos",
-    "volver": "Voltar ao modo anterior",
     "cambiarA": "Mudar para {{modo}}",
     "activo": "Modo {{modo}} ativo",
-    "cerrar": "Fechar a roda"
+    "cerrar": "Fechar a roda",
+    "base": "BASE",
+    "actual": "ATUAL",
+    "anterior": "ANTERIOR",
+    "equipado": "EQUIPADO",
+    "recargaBase": "DE VOLTA À BASE",
+    "subtitulo": {
+      "general": "Base · nível global",
+      "iron": "Ginásio + dieta",
+      "focus": "Estudo",
+      "work": "Trabalho",
+      "founder": "Empreender"
+    }
   }
 }
