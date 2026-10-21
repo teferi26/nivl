@@ -12,7 +12,7 @@
 //   el Hoy de NIVL; otro: el inicio de IRON) · anterior: el que se marca ·
 //   t: instante de la recarga (0,7 por defecto)
 // Las piezas son las de la app (RuedaModos, DibujoEmblema, CabeceraMundo,
-// HoyVista, IronHoyVista, TabBar); aquí solo se fijan sus valores. En un build
+// HoyVista, InicioIronVista, TabBar); aquí solo se fijan sus valores. En un build
 // de release (__DEV__ false) redirige a la raíz.
 
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
@@ -23,8 +23,9 @@ import { useSharedValue } from 'react-native-reanimated';
 import { HOY_DEMO, misionDemo, perfilDemo, YO_DEMO } from '@/components/arena/demoDatos';
 import { derivarHoy, type EntradaHoy } from '@/components/hoy/derivarHoy';
 import { HoyVista } from '@/components/hoy/HoyVista';
+import { InicioIronVista } from '@/components/ironmundo/InicioIronVista';
+import { PielIron } from '@/components/ironmundo/piel';
 import { CabeceraMundo, LADO_RANURA } from '@/components/modos/mundo/CabeceraMundo';
-import { IronHoyVista } from '@/components/modos/mundo/IronHoyVista';
 import { DibujoEmblema, type FormaEmblema } from '@/components/modos/rueda/DibujoEmblema';
 import { DiscoRueda, FichaRueda, geometriaRueda, GuiaDedo, RecargaModo, topFicha, VeloRueda } from '@/components/modos/rueda/RuedaModos';
 import { nombreDestino } from '@/components/ui/navItems';
@@ -232,44 +233,48 @@ function InicioIron({ alMedir }: { alMedir: (p: { x: number; y: number }) => voi
   return (
     <View style={styles.columna}>
       <View style={styles.contenido}>
-        <IronHoyVista
-          cabecera={
-            <CabeceraMundo
-              modo="iron"
-              nivel={nivel}
-              emblema={<DibujoEmblema forma="placa" tamano={LADO_RANURA} modo="iron" disponibles={TODOS} />}
-            />
-          }
-          fecha="Martes, 20 de octubre"
-          cierre={null}
-          entreno={{
-            cargado: true,
-            errorCarga: null,
-            hoyDia: 2,
-            dias,
-            ejercicios,
-            sesionHoy: null,
-            xpMisionHoy: 0,
-            onEmpezar: nada,
-            onReintentar: nada,
-          }}
-          pesos={{
-            estado: 'listo',
-            filas: [
-              { clave: 'sentadilla', nombre: 'Sentadilla', kg: 100, subida: 7.5, record: false, e1rm: 117, sesiones: 6 },
-              { clave: 'banca', nombre: 'Press banca', kg: 72.5, subida: 5, record: true, e1rm: 84, sesiones: 6 },
-              { clave: 'muerto', nombre: 'Peso muerto', kg: 130, subida: 10, record: false, e1rm: 151, sesiones: 5 },
-            ],
-          }}
-          dieta={{ estado: 'listo', objetivo: { kcal: 2400, proteina: 160 }, parte: { kcal: 1880, proteina: 128 } }}
-          acciones={{ onRutinas: nada, onPesos: nada, onCatalogo: nada, onDieta: nada, onNutricion: nada, onCoach: nada }}
-        />
+        <PielIron>
+          <InicioIronVista
+            cabecera={
+              <CabeceraMundo
+                modo="iron"
+                nivel={nivel}
+                emblema={<DibujoEmblema forma="placa" tamano={LADO_RANURA} modo="iron" disponibles={TODOS} />}
+              />
+            }
+            fecha="Martes, 20 de octubre"
+            cierre={null}
+            entreno={{
+              cargado: true,
+              errorCarga: null,
+              hoyDia: 2,
+              dias,
+              ejercicios,
+              prescrito: [],
+              xpHecho: null,
+              xpSesion: 50,
+              onEmpezar: nada,
+              onReintentar: nada,
+            }}
+            pesos={{
+              estado: 'listo',
+              filas: [
+                { clave: 'sentadilla', nombre: 'Sentadilla', kg: 100, subida: 7.5, record: false, e1rm: 117, sesiones: 6, serie: [90, 95, 100], ultimaFecha: '2026-10-19' },
+                { clave: 'banca', nombre: 'Press banca', kg: 72.5, subida: 5, record: true, e1rm: 84, sesiones: 6, serie: [67.5, 70, 72.5], ultimaFecha: '2026-10-18' },
+                { clave: 'muerto', nombre: 'Peso muerto', kg: 130, subida: 10, record: false, e1rm: 151, sesiones: 5, serie: [120, 125, 130], ultimaFecha: '2026-10-17' },
+              ],
+            }}
+            dieta={{ estado: 'listo', kcal: 1880, objetivoKcal: 2400, proteina: 128, objetivoProteina: 160, aguaMl: 1500, objetivoAguaMl: 2000 }}
+            coach="Pierna A hoy. Sube 2,5 kg en la sentadilla."
+            acciones={{ onRutinas: nada, onPesos: nada, onCatalogo: nada, onDieta: nada, onCoach: nada }}
+          />
+        </PielIron>
       </View>
       <BarraDemo
         modo="iron"
         alMedir={alMedir}
-        rutas={['iron-hoy', 'iron-rutinas', 'iron-pesos', 'iron-coach']}
-        titulos={{ 'iron-hoy': t('mundos:pestana.hoy'), 'iron-rutinas': t('mundos:pestana.rutinas'), 'iron-pesos': t('mundos:pestana.pesos'), 'iron-coach': t('mundos:pestana.coach') }}
+        rutas={['iron-hoy', 'iron-rutinas', 'iron-dieta', 'iron-coach']}
+        titulos={{ 'iron-hoy': t('mundos:pestana.hoy'), 'iron-rutinas': t('mundos:pestana.entreno'), 'iron-dieta': t('mundos:pestana.dieta'), 'iron-coach': t('mundos:pestana.coach') }}
         acento={acentoRueda.iron}
       />
     </View>

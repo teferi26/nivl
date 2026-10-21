@@ -2,7 +2,7 @@
 // valer desde el primer módulo que lo use (docs/i18n/PLAN-1010.md).
 import { activarIdiomasInterfaz, t, useIdiomaInterfaz } from '@/i18n';
 import { Cinzel_600SemiBold, Cinzel_700Bold, Cinzel_900Black } from '@expo-google-fonts/cinzel';
-import { Outfit_500Medium, Outfit_600SemiBold, Outfit_700Bold, Outfit_800ExtraBold } from '@expo-google-fonts/outfit';
+import { Outfit_400Regular, Outfit_500Medium, Outfit_600SemiBold, Outfit_700Bold, Outfit_800ExtraBold } from '@expo-google-fonts/outfit';
 import { useFonts } from 'expo-font';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
@@ -184,7 +184,9 @@ export default function RootLayout() {
     Outfit_500Medium,
     Outfit_600SemiBold,
     Outfit_700Bold,
-    // Rótulos de la rueda de modos y su recarga (P01: Outfit 800).
+    // IRON (lámina 2 de la P01): el 400 de lo secundario.
+    Outfit_400Regular,
+    // Rótulos de la rueda de modos y su recarga (P01: Outfit 800), y las cifras y botones de IRON.
     Outfit_800ExtraBold,
   });
 

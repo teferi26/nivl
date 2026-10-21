@@ -1,7 +1,8 @@
-// NIVL · Mundo IRON: tus pesos y récords (efectos). Lee lo mismo que la
-// ficha de técnica (iron/historialDatos.ts) y lo resume con la lógica pura de
-// iron/pesos.ts, casando con el catálogo por el mismo `idDe` de «Ver técnica».
-// Se relee al volver a la pantalla (tras registrar una sesión).
+// NIVL · Mundo IRON: tus pesos y récords (efectos). Lee lo mismo que la ficha
+// de técnica (iron/historialDatos → `gym_lifts`) y lo resume con la lógica
+// pura de iron/pesos.ts (con la serie de la gráfica), casando con el catálogo
+// por el mismo `idDe` de «Ver técnica». Se relee al volver a la pantalla.
+// Nació del antiguo usePesosIron del mundo (ya borrado) con la serie de cada ejercicio para la gráfica.
 
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useRef, useState } from 'react';
@@ -13,7 +14,7 @@ import { resumenPesos } from '@/iron/pesos';
 import { dateKey } from '@/lib/dates';
 import { mensajeSistema } from '@/lib/validation';
 
-export interface FilaPeso {
+export interface PesoIron {
   clave: string;
   /** En el idioma de la interfaz si casa con el catálogo; si no, como se escribió. */
   nombre: string;
@@ -24,18 +25,21 @@ export interface FilaPeso {
   /** 1RM estimado de la mejor marca. */
   e1rm: number | null;
   sesiones: number;
+  /** La carga más alta de cada una de las últimas sesiones (la gráfica). */
+  serie: readonly number[];
+  ultimaFecha: string;
   onTecnica?: () => void;
 }
 
-export type EstadoPesos =
+export type EstadoPesosIron =
   | { readonly estado: 'cargando' }
   | { readonly estado: 'error'; readonly mensaje: string; readonly reintentar: () => void }
-  | { readonly estado: 'listo'; readonly filas: readonly FilaPeso[] };
+  | { readonly estado: 'listo'; readonly filas: readonly PesoIron[] };
 
 const idDe = (nombre: string) => ejercicioIronDe(nombre)?.id ?? null;
 
-export function usePesosIron(): EstadoPesos {
-  const [estado, setEstado] = useState<EstadoPesos>({ estado: 'cargando' });
+export function usePesos(): EstadoPesosIron {
+  const [estado, setEstado] = useState<EstadoPesosIron>({ estado: 'cargando' });
   const vigente = useRef(0);
 
   const cargar = useCallback(() => {
@@ -43,7 +47,7 @@ export function usePesosIron(): EstadoPesos {
     fetchDatosHistorial()
       .then((datos) => {
         if (turno !== vigente.current) return;
-        const filas = resumenPesos(datos.filas, idDe, dateKey()).map((p): FilaPeso => {
+        const filas = resumenPesos(datos.filas, idDe, dateKey()).map((p): PesoIron => {
           const ej = p.idCatalogo ? ejercicioPorId(p.idCatalogo) : undefined;
           return {
             clave: p.clave,
@@ -53,6 +57,8 @@ export function usePesosIron(): EstadoPesos {
             record: p.record,
             e1rm: p.mejor?.e1rm ?? null,
             sesiones: p.sesiones,
+            serie: p.serie,
+            ultimaFecha: p.ultimaFecha,
             onTecnica: ej ? () => router.push({ pathname: '/iron/[id]', params: { id: ej.id } }) : undefined,
           };
         });

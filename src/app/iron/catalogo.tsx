@@ -1,22 +1,25 @@
-// NIVL · IRON · El catálogo con técnica animada (mundo IRON → «Ver
-// catálogo»). Es el mismo CatalogoIron de la hoja de Gimnasio: tocar un
-// ejercicio abre su técnica (/iron/[id]). Sin `modos_activos`, a Gimnasio.
-import { Redirect, router } from 'expo-router';
-import { CatalogoIronPantalla } from '@/components/modos/mundo/CatalogoIronPantalla';
-import { volver } from '@/components/ui/Screen';
-import { ejercicioIronDe } from '@/iron/catalogo';
+// NIVL · IRON · El catálogo con técnica animada (lámina 2 de la P01, a la
+// derecha): búsqueda, grupos, la técnica en bucle con sus músculos y «Más
+// de…». Con `?dia=<id>` (desde Entreno) añade el ejercicio a ese día de la
+// rutina. Sin `modos_activos`, a Gimnasio.
+import { Redirect, useLocalSearchParams } from 'expo-router';
+import { CatalogoIronVista } from '@/components/ironmundo/CatalogoIronVista';
+import { PielIron } from '@/components/ironmundo/piel';
+import { useCatalogoIron } from '@/components/ironmundo/useCatalogoIron';
 import { useFlags } from '@/lib/flags';
 
 export default function CatalogoRuta() {
   const { modos_activos: activo } = useFlags();
   if (!activo) return <Redirect href="/gym" />;
+  return <Catalogo />;
+}
+
+function Catalogo() {
+  const { dia } = useLocalSearchParams<{ dia?: string }>();
+  const props = useCatalogoIron(typeof dia === 'string' && dia ? dia : null);
   return (
-    <CatalogoIronPantalla
-      onVolver={() => volver(router)}
-      onElegir={(nombre) => {
-        const ej = ejercicioIronDe(nombre);
-        if (ej) router.push({ pathname: '/iron/[id]', params: { id: ej.id } });
-      }}
-    />
+    <PielIron>
+      <CatalogoIronVista {...props} />
+    </PielIron>
   );
 }

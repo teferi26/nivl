@@ -1,4 +1,4 @@
-import { e1rm, mantenimientoKcal, paceOf, pendientePorDia } from '../bodymath';
+import { e1rm, kcalCardio, mantenimientoKcal, paceOf, pendientePorDia, PESO_REFERENCIA_KG } from '../bodymath';
 
 // Esta matemática no es cosmética: de ella salen los kilos que el coach te
 // manda levantar la próxima sesión. Un error aquí se traduce en carga real.
@@ -118,5 +118,22 @@ describe('mantenimientoKcal', () => {
     expect(mantenimientoKcal({ ...ficha, edad: 15 })).toBeNull();
     expect(mantenimientoKcal({ ...ficha, edad: 16 })).not.toBeNull();
     expect(mantenimientoKcal({ ...ficha, edad: 101 })).toBeNull();
+  });
+});
+
+describe('kcalCardio', () => {
+  it('corriendo con distancia: ~1 kcal por kilo y kilómetro', () => {
+    expect(kcalCardio({ tipo: 'correr', zona: 'Z2', minutos: 30, km: 5, pesoKg: 70 })).toBe(350);
+  });
+  it('por tiempo: MET × kg × horas, redondeado a 5', () => {
+    // bici Z2: 6 MET × 80 kg × 1 h
+    expect(kcalCardio({ tipo: 'bici', zona: 'Z2', minutos: 60, pesoKg: 80 })).toBe(480);
+    // nadar Z3: 8 × 70 × 0,5 = 280 (la distancia no cambia nada fuera de correr)
+    expect(kcalCardio({ tipo: 'nadar', zona: 'Z3', minutos: 30, km: 1.2, pesoKg: 70 })).toBe(280);
+  });
+  it('sin peso válido usa el de referencia; sin duración, null', () => {
+    expect(kcalCardio({ tipo: 'remo', zona: 'Z2', minutos: 30 })).toBe(Math.round((6 * PESO_REFERENCIA_KG * 0.5) / 5) * 5);
+    expect(kcalCardio({ tipo: 'remo', zona: 'Z2', minutos: 30, pesoKg: 5 })).toBe(210);
+    expect(kcalCardio({ tipo: 'correr', zona: 'Z2', minutos: 0, km: 5 })).toBeNull();
   });
 });

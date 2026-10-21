@@ -4,6 +4,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import type { ReactNode } from 'react';
 import { Platform, Pressable, ScrollView, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 import { vibrar } from '@/design/haptics';
+import { usePiel } from '@/design/piel';
 import { ink, space, type as tipo } from '@/design/tokens';
 import { colors, fonts } from '@/lib/theme';
 import { Grano, Trama } from './Texture';
@@ -34,6 +35,8 @@ const HITSLOP_SMALL = { top: 7, bottom: 7, left: 0, right: 0 };
  * elegido no vibra. Sin `selected` es un botón y no vibra.
  */
 export function Chip({ label, selected, onPress, icon, small, disabled, accessibilityLabel, style }: ChipProps) {
+  // La piel de un mundo (IRON): radio, y el acento en lo elegido.
+  const piel = usePiel();
   const content = (
     <>
       {icon ? <Ionicons name={icon} size={small ? 12 : 14} color={disabled ? ink.ink6 : selected ? ink.ink10 : colors.textDim} /> : null}
@@ -45,6 +48,10 @@ export function Chip({ label, selected, onPress, icon, small, disabled, accessib
     small && styles.chipSmall,
     selected && (small ? styles.selectedSmall : styles.selected),
     disabled && styles.disabled,
+    piel && [
+      { borderRadius: piel.radioChip, borderColor: piel.borde, backgroundColor: piel.tarjeta },
+      selected && { borderColor: piel.acento, backgroundColor: piel.acentoFondo },
+    ],
     style,
   ];
   if (!onPress) return <View style={box}>{content}</View>;

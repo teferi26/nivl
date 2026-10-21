@@ -75,3 +75,44 @@ export function mantenimientoKcal(f: {
   const basal = 10 * f.pesoKg + 6.25 * f.alturaCm - 5 * f.edad + (f.sexo === 'hombre' ? 5 : -161);
   return { basal: Math.round(basal), mantenimiento: Math.round((basal * FACTOR_ACTIVIDAD[f.actividad]) / 10) * 10 };
 }
+
+// ── Calorías estimadas de una sesión de cardio ──────────────────────
+
+export type TipoCardio = 'correr' | 'nadar' | 'bici' | 'caminar' | 'remo' | 'otro';
+export type ZonaCardio = 'Z1' | 'Z2' | 'Z3' | 'Z4' | 'Z5' | 'intervalos' | 'libre';
+
+/**
+ * MET por tipo y zona (redondeados del Compendium of Physical Activities,
+ * Ainsworth 2011). «otro» es el HIIT, la comba o la elíptica: un término medio.
+ * Solo lo usa la pantalla (IRON · Cardio); el coach no lo lee.
+ */
+const MET_CARDIO: Readonly<Record<TipoCardio, Readonly<Record<ZonaCardio, number>>>> = {
+  correr: { Z1: 6, Z2: 8, Z3: 10, Z4: 11.5, Z5: 13, intervalos: 11, libre: 9 },
+  bici: { Z1: 4, Z2: 6, Z3: 8, Z4: 10, Z5: 12, intervalos: 9, libre: 7 },
+  nadar: { Z1: 5, Z2: 6, Z3: 8, Z4: 9.5, Z5: 10, intervalos: 9, libre: 7 },
+  caminar: { Z1: 3, Z2: 3.5, Z3: 4.5, Z4: 5, Z5: 6, intervalos: 5, libre: 3.5 },
+  remo: { Z1: 4.5, Z2: 6, Z3: 7.5, Z4: 9, Z5: 11, intervalos: 9, libre: 7 },
+  otro: { Z1: 4, Z2: 5, Z3: 7, Z4: 8, Z5: 10, intervalos: 8, libre: 6 },
+};
+
+/** Sin peso registrado se estima con este (y la pantalla lo dice). */
+export const PESO_REFERENCIA_KG = 70;
+
+/**
+ * Calorías estimadas de una sesión: MET × kg × horas. Corriendo con distancia
+ * manda la regla de ~1 kcal por kilo y kilómetro (casi no depende del ritmo).
+ * Es una estimación de ±20 %: orienta, no es un dato. Redondeada a 5. Sin
+ * duración válida, null.
+ */
+export function kcalCardio(s: {
+  tipo: TipoCardio;
+  zona: ZonaCardio;
+  minutos: number;
+  km?: number | null;
+  pesoKg?: number | null;
+}): number | null {
+  if (!(s.minutos > 0)) return null;
+  const kg = s.pesoKg && s.pesoKg > 20 && s.pesoKg < 400 ? s.pesoKg : PESO_REFERENCIA_KG;
+  const kcal = s.tipo === 'correr' && s.km && s.km > 0 ? kg * s.km : MET_CARDIO[s.tipo][s.zona] * kg * (s.minutos / 60);
+  return Math.round(kcal / 5) * 5;
+}

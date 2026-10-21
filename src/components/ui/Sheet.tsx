@@ -34,6 +34,7 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { usePiel } from '@/design/piel';
 import { ink, motion, sizeClass, space, stroke, type } from '@/design/tokens';
 import { t } from '@/i18n';
 import { useMovimientoReducido } from './motion';
@@ -57,6 +58,8 @@ const UMBRAL_ARRASTRE = 80;
 
 export function Sheet({ visible, onClose, onDismiss, eyebrow, title, children, footer, scroll = true }: Props) {
   const insets = useSafeAreaInsets();
+  // La piel de un mundo (IRON): superficie, borde de acento y rótulo espaciado.
+  const piel = usePiel();
   const { width } = useWindowDimensions();
   const tablet = sizeClass(width) !== 'compact';
   const reducido = useMovimientoReducido();
@@ -135,12 +138,12 @@ export function Sheet({ visible, onClose, onDismiss, eyebrow, title, children, f
   const cabecera = (
     <View {...pan.panHandlers}>
       <View style={styles.asaZona} accessible={false}>
-        <View style={styles.asa} />
+        <View style={[styles.asa, piel && { backgroundColor: piel.acentoBorde, borderRadius: 2 }]} />
       </View>
       <View style={styles.cabecera}>
         <View style={styles.cabeceraTexto}>
           {eyebrow ? (
-            <Text maxFontSizeMultiplier={1.35} style={styles.eyebrow}>
+            <Text maxFontSizeMultiplier={1.35} style={[styles.eyebrow, piel && { color: piel.acento, letterSpacing: 2.6 }]}>
               {eyebrow}
             </Text>
           ) : null}
@@ -199,11 +202,26 @@ export function Sheet({ visible, onClose, onDismiss, eyebrow, title, children, f
         <Animated.View
           accessibilityViewIsModal
           onAccessibilityEscape={() => cerrarRef.current()}
-          style={[styles.hoja, tablet ? styles.hojaTablet : styles.hojaMovil, { transform }]}
+          style={[
+            styles.hoja,
+            tablet ? styles.hojaTablet : styles.hojaMovil,
+            piel && {
+              backgroundColor: piel.tarjeta,
+              borderColor: piel.acentoBorde,
+              borderTopColor: piel.acentoBorde,
+              borderWidth: 1,
+              borderTopLeftRadius: piel.radioHoja,
+              borderTopRightRadius: piel.radioHoja,
+              borderBottomLeftRadius: tablet ? piel.radioHoja : 0,
+              borderBottomRightRadius: tablet ? piel.radioHoja : 0,
+              overflow: 'hidden',
+            },
+            { transform },
+          ]}
         >
           {cabecera}
           {cuerpo}
-          {footer ? <View style={[styles.pie, { paddingBottom: abajo }]}>{footer}</View> : null}
+          {footer ? <View style={[styles.pie, piel && { borderTopColor: piel.borde }, { paddingBottom: abajo }]}>{footer}</View> : null}
         </Animated.View>
       </KeyboardAvoidingView>
     </Modal>

@@ -1,6 +1,8 @@
 {
   "pestana": {
     "hoy": "Today",
+    "entreno": "Training",
+    "dieta": "Diet",
     "rutinas": "Routines",
     "pesos": "Lifts",
     "agenda": "Agenda",

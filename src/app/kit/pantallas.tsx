@@ -62,6 +62,7 @@ import { DEMO as demoHoy } from '@/components/hoy/demo';
 import { DEMO as demoInforme } from '@/components/informe/demo';
 import { DEMO as demoMemoria } from '@/components/memoria/demo';
 import { DEMO as demoModos } from '@/components/modos/demo';
+import { DEMO as demoIron } from '@/components/ironmundo/demo';
 import { DEMO as demoPrueba } from '@/components/prueba/demo';
 import { DEMO as demoNutricion } from '@/components/nutricion/demo';
 import { DEMO as demoOnboarding } from '@/components/onboarding/demo';
@@ -101,6 +102,7 @@ const DEMOS: Record<IdPantalla, DemoPantalla | null> = {
   economia: demoEconomia,
   creador: demoCreador,
   modos: demoModos,
+  iron: demoIron,
   prueba: demoPrueba,
 };
 
@@ -129,7 +131,10 @@ export default function GaleriaPantallas() {
 
   const pagina: IdPagina = PAGINAS.some((p) => p.id === params.pantalla) ? (params.pantalla as IdPagina) : 'arena';
   const anchoPedido = Number(params.ancho);
-  const ancho = (VERIFY_WIDTHS as readonly number[]).includes(anchoPedido) ? anchoPedido : ANCHO_POR_DEFECTO;
+  // Con «solo» (capturas) vale cualquier ancho de móvil a escritorio: las comparativas con
+  // las láminas se hacen a 390 (iPhone 15), que no es de VERIFY_WIDTHS.
+  const libre = solo && Number.isInteger(anchoPedido) && anchoPedido >= 320 && anchoPedido <= 1600;
+  const ancho = libre || (VERIFY_WIDTHS as readonly number[]).includes(anchoPedido) ? anchoPedido : ANCHO_POR_DEFECTO;
   const demo = pagina === 'arena' ? null : DEMOS[pagina];
   const estado = demo ? (demo.estados.find((e) => e.id === params.estado) ?? demo.estados[0] ?? null) : null;
   const marco = Math.min(ancho, ventana);

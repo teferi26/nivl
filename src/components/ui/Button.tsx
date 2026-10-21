@@ -14,6 +14,7 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useContext, useRef } from 'react';
 import { ActivityIndicator, Animated, Pressable, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
+import { usePiel } from '@/design/piel';
 import { ink, type as tipo } from '@/design/tokens';
 import { SuperficieContext } from './Card';
 import { splitStyle, useMovimientoReducido } from './motion';
@@ -42,6 +43,8 @@ export function Button({ title, onPress, variant = 'primary', size = 'md', icon,
   const scale = useRef(new Animated.Value(1)).current;
   const reducido = useMovimientoReducido();
   const invertida = useContext(SuperficieContext) === 'inverse';
+  // La piel de un mundo (IRON): el acento en lo principal y sus radios.
+  const piel = usePiel();
   // Sobre blanco, el «blanco» del botón pasa a ser negro y viceversa.
   const claro = invertida ? ink.ink0 : ink.ink10;
   const oscuro = invertida ? ink.ink10 : ink.ink0;
@@ -51,7 +54,17 @@ export function Button({ title, onPress, variant = 'primary', size = 'md', icon,
   const apagado = !!disabled && !loading;
   // Apagado sobre una superficie invertida (hueso): ink4, no ink6; ink6 sobre
   // ink10 no llega al contraste de texto.
-  const fg = apagado ? (invertida ? ink.ink4 : ink.ink6) : primary ? oscuro : claro;
+  const fg = apagado
+    ? invertida
+      ? ink.ink4
+      : ink.ink6
+    : piel && !invertida
+      ? primary
+        ? piel.sobreAcento
+        : piel.acento
+      : primary
+        ? oscuro
+        : claro;
   // El layout (márgenes, alignSelf, flex, ancho) va al Pressable, que es quien
   // ocupa sitio en el padre; lo visual, a la vista que escala.
   const { outer, inner } = splitStyle(style);
@@ -86,6 +99,11 @@ export function Button({ title, onPress, variant = 'primary', size = 'md', icon,
           danger && [styles.danger, { backgroundColor: oscuro }],
           // La ghost apagada solo cambia el texto: un borde la convertiría en otra variante.
           apagado && !ghost && [styles.apagado, { backgroundColor: oscuro }],
+          piel && !invertida && [
+            { borderRadius: piel.radioBoton, borderWidth: 1 },
+            primary && !apagado && { backgroundColor: piel.acento, borderColor: piel.acento },
+            variant === 'secondary' && { borderColor: piel.acentoBorde, backgroundColor: 'transparent' },
+          ],
           inner,
           { transform: [{ scale }] },
         ]}
@@ -104,7 +122,13 @@ export function Button({ title, onPress, variant = 'primary', size = 'md', icon,
             {icon ? <Ionicons name={icon} size={size === 'sm' ? 14 : 17} color={fg} /> : null}
             <Text
               maxFontSizeMultiplier={1.35}
-              style={[styles.label, size === 'sm' && styles.labelSm, size === 'lg' && styles.labelLg, { color: fg }]}
+              style={[
+                styles.label,
+                size === 'sm' && styles.labelSm,
+                size === 'lg' && styles.labelLg,
+                piel && !invertida && { fontFamily: piel.fuenteBoton },
+                { color: fg },
+              ]}
             >
               {title}
             </Text>

@@ -26,6 +26,14 @@ describe('resumenPesos', () => {
     expect(s.subida).toBe(7.5);
     expect(s.record).toBe(true);
     expect(s.sesiones).toBe(4);
+    // La gráfica: la carga más alta de cada sesión, de la más antigua a la última.
+    expect(s.serie).toEqual([60, 92.5, 95, 100]);
+  });
+
+  it('la serie de la gráfica se queda con las 8 últimas sesiones', () => {
+    const filas = Array.from({ length: 10 }, (_, i) => f(`2026-10-${String(i + 1).padStart(2, '0')}`, 'Sentadilla', 80 + i * 2.5, 5));
+    const [s] = resumenPesos(filas, idDe, '2026-10-20');
+    expect(s!.serie).toEqual([85, 87.5, 90, 92.5, 95, 97.5, 100, 102.5]);
   });
 
   it('una sola sesión: sin subida y sin récord', () => {

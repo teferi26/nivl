@@ -43,8 +43,8 @@ describe('mundos', () => {
     expect(new Set(todas).size).toBe(todas.length);
     for (const m of MODOS) for (const p of MUNDOS[m].pestanas) expect(p.ruta.startsWith(`${m}-`)).toBe(true);
   });
-  it('IRON: Hoy, Rutinas, Pesos y Coach (P01); ningún mundo tiene hábitos ni campañas', () => {
-    expect(MUNDOS.iron.pestanas.map((p) => p.pestana)).toEqual(['hoy', 'rutinas', 'pesos', 'coach']);
+  it('IRON: Hoy, Entreno, Dieta y Coach (gym + dieta, 4 pestañas como la P01); ningún mundo tiene hábitos ni campañas', () => {
+    expect(MUNDOS.iron.pestanas.map((p) => p.pestana)).toEqual(['hoy', 'entreno', 'dieta', 'coach']);
     for (const m of MODOS) {
       if (m === 'general') continue;
       const nombres = MUNDOS[m].pestanas.map((p) => p.pestana as string);
@@ -59,7 +59,9 @@ describe('mundos', () => {
     expect(mundoDeSegmento('(tabs)')).toBe('general');
     expect(mundoDeSegmento('gym')).toBeNull();
     expect(mundoDeSegmento(undefined)).toBeNull();
-    expect(mundoDeRuta('iron-pesos')).toBe('iron');
+    expect(mundoDeRuta('iron-dieta')).toBe('iron');
+    // Pesos ya no es pestaña (vive en Entreno): /iron-pesos solo redirige.
+    expect(mundoDeRuta('iron-pesos')).toBeNull();
     expect(mundoDeRuta('founder-economia')).toBe('founder');
     expect(mundoDeRuta('coach')).toBeNull();
   });

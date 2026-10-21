@@ -3,7 +3,7 @@
 // inferior propia; NIVL (General) es `(tabs)`, la app de siempre.
 //
 //   (tabs)     NIVL     Hoy · Agenda · Coach · Hábitos · Campañas · Perfil
-//   (iron)     IRON     Hoy · Rutinas · Pesos · Coach
+//   (iron)     IRON     Hoy · Entreno · Dieta · Coach   (gym + dieta; Pesos y Cardio dentro de Entreno)
 //   (focus)    FOCUS    Hoy · Temario · Exámenes · Coach (lámina 3 de la P01)
 //   (work)     WORK     Hoy · Economía · Agenda · Coach (economía: src/components/economia/work)
 //   (founder)  FOUNDER  Hoy · Agenda · Economía · Coach
@@ -23,7 +23,8 @@ import type { ModoId } from './tipos';
 import { esModo } from './tipos';
 
 /** El nombre de cada destino de la barra de un mundo (clave `mundos:pestana.*`). */
-export type PestanaMundo = 'hoy' | 'rutinas' | 'pesos' | 'agenda' | 'diario' | 'economia' | 'temario' | 'examenes' | 'coach';
+export type PestanaMundo =
+  | 'hoy' | 'entreno' | 'dieta' | 'rutinas' | 'pesos' | 'agenda' | 'diario' | 'economia' | 'temario' | 'examenes' | 'coach';
 
 export interface Mundo {
   modo: ModoId;
@@ -41,8 +42,9 @@ export const MUNDOS: Readonly<Record<ModoId, Mundo>> = {
     grupo: '(iron)',
     pestanas: [
       { ruta: 'iron-hoy', pestana: 'hoy' },
-      { ruta: 'iron-rutinas', pestana: 'rutinas' },
-      { ruta: 'iron-pesos', pestana: 'pesos' },
+      // La ruta de Entreno conserva su nombre (`iron-rutinas`): Rutinas, Pesos y Cardio.
+      { ruta: 'iron-rutinas', pestana: 'entreno' },
+      { ruta: 'iron-dieta', pestana: 'dieta' },
       { ruta: 'iron-coach', pestana: 'coach' },
     ],
   },
@@ -120,7 +122,7 @@ export function mundoDeSegmento(segmento: string | null | undefined): ModoId | n
   return null;
 }
 
-/** El mundo de una ruta de pestaña (`iron-pesos` → iron). Si no es de ningún mundo, null. */
+/** El mundo de una ruta de pestaña (`iron-dieta` → iron). Si no es de ningún mundo, null. */
 export function mundoDeRuta(ruta: string | null | undefined): ModoId | null {
   if (!ruta) return null;
   for (const m of Object.values(MUNDOS)) if (m.pestanas.some((p) => p.ruta === ruta)) return m.modo;
