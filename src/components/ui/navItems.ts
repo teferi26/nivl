@@ -68,7 +68,7 @@ export const NAV_MUNDO: Record<string, { off: Icon; on: Icon }> = {
   'focus-coach': { off: 'chatbubble-ellipses-outline', on: 'chatbubble-ellipses' },
   'work-hoy': { off: 'today-outline', on: 'today' },
   'work-agenda': { off: 'calendar-outline', on: 'calendar' },
-  'work-diario': { off: 'book-outline', on: 'book' },
+  'work-economia': { off: 'wallet-outline', on: 'wallet' },
   'work-coach': { off: 'chatbubble-ellipses-outline', on: 'chatbubble-ellipses' },
   'founder-hoy': { off: 'today-outline', on: 'today' },
   'founder-agenda': { off: 'calendar-outline', on: 'calendar' },

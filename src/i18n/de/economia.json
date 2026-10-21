@@ -112,5 +112,237 @@
     "aprendido_other": "{{count}} Buchungen zugeordnet. Ab jetzt macht es das selbst.",
     "errorImporte": "Gib den Betrag ein. Negativ bei Ausgaben, positiv bei Einnahmen.",
     "errorConcepto": "In einem Monat weißt du nicht mehr, was es war."
+  },
+  "work": {
+    "cargandoA11y": "Deine Konten werden gelesen",
+    "avisoA11y": "{{texto}} Tippen zum Ausblenden.",
+    "ahorro": "Sparen",
+    "transferencia": "Umbuchung",
+    "sinClasificar": "Nicht zugeordnet",
+    "grupo": {
+      "comida": "Essen",
+      "transporte": "Verkehr",
+      "ocio": "Freizeit",
+      "casa": "Wohnen",
+      "suscripciones": "Abos",
+      "salud": "Gesundheit",
+      "educacion": "Bildung",
+      "otros": "Sonstiges"
+    },
+    "ingreso": {
+      "nomina": "Gehalt",
+      "negocio": "Geschäft",
+      "otro": "Andere Einnahme"
+    },
+    "tipoCuenta": {
+      "efectivo": "Bargeld",
+      "banco": "Bank",
+      "revolut": "Karte",
+      "otro": "Andere"
+    },
+    "preparando": {
+      "titulo": "Deine Finanzen werden vorbereitet",
+      "cuerpo": "Die Kontoübersicht von WORK kommt in wenigen Tagen. Was du schon hast, bleibt sicher."
+    },
+    "primera": {
+      "meta": "Hier starten",
+      "titulo": "Zuerst deine Konten",
+      "cuerpo": "Bargeld, deine Bank, deine Karte. Trag ein, wie viel heute auf jedem ist, und das System rechnet ab da mit.",
+      "crear": "Erstes Konto anlegen"
+    },
+    "general": {
+      "rotulo": "Übersicht",
+      "cuentas_one": "{{count}} Konto",
+      "cuentas_other": "{{count}} Konten",
+      "nuevaCuentaA11y": "Konto hinzufügen",
+      "totalA11y": "Summe auf deinen Konten: {{importe}}",
+      "mes": "Diesen Monat {{entra}} rein und {{sale}} raus",
+      "cuentaA11y": "{{nombre}}: {{importe}}. Tippen zum Bearbeiten.",
+      "gasto": "Ausgabe eintragen",
+      "ingreso": "Einnahme",
+      "transferir": "Umbuchen"
+    },
+    "fijos": {
+      "rotulo": "Fixkosten des Monats",
+      "meta": "{{hechos}} von {{total}}",
+      "vacio": "Dein Gehalt und deine Fixkosten werden jeden Monat am richtigen Tag von selbst eingetragen.",
+      "hechoA11y": "{{nombre}}, {{importe}}, Tag {{dia}}: schon eingetragen. Tippen zum Beenden.",
+      "pendienteA11y": "{{nombre}}, {{importe}}, Tag {{dia}}: offen. Tippen zum Beenden.",
+      "nuevoIngreso": "Monatliche Einnahme",
+      "nuevoGasto": "Fixkosten"
+    },
+    "categorias": {
+      "rotulo": "Wohin es geht",
+      "vacio": "Diesen Monat noch keine Ausgaben.",
+      "a11y": "{{nombre}}: {{importe}}, {{pct}} % der Ausgaben",
+      "gestionar": "Kategorien"
+    },
+    "movimientos": {
+      "rotulo": "Buchungen",
+      "meta": "Neueste",
+      "vacio": "Noch nichts eingetragen. Eine Ausgabe sind zwei Tipps.",
+      "a11y": "{{concepto}}, {{importe}}, {{fecha}}, {{cuenta}}. Tippen zum Löschen."
+    },
+    "brief": {
+      "rotulo": "Bericht {{mes}}",
+      "metaIa": "System",
+      "sinDatos": "Wenn {{mes}} mit Buchungen endet, siehst du hier, wohin das Geld ging und was du ändern kannst.",
+      "entraSale": "{{entra}} kamen rein und {{sale}} gingen raus.",
+      "top": "Am meisten: {{lista}}.",
+      "sube": "Du hast {{pct}} % mehr ausgegeben als im {{mes}}.",
+      "baja": "Du hast {{pct}} % weniger ausgegeben als im {{mes}}.",
+      "alertaGastaMas": "Es ging {{importe}} mehr raus als rein.",
+      "alertaSube": "{{nombre}} steigt um {{pct}} %.",
+      "alertaFijos": "Die Fixkosten nehmen {{pct}} % der Einnahmen.",
+      "alertaNegativo": "{{cuenta}} ist im Minus.",
+      "alertaSinClasificar_one": "{{count}} Ausgabe ist nicht zugeordnet.",
+      "alertaSinClasificar_other": "{{count}} Ausgaben sind nicht zugeordnet.",
+      "aviso": "Das ist keine Finanzberatung.",
+      "escribir": "Vom System schreiben lassen",
+      "sinPro": "Der geschriebene Bericht und die Tipps gehören zu NIVL Pro. Die Zahlen hast du trotzdem."
+    },
+    "importar": {
+      "rotulo": "Kontoauszug importieren",
+      "meta": "CSV oder PDF",
+      "cuerpo": "Lade den Auszug in deiner Bank-App herunter und hier hoch. Du prüfst ihn vor dem Speichern, nichts wird doppelt.",
+      "nunca": "Wir fragen nie nach deinem Bank-Login oder Passwort.",
+      "elegir": "Datei wählen"
+    },
+    "coach": {
+      "rotulo": "Coach WORK",
+      "enLinea": "Online",
+      "cuerpo": "Frag mich, wohin dein Geld geht oder wie du den Monat ordnest.",
+      "pregunta": "Frag den Coach WORK",
+      "preguntaA11y": "Coach von WORK öffnen"
+    },
+    "avisos": {
+      "fijos_one": "{{count}} Fixposten bis heute eingetragen.",
+      "fijos_other": "{{count}} Fixposten bis heute eingetragen.",
+      "gasto": "Ausgabe von {{importe}} eingetragen.",
+      "ingreso": "Einnahme von {{importe}} eingetragen.",
+      "transferencia": "{{importe}} zwischen deinen Konten verschoben.",
+      "importados_one": "{{count}} Buchung importiert.",
+      "importados_other": "{{count}} Buchungen importiert."
+    },
+    "errores": {
+      "importe": "Gib einen Betrag über null ein.",
+      "saldo": "Gib den heutigen Stand ein, auch wenn er null ist.",
+      "nombre": "Gib ihm einen Namen.",
+      "dia": "Ein Tag von 1 bis 31.",
+      "mismaCuenta": "Wähle zwei verschiedene Konten.",
+      "sinColumnas": "Ich erkenne die Spalten dieser Datei nicht. Es braucht Datum, Text und Betrag.",
+      "vacio": "In der Datei habe ich keine Buchungen gefunden.",
+      "pdfPro": "PDFs lesen gehört zu NIVL Pro. Die CSV deiner Bank wird kostenlos gelesen."
+    },
+    "confirmar": {
+      "archivarTitulo": "{{nombre}} archivieren?",
+      "archivarMensaje": "Es wird nicht mehr angezeigt und nicht mehr mitgezählt. Die Buchungen bleiben.",
+      "bajaTitulo": "{{nombre}} beenden?",
+      "bajaMensaje": "Es wird nicht mehr jeden Monat eingetragen. Was schon da ist, bleibt.",
+      "baja": "Beenden",
+      "borrarTitulo": "Diese Buchung löschen?",
+      "borrarMensaje": "{{concepto}}, {{importe}}. Der Stand wird neu berechnet.",
+      "borrarTransferencia": "Es ist eine Umbuchung über {{importe}}: beide Seiten werden gelöscht.",
+      "borrar": "Löschen"
+    },
+    "hojas": {
+      "cuenta": "Konto",
+      "categoria": "Kategorie",
+      "cuentaA11y": "{{nombre}}, {{importe}}",
+      "mov": {
+        "eyebrow": "Zwei Tipps",
+        "tituloGasto": "Neue Ausgabe",
+        "tituloIngreso": "Neue Einnahme",
+        "gasto": "Ausgabe",
+        "ingreso": "Einnahme",
+        "importe": "Betrag",
+        "importeA11y": "Betrag in Euro",
+        "toca": "Tippe auf die Kategorie zum Speichern",
+        "guardarComoA11y": "Als {{categoria}} speichern",
+        "concepto": "Text",
+        "conceptoPlaceholder": "Optional",
+        "conceptoAyuda": "Leer gelassen, wird es mit dem Namen der Kategorie gespeichert."
+      },
+      "trf": {
+        "eyebrow": "Zwischen deinen Konten",
+        "titulo": "Umbuchen",
+        "sub": "Zählt weder als Ausgabe noch als Einnahme: das Geld wechselt nur den Ort.",
+        "desde": "Von",
+        "a": "Nach",
+        "conceptoPlaceholder": "Aufs Sparkonto",
+        "guardar": "Umbuchen"
+      },
+      "cuentaHoja": {
+        "eyebrow": "Konto",
+        "titulo": "Neues Konto",
+        "tituloEditar": "Konto bearbeiten",
+        "nombre": "Name",
+        "nombrePlaceholder": "Ibercaja, Revolut, Geldbeutel",
+        "tipo": "Art",
+        "saldo": "Stand heute",
+        "saldoAyuda": "Was jetzt da ist. Ab hier rechnet das System von selbst.",
+        "crear": "Konto anlegen",
+        "archivar": "Konto archivieren"
+      },
+      "fijo": {
+        "eyebrow": "Jeden Monat",
+        "tituloIngreso": "Monatliche Einnahme",
+        "tituloGasto": "Fixkosten",
+        "subIngreso": "Dein Gehalt oder was du jeden Monat bekommst. Es wird am gewählten Tag von selbst addiert.",
+        "subGasto": "Miete, Abos, Beiträge. Wird am Abbuchungstag von selbst abgezogen.",
+        "nombre": "Name",
+        "nombreIngreso": "Gehalt",
+        "nombreGasto": "Miete",
+        "dia": "Tag",
+        "esteMes": "Schon diesen Monat zählen"
+      },
+      "cat": {
+        "eyebrow": "Kategorien",
+        "titulo": "Deine Kategorien",
+        "deSerie": "Vorgegeben",
+        "tuyas": "Deine",
+        "nueva": "Neue Kategorie",
+        "nuevaPlaceholder": "Haustier, Geschenke, Reisen",
+        "cuentaComo": "In Berichten zählt sie zu {{grupo}}. Tippe oben eine andere, um das zu ändern.",
+        "crear": "Kategorie anlegen"
+      },
+      "imp": {
+        "eyebrow": "Import",
+        "titulo": "Kontoauszug",
+        "deQue": "Von welchem Konto ist er?",
+        "paso1": "Such in deiner Bank-App nach Auszügen oder Umsätzen und lade die gewünschten Monate als CSV oder PDF herunter.",
+        "paso2": "Wähle die Datei hier. Die CSV wird auf deinem Handy gelesen; das PDF liest die KI von NIVL und löscht es sofort.",
+        "paso3": "Prüf die Liste, entferne, was du nicht willst, und speichere. Doppeltes kommt nicht rein.",
+        "privacidad": "NIVL verbindet sich nicht mit deiner Bank und fragt nie nach Login oder Passwort.",
+        "sinSelector": "Diese App-Version kann noch keine Dateien öffnen. Das kommt mit dem nächsten Update.",
+        "elegir": "Datei wählen"
+      },
+      "elegir": {
+        "eyebrow": "Kategorie ändern"
+      }
+    },
+    "revision": {
+      "eyebrow": "Vor dem Speichern",
+      "titulo": "Prüfen",
+      "sub": "{{archivo}} · {{cuenta}}",
+      "resumen": "Was ich gelesen habe",
+      "marcadas_one": "{{count}} markiert",
+      "marcadas_other": "{{count}} markiert",
+      "nuevos": "Neu",
+      "repetidos": "Schon da",
+      "parecidos": "Ähnlich",
+      "neto": "Die Auswahl ergibt {{importe}}.",
+      "descartadas_one": "{{count}} Zeile war nicht lesbar.",
+      "descartadas_other": "{{count}} Zeilen waren nicht lesbar.",
+      "movimientos": "Buchungen",
+      "todos": "Alle markieren",
+      "ninguno": "Keine",
+      "yaEsta": "Schon da",
+      "parecido": "Schon eingetragen?",
+      "filaA11y": "{{concepto}}, {{importe}}, {{fecha}}",
+      "cambiarA11y": "Kategorie {{categoria}}. Tippen zum Ändern.",
+      "guardar_one": "{{count}} speichern",
+      "guardar_other": "{{count}} speichern"
+    }
   }
 }

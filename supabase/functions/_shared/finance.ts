@@ -393,3 +393,164 @@ export async function construirEstudioEconomico(
 
   return L.join('\n');
 }
+
+// ── WORK: el brief de fin de mes (0075) ─────────────────────────────
+//
+// ESPEJO de `briefDelMes` en src/lib/moneywork.ts (allí los tests). Las cifras
+// son deterministas; la IA de la función `economia` solo las redacta. Si tocas
+// una fórmula o un umbral aquí, tócalo allí.
+
+const GRUPO_DE_BASE: Record<string, string> = {
+  super: 'comida', restaurante: 'comida', transporte: 'transporte', ocio: 'ocio', ropa: 'ocio',
+  vivienda: 'casa', suministros: 'casa', suscripciones: 'suscripciones', salud: 'salud',
+  gimnasio: 'salud', formacion: 'educacion',
+};
+const UMBRAL_SUBIDA_PCT = 30;
+const UMBRAL_SUBIDA_MIN = 50;
+const UMBRAL_FIJOS_PCT = 50;
+
+export interface MovBrief {
+  date: string;
+  amount: number;
+  category: string;
+  is_internal: boolean;
+  user_category_id: string | null;
+}
+
+interface TotalesMes {
+  ingresos: number;
+  gastos: number;
+  neto: number;
+}
+
+export type AlertaBrief =
+  | { tipo: 'gasta_mas_de_lo_que_entra'; diferencia: number }
+  | { tipo: 'categoria_sube'; clave: string; pct: number; total: number }
+  | { tipo: 'fijos_pesan'; pct: number }
+  | { tipo: 'cuenta_en_negativo'; cuenta: string; saldo: number }
+  | { tipo: 'sin_clasificar'; movimientos: number; total: number };
+
+export interface BriefNumeros {
+  mes: string;
+  anterior: string;
+  este: TotalesMes;
+  previo: TotalesMes;
+  gastoDeltaPct: number | null;
+  categorias: { clave: string; total: number; cuota: number; anterior: number; deltaPct: number | null }[];
+  fijosGasto: number;
+  alertas: AlertaBrief[];
+}
+
+function claveCategoria(m: MovBrief): string {
+  return m.user_category_id ? `u:${m.user_category_id}` : GRUPO_DE_BASE[m.category] ?? 'otros';
+}
+
+function totalesDelMes(movs: MovBrief[], mes: string): TotalesMes {
+  let ingresos = 0;
+  let gastos = 0;
+  for (const m of movs) {
+    if (m.is_internal || mesDe(m.date) !== mes) continue;
+    const c = Math.round(Number(m.amount) * 100);
+    if (c >= 0) ingresos += c;
+    else if (!NO_GASTO.includes(m.category)) gastos += -c;
+  }
+  return { ingresos: ingresos / 100, gastos: gastos / 100, neto: (ingresos - gastos) / 100 };
+}
+
+function gastoPorClave(movs: MovBrief[], mes: string): { clave: string; total: number; cuota: number }[] {
+  const acc = new Map<string, number>();
+  for (const m of movs) {
+    if (m.is_internal || m.amount >= 0 || mesDe(m.date) !== mes || NO_GASTO.includes(m.category)) continue;
+    const k = claveCategoria(m);
+    acc.set(k, (acc.get(k) ?? 0) + Math.round(-m.amount * 100));
+  }
+  const total = [...acc.values()].reduce((a, v) => a + v, 0);
+  return [...acc.entries()]
+    .map(([clave, c]) => ({ clave, total: c / 100, cuota: total > 0 ? c / total : 0 }))
+    .sort((a, b) => b.total - a.total || a.clave.localeCompare(b.clave));
+}
+
+function deltaPct(actual: number, anterior: number): number | null {
+  if (!(anterior > 0)) return null;
+  return Math.round(((actual - anterior) / anterior) * 100);
+}
+
+/** Las cifras del brief (pura). Mismo resultado que `briefDelMes` del cliente. */
+export function briefEconomicoMes(
+  movs: MovBrief[],
+  mes: string,
+  saldos: { nombre: string; saldo: number }[],
+  fijosGasto: number,
+): BriefNumeros {
+  const anterior = mesesAtras(`${mes}-01`, 1);
+  const este = totalesDelMes(movs, mes);
+  const previo = totalesDelMes(movs, anterior);
+  const prev = new Map(gastoPorClave(movs, anterior).map((l) => [l.clave, l.total]));
+  const categorias = gastoPorClave(movs, mes).map((l) => {
+    const a = prev.get(l.clave) ?? 0;
+    return { ...l, anterior: a, deltaPct: deltaPct(l.total, a) };
+  });
+  const alertas: AlertaBrief[] = [];
+  if (este.gastos > este.ingresos && este.ingresos + este.gastos > 0) {
+    alertas.push({ tipo: 'gasta_mas_de_lo_que_entra', diferencia: Math.round((este.gastos - este.ingresos) * 100) / 100 });
+  }
+  for (const c of categorias) {
+    if (c.deltaPct !== null && c.deltaPct >= UMBRAL_SUBIDA_PCT && c.total - c.anterior >= UMBRAL_SUBIDA_MIN) {
+      alertas.push({ tipo: 'categoria_sube', clave: c.clave, pct: c.deltaPct, total: c.total });
+    }
+  }
+  if (este.ingresos > 0 && fijosGasto > 0) {
+    const pct = Math.round((fijosGasto / este.ingresos) * 100);
+    if (pct >= UMBRAL_FIJOS_PCT) alertas.push({ tipo: 'fijos_pesan', pct });
+  }
+  for (const s of saldos) if (s.saldo < 0) alertas.push({ tipo: 'cuenta_en_negativo', cuenta: s.nombre, saldo: s.saldo });
+  const sin = movs.filter((m) => mesDe(m.date) === mes && m.category === 'sin_clasificar' && m.amount < 0 && !m.is_internal);
+  if (sin.length) {
+    alertas.push({ tipo: 'sin_clasificar', movimientos: sin.length, total: Math.round(sin.reduce((a, m) => a + -m.amount * 100, 0)) / 100 });
+  }
+  return { mes, anterior, este, previo, gastoDeltaPct: deltaPct(este.gastos, previo.gastos), categorias, fijosGasto, alertas };
+}
+
+/**
+ * Lee lo justo para el brief de un mes (ese mes y el anterior, cuentas con su
+ * saldo inicial, fijos de gasto y los nombres de las categorías propias) con
+ * el cliente del usuario: RLS manda. Nada de esto se escribe en los logs.
+ */
+export async function cargarBriefEconomico(
+  sb: Db,
+  userId: string,
+  mes: string,
+): Promise<{ numeros: BriefNumeros; nombres: Record<string, string> }> {
+  const desde = `${mesesAtras(`${mes}-01`, 1)}-01`;
+  const hasta = `${mes}-${String(diasDelMes(mes)).padStart(2, '0')}`;
+  const [movRes, cuentasRes, fijosRes, catsRes] = await Promise.all([
+    sb.from('transactions').select('date, amount, category, is_internal, user_category_id')
+      .eq('user_id', userId).gte('date', desde).lte('date', hasta),
+    sb.from('money_accounts').select('id, name, opening_balance, opening_date').eq('user_id', userId).eq('active', true),
+    sb.from('money_recurring').select('kind, amount').eq('user_id', userId).eq('active', true),
+    sb.from('money_categories').select('id, name').eq('user_id', userId),
+  ]);
+  if (movRes.error) throw movRes.error;
+  const filas = (movRes.data ?? []) as Record<string, unknown>[];
+  const movs: MovBrief[] = filas.map((r) => ({
+    date: String(r.date),
+    amount: Number(r.amount),
+    category: String(r.category),
+    is_internal: Boolean(r.is_internal),
+    user_category_id: r.user_category_id ? String(r.user_category_id) : null,
+  }));
+  // Saldo a fin de mes de cada cuenta: inicial + lo movido desde el alta.
+  const cuentas = cuentasRes.error ? [] : ((cuentasRes.data ?? []) as Record<string, unknown>[]);
+  const saldos: { nombre: string; saldo: number }[] = [];
+  for (const c of cuentas) {
+    const { data } = await sb.from('transactions').select('amount').eq('user_id', userId)
+      .eq('account_id', String(c.id)).gte('date', String(c.opening_date)).lte('date', hasta);
+    const centimos = ((data ?? []) as { amount: number }[]).reduce((a, m) => a + Math.round(Number(m.amount) * 100), 0);
+    saldos.push({ nombre: String(c.name), saldo: (Math.round(Number(c.opening_balance ?? 0) * 100) + centimos) / 100 });
+  }
+  const fijos = fijosRes.error ? [] : ((fijosRes.data ?? []) as { kind: string; amount: number }[]);
+  const fijosGasto = Math.round(fijos.filter((f) => f.kind === 'gasto').reduce((a, f) => a + Number(f.amount) * 100, 0)) / 100;
+  const nombres: Record<string, string> = {};
+  if (!catsRes.error) for (const c of (catsRes.data ?? []) as { id: string; name: string }[]) nombres[`u:${c.id}`] = c.name;
+  return { numeros: briefEconomicoMes(movs, mes, saldos, fijosGasto), nombres };
+}
