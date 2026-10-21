@@ -4,7 +4,7 @@
 //
 //   (tabs)     NIVL     Hoy · Agenda · Coach · Hábitos · Campañas · Perfil
 //   (iron)     IRON     Hoy · Rutinas · Pesos · Coach
-//   (focus)    FOCUS    Hoy · Agenda · Diario · Coach
+//   (focus)    FOCUS    Hoy · Temario · Exámenes · Coach (lámina 3 de la P01)
 //   (work)     WORK     Hoy · Agenda · Diario · Coach
 //   (founder)  FOUNDER  Hoy · Agenda · Economía · Coach
 //
@@ -23,7 +23,7 @@ import type { ModoId } from './tipos';
 import { esModo } from './tipos';
 
 /** El nombre de cada destino de la barra de un mundo (clave `mundos:pestana.*`). */
-export type PestanaMundo = 'hoy' | 'rutinas' | 'pesos' | 'agenda' | 'diario' | 'economia' | 'coach';
+export type PestanaMundo = 'hoy' | 'rutinas' | 'pesos' | 'agenda' | 'diario' | 'economia' | 'temario' | 'examenes' | 'coach';
 
 export interface Mundo {
   modo: ModoId;
@@ -51,8 +51,8 @@ export const MUNDOS: Readonly<Record<ModoId, Mundo>> = {
     grupo: '(focus)',
     pestanas: [
       { ruta: 'focus-hoy', pestana: 'hoy' },
-      { ruta: 'focus-agenda', pestana: 'agenda' },
-      { ruta: 'focus-diario', pestana: 'diario' },
+      { ruta: 'focus-temario', pestana: 'temario' },
+      { ruta: 'focus-examenes', pestana: 'examenes' },
       { ruta: 'focus-coach', pestana: 'coach' },
     ],
   },
