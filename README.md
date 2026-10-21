@@ -1,6 +1,6 @@
 # NIVL — Un 1 % mejor cada día
 
-App de hábitos de la gente de **Franky**. Gamifica la vida real como una arena (misiones con XP, niveles y rangos, racha, campañas con jefe final) **y lleva dentro un coach con IA que manda en tu día**: dicta el plan hora a hora, decide qué puntúa cada tarea, te avisa, te juzga por la noche y recuerda todo lo que aprende de ti.
+App de hábitos de la gente de **Franky**. Gamifica la vida real como una arena (misiones con XP, niveles y rangos, racha, campañas con jefe final) **y lleva dentro un coach con IA que manda en tu día**: dicta el plan hora a hora, decide qué puntúa cada tarea, te avisa, por la noche te recuerda lo que te juegas y recuerda todo lo que aprende de ti.
 
 Sirve igual a un emprendedor, a un deportista, a un estudiante o a cualquiera que quiera mejorar en general: en el alta eliges **para qué la usas** y eso ordena lo que ves primero, los hábitos que te propone y el énfasis del coach (ver "Perfiles de uso"). Estética: monocromo de gladiador (negro, hueso, hierro; el rojo avisa y el oro corona), tipografía Cinzel + Outfit (la de Franky).
 

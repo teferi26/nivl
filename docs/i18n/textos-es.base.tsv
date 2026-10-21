@@ -748,7 +748,7 @@ coach	src/components/coach/CoachVista.tsx:188	lit	Ver NIVL Pro
 coach	src/components/coach/CoachVista.tsx:188	lit	Ver tu plan y la energía del coach
 coach	src/components/coach/CoachVista.tsx:193	prop:etiqueta	Ver la memoria del sistema
 coach	src/components/coach/CoachVista.tsx:223	jsx	EL SISTEMA TE ESCUCHA.
-coach	src/components/coach/CoachVista.tsx:226	jsx	Manda en tu día, decide qué puntúa cada cosa, te juzga por la noche y recuerda todo lo que aprende de ti. Habla con él como hablarías con quien lleva tu vida.
+coach	src/components/coach/CoachVista.tsx:226	jsx	Manda en tu día, decide qué puntúa cada cosa, por la noche te recuerda lo que te juegas y recuerda todo lo que aprende de ti. Habla con él como hablarías con quien lleva tu vida.
 coach	src/components/coach/CoachVista.tsx:234	prop:accessibilityLabel	Atajos
 coach	src/components/coach/CoachVista.tsx:243	prop:accessibilityHint	Se lo envía al coach
 coach	src/components/coach/CoachVista.tsx:278	prop:accessibilityLabel	Acciones rápidas
@@ -1932,7 +1932,7 @@ onboarding	src/app/onboarding.tsx:790	prop:accessibilityLabel	Sellado. Vence el 
 onboarding	src/app/onboarding.tsx:794	jsx	SELLADO
 onboarding	src/app/onboarding.tsx:798	jsx	Vence el
 onboarding	src/components/onboarding/PortadaArena.tsx:40	lit	Esto no es una lista de tareas. Es una arena.
-onboarding	src/components/onboarding/PortadaArena.tsx:41	lit	Cada día tienes misiones. Cumplirlas da XP y sube tu nivel; fallarlas lo resta. La racha multiplica. Los proyectos grandes son campañas con un jefe final. Y hay un coach que dicta tu día, te juzga por la noche y recuerda todo lo que aprende de ti.
+onboarding	src/components/onboarding/PortadaArena.tsx:41	lit	Cada día tienes misiones. Cumplirlas da XP y sube tu nivel; fallarlas lo resta. La racha multiplica. Los proyectos grandes son campañas con un jefe final. Y hay un coach que dicta tu día, por la noche te recuerda lo que te juegas y recuerda todo lo que aprende de ti.
 onboarding	src/components/onboarding/PortadaArena.tsx:42	lit	Nada de trampas: las evidencias se hacen con la cámara, en el momento. El sistema no opina. Registra.
 onboarding	src/components/onboarding/PortadaArena.tsx:77	prop:accessibilityLabel	NIVL
 onboarding	src/components/onboarding/PortadaArena.tsx:80	jsx	NIVL
