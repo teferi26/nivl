@@ -150,6 +150,40 @@ export const DEMO: DemoPantalla | null = {
       ),
     },
     {
+      // Desde IRON, el coach deja misiones de FOCUS y WORK: un aviso por modo.
+      id: 'otro-modo',
+      titulo: 'Misión de otro modo',
+      render: () => (
+        <CoachVista
+          {...base({
+            burbujas: [
+              ...HILO,
+              { id: 'u3', role: 'user', text: 'El jueves tengo examen. Apúntame repasar.', acciones: [], cita: null, fecha: hoy },
+              {
+                id: 'c3',
+                role: 'assistant',
+                text: 'Hecho. Hoy repasas el tema 4 y mañana haces un simulacro. El entreno no se mueve.',
+                acciones: [
+                  { texto: 'El sistema ha creado una misión', ok: true },
+                  { texto: 'El sistema ha creado una misión', ok: true },
+                  { texto: 'El sistema ha creado una misión', ok: true },
+                ],
+                cita: null,
+                fecha: hoy,
+                voz,
+                onDenunciar: nada,
+                avisosModo: [
+                  { modo: 'focus', titulos: ['Repasa el tema 4', 'Simulacro del examen'] },
+                  { modo: 'work', titulos: ['Enviar el informe'] },
+                ],
+              },
+            ],
+            onIrAModo: nada,
+          })}
+        />
+      ),
+    },
+    {
       id: 'cargando',
       titulo: 'Cargando',
       render: () => <CoachVista {...base({ cargando: true })} />,

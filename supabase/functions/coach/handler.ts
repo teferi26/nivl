@@ -37,7 +37,7 @@ import { healthConsent, healthGuardedResult, healthRevision, healthScopedClient,
 import { adminClient, userClient, type Db } from '../_shared/db.ts';
 import { buildSystem, buildSystemRegistro, DATOS_ABRE, DATOS_CIERRA, neutralizarDatos } from '../_shared/prompt.ts';
 import { elegirModelo, modoDeCabecera, proveedorDe, type Modo, type Routes } from '../_shared/routing.ts';
-import { idiomaDeCabecera, modoDeCabeceraNivl, type ModoCoach } from '../_shared/modos.ts';
+import { idiomaDeCabecera, misionConModos, modoDeCabeceraNivl, type ModoCoach } from '../_shared/modos.ts';
 import { executeTool, TOOL_DEFS } from '../_shared/tools.ts';
 import { controlHerramientas, fechaAceptable, fechaDelTurno, fotosSinVision, Gasto, mensajeDeFallo, reloj, validarImagenes } from './guard.ts';
 import { pareceAfirmacion, rutaDelTurno, type Ruta } from '../_shared/intencion.ts';
@@ -744,7 +744,10 @@ ${userText}` : userText,
           userId,
           today,
         });
-        emit('tool', { name: call.name, ok: true, detail: text.slice(0, 200) });
+        // Una misión con modos viaja entera (título y modos): la app avisa en el
+        // chat si es de otro modo y ofrece ir allí («Ir a FOCUS»).
+        const mision = misionConModos(call.name!, input);
+        emit('tool', { name: call.name, ok: true, detail: text.slice(0, 200), ...(mision ? { mision } : {}) });
       } catch (e) {
         text = `Error: ${describirFallo(e)}`;
         isError = true;

@@ -38,6 +38,9 @@ import type { CoachMode } from '@/lib/coach';
 import { DESCARGO_SALUD, LINEA_CRISIS } from '@/lib/consentmath';
 import { dateKey, relativoDe } from '@/lib/dates';
 import type { DecisionOferta } from '@/lib/paywallmoment';
+import type { AvisoModo } from '@/modos/avisosCoach';
+import type { ModoEtiqueta } from '@/modos/tipos';
+import { AvisosModo } from './AvisoModo';
 import { CoachBloqueado } from './CoachBloqueado';
 import { CoachMark } from './CoachMark';
 import { BotonDictar, FranjaGrabacion, type Dictado } from './Dictado';
@@ -56,6 +59,8 @@ export interface BurbujaVista {
   fecha?: string;
   voz?: VozMensaje;
   onDenunciar?: () => void;
+  /** Misiones que el coach dejó en otros modos: «Ir a FOCUS» bajo la losa. */
+  avisosModo?: AvisoModo[];
 }
 
 export interface CoachVistaProps {
@@ -110,6 +115,8 @@ export interface CoachVistaProps {
      */
     conFotos: boolean | null;
   };
+  /** «Ir a {modo}» de un aviso: la recarga de la rueda y el cambio de mundo. */
+  onIrAModo?: (modo: ModoEtiqueta) => void;
   onPro: () => void;
   onMemoria: () => void;
 }
@@ -421,6 +428,9 @@ export function CoachVista(p: CoachVistaProps) {
                     voz={b.voz}
                     onDenunciar={b.onDenunciar}
                     firma={firma}
+                    avisos={
+                      b.avisosModo?.length && p.onIrAModo ? <AvisosModo avisos={b.avisosModo} onIr={p.onIrAModo} /> : null
+                    }
                   />
                 )}
               </View>
