@@ -20,6 +20,7 @@ import { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ArranqueCargando } from '@/components/acceso/Arranque';
+import { EmblemaBarra } from '@/components/modos/EmblemaMundo';
 import { SubidaMarca } from '@/components/modos/maestria/SubidaMarca';
 import { useMaestria } from '@/components/modos/maestria/useMaestria';
 import { GlifoModo } from '@/components/modos/rueda/GlifoModo';
@@ -70,7 +71,7 @@ export function LayoutMundo({ modo }: { modo: ModoEtiqueta }) {
         <Tabs
           tabBar={(props) =>
             sizeClass === 'compact' ? (
-              <TabBar {...props} acento={acento} />
+              <TabBar {...props} acento={acento} centro={modos.activo ? <EmblemaBarra /> : undefined} />
             ) : sizeClass === 'medium' ? (
               <NavRail {...props} acento={acento} />
             ) : (

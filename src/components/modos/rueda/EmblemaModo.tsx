@@ -20,30 +20,25 @@
 // La rueda lleva además el suyo porque va en un Modal (en Android, otra raíz).
 
 import { useCallback, useMemo, useRef, useState } from 'react';
-import { StyleSheet, useWindowDimensions, View, type AccessibilityActionEvent } from 'react-native';
+import { useWindowDimensions, View, type AccessibilityActionEvent } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
-import Animated, { useAnimatedProps, useSharedValue, withTiming } from 'react-native-reanimated';
-import Svg, { Circle } from 'react-native-svg';
+import { useSharedValue, withTiming } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
 import { anunciar } from '@/components/ui/useAnunciar';
 import { useMovimientoReducido } from '@/components/ui/motion';
 import { vibrar } from '@/design/haptics';
-import { acentoRueda, ink } from '@/design/tokens';
 import { t } from '@/i18n';
 import { useModo } from '@/modos/ModoProvider';
-import { ANGULO_MODO, mascaraDisponibles, puntoEn, resultadoEleccion, sectorEn, seMovio } from '@/modos/rueda';
-import { MODOS_ETIQUETA, NOMBRE_MODO, type ModoId } from '@/modos/tipos';
-import { conAlfa, halo, mezcla } from './color';
-import { GlifoModo } from './GlifoModo';
-import { EVENTO_MODO, geometriaRueda, RuedaModos, type OrigenRueda } from './RuedaModos';
+import { mascaraDisponibles, resultadoEleccion, sectorEn, seMovio } from '@/modos/rueda';
+import { NOMBRE_MODO, type ModoId } from '@/modos/tipos';
+import { DibujoEmblema, type FormaEmblema } from './DibujoEmblema';
+import { EVENTO_MODO, geometriaRueda, RuedaModos, type OrigenEmblema, type OrigenRueda } from './RuedaModos';
 import { precargarSonidos, sonarModo } from './sonido';
-
-const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 
 /** Pulsación que abre la rueda con el atajo (P01). */
 export const MS_MANTENER = 300;
 
-export type FormaEmblema = 'disco' | 'placa';
+export type { FormaEmblema } from './DibujoEmblema';
 
 export interface EmblemaModoProps {
   /** Lado del emblema en pt (mínimo 44). Por defecto 56. */
@@ -89,6 +84,8 @@ export function EmblemaModoVista({ tamano: pedido = 56, forma = 'disco', modo, a
   const [origen, setOrigen] = useState<OrigenRueda>('toque');
   const [elegido, setElegido] = useState<ModoId | null>(null);
   const [cerrando, setCerrando] = useState(false);
+  const [origenEmblema, setOrigenEmblema] = useState<OrigenEmblema | null>(null);
+  const vista = useRef<View>(null);
 
   // Dónde está la rueda (la mide RuedaModos; hasta entonces, la ventana).
   const geo = geometriaRueda(ventana.width, ventana.height);
@@ -116,6 +113,11 @@ export function EmblemaModoVista({ tamano: pedido = 56, forma = 'disco', modo, a
       setOrigen(o);
       setElegido(null);
       setCerrando(false);
+      // Dónde está el emblema en la ventana: la rueda lo repinta nítido encima
+      // del desenfoque y tira de él la estela hasta el dedo.
+      vista.current?.measureInWindow((x, y, ancho) => {
+        if (ancho > 0) setOrigenEmblema({ x: x + ancho / 2, y: y + ancho / 2 });
+      });
       setAbierta(true);
       vibrar('ruedaAbre');
     },
@@ -208,6 +210,8 @@ export function EmblemaModoVista({ tamano: pedido = 56, forma = 'disco', modo, a
     <>
       <GestureDetector gesture={gesto}>
         <View
+          ref={vista}
+          collapsable={false}
           style={{ width: tamano, height: tamano }}
           accessible
           accessibilityRole="button"
@@ -225,6 +229,7 @@ export function EmblemaModoVista({ tamano: pedido = 56, forma = 'disco', modo, a
           modo={modo}
           anterior={anterior}
           disponibles={disponibles}
+          emblema={origenEmblema ? { ...origenEmblema, forma, tamano } : null}
           dedoX={dedoX}
           dedoY={dedoY}
           resaltado={resaltado}
@@ -243,106 +248,3 @@ export function EmblemaModoVista({ tamano: pedido = 56, forma = 'disco', modo, a
     </>
   );
 }
-
-/** El dibujo del emblema (sin gesto): lo usa la galería. */
-export function DibujoEmblema({
-  forma,
-  tamano,
-  modo,
-  disponibles,
-  carga,
-}: {
-  forma: FormaEmblema;
-  tamano: number;
-  modo: ModoId;
-  disponibles: readonly ModoId[];
-  carga?: { value: number };
-}) {
-  const acento = acentoRueda[modo];
-  // El anillo que se carga al mantener (lámina 1, cuadro 01): por fuera del emblema.
-  const lienzo = Math.round(tamano * 1.64);
-  const c = lienzo / 2;
-  const rCarga = tamano * 0.71;
-  const circunferencia = 2 * Math.PI * rCarga;
-  const propsCarga = useAnimatedProps(() => {
-    const v = carga ? carga.value : 0;
-    return { strokeDashoffset: circunferencia * (1 - v), strokeOpacity: v > 0.01 ? 1 : 0 };
-  });
-  const fuera = (lienzo - tamano) / 2;
-
-  return (
-    <>
-      {forma === 'disco' ? (
-        <>
-          <View
-            style={[
-              styles.disco,
-              { width: tamano, height: tamano, borderRadius: tamano / 2, borderColor: acento, boxShadow: halo(acento, 22, 0.6, { ancho: 4, color: ink.ink0 }) },
-            ]}
-          >
-            <GlifoModo modo={modo} tamano={Math.round(tamano * 0.43)} color={acento} trazo={1.9} />
-          </View>
-          <PuntosModos tamano={tamano} modo={modo} disponibles={disponibles} />
-        </>
-      ) : (
-        <View
-          style={[
-            styles.placa,
-            {
-              width: tamano,
-              height: tamano,
-              borderRadius: Math.round(tamano * 0.29),
-              borderColor: acento,
-              backgroundColor: mezcla(acento, 0.14),
-              boxShadow: halo(acento, 16, 0.45),
-            },
-          ]}
-        >
-          <GlifoModo modo={modo} tamano={Math.round(tamano * 0.56)} color={acento} />
-        </View>
-      )}
-      <View style={[styles.carga, { left: -fuera, top: -fuera, width: lienzo, height: lienzo }]} pointerEvents="none">
-        <Svg width={lienzo} height={lienzo}>
-          <AnimatedCircle
-            cx={c}
-            cy={c}
-            r={rCarga}
-            fill="none"
-            stroke={acento}
-            strokeWidth={4}
-            strokeLinecap="round"
-            strokeDasharray={`${circunferencia} ${circunferencia}`}
-            transform={`rotate(-90 ${c} ${c})`}
-            animatedProps={propsCarga}
-          />
-        </Svg>
-      </View>
-    </>
-  );
-}
-
-/** Los cuatro puntos alrededor del disco: cada modo donde vive en la rueda (lámina 1). */
-function PuntosModos({ tamano, modo, disponibles }: { tamano: number; modo: ModoId; disponibles: readonly ModoId[] }) {
-  const lienzo = Math.round(tamano * (74 / 56));
-  const k = lienzo / 74;
-  const c = lienzo / 2;
-  const fuera = (lienzo - tamano) / 2;
-  return (
-    <View style={[styles.carga, { left: -fuera, top: -fuera, width: lienzo, height: lienzo }]} pointerEvents="none">
-      <Svg width={lienzo} height={lienzo}>
-        {MODOS_ETIQUETA.map((m) => {
-          const p = puntoEn(c, c, 34 * k, ANGULO_MODO[m]);
-          const es = m === modo;
-          const color = disponibles.includes(m) ? acentoRueda[m] : ink.ink4;
-          return <Circle key={m} cx={p.x} cy={p.y} r={(es ? 3 : 2) * k} fill={es ? color : conAlfa(color, 0.55)} />;
-        })}
-      </Svg>
-    </View>
-  );
-}
-
-const styles = StyleSheet.create({
-  disco: { backgroundColor: ink.ink0, borderWidth: 2, alignItems: 'center', justifyContent: 'center' },
-  placa: { borderWidth: 1.5, alignItems: 'center', justifyContent: 'center' },
-  carga: { position: 'absolute' },
-});

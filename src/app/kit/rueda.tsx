@@ -1,96 +1,82 @@
-// NIVL · Galería: la rueda de modos quieta, para comparar con las láminas de la
-// P01 (propuestas_modos/p01). SOLO DESARROLLO, sin sesión ni Supabase.
+// NIVL · Galería: la rueda de modos quieta SOBRE LAS PANTALLAS DE VERDAD (el Hoy
+// de NIVL y el inicio de IRON con datos de demo y su barra de pestañas), para
+// compararla con las láminas de la P01 (propuestas_modos/p01). SOLO
+// DESARROLLO, sin sesión ni Supabase.
 //
 // /kit/rueda?estado=<e>&modo=<m>&actual=<m>&anterior=<m>&t=<0..1>
-//   estado: abierta (cuadro 02) · apuntando (03) · recarga (04 y «recarga
-//           dorada» con modo=general) · cabecera (el HUD del mundo) · emblema
-//           (el disco del Hoy de NIVL, quieto y cargando)
-//   modo: el apuntado o el que recarga · actual: el modo a la vista ·
-//   anterior: el que se marca · t: instante de la recarga (0,7 por defecto)
-// Las piezas son las de la app (RuedaModos, EmblemaModo, CabeceraMundo); aquí
-// solo se fijan sus valores. En un build de release (__DEV__ false) redirige a la raíz.
+//   estado: abierta (lámina 4, cuadro 01: mantenida en el emblema) · apuntando
+//           (lámina 1, cuadro 03) · recarga (cuadro 04 y «recarga dorada» con
+//           modo=general) · pantalla (la pantalla sola: cabecera, emblema)
+//           · emblema (el disco quieto y cargando)
+//   modo: el apuntado o el que recarga · actual: el modo a la vista (general:
+//   el Hoy de NIVL; otro: el inicio de IRON) · anterior: el que se marca ·
+//   t: instante de la recarga (0,7 por defecto)
+// Las piezas son las de la app (RuedaModos, DibujoEmblema, CabeceraMundo,
+// HoyVista, IronHoyVista, TabBar); aquí solo se fijan sus valores. En un build
+// de release (__DEV__ false) redirige a la raíz.
 
+import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { Redirect, useLocalSearchParams } from 'expo-router';
-import { useEffect } from 'react';
-import { StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { StyleSheet, useWindowDimensions, View } from 'react-native';
 import { useSharedValue } from 'react-native-reanimated';
-import { MarcoVisor } from '@/components/modos/maestria/MarcoVisor';
+import { HOY_DEMO, misionDemo, perfilDemo, YO_DEMO } from '@/components/arena/demoDatos';
+import { derivarHoy, type EntradaHoy } from '@/components/hoy/derivarHoy';
+import { HoyVista } from '@/components/hoy/HoyVista';
 import { CabeceraMundo, LADO_RANURA } from '@/components/modos/mundo/CabeceraMundo';
-import { DibujoEmblema } from '@/components/modos/rueda/EmblemaModo';
-import { DiscoRueda, FichaRueda, geometriaRueda, RecargaModo, VeloRueda } from '@/components/modos/rueda/RuedaModos';
-import { acentoRueda, ink, space } from '@/design/tokens';
+import { IronHoyVista } from '@/components/modos/mundo/IronHoyVista';
+import { DibujoEmblema, type FormaEmblema } from '@/components/modos/rueda/DibujoEmblema';
+import { DiscoRueda, FichaRueda, geometriaRueda, GuiaDedo, RecargaModo, topFicha, VeloRueda } from '@/components/modos/rueda/RuedaModos';
+import { nombreDestino } from '@/components/ui/navItems';
+import { TabBar } from '@/components/ui/TabBar';
+import { acentoRueda } from '@/design/tokens';
 import { t } from '@/i18n';
-import type { Marca } from '@/modos/maestria';
+import type { Completion, Quest } from '@/lib/types';
 import { nivelesDeModos } from '@/modos/niveles';
-import { mascaraDisponibles, ORDEN_RUEDA } from '@/modos/rueda';
+import { mascaraDisponibles, ORDEN_RUEDA, RUEDA } from '@/modos/rueda';
 import { esModo, MODOS, type ModoEtiqueta, type ModoId } from '@/modos/tipos';
 
 const TODOS: readonly ModoId[] = MODOS;
-const XP_DEMO: Record<ModoEtiqueta, number> = { iron: 6400, focus: 2600, work: 1500, founder: 600 };
+const XP_DEMO: Record<ModoEtiqueta, number> = { iron: 7760, focus: 2600, work: 1500, founder: 600 };
+const nada = () => {};
 
 export default function KitRueda() {
-  const p = useLocalSearchParams<{ estado?: string; modo?: string; actual?: string; anterior?: string; t?: string; marca?: string }>();
+  const p = useLocalSearchParams<{ estado?: string; modo?: string; actual?: string; anterior?: string; t?: string }>();
   const { width: w, height: h } = useWindowDimensions();
   const estado = p.estado ?? 'abierta';
   const modo: ModoId = esModo(p.modo) ? p.modo : 'iron';
   const actual: ModoId = esModo(p.actual) ? p.actual : 'general';
   const anterior: ModoId | null = esModo(p.anterior) ? p.anterior : null;
   const instante = p.t ? Math.min(1, Math.max(0, Number(p.t))) : 0.7;
+  const geo = geometriaRueda(w, h);
   const resaltado = useSharedValue(-1);
   const progreso = useSharedValue(instante);
   const carga = useSharedValue(0);
+  const dedoX = useSharedValue(0);
+  const dedoY = useSharedValue(0);
+  const [emblema, setEmblema] = useState<{ x: number; y: number } | null>(null);
 
   useEffect(() => {
     resaltado.value = estado === 'apuntando' ? ORDEN_RUEDA.indexOf(modo) : -1;
     progreso.value = instante;
     carga.value = estado === 'emblema' ? 0.7 : 0;
-  }, [estado, modo, instante, resaltado, progreso, carga]);
+    if (estado === 'apuntando' && modo !== 'general') {
+      // El dedo sobre el icono del sector apuntado (cuadro 03).
+      const a = ({ iron: 0, focus: 90, work: 180, founder: 270 } as const)[modo];
+      const r = (RUEDA.icono - 4) * geo.escala;
+      dedoX.value = geo.cx + r * Math.sin((a * Math.PI) / 180);
+      dedoY.value = geo.cy - r * Math.cos((a * Math.PI) / 180);
+    } else if (estado === 'abierta' && emblema) {
+      // Mantenido: el dedo sigue en el emblema (lámina 4, cuadro 01).
+      dedoX.value = emblema.x;
+      dedoY.value = emblema.y;
+    } else {
+      dedoX.value = 0;
+      dedoY.value = 0;
+    }
+  }, [estado, modo, instante, emblema, geo.cx, geo.cy, geo.escala, resaltado, progreso, carga, dedoX, dedoY]);
 
   if (!__DEV__) return <Redirect href="/" />;
-
-  const geo = geometriaRueda(w, h);
-  const mascara = mascaraDisponibles(TODOS);
-  const mundo: ModoEtiqueta = actual === 'general' ? 'iron' : actual;
-  const nivel = nivelesDeModos([mundo], XP_DEMO)[0];
-  const marca = (Number(p.marca) || null) as Marca | null;
-
-  const cabecera = (
-    <CabeceraMundo
-      modo={mundo}
-      nivel={nivel}
-      marca={marca}
-      emblema={
-        <View style={styles.ranura}>
-          <MarcoVisor marca={marca ?? 3} color={acentoRueda[mundo]} tamano={LADO_RANURA} style={StyleSheet.absoluteFill} />
-          <View style={{ width: 44, height: 44 }}>
-            <DibujoEmblema forma="placa" tamano={44} modo={mundo} disponibles={TODOS} />
-          </View>
-        </View>
-      }
-    />
-  );
-
-  if (estado === 'cabecera') {
-    return (
-      <View style={styles.pantalla}>
-        <View style={styles.contenido}>{cabecera}</View>
-      </View>
-    );
-  }
-
-  if (estado === 'emblema') {
-    return (
-      <View style={[styles.pantalla, styles.centrado]}>
-        <View style={{ width: 56, height: 56 }}>
-          <DibujoEmblema forma="disco" tamano={56} modo={actual} disponibles={TODOS} />
-        </View>
-        <View style={{ height: 80 }} />
-        <View style={{ width: 56, height: 56 }}>
-          <DibujoEmblema forma="disco" tamano={56} modo={actual} disponibles={TODOS} carga={carga} />
-        </View>
-      </View>
-    );
-  }
 
   if (estado === 'recarga') {
     return (
@@ -100,55 +86,231 @@ export default function KitRueda() {
     );
   }
 
-  // abierta / apuntando: la app detrás (la cabecera y bloques), el velo y la rueda.
+  if (estado === 'emblema') {
+    return (
+      <View style={[styles.pantalla, styles.centrado]}>
+        <DibujoEmblema forma="disco" tamano={56} modo={actual} disponibles={TODOS} />
+        <View style={{ height: 80 }} />
+        <DibujoEmblema forma="disco" tamano={56} modo={actual} disponibles={TODOS} carga={carga} />
+      </View>
+    );
+  }
+
+  // El gesto nace del disco del centro de la barra (P01).
+  const forma: FormaEmblema = 'disco';
+  const tamano = 56;
+  const pantalla = actual === 'general' ? <HoyNivl alMedir={setEmblema} /> : <InicioIron alMedir={setEmblema} />;
+
+  if (estado === 'pantalla') return <View style={styles.pantalla}>{pantalla}</View>;
+
+  // abierta / apuntando: la pantalla real, el desenfoque y la rueda.
   return (
     <View style={styles.pantalla}>
-      <View style={styles.contenido}>
-        {actual === 'general' ? <FondoNivl /> : cabecera}
-        {[150, 120, 96, 110, 140].map((alto, i) => (
-          <View key={i} style={[styles.bloque, { height: alto }]} />
-        ))}
-      </View>
+      {pantalla}
       <VeloRueda resaltado={resaltado} />
+      <GuiaDedo ancho={w} alto={h} emblema={emblema ? { ...emblema, forma, tamano } : null} modo={actual} disponibles={TODOS} dedoX={dedoX} dedoY={dedoY} resaltado={resaltado} mantener={estado === 'abierta'} capa="fondo" />
       <FichaRueda
         modo={estado === 'apuntando' ? modo : null}
         actual={actual}
         anterior={anterior}
         ancho={w}
-        top={Math.max(space.s14, geo.cy - geo.D / 2 - 150)}
+        top={topFicha(geo)}
+        arribaRueda={geo.cy - geo.D / 2}
       />
       <View style={{ position: 'absolute', left: geo.cx - geo.D / 2, top: geo.cy - geo.D / 2 }}>
-        <DiscoRueda lado={geo.D} modo={actual} anterior={anterior} mascara={mascara} resaltado={resaltado} />
+        <DiscoRueda lado={geo.D} modo={actual} anterior={anterior} mascara={mascaraDisponibles(TODOS)} resaltado={resaltado} />
       </View>
-      <Text style={[styles.pista, { top: geo.cy + geo.D / 2 + space.s6, width: w }]}>{t('modos:rueda.cancelar')}</Text>
+      <GuiaDedo
+        ancho={w}
+        alto={h}
+        emblema={emblema ? { ...emblema, forma, tamano } : null}
+        modo={actual}
+        disponibles={TODOS}
+        dedoX={dedoX}
+        dedoY={dedoY}
+        resaltado={resaltado}
+        mantener={estado === 'abierta'}
+        capa="dedo"
+      />
     </View>
   );
 }
 
-function FondoNivl() {
+/** Mide dónde queda el emblema en la ventana (de ahí nace la estela). */
+function Medido({ alMedir, children }: { alMedir: (p: { x: number; y: number }) => void; children: React.ReactNode }) {
+  const ref = useRef<View>(null);
   return (
-    <View style={styles.fondoNivl}>
-      <Text style={styles.fondoNivlTitulo}>{'NIVL' /* i18n-ok: marca */}</Text>
+    <View
+      ref={ref}
+      collapsable={false}
+      onLayout={() =>
+        ref.current?.measureInWindow((x, y, ancho, alto) => {
+          if (ancho > 0) alMedir({ x: x + ancho / 2, y: y + alto / 2 });
+        })
+      }
+    >
+      {children}
     </View>
+  );
+}
+
+// ─────────────── El Hoy de NIVL (datos de demo de la galería) ───────────────
+
+const hecha = (q: Quest, xp: number): Completion => ({
+  id: `c-${q.id}`,
+  user_id: 'demo-usuario',
+  quest_id: q.id,
+  date: HOY_DEMO,
+  completed_at: `${HOY_DEMO}T08:30:00Z`,
+  xp_awarded: xp,
+  evidence_url: null,
+});
+
+function HoyNivl({ alMedir }: { alMedir: (p: { x: number; y: number }) => void }) {
+  const datos = useMemo(() => {
+    const pierna = misionDemo({ title: 'Entreno de pierna', stat: 'FUE', difficulty: 'dificil', link: 'gym', modes: ['iron'] });
+    const proteina = misionDemo({ title: 'Llegar a 140 g de proteína', stat: 'VIT', modes: ['iron'] });
+    const tema4 = misionDemo({ title: 'Estudiar Tema 4', stat: 'INT', modes: ['focus'] });
+    const leer = misionDemo({ title: 'Leer 20 páginas', stat: 'INT' });
+    const entrada: EntradaHoy = {
+      hoy: HOY_DEMO,
+      hora: 16,
+      profile: perfilDemo(),
+      rango: YO_DEMO.rango,
+      tituloEquipado: null,
+      quests: [pierna, proteina, tema4, leer],
+      completions: { [pierna.id]: hecha(pierna, 100) },
+      dayResult: null,
+      plan: null,
+      esPro: false,
+      board: null,
+      rotosPrevios: 0,
+      diaPerfecto: false,
+      avisoRecuperacion: false,
+      modo: 'general',
+    };
+    return derivarHoy(entrada);
+  }, []);
+  return (
+    <View style={styles.columna}>
+      <View style={styles.contenido}>
+        <HoyVista
+          estado="listo"
+          error={null}
+          datos={datos}
+          ocupada={null}
+          preparandoTarjeta={false}
+          refrescando={false}
+          desde={null}
+          acciones={{ onCompletar: nada, onAlternarBloque: nada, onCompartirDia: nada, onRefrescar: nada, onReintentar: nada }}
+        />
+      </View>
+      <BarraDemo
+        modo="general"
+        alMedir={alMedir}
+        rutas={['index', 'coach', 'habitos', 'mazmorras', 'perfil']} titulos={{ index: nombreDestino('hoy'), coach: nombreDestino('coach'), habitos: nombreDestino('habitos'), mazmorras: nombreDestino('campanas'), perfil: nombreDestino('perfil') }} />
+    </View>
+  );
+}
+
+// ─────────────── El inicio de IRON (datos de demo) ───────────────
+
+function InicioIron({ alMedir }: { alMedir: (p: { x: number; y: number }) => void }) {
+  const u = 'demo-usuario';
+  const dias = [
+    { id: 'd1', user_id: u, day_of_week: 2, name: 'Pierna A' },
+    { id: 'd2', user_id: u, day_of_week: 1, name: 'Empuje' },
+    { id: 'd3', user_id: u, day_of_week: 4, name: 'Tirón' },
+    { id: 'd4', user_id: u, day_of_week: 5, name: 'Pierna B' },
+  ];
+  const ejercicios = [
+    { id: 'e1', gym_day_id: 'd1', user_id: u, name: 'Sentadilla trasera', sets: 4, reps: 5, weight: 102.5, position: 0 },
+    { id: 'e2', gym_day_id: 'd1', user_id: u, name: 'Peso muerto rumano', sets: 3, reps: 8, weight: 80, position: 1 },
+    { id: 'e3', gym_day_id: 'd1', user_id: u, name: 'Prensa inclinada', sets: 3, reps: 10, weight: 160, position: 2 },
+  ];
+  const nivel = nivelesDeModos(['iron'], XP_DEMO)[0];
+  return (
+    <View style={styles.columna}>
+      <View style={styles.contenido}>
+        <IronHoyVista
+          cabecera={
+            <CabeceraMundo
+              modo="iron"
+              nivel={nivel}
+              emblema={<DibujoEmblema forma="placa" tamano={LADO_RANURA} modo="iron" disponibles={TODOS} />}
+            />
+          }
+          fecha="Martes, 20 de octubre"
+          cierre={null}
+          entreno={{
+            cargado: true,
+            errorCarga: null,
+            hoyDia: 2,
+            dias,
+            ejercicios,
+            sesionHoy: null,
+            xpMisionHoy: 0,
+            onEmpezar: nada,
+            onReintentar: nada,
+          }}
+          pesos={{
+            estado: 'listo',
+            filas: [
+              { clave: 'sentadilla', nombre: 'Sentadilla', kg: 100, subida: 7.5, record: false, e1rm: 117, sesiones: 6 },
+              { clave: 'banca', nombre: 'Press banca', kg: 72.5, subida: 5, record: true, e1rm: 84, sesiones: 6 },
+              { clave: 'muerto', nombre: 'Peso muerto', kg: 130, subida: 10, record: false, e1rm: 151, sesiones: 5 },
+            ],
+          }}
+          dieta={{ estado: 'listo', objetivo: { kcal: 2400, proteina: 160 }, parte: { kcal: 1880, proteina: 128 } }}
+          acciones={{ onRutinas: nada, onPesos: nada, onCatalogo: nada, onDieta: nada, onNutricion: nada, onCoach: nada }}
+        />
+      </View>
+      <BarraDemo
+        modo="iron"
+        alMedir={alMedir}
+        rutas={['iron-hoy', 'iron-rutinas', 'iron-pesos', 'iron-coach']}
+        titulos={{ 'iron-hoy': t('mundos:pestana.hoy'), 'iron-rutinas': t('mundos:pestana.rutinas'), 'iron-pesos': t('mundos:pestana.pesos'), 'iron-coach': t('mundos:pestana.coach') }}
+        acento={acentoRueda.iron}
+      />
+    </View>
+  );
+}
+
+/** La barra de pestañas de verdad con una navegación de mentira (no navega). */
+function BarraDemo({
+  rutas,
+  titulos,
+  acento,
+  modo,
+  alMedir,
+}: {
+  rutas: string[];
+  titulos: Record<string, string>;
+  acento?: string;
+  modo: ModoId;
+  alMedir: (p: { x: number; y: number }) => void;
+}) {
+  const props = {
+    state: { index: 0, routes: rutas.map((n) => ({ key: n, name: n })) },
+    descriptors: Object.fromEntries(rutas.map((n) => [n, { options: { title: titulos[n] } }])),
+    navigation: { emit: () => ({ defaultPrevented: true }), navigate: nada },
+  } as unknown as BottomTabBarProps;
+  return (
+    <TabBar
+      {...props}
+      acento={acento}
+      centro={
+        <Medido alMedir={alMedir}>
+          <DibujoEmblema forma="disco" tamano={56} modo={modo} disponibles={TODOS} />
+        </Medido>
+      }
+    />
   );
 }
 
 const styles = StyleSheet.create({
-  pantalla: { flex: 1, backgroundColor: ink.ink0, overflow: 'hidden' },
+  pantalla: { flex: 1, backgroundColor: '#000000', overflow: 'hidden' },
   centrado: { alignItems: 'center', justifyContent: 'center' },
-  contenido: { paddingTop: 54, paddingHorizontal: 16, gap: 8 },
-  ranura: { width: LADO_RANURA, height: LADO_RANURA, alignItems: 'center', justifyContent: 'center' },
-  bloque: { borderRadius: 16, borderWidth: 1, borderColor: '#1C1C21', backgroundColor: '#0C0C0F' },
-  fondoNivl: { height: 52, justifyContent: 'center' },
-  fondoNivlTitulo: { fontFamily: 'Cinzel_900Black', fontSize: 22, letterSpacing: 2, color: ink.ink10 },
-  pista: {
-    position: 'absolute',
-    left: 0,
-    textAlign: 'center',
-    paddingHorizontal: space.s6,
-    fontFamily: 'Outfit_500Medium',
-    fontSize: 14,
-    lineHeight: 20,
-    color: '#8A8A92',
-  },
+  columna: { flex: 1 },
+  contenido: { flex: 1, paddingTop: 44 },
 });

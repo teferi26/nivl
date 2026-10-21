@@ -27,7 +27,7 @@
 // la galería /kit/rueda, que las monta quietas para las capturas.
 
 import { useEffect, useMemo, useState } from 'react';
-import { Modal, StyleSheet, Text, useWindowDimensions, View, type LayoutChangeEvent } from 'react-native';
+import { Modal, Platform, StyleSheet, Text, useWindowDimensions, View, type LayoutChangeEvent } from 'react-native';
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
 import Animated, {
   Easing,
@@ -35,6 +35,7 @@ import Animated, {
   useAnimatedProps,
   useAnimatedReaction,
   useAnimatedStyle,
+  useDerivedValue,
   useSharedValue,
   withDelay,
   withSpring,
@@ -60,11 +61,15 @@ import {
 } from '@/modos/rueda';
 import { MODOS_ETIQUETA, NOMBRE_MODO, type ModoEtiqueta, type ModoId } from '@/modos/tipos';
 import { conAlfa, halo, mezcla } from './color';
+import { Desenfoque, hayDesenfoque } from './Desenfoque';
+import { DibujoEmblema, type FormaEmblema } from './DibujoEmblema';
 import { GlifoModo } from './GlifoModo';
 import { sonarModo } from './sonido';
 
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 const AnimatedG = Animated.createAnimatedComponent(G);
+const AnimatedLine = Animated.createAnimatedComponent(Line);
+const AnimatedView = Animated.View;
 
 /** La firma de vibración de cada modo (hapticsMap). */
 export const EVENTO_MODO: Record<ModoId, EventoVibracion> = {
@@ -82,9 +87,19 @@ export const MS_FUNDIDO = 200;
 /** Cinzel Black (la lámina): los nombres de modo grandes. */
 const CINZEL_BLACK = 'Cinzel_900Black';
 const OUTFIT_BOLD = tipo.label.family;
+/** Outfit ExtraBold (la lámina: 800) para los rótulos de la rueda y la recarga. */
+const OUTFIT_BLACK = 'Outfit_800ExtraBold';
+/** Rótulos de la rueda sin apuntar (blanco roto de la lámina). */
+const HUESO = '#E9E6DF';
 const OUTFIT_MEDIO = tipo.bodySm.family;
 
 export type OrigenRueda = 'mantener' | 'toque';
+
+/** El centro del emblema en la ventana (de ahí nace la estela). */
+export interface OrigenEmblema {
+  x: number;
+  y: number;
+}
 
 /** Dónde va la rueda en una pantalla de w × h, y su escala respecto a la lámina. */
 export function geometriaRueda(w: number, h: number) {
@@ -100,7 +115,9 @@ export interface RuedaModosProps {
   modo: ModoId;
   anterior: ModoId | null;
   disponibles: readonly ModoId[];
-  /** Dónde está el dedo (coordenadas de la ventana), con el emblema mantenido. */
+  /** El emblema que abrió la rueda: se repinta nítido encima del desenfoque. */
+  emblema: (OrigenEmblema & { forma: FormaEmblema; tamano: number }) | null;
+  /** Dónde está el dedo (coordenadas de la ventana): huella y estela. */
   dedoX: SharedValue<number>;
   dedoY: SharedValue<number>;
   /** El índice apuntado (ORDEN_RUEDA, -1 ninguno). */
@@ -125,7 +142,7 @@ export interface RuedaModosProps {
 }
 
 export function RuedaModos(props: RuedaModosProps) {
-  const { origen, modo, anterior, disponibles, dedoX, dedoY, resaltado, centroX, centroY, escala } = props;
+  const { origen, modo, anterior, disponibles, emblema, dedoX, dedoY, resaltado, centroX, centroY, escala } = props;
   const { elegido, cerrando, reducido, alElegir, alPedirCierre, alEncajar, alCerrar } = props;
   const ventana = useWindowDimensions();
   const [lienzo, setLienzo] = useState({ w: ventana.width, h: ventana.height });
@@ -221,9 +238,13 @@ export function RuedaModos(props: RuedaModosProps) {
         .onBegin((e) => {
           x0.value = e.x;
           y0.value = e.y;
+          dedoX.value = e.absoluteX;
+          dedoY.value = e.absoluteY;
           resaltado.value = sectorEn(e.x - cx, e.y - cy, esc, mascara);
         })
         .onUpdate((e) => {
+          dedoX.value = e.absoluteX;
+          dedoY.value = e.absoluteY;
           const dy = e.translationY;
           if (dy > UMBRAL_MOVIMIENTO && dy > Math.abs(e.translationX)) {
             baja.value = dy;
@@ -246,7 +267,7 @@ export function RuedaModos(props: RuedaModosProps) {
             scheduleOnRN(alElegir, resaltado.value);
           }
         }),
-    [origen, elegido, cerrando, cx, cy, esc, mascara, x0, y0, baja, resaltado, alElegir, alPedirCierre],
+    [origen, elegido, cerrando, cx, cy, esc, mascara, x0, y0, dedoX, dedoY, baja, resaltado, alElegir, alPedirCierre],
   );
 
   const estiloVelo = useAnimatedStyle(() => ({ opacity: velo.value }));
@@ -255,12 +276,6 @@ export function RuedaModos(props: RuedaModosProps) {
     transform: [{ translateY: baja.value }, { scale: abre.value }],
   }));
   const estiloRecarga = useAnimatedStyle(() => ({ opacity: recarga.value }));
-
-  // El dedo, con el emblema mantenido (la lámina pinta la huella).
-  const estiloDedo = useAnimatedStyle(() => ({
-    transform: [{ translateX: dedoX.value - 23 }, { translateY: dedoY.value - 23 }],
-    opacity: dedoX.value > 0 || dedoY.value > 0 ? 1 : 0,
-  }));
 
   const alMedir = (e: LayoutChangeEvent) => {
     const { width, height } = e.nativeEvent.layout;
@@ -281,6 +296,9 @@ export function RuedaModos(props: RuedaModosProps) {
             onAccessibilityEscape={alPedirCierre}
           >
             <VeloRueda resaltado={resaltado} />
+            {!elegido ? (
+              <GuiaDedo ancho={w} alto={h} emblema={emblema} modo={modo} disponibles={disponibles} dedoX={dedoX} dedoY={dedoY} resaltado={resaltado} mantener={origen === 'mantener'} capa="fondo" />
+            ) : null}
 
             {!elegido ? (
               <Animated.View style={[StyleSheet.absoluteFill, estiloRueda]} pointerEvents="none">
@@ -289,18 +307,18 @@ export function RuedaModos(props: RuedaModosProps) {
                   actual={modo}
                   anterior={anterior}
                   ancho={w}
-                  top={Math.max(space.s14, geo.cy - geo.D / 2 - 150)}
+                  top={topFicha(geo)}
+                  arribaRueda={geo.cy - geo.D / 2}
                 />
                 <View style={{ position: 'absolute', left: cx - geo.D / 2, top: cy - geo.D / 2 }}>
                   <DiscoRueda lado={geo.D} modo={modo} anterior={anterior} mascara={mascara} resaltado={resaltado} />
                 </View>
-                <Text style={[styles.pista, { top: cy + geo.D / 2 + space.s6, width: w }]} maxFontSizeMultiplier={1.35}>
-                  {origen === 'toque' ? t('modos:rueda.cancelar') : t('modos:rueda.soltar')}
-                </Text>
               </Animated.View>
             ) : null}
 
-            {origen === 'mantener' && !elegido ? <Animated.View style={[styles.dedo, estiloDedo]} pointerEvents="none" /> : null}
+            {!elegido ? (
+              <GuiaDedo ancho={w} alto={h} emblema={emblema} modo={modo} disponibles={disponibles} dedoX={dedoX} dedoY={dedoY} resaltado={resaltado} mantener={origen === 'mantener'} capa="dedo" />
+            ) : null}
 
             {elegido ? (
               <Animated.View style={[StyleSheet.absoluteFill, estiloRecarga]} pointerEvents="none">
@@ -316,18 +334,83 @@ export function RuedaModos(props: RuedaModosProps) {
 
 /** El velo: la app se apaga y, al apuntar, toma el tinte del modo (lámina 1, cuadro 03). */
 export function VeloRueda({ resaltado }: { resaltado: SharedValue<number> }) {
-  const tintes = ORDEN_RUEDA.map((m) => conAlfa(acentoRueda[m], 0.14));
+  const tintes = ORDEN_RUEDA.map((m) => conAlfa(acentoRueda[m], 0.1));
+  // Con desenfoque (expo-blur o web) la app se intuye debajo; sin él, el velo tapa más.
+  const negro = hayDesenfoque() ? 0.4 : 0.62;
   const estiloTinte = useAnimatedStyle(() => {
     const i = resaltado.value;
     return { backgroundColor: i >= 0 && i < tintes.length ? tintes[i] : 'rgba(0,0,0,0)' };
   });
   return (
     <>
-      <View style={[StyleSheet.absoluteFill, styles.velo]} pointerEvents="none" />
+      <Desenfoque />
+      <View style={[StyleSheet.absoluteFill, { backgroundColor: `rgba(0,0,0,${negro})` }]} pointerEvents="none" />
       <Animated.View style={[StyleSheet.absoluteFill, estiloTinte]} pointerEvents="none" />
     </>
   );
 }
+
+/** Dónde va la ficha de arriba. */
+export function topFicha(geo: { cy: number; D: number }): number {
+  return Math.max(space.s14, geo.cy - geo.D / 2 - 150);
+}
+
+export interface GuiaDedoProps {
+  ancho: number;
+  alto: number;
+  emblema: (OrigenEmblema & { forma: FormaEmblema; tamano: number }) | null;
+  modo: ModoId;
+  disponibles: readonly ModoId[];
+  dedoX: SharedValue<number>;
+  dedoY: SharedValue<number>;
+  resaltado: SharedValue<number>;
+  /** Con el emblema mantenido la huella va siempre; con la rueda tocada, solo al apuntar. */
+  mantener: boolean;
+  /** 'fondo': emblema nítido y estela (debajo de la rueda y la ficha); 'dedo': la huella (encima). */
+  capa: 'fondo' | 'dedo';
+}
+
+/**
+ * Lámina 1, cuadro 03: el emblema de donde nace el gesto, nítido sobre el
+ * desenfoque; la estela punteada del emblema al dedo y la huella del dedo.
+ */
+export function GuiaDedo({ ancho, alto, emblema, modo, disponibles, dedoX, dedoY, resaltado, mantener, capa }: GuiaDedoProps) {
+  const visible = useDerivedValue(() => (dedoX.value > 0 || dedoY.value > 0) && (mantener || resaltado.value >= 0));
+  const propsEstela = useAnimatedProps(() => ({
+    x2: dedoX.value,
+    y2: dedoY.value,
+    strokeOpacity: visible.value ? 0.7 : 0,
+  }));
+  const estiloHuella = useAnimatedStyle(() => ({
+    opacity: visible.value ? 1 : 0,
+    transform: [{ translateX: dedoX.value - HUELLA / 2 }, { translateY: dedoY.value - HUELLA / 2 }],
+  }));
+  return (
+    <View style={StyleSheet.absoluteFill} pointerEvents="none" accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+      {capa === 'fondo' && emblema ? (
+        <>
+          <Svg width={ancho} height={alto} style={StyleSheet.absoluteFill}>
+            <AnimatedLine
+              x1={emblema.x}
+              y1={emblema.y}
+              stroke="#FFFFFF"
+              strokeWidth={2}
+              strokeDasharray="4 6"
+              strokeLinecap="round"
+              animatedProps={propsEstela}
+            />
+          </Svg>
+          <View style={{ position: 'absolute', left: emblema.x - emblema.tamano / 2, top: emblema.y - emblema.tamano / 2 }}>
+            <DibujoEmblema forma={emblema.forma} tamano={emblema.tamano} modo={modo} disponibles={disponibles} />
+          </View>
+        </>
+      ) : null}
+      {capa === 'dedo' ? <AnimatedView style={[styles.huella, estiloHuella]} /> : null}
+    </View>
+  );
+}
+
+const HUELLA = 64;
 
 // ─────────────────────────────── La rueda ───────────────────────────────
 
@@ -385,8 +468,8 @@ export function DiscoRueda({ lado, modo, anterior, mascara, resaltado }: DiscoRu
       </View>
 
       {/* ACTUAL y ANTERIOR (lámina 4). */}
-      <PlacaRueda modo={modo} tipo="actual" k={k} lado={lado} />
-      {anterior && anterior !== modo ? <PlacaRueda modo={anterior} tipo="anterior" k={k} lado={lado} /> : null}
+      <PlacaRueda modo={modo} tipo="actual" k={k} lado={lado} resaltado={resaltado} />
+      {anterior && anterior !== modo ? <PlacaRueda modo={anterior} tipo="anterior" k={k} lado={lado} resaltado={resaltado} /> : null}
     </View>
   );
 }
@@ -395,8 +478,9 @@ function SectorRueda({ modo, indice, disponible, resaltado }: { modo: ModoEtique
   const col = acentoRueda[modo];
   const ang = ANGULO_MODO[modo];
   const d = trazoSector(0, 0, RUEDA.sectorDentro, RUEDA.sectorFuera, ang, 90, 2);
-  const dHalo = trazoSector(0, 0, RUEDA.sectorDentro, RUEDA.filoFuera - 3, ang, 90, 2);
-  const dFilo = trazoSector(0, 0, RUEDA.filoDentro, RUEDA.filoFuera, ang, 90, 5);
+  const dHalo = trazoSector(0, 0, RUEDA.filoDentro, RUEDA.filoFuera, ang, 90, 5);
+  // Filo exterior de 3 pt de pantalla con la rueda a ~1,35 de escala.
+  const dFilo = trazoSector(0, 0, RUEDA.filoDentro + 0.6, RUEDA.filoDentro + 2.8, ang, 90, 4);
   const encendido = useAnimatedProps(() => ({ opacity: resaltado.value === indice ? 1 : 0 }));
   if (!disponible) {
     return <Path d={d} fill="none" stroke="rgba(255,255,255,0.16)" strokeWidth={1} strokeDasharray="3 4" />;
@@ -405,11 +489,10 @@ function SectorRueda({ modo, indice, disponible, resaltado }: { modo: ModoEtique
     <>
       <Path d={d} fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.16)" strokeWidth={1} />
       <AnimatedG animatedProps={encendido}>
-        {/* Halo (la lámina lo desenfoca; aquí, trazos anchos y tenues). */}
-        <Path d={dHalo} fill="none" stroke={col} strokeOpacity={0.2} strokeWidth={16} strokeLinejoin="round" />
-        <Path d={dHalo} fill="none" stroke={col} strokeOpacity={0.35} strokeWidth={8} strokeLinejoin="round" />
-        <Path d={d} fill={col} fillOpacity={0.72} stroke={col} strokeWidth={2} />
-        <Path d={dFilo} fill={col} />
+        {/* Halo corto del filo (la lámina lo desenfoca). */}
+        <Path d={dHalo} fill="none" stroke={col} strokeOpacity={0.25} strokeWidth={6} strokeLinejoin="round" />
+        <Path d={d} fill={col} fillOpacity={0.85} stroke={col} strokeWidth={1.5} />
+        <Path d={dFilo} fill={mezcla(col, 0.6, '#FFFFFF')} />
       </AnimatedG>
     </>
   );
@@ -465,7 +548,7 @@ function RotuloSector({
       </View>
       <View style={{ marginTop: 5 * k }}>
         <Animated.Text
-          style={[styles.nombreSector, nombre, { color: disponible ? 'rgba(255,255,255,0.55)' : ink.ink4 }, estiloOff]}
+          style={[styles.nombreSector, nombre, { color: disponible ? HUESO : ink.ink4 }, estiloOff]}
           maxFontSizeMultiplier={1}
         >
           {NOMBRE_MODO[modo]}
@@ -486,17 +569,32 @@ function RotuloSector({
 }
 
 /** La placa ACTUAL (blanca) o ANTERIOR (de trazo) sobre el borde de su sector, o bajo la base. */
-function PlacaRueda({ modo, tipo: clase, k, lado }: { modo: ModoId; tipo: 'actual' | 'anterior'; k: number; lado: number }) {
+function PlacaRueda({
+  modo,
+  tipo: clase,
+  k,
+  lado,
+  resaltado,
+}: {
+  modo: ModoId;
+  tipo: 'actual' | 'anterior';
+  k: number;
+  lado: number;
+  resaltado: SharedValue<number>;
+}) {
   const p = modo === 'general' ? { x: lado / 2, y: lado / 2 + RUEDA.centro * k } : puntoEn(lado / 2, lado / 2, 86 * k, ANGULO_MODO[modo]);
   const actual = clase === 'actual';
+  const propio = ORDEN_RUEDA.indexOf(modo);
+  // Mientras se apunta a otro sector, las placas se apartan (lámina 1, cuadro 03).
+  const estilo = useAnimatedStyle(() => ({ opacity: resaltado.value >= 0 && resaltado.value !== propio ? 0 : 1 }));
   return (
-    <View style={[styles.placaCaja, { left: p.x - 50, top: p.y - 9 }]} pointerEvents="none">
+    <AnimatedView style={[styles.placaCaja, { left: p.x - 50, top: p.y - 9 }, estilo]} pointerEvents="none">
       <View style={[styles.placa, actual ? styles.placaActual : styles.placaAnterior]}>
-        <Text style={[styles.placaTexto, { color: actual ? ink.ink0 : ink.ink10 }]} maxFontSizeMultiplier={1}>
+        <Text style={actual ? styles.placaTexto : styles.placaTextoAnterior} maxFontSizeMultiplier={1}>
           {actual ? t('modos:rueda.actual') : t('modos:rueda.anterior')}
         </Text>
       </View>
-    </View>
+    </AnimatedView>
   );
 }
 
@@ -509,13 +607,15 @@ export interface FichaRuedaProps {
   anterior: ModoId | null;
   ancho: number;
   top: number;
+  /** Dónde empieza la rueda (y del disco): «ELIGE MODO» va 24 pt por encima. */
+  arribaRueda: number;
 }
 
 /** Arriba de la rueda: «ELIGE MODO» y, al apuntar, la ficha de lo que se va a cargar (lámina 1, cuadro 03). */
-export function FichaRueda({ modo, actual, anterior, ancho, top }: FichaRuedaProps) {
+export function FichaRueda({ modo, actual, anterior, ancho, top, arribaRueda }: FichaRuedaProps) {
   if (!modo) {
     return (
-      <View style={[styles.fichaVacia, { top: top + 48, width: ancho }]} pointerEvents="none">
+      <View style={[styles.fichaVacia, { top: arribaRueda - 24 - 14, width: ancho }]} pointerEvents="none">
         <Text style={styles.eyebrow} maxFontSizeMultiplier={1.35}>
           {t('modos:rueda.eyebrow')}
         </Text>
@@ -545,7 +645,7 @@ export function FichaRueda({ modo, actual, anterior, ancho, top }: FichaRuedaPro
         </Text>
         {estado ? (
           <View style={[styles.placa, modo === actual ? styles.placaActual : styles.placaAnterior]}>
-            <Text style={[styles.placaTexto, { color: modo === actual ? ink.ink0 : ink.ink10 }]} maxFontSizeMultiplier={1}>
+            <Text style={modo === actual ? styles.placaTexto : styles.placaTextoAnterior} maxFontSizeMultiplier={1}>
               {estado}
             </Text>
           </View>
@@ -618,7 +718,7 @@ export function RecargaModo({ modo, ancho: w, alto: h, progreso, reducido }: Rec
       <View style={[styles.recargaCentro, { top: (base ? 0.31 : 0.337) * h, width: w }]}>
         {base ? (
           <View style={{ width: lado, height: lado, alignItems: 'center', justifyContent: 'center' }}>
-            <GlifoModo modo="general" tamano={Math.round(108 * k)} color={ink.ink10} trazo={1.3} relleno={ink.ink0} colorN={col} trazoN={2} />
+            <GlifoModo modo="general" tamano={Math.round(130 * k)} color={ink.ink10} trazo={1.25} relleno={ink.ink0} colorN={col} trazoN={2} />
           </View>
         ) : (
           <View style={{ width: lado, height: lado }}>
@@ -642,14 +742,17 @@ export function RecargaModo({ modo, ancho: w, alto: h, progreso, reducido }: Rec
         )}
         <Animated.View style={[styles.medio, estiloTexto]}>
           <Text
-            style={[styles.recargaNombre, { fontSize: Math.round(30 * k), lineHeight: Math.round(36 * k), marginTop: 14 * k, textShadowColor: col }]}
+            style={[styles.recargaNombre, { fontSize: Math.round(30 * k), lineHeight: Math.round(36 * k), marginTop: (base ? 4 : 14) * k, textShadowColor: conAlfa(col, 0.75) },
+              // react-native-web ya no traduce textShadow*: en web, la sombra en CSS.
+              Platform.OS === 'web' ? ({ textShadow: `0px 0px 18px ${conAlfa(col, 0.75)}` } as object) : null,
+            ]}
             maxFontSizeMultiplier={1}
             numberOfLines={1}
           >
             {NOMBRE_MODO[modo]}
           </Text>
           <Text
-            style={[styles.recargaSub, { color: base ? ink.ink9 : mezcla(col, 0.3, '#FFFFFF'), fontSize: Math.max(11, 11 * k), letterSpacing: 0.34 * 11 * k }]}
+            style={[styles.recargaSub, base ? styles.recargaSubBase : null, { fontSize: Math.max(11, 11 * k) }]}
             maxFontSizeMultiplier={1}
           >
             {base ? t('modos:rueda.recargaBase') : t('modos:rueda.equipado')}
@@ -666,19 +769,18 @@ export function RecargaModo({ modo, ancho: w, alto: h, progreso, reducido }: Rec
 }
 
 function Onda({ i, cx, cy, k, progreso, reducido }: { i: number; cx: number; cy: number; k: number; progreso: SharedValue<number>; reducido: boolean }) {
-  const r = (110 + i * 70) * k;
+  const r = (103 + i * 70) * k;
   const props = useAnimatedProps(() => ({ r: reducido ? r : r * interpolate(progreso.value, [0, 0.6], [0.35, 1], 'clamp') }));
   return <AnimatedCircle cx={cx} cy={cy} fill="none" stroke="#FFFFFF" strokeOpacity={0.35 - i * 0.1} strokeWidth={2 - i * 0.5} animatedProps={props} />;
 }
 
 const styles = StyleSheet.create({
   lleno: { flex: 1 },
-  velo: { backgroundColor: ink.ink0, opacity: 0.8 },
   medio: { alignItems: 'center', justifyContent: 'center' },
   centroCaja: { position: 'absolute', alignItems: 'center', justifyContent: 'center' },
-  base: { fontFamily: OUTFIT_BOLD, marginTop: 1, textAlign: 'center' },
+  base: { fontFamily: OUTFIT_BLACK, marginTop: 1, textAlign: 'center' },
   rotulo: { position: 'absolute', alignItems: 'center' },
-  nombreSector: { fontFamily: OUTFIT_BOLD, textAlign: 'center' },
+  nombreSector: { fontFamily: OUTFIT_BLACK, textAlign: 'center' },
   encima: { position: 'absolute', left: 0, right: 0, top: 0 },
   sinActivar: {
     fontFamily: tipo.micro.family,
@@ -689,43 +791,33 @@ const styles = StyleSheet.create({
   placaCaja: { position: 'absolute', width: 100, alignItems: 'center' },
   placa: { paddingHorizontal: 6, height: 18, borderRadius: 4, alignItems: 'center', justifyContent: 'center' },
   placaActual: { backgroundColor: ink.ink10 },
-  placaAnterior: { backgroundColor: ink.ink0, borderWidth: 1, borderColor: 'rgba(255,255,255,0.7)' },
-  placaTexto: { fontFamily: OUTFIT_BOLD, fontSize: 11, lineHeight: 14, letterSpacing: 1.2 },
+  placaAnterior: { backgroundColor: 'rgba(0,0,0,0.6)', borderWidth: 1, borderColor: ink.ink4, height: 16, paddingHorizontal: 5 },
+  placaTexto: { fontFamily: OUTFIT_BLACK, fontSize: 11, lineHeight: 14, letterSpacing: 1.2, color: ink.ink0 },
+  placaTextoAnterior: { fontFamily: OUTFIT_BOLD, fontSize: 10, lineHeight: 12, letterSpacing: 1, color: ink.ink6 },
   fichaVacia: { position: 'absolute', left: 0, alignItems: 'center' },
   eyebrow: {
     fontFamily: OUTFIT_BOLD,
-    fontSize: 12,
-    lineHeight: 16,
-    letterSpacing: 12 * 0.3,
+    fontSize: 11,
+    lineHeight: 14,
+    letterSpacing: 4,
     textTransform: 'uppercase',
-    color: '#9A9AA2',
+    color: 'rgba(255,255,255,0.45)',
   },
   ficha: { position: 'absolute', borderWidth: 1, borderRadius: 16, paddingHorizontal: 14, paddingVertical: 12 },
   fichaFila: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: space.s2 },
   fichaNombre: { fontFamily: CINZEL_BLACK, fontSize: 21, lineHeight: 26, letterSpacing: 1.3, color: ink.ink10, flexShrink: 1 },
   fichaSub: { fontFamily: OUTFIT_MEDIO, fontSize: 12, lineHeight: 16, marginTop: 1 },
   fichaLinea: { fontFamily: tipo.micro.family, fontSize: 13, lineHeight: 18, color: ink.ink10, marginTop: 6 },
-  pista: {
-    position: 'absolute',
-    left: 0,
-    textAlign: 'center',
-    paddingHorizontal: space.s6,
-    fontFamily: OUTFIT_MEDIO,
-    fontSize: tipo.bodySm.size,
-    lineHeight: tipo.bodySm.lineHeight,
-    color: '#8A8A92',
-  },
-  dedo: {
+  huella: {
     position: 'absolute',
     left: 0,
     top: 0,
-    width: 46,
-    height: 46,
-    borderRadius: 23,
-    backgroundColor: 'rgba(255,255,255,0.28)',
+    width: HUELLA,
+    height: HUELLA,
+    borderRadius: HUELLA / 2,
+    backgroundColor: 'rgba(255,255,255,0.15)',
     borderWidth: 2,
-    borderColor: 'rgba(255,255,255,0.85)',
-    boxShadow: '0px 0px 0px 8px rgba(255,255,255,0.08)',
+    borderColor: 'rgba(255,255,255,0.9)',
   },
   recargaCentro: { position: 'absolute', left: 0, alignItems: 'center' },
   recargaNombre: {
@@ -734,9 +826,10 @@ const styles = StyleSheet.create({
     letterSpacing: 3,
     textAlign: 'center',
     textShadowOffset: { width: 0, height: 0.5 },
-    textShadowRadius: 20,
+    textShadowRadius: 18,
   },
-  recargaSub: { fontFamily: OUTFIT_BOLD, marginTop: 4, textAlign: 'center' },
+  recargaSub: { fontFamily: OUTFIT_BLACK, marginTop: 4, textAlign: 'center', color: 'rgba(233,230,223,0.75)', letterSpacing: 4.2 },
+  recargaSubBase: { color: 'rgba(255,255,255,0.9)', letterSpacing: 3 },
   barra: { height: 4, borderRadius: 4, backgroundColor: 'rgba(255,255,255,0.2)', overflow: 'hidden' },
   barraRelleno: { height: 4, backgroundColor: ink.ink10 },
 });

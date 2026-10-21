@@ -1,6 +1,7 @@
 import { Redirect, Tabs } from 'expo-router';
 import { useEffect } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { EmblemaBarra, useHayEmblema } from '@/components/modos/EmblemaMundo';
 import { PruebaAuto } from '@/components/prueba/PruebaAuto';
 import { NavRail } from '@/components/ui/NavRail';
 import { nombreDestino } from '@/components/ui/navItems';
@@ -30,6 +31,7 @@ export default function TabsLayout() {
   const { left } = useSafeAreaInsets();
   const hueco = huecoContenido(ventana, left).ancho;
   const modos = useModo();
+  const hayEmblema = useHayEmblema();
   // Mientras el emblema cambia de mundo (irAlMundo) no se redirige por cuenta propia.
   const mundo = destinoMundo({ activo: modos.activo, cargado: modos.cargado, modo: modos.modo, transito: transitoMundo() }, 'general');
   const llegado = mundo === null && modos.activo && modos.modo === 'general';
@@ -42,7 +44,7 @@ export default function TabsLayout() {
       <Tabs
         tabBar={(props) =>
           sizeClass === 'compact' ? (
-            <TabBar {...props} />
+            <TabBar {...props} centro={hayEmblema ? <EmblemaBarra /> : undefined} />
           ) : sizeClass === 'medium' ? (
             <NavRail {...props} />
           ) : (

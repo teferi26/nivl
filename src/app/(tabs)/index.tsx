@@ -14,13 +14,17 @@ import { useHoy } from '@/components/hoy/useHoy';
 import { EmblemaNivl } from '@/components/modos/EmblemaMundo';
 import { NovedadModos } from '@/components/modos/NovedadModos';
 import { HojaOpinion } from '@/components/opinion/HojaOpinion';
+import { marcoDe } from '@/design/responsive';
+import { useAnchoUtil } from '@/design/useSizeClass';
 import { useModo } from '@/modos';
 
 export default function Hoy() {
   const { vista, hojas, perfil } = useHoy();
   const { celebrando } = useCelebracion();
   const modos = useModo();
-  const emblema = modos.activo && modos.disponibles.length > 1 ? <EmblemaNivl /> : undefined;
+  // En compact el emblema va en el centro de la barra inferior ((tabs)/_layout).
+  const compacto = marcoDe(useAnchoUtil()).sizeClass === 'compact';
+  const emblema = !compacto && modos.activo && modos.disponibles.length > 1 ? <EmblemaNivl /> : undefined;
   return (
     <>
       <HoyVista {...vista} selectorModo={emblema} />
