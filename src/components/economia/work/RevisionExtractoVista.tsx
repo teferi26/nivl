@@ -15,7 +15,7 @@ import { t } from '@/i18n';
 import { fechaCorta } from '@/i18n/formato';
 import type { FilaPropuesta } from '@/lib/moneyextracto';
 import type { CategoriaPropia } from '@/lib/moneywork';
-import { ACENTO, BotonWork, Filete, TarjetaWork, tinte } from './PiezasWork';
+import { BotonWork, Filete, TarjetaWork, useAcento } from './PiezasWork';
 import { eurosSigno, nombreCategoriaMov } from './nombres';
 
 export interface FilaRevision extends FilaPropuesta {
@@ -40,6 +40,7 @@ export interface RevisionExtractoVistaProps {
 }
 
 export function RevisionExtractoVista(p: RevisionExtractoVistaProps) {
+  const a = useAcento();
   const marcadas = p.filas.filter((f) => f.marcada).length;
   const nuevas = p.filas.filter((f) => f.estado === 'nuevo').length;
   const repetidas = p.filas.filter((f) => f.estado === 'repetido').length;
@@ -63,7 +64,7 @@ export function RevisionExtractoVista(p: RevisionExtractoVistaProps) {
       }
     >
       <View style={styles.cabecera}>
-        <Text style={styles.eyebrow} maxFontSizeMultiplier={1.35}>
+        <Text style={[styles.eyebrow, { color: a.acento }]} maxFontSizeMultiplier={1.35}>
           {t('economia:work.revision.eyebrow')}
         </Text>
         <Text style={styles.titulo} accessibilityRole="header" maxFontSizeMultiplier={1.35}>
@@ -115,7 +116,7 @@ export function RevisionExtractoVista(p: RevisionExtractoVistaProps) {
                   <Ionicons
                     name={repetido ? 'remove-circle-outline' : f.marcada ? 'checkbox-outline' : 'square-outline'}
                     size={16}
-                    color={repetido ? ink.ink4 : f.marcada ? ACENTO : ink.ink6}
+                    color={repetido ? ink.ink4 : f.marcada ? a.acento : ink.ink6}
                   />
                 </Pressable>
                 <View style={styles.textos}>
@@ -138,7 +139,7 @@ export function RevisionExtractoVista(p: RevisionExtractoVistaProps) {
                         accessibilityLabel={t('economia:work.revision.cambiarA11y', {
                           categoria: nombreCategoriaMov({ category: f.categoria, user_category_id: f.propia, is_internal: f.interno }, p.propias),
                         })}
-                        style={styles.chip}
+                        style={[styles.chip, { borderColor: a.tinte(0.4), backgroundColor: a.tinte(0.08) }]}
                       >
                         <Text style={styles.chipTexto} maxFontSizeMultiplier={1.2} numberOfLines={1}>
                           {nombreCategoriaMov({ category: f.categoria, user_category_id: f.propia, is_internal: f.interno }, p.propias)}
@@ -153,7 +154,7 @@ export function RevisionExtractoVista(p: RevisionExtractoVistaProps) {
                     </Text>
                   ) : null}
                 </View>
-                <Text style={[styles.importe, f.importe >= 0 && styles.positivo, repetido && styles.apagado]} maxFontSizeMultiplier={1.2}>
+                <Text style={[styles.importe, f.importe >= 0 && { color: a.acento }, repetido && styles.apagado]} maxFontSizeMultiplier={1.2}>
                   {eurosSigno(f.importe)}
                 </Text>
               </View>
@@ -167,10 +168,11 @@ export function RevisionExtractoVista(p: RevisionExtractoVistaProps) {
 }
 
 function Cifra({ valor, etiqueta, acento }: { valor: number; etiqueta: string; acento?: boolean }) {
+  const { acento: colorAcento } = useAcento();
   const a11y = `${etiqueta}: ${valor}`; // i18n-ok: rótulo ya traducido y una cifra
   return (
     <View style={styles.cifra} accessible accessibilityLabel={a11y}>
-      <Text style={[styles.cifraValor, acento && { color: ACENTO }]} maxFontSizeMultiplier={1}>
+      <Text style={[styles.cifraValor, acento && { color: colorAcento }]} maxFontSizeMultiplier={1}>
         {valor}
       </Text>
       <Text style={styles.cifraEtiqueta} maxFontSizeMultiplier={1.2}>
@@ -182,7 +184,7 @@ function Cifra({ valor, etiqueta, acento }: { valor: number; etiqueta: string; a
 
 const styles = StyleSheet.create({
   cabecera: { paddingTop: space.s2, paddingBottom: space.s4, gap: space.s1 },
-  eyebrow: { fontFamily: tipo.label.family, fontSize: 11, letterSpacing: 1.6, color: ACENTO, textTransform: 'uppercase' },
+  eyebrow: { fontFamily: tipo.label.family, fontSize: 11, letterSpacing: 1.6, textTransform: 'uppercase' },
   titulo: { fontFamily: tipo.rank.family, fontSize: 24, lineHeight: 30, letterSpacing: 2, color: ink.ink10 },
   sub: { fontFamily: tipo.bodySm.family, fontSize: 13, lineHeight: 18, color: ink.ink8 },
   cifras: { flexDirection: 'row', gap: space.s3 },
@@ -204,14 +206,11 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: tinte(0.4),
-    backgroundColor: tinte(0.08),
     maxWidth: 160,
   },
   chipTexto: { fontFamily: tipo.micro.family, fontSize: 11, color: ink.ink9 },
   etiqueta: { fontFamily: tipo.micro.family, fontSize: 11, color: ink.ink6, textTransform: 'uppercase', letterSpacing: 1 },
   importe: { fontFamily: tipo.label.family, fontSize: 13, color: ink.ink9 },
-  positivo: { color: ACENTO },
   apagado: { color: ink.ink6 },
   pie: {
     position: 'absolute',

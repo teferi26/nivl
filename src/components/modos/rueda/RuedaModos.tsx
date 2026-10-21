@@ -56,6 +56,7 @@ import {
   finDeGesto,
   mascaraDisponibles,
   puntoEn,
+  opacidadApuntado,
   sectorEn,
   trazoSector,
 } from '@/modos/rueda';
@@ -481,14 +482,16 @@ function SectorRueda({ modo, indice, disponible, resaltado }: { modo: ModoEtique
   const dHalo = trazoSector(0, 0, RUEDA.filoDentro, RUEDA.filoFuera, ang, 90, 5);
   // Filo exterior de 3 pt de pantalla con la rueda a ~1,35 de escala.
   const dFilo = trazoSector(0, 0, RUEDA.filoDentro + 0.6, RUEDA.filoDentro + 2.8, ang, 90, 4);
-  const encendido = useAnimatedProps(() => ({ opacity: resaltado.value === indice ? 1 : 0 }));
+  const encendido = useAnimatedProps(() => ({ opacity: opacidadApuntado(resaltado.value, indice) }));
   if (!disponible) {
     return <Path d={d} fill="none" stroke="rgba(255,255,255,0.16)" strokeWidth={1} strokeDasharray="3 4" />;
   }
   return (
     <>
       <Path d={d} fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.16)" strokeWidth={1} />
-      <AnimatedG animatedProps={encendido}>
+      {/* `opacity={0}` de partida: sin él el grupo nace encendido hasta que su
+          valor animado cambia una vez (todos marcados al abrir la rueda). */}
+      <AnimatedG opacity={0} animatedProps={encendido}>
         {/* Halo corto del filo (la lámina lo desenfoca). */}
         <Path d={dHalo} fill="none" stroke={col} strokeOpacity={0.25} strokeWidth={6} strokeLinejoin="round" />
         <Path d={d} fill={col} fillOpacity={0.85} stroke={col} strokeWidth={1.5} />
@@ -500,11 +503,11 @@ function SectorRueda({ modo, indice, disponible, resaltado }: { modo: ModoEtique
 
 function CentroRueda({ resaltado }: { resaltado: SharedValue<number> }) {
   const oro = acentoRueda.general;
-  const encendido = useAnimatedProps(() => ({ opacity: resaltado.value === 0 ? 1 : 0 }));
+  const encendido = useAnimatedProps(() => ({ opacity: opacidadApuntado(resaltado.value, 0) }));
   return (
     <>
       <Circle r={RUEDA.centro} fill="#000000" stroke={oro} strokeOpacity={0.55} strokeWidth={1.5} />
-      <AnimatedG animatedProps={encendido}>
+      <AnimatedG opacity={0} animatedProps={encendido}>
         <Circle r={RUEDA.centro + 5} fill="none" stroke={oro} strokeOpacity={0.18} strokeWidth={8} />
         <Circle r={RUEDA.centro} fill={oro} fillOpacity={0.25} stroke={oro} strokeWidth={2.5} />
       </AnimatedG>
@@ -531,8 +534,8 @@ function RotuloSector({
   const p = puntoEn(lado / 2, lado / 2, RUEDA.icono * k, ANGULO_MODO[modo]);
   const lado24 = Math.round(24 * k);
   const caja = 100;
-  const estiloOn = useAnimatedStyle(() => ({ opacity: resaltado.value === indice ? 1 : 0 }));
-  const estiloOff = useAnimatedStyle(() => ({ opacity: resaltado.value === indice ? 0 : 1 }));
+  const estiloOn = useAnimatedStyle(() => ({ opacity: opacidadApuntado(resaltado.value, indice) }));
+  const estiloOff = useAnimatedStyle(() => ({ opacity: 1 - opacidadApuntado(resaltado.value, indice) }));
   const nombre = { fontSize: Math.max(11, 8 * k), lineHeight: Math.max(14, 10 * k), letterSpacing: 1.4 * k };
   return (
     <View style={[styles.rotulo, { left: p.x - caja / 2, top: p.y - 6 * k - lado24 / 2, width: caja }]} pointerEvents="none">
@@ -541,7 +544,7 @@ function RotuloSector({
           <GlifoModo modo={modo} tamano={Math.round(lado24 * 0.85)} color={disponible ? col : ink.ink4} />
         </Animated.View>
         {disponible ? (
-          <Animated.View style={[StyleSheet.absoluteFill, styles.medio, estiloOn]}>
+          <Animated.View style={[StyleSheet.absoluteFill, styles.medio, styles.apagadoInicio, estiloOn]}>
             <GlifoModo modo={modo} tamano={Math.round(lado24 * 1.05)} color={ink.ink10} />
           </Animated.View>
         ) : null}
@@ -554,7 +557,7 @@ function RotuloSector({
           {NOMBRE_MODO[modo]}
         </Animated.Text>
         {disponible ? (
-          <Animated.Text style={[styles.nombreSector, styles.encima, nombre, { color: ink.ink10 }, estiloOn]} maxFontSizeMultiplier={1}>
+          <Animated.Text style={[styles.nombreSector, styles.encima, nombre, { color: ink.ink10 }, styles.apagadoInicio, estiloOn]} maxFontSizeMultiplier={1}>
             {NOMBRE_MODO[modo]}
           </Animated.Text>
         ) : null}
@@ -774,6 +777,8 @@ function Onda({ i, cx, cy, k, progreso, reducido }: { i: number; cx: number; cy:
 }
 
 const styles = StyleSheet.create({
+  /** Lo «apuntado» nace apagado; el estilo animado lo enciende bajo el dedo. */
+  apagadoInicio: { opacity: 0 },
   lleno: { flex: 1 },
   medio: { alignItems: 'center', justifyContent: 'center' },
   centroCaja: { position: 'absolute', alignItems: 'center', justifyContent: 'center' },

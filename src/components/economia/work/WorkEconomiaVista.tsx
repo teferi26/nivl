@@ -26,7 +26,7 @@ import { t } from '@/i18n';
 import { capital, fechaCorta, mayus, nombreMes } from '@/i18n/formato';
 import { claveCategoria } from '@/lib/moneywork';
 import type { BriefNumeros, CategoriaPropia, FijoDelMes, LineaCategoria, MovWork, TotalesMes, VistaGeneral } from '@/lib/moneywork';
-import { ACENTO, BarraWork, BotonWork, Filete, TarjetaWork, tinte } from './PiezasWork';
+import { BarraWork, BotonWork, Filete, TarjetaWork, useAcento } from './PiezasWork';
 import { euros, eurosSigno, iconoClave, iconoCuenta, nombreCategoriaMov, nombreClave } from './nombres';
 
 export type EstadoBrief = 'listo' | 'sin_texto' | 'pidiendo' | 'sin_pro' | 'sin_datos';
@@ -87,6 +87,7 @@ function Cifra({ valor, grande }: { valor: number; grande?: boolean }) {
 }
 
 function VistaGeneralTarjeta({ d, acciones }: { d: DatosWorkVista; acciones: AccionesWork }) {
+  const a = useAcento();
   const n = d.vista.cuentas.length;
   return (
     <TarjetaWork
@@ -112,7 +113,7 @@ function VistaGeneralTarjeta({ d, acciones }: { d: DatosWorkVista; acciones: Acc
             style={({ pressed }) => [styles.cuenta, pressed && styles.pulsado]}
           >
             <View style={styles.cuentaFila}>
-              <Ionicons name={iconoCuenta(c.tipo)} size={15} color={ACENTO} />
+              <Ionicons name={iconoCuenta(c.tipo)} size={15} color={a.acento} />
               <Text style={styles.cuentaNombre} numberOfLines={1} maxFontSizeMultiplier={1.35}>
                 {c.nombre}
               </Text>
@@ -136,6 +137,7 @@ function VistaGeneralTarjeta({ d, acciones }: { d: DatosWorkVista; acciones: Acc
 }
 
 function Fijos({ d, acciones }: { d: DatosWorkVista; acciones: AccionesWork }) {
+  const a = useAcento();
   const hechos = d.fijos.filter((f) => f.hecho).length;
   return (
     <TarjetaWork
@@ -160,7 +162,7 @@ function Fijos({ d, acciones }: { d: DatosWorkVista; acciones: AccionesWork }) {
               })}
               style={({ pressed }) => [styles.filaFijo, pressed && styles.pulsado]}
             >
-              <Text style={styles.dia} maxFontSizeMultiplier={1.2}>
+              <Text style={[styles.dia, { color: a.acento }]} maxFontSizeMultiplier={1.2}>
                 {Number(f.fecha.slice(8, 10))}
               </Text>
               <Text style={[styles.fijoNombre, f.hecho && styles.tachado]} numberOfLines={1} maxFontSizeMultiplier={1.35}>
@@ -170,7 +172,7 @@ function Fijos({ d, acciones }: { d: DatosWorkVista; acciones: AccionesWork }) {
                 {eurosSigno(f.fijo.kind === 'gasto' ? -f.fijo.amount : f.fijo.amount)}
               </Text>
               <View style={styles.marcaFijo} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
-                {f.hecho ? <Ionicons name="checkbox-outline" size={14} color={ACENTO} /> : null}
+                {f.hecho ? <Ionicons name="checkbox-outline" size={14} color={a.acento} /> : null}
               </View>
             </Pressable>
           </View>
@@ -226,6 +228,7 @@ function EnQueSeVa({ d, hoy, acciones }: { d: DatosWorkVista; hoy: string; accio
 }
 
 function Movimientos({ d, acciones }: { d: DatosWorkVista; acciones: AccionesWork }) {
+  const a = useAcento();
   return (
     <TarjetaWork rotulo={t('economia:work.movimientos.rotulo')} meta={d.movimientos.length ? t('economia:work.movimientos.meta') : undefined}>
       {d.movimientos.length === 0 ? (
@@ -249,7 +252,7 @@ function Movimientos({ d, acciones }: { d: DatosWorkVista; acciones: AccionesWor
             <Ionicons
               name={m.is_internal ? 'swap-horizontal' : m.amount >= 0 ? 'arrow-down' : iconoClave(claveCategoria(m))}
               size={14}
-              color={ACENTO}
+              color={a.acento}
             />
             <View style={styles.movTextos}>
               <Text style={styles.movConcepto} numberOfLines={1} maxFontSizeMultiplier={1.35}>
@@ -260,7 +263,7 @@ function Movimientos({ d, acciones }: { d: DatosWorkVista; acciones: AccionesWor
               </Text>
             </View>
             <View style={styles.movDerecha}>
-              <Text style={[styles.movImporte, m.amount >= 0 && !m.is_internal && styles.positivo]} maxFontSizeMultiplier={1.2}>
+              <Text style={[styles.movImporte, m.amount >= 0 && !m.is_internal && { color: a.acento }]} maxFontSizeMultiplier={1.2}>
                 {eurosSigno(m.amount)}
               </Text>
               <Text style={styles.movFecha} maxFontSizeMultiplier={1.2}>
@@ -275,10 +278,11 @@ function Movimientos({ d, acciones }: { d: DatosWorkVista; acciones: AccionesWor
 }
 
 function Burbuja({ children }: { children: ReactNode }) {
+  const a = useAcento();
   return (
     <View style={styles.burbujaFila}>
-      <View style={styles.avatar} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
-        <Ionicons name="briefcase-outline" size={14} color={ACENTO} />
+      <View style={[styles.avatar, { borderColor: a.acento }]} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+        <Ionicons name="briefcase-outline" size={14} color={a.acento} />
       </View>
       <View style={styles.burbuja}>{children}</View>
     </View>
@@ -362,13 +366,14 @@ function Brief({ d, acciones }: { d: DatosWorkVista; acciones: AccionesWork }) {
 }
 
 function Importar({ acciones }: { acciones: AccionesWork }) {
+  const a = useAcento();
   return (
     <TarjetaWork rotulo={t('economia:work.importar.rotulo')} meta={t('economia:work.importar.meta')}>
       <Text style={styles.cuerpo} maxFontSizeMultiplier={1.6}>
         {t('economia:work.importar.cuerpo')}
       </Text>
       <View style={styles.seguro}>
-        <Ionicons name="lock-closed-outline" size={13} color={ACENTO} />
+        <Ionicons name="lock-closed-outline" size={13} color={a.acento} />
         <Text style={styles.nota} maxFontSizeMultiplier={1.35}>
           {t('economia:work.importar.nunca')}
         </Text>
@@ -379,8 +384,9 @@ function Importar({ acciones }: { acciones: AccionesWork }) {
 }
 
 function Coach({ acciones }: { acciones: AccionesWork }) {
+  const a = useAcento();
   return (
-    <TarjetaWork rotulo={t('economia:work.coach.rotulo')} meta={'• ' + t('economia:work.coach.enLinea')}>
+    <TarjetaWork rotulo={t('economia:work.coach.rotulo', { modo: a.nombre })} meta={'• ' + t('economia:work.coach.enLinea')}>
       <Burbuja>
         <Text style={styles.burbujaTexto} maxFontSizeMultiplier={1.6}>
           {t('economia:work.coach.cuerpo')}
@@ -389,13 +395,13 @@ function Coach({ acciones }: { acciones: AccionesWork }) {
       <Pressable
         onPress={acciones.onCoach}
         accessibilityRole="button"
-        accessibilityLabel={t('economia:work.coach.preguntaA11y')}
+        accessibilityLabel={t('economia:work.coach.preguntaA11y', { modo: a.nombre })}
         style={({ pressed }) => [styles.pregunta, pressed && styles.pulsado]}
       >
         <Text style={styles.preguntaTexto} numberOfLines={1} maxFontSizeMultiplier={1.35}>
-          {t('economia:work.coach.pregunta')}
+          {t('economia:work.coach.pregunta', { modo: a.nombre })}
         </Text>
-        <View style={styles.enviar}>
+        <View style={[styles.enviar, { backgroundColor: a.acento }]}>
           <Ionicons name="arrow-forward" size={14} color={ink.ink0} />
         </View>
       </Pressable>
@@ -404,6 +410,7 @@ function Coach({ acciones }: { acciones: AccionesWork }) {
 }
 
 export function WorkEconomiaVista({ cabecera, estado, error, refrescando, hoy, datos: d, aviso, acciones }: WorkEconomiaVistaProps) {
+  const a = useAcento();
   return (
     <Screen refreshing={refrescando} onRefresh={acciones.onRefrescar}>
       <Entrada indice={0}>{cabecera}</Entrada>
@@ -423,7 +430,7 @@ export function WorkEconomiaVista({ cabecera, estado, error, refrescando, hoy, d
               {t('economia:work.preparando.titulo')}
             </Text>
             <Text style={styles.cuerpo} maxFontSizeMultiplier={1.6}>
-              {t('economia:work.preparando.cuerpo')}
+              {t('economia:work.preparando.cuerpo', { modo: a.nombre })}
             </Text>
           </TarjetaWork>
         </Entrada>
@@ -443,8 +450,8 @@ export function WorkEconomiaVista({ cabecera, estado, error, refrescando, hoy, d
         <>
           {aviso ? (
             <Pressable onPress={acciones.onOlvidarAviso} accessibilityRole="button" accessibilityLabel={t('economia:work.avisoA11y', { texto: aviso })}>
-              <View style={styles.avisoSistema}>
-                <Ionicons name="checkmark-circle" size={15} color={ACENTO} />
+              <View style={[styles.avisoSistema, { borderColor: a.tinte(0.35) }]}>
+                <Ionicons name="checkmark-circle" size={15} color={a.acento} />
                 <Text style={styles.avisoTexto} maxFontSizeMultiplier={1.35}>
                   {aviso}
                 </Text>
@@ -521,7 +528,6 @@ const styles = StyleSheet.create({
     width: 22,
     fontFamily: tipo.rank.family,
     fontSize: 15,
-    color: ACENTO,
     textAlign: 'left',
   },
   fijoNombre: { flex: 1, minWidth: 0, fontFamily: tipo.micro.family, fontSize: 13.5, color: ink.ink9 },
@@ -539,7 +545,6 @@ const styles = StyleSheet.create({
   movDetalle: { fontFamily: tipo.micro.family, fontSize: 11, lineHeight: 14, color: ink.ink6, marginTop: 1 },
   movDerecha: { alignItems: 'flex-end' },
   movImporte: { fontFamily: tipo.label.family, fontSize: 13, lineHeight: 18, color: ink.ink9 },
-  positivo: { color: ACENTO },
   movFecha: { fontFamily: tipo.micro.family, fontSize: 11, lineHeight: 14, color: ink.ink6 },
   burbujaFila: { flexDirection: 'row', gap: space.s3, alignItems: 'flex-start' },
   avatar: {
@@ -547,7 +552,6 @@ const styles = StyleSheet.create({
     height: 30,
     borderRadius: 15,
     borderWidth: 1,
-    borderColor: ACENTO,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -590,14 +594,13 @@ const styles = StyleSheet.create({
     paddingRight: 6,
   },
   preguntaTexto: { flex: 1, fontFamily: tipo.bodySm.family, fontSize: 13, color: ink.ink6 },
-  enviar: { width: 30, height: 30, borderRadius: 7, backgroundColor: ACENTO, alignItems: 'center', justifyContent: 'center' },
+  enviar: { width: 30, height: 30, borderRadius: 7, alignItems: 'center', justifyContent: 'center' },
   avisoSistema: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: space.s2,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: tinte(0.35),
     paddingHorizontal: space.s3,
     paddingVertical: space.s2,
     marginBottom: space.s3,

@@ -142,7 +142,7 @@
     },
     "preparando": {
       "titulo": "Deine Finanzen werden vorbereitet",
-      "cuerpo": "Die Kontoübersicht von WORK kommt in wenigen Tagen. Was du schon hast, bleibt sicher."
+      "cuerpo": "Die Kontoübersicht von {{modo}} kommt in wenigen Tagen. Was du schon hast, bleibt sicher."
     },
     "primera": {
       "meta": "Hier starten",
@@ -209,11 +209,11 @@
       "elegir": "Datei wählen"
     },
     "coach": {
-      "rotulo": "Coach WORK",
+      "rotulo": "Coach {{modo}}",
       "enLinea": "Online",
       "cuerpo": "Frag mich, wohin dein Geld geht oder wie du den Monat ordnest.",
-      "pregunta": "Frag den Coach WORK",
-      "preguntaA11y": "Coach von WORK öffnen"
+      "pregunta": "Frag den Coach {{modo}}",
+      "preguntaA11y": "Coach von {{modo}} öffnen"
     },
     "avisos": {
       "fijos_one": "{{count}} Fixposten bis heute eingetragen.",

@@ -94,6 +94,16 @@ export function sectorEn(dx: number, dy: number, escala: number, disponibles: re
   return disponibles[i] ? i : -1;
 }
 
+/**
+ * Opacidad del resaltado «apuntado» del hueco `indice`: 1 solo si el dedo está
+ * sobre él. Con `resaltado` a -1 (rueda recién abierta, nada apuntado) ninguno
+ * se enciende, y nunca hay dos a la vez.
+ */
+export function opacidadApuntado(resaltado: number, indice: number): number {
+  'worklet';
+  return resaltado >= 0 && resaltado === indice ? 1 : 0;
+}
+
 /** La máscara de `sectorEn`: qué huecos de la rueda se pueden elegir. NIVL siempre. */
 export function mascaraDisponibles(disponibles: readonly ModoId[]): boolean[] {
   return ORDEN_RUEDA.map((m) => m === 'general' || disponibles.includes(m));

@@ -316,7 +316,7 @@ const styles = StyleSheet.create({
     borderRadius: RADIO_BOTON,
     borderWidth: 1.5,
     borderColor: ACENTO,
-    backgroundColor: tinte(0.08),
+    backgroundColor: tinte(0.08, ACENTO),
     alignItems: 'center',
     justifyContent: 'center',
   },

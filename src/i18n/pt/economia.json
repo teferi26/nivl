@@ -142,7 +142,7 @@
     },
     "preparando": {
       "titulo": "As tuas finanças estão a ser preparadas",
-      "cuerpo": "O controlo de contas do WORK chega dentro de dias. O que já tens continua seguro."
+      "cuerpo": "O controlo de contas do {{modo}} chega dentro de dias. O que já tens continua seguro."
     },
     "primera": {
       "meta": "Começa aqui",
@@ -209,11 +209,11 @@
       "elegir": "Escolher ficheiro"
     },
     "coach": {
-      "rotulo": "Coach WORK",
+      "rotulo": "Coach {{modo}}",
       "enLinea": "Online",
       "cuerpo": "Pergunta-me para onde vai o teu dinheiro ou como organizar o mês.",
-      "pregunta": "Pergunta ao coach WORK",
-      "preguntaA11y": "Abrir o coach do WORK"
+      "pregunta": "Pergunta ao coach {{modo}}",
+      "preguntaA11y": "Abrir o coach do {{modo}}"
     },
     "avisos": {
       "fijos_one": "{{count}} fixo anotado até hoje.",

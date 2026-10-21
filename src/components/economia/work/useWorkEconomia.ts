@@ -104,7 +104,7 @@ function leerSaldo(texto: string): number | null {
   return negativo ? -n : n;
 }
 
-export function useWorkEconomia(): UsoWorkEconomia {
+export function useWorkEconomia(modo: 'work' | 'founder' = 'work'): UsoWorkEconomia {
   const consentimiento = useConsentimientoIA();
   const hoy = dateKey();
 
@@ -626,7 +626,7 @@ export function useWorkEconomia(): UsoWorkEconomia {
           setCatError(null);
           setCatAbierta(true);
         },
-        onCoach: () => router.navigate(rutaCoachDe('work')),
+        onCoach: () => router.navigate(rutaCoachDe(modo)),
         onOlvidarAviso: () => setAviso(null),
       },
     },

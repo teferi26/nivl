@@ -18,7 +18,7 @@ import { Button, Sheet } from '@/components/ui';
 import { ink, space, type as tipo } from '@/design/tokens';
 import { t } from '@/i18n';
 import { BASE_DE_GRUPO, GRUPOS, type CategoriaPropia, type GrupoId, type TipoCuenta } from '@/lib/moneywork';
-import { ACENTO, BotonWork, ChipWork, FilaChips, RotuloGrupo, tinte } from './PiezasWork';
+import { BotonWork, ChipWork, FilaChips, RotuloGrupo, useAcento } from './PiezasWork';
 import { euros, ICONO_GRUPO, iconoCuenta, nombreGrupo } from './nombres';
 
 export interface CuentaElegible {
@@ -92,6 +92,7 @@ export interface HojaMovimientoProps {
 }
 
 export function HojaMovimiento(p: HojaMovimientoProps) {
+  const a = useAcento();
   const tipo = p.tipo ?? 'gasto';
   const propias = p.propias.filter((c) => c.kind === tipo);
   return (
@@ -108,7 +109,7 @@ export function HojaMovimiento(p: HojaMovimientoProps) {
           <ChipWork etiqueta={t('economia:work.hojas.mov.ingreso')} icono="add" elegido={tipo === 'ingreso'} onPress={() => p.onTipo('ingreso')} />
         </FilaChips>
         <Campo
-          style={styles.campo}
+          style={[styles.campo, { borderColor: a.tinte(0.55) }]}
           etiqueta={t('economia:work.hojas.mov.importe')}
           value={p.importe}
           onChangeText={p.onImporte}
@@ -159,7 +160,7 @@ export function HojaMovimiento(p: HojaMovimientoProps) {
           </FilaChips>
         </View>
         <Campo
-          style={styles.campo}
+          style={[styles.campo, { borderColor: a.tinte(0.55) }]}
           etiqueta={t('economia:work.hojas.mov.concepto')}
           value={p.concepto}
           onChangeText={p.onConcepto}
@@ -193,6 +194,7 @@ export interface HojaTransferenciaProps {
 }
 
 export function HojaTransferencia(p: HojaTransferenciaProps) {
+  const a = useAcento();
   return (
     <Sheet
       visible={p.visible}
@@ -213,7 +215,7 @@ export function HojaTransferencia(p: HojaTransferenciaProps) {
         <SelectorCuenta cuentas={p.cuentas} elegida={p.origen} onElegir={p.onOrigen} rotulo={t('economia:work.hojas.trf.desde')} />
         <SelectorCuenta cuentas={p.cuentas} elegida={p.destino} excluir={p.origen} onElegir={p.onDestino} rotulo={t('economia:work.hojas.trf.a')} />
         <Campo
-          style={styles.campo}
+          style={[styles.campo, { borderColor: a.tinte(0.55) }]}
           etiqueta={t('economia:work.hojas.mov.importe')}
           value={p.importe}
           onChangeText={p.onImporte}
@@ -223,7 +225,7 @@ export function HojaTransferencia(p: HojaTransferenciaProps) {
           error={p.errorImporte}
         />
         <Campo
-          style={styles.campo}
+          style={[styles.campo, { borderColor: a.tinte(0.55) }]}
           etiqueta={t('economia:work.hojas.mov.concepto')}
           value={p.concepto}
           onChangeText={p.onConcepto}
@@ -259,6 +261,7 @@ export interface HojaCuentaProps {
 }
 
 export function HojaCuenta(p: HojaCuentaProps) {
+  const a = useAcento();
   return (
     <Sheet
       visible={p.visible}
@@ -278,7 +281,7 @@ export function HojaCuenta(p: HojaCuentaProps) {
     >
       <View style={styles.pila}>
         <Campo
-          style={styles.campo}
+          style={[styles.campo, { borderColor: a.tinte(0.55) }]}
           etiqueta={t('economia:work.hojas.cuentaHoja.nombre')}
           value={p.nombre}
           onChangeText={p.onNombre}
@@ -297,7 +300,7 @@ export function HojaCuenta(p: HojaCuentaProps) {
           </View>
         )}
         <Campo
-          style={styles.campo}
+          style={[styles.campo, { borderColor: a.tinte(0.55) }]}
           etiqueta={t('economia:work.hojas.cuentaHoja.saldo')}
           value={p.saldo}
           onChangeText={p.onSaldo}
@@ -339,6 +342,7 @@ export interface HojaFijoProps {
 }
 
 export function HojaFijo(p: HojaFijoProps) {
+  const a = useAcento();
   const ingreso = p.tipo === 'ingreso';
   return (
     <Sheet
@@ -358,7 +362,7 @@ export function HojaFijo(p: HojaFijoProps) {
           {t(ingreso ? 'economia:work.hojas.fijo.subIngreso' : 'economia:work.hojas.fijo.subGasto')}
         </Text>
         <Campo
-          style={styles.campo}
+          style={[styles.campo, { borderColor: a.tinte(0.55) }]}
           etiqueta={t('economia:work.hojas.fijo.nombre')}
           value={p.nombre}
           onChangeText={p.onNombre}
@@ -369,7 +373,7 @@ export function HojaFijo(p: HojaFijoProps) {
         <View style={styles.dosCampos}>
           <View style={styles.flex}>
             <Campo
-              style={styles.campo}
+              style={[styles.campo, { borderColor: a.tinte(0.55) }]}
               etiqueta={t('economia:work.hojas.mov.importe')}
               value={p.importe}
               onChangeText={p.onImporte}
@@ -380,7 +384,7 @@ export function HojaFijo(p: HojaFijoProps) {
           </View>
           <View style={styles.campoDia}>
             <Campo
-              style={styles.campo}
+              style={[styles.campo, { borderColor: a.tinte(0.55) }]}
               etiqueta={t('economia:work.hojas.fijo.dia')}
               value={p.dia}
               onChangeText={p.onDia}
@@ -437,6 +441,7 @@ export interface HojaCategoriasProps {
 }
 
 export function HojaCategorias(p: HojaCategoriasProps) {
+  const a = useAcento();
   return (
     <Sheet
       visible={p.visible}
@@ -471,7 +476,7 @@ export function HojaCategorias(p: HojaCategoriasProps) {
         ) : null}
         <View style={styles.separador} />
         <Campo
-          style={styles.campo}
+          style={[styles.campo, { borderColor: a.tinte(0.55) }]}
           etiqueta={t('economia:work.hojas.cat.nueva')}
           value={p.nombre}
           onChangeText={p.onNombre}
@@ -509,6 +514,7 @@ export interface HojaImportarProps {
 }
 
 export function HojaImportar(p: HojaImportarProps) {
+  const a = useAcento();
   return (
     <Sheet
       visible={p.visible}
@@ -526,14 +532,14 @@ export function HojaImportar(p: HojaImportarProps) {
         <SelectorCuenta cuentas={p.cuentas} elegida={p.cuenta} onElegir={p.onCuenta} rotulo={t('economia:work.hojas.imp.deQue')} />
         {(['economia:work.hojas.imp.paso1', 'economia:work.hojas.imp.paso2', 'economia:work.hojas.imp.paso3'] as const).map((clave, n) => (
           <View key={n} style={styles.paso}>
-            <Text style={styles.pasoNum}>{n + 1}</Text>
+            <Text style={[styles.pasoNum, { color: a.acento }]}>{n + 1}</Text>
             <Text style={styles.sub} maxFontSizeMultiplier={1.35}>
               {t(clave)}
             </Text>
           </View>
         ))}
         <View style={styles.seguro}>
-          <Ionicons name="lock-closed-outline" size={14} color={ACENTO} />
+          <Ionicons name="lock-closed-outline" size={14} color={a.acento} />
           <Text style={styles.sub} maxFontSizeMultiplier={1.35}>
             {t('economia:work.hojas.imp.privacidad')}
           </Text>
@@ -596,7 +602,7 @@ export function baseDe(c: CategoriaElegida, propias: readonly CategoriaPropia[])
 
 const styles = StyleSheet.create({
   pila: { gap: space.s5 },
-  campo: { borderRadius: 10, borderColor: tinte(0.55) },
+  campo: { borderRadius: 10 },
   grupo: { gap: space.s2 },
   sub: { flex: 1, fontFamily: tipo.bodySm.family, fontSize: tipo.bodySm.size, lineHeight: tipo.bodySm.lineHeight, color: ink.ink8 },
   dosCampos: { flexDirection: 'row', gap: space.s3 },
@@ -604,6 +610,6 @@ const styles = StyleSheet.create({
   campoDia: { width: 96 },
   separador: { height: 1, backgroundColor: ink.ink3 },
   paso: { flexDirection: 'row', gap: space.s3, alignItems: 'flex-start' },
-  pasoNum: { width: 18, fontFamily: tipo.label.family, fontSize: 14, lineHeight: 20, color: ACENTO },
+  pasoNum: { width: 18, fontFamily: tipo.label.family, fontSize: 14, lineHeight: 20 },
   seguro: { flexDirection: 'row', gap: space.s2, alignItems: 'flex-start' },
 });

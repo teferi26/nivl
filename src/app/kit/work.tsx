@@ -108,7 +108,7 @@ const styles = StyleSheet.create({
     borderRadius: 28,
     borderWidth: 2,
     borderColor: ACENTO,
-    backgroundColor: tinte(0.1),
+    backgroundColor: tinte(0.1, ACENTO),
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: -22,

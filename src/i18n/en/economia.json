@@ -142,7 +142,7 @@
     },
     "preparando": {
       "titulo": "Your money is being set up",
-      "cuerpo": "WORK account tracking arrives in a few days. What you already have stays safe."
+      "cuerpo": "{{modo}} account tracking arrives in a few days. What you already have stays safe."
     },
     "primera": {
       "meta": "Start here",
@@ -209,11 +209,11 @@
       "elegir": "Choose file"
     },
     "coach": {
-      "rotulo": "WORK coach",
+      "rotulo": "{{modo}} coach",
       "enLinea": "Online",
       "cuerpo": "Ask me where your money goes or how to organise the month.",
-      "pregunta": "Ask the WORK coach",
-      "preguntaA11y": "Open the WORK coach"
+      "pregunta": "Ask the {{modo}} coach",
+      "preguntaA11y": "Open the {{modo}} coach"
     },
     "avisos": {
       "fijos_one": "{{count}} fixed item added up to today.",

@@ -142,7 +142,7 @@
     },
     "preparando": {
       "titulo": "Tes finances se préparent",
-      "cuerpo": "Le suivi des comptes de WORK arrive dans quelques jours. Ce que tu as déjà reste en sécurité."
+      "cuerpo": "Le suivi des comptes de {{modo}} arrive dans quelques jours. Ce que tu as déjà reste en sécurité."
     },
     "primera": {
       "meta": "Commence ici",
@@ -209,11 +209,11 @@
       "elegir": "Choisir un fichier"
     },
     "coach": {
-      "rotulo": "Coach WORK",
+      "rotulo": "Coach {{modo}}",
       "enLinea": "En ligne",
       "cuerpo": "Demande-moi où part ton argent ou comment organiser le mois.",
-      "pregunta": "Demande au coach WORK",
-      "preguntaA11y": "Ouvrir le coach de WORK"
+      "pregunta": "Demande au coach {{modo}}",
+      "preguntaA11y": "Ouvrir le coach de {{modo}}"
     },
     "avisos": {
       "fijos_one": "{{count}} fixe noté à ce jour.",

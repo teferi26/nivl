@@ -12,24 +12,54 @@
 //   · BarraWork: la barra fina de «Proyectos» (pista gris, relleno del acento).
 //   · ChipWork: elegir (cuenta, categoría); el elegido, con el filete del acento.
 //
-// El acento del modo (tokens.ts → modoAcento.work) es el único color; lo
-// demás es la escala ink. Ningún texto va sobre el acento salvo en ink0.
+// El acento del modo (tokens.ts → modoAcento) es el único color; lo demás es
+// la escala ink. Ningún texto va sobre el acento salvo en ink0. La misma
+// economía sirve a WORK y a FOUNDER: el acento llega por `AcentoEconomia`
+// (esmeralda por defecto) y cada pieza lo lee con `useAcento()`.
 
 import Ionicons from '@expo/vector-icons/Ionicons';
-import type { ReactNode } from 'react';
+import { createContext, useContext, useMemo, type ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 import { vibrar } from '@/design/haptics';
 import { ink, modoAcento, space, type as tipo } from '@/design/tokens';
 
+/** El acento de WORK (el de por defecto; las demos lo usan tal cual). */
 export const ACENTO = modoAcento.work;
 
 /** El acento con transparencia (tinte de fondo y filetes). */
-export function tinte(alfa: number, hex: string = ACENTO): string {
+export function tinte(alfa: number, hex: string): string {
   const h = hex.replace('#', '');
   const r = parseInt(h.slice(0, 2), 16);
   const g = parseInt(h.slice(2, 4), 16);
   const b = parseInt(h.slice(4, 6), 16);
   return `rgba(${r}, ${g}, ${b}, ${alfa})`;
+}
+
+/** Los modos que comparten esta economía. */
+export type ModoEconomia = 'work' | 'founder';
+
+const AcentoCtx = createContext<ModoEconomia>('work');
+
+/** Da el modo (WORK o FOUNDER) y su acento a toda la economía que envuelve. */
+export function AcentoEconomia({ modo, children }: { modo: ModoEconomia; children: ReactNode }) {
+  return <AcentoCtx.Provider value={modo}>{children}</AcentoCtx.Provider>;
+}
+
+export type Acento = {
+  modo: ModoEconomia;
+  /** El nombre del modo tal como se lee («WORK», «FOUNDER»). */
+  nombre: string;
+  acento: string;
+  tinte: (alfa: number) => string;
+};
+
+/** El acento del modo en curso y su tinte con transparencia. */
+export function useAcento(): Acento {
+  const modo = useContext(AcentoCtx);
+  return useMemo(() => {
+    const acento = modoAcento[modo];
+    return { modo, nombre: modo.toUpperCase(), acento, tinte: (alfa: number) => tinte(alfa, acento) };
+  }, [modo]);
 }
 
 export const RADIO = 12;
@@ -54,8 +84,10 @@ export function TarjetaWork({
   children?: ReactNode;
   style?: StyleProp<ViewStyle>;
 }) {
+  const a = useAcento();
+  const colorMeta = { color: a.acento };
   return (
-    <View style={[styles.tarjeta, destacada && styles.destacada, style]}>
+    <View style={[styles.tarjeta, destacada && { backgroundColor: a.tinte(0.07), borderColor: a.tinte(0.45) }, style]}>
       {rotulo || meta ? (
         <View style={styles.cabecera}>
           {rotulo ? (
@@ -68,12 +100,12 @@ export function TarjetaWork({
           {meta ? (
             onMeta ? (
               <Pressable onPress={onMeta} hitSlop={12} accessibilityRole="button" accessibilityLabel={metaA11y ?? meta}>
-                <Text style={styles.meta} maxFontSizeMultiplier={1.35}>
+                <Text style={[styles.meta, colorMeta]} maxFontSizeMultiplier={1.35}>
                   {meta}
                 </Text>
               </Pressable>
             ) : (
-              <Text style={styles.meta} maxFontSizeMultiplier={1.35} accessibilityLabel={metaA11y}>
+              <Text style={[styles.meta, colorMeta]} maxFontSizeMultiplier={1.35} accessibilityLabel={metaA11y}>
                 {meta}
               </Text>
             )
@@ -104,7 +136,8 @@ export function BotonWork({
   accessibilityLabel?: string;
   style?: StyleProp<ViewStyle>;
 }) {
-  const color = variante === 'lleno' ? ink.ink0 : disabled ? ink.ink6 : ACENTO;
+  const a = useAcento();
+  const color = variante === 'lleno' ? ink.ink0 : disabled ? ink.ink6 : a.acento;
   return (
     <Pressable
       onPress={() => {
@@ -117,8 +150,8 @@ export function BotonWork({
       accessibilityState={{ disabled: !!disabled, busy: !!cargando }}
       style={({ pressed }) => [
         styles.boton,
-        variante === 'lleno' && styles.botonLleno,
-        variante === 'contorno' && styles.botonContorno,
+        variante === 'lleno' && { backgroundColor: a.acento },
+        variante === 'contorno' && [styles.botonContorno, { borderColor: a.tinte(0.55), backgroundColor: a.tinte(0.06) }],
         variante === 'texto' && styles.botonTexto,
         disabled && variante === 'lleno' && styles.botonApagado,
         pressed && !disabled && styles.pulsado,
@@ -138,10 +171,11 @@ export function BotonWork({
 }
 
 export function BarraWork({ ratio, alto = 4 }: { ratio: number; alto?: number }) {
+  const { acento } = useAcento();
   const r = Math.max(0, Math.min(1, Number.isFinite(ratio) ? ratio : 0));
   return (
     <View style={[styles.pista, { height: alto, borderRadius: alto / 2 }]} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
-      <View style={[styles.relleno, { width: `${Math.round(r * 1000) / 10}%`, height: alto, borderRadius: alto / 2 }]} />
+      <View style={[{ backgroundColor: acento, width: `${Math.round(r * 1000) / 10}%`, height: alto, borderRadius: alto / 2 }]} />
     </View>
   );
 }
@@ -161,6 +195,7 @@ export function ChipWork({
   disabled?: boolean;
   accessibilityLabel?: string;
 }) {
+  const a = useAcento();
   return (
     <Pressable
       onPress={() => {
@@ -172,9 +207,9 @@ export function ChipWork({
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel ?? etiqueta}
       accessibilityState={{ selected: !!elegido, disabled: !!disabled }}
-      style={({ pressed }) => [styles.chip, elegido && styles.chipElegido, disabled && styles.chipApagado, pressed && styles.pulsado]}
+      style={({ pressed }) => [styles.chip, elegido && { borderColor: a.acento, backgroundColor: a.tinte(0.12) }, disabled && styles.chipApagado, pressed && styles.pulsado]}
     >
-      {icono ? <Ionicons name={icono} size={14} color={elegido ? ACENTO : ink.ink8} /> : null}
+      {icono ? <Ionicons name={icono} size={14} color={elegido ? a.acento : ink.ink8} /> : null}
       <Text style={[styles.chipTexto, elegido && styles.chipTextoElegido]} maxFontSizeMultiplier={1.3} numberOfLines={1}>
         {etiqueta}
       </Text>
@@ -211,10 +246,6 @@ const styles = StyleSheet.create({
     paddingBottom: space.s4,
     marginBottom: space.s3,
   },
-  destacada: {
-    backgroundColor: tinte(0.07),
-    borderColor: tinte(0.45),
-  },
   cabecera: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -237,7 +268,6 @@ const styles = StyleSheet.create({
     lineHeight: tipo.micro.lineHeight,
     letterSpacing: 1.6,
     textTransform: 'uppercase',
-    color: ACENTO,
   },
   boton: {
     minHeight: 44,
@@ -248,8 +278,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: space.s4,
     borderRadius: RADIO_BOTON,
   },
-  botonLleno: { backgroundColor: ACENTO },
-  botonContorno: { borderWidth: 1, borderColor: tinte(0.55), backgroundColor: tinte(0.06) },
+  botonContorno: { borderWidth: 1 },
   botonTexto: { minHeight: 44, paddingHorizontal: 0, justifyContent: 'flex-start' },
   botonApagado: { backgroundColor: ink.ink3 },
   pulsado: { opacity: 0.8 },
@@ -263,7 +292,6 @@ const styles = StyleSheet.create({
   botonTextoMedio: { fontSize: 12, letterSpacing: 1.4 },
   botonTextoChico: { fontSize: tipo.micro.size, letterSpacing: 1.6 },
   pista: { backgroundColor: ink.ink3, overflow: 'hidden' },
-  relleno: { backgroundColor: ACENTO },
   chip: {
     minHeight: 36,
     flexDirection: 'row',
@@ -275,7 +303,6 @@ const styles = StyleSheet.create({
     borderColor: ink.ink4,
     backgroundColor: ink.ink2,
   },
-  chipElegido: { borderColor: ACENTO, backgroundColor: tinte(0.12) },
   chipApagado: { opacity: 0.45 },
   chipTexto: { fontFamily: tipo.bodySm.family, fontSize: tipo.bodySm.size, color: ink.ink8 },
   chipTextoElegido: { color: ink.ink10 },

@@ -142,7 +142,7 @@
     },
     "preparando": {
       "titulo": "Tu economía se está preparando",
-      "cuerpo": "El control de cuentas de WORK llega en unos días. Lo que ya tienes sigue a salvo."
+      "cuerpo": "El control de cuentas de {{modo}} llega en unos días. Lo que ya tienes sigue a salvo."
     },
     "primera": {
       "meta": "Empieza aquí",
@@ -209,11 +209,11 @@
       "elegir": "Elegir archivo"
     },
     "coach": {
-      "rotulo": "Coach WORK",
+      "rotulo": "Coach {{modo}}",
       "enLinea": "En línea",
       "cuerpo": "Pregúntame en qué se te va el dinero o cómo organizar el mes.",
-      "pregunta": "Pregunta al coach WORK",
-      "preguntaA11y": "Abrir el coach de WORK"
+      "pregunta": "Pregunta al coach {{modo}}",
+      "preguntaA11y": "Abrir el coach de {{modo}}"
     },
     "avisos": {
       "fijos_one": "{{count}} fijo apuntado al día de hoy.",

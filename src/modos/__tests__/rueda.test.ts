@@ -11,6 +11,7 @@ import {
   indiceSector,
   mascaraDisponibles,
   modoDeIndice,
+  opacidadApuntado,
   puntoEn,
   radioCubre,
   resultadoEleccion,
@@ -136,5 +137,18 @@ describe('anterior (se marca en la rueda)', () => {
     expect(anteriorTrasCambio('general', 'iron', null)).toBe('general');
     expect(anteriorTrasCambio('iron', 'focus', 'general')).toBe('iron');
     expect(anteriorTrasCambio('iron', 'iron', 'general')).toBe('general');
+  });
+});
+
+describe('opacidadApuntado', () => {
+  it('al abrir (nada apuntado) no enciende ningún hueco', () => {
+    expect(ORDEN_RUEDA.map((_, i) => opacidadApuntado(-1, i))).toEqual([0, 0, 0, 0, 0]);
+  });
+  it('enciende solo el hueco bajo el dedo, nunca varios', () => {
+    ORDEN_RUEDA.forEach((_, apuntado) => {
+      const encendidos = ORDEN_RUEDA.map((__, i) => opacidadApuntado(apuntado, i)).filter((o) => o === 1);
+      expect(encendidos).toHaveLength(1);
+      expect(opacidadApuntado(apuntado, apuntado)).toBe(1);
+    });
   });
 });
