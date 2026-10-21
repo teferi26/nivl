@@ -314,7 +314,7 @@ export interface PropuestaServidor {
   descartadas: number;
 }
 
-/** El PDF va al servidor (la IA lo lee); el CSV, solo si el móvil no puede leerlo. */
+/** Solo el PDF va al servidor (la IA lo lee); el CSV se lee siempre en el móvil. */
 export function pedirPropuesta(a: ArchivoExtracto, cuenta: { id: string; name: string }): Promise<PropuestaServidor> {
   return llamar<PropuestaServidor>({ accion: 'extracto', tipo: a.tipo, contenido: a.contenido, cuenta: cuenta.name, cuenta_id: cuenta.id });
 }

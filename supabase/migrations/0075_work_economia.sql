@@ -48,10 +48,25 @@
 begin;
 
 -- ── 1. Cuentas: saldo inicial ────────────────────────────────────────
+-- Las cuentas que YA existen conservan su saldo: entran con fecha de alta
+-- 1900-01-01 (cuentan todos sus movimientos) y, si el importador dejó un
+-- saldo reportado (`balance` a fecha `balance_at`), el saldo inicial es el
+-- que hace que inicial + movimientos hasta esa fecha = ese saldo. Las cuentas
+-- nuevas empiezan el día de alta con el saldo que escriba la persona.
 alter table public.money_accounts
   add column if not exists opening_balance numeric not null default 0,
-  add column if not exists opening_date date not null default current_date,
+  add column if not exists opening_date date not null default date '1900-01-01',
   add column if not exists sort_order integer not null default 0;
+alter table public.money_accounts alter column opening_date set default current_date;
+
+update public.money_accounts a
+   set opening_balance = round(a.balance - coalesce((
+         select sum(t.amount) from public.transactions t
+          where t.account_id = a.id and t.user_id = a.user_id and t.date <= a.balance_at::date), 0), 2)
+ where a.opening_date = date '1900-01-01' and a.opening_balance = 0
+   and a.balance is not null and a.balance_at is not null
+   -- Con un borrado de cuenta pendiente, account_write_guard no deja tocarla.
+   and not public.account_erasure_pending(a.user_id);
 
 alter table public.money_accounts drop constraint if exists money_accounts_opening_balance_check;
 alter table public.money_accounts add constraint money_accounts_opening_balance_check
@@ -142,8 +157,33 @@ create table if not exists public.money_briefs (
 alter table public.money_categories enable row level security;
 alter table public.money_recurring enable row level security;
 alter table public.money_briefs enable row level security;
-revoke all on public.money_categories, public.money_recurring, public.money_briefs from public, anon;
-grant select, insert, update, delete on public.money_categories, public.money_recurring, public.money_briefs to authenticated;
+revoke all on public.money_categories, public.money_recurring, public.money_briefs from public, anon, authenticated;
+grant select, insert, update, delete on public.money_categories, public.money_recurring to authenticated;
+-- El brief lo escribe solo la función `economia` (service_role): la app lo
+-- lee y, como mucho, lo borra para pedir otro.
+grant select, delete on public.money_briefs to authenticated;
+grant all on public.money_categories, public.money_recurring, public.money_briefs to service_role;
+
+-- Con un borrado de cuenta pendiente no entra nada nuevo (0031), igual que
+-- en el resto de tablas de dinero.
+do $$
+begin
+  if to_regprocedure('public.require_account_active()') is not null then
+    drop trigger if exists account_write_guard on public.money_categories;
+    create trigger account_write_guard before insert or update on public.money_categories
+      for each row execute function public.require_account_active('user_id');
+    drop trigger if exists account_write_guard on public.money_recurring;
+    create trigger account_write_guard before insert or update on public.money_recurring
+      for each row execute function public.require_account_active('user_id');
+    drop trigger if exists account_write_guard on public.money_briefs;
+    create trigger account_write_guard before insert or update on public.money_briefs
+      for each row execute function public.require_account_active('user_id');
+  end if;
+end $$;
+-- health_write (0030) NO se pone aquí: health_row() trata una tabla que no
+-- conoce como de salud («else true») y exigiría el permiso de salud para
+-- apuntar un gasto. Los nombres de fijos y categorías los escribe la persona;
+-- si un día los escribe la IA, se añade health_note y el caso en health_row.
 
 drop policy if exists "own money_categories" on public.money_categories;
 create policy "own money_categories" on public.money_categories for all to authenticated

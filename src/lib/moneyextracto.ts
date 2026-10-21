@@ -266,6 +266,21 @@ export function leerLineasIa(texto: string): LecturaExtracto {
   return { filas, descartadas, error: filas.length === 0 ? 'vacio' : null };
 }
 
+/**
+ * Enmascara IBAN, números de cuenta y de tarjeta en el texto de un extracto
+ * ANTES de mandarlo a la IA: se queda con los 4 últimos dígitos («ES12 ****
+ * 3456»). Cubre IBAN (con o sin espacios), CCC de 20 dígitos y tarjetas de 13
+ * a 19 dígitos (con espacios o guiones), y cualquier tira de 10 o más cifras.
+ * Las fechas y los importes no se tocan: llevan separadores y son cortos.
+ */
+export function enmascararDatosBancarios(texto: string): string {
+  const ultimos4 = (s: string) => s.replace(/\D/g, '').slice(-4);
+  return texto
+    .replace(/\b[A-Z]{2}\d{2}(?:[ ]?[A-Z0-9]){11,30}\b/g, (m) => `${m.slice(0, 2)}** **** ${ultimos4(m)}`)
+    .replace(/\d{10,}/g, (m) => `****${m.slice(-4)}`)
+    .replace(/\b\d{4}(?:[ -]\d{4}){2,3}\b|\b\d{4}[ -]\d{6}[ -]\d{5}\b/g, (m) => `**** ${ultimos4(m)}`);
+}
+
 /** Reglas de categoría: las de la persona (category_rules) y las de serie. */
 export interface ReglaCategoria {
   pattern: string;

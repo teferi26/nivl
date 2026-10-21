@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import {
   categorizar,
+  enmascararDatosBancarios,
   huellaExtracto,
   leerExtractoCsv,
   leerFecha,
@@ -125,6 +126,23 @@ describe('categorías y propuesta', () => {
     expect(p[4]!.categoria).toBe('transferencia');
     const p2 = proponerImportacion([filas[2]!], 'BBVA', [], [{ date: '2026-10-04', amount: -3.5, dedup_hash: 'app|x', source: 'manual' }]);
     expect(p2[0]!.estado).toBe('parecido');
+  });
+});
+
+describe('enmascarar antes de la IA', () => {
+  it('IBAN, tarjetas, CCC y tiras largas; fechas e importes intactos', () => {
+    const t = enmascararDatosBancarios(
+      'Titular cuenta ES91 2100 0418 4502 0005 1332 · IBAN ES9121000418450200051332\n' +
+        'Tarjeta 4111 1111 1111 1234 · 4111-1111-1111-5678 · Ref 00490001512000123456\n' +
+        '21/10/2026 2026-10-21 -1.234,56 2.150,00 BIZUM 612345678',
+    );
+    expect(t).not.toMatch(/2100 0418 4502|21000418450200051332|4111 1111 1111|4111-1111|00490001512/);
+    expect(t).toContain('ES** **** 1332');
+    expect(t).toContain('**** 1234');
+    expect(t).toContain('**** 5678');
+    expect(t).toContain('****3456');
+    expect(t).toContain('21/10/2026 2026-10-21 -1.234,56 2.150,00');
+    expect(t).toContain('612345678');
   });
 });
 
