@@ -70,7 +70,8 @@ await q(`insert into public.profiles(id) values ($1),($2) on conflict do nothing
 // Export de un usuario 1.0.9 ANTES de tocar nada de lo nuevo: v9 = v8 + tres listas vacías.
 let r = await como('authenticated', u1, `select export_my_data() x`);
 const exp0 = r.rows[0].x;
-ok(exp0.version === 9, 'export v9');
+// Integración v3: con WORK (0075) y FOCUS (0076) la última es la v11; la v9 de la 0072 sigue dentro.
+ok(exp0.version >= 9, 'export v9 o posterior');
 for (const k of ['funnel_events', 'app_feedback', 'admins']) ok(Array.isArray(exp0[k]) && exp0[k].length === 0, `export trae ${k} vacío`);
 for (const k of ['profiles', 'quests', 'completions', 'events', 'user_modes', 'mode_xp', 'store_erasure_cleanup']) ok(k in exp0, `la v8 sigue: ${k}`);
 r = await q(`select obj_description(to_regprocedure('public.export_my_data()'),'pg_proc') c`);

@@ -71,6 +71,8 @@ import ironCore from './es/iron-core.json';
 import ironHombro from './es/iron-hombro.json';
 // IRON fase 2: un namespace por grupo de ejercicios.
 import ironPecho from './es/iron-pecho.json';
+// Modos v2: el mundo FOCUS (src/components/focus).
+import focus from './es/focus.json';
 
 /** Los catálogos en español: la fuente de verdad de todas las claves. */
 export const RECURSOS_ES = {
@@ -123,6 +125,7 @@ export const RECURSOS_ES = {
   'iron-core': ironCore,
   'iron-hombro': ironHombro,
   'iron-pecho': ironPecho,
+  focus,
 };
 
 export type RecursosEs = typeof RECURSOS_ES;

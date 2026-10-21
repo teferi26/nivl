@@ -147,7 +147,12 @@ async function guion109(db) {
   return out;
 }
 
-const HAY_ANALITICA = (await readdir(migrations)).some((n) => n.startsWith('0072'));
+const ARCHIVOS = await readdir(migrations);
+const HAY_ANALITICA = ARCHIVOS.some((n) => n.startsWith('0072'));
+// Integración v3: la 0075 (WORK) deja la v10 y la 0076 (FOCUS) la v11, que exporta todo.
+const V_EXPORT = ARCHIVOS.some((n) => n.startsWith('0076')) ? 11 : ARCHIVOS.some((n) => n.startsWith('0075')) ? 10 : HAY_ANALITICA ? 9 : 8;
+const CLAVES_NUEVAS = ['money_categories', 'money_recurring', 'money_briefs', 'focus_subjects', 'focus_exams', 'focus_topics',
+  'focus_sessions', 'focus_classes', 'focus_grades', 'focus_decks', 'focus_cards'];
 const antes = await boot(65);
 const despues = await boot(9999);
 try {
@@ -157,7 +162,7 @@ try {
   // Integración F1: con la 0072 de analítica la exportación es la v9 (la v8 de
   // la 0068 más funnel_events, app_feedback y admins). Sin las tablas de
   // analítica en el repo, la última es la v8 de la 0068.
-  eq(d.export.version, HAY_ANALITICA ? 9 : 8, HAY_ANALITICA ? 'export v9' : 'export v8');
+  eq(d.export.version, V_EXPORT, `export v${V_EXPORT}`);
   if (HAY_ANALITICA) {
     eq(d.export.funnel_events, [], 'funnel_events vacío');
     eq(d.export.app_feedback, [], 'app_feedback vacío');
@@ -171,6 +176,7 @@ try {
   const dExp = structuredClone(d.export);
   delete dExp.version; delete dExp.user_modes; delete dExp.mode_xp;
   delete dExp.funnel_events; delete dExp.app_feedback; delete dExp.admins;
+  for (const k of CLAVES_NUEVAS) { if (k in dExp) { eq(dExp[k], [], `${k} vacío`); delete dExp[k]; } }
   for (const p of dExp.profiles) delete p.locale;
   for (const q of dExp.quests) delete q.modes;
   const aExp = structuredClone(a.export); delete aExp.version;

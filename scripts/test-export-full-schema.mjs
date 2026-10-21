@@ -49,9 +49,32 @@ async function exportAs(uid) {
   await db.query("select set_config('request.jwt.claim.sub',$1,false)",[uid]);
   return (await db.query('select export_my_data() as exported')).rows[0].exported;
 }
+// WORK (0075): una categoría propia de A; B no la ve.
+await db.query("select set_config('request.jwt.claim.sub',$1,false)",[A]);
+await db.query("insert into money_categories(name,base_category) values('Cafés','restaurante')");
+await db.query("select set_config('request.jwt.claim.sub',$1,false)",[B]);
+assert.equal((await db.query('select count(*)::int as n from money_categories')).rows[0].n,0,'B no ve las categorías de A');
+// FOCUS (0076): RLS de dueño y referencias de la misma cuenta.
+await db.query("select set_config('request.jwt.claim.sub',$1,false)",[A]);
+const subA = (await db.query("insert into focus_subjects(name) values('Cálculo II') returning id")).rows[0].id;
+await db.query("insert into focus_topics(subject_id,name) values($1,'Integrales dobles')",[subA]);
+await db.query("insert into focus_sessions(subject_id,client_id,session_date,minutes) values($1,'foco-1-1',current_date,25)",[subA]);
+await assert.rejects(()=>db.query("insert into focus_sessions(subject_id,client_id,session_date,minutes) values($1,'foco-1-1',current_date,25)",[subA]),/duplicate|unique/);
+await db.query("select set_config('request.jwt.claim.sub',$1,false)",[B]);
+assert.equal((await db.query('select count(*)::int as n from focus_subjects')).rows[0].n,0,'B no ve las asignaturas de A');
+await assert.rejects(()=>db.query("insert into focus_topics(subject_id,name) values($1,'Robado')",[subA]),/ajena/);
+await assert.rejects(()=>db.query("insert into focus_subjects(user_id,name) values($1,'Suplantada')",[A]),/row-level security|violates/);
+assert.equal((await db.query("update focus_subjects set name='x' where id=$1 returning id",[subA])).rows.length,0);
 const own = await exportAs(A), other = await exportAs(B);
-// v9 desde la 0072 (analítica): la v8 de la 0068 más funnel_events, app_feedback y admins.
-assert.equal(own.version,9);
+// v11 desde la 0076: la v9 de la 0072 (funnel_events, app_feedback y admins), más las tres tablas de WORK (0075)
+// y las ocho de FOCUS (0076). La 0077 (IRON) no toca la exportación: sus columnas viajan en nutrition_logs.
+assert.equal(own.version,11);
+assert.equal(own.money_categories.length,1); assert.equal(own.money_categories[0].name,'Cafés');
+assert.deepEqual(other.money_categories,[]); assert.deepEqual(own.money_recurring,[]); assert.deepEqual(own.money_briefs,[]);
+const comentario = (await db.query("select obj_description(to_regprocedure('public.export_my_data()'),'pg_proc') as c")).rows[0].c;
+for (const h of ['nivl:export-analitica-0072','nivl:export-work-0075','nivl:export-focus-0076']) assert.ok(comentario.includes(h),'huella '+h);
+assert.equal(own.focus_subjects.length,1); assert.equal(own.focus_topics.length,1); assert.equal(own.focus_sessions.length,1);
+assert.deepEqual(other.focus_subjects,[]); assert.deepEqual(own.focus_cards,[]);
 assert.deepEqual(own.funnel_events,[]); assert.deepEqual(own.app_feedback,[]); assert.deepEqual(own.admins,[]);
 assert.deepEqual(own.user_modes,[]); assert.deepEqual(own.mode_xp,[]);
 assert.equal(own.creador.code,'OWNTEST');
@@ -72,5 +95,5 @@ await db.query("select set_config('request.jwt.claim.sub','',false)");
 await assert.rejects(()=>db.query('select export_my_data()'),/No autenticado/);
 await db.exec('reset role; set role anon');
 await assert.rejects(()=>db.query('select export_my_data()'),/permission denied/);
-console.log('PASS full-schema export v9: all actual migrations except scheduler0010, own/other creator and queue, commission/payout coverage, identity and lease redaction, unauthenticated/anon denies');
+console.log('PASS full-schema export v11 (WORK + FOCUS, RLS incl.): all actual migrations except scheduler0010, own/other creator and queue, commission/payout coverage, identity and lease redaction, unauthenticated/anon denies');
 } finally { await db.close(); }
