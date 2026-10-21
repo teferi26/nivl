@@ -194,11 +194,11 @@ export function Sheet({ visible, onClose, onDismiss, eyebrow, title, children, f
       onRequestClose={() => cerrarRef.current()}
     >
       <KeyboardAvoidingView
-        style={[styles.fondo, tablet ? styles.fondoCentrado : styles.fondoAbajo]}
+        style={[styles.fondo, tablet ? styles.fondoCentrado : styles.fondoAbajo, piel && Platform.OS === 'web' && ({ outlineStyle: 'none' } as object)]}
         behavior={Platform.OS === 'ios' ? 'padding' : Platform.OS === 'android' ? 'height' : undefined}
       >
         <Pressable
-          style={StyleSheet.absoluteFill}
+          style={[StyleSheet.absoluteFill, piel && Platform.OS === 'web' && ({ outlineStyle: 'none' } as object)]}
           onPress={tocarFondo}
           accessibilityRole="button"
           accessibilityLabel={t('comun:cerrar')}

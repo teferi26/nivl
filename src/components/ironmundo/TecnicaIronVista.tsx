@@ -159,12 +159,12 @@ export function TecnicaIronVista({ ejercicio: ej, onVolver, historial, ms }: Tec
           <FiguraTecnica
             ejercicio={ej}
             alto={Math.min(px(200), 300)}
-            ancho={Math.round(ancho * 0.58)}
+            ancho={ancho - px(150)}
             ms={ms}
             pausado={pausado}
             accessibilityLabel={t('iron:demo.animacion', { nombre })}
           />
-          <MapaMini musculos={ej.musculos} alto={px(150)} etiqueta={t('ironmundo:catalogo.mapaA11y', { nombre })} />
+          <MapaMini musculos={ej.musculos} alto={px(120)} etiqueta={t('ironmundo:catalogo.mapaA11y', { nombre })} />
         </View>
         <Text style={[estilosIron.titulo, styles.nombre]} maxFontSizeMultiplier={1.35}>
           {nombre}

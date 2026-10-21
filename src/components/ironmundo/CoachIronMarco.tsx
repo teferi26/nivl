@@ -41,16 +41,12 @@ const PIEL_COACH_IRON: Piel = {
       <View style={styles.franja}>
         <AvatarIron lado={px(34)} />
         <View style={styles.textos}>
-          <View style={styles.titulo}>
-            <Text style={styles.nombre} accessibilityRole="header" maxFontSizeMultiplier={1.2}>
-              {t('ironmundo:coach.rotulo').toUpperCase()}
-            </Text>
-            <Text style={styles.enLinea} maxFontSizeMultiplier={1.2}>
-              {t('ironmundo:coach.enLinea').toUpperCase()}
-            </Text>
-          </View>
+          <Text style={styles.nombre} accessibilityRole="header" numberOfLines={1} maxFontSizeMultiplier={1.2}>
+            {t('ironmundo:coach.rotulo').toUpperCase()}
+          </Text>
           <Text style={styles.sub} numberOfLines={1} maxFontSizeMultiplier={1.35}>
-            {linea}
+            <Text style={styles.enLinea}>{t('ironmundo:coach.enLinea').toUpperCase()}</Text>
+            {` · ${linea}`}
           </Text>
         </View>
         {cargando ? null : (
@@ -100,7 +96,6 @@ const styles = StyleSheet.create({
     backgroundColor: C.tarjeta,
   },
   textos: { flex: 1, minWidth: 0 },
-  titulo: { flexDirection: 'row', alignItems: 'center', gap: px(8) },
   nombre: { fontFamily: F.cinzel, fontSize: fs(15), letterSpacing: fs(15) * 0.08, color: C.blanco },
   sub: { fontFamily: F.r, fontSize: fs(9.5), color: C.mudo, marginTop: px(1) },
   enLinea: { fontFamily: F.b, fontSize: fs(8), letterSpacing: fs(8) * 0.1, color: A },
