@@ -93,3 +93,27 @@ export function etiquetaModos(modes: unknown): string {
   const validos = [...new Set(modes.filter((x): x is string => typeof x === 'string' && (MODOS_COACH as readonly string[]).includes(x)))];
   return validos.length ? ` · modos: ${validos.map((x) => x.toUpperCase()).join(', ')}` : '';
 }
+
+/**
+ * Las etiquetas de modo que pide el coach (parámetro `modos` de crear_mision), limpias: solo valores
+ * válidos, sin repetir y en el orden de MODOS_COACH. Sin parámetro (modelo viejo) o con basura, ninguna:
+ * la misión queda solo en General, como en la 1.0.9.
+ */
+export function modosDeEntrada(v: unknown): ModoCoach[] {
+  if (!Array.isArray(v)) return [];
+  const crudo = v.map((x) => (typeof x === 'string' ? x.trim().toLowerCase() : ''));
+  return MODOS_COACH.filter((m) => crudo.includes(m));
+}
+
+/**
+ * Lo que la app necesita para avisar en el chat de una misión que el coach ha dejado en un modo
+ * («Ir a FOCUS»): su título y sus modos. Solo crear_mision con algún modo; lo demás, null (el evento
+ * `tool` sale como siempre). Viaja en el evento SSE `tool` como `mision`, y solo si la herramienta fue bien.
+ */
+export function misionConModos(nombre: string, input: Record<string, unknown>): { titulo: string; modos: ModoCoach[] } | null {
+  if (nombre !== 'crear_mision') return null;
+  const modos = modosDeEntrada(input.modos);
+  if (!modos.length) return null;
+  const titulo = typeof input.titulo === 'string' ? input.titulo.trim().slice(0, 200) : '';
+  return titulo ? { titulo, modos } : null;
+}

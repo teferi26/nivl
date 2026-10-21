@@ -38,6 +38,10 @@ export interface CoachBlock {
   input?: Record<string, unknown>;
   content?: unknown;
   is_error?: boolean;
+  /** tool_use: su id. */
+  id?: string;
+  /** tool_result: el tool_use al que responde. */
+  tool_use_id?: string;
 }
 
 export interface CoachMessage {
@@ -73,6 +77,11 @@ export interface CoachAction {
   name: string;
   ok: boolean;
   detail: string;
+  /**
+   * crear_mision con modos: `{ titulo, modos }` tal cual llega del servidor
+   * (se valida en modos/avisosCoach.ts). Con él, el chat avisa «Ir a FOCUS».
+   */
+  mision?: unknown;
 }
 
 export type CoachEvent =
@@ -326,7 +335,7 @@ export async function streamCoach(opts: {
           case 'tool':
             opts.onEvent({
               type: 'tool',
-              action: { name: d.name, ok: !!d.ok, detail: d.detail ?? '' },
+              action: { name: d.name, ok: !!d.ok, detail: d.detail ?? '', ...(d.mision ? { mision: d.mision } : {}) },
             });
             break;
           case 'done':

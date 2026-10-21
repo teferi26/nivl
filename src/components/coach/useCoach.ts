@@ -53,6 +53,18 @@ import {
   type DecisionOferta,
 } from '@/lib/pro';
 import { mensajeSistema } from '@/lib/validation';
+import { EVENTO_MODO } from '@/components/modos/rueda/RuedaModos';
+import { sonarModo } from '@/components/modos/rueda/sonido';
+import {
+  avisosDeModo,
+  misionDeAccion,
+  misionesDeMensaje,
+  resultadosBuenos,
+  type MisionConModos,
+} from '@/modos/avisosCoach';
+import { useModo } from '@/modos/ModoProvider';
+import { irAlMundo, transitoMundo } from '@/modos/rutasModo';
+import type { ModoEtiqueta } from '@/modos/tipos';
 import { citaDe, esConsulta, sinConsultas } from './cita';
 import type { BurbujaVista, CoachVistaProps } from './CoachVista';
 import { useDictado } from './Dictado';
@@ -70,6 +82,8 @@ interface Burbuja {
   herramientas: string[];
   /** Cuándo se escribió (solo las del servidor): da el separador «HOY» / «AYER». */
   fecha?: string;
+  /** Misiones con modos que dejó este turno (para el aviso «Ir a FOCUS»). */
+  misiones: MisionConModos[];
 }
 
 /** Nombres de las herramientas que usó un turno guardado. */
@@ -85,6 +99,7 @@ function herramientasDe(m: CoachMessage): string[] {
 function aBurbujas(mensajes: CoachMessage[]): Burbuja[] {
   const lista: Burbuja[] = [];
   let pendientes: string[] = [];
+  const buenos = resultadosBuenos(mensajes);
   for (const m of mensajes) {
     if (isToolResultOnly(m)) continue;
     const propias = herramientasDe(m);
@@ -96,7 +111,8 @@ function aBurbujas(mensajes: CoachMessage[]): Burbuja[] {
       continue;
     }
     pendientes = [];
-    lista.push({ id: m.id, role: m.role, text, acciones, herramientas, fecha: m.created_at });
+    const misiones = m.role === 'assistant' ? misionesDeMensaje(m, buenos) : [];
+    lista.push({ id: m.id, role: m.role, text, acciones, herramientas, fecha: m.created_at, misiones });
   }
   return lista;
 }
@@ -159,6 +175,20 @@ export function useCoach(): { vista: CoachVistaProps; hojas: HojasCoach } {
   // turno profundo: que el mes no se queme por despiste.
   const [modo, setModo] = useState<CoachMode>('estandar');
   const userId = session?.user.id;
+  // El mundo en el que está el chat: decide qué misiones son «de otro modo».
+  const { activo: modosActivos, modo: modoMundo, activados, cambiar: cambiarModo } = useModo();
+  // «Ir a FOCUS»: la misma recarga que la rueda (su sonido y su vibración) y
+  // el cambio de mundo en un paso (irAlMundo). Un segundo toque durante el
+  // tránsito no navega dos veces.
+  const irAModo = useCallback(
+    (m: ModoEtiqueta) => {
+      if (transitoMundo() !== null) return;
+      sonarModo(m);
+      vibrar(EVENTO_MODO[m]);
+      irAlMundo(m, cambiarModo);
+    },
+    [cambiarModo],
+  );
   // Antes del primer turno, el consentimiento para la IA (0028). El servidor
   // lo vuelve a exigir: sin él responde 403 y aquí se abre la hoja.
   const consentimiento = useConsentimientoIA();
@@ -403,6 +433,7 @@ export function useCoach(): { vista: CoachVistaProps; hojas: HojasCoach } {
         text: fotos.length ? `[${fotos.length} ${fotos.length === 1 ? 'foto' : 'fotos'}]\n${limpio}` : limpio,
         acciones: [],
         herramientas: [],
+        misiones: [],
       },
     ]);
     alFondo();
@@ -450,6 +481,7 @@ export function useCoach(): { vista: CoachVistaProps; hojas: HojasCoach } {
                   text: e.text || acumulado,
                   acciones: ejecutadas.filter((a) => !esConsulta(a.name)).map((a) => describeAction(a.name)),
                   herramientas: ejecutadas.filter((a) => a.ok).map((a) => a.name),
+                  misiones: ejecutadas.map(misionDeAccion).filter((x): x is MisionConModos => x !== null),
                 },
               ]);
               setEnCurso('');
@@ -556,6 +588,7 @@ export function useCoach(): { vista: CoachVistaProps; hojas: HojasCoach } {
           acciones: b.acciones.map((texto) => ({ texto, ok: true })),
           cita: citaDe(b.herramientas),
           fecha: b.fecha,
+          avisosModo: avisosDeModo(b.misiones, { activo: modosActivos, modo: modoMundo, activados }),
           voz:
             conEscuchar(puedeHablar, b.text, idiomaDelCoach)
               ? {
@@ -630,6 +663,7 @@ export function useCoach(): { vista: CoachVistaProps; hojas: HojasCoach } {
       // integrado, el nivel: solo Élite y owner van por un modelo con visión.
       conFotos: estado ? puedeVerFotos(estado) : null,
     },
+    onIrAModo: irAModo,
     onPro: () => router.push('/pro'),
     onMemoria: () => router.push('/memoria'),
   };

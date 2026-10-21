@@ -124,5 +124,11 @@
     "miraFoto": "Mira esta foto.",
     "energiaAgotada": "La energía del coach de este mes se ha agotado. Se recarga el día 1.",
     "energiaAgotadaDia": "La energía del coach de este mes se ha agotado. Se recarga el {{dia}}."
+  },
+  "modo": {
+    "mision_one": "Misión de {{modo}}: {{titulos}}",
+    "mision_other": "{{count}} misiones de {{modo}}: {{titulos}}",
+    "titulo": "«{{titulo}}»",
+    "ir": "Ir a {{modo}}"
   }
 }
