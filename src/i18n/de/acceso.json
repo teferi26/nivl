@@ -93,5 +93,13 @@
     "falloRotulo": "Bestätigung fehlgeschlagen",
     "confirmando": "Deine E-Mail-Adresse wird bestätigt",
     "sinEnlace": "Dieser Link enthält nichts zu bestätigen. Öffne die letzte E-Mail, die wir dir geschickt haben, oder melde dich mit deinem Passwort an."
+  },
+  "web": {
+    "eyebrow": "NIVL im Browser",
+    "titulo": "Deine Arena, auch hier.",
+    "cuerpo": "Dasselbe Konto und dieselben Daten wie auf dem Handy. Was du hier tust, zählt dort.",
+    "punto1": "Missionen, Serie und Tagesabschluss",
+    "punto2": "Deine Welten: IRON, FOCUS, WORK und FOUNDER",
+    "punto3": "Der Coach, mit echter Tastatur"
   }
 }

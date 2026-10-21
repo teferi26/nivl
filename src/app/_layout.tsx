@@ -8,11 +8,13 @@ import { Stack, useRouter, useSegments } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, type ReactNode } from 'react';
-import { Platform, StyleSheet, View } from 'react-native';
+import { Platform, StyleSheet, View, useWindowDimensions } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { EdadMinimaGuard, EdadMinimaProvider, useEdadMinima } from '@/components/EdadMinima';
 import { HealthConsentGuard, HealthConsentProvider } from '@/components/ConsentimientoSalud';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { AvisosWeb } from '@/components/web/AvisosWeb';
+import { ConFachada, FachadaAcceso, MIN_DOS_PANELES } from '@/components/web/FachadaAcceso';
 import { CelebracionProvider } from '@/components/celebracion/CelebracionProvider';
 import { TopeAncho } from '@/design/useSizeClass';
 import { sincronizarIdioma } from '@/i18n/sincronizar';
@@ -22,6 +24,7 @@ import { useFlags } from '@/lib/flags';
 import { identificarEnTienda } from '@/lib/pro';
 import { registrarDispositivo } from '@/lib/push';
 import { destinoPortal, SITIO_CREADORES } from '@/lib/sitio';
+import { GALERIA } from '@/lib/galeria';
 import { colors } from '@/lib/theme';
 import { useNotificationRouting } from '@/lib/useNotificationRouting';
 import { ModoProvider } from '@/modos';
@@ -43,16 +46,28 @@ SplashScreen.preventAutoHideAsync().catch(() => {});
 // La galería del kit (/kit, solo en desarrollo) tampoco se acota: tiene que
 // poder verse a 744, 1024 y 1440 para verificar el sistema.
 const SEGMENTOS_ACOTADOS = new Set(['login', 'auth', 'c', 'onboarding']);
+// En escritorio, entrar y los enlaces del correo llevan a la izquierda la
+// fachada (FachadaAcceso) y la columna a la derecha. La fachada ocupa una
+// ranura fija ANTES del Stack (null cuando no toca): el Stack no cambia de
+// sitio en el árbol y no se remonta. No en el portal de creadores.
+const SEGMENTOS_FACHADA = new Set(['login', 'auth']);
 
 function ColumnaWeb({ children }: { children: ReactNode }) {
   const seg = useSegments();
+  const { width } = useWindowDimensions();
   const acotada = SITIO_CREADORES || SEGMENTOS_ACOTADOS.has(seg[0] ?? '');
   if (Platform.OS !== 'web') return <>{children}</>;
+  const fachada = !SITIO_CREADORES && width >= MIN_DOS_PANELES && SEGMENTOS_FACHADA.has(seg[0] ?? '');
   return (
-    <View style={webStyles.fuera}>
-      <View style={[webStyles.dentro, !acotada && webStyles.ancho]}>
-        <TopeAncho.Provider value={acotada ? ANCHO_COLUMNA_WEB : null}>{children}</TopeAncho.Provider>
+    <View style={[webStyles.fuera, fachada && webStyles.fueraFila]}>
+      {fachada ? <FachadaAcceso /> : null}
+      <View style={[webStyles.dentro, !acotada && webStyles.ancho, fachada && webStyles.dentroFachada]}>
+        <ConFachada.Provider value={fachada}>
+          <TopeAncho.Provider value={acotada ? ANCHO_COLUMNA_WEB : null}>{children}</TopeAncho.Provider>
+        </ConFachada.Provider>
       </View>
+      {/* Los avisos que en el móvil serían notificaciones (fin de un bloque de FOCUS). */}
+      {SITIO_CREADORES ? null : <AvisosWeb />}
     </View>
   );
 }
@@ -61,7 +76,9 @@ const ANCHO_COLUMNA_WEB = 560;
 
 const webStyles = StyleSheet.create({
   fuera: { flex: 1, alignItems: 'center', backgroundColor: colors.bg },
+  fueraFila: { flexDirection: 'row', alignItems: 'stretch' },
   dentro: { flex: 1, width: '100%', maxWidth: ANCHO_COLUMNA_WEB },
+  dentroFachada: { flexGrow: 0, flexShrink: 0, flexBasis: ANCHO_COLUMNA_WEB, width: ANCHO_COLUMNA_WEB },
   ancho: { maxWidth: '100%' },
   vacio: { flex: 1, backgroundColor: colors.bg },
 });
@@ -112,7 +129,7 @@ function ProtectedStack() {
     // salta sola a '/'. Sin esto el guard iba a /login antes de guardarlo.
     // `auth` (nivl://auth/confirmar y /restablecer) llega sin sesión: es el
     // enlace del correo el que la abre.
-    const inPublicArea = inAuthArea || segments[0] === 'c' || segments[0] === 'auth' || (__DEV__ && segments[0] === 'kit');
+    const inPublicArea = inAuthArea || segments[0] === 'c' || segments[0] === 'auth' || (GALERIA && segments[0] === 'kit');
     if (!session && !inPublicArea) {
       router.replace('/login');
     } else if (session && inAuthArea) {

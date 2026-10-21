@@ -11,7 +11,9 @@
 //   binario sin él (1.0.10) no debe caerse por importar Hoy. Sin módulo, silencio.
 
 import type { AudioPlayer } from 'expo-audio';
+import { Platform } from 'react-native';
 import type { ModoId } from '@/modos/tipos';
+import { prepararSonidoWeb, sonarWeb } from '@/lib/web/sonido';
 
 const FUENTES: Record<ModoId, number> = {
   general: require('../../../../assets/sonidos/modos/general.m4a'),
@@ -68,12 +70,21 @@ function reproductor(m: ModoId): AudioPlayer | null {
 
 /** Carga los cinco sonidos antes de hacer falta (al abrir la rueda). */
 export function precargarSonidos(): void {
+  // En la web: Web Audio con los mismos m4a; abrir la rueda es el gesto que lo despierta.
+  if (Platform.OS === 'web') {
+    prepararSonidoWeb(Object.values(FUENTES));
+    return;
+  }
   void prepararSesion();
   for (const m of Object.keys(FUENTES) as ModoId[]) reproductor(m);
 }
 
 /** Suena la firma del modo. No lanza nunca. */
 export function sonarModo(m: ModoId): void {
+  if (Platform.OS === 'web') {
+    sonarWeb(FUENTES[m], VOLUMEN);
+    return;
+  }
   try {
     void prepararSesion().then(() => {
       const p = reproductor(m);

@@ -10,6 +10,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import type { Router } from 'expo-router';
 import { createContext, type ReactNode } from 'react';
 import {
+  Platform,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -59,6 +60,12 @@ interface ScreenProps extends Omit<ScrollViewProps, 'style' | 'contentContainerS
    */
   aside?: ReactNode;
   /**
+   * Solo en la web y en `expanded`: la columna crece hasta ANCHO_AMPLIO para
+   * que quepan dos columnas (`DosColumnas`). En el móvil y en la tableta no
+   * cambia nada.
+   */
+  amplio?: boolean;
+  /**
    * Lo que flota SOBRE la pantalla y no debe irse con el scroll: el aviso de
    * XP, una celebración. Se pinta como hermano del ScrollView; dentro de él,
    * un `position: 'absolute'` se ancla al contenido y, con la lista desplazada,
@@ -67,6 +74,9 @@ interface ScreenProps extends Omit<ScrollViewProps, 'style' | 'contentContainerS
   overlay?: ReactNode;
   children: ReactNode;
 }
+
+/** Ancho del contenido de una pantalla `amplio` en la web (escritorio). */
+export const ANCHO_AMPLIO = 1120;
 
 /** Margen lateral cuando la pantalla traía panel pero no le cabe. */
 const MARGEN_SIN_PANEL = space.s8;
@@ -85,7 +95,7 @@ export const GutterContext = createContext<number>(20);
  * el margen y el ancho máximo salen de la clase de tamaño de `useSizeClass`.
  * El contenido es una columna centrada de `maxContent` más sus márgenes.
  */
-export function Screen({ plain, wide, refreshing, onRefresh, style, contentStyle, aside, overlay, children, ...rest }: ScreenProps) {
+export function Screen({ plain, wide, amplio, refreshing, onRefresh, style, contentStyle, aside, overlay, children, ...rest }: ScreenProps) {
   // El ancho útil es el hueco real (dentro de las pestañas, la ventana menos el
   // raíl o la barra lateral: lo publica (tabs)/_layout.tsx en TopeAncho).
   const ancho = useAnchoUtil();
@@ -95,7 +105,7 @@ export function Screen({ plain, wide, refreshing, onRefresh, style, contentStyle
   const conAside = aside != null && cabeAside(ancho);
   // Si había panel pero no cabe, el contenido usa el margen medio de 32.
   const gutter = aside != null && !conAside && marco.sizeClass === 'expanded' ? MARGEN_SIN_PANEL : marco.gutter;
-  const { maxContent } = marco;
+  const maxContent = amplio && Platform.OS === 'web' && marco.sizeClass === 'expanded' ? ANCHO_AMPLIO : marco.maxContent;
   const columna: ViewStyle = { width: '100%', maxWidth: maxContent + 2 * gutter, alignSelf: 'center' };
 
   // `plain` no recibe margen lateral: esas pantallas (coach, diario) ya llevan

@@ -15,6 +15,7 @@
 // En un build de release (__DEV__ false) redirige a la raíz.
 
 import { Redirect, router, useLocalSearchParams } from 'expo-router';
+import { GALERIA } from '@/lib/galeria';
 import { useEffect, useState, type ReactNode } from 'react';
 import { StyleSheet, Text, View, useWindowDimensions, type LayoutChangeEvent } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -125,7 +126,7 @@ export default function GaleriaPantallas() {
   // salir de la galería se apaga.
   fijarQuieto(params.quieto === '1');
   useEffect(() => () => fijarQuieto(false), []);
-  if (!__DEV__) return <Redirect href="/" />;
+  if (!GALERIA) return <Redirect href="/" />;
   const solo = params.solo === '1';
   const quieto = params.quieto === '1';
 

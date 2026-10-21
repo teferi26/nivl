@@ -17,6 +17,7 @@
 
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { Redirect, useLocalSearchParams } from 'expo-router';
+import { GALERIA } from '@/lib/galeria';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { StyleSheet, useWindowDimensions, View } from 'react-native';
 import { useSharedValue } from 'react-native-reanimated';
@@ -77,7 +78,7 @@ export default function KitRueda() {
     }
   }, [estado, modo, instante, emblema, geo.cx, geo.cy, geo.escala, resaltado, progreso, carga, dedoX, dedoY]);
 
-  if (!__DEV__) return <Redirect href="/" />;
+  if (!GALERIA) return <Redirect href="/" />;
 
   if (estado === 'recarga') {
     return (

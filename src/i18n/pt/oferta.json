@@ -68,5 +68,14 @@
       "enlace": "Ver NIVL Élite",
       "contexto": "O teu juramento está selado. O NIVL continua totalmente gratuito; o Élite acrescenta o coach na potência máxima."
     }
+  },
+  "web": {
+    "eyebrow": "NIVL",
+    "titulo": "Planos",
+    "subtitulo": "O NIVL é totalmente gratuito. Pro e Élite acrescentam o coach: a IA que dirige o teu dia.",
+    "rotulo": "Como subscrever",
+    "cuerpo": "Por agora, a subscrição contrata-se e gere-se na app NIVL para iPhone. Na web não se cobra nada.",
+    "cuenta": "É a mesma conta: o plano que tens no telemóvel vale aqui também.",
+    "seguir": "Continuar grátis"
   }
 }

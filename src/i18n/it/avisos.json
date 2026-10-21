@@ -30,5 +30,9 @@
     "avisosDelDia": "Impossibile programmare gli avvisi del giorno.",
     "aviso": "Impossibile programmare l'avviso.",
     "avisosDelSistema": "Impossibile programmare gli avvisi del sistema."
+  },
+  "web": {
+    "regionA11y": "Avvisi del sistema",
+    "cerrarA11y": "Chiudi l'avviso: {{titulo}}"
   }
 }

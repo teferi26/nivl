@@ -10,6 +10,7 @@
 // En un build de release (__DEV__ false) redirige a la raíz.
 
 import { Redirect, router, useLocalSearchParams } from 'expo-router';
+import { GALERIA } from '@/lib/galeria';
 import { useEffect, useState } from 'react';
 import { Platform, ScrollView, useWindowDimensions } from 'react-native';
 import { Screen } from '@/components/ui';
@@ -29,7 +30,7 @@ export default function KitIron() {
   const ejercicio = ejercicioPorId(id) ?? EJERCICIOS[0];
   // Grabación (solo web y desarrollo): el grabador lee el ciclo y fija el instante cuadro a cuadro.
   useEffect(() => {
-    if (!__DEV__ || Platform.OS !== 'web' || p.solo !== '1' || !p.ejercicio) return;
+    if (!GALERIA || Platform.OS !== 'web' || p.solo !== '1' || !p.ejercicio) return;
     const g = globalThis as { __ironCuadro?: (ms: number) => void; __ironCiclo?: number; __ironQuieto?: number };
     g.__ironCuadro = setCuadro;
     g.__ironCiclo = ejercicio.cicloMs;
@@ -38,7 +39,7 @@ export default function KitIron() {
       delete g.__ironCuadro;
     };
   }, [p.solo, p.ejercicio, ejercicio]);
-  if (!__DEV__) return <Redirect href="/" />;
+  if (!GALERIA) return <Redirect href="/" />;
   const ms = cuadro ?? (p.t !== undefined && Number.isFinite(Number(p.t)) ? Number(p.t) : undefined);
 
   if (p.ficha === '1') {

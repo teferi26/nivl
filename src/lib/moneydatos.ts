@@ -249,17 +249,21 @@ export async function elegirExtracto(): Promise<ArchivoExtracto | null> {
   if (r.canceled || !r.assets?.[0]) return null;
   const a = r.assets[0];
   const esPdf = /\.pdf$/i.test(a.name) || a.mimeType === 'application/pdf';
-  const { File } = await import('expo-file-system');
   if (Platform.OS === 'web') {
+    // El selector del navegador (<input type="file">) da un blob: local. El
+    // archivo no sale del navegador hasta que se manda a la función, igual
+    // que en el móvil.
     const res = await fetch(a.uri);
     if (esPdf) {
       const bytes = new Uint8Array(await res.arrayBuffer());
+      // A trozos: un carácter cada vez era cuadrático en extractos de varios MB.
       let bin = '';
-      for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]!);
+      for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
       return { nombre: a.name, tipo: 'pdf', contenido: btoa(bin) };
     }
     return { nombre: a.name, tipo: 'csv', contenido: await res.text() };
   }
+  const { File } = await import('expo-file-system');
   const f = new File(a.uri);
   try {
     const contenido = esPdf ? await f.base64() : await f.text();

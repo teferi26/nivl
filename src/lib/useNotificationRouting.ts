@@ -13,6 +13,7 @@
 import * as Notifications from 'expo-notifications';
 import { useRouter } from 'expo-router';
 import { useEffect, useRef } from 'react';
+import { Platform } from 'react-native';
 import { t } from '@/i18n';
 import { setBlockDone } from './dayplan';
 import { avisarEn } from './notifications';
@@ -56,7 +57,8 @@ export function useNotificationRouting(listo: boolean) {
   const yaTratada = useRef<string | null>(null);
 
   useEffect(() => {
-    if (!listo) return;
+    // En la web no hay notificaciones que tocar (ni la API nativa que leer).
+    if (!listo || Platform.OS === 'web') return;
     const ir = (r: string) => router.push(r as never);
 
     // Arranque en frío: la respuesta pendiente desde que la app estaba cerrada.

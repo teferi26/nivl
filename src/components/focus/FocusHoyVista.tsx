@@ -15,6 +15,7 @@ import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Entrada, ErrorSistema } from '@/components/arena';
 import { Screen, Skeleton } from '@/components/ui';
+import { DosColumnas } from '@/components/web/DosColumnas';
 import { ink, space, type as tipo } from '@/design/tokens';
 import type { BloquePlan, ExamenVista } from '@/focus/resumen';
 import type { Fase, Situacion } from '@/focus/pomodoro';
@@ -390,62 +391,71 @@ export function FocusHoyVista(p: FocusHoyVistaProps) {
   const listo = p.estado === 'listo';
   let i = 2;
   return (
-    <Screen refreshing={p.refrescando} onRefresh={acciones.onRefrescar} contentStyle={styles.contenido}>
+    <Screen amplio refreshing={p.refrescando} onRefresh={acciones.onRefrescar} contentStyle={styles.contenido}>
       <Entrada indice={0}>{p.cabecera}</Entrada>
 
-      <Entrada indice={1} style={styles.bloque}>
-        <Sesion s={p.sesion} acciones={acciones} />
-      </Entrada>
-
-      {p.estado === 'cargando' ? (
-        <Huecos />
-      ) : p.estado === 'error' ? (
-        <View style={styles.bloque}>
-          <ErrorSistema mensaje={p.error ?? ''} onReintentar={acciones.onReintentar} compacto />
-        </View>
-      ) : !p.disponible ? (
-        <Entrada indice={2} style={styles.bloque}>
-          <TarjetaFocus>
-            <VacioFocus rotulo={t('focus:hoy.asignaturasRotulo')} icono="hourglass-outline" titulo={t('focus:comun.noDisponibleTitulo')} cuerpo={t('focus:comun.noDisponibleCuerpo')} />
-          </TarjetaFocus>
-        </Entrada>
-      ) : p.sinAsignaturas ? (
-        <Entrada indice={2} style={styles.bloque}>
-          <TarjetaFocus>
-            <VacioFocus
-              rotulo={t('focus:hoy.asignaturasRotulo')}
-              icono="school-outline"
-              titulo={t('focus:hoy.empiezaTitulo')}
-              cuerpo={t('focus:hoy.empiezaCuerpo')}
-              accion={{ titulo: t('focus:hoy.anadirAsignatura'), onPress: acciones.onAnadirAsignatura }}
-            />
-          </TarjetaFocus>
-        </Entrada>
-      ) : (
-        <>
-          <Entrada indice={i++} style={styles.bloque}>
-            <Examenes examenes={p.examenes} acciones={acciones} />
-          </Entrada>
-          {p.temario ? (
-            <Entrada indice={i++} style={styles.bloque}>
-              <Temario temario={p.temario} acciones={acciones} />
+      {/* En escritorio (web), el bloque y el estudio a la izquierda; el coach y las misiones a la derecha. */}
+      <DosColumnas
+        principal={
+          <>
+            <Entrada indice={1} style={styles.bloque}>
+              <Sesion s={p.sesion} acciones={acciones} />
             </Entrada>
-          ) : null}
-          <Entrada indice={i++} style={styles.bloque}>
-            <Plan plan={p.plan} acciones={acciones} />
-          </Entrada>
-        </>
-      )}
 
-      <Entrada indice={6} style={styles.bloque}>
-        <Coach frase={p.coach} onCoach={acciones.onCoach} />
-      </Entrada>
-      {listo && p.misiones && p.misiones.length > 0 ? (
-        <Entrada indice={7} style={styles.bloque}>
-          <Misiones misiones={p.misiones} acciones={acciones} />
-        </Entrada>
-      ) : null}
-
+            {p.estado === 'cargando' ? (
+              <Huecos />
+            ) : p.estado === 'error' ? (
+              <View style={styles.bloque}>
+                <ErrorSistema mensaje={p.error ?? ''} onReintentar={acciones.onReintentar} compacto />
+              </View>
+            ) : !p.disponible ? (
+              <Entrada indice={2} style={styles.bloque}>
+                <TarjetaFocus>
+                  <VacioFocus rotulo={t('focus:hoy.asignaturasRotulo')} icono="hourglass-outline" titulo={t('focus:comun.noDisponibleTitulo')} cuerpo={t('focus:comun.noDisponibleCuerpo')} />
+                </TarjetaFocus>
+              </Entrada>
+            ) : p.sinAsignaturas ? (
+              <Entrada indice={2} style={styles.bloque}>
+                <TarjetaFocus>
+                  <VacioFocus
+                    rotulo={t('focus:hoy.asignaturasRotulo')}
+                    icono="school-outline"
+                    titulo={t('focus:hoy.empiezaTitulo')}
+                    cuerpo={t('focus:hoy.empiezaCuerpo')}
+                    accion={{ titulo: t('focus:hoy.anadirAsignatura'), onPress: acciones.onAnadirAsignatura }}
+                  />
+                </TarjetaFocus>
+              </Entrada>
+            ) : (
+              <>
+                <Entrada indice={i++} style={styles.bloque}>
+                  <Examenes examenes={p.examenes} acciones={acciones} />
+                </Entrada>
+                {p.temario ? (
+                  <Entrada indice={i++} style={styles.bloque}>
+                    <Temario temario={p.temario} acciones={acciones} />
+                  </Entrada>
+                ) : null}
+                <Entrada indice={i++} style={styles.bloque}>
+                  <Plan plan={p.plan} acciones={acciones} />
+                </Entrada>
+              </>
+            )}
+          </>
+        }
+        lateral={
+          <>
+            <Entrada indice={6} style={styles.bloque}>
+              <Coach frase={p.coach} onCoach={acciones.onCoach} />
+            </Entrada>
+            {listo && p.misiones && p.misiones.length > 0 ? (
+              <Entrada indice={7} style={styles.bloque}>
+                <Misiones misiones={p.misiones} acciones={acciones} />
+              </Entrada>
+            ) : null}
+          </>
+        }
+      />
     </Screen>
   );
 }

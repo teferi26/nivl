@@ -21,6 +21,7 @@ import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { CargaArena, Entrada, ErrorSistema } from '@/components/arena';
 import { Screen } from '@/components/ui';
+import { DosColumnas } from '@/components/web/DosColumnas';
 import { ink, space, type as tipo } from '@/design/tokens';
 import { t } from '@/i18n';
 import { capital, fechaCorta, mayus, nombreMes } from '@/i18n/formato';
@@ -412,7 +413,7 @@ function Coach({ acciones }: { acciones: AccionesWork }) {
 export function WorkEconomiaVista({ cabecera, estado, error, refrescando, hoy, datos: d, aviso, acciones }: WorkEconomiaVistaProps) {
   const a = useAcento();
   return (
-    <Screen refreshing={refrescando} onRefresh={acciones.onRefrescar}>
+    <Screen amplio refreshing={refrescando} onRefresh={acciones.onRefrescar}>
       <Entrada indice={0}>{cabecera}</Entrada>
 
       {estado === 'cargando' ? (
@@ -459,27 +460,38 @@ export function WorkEconomiaVista({ cabecera, estado, error, refrescando, hoy, d
             </Pressable>
           ) : null}
           {error ? <ErrorSistema compacto mensaje={error} onReintentar={acciones.onReintentar} /> : null}
-          <Entrada indice={1}>
-            <VistaGeneralTarjeta d={d} acciones={acciones} />
-          </Entrada>
-          <Entrada indice={2}>
-            <Fijos d={d} acciones={acciones} />
-          </Entrada>
-          <Entrada indice={3}>
-            <EnQueSeVa d={d} hoy={hoy} acciones={acciones} />
-          </Entrada>
-          <Entrada indice={4}>
-            <Movimientos d={d} acciones={acciones} />
-          </Entrada>
-          <Entrada indice={5}>
-            <Brief d={d} acciones={acciones} />
-          </Entrada>
-          <Entrada indice={6}>
-            <Importar acciones={acciones} />
-          </Entrada>
-          <Entrada indice={7}>
-            <Coach acciones={acciones} />
-          </Entrada>
+          {/* En escritorio (web): las cuentas y los movimientos a la izquierda; el brief, importar y el coach a la derecha. */}
+          <DosColumnas
+            principal={
+              <>
+                <Entrada indice={1}>
+                  <VistaGeneralTarjeta d={d} acciones={acciones} />
+                </Entrada>
+                <Entrada indice={2}>
+                  <Fijos d={d} acciones={acciones} />
+                </Entrada>
+                <Entrada indice={3}>
+                  <EnQueSeVa d={d} hoy={hoy} acciones={acciones} />
+                </Entrada>
+                <Entrada indice={4}>
+                  <Movimientos d={d} acciones={acciones} />
+                </Entrada>
+              </>
+            }
+            lateral={
+              <>
+                <Entrada indice={5}>
+                  <Brief d={d} acciones={acciones} />
+                </Entrada>
+                <Entrada indice={6}>
+                  <Importar acciones={acciones} />
+                </Entrada>
+                <Entrada indice={7}>
+                  <Coach acciones={acciones} />
+                </Entrada>
+              </>
+            }
+          />
         </>
       ) : null}
       {estado !== 'listo' && estado !== 'cargando' ? (

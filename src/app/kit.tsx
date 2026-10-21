@@ -6,6 +6,7 @@
 // web no se acota a la columna de 560 (ColumnaWeb en _layout.tsx).
 
 import { Redirect, router } from 'expo-router';
+import { GALERIA } from '@/lib/galeria';
 import { useContext, useMemo, useState, type ReactNode } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Campo, EncabezadoArena } from '@/components/arena';
@@ -105,7 +106,7 @@ export default function Kit() {
     for (let i = 0; i < 91; i++) out[addDays(hoy, -i)] = (i * 7) % 6;
     return out;
   }, []);
-  if (!__DEV__) return <Redirect href="/" />;
+  if (!GALERIA) return <Redirect href="/" />;
 
   return (
     <Screen

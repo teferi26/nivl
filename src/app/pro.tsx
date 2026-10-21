@@ -19,6 +19,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Platform, StyleSheet, Text, View } from 'react-native';
 import { ProOffer } from '@/components/ProOffer';
 import { UsoIa } from '@/components/UsoIa';
+import { PlanesWeb } from '@/components/web/PlanesWeb';
 import { Barra, CargaArena, EncabezadoArena, Entrada, ErrorSistema, TarjetaArena } from '@/components/arena';
 import { Button, Row, Screen, Section } from '@/components/ui';
 import { vibrar } from '@/design/haptics';
@@ -201,8 +202,9 @@ export default function Pro() {
     // Sin segunda suscripción: ni al Élite/dueño, ni a quien paga por Stripe
     // (web) o con plan heredado de Stripe. La tienda decide el resto.
     const mejorable = purchasesAvailable() && puedeMejorarEnTienda(status, provider);
-    // Se gestiona en la tienda solo lo que se pagó en una tienda.
-    const deTienda = dePago && (provider === 'apple' || provider === 'google');
+    // Se gestiona en la tienda solo lo que se pagó en una tienda. En la web no
+    // hay tienda que abrir: queda la nota de dónde se gestiona.
+    const deTienda = Platform.OS !== 'web' && dePago && (provider === 'apple' || provider === 'google');
     const gestionar = async () => {
       setAvisoGestion(null);
       try {
@@ -348,6 +350,13 @@ export default function Pro() {
         </>
       </Screen>
     );
+  }
+
+  // En la web no se compra ni se enlaza a ninguna compra (ni Apple, ni Google,
+  // ni Stripe todavía): «Planes» explica que la suscripción va por la app de
+  // iPhone y enseña los planes en solo lectura (src/components/web/PlanesWeb).
+  if (Platform.OS === 'web') {
+    return <PlanesWeb userId={userId} kind={kind} onVolver={salir} refrescando={refreshing} onRefrescar={refrescar} />;
   }
 
   // Con motivo, la cabecera es la del momento; sin él, la de siempre. La prueba

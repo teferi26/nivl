@@ -69,3 +69,4 @@ banco-estado.json
 privado/
 scripts/*.local.*
 dist-creadores/
+dist-web/
