@@ -23,6 +23,7 @@
 
 import { callClaude, CHEAP_MODEL, costMicroUsd, LlamadaFallida, type Usage } from '../_shared/anthropic.ts';
 import { esColumnaInexistente, insertarRun } from '../_shared/telemetria.ts';
+import { CarteraIa } from '../_shared/cartera.ts';
 import { AI_SAFETY_RULES } from '../_shared/ai-safety.ts';
 import { buildContextMinimo } from '../_shared/context.ts';
 import { DATOS_ABRE, DATOS_CIERRA, neutralizarDatos, REGLA_DATOS } from '../_shared/prompt.ts';
@@ -472,6 +473,8 @@ export async function intentarCheckin(admin: Db, sb: Db, p: Perfil): Promise<str
         }],
         maxTokens: 200,
         // Sin herramientas: el checkin no escribe nada.
+        // La cartera (0078): reserva la cota antes de llamar (función 'checkin', 2 al día).
+        cartera: new CarteraIa(admin, p.id, 'checkin'),
       });
       uso = turn.usage;
       modelo = turn.model;

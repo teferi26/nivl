@@ -58,6 +58,38 @@ export function parseCustomerInfo(
   return { ...reservation, requested_ms: requested, subscriptions };
 }
 
+/** Recargas de IA (0078): productos consumibles. Se cotejan además con ai_recarga_productos en SQL. */
+export const RECARGAS_IA = new Set(['nivl_ia_recarga_1']);
+export type CompraRecarga = { id: string; product_id: string; store: 'app_store' | 'play_store'; sandbox: boolean; purchased_at: string };
+
+/**
+ * Las recargas de IA de la información de cliente VERIFICADA (RevenueCat v1, `subscriber.non_subscriptions`:
+ * por producto, una lista de compras con `id`, `purchase_date`, `store` e `is_sandbox`). Nunca del cuerpo del
+ * webhook ni del cliente. Lo malformado se ignora (no da crédito); el sandbox, con la misma política que las
+ * suscripciones.
+ * https://www.revenuecat.com/docs/api-v1/customers (contrastar el formato antes de abrir la venta).
+ */
+export function parseRecargas(value: unknown, userId: string, allowSandbox: SandboxPolicy = () => true): CompraRecarga[] {
+  if (!object(value) || !object(value.subscriber) || !object(value.subscriber.non_subscriptions)) return [];
+  const out: CompraRecarga[] = [];
+  for (const [identifier, compras] of Object.entries(value.subscriber.non_subscriptions)) {
+    const product = identifier.split(':')[0];
+    if (!RECARGAS_IA.has(product) || !Array.isArray(compras)) continue;
+    for (const c of compras) {
+      if (!object(c)) continue;
+      // La transacción de la tienda (la que trae el reembolso en el webhook); sin ella, el id de RevenueCat.
+      const id = typeof c.store_transaction_id === 'string' && c.store_transaction_id ? c.store_transaction_id : c.id;
+      if (typeof id !== 'string' || !id || id.length > 200) continue;
+      if (c.store !== 'app_store' && c.store !== 'play_store') continue;
+      const fecha = date(c.purchase_date);
+      if (fecha === null || typeof c.is_sandbox !== 'boolean') continue;
+      if (c.is_sandbox && !allowSandbox(userId)) continue;
+      out.push({ id, product_id: product, store: c.store, sandbox: c.is_sandbox, purchased_at: new Date(fecha).toISOString() });
+    }
+  }
+  return out;
+}
+
 export function eventUsers(event: ObjectValue): string[] {
   const candidates = event.type === 'TRANSFER'
     ? [...(Array.isArray(event.transferred_from) ? event.transferred_from : []), ...(Array.isArray(event.transferred_to) ? event.transferred_to : [])]
@@ -135,6 +167,7 @@ export async function reconcileStore(
         !Number.isSafeInteger(value.revision) || Number(value.revision) < 1) throw new Error('Invalid store reservation');
     return { user_id: value.user_id, revision: Number(value.revision) };
   });
+  const recargas = new Map<string, CompraRecarga[]>();
   const results = await Promise.allSettled(reservations.map(async reservation => {
     if (!(await accountActive(admin, reservation.user_id))) throw new Error('Account unavailable');
     try {
@@ -144,7 +177,9 @@ export async function reconcileStore(
       });
       // Never treat an upstream error, including a 404, as "no subscription".
       if (!response.ok) throw new Error('Store verification unavailable');
-      const snapshot = parseCustomerInfo(await response.json(), reservation, Date.now(), options.allowSandbox);
+      const info = await response.json();
+      const snapshot = parseCustomerInfo(info, reservation, Date.now(), options.allowSandbox);
+      recargas.set(reservation.user_id, parseRecargas(info, reservation.user_id, options.allowSandbox));
       if (event && typeof event.event_timestamp_ms === 'number' && snapshot.requested_ms < event.event_timestamp_ms) {
         throw new Error('Snapshot predates webhook');
       }
@@ -163,6 +198,19 @@ export async function reconcileStore(
       p_snapshots: snapshots, p_event: event ? normalizeStoreEvent(event) : null,
     });
     if (applyError || !object(applied) || typeof applied.ok !== 'boolean') throw new Error('Cannot apply store verification');
+    // Recargas de IA (0078), idempotentes por id de compra. Un fallo aquí se reintenta: el webhook responde
+    // 503 y RevenueCat vuelve a mandarlo (o la app reintenta con store-reconcile).
+    for (const [user, compras] of recargas) {
+      if (!compras.length) continue;
+      const { error: recargaError } = await admin.rpc('apply_ai_recargas', { p_user: user, p_compras: compras });
+      if (recargaError) throw new Error('Cannot apply AI top-ups');
+    }
+    // Reembolso de una recarga (CANCELLATION de un consumible): deja de sumar desde ya.
+    const producto = typeof event?.product_id === 'string' ? event.product_id.split(':')[0] : '';
+    if (event?.type === 'CANCELLATION' && RECARGAS_IA.has(producto) && typeof event.transaction_id === 'string') {
+      const { error: revError } = await admin.rpc('revocar_ai_recarga', { p_transaccion: event.transaction_id });
+      if (revError) throw new Error('Cannot revoke AI top-up');
+    }
     return { ok: applied.ok, ...(applied.ok ? {} : { pending: true }) };
   } finally {
     // Await every identity's compensation before returning a transfer failure.

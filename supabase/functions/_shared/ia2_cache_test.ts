@@ -108,14 +108,17 @@ const HISTORIA = [
   { role: 'assistant', content: [{ type: 'text', text: 'Vas al 80 %. Te falta el cardio del jueves.' }] },
 ];
 
-Deno.test('cache: la petición del handler lleva 3 puntos (fijo, dinámico, historial) y nunca más de 4', async () => {
+Deno.test('cache: la petición del handler lleva 4 puntos (fijo, estable, historial, turno) y nunca más', async () => {
   const fake = instalar({
     filas: { coach_dossier: [{ content: 'Memoria del gladiador.' }], coach_messages: [...HISTORIA].reverse() },
   });
   try {
     await (await handler(peticion({ kind: 'chat', message: 'hola', stream: false }))).text();
     const body = fake.proveedor[0].body as Body;
-    equal(marcasEn(body), 3);
+    // IA barata (21/10/2026): el cuarto punto va al final del turno (estado rápido + mensaje).
+    equal(marcasEn(body), 4);
+    const ultimo = body.messages.at(-1)!.content as { cache_control?: unknown }[];
+    ok(ultimo.at(-1)!.cache_control, 'punto al final del turno');
     ok(body.system[N_FIJO - 1].cache_control, 'punto tras la parte fija');
     ok(body.system.at(-1)!.cache_control, 'punto tras dossier + estado');
     deepEqual(body.system.slice(0, N_FIJO).map((b) => b.text), [...SISTEMA_FIJO].map(sinGuionesProtegido));

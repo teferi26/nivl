@@ -12,7 +12,7 @@
 // Lo que este módulo NO hace: decidir si un gasto está bien o mal, si toca
 // recortar o qué presupuesto poner. Eso es criterio y es del coach.
 
-import { callClaude, CHEAP_MODEL, type Usage } from './anthropic.ts';
+import { callClaude, CHEAP_MODEL, type Cartera, type Usage } from './anthropic.ts';
 import { consentimientoIa, MENSAJE_SIN_CONSENTIMIENTO } from './consent.ts';
 import type { Db } from './db.ts';
 
@@ -64,6 +64,8 @@ export async function clasificarPendientes(
   sb: Db,
   admin: Db,
   userId: string,
+  /** La cartera del usuario (0078): la llamada reserva antes su coste máximo. */
+  cartera: Cartera,
   tope = 60,
 ): Promise<ResultadoClasificacion> {
   const { data, error } = await sb
@@ -101,6 +103,7 @@ export async function clasificarPendientes(
     messages: [{ role: 'user', content: [{ type: 'text', text: lista }] }],
     maxTokens: 2000,
     effort: 'low',
+    cartera,
   });
 
   const texto = turn.content

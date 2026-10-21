@@ -17,7 +17,7 @@
 // memoria funcionan igual con cualquier proveedor.
 
 import { FiltroGuiones, sanearPeticion } from './singuiones.ts';
-import { sanearTurno } from './anthropic.ts';
+import { conReserva, costeMaximo, fichasMaximas, sanearTurno, type Cartera } from './anthropic.ts';
 import { estimarFichas, LlamadaFallida, PLAZO_LLAMADA_MS, type ApiMessage, type ContentBlock, type Turn, type Usage } from './anthropic.ts';
 
 export interface OpcionesCompat {
@@ -33,6 +33,8 @@ export interface OpcionesCompat {
   onText?: (delta: string) => void;
   /** Corta la llamada (plazo del turno). Sin él, PLAZO_LLAMADA_MS. */
   signal?: AbortSignal;
+  /** OBLIGATORIA (0078): reserva la cota del coste antes de llamar y liquida el real después. */
+  cartera: Cartera;
 }
 
 interface MensajeChat {
@@ -294,7 +296,13 @@ export async function callOpenAICompat(opts: OpcionesCompat): Promise<Turn> {
       if (s) opts.onText!(s);
     }
     : undefined;
-  const turn = await callOpenAICompatCrudo(sanearPeticion({ ...opts, onText }));
+  const peticion = sanearPeticion({ ...opts, onText });
+  const maximo = costeMaximo(
+    peticion.model,
+    fichasMaximas({ system: peticion.system, messages: peticion.messages, tools: peticion.tools ?? [] }),
+    peticion.maxTokens ?? 16000,
+  );
+  const turn = await conReserva(opts.cartera, maximo, () => callOpenAICompatCrudo(peticion));
   const resto = filtro.fin();
   if (resto && opts.onText) opts.onText(resto);
   return sanearTurno(turn);

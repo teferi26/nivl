@@ -6,7 +6,7 @@
 // `sec_coach_fake_test.ts`: ni red, ni proveedor real, ni gasto.
 
 import { deepEqual, equal, ok } from 'node:assert/strict';
-import { instalar, peticion, sse, turnoHerramienta, turnoTexto } from './sec_coach_fake_test.ts';
+import { CARTERA_DE_PRUEBA, instalar, peticion, sse, turnoHerramienta, turnoTexto } from './sec_coach_fake_test.ts';
 import { buildSystem, DATOS_CIERRA } from './prompt.ts';
 import { callClaude, LlamadaFallida } from './anthropic.ts';
 import {
@@ -179,7 +179,7 @@ Deno.test('plazo: un proveedor colgado se corta y lo consumido viaja en el error
     const t0 = Date.now();
     let err: unknown;
     try {
-      await callClaude({ system: [{ type: 'text', text: 's' }], messages: [], signal: AbortSignal.timeout(80) });
+      await callClaude({ system: [{ type: 'text', text: 's' }], messages: [], signal: AbortSignal.timeout(80), cartera: CARTERA_DE_PRUEBA });
     } catch (e) {
       err = e;
     }

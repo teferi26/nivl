@@ -11,7 +11,8 @@ import { consentimientoIa, MENSAJE_SIN_CONSENTIMIENTO, SIN_CONSENTIMIENTO } from
 import { healthConsent, healthRevision, healthScopedClient, HEALTH_REQUIRED } from '../_shared/health.ts';
 import { adminClient, userClient, type Db } from '../_shared/db.ts';
 import { AI_SAFETY_RULES } from '../_shared/ai-safety.ts';
-import { costMicroUsd, type Usage } from '../_shared/anthropic.ts';
+import { costeMaximo, costMicroUsd, fichasMaximas, TopeIaError, type Usage } from '../_shared/anthropic.ts';
+import { CarteraIa, mensajeTope } from '../_shared/cartera.ts';
 import { sinGuionesProfundo } from '../_shared/singuiones.ts';
 
 const MODEL = 'claude-haiku-4-5';
@@ -190,6 +191,32 @@ async function consultar(req: Request, userId: string, healthDb: Db): Promise<Re
   if (!consienteAlEnviar) return json(403, { error: MENSAJE_SIN_CONSENTIMIENTO, reason: SIN_CONSENTIMIENTO });
   if (await healthConsent(healthDb, userId) !== true) return json(403, { error: 'El permiso de salud ya no está activo.', reason: HEALTH_REQUIRED });
 
+  // La cartera (0078): reserva la cota de esta llamada antes de mandarla (función 'oracle').
+  const peticion = {
+    model: MODEL,
+    max_tokens: 2500,
+    system,
+    messages: [{ role: 'user', content: userContent }],
+    output_config: { format: { type: 'json_schema', schema } },
+  };
+  const cartera = new CarteraIa(admin, userId, 'oracle');
+  const maximo = costeMaximo(MODEL, fichasMaximas(peticion), peticion.max_tokens);
+  let reserva: string;
+  try {
+    reserva = await cartera.reservar(maximo);
+  } catch (e) {
+    const m = mensajeTope(e instanceof TopeIaError ? e.motivo : 'cerrado');
+    return json(m.status, { error: m.error, reason: m.reason });
+  }
+  // Por defecto, la reserva entera (peca de caro); se ajusta en cuanto se sabe lo cobrado.
+  let realMicro = maximo;
+  try {
+    return await consultarProveedor();
+  } finally {
+    await cartera.liquidar(reserva, realMicro);
+  }
+
+  async function consultarProveedor(): Promise<Response> {
   let res: Response;
   try {
     res = await fetch('https://api.anthropic.com/v1/messages', {
@@ -202,13 +229,7 @@ async function consultar(req: Request, userId: string, healthDb: Db): Promise<Re
         'anthropic-version': '2023-06-01',
         'content-type': 'application/json',
       },
-      body: JSON.stringify({
-        model: MODEL,
-        max_tokens: 2500,
-        system,
-        messages: [{ role: 'user', content: userContent }],
-        output_config: { format: { type: 'json_schema', schema } },
-      }),
+      body: JSON.stringify(peticion),
     });
   } catch (e) {
     console.error('oracle provider unreachable:', e instanceof Error ? e.name : 'error');
@@ -216,6 +237,8 @@ async function consultar(req: Request, userId: string, healthDb: Db): Promise<Re
   }
 
   if (!res.ok) {
+    // Respuesta de error: el proveedor no cobra; se libera la reserva.
+    realMicro = 0;
     console.error('anthropic error:', res.status);
     return json(502, { error: 'El oráculo no responde. Reintenta en un momento.' });
   }
@@ -233,6 +256,7 @@ async function consultar(req: Request, userId: string, healthDb: Db): Promise<Re
   // hasta aplicarla, el insert falla y queda en el log.)
   const modelo = data.model ?? MODEL;
   const u: Usage = data.usage ?? {};
+  realMicro = costMicroUsd(modelo, u);
   await admin
     .from('oracle_usage')
     .upsert({ user_id: userId, month, count: used + 1 }, { onConflict: 'user_id,month' });
@@ -261,4 +285,5 @@ async function consultar(req: Request, userId: string, healthDb: Db): Promise<Re
 
   if (await healthConsent(healthDb, userId) !== true) return json(403, { error: 'El permiso de salud ya no está activo.', reason: HEALTH_REQUIRED });
   return json(200, { result, remaining: MONTHLY_CAP - used - 1 });
+  }
 }

@@ -28,11 +28,13 @@ async function sha256(v: unknown): Promise<string> {
 
 // Calculados con el prompt.ts de 659714e (antes de Modos F1). Si cambias a propósito la voz, el
 // conocimiento o las reglas, recalcúlalos; si cambian sin querer, algo ha roto la regla «sin cabeceras, igual».
+// 21/10/2026 (IA barata): recalculados a propósito: dos reglas nuevas en AI_SAFETY_RULES (productos
+// financieros, 024/112) y el encargo del ritual pasa al final de la parte estable.
 const HASH_ANTES = {
-  chat: 'b000f0cb33bd9db4f2e94ea26c1591cbaa6c614874262d0db39ae16fbbaa2466',
-  brief: 'c8e463ea12f6ef3d125e5094f527159e9ea5ccb6661048b3dd0c73cf8d74d756',
-  vacio: 'f21fc8c1ccb20cae1160fe456cdb80f86ceb3b73f5f05a7fe96d52a6251708d0',
-  registro: 'd0380017a4a436ee4b7548cccc240e4a1419d741d242c2ad569772f166d36956',
+  chat: '40f1a55a40d4f3899e9077491c1411772fe121e84217ce72b134f4a5ee213fc2',
+  brief: '891047c078dde683e0a71e5d26c069b3c1bffc77ded5105b70dd8702acc4b445',
+  vacio: '3b5938df67c36b099b04e5b19111b840af7a5616616897079fa0f34c2a150e99',
+  registro: '8ab1401e369c8b83b4d8a4fcdfd8a093961f694c52f73891612890ca5a428937',
 };
 
 Deno.test('modos: sin idioma ni modo el sistema es idéntico byte a byte al de antes (SHA-256)', async () => {
@@ -113,7 +115,11 @@ async function sistemaDe(cabeceras: Record<string, string>, perfil: Record<strin
   });
   try {
     await (await handler(peticion({ kind: 'chat', message: 'Plan para hoy y tres prioridades', stream: false }, cabeceras))).text();
-    return (fake.proveedor[0].body as Body).system;
+    // IA barata: el estado RÁPIDO (misiones de hoy) va en el mensaje del turno, no en el sistema. Se
+    // devuelve el sistema seguido de los bloques de texto de ese mensaje.
+    const cuerpo = fake.proveedor[0].body as Body & { messages: { content: { type: string; text?: string }[] }[] };
+    const turno = cuerpo.messages[cuerpo.messages.length - 1].content.filter((x) => x.type === 'text');
+    return [...cuerpo.system, ...turno.map((x) => ({ type: 'text' as const, text: x.text ?? '' }))];
   } finally {
     fake.restaurar();
   }

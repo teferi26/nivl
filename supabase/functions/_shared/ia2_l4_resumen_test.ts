@@ -3,6 +3,7 @@
 // Con el arnés sec_coach_fake_test.ts: nada sale a la red. El "proveedor"
 // distingue al coach (Sonnet) del resumen (Haiku) por el modelo pedido.
 
+import { CARTERA_DE_PRUEBA } from './sec_coach_fake_test.ts';
 import { assert as ok, assertEquals as equal } from 'jsr:@std/assert@1';
 import { instalar, peticion, turnoTexto, USER_ID, USER_TOKEN, type Llamada } from './sec_coach_fake_test.ts';
 import { handler } from '../coach/handler.ts';
@@ -216,6 +217,7 @@ Deno.test('L4 resumen: un resumen previo malicioso llega a Haiku también como d
   const fake = instalar({ otras: postgrest(datos({ summary: malicioso, summary_until: hora(0) }, mensajes(15, 1))), proveedor: proveedor() });
   try {
     const r = await resumirHilo({
+      cartera: CARTERA_DE_PRUEBA,
       sb: userClient(USER_TOKEN), admin: adminClient(), userId: USER_ID, threadId: HILO, presupuestoMicro: 1_000_000, modo: 'estandar',
     });
     equal(r, 'resumido');
@@ -234,6 +236,7 @@ Deno.test('L4 resumen: sin consentimiento de IA vigente no llama a Haiku ni apun
   const fake = instalar({ otras: postgrest(datos({}, mensajes(14))), rpc: { ai_consent_ok: () => false }, proveedor: proveedor() });
   try {
     const r = await resumirHilo({
+      cartera: CARTERA_DE_PRUEBA,
       sb: userClient(USER_TOKEN), admin: adminClient(), userId: USER_ID, threadId: HILO, presupuestoMicro: 1_000_000, modo: 'estandar',
     });
     equal(r, 'sin_consentimiento');
@@ -251,6 +254,7 @@ Deno.test('L4 resumen: sin permiso de salud (el hilo lleva datos de salud) no se
   const fake = instalar({ otras: postgrest(datos({}, mensajes(14))), rpc: { health_consent_ok: () => false }, proveedor: proveedor() });
   try {
     const r = await resumirHilo({
+      cartera: CARTERA_DE_PRUEBA,
       sb: userClient(USER_TOKEN), admin: adminClient(), userId: USER_ID, threadId: HILO, presupuestoMicro: 1_000_000, modo: 'estandar',
     });
     equal(r, 'sin_salud');
@@ -265,6 +269,7 @@ Deno.test('L4 resumen: sin presupuesto restante no se gasta; y un fallo del prov
   const fake = instalar({ otras: postgrest(datos({}, mensajes(14))), proveedor: proveedor() });
   try {
     const r = await resumirHilo({
+      cartera: CARTERA_DE_PRUEBA,
       sb: userClient(USER_TOKEN), admin: adminClient(), userId: USER_ID, threadId: HILO, presupuestoMicro: 5_000, modo: 'estandar',
     });
     equal(r, 'sin_presupuesto');
@@ -278,6 +283,7 @@ Deno.test('L4 resumen: sin presupuesto restante no se gasta; y un fallo del prov
   });
   try {
     const r = await resumirHilo({
+      cartera: CARTERA_DE_PRUEBA,
       sb: userClient(USER_TOKEN), admin: adminClient(), userId: USER_ID, threadId: HILO, presupuestoMicro: 1_000_000, modo: 'estandar',
     });
     equal(r, 'fallo');

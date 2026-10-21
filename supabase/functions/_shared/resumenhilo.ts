@@ -29,7 +29,7 @@
 //     concurrencia optimista sobre summary_until: si otro turno resumió antes,
 //     esta escritura no pisa nada.
 
-import { callClaude, CHEAP_MODEL, costMicroUsd, LlamadaFallida, type Turn, type Usage } from './anthropic.ts';
+import { callClaude, CHEAP_MODEL, costMicroUsd, LlamadaFallida, type Cartera, type Turn, type Usage } from './anthropic.ts';
 import { consentimientoIa } from './consent.ts';
 import type { Db } from './db.ts';
 import { healthConsent, healthGuardedResult } from './health.ts';
@@ -176,6 +176,8 @@ export interface ArgsResumen {
   /** Lo que le queda del bolsillo del turno (microdólares) tras el turno. */
   presupuestoMicro: number;
   modo: string;
+  /** La cartera del usuario (0078, función 'resumen_hilo'): reserva antes de llamar. */
+  cartera: Cartera;
 }
 
 /**
@@ -215,6 +217,7 @@ export async function resumirHilo(a: ArgsResumen): Promise<ResultadoResumen> {
           messages: [{ role: 'user', content: [{ type: 'text', text: entradaDelResumen(previo.summary, sel.compactar) }] }],
           maxTokens: 900,
           signal: AbortSignal.timeout(45_000),
+          cartera: a.cartera,
         })
       );
       usage = turn.usage;

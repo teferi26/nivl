@@ -41,6 +41,20 @@ export function proveedorDe(model: string): 'anthropic' | 'compat' {
   return model.trim().toLowerCase().startsWith('claude-') ? 'anthropic' : 'compat';
 }
 
+/**
+ * Privacidad (decisión del 21/10/2026): solo modelos de Anthropic. Si `ai_plans.routes` (o un secret)
+ * trae otro (p. ej. `deepseek-*`), NO se llama a COACH_BASE_URL: se atiende con `reserva` (el modelo
+ * barato de Anthropic) y queda un aviso en el log solo con el código. Así un UPDATE de ai_plans no
+ * puede reactivar un proveedor sin cambiar código.
+ */
+export function soloAnthropic(model: string, reserva: string): { model: string; bloqueado: boolean } {
+  if (proveedorDe(model) === 'anthropic') return { model: model.trim(), bloqueado: false };
+  return { model: reserva, bloqueado: true };
+}
+
+/** El código del aviso del log cuando se bloquea un modelo (sin el nombre del modelo ni datos). */
+export const AVISO_MODELO_BLOQUEADO = 'modelo_no_anthropic_bloqueado';
+
 /** Lo que llega en la cabecera `x-nivl-mode`: solo 'profundo' exacto abre el bolsillo caro. */
 export function modoDeCabecera(valor: string | null | undefined): Modo {
   return valor?.trim().toLowerCase() === 'profundo' ? 'profundo' : 'estandar';

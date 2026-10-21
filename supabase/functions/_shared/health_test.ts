@@ -1,4 +1,5 @@
 import { healthConsent, healthGuardedResult, healthRevision, healthScopedClient, requireHealth } from './health.ts';
+import { CARTERA_DE_PRUEBA } from './sec_coach_fake_test.ts';
 import { healthErasureHandler } from './health-erasure.ts';
 import { buildContext } from './context.ts';
 import { construirEstudio } from './analytics.ts';
@@ -30,7 +31,7 @@ Deno.test('no health consent stops context, analytics, recap and tool BEFORE rea
   const sb = { rpc: () => Promise.resolve({ data: false, error: null }), from: () => { reads++; throw new Error('Private read/write must not happen'); } } as unknown as Db;
   await rejects(() => buildContext(sb, UID, '2026-09-27'));
   await rejects(() => construirEstudio(sb, UID, '2026-09-27'));
-  await rejects(() => construirResumen(sb, UID, 'semanal', '2026-09-27'));
+  await rejects(() => construirResumen(sb, UID, 'semanal', '2026-09-27', sb, CARTERA_DE_PRUEBA));
   await rejects(() => executeTool('crear_mision', { titulo: 'test' }, { sb, userId: UID, today: '2026-09-27' }));
   equal(reads, 0);
 });

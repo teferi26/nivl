@@ -46,7 +46,7 @@ export interface Fake {
 }
 
 /** Las RPC que en la base real solo puede ejecutar service_role (comprobado en pg_proc.proacl). */
-const SOLO_SERVICE = new Set(['ai_begin_turn', 'ai_end_turn', 'ai_state', 'ai_consent_ok']);
+const SOLO_SERVICE = new Set(['ai_begin_turn', 'ai_end_turn', 'ai_state', 'ai_consent_ok', 'ai_reservar', 'ai_liquidar', 'ai_puede']);
 
 export function sse(eventos: unknown[]): Response {
   const cuerpo = eventos.map((e) => `event: x\ndata: ${JSON.stringify(e)}\n\n`).join('');
@@ -107,6 +107,10 @@ export function instalar(op: Opciones = {}): Fake {
     ai_begin_turn: () => ({ allowed: true, mode: 'estandar', turn_budget: 5_000_000, routes: {} }),
     ai_end_turn: () => null,
     ai_state: () => ({ entitled: true, remaining: 5_000_000, tier: 'pro' }),
+    // La cartera (0078): por defecto deja; los tests del tope la sustituyen (ia_tope_test.ts).
+    ai_puede: () => ({ ok: true, motivo: null }),
+    ai_reservar: () => ({ ok: true, id: `reserva-${llamadas.length}` }),
+    ai_liquidar: () => ({ ok: true }),
   };
   const filasPorDefecto: Record<string, unknown[]> = {
     health_state: [{ revision: 1, accepted: true }],
@@ -183,6 +187,20 @@ export function instalar(op: Opciones = {}): Fake {
     },
   };
 }
+
+/** Una cartera que siempre deja (0078), para llamar a callClaude y a los atajos directamente en los tests. */
+export const CARTERA_DE_PRUEBA = {
+  reservas: [] as { micro: number; real?: number }[],
+  reservar(micro: number): Promise<string> {
+    this.reservas.push({ micro });
+    return Promise.resolve(`prueba-${this.reservas.length - 1}`);
+  },
+  liquidar(id: string, real: number): Promise<void> {
+    const fila = this.reservas[Number(id.split('-')[1])];
+    if (fila) fila.real = real;
+    return Promise.resolve();
+  },
+};
 
 /** Una petición a la función como la haría la app. */
 export function peticion(body: unknown, cabeceras: Record<string, string> = {}): Request {
