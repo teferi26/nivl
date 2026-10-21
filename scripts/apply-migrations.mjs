@@ -67,6 +67,8 @@ async function sql(query) {
 
 // Cada migración se reconoce por un objeto que solo ella crea.
 const HUELLAS = {
+  '0079': `coalesce(obj_description(to_regprocedure('public.export_my_data()'), 'pg_proc') like '%nivl:export-ia-0079%', false)`,
+  '0078': `coalesce(obj_description(to_regprocedure('public.ai_reservar(uuid,text,text,bigint,uuid,text)'), 'pg_proc') like '%nivl:ia-tope-0078%', false)`,
   '0074': `coalesce(obj_description(to_regclass('public.meta_level_envios'), 'pg_class') like '%nivl:meta-level-0074%', false)`,
   '0073': `coalesce(obj_description(to_regprocedure('public.olvidar_instalacion(text)'), 'pg_proc') like '%nivl:analitica-consentimiento-0073%', false)`,
   '0072': `coalesce(obj_description(to_regprocedure('public.es_admin()'), 'pg_proc') like '%nivl:admin-0072%', false) and coalesce(obj_description(to_regprocedure('public.export_my_data()'), 'pg_proc') like '%nivl:export-analitica-0072%', false)`,
