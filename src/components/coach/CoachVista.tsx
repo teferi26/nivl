@@ -29,6 +29,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Arena, BotonArena, Entrada, Galea } from '@/components/arena';
 import { ProUpsellLine } from '@/components/ProOffer';
+import { UsoIa } from '@/components/UsoIa';
 import { Button, Card, Chip, Screen, Skeleton, Tag } from '@/components/ui';
 import { useTecladoAbierto } from '@/components/ui/useTecladoAbierto';
 import { ink, space, stroke, type } from '@/design/tokens';
@@ -38,6 +39,7 @@ import type { CoachMode } from '@/lib/coach';
 import { DESCARGO_SALUD, LINEA_CRISIS } from '@/lib/consentmath';
 import { dateKey, relativoDe } from '@/lib/dates';
 import type { DecisionOferta } from '@/lib/paywallmoment';
+import type { AiStatus } from '@/lib/pro';
 import { CoachBloqueado } from './CoachBloqueado';
 import { CoachMark } from './CoachMark';
 import { BotonDictar, FranjaGrabacion, type Dictado } from './Dictado';
@@ -86,6 +88,8 @@ export interface CoachVistaProps {
   onQuitarAdjuntas: () => void;
   /** Aviso de energía (o del servidor). `ofertaTier`: la línea `energia_agotada`. */
   energia: { texto: string; ofertaTier: Tier | null; avisoAparte: string | null } | null;
+  /** Cuánta IA queda este mes, avisos del 80/95 % y la recarga (0078). null = sin cartera. */
+  uso?: { status: AiStatus; onRecargada: () => void } | null;
   /** Solo si el plan incluye el modo profundo. */
   potencia: { modo: CoachMode; profundoAbierto: boolean; linea: string; onElegir: (m: CoachMode) => void } | null;
   compositor: {
@@ -465,6 +469,8 @@ export function CoachVista(p: CoachVistaProps) {
             </Pressable>
           </View>
         ) : null}
+
+        {p.uso ? <UsoIa compacto status={p.uso.status} onRecargada={p.uso.onRecargada} /> : null}
 
         {p.energia ? (
           p.energia.ofertaTier ? (

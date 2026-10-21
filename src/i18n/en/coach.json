@@ -124,5 +124,19 @@
     "miraFoto": "Look at this photo.",
     "energiaAgotada": "The coach's energy for this month has run out. It recharges on the 1st.",
     "energiaAgotadaDia": "The coach's energy for this month has run out. It recharges on {{dia}}."
+  },
+  "uso": {
+    "etiqueta": "AI this month",
+    "restante": "{{pct}} % available",
+    "a11y": "AI this month: {{pct}} % left",
+    "aviso80": "You've used 80 % of your AI this month. The system will manage what's left.",
+    "aviso95": "5 % of your AI is left this month. Save it for what matters.",
+    "agotada": "Your AI for this month is used up. It comes back on {{dia}}, or top it up now.",
+    "agotadaSinDia": "Your AI for this month is used up. You can top it up now.",
+    "hoy": "You've used today's share of AI. It comes back tomorrow.",
+    "recargar": "Top up AI · {{precio}}",
+    "recargarSinPrecio": "Top up AI",
+    "recargaHecha": "Top-up applied. The system is answering again.",
+    "recargaPendiente": "The store has charged the top-up. It applies in a few seconds."
   }
 }

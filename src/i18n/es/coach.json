@@ -124,5 +124,19 @@
     "miraFoto": "Mira esta foto.",
     "energiaAgotada": "La energía del coach de este mes se ha agotado. Se recarga el día 1.",
     "energiaAgotadaDia": "La energía del coach de este mes se ha agotado. Se recarga el {{dia}}."
+  },
+  "uso": {
+    "etiqueta": "IA de este mes",
+    "restante": "{{pct}} % disponible",
+    "a11y": "IA de este mes: queda un {{pct}} %",
+    "aviso80": "Has usado el 80 % de tu IA de este mes. El sistema administra lo que queda.",
+    "aviso95": "Te queda un 5 % de IA este mes. Guárdala para lo que decide.",
+    "agotada": "Tu IA de este mes está agotada. Vuelve el {{dia}}, o recárgala ahora.",
+    "agotadaSinDia": "Tu IA de este mes está agotada. Puedes recargarla ahora.",
+    "hoy": "Hoy ya has usado la IA que te corresponde. Mañana vuelve.",
+    "recargar": "Recargar IA · {{precio}}",
+    "recargarSinPrecio": "Recargar IA",
+    "recargaHecha": "Recarga aplicada. El sistema vuelve a responder.",
+    "recargaPendiente": "La tienda ha cobrado la recarga. Se aplica en unos segundos."
   }
 }

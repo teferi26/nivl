@@ -603,8 +603,11 @@ export function useCoach(): { vista: CoachVistaProps; hojas: HojasCoach } {
     onAtajo: (m) => void enviar(m),
     adjuntas: adjuntas.length,
     onQuitarAdjuntas: () => setAdjuntas([]),
+    // Con la cartera del servidor (0078) la barra de UsoIa ya dice cuánto queda y ofrece la recarga: la
+    // línea de energía solo queda para un aviso propio del servidor (o un servidor sin la migración).
+    uso: !sinPro && estado?.ia ? { status: estado, onRecargada: () => void releerEstado() } : null,
     energia:
-      avisoEnergia && !sinPro
+      avisoEnergia && !sinPro && (!estado?.ia || !!aviso)
         ? {
             texto: avisoEnergia,
             ofertaTier: ofertaEnergia && agotadaPro ? ofertaEnergia.tier : null,

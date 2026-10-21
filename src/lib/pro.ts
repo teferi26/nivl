@@ -34,6 +34,8 @@ import {
   compraReflejada,
   esProductoNivl,
   puedeMejorarEnTienda,
+  carteraDe,
+  RECARGA_IA_ID,
   modoReemplazoGoogle,
   planExacto,
   periodoIntroGratis,
@@ -91,7 +93,51 @@ export async function fetchAiStatus(): Promise<AiStatus> {
     deepTurns: Number(s.deep_turns ?? 0),
     trialAvailable: s.trial_available === true,
     vision: typeof s.vision === 'boolean' ? s.vision : null,
+    ia: carteraDe(s.ia),
   };
+}
+
+/** Precio de la recarga de IA en la tienda (`priceString`), o null sin tienda o sin producto. */
+export async function precioRecargaIa(): Promise<string | null> {
+  if (!purchasesAvailable()) return null;
+  try {
+    const [p] = await conLimiteDeRed(Purchases.getProducts([RECARGA_IA_ID], Purchases.PRODUCT_CATEGORY?.NON_SUBSCRIPTION));
+    return precioVisible(p?.priceString);
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Compra la recarga de IA (consumible). La tienda cobra; el crédito lo apunta el servidor con la compra
+ * verificada en RevenueCat (store-reconcile → apply_ai_recargas). Se espera unos segundos a verlo.
+ */
+export async function comprarRecargaIa(): Promise<'activa' | 'pendiente' | 'cancelada'> {
+  const uid = await asegurarUsuario();
+  return enColaDeTienda(async () => {
+    await comprobarCuenta(uid);
+    let antes = 0;
+    try {
+      antes = (await fetchAiStatus()).ia?.recarga ?? 0;
+    } catch {
+      /* sin red: se compara con 0 */
+    }
+    let producto;
+    try {
+      [producto] = await conLimiteDeRed(Purchases.getProducts([RECARGA_IA_ID], Purchases.PRODUCT_CATEGORY?.NON_SUBSCRIPTION));
+    } catch (e) {
+      throw traducir(e);
+    }
+    if (!producto) throw new ErrorVisible('La recarga no está disponible ahora mismo en la tienda.');
+    try {
+      await Purchases.purchaseStoreProduct(producto);
+    } catch (e) {
+      if (cancelada(e)) return 'cancelada';
+      throw traducir(e);
+    }
+    await reconciliarCompra(uid);
+    return (await esperarDerecho(uid, (st) => (st.ia?.recarga ?? 0) > antes)) ? 'activa' : 'pendiente';
+  });
 }
 
 /**

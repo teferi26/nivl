@@ -22,6 +22,7 @@ jest.mock('react-native', () => ({
   StyleSheet: { create: (s: unknown) => s },
 }));
 jest.mock('@/components/ProOffer', () => ({ ProOffer: 'ProOffer' }));
+jest.mock('@/components/UsoIa', () => ({ UsoIa: 'UsoIa' }));
 jest.mock('@/components/arena', () => {
   const { createElement: h } = jest.requireActual<typeof import('react')>('react');
   return {

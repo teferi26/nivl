@@ -124,5 +124,19 @@
     "miraFoto": "Regarde cette photo.",
     "energiaAgotada": "L'énergie du coach pour ce mois est épuisée. Elle se recharge le 1er.",
     "energiaAgotadaDia": "L'énergie du coach pour ce mois est épuisée. Elle se recharge le {{dia}}."
+  },
+  "uso": {
+    "etiqueta": "IA de ce mois",
+    "restante": "{{pct}} % disponible",
+    "a11y": "IA de ce mois : il reste {{pct}} %",
+    "aviso80": "Tu as utilisé 80 % de ton IA ce mois-ci. Le système gère ce qui reste.",
+    "aviso95": "Il te reste 5 % d'IA ce mois-ci. Garde-la pour ce qui compte.",
+    "agotada": "Ton IA de ce mois est épuisée. Elle revient le {{dia}}, ou recharge-la maintenant.",
+    "agotadaSinDia": "Ton IA de ce mois est épuisée. Tu peux la recharger maintenant.",
+    "hoy": "Tu as utilisé ta part d'IA du jour. Elle revient demain.",
+    "recargar": "Recharger l'IA · {{precio}}",
+    "recargarSinPrecio": "Recharger l'IA",
+    "recargaHecha": "Recharge appliquée. Le système répond de nouveau.",
+    "recargaPendiente": "La boutique a encaissé la recharge. Elle s’applique dans quelques secondes."
   }
 }
