@@ -29,7 +29,7 @@ const PESTANAS = [
 ] as const;
 
 /** La barra de NIVL tal como la pinta TabBar con el emblema (solo para la captura). */
-function BarraNivl({ activa }: { activa: EstadoGeneral['pestana'] }) {
+function BarraNivl({ activa }: { activa: NonNullable<EstadoGeneral['pestana']> }) {
   const { bottom } = useSafeAreaInsets();
   return (
     <View style={[styles.barra, { paddingBottom: Math.max(bottom, 10) }]}>
@@ -70,7 +70,7 @@ export default function KitGeneral() {
             <View style={styles.lleno}>
               <PielGeneral>{estado.render()}</PielGeneral>
             </View>
-            <BarraNivl activa={estado.pestana} />
+            {estado.pestana ? <BarraNivl activa={estado.pestana} /> : null}
           </View>
         </TopeAncho.Provider>
       </View>

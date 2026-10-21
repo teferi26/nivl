@@ -3,7 +3,13 @@
 // mismos de /kit/pantallas para Hoy y Campañas) y se pasan por props.
 import { useMemo, useState, type ReactNode } from 'react';
 import { HOY_DEMO, perfilDemo } from '@/components/arena/demoDatos';
-import { listaCampanasDemo } from '@/components/campanas/demo';
+import { baseAmigosDemo, filasAmigosDemo, RIVALES_DEMO, SOLICITUD_DEMO, YO_AMIGOS_DEMO } from '@/components/amigos/demo';
+import { campanaDemo, detalleCampanaDemo, listaCampanasDemo, tareaDemo, TAREAS_DEMO } from '@/components/campanas/demo';
+import { ACCIONES_PERFIL_DEMO, ajustesPerfilDemo, datosPerfilDemo } from '@/components/perfil/demo';
+import type { Duelo } from '@/lib/competicionData';
+import { ArenaGeneralVista } from './arena/ArenaGeneralVista';
+import { CampanaGeneralVista } from './CampanaGeneralVista';
+import { PerfilGeneralVista } from './PerfilGeneralVista';
 import { derivarHoy, type EntradaHoy } from '@/components/hoy/derivarHoy';
 import { baseHoyDemo, hechaDemo, todasDemo } from '@/components/hoy/demo';
 import { ACHIEVEMENTS_VISIBLES } from '@/lib/achievements';
@@ -117,11 +123,111 @@ function AvanceDemo({ segmento: inicial, cargando = false }: { segmento: Segment
   );
 }
 
+// ── Arena ──
+function duelo(p: Partial<Duelo> & { id: string; rival: string }): Duelo {
+  return {
+    soy_retador: true,
+    week_start: addDays(HOY_DEMO, -3),
+    status: 'accepted',
+    mi_indice: 82,
+    su_indice: 76,
+    mis_dias: 4,
+    sus_dias: 3,
+    resultado: null,
+    mi_suficiente: true,
+    su_suficiente: true,
+    semana_cerrada: false,
+    ...p,
+  };
+}
+
+function ArenaDemo({ vacia = false }: { vacia?: boolean }) {
+  const board = vacia ? [YO_AMIGOS_DEMO] : [YO_AMIGOS_DEMO, ...RIVALES_DEMO];
+  const a = baseAmigosDemo(board);
+  return (
+    <ArenaGeneralVista
+      cargando={false}
+      fallo={null}
+      refrescando={false}
+      refrescar={nada}
+      subtitulo={a.subtitulo}
+      numAmigos={a.numAmigos}
+      ranking={filasAmigosDemo(board, 'cumplimiento')}
+      ventana="semana"
+      elegirVentana={nada}
+      metrica="cumplimiento"
+      elegirMetrica={nada}
+      miCodigo="TFRK7Q2M"
+      copiado={false}
+      copiar={nada}
+      invitar={nada}
+      codigo=""
+      setCodigo={nada}
+      enviar={nada}
+      enviando={false}
+      avisoCodigo={null}
+      entrantes={vacia ? [] : [SOLICITUD_DEMO]}
+      salientes={[]}
+      ocupada={null}
+      responder={nada}
+      retirar={nada}
+      abrirSeguridad={nada}
+      duelos={{
+        disponible: true,
+        listo: true,
+        fallo: null,
+        hoy: HOY_DEMO,
+        ocupado: null,
+        responder: nada,
+        vista: vacia
+          ? { porResponder: [], activos: [], enviados: [], cerrados: [], resueltos: [] }
+          : {
+              porResponder: [duelo({ id: 'd0', rival: 'Irene', status: 'pending', soy_retador: false, su_indice: null, sus_dias: null })],
+              activos: [duelo({ id: 'd1', rival: 'Marcos' })],
+              enviados: [],
+              cerrados: [],
+              resueltos: [
+                duelo({ id: 'd2', rival: 'Lucía', status: 'done', resultado: 'pierdo', week_start: addDays(HOY_DEMO, -10), mi_indice: 71, su_indice: 90 }),
+                duelo({ id: 'd3', rival: 'Dani', status: 'done', resultado: 'gano', week_start: addDays(HOY_DEMO, -17), mi_indice: 84, su_indice: 62 }),
+              ],
+            },
+      }}
+      onRetar={nada}
+      amigos={RIVALES_DEMO.map((r) => ({ userId: r.userId, name: r.name }))}
+      onAjustes={nada}
+    />
+  );
+}
+
+// ── Detalle de campaña ──
+const TAREAS_HECHAS = TAREAS_DEMO.map((x) => ({ ...x, done: true }));
+const WINTER = campanaDemo({ id: 'w', title: 'Winter Arc', rank: 'A', stat: 'VIT', deadline: null });
+const TAREAS_WINTER = ['Dormir 8 horas', 'Entrenar', 'Sin azúcar', 'Leer 20 páginas', 'Ducha fría'].map((title, i) => tareaDemo({ title, dungeon_id: 'w', done: i < 2 }));
+
+// ── Perfil ──
+function PerfilDemo() {
+  const datos = datosPerfilDemo();
+  return (
+    <PerfilGeneralVista
+      datos={datos}
+      error={null}
+      desde={null}
+      nombre={datos.profile.name}
+      subiendoFoto={false}
+      acciones={ACCIONES_PERFIL_DEMO}
+      ajustes={ajustesPerfilDemo(datos)}
+      nivelesModo={ARSENAL}
+      onVolver={nada}
+      onProgresion={nada}
+    />
+  );
+}
+
 export interface EstadoGeneral {
   id: string;
   titulo: string;
   /** La pestaña que se enciende en la barra de la captura. */
-  pestana: 'hoy' | 'avance' | 'campanas' | 'arena';
+  pestana: 'hoy' | 'avance' | 'campanas' | 'arena' | null;
   render: () => ReactNode;
 }
 
@@ -159,4 +265,10 @@ export const ESTADOS_GENERAL: EstadoGeneral[] = [
     pestana: 'campanas',
     render: () => <CampanasGeneralVista {...listaCampanasDemo({ titulo: null, campanas: [] })} />,
   },
+  { id: 'campana', titulo: 'Campaña · en curso con jefe', pestana: null, render: () => <CampanaGeneralVista {...detalleCampanaDemo()} /> },
+  { id: 'campana-botin', titulo: 'Campaña · botín disponible', pestana: null, render: () => <CampanaGeneralVista {...detalleCampanaDemo({ tareas: TAREAS_HECHAS })} /> },
+  { id: 'campana-winter', titulo: 'Campaña · Winter Arc (sin jefe ni meta)', pestana: null, render: () => <CampanaGeneralVista {...detalleCampanaDemo({ campana: WINTER, tareas: TAREAS_WINTER })} /> },
+  { id: 'arena', titulo: 'Arena · llena', pestana: 'arena', render: () => <ArenaDemo /> },
+  { id: 'arena-vacia', titulo: 'Arena · vacía', pestana: 'arena', render: () => <ArenaDemo vacia /> },
+  { id: 'perfil', titulo: 'Perfil', pestana: null, render: () => <PerfilDemo /> },
 ];

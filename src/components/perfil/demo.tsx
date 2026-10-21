@@ -428,3 +428,6 @@ export const DEMO: DemoPantalla | null = {
     },
   ],
 };
+
+/** Para la galería de General (/kit/general). */
+export { datosYo as datosPerfilDemo, ajustesDemo as ajustesPerfilDemo, ACCIONES as ACCIONES_PERFIL_DEMO };

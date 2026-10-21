@@ -124,5 +124,70 @@
   },
   "prestado": {
     "volverA11y": "Retour à NIVL"
+  },
+  "arena": {
+    "ajustes": "Réglages de l'arène",
+    "amigos": "Amis",
+    "anadir": "Ajouter des amis",
+    "cargandoA11y": "Chargement de l'arène",
+    "de": "sur {{total}}",
+    "deTotal": "{{puesto}}e sur {{total}}",
+    "diasActivos": "{{n}} jours actifs",
+    "duelo": "Duel de la semaine",
+    "duelos": "Duels",
+    "duelosRotulo": "Duels",
+    "enCurso": "en cours",
+    "enCursoN": "{{n}} en cours",
+    "enviado": "Défi envoyé",
+    "eyebrow": "NIVL · L'ARÈNE",
+    "filaA11y": "{{puesto}}e, {{nombre}} : {{valor}}",
+    "puesto": "Ta place",
+    "puestoA11y": "Tu es {{puesto}}e sur {{total}} avec {{valor}}",
+    "ranking": "Classement",
+    "rechazar": "Refuser",
+    "retar": "Défier un ami",
+    "teReta": "Te défie",
+    "titulo": "ARÈNE",
+    "tuPuesto": "Ta place",
+    "vacioCuerpo": "Ajoute tes amis avec leur code ou invite-les. L'arène mesure la constance, pas qui se fixe le plus de missions.",
+    "vacioTitulo": "Ton arène est vide",
+    "vs": "VS",
+    "ventana": {
+      "semana": "Semaine",
+      "mes": "Mois"
+    },
+    "metrica": {
+      "cumplimiento": "Constance",
+      "xp": "XP",
+      "racha": "Série"
+    }
+  },
+  "campana": {
+    "caidos": "tous tombés",
+    "cobrado": "encaissé",
+    "despejadaEl": "TERMINÉE LE {{fecha}}",
+    "hecha": "faite",
+    "jefeA11y": "Boss final : {{titulo}}, {{xp}} XP. Touche pour le vaincre.",
+    "jefeDetalle": "Paie double · {{dificultad}}",
+    "meta": "{{stat}} · ce qu'elle entraîne",
+    "pendiente": "en attente",
+    "reclamar": "RÉCLAMER +{{xp}} XP",
+    "tareaA11y": "{{titulo}}, {{xp}} XP, {{estado}}",
+    "tareasHechas": "tâches faites"
+  },
+  "perfil": {
+    "cargandoA11y": "Chargement de ton profil",
+    "cuenta": "Compte",
+    "evidencia": "{{pct}} % avec preuve",
+    "eyebrow": "PROFIL",
+    "fotoA11y": "Changer ta photo",
+    "progresion": "Progression",
+    "rangoUso": "Rang {{rango}} · {{nombre}} · {{uso}}",
+    "siguienteRango": "Rang suivant",
+    "sinTitulos": "Pas encore de titres. Les succès avec titre s'équipent ici.",
+    "tituloA11y": "Équiper le titre {{titulo}}",
+    "titulos": "Titres",
+    "verProgresion": "Voir la progression",
+    "piedras": "Pierres"
   }
 }

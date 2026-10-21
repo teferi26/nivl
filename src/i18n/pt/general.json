@@ -124,5 +124,70 @@
   },
   "prestado": {
     "volverA11y": "Voltar a NIVL"
+  },
+  "arena": {
+    "ajustes": "Definições da arena",
+    "amigos": "Amigos",
+    "anadir": "Adicionar amigos",
+    "cargandoA11y": "A carregar a arena",
+    "de": "de {{total}}",
+    "deTotal": "{{puesto}}.º de {{total}}",
+    "diasActivos": "{{n}} dias ativos",
+    "duelo": "Duelo da semana",
+    "duelos": "Duelos",
+    "duelosRotulo": "Duelos",
+    "enCurso": "em curso",
+    "enCursoN": "{{n}} em curso",
+    "enviado": "Desafio enviado",
+    "eyebrow": "NIVL · A ARENA",
+    "filaA11y": "{{puesto}}.º, {{nombre}}: {{valor}}",
+    "puesto": "O teu lugar",
+    "puestoA11y": "Estás em {{puesto}}.º de {{total}} com {{valor}}",
+    "ranking": "Ranking",
+    "rechazar": "Recusar",
+    "retar": "Desafiar um amigo",
+    "teReta": "Desafia-te",
+    "titulo": "ARENA",
+    "tuPuesto": "O teu lugar",
+    "vacioCuerpo": "Adiciona os teus amigos com o código deles ou convida-os. A arena mede a constância, não quem se dá mais missões.",
+    "vacioTitulo": "A tua arena está vazia",
+    "vs": "VS",
+    "ventana": {
+      "semana": "Semana",
+      "mes": "Mês"
+    },
+    "metrica": {
+      "cumplimiento": "Constância",
+      "xp": "XP",
+      "racha": "Sequência"
+    }
+  },
+  "campana": {
+    "caidos": "todos caídos",
+    "cobrado": "recebido",
+    "despejadaEl": "CONCLUÍDA A {{fecha}}",
+    "hecha": "feita",
+    "jefeA11y": "Chefe final: {{titulo}}, {{xp}} XP. Toca para o derrotar.",
+    "jefeDetalle": "Paga o dobro · {{dificultad}}",
+    "meta": "{{stat}} · o que treina",
+    "pendiente": "pendente",
+    "reclamar": "RECLAMAR +{{xp}} XP",
+    "tareaA11y": "{{titulo}}, {{xp}} XP, {{estado}}",
+    "tareasHechas": "tarefas feitas"
+  },
+  "perfil": {
+    "cargandoA11y": "A carregar o teu perfil",
+    "cuenta": "Conta",
+    "evidencia": "{{pct}} % com prova",
+    "eyebrow": "PERFIL",
+    "fotoA11y": "Mudar a tua foto",
+    "progresion": "Progressão",
+    "rangoUso": "Rango {{rango}} · {{nombre}} · {{uso}}",
+    "siguienteRango": "Próximo rango",
+    "sinTitulos": "Ainda não ganhaste títulos. As conquistas com título equipam-se aqui.",
+    "tituloA11y": "Equipar o título {{titulo}}",
+    "titulos": "Títulos",
+    "verProgresion": "Ver progressão",
+    "piedras": "Pedras"
   }
 }

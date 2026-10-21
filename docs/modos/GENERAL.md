@@ -12,8 +12,10 @@ Hoy · Avance · [emblema NIVL] · Campañas · Arena
 |---|---|---|
 | **Hoy** | Nivel y rango, racha y piedras, LA siguiente acción, misiones, arsenal de modos, orden del día, campaña activa, duelo, coach y «Todo desde aquí» | `(tabs)/index` |
 | **Avance** | Métricas (XP por semana, cumplimiento, racha histórica, FUE/VIT/INT/AGI/PER, informe semanal) y Progresión (nivel, camino de rangos E a S con días activos reales, logros y premios, botín de campañas, niveles de modo) | `(tabs)/avance` (`?ver=progresion`) |
-| **Campañas** | Lista con cifras, tarjetas por campaña y botín; el detalle de siempre con la piel de NIVL | `(tabs)/mazmorras`, `dungeon/[id]` |
-| **Arena** | Amigos: podio, ranking por constancia (abre en cumplimiento), duelos de la semana, solicitudes, código y ludus. Sin ligas (`LIGAS_VISIBLES = false`) | `(tabs)/arena` |
+| **Campañas** | Lista con cifras, tarjetas por campaña y botín. Detalle (`CampanaGeneralVista`): cabecera con estandarte y progreso, plazo, jefes y botín (lo que la campaña no tiene no se pinta: el Winter Arc va sin jefe ni meta), jefe final con presencia, tareas y «Botín disponible» | `(tabs)/mazmorras`, `dungeon/[id]` |
+| **Arena** | `ArenaGeneralVista`: podio, ranking por constancia (abre en cumplimiento) con tu puesto fijo sobre la barra, duelos (por responder, marcador de los activos, enviados y pasados con revancha), solicitudes y añadir amigos por código. Ludus, privacidad y bloqueados, en «Ajustes de la arena» (`/amigos`). Sin ligas (`LIGAS_VISIBLES = false`) | `(tabs)/arena` |
+
+**Perfil** (`PerfilGeneralVista`, desde el botón de la cabecera): identidad (retrato, escudo y nivel, nombre, rango y título, perfil de uso, Élite), progresión resumida (racha, piedras, misiones, siguiente rango con días activos reales), arsenal y niveles de modo, títulos equipables, cuenta y los ajustes de siempre en sus secciones.
 
 **Por qué así.** Teferi nombró siete cosas y todas caben en tres palabras: *avanzar* (gráficas, métricas, niveles, rangos, premios), *conquistar* (campañas) y *competir* (amigos). Cada una es una pestaña, y Hoy las resume. Los mundos ya enseñaron el patrón (cuatro destinos y el emblema en medio): General lo repite y el gesto es el mismo en toda la app.
 

@@ -124,5 +124,70 @@
   },
   "prestado": {
     "volverA11y": "Back to NIVL"
+  },
+  "arena": {
+    "ajustes": "Arena settings",
+    "amigos": "Friends",
+    "anadir": "Add friends",
+    "cargandoA11y": "Loading the arena",
+    "de": "of {{total}}",
+    "deTotal": "{{puesto}} of {{total}}",
+    "diasActivos": "{{n}} active days",
+    "duelo": "Duel of the week",
+    "duelos": "Duels",
+    "duelosRotulo": "Duels",
+    "enCurso": "in progress",
+    "enCursoN": "{{n}} in progress",
+    "enviado": "Challenge sent",
+    "eyebrow": "NIVL · THE ARENA",
+    "filaA11y": "#{{puesto}}, {{nombre}}: {{valor}}",
+    "puesto": "Your place",
+    "puestoA11y": "You are #{{puesto}} of {{total}} with {{valor}}",
+    "ranking": "Ranking",
+    "rechazar": "Decline",
+    "retar": "Challenge a friend",
+    "teReta": "Challenges you",
+    "titulo": "ARENA",
+    "tuPuesto": "Your place",
+    "vacioCuerpo": "Add your friends with their code or invite them. The arena measures consistency, not who sets more missions.",
+    "vacioTitulo": "Your arena is empty",
+    "vs": "VS",
+    "ventana": {
+      "semana": "Week",
+      "mes": "Month"
+    },
+    "metrica": {
+      "cumplimiento": "Consistency",
+      "xp": "XP",
+      "racha": "Streak"
+    }
+  },
+  "campana": {
+    "caidos": "all down",
+    "cobrado": "claimed",
+    "despejadaEl": "CLEARED ON {{fecha}}",
+    "hecha": "done",
+    "jefeA11y": "Final boss: {{titulo}}, {{xp}} XP. Tap to defeat it.",
+    "jefeDetalle": "Pays double · {{dificultad}}",
+    "meta": "{{stat}} · what it trains",
+    "pendiente": "pending",
+    "reclamar": "CLAIM +{{xp}} XP",
+    "tareaA11y": "{{titulo}}, {{xp}} XP, {{estado}}",
+    "tareasHechas": "tasks done"
+  },
+  "perfil": {
+    "cargandoA11y": "Loading your profile",
+    "cuenta": "Account",
+    "evidencia": "{{pct}} % with proof",
+    "eyebrow": "PROFILE",
+    "fotoA11y": "Change your photo",
+    "progresion": "Progression",
+    "rangoUso": "Rank {{rango}} · {{nombre}} · {{uso}}",
+    "siguienteRango": "Next rank",
+    "sinTitulos": "No titles yet. Achievements with a title are equipped here.",
+    "tituloA11y": "Equip the title {{titulo}}",
+    "titulos": "Titles",
+    "verProgresion": "See progression",
+    "piedras": "Stones"
   }
 }

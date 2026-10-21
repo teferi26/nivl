@@ -216,3 +216,6 @@ export const DEMO: DemoPantalla | null = {
     },
   ],
 };
+
+/** Para la galería de General (/kit/general). */
+export { base as baseAmigosDemo, RIVALES as RIVALES_DEMO, YO as YO_AMIGOS_DEMO, SOLICITUD as SOLICITUD_DEMO, filas as filasAmigosDemo };

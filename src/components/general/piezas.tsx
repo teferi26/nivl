@@ -332,9 +332,23 @@ export function BarrasGeneral({ valores, etiquetas, alto = px(96), resaltar, cif
 
 // ── Fila, título y huecos ────────────────────────────────────────────
 
-export function FilaGeneral({ children, primera, onPress, accessibilityLabel, style }: { children: ReactNode; primera?: boolean; onPress?: () => void; accessibilityLabel?: string; style?: StyleProp<ViewStyle> }) {
+export function FilaGeneral({
+  children,
+  primera,
+  onPress,
+  onLongPress,
+  accessibilityLabel,
+  style,
+}: {
+  children: ReactNode;
+  primera?: boolean;
+  onPress?: () => void;
+  onLongPress?: () => void;
+  accessibilityLabel?: string;
+  style?: StyleProp<ViewStyle>;
+}) {
   const caja = [styles.fila, !primera && styles.filaRegla, style];
-  if (!onPress) {
+  if (!onPress && !onLongPress) {
     return (
       <View style={caja} accessible={!!accessibilityLabel} accessibilityLabel={accessibilityLabel}>
         {children}
@@ -342,7 +356,7 @@ export function FilaGeneral({ children, primera, onPress, accessibilityLabel, st
     );
   }
   return (
-    <Pressable onPress={onPress} accessibilityRole="button" accessibilityLabel={accessibilityLabel} style={({ pressed }) => [caja, pressed && styles.pulsada]}>
+    <Pressable onPress={onPress} onLongPress={onLongPress} accessibilityRole="button" accessibilityLabel={accessibilityLabel} style={({ pressed }) => [caja, pressed && styles.pulsada]}>
       {children}
     </Pressable>
   );

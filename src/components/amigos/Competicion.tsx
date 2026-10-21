@@ -519,7 +519,7 @@ function BarraDuelo({ etiqueta, valor, dias, mia }: { etiqueta: string; valor: n
 
 // ── Hoja: retar ─────────────────────────────────────────────────────────
 
-function RetarSheet({
+export function RetarSheet({
   visible,
   amigos,
   preelegido,

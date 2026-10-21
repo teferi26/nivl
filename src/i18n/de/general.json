@@ -124,5 +124,70 @@
   },
   "prestado": {
     "volverA11y": "Zurück zu NIVL"
+  },
+  "arena": {
+    "ajustes": "Arena-Einstellungen",
+    "amigos": "Freunde",
+    "anadir": "Freunde hinzufügen",
+    "cargandoA11y": "Arena wird geladen",
+    "de": "von {{total}}",
+    "deTotal": "Platz {{puesto}} von {{total}}",
+    "diasActivos": "{{n}} aktive Tage",
+    "duelo": "Duell der Woche",
+    "duelos": "Duelle",
+    "duelosRotulo": "Duelle",
+    "enCurso": "laufend",
+    "enCursoN": "{{n}} laufend",
+    "enviado": "Herausforderung gesendet",
+    "eyebrow": "NIVL · DIE ARENA",
+    "filaA11y": "Platz {{puesto}}, {{nombre}}: {{valor}}",
+    "puesto": "Dein Platz",
+    "puestoA11y": "Du bist auf Platz {{puesto}} von {{total}} mit {{valor}}",
+    "ranking": "Rangliste",
+    "rechazar": "Ablehnen",
+    "retar": "Freund herausfordern",
+    "teReta": "Fordert dich heraus",
+    "titulo": "ARENA",
+    "tuPuesto": "Dein Platz",
+    "vacioCuerpo": "Füge Freunde mit ihrem Code hinzu oder lade sie ein. Die Arena misst Beständigkeit, nicht wer sich mehr Missionen setzt.",
+    "vacioTitulo": "Deine Arena ist leer",
+    "vs": "VS",
+    "ventana": {
+      "semana": "Woche",
+      "mes": "Monat"
+    },
+    "metrica": {
+      "cumplimiento": "Beständigkeit",
+      "xp": "XP",
+      "racha": "Serie"
+    }
+  },
+  "campana": {
+    "caidos": "alle besiegt",
+    "cobrado": "kassiert",
+    "despejadaEl": "ABGESCHLOSSEN AM {{fecha}}",
+    "hecha": "erledigt",
+    "jefeA11y": "Endboss: {{titulo}}, {{xp}} XP. Tippen, um ihn zu besiegen.",
+    "jefeDetalle": "Zahlt doppelt · {{dificultad}}",
+    "meta": "{{stat}} · was sie trainiert",
+    "pendiente": "offen",
+    "reclamar": "+{{xp}} XP EINFORDERN",
+    "tareaA11y": "{{titulo}}, {{xp}} XP, {{estado}}",
+    "tareasHechas": "Aufgaben erledigt"
+  },
+  "perfil": {
+    "cargandoA11y": "Dein Profil wird geladen",
+    "cuenta": "Konto",
+    "evidencia": "{{pct}} % mit Beweis",
+    "eyebrow": "PROFIL",
+    "fotoA11y": "Dein Foto ändern",
+    "progresion": "Aufstieg",
+    "rangoUso": "Rang {{rango}} · {{nombre}} · {{uso}}",
+    "siguienteRango": "Nächster Rang",
+    "sinTitulos": "Noch keine Titel. Erfolge mit Titel werden hier ausgerüstet.",
+    "tituloA11y": "Titel {{titulo}} ausrüsten",
+    "titulos": "Titel",
+    "verProgresion": "Aufstieg ansehen",
+    "piedras": "Steine"
   }
 }

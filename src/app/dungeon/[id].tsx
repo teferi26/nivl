@@ -4,7 +4,7 @@
 // añadir una tarea (con Campo y rótulos de la arena, FASE3 Lote B2).
 import { StyleSheet, Text, View } from 'react-native';
 import { Campo } from '@/components/arena';
-import { CampanaVista } from '@/components/campanas/CampanaVista';
+import { CampanaGeneralVista } from '@/components/general/CampanaGeneralVista';
 import { useCampana } from '@/components/campanas/useCampana';
 import { FondoGeneral } from '@/components/general/piezas';
 import { PielGeneral } from '@/components/general/piel';
@@ -17,10 +17,10 @@ export default function DungeonDetail() {
   const { vista, hojas } = useCampana();
   const h = hojas.tarea;
   return (
-    // La piel y el fondo de NIVL (General): el detalle de siempre en oro.
+    // El detalle rediseñado de General (CampanaGeneralVista) y sus hojas en la piel de NIVL.
     <FondoGeneral>
       <PielGeneral>
-      <CampanaVista {...vista} />
+      <CampanaGeneralVista {...vista} />
       <Sheet
         visible={h.visible}
         onClose={h.onClose}

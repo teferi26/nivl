@@ -1,17 +1,16 @@
-// NIVL · General · Arena: la competición con amigos (ranking por constancia,
-// podio, duelos de la semana, solicitudes, código y ludus; sin ligas, que
-// siguen apagadas con LIGAS_VISIBLES). Es la pantalla de Amigos de siempre
-// como pestaña, con el fondo y la piel de NIVL (oro) y sin flecha de volver.
+// NIVL · General · Arena: la competición con amigos rediseñada (ArenaGeneralVista):
+// ranking por constancia con tu puesto fijo, podio, duelos con marcador y los
+// pasados, solicitudes y añadir amigos. Sin ligas (LIGAS_VISIBLES apagado).
+// Los datos son los de Amigos (PantallaAmigos conserva la hoja de seguridad);
+// ludus, privacidad y bloqueados siguen en /amigos («Ajustes de la arena»).
 import { PantallaAmigos } from '@/components/amigos/PantallaAmigos';
-import { FondoGeneral } from '@/components/general/piezas';
+import { ArenaConectada } from '@/components/general/arena/ArenaConectada';
 import { PielGeneral } from '@/components/general/piel';
 
 export default function Arena() {
   return (
-    <FondoGeneral>
-      <PielGeneral>
-        <PantallaAmigos enPestana />
-      </PielGeneral>
-    </FondoGeneral>
+    <PielGeneral>
+      <PantallaAmigos enPestana pintar={(d) => <ArenaConectada d={d} />} />
+    </PielGeneral>
   );
 }

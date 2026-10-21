@@ -7,10 +7,11 @@
 // curso no se cierra (mismo cerrojo `safetyBusy` que antes). Sin inversión:
 // denunciar y bloquear no son la acción principal de la pantalla.
 
+import type { ReactNode } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { AmigosVista } from './AmigosVista';
 import { Competicion } from './Competicion';
-import { useAmigos } from './useAmigos';
+import { useAmigos, type DatosAmigos } from './useAmigos';
 import { Button, Chip, ChipWrap, Sheet } from '@/components/ui';
 import { ink, space, type as tipo } from '@/design/tokens';
 import { t } from '@/i18n';
@@ -21,8 +22,16 @@ import { REPORT_REASONS } from '@/lib/socialSafety';
  * la Arena de General ((tabs)/arena.tsx) como pestaña: sin volver y con el
  * ranking abierto por constancia.
  */
-export function PantallaAmigos({ enPestana = false }: { enPestana?: boolean }) {
-  const { vista, competicion: comp, hojas } = useAmigos(enPestana ? { metricaInicial: 'cumplimiento', enPestana: true } : {});
+export function PantallaAmigos({
+  enPestana = false,
+  pintar,
+}: {
+  enPestana?: boolean;
+  /** Otra vista con los mismos datos (la Arena de General); la hoja de seguridad sigue aquí. */
+  pintar?: (d: DatosAmigos) => ReactNode;
+}) {
+  const datos = useAmigos(enPestana ? { metricaInicial: 'cumplimiento', enPestana: true } : {});
+  const { vista, competicion: comp, hojas } = datos;
   const {
     safetyUser,
     setSafetyUser,
@@ -45,7 +54,7 @@ export function PantallaAmigos({ enPestana = false }: { enPestana?: boolean }) {
 
   return (
     <>
-      <AmigosVista {...vista} competicion={<Competicion {...comp} />} />
+      {pintar ? pintar(datos) : <AmigosVista {...vista} competicion={<Competicion {...comp} />} />}
 
       <Sheet
         visible={safetyUser !== null}

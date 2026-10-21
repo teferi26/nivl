@@ -124,5 +124,70 @@
   },
   "prestado": {
     "volverA11y": "Torna a NIVL"
+  },
+  "arena": {
+    "ajustes": "Impostazioni dell'arena",
+    "amigos": "Amici",
+    "anadir": "Aggiungi amici",
+    "cargandoA11y": "Caricamento dell'arena",
+    "de": "su {{total}}",
+    "deTotal": "{{puesto}}º su {{total}}",
+    "diasActivos": "{{n}} giorni attivi",
+    "duelo": "Duello della settimana",
+    "duelos": "Duelli",
+    "duelosRotulo": "Duelli",
+    "enCurso": "in corso",
+    "enCursoN": "{{n}} in corso",
+    "enviado": "Sfida inviata",
+    "eyebrow": "NIVL · L'ARENA",
+    "filaA11y": "{{puesto}}º, {{nombre}}: {{valor}}",
+    "puesto": "Il tuo posto",
+    "puestoA11y": "Sei {{puesto}}º su {{total}} con {{valor}}",
+    "ranking": "Classifica",
+    "rechazar": "Rifiuta",
+    "retar": "Sfida un amico",
+    "teReta": "Ti sfida",
+    "titulo": "ARENA",
+    "tuPuesto": "Il tuo posto",
+    "vacioCuerpo": "Aggiungi i tuoi amici con il loro codice o invitali. L'arena misura la costanza, non chi si dà più missioni.",
+    "vacioTitulo": "La tua arena è vuota",
+    "vs": "VS",
+    "ventana": {
+      "semana": "Settimana",
+      "mes": "Mese"
+    },
+    "metrica": {
+      "cumplimiento": "Costanza",
+      "xp": "XP",
+      "racha": "Serie"
+    }
+  },
+  "campana": {
+    "caidos": "tutti caduti",
+    "cobrado": "incassato",
+    "despejadaEl": "COMPLETATA IL {{fecha}}",
+    "hecha": "fatta",
+    "jefeA11y": "Boss finale: {{titulo}}, {{xp}} XP. Tocca per sconfiggerlo.",
+    "jefeDetalle": "Paga il doppio · {{dificultad}}",
+    "meta": "{{stat}} · ciò che allena",
+    "pendiente": "in sospeso",
+    "reclamar": "RISCATTA +{{xp}} XP",
+    "tareaA11y": "{{titulo}}, {{xp}} XP, {{estado}}",
+    "tareasHechas": "compiti fatti"
+  },
+  "perfil": {
+    "cargandoA11y": "Caricamento del tuo profilo",
+    "cuenta": "Account",
+    "evidencia": "{{pct}} % con prova",
+    "eyebrow": "PROFILO",
+    "fotoA11y": "Cambia la tua foto",
+    "progresion": "Progressione",
+    "rangoUso": "Rango {{rango}} · {{nombre}} · {{uso}}",
+    "siguienteRango": "Prossimo rango",
+    "sinTitulos": "Ancora nessun titolo. I traguardi con titolo si equipaggiano qui.",
+    "tituloA11y": "Equipaggia il titolo {{titulo}}",
+    "titulos": "Titoli",
+    "verProgresion": "Vedi progressione",
+    "piedras": "Pietre"
   }
 }
