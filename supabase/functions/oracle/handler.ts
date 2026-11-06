@@ -206,7 +206,7 @@ async function consultar(req: Request, userId: string, healthDb: Db): Promise<Re
     reserva = await cartera.reservar(maximo);
   } catch (e) {
     const m = mensajeTope(e instanceof TopeIaError ? e.motivo : 'cerrado');
-    return json(m.status, { error: m.error, reason: m.reason });
+    return json(m.status, { error: m.error, reason: m.reason, detalle: m.detalle });
   }
   // Por defecto, la reserva entera (peca de caro); se ajusta en cuanto se sabe lo cobrado.
   let realMicro = maximo;

@@ -140,6 +140,9 @@ export type CoachDenyReason =
   | 'turno_en_curso'
   | 'profundo_no_incluido'
   | 'profundo_agotado'
+  /** Tope diario (0078) que mandaría un servidor que aún no lo traduce a `presupuesto_agotado`. */
+  | 'ritmo_diario'
+  | 'tope_funcion'
   /** Sin consentimiento vigente para la IA (0028): se abre la hoja, no un error. */
   | 'sin_consentimiento'
   | 'sin_consentimiento_salud';
@@ -150,6 +153,8 @@ const DENY_REASONS: readonly CoachDenyReason[] = [
   'turno_en_curso',
   'profundo_no_incluido',
   'profundo_agotado',
+  'ritmo_diario',
+  'tope_funcion',
   'sin_consentimiento',
   'sin_consentimiento_salud',
 ];
@@ -184,6 +189,9 @@ export function accessNotice(e: CoachAccessError): string {
     case 'presupuesto_agotado':
       // El servidor ya trae la fecha de recarga en su mensaje.
       return e.message || 'La energía del coach de este mes se ha agotado. Se recarga el día 1.';
+    case 'ritmo_diario':
+    case 'tope_funcion':
+      return e.message || 'Hoy ya has usado la IA que te corresponde. Mañana vuelve.';
     case 'turno_en_curso':
       return 'El sistema sigue respondiendo a tu mensaje anterior. Dale unos segundos.';
     case 'profundo_no_incluido':
@@ -219,6 +227,8 @@ async function errorDe(res: { status: number; json: () => Promise<unknown> }): P
   if (res.status === 400 && typeof body.error === 'string' && /foto/i.test(body.error)) {
     return new ErrorVisible(body.error);
   }
+  // Petición más grande que el tope de la cartera (0078): el servidor ya trae el texto.
+  if (res.status === 413 && typeof body.error === 'string' && body.error) return new ErrorVisible(body.error);
   if (res.status === 404) return new HiloPerdidoError();
   return new Error(body.error || `El sistema no responde (HTTP ${res.status}).`);
 }

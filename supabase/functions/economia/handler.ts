@@ -390,7 +390,7 @@ async function extracto(body: Json, sb: Db, userId: string, deps: Deps): Promise
   } catch (e) {
     if (e instanceof TopeIaError) {
       const m = mensajeTope(e.motivo);
-      return json(m.status, { error: m.error, reason: m.reason });
+      return json(m.status, { error: m.error, reason: m.reason, detalle: m.detalle });
     }
     console.error('economia: pdf', e instanceof Error ? e.name : 'error');
     return json(502, { error: 'No se ha podido leer el PDF. Prueba con el CSV de tu banco.' });
@@ -437,7 +437,7 @@ async function brief(body: Json, sb: Db, userId: string, deps: Deps, hoy: string
   } catch (e) {
     if (e instanceof TopeIaError) {
       const m = mensajeTope(e.motivo);
-      return json(m.status, { error: m.error, reason: m.reason });
+      return json(m.status, { error: m.error, reason: m.reason, detalle: m.detalle });
     }
     console.error('economia: brief', e instanceof Error ? e.name : 'error');
     return json(502, { error: 'El sistema no ha podido escribir el brief. Vuelve a intentarlo.' });

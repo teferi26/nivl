@@ -103,15 +103,21 @@ export async function puertaCartera(
   };
 }
 
-/** El texto (voz del sistema, sin guion largo) y el estado HTTP de cada motivo de la cartera. */
-export function mensajeTope(motivo: string, renueva?: string): { status: number; error: string; reason: string } {
+/**
+ * El texto (voz del sistema, sin guion largo) y el estado HTTP de cada motivo de la cartera.
+ * El tope diario y el de función salen con `reason: 'presupuesto_agotado'` (el detalle va en
+ * `detalle`): es el motivo que ya entienden los binarios 1.0.10 y anteriores. Con un motivo
+ * desconocido, el cliente trata el 402 como «sin suscripción» y le enseña el muro de pago a
+ * quien ya paga.
+ */
+export function mensajeTope(motivo: string, renueva?: string): { status: number; error: string; reason: string; detalle?: string } {
   switch (motivo) {
     case 'tope_mes':
       return { status: 402, reason: 'presupuesto_agotado', error: `Has usado toda la IA de este mes. Se renueva el ${renueva ?? 'día 1'}. Puedes recargarla desde NIVL Pro.` };
     case 'ritmo_diario':
-      return { status: 402, reason: 'ritmo_diario', error: 'Hoy ya has usado la IA que te corresponde para llegar a fin de mes. Mañana vuelve.' };
+      return { status: 402, reason: 'presupuesto_agotado', detalle: 'ritmo_diario', error: 'Hoy ya has usado la IA que te corresponde para llegar a fin de mes. Mañana vuelve.' };
     case 'tope_funcion':
-      return { status: 429, reason: 'tope_funcion', error: 'Has llegado al máximo de hoy para esta función. Mañana vuelve.' };
+      return { status: 429, reason: 'presupuesto_agotado', detalle: 'tope_funcion', error: 'Has llegado al máximo de hoy para esta función. Mañana vuelve.' };
     case 'profundo_agotado':
       return { status: 402, reason: 'profundo_agotado', error: 'Has usado tus turnos profundos de este mes. El modo estándar sigue disponible.' };
     case 'tope_llamada':

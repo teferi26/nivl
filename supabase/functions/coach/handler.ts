@@ -1030,7 +1030,7 @@ async function atender(
     const p = await puertaCartera(admin, userId, funcion, 'estandar');
     if (p.ok) return null;
     const m = mensajeTope(p.motivo ?? 'cerrado', p.renueva);
-    return json(m.status, { error: m.error, reason: m.reason });
+    return json(m.status, { error: m.error, reason: m.reason, detalle: m.detalle });
   };
 
   if (body.kind === KIND_MECANICO) {
@@ -1060,7 +1060,7 @@ async function atender(
       }
       if (e instanceof TopeIaError) {
         const m = mensajeTope(e.motivo);
-        return json(m.status, { error: m.error, reason: m.reason });
+        return json(m.status, { error: m.error, reason: m.reason, detalle: m.detalle });
       }
       // Solo el código: el objeto puede llevar conceptos bancarios o el cuerpo del proveedor.
       console.error('clasificar error:', codigoError(e));
@@ -1105,7 +1105,7 @@ async function atender(
     } catch (e) {
       if (e instanceof TopeIaError) {
         const m = mensajeTope(e.motivo);
-        return json(m.status, { error: m.error, reason: m.reason });
+        return json(m.status, { error: m.error, reason: m.reason, detalle: m.detalle });
       }
       console.error('estudio error:', codigoError(e));
       return json(502, { error: 'El sistema no ha podido ordenar ese texto. Vuelve a intentarlo.' });
@@ -1168,7 +1168,7 @@ async function atender(
     } catch (e) {
       if (e instanceof TopeIaError) {
         const m = mensajeTope(e.motivo);
-        return json(m.status, { error: m.error, reason: m.reason });
+        return json(m.status, { error: m.error, reason: m.reason, detalle: m.detalle });
       }
       console.error('resumen error:', codigoError(e));
       return json(500, { error: 'No se pudo construir el resumen.' });
@@ -1250,7 +1250,7 @@ async function atender(
     const p = await puertaCartera(admin, userId, funcion, modo === 'profundo' ? 'profundo' : 'estandar');
     if (!p.ok) {
       const m = mensajeTope(p.motivo ?? 'cerrado', p.renueva ?? estado.renews);
-      return json(m.status, { error: m.error, reason: m.reason });
+      return json(m.status, { error: m.error, reason: m.reason, detalle: m.detalle });
     }
   }
   const cartera = new CarteraIa(admin, userId, funcion, modo === 'profundo' ? 'profundo' : 'estandar');
@@ -1365,7 +1365,7 @@ async function atender(
       await finish(null, message);
       if (e instanceof TopeIaError) {
         const m = mensajeTope(e.motivo, estado.renews);
-        return json(m.status, { error: m.error, reason: m.reason });
+        return json(m.status, { error: m.error, reason: m.reason, detalle: m.detalle });
       }
       return json(502, { error: message });
     }

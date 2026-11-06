@@ -282,7 +282,7 @@ function urlEconomia(): string {
   return `${base}/functions/v1/economia`;
 }
 
-const RAZONES: readonly CoachDenyReason[] = ['sin_suscripcion', 'presupuesto_agotado', 'turno_en_curso', 'sin_consentimiento'];
+const RAZONES: readonly CoachDenyReason[] = ['sin_suscripcion', 'presupuesto_agotado', 'ritmo_diario', 'tope_funcion', 'turno_en_curso', 'sin_consentimiento'];
 
 async function llamar<T>(cuerpo: Record<string, unknown>): Promise<T> {
   const { data } = await supabase.auth.getSession();

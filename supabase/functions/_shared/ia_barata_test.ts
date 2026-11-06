@@ -272,7 +272,7 @@ Deno.test('cartera: cada llamada reserva antes y liquida después; la reserva es
 });
 
 Deno.test('cartera: sin reserva no sale ni un byte; la puerta da 402 con su motivo', async () => {
-  for (const [motivo, status, reason] of [['tope_mes', 402, 'presupuesto_agotado'], ['ritmo_diario', 402, 'ritmo_diario'], ['tope_funcion', 429, 'tope_funcion']] as const) {
+  for (const [motivo, status, reason] of [['tope_mes', 402, 'presupuesto_agotado'], ['ritmo_diario', 402, 'presupuesto_agotado'], ['tope_funcion', 429, 'presupuesto_agotado']] as const) {
     const fake = instalar({ rpc: { ai_puede: () => ({ ok: false, motivo, renueva: '2026-11-01' }) } });
     try {
       const r = await handler(peticion({ kind: 'chat', message: 'hola', stream: true }));
