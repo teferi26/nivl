@@ -19,8 +19,15 @@ jest.mock('@react-native-async-storage/async-storage', () => ({
 }));
 jest.mock('../health', () => ({ requireHealthConsent: jest.fn(async () => undefined) }));
 
+// La última apertura es HOY (fecha local): con una fecha fija, pasados 30 días
+// el plan entra en silencio total y no programa nada (el test caducaba solo).
+const hoyLocal = (() => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+})();
+
 const estado: EstadoPlanAvisos = {
-  ultimaApertura: '2026-10-07', streakDays: 0, questsHoy: [],
+  ultimaApertura: hoyLocal, streakDays: 0, questsHoy: [],
   completadasHoy: new Set(), fotosPendientes: 0, duelosPendientes: 0,
   celebracionPendiente: null,
 };
