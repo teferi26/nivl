@@ -96,6 +96,7 @@
         }
       ],
       "expo-secure-store",
+      "@bacons/apple-targets",
       [
         "expo-speech-recognition",
         {
