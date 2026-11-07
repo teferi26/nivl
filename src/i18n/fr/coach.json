@@ -139,9 +139,12 @@
     "aviso95": "Il te reste 5 % d'IA ce mois-ci. Garde-la pour ce qui compte.",
     "agotada": "Ton IA de ce mois est épuisée. Elle revient le {{dia}}, ou recharge-la maintenant.",
     "agotadaSinDia": "Ton IA de ce mois est épuisée. Tu peux la recharger maintenant.",
+    "agotadaSinRecarga": "Ton IA de ce mois est épuisée. Elle revient le {{dia}}.",
+    "agotadaSinRecargaSinDia": "Ton IA de ce mois est épuisée. Elle revient au renouvellement de ton offre.",
     "hoy": "Tu as utilisé ta part d'IA du jour. Elle revient demain.",
     "recargar": "Recharger l'IA · {{precio}}",
     "recargarSinPrecio": "Recharger l'IA",
+    "recargaNota": "Étend l'IA de ton offre Pro ou Élite active. Ce que tu n'utilises pas est conservé.",
     "recargaHecha": "Recharge appliquée. Le système répond de nouveau.",
     "recargaPendiente": "La boutique a encaissé la recharge. Elle s’applique dans quelques secondes."
   }

@@ -139,9 +139,12 @@
     "aviso95": "Ti resta il 5 % di IA questo mese. Tienila per ciò che conta.",
     "agotada": "La tua IA di questo mese è esaurita. Torna il {{dia}}, oppure ricaricala ora.",
     "agotadaSinDia": "La tua IA di questo mese è esaurita. Puoi ricaricarla ora.",
+    "agotadaSinRecarga": "La tua IA di questo mese è esaurita. Torna il {{dia}}.",
+    "agotadaSinRecargaSinDia": "La tua IA di questo mese è esaurita. Torna con il rinnovo del tuo piano.",
     "hoy": "Oggi hai già usato la tua parte di IA. Torna domani.",
     "recargar": "Ricarica IA · {{precio}}",
     "recargarSinPrecio": "Ricarica IA",
+    "recargaNota": "Amplia l'IA del tuo piano Pro o Élite attivo. Quello che non usi resta tuo.",
     "recargaHecha": "Ricarica applicata. Il sistema risponde di nuovo.",
     "recargaPendiente": "Lo store ha addebitato la ricarica. Si applica tra pochi secondi."
   }

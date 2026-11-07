@@ -139,9 +139,12 @@
     "aviso95": "Dir bleiben 5 % KI für diesen Monat. Heb sie für das Wichtige auf.",
     "agotada": "Deine KI für diesen Monat ist aufgebraucht. Sie kommt am {{dia}} zurück, oder lade sie jetzt auf.",
     "agotadaSinDia": "Deine KI für diesen Monat ist aufgebraucht. Du kannst sie jetzt aufladen.",
+    "agotadaSinRecarga": "Deine KI für diesen Monat ist aufgebraucht. Sie kommt am {{dia}} zurück.",
+    "agotadaSinRecargaSinDia": "Deine KI für diesen Monat ist aufgebraucht. Sie kommt mit der Verlängerung deines Plans zurück.",
     "hoy": "Du hast deinen KI-Anteil für heute verbraucht. Morgen geht es weiter.",
     "recargar": "KI aufladen · {{precio}}",
     "recargarSinPrecio": "KI aufladen",
+    "recargaNota": "Erweitert die KI deines aktiven Pro- oder Élite-Plans. Was du nicht nutzt, bleibt erhalten.",
     "recargaHecha": "Aufladung angewendet. Das System antwortet wieder.",
     "recargaPendiente": "Der Store hat die Aufladung abgebucht. Sie wird in wenigen Sekunden angewendet."
   }

@@ -15,8 +15,11 @@ import { nombreDia } from '@/lib/dates';
 import { comprarRecargaIa, porcentajeIa, precioRecargaIa, purchasesAvailable, usoIa, type AiStatus, type NivelUsoIa } from '@/lib/pro';
 import { mensajeSistema } from '@/lib/validation';
 
-/** El texto del aviso para un nivel de uso (null en uso normal). Puro salvo el catálogo. */
-export function textoUsoIa(nivel: NivelUsoIa, renueva?: string): string | null {
+/**
+ * El texto del aviso para un nivel de uso (null en uso normal). Puro salvo el catálogo.
+ * `conRecarga`: si se pinta el botón de recarga; sin él, el aviso no la promete.
+ */
+export function textoUsoIa(nivel: NivelUsoIa, renueva?: string, conRecarga = true): string | null {
   switch (nivel) {
     case 'aviso80':
       return t('coach:uso.aviso80');
@@ -25,6 +28,9 @@ export function textoUsoIa(nivel: NivelUsoIa, renueva?: string): string | null {
     case 'hoy':
       return t('coach:uso.hoy');
     case 'agotada':
+      if (!conRecarga) {
+        return renueva ? t('coach:uso.agotadaSinRecarga', { dia: nombreDia(renueva).toLowerCase() }) : t('coach:uso.agotadaSinRecargaSinDia');
+      }
       return renueva ? t('coach:uso.agotada', { dia: nombreDia(renueva).toLowerCase() }) : t('coach:uso.agotadaSinDia');
     default:
       return null;
@@ -46,20 +52,22 @@ export function UsoIa({ status, onRecargada, compacto = false, sinBarra = false 
   const [precio, setPrecio] = useState<string | null>(null);
   const [comprando, setComprando] = useState(false);
   const [mensaje, setMensaje] = useState<string | null>(null);
-  const ofreceRecarga = !!uso && (uso.nivel === 'agotada' || uso.nivel === 'aviso95') && purchasesAvailable();
+  const puedeRecargar = !!uso && (uso.nivel === 'agotada' || uso.nivel === 'aviso95') && purchasesAvailable();
+  // El botón solo con el producto que da la tienda (su precio): sin él, la compra fallaría.
+  const ofreceRecarga = puedeRecargar && precio !== null;
 
   useEffect(() => {
-    if (!ofreceRecarga) return;
+    if (!puedeRecargar) return;
     let vivo = true;
     precioRecargaIa().then((p) => vivo && setPrecio(p)).catch(() => {});
     return () => {
       vivo = false;
     };
-  }, [ofreceRecarga]);
+  }, [puedeRecargar]);
 
   if (!uso) return null;
   const pct = porcentajeIa(uso.queda);
-  const aviso = textoUsoIa(uso.nivel, status?.ia?.renueva ?? status?.renews);
+  const aviso = textoUsoIa(uso.nivel, status?.ia?.renueva ?? status?.renews, ofreceRecarga);
   if (sinBarra && !aviso && !mensaje) return null;
   if (compacto && !aviso) {
     return (
@@ -105,7 +113,7 @@ export function UsoIa({ status, onRecargada, compacto = false, sinBarra = false 
       ) : null}
       {ofreceRecarga ? (
         <Button
-          title={precio ? t('coach:uso.recargar', { precio }) : t('coach:uso.recargarSinPrecio')}
+          title={t('coach:uso.recargar', { precio })}
           variant={uso.nivel === 'agotada' ? 'primary' : 'secondary'}
           size="sm"
           icon="flash-outline"
@@ -113,6 +121,7 @@ export function UsoIa({ status, onRecargada, compacto = false, sinBarra = false 
           onPress={() => void recargar()}
         />
       ) : null}
+      {ofreceRecarga ? <Text style={styles.nota}>{t('coach:uso.recargaNota')}</Text> : null}
       {mensaje ? <Text style={styles.aviso}>{mensaje}</Text> : null}
     </View>
   );
@@ -130,4 +139,5 @@ const styles = StyleSheet.create({
   pct: { ...micro, color: ink.ink8 },
   avisoFila: { flexDirection: 'row', alignItems: 'flex-start', gap: space.s2 },
   aviso: { ...lectura, color: ink.ink8, flex: 1, minWidth: 0 },
+  nota: { ...micro, color: ink.ink8 },
 });

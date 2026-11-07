@@ -139,9 +139,12 @@
     "aviso95": "Restam-te 5 % de IA este mês. Guarda-a para o que importa.",
     "agotada": "A tua IA deste mês esgotou-se. Volta no dia {{dia}}, ou recarrega-a agora.",
     "agotadaSinDia": "A tua IA deste mês esgotou-se. Podes recarregá-la agora.",
+    "agotadaSinRecarga": "A tua IA deste mês esgotou-se. Volta no dia {{dia}}.",
+    "agotadaSinRecargaSinDia": "A tua IA deste mês esgotou-se. Volta com a renovação do teu plano.",
     "hoy": "Hoje já usaste a tua parte de IA. Volta amanhã.",
     "recargar": "Recarregar IA · {{precio}}",
     "recargarSinPrecio": "Recarregar IA",
+    "recargaNota": "Amplia a IA do teu plano Pro ou Élite ativo. O que não usares fica guardado.",
     "recargaHecha": "Recarga aplicada. O sistema volta a responder.",
     "recargaPendiente": "A loja cobrou a recarga. Aplica-se em poucos segundos."
   }

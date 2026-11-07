@@ -139,9 +139,12 @@
     "aviso95": "5 % of your AI is left this month. Save it for what matters.",
     "agotada": "Your AI for this month is used up. It comes back on {{dia}}, or top it up now.",
     "agotadaSinDia": "Your AI for this month is used up. You can top it up now.",
+    "agotadaSinRecarga": "Your AI for this month is used up. It comes back on {{dia}}.",
+    "agotadaSinRecargaSinDia": "Your AI for this month is used up. It comes back when your plan renews.",
     "hoy": "You've used today's share of AI. It comes back tomorrow.",
     "recargar": "Top up AI · {{precio}}",
     "recargarSinPrecio": "Top up AI",
+    "recargaNota": "Extends the AI of your active Pro or Élite plan. Whatever you don't use is kept.",
     "recargaHecha": "Top-up applied. The system is answering again.",
     "recargaPendiente": "The store has charged the top-up. It applies in a few seconds."
   }
