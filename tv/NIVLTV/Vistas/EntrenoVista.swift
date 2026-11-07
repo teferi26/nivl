@@ -17,10 +17,23 @@ struct EntrenoVista: View {
         var m = MaquinaSesion(rutina: rutina)
         // `-estado descanso` al lanzar: deja la sesión en el primer descanso
         // (solo para capturas; el simulador de tvOS no simula el mando).
-        if UserDefaults.standard.string(forKey: "estado") == "descanso" {
-            let t = Date()
+        // `-estado serie` deja la primera serie en marcha y `-estado fin`
+        // cierra la sesión entera (pantalla de cierre).
+        let t = Date()
+        switch UserDefaults.standard.string(forKey: "estado") {
+        case "descanso":
             m.pulsar(ahora: t.addingTimeInterval(-40))
             m.pulsar(ahora: t.addingTimeInterval(-38))
+        case "serie":
+            m.pulsar(ahora: t.addingTimeInterval(-24))
+        case "fin":
+            var vueltas = 0
+            while m.fase != .terminada && vueltas < 500 {
+                m.pulsar(ahora: t)
+                vueltas += 1
+            }
+        default:
+            break
         }
         _maquina = State(initialValue: m)
     }
@@ -28,10 +41,12 @@ struct EntrenoVista: View {
     var body: some View {
         HStack(alignment: .top, spacing: Hueco.s14) {
             ColumnaRutina(maquina: maquina)
-                .frame(width: 440)
+                .frame(width: 500)
             centro
                 .frame(maxWidth: .infinity)
-            ColumnaTecnica(ejercicio: maquina.ejercicio)
+            // Con la sesión cerrada no tiene sentido la técnica del último
+            // ejercicio: la columna resume lo trabajado hoy.
+            ColumnaTecnica(ejercicio: maquina.fase == .terminada ? nil : maquina.ejercicio, rutina: maquina.rutina)
                 .frame(width: 460)
         }
         .padding(.horizontal, Hueco.margenLateral)
@@ -106,11 +121,11 @@ struct EntrenoVista: View {
     }
 
     private func bloqueReloj(rotulo: String, cifra: String, pie: String, fraccion: Double?) -> some View {
-        Tarjeta(marco: Trazo.rule, relleno: Hueco.s8) {
-            VStack(alignment: .leading, spacing: Hueco.s3) {
+        Tarjeta(marco: Trazo.rule, relleno: Hueco.s6) {
+            VStack(alignment: .leading, spacing: Hueco.s2) {
                 Inscripcion(texto: rotulo)
                 Text(cifra)
-                    .font(Tipo.monumento(170))
+                    .font(Tipo.monumento(150))
                     .foregroundStyle(Tinta.i10)
                     .monospacedDigit()
                     .lineLimit(1)
@@ -137,6 +152,8 @@ struct EntrenoVista: View {
                 Text("Regístrala en el iPhone: la misión enlazada se marca sola.")
                     .font(Tipo.cuerpo)
                     .foregroundStyle(Tinta.i8)
+                    // Sin esto la frase salía cortada con puntos suspensivos.
+                    .fixedSize(horizontal: false, vertical: true)
             }
         }
     }
@@ -231,9 +248,34 @@ private struct ColumnaRutina: View {
 
 private struct ColumnaTecnica: View {
     let ejercicio: EjercicioTV?
+    let rutina: RutinaTV
+
+    /// Músculos de toda la rutina, sin repetir y en orden de aparición.
+    private var musculosDelDia: [String] {
+        var vistos = Set<String>()
+        return rutina.ejercicios.flatMap(\.musculos).filter { vistos.insert($0).inserted }
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: Hueco.s6) {
+            if ejercicio == nil {
+                Tarjeta(marco: Trazo.hairline, relleno: Hueco.s8) {
+                    Image(systemName: "checkmark.seal")
+                        .font(.system(size: 180, weight: .light))
+                        .foregroundStyle(Tinta.i9)
+                        .frame(maxWidth: .infinity, minHeight: 240)
+                        .accessibilityHidden(true)
+                }
+                VStack(alignment: .leading, spacing: Hueco.s3) {
+                    Rotulo(texto: "Trabajado hoy")
+                    Text(musculosDelDia.joined(separator: " · "))
+                        .font(Tipo.cuerpoSm)
+                        .foregroundStyle(Tinta.i8)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                // Cinzel no tiene minúsculas: «de» va en Outfit, como en Cifra.
+                Cifra(rotulo: "Ejercicios", valor: "\(rutina.ejercicios.count)", unidad: "de \(rutina.ejercicios.count)")
+            }
             if let ej = ejercicio {
                 Tarjeta(marco: Trazo.hairline, relleno: Hueco.s8) {
                     Image(systemName: ej.figura)

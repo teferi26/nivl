@@ -40,10 +40,13 @@ enum Hueco {
     static let s10: CGFloat = 40
     static let s14: CGFloat = 56
     static let s20: CGFloat = 80
-    /// Margen seguro de tvOS: 60 pt arriba y abajo, 80 a los lados.
-    static let margenLateral: CGFloat = 80
-    /// Bajo la barra de pestañas flotante de tvOS (el contenido pasa por debajo).
-    static let bajoPestanas: CGFloat = 130
+    /// El margen seguro de tvOS (60 pt arriba y abajo, 80 a los lados) ya lo
+    /// pone el área segura de la TabView: sumar otros 80 dejaba 160 por lado,
+    /// estrechaba las columnas y hacía que el contenido se saliera por abajo.
+    static let margenLateral: CGFloat = 0
+    /// Bajo la barra de pestañas flotante de tvOS (se suma a los 60 del área
+    /// segura; la barra acaba hacia los 115 pt).
+    static let bajoPestanas: CGFloat = 80
 }
 
 /// Foco: escala ×1,1 y marco blanco. Nada de hover.

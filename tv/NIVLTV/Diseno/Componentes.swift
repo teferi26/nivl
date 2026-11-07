@@ -107,8 +107,10 @@ struct EncabezadoTV: View {
                 .tracking(6)
                 .textCase(.uppercase)
                 .foregroundStyle(Tinta.i10)
-                .lineLimit(2)
-                .minimumScaleFactor(0.7)
+                // Una sola línea que encoge: a dos líneas «TORSO ·» dejaba el
+                // punto colgando al final.
+                .lineLimit(1)
+                .minimumScaleFactor(0.5)
             if let subtitulo {
                 Text(subtitulo).font(Tipo.cuerpo).foregroundStyle(Tinta.i8)
             }

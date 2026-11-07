@@ -12,11 +12,14 @@ struct SemanaVista: View {
     var semana: SemanaTV = Demo.semana
 
     var body: some View {
-        VStack(alignment: .leading, spacing: Hueco.s8) {
+        VStack(alignment: .leading, spacing: Hueco.s6) {
             HStack(alignment: .bottom) {
                 EncabezadoTV(ceja: "Resumen · esta semana", titulo: "Tu semana")
+                    // Si no, el título (que encoge para caber en una línea)
+                    // cede su sitio a las cifras y sale diminuto.
+                    .fixedSize()
                 Spacer()
-                HStack(spacing: Hueco.s14) {
+                HStack(spacing: Hueco.s8) {
                     Cifra(rotulo: "Racha", valor: "\(semana.racha)", unidad: "días")
                     Cifra(rotulo: "Piedras", valor: "\(semana.piedras)", unidad: "de 3")
                     Cifra(rotulo: "XP ganado", valor: Formato.miles(semana.xpGanado))
@@ -43,7 +46,8 @@ struct SemanaVista: View {
                 }
             }
 
-            Tarjeta(marco: Trazo.hairline, relleno: Hueco.s8) {
+            // Relleno más corto: con s8 la tarjeta bajaba del área segura.
+            Tarjeta(marco: Trazo.hairline, relleno: Hueco.s6) {
                 HStack(alignment: .top, spacing: Hueco.s10) {
                     VStack(alignment: .leading, spacing: Hueco.s4) {
                         Rotulo(texto: "Peso · 4 semanas")
@@ -60,7 +64,7 @@ struct SemanaVista: View {
                     }
                     .frame(width: 520, alignment: .leading)
                     GraficoPeso(semana: semana)
-                        .frame(height: 190)
+                        .frame(height: 150)
                 }
             }
         }
@@ -75,7 +79,7 @@ struct SemanaVista: View {
 
 private struct BarrasSemana: View {
     let dias: [DiaSemana]
-    private let alto: CGFloat = 190
+    private let alto: CGFloat = 130
 
     var body: some View {
         let tope = max(1, dias.map { $0.hechas + $0.falladas }.max() ?? 1)
@@ -154,18 +158,18 @@ private struct MapaCalor: View {
 
     var body: some View {
         HStack(alignment: .top, spacing: Hueco.s3) {
-            VStack(spacing: 8) {
+            VStack(spacing: 6) {
                 ForEach(iniciales, id: \.self) { i in
-                    Text(i).font(Tipo.rotulo).foregroundStyle(Tinta.i6).frame(height: 30)
+                    Text(i).font(Tipo.rotulo).foregroundStyle(Tinta.i6).frame(height: 26)
                 }
             }
             ForEach(mapa.indices, id: \.self) { s in
-                VStack(spacing: 8) {
+                VStack(spacing: 6) {
                     ForEach(mapa[s].indices, id: \.self) { d in
                         Rectangle()
                             .fill(tinta(mapa[s][d]))
                             .frame(maxWidth: .infinity)
-                            .frame(height: 30)
+                            .frame(height: 26)
                             .overlay(
                                 Rectangle().strokeBorder(Tinta.i10, lineWidth: s == mapa.count - 1 ? Trazo.hairline : 0)
                             )

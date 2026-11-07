@@ -33,6 +33,8 @@ Para hacer capturas, el simulador de tvOS no simula el mando, así que hay dos a
 ```bash
 xcrun simctl launch <udid> com.teferi.nivl.tv -pestana arena      # entreno | arena | semana
 xcrun simctl launch <udid> com.teferi.nivl.tv -estado descanso    # sesión en el primer descanso
+xcrun simctl launch <udid> com.teferi.nivl.tv -estado serie       # primera serie en marcha
+xcrun simctl launch <udid> com.teferi.nivl.tv -estado fin         # sesión cerrada
 ```
 
 ## Lo que falta (v2) y por qué no está

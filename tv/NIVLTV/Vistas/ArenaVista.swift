@@ -31,14 +31,25 @@ struct ArenaVista: View {
                                 .focused($enfocada, equals: fila.id)
                         }
                     }
+                    // Holgura para la escala de foco (×1,03): así la lista
+                    // se recorta en su marco sin morder el marco blanco y no
+                    // asoma por debajo del área segura.
                     .padding(.vertical, Hueco.s4)
                     .padding(.horizontal, Hueco.s4)
                 }
-                .scrollClipDisabled()
+                .clipped()
+                // Las filas que siguen se funden en vez de cortarse en seco.
+                .mask(
+                    VStack(spacing: 0) {
+                        Rectangle()
+                        LinearGradient(colors: [.black, .clear], startPoint: .top, endPoint: .bottom)
+                            .frame(height: 60)
+                    }
+                )
             }
             .frame(maxWidth: .infinity)
 
-            VStack(alignment: .leading, spacing: Hueco.s8) {
+            VStack(alignment: .leading, spacing: Hueco.s6) {
                 if let s = seleccion { FichaGladiador(fila: s) }
                 if let ludus { TablaLudus(ludus: ludus) }
             }
@@ -141,15 +152,15 @@ private struct FichaGladiador: View {
 
     var body: some View {
         let n = Juego.nivel(xp: fila.xpTotal)
-        Tarjeta(marco: Trazo.frame, relleno: Hueco.s8) {
-            VStack(alignment: .leading, spacing: Hueco.s6) {
+        Tarjeta(marco: Trazo.frame, relleno: Hueco.s6) {
+            VStack(alignment: .leading, spacing: Hueco.s4) {
                 HStack(alignment: .center, spacing: Hueco.s4) {
                     Inscripcion(texto: "Rango \(fila.rango) · \(fila.titulo)")
                     if fila.elite { LaurelElite(tam: 26) }
                 }
                 HStack(alignment: .lastTextBaseline, spacing: Hueco.s6) {
                     Text("\(n.nivel)")
-                        .font(Tipo.monumento(130))
+                        .font(Tipo.monumento(110))
                         .foregroundStyle(Tinta.i10)
                     VStack(alignment: .leading, spacing: Hueco.s2) {
                         Rotulo(texto: "Nivel")
@@ -175,13 +186,19 @@ private struct TablaLudus: View {
     let ludus: LudusTV
 
     var body: some View {
-        Tarjeta(marco: Trazo.hairline, relleno: Hueco.s8) {
-            VStack(alignment: .leading, spacing: Hueco.s4) {
+        // La ficha no tiene foco ni scroll: caben `maxFilas` miembros y el
+        // resto se resume en una línea (tú siempre sales).
+        let visibles = Self.visibles(ludus.miembros)
+        let resto = ludus.miembros.count - visibles.count
+        return Tarjeta(marco: Trazo.hairline, relleno: Hueco.s6) {
+            VStack(alignment: .leading, spacing: Hueco.s3) {
                 HStack(spacing: Hueco.s3) {
                     LaurelElite(tam: 26)
                     Inscripcion(texto: "Tu ludus · \(ludus.nombre)", color: Tinta.i10)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.7)
                 }
-                ForEach(ludus.miembros) { m in
+                ForEach(visibles) { m in
                     HStack {
                         Text(m.nombre)
                             .font(Tipo.cuerpo)
@@ -195,7 +212,23 @@ private struct TablaLudus: View {
                     }
                     .accessibilityElement(children: .combine)
                 }
+                if resto > 0 {
+                    Text(resto == 1 ? "y 1 más en el iPhone" : "y \(resto) más en el iPhone")
+                        .font(Tipo.rotulo)
+                        .foregroundStyle(Tinta.i6)
+                }
             }
         }
+    }
+
+    static let maxFilas = 4
+
+    static func visibles(_ miembros: [FilaLudus]) -> [FilaLudus] {
+        guard miembros.count > maxFilas else { return miembros }
+        var v = Array(miembros.prefix(maxFilas))
+        if !v.contains(where: { $0.soyYo }), let yo = miembros.first(where: { $0.soyYo }) {
+            v[maxFilas - 1] = yo
+        }
+        return v
     }
 }
