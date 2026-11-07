@@ -115,6 +115,18 @@ export function rutaCoachDe(modo: ModoId | null | undefined): RutaCoach {
   return esModo(modo) ? COACH[modo] : COACH.general;
 }
 
+/**
+ * La ruta de un aviso (escrita para NIVL: `/(tabs)` o `/(tabs)/coach`) traducida
+ * al mundo en el que se está. Sin esto, `(tabs)` rebota al inicio del mundo y el
+ * toque en el aviso del brief no llega al chat. El resto de rutas no son de
+ * ningún grupo y pasan tal cual.
+ */
+export function rutaAvisoEnMundo(ruta: string, modo: ModoId | null | undefined): string {
+  if (ruta === '/(tabs)') return rutaInicioDe(modo);
+  if (ruta === '/(tabs)/coach') return rutaCoachDe(modo);
+  return ruta;
+}
+
 /** El mundo de un grupo de expo-router (`useSegments()[0]`): `(iron)` → iron. Fuera de un mundo, null. */
 export function mundoDeSegmento(segmento: string | null | undefined): ModoId | null {
   if (!segmento) return null;
@@ -212,4 +224,19 @@ export function irAlMundo(modo: ModoId, cambiar: (m: ModoId) => void, ahora: num
   transito = { modo, hasta: ahora + MS_TRANSITO };
   cambiar(modo);
   router.replace(rutaInicioDe(modo));
+}
+
+/**
+ * Ir a Perfil, que solo existe en NIVL (`(tabs)`). Dentro de otro mundo, el
+ * layout de `(tabs)` rebotaría al inicio del mundo («Ir a Perfil» de la puerta
+ * de salud no hacía nada): se vuelve antes a NIVL, en el mismo paso.
+ */
+export function irAPerfil(modos: { activo: boolean; modo: ModoId; cambiar: (m: ModoId) => void }, ahora: number = Date.now()): void {
+  if (modos.activo && modos.modo !== 'general') {
+    transito = { modo: 'general', hasta: ahora + MS_TRANSITO };
+    modos.cambiar('general');
+    router.replace('/(tabs)/perfil');
+    return;
+  }
+  router.push('/(tabs)/perfil');
 }

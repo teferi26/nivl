@@ -18,6 +18,8 @@ import { CabeceraMundo } from '@/components/modos/mundo/CabeceraMundo';
 import { useMundo } from '@/components/modos/mundo/useMundo';
 import type { PuertaSaludVistaProps } from '@/components/puertas/SaludVista';
 import { t } from '@/i18n';
+import { useModo } from '@/modos/ModoProvider';
+import { irAPerfil } from '@/modos/rutasModo';
 import { HEALTH_ROUTES } from '@/lib/healthmath';
 import { GlifoIron, type Glifo } from './Glifos';
 import { TarjetaHueco } from './Esqueletos';
@@ -89,6 +91,7 @@ export function PuertaSaludIron(p: PuertaSaludVistaProps & { cabecera: ReactNode
 export function GuardaSaludIron({ children, routeName }: PropsWithChildren<{ routeName: string }>) {
   const health = useHealthConsent();
   const mundo = useMundo('iron');
+  const modos = useModo();
   if (!HEALTH_ROUTES.has(routeName) || health.accepted) {
     return (
       <View key={health.epoch} style={styles.flex}>
@@ -105,7 +108,7 @@ export function GuardaSaludIron({ children, routeName }: PropsWithChildren<{ rou
       onVolver={() => (router.canGoBack() ? router.back() : router.replace('/(tabs)'))}
       onRevisar={health.ask}
       onReintentar={() => void health.refresh()}
-      onPerfil={() => router.push('/(tabs)/perfil')}
+      onPerfil={() => irAPerfil(modos)}
     />
   );
 }

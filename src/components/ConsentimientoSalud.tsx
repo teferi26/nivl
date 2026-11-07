@@ -9,6 +9,8 @@ import { cancelarAvisosSalud } from '@/lib/notifications';
 import { supabase } from '@/lib/supabase';
 import { mensajeSistema } from '@/lib/validation';
 import { t } from '@/i18n';
+import { useModo } from '@/modos/ModoProvider';
+import { irAPerfil } from '@/modos/rutasModo';
 import { AvisoSaludVista, SaludAjustesVista } from './puertas/SaludPerfilVista';
 import { HojaSaludVista, PuertaSaludVista } from './puertas/SaludVista';
 import { confirmar } from './ui/confirmar';
@@ -79,6 +81,7 @@ export function useHealthConsent() {
 
 export function HealthConsentGuard({ children, routeName }: PropsWithChildren<{ routeName: string }>) {
   const health = useHealthConsent();
+  const modos = useModo();
   if (!HEALTH_ROUTES.has(routeName) || health.accepted) return <View key={routeName === 'onboarding' ? 'setup' : health.epoch} style={styles.flex}>{children}</View>;
   return <PuertaSaludVista
     cargando={health.loading}
@@ -87,7 +90,7 @@ export function HealthConsentGuard({ children, routeName }: PropsWithChildren<{ 
     onVolver={() => router.canGoBack() ? router.back() : router.replace('/(tabs)')}
     onRevisar={health.ask}
     onReintentar={() => void health.refresh()}
-    onPerfil={() => router.push('/(tabs)/perfil')}
+    onPerfil={() => irAPerfil(modos)}
   />;
 }
 

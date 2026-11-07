@@ -14,6 +14,8 @@ import * as Notifications from 'expo-notifications';
 import { useRouter } from 'expo-router';
 import { useEffect, useRef } from 'react';
 import { t } from '@/i18n';
+import { useModo } from '@/modos/ModoProvider';
+import { rutaAvisoEnMundo } from '@/modos/rutasModo';
 import { setBlockDone } from './dayplan';
 import { avisarEn } from './notifications';
 import { rutaSegura } from './voice';
@@ -54,10 +56,16 @@ async function aplicar(respuesta: Notifications.NotificationResponse, ir: (r: st
 export function useNotificationRouting(listo: boolean) {
   const router = useRouter();
   const yaTratada = useRef<string | null>(null);
+  // El mundo en el que se está al tocar (sin volver a suscribirse a cada cambio de modo).
+  const { activo, modo } = useModo();
+  const modoRef = useRef(modo);
+  useEffect(() => {
+    modoRef.current = activo ? modo : 'general';
+  }, [activo, modo]);
 
   useEffect(() => {
     if (!listo) return;
-    const ir = (r: string) => router.push(r as never);
+    const ir = (r: string) => router.push(rutaAvisoEnMundo(r, modoRef.current) as never);
 
     // Arranque en frío: la respuesta pendiente desde que la app estaba cerrada.
     Notifications.getLastNotificationResponseAsync()

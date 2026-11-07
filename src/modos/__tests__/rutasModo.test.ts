@@ -1,4 +1,4 @@
-import { destinoMundo, irAlMundo, llegadaAlMundo, MS_TRANSITO, MUNDOS, mundoDeRuta, mundoDeSegmento, rutaCoachDe, rutaDeArranque, rutaInicioDe, transitoMundo } from '@/modos/rutasModo';
+import { destinoMundo, irAlMundo, llegadaAlMundo, MS_TRANSITO, MUNDOS, mundoDeRuta, mundoDeSegmento, rutaCoachDe, rutaDeArranque, rutaAvisoEnMundo, rutaInicioDe, transitoMundo } from '@/modos/rutasModo';
 import { MODOS } from '@/modos/tipos';
 const mockReplace = jest.fn();
 jest.mock('expo-router', () => ({ router: { replace: (...a: unknown[]) => mockReplace(...a) } }));
@@ -34,6 +34,15 @@ describe('rutaCoachDe', () => {
       const coach = MUNDOS[m].pestanas.find((p) => p.pestana === 'coach')!;
       expect(rutaCoachDe(m)).toBe(`/${coach.ruta}`);
     }
+  });
+});
+
+describe('rutaAvisoEnMundo', () => {
+  it('lleva el aviso del coach y de Hoy al mundo en el que se está', () => {
+    expect(rutaAvisoEnMundo('/(tabs)/coach', 'iron')).toBe('/iron-coach');
+    expect(rutaAvisoEnMundo('/(tabs)', 'focus')).toBe('/focus-hoy');
+    expect(rutaAvisoEnMundo('/(tabs)/coach', 'general')).toBe('/(tabs)/coach');
+    expect(rutaAvisoEnMundo('/diario', 'iron')).toBe('/diario');
   });
 });
 
