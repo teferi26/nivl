@@ -22,6 +22,8 @@ jest.mock('../data', () => ({ clearEvidenceSignatures: () => mockClear() }));
 jest.mock('../notifications', () => ({ cancelarAvisosSalud: jest.fn().mockResolvedValue(undefined) }));
 jest.mock('expo-image', () => ({ Image: { clearMemoryCache: jest.fn().mockResolvedValue(true), clearDiskCache: jest.fn().mockResolvedValue(true) } }));
 jest.mock('expo-router', () => ({ router: { canGoBack: () => false, replace: jest.fn(), push: jest.fn() } }));
+// El modo (para «Ir a Perfil» desde un mundo) lee flags con AsyncStorage: aquí, siempre NIVL.
+jest.mock('@/modos/ModoProvider', () => ({ useModo: () => ({ activo: false, modo: 'general', cambiar: jest.fn() }) }));
 jest.mock('react-native', () => ({
   Alert: { alert: jest.fn() },
   AppState: { addEventListener: (_name: string, callback: (s: string) => void) => { mockActive = callback; return { remove: jest.fn() }; } },
