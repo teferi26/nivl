@@ -105,7 +105,7 @@
     "pendiente": "noch offen",
     "titulo": "Titel: {{titulo}}",
     "botin": "Kampagnenbeute",
-    "botinXp": "{{xp}} XP",
+    "botinXp": "bis zu {{xp}} XP",
     "botinVacio_one": "Du hast noch keine Kampagne abgeschlossen. {{count}} ist offen.",
     "botinVacio_other": "Du hast noch keine Kampagne abgeschlossen. {{count}} sind offen.",
     "irCampanas": "Zu den Kampagnen"
@@ -167,13 +167,15 @@
     "cobrado": "kassiert",
     "despejadaEl": "ABGESCHLOSSEN AM {{fecha}}",
     "hecha": "erledigt",
-    "jefeA11y": "Endboss: {{titulo}}, {{xp}} XP. Tippen, um ihn zu besiegen.",
+    "jefeA11y": "Endboss: {{titulo}}, bis zu {{xp}} XP. Tippen, um ihn zu besiegen.",
     "jefeDetalle": "Zahlt doppelt · {{dificultad}}",
     "meta": "{{stat}} · was sie trainiert",
     "pendiente": "offen",
-    "reclamar": "+{{xp}} XP EINFORDERN",
-    "tareaA11y": "{{titulo}}, {{xp}} XP, {{estado}}",
-    "tareasHechas": "Aufgaben erledigt"
+    "reclamar": "BIS ZU +{{xp}} XP EINFORDERN",
+    "tareaA11y": "{{titulo}}, bis zu {{xp}} XP, {{estado}}",
+    "tareasHechas": "Aufgaben erledigt",
+    "botinMinimo": "Mit weniger als 3 erledigten Aufgaben bringt die Kampagne keine Beute.",
+    "botinMax": "höchstens"
   },
   "perfil": {
     "cargandoA11y": "Dein Profil wird geladen",

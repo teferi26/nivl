@@ -330,7 +330,7 @@ function Progresion({ d, arsenal, onCampanas }: { d: DatosProgresion; arsenal?: 
                 <Text style={[textoGeneral.fila, styles.flex]} numberOfLines={1}>
                   {b.titulo}
                 </Text>
-                <Text style={textoGeneral.oro}>{`+${formatoMiles(b.xp)} XP`}</Text>
+                <Text style={textoGeneral.oro}>{t('campanas:detalle.hastaXp', { xp: formatoMiles(b.xp) })}</Text>
               </FilaGeneral>
             ))
           )}

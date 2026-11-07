@@ -105,7 +105,7 @@
     "pendiente": "por conseguir",
     "titulo": "Título: {{titulo}}",
     "botin": "Saque das campanhas",
-    "botinXp": "{{xp}} XP",
+    "botinXp": "até {{xp}} XP",
     "botinVacio_one": "Ainda não concluíste nenhuma campanha. Tens {{count}} aberta.",
     "botinVacio_other": "Ainda não concluíste nenhuma campanha. Tens {{count}} abertas.",
     "irCampanas": "Ir para campanhas"
@@ -167,13 +167,15 @@
     "cobrado": "recebido",
     "despejadaEl": "CONCLUÍDA A {{fecha}}",
     "hecha": "feita",
-    "jefeA11y": "Chefe final: {{titulo}}, {{xp}} XP. Toca para o derrotar.",
+    "jefeA11y": "Chefe final: {{titulo}}, até {{xp}} XP. Toca para o derrotar.",
     "jefeDetalle": "Paga o dobro · {{dificultad}}",
     "meta": "{{stat}} · o que treina",
     "pendiente": "pendente",
-    "reclamar": "RECLAMAR +{{xp}} XP",
-    "tareaA11y": "{{titulo}}, {{xp}} XP, {{estado}}",
-    "tareasHechas": "tarefas feitas"
+    "reclamar": "RECLAMAR ATÉ +{{xp}} XP",
+    "tareaA11y": "{{titulo}}, até {{xp}} XP, {{estado}}",
+    "tareasHechas": "tarefas feitas",
+    "botinMinimo": "Com menos de 3 tarefas feitas, a campanha não paga saque.",
+    "botinMax": "no máximo"
   },
   "perfil": {
     "cargandoA11y": "A carregar o teu perfil",

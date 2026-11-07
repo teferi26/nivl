@@ -105,7 +105,7 @@
     "pendiente": "da ottenere",
     "titulo": "Titolo: {{titulo}}",
     "botin": "Bottino delle campagne",
-    "botinXp": "{{xp}} XP",
+    "botinXp": "fino a {{xp}} XP",
     "botinVacio_one": "Non hai ancora completato nessuna campagna. Ne hai {{count}} aperta.",
     "botinVacio_other": "Non hai ancora completato nessuna campagna. Ne hai {{count}} aperte.",
     "irCampanas": "Vai alle campagne"
@@ -167,13 +167,15 @@
     "cobrado": "incassato",
     "despejadaEl": "COMPLETATA IL {{fecha}}",
     "hecha": "fatta",
-    "jefeA11y": "Boss finale: {{titulo}}, {{xp}} XP. Tocca per sconfiggerlo.",
+    "jefeA11y": "Boss finale: {{titulo}}, fino a {{xp}} XP. Tocca per sconfiggerlo.",
     "jefeDetalle": "Paga il doppio · {{dificultad}}",
     "meta": "{{stat}} · ciò che allena",
     "pendiente": "in sospeso",
-    "reclamar": "RISCATTA +{{xp}} XP",
-    "tareaA11y": "{{titulo}}, {{xp}} XP, {{estado}}",
-    "tareasHechas": "compiti fatti"
+    "reclamar": "RISCATTA FINO A +{{xp}} XP",
+    "tareaA11y": "{{titulo}}, fino a {{xp}} XP, {{estado}}",
+    "tareasHechas": "compiti fatti",
+    "botinMinimo": "Con meno di 3 attività fatte, la campagna non paga bottino.",
+    "botinMax": "al massimo"
   },
   "perfil": {
     "cargandoA11y": "Caricamento del tuo profilo",

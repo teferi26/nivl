@@ -105,7 +105,7 @@
     "pendiente": "not yet",
     "titulo": "Title: {{titulo}}",
     "botin": "Campaign loot",
-    "botinXp": "{{xp}} XP",
+    "botinXp": "up to {{xp}} XP",
     "botinVacio_one": "You have not cleared a campaign yet. You have {{count}} open.",
     "botinVacio_other": "You have not cleared a campaign yet. You have {{count}} open.",
     "irCampanas": "Go to campaigns"
@@ -167,13 +167,15 @@
     "cobrado": "claimed",
     "despejadaEl": "CLEARED ON {{fecha}}",
     "hecha": "done",
-    "jefeA11y": "Final boss: {{titulo}}, {{xp}} XP. Tap to defeat it.",
+    "jefeA11y": "Final boss: {{titulo}}, up to {{xp}} XP. Tap to defeat it.",
     "jefeDetalle": "Pays double · {{dificultad}}",
     "meta": "{{stat}} · what it trains",
     "pendiente": "pending",
-    "reclamar": "CLAIM +{{xp}} XP",
-    "tareaA11y": "{{titulo}}, {{xp}} XP, {{estado}}",
-    "tareasHechas": "tasks done"
+    "reclamar": "CLAIM UP TO +{{xp}} XP",
+    "tareaA11y": "{{titulo}}, up to {{xp}} XP, {{estado}}",
+    "tareasHechas": "tasks done",
+    "botinMinimo": "With fewer than 3 tasks done, the campaign pays no loot.",
+    "botinMax": "at most"
   },
   "perfil": {
     "cargandoA11y": "Loading your profile",

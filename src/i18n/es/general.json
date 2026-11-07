@@ -105,7 +105,7 @@
     "pendiente": "por conseguir",
     "titulo": "Título: {{titulo}}",
     "botin": "Botín de campañas",
-    "botinXp": "{{xp}} XP",
+    "botinXp": "hasta {{xp}} XP",
     "botinVacio_one": "Aún no has despejado ninguna campaña. Tienes {{count}} abierta.",
     "botinVacio_other": "Aún no has despejado ninguna campaña. Tienes {{count}} abiertas.",
     "irCampanas": "Ir a campañas"
@@ -167,13 +167,15 @@
     "cobrado": "cobrado",
     "despejadaEl": "DESPEJADA EL {{fecha}}",
     "hecha": "hecha",
-    "jefeA11y": "Jefe final: {{titulo}}, {{xp}} XP. Toca para derrotarlo.",
+    "jefeA11y": "Jefe final: {{titulo}}, hasta {{xp}} XP. Toca para derrotarlo.",
     "jefeDetalle": "Paga el doble · {{dificultad}}",
     "meta": "{{stat}} · lo que entrena",
     "pendiente": "pendiente",
-    "reclamar": "RECLAMAR +{{xp}} XP",
-    "tareaA11y": "{{titulo}}, {{xp}} XP, {{estado}}",
-    "tareasHechas": "tareas hechas"
+    "reclamar": "RECLAMAR HASTA +{{xp}} XP",
+    "tareaA11y": "{{titulo}}, hasta {{xp}} XP, {{estado}}",
+    "tareasHechas": "tareas hechas",
+    "botinMinimo": "Con menos de 3 tareas hechas, la campaña no paga botín.",
+    "botinMax": "como máximo"
   },
   "perfil": {
     "cargandoA11y": "Cargando tu perfil",

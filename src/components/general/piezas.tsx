@@ -20,6 +20,7 @@ import type { ReactNode } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 import Svg, { Defs, Path, RadialGradient, Rect, Stop } from 'react-native-svg';
 import { Screen } from '@/components/ui';
+import { t } from '@/i18n';
 import { C, F, fs, G, M, oroA, oroMezcla, px } from './tema';
 
 type Icono = keyof typeof Ionicons.glyphMap;
@@ -338,6 +339,7 @@ export function FilaGeneral({
   onPress,
   onLongPress,
   accessibilityLabel,
+  accessibilityLongPressLabel,
   style,
 }: {
   children: ReactNode;
@@ -345,6 +347,8 @@ export function FilaGeneral({
   onPress?: () => void;
   onLongPress?: () => void;
   accessibilityLabel?: string;
+  /** El nombre de la acción de la pulsación larga para el lector de pantalla. */
+  accessibilityLongPressLabel?: string;
   style?: StyleProp<ViewStyle>;
 }) {
   const caja = [styles.fila, !primera && styles.filaRegla, style];
@@ -356,7 +360,16 @@ export function FilaGeneral({
     );
   }
   return (
-    <Pressable onPress={onPress} onLongPress={onLongPress} accessibilityRole="button" accessibilityLabel={accessibilityLabel} style={({ pressed }) => [caja, pressed && styles.pulsada]}>
+    <Pressable
+      onPress={onPress}
+      onLongPress={onLongPress}
+      accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel}
+      // La pulsación larga no se descubre con el lector: va como acción.
+      accessibilityActions={onLongPress ? [{ name: 'longpress', label: accessibilityLongPressLabel ?? t('ui:row.masOpciones') }] : undefined}
+      onAccessibilityAction={onLongPress ? (e) => e.nativeEvent.actionName === 'longpress' && onLongPress() : undefined}
+      style={({ pressed }) => [caja, pressed && styles.pulsada]}
+    >
       {children}
     </Pressable>
   );

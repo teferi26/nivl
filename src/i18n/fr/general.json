@@ -105,7 +105,7 @@
     "pendiente": "à obtenir",
     "titulo": "Titre : {{titulo}}",
     "botin": "Butin des campagnes",
-    "botinXp": "{{xp}} XP",
+    "botinXp": "jusqu'à {{xp}} XP",
     "botinVacio_one": "Tu n'as encore terminé aucune campagne. Tu en as {{count}} ouverte.",
     "botinVacio_other": "Tu n'as encore terminé aucune campagne. Tu en as {{count}} ouvertes.",
     "irCampanas": "Aller aux campagnes"
@@ -167,13 +167,15 @@
     "cobrado": "encaissé",
     "despejadaEl": "TERMINÉE LE {{fecha}}",
     "hecha": "faite",
-    "jefeA11y": "Boss final : {{titulo}}, {{xp}} XP. Touche pour le vaincre.",
+    "jefeA11y": "Boss final : {{titulo}}, jusqu'à {{xp}} XP. Touche pour le vaincre.",
     "jefeDetalle": "Paie double · {{dificultad}}",
     "meta": "{{stat}} · ce qu'elle entraîne",
     "pendiente": "en attente",
-    "reclamar": "RÉCLAMER +{{xp}} XP",
-    "tareaA11y": "{{titulo}}, {{xp}} XP, {{estado}}",
-    "tareasHechas": "tâches faites"
+    "reclamar": "RÉCLAMER JUSQU'À +{{xp}} XP",
+    "tareaA11y": "{{titulo}}, jusqu'à {{xp}} XP, {{estado}}",
+    "tareasHechas": "tâches faites",
+    "botinMinimo": "Avec moins de 3 tâches faites, la campagne ne rapporte pas de butin.",
+    "botinMax": "au maximum"
   },
   "perfil": {
     "cargandoA11y": "Chargement de ton profil",

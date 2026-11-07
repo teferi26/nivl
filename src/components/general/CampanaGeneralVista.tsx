@@ -128,7 +128,7 @@ export function CampanaGeneralVista(p: CampanaVistaProps) {
           {jefes.length > 0 ? (
             <CifraGeneral icono="skull" rotulo={t('campanas:detalle.jefes')} valor={`${jefesCaidos}/${jefes.length}`} nota={jefesCaidos === jefes.length ? t('general:campana.caidos') : undefined} />
           ) : null}
-          <CifraGeneral icono="diamond" rotulo={t('campanas:comun.botin')} valor={formatoMiles(botin)} unidad="XP" nota={despejada ? t('general:campana.cobrado') : undefined} />
+          <CifraGeneral icono="diamond" rotulo={t('campanas:comun.botin')} valor={formatoMiles(botin)} unidad="XP" nota={t('general:campana.botinMax')} />
         </FilaCifras>
       </Entrada>
 
@@ -139,7 +139,7 @@ export function CampanaGeneralVista(p: CampanaVistaProps) {
               <Ionicons name="trophy" size={px(22)} color={C.fondo} />
               <Text style={styles.botinRotulo}>{t('campanas:detalle.botinDisponible').toUpperCase()}</Text>
             </View>
-            <Text style={styles.botinTexto}>{t('campanas:detalle.botinCuerpo')}</Text>
+            <Text style={styles.botinTexto}>{hechas < 3 ? t('general:campana.botinMinimo') : t('campanas:detalle.botinCuerpo')}</Text>
             <Pressable
               onPress={p.onReclamar}
               disabled={p.ocupada}
@@ -155,10 +155,12 @@ export function CampanaGeneralVista(p: CampanaVistaProps) {
 
       {jefePendiente ? (
         <Entrada indice={3}>
-          <RotuloGeneral texto={t('campanas:detalle.jefeFinal')} em={`+${dungeonTaskXp(jefePendiente.difficulty, true)} XP`} seccion />
+          <RotuloGeneral texto={t('campanas:detalle.jefeFinal')} em={t('campanas:detalle.hastaXp', { xp: dungeonTaskXp(jefePendiente.difficulty, true) })} seccion />
           <Pressable
             onPress={() => p.onTarea(jefePendiente)}
             onLongPress={() => p.onBorrarTarea(jefePendiente)}
+            accessibilityActions={abierta && !p.ocupada ? [{ name: 'longpress', label: t('campanas:detalle.borrarTarea') }] : undefined}
+            onAccessibilityAction={(e) => abierta && !p.ocupada && e.nativeEvent.actionName === 'longpress' && p.onBorrarTarea(jefePendiente)}
             disabled={!abierta || p.ocupada}
             accessibilityRole="button"
             accessibilityLabel={t('general:campana.jefeA11y', { titulo: jefePendiente.title, xp: dungeonTaskXp(jefePendiente.difficulty, true) })}
@@ -218,7 +220,7 @@ export function CampanaGeneralVista(p: CampanaVistaProps) {
 function Tarea({ tarea, primera, marcando, activa, onPress, onLongPress }: { tarea: DungeonTask; primera: boolean; marcando: boolean; activa: boolean; onPress: () => void; onLongPress: () => void }) {
   const xp = dungeonTaskXp(tarea.difficulty, tarea.is_boss);
   return (
-    <FilaGeneral primera={primera} onPress={activa ? onPress : undefined} onLongPress={onLongPress} accessibilityLabel={t('general:campana.tareaA11y', { titulo: tarea.title, xp, estado: tarea.done ? t('general:campana.hecha') : t('general:campana.pendiente') })}>
+    <FilaGeneral primera={primera} onPress={activa ? onPress : undefined} onLongPress={onLongPress} accessibilityLongPressLabel={t('campanas:detalle.borrarTarea')} accessibilityLabel={t('general:campana.tareaA11y', { titulo: tarea.title, xp, estado: tarea.done ? t('general:campana.hecha') : t('general:campana.pendiente') })}>
       <View style={[styles.check, tarea.done && styles.checkHecho]} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
         {marcando ? <Ionicons name="hourglass-outline" size={px(12)} color={G} /> : tarea.done ? <Ionicons name="checkmark" size={px(13)} color={C.fondo} /> : null}
       </View>
@@ -228,7 +230,7 @@ function Tarea({ tarea, primera, marcando, activa, onPress, onLongPress }: { tar
         </Text>
         <Text style={textoGeneral.detalle}>{tarea.is_boss ? t('campanas:detalle.jefeFinal') : DIFFICULTY_LABEL[tarea.difficulty]}</Text>
       </View>
-      <Text style={[styles.xp, tarea.done && styles.xpHecha]}>{`+${xp} XP`}</Text>
+      <Text style={[styles.xp, tarea.done && styles.xpHecha]}>{t('campanas:detalle.hastaXp', { xp })}</Text>
     </FilaGeneral>
   );
 }
