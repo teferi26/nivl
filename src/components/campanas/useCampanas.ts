@@ -73,7 +73,11 @@ export function useCampanas({ enPanel = false }: { enPanel?: boolean } = {}): {
     }
     const abierta = elegidaAntes.current;
     elegidaAntes.current = null;
-    if (abierta) router.push({ pathname: '/dungeon/[id]', params: { id: abierta } });
+    if (abierta) {
+      // Ya va en su pantalla: al desplegar no se pinta a la vez en el panel.
+      setElegida(null);
+      router.push({ pathname: '/dungeon/[id]', params: { id: abierta } });
+    }
   }, [enPanel, elegida]);
 
   const load = useCallback(async () => {
@@ -140,7 +144,9 @@ export function useCampanas({ enPanel = false }: { enPanel?: boolean } = {}): {
       campanas: dungeons,
       onNueva: () => setFormOpen(true),
       onAbrir: abrir,
-      elegida: enPanel ? elegida : null,
+      // undefined con un panel (la lista marca la primera); null con dos y nada
+      // abierto (no se marca ninguna: el panel de al lado dice «Elige una campaña»).
+      elegida: enPanel ? elegida : undefined,
       onReintentar: load,
     },
     hojas: {

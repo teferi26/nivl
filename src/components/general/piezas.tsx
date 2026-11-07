@@ -16,8 +16,8 @@
 
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { LinearGradient } from 'expo-linear-gradient';
-import type { ReactNode } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
+import { useState, type ReactNode } from 'react';
+import { ActivityIndicator, Pressable, StyleSheet, Text, View, type LayoutChangeEvent, type StyleProp, type ViewStyle } from 'react-native';
 import Svg, { Defs, Path, RadialGradient, Rect, Stop } from 'react-native-svg';
 import { Screen } from '@/components/ui';
 import { t } from '@/i18n';
@@ -29,17 +29,35 @@ type Icono = keyof typeof Ionicons.glyphMap;
 
 /** El fondo de NIVL: negro y, arriba, el brillo del oro (la recarga dorada sube del centro). */
 export function BrilloGeneral() {
+  // Medido en número: un <Svg> con "100%" no se vuelve a pintar al girar el
+  // iPad o al cambiar la ventana (Split View, Stage Manager, Mac) y el brillo
+  // se quedaba cortado en el ancho de antes, con un borde recto a media pantalla.
+  const [lado, setLado] = useState<{ w: number; h: number } | null>(null);
+  const alMedir = (e: LayoutChangeEvent) => {
+    const { width, height } = e.nativeEvent.layout;
+    const w = Math.round(width);
+    const h = Math.round(height);
+    setLado((a) => (a && a.w === w && a.h === h ? a : { w, h }));
+  };
   return (
-    <View style={StyleSheet.absoluteFill} pointerEvents="none" accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
-      <Svg width="100%" height="100%">
-        <Defs>
-          <RadialGradient id="brilloGeneral" cx="50%" cy="0%" rx="90%" ry="40%" fx="50%" fy="0%">
-            <Stop offset="0" stopColor={G} stopOpacity={0.13} />
-            <Stop offset="1" stopColor={G} stopOpacity={0} />
-          </RadialGradient>
-        </Defs>
-        <Rect x="0" y="0" width="100%" height="100%" fill="url(#brilloGeneral)" />
-      </Svg>
+    <View
+      style={StyleSheet.absoluteFill}
+      onLayout={alMedir}
+      pointerEvents="none"
+      accessibilityElementsHidden
+      importantForAccessibility="no-hide-descendants"
+    >
+      {lado && lado.w > 0 && lado.h > 0 ? (
+        <Svg key={`${lado.w}x${lado.h}`} width={lado.w} height={lado.h}>
+          <Defs>
+            <RadialGradient id="brilloGeneral" cx="50%" cy="0%" rx="90%" ry="40%" fx="50%" fy="0%">
+              <Stop offset="0" stopColor={G} stopOpacity={0.13} />
+              <Stop offset="1" stopColor={G} stopOpacity={0} />
+            </RadialGradient>
+          </Defs>
+          <Rect x="0" y="0" width={lado.w} height={lado.h} fill="url(#brilloGeneral)" />
+        </Svg>
+      ) : null}
     </View>
   );
 }
