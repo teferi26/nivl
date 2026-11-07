@@ -44,7 +44,8 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     appDelegate.window = window
 
     // Un enlace que abre la app en frío llega aquí y no a application(_:open:):
-    // va en las opciones de arranque, que es donde lo busca Linking.getInitialURL.
+    // va en las opciones de arranque, que es donde lo busca Linking.getInitialURL
+    // de React Native (RCTLinkingManager).
     var opciones = appDelegate.opcionesDeArranque ?? [:]
     if let url = connectionOptions.urlContexts.first?.url {
       opciones[.url] = url
@@ -54,6 +55,22 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         UIApplication.LaunchOptionsKey.userActivityType: actividad.activityType,
         "UIApplicationLaunchOptionsUserActivityKey": actividad,
       ]
+    }
+    // expo-router en iOS NO lee las opciones de arranque: pregunta a
+    // expo-linking (Linking.getLinkingURL), que solo apunta la URL inicial
+    // cuando el AppDelegate recibe application(_:open:) o (_:continue:). Sin
+    // este reenvío, un enlace en frío (nivl://auth/confirmar, /c/CODIGO, un
+    // enlace universal) abría la app en la raíz. Va ANTES de arrancar React
+    // Native, para que la URL ya esté apuntada cuando el router la pida.
+    if let contexto = connectionOptions.urlContexts.first {
+      var abrir: [UIApplication.OpenURLOptionsKey: Any] = [:]
+      if let origen = contexto.options.sourceApplication {
+        abrir[.sourceApplication] = origen
+      }
+      _ = appDelegate.application(UIApplication.shared, open: contexto.url, options: abrir)
+    }
+    if let actividad = connectionOptions.userActivities.first {
+      _ = appDelegate.application(UIApplication.shared, continue: actividad, restorationHandler: { _ in })
     }
     factory.startReactNative(withModuleName: "main", in: window, launchOptions: opciones)
   }
