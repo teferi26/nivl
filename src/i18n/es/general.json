@@ -120,7 +120,9 @@
     "sinTareas": "sin tareas",
     "botinXp": "{{xp}} XP de botín",
     "abrir": "Abrir",
-    "a11y": "{{titulo}}, rango {{rango}}: {{hechas}} de {{total}} tareas, {{xp}} XP de botín. Abrir."
+    "a11y": "{{titulo}}, rango {{rango}}: {{hechas}} de {{total}} tareas, {{xp}} XP de botín. Abrir.",
+    "panelTitulo": "Elige una campaña",
+    "panelCuerpo": "Sus tareas y su botín se abren aquí, al lado de la lista."
   },
   "prestado": {
     "volverA11y": "Volver a NIVL"

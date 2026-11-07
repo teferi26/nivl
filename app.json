@@ -22,7 +22,14 @@
         "NSMicrophoneUsageDescription": "NIVL usa el micrófono solo cuando tú lo pides: para dictarle a tu coach mientras mantienes pulsado el botón de voz. Nunca graba en segundo plano.",
         "NSPhotoLibraryAddUsageDescription": "NIVL guarda en tus fotos solo las tarjetas que tú decides guardar al compartir.",
         "CFBundleDevelopmentRegion": "es",
-        "CFBundleLocalizations": ["es", "en", "fr", "de", "pt", "it"]
+        "CFBundleLocalizations": ["es", "en", "fr", "de", "pt", "it"],
+        "UISupportedInterfaceOrientations~ipad": [
+          "UIInterfaceOrientationPortrait",
+          "UIInterfaceOrientationPortraitUpsideDown",
+          "UIInterfaceOrientationLandscapeLeft",
+          "UIInterfaceOrientationLandscapeRight"
+        ],
+        "UIRequiresFullScreen": false
       },
       "entitlements": {
         "com.apple.developer.usernotifications.time-sensitive": true

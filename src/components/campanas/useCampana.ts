@@ -62,8 +62,28 @@ export interface HojaNuevaTarea {
   addTask: () => void;
 }
 
-export function useCampana(): { vista: CampanaVistaProps; hojas: { tarea: HojaNuevaTarea } } {
-  const { id } = useLocalSearchParams<{ id: string }>();
+export interface OpcionesCampana {
+  /** La campaña, si no viene en la ruta (el panel derecho de Campañas). */
+  id?: string;
+  /** Volver, o abandonar la campaña: en el panel, cierra el detalle. */
+  onCerrar?: () => void;
+  /** Tras cada cambio guardado (tareas, cobro): la lista de al lado se recarga. */
+  onCambio?: () => void;
+}
+
+export function useCampana(opciones: OpcionesCampana = {}): { vista: CampanaVistaProps; hojas: { tarea: HojaNuevaTarea } } {
+  const params = useLocalSearchParams<{ id: string }>();
+  const id = opciones.id ?? params.id;
+  const { onCerrar, onCambio } = opciones;
+  const cerrar = () => (onCerrar ? onCerrar() : volver(router));
+  // La primera carga no es un cambio: solo las que siguen a guardar algo.
+  const cargadaUnaVez = useRef(false);
+  // En una ref: la carga no se rehace (ni entra en bucle) si el padre pasa
+  // una función nueva en cada render.
+  const avisarCambio = useRef(onCambio);
+  useEffect(() => {
+    avisarCambio.current = onCambio;
+  }, [onCambio]);
   const { session } = useAuth();
   const userId = session?.user.id;
 
@@ -96,6 +116,8 @@ export function useCampana(): { vista: CampanaVistaProps; hojas: { tarea: HojaNu
       setDungeon(d);
       setTasks(lista);
       setLoadError(null);
+      if (cargadaUnaVez.current) avisarCambio.current?.();
+      cargadaUnaVez.current = true;
     } catch (e) {
       setLoadError(mensajeSistema(e));
     } finally {
@@ -272,7 +294,8 @@ export function useCampana(): { vista: CampanaVistaProps; hojas: { tarea: HojaNu
       await deleteDungeon(dungeon.id);
       // La háptica de borrado, solo si se ha borrado.
       vibrar('destructiva');
-      volver(router);
+      avisarCambio.current?.();
+      cerrar();
     } catch (e) {
       avisar(t('comun:sistemaNoResponde'), mensajeSistema(e));
     }
@@ -303,7 +326,7 @@ export function useCampana(): { vista: CampanaVistaProps; hojas: { tarea: HojaNu
       tareas: tasks,
       marcando,
       ocupada: busy,
-      onVolver: () => volver(router),
+      onVolver: cerrar,
       onReintentar: reintentar,
       onNuevaTarea: () => setFormOpen(true),
       onTarea: toggleTask,

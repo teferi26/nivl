@@ -30,6 +30,8 @@ describe('clases de tamaño', () => {
     expect(VERIFY_WIDTHS.map(sizeClass)).toEqual([
       'compact',
       'compact',
+      'compact',
+      'medium',
       'medium',
       'medium',
       'expanded',

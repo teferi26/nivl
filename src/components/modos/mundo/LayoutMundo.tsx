@@ -39,7 +39,9 @@ import { NOMBRE_MODO, type ModoEtiqueta } from '@/modos/tipos';
 export function LayoutMundo({ modo }: { modo: ModoEtiqueta }) {
   const modos = useModo();
   const ventana = useAnchoUtil();
-  const { sizeClass } = marcoDe(ventana);
+  // La barra sale de `nav` (no de la clase): entre 600 y 719 la ventana es
+  // `medium` pero lleva barra inferior (iPhone Duo abierto, Split View).
+  const { nav } = marcoDe(ventana);
   const { left } = useSafeAreaInsets();
   const hueco = huecoContenido(ventana, left).ancho;
   const acento = modoAcento[modo];
@@ -70,15 +72,15 @@ export function LayoutMundo({ modo }: { modo: ModoEtiqueta }) {
       <TopeAncho.Provider value={hueco}>
         <Tabs
           tabBar={(props) =>
-            sizeClass === 'compact' ? (
+            nav === 'tabs' ? (
               <TabBar {...props} acento={acento} centro={modos.activo ? <EmblemaBarra /> : undefined} />
-            ) : sizeClass === 'medium' ? (
+            ) : nav === 'rail' ? (
               <NavRail {...props} acento={acento} />
             ) : (
               <NavSidebar {...props} acento={acento} marca={NOMBRE_MODO[modo]} />
             )
           }
-          screenOptions={{ headerShown: false, tabBarPosition: sizeClass === 'compact' ? 'bottom' : 'left' }}
+          screenOptions={{ headerShown: false, tabBarPosition: nav === 'tabs' ? 'bottom' : 'left' }}
         >
           {MUNDOS[modo].pestanas.map((p) => (
             <Tabs.Screen key={p.ruta} name={p.ruta} options={{ title: t(`mundos:pestana.${p.pestana}`) }} />

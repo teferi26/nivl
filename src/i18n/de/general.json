@@ -120,7 +120,9 @@
     "sinTareas": "keine Aufgaben",
     "botinXp": "{{xp}} XP Beute",
     "abrir": "Öffnen",
-    "a11y": "{{titulo}}, Rang {{rango}}: {{hechas}} von {{total}} Aufgaben, {{xp}} XP Beute. Öffnen."
+    "a11y": "{{titulo}}, Rang {{rango}}: {{hechas}} von {{total}} Aufgaben, {{xp}} XP Beute. Öffnen.",
+    "panelTitulo": "Wähle eine Kampagne",
+    "panelCuerpo": "Ihre Aufgaben und ihre Beute öffnen sich hier, neben der Liste."
   },
   "prestado": {
     "volverA11y": "Zurück zu NIVL"

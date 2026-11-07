@@ -120,7 +120,9 @@
     "sinTareas": "sans tâches",
     "botinXp": "{{xp}} XP de butin",
     "abrir": "Ouvrir",
-    "a11y": "{{titulo}}, rang {{rango}} : {{hechas}} tâches sur {{total}}, {{xp}} XP de butin. Ouvrir."
+    "a11y": "{{titulo}}, rang {{rango}} : {{hechas}} tâches sur {{total}}, {{xp}} XP de butin. Ouvrir.",
+    "panelTitulo": "Choisis une campagne",
+    "panelCuerpo": "Ses tâches et son butin s'ouvrent ici, à côté de la liste."
   },
   "prestado": {
     "volverA11y": "Retour à NIVL"

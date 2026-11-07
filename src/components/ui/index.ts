@@ -7,6 +7,7 @@ export { Chip, ChipRow, ChipWrap, Tag } from './Chip';
 export { avisar, confirmar } from './confirmar';
 export { Crown, GALEA_PATH } from './Crown';
 export { EmptyState } from './EmptyState';
+export { MaestroDetalle, useMaestroDetalle } from './MaestroDetalle';
 export { FadeIn, PressScale, Stagger } from './motion';
 export { ProgressRing } from './ProgressRing';
 export { Check, Row, RowValue } from './Row';

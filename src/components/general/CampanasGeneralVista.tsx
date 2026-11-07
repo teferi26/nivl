@@ -80,7 +80,8 @@ export function CampanasGeneralVista(p: CampanasVistaProps) {
               return (
                 <Entrada key={c.id} indice={Math.min(3 + i, 8)}>
                   <TarjetaGeneral
-                    heroe={i === 0}
+                    // Con dos paneles, la tarjeta héroe es la abierta al lado.
+                    heroe={p.elegida ? c.id === p.elegida : i === 0}
                     onPress={() => p.onAbrir(c.id)}
                     accessibilityLabel={t('general:campanas.a11y', { titulo: c.title, rango: c.rank, hechas: c.doneCount, total: c.total, xp: DUNGEON_CLEAR_XP[c.rank] })}
                   >

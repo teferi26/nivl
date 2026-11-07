@@ -88,9 +88,10 @@ export const layout = {
 /**
  * Anchos en los que se verifica cada pantalla. 768 (iPad mini / 9,7" vertical)
  * y 1366 (iPad Pro 12,9" apaisado) solo para la galería: los dos iPad que se
- * escapaban entre 744 y 1440.
+ * escapaban entre 744 y 1440. 466 y 669: el iPhone Duo plegado (pantalla
+ * exterior, compact) y abierto (interior, medium con barra inferior).
  */
-export const VERIFY_WIDTHS = [375, 430, 744, 768, 1024, 1366, 1440] as const;
+export const VERIFY_WIDTHS = [375, 430, 466, 669, 744, 768, 1024, 1366, 1440] as const;
 
 // ── Rango → tema ──────────────────────────────────────────────────────
 export type Rank = 'E' | 'D' | 'C' | 'B' | 'A' | 'S';

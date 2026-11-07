@@ -366,9 +366,12 @@ export function FilaIron({
   style,
   accessibilityActions,
   onAccessibilityAction,
+  seleccionada,
 }: {
   children: ReactNode;
   primera?: boolean;
+  /** Lo abierto en el panel de al lado (maestro-detalle). */
+  seleccionada?: boolean;
   onPress?: () => void;
   onLongPress?: () => void;
   accessibilityLabel?: string;
@@ -390,6 +393,7 @@ export function FilaIron({
       onLongPress={onLongPress}
       accessibilityRole={onPress ? 'button' : undefined}
       accessibilityLabel={accessibilityLabel}
+      accessibilityState={seleccionada ? { selected: true } : undefined}
       accessibilityActions={accessibilityActions}
       onAccessibilityAction={onAccessibilityAction}
       style={({ pressed }) => [caja, pressed && styles.pulsada]}

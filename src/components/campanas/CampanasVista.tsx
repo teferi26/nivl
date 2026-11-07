@@ -39,6 +39,8 @@ export interface CampanasVistaProps {
   campanas: CampanaResumen[];
   onNueva: () => void;
   onAbrir: (id: string) => void;
+  /** La abierta en el panel de al lado (dos paneles): se marca en la lista. */
+  elegida?: string | null;
   onReintentar: () => void;
 }
 
