@@ -123,9 +123,13 @@ final class PuenteReloj: NSObject, WCSessionDelegate {
         id = UUID().uuidString
         self.respuestas[id] = respuesta
         // El reloj no espera para siempre: si JS no contesta (app sin JS
-        // cargado), se responde para que el reloj lo diga y lo deje en cola.
+        // cargado), se responde «vuelve a intentarlo» y la petición SALE de
+        // la cola: si se quedara, JS la atendería minutos después (un
+        // «pausar» del pomodoro a destiempo o una misión marcada que el reloj
+        // dio por fallida).
         self.cola.asyncAfter(deadline: .now() + 8) {
           if let r = self.respuestas.removeValue(forKey: id) {
+            self.pendientes.removeAll { $0["id"] == id }
             r(["respuesta": "{\"ok\":false,\"motivo\":\"Abre NIVL en el iPhone y vuelve a intentarlo.\"}"])
           }
         }

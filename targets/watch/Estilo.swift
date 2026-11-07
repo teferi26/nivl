@@ -44,6 +44,10 @@ struct Rotulo: View {
       .font(Tipo.rotulo)
       .tracking(2)
       .foregroundStyle(Ink.ink6)
+      // Una línea siempre: en 40 mm «BLOQUE 2 DE 4 · IPHONE» partía en dos
+      // por el punto medio. Encoge antes que partir.
+      .lineLimit(1)
+      .minimumScaleFactor(0.7)
       .accessibilityAddTraits(.isHeader)
   }
 }

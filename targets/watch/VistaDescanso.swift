@@ -19,7 +19,7 @@ struct VistaDescanso: View {
   var body: some View {
     TimelineView(.periodic(from: .now, by: 1)) { ctx in
       ScrollView {
-        VStack(spacing: 8) {
+        VStack(spacing: 6) {
           if t.enMarcha || t.enPausa {
             Rotulo(texto: "Descanso")
             Anillo(progreso: t.progreso(ctx.date), texto: formatoReloj(t.restante(ctx.date)))

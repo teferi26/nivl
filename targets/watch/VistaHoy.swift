@@ -66,7 +66,7 @@ struct FilaMision: View {
   let enCamino: Bool
 
   var body: some View {
-    HStack(alignment: .center, spacing: 10) {
+    HStack(alignment: .center, spacing: 8) {
       Check(hecha: mision.hecha, enCamino: enCamino)
       VStack(alignment: .leading, spacing: 2) {
         Text(mision.titulo)
@@ -143,12 +143,6 @@ struct ConfirmarMision: View {
           .tracking(2)
           .foregroundStyle(Ink.ink8)
 
-        if let modulo = m.nombreModulo, !m.hecha, razonBloqueo(m) == nil {
-          Text("Se marca sola al registrar \(modulo) en el iPhone. Si la marcas aquí, \(modulo) no la paga dos veces.")
-            .font(Tipo.detalle)
-            .foregroundStyle(Ink.ink8)
-            .fixedSize(horizontal: false, vertical: true)
-        }
         if let razon = razonBloqueo(m) {
           Text(razon)
             .font(Tipo.detalle)
@@ -181,6 +175,15 @@ struct ConfirmarMision: View {
           .buttonStyle(BotonInvertido(activo: razonBloqueo(m) == nil && !ocupada))
           .disabled(razonBloqueo(m) != nil || ocupada || almacen.enCamino.contains(m.id))
           .accessibilityHint("Marca la misión como hecha en NIVL.")
+        }
+
+        // La nota del módulo va DEBAJO del botón: en 40 mm, encima, empujaba
+        // «Hecha» fuera de la pantalla.
+        if let modulo = m.nombreModulo, !m.hecha, razonBloqueo(m) == nil {
+          Text("Se marca sola al registrar \(modulo) en el iPhone. Si la marcas aquí, \(modulo) no la paga dos veces.")
+            .font(Tipo.detalle)
+            .foregroundStyle(Ink.ink8)
+            .fixedSize(horizontal: false, vertical: true)
         }
       }
       .padding(.horizontal, 4)

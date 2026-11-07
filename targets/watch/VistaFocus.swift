@@ -27,7 +27,16 @@ struct VistaFocus: View {
   var body: some View {
     TimelineView(.periodic(from: .now, by: 1)) { ctx in
       ScrollView {
-        VStack(spacing: 8) {
+        VStack(spacing: 6) {
+          // El aviso arriba: debajo del botón quedaba fuera de la pantalla y
+          // «Pausar» parecía no hacer nada.
+          if let aviso {
+            Text(aviso)
+              .font(Tipo.detalle)
+              .foregroundStyle(Ink.ink9)
+              .multilineTextAlignment(.center)
+              .fixedSize(horizontal: false, vertical: true)
+          }
           if let f = delIphone {
             cabecera(f.nombreFase, "BLOQUE \(f.bloque) DE \(f.cadaLargo) · IPHONE")
             Anillo(progreso: progresoIphone(f, ctx.date), texto: formatoReloj(restanteIphone(f, ctx.date)))
@@ -47,12 +56,6 @@ struct VistaFocus: View {
                 .foregroundStyle(Ink.ink6)
                 .multilineTextAlignment(.center)
             }
-          }
-          if let aviso {
-            Text(aviso)
-              .font(Tipo.detalle)
-              .foregroundStyle(Ink.ink8)
-              .multilineTextAlignment(.center)
           }
         }
         .padding(.horizontal, 4)
@@ -135,6 +138,7 @@ struct VistaFocus: View {
       if ok {
         WKInterfaceDevice.current().play(.click)
       } else {
+        WKInterfaceDevice.current().play(.failure)
         aviso = "Abre FOCUS en el iPhone para mandar en su pomodoro."
       }
     }
@@ -146,6 +150,10 @@ struct Anillo: View {
   let progreso: Double
   let texto: String
 
+  /// Sale del ALTO de la pantalla (no del ancho): cabecera + anillo + botón
+  /// tienen que caber sin girar la corona. ~89 pt en 46 mm, ~71 en 40 mm.
+  static let lado: CGFloat = min(112, (WKInterfaceDevice.current().screenBounds.height * 0.36).rounded())
+
   var body: some View {
     ZStack {
       Circle().stroke(Ink.ink4, lineWidth: 6)
@@ -154,14 +162,13 @@ struct Anillo: View {
         .stroke(Ink.ink10, style: StrokeStyle(lineWidth: 6, lineCap: .butt))
         .rotationEffect(.degrees(-90))
       Text(texto)
-        .font(Tipo.cifra(30, relativoA: .title))
+        .font(Tipo.cifra(30 * Anillo.lado / 112, relativoA: .title))
         .minimumScaleFactor(0.6)
         .lineLimit(1)
         .foregroundStyle(Ink.ink10)
         .padding(.horizontal, 12)
     }
-    .frame(width: 112, height: 112)
-    .padding(.vertical, 4)
+    .frame(width: Anillo.lado, height: Anillo.lado)
     .accessibilityElement(children: .ignore)
     .accessibilityLabel("Quedan \(texto)")
   }
