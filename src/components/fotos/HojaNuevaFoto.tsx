@@ -20,6 +20,7 @@ import { avisar, confirmar } from '@/components/ui/confirmar';
 import { vibrar } from '@/design/haptics';
 import { ink, space, stroke, type as tipo } from '@/design/tokens';
 import { t } from '@/i18n';
+import { hacerFoto } from '@/lib/camara';
 import { addDays, isValidKey } from '@/lib/dates';
 import { POSES, type FotoProgreso, type Pose } from '@/lib/progressPhotos';
 import { borrarCacheSelector, borrarTemporales, subirFoto } from './datos';
@@ -132,7 +133,7 @@ export function HojaNuevaFoto({ visible, onCerrar, uid, hoy, onGuardada, onGate,
       }
       return;
     }
-    tomar(await ImagePicker.launchCameraAsync(OPCIONES));
+    tomar(await hacerFoto(OPCIONES));
   };
 
   // iOS 14+ y el selector de Android 13+ no piden permiso para elegir una foto.

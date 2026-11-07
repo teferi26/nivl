@@ -11,6 +11,7 @@ import { avisar, confirmar } from '@/components/ui/confirmar';
 import { volver } from '@/components/ui/Screen';
 import { vibrar } from '@/design/haptics';
 import { t } from '@/i18n';
+import { hacerFoto } from '@/lib/camara';
 import { evaluateAchievements, unlockAchievements } from '@/lib/achievements';
 import { useAuth } from '@/lib/auth';
 import {
@@ -238,7 +239,7 @@ export function useDiario(): DiarioVistaProps {
       }
       return;
     }
-    const result = await ImagePicker.launchCameraAsync({
+    const result = await hacerFoto({
       mediaTypes: ['images'],
       quality: 0.4,
       base64: true,

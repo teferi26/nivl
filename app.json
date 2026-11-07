@@ -103,6 +103,7 @@
         }
       ],
       "expo-secure-store",
+      "./plugins/withEscenas.js",
       [
         "expo-speech-recognition",
         {

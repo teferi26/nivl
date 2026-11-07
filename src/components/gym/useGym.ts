@@ -26,6 +26,7 @@ import {
   sincronizarRangoDetalle,
   unlockAchievements,
 } from '@/lib/achievements';
+import { hacerFoto } from '@/lib/camara';
 import { useAuth } from '@/lib/auth';
 import {
   createGymDay,
@@ -419,7 +420,7 @@ export function useGym(): UseGym {
       }
       return;
     }
-    const r = await ImagePicker.launchCameraAsync({ mediaTypes: ['images'], quality: 0.4, base64: true });
+    const r = await hacerFoto({ mediaTypes: ['images'], quality: 0.4, base64: true });
     if (r.canceled) return;
     setFotoB64(r.assets[0]?.base64 ?? null);
     vibrar('seleccion');
