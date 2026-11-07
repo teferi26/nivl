@@ -65,7 +65,7 @@
     "mejor": "Mejor {{n}}",
     "xpPorSemana": "XP por semana",
     "ochoSemanas": "8 semanas",
-    "estaSemana": "Hoy",
+    "estaSemana": "Ahora",
     "xpPorSemanaA11y": "XP por semana. {{lista}}",
     "cumplimiento28": "Cumplimiento · 28 días",
     "rejillaA11y": "{{dias}} días activos de 28, cumplimiento del {{pct}} por ciento",
@@ -149,7 +149,7 @@
     "teReta": "Te reta",
     "titulo": "ARENA",
     "tuPuesto": "Tu puesto",
-    "vacioCuerpo": "Añade a tus amigos con su código o invítales. En la arena se mide la constancia, no quién se pone más misiones.",
+    "vacioCuerpo": "Añade a tus amigos con su código o invítalos. En la arena se mide la constancia, no quién se pone más misiones.",
     "vacioTitulo": "Tu arena está vacía",
     "vs": "VS",
     "ventana": {
@@ -180,7 +180,7 @@
   "perfil": {
     "cargandoA11y": "Cargando tu perfil",
     "cuenta": "Cuenta",
-    "evidencia": "{{pct}} % con prueba",
+    "evidencia": "{{pct}} % con evidencia",
     "eyebrow": "PERFIL",
     "fotoA11y": "Cambiar tu foto",
     "progresion": "Progresión",
