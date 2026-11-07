@@ -43,3 +43,5 @@ xcrun simctl launch <udid-del-reloj> com.teferi.nivl.watchkitapp -nivlDemo YES [
 ```
 
 La app entera para el simulador de iPhone (embebe el reloj): `xcodebuild -workspace ios/NIVL.xcworkspace -scheme NIVL -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO IPHONEOS_DEPLOYMENT_TARGET=15.1 build`. Sin `-sdk iphonesimulator`: forzar el SDK compila también los targets del reloj contra iOS y fallan.
+
+Ojo (QA, 7 nov): compilada en local con el SDK de iOS 27, la app del iPhone se cierra nada más abrirse en los simuladores iOS 27.2 (`_UIApplicationEvaluateRuntimeIssueForNoSceneLifecycleAdoption`: iOS 27 exige el ciclo de vida UIScene y el AppDelegate de Expo no lo adopta). No es de este frente (pasa igual sin el reloj), pero impide probar de punta a punta iPhone + reloj en local: el reloj solo se ha visto en modo demo y en «sin datos». Las capturas del QA están en red-de-clips/cuentas/_estilos_nivl/recursos_app/dispositivos/watch/.
