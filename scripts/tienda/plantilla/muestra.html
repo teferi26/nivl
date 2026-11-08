@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'">
+<style>
+/* Pantalla inventada solo para maquetar: ni es la app ni lleva datos reales. */
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:#000;color:#ededed;font-family:Helvetica,Arial,sans-serif}
+body{width:{{W}}px;height:{{H}}px;overflow:hidden;padding:{{P}}px;position:relative}
+.t{font-size:{{T}}px;font-weight:700;letter-spacing:.08em;margin-bottom:{{P}}px}
+.f{display:grid;grid-template-columns:repeat(3,1fr);gap:{{G}}px;margin-bottom:{{P}}px}
+.c{border:{{B}}px solid #3a3a3a;height:{{C}}px;display:flex;align-items:center;justify-content:center;font-size:{{T}}px}
+.i{background:#fff;color:#000;height:{{C}}px;display:flex;align-items:center;padding:0 {{P}}px;font-size:{{R}}px;font-weight:700;margin-bottom:{{G}}px}
+.r{height:{{FILA}}px;border-bottom:{{B}}px solid #242424;display:flex;align-items:center;font-size:{{R}}px;color:#bdbdbd}
+.b{position:absolute;left:0;right:0;bottom:0;height:{{C}}px;border-top:{{B}}px solid #3a3a3a;background:#0b0b0b;display:flex;align-items:center;justify-content:center;font-size:{{R}}px;color:#8c8c8c}
+</style></head><body>
+<div class="t">PANTALLA DE MUESTRA</div>
+<div class="f"><div class="c">12</div><div class="c">0/3</div><div class="c">2d</div></div>
+<div class="i">Fila activa de prueba</div>
+{{FILAS}}
+<div class="b">pie de la pantalla</div>
+</body></html>

@@ -69,3 +69,6 @@ banco-estado.json
 privado/
 scripts/*.local.*
 dist-creadores/
+
+# Salida y caché de scripts/tienda (capturas y vídeos de tienda)
+.tienda/
