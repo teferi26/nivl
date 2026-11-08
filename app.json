@@ -99,6 +99,7 @@
       ],
       "expo-secure-store",
       "@bacons/apple-targets",
+      "./plugins/withEscenas",
       [
         "expo-speech-recognition",
         {
