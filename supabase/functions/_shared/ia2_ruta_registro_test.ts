@@ -54,7 +54,6 @@ const PARTES = [
   'me he pesado: 80,4',
   'me pesé esta mañana, 81,2',
   'acabo de registrar la cena',
-  'he corrido 5 km',
   'Hoy he comido 2.300 kcal',
   'fui al gimnasio a las 7',
   'ya lo subí',
@@ -66,6 +65,10 @@ const PARTES = [
 ];
 
 const NO_PARTES = [
+  'he corrido 5 km',
+  'he corrido 10 km en 52 minutos',
+  'Hoy he nadado 1500 m en 35 min',
+  'he hecho 40 km de bici en 1h30',
   '¿qué entreno hoy?',
   'qué entreno hoy',
   'he entrenado hoy?',

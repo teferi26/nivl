@@ -21,6 +21,7 @@ App de hábitos de la gente de Franky (interfaz en español), gamificada como un
 - **Plan del día**: `src/lib/plan.ts` (puro) + `src/lib/dayplan.ts` (datos)
 - **Coach**: `src/lib/coach.ts` (cliente) · `supabase/functions/coach/` (el agente) · `supabase/functions/ritual/` (lo que dispara el cron)
 - **Cuerpo**: `src/lib/bodymath.ts` (puro) + `src/lib/bodywork.ts` (datos: cardio, nutrición, prescripciones) · `supabase/functions/_shared/analytics.ts` (el estudio que lee el coach) + `_shared/knowledge.ts` (la doctrina de entreno y dieta)
+- **Resistencia (IRON)**: contrato de captura `src/lib/entrenoMedido.ts` · puros con copia exacta en Deno (`entrenomath`, `cargamath`, `planCarrera`, `mejorHora`, `entrenoEspejo`; `resistencia_paridad_test.ts` lo vigila) · datos y pago en `src/lib/resistencia.ts`: `guardarEntrenoMedido` es la única puerta (solo paga lo de hoy, Salud se propone) · pantallas en `src/components/resistencia/` y `src/app/resistencia/` · coach en `_shared/estudioResistencia.ts`, `resistenciaCoach.ts`, previsión en `_shared/tiempo.ts` y la función `prevision`.
 - **Dinero**: `src/lib/moneymath.ts` (puro) + `src/lib/money.ts` (datos) · `supabase/functions/_shared/finance.ts` (el estudio económico) · importadores en `scripts/import-revolut.mjs` (CSV) y `scripts/setup-banco.mjs` (open banking)
 - **Pausa del coach (0135)**: `src/lib/coachpausa.ts` (puro, espejo idéntico en `_shared/coachpausa.ts`): con 3 días completos en su zona sin escribir (`profiles.coach_last_reply_at`, solo la toca `reactivar_coach()`) el ritual no gasta IA. En el chat, `PausaCoach.tsx`.
 - **Avisos**: `src/lib/notifications.ts` + `src/lib/useNotificationRouting.ts`
@@ -71,7 +72,7 @@ La **ficha física** (`body_profile`: altura, año, sexo, actividad, experiencia
 
 ## Herramientas del coach
 
-Las define `supabase/functions/_shared/tools.ts` (hoy son 26). Dos límites de la API que ya nos han mordido:
+Las define `supabase/functions/_shared/tools.ts` (hoy son 30). Dos límites de la API que ya nos han mordido:
 
 1. **Sin `strict: true`**: pasando de doce herramientas el compilador de esquemas responde "Schema is too complex". La validación real la hacen los CHECK de Postgres y el ejecutor.
 2. **Nada de tipos unión**: `{ type: ['string','null'] }` junto a un `enum` se rechaza, y hay un tope de 16 parámetros con uniones en todo el conjunto. Lo opcional se expresa con **cadena vacía** como centinela (`opt` / `enumOpt`), no con null.

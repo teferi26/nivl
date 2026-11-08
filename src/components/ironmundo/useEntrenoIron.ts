@@ -103,6 +103,7 @@ export function useEntrenoIron(): UseEntrenoIron {
           onBorrar: c.acciones.onBorrar,
           onReintentar: c.acciones.onReintentar,
           onCerrarAnuncio: c.acciones.onCerrarAnuncio,
+          onResistencia: () => router.push('/resistencia'),
         },
       },
     },

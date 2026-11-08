@@ -127,6 +127,13 @@ const PIDE_MAS_PALABRAS: readonly string[] = [
 ];
 const PIDE_MAS = new RegExp(String.raw`\b(?:${PIDE_MAS_PALABRAS.join('|')})\b`);
 
+/**
+ * Un entreno de resistencia contado con cifras: lo apunta registrar_entreno, que
+ * solo está en la ruta completa.
+ */
+const ACTO_RESISTENCIA = /\b(?:corrido|corri|nadado|nade|rodado|bici|ciclismo|caminado|andado|camine)\b/;
+const CIFRA_RESISTENCIA = /\d+(?:[.,]\d+)?\s*(?:km|kilometros?|m|metros|min|minutos?|h|horas?)\b/;
+
 const MAX_REGISTRO_CHARS = 300;
 const MAX_REGISTRO_FRASES = 3;
 
@@ -154,6 +161,7 @@ export function rutaDelTurno(texto: unknown, kind: string): Ruta {
   const frases = t.split(/[.!;\n]+/).map((f) => f.trim()).filter(Boolean);
   if (frases.length > MAX_REGISTRO_FRASES) return 'completa';
   if (PIDE_MAS.test(t)) return 'completa';
+  if (ACTO_RESISTENCIA.test(t) && CIFRA_RESISTENCIA.test(t)) return 'completa';
   if (pareceAfirmacion(crudo)) return 'registro';
   const sinPunto = t.replace(/[.!,]+$/g, '').trim();
   return DATOS_SUELTOS.some((re) => re.test(sinPunto)) ? 'registro' : 'completa';

@@ -14,6 +14,7 @@ import { fetchRules, marcarReglaCumplida } from './contract';
 import { fetchCompletionsForDate, fetchQuests } from './data';
 import { fetchPlan, setBlockDone } from './dayplan';
 import { completeQuest } from './engine';
+import { misionCasaConDeporte } from './entrenoEspejo';
 import type { BlockKind } from './plan';
 import { supabase } from './supabase';
 import type { ActLink, Profile } from './types';
@@ -48,7 +49,8 @@ export function restoDelModulo(base: number, eco: Pick<Propagado, 'xpMisiones'> 
   return Math.max(0, base - (eco?.xpMisiones ?? 0));
 }
 
-export async function propagarActo(profile: Profile, link: ActLink, date: string, bloqueId?: string | null): Promise<Propagado> {
+/** `deporte`, si el acto lo sabe: una misión de otro deporte no se salda con él. */
+export async function propagarActo(profile: Profile, link: ActLink, date: string, bloqueId?: string | null, deporte?: string): Promise<Propagado> {
   const out: Propagado = { xpMisiones: 0, xp: 0, marcadas: [], profile, leveledUp: false, newLevel: 0 };
 
   // Una lectura fallida no puede convertirse en "no había misión": el módulo
@@ -70,7 +72,7 @@ export async function propagarActo(profile: Profile, link: ActLink, date: string
   try {
     const [quests, completions] = await leer().catch(leer);
     const hechas = new Map(completions.map((c) => [c.quest_id, c.xp_awarded]));
-    const enlazadas = questsScheduledOn(quests, date).filter((q) => q.link === link);
+    const enlazadas = questsScheduledOn(quests, date).filter((q) => q.link === link && (!deporte || misionCasaConDeporte(q.title, deporte)));
 
     for (const q of enlazadas) {
       if (hechas.has(q.id)) {

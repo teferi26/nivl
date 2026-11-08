@@ -83,6 +83,9 @@ import trabajoagenda from './es/trabajoagenda.json';
 import general from './es/general.json';
 // Primer uso: pistas, términos y glosario (src/components/ayuda).
 import ayuda from './es/ayuda.json';
+// IRON Resistencia: pantallas (src/components/resistencia) y plan de carrera.
+import resistencia from './es/resistencia.json';
+import resistenciaPlan from './es/resistenciaPlan.json';
 
 /** Los catálogos en español: la fuente de verdad de todas las claves. */
 export const RECURSOS_ES = {
@@ -142,6 +145,8 @@ export const RECURSOS_ES = {
   trabajoagenda,
   general,
   ayuda,
+  resistencia,
+  resistenciaPlan,
 };
 
 export type RecursosEs = typeof RECURSOS_ES;

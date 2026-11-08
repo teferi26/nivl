@@ -87,6 +87,7 @@ export function useInicioIron(): UseInicioIron {
     onCatalogo: () => router.push('/iron/catalogo'),
     onDieta: () => router.navigate('/iron-dieta'),
     onCoach: () => router.navigate('/iron-coach'),
+    onResistencia: () => router.push('/resistencia'),
   };
   return {
     gym,

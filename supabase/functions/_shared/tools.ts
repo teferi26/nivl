@@ -10,8 +10,21 @@
 
 import { LIGAS_ACTIVAS } from './funciones.ts';
 import type { Db } from './db.ts';
+import { misionCasaConDeporte } from './entrenoEspejo.ts';
 import { leerDiaYAnterior } from './comprobacion.ts';
 import { etiquetaModos, MODOS_COACH, modosDeEntrada } from './modos.ts';
+import {
+  ajustarSesionPlan,
+  cuandoSalir,
+  DEPORTES_REGISTRO,
+  DISCIPLINAS_PLAN,
+  DISCIPLINAS_SALIDA,
+  fijarCarrera,
+  lineasEntrenosMedidos,
+  NIVELES_CARRERA,
+  registrarEntreno,
+  TIPOS_PRUEBA,
+} from './resistenciaCoach.ts';
 
 const STATS = ['FUE', 'VIT', 'INT', 'AGI', 'PER'];
 
@@ -421,7 +434,7 @@ export const TOOL_DEFS = [
 
   tool(
     'registrar_dato',
-    'Apunta EN SU NOMBRE lo que te cuente por el chat, para que no tenga que ir a marcarlo a otra pantalla: "hoy peso 94,2", "he comido X, Y y Z", "ya he hecho la lectura", "he cumplido lo del alcohol". Es un solo gesto: al registrar el peso o las comidas se marcan solas las misiones y reglas enlazadas. Para las comidas, estima tú las calorías y la proteína del día a partir de lo que describa (cantidades en gramos si las da; si no, pregunta solo lo que cambie el total de verdad) y dile el número. NUNCA la uses para marcar algo que él no ha dicho que hizo: hecho es hecho. El gimnasio y el cardio no se registran aquí — necesitan series, pesos y ritmos, y eso se apunta en su pantalla.',
+    'Apunta EN SU NOMBRE lo que te cuente por el chat, para que no tenga que ir a marcarlo a otra pantalla: "hoy peso 94,2", "he comido X, Y y Z", "ya he hecho la lectura", "he cumplido lo del alcohol". Es un solo gesto: al registrar el peso o las comidas se marcan solas las misiones y reglas enlazadas. Para las comidas, estima tú las calorías y la proteína del día a partir de lo que describa (cantidades en gramos si las da; si no, pregunta solo lo que cambie el total de verdad) y dile el número. NUNCA la uses para marcar algo que él no ha dicho que hizo: hecho es hecho. El gimnasio y el cardio no se registran aquí.',
     {
       tipo: enumOf(
         ['peso', 'comidas', 'mision_hecha', 'regla_cumplida'],
@@ -477,10 +490,10 @@ export const TOOL_DEFS = [
 
   tool(
     'consultar_historial',
-    'Consulta datos que no vienen en el estado inicial. Úsala cuando necesites comprobar algo concreto antes de afirmarlo: si de verdad falló una misión, cuánto levantó hace un mes, qué pesaba en enero, cuánto se gastó en algo. Úsala para comprobar lo que el gladiador dice haber hecho. Devuelve lo más reciente primero. fotos = sus fotos de progreso, solo fecha, pose y peso de ese día (nunca ves la imagen).' + (LIGAS_ACTIVAS ? ' liga = su puesto en cada liga privada ahora (ignora las fechas; nunca datos de otros miembros).' : '') + ' tareas = tareas de campaña que completó en el rango.',
+    'Consulta datos que no vienen en el estado inicial. Úsala cuando necesites comprobar algo concreto antes de afirmarlo: si de verdad falló una misión, cuánto levantó hace un mes, qué pesaba en enero, cuánto se gastó en algo. Úsala para comprobar lo que el gladiador dice haber hecho. Devuelve lo más reciente primero. fotos = sus fotos de progreso, solo fecha, pose y peso de ese día (nunca ves la imagen). entrenos: medidos, sin ruta. bienestar: sueño, fatiga, dolor. plan: sesiones con id.' + (LIGAS_ACTIVAS ? ' liga = su puesto en cada liga privada ahora (ignora las fechas; nunca datos de otros miembros).' : '') + ' tareas = tareas de campaña que completó en el rango.',
     {
       que: enumOf(
-        ['completadas', 'eventos', 'peso', 'gym', 'cardio', 'nutricion', 'comidas', 'diario', 'reglas_rotas', 'hechos', 'movimientos', 'fotos', ...(LIGAS_ACTIVAS ? ['liga'] : []), 'tareas'],
+        ['completadas', 'eventos', 'peso', 'gym', 'cardio', 'nutricion', 'comidas', 'diario', 'reglas_rotas', 'hechos', 'movimientos', 'fotos', ...(LIGAS_ACTIVAS ? ['liga'] : []), 'tareas', 'entrenos', 'bienestar', 'plan'],
         'Qué serie quieres',
       ),
       desde: str('YYYY-MM-DD'),
@@ -496,6 +509,65 @@ export const TOOL_DEFS = [
     'Lo registrado en una fecha y en la anterior: sesiones de gimnasio con sus series (kg×reps, también peso corporal), cardio, peso, parte de comidas, si hay diario y las misiones completadas. Solo lee. Llámala SIEMPRE que diga que ha hecho o registrado algo, antes de contestarle, y cita lo que veas (ejercicio, kg×reps, fecha). Si no aparece, dile qué fechas has mirado y pregúntale dónde lo registró.',
     {
       fecha: opt('YYYY-MM-DD; vacía = hoy'),
+    },
+  ),
+
+  // Solo lectura. La hora la decide mejorVentana; el modelo no la elige.
+  tool(
+    'cuando_salir',
+    'Calcula a qué hora le conviene salir a entrenar: cruza la previsión por horas de su ciudad con su agenda, su forma, su sueño, su fatiga y el plan. Solo lee. Llámala cuando pregunte cuándo salir o si hoy se puede, y antes de darle una hora: nunca inventes el tiempo ni la hora. Si el resultado es no salir por dolor, no lo discutas: dile que pare y lo consulte con un profesional sanitario.',
+    {
+      dia: enumOf(['hoy', 'manana'], 'Qué día miras'),
+      disciplina: enumOpt(DISCIPLINAS_SALIDA, 'Qué va a hacer. Vacía: la que marque el plan de ese día'),
+      duracion_min: { type: 'integer', description: 'Minutos de la salida. 0 para usar los del plan.' },
+    },
+  ),
+
+  tool(
+    'fijar_carrera',
+    'Fija su carrera objetivo y le escribe el plan por semanas hasta esa fecha, calculado por el sistema (fases, descargas, brick y afinado). Sustituye a la carrera activa y a su plan: úsala solo cuando él confirme la prueba, la fecha, las horas reales por semana y su nivel. Para cambiar una sesión suelta, ajustar_sesion_plan.',
+    {
+      tipo: enumOf(TIPOS_PRUEBA, 'La prueba. otra exige distancias'),
+      nombre: opt('Nombre de la prueba'),
+      fecha: str('Día de la prueba, YYYY-MM-DD'),
+      horas_semana: { type: 'number', description: 'Horas reales que puede entrenar por semana, de 2 a 30' },
+      nivel: enumOf(NIVELES_CARRERA, 'Su experiencia real en la disciplina'),
+      natacion_m: { type: 'integer', description: 'Metros de natación. Solo con tipo otra; 0 en el resto.' },
+      bici_m: { type: 'integer', description: 'Metros de bici. Solo con tipo otra; 0 en el resto.' },
+      carrera_m: { type: 'integer', description: 'Metros a pie. Solo con tipo otra; 0 en el resto.' },
+    },
+  ),
+
+  tool(
+    'ajustar_sesion_plan',
+    'Cambia una sesión pendiente del plan de carrera: la mueve, la acorta, cambia la zona o la convierte en descanso. Úsala cuando el estudio (fatiga, sueño, forma) o su agenda lo pidan. Los ids salen en el estudio o en consultar_historial con que=plan. Una sesión ya hecha no se toca. Deja vacío lo que no cambie.',
+    {
+      sesion_id: str('El id de la sesión'),
+      titulo: opt('Nuevo título'),
+      detalle: opt('Las órdenes exactas con números'),
+      fecha: opt('Nuevo día, YYYY-MM-DD'),
+      disciplina: enumOpt(DISCIPLINAS_PLAN, 'Nueva disciplina. descanso deja la sesión a 0 minutos'),
+      duracion_min: { type: 'integer', description: 'Nueva duración en minutos. 0 para no tocarla.' },
+      zona: enumOpt(['Z1', 'Z2', 'Z3', 'Z4', 'Z5', 'ninguna'], 'Nueva zona'),
+      motivo: str('Por qué cambia, en una frase. Se le enseña tal cual.'),
+    },
+  ),
+
+  tool(
+    'registrar_entreno',
+    'Apunta EN SU NOMBRE un entreno de resistencia que te cuenta con sus cifras: "he corrido 10 km en 52 minutos". Marca sola la misión enlazada y el plan, y el XP sale de las mismas tablas y topes que la app. NUNCA la uses para algo que no ha dicho que hizo, ni estimes una duración que no ha dado: pregúntala. Si dice que ya lo ha subido, compruébalo con consultar_dia y no lo apuntes otra vez.',
+    {
+      deporte: enumOf(DEPORTES_REGISTRO, 'Qué hizo'),
+      fecha: opt('YYYY-MM-DD; vacía = hoy'),
+      hora: opt('Hora de inicio HH:MM en 24h, si la dio'),
+      duracion_min: { type: 'number', description: 'Minutos que duró' },
+      distancia_km: { type: 'number', description: 'Kilómetros (natación: 1,5 son 1.500 m). 0 si no la dio.' },
+      fc_media: { type: 'integer', description: 'Pulso medio. 0 si no lo dio.' },
+      desnivel_m: { type: 'integer', description: 'Metros de desnivel positivo. 0 si no lo dio.' },
+      rpe: { type: 'number', description: 'Esfuerzo percibido de 1 a 10. 0 si no lo dio.' },
+      largo_piscina_m: { type: 'integer', description: 'Largo de la piscina en metros. 0 si no aplica.' },
+      notas: opt('Cómo fue, con sus palabras'),
+      es_otra_sesion: bool('true solo si ya hay una sesión de ese tipo ese día y él confirma que esta es otra distinta'),
     },
   ),
 ];
@@ -631,12 +703,15 @@ export function bloqueDelActo<T extends { kind: string; done: boolean }>(link: s
 async function propagarActo(
   ctx: ToolCtx,
   link: string,
-): Promise<{ texto: string; enlazadas: number; pagadoMisiones: number | null }> {
+  opts: { desglose?: boolean; deporte?: string } = {},
+): Promise<{ texto: string; enlazadas: number; pagadoMisiones: number | null; xpAhora: number | null }> {
   const { sb, userId, today } = ctx;
   const weekday = ((new Date(today).getDay() + 6) % 7) + 1;
   const marcadas: string[] = [];
   let enlazadas = 0;
   let pagadoMisiones: number | null = null;
+  // Lo pagado ANTES de marcar, solo si se pide: `xpAhora` es la diferencia.
+  let pagadoAntes: number | null = null;
   try {
     const { data: quests, error } = await sb
       .from('quests')
@@ -647,7 +722,21 @@ async function propagarActo(
       .eq('is_penalty', false)
       .is('acquired_at', null);
     if (error) throw error;
-    const hoy = ((quests ?? []) as any[]).filter((q) => (q.days_of_week ?? []).includes(weekday));
+    const hoy = ((quests ?? []) as any[]).filter(
+      (q) => (q.days_of_week ?? []).includes(weekday) && (!opts.deporte || misionCasaConDeporte(q.title, opts.deporte)),
+    );
+    if (opts.desglose && hoy.length) {
+      const { data: previas, error: e0 } = await sb
+        .from('completions')
+        .select('xp_awarded')
+        .eq('user_id', userId)
+        .eq('date', today)
+        .in('quest_id', hoy.map((q) => q.id));
+      if (e0) throw e0;
+      pagadoAntes = ((previas ?? []) as any[]).reduce((a, c) => a + (c.xp_awarded ?? 0), 0);
+    } else if (opts.desglose) {
+      pagadoAntes = 0;
+    }
     for (const q of hoy) {
       enlazadas += 1;
       try {
@@ -704,7 +793,12 @@ async function propagarActo(
       /* ídem */
     }
   }
-  return { texto: marcadas.length ? ` Marcado solo: ${marcadas.join(', ')}.` : '', enlazadas, pagadoMisiones };
+  return {
+    texto: marcadas.length ? ` Marcado solo: ${marcadas.join(', ')}.` : '',
+    enlazadas,
+    pagadoMisiones,
+    xpAhora: pagadoMisiones !== null && pagadoAntes !== null ? Math.max(0, pagadoMisiones - pagadoAntes) : null,
+  };
 }
 
 // ── L5: fotos, liga y tareas en consultar_historial ─────────────────
@@ -1653,6 +1747,10 @@ export async function executeTool(
         // Sin concepto ni cobrador (auditoría WORK 1011): el coach mide con
         // fecha, importe y categoría; los nombres de terceros no le llegan.
         movimientos: { t: 'transactions', cols: 'date, amount, currency, category, is_internal', dateCol: 'date' },
+        // Sin ruta ni serie de pulso: pesan cientos de KB y son datos de ubicación.
+        entrenos: { t: 'entrenos_medidos', cols: 'id, fecha, deporte, origen, duracion_s, distancia_m, desnivel_m, fc_media, fc_max, rpe, largo_piscina_m, notas', dateCol: 'fecha' },
+        bienestar: { t: 'entreno_bienestar', cols: 'fecha, sueno_h, calidad, fatiga, dolor, dolor_zona, vfc_ms, fc_reposo', dateCol: 'fecha' },
+        plan: { t: 'plan_sesiones', cols: 'id, semana, fecha, disciplina, titulo, detalle, duracion_min, zona, clave, fase, hecha_entreno_id, editada_por_coach, nota_coach', dateCol: 'fecha' },
       };
       // gym_lifts NO tiene fecha propia: la fecha vive en su sesión. Filtrarlo
       // por created_at reventaba con un error de Postgres que además llegaba al
@@ -1746,8 +1844,20 @@ export async function executeTool(
 
     case 'consultar_dia': {
       const fecha = val(input.fecha) ? fechaValida(input.fecha) : ctx.today;
-      return ok(await leerDiaYAnterior(sb, userId, fecha));
+      return ok(`${await leerDiaYAnterior(sb, userId, fecha)}${await lineasEntrenosMedidos(sb, userId, fecha)}`);
     }
+
+    case 'cuando_salir':
+      return ok(await cuandoSalir(ctx, input));
+
+    case 'fijar_carrera':
+      return ok(await fijarCarrera(ctx, input));
+
+    case 'ajustar_sesion_plan':
+      return ok(await ajustarSesionPlan(ctx, input));
+
+    case 'registrar_entreno':
+      return ok(await registrarEntreno(ctx, input, { propagarActo, restoDelModulo }));
 
     default:
       throw new Error(`Herramienta desconocida: ${name}`);

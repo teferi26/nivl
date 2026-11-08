@@ -10,6 +10,7 @@
 //     diarios y una línea «+40 XP» que no entró es mentira.
 
 import { SIN_DATO } from '@/components/ui/sinDato';
+import { t } from '@/i18n';
 import type { Propagado } from './links';
 import { deMisiones, desgloseXp } from './voice';
 
@@ -69,7 +70,7 @@ export function kmES(km: number | null | undefined): string {
  */
 export function anuncioActo(a: { xpMision: number; marcadas: string[]; xpModulo: number; deModulo: string }): string {
   return desgloseXp([
-    { xp: a.xpMision, de: a.marcadas.length > 0 ? deMisiones(a.marcadas) : 'de la misión enlazada' },
+    { xp: a.xpMision, de: a.marcadas.length > 0 ? deMisiones(a.marcadas) : t('resistencia:anuncioXp.misionEnlazada') },
     { xp: a.xpModulo, de: a.deModulo },
   ]);
 }
@@ -92,10 +93,10 @@ export function anuncioCardio(a: {
   esCorreccion: boolean;
   topeDiario: number;
 }): string {
-  const pagado = anuncioActo({ ...a, deModulo: 'a FUE por la sesión' });
+  const pagado = anuncioActo({ ...a, deModulo: t('resistencia:anuncioXp.sesion') });
   if (pagado) return pagado;
-  if (a.esCorreccion) return 'El sistema corrige el registro. El XP de esta sesión ya estaba pagado.';
-  if (a.pedidoModulo > 0) return 'Anotada. Hoy ya has llegado al tope diario de XP: la sesión cuenta igual para tu estudio.';
-  if (a.misionYaPagada) return 'Anotada. La misión de hoy ya estaba marcada y pagada.';
-  return `Anotada. Hoy ya has cobrado el máximo de cardio (${a.topeDiario} XP), pero la sesión cuenta igual para tu estudio.`;
+  if (a.esCorreccion) return t('resistencia:anuncioXp.corrige');
+  if (a.pedidoModulo > 0) return t('resistencia:anuncioXp.tope');
+  if (a.misionYaPagada) return t('resistencia:anuncioXp.yaMarcada');
+  return t('resistencia:anuncioXp.maximo', { tope: a.topeDiario });
 }

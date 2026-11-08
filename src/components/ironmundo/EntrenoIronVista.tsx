@@ -81,6 +81,8 @@ export interface CardioIronProps {
     onBorrar: (s: CardioSession) => void;
     onReintentar: () => void;
     onCerrarAnuncio: () => void;
+    /** Abre Resistencia (carrera, plan y forma). */
+    onResistencia?: () => void;
   };
 }
 
@@ -539,6 +541,15 @@ function Cardio({ c }: { c: CardioIronProps }) {
           <RotuloIron texto={t('ironmundo:cardio.anuncio')} em={t('ironmundo:cerrar')} />
           <Text style={[estilosIron.cuerpo, styles.anuncio]} maxFontSizeMultiplier={1.6}>
             {c.anuncio.texto}
+          </Text>
+        </TarjetaIron>
+      ) : null}
+
+      {c.acciones.onResistencia ? (
+        <TarjetaIron onPress={c.acciones.onResistencia} accessibilityLabel={t('resistencia:entrada.cuerpo')}>
+          <RotuloIron texto={t('resistencia:entrada.rotulo')} em={t('resistencia:entrada.abrir')} />
+          <Text style={[estilosIron.detalle, styles.anuncio]} maxFontSizeMultiplier={1.6}>
+            {t('resistencia:entrada.cuerpo')}
           </Text>
         </TarjetaIron>
       ) : null}
