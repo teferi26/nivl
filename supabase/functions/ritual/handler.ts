@@ -128,6 +128,56 @@ export function cuerpoPush(kind: string): string {
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
+const MOTIVO_PUSH: Record<string, Record<string, string>> = {
+  perfil: {
+    name: 'nombre ofensivo',
+    avatar: 'foto ofensiva',
+    harassment: 'acoso o amenazas',
+    impersonation: 'suplantación',
+  },
+  ia: {
+    danino: 'puede hacer daño',
+    salud: 'consejo de salud peligroso',
+    dinero: 'consejo de dinero peligroso',
+    incorrecto: 'información falsa',
+    ofensivo: 'contenido ofensivo',
+  },
+};
+const TIPO_PUSH: Record<string, string> = { perfil: 'Denuncia de perfil', ia: 'Denuncia de respuesta de IA' };
+
+function plural(n: number, uno: string, varios: string): string {
+  return `${n} ${n === 1 ? uno : varios}`;
+}
+
+/**
+ * El texto del aviso: de qué va, sin datos de nadie. El motivo sale de una lista
+ * cerrada, así que nada escrito por un usuario puede llegar a la notificación.
+ */
+export function cuerpoModeracion(d: {
+  nuevos: number;
+  abiertos: number;
+  denuncias?: unknown;
+  perfiles?: unknown;
+  detalle?: unknown;
+}): string {
+  const cola = d.abiertos > d.nuevos ? ` · ${plural(d.abiertos, 'abierta', 'abiertas')}` : '';
+  // moderation_digest anterior a la 0088: solo trae recuentos.
+  if (typeof d.denuncias !== 'number' || typeof d.perfiles !== 'number') {
+    return `${plural(d.nuevos, 'denuncia o revisión nueva', 'denuncias o revisiones nuevas')} · ${plural(d.abiertos, 'abierta', 'abiertas')}`;
+  }
+  const detalle = (d.detalle ?? {}) as { tipo?: unknown; motivo?: unknown };
+  const tipo = typeof detalle.tipo === 'string' && Object.hasOwn(TIPO_PUSH, detalle.tipo) ? detalle.tipo : null;
+  if (tipo && d.denuncias === 1 && d.perfiles === 0) {
+    const tabla = MOTIVO_PUSH[tipo];
+    const motivo = typeof detalle.motivo === 'string' && Object.hasOwn(tabla, detalle.motivo) ? tabla[detalle.motivo] : null;
+    return `${TIPO_PUSH[tipo]}${motivo ? `: ${motivo}` : ''}${cola}`;
+  }
+  const partes: string[] = [];
+  if (d.denuncias > 0) partes.push(plural(d.denuncias, 'denuncia nueva', 'denuncias nuevas'));
+  if (d.perfiles > 0) partes.push(plural(d.perfiles, 'perfil por revisar', 'perfiles por revisar'));
+  return `${partes.join(' y ') || plural(d.nuevos, 'aviso nuevo', 'avisos nuevos')}${cola}`;
+}
+
 /**
  * Aviso operativo de moderación (propuesta 0037_moderacion.sql).
  *
@@ -136,7 +186,10 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
  * aviso. Si hay alguna, se empuja un push a los dispositivos de las cuentas
  * owner que devuelve la propia RPC.
  *
- *   · Solo recuentos: NI una palabra del contenido de las denuncias.
+ *   · Recuentos y, si hay una sola denuncia, su tipo y su motivo (códigos de
+ *     una lista cerrada): NI una palabra del contenido de las denuncias.
+ *   · Al tocarlo abre /moderacion. Un binario sin esa ruta en su lista
+ *     (rutaSegura) lleva a Hoy, así que el ritual puede salir antes que la app.
  *   · No depende de los consentimientos de IA ni de salud: es operativo y no
  *     llama a ningún modelo.
  *   · Si la RPC aún no existe (42883 / PGRST202) se ignora con un aviso sin
@@ -154,7 +207,7 @@ export async function avisarModeracion(admin: Db): Promise<number> {
       else console.warn('moderation_digest falló: aviso omitido.');
       return 0;
     }
-    const d = data as { nuevos?: unknown; abiertos?: unknown; owners?: unknown } | null;
+    const d = data as { nuevos?: unknown; abiertos?: unknown; owners?: unknown; denuncias?: unknown; perfiles?: unknown; detalle?: unknown } | null;
     const nuevos = Math.max(0, Math.trunc(Number(d?.nuevos) || 0));
     if (!nuevos) return 0;
     const abiertos = Math.max(nuevos, Math.trunc(Number(d?.abiertos) || 0));
@@ -171,7 +224,7 @@ export async function avisarModeracion(admin: Db): Promise<number> {
     const tokens = [...new Set(((filas ?? []) as { token?: unknown }[]).map((t) => t.token).filter((t): t is string => typeof t === 'string' && !!t))];
     if (!tokens.length) return 0;
 
-    const cuerpo = `${nuevos} ${nuevos === 1 ? 'denuncia o revisión nueva' : 'denuncias o revisiones nuevas'} · ${abiertos} ${abiertos === 1 ? 'abierta' : 'abiertas'}`;
+    const cuerpo = cuerpoModeracion({ nuevos, abiertos, denuncias: d?.denuncias, perfiles: d?.perfiles, detalle: d?.detalle });
     // Expo admite hasta 100 mensajes por petición.
     for (let i = 0; i < tokens.length; i += 100) {
       await fetch(EXPO_PUSH, {
@@ -185,8 +238,8 @@ export async function avisarModeracion(admin: Db): Promise<number> {
             sound: 'default',
             priority: 'high',
             channelId: 'sistema',
-            // Sin pantalla de moderación en la app: Hoy (ruta en RUTAS_PERMITIDAS de voice.ts).
-            data: { ruta: '/(tabs)' },
+            // Ruta en RUTAS_PERMITIDAS de voice.ts.
+            data: { ruta: '/moderacion' },
           })),
         ),
       }).catch(() => {});
