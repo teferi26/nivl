@@ -89,6 +89,27 @@ jobs:
             -o "$dir/$GRADLE_ZIP" "https://mirrors.cloud.tencent.com/gradle/$GRADLE_ZIP"
           echo "$GRADLE_SHA256  $dir/$GRADLE_ZIP" | sha256sum -c -
 
+      # El portal de plugins redirige los jar de Kotlin a GitHub Releases, que da
+      # 504 a rachas. Maven Central los sirve directos: va delante del portal.
+      - name: Maven Central primero en Gradle
+        run: |
+          mkdir -p ~/.gradle/init.d
+          cat > ~/.gradle/init.d/central-primero.gradle <<'EOF'
+          def primero = { repos ->
+            def central = repos.mavenCentral()
+            repos.remove(central)
+            repos.addFirst(central)
+          }
+          beforeSettings { s ->
+            primero(s.pluginManagement.repositories)
+            primero(s.buildscript.repositories)
+          }
+          allprojects {
+            primero(buildscript.repositories)
+            primero(repositories)
+          }
+          EOF
+
       - run: npm ci
 
       - run: npm install --global eas-cli@21.2.0
