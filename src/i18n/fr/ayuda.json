@@ -1,0 +1,161 @@
+{
+  "pista": {
+    "entendido": "Compris",
+    "noMostrar": "Ne plus afficher de conseils",
+    "noMostrarA11y": "Ne plus afficher de conseils sur aucun écran"
+  },
+  "termino": {
+    "hint": "Touche pour voir ce que cela signifie",
+    "queSignifica": "Ce que signifie {{termino}}"
+  },
+  "hoja": {
+    "eyebrow": "Ce que ça veut dire",
+    "masEnGlosario": "Plus dans le glossaire"
+  },
+  "glosario": {
+    "eyebrow": "Glossaire",
+    "titulo": "Ce que chaque chose veut dire",
+    "grupo": {
+      "dia": "Ta journée",
+      "progreso": "Ta progression",
+      "habitos": "Habitudes et règles",
+      "campanas": "Campagnes",
+      "ayudantes": "Coach, modes et offres"
+    }
+  },
+  "perfil": {
+    "seccion": "Aide",
+    "glosarioDetalle": "XP, série, rangs et les autres mots du jeu.",
+    "pistas": "Conseils à l'écran",
+    "pistasDetalle": "De courts conseils la première fois que tu vois quelque chose. Les activer ramène aussi ceux que tu as fermés."
+  },
+  "terminos": {
+    "misiones": {
+      "titulo": "Missions",
+      "definicion": "Ce que tu te proposes de faire un jour donné. Accomplie, elle te rapporte de l'XP ; laissée de côté, elle t'en fait perdre.",
+      "detalle": "Les missions bonus sont à part : elles ne donnent pas d'XP et ne comptent pas pour la série. Elles donnent des points bonus."
+    },
+    "dificultad": {
+      "titulo": "Difficulté",
+      "definicion": "À quel point une mission est dure : triviale, facile, moyenne, difficile ou épique. Plus elle est dure, plus elle rapporte d'XP et plus la manquer coûte cher."
+    },
+    "evidencia": {
+      "titulo": "Preuve",
+      "definicion": "Une photo prise sur le moment qui montre que tu as accompli la mission. Elle donne 25 % d'XP en plus, et certaines missions l'exigent."
+    },
+    "cierre": {
+      "titulo": "Clôture",
+      "definicion": "À minuit, le système clôt la journée. Il ajoute un jour à ta série si tu as tenu et fait payer ce qui reste à faire."
+    },
+    "racha": {
+      "titulo": "Série",
+      "definicion": "Les jours d'affilée où tu tiens tes engagements. Un jour compte si tu laisses au plus 30 % de ce qui était prévu.",
+      "detalle": "Tous les 7 jours de série, tes missions donnent 10 % d'XP en plus, jusqu'à 50 %. Si tu en manques trop en une journée, la série retombe à zéro."
+    },
+    "penalizacion": {
+      "titulo": "Pénalité",
+      "definicion": "Ce que tu perds à la clôture pour ce que tu n'as pas fait : la moitié de l'XP de chaque mission, au maximum 150 XP par jour. Le lendemain, une mission te permet de le récupérer.",
+      "detalle": "La mission de rattrapage rend exactement ce que tu as perdu, mais seulement ce jour-là, et elle s'ouvre une fois une mission normale accomplie. Si tu casses ta série plusieurs jours de suite, plus rien n'est retenu à partir du quatrième."
+    },
+    "piedras": {
+      "titulo": "Pierres de protection",
+      "definicion": "Elles sauvent ta série et t'évitent la pénalité des missions le jour où tu flanches. Tu peux en garder jusqu'à 3.",
+      "detalle": "Tu en gagnes une tous les 7 jours d'affilée avec toutes les missions faites. Elle se consomme seule quand une journée casserait ta série. Elle ne couvre pas les règles du contrat."
+    },
+    "pausa": {
+      "titulo": "Pause",
+      "definicion": "Arrête le système quand tu en as besoin, depuis ton Profil. Tant qu'elle dure, ta série ne bouge pas et rien n'est retenu."
+    },
+    "xp": {
+      "titulo": "XP",
+      "definicion": "Les points que tu gagnes en accomplissant tes missions et en notant ce que tu fais. Ils font monter ton niveau.",
+      "detalle": "Plus une mission est dure, plus elle rapporte : triviale 10, facile 25, moyenne 50, difficile 100 et épique 250."
+    },
+    "nivel": {
+      "titulo": "Niveau",
+      "definicion": "Mesure ton avancée globale. Tu montes en cumulant de l'XP, et chaque niveau coûte plus cher que le précédent.",
+      "detalle": "Si une pénalité te retire de l'XP, ton niveau peut baisser. Ton rang, non."
+    },
+    "rango": {
+      "titulo": "Rang",
+      "definicion": "Ta place dans l'arène, du E, au départ, au S, tout en haut. Une fois gagné, il ne se perd jamais.",
+      "detalle": "Pour monter, il faut du niveau et des jours actifs. L'XP seule ne suffit pas."
+    },
+    "stats": {
+      "titulo": "Attributs",
+      "definicion": "Cinq mesures de ce que tu améliores : force, vitalité, intelligence, agilité et perception. Chaque mission en entraîne une.",
+      "detalle": "Chaque tranche de 100 XP gagnée dans un attribut ajoute 1 point."
+    },
+    "FUE": {
+      "titulo": "Force (FOR)",
+      "definicion": "L'attribut de l'exercice. Il monte avec la salle, le cardio et les missions d'entraînement."
+    },
+    "VIT": {
+      "titulo": "Vitalité (VIT)",
+      "definicion": "L'attribut de la santé. Il monte en dormant bien, en mangeant bien et en prenant soin de ton corps."
+    },
+    "INT": {
+      "titulo": "Intelligence (INT)",
+      "definicion": "L'attribut du travail mental. Il monte en étudiant, en lisant et en te concentrant sur ce qui est difficile."
+    },
+    "AGI": {
+      "titulo": "Agilité (AGI)",
+      "definicion": "L'attribut de la constance. Il monte avec les petites routines que tu répètes jour après jour."
+    },
+    "PER": {
+      "titulo": "Perception (PER)",
+      "definicion": "L'attribut de la réflexion. Il monte avec le journal et le regard que tu portes sur ta progression."
+    },
+    "forja": {
+      "titulo": "En forge",
+      "definicion": "Une habitude que tu es encore en train de construire. Le système compte ses jours d'affilée, seulement ceux où elle était prévue, jusqu'à 21."
+    },
+    "adquirido": {
+      "titulo": "Acquise ou forgée",
+      "definicion": "Une habitude tenue 21 jours d'affilée que tu considères comme acquise. Elle n'est plus demandée, ne peut plus casser ta série, et te rapporte 100 XP une seule fois."
+    },
+    "contrato": {
+      "titulo": "Contrat",
+      "definicion": "Tes règles signées : ce à quoi tu t'engages chaque jour. Chaque règle a sa conséquence si tu l'enfreins.",
+      "detalle": "Une règle non cochée à la clôture compte comme enfreinte : elle coûte 25 XP et te laisse une conséquence pour le lendemain. Le décompte commence le jour où tu coches la première."
+    },
+    "puntosBonus": {
+      "titulo": "Points bonus (PB)",
+      "definicion": "Ce que rapportent les missions bonus. Tu les échanges contre du repos : 10 PB valent une heure, avec un maximum de 30 PB par semaine."
+    },
+    "campana": {
+      "titulo": "Campagne",
+      "definicion": "Un grand objectif découpé en étapes, avec un butin à la fin. Selon ton profil, elle s'appelle projet, objectif, bloc ou matière."
+    },
+    "jefe": {
+      "titulo": "Boss",
+      "definicion": "Une étape décisive d'une campagne. Elle rapporte deux fois plus d'XP qu'une étape normale de même difficulté."
+    },
+    "botin": {
+      "titulo": "Butin",
+      "definicion": "L'XP que tu gagnes une seule fois en terminant une campagne. Elle va de 50 à 600 XP selon son rang."
+    },
+    "coach": {
+      "titulo": "Coach",
+      "definicion": "Ton coach IA. Il prépare ton plan du jour, te prévient et répond à tes questions ; il fait partie de NIVL Pro."
+    },
+    "oraculo": {
+      "titulo": "Oracle",
+      "definicion": "Donne-lui un objectif et il le transforme en missions datées et mesurables. Tu choisis lesquelles accepter ; il fait partie de NIVL Pro."
+    },
+    "modos": {
+      "titulo": "Modes",
+      "definicion": "Des arènes pour te concentrer sur une partie de ta vie : IRON pour la salle et l'alimentation, FOCUS pour les études, WORK pour le travail et FOUNDER pour ton projet. Une mission avec un mode compte pour ton niveau et pour celui de ce mode.",
+      "detalle": "NIVL voit tout et reste toujours actif. Les autres, c'est toi qui les choisis."
+    },
+    "elite": {
+      "titulo": "Élite",
+      "definicion": "L'offre la plus haute : le coach à pleine puissance, le mode approfondi et un badge de laurier. Elle donne du prestige, pas des points.",
+      "detalle": "Avec Élite, tu peux aussi demander une place dans un ludus."
+    },
+    "ludus": {
+      "titulo": "Ludus",
+      "definicion": "Ton école de gladiateurs : un groupe de 5 à 8 Élite avec le même objectif, qui se mesurent chaque semaine. Pas de chat, juste le tableau des scores."
+    }
+  }
+}

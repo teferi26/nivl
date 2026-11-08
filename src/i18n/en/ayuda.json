@@ -1,0 +1,161 @@
+{
+  "pista": {
+    "entendido": "Got it",
+    "noMostrar": "Don't show more tips",
+    "noMostrarA11y": "Don't show more tips on any screen"
+  },
+  "termino": {
+    "hint": "Tap to see what it means",
+    "queSignifica": "What {{termino}} means"
+  },
+  "hoja": {
+    "eyebrow": "What it means",
+    "masEnGlosario": "More in the glossary"
+  },
+  "glosario": {
+    "eyebrow": "Glossary",
+    "titulo": "What everything means",
+    "grupo": {
+      "dia": "Your day",
+      "progreso": "Your progress",
+      "habitos": "Habits and rules",
+      "campanas": "Campaigns",
+      "ayudantes": "Coach, modes and plans"
+    }
+  },
+  "perfil": {
+    "seccion": "Help",
+    "glosarioDetalle": "XP, streak, ranks and the rest of the game's words.",
+    "pistas": "On-screen tips",
+    "pistasDetalle": "Short tips the first time you see something. Turning them on also brings back the ones you closed."
+  },
+  "terminos": {
+    "misiones": {
+      "titulo": "Missions",
+      "definicion": "What you set out to do on a given day. Complete one and you earn XP; leave it undone and you lose some.",
+      "detalle": "Extra missions are separate: they give no XP and don't count for your streak. They give Bonus Points."
+    },
+    "dificultad": {
+      "titulo": "Difficulty",
+      "definicion": "How hard a mission is: trivial, easy, medium, hard or epic. The harder it is, the more XP it gives and the more it costs to miss."
+    },
+    "evidencia": {
+      "titulo": "Proof",
+      "definicion": "A photo taken on the spot that shows you did the mission. It gives 25% more XP, and some missions require it."
+    },
+    "cierre": {
+      "titulo": "Day close",
+      "definicion": "At midnight the system closes the day. It adds to your streak if you delivered and charges for what was left undone."
+    },
+    "racha": {
+      "titulo": "Streak",
+      "definicion": "The days in a row you deliver. A day counts if you leave at most 30% of what was scheduled undone.",
+      "detalle": "Every 7 days of streak, your missions give 10% more XP, up to 50% more. If you miss too much in a day, the streak goes back to zero."
+    },
+    "penalizacion": {
+      "titulo": "Penalty",
+      "definicion": "What you lose at day close for what you didn't do: half the XP of each mission, up to 150 XP a day. The next day you get a mission to win it back.",
+      "detalle": "The recovery mission returns exactly what you lost, but only that day, and it unlocks once you complete a normal mission. If you break your streak several days running, nothing is charged from the fourth day on."
+    },
+    "piedras": {
+      "titulo": "Protection Stones",
+      "definicion": "They save your streak and spare you the mission penalty on a day you fall short. You can hold up to 3.",
+      "detalle": "You earn one every 7 days in a row with every mission done. It's spent automatically when a day would break your streak. It doesn't cover contract rules."
+    },
+    "pausa": {
+      "titulo": "Pause",
+      "definicion": "Stops the system when you need it, from Profile. While it lasts, your streak doesn't move and nothing is charged."
+    },
+    "xp": {
+      "titulo": "XP",
+      "definicion": "Points you earn by completing your missions and logging what you do. They take you up in level.",
+      "detalle": "The harder a mission, the more it gives: trivial 10, easy 25, medium 50, hard 100 and epic 250."
+    },
+    "nivel": {
+      "titulo": "Level",
+      "definicion": "How far you've come overall. You go up by collecting XP, and each level costs more than the last.",
+      "detalle": "If a penalty takes XP away, your level can drop. Your rank can't."
+    },
+    "rango": {
+      "titulo": "Rank",
+      "definicion": "Your standing in the arena, from E, where you start, to S, the highest. Once earned, it's never lost.",
+      "detalle": "Moving up takes both level and active days. XP alone isn't enough."
+    },
+    "stats": {
+      "titulo": "Attributes",
+      "definicion": "Five measures of where you're improving: strength, vitality, intelligence, agility and perception. Each mission trains one.",
+      "detalle": "Every 100 XP earned in an attribute adds 1 point."
+    },
+    "FUE": {
+      "titulo": "Strength (STR)",
+      "definicion": "The exercise attribute. It grows with the gym, cardio and training missions."
+    },
+    "VIT": {
+      "titulo": "Vitality (VIT)",
+      "definicion": "The health attribute. It grows with good sleep, good food and looking after your body."
+    },
+    "INT": {
+      "titulo": "Intelligence (INT)",
+      "definicion": "The mental work attribute. It grows with studying, reading and focusing on hard things."
+    },
+    "AGI": {
+      "titulo": "Agility (AGI)",
+      "definicion": "The consistency attribute. It grows with the small routines you repeat day after day."
+    },
+    "PER": {
+      "titulo": "Perception (PER)",
+      "definicion": "The reflection attribute. It grows with your journal and with reviewing how things are going."
+    },
+    "forja": {
+      "titulo": "In the forge",
+      "definicion": "A habit you're still building. The system counts its days in a row, only the ones it was due, up to 21."
+    },
+    "adquirido": {
+      "titulo": "Acquired or forged",
+      "definicion": "A habit you've kept for 21 days in a row and now consider done. It's no longer asked of you and can't break your streak, and you earn 100 XP once."
+    },
+    "contrato": {
+      "titulo": "Contract",
+      "definicion": "Your signed rules: what you commit to every day. Each rule has its own consequence if you break it.",
+      "detalle": "A rule left unmarked at day close counts as broken: it costs 25 XP and leaves you a consequence for the next day. It starts counting the day you mark your first one."
+    },
+    "puntosBonus": {
+      "titulo": "Bonus Points (PB)",
+      "definicion": "What you earn from extra missions. You trade them for rest: 10 PB is one hour, up to 30 PB a week."
+    },
+    "campana": {
+      "titulo": "Campaign",
+      "definicion": "A big goal split into tasks, with loot at the end. Depending on your profile it's called a project, goal, block or subject."
+    },
+    "jefe": {
+      "titulo": "Boss",
+      "definicion": "A decisive task within a campaign. It gives twice the XP of a normal task of the same difficulty."
+    },
+    "botin": {
+      "titulo": "Loot",
+      "definicion": "The XP you earn once when you finish a campaign. It ranges from 50 to 600 XP depending on its rank."
+    },
+    "coach": {
+      "titulo": "Coach",
+      "definicion": "Your AI coach. It prepares your daily plan, reminds you of things and answers your questions; it's part of NIVL Pro."
+    },
+    "oraculo": {
+      "titulo": "Oracle",
+      "definicion": "Tell it a goal and it turns it into missions with a date and a measure. You choose which to accept; it's part of NIVL Pro."
+    },
+    "modos": {
+      "titulo": "Modes",
+      "definicion": "Arenas for focusing on one part of your life: IRON for gym and diet, FOCUS for study, WORK for work and FOUNDER for your project. A mission with a mode adds to your level and to that mode's.",
+      "detalle": "NIVL sees everything and is always on. The others are your choice."
+    },
+    "elite": {
+      "titulo": "Élite",
+      "definicion": "The top plan: the coach at full power, deep mode and a laurel badge. It gives status, not points.",
+      "detalle": "With Élite you can also ask for a place in a ludus."
+    },
+    "ludus": {
+      "titulo": "Ludus",
+      "definicion": "Your gladiator school: a group of 5 to 8 Élite members with the same goal, measured every week. No chat, just the scoreboard."
+    }
+  }
+}

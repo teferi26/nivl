@@ -12,6 +12,7 @@ import { ActivityIndicator, Linking, StyleSheet, Text, View } from 'react-native
 import { HealthPrivacySection } from '@/components/ConsentimientoSalud';
 import { MedicionUsoSection } from '@/components/consentimiento/ConsentimientoAnalitica';
 import { Version } from '@/components/Version';
+import { AyudaPerfil } from '@/components/ayuda';
 import { Button, Card, Chip, ChipWrap, Row, RowValue, Section, Tag } from '@/components/ui';
 import { Interruptor } from '@/components/ui/Interruptor';
 import { ink, space, type as tipo } from '@/design/tokens';
@@ -299,6 +300,7 @@ export function PerfilAjustes({
       {salud ?? (sinSalud ? null : <HealthPrivacySection />)}
       {/* Perfil > Privacidad > Medición de uso (consulta el móvil y el flag: fuera de la galería). */}
       {sinSalud ? null : <MedicionUsoSection />}
+      <AyudaPerfil />
       <Section title={t('perfil:ajustes.cuenta')}>
         <Card padded={false} style={styles.lista}>
           <View ref={filaExportar} collapsable={false}>

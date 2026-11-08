@@ -1,0 +1,161 @@
+{
+  "pista": {
+    "entendido": "Entendido",
+    "noMostrar": "No mostrar más pistas",
+    "noMostrarA11y": "No mostrar más pistas en ninguna pantalla"
+  },
+  "termino": {
+    "hint": "Toca para ver qué significa",
+    "queSignifica": "Qué significa {{termino}}"
+  },
+  "hoja": {
+    "eyebrow": "Qué significa",
+    "masEnGlosario": "Más en el glosario"
+  },
+  "glosario": {
+    "eyebrow": "Glosario",
+    "titulo": "Qué significa cada cosa",
+    "grupo": {
+      "dia": "Tu día",
+      "progreso": "Tu progreso",
+      "habitos": "Hábitos y normas",
+      "campanas": "Campañas",
+      "ayudantes": "Coach, modos y planes"
+    }
+  },
+  "perfil": {
+    "seccion": "Ayuda",
+    "glosarioDetalle": "XP, racha, rangos y el resto de palabras del juego.",
+    "pistas": "Pistas en pantalla",
+    "pistasDetalle": "Consejos cortos la primera vez que ves algo. Al activarlas vuelven también las que ya cerraste."
+  },
+  "terminos": {
+    "misiones": {
+      "titulo": "Misiones",
+      "definicion": "Lo que te propones hacer un día concreto. Si la completas ganas XP y si la dejas sin hacer pierdes parte.",
+      "detalle": "Las misiones extra son aparte: no dan XP ni cuentan para la racha, dan Puntos Bonus."
+    },
+    "dificultad": {
+      "titulo": "Dificultad",
+      "definicion": "Lo dura que es una misión: trivial, fácil, media, difícil o épica. Cuanto más dura, más XP da y más cuesta fallarla."
+    },
+    "evidencia": {
+      "titulo": "Evidencia",
+      "definicion": "Una foto hecha en el momento que demuestra que has cumplido la misión. Da un 25 % más de XP y algunas misiones la exigen."
+    },
+    "cierre": {
+      "titulo": "Cierre",
+      "definicion": "A medianoche el sistema cierra el día. Suma a tu racha si has cumplido y cobra lo que quedó sin hacer."
+    },
+    "racha": {
+      "titulo": "Racha",
+      "definicion": "Los días seguidos que cumples. Un día vale si dejas sin hacer, como mucho, el 30 % de lo programado.",
+      "detalle": "Cada 7 días de racha tus misiones dan un 10 % más de XP, hasta un 50 % más. Si un día fallas más de la cuenta, la racha vuelve a cero."
+    },
+    "penalizacion": {
+      "titulo": "Penalización",
+      "definicion": "Lo que pierdes al cierre por lo que no hiciste: la mitad del XP de cada misión, con un máximo de 150 XP al día. Al día siguiente tienes una misión para recuperarlo.",
+      "detalle": "La misión de recuperación devuelve justo lo perdido, pero solo vale ese día y se abre al completar una misión normal. Si rompes la racha varios días seguidos, desde el cuarto ya no se cobra nada."
+    },
+    "piedras": {
+      "titulo": "Piedras de protección",
+      "definicion": "Salvan tu racha y te libran de la penalización de las misiones el día que fallas. Puedes guardar hasta 3.",
+      "detalle": "Ganas una cada 7 días seguidos con todas las misiones hechas. Se gasta sola cuando un día te rompería la racha. No cubre las reglas del contrato."
+    },
+    "pausa": {
+      "titulo": "Pausa",
+      "definicion": "Detiene el sistema cuando lo necesitas, desde Perfil. Mientras dura, la racha no sube ni baja y no se te cobra nada."
+    },
+    "xp": {
+      "titulo": "XP",
+      "definicion": "Puntos que ganas al cumplir tus misiones y registrar lo que haces. Sirven para subir de nivel.",
+      "detalle": "Una misión da más cuanto más dura es: trivial 10, fácil 25, media 50, difícil 100 y épica 250."
+    },
+    "nivel": {
+      "titulo": "Nivel",
+      "definicion": "Mide cuánto has avanzado en total. Subes al juntar XP y cada nivel cuesta más que el anterior.",
+      "detalle": "Si una penalización te quita XP, el nivel puede bajar. El rango no."
+    },
+    "rango": {
+      "titulo": "Rango",
+      "definicion": "Tu categoría en la arena, de la E, la inicial, a la S, la más alta. Una vez ganado no se pierde.",
+      "detalle": "Para subir hacen falta nivel y días activos. El XP por sí solo no basta."
+    },
+    "stats": {
+      "titulo": "Atributos",
+      "definicion": "Cinco medidas de en qué estás mejorando: fuerza, vitalidad, inteligencia, agilidad y percepción. Cada misión entrena una.",
+      "detalle": "Cada 100 XP ganados en un atributo suman 1 punto."
+    },
+    "FUE": {
+      "titulo": "Fuerza (FUE)",
+      "definicion": "El atributo del ejercicio. Sube con el gimnasio, el cardio y las misiones de entrenar."
+    },
+    "VIT": {
+      "titulo": "Vitalidad (VIT)",
+      "definicion": "El atributo de la salud. Sube con dormir bien, comer bien y cuidar tu cuerpo."
+    },
+    "INT": {
+      "titulo": "Inteligencia (INT)",
+      "definicion": "El atributo del trabajo mental. Sube con estudiar, leer y concentrarte en lo difícil."
+    },
+    "AGI": {
+      "titulo": "Agilidad (AGI)",
+      "definicion": "El atributo de la constancia. Sube con las rutinas pequeñas que repites día tras día."
+    },
+    "PER": {
+      "titulo": "Percepción (PER)",
+      "definicion": "El atributo de la reflexión. Sube con el diario y con revisar cómo te va."
+    },
+    "forja": {
+      "titulo": "En forja",
+      "definicion": "Un hábito que aún estás construyendo. El sistema cuenta sus días seguidos, solo los que te tocaba, hasta llegar a 21."
+    },
+    "adquirido": {
+      "titulo": "Adquirido o forjado",
+      "definicion": "Un hábito que has cumplido 21 días seguidos y das por hecho. Ya no se te pide ni puede romperte la racha, y ganas 100 XP una sola vez."
+    },
+    "contrato": {
+      "titulo": "Contrato",
+      "definicion": "Tus reglas firmadas: lo que te comprometes a cumplir cada día. Cada regla lleva su consecuencia si la rompes.",
+      "detalle": "Una regla sin marcar al cierre cuenta como rota: cuesta 25 XP y te deja una consecuencia para el día siguiente. Empieza a contar el día que marcas la primera."
+    },
+    "puntosBonus": {
+      "titulo": "Puntos Bonus (PB)",
+      "definicion": "Lo que ganas con las misiones extra. Se canjean por descanso: 10 PB son una hora, con un máximo de 30 PB a la semana."
+    },
+    "campana": {
+      "titulo": "Campaña",
+      "definicion": "Un objetivo grande partido en tareas, con botín al terminarlo. Según tu perfil se llama proyecto, objetivo, bloque o asignatura."
+    },
+    "jefe": {
+      "titulo": "Jefe",
+      "definicion": "Una tarea decisiva dentro de una campaña. Da el doble de XP que una tarea normal de su dificultad."
+    },
+    "botin": {
+      "titulo": "Botín",
+      "definicion": "El XP que ganas una sola vez al terminar una campaña. Va de 50 a 600 XP según su rango."
+    },
+    "coach": {
+      "titulo": "Coach",
+      "definicion": "Tu entrenador con inteligencia artificial. Te prepara el plan del día, te avisa y responde a lo que le preguntes; es parte de NIVL Pro."
+    },
+    "oraculo": {
+      "titulo": "Oráculo",
+      "definicion": "Le dices un objetivo y lo convierte en misiones con fecha y medida. Tú eliges cuáles aceptar; es parte de NIVL Pro."
+    },
+    "modos": {
+      "titulo": "Modos",
+      "definicion": "Arenas para centrarte en una parte de tu vida: IRON para gimnasio y dieta, FOCUS para estudio, WORK para trabajo y FOUNDER para tu proyecto. Una misión con modo suma a tu nivel y al de ese modo.",
+      "detalle": "NIVL lo ve todo y siempre está activo. Los demás los eliges tú."
+    },
+    "elite": {
+      "titulo": "Élite",
+      "definicion": "El plan más alto: el coach a máxima potencia, modo profundo e insignia de laurel. Da estatus, no puntos.",
+      "detalle": "Con Élite también puedes pedir plaza en un ludus."
+    },
+    "ludus": {
+      "titulo": "Ludus",
+      "definicion": "Tu escuela de gladiadores: un grupo de 5 a 8 miembros Élite con el mismo objetivo que se miden cada semana. No hay chat, solo el marcador."
+    }
+  }
+}
