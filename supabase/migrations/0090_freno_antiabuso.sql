@@ -11,6 +11,8 @@ begin;
 -- El freno es, como mucho, lo que queda al mes de lo que paga cada plan: precio
 -- sin IVA del 21 % y con la comisión del 15 % de la tienda (docs/PRECIOS.md), a
 -- 1 $ = 0,93 €. Si cambia un precio, hay que rehacer esta cuenta.
+-- Planes antiguos de la web: 6 $ cubre el de menor ingreso.
+update public.ai_plans set monthly_budget_micro_usd = 6000000, deep_budget_micro_usd = 0 where plan in ('mensual', 'anual');
 update public.ai_plans set monthly_budget_micro_usd = 9000000, deep_budget_micro_usd = 0 where plan = 'pro_mensual';
 update public.ai_plans set monthly_budget_micro_usd = 6000000, deep_budget_micro_usd = 0 where plan = 'pro_anual';
 update public.ai_plans set monthly_budget_micro_usd = 22000000, deep_budget_micro_usd = 5500000 where plan = 'elite_mensual';
