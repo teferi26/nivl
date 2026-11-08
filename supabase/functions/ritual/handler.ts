@@ -145,6 +145,10 @@ const MOTIVO_PUSH: Record<string, Record<string, string>> = {
 };
 const TIPO_PUSH: Record<string, string> = { perfil: 'Denuncia de perfil', ia: 'Denuncia de respuesta de IA' };
 
+export function tituloModeracion(nuevos: number): string {
+  return nuevos === 1 ? 'Moderación: 1 caso nuevo' : `Moderación: ${nuevos} casos nuevos`;
+}
+
 function plural(n: number, uno: string, varios: string): string {
   return `${n} ${n === 1 ? uno : varios}`;
 }
@@ -233,7 +237,7 @@ export async function avisarModeracion(admin: Db): Promise<number> {
         body: JSON.stringify(
           tokens.slice(i, i + 100).map((to) => ({
             to,
-            title: 'Moderación',
+            title: tituloModeracion(nuevos),
             body: cuerpo,
             sound: 'default',
             priority: 'high',

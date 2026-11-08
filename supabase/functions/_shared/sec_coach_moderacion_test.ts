@@ -85,7 +85,7 @@ Deno.test('moderación: nuevos > 0 envía solo a los dispositivos de los owners,
     const mensajes = enviados[0].body as { to: string; title: string; body: string; data?: unknown }[];
     deepEqual(mensajes.map((m) => m.to).sort(), ['ExponentPushToken[ownerA]', 'ExponentPushToken[ownerB]']);
     for (const m of mensajes) {
-      equal(m.title, 'Moderación');
+      equal(m.title, 'Moderación: 2 casos nuevos');
       equal(m.body, '2 denuncias o revisiones nuevas · 5 abiertas');
       deepEqual(m.data, { ruta: '/moderacion' }, 'solo la ruta de la bandeja, sin contenido');
     }

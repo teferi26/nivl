@@ -197,6 +197,14 @@ export function PerfilVista({ datos, error, desde, nombre, subiendoFoto, accione
                 onPress={() => router.push('/moderacion' as never)}
               />
             ) : null}
+            {datos.esAdmin ? (
+              <FilaArena
+                icono="stats-chart-outline"
+                titulo="Métricas" // i18n-ok
+                detalle="Usuarios, altas, retención y opiniones" // i18n-ok
+                onPress={() => router.push('/metricas' as never)}
+              />
+            ) : null}
           </View>
         </Section>
       </Entrada>
