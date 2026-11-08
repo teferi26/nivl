@@ -10,7 +10,8 @@ import { construirEstudioEconomico } from './finance.ts';
 import type { Db } from './db.ts';
 import { kindLines } from './kinds.ts';
 import { leerRegistros, lineasDelDia } from './comprobacion.ts';
-import { etiquetaModos } from './modos.ts';
+import { etiquetaModos, type ModoCoach } from './modos.ts';
+import { construirEstudioTrabajo } from './trabajo.ts';
 
 // Espejo de levelFromXp/rankForLevel de src/lib/game.ts. La fuente de verdad
 // es game.ts: si allí cambia la curva, hay que tocar aquí. Se replica porque
@@ -42,6 +43,7 @@ const ENLACE: Record<string, string> = {
   nutricion: 'el parte de comidas',
   peso: 'el pesaje',
   diario: 'el diario',
+  trabajo: 'el bloque de trabajo',
 };
 
 // Espejo de mantenimientoKcal en src/lib/bodymath.ts (allí están los tests).
@@ -251,6 +253,7 @@ export async function buildContext(
   sb: Db,
   userId: string,
   today: string,
+  opciones: { modo?: ModoCoach | null } = {},
 ): Promise<BuiltContext> {
   await requireHealth(sb, userId);
   const since14 = new Date(new Date(today).getTime() - 14 * 86400000).toISOString().slice(0, 10);
@@ -699,13 +702,15 @@ export async function buildContext(
   // Los estudios van al final: son las conclusiones sobre las que programa.
   // En paralelo porque son dos barridos independientes de tablas distintas y
   // encadenarlos añade su latencia entera a cada turno.
-  const [estudio, economia] = await Promise.all([
+  const [estudio, economia, trabajo] = await Promise.all([
     construirEstudio(sb, userId, today),
     construirEstudioEconomico(sb, userId, today),
+    // Solo en modo work. Va al final y con título «## Trabajo ahora», que partirEstado manda al turno.
+    opciones.modo === 'work' ? construirEstudioTrabajo(sb, userId, today, p.timezone) : Promise.resolve(''),
   ]);
 
   return {
-    text: `${lines.join('\n')}\n\n${estudio}\n\n${economia}`,
+    text: `${lines.join('\n')}\n\n${estudio}\n\n${economia}${trabajo ? `\n\n${trabajo}` : ''}`,
     dossier: (dossierRes.data as any)?.content ?? '',
     locale: typeof p.locale === 'string' ? p.locale : null,
   };

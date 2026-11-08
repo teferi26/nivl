@@ -25,7 +25,19 @@ export interface EntradaWork {
 
 export const MOVIMIENTOS_EN_INICIO = 6;
 
-export function derivarWork(e: EntradaWork, hoy: string, brief: { texto: string | null; estado: EstadoBrief }): DatosWorkVista {
+/** De dónde sale lo que se lee en el brief. */
+export type OrigenBrief = { tipo: 'ia'; generado: string | null } | { tipo: 'cifras'; mesAbierto: boolean };
+
+/** Desde el día 25 ya se ve el brief del mes en curso: aún no ha cerrado. */
+export function mesAbierto(mesBrief: string, hoy: string): boolean {
+  return mesBrief >= mesDe(hoy);
+}
+
+export function origenBrief(brief: { texto: string | null; generado?: string | null }, mesBrief: string, hoy: string): OrigenBrief {
+  return brief.texto ? { tipo: 'ia', generado: brief.generado ?? null } : { tipo: 'cifras', mesAbierto: mesAbierto(mesBrief, hoy) };
+}
+
+export function derivarWork(e: EntradaWork, hoy: string, brief: { texto: string | null; estado: EstadoBrief; generado?: string | null }): DatosWorkVista {
   const mes = mesDe(hoy);
   const vista = vistaGeneral(e.cuentas, e.movs);
   const mesBrief = mesDelBrief(hoy);
@@ -50,6 +62,6 @@ export function derivarWork(e: EntradaWork, hoy: string, brief: { texto: string 
       .slice(0, MOVIMIENTOS_EN_INICIO),
     nombresCuenta: Object.fromEntries(e.cuentas.map((c) => [c.id, c.name])),
     propias: e.categorias,
-    brief: { mes: mesBrief, numeros, texto: brief.texto, estado: sinDatos && !brief.texto ? 'sin_datos' : brief.estado },
+    brief: { mes: mesBrief, numeros, texto: brief.texto, estado: sinDatos && !brief.texto ? 'sin_datos' : brief.estado, origen: origenBrief(brief, mesBrief, hoy) },
   };
 }

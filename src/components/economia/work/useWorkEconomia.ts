@@ -27,7 +27,6 @@ import {
   archivarCuenta,
   bajaFijo,
   borrarMovimiento,
-  briefGuardado,
   cargarWork,
   crearCategoria,
   crearCuenta,
@@ -76,6 +75,7 @@ import {
   type HojaMovimientoProps,
   type HojaTransferenciaProps,
 } from './HojasWork';
+import { briefConFecha } from '@/work/datosBrief';
 import { euros } from './nombres';
 import type { FilaRevision, RevisionExtractoVistaProps } from './RevisionExtractoVista';
 import type { EstadoBrief, WorkEconomiaVistaProps } from './WorkEconomiaVista';
@@ -114,7 +114,7 @@ export function useWorkEconomia(modo: 'work' | 'founder' = 'work'): UsoWorkEcono
   const [error, setError] = useState<string | null>(null);
   const [refrescando, setRefrescando] = useState(false);
   const [aviso, setAviso] = useState<string | null>(null);
-  const [brief, setBrief] = useState<{ texto: string | null; estado: EstadoBrief }>({ texto: null, estado: 'sin_texto' });
+  const [brief, setBrief] = useState<{ texto: string | null; estado: EstadoBrief; generado?: string | null }>({ texto: null, estado: 'sin_texto' });
   const cargando = useRef(false);
 
   const cargar = useCallback(async () => {
@@ -150,8 +150,8 @@ export function useWorkEconomia(modo: 'work' | 'founder' = 'work'): UsoWorkEcono
       setDatos(c);
       setEstado('listo');
       setError(null);
-      const texto = await briefGuardado(mesDelBrief(hoy));
-      setBrief((b) => (b.estado === 'pidiendo' ? b : { texto, estado: texto ? 'listo' : b.estado === 'sin_pro' ? 'sin_pro' : 'sin_texto' }));
+      const g = await briefConFecha(mesDelBrief(hoy));
+      setBrief((b) => (b.estado === 'pidiendo' ? b : { texto: g?.texto ?? null, generado: g?.generado ?? null, estado: g ? 'listo' : b.estado === 'sin_pro' ? 'sin_pro' : 'sin_texto' }));
     } catch (e) {
       setError(mensajeSistema(e));
       setEstado('error');
@@ -578,8 +578,11 @@ export function useWorkEconomia(modo: 'work' | 'founder' = 'work'): UsoWorkEcono
     if (!(await consentimiento.asegurar())) return;
     setBrief({ texto: null, estado: 'pidiendo' });
     try {
-      const r = await pedirBrief(mesDelBrief(hoy));
-      setBrief({ texto: r.texto, estado: r.texto ? 'listo' : 'sin_texto' });
+      const mes = mesDelBrief(hoy);
+      const r = await pedirBrief(mes);
+      // La fecha real es la de la fila (puede ser un brief ya escrito antes).
+      const g = r.texto ? await briefConFecha(mes) : null;
+      setBrief({ texto: r.texto, generado: g?.generado ?? null, estado: r.texto ? 'listo' : 'sin_texto' });
     } catch (e) {
       if (e instanceof CoachAccessError && e.reason === 'sin_suscripcion') {
         setBrief({ texto: null, estado: 'sin_pro' });

@@ -1,4 +1,4 @@
-// NIVL · Mundo WORK: la agenda (bloques del plan y eventos).
-import { PantallaMundoAgenda } from '@/components/modos/mundo/PantallasMundo';
+// NIVL · Mundo WORK: la agenda de trabajo.
+import { PantallaWorkAgenda } from '@/components/work/agenda/PantallaWorkAgenda';
 
-export default PantallaMundoAgenda;
+export default PantallaWorkAgenda;

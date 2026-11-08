@@ -55,7 +55,9 @@
         }
       ],
       "permissions": [
-        "android.permission.POST_NOTIFICATIONS"
+        "android.permission.POST_NOTIFICATIONS",
+        "android.permission.READ_CALENDAR",
+        "android.permission.WRITE_CALENDAR"
       ],
       "blockedPermissions": [
         "com.google.android.gms.permission.AD_ID",
@@ -103,6 +105,13 @@
         {
           "microphonePermission": "NIVL usa el micrófono solo cuando tú lo pides: para dictarle a tu coach mientras mantienes pulsado el botón de voz. Nunca graba en segundo plano.",
           "speechRecognitionPermission": "NIVL convierte tu voz en texto para enviárselo a tu coach. Se procesa en tu dispositivo cuando es posible."
+        }
+      ],
+      [
+        "expo-calendar",
+        {
+          "calendarPermission": "Si conectas tu calendario, NIVL copia a tu cuenta el título y las horas de tus próximos 14 días. Solo lo lee: nunca cambia nada en él.",
+          "remindersPermission": false
         }
       ]
     ],

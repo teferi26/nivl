@@ -543,6 +543,10 @@ async function completarMision(ctx: ToolCtx, questId: string): Promise<string> {
     throw new Error('Esa penalización era de otro día y ya está consolidada. No se puede recuperar.');
   }
   if (quest.acquired_at) throw new Error('Ese hábito ya está adquirido: no se marca ni se cobra.');
+  // Espejo de questsScheduledOn: una misión con día propio (WORK) solo existe ese día.
+  if (quest.work_day && String(quest.work_day).slice(0, 10) !== today) {
+    throw new Error(`"${quest.title}" no toca hoy. Solo se marca lo programado para hoy.`);
+  }
   const diaSemana = ((new Date(today).getDay() + 6) % 7) + 1;
   // RET-03 «Regreso a la arena», espejo de closing.recuperacionDesbloqueada:
   // la penalización se abre con una misión normal de hoy ya completada (no
@@ -614,6 +618,16 @@ export function restoDelModulo(base: number, pagadoMisiones: number | null): num
   return Math.max(0, base - (pagadoMisiones ?? 0));
 }
 
+// Espejo de BLOQUES en src/lib/links.ts, para los actos que marcan bloque desde el coach. Si tocas uno,
+// toca el otro. Un día tiene varios bloques de trabajo: cada bloque hecho marca uno solo.
+const BLOQUES_DE_ACTO: Record<string, string[]> = { trabajo: ['deep_work'] };
+
+/** El bloque del plan de hoy que marca este acto, o null. Puro (trabajo_test.ts). */
+export function bloqueDelActo<T extends { kind: string; done: boolean }>(link: string, bloques: readonly T[]): T | null {
+  const tipos = BLOQUES_DE_ACTO[link];
+  return tipos ? (bloques.find((b) => !b.done && tipos.includes(b.kind)) ?? null) : null;
+}
+
 async function propagarActo(
   ctx: ToolCtx,
   link: string,
@@ -677,6 +691,18 @@ async function propagarActo(
     }
   } catch {
     /* ídem */
+  }
+  if (BLOQUES_DE_ACTO[link]) {
+    try {
+      const { data: plan } = await sb.from('day_plans').select('id').eq('user_id', userId).eq('date', today).maybeSingle();
+      if (plan) {
+        const { data: bloques } = await sb.from('day_blocks').select('id, kind, done').eq('plan_id', (plan as any).id).order('position');
+        const bloque = bloqueDelActo(link, (bloques ?? []) as { id: string; kind: string; done: boolean }[]);
+        if (bloque) await sb.from('day_blocks').update({ done: true }).eq('id', bloque.id);
+      }
+    } catch {
+      /* ídem */
+    }
   }
   return { texto: marcadas.length ? ` Marcado solo: ${marcadas.join(', ')}.` : '', enlazadas, pagadoMisiones };
 }
@@ -834,8 +860,16 @@ export async function executeTool(
       if (val(input.dificultad)) patch.difficulty = val(input.dificultad);
       if (input.dias_semana?.length) patch.days_of_week = input.dias_semana;
       if (!Object.keys(patch).length) return ok('Nada que cambiar.');
+      // WORK: renombrar hace que el trigger de la 0019 vuelva a deducir el enlace, y 'trabajo' nunca se
+      // deduce de un título. Reenviarlo en el mismo update no sirve (el trigger mira si cambió): va después.
+      const { data: previa } = patch.title
+        ? await sb.from('quests').select('link').eq('id', input.mision_id).eq('user_id', userId).maybeSingle()
+        : { data: null };
       const { error } = await sb.from('quests').update(patch).eq('id', input.mision_id).eq('user_id', userId);
       if (error) throw error;
+      if ((previa as { link?: string } | null)?.link === 'trabajo') {
+        await sb.from('quests').update({ link: 'trabajo' }).eq('id', input.mision_id).eq('user_id', userId);
+      }
       return ok(`Misión ${input.mision_id} actualizada: ${JSON.stringify(patch)}`);
     }
 

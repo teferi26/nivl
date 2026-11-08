@@ -1,0 +1,1843 @@
+{
+ "aviso": "Generado desde src/work/. Lo leen trabajo_test.ts (Deno) y src/work/__tests__/coach-paridad.test.ts (Jest). Sin datos reales.",
+ "ahora": [
+  {
+   "nombre": "vacio pide plan",
+   "entrada": {
+    "fecha": "2026-11-11",
+    "ahoraMin": 600,
+    "misiones": [],
+    "plan": [],
+    "eventos": [],
+    "entregas": []
+   },
+   "espera": {
+    "questId": null,
+    "entregaId": null,
+    "bloquePlanId": null,
+    "minutosSugeridos": null,
+    "hastaMin": null,
+    "soltar": [],
+    "tipo": "planificar",
+    "titulo": null,
+    "motivo": {
+     "codigo": "planificar"
+    },
+    "accion": "planificar"
+   }
+  },
+  {
+   "nombre": "tres prioridades",
+   "entrada": {
+    "fecha": "2026-11-11",
+    "ahoraMin": 600,
+    "misiones": [
+     {
+      "id": "b",
+      "titulo": "Tarea b",
+      "hecha": false,
+      "penalizacion": false,
+      "xp": 50,
+      "diaPrioridad": "2026-11-11",
+      "rango": 2,
+      "creadaEn": "2026-11-11T08:00:00Z"
+     },
+     {
+      "id": "a",
+      "titulo": "Tarea a",
+      "hecha": false,
+      "penalizacion": false,
+      "xp": 50,
+      "diaPrioridad": "2026-11-11",
+      "rango": 1,
+      "creadaEn": "2026-11-11T08:00:00Z"
+     },
+     {
+      "id": "c",
+      "titulo": "Tarea c",
+      "hecha": false,
+      "penalizacion": false,
+      "xp": 50,
+      "diaPrioridad": "2026-11-11",
+      "rango": 3,
+      "creadaEn": "2026-11-11T08:00:00Z"
+     }
+    ],
+    "plan": [],
+    "eventos": [],
+    "entregas": []
+   },
+   "espera": {
+    "questId": "a",
+    "entregaId": null,
+    "bloquePlanId": null,
+    "minutosSugeridos": 50,
+    "hastaMin": null,
+    "soltar": [],
+    "tipo": "mision",
+    "titulo": "Tarea a",
+    "motivo": {
+     "codigo": "prioridad_primera",
+     "vars": {
+      "restantes": 2
+     }
+    },
+    "accion": "empezar_bloque"
+   }
+  },
+  {
+   "nombre": "bloque en curso",
+   "entrada": {
+    "fecha": "2026-11-11",
+    "ahoraMin": 600,
+    "misiones": [
+     {
+      "id": "a",
+      "titulo": "Tarea a",
+      "hecha": false,
+      "penalizacion": false,
+      "xp": 50,
+      "diaPrioridad": "2026-11-11",
+      "rango": 1,
+      "creadaEn": "2026-11-11T08:00:00Z"
+     }
+    ],
+    "plan": [],
+    "eventos": [],
+    "entregas": [],
+    "bloque": {
+     "titulo": "X",
+     "questId": "a",
+     "fase": "corriendo",
+     "restanteMin": 12
+    }
+   },
+   "espera": {
+    "questId": "a",
+    "entregaId": null,
+    "bloquePlanId": null,
+    "minutosSugeridos": null,
+    "hastaMin": null,
+    "soltar": [],
+    "tipo": "bloque",
+    "titulo": "X",
+    "motivo": {
+     "codigo": "bloque_en_curso",
+     "vars": {
+      "minutos": 12
+     }
+    },
+    "accion": "seguir_bloque"
+   }
+  },
+  {
+   "nombre": "bloque pausado",
+   "entrada": {
+    "fecha": "2026-11-11",
+    "ahoraMin": 600,
+    "misiones": [],
+    "plan": [],
+    "eventos": [],
+    "entregas": [],
+    "bloque": {
+     "titulo": null,
+     "questId": null,
+     "fase": "pausado",
+     "restanteMin": 30
+    }
+   },
+   "espera": {
+    "questId": null,
+    "entregaId": null,
+    "bloquePlanId": null,
+    "minutosSugeridos": null,
+    "hastaMin": null,
+    "soltar": [],
+    "tipo": "bloque",
+    "titulo": null,
+    "motivo": {
+     "codigo": "bloque_pausado",
+     "vars": {
+      "minutos": 30
+     }
+    },
+    "accion": "seguir_bloque"
+   }
+  },
+  {
+   "nombre": "reunion en curso",
+   "entrada": {
+    "fecha": "2026-11-11",
+    "ahoraMin": 600,
+    "misiones": [
+     {
+      "id": "a",
+      "titulo": "Tarea a",
+      "hecha": false,
+      "penalizacion": false,
+      "xp": 50,
+      "diaPrioridad": "2026-11-11",
+      "rango": 1,
+      "creadaEn": "2026-11-11T08:00:00Z"
+     }
+    ],
+    "plan": [],
+    "eventos": [
+     {
+      "id": "e",
+      "titulo": "Reunion e",
+      "fecha": "2026-11-11",
+      "inicio": 590,
+      "fin": 650,
+      "origen": "manual"
+     }
+    ],
+    "entregas": []
+   },
+   "espera": {
+    "questId": null,
+    "entregaId": null,
+    "bloquePlanId": null,
+    "minutosSugeridos": null,
+    "hastaMin": 650,
+    "soltar": [],
+    "tipo": "reunion",
+    "titulo": "Reunion e",
+    "motivo": {
+     "codigo": "reunion_en_curso",
+     "vars": {
+      "minutos": 50
+     }
+    },
+    "accion": "ninguna"
+   }
+  },
+  {
+   "nombre": "reunion cerca",
+   "entrada": {
+    "fecha": "2026-11-11",
+    "ahoraMin": 600,
+    "misiones": [
+     {
+      "id": "a",
+      "titulo": "Tarea a",
+      "hecha": false,
+      "penalizacion": false,
+      "xp": 50,
+      "diaPrioridad": "2026-11-11",
+      "rango": 1,
+      "creadaEn": "2026-11-11T08:00:00Z"
+     }
+    ],
+    "plan": [],
+    "eventos": [
+     {
+      "id": "e",
+      "titulo": "Reunion e",
+      "fecha": "2026-11-11",
+      "inicio": 610,
+      "fin": null,
+      "origen": "manual"
+     }
+    ],
+    "entregas": []
+   },
+   "espera": {
+    "questId": null,
+    "entregaId": null,
+    "bloquePlanId": null,
+    "minutosSugeridos": null,
+    "hastaMin": 610,
+    "soltar": [],
+    "tipo": "reunion",
+    "titulo": "Reunion e",
+    "motivo": {
+     "codigo": "reunion_cerca",
+     "vars": {
+      "minutos": 10
+     }
+    },
+    "accion": "ninguna"
+   }
+  },
+  {
+   "nombre": "reunion sin fin cruza dia",
+   "entrada": {
+    "fecha": "2026-11-11",
+    "ahoraMin": 1420,
+    "misiones": [],
+    "plan": [],
+    "eventos": [
+     {
+      "id": "e",
+      "titulo": "Reunion e",
+      "fecha": "2026-11-11",
+      "inicio": 1410,
+      "fin": null,
+      "origen": "manual"
+     }
+    ],
+    "entregas": []
+   },
+   "espera": {
+    "questId": null,
+    "entregaId": null,
+    "bloquePlanId": null,
+    "minutosSugeridos": null,
+    "hastaMin": 1440,
+    "soltar": [],
+    "tipo": "reunion",
+    "titulo": "Reunion e",
+    "motivo": {
+     "codigo": "reunion_en_curso",
+     "vars": {
+      "minutos": 20
+     }
+    },
+    "accion": "ninguna"
+   }
+  },
+  {
+   "nombre": "plan ahora",
+   "entrada": {
+    "fecha": "2026-11-11",
+    "ahoraMin": 600,
+    "misiones": [
+     {
+      "id": "a",
+      "titulo": "Tarea a",
+      "hecha": false,
+      "penalizacion": false,
+      "xp": 50,
+      "diaPrioridad": "2026-11-11",
+      "rango": 1,
+      "creadaEn": "2026-11-11T08:00:00Z"
+     }
+    ],
+    "plan": [
+     {
+      "id": "p",
+      "inicio": 570,
+      "fin": 660,
+      "titulo": "Bloque p",
+      "tipo": "deep_work",
+      "hecho": false,
+      "questId": null
+     }
+    ],
+    "eventos": [],
+    "entregas": []
+   },
+   "espera": {
+    "questId": "a",
+    "entregaId": null,
+    "bloquePlanId": "p",
+    "minutosSugeridos": 60,
+    "hastaMin": 660,
+    "soltar": [],
+    "tipo": "plan",
+    "titulo": "Tarea a",
+    "motivo": {
+     "codigo": "plan_ahora",
+     "vars": {
+      "hasta": "11:00"
+     }
+    },
+    "accion": "empezar_bloque"
+   }
+  },
+  {
+   "nombre": "plan con quest",
+   "entrada": {
+    "fecha": "2026-11-11",
+    "ahoraMin": 600,
+    "misiones": [
+     {
+      "id": "a",
+      "titulo": "Tarea a",
+      "hecha": false,
+      "penalizacion": false,
+      "xp": 50,
+      "diaPrioridad": "2026-11-11",
+      "rango": 1,
+      "creadaEn": "2026-11-11T08:00:00Z"
+     },
+     {
+      "id": "b",
+      "titulo": "Tarea b",
+      "hecha": false,
+      "penalizacion": false,
+      "xp": 50,
+      "diaPrioridad": "2026-11-11",
+      "rango": 2,
+      "creadaEn": "2026-11-11T08:00:00Z"
+     }
+    ],
+    "plan": [
+     {
+      "id": "p",
+      "inicio": 570,
+      "fin": 660,
+      "titulo": "Bloque p",
+      "tipo": "ventas",
+      "hecho": false,
+      "questId": "b"
+     }
+    ],
+    "eventos": [],
+    "entregas": []
+   },
+   "espera": {
+    "questId": "b",
+    "entregaId": null,
+    "bloquePlanId": "p",
+    "minutosSugeridos": 60,
+    "hastaMin": 660,
+    "soltar": [],
+    "tipo": "plan",
+    "titulo": "Bloque p",
+    "motivo": {
+     "codigo": "plan_ahora",
+     "vars": {
+      "hasta": "11:00"
+     }
+    },
+    "accion": "empezar_bloque"
+   }
+  },
+  {
+   "nombre": "plan recortado por reunion",
+   "entrada": {
+    "fecha": "2026-11-11",
+    "ahoraMin": 600,
+    "misiones": [
+     {
+      "id": "a",
+      "titulo": "Tarea a",
+      "hecha": false,
+      "penalizacion": false,
+      "xp": 50,
+      "diaPrioridad": "2026-11-11",
+      "rango": 1,
+      "creadaEn": "2026-11-11T08:00:00Z"
+     }
+    ],
+    "plan": [
+     {
+      "id": "p",
+      "inicio": 570,
+      "fin": 720,
+      "titulo": "Bloque p",
+      "tipo": "deep_work",
+      "hecho": false,
+      "questId": null
+     }
+    ],
+    "eventos": [
+     {
+      "id": "e",
+      "titulo": "Reunion e",
+      "fecha": "2026-11-11",
+      "inicio": 640,
+      "fin": 700,
+      "origen": "manual"
+     }
+    ],
+    "entregas": []
+   },
+   "espera": {
+    "questId": "a",
+    "entregaId": null,
+    "bloquePlanId": "p",
+    "minutosSugeridos": 40,
+    "hastaMin": 720,
+    "soltar": [],
+    "tipo": "plan",
+    "titulo": "Tarea a",
+    "motivo": {
+     "codigo": "plan_ahora",
+     "vars": {
+      "hasta": "12:00"
+     }
+    },
+    "accion": "empezar_bloque"
+   }
+  },
+  {
+   "nombre": "hueco corto",
+   "entrada": {
+    "fecha": "2026-11-11",
+    "ahoraMin": 600,
+    "misiones": [
+     {
+      "id": "a",
+      "titulo": "Tarea a",
+      "hecha": false,
+      "penalizacion": false,
+      "xp": 50,
+      "diaPrioridad": "2026-11-11",
+      "rango": 1,
+      "creadaEn": "2026-11-11T08:00:00Z"
+     }
+    ],
+    "plan": [],
+    "eventos": [
+     {
+      "id": "e",
+      "titulo": "Reunion e",
+      "fecha": "2026-11-11",
+      "inicio": 620,
+      "fin": 650,
+      "origen": "manual"
+     }
+    ],
+    "entregas": []
+   },
+   "espera": {
+    "questId": "a",
+    "entregaId": null,
+    "bloquePlanId": null,
+    "minutosSugeridos": null,
+    "hastaMin": 620,
+    "soltar": [],
+    "tipo": "hueco",
+    "titulo": "Tarea a",
+    "motivo": {
+     "codigo": "hueco_corto",
+     "vars": {
+      "minutos": 20
+     }
+    },
+    "accion": "ninguna"
+   }
+  },
+  {
+   "nombre": "fuera de jornada",
+   "entrada": {
+    "fecha": "2026-11-11",
+    "ahoraMin": 1170,
+    "misiones": [
+     {
+      "id": "a",
+      "titulo": "Tarea a",
+      "hecha": false,
+      "penalizacion": false,
+      "xp": 50,
+      "diaPrioridad": "2026-11-11",
+      "rango": 1,
+      "creadaEn": "2026-11-11T08:00:00Z"
+     },
+     {
+      "id": "b",
+      "titulo": "Tarea b",
+      "hecha": false,
+      "penalizacion": false,
+      "xp": 50,
+      "diaPrioridad": "2026-11-11",
+      "rango": 2,
+      "creadaEn": "2026-11-11T08:00:00Z"
+     }
+    ],
+    "plan": [],
+    "eventos": [],
+    "entregas": []
+   },
+   "espera": {
+    "questId": "a",
+    "entregaId": null,
+    "bloquePlanId": null,
+    "minutosSugeridos": 50,
+    "hastaMin": null,
+    "soltar": [
+     {
+      "tipo": "mision",
+      "id": "b",
+      "titulo": "Tarea b",
+      "motivo": {
+       "codigo": "soltar_no_cabe"
+      },
+      "sinCoste": true
+     }
+    ],
+    "tipo": "mision",
+    "titulo": "Tarea a",
+    "motivo": {
+     "codigo": "fuera_de_jornada",
+     "vars": {
+      "restantes": 1
+     }
+    },
+    "accion": "empezar_bloque"
+   }
+  },
+  {
+   "nombre": "mision fija",
+   "entrada": {
+    "fecha": "2026-11-11",
+    "ahoraMin": 600,
+    "misiones": [
+     {
+      "id": "a",
+      "titulo": "Tarea a",
+      "hecha": false,
+      "penalizacion": false,
+      "xp": 100,
+      "diaPrioridad": null,
+      "rango": null,
+      "creadaEn": "2026-11-11T08:00:00Z"
+     }
+    ],
+    "plan": [],
+    "eventos": [],
+    "entregas": []
+   },
+   "espera": {
+    "questId": "a",
+    "entregaId": null,
+    "bloquePlanId": null,
+    "minutosSugeridos": 90,
+    "hastaMin": null,
+    "soltar": [],
+    "tipo": "mision",
+    "titulo": "Tarea a",
+    "motivo": {
+     "codigo": "mision_fija",
+     "vars": {
+      "restantes": 0
+     }
+    },
+    "accion": "empezar_bloque"
+   }
+  },
+  {
+   "nombre": "siguiente tras hecha",
+   "entrada": {
+    "fecha": "2026-11-11",
+    "ahoraMin": 600,
+    "misiones": [
+     {
+      "id": "a",
+      "titulo": "Tarea a",
+      "hecha": true,
+      "penalizacion": false,
+      "xp": 50,
+      "diaPrioridad": "2026-11-11",
+      "rango": 1,
+      "creadaEn": "2026-11-11T08:00:00Z"
+     },
+     {
+      "id": "b",
+      "titulo": "Tarea b",
+      "hecha": false,
+      "penalizacion": false,
+      "xp": 50,
+      "diaPrioridad": "2026-11-11",
+      "rango": 2,
+      "creadaEn": "2026-11-11T08:00:00Z"
+     }
+    ],
+    "plan": [],
+    "eventos": [],
+    "entregas": []
+   },
+   "espera": {
+    "questId": "b",
+    "entregaId": null,
+    "bloquePlanId": null,
+    "minutosSugeridos": 50,
+    "hastaMin": null,
+    "soltar": [],
+    "tipo": "mision",
+    "titulo": "Tarea b",
+    "motivo": {
+     "codigo": "prioridad_siguiente",
+     "vars": {
+      "restantes": 0
+     }
+    },
+    "accion": "empezar_bloque"
+   }
+  },
+  {
+   "nombre": "no cabe y se suelta",
+   "entrada": {
+    "fecha": "2026-11-11",
+    "ahoraMin": 1000,
+    "misiones": [
+     {
+      "id": "a",
+      "titulo": "Tarea a",
+      "hecha": false,
+      "penalizacion": false,
+      "xp": 100,
+      "diaPrioridad": "2026-11-11",
+      "rango": 1,
+      "creadaEn": "2026-11-11T08:00:00Z"
+     },
+     {
+      "id": "b",
+      "titulo": "Tarea b",
+      "hecha": false,
+      "penalizacion": false,
+      "xp": 100,
+      "diaPrioridad": "2026-11-11",
+      "rango": 2,
+      "creadaEn": "2026-11-11T08:00:00Z"
+     },
+     {
+      "id": "c",
+      "titulo": "Tarea c",
+      "hecha": false,
+      "penalizacion": false,
+      "xp": 250,
+      "diaPrioridad": "2026-11-11",
+      "rango": 3,
+      "creadaEn": "2026-11-11T08:00:00Z"
+     }
+    ],
+    "plan": [],
+    "eventos": [],
+    "entregas": []
+   },
+   "espera": {
+    "questId": "a",
+    "entregaId": null,
+    "bloquePlanId": null,
+    "minutosSugeridos": 90,
+    "hastaMin": null,
+    "soltar": [
+     {
+      "tipo": "mision",
+      "id": "c",
+      "titulo": "Tarea c",
+      "motivo": {
+       "codigo": "soltar_no_cabe"
+      },
+      "sinCoste": true
+     },
+     {
+      "tipo": "mision",
+      "id": "b",
+      "titulo": "Tarea b",
+      "motivo": {
+       "codigo": "soltar_no_cabe"
+      },
+      "sinCoste": true
+     }
+    ],
+    "tipo": "mision",
+    "titulo": "Tarea a",
+    "motivo": {
+     "codigo": "prioridad_primera",
+     "vars": {
+      "restantes": 2
+     }
+    },
+    "accion": "empezar_bloque"
+   }
+  },
+  {
+   "nombre": "carga alta suelta la ultima",
+   "entrada": {
+    "fecha": "2026-11-11",
+    "ahoraMin": 600,
+    "misiones": [
+     {
+      "id": "a",
+      "titulo": "Tarea a",
+      "hecha": false,
+      "penalizacion": false,
+      "xp": 50,
+      "diaPrioridad": "2026-11-11",
+      "rango": 1,
+      "creadaEn": "2026-11-11T08:00:00Z"
+     },
+     {
+      "id": "b",
+      "titulo": "Tarea b",
+      "hecha": false,
+      "penalizacion": false,
+      "xp": 50,
+      "diaPrioridad": "2026-11-11",
+      "rango": 2,
+      "creadaEn": "2026-11-11T08:00:00Z"
+     }
+    ],
+    "plan": [],
+    "eventos": [],
+    "entregas": [],
+    "nivelCarga": "alta"
+   },
+   "espera": {
+    "questId": "a",
+    "entregaId": null,
+    "bloquePlanId": null,
+    "minutosSugeridos": 50,
+    "hastaMin": null,
+    "soltar": [
+     {
+      "tipo": "mision",
+      "id": "b",
+      "titulo": "Tarea b",
+      "motivo": {
+       "codigo": "soltar_carga"
+      },
+      "sinCoste": true
+     }
+    ],
+    "tipo": "mision",
+    "titulo": "Tarea a",
+    "motivo": {
+     "codigo": "prioridad_primera",
+     "vars": {
+      "restantes": 1
+     }
+    },
+    "accion": "empezar_bloque"
+   }
+  },
+  {
+   "nombre": "entrega atrasada",
+   "entrada": {
+    "fecha": "2026-11-11",
+    "ahoraMin": 600,
+    "misiones": [],
+    "plan": [],
+    "eventos": [],
+    "entregas": [
+     {
+      "id": "x",
+      "proyectoId": null,
+      "titulo": "Entrega x",
+      "fecha": "2026-11-09",
+      "hecha": false,
+      "hechaEl": null,
+      "posicion": 0
+     }
+    ]
+   },
+   "espera": {
+    "questId": null,
+    "entregaId": "x",
+    "bloquePlanId": null,
+    "minutosSugeridos": 50,
+    "hastaMin": null,
+    "soltar": [],
+    "tipo": "entrega",
+    "titulo": "Entrega x",
+    "motivo": {
+     "codigo": "entrega_atrasada"
+    },
+    "accion": "empezar_bloque"
+   }
+  },
+  {
+   "nombre": "entrega hoy",
+   "entrada": {
+    "fecha": "2026-11-11",
+    "ahoraMin": 600,
+    "misiones": [],
+    "plan": [],
+    "eventos": [],
+    "entregas": [
+     {
+      "id": "x",
+      "proyectoId": null,
+      "titulo": "Entrega x",
+      "fecha": "2026-11-11",
+      "hecha": false,
+      "hechaEl": null,
+      "posicion": 0
+     }
+    ]
+   },
+   "espera": {
+    "questId": null,
+    "entregaId": "x",
+    "bloquePlanId": null,
+    "minutosSugeridos": 50,
+    "hastaMin": null,
+    "soltar": [],
+    "tipo": "entrega",
+    "titulo": "Entrega x",
+    "motivo": {
+     "codigo": "entrega_hoy"
+    },
+    "accion": "empezar_bloque"
+   }
+  },
+  {
+   "nombre": "entrega cerca",
+   "entrada": {
+    "fecha": "2026-11-11",
+    "ahoraMin": 600,
+    "misiones": [],
+    "plan": [],
+    "eventos": [],
+    "entregas": [
+     {
+      "id": "x",
+      "proyectoId": null,
+      "titulo": "Entrega x",
+      "fecha": "2026-11-13",
+      "hecha": false,
+      "hechaEl": null,
+      "posicion": 0
+     }
+    ]
+   },
+   "espera": {
+    "questId": null,
+    "entregaId": "x",
+    "bloquePlanId": null,
+    "minutosSugeridos": 50,
+    "hastaMin": null,
+    "soltar": [],
+    "tipo": "entrega",
+    "titulo": "Entrega x",
+    "motivo": {
+     "codigo": "entrega_cerca"
+    },
+    "accion": "empezar_bloque"
+   }
+  },
+  {
+   "nombre": "entrega lejana no aprieta",
+   "entrada": {
+    "fecha": "2026-11-11",
+    "ahoraMin": 600,
+    "misiones": [],
+    "plan": [],
+    "eventos": [],
+    "entregas": [
+     {
+      "id": "x",
+      "proyectoId": null,
+      "titulo": "Entrega x",
+      "fecha": "2026-11-16",
+      "hecha": false,
+      "hechaEl": null,
+      "posicion": 0
+     }
+    ]
+   },
+   "espera": {
+    "questId": null,
+    "entregaId": null,
+    "bloquePlanId": null,
+    "minutosSugeridos": null,
+    "hastaMin": null,
+    "soltar": [],
+    "tipo": "planificar",
+    "titulo": null,
+    "motivo": {
+     "codigo": "planificar"
+    },
+    "accion": "planificar"
+   }
+  },
+  {
+   "nombre": "dia cerrado",
+   "entrada": {
+    "fecha": "2026-11-11",
+    "ahoraMin": 600,
+    "misiones": [
+     {
+      "id": "a",
+      "titulo": "Tarea a",
+      "hecha": true,
+      "penalizacion": false,
+      "xp": 50,
+      "diaPrioridad": "2026-11-11",
+      "rango": 1,
+      "creadaEn": "2026-11-11T08:00:00Z"
+     }
+    ],
+    "plan": [],
+    "eventos": [],
+    "entregas": []
+   },
+   "espera": {
+    "questId": null,
+    "entregaId": null,
+    "bloquePlanId": null,
+    "minutosSugeridos": null,
+    "hastaMin": null,
+    "soltar": [],
+    "tipo": "cerrado",
+    "titulo": null,
+    "motivo": {
+     "codigo": "dia_cerrado"
+    },
+    "accion": "ninguna"
+   }
+  },
+  {
+   "nombre": "penalizacion no se ataca",
+   "entrada": {
+    "fecha": "2026-11-11",
+    "ahoraMin": 600,
+    "misiones": [
+     {
+      "id": "p",
+      "titulo": "Tarea p",
+      "hecha": false,
+      "penalizacion": true,
+      "xp": 50,
+      "diaPrioridad": "2026-11-11",
+      "rango": 1,
+      "creadaEn": "2026-11-11T08:00:00Z"
+     }
+    ],
+    "plan": [],
+    "eventos": [],
+    "entregas": []
+   },
+   "espera": {
+    "questId": null,
+    "entregaId": null,
+    "bloquePlanId": null,
+    "minutosSugeridos": null,
+    "hastaMin": null,
+    "soltar": [],
+    "tipo": "planificar",
+    "titulo": null,
+    "motivo": {
+     "codigo": "planificar"
+    },
+    "accion": "planificar"
+   }
+  },
+  {
+   "nombre": "plan de otro tipo ocupa",
+   "entrada": {
+    "fecha": "2026-11-11",
+    "ahoraMin": 600,
+    "misiones": [
+     {
+      "id": "a",
+      "titulo": "Tarea a",
+      "hecha": false,
+      "penalizacion": false,
+      "xp": 50,
+      "diaPrioridad": "2026-11-11",
+      "rango": 1,
+      "creadaEn": "2026-11-11T08:00:00Z"
+     },
+     {
+      "id": "b",
+      "titulo": "Tarea b",
+      "hecha": false,
+      "penalizacion": false,
+      "xp": 50,
+      "diaPrioridad": "2026-11-11",
+      "rango": 2,
+      "creadaEn": "2026-11-11T08:00:00Z"
+     }
+    ],
+    "plan": [
+     {
+      "id": "g",
+      "inicio": 610,
+      "fin": 700,
+      "titulo": "Bloque g",
+      "tipo": "gym",
+      "hecho": false,
+      "questId": null
+     }
+    ],
+    "eventos": [],
+    "entregas": []
+   },
+   "espera": {
+    "questId": "a",
+    "entregaId": null,
+    "bloquePlanId": null,
+    "minutosSugeridos": null,
+    "hastaMin": 610,
+    "soltar": [],
+    "tipo": "hueco",
+    "titulo": "Tarea a",
+    "motivo": {
+     "codigo": "hueco_corto",
+     "vars": {
+      "minutos": 10
+     }
+    },
+    "accion": "ninguna"
+   }
+  },
+  {
+   "nombre": "recuperar antes de cerrar",
+   "entrada": {
+    "fecha": "2026-11-11",
+    "ahoraMin": 600,
+    "misiones": [
+     {
+      "id": "a",
+      "titulo": "Tarea a",
+      "hecha": true,
+      "penalizacion": false,
+      "xp": 50,
+      "diaPrioridad": "2026-11-11",
+      "rango": 1,
+      "creadaEn": "2026-11-11T08:00:00Z"
+     },
+     {
+      "id": "p",
+      "titulo": "Recupera lo de ayer",
+      "hecha": false,
+      "penalizacion": true,
+      "xp": 0,
+      "diaPrioridad": null,
+      "rango": null,
+      "creadaEn": null
+     }
+    ],
+    "plan": [],
+    "eventos": [],
+    "entregas": []
+   },
+   "espera": {
+    "questId": "p",
+    "entregaId": null,
+    "bloquePlanId": null,
+    "minutosSugeridos": null,
+    "hastaMin": null,
+    "soltar": [],
+    "tipo": "recuperar",
+    "titulo": "Recupera lo de ayer",
+    "motivo": {
+     "codigo": "recuperar"
+    },
+    "accion": "ninguna"
+   }
+  }
+ ],
+ "carga": [
+  {
+   "nombre": "vacia",
+   "entrada": {
+    "fecha": "2026-11-11",
+    "eventos": [],
+    "sesiones": []
+   },
+   "espera": {
+    "nivel": "ligera",
+    "puntos": 0,
+    "reunionesHoyMin": 0,
+    "reunionesSemanaMin": 0,
+    "profundoHoyMin": 0,
+    "profundoSemanaMin": 0,
+    "trabajoSemanaMin": 0,
+    "diasTarde": 0,
+    "diasFinDeSemana": 0,
+    "diasSeguidos": 0,
+    "senales": [],
+    "soltar": null
+   }
+  },
+  {
+   "nombre": "reuniones hoy altas",
+   "entrada": {
+    "fecha": "2026-11-11",
+    "eventos": [
+     {
+      "id": "a",
+      "titulo": "Reunion a",
+      "fecha": "2026-11-11",
+      "inicio": 540,
+      "fin": 720,
+      "origen": "manual"
+     },
+     {
+      "id": "b",
+      "titulo": "Reunion b",
+      "fecha": "2026-11-11",
+      "inicio": 800,
+      "fin": 1000,
+      "origen": "manual"
+     }
+    ],
+    "sesiones": []
+   },
+   "espera": {
+    "nivel": "normal",
+    "puntos": 2,
+    "reunionesHoyMin": 380,
+    "reunionesSemanaMin": 380,
+    "profundoHoyMin": 0,
+    "profundoSemanaMin": 0,
+    "trabajoSemanaMin": 0,
+    "diasTarde": 0,
+    "diasFinDeSemana": 0,
+    "diasSeguidos": 0,
+    "senales": [
+     {
+      "codigo": "reuniones_hoy",
+      "valor": 380
+     }
+    ],
+    "soltar": null
+   }
+  },
+  {
+   "nombre": "solapes no cuentan doble",
+   "entrada": {
+    "fecha": "2026-11-11",
+    "eventos": [
+     {
+      "id": "a",
+      "titulo": "Reunion a",
+      "fecha": "2026-11-11",
+      "inicio": 540,
+      "fin": 660,
+      "origen": "manual"
+     },
+     {
+      "id": "b",
+      "titulo": "Reunion b",
+      "fecha": "2026-11-11",
+      "inicio": 600,
+      "fin": 700,
+      "origen": "manual"
+     },
+     {
+      "id": "c",
+      "titulo": "Reunion c",
+      "fecha": "2026-11-11",
+      "inicio": 690,
+      "fin": null,
+      "origen": "manual"
+     }
+    ],
+    "sesiones": []
+   },
+   "espera": {
+    "nivel": "normal",
+    "puntos": 1,
+    "reunionesHoyMin": 195,
+    "reunionesSemanaMin": 195,
+    "profundoHoyMin": 0,
+    "profundoSemanaMin": 0,
+    "trabajoSemanaMin": 0,
+    "diasTarde": 0,
+    "diasFinDeSemana": 0,
+    "diasSeguidos": 0,
+    "senales": [
+     {
+      "codigo": "reuniones_hoy",
+      "valor": 195
+     }
+    ],
+    "soltar": null
+   }
+  },
+  {
+   "nombre": "findes y tardes",
+   "entrada": {
+    "fecha": "2026-11-11",
+    "eventos": [],
+    "sesiones": [
+     {
+      "id": "2026-11-07600",
+      "clientId": "c",
+      "proyectoId": null,
+      "entregaId": null,
+      "questId": null,
+      "fecha": "2026-11-07",
+      "inicioMin": 600,
+      "minutos": 60,
+      "tipo": "bloque",
+      "facturable": false,
+      "facturadaEl": null,
+      "nota": null
+     },
+     {
+      "id": "2026-11-081190",
+      "clientId": "c",
+      "proyectoId": null,
+      "entregaId": null,
+      "questId": null,
+      "fecha": "2026-11-08",
+      "inicioMin": 1190,
+      "minutos": 30,
+      "tipo": "bloque",
+      "facturable": false,
+      "facturadaEl": null,
+      "nota": null
+     },
+     {
+      "id": "2026-11-101200",
+      "clientId": "c",
+      "proyectoId": null,
+      "entregaId": null,
+      "questId": null,
+      "fecha": "2026-11-10",
+      "inicioMin": 1200,
+      "minutos": 30,
+      "tipo": "bloque",
+      "facturable": false,
+      "facturadaEl": null,
+      "nota": null
+     },
+     {
+      "id": "2026-11-111210",
+      "clientId": "c",
+      "proyectoId": null,
+      "entregaId": null,
+      "questId": null,
+      "fecha": "2026-11-11",
+      "inicioMin": 1210,
+      "minutos": 20,
+      "tipo": "bloque",
+      "facturable": false,
+      "facturadaEl": null,
+      "nota": null
+     }
+    ]
+   },
+   "espera": {
+    "nivel": "normal",
+    "puntos": 2,
+    "reunionesHoyMin": 0,
+    "reunionesSemanaMin": 0,
+    "profundoHoyMin": 20,
+    "profundoSemanaMin": 140,
+    "trabajoSemanaMin": 140,
+    "diasTarde": 3,
+    "diasFinDeSemana": 2,
+    "diasSeguidos": 2,
+    "senales": [
+     {
+      "codigo": "tardes",
+      "valor": 3
+     },
+     {
+      "codigo": "fin_de_semana",
+      "valor": 2
+     }
+    ],
+    "soltar": null
+   }
+  },
+  {
+   "nombre": "evento en sabado no cuenta",
+   "entrada": {
+    "fecha": "2026-11-11",
+    "eventos": [
+     {
+      "id": "a",
+      "titulo": "Reunion a",
+      "fecha": "2026-11-07",
+      "inicio": 540,
+      "fin": 900,
+      "origen": "manual"
+     }
+    ],
+    "sesiones": []
+   },
+   "espera": {
+    "nivel": "ligera",
+    "puntos": 0,
+    "reunionesHoyMin": 0,
+    "reunionesSemanaMin": 0,
+    "profundoHoyMin": 0,
+    "profundoSemanaMin": 0,
+    "trabajoSemanaMin": 0,
+    "diasTarde": 0,
+    "diasFinDeSemana": 0,
+    "diasSeguidos": 0,
+    "senales": [],
+    "soltar": null
+   }
+  },
+  {
+   "nombre": "diez dias seguidos",
+   "entrada": {
+    "fecha": "2026-11-11",
+    "eventos": [],
+    "sesiones": [
+     {
+      "id": "2026-11-11540",
+      "clientId": "c",
+      "proyectoId": null,
+      "entregaId": null,
+      "questId": null,
+      "fecha": "2026-11-11",
+      "inicioMin": 540,
+      "minutos": 120,
+      "tipo": "bloque",
+      "facturable": false,
+      "facturadaEl": null,
+      "nota": null
+     },
+     {
+      "id": "2026-11-10540",
+      "clientId": "c",
+      "proyectoId": null,
+      "entregaId": null,
+      "questId": null,
+      "fecha": "2026-11-10",
+      "inicioMin": 540,
+      "minutos": 120,
+      "tipo": "bloque",
+      "facturable": false,
+      "facturadaEl": null,
+      "nota": null
+     },
+     {
+      "id": "2026-11-09540",
+      "clientId": "c",
+      "proyectoId": null,
+      "entregaId": null,
+      "questId": null,
+      "fecha": "2026-11-09",
+      "inicioMin": 540,
+      "minutos": 120,
+      "tipo": "bloque",
+      "facturable": false,
+      "facturadaEl": null,
+      "nota": null
+     },
+     {
+      "id": "2026-11-08540",
+      "clientId": "c",
+      "proyectoId": null,
+      "entregaId": null,
+      "questId": null,
+      "fecha": "2026-11-08",
+      "inicioMin": 540,
+      "minutos": 120,
+      "tipo": "bloque",
+      "facturable": false,
+      "facturadaEl": null,
+      "nota": null
+     },
+     {
+      "id": "2026-11-07540",
+      "clientId": "c",
+      "proyectoId": null,
+      "entregaId": null,
+      "questId": null,
+      "fecha": "2026-11-07",
+      "inicioMin": 540,
+      "minutos": 120,
+      "tipo": "bloque",
+      "facturable": false,
+      "facturadaEl": null,
+      "nota": null
+     },
+     {
+      "id": "2026-11-06540",
+      "clientId": "c",
+      "proyectoId": null,
+      "entregaId": null,
+      "questId": null,
+      "fecha": "2026-11-06",
+      "inicioMin": 540,
+      "minutos": 120,
+      "tipo": "bloque",
+      "facturable": false,
+      "facturadaEl": null,
+      "nota": null
+     },
+     {
+      "id": "2026-11-05540",
+      "clientId": "c",
+      "proyectoId": null,
+      "entregaId": null,
+      "questId": null,
+      "fecha": "2026-11-05",
+      "inicioMin": 540,
+      "minutos": 120,
+      "tipo": "bloque",
+      "facturable": false,
+      "facturadaEl": null,
+      "nota": null
+     },
+     {
+      "id": "2026-11-04540",
+      "clientId": "c",
+      "proyectoId": null,
+      "entregaId": null,
+      "questId": null,
+      "fecha": "2026-11-04",
+      "inicioMin": 540,
+      "minutos": 120,
+      "tipo": "bloque",
+      "facturable": false,
+      "facturadaEl": null,
+      "nota": null
+     },
+     {
+      "id": "2026-11-03540",
+      "clientId": "c",
+      "proyectoId": null,
+      "entregaId": null,
+      "questId": null,
+      "fecha": "2026-11-03",
+      "inicioMin": 540,
+      "minutos": 120,
+      "tipo": "bloque",
+      "facturable": false,
+      "facturadaEl": null,
+      "nota": null
+     },
+     {
+      "id": "2026-11-02540",
+      "clientId": "c",
+      "proyectoId": null,
+      "entregaId": null,
+      "questId": null,
+      "fecha": "2026-11-02",
+      "inicioMin": 540,
+      "minutos": 120,
+      "tipo": "bloque",
+      "facturable": false,
+      "facturadaEl": null,
+      "nota": null
+     }
+    ]
+   },
+   "espera": {
+    "nivel": "alta",
+    "puntos": 3,
+    "reunionesHoyMin": 0,
+    "reunionesSemanaMin": 0,
+    "profundoHoyMin": 120,
+    "profundoSemanaMin": 840,
+    "trabajoSemanaMin": 840,
+    "diasTarde": 0,
+    "diasFinDeSemana": 2,
+    "diasSeguidos": 10,
+    "senales": [
+     {
+      "codigo": "dias_seguidos",
+      "valor": 10
+     },
+     {
+      "codigo": "fin_de_semana",
+      "valor": 2
+     }
+    ],
+    "soltar": "dias_seguidos"
+   }
+  },
+  {
+   "nombre": "serie desde ayer",
+   "entrada": {
+    "fecha": "2026-11-11",
+    "eventos": [],
+    "sesiones": [
+     {
+      "id": "2026-11-10540",
+      "clientId": "c",
+      "proyectoId": null,
+      "entregaId": null,
+      "questId": null,
+      "fecha": "2026-11-10",
+      "inicioMin": 540,
+      "minutos": 60,
+      "tipo": "manual",
+      "facturable": false,
+      "facturadaEl": null,
+      "nota": null
+     },
+     {
+      "id": "2026-11-09540",
+      "clientId": "c",
+      "proyectoId": null,
+      "entregaId": null,
+      "questId": null,
+      "fecha": "2026-11-09",
+      "inicioMin": 540,
+      "minutos": 60,
+      "tipo": "manual",
+      "facturable": false,
+      "facturadaEl": null,
+      "nota": null
+     },
+     {
+      "id": "2026-11-08540",
+      "clientId": "c",
+      "proyectoId": null,
+      "entregaId": null,
+      "questId": null,
+      "fecha": "2026-11-08",
+      "inicioMin": 540,
+      "minutos": 60,
+      "tipo": "manual",
+      "facturable": false,
+      "facturadaEl": null,
+      "nota": null
+     },
+     {
+      "id": "2026-11-07540",
+      "clientId": "c",
+      "proyectoId": null,
+      "entregaId": null,
+      "questId": null,
+      "fecha": "2026-11-07",
+      "inicioMin": 540,
+      "minutos": 60,
+      "tipo": "manual",
+      "facturable": false,
+      "facturadaEl": null,
+      "nota": null
+     },
+     {
+      "id": "2026-11-06540",
+      "clientId": "c",
+      "proyectoId": null,
+      "entregaId": null,
+      "questId": null,
+      "fecha": "2026-11-06",
+      "inicioMin": 540,
+      "minutos": 60,
+      "tipo": "manual",
+      "facturable": false,
+      "facturadaEl": null,
+      "nota": null
+     },
+     {
+      "id": "2026-11-05540",
+      "clientId": "c",
+      "proyectoId": null,
+      "entregaId": null,
+      "questId": null,
+      "fecha": "2026-11-05",
+      "inicioMin": 540,
+      "minutos": 60,
+      "tipo": "manual",
+      "facturable": false,
+      "facturadaEl": null,
+      "nota": null
+     },
+     {
+      "id": "2026-11-04540",
+      "clientId": "c",
+      "proyectoId": null,
+      "entregaId": null,
+      "questId": null,
+      "fecha": "2026-11-04",
+      "inicioMin": 540,
+      "minutos": 60,
+      "tipo": "manual",
+      "facturable": false,
+      "facturadaEl": null,
+      "nota": null
+     },
+     {
+      "id": "2026-11-03540",
+      "clientId": "c",
+      "proyectoId": null,
+      "entregaId": null,
+      "questId": null,
+      "fecha": "2026-11-03",
+      "inicioMin": 540,
+      "minutos": 60,
+      "tipo": "manual",
+      "facturable": false,
+      "facturadaEl": null,
+      "nota": null
+     }
+    ]
+   },
+   "espera": {
+    "nivel": "normal",
+    "puntos": 2,
+    "reunionesHoyMin": 0,
+    "reunionesSemanaMin": 0,
+    "profundoHoyMin": 0,
+    "profundoSemanaMin": 0,
+    "trabajoSemanaMin": 360,
+    "diasTarde": 0,
+    "diasFinDeSemana": 2,
+    "diasSeguidos": 8,
+    "senales": [
+     {
+      "codigo": "dias_seguidos",
+      "valor": 8
+     },
+     {
+      "codigo": "fin_de_semana",
+      "valor": 2
+     }
+    ],
+    "soltar": null
+   }
+  },
+  {
+   "nombre": "horas altas",
+   "entrada": {
+    "fecha": "2026-11-11",
+    "eventos": [],
+    "sesiones": [
+     {
+      "id": "2026-11-11540",
+      "clientId": "c",
+      "proyectoId": null,
+      "entregaId": null,
+      "questId": null,
+      "fecha": "2026-11-11",
+      "inicioMin": 540,
+      "minutos": 500,
+      "tipo": "bloque",
+      "facturable": false,
+      "facturadaEl": null,
+      "nota": null
+     },
+     {
+      "id": "2026-11-10540",
+      "clientId": "c",
+      "proyectoId": null,
+      "entregaId": null,
+      "questId": null,
+      "fecha": "2026-11-10",
+      "inicioMin": 540,
+      "minutos": 500,
+      "tipo": "bloque",
+      "facturable": false,
+      "facturadaEl": null,
+      "nota": null
+     },
+     {
+      "id": "2026-11-09540",
+      "clientId": "c",
+      "proyectoId": null,
+      "entregaId": null,
+      "questId": null,
+      "fecha": "2026-11-09",
+      "inicioMin": 540,
+      "minutos": 500,
+      "tipo": "bloque",
+      "facturable": false,
+      "facturadaEl": null,
+      "nota": null
+     },
+     {
+      "id": "2026-11-08540",
+      "clientId": "c",
+      "proyectoId": null,
+      "entregaId": null,
+      "questId": null,
+      "fecha": "2026-11-08",
+      "inicioMin": 540,
+      "minutos": 500,
+      "tipo": "bloque",
+      "facturable": false,
+      "facturadaEl": null,
+      "nota": null
+     },
+     {
+      "id": "2026-11-07540",
+      "clientId": "c",
+      "proyectoId": null,
+      "entregaId": null,
+      "questId": null,
+      "fecha": "2026-11-07",
+      "inicioMin": 540,
+      "minutos": 500,
+      "tipo": "bloque",
+      "facturable": false,
+      "facturadaEl": null,
+      "nota": null
+     },
+     {
+      "id": "2026-11-06540",
+      "clientId": "c",
+      "proyectoId": null,
+      "entregaId": null,
+      "questId": null,
+      "fecha": "2026-11-06",
+      "inicioMin": 540,
+      "minutos": 500,
+      "tipo": "bloque",
+      "facturable": false,
+      "facturadaEl": null,
+      "nota": null
+     },
+     {
+      "id": "2026-11-05540",
+      "clientId": "c",
+      "proyectoId": null,
+      "entregaId": null,
+      "questId": null,
+      "fecha": "2026-11-05",
+      "inicioMin": 540,
+      "minutos": 500,
+      "tipo": "bloque",
+      "facturable": false,
+      "facturadaEl": null,
+      "nota": null
+     }
+    ]
+   },
+   "espera": {
+    "nivel": "alta",
+    "puntos": 4,
+    "reunionesHoyMin": 0,
+    "reunionesSemanaMin": 0,
+    "profundoHoyMin": 500,
+    "profundoSemanaMin": 3500,
+    "trabajoSemanaMin": 3500,
+    "diasTarde": 0,
+    "diasFinDeSemana": 2,
+    "diasSeguidos": 7,
+    "senales": [
+     {
+      "codigo": "horas_semana",
+      "valor": 3500
+     },
+     {
+      "codigo": "dias_seguidos",
+      "valor": 7
+     },
+     {
+      "codigo": "fin_de_semana",
+      "valor": 2
+     }
+    ],
+    "soltar": "horas_semana"
+   }
+  },
+  {
+   "nombre": "sesion a cero se ignora",
+   "entrada": {
+    "fecha": "2026-11-11",
+    "eventos": [],
+    "sesiones": [
+     {
+      "id": "2026-11-111300",
+      "clientId": "c",
+      "proyectoId": null,
+      "entregaId": null,
+      "questId": null,
+      "fecha": "2026-11-11",
+      "inicioMin": 1300,
+      "minutos": 0,
+      "tipo": "bloque",
+      "facturable": false,
+      "facturadaEl": null,
+      "nota": null
+     }
+    ]
+   },
+   "espera": {
+    "nivel": "ligera",
+    "puntos": 0,
+    "reunionesHoyMin": 0,
+    "reunionesSemanaMin": 0,
+    "profundoHoyMin": 0,
+    "profundoSemanaMin": 0,
+    "trabajoSemanaMin": 0,
+    "diasTarde": 0,
+    "diasFinDeSemana": 0,
+    "diasSeguidos": 0,
+    "senales": [],
+    "soltar": null
+   }
+  }
+ ]
+}

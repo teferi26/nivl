@@ -14,6 +14,8 @@ export function questsScheduledOn(quests: Quest[], date: string): Quest[] {
     // los 21 días: deja de exigir el toque diario y deja de poder romperte la
     // racha. Se sigue pudiendo marcar a mano desde Hábitos si apetece.
     if (q.acquired_at) return false;
+    // WORK: una misión con día propio solo existe ese día (no recae cada semana).
+    if (q.work_day) return q.work_day === date;
     return q.days_of_week.includes(wd);
   });
 }

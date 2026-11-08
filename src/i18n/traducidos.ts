@@ -53,6 +53,9 @@ import enIronCore from './en/iron-core.json';
 import enIronHombro from './en/iron-hombro.json';
 import enIronPecho from './en/iron-pecho.json';
 import enFocus from './en/focus.json';
+import enTrabajo from './en/trabajo.json';
+import enTrabajogestion from './en/trabajogestion.json';
+import enTrabajoagenda from './en/trabajoagenda.json';
 import enGeneral from './en/general.json';
 import frComun from './fr/comun.json';
 import frRaiz from './fr/raiz.json';
@@ -101,6 +104,9 @@ import frIronCore from './fr/iron-core.json';
 import frIronHombro from './fr/iron-hombro.json';
 import frIronPecho from './fr/iron-pecho.json';
 import frFocus from './fr/focus.json';
+import frTrabajo from './fr/trabajo.json';
+import frTrabajogestion from './fr/trabajogestion.json';
+import frTrabajoagenda from './fr/trabajoagenda.json';
 import frGeneral from './fr/general.json';
 import ptComun from './pt/comun.json';
 import ptRaiz from './pt/raiz.json';
@@ -149,6 +155,9 @@ import ptIronCore from './pt/iron-core.json';
 import ptIronHombro from './pt/iron-hombro.json';
 import ptIronPecho from './pt/iron-pecho.json';
 import ptFocus from './pt/focus.json';
+import ptTrabajo from './pt/trabajo.json';
+import ptTrabajogestion from './pt/trabajogestion.json';
+import ptTrabajoagenda from './pt/trabajoagenda.json';
 import ptGeneral from './pt/general.json';
 import deComun from './de/comun.json';
 import deRaiz from './de/raiz.json';
@@ -197,6 +206,9 @@ import deIronCore from './de/iron-core.json';
 import deIronHombro from './de/iron-hombro.json';
 import deIronPecho from './de/iron-pecho.json';
 import deFocus from './de/focus.json';
+import deTrabajo from './de/trabajo.json';
+import deTrabajogestion from './de/trabajogestion.json';
+import deTrabajoagenda from './de/trabajoagenda.json';
 import deGeneral from './de/general.json';
 import itComun from './it/comun.json';
 import itRaiz from './it/raiz.json';
@@ -245,6 +257,9 @@ import itIronCore from './it/iron-core.json';
 import itIronHombro from './it/iron-hombro.json';
 import itIronPecho from './it/iron-pecho.json';
 import itFocus from './it/focus.json';
+import itTrabajo from './it/trabajo.json';
+import itTrabajogestion from './it/trabajogestion.json';
+import itTrabajoagenda from './it/trabajoagenda.json';
 import itGeneral from './it/general.json';
 
 /** Los idiomas con interfaz traducida (el español no está: es la base). */
@@ -302,6 +317,9 @@ export const RECURSOS_LOCALES: Record<IdiomaTraducido, Catalogo> = {
     'iron-hombro': enIronHombro,
     'iron-pecho': enIronPecho,
     focus: enFocus,
+    trabajo: enTrabajo,
+    trabajogestion: enTrabajogestion,
+    trabajoagenda: enTrabajoagenda,
     general: enGeneral,
   },
   fr: {
@@ -352,6 +370,9 @@ export const RECURSOS_LOCALES: Record<IdiomaTraducido, Catalogo> = {
     'iron-hombro': frIronHombro,
     'iron-pecho': frIronPecho,
     focus: frFocus,
+    trabajo: frTrabajo,
+    trabajogestion: frTrabajogestion,
+    trabajoagenda: frTrabajoagenda,
     general: frGeneral,
   },
   pt: {
@@ -402,6 +423,9 @@ export const RECURSOS_LOCALES: Record<IdiomaTraducido, Catalogo> = {
     'iron-hombro': ptIronHombro,
     'iron-pecho': ptIronPecho,
     focus: ptFocus,
+    trabajo: ptTrabajo,
+    trabajogestion: ptTrabajogestion,
+    trabajoagenda: ptTrabajoagenda,
     general: ptGeneral,
   },
   de: {
@@ -452,6 +476,9 @@ export const RECURSOS_LOCALES: Record<IdiomaTraducido, Catalogo> = {
     'iron-hombro': deIronHombro,
     'iron-pecho': deIronPecho,
     focus: deFocus,
+    trabajo: deTrabajo,
+    trabajogestion: deTrabajogestion,
+    trabajoagenda: deTrabajoagenda,
     general: deGeneral,
   },
   it: {
@@ -502,6 +529,9 @@ export const RECURSOS_LOCALES: Record<IdiomaTraducido, Catalogo> = {
     'iron-hombro': itIronHombro,
     'iron-pecho': itIronPecho,
     focus: itFocus,
+    trabajo: itTrabajo,
+    trabajogestion: itTrabajogestion,
+    trabajoagenda: itTrabajoagenda,
     general: itGeneral,
   },
 };

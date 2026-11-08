@@ -1,6 +1,13 @@
-// NIVL · Mundo WORK: el inicio (misiones de WORK, orden del día y coach).
-import { PantallaMundoHoy } from '@/components/modos/mundo/PantallasMundo';
+// NIVL · Mundo WORK: Hoy, el centro de mando del trabajo.
+import { useWorkHoy } from '@/components/work/useWorkHoy';
+import { WorkHoyVista } from '@/components/work/WorkHoyVista';
 
 export default function WorkHoy() {
-  return <PantallaMundoHoy modo="work" />;
+  const { vista, extra } = useWorkHoy();
+  return (
+    <>
+      <WorkHoyVista {...vista} />
+      {extra}
+    </>
+  );
 }

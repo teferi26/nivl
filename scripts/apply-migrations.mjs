@@ -67,6 +67,10 @@ async function sql(query) {
 
 // Cada migración se reconoce por un objeto que solo ella crea.
 const HUELLAS = {
+  '0118': `coalesce(obj_description(to_regprocedure('public.export_my_data()'), 'pg_proc') like '%nivl:export-work-0118%', false)`,
+  '0117': `exists(select 1 from pg_constraint where conname = 'quests_link_check' and conrelid = 'public.quests'::regclass and pg_get_constraintdef(oid) like '%trabajo%') and exists(select 1 from pg_constraint where conname = 'rules_link_check' and conrelid = 'public.rules'::regclass and pg_get_constraintdef(oid) like '%trabajo%') and position('''trabajo''' in pg_get_functiondef('public.health_row(text,jsonb)'::regprocedure)) > 0`,
+  '0116': `coalesce(col_description('public.calendar_events'::regclass, (select attnum from pg_attribute where attrelid = 'public.calendar_events'::regclass and attname = 'external_id')::int) like '%nivl:work-calendario-0116%', false)`,
+  '0115': `coalesce(obj_description(to_regclass('public.work_sessions'), 'pg_class') like '%nivl:work-nucleo-0115%', false)`,
   '0090': `coalesce(obj_description('public.ai_topes_funcion'::regclass, 'pg_class') like '%nivl:freno-antiabuso-0090%', false)`,
   '0089': `to_regprocedure('public.admin_cola()') is null`,
   '0088': `coalesce(obj_description(to_regprocedure('public.admin_moderacion_bandeja(integer)'), 'pg_proc') like '%nivl:panel-moderacion-0088%', false)`,

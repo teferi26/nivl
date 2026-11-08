@@ -3,7 +3,6 @@
 
 import type Ionicons from '@expo/vector-icons/Ionicons';
 import { t } from '@/i18n';
-import { moneda } from '@/i18n/formato';
 import { grupoDe, GRUPOS, type CategoriaPropia, type GrupoId } from '@/lib/moneywork';
 
 type Icono = keyof typeof Ionicons.glyphMap;
@@ -65,12 +64,4 @@ export function nombreCategoriaMov(
   return nombreGrupo(grupoDe(m.category));
 }
 
-/** «1.234,50 €» (siempre con céntimos si los hay). */
-export function euros(n: number): string {
-  return moneda(n, Number.isInteger(Math.round(n * 100) / 100) ? 0 : 2);
-}
-
-/** Con signo: «−12,50 €» / «+2.150 €». El signo es la información. */
-export function eurosSigno(n: number): string {
-  return `${n < 0 ? '−' : '+'}${euros(Math.abs(n))}`;
-}
+export { euros, eurosSigno } from './cifras';

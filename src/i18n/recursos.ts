@@ -75,6 +75,10 @@ import ironHombro from './es/iron-hombro.json';
 import ironPecho from './es/iron-pecho.json';
 // Modos v2: el mundo FOCUS (src/components/focus).
 import focus from './es/focus.json';
+// El mundo WORK (src/work, src/components/work). docs/modos/WORK.md
+import trabajo from './es/trabajo.json';
+import trabajogestion from './es/trabajogestion.json';
+import trabajoagenda from './es/trabajoagenda.json';
 // General v2: el modo GENERAL rediseñado (src/components/general).
 import general from './es/general.json';
 
@@ -131,6 +135,9 @@ export const RECURSOS_ES = {
   'iron-hombro': ironHombro,
   'iron-pecho': ironPecho,
   focus,
+  trabajo,
+  trabajogestion,
+  trabajoagenda,
   general,
 };
 

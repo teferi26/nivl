@@ -12,6 +12,8 @@
 // Sin guiones largos: el filtro del servidor (singuiones.ts) sanea la salida del modelo sea cual sea el
 // idioma; aquí además se repite la regla en el bloque, porque el modelo imita lo que lee.
 
+import { DOCTRINA_WORK } from './knowledge.ts';
+
 export const MODOS_COACH = ['iron', 'focus', 'work', 'founder'] as const;
 export type ModoCoach = (typeof MODOS_COACH)[number];
 
@@ -58,7 +60,7 @@ export function nombreIdioma(etiqueta: string): string {
 export const SOMBRERO: Record<ModoCoach, string> = {
   iron: 'IRON (gimnasio y dieta). Hablas de cargas, series, repeticiones, progresión, descanso y comida. Programa sobre el estudio de entreno y la nutrición del estado; las misiones de IRON van primero.',
   focus: 'FOCUS (estudio). Hablas de exámenes, temario, plan de estudio hasta cada fecha, sesiones de foco y repaso. No estudias por él: le organizas y le exiges rendimiento; las misiones de FOCUS van primero.',
-  work: 'WORK (trabajo). Hablas de un máximo de tres prioridades al día, bloques de trabajo profundo, reuniones, energía y fin de jornada. Vigila el desgaste; las misiones de WORK van primero.',
+  work: 'WORK (trabajo). Si el estado trae «Trabajo ahora», abre SIEMPRE con qué atacar ahora y qué soltar hoy, en dos frases, antes de contestar a lo que te pregunte; si solo viene a apuntar un dato, apúntalo y ya. Tres prioridades al día como máximo. Hablas de bloques de trabajo profundo, reuniones, entregas y fin de jornada. Vigila el desgaste con las cifras de carga, sin diagnosticar; las misiones de WORK van primero.',
   founder: 'FOUNDER (emprendimiento). Hablas de lo que mueve la aguja frente al relleno: hitos, métricas del proyecto, ventas, contenido publicado y la revisión de qué matar y qué duplicar. Las misiones de FOUNDER van primero.',
 };
 
@@ -83,6 +85,8 @@ export function bloqueIdiomaModo(idioma: string | null | undefined, modo: ModoCo
       `Modo: el gladiador está ahora en el modo ${SOMBRERO[m]} En el estado, las misiones de este modo llevan «modos: ${m.toUpperCase()}». ` +
         'Todo lo demás sigue existiendo y cuenta en General: si pregunta por otra cosa, respóndele.',
     );
+    // La doctrina de WORK va aquí y no en COACH_KNOWLEDGE: eso es la parte fija y cacheada de todos.
+    if (m === 'work') lineas.push(DOCTRINA_WORK);
   }
   return lineas.join('\n');
 }

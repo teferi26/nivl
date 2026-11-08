@@ -61,11 +61,15 @@ export interface Quest {
   // Modos F1 (migración 0068): etiquetas de modo (iron, focus, work,
   // founder). Vacío = solo General. Ausente con el servidor viejo.
   modes?: string[] | null;
+  // WORK (migración 0115): prioridad de un solo día. Con fecha, la retira
+  // retirarPrioridadesCaducadas al día siguiente; work_rank es su orden (1 a 3).
+  work_day?: string | null;
+  work_rank?: number | null;
   created_at: string;
 }
 
 /** Los actos reales que pueden marcar solos una misión, una regla o un bloque. */
-export type ActLink = 'gym' | 'cardio' | 'nutricion' | 'peso' | 'diario';
+export type ActLink = 'gym' | 'cardio' | 'nutricion' | 'peso' | 'diario' | 'trabajo';
 
 export interface Completion {
   id: string;

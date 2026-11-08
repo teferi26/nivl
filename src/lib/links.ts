@@ -23,6 +23,7 @@ import type { ActLink, Profile } from './types';
 const BLOQUES: Partial<Record<ActLink, BlockKind[]>> = {
   gym: ['gym'],
   cardio: ['aerobico'],
+  trabajo: ['deep_work'],
 };
 
 export interface Propagado {
@@ -47,7 +48,7 @@ export function restoDelModulo(base: number, eco: Pick<Propagado, 'xpMisiones'> 
   return Math.max(0, base - (eco?.xpMisiones ?? 0));
 }
 
-export async function propagarActo(profile: Profile, link: ActLink, date: string): Promise<Propagado> {
+export async function propagarActo(profile: Profile, link: ActLink, date: string, bloqueId?: string | null): Promise<Propagado> {
   const out: Propagado = { xpMisiones: 0, xp: 0, marcadas: [], profile, leveledUp: false, newLevel: 0 };
 
   // Una lectura fallida no puede convertirse en "no había misión": el módulo
@@ -129,8 +130,15 @@ export async function propagarActo(profile: Profile, link: ActLink, date: string
   if (kinds) {
     try {
       const plan = await fetchPlan(date);
-      for (const b of plan?.bloques ?? []) {
-        if (!b.done && kinds.includes(b.kind)) await setBlockDone(b.id, true);
+      const propio = bloqueId ? plan?.bloques.find((b) => b.id === bloqueId) : undefined;
+      if (propio) {
+        if (!propio.done) await setBlockDone(propio.id, true);
+      } else for (const b of plan?.bloques ?? []) {
+        if (!b.done && kinds.includes(b.kind)) {
+          await setBlockDone(b.id, true);
+          // Un día tiene varios bloques de trabajo: cada bloque hecho marca uno.
+          if (link === 'trabajo') break;
+        }
       }
     } catch {
       /* ídem */
@@ -141,12 +149,13 @@ export async function propagarActo(profile: Profile, link: ActLink, date: string
 }
 
 /** La pantalla donde se demuestra cada acto: tocar la misión lleva allí. */
-export const RUTA_DE_ACTO: Record<ActLink, '/gym' | '/cardio' | '/nutricion' | '/avances' | '/diario'> = {
+export const RUTA_DE_ACTO: Record<ActLink, '/gym' | '/cardio' | '/nutricion' | '/avances' | '/diario' | '/work-hoy'> = {
   gym: '/gym',
   cardio: '/cardio',
   nutricion: '/nutricion',
   peso: '/avances',
   diario: '/diario',
+  trabajo: '/work-hoy',
 };
 
 /** El módulo donde se registra cada acto, como se le llama en los botones. */
@@ -156,6 +165,7 @@ export const MODULO_DE_ACTO: Record<ActLink, string> = {
   nutricion: 'Nutrición',
   peso: 'Avances',
   diario: 'Diario',
+  trabajo: 'Trabajo',
 };
 
 export const NOMBRE_DE_ACTO: Record<ActLink, string> = {
@@ -164,4 +174,5 @@ export const NOMBRE_DE_ACTO: Record<ActLink, string> = {
   nutricion: 'el parte de comidas',
   peso: 'el pesaje',
   diario: 'el diario',
+  trabajo: 'el bloque de trabajo',
 };
