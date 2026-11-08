@@ -41,7 +41,7 @@
     "cuentasMes": "Cuentas este mes",
     "ventasMes": "Ventas este mes",
     "queEsVenta": "Una venta es una cuenta tuya que se suscribe por primera vez.",
-    "comision": "Por venta anual cobras {{importe}}; en mensual, tu {{pct}} % de lo que entra cada mes hasta llegar a lo mismo."
+    "comision": "Cobras tu {{pct}} % del beneficio de cada venta: lo que entra sin impuestos ni tienda, menos lo que cuesta su IA. Se calcula mes a mes, también en los planes anuales."
   },
   "retos": {
     "titulo": "Retos",

@@ -351,6 +351,41 @@ export function comisionCents(args: {
   return { kind, pct: pctFinal, capCents: cap, amountCents: amount };
 }
 
+// ── Comisión sobre beneficio (0141) ─────────────────────────────────
+// `comisionCents` queda como la regla de las ventas anteriores a la 0141.
+
+/** Meses en que se reparte un cobro: 12 el anual, 1 el mensual. */
+export function mesesDeCobro(period: Periodo): number {
+  return period === 'anual' ? 12 : 1;
+}
+
+/** El neto del tramo k (1..meses), por diferencia: los tramos suman exactamente el neto. */
+export function netoTramoCents(netCents: number, tramo: number, meses: number): number {
+  return redondear((netCents * tramo) / meses) - redondear((netCents * (tramo - 1)) / meses);
+}
+
+/** El coste real de IA del mes, de micro-USD a céntimos de euro. */
+export function iaCents(microUsd: number, eurPorUsd: number): number {
+  return redondear((microUsd * eurPorUsd) / 10_000);
+}
+
+/**
+ * La comisión de un tramo, como `devengar_comisiones`: su % del beneficio del
+ * mes (neto menos IA, nunca negativo), sin pasar del hueco del tope por cuenta.
+ * Las renovaciones no tienen tope (`capCents` null).
+ */
+export function comisionTramo(args: {
+  pct: number;
+  netoCents: number;
+  iaCents: number;
+  capCents: number | null;
+  acumuladoCents: number;
+}): number {
+  const importe = redondear((Math.max(0, args.netoCents - args.iaCents) * args.pct) / 100);
+  if (args.capCents === null) return importe;
+  return Math.max(0, Math.min(importe, args.capCents - args.acumuladoCents));
+}
+
 /** Lo que se transfiere al liquidar: disponible menos clawbacks. null = no hay nada que pagar. */
 export function liquidacionCents(disponibleCents: number, clawbackCents: number): number | null {
   const neto = disponibleCents - clawbackCents;

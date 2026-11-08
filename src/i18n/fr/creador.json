@@ -41,7 +41,7 @@
     "cuentasMes": "Comptes ce mois-ci",
     "ventasMes": "Ventes ce mois-ci",
     "queEsVenta": "Une vente, c'est un de tes comptes qui s'abonne pour la première fois.",
-    "comision": "Pour une vente annuelle, tu touches {{importe}} ; en mensuel, tes {{pct}} % de chaque mois jusqu'à atteindre le même montant."
+    "comision": "Tu touches {{pct}} % du bénéfice de chaque vente : ce qui rentre hors taxes et frais de boutique, moins le coût de son IA. Le calcul se fait mois par mois, abonnements annuels compris."
   },
   "retos": {
     "titulo": "Défis",

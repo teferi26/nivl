@@ -384,6 +384,8 @@ async function liquidar(rawCode, nota) {
   const c = codigo(rawCode);
   const cr = await creadorPorCodigo(c);
   if (fichaRetirada(cr)) console.log(`Aviso: ${AVISO_RETIRADA}`);
+  // Antes de la foto: los tramos cerrados hoy aún no los ha calculado el cron.
+  await sql('select public.devengar_comisiones();');
   const [detalle, [claw]] = [await sql(sqlDetalleLiquidacion(cr.id)), await sql(sqlFotoDescuentos(cr.id))];
   const foto = fotoLiquidacion(detalle, claw);
 

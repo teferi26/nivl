@@ -41,7 +41,7 @@
     "cuentasMes": "Accounts this month",
     "ventasMes": "Sales this month",
     "queEsVenta": "A sale is one of your accounts subscribing for the first time.",
-    "comision": "For an annual sale you earn {{importe}}; on monthly, your {{pct}}% of what comes in each month until it reaches the same."
+    "comision": "You earn {{pct}}% of the profit on each sale: what comes in after taxes and store fees, minus its AI cost. It is worked out month by month, annual plans included."
   },
   "retos": {
     "titulo": "Challenges",
