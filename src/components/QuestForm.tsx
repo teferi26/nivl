@@ -33,10 +33,12 @@ const mismosDias = (a: number[], b: number[]) => a.length === b.length && a.ever
 interface Props {
   visible: boolean;
   onClose: () => void;
-  onSubmit: (input: QuestInput) => Promise<void>;
+  /** Devuelve false si no se ha guardado y la hoja debe seguir abierta. */
+  onSubmit: (input: QuestInput) => Promise<void | false>;
   // Modo edición: precarga la misión y muestra Guardar/Eliminar.
   initial?: Quest | null;
-  onDelete?: (quest: Quest) => Promise<void>;
+  /** Devuelve false si no se ha borrado y la hoja debe seguir abierta. */
+  onDelete?: (quest: Quest) => Promise<void | false>;
   /**
    * Cómo se llama lo que se crea: cambia el eyebrow, el título, los botones y
    * la confirmación de borrado para que digan lo mismo que el botón que abrió
@@ -123,7 +125,7 @@ export function QuestForm({ visible, onClose, onSubmit, initial, onDelete, susta
     guardando.current = true;
     setSaving(true);
     try {
-      await onSubmit({
+      const resultado = await onSubmit({
         title: title.trim(),
         stat,
         difficulty,
@@ -133,7 +135,7 @@ export function QuestForm({ visible, onClose, onSubmit, initial, onDelete, susta
         // Modos F1: la clave solo va con el interruptor encendido.
         ...(modos ? { modes: etiquetas } : {}),
       });
-      onClose();
+      if (resultado !== false) onClose();
     } catch (e) {
       avisar(t('comun:sistemaNoResponde'), mensajeSistema(e));
     } finally {
@@ -154,7 +156,7 @@ export function QuestForm({ visible, onClose, onSubmit, initial, onDelete, susta
     try {
       // La hoja solo se cierra si se ha borrado de verdad, y la háptica de
       // borrado solo suena entonces: si falla, no ha habido nada destructivo.
-      await onDelete(initial);
+      if ((await onDelete(initial)) === false) return;
       vibrar('destructiva');
       onClose();
     } catch (e) {

@@ -1,4 +1,8 @@
 {
+  "esperaManana": {
+    "titulo": "Hoje ainda conta",
+    "mensaje": "Esta missão continua pendente hoje. Conclui-a ou altera-a a partir de amanhã."
+  },
   "derivar": {
     "listo": "Pronto para ser teu",
     "faltan_one": "Falta {{count}} dia",

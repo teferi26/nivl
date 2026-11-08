@@ -35,7 +35,7 @@
   },
   "vista": {
     "nombreA11y": "Ton nom. Touche pour le changer.",
-    "avisoRevision": "Ton nom, ta photo et ton titre sont montrés aux autres après vérification. En attendant, ils verront un pseudo provisoire.",
+    "avisoRevision": "Les autres peuvent voir ton nom, ta photo et ton titre. Ce qui enfreint les règles peut être signalé et retiré.",
     "camino": "Chemin des rangs",
     "arena": "Arène",
     "compartir": "Partager ma progression",

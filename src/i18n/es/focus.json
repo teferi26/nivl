@@ -74,7 +74,7 @@
     "relojDescanso": "PAUSA",
     "sesionA11y": "{{fase}}. {{titulo}}. Quedan {{reloj}}.",
     "temaN": "Tema {{n}} · {{nombre}}",
-    "silencio": "Móvil en silencio al empezar",
+    "silencio": "Pon el móvil en No molestar",
     "noMolestarA11y": "Cómo poner el móvil en No molestar",
     "misionElegir": "Enlazar una misión de FOCUS",
     "empezar": "Empezar bloque",
