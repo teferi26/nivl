@@ -129,7 +129,7 @@
         "expo-calendar",
         {
           "calendarPermission": "Si conectas tu calendario, NIVL copia a tu cuenta el título y las horas de tus próximos 14 días. Solo lo lee: nunca cambia nada en él.",
-          "remindersPermission": false
+          "remindersPermission": "NIVL solo lee tu calendario. No lee ni cambia tus recordatorios."
         }
       ]
     ],
