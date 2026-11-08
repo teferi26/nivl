@@ -80,8 +80,8 @@
   "coach": {
     "inscripcion": "Il coach",
     "titulo": "Firmato. Ora, chi lo dirige.",
-    "pista": "Le tue abitudini, la tua organizzazione e i tuoi progressi sono gratis. I piani a pagamento aggiungono il coach IA e, con Élite, medaglia e richiesta di un posto in un ludus.",
-    "pistaHoja": "Le tue abitudini, la tua organizzazione e i tuoi progressi sono gratis. I piani a pagamento aggiungono il coach IA e, con Élite, medaglia e richiesta di un posto in un ludus. Decidi ora o più avanti: l'impegno vale lo stesso.",
+    "pista": "Le tue abitudini, la tua organizzazione e i tuoi progressi sono gratis. NIVL Pro aggiunge il coach IA.",
+    "pistaHoja": "Le tue abitudini, la tua organizzazione e i tuoi progressi sono gratis. NIVL Pro aggiunge il coach IA. Decidi ora o più avanti: l'impegno vale lo stesso.",
     "preparandoA11y": "Preparazione del tuo ingresso",
     "seguirGratis": "Continua gratis per ora"
   },

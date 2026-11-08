@@ -17,7 +17,6 @@ import { CARTERA_DE_PRUEBA, instalar, peticion, sse, turnoHerramienta, turnoText
 import { AI_SAFETY_RULES, REGLA_PRODUCTOS_FINANCIEROS, REGLA_RIESGO_SALUD } from './ai-safety.ts';
 import {
   callClaude,
-  CHEAP_MODEL,
   COACH_MODEL,
   costeMaximo,
   costeMaximoClaude,
@@ -27,7 +26,6 @@ import {
   type SystemBlock,
 } from './anthropic.ts';
 import { buildSystemRegistro, partirEstado, REGLA_SIN_GUIONES, SECCIONES_RAPIDAS, SISTEMA_FIJO } from './prompt.ts';
-import { soloAnthropic } from './routing.ts';
 import { sistemaEstudio, TAREAS_ESTUDIO } from './estudio.ts';
 import { esperarSegundoPlano } from './resumenhilo.ts';
 
@@ -327,8 +325,9 @@ Deno.test('cartera: error HTTP del proveedor libera la reserva; tope a mitad de 
 
 // ── 3. Abuso con el handler ────────────────────────────────────────────
 
-Deno.test('abuso: 10 dispositivos × 40 peticiones a la vez, reintentos y fallos a mitad, contra un tope de 8 $', async () => {
-  const TOPE = 8_000_000;
+Deno.test('abuso: 10 dispositivos × 40 peticiones a la vez, reintentos y fallos a mitad, contra un tope bajo', async () => {
+  // Con Haiku 5.5 cada llamada cuesta céntimos: un tope más bajo sigue poniendo la cartera al borde.
+  const TOPE = 300_000;
   const w = carteraSimulada(TOPE);
   let semilla = 7;
   const azar = () => ((semilla = (semilla * 1103515245 + 12345) % 2147483648) / 2147483648);
@@ -347,9 +346,7 @@ Deno.test('abuso: 10 dispositivos × 40 peticiones a la vez, reintentos y fallos
   try {
     const dispositivo = async (d: number) => {
       for (let i = 0; i < 40; i++) {
-        const profundo = azar() < 0.15;
-        const r = await handler(peticion({ kind: 'chat', message: `dispositivo ${d}, petición ${i}: ¿qué hago ahora?`, stream: azar() < 0.5 },
-          profundo ? { 'x-nivl-mode': 'profundo' } : {}));
+        const r = await handler(peticion({ kind: 'chat', message: `dispositivo ${d}, petición ${i}: ¿qué hago ahora?`, stream: azar() < 0.5 }));
         await r.text();
       }
     };
@@ -382,19 +379,19 @@ Deno.test('estudio: Haiku, sin dossier ni herramientas, con su cartera, y la res
   const fake = instalar({
     rpc: { ai_reservar: (a: { p_funcion: string }) => { reservas.push(a); return { ok: true, id: 'e1' }; } },
     filas: { coach_dossier: [{ content: 'MEMORIA_SECRETA_DEL_DOSSIER' }] },
-    proveedor: () => turnoTexto('[{"frente":"¿Qué es la mitosis?","dorso":"División celular"}]', { input_tokens: 900, output_tokens: 120 }, CHEAP_MODEL),
+    proveedor: () => turnoTexto('[{"frente":"¿Qué es la mitosis?","dorso":"División celular"}]', { input_tokens: 900, output_tokens: 120 }, COACH_MODEL),
   });
   try {
     const r = await handler(peticion({ kind: 'estudio', tarea: 'flashcards', texto: 'La mitosis es la división celular...' }));
     equal(r.status, 200);
     deepEqual((await r.json()).resultado, [{ frente: '¿Qué es la mitosis?', dorso: 'División celular' }]);
     const b = fake.proveedor[0].body as Body;
-    equal(b.model, CHEAP_MODEL);
+    equal(b.model, COACH_MODEL);
     equal(b.tools, undefined, 'sin herramientas');
     ok(!JSON.stringify(b).includes('MEMORIA_SECRETA_DEL_DOSSIER'), 'sin el dossier');
     equal(fake.llamadas.some((l) => l.url.pathname.endsWith('/coach_dossier')), false, 'ni lo lee');
     deepEqual(reservas.map((x) => x.p_funcion), ['estudio']);
-    ok(costMicroUsd(CHEAP_MODEL, { input_tokens: 900, output_tokens: 120 }) < 2_000, 'menos de 0,002 $');
+    ok(costMicroUsd(COACH_MODEL, { input_tokens: 900, output_tokens: 120 }) < 2_000, 'menos de 0,002 $');
     reservas = [];
     equal((await handler(peticion({ kind: 'estudio', tarea: 'inventada', texto: 'x' }))).status, 400);
   } finally {
@@ -406,13 +403,13 @@ Deno.test('brief ligero: con el plan ya escrito, Haiku sin herramientas ni histo
   const planHoy = { day_plans: [{ id: 'p1' }], day_blocks: [{ start_min: 420, end_min: 480, title: 'Gimnasio', done: false }] };
   {
     const fake = instalar({ filas: { ...planHoy, coach_messages: [{ role: 'user', content: [{ type: 'text', text: 'CHARLA_DE_AYER' }] }] },
-      proveedor: () => turnoTexto('07:00 Gimnasio. Empieza.', { input_tokens: 2_000, output_tokens: 150 }, CHEAP_MODEL) });
+      proveedor: () => turnoTexto('07:00 Gimnasio. Empieza.', { input_tokens: 2_000, output_tokens: 150 }, COACH_MODEL) });
     try {
       const r = await handler(peticion({ kind: 'brief', stream: false, date: '2026-10-21' }));
       equal(r.status, 200);
       const b = fake.proveedor[0].body as Body;
       equal(fake.proveedor.length, 1);
-      equal(b.model, CHEAP_MODEL);
+      equal(b.model, COACH_MODEL);
       equal(b.tools, undefined);
       ok(JSON.stringify(b).includes('Gimnasio') && !JSON.stringify(b).includes('CHARLA_DE_AYER'));
       ok(b.system[0].text.startsWith(SISTEMA_BRIEF_LIGERO));
@@ -436,12 +433,6 @@ Deno.test('brief ligero: con el plan ya escrito, Haiku sin herramientas ni histo
 
 // ── 5. Solo Anthropic y reglas de seguridad ───────────────────────────
 
-Deno.test('routing: solo modelos de Anthropic; cualquier otro cae al modelo barato de Anthropic', () => {
-  deepEqual(soloAnthropic('claude-sonnet-5', CHEAP_MODEL), { model: 'claude-sonnet-5', bloqueado: false });
-  for (const otro of ['deepseek-v4-flash', 'deepseek-flash', 'gpt-5', 'gemini-2.5-pro', 'qwen-plus', ' DeepSeek-chat ', '']) {
-    deepEqual(soloAnthropic(otro, CHEAP_MODEL), { model: CHEAP_MODEL, bloqueado: true }, otro);
-  }
-});
 
 Deno.test('seguridad: nunca productos financieros concretos y 024/112 ante riesgo, en todos los prompts', async () => {
   ok(/fondos, acciones, ETF, criptomonedas, préstamos/.test(REGLA_PRODUCTOS_FINANCIEROS));

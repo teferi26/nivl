@@ -12,7 +12,7 @@
 // Lo que este módulo NO hace: decidir si un gasto está bien o mal, si toca
 // recortar o qué presupuesto poner. Eso es criterio y es del coach.
 
-import { callClaude, CHEAP_MODEL, type Cartera, type Usage } from './anthropic.ts';
+import { callClaude, COACH_MODEL, type Cartera, type Usage } from './anthropic.ts';
 import { consentimientoIa, MENSAJE_SIN_CONSENTIMIENTO } from './consent.ts';
 import type { Db } from './db.ts';
 
@@ -83,7 +83,7 @@ export async function clasificarPendientes(
       revisados: 0,
       clasificados: 0,
       usage: {},
-      model: CHEAP_MODEL,
+      model: COACH_MODEL,
       resumen: 'No hay movimientos sin clasificar.',
     };
   }
@@ -98,10 +98,11 @@ export async function clasificarPendientes(
   if (consiente !== true) throw new ClasificacionConsentimientoError(consiente === null ? 503 : 403);
 
   const turn = await callClaude({
-    model: CHEAP_MODEL,
+    model: COACH_MODEL,
     system: [{ type: 'text', text: SISTEMA }],
     messages: [{ role: 'user', content: [{ type: 'text', text: lista }] }],
-    maxTokens: 2000,
+    // El pensamiento cuenta dentro del techo.
+    maxTokens: 4000,
     effort: 'low',
     cartera,
   });

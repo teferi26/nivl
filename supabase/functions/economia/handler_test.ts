@@ -15,8 +15,8 @@ Deno.test('paginasPdf: árbol, objetos, sin contar y no PDF', () => {
 });
 
 Deno.test('costeMaximo: el tope corta antes de llamar', () => {
-  assert(costeMaximo('claude-haiku-4-5', 60_000, 8000) <= MAX_COSTE_PDF_MICRO_USD);
-  assert(costeMaximo('claude-haiku-4-5', 200_000, 8000) > MAX_COSTE_PDF_MICRO_USD);
+  assert(costeMaximo('claude-haiku-5-5', 60_000, 8000) <= MAX_COSTE_PDF_MICRO_USD);
+  assert(costeMaximo('claude-haiku-5-5', 200_000, 8000) > MAX_COSTE_PDF_MICRO_USD);
 });
 
 Deno.test('leerCuerpo corta sin content-length', async () => {
@@ -64,7 +64,7 @@ function deps(over: Partial<Deps> = {}, modos: string[] = ['work']): { deps: Dep
       userClient: () => ({ from: () => consulta }) as unknown as Db,
       llamarModelo: () => {
         llamadas.push('modelo');
-        return Promise.resolve({ content: [{ type: 'text', text: '2026-10-02|-45,20|MERCADONA' }], stopReason: 'end_turn', usage: {}, model: 'claude-haiku-4-5' });
+        return Promise.resolve({ content: [{ type: 'text', text: '2026-10-02|-45,20|MERCADONA' }], stopReason: 'end_turn', usage: {}, model: 'claude-haiku-5-5' });
       },
       contarFichas: () => Promise.resolve(1000),
       leerPdf: () =>
@@ -130,7 +130,7 @@ Deno.test('a la IA llega el texto con el IBAN enmascarado, nunca el PDF', async 
   const { deps: d } = deps({
     llamarModelo: (o) => {
       enviado = JSON.stringify(o.messages);
-      return Promise.resolve({ content: [{ type: 'text', text: '2026-10-02|-45,20|MERCADONA' }], stopReason: 'end_turn', usage: {}, model: 'claude-haiku-4-5' });
+      return Promise.resolve({ content: [{ type: 'text', text: '2026-10-02|-45,20|MERCADONA' }], stopReason: 'end_turn', usage: {}, model: 'claude-haiku-5-5' });
     },
   });
   const r = await crearHandler(d)(peticion({ accion: 'extracto', tipo: 'pdf', contenido: pdf('pequeño'), cuenta: 'X' }));

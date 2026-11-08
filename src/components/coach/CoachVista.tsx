@@ -30,13 +30,12 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Arena, BotonArena, Entrada, Galea } from '@/components/arena';
 import { ProUpsellLine } from '@/components/ProOffer';
 import { UsoIa } from '@/components/UsoIa';
-import { Button, Card, Chip, Screen, Skeleton, Tag } from '@/components/ui';
+import { Button, Card, Screen, Skeleton } from '@/components/ui';
 import { useTecladoAbierto } from '@/components/ui/useTecladoAbierto';
 import { usePiel, type Piel } from '@/design/piel';
 import { ink, space, stroke, type } from '@/design/tokens';
 import { useAnchoUtil, useNavActual } from '@/design/useSizeClass';
 import { t } from '@/i18n';
-import type { CoachMode } from '@/lib/coach';
 import { DESCARGO_SALUD, LINEA_CRISIS } from '@/lib/consentmath';
 import { dateKey, relativoDe } from '@/lib/dates';
 import type { DecisionOferta } from '@/lib/paywallmoment';
@@ -81,8 +80,6 @@ export interface CoachVistaProps {
   onReintentar: () => void;
   /** Consultas del último turno cerrado del coach. */
   consultas: number;
-  /** El próximo turno va en modo profundo. */
-  profundo: boolean;
   burbujas: BurbujaVista[];
   enCurso: { texto: string; pensando: boolean; acciones: { texto: string; ok: boolean }[]; cita: string | null } | null;
   error: string | null;
@@ -96,8 +93,6 @@ export interface CoachVistaProps {
   energia: { texto: string; ofertaTier: Tier | null; avisoAparte: string | null } | null;
   /** Cuánta IA queda este mes, avisos del 80/95 % y la recarga (0078). null = sin cartera. */
   uso?: { status: AiStatus; onRecargada: () => void } | null;
-  /** Solo si el plan incluye el modo profundo. */
-  potencia: { modo: CoachMode; profundoAbierto: boolean; linea: string; onElegir: (m: CoachMode) => void } | null;
   compositor: {
     texto: string;
     onCambiarTexto: (texto: string) => void;
@@ -167,7 +162,7 @@ export function rotuloDia(fecha: string | undefined, hoy: string = dateKey()): s
   return relativoDe(dateKey(d), hoy).toUpperCase();
 }
 
-function Cabecera({ p }: { p: Pick<CoachVistaProps, 'cargando' | 'sinPro' | 'consultas' | 'profundo' | 'onPro' | 'onMemoria'> }) {
+function Cabecera({ p }: { p: Pick<CoachVistaProps, 'cargando' | 'sinPro' | 'consultas' | 'onPro' | 'onMemoria'> }) {
   const grande = useAnchoUtil() >= ANCHO_TITULO_GRANDE;
   return (
     <View style={styles.header}>
@@ -183,7 +178,6 @@ function Cabecera({ p }: { p: Pick<CoachVistaProps, 'cargando' | 'sinPro' | 'con
           >
             {t('coach:vista.titulo')}
           </Text>
-          {p.profundo ? <Tag>{t('coach:vista.profundoTag')}</Tag> : null}
         </View>
         <Text style={styles.headerLinea} numberOfLines={2} maxFontSizeMultiplier={1.35}>
           {lineaCabecera(p)}
@@ -276,7 +270,7 @@ function Rapidas({
 }: {
   onAtajo: (mensaje: string) => void;
   desactivadas: boolean;
-  /** Sin el selector de potencia encima, la fila pone el filete. */
+  /** La fila pone el filete. */
   conLinea: boolean;
 }) {
   const piel = usePiel();
@@ -345,7 +339,7 @@ export function CoachVista(p: CoachVistaProps) {
   const piel = usePiel();
   const pc = piel?.coach;
   const cabecera = pc ? (
-    pc.cabecera({ linea: lineaCabecera(p), sinPro: p.sinPro, profundo: p.profundo, cargando: p.cargando, onPro: p.onPro, onMemoria: p.onMemoria })
+    pc.cabecera({ linea: lineaCabecera(p), sinPro: p.sinPro, cargando: p.cargando, onPro: p.onPro, onMemoria: p.onMemoria })
   ) : (
     <Cabecera p={p} />
   );
@@ -538,31 +532,6 @@ export function CoachVista(p: CoachVistaProps) {
           )
         ) : null}
 
-        {p.potencia ? (
-          <View style={styles.potencia}>
-            <View style={styles.potenciaChips} accessibilityRole="radiogroup" accessibilityLabel={t('coach:vista.potenciaA11y')}>
-              <Chip
-                small
-                label={t('coach:vista.estandar')}
-                selected={p.potencia.modo === 'estandar'}
-                onPress={() => p.potencia?.onElegir('estandar')}
-              />
-              <Chip
-                small
-                label={t('coach:vista.profundo')}
-                icon="telescope-outline"
-                selected={p.potencia.modo === 'profundo'}
-                onPress={() => p.potencia?.onElegir('profundo')}
-                disabled={!p.potencia.profundoAbierto}
-                accessibilityLabel={t('coach:vista.profundoA11y', { linea: p.potencia.linea })}
-              />
-            </View>
-            <Text style={styles.potenciaTexto} numberOfLines={2}>
-              {p.potencia.linea}
-            </Text>
-          </View>
-        ) : null}
-
         {/* Sin Pro se cierra ESCRIBIR, no leer: con historial (una suscripción
             que venció) la conversación se conserva a la vista. Sin historial,
             el estado bloqueado de arriba ya lleva su propio botón. */}
@@ -582,13 +551,13 @@ export function CoachVista(p: CoachVistaProps) {
           )
         ) : (
           <View>
-            {conRapidas ? <Rapidas onAtajo={p.onAtajo} desactivadas={c.ocupado} conLinea={!p.potencia} /> : null}
+            {conRapidas ? <Rapidas onAtajo={p.onAtajo} desactivadas={c.ocupado} conLinea /> : null}
             <FranjaGrabacion dictado={c.dictado} aviso={c.avisoDictado} />
-            {c.conFotos === false ? <Text style={styles.sinFotos}>{t('coach:vista.fotosElite')}</Text> : null}
+            {c.conFotos === false ? <Text style={styles.sinFotos}>{t('coach:vista.fotosPro')}</Text> : null}
             <View
               style={[
                 styles.barra,
-                (!!p.potencia || conRapidas || c.grabando || !!c.avisoDictado) && styles.barraSinLinea,
+                (conRapidas || c.grabando || !!c.avisoDictado) && styles.barraSinLinea,
                 piel && { backgroundColor: 'transparent', borderTopColor: piel.borde },
                 { paddingBottom: styles.barra.paddingBottom + fondoSeguro + (pc?.margenInferior ?? 0) },
               ]}
@@ -860,14 +829,5 @@ const styles = StyleSheet.create({
   },
   adjuntasTexto: { ...lectura, color: ink.ink8, flex: 1 },
   quitar: { width: 28, height: 28, alignItems: 'center', justifyContent: 'center' },
-  potencia: {
-    paddingHorizontal: space.s5,
-    paddingTop: space.s3 - 2,
-    paddingBottom: 2,
-    borderTopWidth: stroke.hairline,
-    borderTopColor: ink.ink3,
-  },
-  potenciaChips: { flexDirection: 'row', gap: space.s2 },
   barraSinLinea: { borderTopWidth: 0 },
-  potenciaTexto: { ...lectura, color: ink.ink8, marginTop: space.s1 + 2 },
 });

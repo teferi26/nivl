@@ -24,8 +24,8 @@ export function PruebaAuto() {
           precios={p.precios}
           onSeguir={() => {
             p.apartar();
-            // Las ofertas de la tienda (Élite mensual o anual, y Pro), con su letra.
-            router.push('/pro?tier=elite');
+            // Las ofertas de la tienda (NIVL Pro mensual o anual), con su letra.
+            router.push('/pro');
           }}
           onQuedarme={p.quedarme}
         />

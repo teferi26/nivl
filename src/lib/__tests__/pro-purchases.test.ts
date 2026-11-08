@@ -461,15 +461,15 @@ describe('momento de la oferta: historial local', () => {
   test('ofrecerSi: nunca con celebración, nunca sin estado, y una línea no se apunta', async () => {
     expect((await ofrecerSi('primer_dia', libre, { celebrando: true, ahora: AHORA })).mostrar).toBe(false);
     expect((await ofrecerSi('primer_dia', null, { celebrando: false, ahora: AHORA })).mostrar).toBe(false);
-    const linea = await ofrecerSi('coach_profundo', libre, { celebrando: false, ahora: AHORA });
-    expect(linea).toMatchObject({ mostrar: true, forma: 'linea', tier: 'elite' });
+    const linea = await ofrecerSi('analisis_foto', libre, { celebrando: false, ahora: AHORA });
+    expect(linea).toMatchObject({ mostrar: true, forma: 'linea', tier: 'pro' });
     expect(await leerHistorialOfertas(AHORA)).toEqual([]);
   });
 
-  test('ofrecerSi: a quien paga Pro por Stripe no se le ofrece Élite en la tienda', async () => {
+  test('ofrecerSi: a quien ya paga Pro no se le ofrece nada, sea cual sea su tienda', async () => {
     const proStripe = { ...SIN_IA, entitled: true, tier: 'pro' as const, plan: 'pro_anual' as const };
-    expect((await ofrecerSi('coach_profundo', proStripe, { celebrando: false, provider: 'stripe', ahora: AHORA })).mostrar).toBe(false);
-    expect((await ofrecerSi('coach_profundo', proStripe, { celebrando: false, provider: 'apple', ahora: AHORA })).mostrar).toBe(true);
+    expect((await ofrecerSi('analisis_foto', proStripe, { celebrando: false, provider: 'stripe', ahora: AHORA })).mostrar).toBe(false);
+    expect((await ofrecerSi('analisis_foto', proStripe, { celebrando: false, provider: 'apple', ahora: AHORA })).mostrar).toBe(false);
   });
 
   test('ofrecerSi fin_prueba: el inicio de la prueba apuntado (como línea) basta; o lo dice el servidor', async () => {

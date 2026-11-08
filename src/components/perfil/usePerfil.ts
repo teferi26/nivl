@@ -265,7 +265,7 @@ export function usePerfil(): UsePerfil {
     fetchAiStatus()
       .then((s) => {
         setTieneCoach(isPro(s));
-        setElite(isElite(s));
+        setElite(isElite(s) && !s.trial);
       })
       .catch(() => {});
     fetchMyReferral()

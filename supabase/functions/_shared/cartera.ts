@@ -15,7 +15,6 @@ export type { Cartera };
 export type FuncionIa =
   | 'chat'
   | 'registro'
-  | 'profundo'
   | 'ritual'
   | 'estudio'
   | 'pdf'
@@ -24,8 +23,6 @@ export type FuncionIa =
   | 'resumen_hilo'
   | 'checkin'
   | 'oracle';
-
-export type ModoCartera = 'estandar' | 'profundo';
 
 /** Solo el código de un error de Supabase, nunca el objeto (puede llevar datos). */
 export function codigoError(e: unknown): string {
@@ -48,14 +45,13 @@ export class CarteraIa implements Cartera {
     private readonly admin: Db,
     private readonly userId: string,
     readonly funcion: FuncionIa,
-    readonly modo: ModoCartera = 'estandar',
   ) {}
 
   async reservar(micro: number): Promise<string> {
     const { data, error } = await this.admin.rpc('ai_reservar', {
       p_user: this.userId,
       p_funcion: this.funcion,
-      p_modo: this.modo,
+      p_modo: 'estandar',
       p_micro: Math.max(1, Math.ceil(micro)),
       p_turno: this.turno,
     });
@@ -88,9 +84,8 @@ export async function puertaCartera(
   admin: Db,
   userId: string,
   funcion: FuncionIa,
-  modo: ModoCartera,
 ): Promise<{ ok: boolean; motivo: string | null; renueva?: string }> {
-  const { data, error } = await admin.rpc('ai_puede', { p_user: userId, p_funcion: funcion, p_modo: modo });
+  const { data, error } = await admin.rpc('ai_puede', { p_user: userId, p_funcion: funcion, p_modo: 'estandar' });
   if (error) {
     console.error('ai_puede failed:', codigoError(error));
     return { ok: false, motivo: 'cartera_no_disponible' };
@@ -118,8 +113,6 @@ export function mensajeTope(motivo: string, renueva?: string): { status: number;
       return { status: 402, reason: 'presupuesto_agotado', detalle: 'ritmo_diario', error: 'Hoy ya has usado la IA que te corresponde para llegar a fin de mes. Mañana vuelve.' };
     case 'tope_funcion':
       return { status: 429, reason: 'presupuesto_agotado', detalle: 'tope_funcion', error: 'Has llegado al máximo de hoy para esta función. Mañana vuelve.' };
-    case 'profundo_agotado':
-      return { status: 402, reason: 'profundo_agotado', error: 'Has usado tus turnos profundos de este mes. El modo estándar sigue disponible.' };
     case 'tope_llamada':
       return { status: 413, reason: 'tope_llamada', error: 'Esta petición es demasiado grande para el sistema. Recórtala y vuelve a intentarlo.' };
     case 'sin_suscripcion':

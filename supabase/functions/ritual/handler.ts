@@ -21,7 +21,7 @@
 //   supabase functions deploy ritual --no-verify-jwt
 //   supabase secrets set RITUAL_SECRET=<cadena larga al azar>
 
-import { callClaude, CHEAP_MODEL, costMicroUsd, LlamadaFallida, type Usage } from '../_shared/anthropic.ts';
+import { callClaude, COACH_MODEL, costMicroUsd, LlamadaFallida, type Usage } from '../_shared/anthropic.ts';
 import { esColumnaInexistente, insertarRun } from '../_shared/telemetria.ts';
 import { CarteraIa } from '../_shared/cartera.ts';
 import { AI_SAFETY_RULES } from '../_shared/ai-safety.ts';
@@ -495,7 +495,7 @@ export async function intentarCheckin(admin: Db, sb: Db, p: Perfil): Promise<str
   if (!estado || estado.allowed !== true) return `candado_${estado?.reason ?? 'cerrado'}`;
 
   let uso: Usage = {};
-  let modelo = CHEAP_MODEL;
+  let modelo = COACH_MODEL;
   let fallo: string | null = null;
   let llamado = false;
   let stateChars = 0;
@@ -518,7 +518,7 @@ export async function intentarCheckin(admin: Db, sb: Db, p: Perfil): Promise<str
     let texto = '';
     try {
       const turn = await callClaude({
-        model: CHEAP_MODEL,
+        model: COACH_MODEL,
         signal: AbortSignal.timeout(30_000),
         system: [{ type: 'text', text: `${SISTEMA_CHECKIN}\n\n${AI_SAFETY_RULES}\n\n${REGLA_DATOS}` }],
         messages: [{
@@ -528,7 +528,9 @@ export async function intentarCheckin(admin: Db, sb: Db, p: Perfil): Promise<str
             text: `${DATOS_ABRE}\n${neutralizarDatos(datos)}\n${DATOS_CIERRA}\n\nEscribe el mensaje de seguimiento de hoy (${ahora.fecha}, ${hhmm}).`,
           }],
         }],
-        maxTokens: 200,
+        // El pensamiento cuenta dentro del techo: el mensaje son dos frases, pero 200 fichas no daban para pensar.
+        maxTokens: 1200,
+        effort: 'low',
         // Sin herramientas: el checkin no escribe nada.
         // La cartera (0078): reserva la cota antes de llamar (función 'checkin', 2 al día).
         cartera: new CarteraIa(admin, p.id, 'checkin'),

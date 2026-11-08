@@ -30,7 +30,7 @@ import { COACH_KNOWLEDGE } from './knowledge.ts';
 import { buildSystemRegistro, REGLA_COMPROBAR, REGLA_NO_ESCRIBIR, SISTEMA_REGISTRO, SISTEMA_REGISTRO_FIJO } from './prompt.ts';
 import { buildContextMinimo } from './context.ts';
 import { userClient } from './db.ts';
-import { CHEAP_MODEL, COACH_MODEL, costMicroUsd, estimarFichas } from './anthropic.ts';
+import { COACH_MODEL, costMicroUsd, estimarFichas } from './anthropic.ts';
 import { HEALTH_REQUIRED } from './health.ts';
 import { esperarSegundoPlano } from './resumenhilo.ts';
 
@@ -283,9 +283,9 @@ Deno.test('L3 «te he subido el gym hoy»: modelo barato, pack fijo, sin dossier
           { fecha: HOY, ejercicios: [{ ejercicio: 'Press banca', series: 5, repeticiones: 5, peso: 80, rpe: 8, notas: '' }], motivo: 'por mi cuenta' },
           'tu_presc',
           USO_ESTRECHO,
-          CHEAP_MODEL,
+          COACH_MODEL,
         )
-        : turnoTexto('Consta: Sentadilla 100×5, 100×5 hoy.', USO_ESTRECHO, CHEAP_MODEL),
+        : turnoTexto('Consta: Sentadilla 100×5, 100×5 hoy.', USO_ESTRECHO, COACH_MODEL),
   });
   try {
     const r = await handler(peticion({ kind: 'chat', message: 'te he subido el gym hoy', stream: false, date: HOY }));
@@ -294,7 +294,7 @@ Deno.test('L3 «te he subido el gym hoy»: modelo barato, pack fijo, sin dossier
     ok(respuesta.text.includes('Sentadilla'));
 
     const primera = cuerpo(fake, 0);
-    equal(primera.model, CHEAP_MODEL, 'modelo barato');
+    equal(primera.model, COACH_MODEL, 'modelo barato');
     deepEqual(primera.tools.map((t) => t.name), TOOL_DEFS_REGISTRO.map((t) => t.name), 'herramientas = PACK_REGISTRO');
 
     const sistema = JSON.stringify(primera.system);
@@ -365,32 +365,28 @@ Deno.test('L3 «¿qué entreno hoy?» → ruta completa (coach, todas las herram
   }
 });
 
-Deno.test('L3 modelo: routes.registro del plan manda; sin él, CHEAP_MODEL aunque el plan tenga default', async () => {
-  for (const [routes, esperado] of [
-    [{ default: 'claude-sonnet-5', profundo: 'claude-sonnet-5' }, CHEAP_MODEL],
-    [{ default: 'claude-sonnet-5', registro: 'claude-opus-5' }, 'claude-opus-5'],
-  ] as const) {
+Deno.test('L3 modelo: ni routes ni los secretos eligen modelo; siempre COACH_MODEL', async () => {
+  Deno.env.set('COACH_MODEL_CHAT', 'claude-otro');
+  for (const routes of [{ default: 'claude-otro', profundo: 'claude-otro' }, { default: 'claude-otro', registro: 'claude-otro' }]) {
     const fake = instalar({
       otras: postgrest(datos()),
       rpc: { ai_begin_turn: () => ({ allowed: true, mode: 'estandar', turn_budget: 5_000_000, routes }) },
-      proveedor: () => turnoTexto('Anotado.', USO_ESTRECHO, CHEAP_MODEL),
+      proveedor: () => turnoTexto('Anotado.', USO_ESTRECHO, COACH_MODEL),
     });
     try {
       await (await handler(peticion({ kind: 'chat', message: 'peso 94,2', stream: false, date: HOY }))).text();
-      equal(cuerpo(fake, 0).model, esperado);
-      equal(runs(fake)[0].intent, 'dato');
+      await (await handler(peticion({ kind: 'chat', message: '¿cómo enfoco la semana?', stream: false, date: HOY }))).text();
+      for (const c of fake.proveedor) equal((c.body as { model: string }).model, COACH_MODEL);
     } finally {
       await esperarSegundoPlano(); // L8: el resumen del hilo (segundo plano) no se escapa del fake
       fake.restaurar();
     }
   }
+  Deno.env.delete('COACH_MODEL_CHAT');
 });
 
-Deno.test('L3 profundo y fotos: el parte va por la ruta completa', async () => {
-  const fake = instalar({
-    otras: postgrest(datos()),
-    rpc: { ai_begin_turn: () => ({ allowed: true, mode: 'profundo', turn_budget: 5_000_000, routes: { profundo: 'claude-sonnet-5' } }) },
-  });
+Deno.test('L3 sin modo profundo: la cabecera antigua se ignora; con fotos, ruta completa', async () => {
+  const fake = instalar({ otras: postgrest(datos()) });
   try {
     await (await handler(peticion({ kind: 'chat', message: 'ya he entrenado', stream: false, date: HOY }, { 'x-nivl-mode': 'profundo' }))).text();
     await (await handler(peticion({
@@ -398,10 +394,10 @@ Deno.test('L3 profundo y fotos: el parte va por la ruta completa', async () => {
       imagenes: [{ media_type: 'image/jpeg', data: 'QUJD' }],
     }))).text();
     // L8: con 8 filas de hilo la ruta completa programa el resumen (resumen_hilo): no es un turno.
-    const [profundo, conFoto] = runs(fake).filter((r) => r.kind !== 'resumen_hilo');
-    equal(profundo.route, 'completa');
+    const [cabecera, conFoto] = runs(fake).filter((r) => r.kind !== 'resumen_hilo');
+    equal(cabecera.route, 'registro');
+    equal(cabecera.mode, 'estandar');
     equal(conFoto.route, 'completa');
-    equal(cuerpo(fake, 0).tools.length, TOOL_DEFS.length);
   } finally {
     await esperarSegundoPlano(); // L8: el resumen del hilo (segundo plano) no se escapa del fake
     fake.restaurar();
@@ -411,7 +407,7 @@ Deno.test('L3 profundo y fotos: el parte va por la ruta completa', async () => {
 Deno.test('L3 vueltas: como mucho 3 y la última va a texto (tool_choice none, mismas 4 herramientas)', async () => {
   const fake = instalar({
     otras: postgrest(datos()),
-    proveedor: (_b, n) => turnoHerramienta('consultar_dia', { fecha: '' }, `tu_${n}`, USO_ESTRECHO, CHEAP_MODEL),
+    proveedor: (_b, n) => turnoHerramienta('consultar_dia', { fecha: '' }, `tu_${n}`, USO_ESTRECHO, COACH_MODEL),
   });
   try {
     await (await handler(peticion({ kind: 'chat', message: 'ya está hecho', stream: false, date: HOY }))).text();
@@ -431,8 +427,8 @@ Deno.test('L3 registrar_dato del pack sí escribe (peso), con el JWT del usuario
     otras: postgrest(datos()),
     proveedor: (_b, n) =>
       n === 0
-        ? turnoHerramienta('registrar_dato', { tipo: 'peso', id: '', peso_kg: 94.2, kcal: 0, proteina_g: 0, notas: '' }, 'tu_peso', USO_ESTRECHO, CHEAP_MODEL)
-        : turnoTexto('Peso anotado: 94,2 kg.', USO_ESTRECHO, CHEAP_MODEL),
+        ? turnoHerramienta('registrar_dato', { tipo: 'peso', id: '', peso_kg: 94.2, kcal: 0, proteina_g: 0, notas: '' }, 'tu_peso', USO_ESTRECHO, COACH_MODEL)
+        : turnoTexto('Peso anotado: 94,2 kg.', USO_ESTRECHO, COACH_MODEL),
   });
   try {
     await (await handler(peticion({ kind: 'chat', message: 'peso 94,2', stream: false, date: HOY }))).text();
@@ -500,38 +496,35 @@ Deno.test('L3 coste simulado: «te he subido el gym hoy» estrecho frente a comp
   ok(cE * 2 < 10_000, `dos llamadas estrechas < 0,01 $ (${cE * 2} µ$)`);
 });
 
-// ── Regresión del P0 de producción (02/10): Haiku 4.5 y el reintento ──────────
-// Con L3 desplegado, «te he subido el gym hoy» devolvía «El sistema no responde»:
-// la petición a claude-haiku-4-5 llevaba thinking adaptive + output_config.effort,
-// que Haiku 4.5 rechaza con 400 (guía de la API). Clasificar y el titular,
-// también en Haiku, fallaban igual en silencio.
+// ── Forma de la petición a Haiku 5.5 ──────────────────────────────
 
-Deno.test('P0 Haiku: la petición a Haiku 4.5 no lleva thinking adaptive ni effort; la de Sonnet sí', async () => {
+Deno.test('Haiku 5.5: pensamiento adaptativo, effort explícito y nada de lo que da 400', async () => {
   const fake = instalar({
     otras: postgrest(datos()),
-    proveedor: () => turnoTexto('Consta.', USO_ESTRECHO, CHEAP_MODEL),
+    proveedor: () => turnoTexto('Consta.', USO_ESTRECHO, COACH_MODEL),
   });
   try {
     const r = await handler(peticion({ kind: 'chat', message: 'te he subido el gym hoy', stream: false, date: HOY }));
     equal(r.status, 200);
     const b = fake.proveedor[0].body as Record<string, unknown>;
-    equal(b.model, CHEAP_MODEL);
-    equal(b.thinking, undefined, 'sin thinking para Haiku 4.5');
-    equal(b.output_config, undefined, 'sin effort para Haiku 4.5');
+    equal(b.model, 'claude-haiku-5-5');
+    deepEqual(b.thinking, { type: 'adaptive', display: 'summarized' });
+    deepEqual(b.output_config, { effort: 'low' });
+    for (const k of ['temperature', 'top_p', 'top_k', 'fallbacks']) ok(!(k in b), k);
+    equal(fake.proveedor[0].headers.get('anthropic-beta'), null, 'sin cabecera de reserva');
+    const ultimo = (b.messages as { role: string }[]).at(-1)!;
+    equal(ultimo.role, 'user', 'sin prefill');
   } finally {
     await esperarSegundoPlano(); // L8: el resumen del hilo (segundo plano) no se escapa del fake
     fake.restaurar();
   }
-  const { admitePensamientoAdaptativo } = await import('./anthropic.ts');
-  ok(!admitePensamientoAdaptativo('claude-haiku-4-5'));
-  ok(admitePensamientoAdaptativo(COACH_MODEL));
 });
 
 Deno.test('P0 reintento: si el proveedor rechaza la ruta estrecha (400), responde la completa y el mensaje se guarda una sola vez', async () => {
   const fake = instalar({
     otras: postgrest(datos()),
-    proveedor: (body: { model: string }) =>
-      body.model === CHEAP_MODEL
+    proveedor: (body: { tools: unknown[] }) =>
+      body.tools.length < TOOL_DEFS.length
         ? new Response(JSON.stringify({ type: 'error', error: { type: 'invalid_request_error', message: 'x' } }), { status: 400 })
         : turnoTexto('Consta: Sentadilla 100×5 hoy.', { input_tokens: 20_000, output_tokens: 300 }, COACH_MODEL),
   });
@@ -540,8 +533,8 @@ Deno.test('P0 reintento: si el proveedor rechaza la ruta estrecha (400), respond
     equal(r.status, 200, 'el usuario no ve un error');
     const respuesta = await r.json() as { text: string };
     ok(respuesta.text.includes('Sentadilla'));
-    equal((fake.proveedor[0].body as { model: string }).model, CHEAP_MODEL);
-    equal((fake.proveedor.at(-1)!.body as { model: string }).model, COACH_MODEL, 'reintento por la completa');
+    ok((fake.proveedor[0].body as { tools: unknown[] }).tools.length < TOOL_DEFS.length);
+    equal((fake.proveedor.at(-1)!.body as { tools: unknown[] }).tools.length, TOOL_DEFS.length, 'reintento por la completa');
     const delUsuario = fake.escrituras('coach_messages').filter((l) => JSON.stringify(l.body).includes('"role":"user"'));
     equal(delUsuario.length, 1, 'el mensaje del usuario no se duplica');
     const [run] = runs(fake);
@@ -562,7 +555,7 @@ function sseCompat(trozos: unknown[]): Response {
   return new Response(cuerpo, { headers: { 'content-type': 'text/event-stream' } });
 }
 
-Deno.test('Privacidad: routes con DeepSeek NO llama a COACH_BASE_URL; se atiende con Haiku y el log solo lleva el código', async () => {
+Deno.test('Privacidad: routes con DeepSeek NO llama a COACH_BASE_URL; se atiende con el modelo único y el log no lo nombra', async () => {
   // Decisión del 21/10/2026: un UPDATE de ai_plans no puede reactivar un proveedor que no sea Anthropic.
   Deno.env.set('COACH_BASE_URL', 'https://deepseek.fake/v1');
   Deno.env.set('COACH_API_KEY', 'clave-de-prueba');
@@ -572,7 +565,7 @@ Deno.test('Privacidad: routes con DeepSeek NO llama a COACH_BASE_URL; se atiende
   const fake = instalar({
     otras: postgrest(datos()),
     rpc: { ai_begin_turn: () => ({ allowed: true, mode: 'estandar', turn_budget: 5_000_000, routes: { default: 'deepseek-v4-flash', registro: 'deepseek-v4-flash' } }) },
-    proveedor: () => turnoTexto('Consta: sentadilla 100×5.', USO_ESTRECHO, CHEAP_MODEL),
+    proveedor: () => turnoTexto('Consta: sentadilla 100×5.', USO_ESTRECHO, COACH_MODEL),
   });
   try {
     for (const message of ['te he subido el gym hoy', '¿cómo enfoco la semana que viene?']) {
@@ -583,10 +576,9 @@ Deno.test('Privacidad: routes con DeepSeek NO llama a COACH_BASE_URL; se atiende
     ok(fake.proveedor.length >= 2);
     for (const c of fake.proveedor) {
       equal(c.url.hostname, 'api.anthropic.com', 'nunca la API compatible');
-      equal((c.body as { model: string }).model, CHEAP_MODEL, 'el modelo barato de Anthropic');
+      equal((c.body as { model: string }).model, COACH_MODEL, 'el modelo único');
     }
     equal(fake.llamadas.some((l) => l.url.hostname === 'deepseek.fake'), false, 'ni un byte a COACH_BASE_URL');
-    ok(avisos.includes('modelo_no_anthropic_bloqueado'), 'aviso con el código');
     equal(avisos.some((a) => a.includes('deepseek')), false, 'el log no lleva el nombre del modelo');
   } finally {
     await esperarSegundoPlano();

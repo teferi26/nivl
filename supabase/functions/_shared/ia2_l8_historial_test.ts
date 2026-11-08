@@ -18,7 +18,7 @@
 import { assert as ok, assertEquals as equal } from 'jsr:@std/assert@1';
 import { instalar, peticion, turnoHerramienta, turnoTexto, USER_ID, type Llamada } from './sec_coach_fake_test.ts';
 import { handler } from '../coach/handler.ts';
-import { CHEAP_MODEL, estimarFichas, type ApiMessage } from './anthropic.ts';
+import { COACH_MODEL, estimarFichas, type ApiMessage } from './anthropic.ts';
 import {
   esperarSegundoPlano,
   MANTENER_RECIENTES,
@@ -118,12 +118,13 @@ interface Cuerpo {
 }
 
 const cuerpo = (fake: ReturnType<typeof instalar>, n = 0) => fake.proveedor[n].body as Cuerpo;
-const esHaiku = (body: any) => String(body?.model ?? '').startsWith('claude-haiku');
+// El resumen del hilo es la única llamada sin herramientas de estos turnos.
+const esHaiku = (body: any) => !body?.tools?.length;
 
 function proveedorTexto() {
   return (body: any) =>
     esHaiku(body)
-      ? turnoTexto(RESUMEN, { input_tokens: 3_000, output_tokens: 200 }, CHEAP_MODEL)
+      ? turnoTexto(RESUMEN, { input_tokens: 3_000, output_tokens: 200 }, COACH_MODEL)
       : turnoTexto('Entendido.', { input_tokens: 20_000, output_tokens: 300 });
 }
 
@@ -199,7 +200,7 @@ Deno.test('L8 (a): un historial que empieza en un tool_result, con un turno solo
 Deno.test('L8 (b): en el turno actual los tool_use/tool_result siguen completos y emparejados', async () => {
   const msgs = [...turnoConHerramientas(0, 'T1')];
   const fake = await turno(datos({}, msgs), 'repasa mi peso', (b, n) => {
-    if (esHaiku(b)) return turnoTexto(RESUMEN, { input_tokens: 3_000, output_tokens: 200 }, CHEAP_MODEL);
+    if (esHaiku(b)) return turnoTexto(RESUMEN, { input_tokens: 3_000, output_tokens: 200 }, COACH_MODEL);
     return n === 0
       ? turnoHerramienta('consultar_historial', { que: 'peso', desde: '2026-09-01', hasta: '2026-09-30', filtro: '' }, 'tu_actual')
       : turnoTexto('Con lo que hay: vas bien.');

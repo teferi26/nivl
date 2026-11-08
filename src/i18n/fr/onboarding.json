@@ -80,8 +80,8 @@
   "coach": {
     "inscripcion": "Le coach",
     "titulo": "Signé. Maintenant, qui le dirige.",
-    "pista": "Tes habitudes, ton organisation et ta progression sont gratuites. Les formules payantes ajoutent le coach IA et, avec Élite, un insigne et une demande de place dans un ludus.",
-    "pistaHoja": "Tes habitudes, ton organisation et ta progression sont gratuites. Les formules payantes ajoutent le coach IA et, avec Élite, un insigne et une demande de place dans un ludus. Décide maintenant ou plus tard : l'engagement vaut autant.",
+    "pista": "Tes habitudes, ton organisation et ta progression sont gratuites. NIVL Pro ajoute le coach IA.",
+    "pistaHoja": "Tes habitudes, ton organisation et ta progression sont gratuites. NIVL Pro ajoute le coach IA. Décide maintenant ou plus tard : l'engagement vaut autant.",
     "preparandoA11y": "Préparation de ton entrée",
     "seguirGratis": "Continuer gratuitement pour l'instant"
   },

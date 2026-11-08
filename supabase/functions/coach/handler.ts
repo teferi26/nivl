@@ -16,12 +16,14 @@
 
 import {
   callClaude,
-  CHEAP_MODEL,
   COACH_MODEL,
   costMicroUsd,
+  fichasDelPrompt,
+  fichasEstimadas,
+  historialEnTramo,
   LlamadaFallida,
-  proveedorCompatible,
   RefusalError,
+  TECHO_PROMPT,
   TopeIaError,
   type ApiMessage,
   type ContentBlock,
@@ -50,7 +52,6 @@ import {
 import { AI_SAFETY_RULES } from '../_shared/ai-safety.ts';
 import { CarteraIa, codigoError, mensajeTope, puertaCartera, type FuncionIa } from '../_shared/cartera.ts';
 import { esTareaEstudio, generarEstudio, MAX_TEXTO_ESTUDIO, TAREAS_DE_SALUD } from '../_shared/estudio.ts';
-import { AVISO_MODELO_BLOQUEADO, elegirModelo, modoDeCabecera, soloAnthropic, type Modo, type Routes } from '../_shared/routing.ts';
 import { idiomaDeCabecera, misionConModos, modoDeCabeceraNivl, negativaModo, type ModoCoach } from '../_shared/modos.ts';
 import { executeTool, TOOL_DEFS } from '../_shared/tools.ts';
 import { controlHerramientas, fechaAceptable, fechaDelTurno, fotosSinVision, Gasto, mensajeDeFallo, reloj, validarImagenes } from './guard.ts';
@@ -99,15 +100,8 @@ const FILAS_POR_TURNO = 2;
 const TOPE_ASISTENTE_VIEJO = 1500;
 // Freno de mano: si un turno encadena tantas herramientas que ya ha costado
 // esto, algo se ha ido de madre y es mejor cortar que despertarse con la
-// sorpresa. Con Sonnet un turno normal ronda 0,07 $ y un brief con herramientas
-// 0,18 $, así que 0,75 $ deja margen de sobra sin dejar pasar una fuga.
+// sorpresa. Con Haiku 5.5 un turno normal ronda céntimos.
 const MAX_COST_MICRO_USD = 750_000; // 0,75 $
-// El modo profundo (solo Élite, 0024) piensa a fondo y escribe más: su freno
-// es el doble. Igual que el estándar, nunca por encima de lo que le queda en
-// su bolsillo.
-const MAX_COST_PROFUNDO_MICRO_USD = 1_500_000; // 1,50 $
-const MAX_TOKENS_PROFUNDO = 16000;
-
 // Ruta estrecha «registro» (L3): un parte («he hecho…», «peso 94,2») con el
 // modelo barato, el estado de hoy y cuatro herramientas. Tres vueltas bastan
 // (comprobar, apuntar, contestar) y la última se fuerza a texto. Su freno es
@@ -124,77 +118,16 @@ const KINDS = ['chat', 'brief', 'plan', 'revision_semanal', 'cierre_mensual', 'e
 type Kind = (typeof KINDS)[number];
 /** Rituales del cron que trabajan sin el historial del chat ni su resumen (IA barata, 21/10/2026). */
 const RITUALES_SIN_HILO: readonly Kind[] = ['brief', 'revision_semanal', 'cierre_mensual', 'escalada'];
-/** El kind de los atajos de estudio (flashcards, resúmenes…): Haiku y fuera del contexto del coach. */
+/** El kind de los atajos de estudio (flashcards, resúmenes…): fuera del contexto del coach. */
 const KIND_ESTUDIO = 'estudio';
 
 // 'clasificar' va aparte de KINDS a propósito: no es un ritual del coach ni
-// pasa por su contexto. Es una tarea mecánica que se atiende con Haiku y con
+// pasa por su contexto. Es una tarea mecánica que se atiende con
 // diez líneas de prompt. Ver _shared/clasificar.ts.
 const KIND_MECANICO = 'clasificar';
 // El resumen visual: tampoco es un ritual del coach, es un generador con datos
 // del periodo. Ver _shared/recap.ts.
 const KIND_RESUMEN = 'resumen';
-
-/**
- * Modelo por ritual SEGÚN LOS SECRETS. Desde la 0024 el modelo sale primero
- * del plan (`ai_plans.routes`, ver `_shared/routing.ts`); esto es la reserva
- * para un plan sin modelo fijado, que hoy es el del owner.
- *
- * Dos secretos para cambiarlo sin desplegar:
- *
- *   COACH_MODEL_CHAT    → el del día a día, que es donde está el volumen
- *   COACH_MODEL_RITUAL  → brief, revisión semanal, cierre de mes y escalada
- *
- * La división no es caprichosa. El chat son decenas de turnos al mes y manda
- * en la factura; los rituales son unos treinta y uno deciden el rumbo de la
- * semana entera, así que ahí un modelo más caro cuesta céntimos y se nota.
- *
- * Para probar si Haiku aguanta de coach basta con poner COACH_MODEL_CHAT a
- * claude-haiku-4-5 en el panel de Supabase y comparar respuestas: el coste real
- * de cada turno queda en coach_runs, con su modelo al lado.
- */
-function modeloDeEnv(kind: Kind): string {
-  const chat = Deno.env.get('COACH_MODEL_CHAT')?.trim();
-  const ritual = Deno.env.get('COACH_MODEL_RITUAL')?.trim();
-  const esCharla = kind === 'chat' || kind === 'plan';
-  const elegido = esCharla ? chat || ritual : ritual || chat;
-  // Antes, con COACH_BASE_URL puesto y sin modelo, esto lanzaba un error: el
-  // proveedor era global y "claude-sonnet-5" acababa en DeepSeek. Ahora el
-  // proveedor sale del nombre del modelo, así que caer a Claude es seguro.
-  return elegido || COACH_MODEL;
-}
-
-/**
- * El modelo del turno y con quién se habla. Un modelo que no es de Claude va
- * por la API compatible; si sus secrets (COACH_BASE_URL + COACH_API_KEY) no
- * están puestos, se cae a COACH_MODEL con un aviso en el log: el producto se
- * degrada, pero el candado sigue cortando el gasto.
- */
-function resolverModelo(
-  routes: Routes,
-  kind: Kind,
-  modo: Modo,
-): { model: string; compat: { baseUrl: string; apiKey: string } | null } {
-  // Privacidad (21/10/2026): solo Anthropic. Otro proveedor en routes o en los secrets no se llama
-  // nunca (ni COACH_BASE_URL): se atiende con el modelo barato de Anthropic y queda el código en el log.
-  const { model, bloqueado } = soloAnthropic(elegirModelo(routes, kind, modo, () => modeloDeEnv(kind)), CHEAP_MODEL);
-  if (bloqueado) console.warn(AVISO_MODELO_BLOQUEADO);
-  return { model, compat: null };
-}
-
-/**
- * El modelo de la ruta de registro: `routes.registro` del plan y, si no hay,
- * CHEAP_MODEL. A propósito NO cae al `default` del plan (que es el coach caro)
- * ni a `profundo`: un parte es leer y transformar, no decidir (AGENTS.md).
- */
-function resolverModeloRegistro(routes: Routes): { model: string; compat: { baseUrl: string; apiKey: string } | null } {
-  const { model, bloqueado } = soloAnthropic(
-    elegirModelo({ registro: routes.registro }, 'registro', 'estandar', () => CHEAP_MODEL),
-    CHEAP_MODEL,
-  );
-  if (bloqueado) console.warn(AVISO_MODELO_BLOQUEADO);
-  return { model, compat: null };
-}
 
 /**
  * El historial de la ruta de registro: los últimos mensajes con TEXTO, sin
@@ -219,24 +152,17 @@ function historialDeTexto(messages: ApiMessage[], limite: number): ApiMessage[] 
   return out;
 }
 
-// Los rituales que deciden el rumbo piensan más que una charla suelta.
-//
-// El chat baja a 'medium' por una razón medida: con 'high' un turno generaba
-// entre 2.000 y 11.000 fichas de pensamiento, y generar es la parte lenta
-// (decenas de fichas por segundo). Un "¿cómo voy?" no necesita once mil fichas
-// de deliberación, necesita responder antes de que sueltes el móvil.
+// El esfuerzo sustituye a lo que antes era cambiar de modelo. El chat va a
+// 'medium' y no a 'low': con veinte herramientas, en 'low' el modelo se salta
+// más comprobaciones, y aquí eso son cargas de gimnasio y dinero. Los rituales
+// que deciden el rumbo, a 'high'. Nada a 'xhigh': en Haiku 5.5 a veces escribe
+// la respuesta entera en el pensamiento y cierra el turno sin texto.
 const EFFORT_BY_KIND: Record<Kind, Effort> = {
-  chat: 'low',
-  // El brief y el plan bajan a 'medium' por lo mismo que el chat, pero el
-  // sintoma fue peor: con 'high' se gastaban el techo ENTERO pensando y
-  // devolvian un turno sin texto y sin llamada, asi que el usuario se
-  // levantaba sin plan del dia. No es reflexion, es un cuelgue. La tarea
-  // tampoco lo pide: leer un estudio ya calculado y aplicar una doctrina
-  // escrita, que es justo el argumento por el que el coach es Sonnet.
+  chat: 'medium',
   brief: 'medium',
   plan: 'medium',
-  revision_semanal: 'xhigh',
-  cierre_mensual: 'xhigh',
+  revision_semanal: 'high',
+  cierre_mensual: 'high',
   escalada: 'high',
 };
 
@@ -434,7 +360,6 @@ interface RunArgs {
   /** Modelo elegido por el plan y, si no es de Claude, la API compatible. */
   modelo: string;
   compat: { baseUrl: string; apiKey: string } | null;
-  modo: Modo;
   emit: (event: string, data: unknown) => void;
   /** Telemetría del turno (0047), rellenada al momento: la lee finish aunque el turno falle. */
   telemetria: Telemetria;
@@ -473,7 +398,7 @@ interface ResultadoTurno {
 }
 
 async function runCoach(args: RunArgs): Promise<ResultadoTurno> {
-  const { sb, admin, userId, kind, threadId, userText, today, imagenes, topeMicro, modelo, compat, modo, emit, gasto, deadline, telemetria, ruta, usuarioYaGuardado } =
+  const { sb, admin, userId, kind, threadId, userText, today, imagenes, topeMicro, modelo, compat, emit, gasto, deadline, telemetria, ruta, usuarioYaGuardado } =
     args;
 
   // La ruta estrecha cambia TRES cosas y nada más: el estado (mínimo), el
@@ -583,11 +508,13 @@ async function runCoach(args: RunArgs): Promise<ResultadoTurno> {
     }
   }
 
-  const messages: ApiMessage[] = [...previos, { role: 'user', content: bloquesUsuario }];
+  // Por encima de 100.000 fichas toda la petición cuesta 5 veces más: el historial cede antes de cruzar.
+  const previosEnTramo = historialEnTramo(previos, { system, tools: herramientas, bloquesUsuario });
+  const messages: ApiMessage[] = [...previosEnTramo, { role: 'user', content: bloquesUsuario }];
   // Cuarto punto de caché, MÓVIL: al final de lo último que se manda. En la primera llamada cubre el
   // estado rápido y el mensaje; en cada vuelta del bucle se corre al último tool_result, así cada vuelta
   // lee lo anterior y solo escribe lo nuevo. (fijo ◆ estable ◆ historial ◆ turno ◆ = los 4 que admite.)
-  const paraEnviar = (): ApiMessage[] => [...messages.slice(0, previos.length), ...markCacheable(messages.slice(previos.length))];
+  const paraEnviar = (): ApiMessage[] => [...messages.slice(0, previosEnTramo.length), ...markCacheable(messages.slice(previosEnTramo.length))];
 
   // Solo se persiste lo que dijo él, sin el volcado de estado. Y de las fotos
   // solo la marca, nunca los bytes: guardar base64 en el historial lo haría
@@ -607,25 +534,64 @@ ${userText}` : userText,
 
   let finalText = '';
   const elegido = modelo;
-  // El profundo piensa a fondo y con más sitio para escribir; el estándar,
-  // lo de cada kind.
-  const esfuerzo: Effort = estrecha ? 'low' : modo === 'profundo' ? 'xhigh' : EFFORT_BY_KIND[kind];
-  const techo = estrecha
-    ? MAX_TOKENS_REGISTRO
-    : modo === 'profundo'
-      ? Math.max(MAX_TOKENS_PROFUNDO, MAX_TOKENS_BY_KIND[kind])
-      : MAX_TOKENS_BY_KIND[kind];
+  const esfuerzo: Effort = estrecha ? 'low' : EFFORT_BY_KIND[kind];
+  const techo = estrecha ? MAX_TOKENS_REGISTRO : MAX_TOKENS_BY_KIND[kind];
   // Arranca en el elegido, pero lo que se apunta en la contabilidad es el que
   // devuelve la API: con el mecanismo de reserva puede resolver en otro.
   let model = elegido;
 
   const arranque = Date.now();
+  // Fichas reales del último prompt y mensajes que llevaba: lo que crece desde ahí se estima.
+  let promptPrevio = 0;
+  let mensajesPrevios = 0;
+
+  // Rechazo de un clasificador de seguridad (Haiku 5.5 no tiene reserva en servidor). El gladiador nunca
+  // se queda sin respuesta: si no se ha hecho nada aún, se vuelve a intentar solo con su mensaje, sin
+  // datos ni herramientas (lo que dispara el clasificador suele ser el contexto); si tampoco, texto fijo.
+  // Lo rechazado no entra en `messages` ni en el hilo.
+  const trasRechazo = async (vuelta: number, e: RefusalError): Promise<string> => {
+    console.warn('coach: rechazo del clasificador', e.category ?? 'sin_categoria');
+    let texto = '';
+    if (vuelta === 0) {
+      const restante = deadline - Date.now();
+      if (restante >= 5_000 && (await consentimientoIa(admin, userId)) === true && (await healthConsent(sb, userId)) === true) {
+        try {
+          const t = await healthGuardedResult(sb, userId, () => callClaude({
+            model: elegido,
+            system: [{ type: 'text', text: `${SISTEMA_TRAS_RECHAZO}\n\n${AI_SAFETY_RULES}` }],
+            messages: [{ role: 'user', content: [{ type: 'text', text: userText }] }],
+            maxTokens: 1500,
+            effort: 'low',
+            signal: AbortSignal.timeout(restante),
+            cartera: args.cartera,
+          }));
+          gasto.sumar(t.usage, t.model);
+          texto = t.content.filter((b) => b.type === 'text').map((b) => b.text ?? '').join('').trim();
+        } catch (e2) {
+          if (e2 instanceof LlamadaFallida) gasto.sumar(e2.usage, e2.model);
+          else if (e2 instanceof RefusalError && e2.usage) gasto.sumar(e2.usage, e2.model);
+        }
+      }
+    }
+    texto ||= vuelta === 0 ? TEXTO_TRAS_RECHAZO : TEXTO_TRAS_RECHAZO_CON_HECHOS;
+    emit('text', { delta: finalText ? `\n\n${texto}` : texto });
+    await requireHealth(sb, userId);
+    await sb.from('coach_messages').insert({
+      thread_id: threadId,
+      user_id: userId,
+      role: 'assistant',
+      content: [{ type: 'text', text: texto }],
+    });
+    return finalText ? `${finalText}\n\n${texto}` : texto;
+  };
 
   for (let i = 0; i < maxVueltas; i++) {
     // Si ya no queda reloj, se corta el encadenado: con lo que hay se contesta,
     // y sin él la función muere sin dejar nada. En la ruta estrecha, la última
     // vuelta también va a texto: tres vueltas y siempre hay respuesta.
-    const sinTiempo = Date.now() - arranque > PRESUPUESTO_MS || (estrecha && i === maxVueltas - 1);
+    // Tampoco se encadena si otra vuelta sacaría el prompt del tramo barato.
+    const sinSitio = i > 0 && promptPrevio + fichasEstimadas(messages.slice(mensajesPrevios)) > TECHO_PROMPT;
+    const sinTiempo = Date.now() - arranque > PRESUPUESTO_MS || (estrecha && i === maxVueltas - 1) || sinSitio;
     const pedirTurno = async (maxTokens: number, effort: Effort) => {
       // La última vuelta debe responder con lo ya calculado, no gastar el
       // margen restante en otra deliberación profunda sin herramientas.
@@ -675,9 +641,12 @@ ${userText}` : userText,
                 onThinking: () => emit('thinking', {}),
               }));
           gasto.sumar(t.usage, t.model);
+          promptPrevio = fichasDelPrompt(t.usage);
+          mensajesPrevios = messages.length;
           return t;
         } catch (e) {
           if (e instanceof LlamadaFallida) gasto.sumar(e.usage, e.model);
+          else if (e instanceof RefusalError && e.usage) gasto.sumar(e.usage, e.model);
           throw e;
         }
       };
@@ -691,6 +660,10 @@ ${userText}` : userText,
     try {
       turn = await pedirTurno(techo, esfuerzo);
     } catch (e) {
+      if (e instanceof RefusalError) {
+        finalText = await trasRechazo(i, e);
+        break;
+      }
       // La cartera ya no deja otra llamada (tope del mes o del día). En la primera vuelta es el error
       // del turno; después, se contesta con lo que haya y se dice por qué se para.
       if (!(e instanceof TopeIaError) || i === 0) throw e;
@@ -723,6 +696,10 @@ ${userText}` : userText,
       try {
         retry = await pedirTurno(techo * 2, 'low');
       } catch (e) {
+        if (e instanceof RefusalError) {
+          finalText = await trasRechazo(i, e);
+          break;
+        }
         if (!(e instanceof TopeIaError)) throw e;
         finalText ||= 'El sistema ha parado aquí: has llegado al tope de IA.';
         emit('text', { delta: finalText });
@@ -831,11 +808,16 @@ ${userText}` : userText,
 
 // ── Brief ligero (IA barata, 21/10/2026) ───────────────────────────────
 //
-// El brief era el gasto fijo más grande (0,16 $ al día con Sonnet, siempre en frío). Cuando el plan del
+// El brief era el gasto fijo más grande (0,16 $ al día, siempre en frío). Cuando el plan del
 // día YA está escrito (lo hizo el gladiador, el coach a demanda o un brief anterior) no queda nada que
-// decidir: el brief solo lo recuerda y da la primera orden. Eso es leer y transformar → Haiku, con el
+// decidir: el brief solo lo recuerda y da la primera orden. Eso es leer y transformar, con el
 // estado mínimo, sin herramientas, sin historial y con un techo corto (~0,005 $). Sin plan, el brief de
-// siempre (Sonnet con herramientas, ya sin el historial del chat).
+// siempre (con herramientas, ya sin el historial del chat).
+
+const SISTEMA_TRAS_RECHAZO = `Eres "el sistema" de NIVL, el coach de hábitos de un gladiador. Contesta a su mensaje en su idioma, en dos o tres frases, sobrio y en segunda persona. Aquí no tienes herramientas ni datos de su cuenta: no digas que has registrado o cambiado nada y no inventes cifras. Si el mensaje se sale de hábitos, entreno, comida, estudio, trabajo o dinero personal, dilo y ofrécele seguir con su día.
+${REGLA_SIN_GUIONES}`;
+const TEXTO_TRAS_RECHAZO = 'Eso no puedo tratarlo por aquí. Cuéntamelo de otra forma o dime qué toca hoy y seguimos.';
+const TEXTO_TRAS_RECHAZO_CON_HECHOS = 'Lo que ya he apuntado queda guardado, pero no puedo seguir con eso por aquí. Dime qué toca ahora y seguimos.';
 
 export const SISTEMA_BRIEF_LIGERO = `Eres "el sistema" de NIVL: el coach de un gladiador, dentro de su móvil. Es el ritual de la mañana y el plan de hoy YA está escrito.
 Escribe el brief en la voz del sistema: español, segunda persona, frases cortas, sobrio, sin emojis ni exclamaciones. Primero la orden del día con números del plan; después las misiones y reglas que tocan hoy. Máximo 120 palabras. No inventes bloques ni cifras que no estén en los datos y no cambies el plan.
@@ -870,7 +852,7 @@ async function runBriefLigero(args: RunArgs): Promise<ResultadoTurno> {
   if ((await consentimientoIa(admin, userId)) !== true || (await healthConsent(sb, userId)) !== true) {
     const aviso = 'El coach se ha detenido porque no puede confirmar tu consentimiento. Revísalo en Perfil antes de continuar.';
     emit('text', { delta: aviso });
-    return { text: aviso, usage: gasto.usage, model: CHEAP_MODEL };
+    return { text: aviso, usage: gasto.usage, model: COACH_MODEL };
   }
   const restante = deadline - Date.now();
   if (restante < 5_000) throw new Error('plazo del turno agotado');
@@ -878,22 +860,29 @@ async function runBriefLigero(args: RunArgs): Promise<ResultadoTurno> {
   let turn: Turn;
   try {
     turn = await callClaude({
-      model: CHEAP_MODEL,
+      model: COACH_MODEL,
       system: [{ type: 'text', text: `${SISTEMA_BRIEF_LIGERO}\n\n${AI_SAFETY_RULES}\n\n${REGLA_DATOS}`, cache_control: { type: 'ephemeral' } }],
       messages: [{ role: 'user', content: [{ type: 'text', text: `${DATOS_ABRE}\n${neutralizarDatos(datos)}\n${DATOS_CIERRA}\n\nEscribe el brief de hoy (${today}).` }] }],
-      maxTokens: 1200,
+      // El pensamiento cuenta dentro del techo: con esfuerzo bajo, sobra sitio para pensar y escribir.
+      maxTokens: 3000,
+      effort: 'low',
       signal: AbortSignal.timeout(restante),
       cartera,
     });
     gasto.sumar(turn.usage, turn.model);
   } catch (e) {
     if (e instanceof LlamadaFallida) gasto.sumar(e.usage, e.model);
-    throw e;
+    else if (e instanceof RefusalError && e.usage) gasto.sumar(e.usage, e.model);
+    if (!(e instanceof RefusalError)) throw e;
+    // El plan ya está escrito: si el clasificador rechaza, el brief es el plan tal cual.
+    console.warn('brief ligero: rechazo del clasificador', e.category ?? 'sin_categoria');
+    turn = { content: [], stopReason: 'refusal', usage: {}, model: COACH_MODEL };
   }
-  const texto = turn.content.filter((b) => b.type === 'text').map((b) => b.text ?? '').join('').trim();
+  const texto = turn.content.filter((b) => b.type === 'text').map((b) => b.text ?? '').join('').trim()
+    || `Tu plan de hoy sigue en pie:\n${(plan ?? []).map((l) => `- ${l}`).join('\n')}`;
   if (texto) emit('text', { delta: texto });
   await requireHealth(sb, userId);
-  await sb.from('coach_messages').insert({ thread_id: threadId, user_id: userId, role: 'assistant', content: turn.content });
+  await sb.from('coach_messages').insert({ thread_id: threadId, user_id: userId, role: 'assistant', content: turn.content.length ? turn.content : [{ type: 'text', text: texto }] });
   await sb.from('coach_threads').update({ last_message_at: new Date().toISOString() }).eq('id', threadId);
   return { text: texto, usage: gasto.usage, model: turn.model };
 }
@@ -939,10 +928,8 @@ export async function handler(req: Request): Promise<Response> {
   // agotar y ningún otro turno en marcha. Cubre también a los rituales del
   // cron, que entran por aquí con el JWT del usuario.
   //
-  // El modo va en una CABECERA y no en el cuerpo a propósito: la puerta se
-  // cruza antes de leer el cuerpo. Solo 'profundo' exacto abre ese bolsillo.
-  const modo = modoDeCabecera(req.headers.get('x-nivl-mode'));
-  const { data: puerta, error: puertaErr } = await admin.rpc('ai_begin_turn', { p_user: userId, p_mode: modo });
+  // Los binarios antiguos pueden mandar aún `x-nivl-mode`: se ignora.
+  const { data: puerta, error: puertaErr } = await admin.rpc('ai_begin_turn', { p_user: userId, p_mode: 'estandar' });
   if (puertaErr) {
     console.error('ai_begin_turn failed:', puertaErr.message);
     // Cerrado por defecto: si no se puede comprobar, no se gasta.
@@ -954,9 +941,6 @@ export async function handler(req: Request): Promise<Response> {
       sin_suscripcion: [402, 'El coach va con tu modo de NIVL.'],
       presupuesto_agotado: [402, `Has agotado la IA de este mes. Se renueva el ${estado?.renews ?? 'día 1'}.`],
       turno_en_curso: [429, 'El sistema todavía está respondiendo a tu mensaje anterior.'],
-      // Lo que recibe un Pro que pide el modo profundo.
-      profundo_no_incluido: [402, 'El modo profundo es parte de NIVL Élite.'],
-      profundo_agotado: [402, 'Has usado tus turnos profundos de este mes. El modo estándar sigue disponible.'],
       // 0069: el tope diario de la prueba automática. Viaja como 'presupuesto_agotado' para que la 1.0.9
       // lo pinte con este texto (accessNotice usa el mensaje del servidor); el motivo real va en 'detalle'.
       tope_diario: [402, 'Has usado los mensajes de hoy de tu prueba. Mañana vuelven.'],
@@ -975,7 +959,7 @@ export async function handler(req: Request): Promise<Response> {
     );
   let res: Response;
   try {
-    res = await atender(req, userId, token, estado, modo, inicio + PLAZO_DURO_MS);
+    res = await atender(req, userId, token, estado, inicio + PLAZO_DURO_MS);
   } catch (e) {
     await soltar();
     throw e;
@@ -996,10 +980,8 @@ interface Puerta {
   reason?: string;
   remaining?: number;
   renews?: string;
-  mode?: Modo;
-  /** Lo que queda en el bolsillo del modo de este turno: su techo de gasto. */
+  /** Lo que queda en el bolsillo de este turno: su techo de gasto. */
   turn_budget?: number;
-  routes?: Routes;
 }
 
 async function atender(
@@ -1007,12 +989,10 @@ async function atender(
   userId: string,
   token: string,
   estado: Puerta,
-  modo: Modo,
   deadline: number,
 ): Promise<Response> {
   // Con la 0024 aplicada llega turn_budget; con la puerta de 0020, remaining.
   const restanteMicro = Number(estado.turn_budget ?? estado.remaining) || 0;
-  const routes: Routes = estado.routes && typeof estado.routes === 'object' ? estado.routes : {};
 
   let body: {
     kind?: string;
@@ -1041,7 +1021,7 @@ async function atender(
   // evitar en las tareas que no piden criterio.
   // La puerta de la cartera (0078) para los atajos: tope de la función, ritmo del día y del mes.
   const cerrada = async (funcion: FuncionIa): Promise<Response | null> => {
-    const p = await puertaCartera(admin, userId, funcion, 'estandar');
+    const p = await puertaCartera(admin, userId, funcion);
     if (p.ok) return null;
     const m = mensajeTope(p.motivo ?? 'cerrado', p.renueva);
     return json(m.status, { error: m.error, reason: m.reason, detalle: m.detalle });
@@ -1055,7 +1035,7 @@ async function atender(
       const { error: ledgerErr } = await insertarRun(admin, {
         user_id: userId,
         kind: KIND_MECANICO,
-        mode: modo,
+        mode: 'estandar',
         model: r.model,
         in_tokens: r.usage.input_tokens ?? 0,
         cache_read_tokens: r.usage.cache_read_input_tokens ?? 0,
@@ -1082,7 +1062,7 @@ async function atender(
     }
   }
 
-  // Atajos de estudio (IA barata): Haiku, sin buildContext, sin herramientas. Los de cuerpo y comida
+  // Atajos de estudio (IA barata): sin buildContext, sin herramientas. Los de cuerpo y comida
   // (dieta, entreno) pasan además por el permiso de salud, más abajo.
   if (body.kind === KIND_ESTUDIO) {
     if (!esTareaEstudio(body.tarea)) return json(400, { error: 'Tarea de estudio no válida.' });
@@ -1169,7 +1149,7 @@ async function atender(
       await insertarRun(admin, {
         user_id: userId,
         kind: `resumen_${periodo}`,
-        mode: modo,
+        mode: 'estandar',
         model: r.model,
         in_tokens: r.usage.input_tokens ?? 0,
         cache_read_tokens: r.usage.cache_read_input_tokens ?? 0,
@@ -1245,32 +1225,28 @@ async function atender(
   const prompt = userText || `[ritual: ${kind}]`;
   const wantsStream = body.stream !== false;
 
-  // La "revisión semanal profunda" del Élite no es un modo: sale de sus routes
-  // (Sonnet, y revision_semanal ya piensa en 'xhigh'), cuenta en el bolsillo
-  // estándar y no gasta turnos profundos del usuario.
-  //
-  // Ruta del turno (L3). Un parte claro va por la estrecha; con fotos o en
-  // modo profundo (lo pidió y lo paga de su bolsillo profundo), por la
-  // completa: el profundo no aplica a la ruta de registro.
-  const ruta: Ruta = !fotos.imagenes.length && modo !== 'profundo' ? rutaDelTurno(userText, kind) : 'completa';
-  const { model: modelo, compat } = ruta === 'registro' ? resolverModeloRegistro(routes) : resolverModelo(routes, kind, modo);
+  // Ruta del turno (L3). Un parte claro va por la estrecha; con fotos, por la completa.
+  const ruta: Ruta = !fotos.imagenes.length ? rutaDelTurno(userText, kind) : 'completa';
+  // Un solo modelo: `ai_plans.routes` y los secretos COACH_MODEL_* ya no eligen nada.
+  const modelo = COACH_MODEL;
+  const compat = null;
   // Las fotos nunca salen a un proveedor sin visión acordada (solo Claude).
   const sinVision = fotosSinVision(fotos.imagenes.length, compat);
   if (sinVision) return json(400, { error: sinVision });
   // La función de la cartera (0078) y su puerta, ANTES de abrir el stream: un 402 limpio y no un error
-  // a mitad de respuesta. Brief con el plan ya escrito: la versión ligera (Haiku, sin herramientas).
-  const funcion: FuncionIa = modo === 'profundo' ? 'profundo' : ruta === 'registro' ? 'registro' : kind === 'chat' ? 'chat' : 'ritual';
+  // a mitad de respuesta. Brief con el plan ya escrito: la versión ligera (sin herramientas).
+  const funcion: FuncionIa = ruta === 'registro' ? 'registro' : kind === 'chat' ? 'chat' : 'ritual';
   {
-    const p = await puertaCartera(admin, userId, funcion, modo === 'profundo' ? 'profundo' : 'estandar');
+    const p = await puertaCartera(admin, userId, funcion);
     if (!p.ok) {
       const m = mensajeTope(p.motivo ?? 'cerrado', p.renueva ?? estado.renews);
       return json(m.status, { error: m.error, reason: m.reason, detalle: m.detalle });
     }
   }
-  const cartera = new CarteraIa(admin, userId, funcion, modo === 'profundo' ? 'profundo' : 'estandar');
-  const briefLigero = kind === 'brief' && modo !== 'profundo' && (await planDeHoy(sb, userId, today)) !== null;
+  const cartera = new CarteraIa(admin, userId, funcion);
+  const briefLigero = kind === 'brief' && (await planDeHoy(sb, userId, today)) !== null;
   const topeMicro = Math.min(
-    ruta === 'registro' ? MAX_COST_REGISTRO_MICRO_USD : modo === 'profundo' ? MAX_COST_PROFUNDO_MICRO_USD : MAX_COST_MICRO_USD,
+    ruta === 'registro' ? MAX_COST_REGISTRO_MICRO_USD : MAX_COST_MICRO_USD,
     restanteMicro,
   );
   // Lo gastado en este turno, sumado según se cobra (ver Gasto en guard.ts).
@@ -1284,7 +1260,7 @@ async function atender(
   const ejecutarTurno = async (emitir: (event: string, data: unknown) => void) => {
     const base = {
       sb, admin, userId, kind, threadId: threadId!, userText: prompt, today,
-      imagenes: fotos.imagenes, gasto, deadline, modo, emit: emitir, telemetria,
+      imagenes: fotos.imagenes, gasto, deadline, emit: emitir, telemetria,
       // Modos F1: cabeceras opcionales; un valor raro es como no mandarla.
       // Con cabecera, manda ella (también 'es': no se mira el perfil). Sin cabecera, null y luego el perfil.
       idioma: (req.headers.get('x-nivl-locale') ?? '').trim()
@@ -1293,18 +1269,17 @@ async function atender(
       modoNivl: modoDeCabeceraNivl(req.headers.get('x-nivl-modo')),
     };
     try {
-      if (briefLigero) return await runBriefLigero({ ...base, topeMicro, modelo: CHEAP_MODEL, compat: null, ruta, cartera });
+      if (briefLigero) return await runBriefLigero({ ...base, topeMicro, modelo: COACH_MODEL, compat: null, ruta, cartera });
       return await runCoach({ ...base, topeMicro, modelo, compat, ruta, cartera });
     } catch (e) {
       if (ruta !== 'registro' || !rechazoDelProveedor(e)) throw e;
       console.warn('ruta de registro rechazada por el proveedor: se reintenta por la completa');
-      const completa = resolverModelo(routes, kind, modo);
       telemetria.route = 'registro_reintento';
       return await runCoach({
         ...base,
         topeMicro: Math.max(0, Math.min(MAX_COST_MICRO_USD, restanteMicro) - gasto.micro()),
-        modelo: completa.model,
-        compat: completa.compat,
+        modelo,
+        compat,
         ruta: 'completa',
         usuarioYaGuardado: true,
         // La completa es un turno de chat: su propia cartera (otra cota por llamada que la del parte).
@@ -1327,7 +1302,7 @@ async function atender(
     const { error: ledgerErr } = await insertarRun(admin, {
       user_id: userId,
       kind,
-      mode: modo,
+      mode: 'estandar',
       model: gasto.model || modelo,
       in_tokens: u.input_tokens ?? 0,
       cache_read_tokens: u.cache_read_input_tokens ?? 0,
@@ -1347,7 +1322,7 @@ async function atender(
   const programarResumen = (result: ResultadoTurno) => {
     if (!result.pideResumen) return;
     enSegundoPlano(resumirHilo({
-      sb, admin, userId, threadId: threadId!, presupuestoMicro: restanteMicro - gasto.micro(), modo,
+      sb, admin, userId, threadId: threadId!, presupuestoMicro: restanteMicro - gasto.micro(), modo: 'estandar',
       cartera: new CarteraIa(admin, userId, 'resumen_hilo'),
     }));
   };

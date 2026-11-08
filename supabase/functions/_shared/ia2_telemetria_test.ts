@@ -83,7 +83,7 @@ Deno.test('telemetría: sin la 0047 (PGRST204) la fila se repite sin columnas nu
     equal(intentos.length, 2, 'primero con telemetría, luego sin ella');
     ok('route' in intentos[0]);
     for (const k of COLUMNAS_TELEMETRIA) ok(!(k in intentos[1]), `sin ${k} en el reintento`);
-    ok(Number(intentos[1].cost_micro_usd) >= 220_000, 'el gasto se apunta igual');
+    ok(Number(intentos[1].cost_micro_usd) >= 11_000, 'el gasto se apunta igual');
     equal(intentos[1].kind, 'chat');
   } finally {
     fake.restaurar();
@@ -136,19 +136,19 @@ Deno.test('telemetría: 42703 también cuenta como columna inexistente; saneado 
 // ── Contabilidad ───────────────────────────────────────────────────────
 
 Deno.test('coste: la escritura de 1 h se cobra a 2× y la de 5 min a 1,25×', () => {
-  // Sonnet 5: 2 $/M de entrada.
-  equal(costMicroUsd('claude-sonnet-5', { cache_creation_input_tokens: 1_000_000 }), 2_500_000);
+  // Con más de 100.000 fichas, tramo caro: 0,50 $/M de entrada.
+  equal(costMicroUsd('claude-haiku-5-5', { cache_creation_input_tokens: 1_000_000 }), 625_000);
   equal(
-    costMicroUsd('claude-sonnet-5', {
+    costMicroUsd('claude-haiku-5-5', {
       cache_creation_input_tokens: 1_000_000,
       cache_creation: { ephemeral_5m_input_tokens: 600_000, ephemeral_1h_input_tokens: 400_000 },
     }),
-    600_000 * 2.5 + 400_000 * 4,
+    600_000 * 0.625 + 400_000 * 1,
   );
   // Un desglose incoherente (1 h > total) no infla el total.
   equal(
-    costMicroUsd('claude-sonnet-5', { cache_creation_input_tokens: 100, cache_creation: { ephemeral_1h_input_tokens: 999 } }),
-    400,
+    costMicroUsd('claude-haiku-5-5', { cache_creation_input_tokens: 100, cache_creation: { ephemeral_1h_input_tokens: 999 } }),
+    20,
   );
 });
 
@@ -160,7 +160,7 @@ Deno.test('coste: el usage de message_delta es ACUMULADO y no se suma al de mess
   const fake = instalar({
     proveedor: () =>
       sse([
-        { type: 'message_start', message: { model: 'claude-sonnet-5', usage: { ...inicio, cache_creation: { ephemeral_5m_input_tokens: 30_000, ephemeral_1h_input_tokens: 0 } } } },
+        { type: 'message_start', message: { model: 'claude-haiku-5-5', usage: { ...inicio, cache_creation: { ephemeral_5m_input_tokens: 30_000, ephemeral_1h_input_tokens: 0 } } } },
         { type: 'content_block_start', index: 0, content_block: { type: 'text', text: '' } },
         { type: 'content_block_delta', index: 0, delta: { type: 'text_delta', text: 'hola' } },
         { type: 'content_block_stop', index: 0 },
@@ -174,7 +174,7 @@ Deno.test('coste: el usage de message_delta es ACUMULADO y no se suma al de mess
     equal(t.usage.cache_read_input_tokens, 15_000);
     equal(t.usage.cache_creation_input_tokens, 30_000);
     equal(t.usage.output_tokens, 500);
-    equal(costMicroUsd(t.model, t.usage), 2_000 * 2 + 15_000 * 0.2 + 30_000 * 2.5 + 500 * 10);
+    equal(costMicroUsd(t.model, t.usage), 2_000 * 0.1 + 15_000 * 0.01 + 30_000 * 0.125 + 500 * 0.5);
   } finally {
     fake.restaurar();
   }

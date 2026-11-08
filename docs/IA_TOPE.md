@@ -4,6 +4,8 @@ Decisión de Teferi: «solucionad todos los problemas, poned IA barata; que nadi
 
 ## Coste por mensaje
 
+> Tabla medida antes de pasar a `claude-haiku-5-5` como único modelo (8-nov-2026): sirve para comparar las medidas de ahorro. La tarifa actual está en `docs/PRECIOS.md`.
+
 | | Antes | Después | Cómo se mide |
 |---|---|---|---|
 | Chat seguido con Sonnet 5 (< 5 min) | 0,080 $ medido en producción (0,065 $ en el simulador) | **~0,017 $** en el simulador | `_shared/ia_barata_test.ts` («coste por mensaje antes/después») |

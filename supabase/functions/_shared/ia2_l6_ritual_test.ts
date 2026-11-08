@@ -2,9 +2,9 @@
 // caducidad (last_open_on), un push al día, el candado de gasto, sin
 // herramientas, coste apuntado como 'checkin' y que un fallo no tumba nada.
 
-import { equal, ok } from 'node:assert/strict';
+import { deepEqual, equal, ok } from 'node:assert/strict';
 import { instalar, SUPABASE_URL, turnoTexto, USER_ID, USER_TOKEN, type Fake, type Opciones } from './sec_coach_fake_test.ts';
-import { CHEAP_MODEL } from './anthropic.ts';
+import { COACH_MODEL } from './anthropic.ts';
 
 Deno.env.set('RITUAL_SECRET', 'secreto-del-cron-de-prueba-0123456789');
 const { handler, relojRitual } = await import('../ritual/handler.ts');
@@ -45,7 +45,7 @@ function escenario(op: Opciones & { perfilExtra?: Record<string, unknown> } = {}
       push_tokens: [{ token: 'ExponentPushToken[prueba]' }],
       ...(op.filas ?? {}),
     },
-    proveedor: op.proveedor ?? (() => turnoTexto(TEXTO, { input_tokens: 1_500, output_tokens: 60 }, CHEAP_MODEL)),
+    proveedor: op.proveedor ?? (() => turnoTexto(TEXTO, { input_tokens: 1_500, output_tokens: 60 }, COACH_MODEL)),
     otras: async (c) => {
       if (c.url.hostname === 'exp.host') return new Response('{"data":[]}', { headers: { 'content-type': 'application/json' } });
       return op.otras ? await op.otras(c) : undefined;
@@ -73,11 +73,11 @@ Deno.test('L6 ritual: checkin a su hora → Haiku sin herramientas, mensaje en e
 
   equal(f.proveedor.length, 1);
   const peticion = f.proveedor[0].body as Record<string, unknown>;
-  equal(peticion.model, CHEAP_MODEL);
+  equal(peticion.model, COACH_MODEL);
   ok(!('tools' in peticion), 'sin herramientas');
   ok(!('tool_choice' in peticion));
-  ok(!('thinking' in peticion) && !('output_config' in peticion), 'Haiku 4.5: ni thinking ni effort');
-  ok(Number(peticion.max_tokens) <= 300);
+  deepEqual(peticion.output_config, { effort: 'low' });
+  ok(Number(peticion.max_tokens) >= 1000 && Number(peticion.max_tokens) <= 1500, 'cabe el pensamiento');
 
   const runs = f.escrituras('coach_runs').map((l) => l.body as Record<string, unknown>);
   equal(runs.length, 1);

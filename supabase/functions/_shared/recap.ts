@@ -13,7 +13,7 @@
 //     modelo redacta. Un resumen con datos falsos es peor que ninguno, porque
 //     mina la confianza en todo lo demás que dice el sistema.
 
-import { callClaude, CHEAP_MODEL, type Cartera, type Usage } from './anthropic.ts';
+import { callClaude, COACH_MODEL, type Cartera, type Usage } from './anthropic.ts';
 import type { Db } from './db.ts';
 
 export interface Slide {
@@ -114,7 +114,7 @@ export async function construirResumen(
       slides: [],
       fotos: 0,
       usage: {},
-      model: CHEAP_MODEL,
+      model: COACH_MODEL,
       motivo:
         kind === 'semanal'
           ? 'No has subido ninguna foto esta semana. El resumen se construye con ellas: sin fotos no hay nada que recordar.'
@@ -168,12 +168,12 @@ export async function construirResumen(
 
   await requireHealth(sb, userId);
   if (await consentimientoIa(consentDb, userId) !== true) throw new Error(SIN_CONSENTIMIENTO);
-  // Leer y transformar (AGENTS.md): el modelo barato. Antes iba con el del coach (Sonnet).
+  // Leer y transformar (AGENTS.md): sin contexto del coach y con esfuerzo medio.
   const turn = await callClaude({
-    model: CHEAP_MODEL,
+    model: COACH_MODEL,
     system: [{ type: 'text', text: SISTEMA }],
     messages: [{ role: 'user', content: [{ type: 'text', text: datos }] }],
-    maxTokens: 3000,
+    maxTokens: 6000,
     effort: 'medium',
     cartera,
   });

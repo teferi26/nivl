@@ -10,9 +10,8 @@ import { BienvenidaPrueba, FinPrueba } from './PruebaVistas';
 const nada = () => {};
 const FIN = fechaHoraLocal('2026-10-20T19:30:00Z');
 const TIENDA_CON_OFERTA = {
-  eliteMes: '29,99 €',
-  eliteAnio: '299,99 €',
-  proMes: '12,99 €',
+  planMes: '12,99 €',
+  planAnio: '99,99 €',
   introGratis: '5 días',
   introCondicional: false,
 };

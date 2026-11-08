@@ -50,6 +50,27 @@ suscripción; desde el segundo, 15 % siempre).
 | Los cuatro, mensual | 30 € | 24,79 € | 21,07 € | 17,36 € |
 | Los cuatro, anual | 99 € | 81,82 € | 69,55 € | 57,27 € |
 
+## Un solo modelo: `claude-haiku-5-5`
+
+Decisión del dueño (8-nov-2026): toda la IA va con Haiku 5.5, en todos los planes y sin selector. Se retiran
+el modo profundo, «máxima potencia» y la revisión con otro modelo. Que el coach vea fotos ya no depende del modelo.
+
+| Por millón de fichas | Entrada | Caché 5 min | Caché 1 h | Lectura de caché | Salida |
+|---|---|---|---|---|---|
+| Prompt de hasta 100.000 fichas | 0,10 $ | 0,125 $ | 0,20 $ | 0,01 $ | 0,50 $ |
+| Prompt de más de 100.000 (toda la petición) | 0,50 $ | 0,625 $ | 1,00 $ | 0,05 $ | 2,50 $ |
+
+El prompt cuenta también la caché leída y escrita. `TECHO_PROMPT` (90.000) mantiene el coach en el tramo barato.
+
+Coste calculado con esta tarifa sobre la cuenta más pesada (76.000 fichas de prefijo y 650 de salida). Aún no
+está medido en producción; Haiku 5.5 cuenta ~30 % más fichas que Haiku 4.5:
+
+| Turno | Coste |
+|---|---|
+| Chat, primer mensaje en frío | ~0,01 $ |
+| Chat, mensajes siguientes (leen la caché) | ~0,002 $ |
+| Brief ligero (plan ya escrito) | < 0,001 $ |
+
 ## El freno de gasto (0140, con la cuenta de la 0090)
 
 Quien paga no ve contadores. El tope mensual es un freno solo contra abusos y,
@@ -67,17 +88,19 @@ como mucho, lo que deja la cuota al mes, a 1 $ = 0,93 €, redondeado hacia abaj
 El de un modo anual es el freno más ajustado: mide con uso real de Haiku 5.5 que
 una persona normal no lo alcance.
 
+Los planes antiguos conservan el suyo hasta caducar (Pro mensual 9 $, Pro anual 6 $, Élite 15 a 22 $).
+
 ## Programa de creadores (clippers)
 
 | Rango | Comisión | Por venta anual |
 |---|---|---|
 | Novato | 25 % | 25 € |
 | Pro | 35 % | 35 € |
-| Élite | 50 % | 50 € |
+| Élite (rango de creador, no el plan retirado) | 50 % | 50 € |
 
 Reglas:
 
-1. **La base es siempre 100 €**, compre el usuario Pro o Élite.
+1. **La base es siempre 100 €**.
 2. **Solo el primer pago.** Renovaciones: 0 % (parámetro; como mucho 10 %).
 3. **Retención de 30 días** por reembolsos: si Apple o Google devuelven el
    dinero (webhook de RevenueCat), la comisión se anula.
@@ -85,7 +108,7 @@ Reglas:
    llegar a lo mismo que en el anual (25/35/50 €). Sustituye a la idea de
    «pagar entera al tercer mes»: con el Pro mensual, 3 meses dejan 27 € limpios
    y pagar 50 € ese día pierde dinero si el usuario se va en el cuarto.
-5. El rango se gana por resultados. Un fijo mensual para los Élite o un premio
+5. El rango se gana por resultados. Un fijo mensual para los creadores Élite o un premio
    al primero del ranking son palancas posibles, del presupuesto de marketing y
    no de esta tabla; **hoy no hay ninguno activo** (las condiciones publicadas
    lo dicen así). Si se activa uno, con bases publicadas antes.

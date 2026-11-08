@@ -17,15 +17,20 @@ import { addUsage, costMicroUsd, type Usage } from '../_shared/anthropic.ts';
 /** Lo gastado en el turno, sumado en cuanto el proveedor lo cobra. */
 export class Gasto {
   usage: Usage = {};
+  // Se suma el coste de cada llamada, no el de los usos sumados: el tramo de
+  // Haiku 5.5 es por petición y cinco vueltas de 30.000 fichas no son una de 150.000.
+  private acumulado = 0;
   constructor(public model: string) {}
 
   sumar(usage: Usage | undefined, model?: string): void {
-    if (usage) this.usage = addUsage(this.usage, usage);
     if (model) this.model = model;
+    if (!usage) return;
+    this.usage = addUsage(this.usage, usage);
+    this.acumulado += costMicroUsd(this.model, usage);
   }
 
   micro(): number {
-    return costMicroUsd(this.model, this.usage);
+    return this.acumulado;
   }
 }
 

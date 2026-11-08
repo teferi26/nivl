@@ -59,7 +59,6 @@
     "haLeido_one": "Has read your day · {{count}} lookup",
     "haLeido_other": "Has read your day · {{count}} lookups",
     "titulo": "COACH",
-    "profundoTag": "DEEP",
     "verPlan": "See your plan",
     "verMemoria": "See the system's memory",
     "vacioTitulo": "THE SYSTEM IS LISTENING.",
@@ -74,18 +73,14 @@
     "fotosListas_other": "{{count}} photos ready to send",
     "quitarFotosA11y": "Remove the photos",
     "energiaA11y": "{{texto}} See the coach's energy",
-    "potenciaA11y": "Coach power",
-    "estandar": "Standard",
-    "profundo": "Deep",
-    "profundoA11y": "Deep mode. {{linea}}",
     "conservada": "Your conversation is kept.",
     "conservadaPro": "The coach is part of NIVL Pro. Your conversation is kept.",
-    "fotosElite": "Photos to the coach are an Élite feature",
     "adjuntarA11y": "Attach a photo",
     "placeholder": "Talk to the system",
     "mensajeA11y": "Message to the system",
     "enviandoA11y": "Sending: the system is thinking",
-    "enviarA11y": "Send message"
+    "enviarA11y": "Send message",
+    "fotosPro": "Photos for the coach come with NIVL Pro"
   },
   "dictado": {
     "microfonoListo": "Microphone ready. Press and hold to dictate.",
@@ -145,7 +140,7 @@
     "hoy": "You've used today's share of AI. It comes back tomorrow.",
     "recargar": "Top up AI · {{precio}}",
     "recargarSinPrecio": "Top up AI",
-    "recargaNota": "Extends the AI of your active Pro or Élite plan. Whatever you don't use is kept.",
+    "recargaNota": "Extends the AI of your active plan. Whatever you don't use is kept.",
     "recargaHecha": "Top-up applied. The system is answering again.",
     "recargaPendiente": "The store has charged the top-up. It applies in a few seconds."
   }
