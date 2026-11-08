@@ -185,7 +185,7 @@ export function accessNotice(e: CoachAccessError): string {
     case 'sin_consentimiento_salud':
       return 'Revisa el permiso de salud en Perfil antes de continuar con el coach.';
     case 'sin_suscripcion':
-      return 'El coach es parte de NIVL Pro. El resto de NIVL sigue siendo tuyo.';
+      return 'El coach va con tu modo de NIVL. El resto de NIVL sigue siendo tuyo.';
     case 'presupuesto_agotado':
       // El servidor ya trae la fecha de recarga en su mensaje.
       return e.message || 'La energía del coach de este mes se ha agotado. Se recarga el día 1.';

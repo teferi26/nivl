@@ -123,7 +123,7 @@ export function mensajeTope(motivo: string, renueva?: string): { status: number;
     case 'tope_llamada':
       return { status: 413, reason: 'tope_llamada', error: 'Esta petición es demasiado grande para el sistema. Recórtala y vuelve a intentarlo.' };
     case 'sin_suscripcion':
-      return { status: 402, reason: 'sin_suscripcion', error: 'El coach es parte de NIVL Pro.' };
+      return { status: 402, reason: 'sin_suscripcion', error: 'El coach va con tu modo de NIVL.' };
     default:
       return { status: 503, reason: 'cartera_no_disponible', error: 'El sistema no puede comprobar tu IA ahora mismo. Vuelve a intentarlo.' };
   }

@@ -36,7 +36,7 @@ Deno.test('cerrarBrief: sin guiones y siempre con el aviso', () => {
   assert(t.endsWith('Esto no es asesoramiento financiero.'));
 });
 
-function deps(over: Partial<Deps> = {}): { deps: Deps; llamadas: string[] } {
+function deps(over: Partial<Deps> = {}, modos: string[] = ['work']): { deps: Deps; llamadas: string[] } {
   const llamadas: string[] = [];
   const consulta = {
     select: () => consulta,
@@ -52,6 +52,7 @@ function deps(over: Partial<Deps> = {}): { deps: Deps; llamadas: string[] } {
     rpc: (n: string) => {
       llamadas.push(n);
       if (n === 'ai_consent_ok') return Promise.resolve({ data: true, error: null });
+      if (n === 'ai_modos') return Promise.resolve({ data: modos, error: null });
       return Promise.resolve({ data: { allowed: true }, error: null });
     },
     from: () => consulta,
@@ -78,6 +79,14 @@ function deps(over: Partial<Deps> = {}): { deps: Deps; llamadas: string[] } {
 
 const peticion = (cuerpo: unknown) =>
   new Request('http://x', { method: 'POST', headers: { authorization: 'Bearer t' }, body: JSON.stringify(cuerpo) });
+
+Deno.test('sin WORK ni FOUNDER: el mismo 402, sin tomar turno', async () => {
+  const { deps: d, llamadas } = deps({}, ['iron']);
+  const r = await crearHandler(d)(peticion({ accion: 'extracto', tipo: 'pdf', contenido: pdf('pequeño'), cuenta: 'X' }));
+  assertEquals(r.status, 402);
+  assertEquals((await r.json()).reason, 'sin_suscripcion');
+  assertEquals(llamadas.includes('ai_begin_turn'), false);
+});
 
 Deno.test('el CSV no se acepta en el servidor', async () => {
   const { deps: d, llamadas } = deps();

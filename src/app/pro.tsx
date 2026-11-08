@@ -17,7 +17,8 @@
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Platform, StyleSheet, Text, View } from 'react-native';
-import { ProOffer } from '@/components/ProOffer';
+import { OfertaModosVista } from '@/components/modos/pago/OfertaModosVista';
+import { useOfertaModos } from '@/components/modos/pago/useOfertaModos';
 import { UsoIa } from '@/components/UsoIa';
 import { Barra, CargaArena, EncabezadoArena, Entrada, ErrorSistema, TarjetaArena } from '@/components/arena';
 import { Button, Row, Screen, Section } from '@/components/ui';
@@ -34,26 +35,28 @@ import {
   porcentajeIa,
   usoIa,
   fetchAiStatus,
+  fetchDerechosModos,
   gestionarSuscripcion,
   isElite,
   isPro,
-  LINEA_PRUEBA,
   lineaProfundos,
+  LINEA_BASE,
+  MODOS_DE_PAGO,
   planDePago,
   planLabel,
-  productoDePlan,
   textoGestionTienda,
   purchasesAvailable,
-  puedeMejorarEnTienda,
   type AiStatus,
+  type DerechosModos,
+  type ModoDePago,
   type OfferTier,
   type RespuestaOferta,
 } from '@/lib/pro';
 import { fetchSubscription } from '@/lib/subscription';
 import { ink, space, type as tipo } from '@/design/tokens';
-import { useFlagsLeidos } from '@/lib/flagsEstado';
-import { pruebaSieteDiasVisible } from '@/lib/proplans';
 import { mensajeSistema } from '@/lib/validation';
+import { NOMBRE_MODO } from '@/modos/tipos';
+import { recargarDerechos } from '@/modos/useDerechos';
 
 /** "jueves, 1 de octubre" a partir de una clave o de un ISO completo. */
 function fechaLegible(valor: string | null | undefined): string | null {
@@ -62,14 +65,37 @@ function fechaLegible(valor: string | null | undefined): string | null {
   return nombreDia(key).toLowerCase();
 }
 
+/** La oferta por modos como bloque: cuerpo, acciones y letra. */
+function Oferta({
+  kind,
+  modoInicial,
+  empezarEnTodos,
+  actual,
+  etiquetaSalida,
+  onSalir,
+  onComprado,
+}: {
+  kind: unknown;
+  modoInicial: ModoDePago | null;
+  empezarEnTodos?: boolean;
+  actual?: string | null;
+  etiquetaSalida: string;
+  onSalir: () => void;
+  onComprado: () => void;
+}) {
+  const oferta = useOfertaModos({ kind, modoInicial, empezarEnTodos, actual, onComprado });
+  return <OfertaModosVista oferta={oferta} etiquetaSalida={etiquetaSalida} onSalir={onSalir} />;
+}
+
 export default function Pro() {
-  const params = useLocalSearchParams<{ motivo?: string; tier?: string }>();
+  const params = useLocalSearchParams<{ motivo?: string; tier?: string; modo?: string }>();
+  const modoParam = MODOS_DE_PAGO.find((m) => m === params.modo) ?? null;
   const motivo = esMomento(params.motivo) ? params.motivo : null;
   const tierParam: OfferTier | undefined = params.tier === 'elite' || params.tier === 'pro' ? params.tier : undefined;
   const { session } = useAuth();
-  const { prueba_auto_activa: pruebaAutoActiva } = useFlagsLeidos();
   const userId = session?.user.id;
   const [status, setStatus] = useState<AiStatus | null>(null);
+  const [derechos, setDerechos] = useState<DerechosModos | null>(null);
   const [kind, setKind] = useState<unknown>('general');
   const [periodEnd, setPeriodEnd] = useState<string | null>(null);
   const [provider, setProvider] = useState<string | null>(null);
@@ -114,8 +140,14 @@ export default function Pro() {
     }
     // Cada lectura falla por su cuenta: sin red, la oferta se pinta igual con
     // el perfil general. Una pantalla de venta nunca se queda en blanco.
-    const [st, prof, sub] = await Promise.allSettled([fetchAiStatus(), ensureProfile(userId), fetchSubscription(userId)]);
+    const [st, prof, sub, modos] = await Promise.allSettled([
+      fetchAiStatus(),
+      ensureProfile(userId),
+      fetchSubscription(userId),
+      fetchDerechosModos(),
+    ]);
     if (st.status === 'fulfilled') setStatus(st.value);
+    setDerechos(modos.status === 'fulfilled' ? modos.value : null);
     setErrorEstado(st.status === 'rejected');
     if (prof.status === 'fulfilled') setKind(prof.value.profile_kind);
     if (sub.status === 'fulfilled') {
@@ -192,12 +224,18 @@ export default function Pro() {
     const recarga = fechaLegible(status?.renews);
     const renueva = fechaLegible(periodEnd);
     const prueba = !!status?.trial;
-    const dePago = planDePago(status?.plan) && !prueba;
+    // La prueba del anual es de la tienda: se guarda como cortesía, pero se
+    // renueva y se cobra sola. Se dice y se gestiona como una compra.
+    const pruebaTienda = prueba && !!derechos?.producto && (provider === 'apple' || provider === 'google');
+    const dePago = pruebaTienda || (planDePago(status?.plan) && !prueba);
     const elite = isElite(status);
     const conProfundo = !!status?.deepAllowed;
-    // Sin segunda suscripción: ni al Élite/dueño, ni a quien paga por Stripe
-    // (web) o con plan heredado de Stripe. La tienda decide el resto.
-    const mejorable = purchasesAvailable() && puedeMejorarEnTienda(status, provider);
+    // Solo hay algo que vender a quien tiene una parte: Pro, Élite y los cuatro
+    // ya lo tienen todo. Tampoco una segunda suscripción a quien paga por Stripe.
+    // Sin saber sus modos (sin red), no se vende nada.
+    const parcial = !!derechos && !derechos.todos;
+    const mejorable = purchasesAvailable() && parcial && provider !== 'stripe';
+    const nombreModos = derechos ? (derechos.todos ? 'Los cuatro' : derechos.modos.map((m) => NOMBRE_MODO[m]).join(', ')) : null; // i18n-ok: marca
     // Se gestiona en la tienda solo lo que se pagó en una tienda.
     const deTienda = dePago && (provider === 'apple' || provider === 'google');
     const gestionar = async () => {
@@ -215,12 +253,14 @@ export default function Pro() {
           <Entrada indice={0}>
             <EncabezadoArena
               onVolver={salir}
-              eyebrow={elite ? 'NIVL Élite' : 'NIVL Pro'}
+              eyebrow={elite ? 'NIVL Élite' : parcial ? nombreModos ?? 'NIVL' : 'NIVL Pro'}
               titulo="El coach está contigo."
               subtitulo={
                 elite
                   ? 'Máxima potencia y modo profundo. Brief, plan del día, entreno, dieta, revisión semanal y memoria.'
-                  : prueba
+                  : pruebaTienda
+                    ? 'Tus días gratis. Al acabar, la tienda cobra tu plan salvo que lo canceles antes.'
+                    : prueba
                     ? 'Tu prueba de 7 días. Brief, plan del día, entreno, dieta, revisión semanal y memoria. Al acabar no se cobra nada: no se renueva sola.'
                     : 'Brief, plan del día, entreno, dieta, revisión semanal y memoria. Todo activo.'
               }
@@ -254,6 +294,7 @@ export default function Pro() {
                     <Text style={styles.planValor}>{prueba ? (status?.plan === 'prueba_auto' ? 'Prueba de Élite' : 'Prueba de 7 días') : planLabel(status?.plan ?? null)}</Text>
                   }
                 />
+                {nombreModos ? <Row title="Modos" trailing={<Text style={styles.valor}>{nombreModos}</Text>} /> : null}
                 {renueva ? (
                   <Row title={dePago ? 'Próxima renovación' : 'Activo hasta'} trailing={<Text style={styles.valor}>{renueva}</Text>} />
                 ) : null}
@@ -310,28 +351,27 @@ export default function Pro() {
             <Entrada key={verOferta ? 'oferta' : 'boton'} indice={4}>
               {verOferta ? (
                 <View style={styles.oferta}>
-                  <ProOffer
-                    userId={userId}
+                  <Oferta
                     kind={kind}
-                    compact
-                    initialTier={prueba ? (tierParam ?? 'pro') : 'elite'}
-                    motivo={motivo}
-                    planActual={deTienda ? productoDePlan(status?.plan) : null}
-                    exitLabel={prueba ? 'Seguir con la prueba' : 'Seguir con Pro'}
-                    onExit={() => {
+                    modoInicial={modoParam}
+                    empezarEnTodos={!modoParam}
+                    actual={derechos?.producto}
+                    etiquetaSalida={prueba ? 'Seguir con la prueba' : 'Seguir con mi plan'}
+                    onSalir={() => {
                       responder('cerrada');
                       setVerOferta(false);
                     }}
-                    onPurchased={() => {
+                    onComprado={() => {
                       responder('compra');
                       setVerOferta(false);
+                      void recargarDerechos(userId ?? null);
                       load();
                     }}
                   />
                 </View>
               ) : (
                 <Button
-                  title={prueba ? 'Suscribirme' : 'Ver NIVL Élite'}
+                  title={prueba ? 'Suscribirme' : 'Ver los cuatro modos'}
                   variant="secondary"
                   onPress={() => setVerOferta(true)}
                   style={styles.mejorar}
@@ -347,35 +387,27 @@ export default function Pro() {
   // Con motivo, la cabecera es la del momento; sin él, la de siempre. La prueba
   // se anuncia arriba solo si la cuenta puede empezarla.
   const cabecera = motivo ? copyUpsell(motivo, tierParam ?? 'pro') : null;
-  const conPrueba = pruebaSieteDiasVisible(status?.trialAvailable, pruebaAutoActiva) ? ` ${LINEA_PRUEBA}` : '';
   return (
     <Screen refreshing={refreshing} onRefresh={refrescar}>
       <>
         <Entrada indice={0}>
           <EncabezadoArena
             onVolver={salir}
-            eyebrow={cabecera?.eyebrow ?? 'NIVL Pro'}
-            titulo={cabecera?.titulo ?? 'Un coach que manda en tu día.'}
-            subtitulo={`NIVL es gratis entera: misiones, racha, campañas, gym, dieta, economía, amigos. Pro añade el coach: la IA que lo dirige todo por ti.${conPrueba}`}
+            eyebrow={cabecera?.eyebrow ?? 'NIVL'}
+            titulo={cabecera?.titulo ?? 'Un modo o los cuatro.'}
+            subtitulo={`Cada modo abre su mundo y su coach. ${LINEA_BASE}`}
           />
         </Entrada>
         {errorPlan}
         <Entrada indice={1}>
-          <ProOffer
-            userId={userId}
+          <Oferta
             kind={kind}
-            initialTier={tierParam}
-            motivo={motivo}
-            exitLabel="Seguir gratis"
-            onExit={salir}
-            onPurchased={() => {
+            modoInicial={modoParam}
+            etiquetaSalida="Seguir gratis"
+            onSalir={salir}
+            onComprado={() => {
               responder('compra');
-              load();
-            }}
-            trialAvailable={!!status?.trialAvailable}
-            onTrialStarted={() => {
-              if (motivo) responder('prueba');
-              else void anotarOferta('coach_cerrado', 'prueba', 'linea');
+              void recargarDerechos(userId ?? null);
               load();
             }}
           />

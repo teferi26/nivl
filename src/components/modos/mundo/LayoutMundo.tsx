@@ -7,6 +7,8 @@
 //   · `modos_activos` apagado: este mundo no existe, a NIVL.
 //   · Aún sin leer el modo: la planta de la arena (ArranqueCargando).
 //   · El modo activo es otro: a su inicio.
+//   · Sin pagar este modo: su oferta (MundoCerrado), nunca una redirección muda.
+//     Es solo la pintura: el candado del coach está en el servidor (0140).
 // Así, dentro de un mundo el modo activo es SIEMPRE el suyo, y el coach lo
 // recibe en `x-nivl-modo` (ModoProvider → modos/coach.ts). Mientras el emblema
 // cambia de mundo (`irAlMundo`), la puerta no redirige por su cuenta.
@@ -21,6 +23,7 @@ import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ArranqueCargando } from '@/components/acceso/Arranque';
 import { EmblemaBarra } from '@/components/modos/EmblemaMundo';
+import { MundoCerrado } from '@/components/modos/pago/MundoCerrado';
 import { SubidaMarca } from '@/components/modos/maestria/SubidaMarca';
 import { useMaestria } from '@/components/modos/maestria/useMaestria';
 import { GlifoModo } from '@/components/modos/rueda/GlifoModo';
@@ -32,6 +35,8 @@ import { huecoContenido, marcoDe } from '@/design/responsive';
 import { modoAcento } from '@/design/tokens';
 import { TopeAncho, useAnchoUtil } from '@/design/useSizeClass';
 import { t } from '@/i18n';
+import { puertaMundo } from '@/lib/planesmodo';
+import { useDerechos } from '@/modos/useDerechos';
 import { useModo } from '@/modos/ModoProvider';
 import { destinoMundo, llegadaAlMundo, MS_TRANSITO, MUNDOS, transitoMundo } from '@/modos/rutasModo';
 import { NOMBRE_MODO, type ModoEtiqueta } from '@/modos/tipos';
@@ -45,6 +50,7 @@ export function LayoutMundo({ modo }: { modo: ModoEtiqueta }) {
   const acento = modoAcento[modo];
   const ruta = usePathname();
   const maestria = useMaestria(modo, { relectura: ruta });
+  const { leido, derechos } = useDerechos();
 
   const transito = transitoMundo();
   const destino = destinoMundo({ activo: modos.activo, cargado: modos.cargado, modo: modos.modo, transito }, modo);
@@ -64,6 +70,10 @@ export function LayoutMundo({ modo }: { modo: ModoEtiqueta }) {
 
   if (destino === 'esperar') return <ArranqueCargando />;
   if (destino) return <Redirect href={destino} />;
+
+  const puerta = puertaMundo(leido, derechos, modo);
+  if (puerta === 'esperar') return <ArranqueCargando />;
+  if (puerta === 'cerrado') return <MundoCerrado modo={modo} />;
 
   return (
     <View style={styles.lleno}>

@@ -46,7 +46,7 @@ export interface Fake {
 }
 
 /** Las RPC que en la base real solo puede ejecutar service_role (comprobado en pg_proc.proacl). */
-const SOLO_SERVICE = new Set(['ai_begin_turn', 'ai_end_turn', 'ai_state', 'ai_consent_ok', 'ai_reservar', 'ai_liquidar', 'ai_puede']);
+const SOLO_SERVICE = new Set(['ai_begin_turn', 'ai_end_turn', 'ai_state', 'ai_consent_ok', 'ai_reservar', 'ai_liquidar', 'ai_puede', 'ai_modos']);
 
 export function sse(eventos: unknown[]): Response {
   const cuerpo = eventos.map((e) => `event: x\ndata: ${JSON.stringify(e)}\n\n`).join('');
@@ -106,6 +106,8 @@ export function instalar(op: Opciones = {}): Fake {
     health_consent_ok: () => true,
     ai_begin_turn: () => ({ allowed: true, mode: 'estandar', turn_budget: 5_000_000, routes: {} }),
     ai_end_turn: () => null,
+    // 0140: por defecto la cuenta tiene los cuatro modos; modos_pago_test.ts lo sustituye.
+    ai_modos: () => ['iron', 'focus', 'work', 'founder'],
     ai_state: () => ({ entitled: true, remaining: 5_000_000, tier: 'pro' }),
     // La cartera (0078): por defecto deja; los tests del tope la sustituyen (ia_tope_test.ts).
     ai_puede: () => ({ ok: true, motivo: null }),

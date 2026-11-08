@@ -5,11 +5,13 @@
 // https://www.revenuecat.com/docs/api-v1/customers
 import type { Db } from './db.ts';
 import type { SandboxPolicy } from './store-config.ts';
+import { PRODUCTOS_MODO } from './productos-modo.ts';
 
 type ObjectValue = Record<string, unknown>;
 const object = (value: unknown): value is ObjectValue => !!value && typeof value === 'object' && !Array.isArray(value);
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-const PRODUCTS = new Set(['nivl_pro_mensual', 'nivl_pro_anual', 'nivl_elite_mensual', 'nivl_elite_anual', 'nivl_elite_fundador']);
+// Pro y Élite siguen aquí: quien ya los paga los conserva hasta que caduquen (0140).
+const PRODUCTS = new Set(['nivl_pro_mensual', 'nivl_pro_anual', 'nivl_elite_mensual', 'nivl_elite_anual', 'nivl_elite_fundador', ...PRODUCTOS_MODO]);
 type Reservation = { user_id: string; revision: number };
 export type StoreSnapshot = Reservation & { requested_ms: number; subscriptions: StoreSubscription[] };
 export type StoreSubscription = {

@@ -31,6 +31,7 @@
 import { callClaude, CHEAP_MODEL, costMicroUsd, tarifa, type ApiMessage, type SystemBlock, type Usage } from '../_shared/anthropic.ts';
 import { consentimientoIa, MENSAJE_SIN_CONSENTIMIENTO, SIN_CONSENTIMIENTO } from '../_shared/consent.ts';
 import { adminClient, userClient, type Db } from '../_shared/db.ts';
+import { negativaModo } from '../_shared/modos.ts';
 import {
   enmascararDatosBancarios,
   leerLineasIa,
@@ -253,6 +254,13 @@ async function abrirPuerta(admin: Db, userId: string): Promise<Response | null> 
   const consiente = await consentimientoIa(admin, userId);
   if (consiente === null) return json(503, { error: 'El sistema no puede comprobar tu consentimiento ahora mismo.' });
   if (!consiente) return json(403, { error: MENSAJE_SIN_CONSENTIMIENTO, reason: SIN_CONSENTIMIENTO });
+  // El candado por modo (0140): esta IA es de los mundos WORK y FOUNDER.
+  const { data: pagados, error: modosErr } = await admin.rpc('ai_modos', { p_user: userId });
+  if (modosErr || !Array.isArray(pagados)) {
+    console.error('economia: ai_modos', modosErr?.code ?? 'sin_codigo');
+    return json(503, { error: 'El sistema no puede comprobar tu plan ahora mismo.' });
+  }
+  if (!pagados.includes('work') && !pagados.includes('founder')) return json(402, negativaModo('work'));
   const { data, error } = await admin.rpc('ai_begin_turn', { p_user: userId, p_mode: 'estandar' });
   if (error) {
     console.error('economia: ai_begin_turn', error.code ?? 'sin_codigo');
@@ -263,7 +271,7 @@ async function abrirPuerta(admin: Db, userId: string): Promise<Response | null> 
     const motivo = p?.reason ?? 'sin_suscripcion';
     const status = motivo === 'turno_en_curso' ? 429 : 402;
     const texto: Record<string, string> = {
-      sin_suscripcion: 'Leer un PDF y escribir el brief son parte de NIVL Pro.',
+      sin_suscripcion: 'Leer un PDF y escribir el brief van con tu modo de NIVL.',
       presupuesto_agotado: `Has agotado la IA de este mes. Se renueva el ${p?.renews ?? 'día 1'}.`,
       turno_en_curso: 'El sistema todavía está con tu petición anterior.',
       tope_diario: 'Has usado la IA de hoy de tu prueba. Mañana vuelve.',

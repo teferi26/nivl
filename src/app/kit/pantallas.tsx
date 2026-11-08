@@ -64,6 +64,7 @@ import { DEMO as demoMemoria } from '@/components/memoria/demo';
 import { DEMO as demoMetricas } from '@/components/metricas/demo';
 import { DEMO as demoModeracion } from '@/components/moderacion/demo';
 import { DEMO as demoModos } from '@/components/modos/demo';
+import { DEMO as demoPago } from '@/components/modos/pago/demo';
 import { DEMO as demoIron } from '@/components/ironmundo/demo';
 import { DEMO as demoPrueba } from '@/components/prueba/demo';
 import { DEMO as demoNutricion } from '@/components/nutricion/demo';
@@ -106,6 +107,7 @@ const DEMOS: Record<IdPantalla, DemoPantalla | null> = {
   moderacion: demoModeracion,
   metricas: demoMetricas,
   modos: demoModos,
+  pago: demoPago,
   iron: demoIron,
   prueba: demoPrueba,
 };

@@ -36,7 +36,9 @@ import { useConsentimientoAnalitica } from '@/components/consentimiento/useConse
 import { ProgresoPasos } from '@/components/onboarding/ProgresoPasos';
 import { TablillaContrato } from '@/components/onboarding/TablillaContrato';
 import { TituloPaso } from '@/components/onboarding/TituloPaso';
-import { ProOfferActions, ProOfferBody, ProOfferLegal, ProUpsellLine, useProOffer } from '@/components/ProOffer';
+import { OfertaModosAcciones, OfertaModosCuerpo, OfertaModosLegal } from '@/components/modos/pago/OfertaModosVista';
+import { useOfertaModos } from '@/components/modos/pago/useOfertaModos';
+import { ProUpsellLine } from '@/components/ProOffer';
 import { Button, Chip, Skeleton } from '@/components/ui';
 import { avisar } from '@/components/ui/confirmar';
 import { GutterContext } from '@/components/ui/Screen';
@@ -188,7 +190,6 @@ export default function Onboarding() {
   // ve la oferta: tras firmar, entra.
   const yaEsPro = useRef(false);
   // La cuenta nunca tuvo coach: el paso 6 ofrece la prueba de 7 días.
-  const [pruebaDisponible, setPruebaDisponible] = useState(false);
   // El estado entero de la IA: el paso 6 lo necesita para decidir la oferta
   // (`ofrecerSi`). null = aún no leído o sin red.
   const estadoIA = useRef<AiStatus | null>(null);
@@ -233,7 +234,6 @@ export default function Onboarding() {
       .then((s) => {
         estadoIA.current = s;
         yaEsPro.current = isPro(s);
-        setPruebaDisponible(s.trialAvailable);
       })
       .catch(() => {});
   }, [userId]);
@@ -507,14 +507,8 @@ export default function Onboarding() {
     await finish(respuesta === 'vista' ? 'cerrada' : respuesta);
   };
 
-  // La prueba de 7 días solo si la cuenta nunca tuvo coach Y la decisión la
-  // incluye. Empezarla o comprar cierra el onboarding.
-  const oferta = useProOffer({
-    userId,
-    onPurchased: () => void salir('compra'),
-    trialAvailable: pruebaDisponible && (decisionOferta?.prueba ?? false),
-    onTrialStarted: () => void salir('prueba'),
-  });
+  // La oferta por modos, con el modo de su perfil primero. Comprar cierra el onboarding.
+  const oferta = useOfertaModos({ kind, onComprado: () => void salir('compra') });
   const forma = pasoOferta(decisionOferta, celebrando);
   // Si la espera se alarga (red lenta, una celebración que no se cierra), el
   // pie enseña una salida discreta: el paso nunca se queda sin puerta.
@@ -530,8 +524,6 @@ export default function Onboarding() {
 
   // Paso 6: se decide la oferta UNA vez, nunca con una celebración en
   // pantalla. Sin estado de la IA (sin red) no se ofrece a ciegas: se entra.
-  // Si la decisión pide otro nivel (Élite), se ajusta el que enseña la hoja.
-  const { elegirNivel, tier: tierOferta } = oferta;
   useEffect(() => {
     if (step !== 6 || decisionOferta || celebrando || pidiendoOferta.current) return;
     pidiendoOferta.current = true;
@@ -546,7 +538,6 @@ export default function Onboarding() {
       if (s) estadoIA.current = s;
       const d = await ofrecerSi('firma', s, { celebrando: false });
       // Se guarda también el «no»: si entrar falla, el pie da el botón para reintentarlo.
-      if (d.mostrar && d.tier !== tierOferta) elegirNivel(d.tier);
       setDecisionOferta(d);
       if (!d.mostrar) await finish();
     })().catch(() => {
@@ -906,8 +897,8 @@ export default function Onboarding() {
               ) : null}
               {forma === 'hoja' ? (
                 <>
-                  <ProOfferBody oferta={oferta} kind={kind} compact motivo="firma" />
-                  <ProOfferLegal oferta={oferta} />
+                  <OfertaModosCuerpo oferta={oferta} />
+                  <OfertaModosLegal oferta={oferta} />
                 </>
               ) : null}
               {forma === 'linea' && decisionOferta ? <ProUpsellLine momento="firma" tier={decisionOferta.tier} /> : null}
@@ -969,11 +960,11 @@ export default function Onboarding() {
               <Button title={t('onboarding:entrar')} variant="ghost" size="lg" onPress={() => void finish()} loading={busy} />
             ) : null}
             {step === 6 && forma === 'hoja' ? (
-              <ProOfferActions
+              <OfertaModosAcciones
                 oferta={oferta}
-                exitLabel={t('onboarding:coach.seguirGratis')}
-                onExit={() => void salir('cerrada')}
-                exitLoading={busy}
+                etiquetaSalida={t('onboarding:coach.seguirGratis')}
+                onSalir={() => void salir('cerrada')}
+                saliendo={busy}
               />
             ) : null}
             {step === 6 && (forma === 'linea' || forma === 'saltar') ? (

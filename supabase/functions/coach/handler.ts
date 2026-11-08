@@ -51,7 +51,7 @@ import { AI_SAFETY_RULES } from '../_shared/ai-safety.ts';
 import { CarteraIa, codigoError, mensajeTope, puertaCartera, type FuncionIa } from '../_shared/cartera.ts';
 import { esTareaEstudio, generarEstudio, MAX_TEXTO_ESTUDIO, TAREAS_DE_SALUD } from '../_shared/estudio.ts';
 import { AVISO_MODELO_BLOQUEADO, elegirModelo, modoDeCabecera, soloAnthropic, type Modo, type Routes } from '../_shared/routing.ts';
-import { idiomaDeCabecera, misionConModos, modoDeCabeceraNivl, type ModoCoach } from '../_shared/modos.ts';
+import { idiomaDeCabecera, misionConModos, modoDeCabeceraNivl, negativaModo, type ModoCoach } from '../_shared/modos.ts';
 import { executeTool, TOOL_DEFS } from '../_shared/tools.ts';
 import { controlHerramientas, fechaAceptable, fechaDelTurno, fotosSinVision, Gasto, mensajeDeFallo, reloj, validarImagenes } from './guard.ts';
 import { pareceAfirmacion, rutaDelTurno, type Ruta } from '../_shared/intencion.ts';
@@ -920,6 +920,20 @@ export async function handler(req: Request): Promise<Response> {
     return json(403, { error: MENSAJE_SIN_CONSENTIMIENTO, reason: SIN_CONSENTIMIENTO });
   }
 
+  // El candado por modo (0140): pedir el coach de un mundo que no se ha pagado
+  // es un 402, como cualquier otra negativa, y va antes de tomar el turno. Sin
+  // cabecera es el coach General, el de cualquier plan con coach y el de los
+  // rituales y los clientes antiguos: su puerta es la de abajo.
+  const modoNivlPedido = modoDeCabeceraNivl(req.headers.get('x-nivl-modo'));
+  if (modoNivlPedido) {
+    const { data: pagados, error: modosErr } = await admin.rpc('ai_modos', { p_user: userId });
+    if (modosErr || !Array.isArray(pagados)) {
+      console.error('ai_modos failed:', modosErr?.message ?? 'sin datos');
+      return json(503, { error: 'El sistema no puede comprobar tu plan ahora mismo. Vuelve a intentarlo.' });
+    }
+    if (!pagados.includes(modoNivlPedido)) return json(402, negativaModo(modoNivlPedido));
+  }
+
   // El candado de gasto (migración 0020). Va ANTES de leer el cuerpo y de
   // cualquier llamada a un modelo: suscripción viva, presupuesto del mes sin
   // agotar y ningún otro turno en marcha. Cubre también a los rituales del
@@ -937,7 +951,7 @@ export async function handler(req: Request): Promise<Response> {
   const estado = puerta as Puerta | null;
   if (!estado || estado.allowed !== true) {
     const MENSAJES: Record<string, [number, string]> = {
-      sin_suscripcion: [402, 'El coach es parte de NIVL Pro.'],
+      sin_suscripcion: [402, 'El coach va con tu modo de NIVL.'],
       presupuesto_agotado: [402, `Has agotado la IA de este mes. Se renueva el ${estado?.renews ?? 'día 1'}.`],
       turno_en_curso: [429, 'El sistema todavía está respondiendo a tu mensaje anterior.'],
       // Lo que recibe un Pro que pide el modo profundo.

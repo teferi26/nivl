@@ -23,6 +23,7 @@ import { moneda } from '@/i18n/formato';
 import { kindMeta, type ProfileKind } from './kinds';
 import { conTextos } from './textosVivos';
 import type { CopyKey, Momento, TierOferta } from './paywallmoment';
+import type { PlanModo } from './planesmodo';
 
 /**
  * Los valores de `subscriptions.plan` (0024). 'mensual' y 'anual' son los
@@ -41,7 +42,9 @@ export type PlanKey =
   | 'owner'
   // Modos F1 (0069): la prueba automática al registrarse (2 días, apagada
   // por defecto con `prueba_auto_activa`). No se cobra.
-  | 'prueba_auto';
+  | 'prueba_auto'
+  // Cobro por modos (0140, `planesmodo.ts`).
+  | PlanModo;
 
 /** El nivel de la cuenta según el servidor (`ai_plans.tier`, 0024). */
 export type Tier = 'free' | 'pro' | 'elite' | 'owner';
@@ -218,6 +221,16 @@ const PLAN_LABEL: Record<PlanKey, string> = {
   owner: 'Dueño',
   // Reserva: el texto sale del catálogo (perfil:planes.pruebaAuto) en planLabel.
   prueba_auto: 'Prueba gratuita', // i18n-ok: reserva de perfil:planes.pruebaAuto
+  iron_mensual: 'IRON mensual', // i18n-ok: marca
+  iron_anual: 'IRON anual', // i18n-ok: marca
+  focus_mensual: 'FOCUS mensual', // i18n-ok: marca
+  focus_anual: 'FOCUS anual', // i18n-ok: marca
+  work_mensual: 'WORK mensual', // i18n-ok: marca
+  work_anual: 'WORK anual', // i18n-ok: marca
+  founder_mensual: 'FOUNDER mensual', // i18n-ok: marca
+  founder_anual: 'FOUNDER anual', // i18n-ok: marca
+  todos_mensual: 'Todos los modos, mensual', // i18n-ok: nombre del plan
+  todos_anual: 'Todos los modos, anual', // i18n-ok: nombre del plan
 };
 
 /**
