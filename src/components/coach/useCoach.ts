@@ -691,6 +691,7 @@ export function useCoach(): { vista: CoachVistaProps; hojas: HojasCoach } {
   );
 
   const vista: CoachVistaProps = {
+    conDisco: modosActivos,
     cargando: cargando || !estadoListo,
     sinPro,
     vacio,

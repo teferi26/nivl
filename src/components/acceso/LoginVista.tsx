@@ -302,7 +302,7 @@ export function LoginVista(p: LoginVistaProps) {
             </Text>
           )}
 
-          {portal ? null : (
+          {portal || p.desdePlan ? null : (
             <Button
               title={t('acceso:login.crearPlan')}
               variant="ghost"

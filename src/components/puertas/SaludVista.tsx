@@ -18,7 +18,7 @@ import { Linking, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Entrada, TarjetaArena } from '@/components/arena';
 // eslint-disable-next-line no-restricted-imports -- health.test.ts (Seguridad) busca el título por ScreenHeader.
 import { Button, Check, Screen, ScreenHeader, Skeleton } from '@/components/ui';
-import { ink, space, stroke, type as tipo } from '@/design/tokens';
+import { ink, oro, radio, space, stroke, type as tipo, vidrio } from '@/design/tokens';
 import { t } from '@/i18n';
 import { HEALTH_COPY as T } from '@/lib/healthmath';
 import { LEGAL_URLS } from '@/lib/proplans';
@@ -169,11 +169,12 @@ const styles = StyleSheet.create({
     marginTop: space.s3,
     paddingHorizontal: space.s3,
     borderWidth: stroke.hairline,
-    borderColor: ink.ink4,
+    borderColor: vidrio.borde,
+    borderRadius: radio.control,
     backgroundColor: ink.ink2,
   },
   // Marcada: el marco engorda a 2 en ink10 (jerarquía por trazo, sin invertir).
-  casillaMarcada: { borderWidth: stroke.rule, borderColor: ink.ink10 },
+  casillaMarcada: { borderWidth: stroke.rule, borderColor: oro.claro },
   error: {
     fontFamily: tipo.bodySm.family,
     fontSize: tipo.bodySm.size,

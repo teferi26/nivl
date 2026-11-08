@@ -100,7 +100,7 @@
     "plazo_one": "{{count}} Jahr",
     "plazo_other": "{{count}} Jahre",
     "cabecera": "VERPFLICHTUNG FÜR {{plazo}}",
-    "firma": "Ich, {{nombre}}, unterschreibe diese Verpflichtung mir selbst gegenüber am {{firmadoEl}}, dem Tag, an dem ich NIVL beigetreten bin.",
+    "firma": "Ich, {{nombre}}, unterschreibe diese Verpflichtung mir selbst gegenüber am {{firmadoEl}}.",
     "objetivo": "Dafür bin ich hier: {{objetivo}}",
     "promesa": "Ich verspreche keine perfekten Tage. Ich verspreche, jeden Tag 1 % besser zu sein: eine erfüllte Mission, wenn ich keine Lust habe, eine eingehaltene Regel, wenn niemand hinsieht, ein ehrlicher Eintrag, wenn der Tag schlecht gelaufen ist.",
     "unoPorCiento": "1 % merkt man in einer Woche nicht. {{plazo}} später ist es ein anderes Leben.",

@@ -67,6 +67,8 @@ export interface BurbujaVista {
 }
 
 export interface CoachVistaProps {
+  /** Hay disco central en la barra inferior: el pie le deja hueco. */
+  conDisco?: boolean;
   /** Aún sin hilo o sin estado de la IA: cabecera y huecos. */
   cargando: boolean;
   /** Con certeza sin coach (estado leído y sin Pro). */
@@ -351,6 +353,8 @@ export function CoachVista(p: CoachVistaProps) {
   const nav = useNavActual();
   const teclado = useTecladoAbierto();
   const fondoSeguro = nav !== 'tabs' && !teclado ? insets.bottom : 0;
+  // El disco central de la barra (rueda de modos) asoma por encima del pie.
+  const margenDisco = nav === 'tabs' && p.conDisco && !teclado ? 26 : 0;
 
   if (p.cargando) {
     // La cabecera ya, y el cuerpo en hueco: un spinner solo en mitad del negro
@@ -554,7 +558,7 @@ export function CoachVista(p: CoachVistaProps) {
             </View>
           )
         ) : pausa ? (
-          <PausaPie pausa={pausa} error={pausa.paso === 'compromiso' ? p.error : null} fondoSeguro={fondoSeguro} />
+          <PausaPie pausa={pausa} error={pausa.paso === 'compromiso' ? p.error : null} fondoSeguro={fondoSeguro + margenDisco} />
         ) : (
           <View>
             {conRapidas ? <Rapidas onAtajo={p.onAtajo} desactivadas={c.ocupado} conLinea /> : null}
@@ -565,7 +569,7 @@ export function CoachVista(p: CoachVistaProps) {
                 styles.barra,
                 (conRapidas || c.grabando || !!c.avisoDictado) && styles.barraSinLinea,
                 piel && { backgroundColor: 'transparent', borderTopColor: piel.borde },
-                { paddingBottom: styles.barra.paddingBottom + fondoSeguro + (pc?.margenInferior ?? 0) },
+                { paddingBottom: styles.barra.paddingBottom + fondoSeguro + (pc?.margenInferior ?? margenDisco) },
               ]}
             >
               {c.conFotos ? (

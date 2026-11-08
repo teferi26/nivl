@@ -6,7 +6,7 @@
 // se toca. Sin superficie invertida: la acción del paso es el anillo.
 
 import { StyleSheet, Text, View } from 'react-native';
-import { Entrada, Meandro, TarjetaArena } from '@/components/arena';
+import { Entrada, TarjetaArena } from '@/components/arena';
 import { ink, space, type as tipo } from '@/design/tokens';
 import { t } from '@/i18n';
 import { mayus } from '@/i18n/formato';
@@ -29,7 +29,6 @@ export function TablillaContrato({ parrafos, abreEl, rellenar = true }: Tablilla
   return (
     <View style={rellenar ? styles.relleno : null}>
       <TarjetaArena variante="piedra" remaches zocalo>
-        <Meandro alto={8} />
         <Text style={styles.rotulo} accessibilityRole="header" maxFontSizeMultiplier={1.35}>
           {mayus(t('onboarding:tablilla.rotulo'))}
         </Text>
@@ -42,7 +41,6 @@ export function TablillaContrato({ parrafos, abreEl, rellenar = true }: Tablilla
             </Text>
           </Entrada>
         ))}
-        <Meandro alto={8} style={styles.meandroPie} />
         <Text style={styles.fecha} maxFontSizeMultiplier={1.35}>
           {mayus(t('onboarding:tablilla.seAbre', { fecha: abreEl }))}
         </Text>
@@ -66,7 +64,6 @@ const styles = StyleSheet.create({
   },
   parrafo: { fontFamily: tipo.body.family, fontSize: 15, lineHeight: 23, color: ink.ink9 },
   parrafoSig: { marginTop: space.s3 },
-  meandroPie: { marginTop: space.s5 },
   fecha: {
     fontFamily: tipo.micro.family,
     fontSize: tipo.micro.size,

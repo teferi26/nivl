@@ -100,7 +100,7 @@
     "plazo_one": "{{count}} anno",
     "plazo_other": "{{count}} anni",
     "cabecera": "IMPEGNO A {{plazo}}",
-    "firma": "Io, {{nombre}}, firmo questo impegno con me stesso in data {{firmadoEl}}, il giorno in cui sono entrato in NIVL.",
+    "firma": "Io, {{nombre}}, firmo questo impegno con me stesso in data {{firmadoEl}}.",
     "objetivo": "Sono qui per questo: {{objetivo}}",
     "promesa": "Non prometto giorni perfetti. Prometto di essere l'1% migliore ogni giorno: una missione compiuta quando non ne ho voglia, una regola rispettata quando nessuno guarda, una registrazione onesta quando la giornata è andata male.",
     "unoPorCiento": "L'1% non si nota in una settimana. In {{plazo}} è un'altra vita.",
