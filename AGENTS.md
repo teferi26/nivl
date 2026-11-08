@@ -8,7 +8,7 @@ El proyecto está en **Expo SDK 54** (RN 0.81.5, React 19.1.0). Historial: 56→
 
 Trampas conocidas del SDK 54: `expo-sharing` no tiene config plugin (fuera de `app.json` plugins, funciona autolinkado). `StyleSheet.absoluteFill` no es spreadable en RN 0.81. Las **rutas tipadas solo se regeneran arrancando Metro** (`npx expo start`), no con `expo export`: si `tsc` falla por una ruta nueva, arranca Metro unos segundos y mátalo.
 
-**Xcode 27:** `plugins/with-uiscene.js` adopta UIScene (sin él, la app enlazada con el SDK 27 se cierra al abrir) y sube los pods a iOS 15.1. Los enlaces entran por `SceneDelegate` y pasan por `AppDelegate`. El plugin falla en el prebuild si la plantilla de Expo cambia; si un SDK futuro trae ya `SceneDelegate`, se retira.
+**Xcode 27:** `plugins/withEscenas.js` adopta UIScene (sin él, la app enlazada con el SDK 27 se cierra al abrir) y `plugins/with-uiscene.js` sube los pods a iOS 15.1. Los enlaces entran por `SceneDelegate` y pasan por `AppDelegate`. El plugin falla en el prebuild si la plantilla de Expo cambia; si un SDK futuro trae ya `SceneDelegate`, se retira.
 
 # NIVL — contexto del proyecto
 
