@@ -4,6 +4,7 @@
 const { getDefaultConfig } = require('expo/metro-config');
 
 const config = getDefaultConfig(__dirname);
-config.cacheVersion = `sitio:${process.env.EXPO_PUBLIC_SITIO ?? 'app'}`;
+// Lo mismo con la galería del preview web (EXPO_PUBLIC_GALERIA, src/lib/galeria.ts).
+config.cacheVersion = `sitio:${process.env.EXPO_PUBLIC_SITIO ?? 'app'}:galeria:${process.env.EXPO_PUBLIC_GALERIA ?? '0'}`;
 
 module.exports = config;

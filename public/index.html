@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="%LANG_ISO_CODE%">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="theme-color" content="#000000" />
+    <meta name="description" content="NIVL: tus misiones, tu racha y tu coach, también en el navegador." />
+    <title>%WEB_TITLE%</title>
+    <!--
+      NIVL web (app.nivl.app y el portal de creadores). Sin scripts en línea: la
+      CSP de scripts/web/vercel.json es `script-src 'self'`. Los estilos en línea
+      sí (react-native-web los inyecta al vuelo).
+    -->
+    <style id="expo-reset">
+      html,
+      body {
+        height: 100%;
+        background: #000000;
+        color: #ededed;
+      }
+      body {
+        margin: 0;
+        overflow: hidden;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        text-rendering: optimizeLegibility;
+      }
+      #root {
+        display: flex;
+        height: 100%;
+        flex: 1;
+      }
+      /* La inversión de la marca también al seleccionar texto. */
+      ::selection {
+        background: #ffffff;
+        color: #000000;
+      }
+      /* Teclado: el foco se ve siempre (blanco, 2 px, separado), el ratón no lo enciende. */
+      :focus {
+        outline: none;
+      }
+      :focus-visible {
+        outline: 2px solid #ffffff;
+        outline-offset: 2px;
+      }
+      /* Barras de desplazamiento finas, en la escala ink (ink4 sobre ink0). */
+      * {
+        scrollbar-width: thin;
+        scrollbar-color: #3a3a3a transparent;
+      }
+      ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #3a3a3a;
+      }
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      /* El autocompletado del navegador no pinta los campos de amarillo. */
+      input:-webkit-autofill,
+      input:-webkit-autofill:hover,
+      input:-webkit-autofill:focus {
+        -webkit-text-fill-color: #ededed;
+        -webkit-box-shadow: 0 0 0 1000px #161616 inset;
+        caret-color: #ededed;
+      }
+      noscript {
+        display: block;
+        padding: 48px 24px;
+        font-family: system-ui, sans-serif;
+        text-align: center;
+      }
+    </style>
+  </head>
+
+  <body>
+    <noscript>NIVL necesita JavaScript para funcionar en el navegador.</noscript>
+    <div id="root"></div>
+  </body>
+</html>

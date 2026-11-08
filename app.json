@@ -74,6 +74,7 @@
     },
     "web": {
       "output": "single",
+      "lang": "es",
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [

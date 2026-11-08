@@ -68,5 +68,14 @@
       "enlace": "See NIVL Élite",
       "contexto": "Your oath is sealed. NIVL stays fully free; Élite adds the coach at full power."
     }
+  },
+  "web": {
+    "eyebrow": "NIVL",
+    "titulo": "Plans",
+    "subtitulo": "NIVL is entirely free. Pro and Elite add the coach: the AI that runs your day.",
+    "rotulo": "How to subscribe",
+    "cuerpo": "For now, the subscription is bought and managed in the NIVL app for iPhone. Nothing is charged on the web.",
+    "cuenta": "It is the same account: the plan you have on your phone works here too.",
+    "seguir": "Continue for free"
   }
 }

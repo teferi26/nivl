@@ -6,11 +6,16 @@
 //   su final (suena aunque la app esté en segundo plano); al pausar, parar o
 //   cerrar la fase, se cancela. Mismo id siempre: nunca se acumulan.
 // · Sin permiso de avisos, el temporizador funciona igual (solo no avisa fuera).
+// · En la web no hay avisos locales: un temporizador de la pestaña dispara el
+//   aviso en pantalla y, con permiso y la pestaña oculta, la notificación del
+//   navegador (src/lib/web/avisos.ts). El permiso se pide al empezar el bloque,
+//   que es un gesto; nunca al cargar.
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 import { asegurarPermiso, avisarEn } from '@/lib/notifications';
+import { avisarWeb, pedirPermisoNavegador } from '@/lib/web/avisos';
 import { normalizarConfig, normalizarEstado, type ConfigPomodoro, type EstadoPomodoro } from './pomodoro';
 
 const claveEstado = (uid: string) => `nivl.focus.pomodoro.${uid}`;
@@ -51,9 +56,26 @@ export async function guardarEstado(uid: string, e: EstadoPomodoro): Promise<voi
   }
 }
 
+let relojWeb: ReturnType<typeof setTimeout> | null = null;
+
+function avisarFinWeb(cuando: number, titulo: string, cuerpo: string): void {
+  if (relojWeb) clearTimeout(relojWeb);
+  void pedirPermisoNavegador();
+  relojWeb = setTimeout(
+    () => {
+      relojWeb = null;
+      avisarWeb(titulo, cuerpo, ID_AVISO);
+    },
+    Math.max(0, cuando - Date.now()),
+  );
+}
+
 /** Programa el aviso de fin de fase. Nunca lanza. */
 export async function avisarFin(cuando: number, titulo: string, cuerpo: string): Promise<void> {
-  if (Platform.OS === 'web') return;
+  if (Platform.OS === 'web') {
+    avisarFinWeb(cuando, titulo, cuerpo);
+    return;
+  }
   try {
     if (!(await asegurarPermiso())) return;
     await avisarEn(ID_AVISO, new Date(cuando), titulo, cuerpo);
@@ -63,7 +85,11 @@ export async function avisarFin(cuando: number, titulo: string, cuerpo: string):
 }
 
 export async function cancelarAvisoFin(): Promise<void> {
-  if (Platform.OS === 'web') return;
+  if (Platform.OS === 'web') {
+    if (relojWeb) clearTimeout(relojWeb);
+    relojWeb = null;
+    return;
+  }
   try {
     await Notifications.cancelScheduledNotificationAsync(ID_AVISO);
   } catch {

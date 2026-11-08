@@ -68,5 +68,14 @@
       "enlace": "NIVL Élite ansehen",
       "contexto": "Dein Schwur ist besiegelt. NIVL bleibt komplett kostenlos; Élite fügt den Coach mit voller Leistung hinzu."
     }
+  },
+  "web": {
+    "eyebrow": "NIVL",
+    "titulo": "Tarife",
+    "subtitulo": "NIVL ist komplett kostenlos. Pro und Élite fügen den Coach hinzu: die KI, die deinen Tag lenkt.",
+    "rotulo": "So schließt du ab",
+    "cuerpo": "Vorerst wird das Abo in der NIVL App für iPhone abgeschlossen und verwaltet. Im Web wird nichts berechnet.",
+    "cuenta": "Es ist dasselbe Konto: Dein Tarif vom Handy gilt hier genauso.",
+    "seguir": "Kostenlos weiter"
   }
 }

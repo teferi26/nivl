@@ -93,5 +93,13 @@
     "falloRotulo": "Confirmation impossible",
     "confirmando": "Confirmation de ton e-mail",
     "sinEnlace": "Ce lien n'a rien à confirmer. Ouvre le dernier e-mail qu'on t'a envoyé ou connecte-toi avec ton mot de passe."
+  },
+  "web": {
+    "eyebrow": "NIVL dans le navigateur",
+    "titulo": "Ton arène, ici aussi.",
+    "cuerpo": "Le même compte et les mêmes données que sur ton téléphone. Ce que tu fais ici compte là-bas.",
+    "punto1": "Missions, série et clôture du jour",
+    "punto2": "Tes mondes : IRON, FOCUS, WORK et FOUNDER",
+    "punto3": "Le coach, avec un vrai clavier"
   }
 }

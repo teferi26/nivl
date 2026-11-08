@@ -328,6 +328,15 @@ function CatalogoDemo({ consulta = '', ms }: { consulta?: string; ms?: number })
 const SENTADILLA = ejercicioPorId('sentadilla-barra') ?? EJERCICIOS[0]!;
 const MS_FONDO = SENTADILLA.msFicha ?? SENTADILLA.poses[Math.floor(SENTADILLA.poses.length / 2)]!.ms;
 
+/** El inicio de IRON sin la barra de la lámina (la galería web pone la navegación real). */
+export function InicioIronDemo() {
+  return (
+    <PielIron>
+      <InicioIronVista {...inicio()} />
+    </PielIron>
+  );
+}
+
 export const DEMO: DemoPantalla = {
   id: 'iron',
   titulo: 'IRON',

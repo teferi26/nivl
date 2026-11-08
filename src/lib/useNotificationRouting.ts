@@ -13,6 +13,7 @@
 import * as Notifications from 'expo-notifications';
 import { useRouter } from 'expo-router';
 import { useEffect, useRef } from 'react';
+import { Platform } from 'react-native';
 import { t } from '@/i18n';
 import { useModo } from '@/modos/ModoProvider';
 import { rutaAvisoEnMundo } from '@/modos/rutasModo';
@@ -64,7 +65,8 @@ export function useNotificationRouting(listo: boolean) {
   }, [activo, modo]);
 
   useEffect(() => {
-    if (!listo) return;
+    // En la web no hay notificaciones que tocar (ni la API nativa que leer).
+    if (!listo || Platform.OS === 'web') return;
     const ir = (r: string) => router.push(rutaAvisoEnMundo(r, modoRef.current) as never);
 
     // Arranque en frío: la respuesta pendiente desde que la app estaba cerrada.

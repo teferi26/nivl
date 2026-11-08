@@ -93,5 +93,13 @@
     "falloRotulo": "Não foi possível confirmar",
     "confirmando": "A confirmar o teu e-mail",
     "sinEnlace": "Esta ligação não traz nada para confirmar. Abre o último e-mail que te enviámos ou entra com a tua palavra-passe."
+  },
+  "web": {
+    "eyebrow": "NIVL no navegador",
+    "titulo": "A tua arena, também aqui.",
+    "cuerpo": "A mesma conta e os mesmos dados que no telemóvel. O que fazes aqui conta lá.",
+    "punto1": "Missões, sequência e fecho do dia",
+    "punto2": "Os teus mundos: IRON, FOCUS, WORK e FOUNDER",
+    "punto3": "O coach, com um teclado a sério"
   }
 }

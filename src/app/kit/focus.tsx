@@ -7,6 +7,7 @@
 // src/components/focus/demo.tsx. En un build de release redirige a la raíz.
 
 import { Redirect, router, useLocalSearchParams } from 'expo-router';
+import { GALERIA } from '@/lib/galeria';
 import { useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -19,7 +20,7 @@ export default function GaleriaFocus() {
   const p = useLocalSearchParams<{ pantalla?: string; estado?: string; quieto?: string; solo?: string }>();
   fijarQuieto(p.quieto === '1');
   useEffect(() => () => fijarQuieto(false), []);
-  if (!__DEV__) return <Redirect href="/" />;
+  if (!GALERIA) return <Redirect href="/" />;
   const pantalla = GALERIA_FOCUS.find((x) => x.id === p.pantalla) ?? GALERIA_FOCUS[0]!;
   const estado = pantalla.estados.find((e) => e.id === p.estado) ?? pantalla.estados[0]!;
   const ir = (cambio: { pantalla?: string; estado?: string }) => router.setParams(cambio);

@@ -18,10 +18,11 @@
 // creador es manual) ni restablecer (el enlace del correo abre la app, no
 // este sitio; R1 del Chat 3).
 
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 import { Pressable, StyleSheet, Text, View, type LayoutChangeEvent } from 'react-native';
 import { Arena, ASangre, Campo, Entrada, Laurel, TarjetaArena } from '@/components/arena';
 import { Button, Check, Screen, useAnunciar } from '@/components/ui';
+import { ConFachada } from '@/components/web/FachadaAcceso';
 import { vibrar } from '@/design/haptics';
 import { ink, space, stroke, type as tipo } from '@/design/tokens';
 import { t } from '@/i18n';
@@ -79,11 +80,13 @@ export function LoginVista(p: LoginVistaProps) {
   const recuperar = modo === 'recover';
   // Alta con todo bien salvo la casilla: el botón apagado debe decir por qué.
   const faltaCasilla = alta && !campos.aceptado && evaluarLogin(modo, { ...campos, aceptado: true }, tocados).puedeEnviar;
+  // Web de escritorio: la fachada de la izquierda ya lleva la marca y el lema.
+  const conFachada = useContext(ConFachada);
 
   return (
     <Screen contentStyle={styles.contenido}>
       <Entrada indice={0}>
-        {plegada ? (
+        {conFachada ? null : plegada ? (
           <Text style={styles.marcaPlegada} accessibilityRole="header" maxFontSizeMultiplier={1}>{/* i18n-ok: la marca */}
             NIVL
           </Text>
