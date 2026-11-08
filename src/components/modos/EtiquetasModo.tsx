@@ -1,12 +1,12 @@
 // NIVL · Modos F1: las etiquetas de modo de una misión (selección múltiple, pura).
 //
-// Una fila de casillas con forma de chip: marco ink4; marcada, marco de 2 en
-// el acento del modo con un cuadrado lleno a la izquierda. La misión se marca
+// Una fila de casillas con forma de chip: marco de vidrio; marcada, marco y velo
+// de oro con un punto lleno a la izquierda. La misión se marca
 // una vez y cuenta en todos los modos que lleve. Sin ninguna, solo en General.
 
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { vibrar } from '@/design/haptics';
-import { ink, modoAcento, space, stroke, type as tipo } from '@/design/tokens';
+import { ink, modoAcento, oro, radio, space, stroke, type as tipo, vidrio } from '@/design/tokens';
 import { t } from '@/i18n';
 import { alternarModo, NOMBRE_MODO, type ModoEtiqueta } from '@/modos/tipos';
 
@@ -31,7 +31,7 @@ export function EtiquetasModo({ valor, opciones, alCambiar }: EtiquetasModoProps
             accessibilityRole="checkbox"
             accessibilityState={{ checked: on }}
             accessibilityLabel={t('modos:form.a11y', { modo: NOMBRE_MODO[m] })}
-            style={({ pressed }) => [styles.etiqueta, on && { borderColor: modoAcento[m], borderWidth: stroke.rule }, pressed && styles.pulsada]}
+            style={({ pressed }) => [styles.etiqueta, on && styles.etiquetaOn, pressed && styles.pulsada]}
           >
             <View style={[styles.marca, on && { backgroundColor: modoAcento[m], borderColor: modoAcento[m] }]} />
             <Text style={[styles.texto, on && styles.textoOn]} maxFontSizeMultiplier={1.35}>
@@ -53,11 +53,13 @@ const styles = StyleSheet.create({
     gap: space.s2,
     paddingHorizontal: space.s3,
     borderWidth: stroke.hairline,
-    borderColor: ink.ink4,
-    backgroundColor: ink.ink1,
+    borderColor: vidrio.borde,
+    borderRadius: radio.chip,
+    backgroundColor: vidrio.suave,
   },
+  etiquetaOn: { borderColor: oro.borde, backgroundColor: oro.tenue },
   pulsada: { opacity: 0.7 },
-  marca: { width: 10, height: 10, borderWidth: stroke.hairline, borderColor: ink.ink6 },
+  marca: { width: 10, height: 10, borderRadius: radio.pastilla, borderWidth: stroke.hairline, borderColor: ink.ink6 },
   texto: {
     fontFamily: tipo.label.family,
     fontSize: tipo.label.size,

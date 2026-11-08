@@ -7,7 +7,7 @@
 //
 // Solo pinta lo que decide `src/lib/sharecard.ts`: textos, fotos permitidas
 // (18+, consentimiento y opt-in) y geometría. Negro puro, la marca NIVL en
-// Cinzel arriba, dentro de la zona segura, y un pie con el alias (si se
+// Playfair arriba, dentro de la zona segura, y un pie con el alias (si se
 // permite) y nivl.app.
 //
 // Se monta FUERA de pantalla y fuera de cualquier Modal (en Android, capturar
@@ -38,7 +38,7 @@ import {
   type Tarjeta,
 } from '@/lib/sharecard';
 import { Crown } from '@/components/ui/Crown';
-import { ink } from '@/design/tokens';
+import { ink, oro, radio, vidrio } from '@/design/tokens';
 import { t } from '@/i18n';
 import { cosmeticosDe, type RangoId } from '@/lib/progression';
 import { fonts } from '@/lib/theme';
@@ -147,12 +147,12 @@ export const TarjetaCompartir = forwardRef<View, TarjetaCompartirProps>(function
             <Text allowFontScaling={false} style={txt(fonts.body, 36, ink.ink8, { letterSpacing: px(10) })}>
               {t('share:tarjeta.nivel')}
             </Text>
-            <Text allowFontScaling={false} style={txt(fonts.brand, 300, ink.ink10, { lineHeight: px(300) })}>
+            <Text allowFontScaling={false} style={txt(fonts.brand, 300, oro.claro, { lineHeight: px(300) })}>
               {String(Math.max(1, Math.floor(tarjeta.nivel)))}
             </Text>
             {typeof tarjeta.progreso === 'number' ? (
-              <View style={{ width: px(640), height: px(12), backgroundColor: ink.ink4 }}>
-                <View style={{ width: `${Math.round(Math.min(1, Math.max(0, tarjeta.progreso)) * 100)}%`, height: px(12), backgroundColor: ink.ink10 }} />
+              <View style={{ width: px(640), height: px(12), borderRadius: px(6), overflow: 'hidden', backgroundColor: vidrio.pista }}>
+                <View style={{ width: `${Math.round(Math.min(1, Math.max(0, tarjeta.progreso)) * 100)}%`, height: px(12), backgroundColor: oro.hilo }} />
               </View>
             ) : null}
           </>
@@ -168,13 +168,13 @@ export const TarjetaCompartir = forwardRef<View, TarjetaCompartirProps>(function
                 </View>
               ) : null}
               {/* Aro exterior fino (el box-shadow de la maqueta) y aro de 8 con el retrato. */}
-              <View style={{ width: px(330 * r), height: px(330 * r), borderRadius: px(165 * r), borderWidth: px(3), borderColor: ink.ink8, alignItems: 'center', justifyContent: 'center', marginBottom: -px(15 * r) }}>
-                <View style={{ width: px(300 * r), height: px(300 * r), borderRadius: px(150 * r), borderWidth: px(8), borderColor: ink.ink10, backgroundColor: ink.ink2, overflow: 'hidden' }}>
+              <View style={{ width: px(330 * r), height: px(330 * r), borderRadius: px(165 * r), borderWidth: px(3), borderColor: oro.borde, alignItems: 'center', justifyContent: 'center', marginBottom: -px(15 * r) }}>
+                <View style={{ width: px(300 * r), height: px(300 * r), borderRadius: px(150 * r), borderWidth: px(4), borderColor: oro.hilo, backgroundColor: ink.ink2, overflow: 'hidden' }}>
                   {retrato ? <Image source={{ uri: retrato }} onLoad={unaMenos} onError={unaMenos} style={StyleSheet.absoluteFillObject} resizeMode="cover" /> : null}
                 </View>
               </View>
             </View>
-            <Text allowFontScaling={false} style={txt(fonts.brand, 220 * r, ink.ink10, { lineHeight: px(220 * r) })}>
+            <Text allowFontScaling={false} style={txt(fonts.brand, 220 * r, oro.claro, { lineHeight: px(220 * r) })}>
               {tarjeta.rango}
             </Text>
           </>
@@ -182,7 +182,7 @@ export const TarjetaCompartir = forwardRef<View, TarjetaCompartirProps>(function
 
         {tarjeta.tipo === 'racha' ? (
           <>
-            <Text allowFontScaling={false} style={txt(fonts.brand, 280, ink.ink10, { lineHeight: px(280) })}>
+            <Text allowFontScaling={false} style={txt(fonts.brand, 280, oro.claro, { lineHeight: px(280) })}>
               {String(Math.max(0, Math.floor(tarjeta.dias)))}
             </Text>
             <Text allowFontScaling={false} style={txt(fonts.body, 44, ink.ink10, { letterSpacing: px(12) })}>
@@ -197,7 +197,8 @@ export const TarjetaCompartir = forwardRef<View, TarjetaCompartirProps>(function
                     aspectRatio: 1,
                     backgroundColor: hecho ? ink.ink10 : 'transparent',
                     borderWidth: hecho ? 0 : px(3),
-                    borderColor: ink.ink4,
+                    borderColor: vidrio.borde,
+                    borderRadius: px(radio.chip),
                   }}
                 />
               ))}
@@ -207,7 +208,7 @@ export const TarjetaCompartir = forwardRef<View, TarjetaCompartirProps>(function
 
         {tarjeta.tipo === 'semana' ? (
           <>
-            <Text allowFontScaling={false} numberOfLines={1} adjustsFontSizeToFit style={txt(fonts.brand, 150, ink.ink10, { lineHeight: px(160) })}>
+            <Text allowFontScaling={false} numberOfLines={1} adjustsFontSizeToFit style={txt(fonts.brand, 150, oro.claro, { lineHeight: px(160) })}>
               {x.titular}
             </Text>
             {x.detalle ? (
@@ -215,10 +216,10 @@ export const TarjetaCompartir = forwardRef<View, TarjetaCompartirProps>(function
                 {x.detalle}
               </Text>
             ) : null}
-            <View style={{ flexDirection: 'row', alignSelf: 'stretch', justifyContent: 'space-around', borderTopWidth: px(2), borderBottomWidth: px(2), borderColor: ink.ink3, paddingVertical: px(36) }}>
+            <View style={{ flexDirection: 'row', alignSelf: 'stretch', justifyContent: 'space-around', borderTopWidth: px(2), borderBottomWidth: px(2), borderColor: vidrio.linea, paddingVertical: px(36) }}>
               {cifrasSemana(tarjeta).map((c) => (
                 <View key={c.rotulo} style={{ alignItems: 'center', flex: 1 }}>
-                  <Text allowFontScaling={false} style={txt(fonts.number, 72, ink.ink10)}>
+                  <Text allowFontScaling={false} style={txt(fonts.number, 72, oro.claro)}>
                     {c.valor}
                   </Text>
                   <Text allowFontScaling={false} numberOfLines={1} adjustsFontSizeToFit style={txt(fonts.heading, 22, ink.ink6, { letterSpacing: px(4), marginTop: px(10) })}>
@@ -243,7 +244,7 @@ export const TarjetaCompartir = forwardRef<View, TarjetaCompartirProps>(function
         {tarjeta.tipo === 'recuerdo' ? (
           <>
             {fotos.length === 1 ? (
-              <View style={{ alignSelf: 'stretch', height: px(formato === 'stories' ? 760 : 480), flexShrink: 1, minHeight: 0, backgroundColor: ink.ink2, borderWidth: px(2), borderColor: ink.ink4, overflow: 'hidden', isolation: 'isolate', ...(bn && Platform.OS === 'android' ? { filter: [{ grayscale: 1 }] } : null) }}>
+              <View style={{ alignSelf: 'stretch', height: px(formato === 'stories' ? 760 : 480), flexShrink: 1, minHeight: 0, backgroundColor: ink.ink2, borderWidth: px(2), borderColor: vidrio.borde, borderRadius: px(radio.tarjeta), overflow: 'hidden', isolation: 'isolate', ...(bn && Platform.OS === 'android' ? { filter: [{ grayscale: 1 }] } : null) }}>
                 <Image source={{ uri: fotos[0].uri }} onLoad={unaMenos} onError={unaMenos} style={StyleSheet.absoluteFillObject} resizeMode="cover" />
                 {bn && Platform.OS !== 'android' ? (
                   <View pointerEvents="none" style={[StyleSheet.absoluteFillObject, { backgroundColor: ink.ink0, mixBlendMode: 'saturation' }]} />
@@ -251,7 +252,7 @@ export const TarjetaCompartir = forwardRef<View, TarjetaCompartirProps>(function
               </View>
             ) : null}
             {tarjeta.dato ? (
-              <Text allowFontScaling={false} numberOfLines={1} adjustsFontSizeToFit style={txt(fonts.brand, 110, ink.ink10, { lineHeight: px(120) })}>
+              <Text allowFontScaling={false} numberOfLines={1} adjustsFontSizeToFit style={txt(fonts.brand, 110, oro.claro, { lineHeight: px(120) })}>
                 {tarjeta.dato}
               </Text>
             ) : null}
@@ -268,7 +269,7 @@ export const TarjetaCompartir = forwardRef<View, TarjetaCompartirProps>(function
           <View style={{ alignSelf: 'stretch', flexDirection: 'row', gap: px(28), flexShrink: 1, minHeight: 0 }}>
             {fotos.map((f, i) => (
               <View key={i === 0 ? 'antes' : 'despues'} style={{ flex: 1, gap: px(18), minHeight: 0 }}>
-                <View style={{ flexShrink: 1, minHeight: 0, height: px(formato === 'stories' ? 980 : 720), backgroundColor: ink.ink2, borderWidth: px(2), borderColor: ink.ink4, overflow: 'hidden', isolation: 'isolate', ...(bn && Platform.OS === 'android' ? { filter: [{ grayscale: 1 }] } : null) }}>
+                <View style={{ flexShrink: 1, minHeight: 0, height: px(formato === 'stories' ? 980 : 720), backgroundColor: ink.ink2, borderWidth: px(2), borderColor: vidrio.borde, borderRadius: px(radio.tarjeta), overflow: 'hidden', isolation: 'isolate', ...(bn && Platform.OS === 'android' ? { filter: [{ grayscale: 1 }] } : null) }}>
                   <Image
                     source={{ uri: f.uri }}
                     onLoad={unaMenos}
@@ -321,7 +322,7 @@ export const TarjetaCompartir = forwardRef<View, TarjetaCompartirProps>(function
           flexDirection: 'row',
           justifyContent: 'space-between',
           borderTopWidth: px(2),
-          borderTopColor: ink.ink3,
+          borderTopColor: vidrio.linea,
           paddingTop: px(28),
           marginBottom: px(40),
         }}

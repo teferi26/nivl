@@ -28,7 +28,8 @@ export function PantallaMundoHoy({ modo }: { modo: ModoMundoSobrio }) {
     <>
       <MundoHoyVista
         modo={modo}
-        cabecera={<CabeceraMundo modo={modo} nivel={mundo.nivel} emblema={<EmblemaMundo modo={modo} />} />}
+        cabecera={<CabeceraMundo modo={modo} nivel={mundo.nivel} emblema={<EmblemaMundo modo={modo} />} conNivel={false} />}
+        nivel={mundo.nivel}
         hoy={vista}
         onCoach={() => router.navigate(rutaCoachDe(modo))}
       />

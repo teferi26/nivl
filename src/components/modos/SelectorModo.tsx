@@ -1,9 +1,8 @@
 // NIVL · Modos F1: el selector de modo de la cabecera de Hoy (puro).
 //
 // Una fila de pestañas: NIVL (General) y los modos activados. La activa va en
-// ink10 con su acento debajo (un trazo `rule`); las demás, en ink6. El acento
-// es lo único de color de la pantalla y solo existe con `modos_activos`
-// encendido: con el interruptor apagado este componente no se monta.
+// oro con el hilo debajo (un trazo `rule`); las demás, en ink8. Solo existe con
+// `modos_activos` encendido: con el interruptor apagado no se monta.
 //
 // QA F1 (M5): nada se ve cortado. Si caben, las pestañas se reparten el ancho
 // (con cinco modos van más compactas); si no caben (texto grande del sistema,
@@ -14,7 +13,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { useEffect, useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { vibrar } from '@/design/haptics';
-import { ink, modoAcento, space, stroke, type as tipo } from '@/design/tokens';
+import { ink, modoAcento, oro, space, stroke, type as tipo, vidrio } from '@/design/tokens';
 import { t } from '@/i18n';
 import { NOMBRE_MODO, type ModoId } from '@/modos/tipos';
 
@@ -99,7 +98,7 @@ export function SelectorModo({ modo, disponibles, alCambiar }: SelectorModoProps
               >
                 {NOMBRE_MODO[m]}
               </Text>
-              <View style={[styles.trazo, activo && { backgroundColor: modoAcento[m] }]} />
+              <View style={[styles.trazo, activo && { backgroundColor: oro.hilo }]} />
             </Pressable>
           );
         })}
@@ -121,7 +120,7 @@ export function SelectorModo({ modo, disponibles, alCambiar }: SelectorModoProps
 const styles = StyleSheet.create({
   marco: {
     borderBottomWidth: stroke.hairline,
-    borderBottomColor: ink.ink3,
+    borderBottomColor: vidrio.linea,
     marginBottom: space.s4,
   },
   fila: { flexDirection: 'row', gap: space.s1 },
@@ -142,7 +141,7 @@ const styles = StyleSheet.create({
     fontSize: tipo.label.size,
     lineHeight: tipo.label.lineHeight,
     letterSpacing: tipo.label.tracking,
-    color: ink.ink6,
+    color: ink.ink8,
     paddingBottom: space.s2,
   },
   textoCompacto: { letterSpacing: tipo.label.tracking / 2 },

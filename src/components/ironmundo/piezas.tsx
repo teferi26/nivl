@@ -1,24 +1,26 @@
-// NIVL · Mundo IRON: las piezas de la lámina 2 de la P01 (puras). Cada una
-// copia una clase de `propuesta.html`:
-//   PantallaIron  .screen + .body   (fondo negro con el brillo del acento)
-//   TarjetaIron   .card / .card.hero (héroe: degradado del acento a 155°)
-//   RotuloIron    .lbl + em          (rótulo en mayúsculas, acento a la derecha)
-//   BotonIron     .btn / .btn.ghost  (EMPEZAR ENTRENO, + CATÁLOGO)
-//   ChipIron      .rc / .rc.on / .rc.add
+// NIVL · Mundo IRON: las piezas en Ónix (puras). Colores y radios, de tokens
+// (./tema):
+//   PantallaIron  el fondo de Ónix y el cuerpo con su margen
+//   TarjetaIron   vidrio con filete; héroe: velo y marco de oro
+//   RotuloIron    rótulo en mayúsculas, oro a la derecha
+//   BotonIron     principal en hueso; fantasma con marco de oro
+//   ChipIron      filete; elegido con velo y marco de oro
 //   Linea         la gráfica de un peso (spark)
 //   AnilloIron    el anillo de calorías
-//   BarraIron     .bar (pista #1b1b20, relleno del acento con brillo)
-//   CoachIron     la tarjeta del coach (avatar, burbuja, campo y enviar)
-//   FilaIron      .row (filete arriba salvo la primera)
+//   BarraIron     pista de vidrio y relleno de oro, sin brillo
+//   CoachIron     «Tu coach»: su palabra y el campo que lleva al chat
+//   FilaIron      fila con hairline arriba salvo la primera
 
 import { LinearGradient } from 'expo-linear-gradient';
 import { useState, type ReactNode } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, Text, View, type LayoutChangeEvent, type StyleProp, type ViewStyle } from 'react-native';
-import Svg, { Circle, Defs, Polyline, RadialGradient, Rect, Stop } from 'react-native-svg';
+import { ActivityIndicator, Pressable, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
+import Svg, { Circle, Polyline } from 'react-native-svg';
 import { Screen } from '@/components/ui';
+import { FondoOnix } from '@/components/ui/FondoOnix';
+import { vidrio } from '@/design/tokens';
 import { t } from '@/i18n';
 import { GlifoIron, type Glifo } from './Glifos';
-import { A, acentoA, C, F, fs, M, mezcla, px } from './tema';
+import { A, C, F, H, M, O, px, R } from './tema';
 
 // ── Pantalla ─────────────────────────────────────────────────────────
 
@@ -33,39 +35,8 @@ export interface PantallaIronProps {
   centrado?: boolean;
 }
 
-/** El fondo de IRON: negro y, arriba a la derecha, el brillo del acento. */
-export function FondoIron() {
-  // Medido en número, como BrilloGeneral: un <Svg> con "100%" no se repinta al
-  // girar el iPad o cambiar la ventana y el brillo quedaba cortado.
-  const [lado, setLado] = useState<{ w: number; h: number } | null>(null);
-  const alMedir = (e: LayoutChangeEvent) => {
-    const { width, height } = e.nativeEvent.layout;
-    const w = Math.round(width);
-    const h = Math.round(height);
-    setLado((a) => (a && a.w === w && a.h === h ? a : { w, h }));
-  };
-  return (
-    <View
-      style={StyleSheet.absoluteFill}
-      onLayout={alMedir}
-      pointerEvents="none"
-      accessibilityElementsHidden
-      importantForAccessibility="no-hide-descendants"
-    >
-      {lado && lado.w > 0 && lado.h > 0 ? (
-        <Svg key={`${lado.w}x${lado.h}`} width={lado.w} height={lado.h}>
-          <Defs>
-            <RadialGradient id="brilloIron" cx="78%" cy="0%" rx="85%" ry="45%" fx="78%" fy="0%">
-              <Stop offset="0" stopColor={A} stopOpacity={0.16} />
-              <Stop offset="1" stopColor={A} stopOpacity={0} />
-            </RadialGradient>
-          </Defs>
-          <Rect x="0" y="0" width={lado.w} height={lado.h} fill="url(#brilloIron)" />
-        </Svg>
-      ) : null}
-    </View>
-  );
-}
+/** El fondo de IRON: el de Ónix, el mismo de toda la app. */
+export const FondoIron = FondoOnix;
 
 export function PantallaIron({ children, overlay, plain, refreshing, onRefresh, centrado }: PantallaIronProps) {
   return (
@@ -89,7 +60,7 @@ export function PantallaIron({ children, overlay, plain, refreshing, onRefresh, 
 
 export interface TarjetaIronProps {
   children: ReactNode;
-  /** La tarjeta héroe: borde del acento y degradado (el entreno de hoy, la técnica). */
+  /** La tarjeta héroe: marco y velo de oro (el nivel, la técnica). */
   heroe?: boolean;
   style?: StyleProp<ViewStyle>;
   /** Toda la tarjeta es un botón. */
@@ -97,13 +68,12 @@ export interface TarjetaIronProps {
   accessibilityLabel?: string;
 }
 
-const ANGULO_HEROE = { start: { x: 0.29, y: 0 }, end: { x: 0.71, y: 1 } };
+const ANGULO_HEROE = { start: { x: 0.25, y: 0 }, end: { x: 0.75, y: 1 } };
 
 export function TarjetaIron({ children, heroe, style, onPress, accessibilityLabel }: TarjetaIronProps) {
   const fondo = heroe ? (
     <LinearGradient
-      colors={[mezcla(0.22, C.tarjeta), C.tarjeta]}
-      locations={[0, 0.62]}
+      colors={[O.fondo, vidrio.suave]}
       start={ANGULO_HEROE.start}
       end={ANGULO_HEROE.end}
       style={StyleSheet.absoluteFill}
@@ -136,7 +106,7 @@ export function TarjetaIron({ children, heroe, style, onPress, accessibilityLabe
 
 export interface RotuloIronProps {
   texto: string;
-  /** Lo de la derecha, en el acento («Semana 3», «Ver todo», «78 %»). */
+  /** Lo de la derecha, en oro («Semana 3», «Ver todo», «78 %»). */
   em?: string;
   /** Si `em` es un enlace. */
   onEm?: () => void;
@@ -144,14 +114,16 @@ export interface RotuloIronProps {
   style?: StyleProp<ViewStyle>;
   /** Rótulo de sección: fuera de tarjeta, con su margen. */
   seccion?: boolean;
-  /** Sube la letra a 11 pt, para las pantallas de lectura. */
+  /** Sube la letra a 12 pt, para las pantallas de lectura. */
   legible?: boolean;
+  /** El propio rótulo en oro («Tu coach»). */
+  oro?: boolean;
 }
 
-export function RotuloIron({ texto, em, onEm, emA11y, style, seccion, legible }: RotuloIronProps) {
+export function RotuloIron({ texto, em, onEm, emA11y, style, seccion, legible, oro: enOro }: RotuloIronProps) {
   return (
     <View style={[styles.rotulo, seccion && styles.rotuloSeccion, style]}>
-      <Text style={[styles.rotuloTexto, legible && styles.rotuloLegible]} accessibilityRole="header" numberOfLines={1} maxFontSizeMultiplier={1.35}>
+      <Text style={[styles.rotuloTexto, legible && styles.rotuloLegible, enOro && styles.rotuloOro]} accessibilityRole="header" numberOfLines={1} maxFontSizeMultiplier={1.35}>
         {texto}
       </Text>
       {em ? (
@@ -177,9 +149,9 @@ export interface BotonIronProps {
   titulo: string;
   onPress: () => void;
   icono?: Glifo;
-  /** `.btn.ghost`: contorno del acento. */
+  /** Secundario: sin relleno, con marco fino de oro. */
   fantasma?: boolean;
-  /** El bajo (26 en la lámina): + CATÁLOGO. */
+  /** El bajo: + CATÁLOGO. */
   fino?: boolean;
   ocupado?: boolean;
   desactivado?: boolean;
@@ -194,8 +166,8 @@ export function BotonIron({ titulo, onPress, icono, fantasma, fino, ocupado, des
     <Pressable
       onPress={onPress}
       disabled={apagado}
-      // La lámina los dibuja de 36 y 30: el toque llega a 44 con el margen.
-      hitSlop={fino ? 8 : 4}
+      // El fino mide 40: el toque llega a 44 con el margen.
+      hitSlop={fino ? 4 : 0}
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel ?? titulo}
       accessibilityState={{ disabled: !!apagado, busy: !!ocupado }}
@@ -210,7 +182,7 @@ export function BotonIron({ titulo, onPress, icono, fantasma, fino, ocupado, des
     >
       {ocupado ? <ActivityIndicator size="small" color={color} /> : icono ? <GlifoIron nombre={icono} lado={px(15)} color={color} grosor={2.2} /> : null}
       <Text style={[styles.botonTexto, fino && styles.botonTextoFino, { color }]} numberOfLines={1} maxFontSizeMultiplier={1.2}>
-        {titulo.toUpperCase()}
+        {titulo}
       </Text>
     </Pressable>
   );
@@ -222,7 +194,7 @@ export interface ChipIronProps {
   texto: string;
   onPress?: () => void;
   activo?: boolean;
-  /** `.rc.add`: discontinuo, en el acento («+ Nueva»). */
+  /** Discontinuo, en oro («+ Nueva»). */
   nuevo?: boolean;
   accessibilityLabel?: string;
   /** Pestaña de un selector (Rutinas · Pesos · Cardio). */
@@ -253,7 +225,7 @@ export function ChipIron({ texto, onPress, activo, nuevo, accessibilityLabel, pe
 
 // ── Gráficas ─────────────────────────────────────────────────────────
 
-/** La línea de un peso (`spark` de la lámina): área tenue, trazo y el último punto en blanco. */
+/** La línea de un peso: área tenue, trazo y el último punto en hueso. */
 export function Linea({ puntos, ancho, alto, grosor = 1.6 }: { puntos: readonly number[]; ancho: number; alto: number; grosor?: number }) {
   if (puntos.length === 0 || ancho <= 0) return <View style={{ height: alto }} />;
   const lista = puntos.length === 1 ? [puntos[0]!, puntos[0]!] : puntos;
@@ -270,9 +242,9 @@ export function Linea({ puntos, ancho, alto, grosor = 1.6 }: { puntos: readonly 
   const [ux, uy] = xy[xy.length - 1]!;
   return (
     <Svg width={ancho} height={alto} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
-      <Polyline points={`${r},${alto} ${p} ${ancho},${uy} ${ancho},${alto}`} fill={A} fillOpacity={0.12} stroke="none" />
-      <Polyline points={p} fill="none" stroke={A} strokeWidth={grosor} strokeLinejoin="round" strokeLinecap="round" />
-      <Circle cx={ux} cy={uy} r={2.4} fill={C.blanco} stroke={A} strokeWidth={1.4} />
+      <Polyline points={`${r},${alto} ${p} ${ancho},${uy} ${ancho},${alto}`} fill={O.hilo} fillOpacity={0.12} stroke="none" />
+      <Polyline points={p} fill="none" stroke={O.hilo} strokeWidth={grosor} strokeLinejoin="round" strokeLinecap="round" />
+      <Circle cx={ux} cy={uy} r={2.4} fill={C.blanco} stroke={O.hilo} strokeWidth={1.4} />
     </Svg>
   );
 }
@@ -287,23 +259,23 @@ export function LineaAncha({ puntos, alto, grosor }: { puntos: readonly number[]
   );
 }
 
-/** El anillo de la dieta: pista #1b1b20, arco del acento, la cifra dentro. */
+/** El anillo de la dieta: pista de vidrio, arco de oro, la cifra dentro. */
 export function AnilloIron({ ratio, lado, valor, unidad }: { ratio: number; lado: number; valor: string; unidad: string }) {
   const grosor = lado * (6 / 54);
-  const radio = (lado - grosor) / 2 - lado * 0.0;
-  const circ = 2 * Math.PI * radio;
+  const r0 = (lado - grosor) / 2;
+  const circ = 2 * Math.PI * r0;
   const r = Math.max(0, Math.min(1, ratio));
   return (
     <View style={{ width: lado, height: lado }}>
       <Svg width={lado} height={lado} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
-        <Circle cx={lado / 2} cy={lado / 2} r={radio} fill="none" stroke={C.pista} strokeWidth={grosor} />
+        <Circle cx={lado / 2} cy={lado / 2} r={r0} fill="none" stroke={C.pista} strokeWidth={grosor} />
         {r > 0 ? (
           <Circle
             cx={lado / 2}
             cy={lado / 2}
-            r={radio}
+            r={r0}
             fill="none"
-            stroke={A}
+            stroke={O.hilo}
             strokeWidth={grosor}
             strokeLinecap="round"
             strokeDasharray={`${circ * r} ${circ}`}
@@ -323,12 +295,12 @@ export function AnilloIron({ ratio, lado, valor, unidad }: { ratio: number; lado
   );
 }
 
-/** `.bar`: pista y relleno del acento con su brillo. */
+/** La barra de progreso: pista de vidrio y relleno de oro. */
 export function BarraIron({ ratio, alto = 3, style }: { ratio: number; alto?: number; style?: StyleProp<ViewStyle> }) {
   const r = Math.max(0, Math.min(1, ratio));
   return (
-    <View style={[styles.barra, { height: alto, borderRadius: alto }, style]} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
-      <View style={[styles.barraRelleno, { width: `${Math.round(r * 100)}%`, borderRadius: alto }]} />
+    <View style={[styles.barra, { height: alto }, style]} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+      <View style={[styles.barraRelleno, { width: `${Math.round(r * 100)}%` }]} />
     </View>
   );
 }
@@ -337,25 +309,20 @@ export function BarraIron({ ratio, alto = 3, style }: { ratio: number; alto?: nu
 
 export function AvatarIron({ lado = px(26) }: { lado?: number }) {
   return (
-    <View style={[styles.avatar, { width: lado, height: lado, borderRadius: lado / 2 }]}>
+    <View style={[styles.avatar, { width: lado, height: lado }]}>
       <GlifoIron nombre="pesa" lado={lado * 0.5} color={A} grosor={2} />
     </View>
   );
 }
 
-/** La tarjeta del coach de IRON: su última palabra y el campo que lleva al chat. */
+/** «Tu coach»: su última palabra y el campo que lleva al chat. */
 export function CoachIron({ mensaje, onAbrir }: { mensaje: string; onAbrir: () => void }) {
   return (
     <TarjetaIron>
-      <RotuloIron texto={t('ironmundo:coach.rotulo')} em={t('ironmundo:coach.enLinea')} style={styles.coachRotulo} />
-      <View style={styles.chat}>
-        <AvatarIron />
-        <View style={styles.burbuja}>
-          <Text style={styles.burbujaTexto} maxFontSizeMultiplier={1.6}>
-            {mensaje}
-          </Text>
-        </View>
-      </View>
+      <RotuloIron oro texto={t('ironmundo:coach.tuCoach')} />
+      <Text style={styles.coachMensaje} maxFontSizeMultiplier={1.6}>
+        {mensaje}
+      </Text>
       <Pressable
         onPress={onAbrir}
         hitSlop={5}
@@ -427,9 +394,9 @@ export function FilaIron({
   );
 }
 
-/** El cuadro del acento con un icono (`.mini-fig`, y el de las filas del catálogo). */
+/** El cuadro con marco de oro y un icono (la figura de Añadir y las filas del catálogo). */
 export function CuadroIron({ lado = px(44), radio, children }: { lado?: number; radio?: number; children: ReactNode }) {
-  return <View style={[styles.cuadro, { width: lado, height: lado, borderRadius: radio ?? px(10) }]}>{children}</View>;
+  return <View style={[styles.cuadro, { width: lado, height: lado, borderRadius: radio ?? R.chip }]}>{children}</View>;
 }
 
 /** Huecos de carga con la forma de una tarjeta de IRON. */
@@ -438,145 +405,130 @@ export function HuecoIron({ alto, style }: { alto: number; style?: StyleProp<Vie
 }
 
 export const estilosIron = StyleSheet.create({
-  titulo: { fontFamily: F.b, fontSize: fs(21), lineHeight: fs(21) * 1.12, color: C.blanco, marginTop: px(4) },
-  meta: { fontFamily: F.r, fontSize: fs(10), lineHeight: fs(10) * 1.35, color: C.meta, marginTop: px(2) },
-  cuerpo: { fontFamily: F.r, fontSize: fs(10.5), lineHeight: fs(10.5) * 1.4, color: C.claro },
-  detalle: { fontFamily: F.r, fontSize: fs(9.5), lineHeight: fs(9.5) * 1.3, color: C.suave },
-  filaNombre: { fontFamily: F.m, fontSize: fs(11), lineHeight: Math.round(fs(11) * 1.32), color: C.texto, flexShrink: 1 },
-  filaSerie: { fontFamily: F.r, fontSize: fs(10), lineHeight: Math.round(fs(11) * 1.32), color: C.mudo },
-  filaKg: { fontFamily: F.b, fontSize: fs(11), lineHeight: Math.round(fs(11) * 1.32), color: C.blanco },
-  kg: { fontFamily: F.xb, fontSize: fs(17), lineHeight: Math.round(fs(17) * 1.3), color: C.blanco },
-  kgUnidad: { fontFamily: F.sb, fontSize: fs(9), color: C.mudo },
-  delta: { fontFamily: F.b, fontSize: fs(8.5), color: A },
+  titulo: { fontFamily: F.b, fontSize: 24, lineHeight: 29, letterSpacing: -0.3, color: C.blanco, marginTop: 4 },
+  meta: { fontFamily: F.m, fontSize: 13, lineHeight: 18, color: C.meta, marginTop: 2 },
+  cuerpo: { fontFamily: F.m, fontSize: 13, lineHeight: 18, color: C.claro },
+  detalle: { fontFamily: F.m, fontSize: 12, lineHeight: 15, color: C.suave },
+  filaNombre: { fontFamily: F.sb, fontSize: 15, lineHeight: 20, color: C.texto, flexShrink: 1, minWidth: 0 },
+  filaSerie: { fontFamily: F.m, fontSize: 13, lineHeight: 20, color: C.meta },
+  filaKg: { fontFamily: F.b, fontSize: 13, lineHeight: 20, color: C.blanco },
+  kg: { fontFamily: F.serif, fontSize: 20, lineHeight: 25, color: C.blanco },
+  kgUnidad: { fontFamily: F.m, fontSize: 12, color: C.meta },
+  delta: { fontFamily: F.b, fontSize: 11, lineHeight: 14, color: A },
   etiqueta: {
-    fontFamily: F.xb,
-    fontSize: fs(7.5),
-    letterSpacing: fs(7.5) * 0.14,
-    color: C.fondo,
-    backgroundColor: A,
-    borderRadius: px(5),
-    paddingHorizontal: px(5),
-    paddingVertical: px(2),
+    fontFamily: F.b,
+    fontSize: 10,
+    lineHeight: 13,
+    letterSpacing: 1.4,
+    color: A,
+    backgroundColor: O.tenue,
+    borderRadius: R.pastilla,
+    paddingHorizontal: 6,
+    paddingVertical: 1,
     overflow: 'hidden',
     alignSelf: 'flex-start',
   },
-  error: { fontFamily: F.m, fontSize: fs(10.5), color: C.claro, marginTop: px(6) },
+  error: { fontFamily: F.m, fontSize: 13, lineHeight: 18, color: C.claro, marginTop: 6 },
 });
 
 const styles = StyleSheet.create({
   pantalla: { flex: 1, backgroundColor: C.fondo },
   transparente: { backgroundColor: 'transparent' },
-  // Abajo, aire para que lo último (el coach) quepa entero sobre la barra.
-  cuerpo: { paddingHorizontal: M.margen, paddingTop: px(2), paddingBottom: px(24), gap: M.hueco },
+  // Abajo, aire para que lo último quepa entero sobre la barra.
+  cuerpo: { paddingHorizontal: M.margen, paddingTop: 2, paddingBottom: 28, gap: M.hueco },
   centrado: { flexGrow: 1 },
   tarjeta: {
     backgroundColor: C.tarjeta,
     borderWidth: 1,
     borderColor: C.filete,
     borderRadius: M.radio,
-    paddingVertical: px(10),
-    paddingHorizontal: px(12),
+    paddingVertical: 13,
+    paddingHorizontal: 15,
     overflow: 'hidden',
   },
-  heroe: { borderColor: acentoA(0.45) },
+  heroe: { backgroundColor: 'transparent', borderColor: O.borde },
   pulsada: { opacity: 0.8 },
   apagado: { opacity: 0.45 },
-  rotulo: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: px(8) },
-  rotuloSeccion: { marginHorizontal: px(2), marginBottom: px(6), marginTop: px(4) },
+  rotulo: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
+  rotuloSeccion: { marginHorizontal: 2, marginBottom: 6, marginTop: 4 },
   rotuloTexto: {
     fontFamily: F.b,
-    fontSize: fs(8.5),
-    lineHeight: Math.round(fs(8.5) * 1.3),
-    letterSpacing: fs(8.5) * 0.16,
-    color: C.mudo,
+    fontSize: 11,
+    lineHeight: 14,
+    letterSpacing: 2,
+    color: C.meta,
     textTransform: 'uppercase',
     flexShrink: 1,
+    minWidth: 0,
   },
-  rotuloLegible: { fontSize: fs(9.5), lineHeight: Math.round(fs(9.5) * 1.3) },
+  rotuloLegible: { fontSize: 12, lineHeight: 16 },
+  rotuloOro: { color: A },
   rotuloEm: {
     fontFamily: F.b,
-    fontSize: fs(8.5),
-    lineHeight: Math.round(fs(8.5) * 1.3),
-    letterSpacing: fs(8.5) * 0.1,
+    fontSize: 11,
+    lineHeight: 14,
+    letterSpacing: 2,
     color: A,
     textTransform: 'uppercase',
   },
   boton: {
-    marginTop: px(7),
+    marginTop: 3,
     minHeight: M.boton,
     borderRadius: M.radioBoton,
-    backgroundColor: A,
+    backgroundColor: H,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: px(7),
-    paddingHorizontal: px(10),
+    gap: 8,
+    paddingHorizontal: 12,
   },
-  botonFino: { minHeight: M.botonFino },
-  botonFantasma: { backgroundColor: 'transparent', borderWidth: 1, borderColor: acentoA(0.5) },
-  botonTexto: { fontFamily: F.xb, fontSize: fs(11), letterSpacing: fs(11) * 0.16 },
-  botonTextoFino: { fontSize: fs(9.5), letterSpacing: fs(9.5) * 0.16 },
+  botonFino: { minHeight: M.botonFino, marginTop: 8 },
+  botonFantasma: { backgroundColor: 'transparent', borderWidth: 1, borderColor: O.borde },
+  botonTexto: { fontFamily: F.b, fontSize: 16, lineHeight: 20, flexShrink: 1, minWidth: 0 },
+  botonTextoFino: { fontSize: 13, lineHeight: 18 },
   chip: {
-    paddingVertical: px(7),
-    paddingHorizontal: px(11),
+    paddingVertical: 8,
+    paddingHorizontal: 12,
     borderRadius: M.radioChip,
     borderWidth: 1,
     borderColor: C.borde,
     backgroundColor: C.tarjeta,
   },
-  chipActivo: { borderColor: A, backgroundColor: mezcla(0.16, C.tarjeta) },
-  chipNuevo: { borderStyle: 'dashed', borderColor: acentoA(0.55) },
-  chipTexto: { fontFamily: F.sb, fontSize: fs(10.5), color: C.texto },
-  chipTextoActivo: { color: C.blanco },
+  chipActivo: { borderColor: O.borde, backgroundColor: O.tenue },
+  chipNuevo: { borderStyle: 'dashed', borderColor: O.borde },
+  chipTexto: { fontFamily: F.sb, fontSize: 13, lineHeight: 18, color: C.texto },
+  chipTextoActivo: { color: A },
   chipTextoNuevo: { color: A },
   anilloDentro: { ...StyleSheet.absoluteFillObject, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 6 },
-  anilloValor: { fontFamily: F.xb, color: C.blanco },
-  anilloUnidad: { fontFamily: F.r, color: C.mudo, marginTop: -1 },
-  barra: { backgroundColor: C.pista, overflow: 'hidden' },
-  barraRelleno: {
-    height: '100%',
-    backgroundColor: A,
-    shadowColor: A,
-    shadowOpacity: 0.9,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 0 },
-  },
-  avatar: { alignItems: 'center', justifyContent: 'center', borderWidth: 1.5, borderColor: A, backgroundColor: C.fondo },
-  coachRotulo: { marginBottom: px(7) },
-  chat: { flexDirection: 'row', alignItems: 'flex-start', gap: px(8) },
-  burbuja: {
-    flex: 1,
-    backgroundColor: C.burbuja,
-    borderTopLeftRadius: px(4),
-    borderTopRightRadius: px(13),
-    borderBottomLeftRadius: px(13),
-    borderBottomRightRadius: px(13),
-    paddingVertical: px(7),
-    paddingHorizontal: px(9),
-  },
-  burbujaTexto: { fontFamily: F.r, fontSize: fs(10.5), lineHeight: fs(10.5) * 1.35, color: C.claro },
+  anilloValor: { fontFamily: F.serif, color: C.blanco },
+  anilloUnidad: { fontFamily: F.m, color: C.meta, marginTop: -1 },
+  barra: { backgroundColor: C.pista, overflow: 'hidden', borderRadius: R.pastilla },
+  barraRelleno: { height: '100%', backgroundColor: O.hilo, borderRadius: R.pastilla },
+  avatar: { alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: O.borde, backgroundColor: O.fondo, borderRadius: R.pastilla },
+  coachMensaje: { fontFamily: F.sb, fontSize: 16, lineHeight: 22, color: C.texto, marginTop: 5 },
   campo: {
-    marginTop: px(7),
-    minHeight: px(30),
-    borderRadius: px(10),
+    marginTop: 10,
+    minHeight: 44,
+    borderRadius: R.control,
     borderWidth: 1,
     borderColor: C.borde,
+    backgroundColor: C.hueco,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingLeft: px(10),
-    paddingRight: px(4),
+    paddingLeft: 14,
+    paddingRight: 6,
   },
-  campoTexto: { fontFamily: F.r, fontSize: fs(10), color: C.tenue, flex: 1 },
-  enviar: { width: px(24), height: px(24), borderRadius: px(8), backgroundColor: A, alignItems: 'center', justifyContent: 'center' },
-  fila: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: px(4), gap: px(8) },
+  campoTexto: { fontFamily: F.m, fontSize: 14, lineHeight: 20, color: C.meta, flex: 1, minWidth: 0 },
+  enviar: { width: 32, height: 32, borderRadius: R.chip, backgroundColor: H, alignItems: 'center', justifyContent: 'center' },
+  fila: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 8, gap: 10 },
   filaRegla: { borderTopWidth: 1, borderTopColor: C.regla },
   cuadro: {
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: mezcla(0.12, C.fondo),
+    backgroundColor: O.fondo,
     borderWidth: 1,
-    borderColor: acentoA(0.35),
+    borderColor: O.borde,
   },
   hueco: { backgroundColor: C.tarjeta, borderRadius: M.radio, borderWidth: 1, borderColor: C.filete },
 });

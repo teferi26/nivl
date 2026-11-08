@@ -5,7 +5,7 @@
 //     en el círculo del acento y los dos accesos del coach (plan y memoria);
 //   · la burbuja del coach con el avatar de la mancuerna y radio 16; la del
 //     usuario en el acento al 15 %;
-//   · días en letras espaciadas (sin Cinzel), compositor redondeado con enviar
+//   · días en letras espaciadas, compositor redondeado con enviar
 //     en el cuadrado del acento y el micro fantasma;
 //   · hueco abajo para el disco central de la barra.
 
@@ -16,7 +16,7 @@ import { PielContext, type Piel } from '@/design/piel';
 import { t } from '@/i18n';
 import { PIEL_IRON } from './piel';
 import { AvatarIron, FondoIron } from './piezas';
-import { A, acentoA, C, F, fs, M, px } from './tema';
+import { A, C, F, fs, M, O, px, R } from './tema';
 
 const LADO_AVATAR = px(28);
 
@@ -60,7 +60,7 @@ const PIEL_COACH_IRON: Piel = {
     avatar: <AvatarIron lado={LADO_AVATAR} />,
     ladoAvatar: LADO_AVATAR,
     burbuja: C.burbuja,
-    burbujaUsuario: acentoA(0.15),
+    burbujaUsuario: O.tenue,
     radioBurbuja: px(14),
     fuenteRotulo: F.b,
     textoTenue: C.mudo,
@@ -96,16 +96,16 @@ const styles = StyleSheet.create({
     backgroundColor: C.tarjeta,
   },
   textos: { flex: 1, minWidth: 0 },
-  nombre: { fontFamily: F.cinzel, fontSize: fs(15), letterSpacing: fs(15) * 0.08, color: C.blanco },
+  nombre: { fontFamily: F.serif, fontSize: fs(15), color: C.blanco },
   sub: { fontFamily: F.r, fontSize: fs(9.5), color: C.mudo, marginTop: px(1) },
   enLinea: { fontFamily: F.b, fontSize: fs(8), letterSpacing: fs(8) * 0.1, color: A },
   accesos: { flexDirection: 'row', gap: px(6) },
   acceso: {
     width: px(32),
     height: px(32),
-    borderRadius: px(10),
+    borderRadius: R.chip,
     borderWidth: 1,
-    borderColor: acentoA(0.35),
+    borderColor: O.borde,
     alignItems: 'center',
     justifyContent: 'center',
   },

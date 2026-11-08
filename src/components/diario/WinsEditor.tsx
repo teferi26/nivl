@@ -7,7 +7,7 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useState } from 'react';
 import { Keyboard, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
-import { ink, space, stroke, type as tipo } from '@/design/tokens';
+import { ink, space, stroke, type as tipo, vidrio } from '@/design/tokens';
 import { t } from '@/i18n';
 import { MAX_LARGO_VICTORIA, VICTORIAS_VISIBLES } from '@/lib/journalmath';
 
@@ -108,7 +108,7 @@ const styles = StyleSheet.create({
     gap: space.s3,
     minHeight: 48,
     borderBottomWidth: stroke.hairline,
-    borderBottomColor: ink.ink3,
+    borderBottomColor: vidrio.linea,
   },
   input: {
     flex: 1,
@@ -125,9 +125,8 @@ const styles = StyleSheet.create({
   anadir: { flexDirection: 'row', alignItems: 'center', gap: space.s2, alignSelf: 'flex-start', minHeight: 44 },
   anadirTexto: {
     fontFamily: tipo.label.family,
-    fontSize: tipo.label.size,
-    letterSpacing: tipo.label.tracking,
-    textTransform: 'uppercase',
+    fontSize: 13,
+    letterSpacing: 0,
     color: ink.ink9,
   },
   nota: {

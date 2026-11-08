@@ -93,6 +93,16 @@
       "work": "T'aide à ordonner tes priorités et tes blocs de travail.",
       "founder": "T'aide à choisir la seule chose qui fait avancer ton projet."
     },
-    "coachAbrir": "Parler au coach"
+    "coachAbrir": "Parler au coach",
+    "tuCoach": "Ton coach",
+    "ahora": "Maintenant",
+    "completar": "Terminer",
+    "rango": "Rang {{rango}}",
+    "rangoDia": "Rang {{rango}} · Jour {{dia}}",
+    "cifras": {
+      "hoy": "aujourd'hui",
+      "racha": "jours de série",
+      "xp": "XP du mode"
+    }
   }
 }

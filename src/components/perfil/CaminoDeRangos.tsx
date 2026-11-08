@@ -2,14 +2,14 @@
 //
 // Seis casillas de 44 en una rejilla de seis con hueco de 6. Sin color
 // (SISTEMA.md §0 y §7): el estado va en la forma.
-//   · alcanzado  → casilla invertida (ink10, letra Cinzel ink0). Los rangos
+//   · alcanzado  → casilla invertida (ink10, letra Playfair ink0). Los rangos
 //                  ya ganados son la ÚNICA inversión de la pantalla de Perfil.
 //   · actual     → marco de 3 en ink10 y letra ink10.
 //   · por llegar → hairline ink4 y letra ink6.
 // Debajo, lo que falta para el siguiente (siguienteRango de progression.ts).
 
 import { StyleSheet, Text, View } from 'react-native';
-import { ink, space, stroke, type as tipo } from '@/design/tokens';
+import { ink, oro, radio, space, stroke, type as tipo, vidrio } from '@/design/tokens';
 import { t } from '@/i18n';
 import { compararRangos, RANGOS, type EstadoProgreso, type RangoId } from '@/lib/progression';
 
@@ -86,13 +86,13 @@ const HUECO = 6;
 
 const styles = StyleSheet.create({
   rejilla: { flexDirection: 'row', gap: HUECO },
-  casilla: { flex: 1, minWidth: 0, height: CASILLA, alignItems: 'center', justifyContent: 'center' },
-  casillaAlcanzada: { backgroundColor: ink.ink10 },
-  casillaActual: { borderWidth: stroke.frame, borderColor: ink.ink10 },
-  casillaFutura: { borderWidth: stroke.hairline, borderColor: ink.ink4 },
+  casilla: { flex: 1, minWidth: 0, height: CASILLA, alignItems: 'center', justifyContent: 'center', borderRadius: radio.chip },
+  casillaAlcanzada: { backgroundColor: oro.fondo, borderWidth: stroke.hairline, borderColor: oro.borde },
+  casillaActual: { borderWidth: stroke.rule, borderColor: oro.claro },
+  casillaFutura: { borderWidth: stroke.hairline, borderColor: vidrio.borde },
   letra: { fontFamily: tipo.rank.family, fontSize: 18, lineHeight: 22 },
-  letraAlcanzada: { color: ink.ink0 },
-  letraActual: { color: ink.ink10 },
+  letraAlcanzada: { color: oro.claro },
+  letraActual: { color: oro.claro },
   letraFutura: { color: ink.ink6 },
   texto: {
     fontFamily: tipo.bodySm.family,

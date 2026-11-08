@@ -1,25 +1,27 @@
 // NIVL · Mundo IRON: la piel de IRON para las piezas base (src/design/piel.ts).
 // Con <PielIron> alrededor, las hojas y formularios que ya existen (día y
-// ejercicio de Gimnasio, cardio, comida) y el coach se pintan con el acento,
-// los radios y las superficies de la lámina 2, sin copiarlos.
+// ejercicio de Gimnasio, cardio, comida) y el coach se pintan en Ónix sin
+// copiarlos: botón principal en hueso, oro solo en marcos y en lo elegido.
 
 import type { ReactNode } from 'react';
+import { ink, oro, radio, vidrio } from '@/design/tokens';
 import { PielContext, type Piel } from '@/design/piel';
-import { A, acentoA, C, F, M, mezcla, px } from './tema';
+import { F, H } from './tema';
 
 export const PIEL_IRON: Piel = {
-  acento: A,
-  acentoBorde: acentoA(0.3),
-  acentoFondo: mezcla(0.16, C.tarjeta),
-  tarjeta: C.tarjeta,
-  campo: C.fondo,
-  borde: C.borde,
-  sobreAcento: C.fondo,
-  radio: px(10),
-  radioBoton: M.radioBoton,
-  radioChip: M.radioChip,
-  radioHoja: px(22),
-  fuenteBoton: F.xb,
+  acento: H,
+  acentoBorde: oro.borde,
+  acentoFondo: oro.tenue,
+  // Las hojas tapan lo de detrás: superficie opaca (SISTEMA.md, ink1).
+  tarjeta: ink.ink1,
+  campo: vidrio.campo,
+  borde: vidrio.borde,
+  sobreAcento: ink.ink0,
+  radio: radio.chip,
+  radioBoton: radio.control,
+  radioChip: radio.chip,
+  radioHoja: radio.hoja,
+  fuenteBoton: F.b,
   pantallaTransparente: true,
 };
 

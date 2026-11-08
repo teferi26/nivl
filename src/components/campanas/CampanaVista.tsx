@@ -3,7 +3,7 @@
 // la galería (/kit/pantallas) la pinta con datos de mentira (demo.tsx).
 //
 // Composición de la arena: encabezado grabado con el estandarte de 72 a la
-// derecha y el meandro; el plazo en una losa (trama si ya venció, piedra si
+// derecha; el plazo en una losa (trama si ya venció, piedra si
 // no) con la franja de cifras; el avance en una barra segmentada; las tareas
 // en filas con hairline, y el jefe final con la galea. La única inversión es
 // el botín: la tarjeta blanca de «Reclamar botín», y solo cuando todas las
@@ -13,10 +13,10 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useMemo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { Barra, EncabezadoArena, Entrada, FranjaCifras, Galea, Meandro, TarjetaArena, formatoMiles } from '@/components/arena';
+import { Barra, EncabezadoArena, Entrada, FranjaCifras, Galea, TarjetaArena, formatoMiles } from '@/components/arena';
 import { Button, Check, EmptyState, Row, Screen, Section, Skeleton, SkeletonRows, Tag } from '@/components/ui';
 import { SIN_DATO } from '@/components/ui/sinDato';
-import { ink, space, type as tipo } from '@/design/tokens';
+import { ink, oro, space, type as tipo } from '@/design/tokens';
 import { t } from '@/i18n';
 import { DIFFICULTY_LABEL, DUNGEON_CLEAR_XP, dungeonTaskXp } from '@/lib/game';
 import type { Dungeon, DungeonTask } from '@/lib/types';
@@ -43,7 +43,7 @@ export interface CampanaVistaProps {
   onBorrarCampana: () => void;
 }
 
-/** Hasta aquí el título va en Cinzel grande; luego Cinzel menor; y pasado el tope, en Outfit. */
+/** Hasta aquí el título va en Playfair grande; luego Playfair menor; y pasado el tope, en Outfit. */
 const TITULO_GRANDE = 14;
 const TITULO_LARGO = 28;
 /** Más de 20 cortes en la barra ya no se leen. */
@@ -65,7 +65,6 @@ export function CampanaVista(p: CampanaVistaProps) {
             onVolver={p.onVolver}
             eyebrow={t('campanas:detalle.campana')}
             titulo={t('campanas:detalle.campana')}
-            meandro
           />
         ) : (
           // Cargando: el título en hueco, no un «ABRIENDO» que luego cambia.
@@ -82,7 +81,6 @@ export function CampanaVista(p: CampanaVistaProps) {
               {t('campanas:detalle.campana')}
             </Text>
             <Skeleton height={tipo.rank.lineHeight} width={220} />
-            <Meandro alto={8} style={styles.meandro} />
           </View>
         )}
         {!p.cargado ? (
@@ -227,7 +225,6 @@ export function CampanaVista(p: CampanaVistaProps) {
               se invierte solo (SuperficieContext) y queda negro sobre blanco. */}
           <TarjetaArena
             variante="invertida"
-            remaches
             rotulo={t('campanas:detalle.botinDisponible')}
             meta={t('campanas:detalle.hastaXp', { xp: formatoMiles(loot) })}
           >
@@ -363,8 +360,8 @@ function FilaTarea({
 
 /**
  * El encabezado del detalle. Como EncabezadoArena, pero el título se adapta a
- * su largo: un nombre de campaña corto se graba en Cinzel 32; uno medio, en
- * Cinzel 22; y pasado de 28 caracteres, en `headline` Outfit (en Cinzel
+ * su largo: un nombre de campaña corto se graba en Playfair 32; uno medio, en
+ * Playfair 22; y pasado de 28 caracteres, en `headline` Outfit (en Playfair
  * mayúscula no cabría junto al estandarte a 375).
  */
 function CabeceraCampana({
@@ -407,7 +404,6 @@ function CabeceraCampana({
       <Text style={styles.subtitulo} maxFontSizeMultiplier={1.35}>
         {subtitulo}
       </Text>
-      <Meandro alto={8} style={styles.meandro} />
     </View>
   );
 }
@@ -466,7 +462,6 @@ const styles = StyleSheet.create({
     color: ink.ink8,
     marginTop: space.s3,
   },
-  meandro: { marginTop: space.s4 },
   frase: {
     fontFamily: tipo.bodySm.family,
     fontSize: tipo.bodySm.size,
@@ -483,7 +478,7 @@ const styles = StyleSheet.create({
     color: ink.ink6,
   },
   mayus: { textTransform: 'uppercase' },
-  pct: { fontFamily: tipo.number.family, fontSize: 14, lineHeight: 18, color: ink.ink10 },
+  pct: { fontFamily: tipo.number.family, fontSize: 14, lineHeight: 18, color: oro.claro },
   // Sobre la invertida (blanca): texto en ink0 (ink6 no llega sobre blanco).
   botinTexto: { fontFamily: tipo.bodySm.family, fontSize: tipo.bodySm.size, lineHeight: tipo.bodySm.lineHeight, color: ink.ink0 },
   botinBoton: { marginTop: space.s4 },

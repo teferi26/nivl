@@ -2,7 +2,7 @@
 // todo llega por props desde useResumen (o desde la galería).
 //
 // De arriba abajo: el encabezado grabado («Recuerdos» / «TU SEMANA EN
-// IMÁGENES») con meandro; «Esta semana» en una tarjeta de piedra con la
+// IMÁGENES»); «Esta semana» en una tarjeta de piedra con la
 // INVERSIÓN de la pantalla, «Generar el de esta semana», y debajo lo que
 // haya contestado el sistema (sin NIVL Pro, el camino a /pro en contorno);
 // y los pases en filas con hairline: el que está sin ver, con el icono
@@ -12,7 +12,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { CargaArena, EncabezadoArena, Entrada, ErrorSistema, TarjetaArena } from '@/components/arena';
 import { Button, EmptyState, Screen, Section, Tag } from '@/components/ui';
-import { ink, space, stroke, type as tipo } from '@/design/tokens';
+import { ink, radio, space, stroke, type as tipo, vidrio } from '@/design/tokens';
 import { t } from '@/i18n';
 import type { Recap } from '@/lib/photos';
 import { nombrePeriodo } from './tipos';
@@ -90,13 +90,12 @@ export function ResumenVista({ cargado, errorCarga, recaps, generando, aviso, pi
           eyebrow={t('resumen:vista.eyebrow')}
           titulo={t('resumen:vista.titulo')}
           subtitulo={subtitulo}
-          meandro
         />
       </Entrada>
 
       <Entrada indice={1}>
         <Section title={t('resumen:vista.estaSemana')}>
-          <TarjetaArena variante="piedra" remaches>
+          <TarjetaArena variante="piedra">
             <Text style={styles.texto} maxFontSizeMultiplier={1.6}>
               {t('resumen:vista.explicacion')}
             </Text>
@@ -197,15 +196,16 @@ const styles = StyleSheet.create({
   },
   falloLista: { marginBottom: space.s4 },
   fila: { flexDirection: 'row', alignItems: 'center', gap: space.s3, minHeight: 64, paddingVertical: space.s3 },
-  conRegla: { borderTopWidth: stroke.hairline, borderTopColor: ink.ink3 },
-  pulsado: { backgroundColor: ink.ink2 },
+  conRegla: { borderTopWidth: stroke.hairline, borderTopColor: vidrio.linea },
+  pulsado: { backgroundColor: vidrio.campo },
   icono: {
     width: BOTON,
     height: BOTON,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: stroke.hairline,
-    borderColor: ink.ink4,
+    borderColor: vidrio.borde,
+    borderRadius: radio.chip,
   },
   filaTexto: { flex: 1, minWidth: 0, gap: 2 },
   filaTitulo: { fontFamily: 'Outfit_600SemiBold', fontSize: 16, lineHeight: 22, color: ink.ink9 },

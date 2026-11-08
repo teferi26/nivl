@@ -49,7 +49,7 @@ import {
 } from '@/components/arena';
 import { Button, Chip, Screen } from '@/components/ui';
 import { useTecladoAbierto } from '@/components/ui/useTecladoAbierto';
-import { ink, space, stroke, type as tipo } from '@/design/tokens';
+import { ink, radio, space, stroke, type as tipo, vidrio } from '@/design/tokens';
 import { useSizeClass } from '@/design/useSizeClass';
 import { t } from '@/i18n';
 import { addDays, nombreDia, relativoDe } from '@/lib/dates';
@@ -597,25 +597,25 @@ const styles = StyleSheet.create({
     paddingVertical: space.s2,
     borderTopWidth: stroke.hairline,
     borderBottomWidth: stroke.hairline,
-    borderColor: ink.ink3,
+    borderColor: vidrio.linea,
   },
   navBoton: {
     width: BOTON,
     height: BOTON,
     borderWidth: stroke.hairline,
-    borderColor: ink.ink4,
+    borderColor: vidrio.borde,
     alignItems: 'center',
     justifyContent: 'center',
+    borderRadius: radio.chip,
   },
-  navOff: { borderColor: ink.ink3 },
+  navOff: { borderColor: vidrio.linea },
   navFecha: {
     flex: 1,
     textAlign: 'center',
-    fontFamily: tipo.inscripcion.family,
-    fontSize: tipo.inscripcion.size,
-    lineHeight: tipo.inscripcion.lineHeight,
-    letterSpacing: tipo.inscripcion.tracking,
-    textTransform: 'uppercase',
+    fontFamily: tipo.title.family,
+    fontSize: 20,
+    lineHeight: 26,
+    letterSpacing: tipo.title.tracking,
     color: ink.ink9,
   },
   pulsado: { opacity: 0.7 },
@@ -659,7 +659,7 @@ const styles = StyleSheet.create({
   },
   largo: { minHeight: 130 },
   fotos: { flexDirection: 'row', flexWrap: 'wrap', gap: space.s2 },
-  foto: { width: FOTO, height: FOTO, backgroundColor: ink.ink2, borderWidth: stroke.hairline, borderColor: ink.ink4 },
+  foto: { width: FOTO, height: FOTO, backgroundColor: vidrio.tarjeta, borderWidth: stroke.hairline, borderColor: vidrio.borde, borderRadius: radio.chip },
   fotoMarco: { position: 'relative' },
   // El blanco de 44 sobresale por la esquina; la marca visible es pequeña.
   fotoQuitar: {
@@ -678,9 +678,10 @@ const styles = StyleSheet.create({
     marginRight: space.s2,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: ink.ink0,
+    backgroundColor: ink.ink1,
     borderWidth: stroke.hairline,
-    borderColor: ink.ink6,
+    borderColor: vidrio.borde,
+    borderRadius: 11,
   },
   fotoNueva: { backgroundColor: 'transparent', alignItems: 'center', justifyContent: 'center' },
   nota: {
@@ -693,8 +694,7 @@ const styles = StyleSheet.create({
   pie: {
     paddingTop: space.s3,
     borderTopWidth: stroke.hairline,
-    borderTopColor: ink.ink3,
-    backgroundColor: ink.ink0,
+    borderTopColor: vidrio.linea,
   },
   pieDentro: { width: '100%', alignSelf: 'center' },
   pieAviso: { marginBottom: space.s3 },

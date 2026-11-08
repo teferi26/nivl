@@ -8,7 +8,7 @@
 import { StyleSheet, Text, View } from 'react-native';
 import { GlifoModo } from '@/components/modos/rueda/GlifoModo';
 import { Button } from '@/components/ui';
-import { ink, modoAcento, space, stroke, type } from '@/design/tokens';
+import { ink, modoAcento, radio, space, stroke, type, vidrio } from '@/design/tokens';
 import { t } from '@/i18n';
 import type { AvisoModo as Aviso } from '@/modos/avisosCoach';
 import { NOMBRE_MODO, type ModoEtiqueta } from '@/modos/tipos';
@@ -54,10 +54,11 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     gap: space.s2,
     borderWidth: stroke.hairline,
-    borderColor: ink.ink3,
-    backgroundColor: ink.ink1,
+    borderColor: vidrio.borde,
+    backgroundColor: vidrio.tarjeta,
     paddingVertical: space.s2,
     paddingHorizontal: space.s3,
+    borderRadius: radio.control,
   },
   texto: { flexDirection: 'row', alignItems: 'center', gap: space.s2, flexShrink: 1, flexGrow: 1, flexBasis: 180 },
   linea: {

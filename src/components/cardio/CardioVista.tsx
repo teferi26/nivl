@@ -2,18 +2,16 @@
 // llega por props desde useCardio (o desde la galería con datos de mentira).
 //
 // De arriba abajo: el encabezado grabado («Cuerpo» / «CARDIO») con la acción
-// SÓLIDA «Registrar sesión» (la INVERSIÓN de la pantalla) y meandro; el
+// SÓLIDA «Registrar sesión» (la INVERSIÓN de la pantalla); el
 // anuncio de la última sesión (lo que pagó de verdad, ver useCardio); la
 // franja km · sesiones · min de 28 días; la arena en óvalo a lo ancho con la
 // regla del 10 %; y las sesiones en filas con hairline: icono, tipo, Tag de
-// zona y cifras en Cinzel. Mantener pulsada una fila la borra (también como
+// zona y cifras en Playfair. Mantener pulsada una fila la borra (también como
 // acción del lector de pantalla).
 
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import {
-  Arena,
   CargaArena,
   EncabezadoArena,
   Entrada,
@@ -24,7 +22,7 @@ import {
 import { DescargoSalud } from '@/components/DescargoSalud';
 import { SelloMedicion, selloLeido } from '@/components/medicion/SelloMedicion';
 import { Button, EmptyState, Screen, Section, Tag } from '@/components/ui';
-import { ink, space, stroke, type as tipo } from '@/design/tokens';
+import { type as tipo, ink, oro, radio, space, stroke, vidrio } from '@/design/tokens';
 import { t } from '@/i18n';
 import { paceOf } from '@/lib/bodymath';
 import type { CardioSession } from '@/lib/bodywork';
@@ -142,7 +140,6 @@ function FilaCardio({ s, primera, sello, onBorrar }: { s: CardioSession; primera
 }
 
 export function CardioVista({ cargado, errorCarga, hoy, sesiones, sellos, anuncio, acciones }: CardioVistaProps) {
-  const [anchoArena, setAnchoArena] = useState(0);
 
   const ultimas28 = sesiones.filter((s) => s.date >= addDays(hoy, -28));
   const km28 = ultimas28.reduce((a, s) => a + Number(s.distance_km ?? 0), 0);
@@ -162,7 +159,6 @@ export function CardioVista({ cargado, errorCarga, hoy, sesiones, sellos, anunci
         titulo={t('cardio:vista.titulo')}
         subtitulo={subtitulo}
         accion={{ icono: 'add', etiqueta: t('cardio:vista.registrar'), onPress: acciones.onRegistrar, solida: true }}
-        meandro
       />
     </Entrada>
   );
@@ -238,14 +234,10 @@ export function CardioVista({ cargado, errorCarga, hoy, sesiones, sellos, anunci
       <Entrada indice={2} style={styles.arenaBloque}>
         <View
           style={styles.arena}
-          onLayout={(e) => setAnchoArena(Math.round(e.nativeEvent.layout.width))}
-          // La nota de debajo ya lo dice entero: el óvalo no se lee dos veces.
+          // La nota de debajo ya lo dice entero: no se lee dos veces.
           importantForAccessibility="no-hide-descendants"
           accessibilityElementsHidden
         >
-          {anchoArena > 0 ? (
-            <Arena ancho={anchoArena} alto={ALTO_ARENA} variante="ovalo" style={styles.arenaFondo} />
-          ) : null}
           <Text style={styles.regla} maxFontSizeMultiplier={1.2}>
             {t('cardio:vista.regla')}
           </Text>
@@ -297,16 +289,16 @@ const styles = StyleSheet.create({
     paddingTop: space.s1,
   },
   cerrar: { width: BOTON, height: BOTON, alignItems: 'center', justifyContent: 'center', marginTop: -space.s3, marginRight: -space.s3 },
-  pulsado: { backgroundColor: ink.ink2 },
+  pulsado: { backgroundColor: vidrio.campo },
   arenaBloque: { marginTop: space.s6, marginBottom: space.s8, gap: space.s3 },
-  arena: { height: ALTO_ARENA, alignItems: 'center', justifyContent: 'center' },
-  arenaFondo: { position: 'absolute', top: 0, left: 0 },
+  arena: { alignItems: 'center', justifyContent: 'center', minHeight: ALTO_ARENA, paddingVertical: space.s4, paddingHorizontal: space.s4, borderRadius: radio.tarjeta, borderWidth: stroke.hairline, borderColor: vidrio.borde, backgroundColor: vidrio.tarjeta },
   regla: {
-    fontFamily: tipo.inscripcion.family,
-    fontSize: tipo.inscripcion.size,
-    lineHeight: tipo.inscripcion.lineHeight,
-    letterSpacing: tipo.inscripcion.tracking,
-    color: ink.ink9,
+    fontFamily: tipo.title.family,
+    fontSize: 22,
+    lineHeight: 28,
+    letterSpacing: tipo.title.tracking,
+    color: oro.claro,
+    textAlign: 'center',
   },
   reglaPie: {
     fontFamily: tipo.micro.family,
@@ -324,14 +316,15 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   fila: { flexDirection: 'row', alignItems: 'flex-start', gap: space.s3, paddingVertical: space.s3, minHeight: 64 },
-  conRegla: { borderTopWidth: stroke.hairline, borderTopColor: ink.ink3 },
+  conRegla: { borderTopWidth: stroke.hairline, borderTopColor: vidrio.linea },
   icono: {
     width: BOTON,
     height: BOTON,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: stroke.hairline,
-    borderColor: ink.ink4,
+    borderColor: vidrio.borde,
+    borderRadius: radio.chip,
   },
   filaTexto: { flex: 1, minWidth: 0, gap: 2 },
   tituloFila: { flexDirection: 'row', alignItems: 'center', gap: space.s2 },

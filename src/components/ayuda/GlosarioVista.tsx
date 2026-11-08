@@ -6,7 +6,7 @@
 import { StyleSheet, Text, View } from 'react-native';
 import { TarjetaArena } from '@/components/arena';
 import { Sheet } from '@/components/ui';
-import { ink, space, stroke, type as tipo } from '@/design/tokens';
+import { ink, space, stroke, type as tipo, vidrio } from '@/design/tokens';
 import { t } from '@/i18n';
 import { GRUPOS_GLOSARIO, terminosDeGrupo, tieneDetalle, type TerminoId } from '@/lib/glosario';
 
@@ -89,7 +89,7 @@ const styles = StyleSheet.create({
     color: ink.ink6,
     marginBottom: space.s2,
   },
-  fila: { borderTopWidth: stroke.hairline, borderTopColor: ink.ink3, paddingVertical: space.s3 },
+  fila: { borderTopWidth: stroke.hairline, borderTopColor: vidrio.linea, paddingVertical: space.s3 },
   entrada: { gap: space.s1, minWidth: 0 },
   titulo: {
     fontFamily: tipo.headline.family,

@@ -16,6 +16,7 @@ import { useHoy } from '@/components/hoy/useHoy';
 import { EmblemaMundo } from '@/components/modos/EmblemaMundo';
 import { CabeceraMundo } from '@/components/modos/mundo/CabeceraMundo';
 import { useMundo } from '@/components/modos/mundo/useMundo';
+import { rutaCoachDe } from '@/modos/rutasModo';
 import { OrdenDelDia } from '@/components/OrdenDelDia';
 import { confirmar } from '@/components/ui';
 import { useMovimientoReducido } from '@/components/ui/motion';
@@ -38,6 +39,7 @@ import { vistaBloque, vistaWorkHoy, type MisionEntrada } from '@/work/vistaHoy';
 import { BloqueVista, type BloqueVistaProps } from './BloqueVista';
 import { LineaEconomia, useLineaEconomia } from './LineaEconomia';
 import { useBloque, type CerrarBloque } from './useBloque';
+import { semanaDelAno } from './textos';
 import { useWorkDatos } from './useWorkDatos';
 import type { DestinoWork, WorkHoyVistaProps } from './WorkHoyVista';
 
@@ -197,12 +199,15 @@ export function useWorkHoy() {
       return ok;
     },
     onIr: (d) => router.push(RUTAS[d]),
+    onCoach: () => router.navigate(rutaCoachDe('work')),
     onReintentar: () => void refrescarTodo(),
     onRefrescar: () => void refrescarTodo(),
   };
 
   const vista: WorkHoyVistaProps = {
-    cabecera: <CabeceraMundo modo="work" nivel={mundo.nivel} emblema={<EmblemaMundo modo="work" />} />,
+    cabecera: <CabeceraMundo modo="work" nivel={mundo.nivel} emblema={<EmblemaMundo modo="work" />} conNivel={false} />,
+    semana: semanaDelAno(hoy),
+    nivelTexto: mundo.nivel ? t('mundos:cabecera.nivel', { nivel: mundo.nivel.nivel }) : undefined,
     estado: nivl.estado === 'cargando' || wd.estado === 'cargando' || !bloque.listo ? 'cargando' : 'listo',
     error: nivl.error ?? (wd.estado === 'error' ? wd.error : null),
     cierre: nivl.datos.cierre

@@ -12,8 +12,9 @@
 import { Redirect, router, useLocalSearchParams } from 'expo-router';
 import { GALERIA } from '@/lib/galeria';
 import { useEffect, useState } from 'react';
-import { Platform, ScrollView, useWindowDimensions } from 'react-native';
+import { Platform, ScrollView, useWindowDimensions, View } from 'react-native';
 import { Screen } from '@/components/ui';
+import { FondoOnix } from '@/components/ui/FondoOnix';
 import { DemoIron, EscenarioIron } from '@/components/iron/DemoIron';
 import { FichaIron } from '@/components/iron/FichaIron';
 import { msQuieto } from '@/components/iron/Maniqui';
@@ -44,9 +45,12 @@ export default function KitIron() {
 
   if (p.ficha === '1') {
     return (
-      <ScrollView style={{ flex: 1 }}>
-        <FichaIron ejercicio={ejercicio} ancho={Math.min(width, 560)} />
-      </ScrollView>
+      <View style={{ flex: 1 }}>
+        <FondoOnix />
+        <ScrollView style={{ flex: 1 }}>
+          <FichaIron ejercicio={ejercicio} ancho={Math.min(width, 560)} />
+        </ScrollView>
+      </View>
     );
   }
   if (p.solo === '1') return <EscenarioIron ejercicio={ejercicio} ancho={Number(p.ancho) || 720} ms={ms} />;

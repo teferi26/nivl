@@ -2,7 +2,7 @@
 // una burbuja de chat. Superficie ink1 con filete ink3 y una regla izquierda
 // de 2 en ink10: se distingue de un vistazo de la burbuja del usuario (ink2,
 // sin marco). El primero de cada bloque seguido va firmado: la galea y
-// «EL SISTEMA» grabado en Cinzel encima de la losa. Orden dentro: texto, la
+// «EL SISTEMA» grabado en Playfair encima de la losa. Orden dentro: texto, la
 // cita de lo consultado, las acciones que cambió y una fila de texto con
 // «Escuchar» / «Parar» y «Denunciar respuesta». Sin animación por mensaje.
 
@@ -21,7 +21,7 @@ import Animated, {
 import { useMovimientoReducido } from '@/components/ui/motion';
 import { TextoSistema } from '@/components/TextoSistema';
 import { usePiel } from '@/design/piel';
-import { ink, space, stroke, type } from '@/design/tokens';
+import { ink, radio, space, stroke, type, vidrio } from '@/design/tokens';
 import { t } from '@/i18n';
 import { CoachMark } from './CoachMark';
 
@@ -245,14 +245,13 @@ const styles = StyleSheet.create({
   },
   losa: {
     minWidth: 0,
-    backgroundColor: ink.ink1,
+    backgroundColor: vidrio.tarjeta,
     borderWidth: stroke.hairline,
-    borderColor: ink.ink3,
-    borderLeftWidth: stroke.rule,
-    borderLeftColor: ink.ink10,
+    borderColor: vidrio.borde,
     paddingVertical: space.s3,
-    paddingLeft: space.s3 + 2,
+    paddingLeft: space.s4,
     paddingRight: space.s4,
+    borderRadius: radio.control,
   },
   pensandoFila: { flexDirection: 'row', alignItems: 'center', gap: space.s2, minHeight: 24 },
   puntos: { flexDirection: 'row', alignItems: 'center', gap: 4 },
@@ -264,11 +263,11 @@ const styles = StyleSheet.create({
     lineHeight: type.bodySm.lineHeight,
     color: ink.ink6,
     borderLeftWidth: stroke.rule,
-    borderLeftColor: ink.ink4,
+    borderLeftColor: vidrio.borde,
     paddingLeft: space.s2 + 2,
     marginTop: space.s2,
   },
-  acciones: { marginTop: space.s2, borderLeftWidth: stroke.hairline, borderLeftColor: ink.ink3, paddingLeft: 10, gap: space.s1 },
+  acciones: { marginTop: space.s2, borderLeftWidth: stroke.hairline, borderLeftColor: vidrio.linea, paddingLeft: 10, gap: space.s1 },
   accion: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   accionTexto: {
     fontFamily: type.bodySm.family,

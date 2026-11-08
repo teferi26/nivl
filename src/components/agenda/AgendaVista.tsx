@@ -3,7 +3,7 @@
 // nada.
 //
 // De arriba abajo: el encabezado grabado (eyebrow mes y año; «MIÉRCOLES 7»,
-// «SEMANA 41» u «OCTUBRE»; acción «Nuevo evento» en contorno; meandro), los
+// «SEMANA 41» u «OCTUBRE»; acción «Nuevo evento» en contorno), los
 // chips Día · Semana · Mes con «Hoy», las flechas de 44 con el rango en
 // inscripción, el calendario (tira o rejilla, Calendario.tsx) y el día
 // elegido: la franja Eventos · Con hora · Misiones, los eventos, el eje por
@@ -29,7 +29,7 @@ import {
   TarjetaArena,
 } from '@/components/arena';
 import { Check, Chip, ChipWrap, EmptyState, Row, Screen, Section, Tag } from '@/components/ui';
-import { ink, space, stroke, type as tipo } from '@/design/tokens';
+import { ink, space, stroke, type as tipo, vidrio } from '@/design/tokens';
 import { useAnchoUtil, useSizeClass } from '@/design/useSizeClass';
 import { t } from '@/i18n';
 import type { PlanConBloques } from '@/lib/dayplan';
@@ -168,7 +168,6 @@ export function AgendaVista({
           subtitulo={listo && !error ? subtituloDia(c, bloques, dia, hoy) : undefined}
           onVolver={onVolver}
           accion={{ icono: 'add', etiqueta: t('agenda:vista.nuevoEvento'), onPress: acciones.onNuevo }}
-          meandro
         />
       </Entrada>
 
@@ -505,11 +504,11 @@ const styles = StyleSheet.create({
     paddingVertical: space.s3,
     borderTopWidth: stroke.hairline,
     borderBottomWidth: stroke.hairline,
-    borderColor: ink.ink3,
+    borderColor: vidrio.linea,
   },
   lista: { paddingHorizontal: space.s4, paddingVertical: 2 },
   punto: { width: MARCA, height: MARCA, borderRadius: MARCA / 2, backgroundColor: ink.ink9 },
-  cuadro: { width: MARCA, height: MARCA, borderWidth: stroke.hairline, borderColor: ink.ink9 },
+  cuadro: { width: MARCA, height: MARCA, borderWidth: stroke.hairline, borderColor: ink.ink9, borderRadius: 2 },
   hora: {
     fontFamily: 'PlayfairDisplay_700Bold',
     fontSize: 16,

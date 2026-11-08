@@ -5,7 +5,7 @@
 // leyenda (principal, secundario, resto) y la técnica. Pura.
 
 import { StyleSheet, Text, View } from 'react-native';
-import { ink, space, type } from '@/design/tokens';
+import { ink, radio, space, type } from '@/design/tokens';
 import { t } from '@/i18n';
 import type { Ejercicio, MusculoId } from '@/iron/tipos';
 import { ACENTO_IRON, BRILLO_IRON, ESTILO_CAPA } from './estilo';
@@ -108,7 +108,7 @@ const styles = StyleSheet.create({
   escena: { alignItems: 'center', marginVertical: space.s3, borderTopWidth: 1, borderBottomWidth: 1, borderColor: ink.ink3 },
   grupo: { gap: space.s1, marginTop: space.s1 },
   filaTitulo: { flexDirection: 'row', alignItems: 'center', gap: space.s2 },
-  muestra: { width: 14, height: 14, borderWidth: 1.5, borderRadius: 7 },
+  muestra: { width: 14, height: 14, borderWidth: 1.5, borderRadius: radio.pastilla },
   rotulo: {
     fontFamily: type.label.family,
     fontSize: type.label.size,

@@ -40,7 +40,9 @@
       "rutinas": "Pläne",
       "pesos": "Gewichte",
       "cardio": "Cardio"
-    }
+    },
+    "ahoraFecha": "Jetzt · {{fecha}}",
+    "listaRotulo": "Übungen heute"
   },
   "pesos": {
     "rotulo": "Deine Gewichte und Rekorde",
@@ -200,7 +202,8 @@
     "sinCarga": "Heute steht {{nombre}} an: {{series}} × {{reps}}. Jede Wiederholung vollständig.",
     "hecho": "Einheit erledigt. Jetzt Eiweiß und Schlaf: so bleibt das Heute hängen.",
     "descanso": "Heute ist Ruhetag. Geh spazieren, iss gut und schlaf: morgen wird geladen.",
-    "sinRutina": "Sag mir deine Tage und dein Material, und ich baue dir den Plan."
+    "sinRutina": "Sag mir deine Tage und dein Material, und ich baue dir den Plan.",
+    "tuCoach": "Dein Coach"
   },
   "tecnica": {
     "titulo": "TECHNIK",

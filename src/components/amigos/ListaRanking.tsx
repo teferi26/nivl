@@ -1,8 +1,8 @@
 // NIVL · Amigos: las filas de un marcador (amigos o ludus), L-RADICAL §B.4.3.
 //
 // Sin tarjeta envolvente: filas separadas por hairline ink3, como las misiones
-// de Hoy. Puesto en Cinzel 600 20 en una columna de 36, Avatar 32 con el marco
-// de su rango, nombre en Outfit 600 14 y la cifra en Cinzel 600 16.
+// de Hoy. Puesto en Playfair 600 20 en una columna de 36, Avatar 32 con el marco
+// de su rango, nombre en Outfit 600 14 y la cifra en Playfair 600 16.
 //
 // MI FILA INVERTIDA = la inversión de la pantalla (SISTEMA §5 bis, excepción 3:
 // la inversión puede ser una fila, «lo activo»). Sale a sangre hasta el borde
@@ -13,13 +13,11 @@
 // y las filas se recolocan con el LayoutAnimation que pide el hook.
 
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { useContext } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { EliteBadge } from '@/components/EliteBadge';
 import { Avatar, Tag } from '@/components/ui';
-import { GutterContext } from '@/components/ui/Screen';
 import { SIN_DATO } from '@/components/ui/sinDato';
-import { ink, space, stroke, type as tipo, type Rank } from '@/design/tokens';
+import { ink, oro, radio, space, stroke, type as tipo, type Rank, vidrio } from '@/design/tokens';
 import { t } from '@/i18n';
 import { INSIGNIA_ELITE_LABEL } from '@/lib/elite';
 import { levelFromXp } from '@/lib/game';
@@ -56,7 +54,6 @@ export function ListaRanking({
   onSafety,
   invertirMiFila = true,
 }: ListaRankingProps) {
-  const gutter = useContext(GutterContext);
   return (
     <View style={[styles.lista, atenuado && styles.atenuado]}>
       {filas.map((c) => {
@@ -91,7 +88,7 @@ export function ListaRanking({
             key={b.userId}
             style={[
               styles.fila,
-              invertida && [styles.miFila, { marginHorizontal: -gutter, paddingHorizontal: gutter }],
+              invertida && styles.miFila,
               b.isMe && !invertirMiFila && styles.miFilaRegla,
             ]}
           >
@@ -184,18 +181,24 @@ export function SafetyButton({ name, onPress }: { name: string; onPress: () => v
 const COLUMNA_PUESTO = 36;
 
 const styles = StyleSheet.create({
-  lista: { borderTopWidth: stroke.hairline, borderTopColor: ink.ink3 },
+  lista: { borderTopWidth: stroke.hairline, borderTopColor: vidrio.linea },
   atenuado: { opacity: 0.45 },
   fila: {
     flexDirection: 'row',
     alignItems: 'center',
     minHeight: 60,
     borderBottomWidth: stroke.hairline,
-    borderBottomColor: ink.ink3,
+    borderBottomColor: vidrio.linea,
   },
   toque: { flex: 1, minWidth: 0, flexDirection: 'row', alignItems: 'center', gap: space.s3, paddingVertical: space.s2 },
-  miFila: { backgroundColor: ink.ink10, borderBottomColor: ink.ink10 },
-  miFilaRegla: { borderLeftWidth: stroke.rule, borderLeftColor: ink.ink10, paddingLeft: space.s2 },
+  miFila: {
+    backgroundColor: ink.ink10,
+    borderBottomColor: 'transparent',
+    borderRadius: radio.control,
+    marginHorizontal: -space.s3,
+    paddingHorizontal: space.s3,
+  },
+  miFilaRegla: { borderLeftWidth: stroke.rule, borderLeftColor: oro.hilo, paddingLeft: space.s2 },
   pulsada: { opacity: 0.7 },
   puesto: {
     width: COLUMNA_PUESTO,
@@ -204,7 +207,7 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     color: ink.ink6,
   },
-  puestoLider: { color: ink.ink10 },
+  puestoLider: { color: oro.claro },
   centro: { flex: 1, minWidth: 0, gap: 2 },
   nombreFila: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   nombre: {
@@ -231,7 +234,7 @@ const styles = StyleSheet.create({
     fontFamily: tipo.number.family,
     fontSize: 16,
     lineHeight: 20,
-    color: ink.ink9,
+    color: oro.claro,
     fontVariant: ['tabular-nums'],
   },
   unidad: {

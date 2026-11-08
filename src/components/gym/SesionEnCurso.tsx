@@ -2,7 +2,7 @@
 // notas y la foto viven en useGym.
 //
 // Una TarjetaArena piedra por ejercicio con su tabla de series: número en
-// Cinzel, y peso, repeticiones y RPE en celdas compactas con la caja de
+// Playfair, y peso, repeticiones y RPE en celdas compactas con la caja de
 // `Campo` (ink2, borde ink4, foco 2 ink10) pero sin etiqueta propia: la
 // cabecera de la tabla hace de etiqueta y el lector oye «Peso de la serie 2
 // de Press banca». Debajo, «Cómo fue» (Campo multilínea) y la foto. El botón
@@ -14,7 +14,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { useState } from 'react';
 import { Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Campo, TarjetaArena } from '@/components/arena';
-import { ink, space, stroke, type as tipo } from '@/design/tokens';
+import { ink, oro, radio, space, stroke, type as tipo, vidrio } from '@/design/tokens';
 import { t } from '@/i18n';
 import { BotonTecnica } from './RutinaSemanal';
 
@@ -86,7 +86,7 @@ function CeldaSerie({
       style={[
         styles.celda,
         // El borde de 2 come 1 de relleno: la caja no cambia de tamaño.
-        foco ? { borderWidth: stroke.rule, borderColor: ink.ink10, paddingHorizontal: space.s1 - 1 } : null,
+        foco ? { borderWidth: stroke.rule, borderColor: oro.hilo, paddingHorizontal: space.s1 - 1 } : null,
       ]}
     />
   );
@@ -243,16 +243,16 @@ const styles = StyleSheet.create({
     gap: space.s1,
     paddingHorizontal: space.s3,
     borderWidth: stroke.hairline,
-    borderColor: ink.ink4,
+    borderColor: vidrio.borde,
+    borderRadius: radio.chip,
   },
   masTexto: {
     fontFamily: tipo.label.family,
-    fontSize: tipo.label.size,
-    letterSpacing: 1.5,
-    textTransform: 'uppercase',
+    fontSize: 13,
+    letterSpacing: 0,
     color: ink.ink10,
   },
-  pulsado: { backgroundColor: ink.ink2 },
+  pulsado: { backgroundColor: vidrio.campo },
   fila: { flexDirection: 'row', alignItems: 'center', gap: space.s2 },
   filaSerie: { marginTop: space.s2 },
   colNum: { width: COL_NUM, textAlign: 'center' },
@@ -270,10 +270,10 @@ const styles = StyleSheet.create({
   numero: { fontFamily: 'PlayfairDisplay_700Bold', fontSize: 14, color: ink.ink6 },
   celda: {
     height: BOTON,
-    backgroundColor: ink.ink2,
+    backgroundColor: vidrio.campo,
     borderWidth: stroke.hairline,
-    borderColor: ink.ink4,
-    borderRadius: 0,
+    borderColor: vidrio.borde,
+    borderRadius: radio.chip,
     paddingHorizontal: space.s1,
     paddingVertical: 0,
     color: ink.ink10,
@@ -291,8 +291,9 @@ const styles = StyleSheet.create({
     gap: space.s2,
     paddingHorizontal: space.s3,
     borderWidth: stroke.hairline,
-    borderColor: ink.ink4,
+    borderColor: vidrio.borde,
+    borderRadius: radio.control,
   },
-  fotoLista: { borderColor: ink.ink10 },
+  fotoLista: { borderColor: oro.borde },
   fotoTexto: { flex: 1, fontFamily: 'Outfit_600SemiBold', fontSize: 14, lineHeight: 20, color: ink.ink9 },
 });

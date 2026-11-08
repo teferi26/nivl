@@ -3,10 +3,10 @@
 // carga nada.
 //
 // De arriba abajo: el encabezado grabado («Cuerpo» / «GIMNASIO», acción «Nuevo
-// día» en contorno, meandro), la franja Días/semana · Ejercicios · XP, lo
+// día» en contorno), la franja Días/semana · Ejercicios · XP, lo
 // prescrito por el sistema (filas), la sesión de hoy y la rutina semanal.
 // Sesión de hoy según el estado:
-//   · rutina hoy → TarjetaArena piedra con remaches y zócalo con los
+//   · rutina hoy → TarjetaArena piedra con los
 //     ejercicios; INVERSIÓN «Entrenar · +N XP».
 //   · entrenando → SesionEnCurso; INVERSIÓN «Terminar sesión» (la otra no está).
 //   · hecha → TarjetaArena grano «Sesión registrada» con el XP del día.
@@ -149,7 +149,6 @@ export function GymVista({
         titulo={t('gym:vista.titulo')}
         subtitulo={subtitulo}
         accion={{ icono: 'add', etiqueta: t('gym:vista.nuevoDia'), onPress: acciones.onNuevoDia }}
-        meandro
       />
     </Entrada>
   );
@@ -222,8 +221,6 @@ export function GymVista({
       <View style={styles.pila}>
         <TarjetaArena
           variante="piedra"
-          remaches
-          zocalo
           rotulo={planHoy.name}
           meta={t('gym:vista.numEjercicios', { count: ejerciciosHoy.length })}
         >

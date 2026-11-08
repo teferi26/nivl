@@ -10,7 +10,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Campo } from '@/components/arena';
 import { nombreIron } from '@/components/iron/texto';
 import { Chip, ChipWrap } from '@/components/ui';
-import { ink, space, stroke, type as tipo } from '@/design/tokens';
+import { ink, space, stroke, type as tipo, vidrio } from '@/design/tokens';
 import { t } from '@/i18n';
 import { normalizarNombre } from '@/iron/casar';
 import { buscarIron, entradasIron, type EntradaIron } from '@/iron/catalogo';
@@ -127,8 +127,8 @@ const styles = StyleSheet.create({
     minHeight: 48,
     paddingVertical: space.s2,
   },
-  conRegla: { borderTopWidth: stroke.hairline, borderTopColor: ink.ink3 },
-  pulsado: { backgroundColor: ink.ink2 },
+  conRegla: { borderTopWidth: stroke.hairline, borderTopColor: vidrio.linea },
+  pulsado: { backgroundColor: vidrio.campo },
   filaTexto: { flex: 1, minWidth: 0, gap: 2 },
   nombre: {
     fontFamily: tipo.body.family,

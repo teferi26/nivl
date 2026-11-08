@@ -11,7 +11,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { BotonArena, TarjetaArena } from '@/components/arena';
 import { Button, EmptyState, Tag } from '@/components/ui';
-import { ink, space, stroke, type as tipo } from '@/design/tokens';
+import { ink, radio, space, stroke, type as tipo, vidrio } from '@/design/tokens';
 import { t } from '@/i18n';
 import { capital, decimal, nombreDia } from '@/i18n/formato';
 import type { GymDay, GymExercise } from '@/lib/types';
@@ -56,8 +56,8 @@ export function BotonTecnica({ nombre, onPress }: { nombre: string; onPress: () 
 }
 
 /**
- * Un ejercicio en una lista con hairline: ordinal opcional en Cinzel ink6,
- * nombre Outfit 600 16 y la carga en Cinzel 600 14 ink8. Sin Entrada ni
+ * Un ejercicio en una lista con hairline: ordinal opcional en Playfair ink6,
+ * nombre Outfit 600 16 y la carga en Playfair 600 14 ink8. Sin Entrada ni
  * Contador (es una fila).
  */
 export function FilaEjercicio({
@@ -286,8 +286,8 @@ const styles = StyleSheet.create({
   lista: { marginTop: space.s2 },
   pie: { flexDirection: 'row', justifyContent: 'flex-end', marginTop: space.s3 },
   fila: { flexDirection: 'row', alignItems: 'center', gap: space.s3, minHeight: 56, paddingVertical: space.s3 },
-  conRegla: { borderTopWidth: stroke.hairline, borderTopColor: ink.ink3 },
-  pulsado: { backgroundColor: ink.ink2 },
+  conRegla: { borderTopWidth: stroke.hairline, borderTopColor: vidrio.linea },
+  pulsado: { backgroundColor: vidrio.campo },
   interior: { flex: 1, minWidth: 0, flexDirection: 'row', alignItems: 'center', gap: space.s3, alignSelf: 'stretch' },
   tecnica: {
     flexDirection: 'row',
@@ -296,14 +296,14 @@ const styles = StyleSheet.create({
     minHeight: 44,
     paddingHorizontal: space.s3,
     borderWidth: stroke.hairline,
-    borderColor: ink.ink4,
+    borderColor: vidrio.borde,
+    borderRadius: radio.chip,
   },
   tecnicaTexto: {
     fontFamily: tipo.micro.family,
-    fontSize: tipo.micro.size,
-    lineHeight: tipo.micro.lineHeight,
-    letterSpacing: tipo.micro.tracking,
-    textTransform: 'uppercase',
+    fontSize: 13,
+    lineHeight: 18,
+    letterSpacing: 0,
     color: ink.ink10,
   },
   ordinal: { width: 24, fontFamily: 'PlayfairDisplay_700Bold', fontSize: 14, color: ink.ink6, textAlign: 'center' },

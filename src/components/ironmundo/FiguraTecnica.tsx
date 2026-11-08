@@ -20,7 +20,7 @@ import { centroCarga, esqueletoEn } from '@/iron/dibujo';
 import { SEGMENTOS, type Esqueleto, type Punto } from '@/iron/esqueleto';
 import type { Ejercicio } from '@/iron/tipos';
 import { faseEn, FASES_TECNICA, msClave, msFantasmas, type FaseTecnica } from './fases';
-import { A, C, F, fs, px } from './tema';
+import { A, C, F, fs, H, px, R } from './tema';
 
 export interface FiguraTecnicaProps {
   ejercicio: Ejercicio;
@@ -198,10 +198,10 @@ const styles = StyleSheet.create({
     letterSpacing: fs(7) * 0.14,
     color: C.tenue,
     backgroundColor: C.hueco,
-    borderRadius: px(4),
+    borderRadius: R.chip,
     paddingHorizontal: px(5),
     paddingVertical: px(2),
     overflow: 'hidden',
   },
-  fichaActual: { backgroundColor: A, color: C.fondo },
+  fichaActual: { backgroundColor: H, color: C.fondo },
 });

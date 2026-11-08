@@ -23,7 +23,7 @@ import type { LiftInput, SerieInput } from '@/components/gym/SesionEnCurso';
 import { t } from '@/i18n';
 import { BarraIron, BotonIron, estilosIron, PantallaIron, RotuloIron, TarjetaIron } from './piezas';
 import { GlifoIron } from './Glifos';
-import { A, acentoA, C, F, fs, mezcla, px } from './tema';
+import { A, C, F, fs, H, O, px, R } from './tema';
 
 export interface EntrenandoIronVistaProps {
   cabecera: ReactNode;
@@ -280,9 +280,9 @@ const styles = StyleSheet.create({
   pulsado: { opacity: 0.6 },
   progresoFila: { flexDirection: 'row', alignItems: 'center', gap: px(12), marginTop: px(10), marginBottom: px(2) },
   progreso: { flex: 1 },
-  terminarCorto: { borderRadius: px(8), backgroundColor: A, paddingHorizontal: px(10), paddingVertical: px(5) },
+  terminarCorto: { borderRadius: R.chip, backgroundColor: H, paddingHorizontal: px(10), paddingVertical: px(5) },
   terminarCortoTexto: { fontFamily: F.xb, fontSize: fs(8.5), letterSpacing: fs(8.5) * 0.14, color: C.fondo },
-  filaActual: { borderWidth: 1.5, borderColor: A, borderRadius: px(10), backgroundColor: acentoA(0.08), marginHorizontal: -px(5), paddingHorizontal: px(4) },
+  filaActual: { borderWidth: 1, borderColor: O.borde, borderRadius: R.chip, backgroundColor: O.fondo, marginHorizontal: -px(5), paddingHorizontal: px(4) },
   casillaNumeroActual: { color: C.fondo },
   cabeza: { flexDirection: 'row', alignItems: 'center', gap: px(10), marginBottom: px(6) },
   nombre: { fontFamily: F.b, fontSize: fs(13), color: C.blanco },
@@ -290,8 +290,8 @@ const styles = StyleSheet.create({
   serieMas: {
     borderWidth: 1,
     borderStyle: 'dashed',
-    borderColor: acentoA(0.55),
-    borderRadius: px(8),
+    borderColor: O.borde,
+    borderRadius: R.chip,
     paddingHorizontal: px(8),
     paddingVertical: px(4),
   },
@@ -305,35 +305,35 @@ const styles = StyleSheet.create({
   casilla: {
     width: px(22),
     height: px(22),
-    borderRadius: px(11),
+    borderRadius: R.control,
     borderWidth: 1.5,
-    borderColor: acentoA(0.6),
+    borderColor: O.borde,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  casillaHecha: { backgroundColor: A, borderColor: A },
+  casillaHecha: { backgroundColor: H, borderColor: H },
   casillaNumero: { fontFamily: F.xb, fontSize: fs(9), color: A },
   celda: {
     height: px(34),
-    borderRadius: px(9),
+    borderRadius: R.chip,
     borderWidth: 1,
     borderColor: C.borde,
-    backgroundColor: C.fondo,
+    backgroundColor: C.hueco,
     color: C.blanco,
-    fontFamily: F.xb,
+    fontFamily: F.b,
     fontSize: fs(13),
     textAlign: 'center',
     paddingHorizontal: px(4),
     ...(Platform.OS === 'web' ? ({ outlineStyle: 'none' } as object) : null),
   },
-  celdaFoco: { borderColor: A, backgroundColor: mezcla(0.1, C.fondo) },
+  celdaFoco: { borderColor: O.borde, backgroundColor: O.fondo },
   notas: {
     marginTop: px(8),
     minHeight: 44,
-    borderRadius: px(10),
+    borderRadius: R.chip,
     borderWidth: 1,
     borderColor: C.borde,
-    backgroundColor: C.fondo,
+    backgroundColor: C.hueco,
     color: C.claro,
     fontFamily: F.r,
     fontSize: fs(11),

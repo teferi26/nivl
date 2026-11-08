@@ -4,8 +4,8 @@
 //
 //   · rueda («tiempo bala»): velo oscuro sobre la app, la ficha arriba y la
 //     rueda: NIVL, la base, en el centro, y cada modo en su punto cardinal
-//     (src/modos/rueda.ts). El sector apuntado se enciende con el color de su
-//     modo (relleno, filo y halo), su icono crece y el velo toma su tinte. El
+//     (src/modos/rueda.ts). El sector apuntado se enciende con el hilo de oro
+//     (los cuatro comparten acento; el nombre los distingue) y su icono crece. El
 //     modo actual lleva la placa ACTUAL y el anterior, ANTERIOR.
 //       - Abierta con un toque (camino principal): se queda abierta. Tocar un
 //         modo lo elige; tocar fuera, tocar el actual o deslizar hacia abajo
@@ -13,7 +13,7 @@
 //       - Abierta manteniendo el emblema (atajo): el mismo dedo apunta y al
 //         soltar elige. Lo lleva el gesto del emblema; aquí solo se pinta.
 //   · recarga (~600 ms): suena la firma del modo y vibra la suya (P10). El
-//     fondo se enciende con el acento desde abajo (NIVL: oro desde el centro),
+//     fondo toma un velo de oro desde abajo (NIVL: desde el centro),
 //     tres ondas suben, el tambor gira un cuarto y aparecen el nombre,
 //     EQUIPADO y la barra. Al encajar se cambia de modo y el overlay se funde.
 //
@@ -45,7 +45,7 @@ import Animated, {
 import Svg, { Circle, Defs, G, Line, Path, RadialGradient, Rect, Stop } from 'react-native-svg';
 import { scheduleOnRN } from 'react-native-worklets';
 import { vibrar, type EventoVibracion } from '@/design/haptics';
-import { acentoRueda, ink, space, type as tipo } from '@/design/tokens';
+import { acentoRueda, ink, oro, radio, space, type as tipo, vidrio } from '@/design/tokens';
 import { t } from '@/i18n';
 import {
   ANGULO_MODO,
@@ -61,7 +61,7 @@ import {
   trazoSector,
 } from '@/modos/rueda';
 import { MODOS_ETIQUETA, NOMBRE_MODO, type ModoEtiqueta, type ModoId } from '@/modos/tipos';
-import { conAlfa, halo, mezcla } from './color';
+import { conAlfa } from './color';
 import { Desenfoque, hayDesenfoque } from './Desenfoque';
 import { DibujoEmblema, type FormaEmblema } from './DibujoEmblema';
 import { GlifoModo } from './GlifoModo';
@@ -85,13 +85,13 @@ export const EVENTO_MODO: Record<ModoId, EventoVibracion> = {
 export const MS_RECARGA = 600;
 export const MS_FUNDIDO = 200;
 
-/** Cinzel Black (la lámina): los nombres de modo grandes. */
-const CINZEL_BLACK = 'PlayfairDisplay_700Bold';
+/** Playfair: los nombres de modo grandes. */
+const TITULAR = tipo.title.family;
 const OUTFIT_BOLD = tipo.label.family;
 /** Outfit ExtraBold (la lámina: 800) para los rótulos de la rueda y la recarga. */
 const OUTFIT_BLACK = 'Outfit_800ExtraBold';
-/** Rótulos de la rueda sin apuntar (blanco roto de la lámina). */
-const HUESO = '#E9E6DF';
+/** Rótulos de la rueda sin apuntar. */
+const HUESO = ink.ink10;
 const OUTFIT_MEDIO = tipo.bodySm.family;
 
 export type OrigenRueda = 'mantener' | 'toque';
@@ -352,14 +352,15 @@ export function VeloRueda({ resaltado }: { resaltado: SharedValue<number> }) {
   const tintes = ORDEN_RUEDA.map((m) => conAlfa(acentoRueda[m], 0.1));
   // Con desenfoque (expo-blur o web) la app se intuye debajo; sin él, el velo tapa más.
   const negro = hayDesenfoque() ? 0.55 : 0.7;
+  const sinTinte = conAlfa(ink.ink0, 0);
   const estiloTinte = useAnimatedStyle(() => {
     const i = resaltado.value;
-    return { backgroundColor: i >= 0 && i < tintes.length ? tintes[i] : 'rgba(0,0,0,0)' };
+    return { backgroundColor: i >= 0 && i < tintes.length ? tintes[i] : sinTinte };
   });
   return (
     <>
       <Desenfoque />
-      <View style={[StyleSheet.absoluteFill, { backgroundColor: `rgba(0,0,0,${negro})` }]} pointerEvents="none" />
+      <View style={[StyleSheet.absoluteFill, { backgroundColor: conAlfa(ink.ink0, negro) }]} pointerEvents="none" />
       <Animated.View style={[StyleSheet.absoluteFill, estiloTinte]} pointerEvents="none" />
     </>
   );
@@ -407,7 +408,7 @@ export function GuiaDedo({ ancho, alto, emblema, modo, disponibles, dedoX, dedoY
             <AnimatedLine
               x1={emblema.x}
               y1={emblema.y}
-              stroke="#FFFFFF"
+              stroke={ink.ink9}
               strokeWidth={2}
               strokeDasharray="4 6"
               strokeLinecap="round"
@@ -452,14 +453,14 @@ export function DiscoRueda({ lado, modo, anterior, mascara, resaltado }: DiscoRu
       }),
     [],
   );
-  const oro = acentoRueda.general;
+  const hilo = acentoRueda.general;
 
   return (
     <View style={{ width: lado, height: lado }} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
       <Svg width={lado} height={lado} viewBox={`${-v} ${-v} ${VISTA_RUEDA} ${VISTA_RUEDA}`}>
-        <Circle r={RUEDA.fuera} fill="rgba(0,0,0,0.55)" stroke="rgba(255,255,255,0.08)" strokeWidth={1} />
+        <Circle r={RUEDA.fuera} fill={conAlfa(ink.ink0, 0.55)} stroke={vidrio.linea} strokeWidth={1} />
         {muescas.map((m, i) => (
-          <Line key={i} x1={m.x1} y1={m.y1} x2={m.x2} y2={m.y2} stroke={`rgba(255,255,255,${m.fuerte ? 0.3 : 0.12})`} strokeWidth={1} />
+          <Line key={i} x1={m.x1} y1={m.y1} x2={m.x2} y2={m.y2} stroke={m.fuerte ? oro.borde : vidrio.linea} strokeWidth={1} />
         ))}
         {MODOS_ETIQUETA.map((m, j) => (
           <SectorRueda key={m} modo={m} indice={j + 1} disponible={mascara[j + 1]} resaltado={resaltado} />
@@ -475,9 +476,9 @@ export function DiscoRueda({ lado, modo, anterior, mascara, resaltado }: DiscoRu
       {/* La base. */}
       <View style={[styles.centroCaja, { left: lado / 2 - RUEDA.centro * k, top: lado / 2 - RUEDA.centro * k, width: RUEDA.centro * 2 * k, height: RUEDA.centro * 2 * k }]} pointerEvents="none">
         <View style={{ marginTop: -4 * k }}>
-          <GlifoModo modo="general" tamano={Math.round(25 * k)} color={oro} />
+          <GlifoModo modo="general" tamano={Math.round(25 * k)} color={hilo} />
         </View>
-        <Text style={[styles.base, { color: oro, fontSize: Math.max(11, 7 * k), letterSpacing: 1.4 * k }]} maxFontSizeMultiplier={1}>
+        <Text style={[styles.base, { color: hilo, fontSize: Math.max(11, 7 * k), letterSpacing: 1.4 * k }]} maxFontSizeMultiplier={1}>
           {t('modos:rueda.base')}
         </Text>
       </View>
@@ -498,32 +499,32 @@ function SectorRueda({ modo, indice, disponible, resaltado }: { modo: ModoEtique
   const dFilo = trazoSector(0, 0, RUEDA.filoDentro + 0.6, RUEDA.filoDentro + 2.8, ang, 90, 4);
   const encendido = useAnimatedProps(() => ({ opacity: opacidadApuntado(resaltado.value, indice) }));
   if (!disponible) {
-    return <Path d={d} fill="none" stroke="rgba(255,255,255,0.16)" strokeWidth={1} strokeDasharray="3 4" />;
+    return <Path d={d} fill="none" stroke={vidrio.borde} strokeWidth={1} strokeDasharray="3 4" />;
   }
   return (
     <>
-      <Path d={d} fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.16)" strokeWidth={1} />
+      <Path d={d} fill={vidrio.tarjeta} stroke={vidrio.borde} strokeWidth={1} />
       {/* `opacity={0}` de partida: sin él el grupo nace encendido hasta que su
           valor animado cambia una vez (todos marcados al abrir la rueda). */}
       <AnimatedG opacity={0} animatedProps={encendido}>
         {/* Halo corto del filo (la lámina lo desenfoca). */}
-        <Path d={dHalo} fill="none" stroke={col} strokeOpacity={0.25} strokeWidth={6} strokeLinejoin="round" />
-        <Path d={d} fill={col} fillOpacity={0.85} stroke={col} strokeWidth={1.5} />
-        <Path d={dFilo} fill={mezcla(col, 0.6, '#FFFFFF')} />
+        <Path d={dHalo} fill="none" stroke={col} strokeOpacity={0.14} strokeWidth={6} strokeLinejoin="round" />
+        <Path d={d} fill={oro.tenue} stroke={oro.hilo} strokeWidth={1.5} />
+        <Path d={dFilo} fill={col} />
       </AnimatedG>
     </>
   );
 }
 
 function CentroRueda({ resaltado }: { resaltado: SharedValue<number> }) {
-  const oro = acentoRueda.general;
+  const hilo = acentoRueda.general;
   const encendido = useAnimatedProps(() => ({ opacity: opacidadApuntado(resaltado.value, 0) }));
   return (
     <>
-      <Circle r={RUEDA.centro} fill="#000000" stroke={oro} strokeOpacity={0.55} strokeWidth={1.5} />
+      <Circle r={RUEDA.centro} fill={ink.ink0} stroke={hilo} strokeOpacity={0.55} strokeWidth={1.5} />
       <AnimatedG opacity={0} animatedProps={encendido}>
-        <Circle r={RUEDA.centro + 5} fill="none" stroke={oro} strokeOpacity={0.18} strokeWidth={8} />
-        <Circle r={RUEDA.centro} fill={oro} fillOpacity={0.25} stroke={oro} strokeWidth={2.5} />
+        <Circle r={RUEDA.centro + 5} fill="none" stroke={hilo} strokeOpacity={0.18} strokeWidth={8} />
+        <Circle r={RUEDA.centro} fill={hilo} fillOpacity={0.25} stroke={hilo} strokeWidth={2.5} />
       </AnimatedG>
     </>
   );
@@ -639,7 +640,6 @@ export function FichaRueda({ modo, actual, anterior, ancho, top, arribaRueda }: 
       </View>
     );
   }
-  const col = acentoRueda[modo];
   const estado = modo === actual ? t('modos:rueda.actual') : modo === anterior ? t('modos:rueda.anterior') : null;
   return (
     <View
@@ -649,9 +649,8 @@ export function FichaRueda({ modo, actual, anterior, ancho, top, arribaRueda }: 
           top,
           left: space.s8,
           width: ancho - 2 * space.s8,
-          borderColor: col,
-          backgroundColor: conAlfa(mezcla(col, 0.1), 0.94),
-          boxShadow: halo(col, 30, 0.4),
+          borderColor: oro.borde,
+          backgroundColor: conAlfa(ink.ink1, 0.94),
         },
       ]}
       pointerEvents="none"
@@ -668,7 +667,7 @@ export function FichaRueda({ modo, actual, anterior, ancho, top, arribaRueda }: 
           </View>
         ) : null}
       </View>
-      <Text style={[styles.fichaSub, { color: mezcla(col, 0.55, '#FFFFFF') }]} maxFontSizeMultiplier={1.35} numberOfLines={1}>
+      <Text style={styles.fichaSub} maxFontSizeMultiplier={1.35} numberOfLines={1}>
         {t(`modos:rueda.subtitulo.${modo}`)}
       </Text>
       <Text style={styles.fichaLinea} maxFontSizeMultiplier={1.35} numberOfLines={2}>
@@ -711,16 +710,16 @@ export function RecargaModo({ modo, ancho: w, alto: h, progreso, reducido }: Rec
           <Defs>
             {base ? (
               <RadialGradient id="recarga" cx="0.5" cy="0.5" r="0.5">
-                <Stop offset="0" stopColor={col} stopOpacity={1} />
-                <Stop offset="0.32" stopColor={col} stopOpacity={0.4} />
+                <Stop offset="0" stopColor={col} stopOpacity={0.24} />
+                <Stop offset="0.32" stopColor={col} stopOpacity={0.1} />
                 <Stop offset="0.72" stopColor={col} stopOpacity={0} />
                 <Stop offset="1" stopColor={col} stopOpacity={0} />
               </RadialGradient>
             ) : (
               <RadialGradient id="recarga" cx="0.5" cy="0.5" r="0.5">
-                <Stop offset="0" stopColor={col} stopOpacity={1} />
-                <Stop offset="0.3" stopColor={col} stopOpacity={0.55} />
-                <Stop offset="0.58" stopColor={col} stopOpacity={0.12} />
+                <Stop offset="0" stopColor={col} stopOpacity={0.24} />
+                <Stop offset="0.3" stopColor={col} stopOpacity={0.14} />
+                <Stop offset="0.58" stopColor={col} stopOpacity={0.04} />
                 <Stop offset="0.75" stopColor={col} stopOpacity={0} />
                 <Stop offset="1" stopColor={col} stopOpacity={0} />
               </RadialGradient>
@@ -741,16 +740,16 @@ export function RecargaModo({ modo, ancho: w, alto: h, progreso, reducido }: Rec
           <View style={{ width: lado, height: lado }}>
             <Animated.View style={[StyleSheet.absoluteFill, estiloTambor]}>
               <Svg width={lado} height={lado} viewBox="-60 -60 120 120">
-                <Circle r={52} fill="#000000" stroke="#FFFFFF" strokeWidth={3} />
+                <Circle r={52} fill={ink.ink0} stroke={oro.hilo} strokeWidth={2} />
                 {Array.from({ length: 6 }, (_, i) => {
                   const a = ((i * 60 - 30) * Math.PI) / 180;
-                  return <Circle key={i} cx={30 * Math.cos(a)} cy={30 * Math.sin(a)} r={9} fill="#000000" stroke="#FFFFFF" strokeWidth={2} />;
+                  return <Circle key={i} cx={30 * Math.cos(a)} cy={30 * Math.sin(a)} r={9} fill={ink.ink0} stroke={oro.borde} strokeWidth={2} />;
                 })}
               </Svg>
             </Animated.View>
             <Svg width={lado} height={lado} viewBox="-60 -60 120 120" style={StyleSheet.absoluteFill}>
-              <Path d="M-58 -10 A58 58 0 0 1 -20 -54" fill="none" stroke="#FFFFFF" strokeWidth={3} strokeLinecap="round" />
-              <Path d="M58 10 A58 58 0 0 1 20 54" fill="none" stroke="#FFFFFF" strokeWidth={3} strokeLinecap="round" />
+              <Path d="M-58 -10 A58 58 0 0 1 -20 -54" fill="none" stroke={oro.claro} strokeWidth={2} strokeLinecap="round" />
+              <Path d="M58 10 A58 58 0 0 1 20 54" fill="none" stroke={oro.claro} strokeWidth={2} strokeLinecap="round" />
             </Svg>
             <View style={[StyleSheet.absoluteFill, styles.medio]}>
               <GlifoModo modo={modo} tamano={Math.round(31 * k)} color={col} trazo={2.2} />
@@ -759,9 +758,9 @@ export function RecargaModo({ modo, ancho: w, alto: h, progreso, reducido }: Rec
         )}
         <Animated.View style={[styles.medio, estiloTexto]}>
           <Text
-            style={[styles.recargaNombre, { fontSize: Math.round(30 * k), lineHeight: Math.round(36 * k), marginTop: (base ? 4 : 14) * k, textShadowColor: conAlfa(col, 0.75) },
+            style={[styles.recargaNombre, { fontSize: Math.round(30 * k), lineHeight: Math.round(36 * k), marginTop: (base ? 4 : 14) * k, textShadowColor: conAlfa(col, 0.3) },
               // react-native-web ya no traduce textShadow*: en web, la sombra en CSS.
-              Platform.OS === 'web' ? ({ textShadow: `0px 0px 18px ${conAlfa(col, 0.75)}` } as object) : null,
+              Platform.OS === 'web' ? ({ textShadow: `0px 0px 18px ${conAlfa(col, 0.3)}` } as object) : null,
             ]}
             maxFontSizeMultiplier={1}
           >
@@ -787,7 +786,7 @@ export function RecargaModo({ modo, ancho: w, alto: h, progreso, reducido }: Rec
 function Onda({ i, cx, cy, k, progreso, reducido }: { i: number; cx: number; cy: number; k: number; progreso: SharedValue<number>; reducido: boolean }) {
   const r = (103 + i * 70) * k;
   const props = useAnimatedProps(() => ({ r: reducido ? r : r * interpolate(progreso.value, [0, 0.6], [0.35, 1], 'clamp') }));
-  return <AnimatedCircle cx={cx} cy={cy} fill="none" stroke="#FFFFFF" strokeOpacity={0.35 - i * 0.1} strokeWidth={2 - i * 0.5} animatedProps={props} />;
+  return <AnimatedCircle cx={cx} cy={cy} fill="none" stroke={oro.hilo} strokeOpacity={0.35 - i * 0.1} strokeWidth={2 - i * 0.5} animatedProps={props} />;
 }
 
 const styles = StyleSheet.create({
@@ -807,9 +806,9 @@ const styles = StyleSheet.create({
     color: ink.ink6,
   },
   placaCaja: { position: 'absolute', width: 100, alignItems: 'center' },
-  placa: { paddingHorizontal: 6, height: 18, borderRadius: 4, alignItems: 'center', justifyContent: 'center' },
+  placa: { paddingHorizontal: space.s2, height: 18, borderRadius: radio.pastilla, alignItems: 'center', justifyContent: 'center' },
   placaActual: { backgroundColor: ink.ink10 },
-  placaAnterior: { backgroundColor: 'rgba(0,0,0,0.6)', borderWidth: 1, borderColor: ink.ink4, height: 16, paddingHorizontal: 5 },
+  placaAnterior: { backgroundColor: conAlfa(ink.ink0, 0.6), borderWidth: 1, borderColor: vidrio.borde, height: 16, paddingHorizontal: 5 },
   placaTexto: { fontFamily: OUTFIT_BLACK, fontSize: 11, lineHeight: 14, letterSpacing: 1.2, color: ink.ink0 },
   placaTextoAnterior: { fontFamily: OUTFIT_BOLD, fontSize: 10, lineHeight: 12, letterSpacing: 1, color: ink.ink6 },
   fichaVacia: { position: 'absolute', left: 0, alignItems: 'center' },
@@ -819,12 +818,12 @@ const styles = StyleSheet.create({
     lineHeight: 14,
     letterSpacing: 4,
     textTransform: 'uppercase',
-    color: 'rgba(255,255,255,0.45)',
+    color: ink.ink8,
   },
-  ficha: { position: 'absolute', borderWidth: 1, borderRadius: 16, paddingHorizontal: 14, paddingVertical: 12 },
+  ficha: { position: 'absolute', borderWidth: 1, borderRadius: radio.control, paddingHorizontal: 14, paddingVertical: 12 },
   fichaFila: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: space.s2 },
-  fichaNombre: { fontFamily: CINZEL_BLACK, fontSize: 21, lineHeight: 26, letterSpacing: 1.3, color: ink.ink10, flexShrink: 1 },
-  fichaSub: { fontFamily: OUTFIT_MEDIO, fontSize: 12, lineHeight: 16, marginTop: 1 },
+  fichaNombre: { fontFamily: TITULAR, fontSize: 21, lineHeight: 26, letterSpacing: 1.3, color: ink.ink10, flexShrink: 1 },
+  fichaSub: { fontFamily: OUTFIT_MEDIO, fontSize: 12, lineHeight: 16, marginTop: 1, color: oro.claro },
   fichaLinea: { fontFamily: tipo.micro.family, fontSize: 13, lineHeight: 18, color: ink.ink10, marginTop: 6 },
   huella: {
     position: 'absolute',
@@ -833,13 +832,13 @@ const styles = StyleSheet.create({
     width: HUELLA,
     height: HUELLA,
     borderRadius: HUELLA / 2,
-    backgroundColor: 'rgba(255,255,255,0.15)',
+    backgroundColor: vidrio.pista,
     borderWidth: 2,
-    borderColor: 'rgba(255,255,255,0.9)',
+    borderColor: ink.ink9,
   },
   recargaCentro: { position: 'absolute', left: 0, alignItems: 'center' },
   recargaNombre: {
-    fontFamily: CINZEL_BLACK,
+    fontFamily: TITULAR,
     color: ink.ink10,
     letterSpacing: 3,
     textAlign: 'center',
@@ -849,8 +848,8 @@ const styles = StyleSheet.create({
     textShadowOffset: { width: 0, height: 0 },
     textShadowRadius: 18,
   },
-  recargaSub: { fontFamily: OUTFIT_BLACK, marginTop: 4, textAlign: 'center', color: 'rgba(233,230,223,0.75)', letterSpacing: 4.2 },
-  recargaSubBase: { color: 'rgba(255,255,255,0.9)', letterSpacing: 3 },
-  barra: { height: 4, borderRadius: 4, backgroundColor: 'rgba(255,255,255,0.2)', overflow: 'hidden' },
-  barraRelleno: { height: 4, backgroundColor: ink.ink10 },
+  recargaSub: { fontFamily: OUTFIT_BLACK, marginTop: 4, textAlign: 'center', color: ink.ink8, letterSpacing: 4.2 },
+  recargaSubBase: { color: ink.ink9, letterSpacing: 3 },
+  barra: { height: 4, borderRadius: radio.pastilla, backgroundColor: vidrio.pista, overflow: 'hidden' },
+  barraRelleno: { height: 4, backgroundColor: oro.hilo },
 });

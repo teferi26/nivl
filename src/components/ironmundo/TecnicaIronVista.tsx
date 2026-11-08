@@ -25,7 +25,7 @@ import { GlifoIron } from './Glifos';
 import { MapaMini } from './MapaMini';
 import { TarjetaHueco } from './Esqueletos';
 import { BotonIron, estilosIron, FilaIron, LineaAncha, PantallaIron, RotuloIron, TarjetaIron } from './piezas';
-import { A, C, F, fs, M, mezcla, px } from './tema';
+import { A, C, F, fs, M, O, px, R } from './tema';
 
 /** La demostración no pasa de aquí de ancho (iPad). */
 const ANCHO_MAX = 520;
@@ -239,15 +239,15 @@ const styles = StyleSheet.create({
   fuerte: { fontFamily: F.b, color: C.blanco },
   cabecera: { flexDirection: 'row', alignItems: 'center', gap: px(9), paddingTop: px(4), marginBottom: px(2) },
   atras: { paddingVertical: px(4) },
-  titulo: { fontFamily: F.cinzel, fontSize: fs(16), letterSpacing: fs(16) * 0.08, color: C.blanco },
+  titulo: { fontFamily: F.serif, fontSize: fs(16), color: C.blanco },
   subtitulo: { fontFamily: F.m, fontSize: fs(9.5), letterSpacing: fs(9.5) * 0.06, color: C.mudo, marginTop: px(2) },
   emblema: {
     width: px(30),
     height: px(30),
-    borderRadius: px(10),
+    borderRadius: R.chip,
     borderWidth: 1.5,
     borderColor: A,
-    backgroundColor: mezcla(0.14, C.fondo),
+    backgroundColor: O.tenue,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -256,14 +256,14 @@ const styles = StyleSheet.create({
   nombre: { fontSize: fs(18) },
   pasos: { marginTop: px(8), gap: px(6) },
   paso: { flexDirection: 'row', alignItems: 'center', gap: px(7) },
-  pasoNumero: { width: px(16), height: px(16), borderRadius: px(5), backgroundColor: C.hueco, alignItems: 'center', justifyContent: 'center' },
+  pasoNumero: { width: px(16), height: px(16), borderRadius: R.chip, backgroundColor: C.hueco, alignItems: 'center', justifyContent: 'center' },
   pasoNumeroTexto: { fontFamily: F.xb, fontSize: fs(8.5), color: A },
   pasoTexto: { flex: 1, fontFamily: F.m, fontSize: fs(10), lineHeight: fs(10) * 1.35, color: C.texto },
   proxima: { marginTop: px(6), gap: px(2) },
   proximaTexto: { fontFamily: F.b, fontSize: fs(15), color: C.blanco },
   cifras: { flexDirection: 'row', gap: px(7), marginTop: px(8) },
-  cifra: { flex: 1, backgroundColor: C.fondo, borderRadius: px(12), borderWidth: 1, borderColor: C.filete, padding: px(8) },
-  cifraValor: { fontFamily: F.xb, fontSize: fs(17), color: C.blanco },
+  cifra: { flex: 1, backgroundColor: C.tarjeta, borderRadius: R.control, borderWidth: 1, borderColor: C.filete, padding: px(8) },
+  cifraValor: { fontFamily: F.serif, fontSize: fs(17), color: C.blanco },
   cifraRotulo: { fontFamily: F.b, fontSize: fs(8), letterSpacing: fs(8) * 0.14, color: C.mudo, textTransform: 'uppercase', marginTop: px(1) },
   grafica: { marginTop: px(10) },
   fecha: { minWidth: px(52) },

@@ -28,7 +28,7 @@ import {
   type Tarjeta,
 } from '@/lib/sharecard';
 import { Trama } from '@/components/ui/Texture';
-import { ink } from '@/design/tokens';
+import { ink, oro, radio, vidrio } from '@/design/tokens';
 import { t } from '@/i18n';
 import { fonts } from '@/lib/theme';
 import { mensajeSistema } from '@/lib/validation';
@@ -337,22 +337,22 @@ const styles = StyleSheet.create({
   cerrar: { minWidth: 44, minHeight: 44, alignItems: 'flex-end', justifyContent: 'center' },
   cerrarX: { fontFamily: fonts.heading, fontSize: 20, color: ink.ink9 },
   contenido: { paddingHorizontal: 20, paddingBottom: 24, gap: 16 },
-  previa: { alignItems: 'center', borderWidth: 1, borderColor: ink.ink3, alignSelf: 'center' },
+  previa: { alignItems: 'center', borderWidth: 1, borderColor: vidrio.linea, alignSelf: 'center', borderRadius: radio.control, overflow: 'hidden' },
   formatos: { flexDirection: 'row', gap: 8 },
-  formato: { flex: 1, minHeight: 44, borderWidth: 1, borderColor: ink.ink4, alignItems: 'center', justifyContent: 'center' },
-  formatoActivo: { backgroundColor: ink.ink10, borderColor: ink.ink10 },
+  formato: { flex: 1, minHeight: 44, borderWidth: 1, borderColor: vidrio.borde, alignItems: 'center', justifyContent: 'center', borderRadius: radio.chip },
+  formatoActivo: { backgroundColor: vidrio.tarjeta, borderColor: oro.claro, borderWidth: 2 },
   formatoTexto: { fontFamily: fonts.heading, fontSize: 12, letterSpacing: 2, color: ink.ink8 },
-  formatoTextoActivo: { color: ink.ink0 },
-  fila: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', minHeight: 44, borderBottomWidth: 1, borderBottomColor: ink.ink3, gap: 12 },
+  formatoTextoActivo: { color: oro.claro },
+  fila: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', minHeight: 44, borderBottomWidth: 1, borderBottomColor: vidrio.linea, gap: 12 },
   filaTexto: { fontFamily: fonts.body, fontSize: 16, color: ink.ink9, flexShrink: 1 },
   nota: { fontFamily: fonts.body, fontSize: 14, lineHeight: 20, color: ink.ink8, flexShrink: 1 },
   aviso: { flexDirection: 'row', alignItems: 'flex-start', gap: 8, marginBottom: 12 },
   // La trama hace de borde de 3 pt; el texto va en la placa lisa, nunca encima del rayado.
-  avisoMarco: { marginBottom: 12, padding: 3, backgroundColor: ink.ink0, overflow: 'hidden' },
-  avisoPlaca: { flexDirection: 'row', alignItems: 'flex-start', gap: 8, padding: 10, backgroundColor: ink.ink1 },
-  pie: { paddingHorizontal: 20, paddingTop: 12, paddingBottom: 32, borderTopWidth: 1, borderTopColor: ink.ink3 },
-  boton: { minHeight: 52, backgroundColor: ink.ink10, alignItems: 'center', justifyContent: 'center' },
-  botonApagado: { backgroundColor: ink.ink1, borderWidth: 1, borderColor: ink.ink4 },
+  avisoMarco: { marginBottom: 12, padding: 3, backgroundColor: ink.ink0, overflow: 'hidden', borderRadius: radio.control },
+  avisoPlaca: { flexDirection: 'row', alignItems: 'flex-start', gap: 8, padding: 10, backgroundColor: ink.ink1, borderRadius: radio.control - 3 },
+  pie: { paddingHorizontal: 20, paddingTop: 12, paddingBottom: 32, borderTopWidth: 1, borderTopColor: vidrio.linea },
+  boton: { minHeight: 52, backgroundColor: ink.ink10, alignItems: 'center', justifyContent: 'center', borderRadius: radio.control },
+  botonApagado: { backgroundColor: vidrio.tarjeta, borderWidth: 1, borderColor: vidrio.borde },
   botonTexto: { fontFamily: fonts.heading, fontSize: 14, letterSpacing: 2, color: ink.ink0 },
   botonTextoApagado: { color: ink.ink6 },
 });

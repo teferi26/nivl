@@ -2,7 +2,7 @@
 // así la galería (/kit/pantallas?pantalla=fotos) la pinta sin sesión.
 //
 // Composición (lenguaje arena, L-RADICAL):
-//   1. EncabezadoArena «Progreso» / «FOTOS» con meandro; su acción sólida
+//   1. EncabezadoArena «Progreso» / «FOTOS»; su acción sólida
 //      «Nueva foto» es LA inversión de la pantalla (solo con acceso abierto).
 //   2. FranjaCifras: semanas seguidas, esta semana (n/3) y fotos.
 //   3. La semana en curso en una TarjetaArena (grano si está cerrada).
@@ -23,7 +23,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { EncabezadoArena, Entrada, FranjaCifras, TarjetaArena } from '@/components/arena';
 import type { AccesoFotos } from '@/components/permisoFotos';
 import { Button, Screen, Section, Skeleton } from '@/components/ui';
-import { ink, space, type as tipo } from '@/design/tokens';
+import { ink, oro, radio, space, type as tipo, vidrio } from '@/design/tokens';
 import { t } from '@/i18n';
 import { mayus } from '@/i18n/formato';
 import {
@@ -147,7 +147,7 @@ export function FotosVista(p: FotosVistaProps) {
   } else if (acceso === 'confirmar_edad') {
     cuerpo = (
       <Entrada>
-        <TarjetaArena variante="contorno" remaches rotulo={t('fotos:vista.solo18')}>
+        <TarjetaArena variante="contorno" rotulo={t('fotos:vista.solo18')}>
           <PreguntaEdad onSi={a.onConfirmarEdad} onNo={a.onAhoraNo} ocupado={p.confirmandoEdad} error={p.errorEdad} />
         </TarjetaArena>
       </Entrada>
@@ -162,7 +162,7 @@ export function FotosVista(p: FotosVistaProps) {
   } else if (fotos.length === 0) {
     cuerpo = (
       <Entrada>
-        <TarjetaArena variante="contorno" remaches rotulo={t('fotos:vista.primeraSemana')}>
+        <TarjetaArena variante="contorno" rotulo={t('fotos:vista.primeraSemana')}>
           <Text style={styles.texto} maxFontSizeMultiplier={1.35}>
             {t('fotos:vista.primeraSemanaTexto')}
           </Text>
@@ -274,7 +274,6 @@ export function FotosVista(p: FotosVistaProps) {
             ? { icono: 'camera-outline', etiqueta: t('fotos:vista.nueva'), onPress: a.onNueva, solida: true }
             : undefined
         }
-        meandro
       />
       <View style={styles.pila}>
         {cuerpo}
@@ -314,10 +313,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: ink.ink4,
+    borderColor: vidrio.borde,
+    borderRadius: radio.chip,
   },
   // Hecha: marco de 2 en ink10, sin invertir (la inversión es «Nueva foto»).
-  poseHecha: { borderWidth: 2, borderColor: ink.ink10 },
+  poseHecha: { borderWidth: 2, borderColor: oro.claro },
   poseTexto: { fontFamily: tipo.micro.family, fontSize: tipo.micro.size, letterSpacing: tipo.micro.tracking, color: ink.ink10 },
   poseFalta: { color: ink.ink6 },
   pie: {

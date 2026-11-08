@@ -1,19 +1,19 @@
 // NIVL · Amigos: el podio (L-RADICAL §B.4.2).
 //
-// Tres columnas dóricas de alto distinto (2.º 96 · 1.º 128 · 3.º 72) en hairline
-// ink4, apoyadas en una basa común donde se graba el puesto en Cinzel
-// (`type.cifra`). Encima de cada columna, el gladiador: Avatar 48 con el marco
-// de su rango, nombre `micro` y su cifra en Cinzel 600 18 (Contador: al cambiar
-// de periodo sube o baja hasta la nueva; al cambiar de métrica se vuelve a
-// montar sin contar; son 3 de los 4 de la pantalla). Debajo, «TU PUESTO: 3.º DE 8» en inscripción entre dos laureles.
+// Tres peanas redondeadas de alto distinto (2.º · 1.º · 3.º), con el hilo de oro
+// solo en la del líder, sobre una línea donde va el puesto (`type.cifra`). Encima
+// de cada peana, el gladiador: Avatar 48 con el marco de su rango, nombre `micro`
+// y su cifra en Playfair 18 (Contador: al cambiar de periodo sube o baja hasta la
+// nueva; al cambiar de métrica se vuelve a montar sin contar; son 3 de los 4 de
+// la pantalla). Debajo, «TU PUESTO: 3.º DE 8».
 //
 // Con uno o dos rivales (o sin tres cifras medidas) no hay podio: solo la línea.
 // No es superficie invertida: la inversión de Amigos es mi fila del ranking.
 
 import { StyleSheet, Text, View } from 'react-native';
-import { Columna, Contador, Laurel } from '@/components/arena';
+import { Contador } from '@/components/arena';
 import { Avatar } from '@/components/ui';
-import { ink, space, stroke, type as tipo, type Rank } from '@/design/tokens';
+import { ink, oro, radio, space, stroke, type as tipo, type Rank, vidrio } from '@/design/tokens';
 import { t } from '@/i18n';
 import { etiquetaPosicion, formatoValor, type Metrica } from '@/lib/socialmath';
 import { lineaPuesto, ordenPodio, sufijoDe } from './cifraRanking';
@@ -31,8 +31,7 @@ interface PodioProps {
 }
 
 /** Alto de la columna por hueco del podio, en el orden pintado (2.º · 1.º · 3.º). */
-const ALTOS = [96, 128, 72] as const;
-const ANCHO_COLUMNA = 40;
+const ALTOS = [56, 80, 36] as const;
 const AVATAR = 48;
 /** El podio no se estira más que esto en tableta y escritorio. */
 const ANCHO_MAX = 440;
@@ -86,7 +85,7 @@ export function Podio({ filas, metrica, rivales, miRango, rangos, atenuado }: Po
                     adjustsFontSizeToFit
                   />
                   <View style={styles.columna}>
-                    <Columna alto={ALTOS[i]} ancho={ANCHO_COLUMNA} color={i === 1 ? ink.ink6 : ink.ink4} />
+                    <View style={[styles.peana, { height: ALTOS[i] }, i === 1 && styles.peanaLider]} />
                   </View>
                 </View>
               );
@@ -110,11 +109,9 @@ export function Podio({ filas, metrica, rivales, miRango, rangos, atenuado }: Po
       ) : null}
 
       <View style={styles.lineaFila}>
-        <Laurel alto={20} lado="izq" />
         <Text style={styles.linea} accessibilityRole="text" maxFontSizeMultiplier={1.35} numberOfLines={2}>
           {linea.toUpperCase()}
         </Text>
-        <Laurel alto={20} lado="der" />
       </View>
     </View>
   );
@@ -145,13 +142,21 @@ const styles = StyleSheet.create({
     // Centrada: Contador con unidad ocupa el ancho del hueco y alinea por aquí.
     textAlign: 'center',
   },
-  valorLider: { color: ink.ink10 },
-  columna: { marginTop: space.s2 },
+  valorLider: { color: oro.claro },
+  columna: { marginTop: space.s2, alignSelf: 'stretch', paddingHorizontal: space.s2 },
+  peana: {
+    borderTopLeftRadius: radio.chip,
+    borderTopRightRadius: radio.chip,
+    borderWidth: stroke.hairline,
+    borderBottomWidth: 0,
+    borderColor: vidrio.borde,
+    backgroundColor: vidrio.tarjeta,
+  },
+  peanaLider: { borderColor: oro.borde, backgroundColor: oro.fondo },
   basa: {
     flexDirection: 'row',
     borderTopWidth: stroke.hairline,
-    borderBottomWidth: stroke.hairline,
-    borderColor: ink.ink4,
+    borderColor: vidrio.borde,
     paddingVertical: space.s2,
   },
   puesto: {
@@ -162,12 +167,11 @@ const styles = StyleSheet.create({
     lineHeight: tipo.cifra.lineHeight,
     color: ink.ink6,
   },
-  puestoLider: { color: ink.ink10 },
+  puestoLider: { color: oro.claro },
   lineaFila: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: space.s3,
     marginTop: space.s5,
   },
   linea: {

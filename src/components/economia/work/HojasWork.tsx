@@ -15,7 +15,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { StyleSheet, Text, View } from 'react-native';
 import { Campo, ErrorSistema } from '@/components/arena';
 import { Button, Sheet } from '@/components/ui';
-import { ink, space, type as tipo } from '@/design/tokens';
+import { ink, oro, radio, space, type as tipo, vidrio } from '@/design/tokens';
 import { t } from '@/i18n';
 import { BASE_DE_GRUPO, GRUPOS, type CategoriaPropia, type GrupoId, type TipoCuenta } from '@/lib/moneywork';
 import { BotonWork, ChipWork, FilaChips, RotuloGrupo, useAcento } from './PiezasWork';
@@ -92,7 +92,6 @@ export interface HojaMovimientoProps {
 }
 
 export function HojaMovimiento(p: HojaMovimientoProps) {
-  const a = useAcento();
   const tipo = p.tipo ?? 'gasto';
   const propias = p.propias.filter((c) => c.kind === tipo);
   return (
@@ -109,7 +108,7 @@ export function HojaMovimiento(p: HojaMovimientoProps) {
           <ChipWork etiqueta={t('economia:work.hojas.mov.ingreso')} icono="add" elegido={tipo === 'ingreso'} onPress={() => p.onTipo('ingreso')} />
         </FilaChips>
         <Campo
-          style={[styles.campo, { borderColor: a.tinte(0.55) }]}
+          style={[styles.campo, { borderColor: oro.borde }]}
           etiqueta={t('economia:work.hojas.mov.importe')}
           value={p.importe}
           onChangeText={p.onImporte}
@@ -160,7 +159,7 @@ export function HojaMovimiento(p: HojaMovimientoProps) {
           </FilaChips>
         </View>
         <Campo
-          style={[styles.campo, { borderColor: a.tinte(0.55) }]}
+          style={[styles.campo, { borderColor: oro.borde }]}
           etiqueta={t('economia:work.hojas.mov.concepto')}
           value={p.concepto}
           onChangeText={p.onConcepto}
@@ -194,7 +193,6 @@ export interface HojaTransferenciaProps {
 }
 
 export function HojaTransferencia(p: HojaTransferenciaProps) {
-  const a = useAcento();
   return (
     <Sheet
       visible={p.visible}
@@ -215,7 +213,7 @@ export function HojaTransferencia(p: HojaTransferenciaProps) {
         <SelectorCuenta cuentas={p.cuentas} elegida={p.origen} onElegir={p.onOrigen} rotulo={t('economia:work.hojas.trf.desde')} />
         <SelectorCuenta cuentas={p.cuentas} elegida={p.destino} excluir={p.origen} onElegir={p.onDestino} rotulo={t('economia:work.hojas.trf.a')} />
         <Campo
-          style={[styles.campo, { borderColor: a.tinte(0.55) }]}
+          style={[styles.campo, { borderColor: oro.borde }]}
           etiqueta={t('economia:work.hojas.mov.importe')}
           value={p.importe}
           onChangeText={p.onImporte}
@@ -225,7 +223,7 @@ export function HojaTransferencia(p: HojaTransferenciaProps) {
           error={p.errorImporte}
         />
         <Campo
-          style={[styles.campo, { borderColor: a.tinte(0.55) }]}
+          style={[styles.campo, { borderColor: oro.borde }]}
           etiqueta={t('economia:work.hojas.mov.concepto')}
           value={p.concepto}
           onChangeText={p.onConcepto}
@@ -261,7 +259,6 @@ export interface HojaCuentaProps {
 }
 
 export function HojaCuenta(p: HojaCuentaProps) {
-  const a = useAcento();
   return (
     <Sheet
       visible={p.visible}
@@ -281,7 +278,7 @@ export function HojaCuenta(p: HojaCuentaProps) {
     >
       <View style={styles.pila}>
         <Campo
-          style={[styles.campo, { borderColor: a.tinte(0.55) }]}
+          style={[styles.campo, { borderColor: oro.borde }]}
           etiqueta={t('economia:work.hojas.cuentaHoja.nombre')}
           value={p.nombre}
           onChangeText={p.onNombre}
@@ -300,7 +297,7 @@ export function HojaCuenta(p: HojaCuentaProps) {
           </View>
         )}
         <Campo
-          style={[styles.campo, { borderColor: a.tinte(0.55) }]}
+          style={[styles.campo, { borderColor: oro.borde }]}
           etiqueta={t('economia:work.hojas.cuentaHoja.saldo')}
           value={p.saldo}
           onChangeText={p.onSaldo}
@@ -342,7 +339,6 @@ export interface HojaFijoProps {
 }
 
 export function HojaFijo(p: HojaFijoProps) {
-  const a = useAcento();
   const ingreso = p.tipo === 'ingreso';
   return (
     <Sheet
@@ -362,7 +358,7 @@ export function HojaFijo(p: HojaFijoProps) {
           {t(ingreso ? 'economia:work.hojas.fijo.subIngreso' : 'economia:work.hojas.fijo.subGasto')}
         </Text>
         <Campo
-          style={[styles.campo, { borderColor: a.tinte(0.55) }]}
+          style={[styles.campo, { borderColor: oro.borde }]}
           etiqueta={t('economia:work.hojas.fijo.nombre')}
           value={p.nombre}
           onChangeText={p.onNombre}
@@ -373,7 +369,7 @@ export function HojaFijo(p: HojaFijoProps) {
         <View style={styles.dosCampos}>
           <View style={styles.flex}>
             <Campo
-              style={[styles.campo, { borderColor: a.tinte(0.55) }]}
+              style={[styles.campo, { borderColor: oro.borde }]}
               etiqueta={t('economia:work.hojas.mov.importe')}
               value={p.importe}
               onChangeText={p.onImporte}
@@ -384,7 +380,7 @@ export function HojaFijo(p: HojaFijoProps) {
           </View>
           <View style={styles.campoDia}>
             <Campo
-              style={[styles.campo, { borderColor: a.tinte(0.55) }]}
+              style={[styles.campo, { borderColor: oro.borde }]}
               etiqueta={t('economia:work.hojas.fijo.dia')}
               value={p.dia}
               onChangeText={p.onDia}
@@ -441,7 +437,6 @@ export interface HojaCategoriasProps {
 }
 
 export function HojaCategorias(p: HojaCategoriasProps) {
-  const a = useAcento();
   return (
     <Sheet
       visible={p.visible}
@@ -476,7 +471,7 @@ export function HojaCategorias(p: HojaCategoriasProps) {
         ) : null}
         <View style={styles.separador} />
         <Campo
-          style={[styles.campo, { borderColor: a.tinte(0.55) }]}
+          style={[styles.campo, { borderColor: oro.borde }]}
           etiqueta={t('economia:work.hojas.cat.nueva')}
           value={p.nombre}
           onChangeText={p.onNombre}
@@ -602,13 +597,13 @@ export function baseDe(c: CategoriaElegida, propias: readonly CategoriaPropia[])
 
 const styles = StyleSheet.create({
   pila: { gap: space.s5 },
-  campo: { borderRadius: 10 },
+  campo: { borderRadius: radio.control },
   grupo: { gap: space.s2 },
   sub: { flex: 1, fontFamily: tipo.bodySm.family, fontSize: tipo.bodySm.size, lineHeight: tipo.bodySm.lineHeight, color: ink.ink8 },
   dosCampos: { flexDirection: 'row', gap: space.s3 },
   flex: { flex: 1 },
   campoDia: { width: 96 },
-  separador: { height: 1, backgroundColor: ink.ink3 },
+  separador: { height: 1, backgroundColor: vidrio.linea },
   paso: { flexDirection: 'row', gap: space.s3, alignItems: 'flex-start' },
   pasoNum: { width: 18, fontFamily: tipo.label.family, fontSize: 14, lineHeight: 20 },
   seguro: { flexDirection: 'row', gap: space.s2, alignItems: 'flex-start' },

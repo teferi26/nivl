@@ -2,13 +2,13 @@
 // «Elige tus modos» del onboarding y la hoja de Perfil.
 //
 // Una tarjeta por modo: NIVL (General) arriba, fija y marcada, con «Siempre
-// activo»; debajo IRON, FOCUS, WORK y FOUNDER como casillas. Marcada = marco
-// de 3 en el acento del modo y el cuadrado lleno; sin invertir (la inversión
-// del paso es «Continuar»). Debajo, si no hay ninguno, «Elige al menos uno.»
+// activo»; debajo IRON, FOCUS, WORK y FOUNDER como casillas. Marcada = marco y
+// velo de oro con el punto lleno; sin invertir (la inversión del paso es
+// «Continuar»). Debajo, si no hay ninguno, «Elige al menos uno.»
 
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { vibrar } from '@/design/haptics';
-import { ink, modoAcento, space, stroke, type as tipo } from '@/design/tokens';
+import { ink, modoAcento, oro, radio, space, stroke, type as tipo, vidrio } from '@/design/tokens';
 import { t } from '@/i18n';
 import { alternarModo, eleccionValida, MODOS_ETIQUETA, NOMBRE_MODO, type ModoEtiqueta, type ModoId } from '@/modos/tipos';
 
@@ -42,7 +42,7 @@ function Fila({
       accessibilityLabel={t('modos:onboarding.a11y', { modo: NOMBRE_MODO[modo], descripcion })}
       style={({ pressed }) => [
         styles.fila,
-        marcada && !fija && { borderColor: modoAcento[modo], borderWidth: stroke.frame, padding: space.s3 + 1 - stroke.frame },
+        marcada && !fija && styles.filaMarcada,
         pressed && styles.pulsada,
       ]}
     >
@@ -96,11 +96,13 @@ const styles = StyleSheet.create({
     padding: space.s3,
     marginBottom: space.s2,
     borderWidth: stroke.hairline,
-    borderColor: ink.ink4,
-    backgroundColor: ink.ink1,
+    borderColor: vidrio.borde,
+    borderRadius: radio.control,
+    backgroundColor: vidrio.tarjeta,
   },
+  filaMarcada: { borderColor: oro.borde, backgroundColor: oro.tenue },
   pulsada: { opacity: 0.7 },
-  marca: { width: 14, height: 14, borderWidth: stroke.hairline, borderColor: ink.ink6 },
+  marca: { width: 14, height: 14, borderRadius: radio.pastilla, borderWidth: stroke.hairline, borderColor: ink.ink6 },
   textos: { flex: 1, minWidth: 0 },
   nombre: {
     fontFamily: tipo.inscripcion.family,

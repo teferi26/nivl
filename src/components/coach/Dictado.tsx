@@ -12,7 +12,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { AccessibilityInfo, AppState, Pressable, StyleSheet, Text, View, type GestureResponderEvent } from 'react-native';
 import { vibrar } from '@/design/haptics';
 import { usePiel } from '@/design/piel';
-import { ink, space, type } from '@/design/tokens';
+import { ink, space, stroke, type, vidrio } from '@/design/tokens';
 import { t } from '@/i18n';
 import { cancelarDictado, detenerDictado, dictar, type ErrorDictado } from '@/lib/coachvoz';
 import { alSoltar, formatoGrabacion, UMBRAL_CANCELAR } from './dictadoGesto';
@@ -336,13 +336,13 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    borderWidth: 3,
-    borderColor: ink.ink10,
+    borderWidth: stroke.hairline,
+    borderColor: vidrio.borde,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: ink.ink0,
+    backgroundColor: vidrio.campo,
   },
-  botonOn: { backgroundColor: ink.ink10 },
+  botonOn: { backgroundColor: ink.ink10, borderColor: ink.ink10 },
   apagado: { opacity: 0.35 },
   pulsado: { opacity: 0.8 },
   franja: {
@@ -350,8 +350,7 @@ const styles = StyleSheet.create({
     paddingTop: space.s3,
     paddingBottom: space.s2,
     borderTopWidth: 1,
-    borderTopColor: ink.ink3,
-    backgroundColor: ink.ink0,
+    borderTopColor: vidrio.linea,
   },
   franjaFila: { flexDirection: 'row', alignItems: 'center', gap: space.s2 },
   punto: { width: 8, height: 8, borderRadius: 4, backgroundColor: ink.ink10 },

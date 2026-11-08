@@ -3,7 +3,7 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useState } from 'react';
 import { Pressable, StyleSheet, type StyleProp, type ViewStyle } from 'react-native';
-import { ink } from '@/design/tokens';
+import { ink, vidrio } from '@/design/tokens';
 import { t } from '@/i18n';
 import type { TerminoId } from '@/lib/glosario';
 import { tituloTermino } from './GlosarioVista';
@@ -38,5 +38,5 @@ export function BotonAyuda({ termino, style }: BotonAyudaProps) {
 
 const styles = StyleSheet.create({
   boton: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
-  pulsado: { backgroundColor: ink.ink2 },
+  pulsado: { backgroundColor: vidrio.campo },
 });

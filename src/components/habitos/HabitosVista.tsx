@@ -1,12 +1,12 @@
 // NIVL · Hábitos: la vista (L-RADICAL B.6 y §C). Pura: todo llega por props
 // desde useHabitos (o desde la galería con datos de mentira) y no carga nada.
 //
-// La forja de la arena, de arriba abajo: el encabezado grabado con el
-// meandro, la franja de cifras (en forja, mejor racha, listos, adquiridos),
-// las reglas del contrato de hoy, cada hábito como una losa con zócalo (la
-// racha manda: columna de 64 con la cifra en Cinzel sobre «/21» y una hairline;
+// La forja de la arena, de arriba abajo: el encabezado,
+// la franja de cifras (en forja, mejor racha, listos, adquiridos),
+// las reglas del contrato de hoy, cada hábito como una tarjeta (la
+// racha manda: columna de 64 con la cifra en Playfair sobre «/21» y una hairline;
 // a la derecha el nombre, la barra en 21 segmentos y los días que toca en
-// contorno) y los adquiridos con su laurel. El hábito que llega a 21 pasa a
+// contorno) y los adquiridos con su marca. El hábito que llega a 21 pasa a
 // losa con grano y pide la decisión: «Darlo por adquirido».
 //
 // Inversión única de la pantalla: «Nuevo hábito» en el encabezado salvo en el
@@ -17,11 +17,12 @@
 // A partir de `medium` las losas van en dos columnas (una sola con el texto
 // muy grande).
 
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { StyleSheet, Text, View, useWindowDimensions } from 'react-native';
-import { Barra, EncabezadoArena, Entrada, FranjaCifras, Laurel, TarjetaArena } from '@/components/arena';
+import { Barra, EncabezadoArena, Entrada, FranjaCifras, TarjetaArena } from '@/components/arena';
 import { Button, Check, EmptyState, PressScale, Row, Screen, Section, Skeleton, SkeletonRows } from '@/components/ui';
 import { SIN_DATO } from '@/components/ui/sinDato';
-import { ink, space, stroke, type as tipo } from '@/design/tokens';
+import { ink, oro, radio, space, stroke, type as tipo, vidrio } from '@/design/tokens';
 import { useSizeClass } from '@/design/useSizeClass';
 import { t } from '@/i18n';
 import { nombreDia } from '@/i18n/formato';
@@ -94,7 +95,7 @@ function Semana({ dias }: { dias: number[] }) {
 
 /**
  * El cuerpo de una losa. La racha manda: columna izquierda de 64 con la cifra
- * en Cinzel sobre «/21» y una hairline vertical; a la derecha, el nombre, la
+ * en Playfair sobre «/21» y una hairline vertical; a la derecha, el nombre, la
  * barra de 21 y la semana.
  */
 function CuerpoHabito({ q, p, animar }: { q: Quest; p: ProgresoHabito; animar: boolean }) {
@@ -156,7 +157,7 @@ function LosaHabito({
   const etiqueta = t('habitos:vista.losaA11y', { resumen: resumenHabito(q.title, p), dias: diasLeidos(q.days_of_week ?? []) });
   if (!p.consolidable) {
     return (
-      <TarjetaArena variante="piedra" zocalo onPress={editar} accessibilityLabel={etiqueta}>
+      <TarjetaArena variante="piedra" onPress={editar} accessibilityLabel={etiqueta}>
         <CuerpoHabito q={q} p={p} animar={animar} />
       </TarjetaArena>
     );
@@ -165,7 +166,7 @@ function LosaHabito({
   // para VoiceOver. Lo que edita es el cuerpo; «Darlo por adquirido» queda
   // como botón propio debajo.
   return (
-    <TarjetaArena variante="grano" zocalo rotulo={t('habitos:vista.forjado')}>
+    <TarjetaArena variante="grano" rotulo={t('habitos:vista.forjado')}>
       <PressScale onPress={editar} accessibilityRole="button" accessibilityLabel={etiqueta}>
         <CuerpoHabito q={q} p={p} animar={animar} />
       </PressScale>
@@ -220,7 +221,6 @@ export function HabitosVista({
           eyebrow={t('habitos:vista.eyebrow')}
           titulo={t('comun:destino.habitos')}
           subtitulo={subtituloHabitos()}
-          meandro
           // Sólida salvo en el vacío: allí la acción principal (la única
           // inversión) es «Añadir el primero». Con todo adquirido y nada en
           // forja, esta es la acción clara.
@@ -304,7 +304,7 @@ export function HabitosVista({
         <Entrada indice={3}>
           <Section title={t('habitos:vista.enForja')} meta={enCurso.length > 0 ? `${enCurso.length}` : undefined}>
             {vacio ? (
-              <TarjetaArena variante="contorno" remaches>
+              <TarjetaArena variante="contorno">
                 <EmptyState
                   icon="hammer-outline"
                   title={t('habitos:vista.vacioTitulo')}
@@ -346,7 +346,7 @@ export function HabitosVista({
                 <Row
                   key={q.id}
                   first={i === 0}
-                  leading={<Laurel alto={18} lado="izq" color={ink.ink8} />}
+                  leading={<Ionicons name="checkmark-circle-outline" size={20} color={oro.hilo} />}
                   title={q.title}
                   muted
                   detail={t('habitos:vista.adquiridoDetalle')}
@@ -387,7 +387,7 @@ const styles = StyleSheet.create({
     paddingVertical: space.s3,
     borderTopWidth: stroke.hairline,
     borderBottomWidth: stroke.hairline,
-    borderColor: ink.ink3,
+    borderColor: vidrio.linea,
   },
   lista: { paddingHorizontal: space.s4, paddingVertical: 2 },
   nota: {
@@ -423,7 +423,7 @@ const styles = StyleSheet.create({
     fontFamily: tipo.cifra.family,
     fontSize: tipo.cifra.size,
     lineHeight: tipo.cifra.lineHeight,
-    color: ink.ink10,
+    color: oro.claro,
     fontVariant: ['tabular-nums'],
     textAlign: 'center',
   },
@@ -451,7 +451,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: stroke.hairline,
-    borderColor: ink.ink3,
+    borderColor: vidrio.linea,
+    borderRadius: radio.pastilla,
   },
   diaOn: { borderColor: ink.ink10 },
   diaTexto: { fontFamily: tipo.micro.family, fontSize: tipo.micro.size, color: ink.ink6 },
@@ -468,7 +469,7 @@ const styles = StyleSheet.create({
   },
   restantesListo: { color: ink.ink10 },
   consolidar: { marginTop: space.s4 },
-  adquirido: { fontFamily: tipo.cifra.family, fontSize: 16, color: ink.ink10 },
+  adquirido: { fontFamily: tipo.cifra.family, fontSize: 16, color: oro.claro },
   adquiridoUnidad: { fontFamily: tipo.micro.family, fontSize: tipo.micro.size, color: ink.ink6 },
   skFranja: { marginBottom: space.s6 },
   skEyebrow: { marginBottom: 12, marginTop: 16 },

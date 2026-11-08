@@ -3,6 +3,8 @@
 // La lámina P01 usa `color-mix(in srgb, acento N%, #000)` y transparencias del
 // acento para fondos, halos y bordes. Aquí, lo mismo con hex de 6 cifras.
 
+import { ink } from '@/design/tokens';
+
 function rgb(hex: string): [number, number, number] {
   const h = hex.replace('#', '');
   const n = parseInt(h.length === 3 ? h.split('').map((c) => c + c).join('') : h.slice(0, 6), 16);
@@ -16,7 +18,7 @@ export function conAlfa(hex: string, a: number): string {
 }
 
 /** `color-mix(in srgb, hex t, base)`: t = 0 es la base, 1 el color. */
-export function mezcla(hex: string, t: number, base = '#000000'): string {
+export function mezcla(hex: string, t: number, base: string = ink.ink0): string {
   const a = rgb(hex);
   const b = rgb(base);
   const c = a.map((v, i) => Math.round(b[i] + (v - b[i]) * t));

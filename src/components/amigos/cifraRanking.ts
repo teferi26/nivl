@@ -1,4 +1,4 @@
-// NIVL · Amigos: cómo se escribe una cifra del marcador en Cinzel (puro).
+// NIVL · Amigos: cómo se escribe una cifra del marcador en Playfair (puro).
 //
 // formatoValor (socialmath) da la frase entera para el lector («1.840 XP»,
 // «3 días»); aquí se parte en cifra grande y unidad pequeña, con el punto de

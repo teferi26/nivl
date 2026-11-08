@@ -21,7 +21,7 @@ import { Barra, Campo, CargaArena, ErrorSistema } from '@/components/arena';
 import { Avatar, Button, Card, Chip, ChipWrap, confirmar, Row, Section, Sheet } from '@/components/ui';
 import { SIN_DATO } from '@/components/ui/sinDato';
 import { vibrar } from '@/design/haptics';
-import { ink, type as tipo } from '@/design/tokens';
+import { ink, oro, radio, type as tipo, vidrio } from '@/design/tokens';
 import { t } from '@/i18n';
 import {
   aceptarLiga,
@@ -879,7 +879,7 @@ const styles = StyleSheet.create({
   lista: { paddingHorizontal: 16, paddingVertical: 2 },
   separado: { marginTop: 14 },
   respuestas: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  rechazar: { width: 32, height: 32, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: ink.ink3 },
+  rechazar: { width: 32, height: 32, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: vidrio.borde, borderRadius: radio.chip },
   pulsado: { opacity: 0.6 },
   mas: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center', marginRight: -10 },
   resultado: { fontFamily: fonts.semibold, fontSize: 14, color: ink.ink9 },
@@ -906,11 +906,11 @@ const styles = StyleSheet.create({
     color: ink.ink6,
     marginBottom: 10,
   },
-  ficha: { marginTop: 16, borderTopWidth: 1, borderTopColor: ink.ink3 },
-  fichaLinea: { flexDirection: 'row', gap: 12, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: ink.ink3 },
+  ficha: { marginTop: 16, borderTopWidth: 1, borderTopColor: vidrio.linea },
+  fichaLinea: { flexDirection: 'row', gap: 12, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: vidrio.linea },
   fichaRotulo: { width: 80, fontFamily: fonts.body, fontSize: 14, lineHeight: 20, color: ink.ink6 },
   fichaValor: { flex: 1, fontFamily: fonts.semibold, fontSize: 14, lineHeight: 20, color: ink.ink9 },
-  miFila: { backgroundColor: ink.ink2 },
+  miFila: { backgroundColor: oro.tenue, borderRadius: radio.chip },
   puesto: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   puestoTexto: { width: 28, fontFamily: fonts.number, fontSize: 13, color: ink.ink8 },
   indice: { fontFamily: fonts.number, fontSize: 15, color: ink.ink9 },

@@ -6,7 +6,7 @@
 // relleno ink10; sin avance solo, quietas), la marca del periodo, compartir y
 // cerrar de 44, las dos mitades que pasan atrás y adelante (mantener pulsado
 // pausa) y el texto de la diapositiva abajo (portada y cierre, centrados en
-// Cinzel).
+// Playfair).
 
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Image } from 'expo-image';
@@ -20,7 +20,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ink, space, stroke, type as tipo } from '@/design/tokens';
+import { ink, oro, radio, space, stroke, type as tipo, vidrio } from '@/design/tokens';
 import { t } from '@/i18n';
 import type { Recap, Slide } from '@/lib/photos';
 import { eyebrowSlide, nombrePeriodo } from './tipos';
@@ -177,7 +177,7 @@ export function PaseVista({
               numberOfLines={4}
               maxFontSizeMultiplier={1.35}
             >
-              {centrado ? slide.titulo.toUpperCase() : slide.titulo}
+              {slide.titulo}
             </Text>
             <Text style={[styles.texto, centrado && styles.centrado]} maxFontSizeMultiplier={1.6}>
               {slide.texto}
@@ -207,8 +207,8 @@ const styles = StyleSheet.create({
   veloFoto: { backgroundColor: 'rgba(0, 0, 0, 0.62)' },
   seguro: { flex: 1, paddingHorizontal: MARGEN },
   barras: { flexDirection: 'row', gap: space.s1, paddingTop: space.s2 },
-  barraPista: { flex: 1, height: stroke.rule, backgroundColor: ink.ink4 },
-  barraRelleno: { height: stroke.rule, width: '0%', backgroundColor: ink.ink10 },
+  barraPista: { flex: 1, height: stroke.rule, backgroundColor: vidrio.pista, borderRadius: radio.pastilla },
+  barraRelleno: { height: stroke.rule, width: '0%', backgroundColor: ink.ink10, borderRadius: radio.pastilla },
   lleno: { width: '100%' },
   cabecera: {
     flexDirection: 'row',
@@ -233,18 +233,19 @@ const styles = StyleSheet.create({
     width: BOTON,
     height: BOTON,
     borderWidth: stroke.hairline,
-    borderColor: ink.ink4,
+    borderColor: vidrio.borde,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: ink.ink0,
+    borderRadius: radio.chip,
   },
-  pulsado: { backgroundColor: ink.ink2 },
+  pulsado: { backgroundColor: vidrio.campo },
   zonas: { ...StyleSheet.absoluteFillObject, flexDirection: 'row' },
   zona: { flex: 1 },
   contenido: { flex: 1, justifyContent: 'flex-end', paddingBottom: space.s14 },
   contenidoCentrado: { justifyContent: 'center', alignItems: 'center', paddingBottom: 0 },
   centrado: { textAlign: 'center' },
-  regla: { width: 40, height: stroke.hairline, backgroundColor: ink.ink4, marginVertical: space.s5 },
+  regla: { width: 40, height: stroke.hairline, backgroundColor: oro.borde, marginVertical: space.s5 },
   eyebrow: {
     fontFamily: tipo.micro.family,
     fontSize: tipo.micro.size,
@@ -258,7 +259,7 @@ const styles = StyleSheet.create({
     fontFamily: tipo.display.family,
     fontSize: tipo.display.size,
     lineHeight: tipo.display.lineHeight,
-    color: ink.ink10,
+    color: oro.claro,
     marginBottom: space.s2,
   },
   titulo: {
@@ -269,12 +270,12 @@ const styles = StyleSheet.create({
     color: ink.ink10,
     marginBottom: space.s3,
   },
-  // Portada y cierre: Cinzel en mayúsculas, la piedra tallada, centrada.
+  // Portada y cierre: Playfair, centrada.
   tituloPortada: {
-    fontFamily: tipo.rank.family,
-    fontSize: 24,
-    lineHeight: 32,
-    letterSpacing: 2,
+    fontFamily: tipo.title.family,
+    fontSize: tipo.title.size,
+    lineHeight: tipo.title.lineHeight,
+    letterSpacing: tipo.title.tracking,
     textAlign: 'center',
   },
   // Lo duro se dice con el mismo blanco, más pequeño y sin adorno.

@@ -84,9 +84,10 @@ const bloquePlan = (id: string, start_min: number, end_min: number, title: strin
 });
 const ORDEN = [bloquePlan('b1', 9 * 60, 10 * 60, 'Propuesta', true), bloquePlan('b2', 15 * 60, 16 * 60, 'Demo del jueves')];
 
-const cabecera = () => <CabeceraMundo modo="work" nivel={nivelesDeModos(['work'], { iron: 0, focus: 0, work: 1250, founder: 0 })[0] ?? null} />;
+const cabecera = () => <CabeceraMundo modo="work" nivel={nivelesDeModos(['work'], { iron: 0, focus: 0, work: 1250, founder: 0 })[0] ?? null} conNivel={false} />;
 
 const acciones: WorkHoyVistaProps['acciones'] = {
+  onCoach: nada,
   onEmpezarAhora: nada,
   onSeguirBloque: nada,
   onMinutos: nada,
@@ -116,7 +117,7 @@ function entrada(cambios: Partial<EntradaVistaWork>): EntradaVistaWork {
 
 function Hoy({ e, resto }: { e: EntradaVistaWork; resto?: Partial<WorkHoyVistaProps> }) {
   const vista = vistaWorkHoy(e);
-  return <WorkHoyVista cabecera={cabecera()} estado="listo" error={null} cierre={null} vista={vista} ocupada={null} minutos={vista.duracionPropuesta} acciones={acciones} {...resto} />;
+  return <WorkHoyVista cabecera={cabecera()} semana={43} nivelTexto="NV 6" estado="listo" error={null} cierre={null} vista={vista} ocupada={null} minutos={vista.duracionPropuesta} acciones={acciones} {...resto} />;
 }
 
 const PRIMERA_VEZ = entrada({ misiones: [], eventos: [], entregas: [], sesiones: [] });

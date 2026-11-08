@@ -40,7 +40,9 @@
       "rutinas": "Programmes",
       "pesos": "Charges",
       "cardio": "Cardio"
-    }
+    },
+    "ahoraFecha": "Maintenant · {{fecha}}",
+    "listaRotulo": "Exercices du jour"
   },
   "pesos": {
     "rotulo": "Tes charges et records",
@@ -200,7 +202,8 @@
     "sinCarga": "Aujourd'hui, {{nombre}} : {{series}} × {{reps}}. Chaque répétition, complète.",
     "hecho": "Séance faite. Maintenant protéines et sommeil : c'est comme ça que ça rentre.",
     "descanso": "Jour de repos. Marche, mange bien et dors : demain on charge.",
-    "sinRutina": "Dis-moi tes jours et ton matériel, et je te monte le programme."
+    "sinRutina": "Dis-moi tes jours et ton matériel, et je te monte le programme.",
+    "tuCoach": "Ton coach"
   },
   "tecnica": {
     "titulo": "TECHNIQUE",

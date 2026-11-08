@@ -9,18 +9,18 @@
 //   4. Pausa, si la hay.
 //   5. Logros: vitrina en rejilla (grano los ganados, contorno los cerrados).
 //   6. Estadísticas con Barra y Registro con FranjaCifras.
-//   7. Meandro a sangre y los Ajustes (PerfilAjustes, sin rediseñar).
+//   7. Los Ajustes (PerfilAjustes, sin rediseñar).
 // Contadores: nivel y racha en el Hero, misiones y evidencia en Registro (4).
 
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { router } from 'expo-router';
 import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
-import { ASangre, Barra, Entrada, FranjaCifras, HeroRango, Meandro, TarjetaArena, type Cifra } from '@/components/arena';
+import { Barra, Entrada, FranjaCifras, HeroRango, TarjetaArena, type Cifra } from '@/components/arena';
 import { EliteBadge } from '@/components/EliteBadge';
 import { Button, Section, Skeleton, SkeletonRows, Tag } from '@/components/ui';
 import { SIN_DATO } from '@/components/ui/sinDato';
-import { ink, space, stroke, type as tipo } from '@/design/tokens';
+import { ink, oro, space, stroke, type as tipo, vidrio } from '@/design/tokens';
 import { columnasRejilla } from '@/design/responsive';
 import { useAnchoUtil, useSizeClass } from '@/design/useSizeClass';
 import { t } from '@/i18n';
@@ -238,10 +238,6 @@ export function PerfilVista({ datos, error, desde, nombre, subiendoFoto, accione
           <FranjaCifras cifras={cifrasRegistro(stats, profile.streak_days)} />
         </Section>
       </Entrada>
-
-      <ASangre style={styles.meandro}>
-        <Meandro alto={12} />
-      </ASangre>
 
       {/* En la galería no hay ajustes (null): sin ellos, tampoco su rótulo. */}
       {ajustes ? <Section title={t('perfil:vista.ajustes')}>{ajustes}</Section> : null}
@@ -483,7 +479,7 @@ const styles = StyleSheet.create({
   },
 
   // Arena
-  lista: { borderBottomWidth: stroke.hairline, borderBottomColor: ink.ink3 },
+  lista: { borderBottomWidth: stroke.hairline, borderBottomColor: vidrio.linea },
   fila: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -491,7 +487,7 @@ const styles = StyleSheet.create({
     minHeight: 52,
     paddingVertical: space.s3,
     borderTopWidth: stroke.hairline,
-    borderTopColor: ink.ink3,
+    borderTopColor: vidrio.linea,
   },
   pulsada: { opacity: 0.6 },
   filaCuerpo: { flex: 1, minWidth: 0 },
@@ -530,7 +526,7 @@ const styles = StyleSheet.create({
 
   // Estadísticas
   stat: { flexDirection: 'row', alignItems: 'center', gap: space.s3, paddingVertical: space.s3 },
-  statSep: { borderTopWidth: stroke.hairline, borderTopColor: ink.ink3 },
+  statSep: { borderTopWidth: stroke.hairline, borderTopColor: vidrio.linea },
   statNombre: { width: 96 },
   statAbbr: { fontFamily: tipo.number.family, fontSize: 14, lineHeight: 18, letterSpacing: 1, color: ink.ink10 },
   statLabel: {
@@ -547,7 +543,7 @@ const styles = StyleSheet.create({
     fontFamily: tipo.number.family,
     fontSize: 16,
     lineHeight: 20,
-    color: ink.ink9,
+    color: oro.claro,
   },
   nota: {
     marginTop: space.s2,
@@ -557,5 +553,4 @@ const styles = StyleSheet.create({
     color: ink.ink6,
   },
 
-  meandro: { marginTop: space.s2, marginBottom: space.s8 },
 });

@@ -93,6 +93,16 @@
       "work": "Helps you order priorities and work blocks.",
       "founder": "Helps you pick the one thing that moves your project."
     },
-    "coachAbrir": "Talk to the coach"
+    "coachAbrir": "Talk to the coach",
+    "tuCoach": "Your coach",
+    "ahora": "Now",
+    "completar": "Complete",
+    "rango": "Rank {{rango}}",
+    "rangoDia": "Rank {{rango}} · Day {{dia}}",
+    "cifras": {
+      "hoy": "today",
+      "racha": "day streak",
+      "xp": "mode XP"
+    }
   }
 }

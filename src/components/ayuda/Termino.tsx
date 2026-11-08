@@ -6,7 +6,7 @@
 import { useState, type ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, type StyleProp, type TextStyle } from 'react-native';
 import { usePiel } from '@/design/piel';
-import { ink, type as tipo } from '@/design/tokens';
+import { ink, type as tipo, vidrio } from '@/design/tokens';
 import { t } from '@/i18n';
 import type { TerminoId } from '@/lib/glosario';
 import { tituloTermino } from './GlosarioVista';
@@ -18,7 +18,7 @@ const ZONA_EXTRA = 12;
 export interface TerminoProps {
   termino: TerminoId;
   children: ReactNode;
-  /** El estilo del texto vecino, para que no desentone (una cifra en Cinzel, por ejemplo). */
+  /** El estilo del texto vecino, para que no desentone (una cifra en Playfair, por ejemplo). */
   textoStyle?: StyleProp<TextStyle>;
   /** Para el lector, si el texto solo no se entiende («12» → «12 días de racha»). */
   accessibilityLabel?: string;
@@ -60,7 +60,7 @@ export function Termino({ termino, children, textoStyle, accessibilityLabel }: T
 
 const styles = StyleSheet.create({
   zona: { minWidth: 20, minHeight: 20, alignItems: 'center', justifyContent: 'center' },
-  pulsado: { backgroundColor: ink.ink2 },
+  pulsado: { backgroundColor: vidrio.campo },
   texto: {
     fontFamily: tipo.bodySm.family,
     fontSize: tipo.bodySm.size,

@@ -40,7 +40,9 @@
       "rutinas": "Routine",
       "pesos": "Carichi",
       "cardio": "Cardio"
-    }
+    },
+    "ahoraFecha": "Adesso · {{fecha}}",
+    "listaRotulo": "Esercizi di oggi"
   },
   "pesos": {
     "rotulo": "I tuoi carichi e record",
@@ -200,7 +202,8 @@
     "sinCarga": "Oggi tocca {{nombre}}: {{series}} × {{reps}}. Ogni ripetizione, completa.",
     "hecho": "Sessione fatta. Ora proteine e dormire: così oggi resta.",
     "descanso": "Oggi riposi. Cammina, mangia bene e dormi: domani si carica.",
-    "sinRutina": "Dimmi i tuoi giorni e la tua attrezzatura, e ti preparo la routine."
+    "sinRutina": "Dimmi i tuoi giorni e la tua attrezzatura, e ti preparo la routine.",
+    "tuCoach": "Il tuo coach"
   },
   "tecnica": {
     "titulo": "TECNICA",

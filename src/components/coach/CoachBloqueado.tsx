@@ -1,6 +1,6 @@
 // NIVL · El Coach de una cuenta sin NIVL Pro (L-RADICAL §B.2.3, movido de la
 // ruta). El mismo contenido que el vacío, pero la galea va en una losa de
-// contorno con remaches: la puerta del coach, cerrada. No es trama: la trama
+// contorno: la puerta del coach, cerrada. No es trama: la trama
 // es alerta y una cuenta sin Pro no es un error. Debajo, lo que haría hoy
 // por este perfil y una muestra de su brief. La inversión de este estado es
 // el botón de respaldo «Ver NIVL Pro» (sin compositor no hay enviar).
@@ -10,7 +10,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { Entrada, Galea, TarjetaArena } from '@/components/arena';
 import { ProUpsellLine } from '@/components/ProOffer';
 import { Button } from '@/components/ui';
-import { ink, space, stroke, type } from '@/design/tokens';
+import { ink, space, stroke, type, vidrio } from '@/design/tokens';
 import { t } from '@/i18n';
 import type { DecisionOferta } from '@/lib/paywallmoment';
 import { proSampleBrief, proToday } from '@/lib/proplans';
@@ -37,7 +37,7 @@ export function CoachBloqueado({
   return (
     <View style={styles.bloqueado}>
       <Entrada indice={0}>
-        <TarjetaArena variante="contorno" remaches>
+        <TarjetaArena variante="contorno">
           <View style={styles.losa}>
             <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants" pointerEvents="none">
               <Galea kind="casco" size={GALEA} color={ink.ink10} />
@@ -95,10 +95,10 @@ const styles = StyleSheet.create({
   bloqueado: { gap: space.s4, paddingTop: space.s2, paddingBottom: space.s6 },
   losa: { alignItems: 'center', paddingVertical: space.s3 },
   titulo: {
-    fontFamily: type.inscripcion.family,
-    fontSize: type.inscripcion.size,
-    lineHeight: type.inscripcion.lineHeight,
-    letterSpacing: type.inscripcion.tracking,
+    fontFamily: type.title.family,
+    fontSize: type.title.size,
+    lineHeight: type.title.lineHeight,
+    letterSpacing: type.title.tracking,
     color: ink.ink10,
     textAlign: 'center',
     marginTop: space.s4,
@@ -112,7 +112,7 @@ const styles = StyleSheet.create({
     marginTop: space.s3,
   },
   fila: { flexDirection: 'row', gap: space.s3 - 2, paddingVertical: space.s2 },
-  filaSep: { borderTopWidth: stroke.hairline, borderTopColor: ink.ink3 },
+  filaSep: { borderTopWidth: stroke.hairline, borderTopColor: vidrio.linea },
   filaIcono: { marginTop: 3 },
   filaTexto: { ...lectura, flex: 1, minWidth: 0, color: ink.ink9 },
   muestraLinea: { ...lectura, color: ink.ink8 },

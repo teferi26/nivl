@@ -6,7 +6,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { AgendaVista, type AgendaVistaProps } from '@/components/agenda/AgendaVista';
 import { Button } from '@/components/ui';
-import { ink, space, stroke, type as tipo } from '@/design/tokens';
+import { ink, space, stroke, type as tipo, vidrio } from '@/design/tokens';
 import { t } from '@/i18n';
 import type { EstadoCalendario } from '@/work/calendario';
 
@@ -77,7 +77,7 @@ const styles = StyleSheet.create({
   raiz: { flex: 1 },
   barra: {
     borderTopWidth: stroke.hairline,
-    borderTopColor: ink.ink3,
+    borderTopColor: vidrio.linea,
     backgroundColor: ink.ink0,
     paddingHorizontal: space.s5,
     paddingVertical: space.s2,

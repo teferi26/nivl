@@ -14,7 +14,7 @@ import { useState } from 'react';
 import { StyleSheet, Text, View, type LayoutChangeEvent } from 'react-native';
 import type { Cifra } from '@/components/arena';
 import { TrendLine } from '@/components/TrendLine';
-import { ink, space, stroke, type as tipo } from '@/design/tokens';
+import { ink, radio, space, stroke, type as tipo, vidrio } from '@/design/tokens';
 import { t } from '@/i18n';
 import { MIN_DATOS_MEDIA, formatoDecimal, type ResumenTendencia } from '@/lib/journalmath';
 
@@ -143,7 +143,7 @@ const styles = StyleSheet.create({
     right: 0,
     top: ALTO_CURVA - PAD_CURVA,
     height: stroke.hairline,
-    backgroundColor: ink.ink4,
+    backgroundColor: vidrio.linea,
   },
   rotulo: {
     fontFamily: tipo.micro.family,
@@ -158,7 +158,7 @@ const styles = StyleSheet.create({
     marginTop: space.s5,
     paddingTop: space.s4,
     borderTopWidth: stroke.hairline,
-    borderTopColor: ink.ink3,
+    borderTopColor: vidrio.linea,
   },
   emocionesFila: { flexDirection: 'row', flexWrap: 'wrap', gap: space.s2 },
   emocion: {
@@ -166,9 +166,10 @@ const styles = StyleSheet.create({
     alignItems: 'baseline',
     gap: space.s2,
     borderWidth: stroke.hairline,
-    borderColor: ink.ink4,
+    borderColor: vidrio.borde,
     paddingHorizontal: space.s2,
     paddingVertical: 2,
+    borderRadius: radio.pastilla,
   },
   emocionTexto: { fontFamily: tipo.micro.family, fontSize: 12, lineHeight: 16, color: ink.ink8 },
   emocionCuenta: { fontFamily: tipo.number.family, fontSize: 12, color: ink.ink10 },

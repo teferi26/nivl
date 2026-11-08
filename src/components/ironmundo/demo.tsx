@@ -142,6 +142,7 @@ function inicio(cambios: Partial<InicioIronVistaProps> = {}): InicioIronVistaPro
   const e = cambios.entreno ?? entreno();
   return {
     cabecera,
+    nivel: NIVEL,
     fecha: fechaIron(HOY),
     cierre: null,
     entreno: e,

@@ -4,7 +4,7 @@
 
 import { StyleSheet, Text, View, type StyleProp, type TextStyle, type ViewStyle } from 'react-native';
 import { Trama } from '@/components/ui';
-import { ink } from '@/design/tokens';
+import { ink, radio } from '@/design/tokens';
 import { fonts } from '@/lib/theme';
 
 export function Aviso({ texto, error, style }: { texto: string; error?: boolean; style?: StyleProp<ViewStyle> }) {
@@ -27,7 +27,7 @@ export function Aviso({ texto, error, style }: { texto: string; error?: boolean;
 
 const styles = StyleSheet.create({
   linea: { fontFamily: fonts.body, fontSize: 14, lineHeight: 20, color: ink.ink8, marginTop: 10 },
-  marco: { marginTop: 10, padding: 3, backgroundColor: ink.ink0, overflow: 'hidden' },
-  placa: { backgroundColor: ink.ink1, paddingHorizontal: 12, paddingVertical: 10 },
+  marco: { marginTop: 10, padding: 3, backgroundColor: ink.ink0, overflow: 'hidden', borderRadius: radio.control },
+  placa: { backgroundColor: ink.ink1, paddingHorizontal: 12, paddingVertical: 10, borderRadius: radio.control - 3 },
   textoError: { fontFamily: fonts.body, fontSize: 14, lineHeight: 20, color: ink.ink9 },
 });

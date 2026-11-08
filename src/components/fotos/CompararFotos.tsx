@@ -3,7 +3,7 @@
 // Pose y plazo (30 · 90 · 180 días) con chips; el par lo elige
 // `parAntesDespues` del Chat 5 (la foto más reciente de la pose y la más
 // cercana al plazo, nunca del mismo día). Dos fotos lado a lado y los días
-// entre ellas en Cinzel.
+// entre ellas en Playfair.
 //
 // Privacidad: el peso va apagado y no se recuerda (estado local que muere con
 // la pantalla). «Compartir» solo existe con `puedeCompartir` (18+, salud y no
@@ -14,7 +14,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Button, Chip, ChipWrap } from '@/components/ui';
 import { Interruptor } from '@/components/ui/Interruptor';
-import { ink, space, stroke, type as tipo } from '@/design/tokens';
+import { ink, oro, space, stroke, type as tipo, vidrio } from '@/design/tokens';
 import { t } from '@/i18n';
 import { parAntesDespues, POSES, type FotoProgreso, type ParAntesDespues, type PesoDia, type Pose } from '@/lib/progressPhotos';
 import { borrarTemporales, TEMP_ANTES, TEMP_DESPUES } from './datos';
@@ -198,9 +198,9 @@ const styles = StyleSheet.create({
     paddingVertical: space.s2,
     borderTopWidth: stroke.hairline,
     borderBottomWidth: stroke.hairline,
-    borderColor: ink.ink3,
+    borderColor: vidrio.linea,
   },
-  cifra: { fontFamily: tipo.cifra.family, fontSize: tipo.cifra.size, lineHeight: tipo.cifra.lineHeight, color: ink.ink10 },
+  cifra: { fontFamily: tipo.cifra.family, fontSize: tipo.cifra.size, lineHeight: tipo.cifra.lineHeight, color: oro.claro },
   diasTexto: {
     flex: 1,
     fontFamily: tipo.micro.family,

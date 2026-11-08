@@ -2,7 +2,7 @@
 // por props desde useContrato (o desde la galería con datos de mentira).
 //
 // De arriba abajo: el encabezado grabado («Lo que tú firmas» / «CONTRATO»),
-// las normas como la tablilla del onboarding (losa remachada sobre su zócalo,
+// las normas como la tablilla del onboarding (tarjeta,
 // greca arriba y abajo, «CONTRATO» grabado) con cada norma en una fila entre
 // hairlines (numeral romano, la norma, la consecuencia y lo que cuesta), los
 // puntos bonus en una FranjaCifras, la carta sellada y la tabla de cómo se
@@ -26,12 +26,11 @@ import {
   Entrada,
   ErrorSistema,
   FranjaCifras,
-  Meandro,
   TarjetaArena,
   romano,
 } from '@/components/arena';
 import { Button, Screen, Section } from '@/components/ui';
-import { ink, space, stroke, type as tipo } from '@/design/tokens';
+import { ink, space, stroke, type as tipo, vidrio } from '@/design/tokens';
 import { t } from '@/i18n';
 import { decimal } from '@/i18n/formato';
 import { esCompromiso } from '@/lib/compromiso';
@@ -356,8 +355,7 @@ export function ContratoVista({
 
       <Entrada indice={1}>
         <View style={styles.bloque}>
-          <TarjetaArena variante="piedra" remaches zocalo>
-            <Meandro alto={8} />
+          <TarjetaArena variante="piedra">
             <Text style={styles.rotulo} accessibilityRole="header" maxFontSizeMultiplier={1.35}>
               {t('contrato:vista.rotulo')}
             </Text>
@@ -391,7 +389,6 @@ export function ContratoVista({
                 />
               </View>
             )}
-            <Meandro alto={8} style={styles.meandroPie} />
           </TarjetaArena>
           {hayReglas ? (
             <Text style={styles.nota} maxFontSizeMultiplier={1.35}>
@@ -455,19 +452,17 @@ export function ContratoVista({
 const styles = StyleSheet.create({
   flex: { flex: 1 },
   bloque: { marginBottom: space.s6 },
-  hairline: { borderTopWidth: stroke.hairline, borderTopColor: ink.ink3 },
+  hairline: { borderTopWidth: stroke.hairline, borderTopColor: vidrio.linea },
   rotulo: {
-    fontFamily: tipo.inscripcion.family,
-    fontSize: tipo.inscripcion.size,
-    lineHeight: tipo.inscripcion.lineHeight,
-    letterSpacing: tipo.inscripcion.tracking,
-    marginRight: -tipo.inscripcion.tracking,
+    fontFamily: tipo.title.family,
+    fontSize: tipo.title.size,
+    lineHeight: tipo.title.lineHeight,
+    letterSpacing: tipo.title.tracking,
     color: ink.ink9,
     textAlign: 'center',
     marginTop: space.s4,
     marginBottom: space.s3,
   },
-  meandroPie: { marginTop: space.s4 },
   normaFila: { flexDirection: 'row', alignItems: 'stretch' },
   norma: {
     flex: 1,
@@ -478,7 +473,7 @@ const styles = StyleSheet.create({
     minHeight: 56,
     paddingVertical: space.s3,
   },
-  normaPulsada: { backgroundColor: ink.ink2 },
+  normaPulsada: { backgroundColor: vidrio.campo },
   numeral: {
     width: 40,
     fontFamily: tipo.number.family,

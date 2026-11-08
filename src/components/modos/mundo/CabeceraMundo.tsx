@@ -1,25 +1,25 @@
 // NIVL · Modos: la cabecera común de cada mundo (IRON, FOCUS, WORK, FOUNDER),
 // el «HUD» de la lámina 2 de la P01. Pura.
 //
-//   [emblema] IRON                 NV 14
-//             Gimnasio y dieta     ▬▬▬▬▬▬▬
+//   [emblema] NIVL                  IRON
+//                                  NV 14
+//                                  ▬▬▬▬▬▬▬
 //                                  2.160 / 3.000 XP
 //
 // · `emblema`: la ranura del emblema del modo (EmblemaMundo: la placa del
 //   modo, que abre la rueda). Sin él, la placa quieta con el glifo.
 // · El nivel es el del modo (`mode_xp`, misma curva que el global): suma
 //   también al nivel global, que vive en NIVL.
-// Tipos y medidas de la lámina (pantalla de 342 llevada a 390): nombre en
-// Cinzel Black blanco, subtítulo gris, «NV» y barra en el acento con su halo.
+// · `conNivel`: WORK y FOUNDER lo apagan en Hoy, donde el nivel va en el héroe.
+// Ónix: «NIVL» en Playfair, el modo en rótulo de oro y la barra con el hilo.
 
 import Ionicons from '@expo/vector-icons/Ionicons';
 import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { formatoMiles, ratioSeguro } from '@/components/arena';
 import { Skeleton } from '@/components/ui';
-import { conAlfa, halo, mezcla } from '@/components/modos/rueda/color';
 import { GlifoModo } from '@/components/modos/rueda/GlifoModo';
-import { acentoRueda, ink, space } from '@/design/tokens';
+import { acentoRueda, ink, oro, radio, space, type as tipo, vidrio } from '@/design/tokens';
 import { t } from '@/i18n';
 import type { NivelModo } from '@/modos/niveles';
 import { NOMBRE_MODO, type ModoEtiqueta } from '@/modos/tipos';
@@ -31,21 +31,18 @@ export interface CabeceraMundoProps {
   nivel: NivelModo | null;
   /** La ranura del emblema del modo (EmblemaMundo). */
   emblema?: ReactNode;
+  /** Nivel y barra bajo el nombre del modo. Por defecto, sí. */
+  conNivel?: boolean;
 }
 
 /** Lado de la placa del emblema (lámina 2: su centro casa con el del bloque de texto). */
 export const LADO_RANURA = 44;
 
-const GRIS = '#8B8B92';
-const GRIS_XP = '#6D6D74';
-const PISTA = '#1B1B20';
-
-export function CabeceraMundo({ modo, nivel, emblema }: CabeceraMundoProps) {
+export function CabeceraMundo({ modo, nivel, emblema, conNivel = true }: CabeceraMundoProps) {
   const acento = acentoRueda[modo];
   const nombre = NOMBRE_MODO[modo];
   const maximo = nivel !== null && nivel.xpSiguiente <= 0;
   const ratio = nivel === null ? 0 : maximo ? 1 : ratioSeguro(nivel.xpEnNivel, nivel.xpSiguiente);
-  const sub = t(`mundos:subtitulo.${modo}`);
   // Prestada a General (Prestado.tsx): en la ranura del emblema, volver a NIVL.
   const prestado = usePrestado();
 
@@ -59,13 +56,13 @@ export function CabeceraMundo({ modo, nivel, emblema }: CabeceraMundoProps) {
               hitSlop={6}
               accessibilityRole="button"
               accessibilityLabel={t('general:prestado.volverA11y')}
-              style={({ pressed }) => [styles.placa, { borderColor: acento, backgroundColor: mezcla(acento, 0.14) }, pressed && styles.pulsado]}
+              style={({ pressed }) => [styles.placa, pressed && styles.pulsado]}
             >
               <Ionicons name="chevron-back" size={22} color={acento} />
             </Pressable>
           ) : emblema ?? (
             <View
-              style={[styles.placa, { borderColor: acento, backgroundColor: mezcla(acento, 0.14), boxShadow: halo(acento, 16, 0.45) }]}
+              style={styles.placa}
               accessibilityElementsHidden
               importantForAccessibility="no-hide-descendants"
             >
@@ -73,17 +70,16 @@ export function CabeceraMundo({ modo, nivel, emblema }: CabeceraMundoProps) {
             </View>
           )}
         </View>
-        <View style={styles.textos}>
-          <Text style={styles.nombre} accessibilityRole="header" maxFontSizeMultiplier={1.35} numberOfLines={1}>
-            {nombre}
-          </Text>
-          <Text style={styles.subtitulo} maxFontSizeMultiplier={1.35} numberOfLines={1}>
-            {sub}
-          </Text>
-        </View>
+        <Text style={styles.marca} maxFontSizeMultiplier={1.35} numberOfLines={1}>
+          {t('mundos:cabecera.baseCorto')}
+        </Text>
       </View>
 
-      {nivel === null ? (
+      <View style={styles.derecha}>
+        <Text style={[styles.nombre, { color: acento }]} accessibilityRole="header" maxFontSizeMultiplier={1.35} numberOfLines={1}>
+          {nombre}
+        </Text>
+      {!conNivel ? null : nivel === null ? (
         <View style={styles.nivel} accessibilityRole="progressbar" accessibilityLabel={t('mundos:cabecera.cargandoA11y', { modo: nombre })}>
           <Skeleton height={34} />
         </View>
@@ -93,16 +89,11 @@ export function CabeceraMundo({ modo, nivel, emblema }: CabeceraMundoProps) {
           accessible
           accessibilityLabel={t('mundos:cabecera.nivelA11y', { modo: nombre, nivel: nivel.nivel, xp: formatoMiles(nivel.xp) })}
         >
-          <Text style={[styles.nv, { color: acento }]} maxFontSizeMultiplier={1.35}>
+          <Text style={styles.nv} maxFontSizeMultiplier={1.35}>
             {t('mundos:cabecera.nivel', { nivel: nivel.nivel })}
           </Text>
           <View style={styles.pista}>
-            <View
-              style={[
-                styles.relleno,
-                { width: `${Math.round(ratio * 100)}%`, backgroundColor: acento, boxShadow: `0px 0px 6px ${conAlfa(acento, 0.9)}` },
-              ]}
-            />
+            <View style={[styles.relleno, { width: `${Math.round(ratio * 100)}%` }]} />
           </View>
           <Text style={styles.xp} maxFontSizeMultiplier={1.35} numberOfLines={1}>
             {maximo
@@ -111,6 +102,7 @@ export function CabeceraMundo({ modo, nivel, emblema }: CabeceraMundoProps) {
           </Text>
         </View>
       )}
+      </View>
     </View>
   );
 }
@@ -124,16 +116,25 @@ const styles = StyleSheet.create({
     paddingTop: space.s1,
     paddingBottom: space.s3,
   },
-  izquierda: { flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1, minWidth: 0 },
+  izquierda: { flexDirection: 'row', alignItems: 'center', gap: space.s3, flex: 1, minWidth: 0 },
   ranura: { width: LADO_RANURA, height: LADO_RANURA, alignItems: 'center', justifyContent: 'center' },
-  placa: { width: LADO_RANURA, height: LADO_RANURA, borderRadius: 12, borderWidth: 1.5, alignItems: 'center', justifyContent: 'center' },
-  textos: { flex: 1, minWidth: 0 },
+  placa: {
+    width: LADO_RANURA,
+    height: LADO_RANURA,
+    borderRadius: radio.chip,
+    borderWidth: 1,
+    borderColor: oro.borde,
+    backgroundColor: oro.fondo,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   pulsado: { opacity: 0.7 },
-  nombre: { fontFamily: 'PlayfairDisplay_700Bold', fontSize: 24, lineHeight: 27, letterSpacing: 1.9, color: ink.ink10 },
-  subtitulo: { fontFamily: 'Outfit_500Medium', fontSize: 12, lineHeight: 15, letterSpacing: 0.7, color: GRIS, marginTop: 2 },
-  nivel: { width: 96, alignItems: 'flex-end' },
-  nv: { fontFamily: 'Outfit_800ExtraBold', fontSize: 13, lineHeight: 16, letterSpacing: 1.6 },
-  pista: { width: 89, height: 5, borderRadius: 3, backgroundColor: PISTA, marginTop: 5, overflow: 'visible' },
-  relleno: { height: 5, borderRadius: 3 },
-  xp: { fontFamily: 'Outfit_500Medium', fontSize: 11, lineHeight: 14, color: GRIS_XP, marginTop: 4 },
+  marca: { flexShrink: 1, fontFamily: tipo.number.family, fontSize: tipo.number.size, lineHeight: tipo.number.lineHeight, letterSpacing: 3, color: ink.ink9 },
+  derecha: { alignItems: 'flex-end', flexShrink: 0, maxWidth: '45%' },
+  nombre: { fontFamily: tipo.label.family, fontSize: tipo.label.size, lineHeight: tipo.label.lineHeight, letterSpacing: tipo.label.tracking },
+  nivel: { width: 96, alignItems: 'flex-end', marginTop: space.s1 },
+  nv: { fontFamily: tipo.micro.family, fontSize: tipo.micro.size, lineHeight: tipo.micro.lineHeight, letterSpacing: tipo.micro.tracking, color: ink.ink8 },
+  pista: { width: 89, height: 5, borderRadius: radio.pastilla, backgroundColor: vidrio.pista, marginTop: space.s1, overflow: 'hidden' },
+  relleno: { height: 5, borderRadius: radio.pastilla, backgroundColor: oro.hilo },
+  xp: { fontFamily: tipo.micro.family, fontSize: tipo.micro.size, lineHeight: tipo.micro.lineHeight, color: ink.ink6, marginTop: space.s1 },
 });

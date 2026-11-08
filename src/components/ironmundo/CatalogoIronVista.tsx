@@ -24,7 +24,7 @@ import { FiguraTecnica } from './FiguraTecnica';
 import { GlifoIron } from './Glifos';
 import { MapaMini } from './MapaMini';
 import { BotonIron, ChipIron, CuadroIron, estilosIron, FilaIron, PantallaIron, RotuloIron, TarjetaIron } from './piezas';
-import { A, C, F, fs, mezcla, px } from './tema';
+import { A, C, F, fs, O, px, R } from './tema';
 
 export interface CatalogoIronVistaProps {
   /** El día de la rutina al que se añade («Pierna A»); null: solo se mira. */
@@ -214,25 +214,21 @@ const styles = StyleSheet.create({
   flex: { flex: 1, minWidth: 0 },
   cabecera: { flexDirection: 'row', alignItems: 'center', gap: px(9), paddingTop: px(4), marginBottom: px(2) },
   atras: { paddingVertical: px(4) },
-  titulo: { fontFamily: F.cinzel, fontSize: fs(16), letterSpacing: fs(16) * 0.08, color: C.blanco },
+  titulo: { fontFamily: F.serif, fontSize: fs(16), color: C.blanco },
   subtitulo: { fontFamily: F.m, fontSize: fs(9.5), letterSpacing: fs(9.5) * 0.06, color: C.mudo, marginTop: px(2) },
   emblema: {
     width: px(30),
     height: px(30),
-    borderRadius: px(10),
+    borderRadius: R.chip,
     borderWidth: 1.5,
     borderColor: A,
-    backgroundColor: mezcla(0.14, C.fondo),
+    backgroundColor: O.tenue,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: A,
-    shadowOpacity: 0.45,
-    shadowRadius: 7,
-    shadowOffset: { width: 0, height: 0 },
   },
   buscar: {
     height: px(34),
-    borderRadius: px(10),
+    borderRadius: R.chip,
     borderWidth: 1,
     borderColor: C.borde,
     flexDirection: 'row',
@@ -245,7 +241,7 @@ const styles = StyleSheet.create({
   lupa: {
     width: px(24),
     height: px(24),
-    borderRadius: px(8),
+    borderRadius: R.chip,
     borderWidth: 1,
     borderColor: C.suelo,
     alignItems: 'center',
@@ -257,14 +253,14 @@ const styles = StyleSheet.create({
   nombre: { fontSize: fs(18) },
   pasos: { marginTop: px(8), gap: px(5) },
   paso: { flexDirection: 'row', alignItems: 'center', gap: px(7) },
-  pasoNumero: { width: px(16), height: px(16), borderRadius: px(5), backgroundColor: C.hueco, alignItems: 'center', justifyContent: 'center' },
+  pasoNumero: { width: px(16), height: px(16), borderRadius: R.chip, backgroundColor: C.hueco, alignItems: 'center', justifyContent: 'center' },
   pasoNumeroTexto: { fontFamily: F.xb, fontSize: fs(8.5), color: A },
   pasoTexto: { flex: 1, fontFamily: F.m, fontSize: fs(10), lineHeight: fs(10) * 1.35, color: C.texto },
   enlace: { alignSelf: 'center', marginTop: px(8) },
   enlaceTexto: { fontFamily: F.b, fontSize: fs(9), letterSpacing: fs(9) * 0.12, color: A, textTransform: 'uppercase' },
   fila: { paddingVertical: px(7), paddingHorizontal: px(2) },
   // El elegido, con la técnica abierta a la derecha: filete del acento a la izquierda.
-  filaElegida: { borderLeftWidth: 2, borderLeftColor: A, paddingLeft: px(8), backgroundColor: mezcla(0.08, C.fondo) },
+  filaElegida: { borderLeftWidth: 2, borderLeftColor: A, paddingLeft: px(8), backgroundColor: O.fondo },
   oculto: { display: 'none' },
   filaIzq: { flexDirection: 'row', alignItems: 'center', gap: px(9), flex: 1, minWidth: 0 },
   mas: { fontFamily: F.xb, fontSize: fs(15), color: A },

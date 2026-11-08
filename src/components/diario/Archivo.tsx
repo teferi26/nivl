@@ -11,7 +11,7 @@ import { useMemo, useState } from 'react';
 import { StyleSheet, View, useWindowDimensions } from 'react-native';
 import { CargaArena, Entrada, ErrorSistema, FranjaCifras, TarjetaArena } from '@/components/arena';
 import { Button, EmptyState, Section } from '@/components/ui';
-import { ink, space, stroke } from '@/design/tokens';
+import { space, stroke, vidrio } from '@/design/tokens';
 import { useSizeClass } from '@/design/useSizeClass';
 import { t } from '@/i18n';
 import { flashbacks, resumenTendencia, serieDe } from '@/lib/journalmath';
@@ -71,7 +71,7 @@ export function Archivo({ loaded, hoy, entries, recuerdos, photoCounts, loadPhot
   if (entries.length === 0) {
     return (
       <Entrada indice={1}>
-        <TarjetaArena variante="contorno" remaches padded={false}>
+        <TarjetaArena variante="contorno" padded={false}>
           <EmptyState
             icon="book-outline"
             title={t('diario:archivo.vacioTitulo')}
@@ -156,7 +156,7 @@ const styles = StyleSheet.create({
     paddingVertical: space.s3,
     borderTopWidth: stroke.hairline,
     borderBottomWidth: stroke.hairline,
-    borderColor: ink.ink3,
+    borderColor: vidrio.linea,
   },
   escribir: { marginBottom: space.s6 },
   columnas: { flexDirection: 'row', alignItems: 'flex-start', gap: space.s8 },

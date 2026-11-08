@@ -3,11 +3,11 @@
 // no carga nada.
 //
 // De arriba abajo: el encabezado grabado («Cuerpo» / «DIETA», con la acción
-// «Lista de la compra» en contorno y el meandro), los chips de los siete días
+// «Lista de la compra» en contorno), los chips de los siete días
 // (radio, vibran al elegir), la franja de cifras del día (kcal y proteína que
 // planificó el coach y las comidas «n/5»), las cinco comidas del día en filas
 // sobre hairlines (letra grabada, la comida y sus ingredientes, y las macros
-// en Cinzel) y la lista de la compra, con el descargo de salud al pie.
+// en Playfair) y la lista de la compra, con el descargo de salud al pie.
 //
 // INVERSIÓN única: «Generar lista de la compra», solo si hay algo que
 // generar (alguna comida planificada). Sin plan, el botón es secundario y la
@@ -24,7 +24,7 @@ import {
   formatoMiles,
 } from '@/components/arena';
 import { Button, Chip, ChipWrap, Row, Screen, Section, SIN_DATO } from '@/components/ui';
-import { ink, space, stroke, type as tipo } from '@/design/tokens';
+import { ink, radio, space, stroke, type as tipo, vidrio } from '@/design/tokens';
 import { t } from '@/i18n';
 import { capital, nombreDia as diaDeSemana } from '@/i18n/formato';
 import { MEAL_SLOTS } from '@/lib/body';
@@ -93,7 +93,6 @@ export function DietaVista({ cargado, errorCarga, slots, dia, hoy, generando, ac
           subtitulo={subtitulo}
           onVolver={acciones.onVolver}
           accion={{ icono: 'cart-outline', etiqueta: t('dieta:vista.irCompra'), onPress: acciones.onCompra }}
-          meandro
         />
       </Entrada>
 
@@ -212,7 +211,7 @@ export function DietaVista({ cargado, errorCarga, slots, dia, hoy, generando, ac
   );
 }
 
-/** Las macros de una comida en Cinzel: kcal arriba, proteína debajo. */
+/** Las macros de una comida en Playfair: kcal arriba, proteína debajo. */
 function Macros({ comida }: { comida: MealSlot }) {
   if (!comida.kcal && !comida.protein_g) return null;
   return (
@@ -257,18 +256,19 @@ const styles = StyleSheet.create({
     paddingVertical: space.s3,
     borderTopWidth: stroke.hairline,
     borderBottomWidth: stroke.hairline,
-    borderColor: ink.ink3,
+    borderColor: vidrio.linea,
     marginBottom: space.s6,
   },
   notaFranja: { marginTop: -space.s4, marginBottom: space.s6 },
-  lista: { borderTopWidth: stroke.hairline, borderBottomWidth: stroke.hairline, borderColor: ink.ink3 },
+  lista: { borderTopWidth: stroke.hairline, borderBottomWidth: stroke.hairline, borderColor: vidrio.linea },
   letra: {
     width: LETRA,
     height: LETRA,
     borderWidth: stroke.hairline,
-    borderColor: ink.ink4,
+    borderColor: vidrio.borde,
     alignItems: 'center',
     justifyContent: 'center',
+    borderRadius: radio.pastilla,
   },
   letraLlena: { borderColor: ink.ink10 },
   letraVacia: { color: ink.ink6 },

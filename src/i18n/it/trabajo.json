@@ -107,5 +107,25 @@
       "pendiente": "Non ancora salvato.",
       "no_guardado": "Questi minuti non si sono potuti salvare. La tua lista resta com'era."
     }
+  },
+  "heroe": {
+    "semana": "Settimana {{n}}",
+    "titulo": {
+      "0": "Pianifica la giornata",
+      "1": "Una cosa oggi",
+      "2": "Due cose oggi",
+      "3": "Tre cose oggi"
+    },
+    "hechas": "{{hechas}} su {{total}} fatte",
+    "sinPlan": "Ancora nessuna priorità",
+    "horas": "{{horas}} h",
+    "foco": "di focus",
+    "reuniones": "in riunione",
+    "carga": "carico",
+    "nivel": {
+      "ligera": "Leggero",
+      "normal": "Normale",
+      "alta": "Alto"
+    }
   }
 }

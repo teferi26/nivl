@@ -460,7 +460,7 @@ const styles = StyleSheet.create({
   flex: { flex: 1, minWidth: 0 },
   cabecera: { flexDirection: 'row', alignItems: 'center', gap: px(9), paddingTop: px(4), marginBottom: px(2) },
   atras: { paddingVertical: px(4) },
-  titulo: { fontFamily: F.cinzel, fontSize: fs(16), letterSpacing: fs(16) * 0.08, color: C.blanco },
+  titulo: { fontFamily: F.serif, fontSize: fs(16), color: C.blanco },
   subtitulo: { fontFamily: F.m, fontSize: fs(9.5), letterSpacing: fs(9.5) * 0.06, color: C.mudo, marginTop: px(2) },
   huecos: { gap: M.hueco },
   arriba: { marginTop: px(6) },

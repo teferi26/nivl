@@ -8,11 +8,11 @@
 
 import type { ReactNode } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { ink, space, stroke, type as tipo } from '@/design/tokens';
+import { ink, oro, space, stroke, type as tipo, vidrio } from '@/design/tokens';
 import { t } from '@/i18n';
 
 interface Props {
-  /** "I", "II"... Cinzel no tiene minúsculas: los romanos le sientan bien. */
+  /** "I", "II"... Playfair no tiene minúsculas: los romanos le sientan bien. */
   numeral: string;
   title: string;
   /** Una línea que dice qué se espera ahí. */
@@ -61,7 +61,7 @@ export function Pregunta({ numeral, title, hint, done, primera, children }: Prop
 
 const styles = StyleSheet.create({
   wrap: { paddingVertical: space.s6 },
-  conRegla: { borderTopWidth: stroke.hairline, borderTopColor: ink.ink3 },
+  conRegla: { borderTopWidth: stroke.hairline, borderTopColor: vidrio.linea },
   cabeza: { flexDirection: 'row', alignItems: 'flex-start' },
   col: { width: COL_NUMERAL, paddingTop: 2 },
   numeral: {
@@ -76,7 +76,7 @@ const styles = StyleSheet.create({
   encendido: { color: ink.ink10 },
   // Sin responder no hay regla, pero el hueco se guarda: el título no salta.
   regla: { width: 20, height: stroke.rule, marginTop: space.s1, backgroundColor: 'transparent' },
-  reglaOn: { backgroundColor: ink.ink10 },
+  reglaOn: { backgroundColor: oro.hilo },
   textos: { flex: 1, minWidth: 0 },
   title: {
     fontFamily: tipo.headline.family,

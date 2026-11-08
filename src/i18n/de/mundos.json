@@ -93,6 +93,16 @@
       "work": "Hilft dir, Prioritäten und Arbeitsblöcke zu ordnen.",
       "founder": "Hilft dir, die eine Sache zu wählen, die dein Projekt voranbringt."
     },
-    "coachAbrir": "Mit dem Coach sprechen"
+    "coachAbrir": "Mit dem Coach sprechen",
+    "tuCoach": "Dein Coach",
+    "ahora": "Jetzt",
+    "completar": "Erledigen",
+    "rango": "Rang {{rango}}",
+    "rangoDia": "Rang {{rango}} · Tag {{dia}}",
+    "cifras": {
+      "hoy": "heute",
+      "racha": "Tage in Folge",
+      "xp": "Modus-XP"
+    }
   }
 }

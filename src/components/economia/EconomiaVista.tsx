@@ -6,7 +6,7 @@
 // (saldo, entrado y gastado; ahorro, proyección y ritmo), el plan del mes y
 // los meses de aire con su Barra estática, lo que está sin clasificar, en qué
 // se va, los cargos recurrentes y los meses cerrados. Las filas van sobre
-// hairlines, sin tarjeta, con el importe en Cinzel y la unidad en Outfit.
+// hairlines, sin tarjeta, con el importe en Playfair y la unidad en Outfit.
 //
 // Convención de signo del extracto: negativo es gasto, positivo es ingreso
 // (el signo es la información). Los traspasos entre cuentas propias no
@@ -29,7 +29,7 @@ import {
   type Cifra,
 } from '@/components/arena';
 import { Button, EmptyState, Row, Screen, Section, SIN_DATO, Tag } from '@/components/ui';
-import { ink, space, stroke, type as tipo } from '@/design/tokens';
+import { ink, space, stroke, type as tipo, vidrio } from '@/design/tokens';
 import { t } from '@/i18n';
 import { NOMBRE_CATEGORIA, type Budget, type MoneyPlan, type Transaction } from '@/lib/money';
 import { tasaAhorro, type ResumenMes, type Suscripcion } from '@/lib/moneymath';
@@ -92,7 +92,7 @@ export interface EconomiaVistaProps {
   };
 }
 
-/** Importe en Cinzel con la unidad en Outfit (Cinzel no tiene minúsculas). */
+/** Importe en Playfair con la unidad en Outfit. */
 function Importe({ texto, unidad = ' €', tenue }: { texto: string; unidad?: string; tenue?: boolean }) {
   return (
     <Text style={[styles.importe, tenue && styles.importeTenue]} maxFontSizeMultiplier={1.2} numberOfLines={1}>
@@ -107,7 +107,7 @@ function ImporteSigno({ n }: { n: number }) {
   return <Importe texto={eurSigno(n).replace(/ €$/, '')} />;
 }
 
-/** Una meta del plan: nombre, «hecho / meta» en Cinzel, Barra estática y su nota. */
+/** Una meta del plan: nombre, «hecho / meta» en Playfair, Barra estática y su nota. */
 function FilaMeta({
   nombre,
   hecho,
@@ -559,17 +559,17 @@ const styles = StyleSheet.create({
     paddingVertical: space.s3,
     borderTopWidth: stroke.hairline,
     borderBottomWidth: stroke.hairline,
-    borderColor: ink.ink3,
+    borderColor: vidrio.linea,
   },
   franjaSegunda: {
     marginTop: space.s3,
     paddingTop: space.s3,
     borderTopWidth: stroke.hairline,
-    borderTopColor: ink.ink3,
+    borderTopColor: vidrio.linea,
   },
   // Filas sobre hairlines, sin tarjeta.
-  lista: { borderTopWidth: stroke.hairline, borderBottomWidth: stroke.hairline, borderColor: ink.ink3 },
-  conRegla: { borderTopWidth: stroke.hairline, borderTopColor: ink.ink3 },
+  lista: { borderTopWidth: stroke.hairline, borderBottomWidth: stroke.hairline, borderColor: vidrio.linea },
+  conRegla: { borderTopWidth: stroke.hairline, borderTopColor: vidrio.linea },
   meta: { paddingVertical: space.s3, gap: space.s2 },
   metaCab: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', gap: space.s3 },
   metaNombre: {
@@ -588,7 +588,7 @@ const styles = StyleSheet.create({
     fontVariant: ['tabular-nums'],
   },
   importeTenue: { color: ink.ink8 },
-  // Cinzel no tiene minúsculas: la unidad va en Outfit.
+  // La unidad va en Outfit.
   unidad: { fontFamily: tipo.micro.family, fontSize: tipo.micro.size, letterSpacing: tipo.micro.tracking, color: ink.ink6 },
   aire: { gap: space.s1 },
   aireCifra: {

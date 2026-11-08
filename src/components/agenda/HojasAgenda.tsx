@@ -5,14 +5,14 @@
 //     hora con «Todo el día». Los fallos van en línea (la fecha en su Campo,
 //     el del servidor en ErrorSistema compacto): nada de avisos encima de una
 //     hoja abierta. Pie: primary «Añadir evento» + ghost «Cancelar».
-//   · HojaDetalle → la fecha en inscripción, la hora en Cinzel y la nota; pie
+//   · HojaDetalle → la fecha en inscripción, la hora en Playfair y la nota; pie
 //     danger «Eliminar evento» (con confirmar y vibración `destructiva`, en
 //     useAgenda) + ghost «Cerrar».
 
 import { StyleSheet, Text, View } from 'react-native';
 import { Campo, ErrorSistema } from '@/components/arena';
 import { Button, Chip, ChipWrap, Sheet } from '@/components/ui';
-import { ink, space, type as tipo } from '@/design/tokens';
+import { ink, oro, space, type as tipo } from '@/design/tokens';
 import { mayus } from '@/i18n/formato';
 import { t } from '@/i18n';
 import { addDays, nombreDia } from '@/lib/dates';
@@ -248,7 +248,7 @@ const styles = StyleSheet.create({
     fontFamily: tipo.cifra.family,
     fontSize: tipo.cifra.size,
     lineHeight: tipo.cifra.lineHeight,
-    color: ink.ink10,
+    color: oro.claro,
     fontVariant: ['tabular-nums'],
   },
   nota: {

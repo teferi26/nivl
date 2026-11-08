@@ -4,7 +4,7 @@
 // llegan hechos como `avisoSalud` y `fotos`; en la galería, null o un doble.
 //
 // De arriba abajo: el encabezado grabado («Progreso» / «AVANCES») con la
-// acción SÓLIDA «Nueva meta» (la INVERSIÓN de la pantalla) y meandro; con
+// acción SÓLIDA «Nueva meta» (la INVERSIÓN de la pantalla); con
 // salud aceptada, la franja Peso · Metas · Logradas (los récords cuentan en su sección), el pesaje
 // (Campo + secondary «Pesar +5 XP», o «Corregir» si ya hay pesaje hoy) y la
 // curva del peso (línea ink10 sobre pista ink4); las metas activas en
@@ -28,7 +28,7 @@ import {
 import { TrendLine } from '@/components/TrendLine';
 import { Button, EmptyState, Screen, Section, Toast } from '@/components/ui';
 import { leidoSinDato, SIN_DATO } from '@/components/ui/sinDato';
-import { ink, space, stroke, type as tipo } from '@/design/tokens';
+import { ink, oro, radio, space, stroke, type as tipo, vidrio } from '@/design/tokens';
 import { t } from '@/i18n';
 import { WEIGH_IN_XP } from '@/lib/game';
 import { numeroES } from '@/lib/pagoActo';
@@ -196,7 +196,6 @@ export function AvancesVista(p: AvancesVistaProps) {
         titulo={t('avances:vista.titulo')}
         subtitulo={subtitulo}
         accion={{ icono: 'add', etiqueta: t('avances:vista.nuevaMeta'), onPress: acciones.onNuevaMeta, solida: true }}
-        meandro
       />
     </Entrada>
   );
@@ -409,7 +408,7 @@ const styles = StyleSheet.create({
   pesaje: { flexDirection: 'row', alignItems: 'flex-start', gap: space.s3 },
   pesajeCampo: { flex: 1, minWidth: 0 },
   pesajeBoton: { paddingTop: DESPEGUE_BOTON },
-  curva: { paddingTop: space.s4, borderTopWidth: stroke.hairline, borderTopColor: ink.ink3 },
+  curva: { paddingTop: space.s4, borderTopWidth: stroke.hairline, borderTopColor: vidrio.linea },
   rotulo: {
     fontFamily: tipo.micro.family,
     fontSize: tipo.micro.size,
@@ -431,7 +430,7 @@ const styles = StyleSheet.create({
     letterSpacing: tipo.headline.tracking,
     color: ink.ink9,
   },
-  metaPct: { fontFamily: tipo.number.family, fontSize: 20, lineHeight: 24, color: ink.ink10 },
+  metaPct: { fontFamily: tipo.number.family, fontSize: 20, lineHeight: 24, color: oro.claro },
   metaBarra: { marginTop: space.s3 },
   metaFila: { flexDirection: 'row', alignItems: 'center', gap: space.s2, marginTop: space.s1, marginBottom: -space.s2 },
   metaDetalle: {
@@ -445,17 +444,18 @@ const styles = StyleSheet.create({
   metaActual: { fontFamily: 'Outfit_700Bold', color: ink.ink10 },
   metaBoton: { alignSelf: 'flex-start', marginTop: space.s3 },
   papelera: { width: BOTON, height: BOTON, alignItems: 'center', justifyContent: 'center', marginRight: -space.s3 },
-  pulsado: { backgroundColor: ink.ink2 },
+  pulsado: { backgroundColor: vidrio.campo },
   fila: { flexDirection: 'row', alignItems: 'center', gap: space.s3, minHeight: 56, paddingVertical: space.s2 },
-  conRegla: { borderTopWidth: stroke.hairline, borderTopColor: ink.ink3 },
-  marcaAbierta: { position: 'absolute', left: -space.s3, top: space.s2, bottom: space.s2, width: stroke.rule, backgroundColor: ink.ink10 },
+  conRegla: { borderTopWidth: stroke.hairline, borderTopColor: vidrio.linea },
+  marcaAbierta: { position: 'absolute', left: -space.s3, top: space.s2, bottom: space.s2, width: stroke.rule, backgroundColor: oro.hilo },
   icono: {
     width: BOTON,
     height: BOTON,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: stroke.hairline,
-    borderColor: ink.ink4,
+    borderColor: vidrio.borde,
+    borderRadius: radio.chip,
   },
   filaTexto: { flex: 1, minWidth: 0, gap: 2 },
   filaTitulo: { fontFamily: 'Outfit_600SemiBold', fontSize: 16, lineHeight: 22, color: ink.ink9 },

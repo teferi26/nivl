@@ -8,7 +8,7 @@ import { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { EncabezadoArena, TarjetaArena } from '@/components/arena';
 import { Button, Chip, ChipWrap } from '@/components/ui';
-import { ink, space, type } from '@/design/tokens';
+import { ink, space, type, radio } from '@/design/tokens';
 import { useAnchoUtil } from '@/design/useSizeClass';
 import { t } from '@/i18n';
 import { EJERCICIOS } from '@/iron/ejercicios';
@@ -173,7 +173,7 @@ const styles = StyleSheet.create({
   mapa: { alignItems: 'center', marginTop: space.s4 },
   bloque: { gap: space.s1, marginTop: space.s2 },
   filaMusculo: { flexDirection: 'row', alignItems: 'center', gap: space.s2 },
-  punto: { width: 10, height: 10, borderRadius: 5 },
+  punto: { width: 10, height: 10, borderRadius: radio.pastilla },
   solo: { backgroundColor: ink.ink0, alignSelf: 'flex-start' },
   titulo: {
     fontFamily: type.headline.family,

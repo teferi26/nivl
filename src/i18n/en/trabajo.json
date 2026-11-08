@@ -107,5 +107,25 @@
       "pendiente": "Not saved yet.",
       "no_guardado": "These minutes couldn't be saved. Your list stays as it was."
     }
+  },
+  "heroe": {
+    "semana": "Week {{n}}",
+    "titulo": {
+      "0": "Plan your day",
+      "1": "One thing today",
+      "2": "Two things today",
+      "3": "Three things today"
+    },
+    "hechas": "{{hechas}} of {{total}} done",
+    "sinPlan": "No priorities yet",
+    "horas": "{{horas}} h",
+    "foco": "of focus",
+    "reuniones": "in meetings",
+    "carga": "load",
+    "nivel": {
+      "ligera": "Light",
+      "normal": "Normal",
+      "alta": "High"
+    }
   }
 }

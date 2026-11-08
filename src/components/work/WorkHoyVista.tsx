@@ -1,8 +1,9 @@
 // NIVL · WORK: Hoy, el centro de mando del trabajo. Pura: todo llega por props.
 //
-// De arriba abajo: la tarjeta Ahora (qué atacar y un solo botón; sin plan, pide
-// las prioridades), qué soltar, las prioridades, lo siguiente de la agenda, el
-// orden del día, la carga cuando importa, el dinero en una línea y los enlaces.
+// De arriba abajo (maqueta Ónix): el héroe de la semana sin escudo, el coach, la
+// tarjeta Ahora (qué atacar y un solo botón; sin plan, pide las prioridades), tres
+// cifras, qué soltar, las prioridades, lo siguiente de la agenda, el orden del
+// día, la carga cuando importa, el dinero en una línea y los enlaces.
 // Sin atributos de RPG. El XP se ve, discreto.
 
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -10,18 +11,23 @@ import { useRef, useState, type ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Campo, ErrorSistema, TarjetaArena } from '@/components/arena';
 import { Button, Check, Chip, Screen, Section, Sheet, Skeleton, SkeletonRows } from '@/components/ui';
-import { ink, space, type as tipo } from '@/design/tokens';
+import { HeroMundo, TarjetaCoach, TresCifras, tituloAhora } from '@/components/modos/mundo/PiezasOnix';
+import { ink, space, type as tipo, vidrio } from '@/design/tokens';
 import { t } from '@/i18n';
 import { minAHora } from '@/work/fechas';
 import { limpiarEntradas } from '@/work/prioridades';
 import { DURACIONES_BLOQUE, MAX_PRIORIDADES, MAX_TITULO_PRIORIDAD } from '@/work/tipos';
 import type { FilaTrabajo, ReunionVista, VistaWorkHoy } from '@/work/vistaHoy';
-import { textoMotivo } from './textos';
+import { textoDuracion, textoMotivo } from './textos';
 
 export type DestinoWork = 'proyectos' | 'horas' | 'revision' | 'carga';
 
 export interface WorkHoyVistaProps {
   cabecera: ReactNode;
+  /** El número de la semana, para el héroe. */
+  semana: number;
+  /** El nivel del modo, discreto («NV 11»). */
+  nivelTexto?: string;
   estado: 'cargando' | 'listo';
   /** Fallo de la carga, ya escrito para el usuario. */
   error: string | null;
@@ -45,6 +51,7 @@ export interface WorkHoyVistaProps {
     onSoltar: (id: string) => void;
     onPlanificar: (titulos: string[]) => Promise<boolean>;
     onIr: (destino: DestinoWork) => void;
+    onCoach: () => void;
     onReintentar: () => void;
     onRefrescar?: () => void;
   };
@@ -101,7 +108,7 @@ function TarjetaAhora({ vista, minutos, acciones }: Pick<WorkHoyVistaProps, 'vis
   const cuerpo = vista.preparando ? t('trabajo:comun.noDisponibleCuerpo') : sinTitulo ? null : textoMotivo(a.motivo);
   const meta = a.hastaMin !== null && a.tipo !== 'bloque' && a.tipo !== 'reunion' ? t('trabajo:ahora.hasta', { hora: minAHora(a.hastaMin) }) : undefined;
   return (
-    <TarjetaArena variante="piedra" marco={2} rotulo={t('trabajo:ahora.rotulo')} meta={meta}>
+    <TarjetaArena variante="piedra" rotulo={t('trabajo:ahora.rotulo')} meta={meta}>
       <Text style={styles.ahoraTitulo} accessibilityRole="header" maxFontSizeMultiplier={1.35}>
         {titulo}
       </Text>
@@ -207,13 +214,16 @@ function Enlaces({ onIr }: { onIr: WorkHoyVistaProps['acciones']['onIr'] }) {
 }
 
 export function WorkHoyVista(p: WorkHoyVistaProps) {
-  const { cabecera, estado, error, cierre, vista: v, ocupada, minutos, refrescando, orden, economia, acciones } = p;
+  const { cabecera, semana, nivelTexto, estado, error, cierre, vista: v, ocupada, minutos, refrescando, orden, economia, acciones } = p;
   const [anadiendo, setAnadiendo] = useState(false);
   const [verResto, setVerResto] = useState(false);
   const cargando = estado === 'cargando';
   const hayFilas = v.prioridades.length > 0 || v.penalizaciones.length > 0;
   const ven = hayFilas || (v.huecos > 0 && !v.pedirPlan);
   const mostrarReunion = v.reunion !== null && v.ahora.tipo !== 'reunion';
+  // Sin migración o sin misiones fiables, estas cifras dirían cosas falsas.
+  const conCifras = !v.preparando && !v.ocultarAhora;
+  const prioridades = Math.min(v.prioridades.length, 3) as 0 | 1 | 2 | 3;
 
   return (
     <Screen refreshing={refrescando} onRefresh={acciones.onRefrescar}>
@@ -244,11 +254,40 @@ export function WorkHoyVista(p: WorkHoyVistaProps) {
         </View>
       ) : (
         <>
+          {conCifras ? (
+            <View style={styles.bloque}>
+              <HeroMundo
+                rotulo={t('trabajo:heroe.semana', { n: semana })}
+                meta={nivelTexto}
+                titulo={t(`trabajo:heroe.titulo.${prioridades}`)}
+                ratio={v.total > 0 ? v.hechas / v.total : 0}
+                pie={v.total > 0 ? t('trabajo:heroe.hechas', { hechas: v.hechas, total: v.total }) : t('trabajo:heroe.sinPlan')}
+                etiquetaBarra={t('trabajo:hoy.prioridades')}
+              />
+            </View>
+          ) : null}
+
+          <View style={styles.bloque}>
+            <TarjetaCoach cuerpo={t('mundos:mundo.coachCuerpo.work')} onAbrir={acciones.onCoach} />
+          </View>
+
           {v.ocultarAhora ? null : (
             <View style={styles.bloque}>
               <TarjetaAhora vista={v} minutos={minutos} acciones={acciones} />
             </View>
           )}
+
+          {conCifras ? (
+            <View style={styles.bloque}>
+              <TresCifras
+                cifras={[
+                  { valor: textoDuracion(v.carga.profundoSemanaMin), rotulo: t('trabajo:heroe.foco') },
+                  { valor: textoDuracion(v.carga.reunionesSemanaMin), rotulo: t('trabajo:heroe.reuniones') },
+                  { valor: t(`trabajo:heroe.nivel.${v.carga.nivel}`), rotulo: t('trabajo:heroe.carga') },
+                ]}
+              />
+            </View>
+          ) : null}
 
           {v.ahora.soltar.length > 0 ? (
             <Section title={t('trabajo:hoy.queSoltar')}>
@@ -344,7 +383,7 @@ export function WorkHoyVista(p: WorkHoyVistaProps) {
 const styles = StyleSheet.create({
   bloque: { marginBottom: space.s5 },
   huecos: { marginTop: space.s5 },
-  ahoraTitulo: { fontFamily: tipo.headline.family, fontSize: tipo.headline.size, lineHeight: tipo.headline.lineHeight, letterSpacing: tipo.headline.tracking, color: ink.ink10 },
+  ahoraTitulo: tituloAhora,
   ahoraMotivo: { fontFamily: tipo.bodySm.family, fontSize: tipo.bodySm.size, lineHeight: tipo.bodySm.lineHeight, color: ink.ink8, marginTop: space.s1 },
   form: { gap: space.s3, marginTop: space.s4 },
   accion: { gap: space.s3, marginTop: space.s4 },
@@ -352,7 +391,7 @@ const styles = StyleSheet.create({
   linea: { fontFamily: tipo.body.family, fontSize: tipo.body.size, lineHeight: tipo.body.lineHeight, color: ink.ink9 },
   detalle: { fontFamily: tipo.bodySm.family, fontSize: tipo.bodySm.size, lineHeight: tipo.bodySm.lineHeight, color: ink.ink6 },
   fila: { flexDirection: 'row', alignItems: 'center', gap: space.s2, minHeight: 56, paddingVertical: space.s2 },
-  sep: { borderTopWidth: 1, borderTopColor: ink.ink3 },
+  sep: { borderTopWidth: 1, borderTopColor: vidrio.linea },
   check: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
   filaTextos: { flex: 1, minWidth: 0 },
   filaTitulo: { fontFamily: tipo.body.family, fontSize: tipo.body.size, lineHeight: tipo.body.lineHeight, color: ink.ink9 },

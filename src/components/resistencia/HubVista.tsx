@@ -12,7 +12,7 @@ import { TarjetaHueco } from '@/components/ironmundo/Esqueletos';
 import { GlifoIron } from '@/components/ironmundo/Glifos';
 import { Entrada, ErrorSistema } from '@/components/arena';
 import { BotonIron, CuadroIron, FilaIron, PantallaIron, TarjetaIron } from '@/components/ironmundo/piezas';
-import { C, F, fs, px } from '@/components/ironmundo/tema';
+import { C, F, fs, px, R } from '@/components/ironmundo/tema';
 import { fechaIron } from '@/components/ironmundo/textos';
 import { Grano } from '@/components/ui';
 import { useAnunciar } from '@/components/ui/useAnunciar';
@@ -576,7 +576,7 @@ const styles = StyleSheet.create({
   sinMargen: { marginTop: 0 },
   cabecera: { flexDirection: 'row', alignItems: 'center', gap: px(8), paddingVertical: px(6) },
   atras: { paddingVertical: px(4) },
-  titulo: { fontFamily: F.cinzel, fontSize: fs(16), letterSpacing: fs(16) * 0.08, color: C.blanco, textTransform: 'uppercase' },
+  titulo: { fontFamily: F.serif, fontSize: fs(16), color: C.blanco },
   subtitulo: { fontFamily: F.r, fontSize: fs(10), color: C.meta, marginTop: px(1) },
   filas: { marginTop: px(4) },
   filaSesion: { paddingVertical: px(6) },
@@ -584,7 +584,7 @@ const styles = StyleSheet.create({
   hecha: { color: C.mudo, textDecorationLine: 'line-through' },
   notaCoach: { marginTop: px(3), color: C.claro },
   derivacion: { borderColor: C.blanco, borderWidth: 2 },
-  cifra: { flex: 1, minWidth: 0, backgroundColor: C.tarjeta, borderWidth: 1, borderColor: C.filete, padding: px(8) },
-  cifraValor: { fontFamily: F.xb, fontSize: fs(19), color: C.blanco },
+  cifra: { flex: 1, minWidth: 0, backgroundColor: C.tarjeta, borderRadius: R.control, borderWidth: 1, borderColor: C.filete, padding: px(8) },
+  cifraValor: { fontFamily: F.serif, fontSize: fs(19), color: C.blanco },
   cifraRotulo: { fontFamily: F.b, fontSize: fs(9.5), letterSpacing: fs(9.5) * 0.14, color: C.mudo, textTransform: 'uppercase', marginTop: px(1) },
 });

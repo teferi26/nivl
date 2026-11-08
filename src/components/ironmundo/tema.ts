@@ -1,18 +1,16 @@
-// NIVL · Mundo IRON: la piel de la lámina 2 de la P01 («IRON: tu gimnasio,
-// nada más», propuestas_modos/p01/propuesta.html). Teferi la aprobó así y
-// pidió la app IGUAL que el PDF (FEEDBACK_TEFERI_1011_B32, punto 0): dentro de
-// IRON mandan estas medidas, no las del mármol de NIVL.
+// NIVL · Mundo IRON: la piel de IRON en Ónix (docs/design-v2/SISTEMA.md). Todo
+// sale de src/design/tokens.ts; aquí solo se le pone nombre corto a lo que las
+// pantallas de IRON y de Resistencia usan a cada momento.
 //
-// La lámina dibuja el móvil a 342 px de ancho; la app se mide a 390. Toda
-// medida de la lámina pasa por `px()` (× 390/342) y los textos por `fs()`, que
-// además no baja de 10 (la lámina llega a 7,5 en las etiquetas).
+//   · A: el hilo de oro de los rótulos, las cifras y lo elegido. No rellena botones.
+//   · H: el hueso del botón principal y de lo marcado, siempre con texto ink0.
+//   · O: los velos y marcos del oro.
+//   · R: los radios de Ónix.
 //
-// Un único color además de los grises: el acento de IRON de `modoAcento`
-// (azul eléctrico). Los grises son los de la lámina (#0c0c0f de tarjeta,
-// #1c1c21 de filete…), que no están en la escala `ink` a propósito: son los
-// del mundo IRON y solo viven aquí.
+// `px()` y `fs()` vienen de la lámina original (342 de ancho, medida a 390). Las
+// pantallas que no se han rehecho los siguen usando para sus proporciones.
 
-import { modoAcento } from '@/design/tokens';
+import { ink, modoAcento, oro, radio, vidrio } from '@/design/tokens';
 
 /** De la lámina (342) a la app (390). */
 const K = 390 / 342;
@@ -28,61 +26,50 @@ export function fs(n: number): number {
 }
 
 export const A = modoAcento.iron;
+export const H = ink.ink10;
+export const O = oro;
+export const R = radio;
 
-/** El acento con transparencia (0 a 1): bordes y brillos de la lámina (`color-mix`). */
-export function acentoA(alfa: number): string {
-  const n = parseInt(A.slice(1), 16);
-  return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${alfa})`;
-}
-
-/** `color-mix(in srgb, acento p%, base)` en hex: el fondo del héroe y de lo activo. */
-export function mezcla(p: number, base: string): string {
-  const a = parseInt(A.slice(1), 16);
-  const b = parseInt(base.slice(1), 16);
-  const canal = (s: number) => Math.round((((a >> s) & 255) * p + ((b >> s) & 255) * (1 - p)));
-  return `#${[16, 8, 0].map((s) => canal(s).toString(16).padStart(2, '0')).join('')}`;
-}
-
-/** Los grises de la lámina. */
+/** Superficies, líneas y textos de IRON en la escala de Ónix. */
 export const C = {
-  fondo: '#000000',
-  tarjeta: '#0c0c0f',
-  filete: '#1c1c21',
-  regla: '#18181d',
-  borde: '#23232a',
-  pista: '#1b1b20',
-  burbuja: '#15151a',
-  hueco: '#16161b',
-  suelo: '#2a2a30',
-  mudo: '#8a8a92',
-  meta: '#9a9aa2',
-  suave: '#a9a9b0',
-  apagado: '#5d5d65',
-  tenue: '#66666e',
-  texto: '#dddddd',
-  claro: '#e6e6e6',
-  blanco: '#ffffff',
-  barra: '#141418',
+  fondo: ink.ink0,
+  tarjeta: vidrio.tarjeta,
+  filete: vidrio.borde,
+  regla: vidrio.linea,
+  borde: vidrio.borde,
+  pista: vidrio.pista,
+  burbuja: vidrio.campo,
+  hueco: vidrio.campo,
+  suelo: ink.ink3,
+  mudo: ink.ink6,
+  meta: ink.ink8,
+  suave: ink.ink8,
+  apagado: ink.ink6,
+  tenue: ink.ink6,
+  texto: ink.ink9,
+  claro: ink.ink9,
+  blanco: ink.ink9,
+  barra: ink.ink1,
 } as const;
 
-/** Las familias que carga `_layout` (Outfit 400 a 800, Cinzel 700). */
+/** Las familias que carga `_layout`: Outfit para leer, Playfair para las cifras y la marca. */
 export const F = {
   r: 'Outfit_400Regular',
   m: 'Outfit_500Medium',
   sb: 'Outfit_600SemiBold',
   b: 'Outfit_700Bold',
   xb: 'Outfit_800ExtraBold',
-  cinzel: 'PlayfairDisplay_700Bold',
+  serif: 'PlayfairDisplay_700Bold',
 } as const;
 
-/** Medidas de la lámina ya pasadas a la app. */
+/** Medidas comunes (las de la maqueta Ónix, a 390 de ancho). */
 export const M = {
-  margen: px(14),
-  hueco: px(7),
-  radio: px(16),
-  radioPeso: px(13),
-  radioBoton: px(11),
-  radioChip: px(10),
-  boton: px(32),
-  botonFino: px(26),
+  margen: 18,
+  hueco: 9,
+  radio: radio.tarjeta,
+  radioPeso: radio.control,
+  radioBoton: radio.control,
+  radioChip: radio.chip,
+  boton: 48,
+  botonFino: 40,
 } as const;

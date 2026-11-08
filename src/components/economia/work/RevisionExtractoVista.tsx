@@ -10,7 +10,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { ErrorSistema } from '@/components/arena';
 import { Screen } from '@/components/ui';
-import { ink, space, type as tipo } from '@/design/tokens';
+import { ink, oro, radio, space, type as tipo, vidrio } from '@/design/tokens';
 import { t } from '@/i18n';
 import { fechaCorta } from '@/i18n/formato';
 import type { FilaPropuesta } from '@/lib/moneyextracto';
@@ -139,7 +139,7 @@ export function RevisionExtractoVista(p: RevisionExtractoVistaProps) {
                         accessibilityLabel={t('economia:work.revision.cambiarA11y', {
                           categoria: nombreCategoriaMov({ category: f.categoria, user_category_id: f.propia, is_internal: f.interno }, p.propias),
                         })}
-                        style={[styles.chip, { borderColor: a.tinte(0.4), backgroundColor: a.tinte(0.08) }]}
+                        style={styles.chip}
                       >
                         <Text style={styles.chipTexto} maxFontSizeMultiplier={1.2} numberOfLines={1}>
                           {nombreCategoriaMov({ category: f.categoria, user_category_id: f.propia, is_internal: f.interno }, p.propias)}
@@ -204,8 +204,10 @@ const styles = StyleSheet.create({
     gap: 3,
     paddingHorizontal: 8,
     paddingVertical: 2,
-    borderRadius: 10,
+    borderRadius: radio.chip,
     borderWidth: 1,
+    borderColor: oro.borde,
+    backgroundColor: oro.fondo,
     maxWidth: 160,
   },
   chipTexto: { fontFamily: tipo.micro.family, fontSize: 11, color: ink.ink9 },
@@ -222,7 +224,7 @@ const styles = StyleSheet.create({
     paddingBottom: space.s5,
     backgroundColor: ink.ink0,
     borderTopWidth: 1,
-    borderTopColor: ink.ink3,
+    borderTopColor: vidrio.linea,
     flexDirection: 'row',
     alignItems: 'center',
     gap: space.s4,

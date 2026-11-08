@@ -3,15 +3,15 @@
 // contorno fino) y UN acento, el de IRON, para los que trabaja el ejercicio:
 // principal relleno y con brillo en la fase de esfuerzo, secundarios tenues.
 //
-// El acento es el de IRON en `modoAcento` (src/design/tokens.ts, contrato F1):
-// una sola fuente para el selector de Hoy, las etiquetas y el maniquí.
+// El acento es el hilo de oro de Ónix (src/design/tokens.ts): una sola fuente
+// para el maniquí, el mapa muscular y su leyenda.
 
-import { ink, modoAcento } from '@/design/tokens';
+import { ink, oro } from '@/design/tokens';
 import type { EstiloCapa } from '@/iron/dibujo';
 
-export const ACENTO_IRON = modoAcento.iron;
-/** El mismo azul aclarado: el brillo del músculo principal al hacer fuerza. */
-export const BRILLO_IRON = '#A9C4FF';
+export const ACENTO_IRON = oro.hilo;
+/** El mismo oro aclarado: el trazo del músculo principal al hacer fuerza. */
+export const BRILLO_IRON = oro.claro;
 
 export interface PropsCapa {
   fill: string;

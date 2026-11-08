@@ -4,7 +4,7 @@
 
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Button, Skeleton } from '@/components/ui';
-import { ink, space, stroke, type } from '@/design/tokens';
+import { ink, space, stroke, type, vidrio } from '@/design/tokens';
 import { t } from '@/i18n';
 
 export interface PausaCoachVista {
@@ -98,7 +98,7 @@ const styles = StyleSheet.create({
     color: ink.ink10,
     paddingVertical: space.s2,
     borderTopWidth: stroke.hairline,
-    borderTopColor: ink.ink3,
+    borderTopColor: vidrio.linea,
   },
   noPasa: { fontFamily: type.body.family, fontSize: type.body.size, lineHeight: type.body.lineHeight, color: ink.ink9 },
   pie: {
@@ -107,7 +107,7 @@ const styles = StyleSheet.create({
     paddingTop: space.s4,
     paddingBottom: space.s3 + 2,
     borderTopWidth: stroke.hairline,
-    borderTopColor: ink.ink3,
+    borderTopColor: vidrio.linea,
   },
   titulo: { fontFamily: type.bodySm.family, fontSize: type.bodySm.size, lineHeight: type.bodySm.lineHeight, color: ink.ink10, letterSpacing: 1.5 },
   cuerpo: { fontFamily: type.bodySm.family, fontSize: type.bodySm.size, lineHeight: type.bodySm.lineHeight, color: ink.ink8 },

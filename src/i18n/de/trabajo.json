@@ -107,5 +107,25 @@
       "pendiente": "Noch nicht gespeichert.",
       "no_guardado": "Diese Minuten konnten nicht gespeichert werden. Deine Liste bleibt, wie sie war."
     }
+  },
+  "heroe": {
+    "semana": "Woche {{n}}",
+    "titulo": {
+      "0": "Plane deinen Tag",
+      "1": "Eine Sache heute",
+      "2": "Zwei Sachen heute",
+      "3": "Drei Sachen heute"
+    },
+    "hechas": "{{hechas}} von {{total}} erledigt",
+    "sinPlan": "Noch keine Prioritäten",
+    "horas": "{{horas}} Std.",
+    "foco": "Fokus",
+    "reuniones": "in Meetings",
+    "carga": "Last",
+    "nivel": {
+      "ligera": "Leicht",
+      "normal": "Normal",
+      "alta": "Hoch"
+    }
   }
 }

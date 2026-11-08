@@ -2,18 +2,18 @@
 // props. Los datos y los efectos viven en useCampanas; la galería
 // (/kit/pantallas) la pinta con datos de mentira (demo.tsx).
 //
-// Composición de la arena: encabezado grabado con el meandro, franja de
+// Composición de la arena: encabezado, franja de
 // cifras (Abiertas · Despejadas · Botín), cada campaña abierta como una losa
-// de piedra con zócalo y su estandarte, y las despejadas como inscripciones
+// con su estandarte, y las despejadas como inscripciones
 // bajo el rótulo de logro. La única inversión de la pantalla es «Abrir
 // campaña»: el botón del encabezado si hay abiertas o, si no hay ninguna, el
 // botón sólido del vacío (nunca los dos a la vez).
 
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { Barra, EncabezadoArena, Entrada, FranjaCifras, Meandro, TarjetaArena, formatoMiles } from '@/components/arena';
+import { Barra, EncabezadoArena, Entrada, FranjaCifras, TarjetaArena, formatoMiles } from '@/components/arena';
 import { Button, EmptyState, Screen, Section, Skeleton, Tag } from '@/components/ui';
-import { ink, space, stroke, type as tipo } from '@/design/tokens';
+import { ink, oro, space, stroke, type as tipo, vidrio } from '@/design/tokens';
 import { useAnchoUtil } from '@/design/useSizeClass';
 import { t } from '@/i18n';
 import { mayus } from '@/i18n/formato';
@@ -78,7 +78,6 @@ export function CampanasVista(p: CampanasVistaProps) {
             eyebrow={eyebrow}
             titulo={p.titulo}
             subtitulo={p.subtitulo}
-            meandro
             accion={{
               icono: 'flag-outline',
               etiqueta: t('campanas:lista.abrirNueva'),
@@ -152,7 +151,7 @@ export function CampanasVista(p: CampanasVistaProps) {
           <Section title={t('campanas:lista.abiertas')} meta={abiertas.length > 0 ? `${abiertas.length}` : undefined}>
             {abiertas.length === 0 ? (
               <Entrada indice={2}>
-                <TarjetaArena variante="contorno" remaches>
+                <TarjetaArena variante="contorno">
                   {/* El estandarte sin letra: el paño espera su campaña. */}
                   <View style={styles.vacio}>
                     <Estandarte letra="" ancho={72} grosor={1} />
@@ -210,12 +209,11 @@ function EncabezadoCargando() {
       <Skeleton height={12} width={90} style={styles.skEyebrow} />
       <Skeleton height={tipo.rank.lineHeight} width={200} />
       <Skeleton height={14} width="80%" style={styles.skSubtitulo} />
-      <Meandro alto={8} style={styles.skMeandro} />
     </View>
   );
 }
 
-/** Una campaña abierta: losa de piedra con zócalo, estandarte y su avance. */
+/** Una campaña abierta: tarjeta con estandarte y su avance. */
 function LosaCampana({ campana: d, onPress }: { campana: CampanaResumen; onPress: () => void }) {
   const plazo = diasHasta(d.deadline);
   const ratio = d.total > 0 ? d.doneCount / d.total : 0;
@@ -224,7 +222,6 @@ function LosaCampana({ campana: d, onPress }: { campana: CampanaResumen; onPress
   return (
     <TarjetaArena
       variante="piedra"
-      zocalo
       onPress={onPress}
       accessibilityLabel={
         plazo
@@ -307,7 +304,6 @@ const styles = StyleSheet.create({
   skFranja: { marginBottom: space.s6 },
   encabezado: { marginBottom: space.s6 },
   skSubtitulo: { marginTop: space.s3 },
-  skMeandro: { marginTop: space.s4 },
   aviso: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -316,7 +312,7 @@ const styles = StyleSheet.create({
     marginBottom: space.s4,
     borderTopWidth: stroke.hairline,
     borderBottomWidth: stroke.hairline,
-    borderColor: ink.ink3,
+    borderColor: vidrio.linea,
   },
   avisoTexto: { flex: 1, minWidth: 0 },
   avisoAccion: { color: ink.ink9 },
@@ -325,11 +321,10 @@ const styles = StyleSheet.create({
   franja: { marginBottom: space.s6 },
   vacio: { alignItems: 'center', paddingVertical: space.s4, paddingHorizontal: space.s2 },
   vacioTitulo: {
-    fontFamily: tipo.inscripcion.family,
-    fontSize: tipo.inscripcion.size,
-    lineHeight: tipo.inscripcion.lineHeight,
-    letterSpacing: tipo.inscripcion.tracking,
-    textTransform: 'uppercase',
+    fontFamily: tipo.title.family,
+    fontSize: tipo.title.size,
+    lineHeight: tipo.title.lineHeight,
+    letterSpacing: tipo.title.tracking,
     color: ink.ink9,
     textAlign: 'center',
     marginTop: space.s5,
@@ -362,12 +357,12 @@ const styles = StyleSheet.create({
   plazo: { flexDirection: 'row', alignItems: 'center', gap: space.s1 },
   avance: { marginTop: space.s4 },
   avancePie: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', marginTop: space.s2 },
-  pct: { fontFamily: tipo.number.family, fontSize: 14, lineHeight: 18, color: ink.ink10 },
+  pct: { fontFamily: tipo.number.family, fontSize: 14, lineHeight: 18, color: oro.claro },
   fila: { flexDirection: 'row', alignItems: 'center', gap: space.s4, paddingVertical: space.s3, minHeight: 64 },
-  filaRegla: { borderTopWidth: stroke.hairline, borderTopColor: ink.ink3 },
+  filaRegla: { borderTopWidth: stroke.hairline, borderTopColor: vidrio.linea },
   pulsada: { opacity: 0.6 },
   filaCuerpo: { flex: 1, minWidth: 0, gap: 2 },
   filaTitulo: { fontFamily: tipo.bodySm.family, fontSize: 14, lineHeight: 20, color: ink.ink8 },
-  botinCobrado: { fontFamily: tipo.number.family, fontSize: 16, lineHeight: 20, color: ink.ink10 },
+  botinCobrado: { fontFamily: tipo.number.family, fontSize: 16, lineHeight: 20, color: oro.claro },
   botinXp: { fontFamily: tipo.micro.family, fontSize: tipo.micro.size, letterSpacing: tipo.micro.tracking, color: ink.ink6 },
 });

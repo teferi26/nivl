@@ -36,7 +36,7 @@ import {
   RotuloIron,
   TarjetaIron,
 } from './piezas';
-import { A, acentoA, C, F, fs, mezcla, px } from './tema';
+import { A, C, F, fs, H, O, px, R } from './tema';
 
 export interface ParteIronProps {
   cargado: boolean;
@@ -435,17 +435,17 @@ const styles = StyleSheet.create({
   caja: {
     width: px(20),
     height: px(20),
-    borderRadius: px(6),
+    borderRadius: R.chip,
     borderWidth: 1.5,
     borderColor: C.suelo,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  cajaHecha: { backgroundColor: A, borderColor: A },
+  cajaHecha: { backgroundColor: H, borderColor: H },
   notas: {
     marginTop: px(6),
     minHeight: 44,
-    borderRadius: px(10),
+    borderRadius: R.chip,
     borderWidth: 1,
     borderColor: C.borde,
     backgroundColor: C.fondo,
@@ -460,14 +460,14 @@ const styles = StyleSheet.create({
   vaso: {
     width: px(32),
     height: px(40),
-    borderRadius: px(9),
+    borderRadius: R.chip,
     borderWidth: 1,
     borderColor: C.borde,
     backgroundColor: C.tarjeta,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  vasoLleno: { borderColor: acentoA(0.7), backgroundColor: mezcla(0.16, C.tarjeta) },
+  vasoLleno: { borderColor: O.borde, backgroundColor: O.tenue },
   libreTexto: { marginTop: px(4) },
   libreChip: { flexDirection: 'row', marginTop: px(8) },
   comida: { paddingVertical: px(8) },
@@ -475,7 +475,7 @@ const styles = StyleSheet.create({
   comidaVacia: { color: C.tenue },
   comidaCifras: { textAlign: 'right', maxWidth: px(110) },
   pesoCabeza: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', gap: px(8), marginTop: px(2) },
-  pesoKg: { fontFamily: F.xb, fontSize: fs(30), color: C.blanco },
+  pesoKg: { fontFamily: F.serif, fontSize: fs(30), color: C.blanco },
   pesoUnidad: { fontFamily: F.sb, fontSize: fs(12), color: C.mudo },
   pesoDelta: { fontSize: fs(10) },
   pesoGrafica: { marginTop: px(8), marginBottom: px(2) },
@@ -483,7 +483,7 @@ const styles = StyleSheet.create({
   pesar: { marginTop: px(10) },
   campoPeso: {
     height: px(44),
-    borderRadius: px(11),
+    borderRadius: R.control,
     borderWidth: 1,
     borderColor: C.borde,
     backgroundColor: C.fondo,

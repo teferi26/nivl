@@ -3,14 +3,14 @@
 // Un contador de media en media hora: escribir "7,5" con el teclado numérico
 // español (coma, punto, nada) es justo la fricción que hace que el dato no se
 // apunte. Arranca sin valor (no registrar no es lo mismo que dormir 7 horas)
-// y el primer toque lo deja en 7. La cifra en Cinzel (`type.cifra`), los
+// y el primer toque lo deja en 7. La cifra en Playfair (`type.cifra`), los
 // botones −/+ de 44 en contorno ink4.
 
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { leidoSinDato, SIN_DATO } from '@/components/ui/sinDato';
 import { vibrar } from '@/design/haptics';
-import { ink, space, stroke, type as tipo } from '@/design/tokens';
+import { ink, oro, radio, space, stroke, type as tipo, vidrio } from '@/design/tokens';
 import { t } from '@/i18n';
 import { SUENO_MAX, SUENO_MIN, formatoDecimal, formatoHoras, pasoDeSueno } from '@/lib/journalmath';
 
@@ -53,7 +53,7 @@ export function SleepStepper({ value, onChange }: Props) {
           <Ionicons name="remove" size={20} color={enMinimo ? ink.ink6 : ink.ink9} />
         </Pressable>
         <View style={styles.centro}>
-          {/* La cifra en Cinzel y la unidad en Outfit: Cinzel no tiene minúsculas
+          {/* La cifra en Playfair y la unidad en Outfit: Playfair no tiene minúsculas
               y "7,5 H" se leería como otra cosa. */}
           <Text
             style={[styles.valor, value === null && styles.valorVacio]}
@@ -101,18 +101,19 @@ const styles = StyleSheet.create({
     width: BOTON,
     height: BOTON,
     borderWidth: stroke.hairline,
-    borderColor: ink.ink4,
+    borderColor: vidrio.borde,
     alignItems: 'center',
     justifyContent: 'center',
+    borderRadius: radio.chip,
   },
-  off: { borderColor: ink.ink3 },
+  off: { borderColor: vidrio.linea },
   pulsado: { opacity: 0.7 },
   centro: { flex: 1, alignItems: 'center', justifyContent: 'center', minHeight: BOTON },
   valor: {
     fontFamily: tipo.cifra.family,
     fontSize: tipo.cifra.size,
     lineHeight: tipo.cifra.lineHeight,
-    color: ink.ink10,
+    color: oro.claro,
     fontVariant: ['tabular-nums'],
   },
   valorVacio: { color: ink.ink6 },
@@ -122,9 +123,8 @@ const styles = StyleSheet.create({
   quitar: { minHeight: BOTON, minWidth: BOTON, alignItems: 'flex-end', justifyContent: 'center' },
   quitarTexto: {
     fontFamily: tipo.label.family,
-    fontSize: tipo.label.size,
-    letterSpacing: tipo.label.tracking,
-    textTransform: 'uppercase',
+    fontSize: 13,
+    letterSpacing: 0,
     color: ink.ink9,
   },
 });

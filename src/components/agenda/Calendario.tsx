@@ -1,9 +1,9 @@
 // NIVL · Agenda: el calendario de arriba (FASE3 Lote C). Puro.
 //
-//   · TiraSemana → siete columnas: la letra en micro ink6, el número en Cinzel
+//   · TiraSemana → siete columnas: la letra en micro ink6, el número en Playfair
 //     600 18 y una pista ink4 con la carga del día en ink8 (lo que ocupan los
 //     eventos con hora sobre 8 h).
-//   · RejillaMes → 7 × 6 con hairline ink3, números en Cinzel 600 14 y las
+//   · RejillaMes → 7 × 6 con hairline ink3, números en Playfair 600 14 y las
 //     marcas por forma, nunca por color: evento = punto lleno ink9, plazo de
 //     campaña = cuadrado en contorno, solo misiones = punto pequeño ink6.
 //
@@ -12,7 +12,7 @@
 // `seleccion` (lo hace useAgenda, no la vista).
 
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { ink, space, stroke, type as tipo } from '@/design/tokens';
+import { ink, oro, radio, space, stroke, type as tipo, vidrio } from '@/design/tokens';
 import { t } from '@/i18n';
 import { cargaDelDia } from '@/lib/timeline';
 import {
@@ -140,13 +140,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: space.s2,
     borderWidth: stroke.hairline,
-    borderColor: ink.ink3,
+    borderColor: vidrio.linea,
+    borderRadius: radio.chip,
   },
   // Hoy: marco de 2. Se resta 1 al relleno para que el número no salte.
-  marcoHoy: { borderWidth: stroke.rule, borderColor: ink.ink10, paddingVertical: space.s2 - 1 },
-  invertido: { backgroundColor: ink.ink10, borderColor: ink.ink10 },
+  marcoHoy: { borderWidth: stroke.rule, borderColor: oro.claro, paddingVertical: space.s2 - 1 },
+  invertido: { backgroundColor: ink.ink10, borderColor: ink.ink10, borderRadius: radio.chip },
   textoInvertido: { color: ink.ink0 },
-  pulsado: { backgroundColor: ink.ink2 },
+  pulsado: { backgroundColor: vidrio.campo, borderRadius: radio.chip },
   letra: {
     fontFamily: tipo.micro.family,
     fontSize: tipo.micro.size,
@@ -166,11 +167,13 @@ const styles = StyleSheet.create({
     width: 14,
     height: 18,
     marginTop: space.s2,
-    backgroundColor: ink.ink4,
+    backgroundColor: vidrio.pista,
     justifyContent: 'flex-end',
+    borderRadius: 3,
+    overflow: 'hidden',
   },
   pistaInvertida: { backgroundColor: ink.ink8 },
-  relleno: { width: '100%', backgroundColor: ink.ink8 },
+  relleno: { width: '100%', backgroundColor: oro.hilo },
   rellenoInvertido: { backgroundColor: ink.ink0 },
 
   cabecera: { flexDirection: 'row', paddingBottom: space.s2 },
@@ -187,9 +190,10 @@ const styles = StyleSheet.create({
   rejilla: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    borderTopWidth: stroke.hairline,
-    borderLeftWidth: stroke.hairline,
-    borderColor: ink.ink3,
+    borderColor: vidrio.linea,
+    borderWidth: stroke.hairline,
+    borderRadius: radio.control,
+    overflow: 'hidden',
   },
   celda: {
     width: `${100 / 7}%`,
@@ -199,7 +203,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderRightWidth: stroke.hairline,
     borderBottomWidth: stroke.hairline,
-    borderColor: ink.ink3,
+    borderColor: vidrio.linea,
   },
   marcoCelda: {
     position: 'absolute',
@@ -208,7 +212,8 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     borderWidth: stroke.rule,
-    borderColor: ink.ink10,
+    borderColor: oro.claro,
+    borderRadius: radio.chip,
   },
   numMes: {
     fontFamily: 'PlayfairDisplay_700Bold',
@@ -220,7 +225,7 @@ const styles = StyleSheet.create({
   marcas: { flexDirection: 'row', alignItems: 'center', gap: 3, height: MARCA, marginTop: 3 },
   punto: { width: MARCA, height: MARCA, borderRadius: MARCA / 2, backgroundColor: ink.ink9 },
   puntoInvertido: { backgroundColor: ink.ink0 },
-  cuadro: { width: MARCA, height: MARCA, borderWidth: stroke.hairline, borderColor: ink.ink9 },
+  cuadro: { width: MARCA, height: MARCA, borderWidth: stroke.hairline, borderColor: ink.ink9, borderRadius: 2 },
   cuadroInvertido: { borderColor: ink.ink0 },
   puntoMision: { width: 3, height: 3, borderRadius: 1.5, backgroundColor: ink.ink6 },
   puntoMisionInvertido: { backgroundColor: ink.ink4 },

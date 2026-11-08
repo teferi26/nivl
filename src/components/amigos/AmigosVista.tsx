@@ -3,14 +3,14 @@
 // datos de mentira (demo.tsx). <Competicion> llega como slot (`competicion`).
 //
 // Composición de la arena:
-//   1. EncabezadoArena «AMIGOS» grabado, con volver, compartir (el único) y
-//      el meandro. Si hay solicitudes entrantes, van justo debajo.
-//   2. El podio de columnas (con 3 rivales o más) y «TU PUESTO: 3.º DE 8».
+//   1. EncabezadoArena «AMIGOS» grabado, con volver, compartir (el único).
+//      Si hay solicitudes entrantes, van justo debajo.
+//   2. El podio de peanas (con 3 rivales o más) y «TU PUESTO: 3.º DE 8».
 //   3. El ranking, que sube justo detrás: chips, línea de rivalidad y la lista
 //      con MI FILA INVERTIDA = la única inversión de la pantalla. Con la arena
 //      vacía no hay fila mía: la inversión pasa a «Invitar al primero».
-//   4. Duelos (slot; las ligas, apagadas en 1.0.8). 5. Solicitudes. 6. Tu código, en piedra con
-//      remaches. 7. Añadir por código, Tu ludus, Tus invitados. 8. Fuera del
+//   4. Duelos (slot; las ligas, apagadas en 1.0.8). 5. Solicitudes. 6. Tu código, en tarjeta.
+//      7. Añadir por código, Tu ludus, Tus invitados. 8. Fuera del
 //      ranking, Convivencia y Privacidad.
 // `Entrada` solo en los bloques (8 como mucho), nunca en las filas.
 
@@ -26,11 +26,11 @@ import {
   View,
   useWindowDimensions,
 } from 'react-native';
-import { Arena, Campo, EncabezadoArena, Entrada, FranjaCifras, TarjetaArena } from '@/components/arena';
+import { Campo, EncabezadoArena, Entrada, FranjaCifras, TarjetaArena } from '@/components/arena';
 import { TAM_BOTON } from '@/components/arena/EncabezadoArena';
 import { Button, Chip, ChipWrap, EmptyState, Row, Screen, Section, Skeleton, SkeletonRows, Tag } from '@/components/ui';
 import { Interruptor } from '@/components/ui/Interruptor';
-import { ink, space, stroke, type as tipo } from '@/design/tokens';
+import { ink, oro, radio, space, stroke, type as tipo, vidrio } from '@/design/tokens';
 import { useSizeClass } from '@/design/useSizeClass';
 import { t } from '@/i18n';
 import { LUDUS_MAX, LUDUS_MIN, lineaLudus, NOTA_LUDUS_MAX, OBJETIVOS_LUDUS } from '@/lib/elite';
@@ -60,7 +60,6 @@ export type AmigosVistaProps = DatosAmigos['vista'] & {
 };
 
 /** La planta de la arena del ranking vacío. */
-const ARENA_VACIA = { ancho: 220, alto: 110 };
 /** Con el texto por encima de esto, «Tu código» y «Añadir» vuelven a apilarse. */
 const ESCALA_DOS_COLUMNAS = 1.35;
 
@@ -94,7 +93,6 @@ export function AmigosVista(p: AmigosVistaProps) {
               </View>
             ) : undefined
           }
-          meandro
         />
       </Entrada>
 
@@ -297,12 +295,7 @@ function Ranking(p: AmigosVistaProps) {
   return (
     <Section title={t('amigos:ranking.titulo')} meta={numAmigos > 0 ? `${visibles.length}` : undefined}>
       {numAmigos === 0 ? (
-        <TarjetaArena variante="contorno" remaches>
-          <View style={styles.vacioArena}>
-            {/* El óvalo va vacío: el único icono es el del EmptyState (que
-                lo exige), así no se repite. */}
-            <Arena ancho={ARENA_VACIA.ancho} alto={ARENA_VACIA.alto} variante="ovalo" />
-          </View>
+        <TarjetaArena variante="contorno">
           {/* La inversión de la pantalla cuando no hay fila mía: invitar.
               EmptyState no expone el ref de su botón: la hoja se ancla al bloque. */}
           <View ref={vacio} collapsable={false}>
@@ -466,7 +459,7 @@ function TuCodigo({ yo, copiado, copiar, invitar }: Pick<AmigosVistaProps, 'copi
 }) {
   const boton = useRef<View>(null);
   return (
-    <TarjetaArena variante="piedra" remaches rotulo={t('amigos:codigo.tuCodigo')} style={styles.bloque}>
+    <TarjetaArena variante="piedra" rotulo={t('amigos:codigo.tuCodigo')} style={styles.bloque}>
       <Text
         style={styles.codigo}
         selectable
@@ -572,7 +565,7 @@ function Ludus(p: AmigosVistaProps) {
         <>
           <View style={styles.ludusCabecera}>
             <Text style={styles.ludusNombre} numberOfLines={1}>
-              {miLudus.group.name.toUpperCase()}
+              {miLudus.group.name}
             </Text>
             <Text style={styles.ludusLinea}>{lineaLudus(miLudus.group)}</Text>
           </View>
@@ -774,8 +767,8 @@ const styles = StyleSheet.create({
   flex: { flex: 1, minWidth: 0 },
   bloque: { marginBottom: space.s6 + 2 },
   // Las listas de la arena van sin tarjeta: filas con hairline (Main.dc).
-  lista: { borderTopWidth: stroke.hairline, borderTopColor: ink.ink3 },
-  filaLista: { borderBottomWidth: stroke.hairline, borderBottomColor: ink.ink3, borderTopWidth: 0 },
+  lista: { borderTopWidth: stroke.hairline, borderTopColor: vidrio.linea },
+  filaLista: { borderBottomWidth: stroke.hairline, borderBottomColor: vidrio.linea, borderTopWidth: 0 },
   bloqueados: { marginTop: space.s4 },
   podioHueco: {
     flexDirection: 'row',
@@ -785,7 +778,7 @@ const styles = StyleSheet.create({
     width: '100%',
     alignSelf: 'center',
     borderBottomWidth: stroke.hairline,
-    borderBottomColor: ink.ink3,
+    borderBottomColor: vidrio.linea,
     paddingBottom: space.s2,
   },
   podioHuecoCol: { alignItems: 'center', gap: space.s2 },
@@ -797,9 +790,10 @@ const styles = StyleSheet.create({
     width: TAM_BOTON,
     height: TAM_BOTON,
     borderWidth: stroke.hairline,
-    borderColor: ink.ink4,
+    borderColor: vidrio.borde,
     alignItems: 'center',
     justifyContent: 'center',
+    borderRadius: radio.chip,
   },
   par: { flexDirection: 'row', alignItems: 'flex-start', gap: space.s5 },
   parCelda: { flex: 1, minWidth: 0 },
@@ -809,13 +803,12 @@ const styles = StyleSheet.create({
     lineHeight: tipo.bodySm.lineHeight,
     color: ink.ink9,
   },
-  vacioArena: { alignItems: 'center', justifyContent: 'center', marginTop: space.s2 },
   codigo: {
     fontFamily: tipo.rank.family,
     fontSize: tipo.rank.size,
     lineHeight: tipo.rank.lineHeight,
     letterSpacing: 6,
-    color: ink.ink10,
+    color: oro.claro,
     marginTop: space.s1,
   },
   cuerpo: {
@@ -845,7 +838,7 @@ const styles = StyleSheet.create({
   insignias: { flexDirection: 'row', flexWrap: 'wrap', gap: space.s2, marginTop: space.s3 },
   // El botón se alinea con la caja del Campo (la etiqueta va encima).
   anadirFila: { flexDirection: 'row', gap: space.s2, alignItems: 'flex-end' },
-  // El código en Cinzel espaciado; caja, foco y relleno los pone Campo.
+  // El código en Playfair espaciado; caja, foco y relleno los pone Campo.
   codigoCampo: {
     color: ink.ink10,
     fontFamily: tipo.number.family,
@@ -859,7 +852,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: stroke.hairline,
-    borderColor: ink.ink4,
+    borderColor: vidrio.borde,
+    borderRadius: radio.chip,
   },
   pulsado: { opacity: 0.6 },
   mas: { width: 44, textAlign: 'center' },
@@ -876,10 +870,10 @@ const styles = StyleSheet.create({
   },
   ludusCabecera: { marginBottom: 14 },
   ludusNombre: {
-    fontFamily: tipo.inscripcion.family,
-    fontSize: 18,
-    lineHeight: 24,
-    letterSpacing: tipo.inscripcion.tracking,
+    fontFamily: tipo.title.family,
+    fontSize: 20,
+    lineHeight: 26,
+    letterSpacing: tipo.title.tracking,
     color: ink.ink10,
   },
   ludusLinea: {

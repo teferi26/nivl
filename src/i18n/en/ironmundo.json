@@ -40,7 +40,9 @@
       "rutinas": "Routines",
       "pesos": "Lifts",
       "cardio": "Cardio"
-    }
+    },
+    "ahoraFecha": "Now · {{fecha}}",
+    "listaRotulo": "Today's exercises"
   },
   "pesos": {
     "rotulo": "Your lifts and records",
@@ -200,7 +202,8 @@
     "sinCarga": "Today it is {{nombre}}: {{series}} × {{reps}}. Every rep, full range.",
     "hecho": "Session done. Now protein and sleep: that is how today sticks.",
     "descanso": "Rest day. Walk, eat well and sleep: tomorrow you load.",
-    "sinRutina": "Tell me your days and your equipment, and I will build your routine."
+    "sinRutina": "Tell me your days and your equipment, and I will build your routine.",
+    "tuCoach": "Your coach"
   },
   "tecnica": {
     "titulo": "TECHNIQUE",

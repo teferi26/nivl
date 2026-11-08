@@ -93,6 +93,7 @@ export function useInicioIron(): UseInicioIron {
     gym,
     mundo,
     vista: {
+      nivel: mundo.nivel,
       fecha: fechaIron(dateKey()),
       cierre: hoy.estado === 'listo' && hoy.datos.cierre ? { alerta: hoy.datos.cierre.alerta, lineas: hoy.datos.cierre.lineas } : null,
       entreno,

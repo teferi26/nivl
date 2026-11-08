@@ -3,7 +3,7 @@
 // con datos de mentira (demo.tsx).
 //
 // Composición de la arena: cabecera fija con la marca (CoachMark 64) y
-// «COACH» grabado en Cinzel; vacío con la planta de la arena y la galea en el
+// «COACH» grabado en Playfair; vacío con la planta de la arena y la galea en el
 // centro; el coach habla en losas con la regla ink10 y firma «EL SISTEMA» al
 // empezar cada bloque; burbuja del usuario en ink2 sin marco; días separados
 // por una inscripción entre dos reglas; acciones rápidas sobre el cuadro;
@@ -27,13 +27,13 @@ import {
   type TextInputKeyPressEventData,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Arena, BotonArena, Entrada, Galea } from '@/components/arena';
+import { BotonArena, Entrada, Galea } from '@/components/arena';
 import { ProUpsellLine } from '@/components/ProOffer';
 import { UsoIa } from '@/components/UsoIa';
 import { Button, Card, Screen, Skeleton } from '@/components/ui';
 import { useTecladoAbierto } from '@/components/ui/useTecladoAbierto';
 import { usePiel, type Piel } from '@/design/piel';
-import { ink, space, stroke, type } from '@/design/tokens';
+import { ink, radio, space, stroke, type, vidrio } from '@/design/tokens';
 import { useAnchoUtil, useNavActual } from '@/design/useSizeClass';
 import { t } from '@/i18n';
 import { DESCARGO_SALUD, LINEA_CRISIS } from '@/lib/consentmath';
@@ -145,8 +145,6 @@ const RAPIDAS = [
 /** Por debajo de este ancho útil, «COACH» baja de `rank` (32) a inscripción de 20. */
 const ANCHO_TITULO_GRANDE = 400;
 /** La planta de la arena del vacío y la galea de su centro. */
-const ARENA_ANCHO = 260;
-const ARENA_ALTO = 160;
 const GALEA = 96;
 
 /** «Ha leído tu día · 4 consultas», «Listo para tu día». */
@@ -205,7 +203,7 @@ function Cabecera({ p }: { p: Pick<CoachVistaProps, 'cargando' | 'sinPro' | 'con
   );
 }
 
-/** La planta de la arena con la galea en el centro. Decoración: el lector la salta. */
+/** La galea del coach. Decoración: el lector la salta. */
 function ArenaGalea() {
   return (
     <View
@@ -214,7 +212,6 @@ function ArenaGalea() {
       importantForAccessibility="no-hide-descendants"
       pointerEvents="none"
     >
-      <Arena ancho={ARENA_ANCHO} alto={ARENA_ALTO} variante="ovalo" style={styles.arenaFondo} />
       <Galea kind="casco" size={GALEA} color={ink.ink10} />
     </View>
   );
@@ -317,7 +314,7 @@ const ZONA_PILDORA = { top: 3, bottom: 3, left: 0, right: 0 };
 
 /** «HOY», «AYER»: inscripción grabada entre dos reglas. */
 function Separador({ texto }: { texto: string }) {
-  // Con la piel de un mundo: letras espaciadas de 11 sin Cinzel y filete fino.
+  // Con la piel de un mundo: letras espaciadas de 11 sin Playfair y filete fino.
   const piel = usePiel();
   const linea = [styles.separadorLinea, piel && { height: stroke.hairline, backgroundColor: piel.borde }];
   return (
@@ -648,8 +645,7 @@ const styles = StyleSheet.create({
     paddingTop: space.s3,
     paddingBottom: space.s3 + 2,
     borderBottomWidth: stroke.hairline,
-    borderBottomColor: ink.ink3,
-    backgroundColor: ink.ink0,
+    borderBottomColor: vidrio.linea,
   },
   headerTextos: { flex: 1, minWidth: 0 },
   headerTituloFila: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', columnGap: space.s2, rowGap: space.s1 },
@@ -660,7 +656,7 @@ const styles = StyleSheet.create({
     letterSpacing: type.rank.tracking,
     color: ink.ink10,
   },
-  tituloSm: { fontFamily: type.inscripcion.family, fontSize: 20, lineHeight: 24, letterSpacing: type.inscripcion.tracking },
+  tituloSm: { fontFamily: type.title.family, fontSize: 20, lineHeight: 26, letterSpacing: type.title.tracking },
   headerLinea: {
     fontFamily: type.micro.family,
     fontSize: type.micro.size,
@@ -675,13 +671,14 @@ const styles = StyleSheet.create({
   // Sin marco y sin invertir: la inversión de la pantalla es enviar.
   burbujaUsuario: {
     maxWidth: '78%',
-    backgroundColor: ink.ink2,
+    backgroundColor: vidrio.campo,
     paddingVertical: space.s3,
     paddingHorizontal: space.s3 + 2,
+    borderRadius: radio.control,
   },
   textoUsuario: { ...conversacion, color: ink.ink9 },
   separador: { flexDirection: 'row', alignItems: 'center', gap: space.s3, marginTop: space.s1, marginBottom: space.s5 },
-  separadorLinea: { flex: 1, height: stroke.rule, backgroundColor: ink.ink4 },
+  separadorLinea: { flex: 1, height: stroke.hairline, backgroundColor: vidrio.linea },
   separadorTexto: {
     fontFamily: type.inscripcion.family,
     fontSize: type.inscripcion.size,
@@ -694,24 +691,23 @@ const styles = StyleSheet.create({
   errorTexto: { ...lectura, color: ink.ink9, flex: 1 },
   falloCarga: { marginTop: space.s8, alignItems: 'center', paddingVertical: space.s6 },
   falloCargaTitulo: {
-    fontFamily: type.inscripcion.family,
-    fontSize: type.inscripcion.size,
-    lineHeight: type.inscripcion.lineHeight,
-    letterSpacing: type.inscripcion.tracking,
+    fontFamily: type.title.family,
+    fontSize: type.title.size,
+    lineHeight: type.title.lineHeight,
+    letterSpacing: type.title.tracking,
     color: ink.ink10,
     textAlign: 'center',
   },
   falloCargaTexto: { ...lectura, color: ink.ink8, textAlign: 'center', marginTop: space.s2 },
   falloCargaBoton: { marginTop: space.s4 },
   vacio: { alignItems: 'center', paddingTop: space.s6, paddingBottom: space.s6 },
-  arenaGalea: { width: ARENA_ANCHO, height: ARENA_ALTO, alignItems: 'center', justifyContent: 'center' },
-  arenaFondo: { position: 'absolute', top: 0, left: 0 },
+  arenaGalea: { alignItems: 'center', justifyContent: 'center', paddingVertical: space.s4 },
   vacioTextos: { alignItems: 'center', alignSelf: 'stretch', paddingHorizontal: space.s2 },
   vacioTitulo: {
-    fontFamily: type.inscripcion.family,
-    fontSize: type.inscripcion.size,
-    lineHeight: type.inscripcion.lineHeight,
-    letterSpacing: type.inscripcion.tracking,
+    fontFamily: type.title.family,
+    fontSize: type.title.size,
+    lineHeight: type.title.lineHeight,
+    letterSpacing: type.title.tracking,
     color: ink.ink10,
     marginTop: space.s5,
     textAlign: 'center',
@@ -741,12 +737,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: space.s3 + 2,
     borderRadius: 999,
     borderWidth: stroke.hairline,
-    borderColor: ink.ink4,
+    borderColor: vidrio.borde,
+    backgroundColor: vidrio.tarjeta,
   },
   pildoraOff: { opacity: 0.35 },
   pildoraTexto: { fontFamily: type.bodySm.family, fontSize: type.bodySm.size, lineHeight: 18, color: ink.ink9 },
   rapidas: { gap: space.s2, paddingHorizontal: space.s5, paddingTop: space.s3 - 2, paddingBottom: space.s1 + 3 },
-  rapidasFila: { borderTopWidth: stroke.hairline, borderTopColor: ink.ink3 },
+  rapidasFila: { borderTopWidth: stroke.hairline, borderTopColor: vidrio.linea },
   cargandoCuerpo: { paddingHorizontal: space.s5, paddingTop: space.s5 },
   cargandoLinea: { marginTop: space.s3 - 2 },
   cargandoBloque: { marginTop: space.s6 },
@@ -758,7 +755,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: space.s5,
     paddingVertical: space.s3 - 2,
     borderTopWidth: stroke.hairline,
-    borderTopColor: ink.ink3,
+    borderTopColor: vidrio.linea,
   },
   // La línea de la oferta trae su propio filete arriba: el bloque no pone otro.
   avisoBloque: { paddingHorizontal: space.s5 },
@@ -768,7 +765,7 @@ const styles = StyleSheet.create({
     gap: space.s2,
     paddingVertical: space.s3 - 2,
     borderTopWidth: stroke.hairline,
-    borderTopColor: ink.ink3,
+    borderTopColor: vidrio.linea,
   },
   avisoTexto: { ...lectura, flex: 1, minWidth: 0, color: ink.ink8 },
   bandaPro: {
@@ -777,7 +774,7 @@ const styles = StyleSheet.create({
     paddingTop: space.s3,
     paddingBottom: space.s3 + 2,
     borderTopWidth: stroke.hairline,
-    borderTopColor: ink.ink3,
+    borderTopColor: vidrio.linea,
   },
   bandaProTexto: { ...lectura, color: ink.ink8 },
   oculto: { display: 'none' },
@@ -790,21 +787,21 @@ const styles = StyleSheet.create({
     paddingTop: space.s3 - 2,
     paddingBottom: space.s3,
     borderTopWidth: stroke.hairline,
-    borderTopColor: ink.ink3,
-    backgroundColor: ink.ink0,
+    borderTopColor: vidrio.linea,
   },
   input: {
     flex: 1,
     minHeight: CIRCULO,
     maxHeight: 130,
-    backgroundColor: ink.ink2,
+    backgroundColor: vidrio.campo,
     borderWidth: stroke.hairline,
-    borderColor: ink.ink4,
+    borderColor: vidrio.borde,
     color: ink.ink9,
     ...conversacion,
     paddingHorizontal: space.s3 + 2,
     paddingTop: 13,
     paddingBottom: 13,
+    borderRadius: radio.control,
   },
   enviar: {
     width: CIRCULO,

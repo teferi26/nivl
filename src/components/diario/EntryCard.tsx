@@ -1,6 +1,6 @@
 // NIVL · Diario: un día del Archivo (FASE3 Lote D).
 //
-// Una fila entre hairlines, no una tarjeta: la fecha grabada (Cinzel 600), las
+// Una fila entre hairlines, no una tarjeta: la fecha grabada (Playfair 600), las
 // notas y las emociones del día y un extracto de dos líneas. «Leer más» abre
 // la entrada entera: las victorias como lista, lo vivido, la lección aparte y
 // lo que dejaste para el día siguiente. Una entrada antigua (solo notas y
@@ -10,7 +10,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { Image } from 'expo-image';
 import { useEffect, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { ink, space, stroke, type as tipo } from '@/design/tokens';
+import { ink, oro, radio, space, stroke, type as tipo, vidrio } from '@/design/tokens';
 import { t } from '@/i18n';
 import { nombreDia, relativoDe } from '@/lib/dates';
 import { etiquetaEmocion, extracto, formatoDecimal, limpiarEmociones, limpiarVictorias } from '@/lib/journalmath';
@@ -47,7 +47,7 @@ export function NotasDelDia({ entry }: { entry: Pick<JournalEntry, 'mood' | 'ene
           </Text>
           <Text style={styles.notaValor} maxFontSizeMultiplier={1.35}>
             {n.valor}
-            {/* Cinzel no tiene minúsculas: la unidad, en Outfit. */}
+            {/* Playfair no tiene minúsculas: la unidad, en Outfit. */}
             {n.unidad ? <Text style={styles.notaUnidad}> {n.unidad}</Text> : null}
           </Text>
         </View>
@@ -251,7 +251,7 @@ export function EntryCard({ entry, hoy, primera, photoCount, eagerPhotos, loadPh
 
 const styles = StyleSheet.create({
   fila: { paddingVertical: space.s4 },
-  conRegla: { borderTopWidth: stroke.hairline, borderTopColor: ink.ink3 },
+  conRegla: { borderTopWidth: stroke.hairline, borderTopColor: vidrio.linea },
   cabecera: { flexDirection: 'row', alignItems: 'flex-start', gap: space.s3 },
   fecha: { flex: 1, minWidth: 0, paddingTop: space.s1 },
   dia: { fontFamily: tipo.number.family, fontSize: 16, lineHeight: 20, letterSpacing: 0.5, color: ink.ink10 },
@@ -282,10 +282,10 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     color: ink.ink6,
   },
-  notaValor: { fontFamily: tipo.number.family, fontSize: 14, color: ink.ink10 },
+  notaValor: { fontFamily: tipo.number.family, fontSize: 14, color: oro.claro },
   notaUnidad: { fontFamily: tipo.micro.family, fontSize: 12, color: ink.ink8 },
   emociones: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: space.s2, marginTop: space.s3 },
-  emocion: { borderWidth: stroke.hairline, borderColor: ink.ink4, paddingHorizontal: space.s2, paddingVertical: 2 },
+  emocion: { borderWidth: stroke.hairline, borderColor: vidrio.borde, paddingHorizontal: space.s2, paddingVertical: 2, borderRadius: radio.pastilla },
   emocionTexto: { fontFamily: tipo.micro.family, fontSize: 12, lineHeight: 16, color: ink.ink8 },
   emocionResto: { fontFamily: tipo.micro.family, fontSize: 12, color: ink.ink6 },
   extracto: {
@@ -301,7 +301,7 @@ const styles = StyleSheet.create({
   victoriaTexto: { flex: 1, minWidth: 0, fontFamily: tipo.bodySm.family, fontSize: 14, lineHeight: 20, color: ink.ink9 },
   texto: { fontFamily: tipo.bodySm.family, fontSize: 14, lineHeight: 21, color: ink.ink8, marginTop: space.s3 },
   // Outfit no trae cursiva: la lección se distingue como cita, con su filo de 2 a la izquierda.
-  leccion: { marginTop: space.s3, paddingLeft: space.s3, borderLeftWidth: stroke.rule, borderLeftColor: ink.ink6 },
+  leccion: { marginTop: space.s3, paddingLeft: space.s3, borderLeftWidth: stroke.rule, borderLeftColor: oro.borde },
   rotulo: {
     fontFamily: tipo.micro.family,
     fontSize: tipo.micro.size,
@@ -315,13 +315,12 @@ const styles = StyleSheet.create({
   lineaRotulo: { fontFamily: tipo.micro.family, color: ink.ink6 },
   soloNotas: { fontFamily: tipo.bodySm.family, fontSize: 14, lineHeight: 20, color: ink.ink6, marginTop: space.s3 },
   fotos: { flexDirection: 'row', flexWrap: 'wrap', gap: space.s2, marginTop: space.s3 },
-  foto: { width: 64, height: 64, backgroundColor: ink.ink2 },
+  foto: { width: 64, height: 64, backgroundColor: vidrio.tarjeta, borderRadius: radio.chip },
   mas: { flexDirection: 'row', alignItems: 'center', gap: space.s1, alignSelf: 'flex-start', minHeight: 44, marginBottom: -space.s3 },
   masTexto: {
     fontFamily: tipo.label.family,
-    fontSize: tipo.label.size,
-    letterSpacing: tipo.label.tracking,
-    textTransform: 'uppercase',
+    fontSize: 13,
+    letterSpacing: 0,
     color: ink.ink9,
   },
 });

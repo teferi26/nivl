@@ -10,7 +10,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { Image } from 'expo-image';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Button } from '@/components/ui';
-import { ink, space, stroke, type as tipo } from '@/design/tokens';
+import { ink, radio, space, stroke, type as tipo, vidrio } from '@/design/tokens';
 import { t } from '@/i18n';
 import { POSES, type FotoConPeso, type Pose, type SemanaFotos } from '@/lib/progressPhotos';
 import { fechaCorta, nombrePose } from './modelo';
@@ -151,19 +151,20 @@ const styles = StyleSheet.create({
   marco: {
     width: '100%',
     aspectRatio: 3 / 4,
-    backgroundColor: ink.ink2,
+    backgroundColor: vidrio.tarjeta,
     borderWidth: stroke.hairline,
-    borderColor: ink.ink3,
+    borderColor: vidrio.linea,
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
+    borderRadius: radio.chip,
   },
-  marcoGrande: { borderColor: ink.ink4 },
-  marcoVacio: { backgroundColor: ink.ink0 },
+  marcoGrande: { borderColor: vidrio.borde },
+  marcoVacio: { backgroundColor: vidrio.suave },
   guion: { fontFamily: tipo.cifra.family, fontSize: 24, lineHeight: 28, color: ink.ink4 },
   lista: { gap: 0 },
   semana: { paddingVertical: space.s4, gap: space.s3 },
-  conRegla: { borderTopWidth: stroke.hairline, borderTopColor: ink.ink3 },
+  conRegla: { borderTopWidth: stroke.hairline, borderTopColor: vidrio.linea },
   cabecera: { flexDirection: 'row', alignItems: 'baseline', gap: space.s2 },
   numero: {
     fontFamily: tipo.inscripcion.family,

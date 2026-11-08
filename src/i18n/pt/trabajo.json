@@ -107,5 +107,25 @@
       "pendiente": "Ainda não foi guardado.",
       "no_guardado": "Estes minutos não puderam ser guardados. A tua lista fica como estava."
     }
+  },
+  "heroe": {
+    "semana": "Semana {{n}}",
+    "titulo": {
+      "0": "Planeia o teu dia",
+      "1": "Uma coisa hoje",
+      "2": "Duas coisas hoje",
+      "3": "Três coisas hoje"
+    },
+    "hechas": "{{hechas}} de {{total}} feitas",
+    "sinPlan": "Ainda sem prioridades",
+    "horas": "{{horas}} h",
+    "foco": "de foco",
+    "reuniones": "em reuniões",
+    "carga": "carga",
+    "nivel": {
+      "ligera": "Leve",
+      "normal": "Normal",
+      "alta": "Alta"
+    }
   }
 }

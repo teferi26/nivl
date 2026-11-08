@@ -1,25 +1,27 @@
-// NIVL · Mundo IRON: el inicio, «IRON: tu gimnasio, nada más» (lámina 2 de la
-// P01, teléfono de la izquierda). Pura: todo llega por props (useInicioIron o
-// la galería).
+// NIVL · Mundo IRON: el inicio en Ónix (maqueta OnixModos, columna IRON). Pura:
+// todo llega por props (useInicioIron o la galería).
 //
-// De arriba abajo, como la lámina:
-//   1 · La cabecera del mundo (ranura: emblema, IRON, nivel de IRON).
-//   2 · El entreno de hoy, primero: tarjeta héroe con el día de la rutina,
-//       tres filas (ejercicio · series × reps · kg) y EMPEZAR ENTRENO.
-//   3 · Tus pesos y récords: tres tarjetas con su gráfica de 6 semanas.
-//   4 · Rutinas: tus días en una fila y «+ Nueva».
-//   5 · Añadir ejercicio (catálogo con técnica) | Dieta de hoy (anillo).
-//   6 · El coach de IRON.
-// El informe del cierre (el mismo de Hoy de NIVL) va antes del entreno si lo hay.
+// De arriba abajo:
+//   1 · La cabecera del mundo (ranura).
+//   2 · El héroe: escudo con el nivel de IRON y su barra de XP.
+//   3 · Tu coach: su palabra y el campo que lleva al chat.
+//   4 · Ahora: el entreno de hoy con su botón principal.
+//   5 · Tres cifras: tus pesos y récords, con su gráfica de 6 semanas.
+//   6 · Los ejercicios de hoy, en lista con hairline.
+//   7 · Rutinas, Añadir ejercicio | Dieta de hoy, Resistencia.
+// El informe del cierre (el mismo de Hoy de NIVL) va antes de todo si lo hay.
 // FUERA (regla de producto): hábitos, campañas, Winter Arc. Viven en NIVL.
 
 import type { ReactNode } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { formatoMiles, ratioSeguro } from '@/components/arena';
+import { EscudoNivel, estiloNivelEscudo } from '@/components/arena/EscudoNivel';
 import { kgTexto } from '@/components/iron/HistorialIron';
+import type { NivelModo } from '@/modos/niveles';
 import { miles } from '@/i18n/formato';
 import { t } from '@/i18n';
 import { entrenoDeHoy, type DiaRutina, type EjercicioRutina, type Prescrito } from './calculos';
-import { BarrasHueco, HeroeHueco, PesosHueco, RutinasHueco } from './Esqueletos';
+import { BarrasHueco, HeroeHueco, PesosHueco, RutinasHueco, TarjetaHueco } from './Esqueletos';
 import { FiguraSentadilla, GlifoIron } from './Glifos';
 import {
   AnilloIron,
@@ -35,7 +37,7 @@ import {
   RotuloIron,
   TarjetaIron,
 } from './piezas';
-import { A, C, F, fs, px } from './tema';
+import { A, C, F, fs, H, M, px, R } from './tema';
 import type { EstadoPesosIron, PesoIron } from './usePesos';
 
 export interface EntradaEntrenoHoy {
@@ -80,6 +82,8 @@ export interface AccionesInicioIron {
 
 export interface InicioIronVistaProps {
   cabecera: ReactNode;
+  /** El nivel de IRON para el héroe; null mientras se lee, sin él no hay héroe. */
+  nivel?: NivelModo | null;
   /** «mar 20 oct»; null mientras carga. */
   fecha: string | null;
   /** Las líneas del informe del cierre (Hoy de NIVL), si lo hay. */
@@ -92,7 +96,7 @@ export interface InicioIronVistaProps {
   acciones: AccionesInicioIron;
 }
 
-const FILAS_HEROE = 3;
+const FILAS_LISTA = 3;
 const PESOS_EN_INICIO = 3;
 
 /** «Pierna A · Fuerza» → «Pierna A»: en la píldora, el nombre corto (la lámina). */
@@ -110,11 +114,46 @@ export function kgFila(kg: number | null): string {
   return kg !== null && kg > 0 ? t('ironmundo:kg', { kg: kgTexto(kg) }) : t('ironmundo:sinCarga');
 }
 
+const LADO_ESCUDO = 62;
+
+/** El héroe: escudo con el nivel de IRON, su barra y lo que falta. */
+function HeroeNivel({ nivel }: { nivel: NivelModo | null }) {
+  if (nivel === null) return <TarjetaHueco heroe lineas={2} alto={98} />;
+  const maximo = nivel.xpSiguiente <= 0;
+  return (
+    <TarjetaIron heroe>
+      <View
+        style={styles.heroeFila}
+        accessible
+        accessibilityLabel={t('mundos:cabecera.nivelA11y', { modo: 'IRON', nivel: nivel.nivel, xp: formatoMiles(nivel.xp) })}
+      >
+        <EscudoNivel lado={LADO_ESCUDO}>
+          <Text style={estiloNivelEscudo(LADO_ESCUDO, nivel.nivel)} maxFontSizeMultiplier={1}>
+            {nivel.nivel}
+          </Text>
+        </EscudoNivel>
+        <View style={styles.flex}>
+          <RotuloIron texto={t('mundos:cabecera.nivel', { nivel: nivel.nivel })} />
+          <Text style={styles.heroeTitulo} numberOfLines={2} maxFontSizeMultiplier={1.35}>
+            {t('mundos:subtitulo.iron')}
+          </Text>
+          <BarraIron ratio={maximo ? 1 : ratioSeguro(nivel.xpEnNivel, nivel.xpSiguiente)} alto={5} />
+          <Text style={[estilosIron.meta, styles.heroeXp]} numberOfLines={1} maxFontSizeMultiplier={1.35}>
+            {maximo
+              ? t('mundos:cabecera.xpMax')
+              : t('mundos:cabecera.xp', { xp: formatoMiles(nivel.xpEnNivel), total: formatoMiles(nivel.xpSiguiente) })}
+          </Text>
+        </View>
+      </View>
+    </TarjetaIron>
+  );
+}
+
 function Entreno({ e, fecha, onRutinas }: { e: EntradaEntrenoHoy; fecha: string | null; onRutinas: () => void }) {
   const rotulo = fecha ? t('ironmundo:entreno.rotuloFecha', { fecha }) : t('ironmundo:entreno.rotulo');
   if (!e.cargado) {
     return e.errorCarga ? (
-      <TarjetaIron heroe>
+      <TarjetaIron>
         <RotuloIron texto={rotulo} />
         <Text style={estilosIron.error} maxFontSizeMultiplier={1.6}>
           {e.errorCarga}
@@ -130,7 +169,7 @@ function Entreno({ e, fecha, onRutinas }: { e: EntradaEntrenoHoy; fecha: string 
 
   if (e.xpHecho !== null) {
     return (
-      <TarjetaIron heroe>
+      <TarjetaIron>
         <RotuloIron texto={rotulo} em={t('ironmundo:xp', { xp: e.xpHecho })} />
         <View style={styles.hecho}>
           <View style={styles.hechoMarca}>
@@ -152,7 +191,7 @@ function Entreno({ e, fecha, onRutinas }: { e: EntradaEntrenoHoy; fecha: string 
 
   if (e.dias.length === 0 && hoy.filas.length === 0) {
     return (
-      <TarjetaIron heroe>
+      <TarjetaIron>
         <RotuloIron texto={rotulo} />
         <Text style={estilosIron.titulo} maxFontSizeMultiplier={1.35}>
           {t('ironmundo:entreno.sinRutinaTitulo')}
@@ -167,7 +206,7 @@ function Entreno({ e, fecha, onRutinas }: { e: EntradaEntrenoHoy; fecha: string 
 
   if (hoy.filas.length === 0) {
     return (
-      <TarjetaIron heroe>
+      <TarjetaIron>
         <RotuloIron texto={rotulo} />
         <Text style={estilosIron.titulo} maxFontSizeMultiplier={1.35}>
           {hoy.dia ? hoy.dia.name : t('ironmundo:entreno.descansoTitulo')}
@@ -180,38 +219,46 @@ function Entreno({ e, fecha, onRutinas }: { e: EntradaEntrenoHoy; fecha: string 
     );
   }
 
-  const visibles = hoy.filas.slice(0, FILAS_HEROE);
   return (
-    <TarjetaIron heroe>
-      <RotuloIron texto={rotulo} em={t('ironmundo:hastaXp', { xp: e.xpSesion })} />
+    <TarjetaIron>
+      <RotuloIron texto={fecha ? t('ironmundo:entreno.ahoraFecha', { fecha }) : rotulo} em={t('ironmundo:hastaXp', { xp: e.xpSesion })} />
       <Text style={estilosIron.titulo} accessibilityRole="header" maxFontSizeMultiplier={1.35} numberOfLines={2}>
         {hoy.dia?.name ?? t('ironmundo:entreno.delCoach')}
       </Text>
       <Text style={estilosIron.meta} maxFontSizeMultiplier={1.35}>
         {t('ironmundo:entreno.meta', { count: hoy.filas.length, series: hoy.series, minutos: hoy.minutos })}
       </Text>
-      <View style={styles.filas}>
-        {visibles.map((f, i) => (
-          <FilaIron
-            key={f.clave}
-            primera={i === 0}
-            onPress={e.tecnicaDe?.(f.nombre)}
-            accessibilityLabel={t('ironmundo:entreno.filaA11y', { nombre: f.nombre, series: f.series, reps: f.reps, kg: kgFila(f.kg) })}
-          >
-            <Text style={estilosIron.filaNombre} numberOfLines={1} maxFontSizeMultiplier={1.35}>
-              {f.nombre}
-            </Text>
-            <Text style={[estilosIron.filaSerie, styles.colSerie]} maxFontSizeMultiplier={1.35}>
-              {seriesReps(f.series, f.reps)}
-            </Text>
-            <Text style={[estilosIron.filaKg, styles.colKg]} maxFontSizeMultiplier={1.35}>
-              {kgFila(f.kg)}
-            </Text>
-          </FilaIron>
-        ))}
-      </View>
-      <BotonIron icono="pesa" titulo={t('ironmundo:entreno.empezar')} onPress={e.onEmpezar} />
+      <BotonIron icono="pesa" titulo={t('ironmundo:entreno.empezar')} onPress={e.onEmpezar} style={styles.empezar} />
     </TarjetaIron>
+  );
+}
+
+/** Los ejercicios de hoy: sin caja y con hairline, debajo de las cifras. */
+function EjerciciosHoy({ e }: { e: EntradaEntrenoHoy }) {
+  if (!e.cargado || e.xpHecho !== null) return null;
+  const hoy = entrenoDeHoy({ dias: e.dias, ejercicios: e.ejercicios, prescrito: e.prescrito, hoyDia: e.hoyDia });
+  if (hoy.filas.length === 0) return null;
+  return (
+    <View>
+      <RotuloIron seccion texto={t('ironmundo:entreno.listaRotulo')} />
+      {hoy.filas.slice(0, FILAS_LISTA).map((f) => (
+        <FilaIron
+          key={f.clave}
+          onPress={e.tecnicaDe?.(f.nombre)}
+          accessibilityLabel={t('ironmundo:entreno.filaA11y', { nombre: f.nombre, series: f.series, reps: f.reps, kg: kgFila(f.kg) })}
+        >
+          <Text style={[estilosIron.filaNombre, styles.flex]} numberOfLines={1} maxFontSizeMultiplier={1.35}>
+            {f.nombre}
+          </Text>
+          <Text style={[estilosIron.filaSerie, styles.colSerie]} maxFontSizeMultiplier={1.35}>
+            {seriesReps(f.series, f.reps)}
+          </Text>
+          <Text style={[estilosIron.filaKg, styles.colKg]} maxFontSizeMultiplier={1.35}>
+            {kgFila(f.kg)}
+          </Text>
+        </FilaIron>
+      ))}
+    </View>
   );
 }
 
@@ -233,12 +280,12 @@ function TarjetaPeso({ p }: { p: PesoIron }) {
         .filter(Boolean)
         .join('. ')}
     >
-      <Text style={styles.pesoNombre} numberOfLines={1} maxFontSizeMultiplier={1.2}>
-        {p.nombre}
-      </Text>
       <Text style={estilosIron.kg} numberOfLines={1} adjustsFontSizeToFit maxFontSizeMultiplier={1}>
         {kgTexto(p.kg)}
         <Text style={estilosIron.kgUnidad}>{` ${t('ironmundo:unidadKg')}`}</Text>
+      </Text>
+      <Text style={styles.pesoNombre} numberOfLines={1} maxFontSizeMultiplier={1.2}>
+        {p.nombre}
       </Text>
       <View style={styles.pesoDelta}>
         {p.record ? (
@@ -391,7 +438,7 @@ function Dieta({ dieta, onDieta }: { dieta: EstadoDietaHoy; onDieta: () => void 
   );
 }
 
-export function InicioIronVista({ cabecera, fecha, cierre, entreno, pesos, dieta, coach, acciones }: InicioIronVistaProps) {
+export function InicioIronVista({ cabecera, nivel, fecha, cierre, entreno, pesos, dieta, coach, acciones }: InicioIronVistaProps) {
   return (
     <PantallaIron>
       {cabecera}
@@ -407,6 +454,10 @@ export function InicioIronVista({ cabecera, fecha, cierre, entreno, pesos, dieta
         </TarjetaIron>
       ) : null}
 
+      {nivel === undefined ? null : <HeroeNivel nivel={nivel} />}
+
+      <CoachIron mensaje={coach} onAbrir={acciones.onCoach} />
+
       <Entreno e={entreno} fecha={fecha} onRutinas={acciones.onRutinas} />
 
       <View>
@@ -419,6 +470,8 @@ export function InicioIronVista({ cabecera, fecha, cierre, entreno, pesos, dieta
         />
         <Pesos estado={pesos} onPesos={acciones.onPesos} />
       </View>
+
+      <EjerciciosHoy e={entreno} />
 
       <Rutinas e={entreno} onRutinas={acciones.onRutinas} />
 
@@ -435,23 +488,24 @@ export function InicioIronVista({ cabecera, fecha, cierre, entreno, pesos, dieta
           </Text>
         </TarjetaIron>
       ) : null}
-
-      <CoachIron mensaje={coach} onAbrir={acciones.onCoach} />
     </PantallaIron>
   );
 }
 
 const styles = StyleSheet.create({
   flex: { flex: 1, minWidth: 0 },
-  filas: { marginTop: px(6) },
-  colSerie: { width: px(44), textAlign: 'center' },
-  colKg: { minWidth: px(60), textAlign: 'right' },
+  heroeFila: { flexDirection: 'row', alignItems: 'center', gap: 14 },
+  heroeTitulo: { fontFamily: F.b, fontSize: 19, lineHeight: 24, color: C.blanco, marginTop: 2, marginBottom: 7 },
+  heroeXp: { marginTop: 5 },
+  empezar: { marginTop: 10 },
+  colSerie: { width: 52, textAlign: 'center' },
+  colKg: { minWidth: 62, textAlign: 'right' },
   hecho: { flexDirection: 'row', alignItems: 'center', gap: px(10), marginTop: px(4) },
-  hechoMarca: { width: px(28), height: px(28), borderRadius: px(14), backgroundColor: A, alignItems: 'center', justifyContent: 'center' },
-  pesos: { flexDirection: 'row', gap: px(7) },
-  peso: { flex: 1, minWidth: 0, borderRadius: px(13), paddingVertical: px(8), paddingHorizontal: px(9) },
-  pesoNombre: { fontFamily: F.sb, fontSize: fs(9), lineHeight: Math.round(fs(9) * 1.3), color: C.meta },
-  pesoDelta: { marginTop: px(1), minHeight: px(13), justifyContent: 'center' },
+  hechoMarca: { width: px(28), height: px(28), borderRadius: R.pastilla, backgroundColor: H, alignItems: 'center', justifyContent: 'center' },
+  pesos: { flexDirection: 'row', gap: 8 },
+  peso: { flex: 1, minWidth: 0, borderRadius: M.radioPeso, paddingVertical: 10, paddingHorizontal: 11 },
+  pesoNombre: { fontFamily: F.m, fontSize: 12, lineHeight: 15, color: C.meta },
+  pesoDelta: { marginTop: 3, minHeight: px(13), justifyContent: 'center' },
   deltaMudo: { color: C.mudo },
   pesoLinea: { marginTop: px(4) },
   chips: { gap: px(6), paddingRight: px(2) },

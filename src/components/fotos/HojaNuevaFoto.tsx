@@ -18,7 +18,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { Button, Chip, ChipWrap, Sheet } from '@/components/ui';
 import { avisar, confirmar } from '@/components/ui/confirmar';
 import { vibrar } from '@/design/haptics';
-import { ink, space, stroke, type as tipo } from '@/design/tokens';
+import { ink, radio, space, stroke, type as tipo, vidrio } from '@/design/tokens';
 import { t } from '@/i18n';
 import { hacerFoto } from '@/lib/camara';
 import { addDays, isValidKey } from '@/lib/dates';
@@ -283,12 +283,13 @@ const styles = StyleSheet.create({
   previa: {
     width: 108,
     aspectRatio: 3 / 4,
-    backgroundColor: ink.ink2,
+    backgroundColor: vidrio.tarjeta,
     borderWidth: stroke.hairline,
-    borderColor: ink.ink4,
+    borderColor: vidrio.borde,
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
+    borderRadius: radio.chip,
   },
   fuentes: { flex: 1, minWidth: 0, gap: space.s2 },
   consejo: { fontFamily: tipo.bodySm.family, fontSize: 13, lineHeight: 18, color: ink.ink6, marginTop: space.s1 },
@@ -308,7 +309,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: stroke.hairline,
-    borderColor: ink.ink4,
+    borderColor: vidrio.borde,
+    borderRadius: radio.chip,
   },
   pasoApagado: { opacity: 0.4 },
   fechaTexto: {

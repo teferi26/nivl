@@ -40,7 +40,9 @@
       "rutinas": "Rutinas",
       "pesos": "Pesos",
       "cardio": "Cardio"
-    }
+    },
+    "ahoraFecha": "Ahora · {{fecha}}",
+    "listaRotulo": "Ejercicios de hoy"
   },
   "pesos": {
     "rotulo": "Tus pesos y récords",
@@ -200,7 +202,8 @@
     "sinCarga": "Hoy toca {{nombre}}: {{series}} × {{reps}}. Cada repetición, completa.",
     "hecho": "Sesión hecha. Ahora proteína y a dormir: así se fija lo de hoy.",
     "descanso": "Hoy descansas. Camina, come bien y duerme: mañana se carga.",
-    "sinRutina": "Dime tus días y tu material, y te monto la rutina."
+    "sinRutina": "Dime tus días y tu material, y te monto la rutina.",
+    "tuCoach": "Tu coach"
   },
   "tecnica": {
     "titulo": "TÉCNICA",

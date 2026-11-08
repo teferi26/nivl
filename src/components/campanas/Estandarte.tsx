@@ -2,7 +2,7 @@
 //
 // El vexilo de la legión: un travesaño arriba y la tela colgando con la muesca
 // en V abajo, de un solo trazo ink10 y sin relleno. Dentro, la letra del rango
-// en Cinzel 700. El grosor dice la envergadura de la campaña (E y D 1, C 2,
+// en Playfair 700. El grosor dice la envergadura de la campaña (E y D 1, C 2,
 // de B arriba 3): la jerarquía va en el trazo, nunca en el color.
 //
 // Es decoración salvo que lleve `accessibilityLabel`; en una tarjeta pulsable
@@ -10,7 +10,7 @@
 
 import { StyleSheet, Text, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
-import { ink, type as tipo } from '@/design/tokens';
+import { oro, type as tipo } from '@/design/tokens';
 import type { DungeonRank } from '@/lib/types';
 
 export interface EstandarteProps {
@@ -58,7 +58,7 @@ export function Estandarte({ letra, ancho, grosor, accessibilityLabel }: Estanda
       <Svg width={ancho} height={alto} viewBox={`0 0 ${ancho} ${alto}`}>
         <Path
           d={pathEstandarte(ancho, grosor)}
-          stroke={ink.ink10}
+          stroke={oro.hilo}
           strokeWidth={grosor}
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -81,7 +81,7 @@ export function Estandarte({ letra, ancho, grosor, accessibilityLabel }: Estanda
 
 const styles = StyleSheet.create({
   letraHueco: { position: 'absolute', left: 0, right: 0, alignItems: 'center', justifyContent: 'center' },
-  letra: { fontFamily: tipo.display.family, color: ink.ink10, textAlign: 'center' },
+  letra: { fontFamily: tipo.display.family, color: oro.claro, textAlign: 'center' },
   letraPeque: { fontSize: 18, lineHeight: 22 },
   letraGrande: { fontSize: 32, lineHeight: 38 },
 });

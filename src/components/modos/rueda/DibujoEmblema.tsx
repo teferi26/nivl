@@ -2,22 +2,20 @@
 // verdad (EmblemaModo), su copia nítida sobre la rueda abierta (RuedaModos) y
 // la galería /kit/rueda.
 //
-//   · 'disco' (lámina 1, cuadro 01, y la barra de la lámina 4): círculo negro
-//     con el aro del acento de 2 pt, halo de 16 pt al 45 % y un anillo negro de
-//     4 pt; los cuatro puntos de los modos (5 pt, al 85 %, brillo corto) centrados
-//     sobre el filo exterior, cada uno donde vive su modo en la rueda.
-//   · 'placa' (cabecera del mundo, lámina 2): la placa redondeada con el
-//     acento al 14 % de fondo, filo del acento y halo.
+//   · 'disco' (la barra): círculo oscuro con el aro de oro de 2 pt y un anillo
+//     oscuro de 4 pt; los cuatro puntos de los modos (5 pt) centrados sobre el
+//     filo exterior, cada uno donde vive su modo en la rueda.
+//   · 'placa' (cabecera del mundo): la placa redondeada con velo y marco de oro.
+//     Ónix: el oro es un hilo, sin halos.
 //   · Al mantener, el anillo de carga abraza el disco: 5 pt de aire y 4 pt de
 //     trazo, extremos redondos y halo.
 
 import { StyleSheet, View } from 'react-native';
 import Animated, { useAnimatedProps, type SharedValue } from 'react-native-reanimated';
 import Svg, { Circle } from 'react-native-svg';
-import { acentoRueda, ink } from '@/design/tokens';
+import { acentoRueda, ink, oro, radio } from '@/design/tokens';
 import { ANGULO_MODO, puntoEn } from '@/modos/rueda';
 import { MODOS_ETIQUETA, type ModoId } from '@/modos/tipos';
-import { conAlfa, halo, mezcla } from './color';
 import { GlifoModo } from './GlifoModo';
 
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
@@ -63,7 +61,7 @@ export function DibujoEmblema({ forma, tamano, modo, disponibles, carga }: Dibuj
                 height: tamano,
                 borderRadius: tamano / 2,
                 borderColor: acento,
-                boxShadow: halo(acento, 16, 0.45, { ancho: 4, color: ink.ink0 }),
+                boxShadow: `0px 0px 0px 4px ${ink.ink0}`,
               },
             ]}
           >
@@ -73,7 +71,6 @@ export function DibujoEmblema({ forma, tamano, modo, disponibles, carga }: Dibuj
             // Sobre el filo exterior del disco (aro negro de 4 pt incluido), como la lámina.
             const p = puntoEn(tamano / 2, tamano / 2, tamano / 2 + 3, ANGULO_MODO[m]);
             const color = disponibles.includes(m) ? acentoRueda[m] : ink.ink4;
-            const encendido = disponibles.includes(m);
             return (
               <View
                 key={m}
@@ -84,7 +81,6 @@ export function DibujoEmblema({ forma, tamano, modo, disponibles, carga }: Dibuj
                     top: p.y - PUNTO / 2,
                     backgroundColor: color,
                     opacity: 0.85,
-                    boxShadow: encendido ? `0px 0px 3px ${conAlfa(color, 0.8)}` : undefined,
                   },
                 ]}
               />
@@ -98,10 +94,9 @@ export function DibujoEmblema({ forma, tamano, modo, disponibles, carga }: Dibuj
             {
               width: tamano,
               height: tamano,
-              borderRadius: Math.round(tamano * 0.27),
-              borderColor: acento,
-              backgroundColor: mezcla(acento, 0.14),
-              boxShadow: halo(acento, 16, 0.45),
+              borderRadius: radio.chip,
+              borderColor: oro.borde,
+              backgroundColor: oro.fondo,
             },
           ]}
         >
@@ -130,7 +125,7 @@ export function DibujoEmblema({ forma, tamano, modo, disponibles, carga }: Dibuj
 
 const styles = StyleSheet.create({
   disco: { backgroundColor: ink.ink0, borderWidth: 2, alignItems: 'center', justifyContent: 'center' },
-  placa: { borderWidth: 1.5, alignItems: 'center', justifyContent: 'center' },
+  placa: { borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
   carga: { position: 'absolute' },
   punto: { position: 'absolute', width: PUNTO, height: PUNTO, borderRadius: PUNTO / 2 },
 });

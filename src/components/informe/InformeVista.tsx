@@ -2,8 +2,8 @@
 // llega por props desde useInforme (o desde la galería con datos de
 // mentira); las cuentas, de derivarInforme.
 //
-// De arriba abajo: el encabezado grabado («Progreso» / «INFORME») con
-// meandro; la franja XP · Misiones · Vs. previa y la Barra de evidencia; la lectura
+// De arriba abajo: el encabezado grabado («Progreso» / «INFORME»);
+// la franja XP · Misiones · Vs. previa y la Barra de evidencia; la lectura
 // semanal; «El sistema se ajusta» (sin análisis, la INVERSIÓN de la
 // pantalla es «Pedir análisis al oráculo»; con análisis, filas con hairline
 // y «Aplicar»/«Crear» en contorno); el XP por estadística con Barra estática
@@ -25,7 +25,7 @@ import {
 import { Heatmap } from '@/components/Heatmap';
 import { Button, EmptyState, Screen, Section } from '@/components/ui';
 import { SIN_DATO } from '@/components/ui/sinDato';
-import { ink, space, stroke, type as tipo } from '@/design/tokens';
+import { ink, radio, space, stroke, type as tipo, vidrio } from '@/design/tokens';
 import { t } from '@/i18n';
 import { DIFFICULTY_LABEL, STAT_ABBR, STAT_LABEL, STATS } from '@/lib/game';
 import type { WeeklyAdvice } from '@/lib/oracle';
@@ -132,7 +132,6 @@ export function InformeVista({
         eyebrow={t('informe:vista.eyebrow')}
         titulo={t('informe:vista.titulo')}
         subtitulo={cargado ? datos.subtitulo : undefined}
-        meandro
       />
     </Entrada>
   );
@@ -377,14 +376,15 @@ const styles = StyleSheet.create({
   consejo: { fontFamily: tipo.bodySm.family, fontSize: tipo.bodySm.size, lineHeight: tipo.bodySm.lineHeight, color: ink.ink8 },
   falloOraculo: { marginTop: space.s4 },
   fila: { flexDirection: 'row', alignItems: 'center', gap: space.s3, paddingVertical: space.s3, minHeight: 64 },
-  conRegla: { borderTopWidth: stroke.hairline, borderTopColor: ink.ink3 },
+  conRegla: { borderTopWidth: stroke.hairline, borderTopColor: vidrio.linea },
   icono: {
     width: BOTON,
     height: BOTON,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: stroke.hairline,
-    borderColor: ink.ink4,
+    borderColor: vidrio.borde,
+    borderRadius: radio.chip,
   },
   filaTexto: { flex: 1, minWidth: 0, gap: 2 },
   filaTitulo: { fontFamily: 'Outfit_600SemiBold', fontSize: 16, lineHeight: 22, color: ink.ink9 },

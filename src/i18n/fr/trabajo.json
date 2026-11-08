@@ -107,5 +107,25 @@
       "pendiente": "Pas encore enregistré.",
       "no_guardado": "Ces minutes n'ont pas pu être enregistrées. Ta liste reste comme elle était."
     }
+  },
+  "heroe": {
+    "semana": "Semaine {{n}}",
+    "titulo": {
+      "0": "Planifie ta journée",
+      "1": "Une chose aujourd'hui",
+      "2": "Deux choses aujourd'hui",
+      "3": "Trois choses aujourd'hui"
+    },
+    "hechas": "{{hechas}} sur {{total}} faites",
+    "sinPlan": "Pas encore de priorités",
+    "horas": "{{horas}} h",
+    "foco": "de concentration",
+    "reuniones": "en réunion",
+    "carga": "charge",
+    "nivel": {
+      "ligera": "Légère",
+      "normal": "Normale",
+      "alta": "Élevée"
+    }
   }
 }

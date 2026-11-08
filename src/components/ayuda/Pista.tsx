@@ -7,7 +7,7 @@ import { useLayoutEffect } from 'react';
 import { Pressable, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 import { Button } from '@/components/ui';
 import { usePiel } from '@/design/piel';
-import { ink, space, stroke, type as tipo } from '@/design/tokens';
+import { ink, radio, space, stroke, type as tipo, vidrio } from '@/design/tokens';
 import { t } from '@/i18n';
 import {
   apagarPistasGuardado,
@@ -122,11 +122,12 @@ const styles = StyleSheet.create({
   caja: {
     backgroundColor: ink.ink1,
     borderWidth: stroke.hairline,
-    borderColor: ink.ink4,
+    borderColor: vidrio.borde,
     paddingHorizontal: space.s4,
     paddingTop: space.s4,
     paddingBottom: space.s1,
     gap: space.s2,
+    borderRadius: radio.control,
   },
   titulo: {
     fontFamily: tipo.headline.family,
@@ -144,7 +145,7 @@ const styles = StyleSheet.create({
   },
   acciones: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: space.s2, marginTop: space.s1 },
   enlace: { alignSelf: 'flex-start', minHeight: 44, justifyContent: 'center' },
-  enlacePulsado: { backgroundColor: ink.ink2 },
+  enlacePulsado: { backgroundColor: vidrio.campo },
   enlaceTexto: {
     fontFamily: tipo.bodySm.family,
     fontSize: tipo.bodySm.size,

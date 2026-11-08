@@ -9,7 +9,7 @@
 //     `confirmar()` de usePerfil: borrar la cuenta no tiene vuelta atrás y
 //     la segunda pregunta se queda aunque el Campo ya frene el roce.
 //   · HojaPausa  → chips del motivo y de los días; INVERSIÓN «Activar pausa».
-//   · HojaCodigo → Campo grande en Cinzel (rank); INVERSIÓN «Guardar código».
+//   · HojaCodigo → Campo grande en Playfair (rank); INVERSIÓN «Guardar código».
 //   · HojaIdioma → el idioma del coach (1.0.10): Automático + es, en, fr, de,
 //     pt, it. Elegir es un toque y cierra la hoja (Check en lo elegido);
 //     pie: ghost «Cerrar». La interfaz sigue en español.

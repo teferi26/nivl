@@ -3,11 +3,11 @@
 // mentira) y no carga nada.
 //
 // De arriba abajo: el encabezado grabado («Cuerpo» / «NUTRICIÓN», con el
-// objetivo en la línea de contexto y el meandro), la franja de cifras del día
+// objetivo en la línea de contexto), la franja de cifras del día
 // (kcal y proteína del objetivo, y el parte «n/2»), el objetivo (carbos y
-// grasa en filas con la cifra en Cinzel, y el porqué del coach) o su vacío,
+// grasa en filas con la cifra en Playfair, y el porqué del coach) o su vacío,
 // el parte de hoy (dos filas con Check sobre hairlines, el Campo de notas y
-// el botón), la adherencia de 28 días (filas con su porcentaje en Cinzel y
+// el botón), la adherencia de 28 días (filas con su porcentaje en Playfair y
 // una Barra estática) y el descargo de salud.
 //
 // INVERSIÓN única: «Registrar el día». Si la carga falla, ErrorSistema ocupa
@@ -29,7 +29,7 @@ import {
   type Cifra,
 } from '@/components/arena';
 import { Button, Check, EmptyState, Row, Screen, Section, SIN_DATO, Tag } from '@/components/ui';
-import { ink, space, stroke, type as tipo } from '@/design/tokens';
+import { ink, space, stroke, type as tipo, vidrio } from '@/design/tokens';
 import { t } from '@/i18n';
 import type { NutritionLog, NutritionTarget } from '@/lib/bodywork';
 
@@ -121,7 +121,6 @@ export function NutricionVista({
           titulo={t('nutricion:vista.titulo')}
           subtitulo={subtitulo}
           onVolver={acciones.onVolver}
-          meandro
         />
       </Entrada>
 
@@ -278,7 +277,7 @@ export function NutricionVista({
   );
 }
 
-/** Una fila de adherencia: rótulo, porcentaje en Cinzel y la barra (estática). */
+/** Una fila de adherencia: rótulo, porcentaje en Playfair y la barra (estática). */
 function FilaAdherencia({ rotulo, pct, primera }: { rotulo: string; pct: number; primera?: boolean }) {
   return (
     <View
@@ -309,10 +308,10 @@ const styles = StyleSheet.create({
     paddingVertical: space.s3,
     borderTopWidth: stroke.hairline,
     borderBottomWidth: stroke.hairline,
-    borderColor: ink.ink3,
+    borderColor: vidrio.linea,
   },
   // Filas sobre hairlines, sin tarjeta.
-  lista: { borderTopWidth: stroke.hairline, borderBottomWidth: stroke.hairline, borderColor: ink.ink3 },
+  lista: { borderTopWidth: stroke.hairline, borderBottomWidth: stroke.hairline, borderColor: vidrio.linea },
   cifraFila: {
     fontFamily: 'PlayfairDisplay_700Bold',
     fontSize: 16,
@@ -320,7 +319,7 @@ const styles = StyleSheet.create({
     color: ink.ink10,
     fontVariant: ['tabular-nums'],
   },
-  // Cinzel no tiene minúsculas: la unidad va en Outfit.
+  // Playfair no tiene minúsculas: la unidad va en Outfit.
   unidad: { fontFamily: tipo.micro.family, fontSize: tipo.micro.size, letterSpacing: tipo.micro.tracking, color: ink.ink6 },
   motivo: {
     fontFamily: tipo.bodySm.family,
@@ -340,7 +339,7 @@ const styles = StyleSheet.create({
     marginTop: space.s3,
   },
   adherencia: { paddingVertical: space.s3, gap: space.s2 },
-  conRegla: { borderTopWidth: stroke.hairline, borderTopColor: ink.ink3 },
+  conRegla: { borderTopWidth: stroke.hairline, borderTopColor: vidrio.linea },
   adherenciaCab: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', gap: space.s3 },
   adherenciaRotulo: {
     fontFamily: tipo.body.family,

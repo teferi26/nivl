@@ -9,17 +9,17 @@ import { Animated, StyleSheet, View, type DimensionValue, type StyleProp, type V
 import { estaQuieto } from '@/components/arena/quieto';
 import { useMovimientoReducido } from '@/components/ui/motion';
 import { t } from '@/i18n';
-import { FilaIron, RotuloIron, TarjetaIron } from './piezas';
-import { acentoA, C, fs, M, px } from './tema';
+import { RotuloIron, TarjetaIron } from './piezas';
+import { C, fs, M, O, px, R } from './tema';
 
 /** Alto de línea de cada texto de IRON (los de estilosIron y piezas). */
 export const LINEA = {
-  rotulo: Math.round(fs(8.5) * 1.3),
-  titulo: Math.round(fs(21) * 1.12),
-  meta: Math.round(fs(10) * 1.35),
-  fila: Math.round(fs(11) * 1.32),
-  kg: Math.round(fs(17) * 1.3),
-  peso: Math.round(fs(9) * 1.3),
+  rotulo: 14,
+  titulo: 29,
+  meta: 18,
+  fila: 20,
+  kg: 25,
+  peso: 15,
 } as const;
 
 function useBrillo(): Animated.Value {
@@ -56,23 +56,14 @@ export function LineaHueco({ ancho, alto, style, acento }: { ancho: DimensionVal
   );
 }
 
-/** El héroe del entreno de hoy cargando: kicker, título, meta, 3 filas y el botón. */
+/** El entreno de hoy cargando: rótulo, título, meta y el botón. */
 export function HeroeHueco() {
   return (
     <View accessibilityRole="progressbar" accessibilityLabel={t('ironmundo:entreno.cargandoA11y')}>
-      <TarjetaIron heroe>
+      <TarjetaIron>
         <LineaHueco ancho="46%" alto={LINEA.rotulo} />
         <LineaHueco ancho="62%" alto={LINEA.titulo} style={styles.titulo} />
         <LineaHueco ancho="52%" alto={LINEA.meta} style={styles.meta} />
-        <View style={styles.filas}>
-          {[0.55, 0.62, 0.48].map((a, i) => (
-            <FilaIron key={i} primera={i === 0}>
-              <LineaHueco ancho={`${Math.round(a * 100)}%`} alto={LINEA.fila} style={styles.flex} />
-              <LineaHueco ancho={px(30)} alto={LINEA.fila} />
-              <LineaHueco ancho={px(46)} alto={LINEA.fila} />
-            </FilaIron>
-          ))}
-        </View>
         <LineaHueco ancho="100%" alto={M.boton} acento style={styles.boton} />
       </TarjetaIron>
     </View>
@@ -85,8 +76,8 @@ export function PesosHueco() {
     <View style={styles.pesos} accessibilityRole="progressbar" accessibilityLabel={t('ironmundo:pesos.cargandoA11y')}>
       {[0, 1, 2].map((i) => (
         <TarjetaIron key={i} style={styles.peso}>
-          <LineaHueco ancho="70%" alto={LINEA.peso} />
-          <LineaHueco ancho="55%" alto={LINEA.kg} style={styles.kg} />
+          <LineaHueco ancho="55%" alto={LINEA.kg} />
+          <LineaHueco ancho="70%" alto={LINEA.peso} style={styles.kg} />
           <LineaHueco ancho="60%" alto={px(13)} style={styles.kg} />
           <LineaHueco ancho="100%" alto={px(18)} style={styles.grafica} />
         </TarjetaIron>
@@ -138,17 +129,15 @@ export function TarjetaHueco({ lineas = 3, heroe, alto }: { lineas?: number; her
 }
 
 const styles = StyleSheet.create({
-  flex: { flex: 1 },
-  linea: { backgroundColor: C.hueco, borderRadius: px(4), overflow: 'hidden' },
-  lineaAcento: { backgroundColor: acentoA(0.18), borderRadius: M.radioBoton },
+  linea: { backgroundColor: C.hueco, borderRadius: R.chip, overflow: 'hidden' },
+  lineaAcento: { backgroundColor: O.tenue, borderRadius: M.radioBoton },
   brillo: { backgroundColor: C.borde },
-  brilloAcento: { backgroundColor: acentoA(0.32) },
+  brilloAcento: { backgroundColor: O.borde },
   titulo: { marginTop: px(4) },
   meta: { marginTop: px(2) },
-  filas: { marginTop: px(6) },
-  boton: { marginTop: px(7) },
-  pesos: { flexDirection: 'row', gap: px(7) },
-  peso: { flex: 1, minWidth: 0, borderRadius: px(13), paddingVertical: px(8), paddingHorizontal: px(9) },
+  boton: { marginTop: 3 },
+  pesos: { flexDirection: 'row', gap: 8 },
+  peso: { flex: 1, minWidth: 0, borderRadius: R.control, paddingVertical: 10, paddingHorizontal: 11 },
   kg: { marginTop: px(2) },
   grafica: { marginTop: px(4) },
   chips: { flexDirection: 'row', gap: px(6) },

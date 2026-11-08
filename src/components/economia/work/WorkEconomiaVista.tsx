@@ -22,7 +22,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { CargaArena, Entrada, ErrorSistema } from '@/components/arena';
 import { Screen } from '@/components/ui';
 import { DosColumnas } from '@/components/web/DosColumnas';
-import { ink, space, type as tipo } from '@/design/tokens';
+import { ink, oro, radio, space, type as tipo, vidrio } from '@/design/tokens';
 import { t } from '@/i18n';
 import { capital, fechaCorta, mayus, nombreMes } from '@/i18n/formato';
 import { claveCategoria } from '@/lib/moneywork';
@@ -288,7 +288,7 @@ function Burbuja({ children }: { children: ReactNode }) {
   const a = useAcento();
   return (
     <View style={styles.burbujaFila}>
-      <View style={[styles.avatar, { borderColor: a.acento }]} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+      <View style={styles.avatar} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
         <Ionicons name="briefcase-outline" size={14} color={a.acento} />
       </View>
       <View style={styles.burbuja}>{children}</View>
@@ -418,7 +418,7 @@ function Coach({ acciones }: { acciones: AccionesWork }) {
         <Text style={styles.preguntaTexto} numberOfLines={1} maxFontSizeMultiplier={1.35}>
           {t('economia:work.coach.pregunta', { modo: a.nombre })}
         </Text>
-        <View style={[styles.enviar, { backgroundColor: a.acento }]}>
+        <View style={styles.enviar}>
           <Ionicons name="arrow-forward" size={14} color={ink.ink0} />
         </View>
       </Pressable>
@@ -467,7 +467,7 @@ export function WorkEconomiaVista({ cabecera, estado, error, refrescando, hoy, d
         <>
           {aviso ? (
             <Pressable onPress={acciones.onOlvidarAviso} accessibilityRole="button" accessibilityLabel={t('economia:work.avisoA11y', { texto: aviso })}>
-              <View style={[styles.avisoSistema, { borderColor: a.tinte(0.35) }]}>
+              <View style={styles.avisoSistema}>
                 <Ionicons name="checkmark-circle" size={15} color={a.acento} />
                 <Text style={styles.avisoTexto} maxFontSizeMultiplier={1.35}>
                   {aviso}
@@ -578,15 +578,16 @@ const styles = StyleSheet.create({
   avatar: {
     width: 30,
     height: 30,
-    borderRadius: 15,
+    borderRadius: radio.pastilla,
     borderWidth: 1,
+    borderColor: oro.borde,
     alignItems: 'center',
     justifyContent: 'center',
   },
   burbuja: {
     flex: 1,
-    backgroundColor: ink.ink2,
-    borderRadius: 10,
+    backgroundColor: vidrio.tarjeta,
+    borderRadius: radio.control,
     paddingHorizontal: space.s3,
     paddingVertical: space.s3,
     gap: space.s1,
@@ -617,20 +618,21 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: ink.ink3,
-    backgroundColor: ink.ink0,
-    borderRadius: 10,
+    borderColor: vidrio.borde,
+    backgroundColor: vidrio.campo,
+    borderRadius: radio.control,
     paddingLeft: space.s3,
     paddingRight: 6,
   },
   preguntaTexto: { flex: 1, fontFamily: tipo.bodySm.family, fontSize: 13, color: ink.ink6 },
-  enviar: { width: 30, height: 30, borderRadius: 7, alignItems: 'center', justifyContent: 'center' },
+  enviar: { width: 30, height: 30, borderRadius: radio.pastilla, backgroundColor: ink.ink10, alignItems: 'center', justifyContent: 'center' },
   avisoSistema: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: space.s2,
-    borderRadius: 10,
+    borderRadius: radio.chip,
     borderWidth: 1,
+    borderColor: oro.borde,
     paddingHorizontal: space.s3,
     paddingVertical: space.s2,
     marginBottom: space.s3,
