@@ -69,6 +69,7 @@ async function sql(query) {
 const HUELLAS = {
   '0140': `to_regprocedure('public.mis_modos()') is not null`,
   '0136': `coalesce(col_description('public.ai_plans'::regclass, (select attnum::int from pg_attribute where attrelid = 'public.ai_plans'::regclass and attname = 'routes')) like '%nivl:un-modelo-0136%', false)`,
+  '0135': `coalesce(obj_description(to_regprocedure('public.reactivar_coach()'), 'pg_proc') like '%nivl:coach-pausa-0135%', false)`,
   '0090': `coalesce(obj_description('public.ai_topes_funcion'::regclass, 'pg_class') like '%nivl:freno-antiabuso-0090%', false)`,
   '0089': `to_regprocedure('public.admin_cola()') is null`,
   '0088': `coalesce(obj_description(to_regprocedure('public.admin_moderacion_bandeja(integer)'), 'pg_proc') like '%nivl:panel-moderacion-0088%', false)`,

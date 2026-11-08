@@ -47,6 +47,7 @@ import { CoachBloqueado } from './CoachBloqueado';
 import { CoachMark } from './CoachMark';
 import { BotonDictar, FranjaGrabacion, type Dictado } from './Dictado';
 import { MensajeCoach, type VozMensaje } from './MensajeCoach';
+import { PausaCompromiso, PausaPie, type PausaCoachVista } from './PausaCoach';
 
 type Tier = DecisionOferta['tier'];
 
@@ -117,6 +118,8 @@ export interface CoachVistaProps {
   };
   /** «Ir a {modo}» de un aviso: la recarga de la rueda y el cambio de mundo. */
   onIrAModo?: (modo: ModoEtiqueta) => void;
+  /** El coach en pausa (0135): en lugar del cuadro de escribir. null = activo. */
+  pausa?: PausaCoachVista | null;
   onPro: () => void;
   onMemoria: () => void;
 }
@@ -147,9 +150,10 @@ const ARENA_ALTO = 160;
 const GALEA = 96;
 
 /** «Ha leído tu día · 4 consultas», «Listo para tu día». */
-export function lineaCabecera(p: Pick<CoachVistaProps, 'cargando' | 'sinPro' | 'consultas'>): string {
+export function lineaCabecera(p: Pick<CoachVistaProps, 'cargando' | 'sinPro' | 'consultas' | 'pausa'>): string {
   if (p.cargando) return t('coach:vista.leyendo');
   if (p.sinPro) return t('coach:vista.partePro');
+  if (p.pausa) return t('coach:pausa.estado');
   if (p.consultas <= 0) return t('coach:vista.listo');
   return t('coach:vista.haLeido', { count: p.consultas });
 }
@@ -162,7 +166,7 @@ export function rotuloDia(fecha: string | undefined, hoy: string = dateKey()): s
   return relativoDe(dateKey(d), hoy).toUpperCase();
 }
 
-function Cabecera({ p }: { p: Pick<CoachVistaProps, 'cargando' | 'sinPro' | 'consultas' | 'onPro' | 'onMemoria'> }) {
+function Cabecera({ p }: { p: Pick<CoachVistaProps, 'cargando' | 'sinPro' | 'consultas' | 'pausa' | 'onPro' | 'onMemoria'> }) {
   const grande = useAnchoUtil() >= ANCHO_TITULO_GRANDE;
   return (
     <View style={styles.header}>
@@ -370,10 +374,11 @@ export function CoachVista(p: CoachVistaProps) {
   }
 
   const { vacio, sinPro, falloCarga } = p;
+  const pausa = p.pausa ?? null;
   const hoy = dateKey();
   let diaPrevio: string | null = null;
   // Las acciones rápidas: con el hilo empezado y el cuadro libre.
-  const conRapidas = !vacio && !sinPro && !c.texto.trim() && !c.grabando && !p.adjuntas;
+  const conRapidas = !pausa && !vacio && !sinPro && !c.texto.trim() && !c.grabando && !p.adjuntas;
   // La firma «EL SISTEMA» va en el primer mensaje del coach de cada bloque
   // seguido; un separador de día también abre bloque.
   let rolPrevio: BurbujaVista['role'] | null = null;
@@ -391,9 +396,11 @@ export function CoachVista(p: CoachVistaProps) {
         // tapaba la barra de entrada unos 50 pt en el iPhone.
         keyboardVerticalOffset={Platform.OS === 'ios' ? insets.top : 0}
       >
+        {pausa?.paso === 'compromiso' ? <PausaCompromiso pausa={pausa} /> : null}
+
         <ScrollView
           ref={p.scrollRef}
-          style={styles.flex}
+          style={[styles.flex, pausa?.paso === 'compromiso' && styles.oculto]}
           contentContainerStyle={styles.lista}
           onContentSizeChange={p.alFondo}
           keyboardShouldPersistTaps="handled"
@@ -419,7 +426,7 @@ export function CoachVista(p: CoachVistaProps) {
             </Entrada>
           ) : null}
 
-          {vacio && !sinPro && !falloCarga ? <Vacio onAtajo={p.onAtajo} /> : null}
+          {vacio && !sinPro && !falloCarga && !pausa ? <Vacio onAtajo={p.onAtajo} /> : null}
 
           {/* El hilo no lleva animaciones de entrada (L-RADICAL R1). */}
           {p.burbujas.map((b) => {
@@ -503,9 +510,9 @@ export function CoachVista(p: CoachVistaProps) {
           </View>
         ) : null}
 
-        {p.uso ? <UsoIa compacto status={p.uso.status} onRecargada={p.uso.onRecargada} /> : null}
+        {p.uso && !pausa ? <UsoIa compacto status={p.uso.status} onRecargada={p.uso.onRecargada} /> : null}
 
-        {p.energia ? (
+        {p.energia && !pausa ? (
           p.energia.ofertaTier ? (
             // La línea ya dice que la energía se ha agotado: el aviso propio
             // solo queda si el servidor ha dicho otra cosa.
@@ -549,6 +556,8 @@ export function CoachVista(p: CoachVistaProps) {
               )}
             </View>
           )
+        ) : pausa ? (
+          <PausaPie pausa={pausa} error={pausa.paso === 'compromiso' ? p.error : null} fondoSeguro={fondoSeguro} />
         ) : (
           <View>
             {conRapidas ? <Rapidas onAtajo={p.onAtajo} desactivadas={c.ocupado} conLinea /> : null}
@@ -771,6 +780,7 @@ const styles = StyleSheet.create({
     borderTopColor: ink.ink3,
   },
   bandaProTexto: { ...lectura, color: ink.ink8 },
+  oculto: { display: 'none' },
   barra: {
     flexDirection: 'row',
     alignItems: 'flex-end',

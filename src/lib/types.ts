@@ -30,6 +30,8 @@ export interface Profile {
   wake_time: string;
   sleep_time: string;
   timezone: string;
+  /** Último mensaje escrito al coach (0135): de aquí se deriva la pausa. */
+  coach_last_reply_at?: string | null;
   coach_mode: 'A' | 'B' | 'pausa';
   // Para qué usa NIVL (migración 0018): ordena módulos, hábitos propuestos y
   // el énfasis del coach. Ver src/lib/kinds.ts.

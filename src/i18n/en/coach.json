@@ -143,5 +143,17 @@
     "recargaNota": "Extends the AI of your active plan. Whatever you don't use is kept.",
     "recargaHecha": "Top-up applied. The system is answering again.",
     "recargaPendiente": "The store has charged the top-up. It applies in a few seconds."
+  },
+  "pausa": {
+    "estado": "Paused",
+    "titulo": "YOUR COACH IS PAUSED",
+    "cuerpo": "It stopped so it wouldn't keep writing to you. It's still here, with everything of yours, whenever you want to come back.",
+    "reactivar": "Reactivate coach",
+    "objetivos": "What you set out to do",
+    "noPasa_one": "It's fine that you went {{count}} day without replying. It happens to everyone. What counts is that you're here.",
+    "noPasa_other": "It's fine that you went {{count}} days without replying. It happens to everyone. What counts is that you're here.",
+    "comprometerse": "I'm committing again",
+    "ahoraNo": "Not now",
+    "cargandoA11y": "Loading your goals"
   }
 }

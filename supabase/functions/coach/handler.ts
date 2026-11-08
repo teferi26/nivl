@@ -58,6 +58,7 @@ import { controlHerramientas, fechaAceptable, fechaDelTurno, fotosSinVision, Gas
 import { pareceAfirmacion, rutaDelTurno, type Ruta } from '../_shared/intencion.ts';
 import { fueraDelPack, PACK_REGISTRO, TOOL_DEFS_REGISTRO } from '../_shared/packs.ts';
 import { bloqueComprobacion } from '../_shared/comprobacion.ts';
+import { briefHechoEn } from '../_shared/checkin.ts';
 import { insertarRun, type Telemetria } from '../_shared/telemetria.ts';
 import { enSegundoPlano, leerResumen, MIN_NUEVOS, resumirHilo, VENTANA_HISTORIAL } from '../_shared/resumenhilo.ts';
 
@@ -1186,6 +1187,33 @@ async function atender(
   // zona de su perfil, no el día UTC (ver fechaDelTurno).
   const ahora = reloj.ahora();
   const today = fechaAceptable(body.date, ahora) ?? fechaDelTurno(null, ahora, await zonaDelPerfil(sb, userId));
+
+  // Un brief al día como mucho, lo pida quien lo pida: reactivar el coach es un
+  // botón y no puede servir para generar varios. El cerrojo de turnos ya cubre
+  // los toques simultáneos. Si no se puede comprobar, no se gasta.
+  if (kind === 'brief') {
+    const desde = new Date(ahora.getTime() - 2 * 86_400_000).toISOString();
+    const { data: briefs, error: briefsErr } = await sb
+      .from('coach_runs')
+      .select('created_at, error')
+      .eq('user_id', userId)
+      .eq('kind', 'brief')
+      .gte('created_at', desde)
+      .limit(20);
+    if (briefsErr) return json(503, { error: 'El sistema no puede comprobarlo ahora mismo. Vuelve a intentarlo.' });
+    if (briefHechoEn((briefs ?? []) as { created_at?: unknown; error?: unknown }[], today, (await zonaDelPerfil(sb, userId)) ?? 'UTC')) {
+      return json(429, { error: 'El brief de hoy ya está escrito.', reason: 'brief_ya_hecho' });
+    }
+  }
+
+  // Responder: solo un turno de chat lo es (los rituales entran con otro kind y
+  // las herramientas no pasan por aquí). Un cliente antiguo sin la pantalla de
+  // pausa que escribe vuelve así a estar activo, sin error. Si falla, el turno
+  // sigue: es el reloj de la pausa, no el mensaje.
+  if (kind === 'chat') {
+    const { error: relojErr } = await sb.rpc('reactivar_coach');
+    if (relojErr) console.error('reactivar_coach falló: reloj de la pausa sin actualizar');
+  }
 
   // Un hilo continuo por defecto: el coach lleva años de conversación, no
   // sesiones sueltas.

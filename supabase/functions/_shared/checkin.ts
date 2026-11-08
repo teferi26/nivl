@@ -118,6 +118,15 @@ export function pushesDeHoy(
   ).length;
 }
 
+/** ¿Hay ya un brief sin error en ese día local? Es el tope de un brief al día (cron y reactivar). */
+export function briefHechoEn(
+  runs: readonly { created_at?: unknown; error?: unknown }[],
+  fecha: string,
+  timezone: string,
+): boolean {
+  return runs.some((r) => !r.error && typeof r.created_at === 'string' && fechaLocal(r.created_at, timezone) === fecha);
+}
+
 export interface EntradaCheckin {
   /** Ahora en hora local de pared. */
   ahora: Momento;
