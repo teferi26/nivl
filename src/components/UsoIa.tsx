@@ -12,7 +12,7 @@ import { Button } from '@/components/ui';
 import { ink, space, type } from '@/design/tokens';
 import { t } from '@/i18n';
 import { nombreDia } from '@/lib/dates';
-import { comprarRecargaIa, porcentajeIa, precioRecargaIa, purchasesAvailable, usoIa, type AiStatus, type NivelUsoIa } from '@/lib/pro';
+import { comprarRecargaIa, conContadorIa, porcentajeIa, precioRecargaIa, purchasesAvailable, usoIa, type AiStatus, type NivelUsoIa } from '@/lib/pro';
 import { mensajeSistema } from '@/lib/validation';
 
 /**
@@ -52,7 +52,9 @@ export function UsoIa({ status, onRecargada, compacto = false, sinBarra = false 
   const [precio, setPrecio] = useState<string | null>(null);
   const [comprando, setComprando] = useState(false);
   const [mensaje, setMensaje] = useState<string | null>(null);
-  const puedeRecargar = !!uso && (uso.nivel === 'agotada' || uso.nivel === 'aviso95') && purchasesAvailable();
+  // Cuota plana (0090): quien paga no ve contadores; solo la pausa si salta el freno antiabuso.
+  const conContador = conContadorIa(status);
+  const puedeRecargar = conContador && !!uso && (uso.nivel === 'agotada' || uso.nivel === 'aviso95') && purchasesAvailable();
   // El botón solo con el producto que da la tienda (su precio): sin él, la compra fallaría.
   const ofreceRecarga = puedeRecargar && precio !== null;
 
@@ -66,6 +68,14 @@ export function UsoIa({ status, onRecargada, compacto = false, sinBarra = false 
   }, [puedeRecargar]);
 
   if (!uso) return null;
+  if (!conContador) {
+    if (uso.nivel !== 'agotada' && uso.nivel !== 'hoy') return null;
+    return (
+      <View style={[styles.bloque, sinBarra && styles.sinMargen]}>
+        <Text style={styles.pct}>{t('coach:uso.freno')}</Text>
+      </View>
+    );
+  }
   const pct = porcentajeIa(uso.queda);
   const aviso = textoUsoIa(uso.nivel, status?.ia?.renueva ?? status?.renews, ofreceRecarga);
   if (sinBarra && !aviso && !mensaje) return null;

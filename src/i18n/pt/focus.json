@@ -74,7 +74,7 @@
     "relojDescanso": "PAUSA",
     "sesionA11y": "{{fase}}. {{titulo}}. Faltam {{reloj}}.",
     "temaN": "Tema {{n}} · {{nombre}}",
-    "silencio": "Telemóvel em silêncio ao começar",
+    "silencio": "Ativa Não incomodar",
     "noMolestarA11y": "Como pôr o telemóvel em Não incomodar",
     "misionElegir": "Ligar uma missão do FOCUS",
     "empezar": "Começar bloco",

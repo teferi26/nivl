@@ -43,10 +43,8 @@ import {
   planLabel,
   productoDePlan,
   textoGestionTienda,
-  puedeProfundo,
   purchasesAvailable,
   puedeMejorarEnTienda,
-  turnosProfundos,
   type AiStatus,
   type OfferTier,
   type RespuestaOferta,
@@ -197,7 +195,6 @@ export default function Pro() {
     const dePago = planDePago(status?.plan) && !prueba;
     const elite = isElite(status);
     const conProfundo = !!status?.deepAllowed;
-    const turnos = turnosProfundos(status);
     // Sin segunda suscripción: ni al Élite/dueño, ni a quien paga por Stripe
     // (web) o con plan heredado de Stripe. La tienda decide el resto.
     const mejorable = purchasesAvailable() && puedeMejorarEnTienda(status, provider);
@@ -233,10 +230,12 @@ export default function Pro() {
           {errorPlan}
 
           <Entrada indice={1}>
-            <Section title="Energía del coach este mes" meta={`${pct} %`}>
-              <Barra ratio={queda} alto={8} tono={agotada ? 'ink8' : 'blanco'} etiqueta={`Energía del coach: ${pct} %`} />
+            <Section title={prueba ? 'Energía del coach este mes' : 'Tu coach'} meta={prueba ? `${pct} %` : undefined}>
+              {prueba ? <Barra ratio={queda} alto={8} tono={agotada ? 'ink8' : 'blanco'} etiqueta={`Energía del coach: ${pct} %`} /> : null}
               <Text style={styles.energia}>
-                {agotada
+                {!prueba
+                  ? 'Úsalo cuanto quieras: sin contadores ni pagos extra.'
+                  : agotada
                   ? `Agotada por este mes. ${recarga ? `Se recarga el ${recarga}.` : 'Se recarga el día 1.'} Tus misiones, tu racha y todos los módulos siguen funcionando.`
                   : `Queda el ${pct} % de lo que el coach puede pensar por ti este mes.${recarga ? ` Se recarga entera el ${recarga}.` : ''}`}
               </Text>
@@ -258,15 +257,10 @@ export default function Pro() {
                 {renueva ? (
                   <Row title={dePago ? 'Próxima renovación' : 'Activo hasta'} trailing={<Text style={styles.valor}>{renueva}</Text>} />
                 ) : null}
-                {/* La prueba no se recarga: acaba. La fila de "Activo hasta" ya lo dice. */}
-                {recarga && !prueba ? (
-                  <Row title="Recarga de energía" trailing={<Text style={styles.valor}>{recarga}</Text>} />
-                ) : null}
                 {conProfundo ? (
                   <Row
-                    title="Turnos profundos"
+                    title="Modo profundo"
                     detail={lineaProfundos(status)}
-                    trailing={<Text style={styles.valor}>{puedeProfundo(status) ? turnos : 'Agotados'}</Text>}
                   />
                 ) : null}
               </TarjetaArena>

@@ -35,7 +35,7 @@
   },
   "vista": {
     "nombreA11y": "Dein Name. Tippen zum Ändern.",
-    "avisoRevision": "Dein Name, Foto und Titel werden anderen nach einer Prüfung angezeigt. Bis dahin sehen sie einen vorläufigen Alias.",
+    "avisoRevision": "Andere sehen deinen Namen, dein Foto und deinen Titel. Was gegen die Regeln verstößt, kann gemeldet und entfernt werden.",
     "camino": "Weg der Ränge",
     "arena": "Arena",
     "compartir": "Meinen Fortschritt teilen",
@@ -47,6 +47,8 @@
     "codigoDetalle": "Hat dich jemand gebracht? Gib den Code ein",
     "panelCreador": "Creator-Panel",
     "panelCreadorDetalle": "Dein Code, deine Verkäufe und deine Auszahlungen",
+    "moderacion": "Moderation",
+    "moderacionDetalle": "Meldungen und zu prüfende Profile",
     "enPausa": "System pausiert",
     "pausaHasta": "{{frase}} Bis {{dia}}.",
     "registro": "Bilanz",

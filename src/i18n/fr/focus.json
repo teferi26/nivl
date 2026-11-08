@@ -74,7 +74,7 @@
     "relojDescanso": "PAUSE",
     "sesionA11y": "{{fase}}. {{titulo}}. Il reste {{reloj}}.",
     "temaN": "Chapitre {{n}} · {{nombre}}",
-    "silencio": "Téléphone en silencieux au départ",
+    "silencio": "Active Ne pas déranger",
     "noMolestarA11y": "Comment mettre ton téléphone en Ne pas déranger",
     "misionElegir": "Lier une mission FOCUS",
     "empezar": "Lancer le bloc",

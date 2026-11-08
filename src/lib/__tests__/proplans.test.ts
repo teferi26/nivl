@@ -190,9 +190,8 @@ describe('NIVL Pro · el estado de la IA', () => {
     // Queda bolsillo pero menos que un turno medio: se puede, y se dice.
     const casi = { ...elite, deepRemaining: 100_000, deepTurns: 0 };
     expect(puedeProfundo(casi)).toBe(true);
-    expect(lineaProfundos(casi)).toMatch(/menos de un turno/);
-    expect(lineaProfundos(elite)).toBe('Te quedan 6 turnos profundos este mes.');
-    expect(lineaProfundos({ ...elite, deepTurns: 1 })).toBe('Te queda 1 turno profundo este mes.');
+    expect(lineaProfundos(casi)).toBe('Disponible cuando lo necesites.');
+    expect(lineaProfundos(elite)).toBe('Disponible cuando lo necesites.');
     expect(lineaProfundos({ ...elite, deepRemaining: 0, deepTurns: 0 })).toMatch(/estándar sigue disponible/);
   });
 
@@ -323,7 +322,7 @@ describe('tienda: cambios de plan, títulos y ofertas (auditoría 2026-10-02)', 
   test('beneficios Élite: nada de uso ilimitado ni ludus inmediato', () => {
     const texto = JSON.stringify([P.ELITE_BENEFITS, P.ELITE_USAGE_NOTICE, P.PRO_BENEFITS]);
     expect(texto).not.toMatch(/ilimitad|sin límite|al instante|inmediat|acceso anticipado|retos trimestrales/i);
-    expect(P.ELITE_USAGE_NOTICE).toMatch(/límite mensual/);
+    expect(P.COACH_USAGE_NOTICE).toMatch(/fuera de lo normal/);
     expect(P.ELITE_USAGE_NOTICE).toMatch(/manualmente/);
     const titulos = P.ELITE_BENEFITS.map((b) => b.title);
     expect(titulos).toContain('Insignia de laurel');

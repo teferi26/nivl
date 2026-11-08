@@ -60,7 +60,7 @@
     "haLeido_other": "A lu ta journée · {{count}} consultations",
     "titulo": "COACH",
     "profundoTag": "APPROFONDI",
-    "verPlan": "Voir ton plan et l'énergie du coach",
+    "verPlan": "Voir ton plan",
     "verMemoria": "Voir la mémoire du système",
     "vacioTitulo": "LE SYSTÈME T'ÉCOUTE.",
     "vacioCuerpo": "Il commande ta journée, décide de ce que vaut chaque chose, le soir te rappelle ce que tu as en jeu et retient tout ce qu'il apprend de toi. Parle-lui comme à celui qui mène ta vie.",
@@ -132,6 +132,7 @@
     "ir": "Aller à {{modo}}"
   },
   "uso": {
+    "freno": "Le coach est en pause à cause d'une utilisation inhabituelle. Il revient bientôt.",
     "etiqueta": "IA de ce mois",
     "restante": "{{pct}} % disponible",
     "a11y": "IA de ce mois : il reste {{pct}} %",

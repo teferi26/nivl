@@ -1,4 +1,8 @@
 {
+  "esperaManana": {
+    "titulo": "Oggi conta ancora",
+    "mensaje": "Questa missione è ancora in sospeso oggi. Completala o modificala da domani."
+  },
   "derivar": {
     "listo": "Pronto a diventare tuo",
     "faltan_one": "Manca {{count}} giorno",
