@@ -43,7 +43,7 @@ import { escucharPedidos, pedidoAtendido } from './pedido';
 import { useFocusDatos } from './useFocusDatos';
 import { useHojasFocus } from './useHojasFocus';
 import { usePomodoro } from './usePomodoro';
-import { vistaHoy, type MisionEnlazable } from './vistaHoy';
+import { conHeroe, vistaHoy, type MisionEnlazable } from './vistaHoy';
 
 /** Lo que tarda en irse un Modal antes de poder presentar otro (iOS). */
 const ESPERA_MODAL = 450;
@@ -382,7 +382,16 @@ export function useFocusHoy() {
     arranque: v.arranque || enArranque,
     hueco: huecoVisto ? null : v.hueco,
     hoy,
-    cabecera: <CabeceraMundo modo="focus" nivel={mundo.nivel} emblema={<EmblemaMundo modo="focus" />} />,
+    // Con héroe, el nivel va en su escudo; en los demás estados, en la cabecera.
+    cabecera: (
+      <CabeceraMundo
+        modo="focus"
+        nivel={mundo.nivel}
+        emblema={<EmblemaMundo modo="focus" />}
+        conNivel={!conHeroe({ estado: fd.estado, disponible: fd.disponible, arranque: v.arranque || enArranque, sinAsignaturas: v.sinAsignaturas })}
+      />
+    ),
+    nivel: mundo.nivel,
     estado: fd.estado,
     error: fd.error,
     disponible: fd.disponible,

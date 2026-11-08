@@ -12,8 +12,9 @@ import { vibrar } from '@/design/haptics';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Animated, AppState, Easing, Pressable, StyleSheet, Text, View } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
+import { type as tipo, vidrio } from '@/design/tokens';
 import { t } from '@/i18n';
-import { colors, fonts } from '@/lib/theme';
+import { colors } from '@/lib/theme';
 
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 
@@ -191,7 +192,7 @@ export function HoldToSign({ label, holdingLabel = t('raiz:holdToSign.noSueltes'
       >
         <View style={[styles.button, disabled && styles.disabled]}>
         <Svg width={SIZE} height={SIZE} style={StyleSheet.absoluteFill}>
-          <Circle cx={SIZE / 2} cy={SIZE / 2} r={R} stroke={colors.track} strokeWidth={STROKE} fill="none" />
+          <Circle cx={SIZE / 2} cy={SIZE / 2} r={R} stroke={vidrio.pista} strokeWidth={STROKE} fill="none" />
           <AnimatedCircle
             cx={SIZE / 2}
             cy={SIZE / 2}
@@ -227,12 +228,13 @@ const styles = StyleSheet.create({
     width: SIZE - 28,
     height: SIZE - 28,
     borderRadius: (SIZE - 28) / 2,
-    backgroundColor: colors.accentFaint,
+    backgroundColor: vidrio.campo,
   },
   label: {
-    fontFamily: fonts.heading,
-    fontSize: 12,
-    letterSpacing: 2.5,
+    fontFamily: tipo.label.family,
+    fontSize: tipo.label.size,
+    lineHeight: tipo.label.lineHeight,
+    letterSpacing: tipo.label.tracking,
     textTransform: 'uppercase',
     color: colors.textDim,
     marginTop: 12,

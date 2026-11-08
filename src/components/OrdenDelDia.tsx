@@ -6,7 +6,7 @@ import { TarjetaArena } from '@/components/arena';
 import { TextoSistema } from '@/components/TextoSistema';
 import { Check, EmptyState, Section } from '@/components/ui';
 import { vibrar } from '@/design/haptics';
-import { ink, space, stroke, type as tipo } from '@/design/tokens';
+import { ink, oro, radio, space, stroke, type as tipo, vidrio } from '@/design/tokens';
 import { t } from '@/i18n';
 // De plan.ts (puro) y no de dayplan.ts: la vista no arrastra Supabase.
 import {
@@ -36,9 +36,9 @@ interface Props {
   ahora?: number;
 }
 
-// El plan del día como un orden escrito (HoyiPad.dc): la hora en Cinzel en
+// El plan del día como un orden escrito (HoyiPad.dc): la hora en Playfair en
 // una columna de 48, el bloque con su hairline y el bloque ACTUAL marcado con
-// una regla de 2 en blanco a la izquierda (contorno, no inversión: la de Hoy es
+// una regla de 2 de oro a la izquierda (contorno, no inversión: la de Hoy es
 // la misión siguiente). A la derecha, el aro que lo da por hecho.
 export const OrdenDelDia = memo(function OrdenDelDia({ plan, bloques, onToggle, pro = true, ahora: ahoraFijo }: Props) {
   // Modos: en un mundo, «Pedir el plan» lleva a SU coach (no saca del mundo).
@@ -133,7 +133,7 @@ export const OrdenDelDia = memo(function OrdenDelDia({ plan, bloques, onToggle, 
 const styles = StyleSheet.create({
   veredicto: {
     borderLeftWidth: stroke.rule,
-    borderLeftColor: ink.ink10,
+    borderLeftColor: vidrio.borde,
     paddingLeft: space.s3,
     marginBottom: space.s3,
   },
@@ -145,11 +145,11 @@ const styles = StyleSheet.create({
   },
   brief: { marginBottom: 14 },
   bloque: { flexDirection: 'row', alignItems: 'flex-start', gap: space.s3, paddingVertical: space.s3, minHeight: 48 },
-  sep: { borderTopWidth: stroke.hairline, borderTopColor: ink.ink3 },
+  sep: { borderTopWidth: stroke.hairline, borderTopColor: vidrio.linea },
   pressed: { opacity: 0.7 },
   horas: { width: 48, paddingTop: 1 },
   hora: { fontFamily: tipo.number.family, fontSize: 13, lineHeight: 18, color: ink.ink6 },
-  horaActual: { color: ink.ink10 },
+  horaActual: { color: oro.claro },
   horaFin: {
     fontFamily: tipo.micro.family,
     fontSize: tipo.micro.size,
@@ -157,19 +157,20 @@ const styles = StyleSheet.create({
     color: ink.ink6,
   },
   cuerpo: { flex: 1, minWidth: 0 },
-  // El bloque de ahora: regla de 2 en blanco a la izquierda.
-  cuerpoActual: { borderLeftWidth: stroke.rule, borderLeftColor: ink.ink10, paddingLeft: space.s3 },
+  // El bloque de ahora: regla de 2 de oro a la izquierda.
+  cuerpoActual: { borderLeftWidth: stroke.rule, borderLeftColor: oro.hilo, paddingLeft: space.s3 },
   tituloFila: { flexDirection: 'row', alignItems: 'center', gap: 7 },
   bloqueTitulo: { flex: 1, fontFamily: fonts.semibold, fontSize: 15, lineHeight: 20, color: ink.ink9 },
   // Contorno, no inversión: la inversión de Hoy es una sola (SISTEMA §0).
   ahora: {
     fontFamily: tipo.micro.family,
     fontSize: tipo.micro.size,
-    letterSpacing: 1.2,
-    color: ink.ink10,
+    letterSpacing: tipo.micro.tracking,
+    color: oro.claro,
     borderWidth: stroke.hairline,
-    borderColor: ink.ink10,
-    paddingHorizontal: 5,
+    borderColor: oro.borde,
+    borderRadius: radio.pastilla,
+    paddingHorizontal: space.s2,
     paddingVertical: 1,
   },
   tachado: { textDecorationLine: 'line-through', color: ink.ink6 },

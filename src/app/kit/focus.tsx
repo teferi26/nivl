@@ -14,7 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { fijarQuieto } from '@/components/arena/quieto';
 import { GALERIA_FOCUS } from '@/components/focus/demo';
 import { Chip, ChipRow } from '@/components/ui';
-import { ink, space } from '@/design/tokens';
+import { ink, space, vidrio } from '@/design/tokens';
 
 export default function GaleriaFocus() {
   const p = useLocalSearchParams<{ pantalla?: string; estado?: string; quieto?: string; solo?: string }>();
@@ -51,7 +51,7 @@ export default function GaleriaFocus() {
 
 const styles = StyleSheet.create({
   pantalla: { flex: 1, backgroundColor: ink.ink0 },
-  controles: { gap: space.s2, paddingVertical: space.s2, borderBottomWidth: 1, borderBottomColor: ink.ink3 },
+  controles: { gap: space.s2, paddingVertical: space.s2, borderBottomWidth: 1, borderBottomColor: vidrio.linea },
   flex: { flex: 1 },
   marcoSolo: { width: 390, alignSelf: 'flex-start' },
 });

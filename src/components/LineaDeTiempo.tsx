@@ -1,7 +1,7 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import Svg, { Line } from 'react-native-svg';
-import { ink, stroke } from '@/design/tokens';
+import { ink, oro, radio, stroke, type as tipo, vidrio } from '@/design/tokens';
 import { t } from '@/i18n';
 import { hhmm } from '@/lib/plan';
 import { ALTO_HORA, disponer, rangoHoras, yDeMinuto, type ItemTiempo } from '@/lib/timeline';
@@ -17,7 +17,7 @@ export interface ItemAgenda extends ItemTiempo {
   icono?: string;
 }
 
-/** Columna de las horas, en Cinzel (FASE3 Lote C). */
+/** Columna de las horas, en Playfair. */
 const ANCHO_HORAS = 48;
 /** Lado de la marca de evento (punto) y de campaña (aro). */
 const MARCA = 7;
@@ -130,8 +130,8 @@ export function LineaDeTiempo({
         })}
       </View>
 
-      {/* «Ahora»: una línea discontinua blanca sobre el carril y la hora exacta
-          en la columna de horas. Sin punto rojo: el blanco ya es el acento. */}
+      {/* «Ahora»: una línea discontinua de oro sobre el carril y la hora exacta
+          en la columna de horas. */}
       {yAhora !== null && ahoraMin != null ? (
         <View style={[styles.ahora, { top: yAhora - ALTO_AHORA / 2 }]} pointerEvents="none">
           <Text style={styles.ahoraHora} accessibilityLabel={t('raiz:lineaDeTiempo.ahoraA11y', { hora: hhmm(ahoraMin) })}>
@@ -143,7 +143,7 @@ export function LineaDeTiempo({
               y1={ALTO_AHORA / 2}
               x2="100%"
               y2={ALTO_AHORA / 2}
-              stroke={ink.ink10}
+              stroke={oro.hilo}
               strokeWidth={1.5}
               strokeDasharray="4 3"
             />
@@ -159,28 +159,23 @@ const styles = StyleSheet.create({
   filaHora: { position: 'absolute', left: 0, right: 0, flexDirection: 'row', alignItems: 'center' },
   horaTexto: {
     width: ANCHO_HORAS,
-    fontFamily: 'PlayfairDisplay_700Bold',
+    fontFamily: tipo.number.family,
     fontSize: 11,
     color: ink.ink6,
     fontVariant: ['tabular-nums'],
   },
-  reglaHora: { flex: 1, height: stroke.hairline, backgroundColor: ink.ink3 },
+  reglaHora: { flex: 1, height: stroke.hairline, backgroundColor: vidrio.linea },
   carril: { position: 'absolute', top: 0, bottom: 0, left: ANCHO_HORAS, right: 0 },
   bloque: {
     position: 'absolute',
     paddingLeft: 8,
     paddingRight: 6,
     paddingVertical: 4,
+    // Opaco: encima pasan las reglas de las horas. El tipo lo dice la marca.
     backgroundColor: ink.ink1,
-    // Borde izquierdo igual para todo: el tipo lo dice la marca de la cabecera.
-    borderLeftWidth: stroke.rule,
-    borderLeftColor: ink.ink6,
-    borderTopWidth: stroke.hairline,
-    borderRightWidth: stroke.hairline,
-    borderBottomWidth: stroke.hairline,
-    borderTopColor: ink.ink3,
-    borderRightColor: ink.ink3,
-    borderBottomColor: ink.ink3,
+    borderWidth: stroke.hairline,
+    borderColor: vidrio.borde,
+    borderRadius: radio.chip,
     overflow: 'hidden',
   },
   bloqueCabecera: { flexDirection: 'row', alignItems: 'center', gap: 5 },
@@ -206,10 +201,10 @@ const styles = StyleSheet.create({
   // Fondo negro: tapa la "hh:00" de debajo si la hora actual cae cerca.
   ahoraHora: {
     width: ANCHO_HORAS,
-    fontFamily: 'PlayfairDisplay_700Bold',
+    fontFamily: tipo.number.family,
     fontSize: 11,
     lineHeight: 14,
-    color: ink.ink10,
+    color: oro.claro,
     backgroundColor: ink.ink0,
   },
   ahoraLienzo: { flex: 1 },

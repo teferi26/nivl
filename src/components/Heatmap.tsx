@@ -1,13 +1,13 @@
 // NIVL · Mapa de actividad (columnas = semanas, filas = lunes a domingo).
 //
-// Mármol y tinta (FASE3 Lote F): escala neutra de cuatro pasos, de la pista
-// ink4 al blanco (SISTEMA §1); sin color. Con `ancho` las celdas crecen hasta
+// Ónix: escala neutra de cuatro pasos, de la pista de vidrio al hueso
+// (SISTEMA §1); sin oro, que aquí sería un relleno. Con `ancho` las celdas crecen hasta
 // llenarlo (tope 20) para que en una tableta no quede un sello en una
 // esquina. El lector oye un resumen, no 91 celdas.
 
 import { StyleSheet, Text, View } from 'react-native';
 import Svg, { Rect } from 'react-native-svg';
-import { ink, space, type as tipo } from '@/design/tokens';
+import { ink, space, type as tipo, vidrio } from '@/design/tokens';
 import { t } from '@/i18n';
 import { addDays, dateKey } from '@/lib/dates';
 
@@ -24,8 +24,8 @@ const CELDA = 11;
 const CELDA_MAX = 20;
 const GAP = 3;
 
-// Escala neutra de cuatro pasos (SISTEMA §1): de la pista ink4 al blanco.
-const ESCALA = [ink.ink4, ink.ink6, ink.ink8, ink.ink10] as const;
+// Escala neutra de cuatro pasos (SISTEMA §1): de la pista de vidrio al hueso.
+const ESCALA = [vidrio.pista, ink.ink6, ink.ink8, ink.ink10] as const;
 
 function cellColor(count: number): string {
   if (count <= 0) return ESCALA[0];

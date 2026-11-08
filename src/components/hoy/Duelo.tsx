@@ -1,6 +1,6 @@
 // NIVL · Hoy: el rival cercano (HoyiPad.dc). Sustituye a la fila de
 // rivalidad: tú y quien va justo delante (o detrás, si lideras), cada uno con
-// su XP de la semana en Cinzel y su barra (la tuya blanca, la suya ink8), y
+// su XP de la semana en Playfair y su barra (la tuya de oro, la suya ink8), y
 // debajo la línea del sistema. Todo el bloque abre Amigos. No es el duelo de
 // Amigos (ese mide disciplina): aquí es el XP de 7 días.
 
@@ -9,7 +9,7 @@ import { router } from 'expo-router';
 import { Pressable, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 import { Barra, formatoMiles } from '@/components/arena';
 import { Section } from '@/components/ui';
-import { ink, space, type as tipo } from '@/design/tokens';
+import { ink, oro, space, type as tipo } from '@/design/tokens';
 import { t } from '@/i18n';
 import { fonts } from '@/lib/theme';
 import { tituloRivalCercano, type DueloHoy, type LadoDuelo } from './derivarHoy';
@@ -29,7 +29,7 @@ function Lado({ lado, rival }: { lado: LadoDuelo; rival?: boolean }) {
         ratio={lado.ratio}
         desde={0}
         alto={4}
-        tono={rival ? 'ink8' : 'blanco'}
+        tono={rival ? 'ink8' : 'oro'}
         etiqueta={
           rival
             ? t('hoy:duelo.barraRival', { nombre: lado.nombre, xp: formatoMiles(lado.xp) })
@@ -81,7 +81,7 @@ const styles = StyleSheet.create({
   fila: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', gap: space.s3 },
   nombre: { flexShrink: 1, fontFamily: fonts.semibold, fontSize: 14, lineHeight: 20, color: ink.ink10 },
   nombreRival: { color: ink.ink8 },
-  xp: { fontFamily: tipo.number.family, fontSize: 14, lineHeight: 18, color: ink.ink10 },
+  xp: { fontFamily: tipo.number.family, fontSize: 14, lineHeight: 18, color: oro.claro },
   xpRival: { color: ink.ink8 },
   pie: { flexDirection: 'row', alignItems: 'center', gap: space.s2, marginTop: space.s1 },
   linea: {

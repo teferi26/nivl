@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/Button';
 // La galea es `Crown` (arena/Motivos la reexporta como Galea). Se importa
 // directa: la red de seguridad carga lo mínimo.
 import { Crown as Galea } from '@/components/ui/Crown';
-import { ink, space, stroke, type as tipo } from '@/design/tokens';
+import { ink, radio, space, stroke, type as tipo, vidrio } from '@/design/tokens';
 import { t } from '@/i18n';
 
 interface Props {
@@ -72,11 +72,11 @@ const styles = StyleSheet.create({
   contenido: { padding: space.s6, paddingTop: space.s20, width: '100%', maxWidth: 560, alignSelf: 'center' },
   galea: { marginBottom: space.s5 },
   titulo: {
-    fontFamily: tipo.inscripcion.family,
-    fontSize: tipo.inscripcion.size,
-    lineHeight: tipo.inscripcion.lineHeight,
-    letterSpacing: tipo.inscripcion.tracking,
-    color: ink.ink10,
+    fontFamily: tipo.title.family,
+    fontSize: tipo.title.size,
+    lineHeight: tipo.title.lineHeight,
+    letterSpacing: tipo.title.tracking,
+    color: ink.ink9,
     marginBottom: space.s3,
   },
   texto: {
@@ -88,8 +88,9 @@ const styles = StyleSheet.create({
   },
   caja: {
     borderWidth: stroke.hairline,
-    borderColor: ink.ink4,
-    backgroundColor: ink.ink1,
+    borderColor: vidrio.borde,
+    backgroundColor: vidrio.tarjeta,
+    borderRadius: radio.control,
     padding: space.s3,
     marginBottom: space.s6,
   },

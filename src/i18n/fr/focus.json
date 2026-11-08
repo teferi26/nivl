@@ -117,10 +117,7 @@
     "hecha": "faite",
     "hastaXp": "jusqu'à +{{xp}} XP",
     "ajustesA11y": "Régler le pomodoro : {{foco}} min de concentration et {{descanso}} de pause",
-    "coachEstado": "● En ligne",
-    "coachRotulo": "Coach FOCUS",
     "coachAbrir": "Ouvrir le chat",
-    "coachPregunta": "Demande au coach FOCUS",
     "empiezaTitulo": "Commence par tes matières",
     "empiezaCuerpo": "Avec tes matières, tes examens et ton programme, FOCUS répartit ton travail sur chaque jour.",
     "anadirAsignatura": "Ajouter une matière",
@@ -511,7 +508,7 @@
     "filosofia": "Histoire de la philosophie"
   },
   "hoyToca": {
-    "rotulo": "Au programme",
+    "rotulo": "Maintenant",
     "minutos": "{{n}} min",
     "elegido": "C'est toi qui l'as choisi.",
     "simulacroDe": "Examen blanc de {{asignatura}}",
@@ -530,6 +527,18 @@
     "repasar": "Réviser",
     "repasosCuerpo_one": "{{count}} révision en attente.",
     "repasosCuerpo_other": "{{count}} révisions en attente."
+  },
+  "hoyHeroe": {
+    "rotulo": "Prochain examen",
+    "pie": "{{cuando}} · {{pct}} % du programme",
+    "barra": "Programme maîtrisé",
+    "sinExamen": "Aucun examen en vue",
+    "barraNivel": "Progression de niveau"
+  },
+  "hoyCifras": {
+    "semana": "cette semaine",
+    "tarjetas": "cartes du jour",
+    "media": "moyenne"
   },
   "hoyEntregas": {
     "rotulo": "Rendus et devoirs",

@@ -20,7 +20,7 @@
     "tambienRegistrar": "Wird auch automatisch abgehakt, wenn du {{acto}} einträgst."
   },
   "errorBoundary": {
-    "titulo": "DAS SYSTEM IST AUSGEFALLEN",
+    "titulo": "Das System ist ausgefallen",
     "texto": "Innen ist etwas kaputtgegangen. Deine Daten sind sicher: Sie liegen auf dem Server, nicht auf diesem Bildschirm."
   },
   "heatmap": {
@@ -135,6 +135,6 @@
     "canal": "Kanal {{canal}}",
     "paquete": "Paket {{paquete}}",
     "buscarA11y": "Nach System-Update suchen",
-    "buscar": "NACH UPDATE SUCHEN"
+    "buscar": "Nach Update suchen"
   }
 }

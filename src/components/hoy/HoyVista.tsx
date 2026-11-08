@@ -1,10 +1,9 @@
 // NIVL · Hoy: la vista (L-RADICAL B.1 y §C). Pura: todo llega por props desde
 // useHoy (o desde la galería con datos de mentira) y no carga nada.
 //
-// De arriba abajo: el Hero del rango a sangre (el nivel como monumento entre
-// laureles, sobre el graderío), los avisos del sistema, el día perfecto, las
-// misiones con la SIGUIENTE invertida, el orden del día, el duelo de la
-// semana, los módulos y el lema entre laureles.
+// De arriba abajo: el Hero del rango a sangre, los avisos del sistema, el día
+// perfecto, las misiones con la SIGUIENTE invertida, el orden del día, el duelo
+// de la semana, los módulos y el lema.
 //
 // Inversión única de la pantalla: la misión siguiente; con el día cerrado y la
 // celebración a la vista, el botón «Compartir» del día perfecto (nunca las dos
@@ -18,14 +17,13 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { router } from 'expo-router';
 import { useState, type ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
-import { EncabezadoArena, Entrada, HeroRango, Laurel, TarjetaArena } from '@/components/arena';
-import { LAUREL_ALTO, LAUREL_ANCHO } from '@/components/arena/geometria';
+import { EncabezadoArena, Entrada, HeroRango, TarjetaArena } from '@/components/arena';
 import { ajustarInscripcion } from '@/components/arena/medida';
 import { OrdenDelDia } from '@/components/OrdenDelDia';
 import { QuestItem } from '@/components/QuestItem';
 import { Button, EmptyState, Row, Screen, Section, SkeletonRows } from '@/components/ui';
 import { cabeAside } from '@/design/responsive';
-import { ink, space, stroke, type as tipo } from '@/design/tokens';
+import { ink, radio, space, stroke, type as tipo, vidrio } from '@/design/tokens';
 import { t } from '@/i18n';
 import { useAnchoUtil, useNavActual, useSizeClass } from '@/design/useSizeClass';
 import type { DayBlock } from '@/lib/plan';
@@ -76,9 +74,6 @@ const HUECO_MODULOS = 8;
 const LADO_MODULO = 112;
 /** Por encima, el texto no cabe en dos columnas: una sola. */
 const ESCALA_DOS_COLUMNAS = 1.35;
-const LAUREL_LEMA = 20;
-/** Lo que el lema no puede usar: dos laureles de 20 y sus dos huecos. */
-const MARCO_LEMA = 2 * ((LAUREL_LEMA * LAUREL_ANCHO) / LAUREL_ALTO) + 2 * space.s3;
 
 export function HoyVista({
   estado,
@@ -116,7 +111,7 @@ export function HoyVista({
 
   // El lema en UNA línea (en la web no hay adjustsFontSizeToFit): tracking 3
   // de partida y, si aun así no cabe, más apretado.
-  const huecoLema = Math.min(ancho, maxContent + 2 * gutter) - 2 * gutter - MARCO_LEMA;
+  const huecoLema = Math.min(ancho, maxContent + 2 * gutter) - 2 * gutter;
   const lema = t('comun:lema');
   const ajusteLema = ajustarInscripcion(lema, huecoLema, { size: tipo.inscripcion.size, tracking: 3 });
 
@@ -269,7 +264,7 @@ export function HoyVista({
           />
         </Entrada>
       ) : (
-        <EncabezadoArena eyebrow={d.fecha} titulo={t('hoy:derivar.titulo')} meandro />
+        <EncabezadoArena eyebrow={d.fecha} titulo={t('hoy:derivar.titulo')} />
       )}
 
       {/* 2 · Avisos del sistema. */}
@@ -382,10 +377,9 @@ export function HoyVista({
         </Section>
       </Entrada>
 
-      {/* 8 · El lema entre laureles. */}
+      {/* 8 · El lema. */}
       <Entrada indice={5}>
         <View style={styles.lema} accessible accessibilityLabel={t('hoy:vista.lemaA11y')}>
-          <Laurel alto={LAUREL_LEMA} lado="izq" />
           <Text
             style={[styles.lemaTexto, { fontSize: ajusteLema.size, letterSpacing: ajusteLema.tracking }]}
             maxFontSizeMultiplier={1.35}
@@ -393,7 +387,6 @@ export function HoyVista({
           >
             {lema}
           </Text>
-          <Laurel alto={LAUREL_LEMA} lado="der" />
         </View>
       </Entrada>
     </Screen>
@@ -434,17 +427,20 @@ const styles = StyleSheet.create({
     marginTop: space.s3,
     borderTopWidth: stroke.hairline,
     borderBottomWidth: stroke.hairline,
-    borderColor: ink.ink3,
+    borderColor: vidrio.linea,
   },
   rejilla: { flexDirection: 'row', flexWrap: 'wrap', gap: HUECO_MODULOS },
   // El lado del azulejo se calcula con el ancho medido de la rejilla (ver `tile`).
   azulejo: {
-    backgroundColor: ink.ink1,
+    backgroundColor: vidrio.tarjeta,
+    borderWidth: stroke.hairline,
+    borderColor: vidrio.borde,
+    borderRadius: radio.control,
     alignItems: 'center',
     justifyContent: 'center',
     gap: 7,
   },
-  azulejoPulsado: { backgroundColor: ink.ink2 },
+  azulejoPulsado: { backgroundColor: vidrio.campo },
   azulejoRotulo: {
     fontFamily: tipo.micro.family,
     fontSize: tipo.micro.size,
@@ -467,7 +463,7 @@ const styles = StyleSheet.create({
     fontSize: tipo.inscripcion.size,
     lineHeight: tipo.inscripcion.lineHeight,
     letterSpacing: tipo.inscripcion.tracking,
-    color: ink.ink6,
+    color: ink.ink8,
     textAlign: 'center',
   },
 });

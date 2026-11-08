@@ -5,6 +5,8 @@
 import { StatusBar } from 'expo-status-bar';
 import { Modal, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { FondoOnix } from '@/components/ui';
+import { tituloAhora } from '@/components/modos/mundo/PiezasOnix';
 import { ink, space } from '@/design/tokens';
 import type { Situacion } from '@/focus/pomodoro';
 import { t } from '@/i18n';
@@ -37,12 +39,13 @@ export function PantallaConcentracion(p: PantallaConcentracionProps) {
     <Modal visible={p.visible} animationType="fade" presentationStyle="fullScreen" onRequestClose={p.onTerminar}>
       {p.visible ? <StatusBar hidden /> : null}
       <View style={[styles.fondo, { paddingTop: insets.top + space.s4, paddingBottom: insets.bottom + space.s4 }]}>
+        <FondoOnix />
         <Rotulo texto={t('focus:concentracion.rotulo')} derecha={t('focus:hoy.bloque', { n: p.bloque, de: p.cadaLargo })} />
         <View style={styles.centro}>
           <View accessible accessibilityRole="timer" accessibilityLabel={t('focus:hoy.sesionA11y', { reloj: p.reloj, titulo, fase: t('focus:concentracion.rotulo') })}>
             <AnilloReloj ratio={p.ratio} reloj={p.reloj} pie={enPausa ? t('focus:concentracion.enPausa') : t('focus:hoy.relojBloque')} lado={LADO_RELOJ} />
           </View>
-          <Text style={[textoFocus.titulo, styles.centrado]} maxFontSizeMultiplier={1.35} numberOfLines={2}>
+          <Text style={[tituloAhora, styles.centrado]} maxFontSizeMultiplier={1.35} numberOfLines={2}>
             {titulo}
           </Text>
           {p.tema ? (

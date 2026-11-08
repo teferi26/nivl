@@ -5,7 +5,7 @@ import { EtiquetasModo } from '@/components/modos/EtiquetasModo';
 import { Button, Chip, ChipWrap, Sheet } from '@/components/ui';
 import { avisar, confirmar } from '@/components/ui/confirmar';
 import { vibrar } from '@/design/haptics';
-import { ink, stroke, type as tipo } from '@/design/tokens';
+import { ink, oro, radio, stroke, type as tipo, vidrio } from '@/design/tokens';
 import { t } from '@/i18n';
 import { capital, nombreDia } from '@/i18n/formato';
 import type { QuestInput } from '@/lib/data';
@@ -330,20 +330,21 @@ const styles = StyleSheet.create({
   },
   campo: { marginTop: 4 },
   hint: { fontFamily: tipo.bodySm.family, fontSize: tipo.bodySm.size, lineHeight: tipo.bodySm.lineHeight, color: ink.ink8, marginTop: 8 },
-  hintAviso: { fontFamily: 'Outfit_600SemiBold', color: ink.ink9 },
+  hintAviso: { fontFamily: tipo.micro.family, color: ink.ink9 },
   days: { flexDirection: 'row', gap: 6 },
   day: {
     flex: 1,
     // 44: la zona táctil mínima; con 7 en fila no hay hitSlop lateral posible.
     height: 44,
     borderWidth: stroke.hairline,
-    borderColor: ink.ink4,
+    borderColor: vidrio.borde,
+    borderRadius: radio.chip,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  // Elegido = marco de 2 ink10 sobre ink1, como el Chip: la inversión es «Crear».
-  dayOn: { backgroundColor: ink.ink1, borderColor: ink.ink10, borderWidth: stroke.rule },
-  dayText: { fontFamily: 'Outfit_700Bold', fontSize: 14, color: ink.ink8 },
-  dayTextOn: { color: ink.ink10 },
+  // Elegido = marco de 2 de oro sobre vidrio, como el Chip: la inversión es «Crear».
+  dayOn: { backgroundColor: vidrio.tarjeta, borderColor: oro.claro, borderWidth: stroke.rule },
+  dayText: { fontFamily: tipo.label.family, fontSize: 14, color: ink.ink8 },
+  dayTextOn: { color: oro.claro },
   pressed: { opacity: 0.7 },
 });

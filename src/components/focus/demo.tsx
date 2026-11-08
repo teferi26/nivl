@@ -16,7 +16,7 @@ import { DEMO_BACHILLERATO, DEMO_OPOSITORA, DEMO_UNIVERSITARIO } from './persona
 import { HojaCierreBloque } from './HojaCierreBloque';
 import { nivelesDeModos } from '@/modos/niveles';
 import { FocusHoyVista, type FocusHoyVistaProps } from './FocusHoyVista';
-import { vistaHoy, type MisionEnlazable } from './vistaHoy';
+import { conHeroe, vistaHoy, type MisionEnlazable } from './vistaHoy';
 import { ExamenesVista, type ExamenesVistaProps } from './ExamenesVista';
 import { HojaEntrega, HojaSimulacro } from './HojasAgenda';
 import { HojaAjustes, HojaDetalleExamen, HojaExamen, HojaMetodo, HojaMision, HojaNoMolestar, HojaRepaso } from './HojasFocus';
@@ -184,7 +184,8 @@ function Hoy({
   return (
     <FocusHoyVista
       {...v}
-      cabecera={cabeceraDemo()}
+      cabecera={<CabeceraMundo modo="focus" nivel={NIVEL} conNivel={!conHeroe({ estado, disponible, arranque: v.arranque, sinAsignaturas: v.sinAsignaturas })} />}
+      nivel={NIVEL}
       estado={estado}
       error={estado === 'error' ? 'Sin conexión. Revisa la red y vuelve a intentarlo.' : null}
       disponible={disponible}

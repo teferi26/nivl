@@ -1,8 +1,8 @@
 // NIVL · FOCUS: las piezas de la lámina 3 (P01). Puras.
 //
-//   TarjetaFocus   la tarjeta redondeada (y la principal, con degradado del acento)
-//   Rotulo         «EXÁMENES ........ 2 PRÓXIMOS» (izquierda gris, derecha acento)
-//   BotonFocus     el botón grande lleno del acento («EMPEZAR BLOQUE») y su contorno
+//   TarjetaFocus   la tarjeta de vidrio (la principal, con marco de oro)
+//   Rotulo         «EXÁMENES ........ 2 PRÓXIMOS» (izquierda gris, derecha oro)
+//   BotonFocus     el botón grande hueso («Empezar bloque») y su contorno
 //   Etiqueta       la pastilla «EN 12 DÍAS»
 //   BarraFocus     la barra fina redondeada
 //   Casilla        la casilla del temario (vacía, a medias, hecha)
@@ -12,11 +12,10 @@
 //   VacioFocus     el estado vacío dentro de una tarjeta
 
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { LinearGradient } from 'expo-linear-gradient';
 import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
-import { ink, space, type as tipo } from '@/design/tokens';
+import { ink, radio, space, stroke, type as tipo } from '@/design/tokens';
 import { usePrestado } from '@/components/modos/mundo/Prestado';
 import { t } from '@/i18n';
 import { F, R } from './estilo';
@@ -37,23 +36,8 @@ export function TarjetaFocus({
   style?: StyleProp<ViewStyle>;
   accessibilityLabel?: string;
 }) {
-  if (heroe) {
-    return (
-      <View style={[styles.tarjeta, styles.heroeBorde, style]} accessibilityLabel={accessibilityLabel}>
-        <LinearGradient
-          colors={[F.heroe, F.tarjeta]}
-          locations={[0, 0.62]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 0.75, y: 1 }}
-          style={styles.degradado}
-          pointerEvents="none"
-        />
-        {children}
-      </View>
-    );
-  }
   return (
-    <View style={[styles.tarjeta, style]} accessibilityLabel={accessibilityLabel}>
+    <View style={[styles.tarjeta, heroe && styles.heroeBorde, style]} accessibilityLabel={accessibilityLabel}>
       {children}
     </View>
   );
@@ -135,7 +119,7 @@ export function BotonFocus({
   pequeno?: boolean;
 }) {
   const lleno = variante === 'lleno';
-  const color = lleno ? F.sobreAcento : F.acento;
+  const color = lleno ? F.sobreHueso : variante === 'contorno' ? F.texto : F.meta;
   return (
     <Pressable
       onPress={onPress}
@@ -186,7 +170,7 @@ export function Casilla({ estado, redonda }: { estado: 'vacia' | 'media' | 'hech
       accessibilityElementsHidden
       importantForAccessibility="no-hide-descendants"
     >
-      {estado === 'hecha' && !redonda ? <Ionicons name="checkmark" size={14} color={F.sobreAcento} /> : null}
+      {estado === 'hecha' && !redonda ? <Ionicons name="checkmark" size={14} color={F.sobreHueso} /> : null}
       {estado === 'hecha' && redonda ? <View style={styles.punto} /> : null}
     </View>
   );
@@ -194,22 +178,22 @@ export function Casilla({ estado, redonda }: { estado: 'vacia' | 'media' | 'hech
 
 const LADO_ANILLO = 80;
 const RADIO = 37;
-const GROSOR = 7;
+const GROSOR = stroke.frame;
 
-export function AnilloReloj({ ratio, reloj, pie, lado = LADO_ANILLO, apagado }: { ratio: number; reloj: string; pie: string; lado?: number; /** El descanso: arco gris, no violeta. */ apagado?: boolean }) {
+export function AnilloReloj({ ratio, reloj, pie, lado = LADO_ANILLO, apagado }: { ratio: number; reloj: string; pie: string; lado?: number; /** El descanso: arco gris, no oro. */ apagado?: boolean }) {
   const c = 2 * Math.PI * RADIO;
   const r = Math.max(0, Math.min(1, ratio));
   const escala = lado / LADO_ANILLO;
   return (
     <View style={{ width: lado, height: lado }} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
       <Svg width={lado} height={lado} viewBox="0 0 88 88">
-        <Circle cx={44} cy={44} r={RADIO} stroke={F.anilloPista} strokeWidth={GROSOR} fill="none" />
+        <Circle cx={44} cy={44} r={RADIO} stroke={F.pista} strokeWidth={GROSOR} fill="none" />
         {r > 0 ? (
           <Circle
             cx={44}
             cy={44}
             r={RADIO}
-            stroke={apagado ? F.meta : F.acento}
+            stroke={apagado ? F.meta : F.hilo}
             strokeWidth={GROSOR}
             fill="none"
             strokeLinecap="round"
@@ -222,7 +206,7 @@ export function AnilloReloj({ ratio, reloj, pie, lado = LADO_ANILLO, apagado }: 
         <Text style={[styles.reloj, { fontSize: 20 * escala, lineHeight: 24 * escala }]} maxFontSizeMultiplier={1} adjustsFontSizeToFit numberOfLines={1}>
           {reloj}
         </Text>
-        <Text style={[styles.relojPie, { fontSize: 9 * Math.max(1, escala * 0.9) }]} maxFontSizeMultiplier={1} numberOfLines={1}>
+        <Text style={[styles.relojPie, { fontSize: Math.max(tipo.micro.size, 9 * escala * 0.9) }]} maxFontSizeMultiplier={1} numberOfLines={1}>
           {pie}
         </Text>
       </View>
@@ -346,7 +330,7 @@ export function VacioFocus({
   );
 }
 
-/** El título de una pestaña de FOCUS: «FOCUS» en el acento y el nombre en Cinzel. */
+/** El título de una pestaña de FOCUS: «FOCUS» en oro y el nombre en Playfair. */
 export function TituloFocus({ titulo, subtitulo }: { titulo: string; subtitulo?: string }) {
   // Prestada a General (Prestado.tsx): «volver» delante del nombre del modo.
   const prestado = usePrestado();
@@ -390,14 +374,14 @@ export const textoFocus = StyleSheet.create({
   cuerpo: { fontFamily: tipo.bodySm.family, fontSize: 14, lineHeight: 20, color: F.meta },
   titulo: { fontFamily: tipo.headline.family, fontSize: 19, lineHeight: 23, letterSpacing: -0.2, color: ink.ink10 },
   acento: { fontFamily: tipo.micro.family, fontSize: 14, lineHeight: 20, color: F.acento },
-  cifra: { fontFamily: tipo.headline.family, fontSize: 28, lineHeight: 32, letterSpacing: -0.4, color: ink.ink10 },
+  cifra: { fontFamily: tipo.number.family, fontSize: 28, lineHeight: 34, color: ink.ink9 },
 });
 
 const styles = StyleSheet.create({
   titulo: { paddingTop: space.s2, paddingBottom: space.s4, gap: 2 },
   tituloVolver: { flexDirection: 'row', alignItems: 'center', gap: 4, alignSelf: 'flex-start' },
   tituloEyebrow: { fontFamily: tipo.label.family, fontSize: 12, lineHeight: 16, letterSpacing: 3, color: F.acento },
-  tituloTexto: { fontFamily: tipo.rank.family, fontSize: 32, lineHeight: 38, letterSpacing: 3, color: ink.ink10, textTransform: 'uppercase' },
+  tituloTexto: { fontFamily: tipo.title.family, fontSize: tipo.title.size, lineHeight: tipo.title.lineHeight, letterSpacing: tipo.title.tracking, color: ink.ink9 },
   tituloSub: { fontFamily: tipo.bodySm.family, fontSize: 14, lineHeight: 20, color: F.meta },
   tarjeta: {
     backgroundColor: F.tarjeta,
@@ -409,7 +393,6 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   heroeBorde: { borderColor: F.bordeHeroe },
-  degradado: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 },
   rotulo: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: space.s3, minHeight: 20 },
   rotuloDer: { flexDirection: 'row', alignItems: 'center', gap: space.s3 },
   rotuloTexto: {
@@ -430,7 +413,7 @@ const styles = StyleSheet.create({
     color: F.acento,
   },
   boton: {
-    minHeight: 46,
+    minHeight: 48,
     borderRadius: R.boton,
     flexDirection: 'row',
     alignItems: 'center',
@@ -438,20 +421,20 @@ const styles = StyleSheet.create({
     gap: space.s2,
     paddingHorizontal: space.s5,
   },
-  botonPequeno: { minHeight: 44, paddingHorizontal: space.s4, borderRadius: 12 },
-  botonLleno: { backgroundColor: F.acento },
+  botonPequeno: { minHeight: 44, paddingHorizontal: space.s4, borderRadius: R.chip },
+  botonLleno: { backgroundColor: F.hueso },
   botonContorno: { borderWidth: 1, borderColor: F.bordeActivo },
   botonTexto: {},
-  botonTitulo: { fontFamily: tipo.label.family, fontSize: 14, lineHeight: 18, letterSpacing: 2.6, textTransform: 'uppercase' },
-  botonTituloPequeno: { fontSize: 13, letterSpacing: 1.8 },
+  botonTitulo: { flexShrink: 1, fontFamily: tipo.headline.family, fontSize: tipo.body.size, lineHeight: 20 },
+  botonTituloPequeno: { fontSize: tipo.bodySm.size },
   apagado: { opacity: 0.45 },
   pulsado: { opacity: 0.7 },
-  etiqueta: { backgroundColor: F.acento, borderRadius: R.etiqueta, paddingHorizontal: 6, paddingVertical: 2 },
-  etiquetaApagada: { backgroundColor: 'transparent', borderWidth: 1, borderColor: F.control },
-  etiquetaTexto: { fontFamily: tipo.label.family, fontSize: 11, lineHeight: 14, letterSpacing: 1.2, color: F.sobreAcento, textTransform: 'uppercase' },
+  etiqueta: { borderWidth: stroke.hairline, borderColor: F.bordeActivo, borderRadius: R.etiqueta, paddingHorizontal: space.s2, paddingVertical: 2 },
+  etiquetaApagada: { borderColor: F.linea },
+  etiquetaTexto: { fontFamily: tipo.label.family, fontSize: 11, lineHeight: 14, letterSpacing: 1.2, color: F.acento, textTransform: 'uppercase' },
   etiquetaTextoApagada: { color: F.meta },
   pista: { height: 5, borderRadius: R.barra, backgroundColor: F.pista, overflow: 'hidden' },
-  relleno: { height: 5, borderRadius: R.barra, backgroundColor: F.acento },
+  relleno: { height: 5, borderRadius: R.barra, backgroundColor: F.hilo },
   casilla: {
     width: 20,
     height: 20,
@@ -462,11 +445,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   casillaOn: { borderColor: F.acento },
-  casillaHecha: { backgroundColor: F.acento },
-  redonda: { borderRadius: 10 },
-  punto: { width: 10, height: 10, borderRadius: 5, backgroundColor: F.acento },
+  casillaHecha: { backgroundColor: F.hueso, borderColor: F.hueso },
+  redonda: { borderRadius: radio.pastilla },
+  punto: { width: 10, height: 10, borderRadius: radio.pastilla, backgroundColor: F.hueso },
   anilloCentro: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, alignItems: 'center', justifyContent: 'center' },
-  reloj: { fontFamily: tipo.headline.family, color: ink.ink10, letterSpacing: 0.2 },
+  reloj: { fontFamily: tipo.number.family, color: ink.ink9, fontVariant: ['lining-nums', 'tabular-nums'] },
   relojPie: { fontFamily: tipo.micro.family, color: F.rotulo, letterSpacing: 1.2, marginTop: 1 },
   // 36 de alto visible y 4 de hitSlop arriba y abajo: la zona táctil sigue siendo de 44.
   fila: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: space.s3, minHeight: 36, paddingVertical: space.s1 },
@@ -475,7 +458,7 @@ const styles = StyleSheet.create({
     borderRadius: R.chip,
     borderWidth: 1,
     borderColor: F.linea,
-    backgroundColor: ink.ink1,
+    backgroundColor: F.tarjeta,
     paddingHorizontal: space.s3,
     paddingVertical: space.s2,
     minHeight: 44,

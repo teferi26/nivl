@@ -13,6 +13,8 @@ import {
   examenesProximos,
   examenesSinFecha,
   planDeHoyCompleto,
+  horasDeLaSemana,
+  notasPorAsignatura,
   repasosDeHoy,
   temasDeAsignatura,
   ventanaTemario,
@@ -21,10 +23,11 @@ import {
   type PlanHoy,
 } from '@/focus/resumen';
 import { enlazables } from '@/focus/mision';
+import { formatoNota, mediaGlobal } from '@/focus/notas';
 import type { DatosFocus } from '@/focus/tipos';
 import { t } from '@/i18n';
 import type { ClaseVista, EntregaFila, ExamenFila, FilaPlan, FocusHoyVistaProps, HuecoVista, MisionFila, PlanVista, SesionVista, TocaVista } from './FocusHoyVista';
-import { tf } from './textos';
+import { textoHoras, tf } from './textos';
 
 export interface MisionEnlazable {
   id: string;
@@ -227,7 +230,12 @@ function huecoVista(d: DatosFocus, hoy: string): HuecoVista | null {
   };
 }
 
-export function vistaHoy(e: EntradaVistaHoy): Omit<FocusHoyVistaProps, 'cabecera' | 'estado' | 'error' | 'disponible' | 'acciones' | 'refrescando' | 'hoy'> {
+/** El inicio con datos lleva héroe (y el nivel en su escudo). */
+export function conHeroe(p: Pick<FocusHoyVistaProps, 'estado' | 'disponible' | 'arranque' | 'sinAsignaturas'>): boolean {
+  return p.estado === 'listo' && p.disponible && !p.arranque && !p.sinAsignaturas;
+}
+
+export function vistaHoy(e: EntradaVistaHoy): Omit<FocusHoyVistaProps, 'cabecera' | 'nivel' | 'estado' | 'error' | 'disponible' | 'acciones' | 'refrescando' | 'hoy'> {
   const d = e.datos;
   const p = e.pomodoro;
   const c = e.config;
@@ -275,6 +283,11 @@ export function vistaHoy(e: EntradaVistaHoy): Omit<FocusHoyVistaProps, 'cabecera
     clase: claseDe(d, e.hoy, e.ahoraMin),
     faltaHorario: perfil !== null && PLANTILLAS[perfil].conHorario && d.clases.length === 0,
     repasos: { temas: repasos.temas.length, tarjetas: repasos.tarjetas, total: totalRepasos },
+    cifras: [
+      { valor: textoHoras(horasDeLaSemana(d, e.hoy).total), rotulo: t('focus:hoyCifras.semana') },
+      { valor: String(repasos.tarjetas), rotulo: t('focus:hoyCifras.tarjetas') },
+      { valor: formatoNota(mediaGlobal(notasPorAsignatura(d).map((n) => n.media.media))), rotulo: t('focus:hoyCifras.media') },
+    ],
     hueco: huecoVista(d, e.hoy),
     examenes: examenesFila(d, e.hoy, proximos),
     temario: foco

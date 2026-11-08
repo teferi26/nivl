@@ -20,7 +20,7 @@
     "tambienRegistrar": "Também fica marcada sozinha ao registar {{acto}}."
   },
   "errorBoundary": {
-    "titulo": "O SISTEMA FALHOU",
+    "titulo": "O sistema falhou",
     "texto": "Algo se partiu por dentro. Os teus dados estão a salvo: vivem no servidor, não nesta página."
   },
   "heatmap": {
@@ -135,6 +135,6 @@
     "canal": "Canal {{canal}}",
     "paquete": "Pacote {{paquete}}",
     "buscarA11y": "Procurar atualização do sistema",
-    "buscar": "PROCURAR ATUALIZAÇÃO"
+    "buscar": "Procurar atualização"
   }
 }

@@ -1,14 +1,14 @@
 // NIVL · La curva de una serie (peso, un récord, el ánimo). Sin librerías.
 //
-// Mármol y tinta (FASE3 Lote F): la línea en ink10 corre sobre una pista ink4
-// (la línea de base, donde cae el valor mínimo); el último punto, un cuadrado
-// blanco. Debajo, mínimo y máximo en `micro` ink6 y la variación en Cinzel.
+// Ónix: la línea es un hilo de oro sobre una pista de vidrio (la línea de
+// base, donde cae el valor mínimo); el último punto, un círculo del mismo
+// color. Debajo, mínimo y máximo en `micro` ink6 y la variación en Playfair.
 // Las cifras van con coma decimal. El lector oye un resumen («de 85 a 78,4
 // kg, mínimo 78,4, máximo 85,2»), no el dibujo.
 
 import { StyleSheet, Text, View } from 'react-native';
 import Svg, { Line, Polyline, Rect } from 'react-native-svg';
-import { ink, space, stroke, type as tipo } from '@/design/tokens';
+import { ink, oro, space, stroke, type as tipo, vidrio } from '@/design/tokens';
 import { t } from '@/i18n';
 import { numeroES } from '@/lib/pagoActo';
 
@@ -18,14 +18,14 @@ interface Props {
   height?: number;
   color?: string;
   unit?: string;
-  /** Pinta la pista ink4 (por defecto, sí). */
+  /** Pinta la pista (por defecto, sí). */
   pista?: boolean;
 }
 
 const PAD = 6;
 const PUNTO = 7;
 
-export function TrendLine({ values, width = 300, height = 90, color = ink.ink10, unit = 'kg', pista = true }: Props) {
+export function TrendLine({ values, width = 300, height = 90, color = oro.hilo, unit = 'kg', pista = true }: Props) {
   if (values.length === 0) {
     return (
       <Text style={styles.vacio} maxFontSizeMultiplier={1.6}>
@@ -66,7 +66,7 @@ export function TrendLine({ values, width = 300, height = 90, color = ink.ink10,
   return (
     <View accessible accessibilityRole="image" accessibilityLabel={leido}>
       <Svg width={width} height={height}>
-        {pista ? <Line x1={0} y1={yPista} x2={width} y2={yPista} stroke={ink.ink4} strokeWidth={stroke.hairline} /> : null}
+        {pista ? <Line x1={0} y1={yPista} x2={width} y2={yPista} stroke={vidrio.pista} strokeWidth={stroke.hairline} /> : null}
         <Polyline
           points={points.map((p) => `${p.x},${p.y}`).join(' ')}
           fill="none"
@@ -75,7 +75,7 @@ export function TrendLine({ values, width = 300, height = 90, color = ink.ink10,
           strokeLinejoin="round"
           strokeLinecap="round"
         />
-        <Rect x={last.x - PUNTO / 2} y={last.y - PUNTO / 2} width={PUNTO} height={PUNTO} fill={color} />
+        <Rect x={last.x - PUNTO / 2} y={last.y - PUNTO / 2} width={PUNTO} height={PUNTO} rx={PUNTO / 2} fill={color} />
       </Svg>
       <View style={[styles.pie, { width }]}>
         <Text style={styles.extremos} maxFontSizeMultiplier={1.35} numberOfLines={1}>
@@ -101,6 +101,6 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     color: ink.ink6,
   },
-  delta: { fontFamily: tipo.number.family, fontSize: 14, lineHeight: 18, color: ink.ink10 },
+  delta: { fontFamily: tipo.number.family, fontSize: 14, lineHeight: 18, color: oro.claro },
   deltaPlano: { color: ink.ink8 },
 });

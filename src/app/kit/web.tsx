@@ -18,7 +18,10 @@ import { GALERIA } from '@/lib/galeria';
 import { fijarQuieto } from '@/components/arena/quieto';
 import { ESTADOS_WORK } from '@/components/economia/work/demo';
 import { GALERIA_FOCUS } from '@/components/focus/demo';
-import { DEMO as demoHoy } from '@/components/hoy/demo';
+import { DEMO as demoHoy, baseHoyDemo } from '@/components/hoy/demo';
+import { derivarHoy } from '@/components/hoy/derivarHoy';
+import { CabeceraMundo } from '@/components/modos/mundo/CabeceraMundo';
+import { MundoHoyVista } from '@/components/modos/mundo/MundoHoyVista';
 import { InicioIronDemo } from '@/components/ironmundo/demo';
 import { NavRail } from '@/components/ui/NavRail';
 import { nombreDestino, NAV_ITEMS } from '@/components/ui/navItems';
@@ -33,7 +36,7 @@ import { avisarEnPantalla } from '@/lib/web/avisos';
 import { MUNDOS } from '@/modos/rutasModo';
 import { NOMBRE_MODO } from '@/modos/tipos';
 
-type Mundo = 'general' | 'iron' | 'focus' | 'work';
+type Mundo = 'general' | 'iron' | 'focus' | 'work' | 'founder';
 
 interface Pestana {
   name: string;
@@ -66,6 +69,22 @@ function contenido(mundo: Mundo): { activa: number; pantalla: ReactNode } {
     const hoy = GALERIA_FOCUS[0]!;
     return { activa: 0, pantalla: (hoy.estados.find((e) => e.id === 'corriendo') ?? hoy.estados[0]!).render() };
   }
+  if (mundo === 'founder') {
+    const datos = derivarHoy(baseHoyDemo());
+    const nada = () => {};
+    return {
+      activa: 0,
+      pantalla: (
+        <MundoHoyVista
+          modo="founder"
+          cabecera={<CabeceraMundo modo="founder" nivel={{ nivel: 12, ratio: 0.4 } as never} emblema={null} conNivel={false} />}
+          nivel={{ nivel: 12, ratio: 0.4 } as never}
+          onCoach={nada}
+          hoy={{ estado: 'listo', error: null, datos, ocupada: null, refrescando: false, acciones: { onCompletar: nada, onAlternarBloque: nada, onCompartirDia: nada, onRefrescar: nada, onReintentar: nada } as never }}
+        />
+      ),
+    };
+  }
   if (mundo === 'iron') return { activa: 0, pantalla: <InicioIronDemo /> };
   if (mundo === 'work') return { activa: MUNDOS.work.pestanas.findIndex((p) => p.ruta === 'work-economia'), pantalla: ESTADOS_WORK[0]!.render() };
   const estado = demoHoy?.estados.find((e) => e.id === 'lleno') ?? demoHoy?.estados[0];
@@ -91,7 +110,7 @@ export default function KitWeb() {
     );
   }
 
-  const mundo: Mundo = p.mundo === 'iron' || p.mundo === 'focus' || p.mundo === 'work' ? p.mundo : 'general';
+  const mundo: Mundo = p.mundo === 'iron' || p.mundo === 'focus' || p.mundo === 'work' || p.mundo === 'founder' ? p.mundo : 'general';
   const { sizeClass } = marcoDe(width);
   const hueco = huecoContenido(width).ancho;
   const { activa, pantalla } = contenido(mundo);

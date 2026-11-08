@@ -54,7 +54,7 @@
   "panel": {
     "cargandoA11y": "Chargement du tableau de bord",
     "coachA11y": "Ouvrir le coach. Demande-lui le plan, ajuste la journée ou pose-lui une question.",
-    "coachTitulo": "COACH",
+    "coachTitulo": "Coach",
     "coachCuerpo": "Demande-lui le plan, ajuste la journée ou pose-lui une question."
   },
   "vista": {

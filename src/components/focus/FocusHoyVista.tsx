@@ -1,26 +1,30 @@
 // NIVL · Mundo FOCUS: el inicio. Pura.
 //
 // Sin datos, el arranque guiado en vez del reloj. Con datos, de arriba abajo:
+//   · Héroe (el próximo examen y el nivel en el escudo) y coach.
 //   · Hueco, si se vuelve tras unos días.
-//   · HOY TOCA: qué se estudia, por qué y EMPEZAR (la única superficie llena).
+//   · AHORA: qué se estudia, por qué y EMPEZAR (el único botón hueso).
+//   · Tres cifras y el plan de hoy entero («ver todo»), con aviso si no se llega.
 //   · Entregas y deberes, por encima de los exámenes.
-//   · El plan de hoy entero («ver todo»), con aviso si no se llega.
 //   · Siguiente clase y la entrada única a los repasos.
-//   · Exámenes, temario, coach y misiones.
+//   · Exámenes, temario y misiones.
 // Con un bloque en marcha, PantallaConcentracion a pantalla completa.
 
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useState, type ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { Entrada, ErrorSistema } from '@/components/arena';
+import { Entrada, ErrorSistema, formatoMiles, ratioSeguro } from '@/components/arena';
+import { HeroMundo, TarjetaCoach, TresCifras, tituloAhora, type CifraMundo } from '@/components/modos/mundo/PiezasOnix';
 import { Screen, Skeleton } from '@/components/ui';
-import { ink, space, type as tipo } from '@/design/tokens';
+import { space, type as tipo } from '@/design/tokens';
 import type { ExamenDeArranque } from '@/focus/arranqueFlujo';
 import type { TipoBloque } from '@/focus/planEstudio';
 import type { BloquePlan } from '@/focus/resumen';
 import type { Fase, Situacion } from '@/focus/pomodoro';
 import type { EstadoTema, PerfilFocus } from '@/focus/tipos';
 import { t } from '@/i18n';
+import type { NivelModo } from '@/modos/niveles';
+import { NOMBRE_MODO } from '@/modos/tipos';
 import { ArranqueGuiado } from './ArranqueGuiado';
 import { F } from './estilo';
 import { AnilloReloj, BarraFocus, BotonFocus, Casilla, ChipFocus, Etiqueta, FilaFocus, Rotulo, TarjetaFocus, VacioFocus, textoFocus } from './Piezas';
@@ -132,6 +136,8 @@ export interface MisionFila {
 
 export interface FocusHoyVistaProps {
   cabecera: ReactNode;
+  /** El nivel del modo para el escudo del héroe; null mientras se lee. */
+  nivel: NivelModo | null;
   estado: 'cargando' | 'listo' | 'error';
   error: string | null;
   /** false: la 0076 aún no está en el servidor (estado vacío tranquilo). */
@@ -149,6 +155,8 @@ export interface FocusHoyVistaProps {
   clase: ClaseVista | null;
   faltaHorario: boolean;
   repasos: { temas: number; tarjetas: number; total: number };
+  /** Las horas de la semana, las tarjetas de hoy y la media. */
+  cifras: readonly CifraMundo[];
   hueco: HuecoVista | null;
   examenes: ExamenFila[];
   /** Asignatura en foco y unos pocos temas alrededor de por dónde va. */
@@ -227,15 +235,35 @@ function Descanso({ s, acciones }: { s: SesionVista; acciones: FocusHoyVistaProp
   );
 }
 
-function HoyToca({ toca, s, asignaturas, acciones }: { toca: TocaVista; s: SesionVista; asignaturas: FocusHoyVistaProps['asignaturas']; acciones: FocusHoyVistaProps['acciones'] }) {
+/** El próximo examen; sin exámenes, el nivel del modo. Nada que no venga de los datos. */
+function Heroe({ examen, nivel }: { examen: ExamenFila | undefined; nivel: NivelModo | null }) {
+  const pieNivel = nivel
+    ? nivel.xpSiguiente <= 0
+      ? t('mundos:cabecera.xpMax')
+      : t('mundos:cabecera.xp', { xp: formatoMiles(nivel.xpEnNivel), total: formatoMiles(nivel.xpSiguiente) })
+    : '';
+  const datos = examen
+    ? { rotulo: t('focus:hoyHeroe.rotulo'), titulo: examen.asignatura, ratio: examen.progreso / 100, pie: t('focus:hoyHeroe.pie', { cuando: examen.etiqueta, pct: examen.progreso }), etiquetaBarra: t('focus:hoyHeroe.barra') }
+    : { rotulo: nivel ? t('mundos:cabecera.nivel', { nivel: nivel.nivel }) : '', titulo: t('focus:hoyHeroe.sinExamen'), ratio: !nivel || nivel.xpSiguiente <= 0 ? 1 : ratioSeguro(nivel.xpEnNivel, nivel.xpSiguiente), pie: pieNivel, etiquetaBarra: t('focus:hoyHeroe.barraNivel') };
+  // El escudo es decorado: el nivel se lee aquí, junto al resto de la tarjeta.
+  const a11yNivel = nivel ? t('mundos:cabecera.nivelA11y', { modo: NOMBRE_MODO.focus, nivel: nivel.nivel, xp: formatoMiles(nivel.xp) }) : null;
   return (
-    <TarjetaFocus heroe>
+    <View accessible accessibilityLabel={[a11yNivel, datos.rotulo, datos.titulo, datos.pie].filter(Boolean).join('. ')}>
+      <HeroMundo {...datos} escudo={nivel?.nivel} />
+    </View>
+  );
+}
+
+function HoyToca({ toca, s, hora, asignaturas, acciones }: { toca: TocaVista; s: SesionVista; /** La hora del plan para este bloque, si la tiene. */ hora?: string | null; asignaturas: FocusHoyVistaProps['asignaturas']; acciones: FocusHoyVistaProps['acciones'] }) {
+  const minutos = t('focus:hoyToca.minutos', { n: toca.minutos });
+  return (
+    <TarjetaFocus>
       <Rotulo
         texto={t('focus:hoyToca.rotulo')}
-        derecha={t('focus:hoyToca.minutos', { n: toca.minutos })}
+        derecha={hora ? `${hora} · ${minutos}` /* i18n-ok: unión de dos datos */ : minutos}
         icono={{ nombre: 'options-outline', a11y: t('focus:hoy.ajustesA11y', { foco: s.foco, descanso: s.descanso }), onPress: acciones.onAjustes }}
       />
-      <Text style={[textoFocus.titulo, styles.arribaPoco]} maxFontSizeMultiplier={1.35} numberOfLines={3}>
+      <Text style={[tituloAhora, styles.arribaPoco]} maxFontSizeMultiplier={1.35} numberOfLines={3}>
         {toca.titulo}
       </Text>
       {toca.detalle ? (
@@ -358,7 +386,7 @@ function Plan({ plan, acciones }: { plan: PlanVista; acciones: FocusHoyVistaProp
   const lista = todo ? plan.bloques : plan.bloques.slice(0, BLOQUES_EN_INICIO);
   const faltanTemasDe = plan.faltanTemasDe;
   return (
-    <TarjetaFocus>
+    <View>
       <Rotulo texto={t('focus:hoy.planRotulo')} derecha={hayMas ? (todo ? t('focus:hoyToca.verMenos') : t('focus:hoyToca.verTodoN', { n: plan.bloques.length + plan.fuera.length })) : null} onDerecha={() => setTodo((v) => !v)} />
       {plan.aviso ? (
         <Text style={[textoFocus.acento, styles.arriba]} maxFontSizeMultiplier={1.5}>
@@ -387,7 +415,7 @@ function Plan({ plan, acciones }: { plan: PlanVista; acciones: FocusHoyVistaProp
         </View>
       ) : null}
       {faltanTemasDe ? <BotonFocus titulo={t('focus:hoyToca.anadirTemas')} variante="contorno" pequeno onPress={() => acciones.onAnadirTemas(faltanTemasDe)} style={styles.arriba} /> : null}
-    </TarjetaFocus>
+    </View>
   );
 }
 
@@ -525,37 +553,6 @@ function Misiones({ misiones, acciones }: { misiones: MisionFila[]; acciones: Fo
   );
 }
 
-function Coach({ frase, onCoach }: { frase: string; onCoach: () => void }) {
-  return (
-    <TarjetaFocus>
-      <Rotulo texto={t('focus:hoy.coachRotulo')} derecha={t('focus:hoy.coachEstado')} />
-      <View style={styles.chat}>
-        <View style={styles.avatar} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
-          <Ionicons name="locate-outline" size={19} color={F.acento} />
-        </View>
-        <View style={styles.burbuja}>
-          <Text style={styles.burbujaTexto} maxFontSizeMultiplier={1.5}>
-            {frase}
-          </Text>
-        </View>
-      </View>
-      <Pressable
-        onPress={onCoach}
-        accessibilityRole="button"
-        accessibilityLabel={t('focus:hoy.coachPregunta')}
-        style={({ pressed }) => [styles.entrada, pressed && styles.pulsado]}
-      >
-        <Text style={styles.entradaTexto} maxFontSizeMultiplier={1.35} numberOfLines={1}>
-          {t('focus:hoy.coachPregunta')}
-        </Text>
-        <View style={styles.enviar}>
-          <Ionicons name="arrow-forward" size={16} color={F.sobreAcento} />
-        </View>
-      </Pressable>
-    </TarjetaFocus>
-  );
-}
-
 function Huecos() {
   return (
     <View style={styles.huecos} accessibilityRole="progressbar" accessibilityLabel={t('focus:comun.cargandoA11y')}>
@@ -570,24 +567,36 @@ function Contenido({ p, indice }: { p: FocusHoyVistaProps; indice: number }) {
   let i = indice;
   const estaEnDescanso = p.sesion.fase !== 'foco';
   const tocaRepaso = p.toca.tipo === 'repasar';
+  const horaToca = p.plan.bloques.find((f) => f.bloque.hora !== null && f.bloque.asignaturaId === p.toca.asignaturaId && f.bloque.temaId === p.toca.temaId)?.hora ?? null;
   return (
     <>
+      {p.examenes.length > 0 || p.nivel ? (
+        <Entrada indice={i++} style={styles.bloque}>
+          <Heroe examen={p.examenes[0]} nivel={p.nivel} />
+        </Entrada>
+      ) : null}
       {p.hueco ? (
         <Entrada indice={i++} style={styles.bloque}>
           <TarjetaHueco hueco={p.hueco} onRetomar={acciones.onRetomarHueco} onCerrar={acciones.onCerrarHueco} />
         </Entrada>
       ) : null}
       <Entrada indice={i++} style={styles.bloque}>
-        {estaEnDescanso ? <Descanso s={p.sesion} acciones={acciones} /> : <HoyToca toca={p.toca} s={p.sesion} asignaturas={p.asignaturas} acciones={acciones} />}
+        <TarjetaCoach cuerpo={p.coach} onAbrir={acciones.onCoach} />
+      </Entrada>
+      <Entrada indice={i++} style={styles.bloque}>
+        {estaEnDescanso ? <Descanso s={p.sesion} acciones={acciones} /> : <HoyToca toca={p.toca} s={p.sesion} hora={horaToca} asignaturas={p.asignaturas} acciones={acciones} />}
+      </Entrada>
+      <Entrada indice={i++} style={styles.bloque}>
+        <TresCifras cifras={p.cifras} />
+      </Entrada>
+      <Entrada indice={i++} style={styles.lista}>
+        <Plan plan={p.plan} acciones={acciones} />
       </Entrada>
       {p.mostrarEntregas ? (
         <Entrada indice={i++} style={styles.bloque}>
           <Entregas entregas={p.entregas} acciones={acciones} />
         </Entrada>
       ) : null}
-      <Entrada indice={i++} style={styles.bloque}>
-        <Plan plan={p.plan} acciones={acciones} />
-      </Entrada>
       {p.clase ? (
         <Entrada indice={i++} style={styles.bloque}>
           <Clase clase={p.clase} />
@@ -615,9 +624,6 @@ function Contenido({ p, indice }: { p: FocusHoyVistaProps; indice: number }) {
           <Temario temario={p.temario} acciones={acciones} />
         </View>
       ) : null}
-      <View style={styles.bloque}>
-        <Coach frase={p.coach} onCoach={acciones.onCoach} />
-      </View>
       {p.misiones && p.misiones.length > 0 ? (
         <View style={styles.bloque}>
           <Misiones misiones={p.misiones} acciones={acciones} />
@@ -697,6 +703,7 @@ export function FocusHoyVista(p: FocusHoyVistaProps) {
 const styles = StyleSheet.create({
   contenido: { paddingBottom: space.s8 },
   bloque: { marginBottom: space.s2 },
+  lista: { marginTop: space.s2, marginBottom: space.s4 },
   flex: { flex: 1, minWidth: 0 },
   arriba: { marginTop: space.s2 },
   arribaPoco: { marginTop: space.s1 },
@@ -707,7 +714,7 @@ const styles = StyleSheet.create({
   sesionTextos: { flex: 1, minWidth: 0, gap: 1 },
   sesionMeta: { fontFamily: tipo.bodySm.family, fontSize: 13, lineHeight: 17, color: F.meta },
   silencio: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: space.s2, alignSelf: 'center', minHeight: 22 },
-  silencioTexto: { fontFamily: tipo.micro.family, fontSize: 13, lineHeight: 17, color: F.acento },
+  silencioTexto: { fontFamily: tipo.micro.family, fontSize: 13, lineHeight: 17, color: F.meta },
   mision: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, minHeight: 20, marginTop: space.s1 },
   misionXp: { fontFamily: tipo.micro.family, color: F.acento },
   misionTexto: { fontFamily: tipo.bodySm.family, fontSize: 12, lineHeight: 17, color: F.rotulo },
@@ -720,41 +727,5 @@ const styles = StyleSheet.create({
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: space.s2, marginTop: space.s3 },
   tachado: { textDecorationLine: 'line-through', color: F.rotulo },
   xp: { color: F.acento },
-  chat: { flexDirection: 'row', alignItems: 'flex-start', gap: space.s3, marginTop: space.s2 },
-  avatar: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    borderWidth: 2,
-    borderColor: F.acento,
-    backgroundColor: F.activo,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  burbuja: {
-    flex: 1,
-    backgroundColor: F.burbuja,
-    borderTopLeftRadius: 4,
-    borderTopRightRadius: 14,
-    borderBottomLeftRadius: 14,
-    borderBottomRightRadius: 14,
-    paddingHorizontal: space.s3,
-    paddingVertical: space.s3 - 2,
-  },
-  burbujaTexto: { fontFamily: tipo.body.family, fontSize: 14, lineHeight: 19, color: ink.ink9 },
-  entrada: {
-    marginTop: space.s3,
-    minHeight: 46,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: F.linea,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingLeft: space.s4,
-    paddingRight: 6,
-  },
-  entradaTexto: { flex: 1, fontFamily: tipo.bodySm.family, fontSize: 14, lineHeight: 20, color: F.rotulo },
-  enviar: { width: 34, height: 34, borderRadius: 10, backgroundColor: F.acento, alignItems: 'center', justifyContent: 'center' },
   huecos: { gap: space.s3, marginBottom: space.s3 },
 });

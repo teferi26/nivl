@@ -69,11 +69,11 @@ const styles = StyleSheet.create({
   coachFila: { flexDirection: 'row', alignItems: 'center', gap: space.s3 },
   coachTexto: { flex: 1, minWidth: 0, gap: space.s1 },
   coachTitulo: {
-    fontFamily: tipo.inscripcion.family,
-    fontSize: tipo.inscripcion.size,
-    lineHeight: tipo.inscripcion.lineHeight,
-    letterSpacing: tipo.inscripcion.tracking,
-    color: ink.ink10,
+    fontFamily: tipo.title.family,
+    fontSize: tipo.title.size,
+    lineHeight: tipo.title.lineHeight,
+    letterSpacing: tipo.title.tracking,
+    color: ink.ink9,
   },
   coachCuerpo: {
     fontFamily: tipo.bodySm.family,

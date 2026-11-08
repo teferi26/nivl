@@ -20,7 +20,7 @@
     "tambienRegistrar": "Elle se coche aussi toute seule quand tu enregistres {{acto}}."
   },
   "errorBoundary": {
-    "titulo": "LE SYSTÈME A PLANTÉ",
+    "titulo": "Le système a planté",
     "texto": "Quelque chose s'est cassé à l'intérieur. Tes données sont en sécurité : elles vivent sur le serveur, pas sur cet écran."
   },
   "heatmap": {
@@ -135,6 +135,6 @@
     "canal": "Canal {{canal}}",
     "paquete": "Paquet {{paquete}}",
     "buscarA11y": "Rechercher une mise à jour du système",
-    "buscar": "RECHERCHER UNE MISE À JOUR"
+    "buscar": "Rechercher une mise à jour"
   }
 }

@@ -17,7 +17,7 @@ import { t } from '@/i18n';
 import { F } from './estilo';
 import { Elegir, nombreDia, Pie } from './HojasFocus';
 import { BarraFocus, BotonFocus, ChipFocus, Etiqueta, FilaFocus, Rotulo, textoFocus } from './Piezas';
-import { textoHoras } from './TemarioVista';
+import { textoHoras } from './textos';
 import type { FaseIa } from './useTarjetasIa';
 
 // ── Editar un tema ───────────────────────────────────────────────────

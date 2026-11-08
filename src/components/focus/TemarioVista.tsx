@@ -13,7 +13,6 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Entrada, ErrorSistema } from '@/components/arena';
 import { Screen, Skeleton } from '@/components/ui';
 import { space, type as tipo } from '@/design/tokens';
-import { formatoHoras } from '@/focus/horario';
 import { METODOS, type Metodo } from '@/focus/metodos';
 import type { HorasAsignatura } from '@/focus/resumen';
 import { agruparPorSeccion, conteoPorEstado, FILTROS_TEMA, filtrarTemas, numeroDeTema, puedeEmpezarVuelta, seccionQueToca, type FiltroTema } from '@/focus/temarioLista';
@@ -22,6 +21,7 @@ import { t } from '@/i18n';
 import { F } from './estilo';
 import { casillaDe, horaClase, nombreDia } from './HojasFocus';
 import { BarraFocus, BotonFocus, Casilla, ChipFocus, FilaFocus, Rotulo, TarjetaFocus, TituloFocus, VacioFocus, textoFocus } from './Piezas';
+import { textoHoras } from './textos';
 
 export interface TemarioVistaProps {
   estado: 'cargando' | 'listo' | 'error';
@@ -57,13 +57,6 @@ export interface TemarioVistaProps {
     onMetodo: (m: Metodo) => void;
     onReintentar: () => void;
   };
-}
-
-export function textoHoras(min: number): string {
-  const { h, m } = formatoHoras(min);
-  if (h === 0) return t('focus:horas.min', { m });
-  if (m === 0) return t('focus:horas.h', { h });
-  return t('focus:horas.hMin', { h, m: String(m).padStart(2, '0') });
 }
 
 function Asignaturas({ p }: { p: TemarioVistaProps }) {

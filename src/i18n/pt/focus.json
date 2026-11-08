@@ -117,10 +117,7 @@
     "hecha": "feita",
     "hastaXp": "até +{{xp}} XP",
     "ajustesA11y": "Ajustar o pomodoro: {{foco}} min de foco e {{descanso}} de pausa",
-    "coachEstado": "● Online",
-    "coachRotulo": "Coach FOCUS",
     "coachAbrir": "Abrir chat",
-    "coachPregunta": "Pergunta ao coach FOCUS",
     "empiezaTitulo": "Começa pelas tuas disciplinas",
     "empiezaCuerpo": "Com as tuas disciplinas, exames e matéria, o FOCUS divide-te o estudo de cada dia.",
     "anadirAsignatura": "Adicionar disciplina",
@@ -511,7 +508,7 @@
     "filosofia": "História da Filosofia"
   },
   "hoyToca": {
-    "rotulo": "Para hoje",
+    "rotulo": "Agora",
     "minutos": "{{n}} min",
     "elegido": "Escolheste-o tu.",
     "simulacroDe": "Simulado de {{asignatura}}",
@@ -530,6 +527,18 @@
     "repasar": "Rever",
     "repasosCuerpo_one": "{{count}} revisão pendente.",
     "repasosCuerpo_other": "{{count}} revisões pendentes."
+  },
+  "hoyHeroe": {
+    "rotulo": "Próximo exame",
+    "pie": "{{cuando}} · {{pct}} % da matéria",
+    "barra": "Matéria dominada",
+    "sinExamen": "Sem exames à vista",
+    "barraNivel": "Progresso de nível"
+  },
+  "hoyCifras": {
+    "semana": "esta semana",
+    "tarjetas": "cartões hoje",
+    "media": "média"
   },
   "hoyEntregas": {
     "rotulo": "Entregas e trabalhos de casa",

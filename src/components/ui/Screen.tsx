@@ -1,10 +1,7 @@
 // NIVL · La pantalla y su cabecera editorial.
 //
-// Antes cada pantalla llevaba una fila con el título en mayúsculas espaciadas y
-// debajo una pila de cajas. Ahora la cabecera es la protagonista: un rótulo
-// pequeño (eyebrow), un título grande con tracking negativo, una línea de
-// contexto y, si hace falta, una acción a la derecha. Es la misma gramática que
-// la web y la app de Franky.
+// La cabecera es la protagonista: un rótulo pequeño (eyebrow), un título en
+// Playfair, una línea de contexto y, si hace falta, una acción a la derecha.
 
 import Ionicons from '@expo/vector-icons/Ionicons';
 import type { Router } from 'expo-router';
@@ -181,10 +178,9 @@ interface ScreenHeaderProps {
   /** Título compacto para pantallas densas. */
   compact?: boolean;
   /**
-   * Título grabado como el de `EncabezadoArena`: Cinzel `rank` en mayúsculas
-   * (por estilo, `textTransform`; el texto y su `title` no cambian, así las
-   * pruebas que lo buscan siguen encontrándolo). Plan B de las pantallas que
-   * no pueden importar `@/components/arena` (las puertas).
+   * Título con rol de cabecera y el trazo de `EncabezadoArena` (Playfair
+   * `title`). Plan B de las pantallas que no pueden importar
+   * `@/components/arena` (las puertas).
    */
   inscrito?: boolean;
   style?: StyleProp<ViewStyle>;
@@ -259,9 +255,10 @@ const styles = StyleSheet.create({
   headerText: { flex: 1, minWidth: 0 },
   right: { alignItems: 'flex-end' },
   eyebrow: {
-    fontFamily: fonts.heading,
-    fontSize: 11,
-    letterSpacing: 2.5,
+    fontFamily: tipo.label.family,
+    fontSize: tipo.label.size,
+    lineHeight: tipo.label.lineHeight,
+    letterSpacing: tipo.label.tracking,
     textTransform: 'uppercase',
     color: colors.textFaint,
     marginBottom: 6,
@@ -274,12 +271,11 @@ const styles = StyleSheet.create({
   },
   titleCompact: { fontSize: 22, lineHeight: 28 },
   titleInscrito: {
-    fontFamily: tipo.rank.family,
-    fontSize: tipo.rank.size,
-    lineHeight: tipo.rank.lineHeight,
-    letterSpacing: tipo.rank.tracking,
-    textTransform: 'uppercase',
-    color: ink.ink10,
+    fontFamily: tipo.title.family,
+    fontSize: tipo.title.size,
+    lineHeight: tipo.title.lineHeight,
+    letterSpacing: tipo.title.tracking,
+    color: ink.ink9,
   },
   subtitle: {
     fontFamily: fonts.body,

@@ -11,6 +11,7 @@ import {
   type ViewStyle,
 } from 'react-native';
 import { t } from '@/i18n';
+import { ink, radio, vidrio } from '@/design/tokens';
 import { colors } from '@/lib/theme';
 
 /**
@@ -113,11 +114,13 @@ export function HojaTeclado({
 }
 
 const styles = StyleSheet.create({
-  backdrop: { flex: 1, backgroundColor: 'rgba(2, 6, 14, 0.85)', justifyContent: 'flex-end' },
+  backdrop: { flex: 1, backgroundColor: `${ink.ink0}D9`, justifyContent: 'flex-end' },
   sheet: {
     backgroundColor: colors.panel,
-    borderTopWidth: 1.5,
-    borderTopColor: colors.accentDim,
+    borderTopWidth: 1,
+    borderTopColor: vidrio.borde,
+    borderTopLeftRadius: radio.hoja,
+    borderTopRightRadius: radio.hoja,
     paddingHorizontal: 20,
     paddingTop: 10,
     paddingBottom: 34,
@@ -129,7 +132,8 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     width: 42,
     height: 3,
-    backgroundColor: colors.accentFaint,
+    backgroundColor: vidrio.pista,
+    borderRadius: radio.pastilla,
     marginBottom: 14,
   },
 });

@@ -27,7 +27,7 @@ import { CONFIG_POR_DEFECTO, LIMITES, type ConfigPomodoro } from '@/focus/pomodo
 import type { Resultado } from '@/focus/repaso';
 import type { Asignatura, Clase, EstadoTema, Examen, Mazo, Nota, PrefsFocus, Tema, TipoExamen } from '@/focus/tipos';
 import { t } from '@/i18n';
-import { F } from './estilo';
+import { F, R } from './estilo';
 import { CampoHora, Elegir, SelectorFecha, porPerfil } from './HojasAgenda';
 import { tf } from './textos';
 import { BotonFocus, Casilla, ChipFocus, FilaFocus, Rotulo, textoFocus } from './Piezas';
@@ -1105,10 +1105,10 @@ const styles = StyleSheet.create({
   izq: { flex: 1, minWidth: 0, flexDirection: 'row', alignItems: 'center', gap: space.s3 },
   pieDos: { flexDirection: 'row', gap: space.s2 },
   mediaFila: { flexDirection: 'row', alignItems: 'center', gap: space.s4 },
-  tarjetaRepaso: { borderRadius: 18, borderWidth: 1, borderColor: F.bordeHeroe, backgroundColor: F.activo, padding: space.s5, minHeight: 180, justifyContent: 'center' },
+  tarjetaRepaso: { borderRadius: R.boton, borderWidth: 1, borderColor: F.bordeHeroe, backgroundColor: F.activo, padding: space.s5, minHeight: 180, justifyContent: 'center' },
   pregunta: { fontFamily: tipo.headline.family, fontSize: 22, lineHeight: 28, color: ink.ink10 },
   respuesta: { marginTop: space.s4, paddingTop: space.s4, borderTopWidth: 1, borderTopColor: F.bordeActivo },
-  numero: { width: 24, fontFamily: tipo.headline.family, fontSize: 17, lineHeight: 21, color: F.acento },
+  numero: { width: 24, fontFamily: tipo.number.family, fontSize: 17, lineHeight: 21, color: F.acento },
   interruptor: { flexDirection: 'row', alignItems: 'center', gap: space.s3 },
   xp: { color: F.acento },
   consejo: { flexDirection: 'row', gap: space.s3, alignItems: 'flex-start' },

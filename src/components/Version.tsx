@@ -5,6 +5,7 @@ import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-nati
 import { avisar, confirmar } from '@/components/ui/confirmar';
 import { SIN_DATO } from '@/components/ui/sinDato';
 import { t } from '@/i18n';
+import { radio, vidrio } from '@/design/tokens';
 import { colors, fonts } from '@/lib/theme';
 import { mensajeSistema } from '@/lib/validation';
 
@@ -152,7 +153,8 @@ const styles = StyleSheet.create({
   boton: {
     marginTop: 10,
     borderWidth: 1,
-    borderColor: colors.accentFaint,
+    borderColor: vidrio.borde,
+    borderRadius: radio.control,
     paddingHorizontal: 14,
     paddingVertical: 9,
     minWidth: 190,
@@ -160,8 +162,7 @@ const styles = StyleSheet.create({
   },
   botonTexto: {
     fontFamily: fonts.heading,
-    fontSize: 11,
-    letterSpacing: 2,
+    fontSize: 13,
     color: colors.accentText,
   },
   linea: {

@@ -7,7 +7,7 @@
 // para que se lea igual a 16 que a 96 (`grosorCorona`).
 
 import Svg, { Path } from 'react-native-svg';
-import { ink } from '@/design/tokens';
+import { oro } from '@/design/tokens';
 
 export type CrownKind = 'casco' | 'laurel' | 'corona_arena';
 
@@ -85,7 +85,7 @@ interface Props {
   strokeWidth?: number;
 }
 
-export function Crown({ kind, size, color = ink.ink10, strokeWidth }: Props) {
+export function Crown({ kind, size, color = oro.claro, strokeWidth }: Props) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" pointerEvents="none">
       <Path

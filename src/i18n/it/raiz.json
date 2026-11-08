@@ -20,7 +20,7 @@
     "tambienRegistrar": "Si segna anche da sola quando registri {{acto}}."
   },
   "errorBoundary": {
-    "titulo": "IL SISTEMA HA FALLITO",
+    "titulo": "Il sistema ha fallito",
     "texto": "Qualcosa si è rotto all'interno. I tuoi dati sono al sicuro: vivono sul server, non su questa schermata."
   },
   "heatmap": {
@@ -135,6 +135,6 @@
     "canal": "Canale {{canal}}",
     "paquete": "Pacchetto {{paquete}}",
     "buscarA11y": "Cerca aggiornamento del sistema",
-    "buscar": "CERCA AGGIORNAMENTO"
+    "buscar": "Cerca aggiornamento"
   }
 }

@@ -20,7 +20,7 @@
     "tambienRegistrar": "It also checks itself off when you log {{acto}}."
   },
   "errorBoundary": {
-    "titulo": "THE SYSTEM HAS FAILED",
+    "titulo": "The system has failed",
     "texto": "Something broke inside. Your data is safe: it lives on the server, not on this screen."
   },
   "heatmap": {
@@ -135,6 +135,6 @@
     "canal": "Channel {{canal}}",
     "paquete": "Package {{paquete}}",
     "buscarA11y": "Check for a system update",
-    "buscar": "CHECK FOR UPDATE"
+    "buscar": "Check for update"
   }
 }

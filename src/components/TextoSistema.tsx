@@ -1,5 +1,6 @@
 import { StyleSheet, Text, View } from 'react-native';
 import { parsear } from '@/lib/markdown';
+import { type as tipo } from '@/design/tokens';
 import { colors, fonts } from '@/lib/theme';
 
 /**
@@ -54,9 +55,10 @@ const styles = StyleSheet.create({
   tenue: { fontFamily: fonts.body, fontSize: 14, lineHeight: 20, color: colors.textDim },
   negrita: { fontFamily: fonts.semibold, color: colors.accentText },
   titulo: {
-    fontFamily: fonts.heading,
-    fontSize: 13,
-    letterSpacing: 1.5,
+    fontFamily: tipo.label.family,
+    fontSize: tipo.label.size,
+    lineHeight: tipo.label.lineHeight,
+    letterSpacing: tipo.label.tracking,
     color: colors.accentText,
     textTransform: 'uppercase',
     marginBottom: 4,

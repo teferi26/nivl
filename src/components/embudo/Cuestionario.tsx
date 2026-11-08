@@ -28,13 +28,15 @@ import {
 
 interface Props {
   inicial?: Respuestas | null;
+  /** La galería arranca en un paso concreto. */
+  indiceInicial?: number;
   onTerminar: (r: Respuestas) => void;
   /** Volver atrás desde la primera pregunta. */
   onSalir?: () => void;
 }
 
-export function Cuestionario({ inicial, onTerminar, onSalir }: Props) {
-  const [indice, setIndice] = useState(0);
+export function Cuestionario({ inicial, indiceInicial = 0, onTerminar, onSalir }: Props) {
+  const [indice, setIndice] = useState(indiceInicial);
   const [r, setR] = useState<Respuestas>(inicial ?? RESPUESTAS_VACIAS);
   const paso = GUION[indice]!;
   const pct = porcentajeGuion(indice);

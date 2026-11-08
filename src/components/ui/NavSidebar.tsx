@@ -1,18 +1,16 @@
 // NIVL · Barra lateral (clase `expanded`, ≥ 1024: iPad horizontal, iPad Pro,
 // Mac, PC). SISTEMA.md §3.
 //
-// 240 pt: la marca NIVL en Cinzel arriba, filas de 44 con icono y rótulo, y
-// abajo el lema entre dos laureles (o el rango del gladiador si se pasa). La
-// fila activa habla como el raíl: regla de 2 pegada a la izquierda, fondo ink2,
-// icono sólido y rótulo en ink10. No se invierte: la inversión queda para la
-// acción principal de cada pantalla.
+// 240 pt: la marca NIVL en Playfair arriba, filas de 44 con icono y rótulo, y
+// abajo el lema (o el rango del gladiador si se pasa). La fila activa lleva
+// velo de oro, icono sólido y rótulo en el acento. No se invierte: la inversión
+// queda para la acción principal de cada pantalla.
 
 import Ionicons from '@expo/vector-icons/Ionicons';
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import type { ReactNode } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Laurel } from '@/components/arena';
 import { ANCHO_SIDEBAR } from '@/design/responsive';
 import { FONDO_ONIX, ink, oro, radio, space, stroke, type as tipo, vidrio } from '@/design/tokens';
 import { t } from '@/i18n';
@@ -20,7 +18,7 @@ import { fonts } from '@/lib/theme';
 import { navItemDe, pulsarDestino } from './navItems';
 
 interface NavSidebarProps extends BottomTabBarProps {
-  /** Hueco del pie: si no se pasa nada, el lema entre laureles. */
+  /** Hueco del pie: si no se pasa nada, el lema. */
   rango?: ReactNode;
   /** La marca de arriba. Por defecto NIVL; en cada mundo, el nombre de su modo. */
   marca?: string;
@@ -28,11 +26,9 @@ interface NavSidebarProps extends BottomTabBarProps {
   acento?: string;
 }
 
-// El lema en dos líneas fijas: en una no cabe en 240 ni a 11 (≈194 de 188
-// útiles, `anchoInscripcion`), y partido a mano no queda «DÍA» huérfano. La
-// línea larga, «UN 1 % MEJOR», mide ≈162 a 14/3. El salto va en el catálogo
-// (`ui:sidebar.lema`): cada idioma lo pone donde no deje una palabra huérfana.
-const LAUREL_LEMA = 16;
+// El lema en dos líneas fijas: partido a mano no queda «DÍA» huérfano. El salto
+// va en el catálogo (`ui:sidebar.lema`): cada idioma lo pone donde no deje una
+// palabra huérfana.
 
 export function NavSidebar({ state, descriptors, navigation, rango, marca, acento = ink.ink10 }: NavSidebarProps) {
   const insets = useSafeAreaInsets();
@@ -83,11 +79,9 @@ export function NavSidebar({ state, descriptors, navigation, rango, marca, acent
       <View style={styles.pie}>
         {rango ?? (
           <View style={styles.lema} accessible accessibilityLabel={t('ui:sidebar.lemaA11y')}>
-            <Laurel alto={LAUREL_LEMA} lado="izq" />
             <Text style={styles.lemaTexto} maxFontSizeMultiplier={1} numberOfLines={2}>
               {t('ui:sidebar.lema')}
             </Text>
-            <Laurel alto={LAUREL_LEMA} lado="der" />
           </View>
         )}
       </View>
@@ -157,8 +151,8 @@ const styles = StyleSheet.create({
     fontFamily: tipo.inscripcion.family,
     fontSize: tipo.inscripcion.size,
     lineHeight: tipo.inscripcion.lineHeight,
-    letterSpacing: 3,
-    color: ink.ink6,
+    letterSpacing: tipo.inscripcion.tracking,
+    color: ink.ink8,
     textAlign: 'center',
   },
 });
