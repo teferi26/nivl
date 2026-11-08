@@ -35,7 +35,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { usePiel } from '@/design/piel';
-import { ink, motion, sizeClass, space, stroke, type } from '@/design/tokens';
+import { ink, motion, radio, sizeClass, space, stroke, type, vidrio } from '@/design/tokens';
 import { t } from '@/i18n';
 import { useMovimientoReducido } from './motion';
 
@@ -238,11 +238,11 @@ const styles = StyleSheet.create({
   fondo: { flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.8)' },
   fondoAbajo: { justifyContent: 'flex-end' },
   fondoCentrado: { justifyContent: 'center', alignItems: 'center', padding: space.s8 },
-  hoja: { backgroundColor: ink.ink1, maxHeight: '85%' },
-  hojaMovil: { width: '100%', borderTopWidth: stroke.hairline, borderTopColor: ink.ink3 },
-  hojaTablet: { width: '100%', maxWidth: 560, borderWidth: stroke.hairline, borderColor: ink.ink3 },
+  hoja: { backgroundColor: ink.ink1, maxHeight: '85%', borderTopLeftRadius: radio.hoja, borderTopRightRadius: radio.hoja },
+  hojaMovil: { width: '100%', borderTopWidth: stroke.hairline, borderTopColor: vidrio.borde },
+  hojaTablet: { width: '100%', maxWidth: 560, borderWidth: stroke.hairline, borderColor: vidrio.borde, borderRadius: radio.hoja },
   asaZona: { alignItems: 'center', paddingTop: space.s3, paddingBottom: space.s2 },
-  asa: { width: 40, height: 4, backgroundColor: ink.ink4 },
+  asa: { width: 40, height: 4, borderRadius: 2, backgroundColor: ink.ink4 },
   cabecera: {
     flexDirection: 'row',
     alignItems: 'flex-start',

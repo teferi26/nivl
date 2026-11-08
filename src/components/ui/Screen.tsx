@@ -23,7 +23,8 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { usePiel } from '@/design/piel';
-import { ink, space, stroke, type as tipo } from '@/design/tokens';
+import { ink, radio, space, stroke, type as tipo, vidrio } from '@/design/tokens';
+import { FondoOnix } from './FondoOnix';
 import { ANCHO_ASIDE, cabeAside, marcoDe } from '@/design/responsive';
 import { useAnchoUtil } from '@/design/useSizeClass';
 import { t } from '@/i18n';
@@ -138,6 +139,7 @@ export function Screen({ plain, wide, amplio, refreshing, onRefresh, style, cont
       style={[styles.screen, piel?.pantallaTransparente && styles.transparente, style]}
       edges={piel?.cubreArriba ? ['left', 'right'] : ['top', 'left', 'right']}
     >
+      {piel?.pantallaTransparente ? null : <FondoOnix />}
       {conAside ? (
         <View style={styles.fila}>
           <View style={styles.flex}>{cuerpo}</View>
@@ -249,7 +251,7 @@ const styles = StyleSheet.create({
   flex: { flex: 1 },
   fila: { flex: 1, flexDirection: 'row' },
   content: { paddingTop: 8, paddingBottom: 40 },
-  aside: { width: ANCHO_ASIDE, borderLeftWidth: stroke.hairline, borderLeftColor: ink.ink3 },
+  aside: { width: ANCHO_ASIDE, borderLeftWidth: stroke.hairline, borderLeftColor: vidrio.linea },
   asideContent: { padding: space.s6, paddingBottom: space.s10 },
   header: { marginBottom: 18 },
   back: { alignSelf: 'flex-start', marginBottom: 12, marginLeft: -4, padding: 4 },
@@ -265,13 +267,12 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   title: {
-    fontFamily: fonts.heading,
-    fontSize: 30,
-    lineHeight: 34,
-    letterSpacing: -0.8,
+    fontFamily: tipo.title.family,
+    fontSize: tipo.title.size,
+    lineHeight: tipo.title.lineHeight,
     color: colors.text,
   },
-  titleCompact: { fontSize: 22, lineHeight: 26, letterSpacing: -0.4 },
+  titleCompact: { fontSize: 22, lineHeight: 28 },
   titleInscrito: {
     fontFamily: tipo.rank.family,
     fontSize: tipo.rank.size,
@@ -291,7 +292,8 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderWidth: 1,
-    borderColor: colors.accentDim,
+    borderColor: vidrio.borde,
+    borderRadius: radio.chip,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 2,

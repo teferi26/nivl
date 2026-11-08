@@ -1,46 +1,67 @@
-// NIVL · Sistema de diseño v2 «Mármol y tinta». Fuente única de tokens.
-// Documento: docs/design-v2/SISTEMA.md. Solo blanco y negro: el significado va
-// en inversión, trazo, trama y grano, nunca en color.
+// NIVL · Sistema de diseño «Ónix» (1.1). Fuente única de tokens.
+// Documento: docs/design-v2/SISTEMA.md. Fondo casi negro, texto y botón color
+// hueso, tarjetas redondeadas y el oro solo como hilo en cifras y detalles.
 //
 // Puro (sin imports de React Native) para poder testearlo.
 
 export const ink = {
-  ink0: '#000000', // fondo
-  ink1: '#0B0B0B', // superficie
-  ink2: '#161616', // superficie elevada, campo
-  ink3: '#242424', // hairline
-  ink4: '#3A3A3A', // pista, borde de control (no es texto)
-  ink6: '#8C8C8C', // texto terciario
-  ink8: '#BDBDBD', // texto secundario
-  ink9: '#EDEDED', // texto principal
-  ink10: '#FFFFFF', // acento: inversión, CTA, nivel
+  ink0: '#09090B', // fondo
+  ink1: '#151517', // superficie opaca (hojas, modales)
+  ink2: '#1D1D1F', // superficie elevada
+  ink3: '#2A2A2C', // hairline
+  ink4: '#4A494C', // pista, borde de control (no es texto)
+  ink6: '#8F8C85', // texto terciario
+  ink8: '#B8B4AB', // texto secundario
+  ink9: '#F5F2EC', // texto principal
+  ink10: '#EDEAE3', // hueso: inversión, CTA
 } as const;
 
 export type InkToken = keyof typeof ink;
 
+/** El oro de Ónix: un hilo en cifras, rótulos y marcos. Nunca un relleno de botón. */
+export const oro = {
+  hilo: '#C9A961',
+  claro: '#EAD9AE',
+  fondo: 'rgba(201, 169, 97, 0.09)',
+  tenue: 'rgba(201, 169, 97, 0.14)',
+  borde: 'rgba(201, 169, 97, 0.32)',
+} as const;
+
+/** Superficies translúcidas sobre el fondo degradado. */
+export const vidrio = {
+  tarjeta: 'rgba(255, 255, 255, 0.05)',
+  suave: 'rgba(255, 255, 255, 0.03)',
+  campo: 'rgba(255, 255, 255, 0.08)',
+  borde: 'rgba(255, 255, 255, 0.13)',
+  linea: 'rgba(255, 255, 255, 0.10)',
+  pista: 'rgba(255, 255, 255, 0.14)',
+} as const;
+
+/** El fondo de pantalla, de arriba a abajo. */
+export const FONDO_ONIX = ['#121214', '#09090B', '#050506'] as const;
+export const FONDO_ONIX_PARADAS = [0, 0.55, 1] as const;
+
+/** Radios: la tarjeta manda; lo que va dentro, menos. */
+export const radio = { tarjeta: 22, control: 18, chip: 14, hoja: 28, pastilla: 999 } as const;
+
 /**
- * Modos (fase 1, contrato MODOS-F1): la base sigue en blanco y negro y cada
- * modo añade UN acento. General es el monocromo de siempre (ink10). Solo se
- * usa con el interruptor `modos_activos` encendido: con él apagado, nada de
- * esto se pinta. Todos llegan a AA (4,5:1) sobre ink0, y el texto ink0 sobre
- * el acento también (test en __tests__/tokens.test.ts).
+ * Modos: en Ónix los cuatro mundos comparten el hilo de oro y se distinguen
+ * por su nombre y su contenido, no por un color propio (decisión del rediseño
+ * 1.1, cierra P46). Todos llegan a AA (4,5:1) sobre ink0, y el texto ink0
+ * sobre el acento también (test en __tests__/tokens.test.ts).
  */
 export const modoAcento = {
-  general: ink.ink10,
-  iron: '#3D7BFF', // azul eléctrico
-  focus: '#8B6CFF', // violeta
-  work: '#19C37D', // esmeralda
-  founder: '#FF9F1C', // ámbar
+  general: oro.claro,
+  iron: oro.claro,
+  focus: oro.claro,
+  work: oro.claro,
+  founder: oro.claro,
 } as const;
 
 export type ModoAcento = keyof typeof modoAcento;
 
-/**
- * La rueda de modos (P01): igual que `modoAcento`, pero NIVL, la base, va en
- * oro (#D4A843, lámina 4 «recarga dorada»). Solo en la rueda, el emblema y su
- * recarga; el resto de NIVL sigue en blanco y negro.
- */
-export const acentoRueda = { ...modoAcento, general: '#D4A843' } as const;
+/** La rueda de modos: el mismo hilo, con NIVL (la base) en el oro más intenso. */
+export const acentoRueda = { ...modoAcento, general: oro.hilo } as const;
 
 /** Escala de espaciado (pt). Base 4. */
 export const space = { s1: 4, s2: 8, s3: 12, s4: 16, s5: 20, s6: 24, s8: 32, s10: 40, s14: 56, s20: 80 } as const;
@@ -49,22 +70,22 @@ export const space = { s1: 4, s2: 8, s3: 12, s4: 16, s5: 20, s6: 24, s8: 32, s10
 export const stroke = { hairline: 1, rule: 2, frame: 3 } as const;
 
 export const type = {
-  display: { family: 'Cinzel_700Bold', size: 56, lineHeight: 60, tracking: 2 },
-  rank: { family: 'Cinzel_700Bold', size: 32, lineHeight: 36, tracking: 4 },
-  title: { family: 'Outfit_700Bold', size: 30, lineHeight: 34, tracking: -0.6 },
+  display: { family: 'PlayfairDisplay_700Bold', size: 44, lineHeight: 50, tracking: 0 },
+  rank: { family: 'PlayfairDisplay_700Bold', size: 32, lineHeight: 38, tracking: 0 },
+  title: { family: 'PlayfairDisplay_700Bold', size: 29, lineHeight: 34, tracking: 0 },
   headline: { family: 'Outfit_700Bold', size: 20, lineHeight: 26, tracking: -0.2 },
   body: { family: 'Outfit_500Medium', size: 16, lineHeight: 24, tracking: 0 },
   bodySm: { family: 'Outfit_500Medium', size: 14, lineHeight: 20, tracking: 0 },
   label: { family: 'Outfit_700Bold', size: 12, lineHeight: 16, tracking: 2 },
-  number: { family: 'Cinzel_600SemiBold', size: 24, lineHeight: 28, tracking: 0 },
+  number: { family: 'PlayfairDisplay_700Bold', size: 24, lineHeight: 30, tracking: 0 },
   micro: { family: 'Outfit_600SemiBold', size: 11, lineHeight: 14, tracking: 1 },
   // Arena (SISTEMA.md §5 bis): la piedra grande. El monumento es el nivel del
   // Hero; la cifra, los números de una franja; la inscripción, los rótulos
   // grabados («RANGO A · HÉROE DE LA ARENA»).
-  monumento: { family: 'Cinzel_700Bold', size: 112, lineHeight: 112, tracking: 0 },
-  monumentoSm: { family: 'Cinzel_700Bold', size: 72, lineHeight: 72, tracking: 0 },
-  cifra: { family: 'Cinzel_600SemiBold', size: 32, lineHeight: 36, tracking: 0 },
-  inscripcion: { family: 'Cinzel_700Bold', size: 14, lineHeight: 18, tracking: 4 },
+  monumento: { family: 'PlayfairDisplay_700Bold', size: 112, lineHeight: 120, tracking: 0 },
+  monumentoSm: { family: 'PlayfairDisplay_700Bold', size: 72, lineHeight: 80, tracking: 0 },
+  cifra: { family: 'PlayfairDisplay_700Bold', size: 32, lineHeight: 38, tracking: 0 },
+  inscripcion: { family: 'Outfit_700Bold', size: 12, lineHeight: 16, tracking: 2 },
 } as const;
 
 /** Duraciones (ms). `escalon`: retraso entre bloques consecutivos de una entrada en cascada. */

@@ -1,10 +1,10 @@
-import { contraste, ink, luminancia } from '@/design/tokens';
+import { contraste, ink, luminancia, oro } from '@/design/tokens';
 import { colors } from '../theme';
 
-const ESCALA = new Set<string>(Object.values(ink));
+const ESCALA = new Set<string>([...Object.values(ink), oro.hilo, oro.borde]);
 
-describe('theme v2: solo la escala ink', () => {
-  it('cada color del tema es un valor de ink', () => {
+describe('theme Ónix: la escala ink y el hilo de oro', () => {
+  it('cada color del tema sale de los tokens', () => {
     for (const [nombre, valor] of Object.entries(colors)) {
       expect({ nombre, enEscala: ESCALA.has(valor) }).toEqual({ nombre, enEscala: true });
     }

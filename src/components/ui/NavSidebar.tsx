@@ -14,7 +14,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Laurel } from '@/components/arena';
 import { ANCHO_SIDEBAR } from '@/design/responsive';
-import { ink, space, stroke, type as tipo } from '@/design/tokens';
+import { FONDO_ONIX, ink, oro, radio, space, stroke, type as tipo, vidrio } from '@/design/tokens';
 import { t } from '@/i18n';
 import { fonts } from '@/lib/theme';
 import { navItemDe, pulsarDestino } from './navItems';
@@ -98,16 +98,16 @@ export function NavSidebar({ state, descriptors, navigation, rango, marca, acent
 const styles = StyleSheet.create({
   flex: { flex: 1 },
   barra: {
-    backgroundColor: ink.ink0,
+    backgroundColor: FONDO_ONIX[1],
     borderRightWidth: stroke.hairline,
-    borderRightColor: ink.ink3,
+    borderRightColor: vidrio.linea,
   },
   marca: {
     fontFamily: fonts.brand,
     fontSize: tipo.rank.size,
     lineHeight: tipo.rank.lineHeight,
-    letterSpacing: 8,
-    color: ink.ink10,
+    letterSpacing: 4,
+    color: ink.ink9,
     paddingHorizontal: space.s6,
     paddingTop: space.s8,
     paddingBottom: space.s6,
@@ -119,16 +119,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: space.s3,
     paddingHorizontal: space.s3,
+    borderRadius: radio.chip,
   },
-  filaOn: { backgroundColor: ink.ink2 },
-  filaPulsada: { backgroundColor: ink.ink1 },
+  filaOn: { backgroundColor: oro.tenue },
+  filaPulsada: { backgroundColor: vidrio.tarjeta },
   indicador: {
     position: 'absolute',
     left: 0,
     top: space.s2,
     bottom: space.s2,
-    width: stroke.rule,
-    backgroundColor: ink.ink10,
+    width: 0,
+    backgroundColor: 'transparent',
   },
   rotulo: {
     flex: 1,
@@ -137,12 +138,12 @@ const styles = StyleSheet.create({
     fontSize: tipo.body.size,
     color: ink.ink8,
   },
-  rotuloOn: { fontFamily: tipo.headline.family, color: ink.ink10 },
+  rotuloOn: { fontFamily: tipo.headline.family, color: oro.claro },
   pie: {
     marginHorizontal: space.s3,
     marginBottom: space.s4,
     borderTopWidth: stroke.hairline,
-    borderTopColor: ink.ink3,
+    borderTopColor: vidrio.linea,
     paddingTop: space.s4,
   },
   lema: {

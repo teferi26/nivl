@@ -11,7 +11,7 @@ import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ANCHO_RAIL } from '@/design/responsive';
-import { ink, space, stroke, type as tipo } from '@/design/tokens';
+import { FONDO_ONIX, ink, oro, space, stroke, type as tipo, vidrio } from '@/design/tokens';
 import { navItemDe, pulsarDestino } from './navItems';
 
 /** `acento`: el color de lo activo (ink10 en NIVL; el de su modo en cada mundo). */
@@ -54,9 +54,9 @@ export function NavRail({ state, descriptors, navigation, acento = ink.ink10 }: 
 
 const styles = StyleSheet.create({
   rail: {
-    backgroundColor: ink.ink0,
+    backgroundColor: FONDO_ONIX[1],
     borderRightWidth: stroke.hairline,
-    borderRightColor: ink.ink3,
+    borderRightColor: vidrio.linea,
   },
   lista: { gap: space.s1 },
   item: {
@@ -67,21 +67,21 @@ const styles = StyleSheet.create({
     gap: space.s1,
     paddingVertical: space.s2,
   },
-  pressed: { backgroundColor: ink.ink2 },
+  pressed: { backgroundColor: vidrio.tarjeta },
   indicador: {
     position: 'absolute',
     left: 0,
     top: space.s2,
     bottom: space.s2,
     width: stroke.rule,
-    backgroundColor: ink.ink10,
+    backgroundColor: oro.hilo,
   },
   rotulo: {
     fontFamily: tipo.micro.family,
     fontSize: tipo.micro.size,
     lineHeight: tipo.micro.lineHeight,
-    color: ink.ink6,
+    color: ink.ink8,
     paddingHorizontal: space.s1,
   },
-  rotuloOn: { color: ink.ink10 },
+  rotuloOn: { color: oro.claro },
 });

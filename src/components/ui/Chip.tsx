@@ -5,7 +5,7 @@ import type { ReactNode } from 'react';
 import { Platform, Pressable, ScrollView, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 import { vibrar } from '@/design/haptics';
 import { usePiel } from '@/design/piel';
-import { ink, space, type as tipo } from '@/design/tokens';
+import { ink, oro, radio, space, type as tipo, vidrio } from '@/design/tokens';
 import { colors, fonts } from '@/lib/theme';
 import { Grano, Trama } from './Texture';
 
@@ -137,15 +137,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 6,
     borderWidth: 1,
-    borderColor: colors.accentDim,
+    borderColor: vidrio.borde,
+    borderRadius: radio.chip,
     paddingHorizontal: 14,
     paddingVertical: 9,
   },
   chipSmall: { paddingHorizontal: 10, paddingVertical: 6 },
   // Marco de 2: se resta 1 al relleno para que el chip no crezca al elegirlo.
-  selected: { borderWidth: 2, borderColor: ink.ink10, backgroundColor: ink.ink1, paddingHorizontal: 13, paddingVertical: 8 },
-  selectedSmall: { borderWidth: 2, borderColor: ink.ink10, backgroundColor: ink.ink1, paddingHorizontal: 9, paddingVertical: 5 },
-  textSelected: { color: ink.ink10 },
+  selected: { borderWidth: 2, borderColor: oro.claro, backgroundColor: vidrio.tarjeta, paddingHorizontal: 13, paddingVertical: 8 },
+  selectedSmall: { borderWidth: 2, borderColor: oro.claro, backgroundColor: vidrio.tarjeta, paddingHorizontal: 9, paddingVertical: 5 },
+  textSelected: { color: ink.ink9 },
   text: { fontFamily: fonts.semibold, fontSize: 13, color: colors.text },
   textSmall: { fontSize: 12 },
   // Desactivado sin opacidad (SISTEMA v2): marco ink4 y texto ink6.

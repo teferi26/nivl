@@ -1,22 +1,21 @@
 // NIVL · La tarjeta: una unidad con superficie propia (SISTEMA.md §5).
 //
 // Cinco variantes y un solo significado cada una:
-//   · surface → superficie ink1 (lo normal para listas de cosas).
-//   · outline → hairline ink3 sobre el negro (bloques secundarios, error).
-//   · inverse → blanco con texto negro: lo activo o lo hecho. UNA por pantalla.
+//   · surface → vidrio redondeado con hairline (lo normal para listas de cosas).
+//   · outline → solo hairline (bloques secundarios, error).
+//   · inverse → hueso con texto oscuro: lo activo o lo hecho. UNA por pantalla.
 //               Publica SuperficieContext = 'inverse' para que el contenido
-//               sepa que tiene que pintarse en negro.
-//   · alerta  → borde rayado (trama ink6, 6,25:1) de 3 pt alrededor de una
-//               superficie ink1. Sustituye al rojo.
-//   · logro   → marco de grano (ink6) de 6 pt alrededor de una placa ink1: el
-//               grano se ve como marco y el texto se lee limpio. Sustituye al oro.
+//               sepa que tiene que pintarse en oscuro.
+//   · alerta  → borde rayado (trama ink6) de 3 pt alrededor de una superficie
+//               opaca: la alerta no depende del color.
+//   · logro   → marco de oro sobre un velo de oro: el hilo de Ónix.
 // Con `onPress` responde al dedo encogiéndose (PressScale).
 
 import { createContext, type ReactNode } from 'react';
 import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
-import { ink } from '@/design/tokens';
+import { ink, oro, radio, vidrio } from '@/design/tokens';
 import { PressScale } from './motion';
-import { Grano, Trama } from './Texture';
+import { Trama } from './Texture';
 
 export type Superficie = 'normal' | 'inverse';
 
@@ -66,8 +65,8 @@ export function Card({
   const v = variant === 'raised' ? 'surface' : variant;
   const alerta = v === 'alerta';
   const logro = v === 'logro';
-  // Las dos texturas son marco: el relleno va en la placa de dentro.
-  const enMarco = alerta || logro;
+  // La trama es marco: el relleno va en la placa de dentro.
+  const enMarco = alerta;
   const base = [
     styles.card,
     v === 'surface' && styles.surface,
@@ -77,7 +76,7 @@ export function Card({
     alerta && styles.alerta,
     logro && styles.logro,
     accent && v !== 'outline' ? { borderLeftWidth: 2, borderLeftColor: accent } : null,
-    // En alerta y logro el relleno va dentro, para que la textura quede como un borde.
+    // En alerta el relleno va dentro, para que la textura quede como un borde.
     padded && !enMarco && styles.padded,
     style,
   ];
@@ -86,11 +85,6 @@ export function Card({
     <>
       <Trama color={ink.ink6} />
       <View style={[styles.alertaDentro, padded && styles.padded]}>{children}</View>
-    </>
-  ) : logro ? (
-    <>
-      <Grano />
-      <View style={[styles.logroDentro, padded && styles.padded]}>{children}</View>
     </>
   ) : (
     children
@@ -118,14 +112,13 @@ export function Card({
 }
 
 const styles = StyleSheet.create({
-  card: { marginBottom: 10 },
-  surface: { backgroundColor: ink.ink1 },
-  outline: { borderWidth: 1, borderColor: ink.ink3, backgroundColor: ink.ink0 },
+  card: { marginBottom: 10, borderRadius: radio.tarjeta },
+  surface: { backgroundColor: vidrio.tarjeta, borderWidth: 1, borderColor: vidrio.borde },
+  outline: { borderWidth: 1, borderColor: vidrio.borde },
   inverse: { backgroundColor: ink.ink10 },
-  tinted: { backgroundColor: ink.ink3 },
+  tinted: { backgroundColor: vidrio.campo },
   alerta: { backgroundColor: ink.ink0, overflow: 'hidden' },
-  alertaDentro: { margin: 3, backgroundColor: ink.ink1 },
-  logro: { backgroundColor: ink.ink0, overflow: 'hidden' },
-  logroDentro: { margin: 6, backgroundColor: ink.ink1 },
+  alertaDentro: { margin: 3, backgroundColor: ink.ink1, borderRadius: radio.tarjeta - 3 },
+  logro: { backgroundColor: oro.fondo, borderWidth: 1, borderColor: oro.borde },
   padded: { padding: 16 },
 });

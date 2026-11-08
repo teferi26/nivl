@@ -18,7 +18,7 @@ import { forwardRef, useState } from 'react';
 import { Platform, StyleSheet, Text, TextInput, View, type StyleProp, type TextInputProps, type ViewStyle } from 'react-native';
 import { useAnunciar } from '@/components/ui/useAnunciar';
 import { usePiel } from '@/design/piel';
-import { ink, space, stroke, type as tipo } from '@/design/tokens';
+import { ink, oro, radio, space, stroke, type as tipo, vidrio } from '@/design/tokens';
 
 export type CampoProps = {
   etiqueta: string;
@@ -119,9 +119,9 @@ const styles = StyleSheet.create({
   },
   caja: {
     minHeight: ALTO_MIN,
-    backgroundColor: ink.ink2,
-    borderColor: ink.ink4,
-    borderRadius: 0,
+    backgroundColor: vidrio.campo,
+    borderColor: vidrio.borde,
+    borderRadius: radio.control,
     color: ink.ink9,
     // En la web el navegador pinta su propio anillo de foco encima del borde.
     ...(Platform.OS === 'web' ? ({ outlineStyle: 'none' } as object) : null),
@@ -137,10 +137,10 @@ const styles = StyleSheet.create({
     fontSize: tipo.rank.size,
     letterSpacing: tipo.rank.tracking,
     textAlign: 'center',
-    color: ink.ink10,
+    color: oro.claro,
   },
   multilinea: { minHeight: 96, lineHeight: tipo.body.lineHeight, textAlignVertical: 'top' },
-  foco: { borderColor: ink.ink10 },
+  foco: { borderColor: oro.hilo },
   conError: { borderColor: ink.ink8, borderStyle: 'dashed' },
   apagado: { backgroundColor: ink.ink1, color: ink.ink6 },
   linea: { flexDirection: 'row', alignItems: 'flex-start', gap: space.s2 },

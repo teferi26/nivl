@@ -9,7 +9,7 @@
 import { useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
 import Animated, { cancelAnimation, ReduceMotion, useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
-import { ink } from '@/design/tokens';
+import { ink, oro, vidrio } from '@/design/tokens';
 import { ratioSeguro } from './cifras';
 import { MUELLE_BARRA } from './muelle';
 import { useMovimientoArena } from './quieto';
@@ -22,7 +22,7 @@ export interface BarraProps {
   alto?: 4 | 6 | 8;
   /** Cortes de 2 pt (solo si son 30 o menos; más no se leen). */
   segmentos?: number;
-  tono?: 'blanco' | 'ink8';
+  tono?: 'blanco' | 'ink8' | 'oro';
   /** Qué mide, para el lector: «Experiencia del nivel 23». */
   etiqueta: string;
   /**
@@ -70,7 +70,7 @@ export function Barra({ ratio, desde, alto = 6, segmentos, tono = 'blanco', etiq
       style={[styles.pista, { height: alto }]}
     >
       <Animated.View
-        style={[styles.relleno, { backgroundColor: tono === 'ink8' ? ink.ink8 : ink.ink10 }, relleno]}
+        style={[styles.relleno, { backgroundColor: tono === 'ink8' ? ink.ink8 : tono === 'oro' ? oro.hilo : ink.ink10 }, relleno]}
       />
       {cortes.map((pct) => (
         <View key={pct} style={[styles.corte, { left: `${pct}%` }]} />
@@ -80,7 +80,7 @@ export function Barra({ ratio, desde, alto = 6, segmentos, tono = 'blanco', etiq
 }
 
 const styles = StyleSheet.create({
-  pista: { width: '100%', backgroundColor: ink.ink4, overflow: 'hidden' },
+  pista: { width: '100%', backgroundColor: vidrio.pista, overflow: 'hidden', borderRadius: 9 },
   relleno: {
     position: 'absolute',
     top: 0,

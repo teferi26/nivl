@@ -1,21 +1,21 @@
 // NIVL · Botón v2 (SISTEMA.md §5). Sustituye a SystemButton, que ahora lo envuelve.
 //
-//   · primary   → blanco sólido con texto negro: la acción principal, una por pantalla.
-//   · secondary → contorno blanco de 1,5.
+//   · primary   → hueso sólido con texto oscuro: la acción principal, una por pantalla.
+//   · secondary → contorno fino sobre el vidrio.
 //   · ghost     → solo texto.
 //   · danger    → contorno con trama y texto blanco: el peligro es la trama, no el rojo.
 // Alto 52 (lg), 44 (md), 36 (sm; con hitSlop para llegar a 44 de zona táctil).
 // Dentro de una Card inverse (SuperficieContext) se invierten los colores.
 // Desactivado: sin opacidad (rompe el contraste del texto); borde ink4 y texto
 // ink6 sobre el fondo (ink4 si la superficie está invertida), en cualquier variante.
-// Rótulo: Outfit 700 en mayúsculas, 15 · 14 · 12 (lg · md · sm). Es el único
+// Rótulo: Outfit 700 en frase, 17 · 15 · 13 (lg · md · sm). Es el único
 // texto del kit fuera de la escala `type`; está documentado en SISTEMA §5.
 
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useContext, useRef } from 'react';
 import { ActivityIndicator, Animated, Pressable, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 import { usePiel } from '@/design/piel';
-import { ink, type as tipo } from '@/design/tokens';
+import { ink, radio, vidrio, type as tipo } from '@/design/tokens';
 import { SuperficieContext } from './Card';
 import { splitStyle, useMovimientoReducido } from './motion';
 import { Trama } from './Texture';
@@ -36,7 +36,7 @@ export interface ButtonProps {
   accessibilityLabel?: string;
 }
 
-const ALTO: Record<ButtonSize, number> = { sm: 36, md: 44, lg: 52 };
+const ALTO: Record<ButtonSize, number> = { sm: 36, md: 44, lg: 56 };
 const ZONA_TACTIL = 44;
 
 export function Button({ title, onPress, variant = 'primary', size = 'md', icon, disabled, loading, style, accessibilityLabel }: ButtonProps) {
@@ -91,7 +91,7 @@ export function Button({ title, onPress, variant = 'primary', size = 'md', icon,
       <Animated.View
         style={[
           styles.base,
-          { minHeight: alto, borderColor: claro },
+          { minHeight: alto, borderColor: variant === 'secondary' && !invertida ? vidrio.borde : claro },
           size === 'sm' && styles.sm,
           size === 'lg' && styles.lg,
           primary && { backgroundColor: claro },
@@ -143,7 +143,8 @@ const styles = StyleSheet.create({
   base: {
     flexDirection: 'row',
     gap: 8,
-    borderWidth: 1.5,
+    borderWidth: 1,
+    borderRadius: radio.control,
     paddingVertical: 10,
     paddingHorizontal: 20,
     alignItems: 'center',
@@ -154,19 +155,17 @@ const styles = StyleSheet.create({
   ghost: { borderColor: 'transparent', backgroundColor: 'transparent' },
   // La trama hace de borde: 3 pt de rayado alrededor del fondo.
   danger: { borderWidth: 0, overflow: 'hidden' },
-  dangerDentro: { position: 'absolute', top: 3, left: 3, right: 3, bottom: 3 },
+  dangerDentro: { position: 'absolute', top: 3, left: 3, right: 3, bottom: 3, borderRadius: radio.control - 3 },
   // Gana a primary y danger: sin relleno blanco, sin trama, borde ink4.
-  apagado: { borderWidth: 1.5, borderColor: ink.ink4 },
+  apagado: { borderWidth: 1, borderColor: ink.ink4 },
   // Si el rótulo no cabe en una línea (fr, de), salta centrado y sin
   // salirse del botón (QA F1, menor 6). En una línea no cambia nada.
   label: {
     flexShrink: 1,
     textAlign: 'center',
     fontFamily: tipo.label.family,
-    fontSize: 14,
-    letterSpacing: 2,
-    textTransform: 'uppercase',
+    fontSize: 15,
   },
-  labelSm: { fontSize: 12, letterSpacing: 1.5 },
-  labelLg: { fontSize: 15, letterSpacing: 2.5 },
+  labelSm: { fontSize: 13 },
+  labelLg: { fontSize: 17 },
 });

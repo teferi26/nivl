@@ -1,4 +1,4 @@
-import { contraste, ink, modoAcento, motion, RANK_THEME, sizeClass, type, VERIFY_WIDTHS } from '../tokens';
+import { contraste, ink, modoAcento, motion, oro, RANK_THEME, sizeClass, type, VERIFY_WIDTHS } from '../tokens';
 
 const SUPERFICIES = [ink.ink0, ink.ink1, ink.ink2] as const;
 
@@ -11,16 +11,25 @@ describe('tokens v2: contraste AA', () => {
     }
   });
 
-  it('la inversión (negro sobre blanco) es máxima', () => {
-    expect(contraste(ink.ink0, ink.ink10)).toBeCloseTo(21, 0);
+  it('la inversión (texto oscuro sobre hueso) es muy alta', () => {
+    expect(contraste(ink.ink0, ink.ink10)).toBeGreaterThanOrEqual(15);
+  });
+
+  it('el oro se lee sobre todas las superficies', () => {
+    for (const fondo of SUPERFICIES) {
+      expect(contraste(oro.claro, fondo)).toBeGreaterThanOrEqual(4.5);
+      expect(contraste(oro.hilo, fondo)).toBeGreaterThanOrEqual(4.5);
+    }
   });
 
   it('los bordes de control superan 1,5:1 contra el fondo (visibles, no texto)', () => {
     expect(contraste(ink.ink4, ink.ink0)).toBeGreaterThanOrEqual(1.5);
   });
 
-  it('la escala es estrictamente creciente en luminancia', () => {
-    const orden = Object.values(ink).map((h) => contraste(h, '#000000'));
+  it('la escala de superficie a texto es estrictamente creciente en luminancia', () => {
+    // ink10 (hueso, el botón) va aparte: en Ónix es un punto más mate que el texto.
+    const { ink10: _hueso, ...escala } = ink;
+    const orden = Object.values(escala).map((h) => contraste(h, '#000000'));
     for (let i = 1; i < orden.length; i++) expect(orden[i]).toBeGreaterThan(orden[i - 1]);
   });
 });
@@ -69,7 +78,7 @@ describe('contrato de rangos del Chat 5', () => {
 
 describe('tipografía', () => {
   // Las familias que carga src/app/_layout.tsx con useFonts.
-  const CARGADAS = new Set(['Cinzel_600SemiBold', 'Cinzel_700Bold', 'Outfit_500Medium', 'Outfit_600SemiBold', 'Outfit_700Bold']);
+  const CARGADAS = new Set(['PlayfairDisplay_700Bold', 'Outfit_500Medium', 'Outfit_600SemiBold', 'Outfit_700Bold']);
 
   it('ningún tamaño baja de 11 y toda familia está cargada', () => {
     for (const t of Object.values(type)) {
@@ -104,13 +113,7 @@ describe('Modos F1: acentos', () => {
     for (const hex of Object.values(modoAcento)) expect(contraste(ink.ink0, hex)).toBeGreaterThanOrEqual(4.5);
   });
 
-  it('General es el monocromo de siempre y los colores son los del contrato', () => {
-    expect(modoAcento).toEqual({
-      general: ink.ink10,
-      iron: '#3D7BFF',
-      focus: '#8B6CFF',
-      work: '#19C37D',
-      founder: '#FF9F1C',
-    });
+  it('los cuatro mundos comparten el hilo de oro de Ónix', () => {
+    expect(new Set(Object.values(modoAcento))).toEqual(new Set([oro.claro]));
   });
 });

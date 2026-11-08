@@ -8,7 +8,7 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { ink, space, stroke, type as tipo } from '@/design/tokens';
+import { ink, radio, space, stroke, type as tipo, vidrio } from '@/design/tokens';
 import { t } from '@/i18n';
 import { Meandro } from './Motivos';
 
@@ -117,7 +117,7 @@ const styles = StyleSheet.create({
     fontSize: tipo.rank.size,
     lineHeight: tipo.rank.lineHeight,
     letterSpacing: tipo.rank.tracking,
-    color: ink.ink10,
+    color: ink.ink9,
   },
   subtitulo: {
     fontFamily: tipo.bodySm.family,
@@ -131,7 +131,8 @@ const styles = StyleSheet.create({
     width: TAM_BOTON,
     height: TAM_BOTON,
     borderWidth: stroke.hairline,
-    borderColor: ink.ink4,
+    borderColor: vidrio.borde,
+    borderRadius: radio.chip,
     alignItems: 'center',
     justifyContent: 'center',
   },

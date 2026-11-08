@@ -12,6 +12,7 @@ export { FadeIn, PressScale, Stagger } from './motion';
 export { ProgressRing } from './ProgressRing';
 export { Check, Row, RowValue } from './Row';
 export { Eyebrow, Screen, ScreenHeader, volver } from './Screen';
+export { FondoOnix } from './FondoOnix';
 export { Rule, Section } from './Section';
 export { Sheet } from './Sheet';
 export { Skeleton, SkeletonRows } from './Skeleton';

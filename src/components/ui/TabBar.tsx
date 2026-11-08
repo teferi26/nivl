@@ -17,7 +17,7 @@ import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import type { ReactNode } from 'react';
 import { Platform, Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ink, layout, stroke } from '@/design/tokens';
+import { FONDO_ONIX, ink, layout, oro, stroke, vidrio } from '@/design/tokens';
 import { fonts } from '@/lib/theme';
 import { destinoActivo, destinosDe, navItemDe, pulsarDestino } from './navItems';
 
@@ -89,9 +89,9 @@ export function TabBar({ state, descriptors, navigation, acento = ink.ink10, cen
 const styles = StyleSheet.create({
   bar: {
     flexDirection: 'row',
-    backgroundColor: ink.ink0,
+    backgroundColor: FONDO_ONIX[2],
     borderTopWidth: stroke.hairline,
-    borderTopColor: ink.ink3,
+    borderTopColor: vidrio.linea,
   },
   item: { flex: 1, alignItems: 'center', paddingTop: 10, gap: 4 },
   centro: { width: 76, alignItems: 'center', marginTop: -24 },
@@ -103,6 +103,6 @@ const styles = StyleSheet.create({
     height: stroke.rule,
     backgroundColor: 'transparent',
   },
-  label: { fontFamily: fonts.semibold, fontSize: 11, color: ink.ink6, letterSpacing: 0 },
-  labelOn: { color: ink.ink10 },
+  label: { fontFamily: fonts.semibold, fontSize: 12, color: ink.ink8, letterSpacing: 0 },
+  labelOn: { fontFamily: fonts.heading, color: oro.claro },
 });
