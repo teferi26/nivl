@@ -55,15 +55,19 @@ Reglas pactadas con nivl-game-balancer: solo paga lo de hoy (fecha local de `fin
 - Auto-pausa con movimiento de verdad y GPS con árboles o edificios.
 - GPS del iPhone con la pantalla apagada durante una sesión larga.
 - Recuperación tras un cierre (`handleActiveWorkoutRecovery`) y que la ruta aparezca en Salud sin duplicar puntos.
-- Largo plazo sin iPhone y entrega posterior.
+- Entrega de `transferFile` al iPhone y entrenos hechos sin iPhone que se sincronizan después.
 
 ### Qué se ha comprobado en simulador (8 nov, iOS y watchOS 27.2)
 
 - Compila el binario completo con los módulos nativos, y la app abre en iOS 27 con `withEscenas`.
 - El diálogo real de permisos de Salud sale en el reloj.
 - Interfaz del reloj en 40, 42, 44, 46 y 49 mm en modo demo.
-- `transferFile` termina sin error en el reloj y el JSON llega al sistema de ficheros del simulador del iPhone. **Pero no se entregó al delegado de la app**, así que el buzón nativo, el drenado desde JS y el acuse no se han visto funcionar juntos. No se ha determinado si es limitación del simulador.
-- **Sin probar de punta a punta:** una sesión real con ruta GPS simulada, porque aceptar el diálogo de Salud exige un toque que no se pudo dar desde esta sesión. Para repetirla: `xcrun simctl location <reloj> start --speed=3 --interval=1 <puntos>` y lanzar con `-nivlAuto carrera -nivlAutoSegundos 45`. `-nivlBuzonPrueba YES` prueba solo el camino reloj a iPhone.
+- **Sesión real en el reloj** (`HKWorkoutSession` + `HKLiveWorkoutBuilder`, con permisos de Salud y ubicación aceptados a mano y ruta simulada con `simctl location`): 47 s, 128 m por GPS, 29 puntos de ruta, 8 muestras de pulso (sintéticas del simulador), guardada con UUID de `HKWorkout`. El JSON pasa `normalizarEntreno` sin rechazos.
+- `transferFile` termina sin error y el JSON llega al simulador del iPhone, **pero Apple documenta que el simulador no llama a `session(_:didReceive:)`**. El buzón nativo del iPhone, el drenado desde JS y el acuse al reloj solo se pueden validar con un iPhone y un reloj reales. Es la primera prueba que hay que hacer con hardware.
+- Sin probar en simulador: el GPS solo con iPhone y la pantalla de conexión con Salud, porque piden iniciar sesión y aceptar el permiso de salud con una cuenta de prueba.
+- Importación de Salud sin datos reales: en iOS 27 el diálogo de Salud pregunta cuánto historial compartir, así que lo anterior a lo elegido puede no llegar.
+
+Para repetir la sesión: `xcrun simctl location <reloj> start --speed=3 --interval=1 <puntos>` y lanzar con `-nivlAuto carrera -nivlAutoSegundos 45` (solo DEBUG). Con `-nivlBuzonPrueba YES`, solo el envío del reloj.
 
 ### Qué hay que dar de alta en Apple
 
