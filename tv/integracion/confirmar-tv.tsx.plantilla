@@ -1,0 +1,202 @@
+// NIVL · nivl://tv/XXXX-XXXX: confirmar el enlace de un Apple TV en el iPhone.
+//
+// La abre el QR de la TV. Ruta con sesión (fuera de la zona pública de
+// _layout). Si la persona no ha entrado, la puerta la manda a /login y tendrá
+// que volver a escanear: un enlace de TV no debe sobrevivir a un login.
+//
+// Es la barrera contra el robo por código: alguien puede enseñarte su código
+// para que le abras tu cuenta. Por eso el aviso va antes que el botón.
+// La lógica de los "no" está en el servidor (tv_aprobar, 0125); aquí solo se
+// traducen sus motivos.
+
+import { router, useLocalSearchParams } from 'expo-router';
+import { useCallback, useEffect, useState } from 'react';
+import { StyleSheet, Text, View } from 'react-native';
+import { Button, Card, confirmar, Row, RowValue, Screen, ScreenHeader, Section, SkeletonRows, volver } from '@/components/ui';
+import { ink, space, type as tipo } from '@/design/tokens';
+import { supabase } from '@/lib/supabase';
+import { mensajeSistema } from '@/lib/validation';
+
+type Fase = 'confirmar' | 'enviando' | 'hecho' | 'rechazado';
+type Motivo = 'codigo_invalido' | 'demasiados_intentos' | 'tope_tv' | 'borrado_pendiente';
+interface Respuesta { ok: boolean; reason?: Motivo; nombre?: string }
+interface Dispositivo { id: string; nombre: string; ultimo_uso: string }
+
+const FORMATO = /^[A-HJ-NP-Z2-9]{8}$/;
+const MOTIVOS: Record<Motivo, string> = {
+  codigo_invalido: 'El código no vale o ha caducado. Pide otro en la TV.',
+  demasiados_intentos: 'Demasiados intentos. Espera una hora.',
+  tope_tv: 'Ya tienes cinco televisores enlazados. Desenlaza uno abajo.',
+  borrado_pendiente: 'Tu cuenta se está borrando. No se puede enlazar.',
+};
+
+function normalizar(crudo: string | string[] | undefined): string {
+  const valor = Array.isArray(crudo) ? crudo[0] : crudo;
+  return (valor ?? '').replace(/[\s-]/g, '').toUpperCase();
+}
+
+function fechaCorta(iso: string): string {
+  const d = new Date(iso);
+  return Number.isNaN(d.getTime()) ? '' : d.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
+}
+
+export default function ConfirmarTv() {
+  const params = useLocalSearchParams<{ codigo: string }>();
+  const codigo = normalizar(params.codigo);
+  const valido = FORMATO.test(codigo);
+  const visible = valido ? `${codigo.slice(0, 4)}-${codigo.slice(4)}` : '';
+
+  const [fase, setFase] = useState<Fase>('confirmar');
+  const [error, setError] = useState<string | null>(null);
+  const [nombreTv, setNombreTv] = useState<string | null>(null);
+  const [dispositivos, setDispositivos] = useState<Dispositivo[]>([]);
+  const [cargado, setCargado] = useState(false);
+  const [quitando, setQuitando] = useState<string | null>(null);
+
+  const cargar = useCallback(async () => {
+    try {
+      const { data, error: e } = await supabase.rpc('tv_mis_dispositivos');
+      if (e) throw e;
+      setDispositivos((data ?? []) as Dispositivo[]);
+    } catch {
+      // Accesorio: sin la lista, confirmar sigue funcionando.
+      setDispositivos([]);
+    } finally {
+      setCargado(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    void cargar();
+  }, [cargar]);
+
+  const responder = async (rpc: 'tv_aprobar' | 'tv_rechazar', fin: Fase) => {
+    setFase('enviando');
+    setError(null);
+    try {
+      const { data, error: e } = await supabase.rpc(rpc, { p_codigo: codigo });
+      if (e) throw e;
+      const r = data as Respuesta | null;
+      if (!r?.ok) {
+        setError(MOTIVOS[r?.reason ?? 'codigo_invalido']);
+        setFase('confirmar');
+        return;
+      }
+      setNombreTv(r.nombre ?? null);
+      setFase(fin);
+      void cargar();
+    } catch (e) {
+      setError(mensajeSistema(e));
+      setFase('confirmar');
+    }
+  };
+
+  const desenlazar = async (d: Dispositivo) => {
+    const ok = await confirmar({
+      titulo: 'Desenlazar televisor',
+      mensaje: `${d.nombre} dejará de ver tu cuenta.`,
+      confirmar: 'Desenlazar',
+      cancelar: 'Cancelar',
+      destructivo: true,
+    });
+    if (!ok) return;
+    setQuitando(d.id);
+    setError(null);
+    try {
+      const { error: e } = await supabase.rpc('tv_revocar', { p_id: d.id });
+      if (e) throw e;
+      await cargar();
+    } catch (e) {
+      setError(mensajeSistema(e));
+    } finally {
+      setQuitando(null);
+    }
+  };
+
+  const salir = () => volver(router);
+  const enviando = fase === 'enviando';
+  const cerrado = fase === 'hecho' || fase === 'rechazado';
+
+  return (
+    <Screen>
+      <ScreenHeader eyebrow="Apple TV" title="Enlazar televisor" onBack={salir} />
+
+      {!valido ? (
+        <Card variant="outline">
+          <Text style={styles.cuerpo} maxFontSizeMultiplier={1.6}>
+            Este enlace no trae un código válido. Vuelve a escanear el código de tu TV.
+          </Text>
+        </Card>
+      ) : fase === 'hecho' ? (
+        <Card variant="outline">
+          <Text style={styles.titular} maxFontSizeMultiplier={1.6}>Televisor enlazado.</Text>
+          <Text style={styles.cuerpo} maxFontSizeMultiplier={1.6}>
+            {nombreTv ?? 'Tu Apple TV'} ya lee tu cuenta. Solo lectura: desde ahí no se registra nada.
+          </Text>
+        </Card>
+      ) : fase === 'rechazado' ? (
+        <Card variant="outline">
+          <Text style={styles.titular} maxFontSizeMultiplier={1.6}>Código rechazado.</Text>
+          <Text style={styles.cuerpo} maxFontSizeMultiplier={1.6}>Ningún televisor ha accedido a tu cuenta.</Text>
+        </Card>
+      ) : (
+        <>
+          <Text style={styles.titular} maxFontSizeMultiplier={1.6}>Vas a enlazar un Apple TV.</Text>
+          <Text style={styles.codigo} maxFontSizeMultiplier={1.4} accessibilityLabel={`Código ${codigo.split('').join(' ')}`}>
+            {visible}
+          </Text>
+          <Card variant="outline" style={styles.aviso}>
+            <Text style={styles.cuerpo} maxFontSizeMultiplier={1.6}>
+              Hazlo solo si este código está en tu propia pantalla. Si te lo ha dado otra persona, recházalo: quien
+              tenga esa TV verá tus misiones, tu rutina y tu ranking.
+            </Text>
+          </Card>
+          {error ? (
+            <Text style={styles.error} accessibilityLiveRegion="polite" maxFontSizeMultiplier={1.6}>
+              {error}
+            </Text>
+          ) : null}
+          <Button title="Enlazar este televisor" size="lg" loading={enviando} disabled={enviando} onPress={() => void responder('tv_aprobar', 'hecho')} />
+          <Button title="No he sido yo" variant="ghost" size="lg" disabled={enviando} style={styles.segundo} onPress={() => void responder('tv_rechazar', 'rechazado')} />
+        </>
+      )}
+
+      {!valido || cerrado ? <Button title="Volver" variant="secondary" size="lg" style={styles.segundo} onPress={salir} /> : null}
+
+      <View style={styles.lista}>
+        {!cargado ? (
+          <View accessibilityRole="progressbar" accessibilityLabel="Cargando televisores">
+            <SkeletonRows />
+          </View>
+        ) : dispositivos.length > 0 ? (
+          <Section title="Televisores enlazados" meta={`${dispositivos.length} de 5`}>
+            <Card padded={false} style={styles.filas}>
+              {dispositivos.map((d, i) => (
+                <Row
+                  key={d.id}
+                  first={i === 0}
+                  title={d.nombre}
+                  detail={`Último uso: ${fechaCorta(d.ultimo_uso)}`}
+                  trailing={<RowValue>{quitando === d.id ? '...' : 'Desenlazar'}</RowValue>}
+                  disabled={quitando !== null}
+                  onPress={() => void desenlazar(d)}
+                />
+              ))}
+            </Card>
+          </Section>
+        ) : null}
+      </View>
+    </Screen>
+  );
+}
+
+const styles = StyleSheet.create({
+  titular: { fontFamily: tipo.headline.family, fontSize: tipo.headline.size, lineHeight: tipo.headline.lineHeight, color: ink.ink10, marginBottom: space.s3 },
+  cuerpo: { fontFamily: tipo.body.family, fontSize: tipo.body.size, lineHeight: tipo.body.lineHeight, color: ink.ink8 },
+  codigo: { fontFamily: tipo.rank.family, fontSize: tipo.rank.size, lineHeight: tipo.rank.lineHeight, letterSpacing: tipo.rank.tracking, color: ink.ink10, textAlign: 'center', marginVertical: space.s6 },
+  aviso: { marginBottom: space.s5 },
+  error: { fontFamily: tipo.bodySm.family, fontSize: tipo.bodySm.size, lineHeight: tipo.bodySm.lineHeight, color: ink.ink10, marginBottom: space.s4 },
+  segundo: { marginTop: space.s3 },
+  lista: { marginTop: space.s8 },
+  filas: { paddingHorizontal: space.s4, paddingVertical: 2 },
+});
