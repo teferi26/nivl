@@ -259,7 +259,7 @@ export default function Kit() {
       <Section title="Líneas Pro">
         <View style={{ gap: space.s3 }}>
           <ProUpsellLine momento="coach_cerrado" tier="pro" onPress={nada} />
-          <ProUpsellLine momento="energia_agotada" tier="elite" onPress={nada} />
+          <ProUpsellLine momento="energia_agotada" tier="pro" onPress={nada} />
           <ProUpsellLine momento="firma" tier="pro" onPress={nada} />
         </View>
       </Section>

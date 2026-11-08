@@ -1,35 +1,40 @@
 # NIVL — precios, niveles y la cuenta que no puede fallar
 
-Rehecho el 2026-09-24 (sustituye a la versión de 9,99/79,99 € del 2026-09-19).
+Rehecho el 2026-11-08 para el cobro por modos de la 1.1 (sustituye a Pro/Élite).
 Si cambias un precio, un presupuesto de `ai_plans`, el proveedor del modelo o
 una comisión de creador, rehaz las tablas de abajo antes de publicar.
 
 Dominio y marca: **NIVL** («se dice *nivel*»), `nivl.app`, `@nivl.app` en
 Instagram, TikTok y YouTube.
 
-## La oferta: tres niveles
+## La oferta: se paga por modo (1.1)
 
-| | Gratis | **Pro** | **Élite — el 1 %** |
+| | Gratis | Un modo | Los cuatro |
 |---|---|---|---|
-| Hábitos, misiones, XP, racha, contrato, campañas, agenda | sí | sí | sí |
-| Gym, cardio, nutrición, peso, diario, avances, economía | sí | sí | sí |
-| Amigos, ranking y compartir progreso | sí | sí | sí |
-| Coach de IA (brief, plan del día, chat, revisión semanal, entreno y dieta) | no | **Estándar** (DeepSeek) | **Máxima potencia** (Sonnet) + modo profundo (Sonnet a `xhigh`) |
-| Solicita plaza en un ludus (5-8), asignación manual según disponibilidad | no | no | sí |
-| Revisión semanal profunda (semana + ficha física + progreso) | no | no | sí |
-| Insignia de laurel (estatus, no puntos) | no | no | sí |
+| NIVL base: hábitos, misiones, XP, racha, contrato, campañas, agenda, amigos | sí | sí | sí |
+| Mundo IRON, FOCUS, WORK o FOUNDER | no | el suyo | los cuatro |
+| Coach de ese mundo (cabecera `x-nivl-modo`, candado en servidor) | no | el suyo | los cuatro |
 
-| Plan | Mensual | Anual |
+| Producto | Mensual | Anual |
 |---|---|---|
-| Pro | **12,99 €** | **99,99 €** (8,33 €/mes · −36 %) |
-| Élite | **29,99 €** | **299 €** · fundador **249 €** (100 plazas, precio congelado) |
+| Un modo (IRON, FOCUS, WORK o FOUNDER) | **14,99 €** | **59,99 €**, 7 días gratis |
+| Los cuatro | **30 €** | **99 €**, 7 días gratis |
 
-- Prueba gratis de 7 días: `plan = 'cortesia'` con presupuesto propio de
-  **0,50 $**, nunca el presupuesto entero.
-- La insignia y la comunidad del Élite son estatus, **no XP**: nada de pagar
-  para ganar en el ranking general.
-- Lo gratis es la app entera sin IA y tiene que ser buena de verdad: es la que
-  hace el boca a boca.
+- El anual lleva 7 días gratis (oferta introductoria de la tienda) y el mensual no.
+- No hay combinaciones de 2 o 3: dos modos ya cuestan lo mismo que los cuatro, y
+  Apple permite una sola suscripción activa por grupo.
+- Élite desaparece y Haiku 5.5 es el único modelo.
+- **Quien ya pagó Pro o Élite conserva todo hasta que caduque.** Las tablas de
+  esos planes siguen en `ai_plans` y `store_products`: se dejan de vender, no de
+  atender. Las pruebas y cortesías del servidor abren todo mientras duran.
+- Los datos de un modo no se borran al dejar de pagar: el mundo se cierra y
+  enseña su oferta; lo registrado sigue ahí.
+- Sin suscripción, el coach no está incluido (como hasta ahora). Con un solo
+  modo también se puede hablar con el coach General de NIVL: la decisión está en
+  `coach/handler.ts` y es la que permite que rituales y binarios antiguos sigan
+  sin cabecera.
+
+Precios, productos y derechos: `src/lib/planesmodo.ts` (con tests), `public.ai_modos` (0140).
 
 ## Lo que entra limpio
 
@@ -38,38 +43,52 @@ precio sin IVA: 15 % dentro del Small Business Program (menos de 1 M $/año;
 **hay que solicitarlo**) y 30 % fuera (solo el primer año de cada
 suscripción; desde el segundo, 15 % siempre).
 
-| Plan | Precio | Sin IVA | Limpio al 15 % | Limpio al 30 % |
+| Producto | Precio | Sin IVA | Limpio al 15 % | Limpio al 30 % |
 |---|---|---|---|---|
-| Pro mensual | 12,99 € | 10,74 € | 9,13 € | 7,51 € |
-| Pro anual | 99,99 € | 82,64 € | 70,24 € | 57,85 € |
-| Élite mensual | 29,99 € | 24,79 € | 21,07 € | 17,35 € |
-| Élite anual | 299 € | 247,11 € | 210,04 € | 172,98 € |
-| Élite fundador | 249 € | 205,79 € | 174,92 € | 144,05 € |
+| Un modo, mensual | 14,99 € | 12,39 € | 10,53 € | 8,67 € |
+| Un modo, anual | 59,99 € | 49,58 € | 42,14 € | 34,71 € |
+| Los cuatro, mensual | 30 € | 24,79 € | 21,07 € | 17,36 € |
+| Los cuatro, anual | 99 € | 81,82 € | 69,55 € | 57,27 € |
 
-## Lo que puede gastar una cuenta en IA
+## Un solo modelo: `claude-haiku-5-5`
 
-`ai_plans.monthly_budget_micro_usd`, cortado en servidor por `ai_begin_turn`
-(0020). El exceso máximo es una sola llamada: ~0,05 $ con DeepSeek, ~0,30 $
-con Sonnet. 1 $ ≈ 0,93 €.
+Decisión del dueño (8-nov-2026): toda la IA va con Haiku 5.5, en todos los planes y sin selector. Se retiran
+el modo profundo, «máxima potencia» y la revisión con otro modelo. Que el coach vea fotos ya no depende del modelo.
 
-| Plan | Modelo | Presupuesto/mes | **Peor caso/mes** | Peor caso/año |
+| Por millón de fichas | Entrada | Caché 5 min | Caché 1 h | Lectura de caché | Salida |
+|---|---|---|---|---|---|
+| Prompt de hasta 100.000 fichas | 0,10 $ | 0,125 $ | 0,20 $ | 0,01 $ | 0,50 $ |
+| Prompt de más de 100.000 (toda la petición) | 0,50 $ | 0,625 $ | 1,00 $ | 0,05 $ | 2,50 $ |
+
+El prompt cuenta también la caché leída y escrita. `TECHO_PROMPT` (90.000) mantiene el coach en el tramo barato.
+
+Coste calculado con esta tarifa sobre la cuenta más pesada (76.000 fichas de prefijo y 650 de salida). Aún no
+está medido en producción; Haiku 5.5 cuenta ~30 % más fichas que Haiku 4.5:
+
+| Turno | Coste |
+|---|---|
+| Chat, primer mensaje en frío | ~0,01 $ |
+| Chat, mensajes siguientes (leen la caché) | ~0,002 $ |
+| Brief ligero (plan ya escrito) | < 0,001 $ |
+
+## El freno de gasto (0140, con la cuenta de la 0090)
+
+Quien paga no ve contadores. El tope mensual es un freno solo contra abusos y,
+como mucho, lo que deja la cuota al mes, a 1 $ = 0,93 €, redondeado hacia abajo.
+`update ai_plans set monthly_budget_micro_usd = …`, sin desplegar.
+
+| Plan | Limpio al mes | En dólares | **Freno** | Peor caso/año |
 |---|---|---|---|---|
-| Prueba (cortesía) | DeepSeek | 0,50 $ | 0,51 € | — |
-| Pro | DeepSeek | 1,50 $ | **1,44 €** | 17,30 € |
-| Élite | Sonnet (2,50 $ estándar + 1,50 $ profundo) | 4,00 $ | **4,00 €** | 48,00 € |
+| Un modo, mensual | 10,53 € | 11,32 $ | **11 $** | 122,76 € |
+| Un modo, anual | 3,51 € | 3,78 $ | **3,50 $** | 39,06 € |
+| Los cuatro, mensual | 21,07 € | 22,66 $ | **22 $** | 245,52 € |
+| Los cuatro, anual | 5,80 € | 6,23 $ | **6 $** | 66,96 € |
+| Prueba (`cortesia`, también la de 7 días del anual) | sin ingreso | sin ingreso | 0,50 $ | |
 
-Qué compra el presupuesto (medido sobre la cuenta más pesada; una normal
-lleva 4-5 veces menos contexto):
+El de un modo anual es el freno más ajustado: mide con uso real de Haiku 5.5 que
+una persona normal no lo alcance.
 
-| Turno | Sonnet 5 | DeepSeek v4 flash |
-|---|---|---|
-| Chat | 0,20 $ | 0,056 $ |
-| Brief de la mañana | 0,30 $ | 0,036 $ |
-| Revisión semanal | 0,48 $ | 0,029 $ |
-
-**El Pro solo existe con DeepSeek.** Con Sonnet, 1,50 $ son 5 briefs. Requisito
-de lanzamiento: el enrutado por plan (Pro → DeepSeek, Élite → Anthropic a la
-vez) y los secrets de DeepSeek puestos en el panel de Supabase.
+Los planes antiguos conservan el suyo hasta caducar (Pro mensual 9 $, Pro anual 6 $, Élite 15 a 22 $).
 
 ## Programa de creadores (clippers)
 
@@ -77,11 +96,11 @@ vez) y los secrets de DeepSeek puestos en el panel de Supabase.
 |---|---|---|
 | Novato | 25 % | 25 € |
 | Pro | 35 % | 35 € |
-| Élite | 50 % | 50 € |
+| Élite (rango de creador, no el plan retirado) | 50 % | 50 € |
 
 Reglas:
 
-1. **La base es siempre 100 €**, compre el usuario Pro o Élite.
+1. **La base es siempre 100 €**.
 2. **Solo el primer pago.** Renovaciones: 0 % (parámetro; como mucho 10 %).
 3. **Retención de 30 días** por reembolsos: si Apple o Google devuelven el
    dinero (webhook de RevenueCat), la comisión se anula.
@@ -89,32 +108,32 @@ Reglas:
    llegar a lo mismo que en el anual (25/35/50 €). Sustituye a la idea de
    «pagar entera al tercer mes»: con el Pro mensual, 3 meses dejan 27 € limpios
    y pagar 50 € ese día pierde dinero si el usuario se va en el cuarto.
-5. El rango se gana por resultados. Un fijo mensual para los Élite o un premio
+5. El rango se gana por resultados. Un fijo mensual para los creadores Élite o un premio
    al primero del ranking son palancas posibles, del presupuesto de marketing y
    no de esta tabla; **hoy no hay ninguno activo** (las condiciones publicadas
    lo dicen así). Si se activa uno, con bases publicadas antes.
 6. Las vistas (CPM) se pagan fuera, en Whop Content Rewards, también con
    presupuesto de marketing.
 
-## La cuenta que no puede fallar: primer año por venta
+## La cuenta que no puede fallar: primer año por venta anual
 
-Limpio − comisión del creador − IA en el peor caso. Las renovaciones no llevan
-comisión y dejan mucho más.
+La comisión de creadores no cambia (`creatormath.ts`): base fija de 100 € × rango,
+25/35/50 €. Es la decisión de 2026-09, cuando el anual más barato era 99,99 €.
 
-| Venta | Tienda 15 %, creador 50 € | Tienda 30 %, creador 50 € | Tienda 30 %, creador 35 € |
-|---|---|---|---|
-| Pro anual | **+2,94 €** | **−9,45 €** ⚠ | +5,55 € |
-| Élite anual | +112,04 € | +74,98 € | +89,98 € |
-| Élite fundador | +76,92 € | +46,05 € | +61,05 € |
+Limpio − comisión, **antes de IA**:
 
-| Venta mensual (por mes, mientras cobra) | Tienda 15 %, creador 50 % | Tienda 30 %, creador 50 % |
-|---|---|---|
-| Pro mensual | +3,12 € | +2,31 € |
-| Élite mensual | +6,53 € | +4,68 € |
+| Venta | Tienda 15 %, Novato 25 € | 15 %, Pro 35 € | 15 %, Élite 50 € | Tienda 30 %, Pro 35 € (tope sin SBP) |
+|---|---|---|---|---|
+| Un modo anual, 59,99 € | +17,14 € | +7,14 € | **−7,86 €** | **−0,29 €** |
+| Los cuatro anual, 99 € | +44,55 € | +34,55 € | +19,55 € | +22,27 € |
 
-**Regla de ajuste**: mientras estemos en el Small Business Program, todo
-cuadra. Si salimos (más de 1 M $/año), la comisión sobre un **Pro anual** baja
-a un máximo de 35 %; es la única casilla que pierde.
+Con el peor caso de IA del freno, un modo anual pierde en todas las casillas
+(−21,92 € con Novato al 15 %); ese caso es el de una cuenta que agota el freno
+todos los meses, no el normal.
+
+**A vigilar:** con 59,99 € y la base de 100 €, un creador Élite cobra 50 € de
+42,14 € limpios: se pierden 7,86 € por venta antes de pagar la IA. Decisión
+pendiente del dueño.
 
 Costes fijos a repartir: Supabase Pro 25 $/mes, Apple Developer 99 $/año,
 dominio nivl.app 15 $/año.
@@ -130,8 +149,37 @@ la app = rechazo. Por eso:
 - **Web (nivl.app)**: Stripe, con el webhook que ya existe, sin comisión de
   tienda. La app no puede enlazarlo.
 
+## Lo que tiene que crear el dueño en las tiendas
+
+Antes de la OTA: sin esto, quien no paga verá los mundos cerrados y no podrá comprar.
+Orden: migraciones (0136 antes que 0140) → Edge Functions (`coach`, `economia`,
+`revenuecat-webhook`, `store-reconcile`, `stripe-webhook`) → productos → OTA.
+
+**Los diez ids, exactos:** `nivl_iron_mensual`, `nivl_iron_anual`,
+`nivl_focus_mensual`, `nivl_focus_anual`, `nivl_work_mensual`, `nivl_work_anual`,
+`nivl_founder_mensual`, `nivl_founder_anual`, `nivl_todos_mensual`, `nivl_todos_anual`.
+
+**App Store Connect**
+1. Suscripciones autorrenovables, los diez **en el mismo grupo que Pro y Élite**:
+   así Apple sigue impidiendo dos suscripciones activas.
+2. Niveles del grupo: arriba los dos `todos`; debajo, los ocho de un modo en el
+   mismo nivel. Así, de un modo a todos es mejora inmediata.
+3. Oferta introductoria gratis de 7 días en los cinco anuales, nunca en los mensuales.
+4. Precios de la tabla, nombre visible, descripción y captura de revisión de cada uno.
+5. Retirar de la venta los `nivl_pro_*` y `nivl_elite_*` sin borrarlos: las
+   suscripciones vivas siguen renovando hasta que el dueño decida otra cosa.
+
+**Google Play Console**: los diez como suscripción, cada uno con su base plan
+(`mensual` o `anual`) y, en los anuales, oferta de 7 días gratis para clientes nuevos.
+
+**RevenueCat**: importar los diez y añadirlos a los paquetes de la offering
+`current` (la app lee los precios de ahí). El servidor no usa entitlements: va por
+id de producto.
+
+**Stripe** (solo si se abre la web): un precio por producto con `lookup_key` igual al id de
+la lista. Sin esa clave el webhook lo trataría como Pro antiguo, con los cuatro modos.
+
 ## Palancas
 
 - Tope de IA: `update ai_plans set monthly_budget_micro_usd = …`, sin desplegar.
-- Packs de turnos profundos (consumibles) para quien agote el mes.
 - Comisiones y retención: parámetros, no código.

@@ -2,9 +2,9 @@
 // adaptador compatible las mandaba como image_url.
 import { assert, assertEquals } from 'jsr:@std/assert@1';
 import { fotosSinVision, MSG_FOTOS_SOLO_CLAUDE } from '../coach/guard.ts';
-import { proveedorDe } from './routing.ts';
 
-const compatDe = (model: string) => (proveedorDe(model) === 'compat' ? { baseUrl: 'https://x', apiKey: 'k' } : null);
+
+const compatDe = (model: string) => (!model.startsWith('claude-') ? { baseUrl: 'https://x', apiKey: 'k' } : null);
 
 Deno.test('Pro (deepseek) con fotos: se corta antes de llamar al modelo', () => {
   assertEquals(fotosSinVision(1, compatDe('deepseek-v4-flash')), MSG_FOTOS_SOLO_CLAUDE);
@@ -13,6 +13,6 @@ Deno.test('Pro (deepseek) con fotos: se corta antes de llamar al modelo', () => 
 });
 
 Deno.test('Élite (claude) con fotos y Pro sin fotos: siguen', () => {
-  assertEquals(fotosSinVision(2, compatDe('claude-sonnet-5')), null);
+  assertEquals(fotosSinVision(2, compatDe('claude-haiku-5-5')), null);
   assertEquals(fotosSinVision(0, compatDe('deepseek-v4-flash')), null);
 });

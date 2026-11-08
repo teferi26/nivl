@@ -49,6 +49,7 @@ import {
   type PreciosTienda,
   type ProPlanId,
   type Tier,
+  type TipoCambio,
 } from './proplans';
 import {
   anotarEn,
@@ -60,18 +61,29 @@ import {
   type Momento,
   type RespuestaOferta,
 } from './paywallmoment';
+import {
+  compraModoReflejada,
+  derechosDe,
+  esProductoModo,
+  productoExacto,
+  productoPorId,
+  tipoCambioModo,
+  type DerechosModos,
+  type ProductoModoId,
+} from './planesmodo';
 import { supabase } from './supabase';
 import { ErrorVisible } from './validation';
 
 export * from './proplans';
 export * from './paywallmoment';
+export * from './planesmodo';
 
 const TIERS_CONOCIDOS: readonly Tier[] = ['free', 'pro', 'elite', 'owner'];
 
 /**
  * Estado de la IA de la cuenta con sesión iniciada. Cada campo nuevo (0024)
  * lleva su valor por defecto: con el servidor aún en la 0020 la pantalla se
- * pinta igual, sin modo profundo ni prueba.
+ * pinta igual, sin prueba.
  */
 export async function fetchAiStatus(): Promise<AiStatus> {
   const { data, error } = await supabase.rpc('ai_status');
@@ -88,13 +100,20 @@ export async function fetchAiStatus(): Promise<AiStatus> {
     remaining: Number(s.remaining ?? 0),
     renews: typeof s.renews === 'string' ? s.renews : undefined,
     trial: s.trial === true,
-    deepAllowed: s.deep_allowed === true,
-    deepRemaining: Number(s.deep_remaining ?? 0),
-    deepTurns: Number(s.deep_turns ?? 0),
     trialAvailable: s.trial_available === true,
     vision: typeof s.vision === 'boolean' ? s.vision : null,
     ia: carteraDe(s.ia),
   };
+}
+
+/**
+ * Los modos de la cuenta según el servidor (`mis_modos`, 0140). Sin la
+ * migración o sin red, lanza: quien llama decide no cerrar nada por eso.
+ */
+export async function fetchDerechosModos(): Promise<DerechosModos | null> {
+  const { data, error } = await supabase.rpc('mis_modos');
+  if (error) throw error;
+  return derechosDe(data);
 }
 
 /** Precio de la recarga de IA en la tienda (`priceString`), o null sin tienda o sin producto. */
@@ -394,34 +413,72 @@ export async function introsDeTienda(): Promise<Partial<Record<ProPlanId, string
   return out;
 }
 
-/** Lo que la pantalla de fin de la prueba automática enseña junto a «Seguir con Élite». */
+export type PreciosModos = Partial<Record<ProductoModoId, string>>;
+
+/** Los precios de los diez productos de modo, tal como los da la tienda. */
+export async function preciosModosDeTienda(): Promise<PreciosModos> {
+  await asegurarUsuario();
+  const out: PreciosModos = {};
+  for (const p of await todosLosPaquetes()) {
+    const id = productoBase(p.product.identifier);
+    const precio = precioVisible(p.product.priceString);
+    if (esProductoModo(id) && !out[id] && precio) out[id] = precio;
+  }
+  return out;
+}
+
+/**
+ * Los días gratis que la tienda declara para cada producto de modo y esta
+ * cuenta («7 días»). Inelegible o sin oferta: no sale, y la pantalla no
+ * promete prueba. Solo se enseña lo que la tienda dice.
+ */
+export async function pruebasModosDeTienda(): Promise<Partial<Record<ProductoModoId, string>>> {
+  await asegurarUsuario();
+  const out: Partial<Record<ProductoModoId, string>> = {};
+  const conIntro = (await todosLosPaquetes()).filter((p) => esProductoModo(p.product.identifier) && p.product.introPrice);
+  if (!conIntro.length) return out;
+  let elegibilidad: Record<string, { status: number }> = {};
+  if (Platform.OS === 'ios') {
+    try {
+      elegibilidad = await Purchases.checkTrialOrIntroductoryPriceEligibility(conIntro.map((p) => p.product.identifier));
+    } catch {
+      elegibilidad = {};
+    }
+  }
+  for (const p of conIntro) {
+    const id = productoBase(p.product.identifier) as ProductoModoId;
+    // 1 = INELIGIBLE, 3 = NO_INTRO_OFFER_EXISTS. Sin confirmar en iOS tampoco se promete.
+    if (Platform.OS === 'ios' && elegibilidad[p.product.identifier]?.status !== 2) continue;
+    const periodo = periodoIntroGratis(p.product.introPrice);
+    if (periodo && !out[id]) out[id] = periodo;
+  }
+  return out;
+}
+
+/** Lo que la pantalla de fin de la prueba automática enseña junto a «Seguir con NIVL Pro». */
 export interface OfertaFinPrueba {
   /** Precios de la tienda (los que se cobran); null si la tienda no los da. */
-  eliteMes: string | null;
-  eliteAnio: string | null;
-  proMes: string | null;
-  /** «5 días» si el Élite mensual tiene periodo gratis y la cuenta es (o puede ser) elegible. */
+  planMes: string | null;
+  planAnio: string | null;
+  /** «5 días» si el plan mensual tiene periodo gratis y la cuenta es (o puede ser) elegible. */
   introGratis: string | null;
   /** En iOS la elegibilidad no se pudo confirmar: se dice como condicional. */
   introCondicional: boolean;
 }
 
 /**
- * Los precios del Élite (y el Pro mensual) y la oferta introductoria del
- * Élite mensual, si la tienda la declara (fase B: 5 días a 0 €, configurada
- * en App Store Connect y Play Console). Sin tienda (Expo Go, web), todo null:
+ * Los precios de NIVL Pro y su oferta introductoria mensual, si la tienda la declara. Sin tienda (Expo Go, web), todo null:
  * la pantalla enseña los precios de la tabla.
  */
 export async function ofertaFinPrueba(): Promise<OfertaFinPrueba> {
-  const out: OfertaFinPrueba = { eliteMes: null, eliteAnio: null, proMes: null, introGratis: null, introCondicional: false };
+  const out: OfertaFinPrueba = { planMes: null, planAnio: null, introGratis: null, introCondicional: false };
   if (!purchasesAvailable()) return out;
   await asegurarUsuario();
   const paquetes = await todosLosPaquetes();
   const de = (id: ProPlanId) => paquetes.find((p) => productoBase(p.product.identifier) === id);
-  out.eliteMes = precioVisible(de('nivl_elite_mensual')?.product.priceString);
-  out.eliteAnio = precioVisible(de('nivl_elite_anual')?.product.priceString);
-  out.proMes = precioVisible(de('nivl_pro_mensual')?.product.priceString);
-  const mes = de('nivl_elite_mensual');
+  out.planMes = precioVisible(de('nivl_pro_mensual')?.product.priceString);
+  out.planAnio = precioVisible(de('nivl_pro_anual')?.product.priceString);
+  const mes = de('nivl_pro_mensual');
   const periodo = periodoIntroGratis(mes?.product.introPrice);
   if (mes && periodo) {
     let st: number | undefined;
@@ -441,7 +498,7 @@ export async function ofertaFinPrueba(): Promise<OfertaFinPrueba> {
   return out;
 }
 
-async function paqueteDe(planId: ProPlanId): Promise<PurchasesPackage | null> {
+async function paqueteDe(planId: ProductoTienda): Promise<PurchasesPackage | null> {
   return (await todosLosPaquetes()).find((p) =>
     productoBase(p.product.identifier) === planId && precioVisible(p.product.priceString) !== null,
   ) ?? null;
@@ -473,12 +530,20 @@ async function reconciliarCompra(uid: string): Promise<void> {
  * total. True si el servidor ya la refleja.
  */
 async function esperarDerecho(uid: string, reflejada: (st: AiStatus) => boolean): Promise<boolean> {
+  return esperarLectura(uid, fetchAiStatus, reflejada);
+}
+
+async function esperarModos(uid: string, reflejada: (d: DerechosModos) => boolean): Promise<boolean> {
+  return esperarLectura(uid, fetchDerechosModos, reflejada);
+}
+
+async function esperarLectura<T>(uid: string, leer: () => Promise<T | null>, reflejada: (st: T) => boolean): Promise<boolean> {
   for (let i = 0; i < 6; i++) {
     if (i > 0) await pausa(2000);
     await comprobarCuenta(uid);
-    let st: AiStatus | null = null;
+    let st: T | null = null;
     try {
-      st = await fetchAiStatus();
+      st = await leer();
     } catch {
       /* sin red un momento: se reintenta */
     }
@@ -519,9 +584,14 @@ const NOMBRE_TIENDA: Record<string, string> = {
   RC_BILLING: 'fuera de esta app',
 };
 
+/** Lo que puede haber activo en la tienda: lo antiguo y lo de modos, en el mismo grupo. */
+export type ProductoTienda = ProPlanId | ProductoModoId;
+
+const esProductoTienda = (id: string | null | undefined): boolean => esProductoNivl(id) || esProductoModo(id);
+
 export interface SuscripcionTienda {
-  /** El producto de NIVL activo, sin la parte de base plan de Google Play. */
-  producto: ProPlanId;
+  /** El producto de NIVL activo (Pro/Élite antiguo o de modo), sin la parte de base plan de Google Play. */
+  producto: ProductoTienda;
   /** "PLAY_STORE"/"APP_STORE"/…; null si el SDK no lo dice (se asume este dispositivo). */
   store: string | null;
   /** El id tal cual lo da la tienda (en Google Play, "producto:baseplan"). */
@@ -539,10 +609,10 @@ export interface SuscripcionTienda {
  */
 function suscripcionesNivl(info: CustomerInfo | null | undefined): SuscripcionTienda[] {
   if (!info) return [];
-  const out = new Map<ProPlanId, SuscripcionTienda>();
+  const out = new Map<ProductoTienda, SuscripcionTienda>();
   const poner = (idTienda: string | null | undefined, store: string | null, url: string | null, renueva: boolean | null = null) => {
-    if (!idTienda || !esProductoNivl(idTienda)) return;
-    const producto = productoBase(idTienda) as ProPlanId;
+    if (!idTienda || !esProductoTienda(idTienda)) return;
+    const producto = productoBase(idTienda) as ProductoTienda;
     const previo = out.get(producto);
     if (previo && (previo.store || !store)) return;
     out.set(producto, { producto, store, idTienda, managementURL: url ?? info.managementURL ?? null, renueva });
@@ -557,7 +627,11 @@ function suscripcionesNivl(info: CustomerInfo | null | undefined): SuscripcionTi
     if (e?.isActive !== false) poner(e?.productIdentifier, e?.store ?? null, null);
   }
   // Élite antes que Pro: si hubiera dos, la de más nivel es la que manda.
-  const rango = (s: SuscripcionTienda) => (proPlan(s.producto).tier === 'elite' ? 1 : 0);
+  const rango = (s: SuscripcionTienda) => {
+    const modo = productoPorId(s.producto);
+    if (modo) return modo.alcance === 'todos' ? 1 : 0;
+    return proPlan(s.producto as ProPlanId).tier === 'elite' ? 1 : 0;
+  };
   return [...out.values()].sort((a, b) => rango(b) - rango(a));
 }
 
@@ -565,10 +639,37 @@ function suscripcionesNivl(info: CustomerInfo | null | undefined): SuscripcionTi
 export async function purchase(planId: ProPlanId, precioMostrado: string): Promise<ResultadoCompra> {
   if (!precioVisible(precioMostrado)) throw new ErrorVisible('Espera a que se cargue el precio de la tienda.');
   const uid = await asegurarUsuario();
-  return enColaDeTienda(() => comprarEnCuenta(uid, planId, precioMostrado));
+  return enColaDeTienda(() => comprarEnCuenta(uid, planId, precioMostrado, reglasPro(uid, planId)));
 }
 
-async function comprarEnCuenta(uid: string, planId: ProPlanId, precioMostrado: string): Promise<ResultadoCompra> {
+/** Compra un producto de modo, con las mismas garantías que cualquier otra compra. */
+export async function purchaseModo(id: ProductoModoId, precioMostrado: string): Promise<ResultadoCompra> {
+  if (!precioVisible(precioMostrado)) throw new ErrorVisible('Espera a que se cargue el precio de la tienda.');
+  const uid = await asegurarUsuario();
+  return enColaDeTienda(() =>
+    comprarEnCuenta(uid, id, precioMostrado, {
+      tipo: (actual) => tipoCambioModo(actual, id),
+      reflejadaNueva: () => esperarModos(uid, (d) => compraModoReflejada(d, id)),
+      exacta: () => esperarModos(uid, (d) => productoExacto(d, id)),
+    }),
+  );
+}
+
+interface ReglasCompra {
+  tipo: (actual: ProductoTienda | null | undefined) => TipoCambio;
+  reflejadaNueva: () => Promise<boolean>;
+  exacta: () => Promise<boolean>;
+}
+
+function reglasPro(uid: string, planId: ProPlanId): ReglasCompra {
+  return {
+    tipo: (actual) => tipoCambio(esProductoNivl(actual) ? actual : actual ? 'nivl_pro_anual' : null, planId),
+    reflejadaNueva: () => esperarDerecho(uid, (st) => compraReflejada(st, planId)),
+    exacta: () => esperarDerecho(uid, (st) => planExacto(st, planId)),
+  };
+}
+
+async function comprarEnCuenta(uid: string, planId: ProductoTienda, precioMostrado: string, reglas: ReglasCompra): Promise<ResultadoCompra> {
   await comprobarCuenta(uid);
   let paquete: PurchasesPackage | null;
   try {
@@ -596,14 +697,14 @@ async function comprarEnCuenta(uid: string, planId: ProPlanId, precioMostrado: s
     throw traducir(e);
   }
   await comprobarCuenta(uid);
-  const tipo = tipoCambio(actual?.producto, planId);
+  const tipo = reglas.tipo(actual?.producto);
   if (tipo === 'mismo') {
     if (actual?.renueva === false) {
       throw new ErrorVisible('Tu suscripción a este plan está cancelada pero sigue vigente. Reactívala desde Gestionar o cancelar suscripción.');
     }
     // Puede que acabe de recuperarse (sincronización de arriba): que el servidor la refleje.
     await reconciliarCompra(uid);
-    if (await esperarDerecho(uid, (st) => planExacto(st, planId))) return 'activa';
+    if (await reglas.exacta()) return 'activa';
     throw new ErrorVisible('Ya tienes este plan activo en la tienda. Si no lo ves en NIVL, pulsa Restaurar compras.');
   }
   if (actual?.store && actual.store !== tiendaDelDispositivo()) {
@@ -633,9 +734,9 @@ async function comprarEnCuenta(uid: string, planId: ProPlanId, precioMostrado: s
   })();
   if (!cobrada) return 'cancelada';
   await reconciliarCompra(uid);
-  if (tipo === 'nueva') return (await esperarDerecho(uid, (st) => compraReflejada(st, planId))) ? 'activa' : 'pendiente';
+  if (tipo === 'nueva') return (await reglas.reflejadaNueva()) ? 'activa' : 'pendiente';
   // Cambio dentro del grupo: solo cuenta el plan EXACTO; el anterior ya daba derecho.
-  if (await esperarDerecho(uid, (st) => planExacto(st, planId))) return 'activa';
+  if (await reglas.exacta()) return 'activa';
   return tipo === 'subida' ? 'pendiente' : 'programada';
 }
 
@@ -664,7 +765,11 @@ export async function restorePurchases(): Promise<ResultadoRestaurar> {
     await comprobarCuenta(uid);
     if (!activas.length) return 'nada';
     await reconciliarCompra(uid);
-    return (await esperarDerecho(uid, (st) => compraReflejada(st, activas[0].producto))) ? 'activa' : 'pendiente';
+    const producto = activas[0]!.producto;
+    const lista = esProductoModo(producto)
+      ? await esperarModos(uid, (d) => compraModoReflejada(d, producto))
+      : await esperarDerecho(uid, (st) => compraReflejada(st, producto));
+    return lista ? 'activa' : 'pendiente';
   });
 }
 

@@ -80,8 +80,8 @@
   "coach": {
     "inscripcion": "Der Coach",
     "titulo": "Unterschrieben. Jetzt: wer führt.",
-    "pista": "Deine Gewohnheiten, deine Organisation und dein Fortschritt sind kostenlos. Die bezahlten Pläne bringen den KI-Coach und, mit Élite, ein Abzeichen und die Bewerbung um einen Platz in einem Ludus.",
-    "pistaHoja": "Deine Gewohnheiten, deine Organisation und dein Fortschritt sind kostenlos. Die bezahlten Pläne bringen den KI-Coach und, mit Élite, ein Abzeichen und die Bewerbung um einen Platz in einem Ludus. Entscheide jetzt oder später: Die Verpflichtung gilt genauso.",
+    "pista": "Deine Gewohnheiten, deine Organisation und dein Fortschritt sind kostenlos. NIVL Pro bringt den KI-Coach.",
+    "pistaHoja": "Deine Gewohnheiten, deine Organisation und dein Fortschritt sind kostenlos. NIVL Pro bringt den KI-Coach. Entscheide jetzt oder später: Die Verpflichtung gilt genauso.",
     "preparandoA11y": "Dein Eintritt wird vorbereitet",
     "seguirGratis": "Vorerst kostenlos weiter"
   },

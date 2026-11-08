@@ -4,7 +4,7 @@ App de hábitos de la gente de **Franky**. Gamifica la vida real como una arena 
 
 Sirve igual a un emprendedor, a un deportista, a un estudiante o a cualquiera que quiera mejorar en general: en el alta eliges **para qué la usas** y eso ordena lo que ves primero, los hábitos que te propone y el énfasis del coach (ver "Perfiles de uso"). Estética: monocromo de gladiador (negro, hueso, hierro; el rojo avisa y el oro corona), tipografía Cinzel + Outfit (la de Franky).
 
-Stack: Expo SDK 54 (React Native 0.81 + TypeScript estricto) · expo-router · Supabase (Postgres, Auth, Storage, Edge Functions, pg_cron) · Claude Sonnet 5.
+Stack: Expo SDK 54 (React Native 0.81 + TypeScript estricto) · expo-router · Supabase (Postgres, Auth, Storage, Edge Functions, pg_cron) · Claude Haiku 5.5.
 
 ## La cuenta es la de Franky
 
@@ -95,21 +95,9 @@ Las tarifas de cada modelo están en `PRICE_PER_MTOK` (`_shared/anthropic.ts`) y
 
 ### Qué modelo hace cada cosa
 
-| Tarea | Modelo | Por qué |
-|---|---|---|
-| Chat, brief, plan del día, revisión semanal, cierre de mes, escalada | **Sonnet 5** | Todo eso es criterio: cruzar dominios, decidir cargas, escribir la carta de las tres puertas |
-| Clasificar movimientos del extracto | **Haiku 4.5** | Leer "MERCADONA 4471" y decir que es súper no pide criterio. Además sale **antes** de construir el contexto: no viajan las 50.000 fichas de dossier y estudios |
-| Titular del push tras un ritual | **Haiku 4.5** | Resumir en una línea un texto ya escrito |
-| Resumen semanal y mensual en imágenes | **Sonnet 5** | Redactar con calidez sobre datos ya calculados; son 5 llamadas al mes |
-| Misiones desde un objetivo (Oráculo) | **Haiku 4.5** | Rellenar una plantilla con salida estructurada |
+Uno: **`claude-haiku-5-5`**, para el chat, los rituales, las revisiones, el estudio, la clasificación, el Oráculo, las fotos y la prueba. Lo que distingue una tarea mecánica de una decisión no es el modelo: las mecánicas salen **antes** de construir el contexto y van con `effort` bajo.
 
-La regla: **si la tarea es leer y transformar, Haiku; si es decidir, Sonnet.** Un extracto entero de sesenta movimientos se clasifica por céntimas; con el coach costaría cien veces más, y no por la tarifa del modelo sino porque arrastraría todo su contexto para responder algo que cabe en una línea.
-
-Los dos secretos `COACH_MODEL_CHAT` y `COACH_MODEL_RITUAL` permiten cambiar el modelo del coach desde el panel de Supabase sin desplegar, por si algún día quieres probar otro y comparar en `coach_runs`.
-
-- **El modelo del coach es `claude-sonnet-5`**, no Opus. La tarea del coach es leer un estudio ya calculado, aplicar una doctrina escrita y llamar a la herramienta correcta; la aritmética fina no la hace él, sale de `analytics.ts` y `finance.ts`. Con Opus el turno costaba 0,42 $ en frío, que para el uso real son del orden de 150 €/mes. Haiku se descartó a propósito: con veinte herramientas y 50.000 tokens de contexto es donde empiezan a elegirse herramientas equivocadas, y aquí eso se traduce en cargas de gimnasio y en dinero.
-- **Coste por turno, medido sobre Sonnet 5**: **0,19 $ el primero de cada conversación** y **0,021 $ los siguientes**. La diferencia es de casi diez veces, y toda está en el prefijo: el primer turno escribe las ~76.000 fichas en caché y el resto las lee a una décima parte. Con Opus eran 0,42 $ y 0,17 $.
-- **Factura estimada con esas cifras**: ~12 €/mes con una conversación al día, **~19 €/mes** con dos, ~42 €/mes si te agarras al chat cinco veces al día. Por eso **hablar del tirón sale casi diez veces más barato que abrir el chat cinco veces**, y por eso Haiku en el chat ya solo ahorraría unos 9 €/mes: no compensa arriesgar el criterio.
+- **Tarifa en dos tramos**: hasta 100.000 fichas de prompt (contando caché), 0,10 $ de entrada y 0,50 $ de salida por millón; por encima, toda la petición cuesta 5 veces más. `TECHO_PROMPT` mantiene el coach en el tramo barato. El detalle y las cuentas están en `docs/PRECIOS.md`.
 - **Lo que manda en la factura no son los mensajes, son las veces que abres el chat.** La caché dura 5 minutos: el primer turno de cada conversación escribe las ~70.000 fichas del prefijo y los siguientes las leen a una décima parte. Diez mensajes del tirón cuestan menos de la mitad que esos diez repartidos por el día.
 - **De dónde sale ese prefijo**: voz, doctrina, dossier y estado del día. El estado va en el bloque de **sistema** a propósito: colgado del turno del usuario quedaba detrás del último punto de caché y se pagaba entero en cada vuelta del bucle de herramientas. Del historial se quitan además los bloques de pensamiento y los resultados largos, que no aportan nada pasado su turno.
 - **Necesita saldo en Anthropic.** Cuando se acaba, el coach lo dice con esas palabras y con el enlace para recargar, en vez de un "reintenta más tarde" que no ayuda.

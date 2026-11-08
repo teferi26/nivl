@@ -35,7 +35,6 @@ import {
   streamCoach,
   type CoachAction,
   type CoachMessage,
-  type CoachMode,
 } from '@/lib/coach';
 import { cancelarDictado, disponible, disponibleDictado, hablar, parar, suscribirHablando } from '@/lib/coachvoz';
 import { olvidarConsentimiento } from '@/lib/consent';
@@ -46,9 +45,7 @@ import {
   energiaAgotada,
   fetchAiStatus,
   isPro,
-  lineaProfundos,
   ofrecerSi,
-  puedeProfundo,
   SIN_IA,
   type AiStatus,
   type DecisionOferta,
@@ -172,9 +169,6 @@ export function useCoach(): { vista: CoachVistaProps; hojas: HojasCoach } {
   // gratuita vería un instante el chat abierto antes del estado bloqueado.
   const [estadoListo, setEstadoListo] = useState(false);
   const [kind, setKind] = useState<unknown>('general');
-  // Potencia del próximo turno (solo Élite). Vuelve sola a estándar tras cada
-  // turno profundo: que el mes no se queme por despiste.
-  const [modo, setModo] = useState<CoachMode>('estandar');
   const userId = session?.user.id;
   // El mundo en el que está el chat: decide qué misiones son «de otro modo».
   const { activo: modosActivos, modo: modoMundo, activados, cambiar: cambiarModo } = useModo();
@@ -441,12 +435,8 @@ export function useCoach(): { vista: CoachVistaProps; hojas: HojasCoach } {
 
     let acumulado = '';
     const ejecutadas: CoachAction[] = [];
-    // Profundo solo si el bolsillo lo permite AHORA: un estado viejo no manda
-    // un turno caro que el servidor rechazaría.
-    const modoTurno: CoachMode = modo === 'profundo' && puedeProfundo(estado) ? 'profundo' : 'estandar';
     try {
       await streamCoach({
-        mode: modoTurno,
         message: limpio || t('coach:turno.miraFoto'),
         threadId: threadId ?? undefined,
         imagenes: fotos.length ? fotos : undefined,
@@ -531,12 +521,6 @@ export function useCoach(): { vista: CoachVistaProps; hojas: HojasCoach } {
       setEsperando(false);
       setOcupado(false);
       enviando.current = false;
-      // Tras un turno profundo (o su negativa), de vuelta a estándar y con los
-      // turnos que quedan releídos del servidor.
-      if (modoTurno === 'profundo') {
-        setModo('estandar');
-        releerEstado();
-      }
     }
   };
 
@@ -548,12 +532,6 @@ export function useCoach(): { vista: CoachVistaProps; hojas: HojasCoach } {
     if (nativo.key !== 'Enter' || nativo.shiftKey || nativo.isComposing) return;
     e.preventDefault();
     if (puedeEnviar) enviar(texto);
-  };
-
-  const elegirModo = (m: CoachMode) => {
-    if (m === modo) return;
-    vibrar('seleccion');
-    setModo(m);
   };
 
   const vacio = !burbujas.length && !enCurso;
@@ -574,10 +552,6 @@ export function useCoach(): { vista: CoachVistaProps; hojas: HojasCoach } {
   // se suma al texto); grabando, enviar se aparta en la vista.
   const grabandoUi = dictado.grabando || dictado.preparando;
   const conDictado = puedeDictar;
-  // El selector de potencia solo existe si el plan incluye el modo profundo.
-  const conPotencia = !sinPro && !!estado?.deepAllowed;
-  const profundoAbierto = puedeProfundo(estado);
-  const modoVisible: CoachMode = modo === 'profundo' && profundoAbierto ? 'profundo' : 'estandar';
 
   // Las consultas del último turno cerrado del coach: la línea de la cabecera.
   const ultimoCoach = [...burbujas].reverse().find((b) => b.role === 'assistant');
@@ -624,7 +598,6 @@ export function useCoach(): { vista: CoachVistaProps; hojas: HojasCoach } {
       void cargar();
     },
     consultas,
-    profundo: conPotencia && modoVisible === 'profundo',
     burbujas: vistaBurbujas,
     enCurso:
       enCurso || pensando || esperando || acciones.length
@@ -652,9 +625,6 @@ export function useCoach(): { vista: CoachVistaProps; hojas: HojasCoach } {
             avisoAparte: aviso && !aviso.energia ? aviso.texto : null,
           }
         : null,
-    potencia: conPotencia
-      ? { modo: modoVisible, profundoAbierto, linea: lineaProfundos(estado), onElegir: elegirModo }
-      : null,
     compositor: {
       texto,
       onCambiarTexto: setTexto,
@@ -686,8 +656,8 @@ export function useCoach(): { vista: CoachVistaProps; hojas: HojasCoach } {
   };
 }
 
-function puedeVerFotos(estado: { tier?: string | null }): boolean {
+function puedeVerFotos(estado: { tier?: string | null; entitled?: boolean }): boolean {
   const vision = (estado as { vision?: unknown }).vision;
   if (typeof vision === 'boolean') return vision;
-  return estado.tier === 'elite' || estado.tier === 'owner';
+  return !!estado.entitled;
 }

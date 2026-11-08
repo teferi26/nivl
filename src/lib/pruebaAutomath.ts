@@ -132,33 +132,30 @@ export function marcasDe(raw: unknown): MarcasPrueba {
 
 /** Lo que da la tienda para la pantalla de fin (pro.ts → ofertaFinPrueba). */
 export interface OfertaTiendaFin {
-  eliteMes: string | null;
-  eliteAnio: string | null;
-  proMes: string | null;
+  planMes: string | null;
+  planAnio: string | null;
   introGratis: string | null;
   introCondicional: boolean;
 }
 
 /**
- * Los precios que se enseñan junto a «Seguir con Élite»: los de la tienda
+ * Los precios que se enseñan junto a «Seguir con NIVL Pro»: los de la tienda
  * (los que se cobran) y, si no los da (sin tienda o sin red), los de la
  * tabla de PRECIOS.md. La oferta introductoria solo se dice si la declara
  * la tienda con su precio: con el de la tabla no se promete. Los de la tabla
  * van en euros con el formato del idioma de la interfaz (QA F1, M2).
  */
 export function preciosFin(oferta: OfertaTiendaFin | null | undefined, idioma?: IdiomaInterfaz): {
-  eliteMes: string;
-  eliteAnio: string;
-  proMes: string;
+  planMes: string;
+  planAnio: string;
   introGratis: string | null;
   introCondicional: boolean;
 } {
   const tabla = (id: string) => eurosLocal(PRO_PLANS.find((p) => p.id === id)!.priceCents, idioma);
   return {
-    eliteMes: oferta?.eliteMes ?? tabla('nivl_elite_mensual'),
-    eliteAnio: oferta?.eliteAnio ?? tabla('nivl_elite_anual'),
-    proMes: oferta?.proMes ?? tabla('nivl_pro_mensual'),
-    introGratis: oferta?.eliteMes && oferta.introGratis ? oferta.introGratis : null,
+    planMes: oferta?.planMes ?? tabla('nivl_pro_mensual'),
+    planAnio: oferta?.planAnio ?? tabla('nivl_pro_anual'),
+    introGratis: oferta?.planMes && oferta.introGratis ? oferta.introGratis : null,
     introCondicional: !!oferta?.introCondicional,
   };
 }

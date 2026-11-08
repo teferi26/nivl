@@ -47,7 +47,7 @@ export interface Piel {
 
 export interface PielCoach {
   /** La cabecera del mundo en lugar de la del coach (con sus dos accesos). */
-  cabecera: (p: { linea: string; sinPro: boolean; profundo: boolean; cargando: boolean; onPro: () => void; onMemoria: () => void }) => ReactNode;
+  cabecera: (p: { linea: string; sinPro: boolean; cargando: boolean; onPro: () => void; onMemoria: () => void }) => ReactNode;
   /** El avatar que firma los mensajes del coach (en lugar de la galea). */
   avatar: ReactNode;
   /** Lado del avatar: los mensajes seguidos dejan ese hueco a la izquierda. */

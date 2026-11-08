@@ -46,7 +46,7 @@ export interface Fake {
 }
 
 /** Las RPC que en la base real solo puede ejecutar service_role (comprobado en pg_proc.proacl). */
-const SOLO_SERVICE = new Set(['ai_begin_turn', 'ai_end_turn', 'ai_state', 'ai_consent_ok', 'ai_reservar', 'ai_liquidar', 'ai_puede']);
+const SOLO_SERVICE = new Set(['ai_begin_turn', 'ai_end_turn', 'ai_state', 'ai_consent_ok', 'ai_reservar', 'ai_liquidar', 'ai_puede', 'ai_modos']);
 
 export function sse(eventos: unknown[]): Response {
   const cuerpo = eventos.map((e) => `event: x\ndata: ${JSON.stringify(e)}\n\n`).join('');
@@ -54,7 +54,7 @@ export function sse(eventos: unknown[]): Response {
 }
 
 /** Un turno de Anthropic con texto y un uso concreto (lo que "cuesta"). */
-export function turnoTexto(texto: string, uso = { input_tokens: 100_000, output_tokens: 2_000 }, modelo = 'claude-sonnet-5'): Response {
+export function turnoTexto(texto: string, uso = { input_tokens: 100_000, output_tokens: 2_000 }, modelo = 'claude-haiku-5-5'): Response {
   return sse([
     { type: 'message_start', message: { model: modelo, usage: { input_tokens: uso.input_tokens, output_tokens: 0 } } },
     { type: 'content_block_start', index: 0, content_block: { type: 'text', text: '' } },
@@ -70,7 +70,7 @@ export function turnoHerramienta(
   input: unknown,
   id = `tu_${nombre}`,
   uso = { input_tokens: 50_000, output_tokens: 300 },
-  modelo = 'claude-sonnet-5',
+  modelo = 'claude-haiku-5-5',
 ): Response {
   return sse([
     { type: 'message_start', message: { model: modelo, usage: { input_tokens: uso.input_tokens, output_tokens: 0 } } },
@@ -106,6 +106,8 @@ export function instalar(op: Opciones = {}): Fake {
     health_consent_ok: () => true,
     ai_begin_turn: () => ({ allowed: true, mode: 'estandar', turn_budget: 5_000_000, routes: {} }),
     ai_end_turn: () => null,
+    // 0140: por defecto la cuenta tiene los cuatro modos; modos_pago_test.ts lo sustituye.
+    ai_modos: () => ['iron', 'focus', 'work', 'founder'],
     ai_state: () => ({ entitled: true, remaining: 5_000_000, tier: 'pro' }),
     // La cartera (0078): por defecto deja; los tests del tope la sustituyen (ia_tope_test.ts).
     ai_puede: () => ({ ok: true, motivo: null }),

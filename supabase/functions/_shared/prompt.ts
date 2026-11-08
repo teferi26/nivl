@@ -309,10 +309,8 @@ export const SISTEMA_REGISTRO_FIJO: readonly string[] = Object.freeze([SISTEMA_R
 /**
  * El sistema de la ruta de registro:
  *   [4 herramientas] → FIJO (voz corta + seguridad + datos) ◆ → estado mínimo ◆
- * Sin dossier, sin conocimiento, sin estudios. Ojo: con Haiku el mínimo
- * cacheable son 4.096 fichas y este prefijo queda por debajo; entonces la API
- * ignora el punto sin cobrar escritura. Se deja puesto para modelos con un
- * mínimo menor (DeepSeek cachea solo, sin marcas).
+ * Sin dossier, sin conocimiento, sin estudios. Con Haiku 5.5 el mínimo
+ * cacheable es de 512 fichas, así que este prefijo ya se cachea.
  */
 export function buildSystemRegistro(
   estado: string,

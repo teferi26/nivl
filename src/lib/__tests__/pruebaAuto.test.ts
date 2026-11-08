@@ -128,25 +128,23 @@ describe('detalles', () => {
 
   it('precios de reserva en el idioma de la interfaz, siempre en euros (QA F1, M2)', () => {
     const en = preciosFin(null, 'en');
-    expect(en.eliteMes).toMatch(/€/);
-    expect(en.eliteMes).toContain('29.99');
-    expect(en.eliteAnio).toContain('299.00');
-    expect(preciosFin(null, 'de').proMes).toMatch(/12,99\s€/);
+    expect(en.planMes).toMatch(/€/);
+    expect(en.planMes).toContain('12.99');
+    expect(en.planAnio).toContain('99.99');
     expect(preciosFin(null, 'es')).toEqual(preciosFin(null));
     // Con tienda, el precio llega ya localizado y no se toca.
-    expect(preciosFin({ eliteMes: '$29.99', eliteAnio: null, proMes: null, introGratis: null, introCondicional: false }, 'en').eliteMes).toBe('$29.99');
+    expect(preciosFin({ planMes: '$29.99', planAnio: null, introGratis: null, introCondicional: false }, 'en').planMes).toBe('$29.99');
   });
 
   it('precios: los de la tienda o los de la tabla; la oferta solo con precio de tienda', () => {
     expect(preciosFin(null)).toEqual({
-      eliteMes: '29,99 €',
-      eliteAnio: '299,00 €',
-      proMes: '12,99 €',
+      planMes: '12,99 €',
+      planAnio: '99,99 €',
       introGratis: null,
       introCondicional: false,
     });
-    const tienda = { eliteMes: '29,99 €', eliteAnio: '299,99 €', proMes: '12,99 €', introGratis: '5 días', introCondicional: false };
+    const tienda = { planMes: '29,99 €', planAnio: '299,99 €', introGratis: '5 días', introCondicional: false };
     expect(preciosFin(tienda)).toEqual(tienda);
-    expect(preciosFin({ ...tienda, eliteMes: null }).introGratis).toBeNull();
+    expect(preciosFin({ ...tienda, planMes: null }).introGratis).toBeNull();
   });
 });

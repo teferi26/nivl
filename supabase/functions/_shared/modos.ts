@@ -21,6 +21,11 @@ export function modoDeCabeceraNivl(valor: string | null | undefined): ModoCoach 
   return (MODOS_COACH as readonly string[]).includes(v) ? (v as ModoCoach) : null;
 }
 
+/** El 402 de un mundo no pagado: el mismo motivo que el resto del candado, con el modo al lado. */
+export function negativaModo(modo: ModoCoach): { error: string; reason: 'sin_suscripcion'; modo: ModoCoach } {
+  return { error: `${modo.toUpperCase()} no está en tu plan.`, reason: 'sin_suscripcion', modo };
+}
+
 const ETIQUETA_IDIOMA = /^([A-Za-z]{2,3})(?:[-_]([A-Za-z0-9]{1,8}))*$/;
 
 /**

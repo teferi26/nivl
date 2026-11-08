@@ -13,12 +13,15 @@
 //  · client_reference_id must be a uuid; a checkout without a subscription
 //    grants nothing (it used to write status active with no end date = forever).
 import type { Db } from './db.ts';
+import { planDeStripe } from './productos-modo.ts';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const GRACE_MS = 2 * 24 * 3600_000; // same two days as ai_state (0020/0024)
 
 export type StripeSubscriptionState = {
   id: string; status: string; customer: string | null; current_period_end: number | null;
+  /** El `lookup_key` del precio: el id del producto de modo (0140). Antiguo o sin clave: null. */
+  lookup_key?: string | null;
 };
 export type SubscriptionRow = {
   user_id: string; status: string; plan: string; provider: string;
@@ -95,6 +98,8 @@ export const stripeWebhookHandler = (deps: StripeDeps | null) => async (req: Req
       if (!UUID.test(userId)) return ok({ ignored: 'client_reference_id' });
       if (!subId) return ok({ ignored: 'sin_suscripcion' });
       const sub = await deps.retrieve(subId);
+      // Un precio de modo dice su plan. Sin clave reconocible (enlaces antiguos): lo de siempre.
+      const planModo = planDeStripe(sub.lookup_key);
       const patch = {
         status: mapStripeStatus(sub.status), provider: 'stripe',
         stripe_customer_id: typeof session.customer === 'string' ? session.customer : sub.customer,
@@ -105,7 +110,7 @@ export const stripeWebhookHandler = (deps: StripeDeps | null) => async (req: Req
       for (let attempt = 0; attempt < 2; attempt++) {
         const row = await deps.repo.byUser(userId);
         if (!row) {
-          if (await deps.repo.insert({ user_id: userId, plan: 'mensual', ...patch })) return ok({});
+          if (await deps.repo.insert({ user_id: userId, plan: planModo ?? 'mensual', ...patch })) return ok({});
           continue; // created concurrently: re-read and decide again
         }
         if (!stripeMayTakeOver(row, now, sub.id)) {
@@ -115,7 +120,7 @@ export const stripeWebhookHandler = (deps: StripeDeps | null) => async (req: Req
           console.error('stripe-webhook: checkout over a protected subscription row; manual review/refund needed', sub.id);
           return ok({ ignored: 'fila_protegida' });
         }
-        const plan = row.provider === 'stripe' ? row.plan : 'mensual';
+        const plan = planModo ?? (row.provider === 'stripe' ? row.plan : 'mensual');
         if (await deps.repo.update(userId, row, { ...patch, plan })) return ok({});
       }
       throw new Error('Concurrent subscription change');
@@ -126,7 +131,9 @@ export const stripeWebhookHandler = (deps: StripeDeps | null) => async (req: Req
       const row = await deps.repo.bySubscription(subId);
       if (!row || row.provider !== 'stripe' || row.plan === 'owner') return ok({ ignored: 'sin_fila_stripe' });
       const sub = await deps.retrieve(subId); // current state, not the (possibly stale) event payload
+      const planModo = planDeStripe(sub.lookup_key);
       const changed = await deps.repo.update(row.user_id, row, {
+        ...(planModo ? { plan: planModo } : {}), // de un modo a todos desde el portal de Stripe
         status: mapStripeStatus(sub.status),
         current_period_end: sub.current_period_end ? new Date(sub.current_period_end * 1000).toISOString() : null,
         updated_at: new Date(now).toISOString(),

@@ -119,7 +119,7 @@ Deno.test('herramientas: como mucho N borrados por turno en el chat', async () =
   const fake = instalar({
     proveedor: (_b, n) => {
       if (n > 0) return turnoTexto('listo');
-      const ev: unknown[] = [{ type: 'message_start', message: { model: 'claude-sonnet-5', usage: { input_tokens: 1000, output_tokens: 0 } } }];
+      const ev: unknown[] = [{ type: 'message_start', message: { model: 'claude-haiku-5-5', usage: { input_tokens: 1000, output_tokens: 0 } } }];
       llamadas.forEach((c, i) => {
         ev.push({ type: 'content_block_start', index: i, content_block: { type: 'tool_use', id: c.id, name: 'desactivar_mision', input: {} } });
         ev.push({ type: 'content_block_delta', index: i, delta: { type: 'input_json_delta', partial_json: JSON.stringify({ mision_id: c.mision_id, motivo: 'x' }) } });
@@ -164,7 +164,7 @@ Deno.test('plazo: un proveedor colgado se corta y lo consumido viaja en el error
     const enc = new TextEncoder();
     const body = new ReadableStream({
       start(c) {
-        c.enqueue(enc.encode(`data: ${JSON.stringify({ type: 'message_start', message: { model: 'claude-sonnet-5', usage: { input_tokens: 90_000, output_tokens: 0 } } })}\n\n`));
+        c.enqueue(enc.encode(`data: ${JSON.stringify({ type: 'message_start', message: { model: 'claude-haiku-5-5', usage: { input_tokens: 90_000, output_tokens: 0 } } })}\n\n`));
         c.enqueue(enc.encode(`data: ${JSON.stringify({ type: 'content_block_start', index: 0, content_block: { type: 'text', text: '' } })}\n\n`));
         c.enqueue(enc.encode(`data: ${JSON.stringify({ type: 'content_block_delta', index: 0, delta: { type: 'text_delta', text: 'x'.repeat(300) } })}\n\n`));
         // …y se queda colgado.

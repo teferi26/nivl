@@ -44,18 +44,15 @@ describe('archivos de Compras', () => {
 function textosVisibles(): string[] {
   const t: string[] = [];
   for (const m of MOMENTOS) {
-    for (const tier of ['pro', 'elite'] as const) {
+    for (const tier of ['pro'] as const) {
       const c = P.copyUpsell(m, tier);
       t.push(c.eyebrow, c.titulo, c.linea, c.enlace, c.contexto);
     }
   }
-  for (const b of [...P.PRO_BENEFITS, ...P.ELITE_BENEFITS]) t.push(b.title, b.detail);
-  t.push(P.COACH_USAGE_NOTICE, P.ELITE_USAGE_NOTICE);
-  for (const tier of ['pro', 'elite'] as const) {
-    t.push(P.textoPrueba(tier), P.tituloBotonPrueba(tier));
-    const o = P.tierOffer(tier);
-    t.push(o.name, o.label, o.power);
-  }
+  for (const b of P.PRO_BENEFITS) t.push(b.title, b.detail);
+  t.push(P.COACH_USAGE_NOTICE);
+  t.push(P.textoPrueba(), P.tituloBotonPrueba());
+  for (const o of P.TIERS_A_LA_VENTA) t.push(o.name, o.label, o.power);
   const intro = P.textoIntro({ price: 0, priceString: '0 €', cycles: 1, periodUnit: 'DAY', periodNumberOfUnits: 7 }, true)!;
   for (const p of P.PRO_PLANS) {
     t.push(P.tituloPlan(p.id), P.duracionPlan(p.id), P.pitchVisible(p));
@@ -64,10 +61,6 @@ function textosVisibles(): string[] {
     }
   }
   for (const k of PROFILE_KINDS) t.push(P.proEmphasis(k), ...P.proToday(k), ...P.proSampleBrief(k));
-  const base = { ...P.SIN_IA, entitled: true, tier: 'elite' as const, deepAllowed: true };
-  for (const s of [base, { ...base, deepRemaining: 100000, deepTurns: 0 }, { ...base, deepRemaining: 100000, deepTurns: 1 }, { ...base, deepRemaining: 900000, deepTurns: 9 }]) {
-    t.push(P.lineaProfundos(s));
-  }
   for (const plan of ['pro_anual', 'elite_fundador', 'cortesia', 'owner', null, 'desconocido']) t.push(P.planLabel(plan));
   return t;
 }
@@ -86,22 +79,20 @@ describe('textos generados', () => {
     }
   });
 
-  test('la prueba se describe como es: estándar, gratis, una vez, sin renovación y sin modo profundo en Élite', () => {
-    for (const tier of ['pro', 'elite'] as const) {
-      expect(P.textoPrueba(tier)).toMatch(/[Gg]ratis/);
-      expect(P.textoPrueba(tier)).toMatch(/una sola vez por cuenta/);
-      expect(P.textoPrueba(tier)).toMatch(/no se renueva sola|No se renueva sola/);
-      expect(P.textoPrueba(tier)).toMatch(/no se cobra nada/);
+  test('la prueba se describe como es: estándar, gratis, una vez y sin renovación', () => {
+    {
+      expect(P.textoPrueba()).toMatch(/[Gg]ratis/);
+      expect(P.textoPrueba()).toMatch(/una sola vez por cuenta/);
+      expect(P.textoPrueba()).toMatch(/no se renueva sola|No se renueva sola/);
+      expect(P.textoPrueba()).toMatch(/no se cobra nada/);
       // Apple 3.1.1: nada que contraponga la prueba al pago de la tienda.
-      expect(P.textoPrueba(tier)).not.toMatch(/tarjeta|método de pago|fuera de la tienda/i);
+      expect(P.textoPrueba()).not.toMatch(/tarjeta|método de pago|fuera de la tienda/i);
     }
     expect(P.LINEA_PRUEBA).toBe('Prueba el coach 7 días: gratis y sin renovación.');
     expect(P.LINEA_PRUEBA).not.toMatch(/tarjeta/i);
-    expect(P.textoPrueba('pro')).toMatch(/energía limitada/);
-    expect(P.textoPrueba('elite')).toMatch(/de Pro/);
-    expect(P.textoPrueba('elite')).toMatch(/sin modo profundo/);
-    expect(P.tituloBotonPrueba('elite')).toBe('Probar Pro 7 días');
-    expect(P.tituloBotonPrueba('pro')).toBe('Probar el coach 7 días');
+    expect(P.textoPrueba()).toMatch(/energía limitada/);
+    expect(P.textoPrueba()).not.toMatch(/profundo|estándar|Élite/);
+    expect(P.tituloBotonPrueba()).toBe('Probar el coach 7 días');
     // Ninguna oferta introductoria de tienda en 1.0.8: la letra no la menciona sin que la tienda la declare.
     for (const p of P.PRO_PLANS) expect(P.legalText(p.id, '9,99 €')).not.toMatch(/prueba|Oferta de la tienda/);
   });

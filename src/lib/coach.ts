@@ -138,8 +138,6 @@ export type CoachDenyReason =
   | 'sin_suscripcion'
   | 'presupuesto_agotado'
   | 'turno_en_curso'
-  | 'profundo_no_incluido'
-  | 'profundo_agotado'
   /** Tope diario (0078) que mandaría un servidor que aún no lo traduce a `presupuesto_agotado`. */
   | 'ritmo_diario'
   | 'tope_funcion'
@@ -151,16 +149,11 @@ const DENY_REASONS: readonly CoachDenyReason[] = [
   'sin_suscripcion',
   'presupuesto_agotado',
   'turno_en_curso',
-  'profundo_no_incluido',
-  'profundo_agotado',
   'ritmo_diario',
   'tope_funcion',
   'sin_consentimiento',
   'sin_consentimiento_salud',
 ];
-
-/** Potencia del turno (0024): el profundo es solo del Élite y tiene su propio bolsillo. */
-export type CoachMode = 'estandar' | 'profundo';
 
 /**
  * El coach ha rechazado el turno por el candado, no por un fallo. Es una señal
@@ -185,7 +178,7 @@ export function accessNotice(e: CoachAccessError): string {
     case 'sin_consentimiento_salud':
       return 'Revisa el permiso de salud en Perfil antes de continuar con el coach.';
     case 'sin_suscripcion':
-      return 'El coach es parte de NIVL Pro. El resto de NIVL sigue siendo tuyo.';
+      return 'El coach va con tu modo de NIVL. El resto de NIVL sigue siendo tuyo.';
     case 'presupuesto_agotado':
       // El servidor ya trae la fecha de recarga en su mensaje.
       return e.message || 'La energía del coach de este mes se ha agotado. Se recarga el día 1.';
@@ -194,10 +187,6 @@ export function accessNotice(e: CoachAccessError): string {
       return e.message || 'Hoy ya has usado la IA que te corresponde. Mañana vuelve.';
     case 'turno_en_curso':
       return 'El sistema sigue respondiendo a tu mensaje anterior. Dale unos segundos.';
-    case 'profundo_no_incluido':
-      return 'El modo profundo es parte de NIVL Élite. El estándar sigue contigo.';
-    case 'profundo_agotado':
-      return 'Has usado tus turnos profundos de este mes. El modo estándar sigue disponible.';
     case 'sin_consentimiento':
       return 'Antes de usar el coach tienes que aceptar el envío de tus datos al proveedor de IA. Puedes hacerlo en Perfil.';
   }
@@ -268,17 +257,11 @@ export async function streamCoach(opts: {
   threadId?: string;
   /** Fotos en base64. Viajan solo en este turno: no se guardan en el hilo. */
   imagenes?: { media_type: string; data: string }[];
-  /**
-   * Potencia del turno. Viaja en la cabecera `x-nivl-mode`, no en el cuerpo:
-   * el servidor cruza la puerta del candado antes de leer el cuerpo.
-   */
-  mode?: CoachMode;
   onEvent: (e: CoachEvent) => void;
   signal?: AbortSignal;
 }): Promise<void> {
   await requireHealthConsent();
   const headers: Record<string, string> = await authHeaders();
-  if (opts.mode === 'profundo') headers['x-nivl-mode'] = 'profundo';
   const res = await streamingFetch(functionsUrl(), {
     method: 'POST',
     headers,

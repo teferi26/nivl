@@ -4,7 +4,7 @@ import { act, createElement, type ReactElement } from 'react';
 import Pro from '@/app/pro';
 import { vibrar } from '@/design/haptics';
 import { SIN_IA, type AiStatus } from '../proplans';
-import { fetchAiStatus, gestionarSuscripcion } from '../pro';
+import { fetchAiStatus, fetchDerechosModos, gestionarSuscripcion } from '../pro';
 import { fetchSubscription } from '../subscription';
 
 jest.mock('expo-router', () => {
@@ -21,7 +21,9 @@ jest.mock('react-native', () => ({
   View: 'View',
   StyleSheet: { create: (s: unknown) => s },
 }));
-jest.mock('@/components/ProOffer', () => ({ ProOffer: 'ProOffer' }));
+jest.mock('@/components/modos/pago/OfertaModosVista', () => ({ OfertaModosVista: 'OfertaModosVista' }));
+jest.mock('@/components/modos/pago/useOfertaModos', () => ({ useOfertaModos: () => ({}) }));
+jest.mock('@/modos/useDerechos', () => ({ recargarDerechos: jest.fn() }));
 jest.mock('@/components/UsoIa', () => ({ UsoIa: 'UsoIa' }));
 jest.mock('@/components/arena', () => {
   const { createElement: h } = jest.requireActual<typeof import('react')>('react');
@@ -45,6 +47,8 @@ jest.mock('@/lib/validation', () => ({ mensajeSistema: () => 'Sin conexión.' })
 jest.mock('@/lib/pro', () => ({
   ...jest.requireActual('@/lib/proplans'),
   ...jest.requireActual('@/lib/paywallmoment'),
+  ...jest.requireActual('@/lib/planesmodo'),
+  fetchDerechosModos: jest.fn(),
   anotarOferta: jest.fn().mockResolvedValue(undefined),
   fetchAiStatus: jest.fn(),
   gestionarSuscripcion: jest.fn(),
@@ -65,6 +69,9 @@ const { create } = jest.requireActual<{
 
 const estado = jest.mocked(fetchAiStatus);
 const suscripcion = jest.mocked(fetchSubscription);
+const derechos = jest.mocked(fetchDerechosModos);
+const TODOS = { modos: ['iron', 'focus', 'work', 'founder'] as const, todos: true, plan: 'pro_anual', producto: 'nivl_pro_anual', expira: null, trial: false };
+const SOLO_IRON = { ...TODOS, modos: ['iron'] as const, todos: false, plan: 'iron_anual', producto: 'nivl_iron_anual' };
 const PRO_TIENDA: AiStatus = { ...SIN_IA, entitled: true, tier: 'pro', plan: 'pro_anual', budget: 100, spent: 10, remaining: 90 };
 
 let r: ReturnType<typeof create> | null = null;
@@ -81,6 +88,7 @@ const primarios = () => r!.root.findAll((n) => n.type === 'Button' && (n.props.v
 beforeEach(() => {
   jest.clearAllMocks();
   suscripcion.mockResolvedValue({ current_period_end: null, provider: 'apple' } as never);
+  derechos.mockResolvedValue(TODOS);
 });
 afterEach(async () => {
   await act(async () => r?.unmount());
@@ -91,7 +99,7 @@ test('sin poder leer el estado: error con Reintentar y salida, nunca la oferta',
   estado.mockRejectedValueOnce(new Error('network')).mockResolvedValue(PRO_TIENDA);
   await montar();
   expect(texto()).toContain('No se ha podido comprobar tu plan.');
-  expect(r!.root.findAllByType('ProOffer')).toHaveLength(0);
+  expect(r!.root.findAllByType('OfertaModosVista')).toHaveLength(0);
   expect(boton('Volver')).toBeTruthy();
   await act(async () => {
     await boton('Reintentar').props.onPress!();
@@ -104,20 +112,45 @@ test('sin poder leer el estado: error con Reintentar y salida, nunca la oferta',
 test('con el estado leído y sin coach, la oferta se pinta sin error', async () => {
   estado.mockResolvedValue({ ...SIN_IA });
   await montar();
-  expect(r!.root.findAllByType('ProOffer')).toHaveLength(1);
+  expect(r!.root.findAllByType('OfertaModosVista')).toHaveLength(1);
   expect(texto()).not.toContain('No se ha podido comprobar tu plan.');
 });
 
 test('una sola inversión: con la oferta abierta, «Hablar con el coach» pasa a secondary', async () => {
-  estado.mockResolvedValue(PRO_TIENDA);
+  estado.mockResolvedValue({ ...PRO_TIENDA, plan: 'iron_anual' });
+  derechos.mockResolvedValue(SOLO_IRON);
   await montar();
   expect(boton('Hablar con el coach').props.variant).toBe('primary');
   await act(async () => {
-    boton('Ver NIVL Élite').props.onPress!();
+    boton('Ver los cuatro modos').props.onPress!();
   });
-  expect(r!.root.findAllByType('ProOffer')).toHaveLength(1);
+  expect(r!.root.findAllByType('OfertaModosVista')).toHaveLength(1);
   expect(boton('Hablar con el coach').props.variant).toBe('secondary');
   expect(primarios()).toHaveLength(0);
+});
+
+test('Pro antiguo: lo tiene todo, no se le vende nada', async () => {
+  estado.mockResolvedValue(PRO_TIENDA);
+  await montar();
+  expect(r!.root.findAll((n) => n.type === 'Button' && n.props.title === 'Ver los cuatro modos')).toHaveLength(0);
+  expect(r!.root.findAllByType('OfertaModosVista')).toHaveLength(0);
+});
+
+test('sin poder leer los modos, a quien paga no se le vende nada', async () => {
+  estado.mockResolvedValue({ ...PRO_TIENDA, plan: 'iron_anual' });
+  derechos.mockRejectedValue(new Error('network'));
+  await montar();
+  expect(r!.root.findAllByType('OfertaModosVista')).toHaveLength(0);
+});
+
+test('la prueba del anual es de la tienda: avisa del cobro y se puede cancelar', async () => {
+  estado.mockResolvedValue({ ...PRO_TIENDA, plan: 'cortesia', trial: true });
+  derechos.mockResolvedValue({ ...SOLO_IRON, trial: true });
+  await montar();
+  const subtitulo = String(r!.root.findAllByType('EncabezadoArena')[0]!.props.subtitulo);
+  expect(subtitulo).toContain('la tienda cobra tu plan');
+  expect(subtitulo).not.toContain('no se renueva sola');
+  expect(boton('Gestionar o cancelar suscripción')).toBeTruthy();
 });
 
 test('gestionar falla: aviso en línea y vibración de penalización', async () => {

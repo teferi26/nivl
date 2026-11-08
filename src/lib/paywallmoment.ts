@@ -1,4 +1,4 @@
-// NIVL · Cuándo (y cómo) se ofrece Pro o Élite. Decisión D1 de la fase 2
+// NIVL · Cuándo (y cómo) se ofrece NIVL Pro. Decisión D1 de la fase 2
 // (docs/payment-audit/FASE2-PLAN.md): la oferta llega en un momento de valor,
 // nunca encima de una celebración, con topes y con la salida siempre a mano.
 //
@@ -11,10 +11,9 @@
 // - Una hoja como mucho por día natural y dos por 7 días; 72 h sin hoja tras
 //   un «Ahora no». La firma del onboarding, la primera vez, no gasta el tope.
 // - «primer_dia» es hoja una sola vez en la vida.
-// - Los momentos de función (modo profundo, voz, fotos) son una LÍNEA no
+// - Los momentos de función (voz, fotos) son una LÍNEA no
 //   modal: la hoja solo se abre si el usuario la toca.
-// - A Élite/dueño, nada. A un Pro, solo Élite y solo en momentos de función o
-//   con la energía agotada (línea). En prueba, línea. Con la tienda cerrada,
+// - A quien ya paga (Pro, Élite heredado o dueño), nada. En prueba, línea. Con la tienda cerrada,
 //   línea salvo que la cuenta pueda empezar la prueba (es del servidor).
 // - `prueba` solo si la cuenta puede empezarla.
 // - En prueba no se vende lo que ya se tiene: ni la firma, ni el primer día,
@@ -26,7 +25,6 @@
 export type Momento =
   | 'firma'
   | 'primer_dia'
-  | 'coach_profundo'
   | 'voz_premium'
   | 'analisis_foto'
   | 'energia_agotada'
@@ -36,7 +34,6 @@ export type Momento =
 export const MOMENTOS: readonly Momento[] = [
   'firma',
   'primer_dia',
-  'coach_profundo',
   'voz_premium',
   'analisis_foto',
   'energia_agotada',
@@ -49,11 +46,11 @@ export function esMomento(v: unknown): v is Momento {
 }
 
 /** Momentos ligados a una función concreta: siempre línea, nunca modal. */
-const MOMENTOS_FUNCION: readonly Momento[] = ['coach_profundo', 'voz_premium', 'analisis_foto'];
+const MOMENTOS_FUNCION: readonly Momento[] = ['voz_premium', 'analisis_foto'];
 
 export type RespuestaOferta = 'cerrada' | 'compra' | 'prueba' | 'vista';
 export type FormaOferta = 'hoja' | 'linea';
-export type TierOferta = 'pro' | 'elite';
+export type TierOferta = 'pro';
 
 export interface EntradaOferta {
   momento: Momento;
@@ -134,13 +131,10 @@ function nivelEfectivo(ctx: ContextoOferta): 'free' | 'trial' | 'pro' | 'top' {
 const TIER_SIN_PAGO: Record<Momento, TierOferta> = {
   firma: 'pro',
   primer_dia: 'pro',
-  // El modo profundo es solo Élite.
-  coach_profundo: 'elite',
   // La voz (en el dispositivo, coste 0) va con el coach: se ofrece Pro y a
   // quien ya tiene coach no se le vende nada por ella.
   voz_premium: 'pro',
-  // Las fotos al coach solo las ve Élite (Pro y la prueba, sin visión).
-  analisis_foto: 'elite',
+  analisis_foto: 'pro',
   energia_agotada: 'pro',
   // La pantalla del coach sin acceso: lo que antes era «Ver NIVL Pro».
   coach_cerrado: 'pro',
@@ -183,7 +177,7 @@ export function decidirOferta(momento: Momento, ctx: ContextoOferta): DecisionOf
   const historial = recortarHistorial(ctx.historial, ctx.ahora);
 
   if (ctx.celebrando) return decision(momento, TIER_SIN_PAGO[momento], { razon: 'celebrando' });
-  if (nivel === 'top') return decision(momento, 'elite', { razon: 'ya_elite' });
+  if (nivel === 'top') return decision(momento, 'pro', { razon: 'ya_elite' });
 
   // Coach cerrado: solo existe para quien no tiene coach. Es la propia pantalla
   // que el usuario ha abierto, así que no gasta topes ni respeta la espera de
@@ -193,14 +187,8 @@ export function decidirOferta(momento: Momento, ctx: ContextoOferta): DecisionOf
     return decision(momento, 'pro', { mostrar: true, forma: 'linea', prueba: ctx.trialAvailable, razon: 'coach_cerrado' });
   }
 
-  if (nivel === 'pro') {
-    if (ctx.mejorable === false) return decision(momento, 'elite', { razon: 'no_mejorable' });
-    // La voz va con el coach: a quien ya lo tiene no se le vende por ella.
-    if (momento === 'voz_premium') return decision(momento, 'elite', { razon: 'voz_incluida' });
-    const funcion = MOMENTOS_FUNCION.includes(momento) || momento === 'energia_agotada';
-    if (!funcion) return decision(momento, 'elite', { razon: 'pro_sin_momento' });
-    return decision(momento, 'elite', { mostrar: true, forma: 'linea', razon: 'pro_a_elite' });
-  }
+  // Ya no hay plan superior que ofrecer a quien paga Pro.
+  if (nivel === 'pro') return decision(momento, 'pro', { razon: 'ya_pro' });
 
   const tier = TIER_SIN_PAGO[momento];
   if (nivel === 'trial' && (INCLUIDO_EN_PRUEBA.includes(momento) || momento === 'fin_prueba')) {

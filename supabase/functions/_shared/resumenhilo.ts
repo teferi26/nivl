@@ -2,7 +2,7 @@
 //
 // El hilo es continuo, pero a la API solo viajan los últimos mensajes. Todo lo
 // anterior se perdía. Con esto, cuando se acumulan MIN_NUEVOS mensajes sin
-// resumir, Haiku (CHEAP_MODEL: leer y transformar, no decidir) compacta el
+// resumir, el modelo (leer y transformar, no decidir) compacta el
 // resumen previo + esos mensajes en ≤ TOPE_RESUMEN caracteres y lo guarda en
 // coach_threads.summary / summary_until (0047). En la ruta completa, el resumen
 // sustituye a los mensajes anteriores a summary_until y los posteriores siguen
@@ -29,7 +29,7 @@
 //     concurrencia optimista sobre summary_until: si otro turno resumió antes,
 //     esta escritura no pisa nada.
 
-import { callClaude, CHEAP_MODEL, costMicroUsd, LlamadaFallida, type Cartera, type Turn, type Usage } from './anthropic.ts';
+import { callClaude, COACH_MODEL, costMicroUsd, LlamadaFallida, type Cartera, type Turn, type Usage } from './anthropic.ts';
 import { consentimientoIa } from './consent.ts';
 import type { Db } from './db.ts';
 import { healthConsent, healthGuardedResult } from './health.ts';
@@ -206,24 +206,24 @@ export async function resumirHilo(a: ArgsResumen): Promise<ResultadoResumen> {
 
     let turn: Turn;
     let usage: Usage = {};
-    let model = CHEAP_MODEL;
+    let model = COACH_MODEL;
     try {
-      // Sin effort ni thinking para Haiku 4.5: callClaude ya no los manda
-      // (admitePensamientoAdaptativo).
       turn = await healthGuardedResult(sb, userId, () =>
         callClaude({
-          model: CHEAP_MODEL,
+          model: COACH_MODEL,
           system: [{ type: 'text', text: SISTEMA_RESUMEN }],
           messages: [{ role: 'user', content: [{ type: 'text', text: entradaDelResumen(previo.summary, sel.compactar) }] }],
-          maxTokens: 900,
+          // El pensamiento cuenta dentro del techo.
+          maxTokens: 2500,
+          effort: 'low',
           signal: AbortSignal.timeout(45_000),
           cartera: a.cartera,
         })
       );
       usage = turn.usage;
-      model = turn.model || CHEAP_MODEL;
+      model = turn.model || COACH_MODEL;
     } catch (e) {
-      if (e instanceof LlamadaFallida) await apuntarCoste(a, e.usage, e.model || CHEAP_MODEL, true);
+      if (e instanceof LlamadaFallida) await apuntarCoste(a, e.usage, e.model || COACH_MODEL, true);
       console.warn('resumen del hilo: la llamada falló');
       return 'fallo';
     }

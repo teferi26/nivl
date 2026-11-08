@@ -15,8 +15,8 @@ Deno.test('paginasPdf: árbol, objetos, sin contar y no PDF', () => {
 });
 
 Deno.test('costeMaximo: el tope corta antes de llamar', () => {
-  assert(costeMaximo('claude-haiku-4-5', 60_000, 8000) <= MAX_COSTE_PDF_MICRO_USD);
-  assert(costeMaximo('claude-haiku-4-5', 200_000, 8000) > MAX_COSTE_PDF_MICRO_USD);
+  assert(costeMaximo('claude-haiku-5-5', 60_000, 8000) <= MAX_COSTE_PDF_MICRO_USD);
+  assert(costeMaximo('claude-haiku-5-5', 200_000, 8000) > MAX_COSTE_PDF_MICRO_USD);
 });
 
 Deno.test('leerCuerpo corta sin content-length', async () => {
@@ -36,7 +36,7 @@ Deno.test('cerrarBrief: sin guiones y siempre con el aviso', () => {
   assert(t.endsWith('Esto no es asesoramiento financiero.'));
 });
 
-function deps(over: Partial<Deps> = {}): { deps: Deps; llamadas: string[] } {
+function deps(over: Partial<Deps> = {}, modos: string[] = ['work']): { deps: Deps; llamadas: string[] } {
   const llamadas: string[] = [];
   const consulta = {
     select: () => consulta,
@@ -52,6 +52,7 @@ function deps(over: Partial<Deps> = {}): { deps: Deps; llamadas: string[] } {
     rpc: (n: string) => {
       llamadas.push(n);
       if (n === 'ai_consent_ok') return Promise.resolve({ data: true, error: null });
+      if (n === 'ai_modos') return Promise.resolve({ data: modos, error: null });
       return Promise.resolve({ data: { allowed: true }, error: null });
     },
     from: () => consulta,
@@ -63,7 +64,7 @@ function deps(over: Partial<Deps> = {}): { deps: Deps; llamadas: string[] } {
       userClient: () => ({ from: () => consulta }) as unknown as Db,
       llamarModelo: () => {
         llamadas.push('modelo');
-        return Promise.resolve({ content: [{ type: 'text', text: '2026-10-02|-45,20|MERCADONA' }], stopReason: 'end_turn', usage: {}, model: 'claude-haiku-4-5' });
+        return Promise.resolve({ content: [{ type: 'text', text: '2026-10-02|-45,20|MERCADONA' }], stopReason: 'end_turn', usage: {}, model: 'claude-haiku-5-5' });
       },
       contarFichas: () => Promise.resolve(1000),
       leerPdf: () =>
@@ -78,6 +79,14 @@ function deps(over: Partial<Deps> = {}): { deps: Deps; llamadas: string[] } {
 
 const peticion = (cuerpo: unknown) =>
   new Request('http://x', { method: 'POST', headers: { authorization: 'Bearer t' }, body: JSON.stringify(cuerpo) });
+
+Deno.test('sin WORK ni FOUNDER: el mismo 402, sin tomar turno', async () => {
+  const { deps: d, llamadas } = deps({}, ['iron']);
+  const r = await crearHandler(d)(peticion({ accion: 'extracto', tipo: 'pdf', contenido: pdf('pequeño'), cuenta: 'X' }));
+  assertEquals(r.status, 402);
+  assertEquals((await r.json()).reason, 'sin_suscripcion');
+  assertEquals(llamadas.includes('ai_begin_turn'), false);
+});
 
 Deno.test('el CSV no se acepta en el servidor', async () => {
   const { deps: d, llamadas } = deps();
@@ -121,7 +130,7 @@ Deno.test('a la IA llega el texto con el IBAN enmascarado, nunca el PDF', async 
   const { deps: d } = deps({
     llamarModelo: (o) => {
       enviado = JSON.stringify(o.messages);
-      return Promise.resolve({ content: [{ type: 'text', text: '2026-10-02|-45,20|MERCADONA' }], stopReason: 'end_turn', usage: {}, model: 'claude-haiku-4-5' });
+      return Promise.resolve({ content: [{ type: 'text', text: '2026-10-02|-45,20|MERCADONA' }], stopReason: 'end_turn', usage: {}, model: 'claude-haiku-5-5' });
     },
   });
   const r = await crearHandler(d)(peticion({ accion: 'extracto', tipo: 'pdf', contenido: pdf('pequeño'), cuenta: 'X' }));

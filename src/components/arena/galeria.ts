@@ -33,6 +33,7 @@ export type IdPantalla =
   | 'memoria'
   | 'economia'
   | 'creador'
+  | 'pago'
   | 'moderacion'
   | 'metricas'
   // Modos F1 (solo con modos_activos encendido en la app).
@@ -90,6 +91,7 @@ export const PANTALLAS_DEMO: { id: IdPantalla; titulo: string }[] = [
   { id: 'memoria', titulo: 'Memoria' },
   { id: 'economia', titulo: 'Economía' },
   { id: 'creador', titulo: 'Creador' },
+  { id: 'pago', titulo: 'Pago por modos' },
   { id: 'moderacion', titulo: 'Moderación' },
   { id: 'metricas', titulo: 'Métricas' },
   { id: 'modos', titulo: 'Modos' },

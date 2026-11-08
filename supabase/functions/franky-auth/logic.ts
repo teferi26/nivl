@@ -1,7 +1,7 @@
 // NIVL · franky-auth: la parte pura del puente (sin red, sin Deno.env).
 //
-// Vive aparte para poder probarla con Jest desde src/lib/__tests__ (igual que
-// _shared/routing.ts). Nada de imports: el empaquetado de la Edge Function y el
+// Vive aparte para poder probarla con Jest desde src/lib/__tests__. Nada de
+// imports: el empaquetado de la Edge Function y el
 // de Jest tienen que poder cargarla tal cual.
 
 export type Action = 'login' | 'register';

@@ -1,7 +1,6 @@
 {
   "potencia": {
-    "pro": "El coach en potencia estándar.",
-    "elite": "El coach a máxima potencia, con modo profundo."
+    "pro": "El coach completo."
   },
   "beneficio": {
     "brief": {
@@ -31,26 +30,6 @@
     "chat": {
       "titulo": "Control total por chat",
       "detalle": "Díselo y lo hace: misiones, agenda, normas, metas."
-    },
-    "potencia": {
-      "titulo": "Máxima potencia",
-      "detalle": "Un modelo de primera línea en cada brief, plan, revisión y conversación."
-    },
-    "profundo": {
-      "titulo": "Modo profundo",
-      "detalle": "Para lo que pide pensarlo a fondo: el coach se toma su tiempo y responde con más detalle."
-    },
-    "revisionFondo": {
-      "titulo": "Revisión semanal a fondo",
-      "detalle": "Tu semana medida por el modelo de primera línea, pensando a fondo."
-    },
-    "ludus": {
-      "titulo": "Solicita plaza en un ludus (5-8)",
-      "detalle": "Un grupo de 5 a 8 gladiadores Élite con tu objetivo y marcador propio. La asignación es manual, según disponibilidad."
-    },
-    "laurel": {
-      "titulo": "Insignia de laurel",
-      "detalle": "El laurel dorado junto a tu nombre. Estatus, no puntos: no cambia ningún ranking."
     }
   },
   "firma": {
@@ -60,13 +39,6 @@
       "linea": "Tu juramento está sellado. El coach puede dirigir tu día desde mañana.",
       "enlace": "Ver NIVL Pro",
       "contexto": "Tu juramento está sellado. NIVL sigue gratis entera; Pro añade el coach que lo dirige."
-    },
-    "elite": {
-      "eyebrow": "Juramento sellado",
-      "titulo": "El coach a máxima potencia.",
-      "linea": "Tu juramento está sellado. Élite es el coach a máxima potencia.",
-      "enlace": "Ver NIVL Élite",
-      "contexto": "Tu juramento está sellado. NIVL sigue gratis entera; Élite añade el coach a máxima potencia."
     }
   }
 }

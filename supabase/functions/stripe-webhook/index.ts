@@ -31,6 +31,7 @@ function deps() {
         id: sub.id, status: sub.status,
         customer: typeof sub.customer === 'string' ? sub.customer : sub.customer?.id ?? null,
         current_period_end: typeof sub.current_period_end === 'number' ? sub.current_period_end : null,
+        lookup_key: sub.items?.data?.[0]?.price?.lookup_key ?? null,
       };
     },
     repo: supabaseStripeRepo(adminClient()),

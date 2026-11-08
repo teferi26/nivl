@@ -3,22 +3,15 @@
 
 import { FiltroGuiones, sanearPeticion, sinGuiones, sinGuionesProfundo } from './singuiones.ts';
 
-// Sonnet 5 es el coach. La decisión es de coste medido, no de gusto: con Opus
-// el turno salía a 0,42 $ en frío, que para el uso real que se le va a dar son
-// del orden de 150 €/mes. La tarea de coach no lo necesita — es leer un estudio
-// ya calculado, aplicar una doctrina escrita y llamar a la herramienta correcta,
-// y en eso Sonnet no se despeña. La aritmética fina, que es donde un modelo
-// mediano sí patina, no la hace él: sale de analytics.ts y finance.ts.
-//
-// Haiku se descartó a propósito para el coach: con veinte herramientas y 50.000
-// tokens de contexto es donde empiezan a elegirse herramientas equivocadas y a
-// inventarse cifras, y aquí eso se traduce en cargas de gimnasio y dinero.
-export const COACH_MODEL = 'claude-sonnet-5';
-// Haiku sí para lo mecánico (destilar la memoria importada, resumir): mismo
-// trabajo por una fracción del coste.
-export const CHEAP_MODEL = 'claude-haiku-4-5';
+// Un solo modelo para toda la IA de NIVL (decisión del dueño, 8-nov-2026): chat,
+// rituales, revisiones, estudio, clasificación, Oráculo, visión y prueba. No hay
+// selector, ni rutas por plan, ni secreto que lo cambie. Lo que abarata lo
+// mecánico ya no es otro modelo: es sacarlo antes de `buildContext` y pedirle
+// menos esfuerzo (`effort`).
+export const COACH_MODEL = 'claude-haiku-5-5';
 
-export type Effort = 'low' | 'medium' | 'high' | 'xhigh' | 'max';
+// xhigh y max no se usan: en Haiku 5.5 alargan mucho y a veces cierran el turno sin texto.
+export type Effort = 'low' | 'medium' | 'high';
 
 export interface ContentBlock {
   type: string;
@@ -76,18 +69,17 @@ export interface Turn {
 // Dólares por millón de tokens. Como el coste se guarda en millonésimas de
 // dólar, tokens × tarifa da directamente el valor.
 //
-// La escritura de caché es ×1,25 y la lectura ×0,1 sobre la tarifa de entrada,
-// así que basta con guardar entrada y salida. Un modelo desconocido se cobra
-// como Opus a propósito: si algún día la API responde con otro por el
-// mecanismo de reserva, más vale que el freno de gasto peque de caro.
-const PRICE_PER_MTOK: Record<string, { in: number; out: number }> = {
-  'claude-opus-5': { in: 5, out: 25 },
-  'claude-sonnet-5': { in: 2, out: 10 },
-  'claude-haiku-4-5': { in: 1, out: 5 },
+// La escritura de caché es ×1,25 (5 min) o ×2 (1 h) y la lectura ×0,1 sobre la
+// tarifa de entrada, así que basta con guardar entrada y salida.
+//
+// `largo`: Haiku 5.5 tiene dos tarifas según el tamaño del prompt, contando en él
+// la caché leída y escrita. Hasta 100.000 fichas, la barata; por encima, TODA la
+// petición (entrada, caché y salida) a la cara, que es 5 veces más.
+interface Tarifa { in: number; out: number }
+const PRICE_PER_MTOK: Record<string, Tarifa & { largo?: Tarifa }> = {
+  'claude-haiku-5-5': { in: 0.1, out: 0.5, largo: { in: 0.5, out: 2.5 } },
   // Proveedores compatibles con OpenAI. Las tarifas son las publicadas y hay
-  // que revisarlas: cambian más a menudo que las de Anthropic. Si el modelo no
-  // aparece aquí, se cobra como Opus a propósito, para que el freno de gasto
-  // peque de caro en vez de dejar pasar una fuga.
+  // que revisarlas: cambian más a menudo que las de Anthropic.
   // DeepSeek cobra distinto en hora punta (01-04 y 06-10 UTC) que fuera de
   // ella, casi el doble. Aqui va SIEMPRE la tarifa de punta: el freno de gasto
   // tiene que pecar de caro, no llevarse la sorpresa. Fuera de punta lo real
@@ -111,19 +103,36 @@ const PRICE_PER_MTOK: Record<string, { in: number; out: number }> = {
   'kimi-k2': { in: 0.6, out: 2.5 },
 };
 
+/** Por encima de estas fichas de prompt, Haiku 5.5 cobra la petición entera 5 veces más. */
+export const UMBRAL_TRAMO_LARGO = 100_000;
 /**
- * La tarifa de un modelo. La API responde a veces con el id fechado
- * (`claude-haiku-4-5-20251001`, comprobado en producción el 2026-10-02): sin
- * quitar la fecha caía en la tarifa de Opus y un turno de Haiku de 0,0075 $ se
- * apuntaba (y descontaba del candado) como 0,0373 $, cinco veces más.
+ * Hasta aquí se deja crecer un prompt del coach: queda margen para que el error de una estimación o lo
+ * que añada la API no lo saque del tramo barato.
  */
-export function tarifa(model: string): { in: number; out: number } {
+export const TECHO_PROMPT = 90_000;
+/** Un modelo desconocido se cobra caro a propósito (tarifa de Opus): el freno de gasto debe pecar de caro. */
+const TARIFA_DESCONOCIDA: Tarifa = { in: 5, out: 25 };
+
+/**
+ * La tarifa de un modelo para un prompt de `fichasPrompt` fichas. La API responde
+ * a veces con el id fechado (comprobado en producción el 2026-10-02 con Haiku
+ * 4.5): sin quitar la fecha caería en la tarifa de un desconocido.
+ */
+export function tarifa(model: string, fichasPrompt = 0): Tarifa {
   const id = model.trim().toLowerCase();
-  return PRICE_PER_MTOK[id] ?? PRICE_PER_MTOK[id.replace(/-\d{8}$/, '')] ?? PRICE_PER_MTOK['claude-opus-5'];
+  const p = PRICE_PER_MTOK[id] ?? PRICE_PER_MTOK[id.replace(/-\d{8}$/, '')];
+  if (!p) return TARIFA_DESCONOCIDA;
+  return p.largo && fichasPrompt > UMBRAL_TRAMO_LARGO ? p.largo : { in: p.in, out: p.out };
 }
 
+/** El tamaño del prompt que decide el tramo: entrada, caché leída y caché escrita. */
+export function fichasDelPrompt(u: Usage): number {
+  return (u.input_tokens ?? 0) + (u.cache_read_input_tokens ?? 0) + (u.cache_creation_input_tokens ?? 0);
+}
+
+/** El coste de UNA llamada. No sumes usos antes de llamar aquí: el tramo es por petición. */
 export function costMicroUsd(model: string, u: Usage): number {
-  const p = tarifa(model);
+  const p = tarifa(model, fichasDelPrompt(u));
   const cacheRead = (u.cache_read_input_tokens ?? 0) * p.in * 0.1;
   // La escritura de 1 h (2×) llega aparte en `cache_creation`; el resto del
   // total es de 5 min (1,25×). Sin desglose, todo es de 5 min, como antes.
@@ -239,56 +248,6 @@ export interface CallOptions {
   cartera: Cartera;
 }
 
-const BETAS = [
-  // Deja que la API reintente en otro modelo si un clasificador declina la
-  // petición, en vez de devolver un turno vacío.
-  'server-side-fallback-2026-07-01',
-];
-
-/**
- * El mecanismo de reserva es solo de la familia Opus: pedirlo con Sonnet o con
- * Haiku devuelve un 400 seco ("does not support the `fallbacks` parameter") y
- * tumba la llamada entera.
- *
- * Se comprueba por modelo y no por bandera de configuración a propósito: el
- * modelo se puede cambiar desde los secretos del panel sin desplegar, así que
- * una constante aquí se quedaría desfasada sin que nadie se entere y el coach
- * dejaría de responder.
- */
-function admiteReserva(model: string): boolean {
-  return model.startsWith('claude-opus');
-}
-
-/**
- * Pensamiento adaptativo y `output_config.effort`: solo modelos 4.6 en
- * adelante. Haiku 4.5 responde 400 a los dos (guía de la API, 2026-10-02):
- * con él no se manda ninguno de los dos y responde sin pensamiento extendido.
- * Rompía la ruta de registro (L3) y, en silencio, clasificar y el titular.
- */
-export function admitePensamientoAdaptativo(model: string): boolean {
-  return !/^claude-haiku-4-5/.test(model.trim().toLowerCase());
-}
-
-/**
- * Las credenciales de la API compatible con OpenAI — DeepSeek, Gemini por su
- * capa compatible, Qwen, Kimi, Groq o la propia OpenAI —, si están puestas
- * (COACH_BASE_URL y COACH_API_KEY en los secretos del panel).
- *
- * Ya NO es "el proveedor global": desde la 0024 el proveedor de cada turno
- * sale del nombre del modelo (`_shared/routing.ts → proveedorDe`). Un modelo
- * `claude-*` va siempre a Anthropic; cualquier otro va por aquí. Así el Pro
- * (DeepSeek) y el Élite (Anthropic) conviven en la misma función. Sin estos
- * secrets, un modelo que no es de Claude cae a COACH_MODEL con un aviso.
- */
-export function proveedorCompatible(): { baseUrl: string; apiKey: string } | null {
-  const baseUrl = Deno.env.get('COACH_BASE_URL')?.trim();
-  const apiKey = Deno.env.get('COACH_API_KEY')?.trim();
-  // Los dos o ninguno: con la URL sin la clave, cada turno fallaría con un 401
-  // y sería un misterio. Mejor seguir con Anthropic.
-  if (!baseUrl || !apiKey) return null;
-  return { baseUrl, apiKey };
-}
-
 /**
  * Un turno del modelo, en streaming. Devuelve los bloques de contenido
  * completos (texto, pensamiento y llamadas a herramientas) listos para
@@ -303,21 +262,17 @@ async function callClaudeCrudo(opts: CallOptions): Promise<Turn> {
     headers: {
       'x-api-key': Deno.env.get('ANTHROPIC_API_KEY') ?? '',
       'anthropic-version': '2023-06-01',
-      'anthropic-beta': BETAS.join(','),
       'content-type': 'application/json',
     },
     body: JSON.stringify({
       model,
       max_tokens: opts.maxTokens ?? 16000,
-      // El pensamiento va en adaptativo (por defecto en Opus 5) y resumido
-      // para poder mostrar "el sistema está pensando" en la app.
-      ...(admitePensamientoAdaptativo(model)
-        ? {
-            thinking: { type: 'adaptive', display: 'summarized' },
-            output_config: { effort: opts.effort ?? 'high' },
-          }
-        : {}),
-      ...(admiteReserva(model) ? { fallbacks: 'default' } : {}),
+      // Pensamiento adaptativo y resumido, para poder mostrar "el sistema está
+      // pensando". Cuenta dentro de max_tokens: los techos tienen que dar para
+      // pensar y además responder. Haiku 5.5 no tiene reserva en servidor (nada
+      // de `fallbacks`): el rechazo lo atiende quien llama (RefusalError).
+      thinking: { type: 'adaptive', display: 'summarized' },
+      output_config: { effort: opts.effort ?? 'medium' },
       system: opts.system,
       messages: opts.messages,
       ...(opts.tools?.length
@@ -495,6 +450,7 @@ export async function callClaude(opts: CallOptions): Promise<Turn> {
 //   · Toda la entrada al precio de ESCRITURA de caché (1,25×; 2× si algún punto es de 1 h): lo más caro
 //     que puede costar una ficha de entrada.
 //   · Salida: max_tokens (el pensamiento cuenta dentro) a la tarifa de salida.
+//   · Tramo: con una cota de más de 100.000 fichas, todo a la tarifa cara de Haiku 5.5.
 // La cota sale varias veces por encima del coste real de un mensaje; lo que sobra se libera al liquidar
 // (docs/IA_TOPE.md).
 
@@ -524,9 +480,38 @@ export function fichasMaximas(carga: unknown): number {
   return new TextEncoder().encode(json).length + imagenes * FICHAS_POR_IMAGEN + MARGEN_FICHAS;
 }
 
+/** Fichas PROBABLES de una carga, a la alta (~2,5 bytes por ficha; imágenes por su tamaño medio). */
+export function fichasEstimadas(carga: unknown): number {
+  let imagenes = 0;
+  const json = JSON.stringify(carga, (_k, v) => {
+    if (v && typeof v === 'object' && !Array.isArray(v) && (v as { type?: unknown }).type === 'image') {
+      imagenes++;
+      return { type: 'image' };
+    }
+    return v;
+  }) ?? '';
+  return Math.ceil(new TextEncoder().encode(json).length / 2.5) + imagenes * 1600 + MARGEN_FICHAS;
+}
+
+/**
+ * El historial que cabe bajo TECHO_PROMPT junto a lo fijo (`resto`). Se tiran los mensajes más viejos: la
+ * memoria larga vive en el dossier y en el resumen. Siempre empieza por un mensaje del usuario.
+ */
+export function historialEnTramo(previos: ApiMessage[], resto: unknown): ApiMessage[] {
+  const fijo = fichasEstimadas(resto);
+  let out = previos;
+  while (out.length && fijo + fichasEstimadas(out) > TECHO_PROMPT) {
+    out = out.slice(1);
+    while (out.length && out[0].role !== 'user') out = out.slice(1);
+  }
+  return out;
+}
+
 /** Cota en microdólares: entrada al precio de escritura de caché más la salida máxima. */
 export function costeMaximo(model: string, fichasEntrada: number, maxSalida: number, factorEscritura = 1.25): number {
-  const p = tarifa(model);
+  // Si la cota de fichas cabe en el tramo barato, el prompt real también (fichas reales <= cota); si no,
+  // se reserva al tramo caro, entrada y salida. Lo que sobre se libera al liquidar.
+  const p = tarifa(model, fichasEntrada);
   return Math.ceil(fichasEntrada * p.in * factorEscritura + Math.max(0, maxSalida) * p.out);
 }
 
