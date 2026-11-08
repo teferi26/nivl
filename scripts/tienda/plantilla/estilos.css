@@ -1,0 +1,99 @@
+/* Diseño comercial de NIVL. Colores y tipos: plantilla/tema.mjs (variables en :root).
+   Los números los pone maquetas.mjs como variables en <body>. */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { background: var(--colorFondo); }
+body {
+  position: relative;
+  width: var(--W);
+  height: var(--H);
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: geometricPrecision;
+  font-kerning: normal;
+}
+.arcos { position: absolute; inset: 0; width: var(--W); height: var(--H); }
+.arcos path { fill: none; stroke: var(--colorArcos); stroke-width: var(--arco); }
+
+.cabecera {
+  position: absolute;
+  top: var(--padTop);
+  left: var(--margen);
+  width: calc(var(--W) - 2 * var(--margen));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+.marca {
+  font-family: var(--marcaFamilia);
+  font-weight: var(--marcaPeso);
+  font-size: var(--marcaFs);
+  line-height: 1;
+  letter-spacing: var(--marcaTracking);
+  padding-left: var(--marcaTracking); /* el tracking deja aire a la derecha: se compensa */
+  color: var(--colorMarca);
+}
+.titulo {
+  margin-top: var(--marcaGap);
+  font-family: var(--titularFamilia);
+  font-weight: var(--titularPeso);
+  font-size: var(--tituloFs);
+  line-height: var(--tituloLh);
+  letter-spacing: var(--titularTracking);
+  color: var(--colorTitular);
+}
+.sub {
+  margin-top: var(--subGap);
+  font-family: var(--subtituloFamilia);
+  font-weight: var(--subtituloPeso);
+  letter-spacing: var(--subtituloTracking);
+  font-size: var(--subFs);
+  line-height: var(--subLh);
+  color: var(--colorSubtitulo);
+}
+.linea { display: block; width: max-content; margin-inline: auto; white-space: nowrap; }
+.meandro { margin-top: var(--meandroGap); display: block; }
+.meandro path { fill: none; stroke: var(--colorMeandro); stroke-linecap: square; }
+
+.marco {
+  position: absolute;
+  top: var(--marcoTop);
+  left: var(--marcoIzq);
+  width: var(--marcoAncho);
+  height: var(--marcoAlto);
+  padding: var(--bisel) var(--bisel) 0;
+  background: var(--colorFondo);
+  border: var(--trazo) solid var(--colorMarcoExterior);
+  border-bottom: 0;
+  border-radius: var(--radio) var(--radio) 0 0;
+}
+.pantalla {
+  width: 100%;
+  height: var(--pantallaAlto);
+  overflow: hidden;
+  background: var(--colorFondo);
+  border: var(--trazo) solid var(--colorMarcoInterior); /* segundo filo del bisel */
+  border-bottom: 0;
+  border-radius: var(--radioInterior) var(--radioInterior) 0 0;
+}
+.marco-pantalla .pantalla { border: 0; }
+.pantalla img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+}
+
+/* Apaisado estrecho (tarjeta social y web con captura vertical). */
+.dividida .cabecera {
+  top: 0;
+  height: var(--H);
+  width: var(--cabeceraAncho);
+  justify-content: center;
+  align-items: flex-start;
+  text-align: left;
+}
+.dividida .marca { padding-left: 0; }
+.dividida .linea { margin-inline: 0; }
+.dividida .pantalla img { object-position: top left; } /* lo que se corta es la derecha */

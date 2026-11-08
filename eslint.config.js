@@ -7,7 +7,7 @@ module.exports = defineConfig([
   {
     // dist*/: exports; .expo/: tipos generados; supabase/functions: Deno (lo
     // validan `deno check` y `deno test`, no las reglas de Node/React Native).
-    ignores: ["dist/*", "dist-creadores/*", ".expo/*", "supabase/functions/**"],
+    ignores: ["dist/*", "dist-creadores/*", ".expo/*", ".tienda/**", "supabase/functions/**"],
   },
   // Scripts de Node: Buffer, process y demás globales de Node.
   {

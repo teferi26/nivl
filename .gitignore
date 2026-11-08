@@ -70,3 +70,6 @@ privado/
 scripts/*.local.*
 dist-creadores/
 dist-web/
+
+# Salida y caché de scripts/tienda (capturas y vídeos de tienda)
+.tienda/
