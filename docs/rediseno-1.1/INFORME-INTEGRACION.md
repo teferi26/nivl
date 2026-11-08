@@ -4,11 +4,11 @@ Rama `claude/integracion-1-1-90cd1f`. Nada está subido, aplicado ni desplegado.
 
 ## Qué está integrado
 
-UIScene (Xcode 27), cobro por modos con Haiku 5.5, pausa del coach, primer uso, adaptativo web, WORK, IRON, Watch, FOCUS y gafas Meta. Sin fusionar: **TV** (`claude/tv-datos-reales-a490b3`), que sigue en obras; sus migraciones 0125 a 0128 pueden cambiar.
+Todo: UIScene (Xcode 27), cobro por modos con Haiku 5.5 y comisión de creadores sobre beneficio (0141, 0142), pausa del coach, primer uso, adaptativo web, WORK, IRON, Watch, FOCUS, gafas Meta, capturas y vídeo de tienda, y TV (1b35bea). Nada queda sin fusionar.
 
 ## Migraciones pendientes, por orden
 
-0105, 0106, 0107, 0108, 0109 (IRON) · 0110, 0111 (Watch, renumeradas: antes 0100 y 0101) · 0112 (FOCUS) · 0115 a 0118 (WORK) · 0135 (pausa) · 0136 (un solo modelo) · 0140 (cobro) · **0113 (FOCUS), al final y solo después de que la OTA esté adoptada**.
+0105 a 0109 (IRON) · 0110, 0111 (Watch, renumeradas: antes 0100 y 0101) · 0112 (FOCUS) · 0115 a 0118 (WORK) · 0125 a 0128 (TV) · 0135 (pausa) · 0136 (un solo modelo) · 0140 (cobro) · 0141, 0142 (comisión de creadores) · **0113 (FOCUS), al final y solo después de que la OTA esté adoptada**.
 
 ```bash
 node scripts/apply-migrations.mjs --hasta=0112
@@ -18,6 +18,8 @@ Dos arreglos sobre migraciones sin aplicar:
 
 - La 0108 reescribe `export_my_data` y el borrado de salud: las de Watch van después para no perder `salud_diaria`.
 - La 0113 y la 0117 reescribían `link` y `health_row` con listas fijas: ahora valen en cualquier orden y conservan `trabajo` y `estudio`.
+
+TV: para que alguien enlace una tele hay que aplicar sus migraciones y copiar `tv/integracion/confirmar-tv.tsx.plantilla` a `src/app/tv/[codigo].tsx`, y antes hacer los dos requisitos de `tv/integracion/INSTRUCCIONES.md` (Televisores enlazados en Perfil y aviso a la cuenta). Sin esa ruta la TV no se enlaza; la app de iOS no cambia.
 
 **Decisión del dueño antes de aplicar:** la 0111 obliga a todas las personas a volver a aceptar el permiso de salud.
 
@@ -29,11 +31,20 @@ Migraciones → funciones (`coach`, `prevision`, `ritual`, `revenuecat-webhook`)
 
 ## Verificación
 
-`npm run typecheck`, `npm test` (6562), `npm run lint` (0 errores), `npx expo export --platform ios` y `deno check` de `coach`, `prevision` y `ritual`.
+`npm run typecheck`, `npm test` (6571), `npm run lint` (0 errores), `npx expo export --platform ios` y `deno check` de `coach`, `prevision` y `ritual`.
 
-Capturas fuera del repo, en la carpeta de notas de la sesión (`capturas-onix/`, a 390 y 1440 px), con datos de demo. Los pasos con sesión del onboarding se recorrieron de verdad contra un servidor falso local.
+**Binario Debug de verdad en simulador iOS 27.2 (Xcode 27.2), contra un servidor falso local.** Qué ha corrido contra ese servidor falso, no contra Supabase: autenticación, perfiles, misiones, permisos de salud e IA, derechos de modos, firma, pausa y el coach (respuesta fija, sin modelo). Lo verificado en iPhone:
 
-**No verificado:** simulador iOS, dispositivo real, Supabase real, compra real, correo real, VoiceOver y la entrega Watch a iPhone (exige reloj). La suite Deno completa no llegó a correr en este entorno (solo `deno check`).
+- Portada, cuestionario entero, «Voy a ser crudo contigo», curva, cuenta, bienvenida, nombre, modos, permiso de salud aceptado, seis misiones marcadas, plan de 90 días, oferta sin tienda, Hoy (sin «Novedad» y sin petición de avisos).
+- El evento `onboarding_goal` llega bien al servidor falso.
+- Completar misión, tarjeta de firma, `/firma` con huella larga: `seal_letter` y `commitment_signed`.
+- Rueda de modos, Hoy de IRON, FOCUS (arranque guiado), WORK y FOUNDER; modo cerrado sin pagar; pausa, compromiso y reactivación del coach.
+
+Dos fallos de binario que el navegador no podía ver, ya corregidos: dos plugins hacían lo mismo en `AppDelegate` y el prebuild fallaba; y sin clave de Recordatorios `expo-calendar` tiraba la app al arrancar.
+
+iPhone Duo y Apple Watch: la app arranca y sigue viva en los dos (Watch emparejado, Hoy vacío porque no le llegan datos). En Duo solo se ha visto la portada, no el recorrido ni el cambio de pantalla.
+
+**No verificado:** Supabase real, compra real (el binario no lleva clave de RevenueCat, solo se ha visto la oferta sin tienda), correo real, IA real, HealthKit y GPS reales, VoiceOver, entrega Watch a iPhone (Apple no la soporta en simulador: exige reloj real), iPad, Android, y la app de TV dentro de este binario. La suite Deno completa no corrió en este entorno (solo `deno check`). El Release no se ha compilado: lo probado es Debug.
 
 ## La entrada, en orden
 
@@ -55,4 +66,6 @@ Las respuestas viven solo en el teléfono hasta que hay cuenta. Una meta de salu
 - Skill `nivl-design-system` (no se puede escribir desde aquí): sustituir paleta, tipos (Playfair y Outfit, sin Cinzel), «esquinas rectas», `SystemWindow` y el vocabulario por Ónix, según `docs/design-v2/SISTEMA.md`.
 - **Watch y TV (SwiftUI)**: llevar fondo #09090B, botón hueso #EDEAE3, oro #C9A961 en cifras y detalles, cifras en Playfair y radios de 22, con el mismo orden que Hoy (héroe, coach, ahora, tres cifras).
 - FOCUS en escritorio va en una columna: al fusionar se perdió `DosColumnas`.
+- La pantalla de arranque nativa sigue con el escudo hueso antiguo: cambia con el binario.
+- Capturas en la carpeta de notas: `capturas-onix/` (`simulador/`, `movil/`, `web/`, `onboarding-real/`). La hoja del permiso de salud no se guarda porque contiene datos del responsable.
 - Auditoría UX: hallazgos altos corregidos. Sin aplicar: rotular el veredicto como «Tu punto de partida» (se deja «El veredicto», pedido en la maqueta) y ocultar el código de creador salvo enlace (es dato protegido).
