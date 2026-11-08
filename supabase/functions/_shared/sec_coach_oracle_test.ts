@@ -17,7 +17,7 @@ function respuestaOraculo(): Response {
     JSON.stringify({
       content: [{ type: 'text', text: JSON.stringify({ quests: [], plan_summary: 'ok' }) }],
       usage: { input_tokens: 1_000, output_tokens: 2_500 },
-      model: 'claude-haiku-4-5',
+      model: 'claude-haiku-5-5',
     }),
     { headers: { 'content-type': 'application/json' } },
   );
@@ -82,8 +82,8 @@ Deno.test('oráculo: lo que cuesta queda en coach_runs (el candado lo ve)', asyn
     equal(filas.length, 1);
     equal(filas[0].user_id, USER_ID);
     equal(filas[0].kind, 'oracle');
-    // 1.000 × 1 $ + 2.500 × 5 $ (Haiku) = 13.500 µ$.
-    equal(filas[0].cost_micro_usd, 13_500);
+    // 1.000 × 0,10 $ + 2.500 × 0,50 $ (Haiku 5.5) = 1.350 µ$.
+    equal(filas[0].cost_micro_usd, 1_350);
     ok(fake.llamadas.some((l) => l.url.pathname === '/rest/v1/rpc/ai_end_turn'), 'el cerrojo se suelta');
   } finally {
     fake.restaurar();

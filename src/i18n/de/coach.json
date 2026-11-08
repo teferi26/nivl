@@ -59,7 +59,6 @@
     "haLeido_one": "Hat deinen Tag gelesen · {{count}} Abfrage",
     "haLeido_other": "Hat deinen Tag gelesen · {{count}} Abfragen",
     "titulo": "COACH",
-    "profundoTag": "TIEF",
     "verPlan": "Deinen Plan ansehen",
     "verMemoria": "Das Gedächtnis des Systems ansehen",
     "vacioTitulo": "DAS SYSTEM HÖRT DIR ZU.",
@@ -74,18 +73,14 @@
     "fotosListas_other": "{{count}} Fotos bereit zum Senden",
     "quitarFotosA11y": "Fotos entfernen",
     "energiaA11y": "{{texto}} Energie des Coachs ansehen",
-    "potenciaA11y": "Leistung des Coachs",
-    "estandar": "Standard",
-    "profundo": "Tief",
-    "profundoA11y": "Tiefer Modus. {{linea}}",
     "conservada": "Dein Gespräch bleibt erhalten.",
     "conservadaPro": "Der Coach gehört zu NIVL Pro. Dein Gespräch bleibt erhalten.",
-    "fotosElite": "Fotos an den Coach gibt es mit Élite",
     "adjuntarA11y": "Ein Foto anhängen",
     "placeholder": "Sprich mit dem System",
     "mensajeA11y": "Nachricht an das System",
     "enviandoA11y": "Wird gesendet: Das System denkt nach",
-    "enviarA11y": "Nachricht senden"
+    "enviarA11y": "Nachricht senden",
+    "fotosPro": "Fotos an den Coach gehören zu NIVL Pro"
   },
   "dictado": {
     "microfonoListo": "Mikrofon bereit. Gedrückt halten zum Diktieren.",
@@ -145,7 +140,7 @@
     "hoy": "Du hast deinen KI-Anteil für heute verbraucht. Morgen geht es weiter.",
     "recargar": "KI aufladen · {{precio}}",
     "recargarSinPrecio": "KI aufladen",
-    "recargaNota": "Erweitert die KI deines aktiven Pro- oder Élite-Plans. Was du nicht nutzt, bleibt erhalten.",
+    "recargaNota": "Erweitert die KI deines aktiven Plans. Was du nicht nutzt, bleibt erhalten.",
     "recargaHecha": "Aufladung angewendet. Das System antwortet wieder.",
     "recargaPendiente": "Der Store hat die Aufladung abgebucht. Sie wird in wenigen Sekunden angewendet."
   }

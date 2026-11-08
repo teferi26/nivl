@@ -56,7 +56,6 @@ function base(cambios: Partial<CoachVistaProps> = {}): CoachVistaProps {
     falloCarga: false,
     onReintentar: nada,
     consultas: 2,
-    profundo: false,
     burbujas: HILO,
     enCurso: null,
     error: null,
@@ -64,7 +63,6 @@ function base(cambios: Partial<CoachVistaProps> = {}): CoachVistaProps {
     adjuntas: 0,
     onQuitarAdjuntas: nada,
     energia: null,
-    potencia: null,
     compositor: {
       texto: '',
       onCambiarTexto: nada,
@@ -97,8 +95,6 @@ export const DEMO: DemoPantalla | null = {
       render: () => (
         <CoachVista
           {...base({
-            profundo: true,
-            potencia: { modo: 'profundo', profundoAbierto: true, linea: 'Te quedan 3 turnos profundos este mes.', onElegir: nada },
             compositor: { ...compositor, texto: 'Y mañana, ¿cuánto peso en remo?', puedeEnviar: true },
           })}
         />
@@ -142,7 +138,7 @@ export const DEMO: DemoPantalla | null = {
           {...base({
             energia: {
               texto: 'La energía del coach de este mes se ha agotado. Se recarga el día 1.',
-              ofertaTier: 'elite',
+              ofertaTier: 'pro',
               avisoAparte: null,
             },
           })}

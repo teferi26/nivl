@@ -28,7 +28,7 @@
 // Despliegue (NO hecho; necesita el OK del dueño y la 0075 aplicada antes):
 //   supabase functions deploy economia
 
-import { callClaude, CHEAP_MODEL, costMicroUsd, tarifa, type ApiMessage, type SystemBlock, type Usage } from '../_shared/anthropic.ts';
+import { callClaude, COACH_MODEL, costMicroUsd, tarifa, type ApiMessage, type SystemBlock, type Usage } from '../_shared/anthropic.ts';
 import { consentimientoIa, MENSAJE_SIN_CONSENTIMIENTO, SIN_CONSENTIMIENTO } from '../_shared/consent.ts';
 import { adminClient, userClient, type Db } from '../_shared/db.ts';
 import {
@@ -55,15 +55,16 @@ export const MAX_PDF_B64 = 4_000_000;
 export const MAX_PDF_B64_SIN_PAGINAS = 1_400_000;
 export const MAX_PDF_PAGINAS = 12;
 /** Fichas de entrada medidas con count_tokens antes de llamar: unas 12 páginas de extracto. */
-export const MAX_FICHAS_PDF = 60_000;
-const MAX_TOKENS_PDF = 8000;
+// Las mismas páginas que antes con el tokenizador de Haiku 5.5 (~30 % más fichas), bajo el tramo de 100.000.
+export const MAX_FICHAS_PDF = 78_000;
+const MAX_TOKENS_PDF = 12_000;
 /**
  * Tope de coste de UNA lectura de PDF, comprobado ANTES de llamar con las
  * fichas reales de entrada y el máximo de salida. Si se pasa, no se llama.
- * Con Haiku: 60.000 × 1 $ + 8.000 × 5 $ por millón = 0,10 $.
+ * Con Haiku 5.5, una lectura máxima (78.000 fichas) ronda 0,02 $: el tope es holgado a propósito.
  */
 export const MAX_COSTE_PDF_MICRO_USD = 100_000; // 0,10 $
-const MAX_TOKENS_BRIEF = 900;
+const MAX_TOKENS_BRIEF = 2500;
 /** Lo más grande que se lee del cuerpo (el PDF en base64 y un margen). */
 export const MAX_CUERPO_BYTES = MAX_PDF_B64 + 10_000;
 
@@ -147,7 +148,7 @@ export function paginasPdf(base64: string): number {
 
 /** El coste máximo posible de una llamada: entrada medida + salida al tope. */
 export function costeMaximo(model: string, fichasEntrada: number, maxSalida: number): number {
-  const p = tarifa(model);
+  const p = tarifa(model, fichasEntrada);
   return Math.ceil(fichasEntrada * p.in + maxSalida * p.out);
 }
 
@@ -374,17 +375,17 @@ async function extracto(body: Json, sb: Db, userId: string, deps: Deps): Promise
     // El tope que manda: las fichas reales de entrada, medidas ANTES de llamar.
     let fichas: number;
     try {
-      fichas = await deps.contarFichas(CHEAP_MODEL, system, messages);
+      fichas = await deps.contarFichas(COACH_MODEL, system, messages);
     } catch (e) {
       console.error('economia: count_tokens', e instanceof Error ? e.name : 'error');
       return json(503, { error: 'El sistema no puede medir el PDF ahora mismo. Vuelve a intentarlo o usa el CSV.' });
     }
-    if (fichas > MAX_FICHAS_PDF || costeMaximo(CHEAP_MODEL, fichas, MAX_TOKENS_PDF) > MAX_COSTE_PDF_MICRO_USD) {
+    if (fichas > MAX_FICHAS_PDF || costeMaximo(COACH_MODEL, fichas, MAX_TOKENS_PDF) > MAX_COSTE_PDF_MICRO_USD) {
       return json(413, { error: 'El PDF es demasiado largo. Exporta menos meses o usa el CSV.' });
     }
     // La cartera (0078): reserva la cota antes de llamar (función 'pdf', 10 al día).
-    const turno = await deps.llamarModelo({ model: CHEAP_MODEL, system, messages, maxTokens: MAX_TOKENS_PDF, effort: 'low', cartera: new CarteraIa(deps.admin, userId, 'pdf') });
-    await apuntarGasto(deps.admin, userId, 'import', turno.model || CHEAP_MODEL, turno.usage);
+    const turno = await deps.llamarModelo({ model: COACH_MODEL, system, messages, maxTokens: MAX_TOKENS_PDF, effort: 'low', cartera: new CarteraIa(deps.admin, userId, 'pdf') });
+    await apuntarGasto(deps.admin, userId, 'import', turno.model || COACH_MODEL, turno.usage);
     const salida = turno.content.filter((b) => b.type === 'text').map((b) => b.text ?? '').join('');
     lectura = leerLineasIa(salida);
   } catch (e) {
@@ -424,15 +425,15 @@ async function brief(body: Json, sb: Db, userId: string, deps: Deps, hoy: string
   let texto: string;
   try {
     const turno = await deps.llamarModelo({
-      model: CHEAP_MODEL,
+      model: COACH_MODEL,
       system: [{ type: 'text', text: SISTEMA_BRIEF }],
       messages: [{ role: 'user', content: [{ type: 'text', text: datosParaBrief(numeros, nombres) }] }],
       maxTokens: MAX_TOKENS_BRIEF,
       effort: 'low',
-      // La cartera (0078): leer y transformar con Haiku, como los atajos de estudio.
+      // La cartera (0078): leer y transformar, como los atajos de estudio.
       cartera: new CarteraIa(deps.admin, userId, 'estudio'),
     });
-    await apuntarGasto(deps.admin, userId, 'economia_brief', turno.model || CHEAP_MODEL, turno.usage);
+    await apuntarGasto(deps.admin, userId, 'economia_brief', turno.model || COACH_MODEL, turno.usage);
     texto = cerrarBrief(turno.content.filter((b) => b.type === 'text').map((b) => b.text ?? '').join(''));
   } catch (e) {
     if (e instanceof TopeIaError) {
@@ -447,7 +448,7 @@ async function brief(body: Json, sb: Db, userId: string, deps: Deps, hoy: string
 
   // El cliente solo puede leer y borrar sus briefs (0075): lo escribe el servidor.
   const { error } = await deps.admin.from('money_briefs').upsert(
-    { user_id: userId, month: mes, numbers: numeros, text: texto, model: CHEAP_MODEL },
+    { user_id: userId, month: mes, numbers: numeros, text: texto, model: COACH_MODEL },
     { onConflict: 'user_id,month', ignoreDuplicates: true },
   );
   if (error) console.error('economia: money_briefs', error.code ?? 'sin_codigo');

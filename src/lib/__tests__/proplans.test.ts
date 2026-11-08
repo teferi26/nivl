@@ -3,7 +3,6 @@ import { PROFILE_KINDS } from '../kinds';
 import {
   DEFAULT_PLAN,
   DEFAULT_TIER,
-  ELITE_BENEFITS,
   PRO_BENEFITS,
   PRO_PLANS,
   SIN_IA,
@@ -16,7 +15,6 @@ import {
   isElite,
   isPro,
   legalText,
-  lineaProfundos,
   planDePago,
   planLabel,
   planPorDefecto,
@@ -30,9 +28,7 @@ import {
   proSampleBrief,
   proToday,
   seleccionDeTienda,
-  puedeProfundo,
   tierOffer,
-  turnosProfundos,
   type AiStatus,
 } from '../proplans';
 
@@ -53,13 +49,18 @@ const elite: AiStatus = {
   budget: 2_500_000,
   spent: 0,
   remaining: 2_500_000,
-  deepAllowed: true,
-  deepRemaining: 1_500_000,
-  deepTurns: 6,
 };
 const gratis: AiStatus = { ...SIN_IA, trialAvailable: true };
 
 describe('NIVL Pro y Élite · la oferta', () => {
+  test('Élite ya no se vende, pero sus compras se siguen reconociendo', () => {
+    expect(P.TIERS_A_LA_VENTA.map((t) => t.id)).toEqual(['pro']);
+    expect(tierOffer('elite').name).toBe('NIVL Élite');
+    expect(planLabel('elite_mensual')).toBe('Élite mensual');
+    expect(P.productoDePlan('elite_anual')).toBe('nivl_elite_anual');
+    expect(JSON.stringify(P.PRO_BENEFITS)).not.toMatch(/Élite|ludus|laurel/);
+  });
+
   test('los precios de Pro cuadran con docs/PRECIOS.md', () => {
     const anual = proPlan('nivl_pro_anual');
     const mensual = proPlan('nivl_pro_mensual');
@@ -131,10 +132,6 @@ describe('NIVL Pro y Élite · la oferta', () => {
     }
     expect(proEmphasis('piloto')).toBe(proEmphasis('general'));
     expect(PRO_BENEFITS.length).toBe(7);
-    // Solo lo que existe (Apple 3.1.2): potencia y modo profundo (fase 1);
-    // revisión a fondo, ludus e insignia (fase 3).
-    expect(ELITE_BENEFITS.length).toBe(5);
-    for (const b of ELITE_BENEFITS) expect(`${b.title} ${b.detail}`).not.toMatch(/escuadra|XP gratis|!/i);
   });
 });
 
@@ -179,20 +176,6 @@ describe('NIVL Pro · el estado de la IA', () => {
     expect(energiaAgotada({ ...pro, remaining: 19_999 })).toBe(true);
     // Una cuenta gratuita no está "agotada": no tiene coach.
     expect(energiaAgotada(gratis)).toBe(false);
-  });
-
-  test('modo profundo: lo abre el bolsillo, no el redondeo de turnos', () => {
-    expect(puedeProfundo(elite)).toBe(true);
-    expect(turnosProfundos(elite)).toBe(6);
-    expect(puedeProfundo(pro)).toBe(false);
-    expect(turnosProfundos(pro)).toBe(0);
-    expect(puedeProfundo({ ...elite, deepRemaining: 19_999, deepTurns: 0 })).toBe(false);
-    // Queda bolsillo pero menos que un turno medio: se puede, y se dice.
-    const casi = { ...elite, deepRemaining: 100_000, deepTurns: 0 };
-    expect(puedeProfundo(casi)).toBe(true);
-    expect(lineaProfundos(casi)).toBe('Disponible cuando lo necesites.');
-    expect(lineaProfundos(elite)).toBe('Disponible cuando lo necesites.');
-    expect(lineaProfundos({ ...elite, deepRemaining: 0, deepTurns: 0 })).toMatch(/estándar sigue disponible/);
   });
 
   test('nombres de plan, con valor por defecto para uno desconocido', () => {
@@ -319,16 +302,6 @@ describe('tienda: cambios de plan, títulos y ofertas (auditoría 2026-10-02)', 
     expect(P.legalText('nivl_pro_anual', '99,99 €', 'Oferta de la tienda: x.')).toContain('Oferta de la tienda: x.');
   });
 
-  test('beneficios Élite: nada de uso ilimitado ni ludus inmediato', () => {
-    const texto = JSON.stringify([P.ELITE_BENEFITS, P.ELITE_USAGE_NOTICE, P.PRO_BENEFITS]);
-    expect(texto).not.toMatch(/ilimitad|sin límite|al instante|inmediat|acceso anticipado|retos trimestrales/i);
-    expect(P.COACH_USAGE_NOTICE).toMatch(/fuera de lo normal/);
-    expect(P.ELITE_USAGE_NOTICE).toMatch(/manualmente/);
-    const titulos = P.ELITE_BENEFITS.map((b) => b.title);
-    expect(titulos).toContain('Insignia de laurel');
-    expect(titulos).toContain('Solicita plaza en un ludus (5-8)');
-    expect(P.ELITE_BENEFITS.find((b) => b.title.includes('ludus'))?.detail).toMatch(/manual, según disponibilidad/);
-  });
 });
 
 describe('Apple 2.3.10: la letra no nombra la tienda de la otra plataforma', () => {

@@ -15,7 +15,7 @@ import {
   type EntradaOferta,
   type Momento,
 } from '../paywallmoment';
-import { COPY_UPSELL, ELITE_BENEFITS, PRO_BENEFITS, beneficiosPorMotivo, copyUpsell } from '../proplans';
+import { COPY_UPSELL, PRO_BENEFITS, beneficiosPorMotivo, copyUpsell } from '../proplans';
 
 // Jueves 1 de octubre de 2026, 18:00 hora local.
 const AHORA = new Date(2026, 9, 1, 18, 0, 0).getTime();
@@ -43,6 +43,12 @@ describe('celebración y niveles', () => {
     }
   });
 
+  test('a quien ya paga Pro no se le ofrece nada', () => {
+    for (const m of ['analisis_foto', 'energia_agotada', 'voz_premium', 'firma'] as const) {
+      expect(decidirOferta(m, pro())).toMatchObject({ mostrar: false, razon: 'ya_pro' });
+    }
+  });
+
   test('a Élite y al dueño, nada', () => {
     for (const m of MOMENTOS) {
       expect(decidirOferta(m, libre({ tier: 'elite', entitled: true })).mostrar).toBe(false);
@@ -55,19 +61,8 @@ describe('celebración y niveles', () => {
     expect(d).toMatchObject({ mostrar: true, forma: 'hoja', tier: 'pro' });
   });
 
-  test('a un Pro: solo Élite, en línea, y solo en momentos de función o energía agotada', () => {
-    for (const m of ['coach_profundo', 'analisis_foto', 'energia_agotada'] as const) {
-      expect(decidirOferta(m, pro())).toMatchObject({ mostrar: true, forma: 'linea', tier: 'elite', prueba: false });
-    }
-    // La voz va con el coach: a un Pro no se le vende nada por ella.
-    expect(decidirOferta('voz_premium', pro()).mostrar).toBe(false);
-    expect(decidirOferta('coach_cerrado', pro()).mostrar).toBe(false);
-    expect(decidirOferta('firma', pro()).mostrar).toBe(false);
-    expect(decidirOferta('primer_dia', pro()).mostrar).toBe(false);
-  });
-
   test('un Pro que paga fuera de la tienda (no mejorable) no recibe nada', () => {
-    expect(decidirOferta('coach_profundo', pro({ mejorable: false })).mostrar).toBe(false);
+    expect(decidirOferta('analisis_foto', pro({ mejorable: false })).mostrar).toBe(false);
   });
 
   test('energía agotada: a un gratis no aplica; en prueba, línea a Pro', () => {
@@ -79,13 +74,11 @@ describe('celebración y niveles', () => {
 
 describe('formas', () => {
   test('los momentos de función son línea, nunca hoja, aunque no haya ninguna hoja hoy', () => {
-    for (const m of ['coach_profundo', 'voz_premium', 'analisis_foto'] as const) {
+    for (const m of ['voz_premium', 'analisis_foto'] as const) {
       expect(decidirOferta(m, libre()).forma).toBe('linea');
       expect(decidirOferta(m, libre()).mostrar).toBe(true);
     }
-    expect(decidirOferta('coach_profundo', libre()).tier).toBe('elite');
-    // Las fotos al coach solo las ve Élite (Pro y la prueba van sin visión).
-    expect(decidirOferta('analisis_foto', libre()).tier).toBe('elite');
+    expect(decidirOferta('analisis_foto', libre()).tier).toBe('pro');
   });
 
   test('en prueba: solo línea, y nunca por lo que la prueba ya incluye', () => {
@@ -99,9 +92,8 @@ describe('formas', () => {
     for (const m of ['firma', 'primer_dia', 'voz_premium', 'fin_prueba'] as const) {
       expect(decidirOferta(m, enPrueba)).toMatchObject({ mostrar: false, razon: 'en_prueba' });
     }
-    // Lo que la prueba no tiene sí se dice: modo profundo y fotos (Élite) y la energía agotada.
-    expect(decidirOferta('coach_profundo', enPrueba)).toMatchObject({ mostrar: true, forma: 'linea', tier: 'elite' });
-    expect(decidirOferta('analisis_foto', enPrueba)).toMatchObject({ mostrar: true, forma: 'linea', tier: 'elite' });
+    // Lo que la prueba no tiene sí se dice: fotos y la energía agotada.
+    expect(decidirOferta('analisis_foto', enPrueba)).toMatchObject({ mostrar: true, forma: 'linea', tier: 'pro' });
     expect(decidirOferta('energia_agotada', enPrueba)).toMatchObject({ mostrar: true, forma: 'linea', tier: 'pro' });
   });
 
@@ -133,8 +125,8 @@ describe('prueba', () => {
     expect(decidirOferta('firma', libre({ trialAvailable: false })).prueba).toBe(false);
   });
 
-  test('nunca se ofrece la prueba (que es de Pro) para vender Élite', () => {
-    expect(decidirOferta('coach_profundo', libre({ trialAvailable: true })).prueba).toBe(false);
+  test('las fotos van con Pro: a quien puede empezar la prueba se le ofrece', () => {
+    expect(decidirOferta('analisis_foto', libre({ trialAvailable: true })).prueba).toBe(true);
   });
 });
 
@@ -164,9 +156,9 @@ describe('topes', () => {
   });
 
   test('un «Ahora no» en una línea también da 72 h de calma, aunque no gaste el tope de hojas', () => {
-    const historial: EntradaOferta[] = [{ momento: 'coach_profundo', at: AHORA - HORA, respuesta: 'cerrada', forma: 'linea' }];
+    const historial: EntradaOferta[] = [{ momento: 'analisis_foto', at: AHORA - HORA, respuesta: 'cerrada', forma: 'linea' }];
     expect(bloqueoDeHoja(historial, AHORA)).toBe('espera_72h');
-    const soloVista: EntradaOferta[] = [{ momento: 'coach_profundo', at: AHORA - HORA, respuesta: 'vista', forma: 'linea' }];
+    const soloVista: EntradaOferta[] = [{ momento: 'analisis_foto', at: AHORA - HORA, respuesta: 'vista', forma: 'linea' }];
     expect(bloqueoDeHoja(soloVista, AHORA)).toBeNull();
   });
 
@@ -176,7 +168,7 @@ describe('topes', () => {
 
   test('las líneas siguen saliendo con los topes de hojas agotados', () => {
     const historial = [hoja('firma', AHORA - HORA, 'cerrada')];
-    expect(decidirOferta('coach_profundo', libre({ historial }))).toMatchObject({ mostrar: true, forma: 'linea' });
+    expect(decidirOferta('analisis_foto', libre({ historial }))).toMatchObject({ mostrar: true, forma: 'linea' });
   });
 });
 
@@ -221,7 +213,7 @@ describe('historial', () => {
   });
 
   test('tope de entradas', () => {
-    const muchas = Array.from({ length: MAX_ENTRADAS + 20 }, (_, i) => hoja('coach_profundo', AHORA - i * 1000));
+    const muchas = Array.from({ length: MAX_ENTRADAS + 20 }, (_, i) => hoja('analisis_foto', AHORA - i * 1000));
     expect(recortarHistorial(muchas, AHORA)).toHaveLength(MAX_ENTRADAS);
   });
 
@@ -239,8 +231,8 @@ describe('historial', () => {
   });
 
   test('sin «vista» previa (llegó desde una línea), se apunta con su forma', () => {
-    const h = anotarEn([], { momento: 'coach_profundo', respuesta: 'cerrada', forma: 'linea' }, AHORA);
-    expect(h).toEqual([{ momento: 'coach_profundo', at: AHORA, respuesta: 'cerrada', forma: 'linea' }]);
+    const h = anotarEn([], { momento: 'analisis_foto', respuesta: 'cerrada', forma: 'linea' }, AHORA);
+    expect(h).toEqual([{ momento: 'analisis_foto', at: AHORA, respuesta: 'cerrada', forma: 'linea' }]);
   });
 
   test('una «vista» vieja no se funde: es otra entrada', () => {
@@ -252,7 +244,7 @@ describe('historial', () => {
 describe('copy y ruta', () => {
   test('hay copy para cada momento y nivel, sin urgencias ni cuentas atrás', () => {
     for (const m of MOMENTOS) {
-      for (const t of ['pro', 'elite'] as const) {
+      for (const t of ['pro'] as const) {
         const c = copyUpsell(m, t);
         for (const texto of [c.linea, c.enlace, c.contexto]) {
           expect(texto.length).toBeGreaterThan(0);
@@ -261,13 +253,13 @@ describe('copy y ruta', () => {
         }
       }
     }
-    expect(Object.keys(COPY_UPSELL)).toHaveLength(MOMENTOS.length * 2);
+    expect(Object.keys(COPY_UPSELL)).toHaveLength(MOMENTOS.length);
   });
 
   test('la voz va con el coach: a un gratis se le ofrece Pro, sin prometer nada más', () => {
     expect(decidirOferta('voz_premium', libre())).toMatchObject({ mostrar: true, forma: 'linea', tier: 'pro' });
     expect(copyUpsell('voz_premium', 'pro').linea).toMatch(/Va con NIVL Pro/);
-    for (const t of ['pro', 'elite'] as const) expect(copyUpsell('voz_premium', t).beneficio).toBeNull();
+    for (const t of ['pro'] as const) expect(copyUpsell('voz_premium', t).beneficio).toBeNull();
   });
 
   test('coach cerrado: línea fija a Pro para quien no tiene coach, sin topes ni espera', () => {
@@ -284,21 +276,21 @@ describe('copy y ruta', () => {
   });
 
   test('cada beneficio citado existe de verdad', () => {
-    const titulos = new Set([...PRO_BENEFITS, ...ELITE_BENEFITS].map((b) => b.title));
+    const titulos = new Set(PRO_BENEFITS.map((b) => b.title));
     for (const c of Object.values(COPY_UPSELL)) if (c.beneficio) expect(titulos.has(c.beneficio)).toBe(true);
   });
 
   test('el motivo pone su beneficio primero sin quitar ni añadir', () => {
-    const base = [...ELITE_BENEFITS, ...PRO_BENEFITS];
+    const base = [...PRO_BENEFITS];
     const orden = beneficiosPorMotivo(base, 'primer_dia', 'pro');
     expect(orden[0]!.title).toBe('Plan del día, bloque a bloque');
     expect([...orden].sort((a, b) => a.title.localeCompare(b.title))).toEqual([...base].sort((a, b) => a.title.localeCompare(b.title)));
     expect(beneficiosPorMotivo(base, null, 'pro')).toBe(base);
-    expect(beneficiosPorMotivo(base, 'voz_premium', 'elite')).toBe(base);
+    expect(beneficiosPorMotivo(base, 'voz_premium', 'pro')).toBe(base);
   });
 
   test('ruta y validación de momento', () => {
-    expect(rutaOferta('coach_profundo', 'elite')).toBe('/pro?motivo=coach_profundo&tier=elite');
+    expect(rutaOferta('analisis_foto', 'pro')).toBe('/pro?motivo=analisis_foto&tier=pro');
     expect(esMomento('firma')).toBe(true);
     expect(esMomento('otro')).toBe(false);
     expect(esMomento(undefined)).toBe(false);
@@ -335,7 +327,7 @@ describe('fin de la prueba (fase 3)', () => {
 
   test('copy de la cabecera para cada momento y nivel, y el fin de la prueba dice que no se cobró', () => {
     for (const m of MOMENTOS) {
-      for (const t of ['pro', 'elite'] as const) {
+      for (const t of ['pro'] as const) {
         const c = copyUpsell(m, t);
         expect(c.eyebrow.length).toBeGreaterThan(0);
         expect(c.eyebrow.length).toBeLessThanOrEqual(24);
@@ -347,9 +339,4 @@ describe('fin de la prueba (fase 3)', () => {
     expect(copyUpsell('fin_prueba', 'pro').linea).toMatch(/sin cobro/);
   });
 
-  test('energía agotada a Élite: no promete más energía ni turnos', () => {
-    const c = copyUpsell('energia_agotada', 'elite');
-    expect(`${c.linea} ${c.contexto}`).not.toMatch(/más energía|más turnos|presupuesto propio|su propio presupuesto/i);
-    expect(c.contexto).toMatch(/sin contadores/);
-  });
 });

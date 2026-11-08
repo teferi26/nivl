@@ -32,9 +32,10 @@ export async function resolveOracleAccess(userId: string): Promise<OracleAccess>
 // El Oráculo BYOK es multi-proveedor: detecta por el prefijo de la key si es
 // OpenAI (sk-proj…/sk-…) o Anthropic (sk-ant…) y llama a la API correcta.
 // Modelos baratos a propósito: cada consulta cuesta ~décimas de céntimo.
-const MODEL = 'claude-haiku-4-5';
+const MODEL = 'claude-haiku-5-5';
 // gpt-4o-mini: el mejor coste/calidad de OpenAI (~0,001 € por consulta).
 const OPENAI_MODEL = 'gpt-4o-mini';
+const ORACULO_RECHAZA = 'El oráculo no puede trabajar con eso. Cuéntale tu objetivo de otra forma.';
 // La key vive en SecureStore (cifrado del SO), no en AsyncStorage (texto plano).
 const KEY_STORAGE = 'nivl_anthropic_key';
 const LEGACY_KEY = 'nivl.anthropic_key';
@@ -235,10 +236,10 @@ export async function generateQuests(goal: string, apiKey: string): Promise<Orac
       },
       body: JSON.stringify({
         model: MODEL,
-        max_tokens: 2000,
+        max_tokens: 5000,
         system: SYSTEM_PROMPT,
         messages: [{ role: 'user', content: `Mi objetivo: ${goal}` }],
-        output_config: { format: { type: 'json_schema', schema: QUESTS_SCHEMA } },
+        output_config: { effort: 'medium', format: { type: 'json_schema', schema: QUESTS_SCHEMA } },
       }),
     });
   } catch (e) {
@@ -262,6 +263,7 @@ export async function generateQuests(goal: string, apiKey: string): Promise<Orac
     content: { type: string; text?: string }[];
     stop_reason: string;
   };
+  if (data.stop_reason === 'refusal') throw new Error(ORACULO_RECHAZA);
   const text = data.content.find((b) => b.type === 'text')?.text;
   if (!text) throw new Error('El oráculo devolvió una respuesta vacía.');
 
@@ -422,10 +424,10 @@ export async function weeklyOracle(input: WeeklyInput, apiKey: string): Promise<
       },
       body: JSON.stringify({
         model: MODEL,
-        max_tokens: 2500,
+        max_tokens: 6000,
         system: WEEKLY_SYSTEM,
         messages: [{ role: 'user', content: `Datos de mis últimos 14 días:\n${JSON.stringify(input)}` }],
-        output_config: { format: { type: 'json_schema', schema: WEEKLY_SCHEMA } },
+        output_config: { effort: 'medium', format: { type: 'json_schema', schema: WEEKLY_SCHEMA } },
       }),
     });
   } catch (e) {
@@ -443,7 +445,8 @@ export async function weeklyOracle(input: WeeklyInput, apiKey: string): Promise<
     throw new Error(`El oráculo no responde (HTTP ${res.status}).`);
   }
 
-  const data = (await res.json()) as { content: { type: string; text?: string }[] };
+  const data = (await res.json()) as { content: { type: string; text?: string }[]; stop_reason?: string };
+  if (data.stop_reason === 'refusal') throw new Error(ORACULO_RECHAZA);
   const text = data.content.find((b) => b.type === 'text')?.text;
   if (!text) throw new Error('El oráculo devolvió una respuesta vacía.');
 

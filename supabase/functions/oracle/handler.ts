@@ -11,11 +11,11 @@ import { consentimientoIa, MENSAJE_SIN_CONSENTIMIENTO, SIN_CONSENTIMIENTO } from
 import { healthConsent, healthRevision, healthScopedClient, HEALTH_REQUIRED } from '../_shared/health.ts';
 import { adminClient, userClient, type Db } from '../_shared/db.ts';
 import { AI_SAFETY_RULES } from '../_shared/ai-safety.ts';
-import { costeMaximo, costMicroUsd, fichasMaximas, TopeIaError, type Usage } from '../_shared/anthropic.ts';
+import { COACH_MODEL, costeMaximo, costMicroUsd, fichasMaximas, TopeIaError, type Usage } from '../_shared/anthropic.ts';
 import { CarteraIa, mensajeTope } from '../_shared/cartera.ts';
 import { sinGuionesProfundo } from '../_shared/singuiones.ts';
 
-const MODEL = 'claude-haiku-4-5';
+const MODEL = COACH_MODEL;
 const MONTHLY_CAP = 100; // consultas premium por usuario y mes (control de coste)
 const PLAZO_ORACULO_MS = 60_000;
 
@@ -194,10 +194,11 @@ async function consultar(req: Request, userId: string, healthDb: Db): Promise<Re
   // La cartera (0078): reserva la cota de esta llamada antes de mandarla (función 'oracle').
   const peticion = {
     model: MODEL,
-    max_tokens: 2500,
+    // El pensamiento cuenta dentro del techo.
+    max_tokens: 5000,
     system,
     messages: [{ role: 'user', content: userContent }],
-    output_config: { format: { type: 'json_schema', schema } },
+    output_config: { effort: 'medium', format: { type: 'json_schema', schema } },
   };
   const cartera = new CarteraIa(admin, userId, 'oracle');
   const maximo = costeMaximo(MODEL, fichasMaximas(peticion), peticion.max_tokens);
@@ -243,7 +244,7 @@ async function consultar(req: Request, userId: string, healthDb: Db): Promise<Re
     return json(502, { error: 'El oráculo no responde. Reintenta en un momento.' });
   }
 
-  let data: { content?: { type: string; text?: string }[]; usage?: Usage; model?: string };
+  let data: { content?: { type: string; text?: string }[]; usage?: Usage; model?: string; stop_reason?: string };
   try {
     data = await res.json();
   } catch {
@@ -273,6 +274,10 @@ async function consultar(req: Request, userId: string, healthDb: Db): Promise<Re
   });
   if (ledgerErr) console.error('coach_runs insert failed (oracle):', ledgerErr.message);
 
+  // Haiku 5.5 no tiene reserva en servidor: un rechazo llega como 200 sin contenido útil.
+  if (data.stop_reason === 'refusal') {
+    return json(422, { error: 'El oráculo no puede trabajar con eso. Cuéntale tu objetivo de otra forma.', reason: 'rechazo' });
+  }
   const text = data.content?.find((b) => b.type === 'text')?.text;
   if (!text) return json(502, { error: 'Respuesta vacía del oráculo.' });
   let result: unknown;

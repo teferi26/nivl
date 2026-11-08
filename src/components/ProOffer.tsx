@@ -1,4 +1,4 @@
-// NIVL · La oferta de NIVL Pro y Élite: qué hace el coach en cada nivel, sus
+// NIVL · La oferta de NIVL Pro: qué hace el coach, sus
 // planes, la acción y la letra pequeña. La comparten la pantalla `/pro` y el último paso del
 // onboarding (`compact`), para que el precio y las condiciones no puedan
 // decir una cosa en un sitio y otra en otro.
@@ -45,12 +45,10 @@ import { pruebaSieteDiasVisible } from '@/lib/proplans';
 import {
   COACH_USAGE_NOTICE,
   DEFAULT_TIER,
-  ELITE_BENEFITS,
-  ELITE_USAGE_NOTICE,
   LEGAL_URLS,
   PRO_BENEFITS,
   StorePriceChangedError,
-  TIERS,
+  TIERS_A_LA_VENTA,
   beneficiosPorMotivo,
   copyUpsell,
   duracionPlan,
@@ -100,8 +98,6 @@ interface OfferOptions {
   trialAvailable?: boolean;
   /** Tras empezar la prueba: releer el estado o seguir adelante. */
   onTrialStarted?: () => void;
-  /** El nivel que se enseña primero (un Pro que mira el Élite). */
-  initialTier?: OfferTier;
   /** El producto que la cuenta YA paga en la tienda (lo dice el servidor): se marca y no se vende otra vez. */
   planActual?: ProPlanId | null;
 }
@@ -112,9 +108,9 @@ interface OfferOptions {
  * pie fijo (en un móvil de 667 pt, si no, no se veía ningún botón sin bajar) y
  * que aun así compartan plan elegido, cerrojo y avisos.
  */
-export function useProOffer({ userId, onPurchased, trialAvailable, onTrialStarted, initialTier, planActual }: OfferOptions) {
-  const [tier, setTier] = useState<OfferTier>(initialTier ?? DEFAULT_TIER);
-  const [elegido, setPlanId] = useState<ProPlanId>(tierOffer(initialTier ?? DEFAULT_TIER).defaultPlan);
+export function useProOffer({ userId, onPurchased, trialAvailable, onTrialStarted, planActual }: OfferOptions) {
+  const [tier, setTier] = useState<OfferTier>(DEFAULT_TIER);
+  const [elegido, setPlanId] = useState<ProPlanId>(tierOffer(DEFAULT_TIER).defaultPlan);
   const [busy, setBusy] = useState<'compra' | 'restaurar' | 'prueba' | null>(null);
   const [anotado, setAnotado] = useState(false);
   const [aviso, setAviso] = useState<string | null>(null);
@@ -166,7 +162,7 @@ export function useProOffer({ userId, onPurchased, trialAvailable, onTrialStarte
   // una sola lista (Apple pide ver cada suscripción sin pasos ocultos). El que
   // ya se paga no cuenta como elegible. Sin tienda: la lista del nivel.
   const planesTienda = disponible
-    ? TIERS.flatMap((t) => planesDeTienda(t.id, plazas, precios))
+    ? TIERS_A_LA_VENTA.flatMap((t) => planesDeTienda(t.id, plazas, precios))
     : planesALaVenta(tier, plazas);
   const planes = planesTienda;
   const comprables = disponible ? planes.filter((p) => p.id !== planActual) : planes;
@@ -179,7 +175,7 @@ export function useProOffer({ userId, onPurchased, trialAvailable, onTrialStarte
   const precioDe = (id: ProPlanId) => precioVisible(precios[id]);
   const puedeComprar = disponible && catalogo === 'listo' && seleccionado !== null;
   /** Productos que la tienda no ha devuelto (sin contar el fundador agotado). */
-  const faltan = disponible && catalogo === 'listo' ? TIERS.flatMap((t) => planesALaVenta(t.id, plazas)).length - planes.length : 0;
+  const faltan = disponible && catalogo === 'listo' ? TIERS_A_LA_VENTA.flatMap((t) => planesALaVenta(t.id, plazas)).length - planes.length : 0;
   // Una sola prueba: con la automática de Élite encendida, la de 7 días no se ofrece.
   const { prueba_auto_activa: pruebaAutoActiva } = useFlagsLeidos();
   const prueba = pruebaSieteDiasVisible(trialAvailable, pruebaAutoActiva) && !pruebaUsada;
@@ -361,8 +357,8 @@ interface BodyProps {
 export function ProOfferBody({ oferta, kind, compact, motivo }: BodyProps) {
   const { tier, nivel, planes, planId, precioDe, catalogo, faltan, planActual, reintentarPrecios, disponible, elegir, elegirNivel, prueba } = oferta;
   const sinNivel = disponible && catalogo === 'listo' && planes.length > 0 && !planes.some((p) => p.tier === tier);
-  const beneficios = beneficiosPorMotivo(tier === 'elite' ? [...ELITE_BENEFITS, ...PRO_BENEFITS] : PRO_BENEFITS, motivo, tier);
-  const contexto = motivo ? copyUpsell(motivo, tier).contexto : null;
+  const beneficios = beneficiosPorMotivo(PRO_BENEFITS, motivo, 'pro');
+  const contexto = motivo ? copyUpsell(motivo, 'pro').contexto : null;
   // Embudo anónimo: la oferta se ha visto (una vez por montaje).
   useEffect(() => {
     registrar('paywall_visto', { motivo: motivo ?? (compact ? 'onboarding' : 'pro'), compacto: !!compact });
@@ -486,17 +482,20 @@ export function ProOfferBody({ oferta, kind, compact, motivo }: BodyProps) {
         </Card>
       )}
 
-      <View style={styles.niveles} accessibilityRole="radiogroup" accessibilityLabel="Nivel">
-        {TIERS.map((t) => (
-          <Chip
-            key={t.id}
-            label={t.label}
-            selected={t.id === tier}
-            onPress={() => elegirNivel(t.id)}
-            accessibilityLabel={`${t.name}. ${t.power}`}
-          />
-        ))}
-      </View>
+      {/* Con un solo nivel a la venta no hay nada que elegir. */}
+      {TIERS_A_LA_VENTA.length > 1 ? (
+        <View style={styles.niveles} accessibilityRole="radiogroup" accessibilityLabel="Nivel">
+          {TIERS_A_LA_VENTA.map((t) => (
+            <Chip
+              key={t.id}
+              label={t.label}
+              selected={t.id === tier}
+              onPress={() => elegirNivel(t.id)}
+              accessibilityLabel={`${t.name}. ${t.power}`}
+            />
+          ))}
+        </View>
+      ) : null}
       <Text style={styles.potencia}>{nivel.power}</Text>
       {planesArriba ? catalogoVista : null}
 
@@ -526,13 +525,12 @@ export function ProOfferBody({ oferta, kind, compact, motivo }: BodyProps) {
       )}
 
       <Text style={styles.usageNotice}>{COACH_USAGE_NOTICE}</Text>
-      {tier === 'elite' ? <Text style={styles.usageNotice}>{ELITE_USAGE_NOTICE}</Text> : null}
 
       {planesArriba ? null : catalogoVista}
       {/* Las condiciones de la prueba, siempre que se ofrece (también con la
           tienda cerrada): qué incluye, que no pide tarjeta y que no se renueva. */}
       {prueba ? (
-        <Text style={[styles.notice, styles.noticeLeft, styles.noticeBelow]}>{textoPrueba(tier)}</Text>
+        <Text style={[styles.notice, styles.noticeLeft, styles.noticeBelow]}>{textoPrueba()}</Text>
       ) : null}
     </View>
   );
@@ -548,7 +546,7 @@ interface ActionsProps {
 
 /** Los dos botones, del mismo tamaño, y lo que el sistema responde al pulsarlos. */
 export function ProOfferActions({ oferta, exitLabel, onExit, exitLoading }: ActionsProps) {
-  const { tier, plan, precioDe, catalogo, puedeComprar, busy, anotado, aviso, sinPermiso, revisarPermiso, disponible, prueba, onPrincipal, onPrueba, hojaConsentimiento } = oferta;
+  const { plan, precioDe, catalogo, puedeComprar, busy, anotado, aviso, sinPermiso, revisarPermiso, disponible, prueba, onPrincipal, onPrueba, hojaConsentimiento } = oferta;
   const activar = puedeComprar
     ? `Activar ${tituloPlan(plan.id)} · ${precioDe(plan.id)} al ${plan.period}`
     : catalogo === 'cargando' ? 'Cargando precios de la tienda' : 'Compra no disponible';
@@ -577,7 +575,7 @@ export function ProOfferActions({ oferta, exitLabel, onExit, exitLoading }: Acti
       {prueba ? (
         <>
           <Button
-            title={tituloBotonPrueba(tier)}
+            title={tituloBotonPrueba()}
             variant="primary"
             size="lg"
             icon="hourglass-outline"
@@ -716,11 +714,10 @@ export function ProOffer({
   onPurchased,
   trialAvailable,
   onTrialStarted,
-  initialTier,
   planActual,
   motivo,
 }: Props) {
-  const oferta = useProOffer({ userId, onPurchased, trialAvailable, onTrialStarted, initialTier, planActual });
+  const oferta = useProOffer({ userId, onPurchased, trialAvailable, onTrialStarted, planActual });
   return (
     <View>
       <ProOfferBody oferta={oferta} kind={kind} compact={compact} motivo={motivo} />
@@ -733,14 +730,14 @@ export function ProOffer({
 interface UpsellLineProps {
   momento: Momento;
   /** El nivel que se ofrece (`decidirOferta(...).tier`). */
-  tier: OfferTier;
+  tier: 'pro';
   /** Por defecto abre `/pro?motivo=…&tier=…`. */
   onPress?: () => void;
 }
 
 /**
  * La oferta NO modal: una fila con icono, una línea y chevron, para ponerla
- * junto a la función (modo profundo, fotos, energía). No tapa nada ni se abre
+ * junto a la función (fotos, energía). No tapa nada ni se abre
  * sola: la oferta completa solo aparece si el usuario la toca.
  */
 export function ProUpsellLine({ momento, tier, onPress }: UpsellLineProps) {
@@ -754,7 +751,7 @@ export function ProUpsellLine({ momento, tier, onPress }: UpsellLineProps) {
       accessibilityLabel={`${copy.linea} ${copy.enlace}`}
       accessibilityHint="Abre los planes. No se cobra nada sin confirmarlo en la tienda."
     >
-      <Ionicons name={(tier === 'elite' ? 'flash-outline' : 'sparkles-outline') as never} size={16} color={ink.ink8} />
+      <Ionicons name="sparkles-outline" size={16} color={ink.ink8} />
       <View style={styles.planBody}>
         <Text style={styles.upsellLinea} numberOfLines={2}>
           {copy.linea}

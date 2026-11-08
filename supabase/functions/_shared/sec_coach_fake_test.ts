@@ -54,7 +54,7 @@ export function sse(eventos: unknown[]): Response {
 }
 
 /** Un turno de Anthropic con texto y un uso concreto (lo que "cuesta"). */
-export function turnoTexto(texto: string, uso = { input_tokens: 100_000, output_tokens: 2_000 }, modelo = 'claude-sonnet-5'): Response {
+export function turnoTexto(texto: string, uso = { input_tokens: 100_000, output_tokens: 2_000 }, modelo = 'claude-haiku-5-5'): Response {
   return sse([
     { type: 'message_start', message: { model: modelo, usage: { input_tokens: uso.input_tokens, output_tokens: 0 } } },
     { type: 'content_block_start', index: 0, content_block: { type: 'text', text: '' } },
@@ -70,7 +70,7 @@ export function turnoHerramienta(
   input: unknown,
   id = `tu_${nombre}`,
   uso = { input_tokens: 50_000, output_tokens: 300 },
-  modelo = 'claude-sonnet-5',
+  modelo = 'claude-haiku-5-5',
 ): Response {
   return sse([
     { type: 'message_start', message: { model: modelo, usage: { input_tokens: uso.input_tokens, output_tokens: 0 } } },

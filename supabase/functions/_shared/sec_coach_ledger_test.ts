@@ -34,8 +34,8 @@ Deno.test('ledger: retirar el permiso de salud a mitad de turno no borra lo ya g
     const res = await handler(peticion({ kind: 'chat', message: 'hola', stream: false }));
     await res.text();
     equal(llamadasProveedor, 1, 'el proveedor cobró una llamada');
-    // 100k × 2 $ + 2k × 10 $ (Sonnet) = 220.000 µ$.
-    ok(costeApuntado(fake) >= 220_000, `el coste real debe constar; apuntado: ${costeApuntado(fake)}`);
+    // 100k × 0,10 $ + 2k × 0,50 $ (Haiku 5.5) = 11.000 µ$.
+    ok(costeApuntado(fake) >= 11_000, `el coste real debe constar; apuntado: ${costeApuntado(fake)}`);
   } finally {
     fake.restaurar();
   }
@@ -54,7 +54,7 @@ Deno.test('ledger: retirar el consentimiento de IA tras la llamada no borra lo y
     const res = await handler(peticion({ kind: 'chat', message: 'hola', stream: false }));
     await res.text();
     equal(llamadasProveedor, 1);
-    ok(costeApuntado(fake) >= 220_000, `el coste real debe constar; apuntado: ${costeApuntado(fake)}`);
+    ok(costeApuntado(fake) >= 11_000, `el coste real debe constar; apuntado: ${costeApuntado(fake)}`);
   } finally {
     fake.restaurar();
   }
@@ -67,7 +67,7 @@ Deno.test('ledger: un fallo del proveedor en la segunda vuelta conserva el coste
         ? (() => {
             // Primera vuelta: pide una herramienta inofensiva.
             const ev = [
-              { type: 'message_start', message: { model: 'claude-sonnet-5', usage: { input_tokens: 100_000, output_tokens: 0 } } },
+              { type: 'message_start', message: { model: 'claude-haiku-5-5', usage: { input_tokens: 100_000, output_tokens: 0 } } },
               { type: 'content_block_start', index: 0, content_block: { type: 'tool_use', id: 'tu1', name: 'consultar_historial', input: {} } },
               { type: 'content_block_delta', index: 0, delta: { type: 'input_json_delta', partial_json: JSON.stringify({ que: 'peso', desde: '2026-01-01', hasta: '2026-01-02', filtro: '' }) } },
               { type: 'content_block_stop', index: 0 },
@@ -81,7 +81,7 @@ Deno.test('ledger: un fallo del proveedor en la segunda vuelta conserva el coste
     const res = await handler(peticion({ kind: 'chat', message: 'hola', stream: false }));
     await res.text();
     equal(fake.proveedor.length, 2);
-    ok(costeApuntado(fake) >= 220_000, `el coste real debe constar; apuntado: ${costeApuntado(fake)}`);
+    ok(costeApuntado(fake) >= 11_000, `el coste real debe constar; apuntado: ${costeApuntado(fake)}`);
   } finally {
     fake.restaurar();
   }

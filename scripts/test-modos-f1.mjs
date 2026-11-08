@@ -114,7 +114,7 @@ async function guion109(db) {
   out.subs = await one(db, 'select count(*)::int from subscriptions where user_id=$1', [U]);
 
   // Matriz de planes: el mismo usuario pasa por cada situación de la 0020/0024.
-  await db.query("insert into coach_runs(user_id,kind,mode,model,cost_micro_usd,created_at) values($1,'chat','estandar','claude-haiku-4-5',30000,now()-interval '1 hour'),($1,'chat','profundo','claude-sonnet-5',90000,now()-interval '2 hours')", [U]);
+  await db.query("insert into coach_runs(user_id,kind,mode,model,cost_micro_usd,created_at) values($1,'chat','estandar','claude-haiku-5-5',30000,now()-interval '1 hour'),($1,'chat','profundo','claude-haiku-5-5',90000,now()-interval '2 hours')", [U]);
   const casos = [
     ['sin fila', null],
     ['cortesia 7 dias viva', "('trialing','cortesia','manual',now()+interval '3 days')"],
@@ -314,7 +314,7 @@ try {
   eq(fila, { status: 'trialing', plan: 'prueba_auto', provider: 'prueba', horas: 48 }, 'nace la prueba de 2 días');
   let st = await one(db, 'select ai_state($1)', [P]);
   eq([st.entitled, st.trial, st.tier, st.routes.default, st.deep_allowed, st.tope_dia, st.mensajes_hoy, st.budget],
-    [true, true, 'elite', 'claude-haiku-4-5', false, 20, 0, 1000000], 'Élite con Haiku, sin profundo, tope 20');
+    [true, true, 'elite', 'claude-haiku-5-5', false, 20, 0, 1000000], 'Élite con Haiku, sin profundo, tope 20');
   eq(await one(db, 'select user_tier($1)', [P]), 'elite');
   eq((await one(db, "select ai_begin_turn($1,'estandar')", [P])).allowed, true); await db.query('select ai_end_turn($1)', [P]);
   eq((await one(db, "select ai_begin_turn($1,'profundo')", [P])).reason, 'profundo_no_incluido');
@@ -323,14 +323,14 @@ try {
   eq([status.plan, status.trial, status.vision, 'routes' in status], ['prueba_auto', true, true, false], 'ai_status de la 1.0.9');
   eq(await one(db, 'select start_trial()'), { ok: false, reason: 'ya_usada' }, 'una prueba por cuenta');
   await admin(db);
-  await db.query("insert into coach_runs(user_id,kind,model,cost_micro_usd) select $1,'chat','claude-haiku-4-5',1000 from generate_series(1,19)", [P]);
-  await db.query("insert into coach_runs(user_id,kind,model,cost_micro_usd,error) values($1,'chat','claude-haiku-4-5',1000,'turn_failed'),($1,'brief','claude-haiku-4-5',1000,null)", [P]);
+  await db.query("insert into coach_runs(user_id,kind,model,cost_micro_usd) select $1,'chat','claude-haiku-5-5',1000 from generate_series(1,19)", [P]);
+  await db.query("insert into coach_runs(user_id,kind,model,cost_micro_usd,error) values($1,'chat','claude-haiku-5-5',1000,'turn_failed'),($1,'brief','claude-haiku-5-5',1000,null)", [P]);
   eq((await one(db, "select ai_begin_turn($1,'estandar')", [P])).allowed, true, '19 mensajes: aún pasa (fallos y rituales no cuentan)');
   await db.query('select ai_end_turn($1)', [P]);
-  await db.query("insert into coach_runs(user_id,kind,model,cost_micro_usd,created_at) values($1,'chat','claude-haiku-4-5',1000,now()-interval '2 days')", [P]);
+  await db.query("insert into coach_runs(user_id,kind,model,cost_micro_usd,created_at) values($1,'chat','claude-haiku-5-5',1000,now()-interval '2 days')", [P]);
   eq((await one(db, "select ai_begin_turn($1,'estandar')", [P])).allowed, true, 'los de otro día no cuentan');
   await db.query('select ai_end_turn($1)', [P]);
-  await db.query("insert into coach_runs(user_id,kind,model,cost_micro_usd) values($1,'chat','claude-haiku-4-5',1000)", [P]);
+  await db.query("insert into coach_runs(user_id,kind,model,cost_micro_usd) values($1,'chat','claude-haiku-5-5',1000)", [P]);
   st = await one(db, "select ai_begin_turn($1,'estandar')", [P]);
   eq([st.allowed, st.reason, st.mensajes_hoy], [false, 'tope_diario', 20], 'tope diario');
   eq(await one(db, 'select count(*)::int from ai_turn_locks where user_id=$1', [P]), 0, 'el tope no toma el cerrojo');

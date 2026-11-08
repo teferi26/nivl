@@ -59,7 +59,6 @@
     "haLeido_one": "Leu o teu dia · {{count}} consulta",
     "haLeido_other": "Leu o teu dia · {{count}} consultas",
     "titulo": "COACH",
-    "profundoTag": "PROFUNDO",
     "verPlan": "Ver o teu plano",
     "verMemoria": "Ver a memória do sistema",
     "vacioTitulo": "O SISTEMA OUVE-TE.",
@@ -74,18 +73,14 @@
     "fotosListas_other": "{{count}} fotos prontas para enviar",
     "quitarFotosA11y": "Remover as fotos",
     "energiaA11y": "{{texto}} Ver a energia do coach",
-    "potenciaA11y": "Potência do coach",
-    "estandar": "Padrão",
-    "profundo": "Profundo",
-    "profundoA11y": "Modo profundo. {{linea}}",
     "conservada": "A tua conversa é mantida.",
     "conservadaPro": "O coach faz parte do NIVL Pro. A tua conversa é mantida.",
-    "fotosElite": "Enviar fotos ao coach é exclusivo do Élite",
     "adjuntarA11y": "Anexar uma foto",
     "placeholder": "Fala com o sistema",
     "mensajeA11y": "Mensagem para o sistema",
     "enviandoA11y": "A enviar: o sistema está a pensar",
-    "enviarA11y": "Enviar mensagem"
+    "enviarA11y": "Enviar mensagem",
+    "fotosPro": "As fotos ao coach estão incluídas no NIVL Pro"
   },
   "dictado": {
     "microfonoListo": "Microfone pronto. Mantém premido para ditar.",
@@ -145,7 +140,7 @@
     "hoy": "Hoje já usaste a tua parte de IA. Volta amanhã.",
     "recargar": "Recarregar IA · {{precio}}",
     "recargarSinPrecio": "Recarregar IA",
-    "recargaNota": "Amplia a IA do teu plano Pro ou Élite ativo. O que não usares fica guardado.",
+    "recargaNota": "Amplia a IA do teu plano ativo. O que não usares fica guardado.",
     "recargaHecha": "Recarga aplicada. O sistema volta a responder.",
     "recargaPendiente": "A loja cobrou a recarga. Aplica-se em poucos segundos."
   }

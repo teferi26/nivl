@@ -1,8 +1,8 @@
-// NIVL · NIVL Pro y Élite. Se llega desde cualquier sitio con router.push('/pro').
+// NIVL · NIVL Pro. Se llega desde cualquier sitio con router.push('/pro').
 //
 // Dos caras de la misma pantalla: quien no tiene coach ve la oferta completa
 // (ProOffer, con la prueba de 7 días si nunca la tuvo); quien ya lo tiene ve
-// su plan, la energía que le queda este mes y, en Élite, sus turnos profundos.
+// su plan y la energía que le queda este mes.
 // La energía es el presupuesto de IA del candado (0020) enseñado SIEMPRE como
 // porcentaje: los dólares son cosa nuestra, no del usuario.
 //
@@ -38,7 +38,6 @@ import {
   isElite,
   isPro,
   LINEA_PRUEBA,
-  lineaProfundos,
   planDePago,
   planLabel,
   productoDePlan,
@@ -46,7 +45,6 @@ import {
   purchasesAvailable,
   puedeMejorarEnTienda,
   type AiStatus,
-  type OfferTier,
   type RespuestaOferta,
 } from '@/lib/pro';
 import { fetchSubscription } from '@/lib/subscription';
@@ -65,7 +63,6 @@ function fechaLegible(valor: string | null | undefined): string | null {
 export default function Pro() {
   const params = useLocalSearchParams<{ motivo?: string; tier?: string }>();
   const motivo = esMomento(params.motivo) ? params.motivo : null;
-  const tierParam: OfferTier | undefined = params.tier === 'elite' || params.tier === 'pro' ? params.tier : undefined;
   const { session } = useAuth();
   const { prueba_auto_activa: pruebaAutoActiva } = useFlagsLeidos();
   const userId = session?.user.id;
@@ -193,11 +190,12 @@ export default function Pro() {
     const renueva = fechaLegible(periodEnd);
     const prueba = !!status?.trial;
     const dePago = planDePago(status?.plan) && !prueba;
-    const elite = isElite(status);
-    const conProfundo = !!status?.deepAllowed;
+    // Élite ya no se vende, pero quien lo paga sigue viendo el plan que tiene.
+    const elite = isElite(status) && !status?.trial;
     // Sin segunda suscripción: ni al Élite/dueño, ni a quien paga por Stripe
     // (web) o con plan heredado de Stripe. La tienda decide el resto.
-    const mejorable = purchasesAvailable() && puedeMejorarEnTienda(status, provider);
+    // Solo quien está de prueba tiene algo que comprar: ya no hay plan superior a Pro.
+    const mejorable = prueba && purchasesAvailable() && puedeMejorarEnTienda(status, provider);
     // Se gestiona en la tienda solo lo que se pagó en una tienda.
     const deTienda = dePago && (provider === 'apple' || provider === 'google');
     const gestionar = async () => {
@@ -218,9 +216,7 @@ export default function Pro() {
               eyebrow={elite ? 'NIVL Élite' : 'NIVL Pro'}
               titulo="El coach está contigo."
               subtitulo={
-                elite
-                  ? 'Máxima potencia y modo profundo. Brief, plan del día, entreno, dieta, revisión semanal y memoria.'
-                  : prueba
+                prueba
                     ? 'Tu prueba de 7 días. Brief, plan del día, entreno, dieta, revisión semanal y memoria. Al acabar no se cobra nada: no se renueva sola.'
                     : 'Brief, plan del día, entreno, dieta, revisión semanal y memoria. Todo activo.'
               }
@@ -251,17 +247,11 @@ export default function Pro() {
                   title="Plan"
                   trailing={
                     // RowValue por defecto pinta en ink6 y en Cinzel: el plan es el dato fuerte, en ink9.
-                    <Text style={styles.planValor}>{prueba ? (status?.plan === 'prueba_auto' ? 'Prueba de Élite' : 'Prueba de 7 días') : planLabel(status?.plan ?? null)}</Text>
+                    <Text style={styles.planValor}>{prueba ? (status?.plan === 'prueba_auto' ? 'Prueba de NIVL Pro' : 'Prueba de 7 días') : planLabel(status?.plan ?? null)}</Text>
                   }
                 />
                 {renueva ? (
                   <Row title={dePago ? 'Próxima renovación' : 'Activo hasta'} trailing={<Text style={styles.valor}>{renueva}</Text>} />
-                ) : null}
-                {conProfundo ? (
-                  <Row
-                    title="Modo profundo"
-                    detail={lineaProfundos(status)}
-                  />
                 ) : null}
               </TarjetaArena>
               {deTienda ? (
@@ -314,10 +304,9 @@ export default function Pro() {
                     userId={userId}
                     kind={kind}
                     compact
-                    initialTier={prueba ? (tierParam ?? 'pro') : 'elite'}
                     motivo={motivo}
                     planActual={deTienda ? productoDePlan(status?.plan) : null}
-                    exitLabel={prueba ? 'Seguir con la prueba' : 'Seguir con Pro'}
+                    exitLabel="Seguir con la prueba"
                     onExit={() => {
                       responder('cerrada');
                       setVerOferta(false);
@@ -331,7 +320,7 @@ export default function Pro() {
                 </View>
               ) : (
                 <Button
-                  title={prueba ? 'Suscribirme' : 'Ver NIVL Élite'}
+                  title="Suscribirme"
                   variant="secondary"
                   onPress={() => setVerOferta(true)}
                   style={styles.mejorar}
@@ -346,7 +335,7 @@ export default function Pro() {
 
   // Con motivo, la cabecera es la del momento; sin él, la de siempre. La prueba
   // se anuncia arriba solo si la cuenta puede empezarla.
-  const cabecera = motivo ? copyUpsell(motivo, tierParam ?? 'pro') : null;
+  const cabecera = motivo ? copyUpsell(motivo, 'pro') : null;
   const conPrueba = pruebaSieteDiasVisible(status?.trialAvailable, pruebaAutoActiva) ? ` ${LINEA_PRUEBA}` : '';
   return (
     <Screen refreshing={refreshing} onRefresh={refrescar}>
@@ -364,7 +353,6 @@ export default function Pro() {
           <ProOffer
             userId={userId}
             kind={kind}
-            initialTier={tierParam}
             motivo={motivo}
             exitLabel="Seguir gratis"
             onExit={salir}

@@ -233,7 +233,8 @@ function Contenido(p: AmigosVistaProps & { yo: NonNullable<AmigosVistaProps['yo'
       )}
 
       <Entrada indice={7}>
-        {estado !== 'fuera' ? <Ludus {...p} /> : null}
+        {/* Élite ya no se vende: solo quien ya está en un ludus lo sigue viendo. */}
+        {estado === 'miembro' ? <Ludus {...p} /> : null}
         {invitaciones ? <Invitados {...p} invitaciones={invitaciones} /> : null}
 
         {ocultos.length > 0 ? (

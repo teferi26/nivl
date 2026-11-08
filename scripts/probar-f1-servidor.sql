@@ -135,11 +135,11 @@ insert into public.profiles(id) values ('f1000000-0000-4000-8000-0000000000c3');
 insert into r select '23 la prueba no pisa una suscripción activa', status = 'active' and plan = 'pro_anual' and provider = 'apple',
   status || ' ' || plan || ' ' || provider from public.subscriptions where user_id = 'f1000000-0000-4000-8000-0000000000c3';
 insert into r select '24 prueba: Élite con Haiku, sin profundo, tope 20',
-  (s->>'entitled')::boolean and (s->>'trial')::boolean and s->>'tier' = 'elite' and s->'routes'->>'default' = 'claude-haiku-4-5'
+  (s->>'entitled')::boolean and (s->>'trial')::boolean and s->>'tier' = 'elite' and s->'routes'->>'default' = 'claude-haiku-5-5'
   and not (s->>'deep_allowed')::boolean and (s->>'tope_dia')::int = 20, s::text
   from (select public.ai_state('f1000000-0000-4000-8000-0000000000d4') s) x;
 insert into public.coach_runs(user_id, kind, model, cost_micro_usd)
-  select 'f1000000-0000-4000-8000-0000000000d4', 'chat', 'claude-haiku-4-5', 1000 from generate_series(1, 20);
+  select 'f1000000-0000-4000-8000-0000000000d4', 'chat', 'claude-haiku-5-5', 1000 from generate_series(1, 20);
 insert into r select '25 tope diario de mensajes', s->>'reason' = 'tope_diario' and not (s->>'allowed')::boolean, s->>'reason'
   from (select public.ai_begin_turn('f1000000-0000-4000-8000-0000000000d4', 'estandar') s) x;
 select public.apply_store_event(jsonb_build_object(

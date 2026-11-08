@@ -232,7 +232,7 @@ await db.query("update app_config set value='3'::jsonb where key='ia_ritmo_facto
 {
   const L = await usuario('elite_mensual', 'legacy@abuso.invalid');
   await db.query(`insert into coach_runs(user_id,kind,mode,model,in_tokens,out_tokens,cost_micro_usd)
-    values($1,'chat','estandar','claude-sonnet-5',1,1,5950000)`, [L]);
+    values($1,'chat','estandar','claude-haiku-5-5',1,1,5950000)`, [L]);
   eq((await reservar(L, 'chat', 'estandar', 60000, randomUUID())).motivo, 'tope_mes', 'coach_runs antiguos cuentan');
   eq((await reservar(L, 'chat', 'estandar', 50000, randomUUID())).ok, true, 'cabe lo que de verdad queda');
 }

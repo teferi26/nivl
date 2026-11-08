@@ -71,7 +71,7 @@ const TIERS_CONOCIDOS: readonly Tier[] = ['free', 'pro', 'elite', 'owner'];
 /**
  * Estado de la IA de la cuenta con sesión iniciada. Cada campo nuevo (0024)
  * lleva su valor por defecto: con el servidor aún en la 0020 la pantalla se
- * pinta igual, sin modo profundo ni prueba.
+ * pinta igual, sin prueba.
  */
 export async function fetchAiStatus(): Promise<AiStatus> {
   const { data, error } = await supabase.rpc('ai_status');
@@ -88,9 +88,6 @@ export async function fetchAiStatus(): Promise<AiStatus> {
     remaining: Number(s.remaining ?? 0),
     renews: typeof s.renews === 'string' ? s.renews : undefined,
     trial: s.trial === true,
-    deepAllowed: s.deep_allowed === true,
-    deepRemaining: Number(s.deep_remaining ?? 0),
-    deepTurns: Number(s.deep_turns ?? 0),
     trialAvailable: s.trial_available === true,
     vision: typeof s.vision === 'boolean' ? s.vision : null,
     ia: carteraDe(s.ia),
@@ -394,34 +391,30 @@ export async function introsDeTienda(): Promise<Partial<Record<ProPlanId, string
   return out;
 }
 
-/** Lo que la pantalla de fin de la prueba automática enseña junto a «Seguir con Élite». */
+/** Lo que la pantalla de fin de la prueba automática enseña junto a «Seguir con NIVL Pro». */
 export interface OfertaFinPrueba {
   /** Precios de la tienda (los que se cobran); null si la tienda no los da. */
-  eliteMes: string | null;
-  eliteAnio: string | null;
-  proMes: string | null;
-  /** «5 días» si el Élite mensual tiene periodo gratis y la cuenta es (o puede ser) elegible. */
+  planMes: string | null;
+  planAnio: string | null;
+  /** «5 días» si el plan mensual tiene periodo gratis y la cuenta es (o puede ser) elegible. */
   introGratis: string | null;
   /** En iOS la elegibilidad no se pudo confirmar: se dice como condicional. */
   introCondicional: boolean;
 }
 
 /**
- * Los precios del Élite (y el Pro mensual) y la oferta introductoria del
- * Élite mensual, si la tienda la declara (fase B: 5 días a 0 €, configurada
- * en App Store Connect y Play Console). Sin tienda (Expo Go, web), todo null:
+ * Los precios de NIVL Pro y su oferta introductoria mensual, si la tienda la declara. Sin tienda (Expo Go, web), todo null:
  * la pantalla enseña los precios de la tabla.
  */
 export async function ofertaFinPrueba(): Promise<OfertaFinPrueba> {
-  const out: OfertaFinPrueba = { eliteMes: null, eliteAnio: null, proMes: null, introGratis: null, introCondicional: false };
+  const out: OfertaFinPrueba = { planMes: null, planAnio: null, introGratis: null, introCondicional: false };
   if (!purchasesAvailable()) return out;
   await asegurarUsuario();
   const paquetes = await todosLosPaquetes();
   const de = (id: ProPlanId) => paquetes.find((p) => productoBase(p.product.identifier) === id);
-  out.eliteMes = precioVisible(de('nivl_elite_mensual')?.product.priceString);
-  out.eliteAnio = precioVisible(de('nivl_elite_anual')?.product.priceString);
-  out.proMes = precioVisible(de('nivl_pro_mensual')?.product.priceString);
-  const mes = de('nivl_elite_mensual');
+  out.planMes = precioVisible(de('nivl_pro_mensual')?.product.priceString);
+  out.planAnio = precioVisible(de('nivl_pro_anual')?.product.priceString);
+  const mes = de('nivl_pro_mensual');
   const periodo = periodoIntroGratis(mes?.product.introPrice);
   if (mes && periodo) {
     let st: number | undefined;

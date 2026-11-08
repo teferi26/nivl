@@ -9,7 +9,7 @@ import { instalar, peticion, turnoTexto, USER_ID, USER_TOKEN, type Llamada } fro
 import { handler } from '../coach/handler.ts';
 import { adminClient, userClient } from './db.ts';
 import { DATOS_ABRE, DATOS_CIERRA } from './prompt.ts';
-import { CHEAP_MODEL } from './anthropic.ts';
+import { COACH_MODEL } from './anthropic.ts';
 import {
   esperarSegundoPlano,
   MIN_NUEVOS,
@@ -79,14 +79,15 @@ function datos(hilo: Fila, msgs: Fila[]): Record<string, Fila[]> {
   };
 }
 
-const esHaiku = (body: any) => String(body?.model ?? '').startsWith('claude-haiku');
+// El resumen del hilo es la única llamada sin herramientas de estos turnos.
+const esHaiku = (body: any) => !body?.tools?.length;
 const RESUMEN_OK = '- Acordó entrenar L-X-V a las 7:00.\n- Sentadilla 100×5 el 30/09.';
 
 function proveedor(retraso?: Promise<void>) {
   return async (body: any) => {
     if (esHaiku(body)) {
       if (retraso) await retraso;
-      return turnoTexto(RESUMEN_OK, { input_tokens: 3_000, output_tokens: 200 }, CHEAP_MODEL);
+      return turnoTexto(RESUMEN_OK, { input_tokens: 3_000, output_tokens: 200 }, COACH_MODEL);
     }
     return turnoTexto('Entendido.', { input_tokens: 20_000, output_tokens: 300 });
   };
@@ -137,9 +138,9 @@ Deno.test('L4 resumen: con ≥12 se resume tras el turno con Haiku, se guarda co
     const h = haikus(fake);
     equal(h.length, 1, 'una llamada a Haiku');
     const cuerpo = h[0].body as any;
-    equal(cuerpo.model, CHEAP_MODEL);
-    equal(cuerpo.thinking, undefined, 'Haiku 4.5 sin thinking adaptive');
-    equal(cuerpo.output_config, undefined, 'ni effort');
+    equal(cuerpo.model, COACH_MODEL);
+    equal(cuerpo.thinking.type, 'adaptive');
+    equal(cuerpo.output_config.effort, 'low');
     equal(cuerpo.tools, undefined, 'sin herramientas');
     const entrada = cuerpo.messages[0].content[0].text as string;
     ok(entrada.startsWith(DATOS_ABRE) && entrada.trimEnd().endsWith(DATOS_CIERRA), 'los mensajes van como DATO');
@@ -157,7 +158,7 @@ Deno.test('L4 resumen: con ≥12 se resume tras el turno con Haiku, se guarda co
 
     const runs = runsResumen(fake);
     equal(runs.length, 1);
-    equal(runs[0].model, CHEAP_MODEL);
+    equal(runs[0].model, COACH_MODEL);
     equal(runs[0].route, 'mecanica');
     ok(Number(runs[0].cost_micro_usd) > 0, 'el coste consta');
     equal(fake.escrituras('coach_runs').find((l) => (l.body as Fila).kind === 'resumen_hilo')!.rol, 'service');

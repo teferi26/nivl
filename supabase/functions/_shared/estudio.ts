@@ -2,13 +2,13 @@
 //
 // Flashcards, resúmenes, mapas conceptuales, extractos bancarios, dietas y entrenos generados a partir de
 // un texto que pega el gladiador. Regla de AGENTS.md: si la tarea es leer y transformar, va con
-// CHEAP_MODEL (Haiku) y FUERA del contexto del coach, como el atajo `kind: 'clasificar'`: sin dossier, sin
+// COACH_MODEL y FUERA del contexto del coach, como el atajo `kind: 'clasificar'`: sin dossier, sin
 // estudios, sin historial y sin herramientas. Coste medido con la cota: ~0,005-0,02 $ por petición frente
 // a 0,08-0,16 $ si fueran turnos del coach (COSTE_IA_ELITE.md).
 //
 // Cada petición reserva su coste en la cartera (función 'estudio', 50 al día) antes de llamar.
 
-import { callClaude, CHEAP_MODEL, type Cartera, type Turn } from './anthropic.ts';
+import { callClaude, COACH_MODEL, type Cartera, type Turn } from './anthropic.ts';
 import { AI_SAFETY_RULES, REGLA_PRODUCTOS_FINANCIEROS } from './ai-safety.ts';
 import { DATOS_ABRE, DATOS_CIERRA, neutralizarDatos, REGLA_DATOS, REGLA_SIN_GUIONES } from './prompt.ts';
 
@@ -21,14 +21,14 @@ export const TAREAS_DE_SALUD: readonly TareaEstudio[] = ['dieta', 'entreno'];
 /** Lo más largo que se acepta de texto de entrada (~10 k fichas). Lo demás se recorta. */
 export const MAX_TEXTO_ESTUDIO = 40_000;
 
-/** Techo de salida por tarea: la cota de la reserva sale de aquí. */
+/** Techo de salida por tarea (el pensamiento cuenta dentro): la cota de la reserva sale de aquí. */
 export const MAX_SALIDA_ESTUDIO: Record<TareaEstudio, number> = {
-  flashcards: 2500,
-  resumen: 1500,
-  mapa: 2000,
-  extracto: 3000,
-  dieta: 2500,
-  entreno: 2000,
+  flashcards: 5000,
+  resumen: 3000,
+  mapa: 4000,
+  extracto: 6000,
+  dieta: 5000,
+  entreno: 4000,
 };
 
 const VOZ = `Eres una herramienta de NIVL que transforma el texto que te da el usuario. Español, claro y directo, sin emojis. No inventes datos que no estén en el texto. ${REGLA_SIN_GUIONES}`;
@@ -88,7 +88,7 @@ export async function generarEstudio(
     `# Texto del usuario\n${DATOS_ABRE}\n${neutralizarDatos(texto.slice(0, MAX_TEXTO_ESTUDIO))}\n${DATOS_CIERRA}`,
   ].join('\n');
   const turn = await callClaude({
-    model: CHEAP_MODEL,
+    model: COACH_MODEL,
     system: [{ type: 'text', text: sistemaEstudio(tarea), cache_control: { type: 'ephemeral' } }],
     messages: [{ role: 'user', content: [{ type: 'text', text: entrada }] }],
     maxTokens: MAX_SALIDA_ESTUDIO[tarea],

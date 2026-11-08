@@ -7,7 +7,7 @@ import path from 'path';
 import { HORIZONTES, textoCompromiso } from '../compromiso';
 import { DIFFICULTY_LABEL, STAT_LABEL } from '../game';
 import { KINDS, MODULES, PROFILE_KINDS } from '../kinds';
-import { COPY_UPSELL, ELITE_BENEFITS, PRO_BENEFITS, TIERS } from '../proplans';
+import { COPY_UPSELL, PRO_BENEFITS, TIERS } from '../proplans';
 import { preciosFin } from '../pruebaAutomath';
 
 const FOTO = path.join(__dirname, 'fijos', 'textos-lib-es.json');
@@ -54,8 +54,7 @@ function foto() {
     }),
     niveles: TIERS.map((x) => [x.id, x.name, x.label, x.power]),
     beneficiosPro: PRO_BENEFITS.map((b) => [b.icon, b.title, b.detail]),
-    beneficiosElite: ELITE_BENEFITS.map((b) => [b.icon, b.title, b.detail]),
-    upsellFirma: [COPY_UPSELL['firma.pro'], COPY_UPSELL['firma.elite']].map((c) => ({ ...c })),
+    upsellFirma: [COPY_UPSELL['firma.pro']].map((c) => ({ ...c })),
     preciosReserva: preciosFin(null),
   };
 }

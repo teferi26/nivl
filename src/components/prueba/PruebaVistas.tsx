@@ -3,10 +3,10 @@
 // · BienvenidaPrueba: hoja la primera vez que la app ve la prueba activa.
 //   Cuántos días, cuándo termina (fecha y hora del teléfono) y TODO lo que
 //   incluye, sin prometer lo que la prueba no trae: el coach va en el modelo
-//   económico con un tope diario y el modo profundo no entra.
+//   económico con un tope diario.
 // · FinPrueba: pantalla al vencer sin compra. Dos salidas del MISMO peso
 //   (las dos `secondary`, mismo tamaño; ninguna invertida, nada preseleccionado)
-//   y, junto a «Seguir con Élite», precio, periodo y renovación (Apple 3.1.2 y
+//   y, junto a «Seguir con NIVL Pro», precio, periodo y renovación (Apple 3.1.2 y
 //   Google Play). Debajo, qué conserva y qué deja de tener con el plan gratis.
 
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -53,8 +53,6 @@ export function listaIncluye(): { icono: keyof typeof Ionicons.glyphMap; texto: 
   return [
     { icono: 'sparkles-outline', texto: t('prueba:incluye.coach') },
     { icono: 'calendar-outline', texto: t('prueba:incluye.revision') },
-    { icono: 'ribbon-outline', texto: t('prueba:incluye.laurel') },
-    { icono: 'people-outline', texto: t('prueba:incluye.ludus') },
   ];
 }
 
@@ -80,9 +78,6 @@ export function BienvenidaPrueba({ visible, dias, fecha, hora, onCerrar }: Bienv
           {p.texto}
         </Punto>
       ))}
-      <Punto icono="remove-outline" apagado>
-        {t('prueba:incluye.profundo')}
-      </Punto>
 
       <Rotulo>{t('prueba:bienvenida.gratis')}</Rotulo>
       <Text style={styles.cuerpo} maxFontSizeMultiplier={1.35}>
@@ -95,10 +90,9 @@ export function BienvenidaPrueba({ visible, dias, fecha, hora, onCerrar }: Bienv
 // ── Fin ────────────────────────────────────────────────────────────────
 
 export interface PreciosFin {
-  eliteMes: string;
-  eliteAnio: string;
-  proMes: string;
-  /** «5 días» si la tienda declara un periodo gratis para el Élite mensual. */
+  planMes: string;
+  planAnio: string;
+  /** «5 días» si la tienda declara un periodo gratis para el plan mensual. */
   introGratis: string | null;
   introCondicional: boolean;
 }
@@ -142,15 +136,12 @@ export function FinPrueba({ fecha, hora, precios, onSeguir, onQuedarme, ocupado 
           <Text style={[styles.nota, styles.destacado]} maxFontSizeMultiplier={1.35}>
             {t(precios.introCondicional ? 'prueba:fin.introCondicional' : 'prueba:fin.intro', {
               periodo: precios.introGratis,
-              precio: precios.eliteMes,
+              precio: precios.planMes,
             })}
           </Text>
         ) : null}
         <Text style={styles.nota} maxFontSizeMultiplier={1.35}>
-          {t('prueba:fin.precios', { mes: precios.eliteMes, anio: precios.eliteAnio })}
-        </Text>
-        <Text style={styles.nota} maxFontSizeMultiplier={1.35}>
-          {t('prueba:fin.pro', { precio: precios.proMes })}
+          {t('prueba:fin.precios', { mes: precios.planMes, anio: precios.planAnio })}
         </Text>
       </TarjetaArena>
 
@@ -170,12 +161,6 @@ export function FinPrueba({ fecha, hora, precios, onSeguir, onQuedarme, ocupado 
       </Punto>
       <Punto icono="remove-outline" apagado>
         {t('prueba:fin.pierdeRevision')}
-      </Punto>
-      <Punto icono="remove-outline" apagado>
-        {t('prueba:fin.pierdeLaurel')}
-      </Punto>
-      <Punto icono="remove-outline" apagado>
-        {t('prueba:fin.pierdeLudus')}
       </Punto>
 
       <Text style={[styles.cuerpo, styles.datos]} maxFontSizeMultiplier={1.35}>

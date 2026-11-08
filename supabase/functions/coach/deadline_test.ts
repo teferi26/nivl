@@ -20,7 +20,7 @@ Deno.test('weekly final synthesis lowers effort only after time budget, keeping 
     equal(fake.proveedor.length, 2);
     const first = fake.proveedor[0].body as any;
     const last = fake.proveedor[1].body as any;
-    equal(first.output_config.effort, 'xhigh');
+    equal(first.output_config.effort, 'high');
     equal(first.max_tokens, 16000);
     equal(last.output_config.effort, 'low');
     equal(last.max_tokens, 8000);
@@ -38,7 +38,7 @@ for (const stream of [false, true]) {
       return controller.signal;
     };
     const events = [
-      { type: 'message_start', message: { model: 'claude-sonnet-5', usage: { input_tokens: 100_000, output_tokens: 0 } } },
+      { type: 'message_start', message: { model: 'claude-haiku-5-5', usage: { input_tokens: 100_000, output_tokens: 0 } } },
       { type: 'content_block_start', index: 0, content_block: { type: 'text', text: '' } },
       { type: 'content_block_delta', index: 0, delta: { type: 'text_delta', text: 'INCOMPLETE_PRIVATE_RESPONSE' } },
     ];
@@ -61,7 +61,7 @@ for (const stream of [false, true]) {
       }
       const ledgers = fake.escrituras('coach_runs').map((c) => c.body as any);
       equal(ledgers.length, 1);
-      ok(ledgers[0].cost_micro_usd > 200_000);
+      ok(ledgers[0].cost_micro_usd > 9_000);
       ok(ledgers[0].out_tokens > 0);
       equal(ledgers[0].error, 'turn_failed');
       equal(fake.escrituras('coach_messages').filter((c) => (c.body as any).role === 'assistant').length, 0);

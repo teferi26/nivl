@@ -184,13 +184,13 @@
       "pro",
       "NIVL Pro",
       "Pro",
-      "El coach en potencia estándar."
+      "El coach completo."
     ],
     [
       "elite",
       "NIVL Élite",
       "Élite",
-      "El coach a máxima potencia, con modo profundo."
+      "El coach completo."
     ]
   ],
   "beneficiosPro": [
@@ -230,55 +230,19 @@
       "Díselo y lo hace: misiones, agenda, normas, metas."
     ]
   ],
-  "beneficiosElite": [
-    [
-      "flash-outline",
-      "Máxima potencia",
-      "Un modelo de primera línea en cada brief, plan, revisión y conversación."
-    ],
-    [
-      "telescope-outline",
-      "Modo profundo",
-      "Para lo que pide pensarlo a fondo: el coach se toma su tiempo y responde con más detalle."
-    ],
-    [
-      "analytics-outline",
-      "Revisión semanal a fondo",
-      "Tu semana medida por el modelo de primera línea, pensando a fondo."
-    ],
-    [
-      "shield-outline",
-      "Solicita plaza en un ludus (5-8)",
-      "Un grupo de 5 a 8 gladiadores Élite con tu objetivo y marcador propio. La asignación es manual, según disponibilidad."
-    ],
-    [
-      "ribbon-outline",
-      "Insignia de laurel",
-      "El laurel dorado junto a tu nombre. Estatus, no puntos: no cambia ningún ranking."
-    ]
-  ],
   "upsellFirma": [
     {
+      "beneficio": "Brief cada mañana",
       "eyebrow": "Juramento sellado",
       "titulo": "Ahora, quién lo dirige.",
       "linea": "Tu juramento está sellado. El coach puede dirigir tu día desde mañana.",
       "enlace": "Ver NIVL Pro",
-      "contexto": "Tu juramento está sellado. NIVL sigue gratis entera; Pro añade el coach que lo dirige.",
-      "beneficio": "Brief cada mañana"
-    },
-    {
-      "eyebrow": "Juramento sellado",
-      "titulo": "El coach a máxima potencia.",
-      "linea": "Tu juramento está sellado. Élite es el coach a máxima potencia.",
-      "enlace": "Ver NIVL Élite",
-      "contexto": "Tu juramento está sellado. NIVL sigue gratis entera; Élite añade el coach a máxima potencia.",
-      "beneficio": "Máxima potencia"
+      "contexto": "Tu juramento está sellado. NIVL sigue gratis entera; Pro añade el coach que lo dirige."
     }
   ],
   "preciosReserva": {
-    "eliteMes": "29,99 €",
-    "eliteAnio": "299,00 €",
-    "proMes": "12,99 €",
+    "planMes": "12,99 €",
+    "planAnio": "99,99 €",
     "introGratis": null,
     "introCondicional": false
   }

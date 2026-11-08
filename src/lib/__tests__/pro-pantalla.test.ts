@@ -109,11 +109,11 @@ test('con el estado leído y sin coach, la oferta se pinta sin error', async () 
 });
 
 test('una sola inversión: con la oferta abierta, «Hablar con el coach» pasa a secondary', async () => {
-  estado.mockResolvedValue(PRO_TIENDA);
+  estado.mockResolvedValue({ ...PRO_TIENDA, trial: true, plan: 'cortesia' });
   await montar();
   expect(boton('Hablar con el coach').props.variant).toBe('primary');
   await act(async () => {
-    boton('Ver NIVL Élite').props.onPress!();
+    boton('Suscribirme').props.onPress!();
   });
   expect(r!.root.findAllByType('ProOffer')).toHaveLength(1);
   expect(boton('Hablar con el coach').props.variant).toBe('secondary');

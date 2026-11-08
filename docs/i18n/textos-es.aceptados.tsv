@@ -2429,3 +2429,26 @@ iron-pierna	+	Abre la pierna recta con la punta del pie mirando al frente.
 iron-pierna	+	Vuelve despacio sin dejar que la banda te junte las rodillas.
 iron-pierna	+	Inclinar el tronco para abrir más.
 iron-pierna	+	Girar la punta del pie hacia arriba.
+coach	-	PROFUNDO
+coach	-	Potencia del coach
+coach	-	Estándar
+coach	-	Profundo
+coach	-	Modo profundo. {}
+coach	-	Las fotos al coach son de Élite
+coach	+	Las fotos al coach van con NIVL Pro
+coach	+	Amplía la IA de tu plan activo. Lo que no uses se conserva.
+oferta	+	El coach completo.
+onboarding	-	Tus hábitos, tu organización y tu progreso son gratis. Los planes de pago añaden el coach de IA y, con Élite, insignia y solicitud de plaza en un ludus.
+onboarding	+	Tus hábitos, tu organización y tu progreso son gratis. NIVL Pro añade el coach de IA.
+onboarding	+	Tus hábitos, tu organización y tu progreso son gratis. NIVL Pro añade el coach de IA. Decide ahora o más adelante: el compromiso vale igual.
+prueba	+	Prueba de NIVL Pro
+prueba	+	Tienes {} día de NIVL Pro
+prueba	+	Tienes {} días de NIVL Pro
+prueba	+	Sin tarjeta y sin cobro automático. Al terminar, eliges tú: seguir con NIVL Pro o quedarte en el plan gratis.
+prueba	+	El coach de NIVL Pro, con un tope diario de mensajes durante la prueba: brief de la mañana, plan del día, chat, revisión semanal, entreno y dieta.
+prueba	+	Revisión semanal: la semana, tu ficha física y tu progreso.
+prueba	+	Te queda 1 día de NIVL Pro. Termina el {} a las {}.
+prueba	+	Tus días de NIVL Pro han terminado
+prueba	+	Seguir con NIVL Pro
+prueba	+	Seguir con NIVL Pro. Abre los planes de la tienda
+prueba	+	NIVL Pro: {} al mes o {} al año. Se renueva solo hasta que lo canceles en la tienda.
