@@ -71,6 +71,8 @@ async function sql(query) {
 
 // Cada migración se reconoce por un objeto que solo ella crea.
 const HUELLAS = {
+  '0142': `coalesce(obj_description(to_regprocedure('public.liquidate_creator(uuid,text)'), 'pg_proc') like '%nivl:pago-multiplos-0142%', false)`,
+  '0141': `to_regprocedure('public.devengar_comisiones()') is not null`,
   '0111': `public.health_consent_version() = '2026-11-08-salud-v2'`,
   '0110': `to_regclass('public.salud_diaria') is not null and coalesce(obj_description(to_regprocedure('public.export_my_data()'), 'pg_proc') like '%nivl:salud-diaria-0110%', false) and coalesce(obj_description(to_regprocedure('public.complete_health_erasure(uuid,uuid)'), 'pg_proc') like '%nivl:salud-diaria-0110%', false)`,
   '0140': `to_regprocedure('public.mis_modos()') is not null`,

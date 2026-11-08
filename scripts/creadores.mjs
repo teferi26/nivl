@@ -384,6 +384,8 @@ async function liquidar(rawCode, nota) {
   const c = codigo(rawCode);
   const cr = await creadorPorCodigo(c);
   if (fichaRetirada(cr)) console.log(`Aviso: ${AVISO_RETIRADA}`);
+  // Antes de la foto: los tramos cerrados hoy aún no los ha calculado el cron.
+  await sql('select public.devengar_comisiones();');
   const [detalle, [claw]] = [await sql(sqlDetalleLiquidacion(cr.id)), await sql(sqlFotoDescuentos(cr.id))];
   const foto = fotoLiquidacion(detalle, claw);
 
@@ -393,8 +395,8 @@ async function liquidar(rawCode, nota) {
   }
   console.log(`Disponible:  ${eur(foto.disponible)} (${foto.n} comisiones fuera de retención)`);
   console.log(`A descontar: ${eur(foto.descuento)} (${foto.nDescuentos} reembolsos de comisiones ya pagadas)`);
-  console.log(`A pagar:     ${eur(Math.max(foto.aPagar, 0))}`);
-  if (foto.aPagar <= 0) return console.log('\nNada que liquidar ahora.');
+  console.log(`A pagar:     ${eur(Math.max(foto.aPagar, 0))} (múltiplos de 5 €; redondeo que se queda NIVL: ${eur(Math.max(foto.saldo - Math.max(foto.aPagar, 0), 0))})`);
+  if (foto.aPagar <= 0) return console.log('\nNo llega a 5 €: nada que liquidar ahora.');
 
   if (!(await confirmar(`\n¿Apuntar el pago de ${eur(foto.aPagar)} a ${cr.code}? La transferencia la haces tú.`, cr.code))) {
     return console.log('Cancelado. No se ha apuntado nada.');
@@ -449,6 +451,7 @@ export function fotoLiquidacion(detalle, claw) {
   }
   const disponible = detalle.reduce((s, r) => s + Number(r.amount_cents), 0);
   const descuento = Number(claw?.cents ?? 0);
+  const saldo = disponible - descuento;
   return {
     ids: ids.join(','),
     idsDescuentos: String(claw?.ids ?? '').split(',').filter(Boolean).sort().join(','),
@@ -456,7 +459,9 @@ export function fotoLiquidacion(detalle, claw) {
     descuento,
     n: detalle.length,
     nDescuentos: Number(claw?.n ?? 0),
-    aPagar: disponible - descuento,
+    saldo,
+    // Múltiplos de 5 € hacia abajo, como liquidate_creator (0142).
+    aPagar: saldo > 0 ? saldo - (saldo % 500) : saldo,
   };
 }
 

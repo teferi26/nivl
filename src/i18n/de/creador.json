@@ -41,7 +41,7 @@
     "cuentasMes": "Konten diesen Monat",
     "ventasMes": "Verkäufe diesen Monat",
     "queEsVenta": "Ein Verkauf ist ein Konto von dir, das zum ersten Mal ein Abo abschließt.",
-    "comision": "Pro Jahresabo bekommst du {{importe}}; beim Monatsabo deine {{pct}} % der monatlichen Einnahmen, bis derselbe Betrag erreicht ist."
+    "comision": "Du bekommst {{pct}} % des Gewinns jedes Verkaufs: die Einnahmen ohne Steuern und Store-Gebühren, abzüglich der KI-Kosten. Die Berechnung erfolgt monatlich, auch bei Jahresabos."
   },
   "retos": {
     "titulo": "Challenges",
@@ -75,7 +75,7 @@
     "fijo": "Monatlicher Fixbetrag",
     "descontar": "Abzuziehen",
     "descontarDetalle": "Erstattungen bereits ausgezahlter Provisionen",
-    "retencionNota": "Jede Provision wartet {{dias}} Tage auf eine mögliche Erstattung; danach wird sie verfügbar und mit der nächsten Abrechnung ausgezahlt. Erstattet der Store das Geld, verfällt die Provision."
+    "retencionNota": "Jede Provision wartet {{dias}} Tage auf eine mögliche Erstattung; danach wird sie verfügbar und mit der nächsten Abrechnung ausgezahlt. Erstattet der Store das Geld, verfällt die Provision. Ausgezahlt wird in 5-€-Schritten, abgerundet; der gerundete Rest wird nicht übertragen."
   },
   "pagos": {
     "titulo": "Erhaltene Zahlungen",

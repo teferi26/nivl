@@ -50,7 +50,6 @@ import {
   lineaPosicion,
   lineaRango,
   pagoLabel,
-  porVentaAnual,
   rangoLabel,
   ventasLabel,
 } from '@/lib/creatormath';
@@ -274,7 +273,7 @@ export function CreadorVista({
           </Text>
           {web ? (
             <Text style={styles.nota} maxFontSizeMultiplier={1.35}>
-              {t('creador:cuentas.comision', { importe: porVentaAnual(web.pct, web.baseCents), pct: Math.round(web.pct) })}
+              {t('creador:cuentas.comision', { pct: Math.round(web.pct) })}
             </Text>
           ) : null}
         </Section>

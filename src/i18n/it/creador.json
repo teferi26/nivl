@@ -41,7 +41,7 @@
     "cuentasMes": "Account questo mese",
     "ventasMes": "Vendite questo mese",
     "queEsVenta": "Una vendita è un tuo account che si abbona per la prima volta.",
-    "comision": "Per una vendita annuale incassi {{importe}}; con il mensile, il tuo {{pct}}% di ciò che entra ogni mese fino ad arrivare alla stessa cifra."
+    "comision": "Incassi il {{pct}}% del profitto di ogni vendita: ciò che entra al netto di tasse e commissioni dello store, meno il costo della sua IA. Si calcola mese per mese, anche nei piani annuali."
   },
   "retos": {
     "titulo": "Sfide",
@@ -75,7 +75,7 @@
     "fijo": "Fisso mensile",
     "descontar": "Da detrarre",
     "descontarDetalle": "Rimborsi di commissioni già incassate",
-    "retencionNota": "Ogni commissione attende {{dias}} giorni in caso di rimborso; poi diventa disponibile e si paga nella liquidazione successiva. Se lo store restituisce i soldi, la commissione si annulla."
+    "retencionNota": "Ogni commissione attende {{dias}} giorni in caso di rimborso; poi diventa disponibile e si paga nella liquidazione successiva. Se lo store restituisce i soldi, la commissione si annulla. Si paga in multipli di 5 €, arrotondando per difetto; ciò che avanza non si accumula."
   },
   "pagos": {
     "titulo": "Pagamenti ricevuti",

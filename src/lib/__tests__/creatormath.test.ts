@@ -26,6 +26,7 @@ import {
   type Comision,
   type Producto,
 } from '../creatormath';
+import { comisionTramo, iaCents, mesesDeCobro, netoTramoCents } from '../creatormath';
 
 // Los productos de store_products (0025).
 const PRO_MENSUAL: Producto = { period: 'mensual' };
@@ -300,7 +301,7 @@ describe('oferta rebajada: comisión proporcional (propuesta 1.0.9)', () => {
 
 describe('liquidación', () => {
   it('disponible menos clawbacks; si no queda nada, no hay pago', () => {
-    expect(liquidacionCents(5000, 1200)).toBe(3800);
+    expect(liquidacionCents(5000, 1200)).toBe(3500);
     expect(liquidacionCents(1000, 1000)).toBeNull();
     expect(liquidacionCents(0, 0)).toBeNull();
   });
@@ -383,5 +384,59 @@ describe('estado de un reto', () => {
   it('fechas inválidas nunca cuentan como activo', () => {
     expect(estadoReto({ startsAt: 'x', endsAt: 'y', goalSales: 2 }, 0, t0).fase).toBe('terminado');
     expect(estadoReto({ ...RETO, endsAt: RETO.startsAt }, 0, t0).fase).toBe('terminado');
+  });
+});
+
+describe('comisión sobre beneficio (espejo de devengar_comisiones, 0141)', () => {
+  it('los tramos de un anual suman exactamente el neto', () => {
+    const neto = 4214;
+    const tramos = Array.from({ length: 12 }, (_, i) => netoTramoCents(neto, i + 1, 12));
+    expect(tramos.reduce((a, b) => a + b, 0)).toBe(neto);
+    expect(mesesDeCobro('anual')).toBe(12);
+    expect(mesesDeCobro('mensual')).toBe(1);
+  });
+
+  it('el % se aplica al neto menos la IA real del mes', () => {
+    expect(iaCents(1_000_000, 0.93)).toBe(93);
+    expect(comisionTramo({ pct: 50, netoCents: 351, iaCents: 51, capCents: 5000, acumuladoCents: 0 })).toBe(150);
+  });
+
+  it('con más IA que ingreso no sale negativa: 0 €', () => {
+    expect(comisionTramo({ pct: 50, netoCents: 351, iaCents: 900, capCents: 5000, acumuladoCents: 0 })).toBe(0);
+  });
+
+  it('no pasa del tope por cuenta', () => {
+    expect(comisionTramo({ pct: 50, netoCents: 2107, iaCents: 0, capCents: 5000, acumuladoCents: 4900 })).toBe(100);
+    expect(comisionTramo({ pct: 50, netoCents: 2107, iaCents: 0, capCents: 5000, acumuladoCents: 5000 })).toBe(0);
+  });
+
+  it('un año de un modo anual nunca paga más que el beneficio', () => {
+    const neto = 4214;
+    let total = 0;
+    for (let k = 1; k <= 12; k++) {
+      total += comisionTramo({ pct: 50, netoCents: netoTramoCents(neto, k, 12), iaCents: 50, capCents: 5000, acumuladoCents: total });
+    }
+    expect(total).toBeLessThanOrEqual(neto - 600);
+    expect(total).toBeGreaterThan(1790);
+  });
+
+  it('la renovación no tiene tope', () => {
+    expect(comisionTramo({ pct: 10, netoCents: 351, iaCents: 51, capCents: null, acumuladoCents: 99999 })).toBe(30);
+  });
+});
+
+describe('el pago va en múltiplos de 5 € (0142)', () => {
+  it('redondea hacia abajo', () => {
+    expect(liquidacionCents(1876, 0)).toBe(1500);
+    expect(liquidacionCents(2000, 0)).toBe(2000);
+    expect(liquidacionCents(499, 0)).toBeNull();
+  });
+
+  it('un descuento se resta antes de redondear', () => {
+    expect(liquidacionCents(1876, 400)).toBe(1000);
+  });
+
+  it('un descuento mayor que el saldo no paga nada', () => {
+    expect(liquidacionCents(100, 900)).toBeNull();
   });
 });

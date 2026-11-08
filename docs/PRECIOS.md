@@ -92,22 +92,28 @@ Los planes antiguos conservan el suyo hasta caducar (Pro mensual 9 $, Pro anual 
 
 ## Programa de creadores (clippers)
 
-| Rango | Comisión | Por venta anual |
+| Rango | % del beneficio | Tope por cuenta |
 |---|---|---|
 | Novato | 25 % | 25 € |
 | Pro | 35 % | 35 € |
 | Élite (rango de creador, no el plan retirado) | 50 % | 50 € |
 
-Reglas:
+Reglas (0141):
 
-1. **La base es siempre 100 €**.
-2. **Solo el primer pago.** Renovaciones: 0 % (parámetro; como mucho 10 %).
-3. **Retención de 30 días** por reembolsos: si Apple o Google devuelven el
-   dinero (webhook de RevenueCat), la comisión se anula.
-4. **Mensual**: el creador cobra su % **del neto de cada mes cobrado** hasta
-   llegar a lo mismo que en el anual (25/35/50 €). Sustituye a la idea de
-   «pagar entera al tercer mes»: con el Pro mensual, 3 meses dejan 27 € limpios
-   y pagar 50 € ese día pierde dinero si el usuario se va en el cuarto.
+1. **El creador cobra sobre el beneficio, no sobre la facturación.** Beneficio =
+   neto del cobro (sin IVA ni tienda) menos el coste real de IA de esa cuenta.
+   Nunca es negativo: un mes con más IA que ingreso deja 0 €.
+2. **Se calcula mes a mes.** Un anual se reparte en 12 tramos y cada uno se
+   devenga al cerrarse su mes (`devengar_comisiones`, cada noche); el coste de
+   IA de un anual no se conoce el día del pago.
+3. **Solo el primer anual.** Renovaciones: 0 % (parámetro; como mucho 10 %, también
+   sobre el beneficio).
+4. **Retención de 30 días** por reembolsos: si Apple o Google devuelven el
+   dinero (webhook de RevenueCat), los tramos se anulan y lo ya pagado se descuenta.
+   Mensual: su % del beneficio de cada mes cobrado, hasta el tope por cuenta.
+   **Se paga en múltiplos de 5 €, redondeando hacia abajo** (0142): lo que sobra
+   al redondear un pago se queda en NIVL y no se acumula. Por debajo de 5 € no se
+   paga y las comisiones siguen disponibles para la siguiente liquidación.
 5. El rango se gana por resultados. Un fijo mensual para los creadores Élite o un premio
    al primero del ranking son palancas posibles, del presupuesto de marketing y
    no de esta tabla; **hoy no hay ninguno activo** (las condiciones publicadas
@@ -117,23 +123,20 @@ Reglas:
 
 ## La cuenta que no puede fallar: primer año por venta anual
 
-La comisión de creadores no cambia (`creatormath.ts`): base fija de 100 € × rango,
-25/35/50 €. Es la decisión de 2026-09, cuando el anual más barato era 99,99 €.
+Comisión sobre el beneficio (0141). Ejemplo con la tienda al 15 % y **0,50 € de
+IA al mes por cuenta**, cifra ilustrativa y sin medir:
 
-Limpio − comisión, **antes de IA**:
+| Venta anual | Neto | Beneficio del año | Novato 25 % | Pro 35 % | Élite 50 % |
+|---|---|---|---|---|---|
+| Un modo, 59,99 € | 42,14 € | 36,14 € | 9,04 € | 12,65 € | 18,07 € |
+| Los cuatro, 99 € | 69,55 € | 63,55 € | 15,89 € | 22,24 € | 31,78 € |
 
-| Venta | Tienda 15 %, Novato 25 € | 15 %, Pro 35 € | 15 %, Élite 50 € | Tienda 30 %, Pro 35 € (tope sin SBP) |
-|---|---|---|---|---|
-| Un modo anual, 59,99 € | +17,14 € | +7,14 € | **−7,86 €** | **−0,29 €** |
-| Los cuatro anual, 99 € | +44,55 € | +34,55 € | +19,55 € | +22,27 € |
+La comisión nunca supera el beneficio, así que una venta ya no puede perder
+dinero por el creador. Si una cuenta agota el freno todos los meses (un modo
+anual: 3,26 € de IA al mes), el beneficio baja a 3 € al año y un creador Élite cobra 1,50 €.
 
-Con el peor caso de IA del freno, un modo anual pierde en todas las casillas
-(−21,92 € con Novato al 15 %); ese caso es el de una cuenta que agota el freno
-todos los meses, no el normal.
-
-**A vigilar:** con 59,99 € y la base de 100 €, un creador Élite cobra 50 € de
-42,14 € limpios: se pierden 7,86 € por venta antes de pagar la IA. Decisión
-pendiente del dueño.
+Las **condiciones publicadas para creadores** decían 25/35/50 € por venta anual:
+hay que actualizarlas antes de aplicar la 0141.
 
 Costes fijos a repartir: Supabase Pro 25 $/mes, Apple Developer 99 $/año,
 dominio nivl.app 15 $/año.
