@@ -28,8 +28,51 @@ La carpeta de la complicación tiene que ordenarse **después** de `watch` (el p
 3. **Completar sin el iPhone** (opción b del plan): leer la sesión de Supabase desde un keychain compartido y llamar a una RPC nueva que haga en el servidor las validaciones que hoy hace `completeQuest` en el cliente. Es migración y despliegue: queda planificado, no hecho.
 4. **FOCUS**: el reloj sigue y manda en el pomodoro del iPhone solo con FOCUS montado. Sin él, cuenta en el reloj como cronómetro que no registra sesión ni paga.
 5. **IRON**: el reloj enseña la serie que toca y cuenta el descanso; las series se siguen apuntando en el iPhone. El descanso sale de las repeticiones (`descansoSugerido`, doctrina de `knowledge.ts`) porque la prescripción no guarda descanso.
-6. **Ejecución extendida**: `WKBackgroundModes = mindfulness` (una sola clase por app). Se usa para FOCUS y para el descanso; si App Review lo discute para el gimnasio, la alternativa es un `HKWorkoutSession` (pide HealthKit y su revisión).
+6. **Ejecución extendida**: `WKBackgroundModes = mindfulness` (una sola clase por app). Se usa para FOCUS y para el descanso; si App Review lo discute para el gimnasio, la alternativa es un `HKWorkoutSession` (ya hay HealthKit: ver «Medición real»).
 7. **Idioma**: la app del reloj está solo en español en la v1.
+
+## Medición real (HealthKit, entrenos y GPS)
+
+| Pieza | Dónde | Qué hace |
+|---|---|---|
+| Entreno en el reloj | `targets/watch/ServicioEntreno.swift`, `EntrenoPuro.swift`, `Vista*Entren*.swift` | `HKWorkoutSession` + `HKLiveWorkoutBuilder` para carrera, bici, piscina, aguas abiertas y fuerza. Ruta GPS, parciales, largos, auto-pausa propia y recuperación tras un cierre. |
+| Sin iPhone | `targets/watch/BuzonEntrenos.swift` | El entreno queda en disco en el reloj y viaja con `transferFile` cuando puede. Se borra solo cuando el iPhone confirma. |
+| iPhone | `modules/nivl-salud` | Permisos de HealthKit por categoría, resumen diario, importación con ancla y GPS en segundo plano. `EntrenoPuro.swift` es copia exacta del reloj (lo comprueba un test). |
+| Recepción | `modules/nivl-watch`, `src/watch/puente.ts`, `src/lib/medicion/buzon.ts` | Buzón nativo, normalizado y duplicados entre orígenes (`fusion.ts`). |
+| Contraste | `src/lib/medicion/contraste.ts`, `src/components/medicion/SelloMedicion.tsx` | `medido`, `coherente` o `sin_datos`. Informativo: no cambia XP ni racha. Con `sin_datos` no se pinta nada, para que quien no tiene reloj no vea una marca. |
+| Servidor | migraciones `0100` (`salud_diaria`, `salud_preferencias`) y `0101` (permiso de salud v2) | Sin aplicar. Enviar datos al coach es un interruptor aparte, apagado por defecto. |
+
+**Quién paga.** `guardarEntrenoMedido` (`src/lib/resistencia.ts`, de IRON) guarda, deduplica y paga. La medición no llama a `propagarActo` ni a `awardXp`. Mientras no se enchufe con `fijarAlmacenEntrenos` en `src/lib/medicion/almacen.ts`, todo se retiene y no se paga nada: no publicar sin ese paso.
+
+Reglas pactadas con nivl-game-balancer: solo paga lo de hoy (fecha local de `fin`), mínimo 5 minutos, mismos topes que el cardio a mano, nada de fuerza ni de `otro`. Propuesto a IRON y pendiente de confirmar: un entreno de Salud se guarda con 0 XP hasta que la persona lo confirme.
+
+**En `ruta` y `fc_serie`, `t` son segundos en movimiento** desde `inicio`, el mismo reloj que `duracion_s`.
+
+### Qué solo se puede validar con un reloj real
+
+- Frecuencia cardiaca, calorías y distancia del builder: el simulador las inventa o no las da.
+- Natación: largos (se cuenta un largo por evento `.lap`, sin confirmar con datos reales), brazadas, bloqueo de agua y GPS en aguas abiertas al emerger.
+- Auto-pausa con movimiento de verdad y GPS con árboles o edificios.
+- GPS del iPhone con la pantalla apagada durante una sesión larga.
+- Recuperación tras un cierre (`handleActiveWorkoutRecovery`) y que la ruta aparezca en Salud sin duplicar puntos.
+- Largo plazo sin iPhone y entrega posterior.
+
+### Qué se ha comprobado en simulador (8 nov, iOS y watchOS 27.2)
+
+- Compila el binario completo con los módulos nativos, y la app abre en iOS 27 con `withEscenas`.
+- El diálogo real de permisos de Salud sale en el reloj.
+- Interfaz del reloj en 40, 42, 44, 46 y 49 mm en modo demo.
+- `transferFile` termina sin error en el reloj y el JSON llega al sistema de ficheros del simulador del iPhone. **Pero no se entregó al delegado de la app**, así que el buzón nativo, el drenado desde JS y el acuse no se han visto funcionar juntos. No se ha determinado si es limitación del simulador.
+- **Sin probar de punta a punta:** una sesión real con ruta GPS simulada, porque aceptar el diálogo de Salud exige un toque que no se pudo dar desde esta sesión. Para repetirla: `xcrun simctl location <reloj> start --speed=3 --interval=1 <puntos>` y lanzar con `-nivlAuto carrera -nivlAutoSegundos 45`. `-nivlBuzonPrueba YES` prueba solo el camino reloj a iPhone.
+
+### Qué hay que dar de alta en Apple
+
+1. Capability **HealthKit** en `com.teferi.nivl` y `com.teferi.nivl.watchkitapp`, y regenerar los perfiles de EAS.
+2. Los bundles y el App Group de la lista de arriba, e `ios.appleTeamId` en `app.json`.
+3. En App Store Connect: etiquetas de privacidad de salud y ubicación, URL de política que mencione HealthKit, y justificar `UIBackgroundModes: location` en las notas de revisión.
+4. Apple no permite usar datos de HealthKit para publicidad ni venderlos. Enviarlos a un proveedor de IA requiere el consentimiento expreso que ya pide el interruptor del coach.
+
+Antes de publicar: aplicar `0100` y `0101` **a la vez** que sale el binario. La `0101` sube la versión del permiso de salud y todo el mundo tendrá que volver a aceptarlo.
 
 ## Probarlo
 

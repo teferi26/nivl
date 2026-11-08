@@ -12,6 +12,7 @@
 import CoreLocation
 import Foundation
 import HealthKit
+import WatchConnectivity
 import WatchKit
 
 enum FaseEntreno: Equatable {
@@ -877,6 +878,14 @@ final class ServicioEntreno: NSObject, ObservableObject {
   /// `-nivlAuto carrera -nivlAutoSegundos 40`: una sesión real sin tocar nada.
   private func pruebaAutomatica() async {
     let d = UserDefaults.standard
+    // `-nivlBuzonPrueba YES`: prueba el camino reloj → iPhone sin HealthKit.
+    if d.bool(forKey: "nivlBuzonPrueba"), let entreno = Demo.resumenEntreno(id: UUID().uuidString) {
+      for _ in 0..<30 where WCSession.default.activationState != .activated {
+        try? await Task.sleep(for: .seconds(1))
+      }
+      print("NIVL_AUTO buzon id=\(entreno.externo_id) guardado=\(BuzonEntrenos.compartido.guardar(entreno))")
+      return
+    }
     guard fase == .parado, let clave = d.string(forKey: "nivlAuto"), let deporte = DeporteReloj(rawValue: clave) else {
       return
     }

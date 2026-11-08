@@ -77,9 +77,9 @@ enum Demo {
 
   /// Por JSON a propósito: es el mismo contrato que viaja al iPhone
   /// (src/lib/entrenoMedido.ts), con datos inventados.
-  static func resumenEntreno() -> EntrenoMedido? {
+  static func resumenEntreno(id: String = "demo-entreno") -> EntrenoMedido? {
     let json = """
-    {"origen":"watch","externo_id":"demo-entreno","deporte":"carrera",
+    {"origen":"watch","externo_id":"\(id)","deporte":"carrera",
      "inicio":"2026-01-05T07:00:00Z","fin":"2026-01-05T07:32:14Z","duracion_s":1934,
      "distancia_m":6420,"kcal":412,"fc_media":147,"fc_max":171,"desnivel_m":58,
      "ruta":null,"largo_piscina_m":null,"fc_serie":null,
