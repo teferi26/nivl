@@ -75,7 +75,7 @@ test('nuevo y de hoy: espejo, propaga con su fecha y paga lo que entró', async 
   mockTablas(FILA);
   const r = await guardarEntrenoMedido(USER, entrada(hoy));
   expect(r).toMatchObject({ ok: true, nuevo: true });
-  expect(propagarActo).toHaveBeenCalledWith(expect.anything(), 'cardio', hoy, null, 'carrera');
+  expect(propagarActo).toHaveBeenCalledWith(expect.anything(), 'cardio', hoy, { deporte: 'carrera' });
   expect(awardXp).toHaveBeenCalledTimes(1);
   const [, cantidad, stat, evento, payload] = jest.mocked(awardXp).mock.calls[0]!;
   expect(stat).toBe('FUE');

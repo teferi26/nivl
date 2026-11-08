@@ -42,7 +42,7 @@ function fijar(e: EstadoFocus) {
 async function cargar(uid: string): Promise<void> {
   const gen = ++generacion;
   try {
-    const r = await leerFocus(sumarDias(dateKey(), -60));
+    const r = await leerFocus(sumarDias(dateKey(), -400));
     if (gen !== generacion || dueno !== uid) return;
     fijar({ estado: 'listo', datos: r.datos, disponible: r.disponible, error: null });
   } catch (e) {
@@ -74,8 +74,11 @@ const leer = () => actual;
 
 export interface UseFocusDatos extends EstadoFocus {
   recargar: () => Promise<void>;
-  /** Ejecuta una escritura y relee. Devuelve true si salió bien. */
-  hacer: (fn: () => Promise<void>) => Promise<boolean>;
+  /**
+   * Ejecuta una escritura y relee. Devuelve true si salió bien. En una tanda,
+   * `releer: false` (se relee al final) y `avisar: false` tras el primer fallo.
+   */
+  hacer: (fn: () => Promise<void>, opciones?: { releer?: boolean; avisar?: boolean }) => Promise<boolean>;
 }
 
 export function useFocusDatos(): UseFocusDatos {
@@ -93,11 +96,12 @@ export function useFocusDatos(): UseFocusDatos {
   }, [uid]);
 
   const hacer = useCallback(
-    async (fn: () => Promise<void>) => {
+    async (fn: () => Promise<void>, opciones?: { releer?: boolean; avisar?: boolean }) => {
       try {
         await fn();
         return true;
       } catch (e) {
+        if (opciones?.avisar === false) return false;
         if (e instanceof FocusNoDisponible) {
           avisar(t('focus:comun.noDisponibleTitulo'), t('focus:comun.noDisponibleCuerpo'));
         } else {
@@ -106,7 +110,7 @@ export function useFocusDatos(): UseFocusDatos {
         }
         return false;
       } finally {
-        if (uid) await recargarDe(uid);
+        if (uid && opciones?.releer !== false) await recargarDe(uid);
       }
     },
     [uid],

@@ -1,7 +1,7 @@
 // NIVL · Packs FIJOS de herramientas por ruta (coach v2, L3).
 //
 // Módulo PURO (sin red ni Supabase). Una ruta estrecha no le enseña al modelo
-// las 30 herramientas: solo las que su encargo necesita. Dos razones:
+// las 32 herramientas: solo las que su encargo necesita. Dos razones:
 //   · Coste: las definiciones viajan en cada llamada (más de 8 k fichas todas).
 //   · Criterio: lo que no se ofrece no se puede llamar. Con todas a mano, un
 //     «te he subido el gym» acabó en prescribir_entreno (medido tras L1).
@@ -43,6 +43,7 @@ export const ESCRITURA_DE_PLANIFICACION: readonly string[] = Object.freeze([
   // cuando_salir solo lee, pero decidir cuándo entrenar no es un parte. Y
   // registrar_entreno no cabe en la ruta estrecha: pasaría su techo de coste.
   'fijar_carrera', 'ajustar_sesion_plan', 'cuando_salir', 'registrar_entreno',
+  'marcar_tema', 'apuntar_estudio',
 ]);
 
 type ToolDef = (typeof TOOL_DEFS)[number];

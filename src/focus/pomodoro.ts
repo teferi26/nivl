@@ -69,6 +69,8 @@ export interface Objetivo {
   temaId: string | null;
   /** La misión de FOCUS que paga si el bloque se completa entero. */
   misionId: string | null;
+  /** Arrancado como simulacro del plan: se decide al empezar, no al cerrar. */
+  simulacro?: boolean;
 }
 
 export interface EstadoPomodoro {
@@ -82,6 +84,15 @@ export interface EstadoPomodoro {
   objetivo: Objetivo;
   /** Id de la fase en marcha: la sesión se registra UNA vez por id. */
   idFase: string | null;
+  /** Minutos de la fase, fijados al arrancarla: cambiar los ajustes no la toca. */
+  minutosFase: number | null;
+  /** 'YYYY-MM-DD' local del arranque: el día en que cuenta el bloque. */
+  fechaInicio: string | null;
+  /** Veces que se salió de la app durante este foco. Informativo: nunca toca el pago. */
+  salidas: number;
+  fueraMs: number;
+  /** Desde cuándo está fuera (ms de época), si lo está. */
+  salioEn: number | null;
 }
 
 export const OBJETIVO_LIBRE: Objetivo = { asignaturaId: null, temaId: null, misionId: null };
@@ -93,7 +104,21 @@ export const ESTADO_INICIAL: EstadoPomodoro = {
   pausaRestante: null,
   objetivo: OBJETIVO_LIBRE,
   idFase: null,
+  minutosFase: null,
+  fechaInicio: null,
+  salidas: 0,
+  fueraMs: 0,
+  salioEn: null,
 };
+
+/** Fuera de la app menos que esto no cuenta (Centro de control, una llamada que se cuelga). */
+export const GRACIA_SALIDA_MS = 3000;
+
+/** 'YYYY-MM-DD' local de un instante. */
+export function fechaLocal(ms: number): string {
+  const d = new Date(ms);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
 
 export type Situacion = 'parado' | 'en_marcha' | 'en_pausa';
 
@@ -112,7 +137,7 @@ export function restanteMs(e: EstadoPomodoro, c: ConfigPomodoro, ahora: number):
 
 /** Fracción hecha de la fase, 0 a 1 (para el anillo). */
 export function progreso(e: EstadoPomodoro, c: ConfigPomodoro, ahora: number): number {
-  const total = minutosDe(e.fase, c) * 60_000;
+  const total = (e.minutosFase ?? minutosDe(e.fase, c)) * 60_000;
   if (total <= 0) return 0;
   return Math.max(0, Math.min(1, 1 - restanteMs(e, c, ahora) / total));
 }
@@ -129,14 +154,36 @@ export function formatoReloj(ms: number): string {
 /** Arranca la fase actual desde el principio (o desde la pausa, si la hay). */
 export function arrancar(e: EstadoPomodoro, c: ConfigPomodoro, ahora: number, objetivo?: Objetivo): EstadoPomodoro {
   if (e.finEn !== null) return e;
-  const dura = e.pausaRestante ?? minutosDe(e.fase, c) * 60_000;
+  const minutos = e.minutosFase ?? minutosDe(e.fase, c);
+  const dura = e.pausaRestante ?? minutos * 60_000;
+  const nueva = e.idFase === null;
   return {
     ...e,
     finEn: ahora + dura,
     pausaRestante: null,
     objetivo: objetivo ?? e.objetivo,
     idFase: e.idFase ?? `${e.fase}-${e.bloque}-${ahora}`,
+    minutosFase: minutos,
+    fechaInicio: e.fechaInicio ?? fechaLocal(ahora),
+    salidas: nueva ? 0 : e.salidas,
+    fueraMs: nueva ? 0 : e.fueraMs,
+    salioEn: null,
   };
+}
+
+/** La app se va a segundo plano con un foco en marcha. */
+export function marcarSalida(e: EstadoPomodoro, ahora: number): EstadoPomodoro {
+  if (e.fase !== 'foco' || e.finEn === null || e.salioEn !== null) return e;
+  return { ...e, salioEn: ahora };
+}
+
+/** La app vuelve: cuenta la salida si duró al menos la gracia y hasta donde llegó el foco. */
+export function marcarVuelta(e: EstadoPomodoro, ahora: number): EstadoPomodoro {
+  if (e.salioEn === null) return e;
+  const fin = e.finEn === null ? ahora : Math.min(ahora, e.finEn);
+  const fuera = Math.max(0, fin - e.salioEn);
+  if (fuera < GRACIA_SALIDA_MS) return { ...e, salioEn: null };
+  return { ...e, salioEn: null, salidas: e.salidas + 1, fueraMs: e.fueraMs + fuera };
 }
 
 export function pausar(e: EstadoPomodoro, ahora: number): EstadoPomodoro {
@@ -159,31 +206,65 @@ export function siguiente(e: Pick<EstadoPomodoro, 'fase' | 'bloque'>, c: ConfigP
 export interface Cierre {
   estado: EstadoPomodoro;
   /** Si lo que acaba de cerrarse es un bloque de foco completo, sus minutos. */
-  focoCompleto: { minutos: number; objetivo: Objetivo; idFase: string } | null;
+  focoCompleto: { minutos: number; objetivo: Objetivo; idFase: string; fecha: string; salidas: number; fueraMs: number } | null;
 }
 
 /**
  * Cierra la fase (acabada sola o saltada) y deja la siguiente lista. Saltar un
  * foco a medias NO cuenta como completo: solo paga lo que se termina.
- * Con `encadenar`, la siguiente arranca sola en el instante en que acabó esta.
+ * El objetivo se limpia al cerrar un foco: lo siguiente lo decide el plan.
+ * Con `encadenar`, la siguiente arranca sola en el instante en que acabó esta y
+ * sigue con el mismo objetivo (sus horas van a la misma asignatura), salvo que
+ * también hubiera acabado ya: fuera de la app se cierra una fase como mucho,
+ * nunca se registran en cascada bloques no vividos.
  */
 export function cerrarFase(e: EstadoPomodoro, c: ConfigPomodoro, ahora: number, saltada = false): Cierre {
   const completa = !saltada && acabada(e, ahora);
+  const vuelta = marcarVuelta(e, ahora);
   const focoCompleto =
-    completa && e.fase === 'foco' ? { minutos: c.foco, objetivo: e.objetivo, idFase: e.idFase ?? `foco-${e.bloque}-${ahora}` } : null;
+    completa && e.fase === 'foco'
+      ? {
+          minutos: e.minutosFase ?? c.foco,
+          objetivo: e.objetivo,
+          idFase: e.idFase ?? `foco-${e.bloque}-${ahora}`,
+          fecha: e.fechaInicio ?? fechaLocal(e.finEn ?? ahora),
+          salidas: vuelta.salidas,
+          fueraMs: vuelta.fueraMs,
+        }
+      : null;
   const sig = siguiente(e, c);
-  let estado: EstadoPomodoro = { ...e, ...sig, finEn: null, pausaRestante: null, idFase: null };
-  if (completa && c.encadenar && e.finEn !== null) {
-    const inicio = e.finEn;
-    estado = { ...estado, finEn: inicio + minutosDe(sig.fase, c) * 60_000, idFase: `${sig.fase}-${sig.bloque}-${inicio}` };
-    // Si también la encadenada acabó fuera, se deja para el siguiente vistazo (nunca se paga un bloque no vivido).
+  const minutosSig = minutosDe(sig.fase, c);
+  const inicioSig = completa && c.encadenar && e.finEn !== null ? e.finEn : null;
+  const encadena = inicioSig !== null && inicioSig + minutosSig * 60_000 > ahora;
+  const { simulacro: _simulacro, ...objetivoSeguido } = e.objetivo;
+  let estado: EstadoPomodoro = {
+    ...e,
+    ...sig,
+    finEn: null,
+    pausaRestante: null,
+    idFase: null,
+    objetivo: encadena ? objetivoSeguido : e.fase === 'foco' ? OBJETIVO_LIBRE : e.objetivo,
+    minutosFase: null,
+    fechaInicio: null,
+    salidas: 0,
+    fueraMs: 0,
+    salioEn: null,
+  };
+  if (encadena) {
+    estado = {
+      ...estado,
+      finEn: inicioSig + minutosSig * 60_000,
+      idFase: `${sig.fase}-${sig.bloque}-${inicioSig}`,
+      minutosFase: minutosSig,
+      fechaInicio: fechaLocal(inicioSig),
+    };
   }
   return { estado, focoCompleto };
 }
 
 /** Parar del todo: vuelve al foco del bloque en curso, sin pagar nada. */
 export function detener(e: EstadoPomodoro): EstadoPomodoro {
-  return { ...e, fase: 'foco', finEn: null, pausaRestante: null, idFase: null };
+  return { ...e, fase: 'foco', finEn: null, pausaRestante: null, idFase: null, minutosFase: null, fechaInicio: null, salidas: 0, fueraMs: 0, salioEn: null };
 }
 
 /** Lee un estado guardado sin fiarse (AsyncStorage puede traer cualquier cosa). */
@@ -202,7 +283,12 @@ export function normalizarEstado(v: unknown, c: ConfigPomodoro): EstadoPomodoro 
     bloque,
     finEn,
     pausaRestante: pausa,
-    objetivo: { asignaturaId: str(obj.asignaturaId), temaId: str(obj.temaId), misionId: str(obj.misionId) },
+    objetivo: { asignaturaId: str(obj.asignaturaId), temaId: str(obj.temaId), misionId: str(obj.misionId), ...(obj.simulacro === true ? { simulacro: true } : {}) },
     idFase: str(o.idFase),
+    minutosFase: num(o.minutosFase),
+    fechaInicio: str(o.fechaInicio),
+    salidas: Math.max(0, num(o.salidas) ?? 0),
+    fueraMs: Math.max(0, num(o.fueraMs) ?? 0),
+    salioEn: finEn === null ? null : num(o.salioEn),
   };
 }

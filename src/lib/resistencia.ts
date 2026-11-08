@@ -584,7 +584,7 @@ export async function guardarEntrenoMedido(
   try {
     let perfil: Profile = await ensureProfile(userId);
     // Un paseo no salda un «Correr 5 km»: como en useCardio.
-    if (kind !== 'caminar') eco = await propagarActo(perfil, 'cardio', fecha, null, e.deporte);
+    if (kind !== 'caminar') eco = await propagarActo(perfil, 'cardio', fecha, { deporte: e.deporte });
     nuevo = pagoDelModulo(base, eco, primera);
     if (nuevo > 0) {
       perfil = await ensureProfile(userId);

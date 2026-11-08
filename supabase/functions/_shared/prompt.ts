@@ -174,6 +174,7 @@ export const SECCIONES_RAPIDAS: readonly string[] = Object.freeze([
   '## Registro reciente',
   '## Entreno prescrito para hoy',
   '## Trabajo ahora',
+  '## FOCUS hoy',
 ]);
 
 /**

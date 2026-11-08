@@ -12,13 +12,17 @@ import { CabeceraMundo } from '@/components/modos/mundo/CabeceraMundo';
 import { CONFIG_POR_DEFECTO, ESTADO_INICIAL, arrancar, type EstadoPomodoro } from '@/focus/pomodoro';
 import type { DatosFocus, Tema } from '@/focus/tipos';
 import { DATOS_VACIOS } from '@/focus/tipos';
+import { DEMO_BACHILLERATO, DEMO_OPOSITORA, DEMO_UNIVERSITARIO } from './personas/demo';
+import { HojaCierreBloque } from './HojaCierreBloque';
 import { nivelesDeModos } from '@/modos/niveles';
 import { FocusHoyVista, type FocusHoyVistaProps } from './FocusHoyVista';
 import { vistaHoy, type MisionEnlazable } from './vistaHoy';
 import { ExamenesVista, type ExamenesVistaProps } from './ExamenesVista';
+import { HojaEntrega, HojaSimulacro } from './HojasAgenda';
 import { HojaAjustes, HojaDetalleExamen, HojaExamen, HojaMetodo, HojaMision, HojaNoMolestar, HojaRepaso } from './HojasFocus';
 import { TemarioVista, type TemarioVistaProps } from './TemarioVista';
 import { vistaExamenes, vistaTemario } from './vistas';
+import { evolucionDe } from '@/focus/agenda';
 import { metodoPorId } from '@/focus/metodos';
 import { planDeExamen } from '@/focus/resumen';
 
@@ -36,17 +40,33 @@ const tema = (id: string, asignaturaId: string, nombre: string, estado: Tema['es
   posicion,
   etapa: 0,
   repasoEl,
+  seccion: null,
+  repasadoEl: null,
 });
+
+const asignatura = (id: string, nombre: string, posicion: number) => ({ id, nombre, posicion, notaObjetivo: null, vuelta: 1 });
+const examen = (id: string, asignaturaId: string, titulo: string, fecha: string, peso: number) => ({
+  id,
+  asignaturaId,
+  titulo,
+  fecha,
+  peso,
+  hora: null,
+  tipo: 'examen' as const,
+  estimada: false,
+  hechaEl: null,
+});
+const sesion = (id: string, asignaturaId: string, temaId: string | null, fecha: string, minutos: number, metodo: string) => ({ id, asignaturaId, temaId, fecha, minutos, metodo, salidas: 0 });
 
 export const DATOS_DEMO: DatosFocus = {
   asignaturas: [
-    { id: 'calc', nombre: 'Cálculo II', posicion: 0 },
-    { id: 'edd', nombre: 'Estructuras de datos', posicion: 1 },
-    { id: 'fis', nombre: 'Física', posicion: 2 },
+    asignatura('calc', 'Cálculo II', 0),
+    asignatura('edd', 'Estructuras de datos', 1),
+    asignatura('fis', 'Física', 2),
   ],
   examenes: [
-    { id: 'x-calc', asignaturaId: 'calc', titulo: 'Parcial 2', fecha: '2026-11-02', peso: 40 },
-    { id: 'x-edd', asignaturaId: 'edd', titulo: 'Final', fecha: '2026-11-16', peso: 60 },
+    examen('x-calc', 'calc', 'Parcial 2', '2026-11-02', 40),
+    examen('x-edd', 'edd', 'Final', '2026-11-16', 60),
   ],
   temas: [
     tema('c1', 'calc', 'Límites en varias variables', 'dominado', 0),
@@ -66,10 +86,10 @@ export const DATOS_DEMO: DatosFocus = {
     tema('e8', 'edd', 'Complejidad', 'pendiente', 7),
   ],
   sesiones: [
-    { id: 's1', asignaturaId: 'calc', temaId: 'c5', fecha: '2026-10-19', minutos: 50, metodo: 'pomodoro' },
-    { id: 's2', asignaturaId: 'edd', temaId: 'e4', fecha: '2026-10-20', minutos: 75, metodo: 'pomodoro' },
-    { id: 's3', asignaturaId: 'calc', temaId: 'c5', fecha: '2026-10-21', minutos: 50, metodo: 'recuerdo' },
-    { id: 's4', asignaturaId: 'fis', temaId: null, fecha: '2026-10-20', minutos: 25, metodo: 'pomodoro' },
+    sesion('s1', 'calc', 'c5', '2026-10-19', 50, 'pomodoro'),
+    sesion('s2', 'edd', 'e4', '2026-10-20', 75, 'pomodoro'),
+    sesion('s3', 'calc', 'c5', '2026-10-21', 50, 'recuerdo'),
+    sesion('s4', 'fis', null, '2026-10-20', 25, 'pomodoro'),
   ],
   clases: [
     { id: 'k1', asignaturaId: 'calc', dia: 3, inicio: 9 * 60, fin: 11 * 60, aula: 'Aula 2.04' },
@@ -93,6 +113,7 @@ export const DATOS_DEMO: DatosFocus = {
     { id: 't2', mazoId: 'm1', anverso: 'Jacobiano en polares', reverso: 'r', etapa: 2, vence: '2026-10-20' },
     { id: 't3', mazoId: 'm2', anverso: 'Búsqueda en un árbol equilibrado', reverso: 'O(log n)', etapa: 0, vence: '2026-10-25' },
   ],
+  prefs: DATOS_VACIOS.prefs,
 };
 
 export const MISIONES_DEMO: MisionEnlazable[] = [
@@ -116,6 +137,14 @@ export const ACCIONES_HOY_DEMO: FocusHoyVistaProps['acciones'] = {
   onTemario: nada,
   onAlternarTema: nada,
   onBloque: nada,
+  onElegirAsignatura: nada,
+  onEntregaHecha: nada,
+  onRepasar: nada,
+  onRetomarHueco: nada,
+  onCerrarHueco: nada,
+  onAnadirTemas: nada,
+  onArranqueAsignaturas: async () => true,
+  onArranqueFin: async () => {},
   onCompletarMision: nada,
   onCoach: nada,
   onAnadirAsignatura: nada,
@@ -192,13 +221,18 @@ const ACCIONES_TEMARIO: TemarioVistaProps['acciones'] = {
   onAnadirAsignatura: nada,
   onAnadirTemas: nada,
   onAlternarTema: nada,
-  onBorrarTema: nada,
+  onEditarTema: nada,
+  onVuelta: nada,
   onRepasar: nada,
   onNuevoMazo: nada,
   onNuevaTarjeta: nada,
+  onPegarTarjetas: nada,
+  onTarjetasIa: nada,
+  onHoras: nada,
   onDia: nada,
   onAnadirClase: nada,
-  onBorrarClase: nada,
+  onEditarClase: nada,
+  onCopiarDia: nada,
   onMetodo: nada,
   onReintentar: nada,
 };
@@ -208,8 +242,12 @@ function Temario({ datos = DATOS_DEMO, estado = 'listo', disponible = true }: { 
 }
 
 const ACCIONES_EXAMENES: ExamenesVistaProps['acciones'] = {
+  onSemana: nada,
   onExamen: nada,
   onNuevoExamen: nada,
+  onEntrega: nada,
+  onMarcarEntrega: nada,
+  onSimulacro: nada,
   onAnadirAsignatura: nada,
   onNotas: nada,
   onNuevaNota: nada,
@@ -219,7 +257,12 @@ const ACCIONES_EXAMENES: ExamenesVistaProps['acciones'] = {
 
 const CON_PASADO: DatosFocus = {
   ...DATOS_DEMO,
-  examenes: [...DATOS_DEMO.examenes, { id: 'x-fis', asignaturaId: 'fis', titulo: 'Parcial 1', fecha: '2026-10-09', peso: 30 }],
+  examenes: [
+    ...DATOS_DEMO.examenes,
+    examen('x-fis', 'fis', 'Parcial 1', '2026-10-09', 30),
+    { ...examen('x-prac', 'edd', 'Práctica 3', '2026-10-23', 10), tipo: 'entrega' as const, hora: 14 * 60 },
+    { ...examen('x-sin', 'fis', 'Final', '2027-01-20', 60), fecha: null },
+  ],
 };
 
 function Examenes({ datos = CON_PASADO, estado = 'listo' }: { datos?: DatosFocus; estado?: ExamenesVistaProps['estado'] }) {
@@ -262,6 +305,7 @@ export const ESTADOS_HOJAS: EstadoGaleria[] = [
           visible
           examen={examenCalc}
           asignatura="Cálculo II"
+          hoy={HOY_FOCUS}
           dias={12}
           plan={planDeExamen(DATOS_DEMO, examenCalc, HOY_FOCUS)}
           temas={temasCalc}
@@ -269,6 +313,8 @@ export const ESTADOS_HOJAS: EstadoGaleria[] = [
           onClose={nada}
           onAlternarTema={nada}
           onAnadirTemas={nada}
+          onEditar={nada}
+          onSimulacro={nada}
           onBorrar={nada}
           onEstudiar={nada}
         />
@@ -291,6 +337,10 @@ export const ESTADOS_HOJAS: EstadoGaleria[] = [
     ),
   },
   { id: 'examen', titulo: 'Nuevo examen', render: () => <ConHoja><HojaExamen visible asignaturas={DATOS_DEMO.asignaturas} hoy={HOY_FOCUS} onClose={nada} onGuardar={nada} /></ConHoja> },
+  { id: 'editarExamen', titulo: 'Editar examen', render: () => <ConHoja><HojaExamen visible asignaturas={DATOS_DEMO.asignaturas} hoy={HOY_FOCUS} examen={examenCalc} perfil="universidad" onClose={nada} onGuardar={nada} /></ConHoja> },
+  { id: 'entrega', titulo: 'Nueva entrega', render: () => <ConHoja><HojaEntrega visible asignaturas={DATOS_DEMO.asignaturas} hoy={HOY_FOCUS} perfil="instituto" onClose={nada} onGuardar={nada} /></ConHoja> },
+  { id: 'simulacro', titulo: 'Simulacro test', render: () => <ConHoja><HojaSimulacro visible asignaturas={DATOS_DEMO.asignaturas} hoy={HOY_FOCUS} perfil="oposicion" evolucionDe={(id) => evolucionDe(DATOS_DEMO, id)} onClose={nada} onGuardar={nada} /></ConHoja> },
+  { id: 'cierre', titulo: 'Cómo te ha ido', render: () => <ConHoja><HojaCierreBloque visible tema="Tema 4 · Árboles binarios" onElegir={nada} onClose={nada} /></ConHoja> },
   { id: 'nomolestar', titulo: 'No molestar', render: () => <ConHoja><HojaNoMolestar visible onClose={nada} /></ConHoja> },
   { id: 'ajustes', titulo: 'Ajustes', render: () => <ConHoja><HojaAjustes visible config={CONFIG_POR_DEFECTO} onClose={nada} onGuardar={nada} /></ConHoja> },
   {
@@ -304,9 +354,22 @@ export const ESTADOS_HOJAS: EstadoGaleria[] = [
   },
 ];
 
+const PERSONAS = [
+  { id: 'opositora', titulo: 'Opositora', datos: DEMO_OPOSITORA },
+  { id: 'universitario', titulo: 'Universitario', datos: DEMO_UNIVERSITARIO },
+  { id: 'bachillerato', titulo: 'Bachillerato', datos: DEMO_BACHILLERATO },
+] as const;
+
+export const ESTADOS_PERSONAS: EstadoGaleria[] = PERSONAS.flatMap((x) => [
+  { id: `${x.id}-hoy`, titulo: `${x.titulo}: Hoy`, render: () => <Hoy datos={x.datos} pomodoro={ESTADO_INICIAL} misiones={MISIONES_DEMO} /> },
+  { id: `${x.id}-agenda`, titulo: `${x.titulo}: Agenda`, render: () => <Examenes datos={x.datos} /> },
+  { id: `${x.id}-temario`, titulo: `${x.titulo}: Temario`, render: () => <Temario datos={x.datos} /> },
+]);
+
 export const GALERIA_FOCUS: { id: string; titulo: string; estados: EstadoGaleria[] }[] = [
   { id: 'hoy', titulo: 'Hoy', estados: ESTADOS_HOY },
   { id: 'temario', titulo: 'Temario', estados: ESTADOS_TEMARIO },
   { id: 'examenes', titulo: 'Exámenes', estados: ESTADOS_EXAMENES },
   { id: 'hojas', titulo: 'Hojas', estados: ESTADOS_HOJAS },
+  { id: 'personas', titulo: 'Personas', estados: ESTADOS_PERSONAS },
 ];

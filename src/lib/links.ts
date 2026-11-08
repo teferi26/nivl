@@ -25,6 +25,7 @@ const BLOQUES: Partial<Record<ActLink, BlockKind[]>> = {
   gym: ['gym'],
   cardio: ['aerobico'],
   trabajo: ['deep_work'],
+  estudio: ['estudio'],
 };
 
 export interface Propagado {
@@ -49,8 +50,23 @@ export function restoDelModulo(base: number, eco: Pick<Propagado, 'xpMisiones'> 
   return Math.max(0, base - (eco?.xpMisiones ?? 0));
 }
 
-/** `deporte`, si el acto lo sabe: una misión de otro deporte no se salda con él. */
-export async function propagarActo(profile: Profile, link: ActLink, date: string, bloqueId?: string | null, deporte?: string): Promise<Propagado> {
+export interface OpcionesActo {
+  /**
+   * Solo estas misiones (FOCUS: las que los minutos reales dejan cubiertas,
+   * src/focus/mision.ts). Sin esto, todas las enlazadas al acto.
+   */
+  soloMisiones?: readonly string[];
+  /** ¿El acto llega a lo que pide esta regla? Sin esto, cualquier acto la cumple. */
+  cubreRegla?: (texto: string) => boolean;
+  /** ¿Da para marcar un bloque de `minutos` con `yaMarcados` min de bloques ya hechos? */
+  cubreBloque?: (minutos: number, yaMarcados: number) => boolean;
+  /** WORK: el bloque del plan al que pertenece este acto. */
+  bloqueId?: string | null;
+  /** IRON: el deporte del acto; una misión de otro deporte no se salda con él. */
+  deporte?: string;
+}
+
+export async function propagarActo(profile: Profile, link: ActLink, date: string, opciones?: OpcionesActo): Promise<Propagado> {
   const out: Propagado = { xpMisiones: 0, xp: 0, marcadas: [], profile, leveledUp: false, newLevel: 0 };
 
   // Una lectura fallida no puede convertirse en "no había misión": el módulo
@@ -72,7 +88,11 @@ export async function propagarActo(profile: Profile, link: ActLink, date: string
   try {
     const [quests, completions] = await leer().catch(leer);
     const hechas = new Map(completions.map((c) => [c.quest_id, c.xp_awarded]));
-    const enlazadas = questsScheduledOn(quests, date).filter((q) => q.link === link && (!deporte || misionCasaConDeporte(q.title, deporte)));
+    const solo = opciones?.soloMisiones;
+    const deporte = opciones?.deporte;
+    const enlazadas = questsScheduledOn(quests, date).filter((q) =>
+      solo ? solo.includes(q.id) : q.link === link && (!deporte || misionCasaConDeporte(q.title, deporte)),
+    );
 
     for (const q of enlazadas) {
       if (hechas.has(q.id)) {
@@ -120,7 +140,7 @@ export async function propagarActo(profile: Profile, link: ActLink, date: string
     const { count } = await supabase.from('rule_checks').select('id', { count: 'exact', head: true });
     if ((count ?? 0) > 0) {
       const rules = await fetchRules();
-      for (const r of rules.filter((x) => x.active && x.link === link)) {
+      for (const r of rules.filter((x) => x.active && x.link === link && (opciones?.cubreRegla?.(x.text) ?? true))) {
         await marcarReglaCumplida(profile.id, r.id, date);
       }
     }
@@ -132,14 +152,17 @@ export async function propagarActo(profile: Profile, link: ActLink, date: string
   if (kinds) {
     try {
       const plan = await fetchPlan(date);
-      const propio = bloqueId ? plan?.bloques.find((b) => b.id === bloqueId) : undefined;
+      const bloques = plan?.bloques ?? [];
+      const propio = opciones?.bloqueId ? bloques.find((b) => b.id === opciones.bloqueId) : undefined;
+      const yaMarcados = bloques.reduce((s, b) => s + (b.done && kinds.includes(b.kind) ? b.end_min - b.start_min : 0), 0);
       if (propio) {
         if (!propio.done) await setBlockDone(propio.id, true);
-      } else for (const b of plan?.bloques ?? []) {
+      } else for (const b of bloques) {
         if (!b.done && kinds.includes(b.kind)) {
+          if (opciones?.cubreBloque && !opciones.cubreBloque(b.end_min - b.start_min, yaMarcados)) break;
           await setBlockDone(b.id, true);
-          // Un día tiene varios bloques de trabajo: cada bloque hecho marca uno.
-          if (link === 'trabajo') break;
+          // Un día de trabajo o de estudio tiene varios bloques: un acto marca uno.
+          if (link === 'trabajo' || link === 'estudio') break;
         }
       }
     } catch {
@@ -151,13 +174,14 @@ export async function propagarActo(profile: Profile, link: ActLink, date: string
 }
 
 /** La pantalla donde se demuestra cada acto: tocar la misión lleva allí. */
-export const RUTA_DE_ACTO: Record<ActLink, '/gym' | '/cardio' | '/nutricion' | '/avances' | '/diario' | '/work-hoy'> = {
+export const RUTA_DE_ACTO: Record<ActLink, '/gym' | '/cardio' | '/nutricion' | '/avances' | '/diario' | '/work-hoy' | '/focus-hoy'> = {
   gym: '/gym',
   cardio: '/cardio',
   nutricion: '/nutricion',
   peso: '/avances',
   diario: '/diario',
   trabajo: '/work-hoy',
+  estudio: '/focus-hoy',
 };
 
 /** El módulo donde se registra cada acto, como se le llama en los botones. */
@@ -168,6 +192,7 @@ export const MODULO_DE_ACTO: Record<ActLink, string> = {
   peso: 'Avances',
   diario: 'Diario',
   trabajo: 'Trabajo',
+  estudio: 'FOCUS',
 };
 
 export const NOMBRE_DE_ACTO: Record<ActLink, string> = {
@@ -177,4 +202,5 @@ export const NOMBRE_DE_ACTO: Record<ActLink, string> = {
   peso: 'el pesaje',
   diario: 'el diario',
   trabajo: 'el bloque de trabajo',
+  estudio: 'el bloque de estudio',
 };

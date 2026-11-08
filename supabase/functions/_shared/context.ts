@@ -12,6 +12,7 @@ import { kindLines } from './kinds.ts';
 import { leerRegistros, lineasDelDia } from './comprobacion.ts';
 import { etiquetaModos, type ModoCoach } from './modos.ts';
 import { construirEstudioTrabajo } from './trabajo.ts';
+import { construirAcademico } from './academico_datos.ts';
 
 // Espejo de levelFromXp/rankForLevel de src/lib/game.ts. La fuente de verdad
 // es game.ts: si allí cambia la curva, hay que tocar aquí. Se replica porque
@@ -44,6 +45,7 @@ const ENLACE: Record<string, string> = {
   peso: 'el pesaje',
   diario: 'el diario',
   trabajo: 'el bloque de trabajo',
+  estudio: 'el bloque de estudio',
 };
 
 // Espejo de mantenimientoKcal en src/lib/bodymath.ts (allí están los tests).
@@ -750,15 +752,17 @@ export async function buildContext(
   // Los estudios van al final: son las conclusiones sobre las que programa.
   // En paralelo porque son dos barridos independientes de tablas distintas y
   // encadenarlos añade su latencia entera a cada turno.
-  const [estudio, economia, trabajo] = await Promise.all([
+  const [estudio, economia, trabajo, academico] = await Promise.all([
     construirEstudio(sb, userId, today),
     construirEstudioEconomico(sb, userId, today),
     // Solo en modo work. Va al final y con título «## Trabajo ahora», que partirEstado manda al turno.
     opciones.modo === 'work' ? construirEstudioTrabajo(sb, userId, today, p.timezone) : Promise.resolve(''),
+    // El estudio académico solo con el modo FOCUS: sin modo, estos bytes son los de siempre.
+    opciones.modo === 'focus' ? construirAcademico(sb, userId, today, { zona: p.timezone }) : Promise.resolve(''),
   ]);
 
   return {
-    text: `${lines.join('\n')}\n\n${estudio}\n\n${economia}${trabajo ? `\n\n${trabajo}` : ''}`,
+    text: `${lines.join('\n')}\n\n${estudio}\n\n${economia}${trabajo ? `\n\n${trabajo}` : ''}${academico ? `\n\n${academico}` : ''}`,
     dossier: (dossierRes.data as any)?.content ?? '',
     locale: typeof p.locale === 'string' ? p.locale : null,
   };

@@ -45,7 +45,7 @@ const LIGAS_DE_LA_BASE = [
 
 // ── Definición ───────────────────────────────────────────────────────────
 
-Deno.test('L5 definición: consultar_historial admite fotos, liga y tareas sin parámetros nuevos; 30 herramientas clasificadas', () => {
+Deno.test('L5 definición: consultar_historial admite fotos, liga y tareas sin parámetros nuevos; 32 herramientas clasificadas', () => {
   const def = TOOL_DEFS.find((t) => t.name === 'consultar_historial')! as any;
   const que = def.input_schema.properties.que.enum as string[];
   for (const m of ['fotos', 'tareas']) ok(que.includes(m), m);
@@ -54,7 +54,7 @@ Deno.test('L5 definición: consultar_historial admite fotos, liga y tareas sin p
   equal(/liga privada/.test(def.description), LIGAS_ACTIVAS);
   equal(Object.keys(def.input_schema.properties).sort(), ['desde', 'filtro', 'hasta', 'que']);
   ok(!JSON.stringify(def.input_schema).includes('"type":['), 'sin tipos unión');
-  equal(TOOL_DEFS.length, 30, 'solo las cuatro de resistencia');
+  equal(TOOL_DEFS.length, 32, 'las 26 de L5, las cuatro de resistencia y las dos de FOCUS');
   const clasificadas = new Set([...PACK_REGISTRO, ...ESCRITURA_DE_PLANIFICACION]);
   equal(TOOL_DEFS.map((t) => t.name).filter((n) => !clasificadas.has(n)), []);
 });

@@ -98,7 +98,7 @@ export function useWorkHoy() {
         completar: (p, q) => completeQuest(p, q, null),
         fijarActoHecho,
         propagar: async (p) => {
-          const res = await propagarActo(p, 'trabajo', dia, c.bloquePlanId);
+          const res = await propagarActo(p, 'trabajo', dia, { bloqueId: c.bloquePlanId });
           return { xp: res.xp, marcadas: res.marcadas, profile: res.profile };
         },
       });

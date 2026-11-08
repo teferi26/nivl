@@ -25,6 +25,7 @@ import {
   registrarEntreno,
   TIPOS_PRUEBA,
 } from './resistenciaCoach.ts';
+import { apuntarEstudio, consultarEstudio, marcarTema } from './academico_datos.ts';
 
 const STATS = ['FUE', 'VIT', 'INT', 'AGI', 'PER'];
 
@@ -488,12 +489,38 @@ export const TOOL_DEFS = [
     },
   ),
 
+  // FOCUS: el coach apunta lo que el alumno dicta; plan, fechas de repaso y medias los calcula el sistema.
+  tool(
+    'marcar_tema',
+    'FOCUS. Cambia cómo va un tema del temario cuando dice que ya lo ha estudiado, que lo domina o cómo le ha ido al repasarlo. El tema_id viene entre corchetes en el plan del estado o en consultar_historial (estudio); si no lo tienes, búscalo ahí antes de preguntar. La etapa y la fecha del próximo repaso las calcula el sistema: tú solo dices estado o resultado. No paga XP.',
+    {
+      tema_id: str('Id del tema'),
+      estado: enumOpt(['pendiente', 'repasando', 'dominado'], 'pendiente = por estudiar · repasando = ya visto · dominado = se lo sabe'),
+      repaso: enumOpt(['bien', 'dudosa', 'mal'], 'Cómo le ha ido al repasarlo, si acaba de hacerlo'),
+    },
+  ),
+
+  tool(
+    'apuntar_estudio',
+    'FOCUS. Apunta lo que dicta el alumno para que el plan salga solo: un examen, una entrega o deberes, temas del temario, una nota o una sesión de estudio hecha sin cronómetro. La asignatura va por nombre: se busca y, si no existe, se crea. Una llamada por examen o entrega; si dice "examen de Física el 20, temas 1 a 4", escribe los cuatro temas en una sola llamada. Apuntar de nuevo el mismo título actualiza su fecha o su peso. Nunca calcules medias ni repartos: salen del estado. Una sesión apuntada cuenta para sus horas, pero no paga XP ni marca misiones.',
+    {
+      que: enumOf(['examen', 'entrega', 'temas', 'nota', 'sesion'], 'Qué se apunta'),
+      asignatura: str('Nombre de la asignatura. Solo en sesion puede ir vacía (bloque libre)'),
+      titulo: opt('Examen o entrega: su título. Nota: de qué es. Temas: el examen al que pertenecen, vacío si son temario general'),
+      fecha: opt('YYYY-MM-DD; en examen y entrega admite YYYY-MM-DD HH:MM. Examen sin fecha conocida: vacía. Nota y sesion: vacía = hoy'),
+      peso: opt('Porcentaje de la nota final, de 1 a 100'),
+      temas: opt('Nombres de los temas, uno por línea'),
+      nota: opt('La nota: 7,5 (sobre 10) o 15/20'),
+      minutos: opt('Solo sesion: minutos estudiados, de 1 a 240'),
+    },
+  ),
+
   tool(
     'consultar_historial',
-    'Consulta datos que no vienen en el estado inicial. Úsala cuando necesites comprobar algo concreto antes de afirmarlo: si de verdad falló una misión, cuánto levantó hace un mes, qué pesaba en enero, cuánto se gastó en algo. Úsala para comprobar lo que el gladiador dice haber hecho. Devuelve lo más reciente primero. fotos = sus fotos de progreso, solo fecha, pose y peso de ese día (nunca ves la imagen). entrenos: medidos, sin ruta. bienestar: sueño, fatiga, dolor. plan: sesiones con id.' + (LIGAS_ACTIVAS ? ' liga = su puesto en cada liga privada ahora (ignora las fechas; nunca datos de otros miembros).' : '') + ' tareas = tareas de campaña que completó en el rango.',
+    'Consulta datos que no vienen en el estado inicial. Úsala cuando necesites comprobar algo concreto antes de afirmarlo: si de verdad falló una misión, cuánto levantó hace un mes, qué pesaba en enero, cuánto se gastó en algo. Úsala para comprobar lo que el gladiador dice haber hecho. Devuelve lo más reciente primero. fotos = sus fotos de progreso, solo fecha, pose y peso de ese día (nunca ves la imagen). entrenos: medidos, sin ruta. bienestar: sueño, fatiga, dolor. plan: sesiones con id.' + (LIGAS_ACTIVAS ? ' liga = su puesto en cada liga privada ahora (ignora las fechas; nunca datos de otros miembros).' : '') + ' tareas = tareas de campaña que completó en el rango. estudio = temario con ids y sesiones.',
     {
       que: enumOf(
-        ['completadas', 'eventos', 'peso', 'gym', 'cardio', 'nutricion', 'comidas', 'diario', 'reglas_rotas', 'hechos', 'movimientos', 'fotos', ...(LIGAS_ACTIVAS ? ['liga'] : []), 'tareas', 'entrenos', 'bienestar', 'plan'],
+        ['completadas', 'eventos', 'peso', 'gym', 'cardio', 'nutricion', 'comidas', 'diario', 'reglas_rotas', 'hechos', 'movimientos', 'fotos', ...(LIGAS_ACTIVAS ? ['liga'] : []), 'tareas', 'entrenos', 'bienestar', 'plan', 'estudio'],
         'Qué serie quieres',
       ),
       desde: str('YYYY-MM-DD'),
@@ -506,7 +533,7 @@ export const TOOL_DEFS = [
   // NEGAR que algo se registró, se mira aquí (L1, ver comprobacion.ts).
   tool(
     'consultar_dia',
-    'Lo registrado en una fecha y en la anterior: sesiones de gimnasio con sus series (kg×reps, también peso corporal), cardio, peso, parte de comidas, si hay diario y las misiones completadas. Solo lee. Llámala SIEMPRE que diga que ha hecho o registrado algo, antes de contestarle, y cita lo que veas (ejercicio, kg×reps, fecha). Si no aparece, dile qué fechas has mirado y pregúntale dónde lo registró.',
+    'Lo registrado en una fecha y en la anterior: sesiones de gimnasio con sus series (kg×reps, también peso corporal), cardio, peso, parte de comidas, si hay diario, estudio y las misiones completadas. Solo lee. Llámala SIEMPRE que diga que ha hecho o registrado algo, antes de contestarle, y cita lo que veas (ejercicio, kg×reps, fecha). Si no aparece, dile qué fechas has mirado y pregúntale dónde lo registró.',
     {
       fecha: opt('YYYY-MM-DD; vacía = hoy'),
     },
@@ -1732,6 +1759,12 @@ export async function executeTool(
       return ok(`Ficha física actualizada: ${Object.keys(patch).join(', ')}.`);
     }
 
+    case 'marcar_tema':
+      return ok(await marcarTema(ctx, input));
+
+    case 'apuntar_estudio':
+      return ok(await apuntarEstudio(ctx, input));
+
     case 'consultar_historial': {
       const { desde, hasta, filtro } = input;
       const LIMIT = 200;
@@ -1805,6 +1838,7 @@ export async function executeTool(
       if (input.que === 'fotos') return ok(await consultarFotos(sb, desde, hasta));
       if (input.que === 'liga') return ok(LIGAS_ACTIVAS ? await consultarLiga(sb) : 'Las ligas no están disponibles.');
       if (input.que === 'tareas') return ok(await consultarTareas(sb, userId, desde, hasta));
+      if (input.que === 'estudio') return ok(await consultarEstudio(sb, userId, desde, hasta, filtro));
 
       // El plan de comidas es semanal, no una serie temporal: filtrarlo por
       // fechas no tiene sentido y la tabla ni siquiera tiene columna de fecha.

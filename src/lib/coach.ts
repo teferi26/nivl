@@ -448,6 +448,22 @@ export async function clasificarMovimientos(): Promise<{ clasificados: number; t
   return { clasificados: body.clasificados ?? 0, texto: body.texto ?? '' };
 }
 
+/**
+ * Tarjetas de estudio a partir de un texto (atajo `estudio`, Haiku y sin el
+ * contexto del coach). Devuelve la respuesta tal cual; la sanea quien la usa
+ * (`tarjetasDeIa`). Sin Pro lanza `CoachAccessError`, que no es un fallo.
+ */
+export async function generarFlashcards(texto: string): Promise<unknown> {
+  const res = await fetch(functionsUrl(), {
+    method: 'POST',
+    headers: await authHeaders(),
+    body: JSON.stringify({ kind: 'estudio', tarea: 'flashcards', texto }),
+  });
+  if (!res.ok) throw await errorDe(res);
+  const body = (await res.json().catch(() => ({}))) as { resultado?: unknown };
+  return body.resultado ?? null;
+}
+
 // ── Lecturas ────────────────────────────────────────────────────────
 
 export async function fetchMainThread(): Promise<CoachThread | null> {
@@ -576,6 +592,8 @@ const ACCION_LEGIBLE: Record<string, string> = {
   escribir_diario: 'ha escrito en tu diario',
   consultar_historial: 'ha consultado tu historial',
   consultar_dia: 'ha comprobado lo registrado ese día',
+  marcar_tema: 'ha actualizado un tema de tu temario',
+  apuntar_estudio: 'ha apuntado algo en tu estudio',
 };
 
 export function describeAction(name: string): string {

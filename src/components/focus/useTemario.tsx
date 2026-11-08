@@ -1,14 +1,16 @@
 // NIVL · Mundo FOCUS: los efectos de Temario y de Exámenes (useX + XVista).
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { confirmar } from '@/components/ui';
 import { vibrar } from '@/design/haptics';
-import { archivarAsignatura, borrarClase } from '@/focus/datos';
-import { diaSemana } from '@/focus/fechas';
+import { archivarAsignatura, empezarVuelta, marcarEntrega } from '@/focus/datos';
+import { diaSemana, lunesDe, sumarDias } from '@/focus/fechas';
+import { CONFIG_POR_DEFECTO } from '@/focus/pomodoro';
+import { leerConfig } from '@/focus/temporizador';
 import { t } from '@/i18n';
+import { useAuth } from '@/lib/auth';
 import { dateKey } from '@/lib/dates';
 import type { ExamenesVistaProps } from './ExamenesVista';
-import { horaClase } from './HojasFocus';
 import { pedirEstudio } from './pedido';
 import type { TemarioVistaProps } from './TemarioVista';
 import { useFocusDatos } from './useFocusDatos';
@@ -42,18 +44,24 @@ export function useTemario() {
       onAnadirAsignatura: hojas.abrir.asignatura,
       onAnadirTemas: () => v.elegida && hojas.abrir.temas(v.elegida),
       onAlternarTema: hojas.abrir.alternarTema,
-      onBorrarTema: (x) => void hojas.abrir.borrarTema(x),
+      onEditarTema: (x) => hojas.abrir.editarTema(x.id),
+      onVuelta: async (a) => {
+        const n = a.vuelta + 1;
+        const ok = await confirmar({ titulo: t('focus:fondo.temas.vueltaTitulo', { n }), mensaje: t('focus:fondo.temas.vueltaCuerpo'), confirmar: t('focus:fondo.temas.vueltaOk', { n }) });
+        if (!ok) return;
+        vibrar('seleccion');
+        await fd.hacer(() => empezarVuelta(a.id, a.vuelta));
+      },
       onRepasar: hojas.abrir.repaso,
       onNuevoMazo: hojas.abrir.mazo,
       onNuevaTarjeta: hojas.abrir.tarjeta,
+      onPegarTarjetas: hojas.abrir.tarjetasLote,
+      onTarjetasIa: hojas.abrir.tarjetasIa,
+      onHoras: hojas.abrir.horas,
       onDia: setDia,
       onAnadirClase: () => hojas.abrir.clase(dia),
-      onBorrarClase: async (c) => {
-        const ok = await confirmar({ titulo: t('focus:temario.borrarClaseTitulo', { horas: horaClase(c) }), confirmar: t('focus:hojas.borrar'), destructivo: true });
-        if (!ok) return;
-        vibrar('destructiva');
-        await fd.hacer(() => borrarClase(c.id));
-      },
+      onEditarClase: (c) => hojas.abrir.clase(c.dia, c.id),
+      onCopiarDia: () => hojas.abrir.copiarDia(dia),
       onMetodo: (m) => hojas.abrir.metodo(m.id),
       onReintentar: () => void fd.recargar(),
     },
@@ -64,18 +72,43 @@ export function useTemario() {
 export function useExamenes() {
   const fd = useFocusDatos();
   const hoy = dateKey();
-  const hojas = useHojasFocus({ datos: fd, hoy, onEstudiar: (asignaturaId, temaId) => pedirEstudio({ asignaturaId, temaId }) });
+  const [lunes, setLunes] = useState(() => lunesDe(hoy));
+  const uid = useAuth().session?.user.id ?? null;
+  // El bloque de esta persona: con él, el plan del examen casa con el de Hoy.
+  const [config, setConfig] = useState(CONFIG_POR_DEFECTO);
+  useEffect(() => {
+    if (!uid) return;
+    let vivo = true;
+    void leerConfig(uid).then((c) => {
+      if (vivo) setConfig(c);
+    });
+    return () => {
+      vivo = false;
+    };
+  }, [uid]);
+  const hojas = useHojasFocus({ datos: fd, hoy, configPlan: config, onEstudiar: (asignaturaId, temaId) => pedirEstudio({ asignaturaId, temaId }) });
+  const ahora = new Date();
   const vista: ExamenesVistaProps = {
-    ...vistaExamenes(fd.datos, hoy),
+    ...vistaExamenes(fd.datos, hoy, { lunes, config, ahoraMin: ahora.getHours() * 60 + ahora.getMinutes() }),
     estado: fd.estado,
     error: fd.error,
     disponible: fd.disponible,
     acciones: {
+      onSemana: (delta) => {
+        vibrar('seleccion');
+        setLunes((l) => (delta === 0 ? lunesDe(hoy) : sumarDias(l, 7 * delta)));
+      },
       onExamen: hojas.abrir.detalle,
       onNuevoExamen: () => hojas.abrir.examen(),
+      onEntrega: hojas.abrir.entrega,
+      onMarcarEntrega: (id, hecha) => {
+        vibrar('seleccion');
+        void fd.hacer(() => marcarEntrega(id, hecha ? hoy : null));
+      },
       onAnadirAsignatura: hojas.abrir.asignatura,
       onNotas: hojas.abrir.notas,
       onNuevaNota: () => hojas.abrir.nota(),
+      onSimulacro: () => hojas.abrir.simulacro(),
       onMetodoAnteriores: () => hojas.abrir.metodo('anteriores'),
       onReintentar: () => void fd.recargar(),
     },

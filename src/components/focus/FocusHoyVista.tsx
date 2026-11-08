@@ -1,29 +1,34 @@
-// NIVL · Mundo FOCUS: el inicio, «el bloque de foco» (P01, lámina 3). Pura.
+// NIVL · Mundo FOCUS: el inicio. Pura.
 //
-// De arriba abajo, como la lámina:
-//   0 · La cabecera del mundo (emblema, FOCUS, nivel de FOCUS).
-//   1 · SESIÓN DE FOCO: el reloj del pomodoro, qué se estudia, «móvil en
-//       silencio al empezar» y EMPEZAR BLOQUE (la única superficie llena).
-//   2 · EXÁMENES: los dos próximos, con días que faltan y % del temario.
-//   3 · TEMARIO de la asignatura en foco: casillas pendiente/repasando/dominado.
-//   4 · PLAN DE ESTUDIO DE HOY: los bloques que reparte el plan automático.
-//   5 · TU FOCO DE HOY: las misiones de FOCUS (pagan por complete_quest).
-//   6 · COACH FOCUS: una línea del sistema y la entrada al chat.
+// Sin datos, el arranque guiado en vez del reloj. Con datos, de arriba abajo:
+//   · Hueco, si se vuelve tras unos días.
+//   · HOY TOCA: qué se estudia, por qué y EMPEZAR (la única superficie llena).
+//   · Entregas y deberes, por encima de los exámenes.
+//   · El plan de hoy entero («ver todo»), con aviso si no se llega.
+//   · Siguiente clase y la entrada única a los repasos.
+//   · Exámenes, temario, coach y misiones.
+// Con un bloque en marcha, PantallaConcentracion a pantalla completa.
 
 import Ionicons from '@expo/vector-icons/Ionicons';
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Entrada, ErrorSistema } from '@/components/arena';
 import { Screen, Skeleton } from '@/components/ui';
-import { DosColumnas } from '@/components/web/DosColumnas';
 import { ink, space, type as tipo } from '@/design/tokens';
-import type { BloquePlan, ExamenVista } from '@/focus/resumen';
+import type { ExamenDeArranque } from '@/focus/arranqueFlujo';
+import type { TipoBloque } from '@/focus/planEstudio';
+import type { BloquePlan } from '@/focus/resumen';
 import type { Fase, Situacion } from '@/focus/pomodoro';
-import type { EstadoTema } from '@/focus/tipos';
-import { hhmm } from '@/focus/fechas';
+import type { EstadoTema, PerfilFocus } from '@/focus/tipos';
 import { t } from '@/i18n';
+import { ArranqueGuiado } from './ArranqueGuiado';
 import { F } from './estilo';
 import { AnilloReloj, BarraFocus, BotonFocus, Casilla, ChipFocus, Etiqueta, FilaFocus, Rotulo, TarjetaFocus, VacioFocus, textoFocus } from './Piezas';
+import { PantallaConcentracion } from './PantallaConcentracion';
+import { TarjetaHueco } from './TarjetaHueco';
+import { etiquetaDias } from './vistaHoy';
+
+export { etiquetaDias };
 
 export interface SesionVista {
   fase: Fase;
@@ -32,16 +37,83 @@ export interface SesionVista {
   situacion: Situacion;
   reloj: string;
   ratio: number;
-  /** La asignatura del bloque (null: bloque libre). */
+  /** La asignatura del bloque en marcha (null: bloque libre). */
   asignatura: string | null;
   /** «Tema 4 · Árboles binarios», o null. */
   tema: string | null;
-  /** La misión que paga el bloque si se termina entero. */
+  /** La misión elegida para el bloque. */
   mision: { titulo: string; xp: number } | null;
-  /** Hay misiones de FOCUS que se podrían enlazar. */
+  /** Hay misiones de FOCUS que se podrían elegir. */
   hayMisiones: boolean;
   foco: number;
   descanso: number;
+  /** Veces que se ha salido de la app en este bloque. Informativo. */
+  salidas: number;
+}
+
+/** Lo que va a estudiar el siguiente bloque y por qué. */
+export interface TocaVista {
+  tipo: TipoBloque | 'libre';
+  titulo: string;
+  detalle: string | null;
+  motivo: string | null;
+  minutos: number;
+  asignaturaId: string | null;
+  temaId: string | null;
+  /** Lo ha elegido a mano, no el plan. */
+  elegido: boolean;
+}
+
+export interface FilaPlan {
+  bloque: BloquePlan;
+  /** «16:00», «Hoy» o null si no cabe hoy. */
+  hora: string | null;
+  titulo: string;
+  motivo: string;
+  minutos: number;
+}
+
+export interface PlanVista {
+  bloques: FilaPlan[];
+  fuera: FilaPlan[];
+  aviso: boolean;
+  /** Por qué no hay bloques; null si los hay. */
+  sinPlan: string | null;
+  /** La asignatura a la que le faltan temas. */
+  faltanTemasDe: string | null;
+}
+
+export interface EntregaFila {
+  id: string;
+  titulo: string;
+  asignatura: string;
+  etiqueta: string;
+  urgente: boolean;
+}
+
+export interface ExamenFila {
+  id: string;
+  asignatura: string;
+  titulo: string;
+  etiqueta: string;
+  progreso: number;
+  conFecha: boolean;
+}
+
+export interface ClaseVista {
+  enCurso: boolean;
+  asignatura: string;
+  cuando: string;
+  aula: string | null;
+}
+
+export interface HuecoVista {
+  dias: number;
+  pasaron: string[];
+  repasos: number;
+  tarjetas: number;
+  /** Los repasos por los que retomar, ya priorizados y con tope. */
+  temaIds: string[];
 }
 
 export interface TemaFila {
@@ -65,11 +137,22 @@ export interface FocusHoyVistaProps {
   /** false: la 0076 aún no está en el servidor (estado vacío tranquilo). */
   disponible: boolean;
   refrescando?: boolean;
+  /** Sin datos: el arranque guiado en vez del reloj. */
+  arranque: boolean;
+  hoy?: string;
   sesion: SesionVista;
-  examenes: ExamenVista[];
+  toca: TocaVista;
+  asignaturas: { id: string; nombre: string }[];
+  entregas: EntregaFila[];
+  mostrarEntregas: boolean;
+  plan: PlanVista;
+  clase: ClaseVista | null;
+  faltaHorario: boolean;
+  repasos: { temas: number; tarjetas: number; total: number };
+  hueco: HuecoVista | null;
+  examenes: ExamenFila[];
   /** Asignatura en foco y unos pocos temas alrededor de por dónde va. */
   temario: { asignatura: string; temas: TemaFila[]; total: number } | null;
-  plan: BloquePlan[];
   /** null mientras cargan las misiones. */
   misiones: MisionFila[] | null;
   coach: string;
@@ -87,10 +170,18 @@ export interface FocusHoyVistaProps {
     onTemario: () => void;
     onAlternarTema: (id: string) => void;
     onBloque: (b: BloquePlan) => void;
+    onElegirAsignatura: (id: string) => void;
+    onEntregaHecha: (id: string) => void;
+    onRepasar: () => void;
+    onRetomarHueco: () => void;
+    onCerrarHueco: () => void;
+    onAnadirTemas: (asignaturaId: string) => void;
     onCompletarMision: (id: string) => void;
     onCoach: () => void;
     onAnadirAsignatura: () => void;
     onAnadirExamen: () => void;
+    onArranqueAsignaturas: (nombres: string[]) => Promise<boolean>;
+    onArranqueFin: (perfil: PerfilFocus, examen: ExamenDeArranque | null, titulo: string) => Promise<void>;
     onReintentar: () => void;
     onRefrescar?: () => void;
   };
@@ -98,102 +189,234 @@ export interface FocusHoyVistaProps {
 
 const EXAMENES_EN_INICIO = 2;
 const BLOQUES_EN_INICIO = 3;
+const ENTREGAS_EN_INICIO = 3;
 
-export function etiquetaDias(dias: number): string {
-  if (dias <= 0) return t('focus:comun.hoy');
-  if (dias === 1) return t('focus:comun.manana');
-  return t('focus:comun.enDias', { count: dias });
+function textoEmpezar(tipoToca: TocaVista['tipo']): string {
+  if (tipoToca === 'repasar') return t('focus:hoyToca.empezarRepaso');
+  if (tipoToca === 'simulacro') return t('focus:hoyToca.empezarSimulacro');
+  return t('focus:hoy.empezar');
 }
 
-function Sesion({ s, acciones }: { s: SesionVista; acciones: FocusHoyVistaProps['acciones'] }) {
-  const foco = s.fase === 'foco';
-  const rotuloDerecha =
-    s.fase === 'foco' ? t('focus:hoy.bloque', { n: s.bloque, de: s.cadaLargo }) : s.fase === 'largo' ? t('focus:hoy.descansoLargo') : t('focus:hoy.descanso');
-  const titulo = foco ? (s.asignatura ?? t('focus:hoy.bloqueLibre')) : t('focus:hoy.descansoTitulo');
-  const principal =
-    s.situacion === 'en_marcha'
-      ? foco
-        ? { titulo: t('focus:hoy.pausar'), onPress: acciones.onPausar, icono: 'pause' as const }
-        : { titulo: t('focus:hoy.saltarDescanso'), onPress: acciones.onSaltar, icono: undefined }
-      : s.situacion === 'en_pausa'
-        ? { titulo: t('focus:hoy.seguir'), onPress: acciones.onEmpezar, icono: 'play' as const }
-        : { titulo: foco ? t('focus:hoy.empezar') : t('focus:hoy.empezarDescanso'), onPress: acciones.onEmpezar, icono: undefined };
-  const resumenA11y = t('focus:hoy.sesionA11y', { reloj: s.reloj, titulo, fase: rotuloDerecha });
+function Descanso({ s, acciones }: { s: SesionVista; acciones: FocusHoyVistaProps['acciones'] }) {
+  const rotulo = s.fase === 'largo' ? t('focus:hoy.descansoLargo') : t('focus:hoy.descanso');
+  const parado = s.situacion === 'parado';
+  const principal = s.situacion === 'en_marcha'
+    ? { titulo: t('focus:hoy.saltarDescanso'), onPress: acciones.onSaltar }
+    : { titulo: parado ? t('focus:hoy.empezarDescanso') : t('focus:hoy.seguir'), onPress: acciones.onEmpezar };
+  return (
+    <TarjetaFocus heroe>
+      <Rotulo texto={rotulo} />
+      <View style={styles.sesion}>
+        <View accessible accessibilityRole="timer" accessibilityLabel={t('focus:hoy.sesionA11y', { reloj: s.reloj, titulo: t('focus:hoy.descansoTitulo'), fase: rotulo })}>
+          <AnilloReloj ratio={s.ratio} reloj={s.reloj} pie={t('focus:hoy.relojDescanso')} apagado />
+        </View>
+        <View style={styles.sesionTextos}>
+          <Text style={textoFocus.titulo} maxFontSizeMultiplier={1.35}>
+            {t('focus:hoy.descansoTitulo')}
+          </Text>
+          <Text style={styles.sesionMeta} maxFontSizeMultiplier={1.35} numberOfLines={2}>
+            {t('focus:hoy.descansoCuerpo')}
+          </Text>
+        </View>
+      </View>
+      <BotonFocus titulo={principal.titulo} onPress={principal.onPress} style={styles.botonGrande} />
+      <View style={styles.secundarios}>
+        {!parado ? <BotonFocus titulo={t('focus:hoy.parar')} variante="texto" pequeno onPress={acciones.onParar} /> : <BotonFocus titulo={t('focus:hoy.saltar')} variante="texto" pequeno onPress={acciones.onSaltar} />}
+      </View>
+    </TarjetaFocus>
+  );
+}
 
+function HoyToca({ toca, s, asignaturas, acciones }: { toca: TocaVista; s: SesionVista; asignaturas: FocusHoyVistaProps['asignaturas']; acciones: FocusHoyVistaProps['acciones'] }) {
   return (
     <TarjetaFocus heroe>
       <Rotulo
-        texto={t('focus:hoy.sesionRotulo')}
-        derecha={rotuloDerecha}
+        texto={t('focus:hoyToca.rotulo')}
+        derecha={t('focus:hoyToca.minutos', { n: toca.minutos })}
         icono={{ nombre: 'options-outline', a11y: t('focus:hoy.ajustesA11y', { foco: s.foco, descanso: s.descanso }), onPress: acciones.onAjustes }}
       />
-      <View style={styles.sesion}>
-        <View accessible accessibilityRole="timer" accessibilityLabel={resumenA11y}>
-          <AnilloReloj ratio={s.ratio} reloj={s.reloj} pie={foco ? t('focus:hoy.relojBloque') : t('focus:hoy.relojDescanso')} apagado={!foco} />
+      <Text style={[textoFocus.titulo, styles.arribaPoco]} maxFontSizeMultiplier={1.35} numberOfLines={3}>
+        {toca.titulo}
+      </Text>
+      {toca.detalle ? (
+        <Text style={styles.sesionMeta} maxFontSizeMultiplier={1.35} numberOfLines={1}>
+          {toca.detalle}
+        </Text>
+      ) : null}
+      {toca.motivo ? (
+        <Text style={[textoFocus.cuerpo, styles.arribaPoco]} maxFontSizeMultiplier={1.5}>
+          {toca.motivo}
+        </Text>
+      ) : null}
+      {asignaturas.length > 1 ? (
+        <View style={styles.chips}>
+          {asignaturas.map((a) => (
+            <ChipFocus key={a.id} titulo={a.nombre} activo={toca.elegido && toca.asignaturaId === a.id} onPress={() => acciones.onElegirAsignatura(a.id)} />
+          ))}
         </View>
-        <View style={styles.sesionTextos}>
-          <Text style={textoFocus.titulo} maxFontSizeMultiplier={1.35} numberOfLines={2}>
-            {titulo}
+      ) : null}
+      <BotonFocus titulo={textoEmpezar(toca.tipo)} onPress={acciones.onEmpezar} style={styles.botonGrande} />
+      <Pressable
+        onPress={acciones.onNoMolestar}
+        hitSlop={8}
+        accessibilityRole="button"
+        accessibilityHint={t('focus:hoy.noMolestarA11y')}
+        style={({ pressed }) => [styles.silencio, pressed && styles.pulsado]}
+      >
+        <Text style={styles.silencioTexto} maxFontSizeMultiplier={1.35}>
+          {t('focus:hoy.silencio')}
+        </Text>
+      </Pressable>
+      {s.mision || s.hayMisiones ? (
+        <Pressable
+          onPress={acciones.onElegirMision}
+          hitSlop={8}
+          accessibilityRole="button"
+          accessibilityLabel={s.mision ? t('focus:hoy.misionPagaA11y', { titulo: s.mision.titulo, xp: s.mision.xp }) : t('focus:hoy.misionElegir')}
+          style={({ pressed }) => [styles.mision, pressed && styles.pulsado]}
+        >
+          {s.mision ? null : <Ionicons name="flag-outline" size={13} color={F.rotulo} />}
+          <Text style={styles.misionTexto} maxFontSizeMultiplier={1.35} numberOfLines={1}>
+            {s.mision ? (
+              <>
+                <Text style={styles.misionXp}>{t('focus:hoy.hastaXp', { xp: s.mision.xp })}</Text> {t('focus:hoy.alTerminar')}
+              </>
+            ) : (
+              t('focus:hoy.misionElegir')
+            )}
           </Text>
-          {foco && s.tema ? (
-            <Text style={styles.sesionMeta} maxFontSizeMultiplier={1.35} numberOfLines={1}>
-              {s.tema}
-            </Text>
-          ) : null}
-          {!foco ? (
-            <Text style={styles.sesionMeta} maxFontSizeMultiplier={1.35} numberOfLines={2}>
-              {t('focus:hoy.descansoCuerpo')}
-            </Text>
-          ) : null}
-          {foco ? (
-            <Pressable
-              onPress={acciones.onNoMolestar}
-              hitSlop={8}
-              accessibilityRole="button"
-              accessibilityHint={t('focus:hoy.noMolestarA11y')}
-              style={({ pressed }) => [styles.silencio, pressed && styles.pulsado]}
-            >
-              <Text style={styles.silencioTexto} maxFontSizeMultiplier={1.35}>
-                {t('focus:hoy.silencio')}
-              </Text>
-            </Pressable>
-          ) : null}
-          {foco && (s.mision || s.hayMisiones) ? (
-            <Pressable
-              onPress={acciones.onElegirMision}
-              hitSlop={8}
-              accessibilityRole="button"
-              accessibilityLabel={s.mision ? t('focus:hoy.misionPagaA11y', { titulo: s.mision.titulo, xp: s.mision.xp }) : t('focus:hoy.misionElegir')}
-              style={({ pressed }) => [styles.mision, pressed && styles.pulsado]}
-            >
-              {s.mision ? null : <Ionicons name="flag-outline" size={13} color={F.rotulo} />}
-              <Text style={styles.misionTexto} maxFontSizeMultiplier={1.35} numberOfLines={1}>
-                {s.mision ? (
-                  <>
-                    <Text style={styles.misionXp}>{t('focus:hoy.hastaXp', { xp: s.mision.xp })}</Text> {t('focus:hoy.alTerminar')}
-                  </>
-                ) : (
-                  t('focus:hoy.misionElegir')
-                )}
-              </Text>
-            </Pressable>
-          ) : null}
-        </View>
-      </View>
-      <BotonFocus titulo={principal.titulo} icono={principal.icono} onPress={principal.onPress} style={styles.botonGrande} />
-      {s.situacion !== 'parado' || !foco ? (
-        <View style={styles.secundarios}>
-          {s.situacion !== 'parado' ? (
-            <BotonFocus titulo={t('focus:hoy.parar')} variante="texto" pequeno onPress={acciones.onParar} />
-          ) : null}
-          {foco || s.situacion === 'parado' ? <BotonFocus titulo={t('focus:hoy.saltar')} variante="texto" pequeno onPress={acciones.onSaltar} /> : null}
-        </View>
+        </Pressable>
       ) : null}
     </TarjetaFocus>
   );
 }
 
-function Examenes({ examenes, acciones }: { examenes: ExamenVista[]; acciones: FocusHoyVistaProps['acciones'] }) {
+function Entregas({ entregas, acciones }: { entregas: EntregaFila[]; acciones: FocusHoyVistaProps['acciones'] }) {
+  const lista = entregas.slice(0, ENTREGAS_EN_INICIO);
+  return (
+    <TarjetaFocus>
+      <Rotulo texto={t('focus:hoyEntregas.rotulo')} derecha={entregas.length > 0 ? t('focus:hoy.verTodo') : t('focus:hoy.anadir')} onDerecha={acciones.onExamenes} />
+      {lista.length === 0 ? (
+        <Text style={[textoFocus.cuerpo, styles.arriba]} maxFontSizeMultiplier={1.5}>
+          {t('focus:hoyEntregas.vacio')}
+        </Text>
+      ) : (
+        <View style={styles.arriba}>
+          {lista.map((e) => (
+            <FilaFocus key={e.id} primera={false} onPress={() => acciones.onEntregaHecha(e.id)} accessibilityLabel={t('focus:hoyEntregas.a11y', { titulo: e.titulo, asignatura: e.asignatura, cuando: e.etiqueta })} accessibilityHint={t('focus:hoyEntregas.hint')}>
+              <View style={styles.temaIzq}>
+                <Casilla estado="vacia" />
+                <View style={styles.flex}>
+                  <Text style={textoFocus.fila} maxFontSizeMultiplier={1.35} numberOfLines={1}>
+                    {e.titulo}
+                  </Text>
+                  <Text style={textoFocus.detalle} maxFontSizeMultiplier={1.35} numberOfLines={1}>
+                    {e.asignatura}
+                  </Text>
+                </View>
+              </View>
+              <Etiqueta texto={e.etiqueta} apagada={!e.urgente} />
+            </FilaFocus>
+          ))}
+          {entregas.length > lista.length ? (
+            <Text style={[textoFocus.detalle, styles.arribaPoco]} maxFontSizeMultiplier={1.35}>
+              {t('focus:hoy.masBloques', { count: entregas.length - lista.length })}
+            </Text>
+          ) : null}
+        </View>
+      )}
+    </TarjetaFocus>
+  );
+}
+
+function FilaDelPlan({ f, acciones }: { f: FilaPlan; acciones: FocusHoyVistaProps['acciones'] }) {
+  return (
+    <FilaFocus primera={false} onPress={() => acciones.onBloque(f.bloque)} accessibilityLabel={t('focus:hoy.bloqueA11y', { hora: f.hora ?? '', titulo: f.titulo, tema: f.motivo })}>
+      {f.hora ? (
+        <Text style={[textoFocus.detalle, styles.hora]} maxFontSizeMultiplier={1.35}>
+          {f.hora}
+        </Text>
+      ) : null}
+      <View style={styles.flex}>
+        <Text style={textoFocus.fila} maxFontSizeMultiplier={1.35} numberOfLines={1}>
+          {f.titulo}
+        </Text>
+        <Text style={textoFocus.detalle} maxFontSizeMultiplier={1.35} numberOfLines={1}>
+          {f.motivo}
+        </Text>
+      </View>
+      <Text style={textoFocus.detalle} maxFontSizeMultiplier={1.35}>
+        {t('focus:hoyToca.minutos', { n: f.minutos })}
+      </Text>
+    </FilaFocus>
+  );
+}
+
+function Plan({ plan, acciones }: { plan: PlanVista; acciones: FocusHoyVistaProps['acciones'] }) {
+  const [todo, setTodo] = useState(false);
+  const hayMas = plan.bloques.length > BLOQUES_EN_INICIO || plan.fuera.length > 0;
+  const lista = todo ? plan.bloques : plan.bloques.slice(0, BLOQUES_EN_INICIO);
+  const faltanTemasDe = plan.faltanTemasDe;
+  return (
+    <TarjetaFocus>
+      <Rotulo texto={t('focus:hoy.planRotulo')} derecha={hayMas ? (todo ? t('focus:hoyToca.verMenos') : t('focus:hoyToca.verTodoN', { n: plan.bloques.length + plan.fuera.length })) : null} onDerecha={() => setTodo((v) => !v)} />
+      {plan.aviso ? (
+        <Text style={[textoFocus.acento, styles.arriba]} maxFontSizeMultiplier={1.5}>
+          {t('focus:hoyToca.noLlegas', { count: plan.fuera.length })}
+        </Text>
+      ) : null}
+      {lista.length === 0 ? (
+        <Text style={[textoFocus.cuerpo, styles.arriba]} maxFontSizeMultiplier={1.5}>
+          {plan.sinPlan}
+        </Text>
+      ) : (
+        <View style={styles.arriba}>
+          {lista.map((f, i) => (
+            <FilaDelPlan key={`${f.bloque.examenId}-${f.bloque.temaId ?? 's'}-${f.bloque.tipo}-${i}`} f={f} acciones={acciones} />
+          ))}
+        </View>
+      )}
+      {todo && plan.fuera.length > 0 ? (
+        <View style={styles.arriba}>
+          <Text style={textoFocus.detalle} maxFontSizeMultiplier={1.35}>
+            {t('focus:hoyToca.fuera')}
+          </Text>
+          {plan.fuera.map((f, i) => (
+            <FilaDelPlan key={`f-${f.bloque.examenId}-${f.bloque.temaId ?? 's'}-${f.bloque.tipo}-${i}`} f={f} acciones={acciones} />
+          ))}
+        </View>
+      ) : null}
+      {faltanTemasDe ? <BotonFocus titulo={t('focus:hoyToca.anadirTemas')} variante="contorno" pequeno onPress={() => acciones.onAnadirTemas(faltanTemasDe)} style={styles.arriba} /> : null}
+    </TarjetaFocus>
+  );
+}
+
+function Clase({ clase }: { clase: ClaseVista }) {
+  return (
+    <TarjetaFocus>
+      <Rotulo texto={clase.enCurso ? t('focus:hoyClase.enCurso') : t('focus:hoyClase.rotulo')} />
+      <Text style={[textoFocus.filaFuerte, styles.arribaPoco]} maxFontSizeMultiplier={1.35} numberOfLines={1}>
+        {clase.asignatura}
+      </Text>
+      <Text style={textoFocus.detalle} maxFontSizeMultiplier={1.35} numberOfLines={1}>
+        {clase.aula ? `${clase.cuando} · ${clase.aula}` /* i18n-ok: unión de dos datos */ : clase.cuando}
+      </Text>
+    </TarjetaFocus>
+  );
+}
+
+function Repasos({ repasos, onRepasar }: { repasos: FocusHoyVistaProps['repasos']; onRepasar: () => void }) {
+  return (
+    <TarjetaFocus>
+      <Rotulo texto={t('focus:hoyToca.repasosRotulo')} derecha={t('focus:hoyToca.repasar')} onDerecha={onRepasar} />
+      <Text style={[textoFocus.cuerpo, styles.arribaPoco]} maxFontSizeMultiplier={1.5}>
+        {t('focus:hoyToca.repasosCuerpo', { count: repasos.total })}
+      </Text>
+    </TarjetaFocus>
+  );
+}
+
+function Examenes({ examenes, acciones }: { examenes: ExamenFila[]; acciones: FocusHoyVistaProps['acciones'] }) {
   const lista = examenes.slice(0, EXAMENES_EN_INICIO);
   return (
     <TarjetaFocus>
@@ -209,17 +432,17 @@ function Examenes({ examenes, acciones }: { examenes: ExamenVista[]; acciones: F
       ) : (
         lista.map((e, i) => (
           <Pressable
-            key={e.examen.id}
-            onPress={() => acciones.onExamen(e.examen.id)}
+            key={e.id}
+            onPress={() => acciones.onExamen(e.id)}
             accessibilityRole="button"
-            accessibilityLabel={t('focus:hoy.examenA11y', { asignatura: e.asignatura, dias: etiquetaDias(e.dias), progreso: e.progreso })}
+            accessibilityLabel={t('focus:hoy.examenA11y', { asignatura: e.asignatura, dias: e.etiqueta, progreso: e.progreso })}
             style={({ pressed }) => [styles.examen, styles.separado, i === 0 && styles.primeraFila, pressed && styles.pulsado]}
           >
             <View style={styles.examenFila}>
               <Text style={[textoFocus.filaFuerte, styles.flex]} maxFontSizeMultiplier={1.35} numberOfLines={1}>
                 {e.asignatura}
               </Text>
-              <Etiqueta texto={etiquetaDias(e.dias)} />
+              <Etiqueta texto={e.etiqueta} apagada={!e.conFecha} />
             </View>
             <View style={styles.examenFila}>
               <BarraFocus ratio={e.progreso / 100} style={styles.flex} />
@@ -266,50 +489,6 @@ function Temario({ temario, acciones }: { temario: NonNullable<FocusHoyVistaProp
                 {etiquetaEstado(x.estado)}
               </Text>
             </FilaFocus>
-          ))}
-        </View>
-      )}
-    </TarjetaFocus>
-  );
-}
-
-/** «Estructuras de datos» → «Estructuras»: en un chip de tres por fila cabe una palabra. */
-export function nombreCorto(nombre: string): string {
-  if (nombre.length <= 12) return nombre;
-  return nombre.split(/\s+/)[0] ?? nombre;
-}
-
-function tituloBloque(b: BloquePlan): string {
-  if (b.tipo === 'simulacro') return t('focus:plan.simulacroCorto');
-  if (b.tipo === 'repasar') return t('focus:plan.repasoCorto');
-  return nombreCorto(b.asignatura);
-}
-
-function Plan({ plan, acciones }: { plan: BloquePlan[]; acciones: FocusHoyVistaProps['acciones'] }) {
-  const lista = plan.slice(0, BLOQUES_EN_INICIO);
-  return (
-    <TarjetaFocus>
-      <Rotulo texto={t('focus:hoy.planRotulo')} />
-      {lista.length === 0 ? (
-        <Text style={[textoFocus.cuerpo, styles.arriba]} maxFontSizeMultiplier={1.5}>
-          {t('focus:hoy.planVacio')}
-        </Text>
-      ) : (
-        <View style={styles.plan}>
-          {lista.map((b, i) => (
-            <ChipFocus
-              key={`${b.examenId}-${b.temaId ?? 's'}-${b.tipo}-${i}`}
-              arriba={b.hora === null ? t('focus:comun.hoy') : hhmm(b.hora)}
-              titulo={tituloBloque(b)}
-              activo={b.tipo === 'estudiar'}
-              onPress={() => acciones.onBloque(b)}
-              accessibilityLabel={t('focus:hoy.bloqueA11y', {
-                hora: b.hora === null ? t('focus:comun.hoy') : hhmm(b.hora),
-                titulo: tituloBloque(b),
-                tema: b.tema ?? b.asignatura,
-              })}
-              style={styles.flex}
-            />
           ))}
         </View>
       )}
@@ -386,76 +565,131 @@ function Huecos() {
   );
 }
 
-export function FocusHoyVista(p: FocusHoyVistaProps) {
+function Contenido({ p, indice }: { p: FocusHoyVistaProps; indice: number }) {
   const { acciones } = p;
-  const listo = p.estado === 'listo';
-  let i = 2;
+  let i = indice;
+  const estaEnDescanso = p.sesion.fase !== 'foco';
+  const tocaRepaso = p.toca.tipo === 'repasar';
   return (
-    <Screen amplio refreshing={p.refrescando} onRefresh={acciones.onRefrescar} contentStyle={styles.contenido}>
+    <>
+      {p.hueco ? (
+        <Entrada indice={i++} style={styles.bloque}>
+          <TarjetaHueco hueco={p.hueco} onRetomar={acciones.onRetomarHueco} onCerrar={acciones.onCerrarHueco} />
+        </Entrada>
+      ) : null}
+      <Entrada indice={i++} style={styles.bloque}>
+        {estaEnDescanso ? <Descanso s={p.sesion} acciones={acciones} /> : <HoyToca toca={p.toca} s={p.sesion} asignaturas={p.asignaturas} acciones={acciones} />}
+      </Entrada>
+      {p.mostrarEntregas ? (
+        <Entrada indice={i++} style={styles.bloque}>
+          <Entregas entregas={p.entregas} acciones={acciones} />
+        </Entrada>
+      ) : null}
+      <Entrada indice={i++} style={styles.bloque}>
+        <Plan plan={p.plan} acciones={acciones} />
+      </Entrada>
+      {p.clase ? (
+        <Entrada indice={i++} style={styles.bloque}>
+          <Clase clase={p.clase} />
+        </Entrada>
+      ) : p.faltaHorario ? (
+        <Entrada indice={i++} style={styles.bloque}>
+          <TarjetaFocus>
+            <Rotulo texto={t('focus:hoyClase.rotulo')} derecha={t('focus:hoy.anadir')} onDerecha={acciones.onTemario} />
+            <Text style={[textoFocus.cuerpo, styles.arribaPoco]} maxFontSizeMultiplier={1.5}>
+              {t('focus:hoyClase.sinHorario')}
+            </Text>
+          </TarjetaFocus>
+        </Entrada>
+      ) : null}
+      {p.repasos.total > 0 && !tocaRepaso ? (
+        <Entrada indice={i++} style={styles.bloque}>
+          <Repasos repasos={p.repasos} onRepasar={acciones.onRepasar} />
+        </Entrada>
+      ) : null}
+      <Entrada indice={i++} style={styles.bloque}>
+        <Examenes examenes={p.examenes} acciones={acciones} />
+      </Entrada>
+      {p.temario ? (
+        <View style={styles.bloque}>
+          <Temario temario={p.temario} acciones={acciones} />
+        </View>
+      ) : null}
+      <View style={styles.bloque}>
+        <Coach frase={p.coach} onCoach={acciones.onCoach} />
+      </View>
+      {p.misiones && p.misiones.length > 0 ? (
+        <View style={styles.bloque}>
+          <Misiones misiones={p.misiones} acciones={acciones} />
+        </View>
+      ) : null}
+    </>
+  );
+}
+
+export function FocusHoyVista(p: FocusHoyVistaProps) {
+  const { acciones, sesion: s } = p;
+  const concentrado = s.fase === 'foco' && s.situacion !== 'parado';
+  return (
+    <Screen
+      refreshing={p.refrescando}
+      onRefresh={acciones.onRefrescar}
+      contentStyle={styles.contenido}
+      overlay={
+        <PantallaConcentracion
+          visible={concentrado}
+          situacion={s.situacion}
+          reloj={s.reloj}
+          ratio={s.ratio}
+          asignatura={s.asignatura}
+          tema={s.tema}
+          salidas={s.salidas}
+          bloque={s.bloque}
+          cadaLargo={s.cadaLargo}
+          onPausar={acciones.onPausar}
+          onSeguir={acciones.onEmpezar}
+          onTerminar={acciones.onParar}
+        />
+      }
+    >
       <Entrada indice={0}>{p.cabecera}</Entrada>
 
-      {/* En escritorio (web), el bloque y el estudio a la izquierda; el coach y las misiones a la derecha. */}
-      <DosColumnas
-        principal={
-          <>
-            <Entrada indice={1} style={styles.bloque}>
-              <Sesion s={p.sesion} acciones={acciones} />
-            </Entrada>
-
-            {p.estado === 'cargando' ? (
-              <Huecos />
-            ) : p.estado === 'error' ? (
-              <View style={styles.bloque}>
-                <ErrorSistema mensaje={p.error ?? ''} onReintentar={acciones.onReintentar} compacto />
-              </View>
-            ) : !p.disponible ? (
-              <Entrada indice={2} style={styles.bloque}>
-                <TarjetaFocus>
-                  <VacioFocus rotulo={t('focus:hoy.asignaturasRotulo')} icono="hourglass-outline" titulo={t('focus:comun.noDisponibleTitulo')} cuerpo={t('focus:comun.noDisponibleCuerpo')} />
-                </TarjetaFocus>
-              </Entrada>
-            ) : p.sinAsignaturas ? (
-              <Entrada indice={2} style={styles.bloque}>
-                <TarjetaFocus>
-                  <VacioFocus
-                    rotulo={t('focus:hoy.asignaturasRotulo')}
-                    icono="school-outline"
-                    titulo={t('focus:hoy.empiezaTitulo')}
-                    cuerpo={t('focus:hoy.empiezaCuerpo')}
-                    accion={{ titulo: t('focus:hoy.anadirAsignatura'), onPress: acciones.onAnadirAsignatura }}
-                  />
-                </TarjetaFocus>
-              </Entrada>
-            ) : (
-              <>
-                <Entrada indice={i++} style={styles.bloque}>
-                  <Examenes examenes={p.examenes} acciones={acciones} />
-                </Entrada>
-                {p.temario ? (
-                  <Entrada indice={i++} style={styles.bloque}>
-                    <Temario temario={p.temario} acciones={acciones} />
-                  </Entrada>
-                ) : null}
-                <Entrada indice={i++} style={styles.bloque}>
-                  <Plan plan={p.plan} acciones={acciones} />
-                </Entrada>
-              </>
-            )}
-          </>
-        }
-        lateral={
-          <>
-            <Entrada indice={6} style={styles.bloque}>
-              <Coach frase={p.coach} onCoach={acciones.onCoach} />
-            </Entrada>
-            {listo && p.misiones && p.misiones.length > 0 ? (
-              <Entrada indice={7} style={styles.bloque}>
-                <Misiones misiones={p.misiones} acciones={acciones} />
-              </Entrada>
-            ) : null}
-          </>
-        }
-      />
+      {p.estado === 'cargando' ? (
+        <Huecos />
+      ) : p.estado === 'error' ? (
+        <View style={styles.bloque}>
+          <ErrorSistema mensaje={p.error ?? ''} onReintentar={acciones.onReintentar} compacto />
+        </View>
+      ) : !p.disponible ? (
+        <>
+          <Entrada indice={1} style={styles.bloque}>
+            <HoyToca toca={p.toca} s={s} asignaturas={[]} acciones={acciones} />
+          </Entrada>
+          <Entrada indice={2} style={styles.bloque}>
+            <TarjetaFocus>
+              <VacioFocus rotulo={t('focus:hoy.asignaturasRotulo')} icono="hourglass-outline" titulo={t('focus:comun.noDisponibleTitulo')} cuerpo={t('focus:comun.noDisponibleCuerpo')} />
+            </TarjetaFocus>
+          </Entrada>
+        </>
+      ) : p.arranque ? (
+        <Entrada indice={1} style={styles.bloque}>
+          <ArranqueGuiado hoy={p.hoy ?? ''} asignaturas={p.asignaturas} onAsignaturas={acciones.onArranqueAsignaturas} onTerminar={acciones.onArranqueFin} />
+        </Entrada>
+      ) : p.sinAsignaturas ? (
+        <Entrada indice={1} style={styles.bloque}>
+          <TarjetaFocus>
+            <VacioFocus
+              rotulo={t('focus:hoy.asignaturasRotulo')}
+              icono="school-outline"
+              titulo={t('focus:hoy.empiezaTitulo')}
+              cuerpo={t('focus:hoy.empiezaCuerpo')}
+              accion={{ titulo: t('focus:hoy.anadirAsignatura'), onPress: acciones.onAnadirAsignatura }}
+            />
+          </TarjetaFocus>
+        </Entrada>
+      ) : (
+        <Contenido p={p} indice={1} />
+      )}
     </Screen>
   );
 }
@@ -472,20 +706,18 @@ const styles = StyleSheet.create({
   sesion: { flexDirection: 'row', alignItems: 'center', gap: space.s4, marginTop: space.s2 },
   sesionTextos: { flex: 1, minWidth: 0, gap: 1 },
   sesionMeta: { fontFamily: tipo.bodySm.family, fontSize: 13, lineHeight: 17, color: F.meta },
-  silencio: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 1, alignSelf: 'flex-start', minHeight: 22 },
+  silencio: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: space.s2, alignSelf: 'center', minHeight: 22 },
   silencioTexto: { fontFamily: tipo.micro.family, fontSize: 13, lineHeight: 17, color: F.acento },
-  mision: { flexDirection: 'row', alignItems: 'center', gap: 6, minHeight: 20 },
+  mision: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, minHeight: 20, marginTop: space.s1 },
   misionXp: { fontFamily: tipo.micro.family, color: F.acento },
-  misionTexto: { flex: 1, fontFamily: tipo.bodySm.family, fontSize: 12, lineHeight: 17, color: F.rotulo },
+  misionTexto: { fontFamily: tipo.bodySm.family, fontSize: 12, lineHeight: 17, color: F.rotulo },
   botonGrande: { marginTop: space.s3 - 2 },
   secundarios: { flexDirection: 'row', justifyContent: 'center', gap: space.s4, marginTop: space.s1 },
-  ajustes: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: space.s2, minHeight: 36, marginTop: space.s1 },
-  ajustesTexto: { fontFamily: tipo.bodySm.family, fontSize: 13, lineHeight: 18, color: F.rotulo },
-  ajustesAccion: { fontFamily: tipo.label.family, fontSize: 12, lineHeight: 18, letterSpacing: 1.2, color: F.acento, textTransform: 'uppercase' },
   examen: { paddingVertical: 6, gap: 5 },
   examenFila: { flexDirection: 'row', alignItems: 'center', gap: space.s3 },
   temaIzq: { flex: 1, minWidth: 0, flexDirection: 'row', alignItems: 'center', gap: space.s3 },
-  plan: { flexDirection: 'row', gap: space.s2, marginTop: space.s2 },
+  hora: { width: 44 },
+  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: space.s2, marginTop: space.s3 },
   tachado: { textDecorationLine: 'line-through', color: F.rotulo },
   xp: { color: F.acento },
   chat: { flexDirection: 'row', alignItems: 'flex-start', gap: space.s3, marginTop: space.s2 },
