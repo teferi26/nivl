@@ -40,7 +40,9 @@ export type IdPantalla =
   // El mundo IRON en la piel de la P01 (src/components/ironmundo).
   | 'iron'
   // Prueba automática de Élite (0069, solo con prueba_auto_activa).
-  | 'prueba';
+  | 'prueba'
+  // Primer uso: pistas, términos y glosario (src/components/ayuda).
+  | 'ayuda';
 
 export interface EstadoDemo {
   /** Va en la URL: /kit/pantallas?pantalla=hoy&estado=<id>. */
@@ -95,4 +97,5 @@ export const PANTALLAS_DEMO: { id: IdPantalla; titulo: string }[] = [
   { id: 'modos', titulo: 'Modos' },
   { id: 'iron', titulo: 'IRON' },
   { id: 'prueba', titulo: 'Prueba Élite' },
+  { id: 'ayuda', titulo: 'Ayuda contextual' },
 ];

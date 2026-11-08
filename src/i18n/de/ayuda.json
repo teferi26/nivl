@@ -1,0 +1,161 @@
+{
+  "pista": {
+    "entendido": "Verstanden",
+    "noMostrar": "Keine Tipps mehr zeigen",
+    "noMostrarA11y": "Auf keinem Bildschirm mehr Tipps zeigen"
+  },
+  "termino": {
+    "hint": "Tippen, um die Bedeutung zu sehen",
+    "queSignifica": "Was {{termino}} bedeutet"
+  },
+  "hoja": {
+    "eyebrow": "Das bedeutet",
+    "masEnGlosario": "Mehr im Glossar"
+  },
+  "glosario": {
+    "eyebrow": "Glossar",
+    "titulo": "Was alles bedeutet",
+    "grupo": {
+      "dia": "Dein Tag",
+      "progreso": "Dein Fortschritt",
+      "habitos": "Gewohnheiten und Regeln",
+      "campanas": "Kampagnen",
+      "ayudantes": "Coach, Modi und Pläne"
+    }
+  },
+  "perfil": {
+    "seccion": "Hilfe",
+    "glosarioDetalle": "XP, Serie, Ränge und die übrigen Begriffe des Spiels.",
+    "pistas": "Tipps auf dem Bildschirm",
+    "pistasDetalle": "Kurze Hinweise, wenn du etwas zum ersten Mal siehst. Beim Einschalten kommen auch die geschlossenen zurück."
+  },
+  "terminos": {
+    "misiones": {
+      "titulo": "Missionen",
+      "definicion": "Was du dir für einen bestimmten Tag vornimmst. Erledigst du sie, bekommst du XP; bleibt sie liegen, verlierst du einen Teil.",
+      "detalle": "Extramissionen laufen getrennt: Sie geben keine XP und zählen nicht für die Serie, dafür Bonuspunkte."
+    },
+    "dificultad": {
+      "titulo": "Schwierigkeit",
+      "definicion": "Wie hart eine Mission ist: trivial, leicht, mittel, schwer oder episch. Je härter, desto mehr XP gibt sie und desto mehr kostet es, sie zu verpassen."
+    },
+    "evidencia": {
+      "titulo": "Beweis",
+      "definicion": "Ein Foto, direkt gemacht, das zeigt, dass du die Mission erledigt hast. Es bringt 25 % mehr XP, und manche Missionen verlangen es."
+    },
+    "cierre": {
+      "titulo": "Tagesabschluss",
+      "definicion": "Um Mitternacht schließt das System den Tag ab. Hast du geliefert, wächst deine Serie, und was offen blieb, wird berechnet."
+    },
+    "racha": {
+      "titulo": "Serie",
+      "definicion": "Die Tage in Folge, an denen du lieferst. Ein Tag zählt, wenn höchstens 30 % des Geplanten offen bleiben.",
+      "detalle": "Alle 7 Tage Serie geben deine Missionen 10 % mehr XP, bis zu 50 % mehr. Lässt du an einem Tag zu viel aus, fällt die Serie auf null."
+    },
+    "penalizacion": {
+      "titulo": "Strafe",
+      "definicion": "Was du beim Tagesabschluss für Unerledigtes verlierst: die Hälfte der XP jeder Mission, höchstens 150 XP am Tag. Am nächsten Tag bekommst du eine Mission, um es zurückzuholen.",
+      "detalle": "Die Aufholmission gibt genau das Verlorene zurück, gilt aber nur an diesem Tag und öffnet sich, sobald du eine normale Mission erledigt hast. Brichst du die Serie mehrere Tage nacheinander, wird ab dem vierten nichts mehr berechnet."
+    },
+    "piedras": {
+      "titulo": "Schutzsteine",
+      "definicion": "Sie retten deine Serie und ersparen dir an einem schwachen Tag die Strafe für Missionen. Du kannst bis zu 3 besitzen.",
+      "detalle": "Du bekommst einen für je 7 Tage in Folge mit allen Missionen. Er wird von selbst verbraucht, wenn ein Tag deine Serie brechen würde. Vertragsregeln deckt er nicht ab."
+    },
+    "pausa": {
+      "titulo": "Pause",
+      "definicion": "Hält das System an, wenn du es brauchst, über dein Profil. Solange sie läuft, bleibt die Serie stehen und nichts wird berechnet."
+    },
+    "xp": {
+      "titulo": "XP",
+      "definicion": "Punkte, die du für erledigte Missionen und Einträge bekommst. Mit ihnen steigst du im Level auf.",
+      "detalle": "Je härter die Mission, desto mehr gibt sie: trivial 10, leicht 25, mittel 50, schwer 100 und episch 250."
+    },
+    "nivel": {
+      "titulo": "Level",
+      "definicion": "Zeigt, wie weit du insgesamt bist. Du steigst mit XP auf, und jedes Level kostet mehr als das vorige.",
+      "detalle": "Nimmt dir eine Strafe XP, kann das Level sinken. Der Rang nicht."
+    },
+    "rango": {
+      "titulo": "Rang",
+      "definicion": "Deine Stellung in der Arena, von E am Anfang bis S ganz oben. Einmal verdient, geht er nie verloren.",
+      "detalle": "Zum Aufstieg brauchst du Level und aktive Tage. XP allein reichen nicht."
+    },
+    "stats": {
+      "titulo": "Attribute",
+      "definicion": "Fünf Werte, die zeigen, worin du besser wirst: Stärke, Vitalität, Intelligenz, Agilität und Wahrnehmung. Jede Mission trainiert einen davon.",
+      "detalle": "Je 100 XP in einem Attribut ergeben 1 Punkt."
+    },
+    "FUE": {
+      "titulo": "Stärke (STÄ)",
+      "definicion": "Das Attribut der Bewegung. Es wächst mit Gym, Cardio und Trainingsmissionen."
+    },
+    "VIT": {
+      "titulo": "Vitalität (VIT)",
+      "definicion": "Das Attribut der Gesundheit. Es wächst mit gutem Schlaf, gutem Essen und Sorge für deinen Körper."
+    },
+    "INT": {
+      "titulo": "Intelligenz (INT)",
+      "definicion": "Das Attribut der Kopfarbeit. Es wächst mit Lernen, Lesen und konzentrierter Arbeit an Schwierigem."
+    },
+    "AGI": {
+      "titulo": "Agilität (AGI)",
+      "definicion": "Das Attribut der Beständigkeit. Es wächst mit den kleinen Routinen, die du Tag für Tag wiederholst."
+    },
+    "PER": {
+      "titulo": "Wahrnehmung (WAH)",
+      "definicion": "Das Attribut der Reflexion. Es wächst mit dem Tagebuch und dem Blick darauf, wie es dir läuft."
+    },
+    "forja": {
+      "titulo": "In der Schmiede",
+      "definicion": "Eine Gewohnheit, die du noch aufbaust. Das System zählt ihre Tage in Folge, nur die fälligen, bis 21."
+    },
+    "adquirido": {
+      "titulo": "Verinnerlicht oder geschmiedet",
+      "definicion": "Eine Gewohnheit, die du 21 Tage in Folge gehalten hast und nun als erledigt ansiehst. Sie wird nicht mehr verlangt, kann deine Serie nicht brechen und bringt einmalig 100 XP."
+    },
+    "contrato": {
+      "titulo": "Vertrag",
+      "definicion": "Deine unterschriebenen Regeln: wozu du dich jeden Tag verpflichtest. Jede Regel hat ihre eigene Konsequenz, wenn du sie brichst.",
+      "detalle": "Eine beim Tagesabschluss nicht markierte Regel gilt als gebrochen: Sie kostet 25 XP und hinterlässt eine Konsequenz für den nächsten Tag. Gezählt wird ab dem Tag, an dem du die erste markierst."
+    },
+    "puntosBonus": {
+      "titulo": "Bonuspunkte (PB)",
+      "definicion": "Was dir Extramissionen einbringen. Du tauschst sie gegen Erholung: 10 PB sind eine Stunde, höchstens 30 PB pro Woche."
+    },
+    "campana": {
+      "titulo": "Kampagne",
+      "definicion": "Ein großes Ziel, in Aufgaben zerlegt, mit Beute am Ende. Je nach Profil heißt sie Projekt, Ziel, Block oder Fach."
+    },
+    "jefe": {
+      "titulo": "Endgegner",
+      "definicion": "Eine entscheidende Aufgabe innerhalb einer Kampagne. Sie gibt doppelt so viele XP wie eine normale Aufgabe gleicher Schwierigkeit."
+    },
+    "botin": {
+      "titulo": "Beute",
+      "definicion": "Die XP, die du einmalig bekommst, wenn du eine Kampagne abschließt. Je nach ihrem Rang sind es 50 bis 600 XP."
+    },
+    "coach": {
+      "titulo": "Coach",
+      "definicion": "Dein KI-Coach. Er erstellt deinen Tagesplan, erinnert dich und beantwortet deine Fragen; er gehört zu NIVL Pro."
+    },
+    "oraculo": {
+      "titulo": "Orakel",
+      "definicion": "Nenne ihm ein Ziel, und es macht daraus Missionen mit Datum und Maß. Du wählst aus, welche du annimmst; es gehört zu NIVL Pro."
+    },
+    "modos": {
+      "titulo": "Modi",
+      "definicion": "Arenen, um dich auf einen Lebensbereich zu konzentrieren: IRON für Gym und Ernährung, FOCUS fürs Lernen, WORK für die Arbeit und FOUNDER für dein Projekt. Eine Mission mit Modus zählt für dein Level und für das dieses Modus.",
+      "detalle": "NIVL sieht alles und ist immer aktiv. Die anderen wählst du selbst."
+    },
+    "elite": {
+      "titulo": "Élite",
+      "definicion": "Der höchste Plan: der Coach mit voller Leistung, Tiefenmodus und Lorbeer-Abzeichen. Er bringt Status, keine Punkte.",
+      "detalle": "Mit Élite kannst du außerdem einen Platz in einem Ludus anfragen."
+    },
+    "ludus": {
+      "titulo": "Ludus",
+      "definicion": "Deine Gladiatorenschule: eine Gruppe von 5 bis 8 Élite mit demselben Ziel, die sich jede Woche messen. Kein Chat, nur die Anzeigetafel."
+    }
+  }
+}

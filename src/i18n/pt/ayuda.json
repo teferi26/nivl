@@ -1,0 +1,161 @@
+{
+  "pista": {
+    "entendido": "Percebi",
+    "noMostrar": "Não mostrar mais dicas",
+    "noMostrarA11y": "Não mostrar mais dicas em nenhum ecrã"
+  },
+  "termino": {
+    "hint": "Toca para ver o que significa",
+    "queSignifica": "O que significa {{termino}}"
+  },
+  "hoja": {
+    "eyebrow": "O que significa",
+    "masEnGlosario": "Mais no glossário"
+  },
+  "glosario": {
+    "eyebrow": "Glossário",
+    "titulo": "O que significa cada coisa",
+    "grupo": {
+      "dia": "O teu dia",
+      "progreso": "O teu progresso",
+      "habitos": "Hábitos e regras",
+      "campanas": "Campanhas",
+      "ayudantes": "Coach, modos e planos"
+    }
+  },
+  "perfil": {
+    "seccion": "Ajuda",
+    "glosarioDetalle": "XP, sequência, patentes e as restantes palavras do jogo.",
+    "pistas": "Dicas no ecrã",
+    "pistasDetalle": "Conselhos curtos da primeira vez que vês algo. Ao ativá-las, voltam também as que já fechaste."
+  },
+  "terminos": {
+    "misiones": {
+      "titulo": "Missões",
+      "definicion": "O que te propões fazer num dia concreto. Se a completares ganhas XP; se ficar por fazer, perdes uma parte.",
+      "detalle": "As missões extra são à parte: não dão XP nem contam para a sequência. Dão Pontos Bónus."
+    },
+    "dificultad": {
+      "titulo": "Dificuldade",
+      "definicion": "O quão dura é uma missão: trivial, fácil, média, difícil ou épica. Quanto mais dura, mais XP dá e mais custa falhá-la."
+    },
+    "evidencia": {
+      "titulo": "Prova",
+      "definicion": "Uma foto tirada no momento que mostra que cumpriste a missão. Dá mais 25% de XP e algumas missões exigem-na."
+    },
+    "cierre": {
+      "titulo": "Fecho",
+      "definicion": "À meia-noite o sistema fecha o dia. Soma à tua sequência se cumpriste e cobra o que ficou por fazer."
+    },
+    "racha": {
+      "titulo": "Sequência",
+      "definicion": "Os dias seguidos em que cumpres. Um dia conta se deixares por fazer, no máximo, 30% do que estava programado.",
+      "detalle": "A cada 7 dias de sequência as tuas missões dão mais 10% de XP, até mais 50%. Se num dia falhares demasiado, a sequência volta a zero."
+    },
+    "penalizacion": {
+      "titulo": "Penalização",
+      "definicion": "O que perdes no fecho pelo que não fizeste: metade do XP de cada missão, no máximo 150 XP por dia. No dia seguinte tens uma missão para o recuperar.",
+      "detalle": "A missão de recuperação devolve exatamente o que perdeste, mas só nesse dia, e abre-se depois de completares uma missão normal. Se quebrares a sequência vários dias seguidos, a partir do quarto já não se cobra nada."
+    },
+    "piedras": {
+      "titulo": "Pedras de Proteção",
+      "definicion": "Salvam a tua sequência e livram-te da penalização das missões no dia em que falhas. Podes guardar até 3.",
+      "detalle": "Ganhas uma a cada 7 dias seguidos com todas as missões feitas. Gasta-se sozinha quando um dia te quebraria a sequência. Não cobre as regras do contrato."
+    },
+    "pausa": {
+      "titulo": "Pausa",
+      "definicion": "Para o sistema quando precisas, a partir do Perfil. Enquanto dura, a sequência não se mexe e não se cobra nada."
+    },
+    "xp": {
+      "titulo": "XP",
+      "definicion": "Pontos que ganhas ao cumprir as tuas missões e registar o que fazes. Servem para subir de nível.",
+      "detalle": "Quanto mais dura a missão, mais dá: trivial 10, fácil 25, média 50, difícil 100 e épica 250."
+    },
+    "nivel": {
+      "titulo": "Nível",
+      "definicion": "Mede o quanto avançaste no total. Sobes ao juntar XP e cada nível custa mais do que o anterior.",
+      "detalle": "Se uma penalização te tirar XP, o nível pode descer. A patente não."
+    },
+    "rango": {
+      "titulo": "Patente",
+      "definicion": "A tua categoria na arena, do E, o inicial, ao S, o mais alto. Depois de ganha, nunca se perde.",
+      "detalle": "Para subir são precisos nível e dias ativos. O XP sozinho não chega."
+    },
+    "stats": {
+      "titulo": "Atributos",
+      "definicion": "Cinco medidas daquilo em que estás a melhorar: força, vitalidade, inteligência, agilidade e perceção. Cada missão treina uma.",
+      "detalle": "Cada 100 XP ganhos num atributo somam 1 ponto."
+    },
+    "FUE": {
+      "titulo": "Força (FOR)",
+      "definicion": "O atributo do exercício. Sobe com o ginásio, o cardio e as missões de treino."
+    },
+    "VIT": {
+      "titulo": "Vitalidade (VIT)",
+      "definicion": "O atributo da saúde. Sobe ao dormir bem, comer bem e cuidar do teu corpo."
+    },
+    "INT": {
+      "titulo": "Inteligência (INT)",
+      "definicion": "O atributo do trabalho mental. Sobe ao estudar, ler e concentrares-te no que é difícil."
+    },
+    "AGI": {
+      "titulo": "Agilidade (AGI)",
+      "definicion": "O atributo da constância. Sobe com as pequenas rotinas que repetes dia após dia."
+    },
+    "PER": {
+      "titulo": "Perceção (PER)",
+      "definicion": "O atributo da reflexão. Sobe com o diário e ao rever como te está a correr."
+    },
+    "forja": {
+      "titulo": "Na forja",
+      "definicion": "Um hábito que ainda estás a construir. O sistema conta os seus dias seguidos, só aqueles em que tocava, até chegar a 21."
+    },
+    "adquirido": {
+      "titulo": "Adquirido ou forjado",
+      "definicion": "Um hábito que cumpriste 21 dias seguidos e dás por feito. Já não te é pedido nem te pode quebrar a sequência, e ganhas 100 XP uma única vez."
+    },
+    "contrato": {
+      "titulo": "Contrato",
+      "definicion": "As tuas regras assinadas: aquilo a que te comprometes todos os dias. Cada regra tem a sua consequência se a quebrares.",
+      "detalle": "Uma regra por marcar no fecho conta como quebrada: custa 25 XP e deixa-te uma consequência para o dia seguinte. Começa a contar no dia em que marcas a primeira."
+    },
+    "puntosBonus": {
+      "titulo": "Pontos Bónus (PB)",
+      "definicion": "O que ganhas com as missões extra. Trocam-se por descanso: 10 PB são uma hora, no máximo 30 PB por semana."
+    },
+    "campana": {
+      "titulo": "Campanha",
+      "definicion": "Um grande objetivo dividido em tarefas, com espólio no fim. Conforme o teu perfil, chama-se projeto, objetivo, bloco ou disciplina."
+    },
+    "jefe": {
+      "titulo": "Chefe",
+      "definicion": "Uma tarefa decisiva dentro de uma campanha. Dá o dobro do XP de uma tarefa normal da mesma dificuldade."
+    },
+    "botin": {
+      "titulo": "Espólio",
+      "definicion": "O XP que ganhas uma única vez ao terminar uma campanha. Vai de 50 a 600 XP conforme a sua patente."
+    },
+    "coach": {
+      "titulo": "Coach",
+      "definicion": "O teu treinador com inteligência artificial. Prepara o plano do dia, avisa-te e responde ao que lhe perguntares; faz parte do NIVL Pro."
+    },
+    "oraculo": {
+      "titulo": "Oráculo",
+      "definicion": "Dizes-lhe um objetivo e ele transforma-o em missões com data e medida. Tu escolhes quais aceitar; faz parte do NIVL Pro."
+    },
+    "modos": {
+      "titulo": "Modos",
+      "definicion": "Arenas para te concentrares numa parte da tua vida: IRON para ginásio e dieta, FOCUS para estudo, WORK para trabalho e FOUNDER para o teu projeto. Uma missão com modo soma ao teu nível e ao desse modo.",
+      "detalle": "O NIVL vê tudo e está sempre ativo. Os outros escolhes tu."
+    },
+    "elite": {
+      "titulo": "Élite",
+      "definicion": "O plano mais alto: o coach na potência máxima, modo profundo e insígnia de louro. Dá estatuto, não pontos.",
+      "detalle": "Com o Élite também podes pedir lugar num ludus."
+    },
+    "ludus": {
+      "titulo": "Ludus",
+      "definicion": "A tua escola de gladiadores: um grupo de 5 a 8 Élite com o mesmo objetivo, a medirem-se todas as semanas. Sem chat, só o marcador."
+    }
+  }
+}

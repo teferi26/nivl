@@ -45,6 +45,7 @@ import { fijarQuieto } from '@/components/arena/quieto';
 import { DEMO as demoAcceso } from '@/components/acceso/demo';
 import { DEMO as demoAgenda } from '@/components/agenda/demo';
 import { DEMO as demoAmigos } from '@/components/amigos/demo';
+import { DEMO as demoAyuda } from '@/components/ayuda/demo';
 import { DEMO as demoAvances } from '@/components/avances/demo';
 import { DEMO as demoCampanas } from '@/components/campanas/demo';
 import { DEMO as demoCardio } from '@/components/cardio/demo';
@@ -108,6 +109,7 @@ const DEMOS: Record<IdPantalla, DemoPantalla | null> = {
   modos: demoModos,
   iron: demoIron,
   prueba: demoPrueba,
+  ayuda: demoAyuda,
 };
 
 type IdPagina = 'arena' | IdPantalla;
