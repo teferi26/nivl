@@ -116,6 +116,11 @@ export const RECARGA_IA_ID = 'nivl_ia_recarga_1';
 
 export type NivelUsoIa = 'normal' | 'aviso80' | 'aviso95' | 'hoy' | 'agotada';
 
+/** Solo la prueba enseña consumo: quien paga no ve contadores (cuota plana, 0090). */
+export function conContadorIa(status: AiStatus | null | undefined): boolean {
+  return !!status?.trial;
+}
+
 /**
  * Cuánta IA queda (0 a 1) y qué decir. Puro. Umbrales: 80 % y 95 % usados; «agotada» si la puerta dice
  * tope del mes o se ha usado todo; «hoy» si solo se ha llegado al reparto del día.
@@ -182,11 +187,8 @@ export function turnosProfundos(status: AiStatus | null | undefined): number {
 
 /** La línea bajo el selector de potencia, en la voz del sistema. */
 export function lineaProfundos(status: AiStatus | null | undefined): string {
-  if (!puedeProfundo(status)) return 'Has usado tus turnos profundos de este mes. El estándar sigue disponible.';
-  const n = turnosProfundos(status);
-  if (n === 0) return 'Te queda menos de un turno profundo este mes.';
-  if (n === 1) return 'Te queda 1 turno profundo este mes.';
-  return `Te quedan ${n} turnos profundos este mes.`;
+  if (!puedeProfundo(status)) return 'El modo profundo vuelve pronto. El estándar sigue disponible.';
+  return 'Disponible cuando lo necesites.';
 }
 
 /**
@@ -445,9 +447,9 @@ export const PRO_BENEFITS: readonly ProBenefit[] = [
 ];
 
 export const COACH_USAGE_NOTICE =
-  'El coach tiene energía limitada que se recarga cada mes, también con el plan anual. ' +
-  'Chats, briefs, planes y revisiones consumen energía según su extensión. ' +
-  'Al agotarla, el coach se pausa hasta la recarga; el resto de NIVL sigue disponible.';
+  'Sin contadores ni pagos extra por usar el coach. ' +
+  'Para proteger el servicio, un uso automatizado o fuera de lo normal puede pausarlo temporalmente; ' +
+  'el resto de NIVL sigue disponible.';
 
 /**
  * La prueba de 7 días, tal cual es (`start_trial`, 0024): del servidor, sin
@@ -485,7 +487,7 @@ export function tituloBotonPrueba(tier: OfferTier): string {
 }
 
 export const ELITE_USAGE_NOTICE =
-  'El modo profundo tiene su propio límite mensual. El ludus se solicita desde Amigos y se asigna manualmente ' +
+  'El ludus se solicita desde Amigos y se asigna manualmente ' +
   'según las plazas disponibles; puede requerir espera.';
 
 // Lo que el Élite añade. SOLO lo que ya existe (Apple 3.1.2). Desde la fase 3
@@ -955,9 +957,9 @@ export const COPY_UPSELL: Record<CopyKey, CopyUpsell> = {
   'energia_agotada.elite': {
     eyebrow: 'Energía agotada',
     titulo: 'El coach se ha pausado.',
-    linea: 'Energía agotada hasta la recarga. El resto de NIVL sigue funcionando.',
+    linea: 'El coach está en pausa por un uso fuera de lo normal. El resto de NIVL sigue funcionando.',
     enlace: 'Ver NIVL Élite',
-    contexto: 'La energía del coach se recarga cada mes. Élite cambia la potencia: modelo de primera línea y modo profundo, cada uno con su límite mensual.',
+    contexto: 'Élite cambia la potencia: modelo de primera línea y modo profundo, sin contadores.',
     beneficio: 'Máxima potencia',
   },
   'fin_prueba.pro': {

@@ -67,6 +67,7 @@ async function sql(query) {
 
 // Cada migración se reconoce por un objeto que solo ella crea.
 const HUELLAS = {
+  '0090': `coalesce(obj_description('public.ai_topes_funcion'::regclass, 'pg_class') like '%nivl:freno-antiabuso-0090%', false)`,
   '0089': `to_regprocedure('public.admin_cola()') is null`,
   '0088': `coalesce(obj_description(to_regprocedure('public.admin_moderacion_bandeja(integer)'), 'pg_proc') like '%nivl:panel-moderacion-0088%', false)`,
   '0087': `coalesce(pg_get_functiondef('public.social_profile_pending()'::regprocedure) like '%''auto''%', false)`,
