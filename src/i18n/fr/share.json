@@ -22,6 +22,9 @@
     "aliasNoDisponible": "Ton pseudo n'est pas disponible pour l'instant.",
     "aliasError": "Impossible de récupérer ton pseudo. Réessaie.",
     "abriendo": "OUVERTURE…",
-    "compartir": "PARTAGER"
+    "compartir": "PARTAGER",
+    "descargar": "TÉLÉCHARGER L'IMAGE",
+    "descargada": "Image téléchargée. Publie-la où tu veux.",
+    "copiada": "Impossible de créer l'image. Le texte a été copié."
   }
 }

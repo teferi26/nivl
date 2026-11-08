@@ -5,6 +5,7 @@
 // una vez y cuenta en todos los modos que lleve. Sin ninguna, solo en General.
 
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { ariaWeb } from '@/components/ui/ariaWeb';
 import { vibrar } from '@/design/haptics';
 import { ink, modoAcento, oro, radio, space, stroke, type as tipo, vidrio } from '@/design/tokens';
 import { t } from '@/i18n';
@@ -30,6 +31,7 @@ export function EtiquetasModo({ valor, opciones, alCambiar }: EtiquetasModoProps
             }}
             accessibilityRole="checkbox"
             accessibilityState={{ checked: on }}
+            {...ariaWeb({ checked: on })}
             accessibilityLabel={t('modos:form.a11y', { modo: NOMBRE_MODO[m] })}
             style={({ pressed }) => [styles.etiqueta, on && styles.etiquetaOn, pressed && styles.pulsada]}
           >

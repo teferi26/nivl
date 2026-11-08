@@ -16,7 +16,8 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useEffect, useRef, useState } from 'react';
 import { PixelRatio, Platform, Pressable, ScrollView, StyleSheet, Switch, Text, useWindowDimensions, View } from 'react-native';
-import { compartirTarjeta, type Ancla } from '@/lib/share';
+import { ariaWeb } from '@/components/ui/ariaWeb';
+import { compartirTarjeta, type Ancla, type ResultadoCompartir } from '@/lib/share';
 import {
   avisoColor,
   bloqueo,
@@ -31,7 +32,9 @@ import { Trama } from '@/components/ui/Texture';
 import { ink, oro, radio, vidrio } from '@/design/tokens';
 import { t } from '@/i18n';
 import { fonts } from '@/lib/theme';
+import { comparteArchivosWeb } from '@/lib/web/capturaTarjeta';
 import { mensajeSistema } from '@/lib/validation';
+import { useCapaWeb } from '@/components/web/useCapaWeb';
 import { TarjetaCompartir } from './TarjetaCompartir';
 
 
@@ -76,6 +79,8 @@ export function HojaCompartir({
   const [listoPara, setListoPara] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
+  // Solo en la web: dónde ha ido a parar (se ha descargado, se ha copiado).
+  const [resultado, setResultado] = useState<ResultadoCompartir | null>(null);
   // Alias pedido al encender el interruptor (undefined = aún no pedido).
   const [aliasPedido, setAliasPedido] = useState<string | null | undefined>(undefined);
   const [pidiendoAlias, setPidiendoAlias] = useState(false);
@@ -86,6 +91,8 @@ export function HojaCompartir({
   const alias = aliasDado ?? aliasPedido ?? null;
   const vista = useRef<View>(null);
   const boton = useRef<View>(null);
+  const capa = useRef<View>(null);
+  useCapaWeb(capa, visible, onCerrar);
   const ctx: ContextoTarjeta = contexto ?? { puedeCompartirFotos: false };
 
   // Cada apertura empieza de cero: nada se recuerda entre usos.
@@ -94,6 +101,7 @@ export function HojaCompartir({
     setFormato(formatoInicial);
     setOpciones(OPCIONES_POR_DEFECTO);
     setError(null);
+    setResultado(null);
     setAliasPedido(undefined);
     setSinAlias(null);
   }, [visible, formatoInicial]);
@@ -150,12 +158,13 @@ export function HojaCompartir({
 
   const compartir = async () => {
     setError(null);
+    setResultado(null);
     setEnviando(true);
     try {
       const ancla = await new Promise<Ancla | null>((r) =>
         boton.current ? boton.current.measureInWindow((x, y, w, h) => r({ x, y, width: w, height: h })) : r(null),
       );
-      await compartirTarjeta({ tarjeta, formato, opciones, contexto: ctx, vista, codigoAmigo, ancla });
+      setResultado(await compartirTarjeta({ tarjeta, formato, opciones, contexto: ctx, vista, codigoAmigo, ancla }));
     } catch (e) {
       setError(mensajeSistema(e));
     } finally {
@@ -164,9 +173,11 @@ export function HojaCompartir({
   };
 
   const puede = !motivo && listo && !enviando;
+  // En un ordenador sin hoja de compartir, el botón dice lo que va a pasar.
+  const soloDescarga = Platform.OS === 'web' && !comparteArchivosWeb();
 
   return (
-    <View style={[StyleSheet.absoluteFill, styles.capa]} accessibilityViewIsModal>
+    <View ref={capa} style={[StyleSheet.absoluteFill, styles.capa]} accessibilityViewIsModal>
       {/* Tarjeta real, fuera de la vista, para capturar. */}
       <View
         style={styles.fuera}
@@ -222,6 +233,7 @@ export function HojaCompartir({
                   onPress={() => setFormato(f)}
                   accessibilityRole="radio"
                   accessibilityState={{ selected: activo }}
+                  {...ariaWeb({ checked: activo })}
                   style={[styles.formato, activo && styles.formatoActivo]}
                 >
                   <Text style={[styles.formatoTexto, activo && styles.formatoTextoActivo]}>{rotulo}</Text>
@@ -259,6 +271,8 @@ export function HojaCompartir({
           {sinAlias === 'ninguno' ? <Aviso texto={t('share:hoja.aliasNoDisponible')} /> : null}
           {sinAlias === 'error' ? <Aviso texto={t('share:hoja.aliasError')} /> : null}
           {error ? <Aviso texto={error} trama alerta /> : null}
+          {resultado === 'descargada' ? <Aviso texto={t('share:hoja.descargada')} /> : null}
+          {resultado === 'copiada' ? <Aviso texto={t('share:hoja.copiada')} /> : null}
           <Pressable
             onPress={compartir}
             disabled={!puede}
@@ -266,7 +280,7 @@ export function HojaCompartir({
             accessibilityState={{ disabled: !puede, busy: enviando }}
             style={[styles.boton, !puede && styles.botonApagado]}
           >
-            <Text style={[styles.botonTexto, !puede && styles.botonTextoApagado]}>{enviando ? t('share:hoja.abriendo') : t('share:hoja.compartir')}</Text>
+            <Text style={[styles.botonTexto, !puede && styles.botonTextoApagado]}>{enviando ? t('share:hoja.abriendo') : soloDescarga ? t('share:hoja.descargar') : t('share:hoja.compartir')}</Text>
           </Pressable>
         </View>
       </View>

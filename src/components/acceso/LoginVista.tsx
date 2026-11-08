@@ -22,6 +22,7 @@ import { useContext } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Campo, Entrada, TarjetaArena } from '@/components/arena';
 import { Button, Check, Screen, useAnunciar } from '@/components/ui';
+import { ariaWeb } from '@/components/ui/ariaWeb';
 import { ConFachada } from '@/components/web/FachadaAcceso';
 import { vibrar } from '@/design/haptics';
 import { ink, oro, radio, space, stroke, type as tipo, vidrio } from '@/design/tokens';
@@ -131,6 +132,7 @@ export function LoginVista(p: LoginVistaProps) {
                     style={[styles.pestana, activa && styles.pestanaActiva]}
                     accessibilityRole="tab"
                     accessibilityState={{ selected: activa }}
+                    {...ariaWeb({ selected: activa })}
                     accessibilityLabel={t(`acceso:login.pestana.${pestana}.a11y`)}
                   >
                     <Text style={[styles.pestanaTexto, activa && styles.pestanaTextoActiva]} maxFontSizeMultiplier={1.35}>
@@ -197,6 +199,7 @@ export function LoginVista(p: LoginVistaProps) {
                   style={styles.casilla}
                   accessibilityRole="checkbox"
                   accessibilityState={{ checked: campos.aceptado }}
+                  {...ariaWeb({ checked: campos.aceptado })}
                   accessibilityLabel={t('acceso:login.casillaLegal')}
                 >
                   <Check checked={campos.aceptado} size={24} />

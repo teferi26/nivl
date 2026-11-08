@@ -12,6 +12,7 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { EncabezadoArena, Entrada, TarjetaArena } from '@/components/arena';
 import { Button, Check, Screen, Skeleton } from '@/components/ui';
+import { ariaWeb } from '@/components/ui/ariaWeb';
 import { space } from '@/design/tokens';
 import { t } from '@/i18n';
 import { ANCHO_PUERTA, texto } from './estilos';
@@ -78,6 +79,7 @@ export function EdadVista(p: EdadVistaProps) {
                   accessibilityRole="checkbox"
                   accessibilityLabel={t('puertas:edad.casillaA11y', { n: p.edadMinima })}
                   accessibilityState={{ checked: p.marcada, disabled: guardando || p.saliendo }}
+                  {...ariaWeb({ checked: p.marcada })}
                   disabled={guardando || p.saliendo}
                   onPress={p.onMarcar}
                 >

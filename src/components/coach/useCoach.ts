@@ -8,7 +8,8 @@
 // (lo que la ruta pinta debajo: consentimiento, privacidad del dictado y
 // denuncia).
 
-import * as ImagePicker from 'expo-image-picker';
+import type * as ImagePicker from 'expo-image-picker';
+import { elegirFoto } from '@/lib/camara';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import {
@@ -398,7 +399,7 @@ export function useCoach(): { vista: CoachVistaProps; hojas: HojasCoach } {
     // necesita. Pedirlo y no tenerlo dejaba el clip sin salida.
     let r: ImagePicker.ImagePickerResult;
     try {
-      r = await ImagePicker.launchImageLibraryAsync({
+      r = await elegirFoto({
         mediaTypes: ['images'],
         // Calidad baja a propósito: una foto de móvil sin comprimir son varios
         // megas de base64, y eso se paga como miles de fichas en cada turno.
@@ -691,7 +692,6 @@ export function useCoach(): { vista: CoachVistaProps; hojas: HojasCoach } {
   );
 
   const vista: CoachVistaProps = {
-    conDisco: modosActivos,
     cargando: cargando || !estadoListo,
     sinPro,
     vacio,

@@ -12,6 +12,7 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useEffect, useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ariaWeb } from '@/components/ui/ariaWeb';
 import { vibrar } from '@/design/haptics';
 import { ink, modoAcento, oro, space, stroke, type as tipo, vidrio } from '@/design/tokens';
 import { t } from '@/i18n';
@@ -83,6 +84,7 @@ export function SelectorModo({ modo, disponibles, alCambiar }: SelectorModoProps
               }}
               accessibilityRole="tab"
               accessibilityState={{ selected: activo }}
+              {...ariaWeb({ selected: activo })}
               accessibilityLabel={t('modos:selector.opcionA11y', { modo: NOMBRE_MODO[m] })}
               style={({ pressed }) => [
                 styles.pestana,

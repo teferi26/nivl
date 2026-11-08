@@ -14,6 +14,7 @@
 
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { menuContextualWeb } from '@/components/ui/pulsacionLarga';
 import { Entrada, formatoMiles } from '@/components/arena';
 import type { CampanaVistaProps } from '@/components/campanas/CampanaVista';
 import { fechaCorta, plazo } from '@/components/campanas/plazo';
@@ -160,6 +161,7 @@ export function CampanaGeneralVista(p: CampanaVistaProps) {
           <Pressable
             onPress={() => p.onTarea(jefePendiente)}
             onLongPress={() => p.onBorrarTarea(jefePendiente)}
+            {...menuContextualWeb(() => p.onBorrarTarea(jefePendiente))}
             accessibilityActions={abierta && !p.ocupada ? [{ name: 'longpress', label: t('campanas:detalle.borrarTarea') }] : undefined}
             onAccessibilityAction={(e) => abierta && !p.ocupada && e.nativeEvent.actionName === 'longpress' && p.onBorrarTarea(jefePendiente)}
             disabled={!abierta || p.ocupada}

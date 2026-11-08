@@ -22,6 +22,9 @@
     "aliasNoDisponible": "Il tuo alias ora non è disponibile.",
     "aliasError": "Impossibile recuperare il tuo alias. Riprova.",
     "abriendo": "APERTURA…",
-    "compartir": "CONDIVIDI"
+    "compartir": "CONDIVIDI",
+    "descargar": "SCARICA IMMAGINE",
+    "descargada": "Immagine scaricata. Pubblicala dove vuoi.",
+    "copiada": "Impossibile creare l'immagine. Il testo è stato copiato."
   }
 }

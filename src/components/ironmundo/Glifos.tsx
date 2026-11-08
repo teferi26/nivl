@@ -2,7 +2,13 @@
 // puntas redondas). Los mismos caminos que `propuesta.html` (P e NI). Son
 // decorativos: el texto de al lado o la etiqueta del botón dicen qué son.
 
+import { Platform } from 'react-native';
 import Svg, { Circle, Path } from 'react-native-svg';
+
+/** Oculto al lector. En la web, Svg pasa sus props al DOM tal cual: ahí solo vale `aria-hidden`. */
+export const OCULTO_LECTOR = Platform.OS === 'web'
+  ? ({ 'aria-hidden': true } as object)
+  : ({ accessibilityElementsHidden: true, importantForAccessibility: 'no-hide-descendants' } as const);
 
 const CAMINOS = {
   pesa: 'M6.5 7v10M3.5 9.5v5M17.5 7v10M20.5 9.5v5M6.5 12h11',
@@ -31,7 +37,7 @@ export function FiguraSentadilla({ lado, color, suelo }: { lado: number; color: 
   const hip = [34, 70];
   const knee = [61, 74];
   return (
-    <Svg width={lado} height={lado} viewBox="0 0 100 100" accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+    <Svg width={lado} height={lado} viewBox="0 0 100 100" {...OCULTO_LECTOR}>
       <Path d="M18 93.5H86" stroke={suelo} strokeWidth={1.5} />
       <Circle cx={sh[0]! + 2} cy={sh[1]! - 9} r={5} fill={color} />
       <Path
@@ -61,8 +67,7 @@ export function GlifoIron({ nombre, lado = 20, color, grosor = 1.8 }: { nombre: 
       strokeWidth={grosor}
       strokeLinecap="round"
       strokeLinejoin="round"
-      accessibilityElementsHidden
-      importantForAccessibility="no-hide-descendants"
+      {...OCULTO_LECTOR}
     >
       {nombre === 'buscar' ? (
         <>

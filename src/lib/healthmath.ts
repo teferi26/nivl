@@ -23,3 +23,23 @@ export const HEALTH_COPY = {
   erase: 'Se eliminarán tu ficha física, peso, entrenamiento con sus rutas GPS y datos de pulso, los datos de Apple Salud y Apple Watch (pulso, sueño, pasos y energía activa), alimentación, metas físicas, objetivos y cartas marcados como salud, hábitos y reglas físicos con sus registros, TODO el diario y sus fotos, fotos de misiones, conversaciones, memoria, resúmenes y planes. También los hábitos, reglas, campañas, agenda, compras y metas creados o modificados por el coach y marcados como contenido mixto. Pueden mezclar salud con otros datos: se elimina el registro completo. En Economía se retiran las anotaciones y se desactivan las reglas automáticas marcadas como texto de IA; se conservan las cuentas, movimientos e importes. Tus puntos y los registros generales sin marcas de salud o del coach se conservan. El texto general anterior no identificado como salud no se borra automáticamente. Exporta antes si quieres una copia. Esta acción no se puede deshacer.',
 } as const;
 export const HEALTH_ROUTES = new Set(['gym', 'cardio', 'dieta', 'nutricion', 'diario', 'archivo', 'memoria', 'resumen', 'coach', 'oraculo', 'informe', 'fotos', 'salud-conexion', 'entreno-gps']);
+
+/**
+ * La siguiente `epoch` del consentimiento: la llave que remonta el contenido de
+ * una ruta cuando cambian la cuenta, el «sí» o la revisión, para que no quede
+ * nada de salud a la vista.
+ *
+ * La PRIMERA lectura tras entrar (`anterior.uid` null) no es un cambio: no había
+ * nada de otra cuenta que borrar. Remontar ahí tiraba los navegadores recién
+ * montados y, si la lectura llegaba después de pintar, una URL directa a una
+ * pestaña de mundo acababa en otra (React Navigation limpia el estado anidado).
+ */
+export function siguienteEpoch(
+  anterior: { uid: string | null; value: { accepted: boolean; revision: number; epoch: number } },
+  uid: string,
+  lectura: { accepted: boolean; revision: number } | null,
+): number {
+  if (anterior.uid === null) return anterior.value.epoch;
+  const cambio = lectura === null || anterior.uid !== uid || anterior.value.accepted !== lectura.accepted || anterior.value.revision !== lectura.revision;
+  return anterior.value.epoch + (cambio ? 1 : 0);
+}

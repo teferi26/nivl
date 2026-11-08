@@ -1,4 +1,5 @@
 import {
+  sitioFicha,
   ANGULO_MODO,
   ORDEN_RUEDA,
   RUEDA,
@@ -150,5 +151,27 @@ describe('opacidadApuntado', () => {
       expect(encendidos).toHaveLength(1);
       expect(opacidadApuntado(apuntado, apuntado)).toBe(1);
     });
+  });
+});
+
+describe('sitioFicha (dónde va la ficha del modo)', () => {
+  const geo = (w: number, h: number, D: number) => ({ cx: w / 2, cy: Math.round(h * 0.51), D });
+
+  it('en el móvil va arriba con los márgenes de siempre', () => {
+    expect(sitioFicha(375, geo(375, 812, 285), 56, 32)).toEqual({ left: 32, top: 56, width: 311 });
+  });
+
+  it('en un escritorio no cruza la ventana: ancho de lectura y centrada', () => {
+    expect(sitioFicha(1920, geo(1920, 1080, 340), 240, 32)).toEqual({ left: 750, top: 240, width: 420 });
+  });
+
+  it('en una ventana baja se aparta a la izquierda de la rueda', () => {
+    const f = sitioFicha(812, geo(812, 375, 270), 56, 32);
+    expect(f).toEqual({ left: 32, top: 191 - 54, width: 207 });
+    expect(f!.left + f!.width).toBeLessThanOrEqual(812 / 2 - 270 / 2);
+  });
+
+  it('si no cabe ni arriba ni al lado, no se pinta', () => {
+    expect(sitioFicha(375, geo(375, 320, 230), 56, 32)).toBeNull();
   });
 });

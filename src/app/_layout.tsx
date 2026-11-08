@@ -14,8 +14,11 @@ import { EdadMinimaGuard, EdadMinimaProvider, useEdadMinima } from '@/components
 import { HealthConsentGuard, HealthConsentProvider, useHealthConsent } from '@/components/ConsentimientoSalud';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { AvisosWeb } from '@/components/web/AvisosWeb';
+import { instalarEntradaWeb } from '@/components/web/entradaWeb';
 import { ConFachada, FachadaAcceso, MIN_DOS_PANELES } from '@/components/web/FachadaAcceso';
+import { NavSecundariaWeb } from '@/components/web/NavSecundariaWeb';
 import { CelebracionProvider } from '@/components/celebracion/CelebracionProvider';
+import { huecoContenido, navDeVentana, segmentoConNavLateral } from '@/design/responsive';
 import { TopeAncho } from '@/design/useSizeClass';
 import { sincronizarIdioma } from '@/i18n/sincronizar';
 import { arrancarAnalitica } from '@/lib/analitica';
@@ -57,18 +60,25 @@ const SEGMENTOS_ACOTADOS = new Set(['login', 'auth', 'c', 'onboarding']);
 // sitio en el árbol y no se remonta. No en el portal de creadores.
 const SEGMENTOS_FACHADA = new Set(['login', 'auth']);
 
-function ColumnaWeb({ children }: { children: ReactNode }) {
+// Con sesión, las pantallas de la pila llevan también la barra lateral o el raíl
+// de las pestañas (NavSecundariaWeb), en otra ranura fija: `conNavegacion` lo
+// dice quien sabe si hay sesión. Las pestañas y los mundos pintan la suya.
+function ColumnaWeb({ conNavegacion = false, children }: { conNavegacion?: boolean; children: ReactNode }) {
   const seg = useSegments();
   const { width } = useWindowDimensions();
   const acotada = SITIO_CREADORES || SEGMENTOS_ACOTADOS.has(seg[0] ?? '');
   if (Platform.OS !== 'web') return <>{children}</>;
   const fachada = !SITIO_CREADORES && width >= MIN_DOS_PANELES && SEGMENTOS_FACHADA.has(seg[0] ?? '');
+  const nav = navDeVentana(width);
+  const navLateral = conNavegacion && nav !== 'tabs' && segmentoConNavLateral(seg[0]) ? nav : null;
+  const tope = navLateral ? huecoContenido(width).ancho : acotada ? ANCHO_COLUMNA_WEB : null;
   return (
-    <View style={[webStyles.fuera, fachada && webStyles.fueraFila]}>
+    <View style={[webStyles.fuera, (fachada || navLateral) && webStyles.fueraFila]}>
       {fachada ? <FachadaAcceso /> : null}
+      {navLateral ? <NavSecundariaWeb nav={navLateral} /> : null}
       <View style={[webStyles.dentro, !acotada && webStyles.ancho, fachada && webStyles.dentroFachada]}>
         <ConFachada.Provider value={fachada}>
-          <TopeAncho.Provider value={acotada ? ANCHO_COLUMNA_WEB : null}>{children}</TopeAncho.Provider>
+          <TopeAncho.Provider value={tope}>{children}</TopeAncho.Provider>
         </ConFachada.Provider>
       </View>
       {/* Los avisos que en el móvil serían notificaciones (fin de un bloque de FOCUS). */}
@@ -82,7 +92,7 @@ const ANCHO_COLUMNA_WEB = 560;
 const webStyles = StyleSheet.create({
   fuera: { flex: 1, alignItems: 'center', backgroundColor: colors.bg },
   fueraFila: { flexDirection: 'row', alignItems: 'stretch' },
-  dentro: { flex: 1, width: '100%', maxWidth: ANCHO_COLUMNA_WEB },
+  dentro: { flex: 1, width: '100%', minWidth: 0, maxWidth: ANCHO_COLUMNA_WEB },
   dentroFachada: { flexGrow: 0, flexShrink: 0, flexBasis: ANCHO_COLUMNA_WEB, width: ANCHO_COLUMNA_WEB },
   ancho: { maxWidth: '100%' },
   vacio: { flex: 1, backgroundColor: colors.bg },
@@ -180,7 +190,7 @@ function ProtectedStack() {
   }, [session, loading, segments, router]);
 
   return (
-    <ColumnaWeb>
+    <ColumnaWeb conNavegacion={!loading && !!session && edadConfirmada}>
       <Stack
         screenLayout={({ children, route }) => <EdadMinimaGuard routeName={route.name}><HealthConsentGuard routeName={route.name}>{children}</HealthConsentGuard></EdadMinimaGuard>}
         screenOptions={{
@@ -252,6 +262,9 @@ export default function RootLayout() {
   useEffect(() => {
     activarIdiomasInterfaz(idiomasActivos);
   }, [idiomasActivos]);
+
+  // Espacio en pestañas y casillas, teclas de desplazar y arrastre de las tiras.
+  useEffect(() => (Platform.OS === 'web' ? instalarEntradaWeb() : undefined), []);
 
   // El HTML de `web.output: single` sale sin idioma: lectores de pantalla y
   // traductores lo leían como inglés. El pseudoidioma (xx) se anuncia como es.

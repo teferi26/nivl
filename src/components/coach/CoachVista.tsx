@@ -67,8 +67,6 @@ export interface BurbujaVista {
 }
 
 export interface CoachVistaProps {
-  /** Hay disco central en la barra inferior: el pie le deja hueco. */
-  conDisco?: boolean;
   /** Aún sin hilo o sin estado de la IA: cabecera y huecos. */
   cargando: boolean;
   /** Con certeza sin coach (estado leído y sin Pro). */
@@ -122,6 +120,8 @@ export interface CoachVistaProps {
   onIrAModo?: (modo: ModoEtiqueta) => void;
   /** El coach en pausa (0135): en lugar del cuadro de escribir. null = activo. */
   pausa?: PausaCoachVista | null;
+  /** Hay emblema levantado en el centro de la barra inferior: el compositor le deja sitio. */
+  emblemaEnBarra?: boolean;
   onPro: () => void;
   onMemoria: () => void;
 }
@@ -353,8 +353,10 @@ export function CoachVista(p: CoachVistaProps) {
   const nav = useNavActual();
   const teclado = useTecladoAbierto();
   const fondoSeguro = nav !== 'tabs' && !teclado ? insets.bottom : 0;
-  // El disco central de la barra (rueda de modos) asoma por encima del pie.
-  const margenDisco = nav === 'tabs' && p.conDisco && !teclado ? 26 : 0;
+  // El disco del emblema sube sobre la barra inferior y tapaba el campo de
+  // texto. Solo con esa barra y sin teclado; la piel puede fijar su medida.
+  const hayDisco = nav === 'tabs' && !teclado && (!!p.emblemaEnBarra || !!pc);
+  const margenDisco = hayDisco ? (pc?.margenInferior ?? MARGEN_DISCO) : 0;
 
   if (p.cargando) {
     // La cabecera ya, y el cuerpo en hueco: un spinner solo en mitad del negro
@@ -569,7 +571,7 @@ export function CoachVista(p: CoachVistaProps) {
                 styles.barra,
                 (conRapidas || c.grabando || !!c.avisoDictado) && styles.barraSinLinea,
                 piel && { backgroundColor: 'transparent', borderTopColor: piel.borde },
-                { paddingBottom: styles.barra.paddingBottom + fondoSeguro + (pc?.margenInferior ?? margenDisco) },
+                { paddingBottom: styles.barra.paddingBottom + fondoSeguro + margenDisco },
               ]}
             >
               {c.conFotos ? (
@@ -631,6 +633,8 @@ const lectura = { fontFamily: type.bodySm.family, fontSize: type.bodySm.size, li
 const conversacion = { fontFamily: type.body.family, fontSize: 15, lineHeight: 21 } as const;
 /** Lado de los círculos del compositor (micrófono y enviar). */
 const CIRCULO = 48;
+/** Hueco bajo el compositor por el medio disco del emblema (el mismo que IRON). */
+const MARGEN_DISCO = 30;
 
 /** Las píldoras (atajos y rápidas) con la piel de un mundo. */
 function pildoraPiel(piel: Piel | null) {

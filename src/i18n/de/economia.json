@@ -312,6 +312,7 @@
         "deQue": "Von welchem Konto ist er?",
         "paso1": "Such in deiner Bank-App nach Auszügen oder Umsätzen und lade die gewünschten Monate als CSV oder PDF herunter.",
         "paso2": "Wähle die Datei hier. Die CSV wird auf deinem Handy gelesen; das PDF liest die KI von NIVL und löscht es sofort.",
+        "paso2Web": "Wähle die Datei hier. Die CSV wird in deinem Browser gelesen; das PDF liest die KI von NIVL und löscht es sofort.",
         "paso3": "Prüf die Liste, entferne, was du nicht willst, und speichere. Doppeltes kommt nicht rein.",
         "privacidad": "NIVL verbindet sich nicht mit deiner Bank und fragt nie nach Login oder Passwort.",
         "sinSelector": "Diese App-Version kann noch keine Dateien öffnen. Das kommt mit dem nächsten Update.",

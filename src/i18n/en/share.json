@@ -22,6 +22,9 @@
     "aliasNoDisponible": "Your handle isn't available right now.",
     "aliasError": "Couldn't load your handle. Try again.",
     "abriendo": "OPENING…",
-    "compartir": "SHARE"
+    "compartir": "SHARE",
+    "descargar": "DOWNLOAD IMAGE",
+    "descargada": "Image downloaded. Post it wherever you like.",
+    "copiada": "Couldn't create the image. The text has been copied."
   }
 }

@@ -12,6 +12,7 @@
 //     subtítulo pasa a decir que la clave está en el dispositivo.
 //   · Marcar o desmarcar una propuesta vibra `seleccion` (el Check rebota).
 
+import { Platform } from 'react-native';
 import { router } from 'expo-router';
 import { useEffect, useState, type ReactNode } from 'react';
 import { useConsentimientoIA } from '@/components/ConsentimientoIA';
@@ -56,7 +57,8 @@ export function useOraculo(): UsoOraculo {
   // El Oráculo es de NIVL Pro: sin él, un aviso con el camino a /pro. Nunca
   // Stripe ni la clave propia en la app de tienda (Guideline 3.1.1).
   const [pidePro, setPidePro] = useState(false);
-  const clavePropia = byokEnabled();
+  // En la web no hay almacén cifrado (oracle.ts): la llave sería un botón que solo acaba en error.
+  const clavePropia = byokEnabled() && Platform.OS !== 'web';
   const consentimiento = useConsentimientoIA();
 
   useEffect(() => {

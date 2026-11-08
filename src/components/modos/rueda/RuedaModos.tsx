@@ -27,7 +27,7 @@
 // la galería /kit/rueda, que las monta quietas para las capturas.
 
 import { useEffect, useMemo, useState } from 'react';
-import { Modal, Platform, StyleSheet, Text, useWindowDimensions, View, type LayoutChangeEvent } from 'react-native';
+import { Modal, Platform, Pressable, StyleSheet, Text, useWindowDimensions, View, type LayoutChangeEvent } from 'react-native';
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
 import Animated, {
   Easing,
@@ -58,7 +58,9 @@ import {
   puntoEn,
   opacidadApuntado,
   sectorEn,
+  sitioFicha,
   trazoSector,
+  type SitioFicha,
 } from '@/modos/rueda';
 import { MODOS_ETIQUETA, NOMBRE_MODO, type ModoEtiqueta, type ModoId } from '@/modos/tipos';
 import { conAlfa } from './color';
@@ -105,7 +107,8 @@ export interface OrigenEmblema {
 /** Dónde va la rueda en una pantalla de w × h, y su escala respecto a la lámina. */
 export function geometriaRueda(w: number, h: number) {
   // La lámina: 260 de 342 de ancho (76 %), con el centro a la mitad del alto.
-  const D = Math.round(Math.min(w * 0.76, 340));
+  // En ventanas bajas (móvil tumbado, escritorio con poco alto) manda el alto.
+  const D = Math.round(Math.min(w * 0.76, 340, h * 0.72));
   return { D, escala: D / VISTA_RUEDA, cx: w / 2, cy: Math.round(h * 0.51) };
 }
 
@@ -322,7 +325,7 @@ export function RuedaModos(props: RuedaModosProps) {
                   actual={modo}
                   anterior={anterior}
                   ancho={w}
-                  top={topFicha(geo)}
+                  sitio={sitioFicha(w, geo, topFicha(geo), space.s8)}
                   arribaRueda={geo.cy - geo.D / 2}
                 />
                 <View style={{ position: 'absolute', left: cx - geo.D / 2, top: cy - geo.D / 2 }}>
@@ -335,6 +338,10 @@ export function RuedaModos(props: RuedaModosProps) {
               <GuiaDedo ancho={w} alto={h} emblema={emblema} modo={modo} disponibles={disponibles} dedoX={dedoX} dedoY={dedoY} resaltado={resaltado} mantener={origen === 'mantener'} capa="dedo" />
             ) : null}
 
+            {Platform.OS === 'web' && !elegido && !cerrando ? (
+              <SectoresTeclado cx={cx} cy={cy} escala={esc} mascara={mascara} resaltado={resaltado} alElegir={alElegir} />
+            ) : null}
+
             {elegido ? (
               <Animated.View style={[StyleSheet.absoluteFill, estiloRecarga]} pointerEvents="none">
                 <RecargaModo modo={elegido} ancho={w} alto={h} progreso={progreso} reducido={reducido} />
@@ -344,6 +351,61 @@ export function RuedaModos(props: RuedaModosProps) {
         </GestureDetector>
       </GestureHandlerRootView>
     </Modal>
+  );
+}
+
+/** ¿El foco llegó por teclado? Un navegador sin `:focus-visible` lanza: se da por sí. */
+function focoDeTeclado(destino: unknown): boolean {
+  try {
+    return (destino as Element).matches(':focus-visible');
+  } catch {
+    return true;
+  }
+}
+
+/** Lado de la parada de teclado de cada hueco, en unidades de la lámina. */
+const LADO_SECTOR_TECLADO = 56;
+
+/**
+ * Web: una parada de tabulador sobre cada hueco de la rueda, porque el gesto no
+ * llega al teclado. Tabular enciende el sector (como apuntarlo) y Enter lo
+ * elige; Escape cierra (onRequestClose). Con `pointerEvents: none` el ratón
+ * sigue yendo al gesto, sin dos caminos para un mismo clic.
+ */
+function SectoresTeclado({ cx, cy, escala, mascara, resaltado, alElegir }: {
+  cx: number;
+  cy: number;
+  escala: number;
+  mascara: readonly boolean[];
+  resaltado: SharedValue<number>;
+  alElegir: (indice: number) => void;
+}) {
+  const lado = LADO_SECTOR_TECLADO * escala;
+  return (
+    <>
+      {ORDEN_RUEDA.map((m, i) => {
+        if (!mascara[i]) return null;
+        const p = m === 'general' ? { x: cx, y: cy } : puntoEn(cx, cy, RUEDA.icono * escala, ANGULO_MODO[m]);
+        return (
+          <Pressable
+            key={m}
+            pointerEvents="none"
+            onPress={() => alElegir(i)}
+            onFocus={(e) => {
+              // La rueda abierta con ratón también recibe el foco (la trampa
+              // del Modal): solo enciende el sector si se ha llegado con teclado.
+              if (focoDeTeclado(e.target)) resaltado.value = i;
+            }}
+            onBlur={() => {
+              resaltado.value = -1;
+            }}
+            accessibilityRole="button"
+            accessibilityLabel={t('modos:rueda.cambiarA', { modo: NOMBRE_MODO[m] })}
+            style={{ position: 'absolute', left: p.x - lado / 2, top: p.y - lado / 2, width: lado, height: lado, borderRadius: lado / 2 }}
+          />
+        );
+      })}
+    </>
   );
 }
 
@@ -624,13 +686,14 @@ export interface FichaRuedaProps {
   actual: ModoId;
   anterior: ModoId | null;
   ancho: number;
-  top: number;
+  /** Dónde va la ficha (sitioFicha); null: no cabe y no se pinta. */
+  sitio: SitioFicha | null;
   /** Dónde empieza la rueda (y del disco): «ELIGE MODO» va 24 pt por encima. */
   arribaRueda: number;
 }
 
 /** Arriba de la rueda: «ELIGE MODO» y, al apuntar, la ficha de lo que se va a cargar (lámina 1, cuadro 03). */
-export function FichaRueda({ modo, actual, anterior, ancho, top, arribaRueda }: FichaRuedaProps) {
+export function FichaRueda({ modo, actual, anterior, ancho, sitio, arribaRueda }: FichaRuedaProps) {
   if (!modo) {
     return (
       <View style={[styles.fichaVacia, { top: arribaRueda - 24 - 14, width: ancho }]} pointerEvents="none">
@@ -640,15 +703,14 @@ export function FichaRueda({ modo, actual, anterior, ancho, top, arribaRueda }: 
       </View>
     );
   }
+  if (!sitio) return null;
   const estado = modo === actual ? t('modos:rueda.actual') : modo === anterior ? t('modos:rueda.anterior') : null;
   return (
     <View
       style={[
         styles.ficha,
         {
-          top,
-          left: space.s8,
-          width: ancho - 2 * space.s8,
+          ...sitio,
           borderColor: oro.borde,
           backgroundColor: conAlfa(ink.ink1, 0.94),
         },

@@ -20,9 +20,11 @@ import { ActivityIndicator, Pressable, StyleSheet, Text, View, type StyleProp, t
 import { EscudoNivel, estiloNivelEscudo } from '@/components/arena/EscudoNivel';
 import { Screen } from '@/components/ui';
 import { FondoOnix } from '@/components/ui/FondoOnix';
+import { menuContextualWeb } from '@/components/ui/pulsacionLarga';
 import { ink, oro, radio, type as tipo, vidrio } from '@/design/tokens';
 import { t } from '@/i18n';
 import { F, G, M, px } from './tema';
+import { ariaWeb } from '@/components/ui/ariaWeb';
 
 type Icono = keyof typeof Ionicons.glyphMap;
 
@@ -201,6 +203,7 @@ export function Segmentos<T extends string>({ opciones, valor, alCambiar }: { op
           onPress={() => alCambiar(o.id)}
           accessibilityRole="tab"
           accessibilityState={{ selected: o.id === valor }}
+          {...ariaWeb({ selected: o.id === valor })}
           style={({ pressed }) => [styles.segmento, o.id === valor && styles.segmentoActivo, pressed && styles.pulsada]}
         >
           <Text style={[styles.segmentoTexto, o.id === valor && styles.segmentoTextoActivo]} numberOfLines={1} maxFontSizeMultiplier={1.3}>
@@ -346,6 +349,7 @@ export function FilaGeneral({
     <Pressable
       onPress={onPress}
       onLongPress={onLongPress}
+      {...menuContextualWeb(onLongPress)}
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
       // La pulsación larga no se descubre con el lector: va como acción.
@@ -451,7 +455,8 @@ const styles = StyleSheet.create({
   cifra: { flex: 1, minWidth: 0, backgroundColor: vidrio.tarjeta, borderWidth: 1, borderColor: vidrio.borde, borderRadius: radio.control, paddingVertical: 10, paddingHorizontal: 11 },
   cifraCabeza: { flexDirection: 'row', alignItems: 'center', gap: px(4) },
   cifraRotulo: { fontFamily: tipo.body.family, fontSize: 12, lineHeight: 15, color: ink.ink8, flexShrink: 1 },
-  cifraValor: { fontFamily: tipo.number.family, fontSize: 20, lineHeight: 25, color: ink.ink9 },
+  // Sin lineHeight: con adjustsFontSizeToFit, en @3x la cifra salía microscópica.
+  cifraValor: { fontFamily: tipo.number.family, fontSize: 20, color: ink.ink9 },
   cifraUnidad: { fontFamily: F.sb, fontSize: 12, color: ink.ink8 },
   cifraNota: { fontFamily: F.b, fontSize: 12, lineHeight: 15, color: oro.claro, marginTop: px(1) },
   filaCifras: { flexDirection: 'row', gap: 8 },
@@ -467,6 +472,7 @@ const styles = StyleSheet.create({
   cuadro: { alignItems: 'center', justifyContent: 'center', backgroundColor: oro.fondo, borderWidth: 1, borderColor: oro.borde },
   titulo: { flexDirection: 'row', alignItems: 'flex-end', gap: px(10), paddingTop: px(4), paddingBottom: px(4) },
   tituloEyebrow: { fontFamily: tipo.label.family, fontSize: tipo.label.size, lineHeight: tipo.label.lineHeight, letterSpacing: tipo.label.tracking, color: oro.claro },
-  tituloTexto: { fontFamily: tipo.title.family, fontSize: tipo.title.size, lineHeight: tipo.title.lineHeight, color: ink.ink9, marginTop: 2 },
+  // Sin lineHeight a propósito: con adjustsFontSizeToFit, en @3x iOS encogía el título al mínimo.
+  tituloTexto: { fontFamily: tipo.title.family, fontSize: tipo.title.size, color: ink.ink9, marginTop: 2 },
   hueco: { backgroundColor: vidrio.suave, borderRadius: radio.tarjeta, borderWidth: 1, borderColor: vidrio.linea },
 });

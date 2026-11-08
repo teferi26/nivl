@@ -15,6 +15,7 @@ import { createContext, type ReactNode } from 'react';
 import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 import { ink, oro, radio, vidrio } from '@/design/tokens';
 import { PressScale } from './motion';
+import { menuContextualWeb } from './pulsacionLarga';
 import { Trama } from './Texture';
 
 export type Superficie = 'normal' | 'inverse';
@@ -99,6 +100,7 @@ export function Card({
       <PressScale
         onPress={onPress}
         onLongPress={onLongPress}
+        {...menuContextualWeb(disabled ? undefined : onLongPress)}
         disabled={disabled}
         accessibilityRole="button"
         accessibilityLabel={accessibilityLabel}

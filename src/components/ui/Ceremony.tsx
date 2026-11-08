@@ -26,6 +26,7 @@ import { vibrar } from '@/design/haptics';
 import { t } from '@/i18n';
 import { ink, motion, RANK_THEME, sizeClass, space, type } from '@/design/tokens';
 import type { Celebracion, EstadoProgreso, RangoId } from '@/lib/progression';
+import { fondoModal } from './ariaWeb';
 import { Avatar, alturaCorona } from './Avatar';
 import { Button } from './Button';
 import { lineaFaltan, piezasCeremonia, rangoDeSalida } from './ceremoniaTexto';
@@ -236,8 +237,7 @@ function Contenido({ c, forma, resumen, siguiente, avatar, onCerrar, onCompartir
       <Pressable
         style={StyleSheet.absoluteFill}
         onPress={alTocarFondo}
-        accessibilityRole="button"
-        accessibilityLabel={t('ui:ceremonia.cerrarA11y')}
+        {...fondoModal(t('ui:ceremonia.cerrarA11y'))}
       />
       <View style={styles.toque} pointerEvents="box-none">
         <View style={styles.columna} pointerEvents="box-none">

@@ -8,7 +8,7 @@
 // Formularios en Sheet con Campo y la acción en el pie (SISTEMA §6).
 
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { useEffect, useState, type ReactNode } from 'react';
+import { Fragment, useEffect, useState, type ReactNode } from 'react';
 import { Platform, StyleSheet, Text, View } from 'react-native';
 import { Campo } from '@/components/arena';
 import { Sheet } from '@/components/ui';
@@ -1035,22 +1035,27 @@ export function HojaMision({
 // ── No molestar: recordatorio honesto ────────────────────────────────
 
 export function HojaNoMolestar({ visible, onClose }: { visible: boolean; onClose: () => void }) {
-  const pasos = Platform.OS === 'android' ? 'android' : 'ios';
+  // En el navegador no hay un móvil del que saber el sistema: van los dos.
+  const sistemas = Platform.OS === 'web' ? (['ios', 'android'] as const) : ([Platform.OS === 'android' ? 'android' : 'ios'] as const);
   return (
     <Sheet visible={visible} onClose={onClose} eyebrow={t('focus:noMolestar.eyebrow')} title={t('focus:noMolestar.titulo')} footer={<Pie titulo={t('focus:noMolestar.listo')} onPress={onClose} />}>
       <Text style={textoFocus.fila} maxFontSizeMultiplier={1.5}>
         {t('focus:noMolestar.honesto')}
       </Text>
-      <Rotulo texto={t(`focus:noMolestar.${pasos}Rotulo`)} style={styles.seccion} />
-      {[0, 1, 2].map((i) => (
-        <FilaFocus key={i} primera={i === 0} style={styles.filaAlta}>
-          <Text style={styles.numero} maxFontSizeMultiplier={1.35}>
-            {i + 1}
-          </Text>
-          <Text style={[textoFocus.fila, styles.flex]} maxFontSizeMultiplier={1.5}>
-            {tf(`focus:noMolestar.${pasos}.${i}`)}
-          </Text>
-        </FilaFocus>
+      {sistemas.map((pasos) => (
+        <Fragment key={pasos}>
+          <Rotulo texto={t(`focus:noMolestar.${pasos}Rotulo`)} style={styles.seccion} />
+          {[0, 1, 2].map((i) => (
+            <FilaFocus key={i} primera={i === 0} style={styles.filaAlta}>
+              <Text style={styles.numero} maxFontSizeMultiplier={1.35}>
+                {i + 1}
+              </Text>
+              <Text style={[textoFocus.fila, styles.flex]} maxFontSizeMultiplier={1.5}>
+                {tf(`focus:noMolestar.${pasos}.${i}`)}
+              </Text>
+            </FilaFocus>
+          ))}
+        </Fragment>
       ))}
       {Platform.OS === 'ios' ? (
         <>

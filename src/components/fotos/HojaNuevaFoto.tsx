@@ -20,7 +20,7 @@ import { avisar, confirmar } from '@/components/ui/confirmar';
 import { vibrar } from '@/design/haptics';
 import { ink, radio, space, stroke, type as tipo, vidrio } from '@/design/tokens';
 import { t } from '@/i18n';
-import { hacerFoto } from '@/lib/camara';
+import { elegirFoto, hacerFoto, ofreceCamara } from '@/lib/camara';
 import { addDays, isValidKey } from '@/lib/dates';
 import { POSES, type FotoProgreso, type Pose } from '@/lib/progressPhotos';
 import { borrarCacheSelector, borrarTemporales, subirFoto } from './datos';
@@ -138,7 +138,7 @@ export function HojaNuevaFoto({ visible, onCerrar, uid, hoy, onGuardada, onGate,
 
   // iOS 14+ y el selector de Android 13+ no piden permiso para elegir una foto.
   const galeria = async () => {
-    tomar(await ImagePicker.launchImageLibraryAsync(OPCIONES));
+    tomar(await elegirFoto(OPCIONES));
   };
 
   const guardar = async () => {
@@ -215,14 +215,16 @@ export function HojaNuevaFoto({ visible, onCerrar, uid, hoy, onGuardada, onGate,
             )}
           </View>
           <View style={styles.fuentes}>
-            <Button
-              title={t('fotos:hoja.hacerFoto')}
-              icon="camera-outline"
-              variant="secondary"
-              size="sm"
-              onPress={camara}
-              disabled={guardando}
-            />
+            {ofreceCamara() ? (
+              <Button
+                title={t('fotos:hoja.hacerFoto')}
+                icon="camera-outline"
+                variant="secondary"
+                size="sm"
+                onPress={camara}
+                disabled={guardando}
+              />
+            ) : null}
             <Button
               title={t('fotos:hoja.galeria')}
               icon="images-outline"

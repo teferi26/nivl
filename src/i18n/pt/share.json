@@ -22,6 +22,9 @@
     "aliasNoDisponible": "O teu pseudónimo não está disponível agora.",
     "aliasError": "Não foi possível obter o teu pseudónimo. Tenta outra vez.",
     "abriendo": "A ABRIR…",
-    "compartir": "PARTILHAR"
+    "compartir": "PARTILHAR",
+    "descargar": "TRANSFERIR IMAGEM",
+    "descargada": "Imagem transferida. Publica onde quiseres.",
+    "copiada": "Não foi possível criar a imagem. O texto foi copiado."
   }
 }

@@ -16,11 +16,13 @@ import {
   Pressable,
   StyleSheet,
   Text,
+  Platform,
   useWindowDimensions,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ink, oro, radio, space, stroke, type as tipo, vidrio } from '@/design/tokens';
+import { useAnchoUtil } from '@/design/useSizeClass';
 import { t } from '@/i18n';
 import type { Recap, Slide } from '@/lib/photos';
 import { eyebrowSlide, nombrePeriodo } from './tipos';
@@ -47,6 +49,11 @@ export interface PaseVistaProps {
   onSalir: () => void;
 }
 
+// En la web cada mitad de la pantalla no es un botón que se ilumine al pasar el
+// ratón: el filete de `[role=button]:hover` pintaba media pantalla. Sigue siendo
+// pulsable y enfocable, y el teclado tiene las flechas (Pase.tsx).
+const ROL_ZONA = Platform.OS === 'web' ? undefined : 'button';
+
 export function PaseVista({
   recap,
   i,
@@ -62,7 +69,9 @@ export function PaseVista({
   onCompartir,
   onSalir,
 }: PaseVistaProps) {
-  const { width, height } = useWindowDimensions();
+  const { height } = useWindowDimensions();
+  // El hueco, no la ventana: en la web la barra lateral también ocupa.
+  const width = useAnchoUtil();
   // La columna del pase: 9:16 como mucho. En un móvil es la pantalla entera;
   // en una web ancha, una columna centrada con negro a los lados.
   const columna = Math.round(Math.min(width, (height * 9) / 16));
@@ -144,7 +153,7 @@ export function PaseVista({
               onPress={onAnterior}
               onLongPress={onPausar}
               onPressOut={pausado ? onSeguir : undefined}
-              accessibilityRole="button"
+              accessibilityRole={ROL_ZONA}
               accessibilityLabel={t('resumen:pase.anterior')}
             />
             <Pressable
@@ -152,7 +161,7 @@ export function PaseVista({
               onPress={onSiguiente}
               onLongPress={onPausar}
               onPressOut={pausado ? onSeguir : undefined}
-              accessibilityRole="button"
+              accessibilityRole={ROL_ZONA}
               accessibilityLabel={ultima ? t('resumen:pase.salir') : t('resumen:pase.siguiente')}
             />
           </View>

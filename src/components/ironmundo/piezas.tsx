@@ -16,10 +16,12 @@ import { useState, type ReactNode } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 import Svg, { Circle, Polyline } from 'react-native-svg';
 import { Screen } from '@/components/ui';
+import { ariaWeb, pulsadoWeb } from '@/components/ui/ariaWeb';
 import { FondoOnix } from '@/components/ui/FondoOnix';
+import { menuContextualWeb } from '@/components/ui/pulsacionLarga';
 import { vidrio } from '@/design/tokens';
 import { t } from '@/i18n';
-import { GlifoIron, type Glifo } from './Glifos';
+import { GlifoIron, OCULTO_LECTOR, type Glifo } from './Glifos';
 import { A, C, F, H, M, O, px, R } from './tema';
 
 // ── Pantalla ─────────────────────────────────────────────────────────
@@ -208,6 +210,7 @@ export function ChipIron({ texto, onPress, activo, nuevo, accessibilityLabel, pe
       disabled={!onPress}
       accessibilityRole={pestana ? 'tab' : 'button'}
       accessibilityState={{ selected: !!activo }}
+      {...(pestana ? ariaWeb({ selected: !!activo }) : pulsadoWeb(!!activo))}
       accessibilityLabel={accessibilityLabel ?? texto}
       hitSlop={{ top: 6, bottom: 6 }}
       style={({ pressed }) => [styles.chip, activo && styles.chipActivo, nuevo && styles.chipNuevo, pressed && styles.pulsada]}
@@ -241,7 +244,7 @@ export function Linea({ puntos, ancho, alto, grosor = 1.6 }: { puntos: readonly 
   const p = xy.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(' ');
   const [ux, uy] = xy[xy.length - 1]!;
   return (
-    <Svg width={ancho} height={alto} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+    <Svg width={ancho} height={alto} {...OCULTO_LECTOR}>
       <Polyline points={`${r},${alto} ${p} ${ancho},${uy} ${ancho},${alto}`} fill={O.hilo} fillOpacity={0.12} stroke="none" />
       <Polyline points={p} fill="none" stroke={O.hilo} strokeWidth={grosor} strokeLinejoin="round" strokeLinecap="round" />
       <Circle cx={ux} cy={uy} r={2.4} fill={C.blanco} stroke={O.hilo} strokeWidth={1.4} />
@@ -267,7 +270,7 @@ export function AnilloIron({ ratio, lado, valor, unidad }: { ratio: number; lado
   const r = Math.max(0, Math.min(1, ratio));
   return (
     <View style={{ width: lado, height: lado }}>
-      <Svg width={lado} height={lado} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+      <Svg width={lado} height={lado} {...OCULTO_LECTOR}>
         <Circle cx={lado / 2} cy={lado / 2} r={r0} fill="none" stroke={C.pista} strokeWidth={grosor} />
         {r > 0 ? (
           <Circle
@@ -381,6 +384,7 @@ export function FilaIron({
     <Pressable
       onPress={onPress}
       onLongPress={onLongPress}
+      {...menuContextualWeb(onLongPress)}
       accessibilityRole={onPress ? 'button' : undefined}
       accessibilityLabel={accessibilityLabel}
       accessibilityActions={accessibilityActions}

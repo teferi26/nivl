@@ -9,6 +9,7 @@
 
 import type Ionicons from '@expo/vector-icons/Ionicons';
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
+import { Platform } from 'react-native';
 import { vibrar } from '@/design/haptics';
 import type { NavKind } from '@/design/responsive';
 import { t } from '@/i18n';
@@ -83,6 +84,22 @@ export const NAV_MUNDO: Record<string, { off: Icon; on: Icon }> = {
 };
 
 type Route = BottomTabBarProps['state']['routes'][number];
+
+/**
+ * Web: en un Tabs las pestañas inactivas siguen montadas y en su sitio, debajo
+ * de la activa. Se ven tapadas, pero el tabulador entraba en ellas. Con
+ * `visibility: hidden` dejan de ser alcanzables y conservan el scroll (con
+ * `display: none` Firefox lo pierde).
+ */
+export function escenaWeb(activa: boolean): { sceneStyle?: object } {
+  return Platform.OS === 'web' && !activa ? { sceneStyle: { visibility: 'hidden' } } : {};
+}
+
+/**
+ * Web: `history` para que cada cambio de pestaña sea una entrada del historial
+ * y el botón Atrás del navegador vuelva a la anterior. En nativo, el de serie.
+ */
+export const BACK_BEHAVIOR_WEB = Platform.OS === 'web' ? ('history' as const) : undefined;
 
 /** Los destinos que pinta una navegación: en la barra inferior, sin los que no son de `compact`. */
 export function destinosDe<R extends { name: string }>(routes: readonly R[], nav: NavKind): R[] {

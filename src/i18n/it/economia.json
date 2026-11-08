@@ -312,6 +312,7 @@
         "deQue": "Di quale conto è?",
         "paso1": "Nell'app della tua banca cerca Estratti o Movimenti e scarica i mesi che vuoi, in CSV o PDF.",
         "paso2": "Scegli il file qui. Il CSV si legge sul telefono; il PDF lo legge l'IA di NIVL e viene cancellato subito.",
+        "paso2Web": "Scegli il file qui. Il CSV si legge nel browser; il PDF lo legge l'IA di NIVL e viene cancellato subito.",
         "paso3": "Controlla l'elenco, togli quello che non vuoi e salva. I doppioni non entrano.",
         "privacidad": "NIVL non si collega alla tua banca e non ti chiederà mai utente o password.",
         "sinSelector": "Questa versione dell'app non può ancora aprire file. Arriva con il prossimo aggiornamento.",

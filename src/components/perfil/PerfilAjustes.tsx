@@ -8,7 +8,7 @@
 
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRef, type ReactNode } from 'react';
-import { ActivityIndicator, Linking, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Linking, Platform, StyleSheet, Text, View } from 'react-native';
 import { HealthPrivacySection } from '@/components/ConsentimientoSalud';
 import { MedicionUsoSection } from '@/components/consentimiento/ConsentimientoAnalitica';
 import { EntradaSaludConexion } from '@/components/medicion/EntradaSaludConexion';
@@ -99,6 +99,7 @@ export function PerfilAjustes({
     fila.measureInWindow((x, y, width, height) => onExportar({ x, y, width, height }));
   };
   const sinPermiso = !!avisos && !avisos.permitido;
+  const enWeb = Platform.OS === 'web';
   const idiomaAuto = idioma.preferencia === 'auto';
   const nombreIdioma = NOMBRE_IDIOMA[idioma.coach];
 
@@ -149,19 +150,35 @@ export function PerfilAjustes({
             onPress={frozen ? onReanudar : onPausar}
             accessibilityLabel={frozen ? t('perfil:ajustes.reanudar') : t('perfil:ajustes.pausar')}
           />
-          <Row
-            leading={<Ionicons name="phone-portrait-outline" size={20} color={vibraciones ? ink.ink9 : ink.ink6} />}
-            title={t('perfil:ajustes.vibraciones')}
-            detail={t('perfil:ajustes.vibracionesDetalle')}
-            trailing={
-              <Interruptor value={vibraciones} onValueChange={onVibraciones} accessibilityLabel={t('perfil:ajustes.vibraciones')} />
-            }
-          />
+          {/* Un navegador no vibra: un interruptor sin efecto no se enseña. */}
+          {enWeb ? null : (
+            <Row
+              leading={<Ionicons name="phone-portrait-outline" size={20} color={vibraciones ? ink.ink9 : ink.ink6} />}
+              title={t('perfil:ajustes.vibraciones')}
+              detail={t('perfil:ajustes.vibracionesDetalle')}
+              trailing={
+                <Interruptor value={vibraciones} onValueChange={onVibraciones} accessibilityLabel={t('perfil:ajustes.vibraciones')} />
+              }
+            />
+          )}
         </Card>
       </Section>
 
       {/* Sin esto no había forma de saber si los avisos estaban vivos: fallaban
           en silencio y el gladiador se enteraba por no recibirlos. */}
+      {/* El navegador no programa avisos: se dice dónde están, sin la alarma de «desactivados». */}
+      {enWeb ? (
+        <Section title={t('perfil:ajustes.avisos')}>
+          <Card padded={false} style={styles.lista}>
+            <Row
+              first
+              leading={<Ionicons name="notifications-outline" size={20} color={ink.ink6} />}
+              title={t('perfil:ajustes.avisosWeb')}
+              detail={t('perfil:ajustes.avisosWebDetalle')}
+            />
+          </Card>
+        </Section>
+      ) : (
       <Section title={t('perfil:ajustes.avisos')}>
         <Card padded={false} variant={sinPermiso ? 'alerta' : 'surface'}>
           {/* El relleno va dentro: en alerta la trama hace de marco de 3 pt. Sin
@@ -219,6 +236,7 @@ export function PerfilAjustes({
         </Card>
         {avisos?.permitido ? <Text style={styles.nota}>{t('perfil:ajustes.programados', { n: avisos.programados })}</Text> : null}
       </Section>
+      )}
 
       {/* Stripe solo existe fuera de la app de tienda (paywallEnabled es
           false en iOS y Android, Guideline 3.1.1): allí lo de pago es /pro. */}

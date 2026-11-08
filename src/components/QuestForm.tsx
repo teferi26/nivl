@@ -21,6 +21,7 @@ import {
 import { mensajeSistema } from '@/lib/validation';
 import type { Difficulty, Quest, Stat } from '@/lib/types';
 import { MODOS_ETIQUETA, modosDeMision, type ModoEtiqueta } from '@/modos/tipos';
+import { ariaWeb } from '@/components/ui/ariaWeb';
 
 /** Lunes a domingo: índices 0..6 de `nombreDia` (el día de la misión es índice + 1). */
 const SEMANA = [0, 1, 2, 3, 4, 5, 6];
@@ -247,6 +248,7 @@ export function QuestForm({ visible, onClose, onSubmit, initial, onDelete, susta
               style={({ pressed }) => [styles.day, on && styles.dayOn, pressed && styles.pressed]}
               accessibilityRole="checkbox"
               accessibilityState={{ checked: on }}
+              {...ariaWeb({ checked: on })}
               accessibilityLabel={capital(nombreDia(i))}
             >
               <Text style={[styles.dayText, on && styles.dayTextOn]} maxFontSizeMultiplier={1.35}>{nombreDia(i, 'letra')}</Text>

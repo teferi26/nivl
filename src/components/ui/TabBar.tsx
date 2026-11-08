@@ -19,6 +19,7 @@ import { Platform, Pressable, StyleSheet, Text, useWindowDimensions, View } from
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { FONDO_ONIX, ink, layout, oro, stroke, vidrio } from '@/design/tokens';
 import { fonts } from '@/lib/theme';
+import { ariaWeb } from './ariaWeb';
 import { destinoActivo, destinosDe, navItemDe, pulsarDestino } from './navItems';
 
 /** Ancho máximo de la franja de destinos: la columna móvil. */
@@ -52,6 +53,7 @@ export function TabBar({ state, descriptors, navigation, acento = ink.ink10, cen
         // Para el lector, seleccionada es la pantalla ENFOCADA: en la Agenda
         // no puede anunciar «Hoy, seleccionada», aunque Hoy siga marcada.
         accessibilityState={{ selected: route.name === enfocada }}
+        {...ariaWeb({ selected: route.name === enfocada })}
         accessibilityLabel={label}
       >
         <View style={[styles.indicator, focused && { backgroundColor: acento }]} />

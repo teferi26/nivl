@@ -124,7 +124,9 @@
     "privacidad": "Política de Privacidade",
     "privacidadA11y": "Política de Privacidade do NIVL",
     "eliminarCuenta": "Eliminar conta",
-    "eliminarNota": "Apaga para sempre o teu perfil e todo o teu progresso no NIVL."
+    "eliminarNota": "Apaga para sempre o teu perfil e todo o teu progresso no NIVL.",
+    "avisosWeb": "Avisos na app móvel",
+    "avisosWebDetalle": "O despertador e os avisos chegam à app móvel."
   },
   "borrar": {
     "palabra": "ELIMINAR",

@@ -19,12 +19,33 @@
         background: #000000;
         color: #ededed;
       }
+      /* Safari en iPhone: el alto real con la barra de direcciones a la vista. */
+      @supports (height: 100dvh) {
+        html,
+        body,
+        #root {
+          height: 100dvh;
+        }
+      }
       body {
         margin: 0;
         overflow: hidden;
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
         text-rendering: optimizeLegibility;
+        -webkit-tap-highlight-color: transparent;
+      }
+      /* Safari y Firefox no encogen un campo dentro de una fila flex si no se les dice. */
+      input,
+      textarea {
+        min-width: 0;
+      }
+      /* Safari en iPhone amplía la página al enfocar un campo de menos de 16 px, y no la devuelve. */
+      @supports (-webkit-touch-callout: none) {
+        input,
+        textarea {
+          font-size: 16px !important;
+        }
       }
       #root {
         display: flex;
@@ -43,6 +64,32 @@
       :focus-visible {
         outline: 2px solid #ffffff;
         outline-offset: 2px;
+      }
+      /* Lo que recibe el foco por programa (una hoja al abrirse) no es una parada del teclado. */
+      [tabindex='-1']:focus-visible {
+        outline: none;
+      }
+      /*
+        Ratón: lo pulsable contesta al pasar por encima. Una veladura clara y un
+        filete ink4 por dentro: se ve sobre lo negro y sobre lo invertido, y no
+        pisa el fondo que traiga cada pieza. Solo con puntero fino de verdad: en
+        el móvil el hover se queda pegado tras el toque.
+      */
+      @media (hover: hover) and (pointer: fine) {
+        [role='button']:not([aria-disabled='true']):hover,
+        [role='tab']:not([aria-disabled='true']):hover,
+        [role='checkbox']:not([aria-disabled='true']):hover,
+        [role='radio']:not([aria-disabled='true']):hover,
+        [role='switch']:not([aria-disabled='true']):hover,
+        [role='menuitem']:not([aria-disabled='true']):hover {
+          box-shadow:
+            inset 0 0 0 1px #3a3a3a,
+            inset 0 0 0 9999px rgba(255, 255, 255, 0.06);
+        }
+        a[href]:hover,
+        [role='link']:hover {
+          text-decoration: underline;
+        }
       }
       /* Barras de desplazamiento finas, en la escala ink (ink4 sobre ink0). */
       * {

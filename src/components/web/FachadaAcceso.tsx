@@ -8,7 +8,7 @@
 // texto va antes del formulario en el orden de lectura.
 
 import { createContext } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Escudo } from '@/components/acceso/Escudo';
 import { FondoOnix } from '@/components/ui/FondoOnix';
 import { ink, space, type as tipo } from '@/design/tokens';
@@ -28,6 +28,8 @@ export function FachadaAcceso() {
   return (
     <View style={styles.fachada}>
       <FondoOnix />
+      {/* Con scroll: en una ventana baja el bloque centrado se cortaba por arriba. */}
+      <ScrollView style={styles.flex} contentContainerStyle={styles.centrado}>
       <View style={styles.texto}>
         <Escudo ancho={104} />
         <Text style={styles.marca} accessibilityRole="header" maxFontSizeMultiplier={1}>{/* i18n-ok: la marca */}
@@ -40,6 +42,7 @@ export function FachadaAcceso() {
           {t('acceso:web.cuerpo')}
         </Text>
       </View>
+      </ScrollView>
     </View>
   );
 }
@@ -47,6 +50,8 @@ export function FachadaAcceso() {
 const styles = StyleSheet.create({
   fachada: { flex: 1, minWidth: 0, justifyContent: 'center', overflow: 'hidden' },
   texto: { maxWidth: 520, alignSelf: 'center', paddingHorizontal: space.s10 },
+  flex: { flex: 1 },
+  centrado: { flexGrow: 1, justifyContent: 'center' },
   marca: {
     fontFamily: tipo.monumentoSm.family,
     fontSize: tipo.monumentoSm.size,

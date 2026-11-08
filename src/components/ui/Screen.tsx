@@ -23,7 +23,7 @@ import { usePiel } from '@/design/piel';
 import { ink, radio, space, stroke, type as tipo, vidrio } from '@/design/tokens';
 import { FondoOnix } from './FondoOnix';
 import { ANCHO_ASIDE, cabeAside, marcoDe } from '@/design/responsive';
-import { useAnchoUtil } from '@/design/useSizeClass';
+import { useAnchoUtil, useHuecoControlesVentana } from '@/design/useSizeClass';
 import { t } from '@/i18n';
 import { colors, fonts } from '@/lib/theme';
 
@@ -99,6 +99,7 @@ export function Screen({ plain, wide, amplio, refreshing, onRefresh, style, cont
   const ancho = useAnchoUtil();
   // La piel de un mundo: su fondo va detrás y, si pone su cabecera arriba, sin margen seguro superior.
   const piel = usePiel();
+  const controlesVentana = useHuecoControlesVentana();
   const marco = marcoDe(ancho);
   const conAside = aside != null && cabeAside(ancho);
   // Si había panel pero no cabe, el contenido usa el margen medio de 32.
@@ -116,7 +117,8 @@ export function Screen({ plain, wide, amplio, refreshing, onRefresh, style, cont
     <ScrollView
       keyboardShouldPersistTaps="handled"
       automaticallyAdjustKeyboardInsets
-      showsVerticalScrollIndicator={false}
+      // En escritorio la barra dice que hay más abajo; en el móvil, el dedo.
+      showsVerticalScrollIndicator={Platform.OS === 'web'}
       contentContainerStyle={[styles.content, columna, { paddingHorizontal: gutter }, contentStyle]}
       refreshControl={
         onRefresh ? (
@@ -133,7 +135,7 @@ export function Screen({ plain, wide, amplio, refreshing, onRefresh, style, cont
     // Arriba y a los lados: en horizontal la isla o el notch quedan a un lado.
     // Junto al raíl o la barra lateral el inset izquierdo ya es 0.
     <SafeAreaView
-      style={[styles.screen, piel?.pantallaTransparente && styles.transparente, style]}
+      style={[styles.screen, piel?.pantallaTransparente && styles.transparente, style, controlesVentana > 0 && { paddingTop: controlesVentana }]}
       edges={piel?.cubreArriba ? ['left', 'right'] : ['top', 'left', 'right']}
     >
       {piel?.pantallaTransparente ? null : <FondoOnix />}

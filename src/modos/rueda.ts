@@ -208,3 +208,35 @@ export function puntoEn(cx: number, cy: number, r: number, angulo: number): { x:
 function redondo(n: number): number {
   return Math.round(n * 100) / 100;
 }
+
+/** Alto aproximado de la ficha de arriba de la rueda (nombre, subtítulo y línea). */
+const ALTO_FICHA = 108;
+const ANCHO_MAX_FICHA = 420;
+const ANCHO_MIN_FICHA = 160;
+
+export interface SitioFicha {
+  left: number;
+  top: number;
+  width: number;
+}
+
+/**
+ * Dónde va la ficha del modo apuntado. Arriba de la rueda y con ancho de lectura
+ * (en un escritorio de 1920 no cruza la ventana entera). Si la ventana es baja y
+ * arriba no cabe, a la izquierda de la rueda; si tampoco, no se pinta: es solo
+ * un refuerzo, el nombre del modo ya está en su sector.
+ */
+export function sitioFicha(
+  w: number,
+  geo: { cx: number; cy: number; D: number },
+  topArriba: number,
+  margen: number,
+): SitioFicha | null {
+  if (topArriba + ALTO_FICHA <= geo.cy - geo.D / 2) {
+    const width = Math.min(w - 2 * margen, ANCHO_MAX_FICHA);
+    return { left: (w - width) / 2, top: topArriba, width };
+  }
+  const hueco = geo.cx - geo.D / 2 - 2 * margen;
+  if (hueco < ANCHO_MIN_FICHA) return null;
+  return { left: margen, top: geo.cy - ALTO_FICHA / 2, width: Math.min(hueco, ANCHO_MAX_FICHA) };
+}

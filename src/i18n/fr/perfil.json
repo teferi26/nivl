@@ -124,7 +124,9 @@
     "privacidad": "Politique de confidentialité",
     "privacidadA11y": "Politique de confidentialité de NIVL",
     "eliminarCuenta": "Supprimer le compte",
-    "eliminarNota": "Efface pour toujours ton profil et toute ta progression dans NIVL."
+    "eliminarNota": "Efface pour toujours ton profil et toute ta progression dans NIVL.",
+    "avisosWeb": "Rappels dans l'app mobile",
+    "avisosWebDetalle": "Le réveil et les rappels arrivent sur l'app mobile."
   },
   "borrar": {
     "palabra": "SUPPRIMER",

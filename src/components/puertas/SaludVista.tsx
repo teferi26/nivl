@@ -18,6 +18,7 @@ import { Linking, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Entrada, TarjetaArena } from '@/components/arena';
 // eslint-disable-next-line no-restricted-imports -- health.test.ts (Seguridad) busca el título por ScreenHeader.
 import { Button, Check, Screen, ScreenHeader, Skeleton } from '@/components/ui';
+import { ariaWeb } from '@/components/ui/ariaWeb';
 import { ink, oro, radio, space, stroke, type as tipo, vidrio } from '@/design/tokens';
 import { t } from '@/i18n';
 import { HEALTH_COPY as T } from '@/lib/healthmath';
@@ -147,6 +148,7 @@ export function HojaSaludVista(p: HojaSaludVistaProps) {
         accessibilityRole="checkbox"
         accessibilityLabel={T.checkbox}
         accessibilityState={{ checked: p.marcada, disabled: p.ocupada }}
+        {...ariaWeb({ checked: p.marcada })}
         disabled={p.ocupada}
         onPress={p.onMarcar}
       >

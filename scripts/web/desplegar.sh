@@ -26,9 +26,10 @@ cp scripts/web/vercel.json scripts/web/robots.txt "$SALIDA/"
 # Vercel no sube carpetas llamadas node_modules: las fuentes de Expo viven en assets/node_modules.
 if [ -d "$SALIDA/assets/node_modules" ]; then
   mv "$SALIDA/assets/node_modules" "$SALIDA/assets/nm"
-  { grep -rl 'assets/node_modules/' --include=*.js --include=*.html --include=*.json "$SALIDA" || true; } | xargs -r sed -i 's#assets/node_modules/#assets/nm/#g'
+  { grep -rl 'assets/node_modules/' --include=*.js --include=*.html --include=*.json "$SALIDA" || true; } | xargs -r perl -pi -e 's#assets/node_modules/#assets/nm/#g'
 fi
-grep -rlE 'service_role|sb_secret_|sk_live_|sk_test_|sk-ant-api|sk-proj-[A-Za-z0-9]{20}|re_[A-Za-z0-9]{20}' "$SALIDA" && { echo 'Secreto en el bundle: aborto'; exit 1; } || true
+# sb_secret_ pide cuerpo de clave: supabase-js lleva ese prefijo como literal para reconocer el tipo de clave.
+grep -rlE 'service_role|sb_secret_[A-Za-z0-9_-]{12}|sk_live_|sk_test_|sk-ant-api|sk-proj-[A-Za-z0-9]{20}|re_[A-Za-z0-9]{20}' "$SALIDA" && { echo 'Secreto en el bundle: aborto'; exit 1; } || true
 # Un JWT de service_role lleva «role":"service_role» en base64 dentro del payload.
 # (Con pipefail, un grep sin coincidencias no puede tumbar el script: de ahí los «|| true».)
 SERVICIO=$({ grep -rhoE 'eyJ[A-Za-z0-9_-]{10,}\.eyJ[A-Za-z0-9_-]{10,}' "$SALIDA" || true; } | sort -u | while read -r jwt; do

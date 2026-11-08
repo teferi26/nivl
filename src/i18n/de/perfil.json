@@ -124,7 +124,9 @@
     "privacidad": "Datenschutzerklärung",
     "privacidadA11y": "Datenschutzerklärung von NIVL",
     "eliminarCuenta": "Konto löschen",
-    "eliminarNota": "Löscht dein Profil und deinen gesamten Fortschritt in NIVL für immer."
+    "eliminarNota": "Löscht dein Profil und deinen gesamten Fortschritt in NIVL für immer.",
+    "avisosWeb": "Erinnerungen in der Mobile-App",
+    "avisosWebDetalle": "Wecker und Erinnerungen kommen in der Mobile-App an."
   },
   "borrar": {
     "palabra": "LÖSCHEN",

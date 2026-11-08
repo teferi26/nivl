@@ -6,7 +6,7 @@
 // cuenta. Devuelve `vista` (PerfilVista, pura), `ajustes` (PerfilAjustes) y
 // `hojas` (las que pinta la ruta: pausa, código de creador, idioma y borrar).
 
-import * as ImagePicker from 'expo-image-picker';
+import { elegirFoto } from '@/lib/camara';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Linking, Platform } from 'react-native';
@@ -350,7 +350,7 @@ export function usePerfil(): UsePerfil {
     if (!userId || !profile || uploadingPhoto) return;
     setUploadingPhoto(true);
     try {
-      const result = await ImagePicker.launchImageLibraryAsync({
+      const result = await elegirFoto({
         mediaTypes: ['images'],
         quality: 0.5,
         base64: true,

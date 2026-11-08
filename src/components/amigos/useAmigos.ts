@@ -16,7 +16,6 @@ import {
   Clipboard,
   LayoutAnimation,
   Linking,
-  Share,
 } from 'react-native';
 import { prepararDatosSemana, tarjetaDeSemana } from '@/components/ShareCardSemana';
 import { useCelebracion } from '@/components/celebracion/contexto';
@@ -28,6 +27,8 @@ import { t } from '@/i18n';
 import { fetchUnlocked, tituloVigente } from '@/lib/achievements';
 import { fetchRangosAmigos } from '@/lib/amigosRango';
 import { useAuth } from '@/lib/auth';
+import { compartirTexto } from '@/lib/compartirTexto';
+import { avisarEnPantalla } from '@/lib/web/avisos';
 import { conInsignias, estadoLudus, SIN_LUDUS, type MiLudus } from '@/lib/elite';
 import { fetchMyInvites, settleMyInvites, UMBRALES_INVITACION, type MyInvites } from '@/lib/invites';
 import type { ProfileKind } from '@/lib/kinds';
@@ -375,7 +376,9 @@ export function useAmigos(opciones: { metricaInicial?: Metrica; enPestana?: bool
   const invitar = async (anchor?: number) => {
     if (!yo) return;
     try {
-      await Share.share({ message: mensajeInvitacion(yo.friendCode) }, anchor != null ? { anchor } : undefined);
+      const r = await compartirTexto(mensajeInvitacion(yo.friendCode), anchor);
+      if (r === 'copiado') avisarEnPantalla(t('comun:invitacionCopiada.titulo'), t('comun:invitacionCopiada.cuerpo'), 'invitacion');
+      else if (r === 'imposible') avisar(t('comun:invitacionManual.titulo'), mensajeInvitacion(yo.friendCode));
     } catch (e) {
       avisar(t('comun:sistemaNoResponde'), mensajeSistema(e));
     }

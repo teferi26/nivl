@@ -24,6 +24,7 @@ import { levelFromXp } from '@/lib/game';
 import type { BoardEntry } from '@/lib/social';
 import { etiquetaPosicion, formatoValor, type Clasificado, type Metrica } from '@/lib/socialmath';
 import { cifraDe } from './cifraRanking';
+import { menuContextualWeb } from '@/components/ui/pulsacionLarga';
 
 /** Una fila ya clasificada, con la insignia Élite y el título equipado resueltos. */
 export type FilaRanking = Clasificado<BoardEntry> & { insignia: boolean; titulo: string | null };
@@ -95,6 +96,7 @@ export function ListaRanking({
             <Pressable
               onPress={!b.isMe ? () => onSafety(b) : undefined}
               onLongPress={quitar}
+              {...menuContextualWeb(quitar)}
               disabled={b.isMe}
               accessibilityActions={quitar ? [{ name: 'longpress', label: t('amigos:comun.quitarAmigo') }] : undefined}
               onAccessibilityAction={

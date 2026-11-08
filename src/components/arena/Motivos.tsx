@@ -5,7 +5,7 @@
 // Los colores son de la escala ink: el laurel en ink6 (se lee), la columna y el
 // meandro en ink4 (estructura) y la arena en ink3 (fondo, casi no se ve).
 
-import { View, type StyleProp, type ViewStyle } from 'react-native';
+import { Platform, View, type StyleProp, type ViewStyle } from 'react-native';
 import Svg, { Defs, Path, Pattern, Rect } from 'react-native-svg';
 import { useIdSeguro } from '@/components/ui/Texture';
 import { ink } from '@/design/tokens';
@@ -14,11 +14,9 @@ import { LAUREL_ALTO, LAUREL_ANCHO, MEANDRO_UNIDAD, PATH_MEANDRO, pathArena, pat
 export { Crown as Galea } from '@/components/ui/Crown';
 
 /** Props comunes para que el motivo no exista para el lector ni para el dedo. */
-const OCULTO = {
-  accessibilityElementsHidden: true,
-  importantForAccessibility: 'no-hide-descendants',
-  pointerEvents: 'none',
-} as const;
+const OCULTO = Platform.OS === 'web'
+  ? ({ 'aria-hidden': true, pointerEvents: 'none' } as const) // En la web, Svg pasa sus props al DOM tal cual.
+  : ({ accessibilityElementsHidden: true, importantForAccessibility: 'no-hide-descendants', pointerEvents: 'none' } as const);
 
 interface LaurelProps {
   alto: number;

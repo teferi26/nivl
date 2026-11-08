@@ -4,6 +4,7 @@
 // ajustes de siempre) y, debajo, las hojas (HojasPerfil): borrar la cuenta,
 // pausar, el código de creador y el idioma. Modos: «Tu arsenal» (un toque) y
 // NivelesModo (nada con el interruptor `modos_activos` apagado).
+import { useNavActual } from '@/design/useSizeClass';
 import { router } from 'expo-router';
 import { ArsenalConectado } from '@/components/general/Arsenal';
 import { PerfilGeneralVista } from '@/components/general/PerfilGeneralVista';
@@ -15,13 +16,15 @@ import { FREEZE_DAYS, motivosPausa, usePerfil } from '@/components/perfil/usePer
 
 export default function Perfil() {
   const { vista, ajustes, hojas } = usePerfil();
+  const nav = useNavActual();
   const { pausa, codigo, borrar, idioma, idiomaApp, today } = hojas;
 
   return (
     <PielGeneral>
       <PerfilGeneralVista
         {...vista}
-        onVolver={() => router.navigate('/(tabs)')}
+        // Con raíl o barra lateral Hoy está siempre a la vista: la flecha sobra.
+        onVolver={nav === 'tabs' ? () => router.navigate('/(tabs)') : undefined}
         onProgresion={() => router.navigate({ pathname: '/(tabs)/avance', params: { ver: 'progresion' } })}
         ajustes={ajustes ? <PerfilAjustes {...ajustes} /> : null}
         nivelesModo={

@@ -27,6 +27,7 @@ import { t } from '@/i18n';
 import { nombreDia } from '@/i18n/formato';
 import { DIFFICULTY_LABEL, STAT_ABBR, XP_BY_DIFFICULTY } from '@/lib/game';
 import type { ProposedQuest } from '@/lib/oracle';
+import { ariaWeb } from '@/components/ui/ariaWeb';
 
 export interface OraculoVistaProps {
   /** La web con clave propia (`byokEnabled()`); nunca en la app de tienda. */
@@ -224,6 +225,7 @@ export function OraculoVista({
                       onPress={() => acciones.onAlternar(i)}
                       accessibilityRole="checkbox"
                       accessibilityState={{ checked: on }}
+                      {...ariaWeb({ checked: on })}
                       accessibilityLabel={t(on ? 'oraculo:vista.propuestaA11y' : 'oraculo:vista.propuestaDescartadaA11y', {
                         titulo: p.title,
                         xp: XP_BY_DIFFICULTY[p.difficulty],

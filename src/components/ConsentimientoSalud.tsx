@@ -5,6 +5,7 @@ import { Image } from 'expo-image';
 import { useAuth } from '@/lib/auth';
 import { borrarCopiasLocales } from '@/lib/medicion/buzon';
 import { acceptHealthConsent, fetchHealthConsent, withdrawAndEraseHealth, HEALTH_COPY as T, HEALTH_ROUTES, type HealthConsent } from '@/lib/health';
+import { siguienteEpoch } from '@/lib/healthmath';
 import { clearEvidenceSignatures } from '@/lib/data';
 import { cancelarAvisosSalud } from '@/lib/notifications';
 import { supabase } from '@/lib/supabase';
@@ -48,13 +49,12 @@ export function HealthConsentProvider({ children }: PropsWithChildren) {
         void cancelarAvisosSalud();
         void Promise.allSettled([Image.clearMemoryCache(), Image.clearDiskCache()]);
       }
-      setRecord(previous => ({ uid, value: { ...value, loading: false, error: null,
-        epoch: previous.value.epoch + (previous.uid !== uid || previous.value.accepted !== value.accepted || previous.value.revision !== value.revision ? 1 : 0) } }));
+      setRecord(previous => ({ uid, value: { ...value, loading: false, error: null, epoch: siguienteEpoch(previous, uid, value) } }));
     } catch (e) {
       if (request !== serial.current) return;
       clearEvidenceSignatures();
       void cancelarAvisosSalud();
-      setRecord(previous => ({ uid, value: { ...EMPTY, loading: false, error: mensajeSistema(e), epoch: previous.value.epoch + 1 } }));
+      setRecord(previous => ({ uid, value: { ...EMPTY, loading: false, error: mensajeSistema(e), epoch: siguienteEpoch(previous, uid, null) } }));
     }
   }, [uid]);
   useEffect(() => {

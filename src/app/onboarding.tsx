@@ -36,6 +36,7 @@ import { OfertaModosAcciones, OfertaModosCuerpo, OfertaModosLegal } from '@/comp
 import { useOfertaModos } from '@/components/modos/pago/useOfertaModos';
 import { ProUpsellLine } from '@/components/ProOffer';
 import { Button, FondoOnix, Skeleton } from '@/components/ui';
+import { ariaWeb } from '@/components/ui/ariaWeb';
 import { avisar } from '@/components/ui/confirmar';
 import { GutterContext } from '@/components/ui/Screen';
 import { useAuth } from '@/lib/auth';
@@ -646,6 +647,7 @@ export default function Onboarding() {
                       style={[styles.starterRow, i > 0 && styles.starterRowSep]}
                       accessibilityRole="checkbox"
                       accessibilityState={{ checked: on }}
+                      {...ariaWeb({ checked: on })}
                       accessibilityLabel={q.title}
                     >
                       <View style={[styles.checkbox, on && styles.checkboxOn]}>

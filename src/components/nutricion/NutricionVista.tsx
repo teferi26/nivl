@@ -32,6 +32,7 @@ import { Button, Check, EmptyState, Row, Screen, Section, SIN_DATO, Tag } from '
 import { ink, space, stroke, type as tipo, vidrio } from '@/design/tokens';
 import { t } from '@/i18n';
 import type { NutritionLog, NutritionTarget } from '@/lib/bodywork';
+import { ariaWeb } from '@/components/ui/ariaWeb';
 
 export interface NutricionVistaProps {
   /** Hasta la primera carga se pintan huecos. */
@@ -196,6 +197,7 @@ export function NutricionVista({
                   onPress={acciones.onKcal}
                   accessibilityRole="checkbox"
                   accessibilityState={{ checked: kcal }}
+                  {...ariaWeb({ checked: kcal })}
                   accessibilityLabel={t('nutricion:vista.kcalA11y')}
                 />
                 <Row
@@ -210,6 +212,7 @@ export function NutricionVista({
                   onPress={acciones.onProte}
                   accessibilityRole="checkbox"
                   accessibilityState={{ checked: prote }}
+                  {...ariaWeb({ checked: prote })}
                   accessibilityLabel={t('nutricion:vista.proteA11y')}
                 />
               </View>

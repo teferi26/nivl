@@ -24,6 +24,8 @@ import { t } from '@/i18n';
 import { marcarVisto, urlFirmada, type Recap, type Slide } from '@/lib/photos';
 import type { Foto, Tarjeta } from '@/lib/sharecard';
 import { mensajeSistema } from '@/lib/validation';
+import { fotoComoDataWeb } from '@/lib/web/fotoWeb';
+import { hayCapaWeb } from '@/components/web/useCapaWeb';
 import { PaseVista, type PaseVistaProps } from './PaseVista';
 import { eyebrowSlide } from './tipos';
 
@@ -32,14 +34,18 @@ const DURACION_MS = 6000;
 /**
  * La foto de evidencia, descargada a caché con una URI local: la tarjeta nunca
  * lleva una URL firmada (caduca en 60 s). Siempre el mismo archivo, que se
- * sobrescribe: no se acumulan fotos de salud en caché. En web (sin sistema de
- * archivos) o si falla, null: el recuerdo se comparte sin foto.
+ * sobrescribe: no se acumulan fotos de salud en caché. En la web, sin sistema
+ * de archivos, va en memoria como `data:`. Si falla, null: el recuerdo se
+ * comparte sin foto.
  */
 async function fotoLocal(ruta: string, fecha: string): Promise<Foto | null> {
-  if (Platform.OS === 'web') return null;
   try {
     const url = await urlFirmada(ruta);
     if (!url) return null;
+    if (Platform.OS === 'web') {
+      const uri = await fotoComoDataWeb(url);
+      return uri ? { uri, fecha } : null;
+    }
     const archivo = await File.downloadFileAsync(url, new File(Paths.cache, 'nivl-recuerdo.jpg'), { idempotent: true });
     return { uri: archivo.uri, fecha };
   } catch {
@@ -161,6 +167,27 @@ export function usePase(recap: Recap, onSalir: () => void): PaseVistaProps {
       setCompartiendo(false);
     }
   };
+
+  // Teclado en la web: flechas para pasar, Escape para salir.
+  const teclas = useRef({ anterior: () => {}, siguiente: () => {}, salir: onSalir });
+  teclas.current = {
+    anterior: () => setI((v) => Math.max(0, v - 1)),
+    siguiente: () => (i < slides.length - 1 ? setI((v) => v + 1) : onSalir()),
+    salir: onSalir,
+  };
+  useEffect(() => {
+    if (Platform.OS !== 'web' || typeof document === 'undefined') return;
+    const alPulsar = (e: KeyboardEvent) => {
+      // Con la hoja de compartir encima, las flechas no pasan las diapositivas de debajo.
+      if (hayCapaWeb()) return;
+      const accion = e.key === 'ArrowLeft' ? teclas.current.anterior : e.key === 'ArrowRight' ? teclas.current.siguiente : e.key === 'Escape' ? teclas.current.salir : null;
+      if (!accion) return;
+      e.preventDefault();
+      accion();
+    };
+    document.addEventListener('keydown', alPulsar);
+    return () => document.removeEventListener('keydown', alPulsar);
+  }, []);
 
   return {
     recap,

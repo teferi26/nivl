@@ -12,6 +12,11 @@ import { SelloMedicion } from '../SelloMedicion';
 
 jest.mock('@/design/haptics', () => ({ vibrar: jest.fn() }));
 jest.mock('@/lib/supabase', () => ({ supabase: {} }));
+// Screen mide el hueco de los controles de ventana con el SafeAreaProvider, que aquí no se monta.
+jest.mock('@/design/useSizeClass', () => ({
+  ...jest.requireActual('@/design/useSizeClass'),
+  useHuecoControlesVentana: () => 0,
+}));
 
 const nada = () => {};
 const acciones = new Proxy({}, { get: () => nada });

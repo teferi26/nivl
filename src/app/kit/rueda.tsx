@@ -31,11 +31,11 @@ import { DibujoEmblema, type FormaEmblema } from '@/components/modos/rueda/Dibuj
 import { DiscoRueda, FichaRueda, geometriaRueda, GuiaDedo, RecargaModo, topFicha, VeloRueda } from '@/components/modos/rueda/RuedaModos';
 import { nombreDestino } from '@/components/ui/navItems';
 import { TabBar } from '@/components/ui/TabBar';
-import { acentoRueda } from '@/design/tokens';
+import { acentoRueda, space } from '@/design/tokens';
 import { t } from '@/i18n';
 import type { Completion, Quest } from '@/lib/types';
 import { nivelesDeModos } from '@/modos/niveles';
-import { mascaraDisponibles, ORDEN_RUEDA, RUEDA } from '@/modos/rueda';
+import { mascaraDisponibles, ORDEN_RUEDA, RUEDA, sitioFicha } from '@/modos/rueda';
 import { esModo, MODOS, type ModoEtiqueta, type ModoId } from '@/modos/tipos';
 
 const TODOS: readonly ModoId[] = MODOS;
@@ -116,7 +116,7 @@ export default function KitRueda() {
         actual={actual}
         anterior={anterior}
         ancho={w}
-        top={topFicha(geo)}
+        sitio={sitioFicha(w, geo, topFicha(geo), space.s8)}
         arribaRueda={geo.cy - geo.D / 2}
       />
       <View style={{ position: 'absolute', left: geo.cx - geo.D / 2, top: geo.cy - geo.D / 2 }}>

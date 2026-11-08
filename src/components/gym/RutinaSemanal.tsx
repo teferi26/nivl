@@ -15,6 +15,7 @@ import { ink, radio, space, stroke, type as tipo, vidrio } from '@/design/tokens
 import { t } from '@/i18n';
 import { capital, decimal, nombreDia } from '@/i18n/formato';
 import type { GymDay, GymExercise } from '@/lib/types';
+import { menuContextualWeb } from '@/components/ui/pulsacionLarga';
 
 /** El día de la semana ISO (1 lunes … 7 domingo) con mayúscula: «Lunes». */
 export function nombreDiaIso(diaIso: number): string {
@@ -125,6 +126,7 @@ export function FilaEjercicio({
         <Pressable
           onPress={onPress}
           onLongPress={onLongPress}
+          {...menuContextualWeb(onLongPress)}
           accessibilityRole="button"
           accessibilityLabel={accessibilityLabel ?? `${nombre}, ${carga}`}
           accessibilityActions={onLongPress ? [{ name: 'longpress', label: t('comun:eliminar') }] : undefined}
@@ -150,6 +152,7 @@ export function FilaEjercicio({
     <Pressable
       onPress={onPress}
       onLongPress={onLongPress}
+      {...menuContextualWeb(onLongPress)}
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel ?? `${nombre}, ${carga}`}
       accessibilityActions={onLongPress ? [{ name: 'longpress', label: t('comun:eliminar') }] : undefined}
