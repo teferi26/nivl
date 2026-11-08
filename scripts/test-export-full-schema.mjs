@@ -74,14 +74,38 @@ assert.equal((await db.query('select count(*)::int as n from focus_subjects')).r
 await assert.rejects(()=>db.query("insert into focus_topics(subject_id,name) values($1,'Robado')",[subA]),/ajena/);
 await assert.rejects(()=>db.query("insert into focus_subjects(user_id,name) values($1,'Suplantada')",[A]),/row-level security|violates/);
 assert.equal((await db.query("update focus_subjects set name='x' where id=$1 returning id",[subA])).rows.length,0);
+// WORK (0115 a 0118): RLS de dueño, referencias de la misma cuenta, enlace 'trabajo' y calendario.
+await db.query("select set_config('request.jwt.claim.sub',$1,false)",[A]);
+const proyA = (await db.query("insert into work_projects(name,hourly_rate) values('Web',60) returning id")).rows[0].id;
+await db.query("insert into work_deliverables(project_id,title,due_date) values($1,'Propuesta',current_date)",[proyA]);
+await db.query("insert into work_sessions(project_id,client_id,session_date,start_min,minutes,billable) values($1,'bloque-1',current_date,600,50,true)",[proyA]);
+await assert.rejects(()=>db.query("insert into work_sessions(project_id,client_id,session_date,minutes) values($1,'bloque-1',current_date,50)",[proyA]),/duplicate|unique/);
+await db.query("insert into work_reviews(week_start,priorities) values(date_trunc('week',current_date)::date,'[\"Una\"]')");
+await assert.rejects(()=>db.query("insert into work_reviews(week_start) values(date_trunc('week',current_date)::date + 1)"),/check/);
+await db.query("insert into quests(user_id,title,stat,difficulty,days_of_week,link,modes,work_day,work_rank) values($1,'Bloque de foco','INT','media','{1}','trabajo','{work}',current_date,1)",[A]);
+assert.equal((await db.query("select link from quests where title='Bloque de foco'")).rows[0].link,'trabajo','el enlace explícito se respeta');
+assert.equal((await db.query("select public.health_row('quests','{\"link\":\"trabajo\",\"title\":\"Bloque de foco\"}'::jsonb) as h")).rows[0].h,false,'trabajo no es dato de salud');
+assert.equal((await db.query("select public.health_row('quests','{\"link\":\"gym\",\"title\":\"x\"}'::jsonb) as h")).rows[0].h,true,'gym sigue siéndolo');
+await assert.rejects(()=>db.query("insert into quests(user_id,title,stat,difficulty,days_of_week,link) values($1,'Q','INT','media','{1}','inventado')",[A]),/check|sin_consentimiento_salud/);
+await db.query("insert into calendar_events(title,date,time,end_time,source,external_id) values('Reunión',current_date,'10:00','11:00','dispositivo','ev-1@hoy')");
+await db.query("insert into calendar_events(title,date,time) values('A mano',current_date,'12:00'),('A mano 2',current_date,'13:00')");
+await assert.rejects(()=>db.query("insert into calendar_events(title,date,source,external_id) values('Doble',current_date,'dispositivo','ev-1@hoy')"),/duplicate|unique/);
+await assert.rejects(()=>db.query("insert into calendar_events(title,date,source) values('Sin id',current_date,'dispositivo')"),/check/);
+await db.query("select set_config('request.jwt.claim.sub',$1,false)",[B]);
+assert.equal((await db.query('select count(*)::int as n from work_projects')).rows[0].n,0,'B no ve los proyectos de A');
+await assert.rejects(()=>db.query("insert into work_deliverables(project_id,title) values($1,'Robado')",[proyA]),/ajeno/);
+await assert.rejects(()=>db.query("insert into work_projects(user_id,name) values($1,'Suplantado')",[A]),/row-level security|violates/);
 const own = await exportAs(A), other = await exportAs(B);
 // v11 desde la 0076: la v9 de la 0072 (funnel_events, app_feedback y admins), más las tres tablas de WORK (0075)
 // y las ocho de FOCUS (0076). La 0077 (IRON) no toca la exportación: sus columnas viajan en nutrition_logs.
-assert.equal(own.version,11);
+assert.equal(own.version,12);
+assert.equal(own.work_projects.length,1); assert.equal(own.work_deliverables.length,1); assert.equal(own.work_sessions.length,1); assert.equal(own.work_reviews.length,1);
+assert.deepEqual(other.work_projects,[]); assert.deepEqual(other.work_sessions,[]);
+assert.ok(Array.isArray(own.ai_cargos),'la cartera de IA sigue'); assert.equal(own.calendar_events.filter((e)=>e.source==='dispositivo').length,1);
 assert.equal(own.money_recurring.length,1); assert.equal(own.money_categories.length,1); assert.equal(own.money_briefs.length,1);
 assert.equal(other.money_recurring.length,0); assert.deepEqual(other.money_categories,[]); assert.equal(Number(own.money_accounts[0].opening_balance),85);
 const comentario = (await db.query("select obj_description(to_regprocedure('public.export_my_data()'),'pg_proc') as c")).rows[0].c;
-for (const h of ['nivl:export-analitica-0072','nivl:export-work-0075','nivl:export-focus-0076']) assert.ok(comentario.includes(h),'huella '+h);
+for (const h of ['nivl:export-analitica-0072','nivl:export-work-0075','nivl:export-focus-0076','nivl:export-ia-0079','nivl:export-work-0118']) assert.ok(comentario.includes(h),'huella '+h);
 assert.equal(own.focus_subjects.length,1); assert.equal(own.focus_topics.length,1); assert.equal(own.focus_sessions.length,1);
 assert.deepEqual(other.focus_subjects,[]); assert.deepEqual(own.focus_cards,[]);
 assert.deepEqual(own.funnel_events,[]); assert.deepEqual(own.app_feedback,[]); assert.deepEqual(own.admins,[]);
@@ -104,5 +128,5 @@ await db.query("select set_config('request.jwt.claim.sub','',false)");
 await assert.rejects(()=>db.query('select export_my_data()'),/No autenticado/);
 await db.exec('reset role; set role anon');
 await assert.rejects(()=>db.query('select export_my_data()'),/permission denied/);
-console.log('PASS full-schema export v11 (WORK 0075: RLS, refs ajenas, briefs solo servidor, account_write_guard; FOCUS 0076: RLS): all actual migrations except scheduler0010, own/other creator and queue, commission/payout coverage, identity and lease redaction, unauthenticated/anon denies');
+console.log('PASS full-schema export v12 (WORK 0075 y 0115-0118: RLS, refs ajenas, briefs solo servidor, account_write_guard; FOCUS 0076: RLS): all actual migrations except scheduler0010, own/other creator and queue, commission/payout coverage, identity and lease redaction, unauthenticated/anon denies');
 } finally { await db.close(); }

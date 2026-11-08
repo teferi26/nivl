@@ -48,6 +48,12 @@ describe('questsScheduledOn', () => {
     expect(questsScheduledOn([penalty], MARTES)).toHaveLength(1);
   });
 
+  test('una misión con día propio (WORK) solo existe ese día, aunque caiga en su día de la semana', () => {
+    const prioridad = makeQuest({ id: 'w', days_of_week: [1], work_day: LUNES });
+    expect(questsScheduledOn([prioridad], LUNES)).toHaveLength(1);
+    expect(questsScheduledOn([prioridad], '2026-06-15')).toHaveLength(0);
+  });
+
   test('las inactivas no cuentan', () => {
     const off = makeQuest({ active: false });
     expect(questsScheduledOn([off], LUNES)).toHaveLength(0);

@@ -27,6 +27,7 @@ import { t } from '@/i18n';
 import { capital, fechaCorta, mayus, nombreMes } from '@/i18n/formato';
 import { claveCategoria } from '@/lib/moneywork';
 import type { BriefNumeros, CategoriaPropia, FijoDelMes, LineaCategoria, MovWork, TotalesMes, VistaGeneral } from '@/lib/moneywork';
+import type { OrigenBrief } from './calculoWork';
 import { BarraWork, BotonWork, Filete, TarjetaWork, useAcento } from './PiezasWork';
 import { euros, eurosSigno, iconoClave, iconoCuenta, nombreCategoriaMov, nombreClave } from './nombres';
 
@@ -40,7 +41,7 @@ export interface DatosWorkVista {
   movimientos: MovWork[];
   nombresCuenta: Record<string, string>;
   propias: CategoriaPropia[];
-  brief: { mes: string; numeros: BriefNumeros; texto: string | null; estado: EstadoBrief };
+  brief: { mes: string; numeros: BriefNumeros; texto: string | null; estado: EstadoBrief; origen: OrigenBrief };
 }
 
 export interface AccionesWork {
@@ -98,6 +99,11 @@ function VistaGeneralTarjeta({ d, acciones }: { d: DatosWorkVista; acciones: Acc
       onMeta={acciones.onNuevaCuenta}
       metaA11y={t('economia:work.general.nuevaCuentaA11y')}
     >
+      {a.modo === 'work' ? (
+        <Text style={styles.personal} maxFontSizeMultiplier={1.35}>
+          {t('trabajoagenda:economia.dineroPersonal')}
+        </Text>
+      ) : null}
       <View accessible accessibilityLabel={t('economia:work.general.totalA11y', { importe: euros(d.vista.total) })}>
         <Cifra valor={d.vista.total} grande />
         <Text style={styles.sub} maxFontSizeMultiplier={1.35}>
@@ -291,11 +297,12 @@ function Burbuja({ children }: { children: ReactNode }) {
 }
 
 /** Las cifras del brief en tres líneas, sin IA (también lo que ve quien no tiene Pro). */
-function lineasBrief(b: BriefNumeros, propias: readonly CategoriaPropia[]): string[] {
+function lineasBrief(b: BriefNumeros, propias: readonly CategoriaPropia[], comparar: boolean): string[] {
   const L: string[] = [t('economia:work.brief.entraSale', { entra: euros(b.este.ingresos), sale: euros(b.este.gastos) })];
   const top = b.categorias.slice(0, 2).map((c) => `${nombreClave(c.clave, propias)} ${euros(c.total)}`);
   if (top.length) L.push(t('economia:work.brief.top', { lista: top.join(', ') }));
-  if (b.gastoDeltaPct !== null) {
+  // Un mes a medias contra uno entero siempre sale «gastas menos»: solo se compara al cerrar.
+  if (comparar && b.gastoDeltaPct !== null) {
     L.push(
       b.gastoDeltaPct >= 0
         ? t('economia:work.brief.sube', { pct: b.gastoDeltaPct, mes: mesLargo(b.anterior) })
@@ -312,8 +319,14 @@ function lineasBrief(b: BriefNumeros, propias: readonly CategoriaPropia[]): stri
   return L;
 }
 
+function textoOrigen(o: OrigenBrief): string {
+  if (o.tipo === 'cifras') return t(o.mesAbierto ? 'trabajoagenda:economia.briefAbierto' : 'trabajoagenda:economia.briefCifras');
+  return o.generado ? t('trabajoagenda:economia.briefIa', { fecha: fechaCorta(o.generado) }) : t('trabajoagenda:economia.briefIaSinFecha');
+}
+
 function Brief({ d, acciones }: { d: DatosWorkVista; acciones: AccionesWork }) {
   const b = d.brief;
+  const abierto = b.origen.tipo === 'cifras' && b.origen.mesAbierto;
   const titulo = t('economia:work.brief.rotulo', { mes: mayus(mesLargo(b.mes)) });
   if (b.estado === 'sin_datos') {
     return (
@@ -325,7 +338,7 @@ function Brief({ d, acciones }: { d: DatosWorkVista; acciones: AccionesWork }) {
     );
   }
   return (
-    <TarjetaWork rotulo={titulo} meta={b.texto ? t('economia:work.brief.metaIa') : undefined}>
+    <TarjetaWork rotulo={titulo} meta={t(b.texto ? 'trabajoagenda:economia.metaIa' : 'trabajoagenda:economia.metaSinIa')}>
       <Burbuja>
         {b.texto ? (
           b.texto
@@ -338,13 +351,16 @@ function Brief({ d, acciones }: { d: DatosWorkVista; acciones: AccionesWork }) {
               </Text>
             ))
         ) : (
-          lineasBrief(b.numeros, d.propias).map((l) => (
+          lineasBrief(b.numeros, d.propias, !abierto).map((l) => (
             <Text key={l} style={styles.burbujaTexto} maxFontSizeMultiplier={1.6}>
               {l}
             </Text>
           ))
         )}
       </Burbuja>
+      <Text style={[styles.nota, styles.origen]} maxFontSizeMultiplier={1.35}>
+        {textoOrigen(b.origen)}
+      </Text>
       <Text style={styles.aviso} maxFontSizeMultiplier={1.35}>
         {t('economia:work.brief.aviso')}
       </Text>
@@ -590,6 +606,8 @@ const styles = StyleSheet.create({
   },
   nota: { flex: 1, fontFamily: tipo.bodySm.family, fontSize: 12, lineHeight: 16, color: ink.ink8 },
   notaArriba: { marginTop: space.s2, marginLeft: 42 },
+  origen: { flex: 0, marginTop: space.s3, marginLeft: 42 },
+  personal: { fontFamily: tipo.bodySm.family, fontSize: 14, lineHeight: 20, color: ink.ink8, marginBottom: space.s2 },
   seguro: { flexDirection: 'row', alignItems: 'center', gap: space.s2, marginTop: space.s3 },
   cuerpo: { fontFamily: tipo.bodySm.family, fontSize: 14, lineHeight: 20, color: ink.ink8 },
   titular: { fontFamily: tipo.headline.family, fontSize: 18, lineHeight: 24, color: ink.ink10, marginBottom: space.s2 },

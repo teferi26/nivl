@@ -154,10 +154,12 @@ const HAY_1011 = ARCHIVOS.some((n) => n.startsWith('0086'));
 const CLAVE_PRUEBA = HAY_1011 ? 'prueba_auto_1011' : 'prueba_auto_activa';
 const CLAVES_1011 = { modos_1011: false, idiomas_1011: false, prueba_auto_1011: false, valoracion_1011: false, analitica_1011: false, opinion_1011: false };
 // Integración v3: la 0075 (WORK) deja la v10 y la 0076 (FOCUS) la v11, que exporta todo.
-const V_EXPORT = ARCHIVOS.some((n) => n.startsWith('0076')) ? 11 : ARCHIVOS.some((n) => n.startsWith('0075')) ? 10 : HAY_ANALITICA ? 9 : 8;
+// La 0118 (WORK núcleo) la lleva a la v12.
+const V_EXPORT = ARCHIVOS.some((n) => n.startsWith('0118')) ? 12 : ARCHIVOS.some((n) => n.startsWith('0076')) ? 11 : ARCHIVOS.some((n) => n.startsWith('0075')) ? 10 : HAY_ANALITICA ? 9 : 8;
 const CLAVES_NUEVAS = ['money_categories', 'money_recurring', 'money_briefs', 'focus_subjects', 'focus_exams', 'focus_topics',
   'focus_sessions', 'focus_classes', 'focus_grades', 'focus_decks', 'focus_cards',
-  'ai_cargos', 'ai_recargas', 'ai_cartera']; // 0079 (cartera de IA)
+  'ai_cargos', 'ai_recargas', 'ai_cartera', // 0079 (cartera de IA)
+  'work_projects', 'work_deliverables', 'work_sessions', 'work_reviews']; // 0118 (WORK núcleo)
 const antes = await boot(65);
 const despues = await boot(9999);
 try {
@@ -183,7 +185,8 @@ try {
   delete dExp.funnel_events; delete dExp.app_feedback; delete dExp.admins;
   for (const k of CLAVES_NUEVAS) { if (k in dExp) { eq(dExp[k], [], `${k} vacío`); delete dExp[k]; } }
   for (const p of dExp.profiles) delete p.locale;
-  for (const q of dExp.quests) delete q.modes;
+  for (const q of dExp.quests) { delete q.modes; delete q.work_day; delete q.work_rank; }
+  for (const c of dExp.calendar_events ?? []) { delete c.source; delete c.external_id; delete c.end_time; }
   const aExp = structuredClone(a.export); delete aExp.version;
   eq(normal(dExp), normal(aExp), 'exportación idéntica salvo las claves nuevas');
   // El perfil que devuelven las RPC gana la clave locale (null): aditivo, la 1.0.9 la ignora.

@@ -1,4 +1,4 @@
-// NIVL · Galería: la economía de WORK con datos de demo. SOLO DESARROLLO.
+// NIVL · Galería: Hoy, el bloque y la economía de WORK con datos de demo. SOLO DESARROLLO.
 //
 // /kit/work                       el índice de estados
 // /kit/work?estado=<id>&quieto=1  un estado a pantalla completa, sin animar,
@@ -9,35 +9,38 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Redirect, router, useLocalSearchParams } from 'expo-router';
 import { GALERIA } from '@/lib/galeria';
-import { useEffect } from 'react';
+import { useEffect, type ReactElement } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { fijarQuieto } from '@/components/arena/quieto';
 import { ESTADOS_WORK } from '@/components/economia/work/demo';
 import { ACENTO, tinte } from '@/components/economia/work/PiezasWork';
 import { GlifoModo } from '@/components/modos/rueda/GlifoModo';
+import { ESTADOS_AGENDA_WORK } from '@/components/work/agenda/demo';
+import { ESTADOS_WORK_HOY } from '@/components/work/demo';
+import { ESTADOS_GESTION } from '@/components/work/gestion/demo';
 import { Screen } from '@/components/ui';
 import { ink, space, type as tipo } from '@/design/tokens';
 import { TopeAncho } from '@/design/useSizeClass';
 
 const PESTANAS = [
-  { icono: 'today-outline', nombre: 'Hoy' },
-  { icono: 'wallet', nombre: 'Economía', activa: true },
+  { icono: 'today-outline', nombre: 'Hoy', id: 'hoy' },
+  { icono: 'wallet', nombre: 'Economía', id: 'economia' },
   { icono: null, nombre: '' },
   { icono: 'calendar-outline', nombre: 'Agenda' },
   { icono: 'chatbubble-ellipses-outline', nombre: 'Coach' },
 ] as const;
 
 /** La barra de WORK tal como sale en la lámina (solo para la captura). */
-function BarraMundo() {
+function BarraMundo({ activa }: { activa: 'hoy' | 'economia' }) {
   const { bottom } = useSafeAreaInsets();
   return (
     <View style={[styles.barra, { paddingBottom: Math.max(bottom, 10) }]}>
       {PESTANAS.map((p, i) =>
         p.icono ? (
           <View key={i} style={styles.pestana}>
-            <Ionicons name={p.icono} size={20} color={'activa' in p ? ink.ink10 : ink.ink6} />
-            <Text style={[styles.pestanaTexto, 'activa' in p && styles.pestanaActiva]}>{p.nombre}</Text>
+            <Ionicons name={p.icono} size={20} color={'id' in p && p.id === activa ? ink.ink10 : ink.ink6} />
+            <Text style={[styles.pestanaTexto, 'id' in p && p.id === activa && styles.pestanaActiva]}>{p.nombre}</Text>
           </View>
         ) : (
           <View key={i} style={styles.pestana}>
@@ -51,6 +54,8 @@ function BarraMundo() {
   );
 }
 
+const ESTADOS: { id: string; titulo: string; pestana?: 'hoy'; sinBarra?: boolean; render: () => ReactElement }[] = [...ESTADOS_WORK_HOY, ...ESTADOS_AGENDA_WORK, ...ESTADOS_GESTION.map((e) => ({ ...e, sinBarra: true })), ...ESTADOS_WORK];
+
 export default function KitWork() {
   const p = useLocalSearchParams<{ estado?: string; quieto?: string; ancho?: string }>();
   // Chrome sin cabeza no baja de ~500 px de ventana: el marco fija el ancho del teléfono.
@@ -59,14 +64,14 @@ export default function KitWork() {
   useEffect(() => () => fijarQuieto(false), []);
   if (!GALERIA) return <Redirect href="/" />;
 
-  const estado = ESTADOS_WORK.find((e) => e.id === p.estado);
+  const estado = ESTADOS.find((e) => e.id === p.estado);
   if (estado) {
     return (
       <View style={styles.fondo}>
         <TopeAncho.Provider value={ancho}>
           <View style={[styles.lleno, { width: ancho, maxWidth: ancho }]}>
             <View style={styles.lleno}>{estado.render()}</View>
-            {estado.id.startsWith('hoja') ? null : <BarraMundo />}
+            {estado.id.startsWith('hoja') || estado.sinBarra ? null : <BarraMundo activa={estado.pestana ?? 'economia'} />}
           </View>
         </TopeAncho.Provider>
       </View>
@@ -74,8 +79,8 @@ export default function KitWork() {
   }
   return (
     <Screen>
-      <Text style={styles.titulo}>WORK · economía</Text>
-      {ESTADOS_WORK.map((e) => (
+      <Text style={styles.titulo}>WORK</Text>
+      {ESTADOS.map((e) => (
         <Pressable key={e.id} onPress={() => router.setParams({ estado: e.id })} style={styles.fila}>
           <Text style={styles.filaTexto}>{e.titulo}</Text>
           <Text style={styles.filaId}>{e.id}</Text>

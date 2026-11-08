@@ -17,7 +17,7 @@ Decisión de Teferi (20/10/2026, propuesta P01 «Rueda», `coordinacion-winter-a
 | NIVL `(tabs)` | Hoy · Agenda · Coach · Hábitos · Campañas · Perfil | La app de siempre |
 | IRON `(iron)` | Hoy · Rutinas · Pesos · Coach | Cabecera IRON con su nivel; entreno de hoy con «Empezar entreno» (useGym; la sesión se hace ahí mismo); tus pesos y récords (3, «Ver todo»); rutinas en una fila con «Nueva»; catálogo con técnica animada (`/iron/catalogo` → `/iron/[id]`); dieta de hoy (objetivo y parte, enlaces a Dieta y Nutrición); coach IRON |
 | FOCUS `(focus)` | Hoy · Agenda · Diario · Coach | Misiones etiquetadas FOCUS («Tu foco de hoy»), orden del día (bloques de foco), coach FOCUS |
-| WORK `(work)` | Hoy · Agenda · Diario · Coach | Misiones WORK («Prioridades de hoy»), orden del día, coach WORK |
+| WORK `(work)` | Hoy · Economía · Agenda · Coach | Centro de mando propio (`src/components/work/`, `docs/modos/WORK.md`): tarjeta Ahora con un botón, «Prioridades de hoy», bloque de trabajo, siguiente en la agenda, carga, una línea de dinero y enlaces a Proyectos, Horas y Revisión; coach WORK |
 | FOUNDER `(founder)` | Hoy · Agenda · Economía · Coach | Misiones FOUNDER («La única cosa de hoy»), orden del día, coach FOUNDER |
 
 Rutinas es Gimnasio entero; Pesos es `iron/pesos.ts` (puro, con test) sobre lo que ya guarda Gimnasio; Agenda, Diario y Economía son las pantallas de siempre sin flecha de volver. El coach es el mismo chat (`PantallaCoach`) en todos.

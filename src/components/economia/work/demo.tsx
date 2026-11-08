@@ -106,7 +106,7 @@ export const CABECERA_DEMO = (
   <CabeceraMundo modo="work" nivel={{ modo: 'work', xp: 6400, nivel: 11, xpEnNivel: 1700, xpSiguiente: 2800 }} emblema={<Emblema />} />
 );
 
-function vista(cambios: Partial<WorkEconomiaVistaProps> = {}, entrada: EntradaWork = ENTRADA, brief: { texto: string | null; estado: EstadoBrief } = { texto: BRIEF_TEXTO, estado: 'listo' }): WorkEconomiaVistaProps {
+function vista(cambios: Partial<WorkEconomiaVistaProps> = {}, entrada: EntradaWork = ENTRADA, brief: { texto: string | null; estado: EstadoBrief; generado?: string | null } = { texto: BRIEF_TEXTO, estado: 'listo', generado: '2026-10-01T08:00:00Z' }): WorkEconomiaVistaProps {
   return {
     cabecera: CABECERA_DEMO,
     estado: 'listo',

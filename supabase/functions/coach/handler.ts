@@ -413,7 +413,7 @@ async function runCoach(args: RunArgs): Promise<ResultadoTurno> {
   // L4: en la ruta completa, el resumen del hilo sustituye a los mensajes
   // anteriores a summary_until (viaja como DATO en el sistema; ver prompt.ts).
   const [ctx, hilo] = await Promise.all([
-    estrecha ? buildContextMinimo(sb, userId, today) : buildContext(sb, userId, today),
+    estrecha ? buildContextMinimo(sb, userId, today) : buildContext(sb, userId, today, { modo: args.modoNivl }),
     sinHilo ? Promise.resolve({ summary: null, summary_until: null }) : leerResumen(sb, threadId),
   ]);
   // El estado lento va al sistema (cacheado); el rápido, al mensaje de este turno (ver partirEstado).
