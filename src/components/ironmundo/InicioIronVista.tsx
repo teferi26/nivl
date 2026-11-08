@@ -74,6 +74,8 @@ export interface AccionesInicioIron {
   onCatalogo: () => void;
   onDieta: () => void;
   onCoach: () => void;
+  /** Abre Resistencia (carrera, plan y forma). */
+  onResistencia?: () => void;
 }
 
 export interface InicioIronVistaProps {
@@ -424,6 +426,15 @@ export function InicioIronVista({ cabecera, fecha, cierre, entreno, pesos, dieta
         <Catalogo onCatalogo={acciones.onCatalogo} />
         <Dieta dieta={dieta} onDieta={acciones.onDieta} />
       </View>
+
+      {acciones.onResistencia ? (
+        <TarjetaIron onPress={acciones.onResistencia} accessibilityLabel={t('resistencia:entrada.cuerpo')}>
+          <RotuloIron texto={t('resistencia:entrada.rotulo')} em={t('resistencia:entrada.abrir')} />
+          <Text style={[estilosIron.detalle, styles.linea]} maxFontSizeMultiplier={1.6}>
+            {t('resistencia:entrada.cuerpo')}
+          </Text>
+        </TarjetaIron>
+      ) : null}
 
       <CoachIron mensaje={coach} onAbrir={acciones.onCoach} />
     </PantallaIron>

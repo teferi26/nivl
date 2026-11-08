@@ -67,6 +67,13 @@ async function sql(query) {
 
 // Cada migración se reconoce por un objeto que solo ella crea.
 const HUELLAS = {
+  '0111': `coalesce(obj_description(to_regprocedure('public.infer_link(text)'), 'pg_proc') like '%nivl:infer-link-0111%', false)`,
+  '0110': `coalesce(obj_description(to_regprocedure('public.award_xp(integer,text,text,jsonb)'), 'pg_proc') like '%nivl:award-xp-cardio-0110%', false)`,
+  '0109': `coalesce(obj_description(to_regprocedure('public.infer_link(text)'), 'pg_proc') like '%nivl:infer-link-0109%', false)`,
+  '0108': `coalesce(obj_description(to_regprocedure('public.export_my_data()'), 'pg_proc') like '%nivl:export-resistencia-0108%', false) and coalesce(obj_description(to_regprocedure('public.complete_health_erasure(uuid,uuid)'), 'pg_proc') like '%nivl:borrado-resistencia-0108%', false)`,
+  '0107': `coalesce(obj_description(to_regclass('public.objetivos_carrera'), 'pg_class') like '%nivl:objetivos-carrera-0107%', false) and coalesce(obj_description(to_regclass('public.plan_sesiones'), 'pg_class') like '%nivl:plan-sesiones-0107%', false)`,
+  '0106': `coalesce(obj_description(to_regclass('public.entreno_perfil'), 'pg_class') like '%nivl:entreno-perfil-0106%', false) and coalesce(obj_description(to_regclass('public.entreno_bienestar'), 'pg_class') like '%nivl:entreno-bienestar-0106%', false)`,
+  '0105': `coalesce(obj_description(to_regclass('public.entrenos_medidos'), 'pg_class') like '%nivl:entrenos-medidos-0105%', false)`,
   '0090': `coalesce(obj_description('public.ai_topes_funcion'::regclass, 'pg_class') like '%nivl:freno-antiabuso-0090%', false)`,
   '0089': `to_regprocedure('public.admin_cola()') is null`,
   '0088': `coalesce(obj_description(to_regprocedure('public.admin_moderacion_bandeja(integer)'), 'pg_proc') like '%nivl:panel-moderacion-0088%', false)`,

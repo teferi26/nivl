@@ -11,9 +11,10 @@ Se ejecuta tras cada tanda de migraciones o funciones. Todo es de **solo lectura
 | `0044_export_v4.test.sql` | solo el test (cuando 0044 esté aplicada) | `3 tablas con dueño SIN cubrir` = **`ninguna`** |
 | `0041_xp_topes.test.sql` | solo el test | 20 × `ok:true` |
 | `0042_push_token.test.sql` | solo el test | 8 × `ok:true` |
+| `0105_0109_resistencia.test.sql` | solo el test (cuando 0105–0109 estén aplicadas) | 16 × `ok:true` |
 
 `0038` y `0043` llevan el cuerpo dentro del test: tras aplicarlas, su caso «ANTES» sale `false` por diseño; basta la huella.
 
-**Regla de cobertura (exportación):** toda migración que cree una tabla con `user_id`, `reporter`, `requester` o `blocker` debe ampliar `export_my_data` en la misma migración; el test de 0044 lo detecta.
+**Regla de cobertura (exportación):** toda migración que cree una tabla con `user_id`, `reporter`, `requester` o `blocker` debe ampliar `export_my_data` en la misma migración; el test de 0044 lo detecta. Si la tanda separa las tablas de la exportación en archivos consecutivos (0105–0107 y 0108), se aplican juntos y el test corre al acabar.
 
 Última ejecución: 02/10/2026 tras el despliegue `c87df0d` — todo PASS salvo la cobertura de 0040 (corregida en 0044, pendiente de aplicar).

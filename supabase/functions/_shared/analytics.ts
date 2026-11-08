@@ -87,6 +87,7 @@ interface Lift {
  * volver a interpretar es contexto desperdiciado.
  */
 import { requireHealth } from './health.ts';
+import { construirEstudioResistencia } from './estudioResistencia.ts';
 
 export async function construirEstudio(sb: Db, userId: string, hoy: string): Promise<string> {
   await requireHealth(sb, userId);
@@ -94,7 +95,7 @@ export async function construirEstudio(sb: Db, userId: string, hoy: string): Pro
   const hace56 = haceDias(hoy, 56);
   const hace90 = haceDias(hoy, 90);
 
-  const [sesionesRes, pesoRes, cardioRes, nutriLogRes, nutriObjRes, prescRes, diasRes, ejerciciosRes] = await Promise.all([
+  const [sesionesRes, pesoRes, cardioRes, nutriLogRes, nutriObjRes, prescRes, diasRes, ejerciciosRes, resistencia] = await Promise.all([
     sb.from('gym_sessions').select('id, date, notes').eq('user_id', userId).gte('date', hace90).order('date'),
     sb.from('body_metrics').select('date, weight_kg').eq('user_id', userId).gte('date', hace56).order('date'),
     sb.from('cardio_sessions').select('*').eq('user_id', userId).gte('date', hace56).order('date'),
@@ -106,6 +107,7 @@ export async function construirEstudio(sb: Db, userId: string, hoy: string): Pro
     // algo que no veía.
     sb.from('gym_days').select('id, day_of_week, name').eq('user_id', userId).order('day_of_week'),
     sb.from('gym_exercises').select('gym_day_id, name, sets, reps, weight, position').eq('user_id', userId).order('position'),
+    construirEstudioResistencia(sb, userId, hoy),
   ]);
 
   const sesiones = (sesionesRes.data ?? []) as { id: string; date: string; notes: string | null }[];
@@ -314,6 +316,11 @@ export async function construirEstudio(sb: Db, userId: string, hoy: string): Pro
       `- Sesiones prescritas en 28 días: ${fechasPrescritas.length} · realizadas: ${cumplidas} ` +
         `(${fechasPrescritas.length ? Math.round((cumplidas / fechasPrescritas.length) * 100) : 0} %)`,
     );
+  }
+
+  if (resistencia) {
+    push();
+    push(resistencia);
   }
 
   return lineas.join('\n');

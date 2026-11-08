@@ -12,7 +12,7 @@
 /** Quién midió. `manual` es quien lo apunta a mano, sin reloj. */
 export type OrigenEntreno = 'watch' | 'iphone_gps' | 'salud' | 'manual';
 
-export type DeporteEntreno = 'carrera' | 'bici' | 'piscina' | 'aguas_abiertas' | 'fuerza' | 'otro';
+export type DeporteEntreno = 'carrera' | 'bici' | 'piscina' | 'aguas_abiertas' | 'caminar' | 'fuerza' | 'otro';
 
 export const ORIGENES_ENTRENO: readonly OrigenEntreno[] = ['watch', 'iphone_gps', 'salud', 'manual'];
 export const DEPORTES_ENTRENO: readonly DeporteEntreno[] = [
@@ -20,11 +20,12 @@ export const DEPORTES_ENTRENO: readonly DeporteEntreno[] = [
   'bici',
   'piscina',
   'aguas_abiertas',
+  'caminar',
   'fuerza',
   'otro',
 ];
 
-/** Un punto de la ruta. `t` son segundos desde `inicio`; `alt`, metros. */
+/** Un punto de la ruta. `t`: segundos en movimiento desde `inicio`, el reloj de `duracion_s`; `alt`, metros. */
 export interface PuntoRuta {
   t: number;
   lat: number;
@@ -32,7 +33,7 @@ export interface PuntoRuta {
   alt: number | null;
 }
 
-/** Una muestra de pulso. `t` son segundos desde `inicio`. */
+/** Una muestra de pulso. `t`: segundos en movimiento desde `inicio`. */
 export interface MuestraFc {
   t: number;
   bpm: number;
@@ -231,7 +232,7 @@ export function esResistencia(d: DeporteEntreno): boolean {
  * real de fuerza es la sesión del gimnasio, y un Watch en modo fuerza no puede
  * cobrarlo otra vez.
  */
-export function tipoCardioDe(d: DeporteEntreno): 'correr' | 'bici' | 'nadar' | 'otro' | null {
+export function tipoCardioDe(d: DeporteEntreno): 'correr' | 'bici' | 'nadar' | 'caminar' | 'otro' | null {
   switch (d) {
     case 'carrera':
       return 'correr';
@@ -240,6 +241,8 @@ export function tipoCardioDe(d: DeporteEntreno): 'correr' | 'bici' | 'nadar' | '
     case 'piscina':
     case 'aguas_abiertas':
       return 'nadar';
+    case 'caminar':
+      return 'caminar';
     case 'otro':
       return 'otro';
     case 'fuerza':

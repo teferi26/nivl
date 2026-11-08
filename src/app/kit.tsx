@@ -5,7 +5,7 @@
 // (__DEV__ false) redirige a la raíz y la puerta de sesión no la abre. En la
 // web no se acota a la columna de 560 (ColumnaWeb en _layout.tsx).
 
-import { Redirect, router } from 'expo-router';
+import { Redirect, router, type Href } from 'expo-router';
 import { useContext, useMemo, useState, type ReactNode } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Campo, EncabezadoArena } from '@/components/arena';
@@ -135,6 +135,13 @@ export default function Kit() {
         variant="secondary"
         icon="barbell-outline"
         onPress={() => router.push('/kit/iron')}
+        style={{ marginBottom: space.s3 }}
+      />
+      <Button
+        title="IRON · Resistencia"
+        variant="secondary"
+        icon="bicycle-outline"
+        onPress={() => router.push('/kit/resistencia' as Href)}
         style={{ marginBottom: space.s6 }}
       />
 

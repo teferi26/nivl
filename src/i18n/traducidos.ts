@@ -54,6 +54,8 @@ import enIronHombro from './en/iron-hombro.json';
 import enIronPecho from './en/iron-pecho.json';
 import enFocus from './en/focus.json';
 import enGeneral from './en/general.json';
+import enResistencia from './en/resistencia.json';
+import enResistenciaPlan from './en/resistenciaPlan.json';
 import frComun from './fr/comun.json';
 import frRaiz from './fr/raiz.json';
 import frUi from './fr/ui.json';
@@ -102,6 +104,8 @@ import frIronHombro from './fr/iron-hombro.json';
 import frIronPecho from './fr/iron-pecho.json';
 import frFocus from './fr/focus.json';
 import frGeneral from './fr/general.json';
+import frResistencia from './fr/resistencia.json';
+import frResistenciaPlan from './fr/resistenciaPlan.json';
 import ptComun from './pt/comun.json';
 import ptRaiz from './pt/raiz.json';
 import ptUi from './pt/ui.json';
@@ -150,6 +154,8 @@ import ptIronHombro from './pt/iron-hombro.json';
 import ptIronPecho from './pt/iron-pecho.json';
 import ptFocus from './pt/focus.json';
 import ptGeneral from './pt/general.json';
+import ptResistencia from './pt/resistencia.json';
+import ptResistenciaPlan from './pt/resistenciaPlan.json';
 import deComun from './de/comun.json';
 import deRaiz from './de/raiz.json';
 import deUi from './de/ui.json';
@@ -198,6 +204,8 @@ import deIronHombro from './de/iron-hombro.json';
 import deIronPecho from './de/iron-pecho.json';
 import deFocus from './de/focus.json';
 import deGeneral from './de/general.json';
+import deResistencia from './de/resistencia.json';
+import deResistenciaPlan from './de/resistenciaPlan.json';
 import itComun from './it/comun.json';
 import itRaiz from './it/raiz.json';
 import itUi from './it/ui.json';
@@ -246,6 +254,8 @@ import itIronHombro from './it/iron-hombro.json';
 import itIronPecho from './it/iron-pecho.json';
 import itFocus from './it/focus.json';
 import itGeneral from './it/general.json';
+import itResistencia from './it/resistencia.json';
+import itResistenciaPlan from './it/resistenciaPlan.json';
 
 /** Los idiomas con interfaz traducida (el español no está: es la base). */
 export const IDIOMAS_TRADUCIDOS = ['en', 'fr', 'pt', 'de', 'it'] as const;
@@ -303,6 +313,8 @@ export const RECURSOS_LOCALES: Record<IdiomaTraducido, Catalogo> = {
     'iron-pecho': enIronPecho,
     focus: enFocus,
     general: enGeneral,
+    resistencia: enResistencia,
+    resistenciaPlan: enResistenciaPlan,
   },
   fr: {
     comun: frComun,
@@ -353,6 +365,8 @@ export const RECURSOS_LOCALES: Record<IdiomaTraducido, Catalogo> = {
     'iron-pecho': frIronPecho,
     focus: frFocus,
     general: frGeneral,
+    resistencia: frResistencia,
+    resistenciaPlan: frResistenciaPlan,
   },
   pt: {
     comun: ptComun,
@@ -403,6 +417,8 @@ export const RECURSOS_LOCALES: Record<IdiomaTraducido, Catalogo> = {
     'iron-pecho': ptIronPecho,
     focus: ptFocus,
     general: ptGeneral,
+    resistencia: ptResistencia,
+    resistenciaPlan: ptResistenciaPlan,
   },
   de: {
     comun: deComun,
@@ -453,6 +469,8 @@ export const RECURSOS_LOCALES: Record<IdiomaTraducido, Catalogo> = {
     'iron-pecho': deIronPecho,
     focus: deFocus,
     general: deGeneral,
+    resistencia: deResistencia,
+    resistenciaPlan: deResistenciaPlan,
   },
   it: {
     comun: itComun,
@@ -503,5 +521,7 @@ export const RECURSOS_LOCALES: Record<IdiomaTraducido, Catalogo> = {
     'iron-pecho': itIronPecho,
     focus: itFocus,
     general: itGeneral,
+    resistencia: itResistencia,
+    resistenciaPlan: itResistenciaPlan,
   },
 };

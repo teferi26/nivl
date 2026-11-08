@@ -127,23 +127,25 @@ export interface RotuloIronProps {
   style?: StyleProp<ViewStyle>;
   /** Rótulo de sección: fuera de tarjeta, con su margen. */
   seccion?: boolean;
+  /** Sube la letra a 11 pt, para las pantallas de lectura. */
+  legible?: boolean;
 }
 
-export function RotuloIron({ texto, em, onEm, emA11y, style, seccion }: RotuloIronProps) {
+export function RotuloIron({ texto, em, onEm, emA11y, style, seccion, legible }: RotuloIronProps) {
   return (
     <View style={[styles.rotulo, seccion && styles.rotuloSeccion, style]}>
-      <Text style={styles.rotuloTexto} accessibilityRole="header" numberOfLines={1} maxFontSizeMultiplier={1.35}>
+      <Text style={[styles.rotuloTexto, legible && styles.rotuloLegible]} accessibilityRole="header" numberOfLines={1} maxFontSizeMultiplier={1.35}>
         {texto}
       </Text>
       {em ? (
         onEm ? (
-          <Pressable onPress={onEm} hitSlop={14} accessibilityRole="link" accessibilityLabel={emA11y ?? em}>
-            <Text style={styles.rotuloEm} maxFontSizeMultiplier={1.35}>
+          <Pressable onPress={onEm} hitSlop={{ top: 16, bottom: 16, left: 14, right: 14 }} accessibilityRole="link" accessibilityLabel={emA11y ?? em}>
+            <Text style={[styles.rotuloEm, legible && styles.rotuloLegible]} maxFontSizeMultiplier={1.35}>
               {em}
             </Text>
           </Pressable>
         ) : (
-          <Text style={styles.rotuloEm} maxFontSizeMultiplier={1.35}>
+          <Text style={[styles.rotuloEm, legible && styles.rotuloLegible]} maxFontSizeMultiplier={1.35}>
             {em}
           </Text>
         )
@@ -366,6 +368,8 @@ export function FilaIron({
   style,
   accessibilityActions,
   onAccessibilityAction,
+  accessibilityState,
+  accessibilityHint,
 }: {
   children: ReactNode;
   primera?: boolean;
@@ -375,6 +379,8 @@ export function FilaIron({
   style?: StyleProp<ViewStyle>;
   accessibilityActions?: { name: string; label?: string }[];
   onAccessibilityAction?: (e: { nativeEvent: { actionName: string } }) => void;
+  accessibilityState?: { expanded?: boolean };
+  accessibilityHint?: string;
 }) {
   const caja = [styles.fila, !primera && styles.filaRegla, style];
   if (!onPress && !onLongPress) {
@@ -392,6 +398,8 @@ export function FilaIron({
       accessibilityLabel={accessibilityLabel}
       accessibilityActions={accessibilityActions}
       onAccessibilityAction={onAccessibilityAction}
+      accessibilityState={accessibilityState}
+      accessibilityHint={accessibilityHint}
       style={({ pressed }) => [caja, pressed && styles.pulsada]}
     >
       {children}
@@ -464,6 +472,7 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     flexShrink: 1,
   },
+  rotuloLegible: { fontSize: fs(9.5), lineHeight: Math.round(fs(9.5) * 1.3) },
   rotuloEm: {
     fontFamily: F.b,
     fontSize: fs(8.5),

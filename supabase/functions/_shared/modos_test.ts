@@ -30,11 +30,13 @@ async function sha256(v: unknown): Promise<string> {
 // conocimiento o las reglas, recalcúlalos; si cambian sin querer, algo ha roto la regla «sin cabeceras, igual».
 // 21/10/2026 (IA barata): recalculados a propósito: dos reglas nuevas en AI_SAFETY_RULES (productos
 // financieros, 024/112) y el encargo del ritual pasa al final de la parte estable.
+// 08/11/2026 (Resistencia): recalculados a propósito: doctrina de triatlón en knowledge.ts y mareos y
+// dolor al entrenar en AI_SAFETY_RULES. Después, la regla de la tirada y el cardio en la ruta de registro.
 const HASH_ANTES = {
-  chat: '40f1a55a40d4f3899e9077491c1411772fe121e84217ce72b134f4a5ee213fc2',
-  brief: '891047c078dde683e0a71e5d26c069b3c1bffc77ded5105b70dd8702acc4b445',
-  vacio: '3b5938df67c36b099b04e5b19111b840af7a5616616897079fa0f34c2a150e99',
-  registro: '8ab1401e369c8b83b4d8a4fcdfd8a093961f694c52f73891612890ca5a428937',
+  chat: '5a7706c6311b8ea75bcaaad1eef8801c24854695728ca2826acf57dde3968e97',
+  brief: '9bfc045986c866a2b1907adf05e8414d74c40ec15133c29d9cda788bfeb2a3c2',
+  vacio: '723c55bcb3fd3ca8bcc8cc4ef7739b76f54a90f9b8997e7e680c2d778e262666',
+  registro: '7227aac804f09a2a007f696bbbbe6f7a0437c5c028129a6a2baf600073acde5f',
 };
 
 Deno.test('modos: sin idioma ni modo el sistema es idéntico byte a byte al de antes (SHA-256)', async () => {

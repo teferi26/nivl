@@ -77,6 +77,9 @@ import ironPecho from './es/iron-pecho.json';
 import focus from './es/focus.json';
 // General v2: el modo GENERAL rediseñado (src/components/general).
 import general from './es/general.json';
+// IRON Resistencia: pantallas (src/components/resistencia) y plan de carrera.
+import resistencia from './es/resistencia.json';
+import resistenciaPlan from './es/resistenciaPlan.json';
 
 /** Los catálogos en español: la fuente de verdad de todas las claves. */
 export const RECURSOS_ES = {
@@ -132,6 +135,8 @@ export const RECURSOS_ES = {
   'iron-pecho': ironPecho,
   focus,
   general,
+  resistencia,
+  resistenciaPlan,
 };
 
 export type RecursosEs = typeof RECURSOS_ES;
