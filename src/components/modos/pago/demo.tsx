@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import type { DemoPantalla } from '@/components/arena/galeria';
 import { Screen } from '@/components/ui';
+import { t } from '@/i18n';
 import { productoModo, type ModoDePago, type Periodo } from '@/lib/planesmodo';
 import { MundoCerradoVista } from './MundoCerradoVista';
 import { OfertaModosVista, type EstadoOfertaModos } from './OfertaModosVista';
@@ -53,14 +54,14 @@ function Oferta(props: Partial<EstadoOfertaModos>) {
   const oferta = useOfertaDemo(props);
   return (
     <Screen>
-      <OfertaModosVista oferta={oferta} etiquetaSalida="Seguir gratis" onSalir={nada} />
+      <OfertaModosVista oferta={oferta} etiquetaSalida={t('oferta:pago.salida.gratis')} onSalir={nada} />
     </Screen>
   );
 }
 
 function Cerrado({ modo }: { modo: ModoDePago }) {
   const oferta = useOfertaDemo({ modo });
-  return <MundoCerradoVista modo={modo} oferta={<OfertaModosVista oferta={oferta} etiquetaSalida="Volver a NIVL" onSalir={nada} />} />;
+  return <MundoCerradoVista modo={modo} oferta={<OfertaModosVista oferta={oferta} etiquetaSalida={t('oferta:pago.salida.volver')} onSalir={nada} />} />;
 }
 
 export const DEMO: DemoPantalla = {

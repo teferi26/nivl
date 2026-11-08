@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { Animated, View } from 'react-native';
 import { useMovimientoReducido } from '@/components/ui/motion';
-import { ink } from '@/design/tokens';
+import { oro, radio, vidrio } from '@/design/tokens';
 import { colors } from '@/lib/theme';
 
 interface Props {
@@ -13,13 +13,13 @@ interface Props {
   segments?: number;
 }
 
-// Toda barra de progreso de NIVL. Relleno blanco sobre pista ink4 (SISTEMA §5). El relleno se anima al cambiar: subir de XP
+// Toda barra de progreso de NIVL. Hilo de oro sobre pista de vidrio (Ónix). El relleno se anima al cambiar: subir de XP
 // se ve, no solo se lee.
 /**
  * @deprecated Usa `Barra` de '@/components/arena' (FASE3): anima en el hilo de
  * UI y se lee como progressbar 0-100. Solo la usa aún src/app/pro.tsx.
  */
-export function XPBar({ ratio, color = colors.accent, trackColor = ink.ink4, height = 6, segments }: Props) {
+export function XPBar({ ratio, color = oro.hilo, trackColor = vidrio.pista, height = 6, segments }: Props) {
   const pct = Math.min(100, Math.max(0, ratio * 100));
   const width = useRef(new Animated.Value(pct)).current;
   const reducido = useMovimientoReducido();
@@ -35,7 +35,7 @@ export function XPBar({ ratio, color = colors.accent, trackColor = ink.ink4, hei
   }, [pct, width, reducido]);
 
   return (
-    <View style={{ height, backgroundColor: trackColor, overflow: 'hidden' }}>
+    <View style={{ height, backgroundColor: trackColor, borderRadius: radio.pastilla, overflow: 'hidden' }}>
       <Animated.View
         style={{
           height,

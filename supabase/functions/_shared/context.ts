@@ -385,7 +385,12 @@ export async function buildContext(
         const partes = [meta.goal, meta.target ? `cifra: ${meta.target}` : '', meta.deadline ? `fecha: ${meta.deadline}` : '']
           .filter(Boolean)
           .join(' · ');
-        push(`Objetivo: ${String(partes).slice(0, 400)}`);
+        if (partes) push(`Objetivo: ${String(partes).slice(0, 400)}`);
+        // El cuestionario de entrada: claves cerradas, sin texto libre. El tono manda en cómo le hablas.
+        if (typeof meta.reason === 'string' && meta.reason) {
+          const tono = /(^|;)tono:duro(;|$)/.test(meta.reason) ? 'sin filtros' : 'directo, con tacto';
+          push(`Pidió que le hables: ${tono}. Cuestionario de entrada: ${meta.reason.slice(0, 300)}`);
+        }
       }
       if (firma) push(`Compromiso firmado a ${firma.years} años (vence el ${firma.open_at}).`);
       push('Todo lo que le mandes tiene que poder explicarse como un paso hacia esto. Si su sistema no lo refleja, arréglalo.');

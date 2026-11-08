@@ -9,6 +9,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Linking, Platform } from 'react-native';
 import { useConsentimientoIA } from '@/components/ConsentimientoIA';
 import { vibrar } from '@/design/haptics';
+import { t } from '@/i18n';
 import { registrar } from '@/lib/analitica';
 import {
   modoDePerfil,
@@ -28,10 +29,6 @@ import {
 } from '@/lib/pro';
 import { mensajeSistema } from '@/lib/validation';
 import type { EstadoOfertaModos } from './OfertaModosVista';
-
-const AVISO_PENDIENTE = 'Compra confirmada por la tienda. El modo se abre en unos segundos; si no aparece, pulsa Restaurar compras.'; // i18n-ok: pantalla de compra, en español como ProOffer
-const AVISO_PROGRAMADA = 'Cambio confirmado por la tienda. Se aplica en tu próxima renovación; hasta entonces sigues con tu plan actual.'; // i18n-ok: pantalla de compra, en español como ProOffer
-const AVISO_SIN_PERMISO = 'Para usar el coach hace falta aceptar el envío de tus datos al proveedor de IA. Sin ese permiso no se cobra nada.'; // i18n-ok: pantalla de compra, en español como ProOffer
 
 export interface OpcionesOfertaModos {
   /** El modo que se enseña primero. Sin él, el del perfil de uso. */
@@ -116,7 +113,7 @@ export function useOfertaModos({ modoInicial, kind, empezarEnTodos, actual, onCo
   const permiso = async (): Promise<boolean> => {
     const ok = await consentimiento.asegurar();
     setSinPermiso(!ok);
-    setAviso(ok ? null : AVISO_SIN_PERMISO);
+    setAviso(ok ? null : t('oferta:pago.aviso.sinPermiso'));
     return ok;
   };
 
@@ -135,8 +132,8 @@ export function useOfertaModos({ modoInicial, kind, empezarEnTodos, actual, onCo
       });
       if (r === 'cancelada') return;
       registrar('compra_ok', { plan: producto.id, resultado: r });
-      if (r === 'pendiente') setAviso(AVISO_PENDIENTE);
-      if (r === 'programada') setAviso(AVISO_PROGRAMADA);
+      if (r === 'pendiente') setAviso(t('oferta:pago.aviso.pendiente'));
+      if (r === 'programada') setAviso(t('oferta:pago.aviso.programada'));
       vibrar('mision');
       onComprado?.();
     });
@@ -146,10 +143,10 @@ export function useOfertaModos({ modoInicial, kind, empezarEnTodos, actual, onCo
     conCerrojo('restaurar', async () => {
       const r = await restorePurchases();
       if (r === 'nada') {
-        setAviso('Esta cuenta de la tienda no tiene ninguna suscripción de NIVL activa.'); // i18n-ok: pantalla de compra, en español como ProOffer
+        setAviso(t('oferta:pago.aviso.nada'));
         return;
       }
-      if (r === 'pendiente') setAviso(AVISO_PENDIENTE);
+      if (r === 'pendiente') setAviso(t('oferta:pago.aviso.pendiente'));
       vibrar('mision');
       onComprado?.();
     });

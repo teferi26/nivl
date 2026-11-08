@@ -351,8 +351,9 @@ export function useHoy() {
   // que abrir esta pestaña borraba todo lo programado.
   // Con permiso, el dispositivo se registra para el push del coach (upsert
   // idempotente: repetirlo en cada montaje no duplica nada).
+  // Sin pedir nada: el permiso se pide en contexto (TarjetasPrimerUso), no al entrar.
   useEffect(() => {
-    inicializarAvisos()
+    inicializarAvisos(false)
       .then((ok) => (ok ? registrarDispositivo() : null))
       .catch(() => {});
   }, []);

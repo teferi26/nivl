@@ -240,6 +240,21 @@ export async function fetchLetter(): Promise<Letter | null> {
   return (data as Letter) ?? null;
 }
 
+/** El objetivo que dejó al entrar, para la firma. Null si no se guardó ninguno. */
+export async function fetchObjetivoEntrada(userId: string): Promise<{ goal: string; healthData: boolean } | null> {
+  const { data, error } = await supabase
+    .from('events')
+    .select('payload,health_data')
+    .eq('user_id', userId)
+    .eq('type', 'onboarding_goal')
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (error) throw error;
+  const goal = (data?.payload as { goal?: unknown } | undefined)?.goal;
+  return typeof goal === 'string' && goal.trim() ? { goal: goal.trim(), healthData: !!data?.health_data } : null;
+}
+
 export async function sealLetter(userId: string, body: string, openAt: string, healthData = false): Promise<Letter> {
   const { data: session, error: sessionError } = await conLimiteDeRed(supabase.auth.getSession());
   if (sessionError) throw sessionError;

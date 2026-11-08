@@ -5,8 +5,8 @@
 // inscripción. Al lector le llega un solo elemento: «Paso 3 de 7».
 
 import { StyleSheet, Text, View } from 'react-native';
-import { Barra, romano } from '@/components/arena';
-import { ink, space, type as tipo } from '@/design/tokens';
+import { Barra } from '@/components/arena';
+import { ink, oro, space, type as tipo } from '@/design/tokens';
 import { t } from '@/i18n';
 import { mayus } from '@/i18n/formato';
 
@@ -19,30 +19,35 @@ export interface ProgresoPasosProps {
 export function ProgresoPasos({ paso, total }: ProgresoPasosProps) {
   const n = Math.max(1, Math.floor(total));
   const actual = Math.min(Math.max(1, Math.floor(paso)), n);
-  const etiqueta = t('onboarding:progreso.paso', { actual, total: n });
+  const pct = Math.round(84 + (actual / n) * 16);
   return (
     <View
       accessible
       accessibilityRole="progressbar"
-      accessibilityLabel={etiqueta}
-      accessibilityValue={{ min: 1, max: n, now: actual }}
+      accessibilityLabel={t('onboarding:embudo.tuPerfilA11y', { pct })}
+      accessibilityValue={{ min: 0, max: 100, now: pct }}
       style={styles.wrap}
     >
-      <Text style={styles.texto} maxFontSizeMultiplier={1.35} numberOfLines={1}>
-        {mayus(t('onboarding:progreso.paso', { actual: romano(actual), total: romano(n) }))}
-      </Text>
-      <Barra ratio={actual / n} alto={4} segmentos={n} etiqueta={etiqueta} />
+      <View style={styles.fila}>
+        <Text style={styles.texto} maxFontSizeMultiplier={1.35} numberOfLines={1}>
+          {mayus(t('onboarding:embudo.tuPerfil'))}
+        </Text>
+        <Text style={styles.pct} maxFontSizeMultiplier={1.35}>{pct} %</Text>
+      </View>
+      <Barra ratio={pct / 100} alto={8} etiqueta={t('onboarding:embudo.tuPerfilA11y', { pct })} enGrupo />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   wrap: { gap: space.s2 },
+  fila: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
   texto: {
-    fontFamily: tipo.micro.family,
-    fontSize: tipo.micro.size,
-    lineHeight: tipo.micro.lineHeight,
-    letterSpacing: tipo.micro.tracking,
-    color: ink.ink6,
+    fontFamily: tipo.label.family,
+    fontSize: tipo.label.size,
+    lineHeight: tipo.label.lineHeight,
+    letterSpacing: tipo.label.tracking,
+    color: ink.ink8,
   },
+  pct: { fontFamily: tipo.number.family, fontSize: 20, lineHeight: 26, color: oro.claro },
 });

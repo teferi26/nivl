@@ -59,7 +59,6 @@ export function EdadVista(p: EdadVistaProps) {
             eyebrow={t('puertas:edad.eyebrow')}
             titulo={t('puertas:edad.titulo')}
             subtitulo={t('puertas:edad.subtitulo', { n: p.edadMinima })}
-            meandro
           />
         </Entrada> : null}
 
@@ -70,7 +69,7 @@ export function EdadVista(p: EdadVistaProps) {
             </View>
           ) : pendiente ? (
             <>
-              <TarjetaArena variante="piedra" remaches rotulo={t('puertas:edad.rotulo')} meta={t('puertas:edad.meta', { n: p.edadMinima })}>
+              <TarjetaArena variante="piedra" rotulo={t('puertas:edad.rotulo')} meta={t('puertas:edad.meta', { n: p.edadMinima })}>
                 <Text style={texto.cuerpo} maxFontSizeMultiplier={1.6}>
                   {t('puertas:edad.cuerpo')}
                 </Text>

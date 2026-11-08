@@ -1,13 +1,13 @@
 // NIVL · Una misión de Hoy (L-RADICAL B.1, Main.dc). Cuatro caras:
 //
 //   · siguiente  → la primera pendiente que no es penalización ni extra. Es LA
-//                  inversión de Hoy: bloque blanco, título grande en negro, el
-//                  XP en Cinzel. Lo que toca ahora no se busca, se ve.
+//                  inversión de Hoy: bloque hueso, título grande en tinta, el
+//                  XP en Playfair. Lo que toca ahora no se busca, se ve.
 //   · penalización pendiente → losa de trama con el candado en el aro mientras
 //                  la recuperación está cerrada (RET-03) y la razón a la vista.
-//   · pendiente  → fila de hairline: aro ink4, título, «INT · Inteligencia» y
-//                  «+30 XP» apagado.
-//   · hecha      → aro blanco, título tachado y el XP pagado en blanco.
+//   · pendiente  → fila de hairline: aro ink6 (3:1 sobre el fondo), título y
+//                  «+30 XP» en gris.
+//   · hecha      → aro hueso, título tachado y el XP pagado en oro.
 //
 // Sin tarjeta que envuelva la lista: filas sueltas con su hairline.
 
@@ -15,9 +15,9 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Entrada, TarjetaArena } from '@/components/arena';
 import { Check, Tag } from '@/components/ui';
-import { ink, space, stroke, type as tipo } from '@/design/tokens';
+import { ink, oro, radio, space, stroke, type as tipo, vidrio } from '@/design/tokens';
 import { t } from '@/i18n';
-import { BONUS_BY_DIFFICULTY, questXp, STAT_ABBR, STAT_LABEL } from '@/lib/game';
+import { BONUS_BY_DIFFICULTY, questXp } from '@/lib/game';
 import { fonts } from '@/lib/theme';
 import type { Quest } from '@/lib/types';
 
@@ -73,11 +73,15 @@ export function QuestItem({ quest, completed, xpAwarded, busy, streakDays, onCom
     accessibilityState: { checked: completed, disabled: inactiva },
     accessibilityLabel: etiqueta,
   };
+  // Sin el atributo de juego de rol: en la fila sobra (P10). Solo lo que cambia cómo se cumple.
+  const hayMeta = quest.is_penalty || quest.requires_evidence || (quest.is_bonus && !siguiente);
   const meta = (
     <>
-      <Text style={[styles.meta, siguiente && styles.metaInvertida]} numberOfLines={1} maxFontSizeMultiplier={1.35}>
-        {quest.is_penalty ? t('raiz:questItem.penalizacionRecuperada') : `${STAT_ABBR[quest.stat]} · ${STAT_LABEL[quest.stat]}`}
-      </Text>
+      {quest.is_penalty ? (
+        <Text style={[styles.meta, siguiente && styles.metaInvertida]} numberOfLines={1} maxFontSizeMultiplier={1.35}>
+          {t('raiz:questItem.penalizacionRecuperada')}
+        </Text>
+      ) : null}
       {quest.requires_evidence ? (
         <Ionicons name="camera-outline" size={13} color={siguiente ? ink.ink3 : ink.ink6} />
       ) : null}
@@ -128,7 +132,7 @@ export function QuestItem({ quest, completed, xpAwarded, busy, streakDays, onCom
             <Text style={styles.tituloSiguiente} numberOfLines={2}>
               {quest.title}
             </Text>
-            <View style={styles.metaFila}>{meta}</View>
+            {hayMeta ? <View style={styles.metaFila}>{meta}</View> : null}
           </View>
           <View style={styles.xp}>
             <Text style={styles.xpSiguiente} maxFontSizeMultiplier={1.35}>
@@ -151,10 +155,12 @@ export function QuestItem({ quest, completed, xpAwarded, busy, streakDays, onCom
         <Text style={[styles.titulo, completed && styles.tituloHecho]} numberOfLines={2}>
           {quest.title}
         </Text>
-        <View style={styles.metaFila}>
-          {meta}
-          {quest.is_bonus ? <Tag tone="logro">{t('raiz:questItem.extra')}</Tag> : null}
-        </View>
+        {hayMeta ? (
+          <View style={styles.metaFila}>
+            {meta}
+            {quest.is_bonus ? <Tag tone="logro">{t('raiz:questItem.extra')}</Tag> : null}
+          </View>
+        ) : null}
       </View>
       <View style={styles.xp}>
         <Text style={[styles.xpValor, completed && styles.xpHecho]} maxFontSizeMultiplier={1.35}>
@@ -176,7 +182,7 @@ const styles = StyleSheet.create({
     minHeight: 64,
     paddingVertical: space.s4,
     borderBottomWidth: stroke.hairline,
-    borderBottomColor: ink.ink3,
+    borderBottomColor: vidrio.linea,
   },
   pulsada: { opacity: 0.6 },
   pulsadaInvertida: { opacity: 0.85 },
@@ -194,8 +200,8 @@ const styles = StyleSheet.create({
   },
   metaInvertida: { color: ink.ink3 },
   xp: { flexDirection: 'row', alignItems: 'baseline', gap: 3 },
-  xpValor: { fontFamily: tipo.number.family, fontSize: 16, lineHeight: 20, color: ink.ink6 },
-  xpHecho: { color: ink.ink10 },
+  xpValor: { fontFamily: tipo.number.family, fontSize: 16, lineHeight: 20, color: ink.ink8 },
+  xpHecho: { color: oro.claro },
   unidad: {
     fontFamily: tipo.micro.family,
     fontSize: tipo.micro.size,
@@ -212,6 +218,7 @@ const styles = StyleSheet.create({
     gap: 14,
     padding: space.s4,
     marginVertical: space.s2,
+    borderRadius: radio.control,
     backgroundColor: ink.ink10,
   },
   aroInvertido: {

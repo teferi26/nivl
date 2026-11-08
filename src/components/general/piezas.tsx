@@ -1,65 +1,36 @@
-// NIVL · Modo GENERAL: las piezas de la lámina 4 de la P01 (puras). Son las
-// mismas formas que las de IRON (ironmundo/piezas.tsx, la referencia
-// aprobada) con el oro de NIVL:
-//   FondoGeneral   el negro con el brillo de oro arriba (para envolver lo que ya existe)
+// NIVL · Modo GENERAL: las piezas Ónix (puras). Vidrio sobre el fondo casi
+// negro, radios de token y el oro solo como hilo:
+//   FondoGeneral   el degradado de Ónix (para envolver lo que ya existe)
 //   PantallaGeneral .screen + .body
-//   TarjetaGeneral .card / .card.hero (héroe: degradado de oro a 155°)
-//   RotuloGeneral  .lbl + em (mayúsculas grises, lo de la derecha en oro)
-//   BotonGeneral   el botón grande lleno de oro (y el de contorno)
+//   TarjetaGeneral vidrio; la héroe lleva el velo de oro
+//   RotuloGeneral  mayúsculas con su dato a la derecha, en oro
+//   BotonGeneral   el botón hueso (y el de contorno)
 //   ChipGeneral    los segmentos (Métricas · Progresión)
-//   BarraGeneral   la pista #1b1b20 con el relleno de oro
-//   CifraGeneral   la cifra grande con su rótulo (las métricas)
-//   Escudo         el escudo dorado con el nivel (lámina 4, «23»)
+//   BarraGeneral   la pista de vidrio con el hilo de oro
+//   CifraGeneral   la cifra en Playfair con su rótulo
+//   Escudo         el escudo con el nivel
 //   BarrasGeneral  la gráfica de barras (XP por semana, cumplimiento)
-//   FilaGeneral    la fila con filete
-//   TituloGeneral  el título de una pestaña (NIVL · CAMPAÑAS)
+//   FilaGeneral    la fila con hairline
+//   TituloGeneral  el título de una pestaña
 
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useState, type ReactNode } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, Text, View, type LayoutChangeEvent, type StyleProp, type ViewStyle } from 'react-native';
-import Svg, { Defs, Path, RadialGradient, Rect, Stop } from 'react-native-svg';
+import type { ReactNode } from 'react';
+import { ActivityIndicator, Pressable, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
+import { EscudoNivel, estiloNivelEscudo } from '@/components/arena/EscudoNivel';
 import { Screen } from '@/components/ui';
+import { FondoOnix } from '@/components/ui/FondoOnix';
+import { ink, oro, radio, type as tipo, vidrio } from '@/design/tokens';
 import { t } from '@/i18n';
-import { C, F, fs, G, M, oroA, oroMezcla, px } from './tema';
+import { F, G, M, px } from './tema';
 
 type Icono = keyof typeof Ionicons.glyphMap;
 
 // ── Fondo y pantalla ─────────────────────────────────────────────────
 
-/** El fondo de NIVL: negro y, arriba, el brillo del oro (la recarga dorada sube del centro). */
+/** El fondo de la base: el degradado de Ónix, sin brillo de color. */
 export function BrilloGeneral() {
-  // Medido en número: un <Svg> con "100%" no se vuelve a pintar al girar el
-  // iPad o al cambiar la ventana (Split View, Stage Manager, Mac) y el brillo
-  // se quedaba cortado en el ancho de antes, con un borde recto a media pantalla.
-  const [lado, setLado] = useState<{ w: number; h: number } | null>(null);
-  const alMedir = (e: LayoutChangeEvent) => {
-    const { width, height } = e.nativeEvent.layout;
-    const w = Math.round(width);
-    const h = Math.round(height);
-    setLado((a) => (a && a.w === w && a.h === h ? a : { w, h }));
-  };
-  return (
-    <View
-      style={StyleSheet.absoluteFill}
-      onLayout={alMedir}
-      pointerEvents="none"
-      accessibilityElementsHidden
-      importantForAccessibility="no-hide-descendants"
-    >
-      {lado && lado.w > 0 && lado.h > 0 ? (
-        <Svg key={`${lado.w}x${lado.h}`} width={lado.w} height={lado.h}>
-          <Defs>
-            <RadialGradient id="brilloGeneral" cx="50%" cy="0%" rx="90%" ry="40%" fx="50%" fy="0%">
-              <Stop offset="0" stopColor={G} stopOpacity={0.13} />
-              <Stop offset="1" stopColor={G} stopOpacity={0} />
-            </RadialGradient>
-          </Defs>
-          <Rect x="0" y="0" width={lado.w} height={lado.h} fill="url(#brilloGeneral)" />
-        </Svg>
-      ) : null}
-    </View>
-  );
+  return <FondoOnix />;
 }
 
 /** Envuelve una pantalla que ya existe (Arena, el detalle de una campaña) con el fondo de NIVL. */
@@ -104,8 +75,7 @@ const ANGULO_HEROE = { start: { x: 0.29, y: 0 }, end: { x: 0.71, y: 1 } };
 export function TarjetaGeneral({ children, heroe, style, onPress, accessibilityLabel }: TarjetaGeneralProps) {
   const fondo = heroe ? (
     <LinearGradient
-      colors={[oroMezcla(0.2, C.tarjeta), C.tarjeta]}
-      locations={[0, 0.66]}
+      colors={[oro.fondo, vidrio.suave]}
       start={ANGULO_HEROE.start}
       end={ANGULO_HEROE.end}
       style={StyleSheet.absoluteFill}
@@ -139,12 +109,14 @@ export interface RotuloGeneralProps {
   style?: StyleProp<ViewStyle>;
   /** Fuera de tarjeta, con su margen. */
   seccion?: boolean;
+  /** El rótulo en oro («Tu coach»). */
+  oro?: boolean;
 }
 
-export function RotuloGeneral({ texto, em, onEm, emA11y, style, seccion }: RotuloGeneralProps) {
+export function RotuloGeneral({ texto, em, onEm, emA11y, style, seccion, oro: enOro }: RotuloGeneralProps) {
   return (
     <View style={[styles.rotulo, seccion && styles.rotuloSeccion, style]}>
-      <Text style={styles.rotuloTexto} accessibilityRole="header" numberOfLines={1} maxFontSizeMultiplier={1.35}>
+      <Text style={[styles.rotuloTexto, enOro && styles.rotuloOro]} accessibilityRole="header" numberOfLines={1} maxFontSizeMultiplier={1.35}>
         {texto}
       </Text>
       {em ? (
@@ -179,7 +151,7 @@ export interface BotonGeneralProps {
 }
 
 export function BotonGeneral({ titulo, onPress, icono, fantasma, fino, ocupado, desactivado, style, accessibilityLabel }: BotonGeneralProps) {
-  const color = fantasma ? G : C.fondo;
+  const color = fantasma ? ink.ink9 : ink.ink0;
   const apagado = desactivado || ocupado;
   return (
     <Pressable
@@ -193,7 +165,7 @@ export function BotonGeneral({ titulo, onPress, icono, fantasma, fino, ocupado, 
     >
       {ocupado ? <ActivityIndicator size="small" color={color} /> : icono ? <Ionicons name={icono} size={px(15)} color={color} /> : null}
       <Text style={[styles.botonTexto, fino && styles.botonTextoFino, { color }]} numberOfLines={1} maxFontSizeMultiplier={1.2}>
-        {titulo.toUpperCase()}
+        {titulo}
       </Text>
     </Pressable>
   );
@@ -232,7 +204,7 @@ export function Segmentos<T extends string>({ opciones, valor, alCambiar }: { op
           style={({ pressed }) => [styles.segmento, o.id === valor && styles.segmentoActivo, pressed && styles.pulsada]}
         >
           <Text style={[styles.segmentoTexto, o.id === valor && styles.segmentoTextoActivo]} numberOfLines={1} maxFontSizeMultiplier={1.3}>
-            {o.texto.toUpperCase()}
+            {o.texto}
           </Text>
         </Pressable>
       ))}
@@ -245,8 +217,8 @@ export function Segmentos<T extends string>({ opciones, valor, alCambiar }: { op
 export function BarraGeneral({ ratio, alto = 4, color = G, style }: { ratio: number; alto?: number; color?: string; style?: StyleProp<ViewStyle> }) {
   const r = Math.max(0, Math.min(1, Number.isFinite(ratio) ? ratio : 0));
   return (
-    <View style={[styles.barra, { height: alto, borderRadius: alto }, style]} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
-      <View style={[styles.barraRelleno, { width: `${Math.round(r * 100)}%`, borderRadius: alto, backgroundColor: color, shadowColor: color }]} />
+    <View style={[styles.barra, { height: alto, borderRadius: radio.pastilla }, style]} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+      <View style={[styles.barraRelleno, { width: `${Math.round(r * 100)}%`, borderRadius: radio.pastilla, backgroundColor: color }]} />
     </View>
   );
 }
@@ -265,16 +237,16 @@ export interface CifraGeneralProps {
 export function CifraGeneral({ valor, unidad, rotulo, nota, icono, style, accessibilityLabel }: CifraGeneralProps) {
   return (
     <View style={[styles.cifra, style]} accessible accessibilityLabel={accessibilityLabel ?? `${rotulo}: ${valor}${unidad ? ` ${unidad}` : ''}${nota ? `, ${nota}` : ''}`}>
+      <Text style={styles.cifraValor} numberOfLines={1} adjustsFontSizeToFit maxFontSizeMultiplier={1.3}>
+        {valor}
+        {unidad ? <Text style={styles.cifraUnidad}>{` ${unidad}`}</Text> : null}
+      </Text>
       <View style={styles.cifraCabeza}>
         {icono ? <Ionicons name={icono} size={px(11)} color={G} /> : null}
         <Text style={styles.cifraRotulo} numberOfLines={1} maxFontSizeMultiplier={1.3}>
           {rotulo}
         </Text>
       </View>
-      <Text style={styles.cifraValor} numberOfLines={1} adjustsFontSizeToFit maxFontSizeMultiplier={1.3}>
-        {valor}
-        {unidad ? <Text style={styles.cifraUnidad}>{` ${unidad}`}</Text> : null}
-      </Text>
       {nota ? (
         <Text style={styles.cifraNota} numberOfLines={1} maxFontSizeMultiplier={1.3}>
           {nota}
@@ -291,21 +263,14 @@ export function FilaCifras({ children }: { children: ReactNode }) {
 
 // ── Escudo ───────────────────────────────────────────────────────────
 
-/** El escudo de oro de la lámina 4 con el nivel global dentro. */
-export function Escudo({ nivel, lado = px(66) }: { nivel: number | string; lado?: number }) {
-  const alto = lado * 1.12;
+/** El escudo de Ónix con el nivel global dentro. */
+export function Escudo({ nivel, lado = 62 }: { nivel: number | string; lado?: number }) {
   return (
-    <View style={{ width: lado, height: alto }} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
-      <Svg width={lado} height={alto} viewBox="0 0 100 112">
-        <Path d="M50 4 L92 18 L92 52 C92 80 72 98 50 108 C28 98 8 80 8 52 L8 18 Z" fill={oroMezcla(0.14, C.fondo)} stroke={G} strokeWidth={5} strokeLinejoin="round" />
-        <Path d="M50 14 L83 25 L83 52 C83 74 67 89 50 97 C33 89 17 74 17 52 L17 25 Z" fill="none" stroke={oroA(0.35)} strokeWidth={1.5} strokeLinejoin="round" />
-      </Svg>
-      <View style={styles.escudoDentro}>
-        <Text style={[styles.escudoNivel, { fontSize: Math.round(lado * (String(nivel).length > 2 ? 0.34 : 0.42)) }]} numberOfLines={1} maxFontSizeMultiplier={1}>
-          {nivel}
-        </Text>
-      </View>
-    </View>
+    <EscudoNivel lado={lado}>
+      <Text style={estiloNivelEscudo(lado, nivel)} numberOfLines={1} maxFontSizeMultiplier={1}>
+        {nivel}
+      </Text>
+    </EscudoNivel>
   );
 }
 
@@ -393,9 +358,9 @@ export function FilaGeneral({
   );
 }
 
-/** El cuadro de oro con un icono (accesos, campañas). */
+/** El cuadro con un icono (accesos, campañas). */
 export function CuadroGeneral({ lado = px(40), children }: { lado?: number; children: ReactNode }) {
-  return <View style={[styles.cuadro, { width: lado, height: lado, borderRadius: px(10) }]}>{children}</View>;
+  return <View style={[styles.cuadro, { width: lado, height: lado, borderRadius: radio.chip }]}>{children}</View>;
 }
 
 export function TituloGeneral({ eyebrow, titulo, derecha }: { eyebrow: string; titulo: string; derecha?: ReactNode }) {
@@ -419,90 +384,89 @@ export function HuecoGeneral({ alto, style }: { alto: number; style?: StyleProp<
 }
 
 export const textoGeneral = StyleSheet.create({
-  titulo: { fontFamily: F.b, fontSize: fs(17), lineHeight: Math.round(fs(17) * 1.2), color: C.blanco },
-  cuerpo: { fontFamily: F.r, fontSize: fs(11), lineHeight: Math.round(fs(11) * 1.42), color: C.claro },
-  detalle: { fontFamily: F.r, fontSize: fs(9.5), lineHeight: Math.round(fs(9.5) * 1.35), color: C.suave },
-  fila: { fontFamily: F.m, fontSize: fs(11.5), lineHeight: Math.round(fs(11.5) * 1.32), color: C.texto, flexShrink: 1 },
-  oro: { fontFamily: F.b, fontSize: fs(10), lineHeight: Math.round(fs(10) * 1.3), color: G },
-  cinzel: { fontFamily: F.cinzel, color: C.blanco },
+  titulo: { fontFamily: tipo.headline.family, fontSize: tipo.headline.size, lineHeight: tipo.headline.lineHeight, letterSpacing: tipo.headline.tracking, color: ink.ink9 },
+  cuerpo: { fontFamily: tipo.bodySm.family, fontSize: tipo.bodySm.size, lineHeight: tipo.bodySm.lineHeight, color: ink.ink9 },
+  detalle: { fontFamily: tipo.body.family, fontSize: 13, lineHeight: 18, color: ink.ink8 },
+  fila: { fontFamily: F.sb, fontSize: 15, lineHeight: 20, color: ink.ink9, flexShrink: 1 },
+  oro: { fontFamily: F.b, fontSize: 13, lineHeight: 18, color: oro.claro },
+  serif: { fontFamily: F.serif, color: ink.ink9 },
 });
 
 const styles = StyleSheet.create({
-  pantalla: { flex: 1, backgroundColor: C.fondo },
+  pantalla: { flex: 1, backgroundColor: ink.ink0 },
   transparente: { backgroundColor: 'transparent' },
   cuerpo: { paddingHorizontal: M.margen, paddingTop: px(2), paddingBottom: px(30), gap: px(9) },
   flex: { flex: 1, minWidth: 0 },
   tarjeta: {
-    backgroundColor: C.tarjeta,
+    backgroundColor: vidrio.tarjeta,
     borderWidth: 1,
-    borderColor: C.filete,
-    borderRadius: M.radio,
-    paddingVertical: px(11),
-    paddingHorizontal: px(12),
+    borderColor: vidrio.borde,
+    borderRadius: radio.tarjeta,
+    paddingVertical: 13,
+    paddingHorizontal: 15,
     overflow: 'hidden',
   },
-  heroe: { borderColor: oroA(0.45) },
+  heroe: { backgroundColor: 'transparent', borderColor: oro.borde },
   pulsada: { opacity: 0.8 },
   apagado: { opacity: 0.45 },
   rotulo: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: px(8) },
   rotuloSeccion: { marginHorizontal: px(2), marginTop: px(6), marginBottom: px(1) },
   rotuloTexto: {
-    fontFamily: F.b,
-    fontSize: fs(8.5),
-    lineHeight: Math.round(fs(8.5) * 1.3),
-    letterSpacing: fs(8.5) * 0.16,
-    color: C.mudo,
+    fontFamily: tipo.label.family,
+    fontSize: tipo.label.size,
+    lineHeight: tipo.label.lineHeight,
+    letterSpacing: tipo.label.tracking,
+    color: ink.ink8,
     textTransform: 'uppercase',
     flexShrink: 1,
   },
-  rotuloEm: { fontFamily: F.b, fontSize: fs(8.5), lineHeight: Math.round(fs(8.5) * 1.3), letterSpacing: fs(8.5) * 0.1, color: G, textTransform: 'uppercase' },
+  rotuloOro: { color: oro.claro },
+  rotuloEm: { fontFamily: tipo.label.family, fontSize: tipo.label.size, lineHeight: tipo.label.lineHeight, letterSpacing: 1, color: oro.claro, textTransform: 'uppercase' },
   boton: {
     marginTop: px(8),
-    minHeight: px(36),
-    borderRadius: M.radioBoton,
-    backgroundColor: G,
+    minHeight: M.boton,
+    borderRadius: radio.control,
+    backgroundColor: ink.ink10,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: px(7),
     paddingHorizontal: px(10),
   },
-  botonFino: { minHeight: px(28) },
-  botonFantasma: { backgroundColor: 'transparent', borderWidth: 1, borderColor: oroA(0.5) },
-  botonTexto: { fontFamily: F.xb, fontSize: fs(11), letterSpacing: fs(11) * 0.16 },
-  botonTextoFino: { fontSize: fs(9.5), letterSpacing: fs(9.5) * 0.16 },
-  chip: { paddingVertical: px(7), paddingHorizontal: px(11), borderRadius: M.radioChip, borderWidth: 1, borderColor: C.borde, backgroundColor: C.tarjeta },
-  chipActivo: { borderColor: G, backgroundColor: oroMezcla(0.16, C.tarjeta) },
-  chipTexto: { fontFamily: F.sb, fontSize: fs(10.5), color: C.texto },
-  chipTextoActivo: { color: C.blanco },
-  segmentos: { flexDirection: 'row', gap: px(5), padding: px(3), borderRadius: M.radioBoton + px(3), backgroundColor: C.tarjeta, borderWidth: 1, borderColor: C.filete },
-  segmento: { flex: 1, minHeight: px(32), borderRadius: M.radioBoton, alignItems: 'center', justifyContent: 'center' },
-  segmentoActivo: { backgroundColor: oroMezcla(0.18, C.tarjeta), borderWidth: 1, borderColor: oroA(0.6) },
-  segmentoTexto: { fontFamily: F.xb, fontSize: fs(9.5), letterSpacing: fs(9.5) * 0.16, color: C.mudo },
-  segmentoTextoActivo: { color: G },
-  barra: { backgroundColor: C.pista, overflow: 'hidden' },
-  barraRelleno: { height: '100%', shadowOpacity: 0.9, shadowRadius: 4, shadowOffset: { width: 0, height: 0 } },
-  cifra: { flex: 1, minWidth: 0, backgroundColor: C.tarjeta, borderWidth: 1, borderColor: C.filete, borderRadius: px(13), paddingVertical: px(9), paddingHorizontal: px(10) },
+  botonFino: { minHeight: M.botonFino },
+  botonFantasma: { backgroundColor: 'transparent', borderWidth: 1, borderColor: vidrio.borde },
+  botonTexto: { fontFamily: tipo.label.family, fontSize: 16, lineHeight: 22 },
+  botonTextoFino: { fontSize: 14, lineHeight: 20 },
+  chip: { paddingVertical: px(7), paddingHorizontal: px(11), borderRadius: radio.chip, borderWidth: 1, borderColor: vidrio.borde, backgroundColor: vidrio.tarjeta },
+  chipActivo: { borderColor: oro.borde, backgroundColor: oro.fondo },
+  chipTexto: { fontFamily: F.sb, fontSize: 13, color: ink.ink8 },
+  chipTextoActivo: { color: ink.ink9 },
+  segmentos: { flexDirection: 'row', gap: px(5), padding: px(3), borderRadius: radio.control, backgroundColor: vidrio.suave, borderWidth: 1, borderColor: vidrio.borde },
+  segmento: { flex: 1, minHeight: 36, borderRadius: radio.chip, alignItems: 'center', justifyContent: 'center' },
+  segmentoActivo: { backgroundColor: oro.fondo, borderWidth: 1, borderColor: oro.borde },
+  segmentoTexto: { fontFamily: F.sb, fontSize: 13, color: ink.ink8 },
+  segmentoTextoActivo: { fontFamily: F.b, color: oro.claro },
+  barra: { backgroundColor: vidrio.pista, overflow: 'hidden' },
+  barraRelleno: { height: '100%' },
+  cifra: { flex: 1, minWidth: 0, backgroundColor: vidrio.tarjeta, borderWidth: 1, borderColor: vidrio.borde, borderRadius: radio.control, paddingVertical: 10, paddingHorizontal: 11 },
   cifraCabeza: { flexDirection: 'row', alignItems: 'center', gap: px(4) },
-  cifraRotulo: { fontFamily: F.m, fontSize: fs(9), color: C.meta, flexShrink: 1 },
-  cifraValor: { fontFamily: F.xb, fontSize: fs(19), lineHeight: Math.round(fs(19) * 1.25), color: C.blanco, marginTop: px(2) },
-  cifraUnidad: { fontFamily: F.sb, fontSize: fs(9), color: C.mudo },
-  cifraNota: { fontFamily: F.b, fontSize: fs(8.5), color: G, marginTop: px(1) },
-  filaCifras: { flexDirection: 'row', gap: px(7) },
-  escudoDentro: { ...StyleSheet.absoluteFillObject, alignItems: 'center', justifyContent: 'center', paddingBottom: '8%' },
-  escudoNivel: { fontFamily: F.cinzel, color: G, textShadowColor: oroA(0.6), textShadowRadius: 8 },
+  cifraRotulo: { fontFamily: tipo.body.family, fontSize: 12, lineHeight: 15, color: ink.ink8, flexShrink: 1 },
+  cifraValor: { fontFamily: tipo.number.family, fontSize: 20, lineHeight: 25, color: ink.ink9 },
+  cifraUnidad: { fontFamily: F.sb, fontSize: 12, color: ink.ink8 },
+  cifraNota: { fontFamily: F.b, fontSize: 12, lineHeight: 15, color: oro.claro, marginTop: px(1) },
+  filaCifras: { flexDirection: 'row', gap: 8 },
   barras: { flexDirection: 'row', alignItems: 'flex-end', gap: px(5), marginTop: px(8) },
   barraCol: { flex: 1, alignItems: 'center', minWidth: 0 },
-  barraVertical: { width: '70%', maxWidth: px(26), borderTopLeftRadius: px(5), borderTopRightRadius: px(5), backgroundColor: oroA(0.32) },
-  barraVerticalFuerte: { backgroundColor: G, shadowColor: G, shadowOpacity: 0.7, shadowRadius: 6, shadowOffset: { width: 0, height: 0 } },
-  barraCifra: { fontFamily: F.b, fontSize: fs(8), color: C.mudo, marginBottom: px(3) },
-  barraCifraFuerte: { color: G },
-  barraEtiqueta: { fontFamily: F.m, fontSize: fs(8), color: C.mudo, marginTop: px(5) },
-  fila: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: px(7), gap: px(9) },
-  filaRegla: { borderTopWidth: 1, borderTopColor: C.regla },
-  cuadro: { alignItems: 'center', justifyContent: 'center', backgroundColor: oroMezcla(0.1, C.fondo), borderWidth: 1, borderColor: oroA(0.35) },
+  barraVertical: { width: '70%', maxWidth: px(26), borderTopLeftRadius: radio.chip, borderTopRightRadius: radio.chip, backgroundColor: oro.borde },
+  barraVerticalFuerte: { backgroundColor: oro.hilo },
+  barraCifra: { fontFamily: F.b, fontSize: 11, color: ink.ink6, marginBottom: px(3) },
+  barraCifraFuerte: { color: oro.claro },
+  barraEtiqueta: { fontFamily: tipo.body.family, fontSize: 11, color: ink.ink8, marginTop: px(5) },
+  fila: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 8, gap: px(9) },
+  filaRegla: { borderTopWidth: 1, borderTopColor: vidrio.linea },
+  cuadro: { alignItems: 'center', justifyContent: 'center', backgroundColor: oro.fondo, borderWidth: 1, borderColor: oro.borde },
   titulo: { flexDirection: 'row', alignItems: 'flex-end', gap: px(10), paddingTop: px(4), paddingBottom: px(4) },
-  tituloEyebrow: { fontFamily: F.b, fontSize: fs(9), letterSpacing: fs(9) * 0.22, color: G },
-  tituloTexto: { fontFamily: 'Cinzel_900Black', fontSize: 26, lineHeight: 31, letterSpacing: 1.6, color: C.blanco, marginTop: 2 },
-  hueco: { backgroundColor: C.tarjeta, borderRadius: M.radio, borderWidth: 1, borderColor: C.filete },
+  tituloEyebrow: { fontFamily: tipo.label.family, fontSize: tipo.label.size, lineHeight: tipo.label.lineHeight, letterSpacing: tipo.label.tracking, color: oro.claro },
+  tituloTexto: { fontFamily: tipo.title.family, fontSize: tipo.title.size, lineHeight: tipo.title.lineHeight, color: ink.ink9, marginTop: 2 },
+  hueco: { backgroundColor: vidrio.suave, borderRadius: radio.tarjeta, borderWidth: 1, borderColor: vidrio.linea },
 });

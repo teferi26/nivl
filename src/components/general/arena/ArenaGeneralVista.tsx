@@ -1,5 +1,5 @@
 // NIVL · General · Arena: la competición con amigos, rediseñada pieza a pieza
-// con la piel de NIVL (lámina 4 de la P01). Pura: los datos llegan de useAmigos
+// con la piel de NIVL (Ónix). Pura: los datos llegan de useAmigos
 // (ranking, solicitudes, código) y de useDuelos (duelos de la semana).
 //
 //   · Título y la franja de cifras (amigos, tu puesto, duelos en curso).
@@ -24,6 +24,7 @@ import type { Duelo } from '@/lib/competicionData';
 import type { FriendRequest } from '@/lib/social';
 import type { FilaRanking } from '@/components/amigos/ListaRanking';
 import { datosRival, detalleResuelto, diasRestantes, lineaDuelo, nombreRival, textoQuedan, textoResultado } from '@/components/amigos/competicionVista';
+import { ink, oro, radio, vidrio } from '@/design/tokens';
 import { t } from '@/i18n';
 import type { DatosDuelos } from './useDuelos';
 import {
@@ -41,7 +42,7 @@ import {
   textoGeneral,
   TituloGeneral,
 } from '../piezas';
-import { C, F, fs, G, oroA, oroMezcla, px } from '../tema';
+import { C, F, fs, G, px } from '../tema';
 
 export interface ArenaGeneralVistaProps {
   cargando: boolean;
@@ -411,7 +412,7 @@ function Lado({ nombre, indice, dias, mia }: { nombre: string; indice: number | 
 function Inicial({ nombre, grande, mia }: { nombre: string; grande?: boolean; mia?: boolean }): ReactNode {
   const lado = grande ? px(46) : px(30);
   return (
-    <View style={[styles.inicial, { width: lado, height: lado, borderRadius: lado / 2 }, (mia || grande) && styles.inicialOro]}>
+    <View style={[styles.inicial, { width: lado, height: lado, borderRadius: radio.pastilla }, (mia || grande) && styles.inicialOro]}>
       <Text style={[styles.inicialTexto, { fontSize: grande ? fs(17) : fs(12) }, (mia || grande) && styles.oro]}>{(nombre.trim()[0] ?? '?').toUpperCase()}</Text>
     </View>
   );
@@ -428,43 +429,43 @@ const styles = StyleSheet.create({
   huecos: { gap: px(9) },
   oro: { color: G },
   separado: { marginTop: px(7) },
-  ajustes: { width: 40, height: 40, borderRadius: 20, borderWidth: 1.5, borderColor: oroA(0.6), alignItems: 'center', justifyContent: 'center' },
+  ajustes: { width: 40, height: 40, borderRadius: radio.pastilla, borderWidth: 1, borderColor: vidrio.borde, alignItems: 'center', justifyContent: 'center' },
   chips: { flexDirection: 'row', gap: px(6), marginTop: px(8) },
   lista: { paddingVertical: px(3), marginTop: px(7) },
   podio: { flexDirection: 'row', alignItems: 'flex-end', gap: px(8), paddingTop: px(4) },
   podioCol: { flex: 1, alignItems: 'center', gap: px(4), minWidth: 0 },
   podioNombre: { fontFamily: F.b, fontSize: fs(11), color: C.blanco, maxWidth: '100%' },
   podioValor: { fontFamily: F.m, fontSize: fs(9.5), color: C.suave },
-  peana: { alignSelf: 'stretch', borderTopLeftRadius: px(8), borderTopRightRadius: px(8), backgroundColor: C.hueco, borderWidth: 1, borderColor: C.borde, alignItems: 'center', paddingTop: px(6) },
-  peanaOro: { backgroundColor: oroMezcla(0.22, C.tarjeta), borderColor: G },
-  peanaNum: { fontFamily: 'Cinzel_900Black', fontSize: fs(18), color: C.suave },
-  peanaNumOro: { color: G },
-  filaMia: { backgroundColor: oroMezcla(0.1, C.tarjeta), marginHorizontal: -px(12), paddingHorizontal: px(12) },
-  puesto: { width: px(20), fontFamily: F.xb, fontSize: fs(12), color: C.suave, textAlign: 'center' },
+  peana: { alignSelf: 'stretch', borderTopLeftRadius: radio.chip, borderTopRightRadius: radio.chip, backgroundColor: C.hueco, borderWidth: 1, borderColor: C.borde, alignItems: 'center', paddingTop: px(6) },
+  peanaOro: { backgroundColor: oro.tenue, borderColor: oro.borde },
+  peanaNum: { fontFamily: F.serif, fontSize: fs(18), color: C.suave },
+  peanaNumOro: { color: oro.claro },
+  filaMia: { backgroundColor: oro.fondo, marginHorizontal: -px(12), paddingHorizontal: px(12) },
+  puesto: { width: px(20), fontFamily: F.serif, fontSize: fs(12), color: C.suave, textAlign: 'center' },
   valor: { fontFamily: F.b, fontSize: fs(11.5), color: C.blanco },
   inicial: { alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: C.borde, backgroundColor: C.hueco },
-  inicialOro: { borderColor: G, backgroundColor: oroMezcla(0.14, C.fondo) },
-  inicialTexto: { fontFamily: 'Cinzel_900Black', color: C.texto },
+  inicialOro: { borderColor: oro.borde, backgroundColor: oro.fondo },
+  inicialTexto: { fontFamily: F.serif, color: C.texto },
   botones: { flexDirection: 'row', gap: px(7) },
   marcador: { flexDirection: 'row', alignItems: 'center', marginTop: px(8) },
-  vs: { fontFamily: 'Cinzel_900Black', fontSize: fs(13), color: C.mudo, marginHorizontal: px(8) },
+  vs: { fontFamily: F.serif, fontSize: fs(13), color: C.mudo, marginHorizontal: px(8) },
   lado: { flex: 1, minWidth: 0 },
   ladoDer: { alignItems: 'flex-end' },
   ladoNombre: { fontFamily: F.b, fontSize: fs(11), color: C.texto },
-  ladoCifra: { fontFamily: F.xb, fontSize: fs(24), color: C.blanco },
+  ladoCifra: { fontFamily: F.serif, fontSize: fs(24), color: C.blanco },
   resultado: { fontFamily: F.b, fontSize: fs(10), color: C.suave },
   respuestas: { flexDirection: 'row', alignItems: 'center', gap: px(6) },
-  x: { width: 32, height: 32, borderRadius: 16, borderWidth: 1, borderColor: C.borde, alignItems: 'center', justifyContent: 'center' },
-  codigo: { fontFamily: F.xb, fontSize: fs(24), letterSpacing: 4, color: G, marginTop: px(6), textAlign: 'center' },
+  x: { width: 32, height: 32, borderRadius: radio.pastilla, borderWidth: 1, borderColor: C.borde, alignItems: 'center', justifyContent: 'center' },
+  codigo: { fontFamily: F.serif, fontSize: fs(24), letterSpacing: 4, color: oro.claro, marginTop: px(6), textAlign: 'center' },
   separador: { height: 1, backgroundColor: C.regla, marginVertical: px(10) },
   campoFila: { flexDirection: 'row', alignItems: 'center', gap: px(7), marginTop: px(6) },
   campo: {
     flex: 1,
     minHeight: px(38),
-    borderRadius: px(10),
+    borderRadius: radio.chip,
     borderWidth: 1,
     borderColor: C.borde,
-    backgroundColor: C.fondo,
+    backgroundColor: vidrio.campo,
     color: C.blanco,
     fontFamily: F.b,
     fontSize: fs(13),
@@ -482,15 +483,15 @@ const styles = StyleSheet.create({
     gap: px(10),
     paddingVertical: px(9),
     paddingHorizontal: px(12),
-    borderRadius: px(14),
+    borderRadius: radio.control,
     borderWidth: 1,
-    borderColor: G,
-    backgroundColor: oroMezcla(0.16, C.tarjeta),
-    boxShadow: `0px 6px 18px rgba(0,0,0,0.6), 0px 0px 12px ${oroA(0.3)}`,
+    borderColor: oro.borde,
+    // Opaca: flota sobre la lista.
+    backgroundColor: ink.ink1,
   },
-  fijaPuesto: { fontFamily: 'Cinzel_900Black', fontSize: fs(20), color: G },
+  fijaPuesto: { fontFamily: F.serif, fontSize: fs(20), color: oro.claro },
   fijaRotulo: { fontFamily: F.b, fontSize: fs(8), letterSpacing: fs(8) * 0.16, color: C.meta, textTransform: 'uppercase' },
   fijaTexto: { fontFamily: F.b, fontSize: fs(11), color: C.blanco },
-  fijaValor: { fontFamily: F.xb, fontSize: fs(13), color: G },
+  fijaValor: { fontFamily: F.serif, fontSize: fs(13), color: oro.claro },
   huecoFija: { height: px(56) },
 });

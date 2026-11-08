@@ -1,5 +1,5 @@
 // NIVL · General · el detalle de una campaña, rediseñado con la piel de NIVL
-// (lámina 4). Pura: las mismas props que CampanaVista (useCampana: datos,
+// (Ónix). Pura: las mismas props que CampanaVista (useCampana: datos,
 // cerrojos, cobro de tareas y del botín, sin tocar la economía).
 //
 //   · Cabecera: volver, estandarte del rango, título, atributo y el progreso
@@ -7,7 +7,7 @@
 //   · Cifras: plazo, jefes y botín. Lo que la campaña no tiene NO se pinta:
 //     sin fecha, sin plazo; sin jefes, sin jefes (así el Winter Arc, que no
 //     tiene jefe ni meta, no enseña huecos ni guiones).
-//   · «Botín disponible»: la tarjeta de oro con el botón grande, solo con
+//   · «Botín disponible»: el velo de oro con el botón hueso, solo con
 //     todo caído y la campaña abierta. Despejada: el sello y lo cobrado.
 //   · El jefe final pendiente, en su propia tarjeta con presencia; después,
 //     las tareas (tocar = hecha; mantener = borrar).
@@ -17,6 +17,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Entrada, formatoMiles } from '@/components/arena';
 import type { CampanaVistaProps } from '@/components/campanas/CampanaVista';
 import { fechaCorta, plazo } from '@/components/campanas/plazo';
+import { ink, oro, radio, vidrio } from '@/design/tokens';
 import { t } from '@/i18n';
 import { DIFFICULTY_LABEL, DUNGEON_CLEAR_XP, dungeonTaskXp, STAT_LABEL } from '@/lib/game';
 import type { DungeonTask } from '@/lib/types';
@@ -32,7 +33,7 @@ import {
   TarjetaGeneral,
   textoGeneral,
 } from './piezas';
-import { C, F, fs, G, oroA, oroMezcla, px } from './tema';
+import { C, F, fs, G, px } from './tema';
 
 export function CampanaGeneralVista(p: CampanaVistaProps) {
   const d = p.campana;
@@ -111,7 +112,7 @@ export function CampanaGeneralVista(p: CampanaVistaProps) {
           ) : null}
           {despejada ? (
             <View style={styles.sello}>
-              <Ionicons name="trophy" size={px(14)} color={C.fondo} />
+              <Ionicons name="trophy" size={px(14)} color={G} />
               <Text style={styles.selloTexto}>
                 {fechaCorta(d.cleared_at) ? t('general:campana.despejadaEl', { fecha: fechaCorta(d.cleared_at) }) : t('campanas:comun.despejada')}
               </Text>
@@ -136,7 +137,7 @@ export function CampanaGeneralVista(p: CampanaVistaProps) {
         <Entrada indice={2}>
           <View style={styles.botin}>
             <View style={styles.botinCabeza}>
-              <Ionicons name="trophy" size={px(22)} color={C.fondo} />
+              <Ionicons name="trophy" size={px(22)} color={G} />
               <Text style={styles.botinRotulo}>{t('campanas:detalle.botinDisponible').toUpperCase()}</Text>
             </View>
             <Text style={styles.botinTexto}>{hechas < 3 ? t('general:campana.botinMinimo') : t('campanas:detalle.botinCuerpo')}</Text>
@@ -241,55 +242,50 @@ const styles = StyleSheet.create({
   huecos: { gap: px(9) },
   pulsado: { opacity: 0.75 },
   barraSup: { flexDirection: 'row', alignItems: 'center', gap: px(10), marginBottom: px(8) },
-  volver: { width: 40, height: 40, borderRadius: 20, borderWidth: 1.5, borderColor: oroA(0.6), alignItems: 'center', justifyContent: 'center' },
+  volver: { width: 40, height: 40, borderRadius: radio.pastilla, borderWidth: 1, borderColor: vidrio.borde, alignItems: 'center', justifyContent: 'center' },
   eyebrow: { fontFamily: F.b, fontSize: fs(9), letterSpacing: fs(9) * 0.2, color: G, flex: 1 },
   cabeza: { flexDirection: 'row', alignItems: 'center', gap: px(12) },
   estandarte: {
     width: px(54),
     height: px(64),
-    borderTopLeftRadius: px(8),
-    borderTopRightRadius: px(8),
-    borderBottomLeftRadius: px(22),
-    borderBottomRightRadius: px(22),
-    borderWidth: 2,
-    borderColor: G,
-    backgroundColor: oroMezcla(0.14, C.fondo),
+    borderRadius: radio.chip,
+    borderWidth: 1,
+    borderColor: oro.borde,
+    backgroundColor: oro.fondo,
     alignItems: 'center',
     justifyContent: 'center',
-    boxShadow: `0px 0px 14px ${oroA(0.4)}`,
   },
-  estandarteLetra: { fontFamily: 'Cinzel_900Black', fontSize: fs(26), color: G },
-  titulo: { fontFamily: 'Cinzel_900Black', fontSize: fs(18), lineHeight: Math.round(fs(18) * 1.25), letterSpacing: 0.6, color: C.blanco },
+  estandarteLetra: { fontFamily: F.serif, fontSize: fs(26), color: oro.claro },
+  titulo: { fontFamily: F.serif, fontSize: fs(18), lineHeight: Math.round(fs(18) * 1.25), color: C.blanco },
   progresoFila: { flexDirection: 'row', alignItems: 'baseline', gap: px(6), marginTop: px(12) },
-  progresoCifra: { fontFamily: F.xb, fontSize: fs(22), color: C.blanco },
-  pct: { fontFamily: F.xb, fontSize: fs(13), color: G },
-  sello: { flexDirection: 'row', alignItems: 'center', gap: px(6), alignSelf: 'flex-start', backgroundColor: G, borderRadius: px(8), paddingHorizontal: px(10), paddingVertical: px(5), marginTop: px(10) },
-  selloTexto: { fontFamily: F.xb, fontSize: fs(9.5), letterSpacing: 1, color: C.fondo },
-  botin: { backgroundColor: G, borderRadius: px(16), padding: px(14), boxShadow: `0px 0px 22px ${oroA(0.45)}` },
+  progresoCifra: { fontFamily: F.serif, fontSize: fs(22), color: C.blanco },
+  pct: { fontFamily: F.serif, fontSize: fs(13), color: oro.claro },
+  sello: { flexDirection: 'row', alignItems: 'center', gap: px(6), alignSelf: 'flex-start', backgroundColor: oro.fondo, borderWidth: 1, borderColor: oro.borde, borderRadius: radio.chip, paddingHorizontal: px(10), paddingVertical: px(5), marginTop: px(10) },
+  selloTexto: { fontFamily: F.xb, fontSize: fs(9.5), letterSpacing: 1, color: oro.claro },
+  botin: { backgroundColor: oro.fondo, borderWidth: 1, borderColor: oro.borde, borderRadius: radio.tarjeta, padding: px(14) },
   botinCabeza: { flexDirection: 'row', alignItems: 'center', gap: px(8) },
-  botinRotulo: { fontFamily: F.xb, fontSize: fs(11), letterSpacing: fs(11) * 0.16, color: C.fondo },
-  botinTexto: { fontFamily: F.m, fontSize: fs(11), lineHeight: Math.round(fs(11) * 1.4), color: '#2a2108', marginTop: px(6) },
-  botinBoton: { marginTop: px(10), minHeight: px(40), borderRadius: px(11), backgroundColor: C.fondo, alignItems: 'center', justifyContent: 'center' },
-  botinBotonTexto: { fontFamily: F.xb, fontSize: fs(11), letterSpacing: fs(11) * 0.14, color: G },
+  botinRotulo: { fontFamily: F.b, fontSize: fs(11), letterSpacing: 2, color: oro.claro },
+  botinTexto: { fontFamily: F.m, fontSize: fs(11), lineHeight: Math.round(fs(11) * 1.4), color: ink.ink9, marginTop: px(6) },
+  botinBoton: { marginTop: px(10), minHeight: 48, borderRadius: radio.control, backgroundColor: ink.ink10, alignItems: 'center', justifyContent: 'center' },
+  botinBotonTexto: { fontFamily: F.b, fontSize: 16, color: ink.ink0 },
   jefe: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: px(12),
-    borderRadius: px(16),
-    borderWidth: 2,
-    borderColor: G,
-    backgroundColor: oroMezcla(0.12, C.tarjeta),
+    borderRadius: radio.tarjeta,
+    borderWidth: 1,
+    borderColor: oro.borde,
+    backgroundColor: oro.fondo,
     padding: px(13),
     marginTop: px(6),
-    boxShadow: `0px 0px 16px ${oroA(0.3)}`,
   },
-  jefeIcono: { width: px(48), height: px(48), borderRadius: px(12), borderWidth: 1, borderColor: oroA(0.5), backgroundColor: C.fondo, alignItems: 'center', justifyContent: 'center' },
-  jefeTitulo: { fontFamily: F.xb, fontSize: fs(14), lineHeight: Math.round(fs(14) * 1.25), color: C.blanco },
+  jefeIcono: { width: px(48), height: px(48), borderRadius: radio.control, borderWidth: 1, borderColor: oro.borde, backgroundColor: vidrio.suave, alignItems: 'center', justifyContent: 'center' },
+  jefeTitulo: { fontFamily: F.b, fontSize: fs(14), lineHeight: Math.round(fs(14) * 1.25), color: C.blanco },
   lista: { paddingVertical: px(3), marginTop: px(6) },
-  check: { width: px(22), height: px(22), borderRadius: px(7), borderWidth: 1.5, borderColor: oroA(0.6), alignItems: 'center', justifyContent: 'center' },
-  checkHecho: { backgroundColor: G, borderColor: G },
+  check: { width: px(22), height: px(22), borderRadius: radio.pastilla, borderWidth: 1.5, borderColor: ink.ink6, alignItems: 'center', justifyContent: 'center' },
+  checkHecho: { backgroundColor: ink.ink10, borderColor: ink.ink10 },
   tachada: { textDecorationLine: 'line-through', color: C.mudo },
-  xp: { fontFamily: F.b, fontSize: fs(10.5), color: G },
+  xp: { fontFamily: F.serif, fontSize: fs(10.5), color: oro.claro },
   xpHecha: { color: C.apagado },
   nota: { marginTop: px(6), marginHorizontal: px(2) },
   peligro: { marginTop: px(14), borderColor: C.borde },

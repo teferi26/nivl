@@ -1,59 +1,57 @@
-# NIVL · Sistema de diseño v2 — «Mármol y tinta»
+# NIVL · Sistema de diseño «Ónix» (1.1)
 
-Fase 2 (1.0.8). Autoridad: Chat 4 (líder de UI). Tokens en `src/design/tokens.ts` (fuente única, con tests de contraste). Maquetas: artifact «NIVL Diseño v2» https://claude.ai/artifact/Gew7UaYjh3rvXweC2DYc62 (privado del dueño hasta que lo comparta).
-Base: `winter2/integracion @99729ea`. Sustituye al sistema «arena» (`nivl-design-system`, paleta con rojo y oro).
+Tokens en `src/design/tokens.ts` (fuente única, con tests de contraste). Maquetas: artifact de rediseño, páginas «Ónix · Desarrollo» (`OnixModos`, `OnixWeb`) y `Embudo` con tema `onix`.
+
+Sustituye a «Mármol y tinta». Lo que sigue en este documento a partir de la sección 3 se conserva como referencia de componentes y movimiento: donde hable de blanco puro, Cinzel, remaches, grano o esquinas rectas, manda Ónix.
 
 ## 0. Principio
 
-**Solo blanco y negro.** No hay rojo, oro, acero ni violeta. El significado no se lleva en el color, sino en cuatro recursos que funcionan también para daltónicos y en lectores de pantalla:
+Fondo casi negro, texto y botón color hueso, tarjetas redondeadas y **el oro solo como hilo**. Es sobrio: sin graderíos, laureles, remaches ni grano. La única imagen de marca es el escudo con la N.
 
 | Recurso | Qué significa |
 |---|---|
-| **Inversión** (blanco con texto negro) | Lo activo, lo hecho, la acción principal. Hay **una** superficie invertida por pantalla. |
-| **Peso del trazo** (hairline 1 · regla 2 · marco 3) | Jerarquía y estatus. El rango engorda el marco. |
-| **Trama** (rayado a 45° o punteado) | Alerta, penalización, bloqueado, pendiente. Sustituye al rojo. |
-| **Grano** (puntos finos sobre negro) | Logro, racha, Élite. Sustituye al oro. |
+| **Hueso** (botón claro, texto oscuro) | La acción principal. Una por pantalla. |
+| **Hilo de oro** (cifra, rótulo, marco fino, velo del héroe) | Lo que se está logrando. Nunca un relleno de botón. |
+| **Trama** (rayado a 45°) | Alerta, penalización, bloqueado. No depende del color. |
 
 Tres reglas:
-1. Cada pantalla tiene **una sola idea en blanco sólido**.
+1. Cada pantalla tiene **una sola acción en hueso**.
 2. Lo que más importa del día está siempre a **≤ 2 toques**.
 3. Toda celebración se puede saltar con un toque y respeta «reducir movimiento».
 
-## 1. Color (tokens `ink`)
+Los cuatro modos comparten el hilo de oro y se distinguen por su nombre y su contenido (`modoAcento`, cierra P46). WORK va sobrio y sin metáfora de gladiador. Móvil, navegador y Mac usan el mismo diseño; en ventana ancha la navegación pasa a la barra lateral.
 
-Escala neutra pura, sin tinte. Contrastes AA verificados en el test `tokens.test.ts`.
+## 1. Color (`ink`, `oro`, `vidrio`)
 
-| Token | Hex | Uso | Contraste sobre `ink0` |
-|---|---|---|---|
-| `ink0` | #000000 | Fondo de la app | — |
-| `ink1` | #0B0B0B | Superficie (tarjetas, hojas) | — |
-| `ink2` | #161616 | Superficie elevada, campo de texto | — |
-| `ink3` | #242424 | Hairline, separadores | — |
-| `ink4` | #3A3A3A | Pista de barras, borde de control | (no es texto) |
-| `ink6` | #8C8C8C | Texto terciario: metadatos, fechas | 6,25:1 · sobre `ink2` 5,38:1 |
-| `ink8` | #BDBDBD | Texto secundario | 11,2:1 · sobre `ink2` 9,6:1 |
-| `ink9` | #EDEDED | Texto principal | 17,9:1 · sobre `ink2` 15,5:1 |
-| `ink10` | #FFFFFF | Acento: inversión, CTA, número de nivel | 21:1 |
+| Token | Valor | Uso |
+|---|---|---|
+| `FONDO_ONIX` | #121214 → #09090B → #050506 | Fondo de pantalla (`FondoOnix`) |
+| `ink0` | #09090B | Fondo plano, texto sobre hueso |
+| `ink1` / `ink2` | #151517 / #1D1D1F | Superficies opacas: hojas, modales |
+| `ink3` / `ink4` | #2A2A2C / #4A494C | Hairline / borde de control apagado |
+| `ink6` / `ink8` | #8F8C85 / #B8B4AB | Texto terciario y control sin marcar / texto secundario |
+| `ink9` | #F5F2EC | Texto principal |
+| `ink10` | #EDEAE3 | Hueso: botón principal, inversión |
+| `oro.hilo` / `oro.claro` | #C9A961 / #EAD9AE | Trazo y barra / cifras, rótulos y elegido |
+| `oro.fondo` / `oro.tenue` / `oro.borde` | velos al 9, 14 y 32 % | Tarjeta héroe, fila activa, marco fino |
+| `vidrio.tarjeta` / `suave` / `campo` | blanco al 5, 3 y 8 % | Tarjetas, opciones, campos |
+| `vidrio.borde` / `linea` / `pista` | blanco al 13, 10 y 14 % | Marco de tarjeta, separador, pista de barra |
 
-Prohibido: hex sueltos en pantallas, opacidades para texto (rompen el contraste), y cualquier color que no sea esta escala. Excepción: los iconos de terceros dentro de su logotipo (Apple, Google) en los botones de tienda.
+Radios (`radio`): tarjeta 22 · control 18 · chip 14 · hoja 28 · pastilla 999.
 
 ## 2. Tipografía
 
-Se mantienen las familias ya cargadas (no se añaden dependencias): **Cinzel** (la piedra) y **Outfit** (la voz).
+| Rol | Familia | Tamaño |
+|---|---|---|
+| `display` | Playfair Display 700 | 44/50 |
+| `title` | Playfair Display 700 | 29/34 |
+| `rank`, `cifra`, `number`, `monumento` | Playfair Display 700 | cifras y títulos cortos |
+| `headline` | Outfit 700 | 20/26 |
+| `body` / `bodySm` | Outfit 500 | 16/24 · 14/20 |
+| `label`, `inscripcion` | Outfit 700, mayúsculas, tracking 2 | 12/16 |
+| `micro` | Outfit 600 | 11/14 |
 
-| Estilo | Familia | Tamaño / interlínea | Tracking | Uso |
-|---|---|---|---|---|
-| `display` | Cinzel 700 | 56/60 | 2 | Número de nivel en la ceremonia, marca |
-| `rank` | Cinzel 700 | 32/36 | 4 | Letra de rango |
-| `title` | Outfit 700 | 30/34 | −0,6 | Título de pantalla |
-| `headline` | Outfit 700 | 20/26 | −0,2 | Título de tarjeta o hoja |
-| `body` | Outfit 500 | 16/24 | 0 | Texto de lectura |
-| `bodySm` | Outfit 500 | 14/20 | 0 | Detalle de fila |
-| `label` | Outfit 700 | 12/16 | 2 MAYÚSCULAS | Rótulo de sección (eyebrow) |
-| `number` | Cinzel 600 | 24/28 | 0 | Cifras en Stat |
-| `micro` | Outfit 600 | 11/14 | 1 | Etiquetas (`Tag`). Mínimo absoluto |
-
-Reglas: lectura ≥ 14; nada < 11; Cinzel solo en mayúsculas o cifras. Se respeta el tamaño dinámico del sistema hasta ×1,35 (`maxFontSizeMultiplier`), y por encima los layouts pasan a una columna.
+Rótulo de botón: Outfit 700 en frase, 17 · 15 · 13 (lg · md · sm). Mínimo 11 pt; lectura ≥ 13.
 
 ## 3. Retícula y espaciado
 

@@ -24,6 +24,7 @@ import { PlanesWeb } from '@/components/web/PlanesWeb';
 import { Barra, CargaArena, EncabezadoArena, Entrada, ErrorSistema, TarjetaArena } from '@/components/arena';
 import { Button, Row, Screen, Section } from '@/components/ui';
 import { vibrar } from '@/design/haptics';
+import { t } from '@/i18n';
 import { useAuth } from '@/lib/auth';
 import { ensureProfile } from '@/lib/data';
 import { isValidKey, nombreDia } from '@/lib/dates';
@@ -40,7 +41,6 @@ import {
   gestionarSuscripcion,
   isElite,
   isPro,
-  LINEA_BASE,
   MODOS_DE_PAGO,
   planDePago,
   planLabel,
@@ -52,7 +52,7 @@ import {
   type RespuestaOferta,
 } from '@/lib/pro';
 import { fetchSubscription } from '@/lib/subscription';
-import { ink, space, type as tipo } from '@/design/tokens';
+import { ink, space, type as tipo, vidrio } from '@/design/tokens';
 import { mensajeSistema } from '@/lib/validation';
 import { NOMBRE_MODO } from '@/modos/tipos';
 import { recargarDerechos } from '@/modos/useDerechos';
@@ -233,7 +233,7 @@ export default function Pro() {
     // Sin saber sus modos (sin red), no se vende nada.
     const parcial = !!derechos && !derechos.todos;
     const mejorable = purchasesAvailable() && parcial && provider !== 'stripe';
-    const nombreModos = derechos ? (derechos.todos ? 'Los cuatro' : derechos.modos.map((m) => NOMBRE_MODO[m]).join(', ')) : null; // i18n-ok: marca
+    const nombreModos = derechos ? (derechos.todos ? t('oferta:pago.losCuatroModos') : derechos.modos.map((m) => NOMBRE_MODO[m]).join(', ')) : null;
     // Se gestiona en la tienda solo lo que se pagó en una tienda. En la web no
     // hay tienda que abrir: queda la nota de dónde se gestiona.
     const deTienda = Platform.OS !== 'web' && dePago && (provider === 'apple' || provider === 'google');
@@ -347,7 +347,7 @@ export default function Pro() {
                     modoInicial={modoParam}
                     empezarEnTodos={!modoParam}
                     actual={derechos?.producto}
-                    etiquetaSalida={prueba ? 'Seguir con la prueba' : 'Seguir con mi plan'}
+                    etiquetaSalida={t(prueba ? 'oferta:pago.salida.prueba' : 'oferta:pago.salida.plan')}
                     onSalir={() => {
                       responder('cerrada');
                       setVerOferta(false);
@@ -362,7 +362,7 @@ export default function Pro() {
                 </View>
               ) : (
                 <Button
-                  title={prueba ? 'Suscribirme' : 'Ver los cuatro modos'}
+                  title={t(prueba ? 'oferta:pago.ver.suscribirme' : 'oferta:pago.ver.cuatro')}
                   variant="secondary"
                   onPress={() => setVerOferta(true)}
                   style={styles.mejorar}
@@ -392,8 +392,8 @@ export default function Pro() {
           <EncabezadoArena
             onVolver={salir}
             eyebrow={cabecera?.eyebrow ?? 'NIVL'}
-            titulo={cabecera?.titulo ?? 'Un modo o los cuatro.'}
-            subtitulo={`Cada modo abre su mundo y su coach. ${LINEA_BASE}`}
+            titulo={cabecera?.titulo ?? t('oferta:pago.titulo')}
+            subtitulo={t('oferta:pago.subtitulo')}
           />
         </Entrada>
         {errorPlan}
@@ -401,7 +401,7 @@ export default function Pro() {
           <Oferta
             kind={kind}
             modoInicial={modoParam}
-            etiquetaSalida="Seguir gratis"
+            etiquetaSalida={t('oferta:pago.salida.gratis')}
             onSalir={salir}
             onComprado={() => {
               responder('compra');
@@ -435,5 +435,5 @@ const styles = StyleSheet.create({
   aviso: { color: ink.ink9, borderLeftWidth: 2, borderLeftColor: ink.ink6, paddingLeft: 10, marginTop: 8 },
   mejorar: { marginTop: 10 },
   gestionar: { marginTop: 8, alignSelf: 'flex-start' },
-  oferta: { marginTop: 22, borderTopWidth: 1, borderTopColor: ink.ink3, paddingTop: 18 },
+  oferta: { marginTop: 22, borderTopWidth: 1, borderTopColor: vidrio.linea, paddingTop: 18 },
 });

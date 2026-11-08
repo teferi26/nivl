@@ -125,14 +125,14 @@ function ProtectedStack() {
 
   useEffect(() => {
     if (loading) return;
-    const inAuthArea = segments[0] === 'login';
+    const inAuthArea = segments[0] === 'login' || segments[0] === 'empezar';
     // `c` (nivl://c/CODIGO) también es pública: guarda el código de creador y
     // salta sola a '/'. Sin esto el guard iba a /login antes de guardarlo.
     // `auth` (nivl://auth/confirmar y /restablecer) llega sin sesión: es el
     // enlace del correo el que la abre.
     const inPublicArea = inAuthArea || segments[0] === 'c' || segments[0] === 'auth' || (GALERIA && segments[0] === 'kit');
     if (!session && !inPublicArea) {
-      router.replace('/login');
+      router.replace('/empezar' as never);
     } else if (session && inAuthArea) {
       // A la raíz, no a las pestañas: `index.tsx` es quien mira
       // `onboarding_done` y decide entre el onboarding y Hoy. Ir directo a

@@ -11,7 +11,8 @@
     }
   },
   "progreso": {
-    "paso": "Step {{actual}} of {{total}}"
+    "paso": "Step {{actual}} of {{total}}",
+    "perfil": "Your profile"
   },
   "tablilla": {
     "rotulo": "Contract",
@@ -68,7 +69,7 @@
   "firma": {
     "inscripcion": "The signature",
     "titulo": "Sign it with yourself",
-    "pista": "Nobody else will read it. It's sealed today and opens when the time is up. Choose how long you give yourself.",
+    "pista": "It's sealed today and opens when the time is up. Your coach can read it to help you. Choose how long you give yourself.",
     "horizonteA11y": "{{plazo}} horizon",
     "horizonteRecomendadoA11y": "{{plazo}} horizon, recommended",
     "recomendado": "recommended",
@@ -108,5 +109,266 @@
     "firmado": "Signed: {{nombre}}",
     "cifra": "Figure: {{cifra}}",
     "fecha": "Date: {{fecha}}"
+  },
+  "embudo": {
+    "tuPerfil": "Your profile",
+    "tuPerfilA11y": "Your profile, {{pct}} percent",
+    "portada": {
+      "crear": "Build my plan in 2 minutes",
+      "yaTengo": "I already have an account",
+      "lema": "Your best self already has a coach",
+      "texto": "Training, study, work and business. A coach who tells you what to do today and won't let you slip away.",
+      "tarjeta": "Build your plan in 2 minutes"
+    },
+    "preguntas": {
+      "mejora": {
+        "t": "What do you want to improve?",
+        "p": "Pick everything that matters to you.",
+        "o": {
+          "cuerpo": "Body and energy",
+          "estudios": "Studies",
+          "trabajo": "Work and career",
+          "negocio": "Business and money",
+          "disciplina": "Discipline and habits",
+          "calma": "Mind and calm"
+        }
+      },
+      "kind": {
+        "t": "What describes you best?",
+        "p": "Your app arranges itself around this.",
+        "o": {
+          "deportista": "Athlete",
+          "estudiante": "Student",
+          "trabajador": "Professional",
+          "emprendedor": "Entrepreneur",
+          "general": "I want my best self"
+        }
+      },
+      "meta": {
+        "t": "What do you want to achieve?",
+        "p": "The thing that would truly make you proud."
+      },
+      "cuanto": {
+        "t": "How long have you wanted this?",
+        "p": "Be honest. Your coach uses this to adjust your plan.",
+        "o": {
+          "semanas": "A few weeks",
+          "meses": "A few months",
+          "anio": "Over a year",
+          "anios": "Too many years"
+        }
+      },
+      "freno": {
+        "t": "What's held you back so far?",
+        "p": "Pick what you recognize.",
+        "o": {
+          "tiempo": "No time",
+          "dejo": "Starting, then quitting",
+          "empezar": "Not knowing where to start",
+          "exige": "Nobody holding me to it",
+          "movil": "My phone eating my day"
+        }
+      },
+      "coach": {
+        "t": "Have you ever had a coach or trainer?",
+        "p": "It changes how I'll work with you.",
+        "o": {
+          "funciono": "Yes, and it worked",
+          "nofunciono": "Yes, and it didn't work",
+          "nunca": "Never",
+          "caro": "I thought about it, but it's expensive"
+        }
+      },
+      "min": {
+        "t": "How much time can you give it each day?",
+        "p": "Don't kid yourself.",
+        "o": {
+          "15": "15 minutes",
+          "30": "30 minutes",
+          "60": "1 hour",
+          "90": "Over 1 hour"
+        }
+      },
+      "mom": {
+        "t": "When are you at your best?",
+        "p": "That's where I'll put the hardest part.",
+        "o": {
+          "primera": "First thing",
+          "media": "Mid-morning",
+          "tarde": "Afternoon",
+          "noche": "Night"
+        }
+      }
+    },
+    "metas": {
+      "deportista": {
+        "carrera": "Train for a triathlon or a race",
+        "musculo": "Build muscle and strength",
+        "grasa": "Lose fat for real",
+        "forma": "Get back in shape"
+      },
+      "estudiante": {
+        "oposicion": "Pass a civil service exam",
+        "notas": "Get better grades",
+        "examenes": "Pass my exams",
+        "procrastinar": "Stop procrastinating"
+      },
+      "trabajador": {
+        "ascenso": "Get a promotion",
+        "rendir": "Get more done in fewer hours",
+        "cambiar": "Change jobs",
+        "vida": "Get my life outside work back"
+      },
+      "emprendedor": {
+        "facturar": "Bring in more revenue",
+        "clientes": "Win clients",
+        "ordenar": "Get my business in order",
+        "lanzarme": "Quit my job and go for it"
+      },
+      "general": {
+        "disciplina": "Have real discipline",
+        "dormir": "Sleep and feel better",
+        "dinero": "Get my money in order",
+        "aprender": "Read and learn more"
+      }
+    },
+    "crudo": {
+      "rotulo": "Before we go on",
+      "titulo": "I'm going to be blunt with you.",
+      "cuerpo": "I'm not here to be liked. I'm here so that 90 days from now you're not the same person.",
+      "detalle": "I'll tell you when you're lying to yourself. I'll call it out when you try to dodge. And I'll be with you every time you deliver.",
+      "pregunta": "How do you want me to talk to you?",
+      "duro": "No filter. Give it to me straight",
+      "tacto": "Direct, but with tact"
+    },
+    "curva": {
+      "titulo": "1% a day doesn't look like much.",
+      "cuerpo": "It's math, not a promise. The hard part is not missing a day. That's what I'm for.",
+      "seguir": "I see it",
+      "a11y": "Rising curve: up 35 percent in 30 days, up 145 percent in 90 days",
+      "hoy": "Today",
+      "dia30": "Day 30",
+      "dia90": "Day 90"
+    },
+    "cuenta": {
+      "titulo": "Your plan is almost ready. Save it.",
+      "texto": "So you lose nothing, on your phone or your computer."
+    },
+    "bienvenida": {
+      "rotulo": "Your account is ready",
+      "titulo": "A couple of things and we start.",
+      "texto": "Your plan is already underway. Before you save it, you need to know this:"
+    },
+    "salud": {
+      "rotulo": "Your health",
+      "titulo": "Your health data, only with your permission.",
+      "texto": "To prepare workouts, meals and rest I need to store health data. It's your call, and you can withdraw it whenever you want in Profile.",
+      "sinPermiso": "Without permission, your plan loses the health goal and those missions. Everything else works the same.",
+      "revisar": "Review the permission",
+      "seguir": "Continue without health data"
+    },
+    "carga": {
+      "titulo": "Building your plan",
+      "leyendo": "Reading your answers",
+      "calculando": "Calculating your 90 days",
+      "eligiendo": "Choosing your first mission",
+      "preparando": "Getting your coach ready"
+    },
+    "plan": {
+      "rotulo": "Your 90-day plan · profile at 100%",
+      "veredicto": "Your coach's verdict",
+      "sinMeta": "Your 90-day plan",
+      "empezar": "I want to start",
+      "cuando": {
+        "hoy": "Today",
+        "sem4": "Wk 4",
+        "dia90": "Day 90"
+      }
+    },
+    "veredicto": {
+      "duro": "{{cuanto}} wanting this and your excuse is “{{freno}}”. You've got {{min}} a day. That's enough. What isn't enough is waiting any longer.",
+      "tacto": "{{cuanto}} wanting it. It's normal to get stuck on “{{freno}}”. With {{min}} a day you'll get there, and I'll take you."
+    },
+    "hitos": {
+      "deportista": {
+        "hoy": {
+          "titulo": "Your first workout",
+          "detalle": "Measured, with pace and distance."
+        },
+        "sem4": {
+          "titulo": "Your first marks",
+          "detalle": "Now you have something to compare against."
+        },
+        "dia90": {
+          "titulo": "The reckoning",
+          "detalle": "You measure what you achieved against your goal."
+        }
+      },
+      "estudiante": {
+        "hoy": {
+          "titulo": "Your first block",
+          "detalle": "The topic you handle worst."
+        },
+        "sem4": {
+          "titulo": "The syllabus, moving",
+          "detalle": "Reviews at just the right moment."
+        },
+        "dia90": {
+          "titulo": "The reckoning",
+          "detalle": "You know what you've mastered and what's left for the exam."
+        }
+      },
+      "trabajador": {
+        "hoy": {
+          "titulo": "Your first focus block",
+          "detalle": "What moves your week the most."
+        },
+        "sem4": {
+          "titulo": "Your week, under control",
+          "detalle": "Clear priorities and hours."
+        },
+        "dia90": {
+          "titulo": "The reckoning",
+          "detalle": "Results you can show."
+        }
+      },
+      "emprendedor": {
+        "hoy": {
+          "titulo": "Five calls",
+          "detalle": "What brings in money comes first."
+        },
+        "sem4": {
+          "titulo": "Your funnel, moving",
+          "detalle": "You know what works and what doesn't."
+        },
+        "dia90": {
+          "titulo": "The reckoning",
+          "detalle": "Numbers, not feelings."
+        }
+      },
+      "general": {
+        "hoy": {
+          "titulo": "Three habits",
+          "detalle": "Small, impossible to skip."
+        },
+        "sem4": {
+          "titulo": "It's getting easier",
+          "detalle": "Your routine starts running itself."
+        },
+        "dia90": {
+          "titulo": "The reckoning",
+          "detalle": "You look back with data, not memory."
+        }
+      }
+    },
+    "tarjetas": {
+      "avisosTitulo": "Don't let it slip",
+      "avisosTexto": "I'll remind you of your mission and the day's close. Change it whenever you want in Profile.",
+      "avisosActivar": "Turn on reminders",
+      "ahoraNo": "Not now",
+      "firmaTitulo": "Sign your commitment",
+      "firmaTexto": "You've already started. Now put it in writing: a letter to yourself that opens a few years from now.",
+      "firmaBoton": "Sign"
+    }
   }
 }

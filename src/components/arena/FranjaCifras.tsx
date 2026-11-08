@@ -1,14 +1,14 @@
 // NIVL · Arena: la franja de cifras.
 //
-// De 2 a 4 celdas iguales separadas por hairlines verticales ink3: el número
-// grande en Cinzel (`type.cifra`) y debajo su rótulo `micro` en mayúsculas.
+// De 2 a 4 celdas iguales separadas por hairlines de vidrio: el número
+// grande en Playfair (`type.cifra`) y debajo su rótulo `micro` en mayúsculas.
 // Un número cuenta con Contador (si trae `desde`); un texto («3/5», «A») se
 // pinta tal cual. Cada celda es un elemento del lector: «Racha: 12 d».
 // La unidad («d», « XP») va aparte, pequeña, y nunca se corta con «…»: si no
 // cabe, Contador encoge la cifra (ver Contador.tsx).
 
 import { StyleSheet, Text, View } from 'react-native';
-import { ink, space, stroke, type as tipo } from '@/design/tokens';
+import { ink, space, stroke, type as tipo, vidrio } from '@/design/tokens';
 import { CIFRA_VACIA, formatoMiles } from './cifras';
 import { CifraConUnidad, Contador } from './Contador';
 
@@ -96,7 +96,7 @@ export function FranjaCifras({ cifras, centrado, enGrupo = false }: FranjaCifras
 const styles = StyleSheet.create({
   franja: { flexDirection: 'row', alignItems: 'stretch' },
   celda: { flex: 1, minWidth: 0, paddingHorizontal: space.s3, paddingVertical: space.s1, gap: space.s1 },
-  conRegla: { borderLeftWidth: stroke.hairline, borderLeftColor: ink.ink3 },
+  conRegla: { borderLeftWidth: stroke.hairline, borderLeftColor: vidrio.linea },
   centrada: { alignItems: 'center' },
   // Alineada a la izquierda, la primera cifra arranca en el margen del texto.
   primera: { paddingLeft: 0 },
@@ -106,18 +106,18 @@ const styles = StyleSheet.create({
     fontSize: tipo.cifra.size,
     lineHeight: tipo.cifra.lineHeight,
     letterSpacing: tipo.cifra.tracking,
-    color: ink.ink10,
+    color: ink.ink9,
   },
   valorCentrado: { textAlign: 'center' },
   // La unidad, pequeña y en tinta terciaria: la cifra manda (igual en las dos ramas).
-  sufijo: { fontFamily: tipo.micro.family, fontSize: 14, letterSpacing: tipo.micro.tracking, color: ink.ink6 },
+  sufijo: { fontFamily: tipo.micro.family, fontSize: 14, letterSpacing: tipo.micro.tracking, color: ink.ink8 },
   rotulo: {
     fontFamily: tipo.micro.family,
     fontSize: tipo.micro.size,
     lineHeight: tipo.micro.lineHeight,
     letterSpacing: tipo.micro.tracking,
     textTransform: 'uppercase',
-    color: ink.ink6,
+    color: ink.ink8,
   },
   rotuloCentrado: { textAlign: 'center' },
 });

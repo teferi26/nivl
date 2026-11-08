@@ -1,5 +1,6 @@
 // NIVL · La puerta de un mundo sin pagar, con sus efectos. La pone LayoutMundo.
 
+import { t } from '@/i18n';
 import { useAuth } from '@/lib/auth';
 import type { ModoDePago } from '@/lib/planesmodo';
 import { useModo } from '@/modos/ModoProvider';
@@ -19,7 +20,7 @@ export function MundoCerrado({ modo }: { modo: ModoDePago }) {
   return (
     <MundoCerradoVista
       modo={modo}
-      oferta={<OfertaModosVista oferta={oferta} etiquetaSalida="Volver a NIVL" onSalir={() => irAlMundo('general', modos.cambiar)} />} // i18n-ok: pantalla de compra, en español como ProOffer
+      oferta={<OfertaModosVista oferta={oferta} etiquetaSalida={t('oferta:pago.salida.volver')} onSalir={() => irAlMundo('general', modos.cambiar)} />}
     />
   );
 }

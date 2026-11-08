@@ -1,4 +1,4 @@
-// NIVL · Cifras: la piedra tallada (Cinzel) con su rótulo debajo.
+// NIVL · Cifras: el número en Playfair con su rótulo debajo.
 
 import { StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 import { colors, fonts } from '@/lib/theme';

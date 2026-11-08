@@ -11,7 +11,8 @@
     }
   },
   "progreso": {
-    "paso": "Étape {{actual}} sur {{total}}"
+    "paso": "Étape {{actual}} sur {{total}}",
+    "perfil": "Ton profil"
   },
   "tablilla": {
     "rotulo": "Contrat",
@@ -68,7 +69,7 @@
   "firma": {
     "inscripcion": "La signature",
     "titulo": "Signe-le avec toi-même",
-    "pista": "Personne d'autre ne le lira. Il est scellé aujourd'hui et s'ouvre à l'échéance. Choisis combien de temps tu te donnes.",
+    "pista": "Il est scellé aujourd'hui et s'ouvre à l'échéance. Ton coach peut le lire pour t'aider. Choisis combien de temps tu te donnes.",
     "horizonteA11y": "Horizon de {{plazo}}",
     "horizonteRecomendadoA11y": "Horizon de {{plazo}}, recommandé",
     "recomendado": "recommandé",
@@ -108,5 +109,266 @@
     "firmado": "Signé : {{nombre}}",
     "cifra": "Chiffre : {{cifra}}",
     "fecha": "Date : {{fecha}}"
+  },
+  "embudo": {
+    "tuPerfil": "Ton profil",
+    "tuPerfilA11y": "Ton profil, {{pct}} pour cent",
+    "portada": {
+      "crear": "Créer mon plan en 2 minutes",
+      "yaTengo": "J'ai déjà un compte",
+      "lema": "Ta meilleure version a déjà un coach",
+      "texto": "Entraînement, études, travail et business. Un coach qui te dit quoi faire aujourd'hui et ne te laisse pas filer.",
+      "tarjeta": "Crée ton plan en 2 minutes"
+    },
+    "preguntas": {
+      "mejora": {
+        "t": "Que veux-tu améliorer ?",
+        "p": "Choisis tout ce qui compte pour toi.",
+        "o": {
+          "cuerpo": "Corps et énergie",
+          "estudios": "Études",
+          "trabajo": "Travail et carrière",
+          "negocio": "Business et argent",
+          "disciplina": "Discipline et habitudes",
+          "calma": "Mental et calme"
+        }
+      },
+      "kind": {
+        "t": "Qu'est-ce qui te décrit le mieux ?",
+        "p": "Ton app s'organise selon ça.",
+        "o": {
+          "deportista": "Sportif",
+          "estudiante": "Étudiant",
+          "trabajador": "Professionnel",
+          "emprendedor": "Entrepreneur",
+          "general": "Je veux ma meilleure version"
+        }
+      },
+      "meta": {
+        "t": "Que veux-tu accomplir ?",
+        "p": "Ce qui te rendrait vraiment fier."
+      },
+      "cuanto": {
+        "t": "Depuis combien de temps veux-tu ça ?",
+        "p": "Dis la vérité. Ton coach s'en sert pour ajuster ton plan.",
+        "o": {
+          "semanas": "Quelques semaines",
+          "meses": "Quelques mois",
+          "anio": "Plus d'un an",
+          "anios": "Trop d'années"
+        }
+      },
+      "freno": {
+        "t": "Qu'est-ce qui t'a freiné jusqu'ici ?",
+        "p": "Choisis ce que tu reconnais.",
+        "o": {
+          "tiempo": "Je n'ai pas le temps",
+          "dejo": "Je commence et j'abandonne",
+          "empezar": "Je ne sais pas par où commencer",
+          "exige": "Personne ne me pousse",
+          "movil": "Mon téléphone me dévore"
+        }
+      },
+      "coach": {
+        "t": "As-tu déjà eu un coach ou un entraîneur ?",
+        "p": "Ça change ma façon de travailler avec toi.",
+        "o": {
+          "funciono": "Oui, et ça a marché",
+          "nofunciono": "Oui, et ça n'a pas marché",
+          "nunca": "Jamais",
+          "caro": "J'y ai pensé, mais c'est cher"
+        }
+      },
+      "min": {
+        "t": "Combien de temps peux-tu y consacrer chaque jour ?",
+        "p": "Sans te mentir.",
+        "o": {
+          "15": "15 minutes",
+          "30": "30 minutes",
+          "60": "1 heure",
+          "90": "Plus d'une heure"
+        }
+      },
+      "mom": {
+        "t": "Quand es-tu au top ?",
+        "p": "C'est là que je mettrai le plus dur.",
+        "o": {
+          "primera": "Tôt le matin",
+          "media": "Milieu de matinée",
+          "tarde": "L'après-midi",
+          "noche": "Le soir"
+        }
+      }
+    },
+    "metas": {
+      "deportista": {
+        "carrera": "Préparer un triathlon ou une course",
+        "musculo": "Gagner du muscle et de la force",
+        "grasa": "Perdre du gras pour de vrai",
+        "forma": "Retrouver la forme"
+      },
+      "estudiante": {
+        "oposicion": "Réussir un concours",
+        "notas": "Avoir de meilleures notes",
+        "examenes": "Réussir mes examens",
+        "procrastinar": "Arrêter de procrastiner"
+      },
+      "trabajador": {
+        "ascenso": "Obtenir une promotion",
+        "rendir": "Faire plus en moins d'heures",
+        "cambiar": "Changer de travail",
+        "vida": "Retrouver ma vie hors du travail"
+      },
+      "emprendedor": {
+        "facturar": "Facturer plus",
+        "clientes": "Trouver des clients",
+        "ordenar": "Mettre de l'ordre dans mon business",
+        "lanzarme": "Quitter mon travail et me lancer"
+      },
+      "general": {
+        "disciplina": "Avoir une vraie discipline",
+        "dormir": "Dormir et me sentir mieux",
+        "dinero": "Mettre de l'ordre dans mon argent",
+        "aprender": "Lire et apprendre plus"
+      }
+    },
+    "crudo": {
+      "rotulo": "Avant de continuer",
+      "titulo": "Je vais être cash avec toi.",
+      "cuerpo": "Je ne suis pas là pour te plaire. Je suis là pour que dans 90 jours tu ne sois plus la même personne.",
+      "detalle": "Je te dirai quand tu te mens. Je te préviendrai quand tu voudras te défiler. Et je serai là chaque fois que tu tiendras parole.",
+      "pregunta": "Comment veux-tu que je te parle ?",
+      "duro": "Sans filtre. Dis-moi tout",
+      "tacto": "Direct, mais avec tact"
+    },
+    "curva": {
+      "titulo": "1 % par jour, ça ne paraît rien.",
+      "cuerpo": "C'est des maths, pas une promesse. Le plus dur, c'est de ne pas lâcher. C'est pour ça que je suis là.",
+      "seguir": "Je vois",
+      "a11y": "Courbe qui monte : plus 35 pour cent en 30 jours, plus 145 pour cent en 90 jours",
+      "hoy": "Aujourd'hui",
+      "dia30": "Jour 30",
+      "dia90": "Jour 90"
+    },
+    "cuenta": {
+      "titulo": "Ton plan est presque prêt. Enregistre-le.",
+      "texto": "Pour ne rien perdre, sur ton téléphone ou ton ordinateur."
+    },
+    "bienvenida": {
+      "rotulo": "Ton compte est prêt",
+      "titulo": "Deux ou trois choses et on commence.",
+      "texto": "Ton plan est déjà lancé. Avant de l'enregistrer, tu dois savoir ceci :"
+    },
+    "salud": {
+      "rotulo": "Ta santé",
+      "titulo": "Tes données de santé, seulement avec ta permission.",
+      "texto": "Pour préparer entraînements, repas et repos, je dois enregistrer des données de santé. C'est toi qui décides, et tu peux retirer ton accord quand tu veux dans Profil.",
+      "sinPermiso": "Sans permission, ton plan perd l'objectif santé et ces missions. Le reste fonctionne pareil.",
+      "revisar": "Revoir la permission",
+      "seguir": "Continuer sans données de santé"
+    },
+    "carga": {
+      "titulo": "Construction de ton plan",
+      "leyendo": "Lecture de tes réponses",
+      "calculando": "Calcul de tes 90 jours",
+      "eligiendo": "Choix de ta première mission",
+      "preparando": "Préparation de ton coach"
+    },
+    "plan": {
+      "rotulo": "Ton plan de 90 jours · profil à 100 %",
+      "veredicto": "Le verdict de ton coach",
+      "sinMeta": "Ton plan de 90 jours",
+      "empezar": "Je veux commencer",
+      "cuando": {
+        "hoy": "Auj.",
+        "sem4": "Sem. 4",
+        "dia90": "Jour 90"
+      }
+    },
+    "veredicto": {
+      "duro": "{{cuanto}} que tu veux ça, et ton excuse, c'est « {{freno}} ». Avec {{min}} par jour, ça suffit. Ce qui ne suffit pas, c'est de continuer à attendre.",
+      "tacto": "{{cuanto}} que tu le veux. C'est normal de bloquer sur « {{freno}} ». Avec {{min}} par jour, tu y arrives, et je t'y emmène."
+    },
+    "hitos": {
+      "deportista": {
+        "hoy": {
+          "titulo": "Ton premier entraînement",
+          "detalle": "Mesuré, avec allure et distance."
+        },
+        "sem4": {
+          "titulo": "Tes premières marques",
+          "detalle": "Tu as de quoi te comparer."
+        },
+        "dia90": {
+          "titulo": "Le bilan",
+          "detalle": "Tu mesures ce que tu as accompli face à ton objectif."
+        }
+      },
+      "estudiante": {
+        "hoy": {
+          "titulo": "Ton premier bloc",
+          "detalle": "Le sujet que tu maîtrises le moins."
+        },
+        "sem4": {
+          "titulo": "Le programme, en route",
+          "detalle": "Des révisions au bon moment."
+        },
+        "dia90": {
+          "titulo": "Le bilan",
+          "detalle": "Tu sais ce que tu maîtrises et ce qu'il te manque pour l'examen."
+        }
+      },
+      "trabajador": {
+        "hoy": {
+          "titulo": "Ton premier bloc de concentration",
+          "detalle": "Ce qui fait le plus avancer ta semaine."
+        },
+        "sem4": {
+          "titulo": "Ta semaine, sous contrôle",
+          "detalle": "Priorités et horaires clairs."
+        },
+        "dia90": {
+          "titulo": "Le bilan",
+          "detalle": "Des résultats que tu peux montrer."
+        }
+      },
+      "emprendedor": {
+        "hoy": {
+          "titulo": "Cinq appels",
+          "detalle": "Ce qui rapporte de l'argent, d'abord."
+        },
+        "sem4": {
+          "titulo": "Ton tunnel de vente, en route",
+          "detalle": "Tu sais ce qui marche et ce qui ne marche pas."
+        },
+        "dia90": {
+          "titulo": "Le bilan",
+          "detalle": "Des chiffres, pas des impressions."
+        }
+      },
+      "general": {
+        "hoy": {
+          "titulo": "Trois habitudes",
+          "detalle": "Petites, impossibles à sauter."
+        },
+        "sem4": {
+          "titulo": "Ça te coûte déjà moins",
+          "detalle": "Ta routine commence à tourner toute seule."
+        },
+        "dia90": {
+          "titulo": "Le bilan",
+          "detalle": "Tu regardes en arrière avec des données, pas de mémoire."
+        }
+      }
+    },
+    "tarjetas": {
+      "avisosTitulo": "Pour ne rien laisser passer",
+      "avisosTexto": "Je te préviens pour ta mission et la clôture du jour. Tu changes ça quand tu veux dans Profil.",
+      "avisosActivar": "Activer les rappels",
+      "ahoraNo": "Pas maintenant",
+      "firmaTitulo": "Signe ton engagement",
+      "firmaTexto": "Tu as déjà commencé. Maintenant, écris-le : une lettre pour toi qui s'ouvre dans quelques années.",
+      "firmaBoton": "Signer"
+    }
   }
 }

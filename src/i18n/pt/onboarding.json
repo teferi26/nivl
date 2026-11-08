@@ -11,7 +11,8 @@
     }
   },
   "progreso": {
-    "paso": "Passo {{actual}} de {{total}}"
+    "paso": "Passo {{actual}} de {{total}}",
+    "perfil": "O teu perfil"
   },
   "tablilla": {
     "rotulo": "Contrato",
@@ -68,7 +69,7 @@
   "firma": {
     "inscripcion": "A assinatura",
     "titulo": "Assina-o contigo",
-    "pista": "Mais ninguém o vai ler. É selado hoje e abre quando terminar o prazo. Escolhe quanto tempo te dás.",
+    "pista": "É selado hoje e abre quando terminar o prazo. O teu coach pode lê-lo para te ajudar. Escolhe quanto tempo te dás.",
     "horizonteA11y": "Horizonte de {{plazo}}",
     "horizonteRecomendadoA11y": "Horizonte de {{plazo}}, recomendado",
     "recomendado": "recomendado",
@@ -108,5 +109,266 @@
     "firmado": "Assinado: {{nombre}}",
     "cifra": "Valor: {{cifra}}",
     "fecha": "Data: {{fecha}}"
+  },
+  "embudo": {
+    "tuPerfil": "O teu perfil",
+    "tuPerfilA11y": "O teu perfil, {{pct}} por cento",
+    "portada": {
+      "crear": "Criar o meu plano em 2 minutos",
+      "yaTengo": "Já tenho conta",
+      "lema": "A tua melhor versão já tem treinador",
+      "texto": "Treino, estudo, trabalho e negócio. Um coach que te diz o que fazer hoje e não te deixa fugir.",
+      "tarjeta": "Cria o teu plano em 2 minutos"
+    },
+    "preguntas": {
+      "mejora": {
+        "t": "Em que queres melhorar?",
+        "p": "Escolhe tudo o que te importa.",
+        "o": {
+          "cuerpo": "Corpo e energia",
+          "estudios": "Estudos",
+          "trabajo": "Trabalho e carreira",
+          "negocio": "Negócio e dinheiro",
+          "disciplina": "Disciplina e hábitos",
+          "calma": "Mente e calma"
+        }
+      },
+      "kind": {
+        "t": "O que te descreve melhor?",
+        "p": "A tua app organiza-se em função disto.",
+        "o": {
+          "deportista": "Desportista",
+          "estudiante": "Estudante",
+          "trabajador": "Profissional",
+          "emprendedor": "Empreendedor",
+          "general": "Quero a minha melhor versão"
+        }
+      },
+      "meta": {
+        "t": "O que queres conseguir?",
+        "p": "Aquilo que te daria orgulho a sério."
+      },
+      "cuanto": {
+        "t": "Há quanto tempo queres isto?",
+        "p": "Diz a verdade. O teu coach usa isto para ajustar o teu plano.",
+        "o": {
+          "semanas": "Algumas semanas",
+          "meses": "Alguns meses",
+          "anio": "Mais de um ano",
+          "anios": "Demasiados anos"
+        }
+      },
+      "freno": {
+        "t": "O que te travou até agora?",
+        "p": "Escolhe o que reconheces.",
+        "o": {
+          "tiempo": "Não tenho tempo",
+          "dejo": "Começo e desisto",
+          "empezar": "Não sei por onde começar",
+          "exige": "Ninguém me exige nada",
+          "movil": "O telemóvel come-me o tempo"
+        }
+      },
+      "coach": {
+        "t": "Já alguma vez tiveste um coach ou treinador?",
+        "p": "Muda a forma como vou trabalhar contigo.",
+        "o": {
+          "funciono": "Sim, e resultou",
+          "nofunciono": "Sim, e não resultou",
+          "nunca": "Nunca",
+          "caro": "Pensei nisso, mas é caro"
+        }
+      },
+      "min": {
+        "t": "Quanto tempo lhe podes dar por dia?",
+        "p": "Sem te enganares.",
+        "o": {
+          "15": "15 minutos",
+          "30": "30 minutos",
+          "60": "1 hora",
+          "90": "Mais de 1 hora"
+        }
+      },
+      "mom": {
+        "t": "Quando rendes mais?",
+        "p": "É aí que vou pôr o mais difícil.",
+        "o": {
+          "primera": "Logo de manhã",
+          "media": "A meio da manhã",
+          "tarde": "À tarde",
+          "noche": "À noite"
+        }
+      }
+    },
+    "metas": {
+      "deportista": {
+        "carrera": "Preparar um triatlo ou uma corrida",
+        "musculo": "Ganhar músculo e força",
+        "grasa": "Perder gordura a sério",
+        "forma": "Voltar a estar em forma"
+      },
+      "estudiante": {
+        "oposicion": "Passar num concurso público",
+        "notas": "Ter melhores notas",
+        "examenes": "Passar nos exames",
+        "procrastinar": "Deixar de procrastinar"
+      },
+      "trabajador": {
+        "ascenso": "Conseguir uma promoção",
+        "rendir": "Render mais em menos horas",
+        "cambiar": "Mudar de trabalho",
+        "vida": "Recuperar a minha vida fora do trabalho"
+      },
+      "emprendedor": {
+        "facturar": "Faturar mais",
+        "clientes": "Conseguir clientes",
+        "ordenar": "Pôr o meu negócio em ordem",
+        "lanzarme": "Deixar o emprego e lançar-me"
+      },
+      "general": {
+        "disciplina": "Ter disciplina a sério",
+        "dormir": "Dormir e sentir-me melhor",
+        "dinero": "Pôr o meu dinheiro em ordem",
+        "aprender": "Ler e aprender mais"
+      }
+    },
+    "crudo": {
+      "rotulo": "Antes de continuar",
+      "titulo": "Vou ser cru contigo.",
+      "cuerpo": "Não estou aqui para te cair bem. Estou aqui para que daqui a 90 dias não sejas a mesma pessoa.",
+      "detalle": "Vou dizer-te quando te estiveres a mentir. Vou avisar-te quando te quiseres baldar. E vou estar contigo sempre que cumprires.",
+      "pregunta": "Como queres que te fale?",
+      "duro": "Sem filtros. Diz-me tudo",
+      "tacto": "Direto, mas com tato"
+    },
+    "curva": {
+      "titulo": "1 % por dia não parece nada.",
+      "cuerpo": "É matemática, não uma promessa. O difícil é não falhar. É para isso que eu cá estou.",
+      "seguir": "Já estou a ver",
+      "a11y": "Curva a subir: mais 35 por cento em 30 dias, mais 145 por cento em 90 dias",
+      "hoy": "Hoje",
+      "dia30": "Dia 30",
+      "dia90": "Dia 90"
+    },
+    "cuenta": {
+      "titulo": "O teu plano está quase pronto. Guarda-o.",
+      "texto": "Para não perderes nada, no telemóvel ou no computador."
+    },
+    "bienvenida": {
+      "rotulo": "A tua conta está pronta",
+      "titulo": "Só um par de coisas e começamos.",
+      "texto": "O teu plano já está em marcha. Antes de o guardares, tens de saber isto:"
+    },
+    "salud": {
+      "rotulo": "A tua saúde",
+      "titulo": "Os teus dados de saúde, só com a tua autorização.",
+      "texto": "Para preparar treinos, refeições e descanso preciso de guardar dados de saúde. Quem decide és tu e podes retirar a autorização quando quiseres em Perfil.",
+      "sinPermiso": "Sem autorização, o teu plano fica sem o objetivo de saúde e sem essas missões. O resto funciona igual.",
+      "revisar": "Rever a autorização",
+      "seguir": "Continuar sem dados de saúde"
+    },
+    "carga": {
+      "titulo": "A construir o teu plano",
+      "leyendo": "A ler as tuas respostas",
+      "calculando": "A calcular os teus 90 dias",
+      "eligiendo": "A escolher a tua primeira missão",
+      "preparando": "A preparar o teu coach"
+    },
+    "plan": {
+      "rotulo": "O teu plano de 90 dias · perfil a 100 %",
+      "veredicto": "O veredito do teu coach",
+      "sinMeta": "O teu plano de 90 dias",
+      "empezar": "Quero começar",
+      "cuando": {
+        "hoy": "Hoje",
+        "sem4": "Sem. 4",
+        "dia90": "Dia 90"
+      }
+    },
+    "veredicto": {
+      "duro": "{{cuanto}} a querer isto e a tua desculpa é «{{freno}}». Com {{min}} por dia chega. O que não chega é continuar à espera.",
+      "tacto": "{{cuanto}} a querê-lo. É normal encravar em «{{freno}}». Com {{min}} por dia lá chegas, e eu levo-te."
+    },
+    "hitos": {
+      "deportista": {
+        "hoy": {
+          "titulo": "O teu primeiro treino",
+          "detalle": "Medido, com ritmo e distância."
+        },
+        "sem4": {
+          "titulo": "As tuas primeiras marcas",
+          "detalle": "Já tens com que te comparar."
+        },
+        "dia90": {
+          "titulo": "O balanço",
+          "detalle": "Medes o que conseguiste face ao teu objetivo."
+        }
+      },
+      "estudiante": {
+        "hoy": {
+          "titulo": "O teu primeiro bloco",
+          "detalle": "O tema que te corre pior."
+        },
+        "sem4": {
+          "titulo": "A matéria, em marcha",
+          "detalle": "Revisões no momento certo."
+        },
+        "dia90": {
+          "titulo": "O balanço",
+          "detalle": "Sabes o que dominas e o que te falta para o exame."
+        }
+      },
+      "trabajador": {
+        "hoy": {
+          "titulo": "O teu primeiro bloco de foco",
+          "detalle": "O que mais mexe com a tua semana."
+        },
+        "sem4": {
+          "titulo": "A tua semana, sob controlo",
+          "detalle": "Prioridades e horas claras."
+        },
+        "dia90": {
+          "titulo": "O balanço",
+          "detalle": "Resultados que podes mostrar."
+        }
+      },
+      "emprendedor": {
+        "hoy": {
+          "titulo": "Cinco chamadas",
+          "detalle": "Primeiro, o que traz dinheiro."
+        },
+        "sem4": {
+          "titulo": "O teu funil, em marcha",
+          "detalle": "Sabes o que funciona e o que não funciona."
+        },
+        "dia90": {
+          "titulo": "O balanço",
+          "detalle": "Números, não sensações."
+        }
+      },
+      "general": {
+        "hoy": {
+          "titulo": "Três hábitos",
+          "detalle": "Pequenos, impossíveis de saltar."
+        },
+        "sem4": {
+          "titulo": "Já te custa menos",
+          "detalle": "A tua rotina começa a andar sozinha."
+        },
+        "dia90": {
+          "titulo": "O balanço",
+          "detalle": "Olhas para trás com dados, não de memória."
+        }
+      }
+    },
+    "tarjetas": {
+      "avisosTitulo": "Para não te escapar",
+      "avisosTexto": "Aviso-te da tua missão e do fecho do dia. Mudas isso quando quiseres em Perfil.",
+      "avisosActivar": "Ativar avisos",
+      "ahoraNo": "Agora não",
+      "firmaTitulo": "Assina o teu compromisso",
+      "firmaTexto": "Já começaste. Agora escreve-o: uma carta para ti que se abre daqui a uns anos.",
+      "firmaBoton": "Assinar"
+    }
   }
 }

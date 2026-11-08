@@ -2,34 +2,22 @@
 // que no existe (+not-found.tsx). Puro: solo props. La decisión de adónde ir
 // (login, onboarding o Hoy) sigue en index.tsx, intacta.
 //
-//   · ArranqueCargando → la planta de la arena (Arena ovalo 220 × 140, ink3)
-//     con «NIVL» grabado en ink6 encima. Un solo elemento accesible,
-//     «Cargando». Nada invertido.
-//   · ArranqueError → ErrorSistema (sin su botón) + LA INVERSIÓN «Reintentar»
+//   · ArranqueCargando → el escudo con la N y «NIVL» debajo. Un solo elemento
+//     accesible, «Cargando».
+//   · ArranqueError → ErrorSistema (sin su botón) + el botón hueso «Reintentar»
 //     + ghost «Cerrar sesión» (la salida si la cuenta no carga nunca).
-//   · FueraDeLaArena → el 404: EncabezadoArena «Ruta» / «FUERA DE LA
-//     ARENA», la planta, una línea y LA INVERSIÓN «Volver a la arena».
+//   · FueraDeLaArena → el 404: EncabezadoArena «Ruta» / «FUERA DE LA ARENA»,
+//     el escudo, una línea y el botón hueso «Volver a la arena».
 
-import type { ReactNode } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { Arena, EncabezadoArena, Entrada, ErrorSistema } from '@/components/arena';
-import { Button, Screen } from '@/components/ui';
+import { EncabezadoArena, Entrada, ErrorSistema } from '@/components/arena';
+import { Button, FondoOnix, Screen } from '@/components/ui';
 import { ink, space, type as tipo } from '@/design/tokens';
 import { t } from '@/i18n';
+import { Escudo } from './Escudo';
 
-const ANCHO_OVALO = 220;
-const ALTO_OVALO = 140;
 const ANCHO = 440;
-
-/** La planta de la arena con algo encima, centrado. */
-function Planta({ children }: { children?: ReactNode }) {
-  return (
-    <View style={styles.planta}>
-      <Arena ancho={ANCHO_OVALO} alto={ALTO_OVALO} variante="ovalo" color={ink.ink3} style={styles.ovalo} />
-      {children}
-    </View>
-  );
-}
+const TRACKING_MARCA = 6;
 
 export function ArranqueCargando() {
   return (
@@ -40,11 +28,11 @@ export function ArranqueCargando() {
       accessibilityLabel={t('acceso:arranque.cargando')}
       accessibilityState={{ busy: true }}
     >
-      <Planta>
-        <Text style={styles.marca} maxFontSizeMultiplier={1}>{/* i18n-ok: la marca */}
-          NIVL
-        </Text>
-      </Planta>
+      <FondoOnix />
+      <Escudo ancho={88} />
+      <Text style={styles.marca} maxFontSizeMultiplier={1}>{/* i18n-ok: la marca */}
+        NIVL
+      </Text>
     </View>
   );
 }
@@ -83,7 +71,9 @@ export function FueraDeLaArena({ onVolver }: { onVolver: () => void }) {
           <EncabezadoArena eyebrow={t('acceso:fuera.eyebrow')} titulo={t('acceso:fuera.titulo')} />
         </Entrada>
         <Entrada indice={1}>
-          <Planta />
+          <View style={styles.escudo}>
+            <Escudo ancho={88} />
+          </View>
         </Entrada>
         <Entrada indice={2}>
           <Text style={styles.linea} maxFontSizeMultiplier={1.6}>
@@ -98,19 +88,16 @@ export function FueraDeLaArena({ onVolver }: { onVolver: () => void }) {
 
 const styles = StyleSheet.create({
   fondo: { flex: 1, backgroundColor: ink.ink0, alignItems: 'center', justifyContent: 'center' },
-  planta: { width: ANCHO_OVALO, height: ALTO_OVALO, alignSelf: 'center', alignItems: 'center', justifyContent: 'center' },
-  ovalo: { position: 'absolute', left: 0, top: 0 },
+  escudo: { alignSelf: 'center' },
   marca: {
-    fontFamily: tipo.inscripcion.family,
-    fontSize: tipo.inscripcion.size,
-    lineHeight: tipo.inscripcion.lineHeight,
-    letterSpacing: tipo.inscripcion.tracking,
+    fontFamily: tipo.number.family,
+    fontSize: tipo.number.size,
+    lineHeight: tipo.number.lineHeight,
+    letterSpacing: TRACKING_MARCA,
     // El tracking se suma tras la última letra: el mismo hueco delante centra.
-    // Placa negra: tapa el eje de la planta detrás de las letras.
-    paddingLeft: tipo.inscripcion.tracking + space.s2,
-    paddingRight: space.s2,
-    backgroundColor: ink.ink0,
-    color: ink.ink6,
+    paddingLeft: TRACKING_MARCA,
+    color: ink.ink9,
+    marginTop: space.s3,
   },
   centro: { flexGrow: 1, justifyContent: 'center' },
   columna: { width: '100%', maxWidth: ANCHO, alignSelf: 'center' },

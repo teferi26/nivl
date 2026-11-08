@@ -10,7 +10,7 @@
 import { useEffect, useRef } from 'react';
 import { AccessibilityInfo, Animated, StyleSheet, Text } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ink, motion, space, type } from '@/design/tokens';
+import { ink, motion, radio, space, type } from '@/design/tokens';
 import { useMovimientoReducido } from './motion';
 
 interface Props {
@@ -81,7 +81,7 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     maxWidth: '90%',
     backgroundColor: ink.ink10,
-    borderRadius: 999,
+    borderRadius: radio.pastilla,
     paddingHorizontal: space.s5,
     paddingVertical: space.s2,
     zIndex: 20,

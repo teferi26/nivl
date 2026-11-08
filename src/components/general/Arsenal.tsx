@@ -1,8 +1,8 @@
-// NIVL · Modo GENERAL: «Tu arsenal» (lámina 4 de la P01, «toca para equipar»)
+// NIVL · Modo GENERAL: «Tu arsenal» («toca para equipar»)
 // y «Todo desde aquí».
 //
-// · ArsenalModos (pura): una tarjeta por modo activado con su glifo, su color
-//   y su nivel. UN toque cambia de modo (el mismo `irAlMundo` de la rueda, con
+// · ArsenalModos (pura): una tarjeta por modo activado con su glifo y su
+//   nivel, todas con el mismo hilo de oro. UN toque cambia de modo (el mismo `irAlMundo` de la rueda, con
 //   la firma de sonido y vibración del modo): quien no quiere la rueda cambia
 //   de modo sin arrastrar ni mantener. Va en Hoy y en Perfil.
 // · ArsenalConectado: lo mismo leyendo useModo y useNivelesModo. Sin el
@@ -15,13 +15,12 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { useCallback } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { formatoMiles, ratioSeguro } from '@/components/arena';
-import { conAlfa, mezcla } from '@/components/modos/rueda/color';
 import { GlifoModo } from '@/components/modos/rueda/GlifoModo';
 import { EVENTO_MODO } from '@/components/modos/rueda/RuedaModos';
 import { sonarModo } from '@/components/modos/rueda/sonido';
 import { useNivelesModo } from '@/components/modos/useNivelesModo';
 import { vibrar } from '@/design/haptics';
-import { acentoRueda } from '@/design/tokens';
+import { acentoRueda, oro, radio } from '@/design/tokens';
 import { t } from '@/i18n';
 import { useModo } from '@/modos/ModoProvider';
 import type { NivelModo } from '@/modos/niveles';
@@ -63,7 +62,6 @@ function TarjetaModo({ modo, nivel, cargando, onPress }: { modo: ModoEtiqueta; n
       accessibilityLabel={t('general:arsenal.equiparA11y', { modo: nombre, nivel: nivel?.nivel ?? 1 })}
       style={({ pressed }) => [
         styles.modo,
-        { borderColor: conAlfa(acento, 0.45), backgroundColor: mezcla(acento, 0.08, C.tarjeta) },
         pressed && styles.pulsado,
       ]}
     >
@@ -161,11 +159,11 @@ export function HuecoArsenal() {
 const styles = StyleSheet.create({
   pulsado: { opacity: 0.75 },
   rejilla: { flexDirection: 'row', flexWrap: 'wrap', gap: px(7), marginTop: px(6) },
-  modo: { flexBasis: '47%', flexGrow: 1, borderWidth: 1, borderRadius: px(14), paddingVertical: px(10), paddingHorizontal: px(11) },
+  modo: { flexBasis: '47%', flexGrow: 1, borderWidth: 1, borderColor: oro.borde, backgroundColor: oro.fondo, borderRadius: radio.control, paddingVertical: px(10), paddingHorizontal: px(11) },
   modoCabeza: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  nv: { fontFamily: F.xb, fontSize: fs(9.5), letterSpacing: fs(9.5) * 0.12 },
-  huecoNv: { width: px(30), height: px(10), borderRadius: 4, backgroundColor: C.hueco },
-  modoNombre: { fontFamily: F.xb, fontSize: fs(12.5), letterSpacing: fs(12.5) * 0.1, color: C.blanco, marginTop: px(8) },
+  nv: { fontFamily: F.serif, fontSize: fs(11) },
+  huecoNv: { width: px(30), height: px(10), borderRadius: radio.chip, backgroundColor: C.hueco },
+  modoNombre: { fontFamily: F.serif, fontSize: fs(13), letterSpacing: 1, color: C.blanco, marginTop: px(8) },
   modoSub: { fontFamily: F.r, fontSize: fs(9.5), color: C.suave, marginTop: px(1) },
   modoBarra: { marginTop: px(8) },
   equipar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: px(6) },
@@ -175,7 +173,7 @@ const styles = StyleSheet.create({
     flexBasis: '30%',
     flexGrow: 1,
     minHeight: px(66),
-    borderRadius: px(13),
+    borderRadius: radio.control,
     borderWidth: 1,
     borderColor: C.filete,
     backgroundColor: C.tarjeta,

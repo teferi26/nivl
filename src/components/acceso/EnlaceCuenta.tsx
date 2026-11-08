@@ -3,32 +3,44 @@
 // rutas /auth/restablecer y /auth/confirmar; la galería pinta estas vistas con
 // datos de mentira (demo.tsx).
 //
-//   · EncabezadoArena con eyebrow «Cuenta»: «NUEVA CONTRASEÑA» o «CONFIRMAR
-//     CORREO».
+//   · El escudo (en móvil; en escritorio ya está en la fachada) y
+//     EncabezadoArena con eyebrow «Cuenta»: «NUEVA CONTRASEÑA» o «CONFIRMAR
+//     CORREO». En escritorio, el contenido va en tarjeta.
 //   · Comprobando: CargaArena con la forma de lo que viene.
-//   · Formulario (restablecer): dos campos, la fuerza y LA INVERSIÓN «Guardar
+//   · Formulario (restablecer): dos campos, la fuerza y el botón hueso «Guardar
 //     contraseña».
 //   · Hecho: TarjetaArena grano. Inválido o fallo: trama. En los dos, la
-//     salida es el botón principal (la única inversión del estado).
+//     salida es el botón principal.
 
-import type { ReactNode } from 'react';
+import { useContext, type ReactNode } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Campo, CargaArena, EncabezadoArena, Entrada, TarjetaArena } from '@/components/arena';
 import { Button, Screen, useAnunciar } from '@/components/ui';
-import { ink, space, type as tipo } from '@/design/tokens';
+import { ConFachada } from '@/components/web/FachadaAcceso';
+import { ink, radio, space, stroke, type as tipo, vidrio } from '@/design/tokens';
 import { t } from '@/i18n';
 import { checkPassword } from '@/lib/validation';
 import { ayudaContrasena, fuerzaDe } from './formulario';
-import { CampoContrasena, FuerzaContrasena } from './piezas';
+import { Escudo } from './Escudo';
+import { ALTO_CAMPO, CampoContrasena, FuerzaContrasena } from './piezas';
 
 /** Ancho máximo del contenido: en tableta, un formulario de 720 no se lee. */
 const ANCHO = 480;
+const PAD_TARJETA = 28;
 
 /** El marco común: Screen centrada y el encabezado grabado. */
 function MarcoCuenta({ titulo, children }: { titulo: string; children: ReactNode }) {
+  const conFachada = useContext(ConFachada);
   return (
     <Screen contentStyle={styles.contenido}>
-      <View style={styles.columna}>
+      <View style={[styles.columna, conFachada && styles.tarjeta]}>
+        {conFachada ? null : (
+          <Entrada indice={0}>
+            <View style={styles.escudo}>
+              <Escudo ancho={64} />
+            </View>
+          </Entrada>
+        )}
         <Entrada indice={0}>
           <EncabezadoArena eyebrow={t('acceso:cuenta.eyebrow')} titulo={titulo} />
         </Entrada>
@@ -159,6 +171,7 @@ export function RestablecerVista(p: RestablecerVistaProps) {
           autoComplete="new-password"
           textContentType="newPassword"
           placeholder="••••••••••"
+          style={styles.campo}
           accessibilityLabel={t('acceso:contrasena.repite')}
           onSubmitEditing={p.onGuardar}
         />
@@ -217,6 +230,15 @@ export function ConfirmarVista({ error, onIrAEntrar }: ConfirmarVistaProps) {
 const styles = StyleSheet.create({
   contenido: { flexGrow: 1, justifyContent: 'center', paddingTop: space.s6 },
   columna: { width: '100%', maxWidth: ANCHO, alignSelf: 'center' },
+  tarjeta: {
+    padding: PAD_TARJETA,
+    borderRadius: radio.tarjeta,
+    borderWidth: stroke.hairline,
+    borderColor: vidrio.borde,
+    backgroundColor: vidrio.tarjeta,
+  },
+  escudo: { alignItems: 'center', marginBottom: space.s5 },
+  campo: { minHeight: ALTO_CAMPO },
   pila: { gap: space.s5 },
   linea: {
     fontFamily: tipo.bodySm.family,

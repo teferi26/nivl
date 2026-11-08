@@ -16,9 +16,11 @@
 // espejo para los tests y para pensar. Si tocas uno, toca el otro, y también
 // `supabase/functions/_shared/productos-modo.ts` (el test de paridad avisa).
 
+import { t } from '@/i18n';
+import { moneda } from '@/i18n/formato';
 import type { ModoEtiqueta } from '@/modos/tipos';
 import { NOMBRE_MODO } from '@/modos/tipos';
-import { precioVisible, textoGestionTienda } from './proplans';
+import { precioVisible } from './proplans';
 
 export type ModoDePago = ModoEtiqueta;
 export const MODOS_DE_PAGO: readonly ModoDePago[] = ['iron', 'focus', 'work', 'founder'];
@@ -90,8 +92,7 @@ export function productoPorId(id: string | null | undefined): ProductoModo | nul
 /** «14,99 €» o «30 €»: sin decimales cuando el importe es redondo. Solo para la tabla sin tienda. */
 export function importeTabla(cents: number): string {
   const e = Math.round(cents) / 100;
-  const texto = Number.isInteger(e) ? String(e) : e.toFixed(2).replace('.', ',');
-  return `${texto} €`;
+  return moneda(e, Number.isInteger(e) ? 0 : 2);
 }
 
 // ── Derechos ────────────────────────────────────────────────────────
@@ -251,40 +252,59 @@ export function modoDePerfil(kind: unknown): ModoDePago {
 }
 
 // ── Lo que se dice ──────────────────────────────────────────────────
-// Español, como la letra de compra de proplans: es texto legal y espera
-// revisión en cada idioma. Los equivalentes mensuales y los ahorros no se
-// calculan: la tienda puede aplicar otro precio en cada país.
+// Por el catálogo `oferta` (pago.*), en los seis idiomas. La letra de compra
+// espera revisión legal en cada uno. Los equivalentes mensuales y los ahorros
+// no se calculan: la tienda puede aplicar otro precio en cada país.
 
 export function tituloProducto(id: ProductoModoId): string {
   const p = productoPorId(id)!;
-  const que = p.alcance === 'todos' ? 'Todos los modos' : NOMBRE_MODO[p.alcance];
-  return `NIVL ${que} ${p.periodo}`; // i18n-ok: nombre del producto en la tienda
+  const que = p.alcance === 'todos' ? t('oferta:pago.todosLosModos') : NOMBRE_MODO[p.alcance];
+  return `NIVL ${que} ${t(`oferta:pago.duracionProducto.${p.periodo}`)}`;
 }
 
 export function periodoCorto(periodo: Periodo): string {
-  return periodo === 'mensual' ? 'al mes' : 'al año';
+  return t(`oferta:pago.porPeriodo.${periodo}`);
+}
+
+/** El importe facturado tal como se destaca: «99 €/año», «14,99 €/mes». */
+export function importeConPeriodo(precio: string, periodo: Periodo): string {
+  return t(`oferta:pago.importe.${periodo}`, { precio });
 }
 
 export function notaAlcance(alcance: Alcance): string {
-  return alcance === 'todos' ? 'IRON, FOCUS, WORK y FOUNDER, con su coach.' : 'Solo este modo y su coach.'; // i18n-ok: letra de compra
+  return t(alcance === 'todos' ? 'oferta:pago.notaTodos' : 'oferta:pago.notaUno');
 }
 
-export const AVISO_IA = 'NIVL es una IA, no un profesional sanitario.'; // i18n-ok: letra de compra
-
 /** Lo que el modo abre, en una línea, para su puerta cerrada. Solo lo que existe. */
-export const QUE_ABRE: Readonly<Record<ModoDePago, string>> = {
-  iron: 'Entreno, dieta y su coach, que programa tus cargas y corrige tu comida.', // i18n-ok: oferta
-  focus: 'Temario, exámenes y su coach, que reparte tu estudio hasta cada fecha.', // i18n-ok: oferta
-  work: 'Economía, agenda y su coach, que protege tu jornada.', // i18n-ok: oferta
-  founder: 'Agenda, economía del negocio y su coach, que te pide las cifras.', // i18n-ok: oferta
+export function queAbre(modo: ModoDePago): string {
+  return t(`oferta:pago.cerrado.queAbre.${modo}`);
+}
+
+const UNIDAD_PRUEBA: Readonly<Record<string, 'dia' | 'semana' | 'mes' | 'anio'>> = {
+  día: 'dia',
+  días: 'dia',
+  dias: 'dia',
+  semana: 'semana',
+  semanas: 'semana',
+  mes: 'mes',
+  meses: 'mes',
+  año: 'anio',
+  años: 'anio',
 };
 
-export const LINEA_DATOS = 'Lo que registraste aquí sigue siendo tuyo. Nada se borra por no pagar.'; // i18n-ok: oferta
-export const LINEA_BASE = 'NIVL y tus hábitos siguen gratis.'; // i18n-ok: oferta
+/**
+ * La prueba que declara la tienda («7 días», de `periodoIntroGratis`) en el
+ * idioma de la interfaz. Lo que no se reconoce pasa tal cual.
+ */
+export function periodoGratisVisible(periodoGratis: string): string {
+  const m = /^(\d+) (\S+)$/.exec(periodoGratis);
+  const unidad = m ? UNIDAD_PRUEBA[m[2]!] : undefined;
+  return m && unidad ? t(`oferta:pago.duracion.${unidad}`, { count: Number(m[1]) }) : periodoGratis;
+}
 
 export function textoBotonCompra(id: ProductoModoId, precio: string, periodoGratis: string | null): string {
-  if (periodoGratis) return `Empezar mis ${periodoGratis} gratis`; // i18n-ok: letra de compra
-  return `Suscribirme por ${precio} ${periodoCorto(productoPorId(id)!.periodo)}`; // i18n-ok: letra de compra
+  if (periodoGratis) return t('oferta:pago.cta.prueba', { periodo: periodoGratisVisible(periodoGratis) });
+  return t('oferta:pago.cta.suscribir', { precio, porPeriodo: periodoCorto(productoPorId(id)!.periodo) });
 }
 
 /** Los dos pasos de la prueba, solo si la tienda la declara. El día de cobro sale de sus días. */
@@ -292,9 +312,13 @@ export function pasosPrueba(periodoGratis: string | null): readonly { dia: strin
   const dias = periodoGratis ? /^(\d+) d[ií]as$/.exec(periodoGratis)?.[1] : null;
   if (!dias) return [];
   return [
-    { dia: 'Hoy', texto: 'Empieza gratis' }, // i18n-ok: letra de compra
-    { dia: `Día ${dias}`, texto: 'Primer cobro' }, // i18n-ok: letra de compra
+    { dia: t('oferta:pago.prueba.hoy'), texto: t('oferta:pago.prueba.empieza') },
+    { dia: t('oferta:pago.prueba.dia', { dias }), texto: t('oferta:pago.prueba.cobro') },
   ];
+}
+
+function gestionTienda(plataforma: string): string {
+  return t(`oferta:pago.legal.gestion.${plataforma === 'ios' || plataforma === 'android' ? plataforma : 'otra'}`);
 }
 
 /**
@@ -311,13 +335,15 @@ export function legalModo(
   const confirmado = precioVisible(precio);
   if (!confirmado) return null;
   const p = productoPorId(id)!;
-  const duracion = p.periodo === 'mensual' ? 'mensual (1 mes)' : 'anual (1 año)';
-  const cobro = periodoGratis
-    ? `${periodoGratis} gratis y después ${confirmado} ${periodoCorto(p.periodo)}`
-    : `${confirmado} ${periodoCorto(p.periodo)}`;
-  return (
-    `${tituloProducto(id)}: suscripción ${duracion} de renovación automática. ${cobro}. ` + // i18n-ok: letra de compra
-    'El cobro se hace en tu cuenta de la tienda y se renueva sola salvo que la canceles al menos 24 horas antes de que acabe el periodo. ' + // i18n-ok: letra de compra
-    `${textoGestionTienda(plataforma)} ${LINEA_BASE} ${AVISO_IA}`
-  );
+  const importe = { precio: confirmado, porPeriodo: periodoCorto(p.periodo) };
+  return [
+    t('oferta:pago.legal.renovacion', { producto: tituloProducto(id), duracion: t(`oferta:pago.duracionLegal.${p.periodo}`) }),
+    periodoGratis
+      ? t('oferta:pago.legal.cobroPrueba', { periodo: periodoGratisVisible(periodoGratis), ...importe })
+      : t('oferta:pago.legal.cobro', importe),
+    t('oferta:pago.legal.tienda'),
+    gestionTienda(plataforma),
+    t('oferta:pago.legal.base'),
+    t('oferta:pago.legal.avisoIa'),
+  ].join(' ');
 }

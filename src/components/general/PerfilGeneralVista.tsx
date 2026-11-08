@@ -1,4 +1,4 @@
-// NIVL · General · Perfil, rediseñado con la piel de NIVL (lámina 4). Pura:
+// NIVL · General · Perfil, rediseñado con la piel de NIVL (Ónix). Pura:
 // las mismas props que PerfilVista (usePerfil); los ajustes llegan hechos
 // (PerfilAjustes, ya partidos en secciones) y el arsenal por la ranura
 // `nivelesModo`.
@@ -20,6 +20,7 @@ import { EliteBadge } from '@/components/EliteBadge';
 import { textoSiguiente } from '@/components/perfil/CaminoDeRangos';
 import type { PerfilVistaProps } from '@/components/perfil/PerfilVista';
 import { Avatar } from '@/components/ui/Avatar';
+import { ink, oro, radio, vidrio } from '@/design/tokens';
 import { t } from '@/i18n';
 import { isValidKey, nombreDia } from '@/lib/dates';
 import { MAX_STONES, streakMultiplier } from '@/lib/game';
@@ -39,7 +40,7 @@ import {
   TarjetaGeneral,
   textoGeneral,
 } from './piezas';
-import { C, F, fs, G, oroA, px } from './tema';
+import { C, F, fs, G, px } from './tema';
 
 export interface PerfilGeneralVistaProps extends PerfilVistaProps {
   onVolver?: () => void;
@@ -119,7 +120,7 @@ export function PerfilGeneralVista(p: PerfilGeneralVistaProps) {
                 {elite ? <EliteBadge size={20} /> : null}
               </View>
               <Text style={styles.titulo} numberOfLines={2}>
-                {(titulo || rango.nombre).toUpperCase()}
+                {titulo || rango.nombre}
               </Text>
               <Text style={textoGeneral.detalle} numberOfLines={1}>
                 {t('general:perfil.rangoUso', { rango: estado.rango, nombre: rango.nombre, uso: kindMeta(profile.profile_kind).title })}
@@ -258,25 +259,25 @@ const styles = StyleSheet.create({
   huecos: { gap: px(9) },
   pulsado: { opacity: 0.75 },
   barraSup: { flexDirection: 'row', alignItems: 'center', gap: px(10), marginBottom: px(4), minHeight: 40 },
-  redondo: { width: 40, height: 40, borderRadius: 20, borderWidth: 1.5, borderColor: oroA(0.6), alignItems: 'center', justifyContent: 'center' },
-  eyebrow: { fontFamily: 'Cinzel_900Black', fontSize: 24, letterSpacing: 1.6, color: C.blanco },
+  redondo: { width: 40, height: 40, borderRadius: radio.pastilla, borderWidth: 1, borderColor: vidrio.borde, alignItems: 'center', justifyContent: 'center' },
+  eyebrow: { fontFamily: F.serif, fontSize: 24, lineHeight: 30, letterSpacing: 3, color: C.blanco },
   identidad: { flexDirection: 'row', alignItems: 'center', gap: px(14), marginBottom: px(12) },
   retrato: { width: px(84), height: px(84) },
-  camara: { position: 'absolute', right: -2, bottom: -2, width: px(24), height: px(24), borderRadius: px(12), backgroundColor: G, alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: C.tarjeta },
+  camara: { position: 'absolute', right: -2, bottom: -2, width: px(24), height: px(24), borderRadius: radio.control, backgroundColor: ink.ink10, alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: ink.ink1 },
   nombreFila: { flexDirection: 'row', alignItems: 'center', gap: px(6) },
-  nombre: { flex: 1, minWidth: 0, fontFamily: F.xb, fontSize: fs(18), color: C.blanco, paddingVertical: 2 },
-  titulo: { fontFamily: 'Cinzel_900Black', fontSize: fs(13), letterSpacing: 1, color: G, marginTop: px(2) },
+  nombre: { flex: 1, minWidth: 0, fontFamily: F.b, fontSize: fs(18), color: C.blanco, paddingVertical: 2 },
+  titulo: { fontFamily: F.serif, fontSize: fs(13), color: oro.claro, marginTop: px(2) },
   nivelFila: { flexDirection: 'row', alignItems: 'center', gap: px(12), marginTop: px(12), paddingTop: px(10), borderTopWidth: 1, borderTopColor: C.regla },
-  rotuloPeq: { fontFamily: F.b, fontSize: fs(9), letterSpacing: fs(9) * 0.16, color: C.meta, textTransform: 'uppercase' },
+  rotuloPeq: { fontFamily: F.b, fontSize: fs(9), letterSpacing: 2, color: C.meta, textTransform: 'uppercase' },
   siguiente: { flexDirection: 'row', alignItems: 'center', gap: px(10) },
-  letra: { width: px(34), height: px(34), borderRadius: px(9), borderWidth: 2, borderColor: G, alignItems: 'center', justifyContent: 'center' },
-  letraTexto: { fontFamily: 'Cinzel_900Black', fontSize: fs(15), color: G },
+  letra: { width: px(34), height: px(34), borderRadius: radio.chip, borderWidth: 1, borderColor: oro.borde, alignItems: 'center', justifyContent: 'center' },
+  letraTexto: { fontFamily: F.serif, fontSize: fs(15), color: oro.claro },
   racha: { marginTop: px(6), marginHorizontal: px(2) },
   titulos: { flexDirection: 'row', flexWrap: 'wrap', gap: px(7), marginTop: px(6) },
-  tituloChip: { flexDirection: 'row', alignItems: 'center', gap: px(6), paddingVertical: px(8), paddingHorizontal: px(11), borderRadius: px(10), borderWidth: 1, borderColor: oroA(0.45), backgroundColor: C.tarjeta, maxWidth: '100%' },
-  tituloChipOn: { backgroundColor: G, borderColor: G },
+  tituloChip: { flexDirection: 'row', alignItems: 'center', gap: px(6), paddingVertical: px(8), paddingHorizontal: px(11), borderRadius: radio.chip, borderWidth: 1, borderColor: vidrio.borde, backgroundColor: vidrio.tarjeta, maxWidth: '100%' },
+  tituloChipOn: { backgroundColor: ink.ink10, borderColor: ink.ink10 },
   tituloChipTexto: { fontFamily: F.sb, fontSize: fs(10.5), color: C.texto, flexShrink: 1 },
-  tituloChipTextoOn: { color: C.fondo, fontFamily: F.xb },
+  tituloChipTextoOn: { color: ink.ink0, fontFamily: F.b },
   lista: { paddingVertical: px(3), marginTop: px(6) },
   ajustes: { marginTop: px(6), paddingTop: px(4) },
 });

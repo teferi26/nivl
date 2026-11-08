@@ -193,11 +193,12 @@ export async function estadoAvisos(): Promise<EstadoAvisos> {
 }
 
 /** Inicializa canales, categorías y permiso. Idempotente. */
-export async function inicializarAvisos(): Promise<boolean> {
+export async function inicializarAvisos(pedir = true): Promise<boolean> {
   try {
     ultimoError = null;
     await prepararCanales();
     await prepararCategorias();
+    if (!pedir) return (await Notifications.getPermissionsAsync()).granted;
     return await asegurarPermiso();
   } catch (e) {
     // Antes esto se tragaba en silencio: en Expo Go las notificaciones no

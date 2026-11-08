@@ -7,11 +7,10 @@
     "fuerte": "Forte"
   },
   "aviso": {
-    "registro": "Se o e-mail for novo, enviámos-te uma ligação para o confirmar. Abre-a neste telefone e depois entra com a tua palavra-passe.",
+    "registro": "Se o e-mail for novo, enviámos-te uma ligação para o confirmar. Abre-a neste telefone e a sessão abre-se sozinha.",
     "recuperacion": "Se esse e-mail tiver conta, enviámos-te uma ligação. Abre-a neste telefone para escolher uma palavra-passe nova."
   },
   "error": {
-    "nombre": "Entre 1 e {{max}} caracteres.",
     "correo": "Formato de e-mail inválido.",
     "noCoinciden": "As palavras-passe não coincidem."
   },
@@ -50,7 +49,6 @@
     },
     "portal": "Portal de criadores",
     "recuperarTitulo": "Recuperar palavra-passe",
-    "nombrePlaceholder": "Como queres que o sistema te chame",
     "correo": "E-mail",
     "correoPlaceholder": "tu@email.com",
     "correoA11y": "Endereço de e-mail",
@@ -62,7 +60,13 @@
     "faltaCasilla": "Marca a caixa dos Termos para continuar.",
     "olvido": "Esqueceste a palavra-passe?",
     "volverAEntrar": "Voltar a entrar",
-    "notaCuenta": "Os teus hábitos, missões e progresso ficam guardados na tua conta NIVL."
+    "notaCuenta": "Os teus hábitos, missões e progresso ficam guardados na tua conta NIVL.",
+    "crearPlan": "Criar o meu plano",
+    "reenviar": {
+      "boton": "Reenviar e-mail",
+      "espera": "Reenviar em {{n}} s",
+      "enviado": "Se esse e-mail estiver por confirmar, voltámos a enviar a ligação. Vê também no spam."
+    }
   },
   "arranque": {
     "cargando": "A carregar"
@@ -95,11 +99,7 @@
     "sinEnlace": "Esta ligação não traz nada para confirmar. Abre o último e-mail que te enviámos ou entra com a tua palavra-passe."
   },
   "web": {
-    "eyebrow": "NIVL no navegador",
-    "titulo": "A tua arena, também aqui.",
-    "cuerpo": "A mesma conta e os mesmos dados que no telemóvel. O que fazes aqui conta lá.",
-    "punto1": "Missões, sequência e fecho do dia",
-    "punto2": "Os teus mundos: IRON, FOCUS, WORK e FOUNDER",
-    "punto3": "O coach, com um teclado a sério"
+    "titulo": "A tua melhor versão já tem treinador",
+    "cuerpo": "Treino, estudo, trabalho e negócio. Um coach que te diz o que fazer hoje e não te deixa fugir."
   }
 }

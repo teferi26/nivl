@@ -2,18 +2,18 @@
 // (docs/design-v2/FASE3.md): el acceso con datos de mentira, sin sesión ni
 // Supabase. Las acciones no hacen nada.
 //
-// Entrar (8 estados + el teclado fuera), restablecer (4), confirmar (2),
+// Entrar (9 estados + el teclado fuera), restablecer (4), confirmar (2),
 // arranque (2) y el 404. Pantallas de la pila: el hueco es el ancho entero.
 import type { DemoPantalla } from '@/components/arena/galeria';
 import { ArranqueCargando, ArranqueError, FueraDeLaArena } from './Arranque';
 import { ConfirmarVista, RestablecerVista, type RestablecerVistaProps } from './EnlaceCuenta';
-import { AVISO_RECUPERACION, SIN_TOCAR, type CamposLogin, type ModoLogin } from './formulario';
+import { AVISO_RECUPERACION, avisoReenviado, avisoRegistro, SIN_TOCAR, type CamposLogin, type ModoLogin } from './formulario';
 import { LoginVista, type LoginVistaProps } from './LoginVista';
 
 const nada = () => {};
 
-const VACIOS: CamposLogin = { nombre: '', correo: '', contrasena: '', repite: '', aceptado: false };
-const TODO_TOCADO = { nombre: true, correo: true, contrasena: true, repite: true };
+const VACIOS: CamposLogin = { correo: '', contrasena: '', aceptado: false };
+const TODO_TOCADO = { correo: true, contrasena: true };
 
 function login(modo: ModoLogin, extra: Partial<LoginVistaProps> = {}): LoginVistaProps {
   return {
@@ -26,15 +26,16 @@ function login(modo: ModoLogin, extra: Partial<LoginVistaProps> = {}): LoginVist
     aviso: null,
     enviando: false,
     plegada: false,
-    onNombre: nada,
+    reenvio: null,
     onCorreo: nada,
     onContrasena: nada,
-    onRepite: nada,
     onTocar: nada,
     onAceptar: nada,
     onVerContrasena: nada,
     onModo: nada,
     onEnviar: nada,
+    onReenviar: nada,
+    onCrearPlan: nada,
     onAbrir: nada,
     ...extra,
   };
@@ -80,8 +81,21 @@ export const DEMO: DemoPantalla | null = {
       render: () => (
         <LoginVista
           {...login('signup', {
-            campos: { nombre: 'Teferi', correo: 'teferi@correo', contrasena: 'gladiador', repite: 'gladiadora', aceptado: true },
+            campos: { correo: 'teferi@correo', contrasena: 'gladiador', aceptado: true },
             tocados: TODO_TOCADO,
+          })}
+        />
+      ),
+    },
+    {
+      id: 'registrado',
+      titulo: 'Registrado · reenviar',
+      render: () => (
+        <LoginVista
+          {...login('signin', {
+            campos: { ...VACIOS, correo: 'teferi@nivl.app' },
+            aviso: avisoRegistro(),
+            reenvio: { segundos: 42, enviando: false, mensaje: avisoReenviado() },
           })}
         />
       ),

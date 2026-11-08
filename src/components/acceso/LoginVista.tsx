@@ -2,39 +2,49 @@
 // datos y los efectos viven en useLogin; la galería (/kit/pantallas) la pinta
 // con datos de mentira (demo.tsx).
 //
-// Composición:
-//   1. Portada a sangre: el graderío (Arena arco 140, ink3) con «NIVL» en
-//      piedra y el lema entre dos laureles. Con el teclado fuera se pliega a
-//      «NIVL» grabado, sin arena.
-//   2. Pestañas ENTRAR / CREAR CUENTA (role tab; la activa con regla inferior
-//      de 2, sin invertir). No salen al recuperar ni en el portal de creadores.
-//   3. La línea del modo y los campos (Campo). Al crear cuenta, la fuerza en
-//      una Barra de 4 segmentos y lo que falta.
-//   4. El aviso (contorno) o el error del servidor (trama compacta, alerta).
-//   5. LA INVERSIÓN: el botón principal en lg. Debajo, enlaces ghost de 44,
-//      y los legales en micro (la versión, solo en Perfil).
+// Composición (Ónix):
+//   1. Portada: el escudo con la N, «NIVL» en Playfair y el lema. Con el
+//      teclado fuera se pliega a «NIVL». En escritorio la lleva la fachada y
+//      el formulario va en tarjeta.
+//   2. Pestañas ENTRAR / CREAR CUENTA (role tab). No salen al recuperar ni en
+//      el portal de creadores.
+//   3. La línea del modo y los campos. Al crear cuenta solo correo, contraseña
+//      (con su fuerza) y la casilla legal.
+//   4. El aviso o el error del servidor y, tras registrarse, «Reenviar correo».
+//   5. El botón principal hueso. Debajo, enlaces ghost de 44 y los legales en
+//      micro (la versión, solo en Perfil).
 //
 // Modo portal (SITIO_CREADORES): solo entrar. Sin registro (el alta de
 // creador es manual) ni restablecer (el enlace del correo abre la app, no
 // este sitio; R1 del Chat 3).
 
-import { useContext, useState } from 'react';
-import { Pressable, StyleSheet, Text, View, type LayoutChangeEvent } from 'react-native';
-import { Arena, ASangre, Campo, Entrada, Laurel, TarjetaArena } from '@/components/arena';
+import { useContext } from 'react';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Campo, Entrada, TarjetaArena } from '@/components/arena';
 import { Button, Check, Screen, useAnunciar } from '@/components/ui';
 import { ConFachada } from '@/components/web/FachadaAcceso';
 import { vibrar } from '@/design/haptics';
-import { ink, space, stroke, type as tipo } from '@/design/tokens';
+import { ink, oro, radio, space, stroke, type as tipo, vidrio } from '@/design/tokens';
 import { t } from '@/i18n';
 import { mayus } from '@/i18n/formato';
 import { LEGAL_URLS } from '@/lib/proplans';
-import { NAME_MAX_LENGTH } from '@/lib/validation';
 import { ayudaContrasena, evaluarLogin, type CampoTocable, type CamposLogin, type ModoLogin, type Tocados } from './formulario';
-import { CampoContrasena, FuerzaContrasena } from './piezas';
+import { Escudo } from './Escudo';
+import { ALTO_CAMPO, CampoContrasena, FuerzaContrasena } from './piezas';
+
+export interface EstadoReenvio {
+  /** Segundos de bloqueo que quedan; 0 si se puede pulsar. */
+  segundos: number;
+  enviando: boolean;
+  /** Resultado del último reenvío, ya en la voz del sistema. */
+  mensaje: string | null;
+}
 
 export interface LoginVistaProps {
   /** Portal de creadores: solo entrar. */
   portal: boolean;
+  /** Viene del cuestionario: el alta guarda su plan. */
+  desdePlan?: boolean;
   modo: ModoLogin;
   campos: CamposLogin;
   tocados: Tocados;
@@ -45,15 +55,17 @@ export interface LoginVistaProps {
   enviando: boolean;
   /** Teclado fuera: la portada se pliega a la marca. */
   plegada: boolean;
-  onNombre: (v: string) => void;
+  /** Tras registrarse: reenviar el correo de confirmación. null si no toca. */
+  reenvio: EstadoReenvio | null;
   onCorreo: (v: string) => void;
   onContrasena: (v: string) => void;
-  onRepite: (v: string) => void;
   onTocar: (campo: CampoTocable) => void;
   onAceptar: () => void;
   onVerContrasena: () => void;
   onModo: (m: ModoLogin) => void;
   onEnviar: () => void;
+  onReenviar: () => void;
+  onCrearPlan: () => void;
   onAbrir: (url: string) => void;
 }
 
@@ -63,10 +75,12 @@ export interface LoginVistaProps {
 
 const PESTANAS: ('signin' | 'signup')[] = ['signin', 'signup'];
 
-/** Alto del graderío de la portada. */
-const ALTO_ARENA = 140;
-/** Tracking de la marca: una fachada, más abierta que el `display`. */
-const TRACKING_MARCA = 16;
+/** Tracking de la marca. */
+const TRACKING_MARCA = 6;
+/** Ancho del escudo de la portada: deja el botón a la vista en un móvil pequeño. */
+const ANCHO_ESCUDO = 72;
+/** Relleno de la tarjeta del formulario en escritorio. */
+const PAD_TARJETA = 28;
 /** Ancho máximo del formulario: en tableta, un campo de 720 no se lee. */
 const ANCHO_FORM = 440;
 
@@ -75,6 +89,7 @@ export function LoginVista(p: LoginVistaProps) {
   // En iOS el rol alerta no habla: el error y el aviso se anuncian a mano.
   useAnunciar(error);
   useAnunciar(aviso);
+  useAnunciar(p.reenvio?.mensaje ?? null);
   const ev = evaluarLogin(modo, campos, tocados);
   const alta = modo === 'signup';
   const recuperar = modo === 'recover';
@@ -96,10 +111,10 @@ export function LoginVista(p: LoginVistaProps) {
       </Entrada>
 
       <Entrada indice={1}>
-        <View style={styles.form}>
+        <View style={[styles.form, conFachada && styles.tarjeta]}>
           {portal ? null : recuperar ? (
             <Text style={styles.tituloModo} accessibilityRole="header" maxFontSizeMultiplier={1.35}>
-              {mayus(t('acceso:login.recuperarTitulo'))}
+              {t('acceso:login.recuperarTitulo')}
             </Text>
           ) : (
             <View style={styles.pestanas} accessibilityRole="tablist">
@@ -128,32 +143,17 @@ export function LoginVista(p: LoginVistaProps) {
           )}
 
           <Text style={styles.intro} maxFontSizeMultiplier={1.6}>
-            {portal ? t('acceso:login.introPortal') : t(`acceso:login.intro.${modo}`)}
+            {portal ? t('acceso:login.introPortal') : p.desdePlan && modo === 'signup' ? t('onboarding:embudo.cuenta.titulo') : t(`acceso:login.intro.${modo}`)}
           </Text>
 
           <View style={styles.campos}>
-            {alta ? (
-              <Campo
-                etiqueta={t('comun:nombre')}
-                value={campos.nombre}
-                onChangeText={p.onNombre}
-                onBlur={() => p.onTocar('nombre')}
-                error={ev.errorNombre}
-                autoCapitalize="words"
-                autoComplete="name"
-                textContentType="name"
-                maxLength={NAME_MAX_LENGTH}
-                placeholder={t('acceso:login.nombrePlaceholder')}
-                accessibilityLabel={t('comun:nombre')}
-              />
-            ) : null}
-
             <Campo
               etiqueta={t('acceso:login.correo')}
               value={campos.correo}
               onChangeText={p.onCorreo}
               onBlur={() => p.onTocar('correo')}
               error={ev.errorCorreo}
+              style={styles.campo}
               autoCapitalize="none"
               autoComplete="email"
               textContentType="username"
@@ -188,53 +188,37 @@ export function LoginVista(p: LoginVistaProps) {
             ) : null}
 
             {alta ? (
-              <>
-                <Campo
-                  etiqueta={t('acceso:contrasena.repite')}
-                  value={campos.repite}
-                  onChangeText={p.onRepite}
-                  onBlur={() => p.onTocar('repite')}
-                  error={ev.errorRepite}
-                  secureTextEntry={!verContrasena}
-                  autoCapitalize="none"
-                  autoComplete="new-password"
-                  textContentType="newPassword"
-                  placeholder="••••••••••"
-                  accessibilityLabel={t('acceso:contrasena.repite')}
-                />
-
-                <View>
-                  <Pressable
-                    onPress={() => {
-                      vibrar('seleccion');
-                      p.onAceptar();
-                    }}
-                    style={styles.casilla}
-                    accessibilityRole="checkbox"
-                    accessibilityState={{ checked: campos.aceptado }}
-                    accessibilityLabel={t('acceso:login.casillaLegal')}
-                  >
-                    <Check checked={campos.aceptado} size={24} />
-                    <Text style={styles.casillaTexto} maxFontSizeMultiplier={1.6}>
-                      {t('acceso:login.casillaLegal')}
-                    </Text>
-                  </Pressable>
-                  {/* Los enlaces van fuera de la casilla: dentro, VoiceOver y
-                      TalkBack leían la casilla entera y no llegaban a ellos. */}
-                  <View style={styles.legalesCasilla}>
-                    <EnlaceLegal
-                      texto={t('acceso:login.terminos')}
-                      etiqueta={t('acceso:login.terminos')}
-                      onPress={() => p.onAbrir(LEGAL_URLS.terminos)}
-                    />
-                    <EnlaceLegal
-                      texto={t('acceso:login.privacidad')}
-                      etiqueta={t('acceso:login.privacidad')}
-                      onPress={() => p.onAbrir(LEGAL_URLS.privacidad)}
-                    />
-                  </View>
+              <View>
+                <Pressable
+                  onPress={() => {
+                    vibrar('seleccion');
+                    p.onAceptar();
+                  }}
+                  style={styles.casilla}
+                  accessibilityRole="checkbox"
+                  accessibilityState={{ checked: campos.aceptado }}
+                  accessibilityLabel={t('acceso:login.casillaLegal')}
+                >
+                  <Check checked={campos.aceptado} size={24} />
+                  <Text style={styles.casillaTexto} maxFontSizeMultiplier={1.6}>
+                    {t('acceso:login.casillaLegal')}
+                  </Text>
+                </Pressable>
+                {/* Los enlaces van fuera de la casilla: dentro, VoiceOver y
+                    TalkBack leían la casilla entera y no llegaban a ellos. */}
+                <View style={styles.legalesCasilla}>
+                  <EnlaceLegal
+                    texto={t('acceso:login.terminos')}
+                    etiqueta={t('acceso:login.terminos')}
+                    onPress={() => p.onAbrir(LEGAL_URLS.terminos)}
+                  />
+                  <EnlaceLegal
+                    texto={t('acceso:login.privacidad')}
+                    etiqueta={t('acceso:login.privacidad')}
+                    onPress={() => p.onAbrir(LEGAL_URLS.privacidad)}
+                  />
                 </View>
-              </>
+              </View>
             ) : null}
           </View>
 
@@ -254,6 +238,27 @@ export function LoginVista(p: LoginVistaProps) {
                   {aviso}
                 </Text>
               </TarjetaArena>
+            </View>
+          ) : null}
+
+          {p.reenvio ? (
+            <View style={styles.reenvio}>
+              <Button
+                title={
+                  p.reenvio.segundos > 0
+                    ? t('acceso:login.reenviar.espera', { n: p.reenvio.segundos })
+                    : t('acceso:login.reenviar.boton')
+                }
+                variant="secondary"
+                onPress={p.onReenviar}
+                loading={p.reenvio.enviando}
+                disabled={p.reenvio.segundos > 0}
+              />
+              {p.reenvio.mensaje ? (
+                <Text style={styles.reenvioMensaje} accessibilityLiveRegion="polite" maxFontSizeMultiplier={1.6}>
+                  {p.reenvio.mensaje}
+                </Text>
+              ) : null}
             </View>
           ) : null}
 
@@ -297,6 +302,16 @@ export function LoginVista(p: LoginVistaProps) {
             </Text>
           )}
 
+          {portal ? null : (
+            <Button
+              title={t('acceso:login.crearPlan')}
+              variant="ghost"
+              onPress={p.onCrearPlan}
+              disabled={enviando}
+              style={styles.enlace}
+            />
+          )}
+
           {/* Los textos legales, a la vista antes de entrar. Al crear cuenta
               ya van junto a la casilla. */}
           {alta ? null : (
@@ -322,40 +337,17 @@ export function LoginVista(p: LoginVistaProps) {
   );
 }
 
-/** El graderío a sangre con la marca y el lema entre laureles. */
+/** El escudo con la N, la marca y el lema. */
 function Portada({ lema }: { lema: string }) {
-  const [ancho, setAncho] = useState(0);
-  const medir = (e: LayoutChangeEvent) => {
-    const w = Math.round(e.nativeEvent.layout.width);
-    if (w !== ancho) setAncho(w);
-  };
   return (
     <View style={styles.portada}>
-      <ASangre>
-        <View style={styles.escena} onLayout={medir}>
-          {ancho > 0 ? (
-            <Arena ancho={ancho} alto={ALTO_ARENA} variante="arco" gradas={4} color={ink.ink3} style={styles.arena} />
-          ) : null}
-          <View style={styles.placa}>
-            <Text style={styles.marca} accessibilityRole="header" accessibilityLabel="NIVL" maxFontSizeMultiplier={1}>{/* i18n-ok: la marca */}
-              NIVL
-            </Text>
-          </View>
-        </View>
-      </ASangre>
-      <View style={styles.lema}>
-        <Laurel alto={20} lado="izq" />
-        <Text
-          style={styles.lemaTexto}
-          maxFontSizeMultiplier={1.35}
-          numberOfLines={1}
-          adjustsFontSizeToFit
-          minimumFontScale={0.8}
-        >
-          {lema}
-        </Text>
-        <Laurel alto={20} lado="der" />
-      </View>
+      <Escudo ancho={ANCHO_ESCUDO} />
+      <Text style={styles.marca} accessibilityRole="header" accessibilityLabel="NIVL" maxFontSizeMultiplier={1}>{/* i18n-ok: la marca */}
+        NIVL
+      </Text>
+      <Text style={styles.lemaTexto} maxFontSizeMultiplier={1.35} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8}>
+        {lema}
+      </Text>
     </View>
   );
 }
@@ -379,12 +371,7 @@ const micro = {
 
 const styles = StyleSheet.create({
   contenido: { flexGrow: 1, justifyContent: 'center', paddingTop: space.s6 },
-  portada: { marginBottom: space.s6 },
-  escena: { height: ALTO_ARENA, justifyContent: 'flex-end', alignItems: 'center' },
-  arena: { position: 'absolute', left: 0, bottom: 0 },
-  // Placa negra bajo la marca: tapa los arranques del graderío detrás de las
-  // letras (como en la portada del onboarding).
-  placa: { backgroundColor: ink.ink0, paddingHorizontal: space.s3, marginBottom: space.s2 },
+  portada: { alignItems: 'center', marginBottom: space.s6 },
   marca: {
     fontFamily: tipo.display.family,
     fontSize: tipo.display.size,
@@ -392,67 +379,64 @@ const styles = StyleSheet.create({
     letterSpacing: TRACKING_MARCA,
     // El tracking se suma tras la última letra: el mismo hueco delante centra.
     paddingLeft: TRACKING_MARCA,
-    color: ink.ink10,
+    color: ink.ink9,
     textAlign: 'center',
-  },
-  lema: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: space.s3,
-    marginTop: space.s4,
+    marginTop: space.s2,
   },
   lemaTexto: {
-    flexShrink: 1,
     fontFamily: tipo.inscripcion.family,
     fontSize: tipo.inscripcion.size,
     lineHeight: tipo.inscripcion.lineHeight,
-    letterSpacing: 3,
+    letterSpacing: tipo.inscripcion.tracking,
     color: ink.ink8,
     textAlign: 'center',
+    marginTop: space.s1,
   },
   marcaPlegada: {
-    fontFamily: tipo.inscripcion.family,
-    fontSize: 20,
-    lineHeight: 26,
-    letterSpacing: tipo.inscripcion.tracking,
-    paddingLeft: tipo.inscripcion.tracking,
-    color: ink.ink10,
+    fontFamily: tipo.number.family,
+    fontSize: tipo.number.size,
+    lineHeight: tipo.number.lineHeight,
+    letterSpacing: TRACKING_MARCA,
+    paddingLeft: TRACKING_MARCA,
+    color: ink.ink9,
     textAlign: 'center',
     marginBottom: space.s5,
   },
   form: { width: '100%', maxWidth: ANCHO_FORM, alignSelf: 'center' },
+  tarjeta: {
+    padding: PAD_TARJETA,
+    borderRadius: radio.tarjeta,
+    borderWidth: stroke.hairline,
+    borderColor: vidrio.borde,
+    backgroundColor: vidrio.tarjeta,
+  },
   tituloModo: {
-    fontFamily: tipo.inscripcion.family,
-    fontSize: tipo.inscripcion.size,
-    lineHeight: tipo.inscripcion.lineHeight,
-    letterSpacing: tipo.inscripcion.tracking,
-    color: ink.ink10,
+    fontFamily: tipo.title.family,
+    fontSize: tipo.title.size,
+    lineHeight: tipo.title.lineHeight,
+    letterSpacing: tipo.title.tracking,
+    color: ink.ink9,
     textAlign: 'center',
-    paddingVertical: space.s3,
-    borderBottomWidth: stroke.hairline,
-    borderBottomColor: ink.ink3,
   },
-  pestanas: { flexDirection: 'row', borderBottomWidth: stroke.hairline, borderBottomColor: ink.ink3 },
-  pestana: {
-    flex: 1,
-    minHeight: 44,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderBottomWidth: stroke.rule,
-    borderBottomColor: 'transparent',
-    // La regla de la activa pisa el hairline de la fila.
-    marginBottom: -stroke.hairline,
+  pestanas: {
+    flexDirection: 'row',
+    gap: space.s1,
+    padding: space.s1,
+    borderRadius: radio.control,
+    borderWidth: stroke.hairline,
+    borderColor: vidrio.borde,
+    backgroundColor: vidrio.suave,
   },
-  pestanaActiva: { borderBottomColor: ink.ink10 },
+  pestana: { flex: 1, minHeight: 44, alignItems: 'center', justifyContent: 'center', borderRadius: radio.chip },
+  pestanaActiva: { backgroundColor: oro.tenue },
   pestanaTexto: {
     fontFamily: tipo.label.family,
     fontSize: tipo.label.size,
     lineHeight: tipo.label.lineHeight,
     letterSpacing: tipo.label.tracking,
-    color: ink.ink6,
+    color: ink.ink8,
   },
-  pestanaTextoActiva: { color: ink.ink10 },
+  pestanaTextoActiva: { color: oro.claro },
   intro: {
     fontFamily: tipo.bodySm.family,
     fontSize: tipo.bodySm.size,
@@ -462,6 +446,7 @@ const styles = StyleSheet.create({
     marginTop: space.s4,
   },
   campos: { gap: space.s4, marginTop: space.s5 },
+  campo: { minHeight: ALTO_CAMPO },
   ayuda: {
     fontFamily: tipo.bodySm.family,
     fontSize: tipo.bodySm.size,
@@ -485,6 +470,14 @@ const styles = StyleSheet.create({
     fontSize: tipo.bodySm.size,
     lineHeight: tipo.bodySm.lineHeight,
     color: ink.ink9,
+  },
+  reenvio: { gap: space.s2, marginTop: space.s3 },
+  reenvioMensaje: {
+    fontFamily: tipo.bodySm.family,
+    fontSize: tipo.bodySm.size,
+    lineHeight: tipo.bodySm.lineHeight,
+    color: ink.ink8,
+    textAlign: 'center',
   },
   principal: { marginTop: space.s6 },
   enlace: { marginTop: space.s2, alignSelf: 'center' },

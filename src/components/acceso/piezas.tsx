@@ -1,5 +1,6 @@
 // NIVL · Acceso: las piezas que comparten entrar y restablecer.
 //
+//   · ALTO_CAMPO → el alto de los campos de acceso en Ónix.
 //   · CampoContrasena → Campo con el ojo de 44 anclado abajo, sobre la caja.
 //     No lleva ayuda ni error propios (la fuerza y las faltas van fuera), así
 //     el ojo no depende del alto de la etiqueta con letra grande.
@@ -14,6 +15,8 @@ import { mayus } from '@/i18n/formato';
 import { t } from '@/i18n';
 
 const OJO = 44;
+/** Alto de los campos de las pantallas de acceso (maqueta Ónix). */
+export const ALTO_CAMPO = 54;
 
 type CampoContrasenaProps = {
   etiqueta: string;
@@ -72,11 +75,11 @@ export function FuerzaContrasena({
 }
 
 const styles = StyleSheet.create({
-  conOjo: { paddingRight: OJO + space.s1 },
+  conOjo: { minHeight: ALTO_CAMPO, paddingRight: OJO + space.s1 },
   ojo: {
     position: 'absolute',
-    right: 2,
-    bottom: 2,
+    right: space.s1,
+    bottom: (ALTO_CAMPO - OJO) / 2,
     width: OJO,
     height: OJO,
     alignItems: 'center',

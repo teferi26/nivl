@@ -49,5 +49,111 @@
     "cuerpo": "Pour l'instant, l'abonnement se souscrit et se gère depuis l'app NIVL pour iPhone. Rien n'est facturé sur le web.",
     "cuenta": "C'est le même compte : la formule que tu as sur ton téléphone vaut aussi ici.",
     "seguir": "Continuer gratuitement"
+  },
+  "pago": {
+    "titulo": "Un mode ou les quatre.",
+    "subtitulo": "Chaque mode ouvre son monde et son coach. NIVL et tes habitudes restent gratuits.",
+    "periodo": {
+      "anual": "Annuel",
+      "mensual": "Mensuel"
+    },
+    "porPeriodo": {
+      "anual": "par an",
+      "mensual": "par mois"
+    },
+    "importe": {
+      "anual": "{{precio}}/an",
+      "mensual": "{{precio}}/mois"
+    },
+    "duracionProducto": {
+      "anual": "annuel",
+      "mensual": "mensuel"
+    },
+    "duracionLegal": {
+      "anual": "annuel (1 an)",
+      "mensual": "mensuel (1 mois)"
+    },
+    "todosLosModos": "Tous les modes",
+    "losCuatroModos": "Les quatre modes",
+    "soloModo": "{{modo}} seul",
+    "notaTodos": "IRON, FOCUS, WORK et FOUNDER, avec leur coach.",
+    "notaUno": "Ce mode et son coach uniquement.",
+    "filaUno": "Un mode et son coach",
+    "filaTodos": "Les quatre modes, avec leur coach",
+    "noDisponible": "Les abonnements ne sont pas disponibles dans cette version de l'app.",
+    "errorPrecios": "Les prix de la boutique n'ont pas pu être chargés.",
+    "a11yOpcion": "{{titulo}}. {{precio}} {{porPeriodo}}. {{nota}}",
+    "a11yOpcionSinPrecio": "{{titulo}}. {{nota}}",
+    "cta": {
+      "actual": "C'est déjà ta formule",
+      "cargando": "Chargement des prix de la boutique",
+      "noDisponible": "Indisponible pour le moment",
+      "prueba": "Commencer mes {{periodo}} gratuits",
+      "suscribir": "M'abonner pour {{precio}} {{porPeriodo}}",
+      "revisarPermiso": "Vérifier l'autorisation"
+    },
+    "prueba": {
+      "hoy": "Aujourd'hui",
+      "empieza": "Début gratuit",
+      "dia": "Jour {{dias}}",
+      "cobro": "Premier paiement"
+    },
+    "duracion": {
+      "dia_one": "{{count}} jour",
+      "dia_other": "{{count}} jours",
+      "semana_one": "{{count}} semaine",
+      "semana_other": "{{count}} semaines",
+      "mes_one": "{{count}} mois",
+      "mes_other": "{{count}} mois",
+      "anio_one": "{{count}} an",
+      "anio_other": "{{count}} ans"
+    },
+    "legal": {
+      "renovacion": "{{producto}} : abonnement {{duracion}} à renouvellement automatique.",
+      "cobroPrueba": "{{periodo}} gratuits, puis {{precio}} {{porPeriodo}}.",
+      "cobro": "{{precio}} {{porPeriodo}}.",
+      "tienda": "Le paiement est débité sur ton compte de la boutique et se renouvelle automatiquement sauf si tu annules au moins 24 heures avant la fin de la période.",
+      "gestion": {
+        "ios": "Tu le gères et tu l'annules quand tu veux dans Réglages > ton nom > Abonnements.",
+        "android": "Tu le gères et tu l'annules quand tu veux dans Google Play > Paiements et abonnements > Abonnements.",
+        "otra": "Tu le gères et tu l'annules quand tu veux depuis la boutique où tu l'as souscrit."
+      },
+      "base": "NIVL et tes habitudes restent gratuits.",
+      "avisoIa": "NIVL est une IA, pas un professionnel de santé."
+    },
+    "enlace": {
+      "restaurar": "Restaurer",
+      "restaurarA11y": "Restaurer les achats",
+      "terminos": "Conditions",
+      "privacidad": "Confidentialité",
+      "eula": "CLUF d'Apple",
+      "error": "Le lien n'a pas pu être ouvert."
+    },
+    "aviso": {
+      "pendiente": "Achat confirmé par la boutique. Le mode s'ouvre dans quelques secondes ; s'il n'apparaît pas, touche Restaurer.",
+      "programada": "Changement confirmé par la boutique. Il s'applique à ton prochain renouvellement ; d'ici là, tu gardes ta formule actuelle.",
+      "sinPermiso": "Pour utiliser le coach, il faut accepter l'envoi de tes données au fournisseur d'IA. Sans cette autorisation, rien n'est facturé.",
+      "nada": "Ce compte de la boutique n'a aucun abonnement NIVL actif."
+    },
+    "salida": {
+      "gratis": "Continuer gratuitement",
+      "volver": "Revenir à NIVL",
+      "prueba": "Continuer l'essai",
+      "plan": "Garder ma formule"
+    },
+    "ver": {
+      "suscribirme": "M'abonner",
+      "cuatro": "Voir les quatre modes"
+    },
+    "cerrado": {
+      "titulo": "Toujours fermé.",
+      "datos": "Ce que tu as enregistré ici reste à toi. Rien n'est effacé si tu ne paies pas.",
+      "queAbre": {
+        "iron": "Entraînement, alimentation et son coach, qui programme tes charges et corrige tes repas.",
+        "focus": "Programme, examens et son coach, qui répartit ton travail jusqu'à chaque date.",
+        "work": "Finances, agenda et son coach, qui protège ta journée de travail.",
+        "founder": "Agenda, finances de l'entreprise et son coach, qui te demande les chiffres."
+      }
+    }
   }
 }

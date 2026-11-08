@@ -14,7 +14,7 @@
     "a11y": "Nível global {{nivel}}, {{titulo}}. {{xp}}. Sequência de {{racha}} dias, {{piedras}} pedras. Abre a tua progressão."
   },
   "hoy": {
-    "siguiente": "Próxima ação",
+    "siguiente": "Agora",
     "xp": "+{{xp}} XP",
     "completar": "Concluir",
     "deTotal": "{{hechas}} de {{total}}",
@@ -46,7 +46,7 @@
     "habitos": "Hábitos"
   },
   "coach": {
-    "rotulo": "Coach NIVL",
+    "rotulo": "O teu coach",
     "enLinea": "● Online",
     "porDefecto": "Diz-me o que queres conseguir e eu organizo o teu dia.",
     "preguntar": "Pergunta ao coach",

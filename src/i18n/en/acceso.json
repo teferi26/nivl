@@ -7,11 +7,10 @@
     "fuerte": "Strong"
   },
   "aviso": {
-    "registro": "If the email is new, we've sent you a link to confirm it. Open it on this phone, then sign in with your password.",
+    "registro": "If the email is new, we've sent you a link to confirm it. Open it on this phone and you'll be signed in automatically.",
     "recuperacion": "If that email has an account, we've sent you a link. Open it on this phone to choose a new password."
   },
   "error": {
-    "nombre": "Between 1 and {{max}} characters.",
     "correo": "Invalid email format.",
     "noCoinciden": "Passwords don't match."
   },
@@ -50,7 +49,6 @@
     },
     "portal": "Creator portal",
     "recuperarTitulo": "Reset password",
-    "nombrePlaceholder": "What the system should call you",
     "correo": "Email",
     "correoPlaceholder": "you@email.com",
     "correoA11y": "Email address",
@@ -62,7 +60,13 @@
     "faltaCasilla": "Check the Terms box to continue.",
     "olvido": "Forgot your password?",
     "volverAEntrar": "Back to sign in",
-    "notaCuenta": "Your habits, missions and progress are saved to your NIVL account."
+    "notaCuenta": "Your habits, missions and progress are saved to your NIVL account.",
+    "crearPlan": "Create my plan",
+    "reenviar": {
+      "boton": "Resend email",
+      "espera": "Resend in {{n}} s",
+      "enviado": "If that email is waiting for confirmation, we've sent the link again. Check your spam folder too."
+    }
   },
   "arranque": {
     "cargando": "Loading"
@@ -95,11 +99,7 @@
     "sinEnlace": "This link has nothing to confirm. Open the latest email we sent you or sign in with your password."
   },
   "web": {
-    "eyebrow": "NIVL in the browser",
-    "titulo": "Your arena, here too.",
-    "cuerpo": "The same account and the same data as on your phone. What you do here counts there.",
-    "punto1": "Quests, streak and day close",
-    "punto2": "Your worlds: IRON, FOCUS, WORK and FOUNDER",
-    "punto3": "The coach, with a real keyboard"
+    "titulo": "Your best self already has a coach",
+    "cuerpo": "Training, study, work and business. A coach who tells you what to do today and won't let you off the hook."
   }
 }

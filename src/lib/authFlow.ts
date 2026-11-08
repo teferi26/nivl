@@ -175,6 +175,29 @@ export async function pedirRecuperacion(email: string, captcha?: string): Promis
   }
 }
 
+/**
+ * Vuelve a enviar el correo de confirmación del alta. Una cuenta ya confirmada
+ * o inexistente responde como un envío correcto (anti-enumeración); el límite
+ * de envíos, el CAPTCHA y la red sí se propagan para que se pueda reintentar.
+ */
+export async function reenviarConfirmacion(email: string): Promise<void> {
+  const correo = limpiarCorreo(email);
+  const { error } = await supabase.auth.resend({ type: 'signup', email: correo, options: { emailRedirectTo: urlConfirmar() } });
+  if (!error) return;
+  const { code, message } = campos(error);
+  if (
+    code === 'email_exists' ||
+    code === 'user_already_exists' ||
+    code === 'user_not_found' ||
+    message.includes('already confirmed') ||
+    message.includes('already registered') ||
+    message.includes('user not found')
+  ) {
+    return;
+  }
+  lanzar(error);
+}
+
 function esFalloDeRed(e: unknown): boolean {
   const { name, status } = campos(e);
   if (name === 'AuthRetryableFetchError') return true;

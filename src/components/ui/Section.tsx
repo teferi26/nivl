@@ -4,16 +4,16 @@
 //
 // Tono (SISTEMA.md §5): sin color. El significado va en la regla que sigue al
 // rótulo hasta el borde:
-//   · default → regla hairline ink3.
+//   · default → hairline de vidrio.
 //   · alerta  → banda de trama (rayado ink6). Sustituye al antiguo 'red'.
-//   · logro   → banda de grano (ink6). Sustituye al antiguo 'gold'.
+//   · logro   → hilo de oro. Sustituye al antiguo 'gold'.
 // Se aceptan los valores viejos para que la migración sea mecánica.
 
 import Ionicons from '@expo/vector-icons/Ionicons';
 import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
-import { ink, space, stroke, type as tipo } from '@/design/tokens';
-import { Grano, Trama } from './Texture';
+import { ink, oro, space, stroke, type as tipo, vidrio } from '@/design/tokens';
+import { Trama } from './Texture';
 
 export type SectionTone =
   | 'default'
@@ -50,7 +50,7 @@ interface Props {
   children?: ReactNode;
 }
 
-/** Alto de la banda de textura que sigue al rótulo en alerta y logro. */
+/** Alto de la banda de trama que sigue al rótulo en alerta. */
 const BANDA = 6;
 
 export function Section({ title, meta, action, tone, style, children }: Props) {
@@ -61,16 +61,18 @@ export function Section({ title, meta, action, tone, style, children }: Props) {
         <Text
           maxFontSizeMultiplier={1.35}
           accessibilityRole="header"
-          style={[styles.title, t !== 'default' && styles.titleMarcado]}
+          style={[styles.title, t === 'alerta' && styles.titleMarcado, t === 'logro' && styles.titleOro]}
           numberOfLines={2}
         >
           {title}
         </Text>
         <View style={styles.reglaZona} accessible={false} importantForAccessibility="no-hide-descendants">
-          {t === 'default' ? (
-            <View style={styles.regla} />
+          {t === 'alerta' ? (
+            <View style={styles.banda}>
+              <Trama color={ink.ink6} />
+            </View>
           ) : (
-            <View style={styles.banda}>{t === 'alerta' ? <Trama color={ink.ink6} /> : <Grano />}</View>
+            <View style={[styles.regla, t === 'logro' && styles.reglaOro]} />
           )}
         </View>
         {meta ? (
@@ -118,14 +120,16 @@ const styles = StyleSheet.create({
     lineHeight: tipo.label.lineHeight,
     letterSpacing: tipo.label.tracking,
     textTransform: 'uppercase',
-    color: ink.ink6,
+    color: ink.ink8,
   },
   titleMarcado: { color: ink.ink9 },
+  titleOro: { color: oro.claro },
   reglaZona: { flexGrow: 1, flexShrink: 0, flexBasis: space.s6, justifyContent: 'center' },
-  regla: { height: stroke.hairline, backgroundColor: ink.ink3 },
+  regla: { height: stroke.hairline, backgroundColor: vidrio.linea },
+  reglaOro: { backgroundColor: oro.borde },
   banda: { height: BANDA, overflow: 'hidden' },
   meta: { fontFamily: tipo.number.family, fontSize: 13, color: ink.ink9 },
   action: { flexDirection: 'row', alignItems: 'center', gap: 3, minHeight: 24 },
   actionText: { fontFamily: tipo.micro.family, fontSize: tipo.label.size, color: ink.ink9 },
-  rule: { height: stroke.hairline, backgroundColor: ink.ink3 },
+  rule: { height: stroke.hairline, backgroundColor: vidrio.linea },
 });

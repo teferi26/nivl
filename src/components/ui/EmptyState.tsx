@@ -1,13 +1,13 @@
 // NIVL · Estado vacío: un icono suelto, un título, una frase y el camino.
 // Nunca un párrafo de disculpa dentro de una caja.
 //
-// v2 (SISTEMA §6): icono ink6, título `headline` ink9, cuerpo `bodySm` ink8
+// Ónix: icono en hilo de oro, título `headline` ink9, cuerpo `bodySm` ink8
 // (14, legible) y la acción en Button `secondary` sm: no gasta la inversión
 // de la pantalla. `variant: 'solid'` la pide expresamente (primary).
 
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
-import { ink, space, type as tipo } from '@/design/tokens';
+import { ink, oro, space, type as tipo } from '@/design/tokens';
 import { Button } from './Button';
 
 interface Props {
@@ -22,7 +22,7 @@ interface Props {
 export function EmptyState({ icon, title, body, action, compact, style }: Props) {
   return (
     <View style={[styles.wrap, compact && styles.compact, style]}>
-      <Ionicons name={icon} size={compact ? 22 : 30} color={ink.ink6} accessibilityElementsHidden importantForAccessibility="no" />
+      <Ionicons name={icon} size={compact ? 22 : 30} color={oro.hilo} accessibilityElementsHidden importantForAccessibility="no" />
       <Text style={[styles.title, compact && styles.titleCompact]} accessibilityRole="header">
         {title}
       </Text>

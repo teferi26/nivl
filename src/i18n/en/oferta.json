@@ -49,5 +49,111 @@
     "cuerpo": "For now, the subscription is bought and managed in the NIVL app for iPhone. Nothing is charged on the web.",
     "cuenta": "It is the same account: the plan you have on your phone works here too.",
     "seguir": "Continue for free"
+  },
+  "pago": {
+    "titulo": "One mode or all four.",
+    "subtitulo": "Each mode opens its world and its coach. NIVL and your habits stay free.",
+    "periodo": {
+      "anual": "Annual",
+      "mensual": "Monthly"
+    },
+    "porPeriodo": {
+      "anual": "per year",
+      "mensual": "per month"
+    },
+    "importe": {
+      "anual": "{{precio}}/year",
+      "mensual": "{{precio}}/month"
+    },
+    "duracionProducto": {
+      "anual": "annual",
+      "mensual": "monthly"
+    },
+    "duracionLegal": {
+      "anual": "annual (1 year)",
+      "mensual": "monthly (1 month)"
+    },
+    "todosLosModos": "All modes",
+    "losCuatroModos": "All four modes",
+    "soloModo": "{{modo}} only",
+    "notaTodos": "IRON, FOCUS, WORK and FOUNDER, each with its coach.",
+    "notaUno": "Only this mode and its coach.",
+    "filaUno": "One mode and its coach",
+    "filaTodos": "All four modes, with their coach",
+    "noDisponible": "Subscriptions are not available in this version of the app.",
+    "errorPrecios": "The store prices could not be loaded.",
+    "a11yOpcion": "{{titulo}}. {{precio}} {{porPeriodo}}. {{nota}}",
+    "a11yOpcionSinPrecio": "{{titulo}}. {{nota}}",
+    "cta": {
+      "actual": "Already your plan",
+      "cargando": "Loading store prices",
+      "noDisponible": "Not available right now",
+      "prueba": "Start my {{periodo}} free",
+      "suscribir": "Subscribe for {{precio}} {{porPeriodo}}",
+      "revisarPermiso": "Review the permission"
+    },
+    "prueba": {
+      "hoy": "Today",
+      "empieza": "Starts free",
+      "dia": "Day {{dias}}",
+      "cobro": "First charge"
+    },
+    "duracion": {
+      "dia_one": "{{count}} day",
+      "dia_other": "{{count}} days",
+      "semana_one": "{{count}} week",
+      "semana_other": "{{count}} weeks",
+      "mes_one": "{{count}} month",
+      "mes_other": "{{count}} months",
+      "anio_one": "{{count}} year",
+      "anio_other": "{{count}} years"
+    },
+    "legal": {
+      "renovacion": "{{producto}}: auto-renewing {{duracion}} subscription.",
+      "cobroPrueba": "{{periodo}} free, then {{precio}} {{porPeriodo}}.",
+      "cobro": "{{precio}} {{porPeriodo}}.",
+      "tienda": "Payment is charged to your store account and renews automatically unless you cancel at least 24 hours before the end of the period.",
+      "gestion": {
+        "ios": "Manage or cancel it anytime in Settings > your name > Subscriptions.",
+        "android": "Manage or cancel it anytime in Google Play > Payments and subscriptions > Subscriptions.",
+        "otra": "Manage or cancel it anytime from the store where you bought it."
+      },
+      "base": "NIVL and your habits stay free.",
+      "avisoIa": "NIVL is an AI, not a healthcare professional."
+    },
+    "enlace": {
+      "restaurar": "Restore",
+      "restaurarA11y": "Restore purchases",
+      "terminos": "Terms",
+      "privacidad": "Privacy",
+      "eula": "Apple EULA",
+      "error": "The link could not be opened."
+    },
+    "aviso": {
+      "pendiente": "Purchase confirmed by the store. The mode opens in a few seconds; if it does not appear, tap Restore.",
+      "programada": "Change confirmed by the store. It applies at your next renewal; until then you keep your current plan.",
+      "sinPermiso": "To use the coach you need to agree to send your data to the AI provider. Without that permission nothing is charged.",
+      "nada": "This store account has no active NIVL subscription."
+    },
+    "salida": {
+      "gratis": "Continue for free",
+      "volver": "Back to NIVL",
+      "prueba": "Continue with the trial",
+      "plan": "Continue with my plan"
+    },
+    "ver": {
+      "suscribirme": "Subscribe",
+      "cuatro": "See all four modes"
+    },
+    "cerrado": {
+      "titulo": "Still closed.",
+      "datos": "What you logged here is still yours. Nothing is deleted for not paying.",
+      "queAbre": {
+        "iron": "Training, diet and its coach, which programs your loads and corrects your food.",
+        "focus": "Syllabus, exams and its coach, which spreads your study up to each date.",
+        "work": "Finances, schedule and its coach, which protects your workday.",
+        "founder": "Schedule, business finances and its coach, which asks you for the numbers."
+      }
+    }
   }
 }

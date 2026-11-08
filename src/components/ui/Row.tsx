@@ -6,7 +6,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { useEffect, useRef, type ReactNode } from 'react';
 import { AccessibilityInfo, ActivityIndicator, Animated, Pressable, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 import { colors, fonts } from '@/lib/theme';
-import { ink, type } from '@/design/tokens';
+import { ink, type, vidrio } from '@/design/tokens';
 import { t } from '@/i18n';
 import { leidoSinDato, SIN_DATO } from './sinDato';
 
@@ -37,7 +37,7 @@ function siHayMovimiento(animar: () => void): void {
   }
 }
 
-/** Marca de completar: círculo de hierro que se rellena de blanco. */
+/** Marca de completar: aro ink6 (3:1 sobre el fondo, P22) que se rellena de hueso. */
 export function Check({ checked, busy, tone = 'accent', size = 26 }: CheckProps) {
   const c = TONE[tone];
   // El momento de marcar: la marca se encoge, rebota un punto por encima y se
@@ -223,7 +223,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     minHeight: 44,
   },
-  sep: { borderTopWidth: 1, borderTopColor: colors.line },
+  sep: { borderTopWidth: 1, borderTopColor: vidrio.linea },
   // Sangra 16 a cada lado: es el padding de las tarjetas-lista, así el destello
   // llega a sus bordes.
   flash: { position: 'absolute', top: 0, bottom: 0, left: -16, right: -16, backgroundColor: colors.accentFaint },
@@ -244,7 +244,7 @@ const styles = StyleSheet.create({
   valueTexto: { fontFamily: type.headline.family, fontSize: 14, color: ink.ink9 },
   check: {
     borderWidth: 1.5,
-    borderColor: colors.accentDim,
+    borderColor: ink.ink6,
     alignItems: 'center',
     justifyContent: 'center',
   },

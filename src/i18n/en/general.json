@@ -14,7 +14,7 @@
     "a11y": "Global level {{nivel}}, {{titulo}}. {{xp}}. {{racha}} day streak, {{piedras}} stones. Opens your progression."
   },
   "hoy": {
-    "siguiente": "Next action",
+    "siguiente": "Now",
     "xp": "+{{xp}} XP",
     "completar": "Complete",
     "deTotal": "{{hechas}} of {{total}}",
@@ -46,7 +46,7 @@
     "habitos": "Habits"
   },
   "coach": {
-    "rotulo": "NIVL coach",
+    "rotulo": "Your coach",
     "enLinea": "● Online",
     "porDefecto": "Tell me what you want to achieve and I will plan your day.",
     "preguntar": "Ask the coach",

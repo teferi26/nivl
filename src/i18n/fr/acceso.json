@@ -7,11 +7,10 @@
     "fuerte": "Forte"
   },
   "aviso": {
-    "registro": "Si l'adresse est nouvelle, on t'a envoyé un lien pour la confirmer. Ouvre-le sur ce téléphone, puis connecte-toi avec ton mot de passe.",
+    "registro": "Si l'adresse est nouvelle, on t'a envoyé un lien pour la confirmer. Ouvre-le sur ce téléphone et ta session s'ouvrira toute seule.",
     "recuperacion": "Si cette adresse a un compte, on t'a envoyé un lien. Ouvre-le sur ce téléphone pour choisir un nouveau mot de passe."
   },
   "error": {
-    "nombre": "Entre 1 et {{max}} caractères.",
     "correo": "Format d'adresse e-mail non valide.",
     "noCoinciden": "Les mots de passe ne correspondent pas."
   },
@@ -50,7 +49,6 @@
     },
     "portal": "Portail des créateurs",
     "recuperarTitulo": "Récupérer le mot de passe",
-    "nombrePlaceholder": "Comment le système doit t'appeler",
     "correo": "E-mail",
     "correoPlaceholder": "toi@email.com",
     "correoA11y": "Adresse e-mail",
@@ -62,7 +60,13 @@
     "faltaCasilla": "Coche la case des Conditions pour continuer.",
     "olvido": "Mot de passe oublié ?",
     "volverAEntrar": "Revenir à la connexion",
-    "notaCuenta": "Tes habitudes, tes missions et ta progression sont enregistrées dans ton compte NIVL."
+    "notaCuenta": "Tes habitudes, tes missions et ta progression sont enregistrées dans ton compte NIVL.",
+    "crearPlan": "Créer mon plan",
+    "reenviar": {
+      "boton": "Renvoyer l'e-mail",
+      "espera": "Renvoyer dans {{n}} s",
+      "enviado": "Si cette adresse attend sa confirmation, on t'a renvoyé le lien. Regarde aussi dans tes spams."
+    }
   },
   "arranque": {
     "cargando": "Chargement"
@@ -95,11 +99,7 @@
     "sinEnlace": "Ce lien n'a rien à confirmer. Ouvre le dernier e-mail qu'on t'a envoyé ou connecte-toi avec ton mot de passe."
   },
   "web": {
-    "eyebrow": "NIVL dans le navigateur",
-    "titulo": "Ton arène, ici aussi.",
-    "cuerpo": "Le même compte et les mêmes données que sur ton téléphone. Ce que tu fais ici compte là-bas.",
-    "punto1": "Missions, série et clôture du jour",
-    "punto2": "Tes mondes : IRON, FOCUS, WORK et FOUNDER",
-    "punto3": "Le coach, avec un vrai clavier"
+    "titulo": "Ta meilleure version a déjà son coach",
+    "cuerpo": "Entraînement, études, travail et business. Un coach qui te dit quoi faire aujourd'hui et ne te laisse pas filer."
   }
 }

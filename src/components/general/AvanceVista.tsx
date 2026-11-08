@@ -15,6 +15,7 @@ import type { ReactNode } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Entrada, formatoMiles, ratioSeguro } from '@/components/arena';
 import { textoSiguiente } from '@/components/perfil/CaminoDeRangos';
+import { oro, radio } from '@/design/tokens';
 import { t } from '@/i18n';
 import { STAT_ABBR, STAT_LABEL } from '@/lib/game';
 import { compararRangos, HITOS_RACHA, RANGO_DIAS, RANGOS } from '@/lib/progression';
@@ -35,7 +36,7 @@ import {
   textoGeneral,
   TituloGeneral,
 } from './piezas';
-import { C, F, fs, G, oroA, oroMezcla, px } from './tema';
+import { C, F, fs, G, oroA, px } from './tema';
 import type { DatosProgresion } from './useAvanceGeneral';
 
 export type SegmentoAvance = 'metricas' | 'progresion';
@@ -155,7 +156,7 @@ function Metricas({ a, informe, acciones }: { a: DatosAvance; informe: string | 
                       : r >= 1
                         ? styles.celdaLlena
                         : r > 0
-                          ? { backgroundColor: oroA(0.18 + 0.5 * r), borderColor: oroA(0.5) }
+                          ? { backgroundColor: oroA(0.18 + 0.5 * r), borderColor: oro.borde }
                           : styles.celdaVacia,
                   ]}
                 />
@@ -349,29 +350,29 @@ const styles = StyleSheet.create({
   arriba: { marginTop: px(6) },
   apagado: { color: C.apagado },
   huecos: { gap: px(9) },
-  eyebrow: { fontFamily: F.b, fontSize: fs(8.5), letterSpacing: fs(8.5) * 0.18, color: C.meta, textTransform: 'uppercase' },
+  eyebrow: { fontFamily: F.b, fontSize: fs(8.5), letterSpacing: 2, color: C.meta, textTransform: 'uppercase' },
   rejilla: { flexDirection: 'row', flexWrap: 'wrap', gap: px(5), marginTop: px(10) },
-  celda: { width: `${(100 - 6 * 2.2) / 7}%`, aspectRatio: 1, borderRadius: px(6), borderWidth: 1 },
+  celda: { width: `${(100 - 6 * 2.2) / 7}%`, aspectRatio: 1, borderRadius: radio.chip, borderWidth: 1 },
   celdaLibre: { backgroundColor: 'transparent', borderColor: C.regla, borderStyle: 'dashed' },
   celdaVacia: { backgroundColor: C.hueco, borderColor: C.filete },
   celdaLlena: { backgroundColor: G, borderColor: G },
   leyenda: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: px(9), gap: px(8) },
   leyendaDer: { flexDirection: 'row', alignItems: 'center', gap: px(4) },
-  punto: { width: px(9), height: px(9), borderRadius: px(3), borderWidth: 1 },
+  punto: { width: px(9), height: px(9), borderRadius: radio.chip, borderWidth: 1 },
   racha: { flexDirection: 'row', alignItems: 'center', gap: px(12), marginTop: px(8) },
-  rachaCifra: { fontFamily: F.xb, fontSize: fs(20), color: C.blanco },
-  statAbbr: { width: px(34), fontFamily: F.xb, fontSize: fs(10.5), letterSpacing: 1, color: G },
+  rachaCifra: { fontFamily: F.serif, fontSize: fs(20), color: C.blanco },
+  statAbbr: { width: px(34), fontFamily: F.b, fontSize: fs(10.5), letterSpacing: 1, color: oro.claro },
   statBarra: { marginTop: px(5) },
   statDer: { alignItems: 'flex-end', minWidth: px(54) },
-  statTotal: { fontFamily: F.b, fontSize: fs(12), color: C.blanco },
+  statTotal: { fontFamily: F.serif, fontSize: fs(12), color: C.blanco },
   botones: { gap: px(2) },
   nivel: { flexDirection: 'row', alignItems: 'center', gap: px(14) },
-  nivelTitulo: { fontFamily: 'Cinzel_900Black', fontSize: fs(19), letterSpacing: 1, color: C.blanco, marginTop: px(2) },
-  letra: { width: LADO_LETRA, height: LADO_LETRA, borderRadius: px(8), borderWidth: 1, borderColor: C.borde, alignItems: 'center', justifyContent: 'center' },
-  letraGanada: { backgroundColor: G, borderColor: G },
-  letraActual: { borderColor: G, borderWidth: 2, backgroundColor: oroMezcla(0.14, C.fondo) },
-  letraTexto: { fontFamily: 'Cinzel_900Black', fontSize: fs(13), color: G },
-  letraTextoGanada: { color: C.fondo },
+  nivelTitulo: { fontFamily: F.serif, fontSize: fs(19), color: C.blanco, marginTop: px(2) },
+  letra: { width: LADO_LETRA, height: LADO_LETRA, borderRadius: radio.chip, borderWidth: 1, borderColor: C.borde, alignItems: 'center', justifyContent: 'center' },
+  letraGanada: { backgroundColor: oro.tenue, borderColor: oro.borde },
+  letraActual: { borderColor: oro.hilo, backgroundColor: oro.fondo },
+  letraTexto: { fontFamily: F.serif, fontSize: fs(13), color: oro.claro },
+  letraTextoGanada: { color: oro.claro },
   letraTextoFutura: { color: C.apagado },
   siguiente: { marginTop: px(8), paddingTop: px(8), borderTopWidth: 1, borderTopColor: C.regla },
   logros: { flexDirection: 'row', flexWrap: 'wrap', gap: px(7), marginTop: px(6) },
@@ -379,7 +380,7 @@ const styles = StyleSheet.create({
     flexBasis: '30%',
     flexGrow: 1,
     minHeight: px(84),
-    borderRadius: px(13),
+    borderRadius: radio.control,
     borderWidth: 1,
     borderColor: C.filete,
     backgroundColor: C.tarjeta,
@@ -388,7 +389,7 @@ const styles = StyleSheet.create({
     gap: px(4),
     padding: px(6),
   },
-  logroGanado: { borderColor: oroA(0.45), backgroundColor: oroMezcla(0.08, C.tarjeta) },
+  logroGanado: { borderColor: oro.borde, backgroundColor: oro.fondo },
   logroNombre: { fontFamily: F.sb, fontSize: fs(9.5), lineHeight: Math.round(fs(9.5) * 1.25), color: C.texto, textAlign: 'center' },
-  logroTitulo: { fontFamily: F.b, fontSize: fs(8), color: G, textAlign: 'center' },
+  logroTitulo: { fontFamily: F.b, fontSize: fs(8), color: oro.claro, textAlign: 'center' },
 });

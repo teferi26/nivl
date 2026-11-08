@@ -11,6 +11,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { Entrada, formatoMiles } from '@/components/arena';
 import { diasHasta } from '@/components/campanas/plazo';
 import type { CampanasVistaProps } from '@/components/campanas/CampanasVista';
+import { oro, radio } from '@/design/tokens';
 import { t } from '@/i18n';
 import { DUNGEON_CLEAR_XP, STAT_LABEL } from '@/lib/game';
 import {
@@ -26,7 +27,7 @@ import {
   textoGeneral,
   TituloGeneral,
 } from './piezas';
-import { C, F, fs, G, oroA, oroMezcla, px } from './tema';
+import { C, F, fs, G, px } from './tema';
 
 export function CampanasGeneralVista(p: CampanasVistaProps) {
   const abiertas = p.campanas
@@ -39,7 +40,7 @@ export function CampanasGeneralVista(p: CampanasVistaProps) {
   return (
     <PantallaGeneral>
       <Entrada indice={0}>
-        <TituloGeneral eyebrow={t('general:campanas.eyebrow')} titulo={titulo.toUpperCase()} />
+        <TituloGeneral eyebrow={t('general:campanas.eyebrow')} titulo={titulo} />
         <Text style={[textoGeneral.detalle, styles.sub]}>{p.subtitulo}</Text>
       </Entrada>
 
@@ -156,25 +157,21 @@ const styles = StyleSheet.create({
   estandarte: {
     width: px(38),
     height: px(44),
-    borderTopLeftRadius: px(6),
-    borderTopRightRadius: px(6),
-    borderBottomLeftRadius: px(14),
-    borderBottomRightRadius: px(14),
-    borderWidth: 1.5,
-    borderColor: G,
-    backgroundColor: oroMezcla(0.14, C.fondo),
+    borderRadius: radio.chip,
+    borderWidth: 1,
+    borderColor: oro.borde,
+    backgroundColor: oro.fondo,
     alignItems: 'center',
     justifyContent: 'center',
-    boxShadow: `0px 0px 10px ${oroA(0.35)}`,
   },
-  estandarteLetra: { fontFamily: 'Cinzel_900Black', fontSize: fs(17), color: G },
+  estandarteLetra: { fontFamily: F.serif, fontSize: fs(17), color: oro.claro },
   nombre: { fontFamily: F.b, fontSize: fs(13), lineHeight: Math.round(fs(13) * 1.25), color: C.blanco },
-  plazo: { borderRadius: px(7), borderWidth: 1, borderColor: C.borde, paddingHorizontal: px(7), paddingVertical: px(3) },
-  plazoUrgente: { borderColor: G, backgroundColor: oroMezcla(0.15, C.tarjeta) },
+  plazo: { borderRadius: radio.chip, borderWidth: 1, borderColor: C.borde, paddingHorizontal: px(7), paddingVertical: px(3) },
+  plazoUrgente: { borderColor: oro.borde, backgroundColor: oro.tenue },
   plazoTexto: { fontFamily: F.b, fontSize: fs(8.5), color: C.suave },
-  plazoTextoUrgente: { color: G },
+  plazoTextoUrgente: { color: oro.claro },
   progreso: { flexDirection: 'row', alignItems: 'center', gap: px(8), marginTop: px(10) },
-  cuenta: { fontFamily: F.b, fontSize: fs(10), color: C.blanco },
+  cuenta: { fontFamily: F.serif, fontSize: fs(10), color: C.blanco },
   pie: { flexDirection: 'row', alignItems: 'center', gap: px(5), marginTop: px(8) },
   nueva: { marginTop: px(4) },
 });

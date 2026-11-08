@@ -9,8 +9,6 @@ import { t } from '@/i18n';
 import {
   checkPassword,
   isValidEmail,
-  isValidName,
-  NAME_MAX_LENGTH,
   PASSWORD_MIN_LENGTH,
   type PasswordStrength,
 } from '@/lib/validation';
@@ -18,17 +16,30 @@ import {
 export type ModoLogin = 'signin' | 'signup' | 'recover';
 
 export interface CamposLogin {
-  nombre: string;
   correo: string;
   contrasena: string;
-  repite: string;
   aceptado: boolean;
 }
 
-export type CampoTocable = 'nombre' | 'correo' | 'contrasena' | 'repite';
+export type CampoTocable = 'correo' | 'contrasena';
 export type Tocados = Record<CampoTocable, boolean>;
 
-export const SIN_TOCAR: Tocados = { nombre: false, correo: false, contrasena: false, repite: false };
+export const SIN_TOCAR: Tocados = { correo: false, contrasena: false };
+
+/**
+ * Nombre con el que nace la cuenta: el alta ya no lo pide (N6, N9) y
+ * `registrar` lo exige. Es el nombre por defecto de la base de datos y el
+ * onboarding lo pregunta después.
+ */
+export const NOMBRE_POR_DEFECTO = 'Gladiador'; // i18n-ok: valor de la base de datos, no se enseña como texto de interfaz
+
+/** Segundos de bloqueo del botón «Reenviar correo» tras pulsarlo. */
+export const ESPERA_REENVIO_S = 60;
+
+/** Segundos que faltan hasta `hasta` (ms), redondeados hacia arriba. */
+export function segundosRestantes(hasta: number, ahora: number): number {
+  return Math.max(0, Math.ceil((hasta - ahora) / 1000));
+}
 
 /** Segmentos llenos de la barra de fuerza (de 4). */
 const SEGMENTOS: Record<PasswordStrength, number> = { debil: 1, media: 3, fuerte: 4 };
@@ -45,6 +56,9 @@ export function avisoRegistro(): string {
 export function avisoRecuperacion(): string {
   return t('acceso:aviso.recuperacion');
 }
+export function avisoReenviado(): string {
+  return t('acceso:login.reenviar.enviado');
+}
 
 /**
  * @deprecated Usa `avisoRecuperacion()`. Alias congelado, igual al texto de
@@ -59,9 +73,7 @@ export function ayudaContrasena(): string {
 
 export interface EvaluacionLogin {
   puedeEnviar: boolean;
-  errorNombre: string | null;
   errorCorreo: string | null;
-  errorRepite: string | null;
   /** Solo al crear cuenta y con algo escrito. */
   fuerza: { segmentos: number; etiqueta: string } | null;
   /** Lo que le falta a la contraseña para poder registrarse. */
@@ -70,9 +82,7 @@ export interface EvaluacionLogin {
 
 export function evaluarLogin(modo: ModoLogin, c: CamposLogin, tocados: Tocados): EvaluacionLogin {
   const correoValido = isValidEmail(c.correo);
-  const nombreValido = isValidName(c.nombre);
   const pw = checkPassword(c.contrasena, c.correo);
-  const coinciden = c.contrasena === c.repite;
   const alta = modo === 'signup';
 
   const puedeEnviar =
@@ -80,14 +90,11 @@ export function evaluarLogin(modo: ModoLogin, c: CamposLogin, tocados: Tocados):
       ? correoValido && c.contrasena.length > 0
       : modo === 'recover'
         ? correoValido
-        : nombreValido && correoValido && pw.ok && coinciden && c.aceptado;
+        : correoValido && pw.ok && c.aceptado;
 
   return {
     puedeEnviar,
-    errorNombre:
-      alta && tocados.nombre && c.nombre.length > 0 && !nombreValido ? t('acceso:error.nombre', { max: NAME_MAX_LENGTH }) : null,
     errorCorreo: tocados.correo && c.correo.length > 0 && !correoValido ? t('acceso:error.correo') : null,
-    errorRepite: alta && tocados.repite && c.repite.length > 0 && !coinciden ? t('acceso:error.noCoinciden') : null,
     fuerza: alta && c.contrasena.length > 0 ? fuerzaDe(pw.strength) : null,
     faltas: alta && c.contrasena.length > 0 ? pw.missing : [],
   };

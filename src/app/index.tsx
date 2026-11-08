@@ -62,7 +62,7 @@ export default function Index() {
     return <ArranqueCargando />;
   }
 
-  if (!session) return <Redirect href="/login" />;
+  if (!session) return <Redirect href={'/empezar' as never} />;
   return (
     <Redirect href={onboarded ? rutaDeArranque({ activo: modos.activo, cargado: modos.cargado, modo: modos.modo }) : '/onboarding'} />
   );

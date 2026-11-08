@@ -1,23 +1,19 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { vibrar } from '@/design/haptics';
 import { router } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  Animated,
   BackHandler,
-  Keyboard,
   KeyboardAvoidingView,
   Platform,
   Pressable,
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Campo, Entrada, TarjetaArena } from '@/components/arena';
-import { HoldToSign } from '@/components/HoldToSign';
+import { DescargoSalud } from '@/components/DescargoSalud';
 import { useHealthConsent } from '@/components/ConsentimientoSalud';
 import {
   conTiempoLimite,
@@ -27,33 +23,22 @@ import {
   SALIDA_ESPERA_MS,
 } from '@/components/onboarding/pasoOferta';
 import { useCelebracion } from '@/components/celebracion/contexto';
-import { PortadaArena } from '@/components/onboarding/PortadaArena';
-import { pasoAnterior, PASO_IDIOMA, PASO_MODOS, posicionPaso, secuenciaPasos, siguientePaso } from '@/components/onboarding/pasos';
+import { Cuestionario } from '@/components/embudo/Cuestionario';
+import { CargaPlan, PlanNoventa } from '@/components/embudo/PlanNoventa';
+import { pasoAnterior, PASO_CUESTIONARIO, PASO_IDIOMA, PASO_MODOS, PASO_SALUD, posicionPaso, secuenciaPasos, siguientePaso } from '@/components/onboarding/pasos';
 import { SelectorIdioma } from '@/components/idioma/SelectorIdioma';
 import { EleccionModos } from '@/components/modos/EleccionModos';
 import { AccionesConsentimiento, CuerpoConsentimiento } from '@/components/consentimiento/ConsentimientoAnalitica';
 import { useConsentimientoAnalitica } from '@/components/consentimiento/useConsentimientoAnalitica';
 import { ProgresoPasos } from '@/components/onboarding/ProgresoPasos';
-import { TablillaContrato } from '@/components/onboarding/TablillaContrato';
 import { TituloPaso } from '@/components/onboarding/TituloPaso';
 import { OfertaModosAcciones, OfertaModosCuerpo, OfertaModosLegal } from '@/components/modos/pago/OfertaModosVista';
 import { useOfertaModos } from '@/components/modos/pago/useOfertaModos';
 import { ProUpsellLine } from '@/components/ProOffer';
-import { Button, Chip, Skeleton } from '@/components/ui';
+import { Button, FondoOnix, Skeleton } from '@/components/ui';
 import { avisar } from '@/components/ui/confirmar';
 import { GutterContext } from '@/components/ui/Screen';
 import { useAuth } from '@/lib/auth';
-import {
-  GOAL_DETAIL_MAX_LENGTH,
-  GOAL_MAX_LENGTH,
-  HORIZONTES,
-  HORIZONTE_POR_DEFECTO,
-  firmaValida,
-  limpiarFrase,
-  textoCompromiso,
-  type Horizonte,
-} from '@/lib/compromiso';
-import { fetchLetter, sealLetter } from '@/lib/contract';
 import { CODIGO_MAX_LENGTH, motivoReferral, normalizarCodigo } from '@/lib/creatormath';
 import {
   claimReferral,
@@ -64,30 +49,29 @@ import {
 } from '@/lib/creators';
 import { registrar, type SalidaOnboarding } from '@/lib/analitica';
 import { createStarterQuests, deleteQuest, ensureProfile, fetchQuests, insertEvent, updateProfile } from '@/lib/data';
-import { addDays, dateKey, fechaConAnio } from '@/lib/dates';
-import { KINDS, PROFILE_KINDS, type ProfileKind } from '@/lib/kinds';
-import { DIFFICULTY_LABEL, STAT_LABEL } from '@/lib/game';
+import { completas, necesitaPermisoSalud, payloadObjetivo, type Respuestas } from '@/lib/embudo';
+import { guardarRespuestas, leerRespuestas, olvidarRespuestas } from '@/lib/embudoGuardado';
+import { KINDS, type ProfileKind } from '@/lib/kinds';
 import { anotarOferta, fetchAiStatus, isPro, ofrecerSi, type AiStatus, type DecisionOferta, type RespuestaOferta } from '@/lib/pro';
 import { colors, fonts } from '@/lib/theme';
-import { ink, type as tipo } from '@/design/tokens';
+import { ink, space, type as tipo, vidrio } from '@/design/tokens';
 import { TopeAncho } from '@/design/useSizeClass';
-import { esIdioma, fijarPreferencia, idiomaDispositivo, idiomaInterfaz, preferenciaIdioma, resolverIdiomaCoach, t, useIdioma } from '@/i18n';
+import { esIdioma, fijarPreferencia, idiomaDispositivo, preferenciaIdioma, resolverIdiomaCoach, t, useIdioma } from '@/i18n';
 import { asegurarIdiomaPerfil } from '@/i18n/sincronizar';
 import { flagsActuales, useFlags } from '@/lib/flags';
 import { eleccionValida, modosSugeridos, useModo, type ModoEtiqueta } from '@/modos';
-import { mayus } from '@/i18n/formato';
+import { marcarNovedadVista } from '@/modos/datos';
 import { mensajeSistema, NAME_MAX_LENGTH } from '@/lib/validation';
 
-// Bienvenida · Nombre · Para qué · El objetivo · Primeros hábitos · La firma · NIVL Pro
+// El onboarding de Ónix, ya con cuenta. El cuestionario (quién eres, qué
+// quieres, cómo te hablo) se contesta antes de registrarse (/empezar) y aquí se
+// recoge; solo se pregunta aquí si este teléfono no lo tiene.
 //
-// Modos F1 (components/onboarding/pasos.ts): con `idiomas_activos`, el idioma
-// va antes de todo; con `modos_activos`, «Elige tus modos» va tras «Para qué».
-// Con los dos apagados, los siete pasos de siempre.
+// Bienvenida y aviso de salud · (cuestionario) · Nombre · (modos) · (permiso de
+// salud) · Primeras misiones · Plan de 90 días · NIVL Pro.
 //
-// El orden no es casual. Primero se dice para qué se está aquí, luego se
-// eligen los hábitos que llevan hasta ahí, y solo entonces se firma: el
-// compromiso ya tiene contenido. Pro va DESPUÉS de la firma, en el momento de
-// más convicción, y con la salida gratuita a la misma altura que la compra.
+// La firma ya no está aquí: se hace después (`/firma`), con la app ya usada. Sus
+// datos son los mismos: `sealLetter` y el evento `commitment_signed`.
 /**
  * Integración F1: el paso del idioma ya se contestó en esta sesión de app. Va
  * fuera del componente a propósito: elegir otro idioma cambia la interfaz y la
@@ -106,11 +90,9 @@ function idiomaYaElegido(preferencia: string | null): boolean {
   return idiomaOnboardingContestado || esIdioma(preferencia);
 }
 
-/** Pasos de los que se puede volver: del nombre a la firma. Tras firmar, no. */
+/** Pasos de los que se puede volver: del nombre a las misiones. */
 const PRIMER_PASO_CON_VUELTA = 1;
-const ULTIMO_PASO_CON_VUELTA = 5;
-/** Lo que dura el sello en pantalla si no se toca. */
-const MS_SELLO = 1400;
+const ULTIMO_PASO_CON_VUELTA = 4;
 /** Margen lateral del onboarding; lo publica GutterContext para lo que va a sangre. */
 const GUTTER = 24;
 /** Ancho útil de la columna del onboarding (sin el canal). */
@@ -122,7 +104,6 @@ const DEFAULT_NAMES = new Set(['Gladiador', 'Cazador']); // i18n-ok: valores por
 
 export default function Onboarding() {
   const health = useHealthConsent();
-  const [healthGoal, setHealthGoal] = useState(false);
   const { session } = useAuth();
   const userId = session?.user.id;
   // Con el idioma encendido ya al montar (caché de interruptores), se empieza
@@ -134,9 +115,15 @@ export default function Onboarding() {
   // Modos F1: los pasos nuevos solo con su interruptor (pasos.ts).
   const flags = useFlags();
   const modosCtx = useModo();
+  const [respuestas, setRespuestas] = useState<Respuestas | null>(null);
+  const [respuestasLeidas, setRespuestasLeidas] = useState(false);
+  const [saludOmitida, setSaludOmitida] = useState(false);
+  const [planListo, setPlanListo] = useState(false);
+  const faltaCuestionario = respuestasLeidas && !(respuestas && completas(respuestas));
+  const faltaSalud = !!respuestas && necesitaPermisoSalud(respuestas) && !health.accepted && !saludOmitida;
   const secuencia = useMemo(
-    () => secuenciaPasos({ idioma: flags.idiomas_activos, modos: modosCtx.activo }),
-    [flags.idiomas_activos, modosCtx.activo],
+    () => secuenciaPasos({ idioma: flags.idiomas_activos, modos: modosCtx.activo, cuestionario: faltaCuestionario, salud: faltaSalud }),
+    [flags.idiomas_activos, modosCtx.activo, faltaCuestionario, faltaSalud],
   );
   const tras = (paso: number) => siguientePaso(secuencia, paso);
   // Propuesto: lo ya elegido o, si no, el del teléfono (si NIVL lo habla).
@@ -174,20 +161,11 @@ export default function Onboarding() {
   // el mismo código, Continuar ya no pregunta otra vez y deja seguir.
   const codigoResuelto = useRef<string | null>(null);
   const [kind, setKind] = useState<ProfileKind | null>(null);
-  const [goal, setGoal] = useState('');
-  const [target, setTarget] = useState('');
-  const [deadline, setDeadline] = useState('');
   const [chosen, setChosen] = useState<Set<number>>(new Set());
-  const [horizonte, setHorizonte] = useState<Horizonte>(HORIZONTE_POR_DEFECTO);
-  const [firma, setFirma] = useState('');
-  const campoFirma = useRef<TextInput>(null);
-  const firmaPorResolver = useRef<{ body: string; openAt: string; years: Horizonte['years']; healthData: boolean } | null>(null);
-  const [firmaPendiente, setFirmaPendiente] = useState(false);
-  const [firmaSellada, setFirmaSellada] = useState<{ body: string; openAt: string } | null>(null);
   const [busy, setBusy] = useState(false);
   const lock = useRef(false);
   // Quien ya tiene coach (una cuenta de cortesía que rehace el onboarding) no
-  // ve la oferta: tras firmar, entra.
+  // ve la oferta: tras el plan, entra.
   const yaEsPro = useRef(false);
   // La cuenta nunca tuvo coach: el paso 6 ofrece la prueba de 7 días.
   // El estado entero de la IA: el paso 6 lo necesita para decidir la oferta
@@ -204,16 +182,17 @@ export default function Onboarding() {
   // perfil solo repone la selección por defecto si es OTRO perfil.
   const creadas = useRef<Map<string, string>>(new Map());
   const objetivoGuardado = useRef<string | null>(null);
-  const kindGuardado = useRef<ProfileKind | null>(null);
-  // Mientras el dedo firma, el scroll se apaga: un milímetro de deriva le daba
-  // el gesto al ScrollView y el anillo volvía a cero.
-  const [holding, setHolding] = useState(false);
-  const holdingRef = useRef(false);
-  const [sello, setSello] = useState(false);
+  const preparadoCon = useRef<string | null>(null);
   const scroll = useRef<ScrollView>(null);
-  const selloEscala = useRef(new Animated.Value(1.5)).current;
-  const selloOpacidad = useRef(new Animated.Value(0)).current;
-  const selloTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    leerRespuestas()
+      .then((r) => {
+        setRespuestas(r);
+        if (r?.kind) setKind(r.kind);
+      })
+      .finally(() => setRespuestasLeidas(true));
+  }, []);
 
   // El nombre puede venir ya de Franky (trigger de alta, migración 0018).
   useEffect(() => {
@@ -278,28 +257,54 @@ export default function Onboarding() {
     }
   };
 
+  /** El objetivo (solo con permiso si es de salud) y las misiones por defecto. */
+  const prepararMisiones = async () => {
+    if (respuestas) {
+      const payload = payloadObjetivo(respuestas, health.accepted);
+      const huella = JSON.stringify(payload);
+      if (objetivoGuardado.current !== huella) {
+        await insertEvent(userId!, 'onboarding_goal', { ...payload });
+        objetivoGuardado.current = huella;
+      }
+    }
+    const k = respuestas?.kind ?? kind;
+    const clave = `${k}:${health.accepted}`;
+    if (k && preparadoCon.current !== clave) {
+      setChosen(new Set(KINDS[k].starterQuests.flatMap((q, i) => (health.accepted || !q.health_data ? [i] : []))));
+      preparadoCon.current = clave;
+    }
+  };
+
+  const avanzarDesde = async (paso: number) => {
+    const sig = tras(paso);
+    if (sig === 4) await prepararMisiones();
+    setStep(sig);
+  };
+
   const saveName = () =>
     withLock(async () => {
       if (!name.trim()) return;
       await updateProfile(userId!, { name: name.trim() });
-      if (await reclamarCodigo()) setStep(tras(1));
+      if (kind) {
+        await updateProfile(userId!, { profile_kind: kind });
+        setModosElegidos(modosSugeridos(kind));
+      }
+      if (await reclamarCodigo()) await avanzarDesde(1);
     });
 
-  const saveKind = () =>
-    withLock(async () => {
-      if (!kind) return;
-      await updateProfile(userId!, { profile_kind: kind });
-      // Por defecto todos los hábitos propuestos marcados: quitar es un toque.
-      // Solo al cambiar de perfil: volver atrás y seguir con el mismo no debe
-      // deshacer lo que ya se había desmarcado.
-      if (kindGuardado.current !== kind) {
-        setChosen(new Set(KINDS[kind].starterQuests.flatMap((q, i) => health.accepted || !q.health_data ? [i] : [])));
-        // Modos F1: el perfil propone su modo (un toque para cambiarlo).
-        setModosElegidos(modosSugeridos(kind));
-        kindGuardado.current = kind;
-      }
-      setStep(tras(2));
+  const terminarCuestionario = (r: Respuestas) => {
+    setRespuestas(r);
+    setKind(r.kind);
+    void guardarRespuestas(r);
+    setStep(tras(PASO_CUESTIONARIO));
+  };
+
+  const seguirSinSalud = () => {
+    setSaludOmitida(true);
+    void withLock(async () => {
+      await avanzarDesde(PASO_SALUD);
     });
+  };
 
   // Modos F1: el idioma (primer paso, con `idiomas_activos`). Se guarda en el
   // teléfono y en `profiles.locale`, como la hoja de Perfil.
@@ -321,29 +326,7 @@ export default function Onboarding() {
     withLock(async () => {
       if (!eleccionValida(modosElegidos)) return;
       await modosCtx.guardarActivados(modosElegidos);
-      setStep(tras(PASO_MODOS));
-    });
-
-  // El objetivo es una frase libre, no una meta medible: no cabe en `goals`
-  // (que exige valor inicial y valor objetivo numéricos y paga XP al
-  // cumplirse). Va a la crónica de eventos, donde el coach puede leerlo.
-  const saveGoal = () =>
-    withLock(async () => {
-      if (!limpiarFrase(goal)) return;
-      if (healthGoal && !health.accepted) { health.ask(); return; }
-      const payload = {
-        health_data: healthGoal,
-        goal: limpiarFrase(goal),
-        target: limpiarFrase(target) || null,
-        deadline: limpiarFrase(deadline) || null,
-        kind,
-      };
-      const huella = JSON.stringify(payload);
-      if (objetivoGuardado.current !== huella) {
-        await insertEvent(userId!, 'onboarding_goal', payload);
-        objetivoGuardado.current = huella;
-      }
-      setStep(tras(3));
+      await avanzarDesde(PASO_MODOS);
     });
 
   const saveStarters = () =>
@@ -374,78 +357,19 @@ export default function Onboarding() {
         elegidas.filter((q) => !creadas.current.has(q.title)),
       );
       for (const q of nuevas) creadas.current.set(q.title, q.id);
-      setFirma('');
+      setPlanListo(false);
       setStep(tras(4));
     });
-
-  const hoy = dateKey();
-  const abreEl = addDays(hoy, horizonte.days);
-  const contrato = textoCompromiso({
-    name,
-    goal,
-    target,
-    deadline,
-    horizonte,
-    firmadoEl: fechaConAnio(hoy),
-    seAbreEl: fechaConAnio(abreEl),
-  });
 
   const finish = (salida: SalidaOnboarding = 'sin_oferta') =>
     withLock(async () => {
       await updateProfile(userId!, { onboarding_done: true });
+      // Quien acaba de elegir no necesita la «Novedad» de los modos (N2).
+      await marcarNovedadVista(userId!);
+      await olvidarRespuestas();
       registrar('onboarding_fin', { salida });
       router.replace('/(tabs)');
     });
-
-  // La firma se sella como una carta al yo del futuro: aparece en Contrato y
-  // se abre el día que vence el horizonte. El evento deja constancia en la
-  // crónica sin revelar el texto.
-  const sign = () =>
-    withLock(async () => {
-      if (sello || step !== 5) return;
-      if (!firmaValida(firma, name)) { campoFirma.current?.focus(); return; }
-      if (healthGoal && !health.accepted) { health.ask(); return; }
-      // Un reintento (falló lo de después, o la app se cerró en el sello) no
-      // sella otra carta igual ni repite el evento: si la última carta es
-      // esta misma firma, se da por sellada.
-      const intentoFirma = firmaPorResolver.current ?? {
-        body: contrato, openAt: abreEl, years: horizonte.years, healthData: healthGoal,
-      };
-      const previa = await fetchLetter();
-      const yaSellada = !!previa && previa.body === intentoFirma.body && previa.open_at === intentoFirma.openAt;
-      if (!yaSellada) {
-        // Preserve the same attempt if an INSERT response is lost. Do not let
-        // a changed horizon silently replace an uncertain persisted letter.
-        firmaPorResolver.current = intentoFirma;
-        setFirmaPendiente(true);
-        await sealLetter(userId!, intentoFirma.body, intentoFirma.openAt, intentoFirma.healthData);
-        // QA F1 (M3): si no se firmó en español, el evento dice en qué idioma
-        // (el texto sellado va en el de la interfaz). En es, el de siempre.
-        const idiomaFirma = idiomaInterfaz();
-        await insertEvent(userId!, 'commitment_signed', {
-          years: intentoFirma.years,
-          open_at: intentoFirma.openAt,
-          ...(idiomaFirma === 'es' ? {} : { idioma: idiomaFirma }),
-        }).catch(() => {});
-      }
-      if (yaEsPro.current) await updateProfile(userId!, { onboarding_done: true });
-      setFirmaSellada(intentoFirma);
-      firmaPorResolver.current = null;
-      setFirmaPendiente(false);
-      setSello(true);
-    });
-
-  // El sello: un segundo y medio para que firmar pese. Se salta con un toque.
-  const trasElSello = useCallback(() => {
-    if (selloTimer.current) clearTimeout(selloTimer.current);
-    selloTimer.current = null;
-    setSello(false);
-    if (yaEsPro.current) {
-      registrar('onboarding_fin', { salida: 'ya_pro' });
-      router.replace('/(tabs)');
-    }
-    else setStep(6);
-  }, []);
 
   // Modos F1: con `idiomas_activos`, el idioma es el primer paso. Los
   // interruptores pueden llegar después de montar (caché o red): si aún no se
@@ -458,35 +382,29 @@ export default function Onboarding() {
     else setStep((s) => (s === PASO_IDIOMA ? 0 : s));
   }, [flags.idiomas_activos, preferencia]);
 
-  useEffect(() => {
-    if (!sello) return;
-    selloEscala.setValue(1.5);
-    selloOpacidad.setValue(0);
-    vibrar('nivel');
-    Animated.parallel([
-      Animated.spring(selloEscala, { toValue: 1, useNativeDriver: true, friction: 6, tension: 80 }),
-      Animated.timing(selloOpacidad, { toValue: 1, duration: 160, useNativeDriver: true }),
-    ]).start();
-    selloTimer.current = setTimeout(trasElSello, MS_SELLO);
-    return () => {
-      if (selloTimer.current) clearTimeout(selloTimer.current);
-    };
-  }, [sello, selloEscala, selloOpacidad, trasElSello]);
-
-  const puedeVolver = step >= PRIMER_PASO_CON_VUELTA && step <= ULTIMO_PASO_CON_VUELTA && !busy && !sello && !firmaPendiente;
+  const puedeVolver = step >= PRIMER_PASO_CON_VUELTA && step <= ULTIMO_PASO_CON_VUELTA && !busy;
   const volver = useCallback(() => setStep((s) => pasoAnterior(secuencia, s)), [secuencia]);
 
-  // El botón físico respeta el bloqueo de la firma, incluso durante un reintento.
-  // Fuera de ese bloqueo sigue el mismo recorrido que la flecha.
+  // Con el permiso de salud concedido en su paso, se sigue solo.
+  useEffect(() => {
+    if (step === PASO_SALUD && health.accepted) {
+      void withLock(async () => {
+        await avanzarDesde(PASO_SALUD);
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- solo al conceder el permiso
+  }, [step, health.accepted]);
+
+  // El botón físico sigue el mismo recorrido que la flecha.
   useEffect(() => {
     const sub = BackHandler.addEventListener('hardwareBackPress', () => {
-      if (sello || busy || firmaPendiente || lock.current || holdingRef.current || firmaPorResolver.current) return true;
+      if (busy || lock.current) return true;
       if (!puedeVolver) return false;
       volver();
       return true;
     });
     return () => sub.remove();
-  }, [puedeVolver, sello, busy, firmaPendiente, holding, volver]);
+  }, [puedeVolver, busy, volver]);
 
   const toggleStarter = (i: number) => {
     if (kind && KINDS[kind].starterQuests[i]?.health_data && !health.accepted && !chosen.has(i)) { health.ask(); return; }
@@ -499,7 +417,8 @@ export default function Onboarding() {
   };
 
   const meta = kind ? KINDS[kind] : null;
-  const firmaOk = firmaValida(firma, name);
+  const terminarCarga = useCallback(() => setPlanListo(true), []);
+  const trasPlan = () => (yaEsPro.current ? void finish('ya_pro') : setStep(tras(5)));
   // Salir del paso 6. La respuesta solo se apunta si se enseñó la hoja: la
   // línea no cuenta contra los topes y no hay nada que cerrar.
   const salir = async (respuesta: RespuestaOferta) => {
@@ -548,14 +467,6 @@ export default function Onboarding() {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- `finish` y el nivel se leen al decidir, una sola vez
   }, [step, decisionOferta, celebrando]);
 
-  // Con una firma válida se baja hasta la acción. El teclado solo se cierra
-  // con Hecho para permitir corregir o pegar el nombre sin perder el foco.
-  useEffect(() => {
-    if (step !== 5 || !firmaOk) return;
-    const bajar = setTimeout(() => scroll.current?.scrollToEnd({ animated: true }), 280);
-    return () => clearTimeout(bajar);
-  }, [firmaOk, step]);
-
   // Embudo anónimo: qué paso se ve (volver atrás lo repite; el panel cuenta
   // instalaciones distintas por paso).
   useEffect(() => {
@@ -570,28 +481,18 @@ export default function Onboarding() {
     scroll.current?.scrollTo({ y: 0, animated: false });
   }, [step]);
 
-  const elegirKind = (k: ProfileKind) => {
-    vibrar('seleccion');
-    setKind(k);
-  };
-  const elegirHorizonte = (h: Horizonte) => {
-    if (lock.current || holdingRef.current || firmaPorResolver.current || sello) return;
-    vibrar('seleccion');
-    setHorizonte(h);
-  };
-
   return (
     <SafeAreaView style={styles.screen}>
+      <FondoOnix />
+      {step === PASO_CUESTIONARIO ? (
+        <Cuestionario inicial={respuestas} onTerminar={terminarCuestionario} />
+      ) : (
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        {/* Columna centrada: en iPad (1024-1366 pt) las tarjetas y los botones
-            ocupaban todo el ancho. Cabecera, contenido y pie comparten el tope,
-            y TopeAncho hace que la portada y las tarjetas midan contra él. */}
+        {/* Columna centrada: en iPad y en la web, cabecera, contenido y pie comparten el tope. */}
         <TopeAncho.Provider value={ANCHO_COLUMNA}>
         <View style={styles.columna}>
-        {/* Cabecera fija: la vuelta atrás y el progreso. La fila de la flecha
-            ocupa siempre su alto para que el progreso no salte entre pasos. La
-            portada no la lleva: es la fachada entera. */}
-        {step > 0 ? (
+        {/* El plan y la oferta no llevan la barra: el perfil ya está completo. */}
+        {step > 0 && step < 5 ? (
         <View style={styles.top}>
           <View style={styles.backRow}>
             {puedeVolver ? (
@@ -614,10 +515,7 @@ export default function Onboarding() {
             automaticallyAdjustKeyboardInsets, iOS sumaba el teclado dos veces. */}
         <ScrollView
           ref={scroll}
-          scrollEnabled={!holding}
-          // La firma es un documento: se lee desde arriba. Centrada, en
-          // pantallas altas dejaba un hueco negro sobre el título.
-          contentContainerStyle={[styles.content, step === 5 && styles.contentArriba]}
+          contentContainerStyle={styles.content}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
@@ -634,7 +532,18 @@ export default function Onboarding() {
             </Entrada>
           ) : null}
 
-          {step === 0 && !preguntandoMedicion ? <PortadaArena key="paso-0" /> : null}
+          {step === 0 && !preguntandoMedicion ? (
+            <Entrada key="paso-0" indice={0}>
+              <TituloPaso
+                inscripcion={t('onboarding:embudo.bienvenida.rotulo')}
+                titulo={t('onboarding:embudo.bienvenida.titulo')}
+                pista={t('onboarding:embudo.bienvenida.texto')}
+              />
+              <TarjetaArena variante="contorno">
+                <DescargoSalud />
+              </TarjetaArena>
+            </Entrada>
+          ) : null}
 
           {step === 0 && preguntandoMedicion ? (
             <Entrada key="paso-medicion" indice={0}>
@@ -646,7 +555,7 @@ export default function Onboarding() {
           {step === 1 ? (
             <Entrada key="paso-1" indice={0}>
               <TituloPaso inscripcion={t('onboarding:nombre.inscripcion')} titulo={t('onboarding:nombre.titulo')} />
-              <TarjetaArena variante="contorno" remaches>
+              <TarjetaArena variante="contorno">
                 <Campo
                   etiqueta={t('onboarding:nombre.etiqueta')}
                   value={name}
@@ -659,7 +568,7 @@ export default function Onboarding() {
                   accessibilityLabel={t('onboarding:nombre.a11y')}
                 />
               </TarjetaArena>
-              <TarjetaArena variante="contorno" remaches>
+              <TarjetaArena variante="contorno" style={styles.segundaTarjeta}>
                 <Campo
                   etiqueta={t('onboarding:nombre.codigoEtiqueta')}
                   error={avisoCodigo ?? undefined}
@@ -681,42 +590,6 @@ export default function Onboarding() {
             </Entrada>
           ) : null}
 
-          {step === 2 ? (
-            <Entrada key="paso-2" indice={0}>
-              <TituloPaso
-                inscripcion={t('onboarding:camino.inscripcion')}
-                titulo={t('onboarding:camino.titulo')}
-                pista={t('onboarding:camino.pista')}
-              />
-              {PROFILE_KINDS.map((k) => {
-                const m = KINDS[k];
-                const on = kind === k;
-                return (
-                  <Pressable
-                    key={k}
-                    onPress={() => elegirKind(k)}
-                    style={[styles.kindCard, on && styles.kindCardOn]}
-                    accessibilityRole="radio"
-                    accessibilityState={{ selected: on }}
-                    accessibilityLabel={m.label}
-                  >
-                    <Ionicons name={m.icon as never} size={22} color={colors.accent} />
-                    <View style={{ flex: 1, minWidth: 0 }}>
-                      <Text style={[styles.kindLabel, on && styles.kindLabelOn]}>{m.label.toUpperCase()}</Text>
-                      <Text style={[styles.kindTagline, on && styles.kindTaglineOn]}>{m.tagline}</Text>
-                    </View>
-                  </Pressable>
-                );
-              })}
-              {meta ? (
-                <TarjetaArena variante="contorno" remaches style={{ marginTop: 6 }}>
-                  <Text style={styles.detailTitle}>{mayus(t('onboarding:camino.queSeActiva'))}</Text>
-                  <Text style={styles.detail}>{meta.description}</Text>
-                </TarjetaArena>
-              ) : null}
-            </Entrada>
-          ) : null}
-
           {step === PASO_MODOS ? (
             <Entrada key="paso-modos" indice={0}>
               <TituloPaso
@@ -728,57 +601,16 @@ export default function Onboarding() {
             </Entrada>
           ) : null}
 
-          {step === 3 && meta ? (
-            <Entrada key="paso-3" indice={0}>
+          {step === PASO_SALUD ? (
+            <Entrada key="paso-salud" indice={0}>
               <TituloPaso
-                inscripcion={t('onboarding:objetivo.inscripcion')}
-                titulo={t('onboarding:objetivo.titulo')}
-                pista={t('onboarding:objetivo.pista')}
+                inscripcion={t('onboarding:embudo.salud.rotulo')}
+                titulo={t('onboarding:embudo.salud.titulo')}
+                pista={t('onboarding:embudo.salud.texto')}
               />
-              <TarjetaArena variante="contorno" remaches>
-                <Text style={styles.label}>{t('onboarding:objetivo.etiqueta')}</Text>
-                <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: healthGoal }}
-                  accessibilityLabel={t('onboarding:objetivo.salud')}
-                  onPress={() => { if (!health.accepted && !healthGoal) { health.ask(); return; } setHealthGoal(v => !v); }}
-                  style={styles.starterRow}>
-                  <View style={[styles.checkbox, healthGoal && styles.checkboxOn]}>{healthGoal ? <Ionicons name="checkmark" size={14} color={colors.bg} /> : null}</View>
-                  <Text style={[styles.detail, { flex: 1 }]}>{t('onboarding:objetivo.salud')}</Text>
-                </Pressable>
-                {!healthGoal ? <Text style={styles.stepHint}>{t('onboarding:objetivo.sinSalud')}</Text> : null}
-                <TextInput
-                  style={[styles.input, styles.inputMulti]}
-                  value={goal}
-                  onChangeText={setGoal}
-                  placeholder={healthGoal ? meta.goalExample : t('onboarding:objetivo.ejemplo')}
-                  placeholderTextColor={ink.ink6}
-                  maxLength={GOAL_MAX_LENGTH}
-                  multiline
-                  accessibilityLabel={t('onboarding:objetivo.a11y')}
-                />
-                <View style={styles.pair}>
-                  <View style={styles.pairItem}>
-                    <Campo
-                      etiqueta={t('onboarding:objetivo.cifra')}
-                      estiloBloque={styles.labelGap}
-                      value={target}
-                      onChangeText={setTarget}
-                      placeholder={healthGoal ? t('onboarding:objetivo.cifraEjemploSalud') : t('onboarding:objetivo.cifraEjemplo')}
-                      maxLength={GOAL_DETAIL_MAX_LENGTH}
-                      accessibilityLabel={t('onboarding:objetivo.cifraA11y')}
-                    />
-                  </View>
-                  <View style={styles.pairItem}>
-                    <Campo
-                      etiqueta={t('onboarding:objetivo.fecha')}
-                      estiloBloque={styles.labelGap}
-                      value={deadline}
-                      onChangeText={setDeadline}
-                      placeholder={t('onboarding:objetivo.fechaEjemplo')}
-                      maxLength={GOAL_DETAIL_MAX_LENGTH}
-                      accessibilityLabel={t('onboarding:objetivo.fechaA11y')}
-                    />
-                  </View>
-                </View>
+              <TarjetaArena variante="contorno">
+                <DescargoSalud />
+                <Text style={styles.notaSalud}>{t('onboarding:embudo.salud.sinPermiso')}</Text>
               </TarjetaArena>
             </Entrada>
           ) : null}
@@ -792,7 +624,7 @@ export default function Onboarding() {
                   para: kind === 'general' ? t('onboarding:misiones.gladiador') : meta.enFrase,
                 })}
               />
-              <TarjetaArena variante="contorno" remaches>
+              <TarjetaArena variante="contorno">
                 {meta.starterQuests.map((q, i) => {
                   const on = chosen.has(i);
                   return (
@@ -810,14 +642,9 @@ export default function Onboarding() {
                       <View style={{ flex: 1, minWidth: 0 }}>
                         <Text style={[styles.starterTitle, !on && styles.starterOff]}>{q.title}</Text>
                         <Text style={styles.starterMeta}>
-                          {t(q.health_data ? 'onboarding:misiones.metaSalud' : 'onboarding:misiones.meta', {
-                            stat: STAT_LABEL[q.stat],
-                            dificultad: DIFFICULTY_LABEL[q.difficulty],
-                            frecuencia:
-                              q.days_of_week.length === 7
-                                ? t('onboarding:misiones.cadaDia')
-                                : t('onboarding:misiones.diasSemana', { n: q.days_of_week.length }),
-                          })}
+                          {q.days_of_week.length === 7
+                            ? t('onboarding:misiones.cadaDia')
+                            : t('onboarding:misiones.diasSemana', { n: q.days_of_week.length })}
                         </Text>
                       </View>
                     </Pressable>
@@ -828,57 +655,13 @@ export default function Onboarding() {
           ) : null}
 
           {step === 5 ? (
-            <Entrada key="paso-5" indice={0}>
-              <TituloPaso
-                inscripcion={t('onboarding:firma.inscripcion')}
-                titulo={t('onboarding:firma.titulo')}
-                pista={t('onboarding:firma.pista')}
-              />
-              <View style={styles.horizontes} accessibilityRole="radiogroup">
-                {HORIZONTES.map((h) => (
-                  <View key={h.years} style={styles.horizonte}>
-                    <Chip
-                      label={h.label}
-                      selected={horizonte.years === h.years}
-                      onPress={() => elegirHorizonte(h)}
-                      disabled={busy || holding || firmaPendiente || sello}
-                      accessibilityLabel={t(h.recomendado ? 'onboarding:firma.horizonteRecomendadoA11y' : 'onboarding:firma.horizonteA11y', { plazo: h.label })}
-                      style={styles.horizonteChip}
-                    />
-                    <Text style={styles.recomendado}>{h.recomendado ? t('onboarding:firma.recomendado') : ' '}</Text>
-                  </View>
-                ))}
-              </View>
-              {/* El texto se revela párrafo a párrafo: se lee, no se acepta. */}
-              <TablillaContrato parrafos={(firmaPorResolver.current?.body ?? firmaSellada?.body ?? contrato).split(/\n\s*\n/)} abreEl={fechaConAnio(firmaPorResolver.current?.openAt ?? firmaSellada?.openAt ?? abreEl)} rellenar={false} />
-              <Text style={styles.smallPrint}>{t('onboarding:firma.letraPequena')}</Text>
-              <TarjetaArena variante="contorno" style={styles.firmaCard}>
-                <Campo
-                  ref={campoFirma}
-                  editable={!busy && !holding && !firmaPendiente && !sello}
-                  etiqueta={t('onboarding:firma.campo')}
-                  value={firma}
-                  onChangeText={(value) => {
-                    if (!lock.current && !holdingRef.current && !firmaPorResolver.current && !sello) setFirma(value);
-                  }}
-                  placeholder={name.trim()}
-                  maxLength={NAME_MAX_LENGTH}
-                  autoCapitalize="words"
-                  autoCorrect={false}
-                  returnKeyType="done"
-                  onSubmitEditing={Keyboard.dismiss}
-                  accessibilityLabel={t('onboarding:firma.campo')}
-                />
-              </TarjetaArena>
-              <HoldToSign
-                label={firmaOk ? t('onboarding:firma.mantenPulsado') : t('onboarding:firma.escribeNombre')}
-                onComplete={sign}
-                onRequestInput={() => campoFirma.current?.focus()}
-                onHoldChange={(value) => { holdingRef.current = value; setHolding(value); }}
-                disabled={!firmaOk}
-                loading={busy}
-              />
-            </Entrada>
+            planListo && respuestas ? (
+              <Entrada key="paso-plan" indice={0}>
+                <PlanNoventa respuestas={respuestas} />
+              </Entrada>
+            ) : (
+              <CargaPlan key="paso-carga" onFin={terminarCarga} />
+            )
           ) : null}
 
           {step === 6 ? (
@@ -907,16 +690,15 @@ export default function Onboarding() {
           </GutterContext.Provider>
         </ScrollView>
 
-        {/* Pie fijo: la acción del paso siempre a la vista, también en 667 pt y
-            con el teclado abierto. La firma no tiene pie: su botón es el anillo. */}
-        {step !== 5 ? (
+        {/* Pie fijo: la acción del paso siempre a la vista, también con el teclado abierto. */}
+        {!(step === 5 && !planListo) ? (
           <View style={styles.footer}>
             {step === PASO_IDIOMA ? (
               <Button title={t('onboarding:continuar')} size="lg" onPress={saveIdioma} loading={busy} />
             ) : null}
             {step === 0 && !preguntandoMedicion ? (
               <Button
-                title={t('onboarding:entrar')}
+                title={t('onboarding:continuar')}
                 size="lg"
                 onPress={() => (medicion.preguntar ? setPreguntandoMedicion(true) : setStep(tras(0)))}
               />
@@ -931,9 +713,6 @@ export default function Onboarding() {
             {step === 1 ? (
               <Button title={t('onboarding:continuar')} size="lg" onPress={saveName} loading={busy} disabled={!name.trim()} />
             ) : null}
-            {step === 2 ? (
-              <Button title={t('onboarding:continuar')} size="lg" onPress={saveKind} loading={busy} disabled={!kind} />
-            ) : null}
             {step === PASO_MODOS ? (
               <Button
                 title={t('onboarding:continuar')}
@@ -943,16 +722,23 @@ export default function Onboarding() {
                 disabled={!eleccionValida(modosElegidos)}
               />
             ) : null}
-            {step === 3 ? (
-              <Button title={t('onboarding:continuar')} size="lg" onPress={saveGoal} loading={busy} disabled={!limpiarFrase(goal)} />
+            {step === PASO_SALUD ? (
+              <View style={styles.dosBotones}>
+                <Button title={t('onboarding:embudo.salud.revisar')} size="lg" onPress={health.ask} loading={busy} />
+                <Button title={t('onboarding:embudo.salud.seguir')} variant="secondary" size="lg" onPress={seguirSinSalud} disabled={busy} />
+              </View>
             ) : null}
             {step === 4 ? (
               <Button
                 title={chosen.size > 0 ? t('onboarding:misiones.crear', { count: chosen.size }) : t('onboarding:misiones.sinMisiones')}
                 size="lg"
+                variant={chosen.size > 0 ? 'primary' : 'secondary'}
                 onPress={saveStarters}
                 loading={busy}
               />
+            ) : null}
+            {step === 5 && planListo ? (
+              <Button title={t('onboarding:embudo.plan.empezar')} size="lg" onPress={trasPlan} loading={busy} />
             ) : null}
             {/* Mientras se decide, el pie queda vacío: ningún botón que cambie de
                 sitio bajo el dedo. Si la espera se alarga, aparece una salida. */}
@@ -975,24 +761,7 @@ export default function Onboarding() {
         </View>
         </TopeAncho.Provider>
       </KeyboardAvoidingView>
-
-      {sello ? (
-        <Pressable
-          style={styles.sello}
-          onPress={trasElSello}
-          accessibilityRole="button"
-          accessibilityLabel={t('onboarding:sello.a11y', { fecha: fechaConAnio(firmaSellada?.openAt ?? abreEl) })}
-        >
-          <Animated.View style={{ alignItems: 'center', opacity: selloOpacidad, transform: [{ scale: selloEscala }] }}>
-            <View style={styles.selloMarco}>
-              <Text style={styles.selloTexto}>{mayus(t('onboarding:sello.titulo'))}</Text>
-            </View>
-          </Animated.View>
-          <Animated.Text style={[styles.selloFecha, { opacity: selloOpacidad }]}>
-            {t('onboarding:sello.vence', { fecha: fechaConAnio(firmaSellada?.openAt ?? abreEl) })}
-          </Animated.Text>
-        </Pressable>
-      ) : null}
+      )}
     </SafeAreaView>
   );
 }
@@ -1005,123 +774,30 @@ const styles = StyleSheet.create({
   // Zona táctil de 44 × 44; el margen negativo deja la flecha alineada al canal.
   back: { alignSelf: 'flex-start', width: 44, height: 44, marginLeft: -12, alignItems: 'center', justifyContent: 'center' },
   content: { flexGrow: 1, justifyContent: 'center', paddingHorizontal: GUTTER, paddingTop: 20, paddingBottom: 24 },
-  contentArriba: { justifyContent: 'flex-start' },
   ofertaEspera: { gap: 10, marginTop: 8 },
+  segundaTarjeta: { marginTop: space.s3 },
   footer: {
     paddingHorizontal: GUTTER,
     paddingTop: 12,
     paddingBottom: 12,
     borderTopWidth: 1,
-    borderTopColor: colors.line,
-    backgroundColor: colors.bg,
+    borderTopColor: vidrio.linea,
   },
-  stepHint: {
-    fontFamily: tipo.bodySm.family,
-    fontSize: tipo.bodySm.size,
-    color: ink.ink8,
-    textAlign: 'center',
-    lineHeight: tipo.bodySm.lineHeight,
-    marginBottom: 16,
-  },
-  label: {
-    fontFamily: tipo.label.family,
-    fontSize: tipo.label.size,
-    lineHeight: tipo.label.lineHeight,
-    letterSpacing: tipo.label.tracking,
-    color: ink.ink6,
-    textTransform: 'uppercase',
-    marginBottom: 7,
-  },
-  labelGap: { marginTop: 14 },
-  // Solo el objetivo (multilínea, con la casilla de salud entre el rótulo y
-  // la caja); el resto de campos son Campo. Misma caja que Campo.
-  input: {
-    borderWidth: 1,
-    borderColor: ink.ink4,
-    backgroundColor: ink.ink2,
-    color: ink.ink9,
-    fontFamily: tipo.body.family,
-    fontSize: tipo.body.size,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-  },
-  inputMulti: { minHeight: 76, textAlignVertical: 'top', lineHeight: 22 },
-  pair: { flexDirection: 'row', gap: 10 },
-  pairItem: { flex: 1, minWidth: 0 },
-  kindCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 14,
-    borderWidth: 1,
-    borderColor: colors.accentDim,
-    backgroundColor: colors.panel,
-    padding: 14,
-    marginBottom: 10,
-  },
-  // Elegido = marco de 3 en blanco, no invertido: la inversión del paso es «Continuar».
-  // El padding baja lo que sube el borde para que la tarjeta no crezca al elegirla.
-  kindCardOn: { borderWidth: 3, borderColor: colors.accent, padding: 12 },
-  kindLabel: { fontFamily: fonts.heading, fontSize: 14, letterSpacing: 2, color: colors.text },
-  kindLabelOn: { color: colors.accent },
-  kindTagline: { fontFamily: tipo.bodySm.family, fontSize: tipo.bodySm.size, color: ink.ink8, marginTop: 3, lineHeight: tipo.bodySm.lineHeight },
-  kindTaglineOn: { color: colors.text },
-  detailTitle: { fontFamily: tipo.label.family, fontSize: tipo.label.size, lineHeight: tipo.label.lineHeight, letterSpacing: tipo.label.tracking, color: ink.ink6, marginBottom: 6 },
-  detail: { fontFamily: tipo.bodySm.family, fontSize: tipo.bodySm.size, color: ink.ink9, lineHeight: tipo.bodySm.lineHeight },
+  dosBotones: { gap: space.s3 },
+  notaSalud: { fontFamily: tipo.bodySm.family, fontSize: tipo.bodySm.size, lineHeight: tipo.bodySm.lineHeight, color: ink.ink8, marginTop: space.s3 },
   starterRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 10, minHeight: 44 },
-  starterRowSep: { borderTopWidth: 1, borderTopColor: colors.line },
+  starterRowSep: { borderTopWidth: 1, borderTopColor: vidrio.linea },
   checkbox: {
-    width: 22,
-    height: 22,
-    borderWidth: 1,
-    borderColor: colors.accentDim,
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    borderWidth: 1.5,
+    borderColor: ink.ink6,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  checkboxOn: { backgroundColor: colors.accent, borderColor: colors.accent },
-  starterTitle: { fontFamily: fonts.semibold, fontSize: 14, color: colors.text },
-  starterOff: { color: colors.textFaint },
-  starterMeta: { fontFamily: fonts.body, fontSize: 11, color: colors.textFaint, marginTop: 2, letterSpacing: 0.5 },
-  horizontes: { flexDirection: 'row', gap: 10, marginBottom: 14 },
-  horizonte: { flex: 1, alignItems: 'stretch' },
-  horizonteChip: { justifyContent: 'center' },
-  recomendado: {
-    fontFamily: fonts.heading,
-    fontSize: 11,
-    letterSpacing: 1.5,
-    textTransform: 'uppercase',
-    color: colors.accentText,
-    textAlign: 'center',
-    marginTop: 6,
-  },
-  sello: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: colors.bg,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 24,
-  },
-  selloMarco: { borderWidth: 1.5, borderColor: colors.accent, paddingHorizontal: 26, paddingVertical: 14 },
-  selloTexto: { fontFamily: fonts.heading, fontSize: 34, letterSpacing: 10, color: colors.accent, marginRight: -10 },
-  selloFecha: {
-    fontFamily: fonts.heading,
-    fontSize: 12,
-    letterSpacing: 2.5,
-    textTransform: 'uppercase',
-    color: colors.textDim,
-    marginTop: 22,
-    textAlign: 'center',
-  },
-  firmaCard: { marginTop: 14 },
-  smallPrint: {
-    fontFamily: tipo.bodySm.family,
-    fontSize: tipo.bodySm.size,
-    color: ink.ink6,
-    textAlign: 'center',
-    lineHeight: tipo.bodySm.lineHeight,
-    marginTop: 4,
-  },
+  checkboxOn: { backgroundColor: ink.ink10, borderColor: ink.ink10 },
+  starterTitle: { fontFamily: fonts.semibold, fontSize: 15, color: colors.text },
+  starterOff: { color: ink.ink8 },
+  starterMeta: { fontFamily: fonts.body, fontSize: 12, color: ink.ink8, marginTop: 2 },
 });

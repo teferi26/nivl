@@ -46,11 +46,6 @@ export interface TarjetaArenaProps {
   children: ReactNode;
 }
 
-/** Lado del remache y su distancia al borde. */
-const REMACHE = 3;
-const REMACHE_BORDE = 5;
-/** Desplazamiento de la losa de debajo. */
-const ZOCALO = 4;
 
 export function TarjetaArena({
   variante = 'piedra',

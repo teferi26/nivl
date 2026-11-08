@@ -15,6 +15,7 @@ import {
   MSG_SIN_CONFIRMAR,
   MSG_SIN_SESION,
   pedirRecuperacion,
+  reenviarConfirmacion,
   registrar,
   traducirErrorAuth,
   urlConfirmar,
@@ -38,6 +39,7 @@ jest.mock('expo-constants', () => {
 
 const mockAuth = {
   signUp: jest.fn(),
+  resend: jest.fn(),
   signInWithPassword: jest.fn(),
   resetPasswordForEmail: jest.fn(),
   exchangeCodeForSession: jest.fn(),
@@ -205,6 +207,39 @@ describe('Turnstile (1.0.9): token opcional', () => {
     expect(await errorDe(entrar('a@b.es', 'x', 'viejo'))).toEqual(new ErrorVisible(MSG_CAPTCHA));
     mockAuth.resetPasswordForEmail.mockResolvedValue({ data: {}, error: err });
     expect(await errorDe(pedirRecuperacion('a@b.es', 'viejo'))).toEqual(new ErrorVisible(MSG_CAPTCHA));
+  });
+});
+
+describe('reenviarConfirmacion (auth)', () => {
+  test('reenvía el alta con el correo limpio y el redirect de confirmar', async () => {
+    mockAuth.resend.mockResolvedValue({ data: {}, error: null });
+    await expect(reenviarConfirmacion(' Ana@Example.com ')).resolves.toBeUndefined();
+    expect(mockAuth.resend).toHaveBeenCalledWith({
+      type: 'signup',
+      email: 'ana@example.com',
+      options: { emailRedirectTo: 'nivl://auth/confirmar' },
+    });
+  });
+  test('un correo mal formado no llega al servidor', async () => {
+    mockAuth.resend.mockClear();
+    await expect(reenviarConfirmacion('no-es-correo')).rejects.toBeInstanceOf(ErrorVisible);
+    expect(mockAuth.resend).not.toHaveBeenCalled();
+  });
+  test.each([
+    ['Email address already confirmed', 422, 'email_exists'],
+    ['User already registered', 422, 'user_already_exists'],
+    ['User not found', 404, 'user_not_found'],
+  ])('anti-enumeración: «%s» responde como un envío correcto', async (mensaje, status, code) => {
+    mockAuth.resend.mockResolvedValue({ data: {}, error: apiError(mensaje, status, code) });
+    await expect(reenviarConfirmacion('a@b.es')).resolves.toBeUndefined();
+  });
+  test('el límite de envíos llega como mensaje para el usuario', async () => {
+    mockAuth.resend.mockResolvedValue({ data: {}, error: apiError('email rate limit exceeded', 429, 'over_email_send_rate_limit') });
+    expect(await errorDe(reenviarConfirmacion('a@b.es'))).toEqual(new ErrorVisible(MSG_DEMASIADOS));
+  });
+  test('un fallo técnico no enseña su texto', async () => {
+    mockAuth.resend.mockResolvedValue({ data: {}, error: apiError('secreto interno de gotrue', 500, 'unexpected_failure') });
+    expect(mensajeSistema(await errorDe(reenviarConfirmacion('a@b.es')))).toBe(MENSAJE_FALLO);
   });
 });
 

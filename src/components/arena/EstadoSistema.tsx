@@ -15,7 +15,7 @@ import { StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-na
 import { Button } from '@/components/ui/Button';
 import { Skeleton, SkeletonRows } from '@/components/ui/Skeleton';
 import { useAnunciar } from '@/components/ui/useAnunciar';
-import { ink, space, stroke, type as tipo } from '@/design/tokens';
+import { ink, radio, space, stroke, type as tipo, vidrio } from '@/design/tokens';
 import { t } from '@/i18n';
 import { TarjetaArena } from './TarjetaArena';
 
@@ -144,18 +144,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     borderTopWidth: stroke.hairline,
     borderBottomWidth: stroke.hairline,
-    borderColor: ink.ink3,
+    borderColor: vidrio.linea,
     paddingVertical: space.s3,
   },
   celda: { flex: 1, alignItems: 'center', gap: space.s2 },
-  celdaSep: { borderLeftWidth: stroke.hairline, borderLeftColor: ink.ink3 },
+  celdaSep: { borderLeftWidth: stroke.hairline, borderLeftColor: vidrio.linea },
   rotulo: { gap: space.s2 },
-  regla: { height: stroke.hairline, backgroundColor: ink.ink3 },
+  regla: { height: stroke.hairline, backgroundColor: vidrio.linea },
   tarjeta: {
     gap: space.s3,
     padding: space.s4,
     borderWidth: stroke.hairline,
-    borderColor: ink.ink3,
-    backgroundColor: ink.ink1,
+    borderColor: vidrio.borde,
+    borderRadius: radio.tarjeta,
+    backgroundColor: vidrio.tarjeta,
   },
 });

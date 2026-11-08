@@ -14,7 +14,7 @@
     "a11y": "Globales Level {{nivel}}, {{titulo}}. {{xp}}. Serie von {{racha}} Tagen, {{piedras}} Steine. Öffnet deinen Fortschritt."
   },
   "hoy": {
-    "siguiente": "Nächster Schritt",
+    "siguiente": "Jetzt",
     "xp": "+{{xp}} XP",
     "completar": "Erledigen",
     "deTotal": "{{hechas}} von {{total}}",
@@ -46,7 +46,7 @@
     "habitos": "Gewohnheiten"
   },
   "coach": {
-    "rotulo": "NIVL Coach",
+    "rotulo": "Dein Coach",
     "enLinea": "● Online",
     "porDefecto": "Sag mir, was du erreichen willst, und ich plane deinen Tag.",
     "preguntar": "Frag den Coach",

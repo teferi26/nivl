@@ -49,5 +49,111 @@
     "cuerpo": "Vorerst wird das Abo in der NIVL App für iPhone abgeschlossen und verwaltet. Im Web wird nichts berechnet.",
     "cuenta": "Es ist dasselbe Konto: Dein Tarif vom Handy gilt hier genauso.",
     "seguir": "Kostenlos weiter"
+  },
+  "pago": {
+    "titulo": "Ein Modus oder alle vier.",
+    "subtitulo": "Jeder Modus öffnet seine Welt und seinen Coach. NIVL und deine Gewohnheiten bleiben kostenlos.",
+    "periodo": {
+      "anual": "Jährlich",
+      "mensual": "Monatlich"
+    },
+    "porPeriodo": {
+      "anual": "pro Jahr",
+      "mensual": "pro Monat"
+    },
+    "importe": {
+      "anual": "{{precio}}/Jahr",
+      "mensual": "{{precio}}/Monat"
+    },
+    "duracionProducto": {
+      "anual": "jährlich",
+      "mensual": "monatlich"
+    },
+    "duracionLegal": {
+      "anual": "für 1 Jahr",
+      "mensual": "für 1 Monat"
+    },
+    "todosLosModos": "Alle Modi",
+    "losCuatroModos": "Alle vier Modi",
+    "soloModo": "Nur {{modo}}",
+    "notaTodos": "IRON, FOCUS, WORK und FOUNDER, jeweils mit Coach.",
+    "notaUno": "Nur dieser Modus und sein Coach.",
+    "filaUno": "Ein Modus und sein Coach",
+    "filaTodos": "Alle vier Modi, mit ihrem Coach",
+    "noDisponible": "Abos sind in dieser Version der App nicht verfügbar.",
+    "errorPrecios": "Die Preise des Stores konnten nicht geladen werden.",
+    "a11yOpcion": "{{titulo}}. {{precio}} {{porPeriodo}}. {{nota}}",
+    "a11yOpcionSinPrecio": "{{titulo}}. {{nota}}",
+    "cta": {
+      "actual": "Das ist schon dein Tarif",
+      "cargando": "Preise des Stores werden geladen",
+      "noDisponible": "Gerade nicht verfügbar",
+      "prueba": "Meine {{periodo}} gratis starten",
+      "suscribir": "Für {{precio}} {{porPeriodo}} abonnieren",
+      "revisarPermiso": "Berechtigung prüfen"
+    },
+    "prueba": {
+      "hoy": "Heute",
+      "empieza": "Startet gratis",
+      "dia": "Tag {{dias}}",
+      "cobro": "Erste Abbuchung"
+    },
+    "duracion": {
+      "dia_one": "{{count}} Tag",
+      "dia_other": "{{count}} Tage",
+      "semana_one": "{{count}} Woche",
+      "semana_other": "{{count}} Wochen",
+      "mes_one": "{{count}} Monat",
+      "mes_other": "{{count}} Monate",
+      "anio_one": "{{count}} Jahr",
+      "anio_other": "{{count}} Jahre"
+    },
+    "legal": {
+      "renovacion": "{{producto}}: automatisch verlängertes Abo {{duracion}}.",
+      "cobroPrueba": "{{periodo}} gratis, danach {{precio}} {{porPeriodo}}.",
+      "cobro": "{{precio}} {{porPeriodo}}.",
+      "tienda": "Die Abbuchung erfolgt über dein Store-Konto, und das Abo verlängert sich automatisch, sofern du es nicht mindestens 24 Stunden vor Ende des Zeitraums kündigst.",
+      "gestion": {
+        "ios": "Du verwaltest und kündigst es jederzeit unter Einstellungen > dein Name > Abos.",
+        "android": "Du verwaltest und kündigst es jederzeit unter Google Play > Zahlungen und Abos > Abos.",
+        "otra": "Du verwaltest und kündigst es jederzeit in dem Store, in dem du es abgeschlossen hast."
+      },
+      "base": "NIVL und deine Gewohnheiten bleiben kostenlos.",
+      "avisoIa": "NIVL ist eine KI, keine medizinische Fachkraft."
+    },
+    "enlace": {
+      "restaurar": "Wiederherstellen",
+      "restaurarA11y": "Käufe wiederherstellen",
+      "terminos": "AGB",
+      "privacidad": "Datenschutz",
+      "eula": "Apple EULA",
+      "error": "Der Link konnte nicht geöffnet werden."
+    },
+    "aviso": {
+      "pendiente": "Kauf vom Store bestätigt. Der Modus öffnet sich in wenigen Sekunden; falls nicht, tippe auf Wiederherstellen.",
+      "programada": "Änderung vom Store bestätigt. Sie gilt ab deiner nächsten Verlängerung; bis dahin bleibt dein aktueller Tarif.",
+      "sinPermiso": "Für den Coach musst du der Übermittlung deiner Daten an den KI-Anbieter zustimmen. Ohne diese Erlaubnis wird nichts berechnet.",
+      "nada": "Dieses Store-Konto hat kein aktives NIVL Abo."
+    },
+    "salida": {
+      "gratis": "Kostenlos weiter",
+      "volver": "Zurück zu NIVL",
+      "prueba": "Mit der Testphase weiter",
+      "plan": "Mit meinem Tarif weiter"
+    },
+    "ver": {
+      "suscribirme": "Abonnieren",
+      "cuatro": "Alle vier Modi ansehen"
+    },
+    "cerrado": {
+      "titulo": "Noch geschlossen.",
+      "datos": "Was du hier eingetragen hast, bleibt deins. Nichts wird gelöscht, nur weil du nicht zahlst.",
+      "queAbre": {
+        "iron": "Training, Ernährung und sein Coach, der deine Gewichte plant und dein Essen korrigiert.",
+        "focus": "Stoff, Prüfungen und sein Coach, der dein Lernen bis zu jedem Termin verteilt.",
+        "work": "Finanzen, Kalender und sein Coach, der deinen Arbeitstag schützt.",
+        "founder": "Kalender, Geschäftszahlen und sein Coach, der dich nach den Zahlen fragt."
+      }
+    }
   }
 }

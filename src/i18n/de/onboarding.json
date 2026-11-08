@@ -11,7 +11,8 @@
     }
   },
   "progreso": {
-    "paso": "Schritt {{actual}} von {{total}}"
+    "paso": "Schritt {{actual}} von {{total}}",
+    "perfil": "Dein Profil"
   },
   "tablilla": {
     "rotulo": "Vertrag",
@@ -68,7 +69,7 @@
   "firma": {
     "inscripcion": "Die Unterschrift",
     "titulo": "Unterschreib es mit dir selbst",
-    "pista": "Niemand sonst wird es lesen. Es wird heute versiegelt und geöffnet, wenn die Frist abläuft. Wähle, wie viel Zeit du dir gibst.",
+    "pista": "Es wird heute versiegelt und geöffnet, wenn die Frist abläuft. Dein Coach kann es lesen, um dir zu helfen. Wähle, wie viel Zeit du dir gibst.",
     "horizonteA11y": "Zeitraum: {{plazo}}",
     "horizonteRecomendadoA11y": "Zeitraum: {{plazo}}, empfohlen",
     "recomendado": "empfohlen",
@@ -108,5 +109,266 @@
     "firmado": "Unterschrieben: {{nombre}}",
     "cifra": "Zahl: {{cifra}}",
     "fecha": "Datum: {{fecha}}"
+  },
+  "embudo": {
+    "tuPerfil": "Dein Profil",
+    "tuPerfilA11y": "Dein Profil, {{pct}} Prozent",
+    "portada": {
+      "crear": "Meinen Plan in 2 Minuten erstellen",
+      "yaTengo": "Ich habe schon ein Konto",
+      "lema": "Deine beste Version hat schon einen Coach",
+      "texto": "Training, Lernen, Arbeit und Business. Ein Coach, der dir sagt, was heute zu tun ist, und dich nicht entkommen lässt.",
+      "tarjeta": "Erstelle deinen Plan in 2 Minuten"
+    },
+    "preguntas": {
+      "mejora": {
+        "t": "Worin willst du besser werden?",
+        "p": "Wähl alles, was dir wichtig ist.",
+        "o": {
+          "cuerpo": "Körper und Energie",
+          "estudios": "Lernen",
+          "trabajo": "Arbeit und Karriere",
+          "negocio": "Business und Geld",
+          "disciplina": "Disziplin und Gewohnheiten",
+          "calma": "Kopf und Ruhe"
+        }
+      },
+      "kind": {
+        "t": "Was beschreibt dich am besten?",
+        "p": "Danach richtet sich deine App.",
+        "o": {
+          "deportista": "Sportler",
+          "estudiante": "Student",
+          "trabajador": "Berufstätig",
+          "emprendedor": "Unternehmer",
+          "general": "Ich will meine beste Version"
+        }
+      },
+      "meta": {
+        "t": "Was willst du erreichen?",
+        "p": "Das, was dich wirklich stolz machen würde."
+      },
+      "cuanto": {
+        "t": "Wie lange willst du das schon?",
+        "p": "Sei ehrlich. Dein Coach passt damit deinen Plan an.",
+        "o": {
+          "semanas": "Ein paar Wochen",
+          "meses": "Ein paar Monate",
+          "anio": "Über ein Jahr",
+          "anios": "Zu viele Jahre"
+        }
+      },
+      "freno": {
+        "t": "Was hat dich bisher gebremst?",
+        "p": "Wähl, was du wiedererkennst.",
+        "o": {
+          "tiempo": "Ich schaffe es zeitlich nicht",
+          "dejo": "Ich fange an und höre auf",
+          "empezar": "Ich weiß nicht, wo ich anfangen soll",
+          "exige": "Niemand fordert mich",
+          "movil": "Ich scrolle ständig"
+        }
+      },
+      "coach": {
+        "t": "Hattest du schon mal einen Coach oder Trainer?",
+        "p": "Das ändert, wie ich mit dir arbeite.",
+        "o": {
+          "funciono": "Ja, und es hat funktioniert",
+          "nofunciono": "Ja, und es hat nicht funktioniert",
+          "nunca": "Nie",
+          "caro": "Daran gedacht, aber es ist teuer"
+        }
+      },
+      "min": {
+        "t": "Wie viel Zeit kannst du jeden Tag investieren?",
+        "p": "Ohne dich zu belügen.",
+        "o": {
+          "15": "15 min",
+          "30": "30 min",
+          "60": "60 min",
+          "90": "Über 60 min"
+        }
+      },
+      "mom": {
+        "t": "Wann bist du am stärksten?",
+        "p": "Dort lege ich das Schwerste hin.",
+        "o": {
+          "primera": "Früh am Morgen",
+          "media": "Am Vormittag",
+          "tarde": "Am Nachmittag",
+          "noche": "Am Abend"
+        }
+      }
+    },
+    "metas": {
+      "deportista": {
+        "carrera": "Für einen Triathlon oder ein Rennen trainieren",
+        "musculo": "Muskeln und Kraft aufbauen",
+        "grasa": "Wirklich Fett verlieren",
+        "forma": "Wieder fit werden"
+      },
+      "estudiante": {
+        "oposicion": "Eine Auswahlprüfung bestehen",
+        "notas": "Bessere Noten bekommen",
+        "examenes": "Die Prüfungen bestehen",
+        "procrastinar": "Aufhören aufzuschieben"
+      },
+      "trabajador": {
+        "ascenso": "Befördert werden",
+        "rendir": "In weniger Stunden mehr schaffen",
+        "cambiar": "Den Job wechseln",
+        "vida": "Mein Leben neben der Arbeit zurückholen"
+      },
+      "emprendedor": {
+        "facturar": "Mehr Umsatz machen",
+        "clientes": "Kunden gewinnen",
+        "ordenar": "Mein Business ordnen",
+        "lanzarme": "Den Job kündigen und loslegen"
+      },
+      "general": {
+        "disciplina": "Echte Disziplin haben",
+        "dormir": "Besser schlafen und mich besser fühlen",
+        "dinero": "Mein Geld ordnen",
+        "aprender": "Mehr lesen und lernen"
+      }
+    },
+    "crudo": {
+      "rotulo": "Bevor wir weitermachen",
+      "titulo": "Ich werde hart zu dir sein.",
+      "cuerpo": "Ich bin nicht hier, damit du mich magst. Ich bin hier, damit du in 90 Tagen nicht mehr derselbe Mensch bist.",
+      "detalle": "Ich sage dir, wenn du dich selbst belügst. Ich warne dich, wenn du dich drücken willst. Und ich bin bei dir, jedes Mal, wenn du lieferst.",
+      "pregunta": "Wie soll ich mit dir reden?",
+      "duro": "Ohne Filter. Sag mir alles",
+      "tacto": "Direkt, aber mit Feingefühl"
+    },
+    "curva": {
+      "titulo": "1 % am Tag wirkt wie nichts.",
+      "cuerpo": "Das ist Mathematik, kein Versprechen. Schwer ist, nicht auszusetzen. Dafür bin ich da.",
+      "seguir": "Ich sehe es",
+      "a11y": "Kurve nach oben: plus 35 Prozent in 30 Tagen, plus 145 Prozent in 90 Tagen",
+      "hoy": "Heute",
+      "dia30": "Tag 30",
+      "dia90": "Tag 90"
+    },
+    "cuenta": {
+      "titulo": "Dein Plan ist fast fertig. Speicher ihn.",
+      "texto": "Damit nichts verloren geht, auf dem Handy oder am Computer."
+    },
+    "bienvenida": {
+      "rotulo": "Dein Konto ist bereit",
+      "titulo": "Noch ein paar Dinge, dann geht's los.",
+      "texto": "Dein Plan läuft schon. Bevor du ihn speicherst, musst du das wissen:"
+    },
+    "salud": {
+      "rotulo": "Deine Gesundheit",
+      "titulo": "Deine Gesundheitsdaten, nur mit deiner Erlaubnis.",
+      "texto": "Um Training, Mahlzeiten und Erholung zu planen, muss ich Gesundheitsdaten speichern. Du entscheidest und kannst das jederzeit in Profil widerrufen.",
+      "sinPermiso": "Ohne Erlaubnis fehlen deinem Plan das Gesundheitsziel und diese Missionen. Alles andere funktioniert genauso.",
+      "revisar": "Erlaubnis prüfen",
+      "seguir": "Ohne Gesundheitsdaten weiter"
+    },
+    "carga": {
+      "titulo": "Dein Plan entsteht",
+      "leyendo": "Deine Antworten werden gelesen",
+      "calculando": "Deine 90 Tage werden berechnet",
+      "eligiendo": "Deine erste Mission wird gewählt",
+      "preparando": "Dein Coach macht sich bereit"
+    },
+    "plan": {
+      "rotulo": "Dein 90-Tage-Plan · Profil zu 100 %",
+      "veredicto": "Das Urteil deines Coachs",
+      "sinMeta": "Dein 90-Tage-Plan",
+      "empezar": "Ich will anfangen",
+      "cuando": {
+        "hoy": "Heute",
+        "sem4": "Wo. 4",
+        "dia90": "Tag 90"
+      }
+    },
+    "veredicto": {
+      "duro": "{{cuanto}} willst du das schon, und deine Ausrede ist „{{freno}}“. Mit {{min}} am Tag reicht es. Was nicht reicht, ist weiter zu warten.",
+      "tacto": "{{cuanto}} willst du das schon. Bei „{{freno}}“ hängen zu bleiben ist normal. Mit {{min}} am Tag schaffst du es, und ich bringe dich hin."
+    },
+    "hitos": {
+      "deportista": {
+        "hoy": {
+          "titulo": "Dein erstes Training",
+          "detalle": "Gemessen, mit Tempo und Distanz."
+        },
+        "sem4": {
+          "titulo": "Deine ersten Bestwerte",
+          "detalle": "Jetzt hast du etwas zum Vergleichen."
+        },
+        "dia90": {
+          "titulo": "Die Bilanz",
+          "detalle": "Du misst, was du erreicht hast, an deinem Ziel."
+        }
+      },
+      "estudiante": {
+        "hoy": {
+          "titulo": "Dein erster Block",
+          "detalle": "Das Thema, das dir am schwersten fällt."
+        },
+        "sem4": {
+          "titulo": "Der Stoff läuft",
+          "detalle": "Wiederholungen genau im richtigen Moment."
+        },
+        "dia90": {
+          "titulo": "Die Bilanz",
+          "detalle": "Du weißt, was du kannst und was dir für die Prüfung fehlt."
+        }
+      },
+      "trabajador": {
+        "hoy": {
+          "titulo": "Dein erster Fokusblock",
+          "detalle": "Das, was deine Woche am meisten bewegt."
+        },
+        "sem4": {
+          "titulo": "Deine Woche im Griff",
+          "detalle": "Klare Prioritäten und Zeiten."
+        },
+        "dia90": {
+          "titulo": "Die Bilanz",
+          "detalle": "Ergebnisse, die du zeigen kannst."
+        }
+      },
+      "emprendedor": {
+        "hoy": {
+          "titulo": "Fünf Anrufe",
+          "detalle": "Was Geld bringt, kommt zuerst."
+        },
+        "sem4": {
+          "titulo": "Dein Funnel läuft",
+          "detalle": "Du weißt, was funktioniert und was nicht."
+        },
+        "dia90": {
+          "titulo": "Die Bilanz",
+          "detalle": "Zahlen, keine Gefühle."
+        }
+      },
+      "general": {
+        "hoy": {
+          "titulo": "Drei Gewohnheiten",
+          "detalle": "Klein, unmöglich auszulassen."
+        },
+        "sem4": {
+          "titulo": "Es fällt dir schon leichter",
+          "detalle": "Deine Routine läuft langsam von selbst."
+        },
+        "dia90": {
+          "titulo": "Die Bilanz",
+          "detalle": "Du blickst mit Daten zurück, nicht aus dem Gedächtnis."
+        }
+      }
+    },
+    "tarjetas": {
+      "avisosTitulo": "Damit dir nichts entgeht",
+      "avisosTexto": "Ich erinnere dich an deine Mission und den Tagesabschluss. Du kannst das jederzeit in Profil ändern.",
+      "avisosActivar": "Erinnerungen aktivieren",
+      "ahoraNo": "Jetzt nicht",
+      "firmaTitulo": "Unterschreib deine Verpflichtung",
+      "firmaTexto": "Du hast schon angefangen. Jetzt schreib es dir auf: ein Brief an dich selbst, der sich in ein paar Jahren öffnet.",
+      "firmaBoton": "Unterschreiben"
+    }
   }
 }

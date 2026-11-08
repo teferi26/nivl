@@ -7,11 +7,10 @@
     "fuerte": "Fuerte"
   },
   "aviso": {
-    "registro": "Si el correo es nuevo, te hemos enviado un enlace para confirmarlo. Ábrelo en este móvil y después entra con tu contraseña.",
+    "registro": "Si el correo es nuevo, te hemos enviado un enlace para confirmarlo. Ábrelo en este móvil y la sesión se abrirá sola.",
     "recuperacion": "Si ese correo tiene cuenta, te hemos enviado un enlace. Ábrelo en este móvil para elegir una contraseña nueva."
   },
   "error": {
-    "nombre": "Entre 1 y {{max}} caracteres.",
     "correo": "Formato de correo no válido.",
     "noCoinciden": "Las contraseñas no coinciden."
   },
@@ -50,7 +49,6 @@
     },
     "portal": "Portal de creadores",
     "recuperarTitulo": "Recuperar contraseña",
-    "nombrePlaceholder": "Cómo quieres que te llame el sistema",
     "correo": "Correo",
     "correoPlaceholder": "tu@correo.com",
     "correoA11y": "Correo electrónico",
@@ -62,7 +60,13 @@
     "faltaCasilla": "Marca la casilla de Términos para continuar.",
     "olvido": "¿Olvidaste tu contraseña?",
     "volverAEntrar": "Volver a entrar",
-    "notaCuenta": "Tus hábitos, misiones y progreso se guardan en tu cuenta de NIVL."
+    "notaCuenta": "Tus hábitos, misiones y progreso se guardan en tu cuenta de NIVL.",
+    "crearPlan": "Crear mi plan",
+    "reenviar": {
+      "boton": "Reenviar correo",
+      "espera": "Reenviar en {{n}} s",
+      "enviado": "Si ese correo está pendiente de confirmar, te lo hemos vuelto a enviar. Mira también en spam."
+    }
   },
   "arranque": {
     "cargando": "Cargando"
@@ -95,11 +99,7 @@
     "sinEnlace": "Este enlace no trae nada que confirmar. Abre el último correo que te enviamos o entra con tu contraseña."
   },
   "web": {
-    "eyebrow": "NIVL en el navegador",
-    "titulo": "Tu arena, también aquí.",
-    "cuerpo": "La misma cuenta y los mismos datos que en el móvil. Lo que hagas aquí cuenta allí.",
-    "punto1": "Misiones, racha y cierre del día",
-    "punto2": "Tus mundos: IRON, FOCUS, WORK y FOUNDER",
-    "punto3": "El coach, con teclado de verdad"
+    "titulo": "Tu mejor versión ya tiene entrenador",
+    "cuerpo": "Entrenador, estudio, trabajo y negocio. Un coach que te dice qué hacer hoy y no te deja escapar."
   }
 }

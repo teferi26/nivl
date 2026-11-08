@@ -7,11 +7,10 @@
     "fuerte": "Forte"
   },
   "aviso": {
-    "registro": "Se l'email è nuova, ti abbiamo inviato un link per confermarla. Aprilo su questo telefono e poi entra con la tua password.",
+    "registro": "Se l'email è nuova, ti abbiamo inviato un link per confermarla. Aprilo su questo telefono e la sessione si aprirà da sola.",
     "recuperacion": "Se a quell'email corrisponde un account, ti abbiamo inviato un link. Aprilo su questo telefono per scegliere una nuova password."
   },
   "error": {
-    "nombre": "Tra 1 e {{max}} caratteri.",
     "correo": "Formato email non valido.",
     "noCoinciden": "Le password non coincidono."
   },
@@ -50,7 +49,6 @@
     },
     "portal": "Portale creator",
     "recuperarTitulo": "Recupera password",
-    "nombrePlaceholder": "Come vuoi che ti chiami il sistema",
     "correo": "Email",
     "correoPlaceholder": "tu@email.com",
     "correoA11y": "Indirizzo email",
@@ -62,7 +60,13 @@
     "faltaCasilla": "Spunta la casella dei Termini per continuare.",
     "olvido": "Hai dimenticato la password?",
     "volverAEntrar": "Torna all'accesso",
-    "notaCuenta": "Le tue abitudini, missioni e progressi si salvano nel tuo account NIVL."
+    "notaCuenta": "Le tue abitudini, missioni e progressi si salvano nel tuo account NIVL.",
+    "crearPlan": "Crea il mio piano",
+    "reenviar": {
+      "boton": "Reinvia email",
+      "espera": "Reinvia tra {{n}} s",
+      "enviado": "Se questa email è in attesa di conferma, ti abbiamo inviato di nuovo il link. Controlla anche lo spam."
+    }
   },
   "arranque": {
     "cargando": "Caricamento"
@@ -95,11 +99,7 @@
     "sinEnlace": "Questo link non contiene nulla da confermare. Apri l'ultima email che ti abbiamo inviato o entra con la tua password."
   },
   "web": {
-    "eyebrow": "NIVL nel browser",
-    "titulo": "La tua arena, anche qui.",
-    "cuerpo": "Lo stesso account e gli stessi dati del telefono. Quello che fai qui conta anche lì.",
-    "punto1": "Missioni, serie e chiusura del giorno",
-    "punto2": "I tuoi mondi: IRON, FOCUS, WORK e FOUNDER",
-    "punto3": "Il coach, con una tastiera vera"
+    "titulo": "La tua versione migliore ha già un coach",
+    "cuerpo": "Allenamento, studio, lavoro e business. Un coach che ti dice cosa fare oggi e non ti lascia scappare."
   }
 }
