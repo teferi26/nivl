@@ -3,7 +3,7 @@ BORRADOR INTERNO (1.0.11): completar los campos entre corchetes, elegir el párr
 NIVL 1.0.11: Guideline 2.1 information
 
 1. Physical-device video
-[VIDEO URL/ATTACHMENT, IPHONE MODEL, IOS, DATE]. NIVL 1.0.11 ([BUILD]). Shows launch, registration/login, normal use, the IRON, FOCUS, WORK and FOUNDER modes, health/AI permissions, subscriptions and the AI top-up, reporting/blocking and deletion of a disposable NIVL account. Keep review accounts available.
+[VIDEO URL/ATTACHMENT, IPHONE MODEL, IOS, DATE]. NIVL 1.0.11 ([BUILD]). Shows launch, registration/login, normal use, the IRON, FOCUS, WORK and FOUNDER modes, health/AI permissions, subscriptions, reporting/blocking and deletion of a disposable NIVL account. Keep review accounts available.
 
 2. Purpose/audience
 Spanish-language habit and personal organisation app for people aged 16+. Routines, projects, schedules and progress; optional exercise, nutrition, study, journal and personal finance records. Tracking is free; AI coaching is optional and paid. Available to consumers, not restricted to businesses/employees.
@@ -18,7 +18,7 @@ New in 1.0.11, modes: Perfil > Tu arsenal (also on Hoy), or tap the centre emble
 Additional Élite demo: [EMAIL / PASSWORD]. Same direct NIVL login; manual access until [FECHA]. Perfil > Amigos shows its separate five-member ludus. Age/health/AI permissions are not preaccepted. Use the original review account for purchase flows. Use a disposable account for deletion, which does not cancel an Apple subscription.
 
 4. External services
-Supabase: auth, database, storage and server functions; database in Frankfurt. StoreKit/RevenueCat: native subscriptions and the AI top-up. Optional AI: Anthropic only (Claude); stores in US and processes in US/Europe/Asia/Australia, disclosed before explicit consent. AI is used by the coach and, in WORK/FOUNDER, to read a bank statement file the user chooses to import (same AI consent; nothing is sent without it). Expo/Apple push: optional notifications and app infrastructure/updates. Vercel: legal/support website (nivl.app) with Google Fonts. Resend: account emails (confirmation, password reset) from nivl.app.
+Supabase: auth, database, storage and server functions; database in Frankfurt. StoreKit/RevenueCat: native subscriptions. Optional AI: Anthropic only (Claude); stores in US and processes in US/Europe/Asia/Australia, disclosed before explicit consent. AI is used by the coach and, in WORK/FOUNDER, to read a bank statement file the user chooses to import (same AI consent; nothing is sent without it). Expo/Apple push: optional notifications and app infrastructure/updates. Vercel: legal/support website (nivl.app) with Google Fonts. Resend: account emails (confirmation, password reset) from nivl.app.
 
 5. Regions
 Same core features and Spanish interface across enabled storefronts; local prices/currency and purchase availability come from the App Store. Scheduling uses the user's timezone. [PENDIENTE: confirm enabled territories match AI provider availability; describe exceptions if any].
@@ -27,11 +27,11 @@ Same core features and Spanish interface across enabled storefronts; local price
 General productivity/wellbeing; no medical diagnosis/treatment, investment advice, banking transactions, gambling or HealthKit. Finance features only record and summarise data the user enters or imports; they never move money. Relevant notices are displayed. Brand graphics are project-generated; fonts/icons have open-source licences. No protected media catalogue. User content is moderated under the Terms.
 
 7. IAP
-Five auto-renewable products: nivl_pro_mensual (month), nivl_pro_anual (year), nivl_elite_mensual (month), nivl_elite_anual (year), nivl_elite_fundador (year, limited offer, not lifetime). One consumable: nivl_ia_recarga_1 (AI top-up), which adds AI allowance to an active Pro or Élite plan; unused top-up is kept and carried over month to month. The top-up button appears only when the monthly AI is nearly or fully used. Pro: standard AI with monthly allowance. Élite: advanced/deep usage, badge and ludus placement requests; assignment is gradual. No XP/ranking advantages are sold. Perfil > NIVL Pro shows plans, title, duration, local store price, renewal, restore and legal links. Active trial: “Suscribirme”; existing Pro: “Ver NIVL Élite”.
+Five auto-renewable products: nivl_pro_mensual (month), nivl_pro_anual (year), nivl_elite_mensual (month), nivl_elite_anual (year), nivl_elite_fundador (year, limited offer, not lifetime).
 
 Privacy: https://nivl.app/privacidad
 Terms: https://nivl.app/terminos
 Apple EULA: https://www.apple.com/legal/internet-services/itunes/dev/stdeula/
 Support: https://nivl.app/soporte
 
-[INTERNO] Antes de enviar: nivl_ia_recarga_1 creado en ASC y RevenueCat, con captura de revisión, y adjunto a la 1.0.11; modos_1011 encendido; repasar la duración de la prueba automática y las fechas del Élite de demo.
+[INTERNO] Antes de enviar: modos_1011 encendido; repasar la duración de la prueba automática y las fechas del Élite de demo.
