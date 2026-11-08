@@ -71,6 +71,24 @@ jobs:
           echo 'org.gradle.daemon=false' >> ~/.gradle/gradle.properties
           echo 'kotlin.daemon.jvmargs=-Xmx3g -XX:MaxMetaspaceSize=1g' >> ~/.gradle/gradle.properties
 
+      # El wrapper de Gradle baja el zip de GitHub Releases una sola vez y sin
+      # reintentos: un 504 de ese host tiró la build. Se deja ya en su caché
+      # (el directorio es el MD5 de la URL en base 36), con reintentos, un espejo
+      # de respaldo y la huella oficial, que es lo que da fe del archivo.
+      - name: Precargar Gradle
+        env:
+          GRADLE_ZIP: gradle-8.14.3-bin.zip
+          GRADLE_SHA256: bd71102213493060956ec229d946beee57158dbd89d0e62b91bca0fa2c5f3531
+        run: |
+          set -euo pipefail
+          dir="$HOME/.gradle/wrapper/dists/gradle-8.14.3-bin/cv11ve7ro1n3o1j4so8xd9n66"
+          mkdir -p "$dir"
+          curl -fsSL --retry 4 --retry-all-errors --retry-delay 15 -m 240 \
+            -o "$dir/$GRADLE_ZIP" "https://services.gradle.org/distributions/$GRADLE_ZIP" \
+          || curl -fsSL --retry 4 --retry-all-errors --retry-delay 15 -m 240 \
+            -o "$dir/$GRADLE_ZIP" "https://mirrors.cloud.tencent.com/gradle/$GRADLE_ZIP"
+          echo "$GRADLE_SHA256  $dir/$GRADLE_ZIP" | sha256sum -c -
+
       - run: npm ci
 
       - run: npm install --global eas-cli@21.2.0
