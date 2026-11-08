@@ -387,8 +387,7 @@ async function liquidar(rawCode, nota) {
   // Antes de la foto: los tramos cerrados hoy aún no los ha calculado el cron.
   await sql('select public.devengar_comisiones();');
   const [detalle, [claw]] = [await sql(sqlDetalleLiquidacion(cr.id)), await sql(sqlFotoDescuentos(cr.id))];
-  const [{ resto_cents: resto }] = await sql(sqlRestoCreador(cr.id));
-  const foto = fotoLiquidacion(detalle, claw, resto);
+  const foto = fotoLiquidacion(detalle, claw);
 
   console.log(`Liquidación de ${cr.code} · ${cr.alias} (creador ${cr.rank})`);
   if (detalle.length) {
@@ -396,8 +395,7 @@ async function liquidar(rawCode, nota) {
   }
   console.log(`Disponible:  ${eur(foto.disponible)} (${foto.n} comisiones fuera de retención)`);
   console.log(`A descontar: ${eur(foto.descuento)} (${foto.nDescuentos} reembolsos de comisiones ya pagadas)`);
-  console.log(`Resto previo: ${eur(foto.resto)} (de la liquidación anterior)`);
-  console.log(`A pagar:     ${eur(Math.max(foto.aPagar, 0))} (múltiplos de 5 €; quedan ${eur(Math.max(foto.saldo - Math.max(foto.aPagar, 0), 0))} para la siguiente)`);
+  console.log(`A pagar:     ${eur(Math.max(foto.aPagar, 0))} (múltiplos de 5 €; redondeo que se queda NIVL: ${eur(Math.max(foto.saldo - Math.max(foto.aPagar, 0), 0))})`);
   if (foto.aPagar <= 0) return console.log('\nNo llega a 5 €: nada que liquidar ahora.');
 
   if (!(await confirmar(`\n¿Apuntar el pago de ${eur(foto.aPagar)} a ${cr.code}? La transferencia la haces tú.`, cr.code))) {
@@ -445,20 +443,15 @@ export function sqlFotoDescuentos(creatorId) {
      where creator_id = ${q(creatorId)} and clawback and clawback_settled_at is null;`;
 }
 
-/** Lo que sobró de la liquidación anterior (0142). */
-export function sqlRestoCreador(creatorId) {
-  return `select resto_cents::int as resto_cents from public.creators where id = ${q(creatorId)};`;
-}
-
 /** Foto de la vista previa: importes y la lista exacta de filas que se tocarían. */
-export function fotoLiquidacion(detalle, claw, resto = 0) {
+export function fotoLiquidacion(detalle, claw) {
   const ids = detalle.map((r) => String(r.id)).sort();
   for (const id of [...ids, ...String(claw?.ids ?? '').split(',').filter(Boolean)]) {
     if (!/^[0-9a-f-]{36}$/i.test(id)) throw new Error(`id de comisión inesperado: ${id}`);
   }
   const disponible = detalle.reduce((s, r) => s + Number(r.amount_cents), 0);
   const descuento = Number(claw?.cents ?? 0);
-  const saldo = disponible + Number(resto) - descuento;
+  const saldo = disponible - descuento;
   return {
     ids: ids.join(','),
     idsDescuentos: String(claw?.ids ?? '').split(',').filter(Boolean).sort().join(','),
@@ -466,7 +459,6 @@ export function fotoLiquidacion(detalle, claw, resto = 0) {
     descuento,
     n: detalle.length,
     nDescuentos: Number(claw?.n ?? 0),
-    resto: Number(resto),
     saldo,
     // Múltiplos de 5 € hacia abajo, como liquidate_creator (0142).
     aPagar: saldo > 0 ? saldo - (saldo % 500) : saldo,
@@ -484,7 +476,6 @@ export function sqlLiquidarSiIgual(creatorId, foto, nota) {
   return `select public.liquidate_creator(c.id, ${nota ? q(nota) : 'null'}) as r
      from public.creators c
      where c.id = ${id}
-       and c.resto_cents = ${Number(foto.resto ?? 0)}
        and (select coalesce(string_agg(k.id::text, ',' order by k.id::text collate "C"), '')
             from public.commissions k
             where k.creator_id = ${id} and k.status = 'pendiente' and k.available_at <= now()) = ${q(foto.ids)}

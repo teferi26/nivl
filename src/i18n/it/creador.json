@@ -75,7 +75,7 @@
     "fijo": "Fisso mensile",
     "descontar": "Da detrarre",
     "descontarDetalle": "Rimborsi di commissioni già incassate",
-    "retencionNota": "Ogni commissione attende {{dias}} giorni in caso di rimborso; poi diventa disponibile e si paga nella liquidazione successiva. Se lo store restituisce i soldi, la commissione si annulla. Si paga in multipli di 5 €; ciò che avanza passa alla liquidazione successiva."
+    "retencionNota": "Ogni commissione attende {{dias}} giorni in caso di rimborso; poi diventa disponibile e si paga nella liquidazione successiva. Se lo store restituisce i soldi, la commissione si annulla. Si paga in multipli di 5 €, arrotondando per difetto; ciò che avanza non si accumula."
   },
   "pagos": {
     "titulo": "Pagamenti ricevuti",

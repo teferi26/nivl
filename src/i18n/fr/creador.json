@@ -75,7 +75,7 @@
     "fijo": "Fixe mensuel",
     "descontar": "À déduire",
     "descontarDetalle": "Remboursements de commissions déjà encaissées",
-    "retencionNota": "Chaque commission attend {{dias}} jours en cas de remboursement ; elle passe ensuite en disponible et est versée au règlement suivant. Si le store rembourse, la commission est annulée. Le versement se fait par multiples de 5 € ; le reste passe au règlement suivant."
+    "retencionNota": "Chaque commission attend {{dias}} jours en cas de remboursement ; elle passe ensuite en disponible et est versée au règlement suivant. Si le store rembourse, la commission est annulée. Le versement se fait par multiples de 5 €, arrondi à l'inférieur ; ce qui dépasse n'est pas reporté."
   },
   "pagos": {
     "titulo": "Paiements reçus",

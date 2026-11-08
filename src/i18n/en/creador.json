@@ -75,7 +75,7 @@
     "fijo": "Monthly fixed",
     "descontar": "To deduct",
     "descontarDetalle": "Refunds on commissions already paid",
-    "retencionNota": "Each commission waits {{dias}} days in case of a refund; then it becomes available and is paid in the next payout. If the store refunds the money, the commission is canceled. Payouts are in multiples of €5; anything left over carries to the next one."
+    "retencionNota": "Each commission waits {{dias}} days in case of a refund; then it becomes available and is paid in the next payout. If the store refunds the money, the commission is canceled. Payouts are in multiples of €5, rounded down; the amount lost to rounding does not carry over."
   },
   "pagos": {
     "titulo": "Payments received",

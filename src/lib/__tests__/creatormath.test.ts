@@ -432,11 +432,11 @@ describe('el pago va en múltiplos de 5 € (0142)', () => {
     expect(liquidacionCents(499, 0)).toBeNull();
   });
 
-  it('el resto anterior cuenta en la siguiente', () => {
-    expect(liquidacionCents(176, 0, 376)).toBe(500);
+  it('un descuento se resta antes de redondear', () => {
+    expect(liquidacionCents(1876, 400)).toBe(1000);
   });
 
   it('un descuento mayor que el saldo no paga nada', () => {
-    expect(liquidacionCents(100, 900, 300)).toBeNull();
+    expect(liquidacionCents(100, 900)).toBeNull();
   });
 });

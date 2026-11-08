@@ -390,12 +390,12 @@ export function comisionTramo(args: {
 export const MULTIPLO_PAGO_CENTS = 500;
 
 /**
- * Lo que se transfiere al liquidar: disponible más el resto anterior menos
- * clawbacks, redondeado hacia abajo a múltiplos de 5 €. Lo que sobra queda en
- * `creators.resto_cents`. null = no llega a 5 €.
+ * Lo que se transfiere al liquidar: disponible menos clawbacks, redondeado
+ * hacia abajo a múltiplos de 5 €. Lo que sobra se queda en NIVL. null = no
+ * llega a 5 € (no se paga y las comisiones siguen disponibles).
  */
-export function liquidacionCents(disponibleCents: number, clawbackCents: number, restoCents = 0): number | null {
-  const saldo = disponibleCents + restoCents - clawbackCents;
+export function liquidacionCents(disponibleCents: number, clawbackCents: number): number | null {
+  const saldo = disponibleCents - clawbackCents;
   const pago = saldo - (saldo % MULTIPLO_PAGO_CENTS);
   return saldo > 0 && pago > 0 ? pago : null;
 }
