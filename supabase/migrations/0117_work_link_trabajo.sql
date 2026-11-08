@@ -39,7 +39,8 @@ declare
   viejo constant text := $v$coalesce(p_row->>'link','ninguno')<>'ninguno'$v$;
   nuevo constant text := $v$coalesce(p_row->>'link','ninguno') not in ('ninguno','trabajo')$v$;
 begin
-  if position(nuevo in actual) > 0 then
+  -- La 0113 (FOCUS) ya deja 'trabajo' fuera de salud: da igual cuál se aplique antes.
+  if position(nuevo in actual) > 0 or position($v$not in ('ninguno','estudio','trabajo')$v$ in actual) > 0 then
     return;
   end if;
   if position(viejo in actual) = 0 then

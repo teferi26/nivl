@@ -23,9 +23,9 @@ create or replace function public.titulo_de_estudio(p_title text) returns boolea
 $$;
 comment on function public.titulo_de_estudio(text) is 'nivl:link-estudio-0113';
 alter table public.quests drop constraint if exists quests_link_check;
-alter table public.quests add constraint quests_link_check check (link is null or link in ('gym','cardio','nutricion','peso','diario','estudio','ninguno'));
+alter table public.quests add constraint quests_link_check check (link is null or link in ('gym','cardio','nutricion','peso','diario','estudio','trabajo','ninguno'));
 alter table public.rules drop constraint if exists rules_link_check;
-alter table public.rules add constraint rules_link_check check (link is null or link in ('gym','cardio','nutricion','peso','diario','estudio','ninguno'));
+alter table public.rules add constraint rules_link_check check (link is null or link in ('gym','cardio','nutricion','peso','diario','estudio','trabajo','ninguno'));
 create or replace function public.quests_set_link() returns trigger language plpgsql as $$
 begin
   if new.is_penalty then new.link := 'ninguno'; return new; end if;
@@ -55,8 +55,8 @@ end $$;
 create or replace function public.health_row(p_table text,p_row jsonb) returns boolean language sql stable
 set search_path=public as $$
   select coalesce((p_row->>'health_data')::boolean,false) or case p_table
-    when 'quests' then coalesce(p_row->>'link','ninguno') not in ('ninguno','estudio') or public.infer_link(p_row->>'title')<>'ninguno'
-    when 'rules' then coalesce(p_row->>'link','ninguno') not in ('ninguno','estudio') or public.infer_link(p_row->>'text')<>'ninguno' or public.infer_link(p_row->>'consequence')<>'ninguno'
+    when 'quests' then coalesce(p_row->>'link','ninguno') not in ('ninguno','estudio','trabajo') or public.infer_link(p_row->>'title')<>'ninguno'
+    when 'rules' then coalesce(p_row->>'link','ninguno') not in ('ninguno','estudio','trabajo') or public.infer_link(p_row->>'text')<>'ninguno' or public.infer_link(p_row->>'consequence')<>'ninguno'
     when 'goals' then coalesce(p_row->>'metric_type','libre') <> 'libre'
     when 'events' then public.health_event(p_row->>'type',p_row->'payload')
     when 'dungeons' then false
