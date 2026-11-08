@@ -25,6 +25,7 @@ import { SubidaMarca } from '@/components/modos/maestria/SubidaMarca';
 import { useMaestria } from '@/components/modos/maestria/useMaestria';
 import { GlifoModo } from '@/components/modos/rueda/GlifoModo';
 import { sonarModo } from '@/components/modos/rueda/sonido';
+import { BACK_BEHAVIOR_WEB, escenaWeb } from '@/components/ui/navItems';
 import { NavRail } from '@/components/ui/NavRail';
 import { NavSidebar } from '@/components/ui/NavSidebar';
 import { TabBar } from '@/components/ui/TabBar';
@@ -80,7 +81,11 @@ export function LayoutMundo({ modo }: { modo: ModoEtiqueta }) {
               <NavSidebar {...props} acento={acento} marca={NOMBRE_MODO[modo]} />
             )
           }
-          screenOptions={{ headerShown: false, tabBarPosition: nav === 'tabs' ? 'bottom' : 'left' }}
+          backBehavior={BACK_BEHAVIOR_WEB}
+          screenOptions={({ route, navigation }) => {
+            const estado = navigation.getState();
+            return { headerShown: false, tabBarPosition: nav === 'tabs' ? 'bottom' : 'left', ...escenaWeb(estado.routes[estado.index]?.key === route.key) };
+          }}
         >
           {MUNDOS[modo].pestanas.map((p) => (
             <Tabs.Screen key={p.ruta} name={p.ruta} options={{ title: t(`mundos:pestana.${p.pestana}`) }} />

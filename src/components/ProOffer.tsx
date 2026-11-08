@@ -81,6 +81,7 @@ import {
   type ProPlanId,
 } from '@/lib/pro';
 import { mensajeSistema } from '@/lib/validation';
+import { ariaWeb } from '@/components/ui/ariaWeb';
 
 /** La tienda cobró pero el servidor aún no refleja la suscripción. Con salida: Restaurar. */
 const AVISO_PENDIENTE =
@@ -413,6 +414,7 @@ export function ProOfferBody({ oferta, kind, compact, motivo }: BodyProps) {
               style={({ pressed }) => [styles.plan, on && styles.planOn, pressed && !actual && styles.pressed]}
               accessibilityRole="radio"
               accessibilityState={{ selected: on, disabled: actual }}
+              {...ariaWeb({ checked: on, disabled: actual })}
               accessibilityLabel={`${titulo}. Suscripción ${p.period === 'mes' ? 'mensual' : 'anual'} de renovación automática, ${precio} al ${p.period}. ${actual ? 'Tu plan actual' : pitch}`}
             >
               {actual ? null : (

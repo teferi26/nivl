@@ -12,13 +12,13 @@
 // Los fallos van en línea (ErrorSistema compacto), nunca en un aviso encima.
 
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { StyleSheet, Text, View } from 'react-native';
+import { Platform, StyleSheet, Text, View } from 'react-native';
 import { Campo, ErrorSistema } from '@/components/arena';
 import { Button, Sheet } from '@/components/ui';
 import { ink, space, type as tipo } from '@/design/tokens';
 import { t } from '@/i18n';
 import { BASE_DE_GRUPO, GRUPOS, type CategoriaPropia, type GrupoId, type TipoCuenta } from '@/lib/moneywork';
-import { BotonWork, ChipWork, FilaChips, RotuloGrupo, useAcento } from './PiezasWork';
+import { BotonWork, ChipWork, enterGuarda, FilaChips, RotuloGrupo, useAcento } from './PiezasWork';
 import { euros, ICONO_GRUPO, iconoCuenta, nombreGrupo } from './nombres';
 
 export interface CuentaElegible {
@@ -223,6 +223,7 @@ export function HojaTransferencia(p: HojaTransferenciaProps) {
           keyboardType="decimal-pad"
           grande="rank"
           error={p.errorImporte}
+          {...enterGuarda(p.onGuardar)}
         />
         <Campo
           style={[styles.campo, { borderColor: a.tinte(0.55) }]}
@@ -230,6 +231,7 @@ export function HojaTransferencia(p: HojaTransferenciaProps) {
           value={p.concepto}
           onChangeText={p.onConcepto}
           placeholder={t('economia:work.hojas.trf.conceptoPlaceholder')}
+          {...enterGuarda(p.onGuardar)}
         />
         {p.error ? <ErrorSistema compacto mensaje={p.error} /> : null}
       </View>
@@ -288,6 +290,7 @@ export function HojaCuenta(p: HojaCuentaProps) {
           placeholder={t('economia:work.hojas.cuentaHoja.nombrePlaceholder')}
           error={p.errorNombre}
           maxLength={40}
+          {...enterGuarda(p.onGuardar)}
         />
         {p.editando ? null : (
           <View style={styles.grupo}>
@@ -308,6 +311,7 @@ export function HojaCuenta(p: HojaCuentaProps) {
           keyboardType="numbers-and-punctuation"
           ayuda={t('economia:work.hojas.cuentaHoja.saldoAyuda')}
           error={p.errorSaldo}
+          {...enterGuarda(p.onGuardar)}
         />
         {p.error ? <ErrorSistema compacto mensaje={p.error} /> : null}
       </View>
@@ -369,6 +373,7 @@ export function HojaFijo(p: HojaFijoProps) {
           placeholder={t(ingreso ? 'economia:work.hojas.fijo.nombreIngreso' : 'economia:work.hojas.fijo.nombreGasto')}
           error={p.errorNombre}
           maxLength={60}
+          {...enterGuarda(p.onGuardar)}
         />
         <View style={styles.dosCampos}>
           <View style={styles.flex}>
@@ -380,6 +385,7 @@ export function HojaFijo(p: HojaFijoProps) {
               placeholder="0,00"
               keyboardType="decimal-pad"
               error={p.errorImporte}
+              {...enterGuarda(p.onGuardar)}
             />
           </View>
           <View style={styles.campoDia}>
@@ -392,6 +398,7 @@ export function HojaFijo(p: HojaFijoProps) {
               keyboardType="number-pad"
               maxLength={2}
               error={p.errorDia}
+              {...enterGuarda(p.onGuardar)}
             />
           </View>
         </View>
@@ -483,6 +490,7 @@ export function HojaCategorias(p: HojaCategoriasProps) {
           placeholder={t('economia:work.hojas.cat.nuevaPlaceholder')}
           error={p.errorNombre}
           maxLength={32}
+          {...enterGuarda(p.onCrear)}
         />
         <FilaChips>
           <ChipWork etiqueta={t('economia:work.hojas.mov.gasto')} elegido={p.tipo === 'gasto'} onPress={() => p.onTipo('gasto')} />
@@ -530,7 +538,7 @@ export function HojaImportar(p: HojaImportarProps) {
     >
       <View style={styles.pila}>
         <SelectorCuenta cuentas={p.cuentas} elegida={p.cuenta} onElegir={p.onCuenta} rotulo={t('economia:work.hojas.imp.deQue')} />
-        {(['economia:work.hojas.imp.paso1', 'economia:work.hojas.imp.paso2', 'economia:work.hojas.imp.paso3'] as const).map((clave, n) => (
+        {(['economia:work.hojas.imp.paso1', Platform.OS === 'web' ? 'economia:work.hojas.imp.paso2Web' : 'economia:work.hojas.imp.paso2', 'economia:work.hojas.imp.paso3'] as const).map((clave, n) => (
           <View key={n} style={styles.paso}>
             <Text style={[styles.pasoNum, { color: a.acento }]}>{n + 1}</Text>
             <Text style={styles.sub} maxFontSizeMultiplier={1.35}>

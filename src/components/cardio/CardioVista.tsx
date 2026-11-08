@@ -29,6 +29,7 @@ import { paceOf } from '@/lib/bodymath';
 import type { CardioSession } from '@/lib/bodywork';
 import { addDays } from '@/lib/dates';
 import { ICONO, cifraCorta, etiquetaCardio, fechaCorta, zonaCardio } from './tipos';
+import { menuContextualWeb } from '@/components/ui/pulsacionLarga';
 
 export interface AnuncioCardio {
   /** El texto de anuncioCardio: lo que entró de verdad, o por qué no entró nada. */
@@ -87,6 +88,7 @@ function FilaCardio({ s, primera, onBorrar }: { s: CardioSession; primera: boole
   return (
     <Pressable
       onLongPress={onBorrar}
+      {...menuContextualWeb(onBorrar)}
       accessibilityLabel={leido}
       accessibilityActions={[{ name: 'longpress', label: t('comun:eliminar') }]}
       onAccessibilityAction={(e) => {

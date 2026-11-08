@@ -56,6 +56,7 @@ import {
   XP_BY_DIFFICULTY,
 } from '@/lib/game';
 import type { Letter, Rule } from '@/lib/types';
+import { menuContextualWeb } from '@/components/ui/pulsacionLarga';
 
 export interface ContratoVistaProps {
   /** Hasta la primera carga se pintan huecos. */
@@ -173,6 +174,7 @@ function FilaNorma({
       <Pressable
         onPress={() => onRomper(regla)}
         onLongPress={() => onEliminar(regla)}
+        {...menuContextualWeb(() => onEliminar(regla))}
         style={({ pressed }) => [styles.norma, pressed && styles.normaPulsada]}
         accessibilityRole="button"
         accessibilityLabel={t(editada ? 'contrato:vista.norma.a11yEditada' : 'contrato:vista.norma.a11y', {

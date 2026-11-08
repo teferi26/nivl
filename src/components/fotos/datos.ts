@@ -17,6 +17,7 @@ import { t } from '@/i18n';
 import { requireHealthConsent } from '@/lib/health';
 import type { FotoProgreso, Pose } from '@/lib/progressPhotos';
 import { supabase } from '@/lib/supabase';
+import { fotoComoDataWeb } from '@/lib/web/fotoWeb';
 import { ErrorVisible } from '@/lib/validation';
 import { cabe, rutaFoto, uuidV4 } from './modelo';
 
@@ -108,10 +109,10 @@ export async function borrarFoto(uid: string, id: string): Promise<void> {
 /**
  * Copia temporal para la tarjeta de compartir (la tarjeta lleva una URI
  * local, nunca una URL firmada). Siempre el mismo nombre, que se sobrescribe.
- * En la web no hay sistema de archivos: null.
+ * En la web no hay sistema de archivos: la foto va en memoria, como `data:`.
  */
 export async function descargarParaCompartir(url: string, nombre: string): Promise<string | null> {
-  if (Platform.OS === 'web') return null;
+  if (Platform.OS === 'web') return fotoComoDataWeb(url);
   try {
     const archivo = await File.downloadFileAsync(url, new File(Paths.cache, nombre), { idempotent: true });
     return archivo.uri;

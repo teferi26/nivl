@@ -12,11 +12,13 @@ import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import type { ReactNode } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useHuecoControlesVentana } from '@/design/useSizeClass';
 import { Laurel } from '@/components/arena';
 import { ANCHO_SIDEBAR } from '@/design/responsive';
 import { ink, space, stroke, type as tipo } from '@/design/tokens';
 import { t } from '@/i18n';
 import { fonts } from '@/lib/theme';
+import { ariaWeb } from './ariaWeb';
 import { navItemDe, pulsarDestino } from './navItems';
 
 interface NavSidebarProps extends BottomTabBarProps {
@@ -36,6 +38,7 @@ const LAUREL_LEMA = 16;
 
 export function NavSidebar({ state, descriptors, navigation, rango, marca, acento = ink.ink10 }: NavSidebarProps) {
   const insets = useSafeAreaInsets();
+  const controlesVentana = useHuecoControlesVentana();
   return (
     <View
       style={[
@@ -43,12 +46,12 @@ export function NavSidebar({ state, descriptors, navigation, rango, marca, acent
         {
           width: ANCHO_SIDEBAR + insets.left,
           paddingLeft: insets.left,
-          paddingTop: insets.top,
+          paddingTop: insets.top + controlesVentana,
           paddingBottom: insets.bottom,
         },
       ]}
     >
-      <Text style={[styles.marca, marca ? { color: acento } : null]} accessibilityRole="header" maxFontSizeMultiplier={1}>{/* i18n-ok: la marca */}
+      <Text style={[styles.marca, marca ? { color: acento } : null, (marca?.length ?? 0) > 5 && styles.marcaLarga]} numberOfLines={1} accessibilityRole="header" maxFontSizeMultiplier={1}>{/* i18n-ok: la marca */}
         {marca ?? 'NIVL' /* i18n-ok: la marca */}
       </Text>
       <ScrollView
@@ -69,6 +72,7 @@ export function NavSidebar({ state, descriptors, navigation, rango, marca, acent
               style={({ pressed }) => [styles.fila, focused ? styles.filaOn : pressed && styles.filaPulsada]}
               accessibilityRole="tab"
               accessibilityState={{ selected: focused }}
+              {...ariaWeb({ selected: focused })}
               accessibilityLabel={meta.label}
             >
               {focused ? <View style={[styles.indicador, { backgroundColor: acento }]} /> : null}
@@ -112,6 +116,8 @@ const styles = StyleSheet.create({
     paddingTop: space.s8,
     paddingBottom: space.s6,
   },
+  // FOUNDER no cabe en 240 con el espaciado de NIVL: se partía en dos líneas.
+  marcaLarga: { letterSpacing: 2 },
   lista: { paddingHorizontal: space.s3, gap: space.s1 },
   fila: {
     minHeight: 44,

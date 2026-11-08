@@ -9,7 +9,7 @@
 // formulario en el orden de lectura; los motivos, ocultos al lector.
 
 import { createContext, useState } from 'react';
-import { StyleSheet, Text, View, type LayoutChangeEvent } from 'react-native';
+import { ScrollView, StyleSheet, Text, View, type LayoutChangeEvent } from 'react-native';
 import { Arena, Columna, Laurel, romano } from '@/components/arena';
 import { ink, space, stroke, type as tipo } from '@/design/tokens';
 import { t } from '@/i18n';
@@ -18,6 +18,8 @@ import { mayus } from '@/i18n/formato';
 /** Ventana mínima para los dos paneles (la columna de 560 + una fachada que se lea). */
 export const MIN_DOS_PANELES = 1024;
 const ALTO_ARENA = 220;
+/** Por debajo de este alto, el graderío se montaría sobre el texto: no se pinta. */
+const ALTO_MIN_ARENA = 680;
 
 /**
  * true dentro de la columna que va junto a la fachada: el acceso no repite su
@@ -27,9 +29,10 @@ export const ConFachada = createContext(false);
 
 export function FachadaAcceso() {
   const [ancho, setAncho] = useState(0);
+  const [alto, setAlto] = useState(0);
   const medir = (e: LayoutChangeEvent) => {
-    const w = Math.round(e.nativeEvent.layout.width);
-    if (w !== ancho) setAncho(w);
+    setAncho(Math.round(e.nativeEvent.layout.width));
+    setAlto(Math.round(e.nativeEvent.layout.height));
   };
   const puntos = [t('acceso:web.punto1'), t('acceso:web.punto2'), t('acceso:web.punto3')];
   return (
@@ -38,40 +41,43 @@ export function FachadaAcceso() {
         <Columna alto={260} ancho={28} color={ink.ink3} />
         <Columna alto={260} ancho={28} color={ink.ink3} />
       </View>
-      <View style={styles.texto}>
-        <Text style={styles.eyebrow} maxFontSizeMultiplier={1.35}>
-          {mayus(t('acceso:web.eyebrow'))}
-        </Text>
-        <Text style={styles.marca} accessibilityRole="header" maxFontSizeMultiplier={1}>{/* i18n-ok: la marca */}
-          NIVL
-        </Text>
-        <View style={styles.lema}>
-          <Laurel alto={18} lado="izq" />
-          <Text style={styles.lemaTexto} maxFontSizeMultiplier={1}>
-            {t('comun:lema')}
+      {/* Con scroll: en una ventana baja el bloque centrado se cortaba por arriba. */}
+      <ScrollView style={styles.flex} contentContainerStyle={styles.centrado}>
+        <View style={styles.texto}>
+          <Text style={styles.eyebrow} maxFontSizeMultiplier={1.35}>
+            {mayus(t('acceso:web.eyebrow'))}
           </Text>
-          <Laurel alto={18} lado="der" />
+          <Text style={styles.marca} accessibilityRole="header" maxFontSizeMultiplier={1}>{/* i18n-ok: la marca */}
+            NIVL
+          </Text>
+          <View style={styles.lema}>
+            <Laurel alto={18} lado="izq" />
+            <Text style={styles.lemaTexto} maxFontSizeMultiplier={1}>
+              {t('comun:lema')}
+            </Text>
+            <Laurel alto={18} lado="der" />
+          </View>
+          <Text style={styles.titulo} maxFontSizeMultiplier={1.35}>
+            {t('acceso:web.titulo')}
+          </Text>
+          <Text style={styles.cuerpo} maxFontSizeMultiplier={1.35}>
+            {t('acceso:web.cuerpo')}
+          </Text>
+          <View style={styles.puntos}>
+            {puntos.map((p, i) => (
+              <View key={p} style={[styles.punto, i === 0 && styles.puntoPrimero]}>
+                <Text style={styles.numero} maxFontSizeMultiplier={1}>{/* i18n-ok: numeral romano */}
+                  {romano(i + 1)}
+                </Text>
+                <Text style={styles.puntoTexto} maxFontSizeMultiplier={1.35}>
+                  {p}
+                </Text>
+              </View>
+            ))}
+          </View>
         </View>
-        <Text style={styles.titulo} maxFontSizeMultiplier={1.35}>
-          {t('acceso:web.titulo')}
-        </Text>
-        <Text style={styles.cuerpo} maxFontSizeMultiplier={1.35}>
-          {t('acceso:web.cuerpo')}
-        </Text>
-        <View style={styles.puntos}>
-          {puntos.map((p, i) => (
-            <View key={p} style={[styles.punto, i === 0 && styles.puntoPrimero]}>
-              <Text style={styles.numero} maxFontSizeMultiplier={1}>{/* i18n-ok: numeral romano */}
-                {romano(i + 1)}
-              </Text>
-              <Text style={styles.puntoTexto} maxFontSizeMultiplier={1.35}>
-                {p}
-              </Text>
-            </View>
-          ))}
-        </View>
-      </View>
-      {ancho > 0 ? <Arena ancho={ancho} alto={ALTO_ARENA} variante="arco" gradas={5} color={ink.ink3} style={styles.arena} /> : null}
+      </ScrollView>
+      {ancho > 0 && alto >= ALTO_MIN_ARENA ? <Arena ancho={ancho} alto={ALTO_ARENA} variante="arco" gradas={5} color={ink.ink3} style={styles.arena} /> : null}
     </View>
   );
 }
@@ -83,9 +89,10 @@ const styles = StyleSheet.create({
     backgroundColor: ink.ink1,
     borderRightWidth: stroke.hairline,
     borderRightColor: ink.ink3,
-    justifyContent: 'center',
     overflow: 'hidden',
   },
+  flex: { flex: 1 },
+  centrado: { flexGrow: 1, justifyContent: 'center' },
   columnas: {
     position: 'absolute',
     top: space.s10,

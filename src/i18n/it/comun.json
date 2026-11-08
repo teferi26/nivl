@@ -36,5 +36,16 @@
   "dia_one": "{{count}} giorno",
   "dia_other": "{{count}} giorni",
   "xp_one": "{{count, miles}} XP",
-  "xp_other": "{{count, miles}} XP"
+  "xp_other": "{{count, miles}} XP",
+  "fotoIlegible": {
+    "titulo": "Impossibile aprire la foto",
+    "cuerpo": "Questo browser non sa leggere il file. Prova con un JPG o un PNG."
+  },
+  "invitacionCopiada": {
+    "titulo": "Invito copiato",
+    "cuerpo": "Incollalo dove vuoi."
+  },
+  "invitacionManual": {
+    "titulo": "Copia il tuo invito"
+  }
 }

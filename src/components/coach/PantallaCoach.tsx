@@ -12,6 +12,7 @@
 import { CoachVista } from './CoachVista';
 import { PlanCoach } from './PlanCoach';
 import { MaestroDetalle, useMaestroDetalle } from '@/components/ui/MaestroDetalle';
+import { useHayEmblema } from '@/components/modos/EmblemaMundo';
 import { HojaPrivacidadDictado } from './HojaPrivacidadDictado';
 import { useCoach } from './useCoach';
 import { HealthConsentGuard } from '@/components/ConsentimientoSalud';
@@ -26,11 +27,12 @@ function CoachContent() {
   const reparto = useMaestroDetalle('mitad');
   // Sin coach (bloqueado) no hay plan que mirar: la oferta va a todo el ancho.
   const conPlan = reparto != null && !vista.sinPro;
+  const emblemaEnBarra = useHayEmblema();
   return (
     <>
       <MaestroDetalle
         reparto={conPlan ? reparto : null}
-        lista={<CoachVista {...vista} />}
+        lista={<CoachVista {...vista} emblemaEnBarra={emblemaEnBarra} />}
         detalle={<PlanCoach ocupado={vista.enCurso != null} />}
       />
       {hojas.consentimiento}

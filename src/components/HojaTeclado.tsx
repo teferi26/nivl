@@ -10,6 +10,7 @@ import {
   View,
   type ViewStyle,
 } from 'react-native';
+import { fondoModal } from '@/components/ui/ariaWeb';
 import { t } from '@/i18n';
 import { colors } from '@/lib/theme';
 
@@ -85,8 +86,7 @@ export function HojaTeclado({
       <Pressable
         style={StyleSheet.absoluteFill}
         onPress={salir}
-        accessibilityRole="button"
-        accessibilityLabel={t('comun:cerrar')}
+        {...fondoModal(t('comun:cerrar'))}
       />
       <Animated.View
         style={[

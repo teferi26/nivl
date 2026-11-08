@@ -36,5 +36,16 @@
   "dia_one": "{{count}} dia",
   "dia_other": "{{count}} dias",
   "xp_one": "{{count, miles}} XP",
-  "xp_other": "{{count, miles}} XP"
+  "xp_other": "{{count, miles}} XP",
+  "fotoIlegible": {
+    "titulo": "Não foi possível abrir a foto",
+    "cuerpo": "Este navegador não consegue ler esse ficheiro. Experimenta um JPG ou PNG."
+  },
+  "invitacionCopiada": {
+    "titulo": "Convite copiado",
+    "cuerpo": "Cola onde quiseres."
+  },
+  "invitacionManual": {
+    "titulo": "Copia o teu convite"
+  }
 }

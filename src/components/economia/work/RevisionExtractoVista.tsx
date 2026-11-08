@@ -10,6 +10,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { ErrorSistema } from '@/components/arena';
 import { Screen } from '@/components/ui';
+import { ariaWeb } from '@/components/ui/ariaWeb';
 import { ink, space, type as tipo } from '@/design/tokens';
 import { t } from '@/i18n';
 import { fechaCorta } from '@/i18n/formato';
@@ -51,15 +52,17 @@ export function RevisionExtractoVista(p: RevisionExtractoVistaProps) {
     <Screen
       overlay={
         <View style={styles.pie}>
-          <BotonWork titulo={t('comun:cancelar')} variante="texto" onPress={p.onCancelar} />
-          <BotonWork
-            titulo={t('economia:work.revision.guardar', { count: marcadas })}
-            icono="checkmark"
-            onPress={p.onGuardar}
-            disabled={marcadas === 0}
-            cargando={p.guardando}
-            style={styles.guardar}
-          />
+          <View style={styles.pieColumna}>
+            <BotonWork titulo={t('comun:cancelar')} variante="texto" onPress={p.onCancelar} />
+            <BotonWork
+              titulo={t('economia:work.revision.guardar', { count: marcadas })}
+              icono="checkmark"
+              onPress={p.onGuardar}
+              disabled={marcadas === 0}
+              cargando={p.guardando}
+              style={styles.guardar}
+            />
+          </View>
         </View>
       }
     >
@@ -106,6 +109,7 @@ export function RevisionExtractoVista(p: RevisionExtractoVistaProps) {
                   hitSlop={8}
                   accessibilityRole="checkbox"
                   accessibilityState={{ checked: f.marcada, disabled: repetido }}
+                  {...ariaWeb({ checked: f.marcada })}
                   accessibilityLabel={t('economia:work.revision.filaA11y', {
                     concepto: f.concepto,
                     importe: eurosSigno(f.importe),
@@ -219,14 +223,14 @@ const styles = StyleSheet.create({
     bottom: 0,
     paddingHorizontal: space.s5,
     paddingTop: space.s3,
-    paddingBottom: space.s5,
+    // El emblema de la barra de los mundos asoma 24 por encima: el botón queda libre.
+    paddingBottom: space.s8,
     backgroundColor: ink.ink0,
     borderTopWidth: 1,
     borderTopColor: ink.ink3,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: space.s4,
   },
+  // A lo ancho de la columna de la lista (la de Screen), no de toda la ventana.
+  pieColumna: { width: '100%', maxWidth: 720, alignSelf: 'center', flexDirection: 'row', alignItems: 'center', gap: space.s4 },
   guardar: { flex: 1 },
-  hueco: { height: 90 },
+  hueco: { height: 104 },
 });

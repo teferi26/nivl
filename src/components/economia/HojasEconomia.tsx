@@ -19,6 +19,7 @@ import { t } from '@/i18n';
 import { decimal } from '@/i18n/formato';
 import { CATEGORIAS, NOMBRE_CATEGORIA, type Categoria, type Transaction } from '@/lib/money';
 import { eurSigno } from './formato';
+import { enterGuarda } from './work/PiezasWork';
 
 export const CATEGORIAS_ELEGIBLES = CATEGORIAS.filter((c) => c !== 'sin_clasificar');
 
@@ -137,6 +138,7 @@ export function HojaEfectivo({
           accessibilityLabel={t('economia:hojas.efectivo.importeA11y')}
           error={errorImporte}
           autoFocus
+          {...enterGuarda(onGuardar)}
         />
         <Campo
           etiqueta={t('economia:hojas.efectivo.concepto')}
@@ -145,6 +147,7 @@ export function HojaEfectivo({
           placeholder={t('economia:hojas.efectivo.conceptoPlaceholder')}
           accessibilityLabel={t('economia:hojas.efectivo.concepto')}
           error={errorConcepto}
+          {...enterGuarda(onGuardar)}
         />
         <View style={styles.grupo}>
           <Text style={styles.etiqueta} maxFontSizeMultiplier={1.35}>

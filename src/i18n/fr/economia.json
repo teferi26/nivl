@@ -312,6 +312,7 @@
         "deQue": "De quel compte est-il ?",
         "paso1": "Dans l'app de ta banque, cherche Relevés ou Opérations et télécharge les mois voulus, en CSV ou PDF.",
         "paso2": "Choisis le fichier ici. Le CSV est lu sur ton téléphone ; le PDF est lu par l'IA de NIVL puis supprimé aussitôt.",
+        "paso2Web": "Choisis le fichier ici. Le CSV est lu dans ton navigateur ; le PDF est lu par l'IA de NIVL puis supprimé aussitôt.",
         "paso3": "Vérifie la liste, retire ce que tu ne veux pas et enregistre. Les doublons n'entrent pas.",
         "privacidad": "NIVL ne se connecte pas à ta banque et ne te demandera jamais ton identifiant ni ton mot de passe.",
         "sinSelector": "Cette version de l'app ne peut pas encore ouvrir de fichiers. Ça arrive avec la prochaine mise à jour.",

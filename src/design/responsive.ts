@@ -100,6 +100,48 @@ export function navDeVentana(ventana: number): NavKind {
   return marcoDe(ventana).nav;
 }
 
+/**
+ * Segmentos raíz que en la web NO llevan la navegación lateral de la pila: el
+ * acceso y la galería no son de la app con sesión, y los grupos de pestañas y
+ * los mundos ya pintan la suya.
+ */
+const SEGMENTOS_SIN_NAV_LATERAL: ReadonlySet<string> = new Set(['login', 'auth', 'c', 'onboarding', 'kit', '(tabs)', '(iron)', '(focus)', '(work)', '(founder)']);
+
+/** ¿Una pantalla de la pila con este primer segmento lleva barra lateral o raíl en la web? */
+export function segmentoConNavLateral(segmento: string | undefined): boolean {
+  return !!segmento && !SEGMENTOS_SIN_NAV_LATERAL.has(segmento);
+}
+
+// ── Ventanas de iPadOS ─────────────────────────────────────────────────
+
+/**
+ * Lo que hay que bajar la cabecera y la navegación en una ventana de iPadOS:
+ * los controles de ventana (los tres puntos) se pintan encima de la app, entre
+ * 20 y 42 pt desde arriba, y no cuentan en la safe area.
+ */
+export const ALTO_CONTROLES_VENTANA = 26;
+
+/** ¿Es una ventana que no llena la pantalla? Solo entonces salen los controles. */
+export function ventanaFlotante(ventanaW: number, ventanaH: number, pantallaW: number, pantallaH: number): boolean {
+  if (!(ventanaW > 0 && ventanaH > 0 && pantallaW > 0 && pantallaH > 0)) return false;
+  // La rotación puede dejar la pantalla con los lados cruzados un instante.
+  const llena = (ventanaW === pantallaW && ventanaH === pantallaH) || (ventanaW === pantallaH && ventanaH === pantallaW);
+  return !llena;
+}
+
+/**
+ * Aire arriba cuando la ventana llena su espacio y no hay barra de estado: el
+ * Vision Pro y el Mac con la app de iPad dan un inset superior de 0 y, sin
+ * esto, la cabecera queda a 8 pt del borde redondeado de la ventana.
+ */
+export const MARGEN_SIN_BARRA_ESTADO = 12;
+
+/** Lo que se baja lo de arriba en iPadOS (y en lo que se hace pasar por iPad). */
+export function huecoSuperiorVentana(flotante: boolean, insetSuperior: number): number {
+  if (flotante) return ALTO_CONTROLES_VENTANA;
+  return insetSuperior === 0 ? MARGEN_SIN_BARRA_ESTADO : 0;
+}
+
 // ── Dos paneles (iPhone Duo abierto, iPad, Mac, Vision Pro) ────────────
 
 /**

@@ -38,6 +38,7 @@ import { TablillaContrato } from '@/components/onboarding/TablillaContrato';
 import { TituloPaso } from '@/components/onboarding/TituloPaso';
 import { ProOfferActions, ProOfferBody, ProOfferLegal, ProUpsellLine, useProOffer } from '@/components/ProOffer';
 import { Button, Chip, Skeleton } from '@/components/ui';
+import { ariaWeb } from '@/components/ui/ariaWeb';
 import { avisar } from '@/components/ui/confirmar';
 import { GutterContext } from '@/components/ui/Screen';
 import { useAuth } from '@/lib/auth';
@@ -707,6 +708,7 @@ export default function Onboarding() {
                     style={[styles.kindCard, on && styles.kindCardOn]}
                     accessibilityRole="radio"
                     accessibilityState={{ selected: on }}
+                    {...ariaWeb({ checked: on })}
                     accessibilityLabel={m.label}
                   >
                     <Ionicons name={m.icon as never} size={22} color={colors.accent} />
@@ -746,7 +748,7 @@ export default function Onboarding() {
               />
               <TarjetaArena variante="contorno" remaches>
                 <Text style={styles.label}>{t('onboarding:objetivo.etiqueta')}</Text>
-                <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: healthGoal }}
+                <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: healthGoal }} {...ariaWeb({ checked: healthGoal })}
                   accessibilityLabel={t('onboarding:objetivo.salud')}
                   onPress={() => { if (!health.accepted && !healthGoal) { health.ask(); return; } setHealthGoal(v => !v); }}
                   style={styles.starterRow}>
@@ -811,6 +813,7 @@ export default function Onboarding() {
                       style={[styles.starterRow, i > 0 && styles.starterRowSep]}
                       accessibilityRole="checkbox"
                       accessibilityState={{ checked: on }}
+                      {...ariaWeb({ checked: on })}
                       accessibilityLabel={q.title}
                     >
                       <View style={[styles.checkbox, on && styles.checkboxOn]}>

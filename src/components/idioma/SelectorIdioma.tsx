@@ -13,6 +13,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Card, Check } from '@/components/ui';
 import { ink, space, stroke, type as tipo } from '@/design/tokens';
 import { IDIOMAS, NOMBRE_IDIOMA, t } from '@/i18n';
+import { ariaWeb } from '@/components/ui/ariaWeb';
 
 export interface SelectorIdiomaProps {
   /** El idioma elegido (código: es, en, fr, de, pt, it). Otro valor no marca ninguno. */
@@ -39,6 +40,7 @@ export function SelectorIdioma({ valor, alCambiar, ocupado }: SelectorIdiomaProp
               accessibilityLabel={NOMBRE_IDIOMA[lng]}
               accessibilityLanguage={lng}
               accessibilityState={{ checked: marcado, disabled: !!ocupado }}
+              {...ariaWeb({ checked: marcado, disabled: !!ocupado })}
               style={({ pressed }) => [styles.fila, i > 0 && styles.separada, pressed && styles.pulsada]}
               testID={`idioma-${lng}`}
             >

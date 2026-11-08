@@ -7,6 +7,7 @@
 // del paso es «Continuar»). Debajo, si no hay ninguno, «Elige al menos uno.»
 
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { ariaWeb } from '@/components/ui/ariaWeb';
 import { vibrar } from '@/design/haptics';
 import { ink, modoAcento, space, stroke, type as tipo } from '@/design/tokens';
 import { t } from '@/i18n';
@@ -39,6 +40,7 @@ function Fila({
       disabled={!onPress}
       accessibilityRole="checkbox"
       accessibilityState={{ checked: marcada, disabled: !!fija }}
+      {...ariaWeb({ checked: marcada, disabled: !!fija })}
       accessibilityLabel={t('modos:onboarding.a11y', { modo: NOMBRE_MODO[modo], descripcion })}
       style={({ pressed }) => [
         styles.fila,

@@ -61,6 +61,7 @@ import { EmotionPicker } from './EmotionPicker';
 import { Pregunta } from './Pregunta';
 import { SleepStepper } from './SleepStepper';
 import { WinsEditor } from './WinsEditor';
+import { menuContextualWeb } from '@/components/ui/pulsacionLarga';
 
 export type Segmento = 'escribir' | 'archivo';
 
@@ -496,6 +497,7 @@ export function DiarioVista({
                         <View key={item.photo.id} style={styles.fotoMarco}>
                           <Pressable
                             onLongPress={() => acciones.onQuitarFoto(item)}
+                            {...menuContextualWeb(() => acciones.onQuitarFoto(item))}
                             style={({ pressed }) => pressed && styles.pulsado}
                             accessibilityRole="imagebutton"
                             accessibilityLabel={t('diario:vista.comprobantes.fotoA11y')}

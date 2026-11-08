@@ -4,7 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { EmblemaBarra, useHayEmblema } from '@/components/modos/EmblemaMundo';
 import { PruebaAuto } from '@/components/prueba/PruebaAuto';
 import { NavRail } from '@/components/ui/NavRail';
-import { nombreDestino } from '@/components/ui/navItems';
+import { BACK_BEHAVIOR_WEB, escenaWeb, nombreDestino } from '@/components/ui/navItems';
 import { NavSidebar } from '@/components/ui/NavSidebar';
 import { TabBar } from '@/components/ui/TabBar';
 import { huecoContenido, marcoDe } from '@/design/responsive';
@@ -54,7 +54,11 @@ export default function TabsLayout() {
             <NavSidebar {...props} acento={acentoRueda.general} />
           )
         }
-        screenOptions={{ headerShown: false, tabBarPosition: nav === 'tabs' ? 'bottom' : 'left' }}
+        backBehavior={BACK_BEHAVIOR_WEB}
+        screenOptions={({ route, navigation }) => {
+          const estado = navigation.getState();
+          return { headerShown: false, tabBarPosition: nav === 'tabs' ? 'bottom' : 'left', ...escenaWeb(estado.routes[estado.index]?.key === route.key) };
+        }}
       >
         {/* General v2 (docs/modos/GENERAL.md): las cuatro de la barra inferior
             primero (Hoy · Avance · [emblema] · Campañas · Arena); detrás, las

@@ -37,6 +37,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { usePiel } from '@/design/piel';
 import { ink, motion, sizeClass, space, stroke, type } from '@/design/tokens';
 import { t } from '@/i18n';
+import { fondoModal } from './ariaWeb';
 import { useMovimientoReducido } from './motion';
 
 interface Props {
@@ -182,7 +183,7 @@ export function Sheet({ visible, onClose, onDismiss, eyebrow, title, children, f
       {children}
     </ScrollView>
   ) : (
-    <View style={[styles.cuerpo, !footer && { paddingBottom: abajo }]}>{children}</View>
+    <View style={[styles.cuerpo, !footer && { paddingBottom: abajo }, Platform.OS === 'web' && styles.cuerpoWeb]}>{children}</View>
   );
 
   return (
@@ -200,8 +201,7 @@ export function Sheet({ visible, onClose, onDismiss, eyebrow, title, children, f
         <Pressable
           style={[StyleSheet.absoluteFill, piel && Platform.OS === 'web' && ({ outlineStyle: 'none' } as object)]}
           onPress={tocarFondo}
-          accessibilityRole="button"
-          accessibilityLabel={t('comun:cerrar')}
+          {...fondoModal(t('comun:cerrar'))}
         />
         <Animated.View
           accessibilityViewIsModal
@@ -271,6 +271,8 @@ const styles = StyleSheet.create({
   },
   flexible: { flexGrow: 0, flexShrink: 1 },
   cuerpo: { paddingHorizontal: space.s5, paddingBottom: space.s4 },
+  // En una ventana muy baja, el cuerpo sin scroll tampoco se corta.
+  cuerpoWeb: { flexShrink: 1, overflow: 'auto' as 'scroll' },
   pie: {
     paddingHorizontal: space.s5,
     paddingTop: space.s3,

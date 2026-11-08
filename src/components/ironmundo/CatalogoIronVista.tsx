@@ -17,6 +17,7 @@
 
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { nombreIron, textoIron } from '@/components/iron/texto';
+import { useAnchoUtil } from '@/design/useSizeClass';
 import { t } from '@/i18n';
 import type { EntradaIron } from '@/iron/catalogo';
 import type { Ejercicio, GrupoMuscular } from '@/iron/tipos';
@@ -24,7 +25,7 @@ import { FiguraTecnica } from './FiguraTecnica';
 import { GlifoIron } from './Glifos';
 import { MapaMini } from './MapaMini';
 import { BotonIron, ChipIron, CuadroIron, estilosIron, FilaIron, PantallaIron, RotuloIron, TarjetaIron } from './piezas';
-import { A, C, F, fs, mezcla, px } from './tema';
+import { A, C, F, fs, M, mezcla, px } from './tema';
 
 export interface CatalogoIronVistaProps {
   /** El día de la rutina al que se añade («Pierna A»); null: solo se mira. */
@@ -75,6 +76,7 @@ function metaCorta(ej: Ejercicio): string {
 }
 
 export function CatalogoIronVista(p: CatalogoIronVistaProps) {
+  const util = useAnchoUtil();
   const ej = p.elegido;
   const nombre = textoIron(ej.nombre);
   const buscando = p.consulta.trim().length > 0;
@@ -124,7 +126,7 @@ export function CatalogoIronVista(p: CatalogoIronVistaProps) {
         <RotuloIron texto={t('ironmundo:catalogo.tecnica')} em={t('ironmundo:catalogo.fases', { count: 3 })} />
         {p.conDetalle ? null : (
           <View style={styles.escena}>
-            <FiguraTecnica ejercicio={ej} alto={px(150)} ancho={px(178)} ms={p.ms} accessibilityLabel={t('iron:demo.animacion', { nombre })} />
+            <FiguraTecnica ejercicio={ej} alto={px(150)} ancho={Math.min(px(178), util - 2 * M.margen - 2 * px(12) - 2 - px(130))} ms={p.ms} accessibilityLabel={t('iron:demo.animacion', { nombre })} />
             <MapaMini musculos={ej.musculos} alto={px(104)} etiqueta={t('ironmundo:catalogo.mapaA11y', { nombre })} />
           </View>
         )}

@@ -24,6 +24,7 @@ import {
   tramosDe,
   type DatosAgenda,
 } from './derivarAgenda';
+import { ariaWeb } from '@/components/ui/ariaWeb';
 
 interface CalendarioProps {
   datos: DatosAgenda;
@@ -57,6 +58,7 @@ export function TiraSemana({ datos, hoy, dia, onElegir }: CalendarioProps) {
             ]}
             accessibilityRole="radio"
             accessibilityState={{ selected: sel }}
+            {...ariaWeb({ checked: sel })}
             accessibilityLabel={etiquetaDia(d, hoy, c)}
           >
             <Text style={[styles.letra, sel && styles.textoInvertido]} maxFontSizeMultiplier={1.2}>
@@ -108,6 +110,7 @@ export function RejillaMes({ datos, hoy, dia, onElegir }: CalendarioProps) {
               style={({ pressed }) => [styles.celda, sel && styles.invertido, pressed && !sel && styles.pulsado]}
               accessibilityRole="radio"
               accessibilityState={{ selected: sel }}
+              {...ariaWeb({ checked: sel })}
               accessibilityLabel={etiquetaDia(d, hoy, c)}
             >
               {esHoy ? <View style={styles.marcoCelda} pointerEvents="none" /> : null}

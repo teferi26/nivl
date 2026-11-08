@@ -11,6 +11,7 @@
 // Sin campos de texto: no necesita mecanismo de teclado.
 import type { ReactNode } from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { fondoModal } from '@/components/ui/ariaWeb';
 import { ink, space, stroke, type as tipo } from '@/design/tokens';
 import { t } from '@/i18n';
 
@@ -29,7 +30,7 @@ export function HojaPuerta({ visible, onCerrar, eyebrow, titulo, children, pie }
   return (
     <Modal visible={visible} transparent animationType="fade" statusBarTranslucent onRequestClose={onCerrar}>
       <View style={styles.fondo}>
-        <Pressable style={styles.fondoToque} onPress={onCerrar} accessibilityRole="button" accessibilityLabel={t('comun:cerrar')} />
+        <Pressable style={styles.fondoToque} onPress={onCerrar} {...fondoModal(t('comun:cerrar'))} />
         <View style={styles.hoja} accessibilityViewIsModal onAccessibilityEscape={onCerrar}>
           <View style={styles.asaZona}>
             <View style={styles.asa} />

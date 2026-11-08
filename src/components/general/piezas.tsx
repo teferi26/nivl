@@ -20,8 +20,10 @@ import { useState, type ReactNode } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View, type LayoutChangeEvent, type StyleProp, type ViewStyle } from 'react-native';
 import Svg, { Defs, Path, RadialGradient, Rect, Stop } from 'react-native-svg';
 import { Screen } from '@/components/ui';
+import { menuContextualWeb } from '@/components/ui/pulsacionLarga';
 import { t } from '@/i18n';
 import { C, F, fs, G, M, oroA, oroMezcla, px } from './tema';
+import { ariaWeb } from '@/components/ui/ariaWeb';
 
 type Icono = keyof typeof Ionicons.glyphMap;
 
@@ -229,6 +231,7 @@ export function Segmentos<T extends string>({ opciones, valor, alCambiar }: { op
           onPress={() => alCambiar(o.id)}
           accessibilityRole="tab"
           accessibilityState={{ selected: o.id === valor }}
+          {...ariaWeb({ selected: o.id === valor })}
           style={({ pressed }) => [styles.segmento, o.id === valor && styles.segmentoActivo, pressed && styles.pulsada]}
         >
           <Text style={[styles.segmentoTexto, o.id === valor && styles.segmentoTextoActivo]} numberOfLines={1} maxFontSizeMultiplier={1.3}>
@@ -381,6 +384,7 @@ export function FilaGeneral({
     <Pressable
       onPress={onPress}
       onLongPress={onLongPress}
+      {...menuContextualWeb(onLongPress)}
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
       // La pulsación larga no se descubre con el lector: va como acción.
@@ -485,7 +489,8 @@ const styles = StyleSheet.create({
   cifra: { flex: 1, minWidth: 0, backgroundColor: C.tarjeta, borderWidth: 1, borderColor: C.filete, borderRadius: px(13), paddingVertical: px(9), paddingHorizontal: px(10) },
   cifraCabeza: { flexDirection: 'row', alignItems: 'center', gap: px(4) },
   cifraRotulo: { fontFamily: F.m, fontSize: fs(9), color: C.meta, flexShrink: 1 },
-  cifraValor: { fontFamily: F.xb, fontSize: fs(19), lineHeight: Math.round(fs(19) * 1.25), color: C.blanco, marginTop: px(2) },
+  // Sin lineHeight por lo mismo que tituloTexto: en Arena la cifra salía a veces microscópica.
+  cifraValor: { fontFamily: F.xb, fontSize: fs(19), color: C.blanco, marginTop: px(2) },
   cifraUnidad: { fontFamily: F.sb, fontSize: fs(9), color: C.mudo },
   cifraNota: { fontFamily: F.b, fontSize: fs(8.5), color: G, marginTop: px(1) },
   filaCifras: { flexDirection: 'row', gap: px(7) },
@@ -503,6 +508,8 @@ const styles = StyleSheet.create({
   cuadro: { alignItems: 'center', justifyContent: 'center', backgroundColor: oroMezcla(0.1, C.fondo), borderWidth: 1, borderColor: oroA(0.35) },
   titulo: { flexDirection: 'row', alignItems: 'flex-end', gap: px(10), paddingTop: px(4), paddingBottom: px(4) },
   tituloEyebrow: { fontFamily: F.b, fontSize: fs(9), letterSpacing: fs(9) * 0.22, color: G },
-  tituloTexto: { fontFamily: 'Cinzel_900Black', fontSize: 26, lineHeight: 31, letterSpacing: 1.6, color: C.blanco, marginTop: 2 },
+  // Sin lineHeight a propósito: con adjustsFontSizeToFit, en pantallas @3x el
+  // alto fijo no «cabe» nunca y iOS encoge el título hasta el mínimo (4 pt).
+  tituloTexto: { fontFamily: 'Cinzel_900Black', fontSize: 26, letterSpacing: 1.6, color: C.blanco, marginTop: 2 },
   hueco: { backgroundColor: C.tarjeta, borderRadius: M.radio, borderWidth: 1, borderColor: C.filete },
 });

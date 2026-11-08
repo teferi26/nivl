@@ -16,6 +16,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
+import { pulsadoWeb } from '@/components/ui/ariaWeb';
+import { menuContextualWeb } from '@/components/ui/pulsacionLarga';
 import { ink, space, type as tipo } from '@/design/tokens';
 import { usePrestado } from '@/components/modos/mundo/Prestado';
 import { t } from '@/i18n';
@@ -257,6 +259,7 @@ export function FilaFocus({
     <Pressable
       onPress={onPress}
       onLongPress={onLongPress}
+      {...menuContextualWeb(onLongPress)}
       hitSlop={{ top: 4, bottom: 4 }}
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
@@ -306,6 +309,7 @@ export function ChipFocus({
       onPress={onPress}
       accessibilityRole="button"
       accessibilityState={{ selected: !!activo }}
+      {...pulsadoWeb(!!activo)}
       accessibilityLabel={accessibilityLabel ?? (arriba ? `${arriba}, ${titulo}` : titulo)}
       style={({ pressed }) => [...estilo, pressed && styles.pulsado]}
     >
@@ -397,7 +401,8 @@ const styles = StyleSheet.create({
   titulo: { paddingTop: space.s2, paddingBottom: space.s4, gap: 2 },
   tituloVolver: { flexDirection: 'row', alignItems: 'center', gap: 4, alignSelf: 'flex-start' },
   tituloEyebrow: { fontFamily: tipo.label.family, fontSize: 12, lineHeight: 16, letterSpacing: 3, color: F.acento },
-  tituloTexto: { fontFamily: tipo.rank.family, fontSize: 32, lineHeight: 38, letterSpacing: 3, color: ink.ink10, textTransform: 'uppercase' },
+  // Sin lineHeight: con adjustsFontSizeToFit, en pantallas @3x iOS lo encogía al mínimo (como TituloGeneral).
+  tituloTexto: { fontFamily: tipo.rank.family, fontSize: 32, letterSpacing: 3, color: ink.ink10, textTransform: 'uppercase' },
   tituloSub: { fontFamily: tipo.bodySm.family, fontSize: 14, lineHeight: 20, color: F.meta },
   tarjeta: {
     backgroundColor: F.tarjeta,

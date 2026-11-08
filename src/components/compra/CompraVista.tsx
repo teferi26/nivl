@@ -28,6 +28,7 @@ import { Check, EmptyState, Row, Screen, Section } from '@/components/ui';
 import { ink, space, stroke } from '@/design/tokens';
 import { t } from '@/i18n';
 import type { ShoppingItem } from '@/lib/types';
+import { ariaWeb } from '@/components/ui/ariaWeb';
 
 export interface CompraVistaProps {
   /** Hasta la primera carga se pintan huecos. */
@@ -170,6 +171,7 @@ export function CompraVista({ cargado, errorCarga, items, nuevo, anadiendo, vaci
                       onPress={() => acciones.onMarcar(i)}
                       accessibilityRole="checkbox"
                       accessibilityState={{ checked: false }}
+                      {...ariaWeb({ checked: false })}
                       accessibilityLabel={
                         i.qty
                           ? t('compra:vista.pendienteCantidadA11y', { nombre: i.name, cantidad: i.qty })
@@ -205,6 +207,7 @@ export function CompraVista({ cargado, errorCarga, items, nuevo, anadiendo, vaci
                       onPress={() => acciones.onMarcar(i)}
                       accessibilityRole="checkbox"
                       accessibilityState={{ checked: true }}
+                      {...ariaWeb({ checked: true })}
                       accessibilityLabel={
                         i.qty
                           ? t('compra:vista.enCarroCantidadA11y', { nombre: i.name, cantidad: i.qty })

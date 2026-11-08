@@ -16,6 +16,7 @@ import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { nombreComida } from '@/components/dieta/DietaVista';
 import { kgTexto } from '@/components/iron/HistorialIron';
+import { ariaWeb, pulsadoWeb } from '@/components/ui/ariaWeb';
 import { t } from '@/i18n';
 import { decimal, miles } from '@/i18n/formato';
 import { MEAL_SLOTS } from '@/lib/body';
@@ -183,6 +184,7 @@ function Marca({ hecho, texto, onPress }: { hecho: boolean; texto: string; onPre
       hitSlop={8}
       accessibilityRole="checkbox"
       accessibilityState={{ checked: hecho }}
+      {...ariaWeb({ checked: hecho })}
       accessibilityLabel={texto}
       style={({ pressed }) => [styles.marca, pressed && styles.pulsado]}
     >
@@ -250,6 +252,7 @@ function Agua({ a }: { a: AguaLibreIronProps }) {
               accessibilityRole="button"
               accessibilityLabel={t('ironmundo:agua.vasoA11y', { n: i + 1 })}
               accessibilityState={{ selected: lleno }}
+              {...pulsadoWeb(lleno)}
               style={({ pressed }) => [styles.vaso, lleno && styles.vasoLleno, pressed && styles.pulsado]}
             >
               <GlifoIron nombre="gota" lado={px(16)} color={lleno ? A : C.apagado} grosor={lleno ? 2 : 1.6} />

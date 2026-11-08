@@ -21,6 +21,7 @@ import { t } from '@/i18n';
 import type { GymDay, GymExercise } from '@/lib/types';
 import { CatalogoIron } from './CatalogoIron';
 import { nombreDiaIso } from './RutinaSemanal';
+import { ariaWeb } from '@/components/ui/ariaWeb';
 
 /** Los siete días ISO (1 lunes … 7 domingo). */
 const DIAS_ISO = [1, 2, 3, 4, 5, 6, 7];
@@ -44,6 +45,7 @@ function DiasEnCirculos({ piel, dia, onDia }: { piel: Piel; dia: number; onDia: 
             hitSlop={4}
             accessibilityRole="radio"
             accessibilityState={{ selected: elegido }}
+            {...ariaWeb({ checked: elegido })}
             accessibilityLabel={nombreDiaIso(d)}
             style={[
               styles.circulo,

@@ -21,6 +21,7 @@ import {
 import { fonts } from '@/lib/theme';
 import { useModo } from '@/modos/ModoProvider';
 import { rutaCoachDe } from '@/modos/rutasModo';
+import { ariaWeb } from '@/components/ui/ariaWeb';
 
 interface Props {
   plan: DayPlan | null;
@@ -91,6 +92,7 @@ export const OrdenDelDia = memo(function OrdenDelDia({ plan, bloques, onToggle, 
               style={({ pressed }) => [styles.bloque, i > 0 && styles.sep, pressed && styles.pressed]}
               accessibilityRole="checkbox"
               accessibilityState={{ checked: b.done }}
+              {...ariaWeb({ checked: b.done })}
               accessibilityLabel={t(esActual ? 'raiz:bloque.a11yAhora' : b.done ? 'raiz:bloque.a11yHecho' : 'raiz:bloque.a11y', {
                 hora: hhmm(b.start_min),
                 titulo: b.title,

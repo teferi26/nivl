@@ -20,12 +20,13 @@ import {
   // al compartir del sistema, que también deja copiar.
   Clipboard,
   Platform,
-  Share,
 } from 'react-native';
 import { avisar } from '@/components/ui/confirmar';
 import { vibrar } from '@/design/haptics';
 import { t } from '@/i18n';
 import { cerrarSoloSesion } from '@/lib/authFlow';
+import { compartirTexto } from '@/lib/compartirTexto';
+import { avisarEnPantalla } from '@/lib/web/avisos';
 import { mensajeInvitacionCreador } from '@/lib/creatormath';
 import { vistaPanelCreador, type PanelCreadorVista } from '@/lib/creatorprogram';
 import {
@@ -112,7 +113,9 @@ export function useCreador(): CreadorVistaProps {
   const compartir = async (anchor?: number) => {
     if (!vista?.code) return;
     try {
-      await Share.share({ message: mensajeInvitacionCreador(vista.code) }, anchor != null ? { anchor } : undefined);
+      const r = await compartirTexto(mensajeInvitacionCreador(vista.code), anchor);
+      if (r === 'copiado') avisarEnPantalla(t('comun:invitacionCopiada.titulo'), t('comun:invitacionCopiada.cuerpo'), 'invitacion');
+      else if (r === 'imposible') avisar(t('comun:invitacionManual.titulo'), mensajeInvitacionCreador(vista.code));
     } catch (e) {
       vibrar('penalizacion');
       avisar(t('comun:sistemaNoResponde'), mensajeSistema(e));

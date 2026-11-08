@@ -8,6 +8,8 @@ import { AccessibilityInfo, ActivityIndicator, Animated, Pressable, StyleSheet, 
 import { colors, fonts } from '@/lib/theme';
 import { ink, type } from '@/design/tokens';
 import { t } from '@/i18n';
+import { ariaWeb } from './ariaWeb';
+import { menuContextualWeb } from './pulsacionLarga';
 import { leidoSinDato, SIN_DATO } from './sinDato';
 
 interface CheckProps {
@@ -179,10 +181,12 @@ export function Row({
       <Pressable
         onPress={onPress}
         onLongPress={onLongPress}
+        {...menuContextualWeb(disabled ? undefined : onLongPress)}
         disabled={disabled}
         accessibilityRole={accessibilityRole ?? 'button'}
         accessibilityLabel={accessibilityLabel ?? title}
         accessibilityState={accessibilityState}
+        {...ariaWeb(accessibilityState)}
         // La pulsación larga no se descubre con el lector: va como acción.
         accessibilityActions={onLongPress && !disabled ? [{ name: 'longpress', label: accessibilityLongPressLabel ?? t('ui:row.masOpciones') }] : undefined}
         onAccessibilityAction={

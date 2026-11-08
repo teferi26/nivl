@@ -124,7 +124,9 @@
     "privacidad": "Privacy Policy",
     "privacidadA11y": "NIVL Privacy Policy",
     "eliminarCuenta": "Delete account",
-    "eliminarNota": "Permanently deletes your profile and all your progress in NIVL."
+    "eliminarNota": "Permanently deletes your profile and all your progress in NIVL.",
+    "avisosWeb": "Reminders in the mobile app",
+    "avisosWebDetalle": "Wake-up and block reminders reach the mobile app."
   },
   "borrar": {
     "palabra": "DELETE",

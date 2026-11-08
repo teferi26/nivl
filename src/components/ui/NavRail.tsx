@@ -11,12 +11,15 @@ import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ANCHO_RAIL } from '@/design/responsive';
+import { useHuecoControlesVentana } from '@/design/useSizeClass';
 import { ink, space, stroke, type as tipo } from '@/design/tokens';
+import { ariaWeb } from './ariaWeb';
 import { navItemDe, pulsarDestino } from './navItems';
 
 /** `acento`: el color de lo activo (ink10 en NIVL; el de su modo en cada mundo). */
 export function NavRail({ state, descriptors, navigation, acento = ink.ink10 }: BottomTabBarProps & { acento?: string }) {
   const insets = useSafeAreaInsets();
+  const controlesVentana = useHuecoControlesVentana();
   return (
     <View style={[styles.rail, { width: ANCHO_RAIL + insets.left, paddingLeft: insets.left }]}>
       <ScrollView
@@ -24,7 +27,7 @@ export function NavRail({ state, descriptors, navigation, acento = ink.ink10 }: 
         accessibilityRole="tablist"
         contentContainerStyle={[
           styles.lista,
-          { paddingTop: insets.top + space.s4, paddingBottom: insets.bottom + space.s4 },
+          { paddingTop: insets.top + controlesVentana + space.s4, paddingBottom: insets.bottom + space.s4 },
         ]}
       >
         {state.routes.map((route, index) => {
@@ -37,6 +40,7 @@ export function NavRail({ state, descriptors, navigation, acento = ink.ink10 }: 
               style={({ pressed }) => [styles.item, pressed && !focused && styles.pressed]}
               accessibilityRole="tab"
               accessibilityState={{ selected: focused }}
+              {...ariaWeb({ selected: focused })}
               accessibilityLabel={meta.label}
             >
               {focused ? <View style={[styles.indicador, { backgroundColor: acento }]} /> : null}

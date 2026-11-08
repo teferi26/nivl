@@ -10,8 +10,10 @@
 // - El temporal se borra al terminar, también si la hoja falla o se cancela.
 // - En iPad la hoja se ancla al botón que la abrió (`anchor`); sin ancla,
 //   UIActivityViewController en popover puede abrirse en un sitio raro o fallar.
-// - Si no hay hoja de compartir (web o Expo Go raro), se comparte el texto y
-//   el enlace con `Share` de React Native.
+// - Si no hay hoja de compartir (Expo Go raro), se comparte el texto y el
+//   enlace con `Share` de React Native.
+// - En la web la tarjeta se pinta con html2canvas: va a la hoja del navegador
+//   si la tiene y, si no, se descarga. Si no se puede pintar, queda el texto.
 // - Un cerrojo evita dos hojas a la vez por un doble toque.
 //
 // Nunca llega un `e.message` al usuario: quien llama usa `mensajeSistema`.
@@ -32,6 +34,8 @@ import {
   type Tarjeta,
 } from './sharecard';
 import { ErrorVisible } from './validation';
+import { compartirTexto } from './compartirTexto';
+import { capturarTarjetaWeb, compartirImagenWeb, descargarImagenWeb } from './web/capturaTarjeta';
 
 export interface Ancla {
   x: number;
@@ -53,7 +57,7 @@ export interface PeticionCompartir {
   ancla?: Ancla | null;
 }
 
-export type ResultadoCompartir = 'compartida' | 'solo-texto' | 'ocupado';
+export type ResultadoCompartir = 'compartida' | 'solo-texto' | 'ocupado' | 'descargada' | 'copiada' | 'cancelada';
 
 let ocupado = false;
 
@@ -72,6 +76,28 @@ function borrar(uri: string | null): void {
   }
 }
 
+async function compartirEnWeb(p: PeticionCompartir, texto: string, contexto: ContextoTarjeta): Promise<ResultadoCompartir> {
+  const { formato, calidad } = formatoArchivo(p.tarjeta, p.opciones, contexto);
+  let imagen: string | null = null;
+  try {
+    imagen = p.vista.current ? await capturarTarjetaWeb(p.vista.current, { ancho: DIMENSIONES[p.formato].ancho, formato, calidad }) : null;
+  } catch {
+    // Una foto sin permiso de origen «mancha» el lienzo: queda compartir el texto.
+    imagen = null;
+  }
+  if (imagen) {
+    const nombre = `nivl-${p.tarjeta.tipo}.${formato}`;
+    const hoja = await compartirImagenWeb(nombre, imagen);
+    if (hoja === 'compartida') return 'compartida';
+    if (hoja === 'cancelada') return 'cancelada';
+    descargarImagenWeb(nombre, imagen);
+    return 'descargada';
+  }
+  const r = await compartirTexto(texto);
+  if (r === 'imposible') throw new Error('Compartir no está disponible en este navegador.');
+  return r === 'copiado' ? 'copiada' : r === 'cancelado' ? 'cancelada' : 'solo-texto';
+}
+
 /**
  * Captura la tarjeta y abre la hoja de compartir. Lanza `ErrorVisible` si la
  * tarjeta no se puede generar con esas opciones (p. ej. antes/después sin
@@ -86,7 +112,8 @@ export async function compartirTarjeta(p: PeticionCompartir): Promise<ResultadoC
   let uri: string | null = null;
   try {
     const texto = mensaje(p.tarjeta, p.opciones, p.codigoAmigo);
-    const hayHoja = Platform.OS !== 'web' && (await Sharing.isAvailableAsync());
+    if (Platform.OS === 'web') return await compartirEnWeb(p, texto, contexto);
+    const hayHoja = await Sharing.isAvailableAsync();
     if (!hayHoja) {
       await Share.share({ message: texto });
       return 'solo-texto';

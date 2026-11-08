@@ -19,7 +19,8 @@
 
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { createContext, useContext, useMemo, type ReactNode } from 'react';
-import { Pressable, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
+import { Platform, Pressable, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
+import { ariaWeb } from '@/components/ui/ariaWeb';
 import { vibrar } from '@/design/haptics';
 import { ink, modoAcento, space, type as tipo } from '@/design/tokens';
 
@@ -148,6 +149,8 @@ export function BotonWork({
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel ?? titulo}
       accessibilityState={{ disabled: !!disabled, busy: !!cargando }}
+      disabled={!!disabled}
+      {...ariaWeb({ busy: !!cargando })}
       style={({ pressed }) => [
         styles.boton,
         variante === 'lleno' && { backgroundColor: a.acento },
@@ -207,6 +210,8 @@ export function ChipWork({
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel ?? etiqueta}
       accessibilityState={{ selected: !!elegido, disabled: !!disabled }}
+      disabled={!!disabled}
+      {...(Platform.OS === 'web' && elegido !== undefined ? { 'aria-pressed': elegido } : null)}
       style={({ pressed }) => [styles.chip, elegido && { borderColor: a.acento, backgroundColor: a.tinte(0.12) }, disabled && styles.chipApagado, pressed && styles.pulsado]}
     >
       {icono ? <Ionicons name={icono} size={14} color={elegido ? a.acento : ink.ink8} /> : null}
@@ -228,6 +233,15 @@ export function RotuloGrupo({ children }: { children: string }) {
       {children}
     </Text>
   );
+}
+
+/**
+ * En la web, Intro en un campo guarda la hoja, como en cualquier formulario del
+ * navegador. En nativo no añade nada: la tecla de retorno sigue cerrando el teclado.
+ */
+export function enterGuarda(accion: () => void): { onSubmitEditing: () => void; blurOnSubmit: false } | null {
+  // Sin blurOnSubmit: si falla la validación, el foco sigue en el campo.
+  return Platform.OS === 'web' ? { onSubmitEditing: accion, blurOnSubmit: false } : null;
 }
 
 /** Separador fino entre filas. */

@@ -240,7 +240,15 @@ export function puedeElegirArchivo(): boolean {
  * credenciales del banco: solo un archivo.
  */
 export async function elegirExtracto(): Promise<ArchivoExtracto | null> {
-  const picker = await import('expo-document-picker');
+  // En la web el selector tiene que abrirse dentro del gesto del clic, sin
+  // ningún `await` antes: Safari puede dejar de considerarlo gesto, y entonces
+  // el selector no sale y el botón se queda mudo. En nativo sigue dinámico: un
+  // binario sin el módulo no debe romper al importar esto.
+  const picker =
+    Platform.OS === 'web'
+      ? // eslint-disable-next-line @typescript-eslint/no-require-imports
+        (require('expo-document-picker') as typeof import('expo-document-picker'))
+      : await import('expo-document-picker');
   const r = await picker.getDocumentAsync({
     type: ['text/csv', 'text/comma-separated-values', 'text/plain', 'application/pdf', 'application/vnd.ms-excel'],
     copyToCacheDirectory: true,

@@ -5,6 +5,11 @@ import {
   columnasRejilla,
   ladoCelda,
   repartoPaneles,
+  segmentoConNavLateral,
+  ventanaFlotante,
+  huecoSuperiorVentana,
+  ALTO_CONTROLES_VENTANA,
+  MARGEN_SIN_BARRA_ESTADO,
   UMBRAL_DOS_PANELES,
   ANCHO_RAIL,
   ANCHO_SIDEBAR,
@@ -197,5 +202,51 @@ describe('columnasRejilla y ladoCelda', () => {
   it('el lado reparte el ancho menos las separaciones', () => {
     expect(ladoCelda(560, 5, 12)).toBe(102);
     expect(ladoCelda(0, 5, 12)).toBe(0);
+  });
+});
+
+describe('segmentoConNavLateral', () => {
+  it('lo llevan las pantallas de la pila', () => {
+    for (const s of ['pro', 'gym', 'amigos', 'dungeon', 'iron']) expect(segmentoConNavLateral(s)).toBe(true);
+  });
+
+  it('no lo llevan el acceso, la galería, las pestañas ni los mundos', () => {
+    for (const s of ['login', 'auth', 'c', 'onboarding', 'kit', '(tabs)', '(iron)', '(focus)', '(work)', '(founder)']) expect(segmentoConNavLateral(s)).toBe(false);
+  });
+
+  it('ni la raíz, que redirige', () => {
+    expect(segmentoConNavLateral(undefined)).toBe(false);
+  });
+});
+
+describe('huecoSuperiorVentana: lo que se baja la cabecera', () => {
+  it('una ventana flotante deja sitio a los controles', () => {
+    expect(huecoSuperiorVentana(true, 0)).toBe(ALTO_CONTROLES_VENTANA);
+    expect(huecoSuperiorVentana(true, 24)).toBe(ALTO_CONTROLES_VENTANA);
+  });
+  it('sin barra de estado (Vision Pro, Mac) añade aire', () => {
+    expect(huecoSuperiorVentana(false, 0)).toBe(MARGEN_SIN_BARRA_ESTADO);
+  });
+  it('el iPad a pantalla completa ya tiene su barra de estado', () => {
+    expect(huecoSuperiorVentana(false, 24)).toBe(0);
+  });
+});
+
+describe('ventanaFlotante: los controles de ventana de iPadOS', () => {
+  it('a pantalla completa, en vertical y en apaisado, no', () => {
+    expect(ventanaFlotante(1032, 1376, 1032, 1376)).toBe(false);
+    expect(ventanaFlotante(1376, 1032, 1376, 1032)).toBe(false);
+    // La pantalla aún no ha rotado.
+    expect(ventanaFlotante(1376, 1032, 1032, 1376)).toBe(false);
+  });
+
+  it('una ventana más pequeña o a media pantalla, sí', () => {
+    expect(ventanaFlotante(761, 998, 1032, 1376)).toBe(true);
+    expect(ventanaFlotante(516, 1376, 1032, 1376)).toBe(true);
+  });
+
+  it('sin medidas no se decide nada', () => {
+    expect(ventanaFlotante(0, 0, 1032, 1376)).toBe(false);
+    expect(ventanaFlotante(1032, 1376, 0, 0)).toBe(false);
   });
 });

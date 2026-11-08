@@ -124,7 +124,9 @@
     "privacidad": "Informativa sulla privacy",
     "privacidadA11y": "Informativa sulla privacy di NIVL",
     "eliminarCuenta": "Elimina account",
-    "eliminarNota": "Cancella per sempre il tuo profilo e tutti i tuoi progressi in NIVL."
+    "eliminarNota": "Cancella per sempre il tuo profilo e tutti i tuoi progressi in NIVL.",
+    "avisosWeb": "Promemoria nell'app mobile",
+    "avisosWebDetalle": "Sveglia e promemoria arrivano nell'app mobile."
   },
   "borrar": {
     "palabra": "ELIMINA",

@@ -22,6 +22,9 @@
     "aliasNoDisponible": "Dein Alias ist gerade nicht verfügbar.",
     "aliasError": "Dein Alias konnte nicht geladen werden. Versuch es noch einmal.",
     "abriendo": "WIRD GEÖFFNET…",
-    "compartir": "TEILEN"
+    "compartir": "TEILEN",
+    "descargar": "BILD HERUNTERLADEN",
+    "descargada": "Bild heruntergeladen. Teile es, wo du willst.",
+    "copiada": "Das Bild konnte nicht erstellt werden. Der Text wurde kopiert."
   }
 }

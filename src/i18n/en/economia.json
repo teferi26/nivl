@@ -312,6 +312,7 @@
         "deQue": "Which account is it from?",
         "paso1": "In your bank app, look for Statements or Transactions and download the months you want, as CSV or PDF.",
         "paso2": "Choose the file here. The CSV is read on your phone; the PDF is read by NIVL's AI and deleted right away.",
+        "paso2Web": "Choose the file here. The CSV is read in your browser; the PDF is read by NIVL's AI and deleted right away.",
         "paso3": "Review the list, remove what you don't want and save. Duplicates don't get in.",
         "privacidad": "NIVL does not connect to your bank and will never ask for your username or password.",
         "sinSelector": "This version of the app cannot open files yet. It arrives with the next update.",

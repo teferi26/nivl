@@ -7,6 +7,7 @@ import { vibrar } from '@/design/haptics';
 import { usePiel } from '@/design/piel';
 import { ink, space, type as tipo } from '@/design/tokens';
 import { colors, fonts } from '@/lib/theme';
+import { ariaWeb } from './ariaWeb';
 import { Grano, Trama } from './Texture';
 
 interface ChipProps {
@@ -65,6 +66,7 @@ export function Chip({ label, selected, onPress, icon, small, disabled, accessib
       disabled={disabled}
       accessibilityRole={selected === undefined ? 'button' : 'radio'}
       accessibilityState={{ selected, disabled: !!disabled }}
+      {...ariaWeb({ checked: selected })}
       accessibilityLabel={accessibilityLabel ?? label}
       // El pequeño mide ~30 de alto: el hitSlop lo lleva a 44 de zona táctil.
       hitSlop={small ? HITSLOP_SMALL : undefined}

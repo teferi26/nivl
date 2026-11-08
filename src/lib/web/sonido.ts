@@ -47,7 +47,14 @@ function cargar(c: Ctx, fuente: number): Promise<AudioBuffer | null> {
       ? fetch(uri)
           .then((r) => (r.ok ? r.arrayBuffer() : Promise.reject(new Error('audio'))))
           // La forma con callbacks: Safari antiguo no devuelve promesa.
-          .then((datos) => new Promise<AudioBuffer>((ok, mal) => c.decodeAudioData(datos, ok, mal)))
+          .then(
+            (datos) =>
+              new Promise<AudioBuffer>((ok, mal) => {
+                // Donde además devuelve promesa, el fallo llega por las dos vías:
+                // sin este catch queda un rechazo sin atender (un códec que falta).
+                c.decodeAudioData(datos, ok, mal)?.catch(() => {});
+              }),
+          )
           .catch(() => {
             buffers.delete(fuente);
             return null;

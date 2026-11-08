@@ -98,8 +98,15 @@ test('sin hoja de compartir, comparte solo el texto con el enlace', async () => 
 
 test('en web no usa la hoja nativa ni borra archivos', async () => {
   Object.defineProperty(Platform, 'OS', { value: 'web', configurable: true });
-  const share = jest.spyOn(Share, 'share').mockResolvedValue({ action: 'sharedAction' });
-  await expect(compartirTarjeta(base)).resolves.toBe('solo-texto');
+  // Sin imagen (el stub de capturaTarjeta no pinta nada) queda el texto por la hoja del navegador.
+  const original = (globalThis as { navigator?: unknown }).navigator;
+  const share = jest.fn().mockResolvedValue(undefined);
+  Object.defineProperty(globalThis, 'navigator', { value: { share }, configurable: true, writable: true });
+  try {
+    await expect(compartirTarjeta(base)).resolves.toBe('solo-texto');
+  } finally {
+    Object.defineProperty(globalThis, 'navigator', { value: original, configurable: true, writable: true });
+  }
   expect(Sharing.isAvailableAsync).not.toHaveBeenCalled();
   expect(share).toHaveBeenCalled();
 });

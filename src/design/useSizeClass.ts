@@ -4,8 +4,9 @@
 // recoloca solo, sin recargar.
 
 import { createContext, useContext } from 'react';
-import { useWindowDimensions } from 'react-native';
-import { marcoDe, navDeVentana, type Marco, type NavKind } from './responsive';
+import { Dimensions, Platform, useWindowDimensions } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { huecoSuperiorVentana, marcoDe, navDeVentana, ventanaFlotante, type Marco, type NavKind } from './responsive';
 
 /**
  * Tope de ancho impuesto por un contenedor: la columna de 560 de la web fuera
@@ -35,4 +36,24 @@ export function useSizeClass(): Marco {
  */
 export function useNavActual(): NavKind {
   return navDeVentana(useWindowDimensions().width);
+}
+
+/**
+ * Lo que hay que bajar lo de arriba a la izquierda (cabecera, raíl, barra
+ * lateral) por los controles de ventana de iPadOS, o el aire que falta donde
+ * no hay barra de estado. 0 en el iPad a pantalla completa y en el iPhone.
+ *
+ * Ojo: la app de iPad en el Vision Pro y en el Mac se hace pasar por iPad
+ * (medido en el simulador de visionOS: `isPad` true, `isVision` false,
+ * `systemName` iPadOS), así que `Platform.isVision` solo vale en un binario
+ * nativo de visionOS. Si en esos sistemas la ventana no llena la «pantalla»,
+ * sale el hueco de 26 aunque no haya controles: solo es aire de más.
+ */
+export function useHuecoControlesVentana(): number {
+  const { width, height } = useWindowDimensions();
+  const { top } = useSafeAreaInsets();
+  if (Platform.OS !== 'ios' || !Platform.isPad) return 0;
+  const pantalla = Dimensions.get('screen');
+  const flotante = !Platform.isVision && ventanaFlotante(width, height, pantalla.width, pantalla.height);
+  return huecoSuperiorVentana(flotante, top);
 }

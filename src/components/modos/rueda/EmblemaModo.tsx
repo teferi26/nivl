@@ -20,7 +20,7 @@
 // La rueda lleva además el suyo porque va en un Modal (en Android, otra raíz).
 
 import { useCallback, useMemo, useRef, useState } from 'react';
-import { useWindowDimensions, View, type AccessibilityActionEvent } from 'react-native';
+import { Platform, useWindowDimensions, View, type AccessibilityActionEvent } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { useSharedValue, withTiming } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
@@ -212,7 +212,18 @@ export function EmblemaModoVista({ tamano: pedido = 56, forma = 'disco', modo, a
         <View
           ref={vista}
           collapsable={false}
-          style={{ width: tamano, height: tamano }}
+          style={[{ width: tamano, height: tamano }, Platform.OS === 'web' && ({ cursor: 'pointer', borderRadius: forma === 'placa' ? Math.round(tamano * 0.27) : tamano / 2 } as object)]}
+          // El gesto no llega al teclado: en la web, Enter o Espacio abren la rueda.
+          {...(Platform.OS === 'web'
+            ? {
+                focusable: true,
+                onKeyDown: (e: { key: string; preventDefault: () => void }) => {
+                  if (e.key !== 'Enter' && e.key !== ' ') return;
+                  e.preventDefault();
+                  abrir('toque');
+                },
+              }
+            : null)}
           accessible
           accessibilityRole="button"
           accessibilityLabel={t('modos:rueda.emblema', { modo: NOMBRE_MODO[modo] })}
