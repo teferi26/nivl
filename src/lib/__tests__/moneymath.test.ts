@@ -5,6 +5,7 @@ import {
   mesesDeAire,
   mesesHastaObjetivo,
   normalizarCobrador,
+  fijosDelMes,
   porCategoria,
   proyeccionMes,
   resumenPorMes,
@@ -179,6 +180,23 @@ describe('ritmoPresupuesto y proyección', () => {
     const r = ritmoPresupuesto(400, 1000, 10, 30)!;
     expect(r).toBeCloseTo(1.2, 5);
     expect(proyeccionMes(400, 10, 30)).toBeCloseTo(1200, 5);
+  });
+
+  test('la proyección no extrapola lo fijo ya pagado', () => {
+    expect(proyeccionMes(1000, 10, 30, { pagado: 800, pendiente: 50 })).toBeCloseTo(1450, 5);
+    expect(proyeccionMes(100, 10, 30, { pagado: 800, pendiente: 0 })).toBeCloseTo(800, 5);
+  });
+
+  test('fijosDelMes separa lo pagado, lo pendiente y lo cancelado', () => {
+    const mov = (date: string, amount: number, description: string, category: string): Movimiento =>
+      ({ date, amount, description, category, counterparty: null, is_internal: false });
+    const subs = [
+      { cobrador: 'NETFLIX', importeMedio: 12, meses: 4, ultimo: '2026-10-05', anual: 144 },
+      { cobrador: 'SPOTIFY', importeMedio: 10, meses: 4, ultimo: '2026-10-28', anual: 120 },
+      { cobrador: 'GIMNASIO VIEJO', importeMedio: 40, meses: 4, ultimo: '2026-06-01', anual: 480 },
+    ];
+    const delMes = [mov('2026-11-01', -800, 'Alquiler', 'vivienda'), mov('2026-11-05', -12, 'NETFLIX', 'ocio'), mov('2026-11-06', -30, 'Bar', 'restaurante'), mov('2026-11-07', -100, 'Fondo', 'ahorro')];
+    expect(fijosDelMes(delMes, subs, '2026-11-08')).toEqual({ pagado: 812, pendiente: 10 });
   });
 
   test('sin tope no hay ritmo que medir', () => {

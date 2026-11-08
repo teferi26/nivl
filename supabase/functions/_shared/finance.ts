@@ -252,14 +252,29 @@ export async function construirEstudioEconomico(
   // ── Mes en curso ────────────────────────────────────────────────
   push();
   push(`## Mes en curso (${mesActual}, día ${diaHoy} de ${totalDias})`);
-  const proyeccion = (esteMes.gastos / Math.max(diaHoy, 1)) * totalDias;
+  // Espejo de proyeccionMes y fijosDelMes (moneymath.ts): solo se extrapola lo variable.
+  const subsVivas = detectarSuscripciones(movs);
+  const recurrentes = new Set(subsVivas.map((s) => s.cobrador));
+  const cobrados = new Set<string>();
+  let fijoPagado = 0;
+  for (const m of movs) {
+    if (!m.date.startsWith(mesActual) || m.is_internal || m.amount >= 0 || ['ahorro', 'inversion', 'transferencia'].includes(m.category)) continue;
+    const cobrador = normalizarCobrador(m);
+    cobrados.add(cobrador);
+    if (['vivienda', 'suministros'].includes(m.category) || recurrentes.has(cobrador)) fijoPagado += -m.amount;
+  }
+  const hoyMs = Date.parse(`${mesActual}-${String(Math.max(diaHoy, 1)).padStart(2, '0')}`);
+  const fijoPendiente = subsVivas
+    .filter((s) => !cobrados.has(s.cobrador) && (hoyMs - Date.parse(s.ultimo)) / 86400000 <= 45)
+    .reduce((a, s) => a + s.importeMedio, 0);
+  const proyeccion = fijoPagado + fijoPendiente + (Math.max(esteMes.gastos - fijoPagado, 0) / Math.max(diaHoy, 1)) * totalDias;
   push(
     `- Entrado ${eur(esteMes.ingresos)} · gastado ${eur(esteMes.gastos)} · apartado ${eur(esteMes.apartado)}`,
   );
   push(`- Proyección de cierre al ritmo actual: ${eur(proyeccion)} de gasto`);
   const tope = plan?.spend_cap ? Number(plan.spend_cap) : null;
   if (tope) {
-    const ritmo = esteMes.gastos / tope / (Math.min(diaHoy, totalDias) / totalDias);
+    const ritmo = proyeccion / tope;
     push(
       `- Ritmo contra el tope de ${eur(tope)}: ×${ritmo.toFixed(2)} ` +
         (ritmo > 1.1

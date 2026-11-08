@@ -42,6 +42,7 @@ import { olvidarConsentimiento } from '@/lib/consent';
 import { ensureProfile } from '@/lib/data';
 import { isValidKey, nombreDia } from '@/lib/dates';
 import {
+  conContadorIa,
   energiaAgotada,
   fetchAiStatus,
   isPro,
@@ -510,7 +511,9 @@ export function useCoach(): { vista: CoachVistaProps; hojas: HojasCoach } {
           olvidarConsentimiento();
           consentimiento.pedir();
         } else {
-          setAviso({ texto: accessNotice(e), energia: e.reason === 'presupuesto_agotado' });
+          // Quien paga no ve fechas de recarga ni topes: solo la pausa del freno antiabuso.
+          const frenoPago = !conContadorIa(estado) && ['presupuesto_agotado', 'ritmo_diario', 'tope_funcion'].includes(e.reason);
+          setAviso({ texto: frenoPago ? t('coach:uso.freno') : accessNotice(e), energia: e.reason === 'presupuesto_agotado' });
         }
       } else {
         setError(mensajeSistema(e));
@@ -560,7 +563,9 @@ export function useCoach(): { vista: CoachVistaProps; hojas: HojasCoach } {
   const avisoEnergia =
     aviso?.texto ??
     (energiaAgotada(estado)
-      ? recarga
+      ? !conContadorIa(estado)
+        ? t('coach:uso.freno')
+        : recarga
         ? t('coach:turno.energiaAgotadaDia', { dia: recarga })
         : t('coach:turno.energiaAgotada')
       : null);

@@ -78,6 +78,7 @@ function datosDemo(p: {
     tieneCoach: !!p.elite,
     codigoCreador: p.rango === 'E',
     esCreador: !!p.elite,
+    esAdmin: false,
     logros,
     stats: p.stats,
     rachaFrase: p.rachaFrase,

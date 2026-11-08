@@ -223,6 +223,7 @@ export function PerfilGeneralVista(p: PerfilGeneralVistaProps) {
           />
           {datos.codigoCreador ? <Fila icono="ticket-outline" titulo={t('perfil:vista.codigo')} onPress={acciones.onCodigo} /> : null}
           {datos.esCreador ? <Fila icono="megaphone-outline" titulo={t('perfil:vista.panelCreador')} onPress={() => router.push('/creador')} /> : null}
+          {datos.esAdmin ? <Fila icono="shield-outline" titulo={t('perfil:vista.moderacion')} onPress={() => router.push('/moderacion' as never)} /> : null}
         </TarjetaGeneral>
       </Entrada>
 

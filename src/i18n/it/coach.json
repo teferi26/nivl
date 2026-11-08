@@ -60,7 +60,7 @@
     "haLeido_other": "Ha letto la tua giornata · {{count}} consultazioni",
     "titulo": "COACH",
     "profundoTag": "PROFONDO",
-    "verPlan": "Vedi il tuo piano e l'energia del coach",
+    "verPlan": "Vedi il tuo piano",
     "verMemoria": "Vedi la memoria del sistema",
     "vacioTitulo": "IL SISTEMA TI ASCOLTA.",
     "vacioCuerpo": "Comanda la tua giornata, decide quanto vale ogni cosa, la sera ti ricorda cosa ti giochi e ricorda tutto ciò che impara da te. Parlagli come parleresti a chi guida la tua vita.",
@@ -132,6 +132,7 @@
     "ir": "Vai a {{modo}}"
   },
   "uso": {
+    "freno": "Il coach è in pausa per un uso fuori dalla norma. Torna presto.",
     "etiqueta": "IA di questo mese",
     "restante": "{{pct}} % disponibile",
     "a11y": "IA di questo mese: resta il {{pct}} %",

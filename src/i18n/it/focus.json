@@ -74,7 +74,7 @@
     "relojDescanso": "PAUSA",
     "sesionA11y": "{{fase}}. {{titulo}}. Mancano {{reloj}}.",
     "temaN": "Argomento {{n}} · {{nombre}}",
-    "silencio": "Telefono in silenzioso all'inizio",
+    "silencio": "Attiva Non disturbare",
     "noMolestarA11y": "Come mettere il telefono in Non disturbare",
     "misionElegir": "Collega una missione FOCUS",
     "empezar": "Inizia blocco",

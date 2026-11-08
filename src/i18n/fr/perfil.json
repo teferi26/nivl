@@ -35,7 +35,7 @@
   },
   "vista": {
     "nombreA11y": "Ton nom. Touche pour le changer.",
-    "avisoRevision": "Ton nom, ta photo et ton titre sont montrés aux autres après vérification. En attendant, ils verront un pseudo provisoire.",
+    "avisoRevision": "Les autres peuvent voir ton nom, ta photo et ton titre. Ce qui enfreint les règles peut être signalé et retiré.",
     "camino": "Chemin des rangs",
     "arena": "Arène",
     "compartir": "Partager ma progression",
@@ -47,6 +47,8 @@
     "codigoDetalle": "Quelqu'un t'a amené ? Saisis son code",
     "panelCreador": "Tableau de bord créateur",
     "panelCreadorDetalle": "Ton code, tes ventes et tes paiements",
+    "moderacion": "Modération",
+    "moderacionDetalle": "Signalements et profils à vérifier",
     "enPausa": "Système en pause",
     "pausaHasta": "{{frase}} Jusqu'au {{dia}}.",
     "registro": "Historique",

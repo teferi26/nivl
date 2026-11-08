@@ -1,0 +1,50 @@
+# NIVL · OTA de producción desde GitHub Actions, para publicar sin sesión de
+# Expo en el equipo. Se lanza con un push a una rama `ota/**`.
+#
+# Antes de empujar esa rama, lo que necesite del servidor (migración, Edge
+# Function) tiene que estar ya desplegado: la OTA llega a los móviles en
+# minutos. `--environment production` lleva la clave de RevenueCat; sin ella la
+# tienda queda cerrada. Único secreto: EXPO_TOKEN.
+
+name: OTA de producción
+
+on:
+  push:
+    branches:
+      - 'ota/**'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ota-produccion
+  cancel-in-progress: false
+
+jobs:
+  preflight:
+    uses: ./.github/workflows/ci.yml
+
+  publicar:
+    needs: preflight
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.14.0
+          cache: npm
+
+      - run: npm ci
+
+      - name: Publicar la OTA
+        run: |
+          npx --yes eas-cli@21.2.0 update --channel production --platform all \
+            --environment production --non-interactive \
+            --message "$(git log -1 --format=%s | cut -c1-200)"

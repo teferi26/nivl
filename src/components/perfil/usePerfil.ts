@@ -69,6 +69,7 @@ import {
 import type { ProfileKind } from '@/lib/kinds';
 import { cosmeticosDe, estadoDe, type LogroInfo } from '@/lib/progression';
 import type { Profile } from '@/lib/types';
+import { fetchEsAdmin } from '@/lib/moderacion';
 import { mensajeSistema } from '@/lib/validation';
 import { voice } from '@/lib/voice';
 import type { PerfilAjustesProps } from './PerfilAjustes';
@@ -198,6 +199,7 @@ export function usePerfil(): UsePerfil {
   // plazo; la del panel, solo si esta cuenta es creador.
   const [referral, setReferral] = useState<MyReferral | null>(null);
   const [esCreador, setEsCreador] = useState(false);
+  const [esAdmin, setEsAdmin] = useState(false);
   const [codigoOpen, setCodigoOpen] = useState(false);
   const [codigo, setCodigo] = useState('');
   const [avisoCodigo, setAvisoCodigo] = useState<string | null>(null);
@@ -271,6 +273,9 @@ export function usePerfil(): UsePerfil {
       .catch(() => {});
     fetchCreatorPanel()
       .then((p) => setEsCreador(!!p))
+      .catch(() => {});
+    fetchEsAdmin()
+      .then(setEsAdmin)
       .catch(() => {});
     fetchConsentimiento({ fresco: true })
       .then(setConsent)
@@ -615,6 +620,7 @@ export function usePerfil(): UsePerfil {
             tieneCoach,
             codigoCreador: !!referral?.claimable,
             esCreador,
+            esAdmin,
             logros,
             stats,
             rachaFrase: streakMsg,
